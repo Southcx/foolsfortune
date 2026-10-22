@@ -28,6 +28,7 @@ import { T } from '../core/config.js';
 import { TIERS as CHEST_TIERS, CURIOS } from '../world/treasure/treasure.js';
 import { sfx } from '../audio/sfx.js';
 import { DOMAINS, levelOf } from './domains.js';
+import { DECOR } from './decor.js';
 import { MIRACLES, EPICS, GOD_POWERS, POWER_EVENTS } from './godpowers.js';
 import { racewayAchievements } from './raceachievements.js';
 import { sealAchievements } from './sealachievements.js';
@@ -51,7 +52,7 @@ export const CATS = [
   { id: 'emocean', name: 'THE EMOCEAN', subs: ['Sailing', 'Sea Stages', 'Crude'] },
   { id: 'collect', name: 'COLLECTION', subs: ['Logged'] },
   { id: 'psyche', name: 'THE DOMAINS', subs: ['Levels'] },
-  { id: 'garden', name: 'THE SPIRIT GARDEN', subs: ['The Press', 'The Garden', 'The Mycelium', 'The Spirits', 'The Firings'] },
+  { id: 'garden', name: 'THE SPIRIT GARDEN', subs: ['The Press', 'The Garden', 'The Mycelium', 'The Spirits', 'The Firings', "The Garden's Life"] },
   { id: 'sky', name: 'THE SKY', subs: ['Weather', 'The Day'] },
   { id: 'general', name: 'GENERAL', subs: ['Time', 'Persistence', 'Achievements'] },
 ];
@@ -650,6 +651,23 @@ export function buildAchievements(game) {
   C('sg1', 'garden', 'The Garden', 2, 'mechanic', 'Put to Work', 'Set a mastered encounter to work a slot in the garden.', 'garden.slot', 1);
   C('sg2', 'garden', 'The Garden', 3, 'endure', 'Dividends', 'Collect 1,000 cubes from the garden.', 'garden.dividend', 1000);
   C('sg3', 'garden', 'The Garden', 1, 'count', 'Green Fingers', 'Harvest a bed.', 'garden.harvest', 1);
+  // the garden made cozy (docs/plans/GARDEN-COZY.md: progress/harmony.js, progress/decor.js, progress/seasons.js): calm and briar counted
+  // the same, a count way and a feat way each (DESIGN.md 22); names placeholders for Espada's
+  C('gy1', 'garden', "The Garden's Life", 1, 'count', 'First Bloom', 'Tend a planetoid into bloom.', 'garden.bloom', 1);
+  H('gy2', 'garden', "The Garden's Life", 4, 'mechanic', 'In Full Bloom', 'Have six planetoids in bloom at once.', 'garden.bloom.most', 6, { title: 'Gardener' });
+  C('gy3', 'garden', "The Garden's Life", 2, 'endure', 'Tender', 'Tend your garden a hundred times.', 'garden.tend', 100);
+  C('gy4', 'garden', "The Garden's Life", 2, 'count', 'Pruner', 'Prune fifty thorns.', 'garden.prune', 50);
+  H('gy5', 'garden', "The Garden's Life", 3, 'mechanic', 'Bramble Keeper', 'Keep a planetoid overgrown for a whole season.', 'garden.briar.held', 7);
+  C('gy6', 'garden', "The Garden's Life", 1, 'collect', 'Homely', 'Own ten garden pieces.', 'decor.owned', 10);
+  F('gy7', 'garden', "The Garden's Life", 5, 'collect', 'The Whole Catalogue', 'Own every garden piece.', (L) => L.get('decor.owned'), Object.keys(DECOR).length, { title: 'Collector' });
+  C('gy8', 'garden', "The Garden's Life", 3, 'mechanic', 'A Set Piece', 'Finish a set of garden pieces round its centrepiece.', 'decor.sets', 1);
+  H('gy9', 'garden', "The Garden's Life", 4, 'collect', 'Five Lotuses', 'Open all five lotuses on the lake.', 'garden.lotuses', 5);
+  F('gy10', 'garden', "The Garden's Life", 3, 'collect', 'A Year in the Jar', 'Visit your Inner Realm in all four seasons.', (L) => ['spring', 'summer', 'autumn', 'winter'].filter((s) => L.get(`garden.season.${s}`) >= 1).length, 4);
+  C('gy11', 'garden', "The Garden's Life", 1, 'count', 'Make a Wish', "Meet a spirit's wish.", 'spirit.wish.done', 1);
+  C('gy12', 'garden', "The Garden's Life", 3, 'endure', 'Wishmaker', "Meet twenty-five of your spirits' wishes.", 'spirit.wish.done', 25);
+  F('gy13', 'garden', "The Garden's Life", 3, 'collect', 'Every Wish', 'Meet a wish of each kind: a meal, a feature, a garden piece, a photo and a visit.', (L) => ['food', 'feature', 'decor', 'photo', 'visit'].filter((k) => L.get(`spirit.wish.${k}`) >= 1).length, 5);
+  C('gy14', 'garden', "The Garden's Life", 2, 'count', 'Pen Pal', 'Get ten letters in your garden\'s mailbox.', 'spirit.letter', 10);
+  C('gy15', 'garden', "The Garden's Life", 3, 'mechanic', 'Postmarked', 'Get a postcard from a spirit you let go.', 'spirit.letter.postcard', 1);
   F('sg4', 'garden', 'The Garden', 5, 'collect', 'Room to Grow', 'Widen the garden as far as it goes.', (L) => L.get('garden.upgrade.slot') + L.get('garden.upgrade.bed'), 7);
 
   // ---------------------------------------------------------------- THE SKY (progress/weather.js: emotional weather and the day)

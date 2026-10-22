@@ -23,6 +23,8 @@ import { Clay } from './clay.js';
 import { Plots, FEELING_COLOR } from './plots.js';
 import { Raising, spiritName } from './raising.js';
 import { GardenHand } from './hand.js';
+import { DecorLayer } from './decorlayer.js';
+import { ThornPatches } from './thornpatches.js';
 import { Awaken, FOSSIL } from './awaken.js';
 import { Tribulation } from './tribulation.js';
 import { GardenCamera } from './gardencam.js';
@@ -95,6 +97,7 @@ export class Realm {
     this.plots.onSeed = (P, dir) => this.plants.seed(P, dir, 2.5);
     this.plots.wet = (p) => this.waterworks.feelingAt(p.planet, p.dir); // (water standing at a plot is a neighbour in its formation: item 11)
     this.hand = new GardenHand(this);
+    this.decorLayer = game.decorLayer = new DecorLayer(this); this.thornPatches = game.thornPatches = new ThornPatches(this); // (garden pieces placed by the hand, and the briar's thorns: Dovina's, world/garden/decorlayer.js, thornpatches.js)
     this.water = new THREE.Group(); this.water.name = 'garden-water'; this.site.group.add(this.water);
     this.rainLook = new GardenRain({ sky: this.site.sky }); this.site.group.add(this.rainLook.group); // (Calissa's rain: each drop falls to its own planetoid's heart, vfx/garden/gardenrain.js)
     this.camera = new GardenCamera(this); // (its three views: behind the Jar, first person, overhead: world/garden/gardencam.js)
@@ -256,14 +259,14 @@ export class Realm {
   fixed(dt) {
     if (!this.active) return;
     const I = this.game.input, J = this.jarBody, typing = this.game.log?.typing;
-    if (!J.held) J.step(dt, { move: typing ? null : this.wish(_v), jump: !typing && this.camera.view !== 'overhead' && I.isDown('Space') && J.grounded });
+    if (!J.held) { const k = this.decorLayer?.keepOut(J.planet, J.pos, J.radius); if (k) J.pos.add(k); J.step(dt, { move: typing ? null : this.wish(_v).multiplyScalar(this.thornPatches?.slowAt(J.planet, J.pos) ?? 1), jump: !typing && this.camera.view !== 'overhead' && I.isDown('Space') && J.grounded }); } // (out of the garden's pieces, slowed in thorns: Dovina's, decorlayer.js, thornpatches.js)
     if (!J.held && !J.flight && J.airT > JAR_LOST) { // (thrown off into the sky: set down by the gate, casebook rule 32, GARDEN-SWEEP #5)
       const D = this.site.by.dantian; J.pos.copy(this.gateStart()); J.vel.set(0, 0, 0); J.planet = D; J.up.copy(J.pos).sub(D.c).normalize(); J.airT = 0; J.grounded = false;
       this.game.events?.emit('garden.jar.back', { by: 'courier' });
     }
     for (const s of this.spirits) {
       if ((s.next -= dt) <= 0) { s.next = 1.2 + simRand() * 2.4; if (simRand() < 0.35) s.wish.set(0, 0, 0); else s.wish.set(simRand() - 0.5, simRand() - 0.5, simRand() - 0.5).normalize().multiplyScalar(0.7); }
-      s.body.step(dt, { move: s.wish });
+      { const k = this.decorLayer?.keepOut(s.body.planet, s.body.pos, s.body.radius); if (k) s.body.pos.add(k); } s.body.step(dt, { move: s.wish });
     }
     this.raising.fixed(dt); this.races.fixed(dt); // (a spar at the Chimney: world/garden/raising.js; a race: races.js)
     this.waterworks.fixed(dt); // (the water runs while you are in the garden: world/garden/waterworks.js)
@@ -280,7 +283,7 @@ export class Realm {
     this.placeJar(dt);
     this.hand.update(dt);
     const raw = g.rawDt ?? dt;
-    this.site.update(raw, g.camera); this.plots.update(raw);
+    this.site.update(raw, g.camera); this.plots.update(raw); this.decorLayer?.update(raw);
     for (const s of this.spirits) s.mesh.userData.form?.update?.(raw);
     // the spirits rest a game hour at a time, and work where they stand
     if ((this.restT += dt) >= GAME_HOUR) { this.raising.rest(Math.floor(this.restT / GAME_HOUR)); this.restT %= GAME_HOUR; }

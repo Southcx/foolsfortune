@@ -116,6 +116,13 @@ Each rides a tool and trains its skill (DESIGN.md section 9).
 | busking | 0.42 | 0.75 | 1.27 |
 | Well runs | 0.72 | 1.21 | 1.31 |
 | hauling (none passes 1.5x but this, where the risk is the profit) | -0.46 (cargo lost) | 0.95 | 1.51 |
+| a passage sailed, sloop, Dunemaw crude (crude + the rutter; three legs and the selling, about 10 real min) | 0.11 | 0.64 | 1.13 |
+| a passage sailed, tanker, Entropolis crude (the Chaos run: the risk is the profit, as hauling) | -1.28 (a stage failed) | 1.46 | 1.77 |
+
+**A passage sailed, measured whole** (2026-10-21, `scripts/economy.mjs`): the crossing pays no cubes itself, so a trip is its crude and
+its rutter, which pays by rank (`ECON.passage.share`, raised 0.6 to 0.8 the same day: a middling sailor in the starter sloop made 0.38x,
+a third of a middling diver's, a grind that never closed; now about half, doubling at an S). The tanker's Chaos run passes 1.5x at its
+best, as hauling does, because a failed stage loses more than a good one gains; open, for the owner if it plays rich.
 
 **Crude** (`ECON.crude`, `.ships`, `.wellFill`; canon: `docs/LORE.md`, "Lachryma as crude"): five grades by aspect, mirth (cheap,
 stable) to dread (richest, most volatile); only crude spills, by volatility and cargo size. The tanker holds 60, is slow, spills x0.35;
