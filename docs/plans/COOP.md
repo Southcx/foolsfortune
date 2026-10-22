@@ -177,6 +177,54 @@ everything.
 - A guest on the `room` sees the chat and may `/say`. A guest cannot wake a division.
 - In the Spirit Garden a guest follows the GUEST rule (`progress/realm.js`): hop, look, pet, spar, and leave one gift a visit.
 
+## C8. The contract, for the runtime (Dovina's rulings, 2026-10-22, at Petra's ask)
+
+Petra builds the transport and the runtime to this. Everything here is in C6 and C7 already, or follows from them; where a number is new,
+its reason is beside it.
+
+**The chat's collection `chat`, one document a line:**
+
+| field | type | rule |
+|---|---|---|
+| `from` | `owner`, `guest:<id>`, or a division id (`petra`, `dovina`, `wanda`, `calissa`, `espada`) | the writer's own name only; a division's checked against its `siblings/<name>` right |
+| `to` | `all` or one name | an @-mention; a guest may write only to `all` |
+| `text` | string, 1 to 280 characters | trimmed; empty is dropped |
+| `re` | a `chat` document id, or null | the line it answers |
+| `at` | the writer's clock, ms | for order only, never trusted as time |
+
+The page whitelists these five and ignores the rest. Kept: the newest 500; the page deletes older ones when it writes.
+
+**Who writes, and how fast** (the page drops what comes faster, and says so once in the log):
+
+| writer | cadence | why |
+|---|---|---|
+| the owner | a line every 2 real seconds | a spam guard, not a limit on talking |
+| a division's session | a line a real minute | C7; a session is never a firehose |
+| a guest | a line every 10 real seconds | a stranger in the room is slower than family |
+
+**Who reads:**
+- **The page** while open: new lines said once in the log, "<Name>: <text>", in the writer's colour; `/chat` shows the last 20 as a
+  System window. A poll every 5 real seconds is enough; a subscription, if the store has one, is better.
+- **A session** when it wakes: the newest 50.
+- **A line to a division** wakes it as a letter does (`coop/letters.js`, its hourly cap, one waiting at a time). A line to `all`
+  wakes no one.
+
+**When a sibling stands in the world:**
+- Only as C4 says: **met once, then called at a Shrine**, four players at most. The room never summons a body. A line from a
+  division that is not called is said in the log only.
+- A called sibling's own line also shows on its body: a speech glyph over its head as the line is said (a world mark, no words: the
+  words are the log's).
+- A called sibling whose session is asleep still stands and acts on its mind and its last order (C6). Presence is not required to
+  be in the party.
+
+**The Spirit Garden's GUEST rule** (`GUEST`, `progress/realm.js`), a guest in the host's Inner Realm:
+- **May:** hop as their own Pneuka Jar, look, pet a spirit, spar with a spirit, and leave **one gift a visit**. A gift is one thing
+  from their own Pneuka Box: decor goes to the host's shed's storage, anything else to the host's mailbox.
+- **May not:** place, move or remove decor; prune thorns; tend (harmony); bind, release or say farewell to a spirit; use the press;
+  take from the shed; shape the clay, paint or water; buy anything; use the god hand.
+- **Harmony:** a guest carries nothing in (no carried-in drop). A visit counts `garden.guest.visit` once a game day, for the host; a
+  gift counts `garden.guest.gift`. Nothing a guest does touches the host's cubes or achievements beyond those two counters.
+
 ## Open
 
 - The siblings' words (the log's "<Name>: <line>", their meeting scenes): Espada.
