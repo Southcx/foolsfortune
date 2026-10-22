@@ -5,7 +5,7 @@
 //   opensea.enter  opensea.board  opensea.moor { islet?, quay? }  sea.chart { square }  sea.find { id, kind, tier }  sea.fix { ok, how }
 //   sea.report { id, tier, fee }  sea.dock { island, paid, fuelCost, short? }  sea.tow { to, fee }  sea.secret { kind }  sea.fuel.low { fuel }
 //   sea.pair.half { id, shape }  sea.pair { id, shape, tier }  sea.lineup { id, charted }  sea.echo.hear { id, notes }  sea.echo { id }
-//   sea.dig { id, tier, cubes, how }  sea.stele { islet, words, line }   (the islets' puzzles and caches: world/opensea/puzzlepieces.js)
+//   sea.dig { id, tier, cubes, how }  sea.stele { islet, words, line }   sea.herds { day, n }  sea.herd { id, square, cubes }   (the migrations)   (the islets' puzzles and caches: world/opensea/puzzlepieces.js)
 //   (each with `by`)
 //
 //   openSeaRules({ on, L, log })   (feedback/tracking/rules.js calls it)
@@ -23,6 +23,9 @@ export function openSeaRules({ on, L, log }) {
   on('sea.find', (e) => { if (e.by !== 'courier') return; L.inc(`sea.find.${e.tier}`); log.say('explore', `You find ${KIND[e.kind] || 'something'} (${e.tier}). Report it at a dock.`, { key: `sea.find.${e.id}`, throttle: 1 }); });
   on('sea.fix', (e) => { if (e.ok) { L.inc('sea.fix'); log.say('info', e.how === 'sky' ? 'You read the sky and know where you are.' : 'A landmark you know: you know where you are.', { key: 'sea.fix', throttle: 4 }); } else log.say('warn', 'The sky is hidden: no reading.', { key: 'sea.fix.no', throttle: 4 }); });
   on('sea.report', (e) => L.inc('sea.report'));
+  // the migrations (progress/opensea/migrations.js; OPEN-SEA.md 13): the dock's board posts a game day's herds; one photographed pays once
+  on('sea.herds', (e) => log.say('info', `The board at the dock: ${e.n} herds gathered at sea today. Calibrate the Sight to one to find it.`, { key: 'sea.herds', throttle: 30 }));
+  on('sea.herd', (e) => { if (e.by !== 'courier') return; L.inc('sea.herd'); L.inc(`sea.herd.${e.id}`); log.say('gain', `You photograph the herd: ${e.cubes} cubes when you next dock.`, { key: 'sea.herd', throttle: 2 }); });
   on('sea.dock', (e) => log.say('info', `${ISLAND[e.island] || 'The dock'}: ${e.paid ? `your reports pay ${e.paid} cubes` : 'nothing to report'}; ${e.short ? `you can pay for ${e.fuelCost} cubes of fuel` : `the tank filled for ${e.fuelCost} cubes`}.`, { key: 'sea.dock', throttle: 1 }));
   on('sea.tow', (e) => { L.inc('sea.tow'); log.say('warn', `Your tank is dry: a tug tows you to the lane for ${e.fee} cubes.`, { key: 'sea.tow', throttle: 2 }); });
   on('sea.secret', (e) => { L.inc(`sea.secret.${e.kind}`); log.say('explore', `On the islet: ${SECRET[e.kind] || 'something'}.`, { key: 'sea.secret', throttle: 1 }); });

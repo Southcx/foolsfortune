@@ -40,7 +40,7 @@ M('harmony.carriedIn: Balanced', carriedIn({ v: 0.5 }), '| Fluid', carriedIn({ v
 // ---- decor: what the catalogue costs
 const ids = Object.keys(DECOR), mins = (c) => +(c / ECON.perMinute).toFixed(1);
 const total = ids.reduce((n, id) => n + priceOf(id), 0);
-M('decor.pieces', ids.length, 'in', Object.keys(SETS).length, 'sets; every piece has two sources or more:', ids.every((id) => DECOR[id].from.length >= 2));
+M('decor.pieces', ids.length, 'in', Object.keys(SETS).length, 'sets; every piece has two sources or more:', ids.every((id) => DECOR[id].from.length >= 2 || DECOR[id].set === 'keepsake'), '(keepsakes one way, by design)');
 M('decor.catalogue: one of each', total, 'cubes =', mins(total), 'minutes of play =', +(mins(total) / 60).toFixed(1), 'real hours at the aim (want: about three)');
 for (const set of Object.keys(SETS)) { const c = ids.filter((id) => DECOR[id].set === set).reduce((n, id) => n + priceOf(id), 0); M(`decor.set.${set}`, c, 'cubes,', mins(c), 'minutes'); }
 M('decor.dividend: the garden dividend at its share pays the catalogue in', +((total / (ECON.perMinute * 60 * ECON.dividend.share * ECON.dividend.slots))).toFixed(1), 'real hours with every slot working (want: inside a real week)');

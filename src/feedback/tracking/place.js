@@ -12,9 +12,15 @@
 const ART = { grab: 'Grab: lift your Pneuka Jar, a spirit or a feature. Tap a spirit to pet it; the right button flicks it.', paint: 'Paint: lay a ground on the clay; the right button clears it. R turns the ground.', water: 'Water: pour with the left button, drink with the right; Shift sets a spring, Ctrl a drain. R turns the feeling.', flatten: 'Flatten: level the clay to where the stroke began.', roughen: 'Roughen: break up the clay.', pull: 'Pull: raise the clay.', press: 'Press: lower the clay.', carve: 'Carve: cut a channel for water.', smooth: 'Smooth: make the clay level.', place: 'Place: put a feature in a plot.' };
 
 export function placeRules({ on, log }) {
-  on('session.open', (e) => {
+  // the welcome waits for the title to close (FIRST-HOUR.md 3: said at session.open it scrolled by under the title, unseen)
+  let fresh = false, said = false;
+  on('session.open', (e) => { fresh = !!e.fresh; });
+  on('title.enter', (e) => {
+    if (said) return; said = true;
     log.say('system', 'Welcome to the workshop. Press B for the Codex: arts, ledger and records.');
-    if (e.fresh) log.say('system', 'A new build of the game: your arts, ledger, records and Codex start afresh. (Settings are kept.)');
+    if (fresh) log.say('system', 'A new build of the game: your arts, ledger, records and Codex start afresh. (Settings are kept.)');
+    // the mode's line points at the first step (FIRST-HOUR.md 3; Espada's words, 2026-10-22)
+    log.say('system', e.mode === 'story' ? 'You wake in the workshop, beside a Shrine. Rest there first. Type /goals to see your first three goals.' : 'DEBUG: the sandbox. Every art is yours in the lab, every tool and every room.');
   });
   on('garden.refuse', (e) => log.say('warn', { god: 'Not while you are the god hand.', death: 'Not while your Pneuka Jar is broken.', stage: 'Not during a sea stage.', busy: 'Wait a moment.' }[e.why] || 'Not now.', { key: 'garden.refuse', throttle: 1 })); // (world/garden/realm.js)
   on('garden.jar.back', () => log.say('info', 'Your Pneuka Jar lands back at the gate.', { key: 'garden.jar.back', throttle: 2 })); // (thrown off into the sky: world/garden/realm.js)

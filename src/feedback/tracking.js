@@ -168,7 +168,7 @@ export class Tracking {
         log.say('gain', `You absorb ${Math.round(sum)} Lachryma.`, { key: 'lgain', win: 2.5, fmt: () => `You absorb ${Math.round(this._lg)} Lachryma.` });
       });
       P.on('denied', () => { L.inc('lach.denied'); log.say('warn', 'You do not have enough Lachryma.', { key: 'lden', throttle: 2.5 }); });
-      P.on('empty', () => { L.inc('lach.empty'); log.say('warn', 'Your Lachryma is used up.', { key: 'lemp', throttle: 8 }); });
+      P.on('empty', () => { L.inc('lach.empty'); log.say('warn', L.get('lach.empty') > 1 ? 'Your pool is empty.' : `Your pool is empty. It fills again on its own once you stop spending: ${(P.regenRate * (P.product?.((m) => m.regenMult) ?? 1)).toFixed(1)} a second, starting ${P.regenDelay.toFixed(1)} real seconds after.`, { key: 'lemp', throttle: 8 }); }); // (the first time, how it comes back: FIRST-HOUR.md 3)
       P.on('full', () => L.inc('lach.full'));
       P.on('overflow', (e) => L.inc('lach.overflow', e.amount));
     }
@@ -529,7 +529,7 @@ export class Tracking {
     on('replay.end', () => log.say('system', 'The replay ends here. The controls are yours.'));
     on('replay.save', (e) => log.say('system', `This session's replay is saved: ${Math.round(e.frames / 60)} seconds${e.full ? ' (the first twenty minutes: it was full)' : ''}.`));
     on('replay.record', () => log.say('system', 'A new replay begins here.'));
-    on('title.enter', (e) => { L.inc('title.enter'); L.inc(`title.enter.${e.mode}`); log.say('system', e.mode === 'story' ? 'STORY is not written yet. Anagami Island is still being fired; the workshop is open in the meantime, and the arts are learned by doing.' : 'DEBUG: the sandbox. Every art is yours in the lab, every tool and every room.', {}); });
+    on('title.enter', (e) => { L.inc('title.enter'); L.inc(`title.enter.${e.mode}`); }); // (the lines, welcome first: tracking/place.js)
     on('item.fit', (e) => { L.inc('item.fit'); log.say('info', e.socket === 'keys' ? `You put ${an(ITEM(e.item).toLowerCase())} on the Lockheart's ring.` : e.socket === 'heart' ? `You hang ${ITEM(e.item).toLowerCase()} on the Lockheart's chain.` : `You fit the ${ITEM(e.item).toLowerCase()} to the Crucibelle.`, { key: `ifit.${e.item}`, throttle: 0.2 }); });
     on('item.unfit', (e) => log.say('info', `You take the ${ITEM(e.item).toLowerCase()} off, into your Pneuka Box.`, { key: 'iunfit', throttle: 0.2 }));
     on('lure.tie', (e) => { L.inc('lure.tie'); if (e.curio) L.inc('lure.tie.curio'); log.say('info', `You tie the ${e.curio ? ITEM(e.lure) : (LURES.find((l) => l.id === e.lure)?.name.toLowerCase() || e.lure)} onto the line.`, { key: 'ltie', throttle: 0.2 }); });

@@ -13,15 +13,30 @@
 //   STRETCH  a Hard or harder one (tier 3+), in a third category, the nearest of its kind: the long reach for the session.
 // Only what is reachable is offered: an achievement with some progress, or one in a sub-group where something is already done. Hidden
 // ones never. A new save, which has begun nothing, is given FIRST STEPS: Easy ones with the smallest asks. Laid once a game day (calendar.js: one real hour), kept in the save; a goal done stays on the list, checked.
+// THE FIRST PATH (docs/plans/FIRST-HOUR.md 4): a new STORY save's three goals are instead the first three undone steps of FIRST.path, a
+// walk outward from where you wake (the Shrine at your feet, the folk, the atrium rail's view, the pots, the hub's chest through the hole,
+// the Index to the Dunes, a slip jelly, the board, the lure, the course), and a step done is replaced by the next at once (Nook Miles+'s
+// refill; Breath of the Wild's Great Plateau, where the next shrine is always in view). It ends when the path is walked, or once enough
+// achievements are done that you plainly found your own way (FIRST.enough). DEBUG never walks it (a sandbox).
 //
 //   GOALS   pickGoals(rows, { day, avoid }) -> [{ id, slot, first? }]   (rows: [{ id, cat, sub, tier, hidden, frac, goal }])
 //   const G = new Goals(game)   G.update(dt)   G.list() -> [{ id, slot, first, name, desc, tier, cur, goal, frac, done }]   /goals
-//   events: goals.set { day, ids }   goal.done { id, slot, ach, all }   goals.ask { goals }
+//   events: goals.set { day, ids, first }   goal.done { id, slot, ach, all, first }   goal.next { id, ach }   goals.ask { goals }
 // ---------------------------------------------------------------------------------------
 import { today } from '../core/calendar.js';
 
 export const GOALS = { near: 0.25, elsewhere: 5, stretch: { tier: 3, of: 3 }, look: 1, never: ['general'] }; // (never: categories that are not done by playing tonight: time, sessions, achievements about achievements)
 export const SLOTS = ['near', 'elsewhere', 'stretch'];
+/** The first path's steps, in the order the map meets them (FIRST-HOUR.md 4), and how many achievements done end it early. */
+export const FIRST = { path: ['sr1', 'fk1', 'sk12', 'br1', 'tc1', 'pl6', 'jl1', 'sf1', 'an1', 'cx3'], enough: 15 };
+
+/** The first path's next steps (up to three, in its order), or [] once it is walked or outgrown. Pure, for the measure. */
+export function firstSteps(rows, { have = [] } = {}) {
+  const by = new Map(rows.map((r) => [r.id, r])), done = rows.filter((r) => r.frac >= 1).length;
+  const left = FIRST.path.filter((id) => by.has(id) && !by.get(id).hidden && by.get(id).frac < 1);
+  if (!left.length || done >= FIRST.enough) return [];
+  return left.filter((id) => !have.includes(id)).slice(0, SLOTS.length);
+}
 
 /** A seeded draw from the game day (the same day lays the same goals). */
 function drawOf(day) {
@@ -65,6 +80,8 @@ export class Goals {
     game.chat?.add?.('goals', { help: "this game day's three goals, and how near each is: /goals", run: () => this.game.events?.emit('goals.ask', { goals: this.list(), by: 'courier' }) });
   }
   get A() { return this.game.achievements; }
+  /** Is this save on the first path? (STORY only: DEBUG is the sandbox.) */
+  get onPath() { return this.game.mode === 'story'; }
   rows() {
     const A = this.A; if (!A) return [];
     return A.list.map((a) => ({ id: a.id, cat: a.cat, sub: a.sub, tier: a.tier, hidden: !!a.hidden, frac: A.done(a.id) ? 1 : A.progress(a)[2], goal: a.dir === 'down' ? Infinity : a.goal }));
@@ -72,18 +89,30 @@ export class Goals {
   /** A new game day lays three goals (yesterday's categories kept out of ELSEWHERE); a goal done since the last look is said, once. */
   update(dt = 0) {
     if ((this.lookT -= dt) > 0 || !this.A) return; this.lookT = GOALS.look;
+    if (this.game.title?.active) return; // (not at the title: the mode, and so the save, is not chosen yet)
     const day = today();
     if (this.s.day !== day) {
-      const avoid = this.s.cats || [], picks = pickGoals(this.rows(), { day, avoid });
+      const avoid = this.s.cats || [], rows = this.rows(), path = this.onPath ? firstSteps(rows) : [];
+      const picks = path.length ? path.map((id, i) => ({ id, slot: SLOTS[i], first: true, path: true })) : pickGoals(rows, { day, avoid });
       this.s = { day, goals: picks, cats: picks.map((p) => this.A.by[p.id]?.cat).filter(Boolean), said: [] };
       this.game.save?.dirty('goals');
-      if (picks.length) this.game.events?.emit('goals.set', { day, ids: picks.map((p) => p.id), by: 'environment' });
+      if (picks.length) this.game.events?.emit('goals.set', { day, ids: picks.map((p) => p.id), first: !!path.length, by: 'environment' });
       return;
     }
     for (const g of this.s.goals) {
       if (this.s.said.includes(g.id) || !this.A.done(g.id)) continue;
       this.s.said.push(g.id); this.game.save?.dirty('goals');
-      this.game.events?.emit('goal.done', { id: g.id, slot: g.slot, ach: this.A.by[g.id]?.name, all: this.s.goals.every((x) => this.A.done(x.id)), by: 'courier' });
+      this.game.events?.emit('goal.done', { id: g.id, slot: g.slot, ach: this.A.by[g.id]?.name, all: this.s.goals.every((x) => this.A.done(x.id)), first: !!g.path, by: 'courier' });
+    }
+    // the first path refills: a step done gives its place to the next undone one (said once, after the done line)
+    if (!this.s.goals.some((g) => g.path)) return;
+    const live = this.s.goals.filter((g) => !this.A.done(g.id)).map((g) => g.id), done = this.s.goals.filter((g) => g.path && this.A.done(g.id) && this.s.said.includes(g.id));
+    if (!done.length) return;
+    const next = this.onPath ? firstSteps(this.rows(), { have: live }) : [];
+    for (const g of done) {
+      const id = next.shift(); if (!id) continue;
+      Object.assign(g, { id, first: true, path: true }); this.game.save?.dirty('goals');
+      this.game.events?.emit('goal.next', { id, ach: this.A.by[id]?.name, by: 'environment' });
     }
   }
   /** The day's goals as a window would show them: the achievement's words and the ledger's numbers. */
