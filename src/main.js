@@ -254,6 +254,7 @@ import { Myggdrasil } from './progress/myggdrasil.js';
 import { Keepsakes } from './progress/keepsakes.js';
 import { GardenMycelium } from './world/garden/mycelium.js';
 import { renderGrimoire } from './feedback/codex/grimoire.js';
+import { GardenMood } from './vfx/garden/gardenmood.js';
 import { Realm } from './world/garden/realm.js';
 import { Party } from './coop/party.js';
 import { SiblingChannel } from './coop/channel.js';
@@ -633,6 +634,7 @@ async function main() {
   game.creations = new Creations(game); // (the hand's voxel creations: godhand/creations.js; GODHAND.md 7)
   game.rejection = new Rejection(game); // (the island's immune response to the hand: godhand/rejection.js; GODHAND.md 10)
   game.realm = new Realm(game, { god }); // (the Spirit Garden entered at a Shrine: the Jar on its planetoids, the hand over it: world/garden/realm.js)
+  game.gardenMood = new GardenMood(game); // (the Inner Realm's one mood: the hour, the season and the briar every garden look reads: vfx/garden/gardenmood.js)
   const cursorFree = () => !!(god.active || game.realm?.active || game.duel?.active); // (the hand's cursor is the pointer: no lock taken, no pause on its loss)
   input.wantLock = () => !cursorFree() && !modalOpen() && !game.kilnUI?.open && !game.dialogue?.open && !game.pneukaUI?.open && !game.shopUI?.open && !game.qais?.open; // (a refused lock is retried only if the game still wants one: core/input.js)
   game.lock = new LockOn(game); // (Z-targeting: the camera and the blade hold one thing)

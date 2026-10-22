@@ -401,6 +401,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   upgrades. The **Pneuka Box** is its shed (P). *Not:* "Shrine Garden". → detail
 - **Inner Realm** (`game.realm`, `src/world/garden/`) — a player's own Spirit Garden: you are the Pneuka Jar hopping round its planetoids, and the
   god hand over them; spirits are bound until released. → detail
+- **the garden's mood** (`GardenMood`, `game.gardenMood`, `moodAt`, `src/vfx/garden/gardenmood.js`) — the one table every Inner Realm look reads: the game hour's light (a golden key on a cool fill, a golden hour, lamps at dusk), the season's palette (`seasonOf`) and the briar's grade (`game.harmony.briarK`), eased together. *Not:* harmony (Dovina's gauge), the weather, mental state.
 - **the ring** (`ORBIT`, `src/world/garden/orbit.js`) — the ten slots round the Dantian where a bought planetoid is set. *Not:* the hue ring, nor
   the upper ring.
 - **Soul Alchemy** (`game.alchemy`, `src/progress/alchemy.js`) — pressing materials walks the Courier's soul colour on the colour wheel; firing it

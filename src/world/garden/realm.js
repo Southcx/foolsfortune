@@ -495,7 +495,8 @@ export class Realm {
     if (!this.active) return;
     const sc = this.game.scene;
     const storm = this.tribulation?.active ? 1 : 0, ph = phaseAt(), S = this.site.sky; // (Calissa's sky: your draught's haze, the night's stars; the Heavenly Kiln darkens it)
-    S.set({ draught: this.game.draughtHex ?? null, night: storm ? 1 : ph === 'night' ? 1 : ph === 'dusk' || ph === 'dawn' ? 0.45 : 0 });
+    if (!storm && this.game.gardenMood) { this.game.gardenMood.apply(this); return; } // (the garden's mood: the hour, the season and the briar on the lights, the fog and the dome: vfx/garden/gardenmood.js)
+    S.set({ draught: this.game.draughtHex ?? null, night: storm ? 1 : ph === 'night' ? 1 : ph === 'dusk' || ph === 'dawn' ? 0.45 : 0, mood: null });
     sc.fog.color.copy(S.fog); sc.fog.density = storm ? 0.012 : 0.003;
     if (sc.background?.isColor) sc.background.copy(S.fog);
     // the ground under it darkens with the hour as the sky does (the garden's own lamps, its water's and foxfire's glow, then read):
