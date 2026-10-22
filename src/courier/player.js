@@ -21,6 +21,7 @@ const simRand = stream('courier/player'); // (the simulation's chance: core/rng.
 const UP = new THREE.Vector3(0, 1, 0);
 const _v = new THREE.Vector3();
 const _v2 = new THREE.Vector3();
+const _crRay = new RAPIER.Ray({ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 1 }), notSensor = (c) => !c.isSensor(); // (the crawl's reach probe: crawlReach)
 const _shotM = new THREE.Matrix4(), _shotQ = new THREE.Quaternion(), _shotR = new THREE.Quaternion(), _shotUp = new THREE.Vector3(0, 1, 0), _shotZ = new THREE.Vector3(0, 0, 1);
 const HALF = 0.55, RADIUS = 0.3; // standing capsule: 1.7 m tall
 const LOW_HALF = 0.375; // crouched / sliding: 1.35 m (the posed body, hair included, fits under 1.5 m)
@@ -39,6 +40,18 @@ const QF = RAPIER.QueryFilterFlags;
 // getting down onto the belly (s): Loco_CrawlEnter's 0.67 from standing, from its 0.2 out of the crouch (CRAWL.enterFrom); getting up is
 // the exit clip's, to the crouch or to standing (CRAWL.exitTo). The body is held still while it plays and keeps the prone shape rising.
 const PRONE_DOWN = { stand: 0.67, crouch: 0.67 - CRAWL.enterFrom.crouch };
+/** How far the body on the belly reaches from the capsule's axis along a direction `a` from its facing (radians): the crawl's outline
+ *  (anim/crawl.js CRAWL.outline, the farthest vertex every 15 degrees, left and right alike) as half-planes, the distance to their
+ *  boundary along the ray. The capsule is upright and RADIUS round, so the body stands out past it by this less RADIUS. */
+const CRAWL_REACH = (() => {
+  const O = CRAWL.outline, n = (O.length - 1) * 2, steps = 72, out = new Float32Array(steps);
+  for (let i = 0; i < steps; i++) {
+    const a = (i / steps) * Math.PI * 2; let r = 9;
+    for (let k = 0; k < n; k++) { const t = (k / n) * Math.PI * 2, c = Math.sin(a) * Math.sin(t) + Math.cos(a) * Math.cos(t); if (c > 0.1) r = Math.min(r, O[Math.min(k, n - k)] / c); }
+    out[i] = r;
+  }
+  return (a) => out[((Math.round((a / (Math.PI * 2)) * steps) % steps) + steps) % steps];
+})();
 
 const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 const hlen = (v) => Math.hypot(v.x, v.z);
@@ -299,6 +312,23 @@ export class Player {
 
   canStand() { return this.fits(this.pos, false); }
 
+  /** On the belly, the body reaches past the capsule (0.95 m ahead of its axis, 1.23 m behind: CRAWL_REACH), so against a wall the head
+   *  has met the capsule would crawl on and the crawl's clearance slide the body back, the clip cycling in place (Calissa's prone note).
+   *  A ray along the move just over the step height (a step the capsule climbs is never a wall to it), as long as the body reaches
+   *  that way: a wall inside it takes the move into it away,
+   *  and the move along it is kept. A collide-and-slide on the body's outline instead of the capsule's (Fauerby's, 2003). */
+  crawlReach(hv) {
+    const sp = Math.hypot(hv.x, hv.z); if (sp < 1e-3 || !this.physics) return;
+    const dx = hv.x / sp, dz = hv.z / sp, reach = CRAWL_REACH(Math.atan2(dx, dz) - this.bodyYaw);
+    const R = _crRay, W = this.physics.world; if (!W || !Number.isFinite(this.pos.x + this.pos.y + this.pos.z)) return;
+    R.origin.x = this.pos.x; R.origin.y = this.pos.y + T.movement.stepHeight + 0.02; R.origin.z = this.pos.z; R.dir.x = dx; R.dir.y = 0; R.dir.z = dz; // (a kept ray: nothing made a frame)
+    const hit = W.castRayAndGetNormal(R, reach + CRAWL.margin, true, undefined, GROUPS.controllerQuery, this.collider, undefined, notSensor);
+    if (!hit) return;
+    const n = hit.normal, nl = Math.hypot(n.x, n.z); if (nl < 0.5) return; // (a slope or a ceiling: the capsule's own business)
+    const nx = n.x / nl, nz = n.z / nl, into = hv.x * nx + hv.z * nz;
+    if (into < 0) { hv.x -= into * nx; hv.z -= into * nz; }
+  }
+
   /** The posture C chose: stand, crouch or prone (the shape follows where it fits). Getting down onto the belly and up from it takes the
    *  crawl's enter and exit clips' time, the body held still meanwhile. */
   setPosture(to) {
@@ -387,7 +417,7 @@ export class Player {
     this.prevPos.copy(this.pos);
     this.slideBuf -= dt;
     this.postureBuf -= dt;
-    this.postureT = Math.max(0, this.postureT - dt);
+    this.postureT = this.postureT - dt > 1e-6 ? this.postureT - dt : 0; // (no float residue: 0.4 s less 24 frames of 1/60 left 1e-17, a frame more of the get-up that ate a press)
     this.dashBuf -= dt;
     this.slideCd -= dt;
     this.slideBoostCd -= dt;
@@ -468,8 +498,9 @@ export class Player {
     this.jumpBuf = liveMove && inp.isDown('Space') && this.jumpHeldLast !== true ? M.jumpBuffer : this.jumpBuf - dt;
     this.jumpHeldLast = inp.isDown('Space');
     if (this.grounded) { this.airJumps = M.airJumps; this.dashCharges = M.dashCharges; }
-    if (this.jumpBuf > 0 && (this.shape === 'prone' || this.postureT > 0)) { if (this.posture === 'prone' && this.postureT <= 0) this.setPosture(this.fits(this.pos, 'low') ? 'crouch' : 'prone'); this.jumpBuf = 0; } // (from the belly, Space gets up to the crouch: no jump)
-    if (this.jumpBuf > 0) {
+    const rising = this.postureT > 0 && this.posture !== 'prone'; // (getting up off the belly: Space now waits in its buffer for the end, not eaten)
+    if (this.jumpBuf > 0 && !rising && (this.shape === 'prone' || this.postureT > 0)) { if (this.posture === 'prone' && this.postureT <= 0) this.setPosture(this.fits(this.pos, 'low') ? 'crouch' : 'prone'); this.jumpBuf = 0; } // (from the belly, Space gets up to the crouch: no jump)
+    if (this.jumpBuf > 0 && !rising) {
       if (this.wallrun) {
         this.wallJump(hv, wishDir);
         jumped = true;
@@ -559,6 +590,7 @@ export class Player {
           if (hv.lengthSq() > 1e-6) hv.setLength(keep);
         }
       }
+      if (this.shape === 'prone' && this.grounded) this.crawlReach(hv); // (the body ahead meets a wall before the capsule does)
     }
 
     // ---- air dash: Shift in the air, paid in Lachryma ----

@@ -782,3 +782,23 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 264. **A state that exists to hold a window open ends when the window closes, however it closes.** Closing
     from the state's side (unseal, so the page shuts) is half; the window shut by its own key, by Esc or by another page must end the
     state too, or the player is left in it with nothing to do but press again.
+
+265. **Where the drawn body reaches past its collider, the move stops where the body meets a wall, not where the
+    collider does.** A look that slides the body back off a wall the collider walks on into is the clip turning in place; probe the
+    body's reach along the move and take the move into the wall away.
+
+266. **A press during a beat the body cannot act in waits in its buffer for the beat's end; it is not eaten**, and a
+    thing drawn again starts its own clocks over (an idle timer from before it went away is a stale state, rule 15's kind).
+
+267. **A velocity made from a distance (a hold, a snap, a spring) has a bound and a breaking point.** Past a distance
+    the hold could never have reached, it lets go; under it, its speed is capped. A knock, a broken ledge or a teleport otherwise turns
+    the error into a launch.
+
+268. **An act queued for later asks whether its thing still exists when it runs**, and whatever frees a thing
+    marks it gone (dead, disposed) first, so every later look at it bails before it reaches a freed body.
+
+269. **A ledger key made from a word the player reads is normalised where it is made** (lower case, no article),
+    and its readers use the header's spelling: 'the Dunes' said is `dunes` kept.
+
+270. **A window that reads keys owns them while it is open**: whatever else reads the same keys, and runs before it in
+    the frame, asks whether the window is open, since spending a key after it was read is too late.
