@@ -8,7 +8,7 @@
 // stored, never both); the grid is world/garden/decorgrid.js; the rating is reported as `garden.rating` after every change. Each piece
 // holds the clay under it still (clay.keep, as a feature does), and a medium piece or larger keeps the Pneuka Jar and the spirits out
 // (keepOut). Drawn in one BatchedMesh on one material (one draw call, one program, made before the realm's warm-up compile), casting
-// no shadow. THE LOOK IS A PLACEHOLDER, one shape a size in its set's colour, until Calissa builds the pieces.
+// no shadow. The pieces' models are Calissa's (vfx/garden/decorpieces.js): one geometry a piece id, in its set's colour x tint.
 //
 // Prior art: Animal Crossing: New Horizons' decorating (half-tile steps, a piece picked up kept whole, the catalogue), Unpacking's
 // placement (a ghost and a sound on each snap), Townscaper's grid on a curved world, Black & White's hand as the only cursor, three.js's
@@ -21,6 +21,7 @@ import * as THREE from 'three';
 import { sfx } from '../../audio/sfx.js';
 import { DECOR, SETS, priceOf, rating } from '../../progress/decor.js';
 import { seasonOf } from '../../progress/seasons.js';
+import { decorGeometry, decorMaterial } from '../../vfx/garden/decorpieces.js';
 import { DECOR_GRID, cellsOf, cellAt, dirAt, tangentAt, regionOf, regionCells } from './decorgrid.js';
 
 /** A piece's footprint (metres round its point) by size; how near a site's fixed thing (the gate, the shed, a bed, the press) or a plot
@@ -31,27 +32,17 @@ export const FOOT = { small: 0.45, medium: 0.95, large: 1.45, centre: 1.95, fixe
 export const SET_COLOR = { plain: 0xa89a86, wonder: 0x7fa86a, mirth: 0xd8794e, desire: 0xc9a356, grief: 0x7f93ad, dread: 0x5b8f8c, sound: 0xc8a050, season: 0xe0a2b4, briar: 0x5d5a32 };
 export const TINT = [1, 0.8, 1.2, 0.62]; // (a piece's four tints: as it is, darker, paler, deep)
 const UNDO = 50; // (decor's undo stack, Petra's depth: GARDEN-COZY.md D2)
-const SIZES = ['small', 'medium', 'large', 'centre'];
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(1, 1, 1), _p = new THREE.Vector3(), _n = new THREE.Vector3(), _t = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Color(), _push = new THREE.Vector3(), _Y = new THREE.Vector3(0, 1, 0);
 
 /** Geometry the batch can hold together: unindexed, position and normal only. */
 const plain = (g) => { const q = g.index ? g.toNonIndexed() : g, o = new THREE.BufferGeometry(); o.setAttribute('position', q.attributes.position); o.setAttribute('normal', q.attributes.normal); return o; };
-export const mergeParts = (parts) => { const pos = [], nor = []; for (const p of parts.map(plain)) { pos.push(...p.attributes.position.array); nor.push(...p.attributes.normal.array); } const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3)); return g; };
-/** The placeholder shapes, one a size: a stone, a block, a tall cone on a stem, a pavilion. */
-export function decorShapes() {
-  return {
-    small: mergeParts([new THREE.CylinderGeometry(0.32, 0.42, 0.5, 7).translate(0, 0.25, 0)]),
-    medium: mergeParts([new THREE.BoxGeometry(1.4, 0.7, 1.4).translate(0, 0.35, 0), new THREE.BoxGeometry(0.9, 0.35, 0.9).translate(0, 0.88, 0)]),
-    large: mergeParts([new THREE.CylinderGeometry(0.16, 0.22, 1.2, 6).translate(0, 0.6, 0), new THREE.ConeGeometry(1.3, 2.2, 7).translate(0, 2.1, 0)]),
-    centre: mergeParts([new THREE.BoxGeometry(3.4, 0.3, 3.4).translate(0, 0.15, 0), ...[[-1.4, -1.4], [1.4, -1.4], [-1.4, 1.4], [1.4, 1.4]].map(([x, z]) => new THREE.CylinderGeometry(0.12, 0.12, 2, 6).translate(x, 1.3, z)), new THREE.ConeGeometry(2.7, 1.2, 4).rotateY(Math.PI / 4).translate(0, 2.9, 0)]),
-  };
-}
+export const mergeParts = (parts) => { const pos = [], nor = []; for (const p of parts.map(plain)) { pos.push(...p.attributes.position.array); nor.push(...p.attributes.normal.array); } const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3)); const n = pos.length / 3; g.setAttribute('color', new THREE.Float32BufferAttribute(new Array(n * 3).fill(1), 3)); g.setAttribute('tintk', new THREE.Float32BufferAttribute(new Array(n).fill(1), 1)); g.setAttribute('glowk', new THREE.Float32BufferAttribute(new Array(n).fill(0), 1)); return g; }; // (white, all tint, no glow: the pieces' material reads these)
 
 export class DecorLayer {
   constructor(realm) {
     this.R = realm; this.game = realm.game; this.on = false; this.held = null; this.blocked = false; this.at = null; this.last = null; this.undos = []; this.spots = [];
     this.mat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.85, metalness: 0, name: 'garden-decor' });
-    this.shapes = decorShapes(); this.cap = FOOT.cap;
+    this.mood = decorMaterial(this.mat, this.game); this.pieces = Object.fromEntries(Object.keys(DECOR).map((id) => [id, decorGeometry(id)])); this.cap = FOOT.cap; // (a model for every piece, built here before the realm's warm-up compile)
     this.batch = this.makeBatch(this.cap); realm.site.group.add(this.batch);
     this.baseKept = {}; // (each clay's own keeps, before any piece's: features and lotuses, kept at build)
     for (const [id, c] of Object.entries(realm.clays || {})) this.baseKept[id] = c.kept.slice();
@@ -64,10 +55,10 @@ export class DecorLayer {
   N(P) { return cellsOf(P.r); }
   /** The batch: the four shapes, its instances (one a piece, and the ghost's), one draw. */
   makeBatch(cap) {
-    const verts = SIZES.reduce((n, k) => n + this.shapes[k].attributes.position.count, 0);
+    const verts = Object.values(this.pieces).reduce((n, g) => n + g.attributes.position.count, 0);
     const B = new THREE.BatchedMesh(cap + 1, verts, 0, this.mat); B.name = 'garden-decor'; B.frustumCulled = false; B.castShadow = false; B.receiveShadow = true;
-    this.geoId = Object.fromEntries(SIZES.map((k) => [k, B.addGeometry(this.shapes[k])]));
-    this.ghostId = B.addInstance(this.geoId.small); B.setColorAt(this.ghostId, _c.set(0xffd36a)); B.setVisibleAt(this.ghostId, false);
+    this.geoId = Object.fromEntries(Object.entries(this.pieces).map(([id, g]) => [id, B.addGeometry(g)]));
+    this.ghostId = B.addInstance(this.geoId.rock); B.setColorAt(this.ghostId, _c.set(0xffd36a)); B.setVisibleAt(this.ghostId, false);
     this.ids = []; return B;
   }
   /** Room for `n` pieces: the batch grows (doubling) when full. */
@@ -91,7 +82,7 @@ export class DecorLayer {
     this.room(placed.length); this.spots = []; const B = this.batch;
     placed.forEach((p, i) => {
       const D = DECOR[p[0]], P = this.planet(p[1]); if (!D || !P) return;
-      if (this.ids[i] == null) this.ids[i] = B.addInstance(this.geoId[D.size]); else B.setGeometryIdAt(this.ids[i], this.geoId[D.size]);
+      if (this.ids[i] == null) this.ids[i] = B.addInstance(this.geoId[p[0]]); else B.setGeometryIdAt(this.ids[i], this.geoId[p[0]]);
       const m = this.frame(P, p[2], p[3], p[4], p[5]);
       B.setMatrixAt(this.ids[i], m); B.setColorAt(this.ids[i], _c.set(SET_COLOR[D.set] || 0xffffff).multiplyScalar(TINT[p[6] || 0] || 1)); B.setVisibleAt(this.ids[i], true);
       const N = this.N(P);
@@ -134,9 +125,9 @@ export class DecorLayer {
     this.on = !this.on; this.held = null; this.ghost(false); this.R.plots?.show(!this.on);
     this.game.events?.emit('garden.art', { art: 'place', mode: this.on ? 'decor' : 'plots', by: 'courier' });
   }
-  ghost(show, size, m, blocked) {
+  ghost(show, id, m, blocked) {
     const B = this.batch; if (!show) { B.setVisibleAt(this.ghostId, false); return; }
-    B.setGeometryIdAt(this.ghostId, this.geoId[size]); B.setMatrixAt(this.ghostId, m.multiply(_m.makeScale(1.04, 1.04, 1.04)));
+    B.setGeometryIdAt(this.ghostId, this.geoId[id]); B.setMatrixAt(this.ghostId, m.multiply(_m.makeScale(1.04, 1.04, 1.04)));
     B.setColorAt(this.ghostId, _c.set(blocked ? 0xd04040 : 0xffd36a)); B.setVisibleAt(this.ghostId, true);
   }
   /** The placed piece nearest a ground point, within reach, as its index in the layout (or -1). */
@@ -162,7 +153,7 @@ export class DecorLayer {
     if (this.held && this.at) {
       const D = DECOR[this.held.id], m = this.frame(this.at.P, this.at.face, this.at.iu, this.at.iv, this.held.yaw);
       this.blocked = !this.free(this.at.P, _p.setFromMatrixPosition(m), D.size, this.held.from ?? -1);
-      this.ghost(true, D.size, m, this.blocked);
+      this.ghost(true, this.held.id, m, this.blocked);
       const key = `${this.at.face}.${this.at.iu}.${this.at.iv}`; if (key !== this.snapKey) { this.snapKey = key; sfx.click?.(); } // (a sound on each snap: Unpacking's)
     } else this.ghost(false);
     if (I.wasPressed('Mouse2')) { if (this.held) { this.held = null; return; } if (hit) { const i = this.near(hit.point); if (i >= 0) { const p = this.decor.s.placed[i]; this.push({ op: 'remove', p: p.slice() }); this.decor.remove(i); this.changed(p[1]); sfx.toss?.(); } } return; }

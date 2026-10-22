@@ -17,6 +17,7 @@
 //   game.psygunModels = new PsygunModels(game)   .show(gunId)   .shown (the variant drawn: 'reference' | 'first' | 'bombardier' | ...)
 //   psygunModelFor(id) -> Promise<{ body, glow }>   psygunIconModel(game, id) -> { group, dispose } | null (null until loaded)
 // ---------------------------------------------------------------------------------------
+import { base64Buffer } from '../core/base64.js';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { GUN_POINTS } from '../courier/character.js';
@@ -29,7 +30,7 @@ const VARIANTS = {
   'psygun.carbine': { key: 'carbine', load: () => import('../assets/psygun_carbine.glb?b64'), muzzle: [0.655, 0.03, 0], front: [0.575, 0.069] },
   'psygun.pepperbox': { key: 'pepperbox', load: () => import('../assets/psygun_pepperbox.glb?b64'), muzzle: [0.376, -0.004, 0], front: [0.34, 0.105] },
 };
-const bytes = (b64) => Uint8Array.from(atob(b64), (c) => c.charCodeAt(0)).buffer;
+const bytes = base64Buffer; // (core/base64.js: a loop, not a callback a byte)
 const CACHE = new Map(), READY = new Map(); // variant key -> Promise<{ body, glow }> / the loaded geometries; 'reference' set at boot
 
 /** A variant's glb as its two geometries, by the reference's material names. */

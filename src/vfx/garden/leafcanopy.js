@@ -32,6 +32,15 @@
 //                veined in gold, the gold's own glow a little more by night (low and steady); lit through when the sun is behind the
 //                crown. A canopy may take a TINT (Myggdrasil's tincture): its flash leans to that colour, keeping its value. The tints
 //                are a 64-texel table (one uniform for every canopy): slot 0 is the plain stone the many share
+//   THE GREENS   (GARDEN-COZY.md H4, H5, H6) a canopy is LEAFY or the stone's, a flag in its slot's gate row (green): the garden's own trees
+//                (vfx/garden/gardentree.js plants every one leafy) take the mood's two greens, a light and a deeper (`uLeafA`, `uLeafB`;
+//                vfx/garden/gardengrounds.js groundTick writes them each frame from game.gardenMood.now), a leaf's tone by how the sun
+//                falls on it and its own phase, the sunlit tops warmer; Lachryma's trees (Myggdrasil's caps and gills, the cocoon tree)
+//                never ask, and keep labradorite and gold. By season: spring a blossom speckled through the leaves, summer deep green,
+//                autumn the mood's ambers and rusts with leaves let go (each by its own phase, shrinking away, so a crown thins and
+//                the dark shell and the limbs show), winter bare to sparse with snow on the crown's tops (where a leaf faces away from
+//                the planetoid's heart); the briar drains the greens to olive and rust, thins the crown further and turns the sway
+//                nervous, a quick twitch over the slow one. Only uniforms change: no recompile, no new draw
 //   THE SHADOW   the colour pass draws the quads; the sun's shadow pass draws the same four vertices where they really are, a square
 //                lying on the sphere a little inside it (no new depth program: three's own depth material draws them), so a crown
 //                casts the round shadow of its spheres
@@ -39,13 +48,15 @@
 // Prior art: the billboard-leaf canopy of Breath of the Wild's trees and of many stylised indie trees (Ghibli-like crowns: a few spheres,
 // quads turned to the eye, normals from the sphere: the "fluffy tree" shader passed round by Minions Art and others), alpha to coverage
 // with sharpened alpha and coverage-preserving mips (Ben Golus, 2017), the leaves themselves (Ginkgo biloba's fan, the weeping willow,
-// the white mulberry the silk moth eats, the gills of an agaric) and labradorite's schiller.
+// the white mulberry the silk moth eats, the gills of an agaric) and labradorite's schiller; for the greens, Harvest Moon: A Wonderful Life's
+// and Stardew Valley's season repaints of one tree and Ghibli's sunlit crowns (warm on top, cool and deep within).
 //
-//   const C = new LeafCanopy({ spheres: [{ c: [0, 4, 0], r: 1.6 }], leaf: 'gingko', density: 1, tint: { color: 0xc06a3a, amount: 0.6 } })
+//   const C = new LeafCanopy({ spheres: [{ c: [0, 4, 0], r: 1.6 }], leaf: 'gingko', density: 1, leafy: false, tint: { color: 0xc06a3a, amount: 0.6 } })
 //   group.add(C.mesh)   C.tint(color, amount)   C.dispose()
 //   canopyGeometry([{ spheres, leaf, density, seed, slot, matrix }]) -> one geometry for many canopies (drawn with canopyMaterial())
 //   canopyTick({ t, wind, night })   (only outside the garden: in it the grounds' clock drives the time and the night)
-//   LEAF_KINDS   canopyMaterial()   canopySlot() / canopyTint(slot, color, amount) / canopyOpen(slot, k) / canopyFree(slot)
+//   LEAF_KINDS   canopyMaterial()   canopySlot() / canopyTint(slot, color, amount) / canopyOpen(slot, k) / canopyLeafy(slot, on) / canopyFree(slot)
+//   (canopyGeometry's entries and LeafCanopy take `leafy`; false, the default, is the stone's)
 //   canopyShow(geometry, geometry.userData.ranges[i], on)   (one entry's leaves hidden or shown: Myggdrasil's caps)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -60,11 +71,13 @@ const KEY = 'leaf-canopy-2';
 
 // ---- the material: one for every canopy (made on first need; shared, never disposed)
 const U = {
-  tLeaf: { value: null }, tCanopyTint: { value: null }, uCanopyWind: { value: new THREE.Vector3(0.09, 0.015, 0.06) }, uLeafHard: { value: 0 },
+  tLeaf: { value: null }, tCanopyTint: { value: null }, uCanopyWind: GROUND_UNIFORMS.uCanopyWind, uLeafHard: { value: 0 },
   uGTime: GROUND_UNIFORMS.uGTime, uGNight: GROUND_UNIFORMS.uGNight, uMindT: mindTime,
+  uLeafA: GROUND_UNIFORMS.uLeafA, uLeafB: GROUND_UNIFORMS.uLeafB, uLeafBl: GROUND_UNIFORMS.uLeafBl, uLeafMood: GROUND_UNIFORMS.uLeafMood, uGMood: GROUND_UNIFORMS.uGMood, // (the garden's mood, written once a frame by groundTick)
 };
 let MAT = null, tintTex = null;
-const slots = new Uint8Array(TINTS); slots[0] = 1;
+const LEAFY = TINTS - 1; // (the slot every plain leafy canopy shares: its gate row's green is the flag, 255: leaves in the garden's greens, not the stone's flash)
+const slots = new Uint8Array(TINTS); slots[0] = 1; slots[LEAFY] = 1;
 
 const VERT_DECL = /* glsl */`
 attribute vec2 aCorner;
@@ -72,7 +85,10 @@ attribute vec4 aLeaf;
 attribute vec2 aTree;
 uniform float uGTime;
 uniform vec3 uCanopyWind;
+uniform vec4 uLeafMood; // (blossom share, leaves dropped, the briar, its nervous twitch)
 uniform sampler2D tCanopyTint;
+varying float vLeafMode;
+varying float vLeafUp;
 varying vec2 vLeafUv;
 varying vec4 vLeafTint;
 varying vec3 vLeafW;
@@ -94,6 +110,7 @@ const VERT_PROJECT = /* glsl */`
   float lms = length(modelMatrix[0].xyz); // (a canopy in a scaled group: its leaves and their sway scale with it)
   float lph = aTree.y * 6.2832 + dot(lwC.xyz, vec3(0.11, 0.05, 0.09));
   float lsw = 0.62 * sin(uGTime * 0.52 + lph) + 0.38 * sin(uGTime * 0.29 + lph * 1.7 + 1.3);
+  lsw += uLeafMood.w * 0.7 * sin(uGTime * 6.1 + lph * 2.9) * (0.5 + 0.5 * sin(uGTime * 2.3 + lph)); // (the briar's wind turns nervous: a quick twitch on the slow sway)
   lwC.xyz += uCanopyWind * (lsw * lms * (0.35 + 0.65 * aLeaf.w)); // (the sway: slow, the outer leaves more)
   vec4 mvPosition = viewMatrix * lwC;
   float lgrow = 1.0 + clamp((-mvPosition.z - 24.0) / 60.0, 0.0, 0.5); // (far off a leaf grows a little: the crown stays a mass, never single pixels)
@@ -102,7 +119,12 @@ const VERT_PROJECT = /* glsl */`
   if (aLeaf.w > 0.99 && dot(normalize(mat3(modelMatrix) * normal), vLeafEye) < -0.3) lgrow = 0.0; // (an outer leaf on the far side of its sphere: hidden by the near side and the inner shell, so never drawn)
   float lcell = floor(aLeaf.z * 7.0 + 0.5);
   vec2 lslot = vec2((floor(aTree.x * 255.0 + 0.5) + 0.5) / ${TINTS.toFixed(1)}, 0.25);
-  lgrow *= clamp((texture2D(tCanopyTint, vec2(lslot.x, 0.75)).r * 1.15 - aTree.y) / 0.15, 0.0, 1.0); // (the slot's open gate: a leaf shows once the gate passes its phase, so a cap grown from its middle out opens as the gate rises; 1 for every plain canopy)
+  vec4 lgate = texture2D(tCanopyTint, vec2(lslot.x, 0.75));
+  float lleafy = step(0.5, lgate.g); // (a leafy canopy: the garden's greens)
+  vLeafMode = lleafy; vLeafUp = dot(normalize(normal), normalize(transformed + vec3(1e-4))); // (how far this leaf faces away from the planetoid's heart: its own up, for the snow)
+  { float lthin = clamp(uLeafMood.y + 0.45 * uLeafMood.z, 0.0, 0.93), lh = fract(aTree.y * 37.1 + aLeaf.y * 11.3 + aLeaf.z * 5.7);
+    lgrow *= mix(1.0, smoothstep(lthin - 0.1, lthin, lh), lleafy); } // (leaves let go by season and by the briar: each by its own phase, shrinking away, never a pop)
+  lgrow *= clamp((lgate.r * 1.15 - aTree.y) / 0.15, 0.0, 1.0); // (the slot's open gate: a leaf shows once the gate passes its phase, so a cap grown from its middle out opens as the gate rises; 1 for every plain canopy)
   float lrot = aLeaf.y * 6.2832 + 0.08 * sin(uGTime * 0.61 + lph * 2.3);
   float lc = cos(lrot), ls = sin(lrot);
   vec2 lux = vec2(lc, ls), luy = vec2(-ls, lc);
@@ -121,6 +143,10 @@ const VERT_PROJECT = /* glsl */`
 const FRAG_DECL = /* glsl */`
 uniform sampler2D tLeaf;
 uniform float uLeafHard, uGNight;
+uniform vec3 uLeafA, uLeafB, uLeafBl;
+uniform vec4 uLeafMood, uGMood; // (uGMood: snow, briar)
+varying float vLeafMode;
+varying float vLeafUp;
 varying vec2 vLeafUv;
 varying vec4 vLeafTint;
 varying vec3 vLeafW;
@@ -145,7 +171,24 @@ const FRAG_COLOUR = /* glsl */`
   vec3 lbody = mix(LAB_INK * 6.0, lstone * 0.56, 0.5 + 0.45 * lband);
   lbody *= mix(0.7, 1.0, lfc.g) * mix(0.62, 1.0, vLeafDepth);
   vec3 lgoldC = labLin(vec3(0.95, 0.77, 0.36));
-  diffuseColor.rgb = mix(lbody, lgoldC * mix(0.5, 0.8, vLeafDepth), lgold);
+  float lleafy = vLeafMode;
+  if (lleafy > 0.5) { // (the garden's own trees: warm leafy greens from the mood, a light and a deeper, the sunlit tops warmer; Lachryma's trees keep the stone above)
+    float lsun = 0.5;
+    #if NUM_DIR_LIGHTS > 0
+    lsun = dot(lnV, directionalLights[0].direction) * 0.5 + 0.5;
+    #endif
+    float lt = clamp(0.26 + 0.6 * lsun + 0.4 * (vLeafVar - 0.5) + 0.3 * (lfc.b - 0.5), 0.0, 1.0);
+    vec3 lcol = mix(uLeafB, uLeafA, lt) * mix(0.74, 1.0, lfc.g) * mix(0.66, 1.0, vLeafDepth);
+    lcol = mix(lcol, lcol * vec3(1.2, 1.08, 0.78), 0.65 * smoothstep(0.55, 1.0, lsun)); // (sunlit tops warmer)
+    float lspeck = step(1.0 - uLeafMood.x * 0.5, fract(vLeafVar * 17.3 + lfc.b * 2.7)) * step(0.99, vLeafDepth);
+    lcol = mix(lcol, uLeafBl * (0.85 + 0.35 * lsun), 0.9 * lspeck); // (spring: the blossom speckled through the leaves)
+    lcol *= 1.0 - 0.2 * uGMood.y;
+    float lsnow = uGMood.x * smoothstep(0.42, 0.8, vLeafUp + 0.28 * (vLeafVar - 0.5)) * step(0.99, vLeafDepth);
+    lcol = mix(lcol, vec3(0.8, 0.88, 1.0) * (0.75 + 0.25 * lsun), lsnow); // (winter: snow on the crown's tops)
+    lstone = lcol * vec3(1.2, 1.1, 0.6); lbody = lcol;
+    lgoldC = lcol * 1.4 + vec3(0.02, 0.03, 0.0); // (the veins and rims: the same green, lighter)
+  }
+  diffuseColor.rgb = mix(lbody, lgoldC * mix(0.5, 0.8, vLeafDepth), lgold * (1.0 - 0.5 * lleafy));
 `;
 const FRAG_CUT = /* glsl */`
   {
@@ -160,8 +203,8 @@ const FRAG_ROUGH = /* glsl */`
 const FRAG_GLOW = /* glsl */`
   {
     float lndv = abs(dot(normalize(vNormal), normalize(vViewPosition)));
-    totalEmissiveRadiance += lstone * (lband * pow(1.0 - lndv, 1.6) * 0.07 * (1.0 - lgold)); // (the schiller at the crown's turn)
-    totalEmissiveRadiance += lgoldC * (lgold * (0.02 + 0.07 * uGNight)); // (the gilding's own glow: a little more by night, steady)
+    totalEmissiveRadiance += lstone * (lband * pow(1.0 - lndv, 1.6) * 0.07 * (1.0 - lgold) * (1.0 - 0.9 * lleafy)); // (the schiller at the crown's turn)
+    totalEmissiveRadiance += lgoldC * (lgold * (0.02 + 0.07 * uGNight) * (1.0 - 0.85 * lleafy)); // (the gilding's own glow: a little more by night, steady)
   }
 `;
 const FRAG_THROUGH = /* glsl */`
@@ -225,13 +268,19 @@ function coverageCheck(renderer) {
 function tintTable() {
   if (tintTex) return tintTex;
   const d = new Uint8Array(TINTS * 2 * 4); for (let i = 0; i < TINTS; i++) d[(TINTS + i) * 4] = 255;
+  d[(TINTS + LEAFY) * 4 + 1] = 255;
   tintTex = new THREE.DataTexture(d, TINTS, 2, THREE.RGBAFormat, THREE.UnsignedByteType);
   tintTex.minFilter = tintTex.magFilter = THREE.NearestFilter; tintTex.generateMipmaps = false; tintTex.needsUpdate = true;
   return tintTex;
 }
 /** A slot of its own for a canopy that will take a tint or open by its gate (0 when the table is full: it stays the plain stone, open). */
-export function canopySlot() { for (let i = 1; i < TINTS; i++) if (!slots[i]) { slots[i] = 1; return i; } return 0; }
-export function canopyFree(slot) { if (slot > 0) { slots[slot] = 0; canopyTint(slot, 0x000000, 0); canopyOpen(slot, 1); } }
+export function canopySlot() { for (let i = 1; i < LEAFY; i++) if (!slots[i]) { slots[i] = 1; return i; } return 0; }
+export function canopyFree(slot) { if (slot > 0 && slot !== LEAFY) { slots[slot] = 0; canopyTint(slot, 0x000000, 0); canopyOpen(slot, 1); canopyLeafy(slot, false); } }
+/** A slot's leaves in the garden's greens (true) or the stone's flash (false, the default: Lachryma's own trees keep it). */
+export function canopyLeafy(slot, on = true) {
+  if (!(slot > 0) || slot === LEAFY) return; const T = tintTable(), i = (TINTS + slot) * 4 + 1, v = on ? 255 : 0;
+  if (T.image.data[i] !== v) { T.image.data[i] = v; T.needsUpdate = true; }
+}
 /** A slot's open gate, 0 (no leaf shown) .. 1 (every leaf): a leaf shows when the gate passes its phase (canopyGeometry's `grow`). */
 export function canopyOpen(slot, k = 1) {
   if (!(slot > 0)) return; const T = tintTable(), i = (TINTS + slot) * 4, v = Math.round(THREE.MathUtils.clamp(k, 0, 1) * 255);
@@ -302,7 +351,7 @@ export function canopyGeometry(entries) {
             : _n.copy(dir).divide(s.q).normalize().lerp(_v.copy(p).sub(whole).normalize(), unify).normalize(); // (the ellipsoid's own normal: its gradient)
           n.applyMatrix3(rot).normalize(); p.applyMatrix4(M);
           const phase = s.grow ? THREE.MathUtils.clamp(out / (s.r * s.q.x), 0, 1) * 0.86 + rnd() * 0.1 : rnd();
-          L.push(p.x, p.y, p.z, n.x, n.y, n.z, size * sz * (0.85 + rnd() * 0.3), rnd(), s.cells[Math.floor(rnd() * s.cells.length)], layer, s.slot ?? E.slot ?? 0, phase);
+          L.push(p.x, p.y, p.z, n.x, n.y, n.z, size * sz * (0.85 + rnd() * 0.3), rnd(), s.cells[Math.floor(rnd() * s.cells.length)], layer, s.slot ?? (E.slot || (E.leafy ? LEAFY : 0)), phase);
         }
       }
     }
@@ -357,15 +406,16 @@ function dropArray() { this.array = null; }
 
 /** One canopy: its own mesh (the shared material), its own tint slot if it takes a tint. */
 export class LeafCanopy {
-  constructor({ spheres, leaf = 'round', density = 1, size = null, seed = 1, tint = null, shell, unify, shadow = true } = {}) {
-    this.slot = tint ? canopySlot() : 0;
-    this.geometry = canopyGeometry([{ spheres, leaf, density, size: size ?? undefined, seed, slot: this.slot, shell, unify }]);
+  constructor({ spheres, leaf = 'round', density = 1, size = null, seed = 1, tint = null, leafy = false, shell, unify, shadow = true } = {}) {
+    this.slot = tint ? canopySlot() : 0; this.leafy = leafy;
+    if (tint && leafy) canopyLeafy(this.slot, true);
+    this.geometry = canopyGeometry([{ spheres, leaf, density, size: size ?? undefined, seed, slot: this.slot, leafy, shell, unify }]);
     this.mesh = canopyMesh(this.geometry, { shadow });
     if (tint) this.tint(tint.color, tint.amount ?? 1);
   }
   get leaves() { return this.geometry.userData.leaves; }
   /** Its flash leaned to `color` by `amount` (a canopy made without a tint takes a slot now). */
-  tint(color, amount = 1) { if (!this.slot) { this.slot = canopySlot(); if (this.slot) this.retag(); } canopyTint(this.slot, color, amount); }
+  tint(color, amount = 1) { if (!this.slot) { this.slot = canopySlot(); if (this.slot) { this.retag(); canopyLeafy(this.slot, this.leafy); } } canopyTint(this.slot, color, amount); }
   retag() { const A = this.geometry.attributes.aTree; for (let i = 0; i < A.count; i++) A.array[i * 2] = this.slot; A.needsUpdate = true; }
   /** The time and the wind, outside the garden (canopyTick). */
   update(t, wind) { canopyTick({ t, wind }); }

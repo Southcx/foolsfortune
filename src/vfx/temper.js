@@ -25,6 +25,7 @@ import * as THREE from 'three';
 
 const NONE = Object.freeze({ gloss: 0.5, glow: new THREE.Color(0, 0, 0), tremble: 0 }); // (an unregistered creature: nothing to add, nothing made)
 const _ember = new THREE.Color(0xff6a2a), _gold = new THREE.Color(0xffd76a);
+const LOOKS = ['temper.stoic', 'temper.prismatic', 'temper.agitated', 'temper.enraged']; // (the held looks, in the order `want` keeps them)
 const ENRAGE = 0.85; // (the default when no enrage is handed in: EMO.enrage, progress/combat/emo.js)
 const smooth = (a, b, x) => { const t = THREE.MathUtils.clamp((x - a) / (b - a), 0, 1); return t * t * (3 - 2 * t); };
 
@@ -56,32 +57,32 @@ export class Temper {
   }
 
   update() {
-    const V = this.game.vfx;
-    for (const [c, T] of this.on) {
-      if (!c.alive) { this.drop(c, T); continue; }
-      // the gloss: the body's roughness, from its own (kept) toward chalk or glass
-      if (c.mat && 'roughness' in c.mat) {
-        T.base ??= c.mat.roughness;
-        const s = T.state;
-        c.mat.roughness = s < 0 ? THREE.MathUtils.lerp(T.base, 0.98, -s / 2) : THREE.MathUtils.lerp(T.base, 0.12, s / 2);
-      }
-      if (!V) continue;
-      const scale = THREE.MathUtils.clamp(c.height || 1, 0.5, 2.5), xr = !!(typeof this.throughWalls === 'function' ? this.throughWalls(c) : this.throughWalls);
-      const at = (out) => out.set(c.pos.x, c.pos.y + (c.height || 1) * 0.5, c.pos.z);
-      const want = {
-        'temper.stoic': smooth(1, 2, -T.state),
-        'temper.prismatic': smooth(1, 2, T.state),
-        'temper.agitated': smooth(0.5, 0.9, T.emo) * (T.enrage ? 0.4 : 1),
-        'temper.enraged': T.enrage || T.emo >= ENRAGE ? 1 : 0,
-      };
-      for (const [name, k] of Object.entries(want)) {
-        let h = T.held.get(name);
-        if (k > 0.02) {
-          if (h && !!h.ctx?.throughWalls !== xr) { h.stop?.(); h = null; } // (the switch thrown: played again into the other pools)
-          if (!h || !h.alive) { h = V.play(name, { pos: at(new THREE.Vector3()), scale, throughWalls: xr }); T.held.set(name, h); }
-          at(h.pos); h.k = k;
-        } else if (h) { h.stop?.(); T.held.delete(name); }
-      }
+    if (!this.game.vfx) { this.on.forEach(this.glossOnly ||= (T, c) => { if (!c.alive) this.drop(c, T); else this.gloss(c, T); }); return; }
+    this.on.forEach(this.step ||= (T, c) => this.stepOne(c, T)); // (one bound step, made once: nothing allocated a frame)
+  }
+
+  /** The gloss: the body's roughness, from its own (kept) toward chalk or glass. */
+  gloss(c, T) {
+    if (!c.mat || !('roughness' in c.mat)) return;
+    T.base ??= c.mat.roughness;
+    const s = T.state;
+    c.mat.roughness = s < 0 ? THREE.MathUtils.lerp(T.base, 0.98, -s / 2) : THREE.MathUtils.lerp(T.base, 0.12, s / 2);
+  }
+
+  stepOne(c, T) {
+    if (!c.alive) { this.drop(c, T); return; }
+    this.gloss(c, T);
+    const V = this.game.vfx, scale = THREE.MathUtils.clamp(c.height || 1, 0.5, 2.5), xr = !!(typeof this.throughWalls === 'function' ? this.throughWalls(c) : this.throughWalls);
+    const W = T.want ||= new Float32Array(LOOKS.length); // (the four looks' strengths, kept on the creature)
+    W[0] = smooth(1, 2, -T.state); W[1] = smooth(1, 2, T.state); W[2] = smooth(0.5, 0.9, T.emo) * (T.enrage ? 0.4 : 1); W[3] = T.enrage || T.emo >= ENRAGE ? 1 : 0;
+    const y = c.pos.y + (c.height || 1) * 0.5;
+    for (let i = 0; i < LOOKS.length; i++) {
+      const name = LOOKS[i], k = W[i]; let h = T.held.get(name);
+      if (k > 0.02) {
+        if (h && !!h.ctx?.throughWalls !== xr) { h.stop?.(); h = null; } // (the switch thrown: played again into the other pools)
+        if (!h || !h.alive) { h = V.play(name, { pos: new THREE.Vector3(c.pos.x, y, c.pos.z), scale, throughWalls: xr }); T.held.set(name, h); } // (a vector only when a look starts)
+        h.pos.set(c.pos.x, y, c.pos.z); h.k = k;
+      } else if (h) { h.stop?.(); T.held.delete(name); }
     }
   }
 

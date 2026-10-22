@@ -6,8 +6,8 @@
 // place, one a thorn counted; GRAB's left button on one prunes it (harmony back a little, a briar cutting in the Pneuka Box: a material
 // of Gall's kind). Nothing it does takes anything away: the hop through a patch is slowed by a multiplier (SLOW, the owner's to feel),
 // exactly 1 outside one, the hop's own numbers untouched (the garden's controller, never the core movement). Drawn in one BatchedMesh
-// on the decor layer's material (one program between them). THE LOOK IS A PLACEHOLDER, clumps of cones in olive and rust, until
-// Calissa builds the briar behind `game.harmony.briarK`.
+// on the decor layer's material (one program between them). The look is Calissa's (vfx/garden/thornlook.js): arching hooked canes in three sizes,
+// olive and rust by vertex colour (the instance colour a near-white tint); a clump's size is its slot's (young, grown, old), its scale grows with the patch's n.
 //
 // Prior art: Animal Crossing's weeds (neglect costs a chore, never a thing), Okami's blight lifted by the brush (the lifting is the
 // pleasure), Viva Pinata's sours (the bad state as a thing with its own life), Sleeping Beauty's briar wall.
@@ -19,7 +19,7 @@ import { sfx } from '../../audio/sfx.js';
 import { makeMaterial } from '../../progress/econ/materials.js';
 import { THORNS } from '../../progress/harmony.js';
 import { stream } from '../../core/rng.js';
-import { mergeParts } from './decorlayer.js';
+import { thornClumps } from '../../vfx/garden/thornlook.js';
 
 const simRand = stream('world/garden/thornpatches'); // (a cutting's seed: core/rng.js, the same twice)
 /** Where a cause grows (the site's fixed thing it gathers round), the ring's radius (metres), how near the hand's click must come,
@@ -27,16 +27,14 @@ const simRand = stream('world/garden/thornpatches'); // (a cutting's seed: core/
 export const PATCH = { at: { lotus: 'gate', spirit: 'cocoon' }, ring: 3.2, reach: 1.6, slowReach: 1.2, slow: 0.6 };
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _p = new THREE.Vector3(), _n = new THREE.Vector3(), _s = new THREE.Vector3(), _c = new THREE.Color(), UP = new THREE.Vector3(0, 1, 0);
 
-const clump = () => mergeParts([[0, 0, 0, 0], [0.35, 0.25, 0.7, 0.6], [-0.3, -0.2, -0.6, 0.5], [0.1, 0.35, 0.2, -0.7]].map(([x, z, rx, rz]) => new THREE.ConeGeometry(0.12, 1.1, 4).translate(0, 0.55, 0).rotateX(rx * 0.5).rotateZ(rz * 0.5).translate(x, 0, z)));
-
 export class ThornPatches {
   constructor(realm) {
     this.R = realm; this.game = realm.game; this.spots = [];
-    const geo = clump(), cap = THORNS.max * 12; // (six a planetoid, room for twelve planetoids)
+    const geos = thornClumps(), cap = THORNS.max * 12; // (six a planetoid, room for twelve planetoids)
     this.mat = realm.decorLayer?.mat || new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.85, metalness: 0, name: 'garden-decor' });
-    this.batch = new THREE.BatchedMesh(cap, geo.attributes.position.count, 0, this.mat); this.batch.name = 'garden-thorns'; this.batch.frustumCulled = false; this.batch.castShadow = false; this.batch.receiveShadow = true; // (as the decor's: one material, one program; a shadow flag that differs is a second program, compiled at first draw: perf, 2026-10-22)
-    this.geoId = this.batch.addGeometry(geo); this.ids = [];
-    for (let i = 0; i < cap; i++) { const k = this.batch.addInstance(this.geoId); this.batch.setVisibleAt(k, false); this.batch.setColorAt(k, _c.set(0x5d5a32)); this.ids.push(k); }
+    this.batch = new THREE.BatchedMesh(cap, geos.reduce((n, g) => n + g.attributes.position.count, 0), 0, this.mat); this.batch.name = 'garden-thorns'; this.batch.frustumCulled = false; this.batch.castShadow = false; this.batch.receiveShadow = true; // (as the decor's: one material, one program; a shadow flag that differs is a second program, compiled at first draw: perf, 2026-10-22)
+    this.geoIds = geos.map((g) => this.batch.addGeometry(g)); this.ids = []; // (young, grown, old: vfx/garden/thornlook.js)
+    for (let i = 0; i < cap; i++) { const k = this.batch.addInstance(this.geoIds[i % 3]); this.batch.setVisibleAt(k, false); this.batch.setColorAt(k, _c.set(0xffffff)); this.ids.push(k); }
     realm.site.group.add(this.batch);
     const E = this.game.events; for (const n of ['garden.thorn', 'garden.prune', 'garden.enter', 'garden.sculpt', 'garden.reset']) E?.on(n, () => this.redraw());
     this.redraw();
@@ -54,8 +52,8 @@ export class ThornPatches {
       for (let i = 0; i < t.n && k < this.ids.length; i++, k++) {
         const ang = (i / THORNS.max) * Math.PI * 2 + 0.4, off = side.clone().applyAxisAngle(a, ang).multiplyScalar(PATCH.ring / Math.max(4, P.r));
         _n.copy(a).add(off).normalize(); const r = P.radiusAt ? P.radiusAt(_n) : P.r;
-        _p.copy(P.c).addScaledVector(_n, r - 0.05); _q.setFromUnitVectors(UP, _n); const sc = 0.9 + 0.25 * Math.sin(i * 2.3 + k);
-        B.setMatrixAt(this.ids[k], _m.compose(_p, _q, _s.set(sc, sc, sc))); B.setColorAt(this.ids[k], _c.set(i % 2 ? 0x6b4a2a : 0x5d5a32)); B.setVisibleAt(this.ids[k], true);
+        _p.copy(P.c).addScaledVector(_n, r - 0.05); _q.setFromUnitVectors(UP, _n); const sc = (0.85 + 0.07 * t.n) * (0.9 + 0.2 * Math.sin(i * 2.3 + k));
+        B.setMatrixAt(this.ids[k], _m.compose(_p, _q, _s.set(sc, sc, sc))); B.setColorAt(this.ids[k], _c.set(i % 2 ? 0xe6d2bc : 0xffffff)); B.setVisibleAt(this.ids[k], true);
         this.spots.push({ planet: P, pos: _p.clone() });
       }
     }

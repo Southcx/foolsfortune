@@ -20,6 +20,11 @@
 //                  slate (metal, grief)   silver-blue cleft stone, metalness 0.3, a sheen of grief where it turns from the eye
 //                  silt  (water, dread)   blue-black and glossy, crazed into mud polygons, a gleam of dread in the cracks
 //                The glints fade out past 40 m, where their texels are smaller than a pixel (no aliasing crawl: CLAUDE.md)
+//   THE SEASON   (GARDEN-COZY.md H5, H6) the garden's mood (vfx/garden/gardenmood.js) in shared uniforms, written by groundTick(raw, mood): moss and
+//                loam take the season's grass (its deep tone in the hollows, its tip on the tops, the cushions and rootlets still their
+//                own height); winter lays snow on each planetoid's pole caps and its upward faces (up is away from its heart, the object's
+//                origin), a ragged edge from the coarse noise, rougher, unglowing; the briar drains every ground toward olive and rust, its
+//                value kept, and darkens the hollows. The same uniforms carry the canopies' greens (vfx/garden/leafcanopy.js)
 //   THE WET      where the garden's water lies or lay (aWet, written by vfx/garden/gardenwater.js): the ground darker and glossier,
 //                drying over 20 real seconds, and under shallow water the caustics (vfx/liquid.js liqCaustics: the Voronoi net in two
 //                layers, white where they meet and split into colour where they part) laid on it, fading out as the water deepens past 1.5 m
@@ -27,9 +32,10 @@
 // Prior art: height-based blending of terrain layers (Andrey Mishkinis, "Advanced Terrain Texture Splatting", 2013; Unreal's
 // HeightLerp), triplanar mapping (GPU Gems 3 ch. 1; Ben Golus 2017; render/triplanar.js here), the five phases' colours of the wuxing
 // (wood green, fire red-gold, earth ochre, metal white-silver, water black-blue) and the celadon, ash and tenmoku glazes of the kiln, and
-// From Dust's painted grounds that read at a glance from above.
+// From Dust's painted grounds that read at a glance from above; the season repaints of Harvest Moon: A Wonderful Life and Stardew Valley.
 //
-//   groundMaterial(material) -> material (patched once; shares GROUND_UNIFORMS)   groundTick(rawDt)   GROUND_PALETTE (data: tune live)
+//   groundMaterial(material) -> material (patched once; shares GROUND_UNIFORMS)   groundTick(rawDt, mood = null)   GROUND_PALETTE (data: tune live)
+//   (mood: game.gardenMood?.now; the planetoid that owns the clock passes it: planetoid.js update)
 //   groundPackTexture() -> THREE.Texture (fetched on first ask)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -76,6 +82,11 @@ export const GROUND_UNIFORMS = {
   uGLo: { value: ORDER.map(() => new THREE.Color()) }, uGHi: { value: ORDER.map(() => new THREE.Color()) }, uGAcc: { value: ORDER.map(() => new THREE.Color()) },
   uGTex: { value: ORDER.map(() => new THREE.Vector4()) }, uGTexC: { value: ORDER.map(() => new THREE.Vector4()) }, uGMat: { value: ORDER.map(() => new THREE.Vector4()) },
   uGAmt: { value: ORDER.map(() => new THREE.Vector4()) }, uGAmt2: { value: ORDER.map(() => new THREE.Vector4()) }, uGRamp: { value: ORDER.map(() => new THREE.Vector2()) },
+  // the garden's mood (vfx/garden/gardenmood.js), written once a frame by groundTick: the season's grass and its tip, snow / briar / on, and the
+  // canopies' (vfx/garden/leafcanopy.js) light and deeper leaf, blossom, and blossom share / leaves let go / briar / nervous twitch, all summer's until a mood comes
+  uGGrass: { value: new THREE.Color(0x4f9a3e) }, uGTip: { value: new THREE.Color(0xa8d060) }, uGMood: { value: new THREE.Vector4(0, 0, 0, 0) },
+  uLeafA: { value: new THREE.Color(0x8cc04a) }, uLeafB: { value: new THREE.Color(0x4e9a3c) }, uLeafBl: { value: new THREE.Color(0xfff2c0) }, uLeafMood: { value: new THREE.Vector4(0, 0, 0, 0) },
+  uCanopyWind: { value: new THREE.Vector3(0.09, 0.015, 0.06) },
 };
 let applied = false;
 /** GROUND_PALETTE into the uniforms (at the first patch, and again after a live change). */
@@ -122,10 +133,12 @@ uniform float uGTime, uGNight;
 uniform vec3 uGLo[5], uGHi[5], uGAcc[5];
 uniform vec4 uGTex[5], uGTexC[5], uGMat[5], uGAmt[5], uGAmt2[5];
 uniform vec2 uGRamp[5];
+uniform vec3 uGGrass, uGTip;
+uniform vec4 uGMood; // (snow, briar, on)
 `;
 // (after the vertex colours: the bare ground is the planetoid's own colour, the painted grounds lie over it)
 const FRAG_COLOUR = /* glsl */`
-  float gB[5]; float gCover = 0.0, gRough = 0.0, gMetal = 0.0; vec3 gGlow = vec3(0.0);
+  float gB[5]; float gCover = 0.0, gRough = 0.0, gMetal = 0.0, gSnow = 0.0; vec3 gGlow = vec3(0.0);
   {
     vec3 gn = normalize(vGn), gw = pow(abs(gn), vec3(4.0)); gw /= gw.x + gw.y + gw.z + 1e-5;
     vec3 gp = vGp * uGShape.x, gc = mat3(0.8, 0.0, -0.6, 0.0, 1.0, 0.0, 0.6, 0.0, 0.8) * vGp * uGShape.y + 0.5, gq = vGp * uGShape.z + vec3(0.37, 0.11, 0.73);
@@ -147,6 +160,10 @@ const FRAG_COLOUR = /* glsl */`
       gB[k] /= sum;
       float t = smoothstep(uGRamp[k].x, uGRamp[k].y, h[k]);
       vec3 c = mix(uGLo[k], uGHi[k], t) * (0.9 + 0.2 * vGv);
+      float gGrassy = (k == 0 ? 0.8 : (k == 2 ? 0.45 : 0.0)) * uGMood.z; // (moss and loam take the season's grass: its deep tone in the hollows, its tip on the tops)
+      c = mix(c, mix(uGGrass * 0.5, mix(uGGrass, uGTip, 0.6), t) * (0.9 + 0.2 * vGv), gGrassy);
+      { float lc = dot(c, vec3(0.2126, 0.7152, 0.0722)), ld = 0.0; vec3 drain = mix(uGGrass, uGTip, 0.3 + 0.4 * vGv); ld = max(dot(drain, vec3(0.2126, 0.7152, 0.0722)), 0.01); // (the briar: every ground drains toward olive and rust, its value kept, and its hollows go dark)
+        c = mix(c, drain * (lc / ld), 0.7 * uGMood.y * uGMood.z) * (1.0 - 0.38 * uGMood.y * uGMood.z * (1.0 - t)); }
       c *= mix(1.0, smoothstep(0.02, 0.24, h[k]), uGAmt2[k].z); // (its cracks darkened: silt's mud polygons)
       gCol += c * gB[k]; gRough += uGMat[k].x * gB[k]; gMetal += uGMat[k].y * gB[k];
       float breath = uGAmt2[k].y > 0.0 ? 0.6 + 0.4 * sin(6.2832 * uGAmt2[k].y * uGTime + vGv * 9.0) : 1.0;
@@ -156,11 +173,16 @@ const FRAG_COLOUR = /* glsl */`
     }
     diffuseColor.rgb = diffuseColor.rgb * (0.95 + 0.1 * Tc.r) * bb + gCol; // (the bare skin keeps its colour, a breath of the coarse cushions in it so a painted patch sits in it)
     diffuseColor.rgb *= 1.0 - 0.38 * vGW.x; // (wet ground darkens: the water fills its pores)
+    { // winter: snow lies on the planetoid's pole caps and on its upward faces (up is away from its heart: the object's own origin), in a ragged edge from the coarse noise
+      vec3 gr = normalize(vGp + vec3(1e-4)); float gUp = dot(normalize(vGn), gr), gPole = smoothstep(0.78, 0.97, abs(gr.y) + 0.1 * (Tc.r - 0.5));
+      gSnow = uGMood.x * clamp(gPole + smoothstep(0.72, 0.94, gUp + 0.22 * (Tc.r - 0.5)) * smoothstep(-0.3, 0.45, gr.y), 0.0, 1.0) * (1.0 - 0.5 * vGW.x);
+      diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.78, 0.86, 1.0) * (0.92 + 0.08 * vGv), gSnow); }
   }
 `;
 const FRAG_SURFACE = /* glsl */`
   roughnessFactor = mix(roughnessFactor * (1.0 - gCover) + gRough, 0.16, 0.85 * vGW.x); // (wet ground goes glossy)
-  metalnessFactor = metalnessFactor * (1.0 - gCover) + gMetal;
+  roughnessFactor = mix(roughnessFactor, 0.85, gSnow);
+  metalnessFactor = (metalnessFactor * (1.0 - gCover) + gMetal) * (1.0 - gSnow);
 `;
 const FRAG_GLOW = /* glsl */`
   { float fres = pow(1.0 - clamp(dot(normal, normalize(vViewPosition)), 0.0, 1.0), 4.0);
@@ -174,9 +196,9 @@ const FRAG_GLOW = /* glsl */`
       if (gw.y > 0.05) c += liqCaustics(vGp.xz, 1.0, t, gpx) * gw.y;
       if (gw.z > 0.05) c += liqCaustics(vGp.xy, 1.0, t, gpx) * gw.z;
       gGlow += c * gk * 0.4 * (0.35 + 0.65 * (1.0 - uGNight)); } // (the Voronoi net in two layers: vfx/liquid.js)
-    totalEmissiveRadiance += gGlow; }
+    totalEmissiveRadiance += gGlow * (1.0 - 0.85 * gSnow); }
 `;
-const KEY = 'garden-grounds-2';
+const KEY = 'garden-grounds-3';
 
 /** Patch a planetoid's MeshStandardMaterial (vertex colours on) with the five grounds. Mutates and returns it; every one patched shares a
  *  program (one cache key) and one set of uniforms. */
@@ -200,9 +222,19 @@ export function groundMaterial(material) {
 }
 
 let night = null;
-/** The grounds' clock: the embers' breath and the night's glow (the game hour's phase, eased as the garden's sky eases it). Once a frame. */
-export function groundTick(raw = 1 / 60) {
+const SEASON_LEAVES = { spring: [0.55, 0], summer: [0, 0], autumn: [0, 0.5], winter: [0, 0.88] }; // (blossom share, leaves let go)
+const WIND_BASE = 0.35, _w0 = new THREE.Vector3(0.09, 0.015, 0.06), blossomK = { v: 0 }, dropK = { v: 0 };
+/** The grounds' clock: the embers' breath and the night's glow (the game hour's phase, eased as the garden's sky eases it). Once a frame.
+ *  With `mood` (game.gardenMood?.now, null at first: the colours stay summer's) the same call writes the garden's mood into the shared
+ *  uniforms: the grass and the snow on every planetoid, the canopies' leaves, blossom, fall and briar, the wind's strength. */
+export function groundTick(raw = 1 / 60, mood = null) {
   const U = GROUND_UNIFORMS, ph = phaseAt(), want = ph === 'night' ? 1 : ph === 'dusk' || ph === 'dawn' ? 0.45 : 0; // (realm.light's own reading of the hour)
   night = night === null ? want : night + (want - night) * (1 - Math.exp(-raw * 0.5));
   U.uGNight.value = night; U.uGTime.value = (U.uGTime.value + raw) % 3600;
+  if (!mood) return;
+  U.uGGrass.value.copy(mood.grass); U.uGTip.value.copy(mood.grassTip); U.uLeafA.value.copy(mood.leaf2); U.uLeafB.value.copy(mood.leaf); U.uLeafBl.value.copy(mood.blossom);
+  const sl = SEASON_LEAVES[mood.season] || SEASON_LEAVES.summer, k = 1 - Math.exp(-raw * 0.6); // (the season's share eases as the mood's colours do: a turn takes seconds)
+  blossomK.v += (sl[0] - blossomK.v) * k; dropK.v += (sl[1] - dropK.v) * k;
+  U.uGMood.value.set(mood.snow, mood.briar, 1, 0); U.uLeafMood.value.set(blossomK.v, dropK.v, mood.briar, mood.wind?.nervous ?? 0);
+  const f = (mood.wind?.strength ?? WIND_BASE) / WIND_BASE; U.uCanopyWind.value.copy(_w0).multiplyScalar(f); // (the canopies' slow sway breathes with the wind's strength)
 }

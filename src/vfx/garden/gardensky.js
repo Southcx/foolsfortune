@@ -75,7 +75,7 @@ export class GardenSky {
     if (draught != null) this.draught.setHex(draught); this.night = THREE.MathUtils.clamp(night, 0, 1); this.mood = mood;
     const k = this.night, u = this.u;
     if (mood) { // (the garden's mood, vfx/garden/gardenmood.js: the hour, the season and the briar keyed together; your draught a lighter touch)
-      u.uZenith.value.copy(mood.zen); u.uHaze.value.copy(mood.haze).lerp(this.draught, 0.14); u.uCloud.value.copy(mood.cloud).lerp(this.draught, 0.05);
+      const dk = 0.03 + 0.11 * (mood.day ?? 1); u.uZenith.value.copy(mood.zen); u.uHaze.value.copy(mood.haze).lerp(this.draught, dk); u.uCloud.value.copy(mood.cloud).lerp(this.draught, dk * 0.35); // (your draught in the air by day; at night a trace, so the dark stays blue)
     } else {
       u.uZenith.value.copy(DAY.zenith).lerp(NIGHT.zenith, k);
       u.uHaze.value.copy(DAY.haze).lerp(NIGHT.haze, k).lerp(this.draught, 0.28); // (your mood in the air)

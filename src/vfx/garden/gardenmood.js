@@ -21,7 +21,7 @@
 // Horseshoe report on coziness (2017: safety, abundance, softness) for what the briar takes away.
 //
 //   const M = new GardenMood(game)   M.update(rawDt) -> M.now   M.apply(realm) (the lights, the fog and the dome: realm.light())
-//   moodAt({ hour, season, briarK }) -> a fresh mood (pure, for a stage or a sheet)   SEASON_LOOK   MOOD_HOURS
+//   moodAt({ hour, season, briarK }) -> a fresh mood (pure, for a stage or a sheet)   gardenMoodNow() -> M.now   SEASON_LOOK   MOOD_HOURS
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { seasonOf } from '../../progress/seasons.js';
@@ -116,9 +116,13 @@ const EASE = 0.6; // (per real second: a phase or a change of the dial turns ove
 const LERPED = ['key', 'sky', 'gnd', 'zen', 'haze', 'cloud', 'grass', 'grassTip', 'leaf', 'leaf2', 'blossom'];
 const NUMS = ['keyI', 'hemiI', 'ambI', 'fogD', 'lamps', 'fireflies', 'bees', 'butterflies', 'dragonflies', 'moths', 'day', 'snow', 'briar', 'bloom', 'moss'];
 
+let current = null;
+/** The garden's mood now, for a look that has no game to ask (a planetoid's grounds): null before the first frame. */
+export const gardenMoodNow = () => current?.now ?? null;
+
 export class GardenMood {
   constructor(game) {
-    this.game = game; this.now = null; this.target = blank();
+    this.game = game; this.now = null; this.target = blank(); current = this;
     this.override = null; // ({ hour?, season?, briarK? }: a stage or a tester pins any of them)
   }
 
