@@ -523,17 +523,21 @@ await run('jetty', async () => {
   if (Math.abs(deck2.y - deck.top) > 1.5) await S.ev(() => { const g = __game.game, B = g.dunes.beach, e = B.jetty.end; g.places.stand(new __game.THREE.Vector3(e.x - 1.6, B.jetty.top + 0.1, e.z), Math.PI / 2); g.player.yaw = Math.PI / 2; }); // (set down on the deck by hand, to go on)
   await S.ticks(30);
   const ch = await ds('chevron()');
-  S.check('jetty: the chevron is on the jetty\'s end', ch.cur === 'pier' && ch.off < 0.6, ch);
+  S.check('jetty: the chevron is on the jetty\'s end', ch.cur === 'cradle' && ch.ref === 'cradle.pier.anagami.sloop' && ch.off < 0.6, ch);
+  // F seals the Courier into the moored hull's helm and the page opens after the stamp (HANKO.md 6.2): waited for, never assumed
   await F(8);
   let w = await ds('win()');
+  for (let i = 0; i < 15 && !w.index; i++) { await S.ticks(4); w = await ds('win()'); }
   S.check('jetty: F at its end opens the pier\'s page', w.index && w.page === 'pier', { page: w.page });
   const text = await S.ev(() => document.getElementById('indexmenu')?.innerText || '');
-  await S.common('jetty-pier-page');
+  await S.shot('jetty-pier-page'); // (S.common after the page: sealed at the helm, the Courier is in the Pneuka Jar and not shown)
   S.check('jetty: the pier\'s page carries no movement calibration', !/CALIBRATION/.test(text), /CALIBRATION/.test(text) ? 'feedback/indexmenu.js render()' : 'none');
   await F(8);
   w = await ds('win()');
   S.check('jetty: F closes the pier\'s page (and does not reopen it)', !w.index, { index: w.index, page: w.page, cause: w.index ? 'feedback/indexmenu.js closes the page on keydown F; the same press stays latched, and world/emocean/pier.js update() opens it again (as world/shrines.js does)' : null });
-  await closeAll();
+  await closeAll(); await S.ticks(30);
+  for (let i = 0; i < 30 && (await S.ev(() => !!__game.game.cradles?.phase)); i++) await S.ticks(6); // (the unseal plays out)
+  await S.common('jetty-after-page');
   S.check('jetty: after the page the Courier stands on the jetty', (await S.ev(() => { const g = __game.game; return g.player.pos.y > g.dunes.beach.seaY; })), await ds('pos()'));
 });
 
@@ -559,10 +563,10 @@ await run('weather', async () => {
       // the Solar Skiffing trial is closed at night, and says so
       const G = await S.ev(() => __game.game.dunes.gnomon?.toArray());
       await ds(`standOn(${G[0] + 15}, ${G[2] + 5}, ${-Math.PI / 2})`); await S.ticks(20);
-      const m2 = await ds('mark()');
+      const m2 = await ds('mark()'), offer = await S.ev(() => { const it = __game.game.interact?.cur; return it ? { id: it.id, ref: it.ref ?? null } : null; });
       await F(8);
       const s = await ds('solar()'), said = await ds(`logSince(${JSON.stringify(m2)})`);
-      S.check('weather night: the Solar Skiffing trial is closed, and the log says so', !s.running && s.shown === 0 && said.some((t) => /night/i.test(t)), { running: s.running, said });
+      S.check('weather night: the Solar Skiffing trial is closed, and the log says so', !s.running && s.shown === 0 && said.some((t) => /night/i.test(t)), { running: s.running, said, offer });
       await goFoot('dunes');
     }
   }
