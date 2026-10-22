@@ -244,6 +244,12 @@ Chaos digs it up cheap and Law buys it dear; the hauler lives in between. Letty'
   chimney-crown). Bought later: the Moonflower Moon, the Koi Pond, the Drill Yard, the Bone Bed (a layer of old bones: the fossils).
 - **The Inner Realm**: your garden by its name, offered in neuralese words the Veritome teaches, drawn as runes: HEMA-LUNO (home,
   rest), KITH-HEMA, LUNO-DEO, STIL-DEO, EZA-LON, ROMI-LON, SIVA-LUNO (an oasis), HUSA-HEMA, AMI-HEMA, MOR-LUNO (grief at rest).
+- **What the Inner Realm is** *(Espada's read, proposed 2026-10-22, for the garden round)*: the garden is inside the Pneuka Jar, the
+  Vessoul's true form, so it is the Courier's own psyche made ground, the one island that is you. It grows by the same law as the
+  Courier's mental state (pushed up by what is drunk, settled by quiet): tended, it grows into harmony; left to what you carry in
+  (feelings drunk and never settled, spirits neglected, the hand forcing it), it grows briar. Briar is a modifier with a source you can
+  see (thorns where a feeling went untended), never a punishment, and it has its own life: the fierce feelings' spirits like it. The
+  lesson, unsaid: feelings untended overgrow; tended, they make a garden.
 - **The Firings**: the soul refired, no ceiling. **Candling** (the last water driven out: never mud again),
   **Sinter** (grains fuse into one body), **Lustre** (the third firing), **Salt** (thrown in at the hottest: it stings, and it glazes),
   **Reduction** (starved of air, the colours change from inside), **Anagama** (the days-long wood firing; the island's own name). After
