@@ -294,7 +294,8 @@ export class Tracking {
     on('course.gate', (e) => { L.inc('course.gate'); L.hi('course.gate.speed', e.speed); log.say('circuit', `Speed gate: ${fx(e.speed, 1)} m/s.`, { key: 'gate', win: 0.8 }); });
     // what the keys do in a place, said once a session on first arriving there (it used to sit on the screen as a banner)
     const HELP = {
-      hub: 'The index console picks a room (F at it). The Tab panel holds the debug jumps (the last checkpoint, the hub).',
+      hub: 'The index console picks a room (F at it).',
+      'hub.debug': 'The Tab panel holds the debug jumps (the last checkpoint, the hub).', // (said after the hub's line in the DEBUG save only: QA-A and QA-C read it in STORY)
       siege: 'THE SIEGE: ~ raises the hand. Raids come here.',
       skiff: 'Solar skiffing: W hoists the sail, S furls it and brakes, A and D steer, Space hops, Shift flares, F steps off and leaves it parked, Y recalls it. Hold Q or E at speed to carve left or right, and let go for a push. In a glide W dives, S pulls up, Q and E bank, A and D spin.',
       weir: 'THE WEIR: Q draws the Sondelass (1 the cutlass, 2 the rod, 3 the hook). With the rod, 4 to 0 choose a feeling (each once you know it), - and = change the lure, hold LMB and let go to cast, MMB pings the water. With the grappling hook, LMB throws, hold to reel, RMB pays out. The gate on the north beach goes to Raku\'s bazaar, where the Treasury\'s chests and the Tithe now stand. Y brings the skiff.',
@@ -310,7 +311,7 @@ export class Tracking {
     // the room they walk into, said as they enter it (the wire compass asks: vfx/wirecompass.js); the same room again only after a while
     const entered = new Map();
     on('place.enter', (e) => { if (g.realm?.active) return; const now = e.t ?? 0; if (now - (entered.get(e.room) ?? -1e9) < 90) return; entered.set(e.room, now); log.say('explore', `You enter ${e.room}.`, { key: 'place', win: 1 }); }); // (no room of the workshop is entered from the garden: GARDEN-SWEEP #8)
-    on('room.help', (e) => { if (HELP[e.room] && !helped.has(e.room)) { helped.add(e.room); log.say('system', HELP[e.room]); } });
+    on('room.help', (e) => { if (HELP[e.room] && !helped.has(e.room)) { helped.add(e.room); log.say('system', HELP[e.room] + (g.mode === 'debug' && HELP[`${e.room}.debug`] ? ` ${HELP[`${e.room}.debug`]}` : '')); } });
     on('circuit.enter', (e) => { L.inc(`circuit.${e.id}.enter`); L.inc('circuit.enter'); log.say('circuit', `You enter ${e.title}.${e.par ? ` Gold under ${e.par.gold} s, silver ${e.par.silver}, bronze ${e.par.bronze}.` : ''}${e.best ? ` Your best: ${fx(e.best)} s.` : ''}`); }); // (the circuit panel's targets, now in the log: the owner, 2026-10-07)
     on('circuit.gate', (e) => {
       L.inc('circuit.gate');
@@ -759,7 +760,7 @@ export class Tracking {
     this.roomT += dt;
     const s = this.moveState();
     L.inc(`time.state.${s}`, dt);
-    L.inc(`time.area.${this.where().replace('the ', '').replace(/^a /, '')}`, dt);
+    L.inc(`time.area.${this.where().replace('the ', '').replace(/^a /, '').toLowerCase()}`, dt); // (the key in lower case, as its readers ask: 'Dunes' wrote time.area.Dunes and Reached the Dunes, the first path's sixth step, never came)
     if (g.god?.controlling) L.inc('time.god', dt);
     if (g.techs?.active?.id === 'skiff') L.inc('time.skiff', dt);
     if (g.circuits?.active) L.inc('time.circuit', dt);

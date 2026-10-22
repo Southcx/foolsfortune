@@ -796,3 +796,9 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 
 268. **An act queued for later asks whether its thing still exists when it runs**, and whatever frees a thing
     marks it gone (dead, disposed) first, so every later look at it bails before it reaches a freed body.
+
+269. **A ledger key made from a word the player reads is normalised where it is made** (lower case, no article),
+    and its readers use the header's spelling: 'the Dunes' said is `dunes` kept.
+
+270. **A window that reads keys owns them while it is open**: whatever else reads the same keys, and runs before it in
+    the frame, asks whether the window is open, since spending a key after it was read is too late.

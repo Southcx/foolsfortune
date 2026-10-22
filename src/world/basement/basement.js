@@ -464,6 +464,7 @@ export class Course {
     // the rooms the menu lists (the course's eight stations and the lab's five wings are one room each: R and the rings inside them do
     // the rest)
     this.rooms = [
+      { id: 'workshop', code: 'KeyK', tag: 'K', name: 'THE WORKSHOP', blurb: 'back up to the kiln, the folk and the pots, where you woke', group: 'THE HUB', spawn: 'workshop' }, // (the basement's way up: QA-C found none but a Shrine's page)
       { id: 'course', code: 'Digit1', tag: '1', name: 'THE COURSE', blurb: 'one loop, eight stations: run · mantle · gaps · wallrun · zigzag · climb · speed · low · splits and laps', group: 'THE HUB', cp: 0 },
       { id: 'lab', code: 'KeyL', tag: 'L', name: 'THE MOVEMENT LAB', blurb: 'one hall, five wings: the hands · the rigging · the techs · the clockwork mill · the kiln stack', group: 'THE HUB', spawn: 'lab' },
       { id: 'braid', code: 'KeyB', tag: 'B', name: 'THE BRAID', blurb: 'three lines over a pit: beams, bars, blinks · change at any junction', group: 'LAP CIRCUITS', spawn: 'circuit' },
@@ -509,7 +510,8 @@ export class Course {
     this.game.circuits?.leave();
     if (r.spawn === 'circuit') { this.game.circuits.enter(r.circuit || r.id); return; }
     if (r.spawn === 'debug') { this.game.debugChests?.go(r.kit); return; } // (the Index's DEBUG rows: debug/debugchest.js)
-    if (r.spawn === 'lab') this.toLab();
+    if (r.spawn === 'workshop') { this.teleport(this.game.player.spawn, 0); this.running = false; this.current = -1; this.lapT = null; sfx.geyser(); }
+    else if (r.spawn === 'lab') this.toLab();
     else if (r.spawn === 'mill') this.toMill();
     else if (r.spawn === 'dunes') this.toDunes();
     else if (r.spawn === 'siege') this.toSiege();

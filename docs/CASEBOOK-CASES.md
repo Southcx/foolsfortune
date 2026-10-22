@@ -3508,3 +3508,19 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** `dispose` marks the jelly dead, and vanish, take and burst return on a disposed one (creatures/jelly/slipjelly.js). Seed 3
   after: 21,600 ticks, 0 violations.
 - **Rule:** 268
+
+### 2026-10-22 · Reached the Dunes never came, the first path's sixth step (QA-C, a STORY hour)
+- **Seen:** a fresh STORY save in the Dunes from minute 12 to 60 of play, and Reached the Dunes (pl6) never done; Pip still pointed at
+  the Dunes at minute 22.
+- **Cause:** the ledger's area time was written under the place's name as the log says it, `time.area.Dunes`; the header of
+  tracking.js and all three readers (pl4, pl5, pl6) ask `time.area.dunes`.
+- **Fix:** the key is written in lower case (feedback/tracking.js). Measured: 4 s in the Dunes, `time.area.dunes` 4, pl6 done.
+- **Rule:** 269
+
+### 2026-10-22 · A digit picking a talk's choice also turned the psygun's cylinder (QA-C)
+- **Seen:** in a talk, 1 to 9 chose a line and the cylinder turned to that chamber (`psygun.turn`).
+- **Cause:** the psygun reads the digits for its chambers before the dialogue reads them for its choices (main.js's order), and neither
+  spends them.
+- **Fix:** the psygun leaves the digits alone while a talk is open (tools/psygun/weapon.js). Measured: Digit2 on Saggar's five choices,
+  0 turns.
+- **Rule:** 270
