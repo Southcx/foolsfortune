@@ -2,7 +2,7 @@
 
 **1. The folk name the next step:** built in `src/npc/talks.js` (mine, on claude/espada-lore). Saggar's and Pip's `again` lines end with
 the first undone goal on `game.goals.list()`. Saggar names the workshop's steps (sr1 the Shrine, fk1 the folk, sk12 the atrium rail, br1
-ten clapperjars). Pip names the basement's and the Dunes' (tc1 the hub's chest, pl6, jl1, sf1, an1 the rod, cx3 a lap). Each sends you
+ten pots). Pip names the basement's and the Dunes' (tc1 the hub's chest, pl6, jl1, sf1, an1 the rod, cx3 a lap). Each sends you
 to the other for the rest. Off the path (any other goal) they say nothing extra.
 
 **2. The rulings** (yours to paste; the strings are on your branch only):

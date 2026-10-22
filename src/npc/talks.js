@@ -41,7 +41,7 @@ const SAGGAR_STEP = step({
   sr1: 'First things first: rest at the Shrine, just there. {p:0.3}{small}A pot cools before it\'s handled.{/}',
   fk1: 'Go and say hello to the rest of the folk. {p:0.3}{small}They like being asked.{/}',
   sk12: 'Climb up to the atrium rail and look out over the island. {p:0.3}{slow}Just look.{/} {p:0.3}{small}You\'ll know why when you do.{/}',
-  br1: 'Clapperjars rattle all over the workshop. {p:0.3}Break ten and send them home to my kiln. {p:0.3}{small}They don\'t mind. Much.{/}',
+  br1: 'The workshop\'s full of old pots nobody wants. {p:0.3}Break ten of them. {p:0.3}{small}The slip runs home and I fire it again. Nothing\'s wasted.{/}',
   other: 'Pip\'s down in the basement, by the Index. {p:0.3}{small}Nervous little thing, but knows every room.{/}',
 });
 const PIP_STEP = step({
