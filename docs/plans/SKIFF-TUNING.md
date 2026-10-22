@@ -29,8 +29,7 @@ It is a plan. Nothing in it is built yet except where it says so.
 - **Cosmetics:** one, the hull glaze (fired at the kiln's HULL tab).
 - **Two bugs found in the reading:**
   - **The hull glaze never shows in the world.** `Skiff.applyStakes` (`boat.js:283`) resets the hull's colour to white and its
-    roughness every frame, over what `glazeHull` set. It is Calissa's to fix: lerp the stakes from the glazed base kept in
-    `m.userData`.
+    roughness every frame, over what `glazeHull` set. *Fixed by Petra in `boat.js` (3fd75c4).*
   - **The weather's wind strength never reaches the sail.** The sail's power reads `W.gust` only (`skiff.js:364`). `W.speed` (where
     `CONDITION.wind` and `BRANCH.wind` land, `raceway.js:253`) drives only the pennant. Desire's "the wanting wind blows harder down the
     course" does nothing. It is mine to fix (T1).
@@ -138,7 +137,7 @@ The design laws apply: arts and their kin only by achievement, a count way and a
 
 ## 3. The paint (the fun half)
 
-- **The hull glaze:** as it is, once Calissa's fix lands.
+- **The hull glaze:** as it is (fixed, 3fd75c4).
 - **The sail's dye:**
   - the seven feelings' colours, each opened when you awaken to that feeling;
   - the cloth's own;
@@ -159,7 +158,7 @@ The design laws apply: arts and their kin only by achievement, a count way and a
 | # | what | who |
 |---|---|---|
 | T1 | the wind's strength to the sail (`W.strength` from `CONDITION.wind`, square-rooted: x1.16 under desire); the six new keys; mass made real; grip by surface | Dovina (skiff.js and boardrules are the board's own: one token a call site) |
-| T2 | the hull glaze fix (`applyStakes` lerps from the glazed base) | Calissa (a casebook case) |
+| T2 | the hull glaze fix (`applyStakes` lerps from the glazed base) | done: Petra, 3fd75c4 |
 | T3 | `scripts/skifftune.mjs`: the reference lap and PI; the sheet's numbers balanced against it | Dovina |
 | T4 | the tune sheet and setups (`TUNE`, `tuneOf`, the save), the two new slots, their achievements | Dovina |
 | T5 | the GARAGE as a sheet: sliders with the feel words and the numbers, compare arrows (`ChoiceCard`), the PI | Calissa (the look), Petra (the board's page) |

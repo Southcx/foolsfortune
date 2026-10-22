@@ -379,7 +379,7 @@ make a garden.
    - **built fourth:** the spirits walk their routines (C1, `world/garden/spiritwalk.js`): toward the nearest of their place on the
      planetoid they stand on, as faithfully as their grain allows, else the old wander.
    - **built fifth:** the farewell (C6, the owner's Q4): `FAREWELL` in `progress/spiritlife.js`; a statue of the spirit in its feeling,
-     a keepsake never sold (`statue<Feeling>`, `progress/decor.js`), and Bon Voyage. The matching glaze is asked of Calissa.
+     a keepsake never sold (`statue<Feeling>`, `progress/decor.js`), and Bon Voyage. The matching glaze is Calissa's (0af7ec5, her branch): Wonder AVENTURINE, Mirth CRYSTALLINE, Desire PEACHBLOOM, Grief BIDORO, Dread KURO RAKU, opened by gy17 to gy21.
    - **next:** seasons in the cue (Wanda's B6).
    No world code; MEASURE lines in a script.
 2. **Petra:**
