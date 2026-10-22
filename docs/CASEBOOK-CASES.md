@@ -3416,4 +3416,4 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   then its front), setting `needsUpdate` at each switch: two programs, and two program checks every draw, every frame.
 - **Fix:** `forceSinglePass: true` on the small life's material (vfx/garden/gardenlife.js), and on every transparent DoubleSide material of
   ours whose draw order cannot matter: additive ones, and the Heavenly Kiln's flat vortex (11 in vfx/).
-- **Rule:** NEW:double-side-one-pass
+- **Rule:** 257
