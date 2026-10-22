@@ -756,3 +756,6 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 
 256. **A library's hot path is counted, not trusted.** What three (or any engine) does a frame (program checks,
     uploads, garbage) is measured by counting the calls, and a count that does not fall when the cause is removed means another cause.
+
+NEW:double-side-one-pass. **A transparent DoubleSide material is drawn in one pass unless its order matters.** three draws it twice
+    (back, then front) and compiles two programs; `forceSinglePass: true` wherever the two-pass sort buys nothing (additive, flat, sprites).

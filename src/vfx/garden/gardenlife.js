@@ -89,7 +89,7 @@ const U = { uLT: { value: 0 } };
 let MAT = null;
 function lifeMaterial() {
   if (MAT) return MAT;
-  MAT = new THREE.MeshBasicMaterial({ name: 'garden-life', transparent: true, depthWrite: false, side: THREE.DoubleSide });
+  MAT = new THREE.MeshBasicMaterial({ name: 'garden-life', transparent: true, forceSinglePass: true, depthWrite: false, side: THREE.DoubleSide });
   MAT.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, U);
     sh.vertexShader = VERT + sh.vertexShader.replace('#include <begin_vertex>', `#include <begin_vertex>\n${VERT_BODY}`).replace('#include <project_vertex>', PROJ);
