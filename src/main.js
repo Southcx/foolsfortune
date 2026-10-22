@@ -272,6 +272,9 @@ import { Raceway } from './world/raceway/raceway.js';
 import { OpenSea } from './world/opensea/opensea.js';
 import { SeaFight } from './world/opensea/seafight.js';
 import { SeaSerpentBody } from './vfx/opensea/seaserpentbody.js';
+import { SeaLooks } from './vfx/opensea/isletlooks.js';
+import { SeaFightLook } from './vfx/opensea/seafightlook.js';
+import { SeaHull } from './ui/seahull.js';
 import { Race } from './world/raceway/race.js';
 import { SkiffParts } from './progress/skiffparts.js';
 import { PoolCaps } from './progress/poolcaps.js';
@@ -675,7 +678,9 @@ async function main() {
     game.solar = new SolarTrial(game); // (the Solar Skiffing trial, begun at the Gnomon's foot: world/dunes/solar.js)
     game.geysers = new Geysers(game); // (slip geysers: launch pads on a cycle, world/dunes/geysers.js)
     game.makeSeaSerpent = (o) => new SeaSerpentBody(game, o); // (the sea serpent's body for its mind to drive: vfx/opensea/seaserpentbody.js, drive/update/hit/down)
+    game.seaLooks = new SeaLooks(game); // (the open sea's islets dressed over Dovina's placeholders: vfx/opensea/isletlooks.js)
     game.opensea = new OpenSea(game); // (the Emocean off the lanes, built the first time it is entered: world/opensea/, docs/plans/OPEN-SEA.md)
+    game.seaFightLook = new SeaFightLook(game); game.seaHull = new SeaHull(game); // (the fight's needles, globs, splashes and the hull's pips: vfx/opensea/seafightlook.js, ui/seahull.js)
     game.seaFight = new SeaFight(game); // (what fights at the free helm: the gun, the parry, the hull, the sea serpent: world/opensea/seafight.js)
     game.raceway = new Raceway(game); game.race = new Race(game); // (the Solar Skiff's test circuit and its time trial, built the first time it is entered: world/raceway/, docs/plans/SKIFF-RACING.md)
     game.interact.add('find', () => (game.dialogue?.open || !idle() ? null : game.well.finds?.near(player) ?? null)); // (an artifact in a Well's wall: world/well/finds.js)
@@ -1068,6 +1073,8 @@ async function main() {
   game.parryMark.mark(brushLooks[0]); // (and the parry mark on the parked bottle, never cleared: its program lives while one mark does)
   const parkCasterS1toS5 = prewarmCasterShadersS1toS5(scene); // (the caster shells' shaders S1 to S5, one copy each 50 m down: their six programs, vfx/caster/)
   const parkCaster = Object.values(CASTER_SHADERS).filter((m) => m.layer).map((m) => m.prewarm?.(game)).filter(Boolean); // (S6 to S10, the caster shaders' programs, their screen passes in the glow's chain: vfx/caster/)
+  const seaFightAt = (game.seaFightLook?.parked() || []).map((o) => { o.visible = true; return o; }); // (the fight's shots: the rail's program, warmed with it)
+  const parkIslets = game.seaLooks?.prewarm?.() ?? (() => {}); // (the islets' and the shallows' programs, 50 m down: vfx/opensea/isletlooks.js)
   const parkSandfall = prewarmSandfall(scene); // (the Raceway's sandfall, one copy 50 m down: its one program, vfx/racewaysandfall.js)
   const parkBracelet = game.bracelets.prewarm(); // (the bracelet's glazes, charms, flash and aura, 50 m down: vfx/braceletwear.js)
   game.present.shade(true); try { await renderer.compileAsync(scene, camera); } catch (e) { console.warn('shader warm-up', e); } // (the scene's programs linked in parallel first: the shell looks' Portal draw below draws the whole scene, which linked them one at a time, 72 of 182, the render inventory 2026-10-19)
@@ -1095,7 +1102,7 @@ async function main() {
   if (!window.__noPrime) primeDraw(renderer, scene, camera, game.post.target); // (a test harness may skip it: it is a long frame on a software GL)
   parkWell?.(); // (after the prime: drawn once, so the driver has finished with its programs too)
   if (wipe) wipe.visible = false;
-  parkWeather?.(); parkDrain(); parkDuel(); parkSpawnLook(); parkCracks(); parkFigmentTelegraphs(); parkCasterS1toS5(); parkCaster.forEach((f) => f()); parkShellLooks(); parkBracelet(); parkSandfall();
+  parkWeather?.(); parkDrain(); parkDuel(); parkSpawnLook(); parkCracks(); parkFigmentTelegraphs(); parkCasterS1toS5(); parkCaster.forEach((f) => f()); parkShellLooks(); parkBracelet(); parkSandfall(); parkIslets(); seaFightAt.forEach((o) => (o.visible = false));
   for (const o of brushLooks) o.visible = false;
   seaLooks.forEach((o, i) => { o.visible = false; o.position.copy(seaAt[i]); });
   for (const o of gardenLooks) o.visible = false;
@@ -1308,7 +1315,9 @@ async function main() {
     if (!godOn && !aboard) { game.lock.update(game.rawDt); techs.tick(dt); game.parries.update(dt); } // (the lock's camera runs in real seconds: a hit-stop does not stall it)
     game.emocean?.update(dt); // (the crossing: before the camera, which rides its shot)
     game.opensea?.update(dt); // (the free helm: before the camera, which rides its shot)
+    game.seaLooks?.update(dt); // (dresses the islets once, the first frame game.opensea.props exists)
     game.seaFight?.update(dt); // (the ship's gun, the serpent's mind and body, the hull)
+    game.seaHull?.update(game.rawDt);
     game.realm?.update(dt); // (the garden: the Jar, the hand and its own camera)
     game.guestJars?.update(game.rawDt);
     env.water.update(dt);

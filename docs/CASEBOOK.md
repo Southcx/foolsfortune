@@ -772,3 +772,5 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 261. **Player text uses the glossary's words, and a helper that builds words is checked on
     irregular ones** (a plural, an article) before it is trusted with any noun.
 
+NEW:clamp-before-fractional-power. **A ratio is clamped before it is raised to a fractional power.** `x ** 1.6` of a hair below 0 is NaN,
+    and a NaN vertex blacks out every triangle it touches; clamp the ratio (or `Math.max(0, ...)`) where it is made, not where it is drawn.

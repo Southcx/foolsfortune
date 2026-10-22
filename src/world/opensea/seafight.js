@@ -55,7 +55,8 @@ export class SeaFight {
     this.game = game; this.serpents = game.seaSerpents = new SeaSerpents(game);
     this.hull = SHIPS.sloop.bears; this.down = new Map(); // (lair id -> the game day its serpent went down)
     this.shots = []; this.globs = []; this.fireT = 0; this.noiseT = 0; this.lairs = null; this.spawnT = 0; this.grounded = false;
-    // [look] placeholders, Calissa's: the gun's needles in one instanced draw, the globs as dark spheres wearing the parry mark
+    // the placeholders, drawn only without game.seaFightLook (Calissa's: vfx/opensea/seafightlook.js): the gun's needles in one instanced
+    // draw, the globs as dark spheres wearing the parry mark
     this.needles = new THREE.InstancedMesh(new THREE.BoxGeometry(0.09, 0.09, 1.8), new THREE.MeshBasicMaterial({ color: LANCE_COLOR }), CAP.shots);
     this.needles.frustumCulled = false; this.needles.userData.zone = 'opensea'; this.needles.count = 0; game.scene.add(this.needles);
     const gm = new THREE.MeshStandardMaterial({ color: 0x16110c, roughness: 0.15, metalness: 0.3, emissive: 0x2a1406 }), gg = new THREE.SphereGeometry(GL.r, 14, 10);
@@ -149,6 +150,7 @@ export class SeaFight {
     if (aim) _d.subVectors(aim, from).normalize(); else _d.set(Math.sin(yaw), 0.015, Math.cos(yaw)).normalize();
     if (this.shots.length >= CAP.shots) this.shots.shift();
     this.shots.push({ pos: from.clone(), prev: from.clone(), vel: _d.clone().multiplyScalar(GN.speed), t: GN.life });
+    g.seaFightLook?.muzzle(from, _d); // (the look's: vfx/opensea/seafightlook.js)
     if (this.noiseT <= 0) { this.noiseT = SEA_FIGHT.noise.every; g.ai?.stimuli.emit('noise', H.pos, { radius: SEA_FIGHT.noise.radius, strength: 1, by: 'courier', source: g.player }); }
   }
 
@@ -183,8 +185,8 @@ export class SeaFight {
     const vel = new THREE.Vector3().subVectors(to, from).divideScalar(T); vel.y += 0.5 * GL.fall * T;
     if (this.globs.length >= CAP.globs) this.dropGlob(this.globs.shift());
     const m = this.pool.find((x) => !x.visible) || this.pool[0];
-    m.visible = true; m.position.copy(from);
-    this.globs.push({ pos: from.clone(), vel, t: GL.life, back: false, from: c, m, mark: g.parryMark?.mark(m, { eta: null }) || null });
+    const L = g.seaFightLook; m.visible = !L; m.position.copy(from); // (the look draws the glob as the rail's outlined shot, its parry mark with it)
+    this.globs.push({ pos: from.clone(), vel, t: GL.life, back: false, from: c, m, mark: L ? null : g.parryMark?.mark(m, { eta: null }) || null });
   }
   dropGlob(b) { if (!b) return; b.mark?.clear(); b.mark = null; b.m.visible = false; }
   hullHit(move) {
@@ -208,25 +210,27 @@ export class SeaFight {
     for (let i = this.shots.length - 1; i >= 0; i--) {
       const s = this.shots[i]; s.prev.copy(s.pos); s.pos.addScaledVector(s.vel, dt); s.t -= dt;
       const hit = S.partsHit(s.prev, s.pos, GN.r);
-      if (hit) { g.creatures.strike(hit.c, hit.point, _d.copy(s.vel).normalize(), GN.power, 'shot', 'courier'); this.shots.splice(i, 1); continue; }
-      if (s.t <= 0 || s.pos.y < S.surf(s.pos.x, s.pos.z) - 0.2) this.shots.splice(i, 1);
+      if (hit) { g.creatures.strike(hit.c, hit.point, _d.copy(s.vel).normalize(), GN.power, 'shot', 'courier'); g.seaFightLook?.hit(hit.point, _d); this.shots.splice(i, 1); continue; }
+      if (s.t <= 0 || s.pos.y < S.surf(s.pos.x, s.pos.z) - 0.2) { if (s.t > 0) g.seaFightLook?.splash(s.pos, 'shot'); this.shots.splice(i, 1); }
     }
     for (let i = this.globs.length - 1; i >= 0; i--) {
       const b = this.globs[i]; b.t -= dt;
       if (b.back) { // (sent back: it flies home to the head)
         const c = b.from, head = c?.alive ? c.head() : null;
-        if (head) { _a.subVectors(head, b.pos); const d = _a.length(); b.vel.copy(_a).multiplyScalar(GL.back / Math.max(d, 1e-3)); if (d < this.serpents.rOf(c, 0) + GL.r + 0.5) { g.creatures.strike(c, head, _d.copy(b.vel).normalize(), GL.power, 'parry', 'courier'); this.dropGlob(b); this.globs.splice(i, 1); continue; } }
+        if (head) { _a.subVectors(head, b.pos); const d = _a.length(); b.vel.copy(_a).multiplyScalar(GL.back / Math.max(d, 1e-3)); if (d < this.serpents.rOf(c, 0) + GL.r + 0.5) { g.creatures.strike(c, head, _d.copy(b.vel).normalize(), GL.power, 'parry', 'courier'); g.seaFightLook?.hit(head, _d); this.dropGlob(b); this.globs.splice(i, 1); continue; } }
         b.pos.addScaledVector(b.vel, dt);
       } else {
         b.vel.y -= GL.fall * dt; b.pos.addScaledVector(b.vel, dt);
-        if (H && b.pos.distanceTo(_a.copy(H.pos).setY(H.pos.y + 1)) < SEA_FIGHT.hurt && this.room.sailing) { this.dropGlob(b); this.globs.splice(i, 1); this.hullHit('spit'); continue; }
+        if (H && b.pos.distanceTo(_a.copy(H.pos).setY(H.pos.y + 1)) < SEA_FIGHT.hurt && this.room.sailing) { g.seaFightLook?.hull(b.pos); this.dropGlob(b); this.globs.splice(i, 1); this.hullHit('spit'); continue; }
       }
       b.m.position.copy(b.pos);
-      if (b.t <= 0 || b.pos.y < S.surf(b.pos.x, b.pos.z) - 0.5) { this.dropGlob(b); this.globs.splice(i, 1); }
+      if (b.t <= 0 || b.pos.y < S.surf(b.pos.x, b.pos.z) - 0.5) { if (b.t > 0) g.seaFightLook?.splash(b.pos, 'glob'); this.dropGlob(b); this.globs.splice(i, 1); }
     }
   }
   draw() {
-    const N = this.needles; N.count = this.shots.length;
+    const N = this.needles, L = this.game.seaFightLook;
+    if (L) { L.draw(this); N.count = 0; return; } // (the look's needles and globs; these are the placeholders without it)
+    N.count = this.shots.length;
     for (let i = 0; i < this.shots.length; i++) { const s = this.shots[i]; _q.setFromUnitVectors(_z, _d.copy(s.vel).normalize()); _m.compose(s.pos, _q, _s); N.setMatrixAt(i, _m); }
     if (!this.shots.length) N.setMatrixAt(0, _hide);
     N.instanceMatrix.needsUpdate = true;

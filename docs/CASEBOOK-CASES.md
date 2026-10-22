@@ -3441,3 +3441,13 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Cause:** tracking.js's `plural` added an "s" to every word.
 - **Fix:** a consonant's y becomes "ies" (jellies); the Shrine's line says "made whole", the glossary's words, never "reforged".
 - **Rule:** 261
+
+### 2026-10-22 · An islet's shallows drew black wedges over the sea (Calissa)
+- **Seen:** headless, the open sea at a game noon: round the atoll and the sandbar, black bands across the shallows ring's outer part,
+  cut along its triangles, on the far side.
+- **Cause:** the ring's per-vertex alpha was `0.6 * (1 - t) ** 1.6`, with t the vertex's distance across the ring; at the rim float error
+  put t a hair past 1, and a negative number to a fractional power is NaN. Every triangle touching a NaN vertex drew black. Proved by
+  swapping materials on the ring: a uniform opacity drew clean, the vertex alpha drew the wedges; the draw order and the frame's alpha
+  changed nothing.
+- **Fix:** t clamped to 0..1 before the power (vfx/opensea/isletlooks.js `shallowsGeometry`).
+- **Rule:** NEW:clamp-before-fractional-power
