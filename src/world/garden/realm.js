@@ -396,7 +396,7 @@ export class Realm {
   /** A planetoid put back to its rest shape (the hand's Ctrl+Backspace, asked twice: free, item 30): its clay, its paint and its water. */
   resetPlanetoid(P) {
     const c = this.clays[P.id]; if (!c) return;
-    this.hand.undos.push({ planet: P, h: c.snapshot() }); // (and a slip of the keys can be undone: Ctrl+Z)
+    this.hand.keep({ planet: P, h: c.snapshot() }); // (and a slip of the keys can be undone: Ctrl+Z)
     c.restore({ h: new Float32Array(c.h.length), g: new Uint8Array(c.ground.length), painted: 0 });
     this.waterworks.reset(P); this.plants.clear(P); this.races.clear(P); this.reshape(P, true); this.plots.veins(P); this.game.save?.dirty('realm');
     this.game.events?.emit('garden.reset', { planetoid: P.id, by: 'courier' });

@@ -15,7 +15,7 @@
 // Prior art: Black & White's hand (the cursor as your whole presence: pick up, throw, pat and slap), Populous's raise and lower,
 // From Dust's carved channels, and Animal Crossing's placing on a grid of plots.
 //
-//   const H = new GardenHand(realm)   H.update(dt)   H.art (ARTS)   H.held   H.size (metres)   H.undo()
+//   const H = new GardenHand(realm)   H.update(dt)   H.art (ARTS)   H.held   H.size (metres)   H.keep(entry)   H.undoLast()   H.undo()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { sfx } from '../../audio/sfx.js';
@@ -122,7 +122,7 @@ export class GardenHand {
       this.brush.hide(); return this.pose(dt); }
     if (ctrl && I.wasPressed('Backspace') && !typing) this.askReset();
     if (shift && I.wheel) { this.size = THREE.MathUtils.clamp(this.size * (1 + Math.sign(I.wheel) * 0.15), STROKE.size[0], STROKE.size[1] * (this.game.alchemy?.widen?.('visualization.canvas') ?? 1)); I.wheel = 0; } // (Shift and the wheel: the stroke's size)
-    if (ctrl && I.wasPressed('KeyZ') && !typing) { if (!(this.art === 'place' && this.R.decorLayer?.on && this.R.decorLayer.undo())) this.undo(); } // (in decor, decor's own undo first: world/garden/decorlayer.js)
+    if (ctrl && I.wasPressed('KeyZ') && !typing) this.undoLast(); // (one history: the clay's strokes and decor's pieces, the later first)
     const { o, d } = this.ray(), cursorIn = I.mx >= 0, menuOpen = !!(g.indexMenu?.open || g.course?.menu?.open);
     if (!cursorIn || menuOpen) { this.letGo(); this.brush.hide(); return this.pose(dt); }
     // the right button: a flick for the spirit under the hand
@@ -183,7 +183,7 @@ export class GardenHand {
     const I = this.game.input, clear = I.isDown('Mouse2'), on = I.isDown('Mouse0') || clear;
     if (!on || !this.hit) { this.endStroke(); return; }
     const P = this.hit.planet, clay = this.R.clays[P.id]; if (!clay) return;
-    if (!this.stroke) { this.stroke = { planet: P, how: 'paint', moved: false, ground: clear ? null : this.ground }; this.undos.push({ planet: P, h: clay.snapshot() }); if (this.undos.length > STROKE.undo) this.undos.shift(); }
+    if (!this.stroke) { this.stroke = { planet: P, how: 'paint', moved: false, ground: clear ? null : this.ground }; this.keep({ planet: P, h: clay.snapshot() }); }
     if ((this.brushT -= dt) > 0) return;
     this.brushT = HAND.every;
     if (clay.paint(this.hit.point.clone().sub(P.c), this.stroke.ground, this.size)) { this.stroke.moved = true; this.R.reshape(P); if (this.stroke.ground === 'moss') this.R.plants?.seed(P, this.hit.point.clone().sub(P.c), this.size * 0.5); } // (moss painted is moss growing)
@@ -197,14 +197,22 @@ export class GardenHand {
     const dir = this.hit.point.clone().sub(P.c).normalize();
     if (!this.stroke) { // (a stroke begins: what it changes can be undone, and a flattening keeps the height it began at)
       this.stroke = { planet: P, how, moved: false, to: clay.heightAt(dir), path: how === 'carve' ? [] : null, held: basinVolume(clay) }; // (a carve's path: a track if it closes on itself, world/garden/races.js; held: what its basins hold before, for the stroke's q)
-      this.undos.push({ planet: P, h: clay.snapshot() }); if (this.undos.length > STROKE.undo) this.undos.shift();
+      this.keep({ planet: P, h: clay.snapshot() });
     }
     if ((this.brushT -= dt) > 0) return;
     this.brushT = HAND.every;
     if (this.stroke.path && this.stroke.planet === P) this.stroke.path.push(dir.clone());
     if (clay.brush(dir, how, STROKE[how] ?? 0.12, this.size, { to: this.stroke.to })) { this.stroke.moved = true; this.R.reshape(P); this.R.waterworks?.disturb(P); }
   }
-  /** Ctrl+Z: the last stroke taken back (the ground as it was before it, and the water told). */
+  /** A stroke kept to undo, stamped in the realm's one count of undoable acts (decor's are stamped there too: decorlayer.js push). */
+  keep(u) { u.n = this.R.undoN = (this.R.undoN || 0) + 1; this.undos.push(u); if (this.undos.length > STROKE.undo) this.undos.shift(); }
+  /** Ctrl+Z: the last act taken back, a stroke of the clay or a piece of decor, whichever came later (Photoshop's one History, not one
+   *  a tool; GARDEN-COZY.md D2). */
+  undoLast() {
+    const D = this.R.decorLayer, a = this.undos.at(-1)?.n ?? 0, b = D?.undos?.at(-1)?.n ?? 0;
+    if (b > a) D.undo(); else this.undo();
+  }
+  /** The last stroke taken back (the ground as it was before it, and the water told). */
   undo() {
     const U = this.undos.pop(); if (!U) return;
     this.R.clays[U.planet.id]?.restore(U.h); this.R.reshape(U.planet, true); this.R.waterworks?.disturb(U.planet); this.R.plots.veins(U.planet); this.R.races?.redraw(U.planet);
