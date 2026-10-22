@@ -20,6 +20,8 @@ import { HEARTS, KEYS, OUTCOMES, CONVERT, CATCH, catchOdds, oddsOf, rates, keyLi
 import { readFileSync } from 'node:fs';
 import { buskPay, bountyPay } from '../src/progress/econ/livelihoods.js';
 import { NODES, CLASSES, hop, stagePlan, stageQuality, reckonLead, RECKON } from '../src/progress/econ/emocean.js';
+import { rutterWorth } from '../src/progress/econ/passage.js';
+import { DECOR, priceOf } from '../src/progress/decor.js';
 import { wellPay, cogitomapWorth, demand, fuel, haulProfit, spillChance, crudeRun, wellYield, drawWell, islandRun, wellSeed, purserPrice } from '../src/progress/econ/islands.js';
 import { KIND_IDS, makeMaterial, press, distance } from '../src/progress/econ/materials.js';
 
@@ -48,6 +50,7 @@ const PLAY = {
   busker: { songMin: 3, set: 10 },                               // three-minute songs, a set of ten different ones before any repeat
   diver: { floors: 5, foes: 1, minutesPerFloor: 5 },             // a Well run: five floors, one FOE, five minutes a floor
   hauler: { units: 12, worth: 30, distance: 4, hopMin: 12 },      // a hold of twelve things worth 30 each, four units away, twelve minutes a hop
+  sailor: { legs: 3, legMin: 2.6, launchMin: 0.4, ashoreMin: 2 }, // a drafted passage: three legs of about 104 bars (2.6 real min) after the launch, and two minutes ashore to sell (RAIL-FLOW.md, the stream's legs)
   completionist: { playPerDay: 2, checkInEvery: 24, farmRate: 480, mastered: [1, 3, 5, 10, 20] }, // hours played a day, hours between
   // collections, what farming one encounter by hand pays an hour (the aim, until there are encounters), how many encounters are mastered
 };
@@ -213,6 +216,19 @@ console.log(KIND_IDS.map((k) => `${k} ${distance({ h: 20, s: 0.5 }, press({ h: 2
 console.log(`\ncrude runs: expected profit a run (clean / one stage failed), cubes an hour clean (a hop of ${PLAY.hauler.hopMin} min x the ship's slowness), and the spill chance of a failed stage`);
 for (const ship of ['sloop', 'tanker']) for (const field of Object.keys(ECON.crude.fields))
   console.log(`${pad(ship, 8)}${pad(field, 10)}${String(crudeRun({ ship, field })).padStart(7)}${String(crudeRun({ ship, field, failed: 1 })).padStart(7)}${String(Math.round(crudeRun({ ship, field }) * 60 / (PLAY.hauler.hopMin * ECON.ships[ship].slow))).padStart(7)}/h ${(crudeRun({ ship, field }) * 60 / (PLAY.hauler.hopMin * ECON.ships[ship].slow) / aim).toFixed(2)}x   spill ${(spillChance(field, ECON.ships[ship].hold, ECON.ships[ship].hull ?? 1) * 100).toFixed(0)}%`);
+// A PASSAGE SAILED (the crossing as a livelihood, measured whole: the rail pays no cubes itself, so a trip's worth is its cargo and its
+// rutter, whose worth follows the rank: passage.js rutterWorth), by ship and crude, at poor / middling / masterful play (rank C / B / S,
+// the route read 0 / 0.5 / 1, a poor sailor failing one stage)
+{ const T = PLAY.sailor, trip = T.launchMin + T.legs * T.legMin + T.ashoreMin;
+  console.log(`\na passage sailed (${T.legs} legs, about ${trip.toFixed(1)} real minutes with the selling): crude + the rutter, cubes an hour at poor / middling / masterful play`);
+  for (const [ship, field] of [['sloop', 'margarite'], ['sloop', 'dunemaw'], ['tanker', 'dunemaw'], ['tanker', 'entra']]) {
+    const at = (q) => { const rank = q < 0.5 ? 'C' : q < 0.9 ? 'B' : 'S', read = q < 0.5 ? 0 : q < 0.9 ? 0.5 : 1, mins = T.launchMin + T.legs * T.legMin;
+      const crude = crudeRun({ ship, field, failed: q < 0.5 ? 1 : 0 }), rutter = rutterWorth({ minutes: mins, rank, read });
+      return { h: (crude + rutter) * 60 / (trip * (ECON.ships[ship].slow > 1 ? ECON.ships[ship].slow : 1)), crude, rutter }; };
+    const v = [0.4, 0.7, 1].map(at);
+    console.log(`${pad(`${ship} ${field}`, 18)}${v.map((x) => num(x.h)).join('')}   ${v.map((x) => (x.h / aim).toFixed(2)).join(' / ')} x aim   (crude ${v.map((x) => x.crude).join(' / ')}, rutter ${v.map((x) => x.rutter).join(' / ')} a trip)`);
+  } }
+
 let fill = 1; const fills = [];
 for (let r = 0; r < 8; r++) { fills.push(wellYield(fill).toFixed(2)); fill = drawWell(fill, 1, 0); }
 console.log(`a Well's yield over eight runs back to back: ${fills.join(' ')}; it refills ${ECON.wellFill.refillPerH * 100}% an hour (dry to full in ${Math.round(1 / ECON.wellFill.refillPerH)} hours)`);
@@ -255,4 +271,15 @@ console.log(`  the reckoning (Divination): a wave's lane marked ${reckonLead(0)}
 { const P = ECON.place, total = P.planetoids.reduce((a, b) => a + b, 0) * ECON.perMinute;
   console.log(`\nthe Spirit Garden's planetoids: ${P.planetoids.map((m) => m * ECON.perMinute).join(' + ')} = ${total} cubes; at the aim (${ECON.perMinute * 60} an hour) ${(total / (ECON.perMinute * 60)).toFixed(1)} hours of play spent on nothing else; at half the aim (a player who also buys looks and keys) ${(2 * total / (ECON.perMinute * 60)).toFixed(1)} hours: the long sink, as meant (weeks at an hour or two a day)`);
   console.log(`  features: ${Object.entries(P.features).map(([k, m]) => `${k} ${m * ECON.perMinute}`).join(', ')} cubes; a spirit at work adds up to ${P.work * 100}% to its slot; formation +/-${P.formation * 100}%, a vein x${P.vein}`); }
+
+// the gardener (SPIRIT-GARDEN.md item 27, GARDEN-COZY.md G3): an hour spent in the garden, what it gives and what it asks. The garden is
+// a sink a player chooses: it pays in materials and a dividend that comes while you are away, never in cubes for tending (cozy: no
+// transactional pressure), so its sinks are paid by the rest of play.
+{ const G = ECON.garden, D = ECON.dividend, hr = ECON.perMinute * 60, perHarvest = 60 / (G.growHours * 2.5); // (a game hour is 2.5 real minutes)
+  const mats = (beds) => Math.floor(perHarvest) * beds * G.yield, div = (slots) => Math.round(D.share * G.farmRate * slots);
+  const cat = Object.keys(DECOR).reduce((n, id) => n + priceOf(id), 0), plan = ECON.place.planetoids.reduce((a, b) => a + b, 0) * ECON.perMinute;
+  console.log(`\nthe gardener: an hour in the Spirit Garden pays no cubes for tending; its beds give ${mats(G.beds)} materials an hour at ${G.beds} beds (${mats(G.beds + 4)} at ${G.beds + 4}), ${perHarvest.toFixed(1)} harvests a bed an hour`);
+  console.log(`  the dividend while away: ${div(1)} / ${div(D.slots)} cubes a real hour with 1 / ${D.slots} slots working, ${D.capDays} game days to its cap (${div(D.slots) * D.capDays} cubes)`);
+  console.log(`  the sinks it asks: the decor catalogue once ${cat} cubes (${(cat / hr).toFixed(1)} hours at the aim), the planetoids ${plan} (${(plan / hr).toFixed(1)} hours), the upgrades ${[...G.upgrade.slot, ...G.upgrade.bed].reduce((a, b) => a + b, 0) * ECON.perMinute}`);
+  console.log(`  a cozy week (an hour or two a real day, a seventh of it in the garden): the dividend at ${D.slots} slots pays the catalogue in ${(cat / div(D.slots)).toFixed(0)} real hours away, the planetoids in ${(plan / div(D.slots)).toFixed(0)}; play pays the rest`); }
 

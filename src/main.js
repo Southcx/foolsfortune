@@ -255,6 +255,7 @@ import { Myggdrasil } from './progress/myggdrasil.js';
 import { Keepsakes } from './progress/keepsakes.js';
 import { GardenMycelium } from './world/garden/mycelium.js';
 import { renderGrimoire } from './feedback/codex/grimoire.js';
+import { GardenMood } from './vfx/garden/gardenmood.js';
 import { Realm } from './world/garden/realm.js';
 import { Party } from './coop/party.js';
 import { SiblingChannel } from './coop/channel.js';
@@ -274,6 +275,9 @@ import { SkiffSettings } from './courier/skiff/skiffsettings.js';
 import { SoulAlchemy } from './progress/alchemy.js';
 import { Knacks } from './progress/knacks.js';
 import { Goals } from './progress/goals.js';
+import { Harmony } from './progress/harmony.js';
+import { Decor } from './progress/decor.js';
+import { SpiritLife } from './progress/spiritlife.js';
 import { Feelings } from './progress/feelings.js';
 import { Vantages } from './world/vantages.js';
 import { DuelSession } from './world/duel/duelsession.js'; import { DuelFoes } from './world/duel/duelfoes.js';
@@ -633,6 +637,7 @@ async function main() {
   game.creations = new Creations(game); // (the hand's voxel creations: godhand/creations.js; GODHAND.md 7)
   game.rejection = new Rejection(game); // (the island's immune response to the hand: godhand/rejection.js; GODHAND.md 10)
   game.realm = new Realm(game, { god }); // (the Spirit Garden entered at a Shrine: the Jar on its planetoids, the hand over it: world/garden/realm.js)
+  game.gardenMood = new GardenMood(game); // (the Inner Realm's one mood: the hour, the season and the briar every garden look reads: vfx/garden/gardenmood.js)
   const cursorFree = () => !!(god.active || game.realm?.active || game.duel?.active); // (the hand's cursor is the pointer: no lock taken, no pause on its loss)
   input.wantLock = () => !cursorFree() && !modalOpen() && !game.kilnUI?.open && !game.dialogue?.open && !game.pneukaUI?.open && !game.shopUI?.open && !game.qais?.open; // (a refused lock is retried only if the game still wants one: core/input.js)
   game.lock = new LockOn(game); // (Z-targeting: the camera and the blade hold one thing)
@@ -840,6 +845,9 @@ async function main() {
   game.courierMind = new CourierMind(game); // (your mental state and your draught, kept: courier/mind.js; the garden's rain reads it)
   game.knacks = new Knacks(game); // (the assists earned, switched on or off: progress/knacks.js; the Crib Sheet first)
   game.goals = new Goals(game); // (the game day's three goals, from the achievements: progress/goals.js)
+  game.harmony = new Harmony(game); // (how calm or overgrown each planetoid of the Spirit Garden is: progress/harmony.js, GARDEN-COZY.md A)
+  game.decor = new Decor(game); // (the garden's pieces: the catalogue, the shed's storage and the rating: progress/decor.js, GARDEN-COZY.md D)
+  game.spiritLife = new SpiritLife(game); // (the spirits' routines, their wishes and the morning's digest: progress/spiritlife.js, GARDEN-COZY.md C)
   game.feelings = new Feelings(game); // (the seven feelings' awakenings: progress/feelings.js, FEELINGS-AWAKENING.md)
   game.vantages = new Vantages(game); game.vantageFrames = new VantageFrames(game); game.awakening = new Awakening(game); // (Wonder's lookouts: world/vantages.js; the awakening's glitch and the body's wait: feedback/awakening.js)
   game.lend = new Lend(game); // (the lend panel: what DEBUG unlocks without the ledger, a category at a time: progress/lend.js, DEBUG-MODE.md)
@@ -1366,7 +1374,7 @@ async function main() {
     game.circuits.update(dt);
     game.cubes.update(dt);
     if (!worldAsleep) { game.chests.update(dt); game.weir.update(dt); }
-    game.well.update(dt); game.ostraca?.update(); game.debugChests?.update(game.rawDt ?? dt); game.knacks?.update(game.rawDt ?? dt); game.goals?.update(game.rawDt ?? dt); game.feelings?.update(game.rawDt ?? dt); game.vantages?.update(game.rawDt ?? dt); game.vantageFrames?.update(game.rawDt ?? dt); game.awakening?.update(game.rawDt ?? dt); game.solar?.update(dt); game.geysers?.update(dt); game.raceway?.update(dt); game.race?.update(dt); game.shrines?.update(); game.pier?.update(); game.mooring?.update(game.rawDt ?? dt); game.encounterFilm?.update(game.rawDt ?? dt); game.margarite?.update(dt); game.bazaar?.update(dt); game.duelFoes.update(); game.busk?.update(); game.catchLook?.update(game.rawDt ?? dt, camera);
+    game.well.update(dt); game.ostraca?.update(); game.debugChests?.update(game.rawDt ?? dt); game.knacks?.update(game.rawDt ?? dt); game.goals?.update(game.rawDt ?? dt); game.harmony?.update(game.rawDt ?? dt); game.spiritLife?.update(game.rawDt ?? dt); game.feelings?.update(game.rawDt ?? dt); game.vantages?.update(game.rawDt ?? dt); game.vantageFrames?.update(game.rawDt ?? dt); game.awakening?.update(game.rawDt ?? dt); game.solar?.update(dt); game.geysers?.update(dt); game.raceway?.update(dt); game.race?.update(dt); game.shrines?.update(); game.pier?.update(); game.mooring?.update(game.rawDt ?? dt); game.encounterFilm?.update(game.rawDt ?? dt); game.margarite?.update(dt); game.bazaar?.update(dt); game.duelFoes.update(); game.busk?.update(); game.catchLook?.update(game.rawDt ?? dt, camera);
     // underground: no sun through the ground (it would light the basement outside its shadow
     // frustum), thinner fog so the long rooms read end to end, no shadow-map updates
     game.daylight.update(dt); // (the open ground's light graded by the hour and the weather, before the dunes blend it in)

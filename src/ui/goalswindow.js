@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE GOALS WINDOW: the game day's three goals (Dovina's progress/goals.js, game.goals) as a System window at the view's left edge, in
-// Anagami's dress (OVERLAY.md 15.4: Clay). A row a goal, in the order the System lays them: its slot (NEAR, ELSEWHERE, STRETCH, or FIRST
-// STEPS), the achievement's name and words, its tier, a bar filled to `frac` with `cur` of `goal` beside it, and a gold check when done.
+// Anagami's dress (OVERLAY.md 15.4: Clay). A row a goal, in the order the System lays them: its slot (CLOSE, ELSEWHERE, STRETCH, or FIRST
+// STEP), the achievement's name and words, its tier, a bar filled to `frac` with `cur` of `goal` beside it, and a gold check when done.
 // It reads what is and says nothing of what happened (the log does: tracking/goals.js). Summoned on `/goals` (goals.ask) for a while;
 // shown a beat when a game day lays them (goals.set) and when one is done (goal.done: its row's check stamped, the others dimmed). Hidden
 // at sea while the rail readout stands in the same corner.
@@ -20,7 +20,7 @@ import { brineFrame, dot, GOLD, SALT, INK, COUNT_FACE } from './brineframe.js';
 import { FONT } from './theme.js';
 
 export const GOALS_LOOK = { ask: 8, set: 5, done: 4, fade: 0.35 }; // (real seconds a summon stands; the fade in and out)
-const SLOT_WORD = { near: 'NEAR', elsewhere: 'ELSEWHERE', stretch: 'STRETCH' }; // (placeholders for Espada's)
+const SLOT_WORD = { near: 'CLOSE', elsewhere: 'ELSEWHERE', stretch: 'STRETCH', first: 'FIRST STEP' }; // (Espada's words, as the log says them: Close, Elsewhere, Stretch, First step)
 const TIER_WORD = [null, 'EASY', 'MEDIUM', 'HARD', 'ELITE', 'MASTER', 'GRANDMASTER'];
 
 const CSS = `
@@ -95,7 +95,7 @@ export class GoalsWindow {
     if (!goals.length) this.list.append(make('div', 'gw-none', 'Nothing laid yet today.'));
     for (const g of goals) {
       const row = make('div', `gw-row${g.done ? ' done' : ''}${g.id === hit ? ' hit' : ''}`);
-      row.append(make('span', 'gw-slot', g.first ? 'FIRST STEPS' : SLOT_WORD[g.slot] || ''), make('span', 'gw-tier', TIER_WORD[g.tier] || ''));
+      row.append(make('span', 'gw-slot', g.first ? SLOT_WORD.first : SLOT_WORD[g.slot] || ''), make('span', 'gw-tier', TIER_WORD[g.tier] || ''));
       const name = make('div', 'gw-name'); name.insertAdjacentHTML('afterbegin', CHECK); name.append(make('span', '', g.name || g.id));
       const bar = make('div', 'gw-bar'), fill = make('i');
       fill.style.setProperty('--f', `${Math.round(Math.max(0, Math.min(1, g.frac ?? 0)) * 100)}%`); bar.append(fill);

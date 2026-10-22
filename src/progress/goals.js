@@ -16,7 +16,7 @@
 //
 //   GOALS   pickGoals(rows, { day, avoid }) -> [{ id, slot, first? }]   (rows: [{ id, cat, sub, tier, hidden, frac, goal }])
 //   const G = new Goals(game)   G.update(dt)   G.list() -> [{ id, slot, first, name, desc, tier, cur, goal, frac, done }]   /goals
-//   events: goals.set { day, ids }   goal.done { id, slot, all }   goals.ask { goals }
+//   events: goals.set { day, ids }   goal.done { id, slot, ach, all }   goals.ask { goals }
 // ---------------------------------------------------------------------------------------
 import { today } from '../core/calendar.js';
 
@@ -83,7 +83,7 @@ export class Goals {
     for (const g of this.s.goals) {
       if (this.s.said.includes(g.id) || !this.A.done(g.id)) continue;
       this.s.said.push(g.id); this.game.save?.dirty('goals');
-      this.game.events?.emit('goal.done', { id: g.id, slot: g.slot, all: this.s.goals.every((x) => this.A.done(x.id)), by: 'courier' });
+      this.game.events?.emit('goal.done', { id: g.id, slot: g.slot, ach: this.A.by[g.id]?.name, all: this.s.goals.every((x) => this.A.done(x.id)), by: 'courier' });
     }
   }
   /** The day's goals as a window would show them: the achievement's words and the ledger's numbers. */
