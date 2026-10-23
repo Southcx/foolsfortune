@@ -118,6 +118,7 @@ export class IndexMenu {
     else this.rooms.forEach((room, i) => {
       if (room.group !== group) { group = room.group; im.appendChild(el('div', 'grp', group)); grid = el('div', 'rooms'); im.appendChild(grid); }
       const row = el('div', `room${i === this.sel ? ' sel' : ''}`, `<span class="n">${room.tag}</span><span><b>${room.name}</b><s>${room.blurb}</s></span>`);
+      if (room.danger) { const p = this.game.dangerPips?.(room.danger); if (p) row.querySelector('.n').after(p); } // (a Well's danger, its FOE's class as pips after the key: ui/dangerpips.js)
       row.onclick = () => this.pick(i);
       row.onmouseenter = () => { this.sel = i; };
       grid.appendChild(row);
