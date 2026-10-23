@@ -4,7 +4,8 @@
 // collider so the Courier, the creatures and the props stand on what the hand built. The field is laid (its authored ground sampled by
 // rays, once) when the hand first works a place; a hand working somewhere more than FIELD.relay metres away lays a new one there. It
 // keeps stepping after the god hand is put away (the water still runs, the mending still heals), and is dropped once it has healed.
-// The looks are stand-ins: firm and loose by vertex colour, Lachryma tinted by its leading feeling (Calissa's to dress: GODHAND.md 9).
+// The looks are Calissa's (vfx/godhand/matterlook.js): the layers dressed by island, the Lachryma the house's liquid, tinted by its
+// leading feeling; this file writes their attributes (the loose share and thickness a cell; the Lachryma's depth and tint code).
 // What the ray did not find (a hole, a drop off the island) is void: matter poured there falls away.
 //
 // Prior art: From Dust's layered terrain mesh and its liquids drawn as a second skin; Rapier's height field (one collider, rebuilt a few
@@ -14,8 +15,8 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../core/physics.js';
-import { COLOR } from '../progress/weather.js';
-import { MatterField, FEELINGS, groundOf } from './matter.js';
+import { MatterField, FEELINGS } from './matter.js';
+import { matterMaterial, matterAttrs, lachrymaSkin, liquidDepth } from '../vfx/godhand/matterlook.js';
 
 /** `relay`: how far from the field's centre the hand may work before a new field is laid; `lookHz` and `colliderHz`: how often the
  *  meshes and the collider follow the simulation (a few times a real second is enough for ground that flows at walking pace);
@@ -23,10 +24,6 @@ import { MatterField, FEELINGS, groundOf } from './matter.js';
  *  cutaway skips it). */
 export const FIELD = { relay: 22, lookHz: 12, colliderHz: 3, mendColliderEvery: 5, sampleUp: 6, sampleDown: 18, show: 0.02, hide: 0.12 };
 
-const FIRM = new THREE.Color(groundOf().firm.colour), LOOSE = new THREE.Color(groundOf().loose.colour), // (the island's own layers: matter.js GROUND)
-   FAIR = new THREE.Color(0x9fd8e0), ICE = new THREE.Color(0xe6f6ff);
-const FEEL = FEELINGS.map((f) => new THREE.Color(COLOR[f]));
-const _c = new THREE.Color();
 
 export class IslandMatter {
   constructor(game) {
@@ -55,7 +52,7 @@ export class IslandMatter {
     if (!this.field) return;
     const g = this.game;
     if (this.body) g.physics.world.removeRigidBody(this.body);
-    for (const m of [this.mesh, this.liquid]) if (m) { g.scene.remove(m); m.geometry.dispose(); m.material.dispose(); }
+    for (const m of [this.mesh, this.liquid]) if (m) { g.scene.remove(m); m.geometry.dispose(); if (!m.material.userData.shared) m.material.dispose(); }
     this.field = this.mesh = this.liquid = this.body = this.collider = null;
     this.seenV = this.seenW = this.colV = this.colM = -1; this.lastBb = null; this.wj0 = this.wj1 = undefined;
   }
@@ -66,12 +63,13 @@ export class IslandMatter {
     const idx = new Uint32Array((n - 1) * (n - 1) * 6);
     let o = 0;
     for (let j = 0; j < n - 1; j++) for (let i = 0; i < n - 1; i++) { const a = j * n + i, b = a + 1, c = a + n, d = c + 1; idx[o++] = a; idx[o++] = c; idx[o++] = b; idx[o++] = b; idx[o++] = c; idx[o++] = d; }
-    const skin = (mat) => {
+    const skin = (mat, liquid) => {
       const geo = new THREE.BufferGeometry();
       const pos = new Float32Array(N * 3);
       for (let k = 0; k < N; k++) { pos[k * 3] = F.xOf(k); pos[k * 3 + 2] = F.zOf(k); pos[k * 3 + 1] = F.base[k] - 1; }
       geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
-      geo.setAttribute('color', new THREE.BufferAttribute(new Float32Array(N * 4), 4));
+      if (liquid) geo.setAttribute('aDepth', new THREE.BufferAttribute(new Float32Array(N).fill(liquidDepth(0, -1, 0, true)), 1));
+      else { matterAttrs(geo, N); geo.attributes.color.array.fill(0); }
       geo.setAttribute('normal', new THREE.BufferAttribute(new Float32Array(N * 3).fill(0).map((_, i) => (i % 3 === 1 ? 1 : 0)), 3));
       geo.setIndex(new THREE.BufferAttribute(idx, 1));
       geo.boundingSphere = new THREE.Sphere(new THREE.Vector3(F.cx, F.base[(N / 2 + n / 2) | 0] || 0, F.cz), n * F.cell);
@@ -81,9 +79,9 @@ export class IslandMatter {
       g.scene.add(m);
       return m;
     };
-    this.mesh = skin(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95, alphaTest: 0.5 }));
+    this.mesh = skin(matterMaterial('ground'));
     this.mesh.receiveShadow = true; this.mesh.castShadow = true;
-    this.liquid = skin(new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.15, metalness: 0.1, transparent: true, depthWrite: false, alphaTest: 0.02 }));
+    this.liquid = skin(lachrymaSkin(g) || new THREE.MeshStandardMaterial({ color: 0x0a0812, roughness: 0.15, transparent: true, opacity: 0.9, depthWrite: false }), true);
     this.liquid.renderOrder = 2;
   }
 
@@ -110,37 +108,35 @@ export class IslandMatter {
     const b = F.bb || this.lastBb;
     if (b && gv !== this.seenV) {
       this.seenV = gv;
-      const geo = this.mesh.geometry, P = geo.attributes.position.array, C = geo.attributes.color.array, NR = geo.attributes.normal.array;
+      const geo = this.mesh.geometry, P = geo.attributes.position.array, C = geo.attributes.color.array, NR = geo.attributes.normal.array, ML = geo.attributes.aMl.array;
       const lb = this.lastBb, i0 = Math.min(b[0], lb?.[0] ?? b[0]), i1 = Math.max(b[1], lb?.[1] ?? b[1]), j0 = Math.min(b[2], lb?.[2] ?? b[2]), j1 = Math.max(b[3], lb?.[3] ?? b[3]);
       for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
         const k = j * n + i, a = F.amount(k), shown = a > FIELD.show && !F.void[k];
         P[k * 3 + 1] = shown ? F.base[k] + a : F.base[k] - FIELD.hide;
-        const s = a > 0 ? F.loose[k] / a : 0;
-        _c.copy(FIRM).lerp(LOOSE, s);
-        C[k * 4] = _c.r; C[k * 4 + 1] = _c.g; C[k * 4 + 2] = _c.b; C[k * 4 + 3] = shown ? 1 : 0;
+        C[k * 4 + 3] = shown ? 1 : 0;
+        ML[k * 4] = a > 0 ? F.loose[k] / a : 0; ML[k * 4 + 1] = Math.min(1, a / 0.3); // (the loose share; the thickness, for the lip)
       }
       for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
         const k = j * n + i, hl = P[(i > 0 ? k - 1 : k) * 3 + 1], hr = P[(i < n - 1 ? k + 1 : k) * 3 + 1], ht = P[(j > 0 ? k - n : k) * 3 + 1], hb = P[(j < n - 1 ? k + n : k) * 3 + 1];
         const nx = hl - hr, nz = ht - hb, ny = 2 * c, l = Math.hypot(nx, ny, nz);
         NR[k * 3] = nx / l; NR[k * 3 + 1] = ny / l; NR[k * 3 + 2] = nz / l;
       }
-      geo.attributes.position.needsUpdate = geo.attributes.color.needsUpdate = geo.attributes.normal.needsUpdate = true;
+      geo.attributes.position.needsUpdate = geo.attributes.color.needsUpdate = geo.attributes.normal.needsUpdate = geo.attributes.aMl.needsUpdate = true;
       this.lastBb = F.bb ? [...F.bb] : null;
       this.rows(geo, F.bb ? F.bb[2] : 0, F.bb ? F.bb[3] : -1); // (only the rows that hold matter are drawn)
     }
     if (F.wversion !== this.seenW) {
       this.seenW = F.wversion;
-      const geo = this.liquid.geometry, P = geo.attributes.position.array, C = geo.attributes.color.array, M = F.mix, NF = FEELINGS.length;
+      const geo = this.liquid.geometry, P = geo.attributes.position.array, D = geo.attributes.aDepth.array, M = F.mix, NF = FEELINGS.length;
       const r0 = Math.min(F.j0, this.wj0 ?? F.j0), r1 = Math.max(F.j1, this.wj1 ?? F.j1);
       this.wj0 = F.j0; this.wj1 = F.j1;
       if (r1 >= r0) for (let k = Math.max(0, r0) * n, ke = (Math.min(n - 1, r1) + 1) * n; k < ke; k++) {
         const w = F.w[k], shown = w > FIELD.show && !F.void[k], ground = F.base[k] + F.amount(k);
         P[k * 3 + 1] = shown ? ground + w : ground - 0.05;
-        if (F.ice[k] > 0) _c.copy(ICE);
-        else { _c.setRGB(0, 0, 0); let s = 0; for (let f = 0; f < NF; f++) { const v = M[k * NF + f]; if (v > 0) { _c.r += FEEL[f].r * v; _c.g += FEEL[f].g * v; _c.b += FEEL[f].b * v; s += v; } } if (s < 0.999) { _c.r += FAIR.r * (1 - s); _c.g += FAIR.g * (1 - s); _c.b += FAIR.b * (1 - s); } }
-        C[k * 4] = _c.r; C[k * 4 + 1] = _c.g; C[k * 4 + 2] = _c.b; C[k * 4 + 3] = shown ? (F.ice[k] > 0 ? 0.92 : Math.min(0.82, 0.45 + w)) : 0;
+        let lead = -1, lv = 0; for (let f = 0; f < NF; f++) { const v = M[k * NF + f]; if (v > lv) { lv = v; lead = f; } } // (its leading feeling)
+        D[k] = F.ice[k] > 0 ? liquidDepth(w, 7, 1, !shown) : liquidDepth(w, lead, lv, !shown);
       }
-      geo.attributes.position.needsUpdate = geo.attributes.color.needsUpdate = true;
+      geo.attributes.position.needsUpdate = geo.attributes.aDepth.needsUpdate = true;
       this.rows(geo, F.j0, F.j1);
     }
   }
