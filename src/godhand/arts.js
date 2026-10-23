@@ -24,7 +24,7 @@ import { MatterArts, MATTER_ARTS } from './matterarts.js';
 import { GodPowers, POWER_IDS, withCost } from './powers.js';
 import { GOD_POWERS, powerOpen, DOMAIN_ORDER } from '../progress/godpowers.js';
 import { DOMAIN_LOOK } from '../ui/domainlook.js';
-import { iconEl, uiIcon } from '../ui/icons/icons.js';
+import { iconEl, uiIcon, hasIcon } from '../ui/icons/icons.js';
 import { mindLineMaterial } from '../vfx/labradorite.js';
 import { ReachDome } from '../vfx/wiremarks.js';
 import { T, PALETTE } from '../core/config.js';
@@ -107,6 +107,7 @@ const CSS = `
 
 /** A domain's pixel icon as a data URL for the wheel's SVG (Calissa's, ui/domainlook.js; drawn once a domain). */
 const ICON_URLS = new Map();
+const artIcon = (a) => (hasIcon(`godart.${a.id}`) ? { id: `godart.${a.id}`, pal: `domain.${a.domain}` } : null); // (the art's pixel icon; the glyph stays the fallback)
 const domainIconUrl = (d) => { if (!ICON_URLS.has(d)) { const L = DOMAIN_LOOK[d]; ICON_URLS.set(d, uiIcon(L.icon, L.pal).toDataURL()); } return ICON_URLS.get(d); };
 
 export class GodArts {
@@ -153,6 +154,7 @@ export class GodArts {
     document.getElementById('hud').appendChild(bar);
     this.bar = bar;
     this.slots = [...bar.querySelectorAll('.slot')];
+    this.slots.forEach((el, i) => { const ic = artIcon(ARTS[i]); if (ic) el.querySelector('i').replaceChildren(iconEl(ic.id, { pal: ic.pal, px: 1 })); });
     // the seven domains over the bar, the chosen one lit (keys 1 to 7; a placeholder for Calissa's selector)
     this.domains = document.createElement('div'); this.domains.id = 'goddomains';
     this.domains.innerHTML = DOMAIN_ORDER.map((d, i) => `<span data-d="${d}"><b>${i + 1}</b><i></i>${d.toUpperCase()}</span>`).join('');
@@ -186,7 +188,7 @@ export class GodArts {
       this.wheelArc = { start, w, arts: arts.map(([, i]) => i) };
       arts.forEach(([a, i], j) => {
         const a0 = start + j * w + gap, a1 = start + (j + 1) * w - gap, [tx, ty] = pt((R1 + 6 + R2) / 2, (a0 + a1) / 2);
-        svg += `<path class="w art" data-i="${i}" d="${arc(R1 + 6, R2, a0, a1)}"/><text class="g" x="${tx}" y="${ty}">${a.glyph}</text><text x="${tx}" y="${ty + 16}">${a.name}</text>`;
+        svg += `<path class="w art" data-i="${i}" d="${arc(R1 + 6, R2, a0, a1)}"/>${artIcon(a) ? `<image href="${uiIcon(artIcon(a).id, artIcon(a).pal).toDataURL()}" x="${tx - 16}" y="${ty - 16}" width="32" height="32" style="image-rendering:pixelated"/>` : `<text class="g" x="${tx}" y="${ty}">${a.glyph}</text>`}<text x="${tx}" y="${ty + 16}">${a.name}</text>`;
       });
     }
     svg += '<circle class="hub" r="36"/><text id="gw-name" y="-2"></text><text class="s" id="gw-sub" y="12"></text></svg>';
