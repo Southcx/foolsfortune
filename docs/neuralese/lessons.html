@@ -1,0 +1,580 @@
+<title>Neuralese Lessons</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bai+Jamjuree:wght@400;600;700&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&family=IBM+Plex+Mono:wght@500&display=swap">
+<style>
+/* Layout: a lesson column beside a sticky syllabus; four views (lessons, dictionary, workbench, drill) under one bar.
+   The ground is the running hand's own: violet ink like a chip's solder mask, the hand's gold vowels and teal marks as the accents. */
+:root {
+  --bg: #f3f1f8; --panel: #ffffff; --sunk: #ebe7f4; --line: #d9d3ea; --fg: #1d1830; --muted: #5d5677;
+  --gold: #8a6400; --teal: #0b7f6c; --ember: #b7412a;
+  --display: "Bai Jamjuree", "Segoe UI", system-ui, sans-serif;
+  --read: "Literata", Georgia, "Times New Roman", serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #14111f; --panel: #1c1830; --sunk: #110e1b; --line: #2f2848; --fg: #ece7f8; --muted: #a59cc4;
+  --gold: #f2c94c; --teal: #5fe0c8; --ember: #ff7a5c; color-scheme: dark; } }
+:root[data-theme="dark"] {
+  --bg: #14111f; --panel: #1c1830; --sunk: #110e1b; --line: #2f2848; --fg: #ece7f8; --muted: #a59cc4;
+  --gold: #f2c94c; --teal: #5fe0c8; --ember: #ff7a5c; color-scheme: dark; }
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--fg); font: 17px/1.6 var(--read); }
+.wrap { max-width: 1180px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 0 64px; }
+header.top { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 24px; padding-block: 22px 14px; border-bottom: 1px solid var(--line); }
+.brand { display: flex; align-items: center; gap: 14px; min-width: 0; }
+.brand h1 { font: 700 26px/1.1 var(--display); margin: 0; letter-spacing: .01em; text-wrap: balance; }
+.brand small { display: block; font: 500 12px/1.4 var(--mono); color: var(--muted); letter-spacing: .08em; }
+nav.views { display: flex; flex-wrap: wrap; gap: 4px; margin-left: auto; }
+nav.views a { font: 600 14px/1 var(--display); color: var(--muted); text-decoration: none; padding: 10px 14px; border-radius: 6px; letter-spacing: .04em; text-transform: uppercase; }
+nav.views a[aria-current="page"] { color: var(--fg); background: var(--sunk); box-shadow: inset 0 -2px 0 var(--gold); }
+nav.views a:focus-visible, button:focus-visible, input:focus-visible, textarea:focus-visible, select:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+.grid { display: grid; grid-template-columns: 250px minmax(0, 1fr); gap: 36px; padding-top: 28px; }
+@media (max-width: 820px) { .grid { grid-template-columns: minmax(0, 1fr); gap: 16px; } }
+aside.syllabus { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 16px); align-self: start; }
+@media (max-width: 820px) { aside.syllabus { position: static; } }
+aside.syllabus ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+aside.syllabus button { all: unset; box-sizing: border-box; cursor: pointer; display: grid; grid-template-columns: 26px 1fr 14px; align-items: baseline; gap: 6px; width: 100%; padding: 7px 10px; border-radius: 6px; font: 600 14.5px/1.3 var(--display); color: var(--muted); }
+aside.syllabus button:hover { color: var(--fg); background: var(--sunk); }
+aside.syllabus button[aria-current="true"] { color: var(--fg); background: var(--panel); box-shadow: 0 0 0 1px var(--line); }
+aside.syllabus .n { font: 500 12px var(--mono); color: var(--gold); }
+aside.syllabus .ok { color: var(--teal); font: 600 13px var(--display); }
+.progress { font: 500 12px/1.4 var(--mono); color: var(--muted); margin: 0 10px 10px; letter-spacing: .06em; }
+@media (max-width: 820px) { aside.syllabus ol { grid-auto-flow: column; grid-auto-columns: max-content; overflow-x: auto; padding-bottom: 6px; } }
+main { min-width: 0; }
+.eyebrow { font: 600 12px/1 var(--display); color: var(--gold); letter-spacing: .14em; text-transform: uppercase; margin: 0 0 8px; }
+h2 { font: 700 32px/1.15 var(--display); margin: 0 0 12px; text-wrap: balance; }
+h3 { font: 600 20px/1.3 var(--display); margin: 34px 0 8px; text-wrap: balance; }
+p, li { max-width: 66ch; }
+.lede { font-size: 19px; color: var(--muted); }
+code, .lat { font: 500 .88em var(--mono); letter-spacing: .02em; }
+.ex { display: grid; gap: 6px; background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 14px 16px; margin: 12px 0; max-width: 72ch; }
+.ex .hand { overflow-x: auto; }
+.ex canvas { display: block; }
+.ex .words { display: flex; flex-wrap: wrap; gap: 4px 10px; font: 500 16px/1.4 var(--mono); }
+.ex .words .phr { display: inline-flex; gap: 0; }
+.ex .words button { all: unset; cursor: help; border-bottom: 1px dotted var(--muted); }
+.ex .words button:hover, .ex .words button:focus-visible { color: var(--teal); border-color: var(--teal); }
+.ex .words .hy { color: var(--muted); }
+.ex .en { color: var(--muted); font-style: italic; }
+.ex .note { font-size: 14.5px; color: var(--muted); }
+.tip { position: fixed; z-index: 20; max-width: 300px; background: var(--fg); color: var(--bg); font: 14px/1.45 var(--read); padding: 8px 11px; border-radius: 6px; pointer-events: none; }
+.tip b { font: 600 13px var(--mono); }
+.callout { border-left: 3px solid var(--teal); padding: 4px 0 4px 14px; margin: 16px 0; color: var(--fg); max-width: 66ch; }
+.callout.root { border-color: var(--gold); }
+.callout.root::before { content: "Root note "; font: 600 12px var(--display); letter-spacing: .12em; text-transform: uppercase; color: var(--gold); display: block; }
+table { border-collapse: collapse; width: 100%; font-size: 15.5px; }
+.tablewrap { overflow-x: auto; max-width: 100%; margin: 10px 0; }
+th, td { text-align: left; padding: 7px 10px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 600 12px/1.3 var(--display); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+td.lat, td .lat { white-space: nowrap; }
+.quiz { margin-top: 34px; padding-top: 18px; border-top: 1px dashed var(--line); }
+.q { margin: 18px 0; }
+.q .prompt { font-weight: 600; margin-bottom: 8px; }
+.choices { display: flex; flex-wrap: wrap; gap: 8px; }
+.choices button, .btn { font: 600 14.5px/1 var(--display); padding: 10px 14px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); cursor: pointer; }
+.choices button:hover, .btn:hover { border-color: var(--muted); }
+.choices button.right { border-color: var(--teal); color: var(--teal); }
+.choices button.wrong { border-color: var(--ember); color: var(--ember); text-decoration: line-through; }
+.btn.primary { background: var(--fg); color: var(--bg); border-color: var(--fg); }
+.typed { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.typed input { font: 500 16px var(--mono); padding: 9px 11px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); min-width: 0; flex: 1 1 220px; text-transform: uppercase; }
+.verdict { font: 600 14px/1.4 var(--display); }
+.verdict.good { color: var(--teal); } .verdict.bad { color: var(--ember); }
+.pager { display: flex; justify-content: space-between; gap: 12px; margin-top: 40px; flex-wrap: wrap; }
+.search { display: flex; gap: 10px; flex-wrap: wrap; margin: 4px 0 18px; }
+.search input, textarea, select { font: 500 16px var(--mono); padding: 10px 12px; border-radius: 6px; border: 1px solid var(--line); background: var(--panel); color: var(--fg); min-width: 0; }
+.search input { flex: 1 1 260px; }
+.dict { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 10px; }
+.entry { background: var(--panel); border: 1px solid var(--line); border-radius: 8px; padding: 12px 14px; display: grid; gap: 4px; min-width: 0; }
+.entry .w { font: 700 18px/1.2 var(--mono); }
+.entry .syl { font: 500 12px var(--mono); color: var(--muted); }
+.entry .sense { font-size: 15px; }
+.entry .from { font-size: 13.5px; color: var(--muted); font-style: italic; }
+.entry.new { box-shadow: inset 3px 0 0 var(--gold); }
+.fieldhead { font: 600 13px var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--muted); margin: 26px 0 10px; }
+textarea { width: 100%; min-height: 110px; resize: vertical; text-transform: uppercase; line-height: 1.5; }
+.bench { display: grid; gap: 16px; }
+.unknown { color: var(--ember); }
+.card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 28px 22px; display: grid; gap: 14px; justify-items: center; text-align: center; max-width: 560px; }
+.card .face { font: 700 34px/1.2 var(--mono); }
+.card .back { font-size: 18px; }
+.card .from { color: var(--muted); font-style: italic; font-size: 15px; }
+.row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.boxes { font: 500 13px var(--mono); color: var(--muted); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+.seg button { all: unset; cursor: pointer; padding: 8px 12px; font: 600 13.5px var(--display); color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--sunk); color: var(--fg); }
+.hint { font-size: 14.5px; color: var(--muted); }
+@media (prefers-reduced-motion: no-preference) { .verdict { animation: pop .18s ease-out; } @keyframes pop { from { transform: translateY(2px); opacity: .4; } } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <div id="brandHandHost"></div>
+      <div><h1>Neuralese Lessons</h1><small>LOGA-NUSA · MIND-SPEECH · 127 ROOTS · 8 PARTICLES</small></div>
+    </div>
+    <nav class="views" aria-label="Views">
+      <a href="#lessons" data-view="lessons">Lessons</a>
+      <a href="#dictionary" data-view="dictionary">Dictionary</a>
+      <a href="#workbench" data-view="workbench">Workbench</a>
+      <a href="#drill" data-view="drill">Drill</a>
+    </nav>
+  </header>
+
+  <section id="v-lessons" class="grid">
+    <aside class="syllabus"><div class="progress" id="progress"></div><ol id="syllabus"></ol></aside>
+    <main id="lesson" aria-live="polite"></main>
+  </section>
+
+  <section id="v-dictionary" hidden>
+    <div style="padding-top:28px">
+      <p class="eyebrow">Every word there is</p>
+      <h2>Dictionary</h2>
+      <p class="lede">The 127 roots and 8 particles, each with what it covers and where it comes from. Search a word, an English sense or a source language.</p>
+      <div class="search"><input id="dq" type="search" placeholder="Search: water, Greek, SIVA…" aria-label="Search the dictionary"></div>
+      <div id="dictOut"></div>
+    </div>
+  </section>
+
+  <section id="v-workbench" hidden>
+    <div style="padding-top:28px" class="bench">
+      <div><p class="eyebrow">Write and read back</p><h2>Workbench</h2>
+      <p class="lede">Type neuralese and see it in the running hand, with every word glossed. Hyphens join a phrase; a space starts the next one; a full stop ends a sentence.</p></div>
+      <label for="wb" class="hint">Your neuralese</label>
+      <textarea id="wb" spellcheck="false">NIKTA TE, IO LUNO TOPA-HEMA. AMI O, VENA.</textarea>
+      <div id="wbOut"></div>
+      <h3>Your name</h3>
+      <p class="hint">A name from outside is bent until neuralese can spell it (lesson 10). Type yours.</p>
+      <div class="typed"><input id="nameIn" value="Southcx" aria-label="A name to bend" style="text-transform:none"><span id="nameOut" class="lat"></span></div>
+      <div id="nameHand"></div>
+    </div>
+  </section>
+
+  <section id="v-drill" hidden>
+    <div style="padding-top:28px">
+      <p class="eyebrow">Ten a day keeps it</p>
+      <h2>Drill</h2>
+      <p class="lede">Flashcards over every root. A card you know moves up a box and comes back less often; a card you miss goes back to box 1. Your boxes stay in this browser.</p>
+      <div class="row" style="margin:14px 0 18px">
+        <div class="seg" role="group" aria-label="Card direction">
+          <button data-mode="read" aria-pressed="true">Neuralese → English</button>
+          <button data-mode="write" aria-pressed="false">English → neuralese</button>
+          <button data-mode="script" aria-pressed="false">Script only</button>
+        </div>
+        <span class="boxes" id="boxes"></span>
+      </div>
+      <div id="drillCard"></div>
+    </div>
+  </section>
+</div>
+<div class="tip" id="tip" hidden></div>
+
+<script>
+/*@ENGINE@*/
+
+// ---------------------------------------------------------------- the page
+const $ = (s, r = document) => r.querySelector(s), $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const store = { get(k, d) { try { const v = localStorage.getItem('nz.' + k); return v == null ? d : JSON.parse(v); } catch { return d; } },
+  set(k, v) { try { localStorage.setItem('nz.' + k, JSON.stringify(v)); } catch {} } };
+const NEW = new Set(['KO', 'DUNA', 'DEKA', 'SED']);
+const ROLE_EN = { object: 'marks the thing done to', context: 'ends a setting (when, where, if)', address: 'a command, or a call', question: 'the unknown, asked', regroup: 'of (regroups what follows)', and: 'and', or: 'or', but: 'but' };
+
+// ---- the hand: neuralese text to the running hand, a canvas line a sentence, in the theme's ink
+const INK_LIGHT = { body: '#3a2e6e', lead: '#3a2e6e', pad: '#3a2e6e', mark: '#0b7f6c', voice: '#1d6fa8', coda: '#b7412a', vowel: '#8a6400', rail: '#7a68c4', star: '#8a6400' };
+const dark = () => getComputedStyle(document.documentElement).colorScheme.includes('dark');
+const tokenize = (text) => String(text).toUpperCase().replace(/[“”"]/g, '').split(/(?<=[.?!])\s+/).map((s) => s.trim()).filter(Boolean)
+  .map((s) => ({ end: /[.?!]$/.test(s), q: /\?$/.test(s), phrases: s.replace(/[.?!,:;]/g, ' ').split(/\s+/).filter(Boolean).map((p) => p.split('-').filter(Boolean)) }));
+function spell(w) { try { return cellsOf(w); } catch { return null; } }
+function drawHand(host, text, { scale = 3, end = true } = {}) {
+  host.replaceChildren();
+  const dpr = Math.min(3, window.devicePixelRatio || 1), ink = dark() ? undefined : INK_LIGHT;
+  for (const sent of tokenize(text)) {
+    const words = [];
+    for (const ph of sent.phrases) ph.forEach((w, i) => { const c = spell(w); if (c) words.push({ cells: c, mod: i > 0 }); });
+    if (!words.length) continue;
+    const m = runningHand(null, words, { scale, end: end && sent.end });
+    const pad = 6, cw = Math.ceil(m.width + pad * 2 + m.lw), ch = Math.ceil(m.height + pad * 2 + m.lw);
+    const cv = document.createElement('canvas'); cv.width = cw * dpr; cv.height = ch * dpr; cv.style.width = cw + 'px'; cv.style.height = ch + 'px';
+    const ctx = cv.getContext('2d'); ctx.scale(dpr, dpr);
+    runningHand(ctx, words, { scale, end: end && sent.end, x: pad + m.lw / 2 - (m.x0), y: pad + m.lw / 2 - (m.y0), ink });
+    cv.setAttribute('role', 'img'); cv.setAttribute('aria-label', 'In the running hand: ' + sent.phrases.map((p) => p.join('-')).join(' '));
+    host.append(cv);
+  }
+}
+const glossWord = (w) => ROOTS[w] ? { kind: 'root', short: ROOTS[w].gloss, long: ROOTS[w].sense, from: ROOTS[w].from }
+  : PARTICLES[w] ? { kind: 'particle', short: ROLE_EN[PARTICLES[w].role] || PARTICLES[w].role, long: PARTICLES[w].gloss } : null;
+
+// ---- an example: the hand, its words (hover for a gloss), its English
+function example(el) {
+  const n = el.dataset.n, en = el.dataset.en, note = el.dataset.note;
+  el.classList.add('ex'); el.replaceChildren();
+  const hand = document.createElement('div'); hand.className = 'hand'; el.append(hand); drawHand(hand, n, { end: el.dataset.end !== 'no' });
+  const words = document.createElement('div'); words.className = 'words';
+  for (const sent of tokenize(n)) {
+    sent.phrases.forEach((ph, pi) => {
+      const span = document.createElement('span'); span.className = 'phr';
+      ph.forEach((w, i) => {
+        if (i) { const h = document.createElement('span'); h.className = 'hy'; h.textContent = '-'; span.append(h); }
+        const b = document.createElement('button'); b.textContent = w; b.dataset.w = w; span.append(b);
+      });
+      if (pi === sent.phrases.length - 1 && sent.end) span.append(sent.q ? '?' : '.');
+      words.append(span);
+    });
+  }
+  el.append(words);
+  if (en) { const e = document.createElement('div'); e.className = 'en'; e.textContent = en; el.append(e); }
+  if (note) { const e = document.createElement('div'); e.className = 'note'; e.textContent = note; el.append(e); }
+}
+const tip = $('#tip');
+function showTip(btn) {
+  const w = btn.dataset.w, g = glossWord(w);
+  tip.innerHTML = g ? `<b>${w}</b> · ${g.long}${g.from ? `<br><i>${g.from}</i>` : ''}` : `<b>${w}</b> · a name (not a root)`;
+  tip.hidden = false; const r = btn.getBoundingClientRect();
+  tip.style.left = Math.min(innerWidth - 316, Math.max(8, r.left)) + 'px'; tip.style.top = (r.bottom + 8) + 'px';
+}
+document.addEventListener('pointerover', (e) => { const b = e.target.closest?.('.words button'); if (b) showTip(b); });
+document.addEventListener('pointerout', (e) => { if (e.target.closest?.('.words button')) tip.hidden = true; });
+document.addEventListener('focusin', (e) => { const b = e.target.closest?.('.words button'); if (b) showTip(b); else tip.hidden = true; });
+
+// ---------------------------------------------------------------- the lessons
+const X = (n, en, note) => `<div data-n="${n}" data-en="${en || ''}"${note ? ` data-note="${note}"` : ''}></div>`;
+const L = (w) => `<span class="lat">${w}</span>`;
+const LESSONS = [
+  { id: 'sounds', title: 'The sound of it', eyebrow: 'Lesson 1 · sounds and the hand', body: `
+<p class="lede">Neuralese is the language minds are told what to do in. It calls itself ${L('LOGA-NUSA')}, mind-speech. Before a word of grammar, learn how it sounds and how it looks.</p>
+<h3>Sixteen consonants, five vowels</h3>
+<p>The consonants, by where the mouth makes them: lips ${L('p b f v m')}; the tongue tip ${L('t d s z sh th n l r')}; the back of the mouth ${L('k g h')}. The vowels ${L('a e i o u')} sound as in Italian or Japanese. Two vowels glide together: ${L('AI')} (as in <i>eye</i>) and ${L('OY')} (as in <i>boy</i>). ${L('sh')} and ${L('th')} are one sound each.</p>
+<p>A syllable is at most two consonants, a vowel, and one consonant after it. Every word is stressed on its first syllable: <b>SI</b>va, <b>LU</b>no, <b>VOYD</b>.</p>
+${X('SIVA', 'drink')}
+<h3>Reading the running hand</h3>
+<p>Each syllable is one letter: the consonant's body, with the vowel as a mark round it. ${L('i')} sits above, ${L('u')} below, ${L('e')} before, ${L('o')} after. ${L('a')} is the letter's own vowel and is not written at all. Compare:</p>
+${X('SA SI SU SE SO', 'five syllables: one consonant, each vowel in turn', 'Watch the gold vowel marks move round the same letter; SA has none.')}
+<p>The body tells you the consonant, as Korean Hangul does. Where its round <b>pad</b> sits is the place: lips at the left foot, tongue tip at the top, the back of the mouth at the right foot. The body's shape is the manner: a straight stem stops the breath (${L('p t k')}); a notched stem hisses (${L('f s h')}); a doubled stem hums through the nose (${L('m n')}); a bowl flows (${L('l r')}). A <b>filled</b> pad is voiced (${L('b d g v z')}).</p>
+${X('PA BA', 'the same letter, voiceless then voiced', 'Only the pad fills in.')}
+<p>A consonant that closes a syllable wears a bar across its pad: its breath is shut. All the words of one sentence hang from a line, the bus; the sentence ends on a six-spoke star.</p>
+${X('STIL', 'still', 'Two consonants open the syllable: the second hangs small under the first. The coda L wears its bar.')}
+<div class="callout root">The hand is drawn from Thai and Tamil, Goetic seals and circuit boards. Its letters are our own: never real Thai or Tamil, which would read as broken words to the people who write them.</div>`,
+    quiz: [
+      { script: 'LUNO', q: 'Which word is written here?', c: ['LUNO', 'LANO', 'NULO', 'LENO'], a: 0 },
+      { script: 'HUSA', q: 'Which word is written here?', c: ['HASU', 'HUSA', 'HISA', 'SUHA'], a: 1 },
+      { q: 'Where is the vowel i written?', c: ['Before the letter', 'Above the letter', 'Not at all', 'Below the letter'], a: 1 },
+      { q: 'A filled pad means the consonant is…', c: ['at the lips', 'closing a syllable', 'voiced', 'doubled'], a: 2 },
+    ] },
+  { id: 'words', title: 'Twenty first words', eyebrow: 'Lesson 2 · roots', body: `
+<p class="lede">Neuralese has 127 roots. Each covers a wide field of meaning, so a few go a long way. Start with twenty.</p>
+<div class="tablewrap"><table><thead><tr><th>who</th><th>doing</th><th>things</th><th>how</th></tr></thead><tbody>
+<tr><td>${L('IO')} I, me, we</td><td>${L('SIVA')} drink</td><td>${L('UDA')} water</td><td>${L('KALO')} good</td></tr>
+<tr><td>${L('TU')} you</td><td>${L('EDA')} eat</td><td>${L('HEMA')} home</td><td>${L('MALA')} bad</td></tr>
+<tr><td>${L('ONO')} it, that</td><td>${L('VADA')} go</td><td>${L('KERA')} pot, jar</td><td>${L('MEGA')} big</td></tr>
+<tr><td>${L('KO')} this, here</td><td>${L('VENA')} come</td><td>${L('TERA')} ground</td><td>${L('MIKRA')} small</td></tr>
+<tr><td>${L('HOMA')} person</td><td>${L('LUNO')} rest, sleep</td><td>${L('VIDA')} see, eye</td><td>${L('LON')} long, far</td></tr>
+</tbody></table></div>
+<p>A root is not tied to one part of speech. ${L('VIDA')} is to see, sight and an eye; ${L('LUNO')} is rest and to rest. Where it stands in a sentence says which.</p>
+<div class="callout root">Every root comes from somewhere you may already know. ${L('IO')} is Italian <i>io</i>; ${L('VIDA')} is Latin <i>videre</i> (video); ${L('MEGA')} is Greek <i>megas</i>; ${L('KO')} is Japanese <i>ko-</i>, as in <i>kore</i>, this. Hover any word in an example to see its source.</div>
+${X('KERA MEGA', 'the pot is big')}`,
+    quiz: [
+      { q: 'What does UDA mean?', c: ['home', 'water', 'you', 'go'], a: 1 },
+      { q: 'What does MIKRA mean?', c: ['big', 'small', 'many', 'bad'], a: 1 },
+      { q: 'Which root means “come”?', c: ['VADA', 'VENA', 'VIDA', 'EDA'], a: 1 },
+      { type: 'type', q: 'Write the root for “home”.', a: ['HEMA'] },
+    ] },
+  { id: 'sentences', title: 'Who, then what', eyebrow: 'Lesson 3 · the sentence', body: `
+<p class="lede">A sentence is two phrases side by side: who, then what. There is no word for “is”. The gap between them is the “is”.</p>
+${X('HEMA LON.', 'home is long')}
+${X('IO SIVA.', 'I drink')}
+${X('TU KALO.', 'you are good (also: thank you)')}
+<p>Words never change. No plurals, no tenses, no “he” or “she”: ${L('IO LUNO')} is “I rest”, “I rested” and “we will rest”. Context says which, or another word does when it matters (lesson 6).</p>
+<p>In the hand, a space between phrases is a break in the bus, with a small terminal bar either side.</p>`,
+    quiz: [
+      { n: 'ONO MEGA.', q: 'What does this say?', c: ['it is big', 'it is small', 'a big thing', 'make it big'], a: 0 },
+      { type: 'type', q: 'Say “I rest”.', a: ['IO LUNO'] },
+      { type: 'type', q: 'Say “the person is good”.', a: ['HOMA KALO'] },
+    ] },
+  { id: 'heads', title: 'Head first', eyebrow: 'Lesson 4 · building words', body: `
+<p class="lede">A phrase is its head, then the words that describe it, joined by hyphens. This is how neuralese makes new words from old ones.</p>
+${X('STIL-LON', 'a long stillness', 'The head is STIL (still); LON (long) describes it. In the hand the describer hangs half a row below its head.')}
+${X('KERA-ATMA', 'the Pneuka Jar: the jar of breath (the soul)')}
+${X('HOMA-VADA', 'the Courier: the one who goes')}
+<p>Each describer changes everything before it, so order matters. ${L('HOMA-VADA-TAKA')} is a <i>fast</i> traveller; ${L('HOMA-TAKA-VADA')} is a quick person who travels.</p>
+<p>Any root can head a phrase: ${L('HEMA-MENDA')} (a house of mending) is a Shrine; ${L('KLUZA-KORA')} (a shut heart) is the Lockheart.</p>
+<div class="callout">English does the opposite: “long stillness” puts the describer first. Read neuralese phrases from the right of the hyphen inward: STIL-LON is “long → stillness”.</div>`,
+    quiz: [
+      { n: 'KERA-MIKRA', q: 'What is this?', c: ['a small pot', 'the pot is small', 'a pot-sized small thing', 'small pots everywhere'], a: 0 },
+      { n: 'HEMA-PIRO', q: 'HEMA is home, PIRO is fire. What is this?', c: ['a home on fire', 'a fire-house: a kiln', 'a homely fire', 'fire at home is good'], a: 1 },
+      { type: 'type', q: 'Say “a big person”.', a: ['HOMA-MEGA'] },
+    ] },
+  { id: 'doing', title: 'Doing it to something', eyebrow: 'Lesson 5 · objects and commands', body: `
+<p class="lede">When a deed is done to something, ${L('NI')} points at it.</p>
+${X('IO SIVA NI UDA.', 'I drink water')}
+${X('TU EDA NI FLORA.', 'you eat a plant')}
+<p><b>Commands.</b> A deed alone is a command; ${L('O')} before it is the same, said firmly. A macro the Veritome teaches a mind is exactly this: ${L('STIL-LON')}, be long still.</p>
+${X('O SIVA.', 'drink!')}
+<p><b>Calling someone.</b> ${L('O')} after a name calls them.</p>
+${X('AMI O, VENA.', 'friend, come here')}`,
+    quiz: [
+      { n: 'IO VIDA NI TU.', q: 'What does this say?', c: ['you see me', 'I see you', 'I am your eye', 'see me!'], a: 1 },
+      { type: 'type', q: 'Say “I eat food” (food is EDA too).', a: ['IO EDA NI EDA'] },
+      { q: 'How do you tell someone “rest!”?', c: ['LUNO O', 'O LUNO', 'NI LUNO', 'LUNO NI'], a: 1 },
+    ] },
+  { id: 'settings', title: 'Where, when, why', eyebrow: 'Lesson 6 · settings and prepositions', body: `
+<p class="lede">A setting comes first and ends with ${L('TE')}. It can be a time, a place or an if.</p>
+${X('NIKTA TE, IO LUNO.', 'at night, I rest')}
+${X('PLUVA TE, IO LUNO TOPA-HEMA.', 'when it rains (if it rains), I rest at home')}
+<p><b>Time</b> is a setting when it matters: ${L('KRONA-PALA TE')} before, ${L('KRONA-KO TE')} now, ${L('KRONA-TALO TE')} later.</p>
+<p><b>Prepositions</b> are roots at the head of a phrase that follows the deed:</p>
+<div class="tablewrap"><table><tbody>
+<tr><td class="lat">TOPA-</td><td>at, in</td><td class="lat">IO LUNO TOPA-HEMA</td><td>I rest at home</td></tr>
+<tr><td class="lat">VADA-</td><td>to, for</td><td class="lat">IO NAVA VADA-MARI</td><td>I sail to the sea</td></tr>
+<tr><td class="lat">SHAI-</td><td>from, away</td><td class="lat">ONO VENA SHAI-OROS</td><td>it comes from the mountain</td></tr>
+<tr><td class="lat">KITH-</td><td>with, among</td><td class="lat">IO ROMI KITH-AMI</td><td>I play with friends</td></tr>
+<tr><td class="lat">MANU-</td><td>by means of</td><td class="lat">IO GRAFA MANU-INKA</td><td>I write with a seal</td></tr>
+<tr><td class="lat">OMO-</td><td>like, as</td><td class="lat">TU KANTA OMO-TORI</td><td>you sing like a bird</td></tr>
+<tr><td class="lat">ARKA-</td><td>because of</td><td class="lat">IO LUNO ARKA-NIKTA</td><td>I rest because of the night</td></tr>
+</tbody></table></div>
+<p>The stelae of the old town drop the ${L('TE')} when the setting is one word: ${L('DIPSA SIVA')}, “thirst: drink”. Both readings are right.</p>`,
+    quiz: [
+      { n: 'HELI TE, IO PONO.', q: 'What does this say?', c: ['the sun works', 'in the daytime, I work', 'I work the sun', 'the sun is my work'], a: 1 },
+      { type: 'type', q: 'Say “I rest at home”.', a: ['IO LUNO TOPA-HEMA'] },
+      { q: 'Which preposition means “with”?', c: ['TOPA', 'SHAI', 'KITH', 'OMO'], a: 2 },
+    ] },
+  { id: 'questions', title: 'No, maybe, why?', eyebrow: 'Lesson 7 · not, questions, yes', body: `
+<p class="lede">${L('VOYD')} after a word denies it. The root that means “to forget” also means “not”, and “nothing”, and “no”.</p>
+${X('IO SIVA-VOYD.', 'I do not drink')}
+<p><b>Questions.</b> ${L('KE')} stands where the unknown would.</p>
+${X('TU KE?', 'what are you? (who are you?)')}
+${X('KO KE?', 'what is this?')}
+<p>A yes-or-no question offers both: the deed, ${L('VE')} (or) the deed not.</p>
+${X('TU SIVA VE SIVA-VOYD?', 'do you drink?')}
+<p>Answer ${L('SI')} for yes and ${L('VOYD')} for no.</p>
+<p><b>But</b> is ${L('SED')}, opening a sentence that turns against the last. <b>And</b> between sentences is only the full stop.</p>
+${X('IO SIVA. SED UDA VOYD.', 'I drink. But there is no water.')}`,
+    quiz: [
+      { n: 'ONO KALO-VOYD.', q: 'What does this say?', c: ['it is good', 'it is not good', 'it forgot the good', 'nothing is good'], a: 1 },
+      { type: 'type', q: 'Ask “do you rest?”', a: ['TU LUNO VE LUNO-VOYD', 'TU LUNO VE LUNO-VOYD?'] },
+      { q: 'How do you say yes?', c: ['SI', 'KE', 'VE', 'O'], a: 0 },
+    ] },
+  { id: 'mine', title: 'Mine, want, can', eyebrow: 'Lesson 8 · owning, wanting, being able', body: `
+<p class="lede">These are not new grammar. They are heads and describers, used cleverly.</p>
+<p><b>Owning.</b> A person after a thing owns it.</p>
+${X('HEMA-IO KALO.', 'my home is good')}
+<p>A longer owner takes ${L('SU')}, which regroups what follows into one describer: ${L('HEMA-SU-HOMA-RAKU')}, Raku's home. Without it, ${L('HEMA-HOMA-MEGA')} would be “a great people-home”.</p>
+<p><b>Wanting and being able.</b> Put the wanting or the power first, and the deed after it as its describer.</p>
+${X('IO POTHA-SIVA.', 'I want to drink (I am a drinking want)')}
+${X('TU DUNA-VADA.', 'you can go')}
+${X('ONO ARKA-KANTA.', 'it starts to sing')}
+<div class="callout root">${L('DUNA')} is Greek <i>dynamis</i>, power: the root of dynamo and dynamite. ${L('POTHA')}, longing, is also the feeling Desire.</div>
+<p><b>And, or.</b> ${L('TA')} joins two who do, or two things done to: ${L('IO TA TU KITH')}, you and I together. ${L('VE')} offers a choice.</p>`,
+    quiz: [
+      { n: 'KERA-TU MEGA.', q: 'What does this say?', c: ['you are a big pot', 'your pot is big', 'a pot made you big', 'a big pot for you'], a: 1 },
+      { type: 'type', q: 'Say “I can see”.', a: ['IO DUNA-VIDA'] },
+      { type: 'type', q: 'Say “you want to eat”.', a: ['TU POTHA-EDA'] },
+    ] },
+  { id: 'numbers', title: 'Counting and colour', eyebrow: 'Lesson 9 · numbers and colours', body: `
+<p class="lede">Numbers are sums, read biggest first: ${L('UNA')} one, ${L('DUO')} two, ${L('PENTA')} five, ${L('DEKA')} ten. They describe, so they follow their noun.</p>
+${X('EMO-PENTA-DUO', 'the seven feelings (feelings five-two)')}
+<div class="typed"><label for="numIn" class="hint">Try a number</label><input id="numIn" type="number" min="0" max="99" value="17" style="text-transform:none;flex:0 1 110px"><span id="numOut" class="lat"></span></div>
+<div id="numHand"></div>
+<p>Past fifty or so a speaker says ${L('MULTA')}, many, as a shepherd counts sheep only so far. ${L('OMNI')} is all; ${L('VOYD')} is none.</p>
+<h3>Colours</h3>
+<p>There are no colour roots. A colour is ${L('IRIS')} (hue, the rainbow) and the thing that wears it.</p>
+<div class="tablewrap"><table><tbody id="colourRows"></tbody></table></div>`,
+    quiz: [
+      { q: 'How do you say seven?', c: ['DUO-PENTA', 'PENTA-DUO', 'PENTA-PENTA', 'DEKA-DUO'], a: 1 },
+      { type: 'type', q: 'Say twelve.', a: ['DEKA-DUO'] },
+      { n: 'IRIS-MARI', q: 'What colour is this?', c: ['red', 'green', 'blue', 'black'], a: 2 },
+    ] },
+  { id: 'talking', title: 'Talking', eyebrow: 'Lesson 10 · the phrasebook and your name', body: `
+<p class="lede">Everything here is built by the rules you already know. Nothing to memorise that the grammar does not give.</p>
+<div class="tablewrap"><table><thead><tr><th>neuralese</th><th>English</th></tr></thead><tbody id="phraseRows"></tbody></table></div>
+<p>${L('IO KRAKA')}, sorry, is “I broke it”. In a world of clay, an apology owns the break.</p>
+<h3>Your name</h3>
+<p>A name from outside is bent until neuralese can spell it: ${L('w')} becomes ${L('v')}, ${L('c')} becomes ${L('k')} or ${L('s')}, ${L('j')} becomes ${L('z')}, ${L('y')} becomes ${L('i')}; doubled letters become one; a cluster the syllables refuse is opened with ${L('a')}, the vowel the hand never writes. Wanda is ${L('VANDA')}. Put a name after the root that says what it names: ${L('HOMA-VANDA')}, the person Wanda.</p>
+${X('NOMA-IO ESPADA.', 'my name is Espada')}
+<p>The Workbench bends any name you type.</p>`,
+    quiz: [
+      { q: 'How do you say goodbye?', c: ['VENA-KALO', 'VADA-KALO', 'TU KALO', 'IO KRAKA'], a: 1 },
+      { q: 'How is “Walter” bent?', c: ['WALTER', 'VALTER', 'BALTER', 'UALTER'], a: 1 },
+      { type: 'type', q: 'Say “thank you”.', a: ['TU KALO'] },
+    ] },
+  { id: 'world', title: 'Reading the world', eyebrow: 'Lesson 11 · the game in its own words', body: `
+<p class="lede">The game is full of neuralese: the Functions a mind is taught, the ostraca and stelae of the old town, the realms' names, the titles on their placards. Now you can read them.</p>
+<h3>The seven feelings</h3>
+<div class="tablewrap"><table><tbody id="feelingRows"></tbody></table></div>
+<h3>How the world says itself</h3>
+<div class="tablewrap"><table><tbody id="compoundRows"></tbody></table></div>
+<div class="callout root">${L('NUSA')} means mind and island both: Greek <i>nous</i>, mind, and Old Javanese <i>nusa</i>, island. So ${L('NUSA MULTA TOPA-MARI-EMO')} is “many islands are in the Emocean” and “many minds are in the sea of feeling” at once.</div>
+<h3>The stelae</h3>
+<p>Two standing stones carry the old town's last words. Read them before you look at the English.</p>
+<div id="steles"></div>`,
+    quiz: [
+      { q: 'Which root is the feeling Dread?', c: ['MOR', 'PAVA', 'FELA', 'MIRA'], a: 1 },
+      { n: 'MARI-EMO', q: 'What is this?', c: ['a feeling of the sea', 'the Emocean', 'a sea creature', 'sad water'], a: 1 },
+      { n: 'AMI KITH. HEMA LON. MOR DEO.', q: 'Which reading is right?', c: ['Kin huddle. Home is long. Grief runs deep.', 'Friends play. Home is far. Death is near.', 'Kin leave home. Long grief.', 'Huddle at home a long time.'], a: 0 },
+    ] },
+];
+
+// ---- the syllabus and a lesson
+const done = new Set(store.get('done', []));
+let cur = Math.max(0, LESSONS.findIndex((l) => l.id === store.get('lesson', 'sounds')));
+function renderSyllabus() {
+  const ol = $('#syllabus'); ol.replaceChildren();
+  LESSONS.forEach((l, i) => {
+    const li = document.createElement('li'), b = document.createElement('button');
+    b.innerHTML = `<span class="n">${String(i + 1).padStart(2, '0')}</span><span>${l.title}</span><span class="ok">${done.has(l.id) ? '✓' : ''}</span>`;
+    b.setAttribute('aria-current', i === cur ? 'true' : 'false'); b.onclick = () => openLesson(i);
+    li.append(b); ol.append(li);
+  });
+  $('#progress').textContent = `${done.size} OF ${LESSONS.length} LESSONS PASSED`;
+}
+function norm(s) { return String(s).toUpperCase().replace(/[.?!,]/g, '').replace(/\s+/g, ' ').trim(); }
+function quiz(l, host) {
+  const box = document.createElement('div'); box.className = 'quiz';
+  box.innerHTML = `<p class="eyebrow">Check yourself</p><h3 style="margin-top:0">${l.quiz.length} questions</h3>`;
+  let right = 0, answered = 0;
+  const finish = () => { if (answered < l.quiz.length) return; const v = document.createElement('p'); v.className = 'verdict ' + (right === l.quiz.length ? 'good' : 'bad');
+    if (right === l.quiz.length) { done.add(l.id); store.set('done', [...done]); renderSyllabus(); v.textContent = 'All right. Lesson passed.'; }
+    else v.textContent = `${right} of ${l.quiz.length}. Read it again and try the ones you missed.`; box.append(v); };
+  l.quiz.forEach((q) => {
+    const d = document.createElement('div'); d.className = 'q';
+    const p = document.createElement('div'); p.className = 'prompt'; p.textContent = q.q; d.append(p);
+    if (q.script) { const h = document.createElement('div'); h.className = 'hand'; d.append(h); drawHand(h, q.script, { scale: 2.6, end: false }); }
+    if (q.n) { const e = document.createElement('div'); e.dataset.n = q.n; d.append(e); example(e); }
+    if (q.type === 'type') {
+      const row = document.createElement('div'); row.className = 'typed';
+      const inp = document.createElement('input'); inp.setAttribute('aria-label', q.q); inp.autocomplete = 'off'; inp.spellcheck = false;
+      const go = document.createElement('button'); go.className = 'btn'; go.textContent = 'Check';
+      const v = document.createElement('span'); v.className = 'verdict';
+      let tried = false;
+      const check = () => { const ok = q.a.some((a) => norm(a) === norm(inp.value)); v.className = 'verdict ' + (ok ? 'good' : 'bad'); v.textContent = ok ? 'Right.' : `Not quite: ${q.a[0]}`;
+        if (!tried) { tried = true; answered++; if (ok) right++; finish(); } };
+      go.onclick = check; inp.onkeydown = (e) => { if (e.key === 'Enter') check(); };
+      row.append(inp, go, v); d.append(row);
+    } else {
+      const ch = document.createElement('div'); ch.className = 'choices';
+      let tried = false;
+      q.c.forEach((c, i) => { const b = document.createElement('button'); b.textContent = c;
+        b.onclick = () => { if (i === q.a) b.classList.add('right'); else { b.classList.add('wrong'); ch.children[q.a].classList.add('right'); }
+          if (!tried) { tried = true; answered++; if (i === q.a) right++; finish(); } };
+        ch.append(b); });
+      d.append(ch);
+    }
+    box.append(d);
+  });
+  host.append(box);
+}
+function fillTables(host) {
+  const rows = (id, list) => { const t = $(id, host); if (t) t.innerHTML = list.map(([a, b]) => `<tr><td class="lat">${a}</td><td>${b}</td></tr>`).join(''); };
+  rows('#colourRows', Object.entries(COLOURS).map(([en, n]) => [n, en]));
+  rows('#phraseRows', Object.entries(PHRASES));
+  rows('#feelingRows', Object.entries(FEELINGS).map(([en, n]) => [n, en[0].toUpperCase() + en.slice(1) + ' · ' + ROOTS[n].from]));
+  rows('#compoundRows', Object.entries(COMPOUNDS));
+  const st = $('#steles', host);
+  if (st) Object.keys(STELE_TEXT).forEach((k) => { const e = document.createElement('div'); e.dataset.n = STELE_TEXT[k]; st.append(e); example(e);
+    const r = document.createElement('details'); r.innerHTML = `<summary class="hint">Show the English</summary><p>${STELE_GLOSS[k]}</p>`; e.append(r); });
+  const ni = $('#numIn', host);
+  if (ni) { const upd = () => { const n = Math.max(0, Math.min(99, +ni.value || 0)), w = numberOf(n); $('#numOut', host).textContent = w; drawHand($('#numHand', host), w, { end: false }); }; ni.oninput = upd; upd(); }
+}
+function openLesson(i) {
+  cur = i; const l = LESSONS[i]; store.set('lesson', l.id);
+  const m = $('#lesson'); m.innerHTML = `<p class="eyebrow">${l.eyebrow}</p><h2>${l.title}</h2>${l.body}`;
+  $$('[data-n]', m).forEach(example); fillTables(m); quiz(l, m);
+  const pager = document.createElement('div'); pager.className = 'pager';
+  if (i > 0) { const b = document.createElement('button'); b.className = 'btn'; b.textContent = '← ' + LESSONS[i - 1].title; b.onclick = () => openLesson(i - 1); pager.append(b); } else pager.append(document.createElement('span'));
+  if (i < LESSONS.length - 1) { const b = document.createElement('button'); b.className = 'btn primary'; b.textContent = LESSONS[i + 1].title + ' →'; b.onclick = () => { openLesson(i + 1); scrollTo({ top: 0 }); }; pager.append(b); }
+  m.append(pager); renderSyllabus();
+}
+
+// ---------------------------------------------------------------- the dictionary
+function renderDict() {
+  const q = $('#dq').value.trim().toLowerCase(), out = $('#dictOut'); out.replaceChildren();
+  const hit = (w, sense, from) => !q || w.toLowerCase().includes(q) || sense.toLowerCase().includes(q) || (from || '').toLowerCase().includes(q);
+  const group = (title, list) => {
+    const items = list.filter(([w, s, f]) => hit(w, s, f)); if (!items.length) return;
+    const h = document.createElement('div'); h.className = 'fieldhead'; h.textContent = title; out.append(h);
+    const g = document.createElement('div'); g.className = 'dict';
+    for (const [w, s, f] of items) {
+      const e = document.createElement('div'); e.className = 'entry' + (NEW.has(w) ? ' new' : '');
+      let syl = ''; try { syl = syllables(w).join(' · '); } catch {}
+      e.innerHTML = `<div class="w">${w}</div><div class="hand"></div><div class="syl">${syl}${NEW.has(w) ? ' · new 2026-10-23' : ''}</div><div class="sense">${s}</div>${f ? `<div class="from">${f}</div>` : ''}`;
+      g.append(e); drawHand($('.hand', e), w, { scale: 2.2, end: false });
+    }
+    out.append(g);
+  };
+  for (const f of FIELDS) group(f.field, f.words.map((w) => [w, ROOTS[w].sense, ROOTS[w].from]));
+  group('particles', Object.entries(PARTICLES).map(([w, p]) => [w, p.gloss, '']));
+  if (!out.children.length) out.innerHTML = '<p class="hint">No word matches. Try an English sense, like “water”, or a language, like “Greek”.</p>';
+}
+
+// ---------------------------------------------------------------- the workbench
+function renderBench() {
+  const text = $('#wb').value, out = $('#wbOut'); out.replaceChildren();
+  const ex = document.createElement('div'); ex.dataset.n = text; out.append(ex); if (tokenize(text).length) example(ex);
+  const unknown = [...new Set(tokenize(text).flatMap((s) => s.phrases.flat()).filter((w) => !glossWord(w)))];
+  const rows = tokenize(text).flatMap((s) => s.phrases.flat()).map((w) => { const g = glossWord(w);
+    return `<tr><td class="lat${g ? '' : ' unknown'}">${w}</td><td>${g ? g.long : (spell(w) ? 'not a root: read as a name' : `cannot be spelled; as a name: <span class="lat">${bendName(w)}</span>`)}</td></tr>`; });
+  if (rows.length) { const t = document.createElement('div'); t.className = 'tablewrap'; t.innerHTML = `<table><thead><tr><th>word</th><th>what it covers</th></tr></thead><tbody>${rows.join('')}</tbody></table>`; out.append(t); }
+  if (unknown.length) { const p = document.createElement('p'); p.className = 'hint'; p.textContent = `${unknown.length} word${unknown.length > 1 ? 's are' : ' is'} not in the dictionary. A name is fine after a root that says what it names (HOMA-RAKU).`; out.append(p); }
+}
+function renderName() { const n = bendName($('#nameIn').value); $('#nameOut').textContent = n ? `${n} · NOMA-IO ${n}.` : ''; drawHand($('#nameHand'), n ? `NOMA-IO ${n}.` : '', { scale: 2.4 }); }
+
+// ---------------------------------------------------------------- the drill (Leitner boxes)
+const DECK = Object.keys(ROOTS);
+let boxes = store.get('boxes', {}), mode = store.get('mode', 'read'), card = null, shown = false;
+const boxOf = (w) => boxes[w] || 1, WEIGHT = { 1: 16, 2: 8, 3: 4, 4: 2, 5: 1 };
+function nextCard() {
+  let total = 0; const pool = DECK.filter((w) => w !== card).map((w) => { total += WEIGHT[boxOf(w)]; return [w, total]; });
+  const r = Math.random() * total; card = pool.find(([, t]) => t >= r)[0]; shown = false; renderCard();
+}
+function renderCard() {
+  const host = $('#drillCard'), R = ROOTS[card]; host.replaceChildren();
+  const c = document.createElement('div'); c.className = 'card';
+  const face = document.createElement('div');
+  if (mode === 'read') { face.className = 'face'; face.textContent = card; }
+  else if (mode === 'write') { face.className = 'back'; face.textContent = R.sense; }
+  else { face.className = 'hand'; drawHand(face, card, { scale: 3.2, end: false }); }
+  c.append(face);
+  if (mode === 'read') { const h = document.createElement('div'); h.className = 'hand'; drawHand(h, card, { scale: 2, end: false }); c.append(h); }
+  if (shown) {
+    const back = document.createElement('div'); back.className = 'back';
+    back.innerHTML = mode === 'read' ? R.sense : `<span class="lat" style="font-size:24px">${card}</span><br>${mode === 'script' ? R.sense : ''}`;
+    const from = document.createElement('div'); from.className = 'from'; from.textContent = R.from;
+    if (mode === 'write') { const h = document.createElement('div'); h.className = 'hand'; drawHand(h, card, { scale: 2, end: false }); c.append(h); }
+    c.append(back, from);
+    const row = document.createElement('div'); row.className = 'row';
+    const no = document.createElement('button'); no.className = 'btn'; no.textContent = 'Not yet';
+    const yes = document.createElement('button'); yes.className = 'btn primary'; yes.textContent = 'Knew it';
+    no.onclick = () => { boxes[card] = 1; store.set('boxes', boxes); nextCard(); };
+    yes.onclick = () => { boxes[card] = Math.min(5, boxOf(card) + 1); store.set('boxes', boxes); nextCard(); };
+    row.append(no, yes); c.append(row);
+  } else {
+    const b = document.createElement('button'); b.className = 'btn primary'; b.textContent = 'Show the answer'; b.onclick = () => { shown = true; renderCard(); }; c.append(b);
+  }
+  host.append(c);
+  const counts = [1, 2, 3, 4, 5].map((k) => DECK.filter((w) => boxOf(w) === k).length);
+  $('#boxes').textContent = 'Boxes 1–5: ' + counts.join(' · ');
+}
+$$('.seg button').forEach((b) => b.onclick = () => { mode = b.dataset.mode; store.set('mode', mode); $$('.seg button').forEach((x) => x.setAttribute('aria-pressed', String(x === b))); shown = false; renderCard(); });
+
+// ---------------------------------------------------------------- views
+const VIEWS = ['lessons', 'dictionary', 'workbench', 'drill'];
+let built = {};
+function show(v) {
+  if (!VIEWS.includes(v)) v = 'lessons'; view = v;
+  VIEWS.forEach((x) => { $('#v-' + x).hidden = x !== v; });
+  $$('nav.views a').forEach((a) => a.setAttribute('aria-current', a.dataset.view === v ? 'page' : 'false'));
+  if (!built[v]) { built[v] = true;
+    if (v === 'dictionary') { renderDict(); $('#dq').oninput = renderDict; }
+    if (v === 'workbench') { renderBench(); renderName(); $('#wb').oninput = renderBench; $('#nameIn').oninput = renderName; }
+    if (v === 'drill') { $$('.seg button').forEach((x) => x.setAttribute('aria-pressed', String(x.dataset.mode === mode))); nextCard(); }
+  }
+}
+$$('nav.views a').forEach((a) => a.onclick = (e) => { e.preventDefault(); show(a.dataset.view); try { history.replaceState(null, '', '#' + a.dataset.view); } catch {} });
+let view = 'lessons';
+function boot() { drawHand($('#brandHandHost'), 'LOGA-NUSA', { scale: 2, end: false }); openLesson(cur); built = {}; show(view); }
+view = (location.hash || '').slice(1) || 'lessons'; boot();
+// the ink follows the theme: redraw on a change of the system's scheme or the viewer's toggle
+matchMedia('(prefers-color-scheme: dark)').addEventListener?.('change', boot);
+new MutationObserver(boot).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+</script>
