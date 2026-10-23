@@ -111,3 +111,43 @@ Courier as a System window in the air.
 Judged on two things the owner named:
 - **novelty:** has a game done this, and do we add something;
 - **cohesion of execution:** one look, the house rules, the overlay's law, and what it costs at the gate.
+
+## 6. The keys today, and what main and sub free (the audit, 2026-10-23)
+
+A read-only audit of every key the Courier binds on foot.
+- **The seven draw keys** each draw one tool, and each tool reads its own: X the psygun, Q the Sondelass, G the Soul Brush, J the
+  Veritome, K the Dreamvane, U the Crucibelle, I the Lockheart.
+- **X also stows** any tool in hand, a rule written out again in four tool files.
+- **Five things exist only because five tools are worn at once:**
+  - the seven keys;
+  - X as the universal stow;
+  - the psygun's `deadInput` filter, which blanks its keys while another tool is out;
+  - `PLACES` and `BELT_SIZE`;
+  - wearing by click in the Box.
+- **R is taken three times:** the psygun's quick taps (`gunmoves.js:53`), the cutlass's Tidecutter (`cutlass.js:104`, already
+  superseded by RMB's specials) and the Dreamvane pick's Dreamquake (`pick.js:59`).
+- **The numbers and the wheel** belong to whichever tool is out: chambers, forms, notes, the lens, the dowse, the keyring.
+
+**Dovina's proposal (for Petra's sketch to correct):**
+- **One key draws and stows the main:** X, as the psygun's and the universal stow are today.
+- **R is the sub's verb.** Each main's own R move moves to R held: the quick taps and the Dreamquake. The Tidecutter retires into
+  RMB's specials, which already hold it.
+- **Q, G, J, K, U and I come free.** None is given a new job this round; an empty key is better than a surprising one.
+- **The bank:** today it opens with the Veritome held open (J). With the Veritome often not worn, the Book opens at a Shrine as the bank
+  instead (Breath of the Wild's and OSRS's bank is a place). With the Veritome worn as main, its open still works.
+
+## 7. Pruning (the owner: "make sure that you guys are pruning old depreciated elements")
+
+The audit's findings, sent to their owners (docs/handoffs):
+
+| what | where | live? | the call |
+|---|---|---|---|
+| the old DOM charge ring `#charge` | `index.html:86`, `feedback/hud.js:44` | yes, on every psygun charge | retire it; the four variants without a charge readout (THE PSYGUN, Bombardier, Pentagun, Pepperbox) get one in their own reticle (Calissa), as the Carbine's full draw has |
+| the DOM reload bar `#reloadbar` | `index.html:87`, `hud.js:50` | yes | retire it: the cylinder's reload beats own the reload |
+| dead `Hud.update` parameters | `hud.js:33`, `main.js:1424` | dead data | remove |
+| dead `hud.el.cross` guards | `godhand.js:178,202,223`, `realm.js:180,218`, `skiff.js:200,212` | no-ops | remove |
+| dead `#crosshair`, `#course` selectors; the empty `#locks` div | `vfx/cinema.js:24`, `world/emocean/stage.js:83`, `index.html:88` | match nothing | remove |
+| `rules.digits` on the belt's tools | `tools/belt.js:106,145-186` | read by nothing | remove (it retires with the belt anyway) |
+| stale comments: the "tool strip", "string row", "Lachrimeter panel" | `main.js:1096`, `vfx/hudring.js:3`, `feedback/wheel.js:12` | comments | correct |
+| the pot-smash trial's DOM text panel `#trial` | `index.html:89`, `world/trial.js:49` | yes | a timer and medal panel CLAUDE.md bans; its count already moved to `CountRings`: the rest goes the same way |
+| the Lachryma ring at the feet (`HudRing`) and the Lachrimeter tube both showing the pool | `main.js:625` | yes, by plan (OVERLAY.md: "the battle ring, kept") | not a leftover; a question for the owner (two readouts of one number is the house rule, so likely kept) |
