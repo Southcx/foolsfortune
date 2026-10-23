@@ -3555,3 +3555,11 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   keys). The psygun counts a tool as out only when it is asked out (`wants`) and waits for the hands like the rest (`mayDraw` in
   updateHolster). Measured: the same sequence, the gun drawn in 1 real s, the fan's three shots on Q.
 - **Rule:** 273
+
+### 2026-10-23 · A pushed commit broke the build though the gate line ran before it (Calissa, the lend gestures)
+- **Seen:** 87c5be32 pushed a syntax error (a row's comma swallowed by a trailing comment) to `claude/calissa-art-cups`: `npm run check`
+  printed `check: FAILED`, and the commit and push after it ran anyway.
+- **Cause:** the gate ran as `npm run check 2>&1 | tail -1 && git commit ...`: a pipe's status is its last command's, and `tail` succeeds,
+  so the `&&` chain never saw the failure.
+- **Fix:** 9bbf3cb2 put the comma back; check and build passed, pushed. The gate is now run with `set -o pipefail` (or unpiped).
+- **Rule:** NEW:gate-status-unpiped
