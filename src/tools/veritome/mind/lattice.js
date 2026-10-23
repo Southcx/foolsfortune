@@ -16,12 +16,14 @@
 // (four cells) where they cost the route least: an optimisation, the way Zachtronics' histograms rank a solution.
 //
 //   const L = new Lattice(state?)   L.place(fnId, x, y, rot, flip) -> bool   L.remove(x, y)   L.at(x, y) -> piece   L.clear()
-//   L.compile() -> { q, complete, tight, tidy, chain: [piece], effects: [{ fn, dur, pow }], words: ['STIL', 'LON'], cells }
+//   L.compile(cap = MAX_EFFECTS) -> { q, complete, tight, tidy, chain: [piece], effects: [{ fn, dur, pow }], words: ['STIL', 'LON'], cells }
+//   (cap: how many Functions a mind will take, widened by Possession: macros.js MacroBook.cap)
 //   L.state() (to keep)   Lattice.W, Lattice.H, Lattice.CORE (row), Lattice.MOUTH (row)
 // ---------------------------------------------------------------------------------------
 import { FUNCTIONS, SHAPES } from './functions.js';
 
-const W = 7, H = 5, CORE = 2, MOUTH = 2, MAX_EFFECTS = 3;
+const W = 7, H = 5, CORE = 2, MOUTH = 2;
+export const MAX_EFFECTS = 3;
 const DX = [1, 0, -1, 0], DY = [0, 1, 0, -1]; // (sides: 0 E, 1 S, 2 W, 3 N)
 
 /** A shape, mirrored left to right if `flip`, then turned `rot` quarter turns clockwise: its cells (from 0, 0) and its sides. */
@@ -79,7 +81,7 @@ export class Lattice {
   }
 
   /** What the macro is, and how good. */
-  compile() {
+  compile(cap = MAX_EFFECTS) {
     const { chain, complete, cells } = this.trace();
     const all = this.pieces.reduce((n, p) => n + turned(FUNCTIONS[p.fn].shape, p.rot, p.flip).cells.length, 0);
     const tight = cells ? Math.min(1, W / cells) : 0;
@@ -89,7 +91,7 @@ export class Lattice {
       const f = FUNCTIONS[p.fn];
       if (f.kind === 'wire') continue;
       if (f.kind === 'mod') { const e = effects[effects.length - 1]; if (e) { e.dur *= f.dur || 1; e.pow *= f.pow || 1; words.push(f.word); } continue; }
-      if (effects.length >= MAX_EFFECTS) continue;
+      if (effects.length >= cap) continue;
       effects.push({ fn: f.id, dur: 1, pow: 1 });
       words.push(f.word);
     }

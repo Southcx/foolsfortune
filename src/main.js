@@ -874,7 +874,7 @@ async function main() {
     setStones();
   }
   game.daylight = new Daylight(game); // (the light on the open ground by the hour and the weather: render/daylight.js)
-  game.macros = new MacroBook(); // (what they have composed for minds: tools/veritome/mind/macros.js, the Codex's VERITOME, THE MIND)
+  game.macros = new MacroBook(game); // (what they have composed for minds: tools/veritome/mind/macros.js, the Codex's VERITOME, THE MIND)
   game.flash = new Flash(game); // (the Veritome's flash: 1 with the book out; it dazzles and stuns: tools/veritome/flash.js)
   game.reprogram = new Reprogram(game); // (a stunned mind, opened with the middle button and rewritten: tools/veritome/reprogram.js)
   game.log.onSend = (t) => game.chat.run(t);

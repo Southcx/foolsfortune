@@ -17,16 +17,18 @@
 //   mem     a memory wiped (what it knew of them)
 // A new creature gets every Function its mind has the parts for: an action it does not have is refused, and the window says so.
 //
-//   const book = new MacroBook()   book.slots[i] (a Lattice)   book.compiled(i)   book.save()
+//   const book = new MacroBook(game)   book.slots[i] (a Lattice)   book.compiled(i)   book.save()   book.cap() (Functions a mind will take)
+//   (the slots: SLOTS, and one more for each Spellscription widens, `spellscription.slots`, to SLOTS_MOST; Possession widens the cap,
+//   `possession.macro`: progress/godpowers.js RAMP.tools)
 //   runMacro(game, creature, compiled) -> { ok, refused: [fnIds], q }
 // ---------------------------------------------------------------------------------------
-import { Lattice } from './lattice.js';
+import { Lattice, MAX_EFFECTS } from './lattice.js';
 import { FUNCTIONS, knownList } from './functions.js';
 import { REL } from '../../../creatures/ai/index.js';
 import { stream } from '../../../core/rng.js';
 const simRand = stream('tools/veritome/mind/macros'); // (the simulation's chance: core/rng.js, the same twice)
 
-export const SLOTS = 5;
+export const SLOTS = 5, SLOTS_MOST = SLOTS + 3; // (the row of spellscription.slots tops out at 3 more)
 const KEY = 'foolsfortune.veritome.macros';
 
 /** A first macro, so that the first mind opened has something to be told: STIL, straight through (a good one: q 1). */
@@ -36,6 +38,7 @@ const STARTER2 = { pieces: [{ fn: 'eza', x: 0, y: 2, rot: 0 }, { fn: 'lon', x: 2
 export class MacroBook {
   /** Once a second or so: any Function newly known (its fact photographed, its deed done) is announced, once (tracking.js says it). */
   watch(game) {
+    this.game ||= game; this.fit(); // (a slot more as Spellscription widens: kept once opened)
     if (!this.known) {
       let s = null;
       try { s = localStorage.getItem(`${KEY}.known`); } catch { s = null; }
@@ -47,18 +50,26 @@ export class MacroBook {
     if (changed) try { localStorage.setItem(`${KEY}.known`, JSON.stringify([...this.known])); } catch { /* this session */ }
   }
 
-  constructor() {
+  constructor(game = null) {
+    this.game = game;
     this.slots = Array.from({ length: SLOTS }, () => new Lattice());
     this.names = new Array(SLOTS).fill('');
     let s = null;
     try { s = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { s = null; }
-    if (s?.slots) s.slots.forEach((st, i) => { if (i < SLOTS) { this.slots[i] = new Lattice(st); this.names[i] = s.names?.[i] || ''; } });
+    if (s?.slots) s.slots.forEach((st, i) => { if (i < SLOTS_MOST) { this.slots[i] = new Lattice(st); this.names[i] = s.names?.[i] || ''; } });
     else { this.slots[0] = new Lattice(STARTER); this.slots[1] = new Lattice(STARTER2); }
   }
   save() { try { localStorage.setItem(KEY, JSON.stringify({ slots: this.slots.map((l) => l.state()), names: this.names })); } catch { /* this session only */ } }
-  compiled(i) { return this.slots[i]?.compile() || null; }
+  /** How many Functions a mind will take from one macro: MAX_EFFECTS, widened by Possession (at level 1, as it was). */
+  cap() { return Math.floor(MAX_EFFECTS * (this.game?.psyche?.widen?.('possession.macro') ?? 1)); }
+  /** The slots the Veritome keeps now: SLOTS, a slot more for each Spellscription widens (never fewer once opened), to SLOTS_MOST. */
+  fit() {
+    const n = Math.min(SLOTS_MOST, SLOTS + Math.floor(this.game?.psyche?.widen?.('spellscription.slots') ?? 0));
+    while (this.slots.length < n) { this.slots.push(new Lattice()); this.names.push(''); }
+  }
+  compiled(i) { return this.slots[i]?.compile(this.cap()) || null; }
   /** The macros worth offering a mind: those with at least one Function. */
-  ready() { return this.slots.map((l, i) => ({ i, c: l.compile() })).filter((m) => m.c.effects.length); }
+  ready() { const cap = this.cap(); return this.slots.map((l, i) => ({ i, c: l.compile(cap) })).filter((m) => m.c.effects.length); }
 }
 
 /** Run a compiled macro on a creature (stunned, its mind open). */
