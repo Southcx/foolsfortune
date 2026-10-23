@@ -3,7 +3,7 @@
 // Anagami's dress (OVERLAY.md 15.4: Clay). A row a goal, in the order the System lays them: its slot (CLOSE, ELSEWHERE, STRETCH, or FIRST
 // STEP), the achievement's name and words, its tier, a bar filled to `frac` with `cur` of `goal` beside it, and a gold check when done.
 // It reads what is and says nothing of what happened (the log does: tracking/goals.js). Summoned on `/goals` (goals.ask) for a while;
-// shown a beat when a game day lays them (goals.set) and when one is done (goal.done: its row's check stamped, the others dimmed). Hidden
+// shown a beat when a game day lays them (goals.set), when the first path lays its next step (goal.next) and when one is done (goal.done: its row's check stamped, the others dimmed). Hidden
 // at sea while the rail readout stands in the same corner.
 //
 //   MATTER     the Brine frame's structure and line (ui/brineframe.js) dressed in Clay: unglazed earthenware, its grog speckled, the
@@ -73,6 +73,7 @@ export class GoalsWindow {
     ev.on('goals.ask', () => this.show(GOALS_LOOK.ask));
     ev.on('goals.set', () => this.show(GOALS_LOOK.set));
     ev.on('goal.done', (e) => this.show(GOALS_LOOK.done, e?.id));
+    ev.on('goal.next', () => this.show(GOALS_LOOK.set)); // (a first step done and the next laid: Dovina's FIRST-HOUR.md 5)
   }
 
   build() {
