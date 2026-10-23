@@ -3606,3 +3606,14 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the quarter turn is multiplied back on after the rail's frame (skiff.js). With it, the board lies across the rail and the rider
   faces down it (the builder's headless check); not run again here.
 - **Rule:** 278
+
+### 2026-10-23 · A card held over an empty place of the reading view was not laid (Dovina, measured headless)
+- **Seen:** with a card picked, a click in the middle of an empty place of the reading view did nothing; the same probe had laid a card
+  while the cards were still flying in.
+- **Cause (measured):** an empty place is drawn as a hollow frame (`frameGeo`, four thin strips, vfx/readingview.js), and the frame
+  itself is the pickable; `readingScene.pickAt` at the place's anchor (its middle) returned null, while a scan on an 8 px grid found no
+  strip once the cards had settled. Mid-flight the strips happened to cross the grid.
+- **Fix:** pneuka/underside.js `nearPlace`: a held or dragged card that touches nothing goes to the nearest place within 40 px of the
+  point. Checked headless: the Priestess picked from the bar, laid in the Past by a click at its anchor. A solid pickable behind the
+  frame is offered to Calissa.
+- **Rule:** NEW:pick-the-whole-target
