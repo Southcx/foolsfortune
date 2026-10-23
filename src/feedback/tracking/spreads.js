@@ -29,7 +29,7 @@ export function spreadRules({ on, L, log }) {
     if (e.lit > 0 && e.counting >= e.lit) L.inc(`spread.full.${e.spread}`);
     if (!e.dark) L.hi(`spread.undark.${e.spread}`, e.counting);
     const pct = Math.round(effectOf(e.suit, e.to) * 100);
-    log.say('info', `Your spread ${e.to > e.from ? 'lights' : 'dims'} ${SUIT[e.suit]}: ${e.to.toFixed(1)} of ${TALLY.cap} (${TALLY[e.suit].does} ${pct > 0 ? '+' : ''}${pct}%).`, { key: `stally.${e.suit}`, throttle: 0.5 });
+    log.say('info', `Your spread ${e.to > e.from ? 'lights' : 'dims'} ${SUIT[e.suit]}: ${e.to.toFixed(1)} of ${e.cap ?? TALLY.cap} (${TALLY[e.suit].does} ${pct > 0 ? '+' : ''}${pct}%).`, { key: `stally.${e.suit}`, throttle: 0.5 });
   });
   on('spread.court', (e) => { // (Petra's, when the class changes: { from, to }, a court id 'queen.wands' or null; SPREADS.md 11.3)
     if (!e.to) return;

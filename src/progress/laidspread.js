@@ -10,8 +10,9 @@
 //
 // What it tells (the log speaks only on what you do, SPREADS.md; Wanda's sounds hang on all five, audio/cues.js):
 //   spread.lay { spread, position, card (null: taken back), reversed }   spread.flip { under }   spread.tally { suit, from, to, lit,
-//   counting, dark, spread } (each suit that moved, after an act: a lay, a reverse, a card taken back, a spread chosen, the pair changed,
-//   a thing moved in the Box)   spread.crack { suit } (a cell gone dark)   spread.complete { spread } (its Outcome lit)   all with `by`.
+//   counting, dark, spread, cap } (each suit that moved, after an act: a lay, a reverse, a card taken back, a spread chosen, the pair
+//   changed, a thing moved in the Box)   spread.court { from, to } (the court class changed)   spread.crack { suit } (a cell gone
+//   dark)   spread.complete { spread } (its Outcome lit)   all with `by`. A spread loaded from the save is recounted without a word.
 // What moves by itself (the Past fading, Self with the pool, the Challenge in a fight, the party) changes the modifiers quietly and shows
 // on the board and the window's tallies, never in the log.
 //
@@ -21,12 +22,13 @@
 //   game.laidSpread = new LaidSpread(game)   .spread  .laid  .under   .choose(id)  .lay(position, card, reversed?)  .pick(position)
 //   .reverse(position)  .flip(under?)  .hand  .majors  .lent (DEBUG's spreads row: every Major to lay)
 //   .update(rawDt)   .cells (the face's 56)  .sums  .counted  .effect(suit)  .cupsK  .swordsK  .worthK
-//   save section `spread` (scope player)
+//   .court (the court class, SPREADS.md 11.3)   save section `spread` (scope player)
 // ---------------------------------------------------------------------------------------
-import { SPREADS, SUITS, light, tally, effectOf } from './spreads.js';
+import { SPREADS, SUITS, TALLY, COURT, light, tally, effectOf, dayCard } from './spreads.js';
+import { seasonOf } from './seasons.js';
 import { ARCANA } from '../tools/veritome/arcana.js';
 import { itemOf } from '../pneuka/items.js';
-import { now, DAY_MS } from '../core/calendar.js';
+import { now, today, DAY_MS } from '../core/calendar.js';
 
 const ZERO = () => ({ wands: 0, cups: 0, swords: 0, pentacles: 0 });
 const STEP = 0.5; // (real s between quiet recounts: the strengths that move by themselves move slowly)
@@ -36,13 +38,13 @@ export class LaidSpread {
     this.game = game;
     this.spread = 'one'; this.laid = {}; this.under = false;
     this.cells = light('one'); this.sums = ZERO(); this.counted = [];
-    this.told = ZERO(); this.dark = new Set(); this.complete = false;
-    this.act = true; this.t = 0; this.sig = ''; this.pairWas = null;
+    this.told = ZERO(); this.dark = new Set(); this.complete = false; this.court = null; this.toldCourt = null;
+    this.act = true; this.quiet = true; this.t = 0; this.sig = ''; this.pairWas = null; // (quiet: a spread loaded is recounted, not told)
     game.save?.section('spread', {
       scope: 'player', version: 1,
       dump: () => ({ spread: this.spread, laid: this.laid }),
-      load: (d) => { this.spread = SPREADS[d?.spread] ? d.spread : 'one'; this.laid = {}; for (const [p, L] of Object.entries(d?.laid || {})) if (this.position(p) && L?.card) this.laid[p] = { card: L.card, reversed: !!L.reversed, at: +L.at || now() }; this.act = true; },
-      reset: () => { this.spread = 'one'; this.laid = {}; this.act = true; },
+      load: (d) => { this.spread = SPREADS[d?.spread] ? d.spread : 'one'; this.laid = {}; for (const [p, L] of Object.entries(d?.laid || {})) if (this.position(p) && L?.card) this.laid[p] = { card: L.card, reversed: !!L.reversed, at: +L.at || now() }; this.act = this.quiet = true; },
+      reset: () => { this.spread = 'one'; this.laid = {}; this.act = this.quiet = true; },
     });
   }
   get positions() { return SPREADS[this.spread].positions; }
@@ -60,6 +62,7 @@ export class LaidSpread {
   /** Lay a spread: the cards in the last one come back to the hand. */
   choose(id) {
     if (!SPREADS[id] || id === this.spread) return false;
+    this.settle();
     this.spread = id; this.laid = {}; this.complete = false; this.changed();
     return true;
   }
@@ -67,6 +70,7 @@ export class LaidSpread {
   lay(position, card, reversed = false) {
     const P = this.position(position);
     if (!P || P.pair || P.fixed || !card || !this.majors.includes(card) || card === 'fool' || card === this.pairCard) return false;
+    this.settle();
     for (const [k, L] of Object.entries(this.laid)) if (L.card === card) delete this.laid[k];
     this.laid[position] = { card, reversed: !!reversed, at: now() };
     this.emit('spread.lay', { spread: this.spread, position, card, reversed: !!reversed });
@@ -76,6 +80,7 @@ export class LaidSpread {
   /** A laid card taken back to the hand. */
   pick(position) {
     if (!this.laid[position]) return false;
+    this.settle();
     delete this.laid[position];
     this.emit('spread.lay', { spread: this.spread, position, card: null, reversed: false });
     this.changed();
@@ -84,6 +89,7 @@ export class LaidSpread {
   /** A laid card turned upside down, or back: its footprint turned half round and its suit its contrary (spreads.js). */
   reverse(position) {
     const L = this.laid[position]; if (!L) return false;
+    this.settle();
     L.reversed = !L.reversed;
     this.emit('spread.lay', { spread: this.spread, position, card: L.card, reversed: L.reversed });
     this.changed();
@@ -107,6 +113,7 @@ export class LaidSpread {
       fight: !!g.combat?.engaged, company: !!(g.party?.list?.length || g.guests?.list?.length),
       pool: g.lachryma?.fraction ?? 1, goals: goals.length ? goals.filter((x) => x.done).length / goals.length : 0,
       pair: this.pairCard, bound: new Set(this.majors),
+      dayCard: dayCard(today()), // (the day's card doubles its strength where it is laid: SPREADS.md 11.2)
     };
   }
 
@@ -120,24 +127,43 @@ export class LaidSpread {
     if (!this.act && this.t < STEP) return;
     this.t = 0;
     const act = this.act; this.act = false;
-    this.cells = light(this.spread, this.laid, this.ctx());
-    const r = tally(this.cells, box.slots.map((s) => (s ? itemOf(s.id) : null)));
-    this.sums = r.sums; this.counted = r.counted;
-    this.apply();
+    this.recount();
+    if (this.quiet) { this.quiet = false; this.hush(); return; }
     if (act) this.tell();
   }
-  /** After an act: each suit that moved, the cells newly dark, the Outcome newly lit. */
+  recount() {
+    const box = this.game.pneuka; if (!box) return;
+    this.cells = light(this.spread, this.laid, this.ctx());
+    const r = tally(this.cells, box.slots.map((s) => (s ? itemOf(s.id) : null)), { season: seasonOf().id }); // (the season's suit x1.25: 11.1)
+    this.sums = r.sums; this.counted = r.counted; this.court = r.court; // (the court class your two strongest suits make: 11.3)
+    this.apply();
+  }
+  /** Before an act: a spread loaded and not yet recounted is settled first, so the act alone is told. */
+  settle() { if (this.quiet) { this.recount(); this.quiet = false; this.hush(); } }
+  /** A spread loaded (or reset): what tell() compares against, set without a word. */
+  hush() {
+    for (const suit of SUITS) this.told[suit] = +this.sums[suit].toFixed(2);
+    this.dark = new Set(); this.cells.forEach((c, i) => { if (c.dark) this.dark.add(i); });
+    this.complete = this.isComplete(); this.toldCourt = this.court?.id ?? null;
+  }
+  isComplete() {
+    const out = this.positions.find((p) => p.rule === 'outcome');
+    return !!out && this.positions.filter((p) => p.rule !== 'outcome').every((p) => p.fixed || (p.pair ? !!this.pairCard : !!this.laid[p.id])) && !!this.laid[out.id];
+  }
+  /** After an act: each suit that moved, the cells newly dark, the court class changed, the Outcome newly lit. */
   tell() {
     const C = this.cells, lit = C.filter((c) => !c.dark && (c.wands || c.cups || c.swords || c.pentacles || c.wild)).length, dark = C.filter((c) => c.dark).length, counting = this.counted.length;
     for (const suit of SUITS) {
       const from = this.told[suit], to = +this.sums[suit].toFixed(2);
-      if (Math.abs(to - from) > 0.01) this.emit('spread.tally', { suit, from, to, lit, counting, dark, spread: this.spread });
+      if (Math.abs(to - from) > 0.01) this.emit('spread.tally', { suit, from, to, lit, counting, dark, spread: this.spread, cap: TALLY.cap + (this.court?.lifts === suit ? COURT.lift : 0) });
       this.told[suit] = to;
     }
     const nowDark = new Set(); C.forEach((c, i) => { if (c.dark) nowDark.add(i); });
     for (const i of nowDark) if (!this.dark.has(i)) { const c = C[i]; this.emit('spread.crack', { suit: c.wands && c.cups ? 'wands' : 'swords', cell: i }); }
     this.dark = nowDark;
-    const out = this.positions.find((p) => p.rule === 'outcome'), done = !!out && this.positions.filter((p) => p.rule !== 'outcome').every((p) => p.fixed || (p.pair ? !!this.pairCard : !!this.laid[p.id])) && !!this.laid[out.id];
+    const court = this.court?.id ?? null;
+    if (court !== this.toldCourt) { this.emit('spread.court', { from: this.toldCourt, to: court }); this.toldCourt = court; }
+    const done = this.isComplete();
     if (done && !this.complete) this.emit('spread.complete', { spread: this.spread });
     this.complete = done;
   }
