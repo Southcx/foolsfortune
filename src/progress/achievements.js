@@ -55,7 +55,7 @@ export const CATS = [
   { id: 'psyche', name: 'THE DOMAINS', subs: ['Levels'] },
   { id: 'garden', name: 'THE SPIRIT GARDEN', subs: ['The Press', 'The Garden', 'The Mycelium', 'The Spirits', 'The Firings', "The Garden's Life"] },
   { id: 'sky', name: 'THE SKY', subs: ['Weather', 'The Day'] },
-  { id: 'general', name: 'GENERAL', subs: ['Time', 'Persistence', 'Achievements'] },
+  { id: 'general', name: 'GENERAL', subs: ['Time', 'Persistence', 'The Spread', 'Achievements'] },
 ];
 
 // what the points buy: a standing, named in the manner of the studio's own trade (a title is the reward, as in FFXIV)

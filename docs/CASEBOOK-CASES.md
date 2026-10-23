@@ -3617,3 +3617,10 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   point. Checked headless: the Priestess picked from the bar, laid in the Past by a click at its anchor. A solid pickable behind the
   frame came after (Calissa, 9edac754): `pickAt` at the middle of an empty place now returns it; the fallback stays for a near miss.
 - **Rule:** 279
+
+### 2026-10-23 · Two console errors at boot from the spread's achievements (Petra, read from the page)
+- **Seen:** at boot, `achievements: "sc1" is in the sub "The Spread", not in CATS`, twice.
+- **Cause (read):** sc1 to sc3 (SPREADS.md 11) were added under GENERAL's new sub "The Spread" without adding it to `CATS`; the load
+  guard (achievements.js, after R57) caught it and pushed the sub itself. Nothing was hidden; the console was dirty.
+- **Fix:** "The Spread" added to GENERAL's subs in `CATS`. Importing achievements.js now logs no error.
+- **Rule:** NEW:sub-in-cats
