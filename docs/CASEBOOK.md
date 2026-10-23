@@ -830,3 +830,5 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
     ring) raycasts only on its strips: pick against a solid quad behind it, or fall back to the nearest anchor within reach.
 280. **A new achievement's sub goes into `CATS` in the same commit.** The Codex lists a category by its subs; the load
     guard adds a missing one and says so on the console, so boot the page once (or import achievements.js) after adding a sub.
+281. **A number two systems split is read from its one row by both.** A share written in data (a stone's
+    `overflow`) and a constant in a consumer drift apart; every consumer reads the row, and a new row is wired where it is written.

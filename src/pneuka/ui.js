@@ -35,6 +35,7 @@ const CSS = `
 #pneuka header { display: flex; align-items: baseline; gap: 14px; margin-bottom: 6px; }
 #pneuka h2 { margin: 0; font-size: 18px; letter-spacing: .22em; color: var(--accent, #ffb27a); font-weight: normal; }
 #pneuka header .sub { opacity: .6; font-size: 11px; letter-spacing: .08em; flex: 1; }
+#pneuka.bare > .px { display: none !important; }
 #pneuka .x { cursor: var(--jcur-pointer, pointer); padding: 2px 8px; border: 1px solid rgba(255,178,122,.35); border-radius: 3px; font-size: 11px; letter-spacing: .1em; }
 #pneuka .x:hover { background: rgba(var(--jsel),.35); }
 #pneuka .hover { height: 18px; font-size: 12px; margin: 0 0 8px; color: #fff1dc; }
@@ -109,6 +110,7 @@ export class PneukaUI {
     addEventListener('keydown', (e) => { // (Esc closes it, and only it: the pause menu does not open under it, as the Codex's: GARDEN-SWEEP #9)
       if (!this.open || e.repeat || /^(TEXTAREA|INPUT)$/.test(e.target?.tagName)) return;
       if (e.code === 'KeyF') { e.preventDefault(); e.stopImmediatePropagation(); this.flip(); return; } // (F turns the Box over: Petra's key, SPREADS.md 5.1)
+      if (e.code === 'KeyH' && this.underside.slim) { e.preventDefault(); e.stopImmediatePropagation(); this.root.classList.toggle('bare'); return; } // (H hides the window over the reading view for a clean shot, the owner's glamour shots; the arrows still turn the camera)
       if (e.code !== 'Escape') return;
       e.preventDefault(); e.stopImmediatePropagation(); this.close();
     }, true);
@@ -118,9 +120,9 @@ export class PneukaUI {
   get box() { return this.game.pneuka; }
   toggle() { this.open ? this.close() : this.show(); }
   /** The Box turned over (the spread's side) or back (the pocket's). */
-  flip() { this.reading.flip(); this.underside.held = null; this.render(); }
+  flip() { this.root.classList.remove('bare'); this.reading.flip(); this.underside.held = null; this.render(); }
   show() { this.open = true; this.root.classList.add('open'); document.exitPointerLock?.(); this.game.time?.slow('pneuka', SLOW); this.render(); this.game.events?.emit('pneuka.open', {}); }
-  close() { if (this.reading.flipped) this.reading.flip(false); this.underside.held = null; this.open = false; this.root.classList.remove('open'); this.game.time?.free('pneuka'); this.hideMenu(); this.onClose?.(); }
+  close() { this.root.classList.remove('bare'); if (this.reading.flipped) this.reading.flip(false); this.underside.held = null; this.open = false; this.root.classList.remove('open'); this.game.time?.free('pneuka'); this.hideMenu(); this.onClose?.(); }
 
   // ---------------------------------------------------------------- what a click on a thing would do
   actions(slot) {
@@ -168,7 +170,8 @@ export class PneukaUI {
     const px = el('div', `px fit ${RT_CLASSES.window}`);
     const head = el('header');
     head.appendChild(el('h2', '', 'THE PNEUKA BOX'));
-    head.appendChild(el('span', 'sub', `what the Courier carries · ${box.used} / ${SLOTS} · P to close`));
+    const cls = this.reading.cls();
+    head.appendChild(el('span', 'sub', `what the Courier carries · ${box.used} / ${SLOTS}${cls?.label ? ` · you read as ${cls.label}` : ''} · ${this.underside.slim ? 'H hides this · ' : ''}P to close`));
     const f = el('div', 'x', this.reading.flipped ? 'FLIP BACK · F' : 'FLIP · F'); f.onclick = () => this.flip(); head.appendChild(f);
     const x = el('div', 'x', 'CLOSE'); x.onclick = () => this.close(); head.appendChild(x);
     px.appendChild(head);

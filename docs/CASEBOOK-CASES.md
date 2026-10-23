@@ -3624,3 +3624,13 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   guard (achievements.js, after R57) caught it and pushed the sub itself. Nothing was hidden; the console was dirty.
 - **Fix:** "The Spread" added to GENERAL's subs in `CATS`. Importing achievements.js now logs no error.
 - **Rule:** 280
+
+### 2026-10-23 · The Lockheart drank 0.8 of overflow whatever the stone (Petra; Dovina found it with the palm die)
+- **Seen:** the stones' rows give the Lockheart's share of overflow by stone (the Maker's 0.8, onyx 1, amethyst 0, with amethyst's
+  bleed 1), but on onyx and amethyst the coffin drank as on the Maker's; the palm die (progress/dice.js) reads the row, so the two
+  disagreed on what was left.
+- **Cause (read):** lockheart.js's overflow hook fed a constant `e.amount * 0.8`; nothing read `overflow.lockheart` until the palm die.
+  Onyx's and amethyst's overflow trades were written and never wired.
+- **Fix:** the hook feeds the worn stone's `overflow.lockheart` (stones.js `stoneOf`). Measured headless, the Lockheart worn, 50 of
+  overflow: the Maker's 40 to the coffin and 10 to the palm die; onyx 50 and 0; amethyst 0 and 0.
+- **Rule:** 281

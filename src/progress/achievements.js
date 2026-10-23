@@ -33,6 +33,7 @@ import { EGREGORES } from './opensea/safari.js';
 import { MIRACLES, EPICS, GOD_POWERS, POWER_EVENTS } from './godpowers.js';
 import { racewayAchievements } from './raceachievements.js';
 import { sealAchievements } from './sealachievements.js';
+import { spreadAchievements } from './spreadachievements.js';
 const FOUNDING_SHELLS = CASTER_SHELLS.filter((r) => r.family === 'founding').map((r) => r.id);
 
 export const TIERS = [null, { name: 'Easy', pts: 1 }, { name: 'Medium', pts: 2 }, { name: 'Hard', pts: 3 }, { name: 'Elite', pts: 4 }, { name: 'Master', pts: 5 }, { name: 'Grandmaster', pts: 6 }];
@@ -55,7 +56,7 @@ export const CATS = [
   { id: 'psyche', name: 'THE DOMAINS', subs: ['Levels'] },
   { id: 'garden', name: 'THE SPIRIT GARDEN', subs: ['The Press', 'The Garden', 'The Mycelium', 'The Spirits', 'The Firings', "The Garden's Life"] },
   { id: 'sky', name: 'THE SKY', subs: ['Weather', 'The Day'] },
-  { id: 'general', name: 'GENERAL', subs: ['Time', 'Persistence', 'The Spread', 'Achievements'] },
+  { id: 'general', name: 'GENERAL', subs: ['Time', 'Persistence', 'The Spread', 'The Stones', 'Achievements'] },
 ];
 
 // what the points buy: a standing, named in the manner of the studio's own trade (a title is the reward, as in FFXIV)
@@ -716,11 +717,7 @@ export function buildAchievements(game) {
   C('ss2', 'general', 'Persistence', 3, 'endure', 'Creature of Habit', 'Play in 20 sessions.', 'sessions', 20, { cur: (L) => L.sessions });
   C('rs1', 'general', 'Persistence', 1, 'count', 'Try, Try Again', 'Fall out of the world 10 times.', 'courier.respawn.fall', 10);
   C('rs2', 'general', 'Persistence', 3, 'endure', 'Bottomless', 'Fall out of the world 100 times.', 'courier.respawn.fall', 100);
-  // the spread's classes and the day's card (docs/plans/SPREADS.md 11, 12; a court wants a spread laid for one suit)
-  C('sc1', 'general', 'The Spread', 1, 'count', 'Card of the Day', "Lay the day's card in your spread on 7 game days.", 'spread.daycard', 7);
-  C('sc2', 'general', 'The Spread', 2, 'collect', 'Reading Yourself', 'Read as 6 classes.', 'spread.classes', 6);
-  C('sc3', 'general', 'The Spread', 4, 'collect', 'The Whole Court', 'Read as all sixteen court cards (one suit held, Page to King).', 'spread.courts', 16, { title: 'of the Sixteen Courts' });
-  C('sc4', 'general', 'The Spread', 4, 'collect', 'The Twelve Houses', 'Read as all twelve zodiac Majors (two suits held).', 'spread.zodiac', 12);
+  spreadAchievements({ C, H }); // (the spread's classes, the day's card and the palm die: progress/spreadachievements.js)
   F('am1', 'general', 'Achievements', 1, 'collect', 'A Start', 'Complete 10 achievements.', (L, g, a) => a.count(), 10);
   F('am2', 'general', 'Achievements', 3, 'collect', 'Halfway Up the Wall', 'Complete 50 achievements.', (L, g, a) => a.count(), 50);
   F('am3', 'general', 'Achievements', 5, 'collect', 'A Full Wall', 'Complete 100 achievements.', (L, g, a) => a.count(), 100);
