@@ -23,7 +23,7 @@ export const LEND_GESTURES = {
   // Snap shot: the draw from the holster to the aim (it holds the aim from 0.37 s), then let go back to the stance; 0.45 real s
   psygun: { clip: 'Gun_QuickDraw', from: 0.08, to: 0.53, rate: 1, out: 0.16, mask: 'arm' },
   // Grapple: an overhand throw from the wound-up arm, so the release (0.37 s in the clip) comes 0.1 real s after the press; 0.43 real s
-  sondelass: { clip: 'throw', from: 0.24, to: 0.76, rate: 1.2, out: 0.18, mask: 'upper' },
+  sondelass: { clip: 'throw', from: 0.24, to: 0.76, rate: 1.2, out: 0.18, mask: 'arm' } // (the right arm alone: the upper mask flung the left arm wide, 2026-10-23's look),
   // Flick: the Soul Brush's own flick of the right hand, the whole of it, quickened; 0.48 real s
   soulbrush: { clip: 'Brush_Flick', from: 0, to: 0.63, rate: 1.3, out: 0.18, mask: 'arm' },
   // Flash: the right hand up to the face as the Flash goes off (raised by 0.3 s in the clip), held, then down; 0.5 real s
