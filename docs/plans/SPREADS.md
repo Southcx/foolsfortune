@@ -19,6 +19,10 @@ Dovina's plan. Status: a plan, not built. Mockup: the design canvas, board "Spre
    theme.
 6. **The planet cards are wild cards** (section 3).
 7. A tool swap is allowed anywhere out of a fight (TOOLS-TOGETHER.md 8). Laying a spread follows the same rule.
+8. **Build it** (the owner, later the same day: "I wholeheartedly support your assessments and implementation"). With it, the open
+   calls of section 9 as proposed: the bracelet's charms become suited items, and the flip mirrors.
+9. **The reading view** (the owner: "the character model orbited by cards against a dark background, similar to the title screen
+   ... that screen is a moneyshot in and of itself"): section 5.7.
 
 ## 2. The deck is already whole
 
@@ -73,6 +77,26 @@ cancel, `AGATES`).
   it makes the board a small spatial puzzle. The owner may veto it, and then the two sides share columns.)
 - Laying: drag a Major from the hand to a position; right-click (or R) on a laid card reverses it (5.3). A card is in one position
   at a time.
+
+### 5.1.1 The reading view (the owner's moneyshot)
+
+The flip opens the reading: the Box's window falls away, the world goes to the title's dark, and the Courier hangs in it as they do
+in the title's fall (`title/scene.js`: "they hang in the fall, cards turning round them"), the laid Majors orbiting them in the
+spread's shape. It is the title's best moment, given back as a place you return to.
+
+- **The cards orbit in the spread's own geometry,** seen from the front: the Celtic Cross's cross at the Courier's heart (the
+  Present over the significator, the Challenge across them, the Crown above the head, the Foundation below the feet, the Past and
+  the Near future either side) and its staff as a column beside them; the Horseshoe as an arc round them; three cards in a row
+  before them. Each card turns slowly in place, its face to the camera; a reversed card hangs upside down.
+- **The grid is the cloth under the Courier's feet:** the 8 by 7 cells as a floor of the dark, each footprint lit on it in its
+  suit's colour, so laying a card shows at once where its light falls (the mirror is the cloth seen from above, the face from below).
+- **The hand** fans at the bottom of the view: the bound Majors not laid. Drag one up into an empty place in the orbit; right-click
+  a laid one to reverse it; drag it out to take it back.
+- **The flip back** turns the camera down through the cloth to the Box's face, the pocket lit from beneath.
+- Prior art: our own title (the fall); Persona's Velvet Room (a reading in a room outside the world); Kingdom Hearts' Dive to the
+  Heart (a figure in the dark on a stained-glass floor); the Golden Dawn's diagram of the Celtic Cross.
+- It is drawn by the game's renderer, the Courier's own model and clips, the post as everywhere (the 480 lines, the glow, the grade).
+  Calissa's look, Petra's camera and scene; the rules it draws are `progress/spreads.js`.
 
 ### 5.2 A card's footprint
 
@@ -209,6 +233,20 @@ capped at 10 points:
 
 - **Why a tally and not an effect per item:** an effect per item is a content tax on every item in the game. A suit's tally makes
   every item matter by where it sits, at no cost per item. Items may gain their own held effects later (the bracelet's charms, 9.1).
+- **Measured** (`node scripts/spreads.mjs`, 2000 lays a spread, seed 7: Majors drawn at random as many as open the spread, a quarter
+  reversed; "careful" fills every lit cell with an item of its best suit, "careless" drops 40 items in pickup order), the median and
+  90th percentile of a suit's points:
+
+  | spread | cells lit (of 56) | careful | careless |
+  | --- | --- | --- | --- |
+  | One card | 4 | 0 / 4 | 0 / 1 |
+  | Three cards | 13 | 2 / 6 | 0.8 / 2 |
+  | The Horseshoe | 24 | 5.5 / 10 | 1.7 / 4 |
+  | The Celtic Cross | 31 | 6.5 / 10 | 2.3 / 4.6 |
+
+  Placing with care is worth about three times placing at random: skill skips grind, and the careless still earn (the design law).
+  The cap of 10 is reached only by a careful Horseshoe or Cross, at its best tenth, or by a spread laid for one suit. Contrary cells
+  are rare (median 0, 3 at the 90th percentile), so they read as a choice made, not a tax. The numbers stand as drafted.
 - **The economy:** Pentacles at its cap lifts sales by 15%. Sales are a part of income, not all of it, so the lift on the aim (480
   cubes a real hour) is smaller. Measured in `scripts/economy.mjs` before the numbers are set, not before.
 - **Two avenues** (CLAUDE.md): the board's glow, the four tallies on the Box's window, and the log when a tally changes ("Your spread
@@ -243,14 +281,14 @@ playing-card suits descend from these: hearts from Cups, spades from Swords, clu
 
 ## 9. Open
 
-1. **The bracelet's charms** (BRACELET.md): a second passive-slot system beside the board. My lean: a charm becomes a suited item, and
-   its power comes from where it sits. One system, not two.
-2. **The mirrored flip** (5.1): my lean yes.
+1. ~~The bracelet's charms~~ ruled (1.8): a charm becomes a suited item (`item.suit`), its power from where it sits; BRACELET.md's
+   sockets give way to the board when the charms are built.
+2. ~~The mirrored flip~~ ruled (1.8): it mirrors (`MIRROR`).
 3. **The second way for each Major:** the acts are drafted (5.6); the predicates come with the build.
 
 ## 10. Who builds what
 
-- **Dovina:** `progress/spreads.js` (the rules: `SPREADS`, `POSITIONS`, `FOOTPRINTS`, `SUIT_OF`, the dignities, `light()`, `tally()`),
+- **Dovina:** `progress/spreads.js` (built: the rules, `SPREADS`, `POSITIONS`, `FOOTPRINTS`, `SUIT_OF`, the dignities, `light()`, `tally()`),
   the achievements, the numbers and their measurement, the window's flip side (`pneuka/ui.js`, `pneuka/loadout.js`), a sweep.
 - **Petra:** the Veritome's storage moved (`tools/veritome/cards.js`, `book.js`) into the Codex and the Box, the Box's storage at a
   Shrine, the flip's key, the save (a section for the spread laid), the events, with `by` (`spread.flip { under }`, `spread.lay { card, position, reversed }`,
