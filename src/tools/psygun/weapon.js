@@ -21,7 +21,7 @@ import { sfx } from '../../audio/sfx.js';
 import { stream, randDir } from '../../core/rng.js';
 import { GunMoves, FAN_KEY } from './gunmoves.js';
 import { VariantPlay } from './variantplay.js';
-import { lendHand } from '../lend.js';
+import { lendHand, LENT_MODELS } from '../lend.js';
 const simRand = stream('tools/psygun/weapon'); // (the simulation's chance: core/rng.js, the same twice)
 
 const UP = new THREE.Vector3(0, 1, 0);
@@ -355,18 +355,22 @@ export class Weapon {
     return { origin, dir: P.sub(origin).normalize() };
   }
 
-  /** THE SNAP SHOT (the psygun as the sub, R: tools/belt.js): one round from the hand where the main aims, paid now and fired once the
-   *  body is posed (tryFire). Refused while the gun cools or reloads. */
+  /** THE SNAP SHOT (the psygun as the sub, R: tools/belt.js): one round where the main aims, paid now and fired once the gesture has
+   *  the gun at the aim (`lentDue` real s, LENT_MODELS.psygun.shotAt; tryFire). Refused while the gun cools or reloads. */
   lend() {
-    if (this.cooldown > 0 || this.reloading || this.lentDue) return false;
+    if (this.cooldown > 0 || this.reloading || this.lentDue != null) return false;
     if (!this.game.lachryma.spend(T.lachryma.shotCost, 'shot')) { sfx.fizzle(); this.game.lachrimeterTube?.pulse(); return false; }
-    this.lentDue = true; this.cooldown = T.weapon.fireInterval;
+    this.lentDue = LENT_MODELS.psygun.shotAt; this.cooldown = T.weapon.fireInterval;
     return true;
   }
 
   /** Called after the gun is posed so the muzzle is current. */
   tryFire(camera, player, character) {
-    if (this.lentDue) { this.lentDue = false; this.shoot(camera, player, character, { spread: 1.5, recoil: 0.35, from: lendHand(this.game, new THREE.Vector3()) }); }
+    if (this.lentDue != null && (this.lentDue -= this.game.rawDt ?? 0) <= 0) { // (from the muzzle when the gun is at the hand this frame, else the hand: tools/lend.js)
+      this.lentDue = null;
+      const from = this.game.lentModels?.placed === 'psygun' ? character.gunPoint('muzzle', new THREE.Vector3()) : lendHand(this.game, new THREE.Vector3());
+      this.shoot(camera, player, character, { spread: 1.5, recoil: 0.35, from });
+    }
     this.moves.afterHands(character, player);
     // the fan's rounds, on the slaps (paid for when it began: gunmoves.js)
     for (; this.moves.fanDue > 0; this.moves.fanDue--) this.shoot(camera, player, character, { spread: 3, recoil: 0.45 });
