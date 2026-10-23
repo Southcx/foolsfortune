@@ -820,3 +820,6 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 
 276. **A state's change event is read against the state, not trusted as a change.** Requests that race (a
     window's close, a stale retry) make the browser fire `pointerlockchange` with nothing changed; compare with what was held first.
+
+277. **What a window works on is updated while the window is open.** `tick` returns early under `modalOpen()`, before the
+    world's updates; a service the window drives (the laid spread under the Box's window) is updated in that branch too.

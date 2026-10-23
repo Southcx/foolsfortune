@@ -66,7 +66,7 @@ export function buildSeaProps(room) {
         const m = add(new THREE.Mesh(new THREE.BoxGeometry(3, 2, 9), mat(0x4a3a2a)));
         m.position.set(at.x, SEA.y + 0.2, at.z); m.rotation.set(0.25, r.range(0, Math.PI), 0.6); out.marks.push({ feature: f, mesh: m });
       } else if (f.kind === 'phenomenon') {
-        const m = add(new THREE.Mesh(new THREE.CylinderGeometry(4, 6, 60, 10, 1, true), mat(0xbfe8ff, { transparent: true, opacity: 0.35, emissive: 0x6090b0, side: THREE.DoubleSide, depthWrite: false })));
+        const m = add(new THREE.Mesh(new THREE.CylinderGeometry(4, 6, 60, 10, 1, true), mat(0xbfe8ff, { transparent: true, opacity: 0.35, emissive: 0x6090b0, side: THREE.DoubleSide, forceSinglePass: true, depthWrite: false })));
         m.position.set(at.x, SEA.y + 30, at.z); m.visible = false; out.marks.push({ feature: f, mesh: m, when: f.when });
       } else if (f.kind === 'seep') {
         const m = add(new THREE.Mesh(new THREE.CircleGeometry(14, 16), mat(0x14100c, { transparent: true, opacity: 0.8 })));

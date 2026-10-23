@@ -3586,3 +3586,13 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** a `pointerlockchange` that leaves the lock as it was is not passed on (core/input.js). Measured: 0 pauses in 48 picks, the
   lock held again after each. Dovina's sweep note and its clearing of the pause can go.
 - **Rule:** 276
+
+### 2026-10-23 · The laid spread was not recounted while the Pneuka Box's window was open (the reading view's probe, headless)
+- **Seen:** with the Box's window open and the Box turned over, the reading view stayed at k 0 and built no positions over 5 ticks; a
+  card laid from the window would not have moved the board or the tallies until the window shut.
+- **Cause (measured, the view's state logged a tick at a time):** `tick` returns at its top while `modalOpen()` (the Codex, the Index,
+  the map, the Box's window ...), before the world's updates. `laidSpread.update` (f5f90f3) sat with the world's, so the window it serves
+  never saw it run.
+- **Fix:** the modal branch updates the laid spread and the reading view too (main.js). Measured: the view opens in 0.7 real s, its
+  positions built and picked, the cloth lit as the face (10 cells of 10).
+- **Rule:** 277

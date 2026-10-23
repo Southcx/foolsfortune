@@ -161,8 +161,12 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the paint reticle / the jet ring / the shine / the bottle's arc** (`PaintReticle`, `JetRing`, `CleanShine`, `src/vfx/brushmarks.js`;
   `BottleArc`, `src/vfx/bottlearc.js`) — where the stream lands and its spread; the hover's fuel or the rocket's gather at the feet; ground
   just cleaned; the bottle's fill beside the paint reticle (`game.paintReticle`). No words. *Not:* the lock-on reticle, the Lachryma ring. → detail
-- **the Veritome** (`src/tools/veritome/veritome.js`) — the book that is a camera; a plate is one photograph; its pages are the Book, the
-  Compendium, the bestiary, the Major Arcana. *Not:* the inventory. → detail
+- **the Veritome** (`src/tools/veritome/veritome.js`) — the book that is a camera, for observation and reprogramming only (the owner, 2026-10-23);
+  a plate is one photograph; what it knows is the Book (`book.js`: the memory, the Compendium, the bestiary's facts). It keeps no cards and
+  no things. *Not:* the inventory, the collection. → detail
+- **the collection** (`game.collection`, `src/progress/collection.js`; save section `collection`) — the cards bound, the 22 Major Arcana and the
+  creature cards, each once (the Fool from the start); a second photograph of one bound condenses into cubes. Shown on the Codex's THE ARCANA
+  shelf (`codex/arcana.js`) and in the bestiary. *Not:* the Veritome, the Box's storage.
 - **a Veritome / its sight** (working names; `docs/plans/VERITOMES.md`, a plan) — one variant of the book, worn as a whole (as a Lockheart's coffin) / what it sees with the lens raised, a convenience never a key. *Not:* a fitting, a lens item.
 - **reprogramming** (`src/tools/veritome/reprogram.js`) — rewriting a stunned creature's mind with a macro composed on a lattice of Functions (THE
   MIND shelf) and spoken in neuralese.
@@ -537,7 +541,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 
 - **the System** (`src/progress/system.js`) — the game's code made a voice; it teaches the Movement Arts and keeps the save. Always capitalised.
   *Not:* a game system in general.
-- **the Codex** (B, `src/feedback/codex/codex.js`) — the System's book: arts, the ledger and records, the tools, the Veritome's shelf, curios.
+- **the Codex** (B, `src/feedback/codex/codex.js`) — the System's book: arts, the ledger and records, the tools, THE ARCANA (the collection's
+  Majors), the Veritome's shelf, curios.
   Its **STATUS shelf** (`codex/status.js`): the domains' levels and Soul Alchemy's ranks as two radar charts.
 - **the DEBUG save / the STORY save** (`game.mode`; `docs/plans/DEBUG-MODE.md`) — the two separate records the title's choice picks; settings
   shared, nothing else crosses. DEBUG is STORY plus the lend panel, the commands, the debug chests and presets.
@@ -572,10 +577,22 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 ## 9. What the game shows and sounds
 
 - **the pause menu** (Esc) — the help pages and the controls. *Retired:* "pause card".
-- **the Pneuka Box** (P, `src/pneuka/`) — the inventory (56 slots) and what is worn; at a Shrine's THE BANK row, or with the Veritome held open, the bank (the Book) opens beside it.
+- **the Pneuka Box** (P, `src/pneuka/`) — the inventory (56 slots) and what is worn; at a Shrine's STORAGE row, its storage opens beside it.
   *Not:* the Veritome.
+- **the Box's storage** (`box.storage`, `storageOpen`, `openStorage`, `src/pneuka/box.js`; save section `storage`) — the Pneuka Box's long-term
+  store, opened only at a Shrine: any thing, stacked by kind, up to 56 stacks. *Not:* the shed's storage (the Spirit Garden's decor), the bank
+  (retired).
 - **the reading table** (plain name; `ReadingTable`, `game.readingTable`, `src/ui/readingtable.js`) — the Pneuka Box's loadout drawn as a tarot reading: the main tool's card upright, the sub's crossed over it, the pair's Major Arcana beside them (face down until opened), the shelf's tools as a hand to pick or drag, a swap's preview, and your seal pressed over a refused swap. It draws what it is handed (`draw(state)`) and sends back hover, pick and drop. *Not:* the window (Dovina's `pneuka/ui.js`), the loadout's rules, a table (Raku's).
-- **the reading view** (plain name; `ReadingView`, `game.readingView`, `src/vfx/readingview.js`; SPREADS.md 5.1.1) — the Box flipped, in the title's dark: the laid Major Arcana orbiting the Courier in the spread's own geometry (the Celtic Cross's cross at their heart, its staff beside them), each edged in its suit's colour; the 8 x 7 grid as a lit cloth under their feet (the underside, seen from above: a suit's glow, a wild cell's film, a dark cell's crack); the hand fanned below. Petra's scene and camera, Dovina's rules (`progress/spreads.js`). *Not:* the reading table (the Box's loadout), a spread (the rules).
+- **the reading view** (plain name; `ReadingView`, `game.readingView`, `src/render/readingview.js`; SPREADS.md 5.1.1) — the Pneuka Box turned over, drawn as a reading in place of the world: the Courier hanging in the title's dark, the laid Major Arcana round them in the spread's shape, the grid a cloth lit under their feet; it says where on it a card would go (`positionAt`, `cardAt`). *Not:* the reading table (the loadout's), the laid spread (the state, `progress/laidspread.js`).
+- **a spread / a spread's position / the spread board** (plain names; tarot's own words; `SPREADS`, `light`, `tally`, `src/progress/spreads.js`; measured by `scripts/spreads.mjs`; `docs/plans/SPREADS.md`) — Major Arcana laid in a tarot layout (the three-card, the Horseshoe, the Celtic Cross), opened by achievement / one place in it, its rule its meaning (the Past fades, the Challenge counts only in a fight; the Crown position, never bare "the crown") / the Pneuka Box's underside, the same 8 by 7 grid, shown by its flip, mirrored. *Not:* the reading table (the loadout), a table (Raku's).
+- **the laid spread** (plain name; `LaidSpread`, `game.laidSpread`, `src/progress/laidspread.js`; save section `spread`; tracking `tracking/spreads.js`) — the
+  one spread you have laid: which spread, a card in each position (reversed or not, when laid), your pair's card in the Present; it lights the
+  board, counts the four tallies over the Box's cells and makes them modifiers (the pool's `costMult` and `regenMult`, `cupsK`, `swordsK`,
+  `worthK`); it tells `spread.lay`, `spread.flip` (F in the window), `spread.tally`, `spread.crack`, `spread.complete`. *Not:* the rules
+  (`progress/spreads.js`, Dovina's), the window's flip side.
+- **the reading view** (plain name; SPREADS.md 5.1.1, a plan) — the flip's view: the Courier hanging in the title's dark, the laid Majors orbiting them in the spread's shape, the grid a lit cloth under their feet, the hand fanned below. *Not:* the reading table (the loadout), the title's fall.
+- **a card's footprint / a lit cell / an item's suit / friendly and contrary suits / a wild card** (plain names; SPREADS.md) — the cells a laid Major lights on the Box's face, its size its card rank / a cell under a footprint, empowering an item of its suit / the suit an item takes by its kind (Wands, Cups, Swords, Pentacles) / the Golden Dawn's dignities: Wands and Cups, Swords and Pentacles cancel, all else adds / a planet card, lighting any suit at 0.75. *Not:* a zone (a render zone), a field (crude's), a patch (the City Trial's).
+- **the reading view's look** (plain name; `ReadingLook`, `game.readingLook`, `src/vfx/readinglook.js`) — what the reading view (Petra's scene) is dressed in: each laid card the house deck's face with an edge of light behind it in its suit's colour (a wild one in the film's schiller), an empty place a thin frame of light, the cloth as plum velvet with gold thread and each cell lit in its suits' colours (mirrored: the underside), a dark cell cracked, the Fool's gold mark, and the title's fall and motes far behind. *Not:* the reading view (the scene, the camera, the places), the underside's dress (the window's).
 - **the underside's dress** (plain name; `installUndersideLook`, `UNDERSIDE_LOOK`, `src/ui/undersidelook.js`) — the Pneuka Box's flip side (Dovina's page, `pneuka/underside.js`, its `us-*` classes) in the Clay dress and the reading view's suit colours: the spreads as glazed tiles, the cloth as plum velvet with gold thread, a dark cell burned through with a scorched crack, the Fool's gold disc, a laid place as the house deck's stock (reversed edged vermilion), the hand fanned and the held card haloed, the tallies as glazed bars. *Not:* the page (Dovina's), the reading view (the 3D one).
 - **the map** (M, `src/feedback/cartography.js`) — on screen **Map** (the owner, 2026-10-20); Mind Mapping stays in the world and the Codex.
 - **the dialogue box** (`src/npc/dialogue.js`) — the one window of words in the world.
@@ -838,6 +855,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | guard | the held block (V); the Sondelass's guard (its UI, `SondelassGuard`) | "the guard" is the block; "the Sondelass's guard" in full |
 | glaze | the Courier's (`GLAZES`, fired at a finishing station); a room glaze (`ROOM_GLAZES`, on a room's built surface or ware); a hull glaze (the Solar Skiff's, `glazeHull`) | "a glaze" is the Courier's; "a room glaze", "a hull glaze" in full |
 | seal | your seal (the Pneuka Jar's base, HANKO.md); an attribute's seal (the potter's chop on the press's kerb); a sealed room (the stele's) | "your seal"; "an attribute's seal"; "a sealed room" |
+| suit | a division's (Petra pentacles, Wanda wands, Calissa cups, Espada swords); a house card's (Raku's tables); an item's (the spread board's, SPREADS.md) | "a division's suit", "a house card's suit", "an item's suit" |
 | ring | a Solar Skiffing ring (`SolarRing`); a rail ring (`G.ring`); the spirit press's hue ring; an intensity ring (the wheel of feelings); a lane mark's rings; the ring (the orbit's ten slots, `ORBIT`); the jet ring (`JetRing`, the jets' gauge at the feet) | "a Solar Skiffing ring", "a rail ring", "the hue ring", "an intensity ring", "the jet ring" |
 
 ## 12. Retired words
@@ -854,3 +872,4 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | the Lockheart's gauge (`LockheartMarks`, the padlock and sockets beside the coffin) | the Lockheart's reliquary (the owner, 2026-10-19: retired with board v10) | `docs/plans/MELEE-LOADOUT.md`, `docs/plans/REGISTERS.md` |
 | the string row (`CutlassStringRow`, the cutlass's pips at the bottom middle) | the Sondelass's guard, its blade's notches (the owner, 2026-10-18: retired with the old HUD) | (gone) |
 | the Soul Brush's radial (the wheel on 1 held, `paintradial`; its icons `paint.<pick>`, `ui/icons/paintart.js`) | the Soul Brush's desk; the quick pick (1 held) (the owner, 2026-10-19: retired with board v11) | `tools/soulbrush/radial.js` (`PaintRadial`, the ring's mechanics: Petra's name) |
+| the bank (the Veritome's Book as storage; the Shrine's THE BANK row; `bankOpen`, `openBank`) | the Box's storage (`box.storage`, `storageOpen`, `openStorage`; the Shrine's STORAGE row) (the owner, 2026-10-23: the Veritome is observation only) | `pneuka/ui.js` (the pane, Dovina's), `pneuka/box.js` (the two old names, until the pane moves) |

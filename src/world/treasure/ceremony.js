@@ -32,10 +32,9 @@ import { deckDraw, nextOfDeck } from '../../progress/econ/deck.js';
 import * as THREE from 'three';
 import { GROUPS } from '../../core/physics.js';
 import { sfx } from '../../audio/sfx.js';
-import { TIERS, curiosOf, cubesIn } from './treasure.js';
+import { TIERS, curiosOf, cubesIn, CURIOS, CURIO_LIMIT } from './treasure.js';
 import { glazeAt } from '../../vfx/chestglaze.js';
 import { buildCurio } from './curiomodel.js';
-import { CARD } from '../../tools/veritome/cards.js';
 import { stream } from '../../core/rng.js';
 const simRand = stream('world/treasure/ceremony'); // (the simulation's chance: core/rng.js, the same twice)
 
@@ -85,9 +84,9 @@ export class Ceremony {
     // a chest's curio is a deck (progress/econ/deck.js): one in every ECON.curioDeck[tier] chests of the tier, certain by then; and which
     // curio is a deck of the tier's four: each one before any of them twice
     if (deckDraw(game.ledger, `curio.deck.${this.T}`, ECON.curioDeck[this.T], simRand())) this.curioId = nextOfDeck(curiosOf(this.T), (c) => owned(c.id), simRand())?.id ?? null;
-    // (one more than the Courier may have of it, in their box, on their line, in their Book and on the ground together, is condensed into
-    // cubes on the spot: the card's limit)
-    const box = game.pneuka, lim = CARD[`curio.${this.curioId}`]?.limit ?? 1;
+    // (one more than the Courier may have of it, in their box, on their line, in their storage and on the ground together, is condensed
+    // into cubes on the spot: CURIO_LIMIT by its tier)
+    const box = game.pneuka, lim = CURIO_LIMIT[CURIOS.find((c) => c.id === this.curioId)?.tier] ?? 1;
     this.dupe = !!this.curioId && (box ? box.held(`curio.${this.curioId}`) >= lim : owned(this.curioId));
     // the roulette (a sealed chest only)
     this.rl = this.sealed ? rouletteSeq(this.T) : null;

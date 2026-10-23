@@ -89,13 +89,13 @@ export class Myggdrasil {
     return n;
   }
 
-  /** Hang a Major Arcana card (from the Book) on its branch: the card is given to the tree, and the branch is open for good. */
+  /** Hang a Major Arcana card on its branch: the card must be bound (progress/collection.js), the branch is open for good, and the card
+   *  stays bound (a card is bound once, SPREADS.md 6: the tree takes its likeness, not the card). */
   hang(arcana) {
-    const B = BRANCHES[arcana], book = this.game.veritome?.book, id = `arcana.${arcana}`;
+    const B = BRANCHES[arcana], id = `arcana.${arcana}`;
     if (!B) return { ok: false, why: 'No branch takes that.' };
     if (this.s.branches[arcana]) return { ok: false, why: 'That branch is already hung.' };
-    if (!book?.has(id)) return { ok: false, why: 'You have no such card in the Book.' };
-    book.take(id);
+    if (!this.game.collection?.has(id)) return { ok: false, why: 'That card is not bound yet.' };
     this.s.branches[arcana] = true; this.dirty();
     if (B.adds === 'seed') this.seedStrain(B.strain);
     this.emit('myggdrasil.hang', { arcana, adds: B.adds });

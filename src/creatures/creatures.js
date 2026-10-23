@@ -123,6 +123,7 @@ export class Creatures {
     if (!c?.alive || !TYPES[type] || amount <= 0) return;
     const take = stateOf(c.mind).take;
     if (type === 'impact') { this.game.stun?.add(c, TYPES.impact.poise * amount * take, { by, cause }); return; }
+    if (by === 'courier') amount *= this.game.laidSpread?.swordsK ?? 1; // (Swords' tally: the status your blows build, progress/laidspread.js)
     const T = TYPES[type], tn = c.friend ? c.tolerance?.[T.builds] : null; // (a friend's next status of this kind needs more build-up: tolerance)
     if (tn?.left > 0) amount /= tolerance(tn.n + 1)?.build ?? Infinity;
     c.build[type] = (c.build[type] || 0) + amount * take;

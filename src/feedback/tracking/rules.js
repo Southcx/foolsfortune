@@ -42,6 +42,7 @@ import { duelRules } from './duel.js';
 import { graphicsRules } from './graphics.js';
 import { familiarityRules } from './familiarity.js';
 import { sealRules } from './seals.js';
+import { spreadRules } from './spreads.js';
 import { stunRules } from './stun.js';
 import { sightRules } from './sight.js';
 import { goalsRules } from './goals.js';
@@ -65,6 +66,7 @@ export function areaRules(ctx) {
   wispRules(ctx); // (the Lantern Wisps)
   familiarityRules(ctx); // (how well each kind of creature is known: the overlay's readouts)
   sealRules(ctx); // (the Seal Book: the cradles your seal set in)
+  spreadRules(ctx); // (the spread laid on the Box's underside: progress/laidspread.js)
   stunRules(ctx); // (the stun and its depth: dazed, stunned, out cold)
   sightRules(ctx); // (the Sight's waypoint, set and cleared)
   goalsRules(ctx); // (the game day's three goals: progress/goals.js)

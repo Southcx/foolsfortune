@@ -47,6 +47,9 @@ export function cubesIn(tier, r = simRand()) {
 }
 
 // ---- curios: four to a tier, named in the alliterating manner the rest of the game keeps
+/** How many of a curio the Courier may have at once (in the box, on the line, in the storage and on the ground together), by its tier: one
+ *  more is condensed into cubes on the spot (world/treasure/ceremony.js). Was the curio card's limit, before curios stopped being cards. */
+export const CURIO_LIMIT = [3, 3, 2, 1, 1];
 export const CURIOS = [
   { id: 'whelk',      tier: 0, name: 'Whistling Whelk',         glyph: '❂', blurb: 'A spiral shell with a hole in it that sings when the tide is in the room.' },
   { id: 'shaker',     tier: 0, name: "Sailor's Salt-Shaker",    glyph: '♨', blurb: 'Nothing has ever come out of it. Everything it has been sprinkled on has kept.' },

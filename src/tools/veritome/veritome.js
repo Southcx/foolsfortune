@@ -13,9 +13,9 @@
 //    the SHUTTER CHANCE (it is in the air, or clapping at them). A photograph never stuns (the Flash does, on its own key). An unaware creature cannot be held: it is
 //    photographed candidly, which is how its habits are learned. (Fatal Frame's Camera Obscura, made gentler: it never kills.)
 //  - THE TRUTH. A photograph undoes whatever the Soul Brush wrote on what it shows (the photograph is of the thing as it is).
-//  - THE BOOK (tools/veritome/book.js), the Courier's bank. While it is held open, the Pneuka Box (P: pneuka/box.js) opens beside it, and
-//    things are stored in it as cards or taken out as things. The binder, the memory, the bestiary and the Compendium are the Codex's
-//    VERITOME shelf (B): the Codex is the Veritome's own pages.
+//  - THE BOOK (tools/veritome/book.js): what the Veritome knows, the memory, the bestiary and the Compendium, the Codex's VERITOME shelf (B).
+//    It keeps no cards and no things (the owner's ruling of 2026-10-23: observation and reprogramming only): a card earned is bound in
+//    the collection (progress/collection.js, the Codex's THE ARCANA), and a thing kept for good is in the Pneuka Box's storage at a Shrine.
 //  - THE READ. The Survey (N, cartography.js) borrows the same open hold for a moment in third person: they read the ground off it.
 //  - THE BOOK BASH. LMB with the lens down: the book clapped shut and swung, a forehand and a backhand (the combo engine: tools/moveset.js).
 //  - THE BODY (the Courier's own suite, Tome_*): the book held open at the waist (Tome_Idle), raised to the eye before first person takes
@@ -23,7 +23,7 @@
 //    reprogrammed (Tome_FlipPages), the ground read off it (Tome_Survey), the bash (Tome_BookBash1-2). In third person the hands carry
 //    the book (hold.js handsFrame), so every clip moves it; the hands then close on its edges.
 //
-//   X      draw / stow (as the main: tools/belt.js; as the sub, R is the Flash)     RMB (hold)  the lens: LMB the shutter, wheel the zoom     LMB  the book bash     P (while it is out)  the box and the bank
+//   X      draw / stow (as the main: tools/belt.js; as the sub, R is the Flash)     RMB (hold)  the lens: LMB the shutter, wheel the zoom     LMB  the book bash
 //   B      the Codex: the binder (Take out, Condense), the memory (appraise), the bestiary, the Compendium
 // ---------------------------------------------------------------------------------------
 import { drawStamp, stampText } from '../../ui/datestamp.js';
@@ -171,7 +171,6 @@ export class Veritome extends Tech {
     this.readT = Math.max(0, this.readT - dt);
     this.readW = THREE.MathUtils.damp(this.readW, this.readT > 0 && !this.toolOut && !P.fp ? 1 : 0, this.readT > 0 ? 9 : 6, dt);
     if (this.readW < 0.002) this.readW = 0;
-    this.book.tick();
     // the cover's instruments keep the tide and the heading
     const W = g.weir;
     const tide = W ? (W.tide + (W.tideT || 0) / TIDE_LEN) / TIDES.length : (performance.now() / 320000) % 1;

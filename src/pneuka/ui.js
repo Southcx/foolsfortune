@@ -41,7 +41,6 @@ const CSS = `
 #pneuka .pane:not(.rt-book):not(.rt-pane) { background: rgba(14,6,4,.55); border: 1px solid rgba(255,178,122,.22); border-radius: 4px; padding: 10px; }
 #pneuka .pane h4 { margin: 0 0 8px; font-size: 10px; letter-spacing: .22em; color: #e7c46a; font-weight: normal; display: flex; justify-content: space-between; gap: 12px; }
 #pneuka .grid { display: grid; grid-template-columns: repeat(8, 52px); gap: 5px; }
-@media (max-width: 560px) { #pneuka .grid { grid-template-columns: repeat(4, 52px); } }
 #pneuka .bank .grid { grid-template-columns: repeat(5, 52px); }
 #pneuka .slot { width: 52px; height: 52px; box-sizing: border-box; position: relative; cursor: var(--jcur-pointer, pointer); }
 #pneuka .slot:not(.rt-slot) { border: 1px solid rgba(255,178,122,.18); border-radius: 4px; background: rgba(40,18,10,.75); } /* (the pocket's slots wear the reading table's dress: RT_CLASSES) */
