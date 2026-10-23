@@ -144,10 +144,9 @@
         else if (r < 0.95) inp.pressed.add('Mouse1');
         else inp.wheel += (rnd() - 0.5) * 400;
       }
-      // (the Book's cards, or none)
-      const B0 = (g) => g.game.veritome?.book.cards || {};
       // the sub's verb (R), now and then; the Veritome as the main: raise the lens and expose plates; now and then appraise the roll or
-      // condense a card; the Pneuka Box: things come into it (as a chest gives them), are dropped, stored, taken out, tied on; the Survey (N)
+      // earn a card (bound once, then condensed: progress/collection.js); the Pneuka Box: things come into it (as a chest gives them), are
+      // dropped, stored and taken out of its storage (refused away from a Shrine), tied on; the Survey (N)
       if (!god.controlling && rnd() < 0.003) inp.pressed.add('KeyR');
       if (!god.controlling && rnd() < 0.001) inp.pressed.add('KeyN');
       const book = g.techs.get('veritome');
@@ -159,9 +158,9 @@
         else inp.pressed.add('Mouse1');
       }
       if (book && rnd() < 0.002) {
-        const B = book.book, r = rnd(), ids = Object.keys(B.cards);
+        const B = book.book, r = rnd(), majors = ['fool', 'magician', 'priestess', 'empress', 'emperor', 'tower', 'world'];
         if (r < 0.5 && B.memory.plates.length) book.appraise();
-        else if (ids.length) B.condense(ids[Math.floor(rnd() * ids.length)]);
+        else g.game.collection?.bind(`arcana.${majors[Math.floor(rnd() * majors.length)]}`, 'stress');
       }
       const box = g.game.pneuka;
       if (box && rnd() < 0.006) {
@@ -169,7 +168,7 @@
         if (r < 0.35) box.add(`curio.${['whelk', 'gull', 'pearl', 'skull', 'koi', 'bell', 'storm'][Math.floor(rnd() * 7)]}`, 'stress');
         else if (r < 0.45 && full.length) box.drop(any);
         else if (r < 0.6 && full.length) box.store(any);
-        else if (r < 0.7) { const c = Object.keys(B0(g)).filter((k) => k.startsWith('curio.')); if (c.length) box.withdraw(c[Math.floor(rnd() * c.length)]); }
+        else if (r < 0.7) { if (box.storage?.length) box.withdraw(Math.floor(rnd() * box.storage.length)); }
         else if (r < 0.8 && full.length) box.tieOn(any);
         else if (r < 0.88) { if (rnd() < 0.5) box.tie(['lure.bob', 'lure.eye', 'lure.fly'][Math.floor(rnd() * 3)]); else if (full.length) box.fitOn(any); }
         else if (r < 0.94 && full.length > 1) box.swap(any, full[0]);

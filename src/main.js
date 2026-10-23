@@ -131,6 +131,7 @@ import { Kiln, KILN_AT } from './courier/moves/kiln.js';
 import { Shops } from './progress/shop/shops.js';
 import { ShopUI } from './progress/shop/ui.js';
 import { PneukaUI } from './pneuka/ui.js';
+import { Collection } from './progress/collection.js';
 import { GroundItems } from './pneuka/ground.js';
 import { SystemVoice } from './audio/voice/voice.js';
 import { MusicPlayer } from './music/player.js';
@@ -594,7 +595,7 @@ async function main() {
   // the Pneuka Box: what they carry (P), what lies on the ground, and the window; the Veritome is its bank (pneuka/)
   game.ground = new GroundItems(game);
   game.pneuka = new PneukaBox(game);
-  if (game.veritome) game.pneuka.migrate(game.veritome.book);
+  game.collection = new Collection(game); // (the cards bound, kept in the Codex: progress/collection.js; the Veritome keeps none)
   game.belt.tick(); game.pneuka.seed(); game.pneuka.reconcile(); // (a new Courier: the Magician's pair worn, the made lures in the box; and two tools worn, never one twice)
   game.pneukaUI = new PneukaUI(game);
   game.pneukaUI.onClose = () => { if (input.enabled && !cursorFree()) input.requestLock(); };

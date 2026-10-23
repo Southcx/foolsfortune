@@ -1,21 +1,17 @@
 // ---------------------------------------------------------------------------------------
-// THE VERITOME'S SHELF in the Codex (B). The Codex is the Veritome's own pages (the Book is the Courier's computer, the Codex its
-// system), and this shelf is the Book itself, in four pages:
+// THE VERITOME'S SHELF in the Codex (B): what the Veritome knows, in four pages. It keeps no cards and no things (the owner's ruling of
+// 2026-10-23: the Veritome is observation and reprogramming only); the cards bound are the Codex's THE ARCANA shelf
+// (feedback/codex/arcana.js) and, for creatures, the bestiary's page here.
 //
-//  - THE BINDER: every designated page, by section, numbered (Greed Island's binder). A filled page shows its card, its rank and how
-//    many copies of its limit the Book holds; TAKE OUT puts a card with an item form into the Pneuka Box as the thing itself (with
-//    the Veritome drawn), CONDENSE turns a spare into cubes. An empty page shows the Book's back and only its riddle. Above it: pages
-//    filled, free slots used, what is in the Pneuka Box, the memory.
 //  - THE MEMORY: the plates not yet appraised, with APPRAISE ALL (or a chosen few) and DISCARD. Appraising is a step of its own, done
 //    in a batch: the report lists each plate with its stars and what it gave (an entry, a fact, a card), Pokémon Snap's way.
-//  - THE BESTIARY: each creature's understanding (GLIMPSED to UNDERSTOOD) and the facts known, the battle ones marked.
+//  - THE BESTIARY: each creature's understanding (GLIMPSED to UNDERSTOOD), the facts known (the battle ones marked), and its card once bound.
 //  - THE COMPENDIUM: the best photograph of every kind of thing, with its stars (the Hyrule Compendium).
 //  - THE MIND: the macros, composed on the lattice from the Functions learned (tools/veritome/mind/composer.js), said to stunned minds (reprogram.js).
 //
-// Prior art: Greed Island's binder (numbered designated slots, free slots, ranks and limits), OSRS's bank, Pokémon Snap's report and album,
-// Monster Hunter's Hunter's Notes, the Hyrule Compendium, and Dark Cloud 2's album of scoops.
+// Prior art: Pokémon Snap's report and album, Monster Hunter's Hunter's Notes, the Hyrule Compendium, and Dark Cloud 2's album of scoops.
 // ---------------------------------------------------------------------------------------
-import { CARDS, CARD, SECTIONS, FREE_SLOTS, WORTH, cardArt } from './cards.js';
+import { CARD, cardArt } from './cards.js';
 import { MEMORY_PLATES } from './memory.js';
 import { CREATURES, CREATURE_IDS } from './bestiary.js';
 import { SUBJECTS } from './subjects.js';
@@ -57,66 +53,23 @@ const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls)
 const button = (label, on, disabled = false, title = '') => { const b = el('button', '', label); b.disabled = disabled; if (title) b.title = title; b.onclick = on; return b; };
 const stars = (n) => '★'.repeat(n || 0) + '<span style="opacity:.25">' + '★'.repeat(Math.max(0, 4 - (n || 0))) + '</span>';
 
+/** The shelf's styles, once (THE ARCANA's shelf wears them too: feedback/codex/arcana.js). */
+export function vtStyle() { if (!styled) { const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st); styled = true; } }
+
 export function renderVeritome(codex, cx) {
-  if (!styled) { const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st); styled = true; }
+  vtStyle();
   const g = codex.game, V = g.veritome, B = V?.book;
   if (!B) { cx.appendChild(el('p', '', 'The Veritome is not here.')); return; }
-  const box = g.pneuka;
-  cx.appendChild(el('div', 'sum', `<span>PAGES ${B.filled} / ${CARDS.length}</span><span>FREE SLOTS ${B.freeUsed} / ${FREE_SLOTS}</span>${box ? `<span>PNEUKA BOX ${box.used} / ${box.slots.length} (P)</span>` : ''}<span>MEMORY ${B.memory.plates.length} / ${MEMORY_PLATES}</span>`));
+  cx.appendChild(el('div', 'sum', `<span>MEMORY ${B.memory.plates.length} / ${MEMORY_PLATES}</span><span>CARDS BOUND ${g.collection?.filled ?? 0} (THE ARCANA, and the bestiary)</span>`));
   const pages = el('div', 'vtpages');
-  codex.vtPage ||= 'binder';
-  for (const [id, name] of [['binder', 'THE BINDER'], ['memory', `THE MEMORY${B.memory.plates.length ? ` (${B.memory.plates.length})` : ''}`], ['bestiary', 'THE BESTIARY'], ['compendium', 'THE COMPENDIUM'], ['mind', 'THE MIND']]) {
+  if (!codex.vtPage || codex.vtPage === 'binder') codex.vtPage = 'memory';
+  for (const [id, name] of [['memory', `THE MEMORY${B.memory.plates.length ? ` (${B.memory.plates.length})` : ''}`], ['bestiary', 'THE BESTIARY'], ['compendium', 'THE COMPENDIUM'], ['mind', 'THE MIND']]) {
     const s = el('span', codex.vtPage === id ? 'on' : '', name);
     s.onclick = () => { codex.vtPage = id; codex.render(); };
     pages.appendChild(s);
   }
   cx.appendChild(pages);
-  ({ binder, memory, bestiary, compendium, mind: (cd, c2, gg) => renderMind(cd, c2, gg) })[codex.vtPage](codex, cx, g, B);
-}
-
-// ---------------------------------------------------------------- the binder
-function binder(codex, cx, g, B) {
-  const wrap = el('div', 'vt'), left = el('div');
-  codex.vtSel ||= CARDS[0].id;
-  for (const S of SECTIONS) {
-    const list = CARDS.filter((c) => c.section === S.id);
-    left.appendChild(el('div', 'sec', `${S.name} · ${B.filledIn(S.id)} / ${list.length}`));
-    const grid = el('div', 'binder');
-    for (const A of list) {
-      const n = B.count(A.id), seen = B.known(A.id), it = g.pneuka ? g.pneuka.count(A.id) + (g.pneuka.lure === A.id ? 1 : 0) : 0;
-      const slot = el('div', `slot${n ? '' : seen ? ' seen' : ' empty'}${codex.vtSel === A.id ? ' sel' : ''}`);
-      const c = document.createElement('canvas'); c.width = 120; c.height = 200;
-      c.getContext('2d').drawImage(cardArt(A.id, 120, 200, { back: !n && !seen }), 0, 0);
-      slot.appendChild(c);
-      slot.appendChild(el('b', '', A.page));
-      if (n) slot.appendChild(el('s', '', `${n}/${A.limit}`));
-      if (it) slot.appendChild(el('i', '', `◆${it}`));
-      slot.onclick = () => { codex.vtSel = A.id; codex.render(); };
-      grid.appendChild(slot);
-    }
-    left.appendChild(grid);
-  }
-  wrap.appendChild(left);
-  // the card picked
-  const A = CARD[codex.vtSel] || CARDS[0], n = B.count(A.id), seen = B.known(A.id), det = el('div', 'card detail');
-  const S = SECTIONS.find((s) => s.id === A.section);
-  det.appendChild(el('div', 'in', `PAGE ${A.page} · ${S.name} · RANK ${A.rank} · LIMIT ${A.limit}`));
-  const art = document.createElement('canvas'); art.width = 120; art.height = 200; art.getContext('2d').drawImage(cardArt(A.id, 120, 200, { back: !n && !seen }), 0, 0);
-  det.appendChild(art);
-  det.appendChild(el('h3', '', n || seen ? A.name.toUpperCase() : '· · ·'));
-  if (n || seen) det.appendChild(el('p', '', A.lore));
-  det.appendChild(el('p', 'hint', A.section === 'arcana' ? `Sitting: ${A.hint}.` : `Comes from: ${A.hint}.`));
-  if (!n) det.appendChild(el('p', 'hint', seen ? 'The page has held it once; it is empty now.' : A.section === 'arcana' ? 'Photograph its sitting, then appraise the photo.' : A.section === 'curio' ? 'Open chests: a curio goes into the Pneuka Box (P), and can be stored here with the Veritome drawn.' : 'Photograph it well (three stars, as the main subject), then appraise the photo.'));
-  const carried = g.pneuka ? g.pneuka.count(A.id) + (g.pneuka.lure === A.id ? 1 : 0) : 0;
-  if (carried) det.appendChild(el('p', '', `<span style="color:#9be36a">CARRIED</span> · ${carried} in the Pneuka Box${g.pneuka.lure === A.id ? ', on the line' : ''} (P)`));
-  const btns = el('div', 'btns');
-  const held = !!g.veritome?.held || !!g.pneuka?.bankOpen; // (the bank: a Shrine's THE BANK row, or the Veritome held open)
-  if (A.form === 'item') btns.appendChild(button('TAKE OUT', () => { if (g.pneuka?.withdraw(A.id)) codex.render(); }, !n || !held || !g.pneuka?.free, !held ? 'the bank opens at a Shrine (THE BANK), or with the Veritome held open as your main' : 'a copy becomes the thing itself, in the Pneuka Box'));
-  btns.appendChild(button(`CONDENSE (${WORTH[A.rank]} cubes)`, () => { if (B.condense(A.id)) codex.render(); }, B.spares(A.id) < 1, 'a spare copy, condensed into Lachryma cubes'));
-  det.appendChild(btns);
-  if (A.form !== 'item') det.appendChild(el('p', 'hint', 'A picture of something known: it has no item form, and stays a card.'));
-  wrap.appendChild(det);
-  cx.appendChild(wrap);
+  ({ memory, bestiary, compendium, mind: (cd, c2, gg) => renderMind(cd, c2, gg) })[codex.vtPage](codex, cx, g, B);
 }
 
 // ---------------------------------------------------------------- the memory and the darkroom
@@ -170,6 +123,7 @@ function bestiary(codex, cx, g, B) {
   card.style.display = 'block';
   const ph = B.photos[C.fish ? 'fish' : 'clapper'];
   card.appendChild(el('div', 'in', `${u.n ? C.name.toUpperCase() : '· · ·'} <span class="tier">${u.name}</span>`));
+  if (g.collection?.has(`creature.${id}`)) { const c = document.createElement('canvas'); c.width = 120; c.height = 200; c.getContext('2d').drawImage(cardArt(`creature.${id}`, 120, 200), 0, 0); const d = el('div', 'detail'); d.appendChild(c); card.appendChild(d); } // (its card, bound: progress/collection.js)
   if (u.n && ph?.thumb && !C.fish) card.appendChild(el('div', 'ph', `<i style="background-image:url(${ph.thumb})"></i>`));
   for (const f of C.facts) {
     const k = Bs.knows(id, f.id);

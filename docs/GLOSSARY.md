@@ -157,8 +157,12 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the paint reticle / the jet ring / the shine / the bottle's arc** (`PaintReticle`, `JetRing`, `CleanShine`, `src/vfx/brushmarks.js`;
   `BottleArc`, `src/vfx/bottlearc.js`) — where the stream lands and its spread; the hover's fuel or the rocket's gather at the feet; ground
   just cleaned; the bottle's fill beside the paint reticle (`game.paintReticle`). No words. *Not:* the lock-on reticle, the Lachryma ring. → detail
-- **the Veritome** (`src/tools/veritome/veritome.js`) — the book that is a camera; a plate is one photograph; its pages are the Book, the
-  Compendium, the bestiary, the Major Arcana. *Not:* the inventory. → detail
+- **the Veritome** (`src/tools/veritome/veritome.js`) — the book that is a camera, for observation and reprogramming only (the owner, 2026-10-23);
+  a plate is one photograph; what it knows is the Book (`book.js`: the memory, the Compendium, the bestiary's facts). It keeps no cards and
+  no things. *Not:* the inventory, the collection. → detail
+- **the collection** (`game.collection`, `src/progress/collection.js`; save section `collection`) — the cards bound, the 22 Major Arcana and the
+  creature cards, each once (the Fool from the start); a second photograph of one bound condenses into cubes. Shown on the Codex's THE ARCANA
+  shelf (`codex/arcana.js`) and in the bestiary. *Not:* the Veritome, the Box's storage.
 - **a Veritome / its sight** (working names; `docs/plans/VERITOMES.md`, a plan) — one variant of the book, worn as a whole (as a Lockheart's coffin) / what it sees with the lens raised, a convenience never a key. *Not:* a fitting, a lens item.
 - **reprogramming** (`src/tools/veritome/reprogram.js`) — rewriting a stunned creature's mind with a macro composed on a lattice of Functions (THE
   MIND shelf) and spoken in neuralese.
@@ -530,7 +534,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 
 - **the System** (`src/progress/system.js`) — the game's code made a voice; it teaches the Movement Arts and keeps the save. Always capitalised.
   *Not:* a game system in general.
-- **the Codex** (B, `src/feedback/codex/codex.js`) — the System's book: arts, the ledger and records, the tools, the Veritome's shelf, curios.
+- **the Codex** (B, `src/feedback/codex/codex.js`) — the System's book: arts, the ledger and records, the tools, THE ARCANA (the collection's
+  Majors), the Veritome's shelf, curios.
   Its **STATUS shelf** (`codex/status.js`): the domains' levels and Soul Alchemy's ranks as two radar charts.
 - **the DEBUG save / the STORY save** (`game.mode`; `docs/plans/DEBUG-MODE.md`) — the two separate records the title's choice picks; settings
   shared, nothing else crosses. DEBUG is STORY plus the lend panel, the commands, the debug chests and presets.
@@ -565,8 +570,11 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 ## 9. What the game shows and sounds
 
 - **the pause menu** (Esc) — the help pages and the controls. *Retired:* "pause card".
-- **the Pneuka Box** (P, `src/pneuka/`) — the inventory (56 slots) and what is worn; at a Shrine's THE BANK row, or with the Veritome held open, the bank (the Book) opens beside it.
+- **the Pneuka Box** (P, `src/pneuka/`) — the inventory (56 slots) and what is worn; at a Shrine's STORAGE row, its storage opens beside it.
   *Not:* the Veritome.
+- **the Box's storage** (`box.storage`, `storageOpen`, `openStorage`, `src/pneuka/box.js`; save section `storage`) — the Pneuka Box's long-term
+  store, opened only at a Shrine: any thing, stacked by kind, up to 56 stacks. *Not:* the shed's storage (the Spirit Garden's decor), the bank
+  (retired).
 - **the reading table** (plain name; `ReadingTable`, `game.readingTable`, `src/ui/readingtable.js`) — the Pneuka Box's loadout drawn as a tarot reading: the main tool's card upright, the sub's crossed over it, the pair's Major Arcana beside them (face down until opened), the shelf's tools as a hand to pick or drag, a swap's preview, and your seal pressed over a refused swap. It draws what it is handed (`draw(state)`) and sends back hover, pick and drop. *Not:* the window (Dovina's `pneuka/ui.js`), the loadout's rules, a table (Raku's).
 - **a spread / a spread's position / the spread board** (plain names; tarot's own words; `SPREADS`, `light`, `tally`, `src/progress/spreads.js`; measured by `scripts/spreads.mjs`; `docs/plans/SPREADS.md`) — Major Arcana laid in a tarot layout (the three-card, the Horseshoe, the Celtic Cross), opened by achievement / one place in it, its rule its meaning (the Past fades, the Challenge counts only in a fight; the Crown position, never bare "the crown") / the Pneuka Box's underside, the same 8 by 7 grid, shown by its flip, mirrored. *Not:* the reading table (the loadout), a table (Raku's).
 - **the reading view** (plain name; SPREADS.md 5.1.1, a plan) — the flip's view: the Courier hanging in the title's dark, the laid Majors orbiting them in the spread's shape, the grid a lit cloth under their feet, the hand fanned below. *Not:* the reading table (the loadout), the title's fall.
@@ -849,3 +857,4 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | the Lockheart's gauge (`LockheartMarks`, the padlock and sockets beside the coffin) | the Lockheart's reliquary (the owner, 2026-10-19: retired with board v10) | `docs/plans/MELEE-LOADOUT.md`, `docs/plans/REGISTERS.md` |
 | the string row (`CutlassStringRow`, the cutlass's pips at the bottom middle) | the Sondelass's guard, its blade's notches (the owner, 2026-10-18: retired with the old HUD) | (gone) |
 | the Soul Brush's radial (the wheel on 1 held, `paintradial`; its icons `paint.<pick>`, `ui/icons/paintart.js`) | the Soul Brush's desk; the quick pick (1 held) (the owner, 2026-10-19: retired with board v11) | `tools/soulbrush/radial.js` (`PaintRadial`, the ring's mechanics: Petra's name) |
+| the bank (the Veritome's Book as storage; the Shrine's THE BANK row; `bankOpen`, `openBank`) | the Box's storage (`box.storage`, `storageOpen`, `openStorage`; the Shrine's STORAGE row) (the owner, 2026-10-23: the Veritome is observation only) | `pneuka/ui.js` (the pane, Dovina's), `pneuka/box.js` (the two old names, until the pane moves) |
