@@ -180,7 +180,7 @@ export class SlipJellies {
   /** Its end: it rears up, and a beat later it bursts (pop): a fountain of slip that rains back down, a pool, its Lachryma, a rush of sand. */
   burst(c, dir, by, cause, culprit = null) {
     const g = this.game;
-    if (!c.alive) return;
+    if (!c.alive || c.disposed) return;
     c.alive = false; c.dying = g.figmentScatter?.play(c, { min: 0.14 }) ?? 0.14; c.deadT = 0; c.attack = null; // (a Figment's scatter first: vfx/figmentscatter.js)
     c.col.setEnabled(false);
     c.deform.kick(9, null, 0.3); c.deform.target.squash = 1.55; // (the rearing: up on its toes, before it goes)
@@ -216,7 +216,7 @@ export class SlipJellies {
   }
   /** Gone without a burst (the zandatsu takes its body apart itself: veritome and sondelass call this). */
   vanish(c, by, cause) {
-    if (!c.alive) return;
+    if (!c.alive || c.disposed) return; // (a zandatsu's cut lands 0.16 real s after it is queued: a floor cleared meanwhile has freed its body)
     c.alive = false; c.dying = null; c.deadT = 0; c.attack = null; c.downBy = by;
     c.col.setEnabled(false); c.root.visible = false;
     c.brain.end('gone');
@@ -234,7 +234,7 @@ export class SlipJellies {
   /** Taken whole (bound: creatures/bound.js): out of the world without a burst, nothing spilled, nothing said of a death. A Well's is
    *  gone for good; a jelly of the dunes forms again at home in time (another one: this one is in the Jar). */
   take(c, by = 'courier') {
-    if (!c.alive) return;
+    if (!c.alive || c.disposed) return;
     c.alive = false; c.dying = null; c.deadT = 0; c.attack = null; c.downBy = by; c.held = null;
     c.col.setEnabled(false); c.root.visible = false;
     c.brain.end('gone'); c.status.clear(); this.game.creatures.unwind(c);
@@ -242,7 +242,7 @@ export class SlipJellies {
   }
   /** Gone for good (a spirit: it does not form again). */
   dispose(c) {
-    if (c.disposed) return; c.disposed = true; // (twice is a no-op: a second removeRigidBody poisons Rapier's world, casebook rule 65)
+    if (c.disposed) return; c.disposed = true; c.alive = false; // (twice is a no-op: a second removeRigidBody poisons Rapier's world, casebook rule 65; and dead to whatever still holds it, a queued cut say: its collider goes with its body)
     const g = this.game;
     g.scene.remove(c.root); c.mat.dispose();
     try { g.physics.removeBody(c.rb); } catch { /* already gone */ }

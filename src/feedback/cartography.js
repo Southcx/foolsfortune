@@ -274,7 +274,7 @@ export class Cartography {
     const l = this.layerOf(P.pos);
     if (!g.lachryma.spend(Z.pulseCost, 'survey')) return false;
     this.pulseCool = Z.pulseCooldown;
-    const R = l.id === 'dunes' ? Z.pulseRadius * 3.2 : byGod ? Z.godPulseRadius : Z.pulseRadius;
+    const R = (l.id === 'dunes' ? Z.pulseRadius * 3.2 : byGod ? Z.godPulseRadius : Z.pulseRadius) * (g.psyche?.widen?.('divination.survey') ?? 1);
     const origin = new THREE.Vector3(P.pos.x, P.pos.y + (byGod ? 1.0 : 1.3), P.pos.z);
     // (the cells it will reach, nearest first, so the ring reveals them as it passes)
     const cs = l.cell, n = Math.ceil(R / cs), cx = Math.floor(P.pos.x / cs), cz = Math.floor(P.pos.z / cs);

@@ -1,8 +1,9 @@
 // ---------------------------------------------------------------------------------------
-// SIGILS: while the Soul Brush is out, every clapperjar near enough carries a little queue of brushed marks over its head (a stroke
-// across, a stroke down, a V, a caret, a lightning bolt; a raider carries three). Drawing a mark on the Celestial Brush's canvas takes
+// SIGILS: while the Soul Brush is out, every clapperjar and every hurtable creature near enough (not an ally, not an aberrant: TOOLS-TOGETHER.md 9)
+// carries a little queue of brushed marks over its head (a stroke across, a stroke down, a V, a caret, a lightning bolt), its length its
+// kind's (SIGIL_QUEUE). Drawing a mark on the Celestial Brush's canvas takes
 // that mark off the FRONT of every queue it heads, all at once, wherever those jars are on the screen; a jar whose queue is emptied is
-// undone (it comes apart in a burst of ink). So a crowd is read and answered, mark by mark, the way a sentence is written.
+// undone (it comes apart in a burst of ink; a creature is struck, a blow of the queue's length: creatures.strike). So a crowd is read and answered, mark by mark, the way a sentence is written.
 //
 // Prior art: Magic Cat Academy (Google's Halloween Doodle, 2016): Momo the cat draws the symbol over a ghost's head to pop it, one symbol
 // pops it from every ghost that shows it, and the lightning bolt and the heart are special symbols. The marks here are drawn as brush
@@ -12,6 +13,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { stream, randDir } from '../../core/rng.js';
+import { hasTag } from '../../core/tags.js';
 const simRand = stream('tools/soulbrush/sigils'); // (the simulation's chance: core/rng.js, the same twice)
 
 export const SIGIL_KEYS = ['h', 'v', 'vee', 'caret', 'bolt'];
@@ -25,6 +27,12 @@ const SHAPES = {
   bolt: [[0.62, 0.08, 0.3, 0.5, 0.68, 0.5, 0.36, 0.92]],
 };
 const RANGE = 16, SIZE = 0.46;
+/** A queue's length (Dovina's balance, TOOLS-TOGETHER.md 9.4): a clapperjar one or two; a creature one mark for every `markHp` of its
+ *  health when dealt, at most `max` (a slip jelly's 8: four; a Lantern Wisp's 5: three). A cleared queue strikes `markHp` a mark, so it
+ *  undoes anything of up to `markHp * max` (10) at once, as in Magic Cat Academy, where the last symbol pops the ghost; what has more is
+ *  dealt a fresh queue and goes on. A mark costs its drawing's technique (3 to 6 Lachryma) and the paper's drain, about 5 in all: a
+ *  slip jelly about 20 of the pool, struck alone, and a crowd far less each, since one mark answers every queue it heads. */
+export const SIGIL_QUEUE = { clapper: [1, 2], raider: 3, markHp: 2, max: 5 }; // (raider: a raid's clapperjar carries three, as it always has)
 
 function sigilTexture(key) {
   const S = 128, c = document.createElement('canvas'); c.width = c.height = S;
@@ -45,9 +53,9 @@ export class Sigils {
     this.bursts = [];
   }
 
-  /** A queue for a clapperjar: a raider carries three, the rest one or two; the bolt is rare. */
+  /** A queue: its kind's length (SIGIL_QUEUE; a clapperjar one or two); the bolt is rare. */
   deal(c) {
-    const n = c.raider ? 3 : simRand() < 0.45 ? 2 : 1;
+    const Q = SIGIL_QUEUE, n = c.raider ? Q.raider : this.jar(c) ? (simRand() < 0.45 ? Q.clapper[1] : Q.clapper[0]) : Math.min(Q.max, Math.max(1, Math.ceil((c.hp ?? Q.markHp) / Q.markHp)));
     const pick = () => (simRand() < 0.12 ? 'bolt' : SIGIL_KEYS[Math.floor(simRand() * 4)]);
     return Array.from({ length: n }, pick);
   }
@@ -60,9 +68,15 @@ export class Sigils {
   }
   drop(s) { this.game.scene.remove(s); s.material.dispose(); }
 
+  /** A clapperjar (the clay folk's lowest), not a creature of `game.creatures`. */
+  jar(c) { return !!this.game.clappers?.list?.includes(c); }
+  /** Where a queue rides: over a clapperjar's lid, over a creature's top. */
+  over(c) { return c.pos.y + (this.jar(c) ? 1.2 : (c.height ?? 1.2) + 0.45); }
+
   update(dt, on) {
     const g = this.game, P = g.player, cam = g.camera;
     const live = new Set(g.clappers?.list || []);
+    for (const c of g.creatures?.near?.(P.pos, RANGE + 2) || []) if (c.alive && hasTag(c, 'hurtable') && !c.ally && !c.aberrant) live.add(c); // (every hurtable Figment: TOOLS-TOGETHER.md 9)
     for (const [c, e] of this.on) if (!live.has(c) || !c.alive || c.ally) { e.sprites.forEach((s) => this.drop(s)); this.on.delete(c); }
     const right = new THREE.Vector3(1, 0, 0).applyQuaternion(cam.quaternion);
     this.t = (this.t || 0) + dt;
@@ -72,7 +86,7 @@ export class Sigils {
       let e = this.on.get(c);
       if (!e) {
         if (!on || !near) continue;
-        c.sigils ||= this.deal(c);
+        if (!c.sigils) { c.sigils = this.deal(c); c.sigilsDealt = c.sigils.length; }
         e = { keys: c.sigils, sprites: c.sigils.map((k) => this.sprite(k)), k: 0 };
         this.on.set(c, e);
       }
@@ -81,7 +95,7 @@ export class Sigils {
       const n = e.sprites.length;
       e.sprites.forEach((s, i) => {
         s.position.copy(c.pos).addScaledVector(right, (i - (n - 1) / 2) * SIZE * 1.05);
-        s.position.y += 1.2 + Math.sin(this.t * 2.2 + i) * 0.02;
+        s.position.y = this.over(c) + Math.sin(this.t * 2.2 + i) * 0.02;
         const lead = i === 0 ? 1.15 : 0.9;
         s.scale.setScalar(SIZE * lead * (0.4 + 0.6 * e.k));
         s.material.opacity = e.k * (i === 0 ? 1 : 0.75);
@@ -116,7 +130,8 @@ export class Sigils {
         const p = c.pos.clone().setY(c.pos.y + 0.35), dir = p.clone().sub(P.pos).setY(0).normalize();
         const ink = new THREE.Color(0x17111a), sheen = new THREE.Color(0x8c56dc);
         for (let i = 0; i < 26; i++) g.fx.alpha.emit({ pos: p, vel: randDir(simRand, new THREE.Vector3()).multiplyScalar(2 + simRand() * 3), life: 0.5 + simRand() * 0.4, size: 0.12, sizeEnd: 0.03, color: i % 4 ? ink : sheen, alpha: 0.85, drag: 3, gravity: 5 });
-        g.clappers.hit(c, p, dir, 1, 'brushed');
+        if (this.jar(c)) g.clappers.hit(c, p, dir, 1, 'brushed');
+        else { g.creatures.strike(c, p, dir, SIGIL_QUEUE.markHp * (c.sigilsDealt || 1), 'brushed', 'courier'); c.sigils = null; } // (a creature: one blow, worth its queue; one still standing is dealt a fresh queue, never left with an empty one)
       }
     }
     return { popped, cleared };

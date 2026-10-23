@@ -379,7 +379,7 @@ make a garden.
    - **built fourth:** the spirits walk their routines (C1, `world/garden/spiritwalk.js`): toward the nearest of their place on the
      planetoid they stand on, as faithfully as their grain allows, else the old wander.
    - **built fifth:** the farewell (C6, the owner's Q4): `FAREWELL` in `progress/spiritlife.js`; a statue of the spirit in its feeling,
-     a keepsake never sold (`statue<Feeling>`, `progress/decor.js`), and Bon Voyage. The matching glaze is asked of Calissa.
+     a keepsake never sold (`statue<Feeling>`, `progress/decor.js`), and Bon Voyage. The matching glaze is Calissa's (0af7ec5, her branch): Wonder AVENTURINE, Mirth CRYSTALLINE, Desire PEACHBLOOM, Grief BIDORO, Dread KURO RAKU, opened by gy17 to gy21.
    - **next:** seasons in the cue (Wanda's B6).
    No world code; MEASURE lines in a script.
 2. **Petra:**
@@ -402,4 +402,7 @@ make a garden.
 - **Q4.** Yes, a spirit at bond 100 may ask to go home, never forced. Every bound spirit is a Figment from the wild: caught, awakened
   from a plate, dug as a fossil, settled as a visitor, or merged from two that were. A spirit that goes home leaves a cosmetic reward.
   (Dovina's proposal: a statue of it as a garden piece, plus its feeling's glaze at the kiln. Espada has the words.)
+- **Q4, the keepsake** (2026-10-22): "a statue plus the glaze". A farewell leaves the spirit's statue (the decor piece) and opens
+  its feeling's farewell glaze. Each glaze hangs on a hidden achievement over `spirit.farewell.<feeling>` (gy17 Wonder to gy21 Dread),
+  so it is retroactive like every glaze; the five glazes themselves are Calissa's.
 - **Q5.** Rearranging is free: "nobody wants to pay to shuffle furniture."

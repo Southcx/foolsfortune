@@ -12,7 +12,7 @@ export function anglingRules({ on, L, log, where }) {
   const asp = (id) => ASPECTS.find((a) => a.id === id)?.name.toLowerCase() || id;
   on('angle.charge', () => L.inc('angle.charge'));
   on('angle.cast', (e) => {
-    L.inc('angle.cast'); L.inc(`angle.cast.${e.aspect}`); if (e.water) L.inc('angle.cast.water'); if (e.lure) { L.inc(`angle.lure.${e.lure}`); if (e.lure.startsWith('curio.')) L.inc('angle.lure.curio'); } L.hi('angle.cast.dist', e.dist, { at: where() });
+    L.inc('angle.cast'); L.inc(`angle.cast.${e.aspect}`); if (e.water) L.inc('angle.cast.water'); if (e.lure) { L.inc(`angle.lure.${e.lure}`); if (e.lure.startsWith('curio.')) L.inc('angle.lure.curio'); } L.hi('angle.cast.dist', e.dist, { at: where() }); if (e.water) L.hi('angle.cast.dist.water', e.dist, { at: where() }); // (into water: what the casting achievements read)
     log.say('angle', e.water ? `You cast your lure. It carries a mask of ${asp(e.aspect)}.` : 'You cast your lure. It lands on dry ground.', { key: 'cast', throttle: 0.5 });
   });
   on('lure.land', (e) => L.inc(e.water ? 'lure.land.water' : 'lure.land.ground'));

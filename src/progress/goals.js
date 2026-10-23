@@ -13,26 +13,39 @@
 //   STRETCH  a Hard or harder one (tier 3+), in a third category, the nearest of its kind: the long reach for the session.
 // Only what is reachable is offered: an achievement with some progress, or one in a sub-group where something is already done. Hidden
 // ones never. A new save, which has begun nothing, is given FIRST STEPS: Easy ones with the smallest asks. Laid once a game day (calendar.js: one real hour), kept in the save; a goal done stays on the list, checked.
+// A goal still open at the turn carries over once, in its slot (Hades' prophecies stay until met); only the done and the twice-carried are drawn again.
 // THE FIRST PATH (docs/plans/FIRST-HOUR.md 4): a new STORY save's three goals are instead the first three undone steps of FIRST.path, a
 // walk outward from where you wake (the Shrine at your feet, the folk, the atrium rail's view, the pots, the hub's chest through the hole,
 // the Index to the Dunes, a slip jelly, the board, the lure, the course), and a step done is replaced by the next at once (Nook Miles+'s
 // refill; Breath of the Wild's Great Plateau, where the next shrine is always in view). It ends when the path is walked, or once enough
-// achievements are done that you plainly found your own way (FIRST.enough). DEBUG never walks it (a sandbox).
+// achievements off the path are done that you plainly found your own way (FIRST.enough: 40; at 15 counting all, QA-C's hour ended it at
+// minute 13 with three steps left). Each step says where it is (FIRST.where, after the achievement's words in the window and the log):
+// QA-C stood 14 real minutes with Lookout in view and nothing saying the atrium rail was upstairs. DEBUG never walks it (a sandbox).
 //
 //   GOALS   pickGoals(rows, { day, avoid }) -> [{ id, slot, first? }]   (rows: [{ id, cat, sub, tier, hidden, frac, goal }])
 //   const G = new Goals(game)   G.update(dt)   G.list() -> [{ id, slot, first, name, desc, tier, cur, goal, frac, done }]   /goals
-//   events: goals.set { day, ids, first }   goal.done { id, slot, ach, all, first }   goal.next { id, ach }   goals.ask { goals }
+//   events: goals.set { day, ids, first, kept }   goal.done { id, slot, ach, all, first }   goal.next { id, ach, where }   goals.ask { goals }
 // ---------------------------------------------------------------------------------------
 import { today } from '../core/calendar.js';
 
 export const GOALS = { near: 0.25, elsewhere: 5, stretch: { tier: 3, of: 3 }, look: 1, never: ['general'] }; // (never: categories that are not done by playing tonight: time, sessions, achievements about achievements)
 export const SLOTS = ['near', 'elsewhere', 'stretch'];
-/** The first path's steps, in the order the map meets them (FIRST-HOUR.md 4), and how many achievements done end it early. */
-export const FIRST = { path: ['sr1', 'fk1', 'sk12', 'br1', 'tc1', 'pl6', 'jl1', 'sf1', 'an1', 'cx3'], enough: 15 };
+/** The first path's steps, in the order the map meets them (FIRST-HOUR.md 4), where each is (placeholder words, Espada's), and how many
+ *  achievements off the path end it early. */
+export const FIRST = {
+  path: ['sr1', 'fk1', 'sk12', 'br1', 'tc1', 'pl6', 'jl1', 'sf1', 'an1', 'cx3'],
+  where: {
+    sr1: 'The Shrine is beside where you wake.', fk1: 'Saggar is on the workshop floor.', sk12: 'The nearest is the atrium rail, upstairs in the workshop.',
+    br1: 'The pots are all round the workshop: F lifts one, LMB throws it.', tc1: 'A chest stands in the basement\'s hub, down the hole in the workshop floor.',
+    pl6: 'The Index in the basement\'s hub sends you there.', jl1: 'Three sit on the sand just past the Weir, in the Dunes.', sf1: 'Y in the Dunes calls the Solar Skiff.',
+    an1: 'The Weir\'s pier: draw the Sondelass and take its rod form.', cx3: 'The course rings the basement\'s hub: eight stations, one lap.',
+  },
+  enough: 40,
+};
 
 /** The first path's next steps (up to three, in its order), or [] once it is walked or outgrown. Pure, for the measure. */
 export function firstSteps(rows, { have = [] } = {}) {
-  const by = new Map(rows.map((r) => [r.id, r])), done = rows.filter((r) => r.frac >= 1).length;
+  const by = new Map(rows.map((r) => [r.id, r])), done = rows.filter((r) => r.frac >= 1 && !FIRST.path.includes(r.id)).length;
   const left = FIRST.path.filter((id) => by.has(id) && !by.get(id).hidden && by.get(id).frac < 1);
   if (!left.length || done >= FIRST.enough) return [];
   return left.filter((id) => !have.includes(id)).slice(0, SLOTS.length);
@@ -93,10 +106,13 @@ export class Goals {
     const day = today();
     if (this.s.day !== day) {
       const avoid = this.s.cats || [], rows = this.rows(), path = this.onPath ? firstSteps(rows) : [];
-      const picks = path.length ? path.map((id, i) => ({ id, slot: SLOTS[i], first: true, path: true })) : pickGoals(rows, { day, avoid });
+      // a goal left open carries over the turn once, in its slot (QA-A: the game day turned 20 game minutes in and took two open goals)
+      const kept = path.length || this.s.day == null ? [] : (this.s.goals || []).filter((g) => !g.path && !g.carried && !this.A.done(g.id)).map((g) => ({ ...g, carried: true }));
+      const fresh = pickGoals(rows, { day, avoid }).filter((p) => !kept.some((k) => k.slot === p.slot || k.id === p.id));
+      const picks = path.length ? path.map((id, i) => ({ id, slot: SLOTS[i], first: true, path: true })) : [...kept, ...fresh].sort((x, y) => SLOTS.indexOf(x.slot) - SLOTS.indexOf(y.slot));
       this.s = { day, goals: picks, cats: picks.map((p) => this.A.by[p.id]?.cat).filter(Boolean), said: [] };
       this.game.save?.dirty('goals');
-      if (picks.length) this.game.events?.emit('goals.set', { day, ids: picks.map((p) => p.id), first: !!path.length, by: 'environment' });
+      if (picks.length) this.game.events?.emit('goals.set', { day, ids: picks.map((p) => p.id), first: !!path.length, kept: kept.length, by: 'environment' });
       return;
     }
     for (const g of this.s.goals) {
@@ -112,13 +128,13 @@ export class Goals {
     for (const g of done) {
       const id = next.shift(); if (!id) continue;
       Object.assign(g, { id, first: true, path: true }); this.game.save?.dirty('goals');
-      this.game.events?.emit('goal.next', { id, ach: this.A.by[id]?.name, by: 'environment' });
+      this.game.events?.emit('goal.next', { id, ach: this.A.by[id]?.name, where: FIRST.where[id] ?? null, by: 'environment' });
     }
   }
   /** The day's goals as a window would show them: the achievement's words and the ledger's numbers. */
   list() {
     const A = this.A; if (!A) return [];
     return this.s.goals.map((g) => { const a = A.by[g.id]; if (!a) return null; const [cur, goal, frac] = A.progress(a);
-      return { id: g.id, slot: g.slot, first: !!g.first, name: a.name, desc: a.desc, tier: a.tier, cur, goal, frac: A.done(g.id) ? 1 : frac, done: A.done(g.id) }; }).filter(Boolean);
+      return { id: g.id, slot: g.slot, first: !!g.first, name: a.name, desc: g.path && FIRST.where[g.id] ? `${a.desc} ${FIRST.where[g.id]}` : a.desc, tier: a.tier, cur, goal, frac: A.done(g.id) ? 1 : frac, done: A.done(g.id) }; }).filter(Boolean);
   }
 }

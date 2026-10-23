@@ -26,7 +26,7 @@ export const KNACKS = {
   wideBore: { name: 'Wide Bore', does: "Makes the psygun's shots a third wider",
     opens: (L) => G(L, 'drill.hits') >= 5000 || G(L, 'chain.max') >= 25,
     switch: "tools/psygun/weapon.js (a shot's radius)", number: 'x 4/3' },
-  thickWalls: { name: 'Last Straw', does: 'Marks on the Lachryma ring when the shield could not take one more full blow', // (an assist, no longer +10% shield: SPINE.md 1.3, the owner 2026-10-13; named Last Straw by Espada)
+  thickWalls: { name: 'Last Straw', does: 'Marks the last 35 Lachryma of your pool: below the mark, one more full blow will crack you', // (in taught words: QA-A met "the Lachryma ring" and "the shield" here first) // (an assist, no longer +10% shield: SPINE.md 1.3, the owner 2026-10-13; named Last Straw by Espada)
     opens: (L) => G(L, 'vessel.mends') >= 200 || G(L, 'well.run.whole') >= 1,
     switch: "the Lachryma ring (Calissa's: lit while game.knacks.on('thickWalls') and the pool holds under SHIELD, courier/vessel/damage.js)", number: 'the last 35 Lachryma of the pool marked' },
   perfectPitch: { name: 'Perfect Pitch', does: "Sounds a crystal's target note once more before you strike",

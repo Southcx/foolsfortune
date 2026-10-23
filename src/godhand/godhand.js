@@ -479,8 +479,9 @@ export class GodMode {
     if (!silent && this.samples.length > 2) {
       const a = this.samples[0], b = this.samples[this.samples.length - 1];
       const dt = Math.max(0.05, b.t - a.t);
-      v.copy(b.p).sub(a.p).multiplyScalar(T.god.throwBoost / dt);
-      if (v.length() > T.god.throwMax) v.setLength(T.god.throwMax);
+      const tk = Math.sqrt(g.psyche?.widen?.('psychokinesis.throw') ?? 1); // (Psychokinesis widens how far: a throw's reach goes as its speed squared)
+      v.copy(b.p).sub(a.p).multiplyScalar(T.god.throwBoost * tk / dt);
+      if (v.length() > T.god.throwMax * tk) v.setLength(T.god.throwMax * tk);
     }
     const t = gr.t;
     if (t.creature) { this.catch.drop('dropped'); return; }

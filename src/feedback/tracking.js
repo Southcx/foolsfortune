@@ -18,7 +18,7 @@
 //   clapper.*   counts         clapper.down, clapper.cause.<cause>
 //   shot.*      counts         shot.fired, shot.hit, shot.charged, shot.air, shell.fire.<id>
 //   the arts' goals (B7)       land.drop12, land.drop20, chain.blink2, chain.stomp3, target.slam.moving50, roll.end, time.slip
-//   lach.*      amounts        lach.spent, lach.spent.<tag>, lach.gain, lach.gain.<source>, lach.denied, lach.empty
+//   lach.*      amounts        lach.spent, lach.spent.<tag>, lach.gain, lach.gain.<source>, lach.denied, lach.empty, lach.low (tracking/pool.js)
 //   god.*       counts         god.enter, god.grab, god.throw, god.sunder, god.cuts, god.manifest, god.raid, god.wave
 //   skiff.*     counts         skiff.start, skiff.pump, skiff.hop, skiff.trick, skiff.spins, skiff.wobble
 //   circuit.<id>.*             runs, finish, clean, fall, gates, medal.<gold|silver|bronze>
@@ -84,7 +84,6 @@ export class Tracking {
     this.pending = new Map(); // record announcements waiting for a lull
     this.roomT = 0;
     this.last = { shots: 0, hits: 0 };
-    this._lg = 0; this._lgT = -9;
     this.listen();
   }
 
@@ -157,21 +156,7 @@ export class Tracking {
     on('slip.splat', () => L.inc('slip.splat'));
     on('creature.mind', (e) => { if (e.by === 'courier') L.inc(`creature.mind.${e.state}`); }); // (a mind pushed into a state: Prismatic's sound is Wanda's)
 
-    // ---- lachryma (the pool has its own listeners)
-    const P = g.lachryma;
-    if (P) {
-      P.on('spend', (e) => { L.inc('lach.spent', e.amount); L.inc(`lach.spent.${e.tag}`, e.amount); L.inc('lach.spend.count'); });
-      P.on('gain', (e) => {
-        L.inc('lach.gain', e.amount); L.inc(`lach.gain.${e.source}`, e.amount);
-        if (e.source === 'regen') return;
-        const sum = (this._lg = (this._lgT > L.play - 2.5 ? this._lg : 0) + e.amount); this._lgT = L.play; // (folded into one line)
-        log.say('gain', `You absorb ${Math.round(sum)} Lachryma.`, { key: 'lgain', win: 2.5, fmt: () => `You absorb ${Math.round(this._lg)} Lachryma.` });
-      });
-      P.on('denied', () => { L.inc('lach.denied'); log.say('warn', 'You do not have enough Lachryma.', { key: 'lden', throttle: 2.5 }); });
-      P.on('empty', () => { L.inc('lach.empty'); log.say('warn', L.get('lach.empty') > 1 ? 'Your pool is empty.' : `Your pool is empty. It fills again on its own once you stop spending: ${(P.regenRate * (P.product?.((m) => m.regenMult) ?? 1)).toFixed(1)} a second, starting ${P.regenDelay.toFixed(1)} real seconds after.`, { key: 'lemp', throttle: 8 }); }); // (the first time, how it comes back: FIRST-HOUR.md 3)
-      P.on('full', () => L.inc('lach.full'));
-      P.on('overflow', (e) => L.inc('lach.overflow', e.amount));
-    }
+    // ---- lachryma: the pool's rules are feedback/tracking/pool.js
 
     // ---- ground movement (the player reports these)
     on('move.jump', (e) => { L.inc('move.jump'); L.inc(`move.jump.${e.kind}`); if (e.kind === 'air') L.inc('move.airjump'); if (e.kind === 'wall') L.inc('move.walljump'); });
@@ -294,7 +279,8 @@ export class Tracking {
     on('course.gate', (e) => { L.inc('course.gate'); L.hi('course.gate.speed', e.speed); log.say('circuit', `Speed gate: ${fx(e.speed, 1)} m/s.`, { key: 'gate', win: 0.8 }); });
     // what the keys do in a place, said once a session on first arriving there (it used to sit on the screen as a banner)
     const HELP = {
-      hub: 'The index console picks a room (F at it). The Tab panel holds the debug jumps (the last checkpoint, the hub).',
+      hub: 'The index console picks a room (F at it).',
+      'hub.debug': 'The Tab panel holds the debug jumps (the last checkpoint, the hub).', // (said after the hub's line in the DEBUG save only: QA-A and QA-C read it in STORY)
       siege: 'THE SIEGE: ~ raises the hand. Raids come here.',
       skiff: 'Solar skiffing: W hoists the sail, S furls it and brakes, A and D steer, Space hops, Shift flares, F steps off and leaves it parked, Y recalls it. Hold Q or E at speed to carve left or right, and let go for a push. In a glide W dives, S pulls up, Q and E bank, A and D spin.',
       weir: 'THE WEIR: Q draws the Sondelass (1 the cutlass, 2 the rod, 3 the hook). With the rod, 4 to 0 choose a feeling (each once you know it), - and = change the lure, hold LMB and let go to cast, MMB pings the water. With the grappling hook, LMB throws, hold to reel, RMB pays out. The gate on the north beach goes to Raku\'s bazaar, where the Treasury\'s chests and the Tithe now stand. Y brings the skiff.',
@@ -310,7 +296,7 @@ export class Tracking {
     // the room they walk into, said as they enter it (the wire compass asks: vfx/wirecompass.js); the same room again only after a while
     const entered = new Map();
     on('place.enter', (e) => { if (g.realm?.active) return; const now = e.t ?? 0; if (now - (entered.get(e.room) ?? -1e9) < 90) return; entered.set(e.room, now); log.say('explore', `You enter ${e.room}.`, { key: 'place', win: 1 }); }); // (no room of the workshop is entered from the garden: GARDEN-SWEEP #8)
-    on('room.help', (e) => { if (HELP[e.room] && !helped.has(e.room)) { helped.add(e.room); log.say('system', HELP[e.room]); } });
+    on('room.help', (e) => { if (HELP[e.room] && !helped.has(e.room)) { helped.add(e.room); log.say('system', HELP[e.room] + (g.mode === 'debug' && HELP[`${e.room}.debug`] ? ` ${HELP[`${e.room}.debug`]}` : '')); } });
     on('circuit.enter', (e) => { L.inc(`circuit.${e.id}.enter`); L.inc('circuit.enter'); log.say('circuit', `You enter ${e.title}.${e.par ? ` Gold under ${e.par.gold} s, silver ${e.par.silver}, bronze ${e.par.bronze}.` : ''}${e.best ? ` Your best: ${fx(e.best)} s.` : ''}`); }); // (the circuit panel's targets, now in the log: the owner, 2026-10-07)
     on('circuit.gate', (e) => {
       L.inc('circuit.gate');
@@ -707,7 +693,7 @@ export class Tracking {
     on('glaze.earn', (e) => { L.inc('glaze.earned'); log.say('record', `A new glaze is yours: ${this.game.vessel?.glaze(e.glaze)?.name || e.glaze}. (the kiln, in the workshop)`); });
     on('glaze.learn', (e) => { L.inc('glaze.learned'); log.say('gain', `The Veritome learns a glaze from the photograph: ${this.game.vessel?.glaze(e.glaze)?.name || 'a new colour'}.`, { tone: '#ffb27a' }); });
     on('econ.grant', (e) => log.say('system', `The System grants you ${plural(e.n, 'Lachryma cube')}.`));
-    on('tithe.pull', () => { log.say('loot', `You feed the Tithe ${plural(TITHE.cost, 'cube')}. A sealed chest falls onto the dais.`, { tone: '#d6c8ff' }); });
+    on('tithe.pull', () => { log.say('loot', `You feed the Tithe ${plural(TITHE.cost, 'cube')}. A sealed chest falls onto the dais: F at it breaks the seal.`, { tone: '#d6c8ff' }); }); // (how to open it, said where it lands: QA-A; the words a placeholder for Espada's)
     on('chest.drop', (e) => { L.inc('chest.drop'); if (e.from === 'catch') log.say('loot', 'A chest falls out of the air.', { tone: tone(e.tier) }); });
     on('rave.start', () => L.inc('rave.count'));
 
@@ -759,7 +745,7 @@ export class Tracking {
     this.roomT += dt;
     const s = this.moveState();
     L.inc(`time.state.${s}`, dt);
-    L.inc(`time.area.${this.where().replace('the ', '').replace(/^a /, '')}`, dt);
+    L.inc(`time.area.${this.where().replace('the ', '').replace(/^a /, '').toLowerCase()}`, dt); // (the key in lower case, as its readers ask: 'Dunes' wrote time.area.Dunes and Reached the Dunes, the first path's sixth step, never came)
     if (g.god?.controlling) L.inc('time.god', dt);
     if (g.techs?.active?.id === 'skiff') L.inc('time.skiff', dt);
     if (g.circuits?.active) L.inc('time.circuit', dt);

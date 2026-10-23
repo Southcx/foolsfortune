@@ -130,7 +130,7 @@ export class Crystals {
   reveal(pos, radius, by = 'courier', how = 'song') {
     let n = 0;
     for (const e of this.list) {
-      if (!e.veiled || e.ground.distanceTo(pos) > radius) continue;
+      if (!e.veiled || e.ground.distanceTo(pos) > radius * (this.game.psyche?.widen?.('divination.reveal') ?? 1)) continue;
       e.veiled = false; e.col.setEnabled(true); e.rising = true; n++;
       sfx.chime?.(0.7);
       this.game.glyphs?.pop('bang', e.pos.clone().setY(e.pos.y + e.h * 0.6), { color: 0xcdb8f2, size: 0.7, life: 1.2, burst: true });

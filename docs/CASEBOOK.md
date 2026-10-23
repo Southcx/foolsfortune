@@ -787,5 +787,24 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
     collider does.** A look that slides the body back off a wall the collider walks on into is the clip turning in place; probe the
     body's reach along the move and take the move into the wall away.
 
-NEW:mark-rides-its-thing. **A mark on a thing that moves is that thing's child.** Placed once at a world point and left in the scene, it
+266. **A press during a beat the body cannot act in waits in its buffer for the beat's end; it is not eaten**, and a
+    thing drawn again starts its own clocks over (an idle timer from before it went away is a stale state, rule 15's kind).
+
+267. **A velocity made from a distance (a hold, a snap, a spring) has a bound and a breaking point.** Past a distance
+    the hold could never have reached, it lets go; under it, its speed is capped. A knock, a broken ledge or a teleport otherwise turns
+    the error into a launch.
+
+268. **An act queued for later asks whether its thing still exists when it runs**, and whatever frees a thing
+    marks it gone (dead, disposed) first, so every later look at it bails before it reaches a freed body.
+
+269. **A ledger key made from a word the player reads is normalised where it is made** (lower case, no article),
+    and its readers use the header's spelling: 'the Dunes' said is `dunes` kept.
+
+270. **A window that reads keys owns them while it is open**: whatever else reads the same keys, and runs before it in
+    the frame, asks whether the window is open, since spending a key after it was read is too late.
+
+271. **A mark on a thing that moves is that thing's child.** Placed once at a world point and left in the scene, it
     drifts, outlives the thing and floats where it was; parent it to the thing (`attach` keeps where it stands) or to what the thing names.
+
+272. **A mark meant to be read is drawn above every wash laid over the world** (a paper, a grade, a fog), and a
+    pick is measured from what is drawn, never from a size the player cannot see.

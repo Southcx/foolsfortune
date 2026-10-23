@@ -168,7 +168,7 @@ export class Weapon {
     this.updateCharge(dt, input);
     this.play.update(dt, input, player);
     const shells = this.game.shells;
-    ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8', 'Digit9', 'Digit0', 'Minus'].forEach((k, i) => { if (input.wasPressed(k)) shells.select(i); });
+    if (!this.game.dialogue?.open) ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8', 'Digit9', 'Digit0', 'Minus'].forEach((k, i) => { if (input.wasPressed(k)) shells.select(i); }); // (in a talk the digits pick its choices: npc/dialogue.js reads them after this, so the gun must not turn its cylinder too, QA-C)
     if (input.wheel) shells.cycle(Math.sign(input.wheel));
     const shellPress = input.wasPressed('Mouse1') && !this.reloading && this.charge === 0;
     if (shells.type.id === 'homing') {
