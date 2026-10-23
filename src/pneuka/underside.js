@@ -10,22 +10,23 @@
 // Prior art: the Celtic Cross as the Golden Dawn lays it (the cross and the staff); Hades' Mirror of Night (one page, chosen between
 // runs); Balatro's hand (the cards held low, the one picked lifted).
 //
-// While the reading view shows (`game.readingView.active`: Petra's scene of it, the Courier in the title's dark), the page falls away
+// While the reading view shows (`game.readingScene.active`: Petra's scene of it, the Courier in the title's dark), the page falls away
 // to a bar at the bottom, the spreads' tabs, the hand and the tallies, and the cards are laid on the view itself: a card dragged from the
-// hand (or picked, then a click) onto a place (`readingView.positionAt`), a laid card clicked to take it back or right-clicked to reverse
-// it (`readingView.cardAt`). The cloth on the page is the fallback when the view is not there.
+// hand (or picked, then a click) onto a place, a laid card clicked to take it back or right-clicked to reverse
+// it (`readingScene.pickAt`). The cloth on the page is the fallback when the view is not there.
 //
 //   const U = new Underside(game, reading, onChange)   U.mount(host)   U.slim (the view shows)   U.atView(x, y, button) -> bool   U.held   UNDERSIDE_CSS
 // ---------------------------------------------------------------------------------------
 import { SPREADS, SUITS, COLS, ROWS, MIRROR, MAJOR_SUIT, FOOTPRINTS, TALLY, FOOL_CELL, effectOf, cellIndex } from '../progress/spreads.js';
 import { ARCANA } from '../tools/veritome/arcana.js';
 import { OPEN_AT } from './reading.js';
+import { UNDERSIDE_LOOK } from '../ui/undersidelook.js';
 
 const ROMAN = ['0', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI'];
 const BY_ID = Object.fromEntries(ARCANA.map((A, n) => [A.id, { ...A, n }]));
-/** Placeholder colours for the suits. Calissa's d3412376 (ui/undersidelook.js) dresses the page: swap this for `UNDERSIDE_LOOK.suits`
- *  once it reaches main (her ask, 2026-10-23: one palette with the reading view's SUIT_LOOK); the wild purple stays until the film has a CSS. */
-const SUIT_CSS = { wands: '#ff6a2a', cups: '#3fa8d8', swords: '#cfd8ff', pentacles: '#e0b040', wild: '#b58cff' };
+/** The suits' colours: Calissa's palette (ui/undersidelook.js, the reading view's SUIT_LOOK as CSS), one for the window and the view;
+ *  the wild card's purple stays until the film has a CSS of its own. */
+const SUIT_CSS = { ...UNDERSIDE_LOOK.suits, wild: '#b58cff' };
 const NAME = { wands: 'Wands', cups: 'Cups', swords: 'Swords', pentacles: 'Pentacles', wild: 'wild' };
 const CELL = 46; // (px a cell of the cloth)
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; };
@@ -75,16 +76,17 @@ export const UNDERSIDE_CSS = `
 export class Underside {
   constructor(game, reading, onChange) { this.game = game; this.reading = reading; this.onChange = onChange; this.held = null; }
 
-  /** Is the reading view showing, so the page gives way to it? */
-  get slim() { return !!this.game.readingView?.active && this.reading.flipped; }
-  /** A click or a drop on the reading view at a client point: a held card laid, a laid card taken back (or reversed, button 2). */
+  /** Is the reading view showing (Petra's scene, game.readingScene, holding Calissa's view), so the page gives way to it? */
+  get slim() { return !!this.game.readingScene?.active && this.reading.flipped; }
+  /** A click or a drop on the reading view at a client point (readingScene.pickAt: a place or a card of the hand): a held card laid in an
+   *  empty place, a laid card taken back (or reversed, button 2), a card of the hand picked up. */
   atView(x, y, button = 0, card = this.held) {
-    const V = this.game.readingView, R = this.reading;
-    if (!V?.active) return false;
-    const laid = V.cardAt?.(x, y);
-    if (laid && !card) { if (button === 2 ? R.reverse(laid) : R.take(laid)) this.changed(); return true; }
-    const pos = card && V.positionAt?.(x, y);
-    if (pos && R.lay(pos, card)) { this.held = null; this.changed(); return true; }
+    const P = this.game.readingScene?.pickAt?.(x, y), R = this.reading;
+    if (!P) return false;
+    if (P.kind === 'hand') { this.held = this.held === P.id ? null : P.id; this.changed(); return true; }
+    if (P.kind !== 'place') return false;
+    if (R.laid[P.id] && !card) { if (button === 2 ? R.reverse(P.id) : R.take(P.id)) this.changed(); return true; }
+    if (card && R.lay(P.id, card)) { this.held = null; this.changed(); return true; }
     return false;
   }
   mount(host) {
