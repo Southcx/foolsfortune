@@ -40,7 +40,7 @@ owner ruled the suits (2026-10-23, through Espada):
 | d8 | octahedron | air | Swords | |
 | d10 | pentagonal trapezohedron | (none) | **Cups** (water) | the owner, 2026-10-23 |
 | d20 | icosahedron | water | **the Major Arcana, I to XX** | the owner: twenty faces, the Magician to Judgement; "I truncate The Fool and The World, like putting the alpha and omega in separate categories": the Fool is you, who throws; the World is the whole, never one face |
-| d12 | dodecahedron | the aether, "the whole heaven" | **open** | the lore keeps Plato's whole heaven, the zodiac's twelve signs, until a mechanic needs it |
+| d12 | dodecahedron | the aether, "the whole heaven" | **the zodiac**, Western and Chinese | the owner, 2026-10-23: twelve signs and twelve animals; the twelve signs are the twelve zodiac Majors (CLASSES.md 2), so on the spread it lights any suit, a wild card |
 | d% | pentagonal trapezohedron | (none) | open | the tens die beside the d10 |
 
 Seven stones, as there are seven feelings, seven domains and seven sockets on the bracelet. The palm die's growth (d4 to d20) ends
@@ -132,10 +132,10 @@ dealt, and the hand that throws. Espada's to write into the world.
 2. Overflow: the Lockheart first, then the palm die condenses the rest into cubes (section 4; built).
 3. The palm die is both the Hungry Die at Entropy Tactics' table and the answer to the island's rejection (section 4).
 4. Luck's re-roll: yes (section 3; the rule built, the throw to wire).
-5. The dice's suits (section 2): d4 Wands, d6 Pentacles, d8 Swords, d10 Cups, d20 the Majors I to XX.
+5. The dice's suits (section 2): d4 Wands, d6 Pentacles, d8 Swords, d10 Cups, d12 the zodiac (Western and Chinese), d20 the Majors I to XX.
 6. The fingers (4.1): d4 little, d6 ring, d8 middle, d10 index, d12 thumb, d20 palm; the d% has none yet.
 7. "Releases", asked: the way out of SPINE.md 4 (a tier IV caster shell, an Overload, an epic miracle), not every god power.
 
 ## 9. Open
 
-1. The d12 and the d% have no suit yet (section 2); the d12 waits on a mechanic that needs it.
+1. The d% has no suit yet (section 2).
