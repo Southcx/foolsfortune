@@ -15,6 +15,7 @@ import { bakeStances } from './anim/stances.js';
 import { Airborne } from './anim/airborne.js';
 import { IdleBreaks } from './anim/idlebreak.js';
 import { Hurt } from './anim/hurt.js';
+import { LendGesture } from './anim/lendgesture.js';
 import { MantleClips } from './anim/mantle.js';
 import { Prowl, PROWL } from './anim/prowl.js';
 import { Crawl } from './anim/crawl.js';
@@ -230,6 +231,8 @@ export class Character {
   /** Hide the body and gun (a tech that turns the Courier into something else). */
   /** A blow taken (k 0..1, dir: its world direction): the upper body flinches over whatever is playing, a big one recoils (anim/hurt.js). */
   flinch(k = 1, dir = null) { this.hurt.flinch(k, dir); }
+  /** The sub tool's verb lent on R, its body over whatever plays (anim/lendgesture.js; event tool.lend). */
+  lend(tool) { return this.lendGesture?.play(tool) ?? false; }
 
   setHidden(h) {
     if (h === !!this.hidden) return;
@@ -334,6 +337,7 @@ export class Character {
     this.airTrack = this.air.track;
     this.idles = new IdleBreaks(this); // (the idle, the fighting stance, the idle breaks: anim/idlebreak.js)
     this.hurt = new Hurt(this); // (a blow taken: anim/hurt.js)
+    this.lendGesture = new LendGesture(this); // (the sub's verb lent on R: anim/lendgesture.js)
     this.mantle = new MantleClips(this); // (over a ledge: anim/mantle.js)
     this.slideTrack = new Track(C, new Set(['slideLoop']));
     this.prowl = new Prowl(this); // (the crouch on the move: its loop, the hips' lift and the cat's still head: anim/prowl.js)
@@ -784,6 +788,7 @@ export class Character {
     // movement techs blend their own poses in (swim, roll, climb...)
     st.footDown = 0; // (a tech's kneel lets the feet down on to the floor: footIK)
     s.techs?.animate(this, base, dt, s);
+    this.lendGesture.pose(dt, base); // (the sub's verb lent on R, over the stance, the air and any tech: anim/lendgesture.js)
     this.applyPose(base);
 
     // ---- procedural layer ----

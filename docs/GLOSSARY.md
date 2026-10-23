@@ -723,6 +723,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   Spirit Garden's beds.
 - **gesture** (`Gestures`, `src/tools/toolbody.js`) — a held tool's own clip that is not a blow, played once over its stance. *Not:* a shot, nor a
   move.
+- **a lend gesture** (plain name; `LendGesture`, `LEND_GESTURES`, `src/courier/anim/lendgesture.js`) — the Courier's upper body (or one arm) doing the sub tool's lent verb on R (`tool.lend`) over the main's stance, the run or the air, a stretch of an existing clip; never the legs or the pelvis. *Not:* a gesture (a held tool's own clip), an emote.
 - **the rhythm mode** (`game.rhythm`, `src/music/rhythm/rhythm.js`) — a track played as a rhythm game on keys 1 to 0, begun from a stage in a
   room. *Not:* the Crucibelle's field playing.
 - **note chart** (`noteChart`, `src/music/rhythm/chart.js`) — the notes the rhythm mode asks for, drawn from a score's lead; a lane is one of its
