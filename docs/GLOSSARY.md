@@ -563,6 +563,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the pause menu** (Esc) — the help pages and the controls. *Retired:* "pause card".
 - **the Pneuka Box** (P, `src/pneuka/`) — the inventory (56 slots) and what is worn; with the Veritome out, the bank (the Book) opens beside it.
   *Not:* the Veritome.
+- **the reading table** (plain name; `ReadingTable`, `game.readingTable`, `src/ui/readingtable.js`) — the Pneuka Box's loadout drawn as a tarot reading: the main tool's card upright, the sub's crossed over it, the pair's Major Arcana beside them (face down until opened), the shelf's tools as a hand to pick or drag, a swap's preview, and your seal pressed over a refused swap. It draws what it is handed (`draw(state)`) and sends back hover, pick and drop. *Not:* the window (Dovina's `pneuka/ui.js`), the loadout's rules, a table (Raku's).
 - **the map** (M, `src/feedback/cartography.js`) — on screen **Map** (the owner, 2026-10-20); Mind Mapping stays in the world and the Codex.
 - **the dialogue box** (`src/npc/dialogue.js`) — the one window of words in the world.
 - **a page set aside** (`showPage(..., { aside })`, `src/feedback/indexmenu.js`) — an index-window page in a column to one side with no veil, so
