@@ -277,6 +277,9 @@ import { OpenSea } from './world/opensea/opensea.js';
 import { SeaFight } from './world/opensea/seafight.js';
 import { SeaSerpentBody } from './vfx/opensea/seaserpentbody.js';
 import { SeaLooks } from './vfx/opensea/isletlooks.js';
+import { PuzzleLooks } from './vfx/opensea/puzzlelooks.js';
+import { SquallLine } from './vfx/opensea/squallline.js';
+import { egregoreBody } from './vfx/opensea/egregorebodies.js';
 import { SeaFightLook } from './vfx/opensea/seafightlook.js';
 import { SeaHull } from './ui/seahull.js';
 import { Race } from './world/raceway/race.js';
@@ -687,7 +690,9 @@ async function main() {
     game.solar = new SolarTrial(game); // (the Solar Skiffing trial, begun at the Gnomon's foot: world/dunes/solar.js)
     game.geysers = new Geysers(game); // (slip geysers: launch pads on a cycle, world/dunes/geysers.js)
     game.makeSeaSerpent = (o) => new SeaSerpentBody(game, o); // (the sea serpent's body for its mind to drive: vfx/opensea/seaserpentbody.js, drive/update/hit/down)
+    game.makeEgregore = (species, o) => egregoreBody(species, o); // (a safari Egregore's placeholder body, for whatever lays a herd or a sighting on the water: vfx/opensea/egregorebodies.js; nothing places them yet)
     game.seaLooks = new SeaLooks(game); // (the open sea's islets dressed over Dovina's placeholders: vfx/opensea/isletlooks.js)
+    game.puzzleLooks = new PuzzleLooks(game); game.squallLine = new SquallLine(game); // (the islets' puzzles dressed, the dig's moment; a front's squall line: vfx/opensea/puzzlelooks.js, squallline.js)
     game.opensea = new OpenSea(game); // (the Emocean off the lanes, built the first time it is entered: world/opensea/, docs/plans/OPEN-SEA.md)
     game.seaFightLook = new SeaFightLook(game); game.seaHull = new SeaHull(game); // (the fight's needles, globs, splashes and the hull's pips: vfx/opensea/seafightlook.js, ui/seahull.js)
     game.seaFight = new SeaFight(game); // (what fights at the free helm: the gun, the parry, the hull, the sea serpent: world/opensea/seafight.js)
@@ -1084,6 +1089,7 @@ async function main() {
   const parkCaster = Object.values(CASTER_SHADERS).filter((m) => m.layer).map((m) => m.prewarm?.(game)).filter(Boolean); // (S6 to S10, the caster shaders' programs, their screen passes in the glow's chain: vfx/caster/)
   const seaFightAt = (game.seaFightLook?.parked() || []).map((o) => { o.visible = true; return o; }); // (the fight's shots: the rail's program, warmed with it)
   const parkIslets = game.seaLooks?.prewarm?.() ?? (() => {}); // (the islets' and the shallows' programs, 50 m down: vfx/opensea/isletlooks.js)
+  const parkSquall = game.squallLine?.prewarm?.() ?? (() => {}); // (the squall line's program, and the rain's: vfx/opensea/squallline.js)
   const parkSandfall = prewarmSandfall(scene); // (the Raceway's sandfall, one copy 50 m down: its one program, vfx/racewaysandfall.js)
   const parkBracelet = game.bracelets.prewarm(); // (the bracelet's glazes, charms, flash and aura, 50 m down: vfx/braceletwear.js)
   game.present.shade(true); try { await renderer.compileAsync(scene, camera); } catch (e) { console.warn('shader warm-up', e); } // (the scene's programs linked in parallel first: the shell looks' Portal draw below draws the whole scene, which linked them one at a time, 72 of 182, the render inventory 2026-10-19)
@@ -1111,7 +1117,7 @@ async function main() {
   if (!window.__noPrime) primeDraw(renderer, scene, camera, game.post.target); // (a test harness may skip it: it is a long frame on a software GL)
   parkWell?.(); // (after the prime: drawn once, so the driver has finished with its programs too)
   if (wipe) wipe.visible = false;
-  parkWeather?.(); parkDrain(); parkDuel(); parkSpawnLook(); parkCracks(); parkFigmentTelegraphs(); parkCasterS1toS5(); parkCaster.forEach((f) => f()); parkShellLooks(); parkBracelet(); parkSandfall(); parkIslets(); seaFightAt.forEach((o) => (o.visible = false));
+  parkWeather?.(); parkDrain(); parkDuel(); parkSpawnLook(); parkCracks(); parkFigmentTelegraphs(); parkCasterS1toS5(); parkCaster.forEach((f) => f()); parkShellLooks(); parkBracelet(); parkSandfall(); parkIslets(); parkSquall(); seaFightAt.forEach((o) => (o.visible = false));
   for (const o of brushLooks) o.visible = false;
   seaLooks.forEach((o, i) => { o.visible = false; o.position.copy(seaAt[i]); });
   for (const o of gardenLooks) o.visible = false;
@@ -1326,6 +1332,7 @@ async function main() {
     game.emocean?.update(dt); // (the crossing: before the camera, which rides its shot)
     game.opensea?.update(dt); // (the free helm: before the camera, which rides its shot)
     game.seaLooks?.update(dt); // (dresses the islets once, the first frame game.opensea.props exists)
+    game.puzzleLooks?.update(dt); // (dresses the islets' puzzles once they exist, and plays a dig)
     game.seaFight?.update(dt); // (the ship's gun, the serpent's mind and body, the hull)
     game.seaHull?.update(game.rawDt);
     game.realm?.update(dt); // (the garden: the Jar, the hand and its own camera)
@@ -1423,7 +1430,7 @@ async function main() {
     game.bazaar?.light(); // (the bazaar's own air under its dome: world/bazaar/bazaar.js)
     game.bazaarHall?.update(game.rawDt ?? dt); // (the dome's turn, the wheel's and the carousel's spin, the neon's film walk: vfx/bazaarhall.js)
     game.realm?.light(); // (the garden's sky over the world's, while you are in it)
-    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.awakeningLook.update(game.rawDt ?? dt, camera); game.weatherLook.update(dt, camera); game.nightSky.update(game.rawDt ?? dt); game.waterFx.update(game.rawDt ?? dt, camera); game.parryMark.update(game.rawDt ?? dt, camera); game.blobShadow.update(); game.figmentTelegraphs.update(dt, camera); game.siblingShatter.update(dt); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.aberrantWipe.update(game.rawDt ?? dt, camera); game.gateRing.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.stormWarp.update(game.rawDt ?? dt, camera); game.umbral.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.duelView.update(game.rawDt ?? dt); game.spawnLook.update(game.rawDt ?? dt, camera); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); game.daturas?.update(game.rawDt ?? dt); game.wellDress.update(game.rawDt ?? dt); game.testroomDress.update(game.rawDt ?? dt); diag.end('fx');
+    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.awakeningLook.update(game.rawDt ?? dt, camera); game.weatherLook.update(dt, camera); game.nightSky.update(game.rawDt ?? dt); game.waterFx.update(game.rawDt ?? dt, camera); game.parryMark.update(game.rawDt ?? dt, camera); game.blobShadow.update(); game.figmentTelegraphs.update(dt, camera); game.siblingShatter.update(dt); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.aberrantWipe.update(game.rawDt ?? dt, camera); game.gateRing.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.squallLine?.update(game.rawDt ?? dt, camera); game.stormWarp.update(game.rawDt ?? dt, camera); game.umbral.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.duelView.update(game.rawDt ?? dt); game.spawnLook.update(game.rawDt ?? dt, camera); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); game.daturas?.update(game.rawDt ?? dt); game.wellDress.update(game.rawDt ?? dt); game.testroomDress.update(game.rawDt ?? dt); diag.end('fx');
     game.glyphs.update(dt); // (after everything that pops one this frame: a mark made before its first update was drawn at the origin)
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;
 

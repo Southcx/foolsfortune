@@ -18,6 +18,7 @@
 //
 //   game.seaLooks = new SeaLooks(game)   const park = game.seaLooks.prewarm() (before the compile)   park() (after the prime draw)
 //   game.seaLooks.update(dt)   (each frame: dresses the islets once, the first frame the open sea's things exist)
+//   isletMaterial() (the islet program: every copy one program, its key "isletlook"; the puzzles and the Egregores draw with it too)
 //   .dressed   .tris { kit: [n, ...] }   isletLook({ kit, rad, id, away? }) -> { geo, colliders, shallows?, tris } (one islet, off-scene)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -31,7 +32,7 @@ const PI = Math.PI;
 const hashId = (s) => { let h = 2166136261; for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); } return h >>> 0; };
 
 /** The islet program: Lambert, its albedo in the vertex, and that albedo given off as light by the vertex's `glow` (a crystal, gold). */
-function isletMaterial() {
+export function isletMaterial() {
   const m = new THREE.MeshLambertMaterial({ vertexColors: true });
   m.onBeforeCompile = (sh) => {
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute float glow;\nvarying float vGlow;')
