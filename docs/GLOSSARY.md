@@ -114,6 +114,9 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   Crucibelle, Lockheart. *Not:* a Node script.
 - **the belt** (`game.belt`, `src/tools/belt.js`) — where tools are worn; "is a tool out?" asks here. **Draw / stow** take a tool in hand / put it
   back.
+- **the main / the sub / a pair's card** (plain names, the owner's rulings 2026-10-22 and 23; `PAIRS`, `pairOf`, `SUB_GIFTS`, `src/progress/toolpairs.js`;
+  TOOLS-TOGETHER.md 8) — the tool worn in hand with all its verbs / the second tool worn, lending the main one verb on R and one passive / the
+  Major Arcana card (I to XXI; the Fool is you) a main and sub make together, its special opened by an achievement. *Not:* a Veritome card, a house card.
 - **the prone holster** (`game.proneHolster`, `src/tools/proneholster.js`) — lying down puts the tool in the hands away through the belt and
   draws it again once up; no tool comes out on the belly. *Not:* a holster (where a tool is worn).
 - **fitting** (`FITTINGS`, `src/pneuka/box.js`) — what fits into a tool (a lure, an instrument, the Lockheart's keys), kept in the Pneuka Box. A
