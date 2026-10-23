@@ -1,10 +1,10 @@
 // ---------------------------------------------------------------------------------------
 // HELD TOOL: what every worn tool does the same way, once. The Sondelass, the Soul Brush and the Veritome each grew their own draw, stow,
-// key, visibility and rest bake; the tools after them (the Dreamvane, the Crucibelle, the Lockheart) are this class and their own
+// visibility and rest bake; the tools after them (the Dreamvane, the Crucibelle, the Lockheart) are this class and their own
 // mechanics only. A subclass gives:
 //
-//   super(mgr, id, { key, worn: { at: [x, y, z], along: [x, y, z], out: [x, y, z], bone }, draw: { twist, lean, via, pole }, idle, grip })
-//     key     the key that draws and stows it (the belt's contract: tools/belt.js)
+//   super(mgr, id, { worn: { at: [x, y, z], along: [x, y, z], out: [x, y, z], bone }, draw: { twist, lean, via, pole }, idle, grip })
+//     (no key of its own: the belt draws the main with X and lends the sub's verb on R, tools/belt.js)
 //     worn    where it hangs, in body space at rest (+X their left, +Z forward): `at` the grip, `along` the haft, `out` the palm side;
 //             `side` ('L' | 'R') for a hip tool: the hip it was measured at (belt.hipSide may send it to the other, mirrored);
 //             `bone` the bone it rides (default the spine: a hip; 'spine003' the chest, for something on a chain at the neck)
@@ -47,10 +47,10 @@ export const mirrorSide = (G) => G.premultiply(_mx).multiply(_my);
 export const hipMirror = (game, id, own) => { const s = game.belt?.hipSide?.(id) || own; return { side: s, mirror: s !== own }; };
 
 export class HeldTool extends Tech {
-  constructor(mgr, id, { key, worn, draw = {}, idle = 'swordIdle', idles = null, grip = 'torchIdle', drawK = 1 } = {}) {
+  constructor(mgr, id, { worn, draw = {}, idle = 'swordIdle', idles = null, grip = 'torchIdle', drawK = 1 } = {}) {
     super(mgr, id);
     this.passive = true; this.alwaysHands = true; this.overrides = 0;
-    this.key = key; this.wornSpec = worn; this.drawSpec = draw; this.idle = idle; this.idles = idles; this.gripClip = grip; this.drawK = drawK;
+    this.wornSpec = worn; this.drawSpec = draw; this.idle = idle; this.idles = idles; this.gripClip = grip; this.drawK = drawK;
     this.drawT = 0; this.drawTarget = 0; this.wasOut = false; this.leftW = 0;
   }
   /** After the subclass has made `this.model`: into the scene, hidden, with its rest bake. */
@@ -92,11 +92,6 @@ export class HeldTool extends Tech {
     if (ch && (!this.grip || (this.wornSpec.side && g.belt?.hipSide(this.id) !== this.socketSide))) this.computeSocket(ch);
     if (this.enabled && inp.enabled) {
       const busy = !!this.mgr.active?.handsBusy || !!this.mgr.get?.('carry')?.item;
-      if (inp.wasPressed(this.key) && !g.god?.controlling && !busy && (this.drawTarget > 0 || g.belt?.ready(this.id) !== false)) {
-        this.drawTarget = this.drawTarget > 0 ? 0 : 1;
-        if (this.drawTarget) g.belt?.draw(g.belt.get(this.id));
-      }
-      if (inp.wasPressed('KeyX') && this.drawTarget > 0) this.drawTarget = 0;
       if (busy && this.drawTarget > 0) { this.drawTarget = 0; this.resume = true; }
       else if (!busy && this.resume && !this.mgr.active) { this.resume = false; this.drawTarget = 1; }
     }

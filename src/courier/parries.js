@@ -10,7 +10,7 @@
 // Prior art: Sekiro's one deflect for everything (what changes is what happens next), and each tool's own: Bloodborne's gun parry,
 // the bat, Kirby's inhale, Fatal Frame's last-instant shot, a staff spin, Hi-Fi Rush's parry on the beat.
 //
-//   game.parries = new Parries(game)   .update(raw)   PARRIES (the table)   WINDOW
+//   game.parries = new Parries(game)   .update(raw)   .lend(id) (the sub's Gulp on R: the tool's window from where it hangs)   PARRIES   WINDOW
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { answer, guard } from './parry.js';
@@ -32,13 +32,27 @@ export const PARRIES = {
 const _at = new THREE.Vector3(), _f = new THREE.Vector3();
 
 export class Parries {
-  constructor(game) { this.game = game; this.t = -1; this.tool = null; this.done = false; this.spinning = false; }
+  constructor(game) { this.game = game; this.t = -1; this.tool = null; this.done = false; this.spinning = false; this.lent = null; }
+
+  /** A tool's window opened without it in the hands (the Lockheart's Gulp as the sub: tools/belt.js lend), run beside the hands' own. */
+  lend(id) {
+    const g = this.game, spec = PARRIES[id];
+    if (!spec || g.god?.active || g.player?.dead || (this.lent && this.lent.t < WINDOW)) return false;
+    this.lent = { id, spec, t: 0, done: false };
+    g.events?.emit('parry.try', { tool: id, lent: true, by: 'courier' });
+    return true;
+  }
 
   /** Where the tool's reach is centred: the chest, `ahead` metres along the look. */
   at(spec) { const P = this.game.player; return _at.set(P.pos.x, P.pos.y + 1.1, P.pos.z).addScaledVector(P.lookDir(_f), spec.ahead); }
 
   update(raw) {
     const g = this.game, P = g.player, tool = g.belt?.inHand, spec = tool && PARRIES[tool.id];
+    const L = this.lent;
+    if (L) {
+      if (L.t < WINDOW && !L.done) { const how = typeof L.spec.how === 'function' ? L.spec.how(g) : L.spec.how; L.done = !!answer(g, { tool: L.id, how, at: this.at(L.spec), radius: this.reach(L.spec), paint: L.spec.paint?.(g) || null }); }
+      L.t += raw; if (L.t >= WINDOW) this.lent = null;
+    }
     if (!spec || tool.drawT < 0.6 || g.god?.active || P.dead) { this.t = -1; this.spin(false); return; }
     if (P.peekLatch('KeyV')) {
       P.latch('KeyV');

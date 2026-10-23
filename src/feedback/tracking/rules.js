@@ -29,6 +29,7 @@ import { ostracaRules } from './ostraca.js';
 import { passageRules } from './passage.js';
 import { wispRules } from './wisps.js';
 import { poolRules } from './pool.js';
+import { pairRules } from './pairs.js';
 import { godRules } from './god.js';
 import { lockheartRules } from './lockheart.js';
 import { raceRules } from './race.js';
@@ -55,6 +56,7 @@ function atSea(ctx) {
 export function areaRules(ctx) {
   const sea = atSea(ctx);
   poolRules(ctx); // (the pool: spent, gained, low, empty)
+  pairRules(ctx); // (/pairs: the 21 cards a main and a sub make)
   anglingRules(ctx);
   wellRules(ctx);
   railRules(sea); // (the crossing's tally, before the voyage's "You make port")

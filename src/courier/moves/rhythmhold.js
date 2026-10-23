@@ -39,7 +39,7 @@ export class RhythmHold extends Tech {
     const P = this.P, g = this.game, B = g.belt;
     P.endCore?.(); P.vel.set(0, 0, 0);
     const bell = this.mgr.get('crucibelle');
-    this.bell = bell?.enabled && B?.isWorn('crucibelle') !== false ? bell : null;
+    this.bell = bell?.enabled && (B ? B.isMain('crucibelle') : true) ? bell : null; // (the bell in hand only as the main: tools/belt.js)
     this.bellWasOut = !!bell && bell.drawTarget > 0;
     for (const t of B?.tools || []) if (t.id !== 'psygun' && t.id !== 'crucibelle' && t.wants) t.stow();
     if (this.bell) { this.bell.drawTarget = 1; B?.draw(B.get('crucibelle')); this.posed = this.bell; }

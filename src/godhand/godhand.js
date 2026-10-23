@@ -175,7 +175,6 @@ export class GodMode {
     this.handPos.copy(P.pos);
     this.raids.reset();
     document.exitPointerLock?.();
-    g.hud.el.cross && (g.hud.el.cross.style.display = 'none');
     this.arts.showBar(true);
     this.veil.visible = true; this.veil.refresh();
     g.lachryma.addModifier('god', { regenMult: 1.6, regenDelayMult: 0.5 });
@@ -199,7 +198,6 @@ export class GodMode {
     for (const c of g.clappers.list) if (c.alive && c.raider) g.clappers.dismiss(c);
     this.ring.visible = this.disc.visible = false; // (the hand stays shown while its vanish plays: applyCamera)
     for (const b of this.beads) b.visible = false;
-    g.hud.el.cross && (g.hud.el.cross.style.display = '');
     this.restoreUi();
     this.el.root.style.display = 'none';
     this.clipPlane.constant = CLIP_OFF;
@@ -220,7 +218,6 @@ export class GodMode {
     this.hand.root.visible = false;
     this.ring.visible = this.disc.visible = false;
     for (const b of this.beads) b.visible = false;
-    g.hud.el.cross && (g.hud.el.cross.style.display = '');
     this.arts.cancel(); this.arts.closeWheel(false);
     this.restoreUi();
     this.el.root.style.display = 'none';

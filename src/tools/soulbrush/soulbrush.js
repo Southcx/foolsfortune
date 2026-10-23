@@ -45,6 +45,7 @@ import { stream, randDir } from '../../core/rng.js';
 import { BrushLoad } from './load.js';
 import { BRUSH as LOAD_BRUSH } from '../../progress/brushload.js';
 import { Crossfade, standLegs, legsW, liftAbove, floorUnder, closeHand, keepOffBody } from '../toolbody.js';
+import { lendHand } from '../lend.js';
 const LOAD_MODES = LOAD_BRUSH.modes;
 const simRand = stream('tools/soulbrush/soulbrush'); // (the simulation's chance: core/rng.js, the same twice)
 
@@ -120,8 +121,6 @@ export class SoulBrush extends Tech {
     const raw = g.rawDt || dt;
     if (this.enabled && inp.enabled) {
       const busy = !!this.mgr.active?.handsBusy || !!this.mgr.get?.('carry')?.item;
-      if (inp.wasPressed('KeyG') && !g.god?.controlling && !busy && (this.drawTarget > 0 || g.belt?.ready('soulbrush') !== false)) { this.drawTarget = this.drawTarget > 0 ? 0 : 1; if (this.drawTarget) g.belt?.draw(g.belt.get('soulbrush')); }
-      if (inp.wasPressed('KeyX') && this.drawTarget > 0) this.drawTarget = 0;
       if (busy && this.drawTarget > 0) { this.drawTarget = 0; this.resume = true; }
       else if (!busy && this.resume && !this.mgr.active) { this.resume = false; this.drawTarget = 1; }
     }
@@ -184,10 +183,17 @@ export class SoulBrush extends Tech {
     if (!this.game.lachryma.spend(1, 'brushflick')) { sfx.fizzle?.(); return; }
     this.club.startFlick(() => this.flickFan());
   }
-  flickFan() {
+  /** The sub's Flick (R: tools/belt.js): the fan flung at once from the hand, no swing of the club. */
+  lend() {
+    if (!this.enabled) return false;
+    if (!this.game.lachryma.spend(1, 'brushflick')) { sfx.fizzle?.(); return false; }
+    this.flickFan(lendHand(this.game, new THREE.Vector3()));
+    return true;
+  }
+  flickFan(at = null) {
     const g = this.game, P = this.P;
     const f = P.lookDir(_v1).clone();
-    const from = this.model.tipWorld(_v2).clone();
+    const from = at ? at.clone() : this.model.tipWorld(_v2).clone();
     for (let i = 0; i < 14; i++) {
       const d = f.clone().add(randDir(simRand, _v3).multiplyScalar(0.18)).normalize().multiplyScalar(12 + simRand() * 5);
       d.y += 2.5;

@@ -43,6 +43,7 @@ import { LURES } from '../tools/sondelass/angling/lures.js';
 import { SUBJECTS } from '../tools/veritome/subjects.js';
 import { EMOTES } from '../courier/emotes.js';
 import { SLOTS } from '../pneuka/box.js';
+import { PAIRS } from '../progress/toolpairs.js';
 import { areaRules } from './tracking/rules.js';
 import { RATINGS, overall } from '../ui/rating.js';
 const plural = (n, w) => `${n} ${n === 1 ? w : `${w.replace(/([^aeiou])y$/, '$1ie')}s`}`; // (slip jellies, not jellys: QA-A)
@@ -283,7 +284,7 @@ export class Tracking {
       'hub.debug': 'The Tab panel holds the debug jumps (the last checkpoint, the hub).', // (said after the hub's line in the DEBUG save only: QA-A and QA-C read it in STORY)
       siege: 'THE SIEGE: ~ raises the hand. Raids come here.',
       skiff: 'Solar skiffing: W hoists the sail, S furls it and brakes, A and D steer, Space hops, Shift flares, F steps off and leaves it parked, Y recalls it. Hold Q or E at speed to carve left or right, and let go for a push. In a glide W dives, S pulls up, Q and E bank, A and D spin.',
-      weir: 'THE WEIR: Q draws the Sondelass (1 the cutlass, 2 the rod, 3 the hook). With the rod, 4 to 0 choose a feeling (each once you know it), - and = change the lure, hold LMB and let go to cast, MMB pings the water. With the grappling hook, LMB throws, hold to reel, RMB pays out. The gate on the north beach goes to Raku\'s bazaar, where the Treasury\'s chests and the Tithe now stand. Y brings the skiff.',
+      weir: 'THE WEIR: with the Sondelass your main (the Pneuka Box, P), X draws it (1 the cutlass, 2 the rod, 3 the hook). With the rod, 4 to 0 choose a feeling (each once you know it), - and = change the lure, hold LMB and let go to cast, MMB pings the water. With the grappling hook, LMB throws, hold to reel, RMB pays out. The gate on the north beach goes to Raku\'s bazaar, where the Treasury\'s chests and the Tithe now stand. Y brings the skiff.',
       dunes: 'THE DUNES: Y brings the Solar Skiff.',
       hand: 'The hand: LMB uses the art; 1 to 7 pick a domain, again for its next art, or hold RMB for the wheel; MMB draws the sign of a miracle. N surveys, Q and E turn the view, the wheel zooms, WASD pans, M opens the map, ~ returns to the Courier.',
     };
@@ -449,11 +450,14 @@ export class Tracking {
     on('item.store', (e) => { L.inc('item.store'); log.say('gain', `You store the ${ITEM(e.item)} in the Veritome.`, { key: 'istore', fmt: (n) => `You store ${n} things in the Veritome.` }); });
     on('item.withdraw', (e) => { L.inc('item.withdraw'); log.say('gain', `You take the ${ITEM(e.item)} out of the Veritome.`, { key: 'iwd', fmt: (n) => `You take ${n} things out of the Veritome.` }); });
     on('lure.untie', (e) => { L.inc('lure.untie'); log.say('info', `You untie the ${ITEM(e.lure)} and put it in your Pneuka Box.`, { key: 'luntie', throttle: 0.2 }); });
-    // the tools: worn in their places, or carried (tools/belt.js)
+    // the tools: the main and the sub (tools/belt.js equip; the pair's card, progress/toolpairs.js)
     const TOOLNAME = (t) => ({ psygun: 'Psygun', sondelass: 'Sondelass', soulbrush: 'Soul Brush', veritome: 'Veritome', dreamvane: 'Dreamvane', crucibelle: 'Crucibelle', lockheart: 'Lockheart' }[t] || t);
-    const WHERE = { psygun: 'across your back', sondelass: 'across your back', dreamvane: 'across your back', soulbrush: 'at your hip', veritome: 'at your hip', crucibelle: 'at your hip', lockheart: 'at your neck' };
-    on('tool.wear', (e) => { L.inc('tool.wear'); L.inc(`tool.wear.${e.tool}`); log.say('info', `You wear the ${TOOLNAME(e.tool)} ${WHERE[e.tool] || ''}${e.off ? `, and put the ${TOOLNAME(e.off)} in your Pneuka Box` : ''}.`, { key: 'twear', throttle: 0.2 }); });
-    on('tool.off', (e) => { L.inc('tool.off'); log.say('info', `You put the ${TOOLNAME(e.tool)} in your Pneuka Box.`, { key: 'toff', throttle: 0.2 }); });
+    on('tool.equip', (e) => {
+      L.inc('tool.equip'); L.inc(`tool.equip.${e.tool}`); L.inc(`tool.equip.${e.as}.${e.tool}`);
+      const P = PAIRS.find((p) => p.n === e.pair);
+      log.say('info', `You make the ${TOOLNAME(e.tool)} your ${e.as}${e.off ? `, and set the ${TOOLNAME(e.off)} aside` : ''}.${P ? ` Your pair: ${P.label}.` : ''}`, { key: 'tequip', throttle: 0.2 });
+    });
+    on('tool.lend', (e) => { L.inc('tool.lend'); L.inc(`tool.lend.${e.tool}`); }); // (the sub's verb on R: what it did is its own event's line)
     // the last three tools (tools/dreamvane/dreamvane.js, crucibelle.js, lockheart.js): what they find, sing and let out
     const KINDNAME = { crystal: 'crystal', chest: 'a chest', creature: 'something alive', clapper: 'a clapperjar', spirit: 'a spirit', bauble: 'loose Lachryma', liquid: 'liquid Lachryma', cube: 'a cube' };
     on('dowse.find', (e) => { L.inc('dowse.find'); L.inc(`dowse.find.${e.kind}`); log.say('find', `The Dreamvane leans hard toward ${e.kind === 'crystal' ? (e.veiled ? 'crystal under the sand' : 'crystal') : KINDNAME[e.kind] || 'something'}, ${e.dist} paces off.`, { key: 'dfind', throttle: 2 }); });
@@ -679,6 +683,7 @@ export class Tracking {
     on('shrine.find', (e) => { if (e.by !== 'courier') return; L.inc('shrine.found'); L.inc(`shrine.found.${e.shrine}`); log.say('explore', `You find ${g.shrines?.get(e.shrine)?.name || 'a Shrine'}.`); });
     on('shrine.rest', (e) => { if (e.by === 'courier') { L.inc('shrine.rest'); log.say('info', 'You rest at the Shrine.', { key: 'shrinerest', throttle: 4 }); } });
     on('shrine.travel', (e) => { if (e.by === 'courier') { L.inc('shrine.travel'); log.say('explore', `You travel to ${g.shrines?.get(e.to)?.name || 'the Shrine'}.`); } });
+    on('shrine.bank', (e) => { if (e.by === 'courier') { L.inc('shrine.bank'); log.say('info', 'The Veritome opens beside your Pneuka Box: the bank.', { key: 'shrinebank', throttle: 4 }); } });
     on('garden.enter', (e) => { if (e.by === 'courier') L.inc('garden.enter'); });
     on('vessel.refire', (e) => { L.inc('vessel.refire'); log.say('info', `The kiln mends your cracks, for ${plural(e.cost, 'cube')}.`, {}); });
     on('vessel.crack', (e) => { L.inc('vessel.cracks'); L.inc(`vessel.crack.${e.region}`); log.say('battle', `The blow cracks ${PART[e.region] || 'you'}.`, { key: `crack.${e.region}`, throttle: 1.5 }); });

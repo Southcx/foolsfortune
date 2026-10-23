@@ -9,7 +9,8 @@
 // Mansion's Strobulb (stun, then act), to the flashbang of the tactical shooter; and the "stun meter" of Monster Hunter's flash pods,
 // which fill a monster's tolerance and knock it out of the sky.
 //
-//   game.flash.fire()   game.flash.ready   (main.js calls update every frame)
+//   game.flash.fire({ from })   game.flash.ready   (main.js calls update every frame; `from`: the light's origin instead of the lens, the
+//   sub's Flash from the hand: tools/veritome/veritome.js lend)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { hasTag } from '../../core/tags.js';
@@ -55,7 +56,7 @@ export class Flash {
     sfx.shutter?.();
   }
 
-  fire() {
+  fire({ from: given = null } = {}) {
     const g = this.game, V = this.tome;
     if (!this.ready) return false;
     if (!g.lachryma.spend(FLASH.cost, 'flash')) {
@@ -66,8 +67,8 @@ export class Flash {
     this.cool = FLASH.cool;
     const lens = !!V?.lens, range = lens ? FLASH.lensRange : FLASH.range, half = (lens ? FLASH.lensHalf : FLASH.half) * DEG;
     const cam = g.camera; cam.getWorldPosition(_e); cam.getWorldDirection(_f);
-    // the light, from the lens (or the eye, in first person)
-    const from = V?.model?.lensWorld ? V.model.lensWorld(new THREE.Vector3()) : _e.clone();
+    // the light, from the lens (or the eye, in first person; or where it was given, the hand)
+    const from = given ? given.clone() : V?.model?.lensWorld ? V.model.lensWorld(new THREE.Vector3()) : _e.clone();
     if (!Number.isFinite(from.x) || from.distanceTo(_e) > 4) from.copy(_e);
     this.cone.position.copy(from);
     this.cone.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, -1), _f);

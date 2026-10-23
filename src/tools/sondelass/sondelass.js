@@ -130,8 +130,6 @@ export class Sondelass extends Tech {
     const wpn = g.weapon;
     if (this.enabled && inp.enabled) {
       const busy = !!this.mgr.active?.handsBusy || !!this.mgr.get?.('carry')?.item; // (both hands are on what is being carried, too)
-      if (inp.wasPressed('KeyQ') && !g.god?.controlling && !busy && (this.drawTarget > 0 || g.belt?.ready('sondelass') !== false)) { this.drawTarget = this.drawTarget > 0 ? 0 : 1; if (this.drawTarget) g.belt?.draw(g.belt.get('sondelass')); }
-      if (inp.wasPressed('KeyX') && this.drawTarget > 0) this.drawTarget = 0;
       if (busy && this.drawTarget > 0) { this.drawTarget = 0; this.resume = true; } // (both hands taken: it goes away, and comes back)
       else if (!busy && this.resume && !this.mgr.active) { this.resume = false; this.drawTarget = 1; }
       if (this.drawTarget > 0 && this.held) {
@@ -146,7 +144,7 @@ export class Sondelass extends Tech {
     const step = dt * (this.game.belt?.hands ?? 1) / (this.drawTarget > this.drawT ? T.weapon.drawTime : T.weapon.holsterTime);
     if (this.drawTarget > this.drawT && gunAway) this.drawT = Math.min(this.drawTarget, this.drawT + step);
     else if (this.drawTarget < this.drawT) this.drawT = Math.max(this.drawTarget, this.drawT - step);
-    if (this.drawTarget === 0 && this.hookshot.att) this.hookshot.release('stow'); // (put away with a line out: it comes away)
+    if (this.drawTarget === 0 && this.hookshot.att && !this.hookshot.lent) this.hookshot.release('stow'); // (put away with a line out: it comes away; lent as the sub's, it was never drawn)
     if (this.drawTarget === 0 && this.cutlass.moves.cur) this.cutlass.cancel(); // (put away mid-stroke: the stroke ends now, not frozen until the holster)
     if (this.drawT > 0.02 && !this.wasOut) { sfx.toolDraw(); this.wasOut = true; this.game.events?.emit('sondelass.draw', {}); }
     if (this.drawT <= 0.02 && this.wasOut) {
@@ -354,6 +352,8 @@ export class Sondelass extends Tech {
 
   /** Where the tool's tip is (world). */
   tip(out) { return this.model.tipWorld(out); }
+  /** The sub's Grapple (R: tools/belt.js): the hook from the hand, reeling on its own (hookshot.js lend). */
+  lend() { return this.enabled && this.hookshot.lend(); }
   /** The camera's aim: a ray from the eye through the crosshair, as the Psygun's own aim reads it. */
   aim(dirOut, originOut) {
     const cam = this.game.camera;

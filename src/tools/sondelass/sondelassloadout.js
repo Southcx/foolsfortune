@@ -3,7 +3,7 @@
 // data, and which of them the Courier has slotted (the owner, 2026-10-11: "expand and bulletproof the Sondelass melee combo system ...
 // like God Hand, where you build out your combo kit yourself"; docs/plans/MELEE-LOADOUT.md section 2).
 //
-//   SONDELASS_MOVES     the catalogue: every move a slot can hold, one row each (12 normals, 6 specials: Dovina's slice, phase 3)
+//   SONDELASS_MOVES     the catalogue: every move a slot can hold, one row each (12 normals, 7 specials: Dovina's slice, phase 3, and the Tidecutter)
 //     { id, kind: 'normal' | 'special', label (what the UI calls it: a genre word, docs/plans/CLARITY.md), line (its one line of effect,
 //       verb first, 8 words at most), lore (the world's name: Espada's, null till then), clip, effect: 'stagger' | 'knock' | 'launch' |
 //       'guardBreak' (what it does to a body), parent (the move whose use opens it: Dovina's earning; null for the ones known from the
@@ -18,7 +18,7 @@
 //                       first) and the specials (RMB tapped, with W, with S; an empty forward or back slot is the tap's)
 //   Read by the engine (tools/moveset.js: `catalogue`, `loadout`), built once, so any tool can take a loadout later. The fixed grammar
 //   stays the tool's own table (cutlass.js MOVES: S + LMB the launcher, the air string, the pause strings, the dash, the charge, the
-//   counter, R the Tidecutter, the crouched iaido).
+//   counter, the crouched iaido).
 //
 // Prior art: God Hand (Clover, 2006): the Combo Tree (the square button walks a chain of slots the player fills with learned
 // techniques) and the specials on their own buttons, bought and assigned in a menu (here: earned, Dovina's predicates), its techniques'
@@ -100,6 +100,12 @@ export const SONDELASS_MOVES = {
   backstepSlash: { id: 'backstepSlash', kind: 'special', label: 'Backstep Slash', line: 'Hops back, cutting as you go', lore: null, clip: 'Sond_Combo3', effect: 'stagger', parent: 'c3', earn: null, // (c3's hop and flat cut, the hop taken backward: 1.4 m out of reach; the back slot's)
     stats: { power: 2.5, time: 1.0, cost: 5, range: 2.1 }, // (range: from where they stand when it is pressed, the hop back taken; measured, S + RMB and tapped, a slip jelly and Strawman: lands at 2.1 m, misses at 2.2; it said 2.4)
     play: { body: 'whole', travelCut: 'peak', root: 'xz', rate: 1.1, step: { v: -5, at: [0.3, 0.55] }, to: 1.1, hit: { power: 2.5, dmg: 1.6, push: 3, away: 1 }, heat: 0.7, arc: 'r2l' } },
+  // the Tidecutter: the cutlass's R special until main and sub (R is the sub's verb now: PNEUKA-BOX.md 5, Dovina's ruling 2026-10-23), so
+  // one of RMB's specials, its row in moves.js as before (the Sondelass mastered: 500 cuts landed). A leap and a cut whose wave rings out
+  // 4.2 m at 1.86 real s
+  tidecutter: { id: 'tidecutter', kind: 'special', label: 'Wave Cut', line: 'Leaps; its wave cuts all within 4.2 m', lore: 'the Tidecutter', clip: 'Sond_SpecialTidecutter', effect: 'knock', parent: null, earn: null, rule: 'special',
+    stats: { power: 7, time: 2.63, cost: 12, range: 4.2 },
+    play: { body: 'whole', ringAt: 1.86, ring: 4.2, hit: { power: 3, dmg: 3, push: 12, lift: 4 }, heat: 1, arc: 'over' } },
 };
 
 /** The default loadout: today's moves, so the string plays exactly as it did before there was a loadout. */

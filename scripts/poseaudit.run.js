@@ -20,7 +20,7 @@
 // ---------------------------------------------------------------------------------------
 window.__paRun = (() => {
   const G = window.__game, g = G.game, THREE = G.THREE, ch = g.character, I = G.input, P = g.player, A = window.__pa;
-  const KEYS = { psygun: 'KeyX', sondelass: 'KeyQ', soulbrush: 'KeyG', veritome: 'KeyJ', dreamvane: 'KeyK', crucibelle: 'KeyU', lockheart: 'KeyI' };
+  const KEYS = { draw: 'KeyX', lend: 'KeyR' }; // (main and sub: X draws the main, R lends the sub's verb, tools/belt.js)
   const FORM_KEY = { cutlass: 'Digit1', rod: 'Digit2', hook: 'Digit3' };
   const tick = () => G.tick(1 / 60);
   try { g.lend?.set?.('moves', true); g.lend?.set?.('arts', true); } catch { /* (STORY: what is locked stays locked, and the plan says so) */ }
@@ -55,11 +55,11 @@ window.__paRun = (() => {
       note(k, v) { rec.notes[k] = v; return c; },
       /** A pose laid over each frame after the game's own (the self-test's deliberate faults): fn(c), or null to stop. */
       after(fn) { rec.after = fn; return c; },
-      /** A tool into the hand (worn first if it is in the box), whole; a form for the Sondelass. */
+      /** A tool into the hand (made the main first), whole; a form for the Sondelass. */
       tool(id, form = null) {
         const t = g.belt.get(id); if (!t) throw new Error(`no tool ${id}`);
-        if (!g.belt.isWorn(id)) { g.belt.wear(id, { stash: false }); c.warm(4); }
-        c.press(KEYS[id]); c.until(() => t.drawT >= 0.999, 150, false);
+        if (!g.belt.isMain(id)) { g.belt.equip(id, 'main', { quiet: true }); c.warm(4); }
+        c.press(KEYS.draw); c.until(() => t.drawT >= 0.999, 150, false);
         if (form) { c.press(FORM_KEY[form]); c.warm(45); }
         c.warm(30);
         if (t.drawT < 0.999) throw new Error(`${id} did not come out (drawT ${t.drawT.toFixed(2)})`);

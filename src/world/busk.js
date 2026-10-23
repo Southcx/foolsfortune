@@ -65,7 +65,7 @@ export class Busk {
     } else this.playing = null;
     if (it?.id !== 'busk' || !P.peekLatch?.('KeyF') || g.god?.controlling) return;
     P.latch('KeyF');
-    if (!g.belt?.isWorn('crucibelle')) { g.log?.say('warn', 'Wear the Crucibelle to busk.', { key: 'busk.nobell', throttle: 2 }); return; }
+    if (!g.belt?.isMain('crucibelle')) { g.log?.say('warn', 'Make the Crucibelle your main to busk.', { key: 'busk.nobell', throttle: 2 }); return; } // (the bell in hand: the main, tools/belt.js)
     if (R?.begin(null, 'steady')) { this.playing = it.ref; g.events?.emit('busk.start', { mat: it.ref, by: 'courier' }); }
   }
 }

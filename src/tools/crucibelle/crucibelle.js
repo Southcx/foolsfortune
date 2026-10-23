@@ -69,7 +69,6 @@ const smooth = (a, b, t) => { const x = THREE.MathUtils.clamp((t - a) / (b - a),
 export class Crucibelle extends HeldTool {
   constructor(mgr) {
     super(mgr, 'crucibelle', {
-      key: 'KeyU',
       // hung at the left hip by its crown ring, the mouth down (the Veritome has the right: the owner, 2026-10-06), and drawn across the
       // body by the right hand; with the Soul Brush worn first it goes to the right hip instead, mirrored (tools/belt.js hipSide)
       worn: { at: [0.24, 1.02, 0.1], along: [-0.05, -1, 0.15], out: [1, 0, 0], side: 'L' },
@@ -249,6 +248,13 @@ export class Crucibelle extends HeldTool {
     if (n) P.shake = Math.max(P.shake || 0, 0.06 * (spec.k ?? 1));
     g.ai?.stimuli.emit('noise', P.pos, { radius: 20, strength: 0.7, by: 'courier' });
     g.events?.emit('crucibelle.toll', { onBeat: on, n, move: c?.id ?? 'toll', by: 'courier' });
+  }
+  /** The sub's Toll (R: tools/belt.js): one toll at once from where the bell hangs, the stagger round them, TOLL.cool apart as in the air. */
+  lend() {
+    if (!this.enabled || this.airCool > 0) return false;
+    this.airCool = TOLL.cool; this.pressAt = this.now(); this.P.bodyYaw = this.P.yaw;
+    this.toll();
+    return true;
   }
   /** A gesture of the bell's own (a note, the fever's peak, a song cast): played over the stance, cut off by the next. */
   gesture(clip, o) { this.gestures?.play(clip, o); }

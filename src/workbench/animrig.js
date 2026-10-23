@@ -55,7 +55,7 @@ export const LAB_TOOLS = [
   { id: 'veritome', label: 'the Veritome', make: (m) => new Veritome(m), belt: (t) => veritomeTool(t) },
   { id: 'dreamvane', label: 'the Dreamvane', make: (m) => new Dreamvane(m), belt: (t) => heldTool(t, 'THE DREAMVANE', 'back') },
   { id: 'crucibelle', label: 'the Crucibelle', make: (m) => new Crucibelle(m), belt: (t) => heldTool(t, 'THE CRUCIBELLE', 'hip') },
-  { id: 'lockheart', label: 'the Lockheart', make: (m) => new Lockheart(m), belt: (t) => heldTool(t, 'THE LOCKHEART', 'neck', true) },
+  { id: 'lockheart', label: 'the Lockheart', make: (m) => new Lockheart(m), belt: (t) => heldTool(t, 'THE LOCKHEART', 'neck') },
 ];
 const bytes = base64Buffer; // (one loop, not a callback a byte: core/base64.js)
 /** Where the Anim Lab's body is put down in the world's frame: far from anything of the world's (a blow's sweep asks the tags' registry,
@@ -100,7 +100,7 @@ export class AnimRig {
     this.body.techs = techs; this.own.techs = techs;
     this.domGuard(() => { techs.add(new Emote(techs)); techs.add(new Kick(techs)); techs.add(new Launch(techs)); });
     this.belt = new ToolBelt(this.g); this.own.belt = this.belt;
-    this.belt.worn = new Set();
+    this.belt.only = new Set(); // (the lab shows what a take asks, not a main and a sub: tools/belt.js `only`)
     this.made = {}; // tool id -> its tech (or the Weapon)
     this.toolId = null; this.form = null; this.wearing = { id: null, form: null, want: new Set() };
     // the fresh state every take begins from (animfresh.js): every tool made, in the game's order, as the game has them all; two frames
@@ -139,7 +139,7 @@ export class AnimRig {
   }
 
   /** The tool in the hands (null: none; the kick is then the moveset), its form, and whether the others are worn (`others`: the
-   *  ones the Courier wears in the game, game.belt.worn, on their places on the body; off: none of them shown). */
+   *  ones the Courier wears in the game, the main and the sub, on their places on the body; off: none of them shown). */
   wear(id, form = null, { others = false } = {}) {
     const want = new Set(id ? [id] : []);
     if (others) for (const t of LAB_TOOLS) if (this.game.belt?.isWorn?.(t.id)) want.add(t.id);
@@ -151,7 +151,7 @@ export class AnimRig {
   dress() {
     const { id, form, want } = this.wearing;
     this.toolId = id; this.form = form;
-    this.belt.worn = new Set(want);
+    this.belt.only = new Set(want);
     const t = id ? this.made[id] : null;
     if (t && form && t.form !== undefined) t.form = form; // (the Sondelass's form, set as the strip's key would: setForm waits out a move)
     for (const [tid, tool] of Object.entries(this.made)) {

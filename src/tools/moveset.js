@@ -14,7 +14,7 @@
 //                          and its strike past cuts the recovery short into a new opener (the RECOVERY CUT, free)
 //     a press in a recovery THE PAID CUT (working name; the owner, 2026-10-10): in any blow's recovery, its strike past, before the
 //                          free ways open, a fresh press pays Lachryma (the tool's `paidCut` row) and the next move begins at once:
-//                          LMB the next blow (after a last blow, the opener), S + LMB the launcher, R the special; the tool's own
+//                          LMB the next blow (after a last blow, the opener), S + LMB the launcher, the special's key; the tool's own
 //                          (the cutlass's RMB stinger, V guard) ask `cut()`. Never inside a strike, never in a plunge's fall; a
 //                          press the pool cannot pay is the free grammar. It leaves an afterimage (vfx/afterimage.js) and the paid
 //                          blow's ribbon wears the oil film (featTint). Not a cancel: opposites cancel.
@@ -32,7 +32,8 @@
 //                          its last move may PLUNGE to the ground, whose ring strikes only what is near the ground, and whose landing
 //                          settles the drawn body (courier/anim/squash.js)
 //     LMB while sprinting  the DASH: the clip's own travel, carried
-//     R                    the SPECIAL: a costly move of the tool's own (Lachryma)
+//     the SPECIAL          a costly move of the tool's own (Lachryma), on its `specialKey` if it has one, or the charge's full
+//                          release (`strings.charge.full`, the pick's Dreamquake); R is the sub's verb (tools/belt.js), never a special's
 //     E (the blink)        THE BLINK CANCEL (the owner, 2026-10-11: "the player should be able to Blink dodge cancel moves at any
 //                          time"): the blink (courier/moves/blink.js) emits `move.blink`; the moveset of the tool in the hand hears it
 //                          and lets the move go at any frame: no recovery owed, an upper move's pose eased out (a whole-body move's
@@ -102,12 +103,13 @@
 // here read from the clip itself by melee.js rather than typed).
 //
 //   const M = new Moveset(tool, { id, moves, strings, reach, pot, k, cause, events: { swing, hit }, segment(a, b), trail, button ('Mouse0'),
-//                                 specialKey ('KeyR'), tip, limb ('R' | 'L' | 'footR' | 'footL' | 'auto': what a move's reach is measured on),
+//                                 specialKey (none by default), tip, limb ('R' | 'L' | 'footR' | 'footL' | 'auto': what a move's reach is measured on),
 //                                 onBegin(c), onAt(c) (once a move, at def.at or its strike's start), onUpdate(c, dt), onHit(...), onEnd(c),
 //                                 catalogue, loadout, wraps: { [id]: (row, { paid }) -> bool } (a slotted special the tool plays itself),
 //                                 drawn() (the tool is the one in the hand: the blink cancel listens only then), onBlinkCancel(c) (the blink
 //                                 cancel heard: the tool lets its own moves go) })
-//   strings.charge: { hold, release?, after? } (no release: letting go ends the hold; `after`: how long the opener is held first)
+//   strings.charge: { hold, release?, full?, after? } (no release: letting go ends the hold; `full`: the special let go from a full charge,
+//                   if open and paid, else the release; `after`: how long the opener is held first)
 //   M.update(dt, inp, { allow })   M.pose(C, out) -> { pose, w } (an upper-body move, over the stance)   M.afterHands(dt)   M.cancel()
 //   M.begin(id, kind, n, join) (`join`: a pose the move begins from, faded out over 0.1 s, as a chained move's)   M.blinkCancel()
 //   M.string (the ground string's move ids)   M.specialOf(dir) -> its catalogue row   M.special(dir, { paid }) -> bool   M.costOf(row)
@@ -382,7 +384,7 @@ export class Moveset {
     const B = S.button || 'Mouse0';
     if (inp.wasPressed(B)) this.buffer = BUFFER;
     this.buffer -= dt;
-    if (allow && st.special && inp.wasPressed(S.specialKey || 'KeyR')) {
+    if (allow && st.special && S.specialKey && inp.wasPressed(S.specialKey)) {
       const c0 = this.cur, whole = c0?.def.body === 'whole', sd = this.def(st.special);
       if (!this.open(st.special)) { if (!whole || this.recovering(c0)) { sfx.fizzle?.(); this.game.log?.say('warn', 'You have not mastered that yet.', { key: 'move.locked', throttle: 3 }); } } // (a refusal at the point of use; Espada's words to come)
       else if (!whole) { this.begin(st.special, 'special'); return; }
@@ -409,7 +411,11 @@ export class Moveset {
     if (c.kind === 'charge-hold') {
       this.charge = Math.min(1, this.charge + dt / 1.1);
       this.holding((c.holdT = (c.holdT || 0) + (this.game.rawDt ?? dt))); // (real seconds into the hold: past HOLD_MAX the run ends)
-      if (!inp.isDown(B)) { if (st.charge.release) this.begin(st.charge.release, 'charge'); else this.finish(); return; }
+      if (!inp.isDown(B)) {
+        const full = this.charge >= 1 ? st.charge.full : null;
+        if (full && this.open(full) && this.begin(full, 'special') !== false) return;
+        if (st.charge.release) this.begin(st.charge.release, 'charge'); else this.finish(); return;
+      }
     } else if (st.charge && c.kind === 'ground' && this.n === 0 && this.held && c.t >= (st.charge.after ?? HOLD)) { if (inp.isDown(B)) { this.charge = 0; this.begin(st.charge.hold, 'charge-hold'); return; } this.held = false; }
     if (!inp.isDown(B)) this.held = false;
     this.sweep();

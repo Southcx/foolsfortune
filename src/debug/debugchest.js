@@ -115,8 +115,7 @@ export class DebugChests {
     for (const [id, count, data] of K.items || []) {
       const it = itemOf(id); if (!it) continue;
       let have;
-      if (it.kind === 'tool') have = g.belt?.isWorn(it.tool) || box.held(id) ? count : 0;
-      else if (data?.tier != null) have = box.slots.filter((s) => s?.id === id && s.data?.tier === data.tier).length;
+      if (data?.tier != null) have = box.slots.filter((s) => s?.id === id && s.data?.tier === data.tier).length;
       else have = box.held(id);
       for (let n = have; n < count; n++) {
         const d = data?.tier != null ? makeMaterial(id.slice(4), 101 + n, data.tier) : data ? { ...data } : null; // (a material by tier; anything else its data as the kit gives it: a rutter's)

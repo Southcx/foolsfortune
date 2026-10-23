@@ -230,7 +230,7 @@ export class Player {
     // edge-triggered actions are latched here (per frame) and consumed by the fixed step
     if (inp.wasPressed('KeyC')) { this.slideBuf = T.movement.slideBuffer; if (this.grounded) this.postureBuf = T.movement.slideBuffer; }
     if (inp.wasPressed('ShiftLeft') || inp.wasPressed('ShiftRight')) this.dashBuf = 0.1;
-    if (inp.wasPressed('KeyO')) this.shoulder *= -1; // (over-the-shoulder side; Q draws the Sondelass)
+    if (inp.wasPressed('KeyO')) this.shoulder *= -1; // (over-the-shoulder side)
     for (const code of ['KeyE', 'KeyC', 'Space', 'KeyG', 'KeyF', 'KeyV', 'Mouse0', 'KeyY']) if (inp.wasPressed(code)) this.latches[code] = 0.15;
     // Sprint pressed while crouched is a dodge (the Roll art reads the latch)
     if (inp.wasPressed('ShiftLeft') || inp.wasPressed('ShiftRight')) this.latches.Dodge = 0.2;

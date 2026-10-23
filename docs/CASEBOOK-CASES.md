@@ -3544,3 +3544,14 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   within 16 m are markable and carry prompts (sigils.js). Measured: a dot 20 px past a slip jelly's ring marks it, 60 px past does not;
   its two prompts popped strike it once, 8 hp to 6.
 - **Rule:** 272
+
+### 2026-10-23 · X drew nothing when the psygun was made the main over a drawn tool (Petra, building main and sub)
+- **Seen:** headless, the Dreamvane drawn as the main, the psygun made the main, X at once: the gun stayed on the back
+  (`drawTarget` 0, `manualHolster` true), and Q (Fan the Hammer) after it did nothing.
+- **Cause:** two halves. The belt's X stowed whatever `inHand` named first, and the Dreamvane, still going back, was it. And the
+  psygun counted any tool with `drawT > 0.02` as out (`belt.others`), so a draw asked while the last one was going back was cancelled
+  the same frame (weapon.js); every other tool waits for the hands with `mayDraw`.
+- **Fix:** X acts on the main first: out or asked, it goes away; otherwise it is drawn, and the draw puts the rest away (tools/belt.js
+  keys). The psygun counts a tool as out only when it is asked out (`wants`) and waits for the hands like the rest (`mayDraw` in
+  updateHolster). Measured: the same sequence, the gun drawn in 1 real s, the fan's three shots on Q.
+- **Rule:** 273

@@ -584,7 +584,7 @@ async function main() {
   game.belt.add(veritomeTool(techs.get('veritome')));
   game.belt.add(heldTool(techs.get('dreamvane'), 'THE DREAMVANE', 'back'));
   game.belt.add(heldTool(techs.get('crucibelle'), 'THE CRUCIBELLE', 'hip'));
-  game.belt.add(heldTool(techs.get('lockheart'), 'THE LOCKHEART', 'neck', true));
+  game.belt.add(heldTool(techs.get('lockheart'), 'THE LOCKHEART', 'neck'));
   game.proneHolster = techs.add(new ProneHolster(techs)); // (lying down: every tool put away, none drawn, the one in the hands back out once up: tools/proneholster.js)
   player.techs = techs;
   game.techs = techs;
@@ -593,7 +593,7 @@ async function main() {
   game.ground = new GroundItems(game);
   game.pneuka = new PneukaBox(game);
   if (game.veritome) game.pneuka.migrate(game.veritome.book);
-  game.belt.tick(); game.pneuka.seed(); game.pneuka.reconcile(); // (a new Courier: the four tools worn, the rest and the made lures in the box; and no tool ever nowhere)
+  game.belt.tick(); game.pneuka.seed(); game.pneuka.reconcile(); // (a new Courier: the Magician's pair worn, the made lures in the box; and two tools worn, never one twice)
   game.pneukaUI = new PneukaUI(game);
   game.pneukaUI.onClose = () => { if (input.enabled && !cursorFree()) input.requestLock(); };
   // the folk's counters (shop/: Raku's treasury and Old Grog's pier, opened from their talk)
@@ -1095,7 +1095,7 @@ async function main() {
   game.present.shade(true); // (shaded as they will be drawn: compiled flat, then turned smooth by the pass a second later, every program was built twice)
   try { await renderer.compileAsync(scene, camera); } catch (e) { console.warn('shader warm-up', e); }
   game.lachrimeterTube = new LachrimeterTube(game); game.spiritualLink = new SpiritualLink(game); game.psygunCylinder = new PsygunCylinder(game); game.psygunReticle = new PsygunReticle(game); game.psygunScope = new PsygunScope(game); // (each psygun's crosshair, the Carbine's lens: vfx/psygunreticle.js, vfx/psygunscope.js) // (the tool UIs' thread to its bulb: vfx/spirituallink.js; the psygun's cylinder on it: vfx/psyguncylinder.js)
-  game.sondelassGuard = new SondelassGuard(game); // (the Sondelass's own UI, board v9: it hides the tool strip and the string row while it stands)
+  game.sondelassGuard = new SondelassGuard(game); // (the Sondelass's own UI, board v9)
   game.lockheartReliquary = new LockheartReliquary(game); // (the Lockheart's own UI, board v10 in its B orientation: vfx/lockheartreliquary.js)
   game.soulBrushDesk = new SoulBrushDesk(game); // (the Soul Brush's own UI, board v11: the scholar's desk, vfx/soulbrushdesk.js)
   game.sightLook = new SightLook(game); game.creatureTags = new CreatureTags(game); game.titlePlacard = new TitlePlacard(game); game.sealImprints = new SealImprints(game); game.sealPicker = new SealPicker(game); // (the overlay's instruments, tags, placard and seal: OVERLAY.md 10.5c, HANKO.md)
@@ -1263,6 +1263,7 @@ async function main() {
       player.chargeLevel = weapon.charge;
       game.reprogram.claim(input); // (the middle button near a stunned mind is the Veritome's, not a shell: tools/veritome/reprogram.js)
       game.proneHolster.update(); // (before the psygun and the tools read their keys)
+      game.belt.keys(input); // (X the main, R the sub's verb: tools/belt.js)
       weapon.update(dt, input, player);
       player.updateBody(dt, weapon.adsT > 0 || weapon.wantsFire || weapon.cooldown > 0 || weapon.charge > 0 || weapon.holding || techs.stance);
     }
@@ -1423,9 +1424,7 @@ async function main() {
     diag.update(game.rawDt);
 
     hud.update(dt, {
-      spreadDeg: weapon.spreadDeg(player), fov: camera.fov,
-      reloadT: weapon.reloadT, fp: player.fpWeight > 0.5, ads: weapon.adsEase,
-      charge: weapon.charge, gunOut: weapon.drawT > 0.05 || !!weapon.wantShell, // (a boolean: undefined would read as the HUD's default, out)
+      charge: weapon.charge,
       speed: Math.hypot(player.vel.x, player.vel.z),
       move: (techs.label() || (player.wallrun ? 'WALLRUN' : player.sliding ? 'SLIDE' : player.mantle ? 'MANTLE' : player.dashT > 0 ? 'DASH' : player.crouching ? 'CROUCH' : player.sprinting ? 'SPRINT' : player.walking ? 'WALK' : !player.grounded ? 'AIR' : ''))
       , debug: diag.mode > 0,

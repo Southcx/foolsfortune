@@ -11,7 +11,7 @@
 //
 //   game.agent.observe({ places? }) -> state     game.agent.act(cmd) -> { ok, why? }     game.agent.update(dt) (main.js, each tick)
 //   cmd: { do: 'goto', place | to: [x,y,z], within?, run? }  { do: 'travel', place }  { do: 'face', place | to | yaw }
-//        { do: 'hold', keys: [...], ticks }  { do: 'press', key }  { do: 'interact', with? }  { do: 'use', tool }  { do: 'attack', ticks? }
+//        { do: 'hold', keys: [...], ticks }  { do: 'press', key }  { do: 'interact', with? }  { do: 'use', tool } (the main: X; the sub: R)  { do: 'attack', ticks? }
 //        { do: 'choose', n } (a dialogue's choice, from 1)  { do: 'say', text }  { do: 'stop' }
 //   game.agent.busy (an intent is being carried out)   .result (how the last one ended: 'arrived', 'stuck', 'timeout'...)
 // ---------------------------------------------------------------------------------------
@@ -19,6 +19,7 @@ import * as THREE from 'three';
 import { zoneOf, wholeOf } from '../render/zones.js';
 import { familiarityOf, readBlow, readHealth } from '../progress/familiarity.js';
 import { readTag } from '../tools/veritome/creaturetag.js';
+import { DRAW_KEY, LEND_KEY } from '../tools/belt.js';
 
 const r2 = (v) => +v.toFixed(2);
 const vec = (v) => [r2(v.x), r2(v.y), r2(v.z)];
@@ -87,7 +88,7 @@ export class Agent {
       dialogue: g.dialogue?.open ? { with: g.dialogue.npc?.id, line: g.dialogue.plain, done: !!g.dialogue.typed,
         choices: g.dialogue.opts ? g.dialogue.opts.map((c) => String(g.dialogue.say(c)).replace(/<[^>]*>/g, '')) : null } : null, // (next: press F; a choice: choose)
       box: (g.pneuka?.slots || []).filter(Boolean).map((s) => s.id + (s.n > 1 ? `x${s.n}` : '')),
-      worn: g.belt?.worn ? [...g.belt.worn] : [],
+      main: g.belt?.main ?? null, sub: g.belt?.sub ?? null, // (main and sub: tools/belt.js)
       near, events: fresh, log: lines,
       task: this.task ? this.task.kind : null, result: this.result,
       ...(places ? { places: g.places?.all() || [] } : {}),
@@ -124,7 +125,7 @@ export class Agent {
         this.run('agent.pin', refId(o));
         this.task = { kind: 'interact', ref: o.ref, ticks: 15 }; return { ok: true };
       }
-      case 'use': { const k = g.belt?.get(cmd.tool)?.key; if (!k) return { ok: false, why: `no tool '${cmd.tool}'` }; if (!g.belt?.isWorn(cmd.tool)) return { ok: false, why: 'not worn (it is in the box)' }; return this.act({ do: 'press', key: k }); }
+      case 'use': { const B = g.belt; if (!B?.get(cmd.tool)) return { ok: false, why: `no tool '${cmd.tool}'` }; if (!B.isWorn(cmd.tool)) return { ok: false, why: 'not worn (on the shelf: equip it in the Pneuka Box)' }; return this.act({ do: 'press', key: B.isMain(cmd.tool) ? DRAW_KEY : LEND_KEY }); } // (the main is drawn with X; the sub lends its verb on R)
       case 'choose': { const n = +cmd.n; if (!g.dialogue?.opts || !(n >= 1 && n <= g.dialogue.opts.length)) return { ok: false, why: 'no such choice' }; return this.act({ do: 'press', key: `Digit${n}` }); }
       case 'attack': this.task = { kind: 'attack', ticks: cmd.ticks ?? 40, k: 0 }; return { ok: true };
       case 'say': this.run('agent.say', String(cmd.text || '').slice(0, 120)); return { ok: true };

@@ -43,7 +43,7 @@ export const PLACES = {
 };
 
 const jellyAhead = (api, d = 3.2, side = 0) => { const g = api.game, P = g.player, f = V(Math.sin(P.yaw), 0, Math.cos(P.yaw)); const p = P.pos.clone().addScaledVector(f, d).add(V(f.z * side, 0, -f.x * side)); const c = g.jellies.spawn(p, { yaw: P.yaw + Math.PI }); api.after(() => { g.jellies.vanish(c, 'environment', 'overture'); g.jellies.dispose(c); }); return c; }; // (gone for good as the next begins: the next bar's jelly is the only one)
-const draw = (api, id) => { const g = api.game, t = g.techs.get(id); const b = g.belt?.get(id); if (!t || !b) return; if (!g.belt.isWorn(id)) { g.belt.wear?.(id); api.keep({ dispose: () => g.belt.takeOff?.(id) }); } if (id === 'psygun') { g.weapon.drawTarget = 1; g.weapon.manualHolster = false; } else t.drawTarget = 1; g.belt.draw(b); };
+const draw = (api, id) => { const g = api.game, t = g.techs.get(id); const b = g.belt?.get(id); if (!t || !b) return; if (!g.belt.isMain(id)) { const was = { main: g.belt.main, sub: g.belt.sub }; g.belt.equip(id, 'main', { quiet: true }); api.keep({ dispose: () => { g.belt.equip(was.main, 'main', { quiet: true }); g.belt.equip(was.sub, 'sub', { quiet: true }); } }); } if (id === 'psygun') { g.weapon.drawTarget = 1; g.weapon.manualHolster = false; } else t.drawTarget = 1; g.belt.draw(b); };
 const fxAt = (api, name, p, o = {}) => api.game.vfx?.play(name, { pos: p, cine: true, ...o });
 const hand = (g) => g.player.renderPos.clone().add(V(0, 1.1, 0)).addScaledVector(V(Math.sin(g.player.yaw), 0, Math.cos(g.player.yaw)), 0.4);
 const mood = (api, m) => (m ? api.game.mood.set('overture', { ease: 12, tintK: 0.6, ...m }) : api.game.mood.free('overture'));

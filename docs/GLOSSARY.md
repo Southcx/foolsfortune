@@ -112,8 +112,11 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   (Seger's hunts by class) were cut (the owner, 2026-10-09).
 - **tool** (`src/tools/`) — one of the Courier's psychic tools, worn on the belt: the psygun, Sondelass, Soul Brush, Veritome, Dreamvane,
   Crucibelle, Lockheart. *Not:* a Node script.
-- **the belt** (`game.belt`, `src/tools/belt.js`) — where tools are worn; "is a tool out?" asks here. **Draw / stow** take a tool in hand / put it
-  back.
+- **the belt** (`game.belt`, `src/tools/belt.js`) — the two tools worn (`belt.main`, `belt.sub`; `equip`, `mayEquip`, `pair`), the other five on the
+  loadout's shelf; "is a tool out?" asks here. **Draw / stow** (X) take the main in hand / put it back; **lend** (R; each tool's `lend()`, `tools/lend.js`) the sub's verb, from where it hangs.
+- **the main / the sub / a pair's card** (plain names, the owner's rulings 2026-10-22 and 23; `PAIRS`, `pairOf`, `SUB_GIFTS`, `src/progress/toolpairs.js`;
+  TOOLS-TOGETHER.md 8) — the tool worn in hand with all its verbs / the second tool worn, lending the main one verb on R and one passive / the
+  Major Arcana card (I to XXI; the Fool is you) a main and sub make together, its special opened by an achievement. *Not:* a Veritome card, a house card.
 - **the prone holster** (`game.proneHolster`, `src/tools/proneholster.js`) — lying down puts the tool in the hands away through the belt and
   draws it again once up; no tool comes out on the belly. *Not:* a holster (where a tool is worn).
 - **fitting** (`FITTINGS`, `src/pneuka/box.js`) — what fits into a tool (a lure, an instrument, the Lockheart's keys), kept in the Pneuka Box. A
@@ -121,7 +124,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the psygun** (`game.weapon`, `src/tools/psygun/weapon.js`) — the gun. A shot is one round; a charge winds up a piercing beam; a shell is a
   special round in a chamber. → detail
 - **a psygun's variant / the cylinder** (the owner's names, 2026-10-18; `PSYGUNS`, `tools/psygun/kinds.js`; OVERLAY.md 18) — by chamber count: THE PSYGUN (6), the Bombardier (1), the Carbine (3), the Pentagun (5), the Pepperbox (7: six round a heart) / the chambers drawn as a revolver's cylinder, its shape its count, turned by the wheel (`PsygunCylinder`, `game.psygunCylinder`, `src/vfx/psyguncylinder.js`; a variant's model: `PsygunModels`, `src/vfx/psygunmodels.js`, `scripts/export_psyguns.py`; as a thing in the Pneuka Box, kind `psygun`, its id the kind's, worn by `box.carryPsygun`). *Not:* a caster shell, a mount.
-- **a variant's play** (working names, Espada's: the quick taps, the flare, the scope, the full draw, a dart, the pentacle, the slug, both barrels; `VariantPlay`, `weapon.play`, `src/tools/psygun/variantplay.js`; numbers kinds.js `play`; OVERLAY.md 19) — how a psygun's variant fights beyond its chamber count. *Not:* a shell, a widening, fanning the hammer (R, `gunmoves.js`: the table's "fan the hammer" is the quick taps).
+- **a variant's play** (working names, Espada's: the quick taps, the flare, the scope, the full draw, a dart, the pentacle, the slug, both barrels; `VariantPlay`, `weapon.play`, `src/tools/psygun/variantplay.js`; numbers kinds.js `play`; OVERLAY.md 19) — how a psygun's variant fights beyond its chamber count. *Not:* a shell, a widening, fanning the hammer (Q for now, `FAN_KEY`, `gunmoves.js`: the table's "fan the hammer" is the quick taps).
 - **the psygun's reticle / the scope's lens ring** (working names, Espada's to rule; `PsygunReticle`, `game.psygunReticle`, `src/vfx/psygunreticle.js` / `PsygunScope`, `game.psygunScope`, `src/vfx/psygunscope.js`; OVERLAY.md 19) — the crosshair, one a variant (THE PSYGUN's ticks and six pips, the Bombardier's ring and chevron, the Carbine's T, the Pentagun's five points, the Pepperbox's spread ring) / the Carbine's raised scope: its brass housing, glass, reticle, the breath's arc and the full draw's ring. *Not:* the lock-on reticle, the paint reticle, the lens's frame.
 - **the lob's arc mark / a flare's reveal outline** (working names; `LobArcMark`, `src/vfx/lobarcmark.js` / `FlareReveal`, `src/vfx/flarereveal.js`) — the Bombardier's lobbed shell previewed: its dotted arc and its landing ring at the shell's area there / the outline in the flare's ember round a creature it revealed (`c.revealed`), seen through walls while it holds (its tag shows as at the lock-on). World marks: no words. *Not:* the carry throw's mark, the MARK shell's rim, a tag.
 - **the spiritual link** (the owner's words, 2026-10-18; `SpiritualLink`, `game.spiritualLink`, `src/vfx/spirituallink.js`) — the thread of the film from the Lachrimeter's bulb to the tool UI in hand: a spend runs down it as a bead, a dry click slackens it. *Not:* the link ring (the trick combo's), the tube's feed.
@@ -561,7 +564,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 ## 9. What the game shows and sounds
 
 - **the pause menu** (Esc) — the help pages and the controls. *Retired:* "pause card".
-- **the Pneuka Box** (P, `src/pneuka/`) — the inventory (56 slots) and what is worn; with the Veritome out, the bank (the Book) opens beside it.
+- **the Pneuka Box** (P, `src/pneuka/`) — the inventory (56 slots) and what is worn; at a Shrine's THE BANK row, or with the Veritome held open, the bank (the Book) opens beside it.
   *Not:* the Veritome.
 - **the reading table** (plain name; `ReadingTable`, `game.readingTable`, `src/ui/readingtable.js`) — the Pneuka Box's loadout drawn as a tarot reading: the main tool's card upright, the sub's crossed over it, the pair's Major Arcana beside them (face down until opened), the shelf's tools as a hand to pick or drag, a swap's preview, and your seal pressed over a refused swap. It draws what it is handed (`draw(state)`) and sends back hover, pick and drop. *Not:* the window (Dovina's `pneuka/ui.js`), the loadout's rules, a table (Raku's).
 - **the map** (M, `src/feedback/cartography.js`) — on screen **Map** (the owner, 2026-10-20); Mind Mapping stays in the world and the Codex.

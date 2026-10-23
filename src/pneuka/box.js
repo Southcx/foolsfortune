@@ -7,13 +7,14 @@
 //    of film: up to its `stack`, 99, in one slot, OSRS's stackables). A thing that will not fit falls at their feet (ground.js) and is
 //    picked up again with F.
 //  - EQUIPMENT: the LURE on the Sondelass' line (one: a made lure or a curio from the box; tying one on takes it out of its slot, and
-//    untying puts it back), and the TOOLS: worn in their places on their body (tools/belt.js), or carried here as things. A tool in the box
-//    is WORN from here (into its place: what was there comes off into the box), and a worn one TAKEN OFF into it.
+//    untying puts it back). The TOOLS are not things in the box: all seven are always owned, two worn as the main and the sub and five on
+//    the loadout's shelf (tools/belt.js equip; the window shows them apart). A psygun's variant is a thing here, carried with carryPsygun.
 //  - FITTINGS, the same way for the tools after: the INSTRUMENT in the Crucibelle (one), the COFFIN on the Lockheart's chain (one: it
 //    is the wheel), and the POSSIBILIKEYS on its ring (up to four, in order: brass is spent when it is opened, any other has `uses` and breaks in time, lockheart/
 //    table.js keyBreaks; fresh keys stack in the box, a used one keeps its uses in a slot of its own, on the ground too). FITTINGS says which.
-//  - THE BANK: while the Veritome is held open (J), the box and the Book are open together: a thing in the box is STORED (it becomes
-//    its card in its page, up to the card's limit) and a card with an item form is TAKEN OUT (it becomes the thing, in the box).
+//  - THE BANK: at a Shrine (its page's THE BANK row: openBank), or while the Veritome is the main and held open, the box and the Book
+//    are open together: a thing in the box is STORED (it becomes its card in its page, up to the card's limit) and a card with an item
+//    form is TAKEN OUT (it becomes the thing, in the box). Breath of the Wild's and OSRS's bank is a place.
 //
 // Prior art: Old School RuneScape's inventory (twenty-eight slots there, twice that here, a left click does the obvious thing, a right click lists the rest,
 // Examine writes to the chat, Drop puts it on the ground, the bank is somewhere else and holds stacks), its equipment screen (worn
@@ -21,7 +22,7 @@
 //
 //   const box = new PneukaBox(game)   box.add(id, from) -> slot | -1 (fell)   box.take(slot)   box.swap(a, b)   box.drop(slot)
 //   box.store(slot) / box.storeAll() / box.withdraw(cardId) (the Veritome open)   box.tieOn(slot) / box.untie() / box.tie(id)
-//   box.wear(slot) (a tool onto the belt; a psygun's variant into the hands: carryPsygun) / box.takeOff(tool)   box.seed() (the first time: the lures and the tools not worn, a small bottle worn half full)
+//   box.carryPsygun(slot) (a psygun's variant carried; the one carried into this slot)   box.openBank() (a Shrine's THE BANK row)   box.seed() (the first time: the lures, a small bottle worn half full)
 //   box.fitOn(slot) / box.fitOff(socket, i) / box.fitted(socket) -> [ids] / box.useUp(socket, i) / box.turn(socket, i) -> uses / box.rotate(socket, d) (the ring turned a notch)     box.feed(slot) (a shard to the Lockheart)
 //   box.count(id)  box.held(id) (everywhere: box, line, Book, ground)  box.free  box.lure (the lure id on the line)  box.bankOpen
 // ---------------------------------------------------------------------------------------
@@ -30,6 +31,7 @@ import { CARD } from '../tools/veritome/cards.js';
 import { LURES } from '../tools/sondelass/angling/lures.js';
 import { sfx } from '../audio/sfx.js';
 import { BOTTLES } from '../progress/brushload.js';
+import { TOOL_IDS, START } from '../progress/toolpairs.js';
 
 export const SLOTS = 56; // (the owner, 2026-10-07: 56 by default, twice OSRS's 28)
 /** What fits into the tools besides the lure: by the item's kind, how many, and to which tool. */
@@ -43,6 +45,13 @@ export const FITTINGS = {
   bottle: { kind: 'bottle', max: 1, place: true, label: 'THE LACHRYMATO BOTTLE · ON THE UPPER BACK', put: 'Wear on the upper back', none: 'no bottle: the Soul Brush draws on your mind' },
 };
 const SOCKET_OF = Object.fromEntries(Object.entries(FITTINGS).map(([k, F]) => [F.kind, k]));
+/** What the log says to a store or a take out with the bank shut (the words a placeholder for Espada's). */
+export const BANK_SHUT = 'The Veritome opens as the bank at a Shrine (THE BANK), or held open as your main.';
+/** The belt's two, as the kit keeps them: two of the seven, never one twice; anything else is a new save's pair. */
+function wearPair(belt, d) {
+  const ok = d && TOOL_IDS.includes(d.main) && TOOL_IDS.includes(d.sub) && d.main !== d.sub;
+  belt.main = ok ? d.main : START.main; belt.sub = ok ? d.sub : START.sub;
+}
 
 export class PneukaBox {
   constructor(game) {
@@ -52,19 +61,33 @@ export class PneukaBox {
     this.fit = { instrument: [], heart: ['heart.plain'], keys: [], bottle: [] };
     this.uses = { instrument: [], heart: [0], keys: [], bottle: [] }; // (beside each fitting: how many times it has been turned)
     this.fresh = false;
-    // THE KIT (core/save.js): the box and the belt are one section, written together, so they can never disagree about a tool
+    this.atBank = false; // (the window opened from a Shrine's THE BANK row, until it is next opened another way: openBank)
+    game.events?.on?.('pneuka.open', () => { this.atBank = false; });
+    // THE KIT (core/save.js): the box and the belt are one section, written together, so they can never disagree about a tool.
+    // Version 2 (main and sub, PNEUKA-BOX.md 5): the belt is { main, sub }; version 1 kept a list of the tools worn and the rest as
+    // `tool.<id>` things in the slots, read as the first two worn in the belt's order and the slots emptied of them.
     const belt = game.belt;
     game.save?.section('kit', {
-      scope: 'player', version: 1,
-      dump: () => ({ box: { slots: this.slots, lure: this.lure, fit: this.fit, uses: this.uses, seeded: this.seeded }, belt: belt?.worn ? [...belt.worn] : null }),
-      load: (d) => { this.load(d.box); if (belt) belt.worn = Array.isArray(d.belt) ? new Set(d.belt) : null; },
-      reset: () => { this.slots = new Array(SLOTS).fill(null); this.lure = 'lure.bob'; this.fit = { instrument: [], heart: ['heart.plain'], keys: [], bottle: [] }; this.uses = { instrument: [], heart: [0], keys: [], bottle: [] }; this.seeded = false; if (belt) belt.worn = null; },
-      check: () => this.reconcile(), // (every tool somewhere)
+      scope: 'player', version: 2,
+      dump: () => ({ box: { slots: this.slots, lure: this.lure, fit: this.fit, uses: this.uses, seeded: this.seeded }, belt: belt ? { main: belt.main, sub: belt.sub } : null }),
+      load: (d) => { this.load(d.box); if (belt) wearPair(belt, d.belt); },
+      migrate: (d, v) => {
+        if (v < 2) {
+          const worn = Array.isArray(d?.belt) ? TOOL_IDS.filter((id) => d.belt.includes(id)) : [];
+          d = { ...d, belt: worn.length >= 2 ? { main: worn[0], sub: worn[1] } : null };
+          if (Array.isArray(d.box?.slots)) d.box = { ...d.box, slots: d.box.slots.map((o) => (String(o?.id).startsWith('tool.') ? null : o)) };
+        }
+        return d;
+      },
+      reset: () => { this.slots = new Array(SLOTS).fill(null); this.lure = 'lure.bob'; this.fit = { instrument: [], heart: ['heart.plain'], keys: [], bottle: [] }; this.uses = { instrument: [], heart: [0], keys: [], bottle: [] }; this.seeded = false; if (belt) wearPair(belt, null); },
+      check: () => this.reconcile(), // (two tools worn, never the same one twice)
     });
   }
   get book() { return this.game.veritome?.book || null; }
-  /** The Book is open with the box while the Veritome is held open. */
-  get bankOpen() { return !!this.game.veritome?.held; }
+  /** The Book is open with the box: at a Shrine's THE BANK row while the window is open, or while the Veritome is held open. */
+  get bankOpen() { return (this.atBank && !!this.game.pneukaUI?.open) || !!this.game.veritome?.held; }
+  /** A Shrine's THE BANK row (world/shrines.js): the window opens with the Book beside it. */
+  openBank() { const W = this.game.pneukaUI; if (!W) return false; if (!W.open) W.show(); else W.render(); this.atBank = true; W.render(); return true; }
   get free() { return this.slots.filter((s) => !s).length; }
   get used() { return SLOTS - this.free; }
   count(id) { return this.slots.reduce((n, s) => n + (s?.id === id ? s.n || 1 : 0), 0); }
@@ -117,7 +140,7 @@ export class PneukaBox {
   store(slot) {
     const s = this.slots[slot], B = this.book;
     if (!s || !B) return false;
-    if (!this.bankOpen) { this.refuse('Draw the Veritome (J) to store things in it.', 'bankshut'); return false; }
+    if (!this.bankOpen) { this.refuse(BANK_SHUT, 'bankshut'); return false; }
     const card = itemOf(s.id)?.card;
     if (!card || !CARD[card]) { this.refuse('That has no page in the Veritome.', 'nopage'); return false; }
     if (!B.canTake(card)) { this.refuse(`The Veritome can hold no more of the ${itemOf(s.id).name}.`, `full.${card}`); return false; }
@@ -133,7 +156,7 @@ export class PneukaBox {
   withdraw(card) {
     const B = this.book, A = CARD[card];
     if (!B || !A || A.form !== 'item' || !B.has(card)) return false;
-    if (!this.bankOpen) { this.refuse('Draw the Veritome (J) to take things out of it.', 'bankshut'); return false; }
+    if (!this.bankOpen) { this.refuse(BANK_SHUT, 'bankshut'); return false; }
     if (!this.free) { this.refuse('Your Pneuka Box is full.', 'boxfull'); return false; }
     B.take(card);
     const i = this.slots.findIndex((s) => !s);
@@ -217,35 +240,14 @@ export class PneukaBox {
     return true;
   }
 
-  // ---------------------------------------------------------------- the tools (worn on the belt, or carried here)
-  /** Put a tool from the box on: into its place on their body (tools/belt.js); whatever was in that place comes off into this slot. */
-  wear(slot) {
-    const s = this.slots[slot], it = s && itemOf(s.id), belt = this.game.belt;
-    if (it?.kind === 'psygun') return this.carryPsygun(slot, it);
-    if (!it || it.kind !== 'tool' || !belt) return false;
-    const off = belt.wear(it.tool, { stash: false }); // (what comes off goes into this slot, below)
-    if (off === false) { this.refuse(`There is no place to wear ${it.name.toLowerCase().replace('the ', 'the ')}.`, 'noplace'); return false; }
-    this.slots[slot] = off ? { id: `tool.${off}` } : null;
-    this.save();
-    return true;
-  }
+  // ---------------------------------------------------------------- a psygun's variant (the tools themselves are the belt's: tools/belt.js equip)
   /** A psygun's variant from the box becomes the psygun you carry (its own chambers, tools/psygun/shells.js setGun); the one you carried
    *  comes off into this slot. */
-  carryPsygun(slot, it) {
-    const S = this.game.shells, was = S?.gun?.id;
-    if (!S || was === it.id) return false;
+  carryPsygun(slot) {
+    const it = itemOf(this.slots[slot]?.id), S = this.game.shells, was = S?.gun?.id;
+    if (it?.kind !== 'psygun' || !S || was === it.id) return false;
     if (!S.setGun(it.id)) return false;
     this.slots[slot] = was ? { id: was } : null;
-    this.save();
-    return true;
-  }
-  /** Take a worn tool off into the box. */
-  takeOff(tool) {
-    const belt = this.game.belt;
-    if (!belt?.isWorn(tool)) return false;
-    if (!this.free) { this.refuse('There is no room in your Pneuka Box for it.', 'boxfull'); return false; }
-    belt.takeOff(tool);
-    this.slots[this.slots.findIndex((s) => !s)] = { id: `tool.${tool}` };
     this.save();
     return true;
   }
@@ -276,13 +278,11 @@ export class PneukaBox {
     for (const id of owed) if (itemOf(id)) this.add(id, 'migrate');
     book.legacyItems = null; book.legacyLoose = null; book.save();
   }
-  /** What a new Courier starts with in the box, once: the made lures that are not on the line, and the tools they are not wearing. */
+  /** What a new Courier starts with in the box, once: the made lures that are not on the line. */
   seed() {
     if (this.seeded) return;
     this.seeded = true;
     for (const L of LURES) if (L.id !== this.lure && !this.count(L.id)) this.add(L.id, 'start');
-    const belt = this.game.belt;
-    if (belt) for (const t of belt.tools) if (!belt.isWorn(t.id) && !this.count(`tool.${t.id}`)) this.add(`tool.${t.id}`, 'start');
     // (for the tools after the first four: the three instruments and a handful of keys to begin with; the Gambler's and the Shepherd's
     // coffins and the INVERTED key are bought from Raku or found, so a first opening is never a bought jackpot: docs/DESIGN.md, section 8, proposal 2)
     for (const id of ['inst.ocarina', 'inst.kalimba', 'inst.lute', 'key.brass', 'key.brass', 'key.twin', 'key.even']) this.add(id, 'start');
@@ -291,19 +291,15 @@ export class PneukaBox {
     if (!this.fit.bottle.length && !this.held('bottle.small')) { this.fit.bottle.push('bottle.small'); this.uses.bottle.push(BOTTLES['bottle.small'].capacity / 2); }
     this.save();
   }
-  /** Every tool is somewhere, once: worn, or held (the box, the ground, the Book). One that is neither (a save from before a fix, a belt
-   *  written without its box) comes back into the box; a copy in the box of one worn or held elsewhere (the owner's duplicate tools,
-   *  2026-10-06) leaves it. Run after loading, and after anything that borrowed the belt. */
+  /** The belt's two are two of the seven tools, never one twice (a save from before a fix, a belt written without its box): anything else
+   *  is a new save's pair. Run after loading, and after anything that borrowed the belt. */
   reconcile() {
     const belt = this.game.belt; if (!belt) return 0;
-    let n = 0;
-    for (const t of belt.tools) {
-      const id = `tool.${t.id}`;
-      if (!belt.isWorn(t.id) && !this.held(id)) { this.add(id, 'restore'); n++; continue; }
-      for (let extra = this.held(id) + (belt.isWorn(t.id) ? 1 : 0) - 1; extra > 0 && this.count(id); extra--) { this.slots[this.slots.findIndex((s) => s?.id === id)] = null; n++; }
-    }
-    if (n) this.save();
-    return n;
+    const was = `${belt.main}+${belt.sub}`;
+    wearPair(belt, { main: belt.main, sub: belt.sub });
+    if (was === `${belt.main}+${belt.sub}`) return 0;
+    this.save();
+    return 1;
   }
   /** DEBUG, the sandbox (title/ui.js): the whole kit, whatever STORY holds back (both coffins, a few of every key), topped up each time. */
   debugKit() {

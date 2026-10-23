@@ -73,7 +73,6 @@ const smooth = (a, b, t) => { const x = THREE.MathUtils.clamp((t - a) / (b - a),
 export class Dreamvane extends HeldTool {
   constructor(mgr) {
     super(mgr, 'dreamvane', {
-      key: 'KeyK',
       // across the back, the crook up over the right shoulder, the heel down by the left hip (a staff slung on a strap)
       worn: { at: [0.1, 1.05, -0.2], along: [-0.55, 1, -0.05], out: [0, 0, -1] },
       draw: { twist: -18, lean: 8, via: [-0.45, 1.25, 0.1], pole: [-0.5, -0.25, -0.35] },
@@ -253,6 +252,14 @@ export class Dreamvane extends HeldTool {
     this.model.setFork(false);
     P.bodyYaw = P.yaw;
     sfx.toss?.(); g.events?.emit('fork.throw', { by: 'courier' });
+  }
+  /** The sub's Lure throw (R: tools/belt.js): the fork thrown at once from the heel where the vane hangs; R again calls it back. */
+  lend() {
+    const F = this.fork;
+    if (!this.enabled) return false;
+    if (F.state === 'heel') { this.throwFork(); return F.state === 'fly'; }
+    if (F.state !== 'back') this.recall();
+    return false;
   }
   recall() { const F = this.fork; if (F.state === 'heel') return; F.state = 'back'; F.t = 0; F.ent = null; sfx.whoosh?.(0.5); }
   /** Back in the heel at once (put away while it was out). */

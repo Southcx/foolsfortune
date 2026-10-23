@@ -177,7 +177,6 @@ export class Realm {
       for (const t of g.belt?.tools || []) if (t.wants) t.stow?.();
       g.character?.setHidden(true);
       document.exitPointerLock?.();
-      g.hud?.el?.cross && (g.hud.el.cross.style.display = 'none');
       const V = this.god?.jar; if (V?.group) { V.group.visible = true; V.group.scale.setScalar(1); this.jarLook ||= new JarHop(V.group, { fx: g.fx }); this.jarLook.base.setScalar(1); } // (Calissa's hop: crouch, stretch, land, trail; at full size whatever the god hand left: GARDEN-SWEEP #2)
       const H = this.god?.hand; if (H?.root) { H.root.visible = true; H.root.scale.setScalar(1); }
       this.hopOut();
@@ -215,7 +214,6 @@ export class Realm {
       const H = this.god?.hand; if (H?.root && !this.god.active) H.root.visible = false;
       g.character?.setHidden(false);
       const K = this.kept, sc = g.scene; if (K) { g.camera.up.copy(K.up); if (K.bg && sc.background?.isColor) sc.background.copy(K.bg); if (K.fog && sc.fog) { sc.fog.color.copy(K.fog); sc.fog.density = K.fogD; } const Lt = g.dunes?.lights; if (Lt && K.hemiSky) { Lt.hemi.color.copy(K.hemiSky); Lt.hemi.groundColor.copy(K.hemiGnd); Lt.hemi.intensity = K.hemiI; Lt.amb.intensity = K.ambI; Lt.sun.color.copy(K.sunC); } this.kept = null; }
-      g.hud?.el?.cross && (g.hud.el.cross.style.display = '');
       this.hand.letGo();
       const B = this.back; if (B && !g.places?.stand(B.pos, B.yaw)) g.course.teleport(B.pos, B.yaw);
       const O = this.raising.out; if (O) g.spirits?.summon(B?.pos || g.player.pos, { life: 1e6, power: 1 + (O.sp ? Math.max(...Object.values(O.sp.stats)) / 999 : 0), from: 'garden' }); // (one walks the world with you: creatures/spirits.js)
