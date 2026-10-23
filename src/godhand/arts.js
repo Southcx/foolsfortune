@@ -318,7 +318,7 @@ export class GodArts {
     if (this.wheelOpen) return;
     // (telekinesis lives in godhand/godhand.js: begin/release grab, and its drain)
     if (a.id === 'telekinesis') return;
-    this.matter.update();
+    this.matter.update(dt);
     if (POWER_IDS.has(a.id)) { // (the domains' god powers: godhand/powers.js)
       const P = this.powers;
       P.passive(a.id, dt);

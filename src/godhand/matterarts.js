@@ -21,7 +21,8 @@ import * as THREE from 'three';
 import { T } from '../core/config.js';
 import { sfx } from '../audio/sfx.js';
 import { GOD_POWERS, rampOf } from '../progress/godpowers.js';
-import { groundOf } from './matter.js';
+import { COLOR } from '../progress/weather.js';
+import { matterMaterial, lumpyBall, tickMatterLook } from '../vfx/godhand/matterlook.js';
 
 /** The verbs' numbers. `carry` the most the hand holds (m³, where Scoop opens; the ramp takes it to 400 at 99: RAMP.scoop); `takeRate` and
  *  `pourRate` m³ a real second; `r` the brush's radius (m); `shapeRate` metres a real second at a full drag (Visualization's
@@ -39,7 +40,8 @@ export class MatterArts {
     this.held = { water: 0, loose: 0, firm: 0, feeling: null };
     this.L = null;
     const g = this.game;
-    this.ball = new THREE.Mesh(new THREE.IcosahedronGeometry(0.5, 2), new THREE.MeshStandardMaterial({ color: groundOf().firm.colour, roughness: 0.6, transparent: true, opacity: 0.9 }));
+    this.ball = new THREE.Mesh(lumpyBall(), matterMaterial('ground')); // (its look: vfx/godhand/matterlook.js, in what it holds)
+    this.ballShare = -1;
     this.ball.visible = false;
     g.scene.add(this.ball);
   }
@@ -143,14 +145,20 @@ export class MatterArts {
     g.events?.emit('god.sculpt', { shape, volume: +r.volume.toFixed(2), moved: +fromHeld.toFixed(2), made: +made.toFixed(2), by: 'courier' });
   }
 
-  /** The ball of held matter under the hand, sized by its volume and coloured by what it is. */
-  update() {
+  /** The ball of held matter under the hand, sized by its volume, in the look of what it holds, turning. */
+  update(dt = 0) {
     const v = this.carried, B = this.ball;
     B.visible = !!this.god.active && v > 0.05;
     if (!B.visible) return;
     const H = this.held, s = Math.cbrt(v) * 0.55;
     B.scale.setScalar(s);
-    B.material.color.setHex(H.water >= H.loose && H.water >= H.firm ? 0x9fd8e0 : H.loose >= H.firm ? groundOf().loose.colour : groundOf().firm.colour);
+    tickMatterLook(dt);
+    const wet = H.water >= H.loose && H.water >= H.firm;
+    B.material = matterMaterial(wet ? 'lachryma' : 'ground');
+    if (wet) B.material.userData.matterUniforms.mlTint.value.setHex(COLOR[H.feeling] ?? 0x9fd8e0);
+    const share = Math.round((H.loose / Math.max(1e-6, H.loose + H.firm)) * 20) / 20; // (the loose share, in steps: written only when it moves)
+    if (share !== this.ballShare) { this.ballShare = share; const ml = B.geometry.attributes.aMl; for (let i = 0; i < ml.count; i++) ml.array[i * 4] = share; ml.needsUpdate = true; }
+    B.rotation.y += dt * 0.7; B.rotation.x = Math.sin(B.rotation.y * 0.6) * 0.35;
     B.position.copy(this.god.cursor.point).addScaledVector(UP, T.god.hoverH + s);
   }
 
