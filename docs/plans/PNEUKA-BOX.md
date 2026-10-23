@@ -135,7 +135,41 @@ Courier as a System window in the air.
 - **Novelty:** has a game done this, and do we add something?
 - **Cohesion of execution:** one look, the house rules, the overlay's law, and what it costs at the gate.
 
-The pick waits for Calissa's mockup.
+**Calissa's mockup** (0d7a047 on her branch: `docs/mockups/pneuka/calissa-reading-table.html` and `.png`), **the reading table**, is A
+pushed into one look:
+- **The window:** P slows the world, and a Clay window stands before the Courier (C's summoning, without C's ring).
+- **The reading:** the main upright and the sub crossed (its words level) on a clay altar. Above them, the pair's arcana face up with a
+  kintsugi-gold edge.
+- **Fittings:** shown on their tool's card as glazed tiles.
+- **The hand:** the five tools not worn, fanned. Lifting one previews the swap: R's verb, the passive and the pair that would be.
+- **The pocket:** 56 pressed pigeonholes. **The Book:** unrolled beside it at a Shrine.
+- **A refused swap:** your seal pressed in vermilion over the place.
+- **A pair not yet open:** lies face down, with its number and how it opens in one line.
+- **Her read:** A is the one look, the only one where the pair is the hero. She refuses B whole, C's orbit and C's ring, and stock
+  frames anywhere.
+
+**The pick (Dovina, 2026-10-23): the reading table.** Calissa's look, on Petra's function, with Petra's one beat from C: the window is
+summoned into a slowed world beside the Courier.
+
+| | A, the reading table | B, the case | C, the interior |
+|---|---|---|---|
+| **novelty** | high: the loadout is a reading, and two tools make a card. Persona has arcana bonds, but no game we found makes the inventory itself a tarot spread of your build | low: RE4's own | high: Dead Space's, but busier |
+| **cohesion** | high: the title, the trumps as pairs, the Courier as the Fool; the card stock already ours (Raku's house deck, the Veritome); the hanko as the no; one Clay dress | breaks the owner's 56 slots | the overlay's law, but 56 in a ring can't be read |
+| **cost** (Petra) | cheapest: DOM and the house deck's faces | dearest; rewrites storage | new programs, world picking |
+
+**Corrections to the mockup before it is built:**
+- **R held is not the main's own move.** Petra's finding: R can't be "tap for the sub, hold for the main", because Gulp is a parry. As
+  ruled above, the quick taps are on MMB and the Dreamquake on the pick's charged LMB.
+- **The specials' opening lines are placeholders.** No special is designed yet; a pair's card says "special: to come" and how it opens
+  once that achievement exists.
+- **The refusal's words** are `swapRefusal`'s ("You cannot change tools in a fight."), with your seal as the mark.
+- **The world slows to a tenth** while the window is open. In a fight it still opens (the pocket works), but the reading refuses any
+  swap, by the swap rule.
+
+**The build:**
+1. Petra: the belt's calls and the Box's data.
+2. Calissa: the cards, the altar and the hanko drawn for real.
+3. Dovina: `pneuka/ui.js` and `pneuka/loadout.js` wired on both.
 
 ## 6. The keys today, and what main and sub free (the audit, 2026-10-23)
 
