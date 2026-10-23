@@ -20,8 +20,9 @@ import * as THREE from 'three';
 
 /** One gesture a sub tool's verb (SUB_GIFTS in progress/toolpairs.js). Lengths in real s = (to - from) / rate. */
 export const LEND_GESTURES = {
-  // Snap shot: the draw from the holster to the aim (it holds the aim from 0.37 s), then let go back to the stance; 0.45 real s
-  psygun: { clip: 'Gun_QuickDraw', from: 0.08, to: 0.53, rate: 1, out: 0.16, mask: 'arm' },
+  // Snap shot: the draw's last stretch to the aim (held from 0.37 s in the clip, so at the aim 0.09 real s after the press: the round
+  // waits for it, LENT_MODELS), then let go back to the stance; 0.23 real s. (From 0.08 the hand crossed the face for 0.2 s first.)
+  psygun: { clip: 'Gun_QuickDraw', from: 0.26, to: 0.53, rate: 1.2, out: 0.12, mask: 'arm' },
   // Grapple: an overhand throw from the wound-up arm, so the release (0.37 s in the clip) comes 0.1 real s after the press; 0.43 real s
   sondelass: { clip: 'throw', from: 0.24, to: 0.76, rate: 1.2, out: 0.18, mask: 'arm' }, // (the right arm alone: the upper mask flung the left arm wide, 2026-10-23's look)
   // Flick: the Soul Brush's own flick of the right hand, the whole of it, quickened; 0.48 real s
