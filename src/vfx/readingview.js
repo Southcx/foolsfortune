@@ -14,7 +14,7 @@
 //                 SPREADS.md 5.1): a velvet ground, gold thread between the cells, each lit cell glowing in its suits' colours by their
 //                 strength, a wild cell in the film's slow schiller, a dark cell (contrary suits met) cracked open with its light gone
 //                 out, a hidden cell left unlit. The Fool's cell holds a small gold mark.
-//   THE HAND      the bound Majors not laid, fanned low before the Courier, face up; the one held lifted.
+//   THE HAND      (off, READING_VIEW.hand.show: the hand is the window's bar under the reading) the bound Majors not laid, fanned low before the Courier.
 //   THE FALL      a few house cards drifting far behind and the motes rising, as on the title (title/scene.js), so the dark has depth.
 // A world mark of the System's: no words (a position's name is the window's, by `anchors`).
 //
@@ -39,7 +39,7 @@ export const READING_VIEW = {
   front: -0.42,                 // (m: the orbit's plane, behind them like a halo, so the Courier stands before the cross and is seen)
   sway: 0.18,                   // (rad: how far a card turns in place, and back)
   cloth: { cell: 0.34, below: 0.62, glow: 1.6 }, // (m a cell; m under the feet; the lit cells' emissive)
-  hand: { r: 1.8, spread: 0.7, y: 0.05, z: 1.35, tilt: -0.55, lift: 0.2, scale: 0.85 }, // (the fan: its radius, its arc, its place, its lean back, its size)
+  hand: { show: false, r: 1.8, spread: 0.7, y: 0.05, z: 1.35, tilt: -0.55, lift: 0.2, scale: 0.85 }, // (the fan: its radius, its arc, its place, its lean back, its size)
   fall: 14, motes: 160,
   flyIn: 0.6,                   // (real s the cards take from the fall to their places)
 };
@@ -174,7 +174,7 @@ export class ReadingView {
     }
     for (const [k, fr] of this.frames) if (!k.startsWith(`${state.spread}:`)) fr.visible = false;
     for (const [k, node] of this.cards) if (!seen.has(k)) { this.drop(node); this.cards.delete(k); }
-    this.drawHand(state.hand || [], state.held);
+    this.drawHand(V.hand.show ? state.hand || [] : [], state.held); // (off: the hand is Dovina's bar under the reading, where the drag starts; a fan here hid the cloth)
     this.drawCloth(state.cells || []);
   }
 
