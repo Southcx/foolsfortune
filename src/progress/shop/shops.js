@@ -54,7 +54,7 @@ export class Shops {
   offer(shop, id, data = null) {
     const D = SHOPS[shop], it = itemOf(id);
     if (!D || !it || !D.buys.includes(it.kind)) return 0;
-    const w = worthOf(id, data) * this.still(id, data) * this.want(shop, id) * this.fx(shop, 'sell') * this.charm() * (D.trade.includes(it.kind) ? 1 : S.buys), glut = this.state[shop].glut[id] || 0;
+    const w = worthOf(id, data) * this.still(id, data) * this.want(shop, id) * this.fx(shop, 'sell') * this.charm() * (this.game.laidSpread?.worthK ?? 1) * (D.trade.includes(it.kind) ? 1 : S.buys), glut = this.state[shop].glut[id] || 0;
     const paid = Math.max(w > 0 ? 1 : 0, Math.floor(w * Math.max(S.floor, 1 - S.glut * glut)));
     // (never above its own full-shelf ask, less a cube: charisma widens both sides, and a buy-and-sell-back must never pay)
     if (D.sells[id] == null) return paid;

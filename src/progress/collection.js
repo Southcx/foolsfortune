@@ -41,7 +41,7 @@ export class Collection {
     const A = CARD[id], g = this.game;
     if (!A) return false;
     if (this.bound.has(id)) {
-      const cubes = WORTH[A.rank] || 10;
+      const cubes = Math.round((WORTH[A.rank] || 10) * (g.laidSpread?.worthK ?? 1)); // (Pentacles' tally: progress/laidspread.js)
       g.cubes?.earn(cubes, 'condense');
       g.events?.emit('card.condense', { card: id, cubes, by: 'courier' });
       return false;

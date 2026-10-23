@@ -132,6 +132,7 @@ import { Shops } from './progress/shop/shops.js';
 import { ShopUI } from './progress/shop/ui.js';
 import { PneukaUI } from './pneuka/ui.js';
 import { Collection } from './progress/collection.js';
+import { LaidSpread } from './progress/laidspread.js';
 import { GroundItems } from './pneuka/ground.js';
 import { SystemVoice } from './audio/voice/voice.js';
 import { MusicPlayer } from './music/player.js';
@@ -596,6 +597,7 @@ async function main() {
   game.ground = new GroundItems(game);
   game.pneuka = new PneukaBox(game);
   game.collection = new Collection(game); // (the cards bound, kept in the Codex: progress/collection.js; the Veritome keeps none)
+  game.laidSpread = new LaidSpread(game); // (the spread laid on the Box's underside, its four tallies the modifiers: progress/laidspread.js)
   game.belt.tick(); game.pneuka.seed(); game.pneuka.reconcile(); // (a new Courier: the Magician's pair worn, the made lures in the box; and two tools worn, never one twice)
   game.pneukaUI = new PneukaUI(game);
   game.pneukaUI.onClose = () => { if (input.enabled && !cursorFree()) input.requestLock(); };
@@ -1405,7 +1407,7 @@ async function main() {
     game.circuits.update(dt);
     game.cubes.update(dt);
     if (!worldAsleep) { game.chests.update(dt); game.weir.update(dt); }
-    game.well.update(dt); game.ostraca?.update(); game.debugChests?.update(game.rawDt ?? dt); game.knacks?.update(game.rawDt ?? dt); game.goals?.update(game.rawDt ?? dt); game.harmony?.update(game.rawDt ?? dt); game.spiritLife?.update(game.rawDt ?? dt); game.feelings?.update(game.rawDt ?? dt); game.vantages?.update(game.rawDt ?? dt); game.vantageFrames?.update(game.rawDt ?? dt); game.awakening?.update(game.rawDt ?? dt); game.solar?.update(dt); game.geysers?.update(dt); game.raceway?.update(dt); game.race?.update(dt); game.shrines?.update(); game.pier?.update(); game.mooring?.update(game.rawDt ?? dt); game.encounterFilm?.update(game.rawDt ?? dt); game.margarite?.update(dt); game.bazaar?.update(dt); game.duelFoes.update(); game.busk?.update(); game.catchLook?.update(game.rawDt ?? dt, camera);
+    game.well.update(dt); game.ostraca?.update(); game.debugChests?.update(game.rawDt ?? dt); game.knacks?.update(game.rawDt ?? dt); game.goals?.update(game.rawDt ?? dt); game.laidSpread?.update(game.rawDt ?? dt); game.harmony?.update(game.rawDt ?? dt); game.spiritLife?.update(game.rawDt ?? dt); game.feelings?.update(game.rawDt ?? dt); game.vantages?.update(game.rawDt ?? dt); game.vantageFrames?.update(game.rawDt ?? dt); game.awakening?.update(game.rawDt ?? dt); game.solar?.update(dt); game.geysers?.update(dt); game.raceway?.update(dt); game.race?.update(dt); game.shrines?.update(); game.pier?.update(); game.mooring?.update(game.rawDt ?? dt); game.encounterFilm?.update(game.rawDt ?? dt); game.margarite?.update(dt); game.bazaar?.update(dt); game.duelFoes.update(); game.busk?.update(); game.catchLook?.update(game.rawDt ?? dt, camera);
     // underground: no sun through the ground (it would light the basement outside its shadow
     // frustum), thinner fog so the long rooms read end to end, no shadow-map updates
     game.daylight.update(dt); // (the open ground's light graded by the hour and the weather, before the dunes blend it in)
