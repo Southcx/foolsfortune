@@ -14,7 +14,7 @@
 // Prior art: Pokemon Snap (the score's parts, the habits, the professor paying for a better photo); Monster Hunter's ecology (monsters
 // that ignore you, are territorial, or hunt); Wind Waker's sea (each square its creature); the Veritome's own plates (tools/veritome/).
 //
-//   EGREGORES[id] = { cls, disposition, size, habits, lives: { off, law?, phase?, weather? }, shy?, zone?, sense?, weight }   (names: placeholders,
+//   EGREGORES[id] = { feel, cls, disposition, size, habits, lives: { off, law?, phase?, weather? }, shy?, zone?, sense?, weight }   (names: placeholders,
 //     each its myth in a comment; Espada's to name when the open sea is called final)
 //   sightings(square, { phase, weather }) -> [{ id, weight }]   plateScore({ fill, centre, facing, habit }) -> { score, stars }
 //   platePay(id, stars, bestBefore = 0) -> cubes
@@ -23,19 +23,20 @@ import { ECON } from '../econ/table.js';
 import { SEA_SERPENT } from './seaserpent.js';
 
 /** The open sea's Egregores, small to great. `lives.off` the rows off the lane it keeps to (at least), `lives.law` its end of the line
- *  (-1 the Law half, +1 the Chaos half, 0 either), `phase` / `weather` when it is about at all. `weight` how often it is met there. */
+ *  (-1 the Law half, +1 the Chaos half, 0 either), `phase` / `weather` when it is about at all. `weight` how often it is met there.
+ *  `feel` its feeling, read from its myth (Calissa's reading, ruled 2026-10-23; the bodies' colour, vfx/opensea/egregorebodies.js). */
 export const EGREGORES = {
-  sealFolk:     { cls: 0, disposition: 'wary', shy: 25, size: 2, habits: ['bask', 'shed'], lives: { off: 1, law: -1 }, weight: 3 },          // (the selkie)
-  seaLights:    { cls: 0, disposition: 'passive', size: 1, habits: ['gather'], lives: { off: 1, phase: 'night' }, weight: 3 },               // (St Elmo's fire, corposants)
-  horseHerd:    { cls: 1, disposition: 'passive', size: 3, habits: ['gallop', 'rear'], lives: { off: 1 }, weight: 2 },                        // (the hippocamp)
-  fishPeople:   { cls: 1, disposition: 'wary', shy: 40, size: 1.5, habits: ['sing', 'dive'], lives: { off: 2, law: 1 }, weight: 2 },          // (the ningyo)
-  wolfWhale:    { cls: 2, disposition: 'territorial', zone: 60, size: 8, habits: ['breach', 'howl'], lives: { off: 2, law: -1 }, weight: 1.5 }, // (the akhlut)
-  seaSerpent:   { cls: 2, disposition: 'hostile', sense: 120, size: 30, habits: ['coil', 'spit'], lives: { off: 2 }, weight: 1.5, fight: SEA_SERPENT },           // (the sea serpent: the test enemy)
-  seaMonk:      { cls: 2, disposition: 'territorial', zone: 50, size: 12, habits: ['rise', 'stare'], lives: { off: 2, phase: 'night', weather: 'dread' }, weight: 1 }, // (the umibozu)
-  islandWhale:  { cls: 3, disposition: 'passive', size: 120, habits: ['surface', 'spout'], lives: { off: 3 }, weight: 0.6 },                  // (the aspidochelone: an islet that is a whale; it dives)
-  ghostShip:    { cls: 3, disposition: 'wary', shy: 150, size: 40, habits: ['hail', 'vanish'], lives: { off: 2, weather: 'grief' }, weight: 0.6 }, // (the Flying Dutchman)
-  bigSquid:     { cls: 3, disposition: 'territorial', zone: 90, size: 50, habits: ['grasp', 'ink'], lives: { off: 3, law: 1 }, weight: 0.5 },   // (the kraken)
-  worldSerpent: { cls: 4, disposition: 'hostile', sense: 300, size: 400, habits: ['circle', 'rise'], lives: { off: 3, law: 1 }, weight: 0.15 }, // (Jormungandr)
+  sealFolk:     { feel: 'grief', cls: 0, disposition: 'wary', shy: 25, size: 2, habits: ['bask', 'shed'], lives: { off: 1, law: -1 }, weight: 3 },          // (the selkie)
+  seaLights:    { feel: 'wonder', cls: 0, disposition: 'passive', size: 1, habits: ['gather'], lives: { off: 1, phase: 'night' }, weight: 3 },               // (St Elmo's fire, corposants)
+  horseHerd:    { feel: 'mirth', cls: 1, disposition: 'passive', size: 3, habits: ['gallop', 'rear'], lives: { off: 1 }, weight: 2 },                        // (the hippocamp)
+  fishPeople:   { feel: 'desire', cls: 1, disposition: 'wary', shy: 40, size: 1.5, habits: ['sing', 'dive'], lives: { off: 2, law: 1 }, weight: 2 },          // (the ningyo)
+  wolfWhale:    { feel: 'fury', cls: 2, disposition: 'territorial', zone: 60, size: 8, habits: ['breach', 'howl'], lives: { off: 2, law: -1 }, weight: 1.5 }, // (the akhlut)
+  seaSerpent:   { feel: 'dread', cls: 2, disposition: 'hostile', sense: 120, size: 30, habits: ['coil', 'spit'], lives: { off: 2 }, weight: 1.5, fight: SEA_SERPENT },           // (the sea serpent: the test enemy)
+  seaMonk:      { feel: 'dread', cls: 2, disposition: 'territorial', zone: 50, size: 12, habits: ['rise', 'stare'], lives: { off: 2, phase: 'night', weather: 'dread' }, weight: 1 }, // (the umibozu)
+  islandWhale:  { feel: 'wonder', cls: 3, disposition: 'passive', size: 120, habits: ['surface', 'spout'], lives: { off: 3 }, weight: 0.6 },                  // (the aspidochelone: an islet that is a whale; it dives)
+  ghostShip:    { feel: 'grief', cls: 3, disposition: 'wary', shy: 150, size: 40, habits: ['hail', 'vanish'], lives: { off: 2, weather: 'grief' }, weight: 0.6 }, // (the Flying Dutchman)
+  bigSquid:     { feel: 'dread', cls: 3, disposition: 'territorial', zone: 90, size: 50, habits: ['grasp', 'ink'], lives: { off: 3, law: 1 }, weight: 0.5 },   // (the kraken)
+  worldSerpent: { feel: 'gall', cls: 4, disposition: 'hostile', sense: 300, size: 400, habits: ['circle', 'rise'], lives: { off: 3, law: 1 }, weight: 0.15 }, // (Jormungandr)
 };
 
 /** The Egregores that may be met in a square now, with their weights (none where the sea is too tame for them). */

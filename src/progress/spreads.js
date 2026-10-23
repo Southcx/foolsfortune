@@ -13,7 +13,7 @@
 //    carried), Cultist Simulator (an inventory of cards on a table), FFXIV's Astrologian (cards as buffs matched to a seal);
 //  - the spreads themselves: the three-card, the Horseshoe and the Celtic Cross, each position's rule its meaning made a mechanic.
 //
-//   COLS ROWS MIRROR   SUITS CONTRARY MAJOR_SUIT FOOTPRINTS RANK_CELLS   SPREADS POSITION_RULES   TALLY KIND_SUIT TOOL_SUIT
+//   COLS ROWS MIRROR FOOL_CELL   SPREAD_ORDER OPEN_AT   SUITS CONTRARY MAJOR_SUIT FOOTPRINTS RANK_CELLS   SPREADS POSITION_RULES   TALLY KIND_SUIT TOOL_SUIT
 //   footprintOf(card, { turn, reversed }) -> [[dx, dy]]   suitOf(card, reversed) -> suit | 'wild'   itemSuit(item) -> suit | null
 //   strengthOf(rule, ctx) -> k   light(spreadId, laid, ctx) -> cells[56] (the face's, mirrored)   tally(cells, items) -> { sums, counted }
 //   effectOf(suit, points) -> the modifier as a number   cellIndex(c, r)
@@ -105,6 +105,11 @@ export const SPREADS = {
     P('crownPosition', 'Crown', [2, 1], 'crown'), P('future', 'Near future', [4, 3], 'grow'), P('self', 'Self', [6, 6], 'self'),
     P('environment', 'Environment', [6, 4], 'company'), P('hopes', 'Hopes and fears', [6, 2], 'hopes'), P('outcome', 'Outcome', [6, 0], 'outcome')] },
 };
+
+/** The spreads in the order they open, and how many Majors bound open each, the count way (SPREADS.md 5.5; the Fool not counted;
+ *  the feat ways come with their achievements). The gate is the window's to keep (pneuka/reading.js). */
+export const SPREAD_ORDER = ['one', 'three', 'horseshoe', 'celtic'];
+export const OPEN_AT = { one: 0, three: 3, horseshoe: 7, celtic: 12 };
 
 /** A card's footprint as laid: turned a quarter for a crossed position, a half turn when reversed (SPREADS.md 5.3). */
 export function footprintOf(card, { turn = 0, reversed = false } = {}) {
