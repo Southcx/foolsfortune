@@ -125,6 +125,14 @@ Courier as a System window in the air.
 - **The swap rule** is `swapRefusal(game)` in `progress/toolpairs.js`; the belt's `mayEquip` asks it. Change tools anywhere the Box opens,
   except in a fight, a puzzle duel, at sea, mid-race or at one of Raku's tables. The log says why at the point of use.
 
+**Corrected (Petra, 2026-10-23, with the belt's calls, dc15f2e):**
+- R's move on the psygun is Fan the Hammer (the moveset's special), not the quick taps. The quick taps are a plain LMB tap.
+- MMB is not free on the psygun: it is the shell press, the homing paint and the Pepperbox's both barrels.
+
+**Ruled (Dovina):**
+- Fan the Hammer goes on **Q** while the psygun is the main (`FAN_KEY`, `gunmoves.js`). Q came free with the draw keys.
+- Q's other readers are mode-bound and never meet a drawn psygun: the skiff's carve and the rail's forms.
+
 **Who builds what:**
 - **Petra:** the belt, the keys out of the tools, each tool's `lend()` (with Calissa's gesture clips), the Box's data and save, the
   Shrine's THE BANK row, and the pruning in her files.

@@ -35,11 +35,10 @@ window.__tl = (() => {
   const G = __game, g = G.game, THREE = G.THREE, v = __sw.v, V = (a) => new THREE.Vector3(...a), I = G.input;
   const seen = [];
   { const E = g.events, emit = E.emit; E.emit = function (n, d = {}) { seen.push({ name: n, keys: Object.keys(d || {}), by: d && 'by' in d ? d.by : undefined }); return emit.call(this, n, d); }; } // (the payload as sent)
-  const KEYS = { psygun: 'KeyX', sondelass: 'KeyQ', soulbrush: 'KeyG', veritome: 'KeyJ', dreamvane: 'KeyK', crucibelle: 'KeyU', lockheart: 'KeyI' };
   const modelOf = (t) => t.id === 'psygun' ? g.character.gun : t.model;
   const shownUp = (o) => { for (let p = o; p; p = p.parent) if (!p.visible) return false; return true; };
   const T = {
-    seen, KEYS,
+    seen,
     mark() { return { ev: seen.length, log: g.log.lines.length }; },
     eventsSince(m) { return seen.slice(m.ev); },
     logSince(m) { return g.log.lines.slice(m.log).map((l) => l.text); },
@@ -88,9 +87,11 @@ window.__tl = (() => {
     /** The Lockheart's chain against the box: the coffin hung and the Possibilikeys strung. */
     ring() { const L = g.techs.list.find((t) => t.id === 'lockheart'), box = g.pneuka; return { heart: box.fitted('heart')[0] || null, coffin: L?.coffinId || null, keys: box.fitted('keys'), strung: (L?.keyMeshes || []).length, keySig: L?.keySig ?? null }; },
     slotOf(id) { return g.pneuka.slots.findIndex((s) => s?.id === id); },
-    worn() { return g.belt.tools.filter((t) => g.belt.isWorn(t.id)).map((t) => t.id); },
-    /** A worn set put back as it was (through the box, as a person would: P, then Wear). */
-    wearSet(ids) { for (const t of g.belt.tools) if (g.belt.isWorn(t.id) && !ids.includes(t.id)) g.pneuka.takeOff(t.id); for (const id of ids) if (!g.belt.isWorn(id)) { const i = T.slotOf('tool.' + id); if (i >= 0) g.pneuka.wear(i); } __sw.tick(4); return T.worn(); },
+    worn() { return [g.belt.main, g.belt.sub]; },
+    /** A tool made the main (or the sub), quietly, as the Pneuka Box's reading does (tools/belt.js equip). */
+    equip(id, as = 'main') { g.belt.equip(id, as, { quiet: true }); __sw.tick(2); return T.worn(); },
+    /** The main and the sub put back as they were: [main, sub]. */
+    wearSet(ids) { g.belt.equip(ids[0], 'main', { quiet: true }); g.belt.equip(ids[1], 'sub', { quiet: true }); __sw.tick(4); return T.worn(); },
     tech(id) { return g.techs.list.find((t) => t.id === id) || null; },
     sond() { const s = T.tech('sondelass'); return { form: s.form, ext: +s.ext.toFixed(2), blade: +s.blade.toFixed(2), hook: !!s.hookshot?.busy, att: !!s.hookshot?.att, lure: !!s.angler?.lure?.active, casting: !!s.angler?.casting, bladeMode: !!s.cutlass?.blade?.active, guard: !!s.cutlass?.guardOn }; },
     brush() { const b = T.tech('soulbrush'); return { mode: b.load.mode, busy: !!b.load.busy, sat: +(b.load.sat ?? 0).toFixed(2), celestial: !!b.celestial?.active, club: !!b.club?.busy }; },
@@ -105,9 +106,10 @@ await S.page.addScriptTag({ content: TL_JS });
 const tl = (e) => S.page.evaluate(`__tl.${e}`);
 const J = JSON.stringify;
 const LAB = [0, -14, -38], LAB_YAW = 1.57; // (a clear stretch of the movement lab's floor, measured: 4.2 m/s walking, 6.8 sprinting, both ways)
-const KEYS = { psygun: 'KeyX', sondelass: 'KeyQ', soulbrush: 'KeyG', veritome: 'KeyJ', dreamvane: 'KeyK', crucibelle: 'KeyU', lockheart: 'KeyI' };
 const NAMES = { psygun: 'the psygun', sondelass: 'the Sondelass', soulbrush: 'the Soul Brush', veritome: 'the Veritome', dreamvane: 'the Dreamvane', crucibelle: 'the Crucibelle', lockheart: 'the Lockheart' };
 const key = async (k, n = 2) => S.press(k, n);
+/** A tool drawn (or, out, stowed) as a person does it now (PNEUKA-BOX.md; the belt as main and sub): made the main, then X. */
+const draw = async (id, n = 2) => { await tl(`equip(${J(id)})`); return key('KeyX', n); };
 const sinceMark = async (m) => ({ evs: await tl(`eventsSince(${J(m)})`), log: await tl(`logSince(${J(m)})`) });
 /** The core movement on the lab's stretch: walk, sprint, jump, slide. */
 const core = async () => { const r = {}; await tl(`stand(${J(LAB)}, ${LAB_YAW})`); r.walk = await tl('move(false)'); await tl(`stand(${J(LAB)}, ${LAB_YAW})`); r.sprint = await tl('move(true)'); r.jump = await tl('jump()'); await tl(`stand(${J(LAB)}, ${LAB_YAW})`); r.slide = await tl('slide()'); return r; };
@@ -128,7 +130,7 @@ const settledChecks = async (label, { expectOut = undefined, world = true } = {}
 };
 /** Wait (up to 4 real s of ticks) until the Courier is done getting up or down and the prone holster holds nothing to draw again. */
 const upright = async () => { for (let i = 0; i < 40; i++) { const u = await S.ev(() => { const g = __game.game; return !(g.player.postureT > 0) && !g.proneHolster?.memo; }); if (u) break; await S.ticks(6); } };
-const stowAll = async () => { for (let i = 0; i < 3; i++) { const out = await tl('out()'); if (!out.length) break; await key(KEYS[out[0]], 4); await S.ticks(60); } };
+const stowAll = async () => { for (let i = 0; i < 3; i++) { const out = await tl('out()'); if (!out.length) break; await key('KeyX', 4); await S.ticks(60); } };
 
 // ================================================================== 0. the places the tools are used in
 if (part('places')) {
@@ -164,10 +166,10 @@ async function toolPass(id) {
   await tl(`stand(${J(LAB)}, ${LAB_YAW})`);
   const before = await tl('tools()'), b = before.find((t) => t.id === id);
   const m = await tl('mark()');
-  await key(KEYS[id], 2); await S.ticks(60);
+  await draw(id, 2); await S.ticks(60);
   const after = await tl('tools()'), a = after.find((t) => t.id === id), others = after.filter((t) => t.id !== id && t.drawT > 0.02).map((t) => t.id);
   const moved = a.body && b.body ? +Math.hypot(...a.body.map((x, i) => x - b.body[i])).toFixed(2) : null;
-  S.check(`${id}: drawn by ${KEYS[id]}`, a.drawT === 1 && a.wants, { drawT: a.drawT, wants: a.wants });
+  S.check(`${id}: drawn as the main by X`, a.drawT === 1 && a.wants, { drawT: a.drawT, wants: a.wants });
   S.check(`${id}: shown, in the hand`, a.shown && a.hand !== null && a.hand < 0.75 && moved > 0.15, { shown: a.shown, fromRightHand: a.hand, movedFromHolster: moved });
   S.check(`${id}: the only tool out`, !others.length, { others });
   await S.common(`${id} drawn`);
@@ -183,7 +185,7 @@ async function toolPass(id) {
   S.phase = `${id} stow mid-verb`;
   const held = VERBS[id].find((x) => x[1].startsWith('Mouse') && x[2] > 0);
   if (held) { await tl(`mdown('${held[1]}')`); await S.ticks(20); }
-  await key(KEYS[id], 2);
+  await draw(id, 2);
   if (held) { await S.ticks(10); await tl(`mup('${held[1]}')`); }
   await S.ticks(60);
   const ev = await sinceMark(m);
@@ -204,15 +206,14 @@ async function toolPass(id) {
 
 if (part('draw')) {
   for (const id of ['psygun', 'sondelass', 'soulbrush', 'veritome', 'lockheart']) await toolPass(id);
-  // the two not worn at the start: put on from the Pneuka Box (each takes the place of one worn there)
+  // the two not worn at the start: made the sub from the Pneuka Box's reading, said in the log, then each drawn as the main
   for (const id of ['dreamvane', 'crucibelle']) {
     S.phase = `wear ${id}`;
-    const m = await tl('mark()'), slot = await tl(`slotOf('tool.${id}')`);
-    S.check(`${id}: carried in the Pneuka Box`, slot >= 0, { slot });
-    await S.ev((s) => __game.game.pneuka.wear(s), slot); await S.ticks(10);
+    const m = await tl('mark()');
+    await S.ev((x) => __game.game.belt.equip(x, 'sub'), id); await S.ticks(10);
     const ev = await sinceMark(m), worn = await tl('worn()');
-    S.check(`${id}: worn from the box`, worn.includes(id), { worn, log: ev.log });
-    S.check(`${id}: the wear's log line names no code id`, !(await tl(`codeIds(${J(ev.log)})`)).length, ev.log);
+    S.check(`${id}: made the sub from the box`, worn[1] === id, { worn, log: ev.log });
+    S.check(`${id}: the swap's log line names no code id`, !(await tl(`codeIds(${J(ev.log)})`)).length, ev.log);
     await toolPass(id);
   }
   S.phase = 'restore worn';
@@ -224,7 +225,7 @@ if (part('draw')) {
 if (part('sondelass')) {
   S.phase = 'sondelass forms';
   await tl(`stand(${J(LAB)}, ${LAB_YAW})`);
-  await key('KeyQ', 2); await S.ticks(60);
+  await draw('sondelass', 2); await S.ticks(60);
   for (const [k, form] of [['Digit2', 'rod'], ['Digit3', 'hook'], ['Digit1', 'cutlass']]) {
     await key(k, 2); await S.ticks(40);
     const s = await tl('sond()');
@@ -236,25 +237,25 @@ if (part('sondelass')) {
   await tl("mouse('Mouse0', 50)"); await S.ticks(60);
   const cast = await tl('sond()');
   S.note('sondelass rod: after a cast', cast);
-  await key('KeyQ', 2); await S.ticks(60);
+  await draw('sondelass', 2); await S.ticks(60);
   const r1 = await tl('sond()');
   S.check('sondelass: stowed with the lure out, the lure comes home', !r1.lure && !r1.casting, r1);
   await settledChecks('sondelass stowed from the rod', { expectOut: null });
   // the hook: fired, stowed in flight
-  await key('KeyQ', 2); await S.ticks(60); await key('Digit3', 2); await S.ticks(30);
+  await draw('sondelass', 2); await S.ticks(60); await key('Digit3', 2); await S.ticks(30);
   await S.ev(() => { __game.game.player.pitch = 0.5; }); // (aimed up at the lab's rigging)
-  await tl("mdown('Mouse0')"); await S.ticks(3); await key('KeyQ', 2); await tl("mup('Mouse0')"); await S.ticks(60);
+  await tl("mdown('Mouse0')"); await S.ticks(3); await draw('sondelass', 2); await tl("mup('Mouse0')"); await S.ticks(60);
   const h1 = await tl('sond()');
   S.check('sondelass: stowed with the grapnel in flight, the line comes away', !h1.hook && !h1.att, h1);
   await S.ev(() => { __game.game.player.pitch = 0; });
   await settledChecks('sondelass stowed from the hook', { expectOut: null });
   // Blade Mode held, then stowed while held
-  await key('KeyQ', 2); await S.ticks(60); await key('Digit1', 2); await S.ticks(20);
+  await draw('sondelass', 2); await S.ticks(60); await key('Digit1', 2); await S.ticks(20);
   await key('KeyC', 2); await S.ticks(20); // (Blade Mode is the crouched iaido held: standing, RMB is the stinger. Calissa, phase 2)
   await tl("mdown('Mouse2')"); await S.ticks(40);
   const bm = await tl('world()'), bmIn = (await tl('sond()')).bladeMode;
   S.note('sondelass: Blade Mode held', { holds: bm.holds, scale: bm.scale, look: bm.look, cinema: bm.cinema, sond: await tl('sond()') });
-  await key('KeyQ', 2); await S.ticks(10); await tl("mup('Mouse2')"); await S.ticks(30);
+  await draw('sondelass', 2); await S.ticks(10); await tl("mup('Mouse2')"); await S.ticks(30);
   const bq = await tl('world()'), bs = await tl('sond()'), bt = (await tl('tools()')).find((t) => t.id === 'sondelass');
   S.check('sondelass: Q in Blade Mode, RMB let go: Blade Mode ends and time runs again', bmIn && !bs.bladeMode && !bq.holds.includes('blade') && bq.scale > 0.9,
     { entered: bmIn, bladeMode: bs.bladeMode, holds: bq.holds, scale: bq.scale, drawT: bt.drawT, cause: !bmIn ? 'Blade Mode never started: crouched, RMB held 40 ticks (cutlass.js, the iaido)' : bs.bladeMode ? 'sondelass.js: Q sets drawTarget 0, so held (drawT >= 1) goes false and cutlass.update (which runs blade.update, the RMB let-go and the drain) stops; cutlass.cancel() waits for drawT <= 0.02, and the holster runs on dt scaled by Blade Mode\'s own 0.05' : null });
@@ -271,7 +272,7 @@ if (part('brush')) {
   await tl(`stand(${J(LAB)}, ${LAB_YAW})`); await S.ticks(10);
   const b0 = await tl('bottle()');
   S.check('Lachrymato Bottle: the box\'s fitting is worn on the upper back', b0.fit && b0.look && b0.lookId === b0.fit && b0.shown && b0.spine !== null && b0.spine < 0.35 && b0.at && b0.at[2] < 0, b0);
-  await key('KeyG', 2); await S.ticks(60);
+  await draw('soulbrush', 2); await S.ticks(60);
   for (const [k, mode] of [['Digit2', 'mop'], ['Digit1', 'paint']]) {
     await key(k, 2); await S.ticks(10);
     const br = await tl('brush()');
@@ -283,10 +284,10 @@ if (part('brush')) {
   const held1 = (await tl('bottle()')).held;
   S.note('soulbrush paint: LMB held 2.5 s', { mid, bottleHeld: [held0, held1] });
   await key('Digit2', 2);
-  await tl("mdown('Mouse0')"); await S.ticks(40); await key('KeyG', 2); await S.ticks(10); await tl("mup('Mouse0')"); await S.ticks(60);
+  await tl("mdown('Mouse0')"); await S.ticks(40); await draw('soulbrush', 2); await S.ticks(10); await tl("mup('Mouse0')"); await S.ticks(60);
   const br2 = await tl('brush()');
   S.check('soulbrush: stowed mid-saturate, the load ends', !br2.busy && !br2.celestial && !br2.club, br2);
-  await key('KeyG', 2); await S.ticks(60); await tl("mdown('Mouse2')"); await S.ticks(40); await key('KeyG', 2); await S.ticks(10); await tl("mup('Mouse2')");
+  await draw('soulbrush', 2); await S.ticks(60); await tl("mdown('Mouse2')"); await S.ticks(40); await draw('soulbrush', 2); await S.ticks(10); await tl("mup('Mouse2')");
   await settledChecks('soulbrush stowed mid-Celestial-mode', { expectOut: null });
   // the bottle taken off in the box, then put back: the model goes and comes with the fitting
   const fitted = (await tl('bottle()')).fit;
@@ -311,8 +312,8 @@ if (part('fittings')) {
   await S.ticks(10);
   const r1 = await tl('ring()');
   S.check('Lockheart: a brass Possibilikey fitted is strung on the chain', added.fit && r1.keys.includes('key.brass') && r1.strung === r1.keys.length, { added, ...r1 });
-  await key('KeyI', 2); await S.ticks(60); await S.shot('lockheart-with-key');
-  await key('KeyI', 2); await S.ticks(60);
+  await draw('lockheart', 2); await S.ticks(60); await S.shot('lockheart-with-key');
+  await draw('lockheart', 2); await S.ticks(60);
   await S.ev(() => __game.game.pneuka.fitOff('keys', __game.game.pneuka.fitted('keys').indexOf('key.brass'))); await S.ticks(10);
   const r2 = await tl('ring()');
   S.check('Lockheart: the Possibilikey taken off is gone from the chain', r2.strung === r2.keys.length && !r2.keys.includes('key.brass'), r2);
@@ -322,25 +323,25 @@ if (part('fittings')) {
 if (part('swap')) {
   S.phase = 'swap';
   await tl(`stand(${J(LAB)}, ${LAB_YAW})`);
-  const order = ['KeyX', 'KeyQ', 'KeyG', 'KeyJ', 'KeyI'];
+  const order = ['psygun', 'sondelass', 'soulbrush', 'veritome', 'lockheart'];
   const n = quick ? 4 : 12;
-  for (let r = 0; r < n; r++) for (const k of order) await key(k, 2);
+  for (let r = 0; r < n; r++) for (const id of order) await draw(id, 2);
   await S.ticks(120);
   await S.shot('swap-fast');
   const after = await tl('out()');
-  S.check('swap: five keys pressed 2 ticks apart, the last one asked for is the one out', after.length === 1 && after[0] === 'lockheart', { out: after, tools: (await tl('tools()')).map((t) => [t.id, t.drawT, t.wants]) });
+  S.check('swap: five mains drawn 2 ticks apart, the last one asked for is the one out', after.length === 1 && after[0] === 'lockheart', { out: after, tools: (await tl('tools()')).map((t) => [t.id, t.drawT, t.wants]) });
   await settledChecks('swap fast', { world: false });
   // a draw cut off by the next key at every point of the draw (0..30 ticks in)
   const stuck = [];
-  for (let d = 0; d <= 30; d += quick ? 15 : 5) { await stowAll(); await key('KeyQ', d); await key('KeyG', 2); await S.ticks(90); const o = await tl('out()'); if (J(o) !== J(['soulbrush'])) stuck.push({ after: d, out: o }); }
+  for (let d = 0; d <= 30; d += quick ? 15 : 5) { await stowAll(); await draw('sondelass', d); await draw('soulbrush', 2); await S.ticks(90); const o = await tl('out()'); if (J(o) !== J(['soulbrush'])) stuck.push({ after: d, out: o }); }
   S.check('swap: the Sondelass cut off at any point of its draw, the Soul Brush comes out', !stuck.length, stuck.length ? stuck : 'every point');
   // one key spammed: twenty presses a tick apart (an even number: it should end put away)
   await stowAll();
   for (const id of ['sondelass', 'veritome', 'lockheart']) {
-    for (let i = 0; i < 20; i++) await key(KEYS[id], 1);
+    for (let i = 0; i < 20; i++) await draw(id, 1);
     await S.ticks(90);
     const t = (await tl('tools()')).find((x) => x.id === id);
-    S.check(`swap: ${KEYS[id]} spammed 20 times (even), ${id} ends consistent`, (t.drawT === 0 && !t.wants) || (t.drawT === 1 && t.wants), t);
+    S.check(`swap: X spammed 20 times (even), ${id} the main, ends consistent`, (t.drawT === 0 && !t.wants) || (t.drawT === 1 && t.wants), t);
     await stowAll();
   }
   await settledChecks('swap spam', { expectOut: null });
@@ -353,7 +354,7 @@ if (part('moves')) {
   S.phase = 'moves';
   // mid-jump
   await tl(`stand(${J(LAB)}, ${LAB_YAW})`);
-  await tl("mdown('Space')"); await S.ticks(1); await tl("mup('Space')"); await S.ticks(8); await key('KeyQ', 2); await S.ticks(10);
+  await tl("mdown('Space')"); await S.ticks(1); await tl("mup('Space')"); await S.ticks(8); await draw('sondelass', 2); await S.ticks(10);
   const air = await S.ev(() => ({ grounded: __game.game.player.grounded, drawT: __tl.tools().find((t) => t.id === 'sondelass').drawT }));
   await S.shot('draw-mid-jump');
   S.check('moves: the Sondelass drawn mid-jump comes out in the air', !air.grounded && air.drawT > 0.1, air);
@@ -363,18 +364,18 @@ if (part('moves')) {
   await tl(`stand(${J(LAB)}, ${LAB_YAW})`);
   await S.page.keyboard.down('KeyW'); await S.page.keyboard.down('ShiftLeft'); await S.ticks(40); await key('KeyC', 6);
   const sl = await S.ev(() => ({ slideT: __game.game.player.slideT, crouch: __game.game.player.crouching }));
-  await key('KeyG', 2); await S.ticks(10); await S.shot('draw-mid-slide');
+  await draw('soulbrush', 2); await S.ticks(10); await S.shot('draw-mid-slide');
   await S.page.keyboard.up('KeyW'); await S.page.keyboard.up('ShiftLeft');
   S.note('moves: the slide when the Soul Brush was asked for', sl);
   await settledChecks('moves mid-slide', { expectOut: 'soulbrush', world: false });
   await stowAll();
   // swimming: drawn before the water, in the water, then out again
-  await key('KeyQ', 2); await S.ticks(60);
+  await draw('sondelass', 2); await S.ticks(60);
   await tl('stand([-28, -16.5, -60], 0)'); await S.ticks(40);
   const sw = await tl('world()'), swT = await tl('tools()');
   await S.shot('swimming-with-sondelass');
   S.check('moves: swimming, the Sondelass goes away (both hands swim)', sw.tech === 'swim' && swT.find((t) => t.id === 'sondelass').drawT <= 0.02, { tech: sw.tech, sondelass: swT.find((t) => t.id === 'sondelass') });
-  for (const id of ['veritome', 'lockheart', 'psygun']) { await key(KEYS[id], 2); await S.ticks(30); }
+  for (const id of ['veritome', 'lockheart', 'psygun']) { await draw(id, 2); await S.ticks(30); }
   const swo = await tl('out()');
   S.check('moves: swimming, no tool comes out by its key', !swo.length, { out: swo });
   await tl(`stand(${J(LAB)}, ${LAB_YAW})`); await S.ticks(90);
@@ -386,7 +387,7 @@ if (part('moves')) {
   await tl('stand([-28, -14, -46.2], 3.14159)');
   await S.page.keyboard.down('KeyW'); await S.ticks(30);
   for (const id of ['sondelass', 'soulbrush', 'lockheart']) {
-    await key(KEYS[id], 2); await S.ticks(60);
+    await draw(id, 2); await S.ticks(60);
     const st = await tl('world()'), t = (await tl('tools()')).find((x) => x.id === id);
     await S.shot(`ladder-${id}`);
     S.note(`moves: on the ladder with ${id} asked for`, { tech: st.tech, drawT: t.drawT, fromRightHand: t.hand });
@@ -407,7 +408,7 @@ if (part('god')) {
   await tl(`stand(${J(LAB)}, ${LAB_YAW})`);
   const godOut = async () => { for (let i = 0; i < 4 && (await S.ev(() => __game.game.god.state)) !== 'off'; i++) { await key('Backquote', 2); await S.ticks(120); } };
   for (const id of ['sondelass', 'psygun', 'lockheart']) {
-    await key(KEYS[id], 2); await S.ticks(60);
+    await draw(id, 2); await S.ticks(60);
     await key('Backquote', 2); await S.ticks(90);
     const st = await tl('world()'), shown = (await tl('tools()')).filter((t) => t.shown).map((t) => t.id);
     await S.shot(`god-with-${id}`);
@@ -420,7 +421,7 @@ if (part('god')) {
     await stowAll();
   }
   // mid-Blade-Mode
-  await key('KeyQ', 2); await S.ticks(60); await key('KeyC', 2); await S.ticks(20); await tl("mdown('Mouse2')"); await S.ticks(40);
+  await draw('sondelass', 2); await S.ticks(60); await key('KeyC', 2); await S.ticks(20); await tl("mdown('Mouse2')"); await S.ticks(40);
   const gIn = (await tl('sond()')).bladeMode;
   await key('Backquote', 2); await tl("mup('Mouse2')"); await S.ticks(120);
   const gb = await tl('world()'), gs = await tl('sond()'), gt = await S.ev(() => +__game.game.god.t.toFixed(2));
@@ -441,7 +442,7 @@ if (part('careless')) {
   const pause = () => S.ev(() => { document.getElementById('overlay').style.display = 'flex'; __game.input.enabled = false; });
   for (const [id, b, n] of [['psygun', 'Mouse0', 40], ['lockheart', 'Mouse0', 40], ['veritome', 'Mouse2', 40], ['soulbrush', 'Mouse0', 40]]) {
     await tl(`stand(${J(LAB)}, ${LAB_YAW})`);
-    if (id !== 'psygun') { await key(KEYS[id], 2); await S.ticks(60); }
+    if (id !== 'psygun') { await draw(id, 2); await S.ticks(60); }
     await tl(`mdown('${b}')`); await S.ticks(n);
     await pause(); await S.ticks(10); await tl(`mup('${b}')`); await S.ticks(30); await S.resume(); await S.ticks(30);
     const w = await tl('world()');
@@ -450,24 +451,22 @@ if (part('careless')) {
     await settledChecks(`careless after the pause mid ${id}`, { expectOut: null });
   }
   // a resize mid-draw
-  await key('KeyJ', 2); await S.ticks(10);
+  await draw('veritome', 2); await S.ticks(10);
   await S.page.setViewportSize({ width: 640, height: 900 }); await S.ticks(30); await S.shot('resize-tall-veritome');
   await S.page.setViewportSize({ width: 960, height: 600 }); await S.ticks(60);
   await settledChecks('careless resize mid-draw', { expectOut: 'veritome', world: false });
   await stowAll();
   // a tool taken off while it is out (the box's Take off), and its key pressed after
-  await key('KeyQ', 2); await S.ticks(60);
+  await draw('sondelass', 2); await S.ticks(60);
   const m = await tl('mark()');
-  await S.ev(() => __game.game.pneuka.takeOff('sondelass')); await S.ticks(30);
-  await key('KeyQ', 2); await S.ticks(30);
+  await S.ev(() => __game.game.belt.equip('veritome', 'main')); await S.ticks(30); // (the Veritome made the main while the Sondelass is out: the Sondelass leaves for the box)
   const ev = await sinceMark(m), t = (await tl('tools()')).find((x) => x.id === 'sondelass');
-  S.check('careless: the Sondelass taken off while out is put away and not shown', t.drawT === 0 && !t.shown && !t.worn, t);
-  S.check('careless: its key then says it is in the Pneuka Box', ev.log.some((l) => /Pneuka Box/.test(l)), ev.log);
+  S.check('careless: the Sondelass swapped off while out is put away and not shown', t.drawT === 0 && !t.shown && !t.worn, t);
   S.check('careless: those lines show no code ids', !(await tl(`codeIds(${J(ev.log)})`)).length, ev.log);
   await tl(`wearSet(${J(WORN0)})`);
   await settledChecks('careless after taking the Sondelass off', { expectOut: null });
   // travel away mid-verb and back
-  await key('KeyI', 2); await S.ticks(60); await tl("mdown('Mouse0')"); await S.ticks(20);
+  await draw('lockheart', 2); await S.ticks(60); await tl("mdown('Mouse0')"); await S.ticks(20);
   await S.go('workshop'); await tl("mup('Mouse0')"); await S.ticks(30);
   await S.common('careless travelled mid-hoover');
   await S.go('lab'); await stowAll();
@@ -483,10 +482,9 @@ if (part('careless')) {
 if (part('pendulum')) {
   S.phase = 'pendulum';
   await tl(`stand(${J(LAB)}, ${LAB_YAW})`);
-  const slot = await tl("slotOf('tool.crucibelle')");
-  if (slot >= 0) { await S.ev((s) => __game.game.pneuka.wear(s), slot); await S.ticks(10); }
+  await tl("equip('crucibelle')"); await S.ticks(10);
   await S.ev(() => { __game.T.audio.volume = 0; __game.game.lachryma.value = __game.game.lachryma.max; });
-  await key('KeyU', 2); await S.ticks(70);
+  await draw('crucibelle', 2); await S.ticks(70);
   const seen = await S.ev(() => __game.game.crucibelleHud?.read());
   S.check('pendulum: shown with the Crucibelle drawn', seen?.shown === true, seen);
   const played = await S.ev(() => {
@@ -508,7 +506,7 @@ if (part('pendulum')) {
   S.check('pendulum: by sight alone, THE RALLY on the beat and cast (sound muted)', played.notes.length === 3 && played.notes.every((x) => x === true) && played.song === 'rally', played);
   S.check('pendulum: the notch agrees with the bell on every note', played.disagree === 0, { disagree: played.disagree });
   await S.shot('pendulum-rally');
-  await key('KeyU', 2); await S.ticks(80);
+  await draw('crucibelle', 2); await S.ticks(80);
   const gone = await S.ev(() => __game.game.crucibelleHud?.read());
   S.check('pendulum: gone when the Crucibelle is stowed', gone?.shown === false, gone);
   await tl(`wearSet(${J(WORN0)})`);
@@ -519,7 +517,7 @@ if (part('pendulum')) {
 if (part('leak')) {
   S.phase = 'leak';
   await tl(`stand(${J(LAB)}, ${LAB_YAW})`);
-  const cycle = async (id, k) => { for (let i = 0; i < k; i++) { await key(KEYS[id], 2); await S.ticks(40); if (id === 'psygun' || id === 'sondelass' || id === 'soulbrush') await tl("mouse('Mouse0', 0)"); await key(KEYS[id], 2); await S.ticks(40); } };
+  const cycle = async (id, k) => { for (let i = 0; i < k; i++) { await draw(id, 2); await S.ticks(40); if (id === 'psygun' || id === 'sondelass' || id === 'soulbrush') await tl("mouse('Mouse0', 0)"); await draw(id, 2); await S.ticks(40); } };
   for (const id of WORN0) await cycle(id, 1); // (a warm pass: pools and first-use things made once)
   await S.ticks(300);
   const c0 = await tl('counts()');

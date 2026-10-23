@@ -179,14 +179,14 @@ await run('busk', async () => {
   const ch = await ds('chevron()');
   S.check('busk: the chevron is on the mat', ch.cur === 'busk' && ch.off < 0.6, ch);
   // without the Crucibelle worn
-  await S.ev(() => __game.game.belt.takeOff('crucibelle', true));
+  await S.ev(() => { const B = __game.game.belt; if (B.isWorn('crucibelle')) B.equip(B.main === 'crucibelle' ? 'psygun' : 'veritome', B.main === 'crucibelle' ? 'main' : 'sub', { quiet: true }); }); // (the Crucibelle neither the main nor the sub)
   let m = await ds('mark()');
   await F(6);
   let w = await ds('win()');
   const said = await ds(`logSince(${JSON.stringify(m)})`);
   S.check('busk: F without the Crucibelle worn says why, and begins nothing', !w.rhythm && said.some((t) => /Crucibelle/.test(t)), { rhythm: w.rhythm, said });
   // with it
-  await S.ev(() => __game.game.belt.wear('crucibelle'));
+  await S.ev(() => __game.game.belt.equip('crucibelle', 'sub', { quiet: true }));
   await S.ticks(4);
   const audio = await unlockAudio();
   S.note('busk: the sound unlocked (headless)', audio);
@@ -431,15 +431,15 @@ await run('geyser', async () => {
 // ================================================================== 7. a crystal struck with the Dreamvane's pick
 await run('crystal', async () => {
   await goFoot('dunes');
-  await S.ev(() => __game.game.belt.wear('dreamvane'));
+  await S.ev(() => __game.game.belt.equip('dreamvane', 'main', { quiet: true })); // (the pick is the main's: X draws it)
   const c = await S.ev(() => { const g = __game.game, P = g.player, THREE = __game.THREE; const L = g.crystals.list.filter((e) => !e.veiled && e.hp > 0).sort((a, b) => a.ground.distanceTo(P.pos) - b.ground.distanceTo(P.pos)); const e = L[0]; if (!e) return null;
     const p = e.ground.clone().add(new THREE.Vector3(e.r + 1, 0, 0)); p.y = g.dunes.heightAt(p.x, p.z) + 0.1; const yaw = Math.atan2(e.ground.x - p.x, e.ground.z - p.z); g.places.stand(p, yaw); P.yaw = yaw; P.pitch = -0.2;
     return { i: g.crystals.list.indexOf(e), hp: e.hp, kind: e.tune.kind }; });
   S.check('crystal: a whole crystal in the Dunes', !!c, c);
   if (!c) return;
   await S.ticks(10);
-  await S.press('KeyK', 50);
-  S.check('crystal: K draws the Dreamvane', (await S.ev(() => __game.game.belt.inHand?.id ?? null)) === 'dreamvane', 'belt.inHand');
+  await S.press('KeyX', 50);
+  S.check('crystal: X draws the Dreamvane as the main', (await S.ev(() => __game.game.belt.inHand?.id ?? null)) === 'dreamvane', 'belt.inHand');
   const m = await ds('mark()');
   const hp = [];
   for (let k = 0; k < c.hp + 3 && hp[hp.length - 1] !== 0; k++) { await S.page.mouse.down(); await S.ticks(3); await S.page.mouse.up(); await S.ticks(80); hp.push(await S.ev((i) => __game.game.crystals.list[i].hp, c.i)); }
@@ -448,7 +448,7 @@ await run('crystal', async () => {
   S.check('crystal: the pick takes it a blow at a time until it gives', hp[hp.length - 1] === 0 && ev.some((e) => e.name === 'crystal.harvest'), { hp, file: name(f) });
   const noBy = [...new Set(ev.filter((e) => /^(crystal|cube|bauble)\./.test(e.name) && e.by === undefined).map((e) => e.name))];
   S.check('crystal: what it pays says by (cube.earn, cube.spill)', !noBy.length, { noBy, cause: noBy.length ? 'world/treasure/cubes.js earn(): emits cube.earn { n, why } with no by' : null });
-  await S.press('KeyK', 30);
+  await S.press('KeyX', 30);
 });
 
 // ================================================================== 8. the Shrines: found, rested at, their page, fast travel

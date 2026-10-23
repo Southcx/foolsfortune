@@ -38,7 +38,7 @@ export const FIRST = {
     sr1: 'The Shrine is beside where you wake.', fk1: 'Saggar is on the workshop floor.', sk12: 'The nearest is the atrium rail, upstairs in the workshop.',
     br1: 'The pots are all round the workshop: F lifts one, LMB throws it.', tc1: 'A chest stands in the basement\'s hub, down the hole in the workshop floor.',
     pl6: 'The Index in the basement\'s hub sends you there.', jl1: 'Three sit on the sand just past the Weir, in the Dunes.', sf1: 'Y in the Dunes calls the Solar Skiff.',
-    an1: 'The Weir\'s pier: draw the Sondelass and take its rod form.', cx3: 'The course rings the basement\'s hub: eight stations, one lap.',
+    an1: 'The Weir\'s pier: in the Box (P), make the Sondelass your main, then X draws it and 2 takes its rod form.', cx3: 'The course rings the basement\'s hub: eight stations, one lap.',
   },
   enough: 40,
 };
