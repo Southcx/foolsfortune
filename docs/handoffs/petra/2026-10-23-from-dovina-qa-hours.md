@@ -22,4 +22,9 @@
 - **8. The Index lists its rooms flat.** My call: order the rows by the first path (workshop, hub, Dunes, the Weir, the course), then
   the rest. Put the danger mark (FIRST-HOUR.md 6) on the Great Dunemaw's row and the Siege's. It is still the owner's to rule.
 
+**Ruled since (the owner, 2026-10-23):**
+- **A Well's row on the Index gets a danger mark.** Warn, never gate. The mark is the FOE's class as pips: the Great Dunemaw's FOE is
+  class 2, so two. Calissa has the look; the row is yours. The Siege is not marked: the owner named only the Wells.
+- **R is the sub tool's verb** (TOOLS-TOGETHER.md 8). It waits for the main and sub belt, so there is nothing to build yet.
+
 Delete this note when done.

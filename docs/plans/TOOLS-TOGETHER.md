@@ -276,6 +276,45 @@ Monster Hunter's weapons are the model: the job is in the motion.
    (the hammer fan, the Tidecutter, the Dreamquake) moves to its R held.
 3. **The new save's pair:** psygun main, Sondelass sub?
 
+**The owner's rulings (2026-10-23).**
+- **R:** "I agree with 'R' being the swap key." Built as proposed in open point 2: R is the sub tool's verb, the same key for every
+  sub. Still asked: whether "swap" meant R also trades main and sub on the spot. My call stays no, since a swap mid-fight dodges the
+  choice.
+- **21 pairs, not 42.** The order of a pair does not matter, so main-and-sub flavours its special but does not double it.
+- **The 21 pairs take the Major Arcana, I to XXI.** The owner's pick: drop The World or The Fool, Dovina's choice.
+  - **The Fool is dropped** because the Fool is you: the Courier, in a game called Fool's Fortune.
+  - The 21 pairs are the stations of the Fool's journey, from the Magician (the pair a new save starts with) to the World.
+  - Each card is matched to what its pair does together.
+  - These are the pairs' themes. The specials' names stay plain until the owner calls them finalized, and then Espada proposes.
+
+| # | card | the pair | why |
+|---|---|---|---|
+| I | the Magician | psygun + Sondelass | the first card, the new save's pair: the tools laid on the table |
+| II | the High Priestess | Veritome + Dreamvane | the scroll and the veil: what is hidden, read |
+| III | the Empress | Soul Brush + Lockheart | what the coffin draws in, the brush gives back: abundance |
+| IV | the Emperor | psygun + Crucibelle | the beat commands and the gun keeps it: order, a drill |
+| V | the Hierophant | Veritome + Crucibelle | bell and book: the rite, the teaching |
+| VI | the Lovers | Sondelass + Crucibelle | the blade and the bell in time: a duet |
+| VII | the Chariot | Sondelass + Dreamvane | the hook and the vane: travel, two forces held in one hand |
+| VIII | Strength | Sondelass + Soul Brush | the edge tamed by the soft brush: gentle force |
+| IX | the Hermit | Soul Brush + Veritome | the scholar's desk: study alone, by lantern |
+| X | the Wheel of Fortune | Lockheart + Dreamvane | the wheel of odds and the turning weather |
+| XI | Justice | Sondelass + Veritome | the sword and the scales: the blade and the appraisal |
+| XII | the Hanged Man | Veritome + Lockheart | a moment held: the plate and the coffin |
+| XIII | Death | Sondelass + Lockheart | the blade and the coffin |
+| XIV | Temperance | Soul Brush + Crucibelle | pouring between two cups: paint and song blended, the healing pair |
+| XV | the Devil | psygun + Lockheart | the chain |
+| XVI | the Tower | psygun + Dreamvane | the bolt from the sky |
+| XVII | the Star | Soul Brush + Dreamvane | water poured on land and pool: the painted lure |
+| XVIII | the Moon | Crucibelle + Dreamvane | the mirage under the sky: illusion |
+| XIX | the Sun | psygun + Veritome | the flash and the shutter: all shown (the mark) |
+| XX | Judgement | Crucibelle + Lockheart | the trumpet opens the coffin |
+| XXI | the World | psygun + Soul Brush | the first tool and the mending one: the circle closed |
+
+Each tool sits in six cards. The first wave of four (above) is the Sun, the Lovers, the Star and the Empress.
+- **The economy simulation for hours 2 to 10:** not now. It runs only when it decides what feature to build next.
+- **Still open:** where you may swap (my call: at a Shrine or the Pneuka Box, out of a fight).
+
 ## 9. Celestial mode's targets drawn over the paper (the owner, 2026-10-22)
 
 > "why don't we have it so that selectable figment targets are rendered on top of the paper shader canvas? That way when you mark them it

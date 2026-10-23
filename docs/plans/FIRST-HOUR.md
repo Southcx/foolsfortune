@@ -120,6 +120,8 @@ The goals' window shows each as FIRST STEP. The log says "Your first 3 goals are
 
 - **The Index at minute 3:** warn, or gate? Dovina's call: **warn**. A danger mark on the Index's row (the FOE's class as pips), never a
   lock, as in the Undead Asylum, where the first boss is open and teaches. A gate would be a base change the sandbox does not need.
+- **Ruled (the owner, 2026-10-23): "we should give Wells a mark or something."** Warn, never gate. The Index's row for a Well (today
+  the Great Dunemaw) carries a danger mark: the FOE's class as pips, a world mark with no words (Calissa's look, Petra's row).
 - **The seal picker** stays a ceremony with no skip: it is once a browser, and settings survive builds.
 
 ## 7. Targets (QA-A measures)
