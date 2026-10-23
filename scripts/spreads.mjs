@@ -53,7 +53,7 @@ for (const S of Object.values(SPREADS)) {
     const cells3 = light(S.id, laid, { ...CTX, pair, bound: new Set(bound), dayCard: dayC });
     const t3 = tally(cells3, want, { season });
     top0.push(Math.max(...SUITS.map((x) => t1[x]))); top3.push(Math.max(...SUITS.map((x) => t3.sums[x])));
-    courts[t3.court?.id ?? 'none'] = (courts[t3.court?.id ?? 'none'] || 0) + 1;
+    courts[t3.class.id] = (courts[t3.class.id] || 0) + 1;
   }
   const row = (o) => SUITS.map((s) => `${s} ${q(o[s], 0.5).toFixed(1)}/${q(o[s], 0.9).toFixed(1)}`).join('  ');
   console.log(`\n${S.label} (${S.positions.length} positions, ${BOUND_AT[S.id]} bound)`);
@@ -62,5 +62,6 @@ for (const S of Object.values(SPREADS)) {
   console.log(`  careless    ${row(careless)}`);
   console.log(`  + day, season: careful top suit median ${q(top0, 0.5).toFixed(1)} -> ${q(top3, 0.5).toFixed(1)}, p90 ${q(top0, 0.9).toFixed(1)} -> ${q(top3, 0.9).toFixed(1)}`);
   const cs = Object.entries(courts).sort((a, b) => b[1] - a[1]);
-  console.log(`  courts       ${cs.length - (courts.none ? 1 : 0)} of 16 seen; none ${((courts.none || 0) / LAYS * 100).toFixed(0)}%; most ${cs.filter(([k]) => k !== 'none').slice(0, 3).map(([k, n]) => `${k} ${(n / LAYS * 100).toFixed(0)}%`).join(', ')}`);
+  const kinds = { court: 0, major: 0 }; for (const [k, n] of cs) kinds[k.startsWith('arcana.') ? 'major' : 'court'] += n;
+  console.log(`  classes      ${cs.length} seen (courts ${(kinds.court / LAYS * 100).toFixed(0)}%, Majors ${(kinds.major / LAYS * 100).toFixed(0)}%); most ${cs.slice(0, 4).map(([k, n]) => `${k} ${(n / LAYS * 100).toFixed(0)}%`).join(', ')}`);
 }

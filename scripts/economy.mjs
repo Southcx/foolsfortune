@@ -18,7 +18,7 @@ import { deckHit, nextOfDeck, deckMean } from '../src/progress/econ/deck.js';
 import { consolidated } from '../src/progress/econ/odds.js';
 import { HEARTS, KEYS, OUTCOMES, CONVERT, CATCH, catchOdds, oddsOf, rates, keyLife } from '../src/tools/lockheart/table.js';
 import { readFileSync } from 'node:fs';
-import { effectOf, TALLY, COURT } from '../src/progress/spreads.js';
+import { effectOf, TALLY, CLASS } from '../src/progress/spreads.js';
 import { buskPay, bountyPay } from '../src/progress/econ/livelihoods.js';
 import { NODES, CLASSES, hop, stagePlan, stageQuality, reckonLead, RECKON } from '../src/progress/econ/emocean.js';
 import { rutterWorth } from '../src/progress/econ/passage.js';
@@ -137,8 +137,8 @@ for (const [name, v] of [['angler + treasury', after.angler + after.treasury], [
 
 // the spread board's Pentacles (docs/plans/SPREADS.md 7): its tally lifts worth when sold or condensed. An upper bound, as if a
 // profile's whole income were sold or condensed: no single livelihood may cross the 1.5x cap even so. The ceiling is the cap with
-// a court class's lift (SPREADS.md 11.3: a Page of anything lifts Pentacles to 12 points).
-const pent = 1 + effectOf('pentacles', TALLY.cap + COURT.lift);
+// a court class's lift (SPREADS.md 12: a class lifts one suit to 12 points).
+const pent = 1 + effectOf('pentacles', TALLY.cap + CLASS.lift);
 console.log(`\nthe spread board's Pentacles at its ceiling (x${pent.toFixed(2)} on worth), an upper bound: all income taken as sold or condensed`);
 for (const k of Object.keys(after)) console.log(`${pad(k, 14)}${num(after[k] * pent)}   ${(after[k] * pent / aim).toFixed(2)} x aim${after[k] * pent / aim > 1.5 ? '   (over the 1.5x cap)' : ''}`);
 

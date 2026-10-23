@@ -358,7 +358,11 @@ open sea's herds are. Laid anywhere in your spread, its strength **doubles** (`D
 - **Where it is shown:** the Codex's THE ARCANA shelf and the underside's tabs (the card marked); the log says it once, the first time
   the Box is turned over in a game day ("Today's card is the Star."). A world mark on the card in the reading view is Calissa's.
 
-### 11.3 The court classes (the Golden Sun homage)
+### 11.3 The court classes (the Golden Sun homage; superseded the same day by CLASSES.md)
+
+**Superseded** (the owner, 2026-10-23: courts for one suit, Majors for a combination): the class is now read as in
+`docs/plans/CLASSES.md` section 2 (one suit a court by depth, two a zodiac Major, all four the World). Kept below as the first draft.
+
 
 Golden Sun's Adepts change class by the Djinn they set: the same character, a Mars-heavy set a different calling. Here your class is
 **the court card your two strongest suits make** (`courtOf(sums)`): its **suit** is your strongest tally, its **rank** the second
@@ -393,3 +397,18 @@ The day's card works in `light()` (a cell's strength), the season in `tally()` (
 (the cap). In a careful three-card spread the strongest suit's median goes from 5.6 to 7.8 points with the day's card laid and its
 season; in the big spreads the cap already binds at the median, so the court's lift shows only at the top (the Celtic Cross's best
 tenth: 10 to 12).
+
+## 12. Classes
+
+Moved to its own plan: `docs/plans/CLASSES.md` (the read, built; what a class gives, a plan).
+
+## 13. Card backs (the owner, 2026-10-23: "I actually have a whole set of tarot cards drawn")
+
+- **A card back is a cosmetic** chosen once and shown wherever one of your cards shows its back: the hand under the reading view, the
+  pair's card face down on the reading table until opened, the title's falling cards. Raku's house deck keeps the house's back (it is
+  Raku's deck).
+- **The owner's drawn set is the first,** and the default. More backs, if the owner draws them, are earned by achievement (a back for
+  binding all 22, a back for the sixteen courts): no back is bought, so the backs stay the owner's art and not a price list.
+- **The art:** the owner uploads the drawings to `source_assets/tarot/backs/` (PNG, any size; Calissa's pipeline sizes them), or into
+  the chat for a division to commit. Calissa wires the choice into the reading view, the reading table and the title; Dovina the
+  achievements; the choice is a setting (scope `settings`), kept across builds.
