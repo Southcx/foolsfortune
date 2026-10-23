@@ -95,6 +95,13 @@ d12, d20** (fire, earth, air, the aether, and the Majors' own).
   of it off. Chance against chance, so Luck may sway it.
 - **Its mineral is your set's.** Wear rubies, and the hand holds a ruby die.
 
+### 4.1 The fingers (the owner, 2026-10-23, through Espada)
+
+Each knucklebone has its place on the god hand: **d4 the little finger, d6 the ring finger, d8 the middle finger, d10 the index
+finger, d12 the thumb, d20 the palm.** The d% has no finger yet. So the palm die's last size, the d20 (the Majors I to XX), is the
+palm's own die: the hand grows its one stone into the place that was waiting for it. Where the other six sit on the hand (a stone in
+each finger's knuckle, its suit's) is Calissa's to show.
+
 ## 5. The hands
 
 The god hand holds "hands" four ways: the hand itself, a hand of cards (Entropy Tactics deals five Minor Arcana), the hand you are
@@ -126,7 +133,8 @@ dealt, and the hand that throws. Espada's to write into the world.
 3. The palm die is both the Hungry Die at Entropy Tactics' table and the answer to the island's rejection (section 4).
 4. Luck's re-roll: yes (section 3; the rule built, the throw to wire).
 5. The dice's suits (section 2): d4 Wands, d6 Pentacles, d8 Swords, d10 Cups, d20 the Majors I to XX.
-6. "Releases", asked: the way out of SPINE.md 4 (a tier IV caster shell, an Overload, an epic miracle), not every god power.
+6. The fingers (4.1): d4 little, d6 ring, d8 middle, d10 index, d12 thumb, d20 palm; the d% has none yet.
+7. "Releases", asked: the way out of SPINE.md 4 (a tier IV caster shell, an Overload, an epic miracle), not every god power.
 
 ## 9. Open
 
