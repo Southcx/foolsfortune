@@ -80,7 +80,7 @@ export class SoulBrush extends Tech {
     this.techniques = new BrushTechniques(this);
     this.celestial = new Celestial(this);
     this.radial = new PaintRadial(this); // (1 held: what the paint is, radial.js)
-    this.sigils = new Sigils(g);
+    this.sigils = g.sigils = new Sigils(g); // (game.sigils: Celestial mode's targets redraw its prompts over the paper, vfx/celestialtargets.js)
     this.paint = new PaintPath(g.scene, { wet: 0xe8ab86, dry: 0xb4603f, life: TRAIL_WET, tint: () => this.load?.aspect }); // (the slide trail and the wash are the Courier's paint, in the brush's feeling: vfx/paintpath.js)
     this.rmbT = -1;
     this.slideW = 0; this.slideYaw = 0; this.sliding = false; this.slideDist = 0; this.lastDab = null; this.slideT = 0;

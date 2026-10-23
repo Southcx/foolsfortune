@@ -823,3 +823,6 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 
 277. **What a window works on is updated while the window is open.** `tick` returns early under `modalOpen()`, before the
     world's updates; a service the window drives (the laid spread under the Box's window) is updated in that branch too.
+
+278. **A rotation set whole keeps the turns composed before it.** A branch that sets an orientation from a frame (a rail's,
+    a surface's) replaces the quaternion; any turn stacked on earlier (a boardslide's yaw) is multiplied back on after it.

@@ -46,7 +46,10 @@ export class PuzzlePieces {
     const islets = room.props.islets, byId = this.islet = new Map(islets.map((i) => [i.feature.id, i]));
     this.deal = dealPuzzles(islets.map((i) => ({ id: i.feature.id, kit: i.islet.kit, tier: i.islet.tier })), room.seed);
     const add = (m) => { m.userData.zone = 'opensea'; this.game.scene.add(m); return m; };
-    const spot = (isl, salt, frac = 0.55) => { const r = seeded((salt * 2654435761) >>> 0); for (let k = 0; k < 8; k++) { const a = r() * 6.283, d = isl.r * frac * Math.sqrt(r()), p = isl.pos.clone().add(_a.set(Math.sin(a) * d, 0, Math.cos(a) * d)); if (p.distanceTo(isl.secret.pos) > 3) return p; } return isl.pos.clone(); };
+    // a spot on the islet clear of its secret (a vantage's stand is dressed wide: Calissa saw the singing stone on one, 2026-10-23): the
+    // first of 24 tries 4.5 m clear, else the try farthest from it, never the islet's middle by default
+    const CLEAR = 4.5;
+    const spot = (isl, salt, frac = 0.55) => { const r = seeded((salt * 2654435761) >>> 0); let best = null, bd = -1; for (let k = 0; k < 24; k++) { const a = r() * 6.283, d = isl.r * Math.max(frac, 0.5) * Math.sqrt(r()), p = isl.pos.clone().add(_a.set(Math.sin(a) * d, 0, Math.cos(a) * d)), dd = p.distanceTo(isl.secret.pos); if (dd > CLEAR) return p; if (dd > bd) { bd = dd; best = p; } } return best; };
     let salt = room.seed % 100000;
     // the pairs: the same carving on two islets
     this.pairs = this.deal.pairs.map((p) => ({ ...p, at: [p.a, p.b].map((id) => { const isl = byId.get(id), pos = spot(isl, ++salt); const m = add(new THREE.Mesh(SHAPE[p.shape](), mat(p.colour))); m.position.copy(pos).setY(isl.top + 0.75); return { islet: id, pos, mesh: m }; }) }));
@@ -59,7 +62,7 @@ export class PuzzlePieces {
       const q = new THREE.Quaternion().setFromRotationMatrix(_m.makeBasis(x, y, dir)), arcs = [];
       const stone = add(new THREE.Mesh(new THREE.CylinderGeometry(0.9, 1, 0.2, 10), mat(0xc8beb0))); stone.position.copy(at).setY(at.y + 0.1);
       L.dists.forEach((d, k) => {
-        const rho = d * Math.tan(L.size), grp = new THREE.Group(), arc = new THREE.Mesh(new THREE.TorusGeometry(rho, d * 0.006, 5, 16, Math.PI / 2), mat(0xd8cfc0, { emissive: 0x000000 }));
+        const rho = d * Math.tan(L.size), grp = new THREE.Group(), arc = new THREE.Mesh(new THREE.TorusGeometry(rho, d * 0.006, 5, 16, Math.PI / 2), mat(0xd8cfc0, { emissive: 0x000000, fog: false }));
         arc.rotation.z = k * Math.PI / 2; grp.add(arc); grp.quaternion.copy(q); grp.position.copy(eye).addScaledVector(dir, d); add(grp); arcs.push(arc);
       });
       const far = eye.clone().addScaledVector(dir, L.dists[L.dists.length - 1]);

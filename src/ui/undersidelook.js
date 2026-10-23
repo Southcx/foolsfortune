@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // THE UNDERSIDE'S DRESS (docs/plans/SPREADS.md 5.1; Dovina's page `pneuka/underside.js`, its `us-*` classes): the Pneuka Box turned over,
-// in the Clay dress and the reading view's look's colours (vfx/readinglook.js SUIT_LOOK), so the window's flip side and the reading round the
+// in the Clay dress and the reading view's colours (vfx/readingview.js SUIT_LOOK), so the window's flip side and the reading round the
 // Courier read as one thing. Only looks: every rule, every number and every word stay the page's.
 //   THE TABS      the spreads as glazed tiles on a cord; the one laid lit gold, a shut one unfired bisque
 //   THE CLOTH     plum velvet with a fine nap, gold thread between the cells; a lit cell glows (the page's tint, laid over the velvet
@@ -16,7 +16,7 @@
 //
 //   installUndersideLook()   (once, at boot: injects the style; the page's classes do the rest)   UNDERSIDE_LOOK (the colours)
 // ---------------------------------------------------------------------------------------
-import { SUIT_LOOK } from '../vfx/readinglook.js';
+import { SUIT_LOOK } from '../vfx/readingview.js';
 
 const hex = (n) => `#${n.toString(16).padStart(6, '0')}`;
 export const UNDERSIDE_LOOK = {

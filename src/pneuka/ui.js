@@ -14,14 +14,16 @@
 // Prior art: Old School RuneScape's inventory (the grid, left click / right click menus, "Use X -> Y" in the hover line), its bank (Deposit
 // inventory); the reading's own in ui/readingtable.js and pneuka/loadout.js.
 // ---------------------------------------------------------------------------------------
-import { SLOTS, FITTINGS } from './box.js';
+import { SLOTS, FITTINGS, STORAGE, STORAGE_SHUT } from './box.js';
 import { oddsOf, rates, OUTCOMES, HEARTS } from '../tools/lockheart/table.js';
 import { itemOf } from './items.js';
 import { itemIcon } from './icons.js';
-import { CARDS, CARD, WORTH } from '../tools/veritome/cards.js';
 import { lureList, tasteOf, BARE } from '../tools/sondelass/angling/lures.js';
 import { RT_CLASSES } from '../ui/readingtable.js';
 import { Loadout } from './loadout.js';
+import { Reading } from './reading.js';
+import { Underside, UNDERSIDE_CSS } from './underside.js';
+import { SUITS } from '../progress/spreads.js';
 import { ASPECTS } from '../tools/sondelass/angling/species.js';
 import { SHELL_TYPES } from '../tools/psygun/shells.js';
 
@@ -45,6 +47,8 @@ const CSS = `
 #pneuka .slot { width: 52px; height: 52px; box-sizing: border-box; position: relative; cursor: var(--jcur-pointer, pointer); }
 #pneuka .slot:not(.rt-slot) { border: 1px solid rgba(255,178,122,.18); border-radius: 4px; background: rgba(40,18,10,.75); } /* (the pocket's slots wear the reading table's dress: RT_CLASSES) */
 #pneuka .slot:not(.rt-slot):hover { border-color: rgba(255,210,150,.75); background: rgba(80,36,20,.8); }
+#pneuka .slot.sp-lit { box-shadow: inset 0 0 0 1px rgba(255,217,138,.35); } #pneuka .slot.sp-dark { box-shadow: inset 0 0 0 1px #5a2a1a; opacity: .8; } /* (lit by the spread: SPREADS.md; Calissa dresses the glow) */
+#pneuka .slot.sp-counts { box-shadow: inset 0 0 0 2px #ffd98a, 0 0 8px rgba(255,217,138,.6); }
 #pneuka .slot.drag { opacity: .4; } #pneuka .slot.over { border-color: #ffd98a; }
 #pneuka .slot img { position: absolute; inset: 3px; width: calc(100% - 6px); height: calc(100% - 6px); pointer-events: none; }
 #pneuka .slot .n { position: absolute; left: 3px; top: 1px; font-size: 11px; color: #ffef7a; text-shadow: 1px 1px 0 #000; pointer-events: none; }
@@ -91,13 +95,17 @@ export class PneukaUI {
     this.game = game;
     this.open = false;
     this.loadout = new Loadout(game, () => this.render());
-    const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
+    this.reading = new Reading(game); // (the window's hand on the laid spread, game.laidSpread: SPREADS.md)
+    this.underside = new Underside(game, this.reading, () => this.render());
+    const st = document.createElement('style'); st.textContent = CSS + UNDERSIDE_CSS; document.head.appendChild(st);
     this.root = el('div'); this.root.id = 'pneuka';
     this.root.addEventListener('mousedown', (e) => e.stopPropagation());
     this.root.addEventListener('contextmenu', (e) => e.preventDefault());
     this.root.addEventListener('click', (e) => { if (e.target === this.root) this.close(); this.hideMenu(); });
     addEventListener('keydown', (e) => { // (Esc closes it, and only it: the pause menu does not open under it, as the Codex's: GARDEN-SWEEP #9)
-      if (!this.open || e.repeat || e.code !== 'Escape' || /^(TEXTAREA|INPUT)$/.test(e.target?.tagName)) return;
+      if (!this.open || e.repeat || /^(TEXTAREA|INPUT)$/.test(e.target?.tagName)) return;
+      if (e.code === 'KeyF') { e.preventDefault(); e.stopImmediatePropagation(); this.flip(); return; } // (F turns the Box over: Petra's key, SPREADS.md 5.1)
+      if (e.code !== 'Escape') return;
       e.preventDefault(); e.stopImmediatePropagation(); this.close();
     }, true);
     document.body.appendChild(this.root);
@@ -105,8 +113,10 @@ export class PneukaUI {
   }
   get box() { return this.game.pneuka; }
   toggle() { this.open ? this.close() : this.show(); }
+  /** The Box turned over (the spread's side) or back (the pocket's). */
+  flip() { this.reading.flip(); this.underside.held = null; this.render(); }
   show() { this.open = true; this.root.classList.add('open'); document.exitPointerLock?.(); this.game.time?.slow('pneuka', SLOW); this.render(); this.game.events?.emit('pneuka.open', {}); }
-  close() { this.open = false; this.root.classList.remove('open'); this.game.time?.free('pneuka'); this.hideMenu(); this.onClose?.(); }
+  close() { if (this.reading.flipped) this.reading.flip(false); this.underside.held = null; this.open = false; this.root.classList.remove('open'); this.game.time?.free('pneuka'); this.hideMenu(); this.onClose?.(); }
 
   // ---------------------------------------------------------------- what a click on a thing would do
   actions(slot) {
@@ -114,7 +124,7 @@ export class PneukaUI {
     if (!it) return [];
     const out = [];
     if (it.kind === 'psygun') out.push({ label: 'Carry', run: () => box.carryPsygun(slot) }); // (a psygun's variant: the tools themselves are on the reading)
-    if (box.bankOpen && it.card) out.push({ label: 'Store', run: () => box.store(slot) });
+    if (box.storageOpen) out.push({ label: 'Store', run: () => box.store(slot) }); // (any thing stores: the storage at a Shrine, SPREADS.md 6)
     if (it.lure) out.push({ label: 'Tie on', run: () => box.tieOn(slot) });
     const F = Object.values(FITTINGS).find((f) => f.kind === it.kind);
     if (F) out.push({ label: F.put, run: () => box.fitOn(slot) });
@@ -124,12 +134,9 @@ export class PneukaUI {
     out.push({ label: 'Examine', run: () => box.examine(s.id) });
     return out;
   }
-  bankActions(card) {
-    const box = this.box, B = box.book, A = CARD[card];
-    const out = [{ label: 'Take out', run: () => box.withdraw(card) }];
-    if (B.spares(card) > 0) out.push({ label: `Condense a spare (${WORTH[A.rank]} cubes)`, run: () => B.condense(card) });
-    out.push({ label: 'Examine', run: () => box.examine(card) });
-    return out;
+  storageActions(i) {
+    const box = this.box, o = box.storage[i];
+    return o ? [{ label: 'Take out', run: () => box.withdraw(i) }, { label: 'Examine', run: () => box.examine(o.id) }] : [];
   }
   say(html) { if (this.hoverEl) this.hoverEl.innerHTML = html; }
   menu(e, name, acts) {
@@ -158,18 +165,26 @@ export class PneukaUI {
     const head = el('header');
     head.appendChild(el('h2', '', 'THE PNEUKA BOX'));
     head.appendChild(el('span', 'sub', `what the Courier carries · ${box.used} / ${SLOTS} · P to close`));
+    const f = el('div', 'x', this.reading.flipped ? 'FLIP BACK · F' : 'FLIP · F'); f.onclick = () => this.flip(); head.appendChild(f);
     const x = el('div', 'x', 'CLOSE'); x.onclick = () => this.close(); head.appendChild(x);
     px.appendChild(head);
     this.hoverEl = el('div', 'hover', '&nbsp;');
     px.appendChild(this.hoverEl);
+    if (this.reading.flipped) { // (the underside: the spread, laid on the cloth; the pocket is on the other side)
+      this.underside.mount(px);
+      px.appendChild(el('footer', '', 'F turns the Box back · pick a card, then a place · a laid card: click to take it back, right-click to reverse it'));
+      this.root.appendChild(px);
+      this.fit();
+      return;
+    }
     const cols = el('div', 'cols'), reading = el('div', 'reading'), side = el('div', 'side');
     this.loadout.mount(reading);
     reading.appendChild(this.equipPane());
     side.appendChild(this.invPane());
-    side.appendChild(this.bankPane());
+    side.appendChild(this.storagePane());
     cols.appendChild(reading); cols.appendChild(side);
     px.appendChild(cols);
-    px.appendChild(el('footer', '', 'X draws and stows the main · R: the sub · a tool below: click for the sub, shift for the main, or drag it onto a place · in the pocket: left click the first action, right click all of them, drag to swap · F picks up what lies on the ground'));
+    px.appendChild(el('footer', '', 'F turns the Box over (the spread) · X draws and stows the main · R: the sub · a tool below: click for the sub, shift for the main, or drag it onto a place · in the pocket: left click the first action, right click all of them, drag to swap · F picks up what lies on the ground'));
     this.root.appendChild(px);
     this.loadout.draw(); // (the reading draws once it is in the page)
     this.fit();
@@ -187,10 +202,13 @@ export class PneukaUI {
 
   invPane() {
     const box = this.box, pane = el('div', 'pane inv');
-    pane.appendChild(el('h4', '', `<span>IN THE BOX</span><span>${box.free} free</span>`));
+    const cells = this.reading.cells(), counted = new Map(this.reading.counted().map((c) => [c.i, c])), sums = this.reading.sums();
+    const lit = SUITS.filter((s) => sums[s] > 0).map((s) => `${s[0].toUpperCase()}${s.slice(1)} ${Math.round(sums[s] * 10) / 10}`).join(' · ');
+    pane.appendChild(el('h4', '', `<span>IN THE BOX</span><span>${lit ? `${lit} · ` : ''}${box.free} free</span>`));
     const grid = el('div', `grid ${RT_CLASSES.tray}`);
     box.slots.forEach((s, i) => {
-      const it = s && itemOf(s.id), d = el('div', `slot ${RT_CLASSES.slot}${it ? '' : ' empty'}`, it ? `${this.icon(s.id)}${s.n > 1 ? `<span class="n">${s.n}</span>` : ''}` : '');
+      const it = s && itemOf(s.id), cell = cells[i], hit = counted.get(i);
+      const d = el('div', `slot ${RT_CLASSES.slot}${it ? '' : ' empty'}${cell?.dark ? ' sp-dark' : SUITS.some((k) => cell?.[k] > 0) || cell?.wild ? ' sp-lit' : ''}${hit ? ` sp-counts sp-${hit.suit}` : ''}`, it ? `${this.icon(s.id)}${s.n > 1 ? `<span class="n">${s.n}</span>` : ''}` : '');
       if (it) {
         d.draggable = true;
         const acts = () => this.actions(i);
@@ -277,32 +295,29 @@ export class PneukaUI {
     return pane;
   }
 
-  bankPane() {
-    const box = this.box, B = box.book, pane = el('div', `pane bank ${RT_CLASSES.book}`);
-    pane.appendChild(el('h4', '', `<span>THE VERITOME · THE BANK</span><span>${box.bankOpen ? 'open' : 'shut'}</span>`));
-    if (!B) return pane;
-    if (!box.bankOpen) {
-      pane.appendChild(el('p', '', 'The Book opens at a Shrine (THE BANK), or with the Veritome as your main, open: then things can be stored in it for good, or taken out.'));
-      pane.appendChild(el('p', '', `In the Book now: ${CARDS.filter((c) => c.form === 'item' && B.has(c.id)).reduce((a, c) => a + B.count(c.id), 0)} curios, ${B.filled} pages filled of ${CARDS.length}.`));
+  /** The storage (Petra's box.storage, SPREADS.md 6): kept for good at a Shrine's STORAGE row, beside the box; shut elsewhere. */
+  storagePane() {
+    const box = this.box, pane = el('div', `pane bank ${RT_CLASSES.book}`), list = box.storage || [];
+    pane.appendChild(el('h4', '', `<span>THE STORAGE</span><span>${box.storageOpen ? `${list.length} / ${STORAGE}` : 'shut'}</span>`));
+    if (!box.storageOpen) {
+      pane.appendChild(el('p', '', `${STORAGE_SHUT} ${list.length ? `It keeps ${list.length} ${list.length === 1 ? 'stack' : 'stacks'} now.` : ''}`));
       return pane;
     }
     const btns = el('div'); btns.style.marginBottom = '8px';
     const all = el('button', '', 'STORE ALL'); all.disabled = !box.used; all.onclick = () => { box.storeAll(); this.render(); };
     btns.appendChild(all);
     pane.appendChild(btns);
-    const grid = el('div', 'grid'), held = CARDS.filter((c) => c.form === 'item' && B.has(c.id));
-    for (const A of held) {
-      const it = itemOf(A.id), d = el('div', 'slot', `${this.icon(A.id)}<span class="n">${B.count(A.id)}</span>`);
-      d.title = '';
-      d.onmouseenter = () => this.say(`Take out <b>${A.name}</b> · ${B.count(A.id)} of ${A.limit} · rank ${A.rank}`);
+    const grid = el('div', 'grid');
+    list.forEach((o, i) => {
+      const it = itemOf(o.id), d = el('div', 'slot', `${this.icon(o.id)}${o.n > 1 ? `<span class="n">${o.n}</span>` : ''}`);
+      d.onmouseenter = () => this.say(`Take out <b>${it?.name || o.id}</b>${o.n > 1 ? ` · ${o.n}` : ''}`);
       d.onmouseleave = () => this.say('&nbsp;');
-      d.onclick = () => { box.withdraw(A.id); this.render(); };
-      d.oncontextmenu = (e) => { e.preventDefault(); this.menu(e, it?.name || A.name, this.bankActions(A.id)); };
+      d.onclick = () => { box.withdraw(i); this.render(); };
+      d.oncontextmenu = (e) => { e.preventDefault(); this.menu(e, it?.name || o.id, this.storageActions(i)); };
       grid.appendChild(d);
-    }
-    if (!held.length) pane.appendChild(el('p', '', 'Nothing kept here yet. Click a thing in the box to store it.'));
+    });
+    if (!list.length) pane.appendChild(el('p', '', 'Nothing kept here yet. Click a thing in the box to store it.'));
     pane.appendChild(grid);
-    pane.appendChild(el('p', '', `Cards without an item form (the Arcana, the creatures) are in the Codex (B), VERITOME.`));
     return pane;
   }
 }

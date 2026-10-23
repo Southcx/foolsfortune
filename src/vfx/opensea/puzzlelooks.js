@@ -69,7 +69,7 @@ export class PuzzleLooks {
     }
     for (const L of P.lineups) {
       if (L.stone) { this.swap(L.stone, lineupStone(0.1)); L.stone.rotation.y = Math.atan2(L.dir.x, L.dir.z); }
-      const lit = isletMaterial(); // (one a line-up: its four arcs light together)
+      const lit = isletMaterial(); lit.fog = false; // (one a line-up: its four arcs light together, clear of the sea's fog so they read from the spot)
       for (const a of L.arcs) { const T = a.geometry.parameters; this.swap(a, lineupArc(T.radius, T.tube), lit); }
     }
     for (const E of P.echoes) {

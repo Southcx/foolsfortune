@@ -96,9 +96,6 @@ export class PneukaBox {
   get storageOpen() { return this.atStorage && !!this.game.pneukaUI?.open; }
   /** A Shrine's STORAGE row (world/shrines.js): the window opens with the storage beside it. */
   openStorage() { const W = this.game.pneukaUI; if (!W) return false; if (!W.open) W.show(); this.atStorage = true; W.render(); return true; }
-  // (the old names, until the window's pane moves to the storage: pneuka/ui.js is Dovina's, docs/handoffs/dovina/)
-  get bankOpen() { return this.storageOpen; }
-  openBank() { return this.openStorage(); }
   /** How many of a thing the storage keeps. */
   stored(id) { return this.storage.reduce((n, o) => n + (o.id === id ? o.n : 0), 0); }
   get free() { return this.slots.filter((s) => !s).length; }

@@ -12,6 +12,8 @@
 //   TITLES[English title] = { neuralese, read }   (each achievement title said in neuralese)
 //   ROOTS[WORD] = { gloss, sense, from }   (gloss: its first sense; sense: all it covers; from: where the word comes from)
 //   PARTICLES[WORD] = { role, gloss }      FEELINGS[aspect] -> its root      COMPOUNDS[phrase] -> its English (worked examples)
+//   PHRASES[neuralese] -> its English (the phrasebook: greetings and the everyday)   COLOURS[colour] -> its compound (IRIS and a thing)
+//   NUMBERS[n] -> its sum (1 to 20)   numberOf(n) -> its sum for any whole number
 // ---------------------------------------------------------------------------------------
 
 // [word, senses (the first is its gloss), where it comes from]
@@ -157,6 +159,12 @@ const TABLE = [
   ['PENTA', 'five, a hand of', 'Greek pente'],
   ['MULTA', 'many, much, a lot', 'Latin multus'],
   ['OMNI', 'all, every, whole', 'Latin omnis'],
+
+  // the refinement (Espada's, 2026-10-23, the owner asking for the language enriched; docs/NEURALESE.md 2a): three roots for the holes
+  // a speaker falls into first, the near one, being able, and counting past a hand twice
+  ['KO', 'this, here, now, the near one', 'Japanese ko-: kore, koko, kono (this, here); ONO\'s near twin'],
+  ['DUNA', 'can, able, may, power to', 'Greek dynamis, power (dynamo, dynamite)'],
+  ['DEKA', 'ten, two hands of', 'Greek deka (decade)'],
 ];
 
 export const ROOTS = Object.fromEntries(TABLE.map(([word, sense, from]) => [word, { gloss: sense.split(',')[0].trim(), sense, from }]));
@@ -170,6 +178,7 @@ export const PARTICLES = {
   SU: { role: 'regroup', gloss: 'of: the modifiers after it modify as one, HEMA-SU-HOMA-MEGA, the home of the great one' },
   TA: { role: 'and', gloss: 'joins two who do, or two that are done to: IO TA TU KITH, you and I, together' },
   VE: { role: 'or', gloss: 'between two choices; a yes-or-no question is SIVA VE SIVA-VOYD?' },
+  SED: { role: 'but', gloss: 'opens a sentence that turns against the last: IO SIVA. SED UDA VOYD. I drink. But there is no water.' },
 };
 
 // the seven feelings, most positive to most negative (progress/weather.js's DISPLAY_ORDER)
@@ -236,6 +245,45 @@ export const TITLES = {
   'the Naturalist': { neuralese: 'HOMA-SHIRA-ZOE', read: 'knower of life' },
   'the Unrejected': { neuralese: 'HOMA-AMI-SU-NUSA', read: 'one kin to the island' },
 };
+
+// the phrasebook (Espada's, 2026-10-23): the everyday said with roots alone, each built by the grammar, nothing memorised that the rules
+// do not give. A greeting is a coming or a going, and good; an apology, in a world of clay, is owning the break.
+export const PHRASES = {
+  'VENA-KALO': 'hello; welcome (a good coming)',
+  'VADA-KALO': 'goodbye (a good going)',
+  'HELI-KALO': 'good day',
+  'NIKTA-KALO': 'good night',
+  'TU KALO': 'thank you (you are good)',
+  'IO KRAKA': 'sorry (I broke it)',
+  'SI': 'yes',
+  'VOYD': 'no',
+  'NOMA-IO X': 'my name is X (my name: X)',
+  'NOMA-TU KE?': 'what is your name?',
+  'IO SHIRA': 'I understand (I know)',
+  'IO SHIRA-VOYD': 'I do not understand',
+  'O LOGA-TAKA-VOYD': 'please speak slowly (speak, not fast)',
+  'KO KE?': 'what is this?',
+  'IO POTHA-SIVA': 'I want to drink (I am a drinking want)',
+  'TU DUNA-VADA': 'you can go',
+  'AMI O, VENA': 'friend, come here',
+  'KRONA-KO TE, IO LUNO': 'now, I rest',
+};
+
+// the colours (2026-10-23): IRIS and the thing whose colour it is, as Toki Pona has five colour roots and we have none
+export const COLOURS = {
+  red: 'IRIS-PIRO', yellow: 'IRIS-HELI', green: 'IRIS-FLORA', blue: 'IRIS-MARI', brown: 'IRIS-KLAI', white: 'IRIS-HIKA', black: 'IRIS-SKOTA',
+  grey: 'IRIS-SUNA', purple: 'IRIS-NIKTA', gold: 'IRIS-HELI-HIKA',
+};
+
+// numbers are sums, read left to right, the biggest first (NEURALESE.md 2, rule 11): DEKA ten, PENTA five, DUO two, UNA one. Twenty is
+// DEKA-DEKA; past fifty a speaker says MULTA, as a shepherd counts sheep only so far.
+export function numberOf(n) {
+  n = Math.floor(Math.abs(n)); if (n === 0) return 'VOYD';
+  const out = [];
+  for (const [v, w] of [[10, 'DEKA'], [5, 'PENTA'], [2, 'DUO'], [1, 'UNA']]) while (n >= v) { out.push(w); n -= v; }
+  return out.join('-');
+}
+export const NUMBERS = Object.fromEntries(Array.from({ length: 20 }, (_, i) => [i + 1, numberOf(i + 1)]));
 
 export const isRoot = (word) => Object.hasOwn(ROOTS, String(word).toUpperCase());
 export const isParticle = (word) => Object.hasOwn(PARTICLES, String(word).toUpperCase());

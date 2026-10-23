@@ -27,6 +27,7 @@ export const LENDS = {
   codex:     { label: 'Codex',         opens: 'Every hidden entry shown' },
   shells:    { label: 'Caster Shells', opens: 'Every caster shell, endless and free. The toll still cracks.' }, // (the owner, v170: "a toggleable debug option for infinite shot charges"; words Espada's)
   racing:    { label: 'Racing',        opens: 'Every skiff part, cup, licence and the siblings\' race open.' }, // (the Raceway's opens: SKIFF-RACING.md 12)
+  spreads:   { label: 'Spreads',       opens: 'Every spread open to lay.' }, // (SPREADS.md: words placeholders for Espada)
   figmentTelegraphs: { label: 'Figment Telegraphs', opens: 'Every Figment telegraph step shown.' }, // (Divination's ladder lent: FIGMENT-TELEGRAPHS.md; always qualified, never the rail's)
 };
 const fresh = () => Object.fromEntries(Object.keys(LENDS).map((k) => [k, true])); // (a new DEBUG save lends everything: today's sandbox)
