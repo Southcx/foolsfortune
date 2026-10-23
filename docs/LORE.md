@@ -197,14 +197,28 @@ Chaos digs it up cheap and Law buys it dear; the hauler lives in between. Letty'
 
 ## 4. How a Courier drinks
 
-- **The stones** set in the Courier (the kiln's STONES region) are where Lachryma enters: a pot breathes through its glaze, a Courier
-  drinks through its stones. The set decides how much, how fast, which feeling, and where overflow goes. **The Maker's Stones** are the
-  Prince's balanced choice; every other stone is a trade, its virtue from what old lapidaries believed: amethyst (*a-methystos*, "not
-  drunk": slow and clear; in Entropolis a charm the good half of rave culture sells), citrine, moonstone, onyx, emerald, sapphire, ruby,
-  diamond, opal. Blurbs are in `courier/vessel/glazes.js`. Look and function one choice: *open* (a glamour is the owner's call).
+- **The stones, the Pneuka stones** *(merged by the owner, 2026-10-23: "Conceptually merge the Pneuka stones with the stones that are
+  determining how Lachryma is processed")*: seven pieces of solid Lachryma set in the Courier (the kiln's STONES region), cut in the
+  shapes of the standard dice set. They are where Lachryma enters: a pot breathes through its glaze, a Courier drinks through its
+  stones. The set decides how much, how fast, which feeling, and where overflow goes. **The Maker's Stones** are the Prince's balanced
+  choice; every other set is a trade, its virtue from what old lapidaries believed: amethyst (*a-methystos*, "not drunk": slow and
+  clear; in Entropolis a charm the good half of rave culture sells), citrine, moonstone, onyx, emerald, sapphire, ruby, diamond, opal.
+  A ruby set is seven ruby dice, and it drinks as rubies do. Blurbs are in `courier/vessel/glazes.js`; the rules in `progress/stones.js`.
+  - **Why dice.** Lachryma set solid takes the shapes chance takes. Five of the seven are Plato's solids, which his *Timaeus* gave to
+    the elements, and the elements are the suits: the d4 fire (Wands), the d6 earth (Pentacles; a cube of Lachrymite is the currency,
+    so a coin was always a die), the d8 air (Swords), the d20 water (Cups, the roundest, which rolls furthest). The d12 is the solid
+    Plato kept for "the whole heaven" and its figures: twelve faces, the twelve zodiac Majors. The d10 is the Tree of Life's ten
+    Sephiroth, with the Majors its 22 paths. Seven stones, as there are seven feelings, seven domains and seven sockets on the bracelet.
+  - **They roll.** Any chance thrown for you is thrown on your stones, never an unseen number: a duel's Flee on your d20, your own set
+    at Raku's tables, opal's little game in every drink. Opal's set was dice before it had faces.
+  - **In the god hand**, the set is gathered into one die in the palm (the hole the owner left there), growing d4 to d20 (DICE.md 4).
+    The first dice were knucklebones, astragali thrown in the hand to read fate; the palm die sits by the hand's knuckles.
+  - **The name.** *Pneuka* is *pneuma*, breath: breath's stones in the breath's jar. "Stone" is three things at once: the gemstone (the
+    set's mineral), the die (stones were cast before bones were), and stoneware (clay fired hard, the folk's own tier). On screen the
+    label is plain: **dice**.
 - **The words**: **the draught** is the feeling last drunk (a drink, and a draught under a door). A stone is **heady** when what you
-  drink goes to your head. Too much and you are **brimming** (a vessel full past its brim; pushed toward Prismatic): "You are
-  brimming." · "You settle." Never "drunk".
+  drink goes to your head. Too much and the pool **overflows** (pushed toward Prismatic): "Your pool overflows." · "You settle." Never
+  "drunk" ("brimming" until 2026-10-19).
 - **The Lachrymato Bottles** (the owner's name): a *lachrymatory* is an old tear bottle mourners filled. Worn on the upper back: a
   reserve the Soul Brush paints from and mops into. Glass: a broken shield can crack one.
 - **Blots and blotlings** *(code says stain)*: spilled crude soaks in as a blot (a stain, and an inkblot a mind reads shapes

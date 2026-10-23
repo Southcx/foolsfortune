@@ -15,8 +15,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   docs and comments. *Not:* "the player" in anything the game says. → detail
 - **the Vessoul** — the soulspark that stands for the player in the world, one being in several forms: the god hand, the Pneuka Jar, the Courier,
   and on the Emocean the ships. *Not:* "the player" in player text.
-- **the stones** (`src/progress/stones.js`) — where Lachryma enters the vessel: the pool's size, regen and costs, the magnet's reach, overflow;
-  one set at a time. *Not:* a stone in the world. → detail
+- **the stones / the Pneuka stones** (`src/progress/stones.js`; merged by the owner, 2026-10-23; `docs/plans/DICE.md`) — where Lachryma enters the vessel: the pool's size, regen and costs, the magnet's reach, overflow;
+  one set at a time, seven dice of solid Lachryma in the standard set's shapes, a set's mineral its trade; the chance thrown for you is thrown on them (on screen: dice). *Not:* a stone in the world, the house's dice set (Raku's). → detail
 - **overflow** (code `mind.brim`; "brimming" until 2026-10-19) — the pool pushed past full; the log says "Your pool overflows." *Not:* "drunk", which never appears in player
   text.
 - **the pool** (`game.lachryma`, `src/courier/lachryma.js`) — the Courier's store of Lachryma; it pays for shots, charges and arts, and it is the
