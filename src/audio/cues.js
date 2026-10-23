@@ -108,6 +108,13 @@ const RULES = {
   'guest.join': (s) => s.guestArrive?.(false),
   'guest.leave': (s) => s.guestArrive?.(false, true),
   'guest.garden': (s, e) => s.guestArrive?.(true, !!e.leave), // (a guest's Pneuka Jar come into your Spirit Garden, or gone: coop/guests.js)
+  // the spreads (SPREADS.md; draft events until Petra's gate; audio/spreads.js): the board turned over, a Major laid, a cell lit in its
+  // suit (the tally's climb its step up the run) or gone out, a crack where contrary suits meet, a spread complete
+  'spread.flip': (s, e) => s.spreadFlip?.(e.under !== false),
+  'spread.lay': (s, e) => s.spreadLay?.(!!e.reversed),
+  'spread.tally': (s, e) => ((e.to ?? 0) > (e.from ?? 0) ? s.spreadLight?.(e.suit, Math.max(0, Math.round(e.to) - 1)) : s.spreadDim?.(e.suit)),
+  'spread.crack': (s, e) => s.spreadCrack?.(e.suit || e.a || 'wands'),
+  'spread.complete': (s) => s.spreadDone?.(),
   'goal.done': (s, e) => s.goalDone?.(e.slot ?? 0, !!e.all), // (a goal of the game day's three done; all three, the Answer whole: audio/ui.js)
   'goals.set': (s) => s.goalsSet?.(),
   // the open sea (audio/opensea.js): the helm's wash and wind from boarding to mooring, and the voyage's moments
