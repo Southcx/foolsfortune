@@ -44,6 +44,7 @@ export const READING_VIEW = {
   cloth: { cell: 0.34, below: 0.62, glow: 1.6 }, // (m a cell; m under the feet; the lit cells' emissive)
   hand: { show: false, r: 1.8, spread: 0.7, y: 0.05, z: 1.35, tilt: -0.55, lift: 0.2, scale: 0.85 }, // (the fan: its radius, its arc, its place, its lean back, its size)
   fall: 14, motes: 160,
+  follow: 0.65,                 // (how much of the camera's orbit the reading turns with: the cross read from any side, the cloth fixed under it for the parallax)
   klass: { scale: 3.4, y: 1.25, z: -1.6, opacity: 0.16, tint: 0.55, turn: 0.9 }, // (the class's card: its size, its height, how far behind the halo, how faint; real s it takes to turn over)
   flyIn: 0.6,                   // (real s the cards take from the fall to their places)
 };
@@ -78,6 +79,9 @@ export const ORBIT = {
   },
 };
 
+/** A place in the orbit turned by `turn` about the Courier's axis (the reading following the camera round). */
+const turned = (x, y, z, turn, out) => out.set(x * Math.cos(turn) + z * Math.sin(turn), y, -x * Math.sin(turn) + z * Math.cos(turn));
+const _p = new THREE.Vector3();
 const tex = (cv) => { const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; t.magFilter = THREE.NearestFilter; t.minFilter = THREE.LinearFilter; return t; };
 const smooth = (x) => { x = Math.max(0, Math.min(1, x)); return x * x * (3 - 2 * x); };
 
@@ -184,7 +188,8 @@ export class ReadingView {
       if (was < 0.5 && this.classTurn >= 0.5) { this.classId = this.classNext; this.classCard.geometry = this.cellGeo(this.classCell(this.classId)); this.classFlare = 1; } // (edge-on: the new face)
     }
     const u = this.classTurn, ph = this.t * 0.25;
-    this.classNode.rotation.set(Math.sin(ph * 1.3) * 0.03, (1 - smooth(u)) * Math.PI + Math.sin(ph) * 0.06, 0);
+    const tn = this.turn || 0; this.classNode.position.copy(turned(0, C.y, F + C.z, tn, _p));
+    this.classNode.rotation.set(Math.sin(ph * 1.3) * 0.03, (this.game.readingScene?.orbit?.yaw ?? 0) + (1 - smooth(u)) * Math.PI + Math.sin(ph) * 0.06, 0, 'YXZ');
     this.classFlare = Math.max(0, this.classFlare - dt * 1.4);
     this.classEdge.color.setHex(this.classSuit ? SUIT_LOOK[this.classSuit] : 0xffe6a8);
     this.classFace.color.setHex(this.classSuit ? SUIT_LOOK[this.classSuit] : 0xffe6a8).multiplyScalar(C.tint); // (the cream stained in its suit's colour: glass, not a wall)
@@ -213,7 +218,7 @@ export class ReadingView {
         node.userData.face.userData.pick = { kind: 'place', id }; this.pickables.push(node.userData.face);
       }
       let fr = this.frames.get(`${state.spread}:${id}`);
-      if (!fr) { fr = new THREE.Mesh(this.frameGeo, this.frameMat); fr.position.set(...at); fr.rotation.z = at.turn || 0; this.frames.set(`${state.spread}:${id}`, fr); this.group.add(fr); const q = new THREE.Mesh(this.cardGeo, this.pickMat); q.userData.pick = { kind: 'place', id }; fr.add(q); fr.userData.quad = q; } // (the frame is hollow: an unseen card behind it takes the pick)
+      if (!fr) { fr = new THREE.Mesh(this.frameGeo, this.frameMat); fr.position.set(...at); fr.rotation.z = at.turn || 0; fr.userData.at = at; this.frames.set(`${state.spread}:${id}`, fr); this.group.add(fr); const q = new THREE.Mesh(this.cardGeo, this.pickMat); q.userData.pick = { kind: 'place', id }; fr.add(q); fr.userData.quad = q; } // (the frame is hollow: an unseen card behind it takes the pick)
       fr.visible = !L; if (!L) this.pickables.push(fr.userData.quad);
     }
     for (const [k, fr] of this.frames) if (!k.startsWith(`${state.spread}:`)) fr.visible = false;
@@ -287,15 +292,15 @@ export class ReadingView {
     if (!this.group.visible) return;
     this.t += dt;
     if (this.dir) { this.k = Math.max(0, Math.min(1, this.k + (this.dir * dt) / V.flyIn)); if (this.dir < 0 && this.k <= 0) { this.group.visible = false; this.dir = 0; } else if (this.k >= 1) this.dir = 0; }
-    const ease = smooth(this.k);
+    const ease = smooth(this.k), yaw = this.game.readingScene?.orbit?.yaw ?? 0, turn = (this.turn = yaw * V.follow);
     let i = 0;
     for (const node of this.cards.values()) {
       const U = node.userData, at = U.at; if (!at) continue;
       U.fly = Math.min(1, (U.fly ?? 1) + dt / V.flyIn);
       const e = smooth(Math.min(U.fly, ease)), ph = this.t * 0.6 + i * 1.7; i++;
       // from the fall (high above and behind) into its place, then hung there breathing
-      node.position.set(at[0] * (0.4 + 0.6 * e), at[1] + (1 - e) * 4.5 + Math.sin(ph) * 0.02, at[2] - (1 - e) * 3);
-      node.rotation.set(Math.sin(ph * 0.7) * 0.05, Math.sin(ph) * V.sway, (U.turn || 0) + (1 - e) * 2.4);
+      node.position.copy(turned(at[0] * (0.4 + 0.6 * e), at[1] + (1 - e) * 4.5 + Math.sin(ph) * 0.02, at[2] - (1 - e) * 3, turn, _p));
+      node.rotation.set(Math.sin(ph * 0.7) * 0.05, yaw + Math.sin(ph) * V.sway, (U.turn || 0) + (1 - e) * 2.4, 'YXZ'); // (its face to the camera wherever the arrows have it)
       U.edgeMat.opacity = (U.suit ? 0.55 + 0.35 * Math.sin(this.t * 2.2 + i) : 0.2) * e;
     }
     for (const c of this.fall) { // (the title's fall, far behind)
@@ -305,6 +310,7 @@ export class ReadingView {
     const mp = this.moteGeo.attributes.position;
     for (let k = 0; k < mp.count; k++) { let y = mp.getY(k) + dt * (0.25 + (k % 5) * 0.08); if (y > 8) y = -6; mp.setY(k, y); }
     mp.needsUpdate = true;
+    for (const fr of this.frames.values()) if (fr.visible) { const at = fr.userData.at; fr.position.copy(turned(at[0], at[1], at[2], turn, _p)); fr.rotation.set(0, yaw, at.turn || 0, 'YXZ'); }
     this.updateClass(dt);
     if (this.clothWild) { this.film += dt * 0.05; this.filmT = (this.filmT || 0) + dt; if (this.filmT > 0.1) { this.filmT = 0; this.drawCloth(this.state?.cells || []); } } // (the schiller at 10 Hz)
   }
@@ -320,7 +326,7 @@ export class ReadingView {
     const out = [], v = new THREE.Vector3(), places = ORBIT[this.state?.spread] || {};
     this.group.updateMatrixWorld(true);
     for (const [id, at] of Object.entries(places)) {
-      v.set(at[0], at[1], at[2]).applyMatrix4(this.group.matrixWorld).project(camera);
+      turned(at[0], at[1], at[2], this.turn || 0, v).applyMatrix4(this.group.matrixWorld).project(camera);
       out.push({ id, x: (v.x * 0.5 + 0.5) * w, y: (-v.y * 0.5 + 0.5) * h });
     }
     return out;
