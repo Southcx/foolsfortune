@@ -90,6 +90,33 @@ Golden Dawn used):
 
 Courts serve no domain: they serve their suit (their lift), as a court serves its house.
 
+### 5.1 The domains on the god hand (palmistry, taken in by the owner, 2026-10-23, through Espada)
+
+Palmistry seats the seven planets on the hand (its mounts), so through the table above every domain has a place on the god hand,
+beside the knucklebone on that finger (DICE.md 4.1):
+
+| mount | planet | domain | the die there |
+| --- | --- | --- | --- |
+| the index finger | Jupiter | Ouranurgy | d10 (Cups) |
+| the middle finger | Saturn | Alteration | d8 (Swords) |
+| the ring finger | the Sun | Divination | d6 (Pentacles) |
+| the little finger | Mercury | Spellscription | d4 (Wands) |
+| the thumb's root | Venus | Manifestation | d12 (the zodiac) |
+| the palm's heart | Mars | Psychokinesis | d20, the palm die (the Majors) |
+| the palm's outer edge | the Moon | Possession | (none) |
+
+The Sun and Moon rows follow Espada's swap (section 5), which waits on the owner. A domain's level could show on its mount (Calissa's).
+
+### 5.2 Two more readings of the hand (Espada's proposals; plans, not rules)
+
+- **The four great lines as four readings of the ledger:** the life line (time played and shatters lived through), the head line (arts
+  and domains learned), the heart line (bonds: spirits, the folk, siblings), the fate line (Luck's bits and achievements). Read on the
+  god hand's palm as the overlay does (a readout, never a gate), and in the Codex's STATUS shelf.
+- **The god hand's shape by the suit you lean on:** palmistry's four elemental hands (earth: a square palm, short fingers; air: square,
+  long; fire: long palm, short fingers; water: long, long). The hand takes the shape of your class's suit (a court's own, a zodiac
+  Major's element), so changing the Box changes the hand. A look only, Calissa's; no rule changes with it.
+
+
 ## 6. What a class gives (proposal)
 
 Every rule here keeps the design laws (DESIGN.md 22): arts only by achievement; a modifier with a source you can see; the core movement
@@ -126,3 +153,5 @@ ENTROPY-TACTICS.md 3.b proposed for the table), each measured before the next.
    for every class" right, or should an art stay with its class?
 5. **One kit, two games** (4.6): a class's arts are its Entropy Tactics actives?
 6. **The first wave of four**: the Fool and three of your choosing?
+7. **Palmistry's two readings** (5.2): the four lines as ledger readings, and the hand's shape by your suit?
+8. **The Sun and Moon swap** (section 5): the Sun to Divination, the Moon to Possession?
