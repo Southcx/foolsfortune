@@ -16,7 +16,9 @@ the pool's size, regen and costs, the magnet's reach, how heady a drink is, whic
 release passes through. **The Pneuka stones are those stones, and they are dice.** A Courier's stones were always a set of seven
 pieces of solid Lachryma set in the vessel; their shapes are the standard set's. "The stones" and "the Pneuka stones" name the same
 thing, so there is no homonym to qualify: player text says "your stones" or "your Pneuka stones", code keeps `stones.js`, `STONES`,
-`stoneOf`.
+`stoneOf`. On screen the label is **dice** (CLARITY.md: the genre's word); "Pneuka stones" is the world's and the Codex's. Espada's
+triple: a stone is the gemstone (the set's mineral), the die (stones were cast before bones), and stoneware (Pip's tier). Knucklebones
+stay in the lore only: the first dice, in the god hand's knuckles, and astragalomancy's root for Divination.
 
 - **A stone set is a dice set.** One set worn at a time, as now. Its **mineral** is its trade: the Maker's (the Prince's balanced
   choice), amethyst, citrine, moonstone, onyx, emerald, sapphire, ruby, diamond, opal, each row of `STONES` unchanged. A ruby set is
@@ -37,7 +39,7 @@ elements are our suits:
 | d6 | cube | earth | Pentacles | a cube of Lachrymite is the currency: a coin was always a die |
 | d8 | octahedron | air | Swords | |
 | d20 | icosahedron | water | Cups | the roundest; rolls furthest |
-| d12 | dodecahedron | the aether, "the whole" | the Majors, the trumps | the fifth over the four |
+| d12 | dodecahedron | the aether, "the whole" | the Majors, the trumps | the fifth over the four; Plato's solid for the whole heaven and its figures, so its twelve faces are the twelve zodiac Majors (CLASSES.md 2) |
 | d10, d% | pentagonal trapezohedron | none | the Tree of Life | the ten Sephiroth; the Golden Dawn laid the 22 Majors as the paths between them |
 
 Seven stones, as there are seven feelings, seven domains and seven sockets on the bracelet.
