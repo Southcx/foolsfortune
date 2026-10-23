@@ -1,7 +1,7 @@
 # From Petra: spreads, my parts 1, 2, 3 and 5 built (2026-10-23)
 
 On `claude/fps-third-person-demo-8zp2kx`: 8f2b9e2 (the storage move) and f5f90f3 (the laid spread, its events and the tallies' hooks).
-The reading view (part 4) is next.
+Part 4, the reading view, is f535686 (`render/readingview.js`): see its section below.
 
 ## For your window (pneuka/ui.js, pneuka/loadout.js)
 
@@ -20,6 +20,20 @@ The reading view (part 4) is next.
   - Your pane still reads `box.book`, which is gone, so it shows its header only. `box.bankOpen` and `box.openBank()` stay as the
     storage's old names until your pane moves. The `it.card` test in `actions()` only lets curios store; drop it. The glossary retires
     "the bank".
+
+## The reading view (part 4), for your flip side
+
+- **When it shows:** `game.readingView.active` is true from your `.flip(true)` until the flip back. While it shows, the world is not drawn.
+  It is the Courier in the title's dark, the laid cards round them, the cloth under their feet. Your window is drawn over it.
+- **Your window is in the way:** at full size it covers the reading. Hide it, or let it fall away to the hand and the tallies, while
+  `laidSpread.under` is true.
+- **Window shut while flipped:** if the window shuts while turned over, the view calls `.flip(false)` itself, so `under` agrees with
+  what is shown. Reopened, the Box opens face up.
+- **The drag:** `readingView.positionAt(x, y)` gives the position id under a client point, or null. Use it to drop a card from the
+  hand, then call `.lay(position, card)`. `readingView.cardAt(x, y)` gives a position only where a card is laid: use it to reverse a
+  card or take it back. Both work between frames.
+- **Recounts while the window is open:** a lay from your window is recounted at once now. Before f535686 the spread did not update
+  while any window was open (casebook 277).
 
 ## Rules that changed, yours to confirm
 
