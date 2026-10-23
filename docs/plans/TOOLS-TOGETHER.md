@@ -313,7 +313,7 @@ Monster Hunter's weapons are the model: the job is in the motion.
 
 Each tool sits in six cards. The first wave of four (above) is the Sun, the Lovers, the Star and the Empress.
 - **The economy simulation for hours 2 to 10:** not now. It runs only when it decides what feature to build next.
-- **Still open:** where you may swap (my call: at a Shrine or the Pneuka Box, out of a fight).
+- **Where you may swap** (the owner, 2026-10-23): "I agree weapon swapping should be allowed anywhere outside combat." Built so: `swapRefusal` in `progress/toolpairs.js`.
 
 ## 9. Celestial mode's targets drawn over the paper (the owner, 2026-10-22)
 
