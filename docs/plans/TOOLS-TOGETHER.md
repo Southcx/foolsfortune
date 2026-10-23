@@ -325,3 +325,43 @@ Monster Hunter's weapons are the model: the job is in the motion.
   Selectable things are drawn after it on their own layer, at their own colour.
 - **A cheaper first step:** keep the CSS paper, and draw each selectable thing's outline, its prompts and the seal on the ink canvas
   above `.paper`. The body itself stays sepia, but the outline and the seal read.
+
+### 9.4 The prompts' balance (Dovina, 2026-10-23; `SIGIL_QUEUE`, `sigils.js`)
+
+Petra built the targets (her note of 2026-10-23): the dot lands in a drawn outline, else the nearest within 28 px; every hurtable
+creature within 16 m is markable and has prompts. Her placeholder struck 1 a mark, so two prompts took a slip jelly from 8 to 6. The
+owner's ask is the Magic Cat Academy rule: a queue drawn out undoes the creature. So:
+
+- **A queue's length is the creature's health when dealt:** one mark for every 2 (`markHp`), at most 5 (`max`). A clapperjar keeps 1
+  or 2.
+
+  | creature | health | queue |
+  |---|---|---|
+  | a clapperjar | (breaks) | 1 to 2 |
+  | a Lantern Wisp | 5 | 3 |
+  | a slip jelly | 8 | 4 |
+  | anything over 10 | | 5, then a fresh queue |
+
+- **A cleared queue strikes 2 a mark,** so a queue drawn out undoes anything of up to 10 at once.
+- **Anything with more than 10 is dealt a fresh queue** and goes on, as Magic Cat Academy's big ghosts do. This was a bug before: a
+  creature still standing kept an empty queue, and the brush could never mark it again.
+
+**The price is the pool, not time.** The paper runs the world at a twenty-fifth of its speed, so a prompt costs almost no world time, and
+real seconds are not the measure (section 9 asked for one; this replaces it). A mark costs its drawing's technique (3 to 6 Lachryma) and
+the paper's drain (1.5 a second, about 1 a mark), about 5 in all:
+
+| target | marks | Lachryma | notes |
+|---|---|---|---|
+| a slip jelly, alone | 4 | about 20 | a fifth of the starting pool |
+| three slip jellies sharing heads | 6 to 8 | 30 to 40 | about 4 each |
+
+Prompts are the crowd answer and the safe answer, paid for in Lachryma. The club stays the cheap, close answer for one.
+
+**The cap's reason:** 5 is Magic Cat Academy's longest queue a ghost, and the most a glance takes in over a head.
+
+**Measure after the owner's play:**
+- the pool spent a prompt run;
+- the marks per kill in a crowd (`sigil.pop`'s `popped` against `cleared`).
+
+If one creature costs more than about a quarter of the pool, `markHp` goes to 2.5.
+
