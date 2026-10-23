@@ -73,7 +73,7 @@ One card, one identity, everywhere it turns up:
 7. **A collected card**: bound in the Codex's THE ARCANA (by its photograph or another achievement).
 8. **A house card**: on Raku's tables, in Querent (the Fate Clause's boons).
 
-## 5. The domains and their planets (proposal; Espada's and the owner's to rule)
+## 5. The domains and their planets (proposal, checked by Espada 2026-10-23: the rulerships right, the Sun and Moon swapped; the owner's to rule)
 
 The seven classical planets for the seven domains, and each zodiac class under its sign's ruling planet (the classical rulers, as the
 Golden Dawn used):
@@ -81,11 +81,11 @@ Golden Dawn used):
 | domain | planet, its Major | why | the zodiac classes it rules |
 | --- | --- | --- | --- |
 | Spellscription | Mercury, the Magician | Hermes: writing, the word that works | the Lovers (Gemini), the Hermit (Virgo) |
-| Divination | the Moon, the High Priestess | the veil, what is hidden and foreseen | the Chariot (Cancer) |
+| Divination | the Sun, the Sun | Helios the all-seeing, Apollo's oracle | Strength (Leo) |
 | Manifestation | Venus, the Empress | bringing forth, the fertile hand | Justice (Libra), the Hierophant (Taurus) |
 | Ouranurgy | Jupiter, the Wheel of Fortune | the sky-father, the heavens' wheel | Temperance (Sagittarius), the Moon (Pisces) |
 | Psychokinesis | Mars, the Tower | force that topples | the Emperor (Aries), Death (Scorpio) |
-| Possession | the Sun, the Sun | the radiant self that fills another | Strength (Leo) |
+| Possession | the Moon, the High Priestess | lunatic and moonstruck, the veil; the Chariot a driver holding reins not his own | the Chariot (Cancer) |
 | Alteration | Saturn, the World | time, limits and change; the World's own planet | the Star (Aquarius), the Devil (Capricorn) |
 
 Courts serve no domain: they serve their suit (their lift), as a court serves its house.

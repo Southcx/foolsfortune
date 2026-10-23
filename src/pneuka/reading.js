@@ -8,7 +8,7 @@
 // Prior art: Hades' Mirror of Night (chosen between runs, never inside one), Monster Hunter's loadouts (set at camp).
 //
 //   const R = new Reading(game)   R.spread  R.laid  R.flipped   R.bound() -> Set   R.pair() -> card | null   R.opened() -> [spreadId]
-//   R.hand() -> [card]   R.cells()  R.sums()  R.counted()   R.setSpread(id)  R.lay(position, card)  R.reverse(position)  R.take(position)
+//   R.hand() -> [card]   R.cells()  R.sums()  R.counted()  R.cls() -> the class read   R.setSpread(id)  R.lay(position, card)  R.reverse(position)  R.take(position)
 //   R.flip(under?)   R.suitAt(position)   (each act -> bool; a refusal is said)
 // ---------------------------------------------------------------------------------------
 import { OPEN_AT, SPREAD_ORDER, suitOf } from '../progress/spreads.js';
@@ -35,6 +35,8 @@ export class Reading {
   cells() { return this.L?.cells ?? []; }
   sums() { return this.L?.sums ?? { wands: 0, cups: 0, swords: 0, pentacles: 0 }; }
   counted() { return this.L?.counted ?? []; }
+  /** The class your tallies read as (CLASSES.md; Petra's `laidSpread.class`): { id, label, ... } or null. */
+  cls() { return this.L?.class ?? null; }
   suitAt(position) { const c = this.laid[position]; return c ? suitOf(c.card, c.reversed) : null; }
 
   refused() {
