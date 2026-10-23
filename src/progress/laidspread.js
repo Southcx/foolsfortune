@@ -19,7 +19,8 @@
 // where a thing sits, recounted when it moves); the Golden Dawn's Book T for the rules it hands to spreads.js.
 //
 //   game.laidSpread = new LaidSpread(game)   .spread  .laid  .under   .choose(id)  .lay(position, card, reversed?)  .pick(position)
-//   .reverse(position)  .flip(under?)   .update(rawDt)   .cells (the face's 56)  .sums  .counted  .effect(suit)  .cupsK  .swordsK  .worthK
+//   .reverse(position)  .flip(under?)  .hand  .majors  .lent (DEBUG's spreads row: every Major to lay)
+//   .update(rawDt)   .cells (the face's 56)  .sums  .counted  .effect(suit)  .cupsK  .swordsK  .worthK
 //   save section `spread` (scope player)
 // ---------------------------------------------------------------------------------------
 import { SPREADS, SUITS, light, tally, effectOf } from './spreads.js';
@@ -48,8 +49,12 @@ export class LaidSpread {
   position(id) { return SPREADS[this.spread].positions.find((p) => p.id === id) || null; }
   /** Your pair's card, laid in the Present by the belt itself (progress/toolpairs.js: the pair's number is its Major's). */
   get pairCard() { const p = this.game.belt?.pair; return p ? ARCANA[p.n]?.id ?? null : null; }
-  /** The Major Arcana you may lay: bound in the collection, and not laid elsewhere. */
-  get hand() { const laid = new Set(Object.values(this.laid).map((L) => L.card)); return (this.game.collection?.majors || []).filter((c) => c !== 'fool' && c !== this.pairCard && !laid.has(c)); }
+  /** DEBUG's lend row `spreads` (progress/lend.js): every Major yours to lay, bound or not; the collection itself is not touched. */
+  get lent() { return !!this.game.lend?.has?.('spreads'); }
+  /** The Major Arcana you may hold: bound in the collection (or every one, lent). */
+  get majors() { return this.lent ? ARCANA.map((A) => A.id) : (this.game.collection?.majors || []); }
+  /** The Major Arcana you may lay: yours (above), and not laid elsewhere. */
+  get hand() { const laid = new Set(Object.values(this.laid).map((L) => L.card)); return this.majors.filter((c) => c !== 'fool' && c !== this.pairCard && !laid.has(c)); }
   emit(k, e) { this.game.events?.emit(k, { ...e, by: 'courier' }); }
 
   /** Lay a spread: the cards in the last one come back to the hand. */
@@ -61,7 +66,7 @@ export class LaidSpread {
   /** A bound Major into a position (out of any other it was in); refused for the Present (your pair's) and the Fool's place. */
   lay(position, card, reversed = false) {
     const P = this.position(position);
-    if (!P || P.pair || P.fixed || !card || !this.game.collection?.has(`arcana.${card}`) || card === 'fool' || card === this.pairCard) return false;
+    if (!P || P.pair || P.fixed || !card || !this.majors.includes(card) || card === 'fool' || card === this.pairCard) return false;
     for (const [k, L] of Object.entries(this.laid)) if (L.card === card) delete this.laid[k];
     this.laid[position] = { card, reversed: !!reversed, at: now() };
     this.emit('spread.lay', { spread: this.spread, position, card, reversed: !!reversed });
@@ -101,7 +106,7 @@ export class LaidSpread {
       since: since('past') || since('future'), sinceOf: since, // (sinceOf: each position its own, once light() asks for it)
       fight: !!g.combat?.engaged, company: !!(g.party?.list?.length || g.guests?.list?.length),
       pool: g.lachryma?.fraction ?? 1, goals: goals.length ? goals.filter((x) => x.done).length / goals.length : 0,
-      pair: this.pairCard, bound: new Set(g.collection?.majors || []),
+      pair: this.pairCard, bound: new Set(this.majors),
     };
   }
 

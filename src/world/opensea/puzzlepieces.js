@@ -18,7 +18,8 @@
 // Prior art: as the rules' module: Islands of Insight, The Witness's anamorphic lines, Ocarina of Time's songs, Ratchet & Clank's
 // metal detector, Pokemon's Dowsing Machine, Animal Crossing's fossils.
 //
-//   new PuzzlePieces(room)   .update(dt)   .interact(P) -> bool (F)   .unearth(point, r) -> n   .deal
+//   new PuzzlePieces(room)   .update(dt)   .interact(P) -> bool (F)   .unearth(point, r) -> n   .deal   (the looks: game.puzzleLooks dresses
+//   .pairs[].at[].mesh, .lineups[].stone / .arcs, .echoes[].hearAt.mesh / .playAt.mesh / .sockets, and draws the dig and the opened box)
 //   events (each with `by`): sea.pair.half { id, shape }, sea.pair { id, shape, tier }, sea.lineup { id, charted }, sea.echo.hear { id },
 //   sea.echo { id }, sea.dig { id, tier, cubes, how }
 // ---------------------------------------------------------------------------------------
@@ -51,7 +52,7 @@ export class PuzzlePieces {
     const spot = (isl, salt, frac = 0.55) => { const r = seeded((salt * 2654435761) >>> 0); let best = null, bd = -1; for (let k = 0; k < 24; k++) { const a = r() * 6.283, d = isl.r * Math.max(frac, 0.5) * Math.sqrt(r()), p = isl.pos.clone().add(_a.set(Math.sin(a) * d, 0, Math.cos(a) * d)), dd = p.distanceTo(isl.secret.pos); if (dd > CLEAR) return p; if (dd > bd) { bd = dd; best = p; } } return best; };
     let salt = room.seed % 100000;
     // the pairs: the same carving on two islets
-    this.pairs = this.deal.pairs.map((p) => ({ ...p, at: [p.a, p.b].map((id) => { const isl = byId.get(id), pos = spot(isl, ++salt); const m = add(new THREE.Mesh(SHAPE[p.shape](), mat(p.colour))); m.position.copy(pos).setY(isl.top + 0.75); return { islet: id, pos }; }) }));
+    this.pairs = this.deal.pairs.map((p) => ({ ...p, at: [p.a, p.b].map((id) => { const isl = byId.get(id), pos = spot(isl, ++salt); const m = add(new THREE.Mesh(SHAPE[p.shape](), mat(p.colour))); m.position.copy(pos).setY(isl.top + 0.75); return { islet: id, pos, mesh: m }; }) }));
     // the line-ups: a spot on the shore, four arcs over the water that make one ring from its eye
     this.lineups = this.deal.lineups.map((L) => {
       const isl = byId.get(L.islet), out = _a.set(Math.sin(L.bearing), 0, Math.cos(L.bearing));
@@ -61,11 +62,11 @@ export class PuzzlePieces {
       const q = new THREE.Quaternion().setFromRotationMatrix(_m.makeBasis(x, y, dir)), arcs = [];
       const stone = add(new THREE.Mesh(new THREE.CylinderGeometry(0.9, 1, 0.2, 10), mat(0xc8beb0))); stone.position.copy(at).setY(at.y + 0.1);
       L.dists.forEach((d, k) => {
-        const rho = d * Math.tan(L.size), grp = new THREE.Group(), arc = new THREE.Mesh(new THREE.TorusGeometry(rho, d * 0.006, 5, 16, Math.PI / 2), mat(0xd8cfc0, { emissive: 0x000000 }));
+        const rho = d * Math.tan(L.size), grp = new THREE.Group(), arc = new THREE.Mesh(new THREE.TorusGeometry(rho, d * 0.006, 5, 16, Math.PI / 2), mat(0xd8cfc0, { emissive: 0x000000, fog: false }));
         arc.rotation.z = k * Math.PI / 2; grp.add(arc); grp.quaternion.copy(q); grp.position.copy(eye).addScaledVector(dir, d); add(grp); arcs.push(arc);
       });
       const far = eye.clone().addScaledVector(dir, L.dists[L.dists.length - 1]);
-      return { ...L, at, eye, dir, far, arcs };
+      return { ...L, at, eye, dir, far, arcs, stone };
     });
     // the echoes: a singing stone and a listening one with a socket a note
     this.echoes = this.deal.echoes.map((E) => {
@@ -159,13 +160,16 @@ export class PuzzlePieces {
     const g = this.game, cubes = cachePay(C.tier);
     this.room.puzzle.dug.add(C.id); this.room.dirty();
     g.cubes?.earn?.(cubes, 'cache');
-    g.fx?.absorbSparkle?.(C.ground.clone().setY(C.ground.y + 0.4));
-    g.glyphs?.pop?.('bang3', C.ground.clone().setY(C.ground.y + 0.9), { color: 0xffb27a, size: 0.6, life: 1 });
+    if (!g.puzzleLooks?.dig?.(C)) { // (the dig's moment is the look's: vfx/opensea/puzzlelooks.js; this the placeholder where it is not)
+      g.fx?.absorbSparkle?.(C.ground.clone().setY(C.ground.y + 0.4));
+      g.glyphs?.pop?.('bang3', C.ground.clone().setY(C.ground.y + 0.9), { color: 0xffb27a, size: 0.6, life: 1 });
+    }
     this.opened(C);
     this.emit('sea.dig', { id: C.id, tier: C.tier, cubes, how });
   }
   opened(C) {
     if (C.box) return void (C.box.visible = true);
+    const look = this.game.puzzleLooks?.box?.(C); if (look) { C.box = look; return; } // (the opened cache's look: vfx/opensea/puzzlelooks.js)
     const m = C.box = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.45, 0.55), mat(0x8a5a2a)); m.userData.zone = 'opensea';
     m.position.copy(C.ground).setY(C.ground.y + 0.2); this.game.scene.add(m);
   }

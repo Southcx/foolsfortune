@@ -16,7 +16,8 @@
 //   THE GRAB  LMB / RMB held in the air (skiff.js `grab`): a hand to the board's rail, over Skiff_Ollie's crouch and UAL's kneel
 //             (courier/skiff/grabreach.js: the under-pose here by the grab's weight, the reach in the skiff's hands())
 //   GRIND TRICK on a rail (skiff.js `grindTrick`): the tail slide a hand back to the stern's lip, the nose grind a crouch leant over
-//             the bow (grabreach.js, by the same weights as a grab)
+//             the bow, the 50-50 centred with the arms out, the boardslide straddling the rail with the arms out and the head turned down
+//             it (grabreach.js, by the same weights as a grab)
 //   PHASES    Skiff_Summon, Skiff_Mount, Skiff_Dismount, Skiff_Recall, Skiff_Bail (then the UAL get-up from the sand): the whole body
 //
 // Prior art: SSX's and Jet Set Radio's board stances (a carve as a held lean, a grab as a held air pose), Tony Hawk's ollie cut into

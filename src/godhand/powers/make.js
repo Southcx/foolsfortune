@@ -34,9 +34,10 @@ export const MAKE = {
       P.cap('totem', Math.round(P.ramp('totem', 'n')));
       const at = L.a.clone(), dur = P.ramp('totem', 'dur');
       g.creations?.raise('pillar', at, null, { r: 0.35, h: 1.8 });
+      const look = g.godhandLooks?.totem(at, feeling, P.domainColour('totem')); // (its band in the feeling: vfx/godhand/marks.js)
       const m = { feeling, kind: 'miracle', x: at.x, y: at.y, z: at.z, r: P.ramp('totem', 'r'), dur, t: 0, tick: 0, every: 0, totem: true };
       Mi.begin(m);
-      P.keep({ id: 'totem', tick: () => m.t >= m.dur || !Mi.live.includes(m), dispose() { const i = Mi.live.indexOf(m); if (i >= 0) Mi.end(i); } });
+      P.keep({ id: 'totem', tick: () => m.t >= m.dur || !Mi.live.includes(m), dispose() { look?.userData.dispose(); const i = Mi.live.indexOf(m); if (i >= 0) Mi.end(i); } });
       P.emit('totem', { feeling });
       return false;
     },

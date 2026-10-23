@@ -3,7 +3,8 @@
 // one mesh and collides it as one trimesh, remeshing only the chunks a stamp or the mending touched, a few a frame inside a time budget
 // (`CREATIONS.budgetMs`) so a sculpt never hitches. The mending takes a creation back from the outside in over about a game day, and the
 // volume it loses is poured back into the island's matter as its firm layer where it stood (godhand/islandmatter.js): nothing is made or lost.
-// Placeholder look: one material in the island's firm colour, smooth shaded (Calissa's to dress, by the island it stands on).
+// The look is Calissa's (vfx/godhand/matterlook.js): greenware raised, fired once Set, crazing as the mending eats it (how much a chunk has
+// been eaten, `eaten`, is kept here and written to its mesh as the look's craze).
 //
 // Prior art: Lysenko's chunked surface nets (remesh the touched chunk only); Minecraft's and Teardown's chunk-dirty queues; From Dust.
 //
@@ -12,7 +13,7 @@
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../core/physics.js';
 import { VoxelGrid, SHAPES, VOXEL } from './voxels.js';
-import { groundOf } from './matter.js';
+import { matterMaterial, matterAttrs } from '../vfx/godhand/matterlook.js';
 
 /** `budgetMs` real ms of remeshing a frame; `life` real seconds a 1 m thick wall stands (a game day); `mendEvery` real seconds between
  *  the mending's steps. The ebb a step follows from them: a 1 m wall's middle stands 0.25 above the surface (half its thickness over
@@ -27,8 +28,7 @@ export class Creations {
     this.parts = new Map(); // chunk key -> { mesh, body }
     this.queue = new Set();
     this.mendT = 0;
-    this.mat = new THREE.MeshStandardMaterial({ color: groundOf().firm.colour, roughness: 0.85 });
-    this.setMat = new THREE.MeshStandardMaterial({ color: 0x6e3a22, roughness: 0.55 }); // (set: darker, a little glossy; Calissa's to dress)
+    this.mat = matterMaterial('creation'); this.setMat = matterMaterial('set'); // (raised: greenware; set: fired)
     this.t = 0;
     // a creation set for good (Set at 99, GODHAND.md 11) is kept, as its chunks' densities in runs; the rest is the mending's
     game.save?.section('creations', { scope: 'world', version: 1,
@@ -44,7 +44,7 @@ export class Creations {
     const S = SHAPES[shape]; if (!S) return { volume: 0 };
     const { sdf, box } = shape === 'pillar' ? S(a, opts) : S(a, b, opts);
     const r = this.grid.stamp(sdf, box);
-    for (const k of this.grid.takeDirty()) this.queue.add(k);
+    for (const k of this.grid.takeDirty()) { this.queue.add(k); const c = this.grid.chunks.get(k); if (c) c.eaten = 0; } // (fresh clay: no crazing)
     return r;
   }
 
@@ -53,7 +53,9 @@ export class Creations {
     this.mendT += dt; this.t += dt;
     if (this.mendT >= CREATIONS.mendEvery) {
       const dk = (0.25 / CREATIONS.life) * this.mendT; this.mendT = 0;
-      for (const { k, lost } of this.grid.ebb(dk, (c) => c.forever || (c.setUntil ?? 0) > this.t)) this.giveBack(k, lost);
+      const held = (c) => c.forever || (c.setUntil ?? 0) > this.t;
+      for (const c of this.grid.chunks.values()) if (!held(c)) c.eaten = (c.eaten || 0) + dk; // (for the look's crazing)
+      for (const { k, lost } of this.grid.ebb(dk, held)) this.giveBack(k, lost);
       for (const k of this.grid.takeDirty()) this.queue.add(k);
     }
     if (!this.queue.size) return;
@@ -80,7 +82,9 @@ export class Creations {
     geo.setAttribute('position', new THREE.BufferAttribute(m.pos, 3));
     geo.setIndex(new THREE.BufferAttribute(m.idx, 1));
     geo.computeVertexNormals(); geo.computeBoundingSphere();
-    const C = this.grid.chunks.get(k), mesh = new THREE.Mesh(geo, C && (C.forever || (C.setUntil ?? 0) > this.t) ? this.setMat : this.mat);
+    const C = this.grid.chunks.get(k), ml = matterAttrs(geo), craze = Math.min(1, (C?.eaten || 0) / 0.15);
+    for (let i = 2; i < ml.length; i += 4) ml[i] = craze;
+    const mesh = new THREE.Mesh(geo, C && (C.forever || (C.setUntil ?? 0) > this.t) ? this.setMat : this.mat);
     mesh.castShadow = mesh.receiveShadow = true;
     this.group.add(mesh);
     const body = W.createRigidBody(RAPIER.RigidBodyDesc.fixed());

@@ -4,7 +4,8 @@
 // contract, and this runner gives them the hand's cursor, the island's matter, the ramp (progress/godpowers.js RAMP: its numbers by the
 // domain's level), marks on the ground, and what lasts (a portal, a ward, a totem: `keep`). Every act is an event `god.<id>` with `by`
 // and `act` (the domains' sources and dissonance reads it).
-// Placeholder looks throughout: plain rings and lines in the domain's colour (Calissa's to dress).
+// The looks are asked of `game.godhandLooks` (vfx/godhand/godhandlooks.js: a mark in the domain's colour, the Portal's eyes, the ward's
+// circle, ...); without it, plain rings and lines in the domain's colour.
 //
 // Prior art: the house's own God Arts (godhand/arts.js: begin on press, hold, end on release); Black & White 2's miracles that stand
 // (a totem is a miracle held); Populous's powers as a short list by kind.
@@ -103,14 +104,14 @@ export class GodPowers {
   }
 
   /** Every frame the hand is up: the selected power's passive (Read, Course) and the walk of taken creatures. */
-  passive(id, dt) { hideSight(id); HANDLERS[id]?.passive?.(this, dt); }
+  passive(id, dt) { hideSight(id, this); HANDLERS[id]?.passive?.(this, dt); }
 
   /** Every frame, hand up or not: what lasts. */
   update(dt) {
     if (!this.chatted && this.game.chat?.add) this.addChat();
     for (const k of [...this.kept]) if (this.kept.includes(k) && k.tick(dt)) { k.dispose?.(); const i = this.kept.indexOf(k); if (i >= 0) this.kept.splice(i, 1); } // (by identity: a tick may cap and remove others)
     for (const c of this.walking) this.step(c, dt);
-    for (let i = this.marks.length - 1; i >= 0; i--) { const m = this.marks[i]; if ((m.life -= dt) <= 0) { this.drop(m.obj); this.marks.splice(i, 1); } }
+    for (let i = this.marks.length - 1; i >= 0; i--) { const m = this.marks[i]; if ((m.life -= dt) <= 0) { this.drop(m.obj); this.marks.splice(i, 1); } else if (m.life < 0.3 && m.obj.material) m.obj.material.opacity = 0.55 * m.life / 0.3; } // (a flash mark fades out its last 0.3 real s)
   }
   keep(item) { this.kept.push(item); return item; }
   count(id) { return this.kept.filter((k) => k.id === id).length; }
@@ -120,8 +121,10 @@ export class GodPowers {
   emit(id, payload = {}) { this.emitted = true; this.game.events?.emit(`god.${id}`, { act: true, ...payload, ...(this.repeating ? { repeat: true } : {}), by: 'courier' }); }
   domainColour(id) { return DOMAIN_COLOUR[GOD_POWERS[id]?.domain] ?? 0xffffff; }
 
-  // ---- marks (placeholders: a ring on the ground, a line; flash marks go after `life` real seconds)
+  // ---- marks (a circle on the ground from the looks, else a plain ring; a line; flash marks go after `life` real seconds)
   ring(at, r, colour, life = 0) {
+    const L = this.game.godhandLooks;
+    if (L) { const m = L.mark(at, r, colour); if (life) this.marks.push({ obj: m, life }); return m; }
     const m = new THREE.Mesh(new THREE.RingGeometry(Math.max(0.05, r - 0.25), r, 48), new THREE.MeshBasicMaterial({ forceSinglePass: true, color: colour, transparent: true, opacity: 0.55, depthWrite: false, side: THREE.DoubleSide }));
     m.rotation.x = -Math.PI / 2; m.position.set(at.x, at.y + 0.07, at.z); m.renderOrder = 7;
     this.game.scene.add(m);
@@ -136,7 +139,7 @@ export class GodPowers {
     if (life) this.marks.push({ obj: m, life });
     return m;
   }
-  drop(obj) { if (!obj) return; this.game.scene.remove(obj); obj.geometry?.dispose(); obj.material?.dispose(); }
+  drop(obj) { if (!obj) return; if (obj.userData?.dispose) { obj.userData.dispose(); return; } this.game.scene.remove(obj); obj.geometry?.dispose(); obj.material?.dispose(); }
 
   // ---- what is on the island
   near(p, r) { return (this.game.creatures?.near?.(p, r) || []).filter((c) => c.alive && !c.friend); }

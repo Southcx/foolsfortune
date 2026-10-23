@@ -6,8 +6,8 @@
 // (godhand/matter.js), so two together make a third thing: Rain then Storm strikes the whole flood; Rain then Aurora freezes a lake to
 // walk on. With Shift held the sign calls its domain's EPIC miracle instead (progress/godpowers.js EPICS), paid as a release from the vessel (SPINE.md 4.3), one a game
 // hour. Said by events with `by`: god.miracle { feeling, size, score }, god.epic { epic, domain }.
-// The looks here are stand-ins (a ring on the ground in the feeling's colour, a flash for a bolt): Calissa's to dress, the weathers'
-// heavy looks to borrow (vfx/weather.js).
+// The looks are asked of `game.godhandLooks` (vfx/godhand/): the sign in the Soul Brush's ink, the circle, the weather's heavy look falling
+// over it (vfx/godhand/miraclefall.js, which finds each live miracle itself), Storm's bolts; without it, a plain ring and a flash.
 //
 // Prior art: Black & White 1 and 2 (the gesture is the spell; its size its strength); Okami's Celestial Brush (a sign drawn over the
 // world, read by its shape); Populous (the earthquake, the volcano, the flood); From Dust (a miracle changes the matter, not just
@@ -19,7 +19,7 @@ import * as THREE from 'three';
 import { sfx } from '../audio/sfx.js';
 import { COLOR } from '../progress/weather.js';
 import { recognize } from '../tools/soulbrush/gesture.js';
-import { MIRACLES, EPICS, EPIC_BY_SIGN, EPIC_EVERY, signOf, powerOpen, rampOf } from '../progress/godpowers.js';
+import { MIRACLES, EPICS, EPIC_BY_SIGN, EPIC_EVERY, signOf, powerOpen, rampOf, DOMAIN_COLOUR } from '../progress/godpowers.js';
 import { stream } from '../core/rng.js';
 const simRand = stream('godhand/miracles'); // (the simulation's chance: core/rng.js, the same twice)
 
@@ -32,14 +32,9 @@ export class Miracles {
   constructor(god) {
     this.god = god; this.game = god.game;
     this.live = []; this.pts = null; this.epicReady = 0;
-    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    svg.setAttribute('style', 'position:fixed;inset:0;width:100vw;height:100vh;pointer-events:none;z-index:5;display:none');
-    this.line = document.createElementNS('http://www.w3.org/2000/svg', 'polyline');
-    this.line.setAttribute('style', 'fill:none;stroke:#ffe0c0;stroke-width:4;stroke-linecap:round;stroke-linejoin:round;opacity:.85');
-    svg.appendChild(this.line);
-    document.body.appendChild(svg);
-    this.svg = svg;
   }
+  /** The drawn sign's ink (vfx/godhand/godsign.js), or null (nothing drawn). */
+  get sign() { return this.game.godhandLooks?.sign ?? null; }
 
   known(feeling) { const g = this.game; return !!g.lend?.has?.('feelings') || (g.ledger?.get?.(`feeling.known.${feeling}`) || 0) > 0; }
 
@@ -48,16 +43,17 @@ export class Miracles {
     const g = this.game, input = g.input;
     this.epicReady = Math.max(0, this.epicReady - dt);
     if (input.isDown('Mouse1')) {
-      if (!this.pts) { this.pts = []; this.svg.style.display = 'block'; }
+      if (!this.pts) { this.pts = []; this.sign?.begin(input.mx, input.my); }
       const last = this.pts[this.pts.length - 1];
       if (!last || Math.hypot(input.mx - last.x, input.my - last.y) > 3) {
         this.pts.push({ x: input.mx, y: input.my });
-        this.line.setAttribute('points', this.pts.map((p) => `${p.x},${p.y}`).join(' '));
+        this.sign?.extend(input.mx, input.my);
       }
     } else if (this.pts) {
-      const pts = this.pts, epic = input.isDown('ShiftLeft') || input.isDown('ShiftRight');
-      this.pts = null; this.svg.style.display = 'none'; this.line.setAttribute('points', '');
-      if (pts.length > 6) this.cast(pts, epic);
+      const pts = this.pts, epic = input.isDown('ShiftLeft') || input.isDown('ShiftRight'), S = this.sign;
+      this.pts = null; S?.lift();
+      const m = pts.length > 6 ? this.cast(pts, epic) : null;
+      S?.close(m ? '#' + (COLOR[m.feeling] ?? 0xffe0c0).toString(16).padStart(6, '0') : null); // (read and called: it takes in the feeling's colour; else it runs)
     }
   }
 
@@ -86,6 +82,7 @@ export class Miracles {
     const m = { feeling, kind: 'miracle', x: at.x, y: at.y, z: at.z, r: lerp(M.r[0], M.r[1], u) * big, dur: lerp(M.dur[0], M.dur[1], u), t: 0, tick: 0, every: 0 };
     this.begin(m); this.last = feeling; // (the last miracle's feeling: a Totem holds it, godhand/powers/make.js)
     g.events?.emit('god.miracle', { feeling, size: +u.toFixed(2), score: +(rec.score || 0).toFixed(2), level: g.rejection?.level ?? 0, by: 'courier' });
+    return m;
   }
 
   castEpic(id, at) {
@@ -99,12 +96,13 @@ export class Miracles {
     const m = { epic: id, kind: 'epic', feeling: E.sign, x: at.x, y: at.y, z: at.z, r: E.r, dur: E.dur, t: 0, tick: 0, every: 0 };
     this.begin(m);
     g.events?.emit('god.epic', { epic: id, domain: E.domain, by: 'courier' });
+    return m;
   }
 
   begin(m) {
     const g = this.game, F = g.matter?.ensure(this.god.jar.pos);
-    const ring = new THREE.Mesh(new THREE.RingGeometry(Math.max(0.1, m.r - 0.35), m.r, 64), new THREE.MeshBasicMaterial({ forceSinglePass: true, color: COLOR[m.feeling], transparent: true, opacity: 0.6, depthWrite: false, side: THREE.DoubleSide }));
-    ring.rotation.x = -Math.PI / 2; ring.position.set(m.x, m.y + 0.06, m.z);
+    let ring = g.godhandLooks?.miracleRing(m, DOMAIN_COLOUR[EPICS[m.epic]?.domain]); // (the feeling's circle, an epic's domain ring round it)
+    if (!ring) { ring = new THREE.Mesh(new THREE.RingGeometry(Math.max(0.1, m.r - 0.35), m.r, 64), new THREE.MeshBasicMaterial({ forceSinglePass: true, color: COLOR[m.feeling], transparent: true, opacity: 0.6, depthWrite: false, side: THREE.DoubleSide })); ring.rotation.x = -Math.PI / 2; ring.position.set(m.x, m.y + 0.06, m.z); }
     g.scene.add(ring);
     m.ring = ring;
     sfx.thump();
@@ -157,10 +155,13 @@ export class Miracles {
       F.fuse(at.x, at.z, 1.5);
       if (F.depthAt(at.x, at.z) > 0.05 && !g.bracelet?.gentle?.('spellscription')) for (const c of list) if (c.alive && F.depthAt(c.pos.x, c.pos.z) > 0.05) C.strike(c, c.pos, UP, power, 'miracle', 'courier', null, 'impact'); // (the whole pool is struck)
     }
-    const flash = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.2, 30, 5), new THREE.MeshBasicMaterial({ color: 0xfff6e0 }));
-    flash.position.set(at.x, at.y + 15, at.z);
-    g.scene.add(flash);
-    setTimeout(() => { g.scene.remove(flash); flash.geometry.dispose(); flash.material.dispose(); }, 120);
+    if (g.godhandLooks) g.godhandLooks.bolt(at); // (the caster shells' lightning, held a beat: vfx/godhand/miraclefall.js)
+    else {
+      const flash = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.2, 30, 5), new THREE.MeshBasicMaterial({ color: 0xfff6e0 }));
+      flash.position.set(at.x, at.y + 15, at.z);
+      g.scene.add(flash);
+      setTimeout(() => { g.scene.remove(flash); flash.geometry.dispose(); flash.material.dispose(); }, 120);
+    }
     g.fx?.impact?.(at, UP, { sparks: 14, dust: 6 });
     sfx.thump();
   }
@@ -198,10 +199,10 @@ export class Miracles {
   end(i) {
     const g = this.game, m = this.live[i];
     this.live.splice(i, 1);
-    g.scene.remove(m.ring); m.ring.geometry.dispose(); m.ring.material.dispose();
+    if (m.ring.userData.dispose) m.ring.userData.dispose(); else { g.scene.remove(m.ring); m.ring.geometry.dispose(); m.ring.material.dispose(); }
     if (m.decoy) { m.decoy.alive = false; const D = g.ai?.decoys; const j = D ? D.indexOf(m.decoy) : -1; if (j >= 0) D.splice(j, 1); }
     if (m.epic === 'maelstrom') this.bodies(m, (b, d, dx, dz) => b.setLinvel({ x: dx / d * 18, y: 6, z: dz / d * 18 }, true)); // (and flings it all out)
   }
 
-  clear() { for (let i = this.live.length - 1; i >= 0; i--) this.end(i); this.pts = null; this.svg.style.display = 'none'; }
+  clear() { for (let i = this.live.length - 1; i >= 0; i--) this.end(i); this.pts = null; this.sign?.fade(); }
 }

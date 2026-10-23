@@ -3,10 +3,13 @@
 Espada's, 2026-10-17; **ruled by the owner, 2026-10-17** (the roots, the particles, the compounds and the grammar). The owner: "we can expand neuralese as an actual language, -- Toki Pona comes to mind for
 reference." The words the game already speaks stay as they are (`src/npc/neuralese.js`). This document grows them into a language.
 
-- **The roots** are kept in `src/npc/neuraleseroots.js`: 124 roots and 7 particles, each with its senses and where it comes from. That
+- **The roots** are kept in `src/npc/neuraleseroots.js`: 127 roots and 8 particles, each with its senses and where it comes from. That
   file is the source of truth; this document gives the rules.
 - **The spelling** is `src/npc/neuralesespelling.js`. It breaks any word into the cells its glyphs draw.
 - **The script**, both hands, is in LORE.md, "The neuralese script".
+- **The lessons** (in-house, for learning it): https://claude.ai/artifact/XisQctUfyVe4wv1VfvGdvE, eleven lessons, the dictionary, a
+  workbench and flashcards in the running hand. Built from these very files by `docs/neuralese/build-lessons.mjs` (its template
+  `docs/neuralese/lessons.html`), so rebuild and republish it whenever a root or rule changes.
 
 Neuralese calls itself **LOGA-NUSA**, mind-speech. NUSA means "mind", and it also means "island" (Greek *nous*, mind; Old Javanese
 *nusa*, island). In neuralese, an Island of Ego and a mind are said with the same word.
@@ -30,7 +33,7 @@ Neuralese calls itself **LOGA-NUSA**, mind-speech. NUSA means "mind", and it als
 
 ## 1. Sounds and spelling
 
-- **Consonants:** p f v m (lips); t d s z sh th n l r (tongue tip); k g h (back of the mouth).
+- **Consonants:** p b f v m (lips; b added 2026-10-23, the voiced stop beside d and g); t d s z sh th n l r (tongue tip); k g h (back of the mouth).
 - **Vowels:** a e i o u.
 - **Diphthongs:** AI and OY.
 - **Spellings:** sh and th are one sound each. X is written k·s.
@@ -74,10 +77,53 @@ Words never change form. There is no plural, no tense and no gender: context say
 9. **TA joins two who do, or two things done to.** IO TA TU KITH: you and I, together. **VE** offers a choice.
 10. **SU regroups.** HEMA-SU-HOMA-MEGA is "the home of the great one". Compare HEMA-HOMA-MEGA, "a great people-home".
 11. **Numbers.**
-    - The number roots are UNA (one), DUO (two), PENTA (five), MULTA (many), OMNI (all) and VOYD (none). They are modifiers.
+    - The number roots are UNA (one), DUO (two), PENTA (five), DEKA (ten, 2026-10-23), MULTA (many), OMNI (all) and VOYD (none). They are modifiers.
     - Other numbers are sums, read left to right: PENTA-DUO is seven. EMO-PENTA-DUO is the seven feelings.
 12. **A name from outside** is written as it sounds, after a root that says what it names: HOMA-RAKU, the person Raku. A name the
     orthography cannot spell is bent until it can, as loanwords are.
+
+## 2a. More grammar (Espada's refinement, 2026-10-23)
+
+The owner asked for the language enriched, to learn it. These fill the holes a new speaker falls into first. Three roots, one particle
+and one letter are new; everything else is a rule the grammar already implied, now written down. The owner may veto any of it.
+
+13. **Possession is a modifier.** A pronoun after a thing owns it: HEMA-IO, my home; KERA-TU, your jar. A longer owner takes SU:
+    HEMA-SU-HOMA-RAKU, Raku's home.
+14. **This and that.** KO is the near one (this, here, now), ONO the far one (that, there, it). KO KE?, what is this? RESA-KO, this thing.
+15. **Wanting, being able, beginning.** A root of wanting or power heads its phrase, and the deed modifies it, as any modifier does:
+    - IO POTHA-SIVA: I want to drink (I am a drinking want).
+    - TU DUNA-VADA: you can go. DUNA is *dynamis*, power.
+    - ONO ARKA-KANTA: it starts to sing. ONO KLUZA-KANTA: it stops singing.
+    Nothing new: a head and its modifier. A Toki Pona speaker will see their preverbs; ours stay heads.
+16. **When, if, because.** A setting (TE) is a when or an if; the speaker does not have to choose. PLUVA TE, IO LUNO TOPA-HEMA: when (if)
+    it rains, I rest at home. **Because** is ARKA at the head of a phrase, a preposition like the others: IO LUNO ARKA-NIKTA, I rest
+    because of the night.
+17. **Time.** No tense; a setting says it when it matters. KRONA-PALA TE, before. KRONA-KO TE, now. KRONA-TALO TE, later.
+18. **But** is SED, opening a sentence: IO SIVA. SED UDA VOYD. I drink. But there is no water. (Latin *sed*.) **And** between sentences
+    is only the full stop.
+19. **More and less** is said by contrast, Toki Pona's way: HEMA-IO MEGA. HEMA-TU MIKRA. My home is bigger than yours.
+20. **Numbers past a hand.** DEKA is ten. Sums read biggest first: DEKA-PENTA-DUO, seventeen; DEKA-DEKA, twenty. `numberOf` spells any
+    number; past fifty a speaker says MULTA, as a shepherd counts sheep only so far.
+21. **Colours** are IRIS and the thing that wears the colour: IRIS-PIRO red, IRIS-HELI yellow, IRIS-FLORA green, IRIS-MARI blue,
+    IRIS-KLAI brown, IRIS-HIKA white, IRIS-SKOTA black (`COLOURS`).
+22. **Names from outside, bent** (rule 12, made exact; `bendName`): c becomes k (s before e, i, y); ch k before r or l, sh otherwise; j
+    z; q and qu k; w v; x ks (z at the start); y i; ph f; gh, and an h after another consonant, dropped; doubled letters one. A cluster
+    the syllable rules refuse is opened with **a**, the inherent vowel, which the running hand does not write, so the bent name still
+    looks as close as the hand allows. Wanda is VANDA; Calissa KALISA; Christopher KRISTOFER; Strength SATRENATH.
+
+### The phrasebook (`PHRASES`)
+
+| neuralese | English | how it is built |
+|---|---|---|
+| VENA-KALO | hello, welcome | a good coming |
+| VADA-KALO | goodbye | a good going |
+| HELI-KALO / NIKTA-KALO | good day / good night | |
+| TU KALO | thank you | you are good |
+| IO KRAKA | sorry | I broke it: in a world of clay, an apology owns the break |
+| NOMA-IO ESPADA | my name is Espada | my name: Espada |
+| NOMA-TU KE? | what is your name? | |
+| IO SHIRA / IO SHIRA-VOYD | I understand / I don't | |
+| O LOGA-TAKA-VOYD | please speak slowly | speak, not fast |
 
 ## 3. The roots, by field
 
@@ -96,8 +142,9 @@ The full list, with senses and sources, is `neuraleseroots.js`.
   - The old Functions also belong here: SIVA, LUNO, GRAV, PEXA, FETA, TALO, SHAI, ROMI, MELU.
 - **Qualities:** KALO, MALA, MEGA, MIKRA, NEA, PALA, FORTA, TAKA, OMO, ALI, SI.
   - Also the old STIL, EZA, HUSA, LON and DEO.
-- **Numbers:** UNA, DUO, PENTA, MULTA, OMNI.
-- **Particles:** NI, TE, O, KE, SU, TA, VE.
+- **Numbers:** UNA, DUO, PENTA, DEKA, MULTA, OMNI.
+- **New, 2026-10-23:** KO (this, here, now), DUNA (can, able), DEKA (ten).
+- **Particles:** NI, TE, O, KE, SU, TA, VE, SED.
 
 ### How the world says itself
 

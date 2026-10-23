@@ -12,10 +12,12 @@
 //   Places: lips | tip | back. Manners: stop | fricative | nasal | liquid (a fricative's mark: tick | ticks | cross; a liquid's: in | out).
 //   Vowels: a (inherent, unwritten in the running hand) | i (above) | u (below) | e (before) | o (after). Throws on a word the
 //   orthography cannot spell, so a bad root is caught where it is written.
+//   bendName('Wanda') -> 'VANDA'   (a name from outside bent until it spells, as loanwords are: NEURALESE.md 2, rule 12; 2a, names)
 // ---------------------------------------------------------------------------------------
 
 const CONSONANTS = {
   p: { place: 'lips', manner: 'stop', voiced: false },
+  b: { place: 'lips', manner: 'stop', voiced: true }, // (2026-10-23: the voiced stop at the lips, beside d and g; both hands draw it from its features)
   f: { place: 'lips', manner: 'fricative', voiced: false, mark: 'tick' },
   v: { place: 'lips', manner: 'fricative', voiced: true, mark: 'tick' },
   m: { place: 'lips', manner: 'nasal', voiced: true },
@@ -100,3 +102,33 @@ export const cellsOf = (word) => parse(word).map((s) => ({
   vowels: s.vowels,
   coda: letterOf(s.coda),
 }));
+
+// a name from outside, bent until the orthography can spell it (docs/NEURALESE.md 2a): the missing letters swapped for the nearest
+// (c k or s, ch k or sh, j z, q and qu k, w v, x ks (z first), y i, ph f, gh and a lone h after a consonant dropped, ng n), doubled letters made one, and a cluster the
+// rules refuse opened with a: the inherent vowel, unwritten in the running hand, so the bent name still looks as close as the hand allows
+// (Japanese loanwords open theirs with u: Christmas, kurisumasu).
+const runOk = (run, at) => at === 'start' ? onsetOk(run) : at === 'end' ? run.length <= 1
+  : (() => { let k = Math.min(run.length, 2); while (k > 0 && !onsetOk(run.slice(run.length - k))) k--; return run.length - k <= 1; })();
+export function bendName(name) {
+  let w = String(name).toLowerCase().replace(/[^a-z]/g, '');
+  w = w.replace(/^x/, 'z').replace(/x/g, 'ks').replace(/gh/g, '').replace(/ph/g, 'f').replace(/ck/g, 'k').replace(/ch(?=[rl])/g, 'k').replace(/ch/g, 'sh').replace(/qu/g, 'k')
+    .replace(/c(?=[eiy])/g, 's').replace(/c/g, 'k').replace(/q/g, 'k').replace(/j/g, 'z').replace(/w/g, 'v').replace(/y/g, 'i')
+    .replace(/ng(?![aeiou])/g, 'n').replace(/([^aeioust])h/g, '$1').replace(/([a-z])\1+/g, '$1');
+  if (!w) return '';
+  if (!/[aeiou]/.test(w)) w += 'a';
+  for (let tries = 0; tries < 12; tries++) {
+    try { parse(w); return w.toUpperCase(); } catch { /* open the first cluster the rules refuse */ }
+    const us = units(w), out = []; let run = [], fixed = false, at = 'start';
+    const flush = () => {
+      if (!fixed && run.length && !runOk(run, at)) {
+        fixed = true;
+        if (at === 'end') out.push(...run.slice(0, -1), 'a', run[run.length - 1]); else out.push(run[0], 'a', ...run.slice(1));
+      } else out.push(...run);
+      run = [];
+    };
+    for (const u of us) { if (u.c) { run.push(u.c); continue; } flush(); at = 'mid'; out.push(u.text); }
+    at = 'end'; flush();
+    w = out.join('');
+  }
+  return w.toUpperCase();
+}
