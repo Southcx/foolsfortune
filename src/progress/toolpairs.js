@@ -13,7 +13,8 @@
 //
 //   TOOL_IDS   SUB_GIFTS[id] -> { verb, does, passive }   PAIRS -> [{ n, card, label, tools: [a, b], why, special }]
 //   pairKey(a, b) -> 'a+b' (sorted)   pairOf(a, b) -> the pair's entry | null   pairsOf(id) -> the six pairs a tool is in
-//   START -> { main, sub } (a new save's pair: the Magician)
+//   START -> { main, sub } (a new save's pair: the Magician)   swapRefusal(game) -> null | the reason a change of main or sub is refused now
+//   (the belt's mayEquip asks it and says the reason at the point of use: tools/belt.js, Petra's)
 // ---------------------------------------------------------------------------------------
 
 /** The seven tools, in the belt's order. */
@@ -67,3 +68,16 @@ export const pairOf = (a, b) => (a && b && a !== b ? BY_KEY.get(pairKey(a, b)) ?
 export const pairsOf = (id) => PAIRS.filter((p) => p.tools.includes(id));
 /** A new save's pair (TOOLS-TOGETHER.md 8: the psygun is the most accessible tool). */
 export const START = { main: 'psygun', sub: 'sondelass' };
+
+/** THE SWAP RULE (PNEUKA-BOX.md 1; TOOLS-TOGETHER.md 8): a change of main or sub is made out of a fight, so the build is chosen before
+ *  the fight, never dodged inside it (Monster Hunter's loadout at camp, Hades' weapon at the courtyard). The Box opens anywhere, so
+ *  anywhere is allowed but these: a fight (`game.combat.engaged`: a notice until the last threat eases off), a puzzle duel, the rail (a crossing sailed), a
+ *  race at the Raceway, a seat at Raku's tables. Null when allowed; else the reason, in the log's words (placeholders for Espada). */
+export function swapRefusal(game) {
+  if (game?.combat?.engaged) return 'You cannot change tools in a fight.';
+  if (game?.duel?.active) return 'You cannot change tools in a duel.';
+  if (game?.emocean?.stage?.active || game?.voyage?.sailing) return 'You cannot change tools at sea.';
+  if (game?.race?.running) return 'You cannot change tools mid-race.';
+  if (game?.bazaar?.session) return 'You cannot change tools at a table.';
+  return null;
+}

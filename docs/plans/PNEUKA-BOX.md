@@ -106,11 +106,36 @@ Courier as a System window in the air.
   - The rules side is mine: the loadout's data, the pair's card and its special's state, and the swap rule.
   - The parts in your files I build with your yes, on your terms, as with K1.
 
-## 5. The review (to come)
+## 5. The review
 
-Judged on two things the owner named:
-- **novelty:** has a game done this, and do we add something;
-- **cohesion of execution:** one look, the house rules, the overlay's law, and what it costs at the gate.
+**Petra's answer** (2026-10-23, her handoff `2026-10-23-from-petra-pneuka-box-function.md`):
+- **The function is common to all three concepts** and is most of the work. The belt becomes the loadout: `main`, `sub`,
+  `equip(id, as)`, `mayEquip(id)`, `pair`. `isWorn` narrows to "main or sub", so its 34 readers keep working. The five tools not worn leave
+  the 56 slots for the loadout's shelf. `kit` goes to version 2.
+- **Her verdicts:** A is the cheapest (DOM, choice cards, and the Major Arcana faces already in `bazaarAtlas`). B is a no (it breaks the
+  56 slots). C is the most novel but the dearest (new programs, world-space picking, a fight going on round the window).
+- **Her lean:** A's spread and tray, with one thing from C: the Courier holds the main and the sub up in the world beside the page.
+- **Keys:** R can't be "tap for the sub, hold for the main": Gulp is a parry and can't wait for the key to come up. So the mains' own R
+  moves leave R.
+
+**Ruled (Dovina, 2026-10-23):**
+- **The quick taps** go to MMB while the psygun is the main (MMB is free for the psygun).
+- **The Dreamquake** goes to the pick's charged LMB.
+- **The Tidecutter** retires into RMB's specials.
+- **The swap rule** is `swapRefusal(game)` in `progress/toolpairs.js`; the belt's `mayEquip` asks it. Change tools anywhere the Box opens,
+  except in a fight, a puzzle duel, at sea, mid-race or at one of Raku's tables. The log says why at the point of use.
+
+**Who builds what:**
+- **Petra:** the belt, the keys out of the tools, each tool's `lend()` (with Calissa's gesture clips), the Box's data and save, the
+  Shrine's THE BANK row, and the pruning in her files.
+- **Dovina:** `pneuka/ui.js` and `pneuka/loadout.js` (the window), `toolpairs.js`, the swap rule and the specials' state.
+- **Calissa:** the look of the window.
+
+**Judged on two things the owner named:**
+- **Novelty:** has a game done this, and do we add something?
+- **Cohesion of execution:** one look, the house rules, the overlay's law, and what it costs at the gate.
+
+The pick waits for Calissa's mockup.
 
 ## 6. The keys today, and what main and sub free (the audit, 2026-10-23)
 
