@@ -156,7 +156,7 @@ export const EGREGORE_SHAPES = Object.keys(SHAPES);
 let SHARED = null; // (one material for every body: the islet program)
 /** One species' placeholder body, scaled to its size; `mat` the islet program's material to draw it with (one shared, by default). */
 export function egregoreBody(species, { mat = null } = {}) {
-  const S = SHAPES[species] || SHAPES.sealFolk, E = EGREGORES[species] || {}, feel = EGREGORE_FEEL[species] || 'wonder';
+  const S = SHAPES[species] || SHAPES.sealFolk, E = EGREGORES[species] || {}, feel = E.feel || EGREGORE_FEEL[species] || 'wonder'; // (Dovina's ruled data first, 978c0355; this table the fallback until it reaches main)
   const k = new IsletKit(), rng = seeded(species.length * 7919 + 13);
   S.build(k, COLOR[feel] ?? 0xffffff, rng);
   const b = k.build(), mesh = new THREE.Mesh(b.geo, mat || (SHARED ||= isletMaterial())), group = new THREE.Group();
