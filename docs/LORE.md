@@ -220,9 +220,29 @@ Chaos digs it up cheap and Law buys it dear; the hauler lives in between. Letty'
     its own finger *(the owner, 2026-10-23)*: **the d4 the little finger, the d6 the ring finger, the d8 the middle finger, the d10 the
     index finger** (the suits climb the hand: fire, earth, air, water), **the d12 the thumb**, and **the d20 the palm**, where the Major
     Arcana are read. The palm die is the palm's own stone. The d100 (two d10s) has no finger yet: *open*.
-    - *A footnote the owner may take or leave:* palmistry already gives each finger a planet: the index Jupiter, the middle Saturn, the
-      ring the Sun, the little finger Mercury, and the thumb's mount Venus. The planets are the domains' (CLASSES.md 5), so a finger
-      could carry its domain as well as its suit.
+    - **Palmistry** *(taken in by the owner, 2026-10-23)*. The hand already carries the seven classical planets, and the planets are
+      the domains' (CLASSES.md 5), so the god hand is the psyche drawn as a hand. Five sit at the fingers' roots, two on the palm:
+
+      | where | palmistry's mount | planet | domain | knucklebone |
+      | --- | --- | --- | --- | --- |
+      | the index finger | Jupiter | Jupiter | Ouranurgy | d10, Cups |
+      | the middle finger | Saturn | Saturn | Alteration | d8, Swords |
+      | the ring finger | Apollo | the Sun | Possession (Divination if the swap is ruled) | d6, Pentacles |
+      | the little finger | Mercury | Mercury | Spellscription | d4, Wands |
+      | the thumb's root | Venus | Venus | Manifestation | d12, the zodiac |
+      | the palm's heart | Mars (the plain and the two mounts) | Mars | Psychokinesis | d20, the Majors |
+      | the palm's outer edge | Luna | the Moon | Divination (Possession if the swap is ruled) | d20, the Majors |
+
+      The swap (Divination to the Sun, Possession to the Moon) is Espada's proposal, still the owner's to rule; the hand reads true
+      either way. The Moon's mount on the outer palm is where palmists read the imagination and the unconscious, the Emocean's own
+      country.
+    - *Proposals, Dovina's to make rules of if wanted:*
+      - **The four great lines as four readings of your play**, read from the ledger as the Assay is: the life line (how far you have
+        gone: the explored area, the crossings), the head line (what you know: the neuralese glossed, the bestiary), the heart line (the
+        feelings awakened, the bonds in the garden), the fate line (Saturn's: the achievements). Drawn on the god hand's palm, deepening
+        as they grow.
+      - **The hand's element**, palmistry's four hand shapes (earth square and short-fingered, air square and long, fire long-palmed
+        and short, water long and long): the god hand takes the shape of the suit you lean on most.
   - **The name.** *Pneuka* is *pneuma*, breath: breath's stones in the breath's jar. "Stone" is three things at once: the gemstone (the
     set's mineral), the die (stones were cast before bones were), and stoneware (clay fired hard, the folk's own tier). On screen the
     label is plain: **dice**.

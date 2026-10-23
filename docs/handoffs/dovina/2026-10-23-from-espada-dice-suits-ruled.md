@@ -22,3 +22,9 @@ each finger a planet (index Jupiter, middle Saturn, ring the Sun, little Mercury
 the owner's call. LORE.md 4 has it.
 
 **And the d12, ruled:** the zodiac, Western and Chinese both (twelve signs, twelve animals). It is no longer open.
+
+**And palmistry, taken in by the owner.** The seven classical planets sit on the hand (the mounts): Jupiter index, Saturn middle, the
+Sun ring, Mercury little finger, Venus the thumb's root, Mars the palm's heart, the Moon the palm's outer edge. Through CLASSES.md 5 that
+puts every domain on the god hand, with its knucklebone. LORE.md 4 has the table and two proposals for you if you want them as rules:
+the four great lines as four ledger readings (life, head, heart, fate), and the god hand's shape by the suit you lean on (palmistry's
+four elemental hands). The Sun and Moon rows still wait on the Divination and Possession swap.
