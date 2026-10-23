@@ -110,8 +110,8 @@ export class Underside {
     const row = el('div', 'us-row');
     if (!this.slim) row.appendChild(this.cloth(S, cells)); // (the view shows the cloth itself, under the Courier's feet)
     const side = el('div', 'us-side');
-    side.appendChild(el('div', 'us-note', this.held ? `Holding <b>${this.cardName(this.held)}</b>: pick an empty place ${this.slim ? 'round you' : 'on the cloth'}.` : `Pick a card from the hand${this.slim ? ' fanned before you' : ''}, then an empty place. A laid card: click to take it back, right-click to reverse it.`));
-    if (!this.slim) side.appendChild(this.handRow()); // (the view fans the hand itself before the Courier, pickable: one hand, not two)
+    side.appendChild(el('div', 'us-note', this.held ? `Holding <b>${this.cardName(this.held)}</b>: pick an empty place ${this.slim ? 'round you' : 'on the cloth'}.` : `Pick a card from the hand, then an empty place. A laid card: click to take it back, right-click to reverse it.`));
+    side.appendChild(this.handRow()); // (the one hand: the view's fan is off, Calissa's READING_VIEW.hand.show)
     side.appendChild(this.tallies());
     row.appendChild(side);
     wrap.appendChild(row);
