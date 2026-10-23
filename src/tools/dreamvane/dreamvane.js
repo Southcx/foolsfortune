@@ -253,6 +253,14 @@ export class Dreamvane extends HeldTool {
     P.bodyYaw = P.yaw;
     sfx.toss?.(); g.events?.emit('fork.throw', { by: 'courier' });
   }
+  /** The sub's Lure throw (R: tools/belt.js): the fork thrown at once from the heel where the vane hangs; R again calls it back. */
+  lend() {
+    const F = this.fork;
+    if (!this.enabled) return false;
+    if (F.state === 'heel') { this.throwFork(); return F.state === 'fly'; }
+    if (F.state !== 'back') this.recall();
+    return false;
+  }
   recall() { const F = this.fork; if (F.state === 'heel') return; F.state = 'back'; F.t = 0; F.ent = null; sfx.whoosh?.(0.5); }
   /** Back in the heel at once (put away while it was out). */
   home() { const F = this.fork; F.state = 'heel'; F.ent = null; if (F.mesh) this.game.scene.remove(F.mesh); this.model.setFork(true); }

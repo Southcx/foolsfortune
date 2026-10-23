@@ -21,6 +21,7 @@ import { sfx } from '../../audio/sfx.js';
 import { stream, randDir } from '../../core/rng.js';
 import { GunMoves, FAN_KEY } from './gunmoves.js';
 import { VariantPlay } from './variantplay.js';
+import { lendHand } from '../lend.js';
 const simRand = stream('tools/psygun/weapon'); // (the simulation's chance: core/rng.js, the same twice)
 
 const UP = new THREE.Vector3(0, 1, 0);
@@ -121,7 +122,8 @@ export class Weapon {
     const was = this.drawT;
     // (this used to step back down every other frame once fully drawn - the drawn-state flicker)
     const hands = this.game.belt?.hands ?? 1; // (Dexterity: draw and stow faster, tools/belt.js)
-    if (this.drawTarget > this.drawT) this.drawT = Math.min(this.drawTarget, this.drawT + dt * hands / W.drawTime);
+    const free = this.game.belt ? this.game.belt.mayDraw(this.game.belt.get('psygun')) : true; // (the hands free of every other tool: drawn as the main while the last one goes back, it waits)
+    if (this.drawTarget > this.drawT && free) this.drawT = Math.min(this.drawTarget, this.drawT + dt * hands / W.drawTime);
     else if (this.drawTarget < this.drawT) this.drawT = Math.max(this.drawTarget, this.drawT - dt * hands / W.holsterTime);
     if (was === 0 && this.drawT > 0) sfx.draw?.();
     if (was > 0.3 && this.drawT <= 0.3 && this.drawTarget === 0) sfx.holster?.();
@@ -147,7 +149,7 @@ export class Weapon {
     //  read here, after the holster has run, and only the gun's own view of the keys holds them all up)
     const prone = !!this.game.proneHolster?.busy;
     if (prone) { this.buffer = 0; this.pressT = -1; this.wantShell = false; this.game.shells?.specials?.cancelPaint(); }
-    const toolOut = prone || (belt ? belt.others(belt.get('psygun')) || !belt.isMain('psygun') : !!player.techs?.toolOut); // (another tool is out, or the psygun is not the main: it stays on the back, and the mouse is that tool's; as the sub it lends its shot on R, lend())
+    const toolOut = prone || (belt ? belt.tools.some((t) => t.id !== 'psygun' && t.wants) || !belt.isMain('psygun') : !!player.techs?.toolOut); // (another tool asked out, or the psygun is not the main: it stays on the back, and the mouse is that tool's; as the sub it lends its shot on R, lend(). One still going back is waited for: updateHolster's mayDraw)
     if (toolOut) { this.drawTarget = 0; this.manualHolster = true; if (this.holding || this.charge > 0) this.cancelCharge(); if (this.moves.busy) this.moves.cancel(); }
     // (the trigger with something close in front is the pistol whip, not a shot: the press is spent, and the button held up until let go;
     // aiming down the sights, or in first person, the trigger is the trigger)
@@ -353,8 +355,18 @@ export class Weapon {
     return { origin, dir: P.sub(origin).normalize() };
   }
 
+  /** THE SNAP SHOT (the psygun as the sub, R: tools/belt.js): one round from the hand where the main aims, paid now and fired once the
+   *  body is posed (tryFire). Refused while the gun cools or reloads. */
+  lend() {
+    if (this.cooldown > 0 || this.reloading || this.lentDue) return false;
+    if (!this.game.lachryma.spend(T.lachryma.shotCost, 'shot')) { sfx.fizzle(); this.game.lachrimeterTube?.pulse(); return false; }
+    this.lentDue = true; this.cooldown = T.weapon.fireInterval;
+    return true;
+  }
+
   /** Called after the gun is posed so the muzzle is current. */
   tryFire(camera, player, character) {
+    if (this.lentDue) { this.lentDue = false; this.shoot(camera, player, character, { spread: 1.5, recoil: 0.35, from: lendHand(this.game, new THREE.Vector3()) }); }
     this.moves.afterHands(character, player);
     // the fan's rounds, on the slaps (paid for when it began: gunmoves.js)
     for (; this.moves.fanDue > 0; this.moves.fanDue--) this.shoot(camera, player, character, { spread: 3, recoil: 0.45 });
@@ -387,9 +399,10 @@ export class Weapon {
     this.play.plain(camera, player, character); // (one round, or the variant's own: a flare, seven pellets)
   }
 
-  /** One round out of the muzzle, already paid for: its spread (x `spread`), its ray, what it hits, and its kick (x `recoil`). */
-  shoot(camera, player, character, { spread: spreadMul = 1, recoil = 1, dir: given = null, range = T.weapon.range, power = 1, knock = 0, quiet = false, pellets = 0 } = {}) {
-    if (!quiet) { this.shots++; this.moves.shot(); }
+  /** One round out of the muzzle, already paid for: its spread (x `spread`), its ray, what it hits, and its kick (x `recoil`). `from`: a
+   *  point it leaves from instead of the muzzle (the snap shot's hand: the gun is on the back, its moves and vent not played). */
+  shoot(camera, player, character, { spread: spreadMul = 1, recoil = 1, dir: given = null, range = T.weapon.range, power = 1, knock = 0, quiet = false, pellets = 0, from = null } = {}) {
+    if (!quiet) { this.shots++; if (!from) this.moves.shot(); }
     const game = this.game;
 
     // spread cone around the crosshair
@@ -405,14 +418,14 @@ export class Weapon {
     let hit = game.physics.raycast(ray.origin, ray.dir, range, player.collider);
     if (game.knacks?.on('wideBore') && !hasTag(hit?.entity, 'hurtable')) hit = this.wideBore(ray, range, hit) || hit; // (the knack: a creature's mark a third wider)
 
-    const muzzle = character.gunPoint('muzzle', new THREE.Vector3());
-    const gunFwd = new THREE.Vector3(1, 0, 0).applyQuaternion(character.gun.quaternion);
+    const muzzle = from ? from.clone() : character.gunPoint('muzzle', new THREE.Vector3());
+    const gunFwd = from ? dir.clone() : new THREE.Vector3(1, 0, 0).applyQuaternion(character.gun.quaternion);
     const end = hit ? hit.point : camera.position.clone().addScaledVector(dir, range);
     game.fx.tracer(muzzle, end);
     if (!quiet) {
       game.fx.muzzleFlash(muzzle, gunFwd);
       sfx.gunshot();
-      game.events?.emit('shot.fire', { dir: dir.clone(), charged: false, air: !player.grounded, ent: hit?.entity ?? null, at: end.clone(), ...(pellets ? { pellets } : {}) }); // (what it hit and where: the Throwing Room's drills count by it; a volley of pellets once)
+      game.events?.emit('shot.fire', { dir: dir.clone(), charged: false, air: !player.grounded, ent: hit?.entity ?? null, at: end.clone(), ...(pellets ? { pellets } : {}), ...(from ? { lent: true } : {}) }); // (what it hit and where: the Throwing Room's drills count by it; a volley of pellets once)
       game.ai?.stimuli.emit('noise', player.pos, { radius: 22, strength: 1, by: 'courier', source: player }); // (heard: creatures/ai/stimuli.js)
     }
 
@@ -425,7 +438,7 @@ export class Weapon {
     player.addRecoil(T.recoil.kickPitch * m, (simRand() * 2 - 1) * T.recoil.kickYaw * m);
     this.kickV += recoil * T.recoil.gunRecoverSpeed * Math.E;
     this.bloom = Math.min(T.weapon.bloomMax, this.bloom + T.weapon.bloomPerShot);
-    this.vent(character);
+    if (!from) this.vent(character);
     return end;
   }
 

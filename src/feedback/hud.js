@@ -7,15 +7,13 @@
 //
 // Prior art: the PS2 shooters' minimal HUDs (Ratchet & Clank's reticle and ammo, Metroid Prime's visor kept to the edges).
 //
-//   const H = new Hud()   H.update(dt, { spreadDeg, fov, fp, ads, charge, speed, move, gunOut, debug })   H.hitmarker(kill)
+//   const H = new Hud()   H.update(dt, { charge, speed, move, debug })   H.hitmarker(kill)   (the reload is the cylinder's beats: vfx/psyguncylinder.js)
 // ---------------------------------------------------------------------------------------
 
 export class Hud {
   constructor() {
     this.el = {
       hit: document.getElementById('hitmarker'),
-      reload: document.getElementById('reloadbar'),
-      reloadFill: document.querySelector('#reloadbar i'),
       charge: document.getElementById('charge'),
       speed: document.getElementById('speed'),
       chargeArc: document.querySelector('#charge circle.arc'),
@@ -30,7 +28,7 @@ export class Hud {
     this.el.hit.classList.toggle('kill', !!kill);
   }
 
-  update(dt, { spreadDeg, fov, reloadT, fp, ads, charge = 0, speed = 0, move = '', gunOut = true, debug = false }) {
+  update(dt, { charge = 0, speed = 0, move = '', debug = false }) {
     // speedometer (with a short peak hold, for tuning movement): a tuning tool, so only with the diagnostics up (F3): live numbers are
     // not the HUD's to show (CLAUDE.md, Feedback; docs/ART.md precept 6)
     if (debug !== this.debugShown) { this.debugShown = debug; this.el.speed.style.display = debug ? '' : 'none'; }
@@ -46,8 +44,5 @@ export class Hud {
     this.el.charge.classList.toggle('full', charge >= 1);
     this.hitT -= dt;
     this.el.hit.style.opacity = this.hitT > 0 ? 1 : 0;
-
-    this.el.reload.style.opacity = reloadT >= 0 ? 1 : 0;
-    this.el.reloadFill.style.width = `${Math.max(0, reloadT) * 100}%`;
   }
 }

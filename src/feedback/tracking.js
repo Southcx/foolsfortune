@@ -457,6 +457,7 @@ export class Tracking {
       const P = PAIRS.find((p) => p.n === e.pair);
       log.say('info', `You make the ${TOOLNAME(e.tool)} your ${e.as}${e.off ? `, and set the ${TOOLNAME(e.off)} aside` : ''}.${P ? ` Your pair: ${P.label}.` : ''}`, { key: 'tequip', throttle: 0.2 });
     });
+    on('tool.lend', (e) => { L.inc('tool.lend'); L.inc(`tool.lend.${e.tool}`); }); // (the sub's verb on R: what it did is its own event's line)
     // the last three tools (tools/dreamvane/dreamvane.js, crucibelle.js, lockheart.js): what they find, sing and let out
     const KINDNAME = { crystal: 'crystal', chest: 'a chest', creature: 'something alive', clapper: 'a clapperjar', spirit: 'a spirit', bauble: 'loose Lachryma', liquid: 'liquid Lachryma', cube: 'a cube' };
     on('dowse.find', (e) => { L.inc('dowse.find'); L.inc(`dowse.find.${e.kind}`); log.say('find', `The Dreamvane leans hard toward ${e.kind === 'crystal' ? (e.veiled ? 'crystal under the sand' : 'crystal') : KINDNAME[e.kind] || 'something'}, ${e.dist} paces off.`, { key: 'dfind', throttle: 2 }); });
@@ -682,6 +683,7 @@ export class Tracking {
     on('shrine.find', (e) => { if (e.by !== 'courier') return; L.inc('shrine.found'); L.inc(`shrine.found.${e.shrine}`); log.say('explore', `You find ${g.shrines?.get(e.shrine)?.name || 'a Shrine'}.`); });
     on('shrine.rest', (e) => { if (e.by === 'courier') { L.inc('shrine.rest'); log.say('info', 'You rest at the Shrine.', { key: 'shrinerest', throttle: 4 }); } });
     on('shrine.travel', (e) => { if (e.by === 'courier') { L.inc('shrine.travel'); log.say('explore', `You travel to ${g.shrines?.get(e.to)?.name || 'the Shrine'}.`); } });
+    on('shrine.bank', (e) => { if (e.by === 'courier') { L.inc('shrine.bank'); log.say('info', 'The Veritome opens beside your Pneuka Box: the bank.', { key: 'shrinebank', throttle: 4 }); } });
     on('garden.enter', (e) => { if (e.by === 'courier') L.inc('garden.enter'); });
     on('vessel.refire', (e) => { L.inc('vessel.refire'); log.say('info', `The kiln mends your cracks, for ${plural(e.cost, 'cube')}.`, {}); });
     on('vessel.crack', (e) => { L.inc('vessel.cracks'); L.inc(`vessel.crack.${e.region}`); log.say('battle', `The blow cracks ${PART[e.region] || 'you'}.`, { key: `crack.${e.region}`, throttle: 1.5 }); });

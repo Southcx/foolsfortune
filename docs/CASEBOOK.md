@@ -808,3 +808,6 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 
 272. **A mark meant to be read is drawn above every wash laid over the world** (a paper, a grade, a fog), and a
     pick is measured from what is drawn, never from a size the player cannot see.
+
+273. **A tool asked out while another goes back waits for the hands; it is never cancelled.** "Out" means asked out
+    (`wants`), not "not yet back"; one rule for every tool (`belt.mayDraw`), so a key acts on what it names, not on whatever is moving.

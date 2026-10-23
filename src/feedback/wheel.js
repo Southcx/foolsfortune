@@ -10,7 +10,7 @@
 //
 //   const W = new RadialWheel({ id, items: [{ label, sub, color?, icon?, locked? }] })   W.open()   W.steer(dx, dy)   W.close() -> index | -1   W.isOpen
 //   (`color`: the wedge's own colour, under its label, never alone (CLARITY.md); `icon`: an element (a pixel icon, ui/icons/icons.js iconEl),
-//   set above the label in place of the colour's chip; `locked`: shown dim and never picked: the Soul Brush's radial)
+//   set above the label in place of the colour's chip; `locked`: shown dim and never picked: the Soul Brush's quick pick, 1 held)
 // ---------------------------------------------------------------------------------------
 
 const DEAD = 40; // (pixels of mouse movement before a direction counts)
