@@ -112,11 +112,11 @@ const FRAG = /* glsl */`
       float k = vMl.z;
       if (k > 0.001) { // the mending eats it: the clay dries pale and crazes
         col = mix(col, col * 1.18 + vec3(0.04, 0.035, 0.03), 0.6 * k);
-        float sc = 2.6, aa = max(mlFw * sc * 1.5, 1e-5), seen = smoothstep(2.5, 5.0, 1.0 / max(mlFw * sc, 1e-5));
-        float e = mlCells(vMlP * sc), w = mix(0.01, 0.07, k), lw = max(w, aa * 1.2);
+        float sc = 5.0, aa = max(mlFw * sc * 1.5, 1e-5), seen = smoothstep(2.5, 5.0, 1.0 / max(mlFw * sc, 1e-5));
+        float e = mlCells(vMlP * sc), w = mix(0.006, 0.035, k), lw = max(w, aa * 1.2);
         float crack = (1.0 - smoothstep(lw - aa, lw + aa, e)) * seen * smoothstep(0.0, 0.15, k);
         float sh = (1.0 - smoothstep(lw * 2.6 - aa, lw * 2.6 + aa, e)) * seen * smoothstep(0.0, 0.15, k) - crack;
-        col = mix(col, col * 1.12, sh * 0.5); col = mix(col, mlFirmSpeck * 0.4, crack);
+        col = mix(col, col * 1.12, sh * 0.5); col = mix(col, col * 0.55, crack * 0.8); // (drying clay's hairlines: a darker clay, never black; Calissa's look of 2026-10-23, a tortoise shell before)
         mlRough = mix(mlRough, 1.0, k);
       }
     } else { // LACHRYMA, held: ink, a feeling's colour deep in it
