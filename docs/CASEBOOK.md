@@ -805,3 +805,6 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 
 271. **A mark on a thing that moves is that thing's child.** Placed once at a world point and left in the scene, it
     drifts, outlives the thing and floats where it was; parent it to the thing (`attach` keeps where it stands) or to what the thing names.
+
+272. **A mark meant to be read is drawn above every wash laid over the world** (a paper, a grade, a fog), and a
+    pick is measured from what is drawn, never from a size the player cannot see.

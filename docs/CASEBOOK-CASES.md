@@ -3534,3 +3534,13 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   attached at the same world place (`attach` keeps the world transform), so it bobs and hides with the hull. Measured in node on a scaled,
   turned hull: placed and faced exactly, its world scale kept, the 8 cm bob followed, hidden with the hull.
 - **Rule:** 271
+
+### 2026-10-23 · Celestial mode's dot read as "a little buggy" (the owner, through Dovina)
+- **Seen:** the owner: a dot's mark was hard to see and hard to land.
+- **Cause (read in the code, not seen in play):** the mark was a vermilion glyph in the world, under the paper's CSS sepia, so its red
+  washed out with everything else; and a dot reached 14 px past a thing's on-screen size, a few pixels on a far clapperjar.
+- **Fix:** what a dot can mark is handed each frame to the layer over the paper (Calissa's `CelestialTargets`: its ring, your seal when
+  marked); a dot lands inside a drawn outline, else on the nearest within 28 px of one (tools/soulbrush/techniques.js); hurtable creatures
+  within 16 m are markable and carry prompts (sigils.js). Measured: a dot 20 px past a slip jelly's ring marks it, 60 px past does not;
+  its two prompts popped strike it once, 8 hp to 6.
+- **Rule:** 272
