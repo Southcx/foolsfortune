@@ -209,8 +209,9 @@ Chaos digs it up cheap and Law buys it dear; the hauler lives in between. Letty'
     currency, so a coin was always a die), the d8 air (Swords, Plato's air), the d10 water (Cups). **The d20 is the Major Arcana**, I
     the Magician to XX Judgement, twenty faces for twenty cards: the owner's way of fitting the Majors to a d20, with the alpha and the
     omega set apart. **The Fool** (0) stands outside the die because the Fool is you, the one who throws it. **The World** (XXI) stands
-    outside it because the World is what every throw is for: the whole, never one face of it. The d12 is the solid Plato kept for "the
-    whole heaven" and its figures, the zodiac's twelve signs (*open*: what it maps in play). The d100 is two d10s thrown together.
+    outside it because the World is what every throw is for: the whole, never one face of it. **The d12 is the zodiac**, the Western and the
+    Chinese both *(the owner, 2026-10-23)*: twelve faces, twelve signs from Aries to Pisces and twelve animals from the Rat to the Pig,
+    East and West on one die as the running hand is. It is the solid Plato kept for "the whole heaven" and its figures. The d100 is two d10s thrown together.
     Seven stones, as there are seven feelings, seven domains and seven sockets on the bracelet.
   - **They roll.** Any chance thrown for you is thrown on your stones, never an unseen number: a duel's Flee on your d20, your own set
     at Raku's tables, opal's little game in every drink. Opal's set was dice before it had faces.

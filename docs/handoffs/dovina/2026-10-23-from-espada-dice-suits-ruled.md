@@ -20,3 +20,5 @@ The palm die's growth (d4 to d20) now ends on the Majors' die, which reads well:
 middle finger, the d10 the index finger, the d12 the thumb, the d20 the palm. The d100 (two d10s) has no finger yet. Palmistry gives
 each finger a planet (index Jupiter, middle Saturn, ring the Sun, little Mercury, thumb Venus), so a finger could carry its domain too:
 the owner's call. LORE.md 4 has it.
+
+**And the d12, ruled:** the zodiac, Western and Chinese both (twelve signs, twelve animals). It is no longer open.
