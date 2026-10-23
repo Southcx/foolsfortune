@@ -1,8 +1,10 @@
 // ---------------------------------------------------------------------------------------
-// A DOMAIN'S LOOK: the seven domains of the Courier's psyche (progress/domains.js), each shown as a real kiln glaze, its tile and its
-// icon, wherever a domain is drawn (the god hand's arts selector, the Codex's STATUS shelf, a domain's power row). A domain's colour is
-// a glaze, never a feeling's hue: the seven feelings own the saturated wheel colours (progress/weather.js COLOR), and a domain is a
-// skill of the psyche, not a feeling, so it wears the kiln's palette (stoneware and porcelain glazes) instead.
+// A DOMAIN'S LOOK: the seven domains of the Courier's psyche (progress/domains.js), wherever a domain is drawn (the god hand's arts
+// selector, the Codex's STATUS shelf, a domain's power row). A domain's identity is its colour and its sign (its icon): those hold on
+// every island. The kiln-glaze tile and the museum label are Anagami's dressing of that colour (REGISTERS.md row 8, the owner,
+// 2026-10-13): `glaze` names the real glaze Anagami fires it as, and another island's dress may wear the same colour its own way. The
+// colour is never a feeling's hue: the seven feelings own the saturated wheel colours (progress/weather.js COLOR), and a domain is a
+// skill of the psyche, not a feeling, so its colours sit in the kiln's palette (stoneware and porcelain glazes).
 //
 //   ouranurgy       Ru celadon                   the blue of the sky after rain
 //   manifestation   fire-flashed shino           a cream glaze blushing orange where the flame licked it

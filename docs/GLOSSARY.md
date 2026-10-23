@@ -374,6 +374,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the workshop** — the ground and upper floors: the kiln, the folk, the pots, the gong.
 - **the basement** — below the workshop: the hub, the course, the movement lab, the lap circuits, the siege. *Not:* "the lab".
 - **the hub** — the basement's centre, where the Index stands. **The Index** (`src/feedback/indexmenu.js`): the console there; F, and pick a room.
+- **a Well's danger mark** (plain name; `dangerPips`, `src/ui/dangerpips.js`) — its FOE's class as vermilion pips before a Well's row at the Index (the Great Dunemaw: two); a world mark that warns and never gates. *Not:* a stun's stars, the Dissonance arc.
 - **the Gate's hoops / the gate-out** (`GateRing`, `game.gateRing`, `src/vfx/gatering.js`) — three glazed hoops turning round a pale sphere over
   the Index / bands of light climbing the Courier as a room is chosen there, under the seam, and coming down over them on arrival. *Not:* a ring.
 - **the course** — the basement's loop of eight stations (checkpoints), with laps and splits.
