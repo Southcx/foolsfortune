@@ -19,8 +19,9 @@
 import * as THREE from 'three';
 
 const OPEN = 0.7; // (real s the camera takes through the cloth)
+const RISE = 0.15; // (of the view's height: the reading lifted clear of the Box's window, which falls to a bar along the bottom while it shows)
 /** The camera at rest (in front, over the heart, looking down enough that the cloth shows past the hand), and where it rises from. */
-const AT = { pos: [0, 2.1, 5.0], look: [0, 0.7, 0], from: [0, -1.9, 0.6], fromLook: [0, -4.5, 0] };
+const AT = { pos: [0, 2.4, 6.6], look: [0, 1.0, 0], from: [0, -1.9, 0.6], fromLook: [0, -4.5, 0] };
 const smooth = (x) => { x = THREE.MathUtils.clamp(x, 0, 1); return x * x * (3 - 2 * x); };
 const _ray = new THREE.Raycaster(), _ndc = new THREE.Vector2(), _a = new THREE.Vector3(), _b = new THREE.Vector3(), _l = new THREE.Vector3();
 
@@ -50,7 +51,7 @@ export class ReadingScene {
   /** The flip back: the cards fly off, the camera turns down through the cloth, then the world. */
   close() { if (this.active && this.dir >= 0) { this.dir = -1; this.view?.leave?.(); } }
   finish() {
-    this.active = false; this.dir = 0; this.k = 0;
+    this.active = false; this.dir = 0; this.k = 0; this.camera.clearViewOffset();
     const ch = this.ch; this.ch = null;
     if (ch) { this.game.vessel?.dressed?.delete?.(ch); const T = this.game.title?.scene; if (T?.scene) T.scene.add(ch.root); if (this.was) { ch.root.position.copy(this.was.p); ch.root.rotation.copy(this.was.r); } }
   }
@@ -71,6 +72,7 @@ export class ReadingScene {
     const e = smooth(this.k), C = this.camera;
     C.position.copy(_a.fromArray(AT.from).lerp(_b.fromArray(AT.pos), e));
     C.lookAt(_a.fromArray(AT.fromLook).lerp(_l.fromArray(AT.look), e));
+    C.setViewOffset(innerWidth, innerHeight, 0, innerHeight * RISE * e, innerWidth, innerHeight); // (picks and anchors read the same offset)
   }
   render() { this.game.post.render(this.scene, this.camera); }
 
