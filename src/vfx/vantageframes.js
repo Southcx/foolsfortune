@@ -5,6 +5,10 @@
 //     words): lit until the vantage is reached, then settled to a faint glint (a collection kept). The body wants to stand on it.
 //   - THE FRAME: a threshold the view is seen through from behind the Courier (two posts and a lintel, a shrine gate's bones), set on
 //     the vantage's look so the vista sits in its window; the camera is left alone (Petra's), the world is composed round it.
+//   - A SIGHTLINE (where the stand cannot be seen from where it is first wanted): a Lachrymite drop on a cord hung off the vantage's
+//     edge into the view below, its halo breathing in Wonder's colour and a star's glint flashing on it every few real seconds, so the
+//     eye goes up to it (a world mark, no words); it dims with the ring once the vantage is reached. The atrium's: the first path's
+//     third step (FIRST-HOUR.md), and its stand sits on the slab 7 m over where the Courier wakes, behind the slab's edge from below.
 // The five:
 //   workshop.atrium  a shino gate on the atrium rail, an ash-glazed lintel (the kiln mouth's own), the hall, the mobile and the kiln below.
 //   weir.pier        a gate standing in the pond off the pier's end, celadon posts and a tenmoku kasagi: the pillar and pergola in it.
@@ -20,10 +24,11 @@
 // camera the game does not take), Itsukushima's great torii standing in the sea (the Weir's gate in the pond), the torii as a threshold
 // (two posts, a nuki tie, a kasagi lintel), Stonehenge's trilithons and the Dunes' own ruin gates (dunes.js), Chinese and Roman
 // sundials (the gnomon and its hour lines on a dial), Ansel Adams' and the Japanese garden's shakkei, borrowed scenery framed by what
-// is near.
+// is near. The sightline: Breath of the Wild's shrine glow and the Sheikah Tower's beacon (a light that reads from far below and says
+// "up there" with no word), Ghost of Tsushima's guiding wind and golden birds (the world pointing), and a crystal hung in a window.
 //
 //   game.vantageFrames = new VantageFrames(game)   .update(rawDt)   (builds each frame once what it stands on exists)
-//   VANTAGE_FRAMES (the numbers)   .frames { [vantageId]: { group, ring } }
+//   VANTAGE_FRAMES (the numbers)   .frames { [vantageId]: { group, ring } }   .sightlines { [vantageId]: group }   SIGHTLINES (where)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../core/physics.js';
@@ -38,8 +43,44 @@ import { DUNE, OASIS } from '../world/dunes/dunes.js';
 /** `every` how often the frames are asked after (real s); the ring's light unreached / reached (of Wonder's colour); the Dunes' ruin
  *  colours (dunes.js: its trilithons' clay and dark lintels). */
 export const VANTAGE_FRAMES = { every: 0.5, ringLit: 1.0, ringKept: 0.32, ruinClay: 0xd9906a, ruinDark: 0x8a4a3a };
+/** A vantage's sightline, in its frame's space (origin the stand, +z the view): the cord's top (on the balustrade's rail), its drop (m),
+ *  the drop's size (m), the halo's and the glint's size (m), the breath's and the glint's period (real s), the light kept once reached.
+ *  The atrium's hangs off the balustrade's rail 1.1 m out (world/level.js: the rail at z -6, its top F2 + 1.0), 1.9 m down past the
+ *  slab's edge, 1.6 m to the stand's left (on the stand's line, the ground floor's middle joist hid it from the spawn): from the spawn
+ *  (0, 0, -11.5) it sits in the view's top sixth, where the stand itself is 7 m up behind the slab and out of the view. */
+export const SIGHTLINES = {
+  'workshop.atrium': { top: [-1.6, 1.0, 1.1], drop: 1.9, size: 0.16, halo: 1.1, glint: 0.9, breath: 3.2, every: 2.6, kept: 0.25 },
+};
 const G = (k) => ROOM_GLAZES[k].body; // (a room glaze's colour id: Level.mat dresses it)
 const _p = new THREE.Vector3(), _q = new THREE.Quaternion();
+let TEX = null;
+/** The halo's soft disc and the glint's four-pointed star, drawn once on canvases (no image files). */
+function sightTextures() {
+  if (TEX) return TEX;
+  const disc = document.createElement('canvas'); disc.width = disc.height = 64;
+  let c = disc.getContext('2d'), gr = c.createRadialGradient(32, 32, 0, 32, 32, 32);
+  gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.25, 'rgba(255,255,255,0.55)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+  c.fillStyle = gr; c.fillRect(0, 0, 64, 64);
+  const star = document.createElement('canvas'); star.width = star.height = 64; c = star.getContext('2d');
+  for (const [w, h] of [[3, 30], [30, 3]]) { gr = c.createRadialGradient(32, 32, 0, 32, 32, 30); gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); c.fillStyle = gr; c.beginPath(); c.ellipse(32, 32, w, h, 0, 0, Math.PI * 2); c.fill(); }
+  TEX = { disc: new THREE.CanvasTexture(disc), star: new THREE.CanvasTexture(star) };
+  return TEX;
+}
+/** A vantage's sightline (SIGHTLINES): the cord, the drop, its halo and glint, added to the frame's group after its merge. */
+function buildSightline(group, S) {
+  const g = new THREE.Group(); g.name = 'vantage-sightline';
+  const [x, y, z] = S.top, wonder = new THREE.Color(COLOR.wonder);
+  const cord = new THREE.Mesh(new THREE.CylinderGeometry(0.008, 0.008, S.drop, 4), new THREE.MeshBasicMaterial({ color: 0x3a2a20 }));
+  cord.position.set(x, y - S.drop / 2, z); g.add(cord);
+  const drop = new THREE.Mesh(new THREE.OctahedronGeometry(S.size / 2, 0), new THREE.MeshBasicMaterial({ color: wonder }));
+  drop.scale.set(0.7, 1.4, 0.7); drop.position.set(x, y - S.drop - S.size * 0.6, z); g.add(drop);
+  const T = sightTextures(), spr = (map, size) => { const m = new THREE.Sprite(new THREE.SpriteMaterial({ map, color: wonder, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, fog: false })); m.scale.setScalar(size); m.position.copy(drop.position); m.renderOrder = 5; g.add(m); return m; };
+  const halo = spr(T.disc, S.halo), glint = spr(T.star, S.glint);
+  for (const o of [cord, drop, halo, glint]) { o.name = 'vantage-sightline-part'; o.castShadow = false; }
+  group.add(g);
+  g.userData = { S, drop, halo, glint, k: 1 };
+  return g;
+}
 
 /** A frame's kit: parts placed in the frame's own space (origin on the spot's floor, +z the way the view looks), drawn and collided. */
 class Kit {
@@ -146,7 +187,7 @@ const BUILD = {
 
 export class VantageFrames {
   constructor(game) {
-    this.game = game; this.t = VANTAGE_FRAMES.every; this.frames = {}; this.mats = new Map(); this.bowl = null;
+    this.game = game; this.t = VANTAGE_FRAMES.every; this.frames = {}; this.mats = new Map(); this.bowl = null; this.sightlines = {}; this.clock = 0;
     this.body = game.physics?.world.createRigidBody(RAPIER.RigidBodyDesc.fixed()) ?? null;
   }
 
@@ -157,6 +198,8 @@ export class VantageFrames {
   }
 
   update(raw = 1 / 60) {
+    this.clock += raw;
+    for (const id in this.sightlines) this.breathe(this.sightlines[id]);
     if ((this.t += raw) < VANTAGE_FRAMES.every) return;
     this.t = 0;
     const g = this.game;
@@ -166,7 +209,20 @@ export class VantageFrames {
       const ring = this.frames[V.id]?.ring; if (!ring) continue;
       const k = g.vantages?.reached(V.id) ? VANTAGE_FRAMES.ringKept : VANTAGE_FRAMES.ringLit;
       if (ring.userData.k !== k) { ring.userData.k = k; ring.material.color.setHex(COLOR.wonder).multiplyScalar(k); }
+      const sl = this.sightlines[V.id]; if (sl) sl.userData.k = k === VANTAGE_FRAMES.ringLit ? 1 : sl.userData.S.kept;
     }
+  }
+
+  /** A sightline's breath (the halo swelling and fading over S.breath real s) and its glint (a star's flash every S.every real s), by its
+   *  light (1 until the vantage is reached, then S.kept: a faint glint, the collection kept). */
+  breathe(sl) {
+    if (!sl.parent?.visible && sl.parent) return;
+    const { S, drop, halo, glint, k } = sl.userData, t = this.clock;
+    const b = 0.5 + 0.5 * Math.sin(t * Math.PI * 2 / S.breath);
+    halo.material.opacity = k * (0.55 + 0.45 * b); halo.scale.setScalar(S.halo * (0.85 + 0.25 * b));
+    const ph = (t % S.every) / S.every, flash = ph < 0.18 ? Math.sin(ph / 0.18 * Math.PI) : 0;
+    glint.material.opacity = k * flash; glint.scale.setScalar(S.glint * (0.4 + 0.8 * flash)); glint.material.rotation = t * 0.6;
+    drop.rotation.y = t * 0.5; drop.material.color.setHex(COLOR.wonder).multiplyScalar(0.55 + 0.45 * k * (0.6 + 0.4 * b));
   }
 
   /** Build a vantage's frame once its spot exists (the jetty, the Gnomon, the bowl are built later than the boot, or per run). */
@@ -186,6 +242,7 @@ export class VantageFrames {
     const collide = inBowl ? (d) => g.bowl.collide(d) : (d) => g.physics.world.createCollider(d, this.body);
     const ring = make(new Kit(this, group, collide), g, V);
     group.traverse((o) => { if (o.isGroup && o !== group) mergeStatic(o); }); mergeStatic(group);
+    if (SIGHTLINES[V.id]) this.sightlines[V.id] = buildSightline(group, SIGHTLINES[V.id]); // (after the merge: it moves)
     this.frames[V.id] = { group, ring };
   }
 }
