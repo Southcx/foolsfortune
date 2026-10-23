@@ -15,8 +15,11 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   docs and comments. *Not:* "the player" in anything the game says. → detail
 - **the Vessoul** — the soulspark that stands for the player in the world, one being in several forms: the god hand, the Pneuka Jar, the Courier,
   and on the Emocean the ships. *Not:* "the player" in player text.
-- **the stones** (`src/progress/stones.js`) — where Lachryma enters the vessel: the pool's size, regen and costs, the magnet's reach, overflow;
-  one set at a time. *Not:* a stone in the world. → detail
+- **the stones / the Pneuka stones** (`src/progress/stones.js`; the owner, 2026-10-23: one thing; `docs/plans/DICE.md`) — where Lachryma enters
+  the vessel and a release leaves it: the pool's size, regen and costs, the magnet's reach, overflow; one set at a time, its mineral its
+  trade; seven dice of solid Lachryma, the standard set (each die its solid's suit), and the chance rolled for you is thrown on them.
+  **The palm die**: the stones in the god hand's form, one die in its palm growing d4 to d20 (a plan). *Not:* a stone in the world,
+  Raku's dice set (the house's). → detail
 - **overflow** (code `mind.brim`; "brimming" until 2026-10-19) — the pool pushed past full; the log says "Your pool overflows." *Not:* "drunk", which never appears in player
   text.
 - **the pool** (`game.lachryma`, `src/courier/lachryma.js`) — the Courier's store of Lachryma; it pays for shots, charges and arts, and it is the
@@ -595,7 +598,6 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the underside's dress** (plain name; `installUndersideLook`, `UNDERSIDE_LOOK`, `src/ui/undersidelook.js`) — the Pneuka Box's flip side (Dovina's page, `pneuka/underside.js`, its `us-*` classes) in the Clay dress and the reading view's suit colours: the spreads as glazed tiles, the cloth as plum velvet with gold thread, a dark cell burned through with a scorched crack, the Fool's gold disc, a laid place as the house deck's stock (reversed edged vermilion), the hand fanned and the held card haloed, the tallies as glazed bars. *Not:* the page (Dovina's), the reading view (the 3D one).
 - **a card's footprint / a lit cell / an item's suit / friendly and contrary suits / a wild card** (plain names; SPREADS.md) — the cells a laid Major lights on the Box's face, its size its card rank / a cell under a footprint, empowering an item of its suit / the suit an item takes by its kind (Wands, Cups, Swords, Pentacles) / the Golden Dawn's dignities: Wands and Cups, Swords and Pentacles cancel, all else adds / a planet card, lighting any suit at 0.75. *Not:* a zone (a render zone), a field (crude's), a patch (the City Trial's).
 - **a class / the day's card / the season's suit** (plain names: tarot's and the genre's; `classOf`, `CLASS`, `ZODIAC`; `dayCard`, `DAY_CARD`; `SEASON_SUIT`, `src/progress/spreads.js`; CLASSES.md, SPREADS.md 11) — what your suits' tallies read as: the Fool (none held), a court card (one suit, Page to King by depth), a zodiac Major (two: the element and its modality), the World (all four, balanced); Golden Sun's classes / the one Major Arcana card a game day, the same for everyone, whose strength doubles where it is laid / the suit the season favours (Pentacles spring, Cups summer, Wands autumn, Swords winter), its points x1.25. *Not:* a house card (Raku's tables), a card rank, the Spirit Garden's season itself.
-- **your dice set / the palm die** (plain names until the owner rules the lore name, DICE.md 1; a plan) — the Courier's own seven dice of the standard set, of Lachrymite, each die its solid's suit / the die in the god hand's palm, growing d4 to d20 as it is fed, Entropy Tactics' Hungry Die. *Not:* the stones (the vessel's, `progress/stones.js`), Raku's dice set (the house's), a cube (though a cube is a d6).
 - **the map** (M, `src/feedback/cartography.js`) — on screen **Map** (the owner, 2026-10-20); Mind Mapping stays in the world and the Codex.
 - **the dialogue box** (`src/npc/dialogue.js`) — the one window of words in the world.
 - **a page set aside** (`showPage(..., { aside })`, `src/feedback/indexmenu.js`) — an index-window page in a column to one side with no veil, so
