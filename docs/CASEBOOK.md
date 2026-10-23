@@ -811,3 +811,6 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 
 273. **A tool asked out while another goes back waits for the hands; it is never cancelled.** "Out" means asked out
     (`wants`), not "not yet back"; one rule for every tool (`belt.mayDraw`), so a key acts on what it names, not on whatever is moving.
+
+NEW:gate-status-unpiped. **A gate's status is the gate's, not its pipe's.** `check | tail && push` pushes on a failure (the pipe's
+    status is `tail`'s); run the gate unpiped, or under `set -o pipefail`, before anything chained on it.

@@ -14,6 +14,8 @@
 //   THE PEPPERBOX   the spread ring: the pellets' 12 degree cone as it falls on the screen at this field of view (`play.pellets`), the
 //                   seven pellets inside it in the cylinder's pattern (six round a heart); the heart chosen, it closes to the slug's
 //                   tight ring; both barrels (`psygun.barrels`) ring it out and flash the pellets
+// Each but the Carbine wears the held charge (the weapon's `charge`) as an arc just outside its marks, filling from the top (the HUD's
+// #charge arc, moved in); the Carbine's is its full draw's ring.
 // No words, no numbers: the reticle is a world mark of the gun's own.
 //
 // Prior art: Ratchet & Clank's per-weapon reticles (the owner's model for the five), Halo's (each weapon's reticle its spread and its
@@ -108,11 +110,12 @@ export class PsygunReticle {
     const kstroke = (w, colr) => { x.lineWidth = w + 2; x.strokeStyle = INK; x.stroke(); x.lineWidth = w; x.strokeStyle = colr; x.stroke(); };
     const dot = (px, py, w, colr) => { px = Math.round(px - w / 2); py = Math.round(py - w / 2); x.fillStyle = INK; x.fillRect(px - 1, py - 1, w + 2, w + 2); x.fillStyle = colr; x.fillRect(px, py, w, w); };
     const P = this.P, W = this.game.weapon;
+    let chR = 22; // (the held charge's arc: its radius, set by each reticle to sit just outside its own marks)
     if (kind === 'psygun') {
       const tap = Math.exp(-this.fireT / 0.1), g = 4 + this.px(spread, fov) + 4 * tap;
       for (const [dx, dy] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) { seg(c + dx * g, c + dy * g, c + dx * (g + 6), c + dy * (g + 6)); kstroke(1, col); }
       dot(c, c, 2, PALE);
-      const run = this.clock - this.fan.last <= (P.fanHammer?.window ?? 0.25) * 1.6 ? this.fan.run : 0, R = g + 12;
+      const run = this.clock - this.fan.last <= (P.fanHammer?.window ?? 0.25) * 1.6 ? this.fan.run : 0, R = g + 12; chR = R + 6;
       for (let k = 0; k < 6; k++) {
         const a = -Math.PI / 2 + (k * TAU) / 6, lit = run > k ? Math.exp(-(this.clock - (this.fan.lit[k] ?? -9)) / 0.6) : 0;
         dot(c + Math.cos(a) * R, c + Math.sin(a) * R, 2, lit > 0.02 ? `rgba(255,250,235,${0.35 + 0.65 * lit})` : 'rgba(160,140,200,.45)');
@@ -121,14 +124,14 @@ export class PsygunReticle {
       const dy = 4 * Math.exp(-this.fireT / 0.14);
       x.beginPath(); x.arc(c, c, 6, 0, TAU); kstroke(1, col); dot(c, c, 2, PALE);
       x.beginPath(); x.moveTo(c - 5, c + 11 + dy); x.lineTo(c, c + 16 + dy); x.lineTo(c + 5, c + 11 + dy); kstroke(1, col2);
-      x.beginPath(); x.arc(c, c + 2, 14, -Math.PI * 0.82, -Math.PI * 0.18); kstroke(1, col);
+      x.beginPath(); x.arc(c, c + 2, 14, -Math.PI * 0.82, -Math.PI * 0.18); kstroke(1, col); chR = 21;
       for (const sd of [-1, 1]) { seg(c + sd * 10, c, c + sd * 16, c); kstroke(1, col); }
     } else if (kind === 'carbine') {
       const g = 8 + this.px(spread, fov) * 0.5;
       for (const sd of [-1, 1]) { seg(c + sd * g, c, c + sd * (g + 18), c); kstroke(1, col); }
       seg(c, c + g, c, c + g + 14); kstroke(1, col);
       x.beginPath(); x.moveTo(c, c - 3); x.lineTo(c + 3, c); x.lineTo(c, c + 3); x.lineTo(c - 3, c); x.closePath(); kstroke(1, PALE);
-      const draw = P.fullDraw ? W.charge ?? 0 : 0;
+      const draw = P.fullDraw ? W.charge ?? 0 : 0; chR = P.fullDraw ? 0 : 26; // (the full draw's closing ring is the Carbine's charge)
       if (draw > 0) { x.beginPath(); x.arc(c, c, lerp(30, 10, eioc(cl(draw))), 0, TAU); kstroke(draw >= 1 ? 2 : 1, draw >= 1 ? PALE : col2); }
     } else if (kind === 'pentagun') {
       const R = 12, Pt = []; for (let k = 0; k < 5; k++) { const a = -Math.PI / 2 + (k * TAU) / 5; Pt.push([c + Math.cos(a) * R, c + Math.sin(a) * R]); }
@@ -136,6 +139,7 @@ export class PsygunReticle {
       let first = Infinity; for (const t of V?.points?.values?.() || []) first = Math.min(first, t);
       const left = lit.size ? cl(1 - ((V.clock ?? 0) - first) / win) : 0;
       if (left > 0) { x.beginPath(); x.arc(c, c, 18, -Math.PI / 2, -Math.PI / 2 + TAU * left); kstroke(1, col2); }
+      chR = 23;
       const st = this.starT; // (the pentacle: five strokes, 70 ms each, then the circle in 150, held 1.5 s, faded in 0.4)
       if (st < 2.2) {
         const star = cl(st / 0.35), circ = cl((st - 0.35) / 0.15), fade = 1 - cl((st - 1.8) / 0.4), ord = [0, 2, 4, 1, 3, 0];
@@ -157,8 +161,18 @@ export class PsygunReticle {
       }
       dot(c, c, m > 0.5 ? 3 : 2, PALE);
       for (const sd of [-1, 1]) { seg(c + sd * (rr + 3), c, c + sd * (rr + 8), c); kstroke(1, col); }
+      chR = Math.min(D / 2 - 3, rr + 12);
       const both = cl(1 - this.bothT / 0.6);
       if (both > 0) { x.globalAlpha = both; x.beginPath(); x.arc(c, c, Math.min(D / 2 - 2, rr + 6 + 14 * (1 - both)), 0, TAU); kstroke(1, PALE); x.globalAlpha = 1; }
+    }
+    // THE HELD CHARGE (the HUD's #charge arc moved into each gun's own reticle, PNEUKA-BOX.md 7): an arc filling clockwise from the top
+    // just outside the reticle's marks, four quarter ticks to read it by, white and doubled when full (Splatoon's charger, Halo's
+    // plasma pistol); the Carbine's is its full draw's closing ring above.
+    const ch = cl(W?.charge ?? 0);
+    if (chR > 0 && ch > 0) {
+      const full = ch >= 1;
+      for (let k = 0; k < 4; k++) { const a = -Math.PI / 2 + (k * TAU) / 4; dot(c + Math.cos(a) * chR, c + Math.sin(a) * chR, 1, ch * 4 > k ? PALE : 'rgba(160,140,200,.45)'); }
+      x.beginPath(); x.arc(c, c, chR, -Math.PI / 2, -Math.PI / 2 + TAU * ch); kstroke(full ? 2 : 1, full ? PALE : col2);
     }
     x.restore();
   }

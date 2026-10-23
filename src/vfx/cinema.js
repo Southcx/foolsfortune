@@ -21,8 +21,8 @@ const CSS = `
 #cinema .bar { position: absolute; left: 0; right: 0; height: 0; background: #0b0402; box-shadow: 0 0 0 1px rgba(255,178,122,.0); }
 #cinema .bar.top { top: 0; border-bottom: 1px solid rgba(255,178,122,.35); }
 #cinema .bar.bot { bottom: 0; border-top: 1px solid rgba(255,178,122,.35); }
-body #speed, body #course, body #locks, body #crosshair { transition: opacity .4s; }
-body.cine #speed, body.cine #course, body.cine #locks, body.cine #crosshair { opacity: 0 !important; }
+body #speed { transition: opacity .4s; }
+body.cine #speed { opacity: 0 !important; }
 #cinema .strain { position: absolute; inset: 0; opacity: 0; background: radial-gradient(ellipse at 50% 50%, rgba(0,0,0,0) 46%, rgba(120,20,8,.55) 100%); }
 `;
 
