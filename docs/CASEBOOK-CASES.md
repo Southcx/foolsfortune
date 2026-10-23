@@ -3574,3 +3574,15 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the Courier comes out on the floor found under a point a step past the far rim (a ray 2 m above the end, 5 m down, solid and
   facing up); with none, or the ray begun inside a wall, they are not taken through (`floorBeside`, space.js).
 - **Rule:** 275
+
+### 2026-10-23 · The pause menu came up over a held lock after the Throwing Room's Index pick (Dovina's workshop sweep, headless)
+- **Seen:** about one run in two of the workshop sweep, the Spray drill's taps landed on the pause menu: overlay up, input off, the
+  pointer locked. Once each on the codex and tuning windows' Esc/Tab closes.
+- **Cause (measured, every lock request, release and change logged with its caller, 24 picks):** the Index releases the lock as it
+  opens (no pause: a window is up). The pick closes it, and its `onClose` asks for the lock back in the same frame as a retry left over
+  from an earlier refusal (input.js lockError) and the plain fallback: three requests at once. One is refused, and Chromium then fires a
+  `pointerlockchange` that still reads unlocked. `onLockChange(false)` took it as you leaving and paused; the request that won took the
+  lock a moment later, under the pause. 3 picks in 24.
+- **Fix:** a `pointerlockchange` that leaves the lock as it was is not passed on (core/input.js). Measured: 0 pauses in 48 picks, the
+  lock held again after each. Dovina's sweep note and its clearing of the pause can go.
+- **Rule:** 276

@@ -52,7 +52,9 @@ export class Input {
     });
     document.addEventListener('mouseleave', () => { this.mx = -1; this.my = -1; }); // (the cursor left the window: no edge-scroll)
     document.addEventListener('pointerlockchange', () => {
+      const was = this.locked;
       this.locked = document.pointerLockElement === this.el;
+      if (this.locked === was) return; // (a change that changes nothing: requests racing after a window's close, one refused, fire one while unlocked; read as you leaving, it paused over the lock the next took: casebook rule 276)
       if (this.locked) { this.everLocked = true; this.lockFailed = false; }
       this.onLockChange?.(this.locked);
     });

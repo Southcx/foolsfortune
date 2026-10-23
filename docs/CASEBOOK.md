@@ -817,3 +817,6 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 
 275. **A body set down somewhere else is set on a floor found there, or not moved.** A point picked or carried
     (a portal's end, a fold's patch) is not ground; look down from above it for a solid face turned up, and refuse when there is none.
+
+276. **A state's change event is read against the state, not trusted as a change.** Requests that race (a
+    window's close, a stale retry) make the browser fire `pointerlockchange` with nothing changed; compare with what was held first.
