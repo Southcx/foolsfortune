@@ -29,6 +29,7 @@ const BY_ID = Object.fromEntries(ARCANA.map((A, n) => [A.id, { ...A, n }]));
 const SUIT_CSS = { ...UNDERSIDE_LOOK.suits, wild: '#b58cff' };
 const NAME = { wands: 'Wands', cups: 'Cups', swords: 'Swords', pentacles: 'Pentacles', wild: 'wild' };
 const CELL = 46; // (px a cell of the cloth)
+const REACH = 40; // (px from a place's middle a held card is laid there: about a card's half width at the reading's distance)
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; };
 
 export const UNDERSIDE_CSS = `
@@ -80,8 +81,15 @@ export class Underside {
   get slim() { return !!this.game.readingScene?.active && this.reading.flipped; }
   /** A click or a drop on the reading view at a client point (readingScene.pickAt: a place or a card of the hand): a held card laid in an
    *  empty place, a laid card taken back (or reversed, button 2), a card of the hand picked up. */
+  /** An empty place's frame is four thin strips, so a click inside it touches nothing: with a card held, the nearest place within
+   *  REACH px of the point (its anchor, the place's middle on screen) takes it. */
+  nearPlace(x, y) {
+    let best = null, d2 = REACH * REACH;
+    for (const a of this.game.readingScene?.anchors?.() ?? []) { const d = (a.x - x) ** 2 + (a.y - y) ** 2; if (d < d2) { d2 = d; best = { kind: 'place', id: a.id }; } }
+    return best;
+  }
   atView(x, y, button = 0, card = this.held) {
-    const P = this.game.readingScene?.pickAt?.(x, y), R = this.reading;
+    const R = this.reading, P = this.game.readingScene?.pickAt?.(x, y) ?? (card ? this.nearPlace(x, y) : null);
     if (!P) return false;
     if (P.kind === 'hand') { this.held = this.held === P.id ? null : P.id; this.changed(); return true; }
     if (P.kind !== 'place') return false;
@@ -102,8 +110,8 @@ export class Underside {
     const row = el('div', 'us-row');
     if (!this.slim) row.appendChild(this.cloth(S, cells)); // (the view shows the cloth itself, under the Courier's feet)
     const side = el('div', 'us-side');
-    side.appendChild(el('div', 'us-note', this.held ? `Holding <b>${this.cardName(this.held)}</b>: pick an empty place ${this.slim ? 'round you' : 'on the cloth'}.` : 'Pick a card from the hand, then an empty place. A laid card: click to take it back, right-click to reverse it.'));
-    side.appendChild(this.handRow());
+    side.appendChild(el('div', 'us-note', this.held ? `Holding <b>${this.cardName(this.held)}</b>: pick an empty place ${this.slim ? 'round you' : 'on the cloth'}.` : `Pick a card from the hand, then an empty place. A laid card: click to take it back, right-click to reverse it.`));
+    side.appendChild(this.handRow()); // (the one hand: the view's fan is off, Calissa's READING_VIEW.hand.show)
     side.appendChild(this.tallies());
     row.appendChild(side);
     wrap.appendChild(row);
