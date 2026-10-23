@@ -27,7 +27,7 @@ export function lendHand(game, out) {
  *  the Grapple's line already leaves the right hand, lendHand, and the Sondelass stays on the back). */
 export const LENT_MODELS = {
   psygun: { hand: 'R', at: [0, 0.26], shotAt: 0.09 }, // (the snap shot's gun, in the hand from the press; at the aim 0.09 real s after it, so its round waits for that: weapon.js tryFire)
-  lockheart: { hand: 'L', at: [0.03, 0.34] }, // (the coffin at the mouth by 0.11, through the Gulp's 0.25 real s window)
+  lockheart: { hand: 'L', at: [0.03, 0.34] }, // (the coffin at the mouth by 0.07, through the Gulp's 0.25 real s window)
   veritome: { hand: 'R', at: [0.05, 0.45] }, // (the Flash held up)
 };
 const _m = new THREE.Matrix4(), _p = new THREE.Vector3(), _q = new THREE.Quaternion(), _s = new THREE.Vector3();

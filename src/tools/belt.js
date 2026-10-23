@@ -27,6 +27,7 @@
 //   game.belt.isWorn(id) (main or sub)   game.belt.isMain(id)   game.belt.keys(input) (X and R, once a frame on foot: main.js; event tool.lend)
 //   game.belt.inHand   game.belt.mayDraw(tool)   game.belt.draw(tool)   game.belt.hands (Dexterity: every draw and stow times this)
 //   game.belt.allows('kick')   game.belt.others(tool)   game.belt.hipSide(id)   game.belt.hideWorn()   game.belt.only (the Anim Lab's)
+//   game.belt.mainHand ('R' | 'L': the hand the main is held in, drawn)   game.belt.freeHand (the other: where a lent verb's gesture goes)
 // ---------------------------------------------------------------------------------------
 import { TOOL_IDS, START, pairOf, swapRefusal } from '../progress/toolpairs.js';
 
@@ -35,6 +36,9 @@ export const DRAW_KEY = 'KeyX', LEND_KEY = 'KeyR';
 /** Which hip each hip tool hangs at by choice (R: their right). Two worn on the same side: the one first in the belt's order (TOOL_IDS)
  *  keeps it, the other goes to the other hip, its holster mirrored (the owner, 2026-10-06). */
 export const HIP_SIDE = { veritome: 'R', soulbrush: 'L', crucibelle: 'L' };
+/** The hand each tool is held in, drawn: its model rides that hand (the gun by its socket, the rest by its grip); the other hand only
+ *  helps (the cutlass's guard in the iaido, the staff's haft). Every tool is the right hand's but the Lockheart's coffin. */
+export const HELD_HAND = { lockheart: 'L' };
 
 export class ToolBelt {
   constructor(game) {
@@ -50,6 +54,8 @@ export class ToolBelt {
   isMain(id) { return id === this.main; }
   /** The card the two make (progress/toolpairs.js PAIRS), or null. */
   get pair() { return pairOf(this.main, this.sub); }
+  get mainHand() { return HELD_HAND[this.main] || 'R'; }
+  get freeHand() { return this.mainHand === 'R' ? 'L' : 'R'; }
 
   /** May this tool be made the main or the sub now? Null if so, else the reason in the log's words (quiet: the window asks it to show the
    *  refusal before a click). */

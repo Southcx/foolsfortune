@@ -12,7 +12,7 @@
 //    shape ($P, multi-stroke: tools/soulbrush/gesture.js) and done to the world (tools/soulbrush/techniques.js, after Okami), and the marks over the
 //    clapperjars' heads are taken off by drawing them (tools/soulbrush/sigils.js, after Magic Cat Academy).
 //
-//   G      draw / stow (the tool in the hands goes away first; X, Q draw theirs instead)          Z / MMB   lock on
+//   X      draw / stow (as the main: tools/belt.js; as the sub, R flicks)          Z / MMB   lock on
 //   1 held the quick pick: the paint's feeling, or Clean (tools/soulbrush/radial.js; seen on the desk, vfx/soulbrushdesk.js); the wheel turns it a seat
 //   LMB    the club: three blows (a pause after the second: the spin; sprinting: the dive); held on the ground, the bristles SATURATE
 //          and the mode works (tools/soulbrush/load.js: 1 PAINT, 2 MOP); held in the air, the charge and the slam   RMB tap  FLICK

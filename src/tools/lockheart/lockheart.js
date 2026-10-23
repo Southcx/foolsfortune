@@ -26,7 +26,7 @@
 //    the flail (Lock_FlailCombo1-3), the coffin lifted and its lid opened (Lock_Open: an opening that is not the ultimate, and the catch);
 //    the ultimate's channel and its opening are tools/lockheart/ultimate.js's (Lock_Channel, Lock_Opening).
 //
-//   I      draw / stow          LMB (tap)  flail     LMB (hold)  hoover          RMB (hold)  the odds, then open it (a key on the ring, and full)
+//   X      draw / stow (as the main: tools/belt.js; as the sub, R is the Gulp)          LMB (tap)  flail     LMB (hold)  hoover          RMB (hold)  the odds, then open it (a key on the ring, and full)
 //   wheel  turn the keyring                                                                                         (the box: P; the Codex: THE TOOLS)
 //
 // Prior art: the gacha (a table of rates, a pull, the spin before the reveal), Luigi's Mansion's Poltergust, Slay the Spire's and

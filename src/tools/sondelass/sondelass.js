@@ -4,7 +4,7 @@
 // into angling (src/tools/sondelass/angling/). It is a passive tech: it doesn't take the step from the core movement, so you run, jump and slide
 // with it out; it owns only the right arm's pose while it is drawn, and puts the Psygun away.
 //
-//   Q     draw / stow (the Psygun goes away first; X also stows it)           1 / 2 / 3   CUTLASS / ROD / HOOK
+//   X     draw / stow (as the main: tools/belt.js; as the sub, R throws the hook)           1 / 2 / 3   CUTLASS / ROD / HOOK
 //   CUTLASS  LMB the loadout's string · RMB the special (the Stinger) · crouched, hold RMB: the iaido into Blade Mode · MMB lock on · V hold:
 //            guard, in time: parry · E (the blink) cancels any move
 //   ROD      hold LMB to charge a cast, release to throw · 4-0 / wheel: the lure's aspect (each once known) · - / =: the lure tied on ·

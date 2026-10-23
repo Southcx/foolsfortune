@@ -23,7 +23,7 @@
 //    clears the face), a gesture for every note (Bell_Note1-5, the octave Bell_NoteHigh), the fever's peak (Bell_FeverPeak), a song cast
 //    out of it (Bell_SongCast). At a busker's mat the busking body is the rhythm mode's (courier/moves/rhythmhold.js); the bell stays out.
 //
-//   U      draw / stow          1-5  notes (RMB held: an octave up)          LMB  toll (in time: the string)   (the Codex: THE TOOLS has the songs)
+//   X      draw / stow (as the main: tools/belt.js; as the sub, R tolls once)          1-5  notes (RMB held: an octave up)          LMB  toll (in time: the string)   (the Codex: THE TOOLS has the songs)
 //   (in the air the string cannot be played, so a press there rings one toll at once, as the toll always did: TOLL.cool apart)
 //
 // Prior art: Ocarina of Time (songs), Patapon (rhythm, fever, an army that the song commands), Crypt of the NecroDancer and Hi-Fi Rush

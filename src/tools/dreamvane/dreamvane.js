@@ -9,7 +9,7 @@
 //    anything, or only to crystal, to chests, to the living, to what lies loose. What it finds clearly is charted (the map).
 //  - THE PICK (LMB): a two-handed overhead blow into the ground (the suite's Vane_PickStrike), the opener of the staff's string; held,
 //    it stays up and comes down the harder (tools/dreamvane/pick.js: the moveset, every blow, the spin, the launcher, the vault, the
-//    Dreamquake on R). Crystal gives to it a blow at a time; pots and clapperjars and minds are struck as by any heavy thing. A blow
+//    Dreamquake, the pick held to its full charge and let go). Crystal gives to it a blow at a time; pots and clapperjars and minds are struck as by any heavy thing. A blow
 //    that comes down into the sand and meets nothing strikes it: where the vane says something is VEILED, the crystal under it rises.
 //  - THE FORK (tap RMB): thrown where they look (Vane_ForkThrow: it leaves the heel at the top of the swing), it sticks and RINGS. In a crystal, the crystal rings with it: the pick's
 //    blows give twice, and the last a shard. In a creature, the ringing shakes the Lachryma out of it (liquid baubles, and its poise
@@ -19,8 +19,8 @@
 //  - THE SURVEY (MMB): the heel struck into the ground (Vane_Survey), and the Mind's ring goes out from them: what is in sight is understood (Mind
 //    Mapping's pulse: cartography.js; it was N). The compass across the top of the view is the Dreamvane's too: it shows while it is worn.
 //
-//   K      draw / stow (X, Q, G, J draw theirs instead)          RMB hold  dowse (Vane_Dowse; the wheel: attune)   RMB tap  the fork
-//   LMB    the pick and the staff's blows (pick.js)                MMB       the survey                        R        the Dreamquake
+//   X      draw / stow (as the main: tools/belt.js; as the sub, R throws the fork)          RMB hold  dowse (Vane_Dowse; the wheel: attune)   RMB tap  the fork
+//   LMB    the pick and the staff's blows (pick.js)                MMB       the survey                        LMB held full  the Dreamquake
 //
 // Held, the vane stands in the suite's Vane_Idle (both hands on the staff, upright at their right); moving, Vane_IdleCarry (the staff in
 // the right hand, the free arm swinging with the run). The clips put the left hand on the haft themselves; it is closed onto it only

@@ -23,7 +23,7 @@
 //    reprogrammed (Tome_FlipPages), the ground read off it (Tome_Survey), the bash (Tome_BookBash1-2). In third person the hands carry
 //    the book (hold.js handsFrame), so every clip moves it; the hands then close on its edges.
 //
-//   J      draw / stow     RMB (hold)  the lens: LMB the shutter, wheel the zoom     LMB  the book bash     P (while it is out)  the box and the bank
+//   X      draw / stow (as the main: tools/belt.js; as the sub, R is the Flash)     RMB (hold)  the lens: LMB the shutter, wheel the zoom     LMB  the book bash     P (while it is out)  the box and the bank
 //   B      the Codex: the binder (Take out, Condense), the memory (appraise), the bestiary, the Compendium
 // ---------------------------------------------------------------------------------------
 import { drawStamp, stampText } from '../../ui/datestamp.js';
