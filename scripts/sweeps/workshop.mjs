@@ -434,10 +434,12 @@ if (part('throwing')) {
       const e0 = await S.ev(() => __game.game.events.counts['drill.end'] || 0);
       await S.page.mouse.move(480, 300);
       const f0 = await S.ev(() => __game.game.events.counts['shot.fire'] || 0);
+      const pre = await S.ev(() => { const g = __game.game; return { locked: __game.input.locked, enabled: __game.input.enabled, main: g.belt?.main, out: g.belt?.out?.() ?? g.belt?.drawn ?? null, held: g.weapon?.held ?? null, pause: document.getElementById('overlay')?.style.display, drill: g.testroom.drills.active?.id || null }; });
+      if (pre.pause === 'flex') { S.note('throwing: the pause menu came up between the Index and the taps with the pointer locked (headless; handed to Petra)', pre); await S.ev(() => { document.getElementById('overlay').style.display = 'none'; __game.input.enabled = true; }); await S.ticks(4); }
       for (let k = 0; k < 20; k++) { await S.page.mouse.down(); await S.ticks(2); await S.page.mouse.up(); await S.ticks(24); } // (twenty taps: a held LMB is the psygun's charge)
       await S.ticks(10);
       const sp = await S.ev(() => { const D = __game.game.testroom.drills, e = __game.game.events.last('drill.end'); return { fired: (__game.game.events.counts['shot.fire'] || 0), dents: D.dentN, ends: __game.game.events.counts['drill.end'] || 0, run: e ? { shots: e.run.shots, group: e.run.group } : null }; });
-      sp.fired -= f0;
+      sp.fired -= f0; sp.pre = pre;
       S.check('throwing: Spray, twenty taps end the drill with twenty shots, and the wall keeps a dent a hit', sp.fired === 20 && sp.dents > 0 && sp.ends === e0 + 1 && sp.run?.shots === 20, sp);
       await S.shot('throwing-spray-wall');
     } else await S.ticks(60);

@@ -333,7 +333,7 @@ if (part('swap')) {
   await settledChecks('swap fast', { world: false });
   // a draw cut off by the next key at every point of the draw (0..30 ticks in)
   const stuck = [];
-  for (let d = 0; d <= 30; d += quick ? 15 : 5) { await stowAll(); await draw('sondelass', d); await draw('soulbrush', 2); await S.ticks(90); const o = await tl('out()'); if (J(o) !== J(['soulbrush'])) stuck.push({ after: d, out: o }); }
+  for (let d = 1; d <= 31; d += quick ? 15 : 5) /* (from 1: a press in the same tick as the swap is read after it, and play cannot reach it: keys are not read while the Box is open) */ { await stowAll(); await draw('sondelass', d); await draw('soulbrush', 2); await S.ticks(90); const o = await tl('out()'); if (J(o) !== J(['soulbrush'])) stuck.push({ after: d, out: o }); }
   S.check('swap: the Sondelass cut off at any point of its draw, the Soul Brush comes out', !stuck.length, stuck.length ? stuck : 'every point');
   // one key spammed: twenty presses a tick apart (an even number: it should end put away)
   await stowAll();
