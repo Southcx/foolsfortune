@@ -1,17 +1,18 @@
 // ---------------------------------------------------------------------------------------
-// THE PNEUKA BOX'S WINDOW (P): what the Courier carries, and what they wear. Left, the box: fifty-six slots, eight across (four on a narrow screen). Right,
-// the equipment: the one lure on the line, and the two tools worn, the main and the sub (tools/belt.js: a click on one of the seven in
-// a row makes it that one; the interim rows until the loadout's window, docs/plans/PNEUKA-BOX.md 5). At a Shrine's THE BANK row, or while
-// the Veritome is held open, the Book opens beside the box as the bank: the curios kept there, stacked, each taken out with a click, and
-// STORE ALL to empty the box into it.
+// THE PNEUKA BOX'S WINDOW (P): what the Courier carries, and what they wear, summoned into a world slowed to a tenth (PNEUKA-BOX.md 5, the
+// pick: the reading table). Left, THE READING (pneuka/loadout.js on Calissa's ui/readingtable.js): the main upright, the sub crossed, the pair's
+// card above, the five tools not worn fanned below, and under it what is fitted to the main and the sub (the lure, the instrument, the
+// coffin's keys and odds, the bottle, the psygun's chambers), each taken off with a click. Right, the pocket: fifty-six slots, eight across;
+// and the Book as the bank, open at a Shrine or with the Veritome open as the main: the curios kept there, stacked, each taken out with a
+// click, and STORE ALL to empty the box into it.
 //
 // How it is used, as OSRS's inventory is: a LEFT CLICK does the obvious thing (with the Book open, store it; otherwise tie a curio
 // on the line), a RIGHT CLICK lists everything that can be done (Tie on, Store, Drop, Examine), a slot can be DRAGGED onto another
 // to swap them, and the line at the top says what a click would do before it is clicked. Examine writes to the log, as OSRS's does
 // to the chat (the log is the only text feedback: tracking.js).
 //
-// Prior art: Old School RuneScape's inventory and equipment tabs (the 4 x 7 grid, left click / right click menus, "Use X -> Y" in the
-// hover line, worn items in their places), its bank (Deposit inventory), and the Codex's own look in this game.
+// Prior art: Old School RuneScape's inventory (the grid, left click / right click menus, "Use X -> Y" in the hover line), its bank (Deposit
+// inventory); the reading's own in ui/readingtable.js and pneuka/loadout.js.
 // ---------------------------------------------------------------------------------------
 import { SLOTS, FITTINGS } from './box.js';
 import { oddsOf, rates, OUTCOMES, HEARTS } from '../tools/lockheart/table.js';
@@ -19,6 +20,8 @@ import { itemOf } from './items.js';
 import { itemIcon } from './icons.js';
 import { CARDS, CARD, WORTH } from '../tools/veritome/cards.js';
 import { lureList, tasteOf, BARE } from '../tools/sondelass/angling/lures.js';
+import { RT_CLASSES } from '../ui/readingtable.js';
+import { Loadout } from './loadout.js';
 import { ASPECTS } from '../tools/sondelass/angling/species.js';
 import { SHELL_TYPES } from '../tools/psygun/shells.js';
 
@@ -35,26 +38,31 @@ const CSS = `
 #pneuka .hover { height: 18px; font-size: 12px; margin: 0 0 8px; color: #fff1dc; }
 #pneuka .hover b { color: #ffd98a; font-weight: normal; }
 #pneuka .cols { display: flex; gap: 16px; align-items: flex-start; flex-wrap: wrap; }
-#pneuka .pane { background: rgba(14,6,4,.55); border: 1px solid rgba(255,178,122,.22); border-radius: 4px; padding: 10px; }
+#pneuka .pane:not(.rt-book):not(.rt-pane) { background: rgba(14,6,4,.55); border: 1px solid rgba(255,178,122,.22); border-radius: 4px; padding: 10px; }
 #pneuka .pane h4 { margin: 0 0 8px; font-size: 10px; letter-spacing: .22em; color: #e7c46a; font-weight: normal; display: flex; justify-content: space-between; gap: 12px; }
 #pneuka .grid { display: grid; grid-template-columns: repeat(8, 52px); gap: 5px; }
 @media (max-width: 560px) { #pneuka .grid { grid-template-columns: repeat(4, 52px); } }
 #pneuka .bank .grid { grid-template-columns: repeat(5, 52px); }
-#pneuka .slot { width: 52px; height: 52px; box-sizing: border-box; border: 1px solid rgba(255,178,122,.18); border-radius: 4px; background: rgba(40,18,10,.75); position: relative; cursor: var(--jcur-pointer, pointer); }
-#pneuka .slot:hover { border-color: rgba(255,210,150,.75); background: rgba(80,36,20,.8); }
+#pneuka .slot { width: 52px; height: 52px; box-sizing: border-box; position: relative; cursor: var(--jcur-pointer, pointer); }
+#pneuka .slot:not(.rt-slot) { border: 1px solid rgba(255,178,122,.18); border-radius: 4px; background: rgba(40,18,10,.75); } /* (the pocket's slots wear the reading table's dress: RT_CLASSES) */
+#pneuka .slot:not(.rt-slot):hover { border-color: rgba(255,210,150,.75); background: rgba(80,36,20,.8); }
 #pneuka .slot.drag { opacity: .4; } #pneuka .slot.over { border-color: #ffd98a; }
 #pneuka .slot img { position: absolute; inset: 3px; width: calc(100% - 6px); height: calc(100% - 6px); pointer-events: none; }
 #pneuka .slot .n { position: absolute; left: 3px; top: 1px; font-size: 11px; color: #ffef7a; text-shadow: 1px 1px 0 #000; pointer-events: none; }
 #pneuka .slot .g { position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 24px; pointer-events: none; }
 #pneuka .slot.empty { cursor: default; }
-#pneuka .equip { width: 250px; }
+#pneuka .equip { width: 560px; }
+#pneuka .px.fit { max-width: none; max-height: none; overflow: visible; transform-origin: center; }
+#pneuka .px.fit .cols { flex-wrap: nowrap; }
+#pneuka .reading { display: flex; flex-direction: column; gap: 10px; }
+#pneuka .side { display: flex; flex-direction: column; gap: 12px; }
 #pneuka .lure { display: flex; gap: 10px; align-items: center; margin-bottom: 8px; }
 #pneuka .lure .slot { width: 64px; height: 64px; }
 #pneuka .lure .t { font-size: 12px; line-height: 1.35; }
 #pneuka .lure .t s { text-decoration: none; opacity: .65; font-size: 10px; letter-spacing: .1em; display: block; }
 #pneuka .taste { display: grid; grid-template-columns: 54px 1fr; gap: 2px 6px; font-size: 9px; letter-spacing: .08em; margin: 4px 0 8px; align-items: center; }
 #pneuka .taste i { display: block; height: 5px; border-radius: 2px; background: currentColor; }
-#pneuka .belt { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(7, auto); grid-auto-flow: column; gap: 4px; } /* (the main's seven, then the sub's: two columns) */
+#pneuka .belt { display: grid; grid-template-columns: 1fr; gap: 4px; }
 #pneuka .belt div { display: flex; justify-content: space-between; font-size: 11px; padding: 4px 6px; border: 1px solid rgba(255,178,122,.15); border-radius: 3px; background: rgba(40,18,10,.5); }
 #pneuka .belt div.on { border-color: #ffd98a; } #pneuka .belt div.none { opacity: .35; }
 #pneuka .belt s { text-decoration: none; opacity: .6; }
@@ -65,7 +73,7 @@ const CSS = `
 #pneuka .odds { display: flex; height: 8px; border-radius: 2px; overflow: hidden; margin: 2px 0 2px; border: 1px solid rgba(255,178,122,.25); }
 #pneuka .odds i { display: block; height: 100%; }
 #pneuka .oddsl { font-size: 9px; letter-spacing: .06em; opacity: .8; margin-bottom: 8px; line-height: 1.4; }
-#pneuka .bank { width: 310px; } #pneuka .bank p { font-size: 12px; opacity: .75; line-height: 1.45; margin: 4px 0; }
+#pneuka .bank { width: 434px; box-sizing: border-box; } #pneuka .bank p { font-size: 12px; opacity: .75; line-height: 1.45; margin: 4px 0; }
 #pneuka button { font: inherit; font-size: 11px; letter-spacing: .1em; color: #fff1dc; background: rgba(120,50,30,.6); border: 1px solid rgba(255,178,122,.45); padding: 4px 10px; border-radius: 3px; cursor: var(--jcur-pointer, pointer); }
 #pneuka button:hover { background: rgba(var(--jsel),.55); } #pneuka button:disabled { opacity: .4; cursor: default; }
 #pneuka footer { margin-top: 10px; font-size: 10px; letter-spacing: .08em; opacity: .55; }
@@ -75,6 +83,7 @@ const CSS = `
 #pneuka .menu .h { color: #e7c46a; cursor: default; font-size: 10px; letter-spacing: .14em; border-bottom: 1px solid rgba(255,178,122,.25); } #pneuka .menu .h:hover { background: none; }
 #pneuka .menu b { color: #ffd98a; font-weight: normal; }
 `;
+const SLOW = 0.1; // (the world at a tenth while the box is open: PNEUKA-BOX.md 5)
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; };
 const hex = (n) => `#${n.toString(16).padStart(6, '0')}`;
 
@@ -82,6 +91,7 @@ export class PneukaUI {
   constructor(game) {
     this.game = game;
     this.open = false;
+    this.loadout = new Loadout(game, () => this.render());
     const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
     this.root = el('div'); this.root.id = 'pneuka';
     this.root.addEventListener('mousedown', (e) => e.stopPropagation());
@@ -92,18 +102,19 @@ export class PneukaUI {
       e.preventDefault(); e.stopImmediatePropagation(); this.close();
     }, true);
     document.body.appendChild(this.root);
+    addEventListener('resize', () => { if (this.open) this.fit(); });
   }
   get box() { return this.game.pneuka; }
   toggle() { this.open ? this.close() : this.show(); }
-  show() { this.open = true; this.root.classList.add('open'); document.exitPointerLock?.(); this.render(); this.game.events?.emit('pneuka.open', {}); }
-  close() { this.open = false; this.root.classList.remove('open'); this.hideMenu(); this.onClose?.(); }
+  show() { this.open = true; this.root.classList.add('open'); document.exitPointerLock?.(); this.game.time?.slow('pneuka', SLOW); this.render(); this.game.events?.emit('pneuka.open', {}); }
+  close() { this.open = false; this.root.classList.remove('open'); this.game.time?.free('pneuka'); this.hideMenu(); this.onClose?.(); }
 
   // ---------------------------------------------------------------- what a click on a thing would do
   actions(slot) {
     const box = this.box, s = box.slots[slot], it = s && itemOf(s.id);
     if (!it) return [];
     const out = [];
-    if (it.kind === 'psygun') out.push({ label: 'Wear', run: () => box.carryPsygun(slot) });
+    if (it.kind === 'psygun') out.push({ label: 'Carry', run: () => box.carryPsygun(slot) }); // (a psygun's variant: the tools themselves are on the reading)
     if (box.bankOpen && it.card) out.push({ label: 'Store', run: () => box.store(slot) });
     if (it.lure) out.push({ label: 'Tie on', run: () => box.tieOn(slot) });
     const F = Object.values(FITTINGS).find((f) => f.kind === it.kind);
@@ -144,7 +155,7 @@ export class PneukaUI {
     if (!this.open) return;
     const g = this.game, box = this.box;
     this.root.innerHTML = '';
-    const px = el('div', 'px');
+    const px = el('div', `px fit ${RT_CLASSES.window}`);
     const head = el('header');
     head.appendChild(el('h2', '', 'THE PNEUKA BOX'));
     head.appendChild(el('span', 'sub', `what the Courier carries · ${box.used} / ${SLOTS} · P to close`));
@@ -152,13 +163,25 @@ export class PneukaUI {
     px.appendChild(head);
     this.hoverEl = el('div', 'hover', '&nbsp;');
     px.appendChild(this.hoverEl);
-    const cols = el('div', 'cols');
-    cols.appendChild(this.bankPane());
-    cols.appendChild(this.invPane());
-    cols.appendChild(this.equipPane());
+    const cols = el('div', 'cols'), reading = el('div', 'reading'), side = el('div', 'side');
+    this.loadout.mount(reading);
+    reading.appendChild(this.equipPane());
+    side.appendChild(this.invPane());
+    side.appendChild(this.bankPane());
+    cols.appendChild(reading); cols.appendChild(side);
     px.appendChild(cols);
-    px.appendChild(el('footer', '', 'left click: the first action · right click: all of them · drag a thing onto another slot to swap · F picks up what lies on the ground'));
+    px.appendChild(el('footer', '', 'X draws and stows the main · R: the sub · a tool below: click for the sub, shift for the main, or drag it onto a place · in the pocket: left click the first action, right click all of them, drag to swap · F picks up what lies on the ground'));
     this.root.appendChild(px);
+    this.loadout.draw(); // (the reading draws once it is in the page)
+    this.fit();
+  }
+  /** The window drawn whole at its own size, scaled down to the screen when the screen is smaller (never up): the reading and the
+   *  pocket side by side, as the reading table is drawn (a menu placed over it reads the scale back: menu()). */
+  fit() {
+    const px = this.root.querySelector('.px'); if (!px) return;
+    px.style.transform = '';
+    const k = Math.min(1, (innerWidth - 24) / Math.max(1, px.offsetWidth), (innerHeight - 24) / Math.max(1, px.offsetHeight));
+    if (k < 1) px.style.transform = `scale(${k.toFixed(3)})`;
   }
 
   icon(id) { const it = itemOf(id); return it ? `<img src="${itemIcon(this.game, id)}" alt="">` : ''; }
@@ -166,9 +189,9 @@ export class PneukaUI {
   invPane() {
     const box = this.box, pane = el('div', 'pane inv');
     pane.appendChild(el('h4', '', `<span>IN THE BOX</span><span>${box.free} free</span>`));
-    const grid = el('div', 'grid');
+    const grid = el('div', `grid ${RT_CLASSES.tray}`);
     box.slots.forEach((s, i) => {
-      const it = s && itemOf(s.id), d = el('div', `slot${it ? '' : ' empty'}`, it ? `${this.icon(s.id)}${s.n > 1 ? `<span class="n">${s.n}</span>` : ''}` : '');
+      const it = s && itemOf(s.id), d = el('div', `slot ${RT_CLASSES.slot}${it ? '' : ' empty'}`, it ? `${this.icon(s.id)}${s.n > 1 ? `<span class="n">${s.n}</span>` : ''}` : '');
       if (it) {
         d.draggable = true;
         const acts = () => this.actions(i);
@@ -189,26 +212,28 @@ export class PneukaUI {
   }
 
   equipPane() {
-    const g = this.game, box = this.box, pane = el('div', 'pane equip');
-    pane.appendChild(el('h4', '', '<span>WORN</span><span>the line · the fittings · the tools</span>'));
-    // the lure on the Sondelass' line: one, or a bare hook
+    const g = this.game, box = this.box, pane = el('div', `pane equip ${RT_CLASSES.pane}`);
+    pane.appendChild(el('h4', '', '<span>FITTED</span><span>to the main and the sub</span>'));
+    // the lure on the Sondelass' line: one, or a bare hook (shown while the Sondelass is the main or the sub)
     const cur = box.lure ? itemOf(box.lure) : null;
     const lure = (box.lure && lureList(g.ledger, box).find((l) => l.id === box.lure)) || BARE;
-    const row = el('div', 'lure');
-    const s = el('div', `slot${cur ? '' : ' empty'}`, cur ? this.icon(box.lure) : '');
-    s.onmouseenter = () => this.say(cur ? `Untie <b>${cur.name}</b> (into the box)` : 'Nothing is tied on. Click a lure (or a curio) in the box to tie it on.');
-    s.onmouseleave = () => this.say('&nbsp;');
-    s.onclick = () => { if (cur) { box.untie(); this.render(); } };
-    s.oncontextmenu = (e) => { e.preventDefault(); if (cur) this.menu(e, cur.name, [{ label: 'Untie', run: () => box.untie() }, { label: 'Examine', run: () => box.examine(box.lure) }]); };
-    row.appendChild(s);
-    row.appendChild(el('div', 't', `<s>THE LURE · ON THE SONDELASS' LINE</s>${cur ? cur.name : lure.name}<s style="margin-top:3px">${!cur ? 'tie one on from the box' : cur.kind === 'curio' ? 'a curio: its life is its taste' : 'one of the made lures'}</s>`));
-    pane.appendChild(row);
-    const taste = tasteOf(lure), tg = el('div', 'taste');
-    ASPECTS.forEach((a, k) => { tg.appendChild(el('span', '', a.name)); tg.appendChild(el('span', '', `<i style="width:${Math.round(Math.min(1, taste[k] / 1.6) * 100)}%;color:${hex(a.color)}"></i>`)); });
-    pane.appendChild(tg);
+    if (g.belt?.isWorn('sondelass')) {
+      const row = el('div', 'lure');
+      const s = el('div', `slot${cur ? '' : ' empty'}`, cur ? this.icon(box.lure) : '');
+      s.onmouseenter = () => this.say(cur ? `Untie <b>${cur.name}</b> (into the box)` : 'Nothing is tied on. Click a lure (or a curio) in the box to tie it on.');
+      s.onmouseleave = () => this.say('&nbsp;');
+      s.onclick = () => { if (cur) { box.untie(); this.render(); } };
+      s.oncontextmenu = (e) => { e.preventDefault(); if (cur) this.menu(e, cur.name, [{ label: 'Untie', run: () => box.untie() }, { label: 'Examine', run: () => box.examine(box.lure) }]); };
+      row.appendChild(s);
+      row.appendChild(el('div', 't', `<s>THE LURE · ON THE SONDELASS' LINE</s>${cur ? cur.name : lure.name}<s style="margin-top:3px">${!cur ? 'tie one on from the box' : cur.kind === 'curio' ? 'a curio: its life is its taste' : 'one of the made lures'}</s>`));
+      pane.appendChild(row);
+      const taste = tasteOf(lure), tg = el('div', 'taste');
+      ASPECTS.forEach((a, k) => { tg.appendChild(el('span', '', a.name)); tg.appendChild(el('span', '', `<i style="width:${Math.round(Math.min(1, taste[k] / 1.6) * 100)}%;color:${hex(a.color)}"></i>`)); });
+      pane.appendChild(tg);
+    }
     // the fittings of the tools after (the bell's instrument, the Lockheart's coffin and keys), if they have those tools at all
     for (const [socket, F] of Object.entries(FITTINGS)) {
-      if (F.hidden) continue; // (every tool is always theirs: main and sub)
+      if (F.hidden || (!F.place && !g.belt?.isWorn(F.tool))) continue; // (fitted to the main or the sub; the rest wait on their own tool)
       const cur = box.fitted(socket), row = el('div', 'fits');
       for (let i = 0; i < F.max; i++) {
         const id = cur[i], it = id && itemOf(id), d = el('div', `slot${it ? '' : ' empty'}`, it ? this.icon(id) : '');
@@ -236,7 +261,7 @@ export class PneukaUI {
     // the psygun's chambers (tools/psygun/kinds.js): which caster shells it carries, and how many of each it holds; a click on a chamber turns
     // it to the next shell not chambered, a right click lists them all
     const S = g.shells;
-    if (S) {
+    if (S && g.belt?.isWorn('psygun')) {
       const row = el('div', 'fits');
       S.chambers.forEach((id, i) => {
         const T0 = SHELL_TYPES.find((t) => t.id === id), d = el('div', 'slot', `${this.icon(`shell.${id}`)}<span class="n">${i + 1}</span>`);
@@ -250,33 +275,15 @@ export class PneukaUI {
       row.appendChild(el('div', 't', `<s>${S.gun.name} · ${S.gun.chambers} CHAMBERS</s>${S.types.map((t) => t.no.replace('TYPE-', '')).join(' · ')}`));
       pane.appendChild(row);
     }
-    // the tools: the main (X draws it) and the sub (R lends its verb), a click on one of the seven making it that one (tools/belt.js equip:
-    // the two change places if it was the other; refused in a fight and the like, the log says why)
-    const B = g.belt, inHand = B?.inHand;
-    pane.appendChild(el('h4', '', `<span>THE TOOLS</span><span>${B?.pair ? B.pair.label : ''}</span>`));
-    const belt = el('div', 'belt');
-    for (const [as, key] of [['main', 'X'], ['sub', 'R']]) {
-      for (const t of B?.tools || []) {
-        const on = B[as] === t.id;
-        const name = t.id === 'lockheart' ? (itemOf(box.fitted('heart')[0])?.name || t.name) : t.name; // (the Lockheart is named for the coffin it is)
-        const d = el('div', on ? (t === inHand ? 'on' : '') : 'none', `<span>${name}</span><s>${as === 'main' ? 'main' : 'sub'} · ${key}</s>`);
-        d.style.cursor = 'var(--jcur-pointer, pointer)';
-        d.onmouseenter = () => this.say(on ? `<b>${t.name}</b> is your ${as}` : `Make <b>${t.name}</b> your ${as}`);
-        d.onmouseleave = () => this.say('&nbsp;');
-        d.onclick = () => { B.equip(t.id, as); this.render(); };
-        belt.appendChild(d);
-      }
-    }
-    pane.appendChild(belt);
     return pane;
   }
 
   bankPane() {
-    const box = this.box, B = box.book, pane = el('div', 'pane bank');
+    const box = this.box, B = box.book, pane = el('div', `pane bank ${RT_CLASSES.book}`);
     pane.appendChild(el('h4', '', `<span>THE VERITOME · THE BANK</span><span>${box.bankOpen ? 'open' : 'shut'}</span>`));
     if (!B) return pane;
     if (!box.bankOpen) {
-      pane.appendChild(el('p', '', 'The Veritome is shut. At a Shrine, THE BANK opens the box with the Book beside it; or make the Veritome your main and hold it open. Things can be stored in it for good, or taken out.'));
+      pane.appendChild(el('p', '', 'The Book opens at a Shrine (THE BANK), or with the Veritome as your main, open: then things can be stored in it for good, or taken out.'));
       pane.appendChild(el('p', '', `In the Book now: ${CARDS.filter((c) => c.form === 'item' && B.has(c.id)).reduce((a, c) => a + B.count(c.id), 0)} curios, ${B.filled} pages filled of ${CARDS.length}.`));
       return pane;
     }
