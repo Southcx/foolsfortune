@@ -133,6 +133,16 @@ Courier as a System window in the air.
 - Fan the Hammer goes on **Q** while the psygun is the main (`FAN_KEY`, `gunmoves.js`). Q came free with the draw keys.
 - Q's other readers are mode-bound and never meet a drawn psygun: the skiff's carve and the rail's forms.
 
+**Ruled (Dovina, 2026-10-23, on Petra's "what now counts only two worn tools"):** all four are kept as main and sub, by the rule's own
+design. The pair is the build, and a build is a choice made before the fight (TOOLS-TOGETHER.md 8):
+- **a puzzle duel's moves** are the main's and the sub's (two tools' moves, not seven). The Veritome as main lends the Flash as Delay's
+  stand-in.
+- **the pier's mounts** are the main and the sub, the sloop's two slots.
+- **the passives** that read `isWorn` (the wire compass and the sea chart's vane for the Dreamvane, `/time` for the Veritome) are the
+  sub's passive at work.
+- **the Lockheart drinks the pool's overflow** only while worn: it is its passive (`SUB_GIFTS.lockheart`).
+- **busking** asks for the Crucibelle as the main: the bell must be in hand.
+
 **Who builds what:**
 - **Petra:** the belt, the keys out of the tools, each tool's `lend()` (with Calissa's gesture clips), the Box's data and save, the
   Shrine's THE BANK row, and the pruning in her files.
