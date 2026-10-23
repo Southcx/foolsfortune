@@ -258,6 +258,7 @@ import { renderGrimoire } from './feedback/codex/grimoire.js';
 import { GardenMood } from './vfx/garden/gardenmood.js';
 import { GuestJars } from './vfx/garden/guestjars.js';
 import { CelestialTargets } from './vfx/celestialtargets.js';
+import { ReadingTable } from './ui/readingtable.js';
 import { Realm } from './world/garden/realm.js';
 import { Party } from './coop/party.js';
 import { SiblingChannel } from './coop/channel.js';
@@ -645,6 +646,7 @@ async function main() {
   game.creations = new Creations(game); // (the hand's voxel creations: godhand/creations.js; GODHAND.md 7)
   game.rejection = new Rejection(game); // (the island's immune response to the hand: godhand/rejection.js; GODHAND.md 10)
   game.realm = new Realm(game, { god }); // (the Spirit Garden entered at a Shrine: the Jar on its planetoids, the hand over it: world/garden/realm.js)
+  game.readingTable = new ReadingTable(game); // (the Pneuka Box's loadout as a two-card reading: Dovina's window mounts .el and calls draw(state), ui/readingtable.js)
   game.celestialTargets = new CelestialTargets(game); // (Celestial mode's targets drawn over the paper: the brush hands its list each frame, vfx/celestialtargets.js)
   game.guestJars = new GuestJars(game); // (a guest visiting your garden as their own Pneuka Jar in their glazes; Petra's runtime calls show: vfx/garden/guestjars.js)
   game.gardenMood = new GardenMood(game); // (the Inner Realm's one mood: the hour, the season and the briar every garden look reads: vfx/garden/gardenmood.js)

@@ -566,6 +566,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the pause menu** (Esc) — the help pages and the controls. *Retired:* "pause card".
 - **the Pneuka Box** (P, `src/pneuka/`) — the inventory (56 slots) and what is worn; at a Shrine's THE BANK row, or with the Veritome held open, the bank (the Book) opens beside it.
   *Not:* the Veritome.
+- **the reading table** (plain name; `ReadingTable`, `game.readingTable`, `src/ui/readingtable.js`) — the Pneuka Box's loadout drawn as a tarot reading: the main tool's card upright, the sub's crossed over it, the pair's Major Arcana beside them (face down until opened), the shelf's tools as a hand to pick or drag, a swap's preview, and your seal pressed over a refused swap. It draws what it is handed (`draw(state)`) and sends back hover, pick and drop. *Not:* the window (Dovina's `pneuka/ui.js`), the loadout's rules, a table (Raku's).
 - **the map** (M, `src/feedback/cartography.js`) — on screen **Map** (the owner, 2026-10-20); Mind Mapping stays in the world and the Codex.
 - **the dialogue box** (`src/npc/dialogue.js`) — the one window of words in the world.
 - **a page set aside** (`showPage(..., { aside })`, `src/feedback/indexmenu.js`) — an index-window page in a column to one side with no veil, so
@@ -618,7 +619,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **a keyword** (`KEYWORDS`, `src/ui/keywords.js`) — one of twelve genre words, bold with its icon and explained on hover: Absorb, Parry, Bomb,
   Lock-on, Weak point, Stun, Energy, Cooldown, Charges, Hull, Fuel, Passive; and the melee loadout's four effects, Stagger, Knockback, Launch,
   Guard break (placeholders for Espada's word). *Not:* a label. → detail
-- **the UI icons** (`uiIcon`, `src/ui/icons/`) — the choice card's and the keywords' pixel art, a picture of what each
+- **the UI icons** (`uiIcon`, `src/ui/icons/`) — the choice card's, the keywords' and the reading table's fittings' (`fit.<kind>`) pixel art, a picture of what each
   thing does, in the icons' hand (a light shape keylined dark), palette-swapped. *Not:* the sea chart's icons. → detail
 - **a domain's look** (`DOMAIN_LOOK`, `src/ui/domainlook.js`) — a domain's colour, sign and icon; never a feeling's colour. Anagami dresses it as a
   kiln-glaze tile; the identity is the colour and the sign.
