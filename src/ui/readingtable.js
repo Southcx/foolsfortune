@@ -19,22 +19,25 @@
 //   const T = new ReadingTable(game)   host.appendChild(T.el)
 //   T.draw(state)   (on any change; cheap, a rebuild of a few dozen nodes)
 //     state = {
-//       main:  { id, name, label, lines: [string], fittings: [{ label, color?, icon? }], chambers?: { of, loaded: [hex | null] } },
+//       main:  { id, name, label, lines: [string], fittings: [{ label, kind?, color?, icon? }], chambers?: { of, loaded: [hex | null] } },
+//              (kind: FITTINGS' kind, pneuka/box.js, or 'lure' / 'shell': its glyph from ui/icons/fittingart.js; icon: an image URL over it)
 //       sub:   { id, name, label, verb: string, passive: string, fittings: [...] },
-//       pair:  { n: 1..21, name, open: bool, line: string },            (line: the special's words, or "special: to come", or how it opens)
+//       pair:  { n: 1..21, name, face: bool, open: bool, line: string },  (face: the arcana shown (else its back); open: the special is
+//              opened (the OPEN tag); face defaults to open. line: the special's words, or "special: to come", or how it opens)
 //       shelf: [{ id, name, label, verb, passive, note? }],               (the five not worn, in TOOL_IDS' order)
 //       preview: { id, as: 'main' | 'sub', rows: [{ what, from?, to, up? }], pair: { n, name, open, line } } | null,
 //       locked: bool }                                                    (a swap would be refused now: the positions dim, nothing lifts)
 //   T.on('hover', ({ id } | null))   T.on('pick', ({ id, button }))   T.on('drop', ({ id, as }))   (a hand card dropped on a position)
 //   T.refuse(as)    (the seal pressed over 'main' or 'sub'; lifted after REFUSE.hold real s)
-//   RT_CLASSES.window / .tray / .slot / .book   (the Clay dress for the window's own parts: add the class, the look follows)
+//   RT_CLASSES.window / .tray / .slot / .book / .pane   (the Clay dress for the window's own parts: add the class, the look follows;
+//              .book carries its own heading (h4), .pane a list pane's rows (the FITTED pane))
 // ---------------------------------------------------------------------------------------
-import { iconEl } from './icons/icons.js';
+import { iconEl, hasIcon } from './icons/icons.js';
 import { bazaarAtlas } from '../vfx/bazaarfaces.js';
 import { drawSealFace } from '../vfx/sealface.js';
 
 export const REFUSE = { hold: 1.4, press: 0.16 };      // (real s the seal stays; real s it takes to come down)
-export const RT_CLASSES = { window: 'rt-clay', tray: 'rt-tray', slot: 'rt-slot', book: 'rt-book' };
+export const RT_CLASSES = { window: 'rt-clay', tray: 'rt-tray', slot: 'rt-slot', book: 'rt-book', pane: 'rt-pane' };
 const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI'];
 const CARD = { w: 128, h: 208, cols: 16, back: 78 }; // (the house deck's cells in its atlas: vfx/bazaarfaces.js AT.card)
 const VERMILION = '#e0442a';
@@ -51,6 +54,13 @@ const CSS = `
   box-shadow:inset 0 3px 4px rgba(0,0,0,.6),inset 0 -1px 0 rgba(255,226,196,.10)}
 .rt-slot:hover,.rt-slot.hov{box-shadow:inset 0 3px 4px rgba(0,0,0,.6),0 0 0 2px var(--rt-window,#6fa596)}
 .rt-book{padding:9px 10px;border-radius:3px;color:#17111f;background:linear-gradient(90deg,#efe0c2,#dcc49c);box-shadow:0 0 0 1px #2a140c,inset 0 0 0 3px rgba(122,70,48,.25)}
+.rt-book h4,#pneuka .rt-book h4{margin:0 0 6px;font:700 11px/1.1 Georgia,serif;letter-spacing:.18em;text-transform:uppercase;color:#7a2414;
+  padding-bottom:4px;border-bottom:1px solid rgba(122,36,20,.35);text-shadow:none}
+.rt-pane{padding:8px 10px;border-radius:4px;color:#efe6d2;background:linear-gradient(180deg,#4e2a1c,#3a1c12);
+  box-shadow:inset 0 2px 5px rgba(0,0,0,.5),0 0 0 1px #2a140c,0 1px 0 rgba(255,226,196,.12)}
+.rt-pane h4,#pneuka .rt-pane h4{margin:0 0 6px;font:700 10px/1 Georgia,serif;letter-spacing:.2em;text-transform:uppercase;color:#ffd36a;text-shadow:none}
+.rt-pane > div,.rt-pane li{padding:3px 0;border-bottom:1px solid rgba(255,226,196,.08)}
+.rt-pane > div:last-child,.rt-pane li:last-child{border-bottom:0}
 
 .rt{position:relative;width:560px;height:640px;user-select:none;font-family:inherit}
 .rt-altar{position:absolute;left:0;right:0;top:0;height:420px;border-radius:50% 50% 8px 8px/22% 22% 8px 8px;
@@ -159,7 +169,9 @@ export class ReadingTable {
     const row = make('div', 'rt-fits');
     for (const f of list) {
       const t = make('div', 'rt-fit'); t.title = f.label || ''; t.style.background = f.color || '#8a5a3a';
-      if (f.icon) { const im = make('img'); im.src = f.icon; im.alt = ''; t.append(im); } else t.textContent = (f.label || '?')[0];
+      if (f.icon) { const im = make('img'); im.src = f.icon; im.alt = ''; t.append(im); }
+      else if (f.kind && hasIcon(`fit.${f.kind}`)) t.append(iconEl(`fit.${f.kind}`, { pal: 'gold', px: 2 }));
+      else t.textContent = (f.label || '?')[0];
       row.append(t);
     }
     return row;
@@ -190,10 +202,12 @@ export class ReadingTable {
   }
 
   pairCard(p) {
-    const c = make('div', `rt-card rt-arcana${p.open ? '' : ' down'}`);
-    const f = this.face(p.n, !p.open); if (f) { f.className = 'face'; c.append(f); }
+    const up = p.face ?? p.open; // (worn face up before its special opens: the face is the pair's, the OPEN tag the special's)
+    const c = make('div', `rt-card rt-arcana${up ? '' : ' down'}`);
+    const f = this.face(p.n, !up); if (f) { f.className = 'face'; c.append(f); }
     c.append(make('div', 'nm', `${ROMAN[p.n] || ''} · ${p.name}`));
-    const gl = make('div', 'gl'); gl.append(make('span', 'tag', p.open ? 'OPEN' : 'NOT YET'), document.createTextNode(p.line || 'special: to come'));
+    const gl = make('div', 'gl'); if (p.open || !up) gl.append(make('span', 'tag', p.open ? 'OPEN' : 'NOT YET'));
+    gl.append(document.createTextNode(p.line || 'special: to come'));
     c.append(gl);
     return c;
   }
@@ -233,7 +247,7 @@ export class ReadingTable {
     }
     if (p.pair) {
       const row = make('div', ''); row.append(document.createTextNode('Pair · '));
-      if (!p.pair.open) row.append(make('span', 'fd'));
+      if (!(p.pair.face ?? p.pair.open)) row.append(make('span', 'fd'));
       row.append(document.createTextNode(`${ROMAN[p.pair.n] || ''} ${p.pair.name}`), make('span', p.pair.open ? 'up' : 'dn', p.pair.open ? ', open' : ', not yet open'));
       b.append(row); if (p.pair.line) { const l = make('div', '', p.pair.line); l.style.opacity = '.75'; b.append(l); }
     }

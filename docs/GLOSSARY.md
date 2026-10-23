@@ -616,7 +616,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **a keyword** (`KEYWORDS`, `src/ui/keywords.js`) — one of twelve genre words, bold with its icon and explained on hover: Absorb, Parry, Bomb,
   Lock-on, Weak point, Stun, Energy, Cooldown, Charges, Hull, Fuel, Passive; and the melee loadout's four effects, Stagger, Knockback, Launch,
   Guard break (placeholders for Espada's word). *Not:* a label. → detail
-- **the UI icons** (`uiIcon`, `src/ui/icons/`) — the choice card's and the keywords' pixel art, a picture of what each
+- **the UI icons** (`uiIcon`, `src/ui/icons/`) — the choice card's, the keywords' and the reading table's fittings' (`fit.<kind>`) pixel art, a picture of what each
   thing does, in the icons' hand (a light shape keylined dark), palette-swapped. *Not:* the sea chart's icons. → detail
 - **a domain's look** (`DOMAIN_LOOK`, `src/ui/domainlook.js`) — a domain's colour, sign and icon; never a feeling's colour. Anagami dresses it as a
   kiln-glaze tile; the identity is the colour and the sign.
