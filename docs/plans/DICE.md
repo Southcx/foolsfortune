@@ -31,18 +31,20 @@ stay in the lore only: the first dice, in the god hand's knuckles, and astragalo
 ## 2. The shapes: the solids are the suits
 
 Seven dice, the standard set, as Raku's tables use. Five are the Platonic solids, which Plato's *Timaeus* gave to the elements, and the
-elements are our suits:
+owner ruled the suits (2026-10-23, through Espada):
 
-| die | solid | Plato's element | suit | |
+| die | solid | Plato's element | suit (ruled) | |
 | --- | --- | --- | --- | --- |
 | d4 | tetrahedron | fire | Wands | the sharpest; the smallest die |
 | d6 | cube | earth | Pentacles | a cube of Lachrymite is the currency: a coin was always a die |
 | d8 | octahedron | air | Swords | |
-| d20 | icosahedron | water | Cups | the roundest; rolls furthest |
-| d12 | dodecahedron | the aether, "the whole" | the Majors, the trumps | the fifth over the four; Plato's solid for the whole heaven and its figures, so its twelve faces are the twelve zodiac Majors (CLASSES.md 2) |
-| d10, d% | pentagonal trapezohedron | none | the Tree of Life | the ten Sephiroth; the Golden Dawn laid the 22 Majors as the paths between them |
+| d10 | pentagonal trapezohedron | (none) | **Cups** (water) | the owner, 2026-10-23 |
+| d20 | icosahedron | water | **the Major Arcana, I to XX** | the owner: twenty faces, the Magician to Judgement; "I truncate The Fool and The World, like putting the alpha and omega in separate categories": the Fool is you, who throws; the World is the whole, never one face |
+| d12 | dodecahedron | the aether, "the whole heaven" | **open** | the lore keeps Plato's whole heaven, the zodiac's twelve signs, until a mechanic needs it |
+| d% | pentagonal trapezohedron | (none) | open | the tens die beside the d10 |
 
-Seven stones, as there are seven feelings, seven domains and seven sockets on the bracelet.
+Seven stones, as there are seven feelings, seven domains and seven sockets on the bracelet. The palm die's growth (d4 to d20) ends
+on the Majors' die: the hand grows toward the trumps (Espada).
 
 ## 3. What they do: what they did, and they roll
 
@@ -61,7 +63,7 @@ Seven stones, as there are seven feelings, seven domains and seven sockets on th
 
 Courier, Pneuka Jar and god hand are one being (GLOSSARY section 1). The Courier wears its stones in the vessel; **the god hand holds
 them in its palm, as one die**: the owner's die in the hole of the palm. It is the set gathered into one and growing: **d4, d6, d8,
-d12, d20** (fire, earth, air, the aether, water; the d10 stays the Tree's).
+d12, d20** (fire, earth, air, the aether, and the Majors' own).
 
 - **It condenses overflow into cubes** (the owner, ruled 2026-10-23: overflow "goes into the Lockheart first if applicable, then
   converted into solid Lachryma cubes via the palm die"). Built: `progress/dice.js`, `game.palmDie`. The pool's overflow, in order:
@@ -102,7 +104,7 @@ dealt, and the hand that throws. Espada's to write into the world.
 
 - **The old lapidaries**: the stones' virtues (stones.js's header), kept.
 - **Plato's *Timaeus***: the five solids as the elements (section 2).
-- **The Golden Dawn's Tree of Life**: the ten Sephiroth and the 22 Majors as the paths (the d10).
+- **The owner's own d20 mapping**: the Majors I to XX on its faces, the Fool and the World outside (alpha and omega).
 - **Astragali and astragalomancy**: the first dice were knucklebones, thrown in the hand to read fate (the palm die; Divination).
 - **Dungeons & Dragons' standard set**: the seven dice, and a roll as the visible face of chance.
 - **Entropy Tactics** (the owner's): the Hungry Die that grows on what you feed it.
@@ -123,8 +125,9 @@ dealt, and the hand that throws. Espada's to write into the world.
 2. Overflow: the Lockheart first, then the palm die condenses the rest into cubes (section 4; built).
 3. The palm die is both the Hungry Die at Entropy Tactics' table and the answer to the island's rejection (section 4).
 4. Luck's re-roll: yes (section 3; the rule built, the throw to wire).
-5. "Releases", asked: the way out of SPINE.md 4 (a tier IV caster shell, an Overload, an epic miracle), not every god power.
+5. The dice's suits (section 2): d4 Wands, d6 Pentacles, d8 Swords, d10 Cups, d20 the Majors I to XX.
+6. "Releases", asked: the way out of SPINE.md 4 (a tier IV caster shell, an Overload, an epic miracle), not every god power.
 
 ## 9. Open
 
-1. The solids as suits (section 2), checked by Espada; the owner's nod.
+1. The d12 and the d% have no suit yet (section 2); the d12 waits on a mechanic that needs it.

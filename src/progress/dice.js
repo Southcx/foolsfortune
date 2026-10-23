@@ -22,15 +22,17 @@
 import { stoneOf } from './stones.js';
 import { today } from '../core/calendar.js';
 
-/** The standard set, each die its Platonic solid's suit (Plato's Timaeus; DICE.md 2); the d10 pair the Tree's. */
+/** The standard set and its suits (the owner, 2026-10-23, through Espada; DICE.md 2): d4 Wands, d6 Pentacles, d8 Swords, d10 Cups,
+ *  d20 the Major Arcana I to XX (the Fool and the World outside it: the alpha and omega); the d12 and the d% open. As an item on the
+ *  spread, the d20 is the trumps' own, so it lights as a wild card does. */
 export const SET = [
   { die: 'd4', sides: 4, solid: 'tetrahedron', suit: 'wands' },
   { die: 'd6', sides: 6, solid: 'cube', suit: 'pentacles' },
   { die: 'd8', sides: 8, solid: 'octahedron', suit: 'swords' },
-  { die: 'd10', sides: 10, solid: 'pentagonal trapezohedron', suit: null },
+  { die: 'd10', sides: 10, solid: 'pentagonal trapezohedron', suit: 'cups' },
   { die: 'd%', sides: 10, solid: 'pentagonal trapezohedron', suit: null },
-  { die: 'd12', sides: 12, solid: 'dodecahedron', suit: 'wild' },
-  { die: 'd20', sides: 20, solid: 'icosahedron', suit: 'cups' },
+  { die: 'd12', sides: 12, solid: 'dodecahedron', suit: null },
+  { die: 'd20', sides: 20, solid: 'icosahedron', suit: 'wild', majors: ['magician', 'priestess', 'empress', 'emperor', 'hierophant', 'lovers', 'chariot', 'strength', 'hermit', 'wheel', 'justice', 'hanged', 'death', 'temperance', 'devil', 'tower', 'star', 'moon', 'sun', 'judgement'] },
 ];
 
 /** The palm die. `rate`: cubes condensed per unit of Lachryma, by size, always under the Lockheart's (the owner, 2026-10-23: "the
