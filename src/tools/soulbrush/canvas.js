@@ -12,6 +12,7 @@
 //
 //   const cv = new BrushCanvas()   cv.show(true|false)   cv.begin(x, y) / cv.extend(x, y) / cv.lift()   cv.pending() -> strokes
 //   cv.take(tint) / cv.run() / cv.fade()  (what becomes of the pending drawing)   cv.cursor(x, y, ink)   cv.update(rawDt)
+//   brushPath(ctx, pts, scale, alpha, from, open)   INK, GLOW   (the stroke and its colours, for another hand that writes in this ink)
 //
 // The cost is paid once: each drawing is painted into its own layer as it is drawn, a dab at a time (and once more, whole, when a
 // stroke lifts, for its tapered end); a frame only lays the layers down. The glow is a second canvas blurred by the browser, not a
@@ -33,7 +34,7 @@ const CSS = `
   padding: 10px 7px; background: rgba(246,228,190,.42); border: 1px solid rgba(60,34,20,.35); border-radius: 3px; box-shadow: 0 2px 10px rgba(40,20,10,.25); }
 #brushcanvas .scroll canvas { width: 38px; height: 38px; opacity: .72; }
 `;
-const INK = '#0e0a0c', GLOW = '#6e3caa';
+export const INK = '#0e0a0c', GLOW = '#6e3caa'; // (the ink, and its violet sheen: also the god hand's drawn sign's, vfx/godhand/godsign.js)
 
 function grainTexture() {
   const c = document.createElement('canvas'); c.width = c.height = 128;
@@ -45,7 +46,7 @@ function grainTexture() {
 
 /** Stroke a path of points as a brush would: a chain of round dabs, the width following the pressure (w) and tapering at the ends
  *  (`from`: only the dabs from that point on, for a stroke still being drawn; `open`: its end is not yet known, so no taper there). */
-function brushPath(g, pts, scale = 1, alpha = 1, from = 1, open = false) {
+export function brushPath(g, pts, scale = 1, alpha = 1, from = 1, open = false) {
   if (pts.length < 2) return;
   let L = 0;
   for (let i = 1; i < pts.length; i++) L += Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y);

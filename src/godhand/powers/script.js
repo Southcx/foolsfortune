@@ -14,7 +14,7 @@ export const SCRIPT = {
     end(P, L) {
       const r = Math.max(2, Math.min(L.a.distanceTo(L.b), P.ramp('ward', 'r'))), dur = P.ramp('ward', 'dur'), at = L.a.clone();
       P.cap('ward', Math.round(P.ramp('ward', 'n')));
-      const ring = P.ring(at, r, P.domainColour('ward')), side = new WeakMap();
+      const ring = P.game.godhandLooks?.ward(at, r, P.domainColour('ward')) ?? P.ring(at, r, P.domainColour('ward')), side = new WeakMap(); // (its written circle and wall: vfx/godhand/marks.js)
       let t = 0;
       P.keep({
         id: 'ward',

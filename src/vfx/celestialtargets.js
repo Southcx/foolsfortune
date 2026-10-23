@@ -7,7 +7,9 @@
 // paper stays CSS (tools/soulbrush/canvas.js, `.paper`), this layer sits just over it; a screen pass is Petra's to take later.
 //
 // What is selectable and where it is on screen are the brush's (Dovina's rule, Petra's pick): each frame the paper is up the brush hands
-// the list here. Nothing is decided here.
+// the list here. Nothing is decided here. The queued sigils over a creature (the brush's prompts, tools/soulbrush/sigils.js: sprites in
+// the world, which the paper, a page element, would cover) are drawn again on this layer at their sprites' screen places, from their
+// own textures, so they ride above the paper too (read from `game.sigils.on`, the brush's Sigils).
 //
 // Prior art: Okami's Celestial Brush (the canvas turns to paper, the brush's targets stay readable on it), Magic Cat Academy (only what
 // you can affect drawn bright), the hanko pressed on a scroll painting beside what it claims, sumi-e's single ring (the ensō).
@@ -65,6 +67,7 @@ export class CelestialTargets {
       if (t.marked) this.press(g, t.x, t.y, r, k, Math.min(1, (now - m.t0) / C.stampIn));
     }
     for (const id of this.marks.keys()) if (!seen.has(id)) this.marks.delete(id); // (lifted: a dot again, or gone)
+    this.prompts(g, W, H);
     this.mask(holes);
     if (!this.on) { this.on = true; cv.style.display = 'block'; }
   }
@@ -73,6 +76,20 @@ export class CelestialTargets {
     if (!this.on) return; this.on = false;
     if (this.cv) { this.cv.getContext('2d').clearRect(0, 0, this.cv.width, this.cv.height); this.cv.style.display = 'none'; }
     this.marks.clear(); this.mask([]);
+  }
+
+  /** The queued sigils, over the paper: each sprite the brush shows, at its screen place and size, from its own texture. */
+  prompts(g, W, H) {
+    const S = this.game.sigils?.on, cam = this.game.camera;
+    if (!S?.size || !cam) return;
+    const v = (this._v ||= cam.position.clone()), u = (this._u ||= cam.position.clone());
+    for (const e of S.values()) for (const sp of e.sprites || []) {
+      const img = sp.material?.map?.image; if (!img || !sp.visible || sp.material.opacity <= 0.01) continue;
+      v.copy(sp.position).project(cam); if (v.z > 1) continue;
+      u.copy(sp.position).addScaledVector(cam.up, sp.scale.y / 2).project(cam); // (its half height, measured on screen)
+      const x = (v.x * 0.5 + 0.5) * W, y = (-v.y * 0.5 + 0.5) * H, h = Math.max(6, (Math.abs(u.y - v.y) * H) / 2); // (NDC to px: half the height)
+      g.save(); g.globalAlpha = sp.material.opacity ?? 1; g.drawImage(img, x - h, y - h, h * 2, h * 2); g.restore();
+    }
   }
 
   /** The paper's sepia masked away in a soft hole round each (the paper's own element, tools/soulbrush/canvas.js `.paper`). */

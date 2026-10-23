@@ -100,6 +100,7 @@ import { Rejection } from './godhand/rejection.js';
 import { Creations } from './godhand/creations.js';
 import { IslandMatter } from './godhand/islandmatter.js';
 import { crackPrewarm } from './vfx/crackskin.js';
+import { prewarm as prewarmMatterLook } from './vfx/godhand/matterlook.js';
 import { prewarmCasterShadersS1toS5 } from './vfx/caster/warmups1tos5.js';
 import { prewarmShellLooks } from './vfx/shelllooks/warmup.js';
 import { prewarmSandfall } from './vfx/racewaysandfall.js';
@@ -152,6 +153,7 @@ import { TimeScale } from './core/time.js';
 import { Sky } from './vfx/sky.js';
 import { WeatherLook } from './vfx/weather.js';
 import { AwakeningLook } from './vfx/awakeninglook.js';
+import { GodhandLooks } from './vfx/godhand/godhandlooks.js';
 import { FEELING_CLIPS } from './courier/anim/feelingclips.js';
 import { MawWipe } from './vfx/mawwipe.js';
 import { AberrantWipe } from './vfx/aberrantwipe.js';
@@ -263,6 +265,8 @@ import { GuestJars } from './vfx/garden/guestjars.js';
 import { CelestialTargets } from './vfx/celestialtargets.js';
 import { ReadingTable } from './ui/readingtable.js';
 import { dangerPips } from './ui/dangerpips.js';
+import { ReadingView } from './vfx/readingview.js';
+import { installUndersideLook } from './ui/undersidelook.js';
 import { Realm } from './world/garden/realm.js';
 import { Party } from './coop/party.js';
 import { SiblingChannel } from './coop/channel.js';
@@ -279,6 +283,9 @@ import { OpenSea } from './world/opensea/opensea.js';
 import { SeaFight } from './world/opensea/seafight.js';
 import { SeaSerpentBody } from './vfx/opensea/seaserpentbody.js';
 import { SeaLooks } from './vfx/opensea/isletlooks.js';
+import { PuzzleLooks } from './vfx/opensea/puzzlelooks.js';
+import { SquallLine } from './vfx/opensea/squallline.js';
+import { egregoreBody } from './vfx/opensea/egregorebodies.js';
 import { SeaFightLook } from './vfx/opensea/seafightlook.js';
 import { SeaHull } from './ui/seahull.js';
 import { Race } from './world/raceway/race.js';
@@ -303,7 +310,7 @@ import { Ostraca } from './world/ostraca.js';
 import { Weather, phaseAt } from './progress/weather.js';
 import { modifier as stoneModifier } from './progress/stones.js';
 import { TitleScene } from './title/scene.js';
-import { ReadingView } from './render/readingview.js';
+import { ReadingScene } from './render/readingscene.js';
 import { TitleUI } from './title/ui.js';
 import { Overture } from './cine/overture.js';
 import { OVERTURE_TITLE } from './cine/overture.board.js';
@@ -494,6 +501,7 @@ async function main() {
   game.mawWipe = new MawWipe(game); // (the seam into a Well, covered: close(onCovered), then open() when the floor is built)
   game.aberrantWipe = new AberrantWipe(game); // (the battle transition into a puzzle duel with an aberrant: catch, bug, crackle on close(onCovered, { foe }), the shatter on open(); a screen volume of the glow, vfx/aberrantwipe.js)
   game.weatherLook = new WeatherLook(game); // (the weather's and the hour's look: reads game.weather; with none, the painting as it is)
+  game.godhandLooks = new GodhandLooks(game); // (the god powers' marks, the miracles' falls, the drawn sign: vfx/godhand/godhandlooks.js)
   game.awakeningLook = new AwakeningLook(game); // (a feeling's heavy weather flooding round the Courier on feeling.wake, its clip on feeling.embody: vfx/awakeninglook.js)
   game.nightSky = new NightSky(game, { seaBearing: SHORE.angle }); // (the night alive: the stars' wheel, meteors, the aurora over the sea at the Shore; vfx/nightsky.js)
   game.shore = new Shore(game); // (the shore's look: the crude sea from the sand, the swash, the wet sand; it builds once the beach exists)
@@ -601,7 +609,6 @@ async function main() {
   game.laidSpread = new LaidSpread(game); // (the spread laid on the Box's underside, its four tallies the modifiers: progress/laidspread.js)
   game.belt.tick(); game.pneuka.seed(); game.pneuka.reconcile(); // (a new Courier: the Magician's pair worn, the made lures in the box; and two tools worn, never one twice)
   game.pneukaUI = new PneukaUI(game);
-  game.readingView = new ReadingView(game); // (the Box turned over: the reading in the title's dark, render/readingview.js)
   game.pneukaUI.onClose = () => { if (input.enabled && !cursorFree()) input.requestLock(); };
   // the folk's counters (shop/: Raku's treasury and Old Grog's pier, opened from their talk)
   game.shops = new Shops(game);
@@ -657,6 +664,9 @@ async function main() {
   game.realm = new Realm(game, { god }); // (the Spirit Garden entered at a Shrine: the Jar on its planetoids, the hand over it: world/garden/realm.js)
   game.readingTable = new ReadingTable(game); // (the Pneuka Box's loadout as a two-card reading: Dovina's window mounts .el and calls draw(state), ui/readingtable.js)
   game.dangerPips = dangerPips; // (a Well's danger mark, its FOE's class as pips: the Index's row puts dangerPips(cls) after its key tag, ui/dangerpips.js)
+  game.readingView = new ReadingView(game); // (the Box flipped: the laid Majors orbiting the Courier, the cloth under their feet, the hand; its scene, game.readingScene, sets .group and calls update(dt): vfx/readingview.js)
+  installUndersideLook(); // (the Box's underside dressed: Dovina's pneuka/underside.js classes, ui/undersidelook.js)
+  game.readingScene = new ReadingScene(game); // (the dark the reading view is drawn in while the Box is turned over: render/readingscene.js)
   game.celestialTargets = new CelestialTargets(game); // (Celestial mode's targets drawn over the paper: the brush hands its list each frame, vfx/celestialtargets.js)
   game.guestJars = new GuestJars(game); // (a guest visiting your garden as their own Pneuka Jar in their glazes; Petra's runtime calls show: vfx/garden/guestjars.js)
   game.gardenMood = new GardenMood(game); // (the Inner Realm's one mood: the hour, the season and the briar every garden look reads: vfx/garden/gardenmood.js)
@@ -692,7 +702,9 @@ async function main() {
     game.solar = new SolarTrial(game); // (the Solar Skiffing trial, begun at the Gnomon's foot: world/dunes/solar.js)
     game.geysers = new Geysers(game); // (slip geysers: launch pads on a cycle, world/dunes/geysers.js)
     game.makeSeaSerpent = (o) => new SeaSerpentBody(game, o); // (the sea serpent's body for its mind to drive: vfx/opensea/seaserpentbody.js, drive/update/hit/down)
+    game.makeEgregore = (species, o) => egregoreBody(species, o); // (a safari Egregore's placeholder body, for whatever lays a herd or a sighting on the water: vfx/opensea/egregorebodies.js; nothing places them yet)
     game.seaLooks = new SeaLooks(game); // (the open sea's islets dressed over Dovina's placeholders: vfx/opensea/isletlooks.js)
+    game.puzzleLooks = new PuzzleLooks(game); game.squallLine = new SquallLine(game); // (the islets' puzzles dressed, the dig's moment; a front's squall line: vfx/opensea/puzzlelooks.js, squallline.js)
     game.opensea = new OpenSea(game); // (the Emocean off the lanes, built the first time it is entered: world/opensea/, docs/plans/OPEN-SEA.md)
     game.seaFightLook = new SeaFightLook(game); game.seaHull = new SeaHull(game); // (the fight's needles, globs, splashes and the hull's pips: vfx/opensea/seafightlook.js, ui/seahull.js)
     game.seaFight = new SeaFight(game); // (what fights at the free helm: the gun, the parry, the hull, the sea serpent: world/opensea/seafight.js)
@@ -1089,7 +1101,9 @@ async function main() {
   const parkCaster = Object.values(CASTER_SHADERS).filter((m) => m.layer).map((m) => m.prewarm?.(game)).filter(Boolean); // (S6 to S10, the caster shaders' programs, their screen passes in the glow's chain: vfx/caster/)
   const seaFightAt = (game.seaFightLook?.parked() || []).map((o) => { o.visible = true; return o; }); // (the fight's shots: the rail's program, warmed with it)
   const parkIslets = game.seaLooks?.prewarm?.() ?? (() => {}); // (the islets' and the shallows' programs, 50 m down: vfx/opensea/isletlooks.js)
+  const parkSquall = game.squallLine?.prewarm?.() ?? (() => {}); // (the squall line's program, and the rain's: vfx/opensea/squallline.js)
   const parkSandfall = prewarmSandfall(scene); // (the Raceway's sandfall, one copy 50 m down: its one program, vfx/racewaysandfall.js)
+  const parkMatterLook = prewarmMatterLook(scene); // (the god hand's matter, ball and creations: one program, vfx/godhand/matterlook.js)
   const parkBracelet = game.bracelets.prewarm(); // (the bracelet's glazes, charms, flash and aura, 50 m down: vfx/braceletwear.js)
   game.present.shade(true); try { await renderer.compileAsync(scene, camera); } catch (e) { console.warn('shader warm-up', e); } // (the scene's programs linked in parallel first: the shell looks' Portal draw below draws the whole scene, which linked them one at a time, 72 of 182, the render inventory 2026-10-19)
   const parkShellLooks = await prewarmShellLooks(game); // (what the caster shells show in play, kept alive so it is never compiled twice: vfx/shelllooks/warmup.js)
@@ -1116,7 +1130,7 @@ async function main() {
   if (!window.__noPrime) primeDraw(renderer, scene, camera, game.post.target); // (a test harness may skip it: it is a long frame on a software GL)
   parkWell?.(); // (after the prime: drawn once, so the driver has finished with its programs too)
   if (wipe) wipe.visible = false;
-  parkWeather?.(); parkDrain(); parkDuel(); parkSpawnLook(); parkCracks(); parkFigmentTelegraphs(); parkCasterS1toS5(); parkCaster.forEach((f) => f()); parkShellLooks(); parkBracelet(); parkSandfall(); parkIslets(); seaFightAt.forEach((o) => (o.visible = false));
+  parkWeather?.(); parkDrain(); parkDuel(); parkSpawnLook(); parkCracks(); parkFigmentTelegraphs(); parkCasterS1toS5(); parkCaster.forEach((f) => f()); parkShellLooks(); parkBracelet(); parkMatterLook(); parkSandfall(); parkIslets(); parkSquall(); seaFightAt.forEach((o) => (o.visible = false));
   for (const o of brushLooks) o.visible = false;
   seaLooks.forEach((o, i) => { o.visible = false; o.position.copy(seaAt[i]); });
   for (const o of gardenLooks) o.visible = false;
@@ -1178,7 +1192,7 @@ async function main() {
       diag.begin('sim'); tick(dt); diag.end('sim');
       game.graphics.update(rawFrame); game.graphics.beforeDraw();
       diag.begin('draw'); // (the PS2 glow and the grade over the frame: render/glow.js; the reading instead of the world while the Box is turned over)
-      if (game.readingView?.active) game.readingView.render(); else game.post.render(scene, window.__debugCam || camera);
+      if (game.readingScene?.active) game.readingScene.render(); else game.post.render(scene, window.__debugCam || camera);
       diag.end('draw');
       if (O?.active) O.afterRender(renderer.domElement);
       game.veritome?.afterRender(renderer.domElement); // (a photograph is the frame just drawn)
@@ -1250,7 +1264,7 @@ async function main() {
     if (input.wasPressed('KeyN') && input.enabled && !guiOpen && !modalOpen() && god.controlling) game.cartography.survey(true);
     if (input.wasPressed('Backquote') && input.enabled && !guiOpen && !modalOpen() && !game.emocean?.stage.active && !game.duel.active) { if (game.realm?.active) game.realm.camera.toggleOverhead(); else god.toggle(); } // (in the garden the god hand's view is straight down on the Jar: world/garden/gardencam.js)
     game.bazaarTable?.tick(game.rawDt ?? dt); // (a seat at Raku's tables: its cloth, cards and dice, its clock is the bazaar's own tickModal: vfx/bazaartable.js)
-    if (modalOpen()) { game.seam.update(game.rawDt); game.cartography.tickModal(); game.bazaar?.tickModal(game.rawDt); game.mooring?.update(game.rawDt); game.pier?.helmTick(); game.laidSpread?.update(game.rawDt); game.readingView?.update(game.rawDt); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (the Codex and the index pause the game; a seam under way still comes back up: GARDEN-SWEEP #1; the Box's window still recounts its spread and draws its reading)
+    if (modalOpen()) { game.seam.update(game.rawDt); game.cartography.tickModal(); game.bazaar?.tickModal(game.rawDt); game.mooring?.update(game.rawDt); game.pier?.helmTick(); game.laidSpread?.update(game.rawDt); game.readingScene?.update(game.rawDt); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (the Codex and the index pause the game; a seam under way still comes back up: GARDEN-SWEEP #1; the Box's window still recounts its spread and draws its reading)
     if (started && overlayUp()) { game.seam.update(game.rawDt); if (!game.emocean?.stage.active) game.music.follow(LACHRYMA); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (and so does the pause menu)
     game.duel.update(game.rawDt ?? dt, input); // (a puzzle duel takes the keys it reads, before anything below sees them: world/duel/duelsession.js)
     game.mood.begin(); // (what the last frame's dimming changed, put back before anything sets its own values)
@@ -1333,6 +1347,7 @@ async function main() {
     game.emocean?.update(dt); // (the crossing: before the camera, which rides its shot)
     game.opensea?.update(dt); // (the free helm: before the camera, which rides its shot)
     game.seaLooks?.update(dt); // (dresses the islets once, the first frame game.opensea.props exists)
+    game.puzzleLooks?.update(dt); // (dresses the islets' puzzles once they exist, and plays a dig)
     game.seaFight?.update(dt); // (the ship's gun, the serpent's mind and body, the hull)
     game.seaHull?.update(game.rawDt);
     game.realm?.update(dt); // (the garden: the Jar, the hand and its own camera)
@@ -1411,7 +1426,7 @@ async function main() {
     game.circuits.update(dt);
     game.cubes.update(dt);
     if (!worldAsleep) { game.chests.update(dt); game.weir.update(dt); }
-    game.well.update(dt); game.ostraca?.update(); game.debugChests?.update(game.rawDt ?? dt); game.knacks?.update(game.rawDt ?? dt); game.goals?.update(game.rawDt ?? dt); game.laidSpread?.update(game.rawDt ?? dt); game.readingView?.update(game.rawDt ?? dt); game.harmony?.update(game.rawDt ?? dt); game.spiritLife?.update(game.rawDt ?? dt); game.feelings?.update(game.rawDt ?? dt); game.vantages?.update(game.rawDt ?? dt); game.vantageFrames?.update(game.rawDt ?? dt); game.awakening?.update(game.rawDt ?? dt); game.solar?.update(dt); game.geysers?.update(dt); game.raceway?.update(dt); game.race?.update(dt); game.shrines?.update(); game.pier?.update(); game.mooring?.update(game.rawDt ?? dt); game.encounterFilm?.update(game.rawDt ?? dt); game.margarite?.update(dt); game.bazaar?.update(dt); game.duelFoes.update(); game.busk?.update(); game.catchLook?.update(game.rawDt ?? dt, camera);
+    game.well.update(dt); game.ostraca?.update(); game.debugChests?.update(game.rawDt ?? dt); game.knacks?.update(game.rawDt ?? dt); game.goals?.update(game.rawDt ?? dt); game.laidSpread?.update(game.rawDt ?? dt); game.readingScene?.update(game.rawDt ?? dt); game.harmony?.update(game.rawDt ?? dt); game.spiritLife?.update(game.rawDt ?? dt); game.feelings?.update(game.rawDt ?? dt); game.vantages?.update(game.rawDt ?? dt); game.vantageFrames?.update(game.rawDt ?? dt); game.awakening?.update(game.rawDt ?? dt); game.solar?.update(dt); game.geysers?.update(dt); game.raceway?.update(dt); game.race?.update(dt); game.shrines?.update(); game.pier?.update(); game.mooring?.update(game.rawDt ?? dt); game.encounterFilm?.update(game.rawDt ?? dt); game.margarite?.update(dt); game.bazaar?.update(dt); game.duelFoes.update(); game.busk?.update(); game.catchLook?.update(game.rawDt ?? dt, camera);
     // underground: no sun through the ground (it would light the basement outside its shadow
     // frustum), thinner fog so the long rooms read end to end, no shadow-map updates
     game.daylight.update(dt); // (the open ground's light graded by the hour and the weather, before the dunes blend it in)
@@ -1430,7 +1445,7 @@ async function main() {
     game.bazaar?.light(); // (the bazaar's own air under its dome: world/bazaar/bazaar.js)
     game.bazaarHall?.update(game.rawDt ?? dt); // (the dome's turn, the wheel's and the carousel's spin, the neon's film walk: vfx/bazaarhall.js)
     game.realm?.light(); // (the garden's sky over the world's, while you are in it)
-    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.awakeningLook.update(game.rawDt ?? dt, camera); game.weatherLook.update(dt, camera); game.nightSky.update(game.rawDt ?? dt); game.waterFx.update(game.rawDt ?? dt, camera); game.parryMark.update(game.rawDt ?? dt, camera); game.blobShadow.update(); game.figmentTelegraphs.update(dt, camera); game.siblingShatter.update(dt); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.aberrantWipe.update(game.rawDt ?? dt, camera); game.gateRing.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.stormWarp.update(game.rawDt ?? dt, camera); game.umbral.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.duelView.update(game.rawDt ?? dt); game.spawnLook.update(game.rawDt ?? dt, camera); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); game.daturas?.update(game.rawDt ?? dt); game.wellDress.update(game.rawDt ?? dt); game.testroomDress.update(game.rawDt ?? dt); diag.end('fx');
+    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.awakeningLook.update(game.rawDt ?? dt, camera); game.godhandLooks.update(game.rawDt ?? dt, camera); game.weatherLook.update(dt, camera); game.nightSky.update(game.rawDt ?? dt); game.waterFx.update(game.rawDt ?? dt, camera); game.parryMark.update(game.rawDt ?? dt, camera); game.blobShadow.update(); game.figmentTelegraphs.update(dt, camera); game.siblingShatter.update(dt); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.aberrantWipe.update(game.rawDt ?? dt, camera); game.gateRing.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.squallLine?.update(game.rawDt ?? dt, camera); game.stormWarp.update(game.rawDt ?? dt, camera); game.umbral.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.duelView.update(game.rawDt ?? dt); game.spawnLook.update(game.rawDt ?? dt, camera); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); game.daturas?.update(game.rawDt ?? dt); game.wellDress.update(game.rawDt ?? dt); game.testroomDress.update(game.rawDt ?? dt); diag.end('fx');
     game.glyphs.update(dt); // (after everything that pops one this frame: a mark made before its first update was drawn at the origin)
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;
 
@@ -1471,7 +1486,7 @@ async function main() {
 
   // handle for automated tests / console tinkering
   window.__hideUI = (level) => game.ui.set(level);
-  window.__game = { THREE, RAPIER, T, scene, camera, renderer, post: game.post, draw: () => { game.graphics.beforeDraw(); if (game.readingView?.active) game.readingView.render(); else game.post.render(scene, camera); }, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, trial, course, techs, game, events, movers, system, codex, pneuka: game.pneuka, ledger: game.ledger, log: game.log, manual: false, hideUI: (level) => game.ui.set(level), zones: game.zones, lights: game.lights };
+  window.__game = { THREE, RAPIER, T, scene, camera, renderer, post: game.post, draw: () => { game.graphics.beforeDraw(); if (game.readingScene?.active) game.readingScene.render(); else game.post.render(scene, camera); }, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, trial, course, techs, game, events, movers, system, codex, pneuka: game.pneuka, ledger: game.ledger, log: game.log, manual: false, hideUI: (level) => game.ui.set(level), zones: game.zones, lights: game.lights };
   mark('ready');
   if (window.__game.manual && game.title?.active) { game.title.active = false; game.mode ||= save.mode || 'debug'; if (game.mode === 'debug') game.pneuka.debugKit(); game.title.ui.close(); game.ui.want('title', false); } // (a test drive goes straight to the world)
   window.__ready = true;
