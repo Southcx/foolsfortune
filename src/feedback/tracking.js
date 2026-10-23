@@ -18,7 +18,7 @@
 //   clapper.*   counts         clapper.down, clapper.cause.<cause>
 //   shot.*      counts         shot.fired, shot.hit, shot.charged, shot.air, shell.fire.<id>
 //   the arts' goals (B7)       land.drop12, land.drop20, chain.blink2, chain.stomp3, target.slam.moving50, roll.end, time.slip
-//   lach.*      amounts        lach.spent, lach.spent.<tag>, lach.gain, lach.gain.<source>, lach.denied, lach.empty
+//   lach.*      amounts        lach.spent, lach.spent.<tag>, lach.gain, lach.gain.<source>, lach.denied, lach.empty, lach.low (tracking/pool.js)
 //   god.*       counts         god.enter, god.grab, god.throw, god.sunder, god.cuts, god.manifest, god.raid, god.wave
 //   skiff.*     counts         skiff.start, skiff.pump, skiff.hop, skiff.trick, skiff.spins, skiff.wobble
 //   circuit.<id>.*             runs, finish, clean, fall, gates, medal.<gold|silver|bronze>
@@ -84,7 +84,6 @@ export class Tracking {
     this.pending = new Map(); // record announcements waiting for a lull
     this.roomT = 0;
     this.last = { shots: 0, hits: 0 };
-    this._lg = 0; this._lgT = -9;
     this.listen();
   }
 
@@ -157,21 +156,7 @@ export class Tracking {
     on('slip.splat', () => L.inc('slip.splat'));
     on('creature.mind', (e) => { if (e.by === 'courier') L.inc(`creature.mind.${e.state}`); }); // (a mind pushed into a state: Prismatic's sound is Wanda's)
 
-    // ---- lachryma (the pool has its own listeners)
-    const P = g.lachryma;
-    if (P) {
-      P.on('spend', (e) => { L.inc('lach.spent', e.amount); L.inc(`lach.spent.${e.tag}`, e.amount); L.inc('lach.spend.count'); });
-      P.on('gain', (e) => {
-        L.inc('lach.gain', e.amount); L.inc(`lach.gain.${e.source}`, e.amount);
-        if (e.source === 'regen') return;
-        const sum = (this._lg = (this._lgT > L.play - 2.5 ? this._lg : 0) + e.amount); this._lgT = L.play; // (folded into one line)
-        log.say('gain', `You absorb ${Math.round(sum)} Lachryma.`, { key: 'lgain', win: 2.5, fmt: () => `You absorb ${Math.round(this._lg)} Lachryma.` });
-      });
-      P.on('denied', () => { L.inc('lach.denied'); log.say('warn', 'You do not have enough Lachryma.', { key: 'lden', throttle: 2.5 }); });
-      P.on('empty', () => { L.inc('lach.empty'); log.say('warn', L.get('lach.empty') > 1 ? 'Your pool is empty.' : `Your pool is empty. It fills again on its own once you stop spending: ${(P.regenRate * (P.product?.((m) => m.regenMult) ?? 1)).toFixed(1)} a second, starting ${P.regenDelay.toFixed(1)} real seconds after.`, { key: 'lemp', throttle: 8 }); }); // (the first time, how it comes back: FIRST-HOUR.md 3)
-      P.on('full', () => L.inc('lach.full'));
-      P.on('overflow', (e) => L.inc('lach.overflow', e.amount));
-    }
+    // ---- lachryma: the pool's rules are feedback/tracking/pool.js
 
     // ---- ground movement (the player reports these)
     on('move.jump', (e) => { L.inc('move.jump'); L.inc(`move.jump.${e.kind}`); if (e.kind === 'air') L.inc('move.airjump'); if (e.kind === 'wall') L.inc('move.walljump'); });

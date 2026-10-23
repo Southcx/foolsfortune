@@ -56,7 +56,7 @@ export const ABILITIES = [
   {
     id: 'roll', key: '⇧ crouched', name: 'Roll', glyph: '◌', tech: 'roll', input: 'Sprint (Shift) while crouched; automatic out of a fall of 20 m or more', station: 'T3',
     blurb: 'An evasive roll: press Sprint while crouched and you tumble the way you steer, invulnerable for the first third of it. It also happens by itself out of a fall of 20 m or more, where it mitigates the fall and turns it into speed. Jump out of the second half to keep the speed.',
-    hint: 'Fall a long way, and land it. Three times.',
+    hint: 'Fall 20 m or more and land it, three times. The workshop\'s hole is only 14 m.', // (QA-C, 2026-10-22: no 20 m drop near the start; Roll is a Dunes art)
     goals: [led('land.drop20', 3, 'drops of 20 m or more')],
     variants: [
       { id: 'tumble', name: 'Tumble', blurb: 'Rolls out of falls of 12 m, carries more speed, and stays invulnerable a little longer.', cfg: { minDrop: 12, speed: 10, speedPerFall: 0.32, iframes: 0.42, cooldown: 0.5 },

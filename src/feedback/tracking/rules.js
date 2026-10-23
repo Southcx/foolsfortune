@@ -28,6 +28,7 @@ import { figmentTelegraphRules } from './figmenttelegraphs.js';
 import { ostracaRules } from './ostraca.js';
 import { passageRules } from './passage.js';
 import { wispRules } from './wisps.js';
+import { poolRules } from './pool.js';
 import { godRules } from './god.js';
 import { lockheartRules } from './lockheart.js';
 import { raceRules } from './race.js';
@@ -53,6 +54,7 @@ function atSea(ctx) {
 
 export function areaRules(ctx) {
   const sea = atSea(ctx);
+  poolRules(ctx); // (the pool: spent, gained, low, empty)
   anglingRules(ctx);
   wellRules(ctx);
   railRules(sea); // (the crossing's tally, before the voyage's "You make port")

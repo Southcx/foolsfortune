@@ -63,7 +63,8 @@ Box, no Movement Arts, all seven feelings locked.
 ## 4. The first path (built, `progress/goals.js` FIRST)
 
 A new STORY save's three goals are the first three undone steps of the path, in its order. A step done gives its place to the next at
-once (`goal.next`, Nook Miles+'s refill). The path ends when it is walked, or once 15 achievements are done (you found your own way).
+once (`goal.next`, Nook Miles+'s refill). The path ends when it is walked, or once 40 achievements off the path are done (you found
+your own way). Each step says where it is (`FIRST.where`), after the achievement's words in the goals' window and in the "Next goal" line.
 DEBUG never walks it. Every step is an existing Easy achievement or one of the two added for it, so the path is a pointer over the
 ledger and pays nothing of its own (the design laws).
 
@@ -132,3 +133,38 @@ The goals' window shows each as FIRST STEP. The log says "Your first 3 goals are
 | the Dunes | by 12 |
 | the path walked | by 45 |
 | a minute with no goal in reach | never |
+
+## 8. QA-C's hour (Petra, 2026-10-22) and what changed
+
+QA-C, a playtester agent, played a fresh STORY save for 3,600 real seconds of play time (seed 1, build fb895af). It used the agent
+bridge's `travel` after about minute 12, a shortcut a player lacks, so its later minutes are faster than a person's. The minutes are
+the ledger's own.
+
+| moment | target | QA-C | verdict |
+|---|---|---|---|
+| step 1, sr1 | under 1 | 0.3 | met |
+| step 2, fk1 | | 0.6 | |
+| step 3, sk12 (the first awakening) | by 6 | 15.1, at the Weir's pier, not the atrium rail | missed: nothing said where a vantage was |
+| step 4, br1 | | 3.0 | |
+| the first Movement Art (the kick) | by 10 | 3.6 | met |
+| step 5, tc1 (the first cube) | by 8 | 7.6, after falling through the hole by accident | met by luck |
+| step 6, pl6 | by 12 | never: the ledger wrote `time.area.Dunes`, the achievement read `dunes` (Petra's, fixed; casebook 269) | a bug |
+| steps 7 to 9 | | 13.1, 13.4, 15.1 | |
+| step 10, cx3 | | not reached: the bot got no push off the zigzag's wall jump | the bot's, likely |
+| the path walked | by 45 | no | the cutoff ended it at minute 13 |
+
+**What changed (Dovina):**
+- **The cutoff counts only achievements off the path, and is 40.** At 15 counting all, the 15th (gl3) came at minute 13.1, and the
+  "Next goal" lines stopped with three steps left. At QA-C's pace (about 10 off the path in 13 real minutes) 40 is past the first
+  hour, so the path ends early only for a player plainly playing their own game.
+- **Every step says where it is** (`FIRST.where`, placeholder words for Espada): the Shrine beside you, Saggar on the floor, the
+  atrium rail upstairs, F and LMB for the pots, the hub's chest down the hole, the Index, the jellies past the Weir, Y for the board,
+  the Weir's pier for the rod, the course round the hub. The three gaps QA-C stood in (the pots, the hole, the vantage) are each a line.
+- **Roll's feat stays 20 m.** No drop that tall is near the start (the workshop's hole is 14 m), so Roll is a Dunes art. Its hint now
+  says the number and that the hole is too short. The count way (`roll.end`, the Tumble's) is unchanged.
+
+**Still open:**
+- The vantage frame on the atrium rail: seen from where you wake? (Calissa's, asked in section 5.)
+- The hole is unmarked. The step's words now point at it; whether the hole wants a world mark is Calissa's call.
+- Item 6 (the Index at minute 3: warn or gate) is the owner's.
+- The Great Dunemaw ate 25 real minutes of QA-C's hour (four shatters). It is in flux, so it gets no check; noted for the warning above.

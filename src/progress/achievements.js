@@ -404,8 +404,8 @@ export function buildAchievements(game) {
   C('an1', 'angle', 'Casting', 1, 'count', 'First Cast', 'Cast the lure.', 'angle.cast', 1);
   C('an2', 'angle', 'Casting', 2, 'count', 'Line and Mind', 'Cast the lure 100 times.', 'angle.cast', 100);
   C('an3', 'angle', 'Casting', 4, 'endure', 'Caster', 'Cast the lure 1,000 times.', 'angle.cast', 1000);
-  H('an4', 'angle', 'Casting', 2, 'mechanic', 'Long Arm', 'Cast 18 m.', 'angle.cast.dist', 18, { unit: 'm' });
-  H('an5', 'angle', 'Casting', 3, 'mechanic', 'The Far Bank', 'Cast 28 m.', 'angle.cast.dist', 28, { unit: 'm' });
+  H('an4', 'angle', 'Casting', 2, 'mechanic', 'Long Arm', 'Cast 18 m into water.', 'angle.cast.dist.water', 18, { unit: 'm' }); // (into water: QA-A's 31 m onto dry sand made The Far Bank by game minute 11)
+  H('an5', 'angle', 'Casting', 3, 'mechanic', 'The Far Bank', 'Cast 28 m into water.', 'angle.cast.dist.water', 28, { unit: 'm' });
   F('an6', 'angle', 'Casting', 2, 'collect', 'Every Mind', 'Cast the lure with every aspect.', (L) => ASPECTS.filter((a) => L.get(`angle.cast.${a.id}`) > 0).length, ASPECTS.length);
   C('an7', 'angle', 'Casting', 1, 'count', 'Jig', 'Twitch the lure 25 times.', 'angle.twitch', 25);
   C('an8', 'angle', 'Casting', 1, 'count', 'Ping', 'Ping the water 10 times.', 'angle.sound', 10);
@@ -545,7 +545,7 @@ export function buildAchievements(game) {
   C('fk1', 'explore', 'Folk', 1, 'count', 'Small Talk', 'Speak with one of the clay folk.', 'npc.talk', 1);
   F('fk2', 'explore', 'Folk', 2, 'collect', 'Everyone\'s Acquaintance', 'Speak with all four of the clay folk.', (L) => ['saggar', 'pip', 'grog', 'raku'].filter((k) => L.get(`npc.talk.${k}`) > 0).length, 4);
   C('fk3', 'explore', 'Folk', 2, 'count', 'Good Listener', 'Hear the clay folk out: 60 lines.', 'npc.lines', 60);
-  F('fk4', 'explore', 'Folk', 3, 'mechanic', 'The Whole Range', 'Hear a folk in five different moods.', (L) => L.under('npc.mood.').filter(([k, v]) => v > 0 && k !== 'npc.mood.calm').length, 5);
+  F('fk4', 'explore', 'Folk', 3, 'mechanic', 'The Whole Range', 'Hear the folk in nine different moods.', (L) => L.under('npc.mood.').filter(([k, v]) => v > 0 && k !== 'npc.mood.calm').length, 9); // (every mood in talks.js but calm; five came in four talks for QA-A, a Hard by game minute 11)
   F('fk5', 'explore', 'Folk', 1, 'collect', 'Body Language', 'Use five different emotes (/help lists them).', (L) => L.under('emote.').filter(([k, v]) => v > 0 && k !== 'emote.total').length, 5);
   C('ex2', 'explore', 'Charting', 2, 'count', 'Surveyor', 'Send out 25 survey pulses.', 'map.pulse', 25);
   C('ex3', 'explore', 'Charting', 4, 'endure', 'Cartographer', 'Send out 250 survey pulses.', 'map.pulse', 250);
@@ -699,8 +699,9 @@ export function buildAchievements(game) {
   // the two feelings past Anagami's five, learned by drinking them where they fall (GALL-AND-FURY.md section 5; Espada's names): the count
   // opens the radial's slot (a predicate over feeling.known.*), so the feeling is earned
   C('sk12', 'sky', 'Weather', 1, 'mechanic', 'Lookout', 'Awaken to Wonder: find a vantage point and look out.', 'feeling.known.wonder', 1); // (the first hour's awakening: the workshop's atrium rail, FIRST-HOUR.md)
-  C('sk9', 'sky', 'Weather', 3, 'mechanic', 'Acquired Taste', 'Awaken to Gall: clean up what rots.', 'feeling.known.gall', 1);
-  C('sk10', 'sky', 'Weather', 3, 'mechanic', 'Seeing Red', 'Awaken to Fury: answer a blow with a blow.', 'feeling.known.fury', 1);
+  C('sk9', 'sky', 'Weather', 2, 'mechanic', 'Acquired Taste', 'Awaken to Gall: clean up what rots.', 'feeling.known.gall', 1);
+  C('sk10', 'sky', 'Weather', 2, 'mechanic', 'Seeing Red', // (an awakening is one act, so Medium: QA-A's Gall came at its first jelly)
+    'Awaken to Fury: answer a blow with a blow.', 'feeling.known.fury', 1);
   F('sk11', 'sky', 'Weather', 4, 'collect', 'Full Spectrum', 'Awaken to all seven feelings.', (L) => ASPECTS_ALL.filter((a) => L.get(`feeling.known.${a}`) > 0).length, ASPECTS_ALL.length); // (Espada's words)
   F('sk8', 'sky', 'Weather', 3, 'collect', 'Agate', 'Stand under five different agates: two moods at once, wedged, never blended.', (L) => L.under('weather.agate.').filter(([, v]) => v > 0).length, 5);
   C('sk5', 'sky', 'The Day', 1, 'count', 'Night Falls', 'See the night come.', 'day.night', 1);
