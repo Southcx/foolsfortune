@@ -6,6 +6,9 @@
 //   A CONDENSE   palm.condense { n }: the stone breathes out a glint, brighter the more it made (the overflow pressed into cubes)
 //   A GROWTH     palm.grow { from, to }: the stone swells and cracks white along its facets, and comes round as the next solid with a
 //                flare of its fire (a stone re-cut, not a gem swapped)
+// THE FINGERS  the other five of the standard set on the hand (the owner, 2026-10-23: d4 the little finger, d6 the ring finger, d8 the
+//              middle, d10 the index, d12 the thumb; the d20 is the palm's), small stones on the back of each finger's first joint,
+//              in the same mineral, the palm die's glint passing through them.
 // No words: a world mark (the log says "Your palm die grows into a d8.").
 //
 // Prior art: the owner's Entropy Tactics' Hungry Die (a die that grows on what it is fed); Plato's solids as the dice (Timaeus); the
@@ -21,12 +24,26 @@ export const PALM_DIE = {
   size: { 4: 0.1, 6: 0.085, 8: 0.1, 12: 0.11, 20: 0.125 }, // (bone units: the solid's radius, a d20 the largest; the hole's is about 0.18)
   spin: 0.6,                    // (rad a real second, turning in its socket)
   grow: 0.8,                    // (real s the re-cut takes)
+  // the other five on the fingers (the owner, 2026-10-23, DICE.md 4.1): set on the back of each finger's first joint like a ring's stone
+  fingers: { pinky: 4, ring: 6, middle: 8, index: 10, thumb: 12 },
+  finger: { size: 0.045, back: 0.05, along: 0.45 }, // (bone units: its radius; out from the finger's back; how far from the knuckle to the next joint)
 };
 const S = PALM_DIE;
 const SOLID = {
   4: (r) => new THREE.TetrahedronGeometry(r), 6: (r) => new THREE.BoxGeometry(r * 1.15, r * 1.15, r * 1.15), 8: (r) => new THREE.OctahedronGeometry(r),
-  12: (r) => new THREE.DodecahedronGeometry(r), 20: (r) => new THREE.IcosahedronGeometry(r),
+  12: (r) => new THREE.DodecahedronGeometry(r), 20: (r) => new THREE.IcosahedronGeometry(r), 10: (r) => trapezohedron(r),
 };
+/** The d10's solid: two apexes and two rings of five, each face a kite (a pentagonal trapezohedron). */
+function trapezohedron(r) {
+  const h = r, k = r * 0.105, ring = (y, a0) => Array.from({ length: 5 }, (_, i) => { const a = a0 + (i * Math.PI * 2) / 5; return [Math.cos(a) * r * 0.9, y, Math.sin(a) * r * 0.9]; });
+  const top = [0, h, 0], bot = [0, -h, 0], U = ring(k, 0), D = ring(-k, Math.PI / 5), pos = [];
+  for (let i = 0; i < 5; i++) {
+    const u0 = U[i], u1 = U[(i + 1) % 5], d0 = D[i], d1 = D[(i + 4) % 5];
+    pos.push(...top, ...u1, ...d0, ...top, ...d0, ...u0); // (an upper kite: the apex, two upper corners, the lower one between)
+    pos.push(...bot, ...d1, ...u0, ...bot, ...u0, ...d0); // (a lower kite)
+  }
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.computeVertexNormals(); return g;
+}
 
 export class PalmDieLook {
   constructor(game) {
@@ -37,6 +54,7 @@ export class PalmDieLook {
     this.mesh = new THREE.Mesh(undefined, this.mat); this.mesh.name = 'palm-die'; this.mesh.castShadow = false;
     this.edges = new THREE.LineSegments(undefined, this.crack); this.mesh.add(this.edges);
     this.mesh.raycast = () => {}; this.edges.raycast = () => {};
+    this.fingerDice = []; this.hand = null;
     game.events?.on?.('palm.condense', (e) => { this.glint = Math.min(1, this.glint + 0.35 + 0.1 * (e?.n || 1)); });
     game.events?.on?.('palm.grow', (e) => { this.next = e?.to || this.sides; this.cut = 0; });
   }
@@ -53,13 +71,31 @@ export class PalmDieLook {
     this.crack.color.setHex(G?.color2 ?? 0xffffff);
   }
 
+  /** The five on the fingers: each parented to its finger's first bone, set at its back between the knuckle and the next joint. */
+  setFingers(B) {
+    for (const d of this.fingerDice) d.removeFromParent();
+    this.fingerDice = [];
+    const F = S.finger, back = new THREE.Vector3(0, 0, 1).transformDirection(B.handR.matrixWorld), a = new THREE.Vector3(), b = new THREE.Vector3();
+    for (const [finger, sides] of Object.entries(S.fingers)) {
+      const b1 = B[`${finger === 'thumb' ? 'thumb' : 'f_' + finger}01R`], b2 = B[`${finger === 'thumb' ? 'thumb' : 'f_' + finger}02R`]; if (!b1 || !b2) continue;
+      b1.updateWorldMatrix(true, false); b2.updateWorldMatrix(true, false);
+      a.setFromMatrixPosition(b1.matrixWorld); b.setFromMatrixPosition(b2.matrixWorld);
+      const len = a.distanceTo(b), p = a.lerp(b, F.along).addScaledVector(back, F.back * len / 0.17); // (the offset scaled by the segment, the world's units)
+      const m = new THREE.Mesh((SOLID[sides])(F.size), this.mat); m.name = `finger-die-d${sides}`; m.raycast = () => {};
+      b1.add(m); m.position.copy(b1.worldToLocal(p)); m.userData.sides = sides; m.scale.setScalar(1 / Math.max(1e-6, b1.getWorldScale(new THREE.Vector3()).x) * B.handR.getWorldScale(new THREE.Vector3()).x);
+      this.fingerDice.push(m);
+    }
+  }
+
   update(dt) {
-    const bone = this.game.god?.hand?.bones?.handR, P = this.game.palmDie;
+    const bone = this.game.god?.hand?.bones?.handR, P = this.game.palmDie, B = this.game.god?.hand?.bones;
+    if (B?.handR && this.hand !== B) { this.hand = B; this.setFingers(B); }
+    if (B?.handR) this.dress(); // (the fingers' stones wear the mineral whether the palm die is yet or not)
+    for (const [i, d] of this.fingerDice.entries()) d.rotation.set(0.5, this.t * 0.3 + i, 0.3);
     if (bone !== this.bone) { this.mesh.removeFromParent(); this.bone = bone; if (bone) { bone.add(this.mesh); this.mesh.position.fromArray(S.at); } }
     if (!bone || !P) { this.mesh.visible = false; return; }
     this.mesh.visible = true; this.t += dt;
     if (!this.sides) this.shape(P.sides || 4);
-    this.dress();
     // the re-cut: swell and crack to the half, the new solid from there
     let swell = 0, crack = 0;
     if (this.cut < 1) {
