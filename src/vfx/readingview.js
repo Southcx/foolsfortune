@@ -15,6 +15,9 @@
 //                 strength, a wild cell in the film's slow schiller, a dark cell (contrary suits met) cracked open with its light gone
 //                 out, a hidden cell left unlit. The Fool's cell holds a small gold mark.
 //   THE HAND      (off, READING_VIEW.hand.show: the hand is the window's bar under the reading) the bound Majors not laid, fanned low before the Courier.
+//   THE CLASS     the card your spread reads you as (the laid spread's court, CLASSES.md; the Fool before any), hung large and faint
+//                 far behind the halo like a window of stained glass, its edge in its suit's colour; when the class changes it turns
+//                 over edge-on and comes round as the new card, with a flare along its edge (Golden Sun's class change, a card flipped)
 //   THE FALL      a few house cards drifting far behind and the motes rising, as on the title (title/scene.js), so the dark has depth.
 // A world mark of the System's: no words (a position's name is the window's, by `anchors`).
 //
@@ -31,7 +34,7 @@
 //   V.anchors(camera, w, h) -> [{ id, x, y }] (each place's screen point, for the window's labels)   READING_VIEW (the numbers)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { bazaarAtlas } from './bazaarfaces.js';
+import { bazaarAtlas, cardIndex } from './bazaarfaces.js';
 
 export const READING_VIEW = {
   card: { w: 0.42, h: 0.68 },   // (m: a card hung in the orbit, the house deck's 64 x 104 frame)
@@ -41,6 +44,7 @@ export const READING_VIEW = {
   cloth: { cell: 0.34, below: 0.62, glow: 1.6 }, // (m a cell; m under the feet; the lit cells' emissive)
   hand: { show: false, r: 1.8, spread: 0.7, y: 0.05, z: 1.35, tilt: -0.55, lift: 0.2, scale: 0.85 }, // (the fan: its radius, its arc, its place, its lean back, its size)
   fall: 14, motes: 160,
+  klass: { scale: 3.4, y: 1.25, z: -1.6, opacity: 0.16, tint: 0.55, turn: 0.9 }, // (the class's card: its size, its height, how far behind the halo, how faint; real s it takes to turn over)
   flyIn: 0.6,                   // (real s the cards take from the fall to their places)
 };
 const V = READING_VIEW;
@@ -52,6 +56,8 @@ const SUIT_CSS = Object.fromEntries(Object.entries(SUIT_LOOK).map(([k, v]) => [k
 /** The Majors by their number (Rider-Waite: Strength VIII, Justice XI), as the house deck's atlas lays them (0..21). */
 const MAJORS = ['fool', 'magician', 'priestess', 'empress', 'emperor', 'hierophant', 'lovers', 'chariot', 'strength', 'hermit', 'wheel',
   'justice', 'hanged', 'death', 'temperance', 'devil', 'tower', 'star', 'moon', 'sun', 'judgement', 'world'];
+/** The house deck's suits in its atlas order (vfx/bazaarfaces.js cardIndex), and a court's number in it. */
+const SUIT_ORDER = ['cups', 'swords', 'pentacles', 'wands'], COURT_R = { page: 11, knight: 12, queen: 13, king: 14 };
 const ATLAS_CARD = { w: 128, h: 208, cols: 16, back: 78, size: 2048 };
 
 const H = V.heart, F = V.front, cw = V.card.w, ch = V.card.h;
@@ -80,7 +86,7 @@ export class ReadingView {
     this.game = game; this.t = 0; this.state = null; this.k = 1; this.dir = 0; this.film = 0;
     this.group = new THREE.Group(); this.group.name = 'readingView'; this.group.visible = false;
     this.cards = new Map(); this.handCards = []; this.frames = new Map(); this.pickables = [];
-    this.buildMaterials(); this.buildCloth(); this.buildFall();
+    this.buildMaterials(); this.buildCloth(); this.buildFall(); this.buildClass();
   }
 
   // ---------------------------------------------------------------- the parts
@@ -147,6 +153,43 @@ export class ReadingView {
     for (let i = 0; i < V.motes; i++) p.set([Math.sin(i * 12.9) * 9, -6 + ((i * 3.7) % 14), -2 - Math.abs(Math.cos(i * 7.1)) * 10], i * 3);
     const g = (this.moteGeo = new THREE.BufferGeometry()); g.setAttribute('position', new THREE.BufferAttribute(p, 3));
     this.group.add(new THREE.Points(g, new THREE.PointsMaterial({ color: 0xffe9c8, size: 0.06, transparent: true, opacity: 0.8, depthWrite: false, blending: THREE.AdditiveBlending })));
+  }
+
+
+  // ---------------------------------------------------------------- the class
+  buildClass() {
+    const C = V.klass, g = this.cardGeo;
+    this.classFace = new THREE.MeshBasicMaterial({ map: this.atlas, transparent: true, opacity: C.opacity, depthWrite: false, toneMapped: false, side: THREE.DoubleSide });
+    this.classEdge = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, forceSinglePass: true });
+    const n = (this.classNode = new THREE.Group());
+    this.classCard = new THREE.Mesh(this.cellGeo(0), this.classFace);
+    const edge = new THREE.Mesh(this.edgeGeo, this.classEdge); edge.position.z = -0.01;
+    n.add(edge, this.classCard); n.scale.setScalar(C.scale); n.position.set(0, C.y, F + C.z);
+    n.traverse((o) => { o.raycast = () => {}; });
+    this.group.add(n);
+    this.classId = 'fool'; this.classTurn = 1; this.classFlare = 0;
+  }
+  /** The atlas cell of a class: a court ('knight.wands'), a Major ('emperor'), or the Fool. */
+  classCell(id) {
+    if (!id) return 0;
+    const [rank, suit] = id.split('.');
+    if (suit) return cardIndex({ r: COURT_R[rank] ?? 11, s: Math.max(0, SUIT_ORDER.indexOf(suit)) });
+    return Math.max(0, MAJORS.indexOf(id));
+  }
+  updateClass(dt) {
+    const K = this.game.laidSpread?.court ?? null, id = K?.id ?? 'fool', C = V.klass;
+    if (id !== this.classId && this.classTurn >= 1) { this.classNext = id; this.classSuit = K?.suit ?? null; this.classTurn = 0; }
+    if (this.classTurn < 1) {
+      const was = this.classTurn; this.classTurn = Math.min(1, this.classTurn + dt / C.turn);
+      if (was < 0.5 && this.classTurn >= 0.5) { this.classId = this.classNext; this.classCard.geometry = this.cellGeo(this.classCell(this.classId)); this.classFlare = 1; } // (edge-on: the new face)
+    }
+    const u = this.classTurn, ph = this.t * 0.25;
+    this.classNode.rotation.set(Math.sin(ph * 1.3) * 0.03, (1 - smooth(u)) * Math.PI + Math.sin(ph) * 0.06, 0);
+    this.classFlare = Math.max(0, this.classFlare - dt * 1.4);
+    this.classEdge.color.setHex(this.classSuit ? SUIT_LOOK[this.classSuit] : 0xffe6a8);
+    this.classFace.color.setHex(this.classSuit ? SUIT_LOOK[this.classSuit] : 0xffe6a8).multiplyScalar(C.tint); // (the cream stained in its suit's colour: glass, not a wall)
+    this.classEdge.opacity = (0.18 + 0.12 * Math.sin(this.t * 1.1) + 0.7 * this.classFlare) * smooth(this.k);
+    this.classFace.opacity = C.opacity * smooth(this.k) * (0.6 + 0.4 * Math.abs(Math.cos(Math.PI * u)));
   }
 
   // ---------------------------------------------------------------- the state
@@ -262,6 +305,7 @@ export class ReadingView {
     const mp = this.moteGeo.attributes.position;
     for (let k = 0; k < mp.count; k++) { let y = mp.getY(k) + dt * (0.25 + (k % 5) * 0.08); if (y > 8) y = -6; mp.setY(k, y); }
     mp.needsUpdate = true;
+    this.updateClass(dt);
     if (this.clothWild) { this.film += dt * 0.05; this.filmT = (this.filmT || 0) + dt; if (this.filmT > 0.1) { this.filmT = 0; this.drawCloth(this.state?.cells || []); } } // (the schiller at 10 Hz)
   }
 
