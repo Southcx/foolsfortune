@@ -204,11 +204,14 @@ Chaos digs it up cheap and Law buys it dear; the hauler lives in between. Letty'
   choice; every other set is a trade, its virtue from what old lapidaries believed: amethyst (*a-methystos*, "not drunk": slow and
   clear; in Entropolis a charm the good half of rave culture sells), citrine, moonstone, onyx, emerald, sapphire, ruby, diamond, opal.
   A ruby set is seven ruby dice, and it drinks as rubies do. Blurbs are in `courier/vessel/glazes.js`; the rules in `progress/stones.js`.
-  - **Why dice.** Lachryma set solid takes the shapes chance takes. Five of the seven are Plato's solids, which his *Timaeus* gave to
-    the elements, and the elements are the suits: the d4 fire (Wands), the d6 earth (Pentacles; a cube of Lachrymite is the currency,
-    so a coin was always a die), the d8 air (Swords), the d20 water (Cups, the roundest, which rolls furthest). The d12 is the solid
-    Plato kept for "the whole heaven" and its figures: twelve faces, the twelve zodiac Majors. The d10 is the Tree of Life's ten
-    Sephiroth, with the Majors its 22 paths. Seven stones, as there are seven feelings, seven domains and seven sockets on the bracelet.
+  - **Why dice** *(the suits ruled by the owner, 2026-10-23)*. Lachryma set solid takes the shapes chance takes. Four dice are the
+    suits: the d4 fire (Wands, the sharpest, Plato's fire), the d6 earth (Pentacles, Plato's cube; a cube of Lachrymite is the
+    currency, so a coin was always a die), the d8 air (Swords, Plato's air), the d10 water (Cups). **The d20 is the Major Arcana**, I
+    the Magician to XX Judgement, twenty faces for twenty cards: the owner's way of fitting the Majors to a d20, with the alpha and the
+    omega set apart. **The Fool** (0) stands outside the die because the Fool is you, the one who throws it. **The World** (XXI) stands
+    outside it because the World is what every throw is for: the whole, never one face of it. The d12 is the solid Plato kept for "the
+    whole heaven" and its figures, the zodiac's twelve signs (*open*: what it maps in play). The d100 is two d10s thrown together.
+    Seven stones, as there are seven feelings, seven domains and seven sockets on the bracelet.
   - **They roll.** Any chance thrown for you is thrown on your stones, never an unseen number: a duel's Flee on your d20, your own set
     at Raku's tables, opal's little game in every drink. Opal's set was dice before it had faces.
   - **In the god hand**, the set is gathered into one die in the palm (the hole the owner left there), growing d4 to d20 (DICE.md 4).
