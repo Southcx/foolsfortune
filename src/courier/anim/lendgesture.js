@@ -6,14 +6,16 @@
 // takes over from the pose it is in (a crossfade: the old gesture's last pose fades as the new one comes in).
 //
 // Every clip is one the Courier already has (CLAUDE.md, an existing clip wherever practicable): the suite's (Gun_QuickDraw,
-// Brush_Flick, Tome_Flash, Vane_ForkThrow, Bell_Toll) and UAL Standard's (OverhandThrow as `throw`, Consume as `consume`).
+// Brush_Flick, Tome_Flash, Vane_Combo2, Skiff_Summon) and UAL Standard's (OverhandThrow as `throw`, Punch_Cross as `punchCross`); a row
+// with `mirror` plays the clip mirrored (character.js mirrorPose: the other arm's motion on this one). Each stretch chosen by the hand's
+// path measured headless over the clip (the palm against the hips, the shoulder and the head bone), never by eye.
 //
 // Prior art: additive and masked upper-body layers over locomotion (Unreal's layered blend per bone, Unity's avatar masks); the off-hand
 // quick act over a held weapon (NieR: Automata's pod commands, Elden Ring's off-hand, Devil May Cry 5's Devil Breaker); the hit reacts'
 // layer here (anim/hurt.js), whose pattern this follows.
 //
-//   LEND_GESTURES[tool] -> { clip, from, to, rate, out, mask: 'arm' (the right arm) | 'armL' (the left) | 'upper' }   (from / to: s in the
-//                          clip; rate: x real time; out: the real s it fades over at the end)
+//   LEND_GESTURES[tool] -> { clip, from, to, rate, out, mask: 'arm' (the right arm) | 'armL' (the left) | 'upper', mirror? }   (from / to: s
+//                          in the clip; rate: x real time; out: the real s it fades over at the end; mirror: the clip mirrored)
 //   const lend = new LendGesture(ch)   lend.play(tool) -> true if the tool has a gesture   lend.pose(dt, base)   lend.active -> tool | null
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -29,13 +31,18 @@ export const LEND_GESTURES = {
   soulbrush: { clip: 'Brush_Flick', from: 0, to: 0.63, rate: 1.3, out: 0.18, mask: 'arm' },
   // Flash: the right hand up to the face as the Flash goes off (raised by 0.3 s in the clip), held, then down; 0.5 real s
   veritome: { clip: 'Tome_Flash', from: 0.14, to: 0.64, rate: 1, out: 0.18, mask: 'arm' },
-  // Lure throw: the reach up and back over the shoulder to the vane's heel (0.37 s), then the throw forward (0.9 to 1.1 s); 0.63 real s
-  dreamvane: { clip: 'Vane_ForkThrow', from: 0.25, to: 1.25, rate: 1.6, out: 0.18, mask: 'upper' },
-  // Toll: the bell's strike, the right hand coming down at the hip (0.3 s in the clip); 0.42 real s
-  crucibelle: { clip: 'Bell_Toll', from: 0.05, to: 0.55, rate: 1.2, out: 0.14, mask: 'arm' },
-  // Gulp: the left hand (the free one: the main is in the right) raised to the mouth as a drink, at it by 0.11 real s, through the parry's
-  // 0.25 real s window; 0.34 real s
-  lockheart: { clip: 'consume', from: 0.25, to: 0.8, rate: 1.6, out: 0.1, mask: 'armL' },
+  // Lure throw: the Dreamvane's own overhead chop (Vane_Combo2), its left arm mirrored onto the right: the hand up and back over the right
+  // shoulder to the vane's heel (0.37 s in the clip: 0.10 m behind the shoulder, 0.42 m above it), then thrown forward and down to the
+  // chest (forward of the shoulder by 0.47 m at 0.57 s); behind at 0.12 real s, forward by 0.19; 0.36 real s
+  dreamvane: { clip: 'Vane_Combo2', from: 0.2, to: 0.7, rate: 1.4, out: 0.14, mask: 'arm', mirror: true },
+  // Toll: the right hand raised before the chest and brought down to strike at the right hip (the Solar Skiff's summon, Skiff_Summon: from
+  // 0.73 m over the pelvis at 0.5 s to 0.19 m at 0.7 s, at 3.5 m/s at its fastest), at the hip 0.13 real s after the press and held there;
+  // 0.3 real s
+  crucibelle: { clip: 'Skiff_Summon', from: 0.5, to: 0.95, rate: 1.5, out: 0.12, mask: 'arm' },
+  // Gulp: the left hand (the free one: the main is in the right) brought in to the mouth, the cross's guard (UAL's Punch_Cross, the left
+  // fist at the chin: its palm 0.07..0.10 m over the head bone and 0.17..0.19 m before it, at the lips, the face's front there being
+  // 0.17..0.22 m out), there by 0.07 real s and held through the parry's 0.25 real s window; 0.34 real s
+  lockheart: { clip: 'punchCross', from: 0.17, to: 0.58, rate: 1.2, out: 0.1, mask: 'armL' },
 };
 
 const IN = 0.05;
@@ -45,7 +52,7 @@ export class LendGesture {
   constructor(ch) {
     this.ch = ch; this.C = ch.clips;
     this.g = null; this.t = 0; this.len = 0; this.active = null;
-    this.pose_ = this.C.pose(); this.prev = this.C.pose(); this.prevW = 0; this.prevMask = null;
+    this.pose_ = this.C.pose(); this.raw = this.C.pose(); this.prev = this.C.pose(); this.prevW = 0; this.prevMask = null;
   }
 
   maskOf(g) { const ch = this.ch; return g.mask === 'upper' ? ch.MASK_UPPER : g.mask === 'armL' ? ch.MASK_ARM.L : ch.MASK_ARM.R; }
@@ -70,7 +77,8 @@ export class LendGesture {
     if (this.t >= this.len) { this.g = null; this.active = null; this.prevW = 0; return; }
     if (this.t >= IN) this.prevW = 0;
     const w = this.weight();
-    C.sample(g.clip, g.from + this.t * g.rate, this.pose_, false);
+    if (g.mirror) this.ch.mirrorPose(C.sample(g.clip, g.from + this.t * g.rate, this.raw, false), this.pose_);
+    else C.sample(g.clip, g.from + this.t * g.rate, this.pose_, false);
     if (w > 0.001) C.blend(base, this.pose_, w, this.maskOf(g), 0);
   }
 }
