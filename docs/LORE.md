@@ -215,7 +215,13 @@ Chaos digs it up cheap and Law buys it dear; the hauler lives in between. Letty'
   - **They roll.** Any chance thrown for you is thrown on your stones, never an unseen number: a duel's Flee on your d20, your own set
     at Raku's tables, opal's little game in every drink. Opal's set was dice before it had faces.
   - **In the god hand**, the set is gathered into one die in the palm (the hole the owner left there), growing d4 to d20 (DICE.md 4).
-    The first dice were knucklebones, astragali thrown in the hand to read fate; the palm die sits by the hand's knuckles.
+    The first dice were knucklebones, astragali thrown in the hand to read fate, and in the hand each stone is a **knucklebone** with
+    its own finger *(the owner, 2026-10-23)*: **the d4 the little finger, the d6 the ring finger, the d8 the middle finger, the d10 the
+    index finger** (the suits climb the hand: fire, earth, air, water), **the d12 the thumb**, and **the d20 the palm**, where the Major
+    Arcana are read. The palm die is the palm's own stone. The d100 (two d10s) has no finger yet: *open*.
+    - *A footnote the owner may take or leave:* palmistry already gives each finger a planet: the index Jupiter, the middle Saturn, the
+      ring the Sun, the little finger Mercury, and the thumb's mount Venus. The planets are the domains' (CLASSES.md 5), so a finger
+      could carry its domain as well as its suit.
   - **The name.** *Pneuka* is *pneuma*, breath: breath's stones in the breath's jar. "Stone" is three things at once: the gemstone (the
     set's mineral), the die (stones were cast before bones were), and stoneware (clay fired hard, the folk's own tier). On screen the
     label is plain: **dice**.

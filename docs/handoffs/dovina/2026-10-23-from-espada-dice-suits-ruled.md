@@ -15,3 +15,8 @@ I truncate The Fool and The World, like putting the alpha and omega in separate 
 The Fool (0) and the World (XXI) stand outside the d20: the Fool is you, the one who throws; the World is the whole, never one face.
 The palm die's growth (d4 to d20) now ends on the Majors' die, which reads well: the hand grows toward the trumps. LORE.md 4 has it
 (claude/espada-lore). Delete this note when DICE.md 2 is updated.
+
+**Added by the owner, the same game day: a finger for each knucklebone.** The d4 the little finger, the d6 the ring finger, the d8 the
+middle finger, the d10 the index finger, the d12 the thumb, the d20 the palm. The d100 (two d10s) has no finger yet. Palmistry gives
+each finger a planet (index Jupiter, middle Saturn, ring the Sun, little Mercury, thumb Venus), so a finger could carry its domain too:
+the owner's call. LORE.md 4 has it.
