@@ -77,18 +77,24 @@ export class SealImprints {
     if (!I) {
       const mat = shrineLook(SHRINE_LOOK.imprint, { uFlash: { value: 1 }, uPad: { value: 1 } }, { name: 'seal-imprint', depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, polygonOffsetUnits: -2 });
       const mesh = new THREE.Mesh(this.geo, mat); mesh.name = `imprint.${c.id}`; mesh.renderOrder = 2; mesh.frustumCulled = true;
-      const upright = /\.arch$/.test(c.id); // (a Shrine's arch cradle stands in the tablet, facing out: vfx/shrine.js)
-      const r = (c.imprintRadius ?? (upright ? ARCH : RADIUS)) / FACE * 2;
-      mesh.scale.set(r, r, 1);
-      mesh.position.copy(c.pos);
-      if (upright) { mesh.rotation.set(0, c.yaw, 0); mesh.position.add(new THREE.Vector3(Math.sin(c.yaw), 0, Math.cos(c.yaw)).multiplyScalar(0.004)); }
-      else { mesh.rotation.set(-Math.PI / 2, c.yaw, 0, 'YXZ'); mesh.position.y += 0.004; } // (its top away from the cradle's front: it reads from there)
-      g.scene.add(mesh);
       I = { mesh, t0: 0 }; this.list.set(c.id, I);
       mesh.onBeforeRender = () => this.tick(I); // (it cools on the wall clock, ticked only while it is drawn: nothing to call each frame)
       mat.uniforms.uInk.value.copy(this.ink); mat.uniforms.uHot.value.copy(this.hot);
     }
+    this.place(I.mesh, c);
     I.mesh.material.uniforms.uMap.value = map; I.t0 = now(); I.done = false;
+  }
+
+  /** Set on its cradle where it stands now. A cradle that rides something (`c.anchor`: a ship's helm, its CradleLook group, kept current by
+   *  the pier) carries the imprint as its child, at the same world place, so it bobs with the hull and hides with it; any other is the scene's. */
+  place(mesh, c) {
+    const upright = /\.arch$/.test(c.id); // (a Shrine's arch cradle stands in the tablet, facing out: vfx/shrine.js)
+    const r = (c.imprintRadius ?? (upright ? ARCH : RADIUS)) / FACE * 2;
+    mesh.removeFromParent(); mesh.position.copy(c.pos); mesh.scale.set(r, r, 1);
+    if (upright) { mesh.rotation.set(0, c.yaw, 0); mesh.position.add(new THREE.Vector3(Math.sin(c.yaw), 0, Math.cos(c.yaw)).multiplyScalar(0.004)); }
+    else { mesh.rotation.set(-Math.PI / 2, c.yaw, 0, 'YXZ'); mesh.position.y += 0.004; } // (its top away from the cradle's front: it reads from there)
+    if (c.anchor?.isObject3D) { c.anchor.updateWorldMatrix(true, false); this.game.scene.add(mesh); mesh.updateMatrixWorld(true); c.anchor.attach(mesh); } // (attach keeps the world transform: the hull's frame from here on)
+    else this.game.scene.add(mesh);
   }
 
   /** The burn's clock: the flash, then the lit face and pad ring cooling to dim (real seconds since the stamp). */

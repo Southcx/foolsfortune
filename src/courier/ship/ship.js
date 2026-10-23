@@ -133,7 +133,7 @@ export class Ship {
     // move in the plane the view gives (it turns at a swing's midpoint: views.js)
     const [ax, ay] = axes(plane), h = (keys.has('KeyD') ? 1 : 0) - (keys.has('KeyA') ? 1 : 0), v = (keys.has('KeyW') ? 1 : 0) - (keys.has('KeyS') ? 1 : 0);
     const want = _a.set(0, 0, 0);
-    const F = FORM[this.form] || FORM.astral, hull = { pace: (this.hull?.pace ?? 1) * F.pace * (this.drag ?? 1) * (this.game.psyche?.widen?.('ouranurgy.lane') ?? 1), box: (this.hull?.box ?? 1) * F.box }; // (drag: a grappler holding on, world/emocean/foemechanics.js)
+    const F = FORM[this.form] || FORM.astral, hull = { pace: (this.hull?.pace ?? 1) * F.pace * (this.drag ?? 1), box: (this.hull?.box ?? 1) * F.box }; // (drag: a grappler holding on, world/emocean/foemechanics.js)
     want[ax.k] += h * ax.s * S.top * hull.pace; want[ay.k] += v * ay.s * S.top * hull.pace;
     const pl = planeOf(plane);
     // boost and brake: the place along the rail (in the screen plane, where z is otherwise pinned)

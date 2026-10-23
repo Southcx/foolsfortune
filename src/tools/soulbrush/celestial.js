@@ -54,7 +54,7 @@ export class Celestial {
     this.active = false;
     g.time.free('brush');
     P.lookScale.brush = 1;
-    this.canvas.show(false);
+    this.canvas.show(false); g.celestialTargets?.hide();
     sfx.brushOut?.();
     // the painting takes: each drawing, in the order drawn
     const n = this.queue.length;
@@ -77,6 +77,7 @@ export class Celestial {
     this.x = Math.min(W - 2, Math.max(2, this.x + inp.dx * SENS));
     this.y = Math.min(H - 2, Math.max(2, this.y + inp.dy * SENS));
     cv.cursor(this.x, this.y, g.lachryma.available / 20);
+    this.tool.techniques.showTargets(W, H); // (what a dot can mark, drawn over the paper: vfx/celestialtargets.js)
     if (inp.isDown('Mouse0') && this.queue.length < QUEUE_MAX) {
       if (!cv.drawing) { cv.begin(this.x, this.y); sfx.inkDab?.(0.5); }
       const d = cv.extend(this.x, this.y);

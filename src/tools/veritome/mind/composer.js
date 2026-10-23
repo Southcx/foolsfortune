@@ -62,7 +62,7 @@ export function renderMind(codex, cx, g) {
   // the five macros
   const slots = el('div', 'mslots');
   book.slots.forEach((l, i) => {
-    const c = l.compile();
+    const c = l.compile(book.cap?.());
     const s = el('span', i === codex.mindSlot ? 'on' : '', `${i + 1} · ${c.words.length ? c.words.join('-') : 'EMPTY'}`);
     s.onclick = () => { codex.mindSlot = i; codex.render(); };
     slots.appendChild(s);
@@ -71,7 +71,7 @@ export function renderMind(codex, cx, g) {
   const wrap = el('div', 'mind'), left = el('div'), right = el('div');
   // ---- the lattice
   const board = el('div', 'board');
-  const res = lat.compile(), inChain = new Set(res.chain);
+  const res = lat.compile(book.cap?.()), inChain = new Set(res.chain);
   const ghost = codex.mindHover && pick.fn ? (() => {
     const t = turned(FUNCTIONS[pick.fn].shape, pick.rot, pick.flip);
     const [hx, hy] = codex.mindHover, ok = lat.fits(pick.fn, hx, hy, pick.rot, pick.flip);

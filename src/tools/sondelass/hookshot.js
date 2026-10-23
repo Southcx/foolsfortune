@@ -34,6 +34,8 @@ const UP = new THREE.Vector3(0, 1, 0);
 const _o = new THREE.Vector3(), _d = new THREE.Vector3(), _t = new THREE.Vector3(), _c = new THREE.Vector3(), _e = new THREE.Vector3(), _s = new THREE.Vector3(), _q = new THREE.Quaternion();
 
 export class Hookshot {
+  /** How far it bites (m): RANGE, widened by Ouranurgy (`ouranurgy.reach`, progress/godpowers.js RAMP.tools); the Sondelass's guard reads it. */
+  get range() { return RANGE * (this.tool.game.psyche?.widen?.('ouranurgy.reach') ?? 1); }
   constructor(tool) {
     this.tool = tool;
     const g = tool.game;
@@ -75,7 +77,7 @@ export class Hookshot {
     const g = this.game, P = this.tool.P;
     g.camera.getWorldPosition(_o);
     P.lookDir(_d);
-    const hit = g.physics.raycast(_o, _d, RANGE * (g.psyche?.widen?.('ouranurgy.reach') ?? 1), P.collider, HOOKABLE, (c) => !c.isSensor());
+    const hit = g.physics.raycast(_o, _d, this.range, P.collider, HOOKABLE, (c) => !c.isSensor());
     if (!hit) return null;
     const ent = hit.entity, body = hit.collider.parent();
     const dyn = !!body?.isDynamic?.();
@@ -110,7 +112,7 @@ export class Hookshot {
     const r = this.probe();
     this.result = r;
     if (r) this.target.copy(r.point);
-    else { g.camera.getWorldPosition(_o); this.tool.P.lookDir(_d); this.target.copy(_o).addScaledVector(_d, RANGE * (g.psyche?.widen?.('ouranurgy.reach') ?? 1)); }
+    else { g.camera.getWorldPosition(_o); this.tool.P.lookDir(_d); this.target.copy(_o).addScaledVector(_d, this.range); }
     this.flying = true; this.phase = 'out'; this.t = 0;
     this.grap.visible = true; this.grap.scale.setScalar(GRAP);
     this.line.rope.reset(this.pos, this.pos);
@@ -273,7 +275,7 @@ export class Hookshot {
     // the tool put away, water, a tech that takes the body: the line goes
     const act = P.techs.active;
     if (act && act.id !== 'grapple' && act.id !== 'sondelass') return this.release('taken');
-    if (this.chest(_c).distanceTo(this.attachPoint(_e)) > RANGE * (g.psyche?.widen?.('ouranurgy.reach') ?? 1) * 1.6) return this.release('far');
+    if (this.chest(_c).distanceTo(this.attachPoint(_e)) > this.range * 1.6) return this.release('far');
     // a line that has caught on a corner comes away
     this.losT -= dt;
     if (this.losT <= 0) {

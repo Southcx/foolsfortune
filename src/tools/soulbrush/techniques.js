@@ -27,6 +27,7 @@ import { registered, hasTag } from '../../core/tags.js';
 import { inside } from './gesture.js';
 import { SIGIL_OF } from './sigils.js';
 import { inscribe } from './inscribe.js';
+import { CELESTIAL_TARGETS } from '../../vfx/celestialtargets.js';
 import { stream, randDir } from '../../core/rng.js';
 const simRand = stream('tools/soulbrush/techniques'); // (the simulation's chance: core/rng.js, the same twice)
 
@@ -69,8 +70,12 @@ function toScreen(v, p) {
 /** A world radius as screen pixels at depth z. */
 const pxOf = (v, r, z) => (r * v.H) / (2 * z * Math.tan((v.cam.fov * Math.PI) / 360));
 
-/** Everything a drawing might touch, with where it is and how big. */
-function things(g) {
+/** A creature the dot may mark and its prompts answer (TOOLS-TOGETHER.md 9): hurtable, within the sigils' reach, not an ally, not an
+ *  aberrant (it takes no blow in the world). A drawing's own techniques never touch one: its prompts do (sigils.js). */
+export const CREATURE_REACH = 16;
+const markable = (c, P) => c.alive && hasTag(c, 'hurtable') && !c.ally && !c.aberrant && c.pos.distanceTo(P.pos) < CREATURE_REACH;
+/** Everything a drawing might touch, with where it is and how big (`creatures`: with the creatures a dot may mark). */
+function things(g, creatures = false) {
   const out = [], B = g.breakables;
   const sphereOf = (ent) => {
     const m = ent.mesh;
@@ -92,19 +97,26 @@ function things(g) {
     if (sp) out.push({ kind: 'piece', ent, pos: sp.center.clone(), r: sp.radius });
   }
   for (const c of g.clappers?.list || []) if (c.alive) out.push({ kind: 'clapper', ent: c, pos: c.pos.clone().setY(c.pos.y + 0.35), r: 0.45 });
+  if (creatures) for (const c of g.creatures?.near?.(g.player.pos, CREATURE_REACH) || []) if (markable(c, g.player)) { const h = c.height ?? 1.2; out.push({ kind: 'creature', ent: c, pos: c.pos.clone().setY(c.pos.y + h * 0.5), r: c.radius ?? Math.max(0.45, h * 0.5) }); }
   return out;
 }
 /** The things a test on the screen picks out (within 30 m), nearest first. */
-function picked(g, v, test, max = 30) {
+function picked(g, v, test, max = 30, creatures = false) {
   const out = [];
-  for (const t of things(g)) {
+  for (const t of things(g, creatures)) {
     if (!allowed(t.ent)) continue;
     const s = toScreen(v, t.pos);
     if (!s || s.z > max) continue;
-    if (test(s, pxOf(v, t.r, s.z))) out.push({ ...t, z: s.z });
+    const r = pxOf(v, t.r, s.z);
+    if (test(s, r)) out.push({ ...t, z: s.z, x: s.x, y: s.y, rpx: r });
   }
   return out.sort((a, b) => a.z - b.z);
 }
+/** A thing's outline as Calissa's layer draws it (px: vfx/celestialtargets.js), the dot's reach measured from it. */
+const drawnR = (r) => Math.max(CELESTIAL_TARGETS.minR, Math.min(CELESTIAL_TARGETS.maxR, r || 0));
+const DOT_NEAR = 28; // (px past a drawn outline a dot still finds the nearest: TOOLS-TOGETHER.md 9)
+const _ids = new WeakMap(); let _nextId = 1;
+const idOf = (ent) => { let i = _ids.get(ent); if (!i) _ids.set(ent, (i = _nextId++)); return i; };
 /** The first solid surface under a screen point. */
 function cast(g, v, x, y, max = 40, staticOnly = false) {
   const r = ray(v, x, y);
@@ -119,24 +131,32 @@ export class BrushTechniques {
     this.tool = tool;
     this.live = []; // things with a life of their own (a bolt's afterglow)
     this.plungeWatch = false;
-    this.marked = new Set(); this.markGlyphs = new Map(); // (R18's marks: the things, and the star held over each)
+    this.marked = new Set(); // (R18's marks: drawn over the paper with your seal, vfx/celestialtargets.js)
+    this.tv = null; // (the light view the targets are found in each frame: the camera itself, nothing cloned)
   }
 
-  /** A dot at a screen point: the nearest thing under it marked, or let go if it was; true when it found one. */
+  /** A dot at a screen point: the thing whose drawn outline it falls in (the nearest centre of those), else the nearest within DOT_NEAR px
+   *  of one; marked, or let go if it was; true when it found one. It never lands on a thing that is not drawn (TOOLS-TOGETHER.md 9). */
   markAt(x, y, v) {
-    const g = this.game, t = picked(g, v, (s, r) => Math.hypot(s.x - x, s.y - y) <= 14 + r)[0];
-    if (!t) return false;
-    if (this.marked.has(t.ent)) { this.marked.delete(t.ent); this.markGlyphs.get(t.ent)?.close?.(); this.markGlyphs.delete(t.ent); }
-    else {
-      this.marked.add(t.ent);
-      const at = () => (t.kind === 'clapper' ? t.ent.pos.clone().setY(t.ent.pos.y + 1.1) : t.ent.body?.isValid?.() ? _w.copy(t.ent.body.translation()).setY(t.ent.body.translation().y + (t.r || 0.4) + 0.5).clone() : t.pos);
-      this.markGlyphs.set(t.ent, g.glyphs?.pop?.('celestialMark', at(), { color: 0xff7a52, size: 0.4, hold: 600, follow: at })); // (Celestial mode's mark, vermilion seal ink: vfx/glyphs.js)
+    const g = this.game; let t = null, best = Infinity;
+    for (const s of picked(g, v, () => true, 30, true)) {
+      const d = Math.hypot(s.x - x, s.y - y), R = drawnR(s.rpx), score = d <= R ? d - 1e4 : d - R; // (inside an outline beats any near miss)
+      if ((d <= R || d - R <= DOT_NEAR) && score < best) { best = score; t = s; }
     }
+    if (!t) return false;
+    if (this.marked.has(t.ent)) this.marked.delete(t.ent); else this.marked.add(t.ent);
     g.events?.emit('brush.mark', { marked: this.marked.size, by: 'courier' });
     return true;
   }
   /** The marks let go (the paper put away). */
-  clearMarks() { for (const m of this.markGlyphs.values()) m?.close?.(); this.markGlyphs.clear(); this.marked.clear(); }
+  clearMarks() { this.marked.clear(); }
+  /** Each frame the paper is up: what a dot can mark, on screen, handed to the layer over the paper (Calissa's, vfx/celestialtargets.js). */
+  showTargets(W, H) {
+    const g = this.game, L = g.celestialTargets; if (!L) return;
+    const cam = g.camera, v = (this.tv ||= { cam, W, H, eye: new THREE.Vector3(), fwd: new THREE.Vector3() });
+    v.cam = cam; v.W = W; v.H = H; cam.getWorldPosition(v.eye); cam.getWorldDirection(v.fwd);
+    L.show(picked(g, v, (s) => s.x > -40 && s.x < W + 40 && s.y > -40 && s.y < H + 40, 30, true).map((t) => ({ id: idOf(t.ent), x: t.x, y: t.y, r: t.rpx, marked: this.marked.has(t.ent) })));
+  }
   get game() { return this.tool.game; }
 
   /** A recognised drawing (or null: a wash) -> a plan { id, cost, empty, run() } for it, read against the view it was drawn over. */
