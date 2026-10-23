@@ -232,7 +232,7 @@ export class Character {
   /** A blow taken (k 0..1, dir: its world direction): the upper body flinches over whatever is playing, a big one recoils (anim/hurt.js). */
   flinch(k = 1, dir = null) { this.hurt.flinch(k, dir); }
   /** The sub tool's verb lent on R, its body over whatever plays (anim/lendgesture.js; event tool.lend). */
-  lend(tool) { return this.lendGesture?.play(tool) ?? false; }
+  lend(tool, freeHand = 'L') { return this.lendGesture?.play(tool, freeHand) ?? false; }
 
   setHidden(h) {
     if (h === !!this.hidden) return;
