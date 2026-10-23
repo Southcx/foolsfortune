@@ -171,11 +171,11 @@ export class SpiritPress {
     // THE CRUCIBLE: the hourglass of glass in the pool, the soul's bead in its waist; the lantern by it, and its thread of smoke
     const hg = [[0.0, 0], [0.13, 0], [0.14, 0.02], [0.1, 0.1], [0.03, 0.2], [0.03, 0.24], [0.11, 0.34], [0.14, 0.44], [0.12, 0.45], [0.09, 0.36], [0.0, 0.3]].map(([x, y]) => new THREE.Vector2(x, y));
     const cru = P.crucible = new THREE.Group(); cru.position.set(0, 0.56, 0.74); group.add(cru); // (front and centre, under the eye's drop)
-    part(cru, new THREE.LatheGeometry(hg, 20), std(0xe8f0f4, { transparent: true, opacity: 0.2, roughness: 0.05, envMap: env, side: THREE.DoubleSide, depthWrite: false }), 0, 0, 0, false);
+    part(cru, new THREE.LatheGeometry(hg, 20), std(0xe8f0f4, { transparent: true, opacity: 0.2, roughness: 0.05, envMap: env, side: THREE.DoubleSide, depthWrite: false, forceSinglePass: true }), 0, 0, 0, false);
     this.beadMat = std(0x101010, { emissive: new THREE.Color(0.7, 0.72, 0.76), emissiveIntensity: 0.6, roughness: 0.2 });
     P.bead = part(cru, new THREE.SphereGeometry(0.05, 12, 8), this.beadMat, 0, 0.12, 0, false);
     const lan = P.lantern = new THREE.Group(); lan.position.set(0.5, 0.56, 0.62); lan.scale.setScalar(1.5); group.add(lan); // (out on the drum's front, clear of the roots, and big enough to read from the press view)
-    part(lan, new THREE.CylinderGeometry(0.075, 0.075, 0.2, 12, 1, true), std(0xf0e6d0, { transparent: true, opacity: 0.35, roughness: 0.1, side: THREE.DoubleSide, depthWrite: false }), 0, 0.1, 0, false);
+    part(lan, new THREE.CylinderGeometry(0.075, 0.075, 0.2, 12, 1, true), std(0xf0e6d0, { transparent: true, opacity: 0.35, roughness: 0.1, side: THREE.DoubleSide, depthWrite: false, forceSinglePass: true }), 0, 0.1, 0, false);
     part(lan, new THREE.CylinderGeometry(0.085, 0.09, 0.03, 12), bronze, 0, 0.015, 0); part(lan, new THREE.ConeGeometry(0.09, 0.07, 12), bronze, 0, 0.235, 0);
     this.flameMat = new THREE.MeshBasicMaterial({ color: 0xffa050, transparent: true, opacity: 0.2, blending: THREE.AdditiveBlending, depthWrite: false });
     P.flame = part(lan, new THREE.ConeGeometry(0.035, 0.11, 8, 1, true), this.flameMat, 0, 0.09, 0, false); P.flame.castShadow = false;
