@@ -369,8 +369,8 @@ if (part('trial')) {
   const ch = await ws('chevron()');
   S.check('trial: the chevron is on the gong', ch.cur === 'trial' && ch.off < 0.6, ch);
   await F(6);
-  let st = await S.ev(() => ({ state: __game.game.trial.state, jars: __game.game.trial.jars.length, box: document.getElementById('trial').style.display, freeze: __game.game.player.freeze }));
-  S.check('trial: F at the gong begins the count', st.state === 'countdown' && st.jars > 0 && st.box === 'block', st);
+  let st = await S.ev(() => ({ state: __game.game.trial.state, jars: __game.game.trial.jars.length, freeze: __game.game.player.freeze })); // (the #trial text panel is pruned: Petra's list, 2026-10-23)
+  S.check('trial: F at the gong begins the count', st.state === 'countdown' && st.jars > 0, st);
   await S.shot('trial-countdown');
   await S.ticks(200);
   st = await S.ev(() => ({ state: __game.game.trial.state, freeze: __game.game.player.freeze }));
@@ -382,8 +382,8 @@ if (part('trial')) {
   S.note('trial: windows mid-run', { B: midB, god: midGod, trialWithTheHand: midState });
   S.check('trial: the god hand is refused mid-run (godhand.js canEnter asks the trial)', midGod !== 'on', `god hand ${midGod} with the trial '${midState}'; canEnter reads trial.active, which Trial never sets (it has state and running)`);
   await S.go('throwing'); await S.ticks(30);
-  st = await S.ev(() => ({ state: __game.game.trial.state, jars: __game.game.trial.jars.length, box: document.getElementById('trial').style.display, arrow: document.getElementById('trialarrow').style.display, freeze: __game.game.player.freeze }));
-  S.check('trial: leaving the workshop calls it off, board and jars', st.state === 'off' && st.jars === 0 && st.box === 'none' && st.arrow === 'none' && !st.freeze, st);
+  st = await S.ev(() => ({ state: __game.game.trial.state, jars: __game.game.trial.jars.length, freeze: __game.game.player.freeze }));
+  S.check('trial: leaving the workshop calls it off, and its jars', st.state === 'off' && st.jars === 0 && !st.freeze, st);
   // careless: the gong struck twenty times; Esc during the count; travel during the count
   await S.go('workshop'); await standGong();
   await F(6); await S.ev(() => __game.game.trial.abort()); await S.ticks(10); await standGong(); // (one start first: what a start builds once is not a leak)
