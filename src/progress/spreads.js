@@ -17,8 +17,9 @@
 //   footprintOf(card, { turn, reversed }) -> [[dx, dy]]   suitOf(card, reversed) -> suit | 'wild'   itemSuit(item) -> suit | null
 //   strengthOf(rule, ctx) -> k   light(spreadId, laid, ctx) -> cells[56] (the face's, mirrored)   tally(cells, items) -> { sums, counted }
 //   effectOf(suit, points) -> the modifier as a number   cellIndex(c, r)
-//   SEASON_SUIT SEASON_K   DAY_CARD dayCard(day) -> card   COURT COURT_RANK courtOf(sums) -> { id, rank, suit, lifts, label } | null
-//   (light ctx.dayCard; tally(cells, items, { season }) -> { sums, counted, court })
+//   SEASON_SUIT SEASON_K   DAY_CARD dayCard(day) -> card   CLASS COURT_DEPTH ZODIAC KINDRED MAJOR_TITLE
+//   classOf(sums) -> { id, kind: 'court' | 'major', lifts, label, ... } (courtOf the same)   classLabel(id)
+//   (light ctx.dayCard; tally(cells, items, { season }) -> { sums, counted, class, court (the same) })
 // ---------------------------------------------------------------------------------------
 
 /** The Box's grid: 8 columns of 7 rows, its 56 cells (pneuka/box.js SLOTS). */
@@ -188,13 +189,13 @@ export const TALLY = {
   pentacles: { per: 0.015, does: 'worth when sold or condensed' },
 };
 // (the ceiling is the cap with a court class's lift: tally() has already capped each suit at its own, 10 or 12)
-export const effectOf = (suit, points) => (TALLY[suit]?.per ?? 0) * Math.min(TALLY.cap + COURT.lift, Math.max(0, points));
+export const effectOf = (suit, points) => (TALLY[suit]?.per ?? 0) * Math.min(TALLY.cap + CLASS.lift, Math.max(0, points));
 
 /**
  * The tallies: an item counts on a lit cell carrying its suit (or wild), and a stack counts once (the cell counts, not the items).
  * items: 56 entries in the face's order, each an item ({ kind, key, suit? }) or null; opts.season: the season's id (seasonOf), whose
  * suit earns SEASON_K. Returns { sums: { suit: points }, counted: [{ i, suit, w }], court }, each sum capped at TALLY.cap, the
- * court class's rank suit at TALLY.cap + COURT.lift.
+ * class's lifted suit at TALLY.cap + CLASS.lift.
  */
 export function tally(cells, items, opts = {}) {
   const sums = { wands: 0, cups: 0, swords: 0, pentacles: 0 }, counted = [];
@@ -208,9 +209,9 @@ export function tally(cells, items, opts = {}) {
   }
   const lift = SEASON_SUIT[opts.season];
   if (lift) sums[lift] *= SEASON_K;
-  const court = courtOf(Object.fromEntries(SUITS.map((x) => [x, Math.min(TALLY.cap, sums[x])])));
-  for (const x of SUITS) sums[x] = Math.min(TALLY.cap + (court && court.lifts === x ? COURT.lift : 0), sums[x]);
-  return { sums, counted, court };
+  const cls = classOf(Object.fromEntries(SUITS.map((x) => [x, Math.min(TALLY.cap, sums[x])])));
+  for (const x of SUITS) sums[x] = Math.min(TALLY.cap + (cls.lifts === x ? CLASS.lift : 0), sums[x]);
+  return { sums, counted, class: cls, court: cls }; // (`court`: the old name, kept while laidspread.js reads it)
 }
 
 // ---------------------------------------------------------------- the three additions (SPREADS.md 11; the owner, 2026-10-23)
@@ -224,18 +225,51 @@ export function dayCard(day) {
   let h = (day | 0) ^ 0x5bd1e995; h = Math.imul(h ^ (h >>> 15), 0x2c1b3c6d); h = Math.imul(h ^ (h >>> 12), 0x297a2d39); h ^= h >>> 15;
   return MAJORS[(h >>> 0) % MAJORS.length];
 }
-/** A court class (Golden Sun's classes, set by the Djinn you hold): the court card your two strongest suits make. Its suit is the
- *  strongest; its rank the second's element by the Golden Dawn's courts (Page earth, Knight fire, Queen water, King air), or the
- *  strongest's own when no second suit has COURT.min points (a pure build: the Knight of Wands, fire of fire). It lifts the cap of
- *  the suit its rank came from by COURT.lift points. */
-export const COURT_RANK = { pentacles: 'page', wands: 'knight', cups: 'queen', swords: 'king' };
-export const COURT = { min: 1, lift: 2 };
+/** A class (Golden Sun's classes, set by the Djinn you hold; SPREADS.md 12, the owner's split, 2026-10-23): what your suits' tallies
+ *  read as. No suit held (under CLASS.held points), the Fool: where everyone starts. ONE suit held, a court card of it, its rank by
+ *  depth (Page, Knight, Queen, King: COURT_DEPTH). TWO suits (or three: the top two count), a zodiac Major by the Golden Dawn: the
+ *  strongest suit is the sign's element, and the second, against it, the sign's modality (KINDRED, fire with air or
+ *  water with earth, the same kind of element: cardinal; CONTRARY, the dignities' foe: fixed; the third: mutable). ALL FOUR held, the World, whose four corners
+ *  are the four elements. The planets, the Hanged Man and Judgement are read by other ways (SPREADS.md 12.3), not yet built.
+ *  A class lifts one suit's cap by CLASS.lift points: a court its own suit, a zodiac Major its second, the World its weakest. */
+export const CLASS = { held: 1, lift: 2, world: 4, balance: 0.5 }; // (the World: each of the four at `world` points, the weakest at least `balance` of the strongest)
+export const COURT = CLASS; // (the old name, kept while laidspread.js reads COURT.lift)
+export const COURT_DEPTH = [[9, 'king'], [6, 'queen'], [3, 'knight'], [0, 'page']]; // (points of the one suit, at least)
+export const KINDRED = { wands: 'swords', swords: 'wands', cups: 'pentacles', pentacles: 'cups' };
+/** The zodiac Majors by element and modality (Book T): fire Aries, Leo, Sagittarius; water Cancer, Scorpio, Pisces; air Libra,
+ *  Aquarius, Gemini; earth Capricorn, Taurus, Virgo. */
+export const ZODIAC = {
+  wands: { cardinal: 'emperor', fixed: 'strength', mutable: 'temperance' },
+  cups: { cardinal: 'chariot', fixed: 'death', mutable: 'moon' },
+  swords: { cardinal: 'justice', fixed: 'star', mutable: 'lovers' },
+  pentacles: { cardinal: 'devil', fixed: 'hierophant', mutable: 'hermit' },
+};
 const TITLE = { page: 'Page', knight: 'Knight', queen: 'Queen', king: 'King', wands: 'Wands', cups: 'Cups', swords: 'Swords', pentacles: 'Pentacles' };
-export function courtOf(sums) {
-  const by = SUITS.filter((x) => (sums[x] || 0) >= COURT.min).sort((a, b) => sums[b] - sums[a]);
-  if (!by.length) return null;
-  const suit = by[0], from = by[1] ?? suit, rank = COURT_RANK[from];
-  return { id: `${rank}.${suit}`, rank, suit, lifts: from, label: `${TITLE[rank]} of ${TITLE[suit]}` };
+export const MAJOR_TITLE = {
+  fool: 'the Fool', magician: 'the Magician', priestess: 'the High Priestess', empress: 'the Empress', emperor: 'the Emperor',
+  hierophant: 'the Hierophant', lovers: 'the Lovers', chariot: 'the Chariot', strength: 'Strength', hermit: 'the Hermit',
+  wheel: 'the Wheel of Fortune', justice: 'Justice', hanged: 'the Hanged Man', death: 'Death', temperance: 'Temperance',
+  devil: 'the Devil', tower: 'the Tower', star: 'the Star', moon: 'the Moon', sun: 'the Sun', judgement: 'Judgement', world: 'the World',
+};
+const major = (card, lifts) => ({ id: `arcana.${card}`, kind: 'major', card, lifts, label: MAJOR_TITLE[card] });
+export function classOf(sums) {
+  const by = SUITS.filter((x) => (sums[x] || 0) >= CLASS.held).sort((a, b) => sums[b] - sums[a]);
+  if (!by.length) return major('fool', null);
+  if (by.length === 4 && sums[by[3]] >= CLASS.world && sums[by[3]] >= CLASS.balance * sums[by[0]]) return major('world', by[3]);
+  const suit = by[0];
+  if (by.length === 1) {
+    const rank = COURT_DEPTH.find(([n]) => sums[suit] >= n)[1];
+    return { id: `${rank}.${suit}`, kind: 'court', rank, suit, lifts: suit, label: `the ${TITLE[rank]} of ${TITLE[suit]}` };
+  }
+  const second = by[1], modality = second === KINDRED[suit] ? 'cardinal' : second === CONTRARY[suit] ? 'fixed' : 'mutable';
+  return major(ZODIAC[suit][modality], second);
+}
+export const courtOf = classOf; // (the old name: the class used to be a court card only)
+/** A class's words from its id ('queen.wands', 'arcana.emperor'), for the log. */
+export function classLabel(id) {
+  if (!id) return null;
+  const [a, b] = id.split('.');
+  return a === 'arcana' ? MAJOR_TITLE[b] : `the ${TITLE[a]} of ${TITLE[b]}`;
 }
 
 // (the footprints are sized by card rank: a mismatch is a data error, said once at load)
