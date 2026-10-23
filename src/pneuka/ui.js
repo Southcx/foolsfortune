@@ -101,7 +101,11 @@ export class PneukaUI {
     this.root = el('div'); this.root.id = 'pneuka';
     this.root.addEventListener('mousedown', (e) => e.stopPropagation());
     this.root.addEventListener('contextmenu', (e) => e.preventDefault());
-    this.root.addEventListener('click', (e) => { if (e.target === this.root) this.close(); this.hideMenu(); });
+    this.root.addEventListener('click', (e) => { if (e.target === this.root && !(this.underside.slim && this.underside.atView(e.clientX, e.clientY, 0))) { if (!this.underside.slim) this.close(); } this.hideMenu(); });
+    // the reading view (the Box turned over, its scene behind the window): a right-click reverses the card under it, a drop lays one
+    this.root.addEventListener('contextmenu', (e) => { if (e.target === this.root && this.underside.slim) this.underside.atView(e.clientX, e.clientY, 2, null); });
+    this.root.addEventListener('dragover', (e) => { if (this.underside.slim) e.preventDefault(); });
+    this.root.addEventListener('drop', (e) => { const d = e.dataTransfer?.getData('text/plain') || ''; if (this.underside.slim && d.startsWith('card:')) { e.preventDefault(); this.underside.atView(e.clientX, e.clientY, 0, d.slice(5)); } });
     addEventListener('keydown', (e) => { // (Esc closes it, and only it: the pause menu does not open under it, as the Codex's: GARDEN-SWEEP #9)
       if (!this.open || e.repeat || /^(TEXTAREA|INPUT)$/.test(e.target?.tagName)) return;
       if (e.code === 'KeyF') { e.preventDefault(); e.stopImmediatePropagation(); this.flip(); return; } // (F turns the Box over: Petra's key, SPREADS.md 5.1)
@@ -170,9 +174,10 @@ export class PneukaUI {
     px.appendChild(head);
     this.hoverEl = el('div', 'hover', '&nbsp;');
     px.appendChild(this.hoverEl);
+    this.root.classList.toggle('view', this.underside.slim); // (the reading view behind: the window falls away to a bar)
     if (this.reading.flipped) { // (the underside: the spread, laid on the cloth; the pocket is on the other side)
       this.underside.mount(px);
-      px.appendChild(el('footer', '', 'F turns the Box back · pick a card, then a place · a laid card: click to take it back, right-click to reverse it'));
+      if (!this.underside.slim) px.appendChild(el('footer', '', 'F turns the Box back · pick a card, then a place · a laid card: click to take it back, right-click to reverse it'));
       this.root.appendChild(px);
       this.fit();
       return;
@@ -195,7 +200,8 @@ export class PneukaUI {
     const px = this.root.querySelector('.px'); if (!px) return;
     px.style.transform = '';
     const k = Math.min(1, (innerWidth - 24) / Math.max(1, px.offsetWidth), (innerHeight - 24) / Math.max(1, px.offsetHeight));
-    if (k < 1) px.style.transform = `scale(${k.toFixed(3)})`;
+    const centre = this.root.classList.contains('view') ? 'translateX(-50%) ' : ''; // (the bar over the reading view, centred at the bottom)
+    px.style.transform = `${centre}${k < 1 ? `scale(${k.toFixed(3)})` : ''}`.trim();
   }
 
   icon(id) { const it = itemOf(id); return it ? `<img src="${itemIcon(this.game, id)}" alt="">` : ''; }
