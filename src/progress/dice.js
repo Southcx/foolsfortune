@@ -7,11 +7,11 @@
 // the palm die". So the pool's overflow is shared out in that order: the Lockheart, worn and not at its cap, drinks its share (the worn
 // stone's `overflow.lockheart`); a stone's `bleed` share is lost, as before (amethyst's trade); the palm die condenses the rest into
 // cubes at its size's rate, up to its size's cap a game day, and grows along the solids (d4, d6, d8, d12, d20) on what it has
-// condensed. The cap keeps a new faucet inside the aim (scripts/economy.mjs prints it; ECONOMY.md): a fighter overflows thousands of
+// condensed, always at a worse rate than the Lockheart's (the bespoke tool converts better; the palm die is for everyone). The cap keeps a new faucet inside the aim (scripts/economy.mjs prints it; ECONOMY.md): a fighter overflows thousands of
 // Lachryma a real hour, so the rate alone would pay twice the aim.
 //
 // Prior art: Entropy Tactics' Hungry Die (the owner's: a die that grows on what it is fed); the Lockheart's conversion (a coffin of
-// Lachryma into cubes, 0.12 a unit at its best: the palm die's d20 rate); Stardew Valley's daily shipping cap feel (a sink-side cap, not
+// Lachryma into cubes, 0.12 a unit plain, 0.24 brimming: the ceiling the palm die stays under); Stardew Valley's daily shipping cap feel (a sink-side cap, not
 // a punishment); Shannon's surprisal for Luck's bits (progress/luck.js).
 //
 //   SET [{ die, sides, solid, suit }]   PALM = { sizes, rate, capPerSide, grow }   palmSides(condensed) -> 4 .. 20   palmCap(sides)
@@ -33,12 +33,15 @@ export const SET = [
   { die: 'd20', sides: 20, solid: 'icosahedron', suit: 'cups' },
 ];
 
-/** The palm die. `rate`: cubes condensed per unit of Lachryma, by size (the d20's is the Lockheart's best, 12 cubes from 100);
+/** The palm die. `rate`: cubes condensed per unit of Lachryma, by size, always under the Lockheart's (the owner, 2026-10-23: "the
+ *  Lockheart as a bespoke tool would be more effective at conversion, but even players who don't want to use a Lockheart can still
+ *  convert"): its brass key turns a full coffin into 12 cubes a 100 (0.12), a brimming one 0.24, with no cap a game day; the d20 is
+ *  two thirds of the plain rate;
  *  `capPerSide`: cubes a game day per side (a d4 8, a d20 40: 0.08 of the aim an hour at most); `grow`: cubes condensed in all to reach
  *  each size (a d6 after 40, about five game days of steady overflow; a d20 after 700, some forty). */
 export const PALM = {
   sizes: [4, 6, 8, 12, 20],
-  rate: { 4: 0.05, 6: 0.06, 8: 0.08, 12: 0.1, 20: 0.12 },
+  rate: { 4: 0.03, 6: 0.04, 8: 0.05, 12: 0.065, 20: 0.08 },
   capPerSide: 2,
   grow: { 4: 0, 6: 40, 8: 120, 12: 300, 20: 700 },
 };

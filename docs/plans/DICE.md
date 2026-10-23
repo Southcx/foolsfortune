@@ -71,12 +71,16 @@ d12, d20** (fire, earth, air, the aether, water; the d10 stays the Tree's).
 
   | die | cubes a unit of Lachryma | cap a game day | grows into the next at, condensed in all |
   | --- | --- | --- | --- |
-  | d4 | 0.05 | 8 | 40 |
-  | d6 | 0.06 | 12 | 120 |
-  | d8 | 0.08 | 16 | 300 |
-  | d12 | 0.10 | 24 | 700 |
-  | d20 | 0.12 (the Lockheart's best) | 40 | |
+  | d4 | 0.03 | 8 | 40 |
+  | d6 | 0.04 | 12 | 120 |
+  | d8 | 0.05 | 16 | 300 |
+  | d12 | 0.065 | 24 | 700 |
+  | d20 | 0.08 | 40 | |
 
+  **The Lockheart converts better** (the owner, 2026-10-23: "the Lockheart as a bespoke tool would be more effective at conversion,
+  but even players who don't want to use a Lockheart can still convert"). It drinks first; its brass key turns a full coffin into 12
+  cubes a 100 Lachryma (0.12), a brimming one 0.24, with no cap a game day; the palm die's best is 0.08, two thirds of the plain rate,
+  a third of the brimming, and capped. Everyone converts; the one who carries the tool for it converts more.
   **Why a cap:** a fighter overflows thousands of Lachryma a real hour; the rate alone would pay twice the aim. At the cap, the d20
   adds 40 cubes a real hour at most (0.08 of the aim), and every profile stays under the 1.5x cap with it (`scripts/economy.mjs`: the
   fighter 1.35x, the miner 1.36x, the treasury 1.35x, counting Pentacles on what each really sells). The d20 is some forty game days
