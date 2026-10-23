@@ -11,6 +11,7 @@
 //
 // Prior art: Pokémon Snap's report and album, Monster Hunter's Hunter's Notes, the Hyrule Compendium, and Dark Cloud 2's album of scoops.
 // ---------------------------------------------------------------------------------------
+import { calibrateButton } from '../../ui/calibratebutton.js';
 import { CARD, cardArt } from './cards.js';
 import { MEMORY_PLATES } from './memory.js';
 import { CREATURES, CREATURE_IDS } from './bestiary.js';
@@ -122,7 +123,8 @@ function bestiary(codex, cx, g, B) {
   const id = codex.vtCre, C = CREATURES[id], u = Bs.understanding(id), card = el('div', 'card vt');
   card.style.display = 'block';
   const ph = B.photos[C.fish ? 'fish' : 'clapper'];
-  card.appendChild(el('div', 'in', `${u.n ? C.name.toUpperCase() : '· · ·'} <span class="tier">${u.name}</span>`));
+  const head = card.appendChild(el('div', 'in', `${u.n ? C.name.toUpperCase() : '· · ·'} <span class="tier">${u.name}</span>`));
+  if (u.n) calibrateButton(head, { kind: id }, g); // (the Sight's TRACK: its needle to the nearest of this kind, ui/calibratebutton.js)
   if (g.collection?.has(`creature.${id}`)) { const c = document.createElement('canvas'); c.width = 120; c.height = 200; c.getContext('2d').drawImage(cardArt(`creature.${id}`, 120, 200), 0, 0); const d = el('div', 'detail'); d.appendChild(c); card.appendChild(d); } // (its card, bound: progress/collection.js)
   if (u.n && ph?.thumb && !C.fish) card.appendChild(el('div', 'ph', `<i style="background-image:url(${ph.thumb})"></i>`));
   for (const f of C.facts) {

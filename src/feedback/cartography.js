@@ -21,6 +21,7 @@
 // nothing is drawn. Prior art: the thread itself, and Hansel's pebbles; kept for the session only (after a reload, a straight line).
 // The Raceway's layer draws its tracks as roads with their names at their starts (`drawTracks`), as a racing game's course map does.
 // ---------------------------------------------------------------------------------------
+import { calibrateButton } from '../ui/calibratebutton.js';
 import * as THREE from 'three';
 import { T, PALETTE } from '../core/config.js';
 import { sfx } from '../audio/sfx.js';
@@ -560,8 +561,13 @@ export class Cartography {
     for (const [id, b] of Object.entries(this.layerBtns)) b.classList.toggle('on', id === l.id);
     // the side panel: what you know
     const here = this.layerOf(P.pos);
-    const rows = this.anchors.filter((a) => a.layer === l.id).sort((a, b) => b.cov - a.cov).slice(0, 9).map((a) => `${a.done ? '◆' : '◇'} <b>${a.name}</b><span class="bar2"><i style="width:${Math.round(a.cov * 100)}%"></i></span>${Math.round(a.cov * 100)}%`).join('<br>');
-    this.side.innerHTML = `<b>${l.name}</b>${here.id === l.id ? ' · you are here' : ''}<br>${rows || '<span style="opacity:.6">nothing charted here yet</span>'}<br><span style="opacity:.6">${this.stats.charted} cells charted · ${this.stats.understood} understood</span>`;
+    const track = (a) => a.done && this.game.places?.get?.(a.tag); // (a charted room that is a place: the Sight's TRACK beside it, ui/calibratebutton.js)
+    const rows = this.anchors.filter((a) => a.layer === l.id).sort((a, b) => b.cov - a.cov).slice(0, 9).map((a) => `<span${track(a) ? ` data-place="${a.tag}"` : ''}>${a.done ? '◆' : '◇'} <b>${a.name}</b><span class="bar2"><i style="width:${Math.round(a.cov * 100)}%"></i></span>${Math.round(a.cov * 100)}%</span>`).join('<br>');
+    const html = `<b>${l.name}</b>${here.id === l.id ? ' · you are here' : ''}<br>${rows || '<span style="opacity:.6">nothing charted here yet</span>'}<br><span style="opacity:.6">${this.stats.charted} cells charted · ${this.stats.understood} understood</span>`;
+    if (html !== this.sideHtml) { // (rebuilt only when it reads differently: a button made every frame cannot be clicked)
+      this.side.innerHTML = this.sideHtml = html;
+      for (const e of this.side.querySelectorAll('[data-place]')) calibrateButton(e, { place: e.dataset.place }, this.game);
+    }
   }
 }
 
