@@ -44,9 +44,11 @@ tarot, and the board teaches it by use.
 - The 21 laid by hand: four Wands, four Cups, three Swords, four Pentacles, six wild. The World's planet is Saturn; the Golden Dawn
   also gives it Earth, which brings Pentacles to four. Swords' fourth would be the Fool (Air), and the Fool is not laid by hand.
 - **The Fool is you** (its element is Air), so its card is not laid by hand: it lies at the board's heart in the Celtic Cross as the significator, a
-  one-cell wild footprint (the Joker descends from the Fool). It is bound from the start.
-- **A wild card** (a planet) empowers an item of any suit, at 0.75 of a suited card's strength. The reason: a planet colours whatever
-  it touches, and a footprint that fits everything must pay for it.
+  one-cell wild footprint (the Joker descends from the Fool). It is bound from the start. The Fool is Air, so the Courier is Swords'
+  missing fourth (Espada).
+- **A wild card** (a planet) empowers an item of any suit, at 0.75 of a suited card's strength. The reason: "planet" is Greek
+  *planētēs*, the wanderer, named for moving through every sign in turn; and a footprint that fits everything must pay for it. The
+  board's tip (Espada's): "A planet: it wanders through every sign, so it lights every suit, a little less brightly."
 
 ## 4. Friendly and contrary suits: the elemental dignities
 
@@ -123,7 +125,7 @@ Past and Future always sum to 1.5, so a stale spread is never punished: re-layin
 | position | rule |
 | --- | --- |
 | Present | your pair's card; 1; it covers the Fool |
-| Crossing | laid across the Present (turned 90 degrees); counts only in a fight |
+| Challenge | laid across the Present (turned 90 degrees); counts only in a fight. Tarot's other name for the crossing card: "the crossing" is the rail's |
 | Foundation | 0.5, and it never fades: the root |
 | Recent past | fades 1 to 0.5 over a game day |
 | Crown | 0.5, plus 0.5 times the share of the game day's goals done (`game.goals`) |
@@ -132,6 +134,9 @@ Past and Future always sum to 1.5, so a stale spread is never punished: re-layin
 | Environment | 1 with a sibling or a guest in your party, 0.5 alone |
 | Hopes and fears | counts its suit and its contrary, each at 0.5, and never cancels |
 | Outcome | 1.5, and lights only once the other nine are laid |
+
+"The Crown" is qualified in docs and code as **the Crown position** (`crownPosition`): "the crown" is the Great Slip Jelly's urn.
+On the board its label alone is clear.
 
 ### 5.5 Opened by achievement (arts only by achievement)
 
@@ -143,6 +148,36 @@ Past and Future always sum to 1.5, so a stale spread is never punished: re-layin
 | Celtic Cross | 12 Majors bound | a Horseshoe with no dark cell and twelve cells counting |
 
 Drafts: the achievements' names and tiers come with the build.
+
+### 5.6 The Majors' second ways (ruling 2; the acts are Espada's, the predicates mine)
+
+Each Major is bound by its photograph or by this act: the card's meaning done. A predicate with no counter yet swaps the act and
+keeps the meaning.
+
+| card | its sitting's riddle | the second way |
+| --- | --- | --- |
+| 0 The Fool | one who has leapt | bound from the start: the Fool is you |
+| I The Magician | a broken thing made whole | use all seven tools within one real minute |
+| II The High Priestess | deep water that keeps its secrets | gloss 10 neuralese words |
+| III The Empress | what grows where nothing should | a planetoid of the Spirit Garden in bloom |
+| IV The Emperor | a treasury, closed and kept | 20 orders carried out by your siblings |
+| V The Hierophant | the bell that calls the faithful | 5 Movement Arts learned from the System |
+| VI The Lovers | two of a kind in one frame | feel an agate |
+| VII The Chariot | a vessel that rides the wind | win a race at the Raceway |
+| VIII Strength | a weight that should not be lifted | calm a creature at its most agitated, without a blow |
+| IX The Hermit | a light kept alone | reach the Great Dunemaw's last floor with no one in your party |
+| X Wheel of Fortune | a wheel that turns of itself | the Lockheart's wheel lands on a jackpot |
+| XI Justice | where every catch is counted | turn in a bounty |
+| XII The Hanged Man | one who hangs by a cord | a game hour spent as the god hand |
+| XIII Death | a thing in its ending | release a spirit from your garden (a farewell, never a death) |
+| XIV Temperance | water poured between vessels | a true firing at the press |
+| XV The Devil | one who hoards more than it can carry | your pool overflows 10 times |
+| XVI The Tower | the tallest thing, from its foot | burst the Great Slip Jelly's crown |
+| XVII The Star | nothing but the open sky | a fix on the open sea by reading the sky |
+| XVIII The Moon | a reflection in the oasis | creatures strike your mirage 3 times |
+| XIX The Sun | the sun itself, in the Dunes | awaken to Mirth |
+| XX Judgement | where something broke | win a puzzle duel and mend its Figment |
+| XXI The World | five kinds of thing in a frame | awaken to all seven feelings |
 
 ## 6. Where the cards go (ruling 1)
 
@@ -183,12 +218,17 @@ capped at 10 points:
 
 | suit | the kinds (`items.js`) | why |
 | --- | --- | --- |
-| Wands | instrument, crude (a cask), psygun (a variant carried) | fire: what is struck, burned or fired |
+| Wands | instrument, crude (a cask), psygun (a variant carried), shell | fire: what is struck, burned or fired |
 | Cups | bottle, fish, lure, heart (the Lockheart's coffin) | water and feeling: what holds or lives in it |
-| Swords | shell, key (a Possibilikey), whistle, rutter (a route map) | air and thought: what cuts, opens or plans |
+| Swords | key (a Possibilikey), whistle, rutter (a route map) | air and thought: what cuts, opens or plans |
 | Pentacles | material, curio, map (a Cogitomap) | earth and matter: what is mined, found or charted |
 
-A first pass for Espada to check against the lore. A new kind takes a suit in the same commit.
+**A tool carried** (kind `tool`) takes its tool's suit: the psygun and the Crucibelle Wands (fired, struck); the Sondelass and the
+Veritome Swords (the blade, the eye that sees through); the Soul Brush and the Lockheart Cups (liquid Lachryma, a heart); the
+Dreamvane Pentacles (the pick and the dowse).
+
+Checked by Espada, 2026-10-23 (the shell moved to Wands, the tool kind added). A new kind takes a suit in the same commit. The
+playing-card suits descend from these: hearts from Cups, spades from Swords, clubs from Wands, diamonds from Pentacles.
 
 ## 8. Prior art, and what was taken
 
@@ -206,7 +246,7 @@ A first pass for Espada to check against the lore. A new kind takes a suit in th
 1. **The bracelet's charms** (BRACELET.md): a second passive-slot system beside the board. My lean: a charm becomes a suited item, and
    its power comes from where it sits. One system, not two.
 2. **The mirrored flip** (5.1): my lean yes.
-3. **The second way for each Major:** 22 achievements, drafted by Dovina and Espada together.
+3. **The second way for each Major:** the acts are drafted (5.6); the predicates come with the build.
 
 ## 10. Who builds what
 
