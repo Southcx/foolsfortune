@@ -37,9 +37,10 @@ function drawSection(P, a, b) {
   }
   const lift = 2.5, base0 = Math.min(...cols.map(([, , k]) => F.base[k])) - 1.5, yaw = Math.atan2(-dz, dx);
   _q.setFromAxisAngle(_p.set(0, 1, 0), yaw);
-  let j = 0;
+  let j = 0; const frame = []; // (the outline for the looks: each column's foot, top and the ground under it)
   for (const [x, z, k] of cols) {
     let y = top + lift - (F.base[k] - base0) - F.firm[k] - F.loose[k] - F.w[k]; // (the section's foot, so the columns keep their heights)
+    frame.push([x, z, y, top + lift, F.top(k) + F.w[k]]);
     for (const [hex, L] of LAYERS) {
       const h = L === 'base' ? F.base[k] - base0 : F[L][k]; if (h <= 0.005) continue;
       _m.compose(_p.set(x, y + h / 2, z), _q, _s.set(0.5, h, 0.12)); S.setMatrixAt(j, _m); S.setColorAt(j, _c.setHex(hex)); j++; y += h;
@@ -47,6 +48,7 @@ function drawSection(P, a, b) {
   }
   S.count = j; S.instanceMatrix.needsUpdate = true; if (S.instanceColor) S.instanceColor.needsUpdate = true;
   S.visible = true;
+  P.game.godhandLooks?.strata(S, frame); // (its frame in the labradorite's line: vfx/godhand/marks.js)
   return len;
 }
 
@@ -79,6 +81,7 @@ export const SIGHT = {
       if ((courseT -= dt) > 0 || !F || !K.ok) return;
       courseT = 0.1;
       const pts = courseFrom(F, K.point.x, K.point.z, Math.round(P.ramp('course', 'steps')));
+      const LK = P.game.godhandLooks; if (LK) { LK.course(pts, P.domainColour('course'), 0.1); return; } // (the run and its pool: vfx/godhand/marks.js)
       if (!courseLine) courseLine = P.line([new THREE.Vector3(), new THREE.Vector3()], P.domainColour('course'));
       courseLine.geometry.setFromPoints(pts.length > 1 ? pts : [K.point, K.point]); courseLine.visible = true;
     },
@@ -96,6 +99,7 @@ export const SIGHT = {
         else if (c.want && c.want.lengthSq() > 0.05) to = _s.copy(c.pos).addScaledVector(c.want, 2);
         if (!to) continue;
         pos.push(from.x, from.y, from.z, to.x, (to.y ?? c.pos.y) + 0.6, to.z); _c.setHex(hex); col.push(_c.r, _c.g, _c.b, _c.r, _c.g, _c.b);
+        g.godhandLooks?.readArrow(pos, col, from, { x: to.x, y: (to.y ?? c.pos.y) + 0.6, z: to.z }, _c); // (its head: what it means to do, pointed)
       }
       if (!readLines) {
         readLines = new THREE.LineSegments(new THREE.BufferGeometry(), new THREE.LineBasicMaterial({ vertexColors: true, transparent: true, opacity: 0.9, depthTest: false }));
@@ -111,8 +115,8 @@ export const SIGHT = {
 };
 
 /** The passive marks go when their power is not chosen (godhand/powers.js calls this every frame with the chosen id). */
-export function hideSight(id) {
-  if (id !== 'course' && courseLine) courseLine.visible = false;
+export function hideSight(id, P) {
+  if (id !== 'course') { if (courseLine) courseLine.visible = false; P?.game.godhandLooks?.hideCourse(); }
   if (id !== 'read' && readLines) readLines.visible = false;
   if (id !== 'strata' && section && sectionLife <= 0) section.visible = false;
 }
