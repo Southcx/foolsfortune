@@ -8,7 +8,8 @@
 //                flare of its fire (a stone re-cut, not a gem swapped)
 // THE FINGERS  the other five of the standard set on the hand (the owner, 2026-10-23: d4 the little finger, d6 the ring finger, d8 the
 //              middle, d10 the index, d12 the thumb; the d20 is the palm's), small stones on the back of each finger's first joint,
-//              in the same mineral, the palm die's glint passing through them.
+//              in the same mineral; each die's edges inked in its suit's colour (d4 Wands, d6 Pentacles, d8 Swords, d10 Cups, the
+//              palm's d20 the Majors' gold, the d12 unruled: none), so the hand teaches the suits without a word.
 // No words: a world mark (the log says "Your palm die grows into a d8.").
 //
 // Prior art: the owner's Entropy Tactics' Hungry Die (a die that grows on what it is fed); Plato's solids as the dice (Timaeus); the
@@ -18,6 +19,10 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { GLAZES } from '../../courier/vessel/glazes.js';
+import { SUIT_LOOK } from '../readingview.js';
+
+/** Each die's ink, its edges, in its suit's colour (Dovina, 2026-10-23: the body the mineral, the ink the suit; the d20 the Majors' gold, the d12 unruled: none). */
+const INK = { 4: SUIT_LOOK.wands, 6: SUIT_LOOK.pentacles, 8: SUIT_LOOK.swords, 10: SUIT_LOOK.cups, 20: 0xffd36a };
 
 export const PALM_DIE = {
   at: [0.0, 0.48, -0.01],       // (the palm hole's middle in the handR bone's frame, measured on the owner's model: the hole goes through, so mid-thickness)
@@ -68,7 +73,7 @@ export class PalmDieLook {
   dress() {
     const G = GLAZES[this.game.vessel?.look?.stones] || GLAZES.maker;
     this.mat.color.setHex(G?.color ?? 0xffffff); this.mat.emissive.setHex(G?.color2 ?? 0xffffff); this.mat.roughness = Math.max(0.06, G?.rough ?? 0.1);
-    this.crack.color.setHex(G?.color2 ?? 0xffffff);
+    this.crack.color.setHex(this.cut < 1 ? (G?.color2 ?? 0xffffff) : INK[this.sides] ?? (G?.color2 ?? 0xffffff)); // (its ink at rest, the mineral's fire through a re-cut)
   }
 
   /** The five on the fingers: each parented to its finger's first bone, set at its back between the knuckle and the next joint. */
@@ -81,7 +86,8 @@ export class PalmDieLook {
       b1.updateWorldMatrix(true, false); b2.updateWorldMatrix(true, false);
       a.setFromMatrixPosition(b1.matrixWorld); b.setFromMatrixPosition(b2.matrixWorld);
       const len = a.distanceTo(b), p = a.lerp(b, F.along).addScaledVector(back, F.back * len / 0.17); // (the offset scaled by the segment, the world's units)
-      const m = new THREE.Mesh((SOLID[sides])(F.size), this.mat); m.name = `finger-die-d${sides}`; m.raycast = () => {};
+      const g = (SOLID[sides])(F.size), m = new THREE.Mesh(g, this.mat); m.name = `finger-die-d${sides}`; m.raycast = () => {};
+      if (INK[sides]) { const e = new THREE.LineSegments(new THREE.EdgesGeometry(g), new THREE.LineBasicMaterial({ color: INK[sides], transparent: true, opacity: 0.85, toneMapped: false })); e.raycast = () => {}; m.add(e); } // (its suit's ink on its edges)
       b1.add(m); m.position.copy(b1.worldToLocal(p)); m.userData.sides = sides; m.scale.setScalar(1 / Math.max(1e-6, b1.getWorldScale(new THREE.Vector3()).x) * B.handR.getWorldScale(new THREE.Vector3()).x);
       this.fingerDice.push(m);
     }
@@ -107,6 +113,6 @@ export class PalmDieLook {
     this.mesh.scale.setScalar(1 + 0.35 * swell + 0.08 * this.glint);
     this.mesh.rotation.set(0.4 + Math.sin(this.t * 0.7) * 0.2, this.t * S.spin, 0.2);
     this.mat.emissiveIntensity = 0.25 + 1.2 * this.glint + 2.5 * swell;
-    this.crack.opacity = Math.min(1, crack * 1.4 + 0.15 * this.glint);
+    this.crack.opacity = Math.min(1, (INK[this.sides] ? 0.6 : 0) + crack * 1.4 + 0.15 * this.glint);
   }
 }
