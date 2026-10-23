@@ -3634,3 +3634,13 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the hook feeds the worn stone's `overflow.lockheart` (stones.js `stoneOf`). Measured headless, the Lockheart worn, 50 of
   overflow: the Maker's 40 to the coffin and 10 to the palm die; onyx 50 and 0; amethyst 0 and 0.
 - **Rule:** 281
+
+### 2026-10-23 · The reading view's class card always showed the Fool (Calissa; Petra and Dovina found it)
+- **Seen:** whatever was laid, the class's card behind the Courier stayed the Fool; and had a Major been read, 'arcana.emperor' would
+  have drawn the Page of Cups.
+- **Cause (read):** vfx/readingview.js read `laidSpread.court`, renamed `laidSpread.class` in ac35a3d while the card was built on the
+  old name (the two commits crossed); `?.` turned the missing field into null, so the Fool. `classCell` split ids on the dot and took
+  'arcana' as a court's rank.
+- **Fix:** it reads `laidSpread.class`; an `arcana.<card>` id is a Major by its number; a Major's tint is the suit it `lifts`.
+  Measured headless: a Celtic Cross reads `arcana.justice`, cell 11; 'arcana.emperor' 4; 'queen.wands' 76.
+- **Rule:** NEW:merge-reread-fields

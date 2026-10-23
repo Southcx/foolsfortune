@@ -832,3 +832,5 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
     guard adds a missing one and says so on the console, so boot the page once (or import achievements.js) after adding a sub.
 281. **A number two systems split is read from its one row by both.** A share written in data (a stone's
     `overflow`) and a constant in a consumer drift apart; every consumer reads the row, and a new row is wired where it is written.
+NEW:merge-reread-fields. **After a merge, a look re-reads the fields it borrows.** Optional chaining turns a renamed field into a quiet
+    default (the Fool, nought, nothing drawn); grep the merged diff for the names your file reads from another division's state.

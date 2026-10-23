@@ -15,7 +15,7 @@
 //                 strength, a wild cell in the film's slow schiller, a dark cell (contrary suits met) cracked open with its light gone
 //                 out, a hidden cell left unlit. The Fool's cell holds a small gold mark.
 //   THE HAND      (off, READING_VIEW.hand.show: the hand is the window's bar under the reading) the bound Majors not laid, fanned low before the Courier.
-//   THE CLASS     the card your spread reads you as (the laid spread's court, CLASSES.md; the Fool before any), hung large and faint
+//   THE CLASS     the card your spread reads you as (the laid spread's class, a court or a Major, CLASSES.md; the Fool before any), hung large and faint
 //                 far behind the halo like a window of stained glass, its edge in its suit's colour; when the class changes it turns
 //                 over edge-on and comes round as the new card, with a flare along its edge (Golden Sun's class change, a card flipped)
 //   THE FALL      a few house cards drifting far behind and the motes rising, as on the title (title/scene.js), so the dark has depth.
@@ -171,18 +171,19 @@ export class ReadingView {
     n.add(edge, this.classCard); n.scale.setScalar(C.scale); n.position.set(0, C.y, F + C.z);
     n.traverse((o) => { o.raycast = () => {}; });
     this.group.add(n);
-    this.classId = 'fool'; this.classTurn = 1; this.classFlare = 0;
+    this.classId = 'arcana.fool'; this.classTurn = 1; this.classFlare = 0;
   }
   /** The atlas cell of a class: a court ('knight.wands'), a Major ('emperor'), or the Fool. */
   classCell(id) {
     if (!id) return 0;
     const [rank, suit] = id.split('.');
+    if (rank === 'arcana') return Math.max(0, MAJORS.indexOf(suit)); // (a Major: 'arcana.emperor', the Fool 'arcana.fool')
     if (suit) return cardIndex({ r: COURT_R[rank] ?? 11, s: Math.max(0, SUIT_ORDER.indexOf(suit)) });
     return Math.max(0, MAJORS.indexOf(id));
   }
   updateClass(dt) {
-    const K = this.game.laidSpread?.court ?? null, id = K?.id ?? 'fool', C = V.klass;
-    if (id !== this.classId && this.classTurn >= 1) { this.classNext = id; this.classSuit = K?.suit ?? null; this.classTurn = 0; }
+    const K = this.game.laidSpread?.class ?? null, id = K?.id ?? 'arcana.fool', C = V.klass;
+    if (id !== this.classId && this.classTurn >= 1) { this.classNext = id; this.classSuit = K?.suit ?? K?.lifts ?? null; this.classTurn = 0; } // (a Major has no suit: its tint the suit it lifts)
     if (this.classTurn < 1) {
       const was = this.classTurn; this.classTurn = Math.min(1, this.classTurn + dt / C.turn);
       if (was < 0.5 && this.classTurn >= 0.5) { this.classId = this.classNext; this.classCard.geometry = this.cellGeo(this.classCell(this.classId)); this.classFlare = 1; } // (edge-on: the new face)
