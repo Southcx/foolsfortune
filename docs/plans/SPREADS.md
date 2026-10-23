@@ -253,8 +253,9 @@ playing-card suits descend from these: hearts from Cups, spades from Swords, clu
 - **Dovina:** `progress/spreads.js` (the rules: `SPREADS`, `POSITIONS`, `FOOTPRINTS`, `SUIT_OF`, the dignities, `light()`, `tally()`),
   the achievements, the numbers and their measurement, the window's flip side (`pneuka/ui.js`, `pneuka/loadout.js`), a sweep.
 - **Petra:** the Veritome's storage moved (`tools/veritome/cards.js`, `book.js`) into the Codex and the Box, the Box's storage at a
-  Shrine, the flip's key, the save (a section for the spread laid), the events (`spread.lay`, `spread.flip`, `spread.tally`, with
-  `by`), the tallies' hooks into the tools' costs, the pool's regen, status build-up and worth.
+  Shrine, the flip's key, the save (a section for the spread laid), the events, with `by` (`spread.flip { under }`, `spread.lay { card, position, reversed }`,
+  `spread.tally { suit, from, to }`, `spread.crack { suit }` for a cell cracked dark, `spread.complete` for the Outcome lit; Wanda's
+  sounds hang on all five, 7c7d8ca9), the tallies' hooks into the tools' costs, the pool's regen, status build-up and worth.
 - **Calissa:** the board's look: the underside's cloth, a card laid, upright and reversed, the glow by suit, the dark cell's crack,
   the wild cell's film, the flip itself.
 - **Espada:** the words (the positions keep tarot's own names: they are the genre's words), the suits by kind, the Majors' second

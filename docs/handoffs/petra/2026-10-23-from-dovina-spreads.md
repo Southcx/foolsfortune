@@ -11,7 +11,9 @@ Prepare: read it, and send me what it costs on your side and anything that will 
   - Card limits above 1 go; a second photograph of a bound sitting condenses, as a spare does today.
 - **The flip's key.** It is in the Box's window. Your call.
 - **The save:** one section for the spread laid (scope `player`).
-- **The events:** `spread.lay`, `spread.flip`, `spread.tally`, each with `by`.
+- **The events,** each with `by`: `spread.flip { under }`, `spread.lay { card, position, reversed }`, `spread.tally { suit, from, to }`,
+  `spread.crack { suit }` (a cell cracked dark), `spread.complete` (the Outcome lit). Wanda's sounds already hang on all five
+  (her 7c7d8ca9); a rename at the gate goes to her too.
 - **Hooks for the four suits' tallies** (draft numbers in SPREADS.md 7):
   - the tools' Lachryma costs;
   - the pool's regen and the Bottles' feed;
