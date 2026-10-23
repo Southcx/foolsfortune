@@ -62,7 +62,7 @@ export class PuzzlePieces {
       const q = new THREE.Quaternion().setFromRotationMatrix(_m.makeBasis(x, y, dir)), arcs = [];
       const stone = add(new THREE.Mesh(new THREE.CylinderGeometry(0.9, 1, 0.2, 10), mat(0xc8beb0))); stone.position.copy(at).setY(at.y + 0.1);
       L.dists.forEach((d, k) => {
-        const rho = d * Math.tan(L.size), grp = new THREE.Group(), arc = new THREE.Mesh(new THREE.TorusGeometry(rho, d * 0.006, 5, 16, Math.PI / 2), mat(0xd8cfc0, { emissive: 0x000000 }));
+        const rho = d * Math.tan(L.size), grp = new THREE.Group(), arc = new THREE.Mesh(new THREE.TorusGeometry(rho, d * 0.006, 5, 16, Math.PI / 2), mat(0xd8cfc0, { emissive: 0x000000, fog: false }));
         arc.rotation.z = k * Math.PI / 2; grp.add(arc); grp.quaternion.copy(q); grp.position.copy(eye).addScaledVector(dir, d); add(grp); arcs.push(arc);
       });
       const far = eye.clone().addScaledVector(dir, L.dists[L.dists.length - 1]);

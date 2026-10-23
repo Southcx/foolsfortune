@@ -19,8 +19,8 @@
 import * as THREE from 'three';
 
 const OPEN = 0.7; // (real s the camera takes through the cloth)
-/** The camera at rest (Calissa's framing: in front, at the heart's height, looking a little down), and where it rises from. */
-const AT = { pos: [0, 1.2, 4.6], look: [0, 0.9, 0], from: [0, -1.9, 0.6], fromLook: [0, -4.5, 0] };
+/** The camera at rest (in front, over the heart, looking down enough that the cloth shows past the hand), and where it rises from. */
+const AT = { pos: [0, 2.1, 5.0], look: [0, 0.7, 0], from: [0, -1.9, 0.6], fromLook: [0, -4.5, 0] };
 const smooth = (x) => { x = THREE.MathUtils.clamp(x, 0, 1); return x * x * (3 - 2 * x); };
 const _ray = new THREE.Raycaster(), _ndc = new THREE.Vector2(), _a = new THREE.Vector3(), _b = new THREE.Vector3(), _l = new THREE.Vector3();
 

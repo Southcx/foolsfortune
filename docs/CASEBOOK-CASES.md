@@ -3596,3 +3596,13 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the modal branch updates the laid spread and the reading view too (main.js). Measured: the view opens in 0.7 real s, its
   positions built and picked, the cloth lit as the face (10 cells of 10).
 - **Rule:** 277
+
+### 2026-10-23 · A boardslide played with the board along the rail (Calissa, read from the code)
+- **Seen:** a boardslide's board stayed along the rail instead of across it, and the rider's new boardslide stance (grabreach.js) twisted
+  about 72° toward a rail running along the board.
+- **Cause (read, then measured by Calissa's builder with the patch applied headless):** `slideYaw` (±π/2 for a boardslide) is composed
+  into the heading's quaternion, but every grind step copies the rail's up (`railUp`, skiff.js), and the grind branch then sets the unit's
+  rotation whole from the rail's frame (`setFromRotationMatrix`), dropping it. On every rail, not only the coaster's.
+- **Fix:** the quarter turn is multiplied back on after the rail's frame (skiff.js). With it, the board lies across the rail and the rider
+  faces down it (the builder's headless check); not run again here.
+- **Rule:** 278
