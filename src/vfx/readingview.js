@@ -3,9 +3,10 @@
 // similar to the title screen ... that screen is a moneyshot in and of itself"). The Pneuka Box flipped: the Courier hangs in the
 // title's dark (Petra's scene and camera put them there), and this is everything round them:
 //   THE ORBIT     the laid Major Arcana in the spread's own geometry, seen from the front: the Celtic Cross's cross at the Courier's
-//                 heart (the Present over the Fool, the Challenge across them, the Crown over the head, the Foundation below the feet,
-//                 the Recent past and the Near future either side) and its staff as a column beside them; the Horseshoe an arc round
-//                 them; three cards in a row before them; one card at the heart. Each card is the house deck's own face (the bazaar's
+//                 heart, hung just behind the body like a halo so the Courier is seen before it (the Present over the Fool, the
+//                 Challenge across them, the Crown over the head, the Foundation below the feet, the Recent past and the Near future
+//                 either side) and its staff as a column beside them; the Horseshoe an arc round them; three cards in a row behind
+//                 their shoulders; one card at the heart. Each card is the house deck's own face (the bazaar's
 //                 atlas, vfx/bazaarfaces.js), hung in its place and turning a little, its face to the front; a reversed card upside
 //                 down, a crossed one a quarter turned. Its edge glows in its suit's colour (a planet's, the film). An empty place is a
 //                 faint frame of light, its suit unknown.
@@ -35,10 +36,10 @@ import { bazaarAtlas } from './bazaarfaces.js';
 export const READING_VIEW = {
   card: { w: 0.42, h: 0.68 },   // (m: a card hung in the orbit, the house deck's 64 x 104 frame)
   heart: 1.05,                  // (m over the feet: the Courier's heart, where the cross is laid)
-  front: 0.55,                  // (m before them: the orbit's plane, clear of the body)
+  front: -0.42,                 // (m: the orbit's plane, behind them like a halo, so the Courier stands before the cross and is seen)
   sway: 0.18,                   // (rad: how far a card turns in place, and back)
   cloth: { cell: 0.34, below: 0.62, glow: 1.6 }, // (m a cell; m under the feet; the lit cells' emissive)
-  hand: { r: 1.6, spread: 0.55, y: -0.15, z: 1.15, tilt: -0.5, lift: 0.18 }, // (the fan: its radius, its arc, its place, its lean back)
+  hand: { r: 1.8, spread: 0.7, y: 0.05, z: 1.35, tilt: -0.55, lift: 0.2, scale: 0.85 }, // (the fan: its radius, its arc, its place, its lean back, its size)
   fall: 14, motes: 160,
   flyIn: 0.6,                   // (real s the cards take from the fall to their places)
 };
@@ -183,7 +184,7 @@ export class ReadingView {
     const Hn = V.hand, n = hand.length;
     hand.forEach((card, i) => {
       const node = this.cardMesh(card), u = n > 1 ? i / (n - 1) - 0.5 : 0, a = u * Hn.spread * Math.min(1, n / 6);
-      node.scale.setScalar(0.62);
+      node.scale.setScalar(Hn.scale);
       node.position.set(Math.sin(a) * Hn.r, Hn.y - (1 - Math.cos(a)) * Hn.r + (card === held ? Hn.lift : 0), Hn.z - i * 0.004);
       node.rotation.set(Hn.tilt, 0, -a);
       node.userData.edgeMat.opacity = card === held ? 0.9 : 0.2; node.userData.edgeMat.color.setHex(0xffe6a8);
