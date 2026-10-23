@@ -14,6 +14,10 @@
 import { SONGS } from '../../tools/crucibelle/songs.js';
 import { TECHNIQUES } from '../../tools/soulbrush/techniques.js';
 import { ARTS } from '../../godhand/arts.js';
+import { SUB_GIFTS } from '../../progress/toolpairs.js';
+
+/** What a tool lends as the sub, for its R row (progress/toolpairs.js). */
+const lent = (id) => `R: ${SUB_GIFTS[id].verb}, ${SUB_GIFTS[id].does}`;
 
 const songRows = () => Object.values(SONGS).map((s) => [s.notes.join(' '), `${s.name}: ${s.does}`]);
 const STROKE = { still: 'a stroke across', bounce: 'a stroke down', circle: 'a circle', bomb: 'a bomb (a circle with a fuse)', spiral: 'a spiral', bolt: 'a lightning bolt', caret: 'a caret ^', vee: 'a V', heart: 'a heart' };
@@ -30,9 +34,7 @@ export const PAGES = [
       ['the arrow keys', 'turn and tilt the camera, as the mouse does (a setting: Tab, Settings)'],
       ['F · V', 'interact (pick up, push, talk, use) · kick, once learned'],
       ['E', 'blink, once learned (the arts are learned by doing: the Codex, B, says how)'],
-      ['X', 'the Psygun'],
-      ['Q · G · J', 'the Sondelass · the Soul Brush · the Veritome'],
-      ['K · U · I', 'the Dreamvane · the Crucibelle · the Lockheart'],
+      ['X · R', 'your main tool, drawn or stowed · your sub tool\'s one verb (which two: the Pneuka Box, P)'],
       ['Y (the Dunes)', 'Solar Skiffing'],
       ['~', 'the god hand'],
       ['B · P · M', 'the Codex · the Pneuka Box · the map'],
@@ -82,10 +84,11 @@ export const PAGES = [
     ],
   },
   {
-    id: 'psygun', title: 'THE PSYGUN', key: 'X', src: 'tools/psygun/',
+    id: 'psygun', title: 'THE PSYGUN', src: 'tools/psygun/',
     lead: 'Your first tool, worn on the back. It fires Lachryma, and CASTER SHELLS: each a numbered type (TYPE-00 the Cleave to TYPE-10 the Hatch) held in a chamber.',
     rows: [
-      ['X', 'draw or holster (firing or aiming draws it)'],
+      ['X · R', `as your main, draw or holster (firing or aiming draws it) · as your sub, ${lent('psygun')}`],
+      ['Q', 'fan the hammer: six shots at once, once learned'],
       ['LMB · hold LMB', 'fire · charge, and let go for a piercing beam (Lachryma)'],
       ['hold RMB', 'aim down the sights'],
       ['MMB', 'fire the chambered shell (the seeker: hold to paint targets, let go)'],
@@ -97,10 +100,11 @@ export const PAGES = [
     ],
   },
   {
-    id: 'sondelass', title: 'THE SONDELASS', key: 'Q', src: 'tools/sondelass/',
+    id: 'sondelass', title: 'THE SONDELASS', src: 'tools/sondelass/',
     lead: 'One instrument, three shapes: a cutlass, a rod and a hook, its sections sliding between them. Worn on the back.',
     rows: [
-      ['Q · 1 2 3', 'draw or stow · CUTLASS, ROD, HOOK'],
+      ['X · R', `as your main, draw or stow · as your sub, ${lent('sondelass')}`],
+      ['1 2 3', 'CUTLASS, ROD, HOOK'],
       ['CUTLASS: LMB', 'the string: four hits, the last looping back to the first'],
       ['RMB', 'the special, at once: the Stinger (a lunge)'],
       ['crouched (C), hold RMB', 'the quick draw: let go for one fast cut, or hold on into Blade Mode: time all but stops, the mouse turns the line of the cut, LMB cuts'],
@@ -112,10 +116,10 @@ export const PAGES = [
     ],
   },
   {
-    id: 'soulbrush', title: 'THE SOUL BRUSH', key: 'G', src: 'tools/soulbrush/',
+    id: 'soulbrush', title: 'THE SOUL BRUSH', src: 'tools/soulbrush/',
     lead: 'A calligrapher\'s brush the size of a club, worn at the hip. It alters things rather than hurting them.',
     rows: [
-      ['G', 'draw or stow'],
+      ['X · R', `as your main, draw or stow · as your sub, ${lent('soulbrush')}`],
       ['LMB · hold LMB', 'the club: three blows · on the ground the bristles saturate, then the mode works; in the air, the charge and the slam'],
       ['1 · 2', 'PAINT: spray Lachryma, laying its feeling on the ground · MOP: drink stains and paint into your Lachrymato Bottle'],
       ['RMB tap', 'FLICK: a fan of paint ahead'],
@@ -126,23 +130,23 @@ export const PAGES = [
     notes: () => ['A Lachrymato Bottle worn on the upper back (the Pneuka Box) holds what the mop drinks and feeds your mind below half; a broken shield can crack it. Painted ground gives what stands in it the feeling\'s status. Opt-in arts on the load: /art hover, /art rocket, /art skim.', `What the Celestial Brush knows: ${Object.entries(TECHNIQUES).map(([k, t]) => `${STROKE[k] || k}, ${t.name}`).join('; ')}. Anything else is laid on the world as paint.`],
   },
   {
-    id: 'veritome', title: 'THE VERITOME', key: 'J', src: 'tools/veritome/',
+    id: 'veritome', title: 'THE VERITOME', src: 'tools/veritome/',
     lead: 'A book that is a camera, held open in both hands. A photograph is the truth of a thing; the book is also your bank.',
     rows: [
-      ['J', 'draw or stow'],
+      ['X · R', `as your main, draw or stow · as your sub, ${lent('veritome')}`],
       ['hold RMB · LMB · wheel', 'raise the lens · take a photo · zoom'],
       ['1', 'the Flash: dazzles what has eyes, and fills its stun'],
       ['MMB by a stunned mind', 'reprogram it'],
-      ['P (with it out)', 'the Pneuka Box, and the bank beside it'],
+      ['P (with it out) · a Shrine', 'the Pneuka Box, and the bank beside it · THE BANK, on the Shrine\'s page'],
     ],
     notes: ['The Codex (B, VERITOME) appraises the photos in its memory, keeps the binder and the bestiary.'],
   },
   {
-    id: 'dreamvane', title: 'THE DREAMVANE', key: 'K', src: 'tools/dreamvane/, world/dunes/crystaltuning.js',
+    id: 'dreamvane', title: 'THE DREAMVANE', src: 'tools/dreamvane/, world/dunes/crystaltuning.js',
     lead: 'A dowsing rod with a pick on its heel and a tuning fork in its crook. It finds Lachryma, takes crystal, and maps the ground; while it is worn, the compass rides at the top of the view.',
     rows: [
-      ['K', 'draw or stow'],
-      ['LMB', 'the pick'],
+      ['X · R', `as your main, draw or stow · as your sub, ${lent('dreamvane')}`],
+      ['LMB · hold LMB, let go full', 'the pick · the Dreamquake, once learned'],
       ['hold RMB · wheel', 'dowse: the rod leans toward Lachryma · attune it to one kind'],
       ['RMB tap', 'throw the tuning fork; tap again to call it back'],
       ['MMB', 'the survey: the heel struck down, and what is in sight is mapped'],
@@ -153,10 +157,10 @@ export const PAGES = [
     ],
   },
   {
-    id: 'crucibelle', title: 'THE CRUCIBELLE', key: 'U', src: 'tools/crucibelle/',
+    id: 'crucibelle', title: 'THE CRUCIBELLE', src: 'tools/crucibelle/',
     lead: 'A smoking bell held up like a lantern: an amplifier, and the musician is you. Five notes, always in the key of what is playing.',
     rows: () => [
-      ['U', 'draw or stow'],
+      ['X · R', `as your main, draw or stow · as your sub, ${lent('crucibelle')}`],
       ['1 – 5 · hold RMB', 'the five notes · an octave up'],
       ['LMB', 'toll the bell: a ring that staggers what is close'],
       ...songRows(),
@@ -164,10 +168,10 @@ export const PAGES = [
     notes: ['Notes on the beat build FEVER, which makes every song stronger and cheaper. What is fitted to the bell (the Pneuka Box) is its voice, and favours some songs.'],
   },
   {
-    id: 'lockheart', title: 'THE LOCKHEART', key: 'I', src: 'tools/lockheart/',
+    id: 'lockheart', title: 'THE LOCKHEART', src: 'tools/lockheart/',
     lead: 'A little coffin on a chain at your neck: weaponised luck. It drinks the Lachryma you cannot hold, and opens when it is full.',
     rows: [
-      ['I', 'draw or stow'],
+      ['X · R', `as your main, draw or stow · as your sub, ${lent('lockheart')}`],
       ['hold LMB', 'vacuum: loose Lachryma in front of you is drawn in, and from a mind laid low'],
       ['RMB', 'open it (full, and a Possibilikey on its ring)'],
     ],

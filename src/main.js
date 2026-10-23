@@ -583,7 +583,7 @@ async function main() {
   game.belt.add(veritomeTool(techs.get('veritome')));
   game.belt.add(heldTool(techs.get('dreamvane'), 'THE DREAMVANE', 'back'));
   game.belt.add(heldTool(techs.get('crucibelle'), 'THE CRUCIBELLE', 'hip'));
-  game.belt.add(heldTool(techs.get('lockheart'), 'THE LOCKHEART', 'neck', true));
+  game.belt.add(heldTool(techs.get('lockheart'), 'THE LOCKHEART', 'neck'));
   game.proneHolster = techs.add(new ProneHolster(techs)); // (lying down: every tool put away, none drawn, the one in the hands back out once up: tools/proneholster.js)
   player.techs = techs;
   game.techs = techs;
@@ -592,7 +592,7 @@ async function main() {
   game.ground = new GroundItems(game);
   game.pneuka = new PneukaBox(game);
   if (game.veritome) game.pneuka.migrate(game.veritome.book);
-  game.belt.tick(); game.pneuka.seed(); game.pneuka.reconcile(); // (a new Courier: the four tools worn, the rest and the made lures in the box; and no tool ever nowhere)
+  game.belt.tick(); game.pneuka.seed(); game.pneuka.reconcile(); // (a new Courier: the Magician's pair worn, the made lures in the box; and two tools worn, never one twice)
   game.pneukaUI = new PneukaUI(game);
   game.pneukaUI.onClose = () => { if (input.enabled && !cursorFree()) input.requestLock(); };
   // the folk's counters (shop/: Raku's treasury and Old Grog's pier, opened from their talk)
@@ -1261,6 +1261,7 @@ async function main() {
       player.chargeLevel = weapon.charge;
       game.reprogram.claim(input); // (the middle button near a stunned mind is the Veritome's, not a shell: tools/veritome/reprogram.js)
       game.proneHolster.update(); // (before the psygun and the tools read their keys)
+      game.belt.keys(input); // (X the main, R the sub's verb: tools/belt.js)
       weapon.update(dt, input, player);
       player.updateBody(dt, weapon.adsT > 0 || weapon.wantsFire || weapon.cooldown > 0 || weapon.charge > 0 || weapon.holding || techs.stance);
     }

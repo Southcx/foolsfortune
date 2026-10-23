@@ -1,8 +1,9 @@
 // ---------------------------------------------------------------------------------------
 // THE PNEUKA BOX'S WINDOW (P): what the Courier carries, and what they wear. Left, the box: fifty-six slots, eight across (four on a narrow screen). Right,
-// the equipment: the one lure on the line, and the tools worn in their places on their body (two across the back, one at each hip, one at
-// the neck: a click takes one off into the box; a tool in the box is worn with a click). While the Veritome is held open, the Book opens beside the box as the bank: the curios kept there, stacked,
-// each taken out with a click, and STORE ALL to empty the box into it.
+// the equipment: the one lure on the line, and the two tools worn, the main and the sub (tools/belt.js: a click on one of the seven in
+// a row makes it that one; the interim rows until the loadout's window, docs/plans/PNEUKA-BOX.md 5). At a Shrine's THE BANK row, or while
+// the Veritome is held open, the Book opens beside the box as the bank: the curios kept there, stacked, each taken out with a click, and
+// STORE ALL to empty the box into it.
 //
 // How it is used, as OSRS's inventory is: a LEFT CLICK does the obvious thing (with the Book open, store it; otherwise tie a curio
 // on the line), a RIGHT CLICK lists everything that can be done (Tie on, Store, Drop, Examine), a slot can be DRAGGED onto another
@@ -18,7 +19,6 @@ import { itemOf } from './items.js';
 import { itemIcon } from './icons.js';
 import { CARDS, CARD, WORTH } from '../tools/veritome/cards.js';
 import { lureList, tasteOf, BARE } from '../tools/sondelass/angling/lures.js';
-import { PLACES } from '../tools/belt.js';
 import { ASPECTS } from '../tools/sondelass/angling/species.js';
 import { SHELL_TYPES } from '../tools/psygun/shells.js';
 
@@ -54,7 +54,7 @@ const CSS = `
 #pneuka .lure .t s { text-decoration: none; opacity: .65; font-size: 10px; letter-spacing: .1em; display: block; }
 #pneuka .taste { display: grid; grid-template-columns: 54px 1fr; gap: 2px 6px; font-size: 9px; letter-spacing: .08em; margin: 4px 0 8px; align-items: center; }
 #pneuka .taste i { display: block; height: 5px; border-radius: 2px; background: currentColor; }
-#pneuka .belt { display: grid; grid-template-columns: 1fr; gap: 4px; }
+#pneuka .belt { display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: repeat(7, auto); grid-auto-flow: column; gap: 4px; } /* (the main's seven, then the sub's: two columns) */
 #pneuka .belt div { display: flex; justify-content: space-between; font-size: 11px; padding: 4px 6px; border: 1px solid rgba(255,178,122,.15); border-radius: 3px; background: rgba(40,18,10,.5); }
 #pneuka .belt div.on { border-color: #ffd98a; } #pneuka .belt div.none { opacity: .35; }
 #pneuka .belt s { text-decoration: none; opacity: .6; }
@@ -103,7 +103,7 @@ export class PneukaUI {
     const box = this.box, s = box.slots[slot], it = s && itemOf(s.id);
     if (!it) return [];
     const out = [];
-    if (it.kind === 'tool' || it.kind === 'psygun') out.push({ label: 'Wear', run: () => box.wear(slot) });
+    if (it.kind === 'psygun') out.push({ label: 'Wear', run: () => box.carryPsygun(slot) });
     if (box.bankOpen && it.card) out.push({ label: 'Store', run: () => box.store(slot) });
     if (it.lure) out.push({ label: 'Tie on', run: () => box.tieOn(slot) });
     const F = Object.values(FITTINGS).find((f) => f.kind === it.kind);
@@ -208,7 +208,7 @@ export class PneukaUI {
     pane.appendChild(tg);
     // the fittings of the tools after (the bell's instrument, the Lockheart's coffin and keys), if they have those tools at all
     for (const [socket, F] of Object.entries(FITTINGS)) {
-      if (F.hidden || (!F.place && !box.held(`tool.${F.tool}`) && !g.belt?.isWorn(F.tool))) continue;
+      if (F.hidden) continue; // (every tool is always theirs: main and sub)
       const cur = box.fitted(socket), row = el('div', 'fits');
       for (let i = 0; i < F.max; i++) {
         const id = cur[i], it = id && itemOf(id), d = el('div', `slot${it ? '' : ' empty'}`, it ? this.icon(id) : '');
@@ -236,7 +236,7 @@ export class PneukaUI {
     // the psygun's chambers (tools/psygun/kinds.js): which caster shells it carries, and how many of each it holds; a click on a chamber turns
     // it to the next shell not chambered, a right click lists them all
     const S = g.shells;
-    if (S && (g.belt?.isWorn('psygun') || box.held('tool.psygun'))) {
+    if (S) {
       const row = el('div', 'fits');
       S.chambers.forEach((id, i) => {
         const T0 = SHELL_TYPES.find((t) => t.id === id), d = el('div', 'slot', `${this.icon(`shell.${id}`)}<span class="n">${i + 1}</span>`);
@@ -250,23 +250,20 @@ export class PneukaUI {
       row.appendChild(el('div', 't', `<s>${S.gun.name} · ${S.gun.chambers} CHAMBERS</s>${S.types.map((t) => t.no.replace('TYPE-', '')).join(' · ')}`));
       pane.appendChild(row);
     }
-    // the tools: worn in the places on their body (tools/belt.js); the rest are in the box
-    pane.appendChild(el('h4', '', '<span>THE TOOLS</span><span>worn · drawn with its key</span>'));
-    const belt = el('div', 'belt'), B = g.belt, inHand = B?.inHand;
-    const WHERE = { back: 'across the back', hip: 'at the hip', neck: 'at the neck' };
-    for (const [place, n] of Object.entries(PLACES)) {
-      const there = B ? B.inPlace(place) : [];
-      for (let i = 0; i < n; i++) {
-        const t = there[i];
-        // (the Lockheart is named for the coffin it is: the plain one, the gambler's, the shepherd's)
-        const name = t?.id === 'lockheart' ? (itemOf(box.fitted('heart')[0])?.name || t.name) : t?.name;
-        const d = el('div', t ? (t === inHand ? 'on' : '') : 'none', t ? `<span>${name}</span><s>${WHERE[place]} · ${t.key.replace('Key', '')}</s>` : `<span>· · ·</span><s>a place ${WHERE[place]}</s>`);
-        if (t) {
-          d.style.cursor = 'var(--jcur-pointer, pointer)';
-          d.onmouseenter = () => this.say(`Take off <b>${t.name}</b> (into the box)`);
-          d.onmouseleave = () => this.say('&nbsp;');
-          d.onclick = () => { box.takeOff(t.id); this.render(); };
-        }
+    // the tools: the main (X draws it) and the sub (R lends its verb), a click on one of the seven making it that one (tools/belt.js equip:
+    // the two change places if it was the other; refused in a fight and the like, the log says why)
+    const B = g.belt, inHand = B?.inHand;
+    pane.appendChild(el('h4', '', `<span>THE TOOLS</span><span>${B?.pair ? B.pair.label : ''}</span>`));
+    const belt = el('div', 'belt');
+    for (const [as, key] of [['main', 'X'], ['sub', 'R']]) {
+      for (const t of B?.tools || []) {
+        const on = B[as] === t.id;
+        const name = t.id === 'lockheart' ? (itemOf(box.fitted('heart')[0])?.name || t.name) : t.name; // (the Lockheart is named for the coffin it is)
+        const d = el('div', on ? (t === inHand ? 'on' : '') : 'none', `<span>${name}</span><s>${as === 'main' ? 'main' : 'sub'} · ${key}</s>`);
+        d.style.cursor = 'var(--jcur-pointer, pointer)';
+        d.onmouseenter = () => this.say(on ? `<b>${t.name}</b> is your ${as}` : `Make <b>${t.name}</b> your ${as}`);
+        d.onmouseleave = () => this.say('&nbsp;');
+        d.onclick = () => { B.equip(t.id, as); this.render(); };
         belt.appendChild(d);
       }
     }
@@ -279,7 +276,7 @@ export class PneukaUI {
     pane.appendChild(el('h4', '', `<span>THE VERITOME · THE BANK</span><span>${box.bankOpen ? 'open' : 'shut'}</span>`));
     if (!B) return pane;
     if (!box.bankOpen) {
-      pane.appendChild(el('p', '', 'The Veritome is shut. Draw it (J), then open the box (P): the Book opens beside it, and things can be stored in it for good, or taken out.'));
+      pane.appendChild(el('p', '', 'The Veritome is shut. At a Shrine, THE BANK opens the box with the Book beside it; or make the Veritome your main and hold it open. Things can be stored in it for good, or taken out.'));
       pane.appendChild(el('p', '', `In the Book now: ${CARDS.filter((c) => c.form === 'item' && B.has(c.id)).reduce((a, c) => a + B.count(c.id), 0)} curios, ${B.filled} pages filled of ${CARDS.length}.`));
       return pane;
     }

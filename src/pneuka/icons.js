@@ -7,7 +7,7 @@
 // Prior art: Old School RuneScape's item sprites (every item a small picture of its own model, at a fixed three-quarter angle), and
 // the inventory portraits of the PS2 era rendered from the game's own meshes.
 //
-//   itemIcon(game, id) -> dataURL (cached)
+//   itemIcon(game, id) -> dataURL (cached)   toolIcon(game, tool) -> dataURL (cached: one of the seven, by its id)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { buildCurio } from '../world/treasure/curiomodel.js';
@@ -20,9 +20,12 @@ import { psygunIconModel, psygunModelFor } from '../vfx/psygunmodels.js';
 
 const CACHE = new Map(), S = 96, R = 2; // (drawn at twice the size and scaled down: smooth edges without a multisampled target)
 
-export function itemIcon(game, id) {
+export function itemIcon(game, id) { return iconOf(game, id, itemOf(id)); }
+/** A tool's picture (the loadout's: the seven are not items, tools/belt.js), rendered from a copy of the model they wear. */
+export function toolIcon(game, tool) { return iconOf(game, `tool.${tool}`, { id: `tool.${tool}`, kind: 'tool', tool, glyph: '⚒', color: 0xffb27a, tier: 0 }); }
+
+function iconOf(game, id, it) {
   if (CACHE.has(id)) return CACHE.get(id);
-  const it = itemOf(id);
   let url = null;
   try { url = render(game, it); } catch (e) { console.warn('icon', id, e); }
   if (!url) url = glyphIcon(it);

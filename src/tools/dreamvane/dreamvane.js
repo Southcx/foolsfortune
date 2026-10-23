@@ -73,7 +73,6 @@ const smooth = (a, b, t) => { const x = THREE.MathUtils.clamp((t - a) / (b - a),
 export class Dreamvane extends HeldTool {
   constructor(mgr) {
     super(mgr, 'dreamvane', {
-      key: 'KeyK',
       // across the back, the crook up over the right shoulder, the heel down by the left hip (a staff slung on a strap)
       worn: { at: [0.1, 1.05, -0.2], along: [-0.55, 1, -0.05], out: [0, 0, -1] },
       draw: { twist: -18, lean: 8, via: [-0.45, 1.25, 0.1], pole: [-0.5, -0.25, -0.35] },

@@ -1,109 +1,114 @@
 // ---------------------------------------------------------------------------------------
-// THE TOOL BELT: the Courier's psychic tools, and the one set of rules for them: seven (the Psygun, the Sondelass, the Soul Brush,
-// the Veritome, the Dreamvane, the Crucibelle and the Lockheart). Every tool is worn somewhere on the body (a holster), drawn into the hands by its own key, and while it is out it owns
-// what it owns: the mouse, the number keys, the V key. Only one is in the hands at a time: drawing one first puts the other away, and
-// the new one comes out only once the old one is back in its place. Anything that asks "is a tool out?" (the kick, first person, the
-// HUD, the ledger) asks the belt, not a particular tool, so a new tool is one file and one line here, not a hunt through the game.
+// THE TOOL BELT: the Courier's seven psychic tools (the psygun, the Sondelass, the Soul Brush, the Veritome, the Dreamvane, the
+// Crucibelle and the Lockheart), and the one set of rules for them. The Courier wears TWO (the owner, 2026-10-23; progress/toolpairs.js):
+// the MAIN, drawn into the hands with X and owning what it owns while out (the mouse, the number keys, V), and the SUB, which stays
+// where it hangs and lends the main one verb on R (SUB_GIFTS) and its passive. The other five are always owned and wait on the loadout's
+// shelf, in the Pneuka Box's window (docs/plans/PNEUKA-BOX.md). Only the main is ever drawn: drawing it first puts any other away, and
+// it comes out only once the hands are free. Anything that asks "is a tool out?" (the kick, first person, the HUD, the ledger) asks the
+// belt, not a particular tool, and "is it worn?" (a passive, the wire compass) asks `isWorn`, which is the main or the sub.
 //
-// A tool is anything with this shape (an adapter, as all four are):
+// A tool is anything with this shape (an adapter, as all seven are):
 //
-//   { id, name, key,            'psygun', 'THE PSYGUN', 'KeyX'  (the key that draws / stows it: the tool reads it itself)
-//     slot,                     where it is worn: 'back' | 'hip' | 'chest' | 'wrist' | ...
+//   { id, name,                 'psygun', 'THE PSYGUN'
+//     slot,                     where its worn model hangs: 'back' | 'hip' | 'neck' (a place on the body, no longer a capacity)
 //     drawT,                    0..1, how far out it is (0 in its holster, 1 in the hands)
 //     wants,                    true while it has been asked to come out (it may still be waiting for the hands to be free)
-//     stow(),                   put it away (the belt calls this on the others when one is drawn)
+//     stow(), out(),            put it away / ask it out (the belt calls these; a tool never reads a draw key of its own)
+//     lend(),                   the sub's verb on R, done from where it hangs (true if it went off)
 //     model,                    the worn model (an Object3D), or none (the psygun's is the body's: character.setHidden hides it)
-//     rules: { mouse, digits, kick, firstPerson } }   while out: takes the mouse / takes 1-9 / allows the kick / allows first person
+//     rules: { mouse, kick, firstPerson } }   while out: takes the mouse / allows the kick / allows first person
 //
-// Prior art: the item belts of Zelda (one item per button, one in the hands, a draw and put-away animation that gates the next), and the
-// weapon wheels of Ratchet & Clank and Devil May Cry (a small fixed set of very different tools behind one shared contract).
+// Prior art: Elden Ring's main hand and off hand and NieR: Automata's light and heavy pair (two tools worn, one verb lent by the other);
+// Zelda's item belt (one in the hands, a draw and put-away that gates the next); Monster Hunter's loadout changed at camp, never mid-hunt
+// (the swap rule: toolpairs.js swapRefusal).
 //
-// (The last three are built on tools/heldtool.js and joined with `heldTool`: the Dreamvane (K, back), the Crucibelle (U, hip) and the
-// Lockheart (I, neck: the one place free, so they start with it on).)
-//
-// WORN or CARRIED: a tool is worn in a PLACE on their body (two across the back, one at each hip, one at the neck: PLACES) and drawn with
-// its key, or carried in the Pneuka Box as a thing (pneuka/items.js) and not to hand. Seven tools and five places: what they take out is
-// a choice, Resident Evil's and Zelda's inventory made a matter of where on the body a thing can go (the box puts them on and off).
-//
-//   game.belt.add(tool)    game.belt.get('sondelass')    game.belt.inHand    game.belt.mayDraw(tool)    game.belt.draw(tool)
-//   game.belt.isWorn(id)   game.belt.wear(id, { stash }) / takeOff(id) (the box calls these; a tool wear() bumps off goes into the box)   game.belt.ready(id) (a key pressed: true, or says why not)
-//   game.belt.hands (Dexterity: every draw and stow times this)   game.belt.allows('kick')   game.belt.others(tool)   game.belt.hideWorn()  (every worn model put out of sight at once: the Courier
-//   has become something else and their tools' own ticks are not running, the God Hand's jar)
+//   game.belt.add(tool)   game.belt.get(id)   game.belt.main / .sub (ids)   game.belt.pair (pairOf(main, sub): the card)
+//   game.belt.equip(id, 'main' | 'sub', { quiet }) -> true | false (refused: the log says why)   game.belt.mayEquip(id) -> null | the reason
+//   game.belt.isWorn(id) (main or sub)   game.belt.isMain(id)   game.belt.keys(input) (X and R, once a frame on foot: main.js)
+//   game.belt.inHand   game.belt.mayDraw(tool)   game.belt.draw(tool)   game.belt.hands (Dexterity: every draw and stow times this)
+//   game.belt.allows('kick')   game.belt.others(tool)   game.belt.hipSide(id)   game.belt.hideWorn()   game.belt.only (the Anim Lab's)
 // ---------------------------------------------------------------------------------------
-export const BELT_SIZE = 7;
-/** The places on their body a tool can be worn, and how many of each: seven tools, five places (the rest ride in the Pneuka Box). */
-export const PLACES = { back: 2, hip: 2, neck: 1 };
-/** Which hip each hip tool hangs at by choice (R: their right). Two worn on the same side: the one worn first keeps it, the other goes to
- *  the other hip, its holster mirrored (the owner, 2026-10-06: the Veritome and the Crucibelle both hung at the right hip). */
+import { TOOL_IDS, START, pairOf, swapRefusal } from '../progress/toolpairs.js';
+
+/** X draws and stows the main; R is the sub's verb, on the press (PNEUKA-BOX.md 5: Gulp is a parry, so R can never wait for its release). */
+export const DRAW_KEY = 'KeyX', LEND_KEY = 'KeyR';
+/** Which hip each hip tool hangs at by choice (R: their right). Two worn on the same side: the one first in the belt's order (TOOL_IDS)
+ *  keeps it, the other goes to the other hip, its holster mirrored (the owner, 2026-10-06). */
 export const HIP_SIDE = { veritome: 'R', soulbrush: 'L', crucibelle: 'L' };
 
 export class ToolBelt {
   constructor(game) {
     this.game = game;
     this.tools = [];
-    this.worn = null; // Set of tool ids, or null until the first tick (then: the ones they start with); kept in the kit (pneuka/box.js)
+    this.main = START.main; this.sub = START.sub; // (kept in the kit, pneuka/box.js)
+    this.only = null; // a Set of ids shown worn instead (the Anim Lab's stage: workbench/animrig.js), or null
   }
   save() { this.game.save?.dirty('kit'); } // (the belt is kept with the box, whole: core/save.js)
 
-  /** Is this tool worn (and so drawn with its key), or in the box? */
-  isWorn(id) { return !this.worn || this.worn.has(id); }
-  /** The tools worn in a place. */
-  inPlace(place) { return this.tools.filter((t) => t.slot === place && this.isWorn(t.id)); }
-  /** The hip a hip tool hangs at now ('L' | 'R'): its own (HIP_SIDE), unless one worn before it already hangs there. */
+  /** Is this tool worn: the main or the sub? */
+  isWorn(id) { return this.only ? this.only.has(id) : id === this.main || id === this.sub; }
+  isMain(id) { return id === this.main; }
+  /** The card the two make (progress/toolpairs.js PAIRS), or null. */
+  get pair() { return pairOf(this.main, this.sub); }
+
+  /** May this tool be made the main or the sub now? Null if so, else the reason in the log's words (quiet: the window asks it to show the
+   *  refusal before a click). */
+  mayEquip(id) { return this.get(id) ? swapRefusal(this.game) : 'There is no such tool.'; }
+  /** Make a tool the main or the sub. The one it replaces goes to the shelf, or, if it was the other of the two, they change places.
+   *  Refused by the swap rule, and the log says why at the point of use. `quiet`: a script's own (the overture, the pose audit), never
+   *  refused and never said. */
+  equip(id, as = 'main', { quiet = false } = {}) {
+    if (!this.get(id) || (as !== 'main' && as !== 'sub')) return false;
+    if (this[as] === id) return true;
+    const why = quiet ? null : this.mayEquip(id);
+    if (why) { this.game.log?.say('warn', why, { key: 'belt.swap', throttle: 2 }); return false; }
+    const other = as === 'main' ? 'sub' : 'main', was = this[as];
+    if (this[other] === id) this[other] = was; // (the two change places)
+    this[as] = id;
+    const off = was && !this.isWorn(was) ? was : null;
+    for (const t of this.tools) if (t.id !== this.main && (t.drawT > 0 || t.wants)) t.stow(); // (only the main is ever drawn)
+    if (off) { const t = this.get(off); if (t?.model) t.model.visible = false; }
+    this.save();
+    if (!quiet) this.game.events?.emit('tool.equip', { tool: id, as, off, pair: this.pair?.n ?? null, by: 'courier' });
+    return true;
+  }
+
+  /** X and R, read once a frame while the Courier is on foot and theirs (main.js, before the psygun reads its own keys): X draws the main
+   *  or puts away whatever is out; R lends the sub's verb. Both hands taken (a ladder, a carry), lying down, a window open: neither. */
+  keys(inp) {
+    const g = this.game;
+    if (!inp?.enabled || g.god?.controlling || g.windowOpen?.() || g.proneHolster?.busy) return;
+    const busy = !!g.techs?.active?.handsBusy || !!g.techs?.get?.('carry')?.item;
+    if (inp.wasPressed(DRAW_KEY)) {
+      const h = this.inHand, m = this.get(this.main);
+      if (h) h.stow();
+      else if (m && !busy) this.draw(m);
+    }
+    if (inp.wasPressed(LEND_KEY) && !busy) this.get(this.sub)?.lend?.();
+  }
+
+  /** The hip a hip tool hangs at now ('L' | 'R'): its own (HIP_SIDE), unless the other worn hip tool comes first in the belt's order and
+   *  wants the same side. */
   hipSide(id) {
     const own = HIP_SIDE[id] || 'R';
     if (!this.isWorn(id)) return own;
-    const order = (this.worn ? [...this.worn] : this.tools.map((t) => t.id)).filter((x) => this.get(x)?.slot === 'hip' && this.isWorn(x));
-    const first = order[0];
-    return first && first !== id && (HIP_SIDE[first] || 'R') === own ? (own === 'R' ? 'L' : 'R') : own;
+    const first = TOOL_IDS.find((x) => x !== id && this.isWorn(x) && this.get(x)?.slot === 'hip');
+    return first && TOOL_IDS.indexOf(first) < TOOL_IDS.indexOf(id) && (HIP_SIDE[first] || 'R') === own ? (own === 'R' ? 'L' : 'R') : own;
   }
-  /** Put a tool on: into a free place of its kind, or in place of the one there longest. Returns the id taken off to make room, null if
-   *  there was room, or false if it cannot be worn at all. */
-  wear(id, { stash = true } = {}) {
-    const t = this.get(id);
-    if (!t || !PLACES[t.slot]) return false;
-    if (this.isWorn(id)) return null;
-    const there = this.inPlace(t.slot);
-    let off = null;
-    if (there.length >= PLACES[t.slot]) { // (said with the wearing: tool.wear's `off`)
-      off = there[0].id; this.takeOff(off, true);
-      if (stash) this.game.pneuka?.add(`tool.${off}`, 'belt'); // (never into nowhere: the box's own wear puts it in the slot it emptied)
-    }
-    this.worn.add(id); this.save();
-    this.game.events?.emit('tool.wear', { tool: id, off });
-    return off;
-  }
-  takeOff(id, quiet = false) {
-    const t = this.get(id);
-    if (!t || !this.worn.has(id)) return false;
-    if (t.drawT > 0 || t.wants) t.stow();
-    this.worn.delete(id); this.save();
-    if (t.model) t.model.visible = false;
-    if (!quiet) this.game.events?.emit('tool.off', { tool: id });
-    return true;
-  }
-  /** A tool's key was pressed: may it come out? (worn: yes; in the box: no, and they say why) */
-  ready(id) {
-    if (this.isWorn(id)) return true;
-    const t = this.get(id);
-    this.game.log?.say('warn', `${(t?.name || 'That tool').replace(/^THE /, 'The ').replace(/\B[A-Z]+/g, (m) => m.toLowerCase())} is in your Pneuka Box (P).`, { key: `belt.${id}`, throttle: 2 });
-    return false;
-  }
-  /** Once a frame: what is not worn stays put away and out of sight (the Psygun's is part of their body: the character hides it). */
+  /** Once a frame: only the main is drawn, and what is not worn is put away and out of sight (the psygun's is part of their body: the
+   *  character hides it). */
   tick() {
-    if (!this.worn) { this.worn = new Set(this.tools.filter((t) => t.start !== false).map((t) => t.id)); this.save(); }
     for (const t of this.tools) {
-      if (this.worn.has(t.id)) continue;
-      if (t.drawT > 0 || t.wants) t.stow();
-      if (t.model && t.model.visible) t.model.visible = false;
+      if (t.id !== this.main && !this.only && (t.drawT > 0 || t.wants)) t.stow();
+      if (!this.isWorn(t.id) && t.model?.visible) t.model.visible = false;
     }
     const ch = this.game.character;
     if (ch) { const off = !this.isWorn('psygun'); if (off !== ch.gunOff) { ch.gunOff = off; ch.gun.visible = !off && !ch.hidden; } }
   }
 
   add(tool) {
-    if (this.tools.length >= BELT_SIZE) throw new Error(`The belt holds ${BELT_SIZE} tools.`);
-    tool.rules = { mouse: true, digits: true, kick: false, firstPerson: true, ...(tool.rules || {}) };
+    if (this.get(tool.id)) throw new Error(`The belt has the ${tool.id} already.`);
+    tool.rules = { mouse: true, kick: false, firstPerson: true, ...(tool.rules || {}) };
     this.tools.push(tool);
     return tool;
   }
@@ -121,8 +126,8 @@ export class ToolBelt {
   others(tool) { return this.tools.some((t) => t !== tool && (t.drawT > 0.02 || t.wants)); }
   /** May this tool come out yet? (every other one is back in its holster) */
   mayDraw(tool) { return !(tool.id !== 'psygun' && this.game.techs?.active?.oneHand) && this.tools.every((t) => t === tool || t.drawT < 0.02); } // (a tech that leaves one hand free, a walking climb, lets only the gun out: SWEEPS group 8)
-  /** Ask for a tool: the others are put away first, and it is asked out (`out()`: CROSSING, Calissa, 2026-10-11: the belt could put a tool
-   *  away but not bring one out, which the prone holster needs to give back what it put away: tools/proneholster.js). */
+  /** Ask for a tool: the others are put away first, and it is asked out (`out()`: the prone holster gives back what it put away
+   *  through this, tools/proneholster.js). */
   draw(tool) { for (const t of this.tools) if (t !== tool && (t.wants || t.drawT > 0)) t.stow(); tool.out?.(); }
   /** What the tool in the hands allows (true when nothing is out). */
   allows(rule) {
@@ -137,51 +142,28 @@ export class ToolBelt {
 // The tools, as belt tools.
 // ---------------------------------------------------------------------------------------
 export const psygunTool = (weapon) => ({
-  id: 'psygun', name: 'THE PSYGUN', key: 'KeyX', slot: 'back',
+  id: 'psygun', name: 'THE PSYGUN', slot: 'back',
   get drawT() { return weapon.drawT; },
   get wants() { return weapon.drawTarget > 0; },
-  stow() { weapon.drawTarget = 0; weapon.manualHolster = true; },
-  out() { weapon.drawTarget = 1; weapon.manualHolster = false; weapon.idleT = 0; }, // (CROSSING, Calissa: the mirror of stow, for belt.draw; drawn, its idle clock starts over, as X's does: handed back after the belly, it no longer holsters a second later)
-  rules: { mouse: true, digits: true, kick: false, firstPerson: true },
+  stow() { weapon.drawTarget = 0; weapon.manualHolster = true; weapon.idleT = 0; },
+  out() { weapon.drawTarget = 1; weapon.manualHolster = false; weapon.idleT = 0; }, // (drawn, its idle clock starts over: handed back after the belly, it no longer holsters a second later)
+  lend() { return !!weapon.lend?.(); },
+  rules: { mouse: true, kick: false, firstPerson: true },
 });
 
-export const sondelassTool = (tech) => ({
-  id: 'sondelass', name: 'THE SONDELASS', key: 'KeyQ', slot: 'back',
+/** A tool that is a tech with `drawT` / `drawTarget` and its model at `model.group` (all six but the psygun): its adapter. */
+const techTool = (tech, id, name, slot) => ({
+  id, name, slot,
   get drawT() { return tech.drawT; },
   get wants() { return tech.drawTarget > 0; },
-  stow() { tech.drawTarget = 0; },
-  out() { tech.drawTarget = 1; }, // (CROSSING, Calissa: the mirror of stow, for belt.draw)
+  stow() { tech.drawTarget = 0; tech.resume = false; },
+  out() { tech.drawTarget = 1; },
+  lend() { return !!tech.lend?.(); },
   get model() { return tech.model?.group; },
-  rules: { mouse: true, digits: true, kick: false, firstPerson: true }, // (V is its guard)
+  rules: { mouse: true, kick: false, firstPerson: true }, // (V is each one's parry while out)
 });
-
-export const veritomeTool = (tech) => ({
-  id: 'veritome', name: 'THE VERITOME', key: 'KeyJ', slot: 'hip',
-  get drawT() { return tech.drawT; },
-  get wants() { return tech.drawTarget > 0; },
-  stow() { tech.drawTarget = 0; },
-  out() { tech.drawTarget = 1; }, // (CROSSING, Calissa: the mirror of stow, for belt.draw)
-  get model() { return tech.model?.group; },
-  rules: { mouse: true, digits: true, kick: false, firstPerson: true }, // (1 is its flash: tools/veritome/flash.js)
-});
-
-/** A tool made on tools/heldtool.js (the Dreamvane, the Crucibelle, the Lockheart): its adapter. `start`: worn by a new Courier. */
-export const heldTool = (tech, name, slot, start = false) => ({
-  id: tech.id, name, key: tech.key, slot, start,
-  get drawT() { return tech.drawT; },
-  get wants() { return tech.drawTarget > 0; },
-  stow() { tech.drawTarget = 0; },
-  out() { tech.drawTarget = 1; }, // (CROSSING, Calissa: the mirror of stow, for belt.draw)
-  get model() { return tech.model?.group; },
-  rules: { mouse: true, digits: true, kick: false, firstPerson: true },
-});
-
-export const soulBrushTool = (tech) => ({
-  id: 'soulbrush', name: 'THE SOUL BRUSH', key: 'KeyG', slot: 'hip',
-  get drawT() { return tech.drawT; },
-  get wants() { return tech.drawTarget > 0; },
-  stow() { tech.drawTarget = 0; },
-  out() { tech.drawTarget = 1; }, // (CROSSING, Calissa: the mirror of stow, for belt.draw)
-  get model() { return tech.model?.group; },
-  rules: { mouse: true, digits: false, kick: false, firstPerson: true },
-});
+export const sondelassTool = (tech) => techTool(tech, 'sondelass', 'THE SONDELASS', 'back');
+export const veritomeTool = (tech) => techTool(tech, 'veritome', 'THE VERITOME', 'hip');
+export const soulBrushTool = (tech) => techTool(tech, 'soulbrush', 'THE SOUL BRUSH', 'hip');
+/** A tool made on tools/heldtool.js (the Dreamvane, the Crucibelle, the Lockheart). */
+export const heldTool = (tech, name, slot) => techTool(tech, tech.id, name, slot);

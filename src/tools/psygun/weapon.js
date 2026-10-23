@@ -19,7 +19,7 @@ import { T, DEG, PALETTE } from '../../core/config.js';
 import { GUN_POINTS } from '../../courier/character.js';
 import { sfx } from '../../audio/sfx.js';
 import { stream, randDir } from '../../core/rng.js';
-import { GunMoves } from './gunmoves.js';
+import { GunMoves, FAN_KEY } from './gunmoves.js';
 import { VariantPlay } from './variantplay.js';
 const simRand = stream('tools/psygun/weapon'); // (the simulation's chance: core/rng.js, the same twice)
 
@@ -42,10 +42,10 @@ function gatedInput(inp) {
   return g;
 }
 
-/** The input with every weapon control held up (a tool is out: see Techs.toolOut). */
+/** The input with every weapon control held up (the psygun is not the main, or another tool is out: see Weapon.update). */
 function deadInput(inp) {
   const g = Object.create(inp);
-  const dead = (c) => c === 'Mouse0' || c === 'Mouse1' || c === 'Mouse2' || c === 'KeyX' || c === 'KeyR' || c === 'Minus' || /^Digit/.test(c);
+  const dead = (c) => c === 'Mouse0' || c === 'Mouse1' || c === 'Mouse2' || c === FAN_KEY || c === 'Minus' || /^Digit/.test(c);
   g.wasPressed = (c) => (dead(c) ? false : inp.wasPressed(c));
   g.isDown = (c) => (dead(c) ? false : inp.isDown(c));
   g.wheel = 0;
@@ -103,8 +103,7 @@ export class Weapon {
 
   updateHolster(dt, input, player) {
     const W = T.weapon;
-    const combat = input.wasPressed('Mouse0') || input.isDown('Mouse2') || input.wasPressed('Mouse1') || input.wasPressed('KeyR') || this.holding;
-    if (input.wasPressed('KeyX')) { this.drawTarget = this.drawTarget > 0.5 ? 0 : 1; this.manualHolster = this.drawTarget === 0; this.idleT = 0; }
+    const combat = input.wasPressed('Mouse0') || input.isDown('Mouse2') || input.wasPressed('Mouse1') || input.wasPressed(FAN_KEY) || this.holding; // (X is the belt's: tools/belt.js keys)
     if (combat) { this.drawTarget = 1; this.manualHolster = false; this.idleT = 0; this.moves.stopFlourish(); }
     if (player.fp && !this.manualHolster) this.drawTarget = 1; // first person keeps it out unless you put it away
     // both hands busy (a ladder, swimming): stow it, and bring it back out after if it was out
@@ -148,7 +147,7 @@ export class Weapon {
     //  read here, after the holster has run, and only the gun's own view of the keys holds them all up)
     const prone = !!this.game.proneHolster?.busy;
     if (prone) { this.buffer = 0; this.pressT = -1; this.wantShell = false; this.game.shells?.specials?.cancelPaint(); }
-    const toolOut = prone || (belt ? belt.others(belt.get('psygun')) || !belt.isWorn('psygun') : !!player.techs?.toolOut); // (or the Psygun is in the box) // (another tool is out: the Psygun stays on the back, and the mouse is that tool's)
+    const toolOut = prone || (belt ? belt.others(belt.get('psygun')) || !belt.isMain('psygun') : !!player.techs?.toolOut); // (another tool is out, or the psygun is not the main: it stays on the back, and the mouse is that tool's; as the sub it lends its shot on R, lend())
     if (toolOut) { this.drawTarget = 0; this.manualHolster = true; if (this.holding || this.charge > 0) this.cancelCharge(); if (this.moves.busy) this.moves.cancel(); }
     // (the trigger with something close in front is the pistol whip, not a shot: the press is spent, and the button held up until let go;
     // aiming down the sights, or in first person, the trigger is the trigger)

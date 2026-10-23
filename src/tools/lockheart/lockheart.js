@@ -77,7 +77,6 @@ const smoothK = (x) => { x = Math.min(1, Math.max(0, x)); return x * x * (3 - 2 
 export class Lockheart extends HeldTool {
   constructor(mgr) {
     super(mgr, 'lockheart', {
-      key: 'KeyI',
       // on its chain at the breastbone (the chest bone: it moves with their breathing), hanging
       worn: { at: [0, 1.3, 0.14], along: [0, -1, 0.12], out: [0, 0, 1], bone: 'spine003' },
       draw: { twist: 4, lean: 4, via: [-0.25, 1.3, 0.4] },

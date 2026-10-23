@@ -110,8 +110,8 @@ function binder(codex, cx, g, B) {
   const carried = g.pneuka ? g.pneuka.count(A.id) + (g.pneuka.lure === A.id ? 1 : 0) : 0;
   if (carried) det.appendChild(el('p', '', `<span style="color:#9be36a">CARRIED</span> · ${carried} in the Pneuka Box${g.pneuka.lure === A.id ? ', on the line' : ''} (P)`));
   const btns = el('div', 'btns');
-  const held = !!g.veritome?.held;
-  if (A.form === 'item') btns.appendChild(button('TAKE OUT', () => { if (g.pneuka?.withdraw(A.id)) codex.render(); }, !n || !held || !g.pneuka?.free, !held ? 'draw the Veritome (J) to take things out of it' : 'a copy becomes the thing itself, in the Pneuka Box'));
+  const held = !!g.veritome?.held || !!g.pneuka?.bankOpen; // (the bank: a Shrine's THE BANK row, or the Veritome held open)
+  if (A.form === 'item') btns.appendChild(button('TAKE OUT', () => { if (g.pneuka?.withdraw(A.id)) codex.render(); }, !n || !held || !g.pneuka?.free, !held ? 'the bank opens at a Shrine (THE BANK), or with the Veritome held open as your main' : 'a copy becomes the thing itself, in the Pneuka Box'));
   btns.appendChild(button(`CONDENSE (${WORTH[A.rank]} cubes)`, () => { if (B.condense(A.id)) codex.render(); }, B.spares(A.id) < 1, 'a spare copy, condensed into Lachryma cubes'));
   det.appendChild(btns);
   if (A.form !== 'item') det.appendChild(el('p', 'hint', 'A picture of something known: it has no item form, and stays a card.'));
@@ -137,7 +137,7 @@ function memory(codex, cx, g, B) {
     d.onclick = () => { if (pick.has(p.id)) pick.delete(p.id); else pick.add(p.id); codex.render(); };
     roll.appendChild(d);
   }
-  if (!F.plates.length) left.appendChild(el('p', 'hint', 'The memory is empty. Draw the Veritome (J), raise the lens (RMB) and take photographs (LMB): they wait here to be appraised.'));
+  if (!F.plates.length) left.appendChild(el('p', 'hint', 'The memory is empty. With the Veritome your main, draw it (X), raise the lens (RMB) and take photographs (LMB): they wait here to be appraised.'));
   left.appendChild(roll);
   wrap.appendChild(left);
   // the last report

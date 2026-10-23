@@ -69,7 +69,6 @@ const smooth = (a, b, t) => { const x = THREE.MathUtils.clamp((t - a) / (b - a),
 export class Crucibelle extends HeldTool {
   constructor(mgr) {
     super(mgr, 'crucibelle', {
-      key: 'KeyU',
       // hung at the left hip by its crown ring, the mouth down (the Veritome has the right: the owner, 2026-10-06), and drawn across the
       // body by the right hand; with the Soul Brush worn first it goes to the right hip instead, mirrored (tools/belt.js hipSide)
       worn: { at: [0.24, 1.02, 0.1], along: [-0.05, -1, 0.15], out: [1, 0, 0], side: 'L' },

@@ -50,7 +50,7 @@ export const VANE_MOVES = {
   j1: { rule: 'pause1', clip: 'Vane_JrpgCombo1', rate: 1.1, chain: [0.45, 1.0], to: 1.08, fade: 0.3, hit: { power: 1.3, dmg: 1.2 }, lunge: 2.2, arc: 'r2l' },
   j2: { rule: 'pause2', clip: 'Vane_JrpgCombo2', rate: 1.1, chain: [0.62, 1.1], to: 1.18, fade: 0.3, hit: { power: 1.4, dmg: 1.3 }, lunge: 2.2, arc: 'l2r' },
   j3: { rule: 'pause3', clip: 'Vane_JrpgCombo3', rate: 1.05, to: 1.6, fade: 0.4, hit: { power: 2.0, dmg: 1.9, push: 6, lift: 3 }, lunge: 2.6, heat: 1, arc: 'r2l' },
-  // S + LMB, sprinting, and R
+  // S + LMB, sprinting, and the full charge let go
   up: { clip: 'Vane_Thrust', rate: 1.1, chain: [0.36, 0.72], to: 0.78, fade: 0.25, hit: { power: 1.4, dmg: 1.1, lift: 9, push: 1 }, lunge: 2.6, arc: 'raise' },
   vault: { rule: 'vault', clip: 'Vane_Vault', body: 'whole', root: 'xz', rate: 1.2, carry: 4, carryTo: 0.3, hit: { power: 1.8, dmg: 1.6, push: 7 }, heat: 0.7, arc: 'over' },
   quake: { rule: 'special', clip: 'Vane_SpecialDreamquake', body: 'whole', cost: 10, ringAt: 1.7, ring: 4, hit: { power: 2.6, dmg: 2.6, push: 9, lift: 6 }, heat: 1, arc: 'over' },
@@ -58,7 +58,7 @@ export const VANE_MOVES = {
 export const VANE_STRINGS = {
   ground: ['pick', 'c1', 'c2', 'c3'], air: ['c1', 'c2'], launcher: 'up', dash: 'vault', special: 'quake',
   pause: [{ at: 0, to: ['spin'] }, { at: 1, to: ['j1', 'j2', 'j3'] }],
-  charge: { hold: 'raise', release: 'drive', after: 0.45 }, // (held a third of a second into the pick: it stays up)
+  charge: { hold: 'raise', release: 'drive', full: 'quake', after: 0.45 }, // (held a third of a second into the pick: it stays up; let go full, 1.1 s into the hold, the Dreamquake: R is the sub's, PNEUKA-BOX.md 5)
 };
 
 const _k = new THREE.Vector3();

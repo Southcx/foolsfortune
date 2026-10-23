@@ -12,7 +12,6 @@
 //               the blade driven down with a blast round them on the ground
 //   a press in a blow's recovery: THE PAID CUT (tools/moveset.js): Lachryma paid, the next move at once; RMB the special, V the guard
 //   sprinting   LMB: the DASH SLASH (its own 2.3 m, carried)
-//   R           the TIDECUTTER: the special, a leaping wave of a cut (12 Lachryma)
 //   RMB         THE SPECIALS (the owner, 2026-10-11: "LMB as a 'normal' attack button and RMB as a 'special' attack button, so moves
 //               like the current Stinger don't get disrupted"): on the press, at once, the loadout's special: tapped, the tap's slot (the
 //               STINGER by default: a committed thrust, eight metres in a quarter of a second, the suite's thrust held out, everything in
@@ -89,19 +88,18 @@ const MOVES = {
   // off the target, so the circle's front passes through it; measured from the clip, melee.js)
   a2: { rule: 'air2', clip: 'Sond_AirCombo2', body: 'whole', gravity: 0.3, chain: [0.36, 1.0], aim: 0.73, hit: { power: 1.3, dmg: 1.1, lift: 1.2, push: 0.5 }, arc: 'l2r', heat: 0.5 },
   a3: { rule: 'plunge', clip: 'Sond_AirPlunge', body: 'whole', rate: 1.25, plunge: { hold: 0.26, speed: 30 }, ring: 2.6, hit: { power: 2.2, dmg: 2.0, push: 2, lift: 0 }, ringHit: { power: 2.2, dmg: 2.0, push: 7, lift: 0 }, heat: 1, arc: 'over' }, // (its chop keeps what it cut near, to fall beside them; the ring's push clears the ground)
-  // a running slash (LMB while sprinting), the charged slash (hold LMB), the counter from the guard, and the special (R)
+  // a running slash (LMB while sprinting), the charged slash (hold LMB), the counter from the guard (the Tidecutter is RMB's: sondelassloadout.js)
   dash: { rule: 'dash', clip: 'Sond_DashSlash', body: 'whole', root: 'xz', hit: { power: 1.9, dmg: 1.8, push: 8 }, heat: 0.8, arc: 'r2l' },
   hold: { clip: 'Sond_ChargeHold' },
   burst: { rule: 'charge', clip: 'Sond_ChargeRelease', body: 'whole', root: 'xz', hit: { power: 1.6, dmg: 1.6, push: 9 }, heat: 1, arc: 'r2l' },
   spin: { rule: 'counter', clip: 'Sond_SpinSlash', body: 'whole', hit: { power: 1.4, dmg: 1.2, push: 6 }, heat: 0.6, arc: 'r2l' },
-  tide: { rule: 'special', clip: 'Sond_SpecialTidecutter', body: 'whole', cost: 12, ringAt: 1.86, ring: 4.2, hit: { power: 3, dmg: 3, push: 12, lift: 4 }, heat: 1, arc: 'over' },
   // crouched, RMB let go before the charge is full: THE IAIDO'S DRAW CUT. The suite's rising cut (c2's clip, low left to high right: the
   // sweep a blade drawn from the left hip makes) from 0.22 s, its strike begun, at 1.4x, begun from the iaido's pose (begin's `join`;
   // from 0.1, the join swept the blade 7 cm through the crouched left thigh, from 0.18 1.5 cm: the pose audit, 2026-10-11). No row of its own yet (progress/combat/moves.js is Dovina's): k x 1.1 = 1.54 a hit,
   // between c3's 1.4 and c4's 2.0; about 0.6 real s a cut with the shortest charge, 2.5 power a second, the string's 2.7 or under
   iai: { clip: 'Sond_Combo2', from: 0.22, rate: 1.4, to: 0.9, fade: 0.3, hit: { power: 1.1, dmg: 1.4, push: 3 }, lunge: 4.5, heat: 0.7, arc: 'l2r', legs: false }, // (the crouch's legs kept: the clip's stood them up mid-cut)
 };
-const STRINGS = { pause: [{ at: 0, to: ['t1', 't2'] }, { at: 1, to: ['j1', 'j2', 'j3'] }], launcher: 'up', air: ['a1', 'a2', 'a3'], dash: 'dash', charge: { hold: 'hold', release: 'burst' }, special: 'tide' };
+const STRINGS = { pause: [{ at: 0, to: ['t1', 't2'] }, { at: 1, to: ['j1', 'j2', 'j3'] }], launcher: 'up', air: ['a1', 'a2', 'a3'], dash: 'dash', charge: { hold: 'hold', release: 'burst' } }; // (the Tidecutter is one of RMB's specials, the loadout's: R is the sub's verb, PNEUKA-BOX.md 5)
 const REACH = BLADE_LEN * 0.55 + 0.35; // (beyond the measured tip of a hand-held thing: the cutlass's blade, and some forgiveness)
 const STING = SONDELASS_MOVES.stinger.sting; // (the stinger's numbers are its catalogue row's)
 // THE IAIDO: `charge` real s held to blade mode (the owner's "charge-up", about half a second); the pose eased in over `in` and out over

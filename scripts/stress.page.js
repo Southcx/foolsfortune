@@ -132,10 +132,10 @@
         }
         if (--godLeft <= 0) { inp.pressed.add('Backquote'); inp.down.delete('Mouse0'); inp.down.delete('Mouse2'); godLeft = 1e9; }
       }
-      // the Sondelass: draw, change form, swing, cast, sink, sound, fire the grapnel
+      // the main (X: the Sondelass at first): draw, change form, swing, cast, sink, sound, fire the grapnel
       if (!god.controlling && rnd() < 0.05) {
         const r = rnd();
-        if (r < 0.1) inp.pressed.add('KeyQ');
+        if (r < 0.1) inp.pressed.add('KeyX');
         else if (r < 0.25) inp.pressed.add('Digit' + (1 + Math.floor(rnd() * 3)));
         else if (r < 0.5) { inp.pressed.add('Mouse0'); inp.down.add('Mouse0'); }
         else if (r < 0.7) inp.down.delete('Mouse0');
@@ -146,9 +146,9 @@
       }
       // (the Book's cards, or none)
       const B0 = (g) => g.game.veritome?.book.cards || {};
-      // the Veritome: draw it now and then (J); raise the lens and expose plates; now and then appraise the roll or condense a card;
-      // the Pneuka Box: things come into it (as a chest gives them), are dropped, stored, taken out, tied on; the Survey (N)
-      if (!god.controlling && rnd() < 0.003) inp.pressed.add('KeyJ');
+      // the sub's verb (R), now and then; the Veritome as the main: raise the lens and expose plates; now and then appraise the roll or
+      // condense a card; the Pneuka Box: things come into it (as a chest gives them), are dropped, stored, taken out, tied on; the Survey (N)
+      if (!god.controlling && rnd() < 0.003) inp.pressed.add('KeyR');
       if (!god.controlling && rnd() < 0.001) inp.pressed.add('KeyN');
       const book = g.techs.get('veritome');
       if (book?.held && rnd() < 0.04) {
@@ -196,11 +196,11 @@
         else if (r < 0.8) R.close('closed');
       }
       if (J.length && rnd() < 0.002) { const bm = g.techs.get('sondelass')?.cutlass?.blade, c = J[Math.floor(rnd() * J.length)]; if (bm) { const p = c.center(new g.THREE.Vector3()); bm.pt.copy(p); bm.size = 0.7; if (gg.stun.stunned(c) && rnd() < 0.5) bm.zandatsuCreature(c, new g.THREE.Vector3(1, 0, 0), new g.THREE.Vector3(0, 0, 1), new g.THREE.Vector3(0, 0, -1)); else bm.slicePlane({ n: new g.THREE.Vector3(1, 0, 0), d: p.x }, new g.THREE.Vector3(1, 0, 0)); } }
-      // the Soul Brush: draw it now and then (G); with the canvas open, the mouse scribbles and LMB lifts and lays the brush
-      if (!god.controlling && rnd() < 0.004) inp.pressed.add('KeyG');
-      // the last three tools: put on and taken off through the box, drawn, played (K the Dreamvane, U the Crucibelle, I the Lockheart)
-      if (rnd() < 0.002 && gg.pneuka) { const id = ['tool.dreamvane', 'tool.crucibelle', 'tool.lockheart'][Math.floor(rnd() * 3)], i = gg.pneuka.slots.findIndex((s) => s?.id === id); if (i >= 0) gg.pneuka.wear(i); }
-      if (!god.controlling && rnd() < 0.004) inp.pressed.add(['KeyK', 'KeyU', 'KeyI'][Math.floor(rnd() * 3)]);
+      // the Soul Brush as the main: with the canvas open, the mouse scribbles and LMB lifts and lays the brush
+      // main and sub (tools/belt.js): any of the seven made the main or the sub now and then (refused in a fight, as the window is), then
+      // X draws the main, R lends the sub's verb, Q fans the psygun's hammer
+      if (rnd() < 0.004 && gg.belt) { const T = gg.belt.tools; gg.belt.equip(T[Math.floor(rnd() * T.length)].id, rnd() < 0.5 ? 'main' : 'sub'); }
+      if (!god.controlling && rnd() < 0.004) inp.pressed.add(['KeyX', 'KeyR', 'KeyQ'][Math.floor(rnd() * 3)]);
       if (gg.belt?.inHand && ['crucibelle'].includes(gg.belt.inHand.id) && rnd() < 0.08) inp.pressed.add('Digit' + (1 + Math.floor(rnd() * 5)));
       if (gg.lockheart && rnd() < 0.002) { gg.lockheart.charge = 80; const i = gg.pneuka?.slots.findIndex((s) => s?.id?.startsWith('key.')); if (i >= 0) gg.pneuka.fitOn(i); }
       const brush = g.techs.get('soulbrush');

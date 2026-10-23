@@ -112,8 +112,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   (Seger's hunts by class) were cut (the owner, 2026-10-09).
 - **tool** (`src/tools/`) — one of the Courier's psychic tools, worn on the belt: the psygun, Sondelass, Soul Brush, Veritome, Dreamvane,
   Crucibelle, Lockheart. *Not:* a Node script.
-- **the belt** (`game.belt`, `src/tools/belt.js`) — where tools are worn; "is a tool out?" asks here. **Draw / stow** take a tool in hand / put it
-  back.
+- **the belt** (`game.belt`, `src/tools/belt.js`) — the two tools worn (`belt.main`, `belt.sub`; `equip`, `mayEquip`, `pair`), the other five on the
+  loadout's shelf; "is a tool out?" asks here. **Draw / stow** (X) take the main in hand / put it back; **lend** (R) the sub's verb, from where it hangs.
 - **the main / the sub / a pair's card** (plain names, the owner's rulings 2026-10-22 and 23; `PAIRS`, `pairOf`, `SUB_GIFTS`, `src/progress/toolpairs.js`;
   TOOLS-TOGETHER.md 8) — the tool worn in hand with all its verbs / the second tool worn, lending the main one verb on R and one passive / the
   Major Arcana card (I to XXI; the Fool is you) a main and sub make together, its special opened by an achievement. *Not:* a Veritome card, a house card.

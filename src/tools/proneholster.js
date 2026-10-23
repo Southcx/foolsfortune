@@ -3,7 +3,7 @@
 // sheathed. it looks SUPER goofy otherwise"). Going prone (player.posture 'prone', from the stand or the crouch) puts the tool in the
 // hands back in its holster through the belt, as its own key would (its stow, which plays the stow), while the body goes down. (A pot in
 // the hands keeps them off the belly altogether: C from the crouch stands them up, player.js; set down on the way, it read as a stoop and
-// a flop, measured.) While prone no tool comes out: a worn tool's key is spent here, before the tools read it, and
+// a flop, measured.) While prone no tool comes out: X (the main's draw) is spent here, before the belt reads it, and
 // the log says why (once in a while). The psygun hears none of its own keys while `busy` (the fire button, a shell, the aim, a reload:
 // tools/psygun/weapon.js reads it as another tool out) and lets go of what its trigger held, so nothing pressed lying down fires once
 // up; `busy` is also the passive techs' "both hands taken" (courier/moves/techs.js), as for a ladder or a swim. Once up (the getting up
@@ -18,6 +18,7 @@
 //   proneHolster.update()   once a frame, before the psygun's own (main.js): the stow, the spent keys, the draw again
 //   proneHolster.busy       lying down or getting up (both hands taken)     proneHolster.memo   the tool to draw again once up, or null
 // ---------------------------------------------------------------------------------------
+import { DRAW_KEY } from './belt.js';
 import { Tech } from '../courier/moves/techs.js';
 
 /** What the log says to a draw key pressed lying down (the words a placeholder for Espada's). */
@@ -40,9 +41,9 @@ export class ProneHolster extends Tech {
     if (down && !this.down) { this.memo = null; this.stowAll(); } // (the one asked out is remembered; one already going back is not)
     this.down = down;
     if (down) {
-      if (inp.enabled) for (const t of belt.tools) {
-        if (!inp.wasPressed(t.key) || !belt.isWorn(t.id)) continue;
-        inp.spend(t.key); // (the tools and the psygun read their keys after this: they never see it)
+      const t = belt.get(belt.main);
+      if (inp.enabled && t && inp.wasPressed(DRAW_KEY)) {
+        inp.spend(DRAW_KEY); // (the belt reads X after this: it never sees it)
         if (t.id === this.memo && t.drawT > 0.02) this.memo = null; // (put away by hand as it went back: it stays away)
         else g.log?.say('warn', PRONE_REFUSAL, { key: 'prone.draw', throttle: 2 });
       }

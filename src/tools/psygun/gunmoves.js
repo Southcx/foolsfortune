@@ -38,6 +38,9 @@ const MOVES = {
   fan: { rule: 'special', clip: 'Gun_FanTheHammer', cost: 8, to: 1.1, fade: 0.18 },
 };
 const K = 0.9, WHIP_REACH = 1.6, WHIP_CONE = 0.7;
+/** Fan the Hammer's key while the psygun is the main: Q for now (R is the sub's verb, tools/belt.js; MMB is the shell, the homing
+ *  paint and the Pepperbox's both barrels, so the fan cannot be there: Dovina's to rule, PNEUKA-BOX.md 5). */
+export const FAN_KEY = 'KeyQ';
 const FAN = [0.07, 0.23, 0.4, 0.57, 0.73, 0.9]; // (the left palm's six slaps on the hammer, read from the clip: where the hands meet)
 const SHOT = { from: 0.26, dur: 0.3, w: 1 }; // (Gun_Shoot from the frame before its kick (the hands 10 cm up and back at 0.3), over the aim)
 const QUICK = [0.18, 0.55]; // (Gun_QuickDraw from the hand at the hip to the aim, over the draw's whip)
@@ -50,7 +53,7 @@ export class GunMoves {
     this.W = weapon;
     this.shotT = 9; this.flourishT = -1; this.fanDue = 0; this.layer = null; this.weight = 0;
     this.moves = new Moveset(this, {
-      id: 'psygun', moves: MOVES, strings: { special: 'fan' }, specialKey: 'KeyR', limb: 'R', tip: 0.3, reach: 0.3, k: K, pot: 50, cause: 'bashed',
+      id: 'psygun', moves: MOVES, strings: { special: 'fan' }, specialKey: FAN_KEY, limb: 'R', tip: 0.3, reach: 0.3, k: K, pot: 50, cause: 'bashed',
       events: { swing: 'gun.move', hit: 'gun.hit' }, onUpdate: (c) => this.onUpdate(c),
     });
   }
@@ -58,14 +61,14 @@ export class GunMoves {
   get P() { return this.W.game.player; }
   get busy() { return this.moves.busy || this.flourishT >= 0; }
 
-  /** Once a frame from Weapon.update: the engine (R is read there), the flourish's clock, and the layer the character will draw. */
+  /** Once a frame from Weapon.update: the engine (FAN_KEY is read there), the flourish's clock, and the layer the character will draw. */
   update(dt, input, { allow }) {
     this.shotT += dt;
     // the quick draw: the last beat of a draw (the gun in the hand, whipped up to the aim) follows Gun_QuickDraw's rise (character.js)
     const W = this.W, d = W.drawT, up = d > (this.lastDraw ?? 0) || (W.drawTarget > 0 && d < 1);
     this.drawU = up && d > T.weapon.drawGrab && d < 1 ? smooth(T.weapon.drawGrab, 1, d) : -1;
     this.lastDraw = d;
-    // (R again while the fan plays is not a second fan: the engine restarts a special in place, and a double tap paid 16 for six shots)
+    // (the fan's key again while it plays is not a second fan: the engine restarts a special in place, and a double tap paid 16 for six shots)
     this.moves.update(dt, input, { allow: allow && this.moves.cur?.id !== 'fan' });
     if (this.flourishT >= 0) { this.flourishT += dt; if (this.flourishT >= FLOURISH.dur || W.drawTarget < 1) this.flourishT = -1; } // (put away by other means mid-spin (X, a ladder): no spin on the way to the holster)
     const C = this.game.character?.clips;
