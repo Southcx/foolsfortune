@@ -10,23 +10,40 @@
 // Prior art: the Celtic Cross as the Golden Dawn lays it (the cross and the staff); Hades' Mirror of Night (one page, chosen between
 // runs); Balatro's hand (the cards held low, the one picked lifted).
 //
-//   const U = new Underside(game, reading, onChange)   U.mount(host)   U.held (the card picked up)   UNDERSIDE_CSS
+// While the reading view shows (`game.readingScene.active`: Petra's scene of it, the Courier in the title's dark), the page falls away
+// to a bar at the bottom, the spreads' tabs, the hand and the tallies, and the cards are laid on the view itself: a card dragged from the
+// hand (or picked, then a click) onto a place, a laid card clicked to take it back or right-clicked to reverse
+// it (`readingScene.pickAt`). The cloth on the page is the fallback when the view is not there.
+//
+//   const U = new Underside(game, reading, onChange)   U.mount(host)   U.slim (the view shows)   U.atView(x, y, button) -> bool   U.held   UNDERSIDE_CSS
 // ---------------------------------------------------------------------------------------
 import { SPREADS, SUITS, COLS, ROWS, MIRROR, MAJOR_SUIT, FOOTPRINTS, TALLY, FOOL_CELL, effectOf, cellIndex } from '../progress/spreads.js';
 import { ARCANA } from '../tools/veritome/arcana.js';
 import { OPEN_AT } from './reading.js';
+import { UNDERSIDE_LOOK } from '../ui/undersidelook.js';
 
 const ROMAN = ['0', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI'];
 const BY_ID = Object.fromEntries(ARCANA.map((A, n) => [A.id, { ...A, n }]));
-/** Placeholder colours for the suits. Calissa's d3412376 (ui/undersidelook.js) dresses the page: swap this for `UNDERSIDE_LOOK.suits`
- *  once it reaches main (her ask, 2026-10-23: one palette with the reading view's SUIT_LOOK); the wild purple stays until the film has a CSS. */
-const SUIT_CSS = { wands: '#ff6a2a', cups: '#3fa8d8', swords: '#cfd8ff', pentacles: '#e0b040', wild: '#b58cff' };
+/** The suits' colours: Calissa's palette (ui/undersidelook.js, the reading view's SUIT_LOOK as CSS), one for the window and the view;
+ *  the wild card's purple stays until the film has a CSS of its own. */
+const SUIT_CSS = { ...UNDERSIDE_LOOK.suits, wild: '#b58cff' };
 const NAME = { wands: 'Wands', cups: 'Cups', swords: 'Swords', pentacles: 'Pentacles', wild: 'wild' };
 const CELL = 46; // (px a cell of the cloth)
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; };
 
 export const UNDERSIDE_CSS = `
 #pneuka .us{display:flex;flex-direction:column;gap:10px;min-width:880px}
+#pneuka.view{background:transparent;align-items:flex-end}
+#pneuka.view>.px{position:fixed!important;left:50%!important;bottom:10px!important;top:auto!important;width:min(1180px,calc(100vw - 24px))!important;max-height:36vh!important;overflow:hidden!important;padding:8px 14px!important;transform-origin:bottom center}
+#pneuka.view>.px header{margin-bottom:4px} #pneuka.view>.px header .sub,#pneuka.view>.px .hover{display:none}
+#pneuka.view .us{min-width:0;flex-direction:row;align-items:flex-start;gap:14px}
+#pneuka.view .us-tabs{flex-direction:column;flex:none}
+#pneuka.view .us-row{flex:1;min-width:0}
+#pneuka.view .us-side{flex-direction:row;align-items:flex-start;gap:14px}
+#pneuka.view .us-side>.us-note{max-width:150px}
+#pneuka.view .us-hand{flex-wrap:nowrap;overflow-x:auto;flex:1}
+#pneuka.view .us-card{width:52px;height:76px;flex:none}
+#pneuka.view .us-tally{min-width:220px}
 #pneuka .us-tabs{display:flex;gap:6px}
 #pneuka .us-tab{padding:4px 10px;border:1px solid rgba(255,178,122,.3);border-radius:3px;font-size:11px;letter-spacing:.12em;cursor:var(--jcur-pointer,pointer)}
 #pneuka .us-tab.on{border-color:#ffd98a;color:#ffd98a}
@@ -59,6 +76,19 @@ export const UNDERSIDE_CSS = `
 export class Underside {
   constructor(game, reading, onChange) { this.game = game; this.reading = reading; this.onChange = onChange; this.held = null; }
 
+  /** Is the reading view showing (Petra's scene, game.readingScene, holding Calissa's view), so the page gives way to it? */
+  get slim() { return !!this.game.readingScene?.active && this.reading.flipped; }
+  /** A click or a drop on the reading view at a client point (readingScene.pickAt: a place or a card of the hand): a held card laid in an
+   *  empty place, a laid card taken back (or reversed, button 2), a card of the hand picked up. */
+  atView(x, y, button = 0, card = this.held) {
+    const P = this.game.readingScene?.pickAt?.(x, y), R = this.reading;
+    if (!P) return false;
+    if (P.kind === 'hand') { this.held = this.held === P.id ? null : P.id; this.changed(); return true; }
+    if (P.kind !== 'place') return false;
+    if (R.laid[P.id] && !card) { if (button === 2 ? R.reverse(P.id) : R.take(P.id)) this.changed(); return true; }
+    if (card && R.lay(P.id, card)) { this.held = null; this.changed(); return true; }
+    return false;
+  }
   mount(host) {
     const R = this.reading, S = SPREADS[R.spread], cells = R.cells(), wrap = el('div', 'us');
     // the spreads, a tab each: opened, or how many bound open it
@@ -70,9 +100,9 @@ export class Underside {
     }
     wrap.appendChild(tabs);
     const row = el('div', 'us-row');
-    row.appendChild(this.cloth(S, cells));
+    if (!this.slim) row.appendChild(this.cloth(S, cells)); // (the view shows the cloth itself, under the Courier's feet)
     const side = el('div', 'us-side');
-    side.appendChild(el('div', 'us-note', this.held ? `Holding <b>${this.cardName(this.held)}</b>: pick an empty place on the cloth.` : 'Pick a card from the hand, then an empty place. A laid card: click to take it back, right-click to reverse it.'));
+    side.appendChild(el('div', 'us-note', this.held ? `Holding <b>${this.cardName(this.held)}</b>: pick an empty place ${this.slim ? 'round you' : 'on the cloth'}.` : 'Pick a card from the hand, then an empty place. A laid card: click to take it back, right-click to reverse it.'));
     side.appendChild(this.handRow());
     side.appendChild(this.tallies());
     row.appendChild(side);
@@ -125,6 +155,7 @@ export class Underside {
       const A = BY_ID[id], suit = MAJOR_SUIT[id];
       const d = el('div', `us-card${this.held === id ? ' held' : ''}`, `<b>${ROMAN[A.n]}</b>${A.name.replace(/^The /, '')}<span style="color:${SUIT_CSS[suit]};text-shadow:0 0 1px #000">${NAME[suit]}</span><span>${FOOTPRINTS[id].length} cells</span>`);
       d.onclick = () => { this.held = this.held === id ? null : id; this.onChange?.(); };
+      d.draggable = true; d.ondragstart = (e) => { this.held = id; e.dataTransfer.setData('text/plain', `card:${id}`); }; // (onto the reading view: the window's drop, pneuka/ui.js)
       hand.appendChild(d);
     }
     if (!hand.children.length) hand.appendChild(el('div', 'us-note', 'No Major in hand: bind more, by a photograph or its other way.'));

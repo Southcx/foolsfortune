@@ -24,7 +24,7 @@ export class Reading {
   get flipped() { return !!this.L?.under; }
 
   /** The Majors bound (the collection's), the Fool always among them. */
-  bound() { return new Set(['fool', ...(this.game.collection?.majors || [])]); }
+  bound() { return new Set(['fool', ...(this.L?.majors ?? this.game.collection?.majors ?? [])]); } // (Petra's .majors: every one under the lend)
   pair() { return this.L?.pairCard ?? null; }
   /** The spreads open: by the count of Majors bound (the Fool not counted), or lent (DEBUG). The feat ways come with their achievements. */
   opened() {
