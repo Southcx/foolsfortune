@@ -35,6 +35,7 @@
 import { iconEl, hasIcon } from './icons/icons.js';
 import { bazaarAtlas } from '../vfx/bazaarfaces.js';
 import { drawSealFace } from '../vfx/sealface.js';
+import { toolIcon } from '../pneuka/icons.js';
 
 export const REFUSE = { hold: 1.4, press: 0.16 };      // (real s the seal stays; real s it takes to come down)
 export const RT_CLASSES = { window: 'rt-clay', tray: 'rt-tray', slot: 'rt-slot', book: 'rt-book', pane: 'rt-pane' };
@@ -94,6 +95,7 @@ const CSS = `
 .rt-fit{width:22px;height:22px;border-radius:4px;display:grid;place-items:center;font:700 11px/1 Georgia,serif;color:#fff;overflow:hidden;
   box-shadow:inset 0 2px 0 rgba(255,255,255,.35),inset 0 -2px 0 rgba(0,0,0,.35),0 0 0 1px #2a140c}
 .rt-fit img{width:100%;height:100%;object-fit:contain}
+.rt-model{width:auto;height:100%;max-width:100%;object-fit:contain;filter:drop-shadow(0 2px 2px rgba(42,20,12,.45))}
 .rt-ch{display:flex;gap:3px;justify-content:center;margin-top:5px}
 .rt-ch i{width:14px;height:14px;border-radius:50%;box-shadow:inset 0 0 0 2px #2a140c;background:#c9b490}
 .rt-hand{position:absolute;left:0;right:0;top:438px;height:200px}
@@ -123,6 +125,13 @@ function style() {
 }
 const make = (tag, cls, text) => { const e = document.createElement(tag); if (cls) e.className = cls; if (text != null) e.textContent = text; return e; };
 const icon = (id, px) => { try { return iconEl(`mount.${id}`, { pal: 'gold', px }); } catch { return make('span', '', '·'); } };
+/** A tool's picture on its card: its own model rendered (pneuka/icons.js toolIcon), once the model it wears exists; the pixel icon until then. */
+function toolArt(game, id, px) {
+  const has = id === 'psygun' ? game?.character?.gunModel : game?.belt?.get?.(id)?.model;
+  if (!has || !game?.renderer) return icon(id, px);
+  const url = toolIcon(game, id); if (!url) return icon(id, px);
+  const im = make('img', 'rt-model'); im.src = url; im.alt = ''; return im;
+}
 
 export class ReadingTable {
   constructor(game) {
@@ -179,7 +188,7 @@ export class ReadingTable {
 
   mainCard(m) {
     const c = make('div', 'rt-card rt-main'); c.dataset.as = 'main'; this.dropTarget(c, 'main');
-    const art = make('div', 'art'); art.append(icon(m.id, 5));
+    const art = make('div', 'art'); art.append(toolArt(this.game, m.id, 5));
     c.append(make('div', 'nm', m.name), make('div', 'lb', m.label), art);
     for (const line of m.lines || []) c.append(make('div', 'gl', line));
     if (m.chambers) {
@@ -193,7 +202,7 @@ export class ReadingTable {
 
   subCard(s) {
     const w = make('div', 'rt-subwrap'); w.dataset.as = 'sub'; this.dropTarget(w, 'sub');
-    const face = make('div', 'face'), art = make('div', ''); art.append(icon(s.id, 3));
+    const face = make('div', 'face'), art = make('div', ''); art.append(toolArt(this.game, s.id, 3));
     const gl = make('div', 'gl'); gl.append(make('b', '', `R · ${s.verb}`), make('br'), document.createTextNode(s.passive ? `Passive: ${s.passive}` : 'Passive: none'));
     const right = make('div', ''); right.append(gl, this.fittings(s.fittings));
     face.append(make('div', 'nm', `${s.name} · ${s.label}`), art, right);
@@ -218,7 +227,7 @@ export class ReadingTable {
       const c = make('div', `rt-t${t.id === lifted ? ' lift' : ''}`), k = i - mid;
       c.style.left = `${8 + i * 62}px`;
       c.style.transform = t.id === lifted ? 'translateY(-34px)' : `rotate(${k * 7}deg) translateY(${Math.abs(k) * 4}px)`;
-      const art = make('div', 'art'); art.append(icon(t.id, 3));
+      const art = make('div', 'art'); art.append(toolArt(this.game, t.id, 3));
       c.append(make('div', 'nm', t.name), art, make('div', 'gl', `R · ${t.verb}`));
       if (t.note) c.append(make('div', 'gl', t.note));
       c.draggable = !this.state?.locked;
