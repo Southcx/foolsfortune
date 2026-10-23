@@ -3623,4 +3623,4 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Cause (read):** sc1 to sc3 (SPREADS.md 11) were added under GENERAL's new sub "The Spread" without adding it to `CATS`; the load
   guard (achievements.js, after R57) caught it and pushed the sub itself. Nothing was hidden; the console was dirty.
 - **Fix:** "The Spread" added to GENERAL's subs in `CATS`. Importing achievements.js now logs no error.
-- **Rule:** NEW:sub-in-cats
+- **Rule:** 280
