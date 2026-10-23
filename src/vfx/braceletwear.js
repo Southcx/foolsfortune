@@ -15,7 +15,8 @@
 //   god.dissonance {level}      the Dissonance Level's red pulse
 //   god.enter, garden.enter, domain.level    the sockets re-read from the domains' levels (open at 30: game.psyche.level)
 //   bracelet.charm {id, domain} (Dovina's progress/bracelet.js: a charm bending an act) a charm's gold line
-// The charms worn are not data yet (BRACELET.md "Not built yet"): `setCharm` is how the table will set them.
+//   bracelet.set {socket, charm}  a charm put in or taken out: every socket re-read from game.bracelet.sockets (a charm moved
+//                                  from one socket to another empties the first without its own event)
 //
 // Prior art: the house's own marks that live on the bus (vfx/glyphs.js, vfx/hookmark.js), Hollow Knight's charms shown on the Knight's
 // inventory as worn.
@@ -87,11 +88,13 @@ export function installBracelets(game) {
   on('god.dissonance', (e) => H.glow({ dissonance: e.level || 0 }));
   for (const n of ['god.enter', 'garden.enter', 'domain.level']) on(n, () => H.refresh());
   on('bracelet.charm', (e) => H.charm(e.id));
+  const sockets = () => { const S = game.bracelet?.sockets || {}; for (const s of new Set([...Object.keys(H.charms), ...Object.keys(S)])) if ((H.charms[s] || null) !== (S[s] || null)) H.setCharm(s, S[s] || null); };
+  on('bracelet.set', sockets);
   game.lachryma?.on?.('spend', (e) => {
     if (!(game.god?.active || game.realm?.active)) return;
     const max = game.lachryma.max || 100;
     H.pulse(Math.min(1, (e.amount || 0) / (max * 0.2)));
   });
-  H.refresh();
+  H.refresh(); sockets();
   return H;
 }

@@ -209,7 +209,7 @@ export class BrushLoad {
     const b = this.bottle;
     this.wear(b, raw);
     if (b && this.held > 0 && g.lachryma) {
-      const f = bottleFeed(b, this.held, g.lachryma.fraction, dt);
+      const f = bottleFeed(b, this.held, g.lachryma.fraction, dt * (g.laidSpread?.cupsK ?? 1)); // (Cups' tally quickens the feed: progress/laidspread.js)
       if (f > 0) { this.held -= f; g.lachryma.gain(f, 'bottle'); }
     }
   }

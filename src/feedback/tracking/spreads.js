@@ -1,18 +1,32 @@
 // ---------------------------------------------------------------------------------------
-// TRACKING, THE SPREAD: what the log says of the spread on the Pneuka Box's underside (docs/plans/SPREADS.md 7). Only on what you do:
-// the positions that move by themselves (the Past fading, the Future growing, the Crown position with the goals) are never announced
-// (Petra's catch, 2026-10-23). Turning the Box back after a change says the tallies once.
+// TRACKING, THE SPREAD LAID (docs/plans/SPREADS.md; the state is Petra's, progress/laidspread.js): the log speaks on what you do (a card laid,
+// reversed or taken back, a tally moved by that, a cell cracked dark, a spread complete), never on what moves by itself (the Past fading,
+// Self with the pool, the Challenge in a fight). The ledger keeps what the spreads' feats are predicates over (SPREADS.md 5.5, Dovina's
+// achievements): the most cells counting in each spread, how often every lit cell counted, the most counting with no cell dark.
 //
-//   spreadRules({ on, log })   (tracking/rules.js calls it)   events: spread.flip { under, spread, sums, changed, by }
+// Prior art: a reader saying the card as it is turned (each act read aloud once), Diablo II's charm tooltips (the power named with its number).
+//
+//   spreadRules({ on, L, log })   (tracking/rules.js calls it)
 // ---------------------------------------------------------------------------------------
-const WORD = ['no', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten'];
-const NAME = { wands: 'Wands', cups: 'Cups', swords: 'Swords', pentacles: 'Pentacles' };
-const said = (n) => (Number.isInteger(n) ? WORD[n] ?? String(n) : n.toFixed(1));
+import { SPREADS, TALLY, effectOf } from '../../progress/spreads.js';
+import { CARD } from '../../tools/veritome/cards.js';
 
-export function spreadRules({ on, log }) {
-  on('spread.flip', (e) => {
-    if (e.under || !e.changed || e.by !== 'courier') return;
-    const lit = Object.entries(e.sums || {}).filter(([, v]) => v > 0).sort((a, b) => b[1] - a[1]).map(([s, v]) => `${said(Math.round(v * 10) / 10)} ${NAME[s]}`);
-    log.say('system', lit.length ? `Your spread lights ${lit.length > 1 ? `${lit.slice(0, -1).join(', ')} and ${lit[lit.length - 1]}` : lit[0]}.` : 'Your spread lights nothing in the Box yet.', { key: 'spread.read', throttle: 1 });
+const SUIT = { wands: 'Wands', cups: 'Cups', swords: 'Swords', pentacles: 'Pentacles' };
+const posOf = (e) => SPREADS[e.spread]?.positions.find((p) => p.id === e.position)?.label || e.position;
+const nameOf = (card) => CARD[`arcana.${card}`]?.name || card;
+
+export function spreadRules({ on, L, log }) {
+  on('spread.lay', (e) => {
+    L.inc('spread.lay');
+    log.say('info', e.card ? `You lay ${nameOf(e.card)}${e.reversed ? ', reversed,' : ''} in the ${posOf(e)}.` : `You take back the card in the ${posOf(e)}.`, { key: `slay.${e.position}`, throttle: 0.3 });
   });
+  on('spread.tally', (e) => {
+    L.hi(`spread.counting.${e.spread}`, e.counting);
+    if (e.lit > 0 && e.counting >= e.lit) L.inc(`spread.full.${e.spread}`);
+    if (!e.dark) L.hi(`spread.undark.${e.spread}`, e.counting);
+    const pct = Math.round(effectOf(e.suit, e.to) * 100);
+    log.say('info', `Your spread ${e.to > e.from ? 'lights' : 'dims'} ${SUIT[e.suit]}: ${e.to.toFixed(1)} of ${TALLY.cap} (${TALLY[e.suit].does} ${pct > 0 ? '+' : ''}${pct}%).`, { key: `stally.${e.suit}`, throttle: 0.5 });
+  });
+  on('spread.crack', () => { L.inc('spread.crack'); log.say('info', 'Contrary suits meet, and a cell goes dark.', { key: 'scrack', throttle: 2 }); });
+  on('spread.complete', (e) => { L.inc(`spread.complete.${e.spread}`); log.say('gain', `${SPREADS[e.spread]?.label || 'The spread'} is complete: its Outcome lights.`, { key: 'sdone' }); });
 }

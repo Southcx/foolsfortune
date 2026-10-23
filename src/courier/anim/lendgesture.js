@@ -14,9 +14,11 @@
 // quick act over a held weapon (NieR: Automata's pod commands, Elden Ring's off-hand, Devil May Cry 5's Devil Breaker); the hit reacts'
 // layer here (anim/hurt.js), whose pattern this follows.
 //
-//   LEND_GESTURES[tool] -> { clip, from, to, rate, out, mask: 'arm' (the right arm) | 'armL' (the left) | 'upper', mirror? }   (from / to: s
-//                          in the clip; rate: x real time; out: the real s it fades over at the end; mirror: the clip mirrored)
-//   const lend = new LendGesture(ch)   lend.play(tool) -> true if the tool has a gesture   lend.pose(dt, base)   lend.active -> tool | null
+//   LEND_GESTURES[tool] -> { clip, from, to, rate, out, mask: 'arm' (the right arm) | 'armL' (the left) | 'upper', mirror?, free? }   (from /
+//                          to: s in the clip; rate: x real time; out: the real s it fades over at the end; mirror: the clip mirrored; free:
+//                          authored on the right arm and played on whichever hand the main leaves free, mirrored onto the left)
+//   const lend = new LendGesture(ch)   lend.play(tool, freeHand = 'L') -> true if the tool has a gesture   lend.pose(dt, base)
+//   lend.active -> tool | null   (freeHand: game.belt.freeHand, tools/belt.js)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
@@ -35,10 +37,11 @@ export const LEND_GESTURES = {
   // shoulder to the vane's heel (0.37 s in the clip: 0.10 m behind the shoulder, 0.42 m above it), then thrown forward and down to the
   // chest (forward of the shoulder by 0.47 m at 0.57 s); behind at 0.12 real s, forward by 0.19; 0.36 real s
   dreamvane: { clip: 'Vane_Combo2', from: 0.2, to: 0.7, rate: 1.4, out: 0.14, mask: 'arm', mirror: true },
-  // Toll: the right hand raised before the chest and brought down to strike at the right hip (the Solar Skiff's summon, Skiff_Summon: from
-  // 0.73 m over the pelvis at 0.5 s to 0.19 m at 0.7 s, at 3.5 m/s at its fastest), at the hip 0.13 real s after the press and held there;
-  // 0.3 real s
-  crucibelle: { clip: 'Skiff_Summon', from: 0.5, to: 0.95, rate: 1.5, out: 0.12, mask: 'arm' },
+  // Toll (free: the bell hangs at the left hip, the owner's ruling of 2026-10-06, so with the main in the right hand this plays mirrored
+  // on the left arm, down to the bell; with the Lockheart as the main, in the left, it stays on the right). As authored: the right hand
+  // raised before the chest and brought down to strike at the right hip (the Solar Skiff's summon, Skiff_Summon: from 0.73 m over the
+  // pelvis at 0.5 s to 0.19 m at 0.7 s, at 3.5 m/s at its fastest), at the hip 0.13 real s after the press and held there; 0.3 real s
+  crucibelle: { clip: 'Skiff_Summon', from: 0.5, to: 0.95, rate: 1.5, out: 0.12, mask: 'arm', free: true },
   // Gulp: the left hand (the free one: the main is in the right) brought in to the mouth, the cross's guard (UAL's Punch_Cross, the left
   // fist at the chin: its palm 0.07..0.10 m over the head bone and 0.17..0.19 m before it, at the lips, the face's front there being
   // 0.17..0.22 m out), there by 0.07 real s and held through the parry's 0.25 real s window; 0.34 real s
@@ -57,9 +60,10 @@ export class LendGesture {
 
   maskOf(g) { const ch = this.ch; return g.mask === 'upper' ? ch.MASK_UPPER : g.mask === 'armL' ? ch.MASK_ARM.L : ch.MASK_ARM.R; }
 
-  play(tool) {
-    const g = LEND_GESTURES[tool];
+  play(tool, freeHand = 'L') {
+    let g = LEND_GESTURES[tool];
     if (!g || !this.C.clips[g.clip]) return false;
+    if (g.free && freeHand === 'L') g = { ...g, mask: 'armL', mirror: !g.mirror }; // (the right arm's motion on the left, the free hand)
     // (a lend over one still playing: its pose as it stands fades out under the new one, over IN)
     if (this.g) { this.prev.copy(this.pose_); this.prevW = this.weight(); this.prevMask = this.maskOf(this.g); }
     this.g = g; this.t = 0; this.len = (g.to - g.from) / g.rate; this.active = tool;

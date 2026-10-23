@@ -43,6 +43,7 @@ import { addOutline } from '../../render/outline.js';
 import { RAPIER, GROUPS } from '../../core/physics.js';
 import { RIG_CPS, HAND_CPS, RIG_PITS } from './rigwing.js';
 import { TR } from '../testroom/layout.js';
+import { FOE } from '../../progress/combat/dunemaw.js';
 
 
 export const BASE_Y = -14;
@@ -476,7 +477,7 @@ export class Course {
       { id: 'opensea', code: 'KeyO', tag: 'O', name: 'THE OPEN SEA', blurb: 'the Emocean off the lanes: sail at a free helm, chart squares, land on islets, report finds at a dock', group: 'THE OPEN', spawn: 'opensea' },
       { id: 'raceway', code: 'KeyR', tag: 'R', name: 'THE RACEWAY', blurb: 'the Solar Skiff\'s test circuit: three laps against the clock, F at the start\'s pillar · the sandfall drop', group: 'THE OPEN', spawn: 'raceway' },
       { id: 'bazaar', code: 'KeyG', tag: 'G', name: "RAKU'S BAZAAR", blurb: 'the casino under the dome: Querent, Zodiac, Event Horizon · chips at Raku\'s cage', group: 'THE OPEN', spawn: 'bazaar' },
-      { id: 'dunemaw', code: 'KeyW', tag: 'W', name: 'THE GREAT DUNEMAW', blurb: 'the Well in the sand, north-west of the oasis: F at its mouth goes down', group: 'THE OPEN', spawn: 'dunemaw' },
+      { id: 'dunemaw', code: 'KeyW', tag: 'W', name: 'THE GREAT DUNEMAW', blurb: 'the Well in the sand, north-west of the oasis: F at its mouth goes down', group: 'THE OPEN', spawn: 'dunemaw', danger: FOE.cls }, // (its FOE's class as the Index row's pips: ui/dangerpips.js)
     ];
     this.menu = new IndexMenu(this.game, this.rooms, (id) => (!id.startsWith('debug.') && this.game.gateRing?.depart(() => this.goRoom(id))) || this.goRoom(id), () => this.calibration()); // (the gate-out under the seam: vfx/gatering.js; the DEBUG rows go at once)
     this.game.indexMenu = this.menu;

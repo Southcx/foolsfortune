@@ -1,12 +1,12 @@
 // ---------------------------------------------------------------------------------------
-// THE MAJOR ARCANA: the first section of the Book's designated pages (cards.js). Twenty-two, numbered 0 to XXI as the tarot numbers
+// THE MAJOR ARCANA: the first section of the cards' designated pages (cards.js), bound in the collection (progress/collection.js) and laid in a
+// spread (progress/spreads.js). Twenty-two, numbered 0 to XXI as the tarot numbers
 // them. They are not spells: the Veritome reads the world, it does not rewrite it, so an Arcana card is a picture of a truth the
 // Courier has SEEN, earned by photographing its SITTING (what the tarot says the card is: the Fool is the one who leaps, the Hanged
 // Man hangs, the Tower is struck) and appraising the photograph in the darkroom (darkroom.js). Each card has:
 //
-//   rank     SS S A B C D E F G H     Greed Island's card ranks (Hunter x Hunter): how hard the card is to come by
-//   limit    copies the Book may hold (its page, and spares in the free slots)
-//   sitting  the photograph that earns a copy: a subject (subjects.js) in a state, photographed well enough
+//   rank     SS S A B C D E F G H     Greed Island's card ranks (Hunter x Hunter): how hard the card is to come by (and its footprint's size)
+//   sitting  the photograph that binds it (a second one condenses into cubes): a subject (subjects.js) in a state, photographed well enough
 //   hint     the sitting as a riddle, shown on the empty page
 //   lore     what is written on the page once the card is bound: the reading, in the Courier's hand
 //
@@ -16,49 +16,49 @@ export const ROMAN = ['0', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX
 
 // sitting: { subject, state?, stars (at least), n (at least that many of it in the frame) }; or a special: { sky } { sun } { kinds: n }
 export const ARCANA = [
-  { id: 'fool', name: 'The Fool', rank: 'C', limit: 3, sitting: { subject: 'clapper', state: 'air', stars: 1 }, hint: 'one who has leapt, caught in the air',
+  { id: 'fool', name: 'The Fool', rank: 'C', sitting: { subject: 'clapper', state: 'air', stars: 1 }, hint: 'one who has leapt, caught in the air',
     lore: 'Every journey in this book begins with a step off something. The jars take it without looking; so, it seems, did I.' },
-  { id: 'magician', name: 'The Magician', rank: 'B', limit: 3, sitting: { subject: 'clapper', state: 'mend', stars: 1 }, hint: 'hands at work, making a broken thing whole',
+  { id: 'magician', name: 'The Magician', rank: 'B', sitting: { subject: 'clapper', state: 'mend', stars: 1 }, hint: 'hands at work, making a broken thing whole',
     lore: 'Will, made into gold along a crack. It mends what I break, and the mended thing is worth more than it was.' },
-  { id: 'priestess', name: 'The High Priestess', rank: 'B', limit: 3, sitting: { subject: 'well', stars: 2 }, hint: 'the deep water that keeps its secrets',
+  { id: 'priestess', name: 'The High Priestess', rank: 'B', sitting: { subject: 'well', stars: 2 }, hint: 'the deep water that keeps its secrets',
     lore: 'What is known and not said. The Well goes further down than the dunes go up.' },
-  { id: 'empress', name: 'The Empress', rank: 'C', limit: 3, sitting: { subject: 'palm', stars: 2 }, hint: 'what grows, green, where nothing should',
+  { id: 'empress', name: 'The Empress', rank: 'C', sitting: { subject: 'palm', stars: 2 }, hint: 'what grows, green, where nothing should',
     lore: 'Abundance where there ought to be none. The palms drink from somewhere.' },
-  { id: 'emperor', name: 'The Emperor', rank: 'B', limit: 2, sitting: { subject: 'chest', stars: 2 }, hint: 'a treasury, closed and kept',
+  { id: 'emperor', name: 'The Emperor', rank: 'B', sitting: { subject: 'chest', stars: 2 }, hint: 'a treasury, closed and kept',
     lore: 'Order, and the keeping of things. Everything worth having in this place is shut in something.' },
-  { id: 'hierophant', name: 'The Hierophant', rank: 'B', limit: 2, sitting: { subject: 'gong', stars: 2 }, hint: 'the bell that calls the faithful',
+  { id: 'hierophant', name: 'The Hierophant', rank: 'B', sitting: { subject: 'gong', stars: 2 }, hint: 'the bell that calls the faithful',
     lore: 'The rite and the rule. Strike it and the room keeps time with you.' },
-  { id: 'lovers', name: 'The Lovers', rank: 'C', limit: 3, sitting: { subject: 'clapper', n: 2, stars: 1 }, hint: 'two of a kind in one frame',
+  { id: 'lovers', name: 'The Lovers', rank: 'C', sitting: { subject: 'clapper', n: 2, stars: 1 }, hint: 'two of a kind in one frame',
     lore: 'A choice made by two. They are never far from one another, and never quite together.' },
-  { id: 'chariot', name: 'The Chariot', rank: 'B', limit: 3, sitting: { subject: 'skiff', stars: 1 }, hint: 'a vessel that rides the wind',
+  { id: 'chariot', name: 'The Chariot', rank: 'B', sitting: { subject: 'skiff', stars: 1 }, hint: 'a vessel that rides the wind',
     lore: 'Will steering the wind. The skiff goes where the sail and I agree.' },
-  { id: 'strength', name: 'Strength', rank: 'B', limit: 3, sitting: { subject: 'pot', state: 'heavy', stars: 1 }, hint: 'a weight that should not be lifted',
+  { id: 'strength', name: 'Strength', rank: 'B', sitting: { subject: 'pot', state: 'heavy', stars: 1 }, hint: 'a weight that should not be lifted',
     lore: 'Not the lifting: the knowing what not to lift. A word made it heavy; a photograph made it honest again.' },
-  { id: 'hermit', name: 'The Hermit', rank: 'C', limit: 3, sitting: { subject: 'lantern', stars: 1 }, hint: 'a light kept alone',
+  { id: 'hermit', name: 'The Hermit', rank: 'C', sitting: { subject: 'lantern', stars: 1 }, hint: 'a light kept alone',
     lore: 'One light, carried inward. Every lantern here hangs where someone once needed to see.' },
-  { id: 'wheel', name: 'Wheel of Fortune', rank: 'A', limit: 2, sitting: { subject: 'cog', stars: 2 }, hint: 'a wheel that turns of itself',
+  { id: 'wheel', name: 'Wheel of Fortune', rank: 'A', sitting: { subject: 'cog', stars: 2 }, hint: 'a wheel that turns of itself',
     lore: 'What goes round. Nobody winds the mill; it turns because it has always turned.' },
-  { id: 'justice', name: 'Justice', rank: 'A', limit: 2, sitting: { subject: 'tally', stars: 2 }, hint: 'the stone where every catch is counted',
+  { id: 'justice', name: 'Justice', rank: 'A', sitting: { subject: 'tally', stars: 2 }, hint: 'the stone where every catch is counted',
     lore: 'The account kept. The tally does not forget a fish, and neither, now, does the Book.' },
-  { id: 'hanged', name: 'The Hanged Man', rank: 'B', limit: 3, sitting: { subject: 'hanging', stars: 1 }, hint: 'one who hangs by a cord',
+  { id: 'hanged', name: 'The Hanged Man', rank: 'B', sitting: { subject: 'hanging', stars: 1 }, hint: 'one who hangs by a cord',
     lore: 'A pause, upside down, that sees further than standing would.' },
-  { id: 'death', name: 'Death', rank: 'A', limit: 2, sitting: { subject: 'shards', stars: 1 }, hint: 'a thing in the moment of its ending',
+  { id: 'death', name: 'Death', rank: 'A', sitting: { subject: 'shards', stars: 1 }, hint: 'a thing in the moment of its ending',
     lore: 'An ending caught in the act. Nothing here stays broken for long; the jars see to that.' },
-  { id: 'temperance', name: 'Temperance', rank: 'B', limit: 3, sitting: { subject: 'water', stars: 2 }, hint: 'still water, poured from one vessel to another',
+  { id: 'temperance', name: 'Temperance', rank: 'B', sitting: { subject: 'water', stars: 2 }, hint: 'still water, poured from one vessel to another',
     lore: 'The middle way, poured. Water in this place is always on its way somewhere else.' },
-  { id: 'devil', name: 'The Devil', rank: 'A', limit: 2, sitting: { subject: 'clapper', state: 'greed', stars: 2 }, hint: 'one who hoards more than it can carry',
+  { id: 'devil', name: 'The Devil', rank: 'A', sitting: { subject: 'clapper', state: 'greed', stars: 2 }, hint: 'one who hoards more than it can carry',
     lore: 'Wanting, swallowed whole. The fat ones are fat with what I dropped.' },
-  { id: 'tower', name: 'The Tower', rank: 'S', limit: 1, sitting: { subject: 'tower', stars: 2 }, hint: 'the tallest thing, from its foot',
+  { id: 'tower', name: 'The Tower', rank: 'S', sitting: { subject: 'tower', stars: 2 }, hint: 'the tallest thing, from its foot',
     lore: 'The thing built too high, seen from where it will fall. The kiln is where the jars come from.' },
-  { id: 'star', name: 'The Star', rank: 'S', limit: 1, sitting: { sky: true }, hint: 'nothing but the open sky',
+  { id: 'star', name: 'The Star', rank: 'S', sitting: { sky: true }, hint: 'nothing but the open sky',
     lore: 'Hope, with nothing in the way. The sky here is painted, and it is still the sky.' },
-  { id: 'moon', name: 'The Moon', rank: 'A', limit: 2, sitting: { subject: 'pond', stars: 2 }, hint: 'a reflection in the oasis',
+  { id: 'moon', name: 'The Moon', rank: 'A', sitting: { subject: 'pond', stars: 2 }, hint: 'a reflection in the oasis',
     lore: 'What is seen twice, once wrongly. The oasis shows a sky the Dunes do not have.' },
-  { id: 'sun', name: 'The Sun', rank: 'S', limit: 1, sitting: { sun: true }, hint: 'the sun itself, in the Dunes',
+  { id: 'sun', name: 'The Sun', rank: 'S', sitting: { sun: true }, hint: 'the sun itself, in the Dunes',
     lore: 'The plain truth, too bright to look at for long. I looked anyway; the Book has it now.' },
-  { id: 'judgement', name: 'Judgement', rank: 'A', limit: 2, sitting: { subject: 'wreck', stars: 1 }, hint: 'the place where something broke',
+  { id: 'judgement', name: 'Judgement', rank: 'A', sitting: { subject: 'wreck', stars: 1 }, hint: 'the place where something broke',
     lore: 'The call to rise again. Every wreck is waiting for a jar to come and say so.' },
-  { id: 'world', name: 'The World', rank: 'SS', limit: 1, sitting: { kinds: 5 }, hint: 'five kinds of thing in a single frame',
+  { id: 'world', name: 'The World', rank: 'SS', sitting: { kinds: 5 }, hint: 'five kinds of thing in a single frame',
     lore: 'Completion: the whole of it, held still at once. The last page of the first section, and the first proof the Book can hold a world.' },
 ].map((a, i) => ({ ...a, num: i, roman: ROMAN[i] }));
 

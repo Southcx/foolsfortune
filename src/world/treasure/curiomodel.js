@@ -19,7 +19,7 @@ export function buildCurio(id, { sky = null } = {}) {
   const trackG = (g) => { geos.push(g); return g; };
   const std = (color, o = {}) => { const m = new THREE.MeshStandardMaterial({ color, roughness: 0.6, metalness: 0, flatShading: false, ...(o.metalness > 0.3 ? { envMap: sky, envMapIntensity: 1.0 } : {}), ...o }); mats.push(m); return m; };
   const glow = (color, o = {}) => { const m = new THREE.MeshBasicMaterial({ color, ...o }); mats.push(m); return m; };
-  const glass = (color, o = {}) => std(color, { roughness: 0.08, metalness: 0.1, transparent: true, opacity: 0.62, emissive: color, emissiveIntensity: 0.35, side: THREE.DoubleSide, ...o });
+  const glass = (color, o = {}) => std(color, { roughness: 0.08, metalness: 0.1, transparent: true, opacity: 0.62, emissive: color, emissiveIntensity: 0.35, side: THREE.DoubleSide, forceSinglePass: true, ...o }); // (both faces in one draw, not two: the low-spec rule, Calissa's 2026-10-23)
   const brass = () => std(0xe2a640, { roughness: 0.32, metalness: 0.85 });
   const silver = () => std(0xd6e0ee, { roughness: 0.3, metalness: 0.85 });
   const gold = () => std(0xffd060, { roughness: 0.28, metalness: 0.9, emissive: 0x6a4000, emissiveIntensity: 0.25 });

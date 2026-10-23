@@ -297,8 +297,8 @@ playing-card suits descend from these: hearts from Cups, spades from Swords, clu
 ## 10. Who builds what
 
 - **Dovina:** `progress/spreads.js` (built: the rules, `SPREADS`, `POSITIONS`, `FOOTPRINTS`, `SUIT_OF`, the dignities, `light()`, `tally()`),
-  the achievements, the numbers and their measurement, the window's flip side (built: `pneuka/reading.js`, the state and acts, save
-  section `spread`; `pneuka/underside.js`, the flip side's page; the pocket's glow; F flips; `tracking/spreads.js`; the lend's Spreads row), a sweep.
+  the achievements, the numbers and their measurement, the window's flip side (built: `pneuka/reading.js`, the window's hand on
+  Petra's `game.laidSpread` (the gate, the refusal; no state of its own); `pneuka/underside.js`, the flip side's page; the pocket's glow; F flips; `tracking/spreads.js`; the lend's Spreads row), a sweep.
 - **Petra:** the Veritome's storage moved (`tools/veritome/cards.js`, `book.js`) into the Codex and the Box, the Box's storage at a
   Shrine, the flip's key, the save (a section for the spread laid), the events, with `by` (`spread.flip { under }`, `spread.lay { card, position, reversed }`,
   `spread.tally { suit, from, to }`, `spread.crack { suit }` for a cell cracked dark, `spread.complete` for the Outcome lit; Wanda's

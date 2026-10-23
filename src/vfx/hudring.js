@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
-// THE RING AT HER FEET: the Courier's Lachryma and what has noticed them, drawn on the ground round them, in the world, with no words
-// and no numbers (docs/plans/OVERLAY.md, the 3D HUD). It is the always-on gauge; the Lachrimeter panel steps forward only while the Lachryma
-// is moving (hud.js).
+// THE RING AT THEIR FEET: the Courier's Lachryma and what has noticed them, drawn on the ground round them, in the world, with no words
+// and no numbers (docs/plans/OVERLAY.md, the 3D HUD). The pool's other avenue is the Lachrimeter's tube, bottom-right
+// (vfx/lachrimetertube.js); the LACHRYMA panel it once handed off to was retired on 2026-10-18.
 //
 //   THE POOL      a band of Lachryma itself (matter, never line: near-black liquid with its oil-film sheen) filling the ring from the
 //                 near side (their body never hides it), clockwise on the screen, as far as they have it; what is held for a charge runs

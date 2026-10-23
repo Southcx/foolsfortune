@@ -258,7 +258,7 @@ export function renderCurios(codex, cx) {
   const g = codex.game, L = g.ledger;
   codex.csel ||= CURIOS[0].id;
   const own = (c) => L.get(`curio.${c.id}`) > 0; // (found, ever: the ledger's)
-  const B = g.veritome?.book, box = g.pneuka, held = (c) => { const id = `curio.${c.id}`, k = box ? box.count(id) + (box.lure === id ? 1 : 0) : 0; return B ? `${B.count(id)} in the Book${k ? ` · ${k} carried` : ''}` : `${L.get(id)} held`; };
+  const box = g.pneuka, held = (c) => { const id = `curio.${c.id}`; if (!box) return `${L.get(id)} held`; const k = box.count(id) + (box.lure === id ? 1 : 0), st = box.stored(id); return `${k} carried${st ? ` · ${st} in storage` : ''}`; };
   const head = el('div', 'lg-head');
   head.innerHTML = `<div><small>CUBES</small><b>${num(g.cubes?.balance ?? 0)}</b></div><div><small>CURIOS</small><b>${CURIOS.filter(own).length}</b> / ${CURIOS.length}</div>`
     + `<div><small>CHESTS OPENED</small><b>${num(L.get('chest.open'))}</b></div><div><small>TITHE PULLS</small><b>${num(L.get('tithe.count'))}</b></div>`

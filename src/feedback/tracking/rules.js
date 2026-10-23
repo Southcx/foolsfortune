@@ -30,7 +30,6 @@ import { passageRules } from './passage.js';
 import { wispRules } from './wisps.js';
 import { poolRules } from './pool.js';
 import { pairRules } from './pairs.js';
-import { spreadRules } from './spreads.js';
 import { godRules } from './god.js';
 import { lockheartRules } from './lockheart.js';
 import { raceRules } from './race.js';
@@ -43,6 +42,7 @@ import { duelRules } from './duel.js';
 import { graphicsRules } from './graphics.js';
 import { familiarityRules } from './familiarity.js';
 import { sealRules } from './seals.js';
+import { spreadRules } from './spreads.js';
 import { stunRules } from './stun.js';
 import { sightRules } from './sight.js';
 import { goalsRules } from './goals.js';
@@ -58,7 +58,6 @@ export function areaRules(ctx) {
   const sea = atSea(ctx);
   poolRules(ctx); // (the pool: spent, gained, low, empty)
   pairRules(ctx); // (/pairs: the 21 cards a main and a sub make)
-  spreadRules(ctx); // (the spread on the Box's underside: said on the flip back)
   anglingRules(ctx);
   wellRules(ctx);
   railRules(sea); // (the crossing's tally, before the voyage's "You make port")
@@ -67,6 +66,7 @@ export function areaRules(ctx) {
   wispRules(ctx); // (the Lantern Wisps)
   familiarityRules(ctx); // (how well each kind of creature is known: the overlay's readouts)
   sealRules(ctx); // (the Seal Book: the cradles your seal set in)
+  spreadRules(ctx); // (the spread laid on the Box's underside: progress/laidspread.js)
   stunRules(ctx); // (the stun and its depth: dazed, stunned, out cold)
   sightRules(ctx); // (the Sight's waypoint, set and cleared)
   goalsRules(ctx); // (the game day's three goals: progress/goals.js)

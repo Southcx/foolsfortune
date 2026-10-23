@@ -219,7 +219,7 @@ export class GardenMycelium {
 
   /** Myggdrasil's page at its roots: pick the crown, feed it, hang a card on a branch. */
   treePage() {
-    const T = this.T, M = this.menu(), book = this.game.veritome?.book; if (!M?.showPage || !T) return;
+    const T = this.T, M = this.menu(), C = this.game.collection; if (!M?.showPage || !T) return;
     const again = (r) => { if (r && r.ok === false) this.say(r.why); this.sync(); this.treePage(); };
     M.showPage('garden.myggdrasil', (im, el) => {
       const mk = (title) => { im.appendChild(el('div', 'grp', title)); const rows = el('div', 'rooms'); im.appendChild(rows); return (glyph, t, sub, run, dim = false) => { const d = el('div', 'room', `<span class="n">${glyph}</span><span><b>${t}</b><s>${sub}</s></span>`); if (dim) d.style.opacity = 0.45; if (run && !dim) d.onclick = run; rows.appendChild(d); }; };
@@ -229,7 +229,7 @@ export class GardenMycelium {
       const food = this.things((x) => !!signatureOf(x));
       for (const w of food.slice(0, 24)) roots('◇', w.name, `Feed it: the tree grows and takes its colour`, () => again(T.feed(w.k)));
       if (!food.length) roots('·', 'Nothing to feed it', 'It eats curios, materials and fish');
-      const branches = mk('THE BRANCHES'), cards = Object.keys(BRANCHES).filter((a) => !T.branches[a] && book?.has?.(`arcana.${a}`));
+      const branches = mk('THE BRANCHES'), cards = Object.keys(BRANCHES).filter((a) => !T.branches[a] && C?.has?.(`arcana.${a}`));
       for (const a of cards) branches('✦', `Hang ${a[0].toUpperCase()}${a.slice(1)}`, `Uses up the card: ${ADDS_LINE[BRANCHES[a].adds] || BRANCHES[a].adds}`, () => again(T.hang(a)));
       branches('·', `${Object.keys(T.branches).length} of ${Object.keys(BRANCHES).length} branches hung`, 'Hang a Major Arcana card from your Book for a lasting bonus');
     }, { title: NAMES.myggdrasil?.name?.toUpperCase?.() || 'MYGGDRASIL', sub: 'click to choose · F closes' });
