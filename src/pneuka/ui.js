@@ -22,6 +22,9 @@ import { CARDS, CARD, WORTH } from '../tools/veritome/cards.js';
 import { lureList, tasteOf, BARE } from '../tools/sondelass/angling/lures.js';
 import { RT_CLASSES } from '../ui/readingtable.js';
 import { Loadout } from './loadout.js';
+import { Reading } from './reading.js';
+import { Underside, UNDERSIDE_CSS } from './underside.js';
+import { SUITS } from '../progress/spreads.js';
 import { ASPECTS } from '../tools/sondelass/angling/species.js';
 import { SHELL_TYPES } from '../tools/psygun/shells.js';
 
@@ -45,6 +48,8 @@ const CSS = `
 #pneuka .slot { width: 52px; height: 52px; box-sizing: border-box; position: relative; cursor: var(--jcur-pointer, pointer); }
 #pneuka .slot:not(.rt-slot) { border: 1px solid rgba(255,178,122,.18); border-radius: 4px; background: rgba(40,18,10,.75); } /* (the pocket's slots wear the reading table's dress: RT_CLASSES) */
 #pneuka .slot:not(.rt-slot):hover { border-color: rgba(255,210,150,.75); background: rgba(80,36,20,.8); }
+#pneuka .slot.sp-lit { box-shadow: inset 0 0 0 1px rgba(255,217,138,.35); } #pneuka .slot.sp-dark { box-shadow: inset 0 0 0 1px #5a2a1a; opacity: .8; } /* (lit by the spread: SPREADS.md; Calissa dresses the glow) */
+#pneuka .slot.sp-counts { box-shadow: inset 0 0 0 2px #ffd98a, 0 0 8px rgba(255,217,138,.6); }
 #pneuka .slot.drag { opacity: .4; } #pneuka .slot.over { border-color: #ffd98a; }
 #pneuka .slot img { position: absolute; inset: 3px; width: calc(100% - 6px); height: calc(100% - 6px); pointer-events: none; }
 #pneuka .slot .n { position: absolute; left: 3px; top: 1px; font-size: 11px; color: #ffef7a; text-shadow: 1px 1px 0 #000; pointer-events: none; }
@@ -91,13 +96,17 @@ export class PneukaUI {
     this.game = game;
     this.open = false;
     this.loadout = new Loadout(game, () => this.render());
-    const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st);
+    this.reading = game.reading = new Reading(game); // (the spread on the Box's underside: SPREADS.md)
+    this.underside = new Underside(game, this.reading, () => this.render());
+    const st = document.createElement('style'); st.textContent = CSS + UNDERSIDE_CSS; document.head.appendChild(st);
     this.root = el('div'); this.root.id = 'pneuka';
     this.root.addEventListener('mousedown', (e) => e.stopPropagation());
     this.root.addEventListener('contextmenu', (e) => e.preventDefault());
     this.root.addEventListener('click', (e) => { if (e.target === this.root) this.close(); this.hideMenu(); });
     addEventListener('keydown', (e) => { // (Esc closes it, and only it: the pause menu does not open under it, as the Codex's: GARDEN-SWEEP #9)
-      if (!this.open || e.repeat || e.code !== 'Escape' || /^(TEXTAREA|INPUT)$/.test(e.target?.tagName)) return;
+      if (!this.open || e.repeat || /^(TEXTAREA|INPUT)$/.test(e.target?.tagName)) return;
+      if (e.code === 'KeyF') { e.preventDefault(); e.stopImmediatePropagation(); this.flip(); return; } // (F turns the Box over: Petra's key, SPREADS.md 5.1)
+      if (e.code !== 'Escape') return;
       e.preventDefault(); e.stopImmediatePropagation(); this.close();
     }, true);
     document.body.appendChild(this.root);
@@ -105,8 +114,10 @@ export class PneukaUI {
   }
   get box() { return this.game.pneuka; }
   toggle() { this.open ? this.close() : this.show(); }
+  /** The Box turned over (the spread's side) or back (the pocket's). */
+  flip() { this.reading.flip(); this.underside.held = null; this.render(); }
   show() { this.open = true; this.root.classList.add('open'); document.exitPointerLock?.(); this.game.time?.slow('pneuka', SLOW); this.render(); this.game.events?.emit('pneuka.open', {}); }
-  close() { this.open = false; this.root.classList.remove('open'); this.game.time?.free('pneuka'); this.hideMenu(); this.onClose?.(); }
+  close() { if (this.reading.flipped) this.reading.flip(false); this.underside.held = null; this.open = false; this.root.classList.remove('open'); this.game.time?.free('pneuka'); this.hideMenu(); this.onClose?.(); }
 
   // ---------------------------------------------------------------- what a click on a thing would do
   actions(slot) {
@@ -158,10 +169,18 @@ export class PneukaUI {
     const head = el('header');
     head.appendChild(el('h2', '', 'THE PNEUKA BOX'));
     head.appendChild(el('span', 'sub', `what the Courier carries · ${box.used} / ${SLOTS} · P to close`));
+    const f = el('div', 'x', this.reading.flipped ? 'FLIP BACK · F' : 'FLIP · F'); f.onclick = () => this.flip(); head.appendChild(f);
     const x = el('div', 'x', 'CLOSE'); x.onclick = () => this.close(); head.appendChild(x);
     px.appendChild(head);
     this.hoverEl = el('div', 'hover', '&nbsp;');
     px.appendChild(this.hoverEl);
+    if (this.reading.flipped) { // (the underside: the spread, laid on the cloth; the pocket is on the other side)
+      this.underside.mount(px);
+      px.appendChild(el('footer', '', 'F turns the Box back · pick a card, then a place · a laid card: click to take it back, right-click to reverse it'));
+      this.root.appendChild(px);
+      this.fit();
+      return;
+    }
     const cols = el('div', 'cols'), reading = el('div', 'reading'), side = el('div', 'side');
     this.loadout.mount(reading);
     reading.appendChild(this.equipPane());
@@ -169,7 +188,7 @@ export class PneukaUI {
     side.appendChild(this.bankPane());
     cols.appendChild(reading); cols.appendChild(side);
     px.appendChild(cols);
-    px.appendChild(el('footer', '', 'X draws and stows the main · R: the sub · a tool below: click for the sub, shift for the main, or drag it onto a place · in the pocket: left click the first action, right click all of them, drag to swap · F picks up what lies on the ground'));
+    px.appendChild(el('footer', '', 'F turns the Box over (the spread) · X draws and stows the main · R: the sub · a tool below: click for the sub, shift for the main, or drag it onto a place · in the pocket: left click the first action, right click all of them, drag to swap · F picks up what lies on the ground'));
     this.root.appendChild(px);
     this.loadout.draw(); // (the reading draws once it is in the page)
     this.fit();
@@ -187,10 +206,13 @@ export class PneukaUI {
 
   invPane() {
     const box = this.box, pane = el('div', 'pane inv');
-    pane.appendChild(el('h4', '', `<span>IN THE BOX</span><span>${box.free} free</span>`));
+    const cells = this.reading.cells(), counted = new Map(this.reading.counted().map((c) => [c.i, c])), sums = this.reading.sums();
+    const lit = SUITS.filter((s) => sums[s] > 0).map((s) => `${s[0].toUpperCase()}${s.slice(1)} ${Math.round(sums[s] * 10) / 10}`).join(' · ');
+    pane.appendChild(el('h4', '', `<span>IN THE BOX</span><span>${lit ? `${lit} · ` : ''}${box.free} free</span>`));
     const grid = el('div', `grid ${RT_CLASSES.tray}`);
     box.slots.forEach((s, i) => {
-      const it = s && itemOf(s.id), d = el('div', `slot ${RT_CLASSES.slot}${it ? '' : ' empty'}`, it ? `${this.icon(s.id)}${s.n > 1 ? `<span class="n">${s.n}</span>` : ''}` : '');
+      const it = s && itemOf(s.id), cell = cells[i], hit = counted.get(i);
+      const d = el('div', `slot ${RT_CLASSES.slot}${it ? '' : ' empty'}${cell?.dark ? ' sp-dark' : SUITS.some((k) => cell?.[k] > 0) || cell?.wild ? ' sp-lit' : ''}${hit ? ` sp-counts sp-${hit.suit}` : ''}`, it ? `${this.icon(s.id)}${s.n > 1 ? `<span class="n">${s.n}</span>` : ''}` : '');
       if (it) {
         d.draggable = true;
         const acts = () => this.actions(i);

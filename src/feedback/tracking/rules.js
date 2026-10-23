@@ -30,6 +30,7 @@ import { passageRules } from './passage.js';
 import { wispRules } from './wisps.js';
 import { poolRules } from './pool.js';
 import { pairRules } from './pairs.js';
+import { spreadRules } from './spreads.js';
 import { godRules } from './god.js';
 import { lockheartRules } from './lockheart.js';
 import { raceRules } from './race.js';
@@ -57,6 +58,7 @@ export function areaRules(ctx) {
   const sea = atSea(ctx);
   poolRules(ctx); // (the pool: spent, gained, low, empty)
   pairRules(ctx); // (/pairs: the 21 cards a main and a sub make)
+  spreadRules(ctx); // (the spread on the Box's underside: said on the flip back)
   anglingRules(ctx);
   wellRules(ctx);
   railRules(sea); // (the crossing's tally, before the voyage's "You make port")
