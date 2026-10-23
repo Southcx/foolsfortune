@@ -24,7 +24,7 @@
 //
 //   game.belt.add(tool)   game.belt.get(id)   game.belt.main / .sub (ids)   game.belt.pair (pairOf(main, sub): the card)
 //   game.belt.equip(id, 'main' | 'sub', { quiet }) -> true | false (refused: the log says why)   game.belt.mayEquip(id) -> null | the reason
-//   game.belt.isWorn(id) (main or sub)   game.belt.isMain(id)   game.belt.keys(input) (X and R, once a frame on foot: main.js)
+//   game.belt.isWorn(id) (main or sub)   game.belt.isMain(id)   game.belt.keys(input) (X and R, once a frame on foot: main.js; event tool.lend)
 //   game.belt.inHand   game.belt.mayDraw(tool)   game.belt.draw(tool)   game.belt.hands (Dexterity: every draw and stow times this)
 //   game.belt.allows('kick')   game.belt.others(tool)   game.belt.hipSide(id)   game.belt.hideWorn()   game.belt.only (the Anim Lab's)
 // ---------------------------------------------------------------------------------------
@@ -80,11 +80,15 @@ export class ToolBelt {
     if (!inp?.enabled || g.god?.controlling || g.windowOpen?.() || g.proneHolster?.busy) return;
     const busy = !!g.techs?.active?.handsBusy || !!g.techs?.get?.('carry')?.item;
     if (inp.wasPressed(DRAW_KEY)) {
-      const h = this.inHand, m = this.get(this.main);
-      if (h) h.stow();
-      else if (m && !busy) this.draw(m);
+      const m = this.get(this.main);
+      if (m && (m.wants || m.drawT > 0.02)) m.stow(); // (the main out, or on its way: away)
+      else if (m && !busy) this.draw(m); // (anything else still going back, an old main just set aside, is put away by the draw)
+      else this.inHand?.stow();
     }
-    if (inp.wasPressed(LEND_KEY) && !busy) this.get(this.sub)?.lend?.();
+    if (inp.wasPressed(LEND_KEY) && !busy) {
+      const t = this.get(this.sub);
+      if (t?.lend?.()) this.game.events?.emit('tool.lend', { tool: t.id, main: this.main, by: 'courier' }); // (each verb says what it did by its own event: shot.fire, hook.fire, flash.fire ...)
+    }
   }
 
   /** The hip a hip tool hangs at now ('L' | 'R'): its own (HIP_SIDE), unless the other worn hip tool comes first in the belt's order and

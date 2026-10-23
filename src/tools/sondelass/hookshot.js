@@ -12,6 +12,8 @@
 //   nothing            the line is drawn back.
 //
 //   LMB fire (while nothing is out) · hold LMB reel · hold RMB pay out · tap RMB let go · Space (in the air) jump off
+//   LENT (the Sondelass as the sub, R: tools/belt.js): fired from the hand, it reels on its own (Zelda's Hookshot): an anchor draws them
+//   to it, a catch is brought to them and dropped; R again lets go
 //
 // The rope is a real one (vfx/rope.js): a chain that hangs with slack and pulls straight when loaded, glowing amber with its load.
 // It costs a little Lachryma to throw and a little to reel. The grapnel is drawn large (2.4x the one on the tool) with a light on it
@@ -27,6 +29,7 @@ const HOOKABLE = groups(0xffff, G.STATIC | G.PROP | G.CRITTER); // (what the gra
 import { sfx } from '../../audio/sfx.js';
 import { T } from '../../core/config.js';
 import { FishingLine } from './angling/line.js';
+import { lendHand } from '../lend.js';
 
 const RANGE = 40, SPEED = 90, COST = 2, GRAP = 2.4, HEAVY = 60, CHEST = 0.9;
 const AMBER = 0xffb27a, LOAD = 0xff8a4a; // (the grapnel's glow, and the colour its rope takes on under load)
@@ -40,6 +43,7 @@ export class Hookshot {
     this.tool = tool;
     const g = tool.game;
     this.flying = false; this.phase = 'idle'; // out | held | back
+    this.lent = false; // (fired as the sub's verb: from the hand, reeling on its own)
     this.aimBlend = 0;
     this.aimDir = new THREE.Vector3(0, 0, 1);
     this.cool = 0;
@@ -65,7 +69,17 @@ export class Hookshot {
 
   cancel() {
     if (this.att) this.release('stow');
-    this.flying = false; this.phase = 'idle'; this.grap.visible = false; this.line.hide(); this.aimBlend = 0;
+    this.flying = false; this.phase = 'idle'; this.grap.visible = false; this.line.hide(); this.aimBlend = 0; this.lent = false;
+  }
+  /** Where the line leaves from: the tool's tip, or the hand when lent. */
+  from(out) { return this.lent ? lendHand(this.game, out) : this.tool.tip(out); }
+  /** The sub's Grapple (R): fired from the hand; R again while it is out lets go. */
+  lend() {
+    if (this.flying || this.att) { if (this.lent) { if (this.att) this.release('tap'); else this.phase = 'back'; } return false; }
+    if (this.cool > 0) return false;
+    this.lent = true; this.fire();
+    if (!this.flying) this.lent = false;
+    return this.flying;
   }
 
   /** The Courier's chest: the point the line pulls. */
@@ -108,7 +122,7 @@ export class Hookshot {
     const g = this.game;
     if (!g.lachryma.spend(COST, 'hook')) return;
     this.tool.model.group.updateMatrixWorld(true);
-    this.tool.tip(this.pos);
+    this.from(this.pos);
     const r = this.probe();
     this.result = r;
     if (r) this.target.copy(r.point);
@@ -126,21 +140,21 @@ export class Hookshot {
     if (!this.flying) return;
     this.t += dt; this.latchT += dt;
     this.tool.model.group.updateMatrixWorld(true);
-    this.tool.tip(_t);
+    this.from(_t);
     let helix = 0, taut = 0.2, endPt = this.pos;
     if (this.phase === 'out') {
       _d.copy(this.target).sub(this.pos);
       const d = _d.length(), step = SPEED * dt;
       if (d <= step) { this.pos.copy(this.target); this.arrive(); }
       else this.pos.addScaledVector(_d.multiplyScalar(1 / d), step);
-      const total = this.tool.tip(_e).distanceTo(this.target) || 1;
+      const total = this.from(_e).distanceTo(this.target) || 1;
       helix = Math.min(1, 0.4 + this.pos.distanceTo(_t) / Math.max(4, total) * 0.8) * (this.phase === 'out' ? 1 : 0);
       taut = 0.7;
       this.spin += dt * 28;
     } else if (this.phase === 'back') {
       _d.copy(_t).sub(this.pos);
       const d = _d.length(), step = SPEED * 1.5 * dt;
-      if (d <= step + 0.3) { this.flying = false; this.phase = 'idle'; this.grap.visible = false; this.line.hide(); this.cool = 0.15; return; }
+      if (d <= step + 0.3) { this.flying = false; this.phase = 'idle'; this.grap.visible = false; this.line.hide(); this.cool = 0.15; this.lent = false; return; }
       this.pos.addScaledVector(_d.multiplyScalar(1 / d), step);
       taut = 0.2; this.spin += dt * 14;
     }
@@ -261,10 +275,10 @@ export class Hookshot {
     const a = this.att;
     if (!a) return;
     const P = this.tool.P, inp = P.input, g = this.game, C = T.tech.grapple || {};
-    // the hands: LMB reels, RMB pays out (a tap lets go)
-    const ok = this.tool.held && this.tool.form === 'hook' && inp.enabled;
-    this.reeling = ok && inp.isDown('Mouse0') && g.lachryma.available > 0.2;
-    const rDown = ok && inp.isDown('Mouse2');
+    // the hands: LMB reels, RMB pays out (a tap lets go); lent, it reels on its own and the mouse is the main's
+    const ok = ((this.tool.held && this.tool.form === 'hook') || this.lent) && inp.enabled;
+    this.reeling = ok && (this.lent || inp.isDown('Mouse0')) && g.lachryma.available > 0.2;
+    const rDown = ok && !this.lent && inp.isDown('Mouse2');
     if (rDown) this.rT += dt;
     else { if (this.rWas && this.rT < 0.2) { this.rWas = false; this.rT = 0; this.release('tap'); return; } this.rT = 0; }
     this.rWas = rDown;
@@ -339,6 +353,7 @@ export class Hookshot {
         body.wakeUp?.();
       }
       this.hold = dd < 0.8;
+      if (this.lent && this.hold) { this.release('delivered'); return; } // (lent: brought to them, and dropped)
     } else {
       this.reelV = Math.max(0, this.reelV - 60 * dt);
       this.hold = false;

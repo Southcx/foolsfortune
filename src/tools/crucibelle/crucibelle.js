@@ -249,6 +249,13 @@ export class Crucibelle extends HeldTool {
     g.ai?.stimuli.emit('noise', P.pos, { radius: 20, strength: 0.7, by: 'courier' });
     g.events?.emit('crucibelle.toll', { onBeat: on, n, move: c?.id ?? 'toll', by: 'courier' });
   }
+  /** The sub's Toll (R: tools/belt.js): one toll at once from where the bell hangs, the stagger round them, TOLL.cool apart as in the air. */
+  lend() {
+    if (!this.enabled || this.airCool > 0) return false;
+    this.airCool = TOLL.cool; this.pressAt = this.now(); this.P.bodyYaw = this.P.yaw;
+    this.toll();
+    return true;
+  }
   /** A gesture of the bell's own (a note, the fever's peak, a song cast): played over the stance, cut off by the next. */
   gesture(clip, o) { this.gestures?.play(clip, o); }
 

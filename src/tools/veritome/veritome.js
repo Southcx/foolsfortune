@@ -49,6 +49,7 @@ import { Moveset } from '../moveset.js';
 import { Gestures, Crossfade, standLegs } from '../toolbody.js';
 import { unwrite, inscribed } from '../soulbrush/inscribe.js';
 import { TIDES, TIDE_LEN } from '../sondelass/angling/species.js';
+import { lendHand } from '../lend.js';
 
 const HOLD = T.weapon.drawGrab;
 const smooth = (a, b, t) => { const x = THREE.MathUtils.clamp((t - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); };
@@ -99,6 +100,8 @@ export class Veritome extends Tech {
   // ---------------------------------------------------------------- what the rest of the game asks
   get engaged() { return this.drawT > 0.001 || this.readW > 0.001; }
   get toolOut() { return this.drawTarget > 0 || this.drawT > 0.02; }
+  /** The sub's Flash (R: tools/belt.js): the light from the hand, the lens never raised. */
+  lend() { return this.enabled && !!this.game.flash?.fire({ from: lendHand(this.game, new THREE.Vector3()) }); }
   get held() { return this.drawT >= 1; }
   get blocksFire() { return this.toolOut; }
   get stance() { return this.toolOut && (this.lens || this.moves.busy); }

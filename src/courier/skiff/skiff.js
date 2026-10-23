@@ -197,7 +197,6 @@ export class Skiffing extends Tech {
     this.animT = 0; this.popT = null; this.landT = null; this.rider.dy = 0;
     this.skiff.load(this.game); this.skiff.visible = true; // (the model is asked for on the way into the Dunes, tick; a ride begun before it is parsed rides an undrawn board)
     this.wake.clear();
-    this.game.hud.el.cross && (this.game.hud.el.cross.style.display = 'none'); // (no gun, no reticle)
     this.sfxLoop = sfx.skiffLoop?.();
     this.game.events?.emit('skiff.start', { by: 'courier' });
     if (this.phase === 'summon' || this.phase === 'mount') this.game.events?.emit(`skiff.${this.phase}`, { by: 'courier' });
@@ -209,7 +208,6 @@ export class Skiffing extends Tech {
     if (!this.parked) this.skiff.visible = false;
     this.wake.clear();
     this.unit = null;
-    this.game.hud.el.cross && (this.game.hud.el.cross.style.display = '');
     this.sfxLoop?.stop(); this.sfxLoop = null;
     const P = this.P;
     if (this.phase === 'ride') { P.vel.x = this.v.x * 0.5; P.vel.z = this.v.z * 0.5; }

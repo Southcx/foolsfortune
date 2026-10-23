@@ -80,7 +80,7 @@ export const SEA_AT = { x: -3000, y: -420, z: -2000 };
 const _sh = { pos: new THREE.Vector3(), look: new THREE.Vector3(), fov: 0 };
 const _up = new THREE.Vector3(), _bx = new THREE.Vector3(), _by = new THREE.Vector3(), _bz = new THREE.Vector3(), _Y = new THREE.Vector3(0, 1, 0), _m4 = new THREE.Matrix4();
 /** Aboard, what is the Courier's on foot steps out of the picture (as in a shot: vfx/cinema.js); the log stays, it carries what is said. */
-const CSS = 'body.aboard #speed, body.aboard #course, body.aboard #locks, body.aboard #crosshair { opacity: 0 !important; }';
+const CSS = 'body.aboard #speed { opacity: 0 !important; }';
 
 export class Emocean {
   constructor(game) {

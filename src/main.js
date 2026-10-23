@@ -1093,7 +1093,7 @@ async function main() {
   game.present.shade(true); // (shaded as they will be drawn: compiled flat, then turned smooth by the pass a second later, every program was built twice)
   try { await renderer.compileAsync(scene, camera); } catch (e) { console.warn('shader warm-up', e); }
   game.lachrimeterTube = new LachrimeterTube(game); game.spiritualLink = new SpiritualLink(game); game.psygunCylinder = new PsygunCylinder(game); game.psygunReticle = new PsygunReticle(game); game.psygunScope = new PsygunScope(game); // (each psygun's crosshair, the Carbine's lens: vfx/psygunreticle.js, vfx/psygunscope.js) // (the tool UIs' thread to its bulb: vfx/spirituallink.js; the psygun's cylinder on it: vfx/psyguncylinder.js)
-  game.sondelassGuard = new SondelassGuard(game); // (the Sondelass's own UI, board v9: it hides the tool strip and the string row while it stands)
+  game.sondelassGuard = new SondelassGuard(game); // (the Sondelass's own UI, board v9)
   game.lockheartReliquary = new LockheartReliquary(game); // (the Lockheart's own UI, board v10 in its B orientation: vfx/lockheartreliquary.js)
   game.soulBrushDesk = new SoulBrushDesk(game); // (the Soul Brush's own UI, board v11: the scholar's desk, vfx/soulbrushdesk.js)
   game.sightLook = new SightLook(game); game.creatureTags = new CreatureTags(game); game.titlePlacard = new TitlePlacard(game); game.sealImprints = new SealImprints(game); game.sealPicker = new SealPicker(game); // (the overlay's instruments, tags, placard and seal: OVERLAY.md 10.5c, HANKO.md)
@@ -1422,9 +1422,7 @@ async function main() {
     diag.update(game.rawDt);
 
     hud.update(dt, {
-      spreadDeg: weapon.spreadDeg(player), fov: camera.fov,
-      reloadT: weapon.reloadT, fp: player.fpWeight > 0.5, ads: weapon.adsEase,
-      charge: weapon.charge, gunOut: weapon.drawT > 0.05 || !!weapon.wantShell, // (a boolean: undefined would read as the HUD's default, out)
+      charge: weapon.charge,
       speed: Math.hypot(player.vel.x, player.vel.z),
       move: (techs.label() || (player.wallrun ? 'WALLRUN' : player.sliding ? 'SLIDE' : player.mantle ? 'MANTLE' : player.dashT > 0 ? 'DASH' : player.crouching ? 'CROUCH' : player.sprinting ? 'SPRINT' : player.walking ? 'WALK' : !player.grounded ? 'AIR' : ''))
       , debug: diag.mode > 0,

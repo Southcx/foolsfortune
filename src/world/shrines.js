@@ -60,7 +60,7 @@ export class Shrines {
     const f = new THREE.Vector3(Math.sin(s.yaw), 0, Math.cos(s.yaw));
     const at = s.model.cradleSpots?.()?.threshold || s.pos.clone().addScaledVector(f, 1.2);
     s.threshold = C.add({ id: `shrine.${s.id}.threshold`, kind: 'threshold', book: `shrine.${s.id}`, pos: at, at: at.clone().setY(s.pos.y), yaw: s.yaw, reach: 1.2, hold: true,
-      page: () => !!this.menu?.open || s.inward > 0, // (its page, or the arch's walk-in to the garden after it)
+      page: () => !!this.menu?.open || s.inward > 0 || (!!g.pneuka?.atBank && !!g.pneukaUI?.open), // (its page, the arch's walk-in to the garden after it, or THE BANK's window)
       onSeal: () => { this.find(s); this.rest(s.id); s.model.wake?.(); this.open(s); }, // (the gate wakes: Calissa's torii, vfx/shrine.js)
       onUnseal: () => { s.model.wake?.(false); if (this.menu?.open && this.page === s.id) this.menu.close(); } });
   }
@@ -153,6 +153,7 @@ export class Shrines {
       const btn = (title, sub, run) => { const d = el('div', 'room', `<span class="n">◇</span><span><b>${title}</b><s>${sub}</s></span>`); d.onclick = run; box.appendChild(d); };
       const inner = el('div', 'rooms'); // (the Spirit Garden, through the arch: the words a placeholder for Espada's)
       { const d = el('div', 'room', `<span class="n">❀</span><span><b>${g.realm?.name ? g.realm.name.toUpperCase() : 'YOUR SPIRIT GARDEN'}</b><s>through the arch</s></span>`); d.onclick = () => this.inward(s); inner.appendChild(d); }
+      { const d = el('div', 'room', '<span class="n">▤</span><span><b>THE BANK</b><s>your Pneuka Box, with the Veritome\'s Book beside it</s></span>'); d.onclick = () => this.bank(s); inner.appendChild(d); } // (PNEUKA-BOX.md 5: the bank is a place, Breath of the Wild's and OSRS's)
       for (const t of this.list) if (t.id !== s.id && this.found.has(t.id)) btn(t.name, 'travel there', () => this.travel(t.id));
       const unfound = SHRINES.filter((t) => !this.found.has(t.id)).length;
       for (const e of [el('div', 'grp', 'YOU REST HERE'), inner, el('div', 'grp', 'TRAVEL'), box, el('div', 'grp', unfound ? `${unfound} NOT YET FOUND` : 'EVERY SHRINE FOUND')]) im.appendChild(e);
@@ -168,6 +169,13 @@ export class Shrines {
         im.appendChild(el('div', 'grp', `THE PARTY (${P.list.length} OF ${P.cap})`)); im.appendChild(rows);
       }
     }, { title: s.name.toUpperCase(), sub: 'click to choose · F closes' });
+  }
+
+  /** THE BANK: the Pneuka Box opened with the Book beside it (pneuka/box.js openBank), the Courier kept in the threshold while it is open. */
+  bank(s) {
+    const g = this.game;
+    this.menu?.close();
+    if (g.pneuka?.openBank()) g.events?.emit('shrine.bank', { shrine: s.id, by: 'courier' });
   }
 
   /** The Spirit Garden, entered at a Shrine and nowhere else (progress/garden.js: its slots and beds; the look is Calissa's to come). */

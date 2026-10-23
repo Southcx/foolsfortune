@@ -326,12 +326,14 @@ export class Lockheart extends HeldTool {
   }
 
   // ---------------------------------------------------------------- every frame
+  /** The sub's Gulp (R: tools/belt.js): the Lockheart's parry window opened from where it hangs, whatever is in the hands (courier/parries.js). */
+  lend() { return this.enabled && !!this.game.parries?.lend('lockheart'); }
   always(dt, raw) {
     const g = this.game;
     if (this.drawTarget === 0 && this.moves.busy) this.moves.cancel(); // (put away mid-flail: let go now, not frozen mid-swing until the holster)
     this.coffin(); this.charmKeys();
     // (the overflow: hooked once the pool exists)
-    if (!this.hooked && g.lachryma) { this.hooked = true; g.lachryma.on('overflow', (e) => { if (e.source !== 'lockheart') this.feed(e.amount * 0.8, 'overflow'); }); }
+    if (!this.hooked && g.lachryma) { this.hooked = true; g.lachryma.on('overflow', (e) => { if (e.source !== 'lockheart' && this.worn) this.feed(e.amount * 0.8, 'overflow'); }); } // (its passive, worn as the main or the sub: progress/toolpairs.js SUB_GIFTS)
     this.hooverW = THREE.MathUtils.damp(this.hooverW, this.hoovering && this.held ? 1 : 0, 10, dt);
     if (this.hooverW > 0.05) this.hoover(dt);
     this.wheel.update(raw);
