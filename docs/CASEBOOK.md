@@ -826,5 +826,5 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 
 278. **A rotation set whole keeps the turns composed before it.** A branch that sets an orientation from a frame (a rail's,
     a surface's) replaces the quaternion; any turn stacked on earlier (a boardslide's yaw) is multiplied back on after it.
-NEW:pick-the-whole-target. **A pick target is the whole shape the player aims at, not its drawing.** An outline (a hollow frame, a
+279. **A pick target is the whole shape the player aims at, not its drawing.** An outline (a hollow frame, a
     ring) raycasts only on its strips: pick against a solid quad behind it, or fall back to the nearest anchor within reach.
