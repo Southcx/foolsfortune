@@ -4,7 +4,7 @@
 // the title's fall ("they hang in the fall, cards turning round them", title/scene.js): the title's own Courier, borrowed and dressed
 // by the vessel. Round them the reading view (Calissa's look, vfx/readingview.js: the orbit, the cloth, the hand, the fall) is set with
 // its origin at their feet and their front toward the camera. The camera rises through the cloth into the reading, and turns down
-// through it again on the way back.
+// through it again on the way back. The arrow keys orbit it round the Courier for a shot, as they turn the camera in play.
 //
 // It opens on `spread.flip { under: true }` while the Box's window is open, and closes on the flip back or on the window shutting (which
 // turns the Box back with it, so `laidSpread.under` says what is shown). The window draws the reading's state into the view
@@ -14,20 +14,28 @@
 // in the dark on a stained-glass floor).
 //
 //   game.readingScene = new ReadingScene(game)   .active  .k (0 shut .. 1 open)   .update(rawDt)   .render()
-//   .pickAt(x, y) -> the view's pick ({ kind: 'place' | 'hand', id } | null)   .anchors() -> the view's places on screen   (x, y: client px)
+//   .orbit (the arrow keys' yaw and elevation round the Courier)   .anchors() -> the view's places on screen
+//   .pickAt(x, y) -> the view's pick ({ kind: 'place' | 'hand', id } | null)   (x, y: client px)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { T } from '../core/config.js';
 
 const OPEN = 0.7; // (real s the camera takes through the cloth)
 const RISE = 0.15; // (of the view's height: the reading lifted clear of the Box's window, which falls to a bar along the bottom while it shows)
 /** The camera at rest (in front, over the heart, looking down enough that the cloth shows past the hand), and where it rises from. */
 const AT = { pos: [0, 2.4, 6.6], look: [0, 1.0, 0], from: [0, -1.9, 0.6], fromLook: [0, -4.5, 0] };
+const DEG = Math.PI / 180, OFF = [AT.pos[0] - AT.look[0], AT.pos[1] - AT.look[1], AT.pos[2] - AT.look[2]];
+/** The arrow keys orbit the camera round the Courier for a shot (docs/plans/PHOTO-MODE.md step 1, the world's own rates and ease,
+ *  courier/player.js ARROWS; the setting visual.arrowCamera): left and right all the way round, up and down kept between just under
+ *  the level of the heart (the cloth stays under their feet) and high over them. */
+const ARROWS = { yaw: 90 * DEG, pitch: 60 * DEG, ease: 0.15, low: -8 * DEG, high: 70 * DEG, r: Math.hypot(...OFF), elev: Math.atan2(OFF[1], Math.hypot(OFF[0], OFF[2])) };
 const smooth = (x) => { x = THREE.MathUtils.clamp(x, 0, 1); return x * x * (3 - 2 * x); };
 const _ray = new THREE.Raycaster(), _ndc = new THREE.Vector2(), _a = new THREE.Vector3(), _b = new THREE.Vector3(), _l = new THREE.Vector3();
 
 export class ReadingScene {
   constructor(game) {
     this.game = game; this.active = false; this.k = 0; this.dir = 0; this.t = 0; this.ch = null; this.was = null;
+    this.orbit = { yaw: 0, elev: ARROWS.elev, ax: 0, ay: 0 }; // (the arrow keys' orbit round the Courier)
     const S = (this.scene = new THREE.Scene());
     S.background = new THREE.Color(0x0b0614); S.fog = new THREE.Fog(0x1a0f2a, 9, 30);
     this.camera = new THREE.PerspectiveCamera(46, innerWidth / innerHeight, 0.05, 80);
@@ -46,6 +54,7 @@ export class ReadingScene {
     if (ch && !this.ch) { this.ch = ch; this.was = { p: ch.root.position.clone(), r: ch.root.rotation.clone() }; this.scene.add(ch.root); ch.root.position.set(0, 0, 0); ch.root.rotation.set(0, 0, 0); this.game.vessel?.dress?.(ch); }
     if (this.view?.group) this.view.group.rotation.y = 0; // (the Courier's yaw: they face the camera)
     this.view?.enter?.();
+    Object.assign(this.orbit, { yaw: 0, elev: ARROWS.elev, ax: 0, ay: 0 });
     this.active = true; this.dir = 1; this.t = 0;
   }
   /** The flip back: the cards fly off, the camera turns down through the cloth, then the world. */
@@ -68,9 +77,17 @@ export class ReadingScene {
     const ch = this.ch;
     if (ch) { ch.pose_ ||= ch.clips.pose(); ch.root.position.y = Math.sin(this.t * 0.8) * 0.05; ch.applyPose(ch.clips.sample(ch.clips.clips.jumpLoop ? 'jumpLoop' : 'idle', this.t * 0.35, ch.pose_, true)); }
     this.view?.update?.(raw);
+    // the arrow keys: the orbit eased in as the world's arrows are (left turns the view left, up tilts it up, as in play)
+    const inp = this.game.input, O = this.orbit, ar = inp && T.visual.arrowCamera !== false && !this.game.log?.typing, ek = Math.min(1, raw / ARROWS.ease);
+    O.ax += ((ar ? (inp.isDown('ArrowLeft') ? 1 : 0) - (inp.isDown('ArrowRight') ? 1 : 0) : 0) - O.ax) * ek;
+    O.ay += ((ar ? (inp.isDown('ArrowUp') ? 1 : 0) - (inp.isDown('ArrowDown') ? 1 : 0) : 0) - O.ay) * ek;
+    O.yaw += O.ax * ARROWS.yaw * raw;
+    O.elev = THREE.MathUtils.clamp(O.elev - O.ay * ARROWS.pitch * raw, ARROWS.low, ARROWS.high);
+    const ce = Math.cos(O.elev) * ARROWS.r;
+    _b.set(AT.look[0] + Math.sin(O.yaw) * ce, AT.look[1] + Math.sin(O.elev) * ARROWS.r, AT.look[2] + Math.cos(O.yaw) * ce); // (the camera at rest, orbited)
     // the camera: up through the cloth into the reading (and down again on the way back)
     const e = smooth(this.k), C = this.camera;
-    C.position.copy(_a.fromArray(AT.from).lerp(_b.fromArray(AT.pos), e));
+    C.position.copy(_a.fromArray(AT.from).lerp(_b, e));
     C.lookAt(_a.fromArray(AT.fromLook).lerp(_l.fromArray(AT.look), e));
     C.setViewOffset(innerWidth, innerHeight, 0, innerHeight * RISE * e, innerWidth, innerHeight); // (picks and anchors read the same offset)
   }
