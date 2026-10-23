@@ -814,3 +814,6 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 
 NEW:gate-status-unpiped. **A gate's status is the gate's, not its pipe's.** `check | tail && push` pushes on a failure (the pipe's
     status is `tail`'s); run the gate unpiped, or under `set -o pipefail`, before anything chained on it.
+
+NEW:set-down-on-a-floor. **A body set down somewhere else is set on a floor found there, or not moved.** A point picked or carried
+    (a portal's end, a fold's patch) is not ground; look down from above it for a solid face turned up, and refuse when there is none.

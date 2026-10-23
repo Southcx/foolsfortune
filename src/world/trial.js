@@ -30,7 +30,6 @@ const COURSE = [
 ];
 // the gong that starts it (a thing in the room, not a key: every game in a room is begun from something in that room)
 const GONG = new THREE.Vector3(-2.6, 0, -12.6);
-const fmt = (t) => `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, '0')}`;
 
 export class Trial {
   constructor(game) {
@@ -45,14 +44,7 @@ export class Trial {
     // the count is rings on the start line that close one by one, and a ring that bursts on GO (no digits: docs/ART.md precepts 6, 7)
     this.rings = new CountRings(game.scene);
     this.xray = makeGlowOutline(PALETTE.glow, 0.005, true);
-    this.el = {
-      box: document.getElementById('trial'),
-      time: document.querySelector('#trial .time'),
-      count: document.querySelector('#trial .count'),
-      medals: document.querySelector('#trial .medals'),
-      big: document.getElementById('trialbig'),
-      arrow: document.getElementById('trialarrow'),
-    };
+    this.el = { arrow: document.getElementById('trialarrow') }; // (the time, the count and the medals are the log's: trial.jar, trial.finish -> tracking.js)
     this.buildGong();
     game.interact?.add('trial', (P) => {
       const d = Math.hypot(P.pos.x - GONG.x, P.pos.z - GONG.z);
@@ -119,7 +111,6 @@ export class Trial {
     this.lastBreak = -9;
     this.countdown = 3;
     this.state = 'countdown';
-    this.el.box.style.display = 'block';
     { // (on the start line: a few metres before their eyes, the way they face)
       const f = new THREE.Vector3(Math.sin(P.yaw), 0, Math.cos(P.yaw));
       this.rings.start(P.pos.clone().addScaledVector(f, 3.2).setY(P.pos.y + 1.5), 3);
@@ -134,7 +125,6 @@ export class Trial {
     this.state = 'off';
     this.clearJars();
     this.rings.stop();
-    this.el.box.style.display = 'none';
     this.el.arrow.style.display = 'none';
     this.game.player.freeze = false;
   }
@@ -170,7 +160,7 @@ export class Trial {
       this.game.save?.dirty('trial');
     }
     this.state = 'done';
-    // (the time is the log's to say: trial.finish -> tracking.js; the board keeps it)
+    // (the time is the log's to say: trial.finish -> tracking.js)
     this.game.events?.emit('trial.finish', { time, medal, pb, jars: this.jars.length });
     sfx.mended(1);
     this.el.arrow.style.display = 'none';
@@ -181,11 +171,9 @@ export class Trial {
     // the gong: struck with F (when it is the thing the chevron is on), it swings and starts the trial
     if (g.interact?.cur?.id === 'trial' && P.peekLatch?.('KeyF')) { P.latch('KeyF'); this.swing = 1; sfx.gong?.() ?? sfx.clonk?.(1); this.start(); return; }
     if (this.swing > 0) { this.swing = Math.max(0, this.swing - dt * 0.7); this.disc.rotation.z = Math.sin(this.swing * 18) * 0.25 * this.swing; }
-    // a trial belongs to its room: leave the workshop and it is called off (and its board with it)
-    if (this.state !== 'off' && zoneOf(P.pos) !== 'workshop') { this.abort(); this.el.big.style.display = 'none'; return; }
+    // a trial belongs to its room: leave the workshop and it is called off (and its jars with it)
+    if (this.state !== 'off' && zoneOf(P.pos) !== 'workshop') { this.abort(); return; }
     this.rings.update(dt, g.camera);
-    this.bigT -= dt;
-    if (this.bigT <= 0 && this.el.big.style.display !== 'none') this.el.big.style.display = 'none';
     if (this.state === 'off') return;
     g.player.freeze = this.state === 'countdown';
     if (this.state === 'countdown') {
@@ -200,10 +188,6 @@ export class Trial {
       }
     } else if (this.state === 'run') this.t += dt;
 
-    const M = T.trial;
-    this.el.time.textContent = fmt(this.time);
-    this.el.count.textContent = `${this.jars.length - this.left}/${this.jars.length}`;
-    this.el.medals.textContent = `GOLD ${fmt(M.gold)} · SILVER ${fmt(M.silver)} · BRONZE ${fmt(M.bronze)}${this.best !== null ? ` · BEST ${fmt(this.best)}` : ''}`;
     const pulse = 0.45 + 0.2 * Math.sin(performance.now() * 0.004);
     for (const ent of this.jars) if (ent.alive && ent.halo) ent.halo.material.opacity = pulse;
     this.glow.opacity = 0.6 + 0.3 * Math.sin(performance.now() * 0.006);

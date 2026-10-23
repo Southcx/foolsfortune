@@ -1,22 +1,20 @@
 // ---------------------------------------------------------------------------------------
-// THE HUD: the few things drawn over the world that are not the log: the psygun's crosshair (only while it is drawn) and its spread, the hitmarker, the charge arc,
-// the speed (F3). The pool, the Blink's charges, the cubes, the shells and the Sondelass's forms are the overlay's made objects
+// THE HUD: the few things drawn over the world that are not the log: the hitmarker and the speed (F3). The crosshair and the held charge
+// are each psygun's own reticle (vfx/psygunreticle.js). The pool, the Blink's charges, the cubes, the shells and the Sondelass's forms are the overlay's made objects
 // (vfx/lachrimetertube.js with its pearls and cube plate, vfx/psyguncylinder.js, vfx/sondelassguard.js); the old DOM gauge, the
 // LACHRYMA panel (its beads and the cubes' readout), the shells row and the tool strip were retired (the owner, 2026-10-18). No words or numbers in the
 // world (CLAUDE.md, Feedback): what deserves a sentence goes to the log.
 //
 // Prior art: the PS2 shooters' minimal HUDs (Ratchet & Clank's reticle and ammo, Metroid Prime's visor kept to the edges).
 //
-//   const H = new Hud()   H.update(dt, { charge, speed, move, debug })   H.hitmarker(kill)   (the reload is the cylinder's beats: vfx/psyguncylinder.js)
+//   const H = new Hud()   H.update(dt, { speed, move, debug })   H.hitmarker(kill)   (the reload is the cylinder's beats: vfx/psyguncylinder.js)
 // ---------------------------------------------------------------------------------------
 
 export class Hud {
   constructor() {
     this.el = {
       hit: document.getElementById('hitmarker'),
-      charge: document.getElementById('charge'),
       speed: document.getElementById('speed'),
-      chargeArc: document.querySelector('#charge circle.arc'),
     };
     this.hitT = 0;
     this.peak = 0;
@@ -28,7 +26,7 @@ export class Hud {
     this.el.hit.classList.toggle('kill', !!kill);
   }
 
-  update(dt, { charge = 0, speed = 0, move = '', debug = false }) {
+  update(dt, { speed = 0, move = '', debug = false }) {
     // speedometer (with a short peak hold, for tuning movement): a tuning tool, so only with the diagnostics up (F3): live numbers are
     // not the HUD's to show (CLAUDE.md, Feedback; docs/ART.md precept 6)
     if (debug !== this.debugShown) { this.debugShown = debug; this.el.speed.style.display = debug ? '' : 'none'; }
@@ -39,9 +37,6 @@ export class Hud {
     }
     // (the crosshair is each psygun's own, in the overlay scene: vfx/psygunreticle.js; the DOM one retired, 2026-10-19)
 
-    this.el.charge.style.opacity = charge > 0 ? 1 : 0;
-    this.el.chargeArc.style.strokeDashoffset = `${(1 - charge) * 100}`;
-    this.el.charge.classList.toggle('full', charge >= 1);
     this.hitT -= dt;
     this.el.hit.style.opacity = this.hitT > 0 ? 1 : 0;
   }

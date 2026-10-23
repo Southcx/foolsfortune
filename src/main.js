@@ -232,6 +232,7 @@ import { px, PX_CSS } from './ui/pixel.js';
 import { installToon, setToon } from './render/toon.js';
 import { Glow } from './render/glow.js';
 import { ToolBelt, psygunTool, sondelassTool, soulBrushTool, veritomeTool, heldTool } from './tools/belt.js';
+import { LentModels } from './tools/lend.js';
 import { ProneHolster } from './tools/proneholster.js';
 import { Dreamvane } from './tools/dreamvane/dreamvane.js';
 import { Crucibelle } from './tools/crucibelle/crucibelle.js';
@@ -631,6 +632,7 @@ async function main() {
   // (a blow taken: they flinch, character.js; the hurting impulses are the filigree's list)
   game.events.on('courier.impulse', (e) => { if (HURT.has(e.why)) character.flinch(Math.min(1, (e.mag || 0) / 10), e.dir); });
   game.events.on('tool.lend', (e) => character.lend(e.tool)); // (the sub's verb's body: anim/lendgesture.js)
+  game.lentModels = new LentModels(game); // (and the tool at the hand where the verb needs it: tools/lend.js)
   const baubles = new Baubles(game);
   game.baubles = baubles;
   const shells = new Shells(game);
@@ -1377,6 +1379,7 @@ async function main() {
       player.headRel = character.headRel;
       weapon.fpPose(dt, camera, player, character);
       character.poseHands(handContext());
+      game.lentModels.update(game.rawDt); // (the sub's verb's tool at the hand for its window, over where it hangs: tools/lend.js)
       game.party.update(dt, acc / FIXED);
       game.guests.update(dt);
       game.meetings.update(dt);
@@ -1425,7 +1428,6 @@ async function main() {
     diag.update(game.rawDt);
 
     hud.update(dt, {
-      charge: weapon.charge,
       speed: Math.hypot(player.vel.x, player.vel.z),
       move: (techs.label() || (player.wallrun ? 'WALLRUN' : player.sliding ? 'SLIDE' : player.mantle ? 'MANTLE' : player.dashT > 0 ? 'DASH' : player.crouching ? 'CROUCH' : player.sprinting ? 'SPRINT' : player.walking ? 'WALK' : !player.grounded ? 'AIR' : ''))
       , debug: diag.mode > 0,

@@ -12,6 +12,16 @@ import * as THREE from 'three';
 
 const _o = new THREE.Vector3();
 const DROP = 0.3; // (real seconds a thing is left alone after coming out of a portal, so it does not go straight back in)
+const DOWN = { x: 0, y: -1, z: 0 };
+
+/** Where the Courier comes out beside a portal's end: on the floor found under a point a step past its rim, or null if there is none
+ *  within reach (an end picked on the island's matter below the basement put them 3 m under its floor, and they fell to killY). */
+function floorBeside(g, to, r) {
+  const x = to.x + r + 0.6, z = to.z, top = to.y + 2;
+  const hit = g.physics?.raycast({ x, y: top, z }, DOWN, 5, g.player.collider, undefined, (c) => !c.isSensor() && !c.parent()?.isDynamic());
+  if (!hit || hit.distance < 0.05 || hit.normal.y < 0.6) return null; // (none; begun inside a wall; a wall's face)
+  return new THREE.Vector3(x, hit.point.y + 0.2, z);
+}
 
 export const SPACE = {
   portal: {
@@ -40,7 +50,11 @@ export const SPACE = {
             for (const c of P.near(from, r)) pass(c, from, to, c.pos);
             P.bodies(from, r, (b, d, dx, dz, p) => pass(b, from, to, _o.set(p.x, p.y, p.z).clone()));
             const pl = g.player;
-            if (pl && !P.god.active && pl.pos.distanceTo(from) < r && (rest.get(pl) ?? 0) <= t) { rest.set(pl, t + 2); g.course?.teleport?.(to.clone().add(new THREE.Vector3(r + 0.6, 0.2, 0)), pl.yaw ?? 0); }
+            if (pl && !P.god.active && pl.pos.distanceTo(from) < r && (rest.get(pl) ?? 0) <= t) {
+              rest.set(pl, t + 2);
+              const at = floorBeside(g, to, r);
+              if (at) g.course?.teleport?.(at, pl.yaw ?? 0); // (no floor at the far end: the Courier is not taken through, casebook rule NEW:set-down-on-a-floor)
+            }
           }
           const F = g.matter?.field;
           if (F) { // (what pools in the fuller end runs through to the other)

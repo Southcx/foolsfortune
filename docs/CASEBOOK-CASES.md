@@ -3563,3 +3563,14 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   so the `&&` chain never saw the failure.
 - **Fix:** 9bbf3cb2 put the comma back; check and build passed, pushed. The gate is now run with `set -o pipefail` (or unpiped).
 - **Rule:** NEW:gate-status-unpiped
+
+### 2026-10-23 · Stress seed 4: the Courier fell out of the basement to killY (Petra, the main-and-sub round's stress run)
+- **Seen:** `node scripts/stress.mjs --seed 4`, run "#6 on cog1": `courier.respawn` 'fall' at (54.5, -100.4, -86.0), the only violation
+  in 24 runs.
+- **Cause (measured, a per-tick trace with a watcher on the Courier's position):** at tick 209 the Courier jumped 29 m in one step, from
+  `Course.teleport` called by the god hand's PORTAL (`godhand/powers/space.js`). The fuzz had opened a portal earlier in the run; its far end
+  lay at y -17.0, 3 m under the basement's floor (-14), and the Courier was set down at the end plus 0.2 m with no floor looked for, so
+  they fell from (43.9, -16.8, -78.2) to killY. Not main and sub.
+- **Fix:** the Courier comes out on the floor found under a point a step past the far rim (a ray 2 m above the end, 5 m down, solid and
+  facing up); with none, or the ray begun inside a wall, they are not taken through (`floorBeside`, space.js).
+- **Rule:** NEW:set-down-on-a-floor
