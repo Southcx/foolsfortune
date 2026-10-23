@@ -90,6 +90,7 @@ export class ReadingView {
     this.cardGeo = new THREE.PlaneGeometry(cw, ch);
     this.edgeGeo = new THREE.PlaneGeometry(cw + 0.05, ch + 0.05);
     this.frameMat = new THREE.MeshBasicMaterial({ color: 0xe8dcff, transparent: true, opacity: 0.22, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, forceSinglePass: true });
+    this.pickMat = new THREE.MeshBasicMaterial({ visible: false, side: THREE.DoubleSide }); // (drawn never, picked always)
     this.frameGeo = (() => { // (a thin frame: four strips round an empty place)
       const s = new THREE.Shape(), w = cw / 2 + 0.02, h = ch / 2 + 0.02, i = 0.012;
       s.moveTo(-w, -h); s.lineTo(w, -h); s.lineTo(w, h); s.lineTo(-w, h); s.lineTo(-w, -h);
@@ -169,8 +170,8 @@ export class ReadingView {
         node.userData.face.userData.pick = { kind: 'place', id }; this.pickables.push(node.userData.face);
       }
       let fr = this.frames.get(`${state.spread}:${id}`);
-      if (!fr) { fr = new THREE.Mesh(this.frameGeo, this.frameMat); fr.position.set(...at); fr.rotation.z = at.turn || 0; this.frames.set(`${state.spread}:${id}`, fr); this.group.add(fr); }
-      fr.visible = !L; fr.userData.pick = { kind: 'place', id }; if (!L) this.pickables.push(fr);
+      if (!fr) { fr = new THREE.Mesh(this.frameGeo, this.frameMat); fr.position.set(...at); fr.rotation.z = at.turn || 0; this.frames.set(`${state.spread}:${id}`, fr); this.group.add(fr); const q = new THREE.Mesh(this.cardGeo, this.pickMat); q.userData.pick = { kind: 'place', id }; fr.add(q); fr.userData.quad = q; } // (the frame is hollow: an unseen card behind it takes the pick)
+      fr.visible = !L; if (!L) this.pickables.push(fr.userData.quad);
     }
     for (const [k, fr] of this.frames) if (!k.startsWith(`${state.spread}:`)) fr.visible = false;
     for (const [k, node] of this.cards) if (!seen.has(k)) { this.drop(node); this.cards.delete(k); }
@@ -236,8 +237,8 @@ export class ReadingView {
   }
 
   // ---------------------------------------------------------------- time
-  enter() { this.group.visible = true; this.dir = 1; this.k = 0; for (const n of this.cards.values()) n.userData.fly = 0; }
-  leave() { this.dir = -1; }
+  enter() { this.game.ui?.want?.('readingView', true); this.group.visible = true; this.dir = 1; this.k = 0; for (const n of this.cards.values()) n.userData.fly = 0; }
+  leave() { this.dir = -1; this.game.ui?.want?.('readingView', false); } // (the HUD and the overlay step out while the Box is turned over: hideui.js)
 
   update(dt) {
     if (!this.group.visible) return;
