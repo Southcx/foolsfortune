@@ -3616,4 +3616,4 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** pneuka/underside.js `nearPlace`: a held or dragged card that touches nothing goes to the nearest place within 40 px of the
   point. Checked headless: the Priestess picked from the bar, laid in the Past by a click at its anchor. A solid pickable behind the
   frame came after (Calissa, 9edac754): `pickAt` at the middle of an empty place now returns it; the fallback stays for a near miss.
-- **Rule:** NEW:pick-the-whole-target
+- **Rule:** 279
