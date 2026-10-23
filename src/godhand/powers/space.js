@@ -53,7 +53,7 @@ export const SPACE = {
             if (pl && !P.god.active && pl.pos.distanceTo(from) < r && (rest.get(pl) ?? 0) <= t) {
               rest.set(pl, t + 2);
               const at = floorBeside(g, to, r);
-              if (at) g.course?.teleport?.(at, pl.yaw ?? 0); // (no floor at the far end: the Courier is not taken through, casebook rule NEW:set-down-on-a-floor)
+              if (at) g.course?.teleport?.(at, pl.yaw ?? 0); // (no floor at the far end: the Courier is not taken through, casebook rule 275)
             }
           }
           const F = g.matter?.field;

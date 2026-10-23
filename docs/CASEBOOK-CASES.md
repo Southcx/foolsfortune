@@ -3562,7 +3562,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Cause:** the gate ran as `npm run check 2>&1 | tail -1 && git commit ...`: a pipe's status is its last command's, and `tail` succeeds,
   so the `&&` chain never saw the failure.
 - **Fix:** 9bbf3cb2 put the comma back; check and build passed, pushed. The gate is now run with `set -o pipefail` (or unpiped).
-- **Rule:** NEW:gate-status-unpiped
+- **Rule:** 274
 
 ### 2026-10-23 · Stress seed 4: the Courier fell out of the basement to killY (Petra, the main-and-sub round's stress run)
 - **Seen:** `node scripts/stress.mjs --seed 4`, run "#6 on cog1": `courier.respawn` 'fall' at (54.5, -100.4, -86.0), the only violation
@@ -3573,4 +3573,4 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   they fell from (43.9, -16.8, -78.2) to killY. Not main and sub.
 - **Fix:** the Courier comes out on the floor found under a point a step past the far rim (a ray 2 m above the end, 5 m down, solid and
   facing up); with none, or the ray begun inside a wall, they are not taken through (`floorBeside`, space.js).
-- **Rule:** NEW:set-down-on-a-floor
+- **Rule:** 275
