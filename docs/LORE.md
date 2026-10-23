@@ -798,7 +798,7 @@ the glyph with the sound as well. A player who has read SIVA and SHAI sees that 
 and has learned *s* (Hangul's own trick: the letter is a picture of the mouth). The real lesson is phonetics.
 
 **The language** is `docs/NEURALESE.md`, ruled by the owner 2026-10-17 (the owner, 2026-10-17: "expand neuralese as an actual language, Toki Pona comes to mind"):
-124 roots and 7 particles (`npc/neuraleseroots.js`), every word cut into its cells by `npc/neuralesespelling.js`. **Neuralese meant to
+127 roots and 8 particles (`npc/neuraleseroots.js`), every word cut into its cells by `npc/neuralesespelling.js`. **Neuralese meant to
 be read is drawn at 2x** (its cell two reading lines tall at the 480-line present; the owner, 2026-10-17); at 1x it is texture.
 
 **The running hand** *(ruled final by the owner, 2026-10-18, on Calissa's board v7: "Don't change a thing about it it's perfect"; the look is
