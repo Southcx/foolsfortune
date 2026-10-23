@@ -32,7 +32,7 @@ const RANGE = 16, SIZE = 0.46;
  *  undoes anything of up to `markHp * max` (10) at once, as in Magic Cat Academy, where the last symbol pops the ghost; what has more is
  *  dealt a fresh queue and goes on. A mark costs its drawing's technique (3 to 6 Lachryma) and the paper's drain, about 5 in all: a
  *  slip jelly about 20 of the pool, struck alone, and a crowd far less each, since one mark answers every queue it heads. */
-export const SIGIL_QUEUE = { clapper: [1, 2], markHp: 2, max: 5 };
+export const SIGIL_QUEUE = { clapper: [1, 2], raider: 3, markHp: 2, max: 5 }; // (raider: a raid's clapperjar carries three, as it always has)
 
 function sigilTexture(key) {
   const S = 128, c = document.createElement('canvas'); c.width = c.height = S;
@@ -55,7 +55,7 @@ export class Sigils {
 
   /** A queue: its kind's length (SIGIL_QUEUE; a clapperjar one or two); the bolt is rare. */
   deal(c) {
-    const Q = SIGIL_QUEUE, n = this.jar(c) ? (simRand() < 0.45 ? Q.clapper[1] : Q.clapper[0]) : Math.min(Q.max, Math.max(1, Math.ceil((c.hp ?? Q.markHp) / Q.markHp)));
+    const Q = SIGIL_QUEUE, n = c.raider ? Q.raider : this.jar(c) ? (simRand() < 0.45 ? Q.clapper[1] : Q.clapper[0]) : Math.min(Q.max, Math.max(1, Math.ceil((c.hp ?? Q.markHp) / Q.markHp)));
     const pick = () => (simRand() < 0.12 ? 'bolt' : SIGIL_KEYS[Math.floor(simRand() * 4)]);
     return Array.from({ length: n }, pick);
   }
