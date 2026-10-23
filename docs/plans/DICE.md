@@ -54,8 +54,8 @@ Seven stones, as there are seven feelings, seven domains and seven sockets on th
    - **Opal's game** (a drink doubled or lost): your stones turning in the vessel.
    - **Entropy Tactics**: your palm die is your Hungry Die (section 4).
 3. **Luck reads them.** Luck (`progress/luck.js`) is measured in bits and nothing reads it yet; a roll's surprise is log2 of its sides
-   (a d20's face is 4.3 bits). Proposal: **once a game day, per so many bits of Luck, re-roll one of your stones' throws** (shown on
-   the set). Chance only, never skill (DESIGN.md 9).
+   (a d20's face is 4.3 bits). Ruled (the owner: "sure"): **one re-roll a game day, one more per 100 bits of Luck, at most 3** (`REROLL`, `rerollsOf`,
+   `progress/dice.js`), shown on the set. Waits on the first throw of your own dice to be wired. Chance only, never skill (DESIGN.md 9).
 
 ## 4. The palm die: the stones in the god hand's form
 
@@ -63,13 +63,29 @@ Courier, Pneuka Jar and god hand are one being (GLOSSARY section 1). The Courier
 them in its palm, as one die**: the owner's die in the hole of the palm. It is the set gathered into one and growing: **d4, d6, d8,
 d12, d20** (fire, earth, air, the aether, water; the d10 stays the Tree's).
 
-- **It grows on what the stones drink past full.** Overflow already goes somewhere by the set's row (`overflow`: the Lockheart's share,
-  or bled away). Proposal: **a third outlet, the palm die**: what overflows feeds the hand's die, as junk feeds Entropy Tactics' Hungry
-  Die. Brimming becomes growth. (Alternatives: the god hand's releases through the stones, SPINE.md 4; or cubes, Lachrymite fed to
-  Lachrymite, a sink.)
-- **It is the Hungry Die.** At Entropy Tactics' table it starts at the size you grew it to, within the table's cap so the table stays
+- **It condenses overflow into cubes** (the owner, ruled 2026-10-23: overflow "goes into the Lockheart first if applicable, then
+  converted into solid Lachryma cubes via the palm die"). Built: `progress/dice.js`, `game.palmDie`. The pool's overflow, in order:
+  the Lockheart drinks its share if it is worn and has room (the worn stone's `overflow.lockheart`); a stone's `bleed` share is lost
+  (amethyst's trade); **the palm die condenses the rest into cubes** at its size's rate, up to its size's cap a game day, and **grows
+  on what it has condensed**:
+
+  | die | cubes a unit of Lachryma | cap a game day | grows into the next at, condensed in all |
+  | --- | --- | --- | --- |
+  | d4 | 0.05 | 8 | 40 |
+  | d6 | 0.06 | 12 | 120 |
+  | d8 | 0.08 | 16 | 300 |
+  | d12 | 0.10 | 24 | 700 |
+  | d20 | 0.12 (the Lockheart's best) | 40 | |
+
+  **Why a cap:** a fighter overflows thousands of Lachryma a real hour; the rate alone would pay twice the aim. At the cap, the d20
+  adds 40 cubes a real hour at most (0.08 of the aim), and every profile stays under the 1.5x cap with it (`scripts/economy.mjs`: the
+  fighter 1.35x, the miner 1.36x, the treasury 1.35x, counting Pentacles on what each really sells). The d20 is some forty game days
+  of steady overflow away: the long arc. Headless: 20,000 Lachryma of overflow at a d4 condensed 8 cubes, its cap, into the ledger.
+- **The log** says a growth ("Your palm die grows into a d8."), never a condensing: the cube plate's rolling count is that avenue.
+- **Achievements:** pd1 a d8, pd2 a d20 (a title), pd3 300 cubes condensed (`progress/spreadachievements.js`).
+- **It is the Hungry Die** (ruled: both uses). At Entropy Tactics' table it starts at the size you grew it to, within the table's cap so the table stays
   fair.
-- **It answers the island.** When a Dissonance Level rises, the island's rejection rolls against your palm die: a grown die holds more
+- **It answers the island** (ruled: both uses). When a Dissonance Level rises, the island's rejection rolls against your palm die: a grown die holds more
   of it off. Chance against chance, so Luck may sway it.
 - **Its mineral is your set's.** Wear rubies, and the hand holds a ruby die.
 
@@ -97,9 +113,14 @@ dealt, and the hand that throws. Espada's to write into the world.
 - **Espada:** LORE.md 4 ("How a Courier drinks"): the stones as solid Lachryma shaped as dice; the hands.
 - **Wanda:** a stone's roll, the palm die's growth.
 
-## 8. Questions for the owner
+## 8. Ruled (the owner, 2026-10-23)
 
-1. **The solids as suits** (section 2): d4 Wands, d6 Pentacles, d8 Swords, d20 Cups, d12 the Majors, d10 the Tree?
-2. **What feeds the palm die** (section 4): overflow (proposed), the god hand's releases, or cubes?
-3. **What the palm die does** (section 4): your Hungry Die at the table, an answer to the island's rejection, or both?
-4. **Luck's re-roll** (section 3): yes?
+1. The stones are the Pneuka stones (section 1).
+2. Overflow: the Lockheart first, then the palm die condenses the rest into cubes (section 4; built).
+3. The palm die is both the Hungry Die at Entropy Tactics' table and the answer to the island's rejection (section 4).
+4. Luck's re-roll: yes (section 3; the rule built, the throw to wire).
+5. "Releases", asked: the way out of SPINE.md 4 (a tier IV caster shell, an Overload, an epic miracle), not every god power.
+
+## 9. Open
+
+1. The solids as suits (section 2), checked by Espada; the owner's nod.
