@@ -247,10 +247,18 @@ capped at 10 points:
   Placing with care is worth about three times placing at random: skill skips grind, and the careless still earn (the design law).
   The cap of 10 is reached only by a careful Horseshoe or Cross, at its best tenth, or by a spread laid for one suit. Contrary cells
   are rare (median 0, 3 at the 90th percentile), so they read as a choice made, not a tax. The numbers stand as drafted.
-- **The economy:** Pentacles at its cap lifts sales by 15%. Sales are a part of income, not all of it, so the lift on the aim (480
-  cubes a real hour) is smaller. Measured in `scripts/economy.mjs` before the numbers are set, not before.
-- **Two avenues** (CLAUDE.md): the board's glow, the four tallies on the Box's window, and the log when a tally changes ("Your spread
-  lights six Wands.").
+- **The economy:** Pentacles lifts worth when sold **and when condensed**. `scripts/economy.mjs` now prints its upper bound, as if a
+  profile's whole income were sold or condensed: at the cap (x1.15) the fighter makes 699 cubes a real hour (1.46 x the aim), the
+  miner 693 (1.44), the treasury 674 (1.40), the angler 546 (1.14), the photographer 494 (1.03). Every livelihood stays under the
+  1.5x cap even so; the true lift is smaller, since no profile sells all it earns.
+- **Two avenues** (CLAUDE.md): the board's glow and the four tallies on the Box's window; and the log, **only on what you do**
+  (Petra's catch: the Past, the Future, the Crown position and four more move by themselves, so a line a change would spam it).
+  Flipping back after a change says the new tallies once ("Your spread lights six Wands and three Cups."). `spread.tally` fires on
+  the same acts, one a suit that changed, `{ suit, from, to, spread, sums, dark, by }`: the board's state rides with it for the
+  achievements. A tally that drifts with the clock is read when it is used, never announced.
+- **The Fool's cell is named** (an 8-wide grid has no middle column): underside column 2, row 3; on the face column 5, row 3
+  (`FOOL_CELL`).
+- **The window keeps 8 by 7 at every width;** it scales down whole (`fit()`), never re-flows to 4 across.
 
 ### 7.1 An item's suit, by kind
 

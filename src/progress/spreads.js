@@ -24,6 +24,9 @@ export const COLS = 8, ROWS = 7;
 /** A flip mirrors the grid, as a board turned over does (the owner, 2026-10-23): the underside's left lights the face's right. */
 export const MIRROR = true;
 export const cellIndex = (c, r) => r * COLS + c;
+/** The Fool's cell (the significator's, under the Celtic Cross's Present): an 8-wide grid has no middle column, so it is named. On the
+ *  underside column 2, row 3; on the face, mirrored, column 5, row 3. */
+export const FOOL_CELL = { under: [2, 3], face: [MIRROR ? COLS - 1 - 2 : 2, 3] };
 
 export const SUITS = ['wands', 'cups', 'swords', 'pentacles'];
 /** The elemental dignities: the two contrary pairs. Every other meeting is friendly. */
