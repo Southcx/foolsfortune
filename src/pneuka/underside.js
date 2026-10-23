@@ -18,7 +18,8 @@ import { OPEN_AT } from './reading.js';
 
 const ROMAN = ['0', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI'];
 const BY_ID = Object.fromEntries(ARCANA.map((A, n) => [A.id, { ...A, n }]));
-/** Placeholder colours for the suits until Calissa dresses the page (hers in vfx/readingview.js SUIT_LOOK). */
+/** Placeholder colours for the suits. Calissa's d3412376 (ui/undersidelook.js) dresses the page: swap this for `UNDERSIDE_LOOK.suits`
+ *  once it reaches main (her ask, 2026-10-23: one palette with the reading view's SUIT_LOOK); the wild purple stays until the film has a CSS. */
 const SUIT_CSS = { wands: '#ff6a2a', cups: '#3fa8d8', swords: '#cfd8ff', pentacles: '#e0b040', wild: '#b58cff' };
 const NAME = { wands: 'Wands', cups: 'Cups', swords: 'Swords', pentacles: 'Pentacles', wild: 'wild' };
 const CELL = 46; // (px a cell of the cloth)
