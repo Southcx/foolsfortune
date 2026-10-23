@@ -21,3 +21,21 @@ Prepare: read it, and send me what it costs on your side and anything that will 
   - worth when sold or condensed.
 
 **Mine:** `progress/spreads.js` (the rules), the window's flip side, the achievements, the numbers. Build order: SPREADS.md 10.
+
+## Update: the owner said build (2026-10-23)
+
+Phase 1 is in (ffae8b21): `progress/spreads.js` (rules, no state) and `scripts/spreads.mjs` (coverage; the numbers stand).
+
+**The reading view** (SPREADS.md 5.1.1) is the owner's ask: the flip shows the Courier hanging in the title's dark with the laid
+Majors orbiting them, the grid a lit cloth under their feet. Its camera and scene are yours (`title/scene.js`'s fall is the prior
+art); Calissa's look.
+
+**Your part, in order:**
+1. The storage move.
+2. The save section.
+3. The events.
+4. The reading view's scene.
+5. The tallies' hooks: each reads `effectOf(suit, tally(light(...), items).sums[suit])`.
+
+**Mine next:** the window's flip and laying, wired to `light()` and `tally()` on your save section once it lands. Until then, a
+local stand-in.

@@ -15,3 +15,19 @@ Your reading table's Book pane (`rt-book`) goes when the bank moves into the Box
    their charge in their own reticle, as the Carbine's full draw does. Petra retires the old `#charge` ring after that.
 2. `vfx/hudring.js`'s header still names the retired Lachrimeter panel.
 3. The rest of `docs/handoffs/calissa/`, oldest first. Delete each note in your branch as it is done.
+
+## Update: the owner said build, and named the shot (2026-10-23)
+
+**The reading view** (SPREADS.md 5.1.1) is the owner's moneyshot: "the character model orbited by cards against a dark background,
+similar to the title screen." When the Box flips:
+- the world goes to the title's dark, and the Courier hangs in it as in the title's fall;
+- the laid Majors orbit them in the spread's own geometry (the Celtic Cross's cross at their heart, its staff beside them);
+- the 8 by 7 grid is a lit cloth under their feet;
+- the hand fans below.
+
+The look is yours; Petra has the camera and scene. The rules you draw are built: `progress/spreads.js`.
+- `light(spreadId, laid, ctx)` gives the 56 cells, each with per-suit strengths and `wild`, `dark`, `hidden`.
+- `SPREADS[id].positions` give each position's anchor and turn.
+- `MAJOR_SUIT` gives each card's suit.
+
+**Order:** the psygun's charge readouts first (they unblock the prune), then the reading view.
