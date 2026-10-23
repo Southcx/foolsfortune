@@ -39,3 +39,15 @@ art); Calissa's look.
 
 **Mine next:** the window's flip and laying, wired to `light()` and `tally()` on your save section once it lands. Until then, a
 local stand-in.
+
+## Later the same day: three modifiers over the tallies (SPREADS.md 11; the owner: "go right ahead")
+
+The rules are built in `progress/spreads.js`; the wiring is yours (laidspread.js):
+- `light(spread, laid, { ...ctx, dayCard: dayCard(today()) })`: the day's card doubles its strength where it is laid.
+- `tally(cells, items, { season: seasonOf().id })`: the season's suit x1.25 (`SEASON_SUIT`: Pentacles spring, Cups summer, Wands
+  autumn, Swords winter, the owner's). It now returns `court` too (`{ id, rank, suit, lifts, label }` or null), and caps the court's
+  `lifts` suit at 12 points, the others at 10. `effectOf` clamps at 12.
+- Keep `court` on the laid spread; tell `spread.court { from, to, by }` (ids like `queen.wands`, or null) when it changes on what you
+  do. My tracking already listens (the log line, `spread.courts`, achievements sc2, sc3); `spread.lay` counts the day's card itself (sc1).
+- The tally's log line says "of 10": with a court's lift it may be 12. Pass the cap in `spread.tally` (`cap`) if you want it right.
+- The day's card said once, on the first flip of a game day: "Today's card is the Star." (Espada has the line).

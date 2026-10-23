@@ -31,3 +31,10 @@ The look is yours; Petra has the camera and scene. The rules you draw are built:
 - `MAJOR_SUIT` gives each card's suit.
 
 **Order:** the psygun's charge readouts first (they unblock the prune), then the reading view.
+
+## Later the same day: the day's card and the court class (SPREADS.md 11)
+
+- **The day's card** (`dayCard(today())`): one Major a game day, the same for everyone; laid, its strength doubles. A world mark on it
+  in the reading view (a gold rim, a star over it) and on its card in the hand. No words.
+- **The court class** (`courtOf`): the court card your two strongest suits make (Queen of Wands ...). Its name in the Box's header and
+  on the STATUS shelf. A look of its own (a crest on the bracelet) is open, yours and the owner's.

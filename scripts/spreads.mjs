@@ -7,7 +7,7 @@
 //
 //   node scripts/spreads.mjs [--lays 2000] [--seed 7]
 // ---------------------------------------------------------------------------------------
-import { SPREADS, MAJOR_SUIT, SUITS, TALLY, light, tally, COLS, ROWS, checkFootprints } from '../src/progress/spreads.js';
+import { SPREADS, MAJOR_SUIT, SUITS, TALLY, light, tally, COLS, ROWS, checkFootprints, SEASON_SUIT } from '../src/progress/spreads.js';
 import { ARCANA } from '../src/tools/veritome/arcana.js';
 
 const arg = (k, d) => { const i = process.argv.indexOf(`--${k}`); return i > 0 ? Number(process.argv[i + 1]) : d; };
@@ -27,6 +27,7 @@ const q = (a, p) => { const s = a.slice().sort((x, y) => x - y); return s[Math.m
 const KIND_OF = { wands: 'shell', cups: 'bottle', swords: 'key', pentacles: 'material' };
 
 for (const S of Object.values(SPREADS)) {
+  const top0 = [], top3 = [], courts = {};
   const lit = [], dark = [], careful = Object.fromEntries(SUITS.map((s) => [s, []])), careless = Object.fromEntries(SUITS.map((s) => [s, []]));
   for (let n = 0; n < LAYS; n++) {
     const bound = shuffle(MAJORS).slice(0, BOUND_AT[S.id] + 1);
@@ -47,10 +48,19 @@ for (const S of Object.values(SPREADS)) {
     const loose = Array.from({ length: COLS * ROWS }, (_, i) => (i < 40 ? { kind: KIND_OF[pick(SUITS)] } : null));
     const t2 = tally(cells, shuffle(loose)).sums;
     for (const s of SUITS) { careful[s].push(t1[s]); careless[s].push(t2[s]); }
+    // the three additions (SPREADS.md 11): the day's card one of those laid, a season at random; the careful top suit and the court
+    const dayC = Object.values(laid)[0]?.card, season = pick(Object.keys(SEASON_SUIT));
+    const cells3 = light(S.id, laid, { ...CTX, pair, bound: new Set(bound), dayCard: dayC });
+    const t3 = tally(cells3, want, { season });
+    top0.push(Math.max(...SUITS.map((x) => t1[x]))); top3.push(Math.max(...SUITS.map((x) => t3.sums[x])));
+    courts[t3.court?.id ?? 'none'] = (courts[t3.court?.id ?? 'none'] || 0) + 1;
   }
   const row = (o) => SUITS.map((s) => `${s} ${q(o[s], 0.5).toFixed(1)}/${q(o[s], 0.9).toFixed(1)}`).join('  ');
   console.log(`\n${S.label} (${S.positions.length} positions, ${BOUND_AT[S.id]} bound)`);
   console.log(`  cells lit   median ${q(lit, 0.5)}  p90 ${q(lit, 0.9)} of ${COLS * ROWS};  dark median ${q(dark, 0.5)}  p90 ${q(dark, 0.9)}`);
   console.log(`  careful     ${row(careful)}   (median/p90, cap ${TALLY.cap})`);
   console.log(`  careless    ${row(careless)}`);
+  console.log(`  + day, season: careful top suit median ${q(top0, 0.5).toFixed(1)} -> ${q(top3, 0.5).toFixed(1)}, p90 ${q(top0, 0.9).toFixed(1)} -> ${q(top3, 0.9).toFixed(1)}`);
+  const cs = Object.entries(courts).sort((a, b) => b[1] - a[1]);
+  console.log(`  courts       ${cs.length - (courts.none ? 1 : 0)} of 16 seen; none ${((courts.none || 0) / LAYS * 100).toFixed(0)}%; most ${cs.filter(([k]) => k !== 'none').slice(0, 3).map(([k, n]) => `${k} ${(n / LAYS * 100).toFixed(0)}%`).join(', ')}`);
 }

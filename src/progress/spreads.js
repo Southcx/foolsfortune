@@ -17,6 +17,8 @@
 //   footprintOf(card, { turn, reversed }) -> [[dx, dy]]   suitOf(card, reversed) -> suit | 'wild'   itemSuit(item) -> suit | null
 //   strengthOf(rule, ctx) -> k   light(spreadId, laid, ctx) -> cells[56] (the face's, mirrored)   tally(cells, items) -> { sums, counted }
 //   effectOf(suit, points) -> the modifier as a number   cellIndex(c, r)
+//   SEASON_SUIT SEASON_K   DAY_CARD dayCard(day) -> card   COURT COURT_RANK courtOf(sums) -> { id, rank, suit, lifts, label } | null
+//   (light ctx.dayCard; tally(cells, items, { season }) -> { sums, counted, court })
 // ---------------------------------------------------------------------------------------
 
 /** The Box's grid: 8 columns of 7 rows, its 56 cells (pneuka/box.js SLOTS). */
@@ -156,7 +158,7 @@ export function light(spreadId, laid = {}, ctx = {}) {
   const placed = S.positions.filter((p) => { const L = cardAt(p); return L && isBound(L.card); });
   const others = S.positions.filter((p) => p.rule !== 'outcome').every((p) => placed.includes(p));
   for (const p of placed) {
-    const L = cardAt(p), k = strengthOf(p.rule, { ...ctx, others });
+    const L = cardAt(p), k = strengthOf(p.rule, { ...ctx, others }) * (ctx.dayCard && L.card === ctx.dayCard ? DAY_CARD.k : 1); // (the day's card: SPREADS.md 11.2)
     if (k <= 0) continue;
     const suit = suitOf(L.card, L.reversed);
     for (const [dx, dy] of footprintOf(L.card, { turn: p.turn, reversed: L.reversed })) {
@@ -185,14 +187,16 @@ export const TALLY = {
   swords: { per: 0.02, does: 'the status your blows build' },
   pentacles: { per: 0.015, does: 'worth when sold or condensed' },
 };
-export const effectOf = (suit, points) => (TALLY[suit]?.per ?? 0) * Math.min(TALLY.cap, Math.max(0, points));
+// (the ceiling is the cap with a court class's lift: tally() has already capped each suit at its own, 10 or 12)
+export const effectOf = (suit, points) => (TALLY[suit]?.per ?? 0) * Math.min(TALLY.cap + COURT.lift, Math.max(0, points));
 
 /**
  * The tallies: an item counts on a lit cell carrying its suit (or wild), and a stack counts once (the cell counts, not the items).
- * items: 56 entries in the face's order, each an item ({ kind, key, suit? }) or null. Returns { sums: { suit: points }, counted: [{ i,
- * suit, w }] }, each sum capped.
+ * items: 56 entries in the face's order, each an item ({ kind, key, suit? }) or null; opts.season: the season's id (seasonOf), whose
+ * suit earns SEASON_K. Returns { sums: { suit: points }, counted: [{ i, suit, w }], court }, each sum capped at TALLY.cap, the
+ * court class's rank suit at TALLY.cap + COURT.lift.
  */
-export function tally(cells, items) {
+export function tally(cells, items, opts = {}) {
   const sums = { wands: 0, cups: 0, swords: 0, pentacles: 0 }, counted = [];
   for (let i = 0; i < cells.length; i++) {
     const cell = cells[i], suit = itemSuit(items[i]);
@@ -202,8 +206,36 @@ export function tally(cells, items) {
     sums[suit] += w;
     counted.push({ i, suit, w });
   }
-  for (const s of SUITS) sums[s] = Math.min(TALLY.cap, sums[s]);
-  return { sums, counted };
+  const lift = SEASON_SUIT[opts.season];
+  if (lift) sums[lift] *= SEASON_K;
+  const court = courtOf(Object.fromEntries(SUITS.map((x) => [x, Math.min(TALLY.cap, sums[x])])));
+  for (const x of SUITS) sums[x] = Math.min(TALLY.cap + (court && court.lifts === x ? COURT.lift : 0), sums[x]);
+  return { sums, counted, court };
+}
+
+// ---------------------------------------------------------------- the three additions (SPREADS.md 11; the owner, 2026-10-23)
+/** The season's suit (the owner's: Pentacles spring, Cups summer, Wands autumn, Swords winter): its points earn a quarter more. */
+export const SEASON_SUIT = { spring: 'pentacles', summer: 'cups', autumn: 'wands', winter: 'swords' };
+export const SEASON_K = 1.25;
+/** The day's card: one Major a game day, the same for everyone (the open sea's herds' way); laid anywhere, its strength doubles. */
+export const DAY_CARD = { k: 2 };
+const MAJORS = Object.keys(MAJOR_SUIT).filter((c) => c !== 'fool');
+export function dayCard(day) {
+  let h = (day | 0) ^ 0x5bd1e995; h = Math.imul(h ^ (h >>> 15), 0x2c1b3c6d); h = Math.imul(h ^ (h >>> 12), 0x297a2d39); h ^= h >>> 15;
+  return MAJORS[(h >>> 0) % MAJORS.length];
+}
+/** A court class (Golden Sun's classes, set by the Djinn you hold): the court card your two strongest suits make. Its suit is the
+ *  strongest; its rank the second's element by the Golden Dawn's courts (Page earth, Knight fire, Queen water, King air), or the
+ *  strongest's own when no second suit has COURT.min points (a pure build: the Knight of Wands, fire of fire). It lifts the cap of
+ *  the suit its rank came from by COURT.lift points. */
+export const COURT_RANK = { pentacles: 'page', wands: 'knight', cups: 'queen', swords: 'king' };
+export const COURT = { min: 1, lift: 2 };
+const TITLE = { page: 'Page', knight: 'Knight', queen: 'Queen', king: 'King', wands: 'Wands', cups: 'Cups', swords: 'Swords', pentacles: 'Pentacles' };
+export function courtOf(sums) {
+  const by = SUITS.filter((x) => (sums[x] || 0) >= COURT.min).sort((a, b) => sums[b] - sums[a]);
+  if (!by.length) return null;
+  const suit = by[0], from = by[1] ?? suit, rank = COURT_RANK[from];
+  return { id: `${rank}.${suit}`, rank, suit, lifts: from, label: `${TITLE[rank]} of ${TITLE[suit]}` };
 }
 
 // (the footprints are sized by card rank: a mismatch is a data error, said once at load)

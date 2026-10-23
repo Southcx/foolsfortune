@@ -716,6 +716,10 @@ export function buildAchievements(game) {
   C('ss2', 'general', 'Persistence', 3, 'endure', 'Creature of Habit', 'Play in 20 sessions.', 'sessions', 20, { cur: (L) => L.sessions });
   C('rs1', 'general', 'Persistence', 1, 'count', 'Try, Try Again', 'Fall out of the world 10 times.', 'courier.respawn.fall', 10);
   C('rs2', 'general', 'Persistence', 3, 'endure', 'Bottomless', 'Fall out of the world 100 times.', 'courier.respawn.fall', 100);
+  // the spread's court classes and the day's card (docs/plans/SPREADS.md 11; the four pure courts want a spread laid for one suit)
+  C('sc1', 'general', 'The Spread', 1, 'count', 'Card of the Day', "Lay the day's card in your spread on 7 game days.", 'spread.daycard', 7);
+  C('sc2', 'general', 'The Spread', 2, 'collect', 'A Seat at Court', 'Read as 4 of the court classes.', 'spread.courts', 4);
+  C('sc3', 'general', 'The Spread', 4, 'collect', 'The Whole Court', 'Read as all sixteen court classes, the four pure ones among them.', 'spread.courts', 16, { title: 'of the Sixteen Courts' });
   F('am1', 'general', 'Achievements', 1, 'collect', 'A Start', 'Complete 10 achievements.', (L, g, a) => a.count(), 10);
   F('am2', 'general', 'Achievements', 3, 'collect', 'Halfway Up the Wall', 'Complete 50 achievements.', (L, g, a) => a.count(), 50);
   F('am3', 'general', 'Achievements', 5, 'collect', 'A Full Wall', 'Complete 100 achievements.', (L, g, a) => a.count(), 100);

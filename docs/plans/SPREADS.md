@@ -23,6 +23,8 @@ Dovina's plan. Status: a plan, not built. Mockup: the design canvas, board "Spre
    calls of section 9 as proposed: the bracelet's charms become suited items, and the flip mirrors.
 9. **The reading view** (the owner: "the character model orbited by cards against a dark background, similar to the title screen
    ... that screen is a moneyshot in and of itself"): section 5.7.
+10. **The court classes, the day's card and the season's suit** (the owner, 2026-10-23: "go right ahead"), section 11, with the
+    seasons' suits the owner's own: **Wands autumn, Cups summer, Swords winter, Pentacles spring**.
 
 ## 2. The deck is already whole
 
@@ -293,6 +295,7 @@ playing-card suits descend from these: hearts from Cups, spades from Swords, clu
    sockets give way to the board when the charms are built.
 2. ~~The mirrored flip~~ ruled (1.8): it mirrors (`MIRROR`).
 3. **The second way for each Major:** the acts are drafted (5.6); the predicates come with the build.
+4. **A court class's look:** a court's crest on the bracelet, or nothing beyond the name (11.3). Calissa's and the owner's.
 
 ## 10. Who builds what
 
@@ -309,5 +312,84 @@ playing-card suits descend from these: hearts from Cups, spades from Swords, clu
   ways, the wild card's line.
 - **Wanda:** the flip, a card laid, a card reversed, a cell lighting, a contrary cell cracking, a spread completed.
 
+**Section 11 (ruling 10):** Dovina, the rules (built: `SEASON_SUIT`, `dayCard`, `courtOf`, `tally(cells, items, { season })` returning
+`court`, `light` reading `ctx.dayCard`), the measurement, the achievements (all sixteen courts; the day's card laid on 7 game days);
+Petra, the wiring (`laidSpread` passes `dayCard: dayCard(today())` to `light` and `{ season: seasonOf().id }` to `tally`, keeps
+`court`, tells `spread.court { from, to, by }`); Calissa, the day's card marked in the reading view and the class's name in the dress;
+Espada, the log's lines; Wanda, a class changing.
+
 **Order:** 1, the rules and a coverage simulation (Dovina); 2, the storage move (Petra); 3, the board in the window (Dovina, Calissa's
 look); 4, the tallies wired and measured; 5, the achievements.
+
+## 11. Three modifiers over the tallies (ruling 10)
+
+Each is a modifier with a source you can see: a calendar's (the game day, the season) or the board's own (the court card your
+tallies make). None changes a base rule. Built as rules in `progress/spreads.js`; wiring them into the laid spread is Petra's (10).
+
+### 11.1 The season's suit
+
+The Spirit Garden's season (`seasonOf`, 7 game days each) favours one suit: its points earn **x1.25** before the cap
+(`SEASON_SUIT`, `SEASON_K`).
+
+| season | suit | why (the owner's ruling) |
+| --- | --- | --- |
+| spring | Pentacles | earth waking: sowing, growth, what is planted |
+| summer | Cups | water and feeling at their fullest |
+| autumn | Wands | fire: the harvest's bonfires, the will to bring it in |
+| winter | Swords | air at its coldest and clearest: thought, the cutting season |
+
+- **What it does to play:** a 28 game day cycle (28 real hours of play) in which the best build turns. A player who rearranges the
+  Box each season is paid a quarter more on one suit; one who never does loses nothing they had.
+- **Prior art:** Stardew Valley's and Animal Crossing's seasons (what is worth doing turns with the calendar); Golden Sun's elemental
+  affinities.
+- **The open question it settles:** GARDEN-COZY.md's Q2 asked whether the seasons are the garden's or the island's. This reads them as
+  the whole Vessoul's (the Box goes everywhere); the garden's look keeps its own.
+
+### 11.2 The day's card
+
+One Major Arcana card a game day, **the same for everyone** that day (`dayCard(day)`, a hash of the game day; the Fool never), as the
+open sea's herds are. Laid anywhere in your spread, its strength **doubles** (`DAY_CARD.k`); a cell still counts at most double
+(`TALLY.cellCap`), so it widens what a card reaches, never past a cell's ceiling.
+
+- **What it does to play:** a reason to open the Box once a game day and relay; a reason to bind every Major, not only your
+  favourites. Over 2100 game days each of the 21 came up 84 to 113 times (a fair draw).
+- **Prior art:** Animal Crossing: New Leaf's Katrina (a fortune a day), the daily card draw of tarot practice, Destiny's daily
+  rotation.
+- **Where it is shown:** the Codex's THE ARCANA shelf and the underside's tabs (the card marked); the log says it once, the first time
+  the Box is turned over in a game day ("Today's card is the Star."). A world mark on the card in the reading view is Calissa's.
+
+### 11.3 The court classes (the Golden Sun homage)
+
+Golden Sun's Adepts change class by the Djinn they set: the same character, a Mars-heavy set a different calling. Here your class is
+**the court card your two strongest suits make** (`courtOf(sums)`): its **suit** is your strongest tally, its **rank** the second
+strongest's element by the Golden Dawn's courts:
+
+| second suit | element | rank |
+| --- | --- | --- |
+| Pentacles | earth | Page |
+| Wands | fire | Knight |
+| Cups | water | Queen |
+| Swords | air | King |
+
+- Six Wands and three Cups make the **Queen of Wands** (water of fire); four Swords alone, the **King of Swords**. A suit counts as
+  second only at 1 point (`COURT.min`); with none, the rank is the strongest's own element (a pure build: the Knight of Wands, fire of
+  fire). Sixteen classes, the deck's sixteen court cards.
+- **What a class does:** it lifts the cap of the suit its rank came from by **2 points** (`COURT.lift`): the Queen of Wands may hold
+  12 Cups. So a class rewards a second suit kept on purpose, and a pure build its one suit. The class is named in the Box's header and
+  on the Codex's STATUS shelf; the log says it when it changes ("You read as the Queen of Wands.").
+- **Measured** (`node scripts/spreads.mjs`): every class turns up in the small spreads; in the Horseshoe and the Celtic Cross a random
+  lay meets 12 of the 16, never the four pure ones (Knight of Wands, Queen of Cups, King of Swords, Page of Pentacles), which want a
+  spread laid for one suit. Those four are the feat; all sixteen held once is an achievement's collection.
+- **The economy:** the Pentacles ceiling is now 12 points (x1.18 on worth). `scripts/economy.mjs`'s upper bound, all income taken as
+  sold: the fighter 717 cubes a real hour (1.49 x the aim), the miner 711 (1.48), the treasury 692 (1.44). Under the 1.5x cap, with
+  no room left: any further lift to Pentacles must come out of these.
+- **Not done, and why:** Golden Sun's classes also change what you can cast. A class that opened arts would gate skill behind an
+  inventory layout (against "arts only by achievement"); a class here is a modifier only. Whether a class should one day colour the
+  Courier's look (a court's crest on the bracelet) is open (9).
+
+### 11.4 How the three stack
+
+The day's card works in `light()` (a cell's strength), the season in `tally()` (a suit's points before the cap), the class after both
+(the cap). In a careful three-card spread the strongest suit's median goes from 5.6 to 7.8 points with the day's card laid and its
+season; in the big spreads the cap already binds at the median, so the court's lift shows only at the top (the Celtic Cross's best
+tenth: 10 to 12).

@@ -40,11 +40,11 @@ export const UNDERSIDE_CSS = `
 #pneuka.view .us{min-width:0;flex-direction:row;align-items:flex-start;gap:14px}
 #pneuka.view .us-tabs{flex-direction:column;flex:none}
 #pneuka.view .us-row{flex:1;min-width:0}
-#pneuka.view .us-side{flex-direction:row;align-items:flex-start;gap:14px}
+#pneuka.view .us-side{flex-direction:row;align-items:flex-start;gap:14px;min-width:0}
 #pneuka.view .us-side>.us-note{max-width:150px}
-#pneuka.view .us-hand{flex-wrap:nowrap;overflow-x:auto;flex:1}
+#pneuka.view .us-hand{flex-wrap:nowrap;overflow-x:auto;flex:1;min-width:0} #pneuka.view .us-card+.us-card{margin-left:-12px} /* (the hand shrinks and overlaps; the tallies keep their room) */
 #pneuka.view .us-card{width:52px;height:76px;flex:none}
-#pneuka.view .us-tally{min-width:220px}
+#pneuka.view .us-tally{min-width:220px} #pneuka.view .us-side>:last-child{flex:none}
 #pneuka .us-tabs{display:flex;gap:6px}
 #pneuka .us-tab{padding:4px 10px;border:1px solid rgba(255,178,122,.3);border-radius:3px;font-size:11px;letter-spacing:.12em;cursor:var(--jcur-pointer,pointer)}
 #pneuka .us-tab.on{border-color:#ffd98a;color:#ffd98a}
