@@ -3755,3 +3755,12 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** `TouchCursor.busy` (a finger down, a gesture under way, a tap's LMB or a two-finger tap's keys still to press or let go),
   and the driver calls `update()` while it is true. The probe: the two-finger tap undoes (2 to 1), 10 of 10.
 - **Rule:** 291
+
+### 2026-10-24 · The rod's and the hook's touch rows never resolved (Petra, wiring M3's driver)
+- **Seen (read, then measured):** with the rod or the hook in hand, `actions.live()` held `tool.cutlass`, so on touch the rod's CRANK,
+  PING and LURE tiles (core/bindings.js, ctx `tool.rod`) resolved to nothing, and the cutlass's SPECIAL swipe would have taken the rod's AIM.
+- **Cause (read):** core/actions.js read the form as `belt.inHand.form`; `inHand` is the belt's adapter (tools/belt.js techTool), which
+  had no `form`, so `t.form || 'cutlass'` was the cutlass every time. A reader of a wrapped thing gets `undefined`, never an error.
+- **Fix:** the adapters carry `tech` (the tool behind them) and the Sondelass's `form`; core/touchtools.js reads the tool's state
+  through `tech`. Measured in the M3 probe: the cutlass's ctx with the cutlass, the brush's, the Veritome's, the psygun's.
+- **Rule:** 292

@@ -16,6 +16,7 @@
 //     stow(), out(),            put it away / ask it out (the belt calls these; a tool never reads a draw key of its own)
 //     lend(),                   the sub's verb on R, done from where it hangs (true if it went off)
 //     model,                    the worn model (an Object3D), or none (the psygun's is the body's: character.setHidden hides it)
+//     tech, form,               the tool itself behind the adapter, and the Sondelass's form (cutlass, rod, hook)
 //     rules: { mouse, kick, firstPerson } }   while out: takes the mouse / allows the kick / allows first person
 //
 // Prior art: Elden Ring's main hand and off hand and NieR: Automata's light and heavy pair (two tools worn, one verb lent by the other);
@@ -153,6 +154,7 @@ export class ToolBelt {
 // ---------------------------------------------------------------------------------------
 export const psygunTool = (weapon) => ({
   id: 'psygun', name: 'THE PSYGUN', slot: 'back',
+  get tech() { return weapon; }, // (the tool itself behind its adapter: core/touchtools.js reads it)
   get drawT() { return weapon.drawT; },
   get wants() { return weapon.drawTarget > 0; },
   stow() { weapon.drawTarget = 0; weapon.manualHolster = true; weapon.idleT = 0; },
@@ -164,6 +166,8 @@ export const psygunTool = (weapon) => ({
 /** A tool that is a tech with `drawT` / `drawTarget` and its model at `model.group` (all six but the psygun): its adapter. */
 const techTool = (tech, id, name, slot) => ({
   id, name, slot,
+  get tech() { return tech; }, // (the tool itself behind its adapter: its state, as core/touchtools.js reads it)
+  get form() { return tech.form; }, // (the Sondelass's form in hand: cutlass, rod or hook; core/actions.js's tool.<form> context)
   get drawT() { return tech.drawT; },
   get wants() { return tech.drawTarget > 0; },
   stow() { tech.drawTarget = 0; tech.resume = false; },

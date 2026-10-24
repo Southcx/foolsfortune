@@ -14,13 +14,19 @@
 //   game.lock.toggle()     game.lock.cycle(+1 | -1)     game.lock.target -> { type, ref } | null     game.lock.point(out)
 //   game.lock.add(ref)  .remove(ref)   a thing to lock to that no list here finds: a `training` body (Strawman, the status bench's
 //   roly-polies: world/testroom/), added by the room that owns it; its lock is never counted (`lock.on { training }`)
+// ON TOUCH (docs/plans/MOBILE.md 8.9: how a thumb aims, every phone action game's aim assist; a setting, `camera.lockAuto`, never a knack):
+// with a tool drawn, the lock takes the nearest foe in front by itself (never a pot), every LOCK_AUTO.every real s while it holds none;
+// let go by hand, it waits LOCK_AUTO.hold real s before it takes one again.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { Reticle } from '../tools/sondelass/angling/reticle.js';
 import { GROUPS } from '../core/physics.js';
 import { sfx } from '../audio/sfx.js';
+import { T } from '../core/config.js';
 
 const RANGE = 18, KEEP = 26, GOLD = 0xffd76a;
+/** every: real s between the touch lock's looks for a foe; hold: real s it waits after the lock was let go by hand. */
+export const LOCK_AUTO = { every: 0.3, hold: 3 };
 const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _f = new THREE.Vector3(), _e = new THREE.Vector3();
 
@@ -29,7 +35,7 @@ export class LockOn {
     this.game = game;
     this.target = null;
     this.reticle = new Reticle(game.scene, { mind: true }); // (the Mind's: black labradorite, docs/ART.md precept 3)
-    this.flickCool = 0; this.blocked = 0; this.losT = 0; this.t = 0;
+    this.flickCool = 0; this.blocked = 0; this.losT = 0; this.t = 0; this.autoWait = 0;
     this.assist = true;
     this.extra = new Set(); // (lock targets added by their owners: `add`)
     game.player.lookScale = game.player.lookScale || { lock: 1, blade: 1 };
@@ -86,11 +92,14 @@ export class LockOn {
     return !hit;
   }
 
-  acquire() {
+  /** The best thing in front to lock to, locked (`foes`: creatures and clapperjars only, never a pot; `auto`: taken by the touch lock,
+   *  not by you, so never counted). */
+  acquire({ foes = false, auto = false } = {}) {
     const g = this.game;
     g.camera.getWorldPosition(_e); g.camera.getWorldDirection(_f);
     let best = null, bs = 1e9;
     for (const t of this.candidates()) {
+      if (foes && t.type === 'breakable') continue;
       this.pointOf(t, _a);
       const d = _a.distanceTo(_e);
       if (d > RANGE || d < 0.5) continue;
@@ -100,25 +109,35 @@ export class LockOn {
       if (score < bs && this.clear(_a, t.ref)) { bs = score; best = t; }
     }
     if (!best) return false;
-    this.set(best);
+    this.set(best, auto);
     return true;
   }
 
-  set(t) {
+  set(t, auto = false) {
     this.target = t; this.blocked = 0; this.losT = 0;
     this.reticle.flash = 1;
     sfx.lockOn?.(1);
-    this.game.events?.emit('lock.on', { type: t.type, ...(t.ref.training && { training: true }) }); // (a training body's lock is never counted)
+    this.game.events?.emit('lock.on', { type: t.type, ...(t.ref.training && { training: true }), ...(auto && { auto: true }) }); // (a training body's lock is never counted, nor the touch lock's own)
   }
 
   release(why = 'let go') {
     if (!this.target) return;
     this.target = null;
+    if (why === 'let go') this.autoWait = LOCK_AUTO.hold; // (let go by hand: the touch lock waits before it takes another)
     this.game.player.lookScale.lock = 1;
     this.game.events?.emit('lock.off', { why });
   }
 
   toggle() { if (this.target) this.release(); else this.acquire(); }
+
+  /** On touch, with a tool drawn and the setting on: a foe in front taken by itself, a look every LOCK_AUTO.every real s. */
+  autoLock(dt) {
+    const g = this.game;
+    if ((this.autoWait -= dt) > 0) return;
+    this.autoWait = LOCK_AUTO.every;
+    if (g.input?.device !== 'touch' || !(T.camera.lockAuto ?? true) || !g.belt?.inHand || g.god?.controlling || g.cursorFree?.()) return;
+    this.acquire({ foes: true, auto: true });
+  }
 
   /** Move the lock to the next thing to the right (+1) or left (-1) on the screen. */
   cycle(dir) {
@@ -147,7 +166,7 @@ export class LockOn {
     this.t += dt;
     this.flickCool -= dt;
     const t = this.target;
-    if (!t) { this.reticle.hide(); this.reticle.update(dt, g.camera); P.lookScale.lock = 1; return; }
+    if (!t) { this.reticle.hide(); this.reticle.update(dt, g.camera); P.lookScale.lock = 1; this.autoLock(dt); return; }
     if (!this.alive(t)) { this.release('gone'); this.reticle.update(dt, g.camera); return; }
     this.pointOf(t, _a);
     const dist = _a.distanceTo(P.pos);

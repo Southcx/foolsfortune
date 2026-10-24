@@ -26,7 +26,8 @@ export class Actions {
   }
 
   /** The contexts live now (read once a frame): any; riding the Solar Skiff (in the air, on a rail), the Spirit Garden, a puzzle duel,
-   *  the god hand, or on foot (and the tool in hand, narrower); a race running; the rhythm mode playing. */
+   *  the god hand, the crossing (`rail`), the open sea's helm, or on foot (and the tool in hand, narrower); a race running; the rhythm
+   *  mode playing. */
   live() {
     const g = this.game, frame = g.clock?.frame ?? -1;
     if (this.cache && frame === this.cacheFrame && frame >= 0) return this.cache;
@@ -35,7 +36,11 @@ export class Actions {
     else if (g.realm?.active) L.add('garden'); // (the garden's own hand: world/garden/hand.js)
     else if (g.duel?.active) L.add('duel'); // (the duel's board has the keys: world/duel/duelsession.js)
     else if (g.god?.active) L.add('godhand');
-    else if (!g.emocean?.active) { L.add('foot'); const t = g.belt?.inHand; if (t) L.add(toolCtx(t)); }
+    else if (g.emocean?.stage?.active) L.add('rail'); // (the crossing: the ship on the stick, the sweep on the look area, core/touchtools.js)
+    else if (!g.emocean?.active) {
+      if (g.opensea?.sailing) L.add('helm'); // (the open sea's free helm, narrower than foot: the stick the rudder, W / S the throttle's taps)
+      L.add('foot'); const t = g.belt?.inHand; if (t) L.add(toolCtx(t));
+    }
     if (g.race?.running) L.add('race');
     if (g.rhythm?.active) L.add('rhythm'); // (the rhythm mode's lanes: Wanda's music/rhythm, the digits as pads)
     this.cache = L; this.cacheFrame = frame;

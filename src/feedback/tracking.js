@@ -574,7 +574,7 @@ export class Tracking {
     on('blade.cut', (e) => { L.inc('blade.cut'); if (e.pieces) L.inc('blade.pieces', e.pieces); });
     on('blade.zandatsu', () => { L.inc('blade.zandatsu'); first('zandatsu', 'Logged: your first zandatsu.'); log.say('battle', 'Zandatsu: you cut the clapperjar apart and take its core.', { key: 'zan', throttle: 2 }); });
     on('blade.exit', (e) => { L.hi('blade.cuts.best', e.cuts); });
-    on('lock.on', () => { L.inc('lock.on'); first('lock', 'Logged: your first lock-on.'); });
+    on('lock.on', (e) => { if (e.auto) return; L.inc('lock.on'); first('lock', 'Logged: your first lock-on.'); }); // (the touch lock's own is the game's aim assist, never yours: courier/lockon.js)
     on('guard.up', () => L.inc('guard.up'));
     on('guard.block', (e) => { L.inc(e.tool === 'dreamvane' ? 'guard.twirl' : 'guard.block'); // (the cutlass's guard only: the twirl is the Dreamvane's, SWEEPS.md tools 5)
       log.say('battle', e.tool === 'dreamvane' ? 'You turn the shot aside on your spinning crook.' : 'You turn the shot aside on your blade.', { key: 'gblock', win: 1 }); });

@@ -37,10 +37,9 @@ export class TouchShell {
   tile(id, down) {
     const g = this.game;
     if (id.startsWith('top.')) return; // (the top bar's: `open` does them, on the tap's release)
-    g.touch?.seen?.();
     const art = ART[id];
-    if (art) { if (down) { for (const c of art) g.input.hold(c, true); requestAnimationFrame(() => { for (const c of art) g.input.hold(c, false); }); } return; }
-    g.actions?.press('touch', id, down);
+    if (art) { g.touch?.seen?.(); if (down) { for (const c of art) g.input.hold(c, true); requestAnimationFrame(() => { for (const c of art) g.input.hold(c, false); }); } return; }
+    if (g.touch) g.touch.control(id, down); else g.actions?.press('touch', id, down); // (through the driver: a tool's own first, core/touchtools.js)
   }
   /** A top bar tile tapped (ui/touch/topbar.js calls it). */
   open(what) {

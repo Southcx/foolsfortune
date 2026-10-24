@@ -341,6 +341,7 @@ import { installConsoleRing } from './debug/qais/attach.js';
 import { installReportButton } from './debug/qais/reportbutton.js';
 import { Settings } from './core/settings.js';
 import { SettingsWindow } from './ui/settingswindow.js';
+import { installLayoutKeep } from './core/layoutkeep.js';
 import { MacroBook } from './tools/veritome/mind/macros.js';
 import { trimShadows } from './render/shadowtrim.js';
 import { installShadowKinds } from './render/shadowkinds.js';
@@ -806,7 +807,7 @@ async function main() {
     if (key === 'volume' || group === '*') sfx.setVolume(T.audio.volume);
     if (group === 'lachryma' || group === '*') { lachryma.baseMax = T.lachryma.max; lachryma.regenRate = T.lachryma.regenRate; lachryma.regenDelay = T.lachryma.regenDelay; }
   };
-  game.knobChanged = knobChanged; game.settings = new Settings(game); // (the settings window's rows: core/settings.js)
+  game.knobChanged = knobChanged; game.settings = new Settings(game); game.touchLayoutKeep = installLayoutKeep(game); // (the settings window's rows: core/settings.js; the touch layout the layout editor makes, kept in the settings scope: core/layoutkeep.js)
   game.settingsWindow = new SettingsWindow(game); // (the settings window: its dress, ui/settingswindow.js)
   const gui = buildTuningPanel(knobChanged, {
     copyJSON: () => navigator.clipboard?.writeText(JSON.stringify(T, null, 2)).then(() => game.log.say('system', 'Settings copied to the clipboard.', { key: 'settings.copy', throttle: 1 })),

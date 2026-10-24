@@ -37,9 +37,11 @@ gives the phases. This note says who does what, in order. One build is published
 
 ## M3 to M5 (in order, after M2 is played)
 
-- **M3, the tools.** Each tool's context and cluster: Dovina maps them with each tool's owner (MOBILE.md 5's rows). Petra: aim by drag with
-  the lock-on, FIRE dragged while held, the drawn verbs as a finger's stroke, the Crucibelle's pads. Wanda with Petra: the rhythm
-  mode's ten lanes as pads.
+- **M3, the tools.** Each tool's context and cluster: Dovina maps them with each tool's owner (MOBILE.md 5's rows). Petra's driver part
+  is **built** (core/touchtools.js, after v265): FIRE or AIM dragged aims; the cutlass's SPECIAL tapped, swiped up or down, or held
+  crouched; Celestial mode drawn under the finger (the stick must stand down for the paper: Calissa); the lens's tap the shutter; two
+  fingers the wheel where a tool reads it; the lock-on taking a foe by itself on touch (a setting). Waiting on Calissa's tool tiles (ids
+  as the bindings: fire, aim, shell, lock, the strips) and Espada's words. Wanda with Petra: the rhythm mode's ten lanes as pads.
 - **M4, the sea.** Petra: the rail (the stick, the lock-on sweep as a drag, ROLL, FORM, the surge) and the open sea's helm. Calissa: the
   rail's tiles. Wanda: the cue under it.
 - **M5, parity.**
