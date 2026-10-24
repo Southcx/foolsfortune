@@ -89,7 +89,7 @@ export class MadeTrack {
     const R = this.R, TR = R.chunks, step = RW.step, n = Math.round((2 * LOT.half) / step) + 1;
     const hs = new Float32Array(n * n), x0 = LOT.x - LOT.half, z0 = LOT.z - LOT.half;
     for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) hs[i * n + j] = this.heightAt(x0 + i * step, z0 + j * step) ?? LOT.y;
-    if (TR) writeTerrain(TR, Math.round((x0 + RW.half) / step), Math.round((z0 + RW.half) / step), n, hs, step);
+    if (TR) TR.setRegion(Math.round((x0 + RW.half) / step), Math.round((z0 + RW.half) / step), n, hs); // (render/terrain.js: Petra's)
     // the physics: a height field over the lot (the park's own under it stays flat, and never higher)
     const W = this.game.physics?.world; if (!W) return;
     if (this.patch) { W.removeRigidBody(this.patch); this.patch = null; }
@@ -111,31 +111,5 @@ export class MadeTrack {
       this.group.add(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.85, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, fog: false })));
     };
     mk((F) => -F.w, 1.2, LINE.edge, 2); mk((F) => F.w, 1.2, LINE.edge, 2); mk(() => 0, 0.4, LINE.centre, 3);
-  }
-}
-
-/** Heights `hs` (n x n, column-major as the terrain's: i along x) written into a ChunkTerrain from its sample (i0, j0): its kept heights,
- *  its drawn vertices (each chunk edge's skirt foot following, as deep as it hung) and normals, and only those rows sent to the card.
- *  (render/terrain.js's layout: Petra's; asked to take this in as a method, docs/handoffs/petra/.) */
-function writeTerrain(TR, i0, j0, n, hs, step) {
-  const N = TR.n, C = TR.chunk, H = TR.heights, geo = TR.geometry, pos = geo.attributes.position, nor = geo.attributes.normal, P = pos.array, Nn = nor.array;
-  const edge = (I, J) => I % C === 0 || J % C === 0;
-  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
-    const I = i0 + i, J = j0 + j, y = hs[i * n + j], o = (J * N + I) * 3, was = P[o + 1];
-    H[I * N + J] = y; P[o + 1] = y;
-    if (edge(I, J)) { const sk = TR.skirtAt(I, J) * 3 + 1; P[sk] = y - (was - P[sk]); }
-  }
-  const Hc = (I, J) => H[Math.min(N - 1, Math.max(0, I)) * N + Math.min(N - 1, Math.max(0, J))];
-  const Ia = Math.max(0, i0 - 1), Ib = Math.min(N - 1, i0 + n), Ja = Math.max(0, j0 - 1), Jb = Math.min(N - 1, j0 + n);
-  for (let J = Ja; J <= Jb; J++) for (let I = Ia; I <= Ib; I++) {
-    const nx = Hc(I - 1, J) - Hc(I + 1, J), nz = Hc(I, J - 1) - Hc(I, J + 1), ny = 2 * step, l = Math.hypot(nx, ny, nz), o = (J * N + I) * 3;
-    Nn[o] = nx / l; Nn[o + 1] = ny / l; Nn[o + 2] = nz / l;
-    if (edge(I, J)) Nn.set([Nn[o], Nn[o + 1], Nn[o + 2]], TR.skirtAt(I, J) * 3);
-  }
-  const s0 = TR.skirtAt(Ia - (Ia % C), Ja), s1 = TR.skirtAt(Math.min(N - 1, Ib + ((C - (Ib % C)) % C)), Jb);
-  for (const A of [pos, nor]) {
-    A.clearUpdateRanges();
-    for (let J = Ja; J <= Jb; J++) A.addUpdateRange((J * N + Ia) * 3, (Ib - Ia + 1) * 3);
-    A.addUpdateRange(s0 * 3, (s1 - s0 + 1) * 3); A.needsUpdate = true;
   }
 }
