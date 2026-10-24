@@ -32,6 +32,7 @@ import { CASINO, hearCasino } from './casino.js';
 import { phaseAt } from '../progress/weather.js';
 import { OPEN_SEA, setSea } from './opensea.js';
 import { READING, setReading } from './reading.js';
+import { DRAFTING } from './drafting.js';
 import { seasonOf } from '../progress/seasons.js';
 
 const DWELL_IN = 1.5, DWELL_OUT = 2.5; // (seconds under before the dive's music starts; seconds up before it stops)
@@ -44,6 +45,7 @@ export function chooseMusic(game, { overlay = false } = {}) {
   const U = game.ultimate; // (the Lockheart's Opening: its mode's cue while the wheel turns, its landing when it lands: music/lockheart.js)
   if (U?.active) { const mode = HEARTS[U.lh?.heart]?.mode || 'casting'; return U.phase === 'landed' || U.phase === 'back' ? LOCK_LANDED[mode] : LOCK_CUES[mode]; }
   if (game.laidSpread?.under) { const S = game.laidSpread.sums || {}; let top = null; for (const k of ['wands', 'cups', 'swords', 'pentacles']) if ((S[k] || 0) > (S[top] || 0)) top = k; setReading({ suit: top }); return READING; } // (the Box turned over, a spread laid: music/reading.js)
+  if (game.trackEditor?.active) return DRAFTING; // (the track editor open at the Raceway: music/drafting.js)
   if (game.chests?.rave?.active || game.god?.active || game.rhythm?.active) return null; // (the rhythm mode plays its own: music/rhythm/)
   // a Firing at the Chimney (music/kiln.js): its ending (fired or cooled) plays out in the garden; a Firing cancelled by leaving stops at once
   const T = game.garden?.tribulation, A = game.music?.arr;
