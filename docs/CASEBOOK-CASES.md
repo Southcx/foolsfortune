@@ -3733,3 +3733,15 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** `watchOf(test)` reads either shape (a name alone is `{ event: name }`), and the listener keeps the match beside the test.
   Checked in node: a string watch heard twice, an object's match heard only when it matches, an empty or a passed test not listened for.
 - **Rule:** 138
+
+### 2026-10-24 · DASH on a pad never dashed in the air after a sprint (Petra, reading the on-foot input for M2)
+- **Seen (read, not yet played):** the pad's sprint latch (L3) holds Shift and keeps it once held, into a jump; the dash button is also
+  Shift. In the air, the dash button changed nothing: no air dash. Touch's DASH tile (M2) would have done the same under the stick's sprint.
+- **Cause (read):** core/input.js `hold` counted a code's holders and never pressed a held code twice, so the dash button's Shift, under
+  the latch's, gave no `wasPressed('ShiftLeft')` (player.js's `dashBuf` and the Dodge latch read only the edge). On a keyboard the player
+  lets Shift go and presses it again; a latch cannot be let go of mid-air.
+- **Fix:** `hold(code, on, edge)`: a control a person pressed (core/actions.js `press`) gives its key's edge even while another holder
+  holds the key; a holder's own state (the latch, a stick's keys, the skiff's touch keys) still never presses twice, and the count of
+  holders is as it was. Checked in node: the latch's first hold an edge, a second state hold none, a person's press an edge, the key
+  down until both let go.
+- **Rule:** 290

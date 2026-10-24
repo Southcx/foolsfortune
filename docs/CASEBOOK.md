@@ -851,3 +851,5 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
     field must take against its `maxlength`, and test the path the player uses (the field), not only the function behind it.
 289. **The audio context is asked to run again whenever it stops.** A phone interrupts it (a call, a hidden tab):
     resume on visibility and on every state change, and arm the next gesture when the browser refuses; schedule on the context's clock.
+290. **A press a person makes is an edge, whatever else holds the key.** Count a key's holders for its down state, but a
+    control pressed by a hand always gives `wasPressed`; only a holder's own state (a latch, a stick's keys) is refused a second edge.

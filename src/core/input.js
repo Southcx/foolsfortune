@@ -2,7 +2,7 @@
 // browser/iframe refuses pointer lock). The touch and pad drivers (core/touchdriver.js, core/paddriver.js) press the same codes through
 // `hold`, so every key read works on them; `axis(id)` is a move read with a stick's push (the keys give exactly -1, 0 or 1, as before),
 // and `device` is the device last touched (keyboard, touch, pad), which the HUD and the help follow (docs/plans/MOBILE.md 6.1).
-//   input.isDown(code)  wasPressed(code)  spend(...codes)  hold(code, on) (a driver's press)  axis(id) (core/bindings.js AXES)
+//   input.isDown(code)  wasPressed(code)  spend(...codes)  hold(code, on, edge?) (a driver's press)  axis(id) (core/bindings.js AXES)
 //   input.axes[id] = v | undefined (a driver's analog push)  input.device  input.onDevice(d)  input.setDevice(d)
 //   input.touchDrag { panX, panY (px), pinch (the log of the scale), twist (rad), fingers }: the fingers on glass this frame, where the
 //   pointer is free (core/touchcursor.js); a camera that wants them reads them, and they are cleared with the frame as the wheel is
@@ -106,10 +106,12 @@ export class Input {
 
   isDown(code) { return this.down.has(code); }
   /** A driver's press or release of a code (a pressed edge on the way down, as a key's), counted: a code two holders hold (the pad's
-   *  dash button and its sprint latch, both Shift) stays down until both let go, and is never pressed twice. */
-  hold(code, on) {
+   *  dash button and its sprint latch, both Shift) stays down until both let go. A holder's own state (the sprint latch, a stick's key)
+   *  never presses a held code again; a control a person pressed (`edge`, core/actions.js) gives its edge all the same, as a key pressed
+   *  again would (DASH in the air with the sprint's Shift still held from the ground). */
+  hold(code, on, edge = false) {
     const n = (this.holdN.get(code) || 0) + (on ? 1 : -1);
-    if (on && !this.down.has(code)) this.pressed.add(code);
+    if (on && (edge || !this.down.has(code))) this.pressed.add(code);
     if (n > 0) { this.holdN.set(code, n); this.down.add(code); } else { this.holdN.delete(code); this.down.delete(code); }
   }
   /** A move axis, -1 .. 1: a driver's analog push while it gives one, else the keys (exactly -1, 0 or 1). */

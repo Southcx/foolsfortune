@@ -54,7 +54,7 @@ export class Actions {
       const row = this.resolve(kind, id), code = row && codeFor(row);
       if (!code) return null;
       const codes = [...(row.mods || []), code];
-      this.held.set(k, codes); for (const c of codes) this.input.hold(c, true);
+      this.held.set(k, codes); for (const c of codes) this.input.hold(c, true, c === code); // (the key's edge always: a person pressed it, core/input.js)
       return code;
     }
     const codes = this.held.get(k); if (!codes) return null;
