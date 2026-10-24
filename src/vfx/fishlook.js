@@ -96,7 +96,7 @@ export function fishMaterial(rim) {
     uRim: { value: new THREE.Color() }, uOpacity: { value: 1 }, uGlow: { value: 0 }, uCrack: { value: 0.9 }, uScaleN: { value: 30 },
   }]);
   u.uRim.value.copy(rim);
-  const m = new THREE.ShaderMaterial({ uniforms: u, vertexShader: VERT, fragmentShader: FRAG, fog: true, transparent: true, depthWrite: true });
+  const m = new THREE.ShaderMaterial({ name: 'fish-body', uniforms: u, vertexShader: VERT, fragmentShader: FRAG, fog: true, transparent: true, depthWrite: true });
   m.userData.u = u;
   return m;
 }

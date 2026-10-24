@@ -14,7 +14,7 @@
 // Prior art: Jakobsen's "Advanced Character Physics" rope (the Verlet chain every game rope descends from), Worms' ninja rope and Just
 // Cause's tether for how a grapple rope reads (a taut line with a little sag), and the harpoon-gun cartoons for the corkscrew.
 //
-//   const r = new Rope(scene, { n: 28, radius: 0.014, color: 0xf3e6d2 })
+//   const r = new Rope(scene, { n: 28, radius: 0.014, color: 0xf3e6d2, bands })   (bands: false for no twist, the same program)
 //   r.update(dt, a, b, { slack (m; or length), taut: 0..1, helix: 0..1, glow: colour|null })
 //   r.trace(other, u0, u1, { cam, px, lift })   (a thinner tube laid along a stretch of another rope: the fishing line's core)
 //   r.hide()
@@ -26,7 +26,7 @@ export const ROPE = { slackFull: 0.3 };
 const _e = new THREE.Vector3(), _t = new THREE.Vector3(), _n = new THREE.Vector3(), _b = new THREE.Vector3(), _p = new THREE.Vector3(), _ax = new THREE.Vector3(), _u = new THREE.Vector3(), _w = new THREE.Vector3();
 
 export class Rope {
-  constructor(scene, { n = 28, sides = 5, radius = 0.014, color = 0xf3e6d2, glowColor = null } = {}) {
+  constructor(scene, { n = 28, sides = 5, radius = 0.014, color = 0xf3e6d2, glowColor = null, bands = true } = {}) {
     this.n = n; this.sides = sides; this.radius = radius;
     this.x = Array.from({ length: n }, () => new THREE.Vector3());
     this.px = Array.from({ length: n }, () => new THREE.Vector3());
@@ -44,8 +44,9 @@ export class Rope {
     this.geo.setAttribute('position', new THREE.BufferAttribute(this.pos, 3).setUsage(THREE.DynamicDrawUsage));
     this.geo.setIndex(idx);
     // (a twist in the strands: bands that spiral along it, fixed to the rope, so it reads as rope and not as a beam)
+    // (bands false: plain white, so a thread that wants no twist keeps the vertex-coloured program instead of a variant of its own)
     const col = new Float32Array(nv * 3);
-    for (let i = 0; i < n; i++) for (let k = 0; k < sides; k++) { const v = ((i * 0.5 + (k / sides) * 2) % 2) < 1 ? 1 : 0.66; const o = (i * sides + k) * 3; col[o] = col[o + 1] = col[o + 2] = v; }
+    for (let i = 0; i < n; i++) for (let k = 0; k < sides; k++) { const v = !bands || ((i * 0.5 + (k / sides) * 2) % 2) < 1 ? 1 : 0.66; const o = (i * sides + k) * 3; col[o] = col[o + 1] = col[o + 2] = v; }
     this.geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
     this.mat = new THREE.MeshBasicMaterial({ color, side: THREE.DoubleSide, vertexColors: true });
     this.mesh = new THREE.Mesh(this.geo, this.mat);
