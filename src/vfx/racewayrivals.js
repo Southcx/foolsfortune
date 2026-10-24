@@ -133,6 +133,7 @@ export class RacewayRivals {
       if (!o.isMesh || o.userData.isOutline) return;
       const n = o.material?.name;
       o.material = n === 'Skiff_Hull' ? hull : n === 'Skiff_Parts' ? M.parts : n === 'CourierEnergy' ? M.energy : n === 'Skiff_Cloth' ? cloth : o.material;
+      if (o.geometry?.userData?.stockCloth) o.geometry = o.geometry.userData.stockCloth; // (the stock cut: a sail's cut is the Courier's own, vfx/skiffsailcut.js)
       o.castShadow = n === 'Skiff_Hull'; o.receiveShadow = false; // (one shadow a board: the hull's)
     });
     let skin = null;
