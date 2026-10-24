@@ -1,5 +1,11 @@
 // Keyboard + mouse with pointer lock (falls back to free-cursor look if the
-// browser/iframe refuses pointer lock).
+// browser/iframe refuses pointer lock). The touch and pad drivers (core/touchdriver.js, core/paddriver.js) press the same codes through
+// `hold`, so every key read works on them; `axis(id)` is a move read with a stick's push (the keys give exactly -1, 0 or 1, as before),
+// and `device` is the device last touched (keyboard, touch, pad), which the HUD and the help follow (docs/plans/MOBILE.md 6.1).
+//   input.isDown(code)  wasPressed(code)  spend(...codes)  hold(code, on) (a driver's press)  axis(id) (core/bindings.js AXES)
+//   input.axes[id] = v | undefined (a driver's analog push)  input.device  input.onDevice(d)  input.setDevice(d)
+import { AXES } from './bindings.js';
+
 export class Input {
   constructor(el) {
     this.el = el;
@@ -14,6 +20,7 @@ export class Input {
     this.wheel = 0;
     this.mx = innerWidth / 2; // the cursor (only meaningful while the pointer is free: the god hand)
     this.my = innerHeight / 2;
+    this.device = 'keyboard'; this.axes = {}; this.touchedAt = -1e9; this.holdN = new Map(); // (touchedAt: a mouse event this soon after a touch is the browser's echo of it)
     el.addEventListener('wheel', (e) => { if (this.enabled) { this.wheel += e.deltaY; e.preventDefault(); } }, { passive: false });
     el.addEventListener('auxclick', (e) => e.preventDefault());
 
@@ -24,16 +31,19 @@ export class Input {
       const tag = e.target?.tagName; if (tag === 'INPUT' || tag === 'TEXTAREA') return; // (typing in a field: the chat line, a save code)
       if (e.code === 'Tab') e.preventDefault();
       if (!e.repeat) this.pressed.add(e.code);
-      this.down.add(e.code);
+      this.down.add(e.code); if (e.isTrusted) this.setDevice('keyboard'); // (a key event the touch bar sends is not the keyboard: feedback/touchbar.js)
       if (this.enabled && ['Space', 'ArrowUp', 'ArrowDown', 'KeyF', 'AltLeft', 'AltRight', 'KeyE', 'KeyG', 'KeyV', 'Backquote', 'Minus'].includes(e.code)) e.preventDefault();
     });
     addEventListener('keyup', (e) => {
       this.down.delete(e.code);
       if (this.enabled && (e.code === 'AltLeft' || e.code === 'AltRight')) e.preventDefault(); // (no menu bar on Alt release)
     });
-    addEventListener('blur', () => this.down.clear());
+    addEventListener('blur', () => { this.down.clear(); this.holdN.clear(); this.onBlur?.(); }); // (the drivers let go too: main.js)
+    addEventListener('pointerdown', (e) => { if (e.pointerType === 'touch') { this.touchedAt = performance.now(); this.setDevice('touch'); } }, true); // (any touch, the start card's too: the device is the thumb)
     el.addEventListener('mousedown', (e) => {
       if (!this.enabled) return;
+      if (performance.now() - this.touchedAt < 800) return; // (the browser's mouse echo of a tap: the touch driver had it)
+      this.setDevice('keyboard');
       if (!this.locked && this.everLocked && (this.wantLock?.() ?? true)) this.requestLock(); // (a click is the user's say-so: the lock a window's close could not take back without one, R12/T10)
       if (e.button === 1) e.preventDefault();
       const code = `Mouse${e.button}`;
@@ -75,6 +85,7 @@ export class Input {
   }
 
   requestLock(retry = false) {
+    if (this.device === 'touch') return; // (a phone has no pointer lock: the thumbs are the look, and losing a lock is never the pause)
     if (!retry) this.tries = 0;
     try {
       const p = this.el.requestPointerLock?.({ unadjustedMovement: true });
@@ -91,6 +102,16 @@ export class Input {
   }
 
   isDown(code) { return this.down.has(code); }
+  /** A driver's press or release of a code (a pressed edge on the way down, as a key's), counted: a code two holders hold (the pad's
+   *  dash button and its sprint latch, both Shift) stays down until both let go, and is never pressed twice. */
+  hold(code, on) {
+    const n = (this.holdN.get(code) || 0) + (on ? 1 : -1);
+    if (on && !this.down.has(code)) this.pressed.add(code);
+    if (n > 0) { this.holdN.set(code, n); this.down.add(code); } else { this.holdN.delete(code); this.down.delete(code); }
+  }
+  /** A move axis, -1 .. 1: a driver's analog push while it gives one, else the keys (exactly -1, 0 or 1). */
+  axis(id) { const v = this.axes[id]; if (v != null) return v; const A = AXES[id]; return A ? (this.down.has(A.pos) ? 1 : 0) - (this.down.has(A.neg) ? 1 : 0) : 0; }
+  setDevice(d) { if (this.device === d) return; this.device = d; this.onDevice?.(d); }
   wasPressed(code) { return this.pressed.has(code); }
   /** A press that closed or picked something is spent: no one else this frame, nor the Courier's latch, sees it (CASEBOOK rule 20). */
   spend(...codes) { for (const c of codes) { this.pressed.delete(c); this.onSpend?.(c); } }
