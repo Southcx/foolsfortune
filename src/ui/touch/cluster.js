@@ -83,6 +83,8 @@ export function defaultSpots(A, avoid = null) {
   ];
 }
 
+const screenTaken = (g) => g.touch?.screenTaken?.(); // (true while the rhythm mode's pads or Celestial mode's paper hold the whole screen: Petra's core/touch)
+
 export class TouchCluster {
   constructor(game) {
     this.game = game; this.auto = true; this.ids = []; this.tiles = new Map(); this.shown = false;
@@ -129,8 +131,11 @@ export class TouchCluster {
 
   /** Each frame: read the moment (while auto), stand down under a window or off touch, and put each tile's state on it. */
   update(now, on) {
-    const g = this.game, show = !!on && !windowOpen(g);
-    if (this.auto) this.set(show ? clusterContext(g) : []);
+    // (the screen taken, Petra's ruling 2026-10-24: the rhythm mode's pads take every touch, so the cluster stands down; Celestial mode's
+    //  paper lives only while AIM is held, so AIM alone stays: core/touchlanes.js, core/touchtools.js)
+    const taken = !!screenTaken(this.game), pads = taken && !!this.game.rhythm?.active;
+    const g = this.game, show = !!on && !windowOpen(g) && !pads;
+    if (this.auto) this.set(show ? (taken ? (clusterContext(g) || []).filter((e) => (e?.id ?? e) === 'aim') : clusterContext(g)) : []);
     if (show !== this.shown) { this.shown = show; for (const id of this.ids) this.tile(id).set({ hidden: !show }); }
     if (!show) return;
     const T = g.player?.techs?.get?.('skiff') || g.techs?.get?.('skiff');

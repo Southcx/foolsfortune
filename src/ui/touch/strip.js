@@ -94,7 +94,7 @@ export class TouchStrip {
 
   /** Each frame: read the moment, lay out what changed, put each tile's state on it. `cb` the cluster's bounds (or null). */
   update(now, on, cb) {
-    const g = this.game, show = !!on && !windowOpen(g);
+    const g = this.game, show = !!on && !windowOpen(g) && !g.touch?.screenTaken?.(); // (the pads or the paper hold the screen: the strip stands down, Petra's ruling)
     const entries = show ? stripOf(g) : [], pair = show ? beltPairOf(g) : [];
     const all = [...pair, ...entries];
     for (const e of all) this.tile(e);
