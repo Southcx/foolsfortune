@@ -126,16 +126,25 @@ export class PneukaJarLook {
     if (this.seal) { this.drop(this.seal); this.seal = null; }
     if (!seal) return;
     const c = (this.sealCanvas ||= document.createElement('canvas')); c.width = c.height = 256;
-    const ctx = c.getContext('2d'); ctx.clearRect(0, 0, 256, 256); ctx.save(); ctx.translate(256, 0); ctx.scale(-1, 1);
+    const ctx = c.getContext('2d'); ctx.fillStyle = '#b8936f'; ctx.fillRect(0, 0, 256, 256); ctx.save(); // (the base's bare clay under the carving: a clear canvas read black) ctx.translate(256, 0); ctx.scale(-1, 1);
     try { drawSealFace(ctx, seal, { size: 256, ink: '#3a1a14' }); } catch { /* a face that cannot be drawn: the bare base */ }
     ctx.restore();
     const M = this.materials.m.seal; if (M.map?.isCanvasTexture) M.map.needsUpdate = true; else { M.map?.dispose?.(); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; M.map = M.emissiveMap = t; M.needsUpdate = true; }
+    M.emissive?.setRGB(0.32, 0.3, 0.28); // (a little light of its own: the base faces the ground, where no lamp reaches)
     const g = new THREE.CircleGeometry(0.148, 32).rotateX(Math.PI / 2).translate(0, 0.034, 0);
     const P = g.attributes.position, v = new THREE.Vector3();
     const e = f(new THREE.Vector3(0.148, 0.034, 0)), k = Math.hypot(e.x, e.z) / 0.148; // (the base widened or narrowed with the shape)
-    for (let i = 0; i < P.count; i++) { v.fromBufferAttribute(P, i); P.setXYZ(i, v.x * k, e.y + (v.y - 0.034), v.z * k); }
-    const n = P.count; g.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(new Uint16Array(n * 4).map((_, i) => (i % 4 ? 0 : 1)), 4));
-    g.setAttribute('skinWeight', new THREE.BufferAttribute(new Float32Array(n * 4).map((_, i) => (i % 4 ? 0 : 1)), 4)); g.setAttribute('aRegion', new THREE.BufferAttribute(new Float32Array(n).fill(4), 1));
+    // (laid just under the base's own floor, found on the body as morphed: its lowest vertex near the axis, and skinned as that vertex is;
+    //  a disc at a guessed height sat inside the recess and never showed: the sheet's from-below cell, 2026-10-24)
+    const B = this.jar.jarBody.geometry, BP = B.attributes.position, SI = B.attributes.skinIndex, SW = B.attributes.skinWeight;
+    let floor = Infinity, at = -1;
+    for (let i = 0; i < BP.count; i++) { const x = BP.getX(i), z = BP.getZ(i), y = BP.getY(i); if (Math.hypot(x, z) < 0.6 * 0.148 * k && y < floor) { floor = y; at = i; } }
+    const y0 = at < 0 ? e.y : floor - 0.0015;
+    for (let i = 0; i < P.count; i++) { v.fromBufferAttribute(P, i); P.setXYZ(i, v.x * k, y0, v.z * k); }
+    const n = P.count, si = new Uint16Array(n * 4), sw = new Float32Array(n * 4);
+    for (let i = 0; i < n; i++) for (let j = 0; j < 4; j++) { si[i * 4 + j] = at < 0 || !SI ? (j ? 0 : 1) : SI.getComponent(at, j); sw[i * 4 + j] = at < 0 || !SW ? (j ? 0 : 1) : SW.getComponent(at, j); }
+    g.setAttribute('skinIndex', new THREE.Uint16BufferAttribute(si, 4));
+    g.setAttribute('skinWeight', new THREE.BufferAttribute(sw, 4)); g.setAttribute('aRegion', new THREE.BufferAttribute(new Float32Array(n).fill(4), 1));
     this.seal = this.mesh(g, M); this.seal.castShadow = false;
   }
 
