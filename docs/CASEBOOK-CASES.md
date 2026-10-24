@@ -3658,4 +3658,4 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   or a crate it still dives, as before). matterlook.js lets the cut wander by the atlas's wide pooling under the lip, so a heap's foot
   feathers out in lobes. Seen headless from the same god hand camera in the workshop: /tmp/matteredge/shots/02-before-close.png
   (the treads) and 02-after-close.png (a smooth, lobed foot).
-- **Rule:** NEW:matter-edge-iso
+- **Rule:** 283

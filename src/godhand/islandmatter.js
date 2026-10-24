@@ -115,7 +115,7 @@ export class IslandMatter {
       const on = (k) => F.amount(k) > FIELD.show && !F.void[k];
       for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
         const k = j * n + i, a = F.amount(k), shown = on(k);
-        // the edge (CASEBOOK NEW:matter-edge-iso): an empty cell beside matter on level ground lies on the authored ground, not under
+        // the edge (CASEBOOK 283): an empty cell beside matter on level ground lies on the authored ground, not under
         // it, and the alpha is the thickness itself (0.5 at FIELD.show, unclamped), so the cut runs where the thickness crosses it,
         // interpolated across each triangle (marching squares' edge interpolation, done by the rasterizer) instead of a staircase
         let edge = false;
