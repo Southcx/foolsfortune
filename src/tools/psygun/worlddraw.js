@@ -89,7 +89,7 @@ export class WorldDraw {
     if (baubles.length) out.push({ kind: 'bauble', amount: baubles.length, feeling: null, ref: baubles });
     const w = g.weather?.here?.(at);
     if (w?.aspect && w.exposure !== 'roofed') { // (the open, and a Well's own weather in its deep; nothing falls under a roof)
-      const s = (w.strength || 0) * this.weatherK(at);
+      const s = w.strength || 0; // (already what is left of it here: Weather.here reads the thin patches, the one reader)
       if (s > 0.01) out.push({ kind: 'weather', amount: s, feeling: w.aspect, ref: w });
     }
     return out;

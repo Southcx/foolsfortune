@@ -177,7 +177,7 @@ const LANDS_WORLD = {
     BASE_LANDS.bloom(R, row, at, ...rest);
     if (!row.world) return;
     const g = R.game; g.worldLooks?.thicket?.(groundAt(g, at), row.n.r, GAME_HOUR, row.world);
-    const mended = g.breakables?.mend?.(at, WORLD_ALTER.bloom.mend, { gold: true, by: 'courier' }) ?? 0; // (a broken pot whole again, its joins gold)
+    const mended = g.breakables?.mendWithin?.(at, WORLD_ALTER.bloom.mend) ?? 0; // (a cracked pot whole again, its joins gold: Petra's breakables.js)
     if (mended) g.events?.emit('shell.mend', { n: mended, by: 'courier' });
   },
 };
