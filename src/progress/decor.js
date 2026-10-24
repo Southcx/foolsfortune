@@ -4,8 +4,9 @@
 // state only: placing a piece on its planetoid's grid is Petra's (the decor layer), drawing it Calissa's, its sound Wanda's.
 //
 // - THE CATALOGUE: about forty pieces, the plain things every garden wants and five sets, one a feeling, plus pieces that sound, pieces
-//   of a season and pieces of briar. Each has two ways or more to get it (CLAUDE.md: every source of growth has a count way and a feat
-//   way). A piece once owned stays in the catalogue, bought again for more copies; a tint is free once the piece is owned.
+//   of a season and pieces of briar, and three sets of no feeling (the Tea Path, a kiln yard, a stargazer's lawn) each opened by a lake
+//   lotus. Each has two ways or more to get it (CLAUDE.md: every source of growth has a count way and a feat way).
+//   A piece once owned stays in the catalogue, bought again for more copies; a tint is free once the piece is owned.
 // - STORAGE: a piece bought is one copy in the shed's storage; placing takes it out, picking it up puts it back whole.
 // - THE RATING: variety over quantity, region by region (a quarter of a cube face of a planetoid's decor grid): a region's points are
 //   half a point a piece up to three pieces a kind, plus three quarters of a point a kind, so a field of one piece scores little and a
@@ -28,11 +29,16 @@ import { ECON } from './econ/table.js';
 /** Where a piece comes from (two or more a piece): the shed's catalogue; a spirit's gift on the doorstep at dawn; a spirit's thanks for a
  *  wish; a visitor's gift; a lotus opening (its set's recipe: then bought); a season's (that season only); briar fruit. */
 export const SOURCES = ['shop', 'gift', 'wish', 'visitor', 'lotus', 'season', 'briar', 'farewell'];
-/** The sets: five feelings' (their place in the Five Phases, SPIRIT-GARDEN.md 1), the sounding pieces, the seasons, the briar. */
+/** The sets: five feelings' (their place in the Five Phases, SPIRIT-GARDEN.md 1), the sounding pieces, the seasons, the briar, the keepsakes
+ *  and three opened by a lake lotus (`lotus`). */
 export const SETS = {
   plain: { name: 'Garden Basics' },
   wonder: { name: 'Moss and Stone' }, mirth: { name: 'Festival' }, desire: { name: 'Tea Garden' }, grief: { name: 'Rain Garden' },
   dread: { name: 'Koi Pond' }, sound: { name: 'Sound' }, season: { name: 'Seasons' }, briar: { name: 'Briar' }, keepsake: { name: 'Keepsakes' },
+  // three sets that are no feeling's (Calissa's 24 pieces, 2026-10-24): each opens at a lake lotus (`lotus`: the lotuses open, GARDEN-COZY.md D6,
+  // "a decor set's recipe at each lotus"), its shop pieces and its centrepiece then bought; the garden's rating is the key, and no spirit's
+  // feeling is theirs, so neither a gift nor a wish brings them (spiritlife.js draws by the spirit's feeling)
+  teapath: { name: 'Tea Path', lotus: 1 }, kilnyard: { name: 'Kiln Yard', lotus: 2 }, stargazer: { name: 'Stargazer', lotus: 3 },
 };
 const P = (name, set, size, tints, from, season) => ({ name, set, size, tints, from, ...(season ? { season } : {}) });
 /** The catalogue (names plain, Espada's to rule; the looks Calissa's). `size`: small 1 cell, medium 2 x 2, large 3 x 3, centre 4 x 4. */
@@ -80,6 +86,33 @@ export const DECOR = {
   lilyPads: P('Lily Pads', 'dread', 'small', 4, ['shop', 'gift']),
   stoneFrog: P('Stone Frog', 'dread', 'small', 4, ['gift', 'visitor']),
   moonGate: P('Moon Gate', 'dread', 'centre', 4, ['lotus', 'wish']),
+  // the Tea Path (Calissa's "Teahouse" set, renamed by Espada: Tea Garden and its Tea House are the desire set's, and `teahouse` read as `teaHouse`)
+  teaPathStones: P('Tea Path Stones', 'teapath', 'small', 4, ['shop', 'gift']),
+  crouchingBasin: P('Crouching Basin', 'teapath', 'small', 4, ['shop', 'gift']),
+  snowViewingLantern: P('Snow-Viewing Lantern', 'teapath', 'medium', 4, ['shop', 'visitor']),
+  bambooLatticeFence: P('Bamboo Lattice Fence', 'teapath', 'small', 4, ['shop', 'gift']), // (Calissa's "Lattice Fence": a lattice is a homonym, qualified)
+  slabBridge: P('Slab Bridge', 'teapath', 'medium', 4, ['shop', 'wish']),
+  teaBenchParasol: P('Tea Bench', 'teapath', 'medium', 4, ['shop', 'visitor']),
+  mossHillock: P('Moss Hillock', 'teapath', 'medium', 4, ['gift', 'wish']),
+  bambooWaterPipe: P('Deer Scarer', 'teapath', 'centre', 4, ['lotus', 'wish']),
+  // a kiln yard (the pottery's yard, not the workshop's kiln station)
+  woodPile: P('Wood Pile', 'kilnyard', 'small', 4, ['shop', 'gift']),
+  saggarStack: P('Saggar Stack', 'kilnyard', 'small', 4, ['shop', 'gift']),
+  tunnelKiln: P('Tunnel Kiln', 'kilnyard', 'centre', 4, ['lotus', 'wish']),
+  potDryingRack: P('Drying Rack', 'kilnyard', 'medium', 4, ['shop', 'visitor']),
+  clayPit: P('Clay Pit', 'kilnyard', 'medium', 4, ['shop', 'wish']),
+  pottersWheel: P('Potter\'s Wheel', 'kilnyard', 'small', 4, ['gift', 'wish']),
+  potShardHeap: P('Shard Heap', 'kilnyard', 'small', 4, ['shop', 'gift']),
+  glazeDipBucket: P('Dipping Bucket', 'kilnyard', 'small', 4, ['shop', 'visitor']), // (Calissa's "Glaze Bucket": glaze is the Courier's word, so the bucket is named for its dipping)
+  // a stargazer's lawn
+  armillarySphere: P('Armillary Sphere', 'stargazer', 'medium', 4, ['shop', 'wish']),
+  brassTelescope: P('Telescope', 'stargazer', 'small', 4, ['shop', 'gift']),
+  gardenSundial: P('Sundial', 'stargazer', 'small', 4, ['shop', 'gift']),
+  starChartTable: P('Star-Chart Table', 'stargazer', 'medium', 4, ['shop', 'visitor']),
+  crescentMoonGate: P('Crescent Gate', 'stargazer', 'medium', 4, ['gift', 'wish']),
+  glassOrbStakes: P('Glass Orbs', 'stargazer', 'small', 4, ['shop', 'gift']),
+  meteorStone: P('Meteor Stone', 'stargazer', 'small', 4, ['gift', 'visitor']),
+  constellationPavement: P('Constellation Pavement', 'stargazer', 'centre', 4, ['lotus', 'wish']),
   // what sounds where it stands (GARDEN-COZY.md B5: Wanda's)
   windChime: P('Wind Chime', 'sound', 'small', 4, ['shop', 'gift']),
   musicBox: P('Music Box', 'sound', 'small', 4, ['wish', 'visitor']),
@@ -161,14 +194,18 @@ export class Decor {
   owns(id) { return !!this.s.owned[id]; }
   stored(id) { return this.s.stored[id] || 0; }
   /** What the shed's catalogue offers now: every piece once owned; the plain pieces always; a set's shop pieces once any piece of that
-   *  set is owned (a gift or a wish brings the set in: discovery, Animal Crossing's catalogue); a season's in its season. */
+   *  set is owned (a gift or a wish brings the set in: discovery, Animal Crossing's catalogue); a season's in its season; a set with a
+   *  `lotus` (SETS) once that many lake lotuses have opened (the ledger's best `garden.lotuses`): its shop pieces, and its centrepiece
+   *  where that piece's way is `lotus` (its recipe, then bought). */
   catalogue(season = null) {
     const met = new Set(Object.keys(this.s.owned).map((id) => DECOR[id]?.set));
+    const lotusOpen = (set) => SETS[set]?.lotus != null && (this.game.ledger?.best?.('garden.lotuses') || 0) >= SETS[set].lotus;
     return Object.keys(DECOR).filter((id) => { const D = DECOR[id];
       if (D.set === 'keepsake') return false; // (a keepsake is never sold, not even again: it is that spirit's)
       if (this.owns(id)) return true;
       if (D.from.includes('season')) return D.season === season;
-      return D.from.includes('shop') && (D.set === 'plain' || met.has(D.set)); });
+      if (D.from.includes('lotus') && lotusOpen(D.set)) return true;
+      return D.from.includes('shop') && (D.set === 'plain' || met.has(D.set) || lotusOpen(D.set)); });
   }
   /** A piece given (a gift, a wish's thanks, a visitor's, a lotus's recipe, briar fruit made into it): one copy to storage. */
   give(id, from = 'gift', n = 1) {
