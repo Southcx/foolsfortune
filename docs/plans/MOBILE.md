@@ -209,7 +209,7 @@ prior art. Landscape. Every rule as on the keyboard (`courier/skiff/skiff.js`, `
 | aftertouch in a bail | the left thumb | |
 | the camera (mouse) | follows by itself; the right half's drag looks round and eases back on release | Sky's lesson |
 | summon / recall (Y), step off (F) | a SKIFF button in the top bar when on foot in the Dunes or the Raceway; STEP OFF in the pause menu | out of the thumbs' way |
-| back to the last gate (R), retire (R held), restart (Backspace), rewind (Backspace held, practice) | the race's own small bar at the top: BACK, RESTART (hold to rewind in practice), RETIRE (hold) | Trackmania's restart is one press: keep it one tap |
+| back to the last gate (R), retire (R held), restart (Backspace), rewind (Backspace held, practice) | in the pause menu while racing: BACK, RESTART (hold to rewind in practice), RETIRE (Calissa's: the top stays clear) | Trackmania's restart is one press: still one tap, behind the pause |
 | the race board, the start pillar (F) | USE, naming its thing ("Race board") | |
 | a route at the cavern's fork | the steering itself (as now); no TouchDrive | the skill is the steering |
 
@@ -240,6 +240,24 @@ Raceway's first race finished and first lap under bronze.
 6. Save on `pagehide`, failed-write notice.
 7. Headless touch in the sweeps and the stress test.
 8. M0's order and size: what lands in her next round.
+
+### Calissa's answers (2026-10-24: yes to all five, with these)
+1. **The layout manager** is one module (`src/ui/hudlayout.js`), its unit `su` = 1% of the safe area's shorter side; every corner
+   instrument registers an anchor and a size in su; on touch the thumbs' zones are reserved rects nothing may enter. On touch **the log
+   becomes a two-line ticker** top-left under the top bar (a tap opens it full, as a sheet), never under the steering thumb, since it is
+   the only narration; **the Lachrimeter moves up the right edge** under the Sight, clear of HOP; the place plate drops to its icon line.
+2. **The race's BACK / RESTART / RETIRE go into the pause menu** while racing (section 8 amended).
+3. **The touch controls are glazed clay tiles** in the Clay dress, each the action's glyph in the UI icons' hand, its state lit in the
+   labradorite's play (HOP's rim fills as the spring loads, FLARE embers as the scorch nears, BOOST shows the banked suns); the floating
+   stick's ring speaks the slip arc's language (calm in the film, the carve's sides an ember band); a word only under a glyph Espada says
+   needs one, 14 px least.
+4. **The long press shows a ring filling under the finger** over its 420 ms. **Tap-then-tap**: the picked thing lifts and glows as the
+   table marks' chosen piece does (one language for "held"), the legal drops lit; she needs a `pick(id)` / `drop(slot)` pair beside the
+   drag handlers in the Pneuka Box (Dovina's `pneuka/ui.js`), the reading table and the underside (Dovina's `pneuka/underside.js`). The
+   Box on a phone: its grid full height on one side, the detail a bottom sheet, the worn kit a strip.
+5. **Outline hulls near only** are acceptable if the hull's width fades out over a band (about 25 to 40 m), never a hard cut; far things
+   keep their silhouette from the grade. Petra measures first.
+6. She builds M0's top bar and pause button as soon as Petra's touch mode lands, to its hook (`game.touch` or a body class: Petra's call).
 
 ## 11. Questions for the owner (in Dovina's digest)
 
