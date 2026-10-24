@@ -3644,3 +3644,18 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** it reads `laidSpread.class`; an `arcana.<card>` id is a Major by its number; a Major's tint is the suit it `lifts`.
   Measured headless: a Celtic Cross reads `arcana.justice`, cell 11; 'arcana.emperor' 4; 'queen.wands' 76.
 - **Rule:** 282
+
+### 2026-10-24 · The god hand's matter met the ground in a sawtooth along its 0.5 m cells (Calissa; Dovina's handoff of 2026-10-13)
+- **Seen:** from the god hand's camera, a heap of the island's matter ended on the authored ground in stair-steps half a metre a tread,
+  chamfered on one diagonal; the colour lip softened the colour, not the shape.
+- **Cause (read):** godhand/islandmatter.js `redraw` wrote each vertex all or nothing: a cell under `FIELD.show` (2 cm) had its vertex
+  dropped 12 cm under the authored ground and its vertex alpha 0, a cell over it alpha 1; the alpha test (0.5) therefore cut every
+  edge triangle at its midpoint whatever the thickness, so the outline followed the grid and its triangles' diagonals, and the skin
+  dived into the ground before it was cut (a cliff, not a foot).
+- **Fix:** the vertex alpha is the thickness itself, `0.5 + (a - show) / FIELD.edge`, unclamped, so the cut falls where the
+  interpolated thickness crosses 2 cm; an empty cell beside matter on level ground (its base within `FIELD.step`, 25 cm, of the
+  neighbour's) lies on the authored ground instead of under it, so the skin ramps down to the ground and is cut there (beside a wall
+  or a crate it still dives, as before). matterlook.js lets the cut wander by the atlas's wide pooling under the lip, so a heap's foot
+  feathers out in lobes. Seen headless from the same god hand camera in the workshop: /tmp/matteredge/shots/02-before-close.png
+  (the treads) and 02-after-close.png (a smooth, lobed foot).
+- **Rule:** NEW:matter-edge-iso
