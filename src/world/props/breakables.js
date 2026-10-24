@@ -7,7 +7,7 @@
 //
 // Prior art: Zelda's pots, Red Faction and Battlefield's destruction, Voronoi fracture done cheap (a jittered grid), Katamari's clutter.
 //
-//   const B = new Breakables(...)   B.spawn(...)   B.hit(...)   B.preStep()   B.update(dt)   PROFILES
+//   const B = new Breakables(...)   B.spawn(...)   B.hit(...)   B.preStep()   B.update(dt)   B.mendWithin(at, r) -> n   PROFILES
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { ConvexGeometry } from 'three/addons/geometries/ConvexGeometry.js';
@@ -586,6 +586,19 @@ export class Breakables {
     const ent = this.spawn({ ...w.def, pos: [w.pos.x, w.pos.y + 0.01, w.pos.z], popIn: true, gold: Math.min(3, (w.gold || 0) + 1), yaw: simRand() * Math.PI * 2, facing: undefined });
     this.game.onRepaired?.(ent);
     return ent;
+  }
+
+  /** Everything broken within r of `at` made whole, as the clapperjars would (a wreck rebuilt with gold seams, a cracked pot's cracks
+   *  turned gold); returns how many. The caller says what did it (Bloom, a World shell: tools/psygun/shellworld.js emits `shell.mend`). */
+  mendWithin(at, r) {
+    let n = 0;
+    for (const w of [...this.wrecks]) if (Math.hypot(w.pos.x - at.x, w.pos.z - at.z) <= r && Math.abs(w.pos.y - at.y) < 4) { this.rebuild(w); n++; }
+    for (const ent of this.items) {
+      if (!ent.alive || !(ent.crackStage > 0)) continue;
+      const p = ent.body.translation();
+      if (Math.hypot(p.x - at.x, p.z - at.z) <= r && Math.abs(p.y - at.y) < 4) { this.mend(ent); n++; }
+    }
+    return n;
   }
 
   /** Take an intact pot away without breaking it (no shards, no side effects). */
