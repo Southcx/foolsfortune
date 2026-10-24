@@ -20,7 +20,7 @@
 // die or tile: the sunk twin cell, for what may not be touched now), and the SEAT PIECES: a seat token (its colour's shape standing up
 // on a foot, never a flat round disk, so it is never read as one of Raku's chips) and a seat rim (a thin flat band in the seat colour
 // under what a seat owns). The seat looks are vfx/seatlook.js's.
-//   bazaarMaterials() -> { paper, glaze, lit }   cardTpl(i, w, h, dim)   dieTpl(sides, skin: '6', 'atk6', 'ash', k, dim)   dieRest(sides, value, yaw, out, k) -> lift
+//   bazaarMaterials() -> { paper, glaze, lit }   cardTpl(i, w, h, dim)   dieTpl(sides, skin: '6', 'atk6', 'ash', k, dim)   dieRest(sides, value, yaw, out, k) -> lift   dieFace(sides, value) -> { n, up }
 //   dieFaces(sides) -> [{ poly, m, n, value }] (the solid's faces, radius 1, no atlas)
 //   chipTpl(kind, k)   tileTpl(n, state, k, dim)   cupTpl(r, h)   clothTpl(id, r)
 //   TIER   tierScale(tier) -> k   new PieceBatch(materials)  .clear()  .add(tpl, matrix, slot, id)
@@ -116,6 +116,13 @@ export function dieTpl(sides, skin = String(sides), k = 1, dim = false) {
     }
     return b.done();
   });
+}
+/** Where `value` is read on a die, in its template's frame: `n` the way the face looks out (the d4: its vertex), `up` the way its numeral
+ *  stands on the face (from its foot vertex, as dieTpl maps it; null on the d4, read at the vertex). Both unit vectors, fresh. */
+export function dieFace(sides, value) {
+  const F = dieFaces(sides), f = F.find((x) => x.value === value) || F[0];
+  if (sides === 4) return { n: f.up.clone().normalize(), up: null };
+  return { n: f.n.clone(), up: f.m.clone().sub(f.poly[0]).projectOnPlane(f.n).normalize() };
 }
 const _up = new THREE.Vector3(0, 1, 0), _q = new THREE.Quaternion(), _qy = new THREE.Quaternion(), _v = new THREE.Vector3();
 /** The turn that rests a die with `value` read on top (the d4: its vertex up), turned `yaw` about the vertical; returns the height its

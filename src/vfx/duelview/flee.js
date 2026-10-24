@@ -6,7 +6,8 @@
 //                   for the number) as the Lockheart's reliquary publishes its break chances (lockheartreliquary/dial.js); faint while
 //                   the turn is not yours or the points will not pay for it
 //   THE ROLL        the 'flee' event { roll, bonus, need, mods, ok }: your own d20 (the owner, 2026-10-23: the stones are your dice), Raku's
-//                   dice set's body (vfx/bazaarpieces.js) in the mineral of the stones you wear (the vessel's STONES glaze, its fire as a glow) thrown from the Courier's figurine before the board, tumbling, coming to rest
+//                   dice set's body (vfx/bazaarpieces.js) in the mineral of the stones you wear (the vessel's STONES glaze), its numerals lit gold
+//                   (the atlas's glow mask as its emissive map: GROWN 2026-10-24, the face read on the dark tsuitate) thrown from the Courier's figurine before the board, tumbling, coming to rest
 //                   before the Courier's half with `roll` turned to you, its window over it; then its reasons counted in as the score ceremony counts (ui/scoreceremony.js):
 //                   ROLL, then each modifier that is not nought (LINE held or lost, BREAK +3 a stun depth, PITY +3 a failed try, LUCK)
 //                   lighting in and rolling the total up, against the 15 it must reach, and the verdict: a tick in the film, or a cross
@@ -33,6 +34,7 @@ import { DUEL_VIEW, sm, ease, clamp01 } from './layout.js';
 const K = 3; // (canvas pixels a dot: drawn crisp, read at the 480 lines)
 const DIE_K = 2.4, THROW = 0.75, PER = 0.3, VERDICT = 0.4, HOLD = 0.6, LINGER = 0.9, SHOWN = 0.3, SNATCH = 0.18; // (a re-roll: the first face shown a beat, then snatched up)
 const REASONS = [['line', 'LINE'], ['break', 'BREAK'], ['pity', 'PITY'], ['luck', 'LUCK']];
+const NUMERAL = 0xffc75a; // (the numerals' glow: the Majors' gold, a touch warmer)
 const OK = '#ffe7a0', NO = '#ff8a5a', FAINT = 'rgba(226,243,230,.45)';
 const _t = new THREE.Quaternion(), _a = new THREE.Quaternion(), _v = new THREE.Vector3(), _up = new THREE.Vector3(0, 1, 0);
 
@@ -62,7 +64,7 @@ export class DuelFlee {
     this.oddsP = plate(56, 22, 0.56); this.rollP = plate(76, 74, 0.62); this.group.add(this.oddsP.mesh, this.rollP.mesh);
     const T = dieTpl(20, 'stone20', DIE_K), geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(T.pos, 3)); geo.setAttribute('normal', new THREE.BufferAttribute(T.nrm, 3)); geo.setAttribute('uv', new THREE.BufferAttribute(T.uv, 2));
-    this.stoneMat = new THREE.MeshStandardMaterial({ name: 'flee-stone', map: bazaarAtlas().tex, roughness: 0.12, metalness: 0.05, emissiveIntensity: 0.18 });
+    this.stoneMat = new THREE.MeshStandardMaterial({ name: 'flee-stone', map: bazaarAtlas().tex, emissiveMap: bazaarAtlas().glow(), emissive: NUMERAL, emissiveIntensity: 1.6, roughness: 0.12, metalness: 0.05 }); // (its numerals alone lit gold: the atlas's glow mask, so the face read against the 15 reads on the dark tsuitate)
     this.die = new THREE.Mesh(geo, this.stoneMat); this.die.visible = false; this.die.castShadow = false; this.group.add(this.die);
     this.run = null; this.linger = 0; this.t = 0; this.board = { w: 20, h: 20 };
   }
@@ -106,7 +108,7 @@ export class DuelFlee {
   /** The die in the mineral of the stones you wear (the vessel's STONES region, glazes.js gems): the house's d20 numerals on your stone. */
   dress() {
     const G = GLAZES[this.view.game?.vessel?.look?.stones] || GLAZES.maker, M = this.stoneMat;
-    M.color.setHex(G?.color ?? 0xffffff); M.emissive.setHex(G?.color2 ?? 0xffffff); M.roughness = Math.max(0.06, G?.rough ?? 0.1);
+    M.color.setHex(G?.color ?? 0xffffff); M.roughness = Math.max(0.06, G?.rough ?? 0.1); // (the emissive stays the numerals' gold)
   }
   /** The die where its throw has it: an arc from the figurine, tumbling about one axis down to rest, one small hop as it lands. */
   /** A re-roll's first throw: the same arc to rest on the failed face, a beat shown, then snatched back up toward the figurine. */
