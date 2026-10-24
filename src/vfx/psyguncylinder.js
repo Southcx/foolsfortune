@@ -40,6 +40,7 @@ import { capacityOf } from '../tools/psygun/kinds.js';
 import { fireCost, shellById } from '../progress/combat/castershells.js';
 import { REGIONS } from '../courier/vessel/damage.js';
 import { T } from '../core/config.js';
+import { COLOR } from '../progress/weather.js';
 import { theme, THEMES } from '../ui/theme.js';
 
 const TAU = Math.PI * 2;
@@ -75,6 +76,7 @@ export class PsygunCylinder {
     const quad = (w, h) => { const c = document.createElement('canvas'); c.width = w * K; c.height = h * K; const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.generateMipmaps = false; t.minFilter = THREE.LinearFilter;
       const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), overlayFlat({ map: t, depthTest: false, depthWrite: false })); m.renderOrder = 10; m.frustumCulled = false; this.root.add(m); return { c, t, m, w, h }; };
     this.plate = quad(PLATE.w, PLATE.h); this.inset = quad(36, 52); this.inset.m.visible = false; this.plateKey = '';
+    this.vial = quad(36, 52); this.vial.m.visible = false; this.vialT = 0; this.vialK = null; // (a World shell's draw under the hammer: drawVial)
     this.slot = this.S.add(this.root, { anchor: 'br', x: 0, y: 0, z: 0, hud: true, update: (dt, slot) => this.update(dt, slot) });
     this.rebuild();
     const on = (n, f) => game.events?.on(n, f);
@@ -342,6 +344,7 @@ export class PsygunCylinder {
     pl.m.position.set(-(px + (PLATE.w / 2) * lp), (PLATE.foot + PLATE.h / 2) * lp, 200); pl.m.scale.set(PLATE.w * lp, PLATE.h * lp, 1);
     this.drawPlate(P);
     this.drawInset(P, px, lp);
+    this.drawVial(px, lp);
     root.updateMatrixWorld(true);
   }
   drawPlate(P) {
@@ -352,12 +355,29 @@ export class PsygunCylinder {
   /** While the Caster's own is under the hammer: the vessel inset, the region the toll would crack glinting (all when it would shatter). */
   drawInset(P, px, lp) {
     const g = this.game, S = this.known, i = this.selIdx(S), id = this.ids[i], ins = this.inset;
-    const armed = !S.open && S.counts[i] > 0 && (shellById(id)?.tier || 1) >= 4 && !!g.vesselDamage;
+    const armed = !S.open && S.counts[i] > 0 && fireCost(id).crack && !!g.vesselDamage; // (the toll's: a tier IV's, never a World shell's, which the place pays)
     ins.m.visible = armed; if (!armed) { this.insetKey = ''; return; }
     const tr = g.vesselDamage.tollRegion?.() || { region: null, shatter: false }, lit = tr.shatter ? REGIONS.map((_, k) => k) : tr.region ? [REGIONS.indexOf(tr.region)] : [];
     const crack = Array.from(g.vesselDamage.crack || []), key = `${lit.join('')}|${crack.join('')}|${Math.floor(this.clock * (lit.length ? 30 : 4))}`; // (the glint pulses at 30 a real s; unlit, only the frame's slow film turns)
     if (key !== this.insetKey) { this.insetKey = key; drawInset(ins.c, lit, crack, 1, this.clock); ins.t.needsUpdate = true; }
     ins.m.position.set(-(px + (PLATE.w - 18) * lp), (PLATE.foot + PLATE.h + PLATE.gap + 26) * lp, 200); ins.m.scale.set(36 * lp, 52 * lp, 1);
+  }
+  /** While a World shell (tier V) is under the hammer: a vial beside the plate filled to what it would draw here now (the draw against
+   *  its need: the gold line is the need, the cap the brim, under the red floor it would dry-click), in the colour of the feeling it
+   *  would draw; measured four times a real second (tools/psygun/worlddraw.js). The second avenue beside the log (CASTER-SHELLS.md 7.1). */
+  drawVial(px, lp) {
+    const g = this.game, S = this.known, i = this.selIdx(S), id = this.ids[i], row = shellById(id), v = this.vial;
+    const on = !S.open && S.counts[i] > 0 && row?.tier === 5 && !!g.worldDraw && !!g.camera;
+    v.m.visible = on; if (!on) { this.vialK = null; return; }
+    if ((this.vialT -= 1 / 60) <= 0 || !this.vialK) {
+      this.vialT = 0.25;
+      const cam = g.camera, dir = new THREE.Vector3(0, 0, -1).applyQuaternion(cam.quaternion), muzzle = (g.player?.pos ?? cam.position).clone(); muzzle.y += 1.4;
+      const m = g.worldDraw.measure(row, { ray: { origin: cam.position.clone(), dir }, muzzle });
+      this.vialK = { k: m.k, dry: m.dry, feeling: m.feeling, liquid: m.src?.some?.((s) => s.kind === 'liquid') };
+    }
+    const W = this.vialK, key = `${Math.round(W.k * 40)}|${W.dry}|${W.feeling}|${Math.floor(this.clock * 8)}`;
+    if (key !== this.vialKey) { this.vialKey = key; paintVial(v.c, W, this.clock); v.t.needsUpdate = true; }
+    v.m.position.set(-(px + (PLATE.w - 18) * lp), (PLATE.foot + PLATE.h + PLATE.gap + 26) * lp, 200); v.m.scale.set(36 * lp, 52 * lp, 1);
   }
   /** The Pentagun's points: a chamber fired in the window lights its corner (60 ms up); the fifth draws the star (five strokes, 70 ms
    *  each), the circle closes (150 ms), all five flare, held 1.2 s and gone in 0.4. */
@@ -371,4 +391,20 @@ export class PsygunCylinder {
   }
   /** The strap's brass eye in the overlay scene's coordinates (the link's far end), or null while hidden. */
   eyeAt(out) { if (!this.vis || !this.B) return null; this.B.eye.getWorldPosition(_v); return out.copy(_v); }
+}
+
+/** The World shell's vial (drawVial): a glass tube on a brass foot, its Lachryma to k of the cap, the need in gold, the floor in red. */
+function paintVial(c, { k, dry, feeling, liquid }, clock) {
+  const x = c.getContext('2d'), w = c.width, h = c.height, u = w / 36, cap = 1.5;
+  x.clearRect(0, 0, w, h);
+  const tx = 11 * u, tw = 14 * u, top = 4 * u, bot = h - 9 * u, H = bot - top, yAt = (kk) => bot - H * Math.min(1, kk / cap);
+  x.fillStyle = 'rgba(20,16,22,0.55)'; x.fillRect(tx, top, tw, H);
+  const col = feeling ? '#' + COLOR[feeling].toString(16).padStart(6, '0') : liquid ? '#6fd0e8' : '#bfe8ff';
+  const fy = yAt(k), wob = Math.sin(clock * 6) * 0.6 * u;
+  x.globalAlpha = dry ? 0.35 + 0.25 * Math.sin(clock * 10) : 0.92; x.fillStyle = dry ? '#a03030' : col; x.fillRect(tx + u, fy + wob, tw - 2 * u, bot - fy - wob); x.globalAlpha = 1;
+  x.strokeStyle = '#ffd36a'; x.lineWidth = 1.5 * u; x.beginPath(); x.moveTo(tx - 2 * u, yAt(1)); x.lineTo(tx + tw + 2 * u, yAt(1)); x.stroke(); // (the need)
+  x.strokeStyle = '#d04a3a'; x.setLineDash([2 * u, 2 * u]); x.beginPath(); x.moveTo(tx, yAt(0.25)); x.lineTo(tx + tw, yAt(0.25)); x.stroke(); x.setLineDash([]); // (the floor)
+  x.strokeStyle = 'rgba(232,251,255,0.85)'; x.lineWidth = 1.2 * u; x.strokeRect(tx, top, tw, H); // (the glass)
+  x.fillStyle = '#b8873a'; x.fillRect(tx - 3 * u, bot, tw + 6 * u, 4 * u); // (the brass foot)
+  if (k >= cap - 0.01) { x.fillStyle = 'rgba(255,255,255,0.8)'; x.beginPath(); x.arc(tx + tw / 2, top + 2 * u, 2.2 * u, 0, Math.PI * 2); x.fill(); } // (brimming: a glint at the lip)
 }

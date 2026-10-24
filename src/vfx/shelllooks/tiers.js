@@ -43,6 +43,7 @@ export const SHELL_TIER_LADDER = {
   2: { count: 1.5, size: 1.15, life: 1.1, light: 1.5, reach: 1.1, glow: 1.15, linger: 1.25, shake: 1.15, hitstop: 1.1, flash: 1 },
   3: { count: 2, size: 1.3, life: 1.25, light: 2, reach: 1.25, glow: 1.3, linger: 1.6, shake: 1.3, hitstop: 1.25, flash: 1.1 },
   4: { count: 3, size: 1.5, life: 1.5, light: 3, reach: 1.5, glow: 1.6, linger: 2.2, shake: 1.5, hitstop: 1.5, flash: 1.2 },
+  5: { count: 2.5, size: 1.5, life: 1.4, light: 2.5, reach: 1.4, glow: 1.4, linger: 2.6, shake: 1.6, hitstop: 1.3, flash: 1 }, // (World: as heavy as IV, longer in the place, no film: what it pulled from the place is its own show, vfx/worldshells.js)
 };
 const PLAIN = SHELL_TIER_LADDER[1];
 
@@ -64,6 +65,7 @@ export const TIER_EXTRAS = {
   2: { fly: 'shell.tier.2.fly' },
   3: { fly: 'shell.tier.3.fly', fire: 'shell.tier.3.fire', land: 'shell.tier.3.land', mark: 'shell.tier.3.mark' },
   4: { fly: 'shell.tier.4.fly', fire: 'shell.tier.4.fire', land: 'shell.tier.4.land', mark: 'shell.tier.4.mark', toll: 'shell.tier.4.toll', screen: 'shell.tier.4.screen' },
+  5: { fly: 'shell.tier.3.fly', land: 'shell.tier.3.land', mark: 'shell.tier.3.mark' }, // (World: III's gold, never IV's film or toll; the draw is its own extra)
 };
 /** The strongest of the rare (tier III): they burn a gold sunburst into the ground where they land, as the Caster's own do. */
 export const CROWNED = { stake: true, volcano: true, thunderhead: true, faradayCage: true, stasis: true, hydra: true, golem: true, prismatic: true, calm: true };

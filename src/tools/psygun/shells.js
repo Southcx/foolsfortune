@@ -156,6 +156,8 @@ export class Shells {
     // a Feelings shell needs its feeling known (FEELINGS-AWAKENING.md); every shell draws its tier's Lachryma (castershells.js TIERS)
     if (f && !g.lend?.has?.('feelings') && !(g.ledger?.get?.(`feeling.known.${f}`) > 0)) { sfx.dryFire(); g.log.say('warn', 'You have not awakened to that feeling yet.', { key: 'shellfeel', throttle: 4 }); return false; }
     const { lachryma: cost, crack } = fireCost(t.id);
+    // a World shell (tier V) is paid by the place: too little Lachryma here and the trigger dry-clicks, the round kept (CASTER-SHELLS.md 7.1)
+    if (t.row?.tier === 5 && !lent && g.worldDraw && this.worldDry(t.row, ctx)) { sfx.dryFire(); g.events?.emit('shell.dry', { id: t.id, by: 'courier' }); return false; }
     if (!lent && cost && g.lachryma && !g.lachryma.spend(cost, 'shell')) { sfx.dryFire(); g.log.say('warn', 'Your pool is too low to fire that shell.', { key: 'shellpool', throttle: 4 }); return false; }
     if (!lent && --this.counts[t.id] <= 0 && !ctx.barrels) this.turnOn(); // (both barrels turn once, after: bothBarrels)
     this.runner.onShellFired(); // (the Detonator's charges go off at the next shell)
@@ -179,6 +181,12 @@ export class Shells {
     weapon.moves?.shot(); // (the arms' recoil, over the aim: gunmoves.js)
     weapon.startRack();
     return true;
+  }
+
+  /** A World shell's draw from here now, at the trigger (tools/psygun/worlddraw.js): true if it is dry (under a quarter of its need). */
+  worldDry(row, { camera, player, character, weapon }) {
+    const ray = weapon.shotRay(camera, player, character, new THREE.Vector3(0, 0, -1).applyQuaternion(camera.quaternion));
+    return this.game.worldDraw.measure(row, { ray, muzzle: character.gunPoint('muzzle', new THREE.Vector3()) }).dry;
   }
 
   /** BOTH BARRELS (the Pepperbox's: variantplay.js): every loaded ring chamber fires at once, each its own shell and its Lachryma; then
