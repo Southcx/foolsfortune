@@ -29,6 +29,7 @@
 //   skiff.stakes({ heat, luff, wear, tilt, roll })            // the board's rules worn on it (vfx/skiffboardlooks.js, each frame)
 //   skiff.partsLook()                                       // the mast and the fins as worn (in own(): MAST and FIN, SKIFF_PARTS_LOOK)
 //   skiff.flash(k, colour?, dur?)   skiff.broken = bool   skiff.setHullMap(tex | null)   skiff.cleanHull (the hull's unworn material)
+//   skiff.paintLook (the paint worn: vfx/skiffpaintlook.js)   skiff.cleanCloth (the cloth as painted, unpainted and unfaded: the rivals')
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -40,6 +41,7 @@ import { vessoulPainted, PAINT_LIGHT } from '../../vfx/vessoulpaint.js';
 import { featTint } from '../../vfx/oxidation.js';
 import { LACHRYMA_TINT } from '../../vfx/racewayeffects.js';
 import { glazeHull } from '../../vfx/hullglaze.js';
+import { SkiffPaintLook } from '../../vfx/skiffpaintlook.js';
 import { base64Buffer } from '../../core/base64.js';
 
 // how far the model stands up in the group (m): the deck is this far over the group's origin, and the rider with it. At 0 the deck
@@ -130,6 +132,7 @@ export class Skiff {
       .then(async (gltf) => {
         this.build(gltf);
         this.hullGlaze(game); // (the glaze fired on the hull at the kiln: hullGlaze below)
+        this.paintLook ||= new SkiffPaintLook(this, game); // (the sail's dye, pattern and seal, the pennant, the trail and the ribbon: vfx/skiffpaintlook.js)
         // (its programs built off the main thread before its first frame, as the warm-up builds the rest, and for the buffer the frame is
         // drawn into, as it does: nothing compiles in play. compileAsync compiles at the call and only waits after, so the target is put back
         // at once. An empty frame first, as main.js's warm-up does: compile reads the clipping state the last render left, and the trail
@@ -149,7 +152,7 @@ export class Skiff {
       .catch((e) => console.warn('the skiff\'s model', e));
     return this.loading;
   }
-  set visible(v) { this.group.visible = v && this.ready; this.rope.visible = v && this.ready; }
+  set visible(v) { this.group.visible = v && this.ready; this.rope.visible = v && this.ready; if (!v) this.paintLook?.clear(); }
 
   // ------------------------------------------------------------------ the model
   build(gltf) {
@@ -173,7 +176,7 @@ export class Skiff {
       const src = m.material, tex = src.emissiveMap || src.map;
       if (src.name === 'Skiff_Hull') { this.hullTex = filtered(tex, true); this.cleanHull = painted(this.hullTex); m.material = this.hullMat = painted(this.hullTex); } // (the board's own hull, worn and flashed by its stakes; `cleanHull` the same program unworn, for the rivals' boards: vfx/racewayrivals.js)
       else if (src.name === 'Skiff_Parts') m.material = painted(filtered(tex, false));
-      else if (src.name === 'Skiff_Cloth') { m.material = this.clothMat = painted(filtered(tex, false), { side: THREE.DoubleSide, roughness: 0.9 }, this.sailFade = rigUniforms()); } // (the screen-door fade, its own uniforms: the ride sees through the sail, skiff.js; painted is already withFade's, a second wrap declared uFade twice and the sail's program failed: nothing drawn)
+      else if (src.name === 'Skiff_Cloth') { m.material = this.clothMat = painted(filtered(tex, false), { side: THREE.DoubleSide, roughness: 0.9 }, this.sailFade = rigUniforms()); this.cleanCloth = painted(tex, { side: THREE.DoubleSide, roughness: 0.9 }); this.cleanCloth.name = src.name; } // (the screen-door fade, its own uniforms: the ride sees through the sail, skiff.js; painted is already withFade's, a second wrap declared uFade twice and the sail's program failed: nothing drawn)
       else if (src.name === 'CourierEnergy') m.material = this.energyMat = new THREE.MeshStandardMaterial({ color: src.color.clone(), roughness: 0.35, metalness: 0.2, emissive: PALETTE.glow ?? C.energy, emissiveIntensity: 0.3 });
       m.material.name = src.name;
       if (src.name === 'Skiff_Hull') this.cleanHull.name = src.name;
@@ -248,6 +251,7 @@ export class Skiff {
     this.wind.yaw = Math.atan2(-_v.x, -_v.z); // (at rest the pennant streams aft, -Z: turned about the mast to where the wind goes)
     this.wind.str = THREE.MathUtils.clamp(strength, 0, 1.2);
     this.wind.t = t;
+    this.paintLook?.frame(t); // (the trail's colour and the ribbon, the board placed)
   }
 
   // ------------------------------------------------------------------ per frame
@@ -367,6 +371,7 @@ export class Skiff {
     }
     this.rom.apply();
     this.partsLook();
+    this.paintLook?.pose(B); // (the pennant's length as worn)
   }
 
   /** The mast and the fins as worn (Dovina's MAST and FIN slots, progress/skiffparts.js): each mast section's rise lengthened or shortened,
