@@ -5,11 +5,12 @@
 // Box, the map, the index, the shop, QAIS, the kiln's, the dialogue box, a reprogramming, the pause menu, the chat line), the god hand,
 // the Spirit Garden, a seat at Raku's tables, a puzzle duel, the title and the seal picker.
 //
-// While it stands the game is held: `game.hudLayout.turnHeld` is true (main.js's modalOpen reads it, so the tick pauses as under the
+// When it shows: game.screenTurn.held once Petra's core/platform.js says it (its `why` picks the second line: race, else), the card's own
+// reading below until then. While it stands the game is held: `game.hudLayout.turnHeld` is true (main.js's modalOpen reads it, so the tick pauses as under the
 // Codex) and the bus hears `hud.turn` { on } when it comes and goes. Turned back, the play goes on from where it stood.
 //
 // The look: a System window in the Clay dress (ui/goalswindow.js clayDress over ui/brineframe.js) over a dark veil, a pixel-art phone
-// (ui/icons/hudart.js `hud.phone`, scaled by a whole number) turning a quarter turn under the quarter-turn arrow, and three words in the
+// (ui/icons/hudart.js `hud.phone`, scaled by a whole number) turning a quarter turn under the quarter-turn arrow, and Espada's two lines in the
 // names face. No stock panel, font or button.
 //
 // Prior art: every mobile game's "rotate your device" screen (Genshin Impact's, Mario Kart Tour's start), iOS's orientation glyph; the
@@ -22,7 +23,7 @@ import { clayDress } from './goalswindow.js';
 import { iconEl } from './icons/icons.js';
 import { FONT } from './theme.js';
 
-export const TURN_CARD = { words: 'TURN YOUR PHONE', px: 6, turn: 2.4, fade: 0.25 }; // (the words; CSS px an art pixel; real s a turn's loop; the fade)
+export const TURN_CARD = { words: 'Turn your phone sideways.', why: { race: 'Racing needs the width.' }, else: 'This part plays sideways.', px: 6, turn: 2.4, fade: 0.25 }; // (the words; CSS px an art pixel; real s a turn's loop; the fade)
 
 const CSS = `
 .tcard{position:fixed;inset:0;z-index:9000;display:flex;align-items:center;justify-content:center;pointer-events:auto;touch-action:none;
@@ -36,7 +37,8 @@ ${clayDress('.tc-win.clay')}
 .tc-phone{animation:tc-turn ${TURN_CARD.turn}s cubic-bezier(.5,0,.2,1) infinite;image-rendering:pixelated}
 .tc-arrow{align-self:flex-start;image-rendering:pixelated}
 @keyframes tc-turn{0%,28%{transform:rotate(0)}58%,90%{transform:rotate(90deg)}100%{transform:rotate(0)}}
-.tc-words{font-family:${FONT.title};font-weight:700;font-size:max(16px,calc(10*var(--d)));letter-spacing:.16em;text-align:center;padding:0 0 calc(4*var(--d))}
+.tc-words{font-family:${FONT.title};font-weight:700;font-size:max(16px,calc(10*var(--d)));letter-spacing:.06em;text-align:center;padding:0 0 calc(2*var(--d))}
+.tc-why{font-family:${FONT.sys};font-size:max(14px,calc(7*var(--d)));opacity:.8;text-align:center;padding:0 0 calc(4*var(--d))}
 `;
 
 export class TurnCard {
@@ -59,7 +61,8 @@ export class TurnCard {
     const side = `${Math.max(parseFloat(phone.style.width), parseFloat(phone.style.height))}px`; box.style.width = box.style.height = side; box.append(phone);
     art.append(box, arrow);
     const words = document.createElement('div'); words.className = 'tc-words'; words.textContent = TURN_CARD.words;
-    f.body.append(art, words);
+    const why = (this.why = document.createElement('div')); why.className = 'tc-why';
+    f.body.append(art, words, why);
     for (const ev of ['pointerdown', 'touchstart', 'mousedown', 'wheel']) root.addEventListener(ev, (e) => e.stopPropagation(), { passive: true }); // (nothing under it is touched)
     document.body.appendChild(root);
   }
@@ -73,11 +76,13 @@ export class TurnCard {
   }
 
   check() {
-    const L = this.layout, want = !!(L.touch && L.portrait && !this.upright());
+    const L = this.layout, st = this.game.screenTurn; // (Petra's platform.js decides when, once it says `held`; until then, the card's own reading)
+    const want = st && 'held' in st ? !!st.held : !!(L.touch && L.portrait && !this.upright());
+    if (this.why) this.why.textContent = TURN_CARD.why[st?.why] || TURN_CARD.else;
     if (want === this.on) return;
     this.on = want; L.turnHeld = want;
     if (want) {
-      this.build(); if (this.root) { this.win.style.setProperty('--d', `${Math.max(2, Math.round(L.su * 0.5 * 2) / 2)}px`); this.root.hidden = false; requestAnimationFrame(() => this.root?.classList.add('on')); }
+      this.build(); if (this.why) this.why.textContent = TURN_CARD.why[st?.why] || TURN_CARD.else; if (this.root) { this.win.style.setProperty('--d', `${Math.max(2, Math.round(L.su * 0.5 * 2) / 2)}px`); this.root.hidden = false; requestAnimationFrame(() => this.root?.classList.add('on')); }
     } else if (this.root) { this.root.classList.remove('on'); const r = this.root; setTimeout(() => { if (!this.on) r.hidden = true; }, TURN_CARD.fade * 1000); }
     this.game.events?.emit?.('hud.turn', { on: want });
   }
