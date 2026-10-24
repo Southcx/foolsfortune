@@ -410,9 +410,20 @@ Calissa's new modules. The dry click and the hook in the runner: Petra's (`shell
 - **Built:** the draw, the thin look and patch (`game.worldDraw`, its `weatherK(pos)` read by `game.weather.here()` and so by every rule
   that asks the weather there), the alterations, Rift's spring, and the cylinder plate's draw fill. Measured headless by Calissa: all nine
   fired on a draw, `shell.draw` carried k, feeling and from, later draws filled from a spring at the cap, Calm took the weather to 0.
-- **Not yet:**
-  - **`erodible` tags.** Nothing carries one, so Weather Away opens nothing yet. What may carry it: the god hand's creations, the
-    Dunes ruins' broken walls, a Well floor's clay baffles. Never a room's bounding walls, a floor, or anything a sweep's route needs.
-    The tags are set where those things are built (Petra's).
-  - **`game.breakables.mend(at, r, { gold, by })`** (Petra's `world/props/breakables.js`). Bloom grows its thicket and mends nothing
-    until it exists.
+- **Bloom's mend** (Petra, main 0e02d57): `game.breakables.mendWithin(at, r) -> n`.
+  - A wreck within reach is rebuilt, and a cracked pot that still stands has its cracks turned gold.
+  - The outcome event is `shell.mend { n, by }` (Calissa's).
+  - In play it mends cracked pots only, since a broken pot stays broken (the owner, 2026-10-06), so no wreck is ever listed.
+- **Weather Away's erosion, ruled (Dovina, 2026-10-24): it eats matter, it never flips a collider.**
+  - Where it lands it stamps a hole out of the god hand's matter: a creation's voxels, or the island's firm layer where the island's
+    matter lies (`godhand/matter.js`, the explored area). The hole is sized by the draw, and it crumbles back in as the mending already
+    mends both.
+  - No `erodible` tag and no sensor, because nothing built is a wall it could open. The Dunes ruins are batched static props and a Well's
+    narrows are merged geometry.
+  - It teaches what the hand already does (matter wears away and the island heals it), and a way opened is the island's own to close.
+  - **The hooks are built (mine):**
+    - `game.creations.erode(at, r) -> { volume }` wears a ball out of a creation (`VoxelGrid.carve`), pours the volume back as loose
+      matter, and remeshes. Measured headless: a 9 m³ pillar lost 4.4 m³ to r 1.2, with no errors.
+    - `game.matter.field.corrode(x, z, r, depth)` already takes the hand's firm and loose layers. The authored ground under them never
+      moves, so erosion eats only what the hand has made.
+    - Calissa's Weather Away calls both where it lands, its r and depth scaled by the draw.

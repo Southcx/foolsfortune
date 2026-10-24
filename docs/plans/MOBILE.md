@@ -344,7 +344,7 @@ which is closer to Black & White's hand than a mouse ever was. Every rule stays 
 | brush size (Shift + wheel) | a size slider beside the art bar while a shaping art or PAINT is lit | a pinch is the camera's |
 | a spring / a drain (Shift or Ctrl + LMB / RMB with WATER) | a SPRING / DRAIN toggle beside WATER | no chord on glass |
 | turn the camera, zoom (Q / E, wheel) | **two fingers**: drag to turn, pinch to zoom | Monument Valley and every maps app |
-| the overhead view (~) | a top-bar tile, OVERHEAD; there one finger pans | |
+| the overhead view (~) | a top-bar tile, TOP VIEW (Espada's word); there one finger pans | |
 | first person (Z) | the pause menu | rare, and it costs a thumb |
 | undo (Ctrl+Z) | **two-finger tap**, and an UNDO tile at the art bar's end | Procreate's undo |
 | put a planetoid back (Ctrl+Backspace twice) | the pause menu, with a confirm | it destroys work: never one gesture |
@@ -365,8 +365,29 @@ which is closer to Black & White's hand than a mouse ever was. Every rule stays 
 - **Petra:** the touch driver's garden ctx (`garden`, `garden.overhead`). The two-finger gestures go to the camera (`gardencam.js`) and
   undo, before the hand sees them.
 - **Calissa:** the art bar and its tiles, the size slider, the TURN and SPRING / DRAIN tiles, and the long press's ring.
-- **Me:** the ctx rows in `core/bindings.js` and tap-to-go's rule (`realm.js` reads a target point when no art is up; the hop is
-  unchanged).
+- **Me:** the ctx rows in `core/bindings.js` and tap-to-go's rule. **Built:** `world/garden/tapgo.js` and `realm.goTo(point)`. The
+  Jar hops toward the point with the hop unchanged, and lets it go on any key or stick, when picked up, on another planetoid, or after 12
+  real s. Measured headless: 5.8 m covered in about a real second, no errors. Petra's touch driver calls `realm.goTo` on a tap with WALK up.
+
+## 8.3 The words (Espada, 2026-10-24; plain until the owner rules)
+- **The tiles:** HOP, BRAKE, FLARE, BOOST, NOSE, TAIL, JUMP, DASH, TURN, UNDO, SIGN, TOP VIEW, WALK, SPRING / DRAIN, SKIFF, STEP OFF,
+  BACK, RESTART, RETIRE.
+  - **USE** shows its thing's own label (RACE BOARD, START, INDEX, TALK for one of the folk), with a small USE in the tile's corner. A
+    thing with no label shows USE alone. One word, two at most.
+- **The turn card:** "Turn your phone sideways." Under it, by context, a smaller line: "Racing needs the width." / "This part plays
+  sideways." Never "landscape".
+- **The cloud save** (section 12):
+  - **The offer:** "Your save from your phone, 3 real hours ago, played longer than this one. LOAD" ("from another device" when unknown;
+    "N real minutes ago", "just now").
+  - **In the Codex:** "Your other save, from your computer, 2 real hours ago. Kept until the next game day. LOAD"
+  - **LOAD's confirm:** "Load it? The save you are playing now is kept here in its place."
+  - **The longer wins at boot, the log once:** "Your save from your phone was played longer, so it is the one loaded. The other is kept in
+    the Codex until the next game day."
+  - **Local only, once:** "Your save is kept on this device only." Add "Sign in to keep it on every device." only if the page can offer
+    signing in.
+  - **The labels:** "your computer", "your phone", "your tablet", "another device". Never "desktop": the user agent can't tell a laptop
+    from a desktop.
+- **The touch help page:** Espada writes it once the tiles exist.
 
 ## 9. The phases
 
