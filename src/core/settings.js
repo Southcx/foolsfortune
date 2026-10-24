@@ -23,7 +23,7 @@ export const SETTING_ROWS = [
   { id: 'graphics', path: 'visual.graphics', kind: 'choice', choices: [['auto', 'Auto'], ['high', 'High'], ['low', 'Low'], ['minimum', 'Minimum']], label: 'Graphics', line: 'Lower runs smoother and cooler; higher looks finer.', lines: { auto: 'Picked for this device.' } },
   { id: 'volume', path: 'audio.volume', kind: 'slider', min: 0, max: 1.5, step: 0.05, label: 'Volume', line: 'How loud the game plays, music and sound together.' },
   { id: 'haptics', path: 'audio.haptics', kind: 'switch', label: 'Haptics', line: 'Small buzzes when you hop, land, hit or are hit. Only on devices that can buzz.' },
-  { id: 'shake', path: 'visual.shake', kind: 'choice', choices: [['full', 'Full'], ['half', 'Half'], ['off', 'Off']], label: 'Screen shake', line: 'How hard the view shakes at a blow or a fall.' }, // (placeholder)
+  { id: 'shake', path: 'visual.shake', kind: 'choice', choices: [['full', 'Full'], ['half', 'Half'], ['off', 'Off']], label: 'Screen shake', line: 'How hard the view shakes when a blow lands or you land hard.' }, // (Espada's words)
   { id: 'layout', kind: 'action', label: 'Reset the touch layout', line: 'Puts every button back where it started.', confirm: 'Put every button back where it started?' },
 ];
 const BY_ID = new Map(SETTING_ROWS.map((r) => [r.id, r]));

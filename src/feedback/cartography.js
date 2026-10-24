@@ -433,7 +433,7 @@ export class Cartography {
     root.appendChild(bar);
     this.side = el('div', 'side');
     root.appendChild(this.side);
-    root.appendChild(el('div', 'legend', '<span style="opacity:.9">▒</span> sensed &nbsp; <span style="color:#d68c5a">■</span> charted &nbsp; <span style="color:#ffd696">■</span> understood &nbsp; <span style="color:#ffe0a0">◆</span> waypoint<br><span style="opacity:.6">drag · wheel · click sets waypoint · right click clears · the Dreamvane surveys (MMB) · on touch: drag, pinch, hold to set or clear</span>'));
+    root.appendChild(el('div', 'legend', '<span style="opacity:.9">▒</span> sensed &nbsp; <span style="color:#d68c5a">■</span> charted &nbsp; <span style="color:#ffd696">■</span> understood &nbsp; <span style="color:#ffe0a0">◆</span> waypoint<br><span style="opacity:.6">drag · wheel · click sets waypoint · right click clears · the Dreamvane surveys (MMB) · on touch: drag to pan · pinch to zoom · hold to set or clear the waypoint</span>'));
     document.body.appendChild(root);
     this.root = root;
     // pointer events, so a finger works as the mouse does (docs/plans/MOBILE.md 9, M2): a drag pans; two fingers pinch to zoom and pan
