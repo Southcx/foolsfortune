@@ -21,7 +21,7 @@ From QAIS's Questions tab, answered by the owner on v131 (2026-10-09). **Parked*
 | **Faith** (the eighth feeling) | "Keep it to seven emotions for colour coding. Faith and Wonder are close enough." | Gall and Fury are to be built (WHEEL.md) |
 
 ## Built next (the same answers)
-- **Every art opens two ways** (a count way and a feat way): "the unlocked Art should be representative of what conditions were met. If it makes sense that an Art should be grindable, make it so." Dovina's.
+- **Every art opens two ways** (a count way and a feat way): "the unlocked Art should be representative of what conditions were met. If it makes sense that an Art should be grindable, make it so." Dovina's. **Built 2026-10-24**: every earned art and variant opens by a count way or a feat way (`SECOND_WAYS`, `progress/skills.js`); the five basic arts are yours from the start.
 - **Prismatic and Stoic** applied to the Courier (x1.5 power and x2 fragility at Prismatic, the reverse at Stoic). The numbers are Dovina's; the wiring is Petra's.
 - **Friendly fire** wired (Petra's).
 - **The parry at sea is the roll only** (E turns shots back; V retires on the rail; Petra's).
