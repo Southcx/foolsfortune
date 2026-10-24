@@ -34,6 +34,7 @@
 //                tint, the tilt a garnish hangs on); .skinTick(dt) a skin's own motion, called each frame shown
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { bakedCanvasTexture } from '../render/bakedcanvas.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { DAY_MS, now as calNow } from '../core/calendar.js';
 import { COLOR, phaseAt } from '../progress/weather.js';
@@ -320,7 +321,7 @@ export class SightLook {
     const glass = (back) => overlayShader(SGLASS, { uTime: { value: 0 }, uBack: { value: back ? 1 : 0 }, uSgTint: tint }, { cull: back ? 2 : 1, depthWrite: false });
     this.gBack = new THREE.Mesh(glassGeo, glass(1)); this.gBack.renderOrder = 1; this.gFront = new THREE.Mesh(glassGeo, glass(0)); this.gFront.renderOrder = 5; root.add(this.gBack, this.gFront);
     // the rete, faint, turning once a game day
-    const reteMap = new THREE.CanvasTexture(reteTex());
+    let rete0 = reteTex(); const reteMap = bakedCanvasTexture((g) => { g.drawImage(rete0 || reteTex(), 0, 0); rete0 = null; }, rete0.width, rete0.height); // (drawn once: its pixels let go once on the GPU, render/bakedcanvas.js)
     this.reteMat = overlayShader(RETE, { uTex: { value: reteMap }, uTime: { value: 0 }, uOp: { value: 0.3 } }, { cull: 1, depthWrite: false, blending: THREE.AdditiveBlending });
     this.rete = new THREE.Mesh(new THREE.CircleGeometry(0.93, 64), this.reteMat); this.rete.position.z = -0.18; this.rete.renderOrder = 2;
     const reteHold = new THREE.Group(); reteHold.rotation.x = -EL; reteHold.add(this.rete); root.add(reteHold);

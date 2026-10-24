@@ -97,7 +97,7 @@ export class ReadingView {
   // ---------------------------------------------------------------- the parts
   buildMaterials() {
     const A = bazaarAtlas();
-    this.atlas = tex(A.canvas);
+    this.atlas = A.tex; // (the atlas's own texture: a second one from its canvas was another 30 MB on the GPU, and held the canvas)
     this.cardGeo = new THREE.PlaneGeometry(cw, ch);
     this.edgeGeo = new THREE.PlaneGeometry(cw + 0.05, ch + 0.05);
     this.frameMat = new THREE.MeshBasicMaterial({ color: 0xe8dcff, transparent: true, opacity: 0.22, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, forceSinglePass: true });

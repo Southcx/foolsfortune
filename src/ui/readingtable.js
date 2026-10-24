@@ -149,6 +149,7 @@ export class ReadingTable {
     const i = down ? backCell('arcana') : n, key = down ? `back:${i}` : n; if (this.faces.has(key)) return this.copy(this.faces.get(key));
     const A = bazaarAtlas(), foot = i >= CARD.foot, c = make('canvas'); c.width = CARD.w; c.height = CARD.h;
     c.getContext('2d').drawImage(A.canvas, foot ? (i - CARD.foot) * CARD.w : (i % CARD.cols) * CARD.w, foot ? CARD.footY : Math.floor(i / CARD.cols) * CARD.h, CARD.w, CARD.h, 0, 0, CARD.w, CARD.h);
+    if (!this.releasing) { this.releasing = true; setTimeout(() => { this.releasing = false; A.release(); }, 0); } // (the atlas's canvas let go again once this turn's faces are cut: render/bakedcanvas.js)
     this.faces.set(key, c); return this.copy(c);
   }
   copy(src) { const c = make('canvas'); c.width = src.width; c.height = src.height; c.getContext('2d').drawImage(src, 0, 0); return c; }

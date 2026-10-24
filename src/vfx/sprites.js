@@ -20,14 +20,15 @@
 //   SHAPES: name -> cell
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { bakedCanvasTexture } from '../render/bakedcanvas.js';
 
 export const SHAPES = { soft: 0, core: 1, star4: 2, sparkle: 3, streak: 4, ring: 5, ringthin: 6, puff: 7, shard: 8, diamond: 9, glint: 10, swirl: 11, petal: 12, crescent: 13, chip: 14, bubble: 15, hex: 16, facet: 17, drip: 18, ripple: 19, disc: 20, talisman: 21, moth: 22, leaf: 23, die: 24, comb: 25 };
 
 let _atlas = null;
 export function atlas() {
   if (_atlas) return _atlas;
-  const C = 128, c = document.createElement('canvas'); c.width = C * 8; c.height = C * 4;
-  const g = c.getContext('2d');
+  const C = 128;
+  const paint = (g) => {
   let seed = 9; const r = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
   const cell = (i, draw) => { g.save(); g.translate((i % 8) * C + C / 2, Math.floor(i / 8) * C + C / 2); draw(C / 2); g.restore(); };
   const radial = (R, stops) => { const gr = g.createRadialGradient(0, 0, 0, 0, 0, R); for (const [t, a] of stops) gr.addColorStop(t, `rgba(255,255,255,${a})`); return gr; };
@@ -95,7 +96,8 @@ export function atlas() {
       g.restore();
     }
   });
-  _atlas = new THREE.CanvasTexture(c);
+  };
+  _atlas = bakedCanvasTexture(paint, C * 8, C * 4); // (drawn once: its pixels let go once on the GPU, render/bakedcanvas.js)
   _atlas.colorSpace = THREE.NoColorSpace; _atlas.generateMipmaps = true; _atlas.minFilter = THREE.LinearMipmapLinearFilter; _atlas.anisotropy = 2;
   return _atlas;
 }

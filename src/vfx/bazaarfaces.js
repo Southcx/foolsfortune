@@ -37,6 +37,7 @@
 //   CARD_BACK (the house deck's back)   ARCANA_BACK (the Major Arcana's, face down)   cardIndex(c) (a Querent card { r, s } -> its index)   DIE_SKINS   SUIT_INK
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { bakedCanvasTexture } from '../render/bakedcanvas.js';
 import { schillerInk } from './oxidation.js';
 import { SUIT_COLOURS } from '../progress/casino/table.js';
 import { drawHouseBack, drawArcanaBack } from './cardbacks.js';
@@ -81,24 +82,28 @@ function stoneCells(g, dieAt, skin) {
 }
 
 let ATLAS = null;
-/** The one atlas (painted on first ask; shared by every table). */
-export function bazaarAtlas() {
-  if (ATLAS) return ATLAS;
-  const cv = document.createElement('canvas'); cv.width = W; cv.height = H;
-  const g = cv.getContext('2d'); g.imageSmoothingEnabled = false;
+/** Where each die skin's faces start in the die cells (laid out before any painting, so the uvs never wait on a canvas). */
+function dieLayout() {
+  let k = 0; const dieAt = {};
+  for (const key of SKIN_ORDER) { dieAt[key] = k; k += +key.replace('atk', ''); }
+  dieAt.cup = k++; dieAt.ash = k++;
+  const dieCount = k;
+  dieAt.stone20 = k; k += 20; // (after dieCount: no dim twin, the dim rows are full)
+  let j = 0; for (const n of STONE_SIDES) { dieAt[`stone${n}`] = j; j += n; } // (indices in AT.stone)
+  return { dieAt, dieCount };
+}
+/** Every face painted into the atlas's canvas (called once, and again only if the canvas is asked for after it went to the GPU). */
+function paintAtlas(g, dieAt, dieCount) {
+  const cv = g.canvas; g.imageSmoothingEnabled = false;
   g.fillStyle = K.deep; g.fillRect(0, 0, W, H);
   const card = (i, draw) => cell(g, AT.card, i, () => { g.scale(2, 2); draw(); }); // (a card is drawn in its 64 x 104 frame, fired at 2x)
   for (let i = 0; i < 22; i++) card(i, () => major(g, i));
   for (let s = 0; s < 4; s++) for (let r = 1; r <= 14; r++) card(cardIndex({ r, s }), () => minor(g, r, s));
   card(CARD_BACK, () => drawHouseBack(g)); cell(g, AT.foot, 0, () => { g.scale(2, 2); drawArcanaBack(g); });
   BACK_SET.forEach((b, k) => cell(g, AT.foot, 1 + k, () => { g.scale(2, 2); drawBackSet(g, b.id); })); card(CARD_EDGE, () => { g.fillStyle = K.cream; g.fillRect(0, 0, 64, 104); });
-  let k = 0; const dieAt = {};
-  for (const key of SKIN_ORDER) { const atk = key.startsWith('atk'), sides = +key.replace('atk', ''); dieAt[key] = k; for (let f = 0; f < sides; f++, k++) dieCell(g, k, sides, f, atk ? DIE_SKINS.atk : DIE_SKINS[sides]); }
-  dieAt.cup = k; dieCell(g, k++, 0, 0, DIE_SKINS.cup);
-  dieAt.ash = k; ashCell(g, k++);
-  const dieCount = k;
-  dieAt.stone20 = k; k += 20; // (after dieCount: no dim twin, the dim rows are full)
-  let j = 0; for (const n of STONE_SIDES) { dieAt[`stone${n}`] = j; j += n; } // (indices in AT.stone)
+  for (const key of SKIN_ORDER) { const atk = key.startsWith('atk'), sides = +key.replace('atk', ''); for (let f = 0; f < sides; f++) dieCell(g, dieAt[key] + f, sides, f, atk ? DIE_SKINS.atk : DIE_SKINS[sides]); }
+  dieCell(g, dieAt.cup, 0, 0, DIE_SKINS.cup);
+  ashCell(g, dieAt.ash);
   stoneCells(g, dieAt, DIE_SKINS.stone);
   for (let n = 1; n <= 12; n++) for (const [j, st] of ['open', 'locked'].entries()) tileCell(g, (n - 1) * 2 + j, n, st);
   tileCell(g, 24, 0, 'back');
@@ -116,14 +121,20 @@ export function bazaarAtlas() {
   for (let c = 0; c < dieCount; c++) dim(AT.die.x + (c % AT.die.cols) * AT.die.s, AT.die.y + Math.floor(c / AT.die.cols) * AT.die.s, AT.die.s, AT.die.s,
     AT.dimDie.x + (c % AT.dimDie.cols) * AT.dimDie.s, AT.dimDie.y + Math.floor(c / AT.dimDie.cols) * AT.dimDie.s, AT.dimDie.s, AT.dimDie.s);
   for (let c = 0; c < 25; c++) dim(AT.tile.x + c * AT.tile.w, AT.tile.y, AT.tile.w, AT.tile.h, AT.dimTile.x + c * AT.dimTile.w, AT.dimTile.y, AT.dimTile.w, AT.dimTile.h);
-  const dimHouse = () => { // (the house deck's dim twin is the back it wears now)
-    const c = backCell('house'), foot = c >= ARCANA_BACK;
-    dim(foot ? AT.foot.x + (c - ARCANA_BACK) * AT.foot.w : AT.card.x + (c % AT.card.cols) * AT.card.w, foot ? AT.foot.y : AT.card.y + Math.floor(c / AT.card.cols) * AT.card.h, AT.card.w, AT.card.h,
-      AT.dimCard.x + (CARD_BACK % AT.dimCard.cols) * AT.dimCard.w, AT.dimCard.y + Math.floor(CARD_BACK / AT.dimCard.cols) * AT.dimCard.h, AT.dimCard.w, AT.dimCard.h);
-  };
-  dimHouse();
-  const tex = new THREE.CanvasTexture(cv);
-  onBackChange((deck) => { if (deck === 'house') { dimHouse(); tex.needsUpdate = true; } }); tex.colorSpace = THREE.SRGBColorSpace; tex.magFilter = THREE.NearestFilter; tex.anisotropy = 4;
+  // the house deck's dim twin is the back it wears now (read here, so a repaint after a change of back draws the new one)
+  const c = backCell('house'), foot = c >= ARCANA_BACK;
+  dim(foot ? AT.foot.x + (c - ARCANA_BACK) * AT.foot.w : AT.card.x + (c % AT.card.cols) * AT.card.w, foot ? AT.foot.y : AT.card.y + Math.floor(c / AT.card.cols) * AT.card.h, AT.card.w, AT.card.h,
+    AT.dimCard.x + (CARD_BACK % AT.dimCard.cols) * AT.dimCard.w, AT.dimCard.y + Math.floor(CARD_BACK / AT.dimCard.cols) * AT.dimCard.h, AT.dimCard.w, AT.dimCard.h);
+}
+/** The one atlas (painted on first ask; shared by every table). A baked canvas (render/bakedcanvas.js: a phone's memory, Petra's
+ *  measure 2026-10-24, 22.5 MB of canvas held beside its GPU copy): its pixels go once the GPU has them, painted again only when asked
+ *  for (`canvas`, a change of the house deck's back). A reader of `canvas` calls `release()` when done with it. */
+export function bazaarAtlas() {
+  if (ATLAS) return ATLAS;
+  const { dieAt, dieCount } = dieLayout();
+  const tex = bakedCanvasTexture((g) => paintAtlas(g, dieAt, dieCount), W, H);
+  onBackChange((deck) => { if (deck === 'house') { tex.source.data = null; tex.needsUpdate = true; } }); // (painted again with the new back on its next upload)
+  tex.colorSpace = THREE.SRGBColorSpace; tex.magFilter = THREE.NearestFilter; tex.anisotropy = 4;
   const rect = (x, y, w, h, inset = 0.5) => [(x + inset) / W, 1 - (y + h - inset) / H, (x + w - inset) / W, 1 - (y + inset) / H];
   const cardRect = (i, dim) => dim ? rect(AT.dimCard.x + (i % AT.dimCard.cols) * AT.dimCard.w, AT.dimCard.y + Math.floor(i / AT.dimCard.cols) * AT.dimCard.h, AT.dimCard.w, AT.dimCard.h)
     : rect(AT.card.x + (i % AT.card.cols) * AT.card.w, AT.card.y + Math.floor(i / AT.card.cols) * AT.card.h, AT.card.w, AT.card.h);
@@ -131,14 +142,15 @@ export function bazaarAtlas() {
   const dieCell_ = (skin, f) => dieAt[skin] + (skin === 'ash' ? 0 : f);
   let glow = null;
   ATLAS = {
-    tex, canvas: cv,
+    tex,
+    /** The painted canvas (painted again if it already went to the GPU); `release()` when done with it. */
+    get canvas() { return tex.image; },
+    release: () => { tex.source.data = null; },
     /** The stone skins' numerals alone, white on black, at half size (the same uvs): painted on first ask. */
     glow: () => {
       if (glow) return glow;
-      const c2 = document.createElement('canvas'); c2.width = W / 2; c2.height = H / 2;
-      const g2 = c2.getContext('2d'); g2.fillStyle = '#000'; g2.fillRect(0, 0, W / 2, H / 2); g2.scale(0.5, 0.5);
-      stoneCells(g2, dieAt, { body: '#000', ink: '#fff' });
-      glow = new THREE.CanvasTexture(c2); glow.colorSpace = THREE.SRGBColorSpace; return glow;
+      glow = bakedCanvasTexture((g2) => { g2.fillStyle = '#000'; g2.fillRect(0, 0, W, H); stoneCells(g2, dieAt, { body: '#000', ink: '#fff' }); }, W, H, { scale: 0.5 });
+      glow.colorSpace = THREE.SRGBColorSpace; return glow;
     },
     card: (i, dim = false) => { if (i === ARCANA_BACK) i = backCell('arcana'); else if (i === CARD_BACK && !dim) i = backCell('house'); return i >= ARCANA_BACK ? rect(AT.foot.x + (i - ARCANA_BACK) * AT.foot.w, AT.foot.y, AT.foot.w, AT.foot.h) : cardRect(i, dim); },
     edge: () => ATLAS.card(CARD_EDGE),

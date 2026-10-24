@@ -16,6 +16,7 @@
 //   K.counts(toCourier, toFoe, courierHex, foeHex, faint?)   K.stars(side, depth, local | null)   K.label(text, hex) -> a Label   K.update(dt)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { bakedCanvasTexture } from '../../render/bakedcanvas.js';
 import { mindLineMaterial } from '../labradorite.js';
 import { starGeometry } from '../dizzy.js';
 import { FONT } from '../../ui/theme.js';
@@ -26,14 +27,12 @@ const _v = new THREE.Vector3();
 
 /** The atlas: each glyph in a 64 px cell, pale with an ink keyline, drawn once (and again when the count face has loaded). */
 function makeAtlas() {
-  const c = document.createElement('canvas'); c.width = G * GLYPHS.length; c.height = G;
-  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.minFilter = THREE.LinearFilter; tex.generateMipmaps = false;
-  const draw = () => {
-    const x = c.getContext('2d'); x.clearRect(0, 0, c.width, c.height); x.font = COUNT(58); x.textAlign = 'center'; x.textBaseline = 'middle'; x.lineJoin = 'round';
+  const paint = (x) => {
+    x.font = COUNT(58); x.textAlign = 'center'; x.textBaseline = 'middle'; x.lineJoin = 'round';
     for (let i = 0; i < GLYPHS.length; i++) { const cx = i * G + G / 2; x.lineWidth = 9; x.strokeStyle = '#17111f'; x.strokeText(GLYPHS[i], cx, G / 2 + 3); x.fillStyle = '#ffffff'; x.fillText(GLYPHS[i], cx, G / 2 + 3); }
-    tex.needsUpdate = true;
   };
-  draw(); document.fonts?.load?.(COUNT(58)).then(draw, () => {});
+  const tex = bakedCanvasTexture(paint, G * GLYPHS.length, G); tex.colorSpace = THREE.SRGBColorSpace; tex.minFilter = THREE.LinearFilter; tex.generateMipmaps = false; // (drawn once: its pixels let go once on the GPU, render/bakedcanvas.js)
+  document.fonts?.load?.(COUNT(58)).then(() => { tex.source.data = null; tex.needsUpdate = true; }, () => {}); // (painted again in the count face once it has loaded)
   return tex;
 }
 
