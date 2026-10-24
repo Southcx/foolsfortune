@@ -3724,3 +3724,12 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   after a quarter of a real second, and if the browser wants a gesture first, on the next touch, click or key. The schedulers read the
   context's clock, so the suspended stretch is skipped. Checked headless: suspended, resumed by itself.
 - **Rule:** 289
+
+### 2026-10-24 · No QAIS test ever gathered evidence (Petra, writing v265's tests)
+- **Seen:** every QAIS test in the db (T197 read back: `"watch": "duel.flee"`) names its event as a string, and every `seen` list is
+  empty, however often the owner played the thing.
+- **Cause (read):** debug/qais/evidence.js listened only for `watch: { event, match? }` (`t.watch?.event`); a string has no `.event`,
+  so no test was ever listened for. The writers (Petra's and the divisions' test files) wrote the name alone from the first round.
+- **Fix:** `watchOf(test)` reads either shape (a name alone is `{ event: name }`), and the listener keeps the match beside the test.
+  Checked in node: a string watch heard twice, an object's match heard only when it matches, an empty or a passed test not listened for.
+- **Rule:** 138

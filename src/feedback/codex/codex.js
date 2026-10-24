@@ -210,7 +210,7 @@ export class Codex {
     exp.onclick = () => { ta.value = G.code(); ta.select(); try { navigator.clipboard?.writeText(ta.value); this.setMsg('code copied'); } catch { this.setMsg('select and copy the code'); } };
     imp.onclick = () => { const c = ta.value.trim(); if (c.startsWith('FFS2.') ? G.fromCode(c) : s.importCode(c)) { this.setMsg('imported'); if (c.startsWith('FFS2.')) reload(); } else this.setMsg('that code did not check out'); };
     let armed = false;
-    rst.onclick = () => { if (!armed) { armed = true; rst.textContent = 'CLICK AGAIN TO ERASE'; setTimeout(() => { armed = false; rst.textContent = 'RESET PROGRESS'; }, 3000); } else { G.wipeProgress(); this.setMsg('progress erased'); reload(); } };
+    rst.onclick = () => { if (!armed) { armed = true; rst.textContent = `${this.game.input?.device === 'touch' ? 'TAP' : 'CLICK'} AGAIN TO ERASE`; setTimeout(() => { armed = false; rst.textContent = 'RESET PROGRESS'; }, 3000); } else { G.wipeProgress(); this.setMsg('progress erased'); reload(); } };
     for (const n of [exp, ta, imp, rst, msg]) foot.appendChild(n);
     // (the other save, core/cloudsave.js: another device's played longer and not taken, or the one played here before a cloud save was
     // taken; kept a game day. LOAD puts it in place whole and reloads; KEEP THIS ONE declines a cloud save offered after the boot)

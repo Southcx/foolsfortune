@@ -8,6 +8,11 @@
 // ---------------------------------------------------------------------------
 import { sfx } from '../audio/sfx.js';
 
+/** A page's line in the words of the device last touched: on touch a click is a tap, and the keys' parts go (CLOSE stands in the
+ *  corner). Plain placeholders until Espada's words (MOBILE.md 8.3). */
+const TOUCH_SUB = [[/, or its key \(or arrows \+ Enter\)/g, ''], [/\s*·\s*F closes/g, ''], [/\bclick\b/g, 'tap'], [/\bClick\b/g, 'Tap']];
+export const subFor = (sub, device) => (device === 'touch' ? TOUCH_SUB.reduce((t, [re, to]) => t.replace(re, to), String(sub)) : sub);
+
 
 const CSS = `
 #indexmenu { position: fixed; inset: 0; z-index: 9; display: none; align-items: center; justify-content: center; background: rgba(20,9,6,.78); cursor: default; user-select: none; }
@@ -108,7 +113,7 @@ export class IndexMenu {
     r.appendChild(im);
     const head = el('header');
     head.appendChild(el('h2', '', this.page ? this.page.title || `INDEX · ${this.page.name.toUpperCase()}` : 'INDEX'));
-    head.appendChild(el('span', 'sub', this.page ? this.page.sub || 'click to begin · F closes' : 'click a room, or its key (or arrows + Enter) · F closes'));
+    head.appendChild(el('span', 'sub', subFor(this.page ? this.page.sub || 'click to begin · F closes' : 'click a room, or its key (or arrows + Enter) · F closes', this.game.input?.device)));
     const x = el('div', 'x', 'CLOSE');
     x.onclick = () => this.close();
     head.appendChild(x);

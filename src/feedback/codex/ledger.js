@@ -197,7 +197,7 @@ export function renderRecords(codex, cx) {
   const wipe = el('i', '', 'ERASE STATS');
   let armed = false;
   wipe.onclick = () => {
-    if (!armed) { armed = true; wipe.textContent = 'CLICK AGAIN TO ERASE'; setTimeout(() => { armed = false; wipe.textContent = 'ERASE STATS'; }, 3000); } else { L.reset(); g.achievements.rank = 0; codex.render(); }
+    if (!armed) { armed = true; wipe.textContent = `${g.input?.device === 'touch' ? 'TAP' : 'CLICK'} AGAIN TO ERASE`; setTimeout(() => { armed = false; wipe.textContent = 'ERASE STATS'; }, 3000); } else { L.reset(); g.achievements.rank = 0; codex.render(); }
   };
   foot.appendChild(wipe);
   cx.appendChild(foot);

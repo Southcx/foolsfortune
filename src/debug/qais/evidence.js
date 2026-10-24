@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// QAIS'S EVIDENCE: a QAIS test may name the event it expects (`watch: { event, match? }`); while the test is open in the round the game
+// QAIS'S EVIDENCE: a QAIS test may name the event it expects (`watch: { event, match? }`, or the event's name alone); while the test is open in the round the game
 // listens, and the first sightings are written to the test (`seen`: the real time and the payload's gist). It never ticks a test: an
 // event firing is not the same as it looking or sounding right (docs/plans/QAIS.md, Tests).
 //
@@ -9,7 +9,7 @@
 // Prior art: our own ledger and achievements (a predicate over what happened, src/progress/achievements.js), and a test harness's event
 // expectations (Unreal's Gauntlet: "wait for this event" as evidence, the tester still judges).
 //
-//   const ev = new Evidence(game, (test, seen) => store.update(...))  (seen: the test's sightings so far, the newest last)   ev.watch(tests)  (each time the tests change)   ev.dispose()
+//   const ev = new Evidence(game, (test, seen) => store.update(...))  (seen: the test's sightings so far, the newest last)   ev.watch(tests)  (each time the tests change)   ev.dispose()   watchOf(test)
 // ---------------------------------------------------------------------------------------
 
 const KEEP = 3;
@@ -22,6 +22,9 @@ export function gist(e) {
   const s = JSON.stringify(o);
   return s.length > 140 ? `${s.slice(0, 137)}...` : s;
 }
+
+/** A test's `watch` as { event, match }: the db's tests name the event alone as often as not (a string). */
+export const watchOf = (t) => (typeof t.watch === 'string' ? (t.watch ? { event: t.watch } : null) : t.watch || null);
 
 /** Does the payload say what the test's `match` asks (each field equal, as text)? */
 export const matches = (e, match) => !match || Object.entries(match).every(([k, v]) => String(e[k]) === String(v));
@@ -38,20 +41,21 @@ export class Evidence {
   watch(tests) {
     this.by.clear();
     for (const t of tests) {
-      if (!t.watch?.event || !OPEN(t.status)) continue;
+      const w = watchOf(t);
+      if (!w?.event || !OPEN(t.status)) continue;
       if (!this.seen.has(t.id)) this.seen.set(t.id, [...(t.seen || [])]);
       if (this.seen.get(t.id).length >= KEEP) continue;
-      const list = this.by.get(t.watch.event) || [];
-      list.push(t); this.by.set(t.watch.event, list);
+      const list = this.by.get(w.event) || [];
+      list.push({ t, match: w.match }); this.by.set(w.event, list);
     }
   }
 
   hear(e) {
     const list = this.by.get(e.name);
     if (!list) return;
-    for (const t of list) {
+    for (const { t, match } of list) {
       const seen = this.seen.get(t.id);
-      if (seen.length >= KEEP || !matches(e, t.watch.match)) continue;
+      if (seen.length >= KEEP || !matches(e, match)) continue;
       seen.push({ at: Date.now(), gameT: +e.t.toFixed(2), gist: gist(e) }); // (the real time: when the owner saw it, by their own clock)
       this.onSeen(t, seen.slice());
     }

@@ -14,6 +14,7 @@
 import { FUNCTIONS, KIND_COLOR, known } from './functions.js';
 import { Lattice, turned } from './lattice.js';
 import { runeStrip } from './runes.js';
+import { longPressOn } from '../../../core/elementlongpress.js';
 
 const CSS = `
 #codex .mind { display: grid; grid-template-columns: auto 1fr; gap: 18px; align-items: start; }
@@ -96,6 +97,7 @@ export function renderMind(codex, cx, g) {
       if (pick.fn && lat.place(pick.fn, x, y, pick.rot, pick.flip)) { g.events?.emit('mind.place', { fn: pick.fn }); save(); }
     };
     d.oncontextmenu = (e) => { e.preventDefault(); pick.rot = (pick.rot + 1) % 4; codex.render(); };
+    longPressOn(d, () => { pick.rot = (pick.rot + 1) % 4; codex.render(); }, g); // (on touch the right-click's turn is a long press: MOBILE.md 5)
     board.appendChild(d);
   }
   const core = el('div', 'end core'), mouth = el('div', 'end mouth');

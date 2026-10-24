@@ -54,7 +54,7 @@ const CSS = `
 #reprogram.verbose .m .does { white-space: normal; }
 #reprogram .does { max-width: 360px; }
 #reprogram .ok { display: flex; justify-content: center; margin-top: 6px; }
-#reprogram input.rp-in { position: absolute; opacity: 0; pointer-events: none; width: 1px; height: 1px; }
+#reprogram input.rp-in { position: absolute; opacity: 0; pointer-events: none; width: 1px; height: 1px; font-size: 16px; } /* (16 px: under it iOS zooms the page to a focused field) */
 `;
 
 export class Reprogram {
@@ -87,7 +87,8 @@ export class Reprogram {
     this.field.addEventListener('keydown', (e) => this.key(e));
     this.field.addEventListener('input', () => this.typing());
     this.field.addEventListener('blur', () => { if (this.open) setTimeout(() => this.open && this.field.focus({ preventScroll: true }), 0); });
-    el.addEventListener('pointerdown', (e) => { e.stopPropagation(); setTimeout(() => this.open && this.field.focus({ preventScroll: true }), 0); });
+    el.addEventListener('pointerdown', (e) => { e.stopPropagation(); if (this.open) this.field.focus({ preventScroll: true }); }); // (in the tap itself: a phone opens its keyboard only for a focus inside the gesture, MOBILE.md 5)
+    el.addEventListener('click', () => { if (this.open) this.field.focus({ preventScroll: true }); }); // (and in the click: iOS counts the click as the gesture where the press may not)
     this.programmed = new Set();
     // the chevron marks a mind that can be opened (interact.js); the middle button opens it
     game.interact?.add('reprogram', (P) => { const c = this.target(); return c ? { pos: c.head?.() ?? c.pos, d: Math.hypot(c.pos.x - P.pos.x, c.pos.z - P.pos.z) - 0.5, ref: c } : null; });
