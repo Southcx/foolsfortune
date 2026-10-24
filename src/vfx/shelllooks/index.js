@@ -16,6 +16,7 @@ import * as will from './will.js';
 import * as company from './company.js';
 import * as feelings from './feelings.js';
 import * as caster from './caster.js';
+import * as tiers from './tiers.js'; // (a shell's tier ladder: the extras each tier wears, `shell.tier.<n>.<part>`)
 
 const FAMILIES = [edge, ember, storm, pull, clock, will, company, feelings, caster];
 
@@ -23,4 +24,4 @@ export const SHELL_LOOK_ROWS = Object.assign({}, ...FAMILIES.map((f) => f.LOOKS)
 export const SHELL_EFFECTS = Object.assign({
   // (what keeps the shells' afterimages ticking while any shows: shelllooks/kit.js leaveGhost; it draws nothing of its own)
   'shell.ghost': { layers: [{ type: 'sprites', rate: 1e-6, dur: Infinity, shape: 'soft', size: 0.01, life: 0.01 }] },
-}, ...FAMILIES.map((f) => f.EFFECTS));
+}, ...FAMILIES.map((f) => f.EFFECTS), tiers.EFFECTS);
