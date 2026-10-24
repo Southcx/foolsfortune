@@ -118,6 +118,7 @@ import { LachrimeterTube } from './vfx/lachrimetertube.js'; import { SpiritualLi
 import { RailResults } from './ui/railresults.js'; // (round 6's overlay pieces: OVERLAY.md 10.5c)
 import { RacewaySiphons } from './vfx/racewaysiphons.js'; // (the siphon arches' look)
 import { installBracelets } from './vfx/braceletwear.js';
+import { PneukaJarLook } from './vfx/pneukajar/look.js';
 import { Cartography } from './feedback/cartography.js';
 import { Dunes, DUNE, POND } from './world/dunes/dunes.js';
 import { Dunemaw } from './world/well/dunemaw.js';
@@ -920,6 +921,7 @@ async function main() {
   installPsyche(game); // (the seven domains' EXP, earned in every layer: progress/psyche.js)
   game.bracelet = new Bracelet(game); // (the ring's sockets and charms: progress/bracelet.js; BRACELET.md)
   game.bracelets = installBracelets(game); // (the bracelet, working name: worn at the hand's wrist, the Pneuka Jar's neck, the Courier's left wrist; driven from the bus: vfx/braceletwear.js)
+  game.pneukaJarLook = new PneukaJarLook(game); // (the Pneuka Jar fired in the vessel's looks, and its own lid, handles, shape, foot, pendant and hop's burst: vfx/pneukajar/look.js)
   game.voyage = new Voyage(game); // (the Emocean hop's systems: the hold, the crossing, the reckoning: progress/voyage.js)
   game.garden = new Garden(game); // (the Spirit Garden: the dividend's slots, the beds, the long sink: progress/garden.js)
   game.sporeBeds = new SporeBeds(game, { itemOf }); // (the mycelium's beds: progress/sporebeds.js, docs/plans/MYCELIUM.md)
@@ -1162,6 +1164,7 @@ async function main() {
   const parkSquall = game.squallLine?.prewarm?.() ?? (() => {}); // (the squall line's program, and the rain's: vfx/opensea/squallline.js)
   const parkSandfall = prewarmSandfall(scene); // (the Raceway's sandfall, one copy 50 m down: its one program, vfx/racewaysandfall.js)
   const parkMatterLook = prewarmMatterLook(scene); // (the god hand's matter, ball and creations: one program, vfx/godhand/matterlook.js)
+  const parkJarLook = game.pneukaJarLook.prewarm(); // (the Jar's look's one program, the Jar shown 50 m down for the compile: vfx/pneukajar/look.js)
   const parkBracelet = game.bracelets.prewarm(); // (the bracelet's glazes, charms, flash and aura, 50 m down: vfx/braceletwear.js)
   game.present.shade(true); try { await renderer.compileAsync(scene, camera); } catch (e) { console.warn('shader warm-up', e); } // (the scene's programs linked in parallel first: the shell looks' Portal draw below draws the whole scene, which linked them one at a time, 72 of 182, the render inventory 2026-10-19)
   const parkShellLooks = await prewarmShellLooks(game); // (what the caster shells show in play, kept alive so it is never compiled twice: vfx/shelllooks/warmup.js)
@@ -1191,7 +1194,7 @@ async function main() {
   if (!window.__noPrime) primeDraw(renderer, scene, camera, game.post.target); // (a test harness may skip it: it is a long frame on a software GL)
   parkWell?.(); // (after the prime: drawn once, so the driver has finished with its programs too)
   if (wipe) wipe.visible = false;
-  parkWeather?.(); parkDrain(); parkDuel(); parkSpawnLook(); parkCracks(); parkFigmentTelegraphs(); parkCasterS1toS5(); parkCaster.forEach((f) => f()); parkShellLooks(); parkBracelet(); parkMatterLook(); parkSandfall(); parkIslets(); parkSquall(); seaFightAt.forEach((o) => (o.visible = false));
+  parkWeather?.(); parkDrain(); parkDuel(); parkSpawnLook(); parkCracks(); parkFigmentTelegraphs(); parkCasterS1toS5(); parkCaster.forEach((f) => f()); parkShellLooks(); parkBracelet(); parkJarLook(); parkMatterLook(); parkSandfall(); parkIslets(); parkSquall(); seaFightAt.forEach((o) => (o.visible = false));
   for (const o of brushLooks) o.visible = false;
   seaLooks.forEach((o, i) => { o.visible = false; o.position.copy(seaAt[i]); });
   for (const o of gardenLooks) o.visible = false;
@@ -1539,6 +1542,7 @@ async function main() {
     (game.veritomeFrame ||= new VeritomeFrame(game)).update(game.rawDt || dt); // (the lens's frame: what a plate would hold, in the third person while the Veritome is drawn: vfx/veritomeframe.js)
     (game.tollReach ||= new TollReach(game)).update(game.rawDt ?? dt); // (the Crucibelle's toll's reach at the feet, lit on the beat: vfx/tollreach.js)
     game.bracelets.update(game.rawDt ?? dt); // (the bracelet's glow: vfx/braceletwear.js)
+    game.pneukaJarLook.update(game.rawDt ?? dt); // (the Jar in the vessel's looks, live; its pendant's swing)
     game.lockheartReach.update(game.rawDt ?? dt); game.carryThrowMark.update(game.rawDt ?? dt); game.lobArcMark.update(game.rawDt ?? dt); game.flareReveal.update(); // (each tool its own marks: the Lockheart's, and empty hands' throw)
 
     game.mood.end(game.rawDt); // (and the room's lights borrowed again, just before the draw)
