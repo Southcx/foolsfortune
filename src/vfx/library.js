@@ -22,6 +22,7 @@ import { PSYGUN_VARIANT_EFFECTS } from './psygunvarianteffects.js'; // (the psyg
 import { PUZZLE_EFFECTS } from './opensea/puzzleeffects.js'; // (the islets' caches dug: the sand thrown up and the find's glint, vfx/opensea/puzzlelooks.js)
 import { ANGLING_EFFECTS } from './anglingeffects.js'; // (the catch leaving the water: tools/sondelass/angling/catchlift.js)
 import { BLOW_FEEL_EFFECTS } from './blowfeeleffects.js'; // (a melee blow's weight, and Strawman's straw: vfx/blowfeel.js plays them)
+import { FLOURISH_EFFECTS } from './flourisheffects.js'; // (the Courier's flourishes: a step's, a dash's, the shatter's, the aura's, the arrival's: vfx/flourishes.js)
 const L = (o) => o; // (a layer: only for readability)
 const GLAZES = [0x2f6db5, 0x4f9a7a, 0xe0b030, 0xc84a3a, 0xf3efe6, 0x6a4a9a, 0x2a8ab0]; // (the glazes' own colours: the Hailstorm's shards)
 
@@ -778,4 +779,5 @@ export const LIBRARY = {
   ...PUZZLE_EFFECTS,
   ...ANGLING_EFFECTS,
   ...BLOW_FEEL_EFFECTS,
+  ...FLOURISH_EFFECTS,
 };
