@@ -11,6 +11,7 @@
 //   ach          earned: an achievement (achievements.js) gives it, so it is retroactive like they are
 //   photo        learned: the Veritome learns a colour from a good photograph (vessel.js: learnFrom)
 //   shop         bought at Saggar's kiln (plan A11)
+//   debug        shown in the DEBUG save only: a look waiting for its rules (the new stones' minerals, until Dovina rules them)
 //
 // Prior art: the glaze families of East Asian ceramics (shino, oribe, tenmoku, celadon, jun, raku, sang de boeuf), FFXIV's dyes and
 // glamour (a look apart from power, a dye per channel), Splatoon's and Animal Crossing's colour-per-part, and the palette swap of the
@@ -84,9 +85,19 @@ export const GLAZES = Object.fromEntries([
   F('gem', 'amethyst', 'AMETHYST', 0x7a3ab8, 0xc090ff, 0.05, 0, [2.6, 0.4, 0, 0], 'Purple quartz; the Greeks thought it kept you sober.', { start: true }),
   F('gem', 'citrine', 'CITRINE', 0xe8a020, 0xffe080, 0.05, 0, [2.6, 0.4, 0, 0], 'Yellow quartz, the colour of honey held to the light.', { start: true }),
   F('gem', 'diamond', 'DIAMOND', 0xe8eef8, 0xffffff, 0.02, 0, [3.2, 1.0, 0, 0], 'Clear, and full of fire: it splits white light into colours more than any other stone.', { start: true }),
-  F('gem', 'opal', 'OPAL', 0xdcd8e8, 0x90c0ff, 0.15, 0, [1.4, 0.2, 1.0, 0], 'Silica spheres stacked like oranges, small enough to break the light into flashes of every colour.', { start: true }),
+  F('gem', 'opal', 'OPAL', 0xdcd8e8, 0x90c0ff, 0.15, 0, [1.4, 0.2, 0.3, 0], 'Silica spheres stacked like oranges, small enough to break the light into flashes of every colour.', { start: true }),
   F('gem', 'moonstone', 'MOONSTONE', 0xe0e4ee, 0x6a9aff, 0.12, 0, [1.2, 0.1, 0, 1.0], 'Feldspar in fine layers; a blue light seems to float just under its surface.', { start: true }),
   F('gem', 'onyx', 'ONYX', 0x0c0a0e, 0x403848, 0.08, 0.1, [2.0, 0.1, 0, 0], 'Black chalcedony, polished to a mirror.', { start: true }),
+  // THE NEW MINERALS (the owner, 2026-10-24: "more pneuka stones"; Calissa's looks, vfx/stoneminerals.js): shown in the DEBUG save only
+  // (`debug`) until Dovina rules each one's trade and how it is got (progress/stones.js; worn before then, a stone the rules do not know
+  // is the Maker's). Names and blurbs are placeholders for Espada's.
+  F('gem', 'labradorite', 'LABRADORITE', 0x262c32, 0x4a8aff, 0.08, 0, [1.4, 0.1, 0, 0], 'Grey feldspar until it is turned: then a flash of blue, green or gold comes up out of it. The house knows this one.', { debug: true }),
+  F('gem', 'sheenobsidian', 'OBSIDIAN', 0x0a080c, 0xd8b060, 0.03, 0.05, [2.0, 0.05, 0, 0], 'Volcanic glass, cooled too fast to crystallise; a gold sheen rides across it where bubbles lined up.', { debug: true }),
+  F('gem', 'malachite', 'MALACHITE', 0x0e6a3a, 0x40c080, 0.12, 0, [1.0, 0, 0, 0], 'Copper ore in rings of dark and pale green, like the grain of a green tree.', { debug: true }),
+  F('gem', 'lapis', 'LAPIS LAZULI', 0x1c2a8a, 0xe0b850, 0.25, 0, [1.0, 0, 0, 0], 'Deep blue rock with white clouds of calcite and gold flecks of pyrite. Ground up, it was ultramarine.', { debug: true }),
+  F('gem', 'garnet', 'GARNET', 0x7a0a1a, 0xd02838, 0.04, 0, [2.6, 0.3, 0, 0], 'So deep a red it is nearly black, until light comes back out of its edges.', { debug: true }),
+  F('gem', 'rosequartz', 'ROSE QUARTZ', 0xe8a8b8, 0xffc0d0, 0.15, 0, [1.6, 0.1, 0, 0.2], 'Quartz clouded pink with fine fibres: milky, never quite clear.', { debug: true }),
+  F('gem', 'tigerseye', "TIGER'S EYE", 0xc08a2a, 0xffd070, 0.1, 0, [1.0, 0, 0, 0], 'Quartz grown over golden fibres; a line of light rolls across it as you turn it, like a cat\'s eye.', { debug: true }),
   // HAIR finishes (the hair can still take any glaze as well)
   F('hair', 'satin', 'SATIN', 0xe8d8bc, 0xe8d8bc, 0.45, 0, [0, 1, 0, 0], 'Pale and soft, with a sheen that slides as you turn.', { start: true }),
   F('hair', 'raven', 'RAVEN', 0x101420, 0x101420, 0.3, 0.05, [0, 1, 0, 0], 'Blue-black, with a blue light along it like a crow\'s wing.', { start: true }),

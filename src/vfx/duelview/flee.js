@@ -24,9 +24,10 @@
 //   F.update(dt)   F.clear()   F.prewarm()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { bazaarMaterials, dieTpl, dieRest } from '../bazaarpieces.js';
+import { bazaarMaterials, dieTpl, dieRest, PIECE } from '../bazaarpieces.js';
 import { bazaarAtlas } from '../bazaarfaces.js';
-import { GLAZES } from '../../courier/vessel/glazes.js';
+import { dressFinish } from '../finish.js';
+import { dressStone } from '../stoneminerals.js';
 import { fleeOdds, FLEE } from '../../progress/duel/flee.js';
 import { VERD, J15, CZ, film, rng } from '../lockheartreliquary/look.js';
 import { DUEL_VIEW, sm, ease, clamp01 } from './layout.js';
@@ -107,8 +108,8 @@ export class DuelFlee {
 
   /** The die in the mineral of the stones you wear (the vessel's STONES region, glazes.js gems): the house's d20 numerals on your stone. */
   dress() {
-    const G = GLAZES[this.view.game?.vessel?.look?.stones] || GLAZES.maker, M = this.stoneMat;
-    M.color.setHex(G?.color ?? 0xffffff); M.roughness = Math.max(0.06, G?.rough ?? 0.1); // (the emissive stays the numerals' gold)
+    const id = this.view.game?.vessel?.look?.stones, M = this.stoneMat;
+    dressStone(this.finU ||= dressFinish(M, 'gem'), M, id, { radius: DIE_K * PIECE.die, ink: true }); // (the gem and its mineral, the numerals kept: vfx/stoneminerals.js; the emissive stays the numerals' gold)
   }
   /** The die where its throw has it: an arc from the figurine, tumbling about one axis down to rest, one small hop as it lands. */
   /** A re-roll's first throw: the same arc to rest on the failed face, a beat shown, then snatched back up toward the figurine. */
