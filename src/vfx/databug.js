@@ -15,8 +15,10 @@
 //               wrong way (down, and up too slowly), and sparse dark streaks falling. One held effect a creature ('databug.aura',
 //               written into the effect library from here), on the effect pools: no program of its own.
 //
-// An aberrant also wears its colours inverted while it lives (a placeholder, PUZZLE-DUELS.md 16.4: vfx/aberrantinvert.js, given
-// back with the rest when it is mended or gone).
+// An aberrant alive also wears its own look (vfx/aberrantlook.js: the Comb's cells flipping, its edge in its opposite colour, a scan, a
+// snap on the beat, its shadow drawn wrong, its shards orbiting), or, where the owner compares them (`ABERRANT_LOOK.mode` 'invert',
+// '/aberrant invert' in DEBUG), its colours inverted (the placeholder, PUZZLE-DUELS.md 16.4: vfx/aberrantinvert.js); given back with
+// the rest when it is mended or gone.
 //
 // A drain mends it (.hack's data drain repairs a data bug): `mend(c)` gives the mesh back and the aura goes. The drain's set-down
 // (a drained creature a step paler) rides the same per-frame tint: `drained(c)`.
@@ -35,6 +37,7 @@
 import * as THREE from 'three';
 import { LIBRARY } from './library.js';
 import { AberrantInversion } from './aberrantinvert.js';
+import { AberrantLook, ABERRANT_LOOK } from './aberrantlook.js';
 
 export const BUG_KINDS = ['limb', 'slide', 'cast'];
 const CAST = new THREE.Color(0.34, 0.27, 0.5); // (over the body's sand: toward #4a3a52, grey-violet)
@@ -138,7 +141,8 @@ const _q = new THREE.Quaternion();
 export class DataBugs {
   constructor(game) {
     this.game = game; this.bugs = new Map(); this.tints = new Map(); this.scanT = 0; this.t = 0;
-    this.inversion = new AberrantInversion(); // (an aberrant's colours inverted while it lives, a placeholder: vfx/aberrantinvert.js)
+    this.inversion = new AberrantInversion(); // (an aberrant's colours inverted while it lives, the placeholder kept to compare: vfx/aberrantinvert.js)
+    this.own = new AberrantLook(game); // (an aberrant's own look, the default: vfx/aberrantlook.js)
   }
 
   /** Mark a creature a data bug (found by the scan; or by hand, `kind` forced, for a contact sheet). */
@@ -167,7 +171,7 @@ export class DataBugs {
     if (B.mesh && B.mesh.geometry === B.geo) B.mesh.geometry = B.geo0;
     B.geo?.dispose(); B.veinGeo?.dispose();
     for (const m of B.marks) { m.parent?.remove(m); m.material.dispose(); }
-    B.aura?.stop?.(); this.inversion.release(c);
+    B.aura?.stop?.(); this.inversion.release(c); this.own.release(c);
     const T = this.tints.get(c); if (T) T.cast = false;
     this.bugs.delete(c);
   }
@@ -211,14 +215,26 @@ export class DataBugs {
         T.wrote.copy(m.color);
       }
     }
-    // an aberrant alive wears its colours inverted (copies synced after the tints above); dead, it gives them back before its scatter
+    // an aberrant alive wears its own look, or its colours inverted where the owner compares (copies synced after the tints above);
+    // dead, it gives them back before its scatter
+    const look = ABERRANT_LOOK.mode === 'invert' ? this.inversion : this.own, other = look === this.own ? this.inversion : this.own;
     for (const c of this.bugs.keys()) {
       const want = !!c.aberrant && c.alive !== false;
-      if (want && !this.inversion.has(c)) this.inversion.hold(c); else if (!want && this.inversion.has(c)) this.inversion.release(c);
+      if (other.has(c)) other.release(c);
+      if (want && !look.has(c)) look.hold(c); else if (!want && look.has(c)) look.release(c);
     }
     this.inversion.update();
+    this.own.update(raw, (c) => this.bugs.get(c)?.k ?? 0);
+    if (!this.chatted && g.chat?.add) { // (the owner's comparison: DEBUG)
+      this.chatted = true;
+      g.chat.add('aberrant', { debug: true, help: "an aberrant's look: /aberrant own (its own, the default) or /aberrant invert (the inverted placeholder, to compare)", run: ([m]) => {
+        ABERRANT_LOOK.mode = m === 'invert' ? 'invert' : 'own';
+        g.events?.emit('aberrant.look', { mode: ABERRANT_LOOK.mode, by: 'courier' });
+      } });
+    }
   }
 
-  /** For the boot's warm-up: nothing of its own to compile (the effect pools, the decal and the page material are warm). */
-  prewarm() { return () => {}; }
+  /** For the boot's warm-up: the own look's programs (one a kind of body, vfx/aberrantlook.js); the effect pools, the decal and the
+   *  page material are warm already. */
+  prewarm() { return this.own.prewarm(); }
 }
