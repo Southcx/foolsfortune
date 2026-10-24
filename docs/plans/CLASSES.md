@@ -5,7 +5,7 @@ combo)? We can have Major Arcana pulling triple, quadruple, even quintuple duty 
 We're going to have to design RPG classes around them too, in tandem with fleshing out the skill domains and ability unlocks."
 
 Dovina's plan. Status: **the read is built** (`classOf`, `progress/spreads.js`; wired by Petra as the laid spread's class, told as
-`spread.court`); **what a class gives is a plan** (sections 4 to 6), waiting on the owner's answers (section 8).
+`spread.court`); **what a class gives is a plan** (sections 4 to 6): arts kept across classes and accentuated in their own is ruled (6.3); the rest waits on section 8.
 
 ## 1. Golden Sun's idea, our cards
 
@@ -125,11 +125,13 @@ untouched.
 1. **Its lift** (built): one suit's cap to 12.
 2. **Its domain's affinity**: experience in its ruling domain x1.25 while you read as it. The board says why your Divination is
    climbing faster.
-3. **Its arts, learned in it and kept** (Final Fantasy Tactics' jobs: abilities bought with that job's points, then usable from any
-   job as a secondary). A class has two arts. Each is opened by **an achievement done while you read as that class** (the Chariot's
-   art for a race won as the Chariot). Once open, it is yours in any class. So a class is where you learn, never what you must wear to
-   use what you learned: skill skips grind (you can earn an art in one session as the right class), grind closes the gap (any class
-   reaches every art in the end).
+3. **Its arts: a class sharpens them, never locks them** (ruled by the owner, 2026-10-24: "having a class accentuates the abilities
+   you can use, but doesn't preclude you from using them"). A class has two arts. Each is opened by **an achievement done while you
+   read as that class** (the Chariot's art for a race won as the Chariot), and once open it is yours in every class (Final Fantasy
+   Tactics' jobs: learned in one, used from any). Read as its class, an art is **accentuated**: a modifier on its numbers, its source
+   the class shown on the board; read as another, it works exactly as learned. So a class is where you learn and where you shine,
+   never what you must wear to use what you learned: skill skips grind (earn an art in one session as the right class), grind closes
+   the gap (any class reaches every art in the end). The size of the accent is a number to measure, not yet set.
 4. **Its Entropy Tactics kit** (4.6): the same two arts are two of its three actives at the table.
 
 The cost is content: 38 classes at two arts each is 76 arts, plus the 22 Majors' table kits. Ship in waves of four (as
@@ -149,8 +151,7 @@ ENTROPY-TACTICS.md 3.b proposed for the table), each measured before the next.
 2. **The other eight** (section 3): planets by the wild light, the Hanged Man by an all-reversed spread, Judgement by the Celtic Cross
    complete. Or your own?
 3. **The domains' planets** (section 5): this mapping, or another?
-4. **What a class gives** (section 6): the lift, the domain's affinity, two arts learned in it and kept. Is "learned in a class, kept
-   for every class" right, or should an art stay with its class?
+4. ~~What a class gives~~ ruled (2026-10-24): arts are kept across classes; a class accentuates its own (section 6.3).
 5. **One kit, two games** (4.6): a class's arts are its Entropy Tactics actives?
 6. **The first wave of four**: the Fool and three of your choosing?
 7. **Palmistry's two readings** (5.2): the four lines as ledger readings, and the hand's shape by your suit?
