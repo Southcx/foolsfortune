@@ -279,7 +279,7 @@ export class Skiff {
   set broken(v) { if (this.body) this.body.visible = !v; }
   get broken() { return !!this.body && !this.body.visible; }
   /** The hull's painting: a worn one (cracked, vfx/skiffboardlooks.js), or null for its own. */
-  setHullMap(tex) { const m = this.hullMat; if (!m) return; const t = tex || this.hullTex; if (m.map !== t) { m.map = m.emissiveMap = t; } }
+  setHullMap(tex) { const m = this.hullMat; if (!m) return; const t0 = tex || this.hullTex, t = this.hullWrap?.(t0) ?? t0; if (m.map !== t) { m.map = m.emissiveMap = t; } } // (through the hull wrap worn, if any: vfx/skifftrims/wraps.js)
   /** The stakes applied (set: each frame, after the boost's glow). */
   applyStakes(dt) {
     const S = this.st, K = SKIFF_STAKES, h = THREE.MathUtils.clamp(S.heat, 0, 1), w = THREE.MathUtils.clamp(S.wear, 0, 1);

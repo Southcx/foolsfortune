@@ -49,6 +49,7 @@ import { FIN_PATTERN_GLSL } from './finish.js';
 import { drawSealFace } from './sealface.js';
 import { featTint } from './oxidation.js';
 import { LACHRYMA_TINT } from './racewayeffects.js';
+import { SkiffTrims } from './skifftrims/skifftrims.js';
 
 /** The numbers. The cloth's painting in its UVs (glTF's, v down): the sail is u 0.015..0.735 (luff to leech), v 0.02..0.98 (yard to
  *  boom), the pennant's strip u past `penU`; `metres` the sail's metres a unit of u and of v (2.05 m of boom over 0.74 u, 1.91 m of hoist
@@ -151,6 +152,7 @@ export class SkiffPaintLook {
     this.base = this.mat ? { rough: this.mat.roughness, metal: this.mat.metalness } : null;
     this.pen = 1; this.wakeOwn = null; this.trailC = new THREE.Color(); this.dyeHex = null;
     this.ribbon = new Ribbon(game?.scene);
+    this.trims = new SkiffTrims(skiff, game); // (the trail's look, the ribbon's and the pennant's shapes, the hull wrap: vfx/skifftrims/)
     const E = game?.events;
     this.offs = ['skiff.paint', 'vessel.fire', 'seal.carve'].map((ev) => E?.on?.(ev, () => this.apply()));
     this.apply();
@@ -162,6 +164,7 @@ export class SkiffPaintLook {
   /** The choices made into the cloth, the pennant's length and the trail's kind: at load and on every `skiff.paint`. */
   apply() {
     const W = this.worn, g = this.game;
+    this.trims?.apply(W);
     this.pen = W.length === 'long' ? L.pennant.long : 1;
     this.trail = W.trail || 'own'; this.ribbonOn = W.ribbon === 'on';
     // the dye
@@ -234,7 +237,7 @@ export class SkiffPaintLook {
   }
 
   /** The pennant's length: each link's offset from the one before it, longer (after the pose: boat.js own). */
-  pose(B) { if (this.pen !== 1 && B) for (let i = 1; i <= 5; i++) B[`pennant_${i}`]?.position.multiplyScalar(this.pen); }
+  pose(B) { if (this.pen !== 1 && B) for (let i = 1; i <= 5; i++) B[`pennant_${i}`]?.position.multiplyScalar(this.pen); this.trims?.pose(B); }
 
   /** Per frame, once the board is placed (boat.js placePennant): the trail's colour on the wake, and the ribbon. */
   frame(t) {
@@ -251,17 +254,18 @@ export class SkiffPaintLook {
       wake.color.copy(C);
     }
     const G = this.skiff.group;
-    const emit = this.ribbonOn && G.visible && !!tech.air && (tech.flaring || tech.boosting > 0.8);
+    const flying = G.visible && !!tech.air && (tech.flaring || tech.boosting > 0.8);
     G.updateMatrixWorld();
     _v.set(...L.ribbon.stern).applyMatrix4(G.matrixWorld);
-    this.ribbon.update(dt, t, emit, _v, this.game.camera, this.dyeHex);
+    this.ribbon.update(dt, t, this.ribbonOn && flying, _v, this.game.camera, this.dyeHex);
+    this.trims?.frame(t, dt, { wake, flying, stern: _v, camera: this.game.camera, dye: this.dyeHex });
   }
 
-  clear() { this.ribbon.clear(); }
+  clear() { this.ribbon.clear(); this.trims?.clear(); }
 
   dispose() {
     for (const off of this.offs || []) off?.();
-    this.setMap(this.tex); this.rt?.dispose(); this.bakeMat?.dispose(); this.quad?.geometry.dispose(); this.sealT?.dispose(); this.ribbon.dispose();
+    this.setMap(this.tex); this.rt?.dispose(); this.bakeMat?.dispose(); this.quad?.geometry.dispose(); this.sealT?.dispose(); this.ribbon.dispose(); this.trims?.dispose();
   }
 }
 const _v = new THREE.Vector3(), _fc = new THREE.Color();
