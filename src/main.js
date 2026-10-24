@@ -211,6 +211,8 @@ import { AI } from './creatures/ai/index.js';
 import { Stun } from './creatures/stun.js';
 import { BUILD } from './core/progress.js';
 import { Save } from './core/save.js';
+import { CloudSave } from './core/cloudsave.js';
+import { installContextLoss } from './render/contextloss.js';
 import { Agent } from './agent/agent.js';
 import { installPlaces } from './world/places.js';
 import { installReplay } from './debug/replay.js';
@@ -375,6 +377,7 @@ async function main() {
   reseed(seedArg != null ? +seedArg >>> 0 : (Date.now() ^ Math.floor(performance.now() * 1000)) >>> 0); // (the session's seed: every chance the simulation takes follows from it: core/rng.js)
   const save = new Save(); // (everything the game keeps, in one place: core/save.js)
   const freshBuild = save.boot(BUILD, save.unstash('mode') || save.lastMode()); // (a new build starts its progress afresh: the player's and the world's; and the save is the mode's chosen on the title, DEBUG or STORY: DEBUG-MODE.md section 2)
+  const cloud = new CloudSave(save, { build: BUILD, mode: save.mode }); await cloud.boot(); // (the same save on every device: the published page's private store, 1.5 real s at most before anything loads: core/cloudsave.js)
   loadTuning();
   const machine = detectMachine(), graphicsTier = applyBootTier(machine); // (the quality tier, read from the machine before anything is built: render/graphics.js)
   installTheme(); // (the windows' look, the faces, the glove: ui/theme.js)
@@ -425,7 +428,7 @@ async function main() {
   const stats = { broken: 0, total: 0 };
   const events = new Events();
   const game = {
-    scene, physics, fx, hud, camera, renderer, stats, events, save,
+    scene, physics, fx, hud, camera, renderer, stats, events, save, cloud,
     reseed, get seed() { return sessionSeed(); }, // (the simulation's chance: core/rng.js; the stress test and replays set it)
     ledger: new Stats(save), // (the quiet ledger: everything counted; see stats.js; kept in the save's player scope)
     listenerDistance: (p) => camera.position.distanceTo(p),
@@ -947,6 +950,9 @@ async function main() {
     game.overture.start({ own: !tr });
   } });
   for (const m of [game.ledger, system, game.veritome?.book, game.cartography]) if (m?.save) save.writer(() => m.save()); // (they write their own keys on timers of their own, until each has a section: core/save.js)
+  save.watchPage(() => cloud.flushNow()); // (a hidden or closed page writes everything now: a phone may never come back to the tab, MOBILE.md 10)
+  { let said = false; save.onFail = (key, why) => { if (!said) { said = true; events.emit('save.fail', { key, why, by: 'environment' }); } }; } // (a write the browser refused: said once)
+  cloud.attach(game); installContextLoss(renderer, game); // (the cloud's word at boot said now; the graphics context lost and given back: render/contextloss.js)
   const replays = (game.replays = installReplay(game, { player, frame: () => clock.frame, time: { get: () => simTime, set: (v) => { simTime = v; events.time = v; } } })); // (recording from the start of play, /replay, /record: debug/replay.js)
   game.chat.add('goto', { debug: true, help: 'stand at a place (/goto well.mouth) or a point (/goto x y z yaw: the stand line of a QAIS report)', run: (a) => {
     const n = a.map(Number), point = a.length >= 3 && n.slice(0, 3).every(Number.isFinite);
@@ -1343,6 +1349,7 @@ async function main() {
     system.tick(dt);
     game.ledger.tick(dt);
     save.flush(); // (whatever changed this frame, written whole: core/save.js)
+    cloud.update(game.rawDt || dt); // (and what changed sent to the cloud, at most once a real minute: core/cloudsave.js)
     game.tracking.update(dt);
     game.achievements.tick(dt);
     game.log.tick(dt);
