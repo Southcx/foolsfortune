@@ -39,7 +39,7 @@
 // XIV's .avfx (an effect is named by its use and layered: particles, models, lights, screen effects), and the data-driven hit tables
 // of fighting games (a move names its hit effect; the effect is tuned apart from the move).
 //
-//   game.vfx = new Vfx(game)   .play(name, ctx) -> handle   .update(rawDt)   .has(name)   .names()
+//   game.vfx = new Vfx(game)   .play(name, ctx) -> handle   .update(rawDt)   .has(name)   .names()   materialOf(ent, kind) -> a hit's material
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { Sprites } from './sprites.js';
@@ -133,7 +133,11 @@ const UP = new THREE.Vector3(0, 1, 0);
 const SLASH = /cut|slice|slash|cleave|rend|sunder|blade|zandatsu|stinger/;
 const SHOT = /shot|charged|ricochet|homing|bolt|spark|slicer/;
 export const MATERIALS = ['clay', 'crystal', 'jelly', 'wood', 'stone', 'metal']; // (the material tags a hit reads: tags.js)
-const MATERIAL = { pot: 'clay', jar: 'clay', urn: 'clay', vase: 'clay', lantern: 'clay', pitcher: 'clay', bowl: 'clay', clapper: 'clay', crate: 'wood', slipjelly: 'jelly', jelly: 'jelly', crystal: 'crystal' };
+const MATERIAL = { pot: 'clay', jar: 'clay', urn: 'clay', vase: 'clay', lantern: 'clay', pitcher: 'clay', bowl: 'clay', clapper: 'clay', crate: 'wood', slipjelly: 'jelly', jelly: 'jelly', crystal: 'crystal', strawman: 'straw' }; // (straw: Strawman's sack, a kind's look only, never a tag)
+/** What a struck thing is made of, for its look: its material tag (tags.js), else a guess from its kind. */
+export function materialOf(ent, kind = '') {
+  return (ent && MATERIALS.find((m) => hasTag(ent, m))) || MATERIAL[kind] || (/jelly/.test(kind) ? 'jelly' : /crystal|shard/.test(kind) ? 'crystal' : 'clay');
+}
 const TOOL_TINT = { blunt: 0xffd76a, slash: 0xfff1dc, shot: 0xffb27a };
 
 function color(v, ctx) {
@@ -215,7 +219,7 @@ export class Vfx {
    *  effect: its `trail` layers are ribbons between the two ends pushed each frame (`span` [from, to] along base->tip: a hot core near the
    *  tip, a wide afterglow behind), and its `sprites` layers with `perM` are shed along the way, so many per metre the tip travels
    *  (`along: 'tip'` at the tip, `'blade'` anywhere on it), carrying some of its speed (`inherit`).
-   *    const sw = game.vfx.swing('swing.cutlass', { tint, tip })   sw.push(base, tip)   sw.gap()   sw.power = 2   sw.setColors(a, b)
+   *    const sw = game.vfx.swing('swing.cutlass', { tint, tip })   sw.push(base, tip)   sw.gap()   sw.power = 2   sw.setColors(a, b)   sw.flare(k, dur) (a blow connects)
    *    game.vfx.swing('swing.brush').follow((a, b) => striking && (model.headSegment(a, b), true))   (or it asks, every frame)
    *  `update` is the player's (a tool need not call it). Prior art: Soul Calibur's and DMC's ribbons, Monster Hunter's weapon trails
    *  with their sparks, Kingdom Hearts' keyblade trail shedding motes. */
@@ -247,6 +251,9 @@ export class Vfx {
       (sw.last ||= new THREE.Vector3()).copy(tip); (sw.lastB ||= new THREE.Vector3()).copy(base);
     };
     sw.gap = () => { for (const { t } of sw.trails) t.gap(); sw.last = null; };
+    // (a blow that connects: the ribbons burn brighter for `dur` real s, eased out; `k` the extra share, the strongest asked wins)
+    sw.flareK = 0; sw.flareT = 0; sw.flareDur = 0.1;
+    sw.flare = (k, dur = 0.1) => { const now = sw.flareK * Math.max(0, 1 - sw.flareT / sw.flareDur); if (k < now) return; sw.flareK = k; sw.flareT = 0; sw.flareDur = Math.max(0.02, dur); };
     sw.setColors = (a, b) => { sw.ctx.tint = a; sw.ctx.tip = b; for (const { L, t } of sw.trails) t.setColors(color(L.color ?? 'tint', sw.ctx), color(L.tip ?? 'tip', sw.ctx) || 0xffffff); };
     sw.update = () => {}; // (the player's: see update)
     // (or it follows on its own: `fn(a, b)` sets the two ends and returns true while the thing is striking, false between: a tool says
@@ -267,7 +274,7 @@ export class Vfx {
   hit({ ent, kind = '', cause = 'shot', point, dir, power = 1, kill = false, tint, type }) {
     if (!point) return null;
     const tool = SLASH.test(cause) ? 'slash' : SHOT.test(cause) ? 'shot' : 'blunt';
-    const mat = (ent && MATERIALS.find((m) => hasTag(ent, m))) || MATERIAL[kind] || (/jelly/.test(kind) ? 'jelly' : /crystal|shard/.test(kind) ? 'crystal' : 'clay');
+    const mat = materialOf(ent, kind);
     const name = `hit.${tool}.${mat}${kill ? '.kill' : ''}`;
     const ctx = { pos: point, dir: dir ? _d.copy(dir).negate() : UP, power: THREE.MathUtils.clamp(power, 0.4, 2.5), tint: tint ?? TOOL_TINT[tool], floor: point.y - 1.5 };
     if (type) this.play(`damage.${type}`, ctx); // (what the blow is made of, over what struck what: the damage looks)
@@ -284,7 +291,7 @@ export class Vfx {
       for (const s of h.layers) busy = this.step(h, s, raw) || busy;
       if (!busy) { for (const s of h.layers) s.mesh?.dispose(); this.live.splice(i, 1); h.alive = false; }
     }
-    for (const sw of this.swings || []) { sw.tick(); for (const { t } of sw.trails) t.update(raw); }
+    for (const sw of this.swings || []) { sw.tick(); if (sw.flareK > 0) this.flareStep(sw, raw); for (const { t } of sw.trails) t.update(raw); }
     this.add.update(raw); this.alpha.update(raw); this.xray?.add.update(raw); this.xray?.alpha.update(raw);
     for (const L of this.lights) {
       if (L.t >= L.dur) { L.l.intensity = 0; continue; }
@@ -294,6 +301,15 @@ export class Vfx {
     if (this.smearT > 0) { this.smearT -= raw; const A = this.game.post?.accum; if (A && !this.game.death?.active) A.amt = Math.max(0, this.smearAmt * this.smearT / this.smearDur); }
     this.flashK = Math.max(0, this.flashK - raw * this.flashDecay);
     this.flashEl.style.opacity = String(Math.min(0.85, this.flashK));
+  }
+
+  /** A swing's flare, this frame: each ribbon's strength and hot core raised by the flare's share, eased out over its time (uniforms
+   *  only: the ribbon's one program). */
+  flareStep(sw, raw) {
+    sw.flareT += raw;
+    const u = Math.max(0, 1 - sw.flareT / sw.flareDur), m = sw.flareK * u * u;
+    if (u <= 0) sw.flareK = 0;
+    for (const { L, t } of sw.trails) { t.uni.uK.value = Math.min(1.6, (L.k ?? 1) * (1 + m)); t.uni.uCore.value = (L.core ?? 1) + 2.5 * m; }
   }
 
   /** One layer, this frame. Returns whether it still has something to do. */

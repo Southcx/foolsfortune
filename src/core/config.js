@@ -73,6 +73,7 @@ export const DEFAULTS = {
   camera: {
     sensitivity: 1.0,
     follow: 0.5, // on touch, how quickly the camera swings back behind a moving Courier once the look thumb lets go, 0 (never) to 1 (courier/camfollow.js; a setting)
+    lockAuto: true, // on touch, with a tool drawn, the lock-on takes the nearest foe in front by itself (courier/lockon.js; a setting: MOBILE.md 8.9)
     adsSensMult: 0.65,
     fpFov: 78,
     fpAdsFov: 54,
@@ -315,7 +316,7 @@ export const DEFAULTS = {
     lockheart: { enabled: true, openHold: 0.5 }, // I: the Lockheart: drinks spare Lachryma, opened with Possibilikeys, RMB held openHold real s with the odds shown (OVERLAY.md 19.8; src/tools/lockheart/)
     grapple: { reelMax: 26, reelAccel: 70, payV: 6, pump: 9, drag: 0.05, stop: 1.6, maxSpeed: 30, maxLen: 46, reelCost: 2 }, // the line of the grapnel (src/tools/sondelass/grapple.js, src/tools/sondelass/hookshot.js): reel, pay out, pump, let go
     kick: { enabled: true, radius: 0.85, damage: 60, launch: 6, heavyCap: 60, knock: 9, cooldown: 0.25, parrySpeed: 4.5, parryRadius: 2.0, parryOut: 12, parryIframes: 0.35, parryAssist: 0.45 }, // V
-    skiff: { enabled: true, hover: 0.5, cruise: 24, accel: 7, coast: 1.6, brake: 16, hoistTime: 1.0, furlTime: 0.6, pump: 3.2, turn: 2.0, grip: 5, maxSpeed: 42, slopeGain: 1.6, follow: 12, gravity: 24, boostMult: 1.45, boostAccel: 26, boostCost: 20, hop: 7.6, hopCharge: 6, hopTime: 0.3 }, // the Solar Skiff, in the dunes: Y stows / summons
+    skiff: { enabled: true, hover: 0.5, cruise: 24, accel: 7, coast: 1.6, brake: 16, hoistTime: 1.0, furlTime: 0.6, pump: 3.2, turn: 2.0, grip: 5, maxSpeed: 42, slopeGain: 1.6, follow: 12, gravity: 24, boostMult: 1.45, boostAccel: 26, boostCost: 20, hop: 7.6, hopCharge: 6, hopTime: 0.3, gyro: false }, // the Solar Skiff, in the dunes: Y stows / summons; gyro: on a phone, steered by turning it (core/gyrosteer.js; a setting)
     recoil: { enabled: true, charges: 3, kick: 5.4, chargedKick: 11, minDown: 0.35, horizontal: 0.6 }, // shoot down in the air
   },
   anim: {
@@ -362,6 +363,7 @@ export const DEFAULTS = {
     antialias: true, // the canvas's own (boot only)
     outlineReach: 0, // props' outline hulls drawn within this many metres; 0 draws them all (render/graphics.js)
     lightSlots: 8, // point lights lit at once (render/lightbudget.js)
+    labelScale: 1, // baked labels' canvases drawn at this fraction of their pixels (render/bakedcanvas.js; boot only): a phone's memory
     toon: 1, // the soft cel ramp on direct light, 0 (the plain cosine) to 1 (render/toon.js)
     glow: 0.45, // the PS2 glow (render/glow.js): 0 is off
     grade: 1, // the colour grade after it: shadows toward indigo, light toward the kiln's warmth

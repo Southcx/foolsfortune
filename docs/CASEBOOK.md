@@ -856,6 +856,15 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 291. **A press owed after the lift keeps its loop running.** Whatever a gesture earns when the fingers lift (a tap's
     click, a two-finger tap's undo) is made by the next frame's update; the caller asks the gesture whether it owes anything, not
     whether a finger is down. A check that calls the update by hand cannot see this: drive it with real touches.
+292. **An adapter carries what its readers ask.** A reader that asks a wrapped thing for a field (the Sondelass's form through the
+    belt's adapter) gets `undefined`, never an error; give the adapter the field (or the thing behind it), and test the reader
+    through the adapter, not the thing.
+293. **A userData that keeps a three.js object is never JSON-copied.** three's clone serializes userData
+    whole (every texture into a data URL); the shim keeps the objects as themselves (render/threefixes.js). Look for big work hidden
+    in a library's copy before blaming the code that calls it.
+294. **A canvas drawn once is baked.** Its texture lets the canvas go once uploaded (render/bakedcanvas.js); a canvas
+    redrawn in play stays a CanvasTexture. Count a page's memory by its owners (canvases by the module that made them), not in sum.
+
 NEW:ledger-kind-matches. **A predicate reads a key in the kind it was written.** `inc` is read by `get`, `hi` and `lo` by `best`,
     `first` by `has`; a key read in another kind reads nothing, forever. Run `node scripts/reachable.mjs` after adding an achievement,
     an art or a knack.

@@ -112,6 +112,23 @@ export const ACTIONS = [
   { id: 'duFlee',   keys: ['KeyE'],                     touch: 'du.flee',    ctx: 'duel', how: 'tap' },
   { id: 'duForm',   keys: ['Backquote'],                touch: 'du.form',    ctx: 'duel', how: 'tap' },     // (hand / Courier)
   { id: 'duYield',  keys: ['Backspace'],                touch: 'menu.yield', ctx: 'duel', how: 'hold' },    // (held 1.5 real s; in the pause menu)
+  // ---- the rail (M4: a crossing at sea; Petra's ctx `rail`, 2026-10-24). The ship steers on the move area's stick (W A S D); the view is
+  //      the rail's. FIRE held as on a pad (StarFox's), the lock-on held and let go; FORM, ROLL and SURGE in the cluster, BOOST and BRAKE held
+  { id: 'raFire',   mouse: 'Mouse0',      pad: 'RT',    touch: 'fire',       ctx: 'rail', how: 'hold' },
+  { id: 'raLock',   mouse: 'Mouse2',      pad: 'LT',    touch: 'lock',       ctx: 'rail', how: 'hold' },  // (the lock-on: held to mark, let go to loose the lances)
+  { id: 'raRoll',   keys: ['KeyE'],       pad: 'B',     touch: 'roll',       ctx: 'rail', how: 'tap' },   // (the barrel roll; its two charges)
+  { id: 'raForm',   keys: ['KeyQ'],       pad: 'Y',     touch: 'form',       ctx: 'rail', how: 'tap' },   // (Astral and Umbral)
+  { id: 'raSurge',  keys: ['KeyR'],       pad: 'X',     touch: 'surge',      ctx: 'rail', how: 'tap' },   // (shown only with the surge's gauge full)
+  { id: 'raBoost',  keys: ['ShiftLeft'],  pad: 'RB',    touch: 'boost',      ctx: 'rail', how: 'hold' },
+  { id: 'raBrake',  keys: ['KeyC'],       pad: 'LB',    touch: 'brake',      ctx: 'rail', how: 'hold' },
+  // ---- the free helm (M4: the open sea; Petra's ctx `helm`). The rudder on the move area's stick (A / D); the throttle a notch a tap
+  { id: 'heUp',     keys: ['KeyW'],       pad: 'Up',    touch: 'throttle.up',   ctx: 'helm', how: 'tap' },
+  { id: 'heDown',   keys: ['KeyS'],       pad: 'Down',  touch: 'throttle.down', ctx: 'helm', how: 'tap' },
+  { id: 'heMoor',   keys: ['KeyF'],       pad: 'A',     touch: 'use',        ctx: 'helm', how: 'tap' },   // (moor, dock or board: USE names its thing)
+  { id: 'heFix',    keys: ['KeyR'],       pad: 'Y',     touch: 'fix',        ctx: 'helm', how: 'tap' },   // (read the sky with the Dreamvane)
+  { id: 'heFire',   mouse: 'Mouse0',      pad: 'RT',    touch: 'fire',       ctx: 'helm', how: 'hold' },  // (the ship's gun, aimed with the camera)
+  { id: 'heParry',  keys: ['KeyV'],       pad: 'B',     touch: 'parry',      ctx: 'helm', how: 'tap' },   // (the outlined spit sent back: seafight.js)
+  { id: 'hePlate',  keys: ['KeyE'],       pad: 'X',     touch: 'plate',      ctx: 'helm', how: 'tap' },   // (a plate from the helm, the Veritome worn: world/opensea/herds.js)
   // ---- the rhythm mode and busking (M3, Wanda's: ten lanes as ten pads in two rows; a held pad is a held lane, music/rhythm/rhythm.js)
   { id: 'rhLane1', keys: ['Digit1'], touch: 'rh.l1', ctx: 'rhythm', how: 'hold' },
   { id: 'rhLane2', keys: ['Digit2'], touch: 'rh.l2', ctx: 'rhythm', how: 'hold' },
@@ -178,7 +195,7 @@ export const ACTIONS = [
 ];
 
 /** The precedence: the first live ctx in this order that binds a pad button or a touch control wins it (MOBILE.md 6.1.1). */
-export const CTX_ORDER = ['race', 'skiff.rail', 'skiff.air', 'skiff', 'rhythm', 'duel', 'godhand', 'garden', 'tool.psygun', 'tool.cutlass', 'tool.rod', 'tool.hook', 'tool.brush', 'tool.veritome', 'tool.dreamvane', 'tool.crucibelle', 'tool.lockheart', 'foot', 'any'];
+export const CTX_ORDER = ['race', 'skiff.rail', 'skiff.air', 'skiff', 'rhythm', 'duel', 'godhand', 'garden', 'rail', 'helm', 'tool.psygun', 'tool.cutlass', 'tool.rod', 'tool.hook', 'tool.brush', 'tool.veritome', 'tool.dreamvane', 'tool.crucibelle', 'tool.lockheart', 'foot', 'any'];
 /** The Gamepad API's standard mapping, by the table's names. */
 export const PAD_BUTTONS = { A: 0, B: 1, X: 2, Y: 3, LB: 4, RB: 5, LT: 6, RT: 7, Back: 8, Start: 9, LS: 10, RS: 11, Up: 12, Down: 13, Left: 14, Right: 15 };
 

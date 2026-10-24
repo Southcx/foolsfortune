@@ -41,7 +41,7 @@ import { TableClarity } from './tableclarity.js';
 /** The numbers: the cloth's height over the hall's floor (just over Dovina's plinth cloth, 0.95), the shot (metres over the cloth, and
  *  out toward you in table radii; where it looks), the ease in (per real second), the pieces' slide, a die's tumble (real seconds), the
  *  lift under the cursor, the lit glint's walk, how long a coach is trusted without a new move (real seconds). */
-export const TABLE_VIEW = { cloth: 0.956, shot: { up: 1.5, out: 0.9, lookOut: 0.3, lookX: -0.3 }, ease: 2.6, slide: 11, tumble: 0.95, hover: 0.035, glint: 0.22, coachFor: 0.5 };
+export const TABLE_VIEW = { cloth: 0.956, shot: { up: 1.5, out: 0.9, lookOut: 0.3, lookX: -0.3 }, ease: 2.6, slide: 11, tumble: 0.95, hover: 0.035, glint: 0.22, coachFor: 0.5, longPress: 0.42, still: 10 }; // (a finger: real s a tap may last, CSS px it may move)
 // (the page is hidden while the view is up; the root lets the canvas through)
 const CSS = '#indexmenu.bztable { pointer-events: none; } #indexmenu.bztable .im { visibility: hidden; pointer-events: none; }';
 /** The marks' seat look: SEAT_LOOK with the number hex the marks' atlas takes, and a keyline where the cloth would swallow the seat colour. */
@@ -74,7 +74,20 @@ export class BazaarTable {
     // (the style and the canvas listeners are made when a seat is taken and taken down when it is left: enter/leave)
     const at = (e) => { this.ndc = { x: (e.clientX / innerWidth) * 2 - 1, y: -(e.clientY / innerHeight) * 2 + 1 }; this.mouse = { x: e.clientX, y: e.clientY }; };
     this.onMove = (e) => { if (this.s) at(e); };
-    this.onDown = (e) => { if (this.s && e.button === 0 && !this.clarity.busy) { at(e); this.click(); } };
+    // a finger (MOBILE.md 8.6): the down only hovers; a short tap acts on the up; held past the long press, the tip shows and nothing is played
+    this.onDown = (e) => {
+      if (!this.s || e.button !== 0 || this.clarity.busy) return;
+      at(e);
+      if (e.pointerType === 'touch') { this.press = { id: e.pointerId, t: performance.now(), x: e.clientX, y: e.clientY }; return; }
+      this.click();
+    };
+    this.onUp = (e) => {
+      const P = this.press; if (!P || e.pointerId !== P.id) return;
+      this.press = null;
+      const short = performance.now() - P.t < TABLE_VIEW.longPress * 1000 && Math.hypot(e.clientX - P.x, e.clientY - P.y) < TABLE_VIEW.still;
+      if (short && e.type === 'pointerup' && this.s && !this.clarity.busy) this.click();
+      this.ndc = null; // (the finger lifted: nothing stays hovered under it)
+    };
   }
   get active() { return !!this.s; }
 
@@ -114,12 +127,15 @@ export class BazaarTable {
     s0.menu?.root?.classList.add('bztable');
     this.style = document.createElement('style'); this.style.textContent = CSS; document.head.appendChild(this.style);
     const el = (this.canvas = g.renderer?.domElement); el?.addEventListener('pointermove', this.onMove); el?.addEventListener('pointerdown', this.onDown);
+    for (const ev of ['pointerup', 'pointercancel']) el?.addEventListener(ev, this.onUp);
   }
   leave() {
     const s0 = this.src; this.s = null; this.src = null; this.batch.mesh.visible = false; this.pieces.clear(); this.batch.clear(); this.hover = null; this.hoverIds = null; this.ndc = null;
     this.marks?.dispose(); this.marks = null; this.clarity.close(); this.coach = null; this.handLook(false);
     s0?.menu?.root?.classList.remove('bztable'); this.game.bazaar?.session?.menu?.root?.classList.remove('bztable');
-    this.canvas?.removeEventListener('pointermove', this.onMove); this.canvas?.removeEventListener('pointerdown', this.onDown); this.canvas = null;
+    this.canvas?.removeEventListener('pointermove', this.onMove); this.canvas?.removeEventListener('pointerdown', this.onDown);
+    for (const ev of ['pointerup', 'pointercancel']) this.canvas?.removeEventListener(ev, this.onUp);
+    this.canvas = null; this.press = null;
     this.style?.remove(); this.style = null;
   }
   /** Querent's face contrast at 480 lines: the paper is lit down and made matt (the sun's glare and the exposure washed the ink out; no emissive, no new program, the same material's

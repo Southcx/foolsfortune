@@ -72,6 +72,7 @@ export class Ship {
     this.game = game; this.rail = rail;
     this.local = new THREE.Vector3(0, CRUISE, 0); this.vel = new THREE.Vector3();
     this.cursor = { x: 0, y: 0.15 }; this.aim = new THREE.Vector3(0, 0, 1); this.nose = new THREE.Vector3();
+    this.touchAt = null; // (a finger's point on the screen, CSS px: the reticle under it while it touches; core/touchtools.js)
     this.aspect = 'mirth'; this.home = 'mirth';
     this.boostZ = 0; this.bank = 0; this.pitch = 0;
     this.rollT = 0; this.spin = 0; this.charges = T.ship.roll.charges; this.rechargeT = 0;
@@ -109,7 +110,7 @@ export class Ship {
   rehull(ship = 'sloop') {
     const H = SHIPS[ship] || SHIPS.sloop, B = SHIPS.sloop;
     this.hull = { id: SHIPS[ship] ? ship : 'sloop', pace: H.speed / B.speed, box: H.box / B.box, hurt: T.ship.hurt * (H.hurtbox / B.hurtbox), locks: Math.min(H.locks, T.ship.lock.max), dive: H.dive };
-    if (!H.dive && this.form === 'umbral') { this.form = 'astral'; this.aspect = this.home; this.game.events?.emit('rail.form', { form: this.form, by: 'environment' }); }
+    if (!H.dive && this.form === 'umbral') { this.form = 'astral'; this.aspect = this.home; this.game.events?.emit('rail.form', { form: this.form, aspect: this.aspect, by: 'environment' }); }
     this.boxSet = false; this.dress(this.hull.id); this.tint();
   }
 
@@ -170,7 +171,7 @@ export class Ship {
     if (this.turning) { const n = shots?.parry(this.local, 2.6) || 0; if (n) this.onParry?.(n); }
     this.mercy = Math.max(0, this.mercy - dt);
     if (hit.has('KeyQ') && this.hull && !this.hull.dive) { if (!this.qSaid) { this.qSaid = true; this.game.events?.emit('rail.refuse', { what: 'dive', ship: this.hull.id, by: 'courier' }); } } // (a heavy hull rides the surface: ships.js dive)
-    else if (hit.has('KeyQ')) { this.form = this.form === 'astral' ? 'umbral' : 'astral'; this.game.events?.emit('rail.form', { form: this.form, by: 'courier' }); this.aspect = this.aspect === this.home ? OPPOSITE[this.home] || this.home : this.home; this.tint(); sfx.click?.(); this.game.events?.emit('rail.polarity', { aspect: this.aspect, by: 'courier' }); }
+    else if (hit.has('KeyQ')) { this.form = this.form === 'astral' ? 'umbral' : 'astral'; this.aspect = this.aspect === this.home ? OPPOSITE[this.home] || this.home : this.home; this.tint(); sfx.click?.(); this.game.events?.emit('rail.form', { form: this.form, aspect: this.aspect, by: 'courier' }); } // (the form and its feeling in one event: the old second one retired with its word)
     // the gun, the sweep and the volley, all on the sixteenth (Rez)
     if (sixteenth !== this.lastSixteenth) {
       this.lastSixteenth = sixteenth;
@@ -205,7 +206,11 @@ export class Ship {
     this.nose.copy(this.local).add(_n.set(0.9 * f[0], 0, 0.9 * f[2]));
     // the cursor: the mouse's pixels as a share of the screen, counted only while the view shows it (a hidden cursor that kept counting
     // came back pinned at the screen's edge after a scroll view: the owner's "becomes locked")
-    if (this.cursorOn(view, arena)) { const W = innerWidth || 960, H = innerHeight || 540; C.x = clamp(C.x + ((I?.dx || 0) * 2) / W, -1, 1); C.y = clamp(C.y - ((I?.dy || 0) * 2) / H, -1, 1); }
+    if (this.cursorOn(view, arena)) {
+      const W = innerWidth || 960, H = innerHeight || 540, F = this.touchAt; // (a finger on the screen: the reticle under it, core/touchtools.js)
+      if (F) { C.x = clamp((F.x * 2) / W - 1, -1, 1); C.y = clamp(1 - (F.y * 2) / H, -1, 1); }
+      else { C.x = clamp(C.x + ((I?.dx || 0) * 2) / W, -1, 1); C.y = clamp(C.y - ((I?.dy || 0) * 2) / H, -1, 1); }
+    }
     const far = this.farOf(view, abeam, waves, arena, _st);
     if (swing) { // (both ends of the swing aimed and eased between, smoothstep as the camera's blend: from the old view's place to the new one's)
       const other = swing.from === view ? swing.to : swing.from, e = swing.k * swing.k * (3 - 2 * swing.k);

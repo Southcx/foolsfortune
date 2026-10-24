@@ -20,6 +20,14 @@
 //   a Float32Array, which V8 keeps unboxed. Measured (the heap sampled, 240 frames): garbage a frame 723 KB to 574 in the Dunes, 731
 //   to 638 in the workshop (found with V8's inlining off, which shows an allocation in the function that makes it).
 //
+//   USERDATA COPY. Object3D.copy deep-copies userData as JSON.parse(JSON.stringify(userData)), so a userData that keeps a mesh, a
+//   material or a texture (the reading view's cards keep their face, edge and edge material there: vfx/readingview.js) has every one
+//   serialized on a clone, and every image through a canvas into a data URL: measured at boot (2026-10-24), 14 clones of a card
+//   encoded the house deck's 2048 x 2304 atlas to a JPEG each, 66 Mpx and 1.3 real s on a desktop's CPU, 8 MB of strings thrown away
+//   (a phone's memory: the build would not open on the owner's iPhone). The copy is plain JSON's for plain data, as before; a three.js
+//   object (a mesh, a material, a texture, a geometry, an attribute) is kept as itself and never serialized. Before, a clone's
+//   userData held JSON dumps of them, of no use to anyone.
+//
 //   import './render/threefixes.js'    (first, in main.js: it installs itself before any module builds a geometry)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -27,6 +35,27 @@ import * as THREE from 'three';
 const _offset = new THREE.Matrix4(), _identity = new THREE.Matrix4();
 /** Sixteen numbers into a Float32Array: this store sees nothing else, so it stays unboxed (MATRIX COPY). */
 function put16(out, at, e) { for (let k = 0; k < 16; k++) out[at + k] = e[k]; }
+
+/** A three.js object a userData may keep: kept by reference in a copy, never serialized (USERDATA COPY). */
+const isThree = (v) => !!(v.isObject3D || v.isMaterial || v.isTexture || v.isBufferGeometry || v.isBufferAttribute || v.isInterleavedBuffer);
+/** Whether a userData keeps a three.js object anywhere in it (a little way down: what a module puts there is shallow). */
+function keepsThree(v, depth = 0) {
+  if (!v || typeof v !== 'object' || depth > 4) return false;
+  if (isThree(v)) return true;
+  if (ArrayBuffer.isView(v)) return false;
+  for (const k in v) { const x = v[k]; if (x && typeof x === 'object' && keepsThree(x, depth + 1)) return true; }
+  return false;
+}
+/** JSON's copy of plain data (functions and undefined dropped, a value with toJSON as JSON makes it), a three.js object as itself. */
+function copyKeeping(v) {
+  if (v === null || typeof v !== 'object') return typeof v === 'function' ? undefined : typeof v === 'number' && !Number.isFinite(v) ? null : v;
+  if (isThree(v)) return v;
+  if (typeof v.toJSON === 'function' || ArrayBuffer.isView(v)) return JSON.parse(JSON.stringify(v));
+  if (Array.isArray(v)) return v.map((x) => { const c = copyKeeping(x); return c === undefined ? null : c; });
+  const out = {};
+  for (const k of Object.keys(v)) { const c = copyKeeping(v[k]); if (c !== undefined) out[k] = c; }
+  return out;
+}
 
 let installed = false;
 function installThreeFixes() {
@@ -48,6 +77,15 @@ function installThreeFixes() {
     if (instanceId >= info.length || info[instanceId].active === false) return this;
     put16(tex.image.data, instanceId * 16, matrix.elements);
     tex.needsUpdate = true;
+    return this;
+  };
+  const copy0 = THREE.Object3D.prototype.copy;
+  THREE.Object3D.prototype.copy = function copy(source, recursive = true) {
+    const ud = source.userData;
+    if (!keepsThree(ud)) return copy0.call(this, source, recursive);
+    source.userData = {}; // (three's own JSON copy, of nothing; the real one below)
+    try { copy0.call(this, source, recursive); } finally { source.userData = ud; }
+    this.userData = copyKeeping(ud);
     return this;
   };
   THREE.BufferGeometry.prototype.deleteAttribute = function deleteAttribute(name) {

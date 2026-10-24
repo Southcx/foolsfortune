@@ -5,7 +5,8 @@
 // outer ring or with the pad's latch the sprint (Shift held, taken only on the ground or kept once held, so crossing the ring in the air
 // is never the air dash's Shift press). On the Solar Skiff the push is the steer, truly analog (`steer` axis), and A / D are held past
 // STICK.key for what reads them (the grind's balance); W and S are never pressed there (the sail and the brake are their own controls),
-// and on touch the ring is the carve (`move.outerL` / `move.outerR`). The keys W / A / S / D are held by direction for every reader of
+// and on touch the ring is the carve (`move.outerL` / `move.outerR`); at the open sea's helm W and S are not pressed either (the
+// throttle's taps, a step each). The keys W / A / S / D are held by direction for every reader of
 // keys; `input.axes` carries the push for the two that read it (courier/player.js, courier/skiff/skiff.js).
 //
 // Prior art: every twin-stick game's radial dead zone (rescaled past it, so a small push is still a small push); Zelda: Breath of the
@@ -35,7 +36,8 @@ export class StickMove {
     inp.axes.moveX = ux; inp.axes.moveY = uy; // (a unit direction: the core movement's own speeds)
     inp.axes.steer = clamp(x / steerFull, -1, 1);
     this.key('KeyD', !noAD && ux > STICK.key); this.key('KeyA', !noAD && ux < -STICK.key); // (noAD: the glide's thumb is the bank, progress/skifftouch.js)
-    this.key('KeyW', !skiff && uy > STICK.key); this.key('KeyS', !skiff && uy < -STICK.key);
+    const noWS = skiff || L.has('helm'); // (the helm's W / S are the throttle's taps, a step each: the stick is the rudder alone there, MOBILE.md 5)
+    this.key('KeyW', !noWS && uy > STICK.key); this.key('KeyS', !noWS && uy < -STICK.key);
     const foot = L.has('foot');
     this.key('AltLeft', foot && push < STICK.walk);
     const past = outer ?? push >= STICK.outer, wantSprint = foot && (sprint || past);

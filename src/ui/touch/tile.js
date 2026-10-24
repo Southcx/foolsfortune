@@ -34,7 +34,7 @@ export const TILE = { main: 96, size: 72, small: 44, min: 44, word: 14, big: 18,
 
 /** The words under the glyphs that need one (Espada's words, MOBILE.md 8.3; which glyphs need one is Calissa's call, Espada's to
  *  overrule: the glyph says HOP, FLARE, BOOST, JUMP, WALK, UNDO and the arts alone). */
-const WORDS = { brake: 'BRAKE', nose: 'NOSE', tail: 'TAIL', spring: 'SPRING', drain: 'DRAIN', turn: 'TURN' }; // (TOP VIEW is said by its glyph alone: a 44 px top-bar tile has no room for 14 px words)
+const WORDS = { alt: 'ALT', sign: 'SIGN', brake: 'BRAKE', nose: 'NOSE', tail: 'TAIL', spring: 'SPRING', drain: 'DRAIN', turn: 'TURN' }; // (TOP VIEW is said by its glyph alone: a 44 px top-bar tile has no room for 14 px words)
 export const tileWord = (id) => WORDS[id] || null;
 
 const CSS = `
@@ -96,7 +96,7 @@ function body(w, h, dpr, { glyph, pal, word, corner, pressed }) {
     g.fillStyle = '#1c0d08'; g.fillText(t, x + 1, y + 1); g.fillStyle = ink; g.fillText(t, x, y);
   };
   if (glyph) { // the glyph, at a whole number of device pixels an art pixel; the word under it
-    const icon = uiIcon(`touch.${glyph}`, pal), wordH = word ? TILE.word + 2 : 0;
+    const icon = uiIcon(glyph.includes('.') ? glyph : `touch.${glyph}`, pal), wordH = word ? TILE.word + 2 : 0;
     const k = Math.max(1, Math.round((s * TILE.glyph * dpr) / Math.max(icon.width, 1))); // (the nearest whole number: a 44 px tile's glyph is not left at 1x)
     const iw = icon.width * k, ih = icon.height * k, cx = Math.round((w * dpr - iw) / 2), cy = Math.round(((h - wordH) * dpr - ih) / 2 + y0 * dpr + (word ? s * 0.03 * dpr : 0));
     g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.imageSmoothingEnabled = false; g.drawImage(icon, cx, cy, iw, ih); g.restore();
@@ -198,7 +198,7 @@ export class TouchTile {
     this.drawnAt = now; this.dirty = false;
     const S = this.state, w = this.w, h = this.size, f = TILE.foot, dpr = Math.max(1, Math.min(3, (typeof devicePixelRatio === 'number' && devicePixelRatio) || 1));
     for (const cv of [this.bodyCv, this.rimCv]) { const W = Math.round(w * dpr), H = Math.round((h + f) * dpr); if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; cv.style.width = `${w}px`; cv.style.height = `${h + f}px`; this.lastBody = null; } }
-    const B = body(w, h, dpr, { glyph: this.glyph, pal: S.lit || S.pressed ? 'gold' : 'clay', word: this.word, corner: this.corner, pressed: S.pressed });
+    const B = body(w, h, dpr, { glyph: this.glyph, pal: S.lit || S.pressed ? 'gold' : this.iconPal || 'clay', word: this.word, corner: this.corner, pressed: S.pressed });
     if (this.lastBody !== B) { const g = this.bodyCv.getContext('2d'); g.clearRect(0, 0, this.bodyCv.width, this.bodyCv.height); g.drawImage(B, 0, 0); this.lastBody = B; }
     this.drawRim(now, w, h, dpr, S.pressed ? f : 0);
   }

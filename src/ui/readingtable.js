@@ -40,7 +40,7 @@ import { toolIcon } from '../pneuka/icons.js';
 export const REFUSE = { hold: 1.4, press: 0.16 };      // (real s the seal stays; real s it takes to come down)
 export const RT_CLASSES = { window: 'rt-clay', tray: 'rt-tray', slot: 'rt-slot', book: 'rt-book', pane: 'rt-pane' };
 const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI'];
-const CARD = { w: 128, h: 208, cols: 16, back: 78 }; // (the house deck's cells in its atlas: vfx/bazaarfaces.js AT.card)
+const CARD = { w: 128, h: 208, cols: 16, back: 80, footY: 2048 }; // (the house deck's cells in its atlas: vfx/bazaarfaces.js AT.card)
 const VERMILION = '#e0442a';
 
 const CSS = `
@@ -146,7 +146,7 @@ export class ReadingTable {
   face(n, down) {
     const key = down ? 'back' : n; if (this.faces.has(key)) return this.copy(this.faces.get(key));
     const A = bazaarAtlas(), i = down ? CARD.back : n, c = make('canvas'); c.width = CARD.w; c.height = CARD.h;
-    c.getContext('2d').drawImage(A.canvas, (i % CARD.cols) * CARD.w, Math.floor(i / CARD.cols) * CARD.h, CARD.w, CARD.h, 0, 0, CARD.w, CARD.h);
+    c.getContext('2d').drawImage(A.canvas, down ? 0 : (i % CARD.cols) * CARD.w, down ? CARD.footY : Math.floor(i / CARD.cols) * CARD.h, CARD.w, CARD.h, 0, 0, CARD.w, CARD.h);
     this.faces.set(key, c); return this.copy(c);
   }
   copy(src) { const c = make('canvas'); c.width = src.width; c.height = src.height; c.getContext('2d').drawImage(src, 0, 0); return c; }
