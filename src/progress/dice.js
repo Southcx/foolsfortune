@@ -15,12 +15,23 @@
 // a punishment); Shannon's surprisal for Luck's bits (progress/luck.js).
 //
 //   SET [{ die, sides, solid, suit }]   PALM = { sizes, rate, capPerSide, grow }   palmSides(condensed) -> 4 .. 20   palmCap(sides)
-//   REROLL = { perDay, bitsPerExtra, max }   rerollsOf(bits) -> re-rolls a game day
-//   new PalmDie(game) -> game.palmDie: .sides  .condensed  .today  feed(amount) -> cubes   save section 'palmdie' (scope player)
-//   events: palm.condense { n, sides, by }   palm.grow { from, to, by }
+//   REROLL = { perDay, bitsPerExtra, max }   rerollsOf(bits) -> re-rolls a game day   PALM_HOLD = { against, perLevel }
+//   new PalmDie(game) -> game.palmDie: .sides  .condensed  .today  feed(amount) -> cubes  answer(level) -> held   save section 'palmdie'
+//   new Rerolls(game) -> game.rerolls: left()  spend()   save section 'rerolls' (scope player)
+//   events: palm.condense { n, sides, by }   palm.grow { from, to, by }   palm.roll { face, sides, against, held, why, by }
+//
+// The palm die against the island (ruled, DICE.md 4: "it answers the island"): each time a Dissonance Level sends its answer, the palm
+// die is thrown against the island's d20 plus the level; meet it and one Figment of the answer is held off, two on the die's top face.
+// Chance against chance, so a grown die holds off more: at Dissonance Level 1 a d4 holds one off about 1 time in 13, a d20 nearly half
+// the time; at 5, a d4 never, a d20 3 times in 10 (DICE.md 4.2; measured: d4 7.5% / 1.2% / 0% at levels 1 / 3 / 5, d8 17 / 9 / 4%, d12 27 / 19 / 12%, d20 48 / 38 / 30%). Luck's re-roll (REROLL) is spent on your own throws (a puzzle duel's
+// Flee: progress/duel/flee.js), one a game day and more with Luck.
 // ---------------------------------------------------------------------------------------
 import { stoneOf } from './stones.js';
 import { today } from '../core/calendar.js';
+import { stream } from '../core/rng.js';
+import { luckOf } from './luck.js';
+
+const rand = stream('progress/palmdie');
 
 /** The standard set and its suits (the owner, 2026-10-23, through Espada; DICE.md 2): d4 Wands, d6 Pentacles, d8 Swords, d10 Cups,
  *  d12 the zodiac, Western and Chinese (twelve signs, twelve animals); d20 the Major Arcana I to XX (the Fool and the World outside it:
@@ -52,6 +63,14 @@ export const palmCap = (sides) => PALM.capPerSide * sides;
 
 /** Luck's re-roll (DICE.md 3, the owner: "sure"): one a game day, one more for every `bitsPerExtra` bits of Luck, at most `max`. */
 export const REROLL = { perDay: 1, bitsPerExtra: 100, max: 3 };
+/** The palm die against the island's answer: the island throws a d`against` plus `perLevel` a Dissonance Level. */
+export const PALM_HOLD = { against: 20, perLevel: 1 };
+/** One throw of the palm die against the island's: the faces, and how many of the answer it holds off (0, 1, or 2 on the top face). */
+export function palmThrow(sides, level, r = rand) {
+  const face = 1 + Math.floor(r() * sides), against = 1 + Math.floor(r() * PALM_HOLD.against) + PALM_HOLD.perLevel * level;
+  return { face, against, held: face >= against ? (face === sides ? 2 : 1) : 0 };
+}
+
 export const rerollsOf = (bits = 0) => Math.min(REROLL.max, REROLL.perDay + Math.floor(Math.max(0, bits) / REROLL.bitsPerExtra));
 
 export class PalmDie {
@@ -93,6 +112,12 @@ export class PalmDie {
     this.game.save?.dirty('palmdie');
     return n;
   }
+  /** Thrown when a Dissonance Level sends its answer (godhand/rejection.js): how many of the answer it holds off. */
+  answer(level) {
+    const sides = this.sides, t = palmThrow(sides, level, rand);
+    this.game.events?.emit('palm.roll', { face: t.face, sides, against: t.against, held: t.held, why: 'rejection', by: 'courier' });
+    return t.held;
+  }
   /** Hooked once the pool exists (as the Lockheart's passive is): every overflow, whatever drank first. */
   update() {
     const pool = this.game.lachryma;
@@ -100,4 +125,21 @@ export class PalmDie {
     this.hooked = true;
     pool.on('overflow', (e) => { if (e.source !== 'lockheart') this.feed(this.share(e.amount)); });
   }
+}
+
+/** Luck's re-rolls (REROLL): how many are left this game day, and spending one. A throw of your own that fails may spend one. */
+export class Rerolls {
+  constructor(game) {
+    this.game = game; this.day = -1; this.used = 0;
+    game.save?.section('rerolls', {
+      scope: 'player', version: 1,
+      dump: () => ({ day: this.day, used: this.used }),
+      load: (d) => { this.day = d?.day ?? -1; this.used = +d?.used || 0; },
+      reset: () => { this.day = -1; this.used = 0; },
+    });
+    game.events?.on('duel.flee', (e) => { if (e.reroll && e.by === 'courier') this.spend(); }); // (the duel's kernel threw it again: flee.js)
+  }
+  roll() { const d = today(); if (d !== this.day) { this.day = d; this.used = 0; } }
+  left() { this.roll(); return Math.max(0, rerollsOf(this.game.ledger ? luckOf(this.game.ledger).bits : 0) - this.used); }
+  spend() { this.roll(); this.used++; this.game.save?.dirty('rerolls'); }
 }

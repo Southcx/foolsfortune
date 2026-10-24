@@ -10,7 +10,7 @@
 // ---------------------------------------------------------------------------------------
 import './render/threefixes.js'; // (first: shims for the pinned three, in place before any module builds a geometry)
 import { CourierMind } from './courier/mind.js';
-import { PalmDie } from './progress/dice.js';
+import { PalmDie, Rerolls } from './progress/dice.js';
 import { HandPose } from './progress/mudras.js';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -888,6 +888,7 @@ async function main() {
   game.alchemy = new SoulAlchemy(game); // (the spirit press: the soul colour, the attributes: progress/alchemy.js)
   game.weather = new Weather(game); // (emotional weather and the day: progress/weather.js)
   game.courierMind = new CourierMind(game); // (your mental state and your draught, kept: courier/mind.js; the garden's rain reads it)
+  game.rerolls = new Rerolls(game); // (Luck's re-rolls a game day, spent by your own failed throws: progress/dice.js)
   game.palmDie = new PalmDie(game); // (the Pneuka stones in the god hand's form: overflow past the Lockheart condensed into cubes, progress/dice.js)
   game.handPose = new HandPose(game); // (the god hand's mudras: which pose, and when; a look only, progress/mudras.js)
   game.knacks = new Knacks(game); // (the assists earned, switched on or off: progress/knacks.js; the Crib Sheet first)

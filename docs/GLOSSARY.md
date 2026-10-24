@@ -567,7 +567,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **knack** (`game.knacks`, `src/progress/knacks.js`, `/knack`) — a passive Art, a toggle, opened by an achievement, where an assist lives; on
   until switched off. *Not:* a widening, nor a Movement Art. → detail
 - **an aptitude** (working name, Espada's and the owner's; `docs/plans/APTITUDE.md`, a plan) — an ability the System measures from how you play, in its own unit and against yourself. *Not:* an attribute (Soul Alchemy's), a domain.
-- **Luck** (`src/progress/luck.js`) — the surprise lived through (in bits), read from the ledger; it sways chance, never a skill.
+- **Luck** (`src/progress/luck.js`) — the surprise lived through (in bits), read from the ledger; it sways chance, never a skill; **Luck's re-roll** (`game.rerolls`, `progress/dice.js`): a failed throw of your own thrown again at once, one a game day and more with Luck (DICE.md 3).
 - **day** (`today()`, `src/core/calendar.js`) — one game day, an hour of real time; always written **game day**, no bare "day". *Not:* a calendar
   day.
 - **game hour** — a twenty-fourth of a game day, 150 real seconds. *Not:* an hour of play.

@@ -123,8 +123,9 @@ Every rule here keeps the design laws (DESIGN.md 22): arts only by achievement; 
 untouched.
 
 1. **Its lift** (built): one suit's cap to 12.
-2. **Its domain's affinity**: experience in its ruling domain x1.25 while you read as it. The board says why your Divination is
-   climbing faster.
+2. **Its domain's affinity** (**built 2026-10-24**: `CLASS_DOMAIN`, `CLASS.affinity`, `progress/spreads.js`; `psyche.affinity`,
+   `progress/psyche.js`): a Major's domain experience x1.25 while you read as it (section 5's table, the World Saturn's), the extra kept
+   in the ledger as `exp.affinity.<domain>`. A court serves its suit, the Fool no one. The board says why your Divination is climbing faster.
 3. **Its arts: a class sharpens them, never locks them** (ruled by the owner, 2026-10-24: "having a class accentuates the abilities
    you can use, but doesn't preclude you from using them"). A class has two arts. Each is opened by **an achievement done while you
    read as that class** (the Chariot's art for a race won as the Chariot), and once open it is yours in every class (Final Fantasy

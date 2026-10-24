@@ -57,7 +57,9 @@ on the Majors' die: the hand grows toward the trumps (Espada).
    - **Entropy Tactics**: your palm die is your Hungry Die (section 4).
 3. **Luck reads them.** Luck (`progress/luck.js`) is measured in bits and nothing reads it yet; a roll's surprise is log2 of its sides
    (a d20's face is 4.3 bits). Ruled (the owner: "sure"): **one re-roll a game day, one more per 100 bits of Luck, at most 3** (`REROLL`, `rerollsOf`,
-   `progress/dice.js`), shown on the set. Waits on the first throw of your own dice to be wired. Chance only, never skill (DESIGN.md 9).
+   `progress/dice.js`). **Built 2026-10-24** for the first throw of your own, a puzzle duel's Flee: a failed roll is thrown again at
+   once while one is left (`game.rerolls`, `progress/dice.js`; the kernel's `s.rerolls`, `progress/duel/flee.js`), automatic as D&D's
+   halfling Lucky is, the event keeping the first roll (`reroll`) so the look throws twice. Chance only, never skill (DESIGN.md 9).
 
 ## 4. The palm die: the stones in the god hand's form
 
@@ -91,9 +93,25 @@ d12, d20** (fire, earth, air, the aether, and the Majors' own).
 - **Achievements:** pd1 a d8, pd2 a d20 (a title), pd3 300 cubes condensed (`progress/spreadachievements.js`).
 - **It is the Hungry Die** (ruled: both uses). At Entropy Tactics' table it starts at the size you grew it to, within the table's cap so the table stays
   fair.
-- **It answers the island** (ruled: both uses). When a Dissonance Level rises, the island's rejection rolls against your palm die: a grown die holds more
-  of it off. Chance against chance, so Luck may sway it.
+- **It answers the island** (ruled: both uses; **built 2026-10-24**, section 4.2).
 - **Its mineral is your set's.** Wear rubies, and the hand holds a ruby die.
+
+### 4.2 The palm die against the island (built)
+
+Each time a Dissonance Level sends its answer (`godhand/rejection.js`), the palm die is thrown against the island's d20 plus the level
+(`PALM_HOLD`, `palmThrow`, `PalmDie.answer`): meet it and one Figment of the answer is held off (a Lantern Wisp first, never the fifth
+level's boss), two on the die's top face. The event is `palm.roll { face, sides, against, held, why: 'rejection', by }`; the log says
+it only when something is held off; the hand opens Abhaya (`progress/mudras.js`). Measured (40,000 throws a cell), the chance of
+holding off at least one:
+
+| die | Dissonance Level 1 | 3 | 5 |
+| --- | --- | --- | --- |
+| d4 | 7.5% | 1.2% | 0% |
+| d8 | 17% | 9% | 4% |
+| d12 | 27% | 19% | 12% |
+| d20 | 48% | 38% | 30% |
+
+So the d4 is a token, and the grown die is a real shield: the long arc of the palm die pays in the god hand as well as in cubes.
 
 ### 4.1 The fingers (the owner, 2026-10-23, through Espada)
 
@@ -131,7 +149,7 @@ dealt, and the hand that throws. Espada's to write into the world.
 1. The stones are the Pneuka stones (section 1).
 2. Overflow: the Lockheart first, then the palm die condenses the rest into cubes (section 4; built).
 3. The palm die is both the Hungry Die at Entropy Tactics' table and the answer to the island's rejection (section 4).
-4. Luck's re-roll: yes (section 3; the rule built, the throw to wire).
+4. Luck's re-roll: yes (section 3; built on the Flee).
 5. The dice's suits (section 2): d4 Wands, d6 Pentacles, d8 Swords, d10 Cups, d12 the zodiac (Western and Chinese), d20 the Majors I to XX.
 6. The fingers (4.1): d4 little, d6 ring, d8 middle, d10 index, d12 thumb, d20 palm; the d% has none yet.
 7. "Releases", asked: the way out of SPINE.md 4 (a tier IV caster shell, an Overload, an epic miracle), not every god power.

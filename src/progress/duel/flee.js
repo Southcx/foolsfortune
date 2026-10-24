@@ -4,6 +4,9 @@
 // helps and the Line lost hurts; a broken foe is easier to slip (its stun depth); every failed try this duel adds to the next (pity);
 // Luck sways it a little, never more than 2 and never against you (Luck only rises: bad luck lived through counts too). A natural 20 always gets away, a natural 1 never does. Away, you are whole: no shatter, no
 // reward; the Figment keeps its aberrance and drifts off. A failed roll costs 3 points and the duel goes on.
+// Luck's re-roll (progress/dice.js REROLL, ruled by the owner 2026-10-23): a failed roll is thrown again at once while the side has a
+// re-roll left (`s.rerolls[side]`, handed in by the session from `game.rerolls.left()`); the event keeps the first roll (`reroll`) so the
+// look throws twice and the ledger spends one. Automatic, as D&D's halfling Lucky is: a throw is never a menu.
 //
 // Prior art: Dungeons & Dragons' saving throw (a d20 against a difficulty class, modifiers from the fiction, the natural 20 and 1);
 // Pokémon's Run (a failed one gives the foe its turn, and each try in a battle raises the odds of the next); the gacha law the
@@ -39,9 +42,11 @@ export function fleeOdds(s, side) {
 export const FLEE_ACTION = { form: null, cost: FLEE.cost,
   legal: (s, side) => !!s.sides[side].flee,
   apply: (s, side) => {
-    const S = s.sides[side], odds = fleeOdds(s, side), roll = 1 + s.r.int(20);
-    const ok = roll === 20 || (roll !== 1 && roll + odds.bonus >= FLEE.dc);
-    const ev = { type: 'flee', side, roll, bonus: odds.bonus, need: odds.need, mods: odds.mods, ok, ap: ok ? 0 : FLEE.cost };
+    const S = s.sides[side], odds = fleeOdds(s, side), made = (r) => r === 20 || (r !== 1 && r + odds.bonus >= FLEE.dc);
+    let roll = 1 + s.r.int(20), reroll = null;
+    if (!made(roll) && s.rerolls?.[side] > 0) { s.rerolls[side]--; reroll = roll; roll = 1 + s.r.int(20); } // (Luck's re-roll)
+    const ok = made(roll);
+    const ev = { type: 'flee', side, roll, reroll, bonus: odds.bonus, need: odds.need, mods: odds.mods, ok, ap: ok ? 0 : FLEE.cost };
     if (!ok) { S.fleeFails = (S.fleeFails || 0) + 1; return [ev]; }
     s.apLeft += FLEE.cost; // (only a failed roll costs: away, the points are handed back; `ap` on the event is what the roll took)
     s.fled = side; s.winner = -1; // (no winner: the duel ends with both whole; a view reads `fled`)
