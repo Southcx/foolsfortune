@@ -29,6 +29,7 @@ import { DEPLOYABLES } from './shelldeployables.js';
 import { BODIES } from './shellbodies.js';
 import { SPACETIME } from './shellspacetime.js';
 import { CASTERS_OWN } from './shellcastersown.js';
+import { WORLD } from './shellworld.js'; // (tier V, World: the nine's draw and their alterations, Calissa's: CASTER-SHELLS.md 7)
 import { shellLook } from '../../vfx/shelllooks.js'; // (Calissa's: each shell's look, by its id)
 const simRand = stream('tools/psygun/shellrunner'); // (the simulation's chance: core/rng.js, the same twice)
 
@@ -427,7 +428,7 @@ const FIRES = {
 CARRIER.doll = CARRIER.lob;
 
 // ---------------------------------------------------------------- the parts (CASTER-SHELLS.md section 1's mechanics), merged in
-const PARTS = [SPLIT_CHAIN, DEPLOYABLES, BODIES, SPACETIME, CASTERS_OWN];
+const PARTS = [SPLIT_CHAIN, DEPLOYABLES, BODIES, SPACETIME, CASTERS_OWN, WORLD]; // (WORLD last: it wraps the nine's own)
 for (const P of PARTS) {
   Object.assign(CARRIER, P.carrier || {}); Object.assign(HIT, P.hit || {}); Object.assign(FLY, P.fly || {});
   Object.assign(EXPIRE, P.expire || {}); Object.assign(FIRES, P.fires || {}); Object.assign(LANDS, P.lands || {});

@@ -106,7 +106,7 @@ export async function open(room, { touch = false } = {}) {
   /** A phone's thumbs for a sweep (open(room, { touch: true })): real touch events through the DevTools protocol, so the game's touch
  *  driver (src/core/touchdriver.js) reads them as it would a phone's. Each call steps the game `frames` ticks after (the clock is the
  *  sweep's). stick(dx, dy, frames): a thumb on the move area pushed by (dx, dy) px (y down), held, then lifted; look(dx, dy): a drag on the
- *  look area; tap(x, y): a finger down and up at a point (a tile, a window's button). */
+ *  look area; tap(x, y, frames, hold): a finger down at a point (a tile, a window's button) for `hold` ticks, then up. */
 function touchOf(page, S) {
   let cdp = null; const send = async (type, pts) => { cdp ||= await page.context().newCDPSession(page); await cdp.send('Input.dispatchTouchEvent', { type, touchPoints: pts }); };
   const P = (id, x, y) => ({ x, y, id, radiusX: 4, radiusY: 4, force: 1 });
@@ -117,7 +117,7 @@ function touchOf(page, S) {
       await S.ticks(frames); await send('touchEnd', []); await S.ticks(2);
     },
     async look(dx, dy, at = [640, 200]) { const [x, y] = at; await send('touchStart', [P(2, x, y)]); for (let k = 1; k <= 4; k++) await send('touchMove', [P(2, x + (dx * k) / 4, y + (dy * k) / 4)]); await send('touchEnd', []); await S.ticks(2); },
-    async tap(x, y, frames = 10) { await send('touchStart', [P(3, x, y)]); await send('touchEnd', []); await S.ticks(frames); },
+    async tap(x, y, frames = 10, hold = 6) { await send('touchStart', [P(3, x, y)]); await S.ticks(hold); await send('touchEnd', []); await S.ticks(frames); }, // (held `hold` ticks: a finger's tap is about 100 ms, and a hop fires on the release)
   };
 }
 

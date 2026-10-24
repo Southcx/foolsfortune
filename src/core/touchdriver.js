@@ -2,7 +2,8 @@
 // THE TOUCH DRIVER (docs/plans/MOBILE.md 4 and 10): a phone's touches as the game's own input, through the keys the game already reads.
 //   THE MOVE AREA   the left half of the screen: a thumb put down anywhere there is a floating stick (its origin where it landed, dragged
 //                   along when the thumb runs past TOUCH.follow), its push TOUCH.r px to the full; the push drives StickMove (the walk, the
-//                   run, the sprint past the ring; the skiff's analog steer and its carve).
+//                   run, the sprint past the ring; the skiff's analog steer and its carve). While touch play's controls are up, their stick
+//                   (Calissa's ring, ui/touch/stick.js) owns the area and is read instead.
 //   THE LOOK AREA   the right half: a drag turns the camera as the mouse does (input.dx / dy, TOUCH.look per px).
 //   THE CURSOR      where the pointer is free (the god hand, the Spirit Garden, a duel, the track editor: `game.cursorFree`), a finger is
 //                   the mouse: its point the cursor, its touch LMB held.
@@ -70,14 +71,23 @@ export class TouchDriver {
   }
   point(t) { this.input.mx = t.clientX; this.input.my = t.clientY; }
 
-  /** Once a frame, before the game reads its input: the move area's push as the moves. */
+  /** Once a frame, before the game reads its input: the move area's push as the moves. While touch play's controls are up, their stick
+   *  owns the move area (ui/touch/stick.js: it reports x, y, outer and carve) and is read instead of this driver's own. */
   update() {
-    const m = this.move;
-    if (m && this.game.cursorFree?.()) { this.move = null; this.stick.clear(); } // (the pointer came free under a held thumb: the stick lets go)
-    const x = this.move ? (m.x - m.x0) / TOUCH.r : 0, y = this.move ? -(m.y - m.y0) / TOUCH.r : 0;
-    const sk = this.active && this.input.device === 'touch' ? skiffTouchKeys(this.game.techs?.get?.('skiff'), { x, y, brake: this.actions.down('brake') }) : null;
-    this.skiffKeys(sk); // (the Solar Skiff's auto-sail and glide: Dovina's rules, progress/skifftouch.js)
-    if (this.move) this.stick.set(x, y, { noAD: !!sk?.noAD });
+    const UI = this.game.touchUI, S = UI?.on ? UI.stick : null;
+    let x = 0, y = 0, held = false;
+    if (S) { this.active = true; held = !!S.active; if (held) { x = S.x; y = S.y; } }
+    else {
+      const m = this.move;
+      if (m && this.game.cursorFree?.()) { this.move = null; this.stick.clear(); } // (the pointer came free under a held thumb: the stick lets go)
+      if (this.move) { held = true; x = (m.x - m.x0) / TOUCH.r; y = -(m.y - m.y0) / TOUCH.r; }
+    }
+    // (the Solar Skiff's auto-sail and glide: Dovina's rules, progress/skifftouch.js; BRAKE read from the tile itself, never from S, which
+    //  the glide's own pitch holds)
+    const sk = this.active && this.input.device === 'touch' ? skiffTouchKeys(this.game.techs?.get?.('skiff'), { x, y, brake: this.actions.held.has('touch:brake') }) : null;
+    this.skiffKeys(sk);
+    if (held) this.stick.set(x, y, S ? { outer: !!S.outer, carve: S.carve || 0, noAD: !!sk?.noAD } : { noAD: !!sk?.noAD });
+    else if (S) this.stick.clear();
   }
   /** The skiff's keys from its touch rules, held while they say so (`null`: none held). */
   skiffKeys(want) {

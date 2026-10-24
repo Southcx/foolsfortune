@@ -109,11 +109,12 @@ import { prewarmShellLooks } from './vfx/shelllooks/warmup.js';
 import { prewarmSandfall } from './vfx/racewaysandfall.js';
 import { RacewayLooks } from './vfx/racewaylooks.js';
 import { SkiffSlipArc } from './vfx/skiffsliparc.js';
+import { WorldLooks } from './vfx/worldshells.js';
 import { RacewayCavern } from './vfx/racewaycavern.js';
 import { RacewayPark } from './vfx/racewaypark.js';
 import { RacewayProps } from './vfx/racewayprops.js';
 import { RacewayFog } from './vfx/racewayfog.js';
-import { LachrimeterTube } from './vfx/lachrimetertube.js'; import { SpiritualLink } from './vfx/spirituallink.js'; import { PsygunCylinder } from './vfx/psyguncylinder.js'; import { SondelassGuard } from './vfx/sondelassguard.js'; import { SightLook } from './vfx/sight.js'; import { CreatureTags } from './vfx/creaturetags.js'; import { TitlePlacard } from './vfx/titleplacard.js'; import { SealImprints } from './vfx/sealimprint.js'; import { SealPicker } from './ui/sealpicker.js'; import { RailReadout } from './ui/railreadout.js'; import { GoalsWindow } from './ui/goalswindow.js';
+import { LachrimeterTube } from './vfx/lachrimetertube.js'; import { SpiritualLink } from './vfx/spirituallink.js'; import { PsygunCylinder } from './vfx/psyguncylinder.js'; import { SondelassGuard } from './vfx/sondelassguard.js'; import { SightLook } from './vfx/sight.js'; import { CreatureTags } from './vfx/creaturetags.js'; import { TitlePlacard } from './vfx/titleplacard.js'; import { SealImprints } from './vfx/sealimprint.js'; import { SealPicker } from './ui/sealpicker.js'; import { RailReadout } from './ui/railreadout.js'; import { GoalsWindow } from './ui/goalswindow.js'; import { HudLayout } from './ui/hudlayout.js';
 import { RailResults } from './ui/railresults.js'; // (round 6's overlay pieces: OVERLAY.md 10.5c)
 import { RacewaySiphons } from './vfx/racewaysiphons.js'; // (the siphon arches' look)
 import { installBracelets } from './vfx/braceletwear.js';
@@ -217,7 +218,7 @@ import { Actions } from './core/actions.js';
 import { TouchDriver } from './core/touchdriver.js';
 import { PadDriver } from './core/paddriver.js';
 import { installPlatform } from './core/platform.js';
-import { TouchBar } from './feedback/touchbar.js';
+import { TouchShell } from './feedback/touchshell.js';
 import { installContextLoss } from './render/contextloss.js';
 import { Agent } from './agent/agent.js';
 import { installPlaces } from './world/places.js';
@@ -346,6 +347,7 @@ import { Cradles } from './world/cradles.js';
 import { Sight, sightCommands } from './progress/sight.js';
 import { mudraCommands } from './godhand/mudras.js';
 import { installCalibrateButtons } from './ui/calibratebutton.js';
+import { installTouchControls } from './ui/touch/index.js';
 import { base64Buffer } from './core/base64.js';
 const CASTER_SHADERS = import.meta.glob('./vfx/caster/*.js', { eager: true }); // (the caster shaders: each module's prewarm(game), compiled in the warm-up)
 
@@ -607,6 +609,7 @@ async function main() {
   applyVfxOverrides(); // (effects edited in the workbench, kept in this browser)
   game.vfx = new Vfx(game);
   game.skiffSlipArc = new SkiffSlipArc(game); // (the slip arc under the board while you ride: vfx/skiffsliparc.js)
+  game.worldLooks = new WorldLooks(game); // (the World shells' draw and alterations: vfx/worldshells.js; the draw itself tools/psygun/worlddraw.js)
   game.racewayLooks = new RacewayLooks(game); // (the Raceway's sun plates, countdown lamps, gates' marks, carve sparks and ghost: dressed by the Raceway, vfx/racewaylooks.js)
   game.racewayCavern = new RacewayCavern(game); game.racewayFog = new RacewayFog(game); game.racewayPark = new RacewayPark(game); game.racewayProps = new RacewayProps(game); game.racewaySiphons = new RacewaySiphons(game); // (the cavern's stone, crystals, veins and dark, and Dread's fog on the course: vfx/racewaycavern.js, vfx/racewayfog.js)
   applyCineOverrides(); game.cine = new Cine(game); // (cinematic events as data: cine/sequences.js)
@@ -655,7 +658,7 @@ async function main() {
   const codex = new Codex(game);
   game.codex = codex;
   codex.onClose = () => { if (input.enabled && !cursorFree()) input.requestLock(); };
-  const modalOpen = () => !!(game.codex?.open || game.indexMenu?.open || game.cartography?.open || game.pneukaUI?.open || game.shopUI?.open || game.qais?.open);
+  const modalOpen = () => !!(game.codex?.open || game.indexMenu?.open || game.cartography?.open || game.pneukaUI?.open || game.shopUI?.open || game.qais?.open || game.hudLayout?.turnHeld); // (and the turn card: an action mode held upright on a phone, ui/turncard.js)
   // Any window or cover at all: a window that pauses, the kiln's, the dialogue box, a seam or the maw wipe under way, a crossing, a
   // reprogramming, the Opening. A window opens only when none is (or to close itself): one window at a time (SWEEPS group 2).
   const windowOpen = () => modalOpen() || !!(game.kilnUI?.open || game.dialogue?.open || game.seam?.busy || game.mawWipe?.active || game.aberrantWipe?.active || game.emocean?.stage.active || game.reprogram?.open || game.lockheartCine?.active);
@@ -1039,7 +1042,7 @@ async function main() {
   };
   overlay.addEventListener('click', start);
   game.pause = () => { if (!started || overlay.style.display !== 'none' || game.title?.active) return; overlay.style.display = 'flex'; input.enabled = false; input.onBlur(); }; // (the touch bar's pause: no lock to lose on a phone, MOBILE.md 4)
-  installPlatform(game); game.touchBar = new TouchBar(game); // (the phone's page: no zoom or scroll, the screen kept awake, which way it is turned; the pause and the windows' buttons: core/platform.js, feedback/touchbar.js)
+  installPlatform(game); // (the phone's page: no zoom or scroll, the screen kept awake, which way it is turned: core/platform.js)
   game.help = new HelpMenu(document.getElementById('help'), () => overlay.style.display !== 'none' && !game.title?.active); // (the pause menu's pages: feedback/help/)
   // --- the title: THE FOOL'S PRECIPICE (title/): drawn instead of the game until a choice is made ---
   const [tCharG, tGunG] = await Promise.all([loader.parseAsync(bytes(courierB64), ''), loader.parseAsync(bytes(gunB64), '')]);
@@ -1161,6 +1164,7 @@ async function main() {
   for (const o of [game.wireCompass.tape, game.wireCompass.wpTape, game.wireCompass.wpWorld, game.vaneHud.group, game.vaneHud.res, game.crucibelleHud.group, game.crucibelleHud.ring]) if (o) o.visible = true;
   game.present.shade(true); // (shaded as they will be drawn: compiled flat, then turned smooth by the pass a second later, every program was built twice)
   try { await renderer.compileAsync(scene, camera); } catch (e) { console.warn('shader warm-up', e); }
+  game.hudLayout = new HudLayout(game); // (where the instruments stand on touch, the thumbs' areas, the log's ticker and the turn card: ui/hudlayout.js)
   game.lachrimeterTube = new LachrimeterTube(game); game.spiritualLink = new SpiritualLink(game); game.psygunCylinder = new PsygunCylinder(game); game.psygunReticle = new PsygunReticle(game); game.psygunScope = new PsygunScope(game); // (each psygun's crosshair, the Carbine's lens: vfx/psygunreticle.js, vfx/psygunscope.js) // (the tool UIs' thread to its bulb: vfx/spirituallink.js; the psygun's cylinder on it: vfx/psyguncylinder.js)
   game.sondelassGuard = new SondelassGuard(game); // (the Sondelass's own UI, board v9)
   game.lockheartReliquary = new LockheartReliquary(game); // (the Lockheart's own UI, board v10 in its B orientation: vfx/lockheartreliquary.js)
@@ -1168,6 +1172,8 @@ async function main() {
   game.sightLook = new SightLook(game); game.creatureTags = new CreatureTags(game); game.titlePlacard = new TitlePlacard(game); game.sealImprints = new SealImprints(game); game.sealPicker = new SealPicker(game); // (the overlay's instruments, tags, placard and seal: OVERLAY.md 10.5c, HANKO.md)
   game.railReadout = new RailReadout(game); game.railResults = new RailResults(game); // (the crossing's score aboard and the trip's results window, built on first use: ui/railreadout.js, ui/railresults.js; RAIL-STANDARDS.md 6)
   game.goalsWindow = new GoalsWindow(game); // (the game day's three goals as a System window, on /goals and a beat at goals.set and goal.done: ui/goalswindow.js)
+  installTouchControls(game); // (touch play's controls, their look: built only once touch is on, ui/touch/index.js)
+  game.touchShell = new TouchShell(game); // (what those controls do: a tile pressed through the bindings, the top bar's windows by their keys: feedback/touchshell.js)
   game.overlayScene.compile(); // (the overlay's meshes, against the canvas they are drawn into)
   game.post.compile(); // (the glow's own passes: a scene of their own, which compileAsync(scene) does not see)
   if (!window.__noPrime) primeDraw(renderer, scene, camera, game.post.target); // (a test harness may skip it: it is a long frame on a software GL)
@@ -1507,6 +1513,7 @@ async function main() {
     game.vfx.update(game.rawDt || dt);
     game.racewayLooks.update(game.rawDt || dt);
     game.skiffSlipArc.update(game.rawDt || dt);
+    game.worldLooks.update(dt);
     game.racewayCavern.update(game.rawDt || dt); game.racewayFog.update(game.rawDt || dt); game.racewayProps.update(game.rawDt || dt); game.racewayPark.update(); game.racewaySiphons.update(game.rawDt || dt); // (the vein lanes, the pots, the antlion chaser, the patches: vfx/racewayprops.js)
     game.cine.update(game.rawDt || dt);
     (game.chestFx ||= new ChestFx(game)).update(dt); // (the chest's opening: Mesh Create's effect meshes, vfx/chestfx.js)
