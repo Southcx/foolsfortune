@@ -60,6 +60,7 @@ import { Grind, GRIND } from './grind.js';
 import { SkiffCombo, COMBO } from './combo.js';
 import { BoardRules, SCORCH } from './boardrules.js';
 import { MASS } from '../../progress/skiffruler.js';
+import { keelSteer } from '../../world/raceway/keel.js';
 
 const UP = new THREE.Vector3(0, 1, 0), X = new THREE.Vector3(1, 0, 0), Z = new THREE.Vector3(0, 0, 1);
 const _v = new THREE.Vector3(), _v2 = new THREE.Vector3(), _v3 = new THREE.Vector3();
@@ -321,6 +322,7 @@ export class Skiffing extends Tech {
     if (this.grind.on) return this.grindStep(dt);
     const held = !!this.hold; // (a race's countdown: the board is held on the line, the sail free to be readied: world/raceway/race.js)
     let steerIn = held ? 0 : (inp.isDown('KeyD') ? 1 : 0) - (inp.isDown('KeyA') ? 1 : 0);
+    if (steerIn === 0 && !held) steerIn = keelSteer(g, this); // (Steady Keel, a knack: the board leaned back toward the race's line while you are not steering; off, nothing: world/raceway/keel.js)
     if (this.spinLock) { if (steerIn === 0 || !this.air) this.spinLock = false; else steerIn = 0; } // (A / D held from a grind's balance spin nothing once off the rail, until let go: the owner's v204 bail off a rail)
     const keyW = inp.isDown('KeyW'), keyS = inp.isDown('KeyS');
     const flare = !held && (inp.isDown('ShiftLeft') || inp.isDown('ShiftRight')); // (Shift: the pool's flare; C spends a banked flare whole: mushroom())
