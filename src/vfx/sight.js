@@ -30,6 +30,8 @@
 // (the needle's line). Ported from Calissa's round-7 mock (three.js r128) to r170: colours given as the mock's raw values.
 //
 //   game.sightLook = new SightLook(game)   (added to game.overlayScene; it updates itself there)   .level  .hidden
+//   .skinParts   the housing an instrument skin repaints (vfx/instrumentskins.js: the discs' atlas, the metal's palette, the hand, the glass's
+//                tint, the tilt a garnish hangs on); .skinTick(dt) a skin's own motion, called each frame shown
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -235,8 +237,8 @@ function envOf(renderer) {
 
 // ---- the shaders (the mock's, with Calissa's notes: the churn read from level 1, the vortex centred, the film only at the eddies' edges),
 // as kinds of the overlay's one shader (vfx/lachrimetertube.js `overlayKind`: one program for every instrument's look)
-const SGLASS = overlayKind('sight.glass', { fdecl: `uniform float uTime,uBack;${GLSL_FILM}`, fbody: `vec3 N=normalize(vN);if(uBack>.5)N=-N;vec3 V=normalize(vV);float fr=pow(1.0-clamp(abs(dot(N,V)),0.0,1.0),2.2);
-  vec3 col=mix(vec3(.55,.74,.80),vec3(.93,1.0,1.0),fr);float a=.03+.6*fr;col=mix(col,film(vP.y*.3+uTime*.05+N.x*.25),fr*.45);
+const SGLASS = overlayKind('sight.glass', { fdecl: `uniform float uTime,uBack;uniform vec4 uSgTint;${GLSL_FILM}`, fbody: `vec3 N=normalize(vN);if(uBack>.5)N=-N;vec3 V=normalize(vV);float fr=pow(1.0-clamp(abs(dot(N,V)),0.0,1.0),2.2);
+  vec3 col=mix(vec3(.55,.74,.80),vec3(.93,1.0,1.0),fr);float a=.03+.6*fr;col=mix(col,film(vP.y*.3+uTime*.05+N.x*.25),fr*.45);col=mix(col,uSgTint.rgb*(.55+.6*fr),uSgTint.a*(.35+.65*fr));
   if(uBack<.5){float sh=smoothstep(.2,.0,length(vec2(N.x+.36,N.y-.48)))*.95;float s2=smoothstep(.05,.0,abs(length(vec2(N.x+.1,N.y-.1))-.82))*smoothstep(.0,.4,N.y+.2)*.45;
     float s3=smoothstep(.06,.0,length(vec2(N.x-.62,N.y+.5)))*.4;float hl=sh+s2+s3;col+=vec3(1.0,.98,.94)*hl;a+=hl*.8;}else{a*=.55;col*=.8;}
   gl_FragColor=vec4(col,clamp(a,0.0,1.0));` });
@@ -314,7 +316,8 @@ export class SightLook {
     const keep = (m, col, rough = 0.32, metal = 0.85, glow = null) => { m.userData.bake = { c: col, r: rough, m: metal, e: glow }; return m; }; // (baked: see bake below)
     // the glass
     const glassGeo = new THREE.SphereGeometry(RG, 40, 28);
-    const glass = (back) => overlayShader(SGLASS, { uTime: { value: 0 }, uBack: { value: back ? 1 : 0 } }, { cull: back ? 2 : 1, depthWrite: false });
+    const tint = { value: new THREE.Vector4(0, 0, 0, 0) }; // (an instrument skin's tint of the glass: rgb, how much; 0 the stock)
+    const glass = (back) => overlayShader(SGLASS, { uTime: { value: 0 }, uBack: { value: back ? 1 : 0 }, uSgTint: tint }, { cull: back ? 2 : 1, depthWrite: false });
     this.gBack = new THREE.Mesh(glassGeo, glass(1)); this.gBack.renderOrder = 1; this.gFront = new THREE.Mesh(glassGeo, glass(0)); this.gFront.renderOrder = 5; root.add(this.gBack, this.gFront);
     // the rete, faint, turning once a game day
     const reteMap = new THREE.CanvasTexture(reteTex());
@@ -350,7 +353,8 @@ export class SightLook {
       const boss = keep(new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.09, 0.06, 24)), bronze); boss.position.y = (an ? 1 : -1) * (DT / 2 + 0.02); holder.add(boss); metal.push(boss);
       return g;
     });
-    tilt.add(new THREE.Mesh(mergeGeometries(discs), this.std({ map: tex(atlas), bumpMap: new THREE.CanvasTexture(bumps), bumpScale: 0.018, roughness: 0.6, clearcoat: 0.33, clearcoatRoughness: 0.4 }, true)));
+    const discMap = tex(atlas), discMat = this.std({ map: discMap, bumpMap: new THREE.CanvasTexture(bumps), bumpScale: 0.018, roughness: 0.6, clearcoat: 0.33, clearcoatRoughness: 0.4 }, true);
+    tilt.add(new THREE.Mesh(mergeGeometries(discs), discMat));
     discs.forEach((g) => g.dispose());
     // the axis rod (only from each disc to the glass), the copper coils and the collars
     { const L = DY - 0.97; for (const sg of [1, -1]) { const rod = keep(new THREE.Mesh(new THREE.CylinderGeometry(0.017, 0.017, L, 10)), dark); rod.position.y = sg * (0.97 + L / 2); tilt.add(rod); metal.push(rod); } }
@@ -413,7 +417,7 @@ export class SightLook {
     { const [x, y] = P(hookA, RO + 0.03); const eye = keep(new THREE.Mesh(new THREE.TorusGeometry(0.045, 0.014, 6, 16)), bronze); eye.position.set(x, y, 0); ringGrp.add(eye); metal.push(eye); }
     const hand = this.hand = new THREE.Group(); ringGrp.add(hand);
     { const cl = new THREE.BoxGeometry(0.13, 0.12, 0.16); cl.translate(0, RO + 0.04, 0); const pt = new THREE.ConeGeometry(0.055, 0.2, 4); pt.rotateZ(Math.PI); pt.scale(1, 1, 0.35); pt.translate(0, PO + 0.03, 0.1);
-      cl.deleteAttribute('uv'); pt.deleteAttribute('uv'); hand.add(new THREE.Mesh(mergeGeometries([cl.toNonIndexed(), pt.toNonIndexed()]), this.std({ color: bronze, metalness: 0.85, roughness: 0.32 }))); }
+      cl.deleteAttribute('uv'); pt.deleteAttribute('uv'); this.handMat = this.std({ color: bronze, metalness: 0.85, roughness: 0.32 }); hand.add(new THREE.Mesh(mergeGeometries([cl.toNonIndexed(), pt.toNonIndexed()]), this.handMat)); }
     this.beadMat = overlayFlat({ cull: 1 }); const bead = new THREE.Mesh(new THREE.SphereGeometry(0.055, 12, 10), this.beadMat); bead.position.set(0, RO + 0.14, 0.02); hand.add(bead);
     this.halo = new THREE.Mesh(new THREE.CircleGeometry(0.16, 24), overlayFlat({ opacity: 0.25, cull: 1, depthWrite: false, blending: THREE.AdditiveBlending })); this.halo.position.set(0, RO + 0.14, 0.03); hand.add(this.halo);
     // bake the static metal into one mesh (root space: the tilt and the ring are fixed turns of it), and the discs' lips into another
@@ -427,14 +431,16 @@ export class SightLook {
       for (const m of list) { const b = m.userData.bake, i = keys.indexOf(key(b)) * 4, e = b.e || { r: 0, g: 0, b: 0 };
         px.set([b8(b.c.r), b8(b.c.g), b8(b.c.b), 255], i); px.set([255, b8(b.r), b8(b.m), 255], W * 4 + i); px.set([b8(e.r), b8(e.g), b8(e.b), 255], W * 8 + i); }
       const col = new THREE.DataTexture(px, W, 3); col.magFilter = col.minFilter = THREE.NearestFilter; col.needsUpdate = true;
+      const looks = keys.map((k) => list.find((m) => key(m.userData.bake) === k).userData.bake); // (each texel's part as built: an instrument skin repaints by it)
       const row = (t, k) => { t.repeat.set(1, 1 / 3); t.offset.set(0, k / 3); return t; }, orm = row(col.clone(), 1), glow = row(col.clone(), 2); row(col, 0);
       const gs = list.map((m) => { const g = m.geometry.clone(); g.applyMatrix4(M.multiplyMatrices(inv, m.matrixWorld)); const u = (keys.indexOf(key(m.userData.bake)) + 0.5) / W, n = g.attributes.position.count, a = new Float32Array(n * 2);
         for (let i = 0; i < n; i++) { a[i * 2] = u; a[i * 2 + 1] = 0.5; } g.setAttribute('uv', new THREE.BufferAttribute(a, 2)); m.parent.remove(m); m.geometry.dispose(); return g; });
       const flat = gs.some((g) => !g.index), all = flat ? gs.map((g) => (g.index ? g.toNonIndexed() : g)) : gs; // (merged all indexed, or none)
       const mesh = new THREE.Mesh(mergeGeometries(all), this.std({ map: col, roughnessMap: orm, metalnessMap: orm, emissiveMap: glow, emissive: 0xffffff, roughness: 1, metalness: 1 }));
-      into.add(mesh); return mesh;
+      mesh.userData.palette = { px, W, looks, tex: [col, orm, glow] }; into.add(mesh); return mesh;
     };
     this.metalM = bake([...metal, ...studsOff], root); this.metalN = this.metalM.geometry.index.count; // (the static metal, the discs' lips, the unlit studs last)
+    this.skinParts = { discAtlas: atlas, discMap, discMat, palette: this.metalM.userData.palette, handMat: this.handMat, glassTint: tint.value, tilt, root, env: this.env, yoke: this.ys, DY, DR, DT };
     const nb = bake(this.needleParts, needle); nb.renderOrder = 6; needle.children.forEach((o) => { if (o.isMesh && o !== line && o !== this.glint) o.renderOrder = 6; });
     // the plates' words: two canvases drawn at the present's dots, on quads in front of everything
     this.wpQuad = this.textQuad(); this.placeQuad = this.textQuad(); frame.add(this.wpQuad.mesh, this.placeQuad.mesh);
@@ -501,7 +507,7 @@ export class SightLook {
     this.t += dt; const t = this.t;
     if ((this.themeT -= dt) <= 0) { this.themeT = 1; if (theme.id !== this.themeId) { this.themeId = theme.id; const L = look(); dialTex(this.dialC, L); this.dialMap.needsUpdate = true; glazeTubeTex(this.yokeC, 57, SEAMS, L); this.yokeMap.needsUpdate = true; this.platesDirty = true; } }
     this.gBack.material.uniforms.uTime.value = this.gFront.material.uniforms.uTime.value = t;
-    this.weather(dt, t); this.clock(t); this.dissonance(dt, t); this.steer(dt, t);
+    this.weather(dt, t); this.clock(t); this.dissonance(dt, t); this.steer(dt, t); this.skinTick?.(dt);
     if (this.platesDirty) { this.platesDirty = false; this.drawWaypointPlate(); this.drawPlacePlate(); }
   }
 

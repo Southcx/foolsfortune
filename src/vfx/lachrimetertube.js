@@ -37,6 +37,8 @@
 //
 //   const L = new LachrimeterTube(game)   game.lachrimeterTube   (it registers itself with game.overlayScene; nothing else to call)
 //   L.pulse()  the pool was touched or refused (a gain, a dry click): the tube comes up and stands its quiet seconds
+//   L.skinParts  the housing an instrument skin repaints (vfx/instrumentskins.js: the brass, the scale plate's ground, their roughness and
+//                metalness, the glass's tint, the instrument a garnish hangs on); L.skinTick(dt) a skin's own motion, called each frame shown
 //   L.bulbAt(out) -> { x, y, z, r } the bulb in the overlay scene (null while hidden)   L.valveAt(out) -> { x, y, z } the Bottles' valve   L.root (the slot's object)   L.state (what it last showed: { level, full, held, charge, cost, brim, feeding, shown })
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -68,11 +70,11 @@ const tex = (c, srgb = true) => { const t = new THREE.CanvasTexture(c); if (srgb
 const rgb = (s) => `rgb(${s})`;
 
 /** A mottled glaze (the plinth's and the brass's patina): blobs over a base, a fine speckle. */
-function mottle(c, base, blobs, n) {
+export function mottle(c, base, blobs, n, specks = ['#0b1f1a', '#9fd3c0']) {
   const w = c.width, x = c.getContext('2d'); seed = 7;
   x.globalAlpha = 1; x.fillStyle = base; x.fillRect(0, 0, w, w);
   for (let i = 0; i < n; i++) { const [col, a] = blobs[i % blobs.length]; x.globalAlpha = a * (0.4 + rnd() * 0.6); x.fillStyle = col; x.beginPath(); x.arc(rnd() * w, rnd() * w, 4 + rnd() * w * 0.12, 0, 7); x.fill(); }
-  x.globalAlpha = 0.5; for (let i = 0; i < w * 2; i++) { x.fillStyle = rnd() < 0.5 ? '#0b1f1a' : '#9fd3c0'; x.fillRect(rnd() * w, rnd() * w, 1, 1); }
+  x.globalAlpha = 0.5; for (let i = 0; i < w * 2; i++) { x.fillStyle = rnd() < 0.5 ? specks[0] : specks[1]; x.fillRect(rnd() * w, rnd() * w, 1, 1); }
   x.globalAlpha = 1; return c;
 }
 /** The held stretch's glass: crazed (a fine net), the clay's cracks through it. */
@@ -86,23 +88,25 @@ function crazeCanvas() {
   for (let i = 0; i < 5; i++) { let px = rnd() * 256, py = rnd() * 512; x.beginPath(); x.moveTo(px, py); for (let k = 0; k < 9; k++) { px += (rnd() - 0.5) * 50; py += (rnd() - 0.3) * 40; x.lineTo(px, py); } x.stroke(); }
   x.globalAlpha = 1; return c;
 }
+/** The scale plate's stock look (an instrument skin brings its own: vfx/instrumentskins.js): its ground, its streaks, its edge, its gilt. */
+export const PLATE_STOCK = { ground: '#160d09', streaks: ['#6e3a18', '#a4622a', '#2a1c30'], edge: '150,84,36', gilt: '#e9c574', minor: '#c8a462', cut: '#0a0503' };
 /** The scale plate: tenmoku-glazed clay, hare's-fur streaks, the glaze breaking rust at the edges, gilt ticks cut through the glaze. */
-function drawPlate(c) {
+function drawPlate(c, L = PLATE_STOCK) {
   const W = c.width, H = c.height, x = c.getContext('2d'); seed = 23;
-  x.globalAlpha = 1; x.fillStyle = '#160d09'; x.fillRect(0, 0, W, H);
-  for (let i = 0; i < 520; i++) { const px = rnd() * W, py = rnd() * H, l = 20 + rnd() * 90; x.globalAlpha = 0.1 + rnd() * 0.22; x.strokeStyle = rnd() < 0.6 ? '#6e3a18' : rnd() < 0.5 ? '#a4622a' : '#2a1c30'; x.lineWidth = 0.6 + rnd() * 1.4; x.beginPath(); x.moveTo(px, py); x.lineTo(px + (rnd() - 0.5) * 3, py + l); x.stroke(); }
+  x.globalAlpha = 1; x.fillStyle = L.ground; x.fillRect(0, 0, W, H);
+  for (let i = 0; i < 520; i++) { const px = rnd() * W, py = rnd() * H, l = 20 + rnd() * 90; x.globalAlpha = 0.1 + rnd() * 0.22; x.strokeStyle = rnd() < 0.6 ? L.streaks[0] : rnd() < 0.5 ? L.streaks[1] : L.streaks[2]; x.lineWidth = 0.6 + rnd() * 1.4; x.beginPath(); x.moveTo(px, py); x.lineTo(px + (rnd() - 0.5) * 3, py + l); x.stroke(); }
   x.globalAlpha = 1;
-  const eg = x.createLinearGradient(0, 0, W, 0); eg.addColorStop(0, 'rgba(150,84,36,.55)'); eg.addColorStop(0.06, 'rgba(0,0,0,0)'); eg.addColorStop(0.94, 'rgba(0,0,0,0)'); eg.addColorStop(1, 'rgba(150,84,36,.55)'); x.fillStyle = eg; x.fillRect(0, 0, W, H);
-  const vg = x.createLinearGradient(0, 0, 0, H); vg.addColorStop(0, 'rgba(150,84,36,.45)'); vg.addColorStop(0.03, 'rgba(0,0,0,0)'); vg.addColorStop(0.97, 'rgba(0,0,0,0)'); vg.addColorStop(1, 'rgba(150,84,36,.45)'); x.fillStyle = vg; x.fillRect(0, 0, W, H);
+  const eg = x.createLinearGradient(0, 0, W, 0); eg.addColorStop(0, `rgba(${L.edge},.55)`); eg.addColorStop(0.06, 'rgba(0,0,0,0)'); eg.addColorStop(0.94, 'rgba(0,0,0,0)'); eg.addColorStop(1, `rgba(${L.edge},.55)`); x.fillStyle = eg; x.fillRect(0, 0, W, H);
+  const vg = x.createLinearGradient(0, 0, 0, H); vg.addColorStop(0, `rgba(${L.edge},.45)`); vg.addColorStop(0.03, 'rgba(0,0,0,0)'); vg.addColorStop(0.97, 'rgba(0,0,0,0)'); vg.addColorStop(1, `rgba(${L.edge},.45)`); x.fillStyle = vg; x.fillRect(0, 0, W, H);
   const u = (X) => ((X - PL.x0) / (PL.x1 - PL.x0)) * W, v = (Y) => (1 - (Y - PL.y0) / (PL.y1 - PL.y0)) * H;
   x.font = `26px ${COUNT_FONT}`; x.textAlign = 'right'; x.textBaseline = 'middle';
   for (let i = 0; i <= 20; i++) {
     const maj = i % 5 === 0, y = v(yOf(i / 20)), a = u(0.27), b = u(maj ? 0.5 : 0.4);
-    x.fillStyle = '#0a0503'; x.fillRect(a, y - (maj ? 2.5 : 1.5) + 1, b - a, maj ? 5 : 3); // (the cut)
-    x.fillStyle = maj ? '#e9c574' : '#c8a462'; x.fillRect(a, y - (maj ? 2 : 1), b - a, maj ? 4 : 2); // (the gilt in it)
-    if (maj) { x.fillStyle = '#0a0503'; x.fillText(i * 5, u(0.71) + 1, y + 1); x.fillStyle = '#e9c574'; x.fillText(i * 5, u(0.71), y); }
+    x.fillStyle = L.cut; x.fillRect(a, y - (maj ? 2.5 : 1.5) + 1, b - a, maj ? 5 : 3); // (the cut)
+    x.fillStyle = maj ? L.gilt : L.minor; x.fillRect(a, y - (maj ? 2 : 1), b - a, maj ? 4 : 2); // (the gilt in it)
+    if (maj) { x.fillStyle = L.cut; x.fillText(i * 5, u(0.71) + 1, y + 1); x.fillStyle = L.gilt; x.fillText(i * 5, u(0.71), y); }
   }
-  x.fillStyle = '#c8a462'; x.fillRect(u(0.27), v(yOf(1)), 2, v(yOf(0)) - v(yOf(1)));
+  x.fillStyle = L.minor; x.fillRect(u(0.27), v(yOf(1)), 2, v(yOf(0)) - v(yOf(1)));
 }
 /** The VFD count: phosphor digits behind a fine grid, the unlit segments ghosting (every digit an 8). */
 function drawVfd(c, txt) {
@@ -199,8 +203,8 @@ vec3 fl=mix(vec3(.25,1.,.88),vec3(1.,.84,.32),smoothstep(.42,.58,fract(n*2.2+vW.
 vec3 col=core*(.85+.5*f)*uGain+fl*flash*1.5*uGain+vec3(.55,.5,1.)*pow(1.-f,2.)*.4;
 col=mix(col,vec3(.85,.94,1.)*(.85+.3*flash),uPale);
 gl_FragColor=vec4(col,1.);` });
-const GLASS = overlayKind('tube.glass', { vdecl: 'attribute vec2 aGlass;', vbody: INST_V + 'vUv=aGlass;', fbody: `vec3 N=normalize(vN),V=normalize(vV);float d=dot(N,V);if(d<0.)N=-N;float f=1.-abs(d);
-float a=vUv.x+pow(f,2.4)*vUv.y;vec3 c=mix(vec3(.78,.90,1.),pal(f*.8+vW.y*.2),.35);
+const GLASS = overlayKind('tube.glass', { vdecl: 'attribute vec2 aGlass;', vbody: INST_V + 'vUv=aGlass;', fdecl: 'uniform vec4 uTgTint;', fbody: `vec3 N=normalize(vN),V=normalize(vV);float d=dot(N,V);if(d<0.)N=-N;float f=1.-abs(d);
+float a=vUv.x+pow(f,2.4)*vUv.y;vec3 c=mix(vec3(.78,.90,1.),pal(f*.8+vW.y*.2),.35);c=mix(c,uTgTint.rgb,uTgTint.a);
 vec3 L=normalize(vec3(-.45,.6,.65));vec3 H=normalize(L+V);float s=pow(max(dot(N,H),0.),90.)*1.6;
 vec3 L2=normalize(vec3(.7,.2,.5));float s2=pow(max(dot(N,normalize(L2+V)),0.),40.)*.35;
 gl_FragColor=vec4(c*a+vec3(1.)*(s+s2),clamp(a+s+s2,0.,1.));` });
@@ -257,7 +261,7 @@ export class LachrimeterTube {
     if (!this.S) return;
     this.build();
     this.slot = this.S.add(this.root, { anchor: 'br', x: 0, y: 0, z: 0, hud: true, update: (dt, slot) => this.update(dt, slot) });
-    document.fonts?.addEventListener?.('loadingdone', () => { this.keys.count = this.keys.tag = this.keys.cost = ''; this.cubePlate.dirty = true; this.cubePlate.fs = 0; drawPlate(this.plateC); this.skin(); });
+    document.fonts?.addEventListener?.('loadingdone', () => { this.keys.count = this.keys.tag = this.keys.cost = ''; this.cubePlate.dirty = true; this.cubePlate.fs = 0; drawPlate(this.plateC, this.plateLook); this.skin(); });
   }
 
   /** The pool was touched or refused (a bauble drunk, a dry click: the seven callers that once pulsed the LACHRYMA panel): the tube
@@ -287,7 +291,7 @@ export class LachrimeterTube {
     this.plateC = cv(288, 1024); drawPlate(this.plateC); this.skinC = cv(SKIN.w, SKIN.h); this.skinT = tex(this.skinC);
     { const o = cv(SKIN.w / 8, SKIN.h / 8), x = o.getContext('2d'); // (roughness in green, metalness in blue, a region each: MeshStandardMaterial's channels)
       for (const [k, r, m] of [['plate', 0.22, 0], ['glaze', 0.32, 0.05], ['brass', 0.38, 0.85]]) { const [x0, y0, w, h] = SKIN[k]; x.fillStyle = `rgb(255,${Math.round(r * 255)},${Math.round(m * 255)})`; x.fillRect(x0 / 8, y0 / 8, w / 8, h / 8); }
-      this.ormT = new THREE.CanvasTexture(o); this.ormT.magFilter = this.ormT.minFilter = THREE.NearestFilter; this.ormT.generateMipmaps = false; }
+      this.ormC = o; this.ormT = new THREE.CanvasTexture(o); this.ormT.magFilter = this.ormT.minFilter = THREE.NearestFilter; this.ormT.generateMipmaps = false; }
     const crazeT = tex(crazeCanvas());
     const glowC = cv(64, 64); { const x = glowC.getContext('2d'), g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(220,250,255,1)'); g.addColorStop(0.25, 'rgba(120,200,255,.55)'); g.addColorStop(1, 'rgba(90,60,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); }
 
@@ -312,7 +316,8 @@ export class LachrimeterTube {
     const inst = (this.inst = new THREE.Group()); inst.rotation.y = -YAW; pitch.add(inst); this.pitch = pitch;
     const add = (geo, mat, o = 0) => { const m = new THREE.Mesh(geo, mat); m.renderOrder = o; m.frustumCulled = false; inst.add(m); return m; };
     /** A glass, drawn as three.js draws a double-sided transparent one: its back faces, then its front (two meshes, one program). */
-    const glassB = sh(GLASS, {}, { cull: 2, depthWrite: false }), glassF = sh(GLASS, {}, { cull: 1, depthWrite: false });
+    const tint = { value: new THREE.Vector4(0, 0, 0, 0) }; // (an instrument skin's tint of the glass: rgb, how much; 0 the stock)
+    const glassB = sh(GLASS, { uTgTint: tint }, { cull: 2, depthWrite: false }), glassF = sh(GLASS, { uTgTint: tint }, { cull: 1, depthWrite: false });
     const glass = (geo, o = 2) => { const b = add(geo, glassB, o), f = new THREE.Mesh(geo, glassF); f.renderOrder = o + 0.01; f.frustumCulled = false; b.add(f); return b; };
     const glasses = []; // (the glass that always stands: the count's, the bulb's, the column's and the chamber's, the feed's; one mesh)
 
@@ -401,6 +406,9 @@ export class LachrimeterTube {
     this.tagC = cv(8, 8); this.tag = plane(this.tagT = tex(this.tagC), 0);
     this.costC = cv(40 * K, 18 * K); this.costLab = plane(this.costT = tex(this.costC), 1);
     this.A = { held: new THREE.Vector3(), cost: new THREE.Vector3() };
+    this.plateLook = PLATE_STOCK;
+    this.skinParts = { glassTint: tint.value, inst, env: ENV, brassC: this.brassC, body, BX, BY, BH, BZ, PL, CP, drawPlate: (L) => { this.plateLook = L; drawPlate(this.plateC, L); this.skin(); },
+      orm: (k, r, m) => { const [x0, y0, w, h] = SKIN[k], x = this.ormC.getContext('2d'); x.fillStyle = `rgb(255,${Math.round(r * 255)},${Math.round(m * 255)})`; x.fillRect(x0 / 8, y0 / 8, w / 8, h / 8); this.ormT.needsUpdate = true; } };
   }
 
   // ---------- each frame it may be drawn ----------
@@ -510,7 +518,7 @@ export class LachrimeterTube {
     root.updateMatrixWorld(true); this.inst.updateMatrix(); this.pitch.updateMatrix();
     this.uInst.value.copy(this.inst.matrixWorld).invert();
     this.inst.getWorldQuaternion(this.turnBack).invert();
-    this.pearls.update(dt, blink, combat, this.turnBack); this.state.pearls = this.pearls.state;
+    this.pearls.update(dt, blink, combat, this.turnBack); this.state.pearls = this.pearls.state; this.skinTick?.(dt);
     this.words(C, full, cap, cost > 0 ? costN : 0, short, lineP);
   }
 

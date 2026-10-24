@@ -40,6 +40,7 @@ import { raceModeRules } from './racemodes.js';
 import { casinoRules } from './casino.js';
 import { duelRules } from './duel.js';
 import { graphicsRules } from './graphics.js';
+import { instrumentRules } from './instruments.js';
 import { touchPlayRules } from './touchplay.js';
 import { perfReadoutRules } from './perfreadout.js';
 import { startAtRules } from './startat.js';
@@ -91,6 +92,7 @@ export function areaRules(ctx) {
   duelRules(ctx); // (a puzzle duel with an aberrant: docs/plans/PUZZLE-DUELS.md)
   cardBackRules(ctx); // (a deck's card back chosen: ui/cardbackchoice.js)
   graphicsRules(ctx); // (the graphics tier, dynamic resolution: render/graphics.js)
+  instrumentRules(ctx); // (an instrument skin put on: vfx/instrumentskins.js)
   touchPlayRules(ctx); // (touch play's settings: the layout kept, gyro steering's motion access: core/layoutkeep.js, core/gyrosteer.js)
   perfReadoutRules(ctx); // (/perf: the performance readout, debug/perfreadout.js; nothing counted)
   startAtRules(ctx); // (?at=: where the Courier was set down, debug/startat.js; nothing counted)

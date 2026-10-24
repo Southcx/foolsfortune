@@ -31,6 +31,7 @@
 //   L.slack()                    a dry click
 //   L.update(dt)                 the overlay scene calls it (its slot's update); nothing else to call
 //   L.state                      { shown, owner, beads, slack } for a probe
+//   L.U.uLinkSkin.value          an instrument skin's tint of the halo and motes (rgb, how much; vfx/instrumentskins.js); the core and a bead stay the film
 // Hidden while no owner holds it, its end is null, or the tube is not shown (it sinks, or the HUD is off).
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -47,7 +48,7 @@ const MAX_BEADS = 3;
 const LINK = overlayKind('link', {
   vdecl: 'attribute float aPart;',
   vbody: 'vUv=uv;vA=aPart;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);',
-  fdecl: `uniform float uLinkT,uLen,uDim,uBulb,uFlare,uBeadA,uRing;uniform vec3 uBeads,uBeadC,uBeadRev;
+  fdecl: `uniform float uLinkT,uLen,uDim,uBulb,uFlare,uBeadA,uRing;uniform vec3 uBeads,uBeadC,uBeadRev;uniform vec4 uLinkSkin;
 vec3 lkFilm(float t){vec3 a=vec3(.30,.06,.70),b=vec3(.04,.55,.75),c=vec3(.95,.72,.18),d=vec3(.85,.10,.50);t=fract(t)*4.;
 if(t<1.)return mix(a,b,smoothstep(0.,1.,t));if(t<2.)return mix(b,c,smoothstep(1.,2.,t));if(t<3.)return mix(c,d,smoothstep(2.,3.,t));return mix(d,a,smoothstep(3.,4.,t));}
 float lkHash(float n){return fract(sin(n*12.9898)*43758.5453);}
@@ -59,7 +60,7 @@ if(vA<.5){float s=vUv.x*uLen,d=vUv.y*${HALF.toFixed(1)},ad=abs(d);
   float core=1.-smoothstep(.35,.75,ad),halo=1.-smoothstep(1.,1.75,ad);
   float m=(s-uLinkT*14.)/22.,cell=floor(m),fm=fract(m)-.5;float mote=lkHash(cell)>.45?exp(-(fm*fm*22.*22.+d*d)/1.4)*(.35+.4*lkHash(cell+7.)):0.;
   float b=lkBead(uBeads.x,s,d,uBeadRev.x)+lkBead(uBeads.y,s,d,uBeadRev.y)+lkBead(uBeads.z,s,d,uBeadRev.z);
-  col=f*(core*.85+halo*.22+mote*.6)*uDim+mix(vec3(1.),uBeadC,.35)*b+f*b*.5;
+  col=(f*core*.85+mix(f,uLinkSkin.rgb*1.25,uLinkSkin.a)*(halo*.22+mote*.6))*uDim+mix(vec3(1.),uBeadC,.35)*b+f*b*.5;
   float fade=smoothstep(0.,.02,vUv.x)*smoothstep(1.,.98,vUv.x);col*=fade;a=1.;}
 else if(vA<1.5){float r=length(vUv)*(uRing+9.),R=uRing+(1.-uBulb)*7.;
   col=vec3(1.)*exp(-(r-R)*(r-R)/1.1)*uBulb*.8+lkFilm(uLinkT*.08)*exp(-r*r/(uRing*uRing))*uBulb*.5;a=1.;}
@@ -89,7 +90,7 @@ export class SpiritualLink {
     for (let q = 0; q < 2; q++) { const a = (N + 1) * 2 + q * 4; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
     g.setAttribute('position', this.pos); g.setAttribute('uv', this.uv); g.setAttribute('aPart', new THREE.BufferAttribute(part, 1)); g.setIndex(idx);
     this.U = { uLinkT: { value: 0 }, uLen: { value: 1 }, uDim: { value: 1 }, uBulb: { value: 0 }, uFlare: { value: 0 }, uBeadA: { value: 1 }, uRing: { value: 10 },
-      uBeads: { value: new THREE.Vector3(-1, -1, -1) }, uBeadRev: { value: new THREE.Vector3(0, 0, 0) }, uBeadC: { value: new THREE.Color(1, 1, 1) } };
+      uBeads: { value: new THREE.Vector3(-1, -1, -1) }, uBeadRev: { value: new THREE.Vector3(0, 0, 0) }, uBeadC: { value: new THREE.Color(1, 1, 1) }, uLinkSkin: { value: new THREE.Vector4(0, 0, 0, 0) } }; // (uLinkSkin: an instrument skin's tint of the halo and motes, never the core or a bead: vfx/instrumentskins.js)
     this.mesh = new THREE.Mesh(g, overlayShader(LINK, this.U, { blending: THREE.AdditiveBlending, depthTest: false, depthWrite: false }));
     this.mesh.name = 'spiritualLink'; this.mesh.frustumCulled = false; this.mesh.renderOrder = -1; // (under the tube and the tool: it leaves the bulb's glass and enters the eye)
     this.mesh.userData.overlayHidden = true;
