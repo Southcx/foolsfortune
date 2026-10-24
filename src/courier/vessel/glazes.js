@@ -135,15 +135,15 @@ export const GLAZES = Object.fromEntries([
   N('tonemahogany', 'MAHOGANY', 0x5e3426, 0x8a2e22, 0.3, 0xd0d8e8, 0.18, 'Deep and red-brown, like polished wood.'),
   N('tonesable', 'SABLE', 0x3f2a22, 0x6a2a30, 0.26, 0xc0cce0, 0.2, 'Very deep and cool, plum beneath, with a blue sheen where the light slides off.'),
   N('toneebony', 'EBONY', 0x2e1e18, 0x5a2420, 0.24, 0xb8c8e0, 0.22, 'The deepest brown, near black, with a cool sheen at the edges.'),
-  // CLAY BODIES (Calissa, 2026-10-24): the potter's own, the vessel as it would be without its glaze. Shown in the DEBUG save until
-  // Dovina rules how each is got (docs/handoffs/dovina/2026-10-24-from-calissa-skins.md). Blurbs are placeholders for Espada's.
-  S('bisquebody', 'BISQUE BODY', 0xf1dcc4, 0xffffff, 0.98, 0, [0, 0, 0, 0.15], { pattern: 3, c3: 0xc9b49a, k: 0.35, w: 22, bump: 0.0006 }, 'Fired once and never glazed: chalky, dry, a little rough to the eye.', { debug: true }),
-  S('terracottabody', 'TERRACOTTA BODY', 0xb35a38, 0xffffff, 0.9, 0, [0, 0, 0, 0.05], { pattern: 3, c3: 0xe2c08a, k: 0.4, w: 16, bump: 0.0008 }, 'Red earthenware, flecked with the pale grog it was wedged with.', { debug: true }),
-  S('stoneware', 'STONEWARE', 0xc9b79a, 0xffffff, 0.55, 0, [0, 0, 0, 0], { pattern: 3, c3: 0x3a2416, k: 0.3, w: 14, bump: 0.0004, aux: 1 }, 'Toasted buff, speckled with iron that bled into the body in the heat.', { debug: true }),
+  // CLAY BODIES (Calissa, 2026-10-24): the potter's own, the vessel as it would be without its glaze. The two bodies a potter starts with, stoneware, sliptrail
+  // and agateware (the shop) are got; the rest show in the DEBUG save until Dovina rules them. Blurbs are placeholders for Espada's.
+  S('bisquebody', 'BISQUE BODY', 0xf1dcc4, 0xffffff, 0.98, 0, [0, 0, 0, 0.15], { pattern: 3, c3: 0xc9b49a, k: 0.35, w: 22, bump: 0.0006 }, 'Fired once and never glazed: chalky, dry, a little rough to the eye.', { start: true }),
+  S('terracottabody', 'TERRACOTTA BODY', 0xb35a38, 0xffffff, 0.9, 0, [0, 0, 0, 0.05], { pattern: 3, c3: 0xe2c08a, k: 0.4, w: 16, bump: 0.0008 }, 'Red earthenware, flecked with the pale grog it was wedged with.', { start: true }),
+  S('stoneware', 'STONEWARE', 0xc9b79a, 0xffffff, 0.55, 0, [0, 0, 0, 0], { pattern: 3, c3: 0x3a2416, k: 0.3, w: 14, bump: 0.0004, aux: 1 }, 'Toasted buff, speckled with iron that bled into the body in the heat.', { shop: true }),
   S('rakubody', 'RAKU BODY', 0xe6ddcf, 0xffffff, 0.3, 0, [0, 0, 0, 0], { pattern: 5, c3: 0x0c0a0a, k: 0.8, w: 7, bump: 0.0006, aux: 1 }, 'Pulled red-hot from the kiln and smothered in sawdust: crackled white, smoke in every crack, copper where the fire caught.', { debug: true }),
   S('sigillata', 'TERRA SIGILLATA', 0xa8492a, 0xffffff, 0.3, 0, [0, 0, 0, 0], { pattern: 4, c3: 0x3a1a10, k: 0.5, bump: 0.0002 }, 'The finest slip, burnished with a stone until it shines; the fire left a dark flash across it.', { debug: true }),
   S('celadonbody', 'CELADON BODY', 0x9cc0a4, 0xc8f0d8, 0.15, 0, [0.1, 0.3, 0, 0.5], { pattern: 6, c3: 0xc8e0a0, w: 9, aux: 0.6, bump: 0.0004 }, 'Jade all the way through, deeper where it lies thick, finely crazed.', { debug: true }),
-  S('agateware', 'AGATEWARE', 0xe8d4b8, 0xffffff, 0.35, 0, [0, 0, 0, 0], { pattern: 7, c3: 0x7a4028, w: 3.5, bump: 0.0002 }, 'Two clays, pale and red, wedged together and swirled like agate.', { debug: true }),
+  S('agateware', 'AGATEWARE', 0xe8d4b8, 0xffffff, 0.35, 0, [0, 0, 0, 0], { pattern: 7, c3: 0x7a4028, w: 3.5, bump: 0.0002 }, 'Two clays, pale and red, wedged together and swirled like agate.', { shop: true }),
   S('bluemarble', 'BLUE AGATEWARE', 0xf0ece4, 0xffffff, 0.3, 0, [0, 0, 0, 0], { pattern: 7, c3: 0x2a4a9a, w: 4.5, bump: 0.0002 }, 'White clay and cobalt-stained clay swirled together.', { debug: true }),
   // STRANGE BODIES (Calissa, 2026-10-24): shown in the DEBUG save until Dovina rules them. Blurbs are placeholders for Espada's.
   S('nacre', 'MOTHER-OF-PEARL', 0xece8e2, 0xf0f4ff, 0.2, 0, [0.1, 0.25, 0, 0.2], { pattern: 8, k: 1, w: 5, bump: 0.0002 }, 'The inside of a shell: wavy layers, every colour sliding over them as you turn.', { debug: true }),
@@ -154,7 +154,7 @@ export const GLAZES = Object.fromEntries([
   S('starfield', 'STARFIELD', 0x05060f, 0x6a4ac0, 0.25, 0, [0, 0.4, 0, 0], { pattern: 12, c3: 0x1a3a8a, k: 1 }, 'A night sky inside you, the stars deep under the surface, moving as you do.', { debug: true }),
   S('nebula', 'NEBULA', 0x0a0512, 0xff6ab0, 0.25, 0, [0, 0.35, 0, 0], { pattern: 12, c3: 0x6a2ac0, k: 2.2 }, 'A nebula in rose and violet, with stars being born in it.', { debug: true }),
   S('stainedglass', 'STAINED GLASS', 0x1a1a1e, 0xffffff, 0.1, 0, [0, 0, 0, 0], { pattern: 13, c3: 0xffffff, k: 1, w: 9, bump: 0.0008 }, 'Leaded panes of ruby, cobalt, amber and green, lit from inside like a window at night.', { debug: true }),
-  S('sliptrail', 'SLIP-TRAILED', 0x5a2a18, 0xffffff, 0.25, 0, [0, 0, 0, 0], { pattern: 14, c3: 0xe8c890, w: 7, bump: 0.0012 }, 'Dark red clay, trailed over with raised lines of cream slip and glazed honey, as the old slipware was.', { debug: true }),
+  S('sliptrail', 'SLIP-TRAILED', 0x5a2a18, 0xffffff, 0.25, 0, [0, 0, 0, 0], { pattern: 14, c3: 0xe8c890, w: 7, bump: 0.0012 }, 'Dark red clay, trailed over with raised lines of cream slip and glazed honey, as the old slipware was.', { shop: true }),
   S('lachrymalit', 'LACHRYMA-LIT', 0x0c0a12, 0x6a4ac0, 0.2, 0, [0, 0.15, 0, 0], { pattern: 15, c3: 0x2a2440, k: 1 }, 'Dark, until it turns: then the film of Lachryma flashes up under it, violet to gold.', { debug: true }),
   S('goldleaf', 'GOLD LEAF', 0xa85a3a, 0xffffff, 0.8, 0, [0, 0, 0, 0], { pattern: 16, c3: 0xe8b850, w: 4, bump: 0.0003 }, 'Leaf gold laid over the red clay and flaking off it.', { debug: true }),
   S('kintsugibody', 'KINTSUGI BODY', 0xd8cfc0, 0xffffff, 0.4, 0, [0, 0, 0, 0], { pattern: 17, c3: 0xe0b048, w: 4.5, bump: 0.0008 }, 'Broken once, and mended in gold: every crack already filled.', { debug: true }),

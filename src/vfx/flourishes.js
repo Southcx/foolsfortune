@@ -15,9 +15,8 @@
 // Nothing here allocates in a frame: the vectors and colours are kept, the effects are the pools'.
 //
 // THE CHOICE is kept with the player's looks (save section `flourishes`, scope player, as the vessel's glazes and the idle are: it travels
-// with the player in co-op and resets with progress on a new build). What opens an option is Dovina's (OPEN_WHEN, empty until her rows
-// land: docs/handoffs/dovina/2026-10-24-from-calissa-flourishes.md); until then every option is open in the DEBUG save only, and a
-// slot's stock is always open.
+// with the player in co-op and resets with progress on a new build). What opens an option is Dovina's (`game.cosmeticOpen`, progress/cosmetics.js);
+// a slot's stock is always open, and the DEBUG save wears any.
 //
 //   game.flourishes = new Flourishes(game)   .worn[slot] (the id worn)   .options(slot) -> [{ id, label, line, open, worn }]
 //   .set(slot, id) -> { ok, reason? }   .shatter(mid) -> bool (true: drawn, the stock burst is not)   .arrive(why) -> bool   .update(raw)
@@ -40,7 +39,7 @@ export const FLOURISHES = {
     { id: 'stock', label: 'Stock', line: 'The ground\'s own print: sand pressed, paint trodden.' },
     { id: 'blossom', label: 'Blossoms', line: 'A cherry blossom opens where you tread.', print: { kind: 'blossom', size: 0.24, life: 7, color: 'petal', alpha: 0.95 }, fx: 'flourish.step.blossom' },
     { id: 'scorch', label: 'Ash scorch', line: 'Kiln-hot soles: a charred print, embers in it.', print: { kind: 'scorch', size: 0.34, life: 9, color: 0xffffff, alpha: 0.8 }, fx: 'flourish.step.scorch' },
-    { id: 'comb', label: 'Comb glyphs', line: 'A cell of the System\'s script, glowing, fading.', print: { kind: 'comb', alt: 'comb2', size: 0.26, life: 3, color: 'soul', alpha: 0.9, glow: 1 }, fx: 'flourish.step.comb' },
+    { id: 'comb', label: 'Script glyphs', line: 'A cell of the System\'s script, glowing, fading.', print: { kind: 'comb', alt: 'comb2', size: 0.26, life: 3, color: 'soul', alpha: 0.9, glow: 1 }, fx: 'flourish.step.comb' },
     { id: 'paw', label: 'Paw prints', line: 'Something small walks where you walk.', print: { kind: 'paw', size: 0.2, life: 8, color: 0x3a2a20, alpha: 0.55 } },
     { id: 'puddle', label: 'Glaze puddles', line: 'A pool of your body glaze, drying.', print: { kind: 'puddle', size: 0.3, life: 6, color: 'body', alpha: 0.9 }, fx: 'flourish.step.puddle' },
   ] },
@@ -63,7 +62,7 @@ export const FLOURISHES = {
   aura: { label: 'Idle aura', line: 'A faint stream round you while you stand still.', stock: 'off', options: [
     { id: 'off', label: 'Off', line: 'Nothing.' },
     { id: 'motes', label: 'Soul motes', line: 'Motes of your soul colour, drifting up.', fx: 'flourish.aura.motes', color: 'soul' },
-    { id: 'comb', label: 'Comb ring', line: 'Cells of the Comb, turning slowly at your feet.', fx: 'flourish.aura.comb', color: 'soul' },
+    { id: 'comb', label: 'Script ring', line: 'Cells of the System\'s script, turning slowly at your feet.', fx: 'flourish.aura.comb', color: 'soul' },
     { id: 'embers', label: 'Kiln embers', line: 'Embers rising, as from a kiln\'s spy-hole.', fx: 'flourish.aura.embers' },
     { id: 'die', label: 'Orbiting die', line: 'A die of your stones, circling.', fx: 'flourish.aura.die', color: 'stones', tip: 'soul', orbit: { r: 0.72, y: 1.3, turn: 1.05 } },
   ] },
@@ -76,8 +75,6 @@ export const FLOURISHES = {
   ] },
 };
 export const FLOURISH_SLOTS = Object.keys(FLOURISHES);
-/** What opens an option, by `slot.id`: `(game) => bool` (Dovina's to fill: a predicate over the ledger or the achievements). */
-export const OPEN_WHEN = {};
 const optionOf = (slot, id) => FLOURISHES[slot]?.options.find((o) => o.id === id) || null;
 
 const LACH = 0xb49be6, PETAL = [0xf6c6d2, 0xf2a8bc, 0xfbe4ea, 0xf7d3dc];
@@ -125,7 +122,7 @@ export class Flourishes {
   /** Open to wear: a slot's stock, anything in the DEBUG save, or what Dovina's rule opens. */
   isOpen(slot, id) {
     if (id === FLOURISHES[slot]?.stock) return true;
-    return this.game.mode === 'debug' || OPEN_WHEN[`${slot}.${id}`]?.(this.game) === true;
+    return this.game.mode === 'debug' || this.game.cosmeticOpen?.('flourishes', `${slot}.${id}`) === true; // (Dovina's table: progress/cosmetics.js, through main.js's game.cosmeticOpen)
   }
   /** An option no longer open (the DEBUG save's pick met in STORY) put back to its slot's stock. */
   enforce() { for (const s of FLOURISH_SLOTS) if (!this.isOpen(s, this.worn[s])) this.worn[s] = FLOURISHES[s].stock; }

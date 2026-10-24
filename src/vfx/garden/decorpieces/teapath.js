@@ -1,8 +1,8 @@
 // ---------------------------------------------------------------------------------------
-// THE TEAHOUSE SET (proposed to Dovina, docs/handoffs/dovina/2026-10-24-from-calissa-decor-sets.md): the approach to a tea room, the
+// THE TEA PATH SET (Dovina's decor.js holds its pieces): the approach to a tea room, the
 // roji, as a cosy garden builder's set of eight. Moss, weathered stone, split bamboo and a red felt bench; the body (white, so the set's
 // sage x tint paints it) is the lantern's hat, the bench's parasol, the fence's poles and the moss, the stone and the water fixed.
-// The water pipe's bamboo tips and knocks in the vertex shader (kit.js MOTION.tip), the snow-viewing lantern's panels light at dusk.
+// The deer scarer's bamboo tips and knocks in the vertex shader (kit.js MOTION.tip), the snow-viewing lantern's panels light at dusk.
 // Prior art: the roji of the chashitsu (tobi-ishi stepping stones and the rope-tied stop stone, sekimori-ishi; the tsukubai crouching
 // basin with its kakehi spout and hishaku ladle; the yukimi-doro snow-viewing lantern; the yotsume-gaki four-eyed bamboo fence; the
 // nodate parasol and the red mosen felt of an outdoor tea), the shishi-odoshi of Shisen-do in Kyoto, Animal Crossing's zen set, and
@@ -13,7 +13,7 @@ import { K, MOTION } from './kit.js';
 const TAU = Math.PI * 2;
 const IRIS = 0x7a62b8;
 
-export const TEAHOUSE = {
+export const TEAPATH = {
   /** small: three round stones of the tea path, moss between, and the stop stone tied with black rope (the path goes no further). */
   teaPathStones(p) {
     for (const [x, z, r, h] of [[-0.24, -0.22, 0.17, 0.1], [0.04, 0.04, 0.19, 0.12], [0.27, 0.27, 0.15, 0.09]]) {
@@ -92,9 +92,9 @@ export const TEAHOUSE = {
     for (const [x, y, z, r] of [[0.48, 1.12, -0.02, 0.26], [-0.34, 1.28, -0.3, 0.24], [0.08, 1.42, -0.22, 0.2], [0.1, 0.92, -0.25, 0.16]]) p.ball(r, { at: [x, y, z], sc: [1.4, 0.45, 1.2], c: K.leafD }, 8, 4);
     for (const [x, z] of [[0.3, -0.5], [-0.6, -0.2], [0.65, 0.05]]) p.ball(0.07, { at: [x, 0.3, z], sc: [1, 0.6, 1], c: K.leaf }, 5, 3);
   },
-  /** centre: the water pipe (shishi-odoshi) at its pond: a spout feeds a bamboo pipe on an axle; it fills, tips, pours and knocks its
+  /** centre: the deer scarer (shishi-odoshi) at its pond: a spout feeds a bamboo pipe on an axle; it fills, tips, pours and knocks its
    *  back end on the stone (MOTION.tip about the axle, in the shader). Rocks, moss banks (the body) and an iris round the water. */
-  bambooWaterPipe(p) {
+  deerScarer(p) {
     const PIV = [0, 0.55, 0.2], TIP = { m: [MOTION.tip, ...PIV] };
     p.cyl(0.85, 0.9, 0.06, { at: [0, 0, 0.82], sit: true, c: K.waterD }, 14); p.cyl(0.78, 0.78, 0.03, { at: [0, 0.05, 0.82], c: K.water }, 14);
     for (let i = 0; i < 11; i++) { const a = (i / 11) * TAU, r = 0.9 + (i % 3) * 0.04; p.ball(0.15 + (i % 3) * 0.05, { at: [Math.cos(a) * r, 0.04, 0.82 + Math.sin(a) * r * 0.95], sc: [1.3, 0.65, 1.1], rot: [0, a, 0], c: i % 2 ? K.stone : K.stoneD }, 6, 4); }

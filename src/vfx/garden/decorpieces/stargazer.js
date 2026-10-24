@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// THE STARGAZER SET (proposed to Dovina, docs/handoffs/dovina/2026-10-24-from-calissa-decor-sets.md): an amateur astronomer's corner of
+// THE STARGAZER SET (Dovina's decor.js holds its pieces): an amateur astronomer's corner of
 // eight, brass and night-blue glaze. An armillary sphere whose inner rings turn about its tilted pole (kit.js MOTION.polar), a brass
 // telescope, a garden sundial, a star-chart table, a crescent gate, glass orbs on stakes, a fallen meteor stone still warm in its veins,
 // and its centrepiece the constellation pavement, a round paving inlaid with a star chart whose stars light at dusk. The body (white, so

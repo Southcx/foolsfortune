@@ -2,7 +2,7 @@
 // THE JAR'S LOOK, AS DATA (plain names: the owner, 2026-10-24: "go as hard as you can on customization, you can get weird with it"):
 // what the Pneuka Jar can wear that the Courier cannot, slot by slot. The Jar always wears the vessel's own looks first (the kiln's
 // glazes, region to part: vfx/pneukajar/dress.js); these are the Jar's alone, looks only, never a rule. Which are open, and how, is
-// Dovina's (docs/handoffs/dovina/2026-10-24-from-calissa-jar.md proposes them); until she rules, the DEBUG save wears any with `/jar`.
+// Dovina's (progress/cosmetics.js, through `game.cosmeticOpen`); the DEBUG save wears any with `/jar`.
 // Labels are plain (CLARITY.md); Espada names them once the owner calls the Jar's look finalized.
 //
 //   lid      what closes its mouth: none (the owner's Jar), a cork, a lotus lid, a crown lid, a little roof, a teardrop stopper

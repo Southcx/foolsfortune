@@ -18,7 +18,7 @@
 // Kept in the save as section `toolSkins`, scope `player` (a look the Courier has earned follows the Courier, as the vessel's glazes and
 // the Solar Skiff's paint do: core/save.js; wiped on a new build with the rest of progress). Said by `toolskin.set` { tool, skin, by }
 // (feedback/tracking/toolskins.js). DEBUG: `/toolskin` lists, `/toolskin <tool> <skin>` wears one. Which skins are open in STORY is
-// Dovina's to rule (docs/handoffs/dovina/2026-10-24-from-calissa-tool-skins.md): until then a STORY save wears stock.
+// Dovina's (progress/cosmetics.js, through `game.cosmeticOpen`); a STORY save wears stock until a skin is open.
 //
 // Prior art: a weapon skin laid over one rig's materials (Counter-Strike's finishes, Destiny's shaders), and the house's own vessel
 // dresser (courier/vessel/vessel.js dress: the same program, uniforms set from a finish).
@@ -117,9 +117,14 @@ export class ToolSkins {
 
   of(tool) { return skinNow(tool); }
 
+  /** Open to wear: stock, anything in the DEBUG save, or what Dovina's rule opens (progress/cosmetics.js, through main.js's game.cosmeticOpen). */
+  isOpen(tool, id) {
+    return id === 'stock' || this.game.mode === 'debug' || this.game.cosmeticOpen?.('toolSkins', `${tool}.${id}`) === true;
+  }
+
   /** Wear skin `id` on `tool` (stock to take it off); false for an unknown tool or skin. */
   set(tool, id, { by = 'courier' } = {}) {
-    if (!TOOL_SKINS[tool]?.[id]) return false;
+    if (!TOOL_SKINS[tool]?.[id] || !this.isOpen(tool, id)) return false;
     if (id === 'stock') delete NOW[tool]; else NOW[tool] = id;
     for (const w of WEARERS) if (w.tool === tool) lay(w);
     this.game.save?.dirty('toolSkins');

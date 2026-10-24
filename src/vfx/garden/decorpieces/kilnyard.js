@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// THE KILN-YARD SET (proposed to Dovina, docs/handoffs/dovina/2026-10-24-from-calissa-decor-sets.md): a country potter's yard of eight,
+// THE KILN-YARD SET (Dovina's decor.js holds its pieces): a country potter's yard of eight,
 // the house's own clay come out into the garden. Split wood, fireclay saggars, greenware drying, a clay pit, a kick wheel turning (kit.js
 // MOTION.turn), a heap of sherds and a bucket of glaze; its centrepiece the tunnel kiln, a long earthen mound whose firebox mouth and
 // stoke holes glow at dusk and waver (MOTION.flicker). The body (white, so the set's terracotta x tint paints it) is the fired clay: the

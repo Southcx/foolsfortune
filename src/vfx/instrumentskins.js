@@ -15,8 +15,7 @@
 // lit parts' one set-up (`overlayStd`).
 //
 // Kept in the save's settings scope (section `instrumentSkin`, as the window colour is `windowColour`); `/instruments id` in DEBUG; a
-// row for the settings window proposed to Petra (docs/handoffs/petra/2026-10-24-from-calissa-instrument-skins.md); opens, if any,
-// Dovina's (docs/handoffs/dovina/...). Event `instruments.skin { id, by }` when the player picks one (tracking/instruments.js says it).
+// row for the settings window is Petra's; what opens a skin is Dovina's (progress/cosmetics.js, through `game.cosmeticOpen`). Event `instruments.skin { id, by }` when the player picks one (tracking/instruments.js says it).
 //
 // Prior art: the Pip-Boy's and the watch world's case options (one movement, many cases: brass, steel, ceramic, carbon); Animal
 // Crossing's NookPhone cases; Final Fantasy XIV's and Destiny's UI themes; a gradient map (Photoshop's, the palette swap of the 16-bit
@@ -157,16 +156,23 @@ export class InstrumentSkins {
   constructor(game) {
     this.game = game; this.id = 'brass'; this.garnish = { sight: null, tube: null }; this.orig = {};
     const save = game.save;
-    save?.section?.('instrumentSkin', { scope: 'settings', version: 1, dump: () => ({ id: this.id }), load: (s) => { if (s && INSTRUMENT_SKINS[s.id]) this.id = s.id; }, reset: () => { this.id = 'brass'; } });
+    save?.section?.('instrumentSkin', { scope: 'settings', version: 1, dump: () => ({ id: this.id }), load: (s) => { if (s && INSTRUMENT_SKINS[s.id]) this.id = s.id; this.enforce(); }, reset: () => { this.id = 'brass'; } });
     if (typeof document !== 'undefined') { const st = document.createElement('style'); st.id = 'instrumentskins'; st.textContent = FIT_CSS; document.head.appendChild(st); }
     this.apply();
   }
   get skin() { return INSTRUMENT_SKINS[this.id] || INSTRUMENT_SKINS.brass; }
   /** The skins as a settings choice's pairs. */
-  get choices() { return INSTRUMENT_SKIN_ORDER.map((id) => [id, INSTRUMENT_SKINS[id].label]); }
-  /** Put a skin on (kept in the save); false for an id that is not one. */
+  get choices() { this.enforce(); return INSTRUMENT_SKIN_ORDER.map((id) => [id, INSTRUMENT_SKINS[id].label]); }
+  /** Open to wear: the stock brass, anything in the DEBUG save, or what Dovina's rule opens (progress/cosmetics.js, through main.js's game.cosmeticOpen). */
+  isOpen(id) { return id === 'brass' || this.game.mode === 'debug' || this.game.cosmeticOpen?.('instruments', id) === true; }
+  /** A skin no longer open (the settings outlive a build, the opens do not; or the DEBUG save's pick met in STORY) put back to the stock brass. */
+  enforce() {
+    if (this.isOpen(this.id)) return;
+    this.id = 'brass'; this.game.save?.dirty?.('instrumentSkin'); this.apply();
+  }
+  /** Put a skin on (kept in the save); false for an id that is not one, or not open. */
   set(id, by = 'courier') {
-    if (!INSTRUMENT_SKINS[id]) return false;
+    if (!INSTRUMENT_SKINS[id] || !this.isOpen(id)) return false;
     const changed = id !== this.id; this.id = id; this.game.save?.dirty?.('instrumentSkin'); this.apply();
     if (changed) this.game.events?.emit('instruments.skin', { id, label: this.skin.label, by });
     return true;

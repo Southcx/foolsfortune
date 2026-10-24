@@ -23,7 +23,7 @@
 // its stock look. Colours are sRGB hex.
 //
 // Rows (a skin's name and line) are plain until the owner rules (CLAUDE.md, "Plain names until settled"); how each is OPENED is Dovina's
-// (proposed in docs/handoffs/dovina/2026-10-24-from-calissa-tool-skins.md). DEBUG wears any: /toolskin <tool> <skin>.
+// (progress/cosmetics.js, through `game.cosmeticOpen`). DEBUG wears any: /toolskin <tool> <skin>.
 //
 // Prior art, as on a museum label: a weapon skin over one rig (Counter-Strike's finishes, Destiny's ornaments and shaders, Valorant's
 // bundles: one finish read across every part), and the real crafts each skin is named for (see vfx/toolpatterns.js's label).
@@ -46,7 +46,7 @@ export const TOOL_SKINS = {
     blued: { label: 'Blued Steel and Bone', line: 'Blued steel, a bone grip.', roles: {
       body: { c: 0x1d2a40, p: 'hammered', s: 60, metal: 0.9, rough: 0.25 }, grip: { c: 0xe8dcc0, b: 0x6b5a40, p: 'bone', s: 10 },
       trim: { c: 0xb8c0cc, metal: 0.9, rough: 0.2 }, glow: { c: 0xd8f0ff, e: 0x9fd8ff } } },
-    porcelain: { label: 'Cobalt Porcelain', line: 'Blue-and-white porcelain, dragons\' scales in cobalt.', roles: {
+    porcelain: { label: 'Blue and White', line: 'Blue-and-white porcelain, dragons\' scales in cobalt.', roles: {
       body: { c: 0xf4f1ea, b: 0x1a3a9a, p: 'cobalt', s: 12, metal: 0, rough: 0.15 }, grip: { c: 0x203d94, b: 0xf4f1ea, p: 'cobalt', s: 14 },
       trim: { c: 0x1a3a9a, metal: 0, rough: 0.2 }, glow: { c: 0xd8e6ff, e: 0x7fb0ff } } },
     raku: { label: 'Raku', line: 'Smoked raku crackle with a copper flash.', roles: {
@@ -121,7 +121,7 @@ export const TOOL_SKINS = {
     ouroboros: { label: 'Serpent Skin', line: 'Bound in a serpent\'s scales, clasped in gold.', roles: {
       leather: { c: 0x2a3a1a, b: 0xa8b04a, p: 'scales', s: 30, rough: 0.5 }, spine: { c: 0x1e2a12, b: 0xa8b04a, p: 'scales', s: 30, rough: 0.5 },
       dark: { c: 0x0e140a }, brass: { c: 0xf2c35a, metal: 0.95, rough: 0.2 }, pages: { c: 0xece2c4 } } },
-    codex: { label: 'Glitched Codex', line: 'A book of light and traces, its spine coming apart into data.', roles: {
+    codex: { label: 'Glitched Tome', line: 'A book of light and traces, its spine coming apart into data.', roles: {
       leather: { c: 0x0a0f18, b: 0x39c8ff, p: 'circuit', s: 18, metal: 0.2, rough: 0.35 }, spine: { c: 0x0a0f18, b: 0xff3a9a, p: 'glitch', s: 20 },
       dark: { c: 0x05080e }, brass: { c: 0x39c8ff, metal: 0.4, rough: 0.3, e: 0x39c8ff, ei: 0.3 }, pages: { c: 0xd8f4ff } } },
   },
@@ -183,7 +183,7 @@ export const TOOL_SKINS = {
     ossuary: { label: 'Ossuary', line: 'A coffin of bone, banded in iron.', roles: {
       body: { c: 0xe8dcc0, b: 0x4a3a28, p: 'bone', s: 12, metal: 0, rough: 0.6 }, trim: { c: 0x2a2622, p: 'hammered', s: 40, metal: 0.7, rough: 0.45 },
       chain: { c: 0x3a3632, metal: 0.7, rough: 0.5 } } },
-    motley: { label: 'Jester\'s Coffin', line: 'Motley for the dead: red and black diamonds, a gold lid.', roles: {
+    motley: { label: 'Jester\'s Coffin', line: 'Motley for the last laugh: red and black diamonds, a gold lid.', roles: {
       body: { c: 0x9a1a2a, b: 0x161216, p: 'harlequin', s: 14, metal: 0.1, rough: 0.3 }, trim: { c: 0xf2c35a, metal: 0.95, rough: 0.2 },
       chain: { c: 0xf2c35a, metal: 0.95, rough: 0.2 } } },
   },

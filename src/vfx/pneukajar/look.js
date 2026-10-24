@@ -63,9 +63,13 @@ export class PneukaJarLook {
     return () => { grp.visible = was.v; grp.position.copy(was.p); grp.userData.zoneFree = was.z; };
   }
 
-  /** One slot set (an id the table knows); false if not. */
+  /** Open to wear: the owner's Jar as made, anything in the DEBUG save, or what Dovina's rule opens (progress/cosmetics.js, through main.js's game.cosmeticOpen). */
+  isOpen(slot, id) {
+    return id === DEFAULT_JAR[slot] || this.game.mode === 'debug' || this.game.cosmeticOpen?.('jar', `${slot}.${id}`) === true;
+  }
+  /** One slot set (an id the table knows, and open); false if not. */
   set(slot, id) {
-    if (!JAR_LOOK[slot]?.options[id]) return false;
+    if (!JAR_LOOK[slot]?.options[id] || !this.isOpen(slot, id)) return false;
     this.look[slot] = id; this.game.save?.dirty('jarLook'); return true;
   }
   /** A whole look worn at once (unknown ids fall back to the owner's). */

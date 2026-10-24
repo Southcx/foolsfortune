@@ -4,8 +4,7 @@
 // shape in the air (ribbons.js), a pennant's shape at the masthead (pennants.js) and a hull wrap over the hull glaze (wraps.js). Owned by
 // the skiff's paint look (vfx/skiffpaintlook.js: `paintLook.trims`), which hands it what is worn (Dovina's `game.skiffPaint.worn`, a
 // race board preview over it) at every change, and the frame and the pose. The kinds are Dovina's catalogue's (progress/skiffpaint.js
-// PAINT: trail, ribbon, and length for the pennant's shape, whose tab and streamer are its first two; `wrap` is proposed in
-// docs/handoffs/dovina/2026-10-24-from-calissa-skiff-trims.md); each look is keyed by its row's id, and an id none of these files knows
+// PAINT: trail, ribbon, and length for the pennant's shape, whose tab and streamer are its first two; `wrap` is hers too); each look is keyed by its row's id, and an id none of these files knows
 // leaves what stands (the sand's own wake, the plain ribbon, the maker's pennant, the bare hull).
 //
 // Prior art: Rocket League's and Mario Kart's cosmetics (each slot its own, none touching the numbers), as the paint look's.

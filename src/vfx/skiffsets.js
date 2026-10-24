@@ -1,12 +1,12 @@
 // ---------------------------------------------------------------------------------------
 // A SKIFF SET (the owner, 2026-10-24: "I feel like some of these cosmetics should be designed as a full set"): one look carried across
 // every slot of the Solar Skiff's paint (Dovina's catalogue, progress/skiffpaint.js PAINT, worn as `game.skiffPaint.worn`): the hull
-// painting (vfx/skiffhulls.js), the sail's dye, pattern and cut, the trail, the ribbon, the pennant and its length, the hull wrap and the
-// card back. Six, each named plainly for what it is: Kintsugi, Driftwood, Celadon, Matsuri, Racing, Obsidian.
+// painting (vfx/skiffhulls.js), the sail's dye, pattern and cut, the trail, the ribbon, the pennant (its colour) and its length (its shape), and the
+// hull wrap. (The card back is not a paint kind, so a set carries none.) Six, each named plainly for what it is: Kintsugi, Driftwood, Celadon, Matsuri, Racing, Obsidian.
 //
 // A slot's choice is a list tried in order, the first the catalogue has winning: the set's own piece first (a pattern, trail, pennant or
 // wrap other builders are adding this round), then the nearest piece that exists now. A slot whose kind the catalogue does not have yet
-// is skipped. Owning a set, or its pieces, is Dovina's (docs/handoffs/dovina/2026-10-24-from-calissa-skiff-sets.md); this is the look's
+// is skipped. Owning a set, or its pieces, is Dovina's (progress/skiffpaint.js SET_RULES); this is the look's
 // table and a tester's way to wear one whole (`/skiffset <id>`, DEBUG only), each slot put on through the catalogue's own setter
 // (`game.skiffPaint.choose`), so a slot shut or too dear is refused as it would be at the race board.
 //
@@ -14,30 +14,31 @@
 // piece); Rocket League's themed bundles (body, decal, wheels, boost, trail and topper made as one); Splatoon's brand sets; Mario Kart 8's
 // kart, wheels and glider combinations named as one.
 //
-//   SKIFF_SETS [{ id, label, line, slots: { hull, dye, pattern, cut, trail, ribbon, pennant, length, wrap, back } }]   SKIFF_SET_SLOTS
+//   SKIFF_SETS [{ id, label, line, slots: { hull, dye, pattern, cut, trail, ribbon, pennant, length, wrap } }]   SKIFF_SET_SLOTS
 //   setOf(id)   applySkiffSet(game, id, { previewHull }) -> { set, worn, skipped, refused } | null   skiffSetCommands(game)  (/skiffset)
 // ---------------------------------------------------------------------------------------
+// TODO: import SET_RULES[id].pieces from progress/skiffpaint.js (Dovina's ask) once it reaches the default branch.
 import { PAINT } from '../progress/skiffpaint.js';
 import { SKIFF_HULLS } from './skiffhulls.js';
 import { skiffPaintPreview } from './skiffpaintlook.js';
 
 /** The slots, in the order a set is put on (the hull first: the rest are judged against it). */
-export const SKIFF_SET_SLOTS = ['hull', 'dye', 'pattern', 'cut', 'trail', 'ribbon', 'pennant', 'length', 'wrap', 'back'];
+export const SKIFF_SET_SLOTS = ['hull', 'dye', 'pattern', 'cut', 'trail', 'ribbon', 'pennant', 'length', 'wrap'];
 
 const L = (...ids) => ids; // (a slot's choices, the set's own first)
 export const SKIFF_SETS = [
   { id: 'kintsugi', label: 'Kintsugi', line: 'Black lacquer mended with gold: the break worn as the beauty.',
-    slots: { hull: L('urushi'), dye: L('cloth'), pattern: L('kintsugi', 'kiln'), cut: L('junk'), trail: L('ink', 'glaze'), ribbon: L('comet', 'on'), pennant: L('swallowtail', 'gold'), length: L('long'), wrap: L('kintsugi'), back: L('cups', 'clay') } },
+    slots: { hull: L('urushi'), dye: L('cloth'), pattern: L('kintsugi', 'kiln'), cut: L('junk'), trail: L('ink', 'glaze'), ribbon: L('comet', 'on'), length: L('swallowtail'), pennant: L('gold'), wrap: L('kintsugi') } },
   { id: 'driftwood', label: 'Driftwood', line: 'A board the sea gave back: silvered grain, salt-white cloth, a weathered flag.',
-    slots: { hull: L('driftwood'), dye: L('glaze.nuka', 'cloth'), pattern: L('solid'), cut: L('lateen'), trail: L('frost', 'own'), ribbon: L('off'), pennant: L('prayer', 'own'), length: L('long'), wrap: L('pinstripe'), back: L('brine', 'pentacles') } },
+    slots: { hull: L('driftwood'), dye: L('glaze.nuka', 'cloth'), pattern: L('solid'), cut: L('lateen'), trail: L('frost', 'own'), ribbon: L('off'), length: L('prayer'), pennant: L('gold'), wrap: L('pinstripes') } },
   { id: 'celadon', label: 'Celadon', line: 'A pale green glaze, crazed, under a sail frosted in Wonder.',
-    slots: { hull: L('celadon'), dye: L('wonder'), pattern: L('motif'), cut: L('stock'), trail: L('frost', 'lachryma'), ribbon: L('helix', 'on'), pennant: L('wonder'), length: L('short'), wrap: L('pinstripe'), back: L('glass', 'cups') } },
+    slots: { hull: L('celadon'), dye: L('wonder'), pattern: L('motif'), cut: L('stock'), trail: L('frost', 'lachryma'), ribbon: L('helix', 'on'), length: L('short'), pennant: L('wonder'), wrap: L('pinstripes') } },
   { id: 'matsuri', label: 'Matsuri', line: 'A festival float on the sand: vermilion and gold, a carp flying, petals behind.',
-    slots: { hull: L('festival'), dye: L('fury'), pattern: L('seigaiha', 'stripe'), cut: L('stock'), trail: L('petals', 'glaze'), ribbon: L('suits', 'on'), pennant: L('carp', 'gold'), length: L('long'), wrap: L('flames'), back: L('wands', 'clay') } },
+    slots: { hull: L('festival'), dye: L('fury'), pattern: L('waves', 'stripe'), cut: L('stock'), trail: L('petals', 'glaze'), ribbon: L('suits', 'on'), length: L('carp'), pennant: L('gold'), wrap: L('flames') } },
   { id: 'racing', label: 'Racing', line: 'Varnished teak and brass, a checkered sail and a roundel: built to win a cup.',
-    slots: { hull: L('teak'), dye: L('mirth'), pattern: L('checker', 'chevron'), cut: L('stock'), trail: L('embers', 'lachryma'), ribbon: L('comet', 'on'), pennant: L('swallowtail', 'gold'), length: L('short'), wrap: L('roundel'), back: L('pentacles', 'nacre') } },
+    slots: { hull: L('teak'), dye: L('mirth'), pattern: L('checker', 'chevron'), cut: L('stock'), trail: L('embers', 'lachryma'), ribbon: L('comet', 'on'), length: L('swallowtail'), pennant: L('gold'), wrap: L('roundel') } },
   { id: 'obsidian', label: 'Obsidian', line: 'Bone over black glass, a sail of Dread charted with stars, starlight in its wake.',
-    slots: { hull: L('obsidian'), dye: L('glaze.kuroraku', 'dread'), pattern: L('starchart', 'motif'), cut: L('crabclaw'), trail: L('starlight', 'lachryma'), ribbon: L('helix', 'on'), pennant: L('dread'), length: L('long'), wrap: L('pinstripe'), back: L('swords', 'glass') } },
+    slots: { hull: L('obsidian'), dye: L('glaze.kuroraku', 'dread'), pattern: L('constellations', 'motif'), cut: L('crabclaw'), trail: L('starlight', 'lachryma'), ribbon: L('helix', 'on'), length: L('long'), pennant: L('dread'), wrap: L('pinstripes') } },
 ];
 export const setOf = (id) => SKIFF_SETS.find((s) => s.id === id) || null;
 

@@ -6,7 +6,7 @@
 // accents their own: stone, wood, paper, moss, a lamp's warm yellow), `tintk` (how much of the instance colour a vertex takes: the body 1,
 // an accent 0, so a gold ghost or a tint never turns a stone grey) and `glowk` (a lamp's face, lit by the hour). The pieces are built by
 // set in decorpieces/ (kit.js is the builder). ONE material still serves all: decorMaterial() patches it in place, no second program.
-// A part that moves (a wheel's head, a water pipe's tip, an armillary's rings) or a fire that wavers carries `motion` (kit.js MOTION),
+// A part that moves (a wheel's head, a deer scarer's tip, an armillary's rings) or a fire that wavers carries `motion` (kit.js MOTION),
 // turned in the vertex shader about its pivot by the real clock and the instance's index (so two copies never move in step).
 //
 // Prior art: Animal Crossing: New Horizons' furniture (a body that takes a variant's colour, fixed trim), the Chao Garden's toy forms,
@@ -22,11 +22,11 @@ import { PLAIN } from './decorpieces/plain.js';
 import { WARM } from './decorpieces/warm.js';
 import { COOL } from './decorpieces/cool.js';
 import { SEASONS } from './decorpieces/seasons.js';
-import { TEAHOUSE } from './decorpieces/teahouse.js';
+import { TEAPATH } from './decorpieces/teapath.js';
 import { KILNYARD } from './decorpieces/kilnyard.js';
 import { STARGAZER } from './decorpieces/stargazer.js';
 
-const BUILD = { ...PLAIN, ...WARM, ...COOL, ...SEASONS, ...TEAHOUSE, ...KILNYARD, ...STARGAZER };
+const BUILD = { ...PLAIN, ...WARM, ...COOL, ...SEASONS, ...TEAPATH, ...KILNYARD, ...STARGAZER };
 export const DECOR_PIECE_IDS = Object.keys(BUILD);
 const cache = {};
 
