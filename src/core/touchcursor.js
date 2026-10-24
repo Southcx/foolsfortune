@@ -11,6 +11,8 @@
 //                lifted soon and still: a two-finger tap (the Spirit Garden's undo, Ctrl+Z).
 //   PANNING      where one finger moves the view instead (the garden's overhead view with WALK up: MOBILE.md 8.2), its drag is
 //                `input.touchDrag.pan`, and nothing is pressed.
+//   SIGNING      while the god hand's SIGN is held (MMB, a tile: MOBILE.md 8.4), a finger only moves the cursor: the sign is drawn
+//                with it, and no LMB or RMB is pressed under it.
 // Every press is made in `update()`, at the top of the frame (core/touchdriver.js calls it), never in a touch event, so the game reads
 // a press at the point it was made, for one frame at least.
 //
@@ -30,7 +32,7 @@ export class TouchCursor {
   constructor(game, input) {
     this.game = game; this.input = input;
     this.fingers = new Map(); // id -> { x0, y0, x, y, t0 }
-    this.mode = null; // null | 'pending' | 'left' | 'right' | 'pan' | 'two' | 'done'
+    this.mode = null; // null | 'pending' | 'left' | 'right' | 'follow' (SIGN held) | 'pan' | 'two' | 'done'
     this.first = null; this.two = null; this.held = null; this.tap = 0; this.keys = null;
   }
   has(id) { return this.fingers.has(id); }
@@ -38,7 +40,7 @@ export class TouchCursor {
   down(t) {
     const p = pt(t), f = { x0: p.x, y0: p.y, x: p.x, y: p.y, t0: performance.now() };
     if (this.fingers.size >= 2) return; // (a third finger: nothing)
-    this.fingers.set(t.identifier, f);
+    this.fingers.set(t.identifier, f); this.input.touchDrag.fingers = this.fingers.size;
     if (this.fingers.size === 1) {
       if (this.mode) return; // (a finger left from the last touch: wait for all of them to lift)
       this.first = t.identifier; this.mode = this.pans() ? 'pan' : 'pending';
@@ -61,14 +63,14 @@ export class TouchCursor {
   up(t) {
     const f = this.fingers.get(t.identifier); if (!f) return;
     f.x = t.clientX; f.y = t.clientY;
-    if (t.identifier === this.first && this.mode === 'pending') { this.ring(null); this.tap = 2; this.at = { x: f.x0, y: f.y0 }; this.mode = 'done'; } // (a tap: LMB for one frame, pressed in update)
-    else if (t.identifier === this.first && (this.mode === 'left' || this.mode === 'right' || this.mode === 'pan')) { this.letGo(); this.mode = 'done'; }
+    if (t.identifier === this.first && this.mode === 'pending') { this.ring(null); if (!this.input.isDown('Mouse1')) { this.tap = 2; this.at = { x: f.x0, y: f.y0 }; } this.mode = 'done'; } // (a tap: LMB for one frame, pressed in update; none under SIGN)
+    else if (t.identifier === this.first && (this.mode === 'left' || this.mode === 'right' || this.mode === 'pan' || this.mode === 'follow')) { this.letGo(); this.mode = 'done'; }
     else if (this.mode === 'two') {
       const T = this.two;
       if (T && T.moved < CURSOR.slop * 2 && performance.now() - T.t0 < CURSOR.twoTap) this.twoTap();
       this.mode = 'done';
     }
-    this.fingers.delete(t.identifier);
+    this.fingers.delete(t.identifier); this.input.touchDrag.fingers = this.fingers.size;
     if (!this.fingers.size) { if (this.mode === 'done' && !this.tap) this.mode = null; this.first = null; this.two = null; }
   }
 
@@ -98,12 +100,13 @@ export class TouchCursor {
       else { I.hold('Mouse0', false); this.tap = 0; if (!this.fingers.size) this.mode = null; }
       return;
     }
+    if (this.mode === 'pending' && f && I.isDown('Mouse1')) { this.ring(null); this.mode = 'follow'; } // (SIGN held, MMB: the finger draws the sign, pressing nothing)
     if (this.mode === 'pending' && f) {
       if (Math.hypot(f.x - f.x0, f.y - f.y0) > CURSOR.slop) { this.ring(null); this.point({ x: f.x0, y: f.y0 }); this.press('Mouse0', 'left'); return; } // (pressed where it came down; it follows from the next frame)
       if (performance.now() - f.t0 >= CURSOR.long) { this.point({ x: f.x0, y: f.y0 }); this.press('Mouse2', 'right'); return; }
       this.point(f); return; // (the hand hovers under the finger)
     }
-    if ((this.mode === 'left' || this.mode === 'right') && f) this.point(f);
+    if ((this.mode === 'left' || this.mode === 'right' || this.mode === 'follow') && f) this.point(f);
   }
   press(code, mode) { this.input.hold(code, true); this.held = code; this.mode = mode; }
   letGo() { if (this.held) { this.input.hold(this.held, false); this.held = null; } }
@@ -118,7 +121,7 @@ export class TouchCursor {
     this.letGo(); this.ring(null);
     if (this.tap === 1) this.input.hold('Mouse0', false);
     if (this.keys?.on) for (const c of this.keys) this.input.hold(c, false);
-    this.fingers.clear(); this.mode = null; this.first = null; this.two = null; this.tap = 0; this.keys = null;
+    this.fingers.clear(); this.input.touchDrag.fingers = 0; this.mode = null; this.first = null; this.two = null; this.tap = 0; this.keys = null;
   }
   state() { return { mode: this.mode, fingers: this.fingers.size, held: this.held }; }
 }

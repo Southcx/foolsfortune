@@ -5,7 +5,8 @@
 //               context (core/actions.js `press('touch', id)`), held while it is held; the art bar's two plain ones are the hand's undo
 //               (Ctrl+Z) and the turn (R). The top bar's own tiles report here too, and are left to `open`.
 //   THE TOP BAR opens a window as the keyboard would, by its key sent as a key event, so the window's own listener and the game's
-//               reads both hear it: codex B, box P, map M, chat Enter, overhead ` (the garden's god hand view). settings and pause are
+//               reads both hear it: codex B, box P, map M, chat Enter, overhead ` (the garden's god hand view), godhand `, skiff Y,
+//               survey N. settings and pause are
 //               the pause menu (`game.pause`: a phone has no pointer lock to lose).
 //   THE ART BAR (the Spirit Garden's, ui/touch/artbar.js) is the hand's: `touch.art { id }` sets its art (WALK, no art, included),
 //               `touch.mod { mod }` WATER's SPRING or DRAIN, `touch.size { size }` the stroke's size (world/garden/hand.js).
@@ -16,7 +17,7 @@
 // ---------------------------------------------------------------------------------------
 
 /** The top bar's windows, by the key the keyboard opens each with. */
-export const OPENS = { codex: 'KeyB', box: 'KeyP', map: 'KeyM', chat: 'Enter', overhead: 'Backquote' };
+export const OPENS = { codex: 'KeyB', box: 'KeyP', map: 'KeyM', chat: 'Enter', overhead: 'Backquote', godhand: 'Backquote', skiff: 'KeyY', survey: 'KeyN' }; // (godhand: the hand raised or let go, ~; skiff: summoned or recalled, Y; survey: the hand's, N)
 /** The art bar's plain tiles: the codes held for one frame (the hand's undo is Ctrl+Z, the turn R). */
 const ART = { 'art.undo': ['ControlLeft', 'KeyZ'], 'art.turn': ['KeyR'] };
 
@@ -29,6 +30,8 @@ export class TouchShell {
     E?.on('touch.art', (e) => hand()?.setArt(e.id));
     E?.on('touch.mod', (e) => { const H = hand(); if (H) H.mod = e.mod || null; });
     E?.on('touch.size', (e) => hand()?.setSize(e.size));
+    // (the bar starts on WALK: on touch the hand comes into the garden with no art up, so the bar and the hand agree)
+    E?.on('garden.enter', () => { if (game.input?.device === 'touch') hand()?.setArt('walk'); });
   }
   /** A tile pressed or let go (every touch tile reports here: ui/touch/presses.js). */
   tile(id, down) {
