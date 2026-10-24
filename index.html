@@ -34,8 +34,8 @@
         line.textContent = name + ' · ' + ((Date.now() - t0) / 1000).toFixed(1) + ' s';
       };
       if (last && last.stage && last.stage !== 'left') {
-        show('The last load of this page stopped while ' + (last.stage === 'playing' ? 'playing' : 'starting, at "' + last.stage + '"') + ', '
-          + (last.s || 0) + ' s in (' + (last.build || '?') + '). A phone does this when the page runs out of memory.');
+        show('Last time, the game stopped while ' + (last.stage === 'playing' ? 'playing' : 'starting, at "' + last.stage + '"') + ', '
+          + (last.s || 0) + ' s in (' + (last.build || '?') + '). A phone does this when it runs out of memory; closing other apps and tabs may help.');
       }
       W.stage = function (name) {
         W.stages.push([name, Date.now() - t0]); stageLine(name);
@@ -45,7 +45,7 @@
       W.stage('html');
       var said = {};
       var report = function (what) { if (W.done) return; var msg = String(what); if (said[msg]) return; said[msg] = 1;
-        show('Could not start (' + (W.stages.length ? W.stages[W.stages.length - 1][0] : 'html') + ', ' + ((Date.now() - t0) / 1000).toFixed(1) + ' s): ' + msg); };
+        show('The game could not start (' + (W.stages.length ? W.stages[W.stages.length - 1][0] : 'html') + ', ' + ((Date.now() - t0) / 1000).toFixed(1) + ' s): ' + msg); };
       window.addEventListener('error', function (e) {
         var el = e && e.target; if (el && el !== window && el.tagName) { report('could not load ' + (el.src || el.href || el.tagName)); return; } // (a script or a stylesheet that failed to load: seen only by a capturing listener)
         var er = e && e.error; report((er && er.message) || (e && e.message) || 'an error');
@@ -53,7 +53,7 @@
       }, true);
       W.fail = function (r) { report((r && r.message) || r || 'a promise failed'); if (r && r.stack) show(String(r.stack).split('\n').slice(0, 4).join('\n')); };
       window.addEventListener('unhandledrejection', function (e) { W.fail(e && e.reason); });
-      window.addEventListener('webglcontextlost', function () { show('The 3D view was lost (' + (W.stages.length ? W.stages[W.stages.length - 1][0] : '') + ', ' + ((Date.now() - t0) / 1000).toFixed(1) + ' s): the device took the graphics back.'); }, true);
+      window.addEventListener('webglcontextlost', function () { show('The 3D view stopped (' + (W.stages.length ? W.stages[W.stages.length - 1][0] : '') + ', ' + ((Date.now() - t0) / 1000).toFixed(1) + ' s): the device took the graphics back. Reload the page to try again.'); }, true);
       window.addEventListener('pagehide', function () { put({ stage: 'left' }); });
     })();
   </script>
