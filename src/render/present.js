@@ -65,7 +65,7 @@ export class Presentation {
     const r = this.renderer, V = T.visual;
     const set = RESOLUTIONS[V.resolution] ?? 480, lines = this.dynLines ? (set ? Math.min(set, this.dynLines) : this.dynLines) : set;
     const dpr = Math.min(devicePixelRatio, 2);
-    const ratio = lines ? Math.min(dpr, lines / innerHeight) : dpr;
+    const ratio = lines ? Math.min(dpr, lines / Math.min(innerWidth, innerHeight)) : dpr; // (the lines on the short side: a phone held upright draws as many pixels as held flat, and the overlay's type as sharp; a landscape window is as ever)
     r.setPixelRatio(ratio);
     r.setSize(innerWidth, innerHeight);
     r.domElement.style.imageRendering = V.upscale === 'pixel' ? 'pixelated' : 'auto';
