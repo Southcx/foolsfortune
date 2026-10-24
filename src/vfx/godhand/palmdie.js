@@ -2,7 +2,8 @@
 // THE PALM DIE'S LOOK (docs/plans/DICE.md 4 and 7; Dovina's rule `game.palmDie`, progress/dice.js; the owner, 2026-10-23: the stones are
 // your dice, and in the god hand's form they are one die in its palm): the stone sat in the god hand's palm hole, the solid its size
 // (a tetrahedron d4, a cube d6, an octahedron d8, a dodecahedron d12, an icosahedron d20), cut in the mineral of the stones you wear
-// (the vessel's STONES glaze: its colour the body, its second colour the fire glowing in it), turning slowly in its socket. Its body is
+// (the vessel's STONES glaze: its colour the body, its second colour the fire glowing in it, its mineral over it: vfx/stoneminerals.js,
+// drawn in the vessel's finish program), turning slowly in its socket. Its body is
 // Raku's (vfx/bazaarpieces.js `dieTpl`, the atlas's stone skin: GROWN 2026-10-24), so every face carries its numeral (the d6 its pips),
 // opposite faces summing to one more than the sides, and the palm's dice and the house's are one family.
 //   A CONDENSE   palm.condense { n }: the stone breathes out a glint, brighter the more it made (the overflow pressed into cubes)
@@ -28,6 +29,8 @@ import { GLAZES } from '../../courier/vessel/glazes.js';
 import { SUIT_LOOK } from '../readingview.js';
 import { dieTpl, dieFace, PIECE } from '../bazaarpieces.js';
 import { bazaarAtlas } from '../bazaarfaces.js';
+import { dressFinish } from '../finish.js';
+import { dressStone } from '../stoneminerals.js';
 
 /** Each die's ink, its edges, in its suit's colour (Dovina, 2026-10-23: the body the mineral, the ink the suit; the d20 the Majors' gold, the d12 unruled: none). Every die
  *  of your set wears it: the palm die and the fingers here, the stones' dice on the vessel (vfx/vesseldice.js). */
@@ -84,8 +87,9 @@ export class PalmDieLook {
   shape(sides) { const G = this.geo(sides); this.mesh.geometry = G.g; this.edges.geometry = G.e; this.sides = sides; }
   /** The mineral of the stones you wear. */
   dress() {
-    const G = GLAZES[this.game.vessel?.look?.stones] || GLAZES.maker;
-    this.mat.color.setHex(G?.color ?? 0xffffff); this.mat.emissive.setHex(G?.color2 ?? 0xffffff); this.mat.roughness = Math.max(0.06, G?.rough ?? 0.1);
+    const id = this.game.vessel?.look?.stones, G = GLAZES[id] || GLAZES.maker;
+    if (id !== this.worn) { this.worn = id; dressStone(this.finU ||= dressFinish(this.mat, 'gem'), this.mat, id, { radius: S.size[20], ink: true }); } // (the gem and its mineral, the numerals kept: vfx/stoneminerals.js)
+    this.mat.emissive.setHex(G?.color2 ?? 0xffffff);
     this.crack.color.setHex(this.cut < 1 ? (G?.color2 ?? 0xffffff) : DIE_INK[this.sides] ?? (G?.color2 ?? 0xffffff)); // (its ink at rest, the mineral's fire through a re-cut)
   }
 

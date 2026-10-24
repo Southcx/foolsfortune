@@ -10,7 +10,8 @@
 //           the body (the eye) rather than over it.
 //   GEM     the stones: cut facets (the surface's direction stepped into planes, so the light breaks on it), a deep body, sparkle where
 //           a facet catches the light, and FIRE (dispersion: a little spectrum at the glint); opal plays its colours, moonstone glows
-//           blue under the surface (adularescence), star stones are left for later.
+//           blue under the surface (adularescence), star stones are left for later; and the stone's MINERAL over it (vfx/stoneminerals.js:
+//           zoning, bands, rings, the jardin, schiller, play, sheen, flecks, the cat's eye), a few uniforms (`uFinM`, `uFinC`) in this program.
 //   HAIR    a sheen band that slides along the hair as it turns (Kajiya-Kay's anisotropic highlight, cheaply: the band follows the
 //           reflection's height), ombre from root to tip, and an optional oil-film sheen.
 //   SKIN    the Lachryma of their body: its glow colour, a soft light from inside at the edges (fake subsurface: wrap and rim), an
@@ -29,6 +30,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { EYE_GLSL } from './eyecup.js';
+import { MINERAL_HEAD, MINERAL_COLOR, MINERAL_SURFACE, MINERAL_LIGHT } from './stoneminerals.js';
 
 const HEAD = `
 varying vec3 vFinObj; varying vec3 vFinN;
@@ -48,7 +50,8 @@ vec3 finCells(vec3 p) { vec3 i = floor(p), f = fract(p); float d1 = 8.0, d2 = 8.
 // the urn crown's broken lip (vfx/urncrown.js urnGeometry: its jag, round the lathe's forty sides, straight between them as a fracture runs)
 float finJag(float a) { return 0.12 * abs(sin(a * 7.0)) + 0.08 * abs(sin(a * 17.0 + 1.3)) + 0.05 * sin(a * 31.0); }
 float finLip(float a) { float s = 6.2831853 / 40.0, i = floor(a / s); return mix(finJag(i * s), finJag((i + 1.0) * s), a / s - i); }
-${EYE_GLSL}`;
+${EYE_GLSL}
+${MINERAL_HEAD}`;
 
 // THE PATTERNS of the rare glazes (glazes.js `pattern`; uFinP.z which, uFinP.w the model's scale, uFinB the pattern's colour), in the
 // part's own space, so they sit on the body as a glaze sits on a pot. Each is how the real one forms in the kiln:
@@ -132,8 +135,11 @@ const COLOR = {
   glaze: `finL = finLuma(diffuseColor.rgb); finShade = clamp(1.0 + (finL - uFinP.y) * uFinP.x, 0.25, 1.6);
     if (uFinOn > 0.5) diffuseColor.rgb = uFinA * finShade;` + PATTERN, // (finL: the painting's own lightness; finShade: what of it the glaze keeps, for the patterns too)
   // A: the stone's colour; B: its second colour (opal's play, moonstone's glow); P.x: facets per unit; P.y: fire; P.z: play of colour; P.w: adularescence
-  gem: `if (uFinOn > 0.5) { vec3 fN = normalize(floor(vFinN * uFinP.x + 0.5)); float ndvF = abs(dot(fN, normalize(vViewPosition)));
-    diffuseColor.rgb = uFinA * (0.35 + 0.65 * ndvF); }`,
+  // uFinM / uFinC: the stone's mineral (vfx/stoneminerals.js); uFinPart: how much of the map's dark numerals to keep (a die's body)
+  gem: `float finInk = mix(1.0, clamp(finLuma(diffuseColor.rgb) * 1.1, 0.0, 1.0), uFinPart);
+    if (uFinOn > 0.5) { vec3 fN = normalize(floor(vFinN * uFinP.x + 0.5)); float ndvF = abs(dot(fN, normalize(vViewPosition)));
+    diffuseColor.rgb = uFinA * (0.35 + 0.65 * ndvF); }` + MINERAL_COLOR + `
+    if (uFinOn > 0.5) diffuseColor.rgb *= finInk;`,
   // A: root colour; B: tip colour; P.x: ombre (0 none, 1 full); P.y: the hair's height range (root at 1, tip at 0, object units)
   hair: `if (uFinOn > 0.5) { float tip = clamp(1.0 - (vFinObj.y - uFinP.w) / max(0.001, uFinP.y), 0.0, 1.0);
     diffuseColor.rgb = mix(uFinA, mix(uFinA, uFinB, smoothstep(0.45, 0.95, tip)), uFinP.x); }`, // (a dip: one colour most of the way, turning near the ends)
@@ -143,6 +149,7 @@ const COLOR = {
 // per kind: the surface itself (after the maps: metal and gloss), where a pattern is metal (silver spots, gold leaf) or a glassier film
 const SURFACE = {
   glaze: `metalnessFactor = mix(metalnessFactor, 0.9, finPatM); roughnessFactor = mix(roughnessFactor, 0.12, finPatR); roughnessFactor = mix(roughnessFactor, 0.8, finPatRo);`,
+  gem: MINERAL_SURFACE,
 };
 // per kind: before the emissive map, and so before anything else adds light (the kintsugi's seams and the cracks' Lachryma,
 // courier/vessel/kintsugi.js, are added right after the map and must never be multiplied by a part's colour)
@@ -163,7 +170,7 @@ const LIGHT = {
     totalEmissiveRadiance += uFinA * 0.18 + glint * (vec3(1.0) + finSpectrum(h + dot(V, fN)) * uFinP.y * 2.0) * 0.9;
     totalEmissiveRadiance += finSpectrum(h * 3.0 + dot(V, vFinN) * 1.5) * uFinP.z * 0.45;                    // opal: play of colour
     totalEmissiveRadiance += uFinB * uFinP.w * pow(1.0 - abs(dot(normalize(normal), V)), 2.0) * 0.9;          // moonstone: the blue glow
-  }`,
+  }` + MINERAL_LIGHT,
   hair: `if (uFinOn > 0.5) {
     vec3 V = normalize(vViewPosition); vec3 R = reflect(-V, normalize(normal));
     float band = exp(-pow((R.y - 0.35) * 5.0, 2.0)) * max(0.0, normal.y * 0.5 + 0.5); // (the sheen band, riding the reflection's height)
@@ -199,7 +206,7 @@ const FIN_DECL = `
 
 export function dressFinish(m, kind) {
   if (m.userData.finish) return m.userData.finish;
-  const u = { uFinOn: { value: 0 }, uFinKind: { value: FIN_KIND[kind] ?? 0 }, uFinA: { value: new THREE.Color(1, 1, 1) }, uFinB: { value: new THREE.Color(1, 1, 1) }, uFinP: { value: new THREE.Vector4(1, 0.3, 0, 0) }, uFinS: { value: new THREE.Vector4(0, 0, 0, 0) }, uFinPart: { value: 0 } };
+  const u = { uFinOn: { value: 0 }, uFinKind: { value: FIN_KIND[kind] ?? 0 }, uFinA: { value: new THREE.Color(1, 1, 1) }, uFinB: { value: new THREE.Color(1, 1, 1) }, uFinP: { value: new THREE.Vector4(1, 0.3, 0, 0) }, uFinS: { value: new THREE.Vector4(0, 0, 0, 0) }, uFinPart: { value: 0 }, uFinM: { value: new THREE.Vector4(0, 1, 0, 0) }, uFinC: { value: new THREE.Color(1, 1, 1) } };
   const prev = m.onBeforeCompile, prevKey = m.customProgramCacheKey?.bind(m);
   m.onBeforeCompile = (sh, r) => {
     prev?.call(m, sh, r);
