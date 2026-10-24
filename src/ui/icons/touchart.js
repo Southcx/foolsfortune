@@ -18,6 +18,9 @@
 //                    map      a map folded in three                               settings  a gear
 //                    chat     a speech balloon                                    pause  two bars
 //                    overhead an eye looking down on a planetoid (TOP VIEW, the garden only)
+//                    skiff    the board under its sail (summon or recall)          godhand  the hand over the ground (raise or let go)
+//                    survey   an eye over the ground's layers (the hand's survey)
+//   the god hand     alt      a loop and an arrow up: the art's other way          sign  a finger tip at the end of a drawn spiral
 // Where a glyph acts on matter the matter is '#', the part that does the thing '+', the ground and what waits '-'.
 //
 // Prior art: the god hand's arts' icons and the keywords' beside them (ui/icons/artart.js, keywordart.js: one picture a verb), the
@@ -429,6 +432,78 @@ export const TOUCH_ART = {
     if (R(x, y, 7, 11.5) <= 3.4 && y >= 8) return y === 8 || R(x, y, 7, 11.5) > 2.6 ? '+' : '-';
     return null;
   }),
+  skiff: [
+    '......+.......',
+    '......++......',
+    '......+++.....',
+    '......++++....',
+    '......+++++...',
+    '......++++++..',
+    '......+++++++.',
+    '......+.......',
+    '......+.......',
+    '.############.',
+    '..##########..',
+    '...--------...',
+    '..............',
+    '..............',
+  ],
+  godhand: [
+    '.....#..#.....',
+    '...#.#..#.#...',
+    '...#.#..#.#...',
+    '...########...',
+    '..#########...',
+    '..##########..',
+    '...########...',
+    '....######....',
+    '......+.......',
+    '......+.......',
+    '..............',
+    '..----------..',
+    '.------------.',
+    '..............',
+  ],
+  survey: grid(14, 14, (x, y) => {
+    const ex = (x + 0.5 - 7) / 5.6, ey = (y + 0.5 - 3.5) / 2.4;
+    if (Math.hypot(ex, ey) <= 1) return R(x, y, 7, 3.5) <= 1.2 ? 'x' : '#';
+    if (y === 8 && x >= 1 && x <= 12) return '+';
+    if (y === 10 && x >= 1 && x <= 12) return x % 3 === 0 ? null : '-';
+    if (y === 12 && x >= 1 && x <= 12) return '-';
+    return null;
+  }),
+  alt: [
+    '..............',
+    '..+++.........',
+    '.+...+........',
+    '+.....+.......',
+    '+.....+...#...',
+    '.+...+...###..',
+    '..+++...#####.',
+    '..........#...',
+    '..........#...',
+    '.--------.#...',
+    '..........#...',
+    '..............',
+    '..............',
+    '..............',
+  ],
+  sign: [
+    '..............',
+    '....++++......',
+    '...+....+.....',
+    '..+..++..+....',
+    '..+.+..+.+....',
+    '..+.+.+..+....',
+    '..+..+..+.....',
+    '...+...+..##..',
+    '....+++..####.',
+    '.........####.',
+    '........#####.',
+    '.......####...',
+    '.......###....',
+    '..............',
+  ],
   pause: [
     '..............',
     '..............',

@@ -21,13 +21,18 @@ import { placeOf } from './areas.js';
 /** The windows in order (the glyph is `touch.<id>`), whether each stands only in the garden, and what says it is open; the gap before
  *  PAUSE (CSS px). */
 export const TOP_BAR = {
-  ids: ['codex', 'box', 'map', 'settings', 'chat', 'overhead'],
-  garden: new Set(['overhead']),
+  ids: ['codex', 'box', 'map', 'settings', 'chat', 'overhead', 'skiff', 'godhand', 'survey'],
+  // where a tile stands (the rest always): TOP VIEW in the garden; the board on foot or riding; the hand outside the garden; its survey in the hand
+  when: {
+    overhead: (g) => !!g.realm?.active, skiff: (g) => !g.realm?.active && !g.god?.active && !g.emocean?.stage?.active, godhand: (g) => !g.realm?.active,
+    survey: (g) => !!g.god?.active,
+  },
   open: {
     codex: (g) => !!g.codex?.open, box: (g) => !!g.pneukaUI?.open, map: (g) => !!g.cartography?.open, chat: (g) => !!g.log?.typing,
-    overhead: (g) => !!(g.realm?.active && g.realm?.camera?.view === 'overhead'), pause: () => { const o = document.getElementById('overlay'); return !!o && o.style.display !== 'none'; },
+    overhead: (g) => !!(g.realm?.active && g.realm?.camera?.view === 'overhead'), godhand: (g) => !!g.god?.active,
+    skiff: (g) => { const T = g.player?.techs?.get?.('skiff') || g.techs?.get?.('skiff'); return !!T?.active; }, pause: () => { const o = document.getElementById('overlay'); return !!o && o.style.display !== 'none'; },
   },
-  gap: 6, pauseGap: 14,
+  gap: 6, pauseGap: 14, h: 44, // (h: one row's height, the layout's own topBar.h)
 };
 
 const CSS = `
@@ -63,20 +68,24 @@ export class TouchTopBar {
     try { this.onOpen?.(what); } catch (e) { console.warn('topBar.onOpen', e); }
   }
 
-  /** Lay the shelf and its tiles in the top bar's area, centred, PAUSE apart at the end. */
+  /** Lay the shelf and its tiles in the top bar's area: one row centred, PAUSE apart at the end; wrapped into rows from the top where the
+   *  area is too narrow for one (upright, beside the Sight). */
   relayout() {
-    const A = placeOf(this.game).areas.topBar, s = TILE.small, n = this.ids.length;
-    const W = n * s + (n - 1) * TOP_BAR.gap + TOP_BAR.pauseGap + s + 16, H = s + TILE.foot + 8;
-    const x0 = A.x + (A.w - W) / 2, y0 = A.y + (A.h - H) / 2;
+    const A = placeOf(this.game).areas.topBar, s = TILE.small, G = TOP_BAR.gap, items = [...this.ids, 'pause'], n = items.length;
+    const one = n * s + (n - 1) * G + (TOP_BAR.pauseGap - G) + 16;
+    const per = one <= A.w ? n : Math.max(1, Math.floor((A.w - 16 + G) / (s + G))), rows = Math.ceil(n / per), F = TILE.foot;
+    const W = per === n ? one : per * s + (per - 1) * G + 16, H = rows * (s + F) + (rows - 1) * G + 8;
+    const x0 = per === n ? A.x + (A.w - W) / 2 : A.x, y0 = rows === 1 ? A.y + (Math.min(A.h, TOP_BAR.h) - H) / 2 : A.y;
     Object.assign(this.shelf.style, { transform: `translate(${Math.round(x0)}px, ${Math.round(y0)}px)`, width: `${Math.round(W)}px`, height: `${Math.round(H)}px` });
-    this.shelf.style.setProperty('--h', `${H}px`);
-    let x = x0 + 8;
-    for (const id of this.ids) { this.tiles.get(`${id}`).place(x, y0 + 4, s); x += s + TOP_BAR.gap; }
-    this.tiles.get('pause').place(x - TOP_BAR.gap + TOP_BAR.pauseGap, y0 + 4, s);
+    this.shelf.style.setProperty('--h', `${Math.min(H, s + F + 8)}px`);
+    items.forEach((id, i) => {
+      const r = Math.floor(i / per), c = i % per, gapX = per === n && id === 'pause' ? TOP_BAR.pauseGap - G : 0;
+      this.tiles.get(id).place(x0 + 8 + c * (s + G) + gapX, y0 + 4 + r * (s + F + G), s);
+    });
   }
 
   update(now, on) {
-    const g = this.game, ids = TOP_BAR.ids.filter((id) => !TOP_BAR.garden.has(id) || g.realm?.active);
+    const g = this.game, ids = TOP_BAR.ids.filter((id) => { try { return !TOP_BAR.when[id] || TOP_BAR.when[id](g); } catch { return false; } });
     if (ids.join() !== this.ids.join()) { this.ids = ids; this.relayout(); for (const id of TOP_BAR.ids) if (!ids.includes(id)) this.tiles.get(id).set({ hidden: true }); this.shown = !on; }
     if (!!on !== this.shown) {
       this.shown = !!on; this.shelf.classList.toggle('off', !on);

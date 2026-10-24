@@ -38,7 +38,8 @@ export const HUD_LAYOUT = {
   // the cluster: the main tile (96) in the corner, the three others (72) on an arc round its centre at 180, 135 and 90 degrees
   // (left, up-left, up), `ring` from it; its rect is the arc's bounds: main / 2 + ring + side / 2 = 180 px square
   cluster: { main: 96, side: 72, gap: 12, get ring() { return this.main / 2 + this.gap + this.side / 2; }, get size() { return this.main / 2 + this.ring + this.side / 2; } },
-  artBar: { t: 60 },    // (its thickness, CSS px: a 44 px tile and its margin; along the bottom upright, down the right edge on its side)
+  artBar: { t: 60, side: 170 }, // (its thickness, CSS px: a 44 px tile and its margin, along the bottom upright; down the right edge on its side, three columns
+                        //  of tiles wide from under the Sight to the foot, the cluster beside it: ten tiles never fit between the Sight and the cluster)
   log: { lines: 2, line: 18, pad: 6, maxW: 420 }, // (the ticker: two lines of 18 px (16 px type), at most 420 px wide)
   poll: 0.25,           // (real seconds between reads of the device, the garden and the hand, and the turn card's check)
   // the instruments, in lines of the 480-line present (their own unit); `scale` su a line on touch (0.2: a 390 px phone's 0.78 CSS px a
@@ -116,15 +117,16 @@ export class HudLayout {
     A.move = rect(0, 0, V.w / 2, V.h); A.look = rect(V.w / 2, 0, V.w - V.w / 2, V.h);
     A.cluster = rect(0, 0, 0, 0); A.topBar = rect(0, 0, 0, 0); A.artBar = rect(0, 0, 0, 0); // (cleared while the Sight is placed: it keeps clear of none of them)
     const sight = this.box('sight');
-    A.topBar = rect(B.x, B.y, (sight ? sight.x - gap : B.x + B.w) - B.x, H.topBar.h);
+    // (upright the strip beside the Sight is narrow: the top bar may take the Sight's height there, its tiles wrapped into rows, ui/touch/topbar.js)
+    A.topBar = rect(B.x, B.y, (sight ? sight.x - gap : B.x + B.w) - B.x, this.portrait && sight ? Math.max(H.topBar.h, sight.h) : H.topBar.h);
     const C = H.cluster.size, t = H.artBar.t;
     if (this.portrait) {
       A.artBar = rect(B.x, B.y + B.h - t, B.w, t);
       A.cluster = rect(B.x + B.w - C, (this.art ? A.artBar.y - gap : B.y + B.h) - C, C, C);
     } else {
-      A.cluster = rect(B.x + B.w - C, B.y + B.h - C, C, C);
-      const y0 = sight ? sight.y + sight.h + gap : A.topBar.y + A.topBar.h + gap;
-      A.artBar = rect(B.x + B.w - t, y0, t, A.cluster.y - gap - y0);
+      const y0 = sight ? sight.y + sight.h + gap : A.topBar.y + A.topBar.h + gap, w = H.artBar.side;
+      A.artBar = this.art ? rect(B.x + B.w - w, y0, w, B.y + B.h - y0) : rect(0, 0, 0, 0);
+      A.cluster = rect((this.art ? A.artBar.x - gap : B.x + B.w) - C, B.y + B.h - C, C, C);
     }
     this.rects.clear(); // (the instruments placed again against the areas as they now stand)
     // the log's ticker: under the top bar, at the left, never wider than the room left of the Sight (upright) or the left half (on its side)
