@@ -690,6 +690,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   only while the carry holds it and nothing is drawn. *Not:* the crosshair (the psygun's), the god hand's throw. → detail
 - **effect** (`game.vfx.play(name)`, `src/vfx/library.js`) — a named VFX entry, played by name; its look is data. **Particles**: the emitter pools
   under the effects.
+- **a blow's feel / a blow's weight class** (plain names; `BlowFeel`, `game.blowFeel`, `blowWeight`, `BLOW_WEIGHT`, `src/vfx/blowfeel.js`; effects `blow.<weight>`, `blow.guardbreak`) — a melee blow landing drawn by its weight, looks only: the spark arc on along the blade, a ring in its damage type's colour, the ribbon's flare, a camera kick along the blade, the struck body's flinch / light, heavy, launcher or finisher, read from the move. *Not:* the hit (`vfx.hit`), the engine's stop (`moveset.js` impact), a damage type.
 - **the caster shaders** (`src/vfx/caster/`; the library's `caster` layer, `caster.*` effects; Dovina's plan's S1 to S10) — the looks the caster
   shells are built from, a module a look, each warmed at boot (S1 to S5: `vfx/caster/warmups1tos5.js`). *Not:* a shell, an effect.
 - **heat haze** (`HeatHaze`, `vfx/caster/heathaze.js`) — the world bent through hot air in a volume (a flame's cone, a volcano's column, the
