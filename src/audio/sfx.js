@@ -47,9 +47,16 @@ import { SpreadSounds } from './spreads.js';
 import { SeaSerpentSounds } from './seaserpent.js';
 import { PalmDieSounds } from './palmdie.js';
 import { AnglingSongSounds } from './anglingsong.js';
+import { TradeSounds } from './trade.js';
+import { WorldMomentSounds } from './worldmoments.js';
+import { DunemawSounds } from './dunemaw.js';
+import { RacewayBuildSounds } from './racewaybuild.js';
+import { GardenLifeSounds } from './gardenlife.js';
+import { GodPowerSounds } from './godpowers.js';
+import { SealSounds } from './seals.js';
 
 const BANK_OF = (Sfx.bankOf ||= {}); // (which bank each sound came from, kept on the class so a reloaded audio/sfx.js sees it)
-for (const Bank of [WeaponSounds, WorldSounds, UiSounds, MoveSounds, JellySounds, GodHandSounds, SondelassSounds, ToolSounds, AnglingSounds, TreasureSounds, BrushSounds, VeritomeSounds, ShopSounds, CrystalSounds, VesselSounds, DamageSounds, RailSounds, CatchSounds, SpiritSounds, PositionalSounds, SeaChartSounds, MyceliumSounds, ShellPartSounds, WispSounds, RacewaySounds, RacewayStuntSounds, RacewayModeSounds, CasinoSounds, PsygunCylinderSounds, PuzzleDuelSounds, OpenSeaSounds, GardenSounds, SpreadSounds, SeaSerpentSounds, PalmDieSounds, AnglingSongSounds]) {
+for (const Bank of [WeaponSounds, WorldSounds, UiSounds, MoveSounds, JellySounds, GodHandSounds, SondelassSounds, ToolSounds, AnglingSounds, TreasureSounds, BrushSounds, VeritomeSounds, ShopSounds, CrystalSounds, VesselSounds, DamageSounds, RailSounds, CatchSounds, SpiritSounds, PositionalSounds, SeaChartSounds, MyceliumSounds, ShellPartSounds, WispSounds, RacewaySounds, RacewayStuntSounds, RacewayModeSounds, CasinoSounds, PsygunCylinderSounds, PuzzleDuelSounds, OpenSeaSounds, GardenSounds, SpreadSounds, SeaSerpentSounds, PalmDieSounds, AnglingSongSounds, SealSounds, GodPowerSounds, GardenLifeSounds, RacewayBuildSounds, DunemawSounds, WorldMomentSounds, TradeSounds]) {
   for (const key of Object.getOwnPropertyNames(Bank.prototype)) {
     if (key === 'constructor') continue;
     const had = BANK_OF[key]; // (the same bank again is a reload, not a clash)
