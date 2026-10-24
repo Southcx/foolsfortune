@@ -304,7 +304,8 @@ import { SeaSerpentBody } from './vfx/opensea/seaserpentbody.js';
 import { SeaLooks } from './vfx/opensea/isletlooks.js';
 import { PuzzleLooks } from './vfx/opensea/puzzlelooks.js';
 import { SquallLine } from './vfx/opensea/squallline.js';
-import { egregoreBody } from './vfx/opensea/egregorebodies.js';
+import { egregoreBody, prewarmEgregores } from './vfx/opensea/egregorebodies.js';
+import { EgregoreHerd } from './vfx/opensea/egregoreherd.js';
 import { SeaFightLook } from './vfx/opensea/seafightlook.js';
 import { SeaHull } from './ui/seahull.js';
 import { Race } from './world/raceway/race.js';
@@ -743,7 +744,8 @@ async function main() {
     game.solar = new SolarTrial(game); // (the Solar Skiffing trial, begun at the Gnomon's foot: world/dunes/solar.js)
     game.geysers = new Geysers(game); // (slip geysers: launch pads on a cycle, world/dunes/geysers.js)
     game.makeSeaSerpent = (o) => new SeaSerpentBody(game, o); // (the sea serpent's body for its mind to drive: vfx/opensea/seaserpentbody.js, drive/update/hit/down)
-    game.makeEgregore = (species, o) => egregoreBody(species, o); // (a safari Egregore's placeholder body, for whatever lays a herd or a sighting on the water: vfx/opensea/egregorebodies.js; nothing places them yet)
+    game.makeEgregore = (species, o) => egregoreBody(species, o); // (a safari Egregore's body, alive, for whatever lays a sighting on the water: update(dt, { speed, bend }), habit(name), dive(on); vfx/opensea/egregorebodies.js; nothing places them yet)
+    game.makeEgregoreHerd = (o) => new EgregoreHerd(o); // (a herd of them in its square, scattering and regrouping round the ship: update(dt, { ship }); vfx/opensea/egregoreherd.js)
     game.seaLooks = new SeaLooks(game); // (the open sea's islets dressed over Dovina's placeholders: vfx/opensea/isletlooks.js)
     game.puzzleLooks = new PuzzleLooks(game); game.squallLine = new SquallLine(game); // (the islets' puzzles dressed, the dig's moment; a front's squall line: vfx/opensea/puzzlelooks.js, squallline.js)
     game.opensea = new OpenSea(game); // (the Emocean off the lanes, built the first time it is entered: world/opensea/, docs/plans/OPEN-SEA.md)
@@ -1164,6 +1166,7 @@ async function main() {
   const parkIslets = game.seaLooks?.prewarm?.() ?? (() => {}); // (the islets' and the shallows' programs, 50 m down: vfx/opensea/isletlooks.js)
   const parkSquall = game.squallLine?.prewarm?.() ?? (() => {}); // (the squall line's program, and the rain's: vfx/opensea/squallline.js)
   const parkDress = [game.dunesDress.prewarm(), game.racewayDress.prewarm()]; // (the dust devils' and the Dunes' mirage's two programs, and the dressing's materials: vfx/dunes/, vfx/raceway/)
+  const parkEgregores = prewarmEgregores(scene); // (the safari Egregores' one program, every species: vfx/opensea/egregorekit.js)
   const parkSandfall = prewarmSandfall(scene); // (the Raceway's sandfall, one copy 50 m down: its one program, vfx/racewaysandfall.js)
   const parkMatterLook = prewarmMatterLook(scene); // (the god hand's matter, ball and creations: one program, vfx/godhand/matterlook.js)
   const parkBracelet = game.bracelets.prewarm(); // (the bracelet's glazes, charms, flash and aura, 50 m down: vfx/braceletwear.js)
@@ -1195,7 +1198,7 @@ async function main() {
   if (!window.__noPrime) primeDraw(renderer, scene, camera, game.post.target); // (a test harness may skip it: it is a long frame on a software GL)
   parkWell?.(); // (after the prime: drawn once, so the driver has finished with its programs too)
   if (wipe) wipe.visible = false;
-  parkWeather?.(); parkDrain(); parkDuel(); parkSpawnLook(); parkCracks(); parkFigmentTelegraphs(); parkCasterS1toS5(); parkCaster.forEach((f) => f()); parkShellLooks(); parkBracelet(); parkMatterLook(); parkSandfall(); parkDress.forEach((f) => f()); parkIslets(); parkSquall(); seaFightAt.forEach((o) => (o.visible = false));
+  parkWeather?.(); parkDrain(); parkDuel(); parkSpawnLook(); parkCracks(); parkFigmentTelegraphs(); parkCasterS1toS5(); parkCaster.forEach((f) => f()); parkShellLooks(); parkBracelet(); parkMatterLook(); parkSandfall(); parkDress.forEach((f) => f()); parkIslets(); parkSquall(); parkEgregores(); seaFightAt.forEach((o) => (o.visible = false));
   for (const o of brushLooks) o.visible = false;
   seaLooks.forEach((o, i) => { o.visible = false; o.position.copy(seaAt[i]); });
   for (const o of gardenLooks) o.visible = false;
