@@ -17,7 +17,7 @@
 // Tales' instant cursor sounds; the trope compendium's UI tab (nine-slice 8-px corners, cursor the same frame, confirm <= 50 ms,
 // open/close <= 150 ms, a Lachryma sheen for selection).
 //
-//   installTheme(game)            once, before the menus are built: fonts, the kit's CSS, the glove, the sounds
+//   installTheme(save)            once, before the menus are built: fonts, the kit's CSS, the glove, the sounds
 //   theme.set('midnight')         the window colour (kept in the browser);  THEMES lists them
 //   theme.watch(root)             a menu's root: its 'open' class unfolds its window and plays the open / back sounds
 // ---------------------------------------------------------------------------------------
@@ -118,10 +118,24 @@ html.jgrab, html.jgrab * { cursor: var(--jcur-grab) !important; }
 class Theme {
   constructor() {
     this.id = 'kiln';
-    try { const s = JSON.parse(localStorage.getItem(KEY) || '{}'); if (THEMES[s.id]) this.id = s.id; } catch { /* the default */ }
     this.target = null; this.mouse = { x: -1, y: -1 }; this.kb = false; this.raf = 0;
   }
-  install() {
+  /** The window colour kept as a section of the save (settings scope); a colour kept under the old key is taken in once. */
+  keep(save) {
+    if (!save?.section || this.save) return;
+    const take = (s) => { if (s && THEMES[s.id]) this.id = s.id; };
+    this.save = save;
+    save.section('windowColour', {
+      scope: 'settings', version: 1, dump: () => ({ id: this.id }), load: take,
+      reset: () => {
+        let old = null;
+        try { old = JSON.parse(save.store?.getItem(KEY) || 'null'); save.store?.removeItem(KEY); } catch { /* none kept */ }
+        if (old) { take(old); save.dirty('windowColour'); }
+      },
+    });
+  }
+  install(save) {
+    this.keep(save);
     const st = document.createElement('style'); st.id = 'jtheme'; st.textContent = CSS(); document.head.appendChild(st);
     this.glove = document.createElement('div'); this.glove.id = 'jglove'; this.glove.style.backgroundImage = `url(${GLOVES.point})`;
     // the glove turned to point down (the HUD's palette), made once the picture is decoded
@@ -147,7 +161,7 @@ class Theme {
   set(id) {
     if (!THEMES[id]) return;
     this.id = id; this.apply();
-    try { localStorage.setItem(KEY, JSON.stringify({ id })); } catch { /* this session only */ }
+    this.save?.dirty('windowColour');
   }
   next() { const ids = Object.keys(THEMES); this.set(ids[(ids.indexOf(this.id) + 1) % ids.length]); return this.id; }
   get name() { return THEMES[this.id].name; }
@@ -236,7 +250,7 @@ Theme.prototype.pixelGloves = function (px) {
 };
 
 export const theme = new Theme();
-export function installTheme() { theme.install(); return theme; }
+export function installTheme(save) { theme.install(save); return theme; }
 /** Resolves when the faces are ready to draw with (the signs in the world are painted onto canvases once, at build). */
 export function fontsReady() {
   if (!document.fonts?.load) return Promise.resolve();

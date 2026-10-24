@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE CROSSING'S LOOK, R1 (the owner, 2026-10-07: "a love letter to the genre... placeholders, but feeling polished to a mirror shine";
 // docs/plans/RAIL.md, sections 3 and 8). What the rail shooter's camera frames and how the sea reads at speed. Petra's rail drives it
-// (the views, the swing, the ship); the sloop's own looks are vfx/sloop.js (polarity, hurt, hoist).
+// (the views, the swing, the ship); the sloop's own looks are vfx/sloop.js (feeling, hurt, hoist).
 //
 //   THE VIEWS   five framings in the ship's own frame (+Z the bow, Y up, metres): CHASE (Star Fox: behind and above, the ship low in
 //               the frame, the sea ahead), ABOVE (Ikaruga: straight down the mast with a lean forward), SIDE (Einhander: the sea as a

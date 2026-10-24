@@ -15,7 +15,7 @@
 // and red plates, grappler arms that hide in the hull, big rear pods), a submarine's photonics mast, Jurai's light for the sails.
 //
 //   const s = new Sloop({ env })   scene.add(s.group)   s.set({ sail 0..1, heel rad, side -1|1, glow 0..1, t, form, roll })   s.fold(u)
-//   s.polarity(hex)   s.hurt(0..1)   s.hoist('bronze' | 'silver' | 'gold' | 'platinum' | 'none')   s.scars({ open, gilt })   s.dispose()
+//   s.feeling(hex)   s.hurt(0..1)   s.hoist('bronze' | 'silver' | 'gold' | 'platinum' | 'none')   s.scars({ open, gilt })   s.dispose()
 //   s.helmCradles (one)   s.helmCradle   s.helmCradleSpots() -> [world point]   s.helmWake(on, i = 0)   (the rest: shipkit/shiplook.js)
 //   (its own frame: +Z the bow, Y up, origin at the waterline amidships; 7 m long)
 // Kept from the jar-hulled sloop, for what else is made with them: JAR (the Pneuka Jar's profile), jarHull, jarDeck, jarTop, seatHelms
@@ -172,5 +172,4 @@ SLOOP_SPEC.rig = {
 export class Sloop extends ShipLook {
   constructor({ env = null } = {}) { super(SLOOP_SPEC, { env }); this.length = SLOOP.length; this.beam = SLOOP.beam; }
   /** The ship's feeling, by the rail's name for it (world/emocean/stage.js, the mooring, the workbench). */
-  polarity(hex) { return this.feeling(hex); }
 }

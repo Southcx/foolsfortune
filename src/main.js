@@ -393,7 +393,7 @@ async function main() {
   const cloud = new CloudSave(save, { build: BUILD, mode: save.mode }); await cloud.boot(); // (the same save on every device: the published page's private store, 1.5 real s at most before anything loads: core/cloudsave.js)
   loadTuning(save); // (the tuning kept under its own key, through the save: core/config.js)
   const machine = detectMachine(), graphicsTier = applyBootTier(machine); // (the quality tier, read from the machine before anything is built: render/graphics.js)
-  installTheme(); // (the windows' look, the faces, the glove: ui/theme.js)
+  installTheme(save); // (the windows' look, the faces, the glove: ui/theme.js)
   installToon(T.visual.toon ?? 1); // (the soft cel ramp on every lit material, before anything compiles: render/toon.js)
   await fontsReady();
   const renderer = new THREE.WebGLRenderer({ antialias: T.visual.antialias !== false, powerPreference: 'high-performance' });
@@ -609,13 +609,13 @@ async function main() {
   const system = new System(game);
   game.system = system;
   // (every effect, by name: vfx/vfx.js, the looks in vfx/library.js; before the tools, which ask it for their swings)
-  applyVfxOverrides(); // (effects edited in the workbench, kept in this browser)
+  applyVfxOverrides(save); // (effects edited in the workbench, kept in this browser)
   game.vfx = new Vfx(game);
   game.skiffSlipArc = new SkiffSlipArc(game); // (the slip arc under the board while you ride: vfx/skiffsliparc.js)
   game.worldLooks = new WorldLooks(game); // (the World shells' draw and alterations: vfx/worldshells.js; the draw itself tools/psygun/worlddraw.js)
   game.racewayLooks = new RacewayLooks(game); // (the Raceway's sun plates, countdown lamps, gates' marks, carve sparks and ghost: dressed by the Raceway, vfx/racewaylooks.js)
   game.racewayCavern = new RacewayCavern(game); game.racewayFog = new RacewayFog(game); game.racewayPark = new RacewayPark(game); game.racewayProps = new RacewayProps(game); game.racewaySiphons = new RacewaySiphons(game); // (the cavern's stone, crystals, veins and dark, and Dread's fog on the course: vfx/racewaycavern.js, vfx/racewayfog.js)
-  applyCineOverrides(); game.cine = new Cine(game); // (cinematic events as data: cine/sequences.js)
+  applyCineOverrides(save); game.cine = new Cine(game); // (cinematic events as data: cine/sequences.js)
   game.auras = new Auras(game); // (a status, shown round whatever has it: vfx/auras.js)
   game.temper = new Temper(game); // (a creature's mental state and agitation, shown with its body: vfx/temper.js)
   const weapon = new Weapon(game);
