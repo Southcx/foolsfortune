@@ -1,6 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE HERDS ON THE WATER (docs/plans/OPEN-SEA.md 13, the world side): the game day's herds (progress/opensea/migrations.js `herdsOf`) laid
-// in their squares as the Egregores' placeholder bodies (Calissa's `game.makeEgregore`), a few bodies a herd, bobbing round the square's
+// in their squares as Calissa's herds (`game.makeEgregoreHerd`: milling, scattering or displaying by disposition; else her placeholder
+// bodies one by one, `game.makeEgregore`, bobbing), round the square's
 // middle. A dock posts the board (`sea.herds`, once a game day): each herd by its bearing from the dock, in squares. A plate
 // taken while you are in a herd's square (the Veritome's shutter ashore, or E at the helm with the Veritome worn) and one of its bodies is in the frame (near enough and inside the view's cone) is that herd met:
 // `sea.herd { id, square, cubes }`, its fee owed and paid with the reports at the next dock (`sea.dock`), one payment a herd a game day.
@@ -40,11 +41,14 @@ export class SeaHerds {
   /** The game day's herds laid (once a game day): yesterday's bodies cleared, a herd's met state carried in the save. */
   lay(day) {
     this.day = day;
-    for (const H of this.list) for (const b of H.bodies) { this.group.remove(b.group); b.group.traverse?.((o) => o.geometry?.dispose?.()); }
+    for (const H of this.list) { if (H.herd) { this.group.remove(H.herd.group); H.herd.dispose?.(); continue; } for (const b of H.bodies) { this.group.remove(b.group); b.group.traverse?.((o) => o.geometry?.dispose?.()); } }
     if (this.state.day !== day) this.state = { ...this.state, day, posted: false, met: [] }; // (what was owed is still owed: it pays at the next dock)
     const R = this.room, r = seeded((R.seed * 31 + day * 977) >>> 0);
     this.list = herdsOf(R.grid, day, R.seed).map((h) => {
       const sq = R.grid.squares.find((s) => s.id === h.square), c = squareCentre(sq.col, sq.row), bodies = [];
+      // (Calissa's herd, where it is built: its bodies mill, scatter or display by the species' disposition, vfx/opensea/egregoreherd.js)
+      const herd = this.game.makeEgregoreHerd?.({ species: h.id, n: h.n, at: c.clone().setY(SEA.y), seed: (R.seed * 31 + day * 977 + sq.col * 13 + sq.row) >>> 0 });
+      if (herd) { this.group.add(herd.group); return { ...h, herd, bodies: herd.members.map((m) => ({ group: m.body.group })) }; }
       for (let i = 0; i < h.n; i++) {
         const B = this.game.makeEgregore?.(h.id); if (!B) break;
         const a = r() * Math.PI * 2, d = HERD_LOOK.spread * Math.sqrt(r());
@@ -85,7 +89,7 @@ export class SeaHerds {
     cam.getWorldDirection(_f);
     for (const H of this.list) {
       if (H.square !== at.id || S.met.includes(H.square + ':' + H.id)) continue;
-      const seen = H.bodies.some((b) => { _v.copy(b.group.position).sub(cam.position); const d = _v.length(); return d < HERD_LOOK.reach && _v.dot(_f) / Math.max(d, 1e-3) > HERD_LOOK.cone; });
+      const seen = H.bodies.some((b) => { if (b.group.visible === false) return false; b.group.getWorldPosition(_v).sub(cam.position); const d = _v.length(); return d < HERD_LOOK.reach && _v.dot(_f) / Math.max(d, 1e-3) > HERD_LOOK.cone; });
       if (!seen) continue;
       const cubes = herdFee(H.cls);
       S.met.push(H.square + ':' + H.id); S.owed += cubes; S.owedN++;
@@ -97,7 +101,12 @@ export class SeaHerds {
     const day = today(); if (day !== this.day) this.lay(day);
     const t = performance.now() / 1000, [amp, per] = HERD_LOOK.bob;
     this.group.visible = this.room.active;
-    if (this.group.visible) for (const H of this.list) for (const b of H.bodies) b.group.position.y = SEA.y + Math.sin(t * Math.PI * 2 / per + b.phase) * amp;
+    if (!this.group.visible) return;
+    const ship = this.room.sailing ? this.room.helm?.pos : null;
+    for (const H of this.list) {
+      if (H.herd) { H.herd.update(dt, { ship }); continue; }
+      for (const b of H.bodies) b.group.position.y = SEA.y + Math.sin(t * Math.PI * 2 / per + b.phase) * amp;
+    }
   }
 }
 

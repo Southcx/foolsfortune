@@ -102,8 +102,8 @@ export const STONES = {
   malachite: { // copper's stone, the conductor: the pool starts filling again half as long after a spend; a smaller vessel
     pool: { regenDelayMult: 0.5, maxBonus: -15 }, reach: 1, heady: 1, tint: 1, overflow: { lockheart: 0.8 },
   },
-  lapis: { // ultramarine, the painter's stone: the Soul Brush's flick and slam and Spellscription cost less; the vessel fills slower
-    pool: { costMult: { brushflick: 0.7, brushslam: 0.7, spellscription: 0.8 }, regenMult: 0.85 }, reach: 1, heady: 1, tint: 1, overflow: { lockheart: 0.8 },
+  lapis: { // ultramarine, the painter's stone: the Soul Brush's verbs cost less (its flick and slam most); the vessel fills slower
+    pool: { costMult: { brush: 0.8, brushpaint: 0.8, brushflick: 0.7, brushslam: 0.7 }, regenMult: 0.85 }, reach: 1, heady: 1, tint: 1, overflow: { lockheart: 0.8 },
   },
   garnet: { // the traveller's stone: the dash costs less, and it runs hot (heady, and a release burns)
     pool: { costMult: { dash: 0.6 } }, reach: 1, heady: 1.25, tint: 1, aperture: 0.75, overflow: { lockheart: 0.8 },
@@ -122,6 +122,7 @@ export const stoneOf = (id) => STONES[id] || STONES.maker;
 export function modifier(id, { night = false } = {}) {
   const s = stoneOf(id), m = { ...s.pool }, phase = night ? s.night : s.day;
   if (phase?.regenMult) m.regenMult = (m.regenMult ?? 1) * phase.regenMult;
+  m.reachMult = (s.reach ?? 1) * (phase?.reach ?? 1); // (the bauble magnet's radius, by day or night: courier/lachryma.js, case 295)
   return m;
 }
 
