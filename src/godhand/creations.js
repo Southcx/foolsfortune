@@ -8,7 +8,7 @@
 //
 // Prior art: Lysenko's chunked surface nets (remesh the touched chunk only); Minecraft's and Teardown's chunk-dirty queues; From Dust.
 //
-//   game.creations = new Creations(game)   .raise(shape, a, b, opts) -> { volume }   .update(dt)   .clear()
+//   game.creations = new Creations(game)   .raise(shape, a, b, opts) -> { volume }   .erode(at, r) -> { volume }   .update(dt)   .clear()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../core/physics.js';
@@ -46,6 +46,17 @@ export class Creations {
     const r = this.grid.stamp(sdf, box);
     for (const k of this.grid.takeDirty()) { this.queue.add(k); const c = this.grid.chunks.get(k); if (c) c.eaten = 0; } // (fresh clay: no crazing)
     return r;
+  }
+
+  /** Erode the creations within r of a point (Weather Away, CASTER-SHELLS.md 7.5): a ball of matter worn out of them, poured back into
+   *  the island's matter as its loose layer where it fell (nothing made or lost), the chunks remeshed. Returns the volume worn (m³). */
+  erode(at, r) {
+    const sdf = (x, y, z) => Math.hypot(x - at.x, y - at.y, z - at.z) - r;
+    const out = this.grid.carve(sdf, [at.x - r, at.y - r, at.z - r, at.x + r, at.y + r, at.z + r]);
+    for (const k of this.grid.takeDirty()) this.queue.add(k);
+    const F = this.game.matter?.field;
+    if (out.volume > 0 && F?.contains?.(at.x, at.z)) F.pour(at.x, at.z, r, out.volume, { kind: 'loose' });
+    return out;
   }
 
   update(dt) {

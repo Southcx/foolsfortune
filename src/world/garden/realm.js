@@ -52,6 +52,7 @@ import { stream } from '../../core/rng.js';
 import { sfx } from '../../audio/sfx.js';
 import { T } from '../../core/config.js';
 import { OFFERED, gloss } from '../../npc/realmnames.js';
+import { TAP_GO, goWish } from './tapgo.js';
 const _pm = new THREE.Matrix4(), _p = new THREE.Vector3(); // (the keepsake pots read for their song)
 const simRand = stream('world/garden/realm'); // (the spirits' wandering: core/rng.js, the same twice)
 
@@ -253,10 +254,15 @@ export class Realm {
   }
 
   // ------------------------------------------------------------------ every step
+  /** Send the Pneuka Jar to a point on its planetoid (tap to go: the touch driver's), or null to let it go. */
+  goTo(point) { const J = this.jarBody; this.goTarget = point && J?.planet ? { planet: J.planet, point: point.clone(), t: 0 } : null; }
   /** Is the Jar's (or a spirit's) wish this step: WASD along the ground, as the camera faces. */
   wish(out) {
     const I = this.game.input, f = (I.isDown('KeyW') ? 1 : 0) - (I.isDown('KeyS') ? 1 : 0), r = (I.isDown('KeyD') ? 1 : 0) - (I.isDown('KeyA') ? 1 : 0);
     if (this.camera.view === 'overhead' || this.press?.viewing) return out.set(0, 0, 0); // (overhead, WASD pans the view; at the press, WASD leaves it: the Jar stands)
+    const T = this.goTarget, J = this.jarBody; // (tap to go, the touch driver's: world/garden/tapgo.js, MOBILE.md 8.2)
+    if (T && (f || r || J.held || J.planet !== T.planet || (T.t += 1 / 60) > TAP_GO.giveUp)) this.goTarget = null;
+    else if (T) { goWish(J, T, out); if (out.lengthSq() === 0) this.goTarget = null; return out; }
     const right = _w.crossVectors(this.camera.fwd, this.camera.up).normalize();
     out.copy(this.camera.fwd).multiplyScalar(f).addScaledVector(right, r);
     if (out.lengthSq() > 1) out.normalize();
