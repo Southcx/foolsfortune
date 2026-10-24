@@ -20,6 +20,9 @@ const under = (L, prefix) => (L.under ? L.under(prefix).filter(([, v]) => v > 0)
 export const KNACKS = {
   crib: { name: 'the Crib Sheet', does: 'Shows the English beside each neuralese word you have glossed',
     opens: (L) => G(L, 'reprogram.run') >= CRIB.macros || G(L, 'reprogram.held5') >= CRIB.heldFive || G(L, 'ostracon.found') >= CRIB.ostraca },
+  steadyKeel: { name: 'Steady Keel', does: 'Leans the Solar Skiff back toward the line while you are not steering, in a race', // (MOBILE.md 8; the owner, 2026-10-24: yes, switchable)
+    opens: (L) => G(L, 'race.raceway.finish') >= 1 || ['bronze', 'silver', 'gold'].some((m) => G(L, `race.raceway.${m}`) >= 1),
+    switch: "world/raceway/keel.js (keelSteer, asked by courier/skiff/skiff.js with A / D let go)", number: 'at most 0.4 of a full steer, aimed 14 m down the line; nothing once on it' },
   steadyHand: { name: 'Steady Hand', does: "Draws the psygun's aim gently onto a target near the reticle",
     opens: (L) => G(L, 'drill.hits') >= 2000 || ['flick', 'track', 'spray', 'recover'].some((d) => G(L, `drill.${d}.gold`) >= 1),
     switch: 'tools/psygun/weapon.js (the aim)', number: 'a pull of the aim toward a target within 3 degrees of the reticle, at most 30% a frame' },
