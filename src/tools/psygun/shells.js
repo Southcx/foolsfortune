@@ -165,7 +165,8 @@ export class Shells {
     const ray = weapon.shotRay(camera, player, character, fwd);
     const muzzle = character.gunPoint('muzzle', new THREE.Vector3());
     // the variant's way with it (variantplay.js): the Bombardier's area and lob, the Carbine's darts, the Pepperbox's three or its slug
-    if (t.runner) for (const s of V.rows(buffRow(t.row), i, ray, camera)) this.runner.fire(s.row, { ...ctx, ray: s.ray, muzzle, fwd });
+    const pull = {}; // (one pull of the trigger, shared by every ray it flies as: a World shell draws on the place once a pull, shellworld.js)
+    if (t.runner) for (const s of V.rows(buffRow(t.row), i, ray, camera)) this.runner.fire(s.row, { ...ctx, ray: s.ray, muzzle, fwd, pull });
     else { for (const s of V.legacy(i, ray, camera)) { this.k = s.k; this[t.id]({ ...ctx, ray: s.ray, muzzle, fwd }); } this.k = null; }
     V.onShell(i, ray); // (the Pentagun's points toward its pentacle)
     if (crack) g.vesselDamage?.toll({ by: 'courier', family: t.row?.family }); // (the Caster's toll: a tier IV is paid in the clay)
