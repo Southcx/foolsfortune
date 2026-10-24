@@ -28,7 +28,7 @@ await page.goto(server.resolvedUrls.local[0], { waitUntil: 'commit' });
 for (let i = 0; i < 180; i++) { await new Promise((r) => setTimeout(r, 1000)); if (await page.evaluate('!!window.__ready').catch(() => false)) break; }
 const rows = await page.evaluate(async (want) => {
   document.getElementById('overlay')?.style.setProperty('display', 'none');
-  const g = __game.game, wb = g.workbench;
+  const g = __game.game; await g.workbench.ready?.(); const wb = g.workbench; // (the workbench is fetched on its first use: debug/workbenchloader.js)
   await g.clipPack?.social; wb.toggle(true); wb.show('models');
   await wb.loadModel('glb:../assets/courier.glb'); wb.figure.visible = false; wb.root.style.display = 'none';
   const C = g.character.clips;

@@ -187,7 +187,8 @@ import { Vfx } from './vfx/vfx.js';
 import { Auras } from './vfx/auras.js';
 import { Temper } from './vfx/temper.js';
 import { Cine, applyCineOverrides } from './cine/sequence.js';
-import { Workbench, applyVfxOverrides } from './workbench/workbench.js';
+import { applyVfxOverrides } from './workbench/overrides.js'; // (the edits kept from the workbench, put in at boot; the workbench itself is fetched on its first open: debug/workbenchloader.js)
+import { installWorkbenchLoader } from './debug/workbenchloader.js';
 import { WireCompass } from './vfx/wirecompass.js';
 import { VaneHud } from './vfx/vanehud.js';
 import { CrucibelleHud } from './vfx/crucibellehud.js';
@@ -943,7 +944,7 @@ async function main() {
     game.vfx.play(name, { pos: P.pos.clone().addScaledVector(f, 2).setY(P.pos.y + 1), dir: f.clone().negate(), tint: tint ? parseInt(tint.replace('#', ''), 16) : 0xffd76a, floor: P.pos.y });
     game.events.emit('vfx.test', { fx: name, found: game.vfx.has(name) });
   } });
-  game.workbench = new Workbench(game);
+  installWorkbenchLoader(game); // (game.workbench: a stand-in until the first open fetches the studio)
   game.chat.add('overture', { help: "the overture's trailer, here and now (the music from the sound test when it has it)", run: () => {
     const tr = SOUNDTRACKS.find((x) => x.score?.title === OVERTURE_TITLE);
     if (tr && game.music) { if (!game.music.on) game.music.setOn(true); game.music.pick = tr.score; }

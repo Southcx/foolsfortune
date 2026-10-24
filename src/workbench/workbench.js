@@ -26,6 +26,7 @@
 // extras menus (Metal Gear Solid 2's, Kingdom Hearts' theatre), and live-tuning consoles (a value changed while it plays).
 //
 //   game.workbench = new Workbench(game)   .toggle()   .open   .frame(dt)  (main.js draws it instead of the world while open)
+//   (built on the first open by debug/workbenchloader.js, which fetches this module then; it is not in the startup bundle)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
@@ -41,15 +42,10 @@ import { buildCurio } from '../world/treasure/curiomodel.js';
 import { CURIOS } from '../world/treasure/treasure.js';
 import { ANIM_OVERLAYS } from './animoverlay.js';
 import { base64Bytes } from '../core/base64.js';
+import { STORE, pristineLibrary } from './overrides.js'; // (the edits kept in this browser, put in at boot: applyVfxOverrides is there, small and static)
 
 const GLBS = import.meta.glob(['../assets/*.glb', '../assets/vfx/*.glb'], { query: '?b64', import: 'default' });
-const STORE = 'ff.vfx.overrides';
-const PRISTINE = JSON.parse(JSON.stringify(LIBRARY));
-
-/** Edits made here, kept in this browser: put into the library at boot, so the world plays them too. */
-export function applyVfxOverrides() {
-  try { const o = JSON.parse(localStorage.getItem(STORE) || '{}'); for (const [k, v] of Object.entries(o)) LIBRARY[k] = v; } catch { /* none */ }
-}
+const PRISTINE = pristineLibrary(); // (the library as shipped, taken at the start: this module evaluates on its first open, after the kept edits are in; overrides.js)
 
 const CSS = `
 #workbench { position: fixed; inset: 0; z-index: 40; pointer-events: none; font: 13px var(--f-ui, sans-serif); color: #f3e6d8; }
