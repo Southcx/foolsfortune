@@ -54,6 +54,7 @@ function invertedCopy(m) {
   const inv = m.map ? invertedMap(m.map) : null;
   if (m.map && !inv) return null;
   const k = m.clone();
+  if (m.defines) k.defines = { ...m.defines }; // (Material.copy resets a Standard material's defines: vfx/greytint.js cloneTinted)
   k.onBeforeCompile = m.onBeforeCompile; k.customProgramCacheKey = m.customProgramCacheKey; // (the same program: the deformer's injection and its key)
   if (inv) k.map = inv;
   k.name = (m.name || 'material') + '-inverted'; k.userData = { ...m.userData, inverted: true, shared: false };

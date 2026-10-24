@@ -26,6 +26,7 @@ import { mindLineMaterial } from '../labradorite.js';
 import { featTint } from '../oxidation.js';
 import { DUEL_VIEW, FEELING_ORDER, cellLocal, feelColour, hash } from './layout.js';
 import { drawCrazing } from './crazing.js';
+import { aberrantFigurine } from '../aberrantlook.js';
 import { gemGeometry, emberGeometry, pipGeometry, junkGeometry, stoneGeometry, bombGeometry, orbGeometry, courierFigurine, foeIdol, ledgeGeometry } from './piecemodels.js';
 
 const CLAY = { junk: 0x93552f, stone: 0x4c4856, bomb: 0x2c2224 };
@@ -65,7 +66,7 @@ export class DuelPieces {
     this.courier = new THREE.Group(); this.courier.add(new THREE.Mesh(courierFigurine(), M.clayVc));
     this.ring = new THREE.Mesh(new THREE.RingGeometry(0.44, 0.48, 28), mindLineMaterial({ opacity: 0.9, depthTest: true }));
     this.courier.add(this.ring);
-    this.foeMat = new THREE.MeshStandardMaterial({ name: 'duel-idol', color: 0xc80018, roughness: 0.5, metalness: 0.1, flatShading: true });
+    this.foeMat = aberrantFigurine(new THREE.MeshStandardMaterial({ name: 'duel-idol', color: 0xc80018, roughness: 0.5, metalness: 0.1, flatShading: true })); // (the aberrant's look on the idol: vfx/aberrantlook.js)
     this.castMat = new THREE.MeshBasicMaterial({ name: 'duel-cast', color: 0xd0207a, transparent: true, opacity: 0.55, depthWrite: false, fog: false, toneMapped: false });
     const idol = foeIdol();
     this.foe = new THREE.Group(); this.foe.add(new THREE.Mesh(idol, this.foeMat), new THREE.Mesh(ledgeGeometry(), M.clayVc));
