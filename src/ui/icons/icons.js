@@ -12,7 +12,8 @@
 // vfx/figmenttelegraph/figmenttelegraphatlas.js), and 'domain.<id>' (ui/icons/domainart.js: the seven domains, each in its own palette
 // 'domain.<id>', ramped from its kiln glaze: ui/domainlook.js, never a feeling's colour), and 'fit.<kind>' (ui/icons/fittingart.js:
 // lure, instrument, key, bottle, heart, shell, the reading table's fitting tiles), and 'godart.<art id>' (ui/icons/artart.js: the god hand's
-// 25 arts, godhand/arts.js, each in its domain's palette 'domain.<id>').
+// 25 arts, godhand/arts.js, each in its domain's palette 'domain.<id>'), 'hud.<id>' (ui/icons/hudart.js: the touch layout's phone and
+// quarter turn, the turn card's) and 'touch.<id>' (ui/icons/touchart.js: the touch tiles' glyphs, ui/touch/).
 //
 // Prior art: the 8- and 16-bit consoles' palette swaps (one sprite, a palette for each state: Final Fantasy's recoloured windows and
 // enemies), and the pixel kit's integer scaling here (a pixel is always a square of pixels).
@@ -32,10 +33,12 @@ import { ANSWER_ART, STATUS_ART, FIGMENT_MARK_ART } from './figmenttelegraphart.
 import { DOMAIN_ART } from './domainart.js';
 import { FITTING_ART } from './fittingart.js';
 import { GOD_ART_ART } from './artart.js';
+import { HUD_ART } from './hudart.js';
+import { TOUCH_ART } from './touchart.js';
 import { DOMAIN_LOOK } from '../domainlook.js';
 
 const ART = {};
-for (const [pre, set] of [['kw', KEYWORD_ART], ['mount', MOUNT_ART], ['chip', CHIP_ART], ['answer', ANSWER_ART], ['status', STATUS_ART], ['figmentMark', FIGMENT_MARK_ART], ['domain', DOMAIN_ART], ['fit', FITTING_ART], ['godart', GOD_ART_ART]]) for (const [k, rows] of Object.entries(set)) ART[`${pre}.${k}`] = rows;
+for (const [pre, set] of [['kw', KEYWORD_ART], ['mount', MOUNT_ART], ['chip', CHIP_ART], ['answer', ANSWER_ART], ['status', STATUS_ART], ['figmentMark', FIGMENT_MARK_ART], ['domain', DOMAIN_ART], ['fit', FITTING_ART], ['godart', GOD_ART_ART], ['hud', HUD_ART], ['touch', TOUCH_ART]]) for (const [k, rows] of Object.entries(set)) ART[`${pre}.${k}`] = rows;
 export const ICON_IDS = Object.keys(ART);
 export const hasIcon = (id) => id in ART;
 

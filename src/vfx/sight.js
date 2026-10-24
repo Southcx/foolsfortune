@@ -20,6 +20,9 @@
 //   the place plate the room (`place.enter`'s room) and its layer, and the weather's name in its colour, glazed in the window colour.
 // Hidden with the HUD (F2: the overlay scene's own rule), on the title, in the god hand, on the rail's crossing and in a cinematic.
 //
+// On touch (ui/hudlayout.js, MOBILE.md 6.3) it stands in the HUD layout's box, inside the safe area at a phone's scale (su, not the height), and
+// the place plate drops to its icon line: the weather's pip and the room, 14 CSS px the least.
+//
 // Prior art: the terrestrial globe's half-meridian stand and the armillary sphere's meridian ring (the yoke); a creeping discharge and
 // its Lichtenberg figures (the arc); the wadokei, Japan's temporal-hour clock, with its sliding plates (the ring); the brass
 // astrolabe's rete (the face); Jack Sparrow's compass and One Piece's Log Pose (the needle); a stirred glass and the Rankine vortex,
@@ -470,10 +473,11 @@ export class SightLook {
     Qd.mesh.visible = true;
   }
 
-  /** The instrument's size and place for this view (on a resize, or the present's resolution changing). */
-  layout(view) {
-    const pr = this.game.overlayScene.r.getPixelRatio(), dot = view.h / 480, k = Math.max(1, Math.round(pr * dot)), snap = (v) => Math.round(v * pr) / pr;
-    this.vh = view.h; this.pr = pr; this.dot = dot; if (k !== this.k) { this.k = k; this.platesDirty = true; }
+  /** The instrument's size and place for this view (on a resize, or the present's resolution changing); `dot` CSS px a dot (the
+   *  480-line present's on the desk; the HUD layout's on touch, keyed to the safe area's shorter side: ui/hudlayout.js). */
+  layout(view, dot = view.h / 480) {
+    const pr = this.game.overlayScene.r.getPixelRatio(), k = Math.max(1, Math.round(pr * dot)), snap = (v) => Math.round(v * pr) / pr;
+    this.vh = view.h; this.vw = view.w; this.pr = pr; this.dot = dot; if (k !== this.k) { this.k = k; this.platesDirty = true; }
     this.view.scale.setScalar(PPU * dot); this.view.position.set(snap(-ORIGIN[0] * dot), snap(-ORIGIN[1] * dot), 0);
     this.frame.position.set(0, 0, 0); this.frame.updateMatrixWorld(true);
     const cb = this.v3.set(0, -DY - DT * 0.6, 0).applyMatrix4(this.tilt.matrixWorld); this.placeAt = [this.view.position.x, -cb.y + 8 * dot];
@@ -485,7 +489,11 @@ export class SightLook {
     const g = this.game, B = document.body.classList;
     const hide = !!(g.title?.active || g.god?.controlling || g.emocean?.stage?.active || B.contains('cine'));
     this.frame.userData.overlayHidden = this.hidden = hide; if (hide) return;
-    if (slot.view.h !== this.vh || g.overlayScene.r.getPixelRatio() !== this.pr) this.layout(slot.view);
+    // where it stands: the top-right corner on the desk; on touch the HUD layout's box, inside the safe area at a phone's scale
+    const L = g.hudLayout, touch = !!L?.touch, P = touch ? L.place('sight') : null, dot = P ? P.scale : slot.view.h / 480;
+    slot.x = P ? P.x + P.w - slot.view.w : 0; slot.y = P ? P.y : 0;
+    if (touch !== this.compact) { this.compact = touch; this.platesDirty = true; } // (on touch the place plate drops to its icon line)
+    if (slot.view.h !== this.vh || slot.view.w !== this.vw || dot !== this.dot || g.overlayScene.r.getPixelRatio() !== this.pr) this.layout(slot.view, dot);
     this.t += dt; const t = this.t;
     if ((this.themeT -= dt) <= 0) { this.themeT = 1; if (theme.id !== this.themeId) { this.themeId = theme.id; const L = look(); dialTex(this.dialC, L); this.dialMap.needsUpdate = true; glazeTubeTex(this.yokeC, 57, SEAMS, L); this.yokeMap.needsUpdate = true; this.platesDirty = true; } }
     this.gBack.material.uniforms.uTime.value = this.gFront.material.uniforms.uTime.value = t;
@@ -587,7 +595,7 @@ export class SightLook {
   drawWaypointPlate() {
     const Qd = this.wpQuad, N = this.nd, k = this.k, wp = N.wp, reel = N.reel; if (!this.hookAt) return;
     if (!wp && !reel?.from) { Qd.mesh.visible = false; return; } // (none when null: Dovina's ruling)
-    const x = this.quadCanvas(Qd, 260, 48), o = Math.max(1, Math.round(k)), fN = Math.round(14 * k), fC = Math.round(14 * k), up = (s) => String(s || '').toUpperCase();
+    const x = this.quadCanvas(Qd, 260, 48), o = Math.max(1, Math.round(k)), fN = this.type(14), fC = this.type(14), up = (s) => String(s || '').toUpperCase();
     const name = up(reel ? reel.to || reel.from : wp.name), from = reel ? up(reel.from) : '';
     const cnt = N.dist < 0 ? '' : N.dist < 1000 ? `${N.dist} m` : `${(N.dist / 1000).toFixed(1)} km`;
     x.font = `600 ${fN}px ${FONT.title}`; const wN = Math.max(x.measureText(name).width, reel ? x.measureText(from).width : 0); x.font = `${fC}px ${COUNT}`; const wC = x.measureText(cnt).width;
@@ -610,8 +618,13 @@ export class SightLook {
     this.showQuad(Qd, [X - 1, 0, ox + 2 * o + 1, Y + h + 1], this.hookAt[0], this.hookAt[1], ox, oy);
   }
 
+  /** Type `n` dots tall, in the quad's pixels. On touch it is sized in CSS px, never under 14 (MOBILE.md 6.3: the least type on a
+   *  phone): `k` is floored at a whole pixel a dot, which upright (the present's ratio about 0.57) drew the plate near 25 CSS px. */
+  type(n) { return this.compact ? Math.ceil(Math.max(14, n * this.dot) * this.pr) : Math.round(n * this.k); }
+
   drawPlacePlate() {
     const Qd = this.placeQuad, k = this.k; if (!this.placeAt || !this.room) { Qd.mesh.visible = false; return; }
+    if (this.compact) { this.drawPlaceLine(); return; }
     const x = this.quadCanvas(Qd, 260, 52), L = look(), R = rng(9), a = this.wx.aspect, o = Math.max(1, Math.round(k)), sky = this.sky !== false;
     const name = this.room.toUpperCase(), sub1 = this.layer ? `${this.layer} · ` : '', sub2 = a ? a[0].toUpperCase() + a.slice(1) : 'fair';
     const fN = Math.round(14 * k), fS = Math.round(14 * k); x.font = `600 ${fN}px ${FONT.title}`; const wN = x.measureText(name).width; x.font = `${fS}px ${FONT.sys}`; const wS = x.measureText(sub1 + sub2).width;
@@ -632,5 +645,24 @@ export class SightLook {
     x.fillStyle = L.lo; x.fillText(sub1, sx0, sy + o); x.fillStyle = L.mid; x.fillText(sub1, sx0, sy);
     x.fillStyle = L.lo; x.fillText(sub2, sx0 + w1, sy + o); x.fillStyle = a === 'dread' ? '#7fae8a' : a ? `#${(COLOR[a] ?? 0xcfe8f0).toString(16).padStart(6, '0')}` : '#cfe8f0'; x.fillText(sub2, Math.round(sx0 + w1), sy);
     this.showQuad(Qd, [X - 1, Y - Math.round(7 * k) - 1, X + w + 1, Y + h + 1], this.placeAt[0], this.placeAt[1], cx, top);
+  }
+
+  /** The place plate's icon line (on touch): one line, the weather's pip (its colour, a diamond; fair a clear one) and the room. */
+  drawPlaceLine() {
+    const Qd = this.placeQuad, k = this.k, u = Math.max(0.5, this.pr * this.dot), L = look(), a = this.wx.aspect, o = 1, sky = this.sky !== false; // (u: the quad's pixels a dot, unrounded)
+    const name = this.room.toUpperCase(), fN = this.type(14);
+    let x = this.quadCanvas(Qd, 260, 52); x.font = `600 ${fN}px ${FONT.title}`; const wN = x.measureText(name).width;
+    const pip = Math.round(fN * 0.62), pad = Math.max(3, Math.round(7 * u)), gap = Math.max(2, Math.round(5 * u)), w = Math.round(pip + gap + wN + 2 * pad), h = Math.round(fN * 1.5), c = Math.max(3, Math.round(4 * u));
+    if (w + 4 > Qd.c.width || h + 4 > Qd.c.height) { Qd.c = null; x = this.quadCanvas(Qd, Math.ceil((w + 8) / k), Math.ceil((h + 8) / k)); x.font = `600 ${fN}px ${FONT.title}`; } // (the floor's type can outgrow the desk's canvas)
+    const X = 2, Y = 2, cx = X + Math.round(w / 2); x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, Qd.c.width, Qd.c.height);
+    const chamfer = (X0, Y0, w0, h0, c0) => { x.beginPath(); x.moveTo(X0 + c0, Y0); x.lineTo(X0 + w0, Y0); x.lineTo(X0 + w0, Y0 + h0 - c0); x.lineTo(X0 + w0 - c0, Y0 + h0); x.lineTo(X0, Y0 + h0); x.lineTo(X0, Y0 + c0); x.closePath(); };
+    chamfer(X, Y, w, h, c); const g = x.createLinearGradient(0, Y, 0, Y + h); g.addColorStop(0, `rgb(${L.top})`); g.addColorStop(1, `rgb(${L.bot})`); x.fillStyle = sky ? g : `rgb(${L.bot})`; x.fill();
+    const lg = x.createLinearGradient(X, Y, X + w, Y + h); [0, 0.33, 0.66, 1].forEach((p, i) => lg.addColorStop(p, filmRGB(i / 4 + this.t * 0.05, 1))); x.strokeStyle = lg; x.lineWidth = o; chamfer(X + 0.5 * o, Y + 0.5 * o, w - o, h - o, c); x.stroke();
+    const px = X + pad + pip / 2, py = Y + h / 2, tone = a === 'dread' ? '#7fae8a' : a ? `#${(COLOR[a] ?? 0xcfe8f0).toString(16).padStart(6, '0')}` : '#cfe8f0';
+    x.beginPath(); x.moveTo(px, py - pip / 2); x.lineTo(px + pip / 2, py); x.lineTo(px, py + pip / 2); x.lineTo(px - pip / 2, py); x.closePath();
+    if (a) { x.fillStyle = tone; x.fill(); } else { x.strokeStyle = tone; x.lineWidth = Math.max(1, o * 1.5); x.stroke(); }
+    x.font = `600 ${fN}px ${FONT.title}`; x.textBaseline = 'middle'; x.textAlign = 'left'; const tx = Math.round(X + pad + pip + gap), ty = Math.round(py + o);
+    x.fillStyle = L.lo; x.fillText(name, tx, ty + o); x.fillStyle = sky ? L.hi : L.mid; x.fillText(name, tx, ty);
+    this.showQuad(Qd, [X - 1, Y - 1, X + w + 1, Y + h + 1], this.placeAt[0], this.placeAt[1], cx, Y);
   }
 }

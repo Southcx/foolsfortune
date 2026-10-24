@@ -571,7 +571,7 @@ export class WeatherLook {
     if (this.forced) return this.forced;
     const W = this.game.weather;
     if (!W?.here) return null;
-    const h = W.here(pos), s = W.sky?.(undefined, h.place);
+    const h = W.here(pos), s = W.sky?.(undefined, h.place); // (a place drawn thin by a World shell, or Calm's fair, is already in here(): progress/weather.js reads worlddraw.js)
     return { aspect: h.aspect, strength: h.strength, second: h.second || null, secondStrength: h.secondStrength || 0, exposure: h.exposure, phase: s?.phase ?? h.phase, light: s?.light ?? 0.5 };
   }
 

@@ -165,7 +165,7 @@ export function buildCylinder(V, ids, tiers, env, bandHex) {
     const r0 = c.rc * 1.05, r1 = c.rc * 1.42; const depth = mesh(new THREE.RingGeometry(r0, r1, 56), M(cylMat(2, { uCyR0: r0, uCyR1: r1 })), B.spin); depth.position.set(c.p[0], c.p[1], F + 0.004);
     g.position.set(c.p[0], c.p[1], F - 0.035); holder.add(g);
     const head = mesh(new THREE.CylinderGeometry(c.rc * 0.97, c.rc * 0.97, 0.06, 32), brass, g); head.rotation.x = Math.PI / 2;
-    const ring = mesh(new THREE.RingGeometry(c.rc * 0.76, c.rc * 0.9, 48), M(cylMat(0, { uCySeed: i * 0.21, uCyCol: v3(col), uCyMix: 0.3, uCyCrack: tier >= 4 ? 1 : 0 })), g); ring.position.z = 0.031; // (a tier IV's ring wears the crackle)
+    const ring = mesh(new THREE.RingGeometry(c.rc * 0.76, c.rc * 0.9, 48), M(cylMat(0, { uCySeed: i * 0.21, uCyCol: v3(col), uCyMix: 0.3, uCyCrack: tier === 4 ? 1 : 0 })), g); ring.position.z = 0.031; // (a tier IV's ring wears the crackle: the toll; a World shell's, paid by the place, does not)
     const cap = mesh(new THREE.CircleGeometry(c.rc * 0.74, 32), M(cylMat(1, { uCyTex: glyphTex(id), uCyCol: v3(col), uCySeed: i * 0.17 })), g); cap.position.z = 0.032;
     if (c.heart && !V.solo) { const sl = mesh(new THREE.CylinderGeometry(c.rc * 0.995, c.rc * 0.995, 0.62, 32, 1, true), sleeve, g); sl.rotation.x = Math.PI / 2; sl.position.z = -0.31; }
     const fl = mesh(new THREE.PlaneGeometry(1, 1), M(glowMat(col)), g); fl.position.z = 0.08; fl.renderOrder = 2;
