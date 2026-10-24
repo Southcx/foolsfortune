@@ -180,11 +180,11 @@ export class Traps {
     if (x.r) { x.r.d += back ? -span : span; }
     else if (x.S) {
       const { F, pos } = this.frameAt(to, x.lat, 0.6), speed = x.S.v.length(), yaw = Math.atan2(F.fx, F.fz), g = this.game;
-      // moved with the board still under them (course.teleport would end the ride and refill the pool): the rider set down at the other
-      // eye, facing along the line, at the speed they came in with
+      // moved with the board still under them (player.moveTo: a move in play, not a setting down; course.teleport would end the ride and
+      // refill the pool, casebook 285): the rider at the other eye, facing along the line, at the speed they came in with
       const P = g.player; pos.y = this.R.rideHeight(pos.x, pos.z) + 0.6;
-      P.pos.copy(pos); P.prevPos.copy(pos); P.renderPos.copy(pos); P.yaw = P.bodyYaw = yaw; P.airPeak = pos.y; P.airT = 0; P.place?.();
-      x.S.heading = yaw; x.S.v.set(F.fx * speed, 0, F.fz * speed); P.vel.set(x.S.v.x, 0, x.S.v.z);
+      x.S.heading = yaw; x.S.v.set(F.fx * speed, 0, F.fz * speed);
+      P.moveTo(pos, new THREE.Vector3(x.S.v.x, 0, x.S.v.z)); P.yaw = P.bodyYaw = yaw;
       g.race?.warp?.(Tp.s, to, back);
     }
     this.game.events?.emit('trap.warp', { from: +Tp.s.toFixed(1), to: +to.toFixed(1), back, target: x.target, by: back ? (this.mode === 'courier' ? 'courier' : 'environment') : 'environment' });

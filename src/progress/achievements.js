@@ -424,7 +424,7 @@ export function buildAchievements(game) {
   H('af3', 'angle', 'The Fight', 3, 'endure', 'A Long Fight', 'Land a fish after 40 seconds.', 'fish.fight.longest', 40, { unit: 's' });
   H('af4', 'angle', 'The Fight', 5, 'endure', 'Iron Line', 'Land a fish after 90 seconds.', 'fish.fight.longest', 90, { unit: 's' });
   C('af5', 'angle', 'The Fight', 3, 'perfect', 'Clean Hands', 'Land 10 fish without the line ever nearing its limit or going slack.', 'fish.clean', 10);
-  C('af6', 'angle', 'The Fight', 2, 'mechanic', 'Stand Firm', 'Land 10 fish while braced (crouched).', 'fish.braced', 10);
+  C('af6', 'angle', 'The Fight', 2, 'mechanic', 'Stand Firm', 'Land 10 fish while braced (S held).', 'fish.braced', 10);
   C('af7', 'angle', 'The Fight', 3, 'mechanic', 'Ease Off', 'Ride out 25 thrashes and land the fish.', 'fish.thrashes', 25);
   S('af8', 'angle', 'The Fight', 3, 'Quick Work', 'Land a fish in 8 seconds or less.', 'fish.fight.shortest', 8);
   C('af11', 'angle', 'The Fight', 3, 'perfect', 'Well Read', 'Land 10 fish while answering nine tenths of what they asked of you: lean, haul, bow, brace.', 'fish.wellread', 10);

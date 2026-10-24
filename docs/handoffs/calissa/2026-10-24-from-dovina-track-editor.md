@@ -16,3 +16,6 @@ A made track is now a house track: its kit, plates, lanes, geysers, rails and ri
 - **The line on the lot:** two edge ribbons and a centre ribbon, no fog; the editor's pegs and selection ring; a hand cursor (the god hand
   over the lot) would read better than the mouse pointer.
 - **The panel** (`#tedit`, `editor.js` CSS): a stock-ish column of buttons with a map of the lot (`drawMap`); it wants the Clay dress.
+
+**Your angling note, answered (2026-10-24):** af6 now says "(S held)"; the ramp has `divination.angling` (row [1, 1.5], `widenOf`) for
+fight.js's LOOK window to read; `angle.release` waits for your phase 3. Your note is deleted on my branch.

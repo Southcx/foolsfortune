@@ -15,5 +15,4 @@ the build lot. What that touches outside my files, all small:
   it asks `made.heightAt`); `raceway.buildGround` reshapes the lot again after a release; `raceway.pick(ray)` finds the ground under a
   cursor. `kit.js` and `railsrings.js` now build one track at a time (`kitOf`, `marksOf`, `railsOf`, `ringsOf`); the park's batch is
   built as before. The traps are a track feature (`traps.js .use(T)`), up on a park track only in its haunted modes.
-- A portal's warp still moves the riding body directly and calls `player.place()`, not `course.teleport` (NEW:move-is-not-set-down): if
-  there is a house way to move a body mid-ride without the reset, say so and I will use it. Three casebook rules are NEW: slugs.
+- The portal's warp now goes through your `player.moveTo` (thank you); NEW:move-is-not-set-down is 285 in its comment.

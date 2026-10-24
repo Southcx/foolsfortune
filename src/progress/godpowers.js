@@ -109,6 +109,7 @@ export const RAMP = {
     'divination.reveal': { domain: 'divination', row: [1, 1.5], does: 'the radius veiled crystal is revealed in' },
     'divination.reckon': { domain: 'divination', row: [1, 1.5], does: "how far ahead a reckoning marks a wave's lane (RECKON.lead)" },
     'divination.forecast': { domain: 'divination', row: [1, 4], does: 'how far ahead the weather can be known (progress/weather.js forecast)' },
+    'divination.angling': { domain: 'divination', row: [1, 1.5], does: "how long a hooked fish's next pull is seen coming (the fight's LOOK window, to 2.1 s: tools/sondelass/angling/fight.js)" },
     'psychokinesis.weight': { domain: 'psychokinesis', row: [1, 2], does: 'how heavy a thing the god hand can lift' },
     'psychokinesis.throw': { domain: 'psychokinesis', row: [1, 1.5], does: 'how far the god hand throws' },
     'possession.macro': { domain: 'possession', row: [1, 1.5], does: 'how long a macro a mind will take' },
