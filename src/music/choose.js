@@ -31,6 +31,7 @@ import { RACEWAY, hearRace } from './raceway.js';
 import { CASINO, hearCasino } from './casino.js';
 import { phaseAt } from '../progress/weather.js';
 import { OPEN_SEA, setSea } from './opensea.js';
+import { READING, setReading } from './reading.js';
 import { seasonOf } from '../progress/seasons.js';
 
 const DWELL_IN = 1.5, DWELL_OUT = 2.5; // (seconds under before the dive's music starts; seconds up before it stops)
@@ -42,6 +43,7 @@ export function chooseMusic(game, { overlay = false } = {}) {
   if (overlay) return LACHRYMA;
   const U = game.ultimate; // (the Lockheart's Opening: its mode's cue while the wheel turns, its landing when it lands: music/lockheart.js)
   if (U?.active) { const mode = HEARTS[U.lh?.heart]?.mode || 'casting'; return U.phase === 'landed' || U.phase === 'back' ? LOCK_LANDED[mode] : LOCK_CUES[mode]; }
+  if (game.laidSpread?.under) { const S = game.laidSpread.sums || {}; let top = null; for (const k of ['wands', 'cups', 'swords', 'pentacles']) if ((S[k] || 0) > (S[top] || 0)) top = k; setReading({ suit: top }); return READING; } // (the Box turned over, a spread laid: music/reading.js)
   if (game.chests?.rave?.active || game.god?.active || game.rhythm?.active) return null; // (the rhythm mode plays its own: music/rhythm/)
   // a Firing at the Chimney (music/kiln.js): its ending (fired or cooled) plays out in the garden; a Firing cancelled by leaving stops at once
   const T = game.garden?.tribulation, A = game.music?.arr;
@@ -113,7 +115,8 @@ function hearSea(game) {
   const O = game.opensea, v = O.voyage;
   if (S.seaAt !== v?.at) { S.seaAt = v?.at; S.sea = O.grid?.squares?.find((q) => q.id === v?.at) || null; }
   const sq = S.sea;
-  setSea({ law: sq?.law ?? 0, off: sq?.off ?? 0, doubt: v?.doubt ?? 0, moored: O.moored?.islet != null ? 'islet' : O.moored?.quay ? 'quay' : null });
+  setSea({ law: sq?.law ?? 0, off: sq?.off ?? 0, doubt: v?.doubt ?? 0, moored: O.moored?.islet != null ? 'islet' : O.moored?.quay ? 'quay' : null,
+    hunt: !!game.seaFight?.serpent?.brain?.action?.hunt, coiled: !!game.seaFight?.serpent?.coiled });
 }
 
 /** The garden's season now (progress/seasons.js), summer while the calendar is not up. */

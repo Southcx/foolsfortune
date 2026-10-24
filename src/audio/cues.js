@@ -9,9 +9,11 @@
 //   hearEvents(game, sfx)   (once, at boot)
 // ---------------------------------------------------------------------------------------
 import { gardenState } from './garden.js';
+import { today } from '../core/calendar.js';
 import { feelingOfKind } from './mycelium.js';
 
 const CYL = { autoAt: 0 }; // (when the cylinder last turned itself)
+const FLIP = { day: -1 }; // (the game day the Box was last turned over in: the day's card once a game day)
 const REPORT = { n: 0 }; // (reports paid at this dock: a coin a step up)
 const RING = { n: -1, at: 0 }; // (rings threaded in this turn: a chime a degree up each)
 const nearK = (n) => (n === true || n == null ? 0.8 : n > 1 ? Math.max(0.2, 1 - n / 8) : n); // (`near`: a flag, 0..1, or metres)
@@ -110,11 +112,23 @@ const RULES = {
   'guest.garden': (s, e) => s.guestArrive?.(true, !!e.leave), // (a guest's Pneuka Jar come into your Spirit Garden, or gone: coop/guests.js)
   // the spreads (SPREADS.md; draft events until Petra's gate; audio/spreads.js): the board turned over, a Major laid, a cell lit in its
   // suit (the tally's climb its step up the run) or gone out, a crack where contrary suits meet, a spread complete
-  'spread.flip': (s, e) => s.spreadFlip?.(e.under !== false),
+  'spread.flip': (s, e) => { s.spreadFlip?.(e.under !== false); if (e.under !== false && today() !== FLIP.day) { FLIP.day = today(); s.spreadDayCard?.(); } }, // (the game day's card on its first flip)
+  'spread.court': (s, e) => s.spreadCourt?.(e.to),
   'spread.lay': (s, e) => s.spreadLay?.(!!e.reversed),
   'spread.tally': (s, e) => ((e.to ?? 0) > (e.from ?? 0) ? s.spreadLight?.(e.suit, Math.max(0, Math.round(e.to) - 1)) : s.spreadDim?.(e.suit)),
   'spread.crack': (s, e) => s.spreadCrack?.(e.suit || e.a || 'wands'),
   'spread.complete': (s) => s.spreadDone?.(),
+  // the open sea's hunter (Petra's events; audio/seaserpent.js): its rise, each move's tell and the move, struck, freed, down; the hull
+  'seaserpent.rise': (s) => s.seaSerpentRise?.(),
+  'seaserpent.wind': (s, e) => s.seaSerpentWind?.(e.move),
+  'seaserpent.move': (s, e) => s.seaSerpentMove?.(e.move, !!e.hit),
+  'seaserpent.hit': (s, e) => s.seaSerpentHit?.(e.part),
+  'seaserpent.free': (s) => s.seaSerpentFree?.(),
+  'seaserpent.down': (s) => s.seaSerpentDown?.(),
+  'palm.condense': (s, e) => s.palmCondense?.(e.n, e.sides),
+  'palm.grow': (s, e) => s.palmGrow?.(e.from, e.to),
+  'sea.hull': (s, e) => s.seaHullHit?.(e.hull ?? 3), // (`hull`: the hits it can still bear)
+  'sea.hull.broken': (s) => s.seaHullBroken?.(),
   'goal.done': (s, e) => s.goalDone?.(e.slot ?? 0, !!e.all), // (a goal of the game day's three done; all three, the Answer whole: audio/ui.js)
   'goals.set': (s) => s.goalsSet?.(),
   // the open sea (audio/opensea.js): the helm's wash and wind from boarding to mooring, and the voyage's moments
