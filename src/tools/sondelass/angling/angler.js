@@ -14,11 +14,13 @@
 // A fish that has noticed the lure gets a "!" over it, probes it (small dips), and then bites: a "!!!" over the lure, a hard dip and
 // a ring of light. Press LMB inside the window to set the hook.
 //
-// THE FIGHT starts the instant the hook is set. The Courier can no longer walk: the movement keys are the rod's (fight.js: A/D lean,
-// S haul, W bow, C brace, LMB reel, RMB give). The screen goes to a frame (letterbox bars, a tighter lens, the camera swinging toward
+// THE FIGHT starts the instant the hook is set. The Courier can no longer walk: the movement keys are the rod's tip (rodhands.js: A/D
+// lean, S haul and held brace, W bow, LMB reel, Shift + LMB crank, RMB give; S then W + LMB the pump). The rod bends with the load
+// (rodhands.js rodBend) and the line is a sheath with the fish's stamina for its core (line.js). The screen goes to a frame (letterbox bars, a tighter lens, the camera swinging toward
 // the fish), a window slides in with the fish thrashing on the lure (portrait.js), and everything the fight is doing is shown where it
 // is: the line is the colour of its load, the reticle sits on the fish and shows what it will do next, a beat before it does it.
-// Then the landing: the fish is drawn up out of the water and held, and spent; what it was is written in the log and the ledger.
+// Then the landing: the fish is drawn up out of the water and held up in both hands (catchlift.js, the catch's lift), and spent; what
+// it was is written in the log and the ledger. The hook set, the leap's apex and the snap are the line's moments (moments.js).
 //
 // The lure is held at a cost: casting reserves Lachryma (the mind is out on the line, so the pool is smaller while it is), and
 // the fight drains a little every second; a landed fish pays back far more (baubles), and a lost line loses what was reserved.
@@ -34,6 +36,9 @@ import { Lure } from './lure.js';
 import { FishingLine } from './line.js';
 import { Fight, LOOK } from './fight.js';
 import { Reticle } from './reticle.js';
+import { CatchLift } from './catchlift.js';
+import { LineMoments } from './moments.js';
+import { RodHands, rodBend, REEL_SPEED } from './rodhands.js';
 import { lureList, attraction, tasteOf, BARE } from './lures.js';
 import { ASPECTS, SHOWN, TIDES, aspectKnown, knownAspects } from './species.js';
 import { GROUPS } from '../../../core/physics.js';
@@ -53,7 +58,6 @@ const G = 9.81;
 const _o = new THREE.Vector3(), _d = new THREE.Vector3(), _t = new THREE.Vector3(), _e = new THREE.Vector3(), _r = new THREE.Vector3(), _u = new THREE.Vector3(), _w = new THREE.Vector3();
 const UP = new THREE.Vector3(0, 1, 0);
 const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
-const smooth = (a, b, t) => { const x = THREE.MathUtils.clamp((t - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); };
 const CALM = { pull: 0.05, tension: 0.15, stamina: 0.02, seg: { kind: 'spent' } };
 
 /** The colour and mark a segment of the fish's script is shown with. */
@@ -77,10 +81,12 @@ export class Angler {
     this.reserved = 0; this.bite = null; this.fight = null; this.hooked = null; this.tremble = 0; this.trembleT = 0; this.bendV = 0; this.bendX = 0;
     this.lastLog = {};
     this.line = new FishingLine(g.scene);
+    this.hands = new RodHands((n, d) => this.emit(n, d)); this.shudder = 0; this.reelSpeed = REEL_SPEED;
     this.reticle = new Reticle(g.scene);
     this.weir = null; // (the room; set once it exists)
     this.lure = null;
-    this.catchT = 0; this.caught = null; this.echo = null;
+    this.caught = null; this.echo = null;
+    this.lift = new CatchLift(this); this.moments = new LineMoments(this); // (the catch's lift; the hook set, the leap's apex and the snap)
     this.biteGlyph = null; this.pingCol = 0xffb27a;
     this.aim = { point: new THREE.Vector3(), water: false };
     this.marker = new THREE.Mesh(new THREE.RingGeometry(0.42, 0.5, 24).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xfff1dc, transparent: true, opacity: 0.7, depthWrite: false, blending: THREE.AdditiveBlending }));
@@ -104,7 +110,7 @@ export class Angler {
   /** The movement keys are the rod's from the instant the hook is set until the fish is landed or lost. */
   get locksMove() { return this.state === 'fight' || this.state === 'catch'; }
   get castClip() { return this.castW > 0.02; }
-  get leftHand() { return this.state === 'fight' ? 1 : this.state === 'wait' ? (this.reeling ? 1 : 0.55) : this.state === 'catch' ? 0.4 : 0; }
+  get leftHand() { return this.state === 'fight' ? 1 : this.state === 'wait' ? (this.reeling ? 1 : 0.55) : this.state === 'catch' ? (this.lift.holding ? 0 : 0.4) : 0; }
   /** What the fish portrait draws from: the fight, or a calm one while it is being held up. */
   fightView() { return this.state === 'fight' ? this.fight : this.state === 'catch' ? CALM : null; }
 
@@ -123,7 +129,7 @@ export class Angler {
   }
 
   emit(name, data) { this.game.events?.emit(name, data); }
-  bend() { return this.bendX; }
+  bend() { return this.bendX + this.shudder + this.moments.bend(); }
   flick() { return this.trembleT > 0 ? Math.sin(performance.now() * 0.05) * this.tremble * 0.06 : 0; }
   /** The lure on the line is what the Pneuka Box says is worn there (pneuka/box.js). */
   get lureId() { return this.game.pneuka?.lure ?? this.ownLure; }
@@ -142,8 +148,8 @@ export class Angler {
   castPose(C, out) {
     if (this.castW > 0.02) { C.sample('Sond_Cast', Math.min(1.42, this.castT * 1.06), out, false); return { pose: out, w: this.castW }; } // (the cast's launch at 0.52 meets the clip's at 0.55)
     if ((this.reelW || 0) <= 0.02) return null;
-    if (this.state === 'catch') C.sample('Sond_Catch', Math.min(1.56, this.stateT), out, false);
-    else C.sample(this.state === 'fight' ? 'Sond_ReelFight' : 'Sond_ReelIn', this.reelT, out, true);
+    if (this.state === 'catch') { const p = this.lift.pose(C, out); return p ? { pose: p, w: this.reelW } : null; } // (catchlift.js: the rod's catch, then both hands)
+    C.sample(this.state === 'fight' ? 'Sond_ReelFight' : 'Sond_ReelIn', this.reelT, out, true);
     return { pose: out, w: this.reelW };
   }
   get aspectColor() { return ASPECTS[this.aspect].color; }
@@ -230,6 +236,7 @@ export class Angler {
     const P = this.P, g = this.game;
     if (!this.lure) { if (g.weir) this.init(g.weir); else return; }
     if (this.echo) { this.echo.t -= dt; if (this.echo.t <= 0) this.echo = null; }
+    this.moments.update(g.rawDt ?? dt);
     this.twitchCool -= dt; this.soundCool -= dt; this.tremble = Math.max(0, this.tremble - dt * 0.8); this.trembleT = this.tremble > 0.01 ? 1 : 0;
     // the aspect (keys 4 to 0; the wheel too, until the lure is in the water) and the depth (the wheel, with it in)
     let depthNudge = 0;
@@ -245,14 +252,14 @@ export class Angler {
     const down = held && inp.isDown('Mouse0'), press = held && inp.wasPressed('Mouse0');
     const rdown = held && inp.isDown('Mouse2');
     // the lure runs whenever there is one
-    this.reeling = false; this.sinking = false;
+    this.reeling = false; this.sinking = false; this.reelSpeed = REEL_SPEED;
     switch (this.state) {
       case 'idle': this.updateIdle(dt, inp, held, down, press, rdown); break;
       case 'charge': this.updateCharge(dt, inp, held, down, rdown); break;
       case 'swing': this.updateSwing(dt); break;
       case 'wait': this.updateWait(dt, inp, held, down, press, rdown); break;
       case 'fight': this.updateFight(dt, inp, held, down, rdown); break;
-      case 'catch': this.updateCatch(dt); break;
+      case 'catch': this.lift.update(g.rawDt ?? dt, inp); break; // (catchlift.js, on real time)
       default: break;
     }
     // (the cast clip's weight, and the reel's: the suite's own rod clips, Sond_Cast, Sond_ReelIn, Sond_ReelFight, Sond_Catch)
@@ -275,18 +282,20 @@ export class Angler {
     if (lure.active && this.state !== 'fight' && this.state !== 'catch') {
       lure.update(dt, {
         poolAt: (x, z) => this.weir.poolAt(x, z), ground: (x, z, y) => this.ground(x, z, y), player: P.pos,
-        reeling: this.reeling, sinking: this.sinking, depthNudge, reelSpeed: 3.6,
+        reeling: this.reeling, sinking: this.sinking, depthNudge, reelSpeed: this.reelSpeed,
         onHome: () => this.home(),
       });
       // (a cast of the whole line: too far from the lure and it parts)
       if (lure.active && this.state !== 'fight' && lure.pos.distanceTo(P.pos) > 60) this.lose('spool');
     }
-    this.drawLine(dt);
+    this.drawLine(dt, this.state === 'catch');
     this.updateMarker(dt, held);
     this.updateReticle(dt);
-    // the rod bends toward what pulls it
-    const bendT = this.state === 'fight' ? 0.12 + Math.min(1.2, this.fight?.tension ?? 0) * 0.5 : this.state === 'charge' ? -0.12 * this.power : this.bite ? 0.15 : 0;
-    this.bendX = THREE.MathUtils.damp(this.bendX, bendT + (this.state === 'fight' && this.fight?.seg?.kind === 'thrash' ? Math.sin(performance.now() * 0.06) * 0.1 : 0), 10, dt);
+    // the rod bends with its load (straight at none, about 30 degrees in the band, about 70 and shuddering at the snap's edge)
+    const fT = this.state === 'fight' ? this.fight?.tension ?? 0 : 0, now = performance.now() / 1000;
+    const bendT = this.state === 'fight' ? rodBend(fT) : this.state === 'charge' ? -0.12 * this.power : this.bite ? 0.15 : 0;
+    this.bendX = THREE.MathUtils.damp(this.bendX, bendT, 10, dt);
+    this.shudder = this.state === 'fight' ? rodBend(fT, now) - rodBend(fT) + (this.fight?.seg?.kind === 'thrash' ? Math.sin(now * 60) * 0.1 : 0) : 0;
   }
 
   updateIdle(dt, inp, held, down, press, rdown) {
@@ -353,6 +362,7 @@ export class Angler {
       }
     }
     if (rdown && lure.state !== 'air') this.sinking = true;
+    this.reelSpeed = this.hands.retrieve(this.reeling, inp); // (Shift + LMB: the fast retrieve)
     // the sounding (MMB): in the water, held it opens the ring of the seven (the wheel turns it, not the depth) and letting go sounds with
     // the feeling it is left on; a tap sounds as set. Out of the water a press sounds at once (OVERLAY.md 18; the ring is Calissa's look)
     if (inp.wasPressed('Mouse1') && held && lure.inWater) this.ringHeld = 0;
@@ -479,7 +489,7 @@ export class Angler {
     sfx.hookSet();
     lure.group.visible = false; // (the fish has it)
     // the moment: a hit-stop, the frame, the window with the fish in it
-    g.time.pulse('hookset', 0.05, 0.11);
+    this.moments.hookSet(); // (4 frames held, the line straight, the rod loaded: moments.js)
     g.glyphs.pop(quality === 'perfect' ? 'star' : 'bang1', _u.copy(lure.pos).addScaledVector(UP, 0.8), { color: quality === 'perfect' ? 0xffd76a : 0xfff1dc, size: quality === 'perfect' ? 1 : 0.6, burst: true, ring: true, life: 1.3 });
     g.portrait.show(f, this.aspectColor);
     this.frameFight(0, true);
@@ -496,6 +506,7 @@ export class Angler {
     else if (kind === 'leap' || kind === 'breach') { rip(kind === 'breach' ? 5 : 2.4, kind === 'breach' ? 0xffd76a : 0xffffff, 1.4); sfx.splash(kind === 'breach' ? 2 : 1); g.portrait.hit(); if (kind === 'breach') { sfx.leviathan(); P.shake = Math.max(P.shake, 0.6); g.time.pulse('breach', 0.15, 0.2, { release: 0.4 }); this.emit('angle.breach', {}); } }
     else if (kind === 'splash') { rip(2.6, 0xffffff, 1); sfx.splash(1.2); g.portrait.hit(); }
     else if (kind === 'spent') { g.glyphs.pop('star', over(), { color: 0xa8ffcf, size: 0.7, life: 1.4 }); this.emit('angle.spent', { species: f.sp.id }); }
+    else if (kind === 'pump') this.emit('angle.pump', { took: d.took, species: f.sp.id, by: 'courier' });
     else if (kind === 'bolt') { rip(1.8, 0xffffff, 0.8); g.glyphs.pop('bang1', over(), { color: 0xff8f7d, size: 0.6, burst: true, life: 1.0 }); this.emit('angle.bolt', {}); }
   }
 
@@ -512,13 +523,13 @@ export class Angler {
     const P = this.P, F = this.fight;
     if (!held) { this.escape('stow'); return; }
     this.reeling = down; this.sinking = false;
-    const kd = (c) => inp.isDown(c);
-    const lean = (kd('KeyD') ? 1 : 0) - (kd('KeyA') ? 1 : 0), haul = kd('KeyS'), ease = kd('KeyW');
-    const brace = P.crouching || kd('KeyC');
+    const { lean, haul, ease, brace, crank } = this.hands.fight(dt, inp, down); // (the keys are the rod's tip: rodhands.js)
     if (brace) F.braced = true;
+    this.bowK = THREE.MathUtils.damp(this.bowK || 0, ease ? 1 : 0, ease ? 6 : 10, dt); // (the line's bow: W drops the tip, the line sags)
     // the body squares up to the fish
     P.bodyYaw += wrap(F.bearing - P.bodyYaw) * (1 - Math.exp(-dt * 7));
-    const res = F.update(dt, { reel: down, give: rdown, brace, lean, haul, ease, pullDir: this.screenSide(F.seg.side, F.bearing), player: P.pos });
+    const res = F.update(dt, { reel: down, crank, give: rdown, brace, lean, haul, ease, pullDir: this.screenSide(F.seg.side, F.bearing), player: P.pos });
+    this.moments.leap(F); // (held a quarter-second at its top)
     F.stats.gaveLine = (F.stats.gaveLine || 0) + (rdown ? dt : 0);
     if (F.seg.need) F.stats.needT = (F.stats.needT || 0) + dt;
     F.stats.answered = (F.stats.answered || 0) + (F.answered ? dt : 0);
@@ -592,7 +603,7 @@ export class Angler {
     // (a lure with no fish on it: only the line parting)
     this.lure.retrieve(); this.line.hide(); this.settle('lose');
     this.state = 'idle'; this.bite = null; this.biteGlyph?.close(); this.biteGlyph = null;
-    sfx.lineSnap(); this.emit('angle.escape', { why, species: null });
+    sfx.lineSnap(); this.emit('angle.escape', { why, species: null, by: 'courier' });
   }
 
   /** Back to the world: the frame, the window and the reticle let go. */
@@ -605,11 +616,13 @@ export class Angler {
 
   escape(why) {
     const F = this.fight, f = this.hooked, g = this.game;
+    if ((why === 'snap' || why === 'spool') && f) this.moments.snap(f.pos); // (the line whips loose, the rod springs up, a beat of silence)
     if (why === 'snap' || why === 'spool') { sfx.lineSnap(); this.settle('lose'); g.time.pulse('snap', 0.08, 0.14); g.glyphs.pop('bang3', _u.copy(this.P.pos).addScaledVector(UP, 2.1), { color: 0xff5a3c, size: 0.9, burst: true, life: 1.2 }); }
     else if (why === 'slip') { sfx.escape(); this.settle('lose'); g.glyphs.pop('ask', _u.copy(f ? f.pos : this.P.pos).addScaledVector(UP, 0.8), { color: 0x9fb3c8, size: 0.7, life: 1.3 }); }
     else { sfx.escape(); this.settle('refund'); }
     if (f) { f.state = 'flee'; f.timer = 3; f.cool = 20; f.pos.y = Math.min(f.pos.y, this.fight.ctx.pool.surface - 0.5); f.heading += Math.PI; }
-    this.emit('angle.escape', { why, species: f?.sp.id ?? null, dur: F ? F.t : 0, stamina: F?.stamina ?? 1 });
+    this.emit('angle.escape', { why, species: f?.sp.id ?? null, dur: F ? F.t : 0, stamina: F?.stamina ?? 1, by: 'courier' });
+    this.hands.reset(); this.bowK = 0;
     this.lure.retrieve();
     this.line.hide();
     this.hooked = null; this.fight = null; this.state = 'idle'; this.reeling = false;
@@ -621,8 +634,8 @@ export class Angler {
     const F = this.fight, f = this.hooked, P = this.P, sp = f.sp, g = this.game;
     const dur = F.t;
     this.caught = { f, t: 0, from: f.pos.clone() };
-    this.state = 'catch'; this.catchT = 0;
-    f.state = 'landed';
+    this.state = 'catch';
+    f.state = 'landed'; f.mesh.setPose?.('held'); // (lifted out: the wriggle in two hands, ready for the catch's lift)
     this.lure.retrieve();
     const first = this.game.ledger.get(`fish.sp.${sp.id}`) === 0;
     const rec = this.game.ledger.best(`fish.cm.${sp.id}`);
@@ -632,7 +645,9 @@ export class Angler {
       aspect: ASPECTS[this.aspect].id, tide, brace: !!F.braced, gave: F.stats.gaveLine || 0, slackMax: F.stats.slackMax, first,
       ans: (F.stats.answered || 0) / Math.max(1, F.stats.needT || 0), // (how much of what it asked for was answered)
       record: rec === undefined ? false : f.cm > rec, depth: this.lure.pool ? this.lure.pool.surface - f.pos.y : 0, legend: !!sp.legend,
+      pumps: F.stats.pumps || 0, by: 'courier',
     });
+    this.hands.reset(); this.bowK = 0;
     this.echo = { id: sp.id, t: 150 }; // (what is left on the lure: the next cast carries it)
     sfx.catchSong(sp.tier > 3 ? 3 : sp.tier > 2 ? 2 : sp.tier > 1 ? 1 : 0);
     if (sp.legend) sfx.leviathan();
@@ -644,52 +659,17 @@ export class Angler {
     g.cinema.strain = 0;
     this.reticle.hide();
     this.hooked = null; this.fight = null;
-  }
-
-  updateCatch(dt) {
-    const P = this.P, C = this.caught, f = C.f, g = this.game;
-    this.catchT += dt;
-    const k = smooth(0, 0.9, this.catchT);
-    // drawn up out of the water and held before them
-    const hold = _t.set(P.pos.x + Math.sin(P.yaw) * 1.6, P.pos.y + 1.7, P.pos.z + Math.cos(P.yaw) * 1.6);
-    f.pos.lerpVectors(C.from, hold, k);
-    f.pos.y += Math.sin(Math.PI * k) * 1.2;
-    f.heading = P.yaw * -1 + Math.PI / 2 + this.catchT * 1.1; f.pitch = 0.3 * (1 - k);
-    f.speed = 0.6;
-    f.state = 'landed'; f.fade = 1;
-    const m = f.mesh.group;
-    m.position.copy(f.pos); m.rotation.set(0, -f.heading, f.pitch, 'YZX');
-    m.scale.setScalar(THREE.MathUtils.lerp(1, Math.min(1.5, 0.7 / Math.max(0.3, f.length) + 0.9), k));
-    f.mesh.swim(dt, 0.3, 0);
-    f.mesh.glow(1);
-    P.bodyYaw += wrap(P.yaw - P.bodyYaw) * (1 - Math.exp(-dt * 6));
-    this.drawLine(dt, true);
-    if (this.catchT > 2.1) {
-      // it comes apart into what it was made of
-      const n = Math.round(2 + f.sp.lach * 0.18 * (0.6 + f.cm / f.sp.size[1]));
-      this.game.baubles?.spawn(f.pos.clone(), n);
-      this.settle('catch');
-      const fx = this.game.fx;
-      for (let i = 0; i < 26; i++) fx.add.emit({ pos: f.pos.clone(), vel: new THREE.Vector3((simRand() - 0.5) * 3, simRand() * 3, (simRand() - 0.5) * 3), life: 1.2, size: 0.12, sizeEnd: 0.01, color: new THREE.Color(f.sp.color), alpha: 0.9, drag: 2, floor: -100 });
-      g.glyphs.pop('star', _u.copy(f.pos).addScaledVector(UP, 0.6), { color: f.sp.color, size: 0.9 + f.sp.tier * 0.12, burst: true, ring: true, life: 1.5 });
-      this.game.pool?.gain?.(0);
-      this.weir.remove(f);
-      this.caught = null; this.state = 'idle'; this.castPhase = 'none';
-      this.release();
-      this.line.hide();
-      this.emit('angle.landed', { species: f.sp.id, baubles: n });
-      g.pneuka?.add(`fish.${f.sp.id}`, 'catch'); // (kept whole, to be sold to Old Grog: progress/shop/catalogue.js)
-    }
+    this.lift.start(f, { first, record: rec === undefined ? false : f.cm > rec, legend: !!sp.legend }); // (out of the water and held up: catchlift.js)
   }
 
   // ---------------------------------------------------------------- put away
   stow() {
     if (this.state === 'fight') this.escape('stow');
-    else if (this.state === 'catch') { this.catchT = 9; this.updateCatch(0.016); }
+    else if (this.state === 'catch') this.lift.finish();
     if (this.lure?.active) { this.lure.retrieve(); }
     this.settle('refund');
     this.state = 'idle'; this.bite = null; this.biteGlyph?.close(); this.biteGlyph = null; this.castPhase = 'none'; this.castW = 0; this.power = 0; this.line.hide();
-    this.marker.visible = false; this.arc.visible = false; this.pressT = -1;
+    this.marker.visible = false; this.arc.visible = false; this.pressT = -1; this.hands.reset();
     this.release();
     if (this.weir) this.weir.sound.r = 0;
   }
@@ -701,13 +681,18 @@ export class Angler {
     const t = performance.now() / 1000;
     tool.model.group.updateMatrixWorld(true);
     tool.tip(_t);
-    const o = { dt, time: t, aspect: this.aspectColor, camDist: 8, cam: cam.position };
+    const o = { dt, time: t, aspect: this.aspectColor, camDist: 8, cam: cam.position, fov: cam.fov, lines: this.game.renderer?.domElement?.height };
+    if (this.moments.drawWhip(this.line, _t, o)) return; // (a snapped line, whipping loose: moments.js)
     if (this.state === 'fight' && this.fight) {
-      const f = this.hooked;
+      const f = this.hooked, F = this.fight;
       const mouth = _e.copy(f.pos).add(_d.set(Math.cos(f.heading), 0, Math.sin(f.heading)).multiplyScalar(f.length * 0.45));
-      o.tension = this.fight.tension; o.camDist = cam.position.distanceTo(_w.copy(_t).add(mouth).multiplyScalar(0.5));
+      o.tension = F.tension; o.camDist = cam.position.distanceTo(_w.copy(_t).add(mouth).multiplyScalar(0.5));
+      o.bow = this.bowK || 0; // (bowed it sags; loaded it is straight: slack is the only curve)
+      if (this.moments.slack() != null) o.slack = 0; // (the hook just set: dead straight)
+      f.mesh.setStamina?.(F.stamina); f.mesh.setPose?.(F.stamina < 0.08 ? 'flank' : 'swim'); // (its body tires with the fight: the beat slows, it rolls, spent it lies on its flank: fishmesh.js)
+      o.fish = { stamina: F.stamina, beat: Math.max(0, Math.sin(f.mesh.phase ?? t * 6)) ** 2 }; // (the core: its stamina, pulsing with its tail)
       this.line.set(_t, mouth, o);
-    } else if (catching && this.caught) {
+    } else if (catching && this.caught && !this.lift.holding) {
       o.tension = 0.55; o.camDist = cam.position.distanceTo(this.caught.f.pos);
       this.line.set(_t, this.caught.f.pos, o);
     } else if (lure.active) {
@@ -747,7 +732,7 @@ export class Angler {
     if (this.state !== 'fight' || !this.fight) return;
     const P = this.P, F = this.fight;
     if (!P.grounded) return;
-    const a = 2.6 * F.pull * (0.5 + F.sizeK) * (F.braced && (P.crouching) ? 0.35 : 1) * (1 - 0.5 * F.relief);
+    const a = 2.6 * F.pull * (0.5 + F.sizeK) * (this.hands.bracing ? 0.35 : 1) * (1 - 0.5 * F.relief); // (braced: S held)
     if (a < 0.2) return;
     const dx = Math.sin(F.bearing), dz = Math.cos(F.bearing);
     // (never into the water, and never off the deck: they are pulled toward the edge and stopped there)

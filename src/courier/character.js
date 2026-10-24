@@ -22,6 +22,7 @@ import { Crawl } from './anim/crawl.js';
 import armorB64 from '../assets/courier/courier_armor.png?b64';
 import maskB64 from '../assets/courier/courier_mask.png?b64';
 import { dressFiligree } from '../vfx/filigree.js';
+import { installVesselDice } from '../vfx/vesseldice.js';
 
 
 const STRETCH = 0.16; // how far a shoulder joint may travel toward a reach the arm alone cannot make
@@ -144,6 +145,7 @@ export class Character {
       if (outlined) addOutline(o, OL.fphide);
       if (o.name === 'Courier_Mask' || o.name === 'Kiritohair') this.fpHidden.push(o, o.userData.outline);
     }
+    this.stoneDice = installVesselDice(this); // (the stones worn as what they are, seven dice of the mineral: vfx/vesseldice.js)
 
     this.bones = {};
     this.model.traverse((o) => { if (o.isBone) this.bones[o.name] = o; });

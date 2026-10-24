@@ -307,6 +307,7 @@ export class Weir {
       onProbe: hooks?.onProbe, onBite: hooks?.onBite, onMiss: hooks?.onMiss, onSpook: hooks?.onSpook, onNotice: hooks?.onNotice, onPing: hooks?.onPing,
     };
     for (const f of [...this.fish]) {
+      if (f.state === 'landed') continue; // (out of the water: the catch's lift has it, angling/catchlift.js)
       if (f.pool && ctx.lure && ctx.lure.pool && ctx.lure.pool !== f.pool) { ctx.lure = null; }
       f.update(dt, { ...ctx, lure: ctx.lure && ctx.lure.pool === f.pool ? ctx.lure : null });
       if (f.dead) this.remove(f);

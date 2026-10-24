@@ -9,7 +9,8 @@
 //            guard, in time: parry · E (the blink) cancels any move
 //   ROD      hold LMB to charge a cast, release to throw · 4-0 / wheel: the lure's aspect (each once known) · - / =: the lure tied on ·
 //            wheel (lure out): its depth · RMB sinks it · MMB sounds
-//            a fish on: the movement keys are the rod's (A/D lean, S haul, W bow, C brace), LMB reels, RMB gives line
+//            a fish on: the movement keys are the rod's tip (A/D lean, S haul, held braces, W bow), LMB reels, Shift + LMB cranks,
+//            RMB gives line; S then W + LMB pumps (angling/rodhands.js). Before a bite, Shift + LMB is the fast retrieve
 //   HOOK     LMB fires the grapnel: it bites, and the line stays. Hold LMB to reel (yourself to an anchor, a loose thing to you),
 //            hold RMB to pay out, tap RMB to let go, Space to jump off it; A/D/W/S pump a swing (tools/sondelass/grapple.js)
 //
@@ -285,6 +286,7 @@ export class Sondelass extends Tech {
     }
     // the rod out and nothing cast: the free hand holds what is tied on (luremodels.js), the way an angler holds the lure before a cast
     this.heldLurePose(ch, phase === 'held' && this.form === 'rod' && !this.angler?.lure?.active && this.leftW < 0.3 && !this.P.fp);
+    if (this.angler?.lift?.active) this.angler.lift.hands(ch); // (the catch held up in both hands, the rod let go: angling/catchlift.js)
     // in first person: in the view, swung along the stroke's arc (tools/viewmodel.js)
     if (this.P.fp && drawT > 0.001) fpToolMatrix(this.game.camera, { draw: Math.min(1, drawT / 0.6), ...(this.form === 'cutlass' ? this.cutlass.fpArc() : this.angler?.casting ? { arc: 'raise', u: 0.6 } : null) }, M);
     // place the tool

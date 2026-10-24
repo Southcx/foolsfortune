@@ -3666,7 +3666,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   sent, so the eye caught it on every pass. A trap with no way past is a wall, not a trap (TRACK-EDITOR.md 4).
 - **Fix:** a rider sent back is spared that portal (`spared`, world/raceway/traps.js) until it is past the eye; the possessed line
   says so (`TRAPS.portal.possessed`). Measured: the rider was sent back once and finished.
-- **Rule:** NEW:trap-has-a-way-past
+- **Rule:** 284
 
 ### 2026-10-24 · A portal's warp stalled the skiff and refilled the pool (Dovina, in the build)
 - **Seen:** after a portal carried the rider on, the Solar Skiff stood still for a beat with its techs ended, and the pool was full.
@@ -3674,7 +3674,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   techs and refills the pool. A warp mid-ride is not a setting down.
 - **Fix:** the warp moves the rider itself (position, previous and render positions, yaw, the skiff's heading and speed) and calls
   `player.place()`; the race's gates and `prevS` are moved with it (`race.warp`).
-- **Rule:** NEW:move-is-not-set-down
+- **Rule:** 285
 
 ### 2026-10-24 · The track editor showed a flat dark red (Dovina, headless)
 - **Seen:** the editor's panel drew, the world behind it was one flat colour, no lot, no line.
@@ -3682,4 +3682,27 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   haze is exp2 at 0.0042 (all but opaque past 250 m). The haunt's camera, at 80 m, drew fine.
 - **Fix:** the editor's camera keeps 40 to 170 m up; the panel draws the whole lot as a map (click to move the camera); the line's
   ribbons and the editor's handles take no fog.
-- **Rule:** NEW:camera-inside-the-haze
+- **Rule:** 286
+
+### 2026-10-24 · The fishing line and the grapnel's line sagged when loaded, and the line's width grew with the camera's distance (the owner; Calissa, measured)
+- **Seen:** the owner (ANGLING.md): "the Sondelass's fishing line being visually loose and sagging even when hanging from a grapnel
+  overhead". Measured in node on `FishingLine` itself (vfx/rope.js under angling/line.js, 240 frames at 60 Hz, a 12.15 m line, the
+  camera about 9 m off): loaded in the sweet band (tension 0.55) the line hung 1.47 m off the straight between tip and hook, at 0.78
+  1.46 m; only at 1.0 was it straight. The grapnel's line in flight (20 m, tension 0.7, no slack told) hung 3.54 m low. Hung from
+  overhead with `slack: 0` it was straight (the 2026-10-11 fix held). The line drew 6.7 px wide at 480 lines here, and its width rose
+  with the square of the camera's distance (about 3 px at 4 m, 11 px at 15 m).
+- **Cause (measured):** two.
+  - **The shape was the solver's, not the length's.** line.js asked for a sag from the tension (`(1 - T) (0.05 + 0.045 d)`, 0.13 m at
+    0.78), which made only 2 mm of spare line on 12 m; rope.js straightened a rope only when its spare length made under 3 cm of sag,
+    so the 36-link chain, held by 7 passes of its constraints, was left to hang: it stretched under its own weight to a belly eleven
+    times what its length allowed. A line with no slack told at all (the grapnel in flight) did the same.
+  - **The width was scaled twice.** line.js passed a radius already grown with the camera's distance (`camDist x 0.0034`), and the
+    rope grew each point's radius with its own distance again on top of it (`radius / this.radius`).
+- **Fix:** rope.js: the caller tells the slack (m beyond the span); at none the rope is laid straight and not simulated; it is a chain
+  only while there is real slack, drawn eased to the straight by `straightness = smoothstep(slack, 0.3, 0)` (the drawn points, not the
+  simulation, so a sag builds), and its belly is capped at the sag its spare length makes (`e = 8 s^2 / 3 d`). line.js: an untold line
+  has no slack once loaded (eased tension 0.3 up), its bow (W in a fight) adds some; its width is a pixel count at the render's lines
+  and the camera's fov, scaled once (2 px a hair, 3 px with a fish on). Measured after, the same runs: in the band and at 0.78, 0 mm;
+  the grapnel in flight 0 mm, hung 0 mm (slack 0 and 0.02 m); a limp line (0.2) 0.64 m; bowed with 0.6 m of slack 1.65 m (the sag
+  0.6 m allows); widths 2.00 px, 3.00 px with a fish on, the grapnel's 3.27 px, at every distance.
+- **Rule:** 287

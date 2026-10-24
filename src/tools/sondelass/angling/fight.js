@@ -7,14 +7,19 @@
 //             Below half it can be brought in; at nothing it is spent.
 //   dist      how much line is out to it. Reeling and hauling bring it in, its runs take it out.
 //
-//   THE HANDS (the Courier cannot walk while a fish is on: the keys are the rod's):
+//   THE HANDS (the Courier cannot walk while a fish is on: the keys are the rod's tip, docs/plans/ANGLING.md 1; read by rodhands.js):
 //     LMB   reel: takes up line, loads it.                      RMB   give line: takes the load off and lets it run.
+//     Shift + LMB  crank: CRANK.takeUp times the line, CRANK.load times the load: speed bought with risk.
 //     A / D lean the rod against a run (away from the way it is going: the reticle shows the way, a beat ahead).
-//     S     haul: heave the rod back against a dive or a heavy run (and pump the fish in a little).
+//     S     haul: heave the rod back against a dive or a heavy run; held, it braces (plant your feet: it drags you less, and a
+//           thrash tells less). C is the posture cycle, never the brace.
 //     W     bow: lower the rod to a leap, so the line is not snapped when it comes down; a light give of the load in general.
-//     C     brace (crouch): plant your feet; it drags you less, and a thrash tells less.
+//   THE PUMP, the one technique (real angling's): S, then W while reeling. The haul wins line under load and banks it (`gained`);
+//   W + LMB takes the bank up at PUMP.takeUp times the reel's rate with none of the reel's load; the bank runs out over PUMP.decay
+//   real seconds once S is let go, so it is done in rhythm.
 //   Every segment of the fish's script asks for one of these (its `need`); answering it takes 55% off its pull, and an answered
-//   pull wears the fish faster. Nothing else is asked for: a rest is for reeling.
+//   pull wears the fish faster (WEAR.answered more: the pump carries the rest). Nothing else is asked for: a rest is for reeling.
+//   The numbers are Dovina's (ANGLING.md 4).
 //
 // The fish's own script is a chain of short segments picked by its STYLE (species.js): a rest, a run, a sweep, a thrash with a
 // half second's warning, a leap that leaves the water and comes down hard. Each has a pull and a side. The NEXT segment is chosen
@@ -40,7 +45,13 @@ const cl = THREE.MathUtils.clamp;
 export const BAND = [0.34, 0.78];
 /** How far ahead of a change the reticle shows it (seconds). */
 export const LOOK = 1.4;
-/** What each kind of segment asks of the hands: lean (A/D against the pull), haul (S), bow (W), brace (C), or nothing (reel). */
+/** The crank (Shift + LMB): the line taken up, and the load put on, against the plain reel's. */
+export const CRANK = { takeUp: 2.5, load: 1.8 };
+/** The pump: the bank (m) the haul builds, taken up by W + LMB at takeUp x the reel's rate, no load; gone over `decay` real s. */
+export const PUMP = { takeUp: 3, decay: 1.5, cap: 3 };
+/** How much faster an answered pull wears the fish (stamina wear x (base + answered x relief)). */
+export const WEAR = { base: 0.7, answered: 0.4 };
+/** What each kind of segment asks of the hands: lean (A/D against the pull), haul (S), bow (W), brace (S held), or nothing (reel). */
 export const NEED = { swim: 'lean', flick: 'lean', run: 'lean', sweep: 'lean', heave: 'haul', sound: 'haul', dive: 'haul', leap: 'bow', breach: 'bow', splash: 'bow', thrash: 'brace', coil: null, rest: null, sulk: null, spent: null };
 
 export class Fight {
@@ -60,6 +71,7 @@ export class Fight {
     this.airborne = 0;
     this.stats = { peak: 0, bandT: 0, slackMax: 0, thrashes: 0, dodged: 0, maxOver: 0 };
     this.outBurst = 0;
+    this.gained = 0; this.gainedPeak = 0; this.pumping = false; this.pumpTook = 0;
     this.adopt();
   }
 
@@ -107,7 +119,7 @@ export class Fight {
   }
 
   /**
-   * input: { reel, give, brace, lean (-1 A .. 1 D), haul (S), ease (W), pullDir (which way the pull goes on the screen: -1, 0, 1), player: Vector3 }.
+   * input: { reel, crank (Shift + LMB), give, brace (S held), lean (-1 A .. 1 D), haul (S), ease (W), pullDir (which way the pull goes on the screen: -1, 0, 1), player: Vector3 }.
    * Returns the result when it ends: 'snap' | 'slip' | 'spool' | 'land' | null.
    */
   update(dt, input) {
@@ -136,8 +148,11 @@ export class Fight {
     if (input.brace && g.need !== 'brace') counter = Math.min(1, counter + 0.12);
     const relief = counter;
     this.relief = relief; this.pull = pull; this.answered = counter > 0.75 && !!g.need;
+    // the pump: W + LMB with line banked by the haul takes it up with none of the reel's load
+    const pumping = !!(input.reel && input.ease && !input.haul && this.gained > 0.01 && !g.air);
+    const reelLoad = input.reel && !pumping ? 0.3 * (input.crank ? CRANK.load : 1) : 0;
     // the line
-    let target = pull * (1 - 0.55 * relief) + (input.reel ? 0.3 : 0) - (input.give ? 0.5 : 0) + (input.haul ? 0.18 : 0) - (input.ease ? 0.14 : 0);
+    let target = pull * (1 - 0.55 * relief) + reelLoad - (input.give ? 0.5 : 0) + (input.haul ? 0.18 : 0) - (input.ease ? 0.14 : 0);
     if (thrashHit) target = 1.3 * (input.reel ? 1 : input.give ? 0.55 : 0.85) * (input.brace ? 0.8 : 1) * (input.ease ? 0.92 : 1);
     if (g.kind === 'splash') target = 0.95 * (input.reel ? 1.15 : input.give ? 0.6 : 0.95) * (input.ease ? 0.85 : 1);
     if (this.forceSlack) target = 0;
@@ -146,7 +161,7 @@ export class Fight {
     this.stats.peak = Math.max(this.stats.peak, this.tension);
     // stamina: worn down in the band
     const inBand = this.tension > BAND[0] && this.tension < BAND[1];
-    if (inBand && !g.air) { this.stamina -= dt / sp.stamina * (0.7 + 0.9 * relief); this.stats.bandT += dt; }
+    if (inBand && !g.air) { this.stamina -= dt / sp.stamina * (WEAR.base + WEAR.answered * relief); this.stats.bandT += dt; }
     else if (this.tension < 0.12 && this.stamina > 0.02) this.stamina += dt * 0.02;
     this.stamina = cl(this.stamina, 0, 1);
     if (this.stamina <= 0.02 && !this.spent) { this.spent = true; this.ctx.onEvent?.('spent', g); }
@@ -157,8 +172,16 @@ export class Fight {
     if (input.give) out += 1.3;
     out += this.outBurst; this.outBurst = Math.max(0, this.outBurst - dt * 2);
     const held = 1 - 0.8 * cl(pull, 0, 1) * this.stamina;
-    let inn = (input.reel ? (2.4 + 3 * tired) * held : 0) + (input.haul ? (1.2 + 1.2 * tired) * held : 0);
+    const reelRate = (2.4 + 3 * tired) * held, haulRate = (1.2 + 1.2 * tired) * held;
+    let inn = (input.reel && !pumping ? reelRate * (input.crank ? CRANK.takeUp : 1) : 0) + (input.haul ? haulRate : 0);
+    if (pumping) { const take = Math.min(this.gained, reelRate * PUMP.takeUp * dt); this.gained -= take; this.pumpTook += take; inn += take / dt; }
     if (g.air) inn = input.reel ? 2 : 0;
+    // the bank: built while S hauls, run out over PUMP.decay once it is let go
+    if (input.haul) { this.gained = Math.min(PUMP.cap, this.gained + haulRate * dt); this.gainedPeak = this.gained; }
+    else this.gained = Math.max(0, this.gained - this.gainedPeak / PUMP.decay * dt);
+    if (this.pumping && !pumping && this.pumpTook > 0.05) { this.stats.pumps = (this.stats.pumps || 0) + 1; this.ctx.onEvent?.('pump', { took: this.pumpTook }); }
+    if (!pumping) this.pumpTook = 0;
+    this.pumping = pumping;
     this.dist = cl(this.dist + (out - inn) * dt, 0.6, this.maxLine + 2);
     // the fish's bearing (it pulls across, and turns at the pool's edge)
     const ang = g.side * (0.16 + 0.35 * pull) * (g.kind === 'rest' || g.kind === 'spent' ? 0.2 : 1) * (0.5 + 0.5 * this.stamina);

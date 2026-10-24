@@ -127,6 +127,8 @@ const RULES = {
   'seaserpent.down': (s) => s.seaSerpentDown?.(),
   'palm.condense': (s, e) => s.palmCondense?.(e.n, e.sides),
   'palm.grow': (s, e) => s.palmGrow?.(e.from, e.to),
+  'angle.hookset': (s, e, g) => s.lineSongStart?.(() => { const a = g.angler, F = a?.state === 'fight' ? a.fight : null; return F ? { tension: F.tension, dist: F.dist, root: g.music?.grid?.()?.root ?? 64, scale: g.music?.scale?.() } : null; }), // (the line's song: audio/anglingsong.js)
+  'angle.lift': (s, e, g) => s.angleLift?.(e, g.music?.grid?.()),
   'sea.hull': (s, e) => s.seaHullHit?.(e.hull ?? 3), // (`hull`: the hits it can still bear)
   'sea.hull.broken': (s) => s.seaHullBroken?.(),
   'goal.done': (s, e) => s.goalDone?.(e.slot ?? 0, !!e.all), // (a goal of the game day's three done; all three, the Answer whole: audio/ui.js)

@@ -99,7 +99,7 @@ export class RacewayRivals {
       if (n === 'Skiff_Hull') M.hull = sk.cleanHull ?? Object.assign(vessoulPainted(o.material.map ?? null, {}), { name: n }); // (the unworn, unglazed hull: the Courier's own wears its stakes and its kiln glaze, boat.js; theirs neither)
       else if (n === 'Skiff_Parts') M.parts = o.material;
       else if (n === 'CourierEnergy') { M.energy = o.material.clone(); M.energy.emissiveIntensity = 0.3; }
-      else if (n === 'Skiff_Cloth') M.cloth = o.material;
+      else if (n === 'Skiff_Cloth') M.cloth = sk.cleanCloth ?? o.material; // (the cloth as the maker painted it: the Courier's own wears its paint, vfx/skiffpaintlook.js)
     });
     // (the pupils: the creatures' own, two little spheres merged into one mesh)
     const eye = (x) => new THREE.SphereGeometry(0.028, 6, 4).scale(0.7, 1.5, 0.7).translate(x, 0.01, 0);
