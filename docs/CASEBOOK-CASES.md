@@ -3714,4 +3714,4 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   "That is not a track code." every time. Headless tests loaded codes through `trackEditor.load` and never through the chat line.
 - **Fix:** the editor's Load code opens a box of its own in its panel, with the clipboard's Paste (a phone's way too); the race board's
   Load a code opens it; `/edit code` is gone from the help.
-- **Rule:** NEW:a-field-fits-what-it-is-for
+- **Rule:** 288
