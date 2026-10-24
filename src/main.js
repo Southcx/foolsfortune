@@ -340,6 +340,7 @@ import { Qais } from './debug/qais/qais.js';
 import { installConsoleRing } from './debug/qais/attach.js';
 import { installReportButton } from './debug/qais/reportbutton.js';
 import { Settings } from './core/settings.js';
+import { SettingsWindow } from './ui/settingswindow.js';
 import { MacroBook } from './tools/veritome/mind/macros.js';
 import { trimShadows } from './render/shadowtrim.js';
 import { installShadowKinds } from './render/shadowkinds.js';
@@ -660,7 +661,7 @@ async function main() {
   const codex = new Codex(game);
   game.codex = codex;
   codex.onClose = () => { if (input.enabled && !cursorFree()) input.requestLock(); };
-  const modalOpen = () => !!(game.codex?.open || game.indexMenu?.open || game.cartography?.open || game.pneukaUI?.open || game.shopUI?.open || game.qais?.open || game.hudLayout?.turnHeld); // (and the turn card: an action mode held upright on a phone, ui/turncard.js)
+  const modalOpen = () => !!(game.codex?.open || game.indexMenu?.open || game.cartography?.open || game.pneukaUI?.open || game.shopUI?.open || game.qais?.open || game.settingsWindow?.isOpen || game.hudLayout?.turnHeld); // (and the settings window; and the turn card: an action mode held upright on a phone, ui/turncard.js)
   // Any window or cover at all: a window that pauses, the kiln's, the dialogue box, a seam or the maw wipe under way, a crossing, a
   // reprogramming, the Opening. A window opens only when none is (or to close itself): one window at a time (SWEEPS group 2).
   const windowOpen = () => modalOpen() || !!(game.kilnUI?.open || game.dialogue?.open || game.seam?.busy || game.mawWipe?.active || game.aberrantWipe?.active || game.emocean?.stage.active || game.reprogram?.open || game.lockheartCine?.active);
@@ -806,6 +807,7 @@ async function main() {
     if (group === 'lachryma' || group === '*') { lachryma.baseMax = T.lachryma.max; lachryma.regenRate = T.lachryma.regenRate; lachryma.regenDelay = T.lachryma.regenDelay; }
   };
   game.knobChanged = knobChanged; game.settings = new Settings(game); // (the settings window's rows: core/settings.js)
+  game.settingsWindow = new SettingsWindow(game); // (the settings window: its dress, ui/settingswindow.js)
   const gui = buildTuningPanel(knobChanged, {
     copyJSON: () => navigator.clipboard?.writeText(JSON.stringify(T, null, 2)).then(() => game.log.say('system', 'Settings copied to the clipboard.', { key: 'settings.copy', throttle: 1 })),
     resetRoom,

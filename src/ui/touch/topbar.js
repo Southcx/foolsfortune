@@ -28,7 +28,7 @@ export const TOP_BAR = {
     survey: (g) => !!g.god?.active,
   },
   open: {
-    codex: (g) => !!g.codex?.open, box: (g) => !!g.pneukaUI?.open, map: (g) => !!g.cartography?.open, chat: (g) => !!g.log?.typing,
+    codex: (g) => !!g.codex?.open, settings: (g) => !!g.settingsWindow?.isOpen, box: (g) => !!g.pneukaUI?.open, map: (g) => !!g.cartography?.open, chat: (g) => !!g.log?.typing,
     overhead: (g) => !!(g.realm?.active && g.realm?.camera?.view === 'overhead'), godhand: (g) => !!g.god?.active,
     skiff: (g) => { const T = g.player?.techs?.get?.('skiff') || g.techs?.get?.('skiff'); return !!T?.active; }, pause: () => { const o = document.getElementById('overlay'); return !!o && o.style.display !== 'none'; },
   },
@@ -64,6 +64,7 @@ export class TouchTopBar {
   open(what) {
     const g = this.game;
     g.events?.emit?.('touch.open', { what, by: 'courier' });
+    if (what === 'settings' && g.settingsWindow) { g.settingsWindow.open(); try { this.onOpen?.(what); } catch (e) { console.warn('topBar.onOpen', e); } return; } // (the window is here: the gear opens it, not the pause menu)
     try { g.touchShell?.open?.(what); } catch (e) { console.warn('touchShell.open', e); }
     try { this.onOpen?.(what); } catch (e) { console.warn('topBar.onOpen', e); }
   }

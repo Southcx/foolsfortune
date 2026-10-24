@@ -95,6 +95,6 @@ export function wireLayout(game) {
  *  thumbs' controls stand down under it; the top bar stays. */
 export function windowOpen(game) {
   const g = game || {}, ov = typeof document !== 'undefined' ? document.getElementById('overlay') : null;
-  return !!(g.codex?.open || g.pneukaUI?.open || g.cartography?.open || g.indexMenu?.open || g.dialogue?.open || g.kilnUI?.open || g.shopUI?.open || g.qais?.open
+  return !!(g.codex?.open || g.pneukaUI?.open || g.cartography?.open || g.indexMenu?.open || g.dialogue?.open || g.kilnUI?.open || g.shopUI?.open || g.qais?.open || g.settingsWindow?.isOpen
     || g.title?.active || (ov && ov.style.display !== 'none'));
 }
