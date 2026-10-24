@@ -245,6 +245,24 @@ Chaos digs it up cheap and Law buys it dear; the hauler lives in between. Letty'
         read in the Codex instead. Still a proposal.
       - **The hand's element**, palmistry's four hand shapes (earth square and short-fingered, air square and long, fire long-palmed
         and short, water long and long): the god hand takes the shape of the suit you lean on most.
+  - **Mudras: the god hand's poses** *(Espada's proposal, 2026-10-24, on the owner's "mudras could be a rich vein"; nothing built)*.
+    A mudra is a hand held in a meaning, from the iconography of India and of Buddhism, and in Japan the kuji-in's nine seals. The god
+    hand cannot show lines on its open palm, but it can hold a pose, and the poses are where the hand's lore lives.
+    - **The finger-to-thumb mudras are a planet in a sign.** Modern hand-yoga gives four fingers a planet each, as palmistry does, and
+      a mudra joins that finger to the thumb (said plainly: a modern practice, not old scripture): Gyan, index to thumb (Jupiter, so
+      Ouranurgy); Shuni, middle to thumb (Saturn, Alteration); Surya, ring to thumb (the Sun, Divination); Buddhi, little finger to thumb
+      (Mercury, Spellscription). Since our thumb is the d12, the zodiac, every such mudra is a planet touching a sign, which is how
+      astrology reads a chart. So a domain's pose shows its planet and its knucklebone together.
+    - **The others, by meaning:** Prana (ring and little fingers to the thumb: *prana* is breath, *pneuma*'s cousin) for Possession,
+      breath sent into another; Bhumisparsha (the fingertips touching the ground, calling the earth to witness) for Manifestation,
+      raising the island's matter; Karana (index and little finger raised, pushing obstacles away) for Psychokinesis; **Abhaya**
+      ("have no fear": the palm raised and turned outward) for the moment the palm die is shown, since the god hand's palm is an
+      opening and Abhaya is the one mudra that shows the palm; **Varada** (the palm down and open, granting) for a miracle let go, paid
+      as a release; **Dhyana** (the hand at rest, meditation) for the quiet that lets the Dissonance Level ebb.
+    - **Care.** These are living sacred gestures, so the rule is the script's: draw from them, never mislabel one, never put one to a
+      cruel or comic use. The names stay in the Codex with what each means; on screen the label is plain ("open palm", "earth touch").
+    - **Whose:** the poses are Calissa's to look at (the hand's clips); a pose that does something is Dovina's to rule. A pose is a look
+      first: the hand's controls stay as they are.
   - **The name.** *Pneuka* is *pneuma*, breath: breath's stones in the breath's jar. "Stone" is three things at once: the gemstone (the
     set's mineral), the die (stones were cast before bones were), and stoneware (clay fired hard, the folk's own tier). On screen the
     label is plain: **dice**.
