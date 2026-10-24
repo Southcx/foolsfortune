@@ -42,7 +42,7 @@ boot, audio, save and platform state. Nothing has been measured on a phone yet; 
 | peak inputs at once | on foot 5; cutlass 6 to 7; rod with a fish 6; Solar Skiff 5 (8 with grabs); the rail 6 to 7; helm 4; god hand 3 to 4; duel 2; tables 1 | the skiff, helm, god hand, duel and tables fit two thumbs as they are; the cutlass and the rail need the context to choose |
 | hardest verbs | free aim while holding others; timing windows (parry 0.25 s, late pop, toll on the beat, roll); chords (carve, rod fight, cutlass specials); mouse-delta cursors (Blade Mode, Celestial mode, the order wheel, the quick pick); RMB and MMB as held verbs; keys with no pointer route (digits, Esc, Tab, Enter, `~`, X, R, F, Z, T, Y) | each gets a touch form in section 4 |
 | windows | 61 surfaces: 11 work, 25 need layout, 20 need redesign, 5 dev-only. Hover carries information in 23 handlers and 37 rules; right-click is required in about 10 places; HTML5 drag in the Pneuka Box, the reading table and the underside; the map pans by mouse-move and zooms by wheel | a press-and-hold detail (the choice cards already have one, 420 ms) replaces hover; tap-to-pick-then-tap-to-place replaces drag; a long press replaces right-click |
-| HUD sizing | five sizing systems, all keyed to height; in portrait the Lachrimeter is 58% of the width, the Sight 77%, the psygun cylinder off the left edge; no safe areas | one layout manager with safe areas and thumb zones (Calissa's) |
+| HUD sizing | five sizing systems, all keyed to height; in portrait the Lachrimeter is 58% of the width, the Sight 77%, the psygun cylinder off the left edge; no safe areas | one layout manager with safe areas and the thumbs' areas (Calissa's) |
 | settings | the player's real settings (sensitivity, graphics, volume) live only in the Tab panel (lil-gui) | a settings window reachable by touch |
 | render | 480-line present (a phone draws about 1039 x 480); tiers High/Low/Minimum and dynamic resolution exist; an iPhone auto-detects as High (4x MSAA twice, 8 lamps, PCF shadows); Minimum still needs half-float render targets | a phone tier and a fixed detector; a direct-to-canvas fallback |
 | boot | 30.8 MB dist; about 23.5 MB on the boot path (11.3 MB gzipped); one 13.3 MB `game.js`; about 190 programs compiled behind a text screen (22 s of a 59 s boot on SwiftShader) | lazy rooms, shader warm-up spread, a progress bar; measured on the phone |
@@ -69,8 +69,8 @@ boot, audio, save and platform state. Nothing has been measured on a phone yet; 
 
 ## 4. The touch grammar (one set of rules for every system)
 
-1. **Two zones and a cluster.** The left half of the screen is the move zone: a thumb landing anywhere makes a floating stick there
-   (Genshin's). The right half is the look zone: a drag turns the camera. In the right half's bottom corner sits the **cluster**: at most
+1. **Two areas and a cluster.** The left half of the screen is the move area: a thumb landing anywhere makes a floating stick there
+   (Genshin's). The right half is the look area: a drag turns the camera. In the right half's bottom corner sits the **cluster**: at most
    four buttons, the context's verbs (section 5), the main one largest under the thumb (96 px), the others round it (72 px). Nothing is
    smaller than 44 px (Apple's and Google's minimum hit target).
 2. **Context decides the buttons.** The cluster shows only what the moment can use (on the skiff: HOP, FLARE, BRAKE; in the air: HOP, NOSE,
@@ -90,7 +90,7 @@ boot, audio, save and platform state. Nothing has been measured on a phone yet; 
    context's choices (chambers, domains, arts, lures), a swipe or a tap.
 8. **The camera helps.** On a phone the camera follows by itself (the chase's own behaviour), and the right thumb takes it only while it
    drags; let go, it eases back (Sky's lesson). Aim-heavy contexts turn the lock-on on by default (it already has aim assist).
-9. **The HUD makes room.** The instruments (the Lachrimeter, the Sight, a tool's own UI) step out of the thumbs' zones on a phone, in a
+9. **The HUD makes room.** The instruments (the Lachrimeter, the Sight, a tool's own UI) step out of the thumbs' areas on a phone, in a
    layout keyed to the screen's shorter side and its safe areas (Calissa's: section 6.3).
 10. **Landscape for action, either for the rest.** The action modes are landscape (a 222 x 480 portrait buffer is too narrow to steer by);
     the windows, the god hand, the garden, the duel and Raku's tables also work in portrait.
@@ -153,7 +153,7 @@ Green: works on touch as it is or with the grammar alone. Amber: needs its own m
   host allows it is Petra's to find out.
 
 ### 6.3 The HUD's layout (Calissa's)
-- One layout manager places every corner instrument, window and the touch controls inside the safe area, with the thumbs' zones reserved
+- One layout manager places every corner instrument, window and the touch controls inside the safe area, with the thumbs' areas reserved
   when the device is touch; its unit is keyed to the screen's **shorter side**, not its height, so portrait stops overflowing.
 - The touch controls are the house's, never stock: in the System's type and the island's dress, the cluster's main button the largest,
   each lit by its state (a held HOP glows as it loads the spring). No words where a glyph says it; a label where it does not (Espada's).
@@ -243,7 +243,7 @@ Raceway's first race finished and first lap under bronze.
 
 ### Calissa's answers (2026-10-24: yes to all five, with these)
 1. **The layout manager** is one module (`src/ui/hudlayout.js`), its unit `su` = 1% of the safe area's shorter side; every corner
-   instrument registers an anchor and a size in su; on touch the thumbs' zones are reserved rects nothing may enter. On touch **the log
+   instrument registers an anchor and a size in su; on touch the thumbs' areas are reserved rects nothing may enter. On touch **the log
    becomes a two-line ticker** top-left under the top bar (a tap opens it full, as a sheet), never under the steering thumb, since it is
    the only narration; **the Lachrimeter moves up the right edge** under the Sight, clear of HOP; the place plate drops to its icon line.
 2. **The race's BACK / RESTART / RETIRE go into the pause menu** while racing (section 8 amended).
@@ -258,6 +258,21 @@ Raceway's first race finished and first lap under bronze.
 5. **Outline hulls near only** are acceptable if the hull's width fades out over a band (about 25 to 40 m), never a hard cut; far things
    keep their silhouette from the grade. Petra measures first.
 6. She builds M0's top bar and pause button as soon as Petra's touch mode lands, to its hook (`game.touch` or a body class: Petra's call).
+
+### Espada's answer (2026-10-24)
+The move and look **areas** (not zones: a zone is a render zone). The stale help pages are fixed on claude/espada-lore (9782ee55): the
+Veritome's keeps no things, the skiff's teaches the carve, the grabs, the banked flare and the shoulder.
+
+### Wanda's answers (2026-10-24, claude/friendly-knuth-vbv82r cd55f0b8)
+1. **Recovery is built** (`audio/core.js recover()`): a hidden page suspends the audio context and a visible one resumes it; any stop
+   (iOS's `interrupted`, a suspend nobody asked for) resumes after 0.25 real s, or on the next touch, click or key if the browser wants a
+   gesture; the schedulers run on the context's clock, so a suspended stretch is skipped, never piled up (casebook
+   NEW:audio-context-recovers; headless only, not yet on a phone).
+2. **Haptics are Wanda's** (`audio/haptics.js`, off the bus, 120 ms between buzzes): a perfect pop [12]; a parry [10, 40, 14]; a combo
+   banked [12, 50, 28]; a hit taken (a crack, not your own) [36]; the shield broken [30, 60, 30]; shattered [80, 40, 160]; the hull struck
+   at sea [40]; a line snapped [24]; a fish's lift [16, 60, 30] (a record or legend [16, 60, 16, 60, 40]). Off with `T.audio.haptics =
+   false`, a knob for now; a settings row is Calissa's or Petra's (the settings window, M1).
+3. **The lighter reverb path** waits on the phone numbers; then the five convolvers share one send in the phone tier.
 
 ## 11. Questions for the owner (in Dovina's digest)
 
