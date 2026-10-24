@@ -128,7 +128,7 @@ class Theme {
     save.section('windowColour', {
       scope: 'settings', version: 1, dump: () => ({ id: this.id }), load: take,
       reset: () => {
-        let old = null;
+        this.id = 'kiln'; let old = null; // (a wipe of the settings: back to the kiln's, unless an old key is still there to take in)
         try { old = JSON.parse(save.store?.getItem(KEY) || 'null'); save.store?.removeItem(KEY); } catch { /* none kept */ }
         if (old) { take(old); save.dirty('windowColour'); }
       },
