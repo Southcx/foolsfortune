@@ -174,14 +174,61 @@ export const GOD_ARTS = [
   {
     realm: 'god', id: 'manifest', key: '5', name: 'Manifest', glyph: '▲', input: 'left click, drag and hold',
     blurb: 'Raise a wall of clay from the floor: press, drag for its length, hold for its height. It stands for a while, then crumbles; whatever stands where it rises is lifted with it. Costs Lachryma by its size. Works on understood ground only.',
-    hint: 'Map four places, and survey ten times.',
-    goals: [led('map.room', 4, 'places mapped'), led('map.pulse', 10, 'surveys')],
+    hint: 'Map four places.',
+    goals: [led('map.room', 4, 'places mapped')],
     variants: [
       { id: 'bastion', name: 'Bastion', blurb: 'Taller, longer, and it stands for a minute and a half.', cfg: { maxH: 6, maxLen: 14, life: 90 },
         hint: 'Raise a great many walls.', goals: [led('god.manifest', 12, 'walls raised')] },
     ],
   },
 ];
+
+// ---------------------------------------------------------------------------
+// THE SECOND WAYS (DESIGN.md 22, the owner's law: "skill skips grind; grind closes the gap"; PARKED.md "every art opens two ways").
+// Each Movement Art and old God Art, and each variant, opens by its COUNT WAY (doing it a lot) or its FEAT WAY (doing something hard
+// once), whichever comes first: the god powers' rule (SPINE.md 2.1) for every art. Most had only a count; the three that had only a
+// feat (Super Slam, Flicker, Spring Stomp) get a count. A base art's feat can be done before the art is yours; a variant's, with the
+// art in hand but without the variant (Bastion's isn't a longer wall, which only Bastion makes). Every key is one tracking.js keeps.
+// Drafts, tuned in play. Prior art: OSRS's quest-or-level gates; Monster Hunter's key quests; Tony Hawk's goal lists (a count and a
+// trick on each).
+// ---------------------------------------------------------------------------
+export const SECOND_WAYS = {
+  // the Movement Arts
+  blink: led('lob.dodged', 3, 'three lobs dodged'),
+  'blink.rush': led('air.longest', 3.5, '3.5 s off the ground in one go'),
+  'blink.flicker': led('move.blink', 80, 'blinks'), // (a count: its own was a feat)
+  slam: led('fall.max', 30, 'a fall of 30 m'),
+  'slam.quake': led('slam.height', 25, 'a slam from 25 m up'),
+  'slam.super': led('slam.target', 25, 'slams onto a target'), // (a count)
+  roll: led('slide.longest', 15, 'a slide of 15 m'),
+  'roll.tumble': led('roll.fall.height', 35, 'a roll out of a 35 m fall'),
+  stomp: led('chain.max', 5, 'five pots broken within a breath of each other'),
+  'stomp.spring': led('move.stomp', 60, 'stomps'), // (a count)
+  slip: led('paint.stroke.best', 15, '15 m² of paint in one hold of the spray'),
+  'slip.tide': led('tech.longest.slip', 20, 'one Paint Dive of 20 s'),
+  latch: led('wallrun.longest', 12, 'a wallrun of 12 m'),
+  'latch.grip': led('tech.longest.latch', 2, 'a wall latch held 2 s'),
+  kick: led('target.moving', 3, 'three moving targets hit'),
+  'kick.counter': led('parry.run.best', 3, 'three parries without a miss'),
+  recoil: led('target.drop', 8, 'a target hit while falling 8 m'),
+  'recoil.boost': led('recoil.charged', 3, 'charged recoil jumps'),
+  glide: led('skiff.pop.perfect', 5, 'perfect pops on the Solar Skiff'),
+  // the old five God Arts
+  'telekinesis.heavy': led('god.grab.clapper', 5, 'clapperjars lifted by the hand'),
+  sunder: led('blade.cuts.best', 5, 'blade mode left with five cuts'),
+  'sunder.guillotine': led('god.cuts.best', 2, 'two things sundered with one stroke'),
+  swell: led('god.throw.speed', 12, 'a thing thrown by the hand at 12 m/s'),
+  'swell.colossus': led('god.scoop.best', 12, '12 m³ scooped in one stroke'),
+  wring: led('god.shape.best', 6, '6 m³ shaped in one stroke'),
+  'wring.wringer': led('god.carve.best', 5, '5 m³ carved in one stroke'),
+  manifest: led('god.wave', 1, 'a raid wave held'),
+  'manifest.bastion': led('god.wave.max', 5, 'wave 5 in a raid'),
+};
+for (const a of [...ABILITIES, ...GOD_ARTS]) for (const v of [null, ...a.variants]) {
+  const art = v || a, way = SECOND_WAYS[v ? `${a.id}.${v.id}` : a.id];
+  if (!way || !art.goals.length) continue;
+  art.goals = [...art.goals, way]; art.any = true; art.hint = `${art.hint} Or: ${way.label.match(/^(a|an|one|two|three|five|\d)/i) ? way.label : `${way.n} ${way.label}`}.`;
+}
 
 // ---------------------------------------------------------------------------
 // The god powers and the epic miracles as God Arts (SPINE.md 2, the owner's ruling of 2026-10-13: "arts only by achievement"). Each

@@ -5,7 +5,7 @@ combo)? We can have Major Arcana pulling triple, quadruple, even quintuple duty 
 We're going to have to design RPG classes around them too, in tandem with fleshing out the skill domains and ability unlocks."
 
 Dovina's plan. Status: **the read is built** (`classOf`, `progress/spreads.js`; wired by Petra as the laid spread's class, told as
-`spread.court`); **what a class gives is a plan** (sections 4 to 6), waiting on the owner's answers (section 8).
+`spread.court`); **what a class gives is a plan** (sections 4 to 6): arts kept across classes and accentuated in their own is ruled (6.3); the rest waits on section 8.
 
 ## 1. Golden Sun's idea, our cards
 
@@ -73,7 +73,7 @@ One card, one identity, everywhere it turns up:
 7. **A collected card**: bound in the Codex's THE ARCANA (by its photograph or another achievement).
 8. **A house card**: on Raku's tables, in Querent (the Fate Clause's boons).
 
-## 5. The domains and their planets (proposal, checked by Espada 2026-10-23: the rulerships right, the Sun and Moon swapped; the owner's to rule)
+## 5. The domains and their planets (checked by Espada 2026-10-23; the Sun and Moon swap ruled by the owner, 2026-10-24)
 
 The seven classical planets for the seven domains, and each zodiac class under its sign's ruling planet (the classical rulers, as the
 Golden Dawn used):
@@ -90,19 +90,49 @@ Golden Dawn used):
 
 Courts serve no domain: they serve their suit (their lift), as a court serves its house.
 
+### 5.1 The domains on the god hand (palmistry, taken in by the owner, 2026-10-23, through Espada)
+
+Palmistry seats the seven planets on the hand (its mounts), so through the table above every domain has a place on the god hand,
+beside the knucklebone on that finger (DICE.md 4.1):
+
+| mount | planet | domain | the die there |
+| --- | --- | --- | --- |
+| the index finger | Jupiter | Ouranurgy | d10 (Cups) |
+| the middle finger | Saturn | Alteration | d8 (Swords) |
+| the ring finger | the Sun | Divination | d6 (Pentacles) |
+| the little finger | Mercury | Spellscription | d4 (Wands) |
+| the thumb's root | Venus | Manifestation | d12 (the zodiac) |
+| the palm's heart | Mars | Psychokinesis | d20, the palm die (the Majors) |
+| the palm's outer edge | the Moon | Possession | (none) |
+
+The Sun and Moon rows follow the swap the owner ruled (section 5). A domain's level could show on its mount (Calissa's).
+
+### 5.2 Two more readings of the hand (Espada's proposals; plans, not rules)
+
+- **The four great lines as four readings of the ledger:** the life line (time played and shatters lived through), the head line (arts
+  and domains learned), the heart line (bonds: spirits, the folk, siblings), the fate line (Luck's bits and achievements). The god hand's palm is an opening (the palm die's hole), so the
+  lines cannot cross it: read them round the opening's rim, or in the Codex's STATUS shelf (Espada, 2026-10-24). A readout, never a gate.
+- **The god hand's shape by the suit you lean on:** palmistry's four elemental hands (earth: a square palm, short fingers; air: square,
+  long; fire: long palm, short fingers; water: long, long). The hand takes the shape of your class's suit (a court's own, a zodiac
+  Major's element), so changing the Box changes the hand. A look only, Calissa's; no rule changes with it.
+
+
 ## 6. What a class gives (proposal)
 
 Every rule here keeps the design laws (DESIGN.md 22): arts only by achievement; a modifier with a source you can see; the core movement
 untouched.
 
 1. **Its lift** (built): one suit's cap to 12.
-2. **Its domain's affinity**: experience in its ruling domain x1.25 while you read as it. The board says why your Divination is
-   climbing faster.
-3. **Its arts, learned in it and kept** (Final Fantasy Tactics' jobs: abilities bought with that job's points, then usable from any
-   job as a secondary). A class has two arts. Each is opened by **an achievement done while you read as that class** (the Chariot's
-   art for a race won as the Chariot). Once open, it is yours in any class. So a class is where you learn, never what you must wear to
-   use what you learned: skill skips grind (you can earn an art in one session as the right class), grind closes the gap (any class
-   reaches every art in the end).
+2. **Its domain's affinity** (**built 2026-10-24**: `CLASS_DOMAIN`, `CLASS.affinity`, `progress/spreads.js`; `psyche.affinity`,
+   `progress/psyche.js`): a Major's domain experience x1.25 while you read as it (section 5's table, the World Saturn's), the extra kept
+   in the ledger as `exp.affinity.<domain>`. A court serves its suit, the Fool no one. The board says why your Divination is climbing faster.
+3. **Its arts: a class sharpens them, never locks them** (ruled by the owner, 2026-10-24: "having a class accentuates the abilities
+   you can use, but doesn't preclude you from using them"). A class has two arts. Each is opened by **an achievement done while you
+   read as that class** (the Chariot's art for a race won as the Chariot), and once open it is yours in every class (Final Fantasy
+   Tactics' jobs: learned in one, used from any). Read as its class, an art is **accentuated**: a modifier on its numbers, its source
+   the class shown on the board; read as another, it works exactly as learned. So a class is where you learn and where you shine,
+   never what you must wear to use what you learned: skill skips grind (earn an art in one session as the right class), grind closes
+   the gap (any class reaches every art in the end). The size of the accent is a number to measure, not yet set.
 4. **Its Entropy Tactics kit** (4.6): the same two arts are two of its three actives at the table.
 
 The cost is content: 38 classes at two arts each is 76 arts, plus the 22 Majors' table kits. Ship in waves of four (as
@@ -122,7 +152,8 @@ ENTROPY-TACTICS.md 3.b proposed for the table), each measured before the next.
 2. **The other eight** (section 3): planets by the wild light, the Hanged Man by an all-reversed spread, Judgement by the Celtic Cross
    complete. Or your own?
 3. **The domains' planets** (section 5): this mapping, or another?
-4. **What a class gives** (section 6): the lift, the domain's affinity, two arts learned in it and kept. Is "learned in a class, kept
-   for every class" right, or should an art stay with its class?
+4. ~~What a class gives~~ ruled (2026-10-24): arts are kept across classes; a class accentuates its own (section 6.3).
 5. **One kit, two games** (4.6): a class's arts are its Entropy Tactics actives?
 6. **The first wave of four**: the Fool and three of your choosing?
+7. **Palmistry's two readings** (5.2): the four lines as ledger readings, and the hand's shape by your suit?
+8. ~~The Sun and Moon swap~~ ruled (2026-10-24): the Sun to Divination (Strength), the Moon to Possession (the Chariot).

@@ -17,7 +17,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   and on the Emocean the ships. *Not:* "the player" in player text.
 - **the stones / the Pneuka stones** (`src/progress/stones.js`; the owner, 2026-10-23: one thing; `docs/plans/DICE.md`) — where Lachryma enters
   the vessel and a release leaves it: the pool's size, regen and costs, the magnet's reach, overflow; one set at a time, its mineral its
-  trade; seven dice of solid Lachryma, the standard set (each die its solid's suit), and the chance rolled for you is thrown on them.
+  trade; seven dice of solid Lachryma, the standard set (each die its solid's suit), and the chance rolled for you is thrown on them (on screen: dice; in the god hand, a knucklebone a finger, LORE.md 4).
   **The palm die** (`PalmDie`, `game.palmDie`, `src/progress/dice.js`): the stones in the god hand's form, one die in its palm that
   condenses the overflow past the Lockheart into cubes, capped a game day by its size, and grows d4 to d20 on what it condensed. *Not:* a stone in the world,
   Raku's dice set (the house's). → detail
@@ -51,7 +51,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **asking a sibling / letter** (`@name words`, `/letter name words`; `src/coop/answer.js`) — a question a sibling answers in seconds, in its
   division's voice / words sent to a division's own session, answered in minutes. *Not:* each other.
 - **the god hand** (~, `src/godhand/godhand.js`) — the mode where the Courier becomes a jar and you become a hand.
-- **a mudra / the hand's poses** (plain name; `MUDRAS`, `MudraPose`, `src/godhand/mudras.js`; `godHandClips.mudra(key)`, `/mudra`) — one of the god hand's ten ruled poses (LORE.md 4), held over its clips and blended out to give them back: keyed by its Sanskrit name (`gyan`, `shuni`, `surya`, `buddhi`, `prana`, `bhumisparsha`, `karana`, `abhaya`, `varada`, `dhyana`), shown by its plain label (index touch .. rest); living sacred gestures, never mislabelled or comic. When one is taken is Dovina's. held at Dovina's `game.handPose` (its id and strength, `progress/mudras.js`); the finger poses and the open palm raised to face the view. *Not:* a clip (`HAND_MOVES`), a gesture (a held tool's), an emote.
+- **a mudra / the hand's pose / a mudra's frame** (ruled by the owner, 2026-10-24; LORE.md 4; `MUDRAS`, `DOMAIN_MUDRA`, `HandPose`, `game.handPose`, `src/progress/mudras.js` / its frame `MudraPose`, `src/godhand/mudras.js`; `godHandClips.mudra(key)`, `/mudra`) — one of the god hand's ten poses, keyed by its Sanskrit name (`gyan` .. `dhyana`) and shown by its plain label (index touch, horns, open palm, rest ...): seven the domains' and three moments (Abhaya the palm die shown, Varada a miracle let go, Dhyana the rest while the Dissonance Level ebbs); living sacred gestures, never mislabelled or comic / which one the hand holds now (Dovina's: its selected power's domain lightly, a cast struck, a moment held; a look only, never a rule) / the pose as built (Calissa's: a clip frame with solved finger offsets, held over the hand's clips at `handPose`'s strength and blended out, the finger poses and the open palm raised to face the view). *Not:* a God Art, a sign (a miracle's), a clip (`HAND_MOVES`), a gesture (a held tool's), an emote.
 - **a miracle / an epic miracle / the island's matter** (working names; `docs/plans/GODHAND.md`) — a feeling's weather the hand calls down by
   drawing its sign / one of seven great ones, one a domain, paid as a release from the vessel (SPINE.md 4) / the explored area's layered ground the hand moves: the island's firm and loose layers (`GROUND`, `godhand/matter.js`; on Anagami, clay and sand), Lachryma, crude. *Not:* a God Art.
 - **a creation** (`game.creations`, `src/godhand/creations.js`, voxels `godhand/voxels.js`) — voxel matter of the island's firm layer the hand raises
@@ -567,7 +567,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **knack** (`game.knacks`, `src/progress/knacks.js`, `/knack`) — a passive Art, a toggle, opened by an achievement, where an assist lives; on
   until switched off. *Not:* a widening, nor a Movement Art. → detail
 - **an aptitude** (working name, Espada's and the owner's; `docs/plans/APTITUDE.md`, a plan) — an ability the System measures from how you play, in its own unit and against yourself. *Not:* an attribute (Soul Alchemy's), a domain.
-- **Luck** (`src/progress/luck.js`) — the surprise lived through (in bits), read from the ledger; it sways chance, never a skill.
+- **Luck** (`src/progress/luck.js`) — the surprise lived through (in bits), read from the ledger; it sways chance, never a skill; **Luck's re-roll** (`game.rerolls`, `progress/dice.js`): a failed throw of your own thrown again at once, one a game day and more with Luck (DICE.md 3).
 - **day** (`today()`, `src/core/calendar.js`) — one game day, an hour of real time; always written **game day**, no bare "day". *Not:* a calendar
   day.
 - **game hour** — a twenty-fourth of a game day, 150 real seconds. *Not:* an hour of play.

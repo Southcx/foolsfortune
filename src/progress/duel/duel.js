@@ -42,7 +42,7 @@ export const junkOf = (n, step) => Math.max(0, n - 2) * 2 ** (step - 1);
 
 /** A new duel under a ruleset (rulesets.js). Each side's forms: the Courier, the god hand, or both (the owner, 2026-10-19); `ap` a number
  *  or one a side (a side of two players has two players' points: section 12); `tools` the tools a side wears (all, if not given). */
-export function newDuel({ ruleset, seed = 1, forms = ['hand', 'courier'], line = 10, w = 20, h = 20, ap = DUEL.ap, pool = DUEL.pool, tools = null, finisher = [true, false], flee = [true, false], luck = [0, 0] } = {}) {
+export function newDuel({ ruleset, seed = 1, forms = ['hand', 'courier'], line = 10, w = 20, h = 20, ap = DUEL.ap, pool = DUEL.pool, tools = null, finisher = [true, false], flee = [true, false], luck = [0, 0], rerolls = [0, 0] } = {}) {
   const rs = { match: 3, cluster: 0, blast: 2, colours: 5, drip: 2, bombs: 0, queue: 3, pincer: false, ...ruleset };
   const r = seeded(seed);
   const board = new Board({ w, h, line });
@@ -52,6 +52,7 @@ export function newDuel({ ruleset, seed = 1, forms = ['hand', 'courier'], line =
     sides: [0, 1].map((i) => ({ form: forms[0], forms: [...forms], at: null, queue: [], pending: 0, sent: 0, landed: 0, total: 0,
       ap: aps[i], pool: pools[i], tools: tools && (tools[i] || tools), emo: 0, depth: 0, stunLeft: 0, stagger: 0, coffin: 0, drunk: 0, breaks: 0, finisher: !!finisher[i], flee: !!flee[i], fleeFails: 0 })) };
   s.luck = luck; // (each side's Luck, -2..2: luck.js's sway, passed in by the room)
+  s.rerolls = [...rerolls]; // (each side's re-rolls left this game day: a failed Flee is thrown again, flee.js; the room hands in game.rerolls.left())
   for (const side of [0, 1]) {
     fillSide(s, side);
     const spot = courierSpot(s, side);

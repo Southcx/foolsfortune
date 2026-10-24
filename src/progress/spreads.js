@@ -232,7 +232,7 @@ export function dayCard(day) {
  *  water with earth, the same kind of element: cardinal; CONTRARY, the dignities' foe: fixed; the third: mutable). ALL FOUR held, the World, whose four corners
  *  are the four elements. The planets, the Hanged Man and Judgement are read by other ways (SPREADS.md 12.3), not yet built.
  *  A class lifts one suit's cap by CLASS.lift points: a court its own suit, a zodiac Major its second, the World its weakest. */
-export const CLASS = { held: 1, lift: 2, world: 4, balance: 0.5 }; // (the World: each of the four at `world` points, the weakest at least `balance` of the strongest)
+export const CLASS = { held: 1, lift: 2, world: 4, balance: 0.5, affinity: 1.25 }; // (affinity: a Major's domain experience while read as it, CLASSES.md 6.2) // (the World: each of the four at `world` points, the weakest at least `balance` of the strongest)
 export const COURT = CLASS; // (the old name, kept while laidspread.js reads COURT.lift)
 export const COURT_DEPTH = [[9, 'king'], [6, 'queen'], [3, 'knight'], [0, 'page']]; // (points of the one suit, at least)
 export const KINDRED = { wands: 'swords', swords: 'wands', cups: 'pentacles', pentacles: 'cups' };
@@ -251,7 +251,18 @@ export const MAJOR_TITLE = {
   wheel: 'the Wheel of Fortune', justice: 'Justice', hanged: 'the Hanged Man', death: 'Death', temperance: 'Temperance',
   devil: 'the Devil', tower: 'the Tower', star: 'the Star', moon: 'the Moon', sun: 'the Sun', judgement: 'Judgement', world: 'the World',
 };
-const major = (card, lifts) => ({ id: `arcana.${card}`, kind: 'major', card, lifts, label: MAJOR_TITLE[card] });
+/** A Major's domain (CLASSES.md 5): a planet's own, a zodiac sign's ruling planet's (the classical rulers), the World Saturn's. A court
+ *  serves its suit (its lift), the Fool no one. Read as that class, the domain's experience counts `CLASS.affinity` times (CLASSES.md 6.2). */
+export const CLASS_DOMAIN = {
+  magician: 'spellscription', lovers: 'spellscription', hermit: 'spellscription',
+  sun: 'divination', strength: 'divination',
+  empress: 'manifestation', justice: 'manifestation', hierophant: 'manifestation',
+  wheel: 'ouranurgy', temperance: 'ouranurgy', moon: 'ouranurgy',
+  tower: 'psychokinesis', emperor: 'psychokinesis', death: 'psychokinesis',
+  priestess: 'possession', chariot: 'possession',
+  world: 'alteration', star: 'alteration', devil: 'alteration',
+};
+const major = (card, lifts) => ({ id: `arcana.${card}`, kind: 'major', card, lifts, domain: CLASS_DOMAIN[card] ?? null, label: MAJOR_TITLE[card] });
 export function classOf(sums) {
   const by = SUITS.filter((x) => (sums[x] || 0) >= CLASS.held).sort((a, b) => sums[b] - sums[a]);
   if (!by.length) return major('fool', null);

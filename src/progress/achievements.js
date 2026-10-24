@@ -242,7 +242,7 @@ export function buildAchievements(game) {
     const id = v ? `${a.id}.${v.id}` : a.id, goals = v ? v.goals : a.goals;
     if (!goals.length) return; // (a basic art is yours from the start)
     F(achOf(id), cat, sub, v ? 3 : 2, 'mechanic', v ? `${a.name}: ${v.name}` : a.name, `Learn ${v ? v.name : a.name}. ${(v || a).hint}`,
-      ...(!v && a.any ? [(L) => goalsFracOf(L, goals, true), 1] : [(L) => goals.reduce((n, g) => n + goalFracOf(L, g), 0), goals.length]), { unlocks: id }); // (an `any` art: a count way OR a feat way)
+      ...((v || a).any ? [(L) => goalsFracOf(L, goals, true), 1] : [(L) => goals.reduce((n, g) => n + goalFracOf(L, g), 0), goals.length]), { unlocks: id }); // (an `any` art: a count way OR a feat way)
   };
   for (const a of ABILITIES) { artAch(a, null, 'move', 'The Arts'); for (const v of a.variants) artAch(a, v, 'move', 'The Arts'); }
   for (const a of GOD_ARTS) { artAch(a, null, 'hand', 'Arts'); for (const v of a.variants) artAch(a, v, 'hand', 'Arts'); }

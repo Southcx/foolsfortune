@@ -3643,4 +3643,4 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   'arcana' as a court's rank.
 - **Fix:** it reads `laidSpread.class`; an `arcana.<card>` id is a Major by its number; a Major's tint is the suit it `lifts`.
   Measured headless: a Celtic Cross reads `arcana.justice`, cell 11; 'arcana.emperor' 4; 'queen.wands' 76.
-- **Rule:** NEW:merge-reread-fields
+- **Rule:** 282

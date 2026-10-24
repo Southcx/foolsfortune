@@ -31,18 +31,20 @@ stay in the lore only: the first dice, in the god hand's knuckles, and astragalo
 ## 2. The shapes: the solids are the suits
 
 Seven dice, the standard set, as Raku's tables use. Five are the Platonic solids, which Plato's *Timaeus* gave to the elements, and the
-elements are our suits:
+owner ruled the suits (2026-10-23, through Espada):
 
-| die | solid | Plato's element | suit | |
+| die | solid | Plato's element | suit (ruled) | |
 | --- | --- | --- | --- | --- |
 | d4 | tetrahedron | fire | Wands | the sharpest; the smallest die |
 | d6 | cube | earth | Pentacles | a cube of Lachrymite is the currency: a coin was always a die |
 | d8 | octahedron | air | Swords | |
-| d20 | icosahedron | water | Cups | the roundest; rolls furthest |
-| d12 | dodecahedron | the aether, "the whole" | the Majors, the trumps | the fifth over the four; Plato's solid for the whole heaven and its figures, so its twelve faces are the twelve zodiac Majors (CLASSES.md 2) |
-| d10, d% | pentagonal trapezohedron | none | the Tree of Life | the ten Sephiroth; the Golden Dawn laid the 22 Majors as the paths between them |
+| d10 | pentagonal trapezohedron | (none) | **Cups** (water) | the owner, 2026-10-23 |
+| d20 | icosahedron | water | **the Major Arcana, I to XX** | the owner: twenty faces, the Magician to Judgement; "I truncate The Fool and The World, like putting the alpha and omega in separate categories": the Fool is you, who throws; the World is the whole, never one face |
+| d12 | dodecahedron | the aether, "the whole heaven" | **the zodiac**, Western and Chinese | the owner, 2026-10-23: twelve signs and twelve animals; the twelve signs are the twelve zodiac Majors (CLASSES.md 2), so on the spread it lights any suit, a wild card |
+| d% | pentagonal trapezohedron | (none) | open | the tens die beside the d10 |
 
-Seven stones, as there are seven feelings, seven domains and seven sockets on the bracelet.
+Seven stones, as there are seven feelings, seven domains and seven sockets on the bracelet. The palm die's growth (d4 to d20) ends
+on the Majors' die: the hand grows toward the trumps (Espada).
 
 ## 3. What they do: what they did, and they roll
 
@@ -55,13 +57,15 @@ Seven stones, as there are seven feelings, seven domains and seven sockets on th
    - **Entropy Tactics**: your palm die is your Hungry Die (section 4).
 3. **Luck reads them.** Luck (`progress/luck.js`) is measured in bits and nothing reads it yet; a roll's surprise is log2 of its sides
    (a d20's face is 4.3 bits). Ruled (the owner: "sure"): **one re-roll a game day, one more per 100 bits of Luck, at most 3** (`REROLL`, `rerollsOf`,
-   `progress/dice.js`), shown on the set. Waits on the first throw of your own dice to be wired. Chance only, never skill (DESIGN.md 9).
+   `progress/dice.js`). **Built 2026-10-24** for the first throw of your own, a puzzle duel's Flee: a failed roll is thrown again at
+   once while one is left (`game.rerolls`, `progress/dice.js`; the kernel's `s.rerolls`, `progress/duel/flee.js`), automatic as D&D's
+   halfling Lucky is, the event keeping the first roll (`reroll`) so the look throws twice. Chance only, never skill (DESIGN.md 9).
 
 ## 4. The palm die: the stones in the god hand's form
 
 Courier, Pneuka Jar and god hand are one being (GLOSSARY section 1). The Courier wears its stones in the vessel; **the god hand holds
 them in its palm, as one die**: the owner's die in the hole of the palm. It is the set gathered into one and growing: **d4, d6, d8,
-d12, d20** (fire, earth, air, the aether, water; the d10 stays the Tree's).
+d12, d20** (fire, earth, air, the aether, and the Majors' own).
 
 - **It condenses overflow into cubes** (the owner, ruled 2026-10-23: overflow "goes into the Lockheart first if applicable, then
   converted into solid Lachryma cubes via the palm die"). Built: `progress/dice.js`, `game.palmDie`. The pool's overflow, in order:
@@ -89,9 +93,32 @@ d12, d20** (fire, earth, air, the aether, water; the d10 stays the Tree's).
 - **Achievements:** pd1 a d8, pd2 a d20 (a title), pd3 300 cubes condensed (`progress/spreadachievements.js`).
 - **It is the Hungry Die** (ruled: both uses). At Entropy Tactics' table it starts at the size you grew it to, within the table's cap so the table stays
   fair.
-- **It answers the island** (ruled: both uses). When a Dissonance Level rises, the island's rejection rolls against your palm die: a grown die holds more
-  of it off. Chance against chance, so Luck may sway it.
+- **It answers the island** (ruled: both uses; **built 2026-10-24**, section 4.2).
 - **Its mineral is your set's.** Wear rubies, and the hand holds a ruby die.
+
+### 4.2 The palm die against the island (built)
+
+Each time a Dissonance Level sends its answer (`godhand/rejection.js`), the palm die is thrown against the island's d20 plus the level
+(`PALM_HOLD`, `palmThrow`, `PalmDie.answer`): meet it and one Figment of the answer is held off (a Lantern Wisp first, never the fifth
+level's boss), two on the die's top face. The event is `palm.roll { face, sides, against, held, why: 'rejection', by }`; the log says
+it only when something is held off; the hand opens Abhaya (`progress/mudras.js`). Measured (40,000 throws a cell), the chance of
+holding off at least one:
+
+| die | Dissonance Level 1 | 3 | 5 |
+| --- | --- | --- | --- |
+| d4 | 7.5% | 1.2% | 0% |
+| d8 | 17% | 9% | 4% |
+| d12 | 27% | 19% | 12% |
+| d20 | 48% | 38% | 30% |
+
+So the d4 is a token, and the grown die is a real shield: the long arc of the palm die pays in the god hand as well as in cubes.
+
+### 4.1 The fingers (the owner, 2026-10-23, through Espada)
+
+Each knucklebone has its place on the god hand: **d4 the little finger, d6 the ring finger, d8 the middle finger, d10 the index
+finger, d12 the thumb, d20 the palm.** The d% has no finger yet. So the palm die's last size, the d20 (the Majors I to XX), is the
+palm's own die: the hand grows its one stone into the place that was waiting for it. Where the other six sit on the hand (a stone in
+each finger's knuckle, its suit's) is Calissa's to show.
 
 ## 5. The hands
 
@@ -102,7 +129,7 @@ dealt, and the hand that throws. Espada's to write into the world.
 
 - **The old lapidaries**: the stones' virtues (stones.js's header), kept.
 - **Plato's *Timaeus***: the five solids as the elements (section 2).
-- **The Golden Dawn's Tree of Life**: the ten Sephiroth and the 22 Majors as the paths (the d10).
+- **The owner's own d20 mapping**: the Majors I to XX on its faces, the Fool and the World outside (alpha and omega).
 - **Astragali and astragalomancy**: the first dice were knucklebones, thrown in the hand to read fate (the palm die; Divination).
 - **Dungeons & Dragons' standard set**: the seven dice, and a roll as the visible face of chance.
 - **Entropy Tactics** (the owner's): the Hungry Die that grows on what you feed it.
@@ -122,9 +149,11 @@ dealt, and the hand that throws. Espada's to write into the world.
 1. The stones are the Pneuka stones (section 1).
 2. Overflow: the Lockheart first, then the palm die condenses the rest into cubes (section 4; built).
 3. The palm die is both the Hungry Die at Entropy Tactics' table and the answer to the island's rejection (section 4).
-4. Luck's re-roll: yes (section 3; the rule built, the throw to wire).
-5. "Releases", asked: the way out of SPINE.md 4 (a tier IV caster shell, an Overload, an epic miracle), not every god power.
+4. Luck's re-roll: yes (section 3; built on the Flee).
+5. The dice's suits (section 2): d4 Wands, d6 Pentacles, d8 Swords, d10 Cups, d12 the zodiac (Western and Chinese), d20 the Majors I to XX.
+6. The fingers (4.1): d4 little, d6 ring, d8 middle, d10 index, d12 thumb, d20 palm; the d% has none yet.
+7. "Releases", asked: the way out of SPINE.md 4 (a tier IV caster shell, an Overload, an epic miracle), not every god power.
 
 ## 9. Open
 
-1. The solids as suits (section 2), checked by Espada; the owner's nod.
+1. The d% has no suit yet (section 2).

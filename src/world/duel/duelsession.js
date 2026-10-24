@@ -23,7 +23,7 @@
 // intent drawn while you plan).
 //
 //   game.duel = new DuelSession(game)   .begin(creature)   .update(raw, input)   .active   .state   .close(outcome)
-//   Events (with `by`): duel.open { kind, feeling }, duel.break { kind, depth }, duel.flee { roll, need, ok }, duel.end { kind, won, how,
+//   Events (with `by`): duel.open { kind, feeling }, duel.break { kind, depth }, duel.flee { roll, reroll, need, ok }, duel.end { kind, won, how,
 //   turns } (how 'fled': away, both whole; tracking.js says each)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -66,7 +66,8 @@ export class DuelSession {
     const tools = (g.belt?.tools || []).filter((t) => g.belt.isWorn(t.id)).map((t) => t.id);
     this.startPool = Math.round(Math.min(100, pool?.available ?? 30));
     this.state = newDuel({ ruleset, seed: Math.floor(duelRand() * 2 ** 31), forms: ['hand', 'courier'], pool: [this.startPool, 30], tools: [tools, []],
-      luck: [g.ledger ? Math.min(2, Math.floor(luckOf(g.ledger).level / 10)) : 0, 0] }); // (Luck's sway on a flee, 0..2: a tenth of its level, Petra's placeholder until Dovina rules)
+      luck: [g.ledger ? Math.min(2, Math.floor(luckOf(g.ledger).level / 10)) : 0, 0], // (Luck's sway on a flee, 0..2: a tenth of its level, as ruled)
+      rerolls: [g.rerolls?.left() ?? 0, 0] }); // (Luck's re-rolls left this game day: a failed Flee is thrown again, progress/duel/flee.js)
     this.foe = c; this.feeling = feeling; this.active = true; this.busy = false; this.botT = -1; this.press = null; this.path = []; this.yieldT = 0;
     for (const t of g.belt?.tools || []) if (t.wants || t.drawT > 0) t.stow(); // (nothing in the hands: the board is the fight)
     g.techs?.get('carry')?.drop?.();
@@ -183,7 +184,7 @@ export class DuelSession {
     for (const e of events) {
       if (e.type === 'duelBreak') this.game.events?.emit('duel.break', { kind: this.foe?.kind, depth: e.depth, by: e.side === 1 ? 'courier' : 'creature' }); // (the room maps a side to `by`: PUZZLE-DUELS.md 13.1)
       if (e.type === 'flee' && e.ok && e.roll === 20) this.atOnce = true; // (a natural 20: the log says "You flee at once." instead)
-      if (e.type === 'flee') this.game.events?.emit('duel.flee', { roll: e.roll, need: e.need, ok: e.ok, by: e.side === 0 ? 'courier' : 'creature' });
+      if (e.type === 'flee') this.game.events?.emit('duel.flee', { roll: e.roll, reroll: e.reroll ?? null, need: e.need, ok: e.ok, by: e.side === 0 ? 'courier' : 'creature' });
     }
     const done = () => { this.busy = false; if (!this.active) return; if (this.state.winner !== null) this.finish(); else this.intent(); };
     const p = this.view?.play?.(events);

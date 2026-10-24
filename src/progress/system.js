@@ -76,7 +76,7 @@ export class System {
 
   // ---- progress (read from the ledger) ----
   /** [0..1] for one goal, or for a skill (the mean over its goals). */
-  skillFrac(id, goals) { return goalsFracOf(this.game.ledger, goals, !id.includes('.') && !!BY_ID[id]?.any); } // (an `any` art: its furthest way)
+  skillFrac(id, goals) { const [aid, vid] = id.split('.'), a = BY_ID[aid]; return goalsFracOf(this.game.ledger, goals, !!(vid ? a?.variants.find((v) => v.id === vid) : a)?.any); } // (an `any` art: its furthest way)
   goalValue(skillId, i) { const sk = this.skill(skillId); const g = sk?.goals[i]; return g ? ledOf(this.game.ledger, g.key) : 0; }
   /** An art or a variant by id ('blink', 'blink.rush'), with its goals. */
   skill(id) {

@@ -73,6 +73,8 @@ export class Rejection {
     const g = this.game, R = REJECTION;
     if (!A || this.sent.length >= R.cap) return;
     const home = this.origin(); if (!home) return;
+    let held = g.palmDie?.answer?.(this.level) || 0; // (the palm die thrown against the island: DICE.md 4.2)
+    if (held) { A = { ...A }; const w = Math.min(held, A.wisp || 0); A.wisp = (A.wisp || 0) - w; held -= w; A.jelly = Math.max(A.boss ? 1 : 0, (A.jelly || 0) - held); }
     const stash = R.stash[this.level] || 0;
     const mark = (c) => { if (!c) return; g.spawnLook?.play(c, c.stray || c.egregore ? 'tear' : 'rise'); c.emo = R.emo; c.stash = (c.stash || 0) + stash; c.rejection = this.level; this.sent.push(c); return c; };
     const room = () => this.sent.length < R.cap;

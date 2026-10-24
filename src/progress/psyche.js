@@ -8,11 +8,15 @@
 // Prior art: Old School RuneScape's skills (EXP only from doing the thing, a level-up message, the level as proof), and the event-
 // sourced counters the ledger already keeps (an achievement is a predicate over them).
 //
-//   installPsyche(game) -> game.psyche = { exp(domain), level(domain), total(), widen(key) }
+// A class's affinity (CLASSES.md 6.2, a modifier with a source you can see: the class your laid spread reads as): read as a Major, its
+// domain's experience counts CLASS.affinity times, and the ledger keeps what the class added (`exp.affinity.<domain>`).
+//
+//   installPsyche(game) -> game.psyche = { exp(domain), level(domain), total(), widen(key), affinity(domain) }
 // ---------------------------------------------------------------------------------------
 import { isTraining } from './combat/testroom.js';
 import { DOMAINS, SOURCES, expFor, levelOf } from './domains.js';
 import { RAMP, widenOf } from './godpowers.js';
+import { CLASS } from './spreads.js';
 
 const EVENTS = new Set(SOURCES.map((s) => s.event));
 
@@ -25,13 +29,16 @@ export function installPsyche(game) {
     total: () => Object.keys(DOMAINS).reduce((a, d) => a + levelOf(exp(d)), 0),
     /** What the Courier's level widens this knob to (godpowers.js RAMP.tools, on the ramp's curve: SPINE.md 1.1): a multiplier of the tool's own number, or a bonus to a count. */
     widen: (key) => widenOf(key, RAMP.tools[key] ? levelOf(exp(RAMP.tools[key].domain)) : 1),
+    /** The class's multiplier on a domain's experience: CLASS.affinity in the domain of the Major you read as, else 1. */
+    affinity: (d) => (game.laidSpread?.class?.domain === d ? CLASS.affinity : 1),
   };
   game.events.on('*', (e) => {
     if (!EVENTS.has(e.name) || (e.by && e.by !== 'courier') || isTraining(e)) return; // (a training body pays no exp: combat/testroom.js)
     for (const [d, n] of expFor(e)) {
       if (!(n > 0)) continue;
-      const was = levelOf(exp(d));
-      L.inc(`exp.${d}`, n);
+      const was = levelOf(exp(d)), k = game.psyche.affinity(d);
+      L.inc(`exp.${d}`, n * k);
+      if (k !== 1) L.inc(`exp.affinity.${d}`, n * (k - 1)); // (what the class added: the Codex can show it)
       const now = levelOf(exp(d));
       if (now > was) game.events.emit('domain.level', { domain: d, level: now, by: 'courier' });
     }
