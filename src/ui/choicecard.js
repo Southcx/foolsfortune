@@ -15,7 +15,8 @@
 // and hollow for worse, green and red, the old number on hover: Monster Hunter's) and THE SLOT ROW (a loadout's slots in a bar, each
 // with what fills it and the key that fires it: Gradius' power-up bar). All of it in the window colour (ui/theme.js), keyboard and
 // mouse alike: Enter or Space picks, the arrows move between the cards of a list (the first one comes in from nothing, for Tab is the
-// game's: core/input.js), a window drawn again after a key's pick gives that card its focus back (by the row's `id`), a held press shows the detail.
+// game's: core/input.js), a window drawn again after a key's pick gives that card its focus back (by the row's `id`), a held press shows the detail (on
+// touch it stays open after the finger lifts, until the next press: MOBILE.md 4.4).
 //
 // Data in: a row with Dovina's fields (`id`, `name`, `does`, `lore`, `detail`, `cost`, `charges`, `cooldown` in real seconds, `duration` in
 // real seconds, `range` m, `angle` degrees, `always`; a blow's `power`, `reach` m and `speed`, real seconds a blow) and the card's own
@@ -150,14 +151,31 @@ export class ChoiceCard {
     el.addEventListener('keydown', (e) => { if (e.target === el && (e.code === 'Enter' || e.code === 'Space')) { if (this.row?.state !== 'locked') keepFocus({ id: this.row?.id }); this.pick(); e.preventDefault(); e.stopPropagation(); } });
     el.addEventListener('focus', () => { el.classList.add('sel'); this.place(); }); el.addEventListener('blur', () => el.classList.remove('sel'));
     el.addEventListener('pointerenter', () => this.place());
-    // held: a press kept down shows the detail (and is not a pick)
-    el.addEventListener('pointerdown', () => { clearTimeout(this.hold); this.hold = setTimeout(() => { el.classList.add('held'); this.swallow = true; this.place(); }, 420); });
-    const up = () => { clearTimeout(this.hold); el.classList.remove('held'); };
-    el.addEventListener('pointerup', up); el.addEventListener('pointerleave', () => { up(); this.swallow = false; });
+    // held: a press kept down shows the detail (and is not a pick). On touch (MOBILE.md 4.4: the long press is hover's place) the detail
+    // stays open once the finger lifts, until the next press: on the card it only shuts it, anywhere else it shuts it and does its own
+    // thing. A finger that starts a scroll (pointercancel) opens nothing. (A touch's pointerleave comes before its click: it keeps the
+    // swallow, or a long press would also pick.)
+    el.addEventListener('pointerdown', (e) => {
+      clearTimeout(this.hold); this.touchy = e.pointerType === 'touch';
+      if (this.touchy && el.classList.contains('held')) { this.unpin?.(); el.classList.remove('held'); this.swallow = true; return; }
+      this.swallow = false;
+      this.hold = setTimeout(() => { el.classList.add('held'); this.swallow = true; this.place(); }, 420);
+    });
+    el.addEventListener('pointerup', () => { clearTimeout(this.hold); if (this.touchy && el.classList.contains('held')) this.pin(); else el.classList.remove('held'); });
+    el.addEventListener('pointercancel', () => clearTimeout(this.hold));
+    el.addEventListener('pointerleave', () => { if (this.touchy) return; clearTimeout(this.hold); el.classList.remove('held'); this.swallow = false; });
+    el.addEventListener('contextmenu', (e) => { if (this.touchy) e.preventDefault(); }); // (a phone's own long-press menu: the detail is ours)
     this.set(row);
   }
 
   pick() { if (this.row?.state === 'locked') return; this.onPick?.(this.row, this); }
+  /** On touch, the detail a long press opened stays until a press anywhere else shuts it. */
+  pin() {
+    this.unpin?.();
+    const off = (e) => { if (this.el.contains(e.target)) return; this.el.classList.remove('held'); this.unpin(); };
+    this.unpin = () => { removeEventListener('pointerdown', off, true); this.unpin = null; };
+    addEventListener('pointerdown', off, true);
+  }
 
   /** The detail opens below the card, or above it where the window's scrolling edge would cut it (the last row of a list). */
   place() {
