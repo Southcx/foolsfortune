@@ -68,4 +68,20 @@ export class SpreadSounds {
     ['pentacles', 'cups', 'swords', 'wands'].forEach((s, i) => this.tone(t + 0.55 + i * 0.05, 1.6, { f0: hz(ROOT[s]), type: 'triangle', gain: 0.05, dest: d }));
     this.noise(t + 0.5, 1.2, { type: 'highpass', f0: 7000, gain: 0.06, attack: 0.2, dest: d });
   }
+
+  /** The court your two strongest suits make, changed (`to`, an id like 'queen.wands' or 'arcana.emperor'): a flourish up the run in the
+   *  new court's suit, a Major's in bells. */
+  spreadCourt(to = '') {
+    if (!this.ok() || !this.allow('spreadCourt', 2) || !to) return;
+    const [rank, suit] = String(to).split('.'), S = ROOT[suit] ? suit : 'wild', up = { page: 0, knight: 1, queen: 2, king: 3 }[rank] ?? 2;
+    [0, 2, 4].forEach((k, i) => setTimeout(() => this.spreadLight(S, k + up), i * 90));
+    const t = this.ctx.currentTime, d = this.out(0.22, 0.6, true); this.tone(t + 0.3, 1.4, { f0: hz((ROOT[S] ?? 76) + 12 + STEP[up]), gain: 0.08, dest: d });
+  }
+  /** The game day's card, the first time the Box is turned over in a game day: a slow bell and a breath over it. */
+  spreadDayCard() {
+    if (!this.ok() || !this.allow('spreadDayCard', 1)) return;
+    const t = this.ctx.currentTime, d = this.out(0.26, 0.7, true);
+    this.tone(t + 0.4, 2.6, { f0: hz(76), gain: 0.1, dest: d }); this.tone(t + 0.4, 1.2, { f0: hz(76) * 2.76, gain: 0.02, dest: d });
+    this.noise(t, 1.2, { type: 'bandpass', f0: 600, f1: 1800, q: 0.7, gain: 0.08, attack: 0.5, dest: d });
+  }
 }

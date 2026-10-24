@@ -16,7 +16,7 @@
 // Hounslow's zone themes, quieter and stranger the further from London); iMUSE's horizontal resequencing (the section chosen at the bar
 // line from what the game says); the church modes ordered bright to dark (Lydian to Phrygian), as music theory has taught them.
 //
-//   setSea({ law, off, doubt, moored })   OPEN_SEA (the score)   SEA_TOUR (the sound test's, once through)   SEA_MODES   seaMode(law)
+//   setSea({ law, off, doubt, moored, hunt, coiled })   OPEN_SEA (the score)   SEA_TOUR (the sound test's, once through)   SEA_MODES   seaMode(law)
 // ---------------------------------------------------------------------------------------
 
 const E = (i, b, d, n, v, o) => ({ i, b, d, n, v, o });
@@ -29,10 +29,10 @@ export const SEA_MODES = [
   { id: 'aeolian', steps: [0, 2, 3, 5, 7, 8, 10], prog: [0, 5, 2, 6], lead: 'shakuhachi' },
   { id: 'phrygian', steps: [0, 1, 3, 5, 7, 8, 10], prog: [0, 1, 0, 6], lead: 'shakuhachi' }, // (the flat second: Entropolis's)
 ];
-const SEA = { law: 0, off: 0, doubt: 0, moored: null };
+const SEA = { law: 0, off: 0, doubt: 0, moored: null, hunt: false, coiled: false };
 /** What the open sea says, each frame (music/choose.js): `law` the square's (-2 Law .. +2 Chaos), `off` rows off the lane, `doubt` squares
  *  of it, `moored` 'islet' | 'quay' | null. */
-export function setSea({ law = 0, off = 0, doubt = 0, moored = null } = {}) { SEA.law = law; SEA.off = off; SEA.doubt = doubt; SEA.moored = moored; }
+export function setSea({ law = 0, off = 0, doubt = 0, moored = null, hunt = false, coiled = false } = {}) { SEA.law = law; SEA.off = off; SEA.doubt = doubt; SEA.moored = moored; SEA.hunt = hunt; SEA.coiled = coiled; }
 /** The mode for a square's law (-2 .. +2). */
 export const seaMode = (law = 0) => SEA_MODES[Math.max(0, Math.min(4, Math.round(law) + 2))];
 
@@ -76,8 +76,20 @@ const deep = (M, i) => {
 };
 const isletBar = (M, i) => [...swell(M, i, 0.6), ...TUNE[i % 8].map(([b, d, deg]) => E('celesta', b, d * 0.9, note(M, deg, 1) + 12, 0.34))];
 
-const GROUP = { swell: 'open', tune: 'open', deep: 'deep', deepTune: 'deep', islet: 'islet' };
-const NEXT = { swell: 'tune', tune: 'swell', deep: 'deepTune', deepTune: 'deep', islet: 'islet' };
+// THE HUNT (a sea serpent turned on you: game.seaFight.serpent's brain hunting): the swell doubled into a gallop, the taiko and the bodhran on
+// every pulse, a low brass ostinato on the mode's root and flat sixth (its colour), the tune's head stabbed on the fiddle; coiled, the
+// brass holds a cluster and the strings tremble on a tritone while the hull is held
+const hunt = (st, M, i) => {
+  const c = M.prog[i % 4], r = note(M, c, -1), ev = [E('taiko', 0, 1, null, 0.6), E('taiko', 3, 1, null, 0.5), ...[1, 2, 4, 5].map((b) => E('bodhran', b, 1, null, 0.3)),
+    E('upright', 0, 1.5, r, 0.5), E('upright', 3, 1.5, r, 0.45),
+    ...[0, 1.5, 3, 4.5].map((b, k) => E('brass', b, 1.3, note(M, k % 2 ? c + 5 : c, 0), 0.16, { stab: true }))];
+  if (st.coiled) ev.push(E('brass', 0, 5.8, [note(M, 0, 0), note(M, 1, 0), note(M, 3, 0)], 0.1), E('strings', 0, 6, [note(M, 0, 1), note(M, 0, 1) + 6], 0.07, { attack: 0.1 }));
+  else ev.push(...TUNE[i % 8].slice(0, 2).map(([b, d, deg]) => E('fiddle', b, d * 0.6, note(M, deg, 1), 0.3, { pan: 0.2, vib: 0.006 })));
+  if (i % 4 === 3) ev.push(E('crash', 5, 1, null, 0.2), E('riser', 3, 3, null, 0.15));
+  return ev;
+};
+const GROUP = { swell: 'open', tune: 'open', deep: 'deep', deepTune: 'deep', islet: 'islet', hunt: 'hunt' };
+const NEXT = { swell: 'tune', tune: 'swell', deep: 'deepTune', deepTune: 'deep', islet: 'islet', hunt: 'hunt' };
 const near = (st) => st.off <= 1;
 /** The cue's five sections, read from a sea's state `st` ({ law, off, doubt, moored }) as each bar is laid. */
 const seaSections = (st) => {
@@ -88,6 +100,7 @@ const seaSections = (st) => {
     { id: 'deep', bars: 4, gain: 1.6, bar: (i) => deep(M(), i) },
     { id: 'deepTune', bars: 8, gain: 1.6, bar: (i) => [...deep(M(), i), ...(i % 2 ? [] : tune(st, M(), i, { lead: 'voice', v: 0.22 })), ...wander(st, M(), i)] },
     { id: 'islet', bars: 8, gain: 1.3, bar: (i) => isletBar(M(), i) },
+    { id: 'hunt', bars: 8, gain: 1.4, bpm: 186, bar: (i) => hunt(st, M(), i) },
   ];
 };
 const pentatonic = (law) => { const s = seaMode(law).steps; return [s[0], s[1], s[2], s[4], s[5]]; };
@@ -98,7 +111,7 @@ export const OPEN_SEA = {
   sections: seaSections(SEA),
   // the sea chooses at the bar line: a change of group moves at once (the next bar line); within one, each section plays through
   jump(sec, bar) {
-    const S = OPEN_SEA.sections, at = S[sec], w = SEA.moored === 'islet' ? 'islet' : SEA.off >= 2 ? 'deep' : 'open';
+    const S = OPEN_SEA.sections, at = S[sec], w = SEA.hunt ? 'hunt' : SEA.moored === 'islet' ? 'islet' : SEA.off >= 2 ? 'deep' : 'open';
     if (GROUP[at.id] !== w) return S.findIndex((s) => GROUP[s.id] === w);
     if (bar < at.bars - 1) return null;
     return S.findIndex((s) => s.id === NEXT[at.id]);
@@ -116,5 +129,6 @@ export const SEA_TOUR = {
     ...stretch({ name: 'chaos', law: 2, off: 1, doubt: 0, moored: null }, ['tune']),
     ...stretch({ name: 'lost', law: 1, off: 3, doubt: 2, moored: null }, ['deep', 'deepTune']),
     ...stretch({ name: 'islet', law: 0, off: 2, doubt: 0, moored: 'islet' }, ['islet']),
+    ...stretch({ name: 'hunted', law: 1, off: 2, doubt: 0, moored: null, hunt: true }, ['hunt']),
   ],
 };
