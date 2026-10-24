@@ -34,8 +34,12 @@ import dayB64 from '../assets/sky_day.webp?b64';
 import nightB64 from '../assets/sky_night.webp?b64';
 
 /** The feelings' skies: the paintings that stand (the owner's ruling, 2026-10-24), each loaded when first wanted; `sunLon` where the
- *  painting's own sun stands (radians, atan2(z, x)), so it can be turned to the game's. The others come as they pass. */
+ *  painting's own sun stands (radians, atan2(z, x)), so it can be turned to the game's. All seven feelings have one. */
 export const FEELING_SKIES = {
+  wonder: { load: () => import('../assets/sky_feeling_wonder.webp?b64'), sunLon: 1.1 },   // (its halo and sun dogs round the sun)
+  mirth: { load: () => import('../assets/sky_feeling_mirth.webp?b64'), sunLon: -0.6 },    // (its rainbow opposite the sun)
+  grief: { load: () => import('../assets/sky_feeling_grief.webp?b64') },
+  gall: { load: () => import('../assets/sky_feeling_gall.webp?b64') },
   desire: { load: () => import('../assets/sky_feeling_desire.webp?b64'), sunLon: 0.3 },
   fury: { load: () => import('../assets/sky_feeling_fury.webp?b64') },
   dread: { load: () => import('../assets/sky_feeling_dread.webp?b64') },
