@@ -190,3 +190,40 @@ The design laws apply: arts and their kin only by achievement, a count way and a
 - Grip by surface: `SURFACE` in `boardrules.js` (sand 1, water 0.85, a vein lane's Lachrymite 1.1), through `rules.surfaceGrip`.
 - The six neutral keys on the seam (2190ec58).
 - Mass made real waits for T3's ruler, since it would change the Heavy and Light hulls already earned.
+
+**T3, T4, T6 and Dovina's half of T7 built (2026-10-24):**
+- **The ruler** (`progress/skiffruler.js`, printed by `node scripts/skifftune.mjs`): a point-mass lap on each track's line (the turn rate
+  carving against the curvature, the sail's speed by the wind's polar, slopes, the slip's loss, the carve's tiers paid at a bend's exit,
+  a backward pass for braking). Two rulers: a **flying lap** and a **race** (three laps from a standing start, knocked to 55% of its speed
+  three times a km: the field). The PI is the race's.
+- **What it found:** the tracks are sail-limited, not bend-limited (the reference rider averages 25 m/s against a cruise of 24), so a 1%
+  step of top speed is worth about 1 PI and a 1% step of acceleration about 0.1. The Racing Sail (top +7%, acceleration -12%) was a
+  straight upgrade (+5.8 PI): a part must be a trade (round 6's law). Rebalanced on the ruler, each part now wins on its own kind of run:
+
+  | part | was | now | PI clean / in a rough field (15 knocks a km) |
+  | --- | --- | --- | --- |
+  | Racing Sail | top 1.07, accel 0.88 | top 1.03, accel 0.80 | +2.4 / -0.9 |
+  | Storm Sail | top 0.95, accel 1.15 | top 0.98, accel 1.30 | -1.8 / +1 |
+  | Light Hull | accel 1.08, mass 0.7 | mass 0.7 | +0.1 / +1.8 |
+  | Heavy Hull | accel 0.92, mass 1.5 | mass 1.5 (and every bump) | 0 / -1.3 |
+
+- **Mass made real** (T1's last item): acceleration and the coast's loss are divided by mass^0.25 (`MASS`, `skiff.js`): a heavy board winds
+  up slowly and keeps its way, so the hulls carry no accel number of their own.
+- **The sheet** (`TUNE`, `progress/skifftune.js`): Sail trim moves top 0.25 a step and acceleration -1 (its ends +-3% and -+12%), so its
+  ends are +-2.5 PI. Every corner of the sheet (243) is within **2.7 PI** of stock on every track; Fin and Rake barely move the PI
+  (the bends seldom bind), so they are feel: the carve's loading, the grip, the wobble. Parts and sheet together reach about +6 PI: the
+  OPEN class.
+- **The medals on every track** (`RACE.medals`, `race.js`): the Sun Circuit's gold is 0.718 of its reference race; the Gorge Run and the
+  Coaster at the same ratio: gold 336 / silver 376 / bronze 435 s and 217 / 242 / 280 s. Each medal pays once a track.
+- **T4:** the sheet, opened slider by slider with its slot's first part (`SkiffParts.sliderOpen`); the two partner slots, MAST (Tall: top
+  1.02, wobble 0.85, rw44; Short: accel 1.12, top 0.99, wobble 1.2, rw45) and FIN (Surf: carveRate 1.2, grip 0.9, rw46; Race: grip 1.12,
+  carveRate 0.88, rw47), each opened by a count way or a feat way; three setups (`saveSetup`, `wear`, `pin`), a pinned one worn when its
+  track starts. Kept in `skiffParts` (version 2). No cubes for any of it.
+- **T6:** a run's record class (`recordClass`, STOCK or OPEN) on `race.lap` and `race.finish`; the ghost and the best kept per class
+  (`race.track.<id>.best.<class>`, `<medal>.<class>`); rw48 Bone Stock (gold on the stock board), rw49 Three Golds. In OPEN the rivals
+  answer half your build's edge (skill x sqrt(PI / 100)) and the wager's odds the other half.
+- **T7 (mine):** the run trace (`race.traces.last` / `.prev`: s, speed, slip angle, sail, grip at 10 Hz) and the trim run (`MODES.trim`:
+  a flying lap against the ghost of your last trim run). The GARAGE prints the trace's numbers; its drawing over the map and the slip
+  arc are Calissa's.
+- **The GARAGE** (`raceboard.js`): the build's class and PI on each track, the five slots with each part's numbers, the sheet (a
+  slider's left half steps it down, its right half up), the setups, the trim runs and the telemetry. Plain rows until T5's dress.

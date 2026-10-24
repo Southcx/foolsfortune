@@ -26,13 +26,15 @@ export function raceModeRules({ on, L, log }) {
     else if (e.mode === 'practice') say('skiff', `Practice on ${TRACKS[e.track]}. Hold Backspace to rewind; nothing is recorded.`, 'rm.start');
     else if (e.mode === 'pots') say('skiff', `A pot smash on ${TRACKS[e.track]}: every pot you ride through takes a second off.`, 'rm.start');
     else if (e.mode === 'escape') say('skiff', 'The crater. Ride for the climb out.', 'rm.start');
+    else if (e.mode === 'trim') say('skiff', `A trim run of ${TRACKS[e.track]}: your last trim run rides beside you, and each gate gives the split.`, 'rm.start');
     if (e.mode !== 'race') say('info', 'Backspace starts again; R held retires.', 'rm.keys', 60);
   });
   on('race.restart', () => L.inc('race.restart'));
   on('race.rewind', (e) => { L.inc('race.rewind'); if (e.seconds > 0) say('info', `Rewound ${e.seconds} s.`, 'rm.rewind', 1); });
   on('race.finish', (e) => {
     if (e.mode === 'race' && e.of > 1) { L.inc(`race.track.${e.track}.finish.rivals`); if (e.place === 1) L.inc(`race.track.${e.track}.win`); if (e.place <= 3) L.inc(`race.track.${e.track}.podium`); }
-    if (e.mode === 'hotlap') { L.inc('race.hotlap'); const b = L.lo(`race.hotlap.${e.track}`, e.seconds); say('record', `A hot lap of ${clock(e.seconds)}${b ? ', your best' : ''}.`, 'rm.fin'); }
+    if (e.mode === 'trim') { L.inc('race.trim'); say('record', `Trim run: ${clock(e.seconds)} (${(e.recordClass || 'stock').toUpperCase()}).`, 'rm.fin'); }
+    if (e.mode === 'hotlap') { L.inc('race.hotlap'); if (e.recordClass) L.lo(`race.hotlap.${e.track}.${e.recordClass}`, e.seconds); const b = L.lo(`race.hotlap.${e.track}`, e.seconds); say('record', `A hot lap of ${clock(e.seconds)}${b ? ', your best' : ''}.`, 'rm.fin'); }
     if (e.mode === 'pots') { L.inc('race.pots'); L.lo(`race.pots.${e.track}`, e.seconds); L.hi('race.pots.smashed.best', e.pots?.smashed || 0); say('record', `${e.pots?.smashed} of ${e.pots?.of} pots: ${clock(e.raw)} less ${e.pots?.smashed} s, ${clock(e.seconds)}.`, 'rm.fin'); }
     if (e.mode === 'escape') { L.inc('race.escape.out'); L.lo('race.escape', e.seconds); say('record', `Out of the crater in ${clock(e.seconds)}, ${e.margin} m ahead of the jaws.`, 'rm.fin'); }
     if (e.mode === 'licence') { L.inc('licence.pass'); if (e.medal) L.inc(`licence.${e.test}.${e.medal}`); L.lo(`licence.${e.test}.best`, e.seconds); say('record', `Licence passed in ${clock(e.seconds)}: ${e.medal}.`, 'rm.fin'); }

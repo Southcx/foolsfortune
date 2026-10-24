@@ -45,14 +45,17 @@ import { Wager } from '../../progress/econ/wager.js';
  *  second; real seconds after a bail before the board is set back on the track. */
 export const RACE = {
   laps: 3, countdown: 3, solar: { window: 0.3, add: 12, dur: 1.3, kick: 4 },
-  medals: { gold: 255, silver: 285, bronze: 330 }, pay: { gold: 10, silver: 6, bronze: 4 }, ghostHz: 10, bailBack: 2.9, retire: 1.2, restart: 0.25, // (retire: real s R held; restart: Backspace let go within this (real s); held longer, practice rewinds)
+  medals: { sun: { gold: 255, silver: 285, bronze: 330 }, gorge: { gold: 336, silver: 376, bronze: 435 }, coaster: { gold: 217, silver: 242, bronze: 280 } }, pay: { gold: 10, silver: 6, bronze: 4 }, ghostHz: 10, bailBack: 2.9, retire: 1.2, restart: 0.25, // (retire: real s R held; restart: Backspace let go within this (real s); held longer, practice rewinds)
 };
-export const medalOfRace = (seconds) => (seconds <= RACE.medals.gold ? 'gold' : seconds <= RACE.medals.silver ? 'silver' : seconds <= RACE.medals.bronze ? 'bronze' : null);
+// (the Gorge Run's and the Coaster's medals: the Sun Circuit's, scaled by each track's reference race against its own, the ruler's
+// `node scripts/skifftune.mjs`, SKIFF-TUNING.md T3: the Sun's gold is 0.718 of its reference race, and so is every track's)
+export const medalOfRace = (seconds, track = 'sun') => { const M = RACE.medals[track]; return !M ? null : seconds <= M.gold ? 'gold' : seconds <= M.silver ? 'silver' : seconds <= M.bronze ? 'bronze' : null; };
 
 export class Race {
   constructor(game) {
     this.game = game; this.running = false; this.state = 'idle';
-    this.bestLaps = {}; // { [track]: { seconds, splits: [s at each gate], frames: [[t, x, y, z, yaw]] } } (the ledger keeps the times)
+    this.bestLaps = {}; // { ['<track>.<class>' | '<track>.trim']: { seconds, splits: [s at each gate], frames: [[t, x, y, z, yaw]] } } (the ledger keeps the times)
+    this.cls = 'stock'; this.trace = []; this.traces = { last: null, prev: null }; // (the run's class, STOCK or OPEN; the lap's telemetry: T7)
     this.T = null; // (the track raced)
     this.rivals = new Rivals(game); this.lapsTotal = RACE.laps; // (three clapperjars on mini skiffs: rivals.js)
     this.modeId = 'race'; this.mode = MODES.race; this.opts = {};
@@ -66,9 +69,9 @@ export class Race {
     game.events?.on('skiff.bail', () => { if (this.running) this.bailT = 0; });
     // the best lap's ghost is kept (the save's `raceGhost`, player scope: a build's progress, reset with it); its frames to a tenth
     const pack = (B) => ({ seconds: B.seconds, splits: B.splits.map((v) => +v.toFixed(2)), frames: B.frames.map((f) => f.map((v) => +v.toFixed(1))) });
-    game.save?.section('raceGhost', { scope: 'player', version: 2,
+    game.save?.section('raceGhost', { scope: 'player', version: 3,
       dump: () => Object.fromEntries(Object.entries(this.bestLaps).map(([k, B]) => [k, pack(B)])),
-      load: (d) => { this.bestLaps = {}; for (const [k, B] of Object.entries(d || {})) if (B?.frames?.length) this.bestLaps[k] = B; }, reset: () => { this.bestLaps = {}; } });
+      load: (d) => { this.bestLaps = {}; for (const [k, B] of Object.entries(d || {})) if (B?.frames?.length) this.bestLaps[k.includes('.') ? k : `${k}.stock`] = B; }, reset: () => { this.bestLaps = {}; } });
   }
   get R() { return this.game.raceway; }
   /** The chat line's /race and /retire (added once the chat line is made: it comes after the Raceway at boot). */
@@ -85,7 +88,8 @@ export class Race {
   }
   /** The race board's pages (raceboard.js). */
   openBoard() { this.board.open(); }
-  get bestLap() { return this.T ? this.bestLaps[this.T.id] || null : null; }
+  /** The ghost raced against: the best lap of this class on this track, or in a trim run the last trim lap (SKIFF-TUNING.md 2.4, 2.5). */
+  get bestLap() { return this.T ? this.bestLaps[`${this.T.id}.${this.mode?.trim ? 'trim' : this.cls}`] || null : null; }
   get skiff() { return this.game.player?.techs?.get?.('skiff'); }
 
   offer() {
@@ -103,12 +107,15 @@ export class Race {
     this.modeId = modeId; this.mode = M; this.opts = { ...opts, mode: modeId }; this.ruleset = ruleset;
     const plan = ruleset?.plan?.(trackId, opts) || {}; // (a ruleset may choose the track, where the run begins and how many laps)
     const T = (this.T = R.trackOf(plan.track || trackId) || R.T), L = T.length;
+    g.skiffParts?.wearPinned?.(T.id); this.cls = g.skiffParts?.recordClass?.() ?? 'stock'; this.trace = []; // (a setup pinned to the track is worn; the run's class read)
     this.lapsTotal = plan.laps ?? M.laps ?? RACE.laps;
     const from = plan.from ?? (M.flying ? T.line - FLY.back : T.line - 20); R.respawn(((from % L) + L) % L, T);
     this.running = true; this.state = plan.flying ?? M.flying ? 'flying' : 'grid'; this.t = 0; this.count = RACE.countdown; this.said = null; this.goT = null; this.solarDone = false;
     this.lap = 1; this.next = plan.gate ?? 0; this.lapT = 0; this.splits = []; this.frames = []; this.laps = []; this.prevS = R.s; this.back = 0; this.bailT = null; this.ghostT = 0; this.pushed = false; this.flyAt = plan.flyAt ?? T.line;
     const C = (this.condition = conditionAt(g));
     this.rivals.start(T, opts.solo || this.solo || !M.rivals, opts.roster || 'clapperjars'); this.solo = false;
+    this.pi = this.cls === 'open' ? g.skiffParts?.pi?.(T) ?? 100 : 100; // (OPEN: the rivals answer your build by half its edge, SKIFF-TUNING.md 2.4)
+    if (this.pi !== 100) for (const r of this.rivals.list) r.skill *= Math.sqrt(this.pi / 100);
     this.rewind.clear(); ruleset?.begin?.(this, plan);
     if (M.flyover && !opts.again) this.flyover.begin(T, R);
     g.events?.emit('race.start', { track: T.id, mode: modeId, rivals: this.rivals.list.length, condition: C.key, light: C.key.split('.')[0], aspect: C.aspect, cup: !!opts.cup, city: !!opts.city, by: 'courier' });
@@ -167,7 +174,10 @@ export class Race {
     if (this.retireT > RACE.retire) { this.end('retired'); return; }
     if (g.input?.wasPressed?.('KeyR') && !g.log?.typing) { this.bailT = null; const T = this.T, gs = this.next > 0 ? T.gates[this.next - 1] : T.line; R.respawn(gs + 2, T); this.prevS = R.s; g.events?.emit('race.back', { gate: this.next, by: 'courier' }); }
     // the ghost's samples of this lap
-    if ((this.ghostT += dt) >= 1 / RACE.ghostHz) { this.ghostT = 0; this.frames.push([+this.lapT.toFixed(2), PL.pos.x, PL.pos.y, PL.pos.z, S?.heading ?? PL.bodyYaw]); }
+    if ((this.ghostT += dt) >= 1 / RACE.ghostHz) {
+      this.ghostT = 0; this.frames.push([+this.lapT.toFixed(2), PL.pos.x, PL.pos.y, PL.pos.z, S?.heading ?? PL.bodyYaw]);
+      if (S?.v) { const h = S.heading, vf = S.v.x * Math.sin(h) + S.v.z * Math.cos(h), vl = -S.v.x * Math.cos(h) + S.v.z * Math.sin(h); this.trace.push([+R.s.toFixed(1), +Math.hypot(vf, vl).toFixed(2), +Math.atan2(vl, Math.max(0.5, Math.abs(vf))).toFixed(3), +(S.L ?? 0).toFixed(2), +(S.rules?.mult?.('grip') ?? 1).toFixed(2)]); } // (the telemetry: s, speed, slip, sail, grip)
+    }
     // gates crossed: the place on the line moved forward past one, inside the track
     const T = this.T, L = T.length, d = ((R.s - this.prevS + L * 1.5) % L) - L / 2; // (how far along the line since the last step, signed)
     const within = R.d < T.frame(R.s).w + 10;
@@ -182,26 +192,28 @@ export class Race {
   }
 
   gate() {
-    const i = this.next++, best = this.mode.record && this.modeId !== 'licence' ? this.bestLap?.splits?.[i] : null;
+    const i = this.next++, best = (this.mode.record || this.mode.trim) && this.modeId !== 'licence' ? this.bestLap?.splits?.[i] : null;
     this.splits.push(this.lapT);
     this.game.events?.emit('race.gate', { gate: i + 1, lap: this.lap, split: best != null ? +(this.lapT - best).toFixed(2) : null, mode: this.modeId, by: 'courier' });
     if (this.ruleset?.gate?.(this, i)) this.finish(); // (a licence test ends at its gate)
   }
   lapDone() {
     const g = this.game, seconds = +this.lapT.toFixed(2), clean = this.mode.record && !this.ruleset, best = clean && (!this.bestLap || seconds < this.bestLap.seconds); // (a lap of practice or of a ruleset's is not the ghost's)
-    if (best) { this.bestLaps[this.T.id] = { seconds, splits: this.splits.slice(), frames: this.frames }; g.save?.dirty('raceGhost'); }
+    if (best || this.mode.trim) { this.bestLaps[`${this.T.id}.${this.mode.trim ? 'trim' : this.cls}`] = { seconds, splits: this.splits.slice(), frames: this.frames }; g.save?.dirty('raceGhost'); } // (a trim run's ghost is always the last one)
+    this.traces = { prev: this.traces.last, last: { track: this.T.id, seconds, cls: this.cls, mode: this.modeId, samples: this.trace } }; this.trace = []; // (the run trace: this lap and the one before, for the GARAGE)
     this.laps.push(seconds);
-    g.events?.emit('race.lap', { track: this.T.id, lap: this.lap, seconds, best, mode: this.modeId, place: this.rivals.on ? this.rivals.place : null, of: this.rivals.list.length + 1, by: 'courier' });
+    g.events?.emit('race.lap', { track: this.T.id, lap: this.lap, seconds, best, mode: this.modeId, recordClass: this.cls, place: this.rivals.on ? this.rivals.place : null, of: this.rivals.list.length + 1, by: 'courier' });
     if (this.lap >= this.lapsTotal) { this.finish(); return; }
     this.lap++; this.next = 0; this.lapT = 0; this.splits = []; this.frames = [];
   }
   finish() {
     const g = this.game, L = g.ledger, M = this.mode, raw = +(this.laps.length ? this.laps.reduce((a, b) => a + b, 0) : this.t).toFixed(2);
     const out = { seconds: raw, medal: null, laps: this.laps.slice(), condition: this.condition?.key || 'day.fair', track: this.T.id, mode: this.modeId, place: 1, of: 1, cup: !!this.opts.cup, city: !!this.opts.city, by: 'courier' };
+    out.recordClass = this.cls; out.pi = this.pi ?? 100;
     if (this.rivals.on) { out.of = this.rivals.list.length + 1; out.place = 1 + this.rivals.list.filter((r) => r.done != null).length; out.order = this.rivals.order(this); }
-    if (M.medals && this.T.id === 'sun') out.medal = medalOfRace(raw); // (medals are the Sun Circuit's for now: the others' times are not yet measured)
+    if (M.medals) out.medal = medalOfRace(raw, this.T.id); // (every track's, from the ruler)
     this.ruleset?.result?.(this, out); // (a ruleset's own reckoning: the pots' seconds off, a licence's medal)
-    const first = M.medals && out.medal && !(L?.get?.(`race.raceway.${out.medal}`) > 0); // (each medal pays once, ever: the ledger counts it as the event lands)
+    const first = M.medals && out.medal && !(L?.get?.(`race.track.${this.T.id}.${out.medal}`) > 0); // (each medal pays once a track, ever: the ledger counts it as the event lands)
     if (this.rivals.on) this.rivals.settle(out.place);
     this.stopRun();
     g.events?.emit('race.finish', out);

@@ -6,8 +6,10 @@
 //   CUPS      the cups (cups.js), and how you last did.
 //   LICENCES  the tests (licences.js), each with the medal you hold.
 //   TRIALS    the escape (escape.js) and the City Trial (citytrial.js).
-//   GARAGE    the skiff's parts, slot by slot (progress/skiffparts.js): the open ones to choose, the shut ones with the achievement that
-//             opens each.
+//   GARAGE    the build: its class (STOCK or OPEN) and Performance Index on each track; the skiff's parts, slot by slot
+//             (progress/skiffparts.js): the open ones to choose, the shut ones with the achievement that opens each; the tune sheet
+//             (progress/skifftune.js: a slider's left half steps it toward its minus end, its right half toward its plus); the three
+//             setups (wear, keep, pin to a track); a trim run on each track; the last lap's telemetry, in numbers (its drawing: Calissa's).
 // A row is a choice card's plain cousin (the index's rooms), its words placeholders for Espada's.
 //
 // Prior art: Mario Kart's mode select, Gran Turismo's world map of modes, Kirby Air Ride's top menu; the index's own room list.
@@ -17,7 +19,8 @@
 import { MODES } from './modes.js';
 import { CUPS } from './cups.js';
 import { LICENCES } from './licences.js';
-import { PARTS } from '../../progress/skiffparts.js';
+import { PARTS, SLOTS } from '../../progress/skiffparts.js';
+import { TUNE, SETUPS, tuneMult } from '../../progress/skifftune.js';
 import { WAGER } from '../../progress/econ/wager.js';
 import { ECON } from '../../progress/econ/table.js';
 
@@ -46,8 +49,8 @@ export class RaceBoard {
   races(grp, row) {
     const g = this.game, L = g.ledger, R = this.race.R, W = g.wager;
     for (const T of R.tracks) {
-      const lap = this.race.bestLaps[T.id]?.seconds, best = L?.best?.(`race.track.${T.id}.best`), hot = L?.best?.(`race.hotlap.${T.id}`), pots = L?.best?.(`race.pots.${T.id}`);
-      const rows = grp(`${T.name.toUpperCase()} · ${(T.length / 1000).toFixed(1)} km · best lap ${clock(lap)}`);
+      const lap = this.race.bestLaps[`${T.id}.stock`]?.seconds, open = this.race.bestLaps[`${T.id}.open`]?.seconds, best = L?.best?.(`race.track.${T.id}.best`), hot = L?.best?.(`race.hotlap.${T.id}`), pots = L?.best?.(`race.pots.${T.id}`);
+      const rows = grp(`${T.name.toUpperCase()} · ${(T.length / 1000).toFixed(1)} km · best lap ${clock(lap)} STOCK, ${clock(open)} OPEN`);
       for (const id of ['race', 'hotlap', 'practice', 'pots']) {
         const M = MODES[id], mine = id === 'race' ? best : id === 'hotlap' ? hot : id === 'pots' ? pots : null;
         row(rows, id === 'race' ? '◇' : id === 'hotlap' ? '⟳' : id === 'practice' ? '∞' : '⚱', M.label, `${M.line}${mine ? ` Best ${clock(mine)}.` : ''}`, (menu) => {
@@ -85,14 +88,41 @@ export class RaceBoard {
     row(rows, '✦', 'City Trial', 'Roam the park for patches that build your board, then ride a drawn event on it.', (menu) => { menu.close(); this.race.city.start(); });
   }
   garage(grp, row) {
-    const g = this.game, P = g.skiffParts; if (!P) return;
-    for (const slot of ['sail', 'keel', 'hull']) {
+    const g = this.game, P = g.skiffParts, R = this.race.R; if (!P) return;
+    const pct = (k) => `${k >= 1 ? '+' : '−'}${Math.abs(Math.round((k - 1) * 100))}%`;
+    grp(`THE BUILD · ${P.recordClass().toUpperCase()} · PI ${R.tracks.map((T) => `${P.pi(T).toFixed(1)} ${T.name.replace(/^the /, '')}`).join(', ')}`);
+    for (const slot of SLOTS) {
       const rows = grp(slot.toUpperCase());
       for (const [id, part] of Object.entries(PARTS)) {
         if (part.slot !== slot) continue;
         const open = P.open(id), mine = P.chosen[slot] === id, ach = part.opens && g.achievements?.by?.[part.opens];
-        row(rows, mine ? '●' : '○', part.name, open ? part.does : `Opened by the achievement ${ach?.name || part.opens}.`, () => { P.choose(slot, id); this.open(); }, !open);
+        const stats = Object.entries(part.mult).map(([k, v]) => `${k} ${pct(v)}`).join(', ');
+        row(rows, mine ? '●' : '○', part.name, open ? `${part.does}${stats ? ` (${stats})` : ''}` : `Opened by the achievement ${ach?.name || part.opens}.`, () => { P.choose(slot, id); this.open(); }, !open);
       }
+    }
+    const sh = grp('THE SHEET · click a slider\'s left half or right half to step it; the middle is the board as it came');
+    if (!P.sheetOpen) row(sh, '○', 'The tune sheet', 'Opens with your first part.', null, true);
+    else for (const [id, S] of Object.entries(TUNE.sliders)) {
+      const v = P.sheet[id] || 0, open = P.sliderOpen(id), one = { [id]: v };
+      const moved = Object.keys(S.moves).map((k) => [k, tuneMult(one, k)]).filter(([, k]) => Math.abs(k - 1) > 1e-6).map(([k, m]) => `${k} ${pct(m)}`).join(', ');
+      const bar = Array.from({ length: 2 * TUNE.range + 1 }, (_, i) => (i - TUNE.range === v ? '◆' : i === TUNE.range ? '┼' : '─')).join('');
+      const d = row(sh, v ? '◆' : '◇', `${S.label} ${v > 0 ? '+' : ''}${v}`, open ? `${S.minus} ${bar} ${S.plus}${moved ? ` · ${moved}` : ''}` : `Opens with a ${S.slot} part.`, null, !open);
+      if (open) d.onclick = (ev) => { const r = d.getBoundingClientRect(); P.setSlider(id, v + (ev.clientX < r.left + r.width / 2 ? -1 : 1)); this.open(); };
+    }
+    const su = grp('SETUPS · the parts and the sheet, kept; pinned, worn when that track starts');
+    for (let i = 0; i < SETUPS; i++) {
+      const S = P.setups[i], pinned = R.tracks.filter((T) => P.pins[T.id] === i).map((T) => T.name).join(', ');
+      row(su, S ? '▣' : '□', S ? `${S.name}: wear it` : `Setup ${i + 1}: empty`, S ? `${Object.values(S.chosen).filter((id) => !id.endsWith('.standard')).map((id) => PARTS[id]?.name).join(', ') || 'standard parts'}; sheet ${Object.entries(S.sheet).filter(([, x]) => x).map(([k, x]) => `${k} ${x > 0 ? '+' : ''}${x}`).join(', ') || 'at 0'}${pinned ? `; pinned to ${pinned}` : ''}.` : 'Keep what you wear here.', S ? () => { P.wear(i); this.open(); } : null, !S);
+      row(su, '⇩', `Keep what you wear as Setup ${i + 1}`, S ? 'It replaces what is kept.' : 'The parts and the sheet as they are now.', () => { P.saveSetup(i); this.open(); });
+      if (S) { const at = R.tracks.findIndex((T) => P.pins[T.id] === i), next = R.tracks[at + 1]; row(su, '⚑', next ? `Pin Setup ${i + 1} to ${next.name}` : `Unpin Setup ${i + 1}`, 'Click again for the next track.', () => { if (at >= 0) P.pin(R.tracks[at].id, null); if (next) P.pin(next.id, i); this.open(); }); }
+    }
+    const tr = grp('TRIM RUNS · one lap from a flying start against your last trim run: the splits say what the tune changed');
+    for (const T of R.tracks) row(tr, '⟲', `Trim run: ${T.name}`, this.race.bestLaps[`${T.id}.trim`] ? `Your last: ${clock(this.race.bestLaps[`${T.id}.trim`].seconds)}.` : 'No trim run yet: the first sets the ghost.', (menu) => this.go(menu, T.id, { mode: 'trim' }));
+    const tel = grp('TELEMETRY · the last lap, and the one before');
+    for (const [k, Tr] of [['Last lap', this.race.traces?.last], ['The lap before', this.race.traces?.prev]]) {
+      if (!Tr?.samples?.length) { row(tel, '·', k, 'Ride a lap to see it.', null, true); continue; }
+      const sp = Tr.samples.map((x) => x[1]), sl = Tr.samples.map((x) => Math.abs(x[2])), slide = sl.filter((x) => x > 0.15).length / sl.length;
+      row(tel, '∿', `${k}: ${clock(Tr.seconds)} on ${R.trackOf(Tr.track)?.name || Tr.track} (${Tr.cls.toUpperCase()})`, `speed ${Math.min(...sp).toFixed(1)} .. ${Math.max(...sp).toFixed(1)} m/s, mean ${(sp.reduce((a, b) => a + b, 0) / sp.length).toFixed(1)}; slip up to ${(Math.max(...sl) * 57.3).toFixed(0)}°, sliding ${(slide * 100).toFixed(0)}% of the lap.`, null);
     }
   }
 }

@@ -283,6 +283,11 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   roamed for patches that build the board, then one drawn event. *Not:* a chest tier, the Solar Skiffing trial.
 - **the wager / the garage / a skiff part** (`progress/econ/wager.js`; `PARTS`, `progress/skiffparts.js`) — cubes staked on your own
   race at the house's odds / the race board's tab where a sail, keel and hull are chosen, each a trade. *Not:* the shell runner's parts.
+- **the tune sheet / the PI / a record class / a setup / a trim run / the run trace** (plain names; `TUNE`, `progress/skifftune.js`; `refLap`,
+  `progress/skiffruler.js`; `recordClass`; `skiffParts.setups`; `MODES.trim`; `race.traces`; SKIFF-TUNING.md) — the Solar Skiff's five
+  sliders, each one trade, 0 the board as it came / the Performance Index, a build's reference race against stock's (100) / STOCK (standard
+  parts, the sheet at 0) or OPEN, each keeping its own bests, medals and ghost / the parts and the sheet kept by name, pinnable to a track /
+  a flying lap against your last trim run's ghost / a lap's speed, slip, sail and grip sampled. *Not:* a class (the spread's), the garage.
 - **a cap on the pool / a siphon** (`capOf`, `PoolCaps`, `progress/poolcaps.js` / working name, Espada's; `SIPHONS`,
   `world/raceway/siphons.js`) — a modifier lowering the pool's max from a source you can see (each cracked region of the vessel: 5%
   until mended) / an arch across a Raceway track that drinks the pool to a quarter as you pass under it, standing only in the Pit lane licence. *Not:* the shield, the regen.
