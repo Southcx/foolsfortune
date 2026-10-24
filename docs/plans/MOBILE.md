@@ -365,8 +365,9 @@ which is closer to Black & White's hand than a mouse ever was. Every rule stays 
 - **Petra:** the touch driver's garden ctx (`garden`, `garden.overhead`). The two-finger gestures go to the camera (`gardencam.js`) and
   undo, before the hand sees them.
 - **Calissa:** the art bar and its tiles, the size slider, the TURN and SPRING / DRAIN tiles, and the long press's ring.
-- **Me:** the ctx rows in `core/bindings.js` and tap-to-go's rule (`realm.js` reads a target point when no art is up; the hop is
-  unchanged).
+- **Me:** the ctx rows in `core/bindings.js` and tap-to-go's rule. **Built:** `world/garden/tapgo.js` and `realm.goTo(point)`. The
+  Jar hops toward the point with the hop unchanged, and lets it go on any key or stick, when picked up, on another planetoid, or after 12
+  real s. Measured headless: 5.8 m covered in about a real second, no errors. Petra's touch driver calls `realm.goTo` on a tap with WALK up.
 
 ## 9. The phases
 
