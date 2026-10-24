@@ -245,7 +245,8 @@ Chaos digs it up cheap and Law buys it dear; the hauler lives in between. Letty'
         read in the Codex instead. Still a proposal.
       - **The hand's element**, palmistry's four hand shapes (earth square and short-fingered, air square and long, fire long-palmed
         and short, water long and long): the god hand takes the shape of the suit you lean on most.
-  - **Mudras: the god hand's poses** *(Espada's proposal, 2026-10-24, on the owner's "mudras could be a rich vein"; nothing built)*.
+  - **Mudras: the god hand's poses** *(Espada's, 2026-10-24, on the owner's "mudras could be a rich vein"; **ruled by the owner,
+    2026-10-24: "They all seem right to me"**; sent to Dovina and Calissa to build)*.
     A mudra is a hand held in a meaning, from the iconography of India and of Buddhism, and in Japan the kuji-in's nine seals. The god
     hand cannot show lines on its open palm, but it can hold a pose, and the poses are where the hand's lore lives.
     - **The finger-to-thumb mudras are a planet in a sign.** Modern hand-yoga gives four fingers a planet each, as palmistry does, and
