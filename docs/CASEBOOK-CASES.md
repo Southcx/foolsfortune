@@ -3755,3 +3755,13 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** `TouchCursor.busy` (a finger down, a gesture under way, a tap's LMB or a two-finger tap's keys still to press or let go),
   and the driver calls `update()` while it is true. The probe: the two-finger tap undoes (2 to 1), 10 of 10.
 - **Rule:** 291
+
+### 2026-10-24 · Three achievements no one could earn (Dovina, scripts/reachable.mjs)
+- **Seen:** the new reachability probe ran every achievement's own predicate against a ledger with every written key full: Elegant
+  (fl9), Feeding the Tree (my5) and The Crown (my6) stayed false.
+- **Cause (read):** their keys are records, written with `L.hi` (`reprogram.q`, feedback/tracking.js; `myggdrasil.caps`,
+  tracking/garden.js), and the predicates read them with `L.get` (`C`, `F`), which reads counters only. A record and a counter of one
+  name are two entries; the read found the empty one.
+- **Fix:** fl9 is an `H` (a best); my5 and my6 read `L.best('myggdrasil.caps')`. The probe: 726 of 727 earnable, the last one (lg5)
+  reads the game's tech list and is earnable in play.
+- **Rule:** NEW:ledger-kind-matches

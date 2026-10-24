@@ -82,8 +82,7 @@ const PSEUDO = { 'move.x': /THE MOVE AREA/, 'move.y': /THE MOVE AREA/, 'look.x':
 const byDriver = (id) => (PSEUDO[id] ? PSEUDO[id].test(driverText) : new RegExp(`['"\`]${id.replace(/\./g, '\\.')}['"\`]`).test(driverText));
 
 // ---- the table's ids that the UI names otherwise (the shell bridges them: feedback/touchshell.js OPENS and ART, artbar.js events) ----
-const ALIAS = { pause: 'top.pause', 'top.topview': 'top.overhead', 'ga.undo': 'art.undo', 'ga.turn': 'art.turn', 'ga.spring': 'art.spring', 'ga.drain': 'art.drain' };
-ARTS.forEach((a, i) => { ALIAS[`ga.a${i + 1}`] = `art.${a}`; });
+const ALIAS = {}; // (an id the table names that the UI draws under another: none since the garden's rows took the art bar's ids)
 
 function reach(r) {
   const id = r.touch, via = ALIAS[id] || id;

@@ -856,3 +856,6 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 291. **A press owed after the lift keeps its loop running.** Whatever a gesture earns when the fingers lift (a tap's
     click, a two-finger tap's undo) is made by the next frame's update; the caller asks the gesture whether it owes anything, not
     whether a finger is down. A check that calls the update by hand cannot see this: drive it with real touches.
+NEW:ledger-kind-matches. **A predicate reads a key in the kind it was written.** `inc` is read by `get`, `hi` and `lo` by `best`,
+    `first` by `has`; a key read in another kind reads nothing, forever. Run `node scripts/reachable.mjs` after adding an achievement,
+    an art or a knack.
