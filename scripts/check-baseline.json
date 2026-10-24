@@ -3,7 +3,6 @@
  "module.size|src/courier/character.js": 1,
  "module.size|src/courier/player.js": 1,
  "module.size|src/main.js": 1,
- "module.size|src/world/props/breakables.js": 1,
  "save.storage|src/cine/sequence.js": 1,
  "save.storage|src/ui/theme.js": 2,
  "save.storage|src/workbench/overrides.js": 1,
