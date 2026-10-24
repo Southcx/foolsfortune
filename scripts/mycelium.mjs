@@ -94,7 +94,7 @@ check('the tree grows a step of girth as its meals double, and opens a fruiting 
     take(k) { const x = this.slots[k]; this.slots[k] = null; return x?.id; } };
   const cards = { 'arcana.world': 1 };
   const game = { pneuka: box, events: { emit: (n, e) => { evs.push({ n, ...e }); for (const f of on[n] || []) f(e); }, on: (n, f) => (on[n] ||= []).push(f) },
-    save: { section() {}, dirty() {} }, veritome: { book: { has: (id) => cards[id] > 0, take: (id) => (cards[id] > 0 ? (cards[id]--, true) : false) } } };
+    save: { section() {}, dirty() {} }, collection: { has: (id) => cards[id] > 0 } }; // (a card hung is a bound card of the collection, kept: the owner, 2026-10-23, the Veritome keeps no cards)
   const itemOf = (id) => id.startsWith('curio.') ? { kind: 'curio', key: id.slice(6), tier: CURIOS.find((c) => `curio.${c.id}` === id)?.tier ?? 0, name: id } : id.startsWith('mat.') ? { kind: 'material', name: id } : null;
   const S = (game.sporeBeds = new SporeBeds(game, { itemOf })), T = (game.myggdrasil = new Myggdrasil(game)), K = new Keepsakes(game);
   game.events.emit('garden.place', { feature: 'sporebed', by: 'courier' });
@@ -120,8 +120,8 @@ check('the tree grows a step of girth as its meals double, and opens a fruiting 
   check('picking puts the crop in the box', T.pick() === n0 && box.slots.filter(Boolean).length === n0);
   now += DAY_MS; check('the next dawn fruits again once picked', T.dawn(now) === T.caps);
   cards['arcana.lovers'] = 1;
-  check('a card hung opens its branch for good, and seeds its strain', T.hang('lovers').ok && S.strains.wonder && cards['arcana.lovers'] === 0 && !T.hang('lovers').ok);
-  check('a branch with no card in the Book is refused', !T.hang('sun').ok);
+  check('a card bound opens its branch for good, and seeds its strain', T.hang('lovers').ok && S.strains.wonder && !T.hang('lovers').ok);
+  check('a branch with no card bound is refused', !T.hang('sun').ok);
   game.events.emit('spirit.release', { kind: 'wisp', spirit: 'Pip', by: 'courier' });
   check('a spirit let go is fired into a keepsake pot', K.pots.length === 1 && K.pots[0].spirit === 'Pip');
   check('every outcome said with by', evs.filter((e) => /^(spore|myggdrasil|keepsake)\./.test(e.n)).every((e) => e.by === 'courier')); }
