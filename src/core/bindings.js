@@ -112,6 +112,17 @@ export const ACTIONS = [
   { id: 'duFlee',   keys: ['KeyE'],                     touch: 'du.flee',    ctx: 'duel', how: 'tap' },
   { id: 'duForm',   keys: ['Backquote'],                touch: 'du.form',    ctx: 'duel', how: 'tap' },     // (hand / Courier)
   { id: 'duYield',  keys: ['Backspace'],                touch: 'menu.yield', ctx: 'duel', how: 'hold' },    // (held 1.5 real s; in the pause menu)
+  // ---- the rhythm mode and busking (M3, Wanda's: ten lanes as ten pads in two rows; a held pad is a held lane, music/rhythm/rhythm.js)
+  { id: 'rhLane1', keys: ['Digit1'], touch: 'rh.l1', ctx: 'rhythm', how: 'hold' },
+  { id: 'rhLane2', keys: ['Digit2'], touch: 'rh.l2', ctx: 'rhythm', how: 'hold' },
+  { id: 'rhLane3', keys: ['Digit3'], touch: 'rh.l3', ctx: 'rhythm', how: 'hold' },
+  { id: 'rhLane4', keys: ['Digit4'], touch: 'rh.l4', ctx: 'rhythm', how: 'hold' },
+  { id: 'rhLane5', keys: ['Digit5'], touch: 'rh.l5', ctx: 'rhythm', how: 'hold' },
+  { id: 'rhLane6', keys: ['Digit6'], touch: 'rh.l6', ctx: 'rhythm', how: 'hold' },
+  { id: 'rhLane7', keys: ['Digit7'], touch: 'rh.l7', ctx: 'rhythm', how: 'hold' },
+  { id: 'rhLane8', keys: ['Digit8'], touch: 'rh.l8', ctx: 'rhythm', how: 'hold' },
+  { id: 'rhLane9', keys: ['Digit9'], touch: 'rh.l9', ctx: 'rhythm', how: 'hold' },
+  { id: 'rhLane10', keys: ['Digit0'], touch: 'rh.l10', ctx: 'rhythm', how: 'hold' },
   // ---- the tools in hand (M3: MOBILE.md 8.7). Each ctx is a main tool drawn (its form for the Sondelass); narrower than foot, so a tile
   //      means the tool's verb while it is out and the foot's while it is stowed. FIRE dragged while held aims (the driver's).
   { id: 'psFire',   mouse: 'Mouse0',      pad: 'RT',    touch: 'fire',       ctx: 'tool.psygun', how: 'hold' },  // (held and let go: the charge)
@@ -167,7 +178,7 @@ export const ACTIONS = [
 ];
 
 /** The precedence: the first live ctx in this order that binds a pad button or a touch control wins it (MOBILE.md 6.1.1). */
-export const CTX_ORDER = ['race', 'skiff.rail', 'skiff.air', 'skiff', 'duel', 'godhand', 'garden', 'tool.psygun', 'tool.cutlass', 'tool.rod', 'tool.hook', 'tool.brush', 'tool.veritome', 'tool.dreamvane', 'tool.crucibelle', 'tool.lockheart', 'foot', 'any'];
+export const CTX_ORDER = ['race', 'skiff.rail', 'skiff.air', 'skiff', 'rhythm', 'duel', 'godhand', 'garden', 'tool.psygun', 'tool.cutlass', 'tool.rod', 'tool.hook', 'tool.brush', 'tool.veritome', 'tool.dreamvane', 'tool.crucibelle', 'tool.lockheart', 'foot', 'any'];
 /** The Gamepad API's standard mapping, by the table's names. */
 export const PAD_BUTTONS = { A: 0, B: 1, X: 2, Y: 3, LB: 4, RB: 5, LT: 6, RT: 7, Back: 8, Start: 9, LS: 10, RS: 11, Up: 12, Down: 13, Left: 14, Right: 15 };
 

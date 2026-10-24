@@ -46,7 +46,8 @@ import { SLOTS } from '../pneuka/box.js';
 import { PAIRS } from '../progress/toolpairs.js';
 import { areaRules } from './tracking/rules.js';
 import { RATINGS, overall } from '../ui/rating.js';
-import { helpLine } from './help/devicehelp.js';
+import { DEVICE_HELP } from './help/devicehelp.js';
+import { deviceText } from '../progress/devicewords.js';
 const plural = (n, w) => `${n} ${n === 1 ? w : `${w.replace(/([^aeiou])y$/, '$1ie')}s`}`; // (slip jellies, not jellys: QA-A)
 const an = (w) => (/^[aeiou]/i.test(w) ? 'an ' : 'a ') + w;
 const clock = (t) => `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, '0')}`;
@@ -281,12 +282,16 @@ export class Tracking {
     on('course.gate', (e) => { L.inc('course.gate'); L.hi('course.gate.speed', e.speed); log.say('circuit', `Speed gate: ${fx(e.speed, 1)} m/s.`, { key: 'gate', win: 0.8 }); });
     // what the keys do in a place, said once a session on first arriving there (it used to sit on the screen as a banner)
     const HELP = {
-      hub: 'The index console picks a room (F at it).',
+      hub: 'The index console picks a room ({use} at it).',
       'hub.debug': 'The Tab panel holds the debug jumps (the last checkpoint, the hub).', // (said after the hub's line in the DEBUG save only: QA-A and QA-C read it in STORY)
-      siege: 'THE SIEGE: ~ raises the hand. Raids come here.',
+      siege: 'THE SIEGE: {godhand} raises the hand. Raids come here.',
       skiff: 'Solar skiffing: W hoists the sail, S furls it and brakes, A and D steer, Space hops, Shift flares, F steps off and leaves it parked, Y recalls it. Hold Q or E at speed to carve left or right, and let go for a push. In a glide W dives, S pulls up, Q and E bank, A and D spin.',
       weir: 'THE WEIR: with the Sondelass your main (the Pneuka Box, P), X draws it (1 the cutlass, 2 the rod, 3 the hook). With the rod, 4 to 0 choose a feeling (each once you know it), - and = change the lure, hold LMB and let go to cast, MMB pings the water. With the grappling hook, LMB throws, hold to reel, RMB pays out. The gate on the north beach goes to Raku\'s bazaar, where the Treasury\'s chests and the Tithe now stand. Y brings the skiff.',
-      dunes: 'THE DUNES: Y brings the Solar Skiff.',
+      'skiff.touch': 'Solar skiffing: the sail fills by itself; hold BRAKE to slow. Slide your left thumb to steer, and past the outer ring to carve, then back inside for a push. Hold HOP and let go to hop; hold FLARE to flare; tap BOOST to spend a banked flare. Swipe left or right on the right side to shoulder. In the air FLARE and BRAKE become NOSE and TAIL: hold them for a grab, and hold HOP to glide. Drag on the right to look.', // (Espada's words, the device's own lines)
+      'skiff.pad': 'Solar skiffing: RT hoists the sail, LT furls it and brakes, the left stick steers, A hops (hold, then let go), X flares, Y spends a banked flare, Up steps off, Down recalls the skiff. Hold LB or RB at speed to carve, and let go for a push; tap one twice to shoulder. In the air X and B grab the nose and the tail, and A held glides.',
+      'hand.touch': "The hand: draw the art with one finger. Tap a domain on the strip, and again for its next art; hold a finger still for the wheel. Hold SIGN and draw a miracle's sign. Two fingers pan, pinch to zoom, twist to turn the view.",
+      'hand.pad': null, // (the god hand is not mapped on a pad yet: nothing said rather than mouse buttons)
+      dunes: 'THE DUNES: {skiff} brings the Solar Skiff.',
       hand: 'The hand: LMB uses the art; 1 to 7 pick a domain, again for its next art, or hold RMB for the wheel; MMB draws the sign of a miracle. N surveys, Q and E turn the view, the wheel zooms, WASD pans, M opens the map, ~ returns to the Courier.',
     };
     const helped = new Set();
@@ -298,9 +303,14 @@ export class Tracking {
     // the room they walk into, said as they enter it (the wire compass asks: vfx/wirecompass.js); the same room again only after a while
     const entered = new Map();
     on('place.enter', (e) => { if (g.realm?.active) return; const now = e.t ?? 0; if (now - (entered.get(e.room) ?? -1e9) < 90) return; entered.set(e.room, now); log.say('explore', `You enter ${e.room}.`, { key: 'place', win: 1 }); }); // (no room of the workshop is entered from the garden: GARDEN-SWEEP #8)
-    on('room.help', (e) => { // (in the words of the device last touched: feedback/help/devicehelp.js; said again in a room if the device changed)
-      const dev = g.input?.device || 'keyboard', line = helpLine(e.room, dev, HELP[e.room]), k = `${e.room}:${dev}`;
-      if (line && !helped.has(k)) { helped.add(k); log.say('system', line + (dev === 'keyboard' && g.mode === 'debug' && HELP[`${e.room}.debug`] ? ` ${HELP[`${e.room}.debug`]}` : '')); }
+    on('room.help', (e) => { // (in the words of the device last touched: the room's own line for it (HELP's `.touch` / `.pad`, else Espada's DEVICE_HELP,
+      //  feedback/help/devicehelp.js; null or '' says nothing there), else its {action}s said for the device, progress/devicewords.js; said
+      //  again in a room once the device has changed. The `.debug` line names the Tab panel: a keyboard's only)
+      const dev = g.input?.device || 'keyboard', seen = `${e.room}.${dev}`;
+      const own = dev === 'keyboard' ? undefined : HELP[seen] !== undefined ? HELP[seen] : DEVICE_HELP[dev]?.[e.room];
+      if (!HELP[e.room] || own === null || own === '' || helped.has(seen)) return; helped.add(seen);
+      const line = own || deviceText(HELP[e.room], dev);
+      log.say('system', line + (dev === 'keyboard' && g.mode === 'debug' && HELP[`${e.room}.debug`] ? ` ${HELP[`${e.room}.debug`]}` : ''));
     });
     on('circuit.enter', (e) => { L.inc(`circuit.${e.id}.enter`); L.inc('circuit.enter'); log.say('circuit', `You enter ${e.title}.${e.par ? ` Gold under ${e.par.gold} s, silver ${e.par.silver}, bronze ${e.par.bronze}.` : ''}${e.best ? ` Your best: ${fx(e.best)} s.` : ''}`); }); // (the circuit panel's targets, now in the log: the owner, 2026-10-07)
     on('circuit.gate', (e) => {

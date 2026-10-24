@@ -476,7 +476,21 @@ character), Brawl Stars (tap to fire assisted, drag to aim).
     signing in.
   - **The labels:** "your computer", "your phone", "your tablet", "another device". Never "desktop": the user agent can't tell a laptop
     from a desktop.
+- **The tools, the god hand, the duel (Espada, 2026-10-24):**
+  - FIRE and AIM take the tool's word, with the tool's name small in the corner: FIRE / AIM, ATTACK / SPECIAL, CAST (REEL) / SINK
+    (GIVE LINE), THROW (REEL) / PAY OUT, ATTACK / FLICK, PHOTO / LENS, PICK / DOWSE, TOLL / HIGH, HOOVER (FLAIL) / OPEN.
+  - DRAW flips to STOW while the main is out. LEND takes the sub's verb from `SUB_GIFTS`.
+  - The god hand's domain tiles carry no word: the domain's sign in its colour. ALT takes the other way's word (STOP, SELF, RAISE), else
+    OTHER.
+  - In the duel, FORM shows what you would become (HAND or COURIER), and YIELD is GIVE UP.
+  - The note pads carry no word: each is lit in its note's colour with its letter small.
 - **The touch help page:** Espada writes it once the tiles exist.
+- **The rule that picks them** (`progress/devicewords.js`, mine):
+  - `deviceWord(id, device)` gives an input action's word on the device last touched: its key on the keyboard ("F", "Ctrl + Z"), its
+    tile on touch ("USE"), its button on a pad ("X"). It reads the one bindings table.
+  - `deviceText("Press {use} to talk", device)` says a hint's `{id}`s.
+  - A room's help line (`room.help`, tracking.js) is said that way. A room whose verbs differ on glass (the skiff, the hand) has its own
+    `.touch` line; those two are my placeholders for Espada's words.
 
 ## 9. The phases
 
