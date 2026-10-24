@@ -10,8 +10,8 @@
 //             pennant and its length; the shut ones with what opens them; a dye's price (a firing's) said before it is paid.
 //   GARAGE    the build: its class (STOCK or OPEN) and Performance Index on each track; the skiff's parts, slot by slot
 //             (progress/skiffparts.js): the open ones to choose, the shut ones with the achievement that opens each; the tune sheet
-//             (progress/skifftune.js: a slider's left half steps it toward its minus end, its right half toward its plus); the three
-//             setups (wear, keep, pin to a track); a test lap on each track; the last lap's telemetry, in numbers (its drawing: Calissa's).
+//             (progress/skifftune.js; drawn as sliders by ui/garagesheet.js: a notch hovered shows its change, clicked wears it); the three
+//             setups (wear, keep, pin to a track); a test lap on each track; the last two laps' telemetry, in numbers and drawn over the map (ui/garagesheet.js).
 // A row is a choice card's plain cousin (the index's rooms), its words placeholders for Espada's.
 //
 // Prior art: Mario Kart's mode select, Gran Turismo's world map of modes, Kirby Air Ride's top menu; the index's own room list.
@@ -24,6 +24,7 @@ import { LICENCES } from './licences.js';
 import { PARTS, SLOTS } from '../../progress/skiffparts.js';
 import { PAINT } from '../../progress/skiffpaint.js';
 import { TUNE, SETUPS, SLIDE, tuneMult } from '../../progress/skifftune.js';
+import { tuneSheet, runTrace } from '../../ui/garagesheet.js';
 import { WAGER } from '../../progress/econ/wager.js';
 import { ECON } from '../../progress/econ/table.js';
 
@@ -103,15 +104,9 @@ export class RaceBoard {
         row(rows, mine ? '●' : '○', part.name, open ? `${part.does}${stats ? ` (${stats})` : ''}` : `Opened by the achievement ${ach?.name || part.opens}.`, () => { P.choose(slot, id); this.open(); }, !open);
       }
     }
-    const sh = grp('THE SHEET · click a slider\'s left half or right half to step it; the middle is the board as it came');
+    const sh = grp('THE SHEET · hover a notch to see what it changes, click to wear it; the gold tick is the board as it came');
     if (!P.sheetOpen) row(sh, '○', 'The tune sheet', 'Opens with your first part.', null, true);
-    else for (const [id, S] of Object.entries(TUNE.sliders)) {
-      const v = P.sheet[id] || 0, open = P.sliderOpen(id), one = { [id]: v };
-      const moved = Object.keys(S.moves).map((k) => [k, tuneMult(one, k)]).filter(([, k]) => Math.abs(k - 1) > 1e-6).map(([k, m]) => `${k} ${pct(m)}`).join(', ');
-      const bar = Array.from({ length: 2 * TUNE.range + 1 }, (_, i) => (i - TUNE.range === v ? '◆' : i === TUNE.range ? '┼' : '─')).join('');
-      const d = row(sh, v ? '◆' : '◇', `${S.label} ${v > 0 ? '+' : ''}${v}`, open ? `${S.minus} ${bar} ${S.plus}${moved ? ` · ${moved}` : ''}` : `Opens with a ${S.slot} part.`, null, !open);
-      if (open) d.onclick = (ev) => { const r = d.getBoundingClientRect(); P.setSlider(id, v + (ev.clientX < r.left + r.width / 2 ? -1 : 1)); this.open(); };
-    }
+    else { sh.style.display = 'block'; tuneSheet(sh, { P, tracks: R.tracks, TUNE, tuneMult, onChange: () => this.open() }); } // (the sheet's look: Calissa's, ui/garagesheet.js)
     const su = grp('SETUPS · the parts and the sheet, kept; pinned, worn when that track starts');
     for (let i = 0; i < SETUPS; i++) {
       const S = P.setups[i], pinned = R.tracks.filter((T) => P.pins[T.id] === i).map((T) => T.name).join(', ');
@@ -127,6 +122,8 @@ export class RaceBoard {
       const sp = Tr.samples.map((x) => x[1]), sl = Tr.samples.map((x) => Math.abs(x[2])), slide = Tr.samples.filter((x) => Math.abs(x[2]) > SLIDE.slip * (x[4] || 1)).length / sl.length;
       row(tel, '∿', `${k}: ${clock(Tr.seconds)} on ${R.trackOf(Tr.track)?.name || Tr.track} (${Tr.cls.toUpperCase()})`, `speed ${Math.min(...sp).toFixed(1)} .. ${Math.max(...sp).toFixed(1)} m/s, mean ${(sp.reduce((a, b) => a + b, 0) / sp.length).toFixed(1)}; slip up to ${(Math.max(...sl) * 57.3).toFixed(0)}°, sliding ${(slide * 100).toFixed(0)}% of the lap.`, null);
     }
+    tel.style.display = 'block';
+    runTrace(tel, { traces: this.race.traces, trackOf: (id) => R.trackOf(id) }); // (the trace drawn under the numbers: Calissa's, ui/garagesheet.js)
   }
   paint(grp, row) {
     const g = this.game, S = g.skiffPaint; if (!S) return;
