@@ -143,6 +143,103 @@ Green: works on touch as it is or with the grammar alone. Amber: needs its own m
 - **The pad driver**: the Gamepad API, polled once a frame; standard mapping.
 - **The last device wins**: the input layer reports `input.device` (keyboard, touch, pad); the HUD and the help follow it.
 
+### 6.1.1 The bindings table, first cut (Dovina's contents, Petra's shape: `core/bindings.js`)
+
+Petra's M0 (section 10): no system moves to actions yet. The touch and pad drivers press **key codes** through the table's reverse map,
+as `VirtualKeys` does, so all 322 key reads work on day one; `action(id)` is the read for new code. So each row's **first key is the code
+a driver presses**. The core movement on a stick (Petra): a unit direction plus the walk and sprint flags, never a speed in between.
+
+- **Columns:**
+  - `id`;
+  - `keys` (`KeyboardEvent.code`; the first is pressed by the drivers);
+  - `mouse` (`Mouse0` to `Mouse2`);
+  - `pad` (the Gamepad API's standard mapping: `A B X Y LB RB LT RT Back Start LS RS Up Down Left Right`);
+  - `touch` (a control id: Calissa's tiles, section 4);
+  - `ctx` (where it is live, `ctx` below);
+  - `how` (`hold`, `tap`, `double`, `release`: held then let go).
+- **ctx:**
+  - `any` (unless a window has the keys);
+  - `foot` (the Courier on foot, nothing riding);
+  - `skiff` (riding, on the sand);
+  - `skiff.air`;
+  - `skiff.rail` (the keel grinding);
+  - `race` (the Raceway with a run live).
+  - A driver asks which ctx is live; the game already knows it (`player.tech`, `skiff.riding`, `skiff.air`, `skiff.grind`, `race.live`).
+- **A touch control shows only in its ctx** (section 4's "context decides the buttons"). A tile that names its thing (USE) takes the
+  chevron's target's label.
+
+```js
+// AXES: -1 .. 1. Keys give ±1 (the keyboard is unchanged); a stick or the move area gives its push.
+export const AXES = {
+  moveX: { neg: 'KeyA', pos: 'KeyD', pad: 'LSx', touch: 'move.x' },
+  moveY: { neg: 'KeyS', pos: 'KeyW', pad: 'LSy', touch: 'move.y' },   // (forward is +)
+  steer: { neg: 'KeyA', pos: 'KeyD', pad: 'LSx', touch: 'move.x' },   // (the skiff; truly analog: full at 60 px on touch, 0.9 on a pad)
+  lookX: { neg: 'ArrowLeft', pos: 'ArrowRight', pad: 'RSx', touch: 'look.x' },
+  lookY: { neg: 'ArrowDown', pos: 'ArrowUp', pad: 'RSy', touch: 'look.y' },
+};
+// The gaits from a push (Petra): below 0.55 walk (the driver holds AltLeft), to full run, sprint (ShiftLeft held) past the move area's outer
+// ring on touch, or LS clicked on a pad (latched until the push falls under 0.55: the genre's L3 sprint, so a full push is still a run).
+
+export const ACTIONS = [
+  // ---- anywhere
+  { id: 'pause',    keys: ['Escape'],     pad: 'Start', touch: 'pause',      ctx: 'any', how: 'tap' },
+  { id: 'box',      keys: ['KeyP'],       pad: 'Back',  touch: 'top.box',    ctx: 'any', how: 'tap' },
+  { id: 'map',      keys: ['KeyM'],                     touch: 'top.map',    ctx: 'any', how: 'tap' },
+  { id: 'codex',    keys: ['KeyB'],                     touch: 'top.codex',  ctx: 'any', how: 'tap' },
+  { id: 'chat',     keys: ['Enter', 'Slash'],           touch: 'top.chat',   ctx: 'any', how: 'tap' },
+  { id: 'godhand',  keys: ['Backquote'],  pad: 'Right', touch: 'top.godhand', ctx: 'any', how: 'tap' },
+  // ---- on foot (M2 for touch; the pad on day one)
+  { id: 'jump',     keys: ['Space'],      pad: 'A',     touch: 'jump',       ctx: 'foot', how: 'hold' },  // (held: the mantle chain, the wall run)
+  { id: 'crouch',   keys: ['KeyC'],       pad: 'B',     touch: 'crouch',     ctx: 'foot', how: 'hold' },  // (a press cycles the posture; at a run the slide; held in paint the Paint Dive)
+  { id: 'use',      keys: ['KeyF'],       pad: 'X',     touch: 'use',        ctx: 'foot', how: 'hold' },  // (shown only with a chevron; held: the push)
+  { id: 'draw',     keys: ['KeyX'],       pad: 'Y',     touch: 'tool',       ctx: 'foot', how: 'tap' },   // (draw / stow the main)
+  { id: 'lend',     keys: ['KeyR'],       pad: 'RS',    touch: 'lend',       ctx: 'foot', how: 'tap' },   // (the sub's verb; a parry for Gulp: never waits for release)
+  { id: 'primary',  mouse: 'Mouse0',      pad: 'RT',    touch: 'fire',       ctx: 'foot', how: 'hold' },  // (the tool's LMB; the carry's throw. M3 per tool)
+  { id: 'secondary', mouse: 'Mouse2',     pad: 'LT',    touch: 'aim',        ctx: 'foot', how: 'hold' },  // (the tool's RMB. M3 per tool)
+  { id: 'parry',    keys: ['KeyV'],       pad: 'RB',    touch: 'parry',      ctx: 'foot', how: 'tap' },   // (the kick with nothing in hand, once learned)
+  { id: 'blink',    keys: ['KeyE'],       pad: 'LB',    touch: 'blink',      ctx: 'foot', how: 'tap' },   // (once learned)
+  { id: 'dash',     keys: ['ShiftLeft'],  pad: 'LS',                         ctx: 'foot', how: 'tap' },   // (a press: the air dash, the crouched roll. Touch: open, below)
+  { id: 'view',     keys: ['KeyZ'],       pad: 'Up',                         ctx: 'foot', how: 'tap' },   // (first / third person; touch: the pause menu)
+  { id: 'shoulder', keys: ['KeyO'],       pad: 'Left',                       ctx: 'foot', how: 'tap' },   // (touch: the pause menu)
+  { id: 'skiff',    keys: ['KeyY'],       pad: 'Down',  touch: 'top.skiff',  ctx: 'foot', how: 'tap' },   // (summon / recall: in the Dunes and the Raceway)
+  // ---- the Solar Skiff (M1: section 8)
+  { id: 'sail',     keys: ['KeyW'],       pad: 'RT',    touch: 'auto',       ctx: 'skiff', how: 'hold' }, // (touch: held by the driver while riding unless BRAKE is held)
+  { id: 'brake',    keys: ['KeyS'],       pad: 'LT',    touch: 'brake',      ctx: 'skiff', how: 'hold' }, // (with a combo live and the sail up: the manual)
+  { id: 'hop',      keys: ['Space'],      pad: 'A',     touch: 'hop',        ctx: 'skiff', how: 'release' }, // (held: the springs; let go: the hop and the late pop; in the air held: the glide)
+  { id: 'flare',    keys: ['ShiftLeft'],  pad: 'X',     touch: 'flare',      ctx: 'skiff', how: 'hold' },
+  { id: 'boost',    keys: ['KeyC'],       pad: 'Y',     touch: 'boost',      ctx: 'skiff', how: 'tap' },  // (shown only with a flare banked)
+  { id: 'carveL',   keys: ['KeyQ'],       pad: 'LB',    touch: 'move.outerL', ctx: 'skiff', how: 'hold' }, // (touch: the slide past the outer ring; tapped twice: the shoulder, a swipe on touch)
+  { id: 'carveR',   keys: ['KeyE'],       pad: 'RB',    touch: 'move.outerR', ctx: 'skiff', how: 'hold' },
+  { id: 'shoulderL', keys: ['KeyQ'],      pad: 'LB',    touch: 'swipe.left', ctx: 'skiff', how: 'double' },
+  { id: 'shoulderR', keys: ['KeyE'],      pad: 'RB',    touch: 'swipe.right', ctx: 'skiff', how: 'double' },
+  { id: 'nose',     mouse: 'Mouse0',      pad: 'X',     touch: 'nose',       ctx: 'skiff.air', how: 'hold' }, // (FLARE's place in the air)
+  { id: 'tail',     mouse: 'Mouse2',      pad: 'B',     touch: 'tail',       ctx: 'skiff.air', how: 'hold' }, // (BRAKE's place in the air)
+  { id: 'bankL',    keys: ['KeyQ'],       pad: 'LB',    touch: 'move.x',     ctx: 'skiff.air', how: 'hold' }, // (the glide's bank; touch: the left thumb)
+  { id: 'bankR',    keys: ['KeyE'],       pad: 'RB',    touch: 'move.x',     ctx: 'skiff.air', how: 'hold' },
+  { id: 'noseGrind', mouse: 'Mouse0',     pad: 'X',     touch: 'nose',       ctx: 'skiff.rail', how: 'double' },
+  { id: 'tailSlide', mouse: 'Mouse2',     pad: 'B',     touch: 'tail',       ctx: 'skiff.rail', how: 'double' },
+  { id: 'stepOff',  keys: ['KeyF'],       pad: 'Up',    touch: 'menu.stepOff', ctx: 'skiff', how: 'tap' }, // (and the race board, the start pillar: USE on touch)
+  { id: 'recall',   keys: ['KeyY'],       pad: 'Down',  touch: 'top.skiff',  ctx: 'skiff', how: 'tap' },
+  { id: 'toGate',   keys: ['KeyR'],       pad: 'Left',  touch: 'menu.back',  ctx: 'race', how: 'tap' },  // (held: retire, RETIRE in the pause menu on touch)
+  { id: 'restart',  keys: ['Backspace'],  pad: 'Back',  touch: 'menu.restart', ctx: 'race', how: 'tap' }, // (held in practice: the rewind; Back is the Box off a race)
+];
+```
+
+- **Two keys, two meanings.** Space, Shift, C, E, Q, F, R and Y mean one thing on foot and another riding. The ctx column is what lets a pad
+  button or a tile press the right code. Where a pad button carries two (X: flare on the sand, nose in the air), it is the same physical
+  button pressing the code its ctx names, as section 8 says for the tiles.
+- **On a pad, the skiff's W is RT and S is LT** (the racer's triggers). The keyboard's W + S chord for the manual is RT + LT. Sail stays
+  manual on a pad: a trigger costs no thumb. Auto-sail is touch only, and it is a binding, not a rule (Petra agreed).
+- **Open (mine, by M2):**
+  - The dash and the roll are a Shift *press* on foot. On touch, either a flick of the move area to its outer ring from rest within
+    0.15 real s, or a DASH tile once the air dash is learned. I'll measure the flick's false presses in the sweeps' touch lane before
+    choosing.
+  - The pad's R3 for `lend` is weak in a fight; the alternative is LB, moving `blink` to R3. I'll ask the owner once a pad is in their
+    hands.
+- **Not in the first cut:** the tools' own verbs past LMB and RMB (M3: each tool's context, with its owner), the god hand, the garden,
+  the rail and the helm (M1 to M4), the digit keys (their strips), T's order wheel (the top bar), Alt (a gait now), Tab and F-keys (debug,
+  the keyboard's only).
+
 ### 6.2 A touch mode for the shell
 - No pointer lock on touch, and its loss is not the pause; the pause is a button. `cursorFree` contexts take the finger as the cursor.
 - The platform's plumbing: `viewport-fit=cover`, `touch-action: none` on the canvas, no pinch-zoom or pull-to-refresh of the page,
@@ -229,7 +326,7 @@ Raceway's first race finished and first lap under bronze.
 | **M4** the sea | the rail and the open sea's helm; reprogramming's field | as above, with Wanda for the rail's cue | cross the Emocean |
 | **M5** parity | a layout editor (move and size the cluster: CoD's and PUBG's), gyro steering as an option (Mario Kart Tour's), haptics everywhere they help, the phone tier tuned from the measurements | all | play the whole game on the phone as well as on the desk |
 
-## 10. To settle with Petra (sent 2026-10-24; her answers recorded here when they come)
+## 10. Settled with Petra (sent 2026-10-24; her answers below the list)
 
 1. Actions and axes in `core/input.js`, or a module beside it; the bindings table's home and its owner (Dovina writes the contents).
 2. The touch mode's shell: pause, pointer lock, `cursorFree`, the top bar.
@@ -240,6 +337,60 @@ Raceway's first race finished and first lap under bronze.
 6. Save on `pagehide`, failed-write notice.
 7. Headless touch in the sweeps and the stress test.
 8. M0's order and size: what lands in her next round.
+
+### Petra's answers (2026-10-24; 9213f61 merged the plan)
+1. **Actions and axes.**
+   - `core/actions.js` (Petra's) holds `action(id)` and `axis(id)`.
+   - `core/input.js` stays the devices.
+   - The table is `core/bindings.js`: its contents are Dovina's (section 6.1.1), its shape Petra's.
+   - **Changed from section 6.1:** in M0 no system moves to actions. The drivers press key codes through the reverse map (HOP presses
+     `Space`), so every key read works on day one; `action()` is for new code, adopted one system at a time.
+   - The only new reads are the axes `moveX`, `moveY`, `steer`, `lookX` and `lookY`.
+   - **The core movement on a stick:** the direction at unit length, its push picking one of the three gaits the body has (walk below
+     0.55, run, sprint past the outer ring). A half push as a new speed would change the feel, so there is none. The animation tree and
+     the stress test meet no new state.
+   - The skiff's `steer` is truly analog; keys still give ±1.
+2. **The shell's touch mode:** as written, plus `input.device`. On touch the lock is never asked for, and losing it pauses only on
+   keyboard and mouse. Petra wires the pause button and the top bar; Calissa dresses them.
+3. **Measuring first.**
+   - **`?perf`** (Petra) shows:
+     - fps, frame ms (tick and draw apart), GL calls with the shadow pass, heap, tier and lines;
+     - `EXT_color_buffer_float`, half floats, `KHR_parallel_shader_compile` and the renderer string;
+     - what the host allows: whether the page is framed, fullscreen, wake lock, orientation lock, pointer lock. Whether a manifest
+       install is possible waits on the framing answer.
+   - **`?at=dunes|raceway|godhand|workshop`** sets the boot down there, so the owner can shoot all four places before touch play exists.
+4. **The phone tier**, ordered by the wall the audit found (the CPU, not fill):
+   - the shadow pass every 2nd or 3rd frame (31% of GL calls);
+   - outline hulls near only (36% of the main pass's draws; Calissa's fade band);
+   - MSAA off, the scene's and the canvas's (about 33 MB at High);
+   - lamps to 4;
+   - a 30 fps cap, with a caveat: physics stays at fixed 1/60 steps, so a 30 fps frame runs 2 steps. It halves the draw, not the
+     simulation; to be measured before it is promised.
+   - **The detector:** `Apple GPU` with a coarse pointer and touch points means the phone tier (a copy of Low until the numbers come).
+   - **Direct-to-canvas** only if a device lacks half-float targets.
+5. **Boot.**
+   - Yes in M0: the workbench as a dynamic import behind `/workbench` (QAIS stays), and a real progress bar over the warm-up.
+   - Not in M0: spreading the compile (it would trade away the no-mid-play-hitch property, unmeasured) and lazy rooms (structural; they
+     wait on the phone's heap).
+6. **The save, all in M0:**
+   - a flush on `pagehide` and `visibilitychange` (the ledger's 5 s debounce too);
+   - a failed `setItem` said in the log, throttled, with the export code;
+   - `webglcontextlost` pauses with a message, and a restore recompiles behind the loading screen.
+7. **Headless touch:** `open(room, { touch: true })` in the sweeps' harness (Playwright's `hasTouch`, `isMobile`, 844 × 390). The sweeps'
+   touch rooms are Dovina's; the stress test's touch lane is Petra's, once the driver exists.
+8. **M0 in Petra's order, one round:**
+   1. `?perf` and `?at=`;
+   2. the save flush, the write-failure notice and context loss;
+   3. `input.device`, axes and actions, the touch driver pressing keys, and the pad driver;
+   4. the shell's touch mode;
+   5. the platform plumbing (`viewport-fit=cover`, `touch-action: none`, safe areas, `dvh`, fullscreen where allowed);
+   6. the harness's touch option;
+   7. the detector and the workbench split.
+   - Then M1 is Dovina's to map: the skiff on touch.
+   - Step 3 needed the bindings' first cut: section 6.1.1.
+- **Steady Keel** is the owner's to rule (section 11).
+- **Not verified by Petra:** anything on a phone, the host's permissions, Safari's half floats and parallel compile. The readout is for
+  those.
 
 ### Calissa's answers (2026-10-24: yes to all five, with these)
 1. **The layout manager** is one module (`src/ui/hudlayout.js`), its unit `su` = 1% of the safe area's shorter side; every corner
