@@ -229,6 +229,7 @@ import { Replay } from './core/replay.js';
 import { reseed, sessionSeed } from './core/rng.js';
 import { Dissolve } from './vfx/dissolve.js';
 import { FigmentScatter } from './vfx/figmentscatter.js';
+import { BlowFeel } from './vfx/blowfeel.js';
 import { DuelView } from './vfx/duelview.js';
 import { SpawnLook } from './vfx/spawnlook.js';
 import { GateRing } from './vfx/gatering.js';
@@ -869,6 +870,7 @@ async function main() {
   game.stun = new Stun(game); // (a mind knocked out of itself, for anything that can be: stun.js)
   game.dissolve = new Dissolve(game); // (a zandatsu's pieces, come undone into Lachryma: vfx/dissolve.js)
   game.spawnLook = new SpawnLook(game); // (how a creature comes in: the island's own rise from the ground, an Egregore or a stray tears in from midair: vfx/spawnlook.js)
+  game.blowFeel = new BlowFeel(game); // (a melee blow's weight, looks only: its sparks, ring, ribbon flare, camera kick, flinch: vfx/blowfeel.js)
   game.figmentScatter = new FigmentScatter(game); // (a Figment's death: snapped, its wire, motes into the air and the ground: vfx/figmentscatter.js)
   game.jellies = new SlipJellies(game, await loader.parseAsync(bytes(jellyB64), ''));
   // (their homes over 45 m from the busker's mat on Grog's pier, a slip jelly's leash and sight together: it was 32, the owner's R9)
