@@ -21,13 +21,14 @@ import * as THREE from 'three';
 import { DAY_MS } from '../../core/calendar.js';
 import { DRAW, drawOf } from '../../progress/combat/worldshells.js';
 import { ASPECTS } from '../../progress/weather.js';
+import { T } from '../../core/config.js';
+import { CARRIER } from './shellrunner.js'; // (read at the trigger, never at load: the runner imports the part that imports this)
 
 /** A game hour in real seconds (a game day is an hour of real time: core/calendar.js). */
 export const GAME_HOUR = DAY_MS / 24 / 1000;
 /** The source a row takes first (CASTER-SHELLS.md 7.1: Calm the weather). */
 export const PREFER = { calm: ['weather'] };
-/** The lob's flight for the predicted landing (shellrunner.js CARRIER.lob and lobPart: the same numbers). */
-const LOB = { speed: 18, lift: 3, grav: 9.81, life: 3, step: 1 / 30 };
+const STEP = 1 / 30; // (the predicted landing's step, real s: the lob's own numbers are the runner's CARRIER.lob, read at the trigger)
 const CELL = 0.25, CELL_M2 = CELL * CELL, NEAR = 0.8;
 const _p = new THREE.Vector3(), _v = new THREE.Vector3(), _d = new THREE.Vector3();
 
@@ -43,13 +44,13 @@ export class WorldDraw {
   aimOf(row, { ray, muzzle } = {}) {
     const g = this.game; if (!ray) return g.player?.pos?.clone() ?? new THREE.Vector3();
     const skip = g.player?.collider, solid = (k) => !k.isSensor();
-    if (['lob', 'deploy'].includes(row.carrier) && muzzle) {
-      const pos = _p.copy(muzzle), vel = _v.copy(ray.dir).multiplyScalar(LOB.speed); vel.y += LOB.lift;
-      for (let t = 0; t < LOB.life; t += LOB.step) {
-        _d.copy(vel).multiplyScalar(LOB.step); const len = _d.length();
+    if ((['lob', 'deploy'].includes(row.carrier) || row.lob) && muzzle) { // (`row.lob`: the Bombardier's mortar lobs any carrier, variantplay.js)
+      const L = CARRIER.lob, grav = T.physics.gravity * L.grav, pos = _p.copy(muzzle), vel = _v.copy(ray.dir).multiplyScalar(L.speed); vel.y += L.lift;
+      for (let t = 0; t < L.life; t += STEP) {
+        _d.copy(vel).multiplyScalar(STEP); const len = _d.length();
         const hit = len > 1e-4 && g.physics?.raycast?.(pos, _d.clone().normalize(), len, skip, undefined, solid);
         if (hit) return hit.point.clone();
-        pos.add(_d); vel.y -= LOB.grav * LOB.step;
+        pos.add(_d); vel.y -= grav * STEP;
       }
       return pos.clone();
     }

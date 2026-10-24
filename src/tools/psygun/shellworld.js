@@ -62,9 +62,12 @@ export function worldRow(R, row, ctx) {
   if (row.tier !== 5) return row;
   const g = R.game, D = drawOf(g);
   if (g.lend?.has?.('shells')) return { ...row, world: { k: 1, feeling: null, at: D.aimOf(row, ctx), lent: true } };
-  const w = D.take(row, ctx);
-  if (w.dry) { if (R.shells?.counts) R.shells.counts[row.id] = (R.shells.counts[row.id] || 0) + 1; sfx.dryFire?.(); g.events?.emit('shell.dry', { id: row.id, by: 'courier' }); return null; }
-  g.worldLooks?.draw?.(w, row);
+  // one pull, one draw (Petra, 2026-10-24): every ray of the trigger's pull (the Pepperbox's spread) shares the one draw shells.js hands
+  // in `ctx.pull`; only the first ray takes from the place, shows it, and (dry) gives the round back
+  const pull = ctx.pull || {}, first = !pull.world;
+  const w = (pull.world ??= D.take(row, ctx));
+  if (w.dry) { if (first) { if (R.shells?.counts) R.shells.counts[row.id] = (R.shells.counts[row.id] || 0) + 1; sfx.dryFire?.(); g.events?.emit('shell.dry', { id: row.id, by: 'courier' }); } return null; }
+  if (first) g.worldLooks?.draw?.(w, row);
   return { ...row, n: scaledN(row, w.k), world: { k: w.k, feeling: w.feeling, at: w.at } };
 }
 
