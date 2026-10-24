@@ -43,7 +43,7 @@ export const ACTIONS = [
   { id: 'secondary', mouse: 'Mouse2',     pad: 'LT',    touch: 'aim',        ctx: 'foot', how: 'hold' },  // (the tool's RMB. M3 per tool)
   { id: 'parry',    keys: ['KeyV'],       pad: 'RB',    touch: 'parry',      ctx: 'foot', how: 'tap' },   // (the kick with nothing in hand, once learned)
   { id: 'blink',    keys: ['KeyE'],       pad: 'LB',    touch: 'blink',      ctx: 'foot', how: 'tap' },   // (once learned)
-  { id: 'dash',     keys: ['ShiftLeft'],  pad: 'LS',    touch: 'dash',       ctx: 'foot', how: 'tap' },   // (a press: the air dash, the crouched roll; on touch a DASH tile, shown once either is learned: MOBILE.md 6.1.1)
+  { id: 'dash',     keys: ['ShiftLeft'],  pad: 'LS',    touch: 'dash',       ctx: 'foot', how: 'tap' },   // (a press: the air dash, the crouched roll; on touch a DASH tile, always on foot: the dash is the core movement's, MOBILE.md 6.1.1)
   { id: 'view',     keys: ['KeyZ'],       pad: 'Up',                         ctx: 'foot', how: 'tap' },   // (first / third person; touch: the pause menu)
   { id: 'shoulder', keys: ['KeyO'],       pad: 'Left',                       ctx: 'foot', how: 'tap' },   // (touch: the pause menu)
   { id: 'skiff',    keys: ['KeyY'],       pad: 'Down',  touch: 'top.skiff',  ctx: 'foot', how: 'tap' },   // (summon / recall: in the Dunes and the Raceway)

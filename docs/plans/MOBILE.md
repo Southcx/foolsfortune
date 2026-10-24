@@ -238,8 +238,8 @@ export const ACTIONS = [
 - **On a pad, the skiff's W is RT and S is LT** (the racer's triggers). The keyboard's W + S chord for the manual is RT + LT. Sail stays
   manual on a pad: a trigger costs no thumb. Auto-sail is touch only, and it is a binding, not a rule (Petra agreed).
 - **Open (mine, by M2):**
-  - **Ruled (Dovina, 2026-10-24):** the dash and the roll (a Shift *press* on foot) are a **DASH tile** on touch, shown once the air dash
-    or the roll is learned. A flick of the stick to its ring would dash by accident, and the ring is already the sprint.
+  - **Ruled (Dovina, 2026-10-24):** the dash and the roll (a Shift *press* on foot) are a **DASH tile** on touch, always shown on foot:
+    the dash is the core movement's (the glossary), never earned. A flick of the stick to its ring would dash by accident, and the ring is already the sprint.
   - The pad's R3 for `lend` is weak in a fight; the alternative is LB, moving `blink` to R3. I'll ask the owner once a pad is in their
     hands.
 - **Not in the first cut:** the tools' own verbs past LMB and RMB (M3: each tool's context, with its owner), the god hand, the garden,
