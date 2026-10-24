@@ -20,19 +20,10 @@
 
 export const START_PLACES = ['workshop', 'dunes', 'raceway', 'godhand'];
 const HAND_WAIT = 6; // (real s the god hand waits for solid ground before it is given up)
-const KEPT = ['life', 'sess', 'rec', 'firsts', 'done']; // (the ledger's records: progress/stats.js)
 
-/** `fn` run with the ledger put back as it was: the counts and firsts the events of a travel tally (the hand taken, a Raceway entered)
- *  are not play. Only what happens inside `fn` is undone; achievements read the ledger a frame later, so none is awarded for it. */
-export function uncounted(game, fn) {
-  const L = game.ledger;
-  if (!L) return fn();
-  const was = KEPT.map((k) => ({ ...L[k] }));
-  try { return fn(); } finally {
-    KEPT.forEach((k, i) => { for (const key of Object.keys(L[k])) delete L[k][key]; Object.assign(L[k], was[i]); });
-    L.version++;
-  }
-}
+/** `fn` run with the ledger put back as it was after (its own `hold`: progress/stats.js): the counts and firsts the events of a travel
+ *  tally (the hand taken, a Raceway entered) are not play; achievements read the ledger a frame later, so none is awarded for it. */
+export const uncounted = (game, fn) => (game.ledger?.hold ? game.ledger.hold(fn) : fn());
 
 export class StartAt {
   constructor(game, query = new URLSearchParams(location.search)) {

@@ -34,7 +34,7 @@ import { now } from './calendar.js';
  *  day); part: characters a document holds (under the store's 256 KiB once escaped). */
 export const CLOUD = { boot: 1500, every: 60, keep: 3600, part: 180000 };
 
-const labelOf = (ua = navigator.userAgent || '') => (/iPhone|Android.+Mobile/i.test(ua) ? 'your phone' : /iPad|Android|Tablet/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) ? 'your tablet' : 'your desktop');
+const labelOf = (ua = navigator.userAgent || '') => (/iPhone|Android.+Mobile/i.test(ua) ? 'your phone' : /iPad|Android|Tablet/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) ? 'your tablet' : 'your computer');
 const rid = () => (globalThis.crypto?.randomUUID?.() || `${now()}-${performance.now()}`).replace(/[^a-z0-9]/gi, '').slice(0, 16); // (an id, not the simulation's chance)
 const withTimeout = (p, ms) => Promise.race([p, new Promise((r) => setTimeout(() => r(undefined), ms))]);
 
@@ -87,10 +87,11 @@ export class CloudSave {
     const takeThem = !localChanged || (M.played || 0) > this.save.played();
     if (!takeThem) { this.keepOther({ keys: theirs, label: M.label, at: M.at, played: M.played }); this.emit('kept', { from: M.label, ago: (now() - M.at) / 1000 }); this.dirtyT = CLOUD.every; return; }
     if (this.closed) { this.offer = { keys: theirs, M }; this.waiting = true; this.keepOther({ keys: theirs, label: M.label, at: M.at, played: M.played, offer: true }); this.emit('offer', { from: M.label, ago: (now() - M.at) / 1000 }); return; }
-    if (localChanged && Object.keys(mine).length) this.keepOther({ keys: mine, label: labelOf(), at: now(), played: this.save.played() }); // (ours, the shorter: kept a game day)
+    const keptMine = localChanged && Object.keys(mine).length > 0;
+    if (keptMine) this.keepOther({ keys: mine, label: labelOf(), at: now(), played: this.save.played() }); // (ours, the shorter: kept a game day)
     else if (this.kept.other?.offer) this.kept.other = null; // (the offer that was this same save: taken now)
     this.save.putProgress(theirs); this.adopt(M, theirs);
-    this.emit('took', { from: M.label, ago: (now() - M.at) / 1000 });
+    this.emit('took', { from: M.label, ago: (now() - M.at) / 1000, kept: keptMine });
   }
   /** The cloud's keys, whole, or null if any part is missing (an upload that never committed). */
   async fetch(M) {
