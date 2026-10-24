@@ -9,8 +9,9 @@
 //   a hit taken     one heavier pulse (a crack in the vessel); the shield broken, a double; shattered, a long fall
 //   the hull struck at sea, a heavy pulse; a line snapped, a sharp one; a fish landed, the lift's beat
 // iOS (the owner's phone) has no Vibration API: the one web haptic it has is Safari 18's switch control (`<input type="checkbox" switch>`),
-// whose toggle gives the system's tick. So there a moment is one tick, two for a pattern of two or more (unverified on the device: it may
-// need the touch's own activation, which a moment soon after a touch has).
+// whose toggle gives the system's tick, one strength only. So there only the four that matter most tick, told apart by count (TICKS):
+// the perfect pop one, the parry two, the combo banked two spaced, the line snapped three fast. Unverified on the device: it may need the
+// touch's own activation, which a moment fired straight off a touch has.
 // Prior art: the ios-haptics trick (a hidden switch's label clicked), the DualSense's and the Switch's HD rumble kept for moments (Astro's Playroom), Apple's Human Interface Guidelines on haptics
 // (match the strength to the event, use them sparingly), the Vibration API.
 //
@@ -31,7 +32,16 @@ const MOMENTS = {
 };
 const GAP = 120; // (real ms between two buzzes at the least: a burst of events is felt once)
 
-/** iOS's one tick: a hidden switch's label clicked (Safari 18). Returns a buzz(pattern) or null where there is no such control. */
+// iOS's ticks: the moments that matter most on a phone, each a count of ticks (ms from the first), since a tick has no strength
+const TICKS = {
+  'skiff.pop': (e) => (e.perfect ? [0] : null), // (one crisp tick)
+  'move.parry': () => [0, 70], // (two: met and turned)
+  'skiff.combo.bank': () => [0, 110], // (two, spaced: the bank's pair)
+  'angle.escape': (e) => (e.why === 'snap' ? [0, 45, 90] : null), // (three fast: the line going)
+};
+
+/** iOS's tick: a hidden switch's label clicked (Safari 18), fired at once so it lands inside the touch's activation. Returns
+ *  tick(times) or null where there is no such control. */
 function switchTick() {
   if (typeof document === 'undefined' || !/iP(hone|ad|od)/.test(navigator.userAgent) && !(navigator.maxTouchPoints > 1 && /Mac/.test(navigator.userAgent))) return null;
   const label = document.createElement('label'), box = document.createElement('input');
@@ -39,15 +49,15 @@ function switchTick() {
   label.addEventListener('click', (e) => e.stopPropagation()); box.addEventListener('click', (e) => e.stopPropagation()); // (the game's own click handlers never see it)
   label.setAttribute('aria-hidden', 'true'); label.style.cssText = 'position:fixed;left:-99px;top:0;width:1px;height:1px;opacity:0;pointer-events:none';
   document.body.appendChild(label);
-  return (p) => { const on = p.filter((_, i) => i % 2 === 0).length; label.click(); if (on > 1) setTimeout(() => label.click(), Math.min(140, (p[0] || 0) + (p[1] || 60))); };
+  return (times) => { for (const ms of times) if (ms <= 0) label.click(); else setTimeout(() => label.click(), ms); };
 }
 
 export function installHaptics(game) {
   if (typeof navigator === 'undefined') return;
-  const buzz = typeof navigator.vibrate === 'function' ? (p) => navigator.vibrate(p) : switchTick();
+  const vibe = typeof navigator.vibrate === 'function', buzz = vibe ? (p) => navigator.vibrate(p) : switchTick();
   if (!buzz) return;
   let last = 0;
-  for (const [name, fn] of Object.entries(MOMENTS)) game.events.on(name, (e) => {
+  for (const [name, fn] of Object.entries(vibe ? MOMENTS : TICKS)) game.events.on(name, (e) => {
     if (T.audio?.haptics === false || document.hidden) return;
     const p = fn(e || {}), now = performance.now(); if (!p || now - last < GAP) return;
     last = now; try { buzz(p); } catch { /* not allowed before a gesture */ }
