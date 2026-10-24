@@ -21,6 +21,8 @@
 import * as THREE from 'three';
 import { REGIONS, GLAZES, DEFAULT_LOOK } from './glazes.js';
 import { dressFinish, ownLight } from '../../vfx/finish.js';
+import { dressStone } from '../../vfx/stoneminerals.js';
+import { dressSkin } from '../../vfx/skinpatterns.js';
 import { wheelOklab, oklabColour } from '../../vfx/wheelcolour.js';
 import { addKintsugi, kintsugiUniforms } from './kintsugi.js';
 import { tagRegions } from './damage.js';
@@ -54,6 +56,7 @@ export class Vessel {
     const g = this.glaze(id);
     if (!g) return false;
     if (g.got.start || g.got.photo || this.game.lend?.has('glazes')) return true; // (DEBUG's lend panel: progress/lend.js)
+    if (g.got.debug) return this.game.mode === 'debug'; // (a look waiting for its rules: glazes.js)
     if (g.got.ach) return this.game.ledger?.done?.[g.got.ach] !== undefined; // (done at play time 0 is 0: never truthiness)
     return !!this.bought?.[id];
   }
@@ -86,7 +89,8 @@ export class Vessel {
         const sh = REGIONS[r].shader, P = U.uFinP.value;
         if (sh === 'glaze') { P.set(m.map ? 2.0 : 0, lumaMean(m), g.pattern || 0, 1 / modelSpan(ch)); U.uFinPart.value = r === 'mask' ? 2 : r === 'trim' ? 1 : 0; } // (how much of the painting's light and shade shows through; the kiln pattern, at the body's scale; which part, for a pattern laid out on the body)
         else if (sh === 'hair') { const b = hairSpan(ch); P.set(g.kind === 'hair' ? g.p[0] : 0, b.h, g.kind === 'hair' ? g.p[2] : 0, b.y0); if (g.kind !== 'hair') U.uFinB.value.setHex(g.color); }
-        else P.set(...(g.p || [0, 0, 0, 0]));
+        else if (sh === 'gem') dressStone(U, m, g.id, { radius: m.userData.stoneR ?? 0.02 }); // (the gem and its mineral, in the dice's radii: vfx/stoneminerals.js)
+        else { P.set(...(g.p || [0, 0, 0, 0])); if (sh === 'skin') dressSkin(U, g.look, modelSpan(ch)); } // (a skin's pattern, at the body's height: vfx/skinpatterns.js)
         m.color.setHex(0xffffff); m.roughness = g.rough; m.metalness = g.metal;
         m.userData.rest = sh === 'glaze' && m.map ? { em: ownLight(g.pattern) ? 0xffffff : g.color, emI: base.emI } : { em: g.glow ? PALETTE.glow : 0x000000, emI: g.glow || 0 }; // (a pattern in colours of its own lights them itself: vfx/finish.js ownLight)
       }

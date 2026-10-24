@@ -115,7 +115,7 @@ export class SkiffBoardLooks {
     const L = this.game.lachryma, frac = L ? L.value / Math.max(1e-6, L.max) : 1, here = !!this.game.raceway?.active;
     this.wear = damp(this.wear, here ? smooth(C.wear.from, C.wear.to, 1 - frac) : 0, C.wear.follow, dt);
     const stage = this.wear > C.wear.cracks[1] ? 2 : this.wear > C.wear.cracks[0] ? 1 : 0;
-    if (stage !== this.stage) { this.stage = stage; boat.setHullMap(stage ? this.crackMap(boat, stage) : null); }
+    if (stage !== this.stage || (stage && this.crack && this.crack.src !== (boat.hullBase ?? boat.hullTex)?.image)) { this.stage = stage; boat.setHullMap(stage ? this.crackMap(boat, stage) : null); } // (and again when another hull painting is worn: the cracks drawn over it)
     boat.stakes({ heat: this.heat, luff: this.luff, wear: this.wear, tilt: this.tilt, roll: this.roll });
     // the held effects: embers off a hot sail, smoke off a luffing one, flakes off a worn hull, sand off the manual's tail
     const vel = S.v, show = on && !boat.broken;
@@ -130,7 +130,7 @@ export class SkiffBoardLooks {
   // ---------------------------------------------------------------- the worn hull's cracks
   /** The hull's own painting with cracks drawn into it: step 1 a few, step 2 those and more (a canvas copy, uploaded on a step only). */
   crackMap(boat, stage) {
-    const src = boat.hullTex?.image; if (!src?.width) return null;
+    const src = (boat.hullBase ?? boat.hullTex)?.image; if (!src?.width) return null; // (the painting worn: the owner's or a hull painting)
     try {
       if (!this.crack) {
         const c = document.createElement('canvas'); c.width = src.width; c.height = src.height;
@@ -139,7 +139,7 @@ export class SkiffBoardLooks {
         this.crack = { c, g: c.getContext('2d'), tex, drawn: -1 };
       }
       const K = this.crack;
-      if (K.drawn !== stage) {
+      if (K.drawn !== stage || K.src !== src) {
         const { g, c } = K, W = c.width, H = c.height, s = Math.max(1, W / 512), C = BOARD_LOOK.colour;
         g.clearRect(0, 0, W, H); g.drawImage(src, 0, 0);
         const r = stream(7), n = stage === 2 ? 30 : 12; // (the same stream: step 2's first twelve are step 1's)
@@ -153,17 +153,19 @@ export class SkiffBoardLooks {
           g.strokeStyle = `#${new THREE.Color(C.crack).getHexString()}`; g.globalAlpha = 0.95; g.lineWidth = s * 1.2; path(0, 0);
           if (r() < 0.5) { const p = pts[(pts.length / 2) | 0], b = a + (r() < 0.5 ? 1 : -1) * (0.7 + r() * 0.6); g.beginPath(); g.moveTo(p[0], p[1]); g.lineTo(p[0] + Math.cos(b) * len * 0.5, p[1] + Math.sin(b) * len * 0.5); g.stroke(); } // (a branch)
         }
-        g.globalAlpha = 1; K.drawn = stage; K.tex.needsUpdate = true;
+        g.globalAlpha = 1; K.drawn = stage; K.src = src; K.tex.needsUpdate = true;
       }
       return K.tex;
     } catch (e) { console.warn('the hull\'s cracks', e); return null; }
   }
   /** The hull's colour as its painting averages (for its shards), found once. */
   hullColour(boat) {
-    if (this.hullC != null) return this.hullC;
+    const src = (boat.hullBase ?? boat.hullTex)?.image;
+    if (this.hullC != null && this.hullCSrc === src) return this.hullC;
+    this.hullCSrc = src;
     let c = BOARD_LOOK.colour.hull;
     try {
-      const src = boat.hullTex?.image, k = document.createElement('canvas'); k.width = k.height = 8;
+      const k = document.createElement('canvas'); k.width = k.height = 8;
       const g = k.getContext('2d'); g.drawImage(src, 0, 0, 8, 8); const d = g.getImageData(0, 0, 8, 8).data;
       let R = 0, G = 0, B = 0, n = 0; for (let i = 0; i < d.length; i += 4) if (d[i + 3] > 128) { R += d[i]; G += d[i + 1]; B += d[i + 2]; n++; }
       if (n) c = new THREE.Color().setRGB(R / n / 255, G / n / 255, B / n / 255, THREE.SRGBColorSpace).getHex();

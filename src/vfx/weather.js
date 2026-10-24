@@ -66,11 +66,14 @@
 //   (the falling pieces and what each weather asks of them: the awakening's flood makes its own set of the same pieces)
 //   Every look shares two falling programs: the streaks (one LineSegments) and the motes (Points, a mode each: drift, flies, hail,
 //   fog lens), the miasma's lenses a second instance of the motes' very source (three caches a program by its source: no new one).
+//   What it does besides falling (the impacts on the ground, the gusts through the streaks and motes, the lens drops): vfx/weatherfx/.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { Overhead, OVERHEAD_GLSL } from './overhead.js';
 import { COLOR } from '../progress/weather.js';
 import { SOUR_U } from './water.js';
+import { GUST_U, GUST_GLSL } from './weatherfx/gusts.js';
+import { WeatherFx } from './weatherfx/index.js';
 
 const C = (hex) => new THREE.Color(hex);
 /** The feelings' colours: the game's one table (progress/weather.js COLOR, Dovina's; ruled the one table 2026-10-08, SOUL-ALCHEMY.md), re-exported
@@ -245,6 +248,7 @@ vec3 curlOf(vec3 p, float t) {
   return vec3(0.11 * c.z - 0.17 * c.y, 0.13 * c.x - 0.23 * c.z, 0.19 * c.y - 0.21 * c.x) * 3.0;
 }
 vec3 curlish(vec3 p, float t) { return curlOf(p, t) + 0.5 * curlOf(p * 2.7 + 11.0, t * 1.7); }
+${GUST_GLSL}
 ${OVERHEAD_GLSL}
 uniform vec4 uShore; uniform vec2 uShoreA; // (a shore: its centre xz, the waterline's radius, on; its bearing and half-width)
 float shoreFade(vec3 w) { // (the island's mood ends at the waterline: nothing falls over the crude)
@@ -284,7 +288,7 @@ export function makeRain(n, occ) {
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 6), 3)); g.setAttribute('aSeed', new THREE.BufferAttribute(seed, 3)); g.setAttribute('aEnd', new THREE.BufferAttribute(end, 1));
   const u = { uT: { value: 0 }, uCam: { value: new THREE.Vector3() }, uShore: SHORE_U.uShore, uShoreA: SHORE_U.uShoreA, uVel: { value: new THREE.Vector3(0, -10, 0) }, uLen: { value: 1 }, uCol: { value: new THREE.Color() }, uA: { value: 0 },
-    uNoise: { value: 0.6 }, uLowK: { value: 0.12 }, uSheet: { value: 0 }, ...boxU(), ...occ };
+    uNoise: { value: 0.6 }, uLowK: { value: 0.12 }, uSheet: { value: 0 }, ...GUST_U, ...boxU(), ...occ };
   const m = new THREE.ShaderMaterial({ name: 'weather-rain',
     uniforms: u, transparent: true, depthWrite: false, fog: false,
     vertexShader: `${WRAP}
@@ -296,11 +300,13 @@ float sheetOf(vec3 p) { // (rain in sheets: curtains of it, denser and thinner i
   return mix(1.0, 0.2 + 1.7 * smoothstep(0.15, 0.95, 0.5 + 0.5 * sin(x)), uSheet);
 }
 void main() {
-  float sp = 0.85 + 0.3 * fract(aSeed.x * 17.3);
+  float sp = 0.85 + 0.3 * fract(aSeed.x * 17.3), lv = 0.65 + 0.7 * fract(aSeed.z * 29.17), sw = 0.6 + 0.8 * fract(aSeed.x * 41.3); // (each streak its own speed, length and sway: never a grid)
   vec3 r = wrapAt(aSeed, sp);
-  vec3 p = uCam + r - normalize(uVel) * uLen * aEnd; // (the streak: its head, and its tail back along the way it falls)
-  float tt = uT - aEnd * uLen / max(0.001, length(uVel) * sp); // (the tail is where the head was a moment ago, on the same wandering path)
-  p += curlish(p * 0.08, tt) * uNoise;
+  vec3 p = uCam + r - normalize(uVel) * uLen * lv * aEnd; // (the streak: its head, and its tail back along the way it falls)
+  float tt = uT - aEnd * uLen * lv / max(0.001, length(uVel) * sp); // (the tail is where the head was a moment ago, on the same wandering path)
+  float gu = gustAt(p.xz, uT - tt); // (a gust front passing: the head shoved downwind before the tail, so the streak leans into it: vfx/weatherfx/gusts.js)
+  p += curlish(p * 0.08, tt) * uNoise * sw * (1.0 + 1.2 * gu);
+  p.xz += gustDir() * uGust.z * gu;
   vec4 mv = viewMatrix * vec4(p, 1.0);
   gl_Position = projectionMatrix * mv;
   vA = edgeFade(r) * fallFade(p, aSeed.y) * (1.0 - 0.8 * aEnd) * sheetOf(uCam + r) * clearFade(gl_Position, -mv.z);
@@ -325,7 +331,7 @@ export function makeMotes(n, occ) {
   const g = new THREE.BufferGeometry();
   g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(n * 3), 3)); g.setAttribute('aSeed', new THREE.BufferAttribute(seed, 3));
   const u = { uT: { value: 0 }, uCam: { value: new THREE.Vector3() }, uShore: SHORE_U.uShore, uShoreA: SHORE_U.uShoreA, uVel: { value: new THREE.Vector3(0, -0.35, 0) }, uCol: { value: new THREE.Color() }, uA: { value: 0 }, uSize: { value: 0.06 }, uHex: { value: 1 }, uPx: { value: 480 },
-    uNoise: { value: 1.5 }, uLowK: { value: 0.2 }, uMode: { value: 0 }, uHue: { value: 0 }, uRise: { value: 0 }, uWet: WET_U.uWet, uWetY: WET_U.uWetY, ...boxU(), ...occ };
+    uNoise: { value: 1.5 }, uLowK: { value: 0.2 }, uMode: { value: 0 }, uHue: { value: 0 }, uRise: { value: 0 }, uWet: WET_U.uWet, uWetY: WET_U.uWetY, ...GUST_U, ...boxU(), ...occ };
   const m = new THREE.ShaderMaterial({ name: 'weather-motes',
     uniforms: u, transparent: true, depthWrite: false, fog: false,
     vertexShader: `${WRAP}
@@ -344,11 +350,13 @@ void main() {
   if (uMode < 0.5) {
     vec3 r = wrapAt(aSeed, 0.8 + 0.4 * fract(aSeed.y * 13.1));
     w = uCam + r;
-    w += curlish(w * 0.08, uT) * uNoise; // (each mote wanders on the wind's own eddies, the ice sinking slower through them)
+    float gu = gustAt(w.xz, 0.0);
+    w += curlish(w * 0.08, uT) * uNoise * (0.6 + 0.8 * fract(aSeed.z * 41.3)) * (1.0 + 1.2 * gu); // (each mote wanders on the wind's own eddies, each its own sway, the ice sinking slower through them)
+    w.xz += gustDir() * uGust.z * gu; // (a gust front sweeping through: vfx/weatherfx/gusts.js)
     // a crystal's glint: a slow turn that catches the light for a moment, each on its own long period (never a twinkle field)
     vG = step(0.5, uHex) * pow(max(0.0, sin(uT * (0.5 + 0.4 * aSeed.x) + aSeed.z * 40.0)), 24.0);
     vec4 mv0 = viewMatrix * vec4(w, 1.0);
-    gl_PointSize = clamp(uSize * uPx / -mv0.z, 1.0, uHex > 1.5 ? 14.0 : 6.0) * (1.0 + 1.5 * vG); // (confetti may come nearer, bigger)
+    gl_PointSize = clamp(uSize * (0.6 + 0.8 * fract(aSeed.x * 23.7)) * uPx / -mv0.z, 1.0, uHex > 1.5 ? 14.0 : 6.0) * (1.0 + 1.5 * vG); // (confetti may come nearer, bigger)
     gl_Position = projectionMatrix * mv0;
     vA = edgeFade(r) * fallFade(w, aSeed.x) * clearFade(gl_Position, -mv0.z);
     return;
@@ -546,6 +554,7 @@ export class WeatherLook {
       const mesh = new THREE.Mesh(boltGeo(rng(7 + i)), i ? boltMat.clone() : boltMat); mesh.frustumCulled = false; mesh.visible = false;
       return { mesh, glow: ringMesh(3, 0, 90), t: -9, glowA: 0.35, boltA: 0.85 };
     });
+    this.fx = new WeatherFx(this.game, this, { occ: this.over.u, wet: WET_U, shore: SHORE_U, heavyOf }); // (the impacts, the gusts and the lens drops: vfx/weatherfx/)
     for (const o of [this.rain.obj, this.motes.obj, this.mist.obj, this.halo.obj, this.bow.obj, this.bow2.obj, ...this.dogs.map((d) => d.obj), this.aurora.obj, ...this.bolts.flatMap((b) => [b.mesh, b.glow.obj])]) this.group.add(o);
   }
 
@@ -623,6 +632,7 @@ export class WeatherLook {
     if (!w) this.game.dunes?.clouds?.grade?.({});
     let any = false; for (const a of ASPECTS) if (this.eff[a] > 1e-3 || this.sec[a] > 1e-3) any = true;
     if (!this.made) { if (!any) { this.lift = 0; return; } this.make(); } // (calm since the boot and never warmed: nothing to draw, nothing made)
+    this.fx.update(dt, camera, open, smooth(w?.light ?? 0.5, 0.3, 0.6)); // (the impacts, the gusts, the lens drops: each frame, so the lens dries in a calm)
     this.group.visible = any || this.t - this.strike.t < 3; // (calm: nothing drawn, nothing updated)
     if (!this.group.visible) { this.lift = 0; SOUR_U.uSour.value = 0; return; }
     const light = w?.light ?? 0.5, dayK = smooth(light, 0.3, 0.6), nightK = 1 - smooth(light, 0.15, 0.4);
@@ -643,7 +653,7 @@ export class WeatherLook {
       hailK = Math.max(hailK, f.hail); pockK = Math.max(pockK, f.pock);
     }
     this.rain.obj.visible = rainA > 0.01; this.motes.obj.visible = moteA > 0.01; this.mist.obj.visible = mistA > 0.01;
-    if (this.rain.obj.visible || this.motes.obj.visible) this.over.update(cam, 48); // (a few dozen rays a frame: the map round the eye kept fresh)
+    if (this.rain.obj.visible || this.motes.obj.visible || this.fx.body.obj.visible) this.over.update(cam, 48); // (a few dozen rays a frame: the map round the eye kept fresh)
     if (this.mist.obj.visible) this.wide.update(cam, 32);
     for (const L of this.falls) { L.u.uT.value = this.t; L.u.uCam.value.copy(cam); }
     this.motes.u.uPx.value = this.mist.u.uPx.value = 480 / (2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2))); // (the scene is drawn at 480 lines)
@@ -728,7 +738,7 @@ export class WeatherLook {
   dispose() {
     this.game.sky?.grade?.({}); SOUR_U.uSour.value = 0;
     if (!this.made) return;
-    this.over.dispose(); this.wide.dispose();
+    this.fx.dispose(); this.over.dispose(); this.wide.dispose();
     this.group.parent?.remove(this.group);
     this.group.traverse((o) => { if (o.isMesh || o.isPoints || o.isLineSegments) { o.geometry.dispose(); o.material.dispose(); } });
   }

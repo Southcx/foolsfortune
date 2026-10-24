@@ -11,20 +11,21 @@
 // Both read the same upside down (tarot reversals show): everything is drawn through `sym`, a drawing and its half-turn, or is round.
 // Prior art: a Bicycle deck's back (a symmetric field in a border), Golden Dawn / Rider-Waite backs (one pattern that survives a
 // reversal), a casino chip's edge spots (Paulson's), the guilloche on a banknote (a hypotrochoid lace).
-//   drawHouseBack(g, W, H)   drawArcanaBack(g, W, H)   drawBackOn(g, kind, w, h)   FILM   HEX_R
+//   drawHouseBack(g, W, H)   drawArcanaBack(g, W, H)   drawBackOn(g, kind, w, h)   FILM   HEX_R   sym / path / star / TAU (the drawing helpers vfx/cardbackset.js shares)
+// The chooseable backs (the four suits', the four islands', the four seasons') are vfx/cardbackset.js.
 // ---------------------------------------------------------------------------------------
 import { COLOR, DISPLAY_ORDER } from '../progress/weather.js';
 
 /** The labradorite film's four stops (OVERLAY.md 10.4). */
 export const FILM = ['#4c0fb3', '#0a8cbf', '#f2b82e', '#d91a80'];
 const CHIP = { ivory: '#efe6d2', cinnabar: '#b8322a', lapis: '#2f5aa8', gold: '#e8c35a', goldDeep: '#a87a22' };
-const TAU = Math.PI * 2;
+export const TAU = Math.PI * 2;
 const hex = (n) => '#' + n.toString(16).padStart(6, '0');
 
 /** A drawing and its half-turn about the frame's middle: whatever `fn` draws, the back looks the same upside down. */
-const sym = (g, W, H, fn) => { fn(); g.save(); g.translate(W, H); g.rotate(Math.PI); fn(); g.restore(); };
-const path = (g, pts) => { g.beginPath(); pts.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y))); };
-const star = (cx, cy, r1, r2, n, rot = -Math.PI / 2) => { const p = []; for (let i = 0; i < n * 2; i++) { const a = rot + (i * Math.PI) / n; p.push([cx + Math.cos(a) * (i % 2 ? r2 : r1), cy + Math.sin(a) * (i % 2 ? r2 : r1)]); } return p; };
+export const sym = (g, W, H, fn) => { fn(); g.save(); g.translate(W, H); g.rotate(Math.PI); fn(); g.restore(); };
+export const path = (g, pts) => { g.beginPath(); pts.forEach(([x, y], i) => (i ? g.lineTo(x, y) : g.moveTo(x, y))); };
+export const star = (cx, cy, r1, r2, n, rot = -Math.PI / 2) => { const p = []; for (let i = 0; i < n * 2; i++) { const a = rot + (i * Math.PI) / n; p.push([cx + Math.cos(a) * (i % 2 ? r2 : r1), cy + Math.sin(a) * (i % 2 ? r2 : r1)]); } return p; };
 
 // ------------------------------------------------------------------ the house deck's back
 export function drawHouseBack(g, W = 64, H = 104) {

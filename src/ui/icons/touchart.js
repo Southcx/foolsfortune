@@ -27,9 +27,12 @@
 // on-screen buttons of the mobile racers and Genshin Impact (a glyph a button, the word only where the glyph cannot say it), and the
 // universal glyphs every phone already teaches (the gear, the balloon, the hooked undo, the two bars of pause).
 //
+//   the action modes  on foot, the tools in hand and the puzzle duel: touchactionart.js (spread in at the end)
+//
 //   TOUCH_ART[id] -> rows (14 x 14)
 // ---------------------------------------------------------------------------------------
 import { grid } from './hand.js';
+import { TOUCH_ACTION_ART } from './touchactionart.js';
 
 const R = (x, y, cx, cy) => Math.hypot(x + 0.5 - cx, y + 0.5 - cy);
 
@@ -520,4 +523,5 @@ export const TOUCH_ART = {
     '..............',
     '..............',
   ],
+  ...TOUCH_ACTION_ART, // (on foot, the tools in hand, the puzzle duel: MOBILE.md 8.5, 8.8, 8.9)
 };

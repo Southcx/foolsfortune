@@ -28,6 +28,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { bazaarAtlas, CARD_BACK, D4_FACES, D4_CORNERS } from './bazaarfaces.js';
+import { backCell } from './cardbackset.js';
 
 /** The sizes (metres: a table's pieces read from a seat's camera, so bigger than life by about three). */
 export const PIECE = { card: { w: 0.2, h: 0.325, gap: 0.003 }, die: 0.072, chip: { r: 0.042, h: 0.011, segs: 14 }, tile: { w: 0.11, h: 0.165, d: 0.03 } };
@@ -58,7 +59,7 @@ const memo = (key, make) => { let t = TPL.get(key); if (!t) TPL.set(key, (t = ma
 
 /** A card: face `i` up (+z), the back behind; its middle at the origin, its top at +y. */
 export function cardTpl(i, w = PIECE.card.w, h = PIECE.card.h, dim = false) {
-  return memo(`card:${i}:${w}:${h}:${dim}`, () => {
+  return memo(`card:${i}:${w}:${h}:${dim}:${backCell('house')}:${backCell('arcana')}`, () => { // (the backs a deck wears now are part of the key: a new choice builds a new template)
     const A = bazaarAtlas(), b = builder(), x = w / 2, y = h / 2, z = PIECE.card.gap / 2;
     b.quad([-x, -y, z], [x, -y, z], [x, y, z], [-x, y, z], [0, 0, 1], A.card(i, dim));
     b.quad([x, -y, -z], [-x, -y, -z], [-x, y, -z], [x, y, -z], [0, 0, -1], A.card(CARD_BACK, dim));

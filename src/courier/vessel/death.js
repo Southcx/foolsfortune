@@ -73,11 +73,12 @@ export class Death {
       this.burst = true;
       const fx = g.fx, up = new THREE.Vector3(0, 1, 0);
       g.character?.setHidden(true);
+      if (!g.flourishes?.shatter(mid)) { // (a shatter flourish worn draws the burst its own way: vfx/flourishes.js, Calissa's)
       fx?.shatterBurst?.(mid.clone(), 2.4, up, { dust: 3, chips: 5 });
       fx?.chipsOff?.(mid.clone(), up, 40, 2.2);
       fx?.toneBurst?.(mid.clone(), LACH, 1, 2.2);
       fx?.toneBurst?.(mid.clone().setY(mid.y + 0.5), 0xffd76a, 1, 1.4);
-      fx?.glitter?.([mid.clone(), mid.clone().setY(mid.y + 0.6), mid.clone().setY(mid.y - 0.5)], mid.clone(), up, new THREE.Color(LACH));
+      fx?.glitter?.([mid.clone(), mid.clone().setY(mid.y + 0.6), mid.clone().setY(mid.y - 0.5)], mid.clone(), up, new THREE.Color(LACH)); }
       sfx.shatter?.(3, 1, 'porcelain'); sfx.vesselCrack?.(1, 'mask');
       g.time?.pulse?.('death', 0.02, 0.12);
       P.shake = Math.max(P.shake || 0, 0.6);

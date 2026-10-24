@@ -666,6 +666,7 @@ export class Tracking {
     on('courier.reform', (e) => { L.inc('courier.reform'); if (e.where === 'lip') return; /* (foe.wipe says it: tracking/dunemaw.js) */ log.say('system', e.where === 'shrine' ? `Your Pneuka Jar is made whole at ${g.shrines?.get(e.shrine)?.name || 'the Shrine'}.` : 'Your Pneuka Jar is made whole in the workshop.', {}); });
     // the Shrines (docs/plans/SHRINES.md; world/shrines.js): found, rested at, travelled between; the Spirit Garden's door. Never "saved".
     on('cavern.force', () => log.say('info', 'You drop through the Great Dunemaw into the great cavern.', { key: 'cavernforce', throttle: 0.5 })); // (/cavern: world/well/dunemaw.js)
+    on('aberrant.look', (e) => log.say('info', e.mode === 'invert' ? 'Aberrants are drawn inverted, to compare.' : 'Aberrants wear their own look.', { key: 'aberrant.look', throttle: 0.5 })); // (/aberrant: vfx/databug.js, DEBUG)
     on('rail.force', (e) => log.say('info', e.setPieces?.length ? `The next sea stage sails into ${e.setPieces.join(', then ')}.` : 'The next sea stage is the sea\'s to choose.', { key: 'railforce', throttle: 0.5 })); // (/crossing: world/emocean/stage.js)
     on('shrine.find', (e) => { if (e.by !== 'courier') return; L.inc('shrine.found'); L.inc(`shrine.found.${e.shrine}`); log.say('explore', `You find ${g.shrines?.get(e.shrine)?.name || 'a Shrine'}.`); });
     on('shrine.rest', (e) => { if (e.by === 'courier') { L.inc('shrine.rest'); log.say('info', 'You rest at the Shrine.', { key: 'shrinerest', throttle: 4 }); } });

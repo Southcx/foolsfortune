@@ -18,6 +18,7 @@
 // Chao Garden's toy bounce, and Pikmin's sparkle trail.
 //
 //   const J = new JarHop(jarObject, { fx, color })   J.crouch(k)   J.hop()   J.land(speed)   J.trail(on)   J.update(rawDt)   (squash along its own +Y, or its clips')
+//   J.burst = (kind, k, obj) => ...   (optional: what else bursts from its foot at a hop and a landing, the Jar's look's: vfx/pneukajar/burst.js)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
@@ -38,10 +39,11 @@ export class JarHop {
   /** Loading the hop: 0 .. 1 how far it is squashed down (a held hop loads deeper). */
   crouch(k) { this.crouchK = this.clips ? 0 : THREE.MathUtils.clamp(k, 0, 1); }
   /** It leaves the ground: a stretch, springing back (or its clips' hop). */
-  hop() { this.crouchK = 0; if (this.clips) { this.clips.hop(); return; } this.sq = 0.28; this.v = 0; }
+  hop() { this.crouchK = 0; this.burst?.('hop', 0.5, this.obj); if (this.clips) { this.clips.hop(); return; } this.sq = 0.28; this.v = 0; }
   /** It comes down at `speed` m/s: a squash by how hard, a wobble back (or its clips' landing, as hard), a puff of motes round its foot. */
   land(speed = 4) {
     const k = THREE.MathUtils.clamp(speed / 10, 0.05, 1);
+    this.burst?.('land', k, this.obj); // (the Jar's look's burst: vfx/pneukajar/burst.js, set by vfx/pneukajar/look.js)
     if (this.clips) this.clips.land(speed); else { this.sq = -0.35 * k; this.v = 0; }
     const fx = this.fx; if (!fx?.add) return; this.obj.updateWorldMatrix(true, false);
     const up = _u.set(0, 1, 0).transformDirection(this.obj.matrixWorld), at = this.obj.getWorldPosition(_p), side = _s.set(1, 0, 0).transformDirection(this.obj.matrixWorld), fwd = _f.crossVectors(side, up);

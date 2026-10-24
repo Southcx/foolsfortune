@@ -22,6 +22,7 @@ import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { GUN_POINTS } from '../courier/character.js';
 import { ensureSmoothNormals } from '../render/outline.js';
+import { wearSkin } from './toolskinwear.js';
 
 /** Each variant's glb (lazily), its muzzle and its front sight's post (gun-model units, +X barrel, +Y up: export_psyguns.py's points). */
 const VARIANTS = {
@@ -80,6 +81,9 @@ export class PsygunModels {
     this.ref = { body: this.body?.geometry, glow: this.glow?.geometry, muzzle: GUN_POINTS.muzzle.clone(), front: this.front.map((o) => o.position.clone()) };
     if (this.ref.body && this.ref.glow) READY.set('reference', { body: this.ref.body, glow: this.ref.glow });
     this.shown = 'reference'; this.want = null;
+    // a tool's skin (vfx/toolskins.js): the body, its grip and stock as a zone of the same mesh (every variant keeps the reference's frame
+    // and grip, export_psyguns.py: the grip below y -0.075 behind x -0.15, the Carbine's stock behind x -0.40), the sights, the energy
+    wearSkin('psygun', { body: this.body?.material, glow: this.glow?.material, trim: sights[0]?.material }, { zone: { role: 'grip', y: -0.075, x: -0.15, stock: -0.4 } });
     game.events.on('psygun.change', (e) => this.show(e.gun));
     this.show(game.shells?.gun?.id);
   }

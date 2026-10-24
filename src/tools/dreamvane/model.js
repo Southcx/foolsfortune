@@ -12,6 +12,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { addOutline } from '../../render/outline.js';
+import { wearSkin } from '../../vfx/toolskinwear.js'; // (a tool's skin, looks only: Calissa's)
 
 // (the crook with its dreamcatcher, and the tuning fork, at two and a half times their first size: the owner's note on v40)
 export const HOOK = 2.5, FORK = 2.5;
@@ -71,6 +72,7 @@ export class DreamvaneModel {
     this.forkMats = { steel, brass };
     for (const o of [...g.children]) if (o.isMesh) addOutline(o);
     this.glow = 0;
+    wearSkin('dreamvane', { wood, wrap: wood2, steel, brass, feather: fm, bead: this.beadMat, web: this.webMat });
   }
 
   /** The fork: a stem and two tines, pointing down the staff (-X) from where it sits. */
@@ -93,6 +95,7 @@ export class DreamvaneModel {
     if (this.vaneG) return this.vaneG;
     const V = (this.vaneG = new THREE.Group()); V.position.set(1.0 + 0.11 * HOOK + 0.06, 0.11 * HOOK, 0); V.scale.setScalar(1.6); this.group.add(V);
     const brass = new THREE.MeshStandardMaterial({ name: 'vane-brass', color: BRASS, metalness: 0.7, roughness: 0.35 });
+    wearSkin('dreamvane', { brass });
     const post = new THREE.Mesh(new THREE.CylinderGeometry(0.006, 0.008, 0.07, 6), brass); post.rotation.z = -Math.PI / 2; post.position.x = -0.02; V.add(post);
     this.petals = []; this.rose = new THREE.Group(); V.add(this.rose);
     const N = (this.vaneNeedle = new THREE.Group()); N.position.x = 0.03; V.add(N);

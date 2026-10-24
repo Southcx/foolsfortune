@@ -16,12 +16,15 @@ import { RACEWAY_CAVERN_EFFECTS } from './racewaycaverneffects.js'; // (a crysta
 import { RACEWAY_PROPS_EFFECTS } from './racewaypropseffects.js'; // (the vein lanes, the pots, the antlion chaser, the patches: vfx/racewayprops.js plays them)
 import { RACEWAY_KNOCK_EFFECTS } from './racewayknockeffects.js'; // (clay struck at speed: a rival bumped or taken down, a pot's plume: vfx/racewayrivals.js, vfx/racewayprops.js)
 import { RACEWAY_PARK_EFFECTS } from './racewayparkeffects.js'; // (the antlion's maw snapping: vfx/racewaypark.js plays it)
+import { DUNES_DRESS_EFFECTS } from './dunes/effects.js'; // (the dust devils' scuff, a fulgurite's strike and glint: vfx/dunes/)
+import { RACEWAY_DRESS_EFFECTS } from './raceway/effects.js'; // (the race's fireworks, a Raceway lantern catching: vfx/raceway/)
 import { SKIFF_BOARD_EFFECTS } from './skiffboardeffects.js'; // (the board's stakes: the scorch, the hull, a wreck, the manual; the buoys: vfx/skiffboardlooks.js, vfx/racewaybuoys.js)
 import { RACEWAY_SIPHON_EFFECTS } from './racewaysiphoneffects.js'; // (the siphon arches' draw, drink and gulp: vfx/racewaysiphons.js plays them)
 import { PSYGUN_VARIANT_EFFECTS } from './psygunvarianteffects.js'; // (the psygun variants' flare, pentacle and reveal: tools/psygun/variantplay.js, vfx/flarereveal.js)
 import { PUZZLE_EFFECTS } from './opensea/puzzleeffects.js'; // (the islets' caches dug: the sand thrown up and the find's glint, vfx/opensea/puzzlelooks.js)
 import { ANGLING_EFFECTS } from './anglingeffects.js'; // (the catch leaving the water: tools/sondelass/angling/catchlift.js)
 import { BLOW_FEEL_EFFECTS } from './blowfeeleffects.js'; // (a melee blow's weight, and Strawman's straw: vfx/blowfeel.js plays them)
+import { FLOURISH_EFFECTS } from './flourisheffects.js'; // (the Courier's flourishes: a step's, a dash's, the shatter's, the aura's, the arrival's: vfx/flourishes.js)
 const L = (o) => o; // (a layer: only for readability)
 const GLAZES = [0x2f6db5, 0x4f9a7a, 0xe0b030, 0xc84a3a, 0xf3efe6, 0x6a4a9a, 0x2a8ab0]; // (the glazes' own colours: the Hailstorm's shards)
 
@@ -770,6 +773,8 @@ export const LIBRARY = {
   ...RACEWAY_EFFECTS,
   ...RACEWAY_CAVERN_EFFECTS,
   ...RACEWAY_PARK_EFFECTS,
+  ...DUNES_DRESS_EFFECTS,
+  ...RACEWAY_DRESS_EFFECTS,
   ...SKIFF_BOARD_EFFECTS,
   ...RACEWAY_PROPS_EFFECTS,
   ...RACEWAY_KNOCK_EFFECTS,
@@ -778,4 +783,5 @@ export const LIBRARY = {
   ...PUZZLE_EFFECTS,
   ...ANGLING_EFFECTS,
   ...BLOW_FEEL_EFFECTS,
+  ...FLOURISH_EFFECTS,
 };

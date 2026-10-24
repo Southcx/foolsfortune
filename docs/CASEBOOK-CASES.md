@@ -3765,6 +3765,16 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   through `tech`. Measured in the M3 probe: the cutlass's ctx with the cutlass, the brush's, the Veritome's, the psygun's.
 - **Rule:** 292
 
+### 2026-10-24 · An aberrant clapperjar's copy would not compile (Calissa, the aberrant's look)
+- **Seen (measured, headless at boot):** `THREE.WebGLProgram: Shader Error ... 'GREY_REF' : undeclared identifier` on `material-aberrant`,
+  the look's copy of a clapperjar's material made for the boot's warm-up.
+- **Cause (read):** the copy was made with `clone()`, which resets a Standard material's defines; the grey tint's hook
+  (vfx/greytint.js) reads `GREY_REF` from them. The inversion's copies (vfx/aberrantinvert.js) had the same fault, unseen only because no
+  clapperjar had turned aberrant yet.
+- **Fix:** both copies carry the original's defines (`k.defines = { ...m.defines }`, as `cloneTinted` does). Measured: the same boot,
+  no shader error.
+- **Rule:** 72
+
 ### 2026-10-24 · Every clone of a reading view card encoded the house deck to a JPEG (Petra, measuring a phone's boot for the iPhone)
 - **Seen (measured):** at boot, 28 canvases were turned into data URLs, 66.1 Mpx in 1,337 real ms on a desktop's CPU, 8 MB of strings;
   14 of them each the house deck's 2048 x 2304 atlas, with three.js warning "Image converted to jpg for performance reasons".

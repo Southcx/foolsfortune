@@ -13,6 +13,7 @@ import * as THREE from 'three';
 import { buildCurio } from '../world/treasure/curiomodel.js';
 import { buildLure } from '../tools/sondelass/angling/luremodels.js';
 import { buildThing } from './thingmodels.js';
+import { skinNow } from '../vfx/toolskinwear.js';
 import { itemOf } from './items.js';
 import { SPECIES } from '../tools/sondelass/angling/species.js';
 import { buildFish } from '../tools/sondelass/angling/fishmesh.js';
@@ -22,7 +23,7 @@ const CACHE = new Map(), S = 96, R = 2; // (drawn at twice the size and scaled d
 
 export function itemIcon(game, id) { return iconOf(game, id, itemOf(id)); }
 /** A tool's picture (the loadout's: the seven are not items, tools/belt.js), rendered from a copy of the model they wear. */
-export function toolIcon(game, tool) { return iconOf(game, `tool.${tool}`, { id: `tool.${tool}`, kind: 'tool', tool, glyph: '⚒', color: 0xffb27a, tier: 0 }); }
+export function toolIcon(game, tool) { return iconOf(game, `tool.${tool}.${skinNow(tool)}`, { id: `tool.${tool}`, kind: 'tool', tool, glyph: '⚒', color: 0xffb27a, tier: 0 }); } // (one picture a skin worn: vfx/toolskinwear.js)
 
 function iconOf(game, id, it) {
   if (CACHE.has(id)) return CACHE.get(id);

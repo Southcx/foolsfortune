@@ -113,11 +113,14 @@ import { WorldLooks } from './vfx/worldshells.js';
 import { RacewayCavern } from './vfx/racewaycavern.js';
 import { RacewayPark } from './vfx/racewaypark.js';
 import { RacewayProps } from './vfx/racewayprops.js';
+import { DunesDress } from './vfx/dunes/index.js';
+import { RacewayDress } from './vfx/raceway/index.js';
 import { RacewayFog } from './vfx/racewayfog.js';
-import { LachrimeterTube } from './vfx/lachrimetertube.js'; import { SpiritualLink } from './vfx/spirituallink.js'; import { PsygunCylinder } from './vfx/psyguncylinder.js'; import { SondelassGuard } from './vfx/sondelassguard.js'; import { SightLook } from './vfx/sight.js'; import { CreatureTags } from './vfx/creaturetags.js'; import { TitlePlacard } from './vfx/titleplacard.js'; import { SealImprints } from './vfx/sealimprint.js'; import { SealPicker } from './ui/sealpicker.js'; import { RailReadout } from './ui/railreadout.js'; import { GoalsWindow } from './ui/goalswindow.js'; import { HudLayout } from './ui/hudlayout.js';
+import { LachrimeterTube } from './vfx/lachrimetertube.js'; import { SpiritualLink } from './vfx/spirituallink.js'; import { PsygunCylinder } from './vfx/psyguncylinder.js'; import { SondelassGuard } from './vfx/sondelassguard.js'; import { SightLook } from './vfx/sight.js'; import { InstrumentSkins, INSTRUMENT_SKIN_ORDER } from './vfx/instrumentskins.js'; import { CreatureTags } from './vfx/creaturetags.js'; import { TitlePlacard } from './vfx/titleplacard.js'; import { SealImprints } from './vfx/sealimprint.js'; import { SealPicker } from './ui/sealpicker.js'; import { RailReadout } from './ui/railreadout.js'; import { GoalsWindow } from './ui/goalswindow.js'; import { HudLayout } from './ui/hudlayout.js';
 import { RailResults } from './ui/railresults.js'; // (round 6's overlay pieces: OVERLAY.md 10.5c)
 import { RacewaySiphons } from './vfx/racewaysiphons.js'; // (the siphon arches' look)
 import { installBracelets } from './vfx/braceletwear.js';
+import { PneukaJarLook } from './vfx/pneukajar/look.js';
 import { Cartography } from './feedback/cartography.js';
 import { Dunes, DUNE, POND } from './world/dunes/dunes.js';
 import { Dunemaw } from './world/well/dunemaw.js';
@@ -195,6 +198,7 @@ import { VaneHud } from './vfx/vanehud.js';
 import { CrucibelleHud } from './vfx/crucibellehud.js';
 import { HookMark } from './vfx/hookmark.js';
 import { BlobShadow } from './vfx/blobshadow.js';
+import { Flourishes } from './vfx/flourishes.js';
 import { VeritomeFrame } from './vfx/veritomeframe.js';
 import { TollReach } from './vfx/tollreach.js';
 import { LockheartReach } from './vfx/lockheartreach.js'; import { LockheartReliquary } from './vfx/lockheartreliquary.js'; import { SoulBrushDesk } from './vfx/soulbrushdesk.js';
@@ -263,6 +267,7 @@ import { Spirits } from './creatures/spirits.js';
 import { Bound } from './creatures/bound.js';
 import { CatchLook } from './vfx/catch.js';
 import { PsygunModels } from './vfx/psygunmodels.js';
+import { ToolSkins } from './vfx/toolskinwear.js';
 import { Busk } from './world/busk.js';
 import { Crystals } from './world/dunes/crystals.js';
 import { installEconomy } from './progress/econ/economy.js';
@@ -280,6 +285,7 @@ import { GardenMood } from './vfx/garden/gardenmood.js';
 import { GuestJars } from './vfx/garden/guestjars.js';
 import { CelestialTargets } from './vfx/celestialtargets.js';
 import { ReadingTable } from './ui/readingtable.js';
+import { CardBackChoice } from './ui/cardbackchoice.js';
 import { dangerPips } from './ui/dangerpips.js';
 import { ReadingView } from './vfx/readingview.js';
 import { installUndersideLook } from './ui/undersidelook.js';
@@ -301,12 +307,14 @@ import { SeaSerpentBody } from './vfx/opensea/seaserpentbody.js';
 import { SeaLooks } from './vfx/opensea/isletlooks.js';
 import { PuzzleLooks } from './vfx/opensea/puzzlelooks.js';
 import { SquallLine } from './vfx/opensea/squallline.js';
-import { egregoreBody } from './vfx/opensea/egregorebodies.js';
+import { egregoreBody, prewarmEgregores } from './vfx/opensea/egregorebodies.js';
+import { EgregoreHerd } from './vfx/opensea/egregoreherd.js';
 import { SeaFightLook } from './vfx/opensea/seafightlook.js';
 import { SeaHull } from './ui/seahull.js';
 import { Race } from './world/raceway/race.js';
 import { SkiffParts } from './progress/skiffparts.js';
 import { SkiffPaint } from './progress/skiffpaint.js';
+import { skiffSetCommands } from './vfx/skiffsets.js';
 import { TrackEditor } from './world/raceway/editor.js';
 import { Haunt } from './world/raceway/haunt.js';
 import { PoolCaps } from './progress/poolcaps.js';
@@ -536,7 +544,7 @@ async function main() {
   game.godhandLooks = new GodhandLooks(game); // (the god powers' marks, the miracles' falls, the drawn sign: vfx/godhand/godhandlooks.js)
   game.palmDieLook = new PalmDieLook(game); // (the palm die in the god hand's palm, in your stones' mineral: vfx/godhand/palmdie.js)
   game.awakeningLook = new AwakeningLook(game); // (a feeling's heavy weather flooding round the Courier on feeling.wake, its clip on feeling.embody: vfx/awakeninglook.js)
-  game.nightSky = new NightSky(game, { seaBearing: SHORE.angle }); // (the night alive: the stars' wheel, meteors, the aurora over the sea at the Shore; vfx/nightsky.js)
+  game.nightSky = new NightSky(game, { seaBearing: SHORE.angle }); // (the night alive: the stars' wheel, meteors and showers, the aurora over the sea at the Shore, the moon's phases, the constellations, each feeling's night; vfx/nightsky.js)
   game.shore = new Shore(game); // (the shore's look: the crude sea from the sand, the swash, the wet sand; it builds once the beach exists)
   mark('dunes');
   game.seam = new Seam(game); // (a place changed under a cover: render/seam.js)
@@ -745,7 +753,8 @@ async function main() {
     game.makeSeaSerpent = (o) => new SeaSerpentBody(game, o); // (the sea serpent's body for its mind to drive: vfx/opensea/seaserpentbody.js, drive/update/hit/down)
     game.cardBackOpen = (id) => cardBackOpen(id, game.ledger); // (what opens each of Calissa's card backs, for her picker's OPEN_WHEN: progress/cardbacks.js)
     game.cosmeticOpen = (kind, id) => cosmeticOpen(kind, id, game.ledger); // (what opens each of Calissa's tool skins, Jar parts, flourishes and instrument housings, for her OPEN_WHENs: progress/cosmetics.js)
-    game.makeEgregore = (species, o) => egregoreBody(species, o); // (a safari Egregore's placeholder body, for whatever lays a herd or a sighting on the water: vfx/opensea/egregorebodies.js; nothing places them yet)
+    game.makeEgregore = (species, o) => egregoreBody(species, o); // (a safari Egregore's body, alive, for whatever lays a sighting on the water: update(dt, { speed, bend }), habit(name), dive(on); vfx/opensea/egregorebodies.js; nothing places them yet)
+    game.makeEgregoreHerd = (o) => new EgregoreHerd(o); // (a herd of them in its square, scattering and regrouping round the ship: update(dt, { ship }); vfx/opensea/egregoreherd.js)
     game.seaLooks = new SeaLooks(game); // (the open sea's islets dressed over Dovina's placeholders: vfx/opensea/isletlooks.js)
     game.puzzleLooks = new PuzzleLooks(game); game.squallLine = new SquallLine(game); // (the islets' puzzles dressed, the dig's moment; a front's squall line: vfx/opensea/puzzlelooks.js, squallline.js)
     game.opensea = new OpenSea(game); // (the Emocean off the lanes, built the first time it is entered: world/opensea/, docs/plans/OPEN-SEA.md)
@@ -889,6 +898,7 @@ async function main() {
   game.bound = new Bound(game); // (the Figments caught, waiting in the Jar for the garden: creatures/bound.js)
   game.catchLook = new CatchLook({ fx: game.fx }); scene.add(game.catchLook.group); // (Calissa's: one look for the hand's catch and the coffin's, vfx/catch.js)
   game.crystals = new Crystals(game); // (Lachryma set hard in the sand: the Dreamvane's: world/dunes/crystals.js)
+  game.dunesDress = new DunesDress(game); game.racewayDress = new RacewayDress(game); // (the living dressing, looks only: the Dunes' dust devils, mirage, geodes and fulgurites; the Raceway's spectators, banners, lanterns and fireworks: vfx/dunes/, vfx/raceway/)
   game.folk = new Folk(game, clapG);
   placePeople(game, game.folk);
   game.dialogue = new Dialogue(game);
@@ -899,12 +909,15 @@ async function main() {
   game.theme = theme;
   // the chat line in the log: words said aloud, /commands, emotes (chat.js, emotes.js)
   game.chat = new Chat(game);
+  game.toolSkins = new ToolSkins(game); // (a tool's skin, looks only, kept in the save and /toolskin: vfx/toolskinwear.js, vfx/toolskins.js)
+  game.cardBacks = new CardBackChoice(game); // (the back each deck wears, kept in the settings, and /cardback: ui/cardbackchoice.js)
+  game.flourishes = new Flourishes(game); // (the Courier's flourishes: prints, dash trail, shatter, aura, arrival; /flourish: vfx/flourishes.js)
   sightCommands(game); // (/sight: the Sight's waypoint on the chat line)
   game.perfReadout = new PerfReadout(game, { diag, renderer }); // (the phone measurement panel: ?perf, /perf, the knob visual.perfReadout; debug/perfreadout.js, MOBILE.md 10.3)
   game.startAt = new StartAt(game); // (?at=dunes|raceway|godhand|workshop: set down there after the title; debug/startat.js)
   mudraCommands(game); // (/mudra: the god hand holds one of its poses, DEBUG: godhand/mudras.js)
   installCalibrateButtons(game); // (the Sight's TRACK buttons, set by a plate's pick and a charted room: ui/calibratebutton.js)
-  game.skiffParts = new SkiffParts(game); game.skiffPaint = new SkiffPaint(game); game.trackEditor = new TrackEditor(game); game.haunt = new Haunt(game); // (made tracks and the haunt mode: world/raceway/editor.js, haunt.js; TRACK-EDITOR.md) game.skiffSettings = new SkiffSettings(game); game.poolCaps = new PoolCaps(game); // (the Solar Skiff's garage and settings, after the chat line they speak on: progress/skiffparts.js, courier/skiff/skiffsettings.js; caps on the pool, a cracked region 5% of its max until mended: progress/poolcaps.js)
+  game.skiffParts = new SkiffParts(game); game.skiffPaint = new SkiffPaint(game); skiffSetCommands(game); game.trackEditor = new TrackEditor(game); game.haunt = new Haunt(game); // (made tracks and the haunt mode: world/raceway/editor.js, haunt.js; TRACK-EDITOR.md) game.skiffSettings = new SkiffSettings(game); game.poolCaps = new PoolCaps(game); // (the Solar Skiff's garage and settings, after the chat line they speak on: progress/skiffparts.js, courier/skiff/skiffsettings.js; caps on the pool, a cracked region 5% of its max until mended: progress/poolcaps.js)
   // the party: the siblings (coop/party.js), each a Courier of its own: the rig's model is parsed when one is called, never at boot
   const makeRig = async () => { // (another Courier's rig: a sibling's or a guest's, its model parsed when it comes, never at boot)
     const [cG, gG] = await Promise.all([loader.parseAsync(bytes(courierB64), ''), loader.parseAsync(bytes(gunB64), '')]);
@@ -923,6 +936,7 @@ async function main() {
   installPsyche(game); // (the seven domains' EXP, earned in every layer: progress/psyche.js)
   game.bracelet = new Bracelet(game); // (the ring's sockets and charms: progress/bracelet.js; BRACELET.md)
   game.bracelets = installBracelets(game); // (the bracelet, working name: worn at the hand's wrist, the Pneuka Jar's neck, the Courier's left wrist; driven from the bus: vfx/braceletwear.js)
+  game.pneukaJarLook = new PneukaJarLook(game); // (the Pneuka Jar fired in the vessel's looks, and its own lid, handles, shape, foot, pendant and hop's burst: vfx/pneukajar/look.js)
   game.voyage = new Voyage(game); // (the Emocean hop's systems: the hold, the crossing, the reckoning: progress/voyage.js)
   game.garden = new Garden(game); // (the Spirit Garden: the dividend's slots, the beds, the long sink: progress/garden.js)
   game.sporeBeds = new SporeBeds(game, { itemOf }); // (the mycelium's beds: progress/sporebeds.js, docs/plans/MYCELIUM.md)
@@ -1163,8 +1177,11 @@ async function main() {
   const seaFightAt = (game.seaFightLook?.parked() || []).map((o) => { o.visible = true; return o; }); // (the fight's shots: the rail's program, warmed with it)
   const parkIslets = game.seaLooks?.prewarm?.() ?? (() => {}); // (the islets' and the shallows' programs, 50 m down: vfx/opensea/isletlooks.js)
   const parkSquall = game.squallLine?.prewarm?.() ?? (() => {}); // (the squall line's program, and the rain's: vfx/opensea/squallline.js)
+  const parkDress = [game.dunesDress.prewarm(), game.racewayDress.prewarm()]; // (the dust devils' and the Dunes' mirage's two programs, and the dressing's materials: vfx/dunes/, vfx/raceway/)
+  const parkEgregores = prewarmEgregores(scene); // (the safari Egregores' one program, every species: vfx/opensea/egregorekit.js)
   const parkSandfall = prewarmSandfall(scene); // (the Raceway's sandfall, one copy 50 m down: its one program, vfx/racewaysandfall.js)
   const parkMatterLook = prewarmMatterLook(scene); // (the god hand's matter, ball and creations: one program, vfx/godhand/matterlook.js)
+  const parkJarLook = game.pneukaJarLook.prewarm(); // (the Jar's look's one program, the Jar shown 50 m down for the compile: vfx/pneukajar/look.js)
   const parkBracelet = game.bracelets.prewarm(); // (the bracelet's glazes, charms, flash and aura, 50 m down: vfx/braceletwear.js)
   game.present.shade(true); try { await renderer.compileAsync(scene, camera); } catch (e) { console.warn('shader warm-up', e); } // (the scene's programs linked in parallel first: the shell looks' Portal draw below draws the whole scene, which linked them one at a time, 72 of 182, the render inventory 2026-10-19)
   const parkShellLooks = await prewarmShellLooks(game); // (what the caster shells show in play, kept alive so it is never compiled twice: vfx/shelllooks/warmup.js)
@@ -1185,6 +1202,11 @@ async function main() {
   game.lockheartReliquary = new LockheartReliquary(game); // (the Lockheart's own UI, board v10 in its B orientation: vfx/lockheartreliquary.js)
   game.soulBrushDesk = new SoulBrushDesk(game); // (the Soul Brush's own UI, board v11: the scholar's desk, vfx/soulbrushdesk.js)
   game.sightLook = new SightLook(game); game.creatureTags = new CreatureTags(game); game.titlePlacard = new TitlePlacard(game); game.sealImprints = new SealImprints(game); game.sealPicker = new SealPicker(game); // (the overlay's instruments, tags, placard and seal: OVERLAY.md 10.5c, HANKO.md)
+  game.instrumentSkins = new InstrumentSkins(game); // (the instruments' housing as one set, a preference kept in the settings: vfx/instrumentskins.js)
+  game.chat.add('instruments', { debug: true, help: `the instruments' skin: /instruments ${INSTRUMENT_SKIN_ORDER.join(' | ')}; /instruments alone lists them`, run: ([id]) => {
+    if (id && game.instrumentSkins.set(id)) return;
+    game.log.say('info', `${id ? `No skin "${id}". ` : ''}Instrument skins: ${INSTRUMENT_SKIN_ORDER.map((k) => `${k}${k === game.instrumentSkins.id ? ' (on)' : ''}`).join(', ')}.`, { key: 'instruments', throttle: 0.5 });
+  } });
   game.railReadout = new RailReadout(game); game.railResults = new RailResults(game); // (the crossing's score aboard and the trip's results window, built on first use: ui/railreadout.js, ui/railresults.js; RAIL-STANDARDS.md 6)
   game.goalsWindow = new GoalsWindow(game); // (the game day's three goals as a System window, on /goals and a beat at goals.set and goal.done: ui/goalswindow.js)
   installTouchControls(game); // (touch play's controls, their look: built only once touch is on, ui/touch/index.js)
@@ -1194,7 +1216,7 @@ async function main() {
   if (!window.__noPrime) primeDraw(renderer, scene, camera, game.post.target); // (a test harness may skip it: it is a long frame on a software GL)
   parkWell?.(); // (after the prime: drawn once, so the driver has finished with its programs too)
   if (wipe) wipe.visible = false;
-  parkWeather?.(); parkDrain(); parkDuel(); parkSpawnLook(); parkCracks(); parkFigmentTelegraphs(); parkCasterS1toS5(); parkCaster.forEach((f) => f()); parkShellLooks(); parkBracelet(); parkMatterLook(); parkSandfall(); parkIslets(); parkSquall(); seaFightAt.forEach((o) => (o.visible = false));
+  parkWeather?.(); parkDrain(); parkDuel(); parkSpawnLook(); parkCracks(); parkFigmentTelegraphs(); parkCasterS1toS5(); parkCaster.forEach((f) => f()); parkShellLooks(); parkBracelet(); parkJarLook(); parkMatterLook(); parkSandfall(); parkDress.forEach((f) => f()); parkIslets(); parkSquall(); parkEgregores(); seaFightAt.forEach((o) => (o.visible = false));
   for (const o of brushLooks) o.visible = false;
   seaLooks.forEach((o, i) => { o.visible = false; o.position.copy(seaAt[i]); });
   for (const o of gardenLooks) o.visible = false;
@@ -1395,7 +1417,7 @@ async function main() {
     game.log.tick(dt);
     game.cartography.update(dt);
     game.cinema.update(game.rawDt); // (the frame and the vignette ease in real seconds, so a slowed world keeps its bars)
-    game.folk?.update(dt); game.dialogue?.update(game.rawDt); game.shops?.update(dt); game.weather?.update(dt); game.vessel?.update(game.rawDt); game.vesselDamage?.update(dt); game.death?.update(game.rawDt); game.ultimate?.update(game.rawDt); game.combat?.update(dt);
+    game.folk?.update(dt); game.dialogue?.update(game.rawDt); game.shops?.update(dt); game.weather?.update(dt); game.vessel?.update(game.rawDt); game.toolSkins?.update(game.rawDt); game.vesselDamage?.update(dt); game.death?.update(game.rawDt); game.ultimate?.update(game.rawDt); game.combat?.update(dt);
     diag.begin('minds'); game.ai.update(dt); game.creatures.update(dt); if (!worldAsleep) { game.jellies.update(dt); game.wisps?.update(dt); } game.stun.update(dt); game.dissolve.update(dt); game.figmentScatter.update(dt); game.flash.update(game.rawDt); game.reprogram.update(game.rawDt); diag.end('minds');
     game.pulse.update(dt);
     game.portrait.update(game.rawDt, game.angler?.fightView?.());
@@ -1511,7 +1533,7 @@ async function main() {
     game.bazaar?.light(); // (the bazaar's own air under its dome: world/bazaar/bazaar.js)
     game.bazaarHall?.update(game.rawDt ?? dt); // (the dome's turn, the wheel's and the carousel's spin, the neon's film walk: vfx/bazaarhall.js)
     game.realm?.light(); // (the garden's sky over the world's, while you are in it)
-    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.awakeningLook.update(game.rawDt ?? dt, camera); game.godhandLooks.update(game.rawDt ?? dt, camera); game.palmDieLook.update(game.rawDt ?? dt); game.weatherLook.update(dt, camera); game.nightSky.update(game.rawDt ?? dt); game.waterFx.update(game.rawDt ?? dt, camera); game.parryMark.update(game.rawDt ?? dt, camera); game.blobShadow.update(); game.figmentTelegraphs.update(dt, camera); game.siblingShatter.update(dt); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.aberrantWipe.update(game.rawDt ?? dt, camera); game.gateRing.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.squallLine?.update(game.rawDt ?? dt, camera); game.stormWarp.update(game.rawDt ?? dt, camera); game.umbral.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.duelView.update(game.rawDt ?? dt); game.spawnLook.update(game.rawDt ?? dt, camera); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); game.daturas?.update(game.rawDt ?? dt); game.wellDress.update(game.rawDt ?? dt); game.testroomDress.update(game.rawDt ?? dt); diag.end('fx');
+    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.awakeningLook.update(game.rawDt ?? dt, camera); game.godhandLooks.update(game.rawDt ?? dt, camera); game.palmDieLook.update(game.rawDt ?? dt); game.weatherLook.update(dt, camera); game.nightSky.update(game.rawDt ?? dt, camera); game.waterFx.update(game.rawDt ?? dt, camera); game.parryMark.update(game.rawDt ?? dt, camera); game.blobShadow.update(); game.flourishes.update(game.rawDt ?? dt); game.figmentTelegraphs.update(dt, camera); game.siblingShatter.update(dt); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.aberrantWipe.update(game.rawDt ?? dt, camera); game.gateRing.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.squallLine?.update(game.rawDt ?? dt, camera); game.stormWarp.update(game.rawDt ?? dt, camera); game.umbral.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.duelView.update(game.rawDt ?? dt); game.spawnLook.update(game.rawDt ?? dt, camera); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); game.daturas?.update(game.rawDt ?? dt); game.wellDress.update(game.rawDt ?? dt); game.testroomDress.update(game.rawDt ?? dt); diag.end('fx');
     game.glyphs.update(dt); // (after everything that pops one this frame: a mark made before its first update was drawn at the origin)
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;
 
@@ -1527,6 +1549,7 @@ async function main() {
     game.temper.update();
     game.vfx.update(game.rawDt || dt);
     game.racewayLooks.update(game.rawDt || dt);
+    game.dunesDress.update(game.rawDt || dt); game.racewayDress.update(game.rawDt || dt); // (vfx/dunes/, vfx/raceway/)
     game.skiffSlipArc.update(game.rawDt || dt);
     game.worldLooks.update(dt);
     game.racewayCavern.update(game.rawDt || dt); game.racewayFog.update(game.rawDt || dt); game.racewayProps.update(game.rawDt || dt); game.racewayPark.update(); game.racewaySiphons.update(game.rawDt || dt); // (the vein lanes, the pots, the antlion chaser, the patches: vfx/racewayprops.js)
@@ -1542,6 +1565,7 @@ async function main() {
     (game.veritomeFrame ||= new VeritomeFrame(game)).update(game.rawDt || dt); // (the lens's frame: what a plate would hold, in the third person while the Veritome is drawn: vfx/veritomeframe.js)
     (game.tollReach ||= new TollReach(game)).update(game.rawDt ?? dt); // (the Crucibelle's toll's reach at the feet, lit on the beat: vfx/tollreach.js)
     game.bracelets.update(game.rawDt ?? dt); // (the bracelet's glow: vfx/braceletwear.js)
+    game.pneukaJarLook.update(game.rawDt ?? dt); // (the Jar in the vessel's looks, live; its pendant's swing)
     game.lockheartReach.update(game.rawDt ?? dt); game.carryThrowMark.update(game.rawDt ?? dt); game.lobArcMark.update(game.rawDt ?? dt); game.flareReveal.update(); // (each tool its own marks: the Lockheart's, and empty hands' throw)
 
     game.mood.end(game.rawDt); // (and the room's lights borrowed again, just before the draw)

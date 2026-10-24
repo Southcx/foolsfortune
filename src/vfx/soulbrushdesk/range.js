@@ -14,6 +14,7 @@
 //   rangeDraw(x, S, t)   brushPose(S, f?) -> { x, y, r }   brushDraw(x, S, t, P, ghost)   streamDraw(x, S, t, P)   tipFx(x, S, t, P)
 //   ptOn(P, u) -> [x, y]   BR (the brush's stations along its axis: tip, heel, ferrule, cap, end, cord)
 // ---------------------------------------------------------------------------------------
+import { skinPalette } from '../toolskinwear.js';
 import { SEATS, seatCol, featPath, motif, C01, sm, lerp, KEY, film, rgba, mixH, shade, rng, mod, SUMI, VERM, TAU, D } from './look.js';
 
 const PK_H = [9, 10, 11, 12, 11, 10, 9], PK_X = (i) => -8 - 10 * i, PK_HW = 7.2, PK_UP = 17; // (a peak's height, its foot; the chosen rises to 17)
@@ -90,23 +91,24 @@ export function rangeDraw(x, S, t) {
 export function brushDraw(x, S, t, P, ghost) {
   const cel = S.cel || 0, press = S.charge >= 0 ? sm(S.charge) : S.burst >= 0 ? 1 - sm(S.burst / 0.12) : 0;
   x.save(); x.translate(P.x, P.y); x.rotate(P.r); const L = BR.heel - BR.tip;
+  const K = skinPalette('soulbrush'); // (the brush's skin, vfx/toolskins.js: its haft, ferrule, cap and tuft in the skin's colours)
   const tw = (u) => { const f = C01(u / L); let w = 3.3 * Math.sin(Math.PI * Math.pow(f, 0.8) * 0.78); w *= 1 + press * (1 - f) * (1 - f) * 1.4; return Math.max(0.2, w); };
   const tip = BR.tip - press * 1.2, mop = S.mp || 0;
   const tuft = () => { x.beginPath(); x.moveTo(tip, 0); for (let u = 0.5; u <= L; u += 0.5) x.lineTo(BR.tip + u, -tw(u)); x.lineTo(BR.heel + 0.3, -2.3); x.lineTo(BR.heel + 0.3, 2.3); for (let u = L; u >= 0.5; u -= 0.5) x.lineTo(BR.tip + u, tw(u)); x.closePath(); };
   if (ghost) { x.setLineDash([1.2, 1.1]); x.lineWidth = 0.8; x.strokeStyle = `rgba(242,195,90,${0.75 + 0.2 * Math.sin(t * 8)})`; tuft(); x.stroke(); x.beginPath(); x.rect(BR.heel, -2.4, BR.end - BR.heel, 4.8); x.stroke(); x.restore(); return; }
   // the haft
   x.beginPath(); x.rect(BR.fer, -1.8, BR.cap - BR.fer, 3.6); x.lineWidth = 1.1; x.strokeStyle = KEY; x.stroke(); let g = x.createLinearGradient(0, -1.8, 0, 1.8);
-  g.addColorStop(0, mixH('#5a4428', '#151010', cel)); g.addColorStop(0.3, mixH('#d8bb7e', '#3a3028', cel)); g.addColorStop(1, mixH('#6a4c26', '#0a0808', cel)); x.fillStyle = g; x.fill();
+  g.addColorStop(0, mixH(K?.wood ? shade(K.wood, -0.35) : '#5a4428', '#151010', cel)); g.addColorStop(0.3, mixH(K?.wood ? shade(K.wood, 0.25) : '#d8bb7e', '#3a3028', cel)); g.addColorStop(1, mixH(K?.wood ? shade(K.wood, -0.5) : '#6a4c26', '#0a0808', cel)); x.fillStyle = g; x.fill();
   const R = rng(17); x.fillStyle = `rgba(70,36,18,${0.6 * (1 - cel)})`; for (let i = 0; i < 14; i++) { x.beginPath(); x.ellipse(BR.fer + 1 + R() * (BR.cap - BR.fer - 2), (R() - 0.5) * 2.4, 0.4 + R() * 1.2, 0.3 + R() * 0.4, 0, 0, TAU); x.fill(); }
   for (const u of [12, 26]) { x.fillStyle = '#3a2814'; x.fillRect(u, -2, 0.8, 4); x.fillStyle = 'rgba(255,230,180,.4)'; x.fillRect(u + 0.8, -1.7, 0.35, 3.4); }
   x.fillStyle = 'rgba(255,240,210,.3)'; x.fillRect(BR.fer, -1.1, BR.cap - BR.fer, 0.4);
-  x.beginPath(); x.rect(BR.cap, -2.1, BR.end - BR.cap, 4.2); x.lineWidth = 1; x.strokeStyle = KEY; x.stroke(); x.fillStyle = '#24140c'; x.fill();
+  x.beginPath(); x.rect(BR.cap, -2.1, BR.end - BR.cap, 4.2); x.lineWidth = 1; x.strokeStyle = KEY; x.stroke(); x.fillStyle = K?.wrap || '#24140c'; x.fill();
   x.beginPath(); x.moveTo(BR.end, 0); x.quadraticCurveTo(BR.end + 2, -1.8, BR.cord, 0); x.quadraticCurveTo(BR.end + 2, 1.8, BR.end, 0); x.lineWidth = 1.1; x.strokeStyle = KEY; x.stroke(); x.lineWidth = 0.6; x.strokeStyle = '#4fa08c'; x.stroke();
   // the ferrule
   x.beginPath(); x.moveTo(BR.heel, -2.6); x.lineTo(BR.fer, -2.2); x.lineTo(BR.fer, 2.2); x.lineTo(BR.heel, 2.6); x.closePath(); x.lineWidth = 1; x.strokeStyle = KEY; x.stroke();
-  g = x.createLinearGradient(0, -2.6, 0, 2.6); g.addColorStop(0, '#f3d98f'); g.addColorStop(0.5, '#b48a3e'); g.addColorStop(1, '#4a3210'); x.fillStyle = g; x.fill();
+  g = x.createLinearGradient(0, -2.6, 0, 2.6); g.addColorStop(0, K?.brass ? shade(K.brass, 0.4) : '#f3d98f'); g.addColorStop(0.5, K?.brass || '#b48a3e'); g.addColorStop(1, K?.brass ? shade(K.brass, -0.6) : '#4a3210'); x.fillStyle = g; x.fill();
   // the tuft: dry hair, the pick's colour at the very tip, filled from the tip by the hold
-  tuft(); x.lineWidth = 1.1; x.strokeStyle = KEY; x.stroke(); g = x.createLinearGradient(0, -3, 0, 3); g.addColorStop(0, '#f6eedc'); g.addColorStop(0.6, '#d9cdb2'); g.addColorStop(1, '#9c8f78'); x.fillStyle = g; x.fill();
+  tuft(); x.lineWidth = 1.1; x.strokeStyle = KEY; x.stroke(); g = x.createLinearGradient(0, -3, 0, 3); g.addColorStop(0, K?.hair ? shade(K.hair, 0.3) : '#f6eedc'); g.addColorStop(0.6, K?.hair || '#d9cdb2'); g.addColorStop(1, K?.hair ? shade(K.hair, -0.3) : '#9c8f78'); x.fillStyle = g; x.fill();
   x.save(); tuft(); x.clip(); x.lineWidth = 0.22; x.strokeStyle = 'rgba(120,100,80,.45)'; for (let v = -3; v <= 3; v += 0.8) { x.beginPath(); x.moveTo(BR.heel, v * 0.75); x.quadraticCurveTo(BR.tip + 8, v, BR.tip, v * 0.1); x.stroke(); }
   const pid = pickOf(S), load = cel > 0 ? Math.max(S.sat, cel) : S.sat;
   if (cel < 0.5 && mop < 0.5 && pid !== 'clean') { const tl = 2.6; x.fillStyle = S.seaFrom; x.fillRect(tip - 1, -4, tl + 1, 8); x.globalAlpha = S.seaFill; x.fillStyle = S.seaTo; x.fillRect(tip - 1, -4, tl + 1, 8); x.globalAlpha = 1; }

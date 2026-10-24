@@ -25,6 +25,7 @@
 //   const rave = new Rave(game);   rave.start(ceremony);   rave.update(rawDt);   rave.stop();   rave.active
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { bakedCanvasTexture } from '../render/bakedcanvas.js';
 import { GROUPS } from '../core/physics.js';
 import { sfx } from '../audio/sfx.js';
 import { beamMaterial } from './beam.js';
@@ -40,8 +41,8 @@ const DOWN = new THREE.Vector3(0, -1, 0), Z = new THREE.Vector3(0, 0, 1);
 
 /** The paint that only shows under a black light: neon splatter, zig-zags, stars, drips and rings, on one transparent sheet. */
 function uvSheet(seed) {
-  const s = 512, c = document.createElement('canvas'); c.width = c.height = s;
-  const g = c.getContext('2d');
+  const s = 512;
+  const paint = (g) => {
   let r = seed * 9301 + 49297; const rnd = () => { r = (r * 9301 + 49297) % 233280; return r / 233280; };
   const col = () => `#${NEON[Math.floor(rnd() * NEON.length)].toString(16).padStart(6, '0')}`;
   g.lineCap = 'round'; g.lineJoin = 'round';
@@ -63,7 +64,8 @@ function uvSheet(seed) {
     const k = col(), x = rnd() * s, y = rnd() * s, R = 26 + rnd() * 26; g.fillStyle = k; g.shadowColor = k; g.shadowBlur = 18;
     g.beginPath(); for (let j = 0; j < 10; j++) { const a = j / 10 * 6.283 - 1.57, rr = j % 2 ? R * 0.45 : R; g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } g.closePath(); g.fill();
   }
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace;
+  };
+  const t = bakedCanvasTexture(paint, s, s); t.colorSpace = THREE.SRGBColorSpace; // (drawn once: its pixels let go once on the GPU, render/bakedcanvas.js)
   return t;
 }
 

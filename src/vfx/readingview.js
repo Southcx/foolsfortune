@@ -35,6 +35,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { bazaarAtlas, cardIndex } from './bazaarfaces.js';
+import { backCell } from './cardbackset.js';
 
 export const READING_VIEW = {
   card: { w: 0.42, h: 0.68 },   // (m: a card hung in the orbit, the house deck's 64 x 104 frame)
@@ -59,7 +60,7 @@ const MAJORS = ['fool', 'magician', 'priestess', 'empress', 'emperor', 'hieropha
   'justice', 'hanged', 'death', 'temperance', 'devil', 'tower', 'star', 'moon', 'sun', 'judgement', 'world'];
 /** The house deck's suits in its atlas order (vfx/bazaarfaces.js cardIndex), and a court's number in it. */
 const SUIT_ORDER = ['cups', 'swords', 'pentacles', 'wands'], COURT_R = { page: 11, knight: 12, queen: 13, king: 14 };
-const ATLAS_CARD = { w: 128, h: 208, cols: 16, back: 80, size: 2048, sizeH: 2304, foot: { x: 0, y: 2048 } }; // (back 80: the Arcana's back, in the atlas's foot: vfx/bazaarfaces.js ARCANA_BACK)
+const ATLAS_CARD = { w: 128, h: 208, cols: 16, foot: 80, size: 2048, sizeH: 2304, footY: 2048 }; // (cards 80 and up are the atlas's foot, one row of 128: the Arcana's own back, then the set's; the back worn is `backCell('arcana')`: vfx/cardbackset.js)
 
 const H = V.heart, F = V.front, cw = V.card.w, ch = V.card.h;
 /** Each place in the orbit (x right, y up from the feet, z forward), its turn (rad, a crossed card's quarter), its depth order. */
@@ -96,7 +97,7 @@ export class ReadingView {
   // ---------------------------------------------------------------- the parts
   buildMaterials() {
     const A = bazaarAtlas();
-    this.atlas = tex(A.canvas);
+    this.atlas = A.tex; // (the atlas's own texture: a second one from its canvas was another 30 MB on the GPU, and held the canvas)
     this.cardGeo = new THREE.PlaneGeometry(cw, ch);
     this.edgeGeo = new THREE.PlaneGeometry(cw + 0.05, ch + 0.05);
     this.frameMat = new THREE.MeshBasicMaterial({ color: 0xe8dcff, transparent: true, opacity: 0.22, depthWrite: false, blending: THREE.AdditiveBlending, side: THREE.DoubleSide, forceSinglePass: true });
@@ -112,18 +113,18 @@ export class ReadingView {
   cellGeo(i) {
     this.geos ||= new Map();
     if (this.geos.has(i)) return this.geos.get(i);
-    const g = this.cardGeo.clone(), uv = g.attributes.uv, S = ATLAS_CARD.size, SH = ATLAS_CARD.sizeH, foot = i === ATLAS_CARD.back;
-    const px = foot ? ATLAS_CARD.foot.x : (i % ATLAS_CARD.cols) * ATLAS_CARD.w, py = foot ? ATLAS_CARD.foot.y : Math.floor(i / ATLAS_CARD.cols) * ATLAS_CARD.h;
+    const g = this.cardGeo.clone(), uv = g.attributes.uv, S = ATLAS_CARD.size, SH = ATLAS_CARD.sizeH, foot = i >= ATLAS_CARD.foot;
+    const px = foot ? (i - ATLAS_CARD.foot) * ATLAS_CARD.w : (i % ATLAS_CARD.cols) * ATLAS_CARD.w, py = foot ? ATLAS_CARD.footY : Math.floor(i / ATLAS_CARD.cols) * ATLAS_CARD.h;
     const u0 = px / S, v1 = 1 - py / SH;
     for (let k = 0; k < uv.count; k++) uv.setXY(k, uv.getX(k) ? u0 + ATLAS_CARD.w / S : u0, uv.getY(k) ? v1 : v1 - ATLAS_CARD.h / SH);
     this.geos.set(i, g); return g;
   }
   /** A card: its face, its back, and the edge of light behind it in its suit's colour. */
   cardMesh(card) {
-    const i = card === 'back' ? ATLAS_CARD.back : Math.max(0, MAJORS.indexOf(card));
+    const i = card === 'back' ? backCell('arcana') : Math.max(0, MAJORS.indexOf(card));
     this.faceMat ||= new THREE.MeshBasicMaterial({ map: this.atlas, side: THREE.FrontSide, toneMapped: false });
     const face = new THREE.Mesh(this.cellGeo(i), this.faceMat);
-    const back = new THREE.Mesh(this.cellGeo(ATLAS_CARD.back), this.faceMat);
+    const back = new THREE.Mesh(this.cellGeo(backCell('arcana')), this.faceMat);
     back.rotation.y = Math.PI; back.position.z = -0.002;
     const edgeMat = new THREE.MeshBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0.9, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, forceSinglePass: true });
     const edge = new THREE.Mesh(this.edgeGeo, edgeMat); edge.position.z = -0.004;

@@ -41,6 +41,17 @@ const CSS = `
 .gt canvas{width:100%;border-radius:6px;box-shadow:0 0 0 1px #2a140c,0 0 0 3px rgba(212,165,60,.35);background:#140a18;cursor:crosshair}
 .gt-key{display:flex;flex-wrap:wrap;gap:4px 14px}.gt-key b{color:#ffd36a;font-weight:700}
 .gt-read{min-height:14px;color:#efe0c2}
+/* on a phone (the HUD layout's .hud-touch: ui/theme.js's windows on a phone): the slider the row's whole width under its name, its two ends
+   under it, and a 44 px track, so each notch is a finger's width apart; the type at 14 px (the windows' floor) */
+body.hud-touch .gs-row{grid-template-columns:1fr 1fr;grid-template-areas:'name name' 'track track' 'lo hi' 'stats stats';row-gap:2px}
+body.hud-touch .gs-row>b{grid-area:name}
+body.hud-touch .gs-row>.gs-end.m{grid-area:lo;text-align:left}
+body.hud-touch .gs-row>.gs-end:not(.m){grid-area:hi;text-align:right}
+body.hud-touch .gs-track{grid-area:track;height:44px}
+body.hud-touch .gs-stats{grid-area:stats}
+body.hud-touch .gs-groove{top:20px}
+body.hud-touch .gs-notch{top:16px}
+body.hud-touch .gs-knob{top:12px}
 `;
 let styled = false;
 export function installGarageSheet() {

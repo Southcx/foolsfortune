@@ -29,6 +29,7 @@
 //   skiff.stakes({ heat, luff, wear, tilt, roll })            // the board's rules worn on it (vfx/skiffboardlooks.js, each frame)
 //   skiff.partsLook()                                       // the mast and the fins as worn (in own(): MAST and FIN, SKIFF_PARTS_LOOK)
 //   skiff.flash(k, colour?, dur?)   skiff.broken = bool   skiff.setHullMap(tex | null)   skiff.cleanHull (the hull's unworn material)
+//   skiff.setHullPainting(tex | null)  (a hull painting, vfx/skiffhulls.js; null the owner's)   skiff.hullBase (the painting under any wear)
 //   skiff.paintLook (the paint worn: vfx/skiffpaintlook.js)   skiff.cleanCloth (the cloth as painted, unpainted and unfaded: the rivals')
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -278,8 +279,14 @@ export class Skiff {
   /** Wrecked: the board's body hidden while its shards are out (vfx/skiffboardlooks.js), shown again as they fly home. */
   set broken(v) { if (this.body) this.body.visible = !v; }
   get broken() { return !!this.body && !this.body.visible; }
-  /** The hull's painting: a worn one (cracked, vfx/skiffboardlooks.js), or null for its own. */
-  setHullMap(tex) { const m = this.hullMat; if (!m) return; const t = tex || this.hullTex; if (m.map !== t) { m.map = m.emissiveMap = t; } }
+  /** The hull's painting worn over: a worn one (cracked, vfx/skiffboardlooks.js), or null for the painting under it. */
+  setHullMap(tex) { this.hullWorn = tex || null; this.showHull(); }
+  /** The hull painting chosen (vfx/skiffhulls.js), or null for the owner's: what the cracks are drawn over, still tinted by a hull glaze. */
+  setHullPainting(tex) { this.hullPaint = tex || null; this.showHull(); }
+  /** The painting under any wear: the chosen one, else the owner's. */
+  get hullBase() { return this.hullPaint || this.hullTex; }
+  showHull() { // (through the hull wrap worn, if any: vfx/skifftrims/wraps.js)
+    const m = this.hullMat; if (!m) return; const t0 = this.hullWorn || this.hullBase, t = this.hullWrap?.(t0) ?? t0; if (m.map !== t) { m.map = m.emissiveMap = t; } }
   /** The stakes applied (set: each frame, after the boost's glow). */
   applyStakes(dt) {
     const S = this.st, K = SKIFF_STAKES, h = THREE.MathUtils.clamp(S.heat, 0, 1), w = THREE.MathUtils.clamp(S.wear, 0, 1);

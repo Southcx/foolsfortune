@@ -3,14 +3,16 @@
 // A piece is a few soft primitives merged into one non-indexed geometry that carries four attributes: position, normal, a vertex colour
 // (the BODY white, so the instance's set colour x tint paints it; an ACCENT in its own colour), `tintk` (0..1: how much of the instance
 // colour an accent takes; the body 1, a fixed accent 0) and `glowk` (0..1: a lamp's face, lit at dusk by the material's patch in
-// decorpieces.js). Rounded boxes are a box of two segments pushed out to a sphere's corner (the Chao Garden's pillow forms).
+// decorpieces.js), and `motion` (vec4: a part's motion kind, then its pivot: MOTION below; 0 for a part that keeps still, as the
+// generic attribute default reads for a geometry without one). Rounded boxes are a box of two segments pushed out to a sphere's corner
+// (the Chao Garden's pillow forms).
 //
 // Prior art: three.js's RoundedBoxGeometry (the clamp-and-inflate trick, here at 2 segments), Animal Crossing's and the Chao Garden's toy
 // furniture (few shapes, round edges), the cave abode vocabulary of vfx/garden/features.js.
 //
 //   const p = new Piece();  p.box(w, h, d, o)  p.slab  p.cyl(rTop, rBottom, h, o, seg)  p.cone  p.ball(r, o)  p.ring(R, tube, o)  p.lathe(points, o)  p.geo(g, o)
-//   p.done() -> BufferGeometry     o: { at:[x,y,z], rot:[x,y,z], sc: n | [x,y,z], c: hex (an accent), t: tint 0..1, g: glow 0..1, sit: true }
-//   K (the accent palette)   body = no `c`
+//   p.done() -> BufferGeometry     o: { at:[x,y,z], rot:[x,y,z], sc: n | [x,y,z], c: hex (an accent), t: tint 0..1, g: glow 0..1, sit: true,
+//   m: [kind, px, py, pz] (a moving part: MOTION's kind about the pivot, in the piece's own frame) }   K (the accent palette)   body = no `c`
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
@@ -21,6 +23,11 @@ export const K = {
   bamboo: 0xb7ad62, brass: 0xc89a46, pink: 0xf0b8c4, red: 0xb8453a, white: 0xf2f0ea, clay: 0xb8673f, thorn: 0x3a2f1c, snow: 0xf4f7fb,
   koi: 0xe8742e, ember: 0xd0642a, gold: 0xe0b04a, black: 0x2a2a2e, mist: 0xdfe8ea,
 };
+
+/** A moving part's kinds (drawn in the vertex shader by decorMaterial, decorpieces.js; the pivot in the piece's frame): TURN about +Y (a
+ *  potter's wheel head), TIP about +X in a filling-and-knocking cycle (the shishi-odoshi's pipe), POLAR about the axis tilted 40 degrees
+ *  from +Y toward +Z (an armillary sphere's inner rings), FLICKER (no motion: the part's lamp glow wavers, a kiln's fire). */
+export const MOTION = { still: 0, turn: 1, tip: 2, polar: 3, flicker: 4 };
 
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Euler(0, 0, 0, 'YXZ'), _p = new THREE.Vector3(), _s = new THREE.Vector3(), _c = new THREE.Color();
 
@@ -37,7 +44,7 @@ export function softBox(w, h, d, r = Math.min(w, h, d) * 0.28) {
 }
 
 export class Piece {
-  constructor() { this.pos = []; this.nor = []; this.col = []; this.tint = []; this.glow = []; }
+  constructor() { this.pos = []; this.nor = []; this.col = []; this.tint = []; this.glow = []; this.mot = []; }
   /** Any geometry, placed and coloured. */
   geo(g, o = {}) {
     const q = g.index ? g.toNonIndexed() : g.clone();
@@ -45,12 +52,12 @@ export class Piece {
     const [x, y, z] = o.at || [0, 0, 0], [rx, ry, rz] = o.rot || [0, 0, 0], sc = o.sc ?? 1;
     _m.compose(_p.set(x, y, z), _q.setFromEuler(_e.set(rx, ry, rz)), Array.isArray(sc) ? _s.set(sc[0], sc[1], sc[2]) : _s.set(sc, sc, sc));
     q.applyMatrix4(_m);
-    const body = o.c == null, t = o.t ?? (body ? 1 : 0), gl = o.g ?? 0; _c.set(body ? 0xffffff : o.c);
+    const body = o.c == null, t = o.t ?? (body ? 1 : 0), gl = o.g ?? 0, mv = o.m || [0, 0, 0, 0]; _c.set(body ? 0xffffff : o.c);
     const n = q.attributes.position.count;
     for (let i = 0; i < n; i++) {
       this.pos.push(q.attributes.position.getX(i), q.attributes.position.getY(i), q.attributes.position.getZ(i));
       this.nor.push(q.attributes.normal.getX(i), q.attributes.normal.getY(i), q.attributes.normal.getZ(i));
-      this.col.push(_c.r, _c.g, _c.b); this.tint.push(t); this.glow.push(gl);
+      this.col.push(_c.r, _c.g, _c.b); this.tint.push(t); this.glow.push(gl); this.mot.push(mv[0], mv[1], mv[2], mv[3]);
     }
     return this;
   }
@@ -75,6 +82,7 @@ export class Piece {
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.Float32BufferAttribute(this.pos, 3)); g.setAttribute('normal', new THREE.Float32BufferAttribute(this.nor, 3));
     g.setAttribute('color', new THREE.Float32BufferAttribute(this.col, 3)); g.setAttribute('tintk', new THREE.Float32BufferAttribute(this.tint, 1)); g.setAttribute('glowk', new THREE.Float32BufferAttribute(this.glow, 1));
+    g.setAttribute('motion', new THREE.Float32BufferAttribute(this.mot, 4));
     return g;
   }
 }

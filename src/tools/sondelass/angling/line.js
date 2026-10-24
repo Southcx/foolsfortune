@@ -33,8 +33,8 @@ export class FishingLine {
   /** opts: { radius (the rope's, at close range), color (its slack colour), n (its links) }: the grapnel's line is the same rope, thicker. */
   constructor(scene, { radius = 0.011, color = 0xd8c7b4, n = 36 } = {}) {
     this.rope = new Rope(scene, { n, sides: 4, radius, color });
-    this.core = new Rope(scene, { n: 24, sides: 4, radius, color: 0xffffff }); // (a tube laid along the line: Rope.trace)
-    this.core.mat.vertexColors = false; this.core.mat.toneMapped = false; this.core.mat.needsUpdate = true;
+    this.core = new Rope(scene, { n: 24, sides: 4, radius, color: 0xffffff, bands: false }); // (a tube laid along the line: Rope.trace; no twist, plain white, so it keeps the rope's own vertex-coloured program)
+    this.core.mat.toneMapped = false; this.core.mat.needsUpdate = true;
     this.core.mesh.renderOrder = 7;
     this.baseR = radius;
     this.slackCol = new THREE.Color(color);

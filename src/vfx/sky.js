@@ -29,13 +29,18 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { warpMaterial } from './stormwarp.js';
+import { NIGHT_GLSL, NIGHT_UNIFORMS } from './nightsky.js';
 import skyB64 from '../assets/sky.webp?b64';
 import dayB64 from '../assets/sky_day.webp?b64';
 import nightB64 from '../assets/sky_night.webp?b64';
 
 /** The feelings' skies: the paintings that stand (the owner's ruling, 2026-10-24), each loaded when first wanted; `sunLon` where the
- *  painting's own sun stands (radians, atan2(z, x)), so it can be turned to the game's. The others come as they pass. */
+ *  painting's own sun stands (radians, atan2(z, x)), so it can be turned to the game's. All seven feelings have one. */
 export const FEELING_SKIES = {
+  wonder: { load: () => import('../assets/sky_feeling_wonder.webp?b64'), sunLon: 1.1 },   // (its halo and sun dogs round the sun)
+  mirth: { load: () => import('../assets/sky_feeling_mirth.webp?b64'), sunLon: -0.6 },    // (its rainbow opposite the sun)
+  grief: { load: () => import('../assets/sky_feeling_grief.webp?b64') },
+  gall: { load: () => import('../assets/sky_feeling_gall.webp?b64') },
   desire: { load: () => import('../assets/sky_feeling_desire.webp?b64'), sunLon: 0.3 },
   fury: { load: () => import('../assets/sky_feeling_fury.webp?b64') },
   dread: { load: () => import('../assets/sky_feeling_dread.webp?b64') },
@@ -49,92 +54,9 @@ vec2 skyUv(vec3 d) { return vec2(atan(d.z, d.x) * 0.15915494 + 0.5, asin(clamp(d
 
 
 // THE NIGHT ALIVE (the owner, R46: "make the night sky feel more alive"; the evaluation is docs/ART.md, "The night sky"): laid over the
-// night painting in the dome's own shader, so it costs no draw call. STARS of our own on a wheel turning about a tilted pole (one turn
-// a game day); now and then a METEOR; and at the Shore, an AURORA's curtains low over the sea.
-// THE STARS AS A SKY HAS THEM (the owner, R10: "too uniform in colour and brightness", "drawn in front of the clouds"):
-//   COLOUR      each star its own temperature, a lognormal round 6300 K (most near white, a tail to orange at 3000 K and to blue-white
-//               past 15000 K), drawn on the Planckian locus, and the whole field leaning a little warmer or cooler across the sky
-//   BRIGHTNESS  a power law (N(>F) ~ F^-1.4, near the -1.5 of stars spread evenly through space): many faint, a few bright, the
-//               brightest a touch larger. A faint star is dimmer, never smaller: a soft Gaussian at least a pixel wide (no crawl)
-//   BEHIND      the cloud layer's own field read here (vfx/clouds.js's mapping and noise, linked by vfx/nightsky.js), so a star is gone
-//               under a cloud and fades at its fringe; the night painting's swirls (`swirl`) let them through only where they are thin;
-//               a high CIRRUS drifting slower than the cloud dims patches of the field, so it is never even
-//   TWINKLE     slow (a few seconds a breath), deeper near the horizon, where starlight crosses more air (and is dimmer there: extinction)
-// Prior art: the Yale Bright Star Catalogue's colour indices and counts (most naked-eye stars white to yellow-white, the K giants
-// orange, a few hot blue-white; three times as many at each fainter magnitude); Tanner Helland's fit to the blackbody in sRGB (2012);
-// the starfields of Elite and of Outer Wilds (a few bright stars and a dust of faint ones); every real night, where cloud hides the stars.
-const NIGHT_GLSL = /* glsl */`
-uniform float uNT, uWheel, uAur, uMetK; uniform vec2 uAurDir; uniform vec3 uMetS, uMetE;
-uniform sampler2D uCloudNoise; uniform vec2 uCloudOff; uniform vec4 uCloud; // (the cloud layer's cover and opacity, whether it is drawn, whether its noise is bound)
-float nh1(float x) { return fract(sin(x * 127.1) * 43758.5453); }
-float nn1(float x) { float i = floor(x), f = fract(x); f = f * f * (3.0 - 2.0 * f); return mix(nh1(i), nh1(i + 1.0), f); }
-vec3 nh3(vec3 p) { p = fract(p * vec3(0.1031, 0.1030, 0.0973)); p += dot(p, p.yxz + 33.33); return fract((p.xxy + p.yxx) * p.zyx); }
-// a star's colour at a temperature (Kelvin): Tanner Helland's fit to the Planckian locus in sRGB, taken to linear light
-vec3 starColour(float t) {
-  t *= 0.01;
-  float r = t <= 66.0 ? 1.0 : 1.292936 * pow(t - 60.0, -0.1332047);
-  float g = t <= 66.0 ? 0.3900816 * log(t) - 0.6318414 : 1.1298909 * pow(t - 60.0, -0.0755148);
-  float b = t >= 66.0 ? 1.0 : 0.5432068 * log(max(t - 10.0, 1.0)) - 1.1962541;
-  return pow(clamp(vec3(r, g, b), 0.0, 1.0), vec3(2.2));
-}
-// the cloud layer over a direction, as vfx/clouds.js draws it (its flat ceiling and two octaves), widened a little: what it hides
-float cloudOver(vec3 d) {
-  vec2 uv = d.xz / (max(d.y, 0.0) + 0.1) * 0.22;
-  float n = texture2D(uCloudNoise, uv + uCloudOff).r * 0.7 + texture2D(uCloudNoise, uv * 2.7 - uCloudOff * 1.6 + 0.37).r * 0.3;
-  return smoothstep(uCloud.x - 0.08, uCloud.x + 0.16, n) * smoothstep(0.015, 0.22, d.y) * clamp(uCloud.y * 2.5, 0.0, 1.0);
-}
-vec3 nightAlive(vec3 c, vec3 d, float k, float swirl) {
-  float lum = dot(c, vec3(0.299, 0.587, 0.114)), dark = 1.0 - smoothstep(0.18, 0.5, lum), up = smoothstep(0.0, 0.1, d.y);
-  float cl = uCloud.z > 0.5 ? cloudOver(d) : 0.0, clear = 1.0 - cl;
-  float cirrus = uCloud.w > 0.5 ? texture2D(uCloudNoise, d.xz / (max(d.y, 0.0) + 0.3) * 0.08 + uCloudOff * 0.4 + 0.53).r : 0.6; // (the cirrus: higher and slower than the cloud)
-  float air = mix(0.3, 1.0, smoothstep(0.03, 0.45, d.y));                                // (extinction: low stars through more air, dimmer)
-  float seen = clear * mix(0.35, 1.0, smoothstep(0.34, 0.62, cirrus)) * (1.0 - smoothstep(0.05, 0.4, swirl)) * dark * up * air * k;
-  // the wheel: the sky turned about a pole 35 degrees off the zenith, toward the north (-z)
-  vec3 P = normalize(vec3(0.0, 0.819, -0.574)); float ca = cos(uWheel), sa = sin(uWheel);
-  vec3 r = d * ca + cross(P, d) * sa + P * dot(P, d) * (1.0 - ca);
-  vec3 q = r * 70.0, base = floor(q - 0.5);
-  float px = max(max(length(dFdx(q)), length(dFdy(q))), 1e-4);                          // (a pixel, in the star field's own units)
-  float lean = sin(r.x * 2.1 + 1.3) * sin(r.y * 1.7 + 0.4) * sin(r.z * 2.3 + 2.1);         // (the field warmer or cooler across the sky)
-  float low = 1.0 - smoothstep(0.0, 0.5, d.y);
-  vec3 sum = vec3(0.0);
-  if (seen > 0.002) for (int i = 0; i < 8; i++) {                                         // (the eight cells round the point: a star is found whole)
-    vec3 cell = base + vec3(mod(float(i), 2.0), mod(floor(float(i) * 0.5), 2.0), floor(float(i) * 0.25));
-    vec3 h = nh3(cell);
-    if (h.x > 0.24) continue;                                                              // (one cell in four may hold a star)
-    vec3 S = normalize(cell + 0.15 + 0.7 * nh3(cell + 17.0)) * 70.0;                      // (the star, on the sphere)
-    if (any(notEqual(floor(S), cell))) continue;                                           // (only one whose point lies in its own cell)
-    vec3 h2 = nh3(cell + 41.0);
-    float F = min(pow(max(h.y, 0.004), -0.72), 40.0);                                      // (its flux: most near 1, one in a hundred past 25)
-    float temp = 6300.0 * exp((h2.x + h2.y + h2.z - 1.5) * 0.9 + lean * 0.3);
-    float sig = px * mix(0.62, 1.05, smoothstep(3.0, 25.0, F)), dd = length(q - S);
-    float s = exp(-dd * dd / (2.0 * sig * sig)) * (1.0 - smoothstep(0.32, 0.5, dd));
-    float tw = 1.0 + (0.12 + 0.3 * low) * sin(uNT * (0.5 + 0.9 * h.z) + h.x * 40.0);  // (a slow twinkle, deeper low down)
-    sum += mix(vec3(1.0), starColour(temp), 0.85) * s * F * tw;
-  }
-  c += sum * 0.2 * seen;
-  // a meteor: a short bright streak along its path, its tail fading behind the head
-  if (uMetK >= 0.0) {
-    vec3 hd = normalize(mix(uMetS, uMetE, uMetK)), tl = normalize(mix(uMetS, uMetE, max(0.0, uMetK - 0.3)));
-    vec3 ab = hd - tl; float t = clamp(dot(d - tl, ab) / max(dot(ab, ab), 1e-6), 0.0, 1.0);
-    float w = length(fwidth(d)) * 2.0, m = 1.0 - smoothstep(0.0, w, length(d - (tl + ab * t)));
-    c += vec3(0.95, 0.92, 1.0) * m * t * t * (1.0 - uMetK * uMetK) * 2.6 * up * k * clear; // (behind the cloud too)
-  }
-  // the aurora: curtains low over the sea, hemmed in labradorite's green, lapis above, violet at the top, drifting and folding slowly
-  if (uAur > 0.001) {
-    float az = atan(d.z, d.x), da = abs(atan(sin(az - uAurDir.x), cos(az - uAurDir.x)));
-    float sector = 1.0 - smoothstep(uAurDir.y * 0.6, uAurDir.y, da), u = az * 2.0;
-    float e = asin(clamp(d.y, -1.0, 1.0));
-    float fold = nn1(u * 6.0 + nn1(u * 1.7 + uNT * 0.03) * 4.0 + uNT * 0.05);
-    float hem = 0.03 + 0.05 * nn1(u * 3.0 + uNT * 0.04), top = hem + 0.18 + 0.22 * fold;      // (radians of elevation: a frayed curtain)
-    float body = smoothstep(hem - 0.01, hem + 0.025, e) * (1.0 - smoothstep(top * 0.6, top, e));
-    float rays = 0.55 + 0.45 * nn1(u * 90.0 + fold * 8.0 + uNT * 0.02);
-    float y = clamp((e - hem) / max(top - hem, 0.01), 0.0, 1.0);
-    vec3 ac = mix(vec3(0.15, 0.95, 0.6), vec3(0.2, 0.35, 1.0), smoothstep(0.1, 0.6, y));
-    ac = mix(ac, vec3(0.6, 0.25, 0.9), smoothstep(0.6, 1.0, y));
-    c += ac * body * rays * sector * (0.4 + 0.6 * fold) * uAur * 0.9 * (0.5 + 0.5 * dark) * (1.0 - 0.85 * cl); // (the aurora is far above the cloud)
-  }
-  return c;
-}`;
+// night painting in this dome's own shader, so it costs no draw call: the stars on their wheel, meteors and showers, the aurora, the
+// moon's phases, the house's constellations, and each feeling's night. Its GLSL and uniforms are vfx/nightsky.js's (NIGHT_GLSL,
+// NIGHT_UNIFORMS), driven there once a frame.
 export class Sky {
   constructor(game) {
     this.game = game;
@@ -146,13 +68,7 @@ export class Sky {
     this.px = null; this.W = 0; this.H = 0;
     this.G = { uSkyDay: { value: null }, uSkyNight: { value: null }, uDay: { value: 0 }, uNight: { value: 0 }, uExpo: { value: 1 }, uMul: { value: new THREE.Color(1, 1, 1) },
       uStars: { value: 1 }, uDesat: { value: 0 }, uHaze: { value: new THREE.Color(0, 0, 0) }, uHazeK: { value: 0 },
-      // the night alive (vfx/nightsky.js drives them): its clock (real seconds), the stars' wheel (radians), the aurora (amount; its bearing
-      // and half-width), and a meteor (its start and end directions; its age 0..1, below 0 none)
-      uNT: { value: 0 }, uWheel: { value: 0 }, uAur: { value: 0 }, uAurDir: { value: new THREE.Vector2(0, 1.1) },
-      uMetS: { value: new THREE.Vector3(1, 0, 0) }, uMetE: { value: new THREE.Vector3(1, 0, 0) }, uMetK: { value: -1 },
-      // the cloud layer's field, so the stars sit behind it (vfx/nightsky.js links the layer's own: its noise, its drift, and its cover,
-      // opacity, whether it is drawn and whether there is one)
-      uCloudNoise: { value: null }, uCloudOff: { value: new THREE.Vector2() }, uCloud: { value: new THREE.Vector4(0.5, 0, 0, 0) },
+      ...NIGHT_UNIFORMS(), // (the night alive: vfx/nightsky.js drives them)
       // a feeling's sky: its painting, its share, and its turn (radians about the up axis, so its sun meets the game's)
       uSkyFeeling: { value: null }, uFeeling: { value: 0 }, uFeelingYaw: { value: 0 } };
     this.feel = { shown: null, k: 0, tex: {}, px: {}, loading: {} };
@@ -258,6 +174,7 @@ export class Sky {
     const l = out.r * 0.299 + out.g * 0.587 + out.b * 0.114;
     out.lerp(_t.setRGB(l, l, l), G.uDesat.value * (1 - fk)).multiply(_t.copy(G.uMul.value).lerp(_white, fk)).multiplyScalar(G.uExpo.value);
     out.lerp(G.uHaze.value, G.uHazeK.value * (1 - 0.6 * fk) * (1 - THREE.MathUtils.smoothstep(Math.abs(d.y), 0, 0.5)));
+    out.multiplyScalar(1 + (G.uMoon?.value.z || 0) * night); // (the moon's lift on the night's colour, as the dome draws it)
     if (sun) { const sd = Math.max(0, d.dot(sun)), k = (Math.pow(sd, 60) * 0.35 + Math.pow(sd, 7) * 0.14) * Math.min(1, G.uExpo.value) * (1 - night); out.r += k; out.g += 0.78 * k; out.b += 0.46 * k; }
     return out;
   }
@@ -285,10 +202,10 @@ void main() {
   c = mix(c, uHaze, uHazeK * (1.0 - 0.6 * uFeeling) * (1.0 - smoothstep(0.0, 0.5, abs(d.y))));
   float sd = max(dot(d, normalize(uSun)), 0.0), sunK = 1.0 - uNight;
   c += vec3(1.0, 0.78, 0.46) * (pow(sd, 1400.0) * 5.0 + pow(sd, 60.0) * 0.35 + pow(sd, 7.0) * 0.14) * min(1.0, uExpo) * sunK; // (the sun fades with the night)
-  // the moon where the sun was (the light's one direction): a cool small disc, its limb a little darker, and a faint ring of haze
-  float md = dot(d, normalize(uSun)), disc = smoothstep(0.99985, 0.99992, md);
-  c = mix(c, vec3(0.82, 0.86, 0.95) * (0.75 + 0.25 * smoothstep(0.99985, 0.99998, md)), disc * uNight) + vec3(0.45, 0.55, 0.8) * pow(sd, 300.0) * 0.12 * uNight;
-  if (uNight > 0.01) c = nightAlive(c, d, (1.0 - disc) * uNight * min(1.0, uExpo * 1.5), max(np.r, max(np.g, np.b))); // (the stars, a meteor, the aurora: vfx/nightsky.js)
+  c *= 1.0 + uMoon.z * uNight; // (the moon's light on the night's own colour: a full moon lifts it a little, vfx/nightsky.js MOON.lift)
+  // the moon where the sun was (the light's one direction), in its phase by the game days, and its glow
+  float disc = uNight > 0.001 ? moonDisc(c, d, normalize(uSun), uNight) : 0.0;
+  if (uNight > 0.01) c = nightAlive(c, d, (1.0 - disc) * uNight * min(1.0, uExpo * 1.5), max(np.r, max(np.g, np.b)), normalize(uSun)); // (the stars, meteors, the aurora, the constellations, a feeling's night: vfx/nightsky.js)
   gl_FragColor = vec4(max(c, 0.0), 1.0);
   #include <colorspace_fragment>
 }`,
