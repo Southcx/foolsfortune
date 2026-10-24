@@ -17,7 +17,7 @@
 //
 //   game.rhythm = new Rhythm(game)   game.rhythm.begin('wanda', 'steady')   game.rhythm.active   game.rhythm.end()   game.rhythm.offset
 //   the Guide Tone knack (game.knacks.on('guideTone')): each charted note sounded softly a beat early
-//   game.rhythm.press(lane, audioTime) (what a key calls; a script can too)   game.rhythm.last { lane, grade, t } (the latest press)   TRACKS: the playable tracks (the sound test's, arranged)
+//   game.rhythm.press(lane, audioTime) (what a key calls; a script can too)   game.rhythm.stamp(code, ms) (a touch pad's own moment: pads())   game.rhythm.last { lane, grade, t } (the latest press)   TRACKS: the playable tracks (the sound test's, arranged)
 // ---------------------------------------------------------------------------------------
 import { Arranger } from '../arranger.js';
 import { TRACKS as ALL } from '../soundtest.js';
@@ -26,6 +26,7 @@ import { Judge } from './judge.js';
 import { Highway } from './highway.js';
 import { sfx } from '../../audio/sfx.js';
 import { TRACK_ASPECT } from '../aspects.js';
+import { keepSetting } from '../../audio/keep.js';
 
 export const TRACKS = ALL.filter((T) => T.score.arrange && T.score.sections.reduce((n, x) => n + x.bars, 0) >= 4); // (a landing or a sting is too short to play)
 const KEY = 'foolsfortune.rhythm.v1';
@@ -35,11 +36,11 @@ const LEAD_IN = 0.15; // (the arranger starts its first bar this far ahead of th
 export class Rhythm {
   constructor(game) {
     this.game = game; this.active = false; this.highway = new Highway(); this.offset = 0; this.turn = -1;
-    try { this.offset = +(JSON.parse(localStorage.getItem(KEY) || '{}').offset || 0); } catch { /* none kept */ }
+    this.kept = keepSetting(game.save, 'rhythm', KEY, { dump: () => ({ offset: this.offset }), load: (d) => { this.offset = +d.offset || 0; }, fresh: () => { this.offset = 0; } }); // (the save's settings scope: audio/keep.js)
     this.onKey = (e) => this.key(e);
   }
   get ctx() { return sfx.ctx; }
-  setOffset(ms) { this.offset = ms; try { localStorage.setItem(KEY, JSON.stringify({ offset: ms })); } catch { /* this session */ } }
+  setOffset(ms) { this.offset = ms; this.kept(); }
 
   /** Begin a track (an id of TRACKS; none: the next in the list) at a level (light, steady, full). False if it cannot. */
   begin(track = null, level = 'steady') {
@@ -53,6 +54,7 @@ export class Rhythm {
     this.t0 = this.ctx.currentTime + LEAD_IN; // (the chart's zero on the audio clock: the count-in's first click)
     this.arr.play(chart.backing); this.t0 = this.arr.started ?? this.t0;
     this.active = true; this.finished = false; this.lastSweep = 0; this.guided = 0;
+    this.keyAt = []; this.stampAt = []; this.padDown = KEYS.map((c) => !!this.game.input?.isDown?.(c)); // (a pad already held at the start is no press)
     addEventListener('keydown', this.onKey, true); // (capture: ahead of the field's input, which never sees the digits)
     this.highway.show({ notes: this.judge.notes });
     this.frame = requestAnimationFrame(() => this.tick());
@@ -82,7 +84,22 @@ export class Rhythm {
     if (e.code === 'Escape') { e.stopPropagation(); e.preventDefault(); this.end(false); return; }
     const lane = KEYS.indexOf(e.code); if (lane < 0) return;
     e.stopPropagation(); e.preventDefault();
-    if (!e.repeat) this.press(lane, this.heard(e.timeStamp));
+    if (!e.repeat) { this.keyAt[lane] = performance.now(); this.press(lane, this.heard(e.timeStamp)); }
+  }
+  /** A pad's own moment for a lane (`code` Digit1 .. Digit0, `ms` its pointer event's timeStamp): a touch pad held through the bindings
+   *  (core/actions.js) is seen a frame late, so the judging takes this time instead when the pad gives one. */
+  stamp(code, ms) { const lane = KEYS.indexOf(code); if (lane >= 0) this.stampAt[lane] = ms; }
+  /** The lanes held through the game's input and not the keyboard (a touch pad: MOBILE.md 5, ten lanes as pads): a press on the
+   *  pressed edge, at the pad's own moment if it gave one, else half a frame back. */
+  pads() {
+    const I = this.game.input; if (!I?.isDown) return;
+    const now = performance.now();
+    for (let lane = 0; lane < KEYS.length; lane++) {
+      const down = I.isDown(KEYS[lane]), was = this.padDown[lane]; this.padDown[lane] = down;
+      if (!down || was || now - (this.keyAt[lane] || -1e9) < 150) continue; // (a key already pressed it: key() heard it on its own time)
+      const st = this.stampAt[lane], at = st != null && now - st < 150 ? st : now - 8;
+      this.stampAt[lane] = null; this.press(lane, this.heard(at));
+    }
   }
   /** A press in a lane at chart time t: judged, and the note sounded (the true one, or the lane's own, softly). */
   press(lane, t = this.now()) {
@@ -117,6 +134,7 @@ export class Rhythm {
   }
   tick() {
     if (!this.active) return;
+    this.pads();
     const t = this.now(), J = this.judge;
     for (const n of J.sweep(t - SLACK)) this.highway.hit(n.lane, 'miss');
     const dt = Math.min(0.1, Math.max(0, t - this.lastSweep)); this.lastSweep = t;

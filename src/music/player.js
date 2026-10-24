@@ -24,16 +24,17 @@ import { Arranger } from './arranger.js';
 import { Band } from './band.js';
 import { moodLayer, moodScale, DEFAULT_SCALE } from './mood.js';
 import { awakenEvents } from './awaken.js';
+import { keepSetting } from '../audio/keep.js';
 
 const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
 const KEY = 'foolsfortune.music.v1';
 
 export class MusicPlayer {
-  constructor(sfx) {
+  constructor(sfx, save = null) {
     this.sfx = sfx;
     this.score = null; this.alive = false; this.volume = 0.32;
     this.on = true;
-    try { const s = JSON.parse(localStorage.getItem(KEY) || 'null'); if (s) this.on = !!s.on; } catch { /* default: on */ }
+    this.kept = keepSetting(save, 'music', KEY, { dump: () => ({ on: this.on }), load: (d) => { this.on = d.on !== false; }, fresh: () => { this.on = true; } }); // (the save's settings scope: audio/keep.js)
     // the scores that build and drop (the main theme) are played by the arranger (music/arranger.js); this player keeps the Dunes'
     this.arr = new Arranger(sfx);
     this.arr.onEnd = (sc) => { if (this.pick === sc) this.pick = null; }; // (a jingle chosen in the sound test plays once)
@@ -58,7 +59,7 @@ export class MusicPlayer {
     if (this.alive && this.score) return this.score.scale || DEFAULT_SCALE;
     const M = this.mood; return M?.aspect ? moodScale(M.aspect, M.second, M.cancelled) : DEFAULT_SCALE;
   }
-  setOn(on) { this.on = on; try { localStorage.setItem(KEY, JSON.stringify({ on })); } catch { /* this session */ } if (!on) { this.stop(1); this.arr.stop(1); } }
+  setOn(on) { this.on = on; this.kept(); if (!on) { this.stop(1); this.arr.stop(1); } }
   /** What is playing now (either player's score), or null. */
   get current() { return this.arr.alive ? this.arr.score : this.alive ? this.score : null; }
   /** Per frame: the theme for where they are (or none), started and stopped with a fade. */
