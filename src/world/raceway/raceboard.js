@@ -9,7 +9,8 @@
 //   BUILD     your made tracks (world/raceway/editor.js, TRACK-EDITOR.md): three slots, each to edit, test, validate, race, race haunted
 //             by the siblings, or haunt yourself (world/raceway/haunt.js); a code pasted on the chat line (/edit code ...) loads one.
 //   PAINT     what the board wears (progress/skiffpaint.js): the sail's dye and pattern, your seal on it, the trail, the ribbon, the
-//             pennant and its length; the shut ones with what opens them; a dye's price (a firing's) said before it is paid.
+//             pennant and its length; the shut ones with what opens them; a dye's price (a firing's) said before it is paid; a choice
+//             hovered is shown on the board before it is worn (Calissa's preview, vfx/skiffpaintlook.js).
 //   GARAGE    the build: its class (STOCK or OPEN) and Performance Index on each track; the skiff's parts, slot by slot
 //             (progress/skiffparts.js): the open ones to choose, the shut ones with the achievement that opens each; the tune sheet
 //             (progress/skifftune.js; drawn as sliders by ui/garagesheet.js: a notch hovered shows its change, clicked wears it); the three
@@ -28,6 +29,7 @@ import { PAINT } from '../../progress/skiffpaint.js';
 import { isValidated, budgetOf } from '../../progress/trackdef.js';
 import { TUNE, SETUPS, SLIDE, tuneMult } from '../../progress/skifftune.js';
 import { tuneSheet, runTrace } from '../../ui/garagesheet.js';
+import { skiffPaintPreview } from '../../vfx/skiffpaintlook.js';
 import { WAGER } from '../../progress/econ/wager.js';
 import { ECON } from '../../progress/econ/table.js';
 
@@ -141,11 +143,21 @@ export class RaceBoard {
       for (const r of kind === 'dye' ? S.dyes() : PAINT[kind]) {
         const open = S.open(kind, r.id), mine = S.worn[kind] === r.id, price = S.priceOf(kind, r.id);
         if (kind === 'dye' && r.glaze && !open) continue; // (a glaze not yours is not offered)
-        row(rows, mine ? '●' : '○', `${r.label}${price && open ? ` · ${price} cubes` : ''}`, S.why(kind, r.id), () => { S.choose(kind, r.id); this.open(); }, !open);
+        const d = row(rows, mine ? '●' : '○', `${r.label}${price && open ? ` · ${price} cubes` : ''}`, S.why(kind, r.id), () => { this.unpreview(); S.choose(kind, r.id); this.open(); }, !open);
+        if (open) { d.onmouseenter = () => this.preview(kind, r.id); d.onmouseleave = () => this.unpreview(); } // (Calissa's look shows a choice on the board before it is worn)
       }
     }
     grp(`PURSE ${g.cubes?.balance ?? 0} CUBES · none of this touches the handling`);
   }
+  /** A paint choice shown on the board without wearing it (vfx/skiffpaintlook.js), given back when the pointer leaves it or the board
+   *  closes (watched a frame at a time while it shows: the index's page has no close hook of its own to borrow). */
+  preview(kind, id) {
+    const g = this.game, menu = g.indexMenu || g.course?.menu; if (!skiffPaintPreview(g, kind, id)) return;
+    if (this.previewing) return; this.previewing = true;
+    const watch = () => { if (!this.previewing) return; if (!menu?.open || menu.page?.name !== 'raceway.board' || this.tab !== 'paint') { this.unpreview(); return; } requestAnimationFrame(watch); };
+    requestAnimationFrame(watch);
+  }
+  unpreview() { if (!this.previewing) return; this.previewing = false; skiffPaintPreview(this.game); }
   build(grp, row) {
     const g = this.game, E = g.trackEditor; if (!E) return;
     const run = (slot, mode) => (menu) => { menu.close(); if (!E.wear(slot)) return; if (mode === 'haunt') g.haunt?.start('made'); else this.race.start('made', { mode, solo: mode === 'validate' || mode === 'practice' }); };
