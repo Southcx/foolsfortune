@@ -425,10 +425,59 @@ Veritome's keeps no things, the skiff's teaches the carve, the grabs, the banked
    false`, a knob for now; a settings row is Calissa's or Petra's (the settings window, M1).
 3. **The lighter reverb path** waits on the phone numbers; then the five convolvers share one send in the phone tier.
 
-## 11. Questions for the owner (in Dovina's digest)
+## 11. Ruled by the owner (2026-10-24)
 
-1. **Your phone**: which (iPhone or Android, which model)? The baseline and the tier are set from it.
-2. **Steady Keel**: a steering assist knack for the skiff (section 8), earned and switchable, on every device. Yes?
-3. **Landscape only for the action modes** (the skiff, on foot, the rail), either way for windows, the god hand, the garden, duels and tables?
-4. **A gamepad** on the phone: do you have one? With the pad driver in M0 it would let you play most of the game before the touch
-   clusters land (the digit-key choices wait for their strips).
+1. **The phone is an iPhone** (iOS Safari, inside the claude.ai page). The baseline and the phone tier are set from it.
+2. **No gamepad.** The pad driver stays in M0 (it is cheap and serves the desk), but nothing waits on it. Touch is the path; the pad's
+   rows in 6.1.1 are kept for whoever has one.
+3. **Steady Keel: yes, switchable.**
+   - **Built:** `world/raceway/keel.js` and the knack `steadyKeel` in `progress/knacks.js`.
+   - **Opened by** the first race finished (the count way) or any medal (the feat way).
+   - **Measured headless** (the Sun Circuit, 75 real s, W held and nothing else): off, the board ran 25 m off the line on average and
+     passed 1 gate; on, 1.1 m and 4 gates, no bails. That is strong: it nearly drives the line alone, like Mario Kart's Smart Steering.
+     The skill left is the racing line, the carves and the flares.
+   - **What it does:** on in a race with no steer given, it aims the board 14 m down the line at no more than 0.4 of a full steer, and
+     does nothing once you are on the line. Your own steer always wins.
+4. **Landscape for the action modes** (the skiff, on foot, the rail). **Either orientation** for windows, the god hand, Raku's tables,
+   the duels and **the Spirit Garden**. The owner: "managing the Spirit Garden (which I think will do really nicely on mobile)", so the
+   garden moves up to M1 beside the skiff (section 9).
+5. **Saves move between platforms** (the owner: "implicit in all this"). One save, desk and phone alike: section 12.
+
+### 11.1 What iOS Safari changes (facts to check on the owner's phone with `?perf`; none assumed)
+- **No orientation lock and no element fullscreen on an iPhone** (Safari gives fullscreen to video only). So landscape cannot be forced:
+  an action mode held in portrait shows a "turn your phone" card instead of the play (Calissa's look), and nothing runs under it.
+  Fullscreen comes only from a home-screen web app, which the framed claude.ai page may not allow (Petra's readout says).
+- **No Vibration API in iOS Safari.** Wanda's haptics (`audio/haptics.js`) are silent on the owner's phone. Safari 18's
+  `<input type="checkbox" switch>` gives a system haptic tick when toggled, which is the only web haptic iOS has. It is Wanda's to try
+  (one tick, no patterns); unverified.
+- **No pointer lock.** Already planned: touch mode never asks for it.
+- **Storage that Safari may clear.** Safari's tracking prevention can delete script-written storage (localStorage) of a site not visited
+  for seven days, and storage in a frame on claude.ai is partitioned. The save in localStorage alone is at risk on the owner's iPhone.
+  This makes section 12's cloud save the save's safety, not only its migration.
+- **Audio** starts only after a touch; Wanda's `recover()` already covers it (section 10).
+
+## 12. One save on every device (the owner, 2026-10-24)
+
+The save is already one format on every platform: `core/save.js`'s sections, and the Codex's EXPORT CODE (`FFS2.<base64>.<checksum>`,
+`save.code()` / `save.fromCode()`). **It works today by hand:** export on the desk, paste on the phone. The plan makes it automatic.
+- **The cloud save** (Petra's: `core/save.js`, and the published page's capabilities):
+  - The published page already declares `db` and `user` (the chatroom uses both).
+  - The save is written to the viewer's private path, `data/users/<id>/save/<section>` (`<id>` from `user.id()`). That path is private even
+    from the owner, so a guest's save is theirs alone.
+  - **One document a section**, so no document nears the 256 KiB cap. A fresh save measures 6.2 KB as a code (the `keys` section is 4.6 KB of
+    it). A long-played save is unmeasured; the ledger and the explored area are the ones to watch.
+  - **Written on the same flush** as localStorage: `pagehide`, `visibilitychange`, and the dirty sections at most once a real minute.
+    Only a changed section is written, one write at a time a document.
+  - **Read at boot**, before the title. Each section carries `{ build, at, device }`. A section from another build is not loaded:
+    progress resets on every new build, settings are kept, as now.
+  - **When both are newer than the last sync** (played on the desk and the phone without a sync between), the save that was played
+    longer wins whole, never section by section. A save is one thing: state that must agree is one section, but the sections still
+    agree with each other. The other is kept as a code in the Codex for a game day ("Your other save, from your desktop, 2 real hours
+    ago: LOAD"). A real hour of play is never lost silently.
+  - **Settings are per device**, never synced: a phone's graphics tier and touch layout are not the desk's.
+  - **Signed out, or `db` absent:** localStorage alone, as now. The log says once that the save is kept on this device only.
+- **The ledger's 5 s debounce** and the save's flush already land in M0 (section 10, answer 6). The cloud write is M0's step 2 too: the
+  same hook, one more writer. It goes before touch play, because the owner's phone storage is the one at risk (11.1).
+- **What I check** (the sweeps' touch lane): a save written on one page and read on a fresh one; a section from an old build refused;
+  the longer play winning whole, the other kept.
+
