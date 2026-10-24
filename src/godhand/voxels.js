@@ -59,6 +59,29 @@ export class VoxelGrid {
     return { cells, volume: added * s * s * s };
   }
 
+  /** Carve a shape out (Weather Away's erosion, CASTER-SHELLS.md 7.5): density is the min of what was there and the shape's outside,
+   *  so a carve only takes away. Only chunks that exist are touched. Returns the voxels touched and the volume removed (m³). */
+  carve(sdf, box) {
+    const s = VOXEL.size, R = VOXEL.ramp;
+    const i0 = Math.floor(box[0] / s) - 1, j0 = Math.floor(box[1] / s) - 1, k0 = Math.floor(box[2] / s) - 1;
+    const i1 = Math.ceil(box[3] / s) + 1, j1 = Math.ceil(box[4] / s) + 1, k1 = Math.ceil(box[5] / s) + 1;
+    let cells = 0, removed = 0, c = null;
+    for (let k = k0; k <= k1; k++) for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
+      const v = 0.5 - sdf((i + 0.5) * s, (j + 0.5) * s, (k + 0.5) * s) / R;
+      if (v <= 0) continue;
+      const cx = Math.floor(i / N), cy = Math.floor(j / N), cz = Math.floor(k / N);
+      if (!c || c.cx !== cx || c.cy !== cy || c.cz !== cz) { c = this.chunk(cx, cy, cz, false); if (c) this.touch(c); }
+      if (!c) continue;
+      const at = (i - cx * N) + (j - cy * N) * N + (k - cz * N) * N2;
+      const nv = Math.max(0, 1 - Math.min(1, v)), was = c.d[at];
+      if (nv >= was) continue;
+      if (was >= 0.5 && nv < 0.5) removed++;
+      c.d[at] = nv; cells++;
+    }
+    for (const k of this.dirty) this.measure(k);
+    return { cells, volume: removed * s * s * s };
+  }
+
   /** A chunk changed: it, and the neighbours whose meshes read its low layer (a chunk meshes the cells from -1). */
   touch(c) {
     this.dirty.add(c.k); this.dirty.add(this.key(c.cx - 1, c.cy, c.cz)); this.dirty.add(this.key(c.cx, c.cy - 1, c.cz)); this.dirty.add(this.key(c.cx, c.cy, c.cz - 1));

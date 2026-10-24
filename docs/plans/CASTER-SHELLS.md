@@ -421,3 +421,9 @@ Calissa's new modules. The dry click and the hook in the runner: Petra's (`shell
   - No `erodible` tag and no sensor, because nothing built is a wall it could open. The Dunes ruins are batched static props and a Well's
     narrows are merged geometry.
   - It teaches what the hand already does (matter wears away and the island heals it), and a way opened is the island's own to close.
+  - **The hooks are built (mine):**
+    - `game.creations.erode(at, r) -> { volume }` wears a ball out of a creation (`VoxelGrid.carve`), pours the volume back as loose
+      matter, and remeshes. Measured headless: a 9 m³ pillar lost 4.4 m³ to r 1.2, with no errors.
+    - `game.matter.field.corrode(x, z, r, depth)` already takes the hand's firm and loose layers. The authored ground under them never
+      moves, so erosion eats only what the hand has made.
+    - Calissa's Weather Away calls both where it lands, its r and depth scaled by the draw.
