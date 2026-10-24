@@ -375,6 +375,89 @@ which is closer to Black & White's hand than a mouse ever was. Every rule stays 
   Jar hops toward the point with the hop unchanged, and lets it go on any key or stick, when picked up, on another planetoid, or after 12
   real s. Measured headless: 5.8 m covered in about a real second, no errors. Petra's touch driver calls `realm.goTo` on a tap with WALK up.
 
+## 8.4 The god hand on touch (M1)
+
+The finger is the hand, as in the garden (8.2). Prior art: Black & White's hand, Populous: The Beginning (a strip of spells by the
+hand), From Dust (one finger moves the matter).
+
+- **The strip:** seven domain tiles (`gh.d1` .. `gh.d7`, the keys 1 to 7, in DOMAIN_ORDER), each in its domain's look (`DOMAIN_LOOK`).
+  Tapped, its art is up; tapped again, the domain's next art, as the key does. The lit art's name and blurb stand over the strip.
+- **The long press: the art wheel.** It holds what the keyboard's RMB wheel holds (the domain's arts): open where the finger rests,
+  slide to a wedge, let go. One finger on the ground draws the art (press, drag, release), as LMB does.
+- **ALT** (`gh.alt`, Shift held): shown only while an art with another way is up (HASTEN stops time, TRANSMUTE your feeling, TELEKINESIS
+  raises, MANIFEST's other).
+- **SIGN** (`gh.sign`, MMB held): one finger draws a miracle's sign while it is held; with ALT held, the epic's.
+- **Two fingers:** drag pans (W A S D), a pinch zooms (the wheel), a twist turns the view an eighth (Q / E). Two fingers never reach the
+  hand (8.2's rule).
+- **The top bar:** SURVEY (N), and the god hand's tile leaves it (~).
+
+## 8.5 The puzzle duel on touch (M1)
+
+Turn-based, so nothing is timed: every verb can be a tile. Prior art: Puzzle Quest and Triple Town (tap a cell, drag a path),
+Into the Breach (a strip of moves, END TURN the largest).
+
+- **The board:** one finger is the cursor. A tap picks a cell, a drag draws a piece's path or the Courier's run (up to four cells). A long
+  press drops a piece (RMB). A swipe that starts on the Courier steps it (push: W A S D); a long press then a swipe kicks (Shift held).
+- **The strip:** the worn tools' moves only: SHOOT (X), GRAB (Q), DRILL (K), PAINT (G), DELAY (U), HOLD (I), SEND (Shift + I).
+- **ROTATE** (R): shown while a piece is under the last touch.
+- **The cluster:** END TURN (Space, the largest), FINISHER (F, shown on a broken foe), FLEE (E), FORM (~, hand or Courier).
+- **YIELD** (Backspace held 1.5 real s): in the pause menu, never a thumb's reach.
+
+## 8.6 Raku's tables on touch (M1)
+
+**Nothing more is needed.** The action bar is already buttons and the pieces are already clicked.
+- The keys 1 to 9 are the bar's own numbers and need no tile.
+- A long press on a piece shows its table tip (the hover card), never RMB.
+- The HUD's type follows Calissa's `su` unit (landscape type was 5 to 7 px).
+
+## 8.7 The track editor and the haunt on touch (M1)
+
+The editor is pointer events already (8.2's finger as the hand).
+- **The drawer** is the whole panel as it stands today (THE LINE, PIECES, TRAPS, RULES, RUNS, KEEP, the slot row and the paste box),
+  folded to a handle on the right edge and opened by a tap or a swipe in.
+- **The selected thing's line and its buttons** (Raise, Lower, Wider, Narrower; Slower, Faster, Later, Sooner; Take out) stand above the
+  folded drawer while something is selected. They are the ones used most.
+- **Gestures:** a long press takes a thing out (RMB). Two fingers pan (W A S D) and a pinch zooms. The minimap's drag stays as it is.
+- **The haunt:** a tap on a trap fires it, as the click does now.
+- **The paste box:** a real field already, so the phone's keyboard and paste work.
+
+## 8.8 On foot (M2): the cluster
+
+At most four, the main one largest (section 4):
+- **JUMP** (Space, held for the mantle chain and the wall run), the largest.
+- **CROUCH** (C): a tap cycles the posture, at a run the slide, held in paint the Paint Dive, in the air looking down the slam.
+- **DASH** (Shift's press): the air dash and the crouched roll.
+- **The fourth, by context:**
+  - USE (F, naming its thing) while the chevron is on one;
+  - else PARRY (V) once learned;
+  - else BLINK (E) once learned.
+- **The tool:** DRAW (X) at the cluster's top edge, small; LEND (R) beside it while a sub is worn.
+- **The stick:** ladders, hanging, poles, grates, swimming and the balance beam read it as they read W A S D (Petra's StickMove holds the
+  keys).
+
+## 8.9 The tools in hand (M3)
+
+A tool drawn is a ctx of its own (`tool.<id>`, narrower than foot). While it is out, the cluster's FIRE and AIM tiles mean its verbs; while
+it is stowed, they are the foot's. The rows are in `core/bindings.js`. The words are Espada's; each tool's owner checks its row before
+it is built. Prior art: Call of Duty Mobile (FIRE dragged to aim, the aim-assist), Genshin Impact (an attack tile and a skill tile by
+character), Brawl Stars (tap to fire assisted, drag to aim).
+
+| tool | FIRE (LMB) | AIM (RMB) | the third | the strip | the driver's part |
+| --- | --- | --- | --- | --- | --- |
+| psygun | a shot; held and let go, the charge | the sights (the Carbine's breath: BREATH while scoped) | SHELL (MMB: tapped assisted, held the seeker paints) | the chambers (1 .. 7); FAN once learned | FIRE dragged while held aims; the lock-on on |
+| cutlass | ATTACK: the string | SPECIAL (RMB tap) | LOCK (MMB) | the forms: cutlass, rod, hook | SPECIAL swiped up is the forward special (W held), down the back one (S held); Blade Mode: crouched, SPECIAL held, then ATTACK, the cut's line by the look area's drag |
+| rod | CAST: held and let go; a tap twitches; fish on, REEL | SINK; fish on, GIVE LINE | PING (MMB: tapped a ping, held the ring) | the forms; LURE (next); CRANK (Shift + LMB) | the fish-on fight on the stick (A / D lean, S haul and brace, W bow), as W A S D; the lure ring's feeling a long press on LURE |
+| hook | FIRE at the hook's mark; held, REEL | AIM: held, paying out after 0.2 s; tapped, let go | (JUMP off, the cluster's) | the forms | the hook's mark snaps already |
+| Soul Brush | ATTACK: the club; on the ground paint or mop | FLICK (RMB tap) | LOCK | PAINT / MOP, one tile two faces | AIM held is Celestial mode: one finger then draws (the virtual brush by the drag, LMB down) |
+| Veritome | the shutter | LENS held | REPROGRAM (MMB, shown by a stunned mind) | FLASH | with the lens up, a tap anywhere on the right half is the shutter; a pinch zooms |
+| Dreamvane | the pick: held, let go full | DOWSE held; a tap throws or calls the fork | SURVEY (MMB) | - | the dowse's attune on a pinch (the wheel) |
+| Crucibelle | TOLL, on the beat | the octave up, held under a note | - | the five note pads, in a row over the cluster | - |
+| Lockheart | HOOVER held; tapped, the flail | OPEN held | - | - | the wheel of odds turned by a finger round it (the wheel) |
+
+- **Every tool:** PARRY (V) is the cluster's fourth while a tool is out, since a blow comes at any tool; BLINK (E) moves to the strip's end.
+- **The lock-on is on by default on touch** (`courier/lockon.js`, its aim assist), as every phone action game does. It is a setting, never
+  a knack: it is how a thumb aims, not a help with the skill.
+
 ## 8.3 The words (Espada, 2026-10-24; plain until the owner rules)
 - **The tiles:** HOP, BRAKE, FLARE, BOOST, NOSE, TAIL, JUMP, DASH, TURN, UNDO, SIGN, TOP VIEW, WALK, SPRING / DRAIN, SKIFF, STEP OFF,
   BACK, RESTART, RETIRE.
