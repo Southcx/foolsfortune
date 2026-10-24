@@ -225,6 +225,13 @@ export const ACTIONS = [
 ];
 ```
 
+- **Precedence** (Petra, 2026-10-24). A pad button or a tile resolves to the first live ctx in this order that binds it: `race`,
+  `skiff.rail`, `skiff.air`, `skiff`, `foot`, `any`.
+  - A narrower ctx shadows a wider one **button by button, never whole**. In the air, X is the nose (`skiff.air`) while A is still the
+    hop's glide (`skiff`). In a race, Back is the restart while the other `any` rows still work.
+  - A mouse row is pressed as `keys[0] ?? mouse`. `input.js` keeps `Mouse0` to `Mouse2` in the same `down` set as the keys.
+  - One button may carry a hold and a double in the same ctx (LB: carveL held, shoulderL twice). Both press KeyQ, and the game already
+    tells a hold from a double.
 - **Two keys, two meanings.** Space, Shift, C, E, Q, F, R and Y mean one thing on foot and another riding. The ctx column is what lets a pad
   button or a tile press the right code. Where a pad button carries two (X: flare on the sand, nose in the air), it is the same physical
   button pressing the code its ctx names, as section 8 says for the tiles.
