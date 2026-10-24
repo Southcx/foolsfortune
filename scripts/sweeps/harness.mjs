@@ -74,7 +74,7 @@ async function serverUp(url) {
   throw new Error('the dev server did not start in 60 real seconds');
 }
 
-export async function open(room) {
+export async function open(room, { touch = false } = {}) {
   const OUT = path.resolve(args.out || path.join(os.tmpdir(), 'sweeps', room)), SHOTS = path.join(OUT, 'shots');
   fs.mkdirSync(SHOTS, { recursive: true });
   const url = process.env.URL || 'http://127.0.0.1:5173/', seed = +args.seed || 1;
@@ -86,7 +86,8 @@ export async function open(room) {
   const S = { room, OUT, SHOTS, browser, errors, warnings, results, quick: !!args.quick, phase: 'boot', page: null };
 
   S.openPage = async () => {
-    const page = S.page = await browser.newPage({ viewport: { width: 960, height: 600 } });
+    const page = S.page = await browser.newPage(touch ? { viewport: { width: 844, height: 390 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 } : { viewport: { width: 960, height: 600 } }); // (touch: a phone held landscape, MOBILE.md 10 step 6)
+    if (touch) S.touch = touchOf(page, S);
     page.on('pageerror', (e) => errors.push(`[${S.phase}] ${e.message}`));
     page.on('console', (m) => {
       const t = m.text().slice(0, 300);
@@ -102,7 +103,25 @@ export async function open(room) {
     return page;
   };
 
-  const say = (tag, id, what) => console.log(`${tag} ${id.padEnd(44)} ${typeof what === 'string' ? what : JSON.stringify(what)}`);
+  /** A phone's thumbs for a sweep (open(room, { touch: true })): real touch events through the DevTools protocol, so the game's touch
+ *  driver (src/core/touchdriver.js) reads them as it would a phone's. Each call steps the game `frames` ticks after (the clock is the
+ *  sweep's). stick(dx, dy, frames): a thumb on the move area pushed by (dx, dy) px (y down), held, then lifted; look(dx, dy): a drag on the
+ *  look area; tap(x, y): a finger down and up at a point (a tile, a window's button). */
+function touchOf(page, S) {
+  let cdp = null; const send = async (type, pts) => { cdp ||= await page.context().newCDPSession(page); await cdp.send('Input.dispatchTouchEvent', { type, touchPoints: pts }); };
+  const P = (id, x, y) => ({ x, y, id, radiusX: 4, radiusY: 4, force: 1 });
+  return {
+    async stick(dx, dy, frames = 60, at = [180, 260]) {
+      const [x, y] = at; await send('touchStart', [P(1, x, y)]);
+      for (let k = 1; k <= 4; k++) await send('touchMove', [P(1, x + (dx * k) / 4, y + (dy * k) / 4)]);
+      await S.ticks(frames); await send('touchEnd', []); await S.ticks(2);
+    },
+    async look(dx, dy, at = [640, 200]) { const [x, y] = at; await send('touchStart', [P(2, x, y)]); for (let k = 1; k <= 4; k++) await send('touchMove', [P(2, x + (dx * k) / 4, y + (dy * k) / 4)]); await send('touchEnd', []); await S.ticks(2); },
+    async tap(x, y, frames = 10) { await send('touchStart', [P(3, x, y)]); await send('touchEnd', []); await S.ticks(frames); },
+  };
+}
+
+const say = (tag, id, what) => console.log(`${tag} ${id.padEnd(44)} ${typeof what === 'string' ? what : JSON.stringify(what)}`);
   /** A check: `ok` true passes, false fails; `what` is the measure, said either way. */
   S.check = (id, ok, what) => { results.push({ id, ok: !!ok, what }); say(ok ? 'PASS' : 'FAIL', id, what); return !!ok; };
   /** A measure kept with the results but judged by no one. */

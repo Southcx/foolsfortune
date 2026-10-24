@@ -321,7 +321,7 @@ export class Skiffing extends Tech {
     this.rideT = (this.rideT || 0) + dt; this.rules.step(dt);
     if (this.grind.on) return this.grindStep(dt);
     const held = !!this.hold; // (a race's countdown: the board is held on the line, the sail free to be readied: world/raceway/race.js)
-    let steerIn = held ? 0 : (inp.isDown('KeyD') ? 1 : 0) - (inp.isDown('KeyA') ? 1 : 0);
+    let steerIn = held ? 0 : inp.axis ? inp.axis('steer') : (inp.isDown('KeyD') ? 1 : 0) - (inp.isDown('KeyA') ? 1 : 0); // (a stick's or a thumb's push is truly analog: core/input.js; on keys -1, 0 or 1, as ever)
     if (steerIn === 0 && !held) steerIn = keelSteer(g, this); // (Steady Keel, a knack: the board leaned back toward the race's line while you are not steering; off, nothing: world/raceway/keel.js)
     if (this.spinLock) { if (steerIn === 0 || !this.air) this.spinLock = false; else steerIn = 0; } // (A / D held from a grind's balance spin nothing once off the rail, until let go: the owner's v204 bail off a rail)
     const keyW = inp.isDown('KeyW'), keyS = inp.isDown('KeyS');

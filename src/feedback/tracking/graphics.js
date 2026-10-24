@@ -3,7 +3,7 @@
 // the rest of it waits for the next start; the picture's lines stepped by dynamic resolution, said the first time only (a frame kept
 // smooth is not news twice). Nothing counted: the ledger keeps play, not the machine. Words placeholders for Espada's.
 //
-//   graphics.tier { tier, chosen, renderer, restart? }   graphics.lines { lines }   graphics.restart { tier }   (each with `by`)
+//   graphics.tier { tier, chosen, renderer, touch, mobile, restart? }   graphics.lines { lines }   graphics.restart { tier }   (each with `by`)
 //
 //   graphicsRules({ on, L, log })   (feedback/tracking/rules.js calls it)
 // ---------------------------------------------------------------------------------------

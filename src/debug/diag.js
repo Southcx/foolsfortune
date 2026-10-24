@@ -20,6 +20,7 @@
 //
 //   const diag = new Diag(game, renderer)      diag.frameStart()  diag.begin('sim') ... diag.end('sim')  diag.frameEnd()
 //   diag.mode (0 off, 1 panel, 2 panel + lines + minds)   diag.cycle()   diag.report() -> text
+//   diag.cur (the last frame's counts)   diag.median()   diag.worst()   diag.phases   diag.counting(true) (another reader wants the whole frame's counts)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { econLine } from '../progress/econ/economy.js';
@@ -66,8 +67,12 @@ export class Diag {
 
   cycle() {
     this.mode = (this.mode + 1) % 3;
-    this.r.info.autoReset = !this.mode; // (while it is shown, a frame's several renders (the scene, the shadow, the glow's passes) are counted together)
+    this.counting();
     this.el.style.display = this.mode ? 'block' : 'none'; this.minds.style.display = this.mode === 2 ? 'block' : 'none'; this.lines.visible = this.mode === 2; }
+
+  /** Whether a frame's several renders (the scene, the shadow, the glow's passes) are counted together: while the panel is shown, or
+   *  another reader of the counts (the perf readout, debug/perfreadout.js) asks. */
+  counting(asked = this.asked) { this.asked = !!asked; this.r.info.autoReset = !(this.mode || this.asked); }
 
   // ---------------------------------------------------------------- timing
   frameStart() {
@@ -114,6 +119,12 @@ export class Diag {
     if (this.mode) this.draw();
   }
 
+  /** The slowest of the last n frames' milliseconds (60: about a second). */
+  worst(n = 60) {
+    let w = 0; for (let k = 0; k < n; k++) w = Math.max(w, this.ms[(this.i - k + N) % N]);
+    return w;
+  }
+
   median(n = 60) {
     const a = [];
     for (let k = 0; k < n; k++) { const v = this.ms[(this.i - k + N) % N]; if (v > 0) a.push(v); }
@@ -124,8 +135,7 @@ export class Diag {
   // ---------------------------------------------------------------- the panel
   draw() {
     const g = this.game, c = this.cur, f = this.cx;
-    let worst = 0; for (let k = 0; k < 60; k++) worst = Math.max(worst, this.ms[(this.i - k + N) % N]);
-    const med = this.median();
+    const worst = this.worst(), med = this.median();
     const fps = 1000 / med;
     const cls = (ms) => (ms > 33 ? 'bad' : ms > 17 ? 'warn' : '');
     if ((this.tick = (this.tick || 0) + 1) % 6 === 0) {

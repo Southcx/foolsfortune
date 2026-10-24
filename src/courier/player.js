@@ -20,6 +20,9 @@ const simRand = stream('courier/player'); // (the simulation's chance: core/rng.
 
 const UP = new THREE.Vector3(0, 1, 0);
 const _v = new THREE.Vector3();
+/** A move axis: a stick's push where the input gives one (core/input.js `axis`; on keys exactly -1, 0 or 1, as ever), else the two keys (a
+ *  sibling's VirtualKeys: coop/sibling.js). The core movement reads the same numbers from the keyboard as before (MOBILE.md 10). */
+const moveAxis = (inp, id, neg, pos) => (inp.axis ? inp.axis(id) : (inp.isDown(pos) ? 1 : 0) - (inp.isDown(neg) ? 1 : 0));
 const _v2 = new THREE.Vector3();
 const _crRay = new RAPIER.Ray({ x: 0, y: 0, z: 0 }, { x: 0, y: 0, z: 1 }), notSensor = (c) => !c.isSensor(); // (the crawl's reach probe: crawlReach)
 const _shotM = new THREE.Matrix4(), _shotQ = new THREE.Quaternion(), _shotR = new THREE.Quaternion(), _shotUp = new THREE.Vector3(0, 1, 0), _shotZ = new THREE.Vector3(0, 0, 1);
@@ -242,8 +245,7 @@ export class Player {
   /** Movement keys as a world direction (length 0..1). */
   wishDir(target = new THREE.Vector3()) {
     const inp = this.input;
-    const ix = (inp.isDown('KeyD') ? 1 : 0) - (inp.isDown('KeyA') ? 1 : 0);
-    const iz = (inp.isDown('KeyW') ? 1 : 0) - (inp.isDown('KeyS') ? 1 : 0);
+    const ix = moveAxis(inp, 'moveX', 'KeyA', 'KeyD'), iz = moveAxis(inp, 'moveY', 'KeyS', 'KeyW');
     target.copy(this.forward(_v)).multiplyScalar(iz).addScaledVector(this.right(_v2), ix);
     if (target.lengthSq() > 1) target.normalize();
     return target;
@@ -448,8 +450,8 @@ export class Player {
     const liveMove = live * (1 - locked);
 
     const f = this.forward(_v), r = this.right(_v2);
-    const ix = liveMove * ((inp.isDown('KeyD') ? 1 : 0) - (inp.isDown('KeyA') ? 1 : 0));
-    const iz = liveMove * ((inp.isDown('KeyW') ? 1 : 0) - (inp.isDown('KeyS') ? 1 : 0));
+    const ix = liveMove * moveAxis(inp, 'moveX', 'KeyA', 'KeyD');
+    const iz = liveMove * moveAxis(inp, 'moveY', 'KeyS', 'KeyW');
     const wish = new THREE.Vector3().addScaledVector(f, iz).addScaledVector(r, ix);
     if (wish.lengthSq() > 1) wish.normalize();
     const wishDir = wish.clone();

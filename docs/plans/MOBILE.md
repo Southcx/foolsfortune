@@ -238,9 +238,8 @@ export const ACTIONS = [
 - **On a pad, the skiff's W is RT and S is LT** (the racer's triggers). The keyboard's W + S chord for the manual is RT + LT. Sail stays
   manual on a pad: a trigger costs no thumb. Auto-sail is touch only, and it is a binding, not a rule (Petra agreed).
 - **Open (mine, by M2):**
-  - The dash and the roll are a Shift *press* on foot. On touch, either a flick of the move area to its outer ring from rest within
-    0.15 real s, or a DASH tile once the air dash is learned. I'll measure the flick's false presses in the sweeps' touch lane before
-    choosing.
+  - **Ruled (Dovina, 2026-10-24):** the dash and the roll (a Shift *press* on foot) are a **DASH tile** on touch, shown once the air dash
+    or the roll is learned. A flick of the stick to its ring would dash by accident, and the ring is already the sprint.
   - The pad's R3 for `lend` is weak in a fight; the alternative is LB, moving `blink` to R3. I'll ask the owner once a pad is in their
     hands.
 - **Not in the first cut:** the tools' own verbs past LMB and RMB (M3: each tool's context, with its owner), the god hand, the garden,
@@ -316,6 +315,13 @@ prior art. Landscape. Every rule as on the keyboard (`courier/skiff/skiff.js`, `
 | back to the last gate (R), retire (R held), restart (Backspace), rewind (Backspace held, practice) | in the pause menu while racing: BACK, RESTART (hold to rewind in practice), RETIRE (Calissa's: the top stays clear) | Trackmania's restart is one press: still one tap, behind the pause |
 | the race board, the start pillar (F) | USE, naming its thing ("Race board") | |
 | a route at the cavern's fork | the steering itself (as now); no TouchDrive | the skill is the steering |
+
+**The rules for the thumb** (`progress/skifftouch.js`, `skiffTouchKeys`, read by the touch driver each frame):
+- **Auto-sail:** on the sand W is held unless BRAKE is; BRAKE with a combo live keeps W, so the chord is the manual.
+- **The glide:** in the air while gliding, the thumb's x is the bank (Q / E) and its y the pitch (W / S), and A / D are let go.
+- **A jump that is not a glide:** the thumb's A / D are the spin, as the stick already holds them.
+- **Measured headless** (844 x 390, touch, the Sun Circuit): with no thumb the board ran at 22.5 m/s on auto-sail; BRAKE held stopped it
+  (W let go, S held); let go, W came back; a key pressed (the keyboard the last device) let W go at once. No errors.
 
 **The assist (a question for the owner, section 11):** Mario Kart Tour's Smart Steering keeps a kart off the walls. The skiff has none.
 By the design laws an assist is a knack: earned, optional, switched, never gating. A **Steady Keel** knack (the board leans back toward the

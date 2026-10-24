@@ -26,7 +26,12 @@
 //   save.wipe(scope)   save.check() -> fixes made   save.hold(why) / save.release(why)   save.export() -> string   save.import(text, { replace })
 //   save.stash(key, text) / save.unstash(key) (this tab only, across one reload: a replay waiting for its page)
 //   save.code() -> 'FFS2...'   save.fromCode(code) -> ok   save.wipeProgress() (player and world wiped as a new build does it; the caller reloads the page)
+//   save.progress() -> { key: text }   save.putProgress(keys)   save.played() -> s   save.watchPage(then)   save.onFail = (key, why) => ...
+//   codeOf(keys) -> 'FFS2...' (any progress as a code: another device's save kept in the Codex, core/cloudsave.js)
+// A hidden or closed page writes everything (a phone may never come back to the tab); a write the browser refuses is said once.
 // ---------------------------------------------------------------------------------------
+import { now } from './calendar.js';
+
 const PREFIXES = ['foolsfortune.', 'ff.']; // (ff.: the workbench's own edits, Calissa's studio)
 const ours = (k) => PREFIXES.some((p) => k?.startsWith(p));
 const RECORD = { player: 'foolsfortune.save.player', world: 'foolsfortune.save.world', settings: 'foolsfortune.save.settings' };
@@ -44,6 +49,9 @@ export const ADOPTED = {
 };
 const fnv = (t) => { let h = 0x811c9dc5; for (let i = 0; i < t.length; i++) h = Math.imul(h ^ t.charCodeAt(i), 16777619); return (h >>> 0).toString(16).padStart(8, '0'); };
 const scopeOfKey = (k) => Object.keys(ADOPTED).find((s) => ADOPTED[s].some((p) => k === p || k.startsWith(`${p}.`)));
+const encode = (text) => { const b = btoa(unescape(encodeURIComponent(text))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); return `FFS2.${b}.${fnv(b)}`; };
+/** Any stored keys as a save code (the export's shape): another device's progress kept to load later. */
+export const codeOf = (keys) => encode(JSON.stringify({ v: 1, at: now(), keys }));
 
 export class Save {
   constructor(store = (() => { try { return window.localStorage; } catch { return null; } })()) {
@@ -57,7 +65,9 @@ export class Save {
   }
 
   read(key) { try { return JSON.parse(this.store?.getItem(key) || 'null'); } catch { return null; } }
-  write(key, value) { try { this.store?.setItem(key, typeof value === 'string' ? value : JSON.stringify(value)); return true; } catch { return false; } }
+  write(key, value) {
+    try { this.store?.setItem(key, typeof value === 'string' ? value : JSON.stringify(value)); return true; } catch (e) { this.onFail?.(key, e?.name || 'error'); return false; } // (full, or the browser refuses: said once, main.js)
+  }
 
   /** The mode the progress now stored belongs to: none stored yet, STORY for a person (FIRST-HOUR.md 5: the first pick does not reload),
    *  DEBUG for a browser a tool drives (`navigator.webdriver`: the sweeps, the stress test, the agent). */
@@ -170,7 +180,7 @@ export class Save {
   }
 
   /** Everything kept, as a code to paste between browsers: FFS2.<base64>.<checksum> (the Codex's EXPORT CODE). */
-  code() { const b = btoa(unescape(encodeURIComponent(this.export()))).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, ''); return `FFS2.${b}.${fnv(b)}`; }
+  code() { return encode(this.export()); }
   /** Put back a code (whole: what it lacks goes too). False if it does not check out; the page reloads after, as for import. */
   fromCode(code) {
     const m = /^FFS2\.([A-Za-z0-9_-]+)\.([0-9a-f]{8})$/.exec(String(code).trim());
@@ -180,6 +190,36 @@ export class Save {
   /** Progress gone, as a new build does it: what is stored wiped and the save held (the page reloads after: the modules that write
    *  their own keys still hold theirs in memory). */
   wipeProgress() { this.flush(); this.hold('wipe'); for (const scope of ['player', 'world']) this.wipeStored(scope); }
+
+  /** The progress as stored (the player's and the world's records, and the adopted keys in those scopes): { key: text }. What the cloud
+   *  save carries (core/cloudsave.js); settings never travel. */
+  progress() {
+    const out = {};
+    if (this.store) for (let i = 0; i < this.store.length; i++) {
+      const k = this.store.key(i);
+      if (k === RECORD.player || k === RECORD.world || ['player', 'world'].includes(scopeOfKey(k))) out[k] = this.store.getItem(k);
+    }
+    return out;
+  }
+  /** The progress replaced whole by `keys` (another device's, before any section is registered: core/cloudsave.js), the records read
+   *  again. Keys of another scope are ignored. */
+  putProgress(keys) {
+    for (const scope of ['player', 'world']) this.wipeStored(scope);
+    for (const [k, v] of Object.entries(keys || {})) if (k === RECORD.player || k === RECORD.world || ['player', 'world'].includes(scopeOfKey(k))) this.write(k, v);
+    for (const scope of ['player', 'world']) this.records[scope] = this.read(RECORD[scope]) || { v: 1, sections: {} };
+  }
+  /** The play time the stored progress holds (the ledger's, real s): what decides which of two saves was played longer. `keys`: of a
+   *  snapshot of the progress (`progress()`), not what is stored now. */
+  played(keys = null) {
+    if (!keys) return this.records.player?.sections?.ledger?.data?.play ?? 0;
+    try { return JSON.parse(keys[RECORD.player] || 'null')?.sections?.ledger?.data?.play ?? 0; } catch { return 0; }
+  }
+  /** A page hidden or closed (a phone backgrounding the tab, a tab shut): everything written now, the timers' keys too; `then` after. */
+  watchPage(then) {
+    const now = () => { this.flush({ all: true }); then?.(); };
+    addEventListener('pagehide', now);
+    document.addEventListener('visibilitychange', () => { if (document.hidden) now(); });
+  }
 
   /** A text kept for this tab only, across a reload and no further (a replay waiting for the page it is played on). Taken once. */
   stash(key, text) { try { sessionStorage.setItem(`foolsfortune.${key}`, text); return true; } catch { return false; } }
