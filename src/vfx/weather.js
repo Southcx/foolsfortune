@@ -593,7 +593,7 @@ export class WeatherLook {
     }
     // the sky's grade: the hour, then the weather over it (with no rules, the painting as it is)
     if (sky?.grade) {
-      if (!w) sky.grade({});
+      if (!w) { sky.grade({}); sky.feeling?.(null, 0, dt); }
       else {
         const g = hourGrade(w.phase, _g);
         for (const a of ASPECTS) {
@@ -604,6 +604,9 @@ export class WeatherLook {
           g.desat = Math.max(g.desat, S.desat * k);
           if (S.hasHaze && S.hazeK * k > g.hazeK) { g.hazeK = S.hazeK * k; S.haze.toArray(g.haze); for (let i = 0; i < 3; i++) g.haze[i] *= 1 - 0.65 * g.night; } // (a horizon's haze holds what light there is: at night an ember, never a lit band)
         }
+        // a feeling's sky: the strongest feeling's painting over the others by its strength (vfx/sky.js FEELING_SKIES)
+        { let fa = null, fk = 0; for (const a of ASPECTS) if (this.eff[a] > fk) { fk = this.eff[a]; fa = a; }
+          sky.feeling?.(fa, fk, dt, this.game.dunes?.sky?.material?.uniforms?.uSun?.value ?? null); } // (its painted sun turned to the dome's)
         sky.grade(Object.assign(_sg, { day: g.day, night: g.night, expo: g.expo, mul: _c.fromArray(g.mul), stars: g.stars, desat: g.desat, haze: _c3.fromArray(g.haze), hazeK: g.hazeK }));
         // the clouds take the hour's light (less of the night's dark: they hold what light there is) and the weather's cover
         const CL = this.game.dunes?.clouds, B = CL?.base;
@@ -613,7 +616,7 @@ export class WeatherLook {
             const k = Math.min(1, this.eff[a] + 0.5 * this.sec[a]), Q = LOOK[a].clouds, HQ = LOOK[a].heavy?.clouds || {}, hv = heavyOf(this.eff[a]);
             if (k && Q) { cover = lerp(cover, mixv(Q.cover ?? cover, HQ.cover, hv), k); opacity = lerp(opacity, mixv(Q.opacity ?? opacity, HQ.opacity, hv), k); }
           }
-          CL.grade({ expo: Math.pow(g.expo, 0.8) * (1 - 0.5 * g.desat) * (1 - 0.65 * g.night), mul: _c.lerp(_white, 0.5), cover, opacity: opacity * (1 - 0.5 * g.night) * (1 - 0.4 * g.day) }); // (thin under the day's and the night's own painted clouds)
+          CL.grade({ expo: Math.pow(g.expo, 0.8) * (1 - 0.5 * g.desat) * (1 - 0.65 * g.night), mul: _c.lerp(_white, 0.5), cover, opacity: opacity * (1 - 0.5 * g.night) * (1 - 0.4 * g.day) * (1 - 0.7 * (sky.feel?.shown ? sky.feel.k : 0)) }); // (thin under the day's and the night's own painted clouds, and under a feeling's sky: its painting is the storm)
         }
       }
     }

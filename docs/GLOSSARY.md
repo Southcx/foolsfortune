@@ -702,6 +702,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **a room glaze / the room glaze atlas** (`ROOM_GLAZES`, `ROOM_SURFACES`, `src/vfx/roomglazes.js` / `glazeAtlas()`, `src/vfx/surfaces.js`) — a
   real glaze fired onto a room's built surface or its ware (the kilns' natural ash, the hub's salt-glazed brick, the gallery's majolica
   plinths) / the one texture they are drawn from. *Not:* a glaze (the Courier's, `GLAZES`), a material, a surface pattern (`SURFACE`). → detail
+- **a feeling's sky / the eye** (plain names; `FEELING_SKIES`, `FEELING_SKY`, `sky.feeling`, `src/vfx/sky.js`; `assets/sky_feeling_<aspect>.webp`, painted by `scripts/skypaint/`) — Calissa's painting of a feeling's weather (watercolour or oil, on the whole sphere) come in over the owner's paintings by the weather's strength, one at a time, its painted sun turned to the dome's / every sky painting's top rows: an iris and a pupil round the zenith (the owner's convention: the eye is the window to the soul). *Not:* the weather's look (its streaks and motes), the heavy look, a weather's grade.
 - **the Raceway's sandfall** (`RacewaySandfall`, `src/vfx/racewaysandfall.js`) — the sand pouring over the Raceway's lip and down its face: one curved
   scrolling sheet, a fainter one behind, dust at its foot. *Not:* a Great Dunemaw sandfall (a floor's door, `vfx/dunemaw.js`).
 - **the Raceway's looks** (`RacewayLooks`, `game.racewayLooks`, `src/vfx/racewaylooks.js`) — the sun plates' glyphs, the start arch's
