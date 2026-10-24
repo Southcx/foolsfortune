@@ -29,6 +29,8 @@
 // feat's hue shift: vfx/oxidation.js featTint, turned by the context's `phase`) or 'gold' / 'lach' / 'white'. `power` (the context's)
 // scales counts and sizes, so one effect serves a tap and a full-strength blow. `throughWalls` (the context's) draws its particles,
 // decals and glyphs over the world instead of behind its walls (a mark revealed: vfx/glyphs.js; off, an effect is hidden by walls).
+// `ladder` (the context's; for a `shell.*` effect found by vfx/shelllooks/tiers.js from the caster shell's tier) multiplies its
+// counts, particle sizes and lives, lamps, decal glow, a burnt mark's stay and its screen weight: a shell's tier ladder.
 //
 // An effect can `extends` another (its layers first, then these), so a family shares a base and each member adds its own: change
 // the base and the family follows.
@@ -48,6 +50,7 @@ import { LIBRARY } from './library.js';
 import { sfx } from '../audio/sfx.js';
 import { LAB_GLSL, mindTime, mindTick } from './labradorite.js';
 import { featTint } from './oxidation.js';
+import { ladderOf } from './shelllooks/tiers.js';
 
 // the caster shaders (vfx/caster/: each module's `layer(game, L, ctx)` -> { group, u, set(k), update(raw), dispose() }), by file name
 const CASTER = Object.fromEntries(Object.entries(import.meta.glob('./caster/*.js', { eager: true })).map(([f, m]) => [f.split('/').pop().replace(/\.js$/, ''), m]));
@@ -200,7 +203,8 @@ export class Vfx {
     const R = this.resolve(name);
     const h = { name, pos: (ctx.pos || new THREE.Vector3()).clone(), dir: (ctx.dir || UP).clone().normalize(), normal: (ctx.normal || UP).clone(), t: 0, k: 1, alive: !!R, stopped: false, layers: [] };
     if (!R) return h;
-    h.ctx = { power: 1, scale: 1, ...ctx };
+    const lad = ladderOf(name, ctx); // (a caster shell's tier ladder: shelllooks/tiers.js, its counts, sizes, lamps, glow and weight)
+    h.ctx = { power: 1, scale: 1, ...ctx, ...(lad ? { ladder: lad } : {}) };
     h.stop = () => { h.stopped = true; };
     for (const L of this.layersOf(R.def)) h.layers.push({ L, started: false, acc: 0, mesh: null });
     this.live.push(h);
@@ -297,11 +301,11 @@ export class Vfx {
     const L = s.L, ctx = h.ctx, at = L.at || 0, lt = h.t - at;
     if (lt < 0) return !h.stopped;
     const held = L.dur === Infinity;
-    const dur = held ? Infinity : L.dur ?? 0;
+    const dur = held ? Infinity : (L.dur ?? 0) * (L.blend === 'darken' ? ctx.ladder?.linger ?? 1 : 1); // (a burnt mark lies longer up the tier ladder)
     if (!s.started) { s.started = true; this.start(h, s); }
     if (L.type === 'sprites' && L.rate) {
       if (!h.stopped && lt <= dur) {
-        s.acc += raw * L.rate * (ctx.power ?? 1) * h.k;
+        s.acc += raw * L.rate * (ctx.power ?? 1) * h.k * (ctx.ladder?.count ?? 1);
         while (s.acc >= 1) { s.acc -= 1; this.emit(h, L, 1); }
         return true;
       }
@@ -338,7 +342,7 @@ export class Vfx {
   start(h, s) {
     const L = s.L, ctx = h.ctx, g = this.game, P = ctx.power ?? 1;
     switch (L.type) {
-      case 'sprites': if (!L.rate) this.emit(h, L, Math.round(rnd(L.count, ctx) * (L.powerCount === false ? 1 : P))); break;
+      case 'sprites': if (!L.rate) this.emit(h, L, Math.round(rnd(L.count, ctx) * (L.powerCount === false ? 1 : P) * (ctx.ladder?.count ?? 1))); break; // (the tier ladder's count holds over `powerCount: false`: that is the blow's power, not the shell's rank)
       case 'mesh': if (this.meshReady) s.mesh = meshFx.make(L.mesh, { scene: g.scene, tint: color(L.tint ?? 'tint', ctx), labradorite: L.labradorite ?? 0, opacity: L.opacity ?? 1, renderOrder: L.order ?? 7 }); break;
       case 'caster': { const M = CASTER[L.shader]; s.mesh = (M?.layer ? M.layer(g, L, { ...ctx, pos: h.pos, tint: color(L.tint ?? 'tint', ctx) }) : M?.vfxLayer?.(g, h, L, color)) || null; break; }
       case 'decal': {
@@ -353,15 +357,15 @@ export class Vfx {
         s.mesh = { group: m, u, set: (k) => { u.uK.value = Math.max(0, k); m.visible = k > 0.002; }, update: () => mindTick(), dispose: () => { m.parent?.remove(m); mat.dispose(); } };
         break;
       }
-      case 'flash': { const k = (L.k ?? 0.5) * Math.min(1.4, P), f = this.spend('flash', k, ctx); if (f < 0.1) break; _c.set(color(L.color ?? 'white', ctx)); this.flashEl.style.background = `#${_c.getHexString()}`; this.flashK = Math.max(this.flashK, k * f); this.flashDecay = 1 / Math.max(0.05, L.dur ?? 0.4); break; }
+      case 'flash': { const k = (L.k ?? 0.5) * Math.min(1.4, P) * (ctx.ladder?.flash ?? 1), f = this.spend('flash', k, ctx); if (f < 0.1) break; _c.set(color(L.color ?? 'white', ctx)); this.flashEl.style.background = `#${_c.getHexString()}`; this.flashK = Math.max(this.flashK, k * f); this.flashDecay = 1 / Math.max(0.05, L.dur ?? 0.4); break; }
       case 'light': {
         const S = this.lights.reduce((m, x) => ((x.dur - x.t) < (m.dur - m.t) ? x : m));
-        S.l.color.set(color(L.color ?? 'tint', ctx)); S.l.distance = L.range ?? 10; S.k = (L.k ?? 30) * P; S.t = 0; S.dur = L.dur ?? 0.5; S.hold = L.hold ?? 0;
+        S.l.color.set(color(L.color ?? 'tint', ctx)); S.l.distance = (L.range ?? 10) * (ctx.ladder?.reach ?? 1); S.k = (L.k ?? 30) * P * (ctx.ladder?.light ?? 1); S.t = 0; S.dur = (L.dur ?? 0.5) * (ctx.ladder?.life ?? 1); S.hold = L.hold ?? 0;
         S.l.position.copy(h.pos).addScaledVector(UP, L.up ?? 0.5);
         break;
       }
-      case 'shake': { const k = (L.k ?? 0.3) * Math.min(1.5, P); g.player && (g.player.shake = Math.max(g.player.shake || 0, k * this.spend('shake', k, ctx))); break; }
-      case 'hitstop': { const d = (L.dur ?? 0.06) * Math.min(1.5, P) * this.spend('hitstop', (L.dur ?? 0.06) * Math.min(1.5, P), ctx); if (d > 0.012) g.time?.pulse?.(`vfx${Math.random()}`, L.scale ?? 0.05, d, { release: L.release ?? 0.08 }); break; }
+      case 'shake': { const k = (L.k ?? 0.3) * Math.min(1.5, P) * (ctx.ladder?.shake ?? 1); g.player && (g.player.shake = Math.max(g.player.shake || 0, k * this.spend('shake', k, ctx))); break; }
+      case 'hitstop': { const w = (L.dur ?? 0.06) * Math.min(1.5, P) * (ctx.ladder?.hitstop ?? 1), d = w * this.spend('hitstop', w, ctx); if (d > 0.012) g.time?.pulse?.(`vfx${Math.random()}`, L.scale ?? 0.05, d, { release: L.release ?? 0.08 }); break; }
       case 'smear': if (g.post?.accum && !g.death?.active) { Object.assign(g.post.accum, { amt: L.amt ?? 0.6, zoom: L.zoom ?? 0.006, spin: L.spin ?? 0 }); this.smearAmt = L.amt ?? 0.6; this.smearT = this.smearDur = L.dur ?? 0.6; } break;
       case 'glyph': g.glyphs?.pop(L.kind || 'bang1', _v.copy(h.pos).addScaledVector(UP, L.up ?? 0.8), { color: color(L.color ?? 'tint', ctx), size: L.size ?? 0.5, burst: L.burst ?? true, ring: L.ring ?? false, throughWalls: ctx.throughWalls ?? null }); break;
       case 'sound': sfx[L.sfx]?.(...(L.args || [])); break;
@@ -383,12 +387,12 @@ export class Vfx {
       m.group.rotation.y = (L.rot ?? 0) + (L.spin ?? 0) * h.t;
       if (L.face === 'dir') m.group.quaternion.setFromUnitVectors(UP, h.dir); // (a ring stood up along the blow)
     }
-    m.set(curve(L.k ?? [[0, 1], [1, 0]], t) * k * (L.kmul ?? 1));
+    m.set(curve(L.k ?? [[0, 1], [1, 0]], t) * k * (L.kmul ?? 1) * (L.type === 'caster' ? 1 : h.ctx.ladder?.glow ?? 1)); // (a decal's or a mesh's glow, up the tier ladder; a caster shader's k is its own)
   }
 
   emit(h, L, n) {
     if (!h.ctx?.cine && n > 0) { const f = this.budget.sprites.take(n); n = f >= 1 ? n : Math.floor(n * f + Math.random()); } // (the particle budget: a busy second thins out)
-    const ctx = h.ctx, P = ctx.power ?? 1, pool = ctx.throughWalls ? this.xrayPool(L.pool === 'alpha') : L.pool === 'alpha' ? this.alpha : this.add, sz = (L.powerSize === false ? 1 : Math.sqrt(P)) * (ctx.scale ?? 1);
+    const ctx = h.ctx, P = ctx.power ?? 1, pool = ctx.throughWalls ? this.xrayPool(L.pool === 'alpha') : L.pool === 'alpha' ? this.alpha : this.add, sz = (L.powerSize === false ? 1 : Math.sqrt(P)) * (ctx.scale ?? 1) * (ctx.ladder?.size ?? 1), lifeK = ctx.ladder?.life ?? 1;
     for (let i = 0; i < n; i++) {
       // where it is born
       const sp = L.spawn || 'point', r = rnd(L.r ?? 0, ctx) * (ctx.scale ?? 1);
@@ -417,7 +421,7 @@ export class Vfx {
       if (L.inherit && ctx.vel) vel.addScaledVector(ctx.vel, L.inherit);
       const size = rnd(L.size ?? 0.2, ctx) * sz;
       pool.emit({
-        pos: _v, vel, life: rnd(L.life ?? 0.6, ctx), delay: rnd(L.delay ?? 0, ctx),
+        pos: _v, vel, life: rnd(L.life ?? 0.6, ctx) * lifeK, delay: rnd(L.delay ?? 0, ctx),
         size, sizeEnd: L.sizeEnd !== undefined ? rnd(L.sizeEnd, ctx) * sz : size,
         color: color(L.color, ctx), colorEnd: L.colorEnd !== undefined ? color(L.colorEnd, ctx) : undefined,
         alpha: rnd(L.alpha ?? 1, ctx), alphaEnd: rnd(L.alphaEnd ?? 0, ctx),

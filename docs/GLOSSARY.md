@@ -148,6 +148,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **a shell's look** (`shellLook`, `SHELL_LOOKS`, `src/vfx/shelllooks.js`, a family's in `vfx/shelllooks/<family>.js`; effects
   `shell.<id>.<moment>`) — a caster shell's body, tail and marks at its moments (fly, touch, land, fire, set), asked by the shell runner
   by shell id. *Not:* the caster shaders (its parts).
+- **a shell's tier ladder** (plain name; `SHELL_TIER_LADDER`, `TIER_EXTRAS`, `src/vfx/shelllooks/tiers.js`) — a caster shell's look weighed by its tier (I as written .. IV three times the particles, louder lamps and weight, never a wider reach), and the extras each tier wears over it (II a sparkle, III gold, IV the film, the toll seen, a held beat and an afterburst, a kintsugi mark). *Not:* the tiers (`TIERS`, Dovina's: price and toll), a shell's look.
 - **the Sondelass** (`src/tools/sondelass/sondelass.js`) — the blade with three forms: the cutlass, the rod (angling), the hook (the grappling hook in player text; its achievements, Grapple). →
   detail
 - **the Soul Brush** (`src/tools/soulbrush/soulbrush.js`) — the club, the flick, Celestial mode (sigils; **Celestial mode's mark**, a

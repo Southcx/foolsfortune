@@ -19,6 +19,8 @@
 // where a round is SPENT (`end`: the parts' lobs that land on their own), a look at the AIM (`fire: 'aim'`), and a row's own hook where
 // data will not say it (`onFire`, `onLand`: the Thunderhead's rain kept over its cloud's quarry, Swap's afterimage).
 //
+//   Every look is weighed by its shell's tier, and tiers II to IV wear extras over it (a shell's tier ladder: shelllooks/tiers.js).
+//
 //   shellLook(game, moment, row, ctx)   moment: 'fly' { mesh, p, kind } | 'touch' { p, at, normal, target, ent } | 'land' { at, normal,
 //                                       target, dir, ent } | 'fire' { muzzle, ray, camera, character } | 'set' { obj }
 //   SHELL_LOOKS (by shell id: body, the moments it has, how long a held one stays)   SHELL_FAMILY_TINT   shellTint(row)
@@ -27,6 +29,7 @@ import * as THREE from 'three';
 import { COLOR } from '../progress/weather.js';
 import { SHELL_LOOK_ROWS } from './shelllooks/index.js';
 import { DUR, bodyMesh, onCreature, atPlace, aimAt, toGround } from './shelllooks/kit.js';
+import { withTier, tierLook } from './shelllooks/tiers.js';
 
 /** A family's colour: its rounds' glaze bead and tail (the runner's FAMILY_COLOR was the placeholder). */
 export const SHELL_FAMILY_TINT = { edge: 0xe6dccb, ember: 0xff7a2a, storm: 0x9fd0ff, pull: 0x8a7aff, clock: 0xe8d080, will: 0xc890d8, company: 0xc46a45, feelings: 0xffffff };
@@ -268,8 +271,10 @@ const MOMENTS = {
   },
 };
 
-/** The one call the runner makes, by shell id: what this moment of this shell looks like. Never throws into the runner. */
+/** The one call the runner makes, by shell id: what this moment of this shell looks like, weighed by its tier, and its tier's extras
+ *  over it (a shell's tier ladder: shelllooks/tiers.js). Never throws into the runner. */
 export function shellLook(game, moment, row, ctx = {}) {
   if (!game?.vfx || !row) return;
-  try { MOMENTS[moment]?.(game, row, SHELL_LOOKS[row.id], ctx); } catch (e) { console.warn('shell look', row.id, moment, e); }
+  try { withTier(row.tier || 1, () => MOMENTS[moment]?.(game, row, SHELL_LOOKS[row.id], ctx)); } catch (e) { console.warn('shell look', row.id, moment, e); }
+  try { tierLook(game, moment, row, ctx); } catch (e) { console.warn('shell tier look', row.id, moment, e); }
 }
