@@ -22,7 +22,7 @@ import { TouchTopBar } from './topbar.js';
 import { TouchArtBar } from './artbar.js';
 
 export function installTouchControls(game) {
-  const UI = { on: false, cluster: null, stick: null, longPress, topBar: null, artBar: null, tiles: touchTiles, force: (on) => force(on) };
+  const UI = { on: false, cluster: null, stick: null, longPress, topBar: null, artBar: null, tiles: touchTiles, force: (on) => { game.hudLayout?.force?.(on); force(on); } }; // (one word on touch for the layout and the controls)
   game.touchUI = UI;
   if (typeof document === 'undefined') return UI;
   let raf = 0;

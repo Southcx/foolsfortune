@@ -79,12 +79,16 @@ export class HudLayout {
 
   /** Is the last device touch? `game.input.device` when the input layer has one; `?touch` (or `?touch=0`) forces it; else a coarse pointer with touch points. */
   isTouch() {
+    if (this.forced != null) return this.forced; // (force(on): the touch controls' and a test's word, so the two never disagree)
     let q = null; try { q = new URLSearchParams(location.search); } catch { /* no location */ }
     if (q?.has('touch')) return q.get('touch') !== '0';
     const d = this.game.input?.device;
     if (d) return d === 'touch';
     try { return matchMedia('(pointer: coarse)').matches && (navigator.maxTouchPoints || 0) > 0; } catch { return false; }
   }
+
+  /** Force touch on or off (null: back to the device's word); the touch controls' `game.touchUI.force` calls it too. */
+  force(on) { this.forced = on == null ? null : !!on; this.read(true); }
 
   /** The art bar is up while the Spirit Garden or the god hand is. */
   artUp() { const g = this.game; return !!(g.realm?.active || g.god?.active || g.godhand?.active); }
