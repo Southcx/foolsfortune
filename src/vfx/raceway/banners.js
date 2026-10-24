@@ -1,8 +1,8 @@
 // ---------------------------------------------------------------------------------------
 // THE RACEWAY'S BANNERS (plain name): feather banners along each track's start straight and beside its gates, tall flags laced to a
 // pole along one edge, their free edge flying downwind (the course wind, raceway.wind: the track's own) and rippling in waves that run
-// out along the cloth, harder in a gust and in Desire's wanting wind. Each in one of the eight seat colours (vfx/seatlook.js SEAT_LOOK,
-// from Raku's tables: the park's festival colours), in turn along a row. A look only: no collider, no rule.
+// out along the cloth, harder in a gust and in Desire's wanting wind. Each in one of the seven feelings' colours (progress/weather.js COLOR: the seat colours are Raku's tables' alone),
+// in turn along a row. A look only: no collider, no rule.
 // EIGHT DRAWS, a colour each: the cloth of every banner of one colour in one mesh, re-laid on the CPU (a travelling wave, its normals
 // recomputed into the same buffers) a few dozen times a real second while the camera is within SEE metres of a row, and the poles in
 // one more (shared with the lanterns: lanterns.js). Each an InstancedMesh of one instance in a plain flat standard (the clay chips'
@@ -14,7 +14,7 @@
 //   const B = new RacewayBanners(game, parent, poles)   B.build(raceway)   B.update(dt, raceway)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { SEAT_LOOK, SEAT_NAMES } from '../seatlook.js';
+import { ASPECTS, COLOR } from '../../progress/weather.js';
 import { sideOf } from '../../world/raceway/kit.js';
 
 /** The numbers: a start straight's banners from `start[0]` to `start[1]` m along the line, `every` apart, `out` m past the track's
@@ -31,7 +31,7 @@ const at = (o0, u, v) => (o0 + u * (BANNER.nv + 1) + v) * 3; // (a grid point's 
 export class RacewayBanners {
   constructor(game, parent, poles) {
     this.game = game; this.parent = parent; this.poles = poles; this.t = 0; this.acc = 0; this.built = false;
-    this.mats = SEAT_NAMES.map((n) => new THREE.MeshStandardMaterial({ name: `raceway-banner-${n}`, color: new THREE.Color(SEAT_LOOK[n].hex), roughness: 0.75, metalness: 0, flatShading: true }));
+    this.mats = ASPECTS.map((n) => new THREE.MeshStandardMaterial({ name: `raceway-banner-${n}`, color: new THREE.Color(COLOR[n]), roughness: 0.75, metalness: 0, flatShading: true })); // (the seven feelings' colours: the seat colours are Raku's tables' alone, the glossary)
   }
 
   build(R) {

@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE RACE'S FIREWORKS (plain name): a short show over the start arch of the track a race was won on (race.finish in first place
 // against rivals, or with a medal run alone): shells rising from behind the arch's lintel in a fan and bursting high over it, a peony of
-// sparks in a seat colour or gold each, a crackle after, about five real seconds in all, louder in the dark (the sparks' size by the
+// sparks in a feeling's colour or gold each, a crackle after, about five real seconds in all, louder in the dark (the sparks' size by the
 // hour). The library's effects on the shared particle pools (vfx/raceway/effects.js 'raceway.firework.rise', '.burst'), each burst's lamp
 // lent by the light budget like any lamp: no meshes, no program. A look only: the win is said in the log, by its rule.
 // Sound: none of its own yet (a placeholder: the burst's report and crackle are Wanda's to write, audio/).
@@ -12,7 +12,7 @@
 //   const F = new RaceFireworks(game)   F.update(dt, raceway)   F.show(track)   (heard on race.finish)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { SEAT_LOOK, SEAT_NAMES } from '../seatlook.js';
+import { ASPECTS, COLOR } from '../../progress/weather.js';
 import { sideOf } from '../../world/raceway/kit.js';
 
 /** The numbers: shells in a show and the real seconds over which they go up; the lintel's height over the line (m, kit.js: 11 over the
@@ -24,7 +24,7 @@ const _p = new THREE.Vector3();
 export class RaceFireworks {
   constructor(game) {
     this.game = game; this.t = 0; this.queue = Array.from({ length: SHOW.cap }, () => ({ at: -1, x: 0, y: 0, z: 0, apex: 0, tint: new THREE.Color(), rose: false }));
-    this.colours = [...SEAT_NAMES.map((n) => new THREE.Color(SEAT_LOOK[n].hex)), new THREE.Color(0xffd36a), new THREE.Color(0xffd36a)];
+    this.colours = [...ASPECTS.map((n) => new THREE.Color(COLOR[n])), new THREE.Color(0xffd36a), new THREE.Color(0xffd36a)]; // (the feelings' colours and gold)
     game.events?.on('race.finish', (e) => { if (e && (e.of > 1 ? e.place === 1 : !!e.medal)) this.show(e.track); });
   }
 

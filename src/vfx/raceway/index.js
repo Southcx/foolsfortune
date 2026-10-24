@@ -2,7 +2,7 @@
 // THE RACEWAY'S LIVING DRESSING (the owner, 2026-10-24: "more environment features ... build, build, build"): the park made a race
 // day, looks only (no collider, no rule, nothing of the layout changed: world/raceway/ is read, never written).
 //   - the spectators (spectators.js): clapperjars on the banks at the starts and the big jumps' landings, cheering as you pass or land a trick
-//   - the banners (banners.js): feather banners in the seat colours along the start straights and by the gates, flying in the course wind
+//   - the banners (banners.js): feather banners in the seven feelings' colours along the start straights and by the gates, flying in the course wind
 //   - the Raceway lanterns (lanterns.js): lit along the track at dusk and through the night, a few of them real lamps from the budget
 //   - the race's fireworks (fireworks.js): over the start arch on a race won
 // Laid from the park's data (raceway.tracks: their lines, gates and frames; GAPS; the hub) the first frame the Raceway is active, and
