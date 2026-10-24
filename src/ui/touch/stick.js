@@ -10,6 +10,8 @@
 //              dashed ring.
 //   READ       x, y (-1 .. 1, full at 60 px; y forward is up the screen), carve (-1 left, 0, 1 right: past 90 px on that side, on the
 //              skiff), outer (past 90 px at all: the sprint on foot), active, and the push (0 .. outer / 60).
+//   AT REST    the ring and knob drawn faint (a third) at the stick's home (hudlayout.js stickHome: the touch layout editor's, kept, or
+//              low in the move area), so a thumb knows where to land; a thumb anywhere in the move area still makes the stick there.
 // Redrawn on a move and, while held, at most 15 times a real second for the schiller's walk; no per-frame DOM.
 //
 // Prior art: Genshin Impact's and Mario Kart Tour's floating sticks (a stick where the thumb lands; MKT's slide past the edge is the
@@ -24,14 +26,14 @@ import { placeOf, windowOpen } from './areas.js';
 
 /** The numbers (CSS px): the full push, the outer band's start and end, the knob's radius; the band's half-sweep round each side (rad);
  *  the ember (the slip arc's); the schiller's redraw rate while held (a real second). */
-export const STICK = { full: 60, outer: 90, band: 112, knob: 26, sweep: 0.95, ember: '#ff7a2a', rate: 15 };
+export const STICK = { full: 60, outer: 90, band: 112, knob: 26, sweep: 0.95, ember: '#ff7a2a', rate: 15, rest: 0.32 };
 
 const CSS = `
 .tstick{position:fixed;left:0;top:0;z-index:5;touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;
   -webkit-tap-highlight-color:transparent;pointer-events:auto}
 .tstick.off{display:none}
 .tstick canvas{position:absolute;left:0;top:0;pointer-events:none;display:none}
-.tstick.held canvas{display:block}
+.tstick.held canvas,.tstick.rest canvas{display:block}
 `;
 const _c = new THREE.Color();
 const glaze = () => { const s = getComputedStyle(document.documentElement); return { top: s.getPropertyValue('--jtop').trim() || '104,50,32', bot: s.getPropertyValue('--jbot').trim() || '34,15,9' }; };
@@ -101,7 +103,7 @@ export class TouchStick {
   relayout() {
     const A = placeOf(this.game).areas.move;
     Object.assign(this.el.style, { transform: `translate(${Math.round(A.x)}px, ${Math.round(A.y)}px)`, width: `${Math.round(A.w)}px`, height: `${Math.round(A.h)}px` });
-    this.area = A;
+    this.area = A; this.restKey = '';
   }
 
   /** Each frame: stand down off touch or under a window (a held thumb let go), redraw while held. */
@@ -111,16 +113,30 @@ export class TouchStick {
     // (and wherever the pointer is free, the duel, the track editor, the haunt, the hand: the finger is the cursor there; the garden held sideways keeps the Jar's stick)
     const show = !!on && !windowOpen(g) && !g.god?.controlling && !(g.realm?.active && P.portrait) && !(g.cursorFree?.() && !g.realm?.active) && !g.touch?.screenTaken?.(); // (screenTaken: Celestial mode's paper or the rhythm mode's pads hold the whole screen, Petra's core/touch)
     if (show !== this.on) { this.on = show; this.el.classList.toggle('off', !show); if (!show && this.active) { this.pid = null; this.release(); } }
-    if (!show || !this.active) return;
+    if (!show) return;
+    if (!this.active) { this.rest(); return; }
+    this.restKey = '';
     if (!this.dirty && now - this.drawnAt < 1 / STICK.rate) return;
     this.dirty = false; this.drawnAt = now; this.draw(now);
   }
 
-  draw(now) {
+  /** At rest: the ring stands faint at its home (the HUD layout's stickHome, the kept one or the default), Genshin's resting stick;
+   *  drawn once a place. */
+  rest() {
+    const H = this.game.hudLayout?.touch ? this.game.hudLayout.stickHome?.() : null;
+    const key = H ? `${Math.round(H.x)},${Math.round(H.y)}` : '';
+    if (key === this.restKey) return;
+    this.restKey = key; this.el.classList.toggle('rest', !!H);
+    if (!H) return;
+    const o = this.o, d = this.d; this.o = H; this.d = { x: 0, y: 0 };
+    this.draw(0, STICK.rest); this.o = o; this.d = d;
+  }
+
+  draw(now, alpha = 1) {
     const dpr = Math.max(1, Math.min(3, devicePixelRatio || 1)), B = STICK.band + 8, D = B * 2, cv = this.cv;
     if (cv.width !== Math.round(D * dpr)) { cv.width = cv.height = Math.round(D * dpr); cv.style.width = cv.style.height = `${D}px`; }
     cv.style.transform = `translate(${Math.round(this.o.x - this.area.x - B)}px, ${Math.round(this.o.y - this.area.y - B)}px)`;
-    const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, D, D);
+    const g = cv.getContext('2d'); g.setTransform(dpr, 0, 0, dpr, 0, 0); g.clearRect(0, 0, D, D); g.globalAlpha = alpha;
     const o = B, ph = now * SCHILLER.rate, skiff = this.skiff;
     // the well: dark clay under the thumb, so the ring reads on noon sand
     const well = g.createRadialGradient(o, o, STICK.full * 0.3, o, o, STICK.band);
