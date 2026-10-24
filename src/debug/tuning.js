@@ -80,7 +80,7 @@ const SETTING_LABEL = {
   'visual.warp': 'storm warp', // (a placeholder for Espada's word)
   'visual.shake': 'screen shake',
   'camera.follow': 'camera follow', 'audio.haptics': 'haptics', // (core/settings.js's rows: Espada's labels)
-  'camera.lockAuto': 'lock-on on touch', 'tech.skiff.gyro': 'tilt to steer', // (placeholders for Espada's)
+  'camera.lockAuto': 'auto lock-on', 'tech.skiff.gyro': 'tilt to steer', // (the first Espada's; the second a placeholder for hers)
 };
 /** Words for the config's camelCase: "maxSlope" -> "max slope", "fpAdsFov" -> "fp ads fov". */
 export const words = (k) => k.replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2').toLowerCase();

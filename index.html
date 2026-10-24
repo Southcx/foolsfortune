@@ -4,6 +4,56 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1" />
   <title>Fool's Fortune Workshop</title>
+  <script>
+    // THE BOOT WATCH (a phone that will not open the game: Dovina's ask, 2026-10-24): from the first byte to the title, before any module
+    // runs, so an error in the bundle's own evaluation or in the renderer's making is shown on screen, not a blank page. Each boot stage
+    // (main.js's `mark`) is said under the loading line and kept as a breadcrumb in the tab's session storage, which outlives the page's
+    // process: when a phone kills a tab for its memory and loads it again, the box says where the last load stopped. A load that leaves
+    // the page (pagehide) forgets it. The breadcrumb is the tab's own and outlives nothing else, so it is kept here, never in the save
+    // (which does not exist yet when this runs). After `ready` errors are the game's own box's (main.js reportError).
+    //   window.__bootWatch.stage(name)   .fail(error)   .build   .stages [[name, ms]]   (main.js's mark() calls stage; its start's catch, fail)
+    (function () {
+      var KEY = 'ff.bootWatch', t0 = Date.now(), W = window.__bootWatch = { stages: [], done: false }, box = null, line = null;
+      var store = null; try { store = window.sessionStorage; store.getItem(KEY); } catch (e) { store = null; }
+      var put = function (o) { try { if (store) store.setItem(KEY, JSON.stringify(o)); } catch (e) { /* full or refused */ } };
+      var last = null; try { last = store && JSON.parse(store.getItem(KEY) || 'null'); } catch (e) { last = null; }
+      var show = function (text) {
+        if (!document.body) { document.addEventListener('DOMContentLoaded', function () { show(text); }); return; }
+        if (!box) { box = document.createElement('div'); box.id = 'bootwatch';
+          box.style.cssText = 'position:fixed;left:8px;right:8px;top:8px;z-index:99999;background:rgba(28,13,8,.94);color:#ffb27a;border:1px solid #ff7a4a;'
+            + 'padding:8px 10px;font:12px/1.4 ui-monospace,Menlo,monospace;white-space:pre-wrap;word-break:break-word;max-height:70%;overflow:auto;pointer-events:none';
+          document.body.appendChild(box); }
+        box.textContent += (box.textContent ? '\n' : '') + text;
+      };
+      var stageLine = function (name) {
+        var l = document.getElementById('loading'); if (!l) return;
+        if (!line) { line = document.createElement('div'); line.style.cssText = 'position:absolute;bottom:18%;left:0;right:0;text-align:center;font:11px ui-monospace,Menlo,monospace;letter-spacing:.12em;opacity:.6'; l.appendChild(line); }
+        line.textContent = name + ' · ' + ((Date.now() - t0) / 1000).toFixed(1) + ' s';
+      };
+      if (last && last.stage && last.stage !== 'left') {
+        show('The last load of this page stopped while ' + (last.stage === 'playing' ? 'playing' : 'starting, at "' + last.stage + '"') + ', '
+          + (last.s || 0) + ' s in (' + (last.build || '?') + '). A phone does this when the page runs out of memory.');
+      }
+      W.stage = function (name) {
+        W.stages.push([name, Date.now() - t0]); stageLine(name);
+        put({ stage: name === 'ready' || name === 'first frame' ? 'playing' : name, s: Math.round((Date.now() - t0) / 1000), build: W.build || '', ua: navigator.userAgent });
+        if (name === 'ready') W.done = true;
+      };
+      W.stage('html');
+      var said = {};
+      var report = function (what) { if (W.done) return; var msg = String(what); if (said[msg]) return; said[msg] = 1;
+        show('Could not start (' + (W.stages.length ? W.stages[W.stages.length - 1][0] : 'html') + ', ' + ((Date.now() - t0) / 1000).toFixed(1) + ' s): ' + msg); };
+      window.addEventListener('error', function (e) {
+        var el = e && e.target; if (el && el !== window && el.tagName) { report('could not load ' + (el.src || el.href || el.tagName)); return; } // (a script or a stylesheet that failed to load: seen only by a capturing listener)
+        var er = e && e.error; report((er && er.message) || (e && e.message) || 'an error');
+        if (er && er.stack) show(String(er.stack).split('\n').slice(0, 4).join('\n'));
+      }, true);
+      W.fail = function (r) { report((r && r.message) || r || 'a promise failed'); if (r && r.stack) show(String(r.stack).split('\n').slice(0, 4).join('\n')); };
+      window.addEventListener('unhandledrejection', function (e) { W.fail(e && e.reason); });
+      window.addEventListener('webglcontextlost', function () { show('The 3D view was lost (' + (W.stages.length ? W.stages[W.stages.length - 1][0] : '') + ', ' + ((Date.now() - t0) / 1000).toFixed(1) + ' s): the device took the graphics back.'); }, true);
+      window.addEventListener('pagehide', function () { put({ stage: 'left' }); });
+    })();
+  </script>
   <style>
     :root { --ink: #fbe3cf; --accent: #ffb27a; --bg: #2a140d; --panel: rgba(42, 20, 13, 0.82); }
     html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--ink);

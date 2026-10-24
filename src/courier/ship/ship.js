@@ -110,7 +110,7 @@ export class Ship {
   rehull(ship = 'sloop') {
     const H = SHIPS[ship] || SHIPS.sloop, B = SHIPS.sloop;
     this.hull = { id: SHIPS[ship] ? ship : 'sloop', pace: H.speed / B.speed, box: H.box / B.box, hurt: T.ship.hurt * (H.hurtbox / B.hurtbox), locks: Math.min(H.locks, T.ship.lock.max), dive: H.dive };
-    if (!H.dive && this.form === 'umbral') { this.form = 'astral'; this.aspect = this.home; this.game.events?.emit('rail.form', { form: this.form, by: 'environment' }); }
+    if (!H.dive && this.form === 'umbral') { this.form = 'astral'; this.aspect = this.home; this.game.events?.emit('rail.form', { form: this.form, aspect: this.aspect, by: 'environment' }); }
     this.boxSet = false; this.dress(this.hull.id); this.tint();
   }
 
@@ -171,7 +171,7 @@ export class Ship {
     if (this.turning) { const n = shots?.parry(this.local, 2.6) || 0; if (n) this.onParry?.(n); }
     this.mercy = Math.max(0, this.mercy - dt);
     if (hit.has('KeyQ') && this.hull && !this.hull.dive) { if (!this.qSaid) { this.qSaid = true; this.game.events?.emit('rail.refuse', { what: 'dive', ship: this.hull.id, by: 'courier' }); } } // (a heavy hull rides the surface: ships.js dive)
-    else if (hit.has('KeyQ')) { this.form = this.form === 'astral' ? 'umbral' : 'astral'; this.game.events?.emit('rail.form', { form: this.form, by: 'courier' }); this.aspect = this.aspect === this.home ? OPPOSITE[this.home] || this.home : this.home; this.tint(); sfx.click?.(); this.game.events?.emit('rail.polarity', { aspect: this.aspect, by: 'courier' }); }
+    else if (hit.has('KeyQ')) { this.form = this.form === 'astral' ? 'umbral' : 'astral'; this.aspect = this.aspect === this.home ? OPPOSITE[this.home] || this.home : this.home; this.tint(); sfx.click?.(); this.game.events?.emit('rail.form', { form: this.form, aspect: this.aspect, by: 'courier' }); } // (the form and its feeling in one event: the old second one retired with its word)
     // the gun, the sweep and the volley, all on the sixteenth (Rez)
     if (sixteenth !== this.lastSixteenth) {
       this.lastSixteenth = sixteenth;

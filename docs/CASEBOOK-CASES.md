@@ -3774,3 +3774,26 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** both copies carry the original's defines (`k.defines = { ...m.defines }`, as `cloneTinted` does). Measured: the same boot,
   no shader error.
 - **Rule:** 72
+
+### 2026-10-24 · Every clone of a reading view card encoded the house deck to a JPEG (Petra, measuring a phone's boot for the iPhone)
+- **Seen (measured):** at boot, 28 canvases were turned into data URLs, 66.1 Mpx in 1,337 real ms on a desktop's CPU, 8 MB of strings;
+  14 of them each the house deck's 2048 x 2304 atlas, with three.js warning "Image converted to jpg for performance reasons".
+- **Cause (measured):** three.js's `Object3D.copy` deep-copies `userData` as `JSON.parse(JSON.stringify(userData))`. The reading view's
+  card keeps its face, edge and edge material there (vfx/readingview.js `cardMesh`), and `buildFall` clones the back 14 times: each
+  clone serialized the meshes, their materials and textures, and each texture's canvas into a data URL, then threw it away (the
+  clone's userData is set right after).
+- **Fix:** render/threefixes.js USERDATA COPY: a userData that keeps a three.js object is copied as JSON copies plain data, and the
+  object is kept as itself. Boot: 14 data URLs, 0 Mpx, 10 ms, 0.1 MB. The reading view flips with its 14 falling cards.
+- **Rule:** 293
+
+### 2026-10-24 · The basement's labels kept 51 MB of canvas a phone had no use for (Petra, measuring a phone's memory for the iPhone)
+- **Seen (measured, the built game as a phone, 844 x 390 at DPR 2):** 252 canvas textures held 137 MB of canvas beside their GPU copies;
+  162 of them the basement's sign tablets (world/basement/basement.js `labelTexture`), 512 x 160 each, 50.6 MB.
+- **Cause (read):** a CanvasTexture keeps its canvas as its image for the texture's life, and a label is drawn once: after the upload
+  the canvas is a second copy of pixels nothing reads. Eleven texts were drawn twice.
+- **Fix:** render/bakedcanvas.js: a baked canvas texture lets its canvas go once three has uploaded it (`onUpdate`), drawn again only if
+  its image is asked for. The labels are baked, one texture a text, at the graphics tier's `labelScale` (High 1, Low and Minimum 0.5).
+  Measured before and after on the same machine: the page's process 644 to 542 MB at boot, 682 to 586 at the Raceway; canvas 139 to
+  88.5 MB; textures 190 to 138 MB.
+- **Rule:** 294
+

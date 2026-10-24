@@ -51,8 +51,12 @@ const CSS = `
 #tedit .bar { height: 8px; border: 1px solid rgba(255,178,122,.5); margin: 4px 0; } #tedit .bar i { display: block; height: 100%; background: #ffb27a; }
 #tedit .map canvas { display: block; width: 256px; height: 256px; border: 1px solid rgba(255,178,122,.35); cursor: crosshair; image-rendering: pixelated; }
 #tedit textarea.code { width: 100%; box-sizing: border-box; font: 11px/1.3 monospace; color: inherit; background: rgba(0,0,0,.35); border: 1px solid rgba(255,178,122,.35); border-radius: 3px; resize: vertical; }
+body.hud-touch #tedit { top: calc(var(--hud-log-y, 60px) + 72px); left: calc(var(--safe-l, 0px) + 8px); bottom: calc(var(--safe-b, 0px) + 8px); } /* (under the log's ticker, clear of the top bar: ui/hudlayout.js) */
+#tedit.fold, body.hud-touch #tedit.fold { bottom: auto; width: auto; max-width: 280px; } #tedit.fold > :not(.keep) { display: none; } #tedit .keep h3 { margin-top: 4px; }
 #tedit .err { color: #ff9a7a; } #tedit .ok { color: #9ae0a0; } #tedit .dim { opacity: .7; }
 `;
+
+const ndcOf = (x, y) => ({ x: (x / innerWidth) * 2 - 1, y: -(y / innerHeight) * 2 + 1 });
 
 export class TrackEditor {
   constructor(game) {
@@ -146,14 +150,30 @@ export class TrackEditor {
   listen(on) {
     const el = this.game.renderer?.domElement; if (!el) return;
     if (!this.h) this.h = {
-      move: (e) => { this.ndc = { x: (e.clientX / innerWidth) * 2 - 1, y: -(e.clientY / innerHeight) * 2 + 1 }; },
-      down: (e) => { if (!this.active) return; e.preventDefault?.(); if (e.button === 2) this.erase(); else if (e.button === 0) this.press(); },
-      up: (e) => { if (e.button === 0) this.release(); },
+      move: (e) => { if (e.pointerType !== 'touch') this.ndc = ndcOf(e.clientX, e.clientY); },
+      down: (e) => { if (!this.active || e.pointerType === 'touch') return; e.preventDefault?.(); if (e.button === 2) this.erase(); else if (e.button === 0) this.press(); },
+      up: (e) => { if (e.button === 0 && e.pointerType !== 'touch') this.release(); },
       wheel: (e) => { if (!this.active) return; this.cam.h = Math.max(CAM.min, Math.min(CAM.max, this.cam.h * (e.deltaY > 0 ? 1.12 : 1 / 1.12))); },
       menu: (e) => { if (this.active) e.preventDefault(); },
     };
     const f = on ? 'addEventListener' : 'removeEventListener';
     el[f]('pointermove', this.h.move); el[f]('pointerdown', this.h.down); window[f]('pointerup', this.h.up); el[f]('wheel', this.h.wheel, { passive: true }); el[f]('contextmenu', this.h.menu);
+  }
+  /** On touch (docs/plans/MOBILE.md 8.5): the DOM's touch pointers are skipped above, and the finger is read as core/touchcursor.js
+   *  makes it: the cursor at input.mx / my, a tap or a drag LMB, the long press RMB (take out), a pinch the wheel (zoom), two fingers'
+   *  drag the pan (the ground following them, as a map's). */
+  touch() {
+    const In = this.game.input; if (In && In.device !== this.panelDevice) this.panel();
+    if (!In || In.device !== 'touch') { this.tLMB = false; return; }
+    this.ndc = ndcOf(In.mx, In.my);
+    const lmb = In.isDown('Mouse0');
+    if (In.wasPressed('Mouse0') || (lmb && !this.tLMB)) this.press();
+    else if (!lmb && this.tLMB) this.release();
+    this.tLMB = lmb;
+    if (In.wasPressed('Mouse2')) this.erase();
+    if (In.wheel) this.cam.h = Math.max(CAM.min, Math.min(CAM.max, this.cam.h * Math.pow(1.12, In.wheel / 100)));
+    const G = In.touchDrag, m = this.cam.h / innerHeight * 1.6; // (about a screen's height of fingers a view's height of ground)
+    if (G?.fingers >= 2 && (G.panX || G.panY)) { this.cam.x -= G.panX * m; this.cam.z -= G.panY * m; }
   }
   /** The cursor on the ground (lot-local x, z; and y over the lot's floor), from the mouse through the camera (the ground as shaped). */
   cursor() {
@@ -289,6 +309,8 @@ export class TrackEditor {
     if (typeof document === 'undefined') return;
     let el = this.el; if (!el) { el = this.el = document.createElement('div'); el.id = 'tedit'; document.body.appendChild(el); el.addEventListener('pointerdown', (e) => e.stopPropagation()); }
     el.style.display = this.active ? 'block' : 'none'; if (!this.active) return;
+    const touch = this.game.input?.device === 'touch'; this.panelDevice = this.game.input?.device; // (on touch the panel is a drawer: MOBILE.md 8.7)
+    el.classList.toggle('fold', touch && !this.drawer);
     const D = this.def, B = this.budget || budgetOf(D), V = this.check || { ok: false, errors: [] }, T = this.T;
     const btn = (label, on, f, dis = false, tip = '') => `<button data-a="${f}" class="${on ? 'on' : ''}" ${dis ? 'disabled' : ''} title="${tip.replace(/"/g, '&quot;')}">${label}</button>`;
     const sel = this.sel, item = !sel ? null : (sel.type === 'point' ? D.points : sel.type === 'piece' ? D.pieces : D.traps)[sel.i];
@@ -297,7 +319,8 @@ export class TrackEditor {
       : sel.type === 'piece' ? `${PIECES[item.kind].label}: ${PIECES[item.kind].line}${PIECES[item.kind].span ? ' Drag either end along the line.' : ''}<div class="row">${btn('Take out', false, 'erase')}</div>`
       : `${TRAPS[item.kind].label}: every ${item.period} s, ${item.offset} s late. ${TRAPS[item.kind].line}<div class="row">${btn('Slower', false, 'nudge:period:0.5', false, '+')}${btn('Faster', false, 'nudge:period:-0.5', false, '-')}${btn('Later', false, 'nudge:offset:0.25', false, '.')}${btn('Sooner', false, 'nudge:offset:-0.25', false, ',')}${btn('Take out', false, 'erase')}</div>`;
     const pendLine = !this.pending ? '' : `<div class="dim">${this.pending.list === 'traps' ? 'Click on the line where the portal\'s second eye goes.' : `Click on the line where the ${PIECES[this.pending.kind].label.toLowerCase()} ends.`} Esc to leave it short.</div>`;
-    el.innerHTML = `<h3>THE TRACK EDITOR · SLOT ${this.slot + 1}</h3>
+    el.innerHTML = `${touch ? `<div class="keep row">${btn(this.drawer ? 'Fold the panel' : 'THE TRACK EDITOR ▸', this.drawer, 'drawer')}${btn('Undo', false, 'undo', !this.undo.length)}${btn('Leave', false, 'leave')}</div>${sel ? `<div class="keep"><h3>SELECTED</h3>${selLine}</div>` : ''}` : ''}
+      <h3>THE TRACK EDITOR · SLOT ${this.slot + 1}</h3>
       <div>${D.name} ${isValidated(D) ? '<span class="ok">· validated</span>' : '<span class="dim">· not validated</span>'}${T ? ` · ${Math.round(T.length)} m` : ''}</div>
       <div class="row">${[0, 1, 2].map((i) => btn(`Slot ${i + 1}`, i === this.slot, `slot:${i}`)).join('')}${btn('Name', false, 'name')}</div>
       <h3>MAP</h3><div class="map"></div>
@@ -313,7 +336,7 @@ export class TrackEditor {
       <h3>RUNS</h3><div class="row">${btn('Test ride', false, 'run:practice', !V.ok)}${btn('Validate', false, 'run:validate', !V.ok, 'Ride it once to the line, alone: your time is its author time.')}${btn('Haunted race', false, 'run:haunted', !V.ok || !D.traps.length, 'Race the clapperjars while the siblings possess its traps.')}${btn('Haunt', false, 'run:haunt', !V.ok || !D.traps.length, 'The clapperjars race it; you possess its traps.')}</div>
       ${this.pasting ? `<h3>LOAD A CODE INTO SLOT ${this.slot + 1}</h3><textarea class="code" rows="4" spellcheck="false" placeholder="FF2-..."></textarea><div class="row">${btn('Paste', false, 'paste', !navigator.clipboard?.readText, 'From the clipboard.')}${btn('Load', false, 'loadit')}${btn('Cancel', false, 'nopaste')}</div>` : ''}
       <h3>KEEP</h3><div class="row">${btn('Save', false, 'save')}${btn('Share code', false, 'share', !isValidated(D), isValidated(D) ? '' : 'Validate it first.')}${btn('Load code', false, 'loadcode')}${btn('Undo', false, 'undo', !this.undo.length)}${btn('Leave', false, 'leave')}</div>
-      <div class="dim" style="margin-top:6px">WASD or the arrows pan, the wheel zooms. LMB places or drags, RMB takes out, Delete too, Ctrl+Z undoes. Pieces and traps sit on the line and slide with it.</div>`;
+      <div class="dim" style="margin-top:6px">${touch ? 'Two fingers pan, a pinch zooms. A tap places, a drag moves, a long press takes out.' : 'WASD or the arrows pan, the wheel zooms. LMB places or drags, RMB takes out, Delete too, Ctrl+Z undoes.'} Pieces and traps sit on the line and slide with it.</div>`;
     el.querySelectorAll('button').forEach((b) => { b.onclick = () => this.act(b.dataset.a); });
     el.querySelector('.map')?.appendChild(this.mapCanvas()); this.drawMap();
   }
@@ -383,6 +406,7 @@ export class TrackEditor {
     else if (k === 'nopaste') { this.pasting = false; }
     else if (k === 'paste') { navigator.clipboard?.readText?.().then((t) => { const ta = this.el?.querySelector('textarea.code'); if (ta) ta.value = t.trim(); }).catch(() => g.log?.say('warn', 'The clipboard would not give it up: paste it into the box.', { key: 'edit.code', throttle: 1 })); return; }
     else if (k === 'loadit') { const t = this.el?.querySelector('textarea.code')?.value || ''; if (this.load(t, this.slot)) { this.pasting = false; this.close(false); this.open(this.slot); } return; }
+    else if (k === 'drawer') this.drawer = !this.drawer;
     else if (k === 'undo') { if (this.undo.length) { this.def = JSON.parse(this.undo.pop()); this.sel = null; this.commit(); } return; }
     else if (k === 'leave') { this.close(); return; }
     this.panel();
@@ -394,7 +418,7 @@ export class TrackEditor {
     if (this.recording) { if (!this.R?.active) this.recording = null; else this.record(); }
     if (!this.active) return;
     if (!this.R?.active) { this.close(); return; }
-    this.keys(dt);
+    this.keys(dt); this.touch();
     if (this.drag) this.dragTo(this.cursor(), dt);
     if ((this.mapT = (this.mapT || 0) + dt) > MAP.every) { this.mapT = 0; this.drawMap(); this.drawHandles(); }
     const look = new THREE.Vector3(RW.x + LOT.x + this.cam.x, RW.y + LOT.y + 6, RW.z + LOT.z + this.cam.z), pos = look.clone().add(new THREE.Vector3(0, this.cam.h, this.cam.h * CAM.lean));

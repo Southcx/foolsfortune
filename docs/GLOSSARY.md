@@ -831,6 +831,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **module / division / round / the gate** — a file under `src/`; one of the five Claude sessions (Petra, Dovina, Wanda, Calissa, Espada); one
   cycle of work (R42...); Petra's review of every push to main. → detail
 - **seam** (`game.seam`, `src/render/seam.js`) — a change of place made under a cover (dip to the dark, change, come back). *Not:* a texture seam.
+- **the boot watch** (`window.__bootWatch`, index.html's first script; stages from main.js's `mark`) — the page's own watch from its first byte to the title: each boot stage said under the loading line and kept as the tab's breadcrumb (session storage, which outlives a killed page), an error before the game's own box shown with the stage it came at, and a load after one that stopped saying where it stopped. *Not:* the game's error box (`reportError`, after boot), the save, `window.__boot` (the timings).
+- **a baked canvas texture** (`bakedCanvasTexture`, `src/render/bakedcanvas.js`; the tier's `labelScale`) — a canvas drawn once whose pixels are let go once three has uploaded them, drawn again only if asked for; at a fraction of its size on Low and Minimum (the basement's labels). *Not:* a CanvasTexture redrawn in play (a readout, a gauge), a rest bake (`render/restbake.js`).
 - **the save** (`game.save`, `src/core/save.js`) — everything the game keeps in the browser, in sections of scope player, world or settings; the
   progress is one mode's (DEBUG or STORY), the other's on its shelf.
   *Not:* `save()` on a module. → detail
@@ -925,7 +927,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | film, a roll of film (`mat.film`, `loadFilm`, `film.load`) | the Veritome's memory (`VeritomeMemory`) | `audio/cues.js`, `pneuka/thingmodels.js` |
 | Lab mode | the all-arts switch (`lendAll`, `setLendAll`; label "ALL ARTS" for now) | `docs/DESIGN.md` |
 | vessel (for the god hand's jar) | the jar | (`sfx.jarHit`, R42) |
-| polarity (the ship's feeling on the rail) | the Astral and Umbral forms | `src/courier/ship/`, `world/emocean/` (29 uses; the check's list is Petra's) |
+| polarity (the ship's feeling on the rail) | the Astral and Umbral forms | (gone, v266: `rail.form` carries the aspect) |
 | slip (as a mechanic: wet slip, slip coverage, the slip field, the slip dive) | paint, crude, a slick; the Paint Dive (`docs/plans/PAINT.md`); "slip" stays in creature and move names (slip jelly, the slip schiller, slip geysers) | the Paint Dive's file and tech id (`courier/moves/slip.js`, `slip`); the ecology's offer id `slip` (the minds' data) |
 | title toast | the title placard (the owner, 2026-10-17) | (gone) |
 | course (for moving between rooms) | rooms (`game.rooms`) | `game.course` (`src/world/basement/basement.js`) |

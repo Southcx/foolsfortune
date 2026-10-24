@@ -20,12 +20,12 @@ import { T, saveTuning } from './config.js';
 export const SETTING_ROWS = [
   { id: 'look', path: 'camera.sensitivity', kind: 'slider', min: 0.2, max: 3, step: 0.05, label: 'Look sensitivity', line: 'How far the camera turns for how far you drag.' },
   { id: 'follow', path: 'camera.follow', kind: 'slider', min: 0, max: 1, step: 0.05, label: 'Camera follow', line: 'How quickly the camera swings back behind you after you stop dragging.' },
-  { id: 'lockAuto', path: 'camera.lockAuto', kind: 'switch', label: 'Lock-on on touch', line: 'With a tool drawn on a phone, the lock-on takes the nearest foe in front by itself.' }, // (words a placeholder: Espada's)
+  { id: 'lockAuto', path: 'camera.lockAuto', kind: 'switch', label: 'Auto lock-on', line: 'On a phone, with a tool drawn, the lock-on finds the nearest foe in front of you by itself.' }, // (Espada's words)
   { id: 'gyro', path: 'tech.skiff.gyro', kind: 'switch', label: 'Tilt to steer', line: 'On the Solar Skiff, turn the phone like a wheel to steer. A thumb on the stick still steers.' }, // (core/gyrosteer.js; words a placeholder: Espada's)
   { id: 'graphics', path: 'visual.graphics', kind: 'choice', choices: [['auto', 'Auto'], ['high', 'High'], ['low', 'Low'], ['minimum', 'Minimum']], label: 'Graphics', line: 'Lower runs smoother and cooler; higher looks finer.', lines: { auto: 'Picked for this device.' } },
   { id: 'volume', path: 'audio.volume', kind: 'slider', min: 0, max: 1.5, step: 0.05, label: 'Volume', line: 'How loud the game plays, music and sound together.' },
   { id: 'haptics', path: 'audio.haptics', kind: 'switch', label: 'Haptics', line: 'Small buzzes when you hop, land, hit or are hit. Only on devices that can buzz.' },
-  { id: 'shake', path: 'visual.shake', kind: 'choice', choices: [['full', 'Full'], ['half', 'Half'], ['off', 'Off']], label: 'Screen shake', line: 'How hard the view shakes at a blow or a fall.' }, // (placeholder)
+  { id: 'shake', path: 'visual.shake', kind: 'choice', choices: [['full', 'Full'], ['half', 'Half'], ['off', 'Off']], label: 'Screen shake', line: 'How hard the view shakes when a blow lands or you land hard.' }, // (Espada's words)
   { id: 'layout', kind: 'action', label: 'Reset the touch layout', line: 'Puts every button back where it started.', confirm: 'Put every button back where it started?' },
 ];
 const BY_ID = new Map(SETTING_ROWS.map((r) => [r.id, r]));
