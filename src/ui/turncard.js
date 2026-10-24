@@ -78,11 +78,11 @@ export class TurnCard {
   check() {
     const L = this.layout, st = this.game.screenTurn; // (Petra's platform.js decides when, once it says `held`; until then, the card's own reading)
     const want = st && 'held' in st ? !!st.held : !!(L.touch && L.portrait && !this.upright());
-    if (this.why) this.why.textContent = TURN_CARD.why[st?.why] || TURN_CARD.else;
+    if (this.why) this.why.textContent = TURN_CARD.why[st?.why ?? (this.game.race?.running ? 'race' : '')] || TURN_CARD.else;
     if (want === this.on) return;
     this.on = want; L.turnHeld = want;
     if (want) {
-      this.build(); if (this.why) this.why.textContent = TURN_CARD.why[st?.why] || TURN_CARD.else; if (this.root) { this.win.style.setProperty('--d', `${Math.max(2, Math.round(L.su * 0.5 * 2) / 2)}px`); this.root.hidden = false; requestAnimationFrame(() => this.root?.classList.add('on')); }
+      this.build(); if (this.why) this.why.textContent = TURN_CARD.why[st?.why ?? (this.game.race?.running ? 'race' : '')] || TURN_CARD.else; if (this.root) { this.win.style.setProperty('--d', `${Math.max(2, Math.round(L.su * 0.5 * 2) / 2)}px`); this.root.hidden = false; requestAnimationFrame(() => this.root?.classList.add('on')); }
     } else if (this.root) { this.root.classList.remove('on'); const r = this.root; setTimeout(() => { if (!this.on) r.hidden = true; }, TURN_CARD.fade * 1000); }
     this.game.events?.emit?.('hud.turn', { on: want });
   }
