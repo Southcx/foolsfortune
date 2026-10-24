@@ -66,7 +66,7 @@ export const TRAPS = {
     label: 'Portal pair', line: 'Two linked eyes. Lit, the first sends you on to the second: a shortcut. Possessed, it sends you back.',
     power: 'portal', cost: 8, cycle: { period: 8, min: 4, max: 14, tell: 0.8, active: 4 }, cooldown: 4, pair: true,
     size: { r: 3 },
-    possessed: 'turn it red: while red, the first eye sends a rider back as far as the shortcut would have taken it on',
+    possessed: 'turn it red: while red, the first eye sends a rider back as far as the shortcut would have taken it on (once: a rider sent back is spared until it is past the eye)',
   },
   turret: {
     label: 'Wisp turret', line: 'A Lantern Wisp in a lamp casts its flame at the rider. Parry it, and it flies home and stuns the turret.',

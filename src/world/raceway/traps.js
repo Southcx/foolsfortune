@@ -145,7 +145,10 @@ export class Traps {
     if (Tp.kind === 'gust') { if (Math.abs(a) < K.size.len / 2) { const push = K.push * grow * Tp.dir * dt; if (x.S) { x.S.v.x += -F.fz * push; x.S.v.z += F.fx * push; } else if (x.r) x.r.lat += push * 0.5; if (!Tp.hitT.has(x.who)) { Tp.hitT.set(x.who, HIT_AGAIN); this.said(Tp, x); } } return; }
     if (Tp.kind === 'sinkhole') { if (Math.hypot(a, x.lat - Tp.lat) < K.size.r * grow && !x.air) this.strike(Tp, x, K.hit); return; }
     if (Tp.kind === 'gusher') { if (x.r && Math.hypot(a, x.lat - Tp.lat) < K.size.r * grow) { x.r.v *= 1 - 0.6 * dt; if (!Tp.hitT.has(x.who)) { Tp.hitT.set(x.who, 3); this.said(Tp, x); } } return; } // (the board's grip: gripAt)
-    if (Tp.kind === 'portal') { if (Math.abs(a) < K.size.r + 1 && Math.abs(x.lat) < K.size.r + 1 && !Tp.hitT.has(x.who)) { Tp.hitT.set(x.who, 2.5); this.warp(Tp, x, L); } }
+    if (Tp.kind === 'portal') {
+      if (a > K.size.r + 2) Tp.spared?.delete(x.who); // (past the eye: the send-back's mercy spent)
+      if (Math.abs(a) < K.size.r + 1 && Math.abs(x.lat) < K.size.r + 1 && !Tp.hitT.has(x.who) && !(Tp.red && Tp.spared?.has(x.who))) { Tp.hitT.set(x.who, 2.5); this.warp(Tp, x, L); }
+    }
   }
   /** A trap's blow on a racer: the board's own verbs (a wall hit and the speed lost, a shove, a bail), or a rival spun out. */
   strike(Tp, x, H, side = 1) {
@@ -164,12 +167,16 @@ export class Traps {
   /** Through a portal: lit, on to its other eye (a shortcut); red (possessed), back as far as the shortcut would have taken it on. */
   warp(Tp, x, L) {
     const lit = Tp.phase === 'active', back = !!Tp.red; if (!lit && !back) return;
+    if (back) (Tp.spared ||= new Set()).add(x.who); // (sent back once, never again until past it: no haunter loops a rider forever, TRAP's fairness)
     const span = ((Tp.s2 - Tp.s) % L + L) % L, to = back ? ((Tp.s - span) % L + L) % L : Tp.s2;
     if (x.r) { x.r.d += back ? -span : span; }
     else if (x.S) {
       const { F, pos } = this.frameAt(to, x.lat, 0.6), speed = x.S.v.length(), yaw = Math.atan2(F.fx, F.fz), g = this.game;
-      pos.y = this.R.rideHeight(pos.x, pos.z) + 0.6; g.course?.teleport?.(pos, yaw);
-      x.S.heading = yaw; x.S.v.set(F.fx * speed, 0, F.fz * speed);
+      // moved with the board still under them (course.teleport would end the ride and refill the pool): the rider set down at the other
+      // eye, facing along the line, at the speed they came in with
+      const P = g.player; pos.y = this.R.rideHeight(pos.x, pos.z) + 0.6;
+      P.pos.copy(pos); P.prevPos.copy(pos); P.renderPos.copy(pos); P.yaw = P.bodyYaw = yaw; P.airPeak = pos.y; P.airT = 0; P.place?.();
+      x.S.heading = yaw; x.S.v.set(F.fx * speed, 0, F.fz * speed); P.vel.set(x.S.v.x, 0, x.S.v.z);
       g.race?.warp?.(Tp.s, to, back);
     }
     this.game.events?.emit('trap.warp', { from: +Tp.s.toFixed(1), to: +to.toFixed(1), back, target: x.target, by: back ? (this.mode === 'courier' ? 'courier' : 'environment') : 'environment' });

@@ -3644,3 +3644,28 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** it reads `laidSpread.class`; an `arcana.<card>` id is a Major by its number; a Major's tint is the suit it `lifts`.
   Measured headless: a Celtic Cross reads `arcana.justice`, cell 11; 'arcana.emperor' 4; 'queen.wands' 76.
 - **Rule:** 282
+
+### 2026-10-24 · A possessed portal threw a rider back forever (Dovina, in the build)
+- **Seen:** headless, a haunted race on a made track with a portal pair held red: the rider reached the first eye, was sent back
+  60 m, rode into it again and was sent back again, lap after lap, never past it.
+- **Cause (measured):** the send-back put the rider on the line before the eye, on the line, at speed; nothing remembered it had been
+  sent, so the eye caught it on every pass. A trap with no way past is a wall, not a trap (TRACK-EDITOR.md 4).
+- **Fix:** a rider sent back is spared that portal (`spared`, world/raceway/traps.js) until it is past the eye; the possessed line
+  says so (`TRAPS.portal.possessed`). Measured: the rider was sent back once and finished.
+- **Rule:** NEW:trap-has-a-way-past
+
+### 2026-10-24 · A portal's warp stalled the skiff and refilled the pool (Dovina, in the build)
+- **Seen:** after a portal carried the rider on, the Solar Skiff stood still for a beat with its techs ended, and the pool was full.
+- **Cause (read):** the warp used `course.teleport`, which (rightly, rule 202) puts back the state of a Courier set down: it ends the
+  techs and refills the pool. A warp mid-ride is not a setting down.
+- **Fix:** the warp moves the rider itself (position, previous and render positions, yaw, the skiff's heading and speed) and calls
+  `player.place()`; the race's gates and `prevS` are moved with it (`race.warp`).
+- **Rule:** NEW:move-is-not-set-down
+
+### 2026-10-24 · The track editor showed a flat dark red (Dovina, headless)
+- **Seen:** the editor's panel drew, the world behind it was one flat colour, no lot, no line.
+- **Cause (measured):** the editor's camera hung 376 m from the lot; the house camera's far plane is 200 m (main.js) and the Dunes'
+  haze is exp2 at 0.0042 (all but opaque past 250 m). The haunt's camera, at 80 m, drew fine.
+- **Fix:** the editor's camera keeps 40 to 170 m up; the panel draws the whole lot as a map (click to move the camera); the line's
+  ribbons and the editor's handles take no fog.
+- **Rule:** NEW:camera-inside-the-haze

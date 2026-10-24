@@ -25,7 +25,7 @@ import { GEYSER } from './kit.js';
 
 const CELL = 24; // (metres a cell of the pieces' grid: rise() looks at one cell and its neighbours)
 const TRI_FLAGS = RAPIER.TriMeshFlags?.FIX_INTERNAL_EDGES ?? 0;
-const CLAY = { stone: 0xd9906a, dark: 0x8a4a3a, band: 0xffd696, ramp: 0xc8845e, edge: 0xf2d4a8, centre: 0xffe0b0 };
+const CLAY = { stone: 0xd9906a, dark: 0x8a4a3a, band: 0xffd696, ramp: 0xc8845e, edge: 0x8a4a3a, centre: 0xffd696 };
 
 /** A made track's track.js object: measured once, then laid again with its gates spaced by its length. */
 export function buildTrack(def) {
@@ -105,10 +105,10 @@ export class MadeTrack {
       if (n) idx.push(2 * n - 2, 2 * n - 1, 2 * n, 2 * n - 1, 2 * n + 1, 2 * n); n++;
     }
     const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setIndex(idx);
-    const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.6, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 }));
+    const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.85, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, fog: false }));
     this.group.add(m); return m;
   }
-  drawLine() { this.ribbon((F) => -F.w, 0.5, CLAY.edge); this.ribbon((F) => F.w, 0.5, CLAY.edge); this.ribbon(() => 0, 0.25, CLAY.centre, 3); }
+  drawLine() { this.ribbon((F) => -F.w, 1.2, CLAY.edge); this.ribbon((F) => F.w, 1.2, CLAY.edge); this.ribbon(() => 0, 0.4, CLAY.centre, 3); } // (edges wide enough to read from the editor's camera, 130 m up)
   pillarGeo(h, w = 1.5) { return this.painted(new THREE.BoxGeometry(w, h, w), CLAY.stone); }
   drawKit() {
     const T = this.T, side = (s, lat) => { const F = T.frame(s); return { x: F.x - F.fz * lat, z: F.z + F.fx * lat, yaw: Math.atan2(F.fx, F.fz) }; };

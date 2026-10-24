@@ -165,3 +165,32 @@ Ward and Stamp, so Spellscription is the rule-writer's domain.
 2. **The first four traps:** rising pillars, the gust gate, the antlion and the Wisp turret, or your four?
 3. **Rewards:** made tracks pay no cubes (section 8). Agreed?
 4. **W1 first** (traps on the existing tracks, no editor), or straight to the editor?
+
+**Answered** (the owner, 2026-10-24: "Let's do bots and shared tracks, go with seven initial trap types, we can copy other games' homework
+on trap design. I agree no cubes for UGC. Go full steam on an editor"): bots and share codes for now, no live guests; seven traps
+(section 4 and `progress/traps.js`); no cubes from made tracks; the editor built at once, W1 to W3 in one round.
+
+## 12. What is built (round of 2026-10-24)
+
+- **The rules, pure** (`progress/trackdef.js`, `trackpieces.js`, `traps.js`, `trapbot.js`): the track format (points, pieces, traps,
+  rules, author), its checks (length 500 to 3,200 m, half-width 5 to 16 m, no bend under 14 m, the start's 60 m clear, a trap 30 m clear
+  of a gate), the budget (100: each piece and trap its cost), the share code (`FF1-<base64url>-<sum>`), nine pieces, seven traps, four
+  rules (No flares, Slick sand, Thirst, Bright plates), the haunters' choices (`wantsFire`: lead-weighted, never twice inside a cooldown).
+- **The world** (`world/raceway/madetrack.js`, `traps.js`, `editor.js`, `haunt.js`): the build lot (flattened, x -830 z 240 in the park,
+  480 m square), the made track built and raced as track `made` (its own gates, start arch and pillar, ghosts keyed by its hash), the
+  traps run on their clocks or fired, the editor (`/edit`, the race board's BUILD tab), the haunt.
+- **The editor:** a camera 40 to 170 m over the lot (kept inside the house camera's 200 m and the Dunes' haze), a map of the whole lot in
+  its panel (click or drag to move the camera), the line's points as pegs, LMB to place or drag, RMB to take out, Q / E to turn, [ ] for
+  a point's width, + / - and , / . for a trap's period and offset, Ctrl+Z to undo; ride it (a point every 35 m) or draw it. A piece or trap
+  is open when its god power is (the power's level, or a lend in DEBUG).
+- **Medals** on a made track: the reference race (the ruler, three laps) times 0.718 gold, 0.802 silver, 0.929 bronze, the park's own
+  ratios. **The author time:** a validate run's lap, kept with the geometry's hash; any change to the line or the pieces clears it.
+- **The portal's mercy** (found in the build): a possessed portal sends a rider back as far as its shortcut would carry it on; a rider so
+  sent is spared that portal until past it, or a held portal is a loop with no way out.
+- **Measured** (`scripts/raceway/drive.mjs --made`, the demo track "The Lot Loop", 1,452 m, seven traps, budget 86): the editor's checks
+  clean; medals gold 127 s, silver 142 s, bronze 164 s; a validate run of 65.07 s; a haunted race of three laps finished (fourth, 202 s,
+  the rivals 174 to 190 s, both sides hit); a haunt firing the next trap every third of a second wrecked 7, the winner in 157 s against
+  a par of 159: broken through, narrowly. HAUNT.parK (0.9) is the first number to tune once the owner plays it.
+- **Not yet:** the traps' and pieces' looks and tells beyond placeholders (Calissa), their sounds (Wanda), their names (Espada), the
+  party mode and live guests (W4, W5), Read showing a possessed trap's next intent, trap kinds opened by achievement (they open with
+  their god powers for now).

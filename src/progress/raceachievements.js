@@ -11,6 +11,7 @@
 // ---------------------------------------------------------------------------------------
 import { LICENCES } from '../world/raceway/licences.js';
 import { GAPS } from '../world/raceway/gaps.js';
+import { TRAP_KINDS } from './traps.js';
 
 export function racewayAchievements({ C, H, F }) {
   // the Raceway (docs/plans/SKIFF-RACING.md: a medal is a test passed once; the carve, the solar start and the plates are its verbs)
@@ -69,4 +70,17 @@ export function racewayAchievements({ C, H, F }) {
   F('rw47', 'skiff', 'The Raceway', 3, 'mechanic', 'Race Regular', 'Finish 15 races, or take gold in the Carve licence. Opens the Race Fin.', any(['race.raceway.finish', 15], ['licence.carve.gold', 1]), 1);
   F('rw48', 'skiff', 'The Raceway', 4, 'mechanic', 'Bone Stock', 'Take gold on any track on the stock board: standard parts, the sheet at 0.', (L) => ['sun', 'gorge', 'coaster'].some((t) => L.get(`race.track.${t}.gold.stock`) > 0) ? 1 : 0, 1);
   F('rw49', 'skiff', 'The Raceway', 4, 'collect', 'Three Golds', 'Take gold on the Sun Circuit, the Gorge Run and the Coaster.', (L) => ['sun', 'gorge', 'coaster'].filter((t) => L.get(`race.track.${t}.gold`) > 0).length, 3);
+  // the build lot (docs/plans/TRACK-EDITOR.md 9): made tracks, their traps and the haunt; counted apart from the park's (race.made.*), and
+  // none opens a part or pays: a made track is its maker's to tune, so what it gives is a mark of having made, shared and haunted it
+  const B = 'The Build Lot', KINDS = TRAP_KINDS;
+  C('mt1', 'skiff', B, 1, 'mechanic', 'Groundbreaker', 'Keep a track you made on the build lot.', 'editor.save', 1);
+  C('mt2', 'skiff', B, 2, 'mechanic', 'Author, Author', 'Validate a track: ride it to the line alone, for its author time.', 'track.validate', 1);
+  C('mt3', 'skiff', B, 2, 'mechanic', 'Pass It On', 'Share a validated track\'s code.', 'track.share', 1);
+  C('mt4', 'skiff', B, 2, 'mechanic', 'Guest Lap', 'Finish a race on a track loaded from a code.', 'race.made.shared.finish', 1);
+  C('mt5', 'skiff', B, 3, 'mechanic', 'Home Ground', 'Take gold on a made track.', 'race.made.gold', 1);
+  F('mt6', 'skiff', B, 3, 'mechanic', 'House Rules', 'Win a haunted race, or finish 10.', any(['race.made.haunted.win', 1], ['race.made.haunted', 10]), 1);
+  C('mt7', 'skiff', B, 2, 'count', 'Things That Go Bump', 'Wreck 10 riders with traps you hold.', 'trap.wreck', 10);
+  F('mt8', 'skiff', B, 4, 'collect', 'Seven Ways Down', 'Wreck a rider with each of the seven traps.', (L) => KINDS.filter((k) => L.get(`trap.wreck.${k}`) > 0).length, 7);
+  F('mt9', 'skiff', B, 4, 'mechanic', 'Hold the Line', 'In the haunt, keep every rival outside par, or wreck 12 in one haunt.', any(['haunt.held', 1], ['haunt.wrecks.best', 12]), 1, { title: 'Poltergeist' });
+  C('mt10', 'skiff', B, 3, 'mechanic', 'Return to Sender', 'Parry a Wisp turret\'s flame home 10 times.', 'trap.parry', 10);
 }

@@ -6,6 +6,8 @@
 //   CUPS      the cups (cups.js), and how you last did.
 //   LICENCES  the tests (licences.js), each with the medal you hold.
 //   TRIALS    the escape (escape.js) and the City Trial (citytrial.js).
+//   BUILD     your made tracks (world/raceway/editor.js, TRACK-EDITOR.md): three slots, each to edit, test, validate, race, race haunted
+//             by the siblings, or haunt yourself (world/raceway/haunt.js); a code pasted on the chat line (/edit code ...) loads one.
 //   PAINT     what the board wears (progress/skiffpaint.js): the sail's dye and pattern, your seal on it, the trail, the ribbon, the
 //             pennant and its length; the shut ones with what opens them; a dye's price (a firing's) said before it is paid.
 //   GARAGE    the build: its class (STOCK or OPEN) and Performance Index on each track; the skiff's parts, slot by slot
@@ -23,11 +25,12 @@ import { CUPS } from './cups.js';
 import { LICENCES } from './licences.js';
 import { PARTS, SLOTS } from '../../progress/skiffparts.js';
 import { PAINT } from '../../progress/skiffpaint.js';
+import { isValidated, budgetOf } from '../../progress/trackdef.js';
 import { TUNE, SETUPS, SLIDE, tuneMult } from '../../progress/skifftune.js';
 import { WAGER } from '../../progress/econ/wager.js';
 import { ECON } from '../../progress/econ/table.js';
 
-const TABS = [['races', 'RACES'], ['cups', 'CUPS'], ['licences', 'LICENCES'], ['trials', 'TRIALS'], ['garage', 'GARAGE'], ['paint', 'PAINT']];
+const TABS = [['races', 'RACES'], ['cups', 'CUPS'], ['licences', 'LICENCES'], ['trials', 'TRIALS'], ['garage', 'GARAGE'], ['paint', 'PAINT'], ['build', 'BUILD']];
 const clock = (s) => (s && Number.isFinite(s) ? `${Math.floor(s / 60)}:${(s % 60).toFixed(1).padStart(4, '0')}` : '—');
 const MEDAL = { gold: '◆ gold', silver: '◇ silver', bronze: '△ bronze' };
 
@@ -140,5 +143,20 @@ export class RaceBoard {
       }
     }
     grp(`PURSE ${g.cubes?.balance ?? 0} CUBES · none of this touches the handling`);
+  }
+  build(grp, row) {
+    const g = this.game, E = g.trackEditor; if (!E) return;
+    const run = (slot, mode) => (menu) => { menu.close(); if (!E.wear(slot)) return; if (mode === 'haunt') g.haunt?.start(); else this.race.start('made', { mode, solo: mode === 'validate' || mode === 'practice' }); };
+    for (let i = 0; i < 3; i++) {
+      const D = E.slots[i], v = D && isValidated(D), rows = grp(`SLOT ${i + 1} · ${D ? `${D.name}${v ? ' · validated' : ' · not validated'} · budget ${budgetOf(D).used}${D.author ? ` · author ${D.author.seconds} s` : ''}` : 'empty'}`);
+      row(rows, '✎', D ? 'Edit it' : 'Build a track', D ? 'The build lot, from above: its line, pieces, traps and rules.' : 'A new track on the build lot.', (menu) => { menu.close(); E.open(i); });
+      if (!D) continue;
+      row(rows, '∞', 'Test ride', 'Laps until you retire. Nothing is recorded.', run(i, 'practice'));
+      row(rows, '✓', 'Validate', 'Ride it once to the line, alone: your time is its author time, and it can be shared.', run(i, 'validate'));
+      row(rows, '◇', 'Race', 'Three laps against the clapperjars, its traps on their own cycles. No cubes: a made track pays in records.', run(i, 'race'), !v);
+      row(rows, '☠', 'Haunted race', 'Three laps against the clapperjars; the siblings possess its traps against you.', run(i, 'haunted'), !v || !D.traps.length);
+      row(rows, '◎', 'Haunt', 'The clapperjars race it; you possess its traps (LMB on one, or Space for the next ahead; Q / E its lane or side).', run(i, 'haunt'), !v || !D.traps.length);
+    }
+    row(grp('SHARED TRACKS'), '⇩', 'Load a code', 'Type /edit code and paste a track code on the chat line: it loads into the first empty slot.', null, true);
   }
 }

@@ -5,7 +5,7 @@
 // (JSON: frames [x, y, z, speed, s], marks [{ kind, x, z, ... }]) that scripts/raceway/map.mjs draws over the park.
 //   node scripts/raceway/drive.mjs [--track sun|gorge|coaster] [--laps 1] [--cave (lap 2 through the cavern)] [--rail <id> (onto that
 //   coaster rail at its start, and ride it out)] [--solo (no rivals)] [--mode race|hotlap|practice|pots|escape|licence] [--test <licence id>]
-//   [--cup clay|sibling] [--city (the City Trial)] [--roster siblings] [--trace out.json] [--secs 400] [--clock ms]
+//   [--cup clay|sibling] [--city (the City Trial)] [--roster siblings] [--made <a track code> (a made track: --track made)] [--trace out.json] [--secs 400] [--clock ms]
 // The autopilot steers at a point ahead on the line (on the sand A / D, gliding Q / E), runs the sail full, never spins in the air: a
 // test of the course, not of a player.
 // ---------------------------------------------------------------------------------------
@@ -13,7 +13,7 @@ import { chromium } from 'playwright';
 import { writeFileSync } from 'node:fs';
 
 const args = process.argv.slice(2), opt = (k, d) => { const i = args.indexOf(`--${k}`); return i >= 0 ? (args[i + 1] && !args[i + 1].startsWith('--') ? args[i + 1] : true) : d; };
-const cfg = { solo: !!opt('solo', false), track: opt('track', 'sun'), laps: +opt('laps', 1), cave: !!opt('cave', false), rail: opt('rail', null), trace: opt('trace', null), mode: opt('mode', 'race'), test: opt('test', null), cup: opt('cup', null), city: !!opt('city', false), roster: opt('roster', 'clapperjars'), secs: +opt('secs', 400), clock: opt('clock', '1791160275000') };
+const cfg = { solo: !!opt('solo', false), track: opt('track', 'sun'), laps: +opt('laps', 1), cave: !!opt('cave', false), rail: opt('rail', null), trace: opt('trace', null), mode: opt('mode', 'race'), test: opt('test', null), cup: opt('cup', null), city: !!opt('city', false), roster: opt('roster', 'clapperjars'), made: opt('made', null), secs: +opt('secs', 400), clock: opt('clock', '1791160275000') };
 const b = await chromium.launch(), p = await b.newPage({ viewport: { width: 640, height: 400 } }), errs = [];
 p.on('pageerror', (e) => errs.push(e.message + ' ' + (e.stack || '').split('\n')[1]));
 p.on('console', (m) => { if (m.type() === 'error' && !/Failed to load/.test(m.text())) errs.push('console: ' + m.text().slice(0, 200)); });
@@ -26,13 +26,14 @@ const r = await p.evaluate(async (cfg) => {
   g.input.isDown = (c) => keys.has(c);
   const watch = ['race.start', 'race.go', 'race.gate', 'race.lap', 'race.finish', 'race.end', 'race.respawn', 'skiff.bail', 'skiff.glide', 'skiff.landhard', 'skiff.plate', 'skiff.carve', 'skiff.wobble', 'skiff.trick',
     'skiff.grind', 'skiff.grind.end', 'skiff.ring', 'skiff.combo.bank', 'skiff.combo.drop', 'raceway.branch', 'raceway.pit', 'skiff.land.slope', 'geyser.launch', 'race.place', 'race.bump', 'race.takedown', 'race.rival.finish', 'skiff.water', 'skiff.grind.trick',
-    'race.pot', 'race.escape.caught', 'licence.fail', 'cup.race', 'cup.finish', 'cup.end', 'citytrial.patch', 'citytrial.stadium', 'citytrial.end', 'skiff.gap', 'skiff.buoy', 'skiff.nearmiss', 'skiff.hull', 'skiff.wreck', 'skiff.refill', 'skiff.siphon', 'skiff.scorch', 'race.flyover', 'race.nemesis', 'wager.settle'];
+    'race.pot', 'race.escape.caught', 'licence.fail', 'cup.race', 'cup.finish', 'cup.end', 'citytrial.patch', 'citytrial.stadium', 'citytrial.end', 'skiff.gap', 'skiff.buoy', 'skiff.nearmiss', 'skiff.hull', 'skiff.wreck', 'skiff.refill', 'skiff.siphon', 'skiff.scorch', 'race.flyover', 'race.nemesis', 'wager.settle', 'trap.tell', 'trap.fire', 'trap.hit', 'trap.warp', 'trap.parry', 'track.validate'];
   for (const n of watch) g.events.on(n, (e) => {
     ev[n] = (ev[n] || 0) + 1; const R = g.raceway, at = { x: +(P.pos.x - 6000).toFixed(1), z: +P.pos.z.toFixed(1), y: +(P.pos.y + 420).toFixed(1), s: Math.round(R.s), track: R.track?.id, line: R.line };
-    if (/bail|respawn|pit|grind.end|branch|lap|finish|takedown|fail|caught|stadium|gap|wreck|cup|citytrial.end|nemesis|siphon/.test(n)) { marks.push({ kind: n.replace('skiff.', '').replace('race.', ''), ...at, ...Object.fromEntries(Object.entries(e).filter(([k]) => !['name', 't', 'by'].includes(k))) }); }
+    if (/bail|respawn|pit|grind.end|branch|lap|finish|takedown|fail|caught|stadium|gap|wreck|cup|citytrial.end|nemesis|siphon|trap.hit|warp|validate/.test(n)) { marks.push({ kind: n.replace('skiff.', '').replace('race.', ''), ...at, ...Object.fromEntries(Object.entries(e).filter(([k]) => !['name', 't', 'by'].includes(k))) }); }
   });
   const t0 = performance.now(); g.course.goRoom('raceway'); const build = performance.now() - t0;
   for (let i = 0; i < 30; i++) G.tick(1 / 60);
+  if (cfg.made) { if (!g.trackEditor.load(cfg.made, 0) || !g.trackEditor.wear(0)) return { error: 'the made track would not build' }; cfg.track = 'made'; }
   const R = g.raceway, T = R.trackOf(cfg.track), wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
   let t = 0, maxV = 0, air = 0, grindT = 0, railRide = null;
   if (cfg.rail) { // onto a coaster rail's start, mounted, moving along it at a coaster's speed, and locked
