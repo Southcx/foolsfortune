@@ -9,20 +9,22 @@
 // Star's Caster (numbered sealed spells, rare and costly; the rare three drawing on the shooter's life: the toll); Noita's wands (a
 // shot built from parts); Monster Hunter's bowguns (a gun loads only some ammo, so many of each: kinds.js's chambers).
 //
-//   TIERS[1..4] = { name, worth, share, lachryma, toll }   CASTER_SHELLS = [{ no, id, label, tier, family, carrier, payloads, field,
-//   needs, n, from, was?, backfire? }]   FAMILIES   shellByNo(n)   shellById(id)   worthOfShell(id)   fireCost(id) -> { lachryma, crack }
+//   TIERS[1..5] = { name, worth, share, lachryma, toll, draw }   CASTER_SHELLS = [{ no, id, label, tier, family, carrier, payloads, field,
+//   needs, n, from, was?, backfire? }]   FAMILIES   shellByNo(n)   shellById(id)   worthOfShell(id)   fireCost(id) -> { lachryma, crack, need }
 //   chamberHolds(id, cap) -> n   typeLabel(no) -> 'TYPE-07'
 // ---------------------------------------------------------------------------------------
 
-/** The four tiers (CASTER-SHELLS.md section 2). `worth` in cubes (`worthOf`; a tier IV is never sold, its worth is for the Codex);
+/** The five tiers (CASTER-SHELLS.md sections 2 and 7). `worth` in cubes (`worthOf`; a tier IV is never sold, its worth is for the Codex);
  *  `share` of the psygun's `cap` a chamber holds (IV and III a fixed count); `lachryma` drawn from the pool to fire; `toll` true: paid in
  *  the vessel instead, a cracked region, and the fourth with three cracked shatters (the owner ruled it: the cracks mend as the vessel's
- *  do when you ease off spending Lachryma). */
+ *  do when you ease off spending Lachryma). V, World (the owner, 2026-10-24, through Calissa: IV's complement): paid by the place, drawn
+ *  from the Lachryma round the aim point (progress/combat/worldshells.js, `n.need` its row's), never the pool nor the vessel. */
 export const TIERS = {
   1: { name: 'common', worth: 6, share: 1, lachryma: 4, toll: false },
   2: { name: 'uncommon', worth: 20, share: 0.5, lachryma: 10, toll: false },
   3: { name: 'rare', worth: 80, holds: 2, lachryma: 25, toll: false },
   4: { name: "the Caster's own", worth: 400, holds: 1, lachryma: 0, toll: true, sold: false },
+  5: { name: 'World', worth: 400, holds: 1, lachryma: 0, toll: false, sold: false, draw: true },
 };
 
 /** The families, by number (CASTER-SHELLS.md section 3), named with no article (the owner, 2026-10-12, through Espada). */
@@ -76,16 +78,16 @@ export const CASTER_SHELLS = [
   S(23, 'lavaLamp', 'Lava Lamp', 2, 'seek', ['blast', 'split'], null, ['S9', 'M1'], { power: 3, count: 3, speed: 3 }, "the Lava Gun's glob"),
   S(24, 'napalm', 'Napalm', 2, 'lob', ['crude'], 'pool', [], { power: 0.8, r: 3, dur: 8, delay: 1 }, 'the Napalm mod'),
   S(25, 'detonator', 'Detonator', 1, 'bolt', ['blast'], null, [], { power: 5, r: 3 }, 'Nitro Launcher'),
-  S(26, 'glassmaker', 'Glassmaker', 2, 'lob', ['world'], null, ['M12'], { size: 4, breaks: 3 }, 'sand and heat'),
+  S(26, 'glassmaker', 'Glassmaker', 5, 'lob', ['world'], null, ['M12'], { size: 4, breaks: 3, need: 1 }, 'sand and heat'),
   S(27, 'bisque', 'Bisque', 3, 'bolt', ['morph', 'status'], null, ['S4', 'M7'], { dur: 5, status: 'halt', shatter: 2 }, 'firing'),
   S(28, 'cinder', 'Cinder', 1, 'swarm', ['type'], null, [], { power: 0.4, dur: 10 }, "the Pyrocitor's sparks"),
-  S(29, 'volcano', 'Volcano', 3, 'deploy', ['blast'], 'pool', ['M4', 'S1', 'S9'], { power: 3, dur: 8, every: 1, r: 2 }, "the Lava Gun's ground"),
+  S(29, 'volcano', 'Volcano', 5, 'deploy', ['blast'], 'pool', ['M4', 'S1', 'S9'], { power: 3, dur: 8, every: 1, r: 2, need: 2 }, "the Lava Gun's ground"),
   S(30, 'slagRain', 'Slag Rain', 2, 'lob', ['blast'], 'cloud', ['S9'], { power: 0.5, r: 6, dur: 3 }, 'volcanic ash'),
   // ---- Storm (lightning)
   S(31, 'teslaNode', 'Tesla Node', 1, 'deploy', ['chain'], null, ['S3', 'M2'], { power: 0.8, count: 2, every: 0.5, dur: 6 }, 'Tesla Claw'),
   S(32, 'chainBolt', 'Chain Bolt', 2, 'bolt', ['chain', 'status'], null, ['S3'], { power: 3, count: 8, falloff: 0.8, status: 'stun' }, 'Shock Cannon'),
   S(33, 'ballLightning', 'Ball Lightning', 2, 'seek', ['chain'], null, ['S3'], { power: 0.6, r: 4, speed: 2, dur: 8 }, 'Plasma Coil'),
-  S(34, 'thunderhead', 'Thunderhead', 3, 'call', ['chain'], 'cloud', ['S3', 'M10'], { power: 4, every: 1.5, dur: 9 }, 'Plasma Storm, Zodiac'),
+  S(34, 'thunderhead', 'Thunderhead', 5, 'call', ['chain'], 'cloud', ['S3', 'M10'], { power: 4, every: 1.5, dur: 9, need: 1.5 }, 'Plasma Storm, Zodiac'),
   S(35, 'lightningRod', 'Lightning Rod', 1, 'bolt', ['status'], null, [], { dur: 10, bend: 6 }, 'a conductor'),
   S(36, 'faradayCage', 'Faraday Cage', 3, 'deploy', ['status'], 'wall', ['S3', 'M4'], { size: 3, dur: 6, status: 'halt', power: 1 }, 'Shield Charger, inside out'),
   S(37, 'capacitor', 'Capacitor', 2, 'beam', ['type'], null, ['S3'], { power: 2, full: 12, charge: 2.5, height: 20 }, 'the charge'),
@@ -95,9 +97,9 @@ export const CASTER_SHELLS = [
   // ---- Pull (gravity, space and portals)
   S(41, 'inhaler', 'Inhaler', 2, 'cone', ['pull'], null, [], { count: 5, r: 6 }, 'Suck Cannon'),
   S(42, 'slingshot', 'Slingshot', 2, 'lob', ['pull', 'split'], null, ['M1'], { r: 6, dur: 1.5, fling: 18 }, 'Gravity Bomb, Vortex Cannon'),
-  S(43, 'rift', 'Rift', 3, 'lob', ['space'], 'rift', ['S5', 'M5'], { dur: 6, drop: 8 }, 'Rift Inducer'),
+  S(43, 'rift', 'Rift', 5, 'lob', ['space'], 'rift', ['S5', 'M5'], { dur: 6, drop: 8, need: 1 }, 'Rift Inducer'),
   S(44, 'portal', 'Portal', 3, 'bolt', ['space'], 'rift', ['S5', 'M5'], { pair: true, dur: 30 }, 'the portal gun'),
-  S(45, 'upfall', 'Upfall', 2, 'lob', ['mass'], 'column', ['M8'], { r: 6, dur: 5 }, 'gravity flip'),
+  S(45, 'upfall', 'Upfall', 5, 'lob', ['mass'], 'column', ['M8'], { r: 6, dur: 5, need: 1 }, 'gravity flip'),
   S(46, 'balloon', 'Balloon', 1, 'bolt', ['mass', 'status'], null, ['M8'], { dur: 6 }, 'weightlessness'),
   S(47, 'leadweight', 'Leadweight', 1, 'bolt', ['mass', 'status'], null, ['M8'], { dur: 6, status: 'slow' }, 'weight'),
   S(48, 'moonlet', 'Moonlet', 3, 'self', ['pull'], null, [], { r: 3, dur: 12, holds: 8 }, 'orbiting shields'),
@@ -109,8 +111,8 @@ export const CASTER_SHELLS = [
   S(53, 'overdrive', 'Overdrive', 2, 'self', ['time'], null, [], { dur: 6, tools: 1.5 }, 'haste (the tools only: the core movement is untouched)'),
   S(54, 'rewind', 'Rewind', 3, 'bolt', ['time'], null, ['M9', 'S7'], { back: 3 }, 'rewind'),
   S(55, 'echo', 'Echo', 2, 'self', ['time'], null, ['M9'], { dur: 5, lag: 1 }, 'afterimages'),
-  S(56, 'weatherAway', 'Weather Away', 2, 'bolt', ['status', 'world'], null, ['S4'], { dur: 4, status: 'soft' }, 'entropy'),
-  S(57, 'bloom', 'Bloom', 2, 'lob', ['world', 'dispel'], null, ['M12'], { r: 5 }, 'youth'),
+  S(56, 'weatherAway', 'Weather Away', 5, 'bolt', ['status', 'world'], null, ['S4'], { dur: 4, status: 'soft', need: 1 }, 'entropy'),
+  S(57, 'bloom', 'Bloom', 5, 'lob', ['world', 'dispel'], null, ['M12'], { r: 5, need: 0.75 }, 'youth'),
   S(58, 'stopMotion', 'Stop-Motion', 2, 'lob', ['time'], 'zone', ['M6', 'S7'], { r: 8, dur: 8, onBeat: 2 }, 'the metronome'),
   S(59, 'bookmark', 'Bookmark', 2, 'self', ['space'], null, ['M9'], { dur: 10 }, 'a save state'),
   S(60, 'lastWord', 'Last Word', 3, 'bolt', ['type'], null, ['M9'], { delay: 3, repeat: 1 }, 'delayed damage'),
@@ -133,7 +135,7 @@ export const CASTER_SHELLS = [
   S(75, 'hydra', 'Hydra', 3, 'bolt', ['type'], null, [], { count: 6, power: 3 }, 'Spitting Hydra, Tempest'),
   S(76, 'holowall', 'Holowall', 2, 'deploy', [], 'wall', ['S2', 'S8', 'M4'], { w: 4, h: 2.5, dur: 10 }, 'Holoshield Glove'),
   S(77, 'barrier', 'Barrier', 3, 'self', ['status'], 'dome', ['S2', 'S3', 'M4'], { r: 2, dur: 6, power: 1 }, 'Shield Charger, Tesla Barrier'),
-  S(78, 'golem', 'Golem', 3, 'lob', ['summon', 'world'], null, ['M12'], { dur: 30, power: 3, h: 3 }, 'the golem'),
+  S(78, 'golem', 'Golem', 5, 'lob', ['summon', 'world'], null, ['M12'], { dur: 30, power: 3, h: 3, need: 2 }, 'the golem'),
   S(79, 'minefield', 'Minefield', 1, 'deploy', ['blast'], null, ['M4'], { count: 6, r: 2, arm: 1, power: 3, dur: 60 }, 'Mine Glove'),
   S(80, 'marionette', 'Marionette', 3, 'bolt', ['summon'], null, [], { dur: 20 }, 'Agents of Dread, a puppeteer'),
   // ---- Feelings (each needs its feeling known: FEELINGS-AWAKENING.md)
@@ -145,7 +147,7 @@ export const CASTER_SHELLS = [
   S(86, 'grief', 'Grief', 2, 'bolt', ['feel', 'status'], null, [], { dur: 8, status: 'slow', feeling: 'grief' }, 'the weeping'),
   S(87, 'dread', 'Dread', 2, 'lob', ['feel', 'status'], null, [], { r: 15, dur: 6, status: 'flee', feeling: 'dread' }, 'the dark'),
   S(88, 'agate', 'Agate', 3, 'bolt', ['feel'], null, [], { feelings: 2 }, 'the agate'),
-  S(89, 'calm', 'Calm', 3, 'beam', ['dispel'], null, [], { r: 8, fair: 1 }, 'Outlaw Star #3 and #5'),
+  S(89, 'calm', 'Calm', 5, 'beam', ['dispel'], null, [], { r: 8, fair: 1, need: 1 }, 'Outlaw Star #3 and #5'),
   S(90, 'prismatic', 'Prismatic', 3, 'bolt', ['feel'], null, [], { feelings: 7 }, 'the wheel of feelings'),
   // ---- Caster's own (tier IV: the toll)
   S(91, 'zodiac', 'Zodiac', 4, 'call', ['blast'], null, ['M10'], { count: 12, power: 10 }, 'Zodiac'),
@@ -168,10 +170,11 @@ export const typeLabel = (no) => `TYPE-${String(no).padStart(2, '0')}`;
 
 /** A shell's worth in cubes: its tier's (catalogue.js worthOf asks here for a `shell.<id>`). */
 export const worthOfShell = (id) => TIERS[shellById(id)?.tier || 1].worth;
-/** What firing it costs: Lachryma from the pool, or (tier IV) a cracked region of the vessel. */
+/** What firing it costs: Lachryma from the pool, (tier IV) a cracked region of the vessel, or (tier V) `need`: the Lachryma it draws from
+ *  round the aim point for full power (worldshells.js drawOf; 0 for every other tier). */
 export function fireCost(id) {
-  const t = TIERS[shellById(id)?.tier || 1];
-  return { lachryma: t.lachryma, crack: !!t.toll };
+  const row = shellById(id), t = TIERS[row?.tier || 1];
+  return { lachryma: t.lachryma, crack: !!t.toll, need: t.draw ? row.n.need || 1 : 0 };
 }
 /** How many of a shell a chamber holds, given the psygun's `cap` (kinds.js): commons the cap, uncommons half, rares 2, the Caster's 1. */
 export function chamberHolds(id, cap) {

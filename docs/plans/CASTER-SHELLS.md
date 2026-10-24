@@ -88,7 +88,7 @@ holds), `rift` (a portal).
 
 ## 2. The cost: scarcity, chambers and the Caster's toll
 
-- **Four tiers.** I *common*, II *uncommon*, III *rare*, IV *the Caster's own*. A tier sets its price, how many a chamber holds and
+- **Five tiers.** I *common*, II *uncommon*, III *rare*, IV *the Caster's own*, V *World* (section 7). A tier sets its price, how many a chamber holds and
   what it draws from the pool to fire.
 
 | tier | worth (cubes) | a chamber holds | Lachryma to fire | where it comes from |
@@ -97,6 +97,7 @@ holds), `rift` (a portal).
 | II | 20 | half | 10 | Tithe chests (rare and up), bounties, the Purser |
 | III | 80 | 2 | 25 | epic chests, a Well's FOE, Charybdis |
 | IV | 400 (never sold) | 1 | the Caster's toll | one each, found in the world |
+| V | 400 (never sold) | 1 | drawn from the place (section 7) | every 12th full-grown blot mopped up |
 
 - **The Caster's toll** (Outlaw Star's rare three): a tier IV shell is paid in the vessel, not the pool. Each one fired **cracks a
   region** (the vessel's own rule, `game.vessel`); a fourth with three regions cracked **shatters you**. Mended at the kiln as now.
@@ -154,10 +155,10 @@ Caster's own. Columns: **no.** (`TYPE-nn`), **label** (a working genre word), **
 | 23 | Lava Lamp | II | the Lava Gun's glob | seek (slow) · blast, split | a wobbling blob of molten clay that drifts after the nearest creature and splits into three when it hits | a lava-lamp wax body, its crust breaking as it moves (S9, M1) |
 | 24 | Napalm | II | the Napalm mod | lob · crude, pool | a crude slick that catches a second later and burns for 8 s | fire on an oil film; the film keeps its labradorite flash under the flames |
 | 25 | Detonator | I | Nitro Launcher | bolt · blast | a charge that sticks; it goes off when you fire your next shell, any kind | a putty lump with a blinking glaze bead |
-| 26 | Glassmaker | II | sand and heat | lob · world | sand where it lands fuses into a sheet of glass: a platform or a ramp that holds you, and breaks | green glass with a refraction edge, cracks spreading when struck (M12). Teaches: sand and heat make glass |
+| 26 | Glassmaker | V | sand and heat | lob · world | sand where it lands fuses into a sheet of glass: a platform or a ramp that holds you, and breaks | green glass with a refraction edge, cracks spreading when struck (M12). Teaches: sand and heat make glass |
 | 27 | Bisque | III | firing | bolt · morph, status (halt) | fires a creature to bisque: it stands as a terracotta statue for 5 s, and an Impact blow shatters it for double | bisque spreads over the body from the hit (S4, M7) |
 | 28 | Cinder | I | the Pyrocitor's sparks | swarm · type | a flitting ember that drifts for 10 s and sets alight what it touches; it goes where the wind goes | a single ember and its smoke ribbon, carried by the weather's wind |
-| 29 | Volcano | III | the Lava Gun's ground | deploy · blast, pool | a small cone of clay rises where it lands and throws a molten bomb every second for 8 s | the cone heaves, cracks glow, heat haze over it (M4, S1, S9) |
+| 29 | Volcano | V | the Lava Gun's ground | deploy · blast, pool | a small cone of clay rises where it lands and throws a molten bomb every second for 8 s | the cone heaves, cracks glow, heat haze over it (M4, S1, S9) |
 | 30 | Slag Rain | II | volcanic ash | lob · blast, field: cloud | throws hot drops up that fall for 3 s in a ring of 6 m | the weather's streaks, glowing; a hiss on every surface they hit (S9) |
 
 ### TYPE-31 to TYPE-40: Storm (lightning and charge)
@@ -167,7 +168,7 @@ Caster's own. Columns: **no.** (`TYPE-nn`), **label** (a working genre word), **
 | 31 | Tesla Node | I | Tesla Claw | deploy · chain | a node that lands and arcs to the nearest two creatures every half second for 6 s | white-blue bolts from a little clay insulator (S3, M2) |
 | 32 | Chain Bolt | II | Shock Cannon | bolt · chain, status (stun) | jumps to up to eight targets, weaker each jump; in water it reaches everything in the water | branching bolts, each jump a beat behind the last (S3) |
 | 33 | Ball Lightning | II | Plasma Coil | seek (slow) · chain | a slow orb that drifts and lashes everything within 4 m | a violet sphere, its tendrils feeling for targets (S3) |
-| 34 | Thunderhead | III | Plasma Storm, Zodiac | call · chain, field: cloud | a small storm cloud that follows the fight for 9 s and strikes the most agitated creature every 1.5 s; heavier in Fury weather | a low black cloud with its own rain, the strike from it white (S3, M10) |
+| 34 | Thunderhead | V | Plasma Storm, Zodiac | call · chain, field: cloud | a small storm cloud that follows the fight for 9 s and strikes the most agitated creature every 1.5 s; heavier in Fury weather | a low black cloud with its own rain, the strike from it white (S3, M10) |
 | 35 | Lightning Rod | I | a conductor | bolt · status (mark) | the creature hit draws your misses to it, and any arc nearby jumps to it | a copper glint on the body; bent shots curving into it |
 | 36 | Faraday Cage | III | Shield Charger, inside out | deploy · status (halt), field: wall | a cube of arcs traps what is inside; touching the bars shocks | a box of standing lightning, its edges humming (S3, M4) |
 | 37 | Capacitor | II | the charge | beam · type | held in the chamber, it charges: the longer, the bigger; full, a 20 m pillar of lightning | a column from the sky to the point, the screen whitening a frame (S3) |
@@ -181,9 +182,9 @@ Caster's own. Columns: **no.** (`TYPE-nn`), **label** (a working genre word), **
 |---|---|---|---|---|---|---|
 | 41 | Inhaler | II | Suck Cannon | cone · pull | hold to suck up to five small creatures or props into the chamber; the next shots fire them out as rounds | a vortex at the muzzle; what it takes shrinks into the chamber with a pop |
 | 42 | Slingshot | II | Gravity Bomb, Vortex Cannon | lob · pull, split | a well that gathers for 1.5 s, then flings all it gathered the way you are aiming | a well that swings round and lets go, things flying out in a fan (M1) |
-| 43 | Rift | III | Rift Inducer | lob · space, field: rift | a rift opens under a creature and takes it for 6 s, then drops it from above | tendrils of crude from a hole in the ground, the hole closing like an eye (S5, M5) |
+| 43 | Rift | V | Rift Inducer | lob · space, field: rift | a rift opens under a creature and takes it for 6 s, then drops it from above | tendrils of crude from a hole in the ground, the hole closing like an eye (S5, M5) |
 | 44 | Portal | III | the portal gun | bolt ×2 · space, field: rift | fire two: a linked pair of rifts that anything passes through (the Courier, shots, creatures) | two ovals, each showing the other's view, rimmed in crude (S5, M5) |
-| 45 | Upfall | II | gravity flip | lob · mass, field: column | gravity reverses in a 6 m column for 5 s: everything falls up, then down | dust and drops falling up; a faint pillar of inverted rain (M8) |
+| 45 | Upfall | V | gravity flip | lob · mass, field: column | gravity reverses in a 6 m column for 5 s: everything falls up, then down | dust and drops falling up; a faint pillar of inverted rain (M8) |
 | 46 | Balloon | I | weightlessness | bolt · mass, status | the creature hit loses its weight and drifts on the wind for 6 s, an easy juggle | the body bobbing, a balloon's squeak (M8) |
 | 47 | Leadweight | I | the reverse | bolt · mass, status (slow) | crushes the creature to the ground: no jumps, half speed; a prop hit cannot be moved | the ground dimples under it; dust settling (M8) |
 | 48 | Moonlet | III | orbiting shields | self · pull | a little moon orbits you; projectiles that come near are caught in its orbit and thrown back with your next shot | a grey moon with its own crater shadows; caught projectiles circling like rings |
@@ -199,8 +200,8 @@ Caster's own. Columns: **no.** (`TYPE-nn`), **label** (a working genre word), **
 | 53 | Overdrive | II | haste | self · time | for 6 s your tools fire and swing faster (never your body: the core movement is untouched) | a ticking on the beat; your tool's trails doubled |
 | 54 | Rewind | III | rewind | bolt · time | sends the creature hit back to where it was 3 s ago, its last attack undone | a ghost trail running backward along its path (M9, S7) |
 | 55 | Echo | II | afterimages | self · time | for 5 s every shot you fire is fired again a second later by your ghost | a glassy afterimage of the Courier (`afterimage.js`) (M9) |
-| 56 | Weather Away | II | entropy | bolt · status (soft), world | the clay hit dries and cracks over 4 s: creatures soften, props crumble, paint dries and flakes | crazing spreading across the surface (S4) |
-| 57 | Bloom | II | youth | lob · world, dispel | in 5 m: cracked pots mend with gold, plants grow, a slip jelly becomes a small slipling | gold kintsugi lines knitting, green rising (M12) |
+| 56 | Weather Away | V | entropy | bolt · status (soft), world | the clay hit dries and cracks over 4 s: creatures soften, props crumble, paint dries and flakes | crazing spreading across the surface (S4) |
+| 57 | Bloom | V | youth | lob · world, dispel | in 5 m: cracked pots mend with gold, plants grow, a slip jelly becomes a small slipling | gold kintsugi lines knitting, green rising (M12) |
 | 58 | Stop-Motion | II | the metronome | lob · time, field: zone | in 8 m everything moves in steps, on the beat; your hits on the beat do double | the zone drawn at twelve frames a second, on the music (M6, S7) |
 | 59 | Bookmark | II | save state | self · space | marks you; fire again within 10 s to return to the mark, your pool as it was then | a hovering bookmark where you stood (M9) |
 | 60 | Last Word | III | delayed damage | bolt · type | does nothing for 3 s, then deals again all the damage the creature took in those 3 s | a ticking glyph over it; the hits replay as ghosts (M9) |
@@ -231,7 +232,7 @@ Caster's own. Columns: **no.** (`TYPE-nn`), **label** (a working genre word), **
 | 75 | Hydra | III | Spitting Hydra, Tempest | bolt · lock-on, seek | locks up to six creatures in view and sends a lance at each | six heads uncoil from the muzzle (the lock-on reticle on foot) |
 | 76 | Holowall | II | Holoshield Glove | deploy · field: wall | a hex wall of hard light; blocks projectiles and throws back any it can parry | hexes in your glaze colour, cracking where struck (S2, S8, M4) |
 | 77 | Barrier | III | Shield Charger, Tesla Barrier | self · field: dome | a dome round you for 6 s: blocks everything and shocks what touches it | a glass dome, arcs crawling over it (S2, S3) |
-| 78 | Golem | III | the golem | lob · summon, world | a 3 m golem rises from clay or painted ground and fights for 30 s | the ground heaves into a body; its eyes two kiln glows (M12) |
+| 78 | Golem | V | the golem | lob · summon, world | a 3 m golem rises from clay or painted ground and fights for 30 s | the ground heaves into a body; its eyes two kiln glows (M12) |
 | 79 | Minefield | I | Mine Glove | deploy · blast | scatters six proximity mines in a ring; each arms after a second and bursts when a creature comes within 2 m | little glazed domes blinking in your glaze colour, faster as a creature nears (M4) |
 | 80 | Marionette | III | Agents of Dread, a puppeteer (Possession) | bolt · summon | a creature you have just downed stands back up on strings of light and fights for you for 20 s, then falls for good | threads from the sky to its joints, its head lolling, moved like a puppet |
 
@@ -249,7 +250,7 @@ Each needs its feeling known (FEELINGS-AWAKENING.md), as the brush does.
 | 86 | Grief | II | the weeping | bolt · feel, status (slow) | a small cloud follows the creature and rains on it; slowed, it weeps Lachryma you can drink | streaks of Grief's rain under one cloud |
 | 87 | Dread | II | the dark | lob · feel, status (flee) | the lights in 15 m go out and every creature flees the point | shadows lengthening, Dread's marbling across the ground |
 | 88 | Agate | III | the agate | bolt · feel ×2 | fires the two feelings you last drank at once: the stronger acts, the weaker colours it (`agateOf`) | a banded stone round, two colours swirling |
-| 89 | Calm | III | Outlaw Star #3 and #5 (the dispel) | beam · dispel | clears every status, summon and field in 8 m, and the weather there to fair for a game hour | a red beam that leaves the air clear and still |
+| 89 | Calm | V | Outlaw Star #3 and #5 (the dispel) | beam · dispel | clears every status, summon and field in 8 m, and the weather there to fair for a game hour | a red beam that leaves the air clear and still |
 | 90 | Prismatic | III | the wheel of feelings | bolt · feel ×7 | a rainbow round: each creature it touches gets the feeling it is weakest to | all seven colours in a spiralling band |
 
 ### TYPE-91 to TYPE-99: Caster's own (tier IV: the toll is paid in the vessel)
@@ -269,7 +270,7 @@ Each needs its feeling known (FEELINGS-AWAKENING.md), as the brush does.
 ## 4. The rules for all hundred
 
 1. **A shell is data.** Every row is a recipe in `CASTER_SHELLS` (`src/progress/combat/castershells.js`, mine: all hundred, their
-   tiers, recipes and numbers; 22 common, 48 uncommon, 21 rare, 9 the Caster's own) read by one runner (Petra's), so a new shell is a row
+   tiers, recipes and numbers; 22 common, 44 uncommon, 16 rare, 9 the Caster's own, 9 World) read by one runner (Petra's), so a new shell is a row
    once its parts exist. A shell's worth is its tier's already (`worthOf`).
 2. **Every outcome carries `by`**, and the log says what a shell did, once, in a line (no pop-ups). Achievements read the ledger:
    `shell.fire.<id>`, `shell.kill.<id>`; "A Shell of Each" (lg6) counts all a hundred, so it becomes a Grandmaster.
@@ -321,3 +322,92 @@ power is now in the look and the hit, not the numbers:
 5. **The Well shell is the Singularity** (TYPE-02), since a Well is the dungeon (the owner, 2026-10-12, on Dovina's call).
 6. **Shell achievements:** A Shell of Each (lg6) is the founding eleven; Full Rack (shc) is every kind the psygun can chamber, so
    Master (tier 5), its goal growing with each batch (42 with batch 1).
+
+## 7. Tier V, World: paid by the place (the owner, 2026-10-24, through Calissa; Dovina's rules)
+
+The Caster's own are paid by the self (the toll). World shells are paid by the place. They draw ambient Lachryma and change the
+place for a while, and every change reverts. Rules: `progress/combat/worldshells.js` (mine). The draw, the alterations and the looks:
+Calissa's new modules. The dry click and the hook in the runner: Petra's (`shells.js`).
+
+### 7.1 The draw
+- **Where.** Within 12 m of the aim point, measured at the trigger. For a lob, the aim point is the predicted landing (the lob's arc
+  mark). The cylinder's plate shows the draw as a fill while the shell is under the hammer: what it would draw now, against its need.
+  That is the second avenue beside the log.
+- **What, in draw units** (`DRAW.units`). 1 unit is a full need-1 shell:
+  - Paint or crude: 0.25 a m² at full, so 4 m² of full paint is one shell (Calissa's default).
+  - A full-grown blot: 1.5. A younger blot counts by its stage.
+  - A slick: 0.25. A loose bauble: 0.1.
+  - The weather: 2 × its strength, so a strength-0.5 weather is 1 unit. It counts only in the open, where the weather's look falls.
+    In a Well, the weather drawn is the Well's own (`placeOf`).
+  - Liquid Lachryma (the Weir's pools, the Emocean's shore, a Rift's spring) fills any shell to its cap and is never drawn down.
+- **How much.** The shell draws up to 1.5 × its `need` (the cap). Power k = drawn ÷ need.
+  - The row's power, radius, size, height, count and drop are scaled by k (`scaledN`). Durations are not.
+  - Under k 0.25 the trigger dry-clicks, the round is kept, nothing is taken, and the log says "Too little Lachryma here."
+- **Order.** A row's preferred source goes first: Calm takes the weather first. Then every other source gives the same fraction of
+  itself. A source is never emptied for a shell that is already full.
+- **The colour** is the feeling drawn most, as an agate's (stronger is what happens, weaker its colour). Crude carries none.
+- **The price.**
+  - What was taken is gone: paint and crude wiped by the fraction taken, a blot taken whole is mopped (and counts as one).
+  - The place is drawn thin for 1 game hour. The weather within 12 m is weakened by the fraction of it taken, easing back over the last
+    quarter, and it shows where it bites (the streaks thinned, Calissa's look).
+  - A second World shell fired there finds less. That is the anti-spam, and it needs no cooldown.
+- **Every alteration is a timed modifier that reverts** (base change bad):
+  - glass melts back to sand;
+  - raised matter crumbles back, as the god hand's creations do;
+  - a softened wall closes, and anything inside is pushed out to the nearest free side (the rescue, counted);
+  - the weather returns.
+  - Nothing reaches the save but the counts.
+
+### 7.2 The nine (each keeps its family and number; `tier: 5`)
+| no. | label | need | as World |
+|---|---|---|---|
+| 26 | Glassmaker | 1 | the sheet of fused sand sized by the draw; melts back after a game hour |
+| 29 | Volcano | 2 | a real cone of the island's matter (`godhand/matter.js` where the ground is explored; a creation's voxels elsewhere) that erupts, then slumps back |
+| 34 | Thunderhead | 1.5 | its cloud fed by the weather drawn; at the cap it is a true storm cell |
+| 43 | Rift | 1 | the rift takes its creature as before; after it closes, the hole stays a **spring** of liquid Lachryma for a game hour, a draw source at the cap for the next World shell (the one World shell that gives a place Lachryma back) |
+| 45 | Upfall | 1 | the column lifts the ground's loose matter too (sand, pots, paint as drops) |
+| 56 | Weather Away | 1 | erosion over a place: things tagged `erodible` (`core/tags.js`) soften and a way opens through them, closing again after a game hour. Never a room's walls |
+| 57 | Bloom | 0.75 | the drawn Lachryma grows a thicket and mends pots in gold (the never-built Bloom, built here) |
+| 78 | Golem | 2 | risen from the matter, its size by the draw, crumbling back after its 30 s |
+| 89 | Calm | 1 | the weather drawn first; within 12 m it is fair for a game hour (the override that was never built, as a local modifier) |
+
+**Changed from Calissa's nine: Flamer (21) stays tier I.**
+- It is one of 22 commons, the cheap, reliable fire cone. As World it would fire once a find.
+- Its baking (paint into ground you can stand on) is its own row's `world` payload. It belongs in the alterations kit at tier I scale:
+  short-lived, small, no draw.
+- Rift (43) takes its place, because a World shell that gives back a source closes the loop.
+
+**Numbering: the numbers stay.**
+- Tiers I to III already run through every family; only IV is a block, because its family is the tier.
+- A World shell's identity is its family: Glassmaker is Ember's sand and heat, and its look lives in `vfx/shelllooks/ember.js`.
+- TYPE numbers are in the plan, the owner's memory and QAIS reports.
+- So World is a tier, not a family. The Feelings keep 81 to 90; Calm stays 89.
+
+### 7.3 Where they come from (a faucet of power, not cubes)
+- **Every 12th full-grown blot you mop up gives a World shell** (`DUE_EVERY`), the one of the nine you have found fewest of, so a
+  collector meets all nine.
+  - It is a sure count, never a roll: Nook Miles' stamp card, the house's pity made plain.
+  - It is read from the ledger (`stain.wash.grown` against `shell.world.found`), so a reload never gives twice.
+  - Mopping blots had no reward but the blotling it prevents; now it has a reason.
+- Never sold. Worth 400, for the Codex, as a tier IV.
+- **Unmeasured:** the rate at which blots are mopped. The guess is about 8 an hour when hunting, so one World shell every 1.5 real
+  hours. `scripts/economy.mjs` gets the row once `stain.wash.grown` has a measured rate, and `DUE_EVERY` moves then.
+
+### 7.4 The ledger and the achievements
+- **Events.**
+  - `shell.found { id, tier: 5, from: 'blot', by }` (`WorldShellFinds`).
+  - `shell.draw { id, k, need, drawn, feeling, from: { <kind>: units }, by }` (Calissa's draw, at the trigger, after `shell.fire`).
+  - `shell.dry { id, by }` (the dry click).
+- **Ledger** (`tracking/worldshells.js`): `shell.world.found(.<id>)`, `shell.world.fire`, the record `shell.world.k`,
+  `shell.world.from.<kind>`, `shell.world.dry`.
+- **Achievements** (BREAKING · Shells):
+  - wd1 *Drawn Thin* (Medium): fire one on a draw.
+  - wd2 *Downpour* (Hard): a draw at the cap, 1.5.
+  - wd3 *The Place Is the Price* (Elite): fire each of the nine.
+  - Full Rack already counts them as kinds.
+
+### 7.5 Not built yet
+- The draw's reading and wiping, the thin modifier, the alterations and the looks (Calissa).
+- The dry click and the scaled numbers in the runner (Petra).
+- Until both land, a World shell fires as its old row: free of the pool, at k 1.
+

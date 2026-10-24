@@ -141,7 +141,10 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the spiritual link** (the owner's words, 2026-10-18; `SpiritualLink`, `game.spiritualLink`, `src/vfx/spirituallink.js`) — the thread of the film from the Lachrimeter's bulb to the tool UI in hand: a spend runs down it as a bead, a dry click slackens it. *Not:* the link ring (the trick combo's), the tube's feed.
 - **the Sondelass's guard / the lure ring** (working names, Espada's to rule; `SondelassGuard`, `game.sondelassGuard`, `src/vfx/sondelassguard.js`) — the Sondelass's own UI: its guard with three windows, the form in hand growing out of it (the cutlass's string on its edge) / the seven feelings round the lure in the rod form, turned by the wheel or MMB held. Always "the Sondelass's guard" in full. *Not:* the guard (the held block).
 - **a caster shell / the Caster's toll** (`SHELL_TYPES`, `CASTER_SHELLS`; `docs/plans/CASTER-SHELLS.md`) — a shell, TYPE-00 to TYPE-99: a carrier, payloads and a
-  field, in four tiers (I common .. IV the Caster's own) / what a tier IV costs: a cracked region of the vessel. *Not:* a shot, a mount.
+  field, in five tiers (I common .. IV the Caster's own, V World) / what a tier IV costs: a cracked region of the vessel. *Not:* a shot, a mount.
+- **a World shell / the draw / drawn thin** (plain names, Espada's and the owner's to rule; `DRAW`, `drawOf`, `WorldShellFinds`, `src/progress/combat/worldshells.js`;
+  CASTER-SHELLS.md 7) — a tier V caster shell, paid by the place / the Lachryma it takes from within 12 m of the aim point (paint, crude,
+  blots, slicks, baubles, the weather), its power drawn ÷ need / the place after, its weather weakened for a game hour. *Not:* the toll, a drink of the pool.
 - **the shell runner** (`ShellRunner`, `game.shells.runner`, `src/tools/psygun/shellrunner.js`) — what flies a caster shell from its row: its
   carrier, then its payloads (`shellpayloads.js`) where it lands; the plan's mechanics are its **parts** (`shellsplitchain.js`,
   `shelldeployables.js`, `shellbodies.js`, `shellspacetime.js`, `shellcastersown.js`). *Not:* the Shells class (the chambers and counts).

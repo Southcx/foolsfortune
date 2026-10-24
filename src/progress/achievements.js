@@ -19,6 +19,7 @@
 // 'down' tasks are best times: cur returns the best (Infinity when there is none yet) and the task is done at or under the goal.
 // ---------------------------------------------------------------------------------------
 import { CASTER_SHELLS } from './combat/castershells.js';
+import { WORLD_SHELLS } from './combat/worldshells.js';
 import { ASPECTS as ASPECTS_ALL } from './weather.js';
 import { ABILITIES, GOD_ARTS, achOf, goalFracOf, goalsFracOf, loggedTechs } from './skills.js';
 import { SHELL_TYPES } from '../tools/psygun/shells.js';
@@ -114,6 +115,9 @@ export function buildAchievements(game) {
   C('sh1', 'break', 'Shells', 1, 'count', 'Loaded', 'Fire 100 shells.', 'shell.fire', 100);
   C('sh2', 'break', 'Shells', 3, 'count', 'Ordnance', 'Fire 1,000 shells.', 'shell.fire', 1000);
   C('sh3', 'break', 'Shells', 5, 'endure', 'Arsenal', 'Fire 10,000 shells.', 'shell.fire', 10000);
+  C('wd1', 'break', 'Shells', 2, 'mechanic', 'Drawn Thin', 'Fire a World shell on the Lachryma round where it lands.', 'shell.world.fire', 1);
+  H('wd2', 'break', 'Shells', 3, 'mechanic', 'Downpour', 'Fire a World shell at its full draw: half again its strength.', 'shell.world.k', 1.5);
+  F('wd3', 'break', 'Shells', 4, 'collect', 'The Place Is the Price', 'Fire each of the nine World shells.', (L) => WORLD_SHELLS.filter((r) => L.get(`shell.fire.${r.id}`) > 0).length, WORLD_SHELLS.length);
   F('shc', 'break', 'Shells', 5, 'collect', 'Full Rack', 'Fire every kind of shell.', (L) => SHELL_TYPES.filter((t) => L.get(`shell.fire.${t.id}`) > 0).length, SHELL_TYPES.length); // (every kind the psygun can chamber: 42 with batch 1, a hundred at the end, so Master. Dovina, 2026-10-12)
   C('shs', 'break', 'Shells', 2, 'count', 'Charged Up', 'Fire 25 charged shots.', 'shot.charged', 25);
   H('shx', 'break', 'Shells', 3, 'mechanic', 'Three at Once', 'Slice through 3 targets with one shell.', 'shell.slice.best', 3);

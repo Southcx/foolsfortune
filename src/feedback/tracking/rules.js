@@ -48,6 +48,7 @@ import { trackEditorRules } from './trackeditor.js';
 import { stunRules } from './stun.js';
 import { sightRules } from './sight.js';
 import { goalsRules } from './goals.js';
+import { worldShellRules } from './worldshells.js';
 
 /** The ledger as the crossing's rules see it: inc, hi, lo and first do nothing while the showcase or a practice crossing sails. */
 function atSea(ctx) {
@@ -91,6 +92,7 @@ export function areaRules(ctx) {
   placeRules(ctx);
   testroomRules(ctx);
   brushRules(ctx); // (the Soul Brush's load: paint, mop, the Lachrymato Bottles, the stains)
+  worldShellRules(ctx); // (the World shells: found from blots, drawn on the place, a dry click)
   qaisRules(ctx); // (QAIS: a report filed, a round sent, /goto; nothing counted)
   partyRules(ctx); // (the siblings: coop/party.js)
   skiffRules(ctx); // (the Solar Skiff's summon, parking, recall and bail: courier/skiff/skiff.js)

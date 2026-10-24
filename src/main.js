@@ -11,6 +11,7 @@
 import './render/threefixes.js'; // (first: shims for the pinned three, in place before any module builds a geometry)
 import { CourierMind } from './courier/mind.js';
 import { PalmDie, Rerolls } from './progress/dice.js';
+import { WorldShellFinds } from './progress/combat/worldshells.js';
 import { HandPose } from './progress/mudras.js';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
@@ -898,6 +899,7 @@ async function main() {
   game.courierMind = new CourierMind(game); // (your mental state and your draught, kept: courier/mind.js; the garden's rain reads it)
   game.rerolls = new Rerolls(game); // (Luck's re-rolls a game day, spent by your own failed throws: progress/dice.js)
   game.palmDie = new PalmDie(game); // (the Pneuka stones in the god hand's form: overflow past the Lockheart condensed into cubes, progress/dice.js)
+  game.worldShellFinds = new WorldShellFinds(game); // (a World shell for every twelfth full-grown blot mopped up: progress/combat/worldshells.js)
   game.handPose = new HandPose(game); // (the god hand's mudras: which pose, and when; a look only, progress/mudras.js)
   game.knacks = new Knacks(game); // (the assists earned, switched on or off: progress/knacks.js; the Crib Sheet first)
   game.goals = new Goals(game); // (the game day's three goals, from the achievements: progress/goals.js)
