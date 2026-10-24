@@ -49,6 +49,7 @@ import { sealRules } from './seals.js';
 import { spreadRules } from './spreads.js';
 import { cardBackRules } from './cardbacks.js';
 import { toolSkinRules } from './toolskins.js';
+import { flourishRules } from './flourishes.js';
 import { palmDieRules } from './palmdie.js';
 import { trackEditorRules } from './trackeditor.js';
 import { stunRules } from './stun.js';
@@ -93,6 +94,7 @@ export function areaRules(ctx) {
   duelRules(ctx); // (a puzzle duel with an aberrant: docs/plans/PUZZLE-DUELS.md)
   cardBackRules(ctx); // (a deck's card back chosen: ui/cardbackchoice.js)
   toolSkinRules(ctx); // (a tool's skin worn: vfx/toolskinwear.js)
+  flourishRules(ctx); // (a flourish of the Courier's worn: vfx/flourishes.js)
   graphicsRules(ctx); // (the graphics tier, dynamic resolution: render/graphics.js)
   instrumentRules(ctx); // (an instrument skin put on: vfx/instrumentskins.js)
   touchPlayRules(ctx); // (touch play's settings: the layout kept, gyro steering's motion access: core/layoutkeep.js, core/gyrosteer.js)

@@ -7,7 +7,7 @@
 // The hoops are fired with the room glazes (celadon, shino, oribe: vfx/roomglazes.js) through the level's own material (Level.mat ->
 // vfx/surfaces.js `dress`), so they are drawn by the program every built surface already uses, triplanar in their own object space (they
 // turn with their glaze, it never slides). The bands of light share the particles' tracer program (an additive MeshBasicMaterial with
-// no map: vfx/particles.js). Nothing here compiles a program of its own; the hoops are built before the warm-up and compiled with it.
+// no map: vfx/particles.js). An arrival flourish worn (vfx/flourishes.js) takes the arrival's place; the gate-out stays. Nothing here compiles a program of its own; the hoops are built before the warm-up and compiled with it.
 //
 // Prior art: .hack's Chaos Gate (CyberConnect2, 2002: the Root Town's ring gate, three hoops round a sphere, and the gate-out, rings of
 // light sweeping the body as the world is left; DATA-LOOK.md proposal 6), kept cute: glazed hoops, celadon and cream, the light warm.
@@ -85,7 +85,8 @@ export class GateRing {
   depart(fn) {
     const S = this.game.seam;
     if (!S || S.busy) return false;
-    const took = S.cross(() => { try { fn(); } finally { this.job = { kind: 'in', t: 0 }; } }, { kind: 'gate', out: OUT });
+    // (on the far side the bands come down, unless an arrival flourish is worn: it is drawn there instead, vfx/flourishes.js)
+    const took = S.cross(() => { try { fn(); } finally { if (this.game.flourishes?.arrive('gate')) { this.job = null; this.bands.visible = false; } else this.job = { kind: 'in', t: 0 }; } }, { kind: 'gate', out: OUT });
     if (!took) return false;
     this.job = { kind: 'out', t: 0 };
     return true;

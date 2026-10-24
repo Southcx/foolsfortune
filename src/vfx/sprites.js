@@ -8,6 +8,7 @@
 //
 // The shapes live in one atlas, drawn here at startup (8 x 4 cells of 128 px, greyscale with alpha: every use tints its own):
 //   soft  core  star4  sparkle  |  streak  ring  ringthin  puff  |  shard  diamond  glint  swirl  |  petal  crescent  chip  bubble
+//   hex  facet  drip  ripple  |  disc  talisman  moth  leaf  |  die  comb   (the last five the Courier's flourishes': vfx/flourisheffects.js)
 //
 // Prior art: the sprite-sheet particle of every sixth-generation action game (Devil May Cry's and Kingdom Hearts' hit stars and
 // streaks, Final Fantasy X's glints, Okami's petals, Dark Cloud 2's poofs), velocity-stretched sparks (every engine's "stretched
@@ -20,7 +21,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
-export const SHAPES = { soft: 0, core: 1, star4: 2, sparkle: 3, streak: 4, ring: 5, ringthin: 6, puff: 7, shard: 8, diamond: 9, glint: 10, swirl: 11, petal: 12, crescent: 13, chip: 14, bubble: 15, hex: 16, facet: 17, drip: 18, ripple: 19, disc: 20 };
+export const SHAPES = { soft: 0, core: 1, star4: 2, sparkle: 3, streak: 4, ring: 5, ringthin: 6, puff: 7, shard: 8, diamond: 9, glint: 10, swirl: 11, petal: 12, crescent: 13, chip: 14, bubble: 15, hex: 16, facet: 17, drip: 18, ripple: 19, disc: 20, talisman: 21, moth: 22, leaf: 23, die: 24, comb: 25 };
 
 let _atlas = null;
 export function atlas() {
@@ -55,6 +56,45 @@ export function atlas() {
   cell(SHAPES.drip, (R) => { g.fillStyle = radial(R * 0.9, [[0, 1], [0.55, 0.85], [1, 0.0]]); g.beginPath(); g.moveTo(0, -R * 0.9); g.bezierCurveTo(R * 0.15, -R * 0.4, R * 0.55, R * 0.1, R * 0.5, R * 0.45); g.arc(0, R * 0.45, R * 0.5, 0, Math.PI); g.bezierCurveTo(-R * 0.55, R * 0.1, -R * 0.15, -R * 0.4, 0, -R * 0.9); g.fill(); g.fillStyle = '#fff'; g.beginPath(); g.arc(-R * 0.18, R * 0.38, R * 0.1, 0, Math.PI * 2); g.fill(); });
   cell(SHAPES.ripple, (R) => { g.lineWidth = R * 0.07; g.beginPath(); g.arc(0, 0, R * 0.88, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 0.6; g.lineWidth = R * 0.05; g.beginPath(); g.arc(0, 0, R * 0.62, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 0.3; g.beginPath(); g.arc(0, 0, R * 0.38, 0, Math.PI * 2); g.stroke(); g.globalAlpha = 1; });
   cell(SHAPES.disc, (R) => { g.beginPath(); g.arc(0, 0, R * 0.82, 0, Math.PI * 2); g.fill(); });
+  // (the Courier's flourishes, vfx/flourisheffects.js: a paper talisman with its brushed marks cut through, a moth, a leaf with its vein,
+  //  a die of the stones turned to show three faces, and a cell of the Comb, the neuralese stamp script on hex cells)
+  const cut = (a, fn) => { g.save(); g.globalCompositeOperation = 'destination-out'; g.globalAlpha = a; fn(); g.restore(); };
+  cell(SHAPES.talisman, (R) => {
+    g.fillRect(-R * 0.34, -R * 0.92, R * 0.68, R * 1.84);
+    cut(0.6, () => { g.lineWidth = R * 0.07; g.lineCap = 'round'; g.beginPath(); g.moveTo(0, -R * 0.62); g.lineTo(0, R * 0.62); g.stroke(); for (const y of [-0.42, -0.1, 0.26]) { g.beginPath(); g.moveTo(-R * 0.18, R * y); g.lineTo(R * 0.18, R * (y + 0.06)); g.stroke(); } g.beginPath(); g.arc(0, -R * 0.72, R * 0.1, 0, Math.PI * 2); g.stroke(); });
+    cut(0.3, () => { g.fillRect(-R * 0.34, -R * 0.92, R * 0.68, R * 0.1); g.fillRect(-R * 0.34, R * 0.82, R * 0.68, R * 0.1); });
+  });
+  cell(SHAPES.moth, (R) => {
+    for (const s of [-1, 1]) {
+      g.beginPath(); g.moveTo(0, -R * 0.1); g.bezierCurveTo(s * R * 0.4, -R * 0.75, s * R * 0.98, -R * 0.55, s * R * 0.82, -R * 0.02); g.quadraticCurveTo(s * R * 0.45, R * 0.12, 0, R * 0.05); g.fill();
+      g.beginPath(); g.moveTo(0, R * 0.05); g.bezierCurveTo(s * R * 0.55, R * 0.12, s * R * 0.66, R * 0.62, s * R * 0.3, R * 0.6); g.quadraticCurveTo(s * R * 0.1, R * 0.5, 0, R * 0.2); g.fill();
+      cut(0.55, () => { g.beginPath(); g.arc(s * R * 0.52, -R * 0.3, R * 0.11, 0, Math.PI * 2); g.fill(); });
+    }
+    g.beginPath(); g.ellipse(0, R * 0.05, R * 0.07, R * 0.42, 0, 0, Math.PI * 2); g.fill();
+    g.lineWidth = R * 0.03; for (const s of [-1, 1]) { g.beginPath(); g.moveTo(0, -R * 0.35); g.quadraticCurveTo(s * R * 0.12, -R * 0.65, s * R * 0.26, -R * 0.72); g.stroke(); }
+  });
+  cell(SHAPES.leaf, (R) => {
+    g.beginPath(); g.moveTo(0, -R * 0.9); g.bezierCurveTo(R * 0.62, -R * 0.5, R * 0.5, R * 0.4, 0, R * 0.7); g.bezierCurveTo(-R * 0.5, R * 0.4, -R * 0.62, -R * 0.5, 0, -R * 0.9); g.fill();
+    g.lineWidth = R * 0.06; g.beginPath(); g.moveTo(0, R * 0.6); g.lineTo(0, R * 0.95); g.stroke();
+    cut(0.5, () => { g.lineWidth = R * 0.04; g.beginPath(); g.moveTo(0, -R * 0.75); g.lineTo(0, R * 0.62); g.stroke(); for (const y of [-0.4, -0.1, 0.2]) for (const s of [-1, 1]) { g.beginPath(); g.moveTo(0, R * (y + 0.12)); g.lineTo(s * R * 0.3, R * y); g.stroke(); } });
+  });
+  cell(SHAPES.die, (R) => {
+    const a = R * 0.78, h = a * 0.5;
+    const face = (P, al) => { g.globalAlpha = al; g.beginPath(); P.forEach(([x, y], k) => (k ? g.lineTo(x, y) : g.moveTo(x, y))); g.closePath(); g.fill(); };
+    face([[0, -a], [a * 0.87, -h], [0, 0], [-a * 0.87, -h]], 1); face([[-a * 0.87, -h], [0, 0], [0, a], [-a * 0.87, h]], 0.72); face([[0, 0], [a * 0.87, -h], [a * 0.87, h], [0, a]], 0.5); g.globalAlpha = 1;
+    const pip = (x, y, rr) => cut(0.85, () => { g.beginPath(); g.ellipse(x, y, rr, rr * 0.6, 0, 0, Math.PI * 2); g.fill(); });
+    pip(0, -h, R * 0.08); pip(-a * 0.6, -h * 0.1, R * 0.06); pip(-a * 0.28, a * 0.55, R * 0.06); pip(a * 0.3, a * 0.05, R * 0.06); pip(a * 0.57, a * 0.42, R * 0.06);
+  });
+  cell(SHAPES.comb, (R) => {
+    g.lineWidth = R * 0.08; hexPath(R * 0.88); g.stroke();
+    const rr = R * 0.22;
+    for (const [x, y, on] of [[0, 0, 1], [0, -2, 1], [1.73, -1, 0], [1.73, 1, 1], [0, 2, 0], [-1.73, 1, 1], [-1.73, -1, 0]]) {
+      g.save(); g.translate(x * rr * 0.98, y * rr * 0.98); g.rotate(Math.PI / 6);
+      g.beginPath(); for (let k = 0; k < 6; k++) { const an = (k / 6) * Math.PI * 2; g.lineTo(Math.cos(an) * rr * 0.86, Math.sin(an) * rr * 0.86); } g.closePath();
+      if (on) g.fill(); else { g.lineWidth = R * 0.04; g.stroke(); }
+      g.restore();
+    }
+  });
   _atlas = new THREE.CanvasTexture(c);
   _atlas.colorSpace = THREE.NoColorSpace; _atlas.generateMipmaps = true; _atlas.minFilter = THREE.LinearMipmapLinearFilter; _atlas.anisotropy = 2;
   return _atlas;
