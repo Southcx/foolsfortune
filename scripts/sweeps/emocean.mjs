@@ -4,7 +4,7 @@
 // interact chevron on it, F: the node map as a list and the mounts, F and Esc to close it, F spammed, a resize, a refusal with an empty
 // purse, a mount taken ashore); boarding (the fuel paid, the seam, the Courier aboard and hidden, the foot HUD stepped out); a crossing
 // to Margarite's dock (the rail: every act's view and every swing, a bar long and on a bar line with nothing entering during it; the
-// lock-on; the barrel roll and its two charges; the parry, a whiff and an outlined shot sent home; polarity and an absorbed shot; a hit
+// lock-on; the barrel roll and its two charges; the parry, a whiff and an outlined shot sent home; the form's flip and an absorbed shot; a hit
 // and its mercy; the set piece's first beat and its end said in the log; the tally before "You make port"); careless play aboard (the
 // windows' keys, F, a resize, /goto mid-crossing); making port (the Courier set down on the far pier, shown, standing,
 // the rail's things gone); Margarite's dock (the Purser's posted board, Letty Marque, the Pearl Shrine, the dock's pier and its page);
@@ -311,11 +311,11 @@ if (part('crossing')) {
     await S.ticks(30); await S.press('KeyE', 2); const a3 = await st();
     await S.ticks(30); await S.press('KeyE', 2); const a4 = await st();
     S.check('verbs: E rolls, once a press, two charges', a1.run.rolls === r0 + 1 && a2.run.rolls === r0 + 1 && a3.run.rolls === r0 + Math.min(2, ch0) && a4.run.rolls === a3.run.rolls, { charges0: ch0, rolls: [a1.run.rolls, a2.run.rolls, a3.run.rolls, a4.run.rolls].map((x) => x - r0), charges: [a1.ship.charges, a2.ship.charges, a3.ship.charges, a4.ship.charges] });
-    // polarity: Q flips to the opposite and back; the keel shows it; the event carries by
+    // the form: Q flips Astral to Umbral and back (the feeling to its opposite and home); the keel shows it; rail.form carries by
     const mq = await em('mark()');
     await S.press('KeyQ', 2); const q1 = await st(); await S.press('KeyQ', 2); const q2 = await st();
-    const pe = (await events(mq)).filter((e) => e.name === 'rail.polarity');
-    S.check('verbs: Q flips polarity and back', q1.ship.aspect !== q1.ship.home && q2.ship.aspect === q2.ship.home && q1.ship.keel !== q2.ship.keel && pe.length === 2 && pe.every((e) => e.by === 'courier'), { home: q1.ship.home, flipped: q1.ship.aspect, back: q2.ship.aspect, keel: [q1.ship.keel, q2.ship.keel], events: pe.length });
+    const pe = (await events(mq)).filter((e) => e.name === 'rail.form' && e.by === 'courier');
+    S.check('verbs: Q flips the form (and its feeling) and back', q1.ship.aspect !== q1.ship.home && q2.ship.aspect === q2.ship.home && q1.ship.keel !== q2.ship.keel && pe.length === 2 && pe.every((e) => e.by === 'courier'), { home: q1.ship.home, flipped: q1.ship.aspect, back: q2.ship.aspect, keel: [q1.ship.keel, q2.ship.keel], events: pe.length });
     // an absorbed shot: one of the ship's own feeling, drunk
     await S.ticks(70);
     const ab0 = (await st()).run.absorbed, h0 = (await st()).run.hits;
