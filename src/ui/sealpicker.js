@@ -35,6 +35,7 @@ import { THEMES, theme, FONT, GLOVES } from './theme.js';
 import { sfx } from '../audio/sfx.js';
 
 const LINES = 480; // (the present's lines: the picker pixelates as the world does)
+const TOUCH_LINE = 'Tap to type your name: two or three syllables, 2 to 12 letters.';
 const UPRIGHT = { w: 384, h: 760 }; // (an upright phone: the least canvas width, and the height the one column needs)
 const HOLD = 1.5, LETGO = 0.25; // (real seconds: the hold to carve; the stroke running back when let go early)
 const MA = 0.5, IN = [0.07, 0.1, 0.12, 0.06], OUT_K = 2 / 3; // (the stillness first; the entrance: a line, the unfold, the scan, the tab)
@@ -109,7 +110,7 @@ export class SealPicker {
     el.style.cssText = `position:fixed;inset:0;width:100%;height:100%;z-index:40;image-rendering:auto;touch-action:none;cursor:url(${GLOVES.cursor}) 14 11, default;`;
     this.ctx = el.getContext('2d');
     const f = (this.input = document.createElement('input')); f.id = 'sealpicker-name';
-    Object.assign(f, { type: 'text', maxLength: 12, autocomplete: 'off', spellcheck: false, enterKeyHint: 'done' });
+    Object.assign(f, { type: 'text', maxLength: 12, autocomplete: 'off', spellcheck: false, enterKeyHint: 'done', placeholder: 'Your name' });
     f.setAttribute('autocapitalize', 'characters'); f.setAttribute('autocorrect', 'off'); f.setAttribute('aria-label', 'your name');
     f.style.cssText = 'position:fixed;z-index:41;margin:0;padding:0;border:0;outline:0;background:transparent;color:transparent;caret-color:transparent;font-size:16px;opacity:0.01;touch-action:manipulation;';
     f.addEventListener('input', this.onInput);
@@ -383,7 +384,7 @@ export class SealPicker {
     if (this.name) {
       c.save(); c.letterSpacing = '3px'; const ex = text(c, this.name, F.x + 10, F.y + 25, NAME_F(24), T.hi); c.restore();
       c.fillStyle = hiA(this.holding ? 0.2 : 0.55); c.fillRect(Math.round(ex) + 1, F.y + 7, 2, 20); // (the caret: steady, never blinking)
-    } else { text(c, this.game.input?.device === 'touch' ? 'tap to type your name' : 'type your name', F.x + 10, F.y + 21, READ_F, hiA(0.4)); c.fillStyle = hiA(0.55); c.fillRect(F.x + 8, F.y + 7, 2, 20); }
+    } else { text(c, 'Your name', F.x + 10, F.y + 21, READ_F, hiA(0.4)); c.fillStyle = hiA(0.55); c.fillRect(F.x + 8, F.y + 7, 2, 20); }
     if (this.read.cells && this.read.ok) {
       const words = [{ cells: this.read.cells }], m1 = runningHand(null, words, { scale: 1 }); // (2x: its cell two reading lines tall, OVERLAY.md 10.5; fitted to the row)
       const sc = Math.min(3.6, (lw - 12) / Math.max(1, m1.width), 34 / Math.max(1, m1.height));
@@ -391,7 +392,10 @@ export class SealPicker {
       runningHand(c, words, { x: Math.round(bx), y: Math.round(by), scale: sc });
     } else { c.globalAlpha = 0.25; c.fillStyle = T.hi; c.fillRect(lx + 6, y + 100, lw - 12, 1); c.globalAlpha = 1; }
     const ok = this.read.ok; (ok ? hexAt : cross)(c, lx + 5, y + 134, 4); c.strokeStyle = hiA(ok ? 0.9 : 0.6); c.stroke();
-    text(c, this.read.line, lx + 14, y + 139, READ_F, hiA(ok ? 0.9 : 0.65));
+    const line = !this.name && this.game.input?.device === 'touch' ? TOUCH_LINE : this.read.line; // (Espada's words, 2026-10-24)
+    c.font = READ_F; const cut = c.measureText(line).width > lw - 14 ? line.indexOf(': ') : -1; // (too long for the column: two rows, broken at its colon)
+    if (cut > 0) { text(c, line.slice(0, cut + 1), lx + 14, y + 133, READ_F, hiA(ok ? 0.9 : 0.65)); text(c, line.slice(cut + 2), lx + 14, y + 148, READ_F, hiA(ok ? 0.9 : 0.65)); }
+    else text(c, line, lx + 14, y + 139, READ_F, hiA(ok ? 0.9 : 0.65));
     // THE OUTLINE and THE CARVING: slots in the frame, their key in a bracket square, the chosen lit in the schiller
     section(c, 'THE OUTLINE', lx, lx + lw, y + 160, T);
     L.outlines.forEach((b, i) => {
