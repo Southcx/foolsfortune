@@ -59,6 +59,7 @@ import { Ragdoll } from '../anim/ragdoll.js';
 import { Grind, GRIND } from './grind.js';
 import { SkiffCombo, COMBO } from './combo.js';
 import { BoardRules, SCORCH } from './boardrules.js';
+import { MASS } from '../../progress/skiffruler.js';
 
 const UP = new THREE.Vector3(0, 1, 0), X = new THREE.Vector3(1, 0, 0), Z = new THREE.Vector3(0, 0, 1);
 const _v = new THREE.Vector3(), _v2 = new THREE.Vector3(), _v3 = new THREE.Vector3();
@@ -364,13 +365,14 @@ export class Skiffing extends Tech {
     // ---- speed: the sail sets where the boat settles; it gets there by the sail's pull, coasts down otherwise
     this.boosting = Math.max(0, this.boosting - dt * 2.2);
     this.turbo = Math.max(0, (this.turbo || 0) - dt);
-    let target = c.cruise * this.L * windF * this.rules.mult('top') * (this.rules.luffing ? SCORCH.pace : 1), accel = c.accel * (0.45 + 0.55 * this.L) * this.rules.mult('accel'); // (the garage's parts; a scorched sail luffs)
+    const massK = Math.pow(this.rules.mult('mass'), MASS.exp); // (mass made real: a heavy board winds up slowly and keeps its way, SKIFF-TUNING.md T1; measured on the ruler)
+    let target = c.cruise * this.L * windF * this.rules.mult('top') * (this.rules.luffing ? SCORCH.pace : 1), accel = c.accel * (0.45 + 0.55 * this.L) * this.rules.mult('accel') / massK; // (the garage's parts; a scorched sail luffs)
     this.flaring = false; this.furling = furlKey && (this.L > 0.001 || vf > 2);
     if (this.rules.flare(dt, flare) && flare && g.lachryma.drain(c.boostCost * dt, 'skiff') > 0) { target = Math.max(target, c.cruise * 0.55) * c.boostMult; accel = c.boostAccel; this.boosting = 1; this.flaring = true; }
     else if (this.boosting > 0.05) { target *= 1 + (c.boostMult - 1) * this.boosting; accel = c.boostAccel * 0.6; }
     if (this.turbo > 0) { target = Math.max(target, c.cruise * 0.6) + this.turboAdd; accel = Math.max(accel, c.boostAccel); this.boosting = Math.max(this.boosting, 0.6); } // (a carve's, a sun plate's, a solar start's push: free of Lachryma)
     if (vf < target) vf = Math.min(target, vf + accel * dt);
-    else vf = Math.max(target, vf - (c.coast + 0.012 * vf * vf) * (CD?.coast ?? 1) * this.rules.mult('coast') * dt); // (the tune's coast: SKIFF-TUNING.md 2.2)
+    else vf = Math.max(target, vf - (c.coast + 0.012 * vf * vf) * (CD?.coast ?? 1) * this.rules.mult('coast') / massK * dt); // (the tune's coast: SKIFF-TUNING.md 2.2)
     if (furlKey && vf > 0 && !this.air) vf = Math.max(0, vf - c.brake * dt); // (the brake is the sand's: in the air S lets the sail down and nothing more, the owner's "W and S kill the momentum")
     vf += pump + (this.kickV || 0); this.kickV = 0;
     if (target === 0 && vf < 0.15 && !this.air) vf = 0;

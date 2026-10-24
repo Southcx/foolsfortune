@@ -45,12 +45,14 @@ export function raceRules({ on, L, log }) {
   on('race.finish', (e) => {
     if (e.mode && e.mode !== 'race') return; // (the other modes: racemodes.js)
     L.inc('race.raceway.finish'); L.lo('race.raceway.best', e.seconds);
-    if (e.medal) L.inc(`race.raceway.${e.medal}`);
-    if (e.track) { L.inc(`race.track.${e.track}.finish`); L.lo(`race.track.${e.track}.best`, e.seconds); }
+    if (e.medal) { L.inc(`race.raceway.${e.medal}`); if (e.track) { L.inc(`race.track.${e.track}.${e.medal}`); if (e.recordClass) L.inc(`race.track.${e.track}.${e.medal}.${e.recordClass}`); } } // (each track's medals, and each class's: SKIFF-TUNING.md 2.4)
+    if (e.track) { L.inc(`race.track.${e.track}.finish`); L.lo(`race.track.${e.track}.best`, e.seconds); if (e.recordClass) L.lo(`race.track.${e.track}.best.${e.recordClass}`, e.seconds); }
     if (e.condition) { L.inc(`race.raceway.finish.${e.condition.split('.')[0]}`); const b = L.lo(`race.raceway.best.${e.condition}`, e.seconds); if (b && b !== 'new') log.say('record', 'Your best under this sky.', { key: 'race.condbest', throttle: 2 }); }
     if (e.of > 1) { L.inc(`race.raceway.place${Math.min(e.place, 4)}`); if (e.place === 1) L.inc('race.raceway.win'); }
-    log.say('record', `Finished ${e.of > 1 ? `${ORD(e.place)} of ${e.of} ` : ''}in ${clock(e.seconds)}${e.medal ? `: ${MEDAL[e.medal]}.` : '. No medal this time.'}`, { key: 'race.finish', throttle: 2 });
+    log.say('record', `Finished ${e.of > 1 ? `${ORD(e.place)} of ${e.of} ` : ''}in ${clock(e.seconds)}${e.recordClass ? ` (${e.recordClass.toUpperCase()})` : ''}${e.medal ? `: ${MEDAL[e.medal]}.` : '. No medal this time.'}`, { key: 'race.finish', throttle: 2 });
   });
+  on('skiff.tune', (e) => { if (e.by === 'courier') L.inc('skiff.tune'); });
+  on('skiff.setup', (e) => { if (e.by === 'courier' && e.how === 'save') L.inc('skiff.setup'); });
   on('race.end', (e) => { if (e.why === 'left') log.say('warn', 'You leave the Raceway. The race is off.', { key: 'race.end', throttle: 2 }); else if (e.why === 'retired') { L.inc('race.raceway.retired'); log.say('skiff', 'You retire from the race.', { key: 'race.end', throttle: 2 }); } });
   on('race.takedown', (e) => { if (e.by !== 'courier') return; L.inc('race.takedown'); log.say('skiff', `Takedown: ${e.who || 'the rival'} spins out, and the push is yours.`, { key: 'race.takedown', throttle: 2 }); });
   on('race.bump', (e) => { if (e.by === 'courier') L.inc('race.bump'); });

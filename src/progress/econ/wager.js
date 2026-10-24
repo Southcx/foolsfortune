@@ -28,11 +28,13 @@ export class Wager {
     ev?.on('race.finish', (e) => { if (this.open && e.mode === 'race' && e.of > 1) this.settle(e.place <= (this.open.on === 'win' ? 1 : 3), 'finish'); });
     for (const k of ['race.end', 'race.restart']) ev?.on(k, () => { if (this.open) this.settle(false, k === 'race.end' ? 'retired' : 'restart'); });
   }
-  /** The payout's multiple for a stake on a track: the house's read of your chance there, less its edge. */
+  /** The payout's multiple for a stake on a track: the house's read of your chance there, less its edge; in the OPEN class shortened by
+ *  half your build's edge (the rivals answer the other half: race.js). */
   odds(track, on = 'win') {
     const L = this.game.ledger, races = L?.get?.(`race.track.${track}.finish.rivals`) || 0, made = L?.get?.(`race.track.${track}.${on}`) || 0;
     const p = (made + SHARE[on] * WAGER.prior) / (races + WAGER.prior);
-    return +Math.max(WAGER.min, Math.min(WAGER.max, (1 - WAGER.edge) / p)).toFixed(2);
+    const P = this.game.skiffParts, T = this.game.raceway?.trackOf?.(track), pi = P?.recordClass?.() === 'open' && T ? P.pi(T) : 100; // (the build's other half of its edge: SKIFF-TUNING.md 2.4)
+    return +Math.max(WAGER.min, Math.min(WAGER.max, (1 - WAGER.edge) / p * Math.sqrt(100 / pi))).toFixed(2);
   }
   /** A stake placed (cubes taken now). False if one is open already, or the cubes are short. */
   place(track, stake, on = 'win') {
