@@ -16,6 +16,7 @@ import { T, DEG, shakeOf } from '../core/config.js';
 import { sfx } from '../audio/sfx.js';
 import { stream } from '../core/rng.js';
 import { CRAWL } from './anim/crawl.js';
+import { camFollow } from './camfollow.js';
 const simRand = stream('courier/player'); // (the simulation's chance: core/rng.js, the same twice)
 
 const UP = new THREE.Vector3(0, 1, 0);
@@ -231,6 +232,7 @@ export class Player {
       this.pitch = THREE.MathUtils.clamp(this.pitch + this.arrowPitch * ARROWS.pitch * dt, -85 * DEG, 85 * DEG);
     }
     this.lookDX = inp.dx; this.lookDY = inp.dy;
+    camFollow(this, dt, adsT); // (on touch, the view eases back behind a running Courier once the look thumb lifts: courier/camfollow.js)
 
     if (inp.wasPressed('KeyZ') && (this.game?.belt?.allows('firstPerson') ?? true)) this.view = this.fp ? 'tp' : 'fp'; // (every tool has its first person; lock-on is the middle button)
     // edge-triggered actions are latched here (per frame) and consumed by the fixed step

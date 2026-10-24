@@ -4,6 +4,8 @@
 // and `device` is the device last touched (keyboard, touch, pad), which the HUD and the help follow (docs/plans/MOBILE.md 6.1).
 //   input.isDown(code)  wasPressed(code)  spend(...codes)  hold(code, on) (a driver's press)  axis(id) (core/bindings.js AXES)
 //   input.axes[id] = v | undefined (a driver's analog push)  input.device  input.onDevice(d)  input.setDevice(d)
+//   input.touchDrag { panX, panY (px), pinch (the log of the scale), twist (rad), fingers }: the fingers on glass this frame, where the
+//   pointer is free (core/touchcursor.js); a camera that wants them reads them, and they are cleared with the frame as the wheel is
 import { AXES } from './bindings.js';
 
 export class Input {
@@ -21,6 +23,7 @@ export class Input {
     this.mx = innerWidth / 2; // the cursor (only meaningful while the pointer is free: the god hand)
     this.my = innerHeight / 2;
     this.device = 'keyboard'; this.axes = {}; this.touchedAt = -1e9; this.holdN = new Map(); // (touchedAt: a mouse event this soon after a touch is the browser's echo of it)
+    this.touchDrag = { panX: 0, panY: 0, pinch: 0, twist: 0, fingers: 0 }; // (the fingers' drag this frame: core/touchcursor.js)
     el.addEventListener('wheel', (e) => { if (this.enabled) { this.wheel += e.deltaY; e.preventDefault(); } }, { passive: false });
     el.addEventListener('auxclick', (e) => e.preventDefault());
 
@@ -121,5 +124,6 @@ export class Input {
     this.dx = 0;
     this.dy = 0;
     this.wheel = 0;
+    const G = this.touchDrag; G.panX = 0; G.panY = 0; G.pinch = 0; G.twist = 0;
   }
 }

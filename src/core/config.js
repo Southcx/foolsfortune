@@ -72,6 +72,7 @@ export const DEFAULTS = {
   },
   camera: {
     sensitivity: 1.0,
+    follow: 0.5, // on touch, how quickly the camera swings back behind a moving Courier once the look thumb lets go, 0 (never) to 1 (courier/camfollow.js; a setting)
     adsSensMult: 0.65,
     fpFov: 78,
     fpAdsFov: 54,
@@ -376,6 +377,7 @@ export const DEFAULTS = {
   },
   audio: {
     volume: 0.7,
+    haptics: true, // small buzzes on a device that can buzz (audio/haptics.js; a setting)
   },
   // the sloop on the rail (courier/ship/, world/emocean/): the crossing's feel (docs/plans/RAIL.md section 8, Dovina's proposals, Petra's
   // to own). Metres, real seconds; a bar is 1.5 s at the cue's 160 bpm.
@@ -421,9 +423,13 @@ export const T = structuredClone(DEFAULTS);
 /** The setting visual.shake as a factor on a camera's shake: full 1, half 0.5, off 0. */
 export const shakeOf = () => ({ off: 0, half: 0.5 })[T.visual?.shake] ?? 1;
 
-export function loadTuning() {
+/** Where the tuning is kept: the save's handle for its key (core/save.js `keyed`, the settings scope), given at boot; none in a tool. */
+let keep = null;
+/** The tuning kept, put over the defaults (main.js, after the save has booted: `loadTuning(save)`). */
+export function loadTuning(save) {
+  keep = save?.keyed?.(STORAGE_KEY, 'settings') || null;
   try {
-    const raw = localStorage.getItem(STORAGE_KEY);
+    const raw = keep?.text();
     if (raw) {
       const o = JSON.parse(raw);
       const v = o.retunedV ?? (o.retuned1 ? 1 : 0);
@@ -433,23 +439,20 @@ export function loadTuning() {
       deepMerge(T, o);
     }
     else {
-      const old = localStorage.getItem(OLD_KEY);
-      if (old) {
-        const o = JSON.parse(old);
+      const old = save?.keyed?.(OLD_KEY, 'settings'), o = old?.json();
+      if (o) {
         for (const [g, k] of V1_DROP) if (o[g]) delete o[g][k];
         deepMerge(T, o);
       }
     }
-  } catch { /* storage unavailable */ }
+  } catch { /* corrupt: the defaults */ }
 }
 
-export function saveTuning() {
-  try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...T, retunedV: RETUNE_V })); } catch { /* ignore */ }
-}
+export function saveTuning() { keep?.put(JSON.stringify({ ...T, retunedV: RETUNE_V })); }
 
 export function resetTuning() {
   deepMerge(T, structuredClone(DEFAULTS));
-  try { localStorage.removeItem(STORAGE_KEY); } catch { /* ignore */ }
+  keep?.remove();
 }
 
 export const DEG = Math.PI / 180;

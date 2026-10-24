@@ -6,8 +6,8 @@
 //                       page comes back), and let go when it is hidden.
 //   FULL SCREEN         asked on the first touch where the browser allows it (Android; an iPhone gives it to video only), and the
 //                       turn to landscape asked after (Android only: no browser lets a page lock it otherwise).
-//   WHICH WAY UP        `game.screenTurn.portrait`, and `screen.turn { portrait, by }` when it changes: an action mode held in portrait
-//                       shows a "turn your phone" card (Calissa's look; MOBILE.md 11.4), nothing run under it.
+//   WHICH WAY UP        `game.screenTurn.portrait`, and `screen.turn { portrait, by }` when it changes. An action mode held in portrait
+//                       shows the turn card instead, the game held under it (Calissa's ui/turncard.js: its rule and its hold).
 // Each is asked once and its refusal is quiet: the perf readout says what the host allows (debug/hostprobe.js).
 //
 // Prior art: the Screen Wake Lock API's own pattern (re-acquire on visibilitychange); Android Chrome's fullscreen-then-lock rule for

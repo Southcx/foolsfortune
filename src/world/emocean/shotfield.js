@@ -4,7 +4,7 @@
 // motions, stepped a frame at a time where `positionAt` gives a closed form), in the RAIL'S FRAME (x across, y up, z along), and decides
 // what a shot meeting the ship means:
 //
-//   ASTRAL / UMBRAL   a shot's kind (Ikaruga's polarity as the Astral and Umbral forms): of the ship's own form it is ABSORBED (drunk:
+//   ASTRAL / UMBRAL   a shot's kind (Ikaruga's black-and-white switch as the Astral and Umbral forms): of the ship's own form it is ABSORBED (drunk:
 //                     the pool and the surge), of the other it hurts; 'gift' takes the ship's form when fired (the calm's)
 //   OUTLINED          wears the parry mark: only the roll answers it, sending it home to its thrower (Sin & Punishment's return)
 //   THE ROLL          its window turns any other shot aside (Star Fox 64's barrel roll)
@@ -22,7 +22,7 @@
 //
 // Prior art: every shmup's bullet pool (a fixed array, nothing allocated in the loop), BulletML's actions (accel, changeDirection, fire
 // on a timer), proportional navigation (a missile turns at N times the line of sight's rate: the Itano circus's homers), Ikaruga's
-// polarity, Star Fox 64's roll, Sin & Punishment's return.
+// black-and-white switch, Star Fox 64's roll, Sin & Punishment's return.
 //
 //   const F = new ShotField({ rail, cap })   F.build(scene)   F.fire(shot, { from, ship })   (a pattern's shot: patterns.js emit's shape)
 //   F.update(dt, { ship, waves })   F.clear()   F.show(on)   F.live   F.peak   F.counts { absorbed, hit, spent (in the mercy), turned, returned }

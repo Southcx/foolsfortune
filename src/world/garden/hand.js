@@ -11,11 +11,15 @@
 // under the hand back to its rest shape (its clay, its paint and its water: free). The model is the god hand's own (godhand/godhand.js; its clips: godhand/godhandclips.js); the strokes are the
 // clay's (world/garden/clay.js). Which art is up is said once in the log (garden.art); the hand's clip says the rest (a snap for the
 // art, pulling, patting, shooing, pointing to carve and place, a pat for a pet, a flick, a backhand for an undo, the grip to hold).
+// ON TOUCH (docs/plans/MOBILE.md 8.2): the art bar's WALK is no art up (`art` 'walk'): a tap on the ground sends the Pneuka Jar there
+// (`realm.goTo`, world/garden/tapgo.js); WATER's SPRING and DRAIN are toggles (`mod`) in place of Shift and Ctrl; the size slider sets
+// `size` (`setSize`). The finger's taps, drags and long presses are LMB and RMB already (core/touchcursor.js).
 //
 // Prior art: Black & White's hand (the cursor as your whole presence: pick up, throw, pat and slap), Populous's raise and lower,
 // From Dust's carved channels, and Animal Crossing's placing on a grid of plots.
 //
-//   const H = new GardenHand(realm)   H.update(dt)   H.art (ARTS)   H.held   H.size (metres)   H.keep(entry)   H.undoLast()   H.undo()
+//   const H = new GardenHand(realm)   H.update(dt)   H.art (ARTS, or 'walk')   H.mod (null | 'spring' | 'drain')   H.held   H.size (metres)
+//   H.setArt(a)   H.setSize(m)   H.keep(entry)   H.undoLast()   H.undo()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { sfx } from '../../audio/sfx.js';
@@ -60,14 +64,16 @@ export class GardenHand {
     this.point = new THREE.Vector3(); this.hit = null; this.downT = 0; this.stroke = null; this.brushT = 0; this.size = HAND.brush; this.undos = [];
     this.brush = new SculptBrush({ fx: realm.game.fx }); realm.site.group.add(this.brush.group); // (Calissa's: the ring on the clay under the hand)
     this.ground = GROUNDS[0]; this.feeling = null; // (PAINT's ground; WATER's feeling, null: your draught's)
-    this.resetAsk = null; this.clock = 0; // ({ planet, t } after the first Ctrl+Backspace; the hand's own real seconds)
+    this.resetAsk = null; this.clock = 0; this.mod = null; // ({ planet, t } after the first Ctrl+Backspace; the hand's own real seconds; WATER's toggle on touch)
   }
 
   setArt(a) {
-    if (!ARTS.includes(a) || a === this.art) return;
-    this.art = a; this.R.plots?.show(a === 'place' && !this.R.decorLayer?.on);
+    if (!(ARTS.includes(a) || a === 'walk') || a === this.art) return;
+    this.art = a; if (a !== 'water') this.mod = null; this.letGo(); this.R.plots?.show(a === 'place' && !this.R.decorLayer?.on);
     this.game.events?.emit('garden.art', { art: a, ground: a === 'paint' ? this.ground : undefined, feeling: a === 'water' ? this.feeling || undefined : undefined, by: 'courier' });
   }
+  /** The stroke's size from the touch size slider (metres; the keyboard's Shift and the wheel, within the same range). */
+  setSize(m) { this.size = THREE.MathUtils.clamp(+m || this.size, STROKE.size[0], STROKE.size[1] * (this.game.alchemy?.widen?.('visualization.canvas') ?? 1)); }
   /** A bought planetoid's seed in the hand (world/garden/orbit.js), until it is let go in the open sky. */
   carrySeed(id) {
     const mesh = new THREE.Mesh(new THREE.IcosahedronGeometry(0.8, 1), this.R.site.mats.lotus); mesh.name = 'garden-seed';
@@ -128,14 +134,15 @@ export class GardenHand {
     // the right button: a flick for the spirit under the hand
     if (I.wasPressed('Mouse2') && this.art !== 'water') { if (R.tribulation?.active) R.tribulation.flick(this.point); else { const b = this.pick(o, d); if (b?.kind === 'spirit') R.raising.flick(b.s); } } // (in the Heavenly Kiln, the flick sends a bolt back)
     switch (this.art) {
+      case 'walk': if (I.wasPressed('Mouse0') && this.hit && !this.pick(o, d)) R.goTo?.(this.hit.point); break; // (no art up: the Jar sent where the finger tapped)
       case 'grab': this.grab(dt, o, d); break;
       case 'paint': this.paint(dt); break;
-      case 'water': R.waterworks?.handle(dt, this.hit, { feeling: this.feeling, pour: I.isDown('Mouse0') && !shift && !ctrl, drink: I.isDown('Mouse2') && !shift, spring: shift && I.wasPressed('Mouse0'), drain: ctrl && I.wasPressed('Mouse0'), unset: shift && I.wasPressed('Mouse2') }); break;
+      case 'water': { const sp = shift || this.mod === 'spring', dr = ctrl || this.mod === 'drain'; R.waterworks?.handle(dt, this.hit, { feeling: this.feeling, pour: I.isDown('Mouse0') && !sp && !dr, drink: I.isDown('Mouse2') && !sp, spring: sp && I.wasPressed('Mouse0'), drain: dr && I.wasPressed('Mouse0'), unset: sp && I.wasPressed('Mouse2') }); break; } // (SPRING and DRAIN on touch are toggles: `mod`)
       case 'place': if (R.decorLayer?.on) { R.decorLayer.handle(dt, this); break; } if (I.wasPressed('Mouse0') && this.hit) { const p = R.plots.near(this.hit.point, 2.6); if (p && !p.placed) this.choose(p); } break;
       default: this.sculpt(dt);
     }
     // the brush's ring on the clay under the hand, for the four strokes
-    if (this.hit && !['grab', 'place'].includes(this.art)) { const P = this.hit.planet; this.brush.at(P.look, this.hit.point.clone().sub(P.c), this.art === 'water' ? 1.5 : this.size, this.art === 'pull' ? 'raise' : this.art === 'smooth' || this.art === 'flatten' || this.art === 'water' || this.art === 'paint' ? 'smooth' : 'dig'); this.brush.work(!!this.stroke); }
+    if (this.hit && !['grab', 'place', 'walk'].includes(this.art)) { const P = this.hit.planet; this.brush.at(P.look, this.hit.point.clone().sub(P.c), this.art === 'water' ? 1.5 : this.size, this.art === 'pull' ? 'raise' : this.art === 'smooth' || this.art === 'flatten' || this.art === 'water' || this.art === 'paint' ? 'smooth' : 'dig'); this.brush.work(!!this.stroke); }
     else this.brush.hide();
     this.brush.update(this.game.rawDt ?? dt);
     this.pose(dt);

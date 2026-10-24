@@ -29,7 +29,7 @@ import { stream } from '../../../core/rng.js';
 const simRand = stream('tools/veritome/mind/macros'); // (the simulation's chance: core/rng.js, the same twice)
 
 export const SLOTS = 5, SLOTS_MOST = SLOTS + 3; // (the row of spellscription.slots tops out at 3 more)
-const KEY = 'foolsfortune.veritome.macros';
+const KEY = 'veritomeMacros'; // (the save's section: the player's)
 
 /** A first macro, so that the first mind opened has something to be told: STIL, straight through (a good one: q 1). */
 const STARTER = { pieces: [{ fn: 'stil', x: 0, y: 2, rot: 0 }, { fn: 'wire', x: 2, y: 2, rot: 0 }, { fn: 'wire', x: 3, y: 2, rot: 0 }, { fn: 'wire', x: 4, y: 2, rot: 0 }, { fn: 'wire', x: 5, y: 2, rot: 0 }, { fn: 'wire', x: 6, y: 2, rot: 0 }] };
@@ -39,27 +39,29 @@ export class MacroBook {
   /** Once a second or so: any Function newly known (its fact photographed, its deed done) is announced, once (tracking.js says it). */
   watch(game) {
     this.game ||= game; this.fit(); // (a slot more as Spellscription widens: kept once opened)
-    if (!this.known) {
-      let s = null;
-      try { s = localStorage.getItem(`${KEY}.known`); } catch { s = null; }
-      // (the first time: what is known from the start is simply known, not announced)
-      this.known = new Set(s ? JSON.parse(s) : knownList(null).concat(Object.keys(FUNCTIONS).filter((id) => FUNCTIONS[id].how === 'Known from the start.')));
-    }
     let changed = false;
+    if (!this.known) { // (the first time: what is known from the start is simply known, not announced)
+      this.known = new Set(knownList(null).concat(Object.keys(FUNCTIONS).filter((id) => FUNCTIONS[id].how === 'Known from the start.'))); changed = true;
+    }
     for (const id of knownList(game.ledger)) if (!this.known.has(id)) { this.known.add(id); changed = true; if (FUNCTIONS[id].word) game.events?.emit('mind.learn', { fn: id }); }
-    if (changed) try { localStorage.setItem(`${KEY}.known`, JSON.stringify([...this.known])); } catch { /* this session */ }
+    if (changed) this.save();
   }
 
   constructor(game = null) {
-    this.game = game;
+    this.game = game; this.known = null;
+    this.take(null);
+    game?.save?.section(KEY, { scope: 'player', version: 1, dump: () => ({ slots: this.slots.map((l) => l.state()), names: this.names, known: this.known ? [...this.known] : null }),
+      load: (s) => this.take(s), reset: () => this.take(null) });
+  }
+  /** What was kept (`s`), or the two starter macros and nothing known yet. */
+  take(s) {
     this.slots = Array.from({ length: SLOTS }, () => new Lattice());
     this.names = new Array(SLOTS).fill('');
-    let s = null;
-    try { s = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { s = null; }
     if (s?.slots) s.slots.forEach((st, i) => { if (i < SLOTS_MOST) { this.slots[i] = new Lattice(st); this.names[i] = s.names?.[i] || ''; } });
     else { this.slots[0] = new Lattice(STARTER); this.slots[1] = new Lattice(STARTER2); }
+    this.known = Array.isArray(s?.known) ? new Set(s.known) : null;
   }
-  save() { try { localStorage.setItem(KEY, JSON.stringify({ slots: this.slots.map((l) => l.state()), names: this.names })); } catch { /* this session only */ } }
+  save() { this.game?.save?.dirty(KEY); }
   /** How many Functions a mind will take from one macro: MAX_EFFECTS, widened by Possession (at level 1, as it was). */
   cap() { return Math.floor(MAX_EFFECTS * (this.game?.psyche?.widen?.('possession.macro') ?? 1)); }
   /** The slots the Veritome keeps now: SLOTS, a slot more for each Spellscription widens (never fewer once opened), to SLOTS_MOST. */

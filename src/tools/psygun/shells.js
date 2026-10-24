@@ -55,7 +55,6 @@ export function buffRow(row, B = T.shells.buff) {
   for (const [k, keys] of Object.entries(BUFF_KEYS)) for (const key of keys) if (typeof n[key] === 'number') n[key] = key === 'count' || key === 'holds' ? Math.round(n[key] * B[k]) : n[key] * B[k];
   return { ...row, n };
 }
-const GUN_KEY = 'foolsfortune.psygun.v1';
 
 const UP = new THREE.Vector3(0, 1, 0);
 const _v = new THREE.Vector3(), _v2 = new THREE.Vector3();
@@ -66,8 +65,11 @@ export class Shells {
     this.game = game;
     this.selected = 0;
     this.counts = Object.fromEntries(SHELL_TYPES.map((t) => [t.id, T.shells.start]));
-    // the psygun they carry (tools/psygun/kinds.js): its chambers (which shell types are loaded) and how many of each it holds
-    this.loadGun();
+    // the psygun they carry (tools/psygun/kinds.js): its chambers (which shell types are loaded) and how many of each it holds; kept as
+    // the save's `psygun` section (the player's)
+    game.save?.section('psygun', { scope: 'player', version: 1, dump: () => ({ gun: this.gun.id, chambers: [...this.chambers] }),
+      load: (s) => this.setGun(s?.gun && PSYGUNS[s.gun] ? s.gun : DEFAULT_PSYGUN, s?.chambers, true), reset: () => this.setGun(DEFAULT_PSYGUN, null, true) });
+    if (!this.gun) this.setGun(DEFAULT_PSYGUN, null, true); // (no save: a tool's game)
     this.bladeIdx = 0;
     this.projectiles = [];
     this.wells = [];
@@ -87,12 +89,7 @@ export class Shells {
   max(id) { const i = this.chambers?.indexOf(id) ?? -1; return i >= 0 ? chamberCapacity(this.gun, i, id) : capacityOf(this.gun, id); }
 
   // ---------------------------------------------------------------- the psygun and its chambers (tools/psygun/kinds.js)
-  loadGun() {
-    let s = null;
-    try { s = JSON.parse(localStorage.getItem(GUN_KEY) || 'null'); } catch { /* none kept */ }
-    this.setGun(s?.gun && PSYGUNS[s.gun] ? s.gun : DEFAULT_PSYGUN, s?.chambers, true);
-  }
-  saveGun() { try { localStorage.setItem(GUN_KEY, JSON.stringify({ gun: this.gun.id, chambers: this.chambers })); } catch { /* this session only */ } }
+  saveGun() { this.game.save?.dirty('psygun'); }
   /** Carry another psygun: its own chambers (the loadout given, or its own), each type's count cut to what it holds. */
   setGun(id, chambers = null, quiet = false) {
     const G = PSYGUNS[id]; if (!G) return false;

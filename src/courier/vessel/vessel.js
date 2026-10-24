@@ -28,7 +28,6 @@ import { ECON } from '../../progress/econ/table.js';
 import { PALETTE } from '../../core/config.js';
 import { sfx } from '../../audio/sfx.js';
 
-const KEY = 'foolsfortune.vessel.v1';
 const LEARNED_MAX = 8;
 const _c = new THREE.Color(), _h = {};
 const SOUL = { L: 0.72, chroma: 1.2, strength: 0.8, off: [0.02, 0.12], bright: 0.8, boost: 6 }; // (the soul glow: Oklab lightness for every hue; chroma x the wheel's (so the lip, 1, still reads past the tiles' 0.65 inside the gamut); strength once off grey (saturation 0.02 .. 0.12); a true firing's x1.8, fading over 6 real seconds seen)
@@ -44,7 +43,8 @@ export class Vessel {
     this.t = 0; this.fireT = 0;
     this.soul = new THREE.Vector4(0, 0, 0, 0); // (the soul colour's glow, shared by every skin dressed: rgb, strength)
     this.soulBoost = 0; game.events?.on?.('alchemy.fire', (e) => { if (e.true) this.soulBoost = 1; }); // (a true firing: brighter for a few real seconds once they are seen again)
-    this.load();
+    game?.save?.section('vessel', { scope: 'player', version: 1, dump: () => ({ look: { ...this.look }, learned: this.learned, seq: this.seq || 0, bought: this.bought || {} }),
+      load: (s) => this.load(s), reset: () => this.load(null) }); // (its glazes, the player's: reset with each build)
   }
   get cost() { return Math.round(ECON.firing * ECON.perMinute); }
 
@@ -178,18 +178,17 @@ export class Vessel {
   }
 
   // ---------------------------------------------------------------- kept (progress: reset with each build)
-  save() { try { localStorage.setItem(KEY, JSON.stringify({ look: this.look, learned: this.learned, seq: this.seq || 0, bought: this.bought || {} })); } catch { /* this session only */ } }
+  save() { this.game?.save?.dirty('vessel'); }
   /** A shop glaze bought at Saggar's kiln (progress/shop/shops.js buyGlaze): theirs from now on. */
   buy(id) { if (!GLAZES[id]?.got?.shop) return false; (this.bought ||= {})[id] = true; this.save(); return true; }
-  load() {
-    try {
-      const s = JSON.parse(localStorage.getItem(KEY) || 'null');
-      if (!s) return;
-      this.learned = (s.learned || []).filter((g) => g?.id && Number.isFinite(g.color)).slice(-LEARNED_MAX);
-      this.bought = Object.fromEntries(Object.keys(s.bought || {}).filter((id) => GLAZES[id]?.got?.shop).map((id) => [id, true])); // (it was read, never written: Dovina's find)
-      this.seq = s.seq || 0;
-      for (const r of Object.keys(REGIONS)) if (s.look?.[r] && this.glaze(s.look[r])) this.look[r] = s.look[r];
-    } catch { /* nothing kept */ }
+  /** What was kept (`s`), or the vessel as it comes (null). */
+  load(s) {
+    this.look = Object.assign(this.look || {}, DEFAULT_LOOK); this.learned = []; this.bought = {}; this.seq = 0; // (the look kept as one object: what wears it reads it)
+    if (!s) return;
+    this.learned = (s.learned || []).filter((g) => g?.id && Number.isFinite(g.color)).slice(-LEARNED_MAX);
+    this.bought = Object.fromEntries(Object.keys(s.bought || {}).filter((id) => GLAZES[id]?.got?.shop).map((id) => [id, true])); // (it was read, never written: Dovina's find)
+    this.seq = s.seq || 0;
+    for (const r of Object.keys(REGIONS)) if (s.look?.[r] && this.glaze(s.look[r])) this.look[r] = s.look[r];
   }
 }
 

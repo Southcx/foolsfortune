@@ -16,9 +16,9 @@
 //             sixteenth apart, 3 Lachryma a lance (RayStorm)
 //   E         the barrel roll: 0.35 s; for its first quarter second it turns plain shots and sends an outlined shot near the hull home
 //             (the parry at sea: V retires on the rail, the owner's ruling); the Blink's two charges (Star Fox 64)
-//   Q         the FORMS (RAIL-OVERHAUL.md 4, the owner's idea): breach into the Astral form, dive into the Umbral (Ikaruga's polarity
-//             as Orta's forms): a shot of your form's kind is drunk, the other hurts; Astral fast, wide, a spread of three and eight locks,
-//             Umbral slower, tighter, one heavy shot and four locks; a hull that cannot dive refuses it. The old polarity rides with it
+//   Q         the FORMS (RAIL-OVERHAUL.md 4, the owner's idea): breach into the Astral form, dive into the Umbral (Ikaruga's black-and-white
+//             switch as Orta's forms): a shot of your form's kind is drunk, the other hurts; Astral fast, wide, a spread of three and eight locks,
+//             Umbral slower, tighter, one heavy shot and four locks; a hull that cannot dive refuses it. The old feeling flip rides with it
 //             (Astral is your feeling, Umbral its opposite) for the shots of a direct hop
 //   R         the SURGE: the absorbed Lachryma let go at once, a lance at everything on the screen and a half bar untouchable; it costs
 //             the chain (Panzer Dragoon's Berserk, Child of Eden's Euphoria)

@@ -11,7 +11,8 @@
 // The controls (the forms: PUZZLE-DUELS.md 4 and 11; the god hand is the cursor, the owner on board v11):
 //   the god hand      LMB on a piece and onto a neighbour: SWAP; held across three or more cells: DRAG; R: ROTATE the 2x2 under the
 //                     hand (its top-left); RMB on an empty cell: DROP the next queued piece; F: the FINISHER on a broken foe
-//   the Courier       LMB on a cell up to four away: RUN there; W A S D: PUSH that way, with Shift: KICK; each worn tool on its own
+//   the Courier       LMB on a cell up to four away: RUN there; W A S D: PUSH that way, with Shift: KICK (or a drag from the Courier
+//                     its way, from RMB held there a KICK: a finger's swipe on touch, MOBILE.md 8.5); each worn tool on its own
 //                     key: X Shoot (the psygun), Q Grab (the Sondelass), K Drill the way last faced (the Dreamvane), G Paint in the Soul
 //                     Brush's feeling (its pick), U Delay (the Crucibelle), I Hold, Shift+I Send (the Lockheart)
 //   both              ~ switches form (1 point), E flees (a d20 against 15, 3 points a failed try), Space ends the turn, Backspace
@@ -45,7 +46,7 @@ const _v = new THREE.Vector3(), _ndc = new THREE.Vector3();
 export class DuelSession {
   constructor(game) {
     this.game = game; this.active = false; this.state = null; this.foe = null; this.busy = false; this.botT = -1;
-    this.press = null; this.path = []; this.yieldT = 0; this.face = 'E'; this.hover = null;
+    this.press = null; this.path = []; this.yieldT = 0; this.face = 'E'; this.hover = null; this.swipe = null;
   }
   get view() { return this.game.duelView || null; }
   /** Your side's mover (side 0) while it is your turn. */
@@ -68,7 +69,7 @@ export class DuelSession {
     this.state = newDuel({ ruleset, seed: Math.floor(duelRand() * 2 ** 31), forms: ['hand', 'courier'], pool: [this.startPool, 30], tools: [tools, []],
       luck: [g.ledger ? Math.min(2, Math.floor(luckOf(g.ledger).level / 10)) : 0, 0], // (Luck's sway on a flee, 0..2: a tenth of its level, as ruled)
       rerolls: [g.rerolls?.left() ?? 0, 0] }); // (Luck's re-rolls left this game day: a failed Flee is thrown again, progress/duel/flee.js)
-    this.foe = c; this.feeling = feeling; this.active = true; this.busy = false; this.botT = -1; this.press = null; this.path = []; this.yieldT = 0;
+    this.foe = c; this.feeling = feeling; this.active = true; this.busy = false; this.botT = -1; this.press = null; this.path = []; this.yieldT = 0; this.swipe = null;
     for (const t of g.belt?.tools || []) if (t.wants || t.drawT > 0) t.stow(); // (nothing in the hands: the board is the fight)
     g.techs?.get('carry')?.drop?.();
     P.vel.set(0, 0, 0);
@@ -155,6 +156,20 @@ export class DuelSession {
     // the Courier
     const shift = input.isDown('ShiftLeft') || input.isDown('ShiftRight');
     for (const [k, dir] of Object.entries(WALK)) if (input.wasPressed(k)) { this.face = dir; return this.take({ kind: shift ? 'kick' : 'push', dir }); }
+    // a swipe that starts on the Courier steps them its way; a long press there first (RMB), then the swipe, kicks (MOBILE.md 8.5: a
+    // finger's, core/touchcursor.js; a mouse dragged from the Courier does the same)
+    const onMe = !!(cell && S.at && cell.x === S.at[0] && cell.y === S.at[1]);
+    if (onMe && (input.wasPressed('Mouse0') || input.wasPressed('Mouse2'))) { this.swipe = { from: cell, kick: input.wasPressed('Mouse2') }; return; }
+    if (this.swipe) {
+      const W = this.swipe;
+      if (!input.isDown('Mouse0') && !input.isDown('Mouse2')) this.swipe = null;
+      else if (cell && !sameCell(cell, W.from)) {
+        this.swipe = null;
+        const dx = cell.x - W.from.x, dy = cell.y - W.from.y, dir = Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 'E' : 'W') : dy > 0 ? 'S' : 'N';
+        this.face = dir; return this.take({ kind: W.kick ? 'kick' : 'push', dir });
+      }
+      return;
+    }
     if (input.wasPressed('Mouse0') && cell) { const path = this.runTo(cell); if (path) return this.take({ kind: 'run', path }); }
     for (const [k, kind] of Object.entries(TOOL_KEYS)) if (input.wasPressed(k)) {
       if (kind === 'drill') return this.take({ kind, dir: this.face });

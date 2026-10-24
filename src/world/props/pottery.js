@@ -6,6 +6,7 @@
 import * as THREE from 'three';
 import { PALETTE } from '../../core/config.js';
 import { stream } from '../../core/rng.js';
+import { wareGlossy } from '../../vfx/roomglazes.js';
 const simRand = stream('world/props/pottery'); // (the simulation's chance: core/rng.js, the same twice)
 
 
@@ -293,6 +294,10 @@ export function locateOnPot(P, p) {
  * open pot (a bowl, a plate, a cup), and just the lip of a pot with a neck, over a dark disc (you cannot see further down a jar's
  * mouth than that, and the shards are built from the profile, not from this mesh).
  */
+/** A glazed pot is dipped (the potter holds it by the foot): below this share of its height its body's clay shows (Calissa's room-glazes
+ *  ask; a glossy room glaze's ware only, vfx/roomglazes.js wareGlossy). */
+const DIP = { foot: 0.08 };
+
 export function buildPotGeometry(P, baseColor) {
   const S = P.segs;
   const us = meshUs(P);
@@ -310,10 +315,11 @@ export function buildPotGeometry(P, baseColor) {
   const innerCol = base.clone().multiplyScalar(0.62);
   const c = new THREE.Color();
   const cen = new THREE.Vector3();
+  const footY = wareGlossy(baseColor) ? DIP.foot * P.height : -1, clay = new THREE.Color(MATERIALS[P.mat]?.fracture ?? PALETTE.fracture); // (the foot left bare: its body's clay)
   const tri = (a, b, d, isInner) => {
     pos.push(a.x, a.y, a.z, b.x, b.y, b.z, d.x, d.y, d.z);
     if (isInner) c.copy(innerCol);
-    else { cen.copy(a).add(b).add(d).divideScalar(3); c.copy(base).multiplyScalar(patternAt(P, cen)); }
+    else { cen.copy(a).add(b).add(d).divideScalar(3); if (cen.y < footY) c.copy(clay); else c.copy(base).multiplyScalar(patternAt(P, cen)); }
     for (let k = 0; k < 3; k++) col.push(c.r, c.g, c.b);
   };
   const V = (arr, i, j) => arr[i * S + ((j + S) % S)];

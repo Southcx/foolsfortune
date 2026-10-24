@@ -265,6 +265,10 @@ export class GodMode {
     if (input.wasPressed('KeyQ')) C.yawT += Math.PI / 4;
     if (input.wasPressed('KeyE')) C.yawT -= Math.PI / 4;
     if (input.wheel) C.distT = THREE.MathUtils.clamp(C.distT * Math.exp(input.wheel * 0.0012), T.god.minDist, T.god.maxDist);
+    // two fingers' twist (core/touchcursor.js): an eighth at a time, as Q and E (MOBILE.md 8.4), the view turned with the fingers
+    C.twist = (C.twist || 0) + (input.touchDrag?.twist || 0);
+    if (input.touchDrag?.fingers < 2) C.twist = 0;
+    else if (Math.abs(C.twist) > Math.PI / 8) { const s = Math.sign(C.twist); C.yawT += s * Math.PI / 4; C.twist -= s * Math.PI / 4; }
     ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7'].forEach((k, i) => { if (input.wasPressed(k)) this.arts.selectDomain(String(i + 1)); }); // (a domain, then its arts in turn: arts.js ARTS)
   }
 
@@ -287,7 +291,7 @@ export class GodMode {
     if (input.isDown('KeyD')) px += 1;
     if (input.isDown('KeyA')) px -= 1;
     const E = T.god.edgeScroll, W = innerWidth, H = innerHeight;
-    if (this.t > 1 && input.mx >= 0 && input.my >= 0) {
+    if (this.t > 1 && input.mx >= 0 && input.my >= 0 && input.device !== 'touch') { // (no edge scroll under a finger: it rests where it lifted)
       if (input.mx < E) px -= 1; else if (input.mx > W - E) px += 1;
       if (input.my < E) pz += 1; else if (input.my > H - E) pz -= 1;
     }
@@ -296,6 +300,11 @@ export class GodMode {
       const right = _v2.set(Math.cos(C.yaw), 0, -Math.sin(C.yaw));
       const sp = C.dist * 0.75 * T.god.panSpeed * dt;
       C.focus.addScaledVector(fwd, pz * sp).addScaledVector(right, px * sp);
+    }
+    const G = input.touchDrag; // (two fingers' drag pans as a map does: the ground follows them, MOBILE.md 8.4)
+    if (G?.fingers >= 2 && (G.panX || G.panY)) {
+      const m = (2 * Math.tan(THREE.MathUtils.degToRad(this.camera.fov) / 2) * C.dist) / Math.max(1, H);
+      C.focus.addScaledVector(_v.set(-Math.sin(C.yaw), 0, -Math.cos(C.yaw)), G.panY * m).addScaledVector(_v2.set(Math.cos(C.yaw), 0, -Math.sin(C.yaw)), -G.panX * m);
     }
     // (on the tether)
     const V = this.jar;

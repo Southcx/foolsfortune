@@ -9,7 +9,7 @@
 //   placeRules({ on, log })
 // ---------------------------------------------------------------------------------------
 
-const ART = { grab: 'Grab: lift your Pneuka Jar, a spirit or a feature. Tap a spirit to pet it; the right button flicks it.', paint: 'Paint: lay a ground on the clay; the right button clears it. R turns the ground.', water: 'Water: pour with the left button, drink with the right; Shift sets a spring, Ctrl a drain. R turns the feeling.', flatten: 'Flatten: level the clay to where the stroke began.', roughen: 'Roughen: break up the clay.', pull: 'Pull: raise the clay.', press: 'Press: lower the clay.', carve: 'Carve: cut a channel for water.', smooth: 'Smooth: make the clay level.', place: 'Place: put a feature in a plot.' };
+const ART = { walk: 'Walk: tap the ground to send your Pneuka Jar there.', grab: 'Grab: lift your Pneuka Jar, a spirit or a feature. Tap a spirit to pet it; the right button flicks it.', paint: 'Paint: lay a ground on the clay; the right button clears it. R turns the ground.', water: 'Water: pour with the left button, drink with the right; Shift sets a spring, Ctrl a drain. R turns the feeling.', flatten: 'Flatten: level the clay to where the stroke began.', roughen: 'Roughen: break up the clay.', pull: 'Pull: raise the clay.', press: 'Press: lower the clay.', carve: 'Carve: cut a channel for water.', smooth: 'Smooth: make the clay level.', place: 'Place: put a feature in a plot.' };
 
 export function placeRules({ on, log }) {
   // the welcome waits for the title to close (FIRST-HOUR.md 3: said at session.open it scrolled by under the title, unseen)

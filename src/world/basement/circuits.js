@@ -25,7 +25,7 @@ import { sfx } from '../../audio/sfx.js';
 import { BRAID_DEF, SPINDLE_DEF } from './circuitrooms.js';
 
 const B = BASE_Y;
-const STORE = 'foolsfortune.circuits.v1';
+const STORE = 'circuitBests'; // (the save's section)
 const zone = (x0, x1, y0, y1, z0, z1) => [x0, x1, B + y0, B + y1, z0, z1];
 
 /** THE MILL RACE: the mill's own pieces in one loop (no new geometry). West to east across the cogs and the millstone, then the fork: the belts under the gates along the north wall, or the lifts, the gantry and the shuttle; the ferris wheel to its deck; back west and up the steam to the ledge, and drop to the start. */
@@ -58,7 +58,7 @@ export class Circuits {
     this.defs = new Map(CIRCUIT_DEFS.map((d) => [d.id, d]));
     this.run = null;
     this.best = {};
-    try { this.best = JSON.parse(localStorage.getItem(STORE) || '{}'); } catch { /* storage unavailable */ }
+    game.save?.section(STORE, { scope: 'player', version: 1, dump: () => this.best, load: (s) => { this.best = { ...s }; }, reset: () => { this.best = {}; } }); // (each circuit's best lap, the player's)
     this.beacons = new Map(); // gate -> beacon
     this.buildBeacons();
   }
@@ -189,7 +189,7 @@ export class Circuits {
     r.pb = !prev || total < prev.time;
     if (r.pb) {
       this.best[def.id] = { time: total, clean: r.clean, medal: r.medal, splits: r.splits.map((s) => ({ ...s, t: s.t + 0 })) };
-      try { localStorage.setItem(STORE, JSON.stringify(this.best)); } catch { /* storage unavailable */ }
+      this.game.save?.dirty(STORE);
     } else if (r.clean && !prev.clean) { prev.clean = true; }
     this.showBeacons(null);
     g.events?.emit('circuit.finish', { id: def.id, title: def.name, time: total, medal: r.medal, clean: r.clean, pb: r.pb, gates: r.splits.length, routes: r.routes.length });

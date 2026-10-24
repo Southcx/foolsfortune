@@ -338,6 +338,8 @@ import { PerfReadout } from './debug/perfreadout.js';
 import { StartAt } from './debug/startat.js';
 import { Qais } from './debug/qais/qais.js';
 import { installConsoleRing } from './debug/qais/attach.js';
+import { installReportButton } from './debug/qais/reportbutton.js';
+import { Settings } from './core/settings.js';
 import { MacroBook } from './tools/veritome/mind/macros.js';
 import { trimShadows } from './render/shadowtrim.js';
 import { installShadowKinds } from './render/shadowkinds.js';
@@ -388,7 +390,7 @@ async function main() {
   const save = new Save(); // (everything the game keeps, in one place: core/save.js)
   const freshBuild = save.boot(BUILD, save.unstash('mode') || save.lastMode()); // (a new build starts its progress afresh: the player's and the world's; and the save is the mode's chosen on the title, DEBUG or STORY: DEBUG-MODE.md section 2)
   const cloud = new CloudSave(save, { build: BUILD, mode: save.mode }); await cloud.boot(); // (the same save on every device: the published page's private store, 1.5 real s at most before anything loads: core/cloudsave.js)
-  loadTuning();
+  loadTuning(save); // (the tuning kept under its own key, through the save: core/config.js)
   const machine = detectMachine(), graphicsTier = applyBootTier(machine); // (the quality tier, read from the machine before anything is built: render/graphics.js)
   installTheme(); // (the windows' look, the faces, the glove: ui/theme.js)
   installToon(T.visual.toon ?? 1); // (the soft cel ramp on every lit material, before anything compiles: render/toon.js)
@@ -547,7 +549,7 @@ async function main() {
   game.brushLoad = new BrushLoad(game); // (the Soul Brush's load, seen: saturate, paint, mop, the slide on wet ground; driven by the brush's mechanics, vfx/brushload.js)
   game.parryMark = new ParryMark(game); // (what can be parried wears Lachryma, and nothing else: parryMark.mark(obj, { eta }); hot, with a glint, while V would answer it: vfx/parrymark.js)
   game.figmentTelegraphs = new FigmentTelegraphs(game); // (what Divination draws of a windup: figmentTelegraphs.show(id, figmentMarkOf(...), { origin, facing, eta }); vfx/figmenttelegraph.js, wired by creatures.windup and the timeline runner)
-  game.railLook = RailLook; // (the crossing's look for the rail: RAIL_VIEWS, swingLook, ShipWake, ShoalLook, BrigLook, BoarderLook, LeviathanLook; vfx/rail.js, the sloop's polarity/hurt/hoist)
+  game.railLook = RailLook; // (the crossing's look for the rail: RAIL_VIEWS, swingLook, ShipWake, ShoalLook, BrigLook, BoarderLook, LeviathanLook; vfx/rail.js, the sloop's feeling/hurt/hoist)
   level.build();
   mark('level');
   const spawnRoom = () => {
@@ -785,7 +787,7 @@ async function main() {
     events.emit('room.reset', {});
   };
 
-  const gui = buildTuningPanel((group, key) => {
+  const knobChanged = (group, key) => { // (a knob or a setting moved, on the panel or in the settings window: core/settings.js)
     if (group === 'physics' || group === '*') physics.setGravity(T.physics.gravity);
     if (group === 'movement' || group === '*') { player.applyTuning(); game.course?.refreshBoard(); }
     if (key === 'gunScale' || group === '*') character.setGunScale(T.weapon.gunScale);
@@ -802,7 +804,9 @@ async function main() {
     else if (group === 'visual' && TIER_KEYS.includes(key) && T.visual.graphics !== 'custom') T.visual.graphics = 'custom'; // (a knob the tier owns moved by hand: the preset is Custom, as on any PC)
     if (key === 'volume' || group === '*') sfx.setVolume(T.audio.volume);
     if (group === 'lachryma' || group === '*') { lachryma.baseMax = T.lachryma.max; lachryma.regenRate = T.lachryma.regenRate; lachryma.regenDelay = T.lachryma.regenDelay; }
-  }, {
+  };
+  game.knobChanged = knobChanged; game.settings = new Settings(game); // (the settings window's rows: core/settings.js)
+  const gui = buildTuningPanel(knobChanged, {
     copyJSON: () => navigator.clipboard?.writeText(JSON.stringify(T, null, 2)).then(() => game.log.say('system', 'Settings copied to the clipboard.', { key: 'settings.copy', throttle: 1 })),
     resetRoom,
     respawn: () => game.course?.respawnHere?.(), // (was R in the basement)
@@ -980,6 +984,7 @@ async function main() {
   } });
   // QAIS (F8): the owner's testing window, in every build but a public one (debug/qais/, docs/plans/QAIS.md)
   game.qais = QAIS_ON ? new Qais(game, { renderer, scene, camera }) : null;
+  if (QAIS_ON) installReportButton(game); // (a phone's F8: REPORT in the corner while touch play is on)
   if (game.qais) game.qais.onClose = () => { if (input.enabled && !cursorFree()) input.requestLock(); };
   // the opt-in Movement Arts (the jet arts: courier/moves/jets.js): switched on and off here, kept with the settings
   const OPT_ARTS = ['hover', 'rocket', 'skim'];
@@ -1043,7 +1048,7 @@ async function main() {
   overlay.addEventListener('click', start);
   game.pause = () => { if (!started || overlay.style.display !== 'none' || game.title?.active) return; overlay.style.display = 'flex'; input.enabled = false; input.onBlur(); }; // (the touch bar's pause: no lock to lose on a phone, MOBILE.md 4)
   installPlatform(game); // (the phone's page: no zoom or scroll, the screen kept awake, which way it is turned: core/platform.js)
-  game.help = new HelpMenu(document.getElementById('help'), () => overlay.style.display !== 'none' && !game.title?.active); // (the pause menu's pages: feedback/help/)
+  game.help = new HelpMenu(document.getElementById('help'), () => overlay.style.display !== 'none' && !game.title?.active, save); // (the pause menu's pages: feedback/help/)
   // --- the title: THE FOOL'S PRECIPICE (title/): drawn instead of the game until a choice is made ---
   const [tCharG, tGunG] = await Promise.all([loader.parseAsync(bytes(courierB64), ''), loader.parseAsync(bytes(gunB64), '')]);
   const titleScene = new TitleScene(game, { charG: tCharG, gunG: tGunG, clipPack, clapG });

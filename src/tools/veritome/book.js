@@ -26,6 +26,7 @@ export class Book {
     this.pins = [];    // where photographs were taken: { x, y, z, yaw, kind, stars }
     this.plates = [];  // the memory's plates (memory.js)
     this.facts = {};   // the bestiary's known facts (bestiary.js)
+    this.keep = game?.save?.keyed?.(KEY, 'player') || null; // (its plates' pictures are too big for the player's record: its own key, through the save)
     this.load();
     this.memory = new VeritomeMemory(this.plates);
     this.bestiary = new Bestiary(this.facts);
@@ -35,15 +36,11 @@ export class Book {
   save() {
     const plates = this.plates.slice(-40);
     const s = { photos: this.photos, pins: this.pins.slice(-60), plates, facts: this.facts };
-    try { localStorage.setItem(KEY, JSON.stringify(s)); } catch {
-      // (storage full: keep everything but the pictures in the memory)
-      try { localStorage.setItem(KEY, JSON.stringify({ ...s, plates: plates.map((p) => ({ ...p, thumb: null })) })); } catch { /* unavailable: the Book still works this session */ }
-    }
+    if (!this.keep || this.keep.put(JSON.stringify(s), { quiet: true })) return;
+    this.keep.put(JSON.stringify({ ...s, plates: plates.map((p) => ({ ...p, thumb: null })) })); // (storage full: everything but the memory's pictures; refused again, said once by the save)
   }
   load() {
-    try {
-      const s = JSON.parse(localStorage.getItem(KEY) || 'null');
-      if (s) Object.assign(this, { photos: s.photos || {}, pins: s.pins || [], plates: s.plates || [], facts: s.facts || {} });
-    } catch { /* nothing kept */ }
+    const s = this.keep?.json();
+    if (s) Object.assign(this, { photos: s.photos || {}, pins: s.pins || [], plates: s.plates || [], facts: s.facts || {} });
   }
 }

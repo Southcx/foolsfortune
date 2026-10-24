@@ -4,7 +4,7 @@
 //
 //   gun      the psygun on the rail: a shot each sixteenth while LMB is held, 70 m/s, gone in 0.9 s
 //   lance    the lock-on's: one at each painted target, turning onto it, worth four shots (RayStorm's lasers)
-//   plain    a foe's shot of a feeling: of the ship's own (its polarity) it is ABSORBED, drunk; of the other it hurts; the roll's first
+//   plain    a foe's shot of a feeling: of the ship's own (its form's feeling) it is ABSORBED, drunk; of the other it hurts; the roll's first
 //            quarter second turns it aside (Ikaruga, Star Fox 64)
 //   outlined   a foe's outlined shot: it wears the parry mark (vfx/parrymark.js, and nothing else does) and only the parry answers it,
 //            back at whoever threw it (Sin & Punishment); sent home it downs its thrower for three times the pay
@@ -15,7 +15,7 @@
 // `S.telegraphs.mark(target, seconds)`). Nothing here decides what a hit means: the ship (`hit`, `absorb`) and the waves (`hitAt`,
 // `strike`) do.
 //
-// Prior art: every shmup's bullet pool (a fixed array, no allocation in the loop), Ikaruga's polarity, RayStorm's lock-on lasers that
+// Prior art: every shmup's bullet pool (a fixed array, no allocation in the loop), Ikaruga's black-and-white switch, RayStorm's lock-on lasers that
 // curve onto their targets, Star Fox 64's barrel roll, Sin & Punishment's returned shot.
 //
 //   const S = new Shots(game, rail)   S.build(scene)   S.gun(p, dir)   S.lance(p, foe)   S.foe(p, vel, { aspect, outlined, from })

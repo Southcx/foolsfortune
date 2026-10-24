@@ -194,7 +194,7 @@ export class Emocean {
         ship: V.ship || 'sloop', downed: 0, spawned: 0, score: 0, chainBest: 0, volleyBest: 0, parried: 0, absorbed: 0, rolls: 0, pointBlank: 0, end: null, won: 0, stolen: 0, chain: chain(), legs: [], leg: null };
       this.trip.pars(); this.hazards.begin(); this.result = null; this.game.railReadout?.show?.(true); // (the legs' pars played out under the cover: par.js, about 40 ms a leg)
       this.lay(trip); this.rail.seat(0);
-      this.ship.begin(aspect, V.ship || 'sloop'); this.ship.look?.polarity?.(COLOR[aspect] ?? 0xffc65c);
+      this.ship.begin(aspect, V.ship || 'sloop'); this.ship.look?.feeling?.(COLOR[aspect] ?? 0xffc65c);
       this.shots.clear(); this.waves.begin(this.plan, aspect); this.mounts.begin(V.mounts || []);
       this.looks.begin(); this.show(true);
       g.character?.setHidden(true); document.body.classList.add('aboard');
@@ -370,7 +370,7 @@ export class Emocean {
       tally: { bears: left, per: SCORE.bears, total: left * SCORE.bears }, trip: { score, rank, medal } };
   }
 
-  /** The sea and the ship's looks: the breathers lay the swells down; the wake at speed; the hull's steady glow after a hit; polarity. */
+  /** The sea and the ship's looks: the breathers lay the swells down; the wake at speed; the hull's steady glow after a hit; the ship's feeling. */
   look(raw, bar) {
     const g = this.game, act = this.plan.acts.find((a) => bar >= a.from && bar < a.to), S = this.ship;
     this.calm = THREE.MathUtils.damp(this.calm ?? 0, act?.id === 'breather' ? 1 : 0, 1.2, raw);
@@ -379,7 +379,7 @@ export class Emocean {
     const sl = S.look;
     if (sl) {
       sl.hurt?.(Math.min(1, S.mercy / T.ship.mercy));
-      if (this.aspectWas !== S.aspect) { this.aspectWas = S.aspect; sl.polarity?.(COLOR[S.aspect] ?? 0xffc65c); }
+      if (this.aspectWas !== S.aspect) { this.aspectWas = S.aspect; sl.feeling?.(COLOR[S.aspect] ?? 0xffc65c); }
     }
   }
 

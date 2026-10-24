@@ -62,6 +62,7 @@ const RANGES = {
   'visual.grade': [0, 1, 0.05],
   'visual.warp': [0, 1, 0.05],
   'audio.volume': [0, 1.5, 0.01],
+  'camera.follow': [0, 1, 0.05],
 };
 
 /** The sections, in the order a person looks for them, each holding config groups (a group not named here falls into the last). */
@@ -78,6 +79,7 @@ const SETTING_LABEL = {
   'visual.upscale': 'upscale', 'visual.shadows': 'shadows', 'audio.volume': 'volume', 'charge.mode': 'a charge fires on',
   'visual.warp': 'storm warp', // (a placeholder for Espada's word)
   'visual.shake': 'screen shake',
+  'camera.follow': 'camera follow', 'audio.haptics': 'haptics', // (core/settings.js's rows: Espada's labels)
 };
 /** Words for the config's camelCase: "maxSlope" -> "max slope", "fpAdsFov" -> "fp ads fov". */
 export const words = (k) => k.replace(/([a-z0-9])([A-Z])/g, '$1 $2').replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2').toLowerCase();

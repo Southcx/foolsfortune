@@ -6,7 +6,7 @@
 //                   (Calissa's ring, ui/touch/stick.js) owns the area and is read instead.
 //   THE LOOK AREA   the right half: a drag turns the camera as the mouse does (input.dx / dy, TOUCH.look per px).
 //   THE CURSOR      where the pointer is free (the god hand, the Spirit Garden, a duel, the track editor: `game.cursorFree`), a finger is
-//                   the mouse: its point the cursor, its touch LMB held.
+//                   the mouse: a drag LMB, a tap a click, a long press RMB; two fingers the camera (core/touchcursor.js).
 //   THE CONTROLS    a tile on screen (its look and layout Calissa's, its words Espada's) is bound by its control id (`bind(id, el)`) and
 //                   presses what the bindings table says that control means in the live context (core/actions.js).
 // Every touch is the driver's alone (`preventDefault`): no page scroll, no zoom, no mouse echo after a tap (core/input.js also refuses
@@ -16,9 +16,10 @@
 // camera drag; Pointer Events' and Touch Events' identifiers for multitouch; VirtualKeys (coop/sibling.js) driving by key codes.
 //
 //   game.touch = new TouchDriver(game, input, actions, el)   .update()   .bind(id, el)   .control(id, on)   .release()   .active
-//   .state() -> { move, look, cursor } (the move area's origin and thumb, for the stick's look: Calissa's)   TOUCH
+//   .state() -> { move, look, cursor } (the move area's origin and thumb, for the stick's look: Calissa's; the cursor's mode)   TOUCH
 // ---------------------------------------------------------------------------------------
 import { StickMove } from './stickmove.js';
+import { TouchCursor } from './touchcursor.js';
 import { skiffTouchKeys } from '../progress/skifftouch.js';
 
 /** r: px of drag for a full push; follow: past this many r the origin is dragged along; look: camera px per px of drag. */
@@ -28,7 +29,7 @@ export class TouchDriver {
   constructor(game, input, actions, el) {
     this.game = game; this.input = input; this.actions = actions; this.el = el;
     this.stick = new StickMove(game, input, actions, 'touch');
-    this.move = null; this.look = null; this.cursor = null;
+    this.move = null; this.look = null; this.cursor = new TouchCursor(game, input);
     this.active = false; // (a touch seen this session: the shell's touch mode follows `input.device`)
     const opt = { passive: false };
     el.addEventListener('touchstart', (e) => this.start(e), opt);
@@ -43,37 +44,38 @@ export class TouchDriver {
     if (!this.input.enabled) return;
     for (const t of e.changedTouches) {
       const at = { id: t.identifier, x0: t.clientX, y0: t.clientY, x: t.clientX, y: t.clientY };
-      if (this.game.cursorFree?.()) { if (!this.cursor) { this.cursor = at; this.point(t); this.input.hold('Mouse0', true); } continue; }
+      if (this.game.cursorFree?.()) { this.cursor.down(t); continue; }
       if (t.clientX < innerWidth / 2) { if (!this.move) this.move = at; } else if (!this.look) this.look = at;
     }
   }
   moveTo(e) {
     e.preventDefault();
     for (const t of e.changedTouches) {
-      const m = this.move, l = this.look, c = this.cursor;
-      if (m?.id === t.identifier) {
+      const m = this.move, l = this.look;
+      if (this.cursor.has(t.identifier)) this.cursor.moveTo(t);
+      else if (m?.id === t.identifier) {
         m.x = t.clientX; m.y = t.clientY;
         const dx = m.x - m.x0, dy = m.y - m.y0, d = Math.hypot(dx, dy), far = TOUCH.follow * TOUCH.r;
         if (d > far) { m.x0 = m.x - (dx / d) * far; m.y0 = m.y - (dy / d) * far; } // (the stick follows a thumb that ran past it)
       } else if (l?.id === t.identifier) {
         this.input.dx += (t.clientX - l.x) * TOUCH.look; this.input.dy += (t.clientY - l.y) * TOUCH.look;
         l.x = t.clientX; l.y = t.clientY;
-      } else if (c?.id === t.identifier) this.point(t);
+      }
     }
   }
   end(e) {
     e.preventDefault();
     for (const t of e.changedTouches) {
-      if (this.move?.id === t.identifier) { this.move = null; this.stick.clear(); }
+      if (this.cursor.has(t.identifier)) this.cursor.up(t);
+      else if (this.move?.id === t.identifier) { this.move = null; this.stick.clear(); }
       else if (this.look?.id === t.identifier) this.look = null;
-      else if (this.cursor?.id === t.identifier) { this.point(t); this.cursor = null; this.input.hold('Mouse0', false); }
     }
   }
-  point(t) { this.input.mx = t.clientX; this.input.my = t.clientY; }
 
   /** Once a frame, before the game reads its input: the move area's push as the moves. While touch play's controls are up, their stick
    *  owns the move area (ui/touch/stick.js: it reports x, y, outer and carve) and is read instead of this driver's own. */
   update() {
+    if (this.cursor.fingers.size || this.cursor.mode) { if (this.game.cursorFree?.()) this.cursor.update(); else this.cursor.release(); } // (the pointer no longer free under a finger: it lets go)
     const UI = this.game.touchUI, S = UI?.on ? UI.stick : null;
     let x = 0, y = 0, held = false;
     if (S) { this.active = true; held = !!S.active; if (held) { x = S.x; y = S.y; } }
@@ -106,8 +108,8 @@ export class TouchDriver {
   control(id, on) { this.seen(); return this.actions.press('touch', id, on); }
   /** Everything let go (the page hidden, the window lost its focus). */
   release() {
-    if (this.cursor) { this.cursor = null; this.input.hold('Mouse0', false); }
+    this.cursor.release();
     this.move = null; this.look = null; this.stick.clear(); this.skiffKeys(null);
   }
-  state() { return { move: this.move && { ...this.move }, look: !!this.look, cursor: !!this.cursor }; }
+  state() { return { move: this.move && { ...this.move }, look: !!this.look, cursor: this.cursor.state() }; }
 }

@@ -27,6 +27,7 @@
 //   save.stash(key, text) / save.unstash(key) (this tab only, across one reload: a replay waiting for its page)
 //   save.code() -> 'FFS2...'   save.fromCode(code) -> ok   save.wipeProgress() (player and world wiped as a new build does it; the caller reloads the page)
 //   save.progress() -> { key: text }   save.putProgress(keys)   save.played() -> s   save.watchPage(then)   save.onFail = (key, why) => ...
+//   save.keyed(key, scope) -> { key, text(), json(fallback), put(value, { quiet }), remove() } (a store under its own key: the Book, the map, the tuning)
 //   codeOf(keys) -> 'FFS2...' (any progress as a code: another device's save kept in the Codex, core/cloudsave.js)
 // A hidden or closed page writes everything (a phone may never come back to the tab); a write the browser refuses is said once.
 // ---------------------------------------------------------------------------------------
@@ -38,14 +39,16 @@ const RECORD = { player: 'foolsfortune.save.player', world: 'foolsfortune.save.w
 const BUILD_KEY = 'foolsfortune.build', MODE_KEY = 'foolsfortune.mode', SHELF = 'foolsfortune.shelf.';
 export const MODES = ['debug', 'story'];
 
-/** Keys still written by their own modules, by scope (each owner moves its key into a section in its own round: docs/HANDOFFS.md). */
+/** Keys kept under their own names, by scope: a store too big for its scope's record or read before it (`save.keyed`: the Book, the map,
+ *  the tuning, kept so for good), and keys still written by their own modules until each owner moves its key into a section. */
 export const ADOPTED = {
-  player: ['foolsfortune.system', 'foolsfortune.stats', 'foolsfortune.veritome', 'foolsfortune.map', 'foolsfortune.course', 'foolsfortune.circuits',
-    'foolsfortune.trial', 'foolsfortune.flash', 'foolsfortune.vessel', 'foolsfortune.psygun',
-    'foolsfortune.pneuka'], // (the box's, the belt's and the Lockheart's keys before their sections: cleared, never written again)
+  player: ['foolsfortune.system', 'foolsfortune.stats', 'foolsfortune.trial', 'foolsfortune.flash',
+    'foolsfortune.veritome', 'foolsfortune.map', // (keyed for good: the Book, tools/veritome/book.js; the explored area, feedback/cartography.js)
+    'foolsfortune.course', 'foolsfortune.circuits', 'foolsfortune.vessel', 'foolsfortune.psygun', 'foolsfortune.pneuka'], // (keys before their sections, the macros' too: cleared, never written again)
   world: ['foolsfortune.shops', 'foolsfortune.ground', 'foolsfortune.wells'], // (the ground's and the Wells' keys before their sections: likewise)
   settings: ['foolsfortune.windows', 'foolsfortune.tuning', 'foolsfortune.help', 'foolsfortune.log', 'ff.vfx.overrides', 'ff.cine.overrides'],
-  // (the voice's, the music's and the rhythm mode's keys are sections now: audio/keep.js takes the old key in once and deletes it)
+  // (the tuning keyed for good, core/config.js; the pause menu's page and the log's fold are sections that take their old key in once;
+  //  the voice's, the music's and the rhythm mode's likewise, audio/keep.js)
 };
 const fnv = (t) => { let h = 0x811c9dc5; for (let i = 0; i < t.length; i++) h = Math.imul(h ^ t.charCodeAt(i), 16777619); return (h >>> 0).toString(16).padStart(8, '0'); };
 const scopeOfKey = (k) => Object.keys(ADOPTED).find((s) => ADOPTED[s].some((p) => k === p || k.startsWith(`${p}.`)));
@@ -65,8 +68,8 @@ export class Save {
   }
 
   read(key) { try { return JSON.parse(this.store?.getItem(key) || 'null'); } catch { return null; } }
-  write(key, value) {
-    try { this.store?.setItem(key, typeof value === 'string' ? value : JSON.stringify(value)); return true; } catch (e) { this.onFail?.(key, e?.name || 'error'); return false; } // (full, or the browser refuses: said once, main.js)
+  write(key, value, quiet = false) {
+    try { this.store?.setItem(key, typeof value === 'string' ? value : JSON.stringify(value)); return true; } catch (e) { if (!quiet) this.onFail?.(key, e?.name || 'error'); return false; } // (full, or the browser refuses: said once, main.js)
   }
 
   /** The mode the progress now stored belongs to: none stored yet, STORY for a person (FIRST-HOUR.md 5: the first pick does not reload),
@@ -122,6 +125,21 @@ export class Save {
   dirty(id) { const s = this.sections.get(id); if (s) this.dirt.add(s.scope); }
   /** An adopted key's owner that keeps changes a while before writing them (the ledger, the System): written too by flush({ all }). */
   writer(fn) { this.writers.add(fn); }
+  /** A key of its own, read and written through here (never localStorage itself), for a store kept apart from its scope's record:
+   *  one too big to write whole with the record at every flush (the Book's plates, the map's cells), or read before the sections are
+   *  (the tuning). Its key must be declared in ADOPTED under `scope`, so the wipe, the shelf, the export and the cloud copy know it.
+   *  While the save is held nothing is written (as `flush`). */
+  keyed(key, scope) {
+    if (scopeOfKey(key) !== scope) throw new Error(`save: the key ${key} is not declared under the ${scope} scope (ADOPTED)`);
+    const S = this;
+    return {
+      key,
+      text() { try { return S.store?.getItem(key) ?? null; } catch { return null; } },
+      json(fallback = null) { const t = this.text(); if (t == null) return fallback; try { return JSON.parse(t); } catch { return fallback; } }, // (corrupt: as none)
+      put(value, { quiet = false } = {}) { return S.holds.size ? false : S.write(key, value, quiet); }, // (quiet: a refusal its owner answers itself)
+      remove() { try { S.store?.removeItem(key); } catch { /* none */ } },
+    };
+  }
   /** Write every scope that changed, whole. Held: nothing is written (the marks wait). `all`: the adopted keys' owners write now too
    *  (an export, a replay's start: the save must be what the game is). */
   flush({ all = false } = {}) {
@@ -129,7 +147,7 @@ export class Save {
     if (all) for (const w of this.writers) { try { w(); } catch { /* its own business */ } }
     if (!this.dirt.size) return;
     for (const scope of this.dirt) {
-      const rec = { v: 1, at: Date.now(), sections: {} };
+      const rec = { v: 1, at: now(), sections: {} };
       for (const s of this.sections.values()) if (s.scope === scope) rec.sections[s.id] = { v: s.version, data: s.dump() };
       // (kept as the text written, read back: a dump may hand over its live arrays (the box's slots), and a record holding those would
       // change with the game, so a hold's release would put back the game as it is, not as it was written)
@@ -166,7 +184,7 @@ export class Save {
   /** Everything kept, as one text (a backup, a bug report). */
   export() {
     this.flush({ all: true });
-    const out = { v: 1, at: Date.now(), keys: {} };
+    const out = { v: 1, at: now(), keys: {} };
     if (this.store) for (let i = 0; i < this.store.length; i++) { const k = this.store.key(i); if (ours(k)) out.keys[k] = this.store.getItem(k); }
     return JSON.stringify(out);
   }

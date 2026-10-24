@@ -368,7 +368,7 @@ export function spawnBasement(Bk) {
 }
 
 // ---- runtime: checkpoints, reset floors, the index console, speed gates, splits ---------
-const STORE = 'foolsfortune.course.v1';
+const STORE = 'courseBests'; // (the save's section)
 
 export class Course {
   constructor(game) {
@@ -379,7 +379,7 @@ export class Course {
     this.lapT = null; // running lap time (from room 1's checkpoint)
     this.lapRooms = new Set();
     this.best = {};
-    try { this.best = JSON.parse(localStorage.getItem(STORE) || '{}'); } catch { /* storage unavailable */ }
+    game.save?.section(STORE, { scope: 'player', version: 1, dump: () => this.best, load: (s) => { this.best = { ...s }; }, reset: () => { this.best = {}; } }); // (the splits' bests, the player's)
     // the ring's checkpoints (a lap, with splits), then the tech lab's (no splits)
     this.ringN = CHECKPOINTS.length;
     this.cps = [...CHECKPOINTS, ...TECH_CPS.map((c) => ({ ...c, tech: true })), ...MILL_CPS.map((c) => ({ ...c, tech: true })), ...RIG_CPS.map((c) => ({ ...c, tech: true })), ...HAND_CPS.map((c) => ({ ...c, tech: true }))]
@@ -654,7 +654,7 @@ export class Course {
       this.lapT = 0;
       this.lapRooms.clear();
     }
-    try { localStorage.setItem(STORE, JSON.stringify(this.best)); } catch { /* storage unavailable */ }
+    this.game.save?.dirty(STORE);
     this.current = i;
     this.t = 0;
     this.running = true;

@@ -21,6 +21,7 @@
 //   PageUp / PageDown scroll, End jumps to the newest, [ and ] change tab.
 // ---------------------------------------------------------------------------------------
 import { speakerLine } from '../ui/siblingline.js';
+import { now as calendarNow } from '../core/calendar.js';
 export const CLASSES = {
   system: { color: '#ead9c6', tab: 'SYSTEM' },
   info: { color: '#fff1e0', tab: 'SYSTEM' },
@@ -82,7 +83,7 @@ const CSS = `
 `;
 
 const pad = (n) => String(n).padStart(2, '0');
-const clock = () => { const d = new Date(); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; };
+const clock = () => { const d = new Date(calendarNow()); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; }; // (the calendar's clock: a replay holds it)
 
 export class GameLog {
   constructor(game) {
@@ -114,8 +115,11 @@ export class GameLog {
     // minimised: only the tab strip (new lines light their tab); the button, or \\ (kept between visits)
     this.minEl = root.querySelector('.min');
     this.minEl.addEventListener('mousedown', (e) => { e.stopPropagation(); e.preventDefault(); this.setMini(!this.mini); });
-    let m = false; try { m = localStorage.getItem('foolsfortune.log.mini') === '1'; } catch { /* storage unavailable */ }
-    this.setMini(m);
+    // (kept as the save's `logView` section, the settings'; a save with none takes in the key the log once wrote itself, and deletes it)
+    const S = game?.save, old = S?.keyed?.('foolsfortune.log.mini', 'settings');
+    S?.section('logView', { scope: 'settings', version: 1, dump: () => ({ mini: !!this.mini }), load: (s) => this.setMini(!!s.mini, false),
+      reset: () => { const t = old?.text(); old?.remove(); this.setMini(t === '1', false); if (t != null) S.dirty('logView'); } });
+    if (!S) this.setMini(false, false);
     this.setTab(0);
     addEventListener('keydown', (e) => this.key(e));
     // the chat line (chat.js runs what is sent)
@@ -202,7 +206,7 @@ export class GameLog {
     this.mini = v;
     this.root.classList.toggle('mini', v);
     this.minEl.textContent = v ? '+' : '–';
-    if (keep) { try { localStorage.setItem('foolsfortune.log.mini', v ? '1' : '0'); } catch { /* storage unavailable */ } }
+    if (keep) this.game?.save?.dirty('logView');
     if (!v) { this.minEl.classList.remove('new'); this.body.scrollTop = this.body.scrollHeight; this.wake(); }
   }
 

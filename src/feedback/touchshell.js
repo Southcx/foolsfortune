@@ -7,10 +7,12 @@
 //   THE TOP BAR opens a window as the keyboard would, by its key sent as a key event, so the window's own listener and the game's
 //               reads both hear it: codex B, box P, map M, chat Enter, overhead ` (the garden's god hand view). settings and pause are
 //               the pause menu (`game.pause`: a phone has no pointer lock to lose).
+//   THE ART BAR (the Spirit Garden's, ui/touch/artbar.js) is the hand's: `touch.art { id }` sets its art (WALK, no art, included),
+//               `touch.mod { mod }` WATER's SPRING or DRAIN, `touch.size { size }` the stroke's size (world/garden/hand.js).
 //
 // Prior art: the virtual gamepad layer of the mobile ports (the view reports, the input layer decides); VirtualKeys (coop/sibling.js).
 //
-//   game.touchShell = new TouchShell(game)   .open(what)   .tile(id, down)   OPENS (what -> code)
+//   game.touchShell = new TouchShell(game)   .open(what)   .tile(id, down)   OPENS (what -> code)   events read: touch.art, touch.mod, touch.size
 // ---------------------------------------------------------------------------------------
 
 /** The top bar's windows, by the key the keyboard opens each with. */
@@ -23,6 +25,10 @@ export class TouchShell {
     this.game = game;
     const T = game.touchUI?.tiles;
     if (T) T.onPress = (id, down) => this.tile(id, down);
+    const hand = () => (game.realm?.active ? game.realm.hand : null), E = game.events;
+    E?.on('touch.art', (e) => hand()?.setArt(e.id));
+    E?.on('touch.mod', (e) => { const H = hand(); if (H) H.mod = e.mod || null; });
+    E?.on('touch.size', (e) => hand()?.setSize(e.size));
   }
   /** A tile pressed or let go (every touch tile reports here: ui/touch/presses.js). */
   tile(id, down) {

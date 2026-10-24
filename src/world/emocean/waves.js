@@ -3,7 +3,7 @@
 // bar, role, class, count, formation and lane; Dovina's), in the RAIL'S FRAME (x across, y up, z along: courier/ship/views.js).
 //
 //   school   the small fry in a formation: a LINE (eight across: one sweep of the lock-on), a VEE, a PINCER (from both flanks at once,
-//            one feeling a side: the polarity lesson, drawn from above), a RING; a stray shot of its feeling now and then
+//            one feeling a side: the forms' lesson, drawn from above), a RING; a stray shot of its feeling now and then
 //   darter   one class up: dashes across the lanes and spits OUTLINED shots at the camera (the parry lesson: V sends them home)
 //   heavy    two classes up: comes ahead and holds, soaking blows, a fan of shots of its feeling each bar and an outlined one each other
 //

@@ -13,7 +13,7 @@ import * as THREE from 'three';
 import { REL } from '../../creatures/ai/index.js';
 import { sfx } from '../../audio/sfx.js';
 import { ECON } from '../../progress/econ/table.js';
-import { stream } from '../../core/rng.js';
+import { stream, randDir } from '../../core/rng.js';
 import { OUTCOMES } from './table.js';
 import { PRESSURE } from '../../progress/stones.js';
 const simRand = stream('tools/lockheart/outcomes');       // (what the outcome decides: the chest's tier; core/rng.js, the same twice)
@@ -25,7 +25,7 @@ const foes = (g, at, r) => g.creatures.near(at, r).filter((c) => !c.ally);
 const burst = (g, at, n, color, { speed = 6, up = 4, life = 1.4, size = 0.12, gravity = 6, alpha = 0.8 } = {}) => {
   const fx = g.fx?.alpha; if (!fx?.emit) return;
   const c = new THREE.Color(color);
-  for (let i = 0; i < n; i++) { const d = new THREE.Vector3().randomDirection(); d.y = Math.abs(d.y) * up / speed + 0.2; fx.emit({ pos: at.clone(), vel: d.normalize().multiplyScalar(speed * rnd(0.4, 1)), life: life * rnd(0.6, 1), size, sizeEnd: size * 0.3, color: c, alpha, drag: 0.8, gravity }); }
+  for (let i = 0; i < n; i++) { const d = randDir(fxRand, new THREE.Vector3()); d.y = Math.abs(d.y) * up / speed + 0.2; fx.emit({ pos: at.clone(), vel: d.normalize().multiplyScalar(speed * rnd(0.4, 1)), life: life * rnd(0.6, 1), size, sizeEnd: size * 0.3, color: c, alpha, drag: 0.8, gravity }); }
 };
 
 export const OUTCOME_FX = {

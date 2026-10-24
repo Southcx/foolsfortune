@@ -18,6 +18,9 @@
 // The camera never goes under the ground (nor into the Chimney's needle, which is the ground's shape): from what it looks at out to where
 // it would stand, the first point within CLEAR of any planetoid's surface is as far as it goes, eased back out (every third-person
 // camera's spring arm). The overhead view is tethered the same way: zoomed out, it stops short of a planetoid between it and the ground.
+// ON TOUCH (docs/plans/MOBILE.md 8.2, core/touchcursor.js's `input.touchDrag`): two fingers dragged sideways turn the view (behind and first,
+// the world following the fingers), up and down tilt the first-person view; a pinch is the wheel. Overhead, the drag pans the view
+// over the ground (one finger too, with WALK up) and a twist turns its north, as a map does.
 // Events: garden.view { view }.
 //
 // Prior art: Super Mario Galaxy's camera (up is the planetoid's, the heading kept over the curve), the god games' straight-down map view
@@ -32,6 +35,7 @@ const CAM = { dist: 10, min: 5, max: 22, pitch: 0.42, turn: 1.8, lookUp: 0.8 }; 
 const FIRST = { eye: 0.75, pitch: -0.12, min: -1.1, max: 0.9, tilt: 0.08 }; // (metres over the Jar's middle; radians, and a wheel notch's)
 const OVER = { dist: 18, min: 9, max: 70, pan: 0.9, turn: 1.8 }; // (metres over the ground; pan speed in view-heights a real second)
 const CLEAR = { margin: 0.6, step: 0.35, out: 4 }; // (metres off the ground; metres a test along the arm; how fast it eases back out, a real second)
+const TOUCH_CAM = { turn: 0.007, tilt: 0.004 }; // (radians a px of two fingers' drag: the turn, the first person's tilt)
 const PRESS_VIEW = { fov: 44, dist: 12.6, pitch: 68, north: 1, in: 0.8, out: 0.5, zoom: 3 }; // (SOUL-ALCHEMY.md 4.3: degrees, metres, real seconds)
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _n = new THREE.Vector3(), _r = new THREE.Vector3(), _p = new THREE.Vector3(), _d = new THREE.Vector3(), _a = new THREE.Vector3(), _b = new THREE.Vector3();
 
@@ -103,6 +107,9 @@ export class GardenCamera {
     this.up.lerp(J.up, Math.min(1, dt * 4)).normalize();
     if (this.over) return this.overhead(dt, turn, wheel, typing);
     if (turn) this.fwd.applyAxisAngle(this.up, -turn * CAM.turn * dt);
+    const G = I.touchDrag; // (two fingers: their drag turns the view, the world following them)
+    if (G?.fingers >= 2 && G.panX) this.fwd.applyAxisAngle(this.up, G.panX * TOUCH_CAM.turn);
+    if (G?.fingers >= 2 && G.panY && this.view === 'first') this.pitch = THREE.MathUtils.clamp(this.pitch + G.panY * TOUCH_CAM.tilt, FIRST.min, FIRST.max);
     this.fwd.projectOnPlane(this.up).normalize(); // (carried along the surface: Galaxy's camera keeps its heading over the curve)
     // a held Jar is not followed: the view holds where it was when the hand picked it up
     if (J.held) this.anchor ||= J.pos.clone(); else this.anchor = null;
@@ -133,6 +140,9 @@ export class GardenCamera {
     const right = _r.crossVectors(O.north, n).normalize();
     const f = typing ? 0 : (I.isDown('KeyW') ? 1 : 0) - (I.isDown('KeyS') ? 1 : 0), r = typing ? 0 : (I.isDown('KeyD') ? 1 : 0) - (I.isDown('KeyA') ? 1 : 0);
     if (f || r) O.focus.addScaledVector(O.north, f * O.dist * OVER.pan * dt).addScaledVector(right, r * O.dist * OVER.pan * dt);
+    const G = I.touchDrag; // (a finger's drag, or two's, pans as a map does: the ground follows it; two fingers' twist turns the north)
+    if (G?.panX || G?.panY) { const m = (2 * Math.tan(THREE.MathUtils.degToRad(cam.fov) / 2) * O.dist) / Math.max(1, innerHeight); O.focus.addScaledVector(right, -G.panX * m).addScaledVector(O.north, G.panY * m); }
+    if (G?.twist) O.north.applyAxisAngle(n, G.twist);
     // back onto the ground under it (so the view stays a height over the surface, round the curve)
     const n2 = _w.copy(O.focus).sub(P.c).normalize();
     O.focus.copy(P.c).addScaledVector(n2, P.radiusAt ? P.radiusAt(n2) : P.r);

@@ -16,7 +16,7 @@
 // Past BOSS.enrage real s its eyes and combs quicken (their gaps times BOSS.quicken).
 //
 // Prior art: Homer's Charybdis (Odyssey XII: thrice a day it swallows the sea and spits it out), Rez's Area X and Star Fox 64's
-// all-range mode (the arena off the rail), Ikaruga's bosses that change their polarity on a beat.
+// all-range mode (the arena off the rail), Ikaruga's bosses that switch black and white on a beat.
 //
 //   const C = new Charybdis(stage)   C.begin(k, waypoint)   C.update(dt, bar)   C.end()   C.active   C.beaten
 //   events: charybdis.rise { feel }, charybdis.dive { feel }, charybdis.felled { feel, shards }, charybdis.driven { feel, hp }, all with `by`

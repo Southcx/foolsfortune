@@ -43,6 +43,9 @@ const LAYERS = [
 const BY_ZONE = Object.fromEntries(LAYERS.filter((l) => l.zone).map((l) => [l.zone, l]));
 const LAYER_BY_ID = Object.fromEntries(LAYERS.map((l) => [l.id, l]));
 const KEY = 'foolsfortune.map.v1';
+/** The map on touch: a long press's wait (ms, the choice card's), how far a finger may move and still be one (CSS px), how near the
+ *  waypoint a long press clears it (CSS px). */
+const MAP_TOUCH = { long: 420, still: 10, reach: 28 };
 const _v = new THREE.Vector3(), _v2 = new THREE.Vector3();
 const staticOnly = (c) => !c.isSensor() && !c.parent()?.isDynamic();
 
@@ -81,6 +84,7 @@ export class Cartography {
     this.open = false;
     this.view = { layer: 'ground', x: 0, z: 0, scale: 6, follow: true };
     this.stats = { charted: 0, understood: 0 };
+    this.keep = game.save?.keyed?.(KEY, 'player') || null; // (the explored area, too big for the player's record: its own key, through the save)
     this.load();
     this.buildMap();
     this.buildPulseFx();
@@ -348,13 +352,12 @@ export class Cartography {
         for (const c of this.cells[l.id].values()) if (c.k > 0.05) arr.push(c.ix, c.iz, Math.round(c.k * 100), c.w ? 1 : 0, Math.round(c.h * 10));
         out.layers[l.id] = arr;
       }
-      localStorage.setItem(KEY, JSON.stringify(out));
-    } catch { /* storage unavailable */ }
+      this.keep?.put(JSON.stringify(out));
+    } catch { /* a cell that would not write: this session only */ }
   }
 
   load() {
-    let raw = null;
-    try { raw = JSON.parse(localStorage.getItem(KEY) || 'null'); } catch { /* corrupt */ }
+    const raw = this.keep?.json();
     if (!raw?.layers) return;
     this.doneTags = new Set(raw.done || []);
     for (const l of LAYERS) {
@@ -430,26 +433,32 @@ export class Cartography {
     root.appendChild(bar);
     this.side = el('div', 'side');
     root.appendChild(this.side);
-    root.appendChild(el('div', 'legend', '<span style="opacity:.9">▒</span> sensed &nbsp; <span style="color:#d68c5a">■</span> charted &nbsp; <span style="color:#ffd696">■</span> understood &nbsp; <span style="color:#ffe0a0">◆</span> waypoint<br><span style="opacity:.6">drag · wheel · click sets waypoint · right click clears · the Dreamvane surveys (MMB)</span>'));
+    root.appendChild(el('div', 'legend', '<span style="opacity:.9">▒</span> sensed &nbsp; <span style="color:#d68c5a">■</span> charted &nbsp; <span style="color:#ffd696">■</span> understood &nbsp; <span style="color:#ffe0a0">◆</span> waypoint<br><span style="opacity:.6">drag · wheel · click sets waypoint · right click clears · the Dreamvane surveys (MMB) · on touch: drag, pinch, hold to set or clear</span>'));
     document.body.appendChild(root);
     this.root = root;
-    root.addEventListener('mousedown', (e) => { e.stopPropagation(); this.drag = { x: e.clientX, y: e.clientY, moved: 0, button: e.button }; root.style.cursor = 'grabbing'; });
-    addEventListener('mouseup', (e) => {
+    // pointer events, so a finger works as the mouse does (docs/plans/MOBILE.md 9, M2): a drag pans; two fingers pinch to zoom and pan
+    // by their middle; on touch a long press sets the waypoint (on it, clears it) where a click does with the mouse
+    root.style.touchAction = 'none';
+    this.fingers = new Map();
+    root.addEventListener('pointerdown', (e) => {
+      e.stopPropagation();
+      if (e.pointerType === 'touch') return this.fingerDown(e);
+      this.drag = { x: e.clientX, y: e.clientY, moved: 0, button: e.button }; root.style.cursor = 'grabbing';
+    });
+    addEventListener('pointerup', (e) => {
+      if (e.pointerType === 'touch') return this.fingerUp(e);
       if (!this.open || !this.drag) return;
       const d = this.drag; this.drag = null; root.style.cursor = '';
-      if (d.moved < 5 && e.target === this.canvas) {
-        const p = this.screenToWorld(e.clientX, e.clientY);
-        if (d.button === 2) this.waypoint = null;
-        else this.waypoint = { x: p.x, z: p.z, layer: this.view.layer };
-        sfx.click?.();
-      }
+      if (d.moved < 5 && e.target === this.canvas) this.mark(e.clientX, e.clientY, d.button === 2);
     });
-    addEventListener('mousemove', (e) => {
+    addEventListener('pointercancel', (e) => { if (e.pointerType === 'touch') this.fingerUp(e, true); });
+    addEventListener('pointermove', (e) => {
+      if (e.pointerType === 'touch') return this.fingerMove(e);
       if (!this.open || !this.drag) return;
       const dx = e.clientX - this.drag.x, dy = e.clientY - this.drag.y;
       this.drag.moved += Math.abs(dx) + Math.abs(dy);
       this.drag.x = e.clientX; this.drag.y = e.clientY;
-      this.view.x -= dx / this.view.scale; this.view.z -= dy / this.view.scale; this.view.follow = false;
+      this.pan(dx, dy);
     });
     root.addEventListener('wheel', (e) => { e.preventDefault(); e.stopPropagation(); this.view.scale = THREE.MathUtils.clamp(this.view.scale * Math.exp(-e.deltaY * 0.0012), 0.5, 40); }, { passive: false });
     root.addEventListener('contextmenu', (e) => e.preventDefault());
@@ -464,6 +473,47 @@ export class Cartography {
   }
 
   toggle() { this.open ? this.hide() : this.show(); }
+
+  /** The view moved by a drag of (dx, dy) CSS px. */
+  pan(dx, dy) { this.view.x -= dx / this.view.scale; this.view.z -= dy / this.view.scale; this.view.follow = false; }
+  /** The waypoint set where (x, y) is on screen, or cleared. */
+  mark(x, y, clear = false) {
+    const p = this.screenToWorld(x, y);
+    this.waypoint = clear ? null : { x: p.x, z: p.z, layer: this.view.layer };
+    sfx.click?.();
+  }
+  // ---- fingers (MAP_TOUCH: the long press's wait and its stillness, the waypoint's reach for a clear)
+  fingerDown(e) {
+    if (!this.open || this.fingers.size >= 2) return;
+    this.fingers.set(e.pointerId, { x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY, t0: performance.now() });
+    const L = this.game.touchUI?.longPress;
+    clearTimeout(this.pressT); L?.cancel();
+    if (this.fingers.size === 1 && e.target === this.canvas) {
+      L?.show(e.clientX, e.clientY, { ms: MAP_TOUCH.long });
+      this.pressT = setTimeout(() => this.longPress(e.pointerId), MAP_TOUCH.long);
+    }
+  }
+  fingerMove(e) {
+    const f = this.fingers.get(e.pointerId); if (!f || !this.open) return;
+    const others = [...this.fingers.entries()].filter(([id]) => id !== e.pointerId);
+    if (others.length) { // (two fingers: the pinch about their middle, and their middle's drag)
+      const o = others[0][1], d0 = Math.hypot(f.x - o.x, f.y - o.y) || 1, d1 = Math.hypot(e.clientX - o.x, e.clientY - o.y) || 1;
+      this.view.scale = THREE.MathUtils.clamp(this.view.scale * (d1 / d0), 0.5, 40);
+      this.pan((e.clientX - f.x) / 2, (e.clientY - f.y) / 2);
+    } else this.pan(e.clientX - f.x, e.clientY - f.y);
+    f.x = e.clientX; f.y = e.clientY;
+    if (Math.hypot(f.x - f.x0, f.y - f.y0) > MAP_TOUCH.still) { clearTimeout(this.pressT); this.game.touchUI?.longPress?.cancel(); }
+  }
+  fingerUp(e, cancel = false) {
+    if (!this.fingers.delete(e.pointerId)) return;
+    clearTimeout(this.pressT); if (!cancel) this.game.touchUI?.longPress?.cancel();
+  }
+  /** A finger held still: the waypoint set there, or cleared if it was on it. */
+  longPress(id) {
+    const f = this.fingers.get(id); if (!f || !this.open || this.fingers.size !== 1) return;
+    const W = this.waypoint, at = W && W.layer === this.view.layer ? this.worldToScreen(W.x, W.z) : null;
+    this.mark(f.x, f.y, !!at && Math.hypot(at.x - f.x, at.y - f.y) < MAP_TOUCH.reach);
+  }
 
   show() {
     const P = this.game.player, l = this.layerOf(P.pos);
@@ -503,6 +553,7 @@ export class Cartography {
   screenToWorld(sx, sy) {
     return { x: this.view.x + (sx - innerWidth / 2) / this.view.scale, z: this.view.z + (sy - innerHeight / 2) / this.view.scale };
   }
+  worldToScreen(x, z) { return { x: innerWidth / 2 + (x - this.view.x) * this.view.scale, y: innerHeight / 2 + (z - this.view.z) * this.view.scale }; }
 
   drawMap() {
     const c = this.mctx, V = this.view, P = this.game.player;

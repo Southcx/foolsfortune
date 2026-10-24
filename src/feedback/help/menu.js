@@ -32,11 +32,14 @@ const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&l
 
 export class HelpMenu {
   /** `root` is the menu's #help; `isOpen()` says whether the pause menu is up (the keys turn the pages only then). */
-  constructor(root, isOpen = () => true) {
-    this.root = root; this.isOpen = isOpen;
-    let at = 0;
-    try { at = Math.max(0, PAGES.findIndex((p) => p.id === localStorage.getItem(KEY))); } catch { /* the first page */ }
-    this.at = at;
+  constructor(root, isOpen = () => true, save = null) {
+    this.root = root; this.isOpen = isOpen; this.save = save; this.at = 0;
+    // (the page last open, kept as the save's `helpPage` section, the settings'; a save with none takes in the key the menu once wrote
+    // itself, and deletes it)
+    const pick = (id) => { this.at = Math.max(0, PAGES.findIndex((p) => p.id === id)); };
+    const old = save?.keyed?.(KEY, 'settings');
+    save?.section('helpPage', { scope: 'settings', version: 1, dump: () => ({ page: PAGES[this.at]?.id || null }), load: (s) => pick(s.page),
+      reset: () => { const t = old?.text(); old?.remove(); pick(t); if (t != null) save.dirty('helpPage'); } });
     if (!document.getElementById('helpcss')) { const st = document.createElement('style'); st.id = 'helpcss'; st.textContent = CSS; document.head.appendChild(st); }
     root.innerHTML = '<div class="hl"></div><div class="hp"></div>';
     this.list = root.querySelector('.hl'); this.page = root.querySelector('.hp');
@@ -60,7 +63,7 @@ export class HelpMenu {
     if (typeof i === 'string') i = PAGES.findIndex((p) => p.id === i);
     if (!(i >= 0 && i < PAGES.length) || i === this.at) return;
     this.at = i;
-    try { localStorage.setItem(KEY, PAGES[i].id); } catch { /* not kept */ }
+    this.save?.dirty('helpPage');
     sfx.menuMove?.();
     this.render();
   }
