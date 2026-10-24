@@ -40,6 +40,7 @@ import { raceModeRules } from './racemodes.js';
 import { casinoRules } from './casino.js';
 import { duelRules } from './duel.js';
 import { graphicsRules } from './graphics.js';
+import { touchPlayRules } from './touchplay.js';
 import { perfReadoutRules } from './perfreadout.js';
 import { startAtRules } from './startat.js';
 import { familiarityRules } from './familiarity.js';
@@ -88,6 +89,7 @@ export function areaRules(ctx) {
   casinoRules(ctx); // (Raku's bazaar: the chips, the tables, what happens at them: docs/plans/CASINO.md)
   duelRules(ctx); // (a puzzle duel with an aberrant: docs/plans/PUZZLE-DUELS.md)
   graphicsRules(ctx); // (the graphics tier, dynamic resolution: render/graphics.js)
+  touchPlayRules(ctx); // (touch play's settings: the layout kept, gyro steering's motion access: core/layoutkeep.js, core/gyrosteer.js)
   perfReadoutRules(ctx); // (/perf: the performance readout, debug/perfreadout.js; nothing counted)
   startAtRules(ctx); // (?at=: where the Courier was set down, debug/startat.js; nothing counted)
   lockheartRules(ctx); // (the Lockheart's Overload recoil) // (the god hand's matter, miracles, epics and the island's rejection)

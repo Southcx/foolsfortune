@@ -316,7 +316,7 @@ export const DEFAULTS = {
     lockheart: { enabled: true, openHold: 0.5 }, // I: the Lockheart: drinks spare Lachryma, opened with Possibilikeys, RMB held openHold real s with the odds shown (OVERLAY.md 19.8; src/tools/lockheart/)
     grapple: { reelMax: 26, reelAccel: 70, payV: 6, pump: 9, drag: 0.05, stop: 1.6, maxSpeed: 30, maxLen: 46, reelCost: 2 }, // the line of the grapnel (src/tools/sondelass/grapple.js, src/tools/sondelass/hookshot.js): reel, pay out, pump, let go
     kick: { enabled: true, radius: 0.85, damage: 60, launch: 6, heavyCap: 60, knock: 9, cooldown: 0.25, parrySpeed: 4.5, parryRadius: 2.0, parryOut: 12, parryIframes: 0.35, parryAssist: 0.45 }, // V
-    skiff: { enabled: true, hover: 0.5, cruise: 24, accel: 7, coast: 1.6, brake: 16, hoistTime: 1.0, furlTime: 0.6, pump: 3.2, turn: 2.0, grip: 5, maxSpeed: 42, slopeGain: 1.6, follow: 12, gravity: 24, boostMult: 1.45, boostAccel: 26, boostCost: 20, hop: 7.6, hopCharge: 6, hopTime: 0.3 }, // the Solar Skiff, in the dunes: Y stows / summons
+    skiff: { enabled: true, hover: 0.5, cruise: 24, accel: 7, coast: 1.6, brake: 16, hoistTime: 1.0, furlTime: 0.6, pump: 3.2, turn: 2.0, grip: 5, maxSpeed: 42, slopeGain: 1.6, follow: 12, gravity: 24, boostMult: 1.45, boostAccel: 26, boostCost: 20, hop: 7.6, hopCharge: 6, hopTime: 0.3, gyro: false }, // the Solar Skiff, in the dunes: Y stows / summons; gyro: on a phone, steered by turning it (core/gyrosteer.js; a setting)
     recoil: { enabled: true, charges: 3, kick: 5.4, chargedKick: 11, minDown: 0.35, horizontal: 0.6 }, // shoot down in the air
   },
   anim: {

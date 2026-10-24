@@ -21,6 +21,7 @@ export const SETTING_ROWS = [
   { id: 'look', path: 'camera.sensitivity', kind: 'slider', min: 0.2, max: 3, step: 0.05, label: 'Look sensitivity', line: 'How far the camera turns for how far you drag.' },
   { id: 'follow', path: 'camera.follow', kind: 'slider', min: 0, max: 1, step: 0.05, label: 'Camera follow', line: 'How quickly the camera swings back behind you after you stop dragging.' },
   { id: 'lockAuto', path: 'camera.lockAuto', kind: 'switch', label: 'Lock-on on touch', line: 'With a tool drawn on a phone, the lock-on takes the nearest foe in front by itself.' }, // (words a placeholder: Espada's)
+  { id: 'gyro', path: 'tech.skiff.gyro', kind: 'switch', label: 'Tilt to steer', line: 'On the Solar Skiff, turn the phone like a wheel to steer. A thumb on the stick still steers.' }, // (core/gyrosteer.js; words a placeholder: Espada's)
   { id: 'graphics', path: 'visual.graphics', kind: 'choice', choices: [['auto', 'Auto'], ['high', 'High'], ['low', 'Low'], ['minimum', 'Minimum']], label: 'Graphics', line: 'Lower runs smoother and cooler; higher looks finer.', lines: { auto: 'Picked for this device.' } },
   { id: 'volume', path: 'audio.volume', kind: 'slider', min: 0, max: 1.5, step: 0.05, label: 'Volume', line: 'How loud the game plays, music and sound together.' },
   { id: 'haptics', path: 'audio.haptics', kind: 'switch', label: 'Haptics', line: 'Small buzzes when you hop, land, hit or are hit. Only on devices that can buzz.' },
@@ -48,12 +49,13 @@ export class Settings {
     this.game.events?.emit('setting.change', { id, value: v, by: 'courier' });
     return true;
   }
-  /** Whether an action row can run here yet (the layout's reset waits for the layout editor: MOBILE.md 9, M5). */
-  available(id) { return id === 'layout' ? !!this.game.hudLayout?.resetLayout : !!this.row(id); }
-  /** An action row run (its confirm is the window's to ask first). */
+  /** Whether an action row can run here yet (the layout's reset: a layout kept, or the layout editor there to lay one out: MOBILE.md 9, M5). */
+  available(id) { return id === 'layout' ? !!(this.game.touchLayoutKeep?.get() || this.game.hudLayout?.resetLayout) : !!this.row(id); }
+  /** An action row run (its confirm is the window's to ask first): the layout's reset forgets the kept layout (core/layoutkeep.js) and
+   *  has the HUD lay itself out again. */
   run(id) {
     if (id !== 'layout' || !this.available(id)) return false;
-    this.game.hudLayout.resetLayout();
+    this.game.touchLayoutKeep?.clear(); this.game.hudLayout?.resetLayout?.();
     this.game.events?.emit('setting.change', { id, value: null, by: 'courier' });
     return true;
   }
