@@ -59,7 +59,7 @@ const MAJORS = ['fool', 'magician', 'priestess', 'empress', 'emperor', 'hieropha
   'justice', 'hanged', 'death', 'temperance', 'devil', 'tower', 'star', 'moon', 'sun', 'judgement', 'world'];
 /** The house deck's suits in its atlas order (vfx/bazaarfaces.js cardIndex), and a court's number in it. */
 const SUIT_ORDER = ['cups', 'swords', 'pentacles', 'wands'], COURT_R = { page: 11, knight: 12, queen: 13, king: 14 };
-const ATLAS_CARD = { w: 128, h: 208, cols: 16, back: 78, size: 2048 };
+const ATLAS_CARD = { w: 128, h: 208, cols: 16, back: 80, size: 2048, sizeH: 2304, foot: { x: 0, y: 2048 } }; // (back 80: the Arcana's back, in the atlas's foot: vfx/bazaarfaces.js ARCANA_BACK)
 
 const H = V.heart, F = V.front, cw = V.card.w, ch = V.card.h;
 /** Each place in the orbit (x right, y up from the feet, z forward), its turn (rad, a crossed card's quarter), its depth order. */
@@ -112,9 +112,10 @@ export class ReadingView {
   cellGeo(i) {
     this.geos ||= new Map();
     if (this.geos.has(i)) return this.geos.get(i);
-    const g = this.cardGeo.clone(), uv = g.attributes.uv, S = ATLAS_CARD.size;
-    const u0 = ((i % ATLAS_CARD.cols) * ATLAS_CARD.w) / S, v1 = 1 - (Math.floor(i / ATLAS_CARD.cols) * ATLAS_CARD.h) / S;
-    for (let k = 0; k < uv.count; k++) uv.setXY(k, uv.getX(k) ? u0 + ATLAS_CARD.w / S : u0, uv.getY(k) ? v1 : v1 - ATLAS_CARD.h / S);
+    const g = this.cardGeo.clone(), uv = g.attributes.uv, S = ATLAS_CARD.size, SH = ATLAS_CARD.sizeH, foot = i === ATLAS_CARD.back;
+    const px = foot ? ATLAS_CARD.foot.x : (i % ATLAS_CARD.cols) * ATLAS_CARD.w, py = foot ? ATLAS_CARD.foot.y : Math.floor(i / ATLAS_CARD.cols) * ATLAS_CARD.h;
+    const u0 = px / S, v1 = 1 - py / SH;
+    for (let k = 0; k < uv.count; k++) uv.setXY(k, uv.getX(k) ? u0 + ATLAS_CARD.w / S : u0, uv.getY(k) ? v1 : v1 - ATLAS_CARD.h / SH);
     this.geos.set(i, g); return g;
   }
   /** A card: its face, its back, and the edge of light behind it in its suit's colour. */

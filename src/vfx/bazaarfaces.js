@@ -33,22 +33,26 @@
 //
 //   bazaarAtlas() -> { tex, glow(), card(i, dim?), die(skin, face, dim?), tile(n, state, dim?), chip(kind, part), cup(), cloth(id), seat(colour, kind) }
 //   (each a uv rect [u0, v0, u1, v1]; `dim` asks the sunk twin)
-//   CARD_BACK   cardIndex(c) (a Querent card { r, s } -> its index)   DIE_SKINS   SUIT_INK
+//   CARD_BACK (the house deck's back)   ARCANA_BACK (the Major Arcana's, face down)   cardIndex(c) (a Querent card { r, s } -> its index)   DIE_SKINS   SUIT_INK
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { schillerInk } from './oxidation.js';
 import { SUIT_COLOURS } from '../progress/casino/table.js';
+import { drawHouseBack, drawArcanaBack } from './cardbacks.js';
 import { SEAT_NAMES, SEAT_KINDS, drawSeatCell, seatCellIndex } from './seatlook.js';
 
-const W = 2048, H = 2048;
+const W = 2048, H = 2304; // (the foot, 2048 to 2304, holds the Arcana's back: one cell no row of the square had room for)
 /** Where each kind of face lies in the atlas (pixels). 128 x 208 cards (16 x 5), 64 dice (32 x 5), 64 x 96 tiles, 64 chips, 24 seat cells
  *  of 64, five cloths of 256 in a row, then the dim twins (cards 48 x 78, dice 32, tiles 32 x 48) in the foot. */
 const AT = { card: { x: 0, y: 0, w: 128, h: 208, cols: 16 }, die: { x: 0, y: 1040, s: 64, cols: 32 }, tile: { x: 0, y: 1360, w: 64, h: 96 },
   chip: { x: 0, y: 1456, s: 64 }, seat: { x: 512, y: 1456, s: 64 }, cloth: { x: 0, y: 1520, s: 256, cols: 5 },
   stone: { x: 1280, y: 1520, s: 64, cols: 12 }, // (your stones d4 .. d12, 40 cells in the 768 x 256 the five cloths leave)
-  dimCard: { x: 0, y: 1776, w: 48, h: 78, cols: 42 }, dimDie: { x: 0, y: 1932, s: 32, cols: 64 }, dimTile: { x: 0, y: 1996, w: 32, h: 48 } };
+  dimCard: { x: 0, y: 1776, w: 48, h: 78, cols: 42 }, dimDie: { x: 0, y: 1932, s: 32, cols: 64 }, dimTile: { x: 0, y: 1996, w: 32, h: 48 },
+  arcanaBack: { x: 0, y: 2048, w: 128, h: 208, cols: 1 } };
 export const CARD_BACK = 78;
 const CARD_EDGE = 79;
+/** The Arcana's back (cardbacks.js): the Major Arcana face down, off the grid, in the atlas's foot. `card(ARCANA_BACK)` is its rect; it has no dim twin. */
+export const ARCANA_BACK = 80;
 /** A Querent card ({ r: 1..14, s: 0..3 }) as its index in the deck: the 22 Major Arcana first, then the suits in the seat suits' order. */
 export const cardIndex = (c) => 22 + c.s * 14 + (c.r - 1);
 /** The suits' inks (cups blue, swords green, pentacles yellow, wands red: SUIT_COLOURS, Dovina's data; cups, swords, pentacles, wands).
@@ -83,7 +87,7 @@ export function bazaarAtlas() {
   const card = (i, draw) => cell(g, AT.card, i, () => { g.scale(2, 2); draw(); }); // (a card is drawn in its 64 x 104 frame, fired at 2x)
   for (let i = 0; i < 22; i++) card(i, () => major(g, i));
   for (let s = 0; s < 4; s++) for (let r = 1; r <= 14; r++) card(cardIndex({ r, s }), () => minor(g, r, s));
-  card(CARD_BACK, () => back(g)); card(CARD_EDGE, () => { g.fillStyle = K.cream; g.fillRect(0, 0, 64, 104); });
+  card(CARD_BACK, () => drawHouseBack(g)); cell(g, AT.arcanaBack, 0, () => { g.scale(2, 2); drawArcanaBack(g); }); card(CARD_EDGE, () => { g.fillStyle = K.cream; g.fillRect(0, 0, 64, 104); });
   let k = 0; const dieAt = {};
   for (const key of SKIN_ORDER) { const atk = key.startsWith('atk'), sides = +key.replace('atk', ''); dieAt[key] = k; for (let f = 0; f < sides; f++, k++) dieCell(g, k, sides, f, atk ? DIE_SKINS.atk : DIE_SKINS[sides]); }
   dieAt.cup = k; dieCell(g, k++, 0, 0, DIE_SKINS.cup);
@@ -123,7 +127,7 @@ export function bazaarAtlas() {
       stoneCells(g2, dieAt, { body: '#000', ink: '#fff' });
       glow = new THREE.CanvasTexture(c2); glow.colorSpace = THREE.SRGBColorSpace; return glow;
     },
-    card: (i, dim = false) => dim ? rect(AT.dimCard.x + (i % AT.dimCard.cols) * AT.dimCard.w, AT.dimCard.y + Math.floor(i / AT.dimCard.cols) * AT.dimCard.h, AT.dimCard.w, AT.dimCard.h)
+    card: (i, dim = false) => i === ARCANA_BACK ? rect(AT.arcanaBack.x, AT.arcanaBack.y, AT.arcanaBack.w, AT.arcanaBack.h) : dim ? rect(AT.dimCard.x + (i % AT.dimCard.cols) * AT.dimCard.w, AT.dimCard.y + Math.floor(i / AT.dimCard.cols) * AT.dimCard.h, AT.dimCard.w, AT.dimCard.h)
       : rect(AT.card.x + (i % AT.card.cols) * AT.card.w, AT.card.y + Math.floor(i / AT.card.cols) * AT.card.h, AT.card.w, AT.card.h),
     edge: () => ATLAS.card(CARD_EDGE),
     die: (skin, f, dim = false) => { const c = dieCell_(skin, f), A = /^stone(4|6|8|10|12)$/.test(skin) ? AT.stone : dim ? AT.dimDie : AT.die; return rect(A.x + (c % A.cols) * A.s, A.y + Math.floor(c / A.cols) * A.s, A.s, A.s, 1); },
@@ -233,15 +237,6 @@ function minor(g, r, s) {
   else { poly(g, [[25, 34], [25, 28], [28, 31], [32, 26], [36, 31], [39, 28], [39, 34]], K.gold); if (r === 14) { box(g, 31, 21, 2, 6, K.gold); box(g, 29, 23, 6, 2, K.gold); } }
   suit(g, s, 32, 72, 12, K.cream);
 }
-/** The back: the title's cards' back (title/scene.js: plum, cream moons and stars, mirrored), the great moon in the schiller. */
-function back(g) {
-  box(g, 0, 0, 64, 104, '#e8d7b6'); box(g, 3, 3, 58, 98, '#3a2148'); g.strokeStyle = K.gold; g.lineWidth = 1; g.strokeRect(5.5, 5.5, 53, 93);
-  for (const [x, y, r] of [[32, 18, 6], [32, 86, 6], [14, 34, 4], [50, 34, 4], [14, 70, 4], [50, 70, 4]]) circ(g, x, y, r, '#d9c7b0');
-  const grad = g.createRadialGradient(30, 50, 2, 32, 52, 10); grad.addColorStop(0, sch(0.1)); grad.addColorStop(0.5, sch(0.45)); grad.addColorStop(1, sch(0.8));
-  circ(g, 32, 52, 9, grad); circ(g, 35, 50, 7, '#3a2148');
-  for (const [x, y] of [[22, 52], [42, 52], [32, 34], [32, 70]]) star(g, x, y, 2.5, 1, 4, K.gold, 0);
-}
-
 // ------------------------------------------------------------------ the dice
 /** One face of a die: its glaze, its numeral (or the d6's pips; the d4's three corner numbers, read from the vertex on top). */
 function dieCell(g, c, sides, f, skin, A = AT.die) {

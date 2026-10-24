@@ -17,6 +17,7 @@
 import { ARCANA, EMBLEM } from './arcana.js';
 import { ECON } from '../../progress/econ/table.js';
 import { CREATURES } from './bestiary.js';
+import { drawBackOn } from '../../vfx/cardbacks.js';
 
 export const WORTH = ECON.condense; // (progress/econ/table.js: the rebalance of R38 cut it to about a quarter at the top)
 
@@ -54,6 +55,7 @@ export function cardArt(id, w = 120, h = 200, { back = false } = {}) {
   g.strokeStyle = gold; g.lineWidth = Math.max(1.5, w * 0.025); roundRect(g, w * 0.05, w * 0.05, w * 0.9, h - w * 0.1, w * 0.05); g.stroke();
   g.lineWidth = 1; roundRect(g, w * 0.09, w * 0.09, w * 0.82, h - w * 0.18, w * 0.04); g.stroke();
   g.fillStyle = gold; g.textAlign = 'center'; g.textBaseline = 'middle';
+  if ((back || !A) && A?.section === 'arcana') { drawBackOn(g, 'arcana', w, h); CACHE.set(key, c); return c; } // (a Major Arcana face down: the Arcana's back, vfx/cardbacks.js)
   if (back || !A) {
     // the back: the Veritome's own cover (a clock, a compass rose, the lens)
     const cx = w / 2, cy = h / 2, R = w * 0.3;
