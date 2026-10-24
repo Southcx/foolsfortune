@@ -109,7 +109,7 @@ export class TouchStick {
     const g = this.game, P = placeOf(g);
     // (the finger is the hand in the garden held upright and under the god hand: no stick there to take its touches, MOBILE.md 8.2)
     // (and wherever the pointer is free, the duel, the track editor, the haunt, the hand: the finger is the cursor there; the garden held sideways keeps the Jar's stick)
-    const show = !!on && !windowOpen(g) && !g.god?.controlling && !(g.realm?.active && P.portrait) && !(g.cursorFree?.() && !g.realm?.active);
+    const show = !!on && !windowOpen(g) && !g.god?.controlling && !(g.realm?.active && P.portrait) && !(g.cursorFree?.() && !g.realm?.active) && !g.touch?.screenTaken?.(); // (screenTaken: Celestial mode's paper or the rhythm mode's pads hold the whole screen, Petra's core/touch)
     if (show !== this.on) { this.on = show; this.el.classList.toggle('off', !show); if (!show && this.active) { this.pid = null; this.release(); } }
     if (!show || !this.active) return;
     if (!this.dirty && now - this.drawnAt < 1 / STICK.rate) return;
