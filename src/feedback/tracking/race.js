@@ -53,6 +53,7 @@ export function raceRules({ on, L, log }) {
     log.say('record', `Finished ${e.of > 1 ? `${ORD(e.place)} of ${e.of} ` : ''}in ${clock(e.seconds)}${e.recordClass ? ` (${e.recordClass.toUpperCase()})` : ''}${e.medal ? `: ${MEDAL[e.medal]}.` : '. No medal this time.'}`, { key: 'race.finish', throttle: 2 });
   });
   on('skiff.paint', (e) => { if (e.by !== 'courier') return; L.inc('skiff.paint'); L.inc(`skiff.paint.${e.kind}`); });
+  on('skiff.set', (e) => { log.say('skiff', `Your board wears the ${e.label} set${e.skipped?.length ? ` (not yet made: ${e.skipped.join(', ')})` : ''}${e.refused?.length ? `; shut or too dear: ${e.refused.join(', ')}` : ''}.`, { key: 'skiff.set', throttle: 0.5 }); }); // (a DEBUG command's: counted nowhere; vfx/skiffsets.js)
   on('skiff.tune', (e) => { if (e.by === 'courier') L.inc('skiff.tune'); });
   on('skiff.setup', (e) => { if (e.by === 'courier' && e.how === 'save') L.inc('skiff.setup'); });
   on('race.end', (e) => { if (e.why === 'left') log.say('warn', 'You leave the Raceway. The race is off.', { key: 'race.end', throttle: 2 }); else if (e.why === 'retired') { L.inc('race.raceway.retired'); log.say('skiff', 'You retire from the race.', { key: 'race.end', throttle: 2 }); } });

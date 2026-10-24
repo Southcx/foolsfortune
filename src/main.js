@@ -311,6 +311,7 @@ import { SeaHull } from './ui/seahull.js';
 import { Race } from './world/raceway/race.js';
 import { SkiffParts } from './progress/skiffparts.js';
 import { SkiffPaint } from './progress/skiffpaint.js';
+import { skiffSetCommands } from './vfx/skiffsets.js';
 import { TrackEditor } from './world/raceway/editor.js';
 import { Haunt } from './world/raceway/haunt.js';
 import { PoolCaps } from './progress/poolcaps.js';
@@ -906,7 +907,7 @@ async function main() {
   game.startAt = new StartAt(game); // (?at=dunes|raceway|godhand|workshop: set down there after the title; debug/startat.js)
   mudraCommands(game); // (/mudra: the god hand holds one of its poses, DEBUG: godhand/mudras.js)
   installCalibrateButtons(game); // (the Sight's TRACK buttons, set by a plate's pick and a charted room: ui/calibratebutton.js)
-  game.skiffParts = new SkiffParts(game); game.skiffPaint = new SkiffPaint(game); game.trackEditor = new TrackEditor(game); game.haunt = new Haunt(game); // (made tracks and the haunt mode: world/raceway/editor.js, haunt.js; TRACK-EDITOR.md) game.skiffSettings = new SkiffSettings(game); game.poolCaps = new PoolCaps(game); // (the Solar Skiff's garage and settings, after the chat line they speak on: progress/skiffparts.js, courier/skiff/skiffsettings.js; caps on the pool, a cracked region 5% of its max until mended: progress/poolcaps.js)
+  game.skiffParts = new SkiffParts(game); game.skiffPaint = new SkiffPaint(game); skiffSetCommands(game); game.trackEditor = new TrackEditor(game); game.haunt = new Haunt(game); // (made tracks and the haunt mode: world/raceway/editor.js, haunt.js; TRACK-EDITOR.md) game.skiffSettings = new SkiffSettings(game); game.poolCaps = new PoolCaps(game); // (the Solar Skiff's garage and settings, after the chat line they speak on: progress/skiffparts.js, courier/skiff/skiffsettings.js; caps on the pool, a cracked region 5% of its max until mended: progress/poolcaps.js)
   // the party: the siblings (coop/party.js), each a Courier of its own: the rig's model is parsed when one is called, never at boot
   const makeRig = async () => { // (another Courier's rig: a sibling's or a guest's, its model parsed when it comes, never at boot)
     const [cG, gG] = await Promise.all([loader.parseAsync(bytes(courierB64), ''), loader.parseAsync(bytes(gunB64), '')]);
