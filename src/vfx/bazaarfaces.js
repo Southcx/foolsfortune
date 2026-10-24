@@ -2,7 +2,7 @@
 // THE BAZAAR'S FACES (docs/plans/CASINO.md section 9; Dovina's handoff of 2026-10-15, items 2 to 5): every face Raku's tables show,
 // painted once into one canvas atlas, so the cards, the dice, the Zodiac tiles, the chips and the three cloths are one texture and one
 // stock material (vfx/bazaarpieces.js builds the bodies). No words: only what a real card, die, tile or chip carries.
-//   (GROWN 2026-10-15, the casino clarity pass, Calissa's brief section 5: the atlas is 2048 x 2048; cards 128 x 208 with a big corner
+//   (GROWN 2026-10-15, the casino clarity pass, Calissa's brief section 5: the atlas is 2048 x 2048, grown to 2048 x 2304 on 2026-10-24 for the Arcana back's cell at its foot; cards 128 x 208 with a big corner
 //   index, dice faces 64 x 64, tiles 64 x 96, chips 64 x 64, SEAT CELLS (eight colours x rim, token, plate: vfx/seatlook.js), and DIM
 //   TWINS of the cards, dice faces and tiles, drawn smaller and sunk into the felt for what may not be touched. Words are the DOM's.)
 //   - THE HOUSE DECK: the 78 cards of a Tarot, drawn in a 64 x 104 frame and fired at 2x (the title's falling cards' size and back: title/scene.js, its moons and
