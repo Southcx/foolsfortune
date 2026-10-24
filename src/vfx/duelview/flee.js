@@ -5,8 +5,8 @@
 //                   chance as a published rate ("FLEE 30%", `fleeOdds(state, 0)`), in the System's type (Cinzel for the word, Jersey 15
 //                   for the number) as the Lockheart's reliquary publishes its break chances (lockheartreliquary/dial.js); faint while
 //                   the turn is not yours or the points will not pay for it
-//   THE ROLL        the 'flee' event { roll, bonus, need, mods, ok }: a d20 of Raku's dice set (vfx/bazaarpieces.js, the plum d20 with
-//                   the schiller in its numerals) thrown from the Courier's figurine before the board, tumbling, coming to rest
+//   THE ROLL        the 'flee' event { roll, bonus, need, mods, ok }: your own d20 (the owner, 2026-10-23: the stones are your dice), Raku's
+//                   dice set's body (vfx/bazaarpieces.js) in the mineral of the stones you wear (the vessel's STONES glaze, its fire as a glow) thrown from the Courier's figurine before the board, tumbling, coming to rest
 //                   before the Courier's half with `roll` turned to you, its window over it; then its reasons counted in as the score ceremony counts (ui/scoreceremony.js):
 //                   ROLL, then each modifier that is not nought (LINE held or lost, BREAK +3 a stun depth, PITY +3 a failed try, LUCK)
 //                   lighting in and rolling the total up, against the 15 it must reach, and the verdict: a tick in the film, or a cross
@@ -24,6 +24,8 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { bazaarMaterials, dieTpl, dieRest } from '../bazaarpieces.js';
+import { bazaarAtlas } from '../bazaarfaces.js';
+import { GLAZES } from '../../courier/vessel/glazes.js';
 import { fleeOdds, FLEE } from '../../progress/duel/flee.js';
 import { VERD, J15, CZ, film, rng } from '../lockheartreliquary/look.js';
 import { DUEL_VIEW, sm, ease, clamp01 } from './layout.js';
@@ -58,9 +60,10 @@ export class DuelFlee {
   constructor(view) {
     this.view = view; this.group = new THREE.Group(); this.group.name = 'duel-flee'; view.frame.add(this.group);
     this.oddsP = plate(56, 22, 0.56); this.rollP = plate(76, 74, 0.62); this.group.add(this.oddsP.mesh, this.rollP.mesh);
-    const T = dieTpl(20, '20', DIE_K), geo = new THREE.BufferGeometry();
+    const T = dieTpl(20, 'stone20', DIE_K), geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(T.pos, 3)); geo.setAttribute('normal', new THREE.BufferAttribute(T.nrm, 3)); geo.setAttribute('uv', new THREE.BufferAttribute(T.uv, 2));
-    this.die = new THREE.Mesh(geo, bazaarMaterials().glaze); this.die.visible = false; this.die.castShadow = false; this.group.add(this.die);
+    this.stoneMat = new THREE.MeshStandardMaterial({ name: 'flee-stone', map: bazaarAtlas().tex, roughness: 0.12, metalness: 0.05, emissiveIntensity: 0.18 });
+    this.die = new THREE.Mesh(geo, this.stoneMat); this.die.visible = false; this.die.castShadow = false; this.group.add(this.die);
     this.run = null; this.linger = 0; this.t = 0; this.board = { w: 20, h: 20 };
   }
 
@@ -93,10 +96,16 @@ export class DuelFlee {
     const R = rng(e.roll * 31 + reasons.length + 7), axis = new THREE.Vector3(R() - 0.5, R() - 0.5, R() - 0.5).normalize(), turns = 9 + R() * 5;
     const count = THROW + 0.25, dur = count + reasons.length * PER + VERDICT + HOLD;
     this.run = { e, reasons, from, restQ, axis, turns, count, dur, age: 0 }; this.linger = 0;
+    this.dress(); // (your die, in your stones' mineral: the stones are your dice, DICE.md 7)
     this.die.visible = true; this.die.scale.setScalar(1); this.rollP.mat.opacity = 1; this.oddsP.mesh.visible = false;
     return { events: [e], dur, step: (u, age) => { this.run.age = age; this.place(age); this.draw(age); }, end: () => { this.place(dur); this.draw(dur); this.linger = LINGER; } };
   }
 
+  /** The die in the mineral of the stones you wear (the vessel's STONES region, glazes.js gems): the house's d20 numerals on your stone. */
+  dress() {
+    const G = GLAZES[this.view.game?.vessel?.look?.stones] || GLAZES.maker, M = this.stoneMat;
+    M.color.setHex(G?.color ?? 0xffffff); M.emissive.setHex(G?.color2 ?? 0xffffff); M.roughness = Math.max(0.06, G?.rough ?? 0.1);
+  }
   /** The die where its throw has it: an arc from the figurine, tumbling about one axis down to rest, one small hop as it lands. */
   place(age) {
     const R = this.run; if (!R) return;

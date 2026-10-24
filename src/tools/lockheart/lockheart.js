@@ -2,7 +2,8 @@
 // THE LOCKHEART: the seventh of the Courier's psychic tools. A little coffin on a chain, worn at the neck (the one place there is: so
 // they start with it on). It is weaponised luck.
 //
-//  - IT DRINKS: worn, it takes the Lachryma they cannot hold (what they gain over the top of their pool: lachryma.js 'overflow'). Drawn
+//  - IT DRINKS: worn, it takes the Lachryma they cannot hold (what they gain over the top of their pool: lachryma.js 'overflow'), the worn
+//    stone's share of it (progress/stones.js `overflow.lockheart`: the Maker's 0.8, onyx all, amethyst none); the palm die condenses what is left. Drawn
 //    and held out, LMB held HOOVERS: loose Lachryma in front of them is drawn in (baubles; liquid ones, turned dark, count double: what
 //    has been let go of is what it is for), and a mind laid low (stunned, asleep, melted: stun.js) has its Lachryma drawn out of it
 //    (Luigi's Mansion's Poltergust). A crystal shard fed to it from the Pneuka Box fills it nearly half.
@@ -44,6 +45,7 @@ import { T } from '../../core/config.js';
 import { buildCoffin, buildThing } from '../../pneuka/thingmodels.js';
 import { HEARTS, OUTCOMES, oddsOf, rates, spin, keyBreaks, catchOdds } from './table.js';
 import { catchFactor } from '../../progress/combat/emo.js';
+import { stoneOf } from '../../progress/stones.js';
 import { deckDraw } from '../../progress/econ/deck.js';
 import { OUTCOME_FX } from './outcomes.js';
 import { weatherAt, placeOf } from '../../progress/weather.js';
@@ -333,7 +335,7 @@ export class Lockheart extends HeldTool {
     if (this.drawTarget === 0 && this.moves.busy) this.moves.cancel(); // (put away mid-flail: let go now, not frozen mid-swing until the holster)
     this.coffin(); this.charmKeys();
     // (the overflow: hooked once the pool exists)
-    if (!this.hooked && g.lachryma) { this.hooked = true; g.lachryma.on('overflow', (e) => { if (e.source !== 'lockheart' && this.worn) this.feed(e.amount * 0.8, 'overflow'); }); } // (its passive, worn as the main or the sub: progress/toolpairs.js SUB_GIFTS)
+    if (!this.hooked && g.lachryma) { this.hooked = true; g.lachryma.on('overflow', (e) => { if (e.source !== 'lockheart' && this.worn) this.feed(e.amount * (stoneOf(g.vessel?.look?.stones).overflow?.lockheart ?? 0.8), 'overflow'); }); } // (its passive, worn as the main or the sub: progress/toolpairs.js SUB_GIFTS; its share the worn stone's, as the palm die reads it: progress/dice.js)
     this.hooverW = THREE.MathUtils.damp(this.hooverW, this.hoovering && this.held ? 1 : 0, 10, dt);
     if (this.hooverW > 0.05) this.hoover(dt);
     this.wheel.update(raw);

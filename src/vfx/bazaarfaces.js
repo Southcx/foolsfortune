@@ -56,6 +56,7 @@ export const DIE_SKINS = {
   4: { body: '#7fb7a0', ink: '#1c3a30' }, 6: { body: '#efe6d2', ink: '#5a1e2a' }, 8: { body: '#2f5aa8', ink: '#f2d27a' },
   10: { body: '#7a3e18', ink: '#f4e3c0' }, 12: { body: '#a8322a', ink: '#f2d27a' }, 20: { body: '#2a1a3a', ink: null },
   atk: { body: '#d9a441', ink: '#3a1a12' }, cup: { body: '#3b2418', ink: '#d9a441' },
+  stone: { body: '#f6f2ec', ink: '#241820' }, // (your own d20: a pale body a stone's colour tints, its numerals dark: vfx/duelview/flee.js)
 };
 /** The cloths in the atlas, in their order (an unknown table's id falls back to the first). */
 const CLOTHS = ['querent', 'zodiac', 'eventhorizon', 'supernova', 'nebula'];
@@ -77,6 +78,7 @@ export function bazaarAtlas() {
   dieAt.cup = k; dieCell(g, k++, 0, 0, DIE_SKINS.cup);
   dieAt.ash = k; ashCell(g, k++);
   const dieCount = k;
+  dieAt.stone20 = k; for (let f = 0; f < 20; f++, k++) dieCell(g, k, 20, f, DIE_SKINS.stone); // (after dieCount: no dim twin, the dim rows are full)
   for (let n = 1; n <= 12; n++) for (const [j, st] of ['open', 'locked'].entries()) tileCell(g, (n - 1) * 2 + j, n, st);
   tileCell(g, 24, 0, 'back');
   [['1', '#efe6d2', '#5a1e2a'], ['5', '#b8322a', '#f4e3c0'], ['25', '#2f5aa8', '#e8c35a'], ['gold', '#e8c35a', '#7a4a12']].forEach(([, body, ink], j) => chipCells(g, j, body, ink));
