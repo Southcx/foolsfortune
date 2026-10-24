@@ -16,7 +16,7 @@
 
 /** dead: the push under which there is none; walk: under it, the walk; key: a direction's component past which its key is held;
  *  outer: the ring, a push past it the sprint (on foot) or the carve (on the skiff, touch). */
-export const STICK = { dead: 0.15, walk: 0.55, key: 0.38, outer: 1.15 };
+export const STICK = { dead: 0.15, walk: 0.55, key: 0.38, outer: 1.5 }; // (the ring at 90 px of a 60 px push: the stick's own band, ui/touch/stick.js)
 const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
 
 export class StickMove {
@@ -24,8 +24,9 @@ export class StickMove {
   key(code, on) { if (on === this.keys.has(code)) return; if (on) this.keys.add(code); else this.keys.delete(code); this.input.hold(code, on); }
 
   /** x right, y forward; their length is the push (past 1 is past the ring). `sprint`: the driver's own (the pad's latch); `steerFull`:
-   *  the push that is a full steer (touch 1, the pad's 0.9). */
-  set(x, y, { sprint = false, steerFull = 1, noAD = false } = {}) {
+   *  the push that is a full steer (touch 1, the pad's 0.9); `outer` and `carve`: what a stick that measures its own band says (the touch
+   *  controls' ring, ui/touch/stick.js: past its band; -1, 0, 1), in place of the push's; `noAD`: Dovina's (the glide's thumb). */
+  set(x, y, { sprint = false, steerFull = 1, outer = null, carve = null, noAD = false } = {}) {
     const push = Math.hypot(x, y), L = this.actions.live(), inp = this.input;
     if (push < STICK.dead) return this.clear();
     this.on = true;
@@ -36,10 +37,10 @@ export class StickMove {
     this.key('KeyW', !skiff && uy > STICK.key); this.key('KeyS', !skiff && uy < -STICK.key);
     const foot = L.has('foot');
     this.key('AltLeft', foot && push < STICK.walk);
-    const wantSprint = foot && (sprint || push >= STICK.outer);
+    const past = outer ?? push >= STICK.outer, wantSprint = foot && (sprint || past);
     this.key('ShiftLeft', wantSprint && (this.keys.has('ShiftLeft') || this.game.player?.grounded !== false));
-    const carve = skiff && !L.has('skiff.air') && this.kind === 'touch' && push >= STICK.outer ? (x < 0 ? 'move.outerL' : 'move.outerR') : null;
-    if (carve !== this.ctl) { if (this.ctl) this.actions.press('touch', this.ctl, false); if (carve) this.actions.press('touch', carve, true); this.ctl = carve; }
+    const side = carve ?? (past ? Math.sign(x) : 0), ctl = skiff && !L.has('skiff.air') && this.kind === 'touch' && side ? (side < 0 ? 'move.outerL' : 'move.outerR') : null;
+    if (ctl !== this.ctl) { if (this.ctl) this.actions.press('touch', this.ctl, false); if (ctl) this.actions.press('touch', ctl, true); this.ctl = ctl; }
   }
   clear() {
     if (!this.on) return; this.on = false; // (only what this stick set: a pad at rest never wipes a thumb's push)

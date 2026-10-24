@@ -218,7 +218,7 @@ import { Actions } from './core/actions.js';
 import { TouchDriver } from './core/touchdriver.js';
 import { PadDriver } from './core/paddriver.js';
 import { installPlatform } from './core/platform.js';
-import { TouchBar } from './feedback/touchbar.js';
+import { TouchShell } from './feedback/touchshell.js';
 import { installContextLoss } from './render/contextloss.js';
 import { Agent } from './agent/agent.js';
 import { installPlaces } from './world/places.js';
@@ -1042,7 +1042,7 @@ async function main() {
   };
   overlay.addEventListener('click', start);
   game.pause = () => { if (!started || overlay.style.display !== 'none' || game.title?.active) return; overlay.style.display = 'flex'; input.enabled = false; input.onBlur(); }; // (the touch bar's pause: no lock to lose on a phone, MOBILE.md 4)
-  installPlatform(game); game.touchBar = new TouchBar(game); // (the phone's page: no zoom or scroll, the screen kept awake, which way it is turned; the pause and the windows' buttons: core/platform.js, feedback/touchbar.js)
+  installPlatform(game); // (the phone's page: no zoom or scroll, the screen kept awake, which way it is turned: core/platform.js)
   game.help = new HelpMenu(document.getElementById('help'), () => overlay.style.display !== 'none' && !game.title?.active); // (the pause menu's pages: feedback/help/)
   // --- the title: THE FOOL'S PRECIPICE (title/): drawn instead of the game until a choice is made ---
   const [tCharG, tGunG] = await Promise.all([loader.parseAsync(bytes(courierB64), ''), loader.parseAsync(bytes(gunB64), '')]);
@@ -1173,6 +1173,7 @@ async function main() {
   game.railReadout = new RailReadout(game); game.railResults = new RailResults(game); // (the crossing's score aboard and the trip's results window, built on first use: ui/railreadout.js, ui/railresults.js; RAIL-STANDARDS.md 6)
   game.goalsWindow = new GoalsWindow(game); // (the game day's three goals as a System window, on /goals and a beat at goals.set and goal.done: ui/goalswindow.js)
   installTouchControls(game); // (touch play's controls, their look: built only once touch is on, ui/touch/index.js)
+  game.touchShell = new TouchShell(game); // (what those controls do: a tile pressed through the bindings, the top bar's windows by their keys: feedback/touchshell.js)
   game.overlayScene.compile(); // (the overlay's meshes, against the canvas they are drawn into)
   game.post.compile(); // (the glow's own passes: a scene of their own, which compileAsync(scene) does not see)
   if (!window.__noPrime) primeDraw(renderer, scene, camera, game.post.target); // (a test harness may skip it: it is a long frame on a software GL)

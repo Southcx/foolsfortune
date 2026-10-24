@@ -26,8 +26,8 @@ input, textarea, [contenteditable] { -webkit-user-select: text; user-select: tex
 export function installPlatform(game) {
   const st = document.createElement('style'); st.setAttribute('data-platform', ''); st.textContent = CSS; document.head.appendChild(st);
   document.addEventListener('gesturestart', (e) => e.preventDefault(), { passive: false }); // (Safari's pinch)
-  const vp = document.querySelector('meta[name="viewport"]');
-  if (vp && !/viewport-fit/.test(vp.content)) vp.content += ', viewport-fit=cover, maximum-scale=1'; // (the notch's safe area is the page's; no zoom)
+  const vp = document.querySelector('meta[name="viewport"]'); // (index.html says viewport-fit=cover, or iOS reports no safe insets; a page that lost it gets it back)
+  if (vp && !/viewport-fit/.test(vp.content)) vp.content += ', viewport-fit=cover, maximum-scale=1';
 
   // ---- awake while playing on touch
   let lock = null;
