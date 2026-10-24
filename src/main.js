@@ -381,9 +381,10 @@ function primeDraw(renderer, scene, camera, like) {
 
 // boot timings: window.__boot (ms at each stage since the page began), for profiling the load
 const BOOT = (window.__boot = []);
-const mark = (n) => BOOT.push([n, Math.round(performance.now())]);
+const mark = (n) => { BOOT.push([n, Math.round(performance.now())]); window.__bootWatch?.stage?.(n); }; // (and said under the loading line, kept as the tab's breadcrumb: index.html's boot watch)
 
 async function main() {
+  if (window.__bootWatch) window.__bootWatch.build = BUILD; // (named in the breadcrumb: which build stopped)
   mark('main');
   if (QAIS_ON) installConsoleRing(); // (the last warnings and errors, for a QAIS report: debug/qais/attach.js)
   const seedArg = new URLSearchParams(location.search).get('seed'); // (?seed=N: a page that must play the same twice, the stress test's)
@@ -1553,7 +1554,7 @@ async function main() {
 }
 
 main().catch((e) => {
-  console.error(e);
+  console.error(e); window.__bootWatch?.fail?.(e);
   const l = document.getElementById('loading');
   if (l) l.textContent = `Failed to start: ${e.message}`;
 });
