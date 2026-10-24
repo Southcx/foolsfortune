@@ -328,6 +328,8 @@ import { Overture } from './cine/overture.js';
 import { OVERTURE_TITLE } from './cine/overture.board.js';
 import { TRACKS as SOUNDTRACKS } from './music/soundtest.js';
 import { Diag } from './debug/diag.js';
+import { PerfReadout } from './debug/perfreadout.js';
+import { StartAt } from './debug/startat.js';
 import { Qais } from './debug/qais/qais.js';
 import { installConsoleRing } from './debug/qais/attach.js';
 import { MacroBook } from './tools/veritome/mind/macros.js';
@@ -870,6 +872,8 @@ async function main() {
   // the chat line in the log: words said aloud, /commands, emotes (chat.js, emotes.js)
   game.chat = new Chat(game);
   sightCommands(game); // (/sight: the Sight's waypoint on the chat line)
+  game.perfReadout = new PerfReadout(game, { diag, renderer }); // (the phone measurement panel: ?perf, /perf, the knob visual.perfReadout; debug/perfreadout.js, MOBILE.md 10.3)
+  game.startAt = new StartAt(game); // (?at=dunes|raceway|godhand|workshop: set down there after the title; debug/startat.js)
   mudraCommands(game); // (/mudra: the god hand holds one of its poses, DEBUG: godhand/mudras.js)
   installCalibrateButtons(game); // (the Sight's TRACK buttons, set by a plate's pick and a charted room: ui/calibratebutton.js)
   game.skiffParts = new SkiffParts(game); game.skiffPaint = new SkiffPaint(game); game.trackEditor = new TrackEditor(game); game.haunt = new Haunt(game); // (made tracks and the haunt mode: world/raceway/editor.js, haunt.js; TRACK-EDITOR.md) game.skiffSettings = new SkiffSettings(game); game.poolCaps = new PoolCaps(game); // (the Solar Skiff's garage and settings, after the chat line they speak on: progress/skiffparts.js, courier/skiff/skiffsettings.js; caps on the pool, a cracked region 5% of its max until mended: progress/poolcaps.js)
@@ -1477,6 +1481,7 @@ async function main() {
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;
 
     diag.update(game.rawDt);
+    game.startAt.update(game.rawDt); // (?at=godhand waits here for solid ground)
 
     hud.update(dt, {
       speed: Math.hypot(player.vel.x, player.vel.z),
@@ -1516,7 +1521,7 @@ async function main() {
   window.__hideUI = (level) => game.ui.set(level);
   window.__game = { THREE, RAPIER, T, scene, camera, renderer, post: game.post, draw: () => { game.graphics.beforeDraw(); if (game.readingScene?.active) game.readingScene.render(); else game.post.render(scene, camera); }, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, trial, course, techs, game, events, movers, system, codex, pneuka: game.pneuka, ledger: game.ledger, log: game.log, manual: false, hideUI: (level) => game.ui.set(level), zones: game.zones, lights: game.lights };
   mark('ready');
-  if (window.__game.manual && game.title?.active) { game.title.active = false; game.mode ||= save.mode || 'debug'; if (game.mode === 'debug') game.pneuka.debugKit(); game.title.ui.close(); game.ui.want('title', false); } // (a test drive goes straight to the world)
+  if (window.__game.manual && game.title?.active) { game.title.active = false; game.mode ||= save.mode || 'debug'; if (game.mode === 'debug') game.pneuka.debugKit(); game.title.ui.close(); game.ui.want('title', false); game.startAt.apply(); } // (a test drive goes straight to the world; ?at= is its start)
   window.__ready = true;
 }
 
