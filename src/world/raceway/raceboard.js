@@ -137,7 +137,7 @@ export class RaceBoard {
   }
   paint(grp, row) {
     const g = this.game, S = g.skiffPaint; if (!S) return;
-    const TITLE = { dye: 'THE SAIL\'S DYE · a firing\'s price each change', pattern: 'THE SAIL\'S PATTERN', seal: 'YOUR SEAL', trail: 'THE TRAIL ON THE SAND', ribbon: 'THE TRAIL IN THE AIR', pennant: 'THE PENNANT', length: 'ITS LENGTH' };
+    const TITLE = { dye: 'THE SAIL\'S DYE · a firing\'s price each change', pattern: 'THE SAIL\'S PATTERN', cut: 'THE SAIL\'S CUT · a look only, its numbers the sail\'s', seal: 'YOUR SEAL', trail: 'THE TRAIL ON THE SAND', ribbon: 'THE TRAIL IN THE AIR', pennant: 'THE PENNANT', length: 'ITS LENGTH' };
     for (const kind of Object.keys(PAINT)) {
       const rows = grp(TITLE[kind]);
       for (const r of kind === 'dye' ? S.dyes() : PAINT[kind]) {

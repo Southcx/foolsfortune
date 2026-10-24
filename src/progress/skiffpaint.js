@@ -10,7 +10,7 @@
 // decals, trails and toppers, each opened by play and none touching the car's numbers (the rule taken whole); Splatoon's gear dyes; a
 // regatta's racing colours and burgee (the pennant); the kiln's own firings (the price).
 //
-//   PAINT = { dye, pattern, seal, trail, ribbon, pennant, length } (each a list of { id, label, opens?, price? })   game.skiffPaint = new SkiffPaint(game)
+//   PAINT = { dye, pattern, cut, seal, trail, ribbon, pennant, length } (each a list of { id, label, opens?, price? })   game.skiffPaint = new SkiffPaint(game)
 //   .worn { dye, pattern, seal, trail, ribbon, pennant, length }   .open(kind, id) -> bool   .why(kind, id) -> string   .choose(kind, id) -> bool
 //   .colourOf(kind) -> 0xRRGGBB | null   save section 'skiffPaint' (scope player)   event skiff.paint { kind, value, price }
 // ---------------------------------------------------------------------------------------
@@ -35,6 +35,24 @@ export const PAINT = {
     { id: 'chevron', label: 'Chevron', line: 'A point down the sail, the way you go.', opens: did('cup.sibling.win'), hint: 'Win the Sibling Cup.' },
     { id: 'motif', label: 'The feeling\'s motif', line: 'The dye\'s feeling\'s pattern, as its paint lays it on the ground (Wonder\'s frost, Mirth\'s dots ...).', opens: did('race.raceway.gold'), hint: 'Take gold at the Raceway.' },
     { id: 'kiln', label: 'Your kiln pattern', line: 'The pattern of a rare glaze you wear, fired into the cloth.', opens: (L, g) => Object.values(g?.vessel?.look || {}).some((id) => GLAZES[id]?.pattern), hint: 'Wear a rare glaze with a kiln pattern.' },
+    // (Calissa's eight, 2026-10-24: vfx/skiffsailpatterns.js; labels plain until Espada names them. Each opens on a thing of the board's own
+    //  craft, so a pattern says what its sailor has done: the race's ladder (3 wins, 3 golds, 20 wins), the trick combo's (5 linked, 6,000
+    //  banked), the pop, the wreck (Kintsugi: the board broken and mended, the only one a failure opens), the night)
+    { id: 'split', label: 'Two-tone', line: 'The sail halved on the diagonal, a gold seam between.', opens: did('race.raceway.finish', 3), hint: 'Finish 3 races at the Raceway.' },
+    { id: 'waves', label: 'Waves', line: 'Rows of overlapping wave fans across the sail (seigaiha).', opens: did('race.raceway.win', 3), hint: 'Win 3 races.' },
+    { id: 'sunburst', label: 'Sunburst', line: 'Gold rays fanned from a sun rising over the boom.', opens: did('skiff.pop.perfect', 10), hint: 'Land 10 perfect pops.' },
+    { id: 'diamonds', label: 'Diamonds', line: 'A diamond lattice, keylined in gold (harlequin).', opens: did('skiff.combo.longest', 5), hint: 'Link 5 tricks into one combo and bank it.' },
+    { id: 'kintsugi', label: 'Kintsugi', line: 'The cloth crazed, its seams mended in gold.', opens: did('skiff.wreck', 5), hint: 'Wreck the skiff 5 times.' },
+    { id: 'checker', label: 'Checker', line: 'A racing checker down the leech.', opens: did('race.raceway.gold', 3), hint: 'Take gold at the Raceway 3 times.' },
+    { id: 'constellations', label: 'Constellations', line: 'A night sky: the Plough, Orion and Cassiopeia.', opens: did('race.raceway.finish.night', 3), hint: 'Finish 3 races at night.' },
+    { id: 'flames', label: 'Flames', line: 'Flames licking up from the foot.', opens: did('skiff.combo.best', 6000), hint: 'Bank a combo worth 6,000.' },
+  ],
+  // the sail's cut (Calissa's, vfx/skiffsailcut.js): its silhouette only; the sail's numbers stay its part's (skiffparts.js PARTS, the SAIL slot)
+  cut: [
+    { id: 'stock', label: 'The lug', line: 'The sail as it was made.' },
+    { id: 'lateen', label: 'Lateen', line: 'A long yard raised aft, the cloth a triangle under it.', opens: did('cup.sibling.win'), hint: 'Win the Sibling Cup.' },
+    { id: 'crabclaw', label: 'Crab-claw', line: 'Two spars from the tack, the cloth hollowed between them.', opens: did('skiff.grab.best', 3), hint: 'Hold a grab for 3 real seconds.' },
+    { id: 'junk', label: 'Junk', line: 'Battened panels, the leech bowed out.', opens: did('race.raceway.win', 10), hint: 'Win 10 races.' },
   ],
   seal: [
     { id: 'off', label: 'No seal', line: 'The cloth bare.' },

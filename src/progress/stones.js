@@ -91,6 +91,30 @@ export const STONES = {
   opal: { // play of colour: each drink is a little game of chance, paid out by Luck (progress/luck.js)
     pool: {}, reach: 1, heady: 1, tint: 1, luck: { double: 0.1, none: 0.1 }, overflow: { lockheart: 0.8 },
   },
+  // (seven more, 2026-10-24: Calissa's looks, vfx/stoneminerals.js; each a trade on a knob the pool already has, so no stone asks for a
+  //  new rule (CLAUDE.md, "Base change bad, modifiers good"). Names and blurbs Espada's.)
+  labradorite: { // the house's own stone, the film's: it shows the place's feeling plainly and keeps it out of your head; it fills slower
+    pool: { regenMult: 0.85 }, reach: 1.25, heady: 0.8, tint: 1.5, overflow: { lockheart: 0.8 },
+  },
+  sheenobsidian: { // volcanic glass, the blade's stone: the Sondelass's paid cut and its hook cost less; brittle, a release cracks sooner
+    pool: { costMult: { cut: 0.75, hook: 0.75 } }, reach: 1, heady: 1, tint: 1, aperture: 0.6, overflow: { lockheart: 0.8 },
+  },
+  malachite: { // copper's stone, the conductor: the pool starts filling again half as long after a spend; a smaller vessel
+    pool: { regenDelayMult: 0.5, maxBonus: -15 }, reach: 1, heady: 1, tint: 1, overflow: { lockheart: 0.8 },
+  },
+  lapis: { // ultramarine, the painter's stone: the Soul Brush's flick and slam and Spellscription cost less; the vessel fills slower
+    pool: { costMult: { brushflick: 0.7, brushslam: 0.7, spellscription: 0.8 }, regenMult: 0.85 }, reach: 1, heady: 1, tint: 1, overflow: { lockheart: 0.8 },
+  },
+  garnet: { // the traveller's stone: the dash costs less, and it runs hot (heady, and a release burns)
+    pool: { costMult: { dash: 0.6 } }, reach: 1, heady: 1.25, tint: 1, aperture: 0.75, overflow: { lockheart: 0.8 },
+  },
+  rosequartz: { // the gentle stone: a bigger, calmer vessel and a softer release; the psygun's shots and charges cost more
+    pool: { maxBonus: 15, costMult: { shot: 1.2, charge: 1.2 } }, reach: 1, heady: 0.6, tint: 1, aperture: 1.25, overflow: { lockheart: 0.8 },
+  },
+  tigerseye: { // the watchful stone, the day's (moonstone's mirror): strong while the sun is up, weak at night
+    pool: {}, reach: 1, heady: 1, tint: 1, overflow: { lockheart: 0.8 },
+    day: { regenMult: 1.3, reach: 1.3 }, night: { regenMult: 0.85, reach: 0.9 },
+  },
 };
 export const stoneOf = (id) => STONES[id] || STONES.maker;
 
