@@ -466,6 +466,20 @@ character), Brawl Stars (tap to fire assisted, drag to aim).
 - **The lock-on is on by default on touch** (`courier/lockon.js`, its aim assist), as every phone action game does. It is a setting, never
   a knack: it is how a thumb aims, not a help with the skill.
 
+## 8.10 The rail and the free helm (M4; Petra's contexts `rail` and `helm`, 2026-10-24)
+
+The rows are in `core/bindings.js`; Calissa draws the tiles; Espada words any the glyph can't carry.
+- **The rail** (a crossing at sea; Star Fox, Rez, Sin and Punishment on a phone): the move area's stick steers the ship in the frame. The
+  cluster: FIRE held (the largest; RT), LOCK held to mark and let go to loose the lances (LT), ROLL (E), FORM (Q, Astral and Umbral), SURGE
+  (R, shown only with its gauge full). BOOST and BRAKE are held tiles on the strip's two ends. The lock-on's marking follows the aim
+  assist, as on foot (8.9). The parry is the roll's place in the strip when an outlined shot is close (PARRY, V).
+- **The free helm** (the open sea; Sea of Thieves', Wind Waker's helm): the stick is the rudder (A / D). THROTTLE up and down are taps
+  (W / S, a notch a tap), so a thumb sets the speed once and lets go. The cluster: FIRE held (the ship's gun, aimed with the look area),
+  USE (moor, dock, board: it names its thing), FIX (R: read the sky), PARRY (V, the outlined spit), PLATE (E, a plate over the bow with the
+  Veritome worn: `world/opensea/herds.js`).
+- **Settings for the lists** (Petra, v266): Tilt to steer (`tech.skiff.gyro`, off by default; `core/gyrosteer.js`) for the Solar Skiff,
+  and the touch layout's keep (`core/layoutkeep.js`).
+
 ## 8.3 The words (Espada, 2026-10-24; plain until the owner rules)
 - **The tiles:** HOP, BRAKE, FLARE, BOOST, NOSE, TAIL, JUMP, DASH, TURN, UNDO, SIGN, TOP VIEW, WALK, SPRING / DRAIN, SKIFF, STEP OFF,
   BACK, RESTART, RETIRE.

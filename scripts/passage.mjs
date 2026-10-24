@@ -110,7 +110,7 @@ check('a share of lanes hold a draught trump (the last feeling type trumps the n
   while (next(chart, id).length && steps < 10) { s.adrift = adrift(s, chart, id); const n = s.adrift ? drift(chart, id, rng) : null; if (!n) break; s = arrive(s, chart, n); id = n; steps++; }
   check('adrift: an empty tank is carried to the end, burning nothing', steps === chart.columns && s.fuel === 0, `${steps} of ${chart.columns} columns`); }
 check('a calm offers mend, reckon and fuel when the tank is short', havenChoices({ ship: 'sloop', fuel: 2 }, { type: 'calm' }).join() === 'mend,reckon,fuel');
-check('spill: crude is calm in its own feeling, unsteady in its opposite', spillAt('grief', 'grief') < 1 && spillAt('grief', 'mirth') > 1 && spillAt('grief', null) === 1);
+check('spill: crude carries no feeling, so any feeling\'s weather unsteadies it and fair weather does not', spillAt('grief', 'grief') > 1 && spillAt('grief', 'mirth') === spillAt('grief', 'grief') && spillAt('grief', null) === 1); // (the owner, 2026-10-11: crude is not graded by feeling)
 check('bright feelings throw astral shots, dark umbral', formSkew('wonder') > 0.5 && formSkew('dread') < 0.5 && formSkew(null) === 0.5);
 { let x = 5; const rng = () => ((x = (x * 16807) % 2147483647) / 2147483647); let glass = 0; for (let i = 0; i < 400; i++) if (pickEncounter({}, rng) === 'mirrorSea') glass++;
   check('the Glass never comes without a run of this sea chart to race', glass === 0); }

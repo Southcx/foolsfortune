@@ -295,6 +295,19 @@ make a garden.
     and harmony are high.
 - [ ] **D7. Collision.** Large pieces get a keep-out circle; the Jar and the spirits' wander read it (Petra: today they walk through
   features).
+- [x] **D9. Three sets of no feeling** (Calissa's 24 pieces, 2026-10-24; `progress/decor.js`; looks `vfx/garden/decorpieces/`).
+  - **The sets:** Tea Path (8 pieces, 280 cubes, centre Deer Scarer), Kiln Yard (8, 248, Tunnel Kiln), Stargazer (8, 264, Constellation
+    Pavement); 792 cubes, 99 minutes of play. Prices are `priceOf` (small 8, medium 24, centre 160); none is set by hand.
+  - **Renamed (Espada's ruling):** Calissa's "Teahouse" is the Tea Path (set id `teapath`; Tea Garden is the desire set and Tea House its
+    centre, and `teahouse` read as `teaHouse`), and her "Water Pipe" is the Deer Scarer (its piece id `deerScarer` since Calissa renamed her model key; it was `bambooWaterPipe`,
+    the key of her model in `decorpieces/teahouse.js`). Two labels qualified for the glossary: "Lattice Fence" is Bamboo Lattice Fence, "Glaze Bucket" is
+    Dipping Bucket (glaze is the Courier's word).
+  - **How they open:** by play, at a lake lotus (D6, "a decor set's recipe at each lotus"): Tea Path at 1 lotus, Kiln Yard at 2,
+    Stargazer at 3. A set's `lotus` in `SETS` is read from the ledger's best `garden.lotuses`; its shop pieces, and its centre (way
+    `lotus`), are then bought at the shed. No spirit's feeling is theirs, so a gift or a wish does not bring them in
+    (`spiritlife.js` draws by the spirit's feeling): their `gift`, `wish` and `visitor` ways wait for a draw that names them.
+  - **Open:** the whole catalogue is now 2,656 cubes, 5.5 real hours at the aim (D4's target was about 3; the three sets are 99 minutes of
+    it). The owner's to prune: a set struck is eight rows.
 - [ ] **D8. Sharing a layout as a text code** to a sibling or a guest, later, with co-op (Petra's note: about 25 bytes a piece).
 
 ### E. Seasons (the garden's own clock)

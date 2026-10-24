@@ -864,7 +864,12 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
     in a library's copy before blaming the code that calls it.
 294. **A canvas drawn once is baked.** Its texture lets the canvas go once uploaded (render/bakedcanvas.js); a canvas
     redrawn in play stays a CanvasTexture. Count a page's memory by its owners (canvases by the module that made them), not in sum.
-
 295. **A field a table promises has a reader.** A row's number its header says does something (a stone's
     `reach`, "multiplies the bauble magnet's radius") is grepped for its reader before it ships; carry it by the channel its readers
     already ask (the pool's modifiers), never a second path beside it.
+296. **A predicate reads a key in the kind it was written.** `inc` is read by `get`, `hi` and `lo` by `best`,
+    `first` by `has`; a key read in another kind reads nothing, forever. Run `node scripts/reachable.mjs` after adding an achievement,
+    an art or a knack.
+297. **An achievement's key and goal are ones the built game can produce.** A templated key is written only
+    for the values its variable really takes (read the emitter and its table); a count is no bigger than the things that exist. Run
+    `node scripts/reachable.mjs --strict` and read the templates it names.

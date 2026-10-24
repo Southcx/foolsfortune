@@ -3787,7 +3787,6 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   88.5 MB; textures 190 to 138 MB.
 - **Rule:** 294
 
-
 ### 2026-10-24 · A stone's reach was read by nothing (Dovina, reading the stones for the dice; fixed by Petra)
 - **Seen (read):** progress/stones.js gives every stone a `reach` (amethyst 0.8, onyx 0.85, moonstone 1.3 by night and 0.9 by day, a
   ruby's 1.5), and its header says it "multiplies the bauble magnet's radius"; courier/lachryma.js pulled baubles in at
@@ -3798,3 +3797,23 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   `magnetRadius x product(reachMult)`: 1 with none, 0.8 with amethyst's. The stones' `modifier()` sets it from the stone's reach and
   the phase's (progress/stones.js, Dovina's line), so a stone changed or night falling changes the reach with the pool's other numbers.
 - **Rule:** 295
+
+### 2026-10-24 · Three achievements no one could earn (Dovina, scripts/reachable.mjs)
+- **Seen:** the new reachability probe ran every achievement's own predicate against a ledger with every written key full: Elegant
+  (fl9), Feeding the Tree (my5) and The Crown (my6) stayed false.
+- **Cause (read):** their keys are records, written with `L.hi` (`reprogram.q`, feedback/tracking.js; `myggdrasil.caps`,
+  tracking/garden.js), and the predicates read them with `L.get` (`C`, `F`), which reads counters only. A record and a counter of one
+  name are two entries; the read found the empty one.
+- **Fix:** fl9 is an `H` (a best); my5 and my6 read `L.best('myggdrasil.caps')`. The probe: 726 of 727 earnable, the last one (lg5)
+  reads the game's tech list and is earnable in play.
+- **Rule:** 296
+
+### 2026-10-24 · Three more achievements no one could earn (Dovina, `reachable.mjs --strict`, triaged by hand)
+- **Seen:** with templated writes counted as nothing, the probe listed 234; read template by template, three were real: Toxic Symbiosis
+  (oc3), Pilgrim (sb2), Every Kind (sb3).
+- **Cause (read):** oc3 read `crude.route.entra.margarite`, but a route is keyed by the port a cask was bought at, and no port sells
+  Entropolis crude (its casks are loot, keyed `convoy` or `pirates`). sb2 asked for 10 Seal Book pages when the game has six cradles that
+  give one (four Shrines, two piers). sb3 asks for an engine cradle, and none is built yet.
+- **Fix:** `crude.field.<field>.<island>` counted beside the route (tracking/voyage.js) and oc3 reads it; sb2's goal is 6; sb3 hidden
+  until the first engine cradle (HANKO.md's Weir sluice).
+- **Rule:** 297

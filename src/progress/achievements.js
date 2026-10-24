@@ -490,7 +490,7 @@ export function buildAchievements(game) {
   F('fl5', 'battle', 'Reprogramming', 3, 'collect', 'The Whole Program', 'Say eight different Functions into minds.', (L) => L.under('reprogram.fn.').filter(([, v]) => v > 0).length, 8);
   C('fl6', 'battle', 'Reprogramming', 2, 'mechanic', 'Good Jelly', 'Make a slip jelly take you for its own kind.', 'reprogram.fn.ami', 1);
   C('fl8', 'battle', 'Reprogramming', 2, 'collect', 'Fluent', 'Learn ten Functions of neuralese.', 'mind.learn', 10);
-  C('fl9', 'battle', 'Reprogramming', 4, 'perfect', 'Elegant', 'Say a macro made at 100% into a mind.', 'reprogram.q', 100);
+  H('fl9', 'battle', 'Reprogramming', 4, 'perfect', 'Elegant', 'Say a macro made at 100% into a mind.', 'reprogram.q', 100);
   C('fl7', 'battle', 'Reprogramming', 3, 'mechanic', 'Dissolution', 'Take a stunned creature apart with the zandatsu.', 'zandatsu.creature', 1);
   // the last three tools (tools/dreamvane/dreamvane.js, crucibelle.js, lockheart.js)
   C('dv1', 'explore', 'The Dreamvane', 1, 'count', 'Divining', 'Dowse something out with the Dreamvane.', 'dowse.find', 1);
@@ -597,7 +597,7 @@ export function buildAchievements(game) {
   C('rl12', 'emocean', 'Sea Stages', 2, 'count', 'Bait Ball', 'Scatter a shoal by downing its Conductor.', 'rail.end.scattered', 1);
   C('oc1', 'emocean', 'Crude', 1, 'count', 'Black Gold', 'Sell crude Lachryma at Margarite.', 'crude.sold.margarite', 1);
   H('oc2', 'emocean', 'Crude', 3, 'count', 'Gusher', 'Make 100 cubes on one cargo of crude.', 'crude.profit', 100);
-  C('oc3', 'emocean', 'Crude', 4, 'mechanic', 'Toxic Symbiosis', 'Sell crude from Entropolis at Margarite.', 'crude.route.entra.margarite', 1, { hidden: true });
+  C('oc3', 'emocean', 'Crude', 4, 'mechanic', 'Toxic Symbiosis', 'Sell crude from Entropolis at Margarite.', 'crude.field.entra.margarite', 1, { hidden: true }); // (by its field: no port sells Entropolis crude, so its route key was never written)
   C('oc4', 'emocean', 'Crude', 2, 'mechanic', 'Slick', 'Spill crude in the Emocean.', 'crude.spill', 1, { hidden: true });
 
   // ---------------------------------------------------------------- COLLECTION (the log: slots, shared by every way of getting them)
@@ -633,8 +633,8 @@ export function buildAchievements(game) {
   C('my2', 'garden', 'The Mycelium', 2, 'count', 'Spore Print', 'Take ten spore prints from the inkcap.', 'spore.print', 10);
   F('my3', 'garden', 'The Mycelium', 3, 'collect', 'Five Strains', 'Hold the spores of all five strains.', (L) => ['wonder', 'mirth', 'desire', 'grief', 'dread'].filter((f) => L.get(`spore.learn.${f}`) >= 1).length, 5);
   C('my4', 'garden', 'The Mycelium', 4, 'mechanic', 'Coniunctio', 'Graft two curios of one tier into one a tier above.', 'spore.graft.up', 1);
-  F('my5', 'garden', 'The Mycelium', 2, 'count', 'Feeding the Tree', 'Open Myggdrasil\'s third cap.', (L) => L.get('myggdrasil.caps'), 3);
-  F('my6', 'garden', 'The Mycelium', 5, 'collect', 'The Crown', 'Open all ten of Myggdrasil\'s caps.', (L) => L.get('myggdrasil.caps'), 10, { title: 'Mycologist' });
+  F('my5', 'garden', 'The Mycelium', 2, 'count', 'Feeding the Tree', 'Open Myggdrasil\'s third cap.', (L) => L.best('myggdrasil.caps') || 0, 3); // (a record: tracking/garden.js writes it with hi)
+  F('my6', 'garden', 'The Mycelium', 5, 'collect', 'The Crown', 'Open all ten of Myggdrasil\'s caps.', (L) => L.best('myggdrasil.caps') || 0, 10, { title: 'Mycologist' });
   C('my7', 'garden', 'The Mycelium', 5, 'collect', 'The Twenty-Two', 'Hang every branch of Myggdrasil with its Major Arcana.', 'myggdrasil.hang', 22, { title: 'Hierophant of Spores' });
   C('my8', 'garden', 'The Spirits', 2, 'count', 'Keepsake', 'Let a spirit go into a keepsake pot.', 'keepsake.pot', 1);
   C('ir1', 'garden', 'The Garden', 2, 'count', 'Feng Shui', 'Place ten features in your Inner Realm.', 'garden.place', 10);

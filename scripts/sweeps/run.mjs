@@ -2,7 +2,8 @@
 // ALL THE SWEEPS (scripts/sweeps/*.mjs, the harness's rooms): each run in turn against the dev server, its tally kept, one table at the
 // end. Exit 1 if any sweep failed a check. Dovina's (mechanical testing).
 //
-//   npm run dev &   then   node scripts/sweeps/run.mjs [room ...] [--quick]      (no rooms: every sweep)
+//   npm run dev &   then   node scripts/sweeps/run.mjs [room ...] [--quick] [--phone]      (no rooms: every sweep;
+//   --phone: each as a phone held landscape, 844 x 390 with touch, the page touch.mjs already uses)
 // ---------------------------------------------------------------------------------------
 import { spawnSync } from 'child_process';
 import fs from 'fs';

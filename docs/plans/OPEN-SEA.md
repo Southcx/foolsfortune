@@ -330,9 +330,13 @@ Section 9's open call is taken: the safari keeps paying through herds.
   professor, Red Dead Redemption 2's legendary animals told by rumour.
 - **The ledger:** `sea.herd`, `sea.herd.<species>`. The achievements, under THE EMOCEAN's "The Open Sea" (names Espada's to rule): Off
   the Lanes, Cartographer (title), Herd Watcher, Migration Season.
-- **The world side (Petra's):**
-  - post the board at the dock (`herdsOf(grid, today(), seed)`, `sea.herds { day, n }`);
-  - lay each herd's bodies in its square (the Egregores' placeholders, Calissa's looks);
-  - on a plate of one inside its square, `sea.herd { id, square, cubes: herdFee(cls) }`, paid with the reports at the next dock;
-  - one herd paid once a game day.
+- **The world side (built by Dovina, 2026-10-24, `world/opensea/herds.js`; it was Petra's to build, taken while she works the phone's memory):**
+  - a dock posts the board once a game day (`sea.herds { day, n, herds: [{ id, squares, way }] }`): each herd by its bearing from the dock;
+  - each herd's bodies lie round its square's middle (`game.makeEgregore`, Calissa's placeholders), bobbing, gone at the day's turn;
+  - a plate in a herd's square with one of its bodies in the frame (within 180 m, inside the view's cone) meets it: the Veritome's shutter
+    ashore, or **E at the helm** with the Veritome worn (`sea.plate`; the Courier's hands are on the wheel, so the plate is taken over
+    the bow); `sea.herd { id, square, cubes: herdFee(cls) }`, owed and paid at the next dock (`sea.herd.paid { cubes, n }`);
+  - one payment a herd a game day; kept in the room's save (`openSea.herds`).
+  - Measured headless: four herds laid (16 bodies); E with no Veritome worn refused; with it, the herd in frame met once (240 cubes,
+    a class 3), a second plate paid nothing more; the dock posted the board and paid 240.
 

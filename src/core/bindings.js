@@ -27,7 +27,7 @@ export const AXES = {
 
 export const ACTIONS = [
   // ---- anywhere
-  { id: 'pause',    keys: ['Escape'],     pad: 'Start', touch: 'pause',      ctx: 'any', how: 'tap' },
+  { id: 'pause',    keys: ['Escape'],     pad: 'Start', touch: 'top.pause',  ctx: 'any', how: 'tap' },
   { id: 'box',      keys: ['KeyP'],       pad: 'Back',  touch: 'top.box',    ctx: 'any', how: 'tap' },
   { id: 'map',      keys: ['KeyM'],                     touch: 'top.map',    ctx: 'any', how: 'tap' },
   { id: 'codex',    keys: ['KeyB'],                     touch: 'top.codex',  ctx: 'any', how: 'tap' },
@@ -80,23 +80,23 @@ export const ACTIONS = [
   { id: 'ghSign',   mouse: 'Mouse1',                    touch: 'gh.sign',    ctx: 'godhand', how: 'hold' }, // (held: one finger draws a miracle's sign; with ALT held, the epic's)
   { id: 'ghSurvey', keys: ['KeyN'],                     touch: 'top.survey', ctx: 'godhand', how: 'tap' },
   // ---- the Spirit Garden (M1: MOBILE.md 8.2). One finger is the hand; a long press is RMB; two fingers turn and zoom; a two-finger tap undoes.
-  { id: 'gaArt1',   keys: ['Digit1'],                   touch: 'ga.a1',      ctx: 'garden', how: 'tap' },   // (GRAB .. PAINT, the bar's order: hand.js ARTS; the lit one tapped again puts it down, WALK)
-  { id: 'gaArt2',   keys: ['Digit2'],                   touch: 'ga.a2',      ctx: 'garden', how: 'tap' },
-  { id: 'gaArt3',   keys: ['Digit3'],                   touch: 'ga.a3',      ctx: 'garden', how: 'tap' },
-  { id: 'gaArt4',   keys: ['Digit4'],                   touch: 'ga.a4',      ctx: 'garden', how: 'tap' },
-  { id: 'gaArt5',   keys: ['Digit5'],                   touch: 'ga.a5',      ctx: 'garden', how: 'tap' },
-  { id: 'gaArt6',   keys: ['Digit6'],                   touch: 'ga.a6',      ctx: 'garden', how: 'tap' },
-  { id: 'gaArt7',   keys: ['Digit7'],                   touch: 'ga.a7',      ctx: 'garden', how: 'tap' },
-  { id: 'gaArt8',   keys: ['Digit8'],                   touch: 'ga.a8',      ctx: 'garden', how: 'tap' },
-  { id: 'gaArt9',   keys: ['Digit9'],                   touch: 'ga.a9',      ctx: 'garden', how: 'tap' },
-  { id: 'gaArt10',  keys: ['Digit0'],                   touch: 'ga.a10',     ctx: 'garden', how: 'tap' },
-  { id: 'gaTurn',   keys: ['KeyR'],                     touch: 'ga.turn',    ctx: 'garden', how: 'tap' },   // (the choice turned: decor, ground, feeling)
-  { id: 'gaSpring', keys: ['ShiftLeft'],                touch: 'ga.spring',  ctx: 'garden', how: 'hold' },  // (with WATER: a spring)
-  { id: 'gaDrain',  keys: ['ControlLeft'],              touch: 'ga.drain',   ctx: 'garden', how: 'hold' },  // (with WATER: a drain)
-  { id: 'gaUndo',   keys: ['KeyZ'], mods: ['ControlLeft'], touch: 'ga.undo', ctx: 'garden', how: 'tap' },   // (and the two-finger tap)
+  { id: 'gaArt1',   keys: ['Digit1'],                   touch: 'art.grab',      ctx: 'garden', how: 'tap' },   // (GRAB .. PAINT, the bar's order: hand.js ARTS; the lit one tapped again puts it down, WALK)
+  { id: 'gaArt2',   keys: ['Digit2'],                   touch: 'art.pull',      ctx: 'garden', how: 'tap' },
+  { id: 'gaArt3',   keys: ['Digit3'],                   touch: 'art.press',      ctx: 'garden', how: 'tap' },
+  { id: 'gaArt4',   keys: ['Digit4'],                   touch: 'art.smooth',      ctx: 'garden', how: 'tap' },
+  { id: 'gaArt5',   keys: ['Digit5'],                   touch: 'art.flatten',      ctx: 'garden', how: 'tap' },
+  { id: 'gaArt6',   keys: ['Digit6'],                   touch: 'art.carve',      ctx: 'garden', how: 'tap' },
+  { id: 'gaArt7',   keys: ['Digit7'],                   touch: 'art.roughen',      ctx: 'garden', how: 'tap' },
+  { id: 'gaArt8',   keys: ['Digit8'],                   touch: 'art.water',      ctx: 'garden', how: 'tap' },
+  { id: 'gaArt9',   keys: ['Digit9'],                   touch: 'art.place',      ctx: 'garden', how: 'tap' },
+  { id: 'gaArt10',  keys: ['Digit0'],                   touch: 'art.paint',     ctx: 'garden', how: 'tap' },
+  { id: 'gaTurn',   keys: ['KeyR'],                     touch: 'art.turn',    ctx: 'garden', how: 'tap' },   // (the choice turned: decor, ground, feeling)
+  { id: 'gaSpring', keys: ['ShiftLeft'],                touch: 'art.spring',  ctx: 'garden', how: 'hold' },  // (with WATER: a spring)
+  { id: 'gaDrain',  keys: ['ControlLeft'],              touch: 'art.drain',   ctx: 'garden', how: 'hold' },  // (with WATER: a drain)
+  { id: 'gaUndo',   keys: ['KeyZ'], mods: ['ControlLeft'], touch: 'art.undo', ctx: 'garden', how: 'tap' },   // (and the two-finger tap)
   { id: 'gaJump',   keys: ['Space'],                    touch: 'jump',       ctx: 'garden', how: 'tap' },
   { id: 'gaUse',    keys: ['KeyF'],                     touch: 'use',        ctx: 'garden', how: 'tap' },
-  { id: 'gaTop',    keys: ['Backquote'],                touch: 'top.topview', ctx: 'garden', how: 'tap' }, // (TOP VIEW: the garden's ~ is the overhead view)
+  { id: 'gaTop',    keys: ['Backquote'],                touch: 'top.overhead', ctx: 'garden', how: 'tap' }, // (TOP VIEW: the garden's ~ is the overhead view)
   // ---- the puzzle duel (M1: MOBILE.md 8.5). One finger is the cursor: a cell tapped, a path dragged; a long press drops a piece (RMB); a
   //      swipe that starts on the Courier steps it (W A S D), a long press then a swipe kicks (Shift held): the driver's gestures.
   { id: 'duShoot',  keys: ['KeyX'],                     touch: 'du.shoot',   ctx: 'duel', how: 'tap' },     // (the strip shows the worn tools' moves only)
@@ -112,6 +112,23 @@ export const ACTIONS = [
   { id: 'duFlee',   keys: ['KeyE'],                     touch: 'du.flee',    ctx: 'duel', how: 'tap' },
   { id: 'duForm',   keys: ['Backquote'],                touch: 'du.form',    ctx: 'duel', how: 'tap' },     // (hand / Courier)
   { id: 'duYield',  keys: ['Backspace'],                touch: 'menu.yield', ctx: 'duel', how: 'hold' },    // (held 1.5 real s; in the pause menu)
+  // ---- the rail (M4: a crossing at sea; Petra's ctx `rail`, 2026-10-24). The ship steers on the move area's stick (W A S D); the view is
+  //      the rail's. FIRE held as on a pad (StarFox's), the lock-on held and let go; FORM, ROLL and SURGE in the cluster, BOOST and BRAKE held
+  { id: 'raFire',   mouse: 'Mouse0',      pad: 'RT',    touch: 'fire',       ctx: 'rail', how: 'hold' },
+  { id: 'raLock',   mouse: 'Mouse2',      pad: 'LT',    touch: 'lock',       ctx: 'rail', how: 'hold' },  // (the lock-on: held to mark, let go to loose the lances)
+  { id: 'raRoll',   keys: ['KeyE'],       pad: 'B',     touch: 'roll',       ctx: 'rail', how: 'tap' },   // (the barrel roll; its two charges)
+  { id: 'raForm',   keys: ['KeyQ'],       pad: 'Y',     touch: 'form',       ctx: 'rail', how: 'tap' },   // (Astral and Umbral)
+  { id: 'raSurge',  keys: ['KeyR'],       pad: 'X',     touch: 'surge',      ctx: 'rail', how: 'tap' },   // (shown only with the surge's gauge full)
+  { id: 'raBoost',  keys: ['ShiftLeft'],  pad: 'RB',    touch: 'boost',      ctx: 'rail', how: 'hold' },
+  { id: 'raBrake',  keys: ['KeyC'],       pad: 'LB',    touch: 'brake',      ctx: 'rail', how: 'hold' },
+  // ---- the free helm (M4: the open sea; Petra's ctx `helm`). The rudder on the move area's stick (A / D); the throttle a notch a tap
+  { id: 'heUp',     keys: ['KeyW'],       pad: 'Up',    touch: 'throttle.up',   ctx: 'helm', how: 'tap' },
+  { id: 'heDown',   keys: ['KeyS'],       pad: 'Down',  touch: 'throttle.down', ctx: 'helm', how: 'tap' },
+  { id: 'heMoor',   keys: ['KeyF'],       pad: 'A',     touch: 'use',        ctx: 'helm', how: 'tap' },   // (moor, dock or board: USE names its thing)
+  { id: 'heFix',    keys: ['KeyR'],       pad: 'Y',     touch: 'fix',        ctx: 'helm', how: 'tap' },   // (read the sky with the Dreamvane)
+  { id: 'heFire',   mouse: 'Mouse0',      pad: 'RT',    touch: 'fire',       ctx: 'helm', how: 'hold' },  // (the ship's gun, aimed with the camera)
+  { id: 'heParry',  keys: ['KeyV'],       pad: 'B',     touch: 'parry',      ctx: 'helm', how: 'tap' },   // (the outlined spit sent back: seafight.js)
+  { id: 'hePlate',  keys: ['KeyE'],       pad: 'X',     touch: 'plate',      ctx: 'helm', how: 'tap' },   // (a plate from the helm, the Veritome worn: world/opensea/herds.js)
   // ---- the rhythm mode and busking (M3, Wanda's: ten lanes as ten pads in two rows; a held pad is a held lane, music/rhythm/rhythm.js)
   { id: 'rhLane1', keys: ['Digit1'], touch: 'rh.l1', ctx: 'rhythm', how: 'hold' },
   { id: 'rhLane2', keys: ['Digit2'], touch: 'rh.l2', ctx: 'rhythm', how: 'hold' },

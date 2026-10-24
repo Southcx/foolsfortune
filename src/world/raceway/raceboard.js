@@ -48,7 +48,7 @@ export class RaceBoard {
       for (const [id, label] of TABS) { const t = el('div', `room${id === this.tab ? ' sel' : ''}`, `<span><b>${label}</b></span>`); t.onclick = () => this.open(id); tabs.appendChild(t); }
       im.appendChild(tabs);
       const row = (parent, icon, title, sub, go, shut) => { const d = el('div', 'room', `<span class="n">${icon}</span><span><b>${title}</b><s>${sub}</s></span>`); if (shut) d.style.opacity = '0.45'; else if (go) d.onclick = () => go(menu); parent.appendChild(d); return d; };
-      const grp = (title) => { im.appendChild(el('div', 'grp', title)); const rows = el('div', 'rooms'); im.appendChild(rows); return rows; };
+      const grp = (title, tip = '') => { const h = el('div', 'grp', title); if (tip) h.title = tip; im.appendChild(h); const rows = el('div', 'rooms'); im.appendChild(rows); return rows; };
       this[this.tab](grp, row, menu);
     }, { title: 'THE RACE BOARD', sub: 'click to choose · F closes' });
   }
@@ -59,7 +59,7 @@ export class RaceBoard {
     const g = this.game, L = g.ledger, R = this.race.R, W = g.wager;
     for (const T of R.tracks) {
       const lap = this.race.bestLaps[`${T.id}.stock`]?.seconds, open = this.race.bestLaps[`${T.id}.open`]?.seconds, best = L?.best?.(`race.track.${T.id}.best`), hot = L?.best?.(`race.hotlap.${T.id}`), pots = L?.best?.(`race.pots.${T.id}`);
-      const rows = grp(`${T.name.toUpperCase()} · ${(T.length / 1000).toFixed(1)} km · best lap ${clock(lap)} STOCK, ${clock(open)} OPEN`);
+      const rows = grp(`${T.name.toUpperCase()} · ${(T.length / 1000).toFixed(1)} KM · BEST ${clock(lap)} / ${clock(open)}`, 'Your best lap here: STOCK / OPEN (standard parts and the sheet at 0 / anything you build).'); // (Espada's short form: one line held upright on a phone)
       for (const id of ['race', 'hotlap', 'practice', 'pots']) {
         const M = MODES[id], mine = id === 'race' ? best : id === 'hotlap' ? hot : id === 'pots' ? pots : null;
         row(rows, id === 'race' ? '◇' : id === 'hotlap' ? '⟳' : id === 'practice' ? '∞' : '⚱', M.label, `${M.line}${mine ? ` Best ${clock(mine)}.` : ''}`, (menu) => {
@@ -104,7 +104,7 @@ export class RaceBoard {
   garage(grp, row) {
     const g = this.game, P = g.skiffParts, R = this.race.R; if (!P) return;
     const pct = (k) => `${k >= 1 ? '+' : '−'}${Math.abs(Math.round((k - 1) * 100))}%`;
-    grp(`THE BUILD · ${P.recordClass().toUpperCase()} · PI ${R.tracks.map((T) => `${P.pi(T).toFixed(1)} ${T.name.replace(/^the /, '')}`).join(', ')}`);
+    grp(`THE BUILD · ${P.recordClass().toUpperCase()} · PI ${R.tracks.map((T) => P.pi(T).toFixed(0)).join(' · ')}`, `The Performance Index on each track, in order: ${R.tracks.map((T) => `${T.name.replace(/^the /, '')} ${P.pi(T).toFixed(1)}`).join(', ')} (stock is 100).`); // (Espada's short form)
     for (const slot of SLOTS) {
       const rows = grp(slot.toUpperCase());
       for (const [id, part] of Object.entries(PARTS)) {
@@ -137,7 +137,7 @@ export class RaceBoard {
   }
   paint(grp, row) {
     const g = this.game, S = g.skiffPaint; if (!S) return;
-    const TITLE = { dye: 'THE SAIL\'S DYE · a firing\'s price each change', pattern: 'THE SAIL\'S PATTERN', seal: 'YOUR SEAL', trail: 'THE TRAIL ON THE SAND', ribbon: 'THE TRAIL IN THE AIR', pennant: 'THE PENNANT', length: 'ITS LENGTH' };
+    const TITLE = { hull: 'THE HULL PAINTING · a firing\'s price each change', dye: 'THE SAIL\'S DYE · a firing\'s price each change', pattern: 'THE SAIL\'S PATTERN', cut: 'THE SAIL\'S CUT · a look only, its numbers the sail\'s', seal: 'YOUR SEAL', trail: 'THE TRAIL ON THE SAND', ribbon: 'THE TRAIL IN THE AIR', pennant: 'THE PENNANT\'S COLOUR', length: 'THE PENNANT\'S SHAPE', wrap: 'THE HULL WRAP · over your hull glaze' };
     for (const kind of Object.keys(PAINT)) {
       const rows = grp(TITLE[kind]);
       for (const r of kind === 'dye' ? S.dyes() : PAINT[kind]) {

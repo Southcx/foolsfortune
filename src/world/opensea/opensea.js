@@ -15,7 +15,7 @@
 //
 //   game.opensea = new OpenSea(game)   .active   .sailing   .arrive(island = 'anagami')   .respawn()   .update(dt)   .grid   .voyage   .helm   .seed
 //   events (each with `by`): opensea.enter, opensea.board, opensea.moor { islet? quay? }, sea.* (seatrip.js), sea.secret { kind }, sea.fuel.low,
-//   sea.stele { islet, words, line }, seaserpent.paid { cubes, hull, of }  (a serpent sunk: progress/opensea/seaserpent.js serpentPay); the islets' puzzles and caches: puzzlepieces.js (`.pieces`)
+//   sea.stele { islet, words, line }, seaserpent.paid { cubes, hull, of }  (a serpent sunk: progress/opensea/seaserpent.js serpentPay); the islets' puzzles and caches: puzzlepieces.js (`.pieces`); the herds: herds.js (`.herds`)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { zoneOf } from '../../render/zonemap.js';
@@ -32,6 +32,7 @@ import { buildSeaProps, squareCentre, SEA } from './seaprops.js';
 import { Helm } from './helm.js';
 import { SeaHud } from './seahud.js';
 import { PuzzlePieces } from './puzzlepieces.js';
+import { SeaHerds } from './herds.js';
 import { steleWords } from '../../progress/opensea/isletpuzzles.js';
 import { WORD_SPLIT } from '../../progress/ostraca.js';
 import { FUNCTIONS } from '../../tools/veritome/mind/functions.js';
@@ -63,11 +64,11 @@ export class OpenSea {
   dump() {
     const v = this.voyage;
     return { at: v.at, fuel: v.fuel, doubt: v.doubt, charted: [...v.charted], found: [...v.found], reported: [...v.reported], claimed: [...this.claimed],
-      puzzle: Object.fromEntries(Object.entries(this.puzzle).map(([k, set]) => [k, [...set]])) };
+      puzzle: Object.fromEntries(Object.entries(this.puzzle).map(([k, set]) => [k, [...set]])), herds: this.herds ? this.herds.dump() : this.herdState };
   }
   load(d) {
     this.voyage = newVoyage({ grid: this.grid, port: 'anagami' });
-    this.claimed = new Set(d?.claimed || []); this.puzzle = freshPuzzle(d?.puzzle); this.pieces?.sync();
+    this.claimed = new Set(d?.claimed || []); this.puzzle = freshPuzzle(d?.puzzle); this.pieces?.sync(); this.herdState = d?.herds || null; this.herds?.load(this.herdState);
     if (!d) return;
     const v = this.voyage; v.at = d.at || v.at; v.fuel = d.fuel ?? v.fuel; v.doubt = d.doubt ?? 0;
     v.charted = new Set(d.charted || [v.at]); v.found = new Map(d.found || []); v.reported = new Set(d.reported || []);
@@ -80,6 +81,7 @@ export class OpenSea {
     this.helm = new Helm(this, 'sloop');
     this.hud = new SeaHud(this);
     this.pieces = new PuzzlePieces(this); // (the islets' puzzles and the buried caches: puzzlepieces.js)
+    this.herds = new SeaHerds(this); this.herds.load(this.herdState); // (the game day's herds on the water and the board: herds.js)
     const q = this.props.quays.anagami; this.helm.placeAt(q.pos.clone().setY(SEA.y).add(_v.set(0, 0, 16)), Math.PI / 2);
   }
 
@@ -119,12 +121,13 @@ export class OpenSea {
 
   // ---------------------------------------------------------------- each frame
   update(dt) {
-    if (!this.built || !this.active) { this.hud?.show(false); return; }
+    if (!this.built || !this.active) { this.hud?.show(false); if (this.herds) this.herds.group.visible = false; return; }
     const g = this.game, I = g.input, P = g.player;
     this.hud.show(true);
     if (this.sailing) this.sail(dt, I, P); else this.walk(I, P);
     this.phenomena(dt);
     this.pieces.update(dt);
+    this.herds.update(dt);
     this.hud.update(dt);
   }
 
@@ -137,6 +140,7 @@ export class OpenSea {
     H.camera(dt, I); H.hold(P);
     const now2 = this.squareAt(H.pos);
     if (now2 && now2.id !== v.at) this.enter(now2, H.full);
+    if (I.wasPressed('KeyE')) this.herds.helmPlate(); // (a plate from the helm, the Veritome worn: herds.js)
     if (I.wasPressed('KeyR')) this.emit(takeFix(v, 'sky', { front: frontAt(this.grid, this.seed, now() / 150000).has(v.at) })), this.dirty();
     if (I.wasPressed('KeyF')) {
       const isl = this.nearIslet(H.pos, ROOM.moor);
