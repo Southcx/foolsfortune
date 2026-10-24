@@ -72,6 +72,7 @@ export class Ship {
     this.game = game; this.rail = rail;
     this.local = new THREE.Vector3(0, CRUISE, 0); this.vel = new THREE.Vector3();
     this.cursor = { x: 0, y: 0.15 }; this.aim = new THREE.Vector3(0, 0, 1); this.nose = new THREE.Vector3();
+    this.touchAt = null; // (a finger's point on the screen, CSS px: the reticle under it while it touches; core/touchtools.js)
     this.aspect = 'mirth'; this.home = 'mirth';
     this.boostZ = 0; this.bank = 0; this.pitch = 0;
     this.rollT = 0; this.spin = 0; this.charges = T.ship.roll.charges; this.rechargeT = 0;
@@ -205,7 +206,11 @@ export class Ship {
     this.nose.copy(this.local).add(_n.set(0.9 * f[0], 0, 0.9 * f[2]));
     // the cursor: the mouse's pixels as a share of the screen, counted only while the view shows it (a hidden cursor that kept counting
     // came back pinned at the screen's edge after a scroll view: the owner's "becomes locked")
-    if (this.cursorOn(view, arena)) { const W = innerWidth || 960, H = innerHeight || 540; C.x = clamp(C.x + ((I?.dx || 0) * 2) / W, -1, 1); C.y = clamp(C.y - ((I?.dy || 0) * 2) / H, -1, 1); }
+    if (this.cursorOn(view, arena)) {
+      const W = innerWidth || 960, H = innerHeight || 540, F = this.touchAt; // (a finger on the screen: the reticle under it, core/touchtools.js)
+      if (F) { C.x = clamp((F.x * 2) / W - 1, -1, 1); C.y = clamp(1 - (F.y * 2) / H, -1, 1); }
+      else { C.x = clamp(C.x + ((I?.dx || 0) * 2) / W, -1, 1); C.y = clamp(C.y - ((I?.dy || 0) * 2) / H, -1, 1); }
+    }
     const far = this.farOf(view, abeam, waves, arena, _st);
     if (swing) { // (both ends of the swing aimed and eased between, smoothstep as the camera's blend: from the old view's place to the new one's)
       const other = swing.from === view ? swing.to : swing.from, e = swing.k * swing.k * (3 - 2 * swing.k);
