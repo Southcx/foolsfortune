@@ -8,13 +8,14 @@
 //               the sheet shows each track's PI (`game.skiffParts.pi(track)`) for that step beside the worn one. A click wears it.
 //   THE TRACE   `race.traces.last` and `.prev` (samples [s, speed m/s, slip rad, sail, grip] at 10 Hz): the track's line as a map, the last
 //               lap a thick strip at the line's left and the lap before a thin one at its right, each coloured by speed (dusk blue slow .. gold fast)
-//               and lit ember where it slid (|slip| past 0.15 rad, the GARAGE's "sliding"); under it the speed along the lap, both laps,
+//               and lit ember where it slid (|slip| past Dovina's SLIDE.slip x the grip then, the GARAGE's "sliding"); under it the speed along the lap, both laps,
 //               the slides marked. Hover the map or the chart for that point's numbers.
 // Prior art: Forza's and Gran Turismo's tuning sheets (a slider, the feel at each end, the numbers it moves, the PI), F-Zero GX's balance
 // slider; MoTeC and Forza's telemetry (speed over distance, a lap against the last, the racing line coloured by speed).
 //
 //   tuneSheet(parent, { P, tracks, TUNE, tuneMult, onChange })   runTrace(parent, { traces, trackOf })   installGarageSheet()
 // ---------------------------------------------------------------------------------------
+import { SLIDE } from '../progress/skifftune.js';
 
 const CSS = `
 .gs{display:flex;flex-direction:column;gap:6px;margin:2px 0 8px;font:12px/1.25 Georgia,serif;color:#efe0c2}
@@ -118,7 +119,6 @@ export function tuneSheet(parent, { P, tracks = [], TUNE, tuneMult, onChange } =
 }
 
 // ---------------------------------------------------------------- the run trace
-const SLIDE = 0.15; // (rad: the GARAGE's "sliding", the slip arc's threshold)
 const lerp = (a, b, u) => a + (b - a) * u;
 /** Speed's colour, dusk blue (slow) through slip cream to gold (fast); `slide` 0..1 lifts it to the ember. */
 function speedColour(u, slide) {
@@ -155,7 +155,7 @@ export function runTrace(parent, { traces, trackOf } = {}) {
     g.lineWidth = k ? 3 : 4.5; g.globalAlpha = k ? 0.7 : 1;
     for (let i = 1; i < Sm.length; i++) {
       const a = T.frame(Sm[i - 1][0]), b = T.frame(Sm[i][0]); if (!a || !b || Math.hypot(b.x - a.x, b.z - a.z) > 40) continue; // (a respawn's jump)
-      const n = [a.fz, -a.fx], [ax, az] = px(a.x, a.z), [bx, bz] = px(b.x, b.z), slide = Math.min(1, Math.max(0, (Math.abs(Sm[i][2]) - SLIDE) / 0.25) + (Math.abs(Sm[i][2]) > SLIDE ? 0.4 : 0));
+      const at = SLIDE.slip * (Sm[i][4] || 1), n = [a.fz, -a.fx], [ax, az] = px(a.x, a.z), [bx, bz] = px(b.x, b.z), slide = Math.min(1, Math.max(0, (Math.abs(Sm[i][2]) - at) / 0.25) + (Math.abs(Sm[i][2]) > at ? 0.4 : 0)); // (Dovina's "sliding": SLIDE.slip x the grip then)
       g.strokeStyle = speedColour(vu(Sm[i][1]), slide);
       g.beginPath(); g.moveTo(ax + n[0] * off, az + n[1] * off); g.lineTo(bx + n[0] * off, bz + n[1] * off); g.stroke();
     }
@@ -170,7 +170,7 @@ export function runTrace(parent, { traces, trackOf } = {}) {
     c2.strokeStyle = k ? 'rgba(205,184,152,.55)' : '#ffd36a'; c2.lineWidth = k ? 1.2 : 1.8; c2.beginPath();
     Sm.forEach((s, i) => (i ? c2.lineTo(cx(s[0]), cy(s[1])) : c2.moveTo(cx(s[0]), cy(s[1])))); c2.stroke();
     c2.fillStyle = k ? 'rgba(255,122,42,.45)' : '#ff7a2a';
-    for (const s of Sm) if (Math.abs(s[2]) > SLIDE) c2.fillRect(cx(s[0]) - 1, CH - (k ? 8 : 14), 2, 5);
+    for (const s of Sm) if (Math.abs(s[2]) > SLIDE.slip * (s[4] || 1)) c2.fillRect(cx(s[0]) - 1, CH - (k ? 8 : 14), 2, 5);
   });
   // the numbers under the cursor
   const near = (L, s) => L.samples.reduce((b, x) => (Math.abs(x[0] - s) < Math.abs(b[0] - s) ? x : b), L.samples[0]);

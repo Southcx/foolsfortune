@@ -14,6 +14,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { schillerInk, SCHILLER } from './oxidation.js';
+import { SLIDE } from '../progress/skifftune.js';
 
 /** The numbers, in the board's own frame (+Z the bow, Y up; m and rad): the arc's height over the deck (below it: just over the sand),
  *  its radius and width, its half-sweep from the bow, its segments; the slide's threshold (rad) and the grip that sets it (the band
@@ -21,7 +22,7 @@ import { schillerInk, SCHILLER } from './oxidation.js';
  *  speed it shows at (m/s); the fade's rate; brightness of the calm and the band; the ember. */
 export const SLIP_ARC = {
   y: -0.52, r: 1.75, w: 0.12, sweep: 1.1, segs: 36,
-  slide: 0.15, minEdge: 0.03, maxEdge: 0.9,
+  minEdge: 0.03, maxEdge: 0.9,
   needle: { len: 1.12, w: 0.09 },
   minSpeed: 3, fade: 6,
   lit: { calm: 0.7, band: 0.95 },
@@ -67,7 +68,7 @@ export class SkiffSlipArc {
     this.k += ((R?.on ? 1 : 0) - this.k) * Math.min(1, dt * S.fade);
     this.group.visible = !!R && this.k > 0.01; if (!this.group.visible) return;
     this.slip += (R.slip - this.slip) * Math.min(1, dt * 14); // (a touch of damping, so the needle never jitters on the sand's grain)
-    const edge = Math.max(S.minEdge, Math.min(S.sweep * S.maxEdge, S.slide * R.grip)), over = Math.max(0, Math.abs(this.slip) - edge) / Math.max(1e-3, S.sweep - edge);
+    const edge = Math.max(S.minEdge, Math.min(S.sweep * S.maxEdge, SLIDE.slip * R.grip)), over = Math.max(0, Math.abs(this.slip) - edge) / Math.max(1e-3, S.sweep - edge);
     // the arc's colours: the calm the schiller walking along it, the band the ember brightening out to each tip and with the slide
     const C = this.arc.geometry.attributes.color, N = S.segs;
     for (let i = 0; i <= N; i++) {

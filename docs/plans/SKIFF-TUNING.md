@@ -227,3 +227,6 @@ The design laws apply: arts and their kin only by achievement, a count way and a
   arc are Calissa's.
 - **The GARAGE** (`raceboard.js`): the build's class and PI on each track, the five slots with each part's numbers, the sheet (a
   slider's left half steps it down, its right half up), the setups, the trim runs and the telemetry. Plain rows until T5's dress.
+
+**Names (Espada, 2026-10-24; strings only, plain until the owner calls it settled):** the sliders Sail trim, Grip (code `fin`), Mast lean
+(`rake`), Weight (`ballast`), Ride height (`ride`); the trim run is the **test lap** (code `MODES.trim`); rw47 Race Regular.
