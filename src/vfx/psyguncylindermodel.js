@@ -17,7 +17,7 @@
 //
 //   buildCylinder(V, ids, env) -> B   V = layoutOf(gun): { n, shape, round, d, rc, heart: { rc } | null, solo }   ids: shell id a chamber
 //     B.mount (the posed root: crane > tilt > spin), B.ch[i] { g, ring, cap, fl, depth, mouth, rc, p }, B.sel, B.pawl, B.hammer, B.eye,
-//     B.heartG, B.puff, B.case, B.glint, B.band (the glaze), B.dispose()
+//     B.heartG, B.puff, B.case, B.glint, B.band (the glaze), B.skin (the tool skin's roles), B.dispose()
 //   CYL_T (the shared time uniform)   drawPlate(canvas, P, time)   drawInset(canvas, lit, cracks, time)
 //   buildPentacle(B) -> B.pent (the Pentagun's five points, its star and circle)   posePentacle(pent, lit, star, circ, a)
 // ---------------------------------------------------------------------------------------
@@ -140,6 +140,7 @@ export function buildCylinder(V, ids, tiers, env, bandHex) {
   B.band = M(overlayStd(env, { color: bandHex, roughness: 0.12, metalness: 0, envMapIntensity: 1.1 }, true));
   B.caseMat = M(overlayStd(env, { color: 0xd8ae58, metalness: 0.95, roughness: 0.22, envMapIntensity: 1.5 }));
   const bore = M(cylMat(4, { uCyCol: v3(0x07060a) }));
+  B.skin = { body: [body], trim: [brass, B.caseMat], grip: [blued] }; // (the psygun's skin's roles on its cylinder: vfx/toolskinwear.js, worn by psyguncylinder.js)
   const mesh = (geo, mat, parent) => { const m = new THREE.Mesh(G(geo), mat); m.frustumCulled = false; parent.add(m); return m; };
   B.mount = new THREE.Group(); B.rx = 0.16; B.ry = -0.42;
   const ap = apexOf(V), sy = ap + 0.17, by = -(ap + 0.15);

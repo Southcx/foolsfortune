@@ -19,6 +19,7 @@
 import * as THREE from 'three';
 import { addOutline, OUTLINE_MAT_CHAR } from '../../render/outline.js';
 import { mergeStatic } from '../../render/merge.js';
+import { wearSkin } from '../../vfx/toolskinwear.js'; // (a tool's skin, looks only: Calissa's)
 import { stream } from '../../core/rng.js';
 const simRand = stream('tools/veritome/model'); // (the simulation's chance: core/rng.js, the same twice)
 
@@ -86,6 +87,7 @@ export class VeritomeModel {
     this.glass.position.x = -0.021;
     mergeStatic(g, { deep: true });
     this.open = -1; this.setOpen(0);
+    wearSkin('veritome', { leather: M.leather, spine: M.spine, dark: M.dark, brass: M.brass, pages: M.pages });
   }
 
   /** 0 shut, 1 held open (the halves a little toward the reader, as hands hold a book). */

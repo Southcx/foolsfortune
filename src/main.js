@@ -265,6 +265,7 @@ import { Spirits } from './creatures/spirits.js';
 import { Bound } from './creatures/bound.js';
 import { CatchLook } from './vfx/catch.js';
 import { PsygunModels } from './vfx/psygunmodels.js';
+import { ToolSkins } from './vfx/toolskinwear.js';
 import { Busk } from './world/busk.js';
 import { Crystals } from './world/dunes/crystals.js';
 import { installEconomy } from './progress/econ/economy.js';
@@ -901,6 +902,7 @@ async function main() {
   game.theme = theme;
   // the chat line in the log: words said aloud, /commands, emotes (chat.js, emotes.js)
   game.chat = new Chat(game);
+  game.toolSkins = new ToolSkins(game); // (a tool's skin, looks only, kept in the save and /toolskin: vfx/toolskinwear.js, vfx/toolskins.js)
   game.cardBacks = new CardBackChoice(game); // (the back each deck wears, kept in the settings, and /cardback: ui/cardbackchoice.js)
   sightCommands(game); // (/sight: the Sight's waypoint on the chat line)
   game.perfReadout = new PerfReadout(game, { diag, renderer }); // (the phone measurement panel: ?perf, /perf, the knob visual.perfReadout; debug/perfreadout.js, MOBILE.md 10.3)
@@ -1400,7 +1402,7 @@ async function main() {
     game.log.tick(dt);
     game.cartography.update(dt);
     game.cinema.update(game.rawDt); // (the frame and the vignette ease in real seconds, so a slowed world keeps its bars)
-    game.folk?.update(dt); game.dialogue?.update(game.rawDt); game.shops?.update(dt); game.weather?.update(dt); game.vessel?.update(game.rawDt); game.vesselDamage?.update(dt); game.death?.update(game.rawDt); game.ultimate?.update(game.rawDt); game.combat?.update(dt);
+    game.folk?.update(dt); game.dialogue?.update(game.rawDt); game.shops?.update(dt); game.weather?.update(dt); game.vessel?.update(game.rawDt); game.toolSkins?.update(game.rawDt); game.vesselDamage?.update(dt); game.death?.update(game.rawDt); game.ultimate?.update(game.rawDt); game.combat?.update(dt);
     diag.begin('minds'); game.ai.update(dt); game.creatures.update(dt); if (!worldAsleep) { game.jellies.update(dt); game.wisps?.update(dt); } game.stun.update(dt); game.dissolve.update(dt); game.figmentScatter.update(dt); game.flash.update(game.rawDt); game.reprogram.update(game.rawDt); diag.end('minds');
     game.pulse.update(dt);
     game.portrait.update(game.rawDt, game.angler?.fightView?.());

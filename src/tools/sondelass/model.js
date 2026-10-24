@@ -19,6 +19,7 @@
 import * as THREE from 'three';
 import { PALETTE } from '../../core/config.js';
 import { addOutline, OUTLINE_MAT_CHAR } from '../../render/outline.js';
+import { wearSkin } from '../../vfx/toolskinwear.js'; // (a tool's skin, looks only: Calissa's)
 
 const SEG_MIN = 0.045;
 const SEG_MAX = [0.62, 0.58, 0.52, 0.46];
@@ -110,6 +111,7 @@ export class SondelassModel {
     this.ext = 0; this.bend = 0; this.bladeOut = 0; this.hookOn = false; this.spin = 0;
     this.tipLocal = new THREE.Vector3(); this.tipDirLocal = new THREE.Vector3(1, 0, 0);
     this.layout();
+    wearSkin('sondelass', { wood: M.wood, steel: M.steel, wrap: M.wrap, brass: M.brass, clay: M.clay, blade: M.blade });
   }
 
   /** How long the shaft is at extension e (grip and guard not counted). */

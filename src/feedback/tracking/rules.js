@@ -47,6 +47,7 @@ import { familiarityRules } from './familiarity.js';
 import { sealRules } from './seals.js';
 import { spreadRules } from './spreads.js';
 import { cardBackRules } from './cardbacks.js';
+import { toolSkinRules } from './toolskins.js';
 import { palmDieRules } from './palmdie.js';
 import { trackEditorRules } from './trackeditor.js';
 import { stunRules } from './stun.js';
@@ -90,6 +91,7 @@ export function areaRules(ctx) {
   casinoRules(ctx); // (Raku's bazaar: the chips, the tables, what happens at them: docs/plans/CASINO.md)
   duelRules(ctx); // (a puzzle duel with an aberrant: docs/plans/PUZZLE-DUELS.md)
   cardBackRules(ctx); // (a deck's card back chosen: ui/cardbackchoice.js)
+  toolSkinRules(ctx); // (a tool's skin worn: vfx/toolskinwear.js)
   graphicsRules(ctx); // (the graphics tier, dynamic resolution: render/graphics.js)
   touchPlayRules(ctx); // (touch play's settings: the layout kept, gyro steering's motion access: core/layoutkeep.js, core/gyrosteer.js)
   perfReadoutRules(ctx); // (/perf: the performance readout, debug/perfreadout.js; nothing counted)

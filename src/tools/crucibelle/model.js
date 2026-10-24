@@ -10,6 +10,7 @@
 import * as THREE from 'three';
 import { addOutline } from '../../render/outline.js';
 import { DEGREE_COLOR } from './songs.js';
+import { wearSkin } from '../../vfx/toolskinwear.js'; // (a tool's skin, looks only: Calissa's)
 
 export class CrucibelleModel {
   constructor() {
@@ -49,6 +50,7 @@ export class CrucibelleModel {
     const bob = new THREE.Mesh(new THREE.OctahedronGeometry(0.017, 0), brass); bob.position.x = -0.104; this.metro.add(bob);
     for (const o of [bell, lip]) addOutline(o);
     this.fever = 0;
+    wearSkin('crucibelle', { bronze, brass, dark });
   }
   /** A vent lit (k 0..1): its note's colour, fading back to dark. */
   lightVent(i, k = 1) { const v = this.vents[i]; if (v) v.k = Math.max(v.k, k); }
