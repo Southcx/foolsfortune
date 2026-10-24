@@ -172,25 +172,42 @@ on trap design. I agree no cubes for UGC. Go full steam on an editor"): bots and
 
 ## 12. What is built (round of 2026-10-24)
 
-- **The rules, pure** (`progress/trackdef.js`, `trackpieces.js`, `traps.js`, `trapbot.js`): the track format (points, pieces, traps,
-  rules, author), its checks (length 500 to 3,200 m, half-width 5 to 16 m, no bend under 14 m, the start's 60 m clear, a trap 30 m clear
-  of a gate), the budget (100: each piece and trap its cost), the share code (`FF1-<base64url>-<sum>`), nine pieces, seven traps, four
-  rules (No flares, Slick sand, Thirst, Bright plates), the haunters' choices (`wantsFire`: lead-weighted, never twice inside a cooldown).
-- **The world** (`world/raceway/madetrack.js`, `traps.js`, `editor.js`, `haunt.js`): the build lot (flattened, x -830 z 240 in the park,
-  480 m square), the made track built and raced as track `made` (its own gates, start arch and pillar, ghosts keyed by its hash), the
-  traps run on their clocks or fired, the editor (`/edit`, the race board's BUILD tab), the haunt.
-- **The editor:** a camera 40 to 170 m over the lot (kept inside the house camera's 200 m and the Dunes' haze), a map of the whole lot in
-  its panel (click or drag to move the camera), the line's points as pegs, LMB to place or drag, RMB to take out, Q / E to turn, [ ] for
-  a point's width, + / - and , / . for a trap's period and offset, Ctrl+Z to undo; ride it (a point every 35 m) or draw it. A piece or trap
-  is open when its god power is (the power's level, or a lend in DEBUG).
+**One format (rewritten the same day, the owner: "if you come across a more elegant way to fold in the existing racing content, rewrite
+the module as necessary").** The first build kept made tracks apart: their own piece list, their own placeholder builder, a flat lot with
+pieces added on top of the ground. Now a made track IS a house track:
+
+- **The format** (`progress/trackdef.js`, v2): points `[x, z, y, halfWidth]` (y up to 30 m over the lot's floor), and every piece and
+  trap placed on the line by `u` (its share of the line from the start) and `lat` (metres right of it), so it slides with the line as the
+  line is edited. `toTrackDef` turns it into a `track.js` definition: the Sun Circuit's kind of line, the house's own features.
+- **The palette is the house kit** (`progress/trackpieces.js`): kicker, side ramp, whoops, bowl, glide lip, boost pad (sun plate),
+  recharge strip (vein lane), geyser, rail, sun ring, and three the kit gained for it (a lone column, a wall across part of the track,
+  an arch to thread: `kit.js`, open to any track). Sizes are the park's: a made kicker is the Sun Circuit's kicker. A span (whoops, a
+  bowl, a glide lip, a rail) takes two clicks.
+- **The ground is the park's** (`world/raceway/madetrack.js`): the lot's samples of the park's terrain are rewritten to the track's
+  corridor (its heights, banks, kickers, ramps, whoops, berms) and a physics height field is laid over the lot; the board rides it through
+  the same `heightAt` as every track. The lot sits on the terrain's grid, so this is the park's ground cell for cell.
+- **The furniture is the park's** (`kit.js kitOf`, `marksOf`; `railsrings.js railsOf`, `ringsOf`): the builders that lay the park's three
+  tracks now lay one track at a time, and the made track is laid by them.
+- **Traps are a track feature** (`traps` in `track.js`, `world/raceway/traps.js .use(T)`): a made track's always; the Sun Circuit, the
+  Gorge Run and the Coaster each carry a layout (seven, six, six traps, each where the track already asks something of the board), set up
+  only for the **haunted race** and **the haunt** on that track (two new rows per track on the race board). The park's own races are
+  never changed by them (DESIGN.md 22: a modifier you choose). `race.haunted` counts haunted races on any track.
+- **The editor** (`world/raceway/editor.js`): the cursor meets the ground as shaped (`raceway.pick`); a point's height and width by keys or
+  the SELECTED buttons (Raise, Lower, Wider, Narrower); a trap's period and offset the same (Slower, Faster, Later, Sooner); ride it lays
+  points at the height you ride. Camera 40 to 170 m up, a map of the lot in the panel, pegs and a selection ring.
+- **Checks** (`validate`): on the lot, length 500 to 3,200 m, no bend under 14 m, no climb steeper than 1 in 3 between points (a drop is
+  a jump: any), no two stretches running into each other, the budget (100), the start's 60 m and 30 m after each gate clear of traps.
 - **Medals** on a made track: the reference race (the ruler, three laps) times 0.718 gold, 0.802 silver, 0.929 bronze, the park's own
-  ratios. **The author time:** a validate run's lap, kept with the geometry's hash; any change to the line or the pieces clears it.
-- **The portal's mercy** (found in the build): a possessed portal sends a rider back as far as its shortcut would carry it on; a rider so
-  sent is spared that portal until past it, or a held portal is a loop with no way out.
-- **Measured** (`scripts/raceway/drive.mjs --made`, the demo track "The Lot Loop", 1,452 m, seven traps, budget 86): the editor's checks
-  clean; medals gold 127 s, silver 142 s, bronze 164 s; a validate run of 65.07 s; a haunted race of three laps finished (fourth, 202 s,
-  the rivals 174 to 190 s, both sides hit); a haunt firing the next trap every third of a second wrecked 7, the winner in 157 s against
-  a par of 159: broken through, narrowly. HAUNT.parK (0.9) is the first number to tune once the owner plays it.
+  ratios. **The author time:** a validate run's lap, kept with the geometry's hash. **The share code:** `FF2-<base64url>-<sum>`
+  (version 1 codes were never shared; progress resets each build).
+- **The portal's mercy:** a possessed portal sends a rider back as far as its shortcut would carry it on; a rider so sent is spared that
+  portal until past it.
+- **Measured** (headless, `scripts/raceway/drive.mjs`): the demo "The Lot Loop" (1,244 m, an 18 m mesa with a glide lip off it, twelve
+  pieces, seven traps, budget 91): checks clean, medals gold 107 s, silver 119 s, bronze 138 s; a validate lap of 53.8 s, up onto the
+  mesa and off it, two trap hits. A haunted race on the Sun Circuit: three laps (121.7, 108.6, 111.1 s), the bots fired 18 times, 17 hits,
+  3 portal warps, fourth place. The haunt on the Gorge Run, firing the next trap every third of a second: 10 wrecks, the winner in 378 s
+  against a par of 421 (the reference race 468 s): broken through easily, so HAUNT.parK (0.9) wants tuning per track, likely lower on the
+  long tracks, once the owner has played it.
 - **Not yet:** the traps' and pieces' looks and tells beyond placeholders (Calissa), their sounds (Wanda), their names (Espada), the
   party mode and live guests (W4, W5), Read showing a possessed trap's next intent, trap kinds opened by achievement (they open with
-  their god powers for now).
+  their god powers for now), fords and bridges on a made track (the lot's ground is only raised, never cut).

@@ -1,6 +1,7 @@
 // ---------------------------------------------------------------------------------------
-// THE TRAPS IN THE WORLD (docs/plans/TRACK-EDITOR.md 4, 6; the rules and clocks: progress/traps.js): a made track's traps stood on its line,
-// each on its own cycle, or POSSESSED: by the siblings as bots (the haunted race: progress/trapbot.js) or by you (the haunt mode:
+// THE TRAPS IN THE WORLD (docs/plans/TRACK-EDITOR.md 4, 6; the rules and clocks: progress/traps.js): a track's traps (its `traps` feature,
+// track.js) stood on its line: a made track's always, a park track's only for a haunted run on it (race.js, haunt.js: the park's races
+// are never changed by them, a modifier you choose). Each on its own cycle, or POSSESSED: by the siblings as bots (the haunted race: progress/trapbot.js) or by you (the haunt mode:
 // world/raceway/haunt.js). Each tells before it acts (trap.tell, the placeholder's glow; the looks are Calissa's), acts on whatever is in its
 // reach (the Courier's board, and the rivals racing the track), and says so (trap.hit). A possessed trap keeps its tell; a hit resets a
 // haunter's wrath, a lap without one grows it (Crawl's).
@@ -10,13 +11,13 @@
 // Prior art: the traps' homework is in progress/traps.js; Crawl's possession (a trap a ghost holds keeps its own shape and timing); Mario
 // Kart's item hits (a spin-out a rival recovers from: the takedown's `wreck`).
 //
-//   R.traps = new Traps(R)   .build(def, T)   .clear()   .list   .haunt(mode: null | 'bots' | 'courier')   .fire(i, opts?) -> bool
-//   .gripAt(x, z) -> multiplier   .update(dt)   .nearest(lx, lz) -> index | -1   events: trap.tell { kind, i, by }, trap.fire { kind, i, by,
+//   R.traps = new Traps(R)   .use(T | null) (a track's traps up; null: the made track's again, if any)   .build(T)   .clear()   .T   .list
+//   .haunt(mode: null | 'bots' | 'courier')   .fire(i, opts?) -> bool
+//   .gripAt(x, z) -> multiplier   .update(dt)   .nearest(lx, lz) (park-local) -> index | -1   events: trap.tell { kind, i, by }, trap.fire { kind, i, by,
 //   possessor }, trap.hit { kind, target: 'courier' | 'rival', who, by, possessor }, trap.parry { by }, trap.stun { kind, by }, trap.warp { from, to, back, by }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RW } from './track.js';
-import { LOT } from '../../progress/trackdef.js';
 import { TRAPS, TRAP, TrapClock, autoPhase } from '../../progress/traps.js';
 import { HAUNTERS, wantsFire } from '../../progress/trapbot.js';
 import { stream } from '../../core/rng.js';
@@ -29,19 +30,26 @@ export class Traps {
   constructor(R) { this.R = R; this.list = []; this.t = 0; this.mode = null; this.group = null; this.balls = []; }
   get game() { return this.R.game; }
 
-  build(def, T) {
+  /** A track's traps up (rebuilt only if it is another track), or with null the made track's again (or none). */
+  use(T) {
+    const want = T ?? this.R.made?.T ?? null;
+    if (!want || !want.features?.traps?.length) { this.clear(); return; }
+    if (want !== this.T || !this.group) this.build(want);
+  }
+  build(T) {
     this.clear();
     const g = this.game, group = (this.group = new THREE.Group()); group.userData.zone = 'raceway'; g.scene.add(group);
-    this.T = T;
-    this.list = (def.traps || []).map((d, i) => {
-      const K = TRAPS[d.kind], n = T.nearest(d.x + LOT.x, d.z + LOT.z); if (!K || !n) return null;
-      const Tp = { i, kind: d.kind, K, d, s: n.s, lat: n.lat, period: d.period || K.cycle.period, offset: d.offset || 0, phase: 'idle', k: 0, hitT: new Map(), lane: 0, fires: 0, stun: 0, dir: 1, wrath: 0, quiet: 0, clock: null, haunter: null };
-      if (K.pair && d.pair) { const m = T.nearest(d.pair[0] + LOT.x, d.pair[1] + LOT.z); Tp.s2 = m ? m.s : n.s; }
+    this.T = T; const L = T.length;
+    this.list = (T.features.traps || []).map((d, i) => {
+      const K = TRAPS[d.kind]; if (!K) return null;
+      const Tp = { i, kind: d.kind, K, d, s: T.sOf(d.cp, d.at), lat: d.lat || 0, period: d.period || K.cycle.period, offset: d.offset || 0, phase: 'idle', k: 0, hitT: new Map(), lane: 0, fires: 0, stun: 0, dir: 1, wrath: 0, quiet: 0, clock: null, haunter: null };
+      if (K.pair) Tp.s2 = d.at2 != null ? T.sOf(d.cp, d.at2) : (Tp.s + 120) % L; // (a portal's second eye; 120 m on if none was set)
       Tp.look = this.place(Tp); return Tp;
     }).filter(Boolean);
     this.haunt(this.mode);
   }
   clear() {
+    this.T = null;
     if (this.group) { this.group.traverse((o) => { o.geometry?.dispose?.(); o.material?.dispose?.(); }); this.group.removeFromParent(); this.group = null; }
     this.list = []; this.balls = [];
   }
@@ -52,8 +60,8 @@ export class Traps {
   }
 
   // ---------------------------------------------------------------- where things are
-  frameAt(s, lat, up = 0) { const F = this.T.frame(s); return { F, pos: new THREE.Vector3(RW.x + F.x - F.fz * lat, RW.y + LOT.y + up, RW.z + F.z + F.fx * lat) }; }
-  /** A racer's place on the made track: its s, lat and world point (the Courier from the Raceway's own reading; a rival from its run). */
+  frameAt(s, lat, up = 0) { const F = this.T.frame(s), pos = this.R.local(F.x - F.fz * lat, F.z + F.fx * lat); pos.y += up; return { F, pos }; }
+  /** A racer's place on the trapped track: its s, lat and world point (the Courier from the Raceway's own reading; a rival from its run). */
   racers() {
     const g = this.game, R = this.R, out = [], T = this.T, L = T.length;
     const S = g.techs?.active?.id === 'skiff' ? g.techs.active : null;
@@ -62,8 +70,8 @@ export class Traps {
     for (const r of rv?.list || []) { if (r.s == null) continue; out.push({ who: r.name, target: 'rival', r, s: ((r.s % L) + L) % L, lat: r.lat, pos: r.group.position, v: r.v, air: false }); }
     return out;
   }
-  /** The trap nearest a lot-local point (for the haunt mode's click), or -1. */
-  nearest(lx, lz, within = 18) { let best = -1, bd = within; this.list.forEach((Tp, i) => { const p = Tp.look.root.position, d = Math.hypot(p.x - (RW.x + LOT.x + lx), p.z - (RW.z + LOT.z + lz)); if (d < bd) { bd = d; best = i; } }); return best; }
+  /** The trap nearest a park-local point (for the haunt mode's click), or -1. */
+  nearest(lx, lz, within = 18) { let best = -1, bd = within; this.list.forEach((Tp, i) => { const p = Tp.look.root.position, d = Math.hypot(p.x - (RW.x + lx), p.z - (RW.z + lz)); if (d < bd) { bd = d; best = i; } }); return best; }
 
   // ---------------------------------------------------------------- the placeholders (Calissa's to dress: a trap's body, its tell)
   place(Tp) {

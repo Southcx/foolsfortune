@@ -9,7 +9,8 @@
 //   escape    the Gorge Run's crater, chased up out of it by the antlion (world/raceway/escape.js).
 //   licence   a test on a stretch of a track, under a rule (world/raceway/licences.js: Gran Turismo's licences).
 //   validate  a made track ridden once from a standing start, alone: its author time (Trackmania's validation; progress/trackdef.js).
-//   haunted   a made track's race with the siblings possessing its traps (TRACK-EDITOR.md 7, Crawl's ghosts as bots: progress/trapbot.js).
+//   haunted   a race with the siblings possessing the track's traps (TRACK-EDITOR.md 7, Crawl's ghosts as bots: progress/trapbot.js): a made
+//             track's own traps, or a park track's `traps` feature, set up only for this mode.
 //   trim      the test lap (Espada's name; the code keeps trim): one lap alone, from a flying start, against the ghost of your LAST test lap (not your best): the splits at each gate say
 //             what the tune changed (Forza Horizon's test drive; SKIFF-TUNING.md 2.5). Nothing is recorded.
 // A cup (world/raceway/cups.js) is three races in a row; the City Trial (world/raceway/citytrial.js) ends in one of these, drawn.

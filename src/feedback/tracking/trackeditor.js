@@ -1,7 +1,8 @@
 // ---------------------------------------------------------------------------------------
 // TRACKING, MADE TRACKS AND THEIR TRAPS (docs/plans/TRACK-EDITOR.md): the editor's saves, validations and shares; a made track's races (kept
 // apart from the park's: race.made.*, never race.raceway.*, so a made track opens none of the park's medals, wins or parts, and pays no
-// cubes: the owner, 2026-10-24); the traps' hits by kind and by who held them; the haunt mode's wrecks. The achievements are predicates over
+// cubes: the owner, 2026-10-24); haunted races on any track (race.haunted); the traps' hits by kind and by who held them, on any track;
+// the haunt mode's wrecks. The achievements are predicates over
 // these (progress/raceachievements.js, the Made Tracks rows).
 //
 // Prior art: the house's own race tracking (feedback/tracking/race.js); Trackmania's and Mario Maker's counts of tracks made and cleared.
@@ -18,10 +19,10 @@ export function trackEditorRules({ on, L, log }) {
   on('track.share', () => L.inc('track.share'));
   on('track.load', (e) => { L.inc('track.load'); if (e.from === 'code') L.inc('track.load.code'); });
   on('race.finish', (e) => {
+    if (e.mode === 'haunted' && !e.validate) { L.inc('race.haunted'); if (e.place === 1) L.inc('race.haunted.win'); } // (a haunted race on any track: TRACK-EDITOR.md 7)
     if (e.track !== 'made' || e.validate) return;
     L.inc('race.made.finish'); if (e.medal) L.inc(`race.made.${e.medal}`);
     if (e.of > 1 && e.place === 1) L.inc('race.made.win');
-    if (e.mode === 'haunted') { L.inc('race.made.haunted'); if (e.place === 1) L.inc('race.made.haunted.win'); }
     if (e.loaded) L.inc('race.made.shared.finish');
   });
   on('trap.hit', (e) => {

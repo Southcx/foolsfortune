@@ -1,157 +1,138 @@
 // ---------------------------------------------------------------------------------------
-// A MADE TRACK IN THE WORLD (docs/plans/TRACK-EDITOR.md 3): the track the editor wrote (progress/trackdef.js), built on the Raceway's build
-// lot as a track the race engine rides like the park's own: its line (track.js), its start arch, its gate pillars, its start pillar (F there
-// races it), its pieces (ramps and hills the board rides through `rise`, pillars, walls and arches as colliders, sun plates, vein lanes and
-// geysers as the Raceway's own furniture), and its traps (world/raceway/traps.js). Built and taken down whole: an edit rebuilds it, the
-// lot's ground never changes (it is laid flat for this: park.js), so nothing of the park's field is worked out again.
-// The looks here are placeholders in the kit's clay (a flat-shaded box, a wedge), for Calissa to dress; the line is drawn as two edge
-// ribbons and a faint centre ribbon on the lot's sand.
+// A MADE TRACK IN THE WORLD (docs/plans/TRACK-EDITOR.md 3, 12): the track the editor wrote (progress/trackdef.js), built on the Raceway's
+// build lot AS A HOUSE TRACK. Its line is a track.js track like the Sun Circuit's, on the lot's floor; the park's own ground is reshaped
+// over the lot to its corridor (the running surface at each point's height, banked by its bends, its kickers, ramps and whoops, the berms
+// and the blend back to the floor), in the terrain the park draws and in a physics height field laid over the lot, so the board rides it
+// as it rides any track, through the same heightAt. Its furniture is the park's, built by the park's builders for this one track: the
+// start's arch, the gates' pillars, the start pillar, columns, walls and arches (kit.js kitOf), the plates, lanes and geysers (marksOf),
+// the rails and the sun rings (railsrings.js railsOf, ringsOf); its traps by world/raceway/traps.js. Built and taken down whole: an edit
+// rebuilds it, and the lot's ground is laid flat again first.
 //
-// Prior art: Trackmania's blocks laid on its stadium's flat floor; the house's own kit (world/raceway/kit.js: the arch, the gate pillars,
-// the start pillar), and its marks (the plates, the lanes, the geysers).
+// Prior art: Trackmania's blocks laid on its stadium's flat floor; ModNation Racers' ground fitted round a road laid as a line; the house's
+// own track.js corridor and kit.
 //
-//   R.made = new MadeTrack(R)   .set(def) -> T (the built track, id 'made') | null   .clear()   .T   .def   .rise(lx, lz) -> metres
-//   .medals { gold, silver, bronze } (real s, three laps)   .ref (the ruler's reference race, real s)   .group
+//   R.made = new MadeTrack(R)   .set(def) -> T (the built track, id 'made') | null   .clear()   .T   .def   .rule(id)   .heightAt(lx, lz) -> y | null
+//   .reshape() (the lot's ground to the track: after the park's ground is built again)   .medals { gold, silver, bronze } (real s, three laps)
+//   .ref (the ruler's reference race, real s)   .group
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../../core/physics.js';
-import { addOutline } from '../../render/outline.js';
-import { SlipGeyser } from '../../vfx/slipgeyser.js';
-import { track, RW } from './track.js';
-import { LOT, MEDAL_K, toTrackDef, gatesFor, hashOf } from '../../progress/trackdef.js';
-import { PIECES, pieceHeight, pieceRadius } from '../../progress/trackpieces.js';
+import { RW } from './track.js';
+import { LOT, MEDAL_K, buildTrack, hashOf } from '../../progress/trackdef.js';
 import { refLap } from '../../progress/skiffruler.js';
-import { GEYSER } from './kit.js';
+import { kitSink, kitOf, marksOf, nearAdd, nearDrop } from './kit.js';
+import { railsOf, railMesh, ringsOf } from './railsrings.js';
 
-const CELL = 24; // (metres a cell of the pieces' grid: rise() looks at one cell and its neighbours)
-const TRI_FLAGS = RAPIER.TriMeshFlags?.FIX_INTERNAL_EDGES ?? 0;
-const CLAY = { stone: 0xd9906a, dark: 0x8a4a3a, band: 0xffd696, ramp: 0xc8845e, edge: 0x8a4a3a, centre: 0xffd696 };
-
-/** A made track's track.js object: measured once, then laid again with its gates spaced by its length. */
-export function buildTrack(def) {
-  const ground = () => LOT.y, T0 = track(toTrackDef(def), ground);
-  return track(toTrackDef(def, gatesFor(T0)), ground);
-}
+const EDGE_FADE = 30; // (metres inside the lot's edge over which the track's ground eases back to the floor: no step where the lot meets the sand)
+const LINE = { edge: 0x8a4a3a, centre: 0xffd696 }; // (the line's ribbons: the editor's view of it from 130 m, and the start's guide)
 
 export class MadeTrack {
-  constructor(R) { this.R = R; this.T = null; this.def = null; this.pieces = []; this.grid = new Map(); this.bodies = []; this.nearKeys = []; this.medals = null; this.ref = 0; }
+  constructor(R) { this.R = R; this.T = null; this.def = null; this.bodies = []; this.near = []; this.medals = null; this.ref = 0; this.patch = null; }
   get game() { return this.R.game; }
-  /** World point of a lot-local point at the floor (plus `up`). */
-  w(lx, lz, up = 0) { return new THREE.Vector3(RW.x + LOT.x + lx, RW.y + LOT.y + up, RW.z + LOT.z + lz); }
 
   /** Build a made track on the lot (the old one taken down first). Returns its track, or null if the line could not be laid. */
   set(def) {
     this.clear();
     let T = null; try { T = buildTrack(def); } catch { T = null; }
     if (!T || !(T.length > 50)) return null;
+    const g = this.game, R = this.R;
     this.T = T; this.def = def; T.key = `made.${hashOf(def)}`; // (its ghosts and records are this geometry's: an edit is a new track)
     // the ruler's reference race, and medals at the Sun Circuit's ratio to its own (MEDAL_K: 0.718 for gold)
     this.ref = refLap(T, () => 1, { race: true }).seconds;
     this.medals = Object.fromEntries(Object.entries(MEDAL_K).map(([m, k]) => [m, Math.round(this.ref * k)]));
-    const g = this.game, group = (this.group = new THREE.Group()); group.userData.zone = 'raceway'; g.scene.add(group);
-    this.mat = new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.9, flatShading: true });
-    this.drawLine(); this.drawKit();
-    this.pieces = def.pieces.map((P) => ({ ...P, r: pieceRadius(P) }));
-    for (const P of this.pieces) { this.index(P); this.drawPiece(P); }
-    this.R.traps?.build(def, T);
+    this.reshape();
+    const group = (this.group = new THREE.Group()); group.userData.zone = 'raceway'; g.scene.add(group);
+    const add = (o) => group.add(o);
+    // the park's builders, for this one track: rails first (the kit keeps its columns off them), then the kit, the marks, the rings
+    const geos = [], rails = railsOf(R, T, geos); R.rails.push(...rails); if (geos.length) group.add(railMesh(geos));
+    kitOf(R, T, kitSink(R, group, { bodies: this.bodies, onNear: (N) => { nearAdd(R, N); this.near.push(N); } }));
+    marksOf(R, T, add);
+    R.rings.push(...ringsOf(R, T, add, R.rings.length));
+    this.drawLine();
+    R.traps?.use(T);
     group.updateMatrixWorld(true);
     return T;
   }
-  /** Take the made track down: its meshes, colliders, the Raceway's lists' entries of it, its traps. */
+  /** Take the made track down: its meshes, colliders, its entries in the Raceway's lists, its traps; the lot laid flat again. */
   clear() {
     const g = this.game, R = this.R;
-    R.traps?.clear();
-    if (this.group) { this.group.traverse((o) => { o.geometry?.dispose?.(); }); this.group.removeFromParent(); this.group = null; }
+    if (this.T && R.traps?.T === this.T) R.traps.clear();
+    for (const G of R.geysers.filter((x) => x.track === 'made')) { G.look.group.removeFromParent(); G.look.dispose?.(); }
+    for (const Rg of R.rings.filter((x) => x.track === 'made')) { Rg.look.group.removeFromParent(); Rg.look.dispose?.(); }
+    if (this.group) { this.group.traverse((o) => { o.geometry?.dispose?.(); o.material?.dispose?.(); }); this.group.removeFromParent(); this.group = null; }
     for (const b of this.bodies) g.physics?.world?.removeRigidBody(b); this.bodies = [];
-    for (const G of this.geysers || []) { G.look.group.removeFromParent(); G.look.dispose?.(); } this.geysers = [];
-    R.geysers = R.geysers.filter((G) => !G.made); R.plates = R.plates.filter((P) => P.track !== 'made'); R.pillars = (R.pillars || []).filter((P) => P.track !== 'made');
-    for (const [k, N] of this.nearKeys) { const l = R.nearGrid?.get(k); if (l) { const i = l.indexOf(N); if (i >= 0) l.splice(i, 1); } } this.nearKeys = [];
-    this.grid = new Map(); this.pieces = []; this.T = null; this.def = null;
-    this.mat?.dispose(); this.mat = null;
+    const mine = (x) => x.track !== 'made';
+    R.geysers = R.geysers.filter(mine); R.plates = R.plates.filter(mine); R.pillars = (R.pillars || []).filter(mine); R.rails = R.rails.filter(mine); R.rings = R.rings.filter(mine);
+    for (const N of this.near) nearDrop(R, N); this.near = [];
+    const had = !!this.T; this.T = null; this.def = null;
+    if (had) this.reshape();
   }
-
-  // ---------------------------------------------------------------- what the board rides
-  index(P) {
-    if (!PIECES[P.kind]?.ride) return;
-    const r = P.r, x0 = Math.floor((P.x - r) / CELL), x1 = Math.floor((P.x + r) / CELL), z0 = Math.floor((P.z - r) / CELL), z1 = Math.floor((P.z + r) / CELL);
-    for (let a = x0; a <= x1; a++) for (let b = z0; b <= z1; b++) { const k = `${a},${b}`; if (!this.grid.has(k)) this.grid.set(k, []); this.grid.get(k).push(P); }
-  }
-  /** The ridden pieces' height over the lot's floor at a park-local point (0 off them, or off the lot). */
-  /** Whether a track's rule (Spellscription's: trackdef.js RULES) holds on the made track. */
+  /** Whether a track's rule (trackdef.js RULES) holds on the made track. */
   rule(id) { return !!this.def?.rules?.includes(id); }
-  rise(lx, lz) {
-    if (!this.grid.size) return 0;
-    const x = lx - LOT.x, z = lz - LOT.z; if (Math.abs(x) > LOT.half || Math.abs(z) > LOT.half) return 0;
-    const l = this.grid.get(`${Math.floor(x / CELL)},${Math.floor(z / CELL)}`); if (!l) return 0;
-    let h = 0; for (const P of l) h = Math.max(h, pieceHeight(P, x, z));
-    return h;
+
+  // ---------------------------------------------------------------- the ground
+  /** The made track's ground at a park-local point on the lot (y over the layer's floor), or null off the lot: its corridor on the
+   *  lot's floor, eased back to the floor at the lot's edge. Read where the park's built ground is not (raceway.heightAt's fallback). */
+  heightAt(lx, lz) {
+    const x = lx - LOT.x, z = lz - LOT.z, d = Math.max(Math.abs(x), Math.abs(z)); if (d > LOT.half) return null;
+    if (!this.T) return null;
+    const k = Math.min(1, (LOT.half - d) / EDGE_FADE);
+    return LOT.y + (this.T.heightAt(lx, lz) - LOT.y) * k * k * (3 - 2 * k);
+  }
+  /** The lot's ground to the made track (or flat, with none): written into the park's terrain where it is built (its heights, which the
+   *  Raceway's heightAt reads, and its drawn vertices and normals over the lot), and a physics height field over the lot. The lot lies
+   *  on the terrain's grid (its corners are whole samples), so the made track's ground is the park's own, cell for cell. */
+  reshape() {
+    const R = this.R, TR = R.chunks, step = RW.step, n = Math.round((2 * LOT.half) / step) + 1;
+    const hs = new Float32Array(n * n), x0 = LOT.x - LOT.half, z0 = LOT.z - LOT.half;
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) hs[i * n + j] = this.heightAt(x0 + i * step, z0 + j * step) ?? LOT.y;
+    if (TR) writeTerrain(TR, Math.round((x0 + RW.half) / step), Math.round((z0 + RW.half) / step), n, hs, step);
+    // the physics: a height field over the lot (the park's own under it stays flat, and never higher)
+    const W = this.game.physics?.world; if (!W) return;
+    if (this.patch) { W.removeRigidBody(this.patch); this.patch = null; }
+    if (!this.T) return;
+    this.patch = W.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(RW.x + LOT.x, RW.y, RW.z + LOT.z));
+    W.createCollider(RAPIER.ColliderDesc.heightfield(n - 1, n - 1, hs, { x: 2 * LOT.half, y: 1, z: 2 * LOT.half }).setFriction(0.9).setCollisionGroups(GROUPS.static), this.patch);
   }
 
-  // ---------------------------------------------------------------- the placeholders
-  painted(geo, color) { const g2 = geo.index ? geo.toNonIndexed() : geo, c = new THREE.Color(color), n = g2.attributes.position.count, a = new Float32Array(n * 3); for (let i = 0; i < n; i++) c.toArray(a, i * 3); g2.setAttribute('color', new THREE.BufferAttribute(a, 3)); return g2; }
-  solid(geo, pos, yaw, half) {
-    const m = new THREE.Mesh(geo, this.mat); m.position.copy(pos); m.rotation.y = yaw; m.castShadow = m.receiveShadow = true; addOutline(m); this.group.add(m);
-    const W = this.game.physics?.world; if (!W || !half) return m;
-    const q = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), yaw), b = W.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(pos.x, pos.y, pos.z).setRotation(q));
-    W.createCollider(RAPIER.ColliderDesc.cuboid(half.x, half.y, half.z).setCollisionGroups(GROUPS.static).setFriction(0.9), b); this.bodies.push(b);
-    return m;
+  // ---------------------------------------------------------------- the line's guide (a placeholder: the editor reads it from 130 m)
+  drawLine() {
+    const T = this.T, R = this.R, mk = (offset, width, color, step) => {
+      const pos = [], idx = []; let k = 0;
+      for (let s = 0; s <= T.length + 0.01; s += step) {
+        const F = T.frame(s % T.length), rx = -F.fz, rz = F.fx, lat = offset(F);
+        for (const e of [-width / 2, width / 2]) { const lx = F.x + rx * (lat + e), lz = F.z + rz * (lat + e); pos.push(RW.x + lx, R.heightAt(RW.x + lx, RW.z + lz) + 0.08, RW.z + lz); }
+        if (k) idx.push(2 * k - 2, 2 * k - 1, 2 * k, 2 * k - 1, 2 * k + 1, 2 * k); k++;
+      }
+      const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setIndex(idx);
+      this.group.add(new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.85, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, fog: false })));
+    };
+    mk((F) => -F.w, 1.2, LINE.edge, 2); mk((F) => F.w, 1.2, LINE.edge, 2); mk(() => 0, 0.4, LINE.centre, 3);
   }
-  near(p, r, what) { const R = this.R, N = { key: `made${this.nearKeys.length}`, x: p.x, y: p.y, z: p.z, r, what }, k = `${Math.floor(N.x / 20)},${Math.floor(N.z / 20)}`; if (!R.nearGrid) R.nearGrid = new Map(); if (!R.nearGrid.has(k)) R.nearGrid.set(k, []); R.nearGrid.get(k).push(N); this.nearKeys.push([k, N]); }
-  ribbon(offset, width, color, step = 2) {
-    const T = this.T, pos = [], idx = []; let n = 0;
-    for (let s = 0; s <= T.length + 0.01; s += step) {
-      const F = T.frame(s % T.length), rx = -F.fz, rz = F.fx, lat = offset(F);
-      for (const e of [-width / 2, width / 2]) { const lx = F.x + rx * (lat + e), lz = F.z + rz * (lat + e); pos.push(RW.x + lx, RW.y + LOT.y + 0.06 + this.rise(lx, lz), RW.z + lz); }
-      if (n) idx.push(2 * n - 2, 2 * n - 1, 2 * n, 2 * n - 1, 2 * n + 1, 2 * n); n++;
-    }
-    const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setIndex(idx);
-    const m = new THREE.Mesh(geo, new THREE.MeshBasicMaterial({ color, transparent: true, opacity: 0.85, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2, fog: false }));
-    this.group.add(m); return m;
+}
+
+/** Heights `hs` (n x n, column-major as the terrain's: i along x) written into a ChunkTerrain from its sample (i0, j0): its kept heights,
+ *  its drawn vertices (each chunk edge's skirt foot following, as deep as it hung) and normals, and only those rows sent to the card.
+ *  (render/terrain.js's layout: Petra's; asked to take this in as a method, docs/handoffs/petra/.) */
+function writeTerrain(TR, i0, j0, n, hs, step) {
+  const N = TR.n, C = TR.chunk, H = TR.heights, geo = TR.geometry, pos = geo.attributes.position, nor = geo.attributes.normal, P = pos.array, Nn = nor.array;
+  const edge = (I, J) => I % C === 0 || J % C === 0;
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+    const I = i0 + i, J = j0 + j, y = hs[i * n + j], o = (J * N + I) * 3, was = P[o + 1];
+    H[I * N + J] = y; P[o + 1] = y;
+    if (edge(I, J)) { const sk = TR.skirtAt(I, J) * 3 + 1; P[sk] = y - (was - P[sk]); }
   }
-  drawLine() { this.ribbon((F) => -F.w, 1.2, CLAY.edge); this.ribbon((F) => F.w, 1.2, CLAY.edge); this.ribbon(() => 0, 0.4, CLAY.centre, 3); } // (edges wide enough to read from the editor's camera, 130 m up)
-  pillarGeo(h, w = 1.5) { return this.painted(new THREE.BoxGeometry(w, h, w), CLAY.stone); }
-  drawKit() {
-    const T = this.T, side = (s, lat) => { const F = T.frame(s); return { x: F.x - F.fz * lat, z: F.z + F.fx * lat, yaw: Math.atan2(F.fx, F.fz) }; };
-    const at = (p, up) => new THREE.Vector3(RW.x + p.x, RW.y + LOT.y + up, RW.z + p.z);
-    // the start's arch, the gates' pillars (the kit's), the start pillar (F there races it: race.js offer)
-    { const F = T.frame(T.line), a = side(T.line, -(F.w + 3)), b = side(T.line, F.w + 3);
-      for (const p of [a, b]) { this.solid(this.pillarGeo(12, 2.2), at(p, 6), p.yaw, { x: 1.1, y: 6, z: 1.1 }); this.near(at(p, 0), 1.4, 'arch'); }
-      const len = Math.hypot(a.x - b.x, a.z - b.z) + 2.6; this.solid(this.painted(new THREE.BoxGeometry(len, 1.4, 2), CLAY.dark), at({ x: (a.x + b.x) / 2, z: (a.z + b.z) / 2 }, 12.6), a.yaw + Math.PI / 2, { x: len / 2, y: 0.7, z: 1 }); }
-    for (const s of T.gates) { const F = T.frame(s); for (const lat of [-(F.w + 2.5), F.w + 2.5]) { const p = side(s, lat); this.solid(this.pillarGeo(8), at(p, 4), p.yaw, { x: 0.75, y: 4, z: 0.75 }); this.near(at(p, 0), 1, 'pillar'); } }
-    { const F = T.frame(T.line), p = side(T.line, -(F.w + 7)), pos = at(p, 7.5);
-      this.solid(this.painted(new THREE.CylinderGeometry(0.8, 3, 16, 6), 0xf0c8f0), pos, 0, { x: 2.4, y: 8, z: 2.4 }); this.R.pillars.push({ track: 'made', pos: at(p, 0) }); }
+  const Hc = (I, J) => H[Math.min(N - 1, Math.max(0, I)) * N + Math.min(N - 1, Math.max(0, J))];
+  const Ia = Math.max(0, i0 - 1), Ib = Math.min(N - 1, i0 + n), Ja = Math.max(0, j0 - 1), Jb = Math.min(N - 1, j0 + n);
+  for (let J = Ja; J <= Jb; J++) for (let I = Ia; I <= Ib; I++) {
+    const nx = Hc(I - 1, J) - Hc(I + 1, J), nz = Hc(I, J - 1) - Hc(I, J + 1), ny = 2 * step, l = Math.hypot(nx, ny, nz), o = (J * N + I) * 3;
+    Nn[o] = nx / l; Nn[o + 1] = ny / l; Nn[o + 2] = nz / l;
+    if (edge(I, J)) Nn.set([Nn[o], Nn[o + 1], Nn[o + 2]], TR.skirtAt(I, J) * 3);
   }
-  drawPiece(P) {
-    const K = PIECES[P.kind], g = this.game, R = this.R, T = this.T, yaw = P.yaw || 0, s = Math.sin(yaw), c = Math.cos(yaw);
-    const toLot = (a, cc) => ({ x: P.x + a * s + cc * c, z: P.z + a * c - cc * s }); // (a piece's own frame to the lot: `a` along, `cc` across)
-    if (K.ride) {
-      // a grid of the ridden surface (its own height function), and its front wall where a wedge ends in a lip; a trimesh to stand on
-      const Rd = K.ride, na = Rd.shape === 'hill' ? 14 : 10, nc = Rd.shape === 'hill' ? 14 : 2, pos = [], idx = [];
-      for (let i = 0; i <= na; i++) for (let j = 0; j <= nc; j++) { const a = -Rd.len / 2 + (Rd.len * i) / na, cc = -Rd.w / 2 + (Rd.w * j) / nc, q = toLot(a, cc); pos.push(RW.x + LOT.x + q.x, RW.y + LOT.y + pieceHeight(P, q.x, q.z) + 0.02, RW.z + LOT.z + q.z); }
-      for (let i = 0; i < na; i++) for (let j = 0; j < nc; j++) { const k = i * (nc + 1) + j; idx.push(k, k + nc + 1, k + 1, k + 1, k + nc + 1, k + nc + 2); }
-      if (Rd.shape === 'wedge') { const base = pos.length / 3, l = toLot(Rd.len / 2, -Rd.w / 2), r = toLot(Rd.len / 2, Rd.w / 2);
-        for (const q of [l, r]) pos.push(RW.x + LOT.x + q.x, RW.y + LOT.y + Rd.h, RW.z + LOT.z + q.z); for (const q of [l, r]) pos.push(RW.x + LOT.x + q.x, RW.y + LOT.y, RW.z + LOT.z + q.z);
-        idx.push(base, base + 2, base + 1, base + 1, base + 2, base + 3); }
-      const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); geo.setIndex(idx); geo.computeVertexNormals();
-      const m = new THREE.Mesh(this.painted(geo, CLAY.ramp), this.mat); m.castShadow = m.receiveShadow = true; addOutline(m); this.group.add(m);
-      const W = g.physics?.world; if (W) { const b = W.createRigidBody(RAPIER.RigidBodyDesc.fixed()); W.createCollider(RAPIER.ColliderDesc.trimesh(new Float32Array(pos), new Uint32Array(idx), TRI_FLAGS).setCollisionGroups(GROUPS.static).setFriction(0.9), b); this.bodies.push(b); }
-      return;
-    }
-    if (K.solid) {
-      for (const p of K.solid.parts) { const q = toLot(p.z, p.x), pos = this.w(q.x, q.z, p.y); this.solid(this.painted(new THREE.BoxGeometry(p.sx, p.sy, p.sz), p.sy > 2 ? CLAY.stone : CLAY.dark), pos, yaw, { x: p.sx / 2, y: p.sy / 2, z: p.sz / 2 }); if (p.y < 4) this.near(this.w(q.x, q.z), Math.max(p.sx, p.sz) / 2, P.kind); }
-      return;
-    }
-    if (K.mark === 'geyser') {
-      const look = new SlipGeyser({ height: 24, radius: GEYSER.r, seed: 90 + (this.geysers?.length || 0) }), pos = this.w(P.x, P.z);
-      look.group.position.copy(pos); look.group.userData.zone = 'raceway'; g.scene.add(look.group);
-      const G = { look, pos, thrown: false, made: true }; (this.geysers ||= []).push(G); R.geysers.push(G); return;
-    }
-    // a plate or a vein lane: on the line where it lies (its s and lat), laid along it as the kit's are (kit.js buildMarks)
-    const n = T.nearest(P.x + LOT.x, P.z + LOT.z); if (!n) return;
-    const Sz = K.size, mat = new THREE.MeshBasicMaterial({ color: K.mark === 'lane' ? 0x7fdcff : 0xffd36b, transparent: true, opacity: 0.75, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 });
-    const slab = (sAt, len) => { const F = T.frame(sAt), m = new THREE.Mesh(new THREE.PlaneGeometry(Sz.w * 2, len).rotateX(-Math.PI / 2), mat); m.position.set(RW.x + F.x - F.fz * n.lat, RW.y + LOT.y + 0.08, RW.z + F.z + F.fx * n.lat); m.rotation.y = Math.atan2(F.fx, F.fz); this.group.add(m); return m; };
-    const s0 = (n.s - Sz.len / 2 + T.length) % T.length, Pl = { track: 'made', line: 'main', s0, s1: s0 + Sz.len, lat: n.lat, w: Sz.w, index: R.plates.length, ...(K.mark === 'lane' ? { lane: true, vein: true, meshes: [] } : {}) };
-    if (K.mark === 'lane') { for (let u = 0; u < Sz.len; u += 5) Pl.meshes.push(slab(s0 + u + 2.5, 5.2)); Pl.mesh = Pl.meshes[0]; } else Pl.mesh = slab(n.s, Sz.len);
-    R.plates.push(Pl);
+  const s0 = TR.skirtAt(Ia - (Ia % C), Ja), s1 = TR.skirtAt(Math.min(N - 1, Ib + ((C - (Ib % C)) % C)), Jb);
+  for (const A of [pos, nor]) {
+    A.clearUpdateRanges();
+    for (let J = Ja; J <= Jb; J++) A.addUpdateRange((J * N + Ia) * 3, (Ib - Ia + 1) * 3);
+    A.addUpdateRange(s0 * 3, (s1 - s0 + 1) * 3); A.needsUpdate = true;
   }
 }

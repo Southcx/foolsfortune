@@ -116,7 +116,7 @@ export class Race {
     this.rivals.start(T, opts.solo || this.solo || !M.rivals, opts.roster || 'clapperjars'); this.solo = false;
     this.pi = this.cls === 'open' ? g.skiffParts?.pi?.(T) ?? 100 : 100; // (OPEN: the rivals answer your build by half its edge, SKIFF-TUNING.md 2.4)
     if (this.pi !== 100) for (const r of this.rivals.list) r.skill *= Math.sqrt(this.pi / 100);
-    if (T.id === 'made') R.traps?.haunt(M.haunted ? 'bots' : null); // (the haunted race: the siblings possess the made track's traps: trapbot.js)
+    if (T.id === 'made' || M.haunted) { R.traps?.use(T); R.traps?.haunt(M.haunted ? 'bots' : null); } // (a made track's traps always; a park track's only in the haunted race, where the siblings possess them: trapbot.js)
     this.rewind.clear(); ruleset?.begin?.(this, plan);
     if (M.flyover && !opts.again) this.flyover.begin(T, R);
     g.events?.emit('race.start', { track: T.id, mode: modeId, rivals: this.rivals.list.length, condition: C.key, light: C.key.split('.')[0], aspect: C.aspect, cup: !!opts.cup, city: !!opts.city, by: 'courier' });
@@ -227,8 +227,9 @@ export class Race {
     this.flyover.stop(); this.rewind.clear(); this.ruleset?.stop?.(this);
     this.rivals.stop(); this.running = false; this.state = 'idle';
     if (this.R?.traps?.mode === 'bots') this.R.traps.haunt(null); // (the haunted race's haunters let go of the traps)
+    this.R?.traps?.use(null); // (a park track's traps taken down again: only the made track keeps its own)
   }
-  /** Through a portal on a made track (world/raceway/traps.js): from s to s, on or back; the gates passed or given back with it, so a
+  /** Through a portal (world/raceway/traps.js): from s to s, on or back; the gates passed or given back with it, so a
    *  shortcut's lap still counts and a send-back's must be ridden again. */
   warp(from, to, back) {
     if (!this.running || this.state !== 'run') return;

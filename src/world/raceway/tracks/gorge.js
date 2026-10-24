@@ -13,6 +13,8 @@
 // Riders' Sand Ruins' quicksand pits, the Nordschleife's Karussell (a banked bowl), Wave Race 64 (the water itself as the course).
 // ---------------------------------------------------------------------------------------
 
+import { trapRows } from '../track.js';
+
 /** The crater's spiral, as control points: from `a0` (radians round its middle) for `turns`, from radius `r0` to `r1`, its road on the
  *  bowl's wall a little under its surface (park.js craterAt). */
 const CRATER = { x: 560, z: -760, r: 260, rf: 60, y: 10, floor: -45 };
@@ -64,6 +66,8 @@ export const GORGE = {
     ].map((r) => ({ ...r, clear: 0.9 })),
     rings: [[0, 120, 0, 5], [5, 30, 0, 0], [5, 55, 0, 0], [CONTROL.length - 5, 10, 0, 5]],
     ringGlide: 5,
+    // the traps, for a haunted run only (track.js FEATURES.traps): the plateau, the crest, the slot, the spiral, the ford's dip
+    traps: trapRows([['pillars', 1, 60, 0], ['turret', 4, 20, 0], ['sinkhole', 8, 50, 2], ['pendulum', SPIRAL0 + 6, 0, 0], ['gust', SPIRAL0 + 10, 0, 0], ['gusher', CONTROL.length - 6, 40, 0]]),
   },
 };
 export { CRATER as GORGE_CRATER, at as gorgeAt };

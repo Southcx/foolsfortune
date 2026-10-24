@@ -2,16 +2,21 @@
 // THE TRACK EDITOR (docs/plans/TRACK-EDITOR.md 3; the owner, 2026-10-24: "go full steam on an editor"): a made track built on the Raceway's
 // build lot, from above. Opened from the race board's BUILD tab (its own room's thing: CLAUDE.md's scope) or /edit at the Raceway; the
 // Courier is held at the lot while it is open, the camera hangs over the lot (cinema.shot, read every frame) and the cursor is free.
-//   THE LINE      SELECT drags a point (its half-width on [ and ]); POINT clicks a point in (on the line: between its neighbours; off it:
-//                 after the selected one); RMB takes one out. Or RIDE IT: the line laid where you sail, a point every 35 m, closed when
-//                 you come back to its start (ModNation Racers' paver).
-//   THE PIECES    a piece of the kit (progress/trackpieces.js) placed at the cursor, turned to the line; Q / E turn the selected thing.
-//                 Each is made with a god power and open when that power is yours (the editor grows with your domains).
+//   THE LINE      SELECT drags a point (its half-width on [ and ], its height on PageUp / PageDown, or the SELECTED buttons); POINT clicks
+//                 a point in (on the line: between its neighbours; off it: after the selected one); RMB takes one out. Or RIDE IT: the
+//                 line laid where you sail, a point every 35 m at the height you ride, closed when you come back to its start (ModNation
+//                 Racers' paver).
+//   THE PIECES    a piece of the house's own kit (progress/trackpieces.js: the park's kickers, ramps, whoops, rails, rings ...) placed on
+//                 the line where the cursor meets it, at its share of the line and its metres off it (it slides with the line when the
+//                 line is edited); a span (whoops, a bowl, a glide lip, a rail) takes a second click, its end. Each is made with a god
+//                 power and open when that power is yours (the editor grows with your domains).
 //   THE TRAPS     a trap (progress/traps.js) placed on the line; a portal takes two clicks (its eyes); + and - its period, , and . its offset.
 //   THE RULES     up to three (trackdef.js RULES), a stele's words at the start.
 //   THE CHECKS    the budget, and why it would not ride (trackdef.js validate), redrawn on every change: Super Mario Maker's red marks.
 //   THE RUNS      TEST (practice), VALIDATE (ridden once to the line, alone: its author time), HAUNTED (you ride, the siblings possess its
 //                 traps), HAUNT (the clapperjars ride, you possess them: world/raceway/haunt.js).
+// The made track is a house track (world/raceway/madetrack.js): the park's ground is shaped to it and its furniture is the park's, so what
+// the editor shows from above is what the board will ride.
 //   KEEPING       three slots in the save (`madeTracks`), a name, a share code (Trackmania's track code: trackdef.js), undo (Ctrl+Z).
 // The panel is a plain placeholder for Calissa's dress (the house's UI is never stock); its words are placeholders for Espada's.
 //
@@ -25,13 +30,13 @@
 import * as THREE from 'three';
 import { RW } from './track.js';
 import { LOT, MADE, RULES, blankTrack, budgetOf, validate, hashOf, isValidated, shareCode, readCode, cleanDef } from '../../progress/trackdef.js';
-import { PIECES, PIECE_KINDS, pieceRadius } from '../../progress/trackpieces.js';
+import { PIECES, PIECE_KINDS } from '../../progress/trackpieces.js';
 import { TRAPS, TRAP_KINDS } from '../../progress/traps.js';
 import { GOD_POWERS } from '../../progress/godpowers.js';
 
 const CAM = { h: 130, min: 40, max: 170, lean: 0.35, pan: 1.1 }; // (the camera's height over the lot, its range, how far it stands back for its lean, pan speed a metre of height; kept inside the
 // house camera's 200 m and the Dunes' haze, exp2 0.0042: at 180 m the lot is still half seen, past it the haze takes everything)
-const PICK = { point: 6, trap: 6 }; // (metres a click reaches a handle at the closest zoom: more as the camera rises)
+const PICK = { point: 6, item: 6 }; // (metres a click reaches a handle at the closest zoom: more as the camera rises)
 const UNDO = 40; // (snapshots kept)
 const MAP = { px: 256, piece: '#9ad0ff', trap: '#ff6a5a', every: 0.1 }; // (the panel's map: its size in pixels, the pieces' and traps' colours, how often it is redrawn, real seconds)
 const RECORD = { every: 35, close: 30, min: 400 }; // (ride it: metres between points laid, how near the start closes it, the least length)
@@ -134,37 +139,48 @@ export class TrackEditor {
     const f = on ? 'addEventListener' : 'removeEventListener';
     el[f]('pointermove', this.h.move); el[f]('pointerdown', this.h.down); window[f]('pointerup', this.h.up); el[f]('wheel', this.h.wheel, { passive: true }); el[f]('contextmenu', this.h.menu);
   }
+  /** The cursor on the ground (lot-local x, z; and y over the lot's floor), from the mouse through the camera (the ground as shaped). */
   cursor() {
     const cam = this.game.camera; if (!this.ndc || !cam) return null;
-    const ray = new THREE.Raycaster(); ray.setFromCamera(this.ndc, cam);
-    const d = ray.ray.direction, y = RW.y + LOT.y; if (Math.abs(d.y) < 1e-4) return null;
-    const k = (y - ray.ray.origin.y) / d.y; if (k < 0) return null;
-    const p = ray.ray.origin.clone().addScaledVector(d, k); return { x: p.x - RW.x - LOT.x, z: p.z - RW.z - LOT.z };
+    const ray = new THREE.Raycaster(); ray.setFromCamera(this.ndc, cam); const p = this.R.pick(ray.ray);
+    return p && { x: p.x - LOT.x, z: p.z - LOT.z, y: p.y - LOT.y };
   }
   reach() { return Math.max(1, this.cam.h / 110); }
-  /** What is under the cursor: a point, a piece, a trap (or a portal's second eye). */
+  /** A piece's or trap's place on the line (lot-local), from its share of the line and its metres off it; `end`: its span's end. */
+  spot(it, end = false) {
+    const T = this.T; if (!T) return null;
+    const u = end ? it.u2 ?? it.u : it.u, lat = end ? it.lat2 ?? it.lat : it.lat, F = T.frame(u * T.length);
+    return { x: F.x - F.fz * lat - LOT.x, z: F.z + F.fx * lat - LOT.z };
+  }
+  /** Where the cursor meets the line: its share of the line and metres off it (kept within the running surface), or null off it. */
+  onLine(c) {
+    const T = this.T; if (!T || !c) return null;
+    const n = T.nearest(c.x + LOT.x, c.z + LOT.z); if (!n) return null;
+    const F = T.frame(n.s); if (n.d > F.w + 25) return null;
+    return { u: Math.round((n.s / T.length) * 10000) / 10000, lat: Math.round(Math.max(-F.w, Math.min(F.w, n.lat)) * 10) / 10 };
+  }
+  /** What is under the cursor: a point, a piece or a trap, or the end of a span or a portal's second eye. */
   pick(c) {
     const D = this.def, k = this.reach(); let best = null, bd = Infinity;
-    const test = (type, i, x, z, r) => { const d = Math.hypot(c.x - x, c.z - z); if (d < r && d < bd) { bd = d; best = { type, i }; } };
-    D.points.forEach((p, i) => test('point', i, p[0], p[1], PICK.point * k));
-    D.traps.forEach((t, i) => { test('trap', i, t.x, t.z, PICK.trap * k); if (t.pair) test('pair', i, t.pair[0], t.pair[1], PICK.trap * k); });
-    D.pieces.forEach((p, i) => test('piece', i, p.x, p.z, Math.max(3, pieceRadius(p) * 0.7)));
+    const test = (type, i, q, r, end = false) => { if (!q) return; const d = Math.hypot(c.x - q.x, c.z - q.z); if (d < r && d < bd) { bd = d; best = { type, i, end }; } };
+    D.points.forEach((p, i) => test('point', i, { x: p[0], z: p[1] }, PICK.point * k));
+    D.pieces.forEach((P, i) => { test('piece', i, this.spot(P), PICK.item * k); if (PIECES[P.kind]?.span) test('piece', i, this.spot(P, true), PICK.item * k, true); });
+    D.traps.forEach((t, i) => { test('trap', i, this.spot(t), PICK.item * k); if (t.u2 != null) test('trap', i, this.spot(t, true), PICK.item * k, true); });
     return best;
   }
   snapshot() { this.undo.push(JSON.stringify(this.def)); if (this.undo.length > UNDO) this.undo.shift(); }
-  /** The line's heading at a lot-local point (for turning a new piece or trap to it). */
-  yawAt(x, z) { const T = this.R.made.T, n = T?.nearest(x + LOT.x, z + LOT.z); if (!n) return 0; const F = T.frame(n.s); return Math.atan2(F.fx, F.fz); }
   press() {
     const c = this.cursor(); if (!c) return; const D = this.def, t = this.tool;
     if (Math.max(Math.abs(c.x), Math.abs(c.z)) > LOT.half) return;
-    if (t === 'select') { this.sel = this.pick(c); if (this.sel) { this.snapshot(); this.drag = { from: c }; } this.panel(); return; }
+    if (t === 'select') { this.sel = this.pick(c); if (this.sel) { this.snapshot(); this.drag = true; } this.panel(); return; }
+    if (t === 'point') { this.snapshot(); const at = this.insertAt(c), P = D.points, a = P[(at - 1 + P.length) % P.length], b = P[at % P.length];
+      P.splice(at, 0, [Math.round(c.x), Math.round(c.z), Math.round(((a?.[2] || 0) + (b?.[2] || 0)) / 2), MADE.defaultWidth]); this.sel = { type: 'point', i: at }; this.commit(); return; }
+    const L = this.onLine(c); if (!L) { this.game.log?.say('warn', 'Place it on the line.', { key: 'edit.place', throttle: 1 }); return; }
     this.snapshot();
-    if (t === 'point') { const at = this.insertAt(c); D.points.splice(at, 0, [Math.round(c.x), Math.round(c.z), MADE.defaultWidth]); this.sel = { type: 'point', i: at }; }
-    else if (PIECES[t]) { D.pieces.push({ kind: t, x: Math.round(c.x), z: Math.round(c.z), yaw: +this.yawAt(c.x, c.z).toFixed(2) }); this.sel = { type: 'piece', i: D.pieces.length - 1 }; }
-    else if (TRAPS[t]) {
-      const pending = this.pendingPair; if (pending != null && D.traps[pending]) { D.traps[pending].pair = [Math.round(c.x), Math.round(c.z)]; this.pendingPair = null; this.sel = { type: 'trap', i: pending }; }
-      else { D.traps.push({ kind: t, x: Math.round(c.x), z: Math.round(c.z), yaw: +this.yawAt(c.x, c.z).toFixed(2), period: TRAPS[t].cycle.period, offset: 0 }); this.sel = { type: 'trap', i: D.traps.length - 1 }; if (TRAPS[t].pair) this.pendingPair = D.traps.length - 1; }
-    }
+    const pend = this.pending; // (a span's or a portal's first click waiting for its second)
+    if (pend && pend.kind === t) { const it = (pend.list === 'traps' ? D.traps : D.pieces)[pend.i]; if (it) { it.u2 = L.u; if (pend.list === 'pieces') it.lat2 = L.lat; this.sel = { type: pend.list === 'traps' ? 'trap' : 'piece', i: pend.i }; } this.pending = null; }
+    else if (PIECES[t]) { D.pieces.push({ kind: t, u: L.u, lat: L.lat, ...(PIECES[t].span ? { u2: L.u, lat2: L.lat } : {}) }); this.sel = { type: 'piece', i: D.pieces.length - 1 }; if (PIECES[t].span) this.pending = { kind: t, list: 'pieces', i: this.sel.i }; }
+    else if (TRAPS[t]) { D.traps.push({ kind: t, u: L.u, lat: L.lat, period: TRAPS[t].cycle.period, offset: 0, ...(TRAPS[t].pair ? { u2: L.u } : {}) }); this.sel = { type: 'trap', i: D.traps.length - 1 }; if (TRAPS[t].pair) this.pending = { kind: t, list: 'traps', i: this.sel.i }; }
     this.commit();
   }
   /** Where a new point goes: between the two neighbours whose segment the click is nearest, else after the selected one. */
@@ -173,22 +189,22 @@ export class TrackEditor {
     for (let i = 0; i < n; i++) { const a = P[i], b = P[(i + 1) % n], dx = b[0] - a[0], dz = b[1] - a[1], l2 = dx * dx + dz * dz || 1, u = Math.max(0, Math.min(1, ((c.x - a[0]) * dx + (c.z - a[1]) * dz) / l2)), d = Math.hypot(c.x - a[0] - dx * u, c.z - a[1] - dz * u); if (d < bd) { bd = d; best = i + 1; } }
     return best >= 0 ? best : this.sel?.type === 'point' ? this.sel.i + 1 : n;
   }
-  release() { if (this.drag) { this.drag = null; this.commit(); } }
-  erase() {
-    const c = this.cursor(); if (!c) return; const s = this.pick(c); if (!s) return; const D = this.def;
+  release() { if (this.drag) { this.drag = false; this.commit(); } }
+  /** Take out what is under the cursor (RMB), or the selection (Delete). */
+  erase(s = null) {
+    if (!s) { const c = this.cursor(); if (!c) return; s = this.pick(c); } if (!s) return; const D = this.def;
     if (s.type === 'point' && D.points.length <= MADE.points[0]) { this.game.log?.say('warn', `A track keeps ${MADE.points[0]} points at least.`, { key: 'edit.min', throttle: 1 }); return; }
     this.snapshot();
-    if (s.type === 'point') D.points.splice(s.i, 1); else if (s.type === 'piece') D.pieces.splice(s.i, 1); else D.traps.splice(s.i, 1);
-    this.sel = null; this.commit();
+    (s.type === 'point' ? D.points : s.type === 'piece' ? D.pieces : D.traps).splice(s.i, 1);
+    this.sel = null; this.pending = null; this.commit();
   }
-  /** The thing dragged follows the cursor; the line is relaid a few times a real second while it moves. */
+  /** The thing dragged follows the cursor (a point anywhere on the lot; a piece or trap along the line); the track is relaid a few times a
+   *  real second while it moves. */
   dragTo(c, dt) {
     const s = this.sel, D = this.def; if (!s || !c) return;
     const cl = (v) => Math.round(Math.max(-LOT.half, Math.min(LOT.half, v)));
     if (s.type === 'point') { D.points[s.i][0] = cl(c.x); D.points[s.i][1] = cl(c.z); }
-    else if (s.type === 'piece') { D.pieces[s.i].x = cl(c.x); D.pieces[s.i].z = cl(c.z); }
-    else if (s.type === 'trap') { D.traps[s.i].x = cl(c.x); D.traps[s.i].z = cl(c.z); }
-    else if (s.type === 'pair') D.traps[s.i].pair = [cl(c.x), cl(c.z)];
+    else { const L = this.onLine(c), it = (s.type === 'piece' ? D.pieces : D.traps)[s.i]; if (!L || !it) return; if (s.end) { it.u2 = L.u; if (s.type === 'piece') it.lat2 = L.lat; } else { it.u = L.u; it.lat = L.lat; } }
     if ((this.relayT = (this.relayT || 0) - dt) <= 0) { this.relayT = 0.15; this.rebuild(); }
   }
   /** After an edit: the track relaid, its checks redrawn, the panel told. */
@@ -197,23 +213,26 @@ export class TrackEditor {
     const R = this.R; this.T = R.made.set(this.def);
     this.check = validate(this.def, this.T); this.budget = budgetOf(this.def);
   }
+  /** One change to the selection, by key or by the panel's buttons: a point's width (w) or height (y); a trap's period or offset. */
+  nudge(what, by) {
+    const s = this.sel, D = this.def; if (!s) return; this.snapshot();
+    if (s.type === 'point') { const p = D.points[s.i]; if (what === 'w') p[3] = Math.max(MADE.width[0], Math.min(MADE.width[1], (p[3] ?? MADE.defaultWidth) + by)); if (what === 'y') p[2] = Math.max(0, Math.min(MADE.rise, (p[2] || 0) + by)); }
+    else if (s.type === 'trap') { const it = D.traps[s.i], C = TRAPS[it.kind].cycle; if (what === 'period') it.period = +Math.max(C.min, Math.min(C.max, (it.period || C.period) + by)).toFixed(1); if (what === 'offset') it.offset = +Math.max(0, Math.min(30, (it.offset || 0) + by)).toFixed(2); }
+    this.commit();
+  }
   keys(dt) {
-    const In = this.game.input, D = this.def, s = this.sel; if (!In) return;
+    const In = this.game.input; if (!In) return;
     const pan = CAM.pan * this.cam.h * dt;
     if (In.isDown('KeyW') || In.isDown('ArrowUp')) this.cam.z -= pan; if (In.isDown('KeyS') || In.isDown('ArrowDown')) this.cam.z += pan;
     if (In.isDown('KeyA') || In.isDown('ArrowLeft')) this.cam.x -= pan; if (In.isDown('KeyD') || In.isDown('ArrowRight')) this.cam.x += pan;
     this.cam.x = Math.max(-LOT.half, Math.min(LOT.half, this.cam.x)); this.cam.z = Math.max(-LOT.half, Math.min(LOT.half, this.cam.z));
-    const ctrl = In.isDown('ControlLeft') || In.isDown('ControlRight');
-    if (ctrl && In.wasPressed('KeyZ') && this.undo.length) { this.def = JSON.parse(this.undo.pop()); this.sel = null; this.commit(); return; }
-    if (!s) return;
-    const once = (k) => In.wasPressed(k);
-    let changed = false, item = s.type === 'piece' ? D.pieces[s.i] : s.type === 'trap' || s.type === 'pair' ? D.traps[s.i] : null;
-    if (item && (once('KeyQ') || once('KeyE'))) { this.snapshot(); item.yaw = +((item.yaw || 0) + (once('KeyQ') ? -1 : 1) * (Math.PI / 12)).toFixed(2); changed = true; }
-    if (s.type === 'point' && (once('BracketLeft') || once('BracketRight'))) { this.snapshot(); const p = D.points[s.i]; p[2] = Math.max(MADE.width[0], Math.min(MADE.width[1], (p[2] ?? MADE.defaultWidth) + (once('BracketLeft') ? -1 : 1))); changed = true; }
-    if (item && s.type !== 'piece' && (once('Equal') || once('Minus'))) { this.snapshot(); const C = TRAPS[item.kind].cycle; item.period = +Math.max(C.min, Math.min(C.max, (item.period || C.period) + (once('Equal') ? 0.5 : -0.5))).toFixed(1); changed = true; }
-    if (item && s.type !== 'piece' && (once('Comma') || once('Period'))) { this.snapshot(); item.offset = +Math.max(0, Math.min(30, (item.offset || 0) + (once('Period') ? 0.25 : -0.25))).toFixed(2); changed = true; }
-    if (once('Delete')) { this.snapshot(); if (s.type === 'piece') D.pieces.splice(s.i, 1); else if (s.type === 'point') { if (D.points.length > MADE.points[0]) D.points.splice(s.i, 1); } else D.traps.splice(s.i, 1); this.sel = null; changed = true; }
-    if (changed) this.commit();
+    const ctrl = In.isDown('ControlLeft') || In.isDown('ControlRight'), once = (k) => In.wasPressed(k);
+    if (ctrl && once('KeyZ')) { this.act('undo'); return; }
+    if (once('Escape') && this.pending) { this.pending = null; this.panel(); }
+    const s = this.sel; if (!s) return;
+    if (s.type === 'point') { if (once('BracketLeft')) this.nudge('w', -1); if (once('BracketRight')) this.nudge('w', 1); if (once('PageUp')) this.nudge('y', 1); if (once('PageDown')) this.nudge('y', -1); }
+    if (s.type === 'trap') { if (once('Equal')) this.nudge('period', 0.5); if (once('Minus')) this.nudge('period', -0.5); if (once('Period')) this.nudge('offset', 0.25); if (once('Comma')) this.nudge('offset', -0.25); }
+    if (once('Delete')) this.erase(s);
   }
 
   // ---------------------------------------------------------------- the runs
@@ -233,14 +252,14 @@ export class TrackEditor {
   }
   record() {
     const g = this.game, Rc = this.recording, p = g.player?.pos; if (!p) return;
-    const x = p.x - RW.x - LOT.x, z = p.z - RW.z - LOT.z;
+    const x = p.x - RW.x - LOT.x, z = p.z - RW.z - LOT.z, y = Math.round(Math.max(0, Math.min(MADE.rise, this.R.heightAt(p.x, p.z) - RW.y - LOT.y))); // (the height you ride at: over a made track's ground, its own)
     if (Math.max(Math.abs(x), Math.abs(z)) > LOT.half - MADE.margin - MADE.defaultWidth) return;
-    if (!Rc.last) { Rc.pts.push([Math.round(x), Math.round(z), MADE.defaultWidth]); Rc.last = { x, z }; return; }
+    if (!Rc.last) { Rc.pts.push([Math.round(x), Math.round(z), y, MADE.defaultWidth]); Rc.last = { x, z }; return; }
     const d = Math.hypot(x - Rc.last.x, z - Rc.last.z); if (d < RECORD.every) return;
     Rc.len += d; Rc.last = { x, z };
     const [x0, z0] = Rc.pts[0];
     if (Rc.len > RECORD.min && Math.hypot(x - x0, z - z0) < RECORD.close) { this.recording = null; const D = this.slots[this.slot] || blankTrack(); D.points = Rc.pts.slice(0, MADE.points[1]); D.author = null; this.slots[this.slot] = D; this.open(this.slot); return; }
-    Rc.pts.push([Math.round(x), Math.round(z), MADE.defaultWidth]);
+    Rc.pts.push([Math.round(x), Math.round(z), y, MADE.defaultWidth]);
     if (Rc.pts.length >= MADE.points[1]) { this.recording = null; const D = this.slots[this.slot] || blankTrack(); D.points = Rc.pts; D.author = null; this.slots[this.slot] = D; this.open(this.slot); }
   }
 
@@ -256,17 +275,20 @@ export class TrackEditor {
     el.style.display = this.active ? 'block' : 'none'; if (!this.active) return;
     const D = this.def, B = this.budget || budgetOf(D), V = this.check || { ok: false, errors: [] }, T = this.T;
     const btn = (label, on, f, dis = false, tip = '') => `<button data-a="${f}" class="${on ? 'on' : ''}" ${dis ? 'disabled' : ''} title="${tip.replace(/"/g, '&quot;')}">${label}</button>`;
-    const sel = this.sel, item = sel?.type === 'piece' ? D.pieces[sel.i] : sel?.type === 'trap' || sel?.type === 'pair' ? D.traps[sel.i] : sel?.type === 'point' ? D.points[sel.i] : null;
-    const selLine = !sel ? '<span class="dim">Nothing selected.</span>' : sel.type === 'point' ? `Point ${sel.i + 1}: half-width ${item[2]} m ([ and ] to change).`
-      : sel.type === 'piece' ? `${PIECES[item.kind].label}: ${PIECES[item.kind].line} (Q / E turn it.)` : `${TRAPS[item.kind].label}: period ${item.period} s (+ / -), offset ${item.offset} s (, / .). ${TRAPS[item.kind].line}`;
+    const sel = this.sel, item = !sel ? null : (sel.type === 'point' ? D.points : sel.type === 'piece' ? D.pieces : D.traps)[sel.i];
+    const selLine = !item ? '<span class="dim">Nothing selected.</span>'
+      : sel.type === 'point' ? `Point ${sel.i + 1}: ${item[2] || 0} m up, half-width ${item[3]} m.<div class="row">${btn('Raise', false, 'nudge:y:1', false, 'PageUp')}${btn('Lower', false, 'nudge:y:-1', !(item[2] > 0), 'PageDown')}${btn('Wider', false, 'nudge:w:1', false, ']')}${btn('Narrower', false, 'nudge:w:-1', false, '[')}${btn('Take out', false, 'erase')}</div>`
+      : sel.type === 'piece' ? `${PIECES[item.kind].label}: ${PIECES[item.kind].line}${PIECES[item.kind].span ? ' Drag either end along the line.' : ''}<div class="row">${btn('Take out', false, 'erase')}</div>`
+      : `${TRAPS[item.kind].label}: every ${item.period} s, ${item.offset} s late. ${TRAPS[item.kind].line}<div class="row">${btn('Slower', false, 'nudge:period:0.5', false, '+')}${btn('Faster', false, 'nudge:period:-0.5', false, '-')}${btn('Later', false, 'nudge:offset:0.25', false, '.')}${btn('Sooner', false, 'nudge:offset:-0.25', false, ',')}${btn('Take out', false, 'erase')}</div>`;
+    const pendLine = !this.pending ? '' : `<div class="dim">${this.pending.list === 'traps' ? 'Click on the line where the portal\'s second eye goes.' : `Click on the line where the ${PIECES[this.pending.kind].label.toLowerCase()} ends.`} Esc to leave it short.</div>`;
     el.innerHTML = `<h3>THE TRACK EDITOR · SLOT ${this.slot + 1}</h3>
       <div>${D.name} ${isValidated(D) ? '<span class="ok">· validated</span>' : '<span class="dim">· not validated</span>'}${T ? ` · ${Math.round(T.length)} m` : ''}</div>
       <div class="row">${[0, 1, 2].map((i) => btn(`Slot ${i + 1}`, i === this.slot, `slot:${i}`)).join('')}${btn('Name', false, 'name')}</div>
       <h3>MAP</h3><div class="map"></div>
-      <h3>THE LINE</h3><div class="row">${btn('Select', this.tool === 'select', 'tool:select', false, 'Drag a point, a piece or a trap. RMB takes one out.')}${btn('Point', this.tool === 'point', 'tool:point', false, 'Click a point into the line.')}${btn('Ride it', false, 'ride', false, 'Sail the line; a point every 35 m.')}${btn('New oval', false, 'reset')}</div>
+      <h3>THE LINE</h3><div class="row">${btn('Select', this.tool === 'select', 'tool:select', false, 'Drag a point, a piece or a trap; raise or lower a point. RMB takes one out.')}${btn('Point', this.tool === 'point', 'tool:point', false, 'Click a point into the line.')}${btn('Ride it', false, 'ride', false, 'Sail the line; a point every 35 m.')}${btn('New oval', false, 'reset')}</div>
       <h3>PIECES</h3><div class="row">${PIECE_KINDS.map((k) => btn(PIECES[k].label, this.tool === k, `tool:${k}`, !this.powerOpen(PIECES[k].power), this.powerOpen(PIECES[k].power) ? PIECES[k].line : `Opens with the god power ${GOD_POWERS[PIECES[k].power]?.label || PIECES[k].power}.`)).join('')}</div>
       <h3>TRAPS</h3><div class="row">${TRAP_KINDS.map((k) => btn(TRAPS[k].label, this.tool === k, `tool:${k}`, !this.powerOpen(TRAPS[k].power), this.powerOpen(TRAPS[k].power) ? TRAPS[k].line : `Opens with the god power ${GOD_POWERS[TRAPS[k].power]?.label || TRAPS[k].power}.`)).join('')}</div>
-      ${this.pendingPair != null ? '<div class="dim">Click where the portal\'s second eye goes.</div>' : ''}
+      ${pendLine}
       <h3>RULES</h3><div class="row">${Object.entries(RULES).map(([id, r]) => btn(r.label, D.rules.includes(id), `rule:${id}`, false, r.line)).join('')}</div>
       <h3>SELECTED</h3><div>${selLine}</div>
       <h3>BUDGET ${B.used} / ${B.max}</h3><div class="bar"><i style="width:${Math.min(100, (100 * B.used) / B.max)}%"></i></div>
@@ -274,7 +296,7 @@ export class TrackEditor {
       ${T ? `<div class="dim">Medals: gold ${this.R.made.medals.gold} s, silver ${this.R.made.medals.silver} s, bronze ${this.R.made.medals.bronze} s (three laps, from the ruler).${D.author ? ` Author ${D.author.seconds} s (one lap).` : ''}</div>` : ''}
       <h3>RUNS</h3><div class="row">${btn('Test ride', false, 'run:practice', !V.ok)}${btn('Validate', false, 'run:validate', !V.ok, 'Ride it once to the line, alone: your time is its author time.')}${btn('Haunted race', false, 'run:haunted', !V.ok || !D.traps.length, 'Race the clapperjars while the siblings possess its traps.')}${btn('Haunt', false, 'run:haunt', !V.ok || !D.traps.length, 'The clapperjars race it; you possess its traps.')}</div>
       <h3>KEEP</h3><div class="row">${btn('Save', false, 'save')}${btn('Share code', false, 'share', !isValidated(D), isValidated(D) ? '' : 'Validate it first.')}${btn('Load code', false, 'loadcode')}${btn('Undo', false, 'undo', !this.undo.length)}${btn('Leave', false, 'leave')}</div>
-      <div class="dim" style="margin-top:6px">WASD or the arrows pan, the wheel zooms. LMB places or drags, RMB takes out, Delete too, Ctrl+Z undoes.</div>`;
+      <div class="dim" style="margin-top:6px">WASD or the arrows pan, the wheel zooms. LMB places or drags, RMB takes out, Delete too, Ctrl+Z undoes. Pieces and traps sit on the line and slide with it.</div>`;
     el.querySelectorAll('button').forEach((b) => { b.onclick = () => this.act(b.dataset.a); });
     el.querySelector('.map')?.appendChild(this.mapCanvas()); this.drawMap();
   }
@@ -292,9 +314,9 @@ export class TrackEditor {
     const m = new THREE.Matrix4(), y = (x, z) => R.heightAt(RW.x + LOT.x + x, RW.z + LOT.z + z);
     D.points.forEach((p, i) => { m.makeTranslation(RW.x + LOT.x + p[0], y(p[0], p[1]) + 0.6, RW.z + LOT.z + p[1]); H.pegs.setMatrixAt(i, m); });
     H.pegs.count = D.points.length; H.pegs.instanceMatrix.needsUpdate = true;
-    const s = this.sel, at = !s ? null : s.type === 'point' ? [D.points[s.i]?.[0], D.points[s.i]?.[1], PICK.point] : s.type === 'piece' ? [D.pieces[s.i]?.x, D.pieces[s.i]?.z, Math.max(3, pieceRadius(D.pieces[s.i] || {}))] : s.type === 'pair' ? [D.traps[s.i]?.pair?.[0], D.traps[s.i]?.pair?.[1], PICK.trap] : [D.traps[s.i]?.x, D.traps[s.i]?.z, PICK.trap];
-    H.ring.visible = !!(at && at[0] != null);
-    if (H.ring.visible) { H.ring.position.set(RW.x + LOT.x + at[0], y(at[0], at[1]) + 0.3, RW.z + LOT.z + at[1]); H.ring.scale.setScalar(at[2]); }
+    const s = this.sel, it = s && s.type !== 'point' ? (s.type === 'piece' ? D.pieces : D.traps)[s.i] : null, q = !s ? null : s.type === 'point' ? (D.points[s.i] && { x: D.points[s.i][0], z: D.points[s.i][1] }) : it && this.spot(it, s.end);
+    H.ring.visible = !!q;
+    if (q) { H.ring.position.set(RW.x + LOT.x + q.x, y(q.x, q.z) + 0.3, RW.z + LOT.z + q.z); H.ring.scale.setScalar(s.type === 'point' ? PICK.point : PICK.item); }
   }
 
   /** The whole lot from above (the camera keeps inside the haze, so this is the overview): the line, its pieces and traps, the start,
@@ -319,18 +341,19 @@ export class TrackEditor {
       const F = T.frame(T.line || 0), [sx, sz] = at(F.x - LOT.x, F.z - LOT.z); x.strokeStyle = '#ffffff'; x.lineWidth = 3; x.beginPath(); x.moveTo(sx - F.fz * F.w * k, sz + F.fx * F.w * k); x.lineTo(sx + F.fz * F.w * k, sz - F.fx * F.w * k); x.stroke();
     }
     D.points.forEach((p, i) => { const [px, pz] = at(p[0], p[1]), on = this.sel?.type === 'point' && this.sel.i === i; x.fillStyle = on ? '#ffffff' : '#ffb27a'; x.fillRect(px - 1.5, pz - 1.5, 3, 3); });
-    for (const P of D.pieces) { const [px, pz] = at(P.x, P.z); x.fillStyle = MAP.piece; x.fillRect(px - 2.5, pz - 2.5, 5, 5); }
-    for (const Tp of D.traps) {
-      const [px, pz] = at(Tp.x, Tp.z); x.fillStyle = MAP.trap; x.beginPath(); x.arc(px, pz, 3.5, 0, 2 * Math.PI); x.fill();
-      if (Tp.pair) { const [qx, qz] = at(Tp.pair[0], Tp.pair[1]); x.strokeStyle = MAP.trap; x.setLineDash([3, 3]); x.lineWidth = 1; x.beginPath(); x.moveTo(px, pz); x.lineTo(qx, qz); x.stroke(); x.setLineDash([]); x.beginPath(); x.arc(qx, qz, 3.5, 0, 2 * Math.PI); x.fill(); }
-    }
+    const dot = (q, style, r) => { if (!q) return null; const [px, pz] = at(q.x, q.z); x.fillStyle = style; x.beginPath(); x.arc(px, pz, r, 0, 2 * Math.PI); x.fill(); return [px, pz]; };
+    const tie = (a, b, style) => { if (!a || !b) return; x.strokeStyle = style; x.setLineDash([3, 3]); x.lineWidth = 1; x.beginPath(); x.moveTo(...a); x.lineTo(...b); x.stroke(); x.setLineDash([]); };
+    for (const P of D.pieces) { const a = dot(this.spot(P), MAP.piece, 2.5); if (PIECES[P.kind]?.span) tie(a, dot(this.spot(P, true), MAP.piece, 2), MAP.piece); }
+    for (const Tp of D.traps) { const a = dot(this.spot(Tp), MAP.trap, 3.5); if (Tp.u2 != null) tie(a, dot(this.spot(Tp, true), MAP.trap, 3.5), MAP.trap); }
     // the camera's view: its footprint on the lot (the view's height over the ground through the house fov, and the screen's shape)
     const cam = this.game.camera, hh = this.cam.h * Math.tan(((cam?.fov || 70) * Math.PI) / 360), hw = hh * (cam?.aspect || 1.6), [cx, cz] = at(this.cam.x, this.cam.z);
     x.strokeStyle = '#ffffff'; x.lineWidth = 1.5; x.strokeRect(cx - hw * k, cz - hh * k, 2 * hw * k, 2 * hh * k);
   }
   act(a) {
     const g = this.game, D = this.def, [k, v] = a.split(':');
-    if (k === 'tool') { this.tool = v; this.pendingPair = null; }
+    if (k === 'tool') { this.tool = v; this.pending = null; }
+    else if (k === 'nudge') { const [, what, by] = a.split(':'); this.nudge(what, +by); return; }
+    else if (k === 'erase') { if (this.sel) this.erase(this.sel); return; }
     else if (k === 'slot') { this.store(); this.close(false); this.open(+v); return; }
     else if (k === 'rule') { this.snapshot(); D.rules = D.rules.includes(v) ? D.rules.filter((x) => x !== v) : [...D.rules, v].slice(0, MADE.maxRules); this.commit(); return; }
     else if (k === 'run') { this.run(v); return; }
@@ -354,7 +377,7 @@ export class TrackEditor {
     this.keys(dt);
     if (this.drag) this.dragTo(this.cursor(), dt);
     if ((this.mapT = (this.mapT || 0) + dt) > MAP.every) { this.mapT = 0; this.drawMap(); this.drawHandles(); }
-    const look = new THREE.Vector3(RW.x + LOT.x + this.cam.x, RW.y + LOT.y, RW.z + LOT.z + this.cam.z), pos = look.clone().add(new THREE.Vector3(0, this.cam.h, this.cam.h * CAM.lean));
+    const look = new THREE.Vector3(RW.x + LOT.x + this.cam.x, RW.y + LOT.y + 6, RW.z + LOT.z + this.cam.z), pos = look.clone().add(new THREE.Vector3(0, this.cam.h, this.cam.h * CAM.lean));
     g.cinema?.shot('editor', { pos, look, fov: 0, bars: 0, ease: 6 });
   }
 }

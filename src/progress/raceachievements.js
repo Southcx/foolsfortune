@@ -78,7 +78,7 @@ export function racewayAchievements({ C, H, F }) {
   C('mt3', 'skiff', B, 2, 'mechanic', 'Pass It On', 'Share a validated track\'s code.', 'track.share', 1);
   C('mt4', 'skiff', B, 2, 'mechanic', 'Guest Lap', 'Finish a race on a track loaded from a code.', 'race.made.shared.finish', 1);
   C('mt5', 'skiff', B, 3, 'mechanic', 'Home Ground', 'Take gold on a made track.', 'race.made.gold', 1);
-  F('mt6', 'skiff', B, 3, 'mechanic', 'House Rules', 'Win a haunted race, or finish 10.', any(['race.made.haunted.win', 1], ['race.made.haunted', 10]), 1);
+  F('mt6', 'skiff', B, 3, 'mechanic', 'House Rules', 'Win a haunted race, or finish 10.', any(['race.haunted.win', 1], ['race.haunted', 10]), 1);
   C('mt7', 'skiff', B, 2, 'count', 'Things That Go Bump', 'Wreck 10 riders with traps you hold.', 'trap.wreck', 10);
   F('mt8', 'skiff', B, 4, 'collect', 'Seven Ways Down', 'Wreck a rider with each of the seven traps.', (L) => KINDS.filter((k) => L.get(`trap.wreck.${k}`) > 0).length, 7);
   F('mt9', 'skiff', B, 4, 'mechanic', 'Hold the Line', 'In the haunt, keep every rival outside par, or wreck 12 in one haunt.', any(['haunt.held', 1], ['haunt.wrecks.best', 12]), 1, { title: 'Poltergeist' });

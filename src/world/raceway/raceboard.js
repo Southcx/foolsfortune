@@ -1,8 +1,8 @@
 // ---------------------------------------------------------------------------------------
 // THE RACE BOARD (docs/plans/SKIFF-RACING.md section 12; the owner, v198: "racetrack selection"): the stone at the park's hub, F there.
 // One page in tabs, every run the Raceway offers begun from it (its room's own thing, never a global key: CLAUDE.md's scope):
-//   RACES     each track: a race, a hot lap, practice, a pot smash; your bests; the rivals to race (the clapperjars, or the siblings
-//             once opened); and the wager on the next race (wager.js).
+//   RACES     each track: a race, a hot lap, practice, a pot smash, a haunted race and the haunt (its traps: TRACK-EDITOR.md 7); your
+//             bests; the rivals to race (the clapperjars, or the siblings once opened); and the wager on the next race (wager.js).
 //   CUPS      the cups (cups.js), and how you last did.
 //   LICENCES  the tests (licences.js), each with the medal you hold.
 //   TRIALS    the escape (escape.js) and the City Trial (citytrial.js).
@@ -64,6 +64,11 @@ export class RaceBoard {
           if (id === 'race' && this.stake && W && !W.place(T.id, WAGER.stakes[this.stake - 1], this.on)) return;
           this.go(menu, T.id, { mode: id, roster: this.roster });
         });
+      }
+      // its traps, set up only for these two (TRACK-EDITOR.md 7: a park track's races are never changed by them)
+      if (T.features.traps?.length) {
+        row(rows, '☠', MODES.haunted.label, `${MODES.haunted.line} ${T.features.traps.length} traps.`, (menu) => this.go(menu, T.id, { mode: 'haunted', roster: this.roster }));
+        row(rows, '◎', 'Haunt', 'The clapperjars race it; you possess its traps (LMB on one, or Space for the next ahead; Q / E its lane or side).', (menu) => { menu.close(); g.haunt?.start(T.id); });
       }
     }
     const rr = grp('RIVALS');
@@ -143,7 +148,7 @@ export class RaceBoard {
   }
   build(grp, row) {
     const g = this.game, E = g.trackEditor; if (!E) return;
-    const run = (slot, mode) => (menu) => { menu.close(); if (!E.wear(slot)) return; if (mode === 'haunt') g.haunt?.start(); else this.race.start('made', { mode, solo: mode === 'validate' || mode === 'practice' }); };
+    const run = (slot, mode) => (menu) => { menu.close(); if (!E.wear(slot)) return; if (mode === 'haunt') g.haunt?.start('made'); else this.race.start('made', { mode, solo: mode === 'validate' || mode === 'practice' }); };
     for (let i = 0; i < 3; i++) {
       const D = E.slots[i], v = D && isValidated(D), rows = grp(`SLOT ${i + 1} · ${D ? `${D.name}${v ? ' · validated' : ' · not validated'} · budget ${budgetOf(D).used}${D.author ? ` · author ${D.author.seconds} s` : ''}` : 'empty'}`);
       row(rows, '✎', D ? 'Edit it' : 'Build a track', D ? 'The build lot, from above: its line, pieces, traps and rules.' : 'A new track on the build lot.', (menu) => { menu.close(); E.open(i); });

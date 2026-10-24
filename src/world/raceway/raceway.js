@@ -28,7 +28,8 @@
 //   game.raceway = new Raceway(game)   .active   .heightAt(x, z)   .rideHeight(x, z)   .normalAt   .wind   .tracks   .track   .s   .d   .lat
 //   .gaps (gaps.js)   .buoys (buoys.js)   .line ('main' | 'cavern')   .sb   .sun (0..1)   .condition (conditions.js)   .edgeLines(step, line?, trackId?) -> [{ side, pts, hide }]
 //   .plateAt(pos) -> plate | null (a vein lane's has `lane`)   .nearThings(pos) -> [{ key, x, y, z, r, what }]   .glideAt(pos) -> bool   .rails   .rings   .pillars   .arrive()   .respawn(s?)   .update(dt)   .T (the Sun Circuit)
-//   .buildGround()   .releaseGround()   .onRelease(fn) (told when the ground is given back)
+//   .buildGround()   .releaseGround()   .onRelease(fn) (told when the ground is given back)   .pick(ray) -> { x, z, y } park-local | null
+//   .made (a made track on the build lot: madetrack.js)   .traps (the traps of the track that has them now: traps.js)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../../core/physics.js';
@@ -81,10 +82,10 @@ export class Raceway {
   /** World height of the ground at world x, z: the field's own samples where it is built (what is drawn and collided), else the function. */
   heightAt(x, z) {
     const lx = x - RW.x, lz = z - RW.z, G = this.grid;
-    if (!G || Math.abs(lx) >= RW.half || Math.abs(lz) >= RW.half) return RW.y + this.P.heightAt(lx, lz) + this.made.rise(lx, lz);
+    if (!G || Math.abs(lx) >= RW.half || Math.abs(lz) >= RW.half) return RW.y + (this.made.heightAt(lx, lz) ?? this.P.heightAt(lx, lz)); // (a made track's ground over the lot: madetrack.js)
     const fx = (lx + RW.half) / RW.step, fz = (lz + RW.half) / RW.step, i = Math.floor(fx), j = Math.floor(fz), u = fx - i, v = fz - j, n = G.n, H = G.heights;
     const h00 = H[i * n + j], h10 = H[(i + 1) * n + j], h01 = H[i * n + j + 1], h11 = H[(i + 1) * n + j + 1];
-    return RW.y + (h00 * (1 - u) + h10 * u) * (1 - v) + (h01 * (1 - u) + h11 * u) * v + this.made.rise(lx, lz); // (a made track's ramps and hills: madetrack.js)
+    return RW.y + (h00 * (1 - u) + h10 * u) * (1 - v) + (h01 * (1 - u) + h11 * u) * v; // (a made track's ground is written into these over the lot: madetrack.js reshape)
   }
   /** The height a board rides at: the ground, the water over it (the lakes, the fords: skimmed), or the bridge deck the Courier is on. */
   rideHeight(x, z) {
@@ -96,6 +97,14 @@ export class Raceway {
   normalAt(x, z, out = new THREE.Vector3()) {
     const e = 0.7, hx = this.heightAt(x + e, z) - this.heightAt(x - e, z), hz = this.heightAt(x, z + e) - this.heightAt(x, z - e);
     return out.set(-hx / (2 * e), 1, -hz / (2 * e)).normalize();
+  }
+  /** Where a ray from the camera meets the ground (a cursor's pick, the editor's and the haunt's): marched in steps and bisected, as
+   *  { x, z, y } park-local, or null if it never comes down within `far` metres. */
+  pick(ray, far = 900) {
+    const o = ray.origin, d = ray.direction, above = (k) => o.y + d.y * k - this.heightAt(o.x + d.x * k, o.z + d.z * k);
+    let a = 0, b = 0; for (let k = 2; k <= far; k += 2) { if (above(k) <= 0) { a = k - 2; b = k; break; } } if (!b) return null;
+    for (let i = 0; i < 14; i++) { const m = (a + b) / 2; if (above(m) > 0) a = m; else b = m; }
+    const k = (a + b) / 2; return { x: o.x + d.x * k - RW.x, z: o.z + d.z * k - RW.z, y: o.y + d.y * k - RW.y };
   }
   /** Where on a track's line s is, in the world, and which way it runs (yaw, as the Courier's: atan2(fx, fz)). */
   at(s, T = this.track) { const F = T.frame(s); return { pos: this.local(F.x, F.z), yaw: Math.atan2(F.fx, F.fz), w: F.w }; }
@@ -130,6 +139,7 @@ export class Raceway {
     this.groundBody = g.physics.world.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(RW.x, RW.y, RW.z));
     g.physics.world.createCollider(RAPIER.ColliderDesc.heightfield(TR.n - 1, TR.n - 1, TR.heights, { x: RW.half * 2, y: 1, z: RW.half * 2 }).setFriction(0.9).setCollisionGroups(GROUPS.static), this.groundBody);
     this.groundMs = Math.round(performance.now() - t0); this.awayT = 0;
+    if (this.made.T) this.made.reshape(); // (the lot's ground to the made track again: the field kept is the park's own)
   }
   /** The ground given back: the terrain's arrays and GPU buffers and the height field's body; the field is kept, for the next arrival. */
   releaseGround() {

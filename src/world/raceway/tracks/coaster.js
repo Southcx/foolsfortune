@@ -13,6 +13,8 @@
 // rail lines over a course, the Nordschleife's Karussell.
 // ---------------------------------------------------------------------------------------
 
+import { trapRows } from '../track.js';
+
 const CONTROL = [
   [60, 120, 24, 13, 0, 0], [230, 140, 25, 13, 0, 0], //                         0-1 the start straight, east off the hub
   [410, 190, 30, 12, 0.3, 0], [570, 280, 38, 12, 0.3, 0], [680, 410, 47, 12, 0.5, 0], [730, 560, 56, 12, 0.3, 0], // 2-5 THE LIFT
@@ -53,5 +55,7 @@ export const COASTER = {
     }],
     rings: [[7, 30, 0, 6], [10, 60, 0, 5], [13, 20, 0, 4]],
     ringGlide: 5,
+    // the traps, for a haunted run only (track.js FEATURES.traps): the lift, the station, the mesa's back, the bowl, home (a portal home: lit, a shortcut)
+    traps: trapRows([['pillars', 2, 60, 0], ['gust', 4, 60, 0], ['turret', 6, 40, 0], ['sinkhole', 9, 60, -3], ['pendulum', 12, 40, 0], ['portal', 14, 50, 0, 170]]),
   },
 };

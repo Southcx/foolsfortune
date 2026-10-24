@@ -5,7 +5,9 @@
 // sampled every 2 m; height and width run between the points on a monotone cubic (Fritsch-Carlson: no overshoot, so a lip stays a lip
 // and a cliff stays a cliff); the banking comes from the line's own bend. The sand is the Dunes' kind of noise, and the track's corridor
 // is cut through it: the running surface, a berm each side, then a blend back to the sea. Features hang on the line by a control point
-// and metres on from it: gates, kickers, whoops, sun plates, geysers, the glide lip, the columns of the slalom.
+// and metres on from it: gates, kickers, whoops, sun plates, geysers, the glide lip, the columns of the slalom, a lone column, a wall, an
+// arch to thread, and traps (progress/traps.js; built only on a made track, or in a haunted run on a park track: world/raceway/traps.js).
+// A made track (progress/trackdef.js) is a track of this same kind, its ground the build lot's floor: one format, one kit, one race.
 // Pure numbers, no three.js: a Node script can lay the track and ask it questions.
 //
 // Prior art: the spline track of every racer since F-Zero (a centre line with a width and a bank: Wipeout's and MK8's track splines);
@@ -36,6 +38,8 @@ export const CONTROL = [
   [-300, -320, 22, 13, 0.4], //                                                 26 the last turn
 ];
 
+/** A track's trap rows as its `traps` feature: [kind, cp, at, lat, at2?] each, on its own default cycle (progress/traps.js). */
+export const trapRows = (rows) => rows.map(([kind, cp, at, lat, at2]) => ({ kind, cp, at, lat, ...(at2 != null ? { at2 } : {}) }));
 /** What hangs on the line: each at control point `cp` and `at` metres on from it (negative: before it). */
 export const FEATURES = {
   start: { cp: 0, at: 30 }, // (the line: the grid is 20 m behind it)
@@ -69,6 +73,9 @@ export const FEATURES = {
   // sun rings in the air (the Gnomon's rings, flown through: a push and a little Lachryma): [cp, at, lat, metres over the line]
   rings: [[1, 108, 6, 5], [2, -22, 0, 4], [6, 60, 0, 6], [16, 14, 0, 4.2], [17, 24, 0, 4.2], [18, 22, 0, 0], [18, 45, 0, 0], [18, 70, 0, 0], [21, 90, 0, 4]],
   ringGlide: 5, // (the drop's rings hang on a 5-to-1 glide from the lip, where the `0` heights are)
+  // the traps (TRACK-EDITOR.md 4), set up only for a haunted run here (race.js, haunt.js): never in the park's own races. [kind, cp, at, lat,
+  // at2 (a portal's second eye, from the same cp)]: each where the track already asks a question of the board, so the trap sharpens it
+  traps: trapRows([['pillars', 3, -40, 0], ['portal', 5, 30, 0, 140], ['turret', 8, -30, 0], ['gust', 11, 30, 0], ['pendulum', 16, 40, 0], ['sinkhole', 22, 60, 3], ['gusher', 25, 40, -3]]),
 };
 // THE CAVERN (working name, Espada's to rule; SKIFF-RACING.md 9): the alternate course, a branch off the line after the landing hill
 // (`from`) that runs down into a gorge under a roof of stone, through the circuit's middle, and back up onto the line at the gale's end
@@ -170,7 +177,8 @@ export function track(def = { ...SUN, control: CONTROL, features: FEATURES, bran
   const at = def.at || { x: 0, z: 0, rot: 0 }, cr = Math.cos(at.rot || 0), sr = Math.sin(at.rot || 0);
   const place = (x, z) => [at.x + x * cr - z * sr, at.z + x * sr + z * cr];
   const C = def.control.map((c) => [...place(c[0], c[1]), c[2], c[3], c[4] ?? 0, c[5] ?? 0]), n = C.length;
-  const FEATURES = { kickers: [], ramps: [], plates: [], lanes: [], geysers: [], rails: [], rings: [], gates: [], ...def.features };
+  const FEATURES = { kickers: [], ramps: [], plates: [], lanes: [], geysers: [], rails: [], rings: [], gates: [], columns: [], walls: [], arches: [], traps: [], ...def.features };
+  FEATURES.whoops = [].concat(FEATURES.whoops || []); FEATURES.slalom = [].concat(FEATURES.slalom || []); // (one or a list: a made track has as many as it likes)
   FEATURES.glideLips ||= FEATURES.glideLip ? [FEATURES.glideLip] : []; FEATURES.sandfalls ||= FEATURES.glideLip ? [{ cp: FEATURES.glideLip.cp }] : []; FEATURES.coaster ||= [];
   const BRANCH = def.branch ? { ...def.branch, ctrl: def.branch.ctrl.map((c) => [...place(c[0], c[1]), c[2], c[3]]) } : null;
   // ---- the line: centripetal Catmull-Rom through the points, closed
@@ -200,7 +208,7 @@ export function track(def = { ...SUN, control: CONTROL, features: FEATURES, bran
   for (let i = 0; i < N; i++) { const c = cutOf(i * ds); CT[i] = c; if (c < 0.5) continue; const w = W[i] + c, l = ground(X[i] + FZ[i] * w, Z[i] - FX[i] * w), r = ground(X[i] - FZ[i] * w, Z[i] + FX[i] * w); BMW[i] = Math.max(2, c); BMB[i] = BERM.cutBlend; BH[i] = Math.max(BERM.h, Math.min(l, r) - Y[i] + 0.5); }
   // the features that shape the ground: whoops, kickers, the canyon's high berms
   const F = FEATURES, idx = (s) => ((Math.round(s / ds) % N) + N) % N, span = (a, b) => { const s0 = sOf(...a), s1 = sOf(...b); return [s0, s1 >= s0 ? s1 : s1 + L]; };
-  if (F.whoops) { const [s0, s1] = span(F.whoops.from, F.whoops.to); for (let s = s0; s < s1; s += ds) { const u = s - s0, e = sstep(0, 20, u) * sstep(0, 20, s1 - s); Y[idx(s)] += F.whoops.h * e * (1 - Math.cos((2 * Math.PI * u) / F.whoops.wave)) / 2; } }
+  for (const Wh of F.whoops) { const [s0, s1] = span(Wh.from, Wh.to); for (let s = s0; s < s1; s += ds) { const u = s - s0, e = sstep(0, 20, u) * sstep(0, 20, s1 - s); Y[idx(s)] += Wh.h * e * (1 - Math.cos((2 * Math.PI * u) / Wh.wave)) / 2; } }
   for (const K of F.kickers) { const s0 = sOf(K.cp, K.at); for (let u = 0; u < K.len + 3; u += ds) Y[idx(s0 + u)] += u <= K.len ? K.h * Math.pow(u / K.len, 1.6) : K.h * (1 - (u - K.len) / 3) * 0.2; }
   // the bridges: a stretch of the line laid as a deck over whatever runs under it (the ground there is left to the sand and the other
   // tracks: a deck is built and collided in world/raceway/features.js, and the board rides it: raceway.rideHeight)

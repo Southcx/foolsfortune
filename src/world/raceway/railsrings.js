@@ -15,6 +15,7 @@
 // Solar Skiffing trial (world/dunes/solar.js), whose ring this is.
 //
 //   railPath(raceway, def) -> [Vector3] (its top, before the lift: where it runs)   buildRails(raceway) -> [{ pts, cum, len, ups?, push? }]   buildRings(raceway) -> [ring]   flyRings(raceway, dt)   RING (the numbers)
+//   ONE TRACK (the park's here, a made track's in madetrack.js): railsOf(R, T, geos) -> rails   railMesh(geos)   ringsOf(R, T, add, i0) -> rings
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { addOutline } from '../../render/outline.js';
@@ -49,8 +50,10 @@ export function railPath(R, def, T = R.T) {
   return out;
 }
 
-export function buildRails(R) {
-  const g = R.game, geos = [], rails = [];
+/** One track's rails (its lintels and coaster rails) as [{ track, pts, cum, len, ups?, push? }], their geometry pushed onto `geos` (world
+ *  space, vertex-coloured: the caller draws them). The park's tracks in buildRails, a made track's in madetrack.js. */
+export function railsOf(R, T, geos) {
+  const rails = [];
   const lintels = (pts, ups) => { for (let i = 0; i < pts.length - 1; i++) {
     const p = pts[i], q = pts[i + 1], len = p.distanceTo(q); if (len < 1e-3) continue;
     const m = new THREE.Matrix4().lookAt(p, q, ups ? ups[i] : new THREE.Vector3(0, 1, 0)).setPosition(p.clone().lerp(q, 0.5));
@@ -63,49 +66,58 @@ export function buildRails(R) {
     if (h > 0.2) geos.push(paint(new THREE.CylinderGeometry(0.22, 0.3, h, 6).translate(p.x, foot + h / 2, p.z), 0xd9906a));
   } };
   const cumOf = (pts) => { const cum = [0]; for (let i = 1; i < pts.length; i++) cum.push(cum[i - 1] + pts[i].distanceTo(pts[i - 1])); return cum; };
-  for (const T of R.tracks) {
-    // the lintels: a ruin's lintel along the ground, never under `clear` over it, never sagging
-    for (const def of T.features.rails) {
-      const path = railPath(R, def, T), n = path.length - 1, a = path[0], b = path[n];
-      const ya = a.y + def.lift, yb = b.y + def.lift, pts = [];
-      const run = [0]; for (let i = 1; i <= n; i++) run.push(run[i - 1] + Math.hypot(path[i].x - path[i - 1].x, path[i].z - path[i - 1].z));
-      for (let i = 0; i <= n; i++) { const p = path[i].clone(); p.y = Math.max(ya + (yb - ya) * (run[i] / run[n]), R.heightAt(p.x, p.z) + def.clear); pts.push(p); }
-      for (let k = 0; k < 2; k++) for (let i = 1; i < n; i++) pts[i].y = Math.max(pts[i].y, (pts[i - 1].y + pts[i + 1].y) / 2); // (no dips between: a lintel sags nowhere)
-      const cum = cumOf(pts); rails.push({ track: T.id, pts, cum, len: cum[n] });
-      lintels(pts); columns(pts, cum);
-    }
-    // the coaster rails: in three dimensions, kept `clear` over the ground where upright, with their ups, pushes and towers
-    for (const def of T.features.coaster) {
-      const L = coasterPath(def), pts = [], ups = [];
-      for (let i = 0; i < L.pts.length; i++) {
-        const [x, y, z] = L.pts[i], p = new THREE.Vector3(RW.x + x, RW.y + y, RW.z + z), up = new THREE.Vector3(...L.ups[i]);
-        if (up.y > 0.85) p.y = Math.max(p.y, R.heightAt(p.x, p.z) + (def.clear ?? 1.2));
-        pts.push(p); ups.push(up);
-      }
-      const cum = cumOf(pts); rails.push({ track: T.id, id: def.id, coaster: true, pts, cum, len: cum[cum.length - 1], ups, push: L.push });
-      lintels(pts, ups); columns(pts, cum, ups);
-      for (const Tw of L.towers) { const foot = R.heightAt(RW.x + Tw.x, RW.z + Tw.z) - 1, h = RW.y + Tw.top - foot; geos.push(paint(new THREE.CylinderGeometry(Tw.r * 0.8, Tw.r, h, 10).translate(RW.x + Tw.x, foot + h / 2, RW.z + Tw.z), 0xd9906a)); }
-    }
+  // the lintels: a ruin's lintel along the ground, never under `clear` over it, never sagging
+  for (const def of T.features.rails) {
+    const path = railPath(R, def, T), n = path.length - 1, a = path[0], b = path[n], clear = def.clear ?? 0.9;
+    const ya = a.y + def.lift, yb = b.y + def.lift, pts = [];
+    const run = [0]; for (let i = 1; i <= n; i++) run.push(run[i - 1] + Math.hypot(path[i].x - path[i - 1].x, path[i].z - path[i - 1].z));
+    for (let i = 0; i <= n; i++) { const p = path[i].clone(); p.y = Math.max(ya + (yb - ya) * (run[i] / run[n]), R.heightAt(p.x, p.z) + clear); pts.push(p); }
+    for (let k = 0; k < 2; k++) for (let i = 1; i < n; i++) pts[i].y = Math.max(pts[i].y, (pts[i - 1].y + pts[i + 1].y) / 2); // (no dips between: a lintel sags nowhere)
+    const cum = cumOf(pts); rails.push({ track: T.id, pts, cum, len: cum[n] });
+    lintels(pts); columns(pts, cum);
   }
-  if (geos.length) {
-    const mesh = new THREE.Mesh(mergeGeometries(geos), new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.9, flatShading: true }));
-    mesh.castShadow = mesh.receiveShadow = true; mesh.userData.zone = 'raceway'; addOutline(mesh); g.scene.add(mesh); R.railMesh = mesh;
+  // the coaster rails: in three dimensions, kept `clear` over the ground where upright, with their ups, pushes and towers
+  for (const def of T.features.coaster) {
+    const L = coasterPath(def), pts = [], ups = [];
+    for (let i = 0; i < L.pts.length; i++) {
+      const [x, y, z] = L.pts[i], p = new THREE.Vector3(RW.x + x, RW.y + y, RW.z + z), up = new THREE.Vector3(...L.ups[i]);
+      if (up.y > 0.85) p.y = Math.max(p.y, R.heightAt(p.x, p.z) + (def.clear ?? 1.2));
+      pts.push(p); ups.push(up);
+    }
+    const cum = cumOf(pts); rails.push({ track: T.id, id: def.id, coaster: true, pts, cum, len: cum[cum.length - 1], ups, push: L.push });
+    lintels(pts, ups); columns(pts, cum, ups);
+    for (const Tw of L.towers) { const foot = R.heightAt(RW.x + Tw.x, RW.z + Tw.z) - 1, h = RW.y + Tw.top - foot; geos.push(paint(new THREE.CylinderGeometry(Tw.r * 0.8, Tw.r, h, 10).translate(RW.x + Tw.x, foot + h / 2, RW.z + Tw.z), 0xd9906a)); }
   }
   return rails;
 }
+/** The rails' one mesh of a list of geometry (the park's, or a made track's). */
+export function railMesh(geos) {
+  const mesh = new THREE.Mesh(mergeGeometries(geos), new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.9, flatShading: true }));
+  mesh.castShadow = mesh.receiveShadow = true; mesh.userData.zone = 'raceway'; addOutline(mesh); return mesh;
+}
+export function buildRails(R) {
+  const geos = [], rails = [];
+  for (const T of R.tracks) rails.push(...railsOf(R, T, geos));
+  if (geos.length) { const mesh = railMesh(geos); R.game.scene.add(mesh); R.railMesh = mesh; }
+  return rails;
+}
 
-export function buildRings(R) {
-  const g = R.game, out = [];
-  for (const T of R.tracks) {
-    const F = T.features, lip = F.glideLips[0], lipS = lip ? T.sOf(lip.cp, 0) : 0, lipY = lip ? T.frame(lipS).y : 0;
-    for (const [cp, at, lat, over] of F.rings) {
-      const s = T.sOf(cp, at), Fr = T.frame(s), p = sidePoint(R, T, cp, at, lat), dir = new THREE.Vector3(Fr.fx, 0, Fr.fz);
-      p.y = over > 0 || !lip ? p.y + (over || 4) : R.center.y + lipY - (((s - lipS) % T.length + T.length) % T.length) / F.ringGlide; // (a drop's: on a glide's line from its lip)
-      const look = new SolarRing({ radius: RING.r }); look.group.position.copy(p); look.group.lookAt(p.clone().add(dir)); look.group.userData.zone = 'raceway'; look.set({ lit: true });
-      g.scene.add(look.group);
-      out.push({ i: out.length, track: T.id, pos: p, dir, look, wait: 0 });
-    }
+/** One track's sun rings, hung where its features say (a drop's on a glide's line from its first lip), numbered on from `i0`. */
+export function ringsOf(R, T, add, i0 = 0) {
+  const out = [], F = T.features, lip = F.glideLips[0], lipS = lip ? T.sOf(lip.cp, 0) : 0, lipY = lip ? T.frame(lipS).y : 0;
+  for (const Rg of F.rings) {
+    const [cp, at, lat, over] = Array.isArray(Rg) ? Rg : [Rg.cp, Rg.at, Rg.lat, Rg.over];
+    const s = T.sOf(cp, at), Fr = T.frame(s), p = sidePoint(R, T, cp, at, lat), dir = new THREE.Vector3(Fr.fx, 0, Fr.fz);
+    p.y = over > 0 || !lip ? p.y + (over || 4) : R.center.y + lipY - (((s - lipS) % T.length + T.length) % T.length) / F.ringGlide; // (a drop's: on a glide's line from its lip)
+    const look = new SolarRing({ radius: RING.r }); look.group.position.copy(p); look.group.lookAt(p.clone().add(dir)); look.group.userData.zone = 'raceway'; look.set({ lit: true });
+    add(look.group);
+    out.push({ i: i0 + out.length, track: T.id, pos: p, dir, look, wait: 0 });
   }
+  return out;
+}
+export function buildRings(R) {
+  const out = [];
+  for (const T of R.tracks) out.push(...ringsOf(R, T, (o) => R.game.scene.add(o), out.length));
   return out;
 }
 
