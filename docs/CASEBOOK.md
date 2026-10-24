@@ -859,3 +859,9 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 292. **An adapter carries what its readers ask.** A reader that asks a wrapped thing for a field (the Sondelass's form through the
     belt's adapter) gets `undefined`, never an error; give the adapter the field (or the thing behind it), and test the reader
     through the adapter, not the thing.
+293. **A userData that keeps a three.js object is never JSON-copied.** three's clone serializes userData
+    whole (every texture into a data URL); the shim keeps the objects as themselves (render/threefixes.js). Look for big work hidden
+    in a library's copy before blaming the code that calls it.
+294. **A canvas drawn once is baked.** Its texture lets the canvas go once uploaded (render/bakedcanvas.js); a canvas
+    redrawn in play stays a CanvasTexture. Count a page's memory by its owners (canvases by the module that made them), not in sum.
+

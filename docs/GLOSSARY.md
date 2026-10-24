@@ -813,6 +813,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   cycle of work (R42...); Petra's review of every push to main. → detail
 - **seam** (`game.seam`, `src/render/seam.js`) — a change of place made under a cover (dip to the dark, change, come back). *Not:* a texture seam.
 - **the boot watch** (`window.__bootWatch`, index.html's first script; stages from main.js's `mark`) — the page's own watch from its first byte to the title: each boot stage said under the loading line and kept as the tab's breadcrumb (session storage, which outlives a killed page), an error before the game's own box shown with the stage it came at, and a load after one that stopped saying where it stopped. *Not:* the game's error box (`reportError`, after boot), the save, `window.__boot` (the timings).
+- **a baked canvas texture** (`bakedCanvasTexture`, `src/render/bakedcanvas.js`; the tier's `labelScale`) — a canvas drawn once whose pixels are let go once three has uploaded them, drawn again only if asked for; at a fraction of its size on Low and Minimum (the basement's labels). *Not:* a CanvasTexture redrawn in play (a readout, a gauge), a rest bake (`render/restbake.js`).
 - **the save** (`game.save`, `src/core/save.js`) — everything the game keeps in the browser, in sections of scope player, world or settings; the
   progress is one mode's (DEBUG or STORY), the other's on its shelf.
   *Not:* `save()` on a module. → detail

@@ -40,6 +40,7 @@ import { MILL_CPS, MILL_PITS } from './mill.js';
 import { IndexMenu } from '../../feedback/indexmenu.js';
 import { ROOM_GLAZE_ID as RG } from '../../vfx/roomglazes.js'; // (the hub's salt-glazed walls, the Index's celadon: Calissa's room glazes)
 import { addOutline } from '../../render/outline.js';
+import { bakedCanvasTexture } from '../../render/bakedcanvas.js';
 import { RAPIER, GROUPS } from '../../core/physics.js';
 import { RIG_CPS, HAND_CPS, RIG_PITS } from './rigwing.js';
 import { TR } from '../testroom/layout.js';
@@ -79,19 +80,24 @@ const PITS = [
 
 export const glowMat = new THREE.MeshBasicMaterial({ color: PALETTE.glow });
 
+/** A label's tablet, one texture a text however many tablets say it, baked (its canvas let go once the GPU has it) at the graphics
+ *  tier's label scale: the basement's 162 labels were 162 canvases of 512 x 160, 51 MB beside their GPU copies (a phone, 2026-10-24). */
+const LABELS = new Map();
 function labelTexture(text, sub) {
-  const c = document.createElement('canvas');
-  c.width = 512; c.height = 160;
-  const g = c.getContext('2d');
-  g.fillStyle = '#fbe3cf';
-  g.textAlign = 'center';
-  g.textBaseline = 'middle';
-  // (the last argument squeezes a long line to fit the tablet instead of clipping it)
-  g.font = `700 70px ${FONT.title}`;
-  g.fillText(text, 256, sub ? 58 : 80, 490);
-  if (sub) { g.font = `500 34px ${FONT.ui}`; g.fillText(sub, 256, 126, 496); }
-  const t = new THREE.CanvasTexture(c);
+  const key = `${text}\n${sub || ''}`;
+  let t = LABELS.get(key);
+  if (t) return t;
+  t = bakedCanvasTexture((g) => {
+    g.fillStyle = '#fbe3cf';
+    g.textAlign = 'center';
+    g.textBaseline = 'middle';
+    // (the last argument squeezes a long line to fit the tablet instead of clipping it)
+    g.font = `700 70px ${FONT.title}`;
+    g.fillText(text, 256, sub ? 58 : 80, 490);
+    if (sub) { g.font = `500 34px ${FONT.ui}`; g.fillText(sub, 256, 126, 496); }
+  }, 512, 160, { scale: T.visual.labelScale ?? 1 });
   t.anisotropy = 8;
+  LABELS.set(key, t);
   return t;
 }
 
