@@ -18,6 +18,7 @@
 //   stats.hi('speed.max', 13.2, { at: 'the workshop' })   -> 'new' (first ever), 'beat' (a real improvement), or false
 //   stats.lo('circuit.braid.time', 41.2)
 //   stats.first('kind.jar')                         -> true the first time
+//   stats.hold(fn)                                  fn run, the ledger put back after (a debug travel: debug/startat.js)
 // ---------------------------------------------------------------------------------------
 export class Stats {
   constructor(save = null) {
@@ -82,6 +83,12 @@ export class Stats {
 
   /** Mark the ledger for the save (core/save.js writes the player scope whole at the end of the frame). */
   save() { this.dirty = 0; this.store?.dirty('ledger'); }
+  /** `fn` run with the ledger put back as it was after it (debug/startat.js: what a travel's own events tally is not play). The records
+   *  are copied whole, so nothing `fn` does to them survives; the version bumps so readers look again. */
+  hold(fn) {
+    const K = ['life', 'sess', 'rec', 'firsts', 'done'], was = K.map((k) => JSON.parse(JSON.stringify(this[k] || {})));
+    try { return fn(); } finally { K.forEach((k, i) => { const o = this[k]; for (const key of Object.keys(o)) delete o[key]; Object.assign(o, was[i]); }); this.version++; } // (in place: a reader may hold the object)
+  }
   dump() { return { life: this.life, rec: this.rec, firsts: this.firsts, done: this.done, play: this.play, sessions: this.sessions }; }
   load(raw) {
     if (!raw || typeof raw !== 'object') return;

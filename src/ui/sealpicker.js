@@ -12,6 +12,9 @@
 // a carving stroke filling, the cradle's pad ring lighting round) beside the one line that says it is for good; letting go when it is
 // full carves it: game.cradles.choose(...), then done() inside that same pointer or key handler (the pointer lock wants a gesture).
 // No skip. Keys: letters, Backspace, Left and Right (or 1 to 4) the outline, Up and Down (or 5, 6) the carving, Enter or Space held.
+// On a phone the name is typed into a real field (MOBILE.md 5): an <input> laid unseen over the carved field (16 px, or iOS zooms on
+// focus), focused by a tap on it, its value read as letters into setName; while the keyboard is up (visualViewport) the window is
+// lifted so the field sits above it.
 //
 // Drawn on one 2D canvas at the 480-line present, upscaled bilinearly as the world is (render/present.js): no WebGL, no texture, no
 // draw call. The window is cached and redrawn only when what it shows changes; a frame composites the cache, the keylines through the
@@ -32,6 +35,7 @@ import { THEMES, theme, FONT, GLOVES } from './theme.js';
 import { sfx } from '../audio/sfx.js';
 
 const LINES = 480; // (the present's lines: the picker pixelates as the world does)
+const UPRIGHT = { w: 384, h: 760 }; // (an upright phone: the least canvas width, and the height the one column needs)
 const HOLD = 1.5, LETGO = 0.25; // (real seconds: the hold to carve; the stroke running back when let go early)
 const MA = 0.5, IN = [0.07, 0.1, 0.12, 0.06], OUT_K = 2 / 3; // (the stillness first; the entrance: a line, the unfold, the scan, the tab)
 const COOL = 2.0; // (real seconds an imprint burns down to dim: vfx/sealimprint.js's)
@@ -78,6 +82,7 @@ export class SealPicker {
     this.onKey = (e) => this.key(e, true); this.onKeyUp = (e) => this.key(e, false);
     this.onDown = (e) => this.pointer(e, 'down'); this.onUp = (e) => this.pointer(e, 'up'); this.onMove = (e) => this.pointer(e, 'move');
     this.onResize = () => { this.layout(); };
+    this.onInput = () => this.typed();
     this.frame = (now) => this.tick(now);
   }
 
@@ -87,8 +92,10 @@ export class SealPicker {
     if (this.game.cradles?.mine) { done?.(); return; }
     this.done = done; this.isOpen = true; this.t = 0; this.out = -1; this.hold = 0; this.full = false; this.holding = null; this.flash = 0;
     if (!this.el) this.build();
-    document.body.appendChild(this.el);
+    document.body.appendChild(this.el); document.body.appendChild(this.input);
+    this.input.value = this.name;
     this.layout();
+    globalThis.visualViewport?.addEventListener('resize', this.onResize); globalThis.visualViewport?.addEventListener('scroll', this.onResize);
     addEventListener('keydown', this.onKey, true); addEventListener('keyup', this.onKeyUp, true); addEventListener('resize', this.onResize);
     this.el.addEventListener('pointerdown', this.onDown); this.el.addEventListener('pointerup', this.onUp); this.el.addEventListener('pointermove', this.onMove);
     this.el.addEventListener('pointercancel', this.onUp);
@@ -101,25 +108,52 @@ export class SealPicker {
     const el = (this.el = canvas(2, 2)); el.id = 'sealpicker';
     el.style.cssText = `position:fixed;inset:0;width:100%;height:100%;z-index:40;image-rendering:auto;touch-action:none;cursor:url(${GLOVES.cursor}) 14 11, default;`;
     this.ctx = el.getContext('2d');
+    const f = (this.input = document.createElement('input')); f.id = 'sealpicker-name';
+    Object.assign(f, { type: 'text', maxLength: 12, autocomplete: 'off', spellcheck: false, enterKeyHint: 'done' });
+    f.setAttribute('autocapitalize', 'characters'); f.setAttribute('autocorrect', 'off'); f.setAttribute('aria-label', 'your name');
+    f.style.cssText = 'position:fixed;z-index:41;margin:0;padding:0;border:0;outline:0;background:transparent;color:transparent;caret-color:transparent;font-size:16px;opacity:0.01;touch-action:manipulation;';
+    f.addEventListener('input', this.onInput);
+    f.addEventListener('pointerup', () => { if (!this.holding && this.out < 0) f.focus(); }); // (in the gesture's own handler: the first touch's full screen moves the page under the finger)
+    f.addEventListener('focus', () => { this.dirty = true; this.onResize(); }); f.addEventListener('blur', () => { this.dirty = true; this.onResize(); });
+  }
+  /** The field's value read as the name: letters only, upper case, 12 at most (the keys' own rule). */
+  typed() {
+    if (this.holding || this.out >= 0) { this.input.value = this.name; return; }
+    const n = this.input.value.toUpperCase().replace(/[^A-Z]/g, '').slice(0, 12);
+    if (this.input.value !== n) this.input.value = n;
+    if (n !== this.name) this.setName(n);
+  }
+  /** The unseen field laid over the carved one, and the window lifted above the keyboard while it is up. */
+  placeField() {
+    const L = this.L, sx = innerWidth / L.W, s = innerHeight / L.H, F = L.field, vv = globalThis.visualViewport; // (the canvas is stretched to the view: below 1:1 it squeezes)
+    let dy = 0;
+    if (vv && document.activeElement === this.input && vv.height < innerHeight * 0.85) {
+      const want = vv.offsetTop + Math.min(vv.height * 0.35, 120); // (the field's top, a little way down what is left in view)
+      dy = Math.min(0, want - F.y * s);
+    }
+    this.el.style.transform = dy ? `translateY(${Math.round(dy)}px)` : '';
+    Object.assign(this.input.style, { left: `${F.x * sx}px`, top: `${F.y * s + dy}px`, width: `${F.w * sx}px`, height: `${Math.max(44, F.h * s)}px` });
   }
 
   /** Every box of the window, in the present's pixels; the caches sized to it. */
   layout() {
-    const H = LINES, W = Math.max(LINES, Math.round(H * innerWidth / Math.max(1, innerHeight)));
+    const up = innerHeight > innerWidth * 1.15, asp = innerWidth / Math.max(1, innerHeight); // (upright: one column, the canvas scaled evenly)
+    const W = up ? Math.max(UPRIGHT.w, Math.ceil(UPRIGHT.h * asp)) : Math.max(LINES, Math.round(LINES * asp)), H = up ? Math.round(W / asp) : LINES;
     if (this.el.width !== W) { this.el.width = W; this.el.height = H; }
     for (const k of ['body', 'win', 'line', 'tmp']) { if (!this[k] || this[k].width !== W) this[k] = canvas(W, H); }
     if (!this.filmStrip) { const f = (this.filmStrip = canvas(256, 1)), c = f.getContext('2d'), g = c.createLinearGradient(0, 0, 256, 0); for (let i = 0; i <= 8; i++) g.addColorStop(i / 8, FILM[i % 4]); c.fillStyle = g; c.fillRect(0, 0, 256, 1); }
     if (!this.faceLit) { this.faceLit = canvas(128, 128); this.faceDim = canvas(128, 128); }
-    const w = Math.min(W - 24, 640), h = 380, x = Math.round((W - w) / 2), y = Math.round((H - h) / 2) + 12;
-    const split = x + Math.round(w * 0.52), lx = x + 16, lw = split - 8 - lx, rx = split + 8, rw = x + w - 16 - rx;
-    const L = (this.L = { W, H, x, y, w, h, lx, lw, rx, rw });
+    const R = up ? 280 : 0, Fy = up ? 284 : 0, h = up ? 380 + Fy + 34 : 380; // (upright: the previews under the choices, the foot under them, the line over the hold)
+    const w = up ? Math.min(W - 24, 360) : Math.min(W - 24, 640), x = Math.round((W - w) / 2), y = Math.round((H - h) / 2) + 12;
+    const split = x + Math.round(w * 0.52), lx = x + 16, lw = up ? w - 32 : split - 8 - lx, rx = up ? lx : split + 8, rw = up ? lw : x + w - 16 - rx;
+    const L = (this.L = { W, H, x, y, w, h, lx, lw, rx, rw, up, R, Fy });
     const sw = Math.floor((lw - 18) / 4), cw = Math.floor((lw - 6) / 2);
     L.outlines = SEAL_OUTLINES.map((id, i) => ({ id, kind: 'outline', x: lx + i * (sw + 6), y: y + 168, w: sw, h: 72 }));
     L.carvings = SEAL_CARVINGS.map((id, i) => ({ id, kind: 'carving', x: lx + i * (cw + 6), y: y + 270, w: cw, h: 40 }));
-    L.confirm = { id: 'confirm', kind: 'confirm', x: x + w - 16 - 224, y: y + 330, w: 224, h: 30 };
+    L.confirm = { id: 'confirm', kind: 'confirm', x: up ? lx : x + w - 16 - 224, y: y + 330 + Fy + (up ? 34 : 0), w: up ? lw : 224, h: up ? 42 : 30 }; // (upright: the whole width, a thumb's height)
     L.field = { x: lx, y: y + 52, w: lw, h: 32 };
-    L.cradle = { x: rx, y: y + 52, w: rw, h: 154 };
-    L.book = { x: rx, y: y + 236, w: rw, h: 80 };
+    L.cradle = { x: rx, y: y + 52 + R, w: rw, h: 154 };
+    L.book = { x: rx, y: y + 236 + R, w: rw, h: 80 };
     const C = L.cradle, cx = C.x + C.w / 2, cy = C.y + C.h * 0.54, RX = Math.min(C.w * 0.27, 64), RY = RX * 0.42;
     L.well = { cx, cy, RX, RY };
     L.pads = Array.from({ length: PADS }, (_, i) => { const a = -Math.PI / 2 + i / PADS * Math.PI * 2; return [cx + Math.cos(a) * RX * 1.09, cy + Math.sin(a) * RY * 1.09, FILM[i % 4]]; });
@@ -127,6 +161,7 @@ export class SealPicker {
     const tu = (s) => [[cx + s * RX * 1.12, cy - RY * 0.55], [cx + s * RX * 1.6, cy - RY * 1.05], [s > 0 ? C.x + C.w - 22 : C.x + 22, cy - RY * 1.05]];
     L.traces = [tr(-1), tr(1), tu(-1), tu(1)];
     L.hits = [...L.outlines, ...L.carvings, L.confirm];
+    this.placeField();
     this.dirty = this.bodyDirty = true;
   }
 
@@ -136,7 +171,7 @@ export class SealPicker {
     e.stopPropagation();
     const c = e.code;
     if (!down) { if ((c === 'Enter' || c === 'NumpadEnter' || c === 'Space') && this.holding === 'key') { e.preventDefault(); this.release(); } return; }
-    if (c === 'Enter' || c === 'NumpadEnter' || c === 'Space') { e.preventDefault(); if (!e.repeat && !this.holding) this.press('key'); return; }
+    if (c === 'Enter' || c === 'NumpadEnter' || c === 'Space') { e.preventDefault(); if (document.activeElement === this.input) { this.input.blur(); return; } if (!e.repeat && !this.holding) this.press('key'); return; }
     if (this.holding) return; // (nothing changes under the chisel)
     if (c === 'Backspace') { e.preventDefault(); if (this.name) this.setName(this.name.slice(0, -1)); return; }
     if (c === 'ArrowLeft' || c === 'ArrowRight') { e.preventDefault(); const i = SEAL_OUTLINES.indexOf(this.outline), d = c === 'ArrowLeft' ? -1 : 1; this.choose('outline', SEAL_OUTLINES[(i + d + SEAL_OUTLINES.length) % SEAL_OUTLINES.length]); return; }
@@ -153,11 +188,13 @@ export class SealPicker {
     if (what === 'up') { if (this.holding === 'pointer') this.release(); return; }
     if (e.button !== 0 || this.holding) return;
     e.preventDefault();
+    const F = this.L.field;
+    if (!at && px >= F.x && px <= F.x + F.w && py >= F.y && py <= F.y + F.h) { this.input.focus(); return; } // (the carved field: a tap on it is a tap on the real one)
     if (!at) return;
     if (at.kind === 'confirm') { this.el.setPointerCapture?.(e.pointerId); this.press('pointer'); }
     else this.choose(at.kind, at.id);
   }
-  setName(n) { this.name = n; this.read = readSealName(n); this.burnT = 0; this.dirty = true; this.faces = null; sfx.click?.(); }
+  setName(n) { this.name = n; if (this.input && this.input.value !== n) this.input.value = n; this.read = readSealName(n); this.burnT = 0; this.dirty = true; this.faces = null; sfx.click?.(); }
   choose(kind, id) { if (this[kind] === id) return; this[kind] = id; this.burnT = 0; this.dirty = true; this.faces = null; sfx.menuMove?.(); }
   press(by) { if (!this.read.ok) { sfx.menuBack?.(); return; } this.holding = by; this.dirty = true; }
   /** The hold let go: full, the seal is carved here, in the gesture's own handler; short of full, the stroke runs back. */
@@ -169,6 +206,8 @@ export class SealPicker {
     sfx.menuOk?.(); // (PLACEHOLDER: the carving's sound is Wanda's, on seal.carve)
     this.flash = 1; this.burnT = 0; this.out = 0;
     removeEventListener('keydown', this.onKey, true); removeEventListener('keyup', this.onKeyUp, true); removeEventListener('resize', this.onResize);
+    globalThis.visualViewport?.removeEventListener('resize', this.onResize); globalThis.visualViewport?.removeEventListener('scroll', this.onResize);
+    this.input.blur(); this.input.remove(); this.el.style.transform = '';
     const d = this.done; this.done = null; d?.();
   }
 
@@ -176,7 +215,7 @@ export class SealPicker {
     cancelAnimationFrame(this.raf); this.raf = 0; this.isOpen = false;
     this.el.removeEventListener('pointerdown', this.onDown); this.el.removeEventListener('pointerup', this.onUp); this.el.removeEventListener('pointermove', this.onMove);
     this.el.removeEventListener('pointercancel', this.onUp);
-    this.el.remove();
+    this.el.remove(); this.input.remove();
   }
 
   // ---- the frame
@@ -344,7 +383,7 @@ export class SealPicker {
     if (this.name) {
       c.save(); c.letterSpacing = '3px'; const ex = text(c, this.name, F.x + 10, F.y + 25, NAME_F(24), T.hi); c.restore();
       c.fillStyle = hiA(this.holding ? 0.2 : 0.55); c.fillRect(Math.round(ex) + 1, F.y + 7, 2, 20); // (the caret: steady, never blinking)
-    } else { text(c, 'type your name', F.x + 10, F.y + 21, READ_F, hiA(0.4)); c.fillStyle = hiA(0.55); c.fillRect(F.x + 8, F.y + 7, 2, 20); }
+    } else { text(c, this.game.input?.device === 'touch' ? 'tap to type your name' : 'type your name', F.x + 10, F.y + 21, READ_F, hiA(0.4)); c.fillStyle = hiA(0.55); c.fillRect(F.x + 8, F.y + 7, 2, 20); }
     if (this.read.cells && this.read.ok) {
       const words = [{ cells: this.read.cells }], m1 = runningHand(null, words, { scale: 1 }); // (2x: its cell two reading lines tall, OVERLAY.md 10.5; fitted to the row)
       const sc = Math.min(3.6, (lw - 12) / Math.max(1, m1.width), 34 / Math.max(1, m1.height));
@@ -369,8 +408,8 @@ export class SealPicker {
       text(c, CARVING_WORDS[b.id][1], b.x + 42, b.y + 34, READ_F, hiA(0.55));
     });
     // the two previews' headers and the book's page
-    section(c, 'PRESSED INTO A CRADLE', rx, rx + rw, y + 44, T);
-    section(c, 'A PAGE OF THE SEAL BOOK', rx, rx + rw, y + 228, T);
+    section(c, 'PRESSED INTO A CRADLE', rx, rx + rw, y + 44 + L.R, T);
+    section(c, 'A PAGE OF THE SEAL BOOK', rx, rx + rw, y + 228 + L.R, T);
     const P = L.book, dx = P.x + 36, dy = P.y + P.h / 2;
     c.fillStyle = CLAY.well; c.beginPath(); c.arc(dx, dy, 29, 0, 7); c.fill(); c.strokeStyle = COPPER; c.lineWidth = 3; c.beginPath(); c.arc(dx, dy, 29, 0, 7); c.stroke(); c.lineWidth = 1;
     c.globalAlpha = 0.9; c.drawImage(this.bookFace, dx - 26, dy - 26); c.globalAlpha = 1;
@@ -378,14 +417,14 @@ export class SealPicker {
     text(c, 'your seal, carved', P.x + 76, P.y + 39, READ_F, hiA(0.7));
     row(c, 'PRESSED', '0', P.x + 76, P.x + P.w - 8, P.y + 57, T); row(c, 'RECEIVED', '0', P.x + 76, P.x + P.w - 8, P.y + 73, T);
     // the foot: the one line, and the hold
-    hair(c, x + 10, x + w - 10, y + 322, T);
-    text(c, 'Your seal is carved once, and for good.', lx, y + 350, READ_F, hiA(0.9));
+    hair(c, x + 10, x + w - 10, y + 322 + L.Fy, T);
+    text(c, 'Your seal is carved once, and for good.', lx, y + 350 + L.Fy, READ_F, hiA(0.9));
     const B = L.confirm, can = this.read.ok, hot = this.hover === B || this.holding;
     c.fillStyle = 'rgba(23,17,31,0.55)'; c.fillRect(B.x, B.y, B.w, B.h);
     if (can) m.strokeRect(B.x + 0.5, B.y + 0.5, B.w - 1, B.h - 1); else { c.strokeStyle = hiA(0.25); c.strokeRect(B.x + 0.5, B.y + 0.5, B.w - 1, B.h - 1); }
-    keyBox(c, B.x + 8, B.y + 6, 'ENTER', T, can ? 0.85 : 0.35);
+    if (this.game.input?.device !== 'touch') keyBox(c, B.x + 8, B.y + Math.round((B.h - 18) / 2), 'ENTER', T, can ? 0.85 : 0.35); // (no key to name under a thumb)
     const label = !can ? 'NAME FIRST' : this.full ? 'LET GO' : 'HOLD TO CARVE';
-    text(c, label, B.x + B.w - 12, B.y + 19, NAME_F(16), can ? (hot ? T.hi : hiA(0.85)) : hiA(0.35), 'right');
+    text(c, label, B.x + B.w - 12, B.y + Math.round(B.h / 2) + 4, NAME_F(16), can ? (hot ? T.hi : hiA(0.85)) : hiA(0.35), 'right');
     c.fillStyle = hiA(0.15); c.fillRect(B.x + 10, B.y + B.h - 6, B.w - 20, 1);
   }
 
