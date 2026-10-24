@@ -126,7 +126,8 @@ export class PneukaJarLook {
     if (this.seal) { this.drop(this.seal); this.seal = null; }
     if (!seal) return;
     const c = (this.sealCanvas ||= document.createElement('canvas')); c.width = c.height = 256;
-    const ctx = c.getContext('2d'); ctx.fillStyle = '#b8936f'; ctx.fillRect(0, 0, 256, 256); ctx.save(); // (the base's bare clay under the carving: a clear canvas read black) ctx.translate(256, 0); ctx.scale(-1, 1);
+    // (the base's bare clay under the carving: a clear canvas read black)
+    const ctx = c.getContext('2d'); ctx.fillStyle = '#b8936f'; ctx.fillRect(0, 0, 256, 256); ctx.save(); ctx.translate(256, 0); ctx.scale(-1, 1);
     try { drawSealFace(ctx, seal, { size: 256, ink: '#3a1a14' }); } catch { /* a face that cannot be drawn: the bare base */ }
     ctx.restore();
     const M = this.materials.m.seal; if (M.map?.isCanvasTexture) M.map.needsUpdate = true; else { M.map?.dispose?.(); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; M.map = M.emissiveMap = t; M.needsUpdate = true; }
