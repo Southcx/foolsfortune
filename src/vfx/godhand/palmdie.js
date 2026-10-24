@@ -4,6 +4,8 @@
 // (a tetrahedron d4, a cube d6, an octahedron d8, a dodecahedron d12, an icosahedron d20), cut in the mineral of the stones you wear
 // (the vessel's STONES glaze: its colour the body, its second colour the fire glowing in it), turning slowly in its socket.
 //   A CONDENSE   palm.condense { n }: the stone breathes out a glint, brighter the more it made (the overflow pressed into cubes)
+//   A ROLL       palm.roll { face, held } (the island's answer rolled against): a quick tumble, then still on the pose its face gives a beat;
+//                a glint when it held (1 or 2). The stones carry no numerals, so the face is a pose, not a number read.
 //   A GROWTH     palm.grow { from, to }: the stone swells and cracks white along its facets, and comes round as the next solid with a
 //                flare of its fire (a stone re-cut, not a gem swapped)
 // THE FINGERS  the other five of the standard set on the hand (the owner, 2026-10-23: d4 the little finger, d6 the ring finger, d8 the
@@ -61,6 +63,7 @@ export class PalmDieLook {
     this.mesh.raycast = () => {}; this.edges.raycast = () => {};
     this.fingerDice = []; this.hand = null;
     game.events?.on?.('palm.condense', (e) => { this.glint = Math.min(1, this.glint + 0.35 + 0.1 * (e?.n || 1)); });
+    game.events?.on?.('palm.roll', (e) => { this.roll = { t: 0, face: e?.face ?? 1, held: e?.held ?? 0 }; if (e?.held === 1 || e?.held === 2) this.glint = 1; }); // (the island's answer rolled against: a tumble, then still on its face; a glint when it held)
     game.events?.on?.('palm.grow', (e) => { this.next = e?.to || this.sides; this.cut = 0; });
   }
 
@@ -111,7 +114,13 @@ export class PalmDieLook {
     } else if (P.sides && P.sides !== this.sides) this.shape(P.sides); // (a save loaded, or a growth missed)
     this.glint = Math.max(0, this.glint - dt * 1.6);
     this.mesh.scale.setScalar(1 + 0.35 * swell + 0.08 * this.glint);
-    this.mesh.rotation.set(0.4 + Math.sin(this.t * 0.7) * 0.2, this.t * S.spin, 0.2);
+    const RL = this.roll;
+    if (RL) { // (a roll: fast tumble 0.4 real s, settling onto the pose its face gives, held still a beat, then back to turning)
+      RL.t += dt; const k = Math.min(1, RL.t / 0.6), f = RL.face;
+      const tx = f * 0.71, ty = f * 1.37, tz = f * 0.29, w = (1 - k) ** 2 * 18;
+      this.mesh.rotation.set(tx + w * 0.9, ty + w, tz + w * 0.4);
+      if (RL.t > 1.6) this.roll = null;
+    } else this.mesh.rotation.set(0.4 + Math.sin(this.t * 0.7) * 0.2, this.t * S.spin, 0.2);
     this.mat.emissiveIntensity = 0.25 + 1.2 * this.glint + 2.5 * swell;
     this.crack.opacity = Math.min(1, (INK[this.sides] ? 0.6 : 0) + crack * 1.4 + 0.15 * this.glint);
   }

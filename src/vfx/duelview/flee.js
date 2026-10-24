@@ -10,7 +10,7 @@
 //                   before the Courier's half with `roll` turned to you, its window over it; then its reasons counted in as the score ceremony counts (ui/scoreceremony.js):
 //                   ROLL, then each modifier that is not nought (LINE held or lost, BREAK +3 a stun depth, PITY +3 a failed try, LUCK)
 //                   lighting in and rolling the total up, against the 15 it must reach, and the verdict: a tick in the film, or a cross
-//                   in the ember (a natural 20 or 1 stamped so). The die and the window linger a beat, then fade.
+//                   in the ember (a natural 20 or 1 stamped so). A failed throw with Luck's re-roll left (`reroll`, the first roll) lands, shows its face a beat, is snatched up and thrown again. The die and the window linger a beat, then fade.
 //   THE FLED        'duel.fled': the domains' clash collapses softly with no winner (no kintsugi gold), and the tsuitate folds back
 //                   on its feet and sinks away.
 // Materials: the plates are canvases on quads of the marks' glyph program (a map, unlit, blended); the die is the bazaar's glaze.
@@ -31,7 +31,7 @@ import { VERD, J15, CZ, film, rng } from '../lockheartreliquary/look.js';
 import { DUEL_VIEW, sm, ease, clamp01 } from './layout.js';
 
 const K = 3; // (canvas pixels a dot: drawn crisp, read at the 480 lines)
-const DIE_K = 2.4, THROW = 0.75, PER = 0.3, VERDICT = 0.4, HOLD = 0.6, LINGER = 0.9;
+const DIE_K = 2.4, THROW = 0.75, PER = 0.3, VERDICT = 0.4, HOLD = 0.6, LINGER = 0.9, SHOWN = 0.3, SNATCH = 0.18; // (a re-roll: the first face shown a beat, then snatched up)
 const REASONS = [['line', 'LINE'], ['break', 'BREAK'], ['pity', 'PITY'], ['luck', 'LUCK']];
 const OK = '#ffe7a0', NO = '#ff8a5a', FAINT = 'rgba(226,243,230,.45)';
 const _t = new THREE.Quaternion(), _a = new THREE.Quaternion(), _v = new THREE.Vector3(), _up = new THREE.Vector3(0, 1, 0);
@@ -94,11 +94,13 @@ export class DuelFlee {
     const restQ = new THREE.Quaternion(); dieRest(20, e.roll, 0.35, restQ, DIE_K);
     restQ.premultiply(_t.setFromUnitVectors(_up, _v.set(0, 0.42, 1).normalize())); // (tipped back, its face to you: it hangs before the board, as a summoned thing of the System's)
     const R = rng(e.roll * 31 + reasons.length + 7), axis = new THREE.Vector3(R() - 0.5, R() - 0.5, R() - 0.5).normalize(), turns = 9 + R() * 5;
-    const count = THROW + 0.25, dur = count + reasons.length * PER + VERDICT + HOLD;
-    this.run = { e, reasons, from, restQ, axis, turns, count, dur, age: 0 }; this.linger = 0;
+    const count = THROW + 0.25, pre = e.reroll != null ? THROW + SHOWN + SNATCH : 0, dur = pre + count + reasons.length * PER + VERDICT + HOLD;
+    let first = null; // (Luck's re-roll, Dovina's: the failed throw lands, is snatched up, and is thrown again at once)
+    if (pre) { const q = new THREE.Quaternion(); dieRest(20, e.reroll, 0.35, q, DIE_K); q.premultiply(_t.setFromUnitVectors(_up, _v.set(0, 0.42, 1).normalize())); first = { restQ: q, axis: new THREE.Vector3(R() - 0.5, R() - 0.5, R() - 0.5).normalize(), turns: 7 + R() * 4 }; }
+    this.run = { e, reasons, from, restQ, axis, turns, count, dur, pre, first, age: 0 }; this.linger = 0;
     this.dress(); // (your die, in your stones' mineral: the stones are your dice, DICE.md 7)
     this.die.visible = true; this.die.scale.setScalar(1); this.rollP.mat.opacity = 1; this.oddsP.mesh.visible = false;
-    return { events: [e], dur, step: (u, age) => { this.run.age = age; this.place(age); this.draw(age); }, end: () => { this.place(dur); this.draw(dur); this.linger = LINGER; } };
+    return { events: [e], dur, step: (u, age) => { this.run.age = age; if (age < pre) { this.placeFirst(age); this.rollP.mesh.visible = false; return; } this.place(age - pre); this.draw(age - pre); }, end: () => { this.place(dur); this.draw(dur); this.linger = LINGER; } };
   }
 
   /** The die in the mineral of the stones you wear (the vessel's STONES region, glazes.js gems): the house's d20 numerals on your stone. */
@@ -107,6 +109,14 @@ export class DuelFlee {
     M.color.setHex(G?.color ?? 0xffffff); M.emissive.setHex(G?.color2 ?? 0xffffff); M.roughness = Math.max(0.06, G?.rough ?? 0.1);
   }
   /** The die where its throw has it: an arc from the figurine, tumbling about one axis down to rest, one small hop as it lands. */
+  /** A re-roll's first throw: the same arc to rest on the failed face, a beat shown, then snatched back up toward the figurine. */
+  placeFirst(age) {
+    const R = this.run, F = R.first;
+    if (age < THROW) { const keep = { restQ: R.restQ, axis: R.axis, turns: R.turns }; Object.assign(R, F); this.place(age); Object.assign(R, keep); return; }
+    const k = clamp01((age - THROW - SHOWN) / SNATCH), s = k * k;
+    this.die.position.lerpVectors(this.rest, R.from, s * 0.6); this.die.position.y += Math.sin(Math.PI * k) * 0.5;
+    this.die.quaternion.copy(F.restQ).multiply(_a.setFromAxisAngle(F.axis, -s * 3));
+  }
   place(age) {
     const R = this.run; if (!R) return;
     const u = clamp01(age / THROW), s = sm(u), hop = u < 0.78 ? Math.sin((Math.PI * u) / 0.78) * 0.9 : Math.sin((Math.PI * (u - 0.78)) / 0.22) * 0.07;
