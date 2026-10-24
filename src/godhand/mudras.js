@@ -99,6 +99,7 @@ export class MudraPose {
   hold(key, strength = 1) {
     if (key != null && !MUDRAS[key]) return false;
     this.key = key ?? null; this.want = Math.max(0, Math.min(1, strength)); // (how far in it is held: Dovina's 1 struck, 0.4 a light hold)
+    if (key) (this.turns ||= new Map()).set(key, this.want >= 1); // (Dovina, 2026-10-24: only a struck pose turns the hand; a light hold leaves the wrist aiming, the cursor)
     if (key && !this.layers.has(key)) this.layers.set(key, 0);
     return true;
   }
@@ -136,7 +137,7 @@ export class MudraPose {
       this.layers.set(key, w);
       const k = w * w * (3 - 2 * w), T = this.target(key), hand = this.bones.handR;
       for (const [b, q] of T) if (b !== hand) b.quaternion.slerp(q, k);
-      if (hand) hand.quaternion.slerp(MUDRAS[key].face ? _o.copy(this.faced(MUDRAS[key].face, T.get(hand))) : T.get(hand), k);
+      if (hand && this.turns?.get(key) !== false) hand.quaternion.slerp(MUDRAS[key].face ? _o.copy(this.faced(MUDRAS[key].face, T.get(hand))) : T.get(hand), k);
     }
     return true;
   }
