@@ -22,7 +22,7 @@ export const TILE_WORDS = { use: 'USE', jump: 'JUMP', crouch: 'CROUCH', dash: 'D
   hop: 'HOP', brake: 'BRAKE', flare: 'FLARE', boost: 'BOOST', nose: 'NOSE', tail: 'TAIL', fire: 'FIRE', aim: 'AIM', pause: 'the pause button',
   'top.topview': 'TOP VIEW', 'top.godhand': "the god hand's tile", 'top.skiff': "the skiff's tile", 'top.survey': 'SURVEY', 'top.box': 'the Pneuka Box', 'top.map': 'the map', 'top.codex': 'the Codex', 'top.chat': 'the chat',
   'move.outerL': 'the stick pushed past its ring', 'move.outerR': 'the stick pushed past its ring', 'swipe.left': 'a swipe', 'swipe.right': 'a swipe',
-  'du.end': 'END TURN', 'menu.yield': 'YIELD in the pause menu', 'menu.restart': 'RESTART in the pause menu', 'menu.back': 'BACK in the pause menu' };
+  'du.end': 'END TURN', 'menu.yield': 'GIVE UP in the pause menu', 'menu.restart': 'RESTART in the pause menu', 'menu.back': 'BACK in the pause menu' };
 const tileWord = (t) => TILE_WORDS[t] || t.split('.').pop().toUpperCase();
 
 /** The row an action id means, in `ctx` if given (else its first). */
