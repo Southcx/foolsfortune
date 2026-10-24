@@ -73,7 +73,7 @@ One card, one identity, everywhere it turns up:
 7. **A collected card**: bound in the Codex's THE ARCANA (by its photograph or another achievement).
 8. **A house card**: on Raku's tables, in Querent (the Fate Clause's boons).
 
-## 5. The domains and their planets (proposal, checked by Espada 2026-10-23: the rulerships right, the Sun and Moon swapped; the owner's to rule)
+## 5. The domains and their planets (checked by Espada 2026-10-23; the Sun and Moon swap ruled by the owner, 2026-10-24)
 
 The seven classical planets for the seven domains, and each zodiac class under its sign's ruling planet (the classical rulers, as the
 Golden Dawn used):
@@ -105,13 +105,13 @@ beside the knucklebone on that finger (DICE.md 4.1):
 | the palm's heart | Mars | Psychokinesis | d20, the palm die (the Majors) |
 | the palm's outer edge | the Moon | Possession | (none) |
 
-The Sun and Moon rows follow Espada's swap (section 5), which waits on the owner. A domain's level could show on its mount (Calissa's).
+The Sun and Moon rows follow the swap the owner ruled (section 5). A domain's level could show on its mount (Calissa's).
 
 ### 5.2 Two more readings of the hand (Espada's proposals; plans, not rules)
 
 - **The four great lines as four readings of the ledger:** the life line (time played and shatters lived through), the head line (arts
-  and domains learned), the heart line (bonds: spirits, the folk, siblings), the fate line (Luck's bits and achievements). Read on the
-  god hand's palm as the overlay does (a readout, never a gate), and in the Codex's STATUS shelf.
+  and domains learned), the heart line (bonds: spirits, the folk, siblings), the fate line (Luck's bits and achievements). The god hand's palm is an opening (the palm die's hole), so the
+  lines cannot cross it: read them round the opening's rim, or in the Codex's STATUS shelf (Espada, 2026-10-24). A readout, never a gate.
 - **The god hand's shape by the suit you lean on:** palmistry's four elemental hands (earth: a square palm, short fingers; air: square,
   long; fire: long palm, short fingers; water: long, long). The hand takes the shape of your class's suit (a court's own, a zodiac
   Major's element), so changing the Box changes the hand. A look only, Calissa's; no rule changes with it.
@@ -154,4 +154,4 @@ ENTROPY-TACTICS.md 3.b proposed for the table), each measured before the next.
 5. **One kit, two games** (4.6): a class's arts are its Entropy Tactics actives?
 6. **The first wave of four**: the Fool and three of your choosing?
 7. **Palmistry's two readings** (5.2): the four lines as ledger readings, and the hand's shape by your suit?
-8. **The Sun and Moon swap** (section 5): the Sun to Divination, the Moon to Possession?
+8. ~~The Sun and Moon swap~~ ruled (2026-10-24): the Sun to Divination (Strength), the Moon to Possession (the Chariot).
