@@ -8,7 +8,8 @@
 //
 //   const wake = new Wake(scene, fx, { color: 0xfff4de });
 //   wake.update(dt, { bow, fwd, right, speed, air, glow, ground: (x, z) => y, floor })
-//   wake.clear()
+//   wake.clear()   wake.look = { after(wake, dt, opts) }  (a trail's look repainting the strips once built: vfx/skifftrims/trails.js)
+//   WAKE { N, SPACING, LIFE, spread(t, k) } (the numbers, for a look laid over it)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { stream } from '../../core/rng.js';
@@ -17,6 +18,8 @@ const simRand = stream('world/ground/wake'); // (the simulation's chance: core/r
 const N = 72;          // samples kept
 const SPACING = 0.32;  // metres between samples
 const LIFE = 2.6;      // seconds a mark lasts at full speed
+const spread = (t, k) => 0.34 + 1.05 * Math.pow(t, 0.75) * (0.4 + 0.6 * k); // the V opens as it ages (t its age 0..1, k how much boat)
+export const WAKE = { N, SPACING, LIFE, spread };
 
 export class Wake {
   constructor(scene, fx, { color = 0xfff4de } = {}) {
@@ -45,11 +48,13 @@ export class Wake {
     this.mesh.visible = false;
     scene.add(this.mesh);
     this.g = g;
+    this.look = null; // (a trail's look, laid over the strips after they are built: vfx/skifftrims/trails.js)
   }
 
   clear() { this.s.length = 0; this.last = null; this.acc = 0; this.mesh.visible = false; }
 
-  update(dt, { bow, fwd, right, speed, air, glow = 0, ground, floor }) {
+  update(dt, opts) {
+    const { bow, fwd, right, speed, air, glow = 0, ground } = opts;
     // age and drop
     for (const p of this.s) p.age += dt;
     while (this.s.length && this.s[0].age > LIFE) this.s.shift();
@@ -80,6 +85,7 @@ export class Wake {
         this.fx.foam.emit({ pos: p, vel: v, life: 0.45 + simRand() * 0.45, size: 0.07 + simRand() * 0.14 * (0.6 + k), sizeEnd: 0.05, color: this.color, alpha: 0.95, drag: 1.2, gravity: 11, floor: gy });
       }
     }
+    this.look?.after(this, dt, opts);
   }
 
   build(right) {
@@ -92,16 +98,16 @@ export class Wake {
       const p = this.s[Math.min(i, n - 1)];
       const live = i < n;
       const t = live ? p.age / LIFE : 1;
-      const spread = 0.34 + 1.05 * Math.pow(t, 0.75) * (0.4 + 0.6 * p.k); // the V opens as it ages
+      const sp = spread(t, p.k);
       const fade = live ? (1 - t) * (1 - t) * p.k : 0;
       const lx = -p.fz, lz = p.fx; // (to the left of that sample's heading)
       const y = p.y + 0.05;
-      const w = { band: 0.5 * spread, line: 0.032 + 0.025 * t };
+      const w = { band: 0.5 * sp, line: 0.032 + 0.025 * t };
       for (let strip = 0; strip < 3; strip++) {
         const base = (strip * N + i) * 2;
         let cx = 0, hw = 0, a = 0;
         if (strip === 0) { hw = w.band; a = 0.34 * fade; }
-        else { cx = (strip === 1 ? 1 : -1) * spread; hw = w.line; a = 0.95 * fade; }
+        else { cx = (strip === 1 ? 1 : -1) * sp; hw = w.line; a = 0.95 * fade; }
         // a break in the line (the boat left the ground here): make the strip degenerate
         if (p.brk) a = 0;
         for (let e = 0; e < 2; e++) {

@@ -57,6 +57,7 @@ import { LACHRYMA_TINT } from './racewayeffects.js';
 import { SAIL_PATTERNS, SAIL_PATTERN_GLSL } from './skiffsailpatterns.js';
 import { SailCut, cutBattens } from './skiffsailcut.js';
 import { wearHull } from './skiffhulls.js';
+import { SkiffTrims } from './skifftrims/skifftrims.js';
 
 /** The numbers. The cloth's painting in its UVs (glTF's, v down): the sail is u 0.015..0.735 (luff to leech), v 0.02..0.98 (yard to
  *  boom), the pennant's strip u past `penU`; `metres` the sail's metres a unit of u and of v (2.05 m of boom over 0.74 u, 1.91 m of hoist
@@ -171,6 +172,7 @@ export class SkiffPaintLook {
     this.pen = 1; this.wakeOwn = null; this.trailC = new THREE.Color(); this.dyeHex = null;
     this.ribbon = new Ribbon(game?.scene);
     this.cut = new SailCut(skiff); // (the sail's cut: vfx/skiffsailcut.js)
+    this.trims = new SkiffTrims(skiff, game); // (the trail's look, the ribbon's and the pennant's shapes, the hull wrap: vfx/skifftrims/)
     const E = game?.events;
     this.offs = ['skiff.paint', 'vessel.fire', 'seal.carve'].map((ev) => E?.on?.(ev, () => this.apply()));
     this.apply();
@@ -183,6 +185,7 @@ export class SkiffPaintLook {
   apply() {
     const W = this.worn, g = this.game;
     wearHull(this.skiff, W.hull); // (a hull painting: vfx/skiffhulls.js; the owner's when none is worn or Dovina's catalogue lacks the kind)
+    this.trims?.apply(W);
     this.pen = W.length === 'long' ? L.pennant.long : 1;
     this.trail = W.trail || 'own'; this.ribbonOn = W.ribbon === 'on';
     // the dye
@@ -267,6 +270,7 @@ export class SkiffPaintLook {
   pose(B) {
     if (this.pen !== 1 && B) for (let i = 1; i <= 5; i++) B[`pennant_${i}`]?.position.multiplyScalar(this.pen);
     this.cut?.pose(B, this.skiff.L); // (the yard where the cut wears it, by the hoist)
+    this.trims?.pose(B);
   }
 
   /** Per frame, once the board is placed (boat.js placePennant): the trail's colour on the wake, and the ribbon. */
@@ -284,17 +288,18 @@ export class SkiffPaintLook {
       wake.color.copy(C);
     }
     const G = this.skiff.group;
-    const emit = this.ribbonOn && G.visible && !!tech.air && (tech.flaring || tech.boosting > 0.8);
+    const flying = G.visible && !!tech.air && (tech.flaring || tech.boosting > 0.8);
     G.updateMatrixWorld();
     _v.set(...L.ribbon.stern).applyMatrix4(G.matrixWorld);
-    this.ribbon.update(dt, t, emit, _v, this.game.camera, this.dyeHex);
+    this.ribbon.update(dt, t, this.ribbonOn && flying, _v, this.game.camera, this.dyeHex);
+    this.trims?.frame(t, dt, { wake, flying, stern: _v, camera: this.game.camera, dye: this.dyeHex });
   }
 
-  clear() { this.ribbon.clear(); }
+  clear() { this.ribbon.clear(); this.trims?.clear(); }
 
   dispose() {
     for (const off of this.offs || []) off?.();
-    this.setMap(this.tex); this.cut?.dispose(); this.rt?.dispose(); this.bakeMat?.dispose(); this.quad?.geometry.dispose(); this.sealT?.dispose(); this.ribbon.dispose();
+    this.setMap(this.tex); this.cut?.dispose(); this.rt?.dispose(); this.bakeMat?.dispose(); this.quad?.geometry.dispose(); this.sealT?.dispose(); this.ribbon.dispose(); this.trims?.dispose();
   }
 }
 const _v = new THREE.Vector3(), _fc = new THREE.Color();

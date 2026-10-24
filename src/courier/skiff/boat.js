@@ -285,7 +285,8 @@ export class Skiff {
   setHullPainting(tex) { this.hullPaint = tex || null; this.showHull(); }
   /** The painting under any wear: the chosen one, else the owner's. */
   get hullBase() { return this.hullPaint || this.hullTex; }
-  showHull() { const m = this.hullMat; if (!m) return; const t = this.hullWorn || this.hullBase; if (m.map !== t) { m.map = m.emissiveMap = t; } }
+  showHull() { // (through the hull wrap worn, if any: vfx/skifftrims/wraps.js)
+    const m = this.hullMat; if (!m) return; const t0 = this.hullWorn || this.hullBase, t = this.hullWrap?.(t0) ?? t0; if (m.map !== t) { m.map = m.emissiveMap = t; } }
   /** The stakes applied (set: each frame, after the boost's glow). */
   applyStakes(dt) {
     const S = this.st, K = SKIFF_STAKES, h = THREE.MathUtils.clamp(S.heat, 0, 1), w = THREE.MathUtils.clamp(S.wear, 0, 1);
