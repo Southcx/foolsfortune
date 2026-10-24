@@ -51,6 +51,7 @@ export function raceRules({ on, L, log }) {
     if (e.of > 1) { L.inc(`race.raceway.place${Math.min(e.place, 4)}`); if (e.place === 1) L.inc('race.raceway.win'); }
     log.say('record', `Finished ${e.of > 1 ? `${ORD(e.place)} of ${e.of} ` : ''}in ${clock(e.seconds)}${e.recordClass ? ` (${e.recordClass.toUpperCase()})` : ''}${e.medal ? `: ${MEDAL[e.medal]}.` : '. No medal this time.'}`, { key: 'race.finish', throttle: 2 });
   });
+  on('skiff.paint', (e) => { if (e.by !== 'courier') return; L.inc('skiff.paint'); L.inc(`skiff.paint.${e.kind}`); });
   on('skiff.tune', (e) => { if (e.by === 'courier') L.inc('skiff.tune'); });
   on('skiff.setup', (e) => { if (e.by === 'courier' && e.how === 'save') L.inc('skiff.setup'); });
   on('race.end', (e) => { if (e.why === 'left') log.say('warn', 'You leave the Raceway. The race is off.', { key: 'race.end', throttle: 2 }); else if (e.why === 'retired') { L.inc('race.raceway.retired'); log.say('skiff', 'You retire from the race.', { key: 'race.end', throttle: 2 }); } });

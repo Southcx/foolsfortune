@@ -6,6 +6,8 @@
 //   CUPS      the cups (cups.js), and how you last did.
 //   LICENCES  the tests (licences.js), each with the medal you hold.
 //   TRIALS    the escape (escape.js) and the City Trial (citytrial.js).
+//   PAINT     what the board wears (progress/skiffpaint.js): the sail's dye and pattern, your seal on it, the trail, the ribbon, the
+//             pennant and its length; the shut ones with what opens them; a dye's price (a firing's) said before it is paid.
 //   GARAGE    the build: its class (STOCK or OPEN) and Performance Index on each track; the skiff's parts, slot by slot
 //             (progress/skiffparts.js): the open ones to choose, the shut ones with the achievement that opens each; the tune sheet
 //             (progress/skifftune.js; drawn as sliders by ui/garagesheet.js: a notch hovered shows its change, clicked wears it); the three
@@ -20,12 +22,13 @@ import { MODES } from './modes.js';
 import { CUPS } from './cups.js';
 import { LICENCES } from './licences.js';
 import { PARTS, SLOTS } from '../../progress/skiffparts.js';
+import { PAINT } from '../../progress/skiffpaint.js';
 import { TUNE, SETUPS, SLIDE, tuneMult } from '../../progress/skifftune.js';
 import { tuneSheet, runTrace } from '../../ui/garagesheet.js';
 import { WAGER } from '../../progress/econ/wager.js';
 import { ECON } from '../../progress/econ/table.js';
 
-const TABS = [['races', 'RACES'], ['cups', 'CUPS'], ['licences', 'LICENCES'], ['trials', 'TRIALS'], ['garage', 'GARAGE']];
+const TABS = [['races', 'RACES'], ['cups', 'CUPS'], ['licences', 'LICENCES'], ['trials', 'TRIALS'], ['garage', 'GARAGE'], ['paint', 'PAINT']];
 const clock = (s) => (s && Number.isFinite(s) ? `${Math.floor(s / 60)}:${(s % 60).toFixed(1).padStart(4, '0')}` : '—');
 const MEDAL = { gold: '◆ gold', silver: '◇ silver', bronze: '△ bronze' };
 
@@ -121,5 +124,18 @@ export class RaceBoard {
     }
     tel.style.display = 'block';
     runTrace(tel, { traces: this.race.traces, trackOf: (id) => R.trackOf(id) }); // (the trace drawn under the numbers: Calissa's, ui/garagesheet.js)
+  }
+  paint(grp, row) {
+    const g = this.game, S = g.skiffPaint; if (!S) return;
+    const TITLE = { dye: 'THE SAIL\'S DYE · a firing\'s price each change', pattern: 'THE SAIL\'S PATTERN', seal: 'YOUR SEAL', trail: 'THE TRAIL ON THE SAND', ribbon: 'THE TRAIL IN THE AIR', pennant: 'THE PENNANT', length: 'ITS LENGTH' };
+    for (const kind of Object.keys(PAINT)) {
+      const rows = grp(TITLE[kind]);
+      for (const r of kind === 'dye' ? S.dyes() : PAINT[kind]) {
+        const open = S.open(kind, r.id), mine = S.worn[kind] === r.id, price = S.priceOf(kind, r.id);
+        if (kind === 'dye' && r.glaze && !open) continue; // (a glaze not yours is not offered)
+        row(rows, mine ? '●' : '○', `${r.label}${price && open ? ` · ${price} cubes` : ''}`, S.why(kind, r.id), () => { S.choose(kind, r.id); this.open(); }, !open);
+      }
+    }
+    grp(`PURSE ${g.cubes?.balance ?? 0} CUBES · none of this touches the handling`);
   }
 }

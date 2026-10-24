@@ -83,6 +83,9 @@ The kiln is the biggest *chosen* sink (the owner hunts glamour: FFXIV, GW2). Pri
 All of it for sale comes to 3,120 cubes (about 6.5 hours of play). Strongest by eye (Calissa): yohen, kinrande, oil spot, guan,
 hare's fur, Ru. Moonlight is the strongest free look on purpose: the hook to open the kiln.
 
+- **The Solar Skiff's dye** (progress/skiffpaint.js, 2026-10-24): a firing's price each change, as the hull glaze; the other paint is free
+  once opened by play. A chosen sink, `cubes.spend(n, 'paint')`.
+
 ## The livelihoods (ruled with the owner, 2026-10-04)
 
 A **livelihood** is a way of earning; the same seven tools in every layer (DESIGN.md section 11). Code cites these rules by number:
