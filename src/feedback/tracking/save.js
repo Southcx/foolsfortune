@@ -3,7 +3,7 @@
 // and given back (render/contextloss.js). Nothing is counted: none of it is the Courier's doing. Words are Espada's (2026-10-24).
 //
 //   saveRules({ on, log })   (tracking/rules.js calls it)
-//   events read: save.fail { key, why }   save.cloud { state, from?, ago? }   render.lost   render.restored { after }
+//   events read: save.fail { key, why }   save.cloud { state, from?, ago?, kept? }   render.lost   render.restored { after }
 // ---------------------------------------------------------------------------------------
 const ago = (s) => (s < 90 ? 'a moment ago' : s < 5400 ? `${Math.round(s / 60)} real minutes ago` : s < 172800 ? `${Math.round(s / 3600)} real hours ago` : `${Math.round(s / 86400)} real days ago`);
 
@@ -13,7 +13,8 @@ export function saveRules({ on, log }) {
     const from = e.from || 'another device';
     const line = {
       local: 'Your save is kept on this device only.',
-      took: `Your save from ${from} was played longer, so it is the one loaded (${ago(e.ago ?? 0)}). This one is kept in the Codex for a game day.`,
+      took: e.kept ? `Your save from ${from} was played longer, so it is the one loaded (${ago(e.ago ?? 0)}). This one is kept in the Codex for a game day.`
+        : `Your save from ${from} is loaded (${ago(e.ago ?? 0)}).`, // (nothing played here since the last copy: nothing to keep)
       kept: `Your save from ${from} was played less, so this one stays. The other is kept in the Codex for a game day.`,
       offer: `Your save from ${from}, ${ago(e.ago ?? 0)}, was played longer than this one. LOAD it in the Codex, or keep this one.`,
       failed: 'Your save could not be copied online just now. It is kept on this device, and the copy is tried again later.',
