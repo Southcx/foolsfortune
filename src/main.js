@@ -114,7 +114,7 @@ import { RacewayCavern } from './vfx/racewaycavern.js';
 import { RacewayPark } from './vfx/racewaypark.js';
 import { RacewayProps } from './vfx/racewayprops.js';
 import { RacewayFog } from './vfx/racewayfog.js';
-import { LachrimeterTube } from './vfx/lachrimetertube.js'; import { SpiritualLink } from './vfx/spirituallink.js'; import { PsygunCylinder } from './vfx/psyguncylinder.js'; import { SondelassGuard } from './vfx/sondelassguard.js'; import { SightLook } from './vfx/sight.js'; import { CreatureTags } from './vfx/creaturetags.js'; import { TitlePlacard } from './vfx/titleplacard.js'; import { SealImprints } from './vfx/sealimprint.js'; import { SealPicker } from './ui/sealpicker.js'; import { RailReadout } from './ui/railreadout.js'; import { GoalsWindow } from './ui/goalswindow.js';
+import { LachrimeterTube } from './vfx/lachrimetertube.js'; import { SpiritualLink } from './vfx/spirituallink.js'; import { PsygunCylinder } from './vfx/psyguncylinder.js'; import { SondelassGuard } from './vfx/sondelassguard.js'; import { SightLook } from './vfx/sight.js'; import { CreatureTags } from './vfx/creaturetags.js'; import { TitlePlacard } from './vfx/titleplacard.js'; import { SealImprints } from './vfx/sealimprint.js'; import { SealPicker } from './ui/sealpicker.js'; import { RailReadout } from './ui/railreadout.js'; import { GoalsWindow } from './ui/goalswindow.js'; import { HudLayout } from './ui/hudlayout.js';
 import { RailResults } from './ui/railresults.js'; // (round 6's overlay pieces: OVERLAY.md 10.5c)
 import { RacewaySiphons } from './vfx/racewaysiphons.js'; // (the siphon arches' look)
 import { installBracelets } from './vfx/braceletwear.js';
@@ -641,7 +641,7 @@ async function main() {
   const codex = new Codex(game);
   game.codex = codex;
   codex.onClose = () => { if (input.enabled && !cursorFree()) input.requestLock(); };
-  const modalOpen = () => !!(game.codex?.open || game.indexMenu?.open || game.cartography?.open || game.pneukaUI?.open || game.shopUI?.open || game.qais?.open);
+  const modalOpen = () => !!(game.codex?.open || game.indexMenu?.open || game.cartography?.open || game.pneukaUI?.open || game.shopUI?.open || game.qais?.open || game.hudLayout?.turnHeld); // (and the turn card: an action mode held upright on a phone, ui/turncard.js)
   // Any window or cover at all: a window that pauses, the kiln's, the dialogue box, a seam or the maw wipe under way, a crossing, a
   // reprogramming, the Opening. A window opens only when none is (or to close itself): one window at a time (SWEEPS group 2).
   const windowOpen = () => modalOpen() || !!(game.kilnUI?.open || game.dialogue?.open || game.seam?.busy || game.mawWipe?.active || game.aberrantWipe?.active || game.emocean?.stage.active || game.reprogram?.open || game.lockheartCine?.active);
@@ -1139,6 +1139,7 @@ async function main() {
   for (const o of [game.wireCompass.tape, game.wireCompass.wpTape, game.wireCompass.wpWorld, game.vaneHud.group, game.vaneHud.res, game.crucibelleHud.group, game.crucibelleHud.ring]) if (o) o.visible = true;
   game.present.shade(true); // (shaded as they will be drawn: compiled flat, then turned smooth by the pass a second later, every program was built twice)
   try { await renderer.compileAsync(scene, camera); } catch (e) { console.warn('shader warm-up', e); }
+  game.hudLayout = new HudLayout(game); // (where the instruments stand on touch, the thumbs' areas, the log's ticker and the turn card: ui/hudlayout.js)
   game.lachrimeterTube = new LachrimeterTube(game); game.spiritualLink = new SpiritualLink(game); game.psygunCylinder = new PsygunCylinder(game); game.psygunReticle = new PsygunReticle(game); game.psygunScope = new PsygunScope(game); // (each psygun's crosshair, the Carbine's lens: vfx/psygunreticle.js, vfx/psygunscope.js) // (the tool UIs' thread to its bulb: vfx/spirituallink.js; the psygun's cylinder on it: vfx/psyguncylinder.js)
   game.sondelassGuard = new SondelassGuard(game); // (the Sondelass's own UI, board v9)
   game.lockheartReliquary = new LockheartReliquary(game); // (the Lockheart's own UI, board v10 in its B orientation: vfx/lockheartreliquary.js)

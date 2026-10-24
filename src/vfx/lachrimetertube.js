@@ -27,6 +27,9 @@
 // the cubes' readout) were retired (the owner, 2026-10-18). Its width in CSS px is `pubW` (the psygun's cylinder stands left of it:
 // vfx/psyguncylinder.js).
 //
+// On touch (ui/hudlayout.js, MOBILE.md 6.3) it stands in the HUD layout's box at a phone's scale (su, not the height): up the right edge under
+// the Sight, or left of the cluster where a phone on its side has no room there; it steps back off the nearer edge.
+//
 // Prior art: the mercury-in-glass thermometer (Fahrenheit, 1714; the clinical and laboratory forms: the bulb as reservoir, the
 // capillary bore, the convex meniscus, the expansion chamber, acid-etched ticks; the Victorian wall thermometer's board and brass);
 // the VFD and Nixie tube (Shōwa calculators and hi-fi; Burroughs' Nixie, 1955); labradorite's schiller (vfx/oxidation.js FILM);
@@ -421,10 +424,19 @@ export class LachrimeterTube {
     if (this.shown <= 0) return;
 
     // where it stands (CSS px), and how big: 32 lines a unit at the 480-line present
-    const H = slot.view.h || innerHeight, lineP = H / 480, s = LINES * lineP, e = this.shown * this.shown * (3 - 2 * this.shown);
+    // (on touch the HUD layout's box instead, keyed to the safe area's shorter side: up the right edge under the Sight, or left of the
+    //  cluster where a phone on its side has no room there; ui/hudlayout.js)
+    const P = g.hudLayout?.touch ? g.hudLayout.place('lachrimeterTube') : null;
+    const H = slot.view.h || innerHeight, lineP = P ? P.scale : H / 480, s = LINES * lineP, e = this.shown * this.shown * (3 - 2 * this.shown);
     this.pubW = Math.round(WIDE * s + 12); // (its width, for what stands left of it: the psygun's cylinder)
-    slot.x = -(CLEAR + RIGHT * s);
-    slot.y = -(GAP * lineP + FOOT * s) + (1 - e) * (HEIGHT * s + GAP * lineP); // (it stands at the corner's foot, and sinks into the corner as it steps back)
+    if (P) { // (the bulb inside its box: the plinth's left end WIDE - RIGHT units left of it, its top HEIGHT - FOOT units above; it steps back off the nearer edge)
+      const low = P.y + P.h > slot.view.h * 0.75;
+      slot.x = P.x + (WIDE - RIGHT) * s - slot.view.w + (low ? 0 : (1 - e) * (P.w + CLEAR));
+      slot.y = P.y + (HEIGHT - FOOT) * s - slot.view.h + (low ? (1 - e) * (HEIGHT * s + GAP * lineP) : 0);
+    } else {
+      slot.x = -(CLEAR + RIGHT * s);
+      slot.y = -(GAP * lineP + FOOT * s) + (1 - e) * (HEIGHT * s + GAP * lineP); // (it stands at the corner's foot, and sinks into the corner as it steps back)
+    }
     this.inst.scale.setScalar(s);
 
     // the numbers: the tube is the pool's uncapped size, the column the pool, the pale stretch what a charge holds

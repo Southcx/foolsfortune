@@ -23,6 +23,8 @@
 // small vessel inset beside the plate glints the region `vesselDamage.tollRegion()` names (every region when it would shatter).
 // It narrates nothing: the plate's words are labels in the System's type, the count its count.
 //
+// On touch (ui/hudlayout.js, MOBILE.md 6.3) it stands in the HUD layout's box, left of the tube with their feet level, at a phone's scale.
+//
 // Prior art: the mock (scratchpad r9-cylinder: its BEATS, ported beat for beat, and its beat table for Wanda); the single-action's hand
 // and pawl, turned by cocking the hammer (the auto-turn's drive); the LeMat's hammer nose (the heart, always chosen); the swing-out crane;
 // Disney's anticipation, follow-through and overshoot; Overwatch's and Persona 5's cylinder menus; Destiny's ammo pips.
@@ -334,10 +336,14 @@ export class PsygunCylinder {
     if (this.B.pent) this.pentacle(dt);
     // the size rule: whole while a beat that shows it runs and 1.2 real s after, settled to the corner over 350 ms
     this.size = this.clock < this.hold ? Math.min(1, this.size + dt / RISE) : Math.max(0, this.size - dt / SETTLE); this.state.size = this.size;
-    const e = sm(this.size), H = slot.view.h || innerHeight, W = slot.view.w || innerWidth, lp = H / 480;
-    const R0 = (this.game.lachrimeterTube?.pubW || TUBE_W * lp + 12) + CLEAR; // (the tube's published width, CSS px)
+    // on the desk the view's bottom-right corner, left of the tube; on touch the HUD layout's box (left of the tube, bottoms aligned, inside
+    // the safe area at a phone's scale: it went off the left edge upright, sized by the height; ui/hudlayout.js), its bottom-right corner
+    const Lb = g.hudLayout?.touch ? g.hudLayout.place('psygunCylinder') : null;
+    const e = sm(this.size), H = slot.view.h || innerHeight, W = slot.view.w || innerWidth, lp = Lb ? Lb.scale : H / 480;
+    const R0 = Lb ? 0 : (this.game.lachrimeterTube?.pubW || TUBE_W * lp + 12) + CLEAR; // (the tube's published width, CSS px)
     const cx = R0 + lerp(AT.corner[0], AT.whole[0], e) * lp, cy = lerp(AT.corner[1], AT.whole[1], e) * lp;
-    slot.x = 0; slot.y = 0; root.position.set(W, -H, 0);
+    const ox = Lb ? Lb.x + Lb.w : W, oy = Lb ? Lb.y + Lb.h : H;
+    slot.x = ox - W; slot.y = oy - H; root.position.set(ox, -oy, 0);
     this.holder.position.set(-cx, cy, 0); this.holder.scale.setScalar(lerp(PPU.corner, PPU.whole, e) * lp);
     // the plate, left of the cylinder at its corner size, on the corner's foot; the vessel inset over its left end
     const px = R0 + (AT.corner[0] + 34 + PLATE.gap) * lp, pl = this.plate;

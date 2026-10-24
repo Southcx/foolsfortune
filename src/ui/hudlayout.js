@@ -1,0 +1,190 @@
+// ---------------------------------------------------------------------------------------
+// THE HUD LAYOUT: the one layout manager for touch play (docs/plans/MOBILE.md 4.9, 6.3, 10 "Calissa's answers" 1). It reads the screen
+// (its size, its orientation, the safe area's insets, the last device) and lays out where everything may stand: the thumbs' areas (the
+// move area, the look area), the cluster, the top bar, the art bar, and every corner instrument registered with it. Its unit is `su`,
+// 1% of the safe area's SHORTER side (never the height: a phone held upright overflowed when the instruments were sized by it).
+// On keyboard and mouse it still measures and lays out, but reserves nothing, and the instruments keep their own desk layout: nothing
+// on the desk moves. It also owns the two touch-only pieces that follow the layout: the log's ticker (ui/touchlog.js) and the turn card
+// (ui/turncard.js).
+//
+// How an instrument stands on touch (HUD_LAYOUT.instruments): an anchor corner of the safe area, a scale in su a line (a line: one
+// line of the 480-line present, the unit every instrument already measures itself in), and the things it keeps clear of: `below` an
+// instrument, `above` / `leftOf` an area or an instrument, `beside` one (left of it, bottoms aligned). If it would shrink under `min`
+// of its size to fit, it takes its `else` placement instead. Nothing it places enters a reserved rect.
+//
+// Prior art: Apple's Human Interface Guidelines on safe areas and layout margins (the insets read from env(safe-area-inset-*), the
+// controls inside them, 44 pt the least target); Genshin Impact's mobile HUD (the floating stick on the left half, the camera drag on the
+// right, the verbs in one cluster under the right thumb, the minimap and menus clear of both thumbs at the top); Mario Kart Tour's (the
+// race's readouts lifted to the top corners, nothing under the steering thumb); CSS's own environment variables and media queries.
+//
+//   game.hudLayout = new HudLayout(game)   (main.js, before the instruments)
+//   L.touch  L.portrait  L.view {w, h}  L.safe {t, r, b, l}  L.su  L.turnHeld      (CSS px; read again on every change)
+//   L.areas { move, look, cluster, topBar, artBar }   each { x, y, w, h } CSS px from the view's top left
+//   L.reserved() -> [rect]      on touch: the cluster, the move area's lower-left quarter, the top bar, the art bar while the
+//                               Spirit Garden or the god hand is up; [] on keyboard and mouse
+//   L.register(id, { anchor, w, h, touch: { anchor, scale, below, above, leftOf, beside, min, else } })   (w, h in lines)
+//   L.place(id, { w, h }?) -> { x, y, scale, w, h }   the box's top left (CSS px), CSS px a line, the box's size (CSS px)
+//   L.on('change', fn) -> off()  on a resize, an orientation change, a device change, the garden or the hand coming up
+//   document.body: .hud-touch .hud-portrait .hud-landscape, and the CSS vars --su --safe-t --safe-r --safe-b --safe-l
+//   (--hud-log-x, --hud-log-y, --hud-log-w: the log's ticker)
+// ---------------------------------------------------------------------------------------
+import { TouchLog } from './touchlog.js';
+import { TurnCard } from './turncard.js';
+
+export const HUD_LAYOUT = {
+  gutter: 8,            // (CSS px inside the safe area, every side: the layout margin)
+  gap: 8,               // (CSS px between two things placed)
+  topBar: { h: 44 },    // (the strip of window icons: one 44 px target tall, left of the Sight)
+  // the cluster: the main tile (96) in the corner, the three others (72) on an arc round its centre at 180, 135 and 90 degrees
+  // (left, up-left, up), `ring` from it; its rect is the arc's bounds: main / 2 + ring + side / 2 = 180 px square
+  cluster: { main: 96, side: 72, gap: 12, get ring() { return this.main / 2 + this.gap + this.side / 2; }, get size() { return this.main / 2 + this.ring + this.side / 2; } },
+  artBar: { t: 60 },    // (its thickness, CSS px: a 44 px tile and its margin; along the bottom upright, down the right edge on its side)
+  log: { lines: 2, line: 18, pad: 6, maxW: 420 }, // (the ticker: two lines of 18 px (16 px type), at most 420 px wide)
+  poll: 0.25,           // (real seconds between reads of the device, the garden and the hand, and the turn card's check)
+  // the instruments, in lines of the 480-line present (their own unit); `scale` su a line on touch (0.2: a 390 px phone's 0.78 CSS px a
+  // line, the desk's 1080 lines are 2.25)
+  instruments: {
+    sight: { anchor: 'tr', w: 172, h: 178, touch: { anchor: 'tr', scale: 0.2 } },
+    lachrimeterTube: { anchor: 'br', w: 112, h: 189, touch: { anchor: 'tr', below: 'sight', above: 'cluster', scale: 0.2, min: 0.8,
+      else: { anchor: 'br', leftOf: 'cluster', scale: 0.2 } } }, // (up the right edge under the Sight; on its side the phone has no room there: left of the cluster)
+    psygunCylinder: { anchor: 'br', w: 190, h: 160, touch: { anchor: 'br', beside: 'lachrimeterTube', scale: 0.2 } },
+  },
+};
+
+const hit = (a, b) => a.x < b.x + b.w && b.x < a.x + a.w && a.y < b.y + b.h && b.y < a.y + a.h;
+const rect = (x, y, w, h) => ({ x, y, w: Math.max(0, w), h: Math.max(0, h) });
+
+export class HudLayout {
+  constructor(game) {
+    this.game = game;
+    this.touch = false; this.portrait = false; this.turnHeld = false;
+    this.view = { w: 0, h: 0 }; this.safe = { t: 0, r: 0, b: 0, l: 0 }; this.su = 1;
+    this.areas = { move: rect(0, 0, 0, 0), look: rect(0, 0, 0, 0), cluster: rect(0, 0, 0, 0), topBar: rect(0, 0, 0, 0), artBar: rect(0, 0, 0, 0) };
+    this.specs = new Map(); this.rects = new Map(); this.fns = new Set(); this.sig = '';
+    for (const [id, s] of Object.entries(HUD_LAYOUT.instruments)) this.register(id, s);
+    if (typeof document === 'undefined') return;
+    // the safe area's insets, read off a hidden probe padded by them (iOS gives them only under viewport-fit=cover; elsewhere 0)
+    const p = (this.probe = document.createElement('div'));
+    p.style.cssText = 'position:fixed;left:0;top:0;width:0;height:0;visibility:hidden;pointer-events:none;padding:env(safe-area-inset-top,0px) env(safe-area-inset-right,0px) env(safe-area-inset-bottom,0px) env(safe-area-inset-left,0px)';
+    document.body.appendChild(p);
+    this.touchLog = new TouchLog(game, this); this.turnCard = new TurnCard(game, this);
+    const read = () => this.read();
+    addEventListener('resize', read); addEventListener('orientationchange', read);
+    globalThis.visualViewport?.addEventListener?.('resize', read);
+    try { matchMedia('(pointer: coarse)').addEventListener('change', read); } catch { /* an old engine: the poll still reads it */ }
+    game.events?.on?.('input.device', read);
+    this.timer = setInterval(() => { this.read(); this.turnCard.check(); }, HUD_LAYOUT.poll * 1000);
+    this.read(true);
+  }
+
+  /** Is the last device touch? `game.input.device` when the input layer has one; `?touch` (or `?touch=0`) forces it; else a coarse pointer with touch points. */
+  isTouch() {
+    let q = null; try { q = new URLSearchParams(location.search); } catch { /* no location */ }
+    if (q?.has('touch')) return q.get('touch') !== '0';
+    const d = this.game.input?.device;
+    if (d) return d === 'touch';
+    try { return matchMedia('(pointer: coarse)').matches && (navigator.maxTouchPoints || 0) > 0; } catch { return false; }
+  }
+
+  /** The art bar is up while the Spirit Garden or the god hand is. */
+  artUp() { const g = this.game; return !!(g.realm?.active || g.god?.active || g.godhand?.active); }
+
+  /** Read the screen; lay out again and tell the listeners if anything changed. */
+  read(force = false) {
+    const cs = this.probe ? getComputedStyle(this.probe) : null, px = (v) => Math.round(parseFloat(v) || 0);
+    const safe = cs ? { t: px(cs.paddingTop), r: px(cs.paddingRight), b: px(cs.paddingBottom), l: px(cs.paddingLeft) } : { t: 0, r: 0, b: 0, l: 0 };
+    const w = Math.round(innerWidth), h = Math.round(innerHeight), touch = this.isTouch(), art = this.artUp();
+    const sig = `${w}x${h}|${safe.t},${safe.r},${safe.b},${safe.l}|${touch}|${art}`;
+    if (sig === this.sig && !force) return;
+    this.sig = sig; this.view = { w, h }; this.safe = safe; this.touch = touch; this.portrait = h > w; this.art = art;
+    this.su = Math.max(1, Math.min(w - safe.l - safe.r, h - safe.t - safe.b) / 100);
+    this.layout(); this.dress();
+    if (!touch) this.turnCard.check();
+    for (const fn of this.fns) { try { fn(this); } catch (e) { console.warn('hudLayout change', e); } }
+  }
+
+  /** The areas and the instruments' boxes for this screen. */
+  layout() {
+    const H = HUD_LAYOUT, g = H.gutter, gap = H.gap, V = this.view, S = this.safe;
+    const B = (this.bounds = rect(S.l + g, S.t + g, V.w - S.l - S.r - 2 * g, V.h - S.t - S.b - 2 * g));
+    this.rects.clear();
+    const A = this.areas;
+    A.move = rect(0, 0, V.w / 2, V.h); A.look = rect(V.w / 2, 0, V.w - V.w / 2, V.h);
+    A.cluster = rect(0, 0, 0, 0); A.topBar = rect(0, 0, 0, 0); A.artBar = rect(0, 0, 0, 0); // (cleared while the Sight is placed: it keeps clear of none of them)
+    const sight = this.box('sight');
+    A.topBar = rect(B.x, B.y, (sight ? sight.x - gap : B.x + B.w) - B.x, H.topBar.h);
+    const C = H.cluster.size, t = H.artBar.t;
+    if (this.portrait) {
+      A.artBar = rect(B.x, B.y + B.h - t, B.w, t);
+      A.cluster = rect(B.x + B.w - C, (this.art ? A.artBar.y - gap : B.y + B.h) - C, C, C);
+    } else {
+      A.cluster = rect(B.x + B.w - C, B.y + B.h - C, C, C);
+      const y0 = sight ? sight.y + sight.h + gap : A.topBar.y + A.topBar.h + gap;
+      A.artBar = rect(B.x + B.w - t, y0, t, A.cluster.y - gap - y0);
+    }
+    this.rects.clear(); // (the instruments placed again against the areas as they now stand)
+    // the log's ticker: under the top bar, at the left, never wider than the room left of the Sight (upright) or the left half (on its side)
+    const L = H.log, sx = this.box('sight')?.x ?? B.x + B.w, right = this.portrait ? sx - gap : Math.min(V.w / 2, sx - gap);
+    this.log = rect(B.x, A.topBar.y + A.topBar.h + gap, Math.min(L.maxW, right - B.x), L.lines * L.line + L.pad);
+  }
+
+  /** The body's classes and CSS vars. */
+  dress() {
+    if (typeof document === 'undefined') return;
+    const b = document.body, s = b.style, S = this.safe;
+    b.classList.toggle('hud-touch', this.touch); b.classList.toggle('hud-portrait', this.portrait); b.classList.toggle('hud-landscape', !this.portrait);
+    s.setProperty('--su', `${this.su.toFixed(2)}px`);
+    s.setProperty('--safe-t', `${S.t}px`); s.setProperty('--safe-r', `${S.r}px`); s.setProperty('--safe-b', `${S.b}px`); s.setProperty('--safe-l', `${S.l}px`);
+    s.setProperty('--hud-log-x', `${Math.round(this.log.x)}px`); s.setProperty('--hud-log-y', `${Math.round(this.log.y)}px`); s.setProperty('--hud-log-w', `${Math.round(this.log.w)}px`);
+  }
+
+  /** What nothing else may enter on touch. */
+  reserved() {
+    if (!this.touch) return [];
+    const A = this.areas, V = this.view, out = [A.cluster, rect(0, V.h / 2, V.w / 4, V.h / 2), A.topBar];
+    if (this.art) out.push(A.artBar);
+    return out;
+  }
+
+  register(id, spec) { this.specs.set(id, { ...spec }); this.rects.delete(id); return this; }
+
+  on(what, fn) { if (what !== 'change' || typeof fn !== 'function') return () => {}; this.fns.add(fn); return () => this.fns.delete(fn); }
+
+  /** Where a registered instrument stands now: its box's top left and size (CSS px), and CSS px a line. */
+  place(id, size = null) {
+    const spec = this.specs.get(id); if (!spec) return null;
+    if (size && ((size.w != null && size.w !== spec.w) || (size.h != null && size.h !== spec.h))) { spec.w = size.w ?? spec.w; spec.h = size.h ?? spec.h; this.rects.clear(); }
+    const r = this.box(id);
+    return r ? { x: r.x, y: r.y, scale: r.scale, w: r.w, h: r.h } : null;
+  }
+
+  box(id, depth = 0) {
+    if (this.rects.has(id)) return this.rects.get(id);
+    const spec = this.specs.get(id); if (!spec || depth > 4) return null;
+    this.rects.set(id, null); // (a cycle reads as nothing)
+    const r = this.touch && spec.touch ? this.solve(spec.touch, spec, depth) : this.desk(spec);
+    this.rects.set(id, r); return r;
+  }
+
+  /** The desk's own rule (the 480-line present's lines, from the view's corner): what the instruments do without asking. */
+  desk(spec) {
+    const s = this.view.h / 480, W = spec.w * s, H = spec.h * s, a = spec.anchor || 'tl';
+    return { x: a[1] === 'r' ? this.view.w - W : 0, y: a[0] === 'b' ? this.view.h - H : 0, w: W, h: H, scale: s };
+  }
+
+  solve(T, spec, depth, tries = 0) {
+    const B = this.bounds, gap = HUD_LAYOUT.gap, ref = (k) => this.areas[k] || this.box(k, depth + 1);
+    let left = B.x, right = B.x + B.w, top = B.y, bottom = B.y + B.h;
+    if (T.below) { const o = ref(T.below); if (o) top = Math.max(top, o.y + o.h + gap); }
+    if (T.above) { const o = ref(T.above); if (o && o.h) bottom = Math.min(bottom, o.y - gap); }
+    if (T.leftOf) { const o = ref(T.leftOf); if (o && o.w) right = Math.min(right, o.x - gap); }
+    if (T.beside) { const o = ref(T.beside); if (o) { right = Math.min(right, o.x - gap); bottom = Math.min(bottom, o.y + o.h); } }
+    const s0 = (T.scale ?? 0.2) * this.su, fit = Math.min(1, (bottom - top) / (spec.h * s0), (right - left) / (spec.w * s0));
+    const next = () => (T.else && tries < 3 ? this.solve(T.else, spec, depth, tries + 1) : null);
+    if (fit < (T.min ?? 0.5)) { const n = next(); if (n) return n; }
+    const s = s0 * Math.max(0.1, fit), W = spec.w * s, H = spec.h * s, a = T.anchor || spec.anchor || 'tl';
+    const r = { x: a[1] === 'r' || T.beside ? right - W : left, y: a[0] === 'b' || T.beside ? bottom - H : top, w: W, h: H, scale: s };
+    if (this.reserved().some((q) => q.w && q.h && hit(r, q))) { const n = next(); if (n) return n; }
+    return r;
+  }
+}

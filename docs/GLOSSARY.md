@@ -796,6 +796,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   (`courier/moves/rhythmhold.js`): the Courier playing it (a gesture a press, the jam at a combo of 10).
 - **the Lockheart's cue** (`LOCK_CUES`, `src/music/lockheart.js`) — the music under the Opening, a mode each, and its **landing** when the wheel
   lands. *Not:* the Opening itself.
+- **the HUD layout / su / the log's ticker / the turn card** (plain names; `HudLayout`, `HUD_LAYOUT`, `game.hudLayout`, `src/ui/hudlayout.js` / `hudLayout.su` / `TouchLog`, `src/ui/touchlog.js` / `TurnCard`, `src/ui/turncard.js`, event `hud.turn`; MOBILE.md 6.3) — where every corner instrument, the move and look areas, the cluster, the top bar and the art bar stand on a screen, inside its safe area, reserving the thumbs' rects on touch (the desk's layout untouched) / its unit, 1% of the safe area's shorter side / the log on touch: two lines top left under the top bar, a tap opens it as a sheet / the System window that holds the game while an action mode is held upright on a phone (`hudLayout.turnHeld`). *Not:* the instruments themselves, hiding the UI (F2), a zone (a render zone), the pause menu.
 
 ## 10. Engine and process
 
