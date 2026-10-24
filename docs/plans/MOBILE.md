@@ -477,6 +477,12 @@ character), Brawl Stars (tap to fire assisted, drag to aim).
   - **The labels:** "your computer", "your phone", "your tablet", "another device". Never "desktop": the user agent can't tell a laptop
     from a desktop.
 - **The touch help page:** Espada writes it once the tiles exist.
+- **The rule that picks them** (`progress/devicewords.js`, mine):
+  - `deviceWord(id, device)` gives an input action's word on the device last touched: its key on the keyboard ("F", "Ctrl + Z"), its
+    tile on touch ("USE"), its button on a pad ("X"). It reads the one bindings table.
+  - `deviceText("Press {use} to talk", device)` says a hint's `{id}`s.
+  - A room's help line (`room.help`, tracking.js) is said that way. A room whose verbs differ on glass (the skiff, the hand) has its own
+    `.touch` line; those two are my placeholders for Espada's words.
 
 ## 9. The phases
 
