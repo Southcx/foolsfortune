@@ -120,7 +120,7 @@ export class Rope {
       X[0].copy(a); X[n - 1].copy(b);
     }
     // (held to its length: the chain's belly no deeper than the sag its spare length makes, the excess taken off its offsets from the
-    //  chord and its motion with them: casebook rule NEW:slack-only-curve)
+    //  chord and its motion with them: casebook rule 287)
     const sagOf = Math.sqrt(slack * dist * 0.375);
     _ax.subVectors(b, a).multiplyScalar(1 / (dist || 1));
     let belly = 0;
