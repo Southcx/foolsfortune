@@ -20,7 +20,7 @@ import { MODES } from './modes.js';
 import { CUPS } from './cups.js';
 import { LICENCES } from './licences.js';
 import { PARTS, SLOTS } from '../../progress/skiffparts.js';
-import { TUNE, SETUPS, tuneMult } from '../../progress/skifftune.js';
+import { TUNE, SETUPS, SLIDE, tuneMult } from '../../progress/skifftune.js';
 import { WAGER } from '../../progress/econ/wager.js';
 import { ECON } from '../../progress/econ/table.js';
 
@@ -121,7 +121,7 @@ export class RaceBoard {
     const tel = grp('TELEMETRY · the last lap, and the one before');
     for (const [k, Tr] of [['Last lap', this.race.traces?.last], ['The lap before', this.race.traces?.prev]]) {
       if (!Tr?.samples?.length) { row(tel, '·', k, 'Ride a lap to see it.', null, true); continue; }
-      const sp = Tr.samples.map((x) => x[1]), sl = Tr.samples.map((x) => Math.abs(x[2])), slide = sl.filter((x) => x > 0.15).length / sl.length;
+      const sp = Tr.samples.map((x) => x[1]), sl = Tr.samples.map((x) => Math.abs(x[2])), slide = Tr.samples.filter((x) => Math.abs(x[2]) > SLIDE.slip * (x[4] || 1)).length / sl.length;
       row(tel, '∿', `${k}: ${clock(Tr.seconds)} on ${R.trackOf(Tr.track)?.name || Tr.track} (${Tr.cls.toUpperCase()})`, `speed ${Math.min(...sp).toFixed(1)} .. ${Math.max(...sp).toFixed(1)} m/s, mean ${(sp.reduce((a, b) => a + b, 0) / sp.length).toFixed(1)}; slip up to ${(Math.max(...sl) * 57.3).toFixed(0)}°, sliding ${(slide * 100).toFixed(0)}% of the lap.`, null);
     }
   }

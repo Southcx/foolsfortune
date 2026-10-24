@@ -29,6 +29,8 @@ export const TUNE = {
   },
 };
 export const STOCK_SHEET = Object.freeze(Object.fromEntries(Object.keys(TUNE.sliders).map((id) => [id, 0])));
+/** When the board counts as sliding: a slip angle (rad) past this, times the grip it has now (the GARAGE's telemetry and the slip arc). */
+export const SLIDE = { slip: 0.15 };
 export const SETUPS = 3; // (named setups kept, each the parts and the sheet, one pinnable to a track: 2.6)
 
 const clampStep = (v) => Math.max(-TUNE.range, Math.min(TUNE.range, Math.round(+v || 0)));
