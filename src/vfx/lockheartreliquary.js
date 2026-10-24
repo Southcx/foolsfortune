@@ -39,6 +39,7 @@ import { HEARTS, oddsOf, rates } from '../tools/lockheart/table.js';
 import { C01, sm, lerp, heartLook, keyLook } from './lockheartreliquary/look.js';
 import { drawPiece } from './lockheartreliquary/piece.js';
 import { RedrawGate } from './redrawgate.js';
+import { skinPalette } from './toolskinwear.js';
 
 const K = 2;                   // (texture pixels a dot)
 const CW = 224, CH = 232;      // (the canvas in dots: room over the coffin, the wheel and its plates, the ring and its tags)
@@ -47,6 +48,8 @@ const CLEAR = 18, HAND = [85, 152]; // (CSS px from the right edge as the tube's
 const PHI0 = 0, SCALE = 1.3; // (the chain's rest angle: straight down, parallel to the Lachrimeter, the owner 2026-10-19; dots a unit of the coffin)
 const KT = 0.18, DUR = 2.1, HOLD = 0.9; // (real s: a Possibilikey's turn at the Opening; the wheel's spin and its hold, tools/lockheart/wheel.js)
 const DRINK = { dur: 0.35, gap: 0.07, colour: 0x7f5cf0 }, GULP = { dur: 0.12, colour: 0xffe296, amount: 6 };
+/** The coffin's look in the Lockheart's skin (vfx/toolskins.js): its body and trim the skin's, its emblem the heart's own. */
+const skinnedLook = (L) => { const P = skinPalette('lockheart'); return P ? { ...L, col: P.body || L.col, trim: P.trim || L.trim } : L; };
 const IDLE_HZ = 10;            // (redraws a real second at rest, when only the ambient shimmer moves; 30 while anything else does: redrawgate.js)
 
 export class LockheartReliquary {
@@ -133,7 +136,7 @@ export class LockheartReliquary {
 
   // ---------------------------------------------------------------- the tool, read
   read(dt, L) {
-    const g = this.game, box = g.pneuka, heart = L.heart || 'heart.plain', look = heartLook(heart), fill = L.fill;
+    const g = this.game, box = g.pneuka, heart = L.heart || 'heart.plain', look = skinnedLook(heartLook(heart)), fill = L.fill;
     // the fill: eased so the count rolls, held back by a drink still on the link
     const target = Math.max(0, L.charge - this.pend);
     this.shownCharge = this.shownCharge < 0 ? target : this.shownCharge + (target - this.shownCharge) * Math.min(1, dt * 8);

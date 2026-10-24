@@ -37,6 +37,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { overlayFlat } from './lachrimetertube.js';
+import { wearSkin, unwear } from './toolskinwear.js';
 import { buildCylinder, buildPentacle, posePentacle, layoutOf, drawPlate, drawInset, colourOf, CYL_T, F, K } from './psyguncylindermodel.js';
 import { capacityOf } from '../tools/psygun/kinds.js';
 import { fireCost, shellById } from '../progress/combat/castershells.js';
@@ -104,7 +105,7 @@ export class PsygunCylinder {
     const sh = this.sh; if (!sh?.gun || !this.S) return;
     const gun = sh.gun, ids = sh.types.map((t) => t.id), key = `${gun.id}:${ids.join(',')}`;
     if (key === this.gunKey && this.B) return; this.gunKey = key;
-    if (this.B) { this.holder.remove(this.B.mount); this.B.dispose(); }
+    if (this.B) { this.holder.remove(this.B.mount); this.B.dispose(); unwear(this.skinW); }
     this.V = layoutOf(gun); this.ids = ids; this.names = sh.types.map((t) => t.name);
     this.maxes = ids.map((id) => sh.max(id));
     const hi = this.V.heart ? (this.V.solo ? 0 : this.V.n) : -1;
@@ -112,6 +113,7 @@ export class PsygunCylinder {
     const env = this.game.lachrimeterTube?.env; this.themeId = theme.id;
     this.B = buildCylinder(this.V, ids, ids.map((id) => shellById(id)?.tier || 1), env, this.bandHex());
     this.holder.add(this.B.mount);
+    this.skinW = wearSkin('psygun', this.B.skin, { scale: 0.08 }); // (the psygun's skin on its cylinder: its steel, brass and blued frame in its units, a radius of 1 to the gun's 0.08 m)
     if (gun.play?.pentacle && this.V.n === 5) buildPentacle(this.B);
     this.turnPace = BASE_CLICK / (gun.play?.turn ?? BASE_CLICK); this.starT = 9;
     this.known = this.read(); this.beat = null; this.state.gun = gun.id;

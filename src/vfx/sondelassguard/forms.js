@@ -118,6 +118,7 @@ export function buildForms(themeColours) {
   { const g = drum.geometry, p = g.attributes.position, uv = g.attributes.uv; for (let i = 0; i < p.count; i++) { const a = Math.atan2(p.getY(i), p.getX(i)), r = Math.hypot(p.getX(i), p.getY(i)); uv.setXY(i, (a / (Math.PI * 2) + 0.5) * 1, (r - 13.6) / 5.2); } }
   return {
     root, tsuba, face, axis, blade, bow, rod, ferrule, hook, hookBand, grapnel: { group: grapnel, flukes }, collars, drum,
+    skin: { blade: [steel], brass: [brass], wood: [urushi], steel: [iron] }, // (the Sondelass's skin's roles here, colour and metal: vfx/toolskinwear.js kind 'sg')
     glaze(t) { glazeCanvas(glazeC, t); glazeT.needsUpdate = true; },
   };
 }

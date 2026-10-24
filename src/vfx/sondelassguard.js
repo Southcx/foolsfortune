@@ -44,6 +44,7 @@ import { THEMES, theme } from '../ui/theme.js';
 import { guardAtlas, FEELINGS, EFFECTS } from './sondelassguard/atlas.js';
 import { QuadBatch } from './sondelassguard/batch.js';
 import { buildForms, BLADE } from './sondelassguard/forms.js';
+import { wearSkin } from './toolskinwear.js';
 import { GuardPlate, GuardCount } from './sondelassguard/plate.js';
 import { drawGuard, drawRing, drawRod, drawBlade, drawHook, film, rgbOf, pawlR, R0U, DPM } from './sondelassguard/marks.js';
 
@@ -96,6 +97,7 @@ export class SondelassGuard {
     const root = (this.root = new THREE.Group()); root.name = 'sondelassGuard'; root.userData.overlayHidden = true;
     this.themeId = theme.id;
     this.forms = buildForms(THEMES[theme.id] || THEMES.verdigris); root.add(this.forms.root);
+    wearSkin('sondelass', this.forms.skin, { kind: 'sg' }); // (the Sondelass's skin on its guard's forms: their colour and metal)
     this.b = { under: new QuadBatch(A.tex, 64, { additive: true, order: 2 }), marks: new QuadBatch(A.tex, 900, { order: 10 }), over: new QuadBatch(A.tex, 500, { additive: true, order: 12 }) };
     root.add(this.b.under.mesh, this.b.marks.mesh, this.b.over.mesh);
     this.plate = new GuardPlate(); root.add(this.plate.mesh); this.plateKey = '';

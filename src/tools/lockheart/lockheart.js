@@ -51,6 +51,7 @@ import { OUTCOME_FX } from './outcomes.js';
 import { weatherAt, placeOf } from '../../progress/weather.js';
 import { Wheel } from './wheel.js';
 import { addOutline } from '../../render/outline.js';
+import { wearSkin, unwear } from '../../vfx/toolskinwear.js'; // (a tool's skin, looks only: Calissa's)
 import { sfx } from '../../audio/sfx.js';
 import { stream } from '../../core/rng.js';
 const simRand = stream('tools/lockheart/lockheart'); // (the simulation's chance: core/rng.js, the same twice)
@@ -88,6 +89,7 @@ export class Lockheart extends HeldTool {
     this.ridesHand = null; // (the coffin hangs from the left hand's place on its chain, never from its turn: either palm may ease, courier/anim/wristease.js)
     this.chain = new THREE.Mesh(new THREE.CylinderGeometry(0.003, 0.003, 0.12, 4), new THREE.MeshStandardMaterial({ color: 0xd9b048, metalness: 0.7, roughness: 0.3 }));
     this.chain.rotation.z = -Math.PI / 2; this.chain.position.x = 0.06; this.model.group.add(this.chain);
+    wearSkin('lockheart', { chain: this.chain.material });
     this.mount();
     const g = mgr.game;
     g.lockheart = this;
@@ -120,6 +122,7 @@ export class Lockheart extends HeldTool {
     this.cof.group.traverse((o) => { if (o.isMesh && o.geometry.boundingSphere?.radius > 0.02) addOutline(o); });
     this.model.group.add(this.cof.group);
     this.cof.group.traverse((o) => this.game.present?.shadeOne(o, true, T.visual.smooth !== false)); // (smooth-shaded now, not at present's walk: its program is the warm one, not one compiled in play; Calissa measured)
+    unwear(this.coffinSkin); this.coffinSkin = wearSkin('lockheart', { body: this.cof.group.children[0]?.material, trim: this.cof.lid.children[0]?.material }); // (the box, and the lid and bail: pneuka/thingmodels.js buildCoffin)
     this.coffinId = id;
     this.rest?.wake();
     return this.cof;

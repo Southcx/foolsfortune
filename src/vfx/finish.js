@@ -18,6 +18,9 @@
 //           optional pearl or aurora sheen, and translucency (porcelain: warm light through the thin edges); and the SOUL COLOUR
 //           (`uFinS`: rgb and strength, Soul Alchemy's, set by the vessel), on whatever skin is worn, the maker's own included.
 //
+//   (and a TOOL's parts: the glaze kind again, told it is a tool's (`uFinPart` 3), with the tool skins' patterns, 8 and up, and a zone
+//   for a second finish on one mesh: vfx/toolpatterns.js, vfx/toolskins.js. The same program: no new one for the tools.)
+//
 // Prior art: the gem shaders of Spyro (2018) and of every jewel-match game (faceted normals, sparkle, dispersion), Kajiya and Kay's hair
 // highlight (1989) as most games after it fake it, the subsurface "wrap" lighting of skin since Half-Life 2, and real gemmology for the
 // stones' optics, Worley's cellular noise (1996) for spots and crazing, and the real glazes (yohen, oil spot, hare's fur, guan crackle,
@@ -31,6 +34,7 @@
 import * as THREE from 'three';
 import { EYE_GLSL } from './eyecup.js';
 import { MINERAL_HEAD, MINERAL_COLOR, MINERAL_SURFACE, MINERAL_LIGHT } from './stoneminerals.js';
+import { TOOL_HEAD, TOOL_DECL, TOOL_COLOR, TOOL_SURFACE, TOOL_LIGHT } from './toolpatterns.js';
 
 const HEAD = `
 varying vec3 vFinObj; varying vec3 vFinN;
@@ -51,7 +55,8 @@ vec3 finCells(vec3 p) { vec3 i = floor(p), f = fract(p); float d1 = 8.0, d2 = 8.
 float finJag(float a) { return 0.12 * abs(sin(a * 7.0)) + 0.08 * abs(sin(a * 17.0 + 1.3)) + 0.05 * sin(a * 31.0); }
 float finLip(float a) { float s = 6.2831853 / 40.0, i = floor(a / s); return mix(finJag(i * s), finJag((i + 1.0) * s), a / s - i); }
 ${EYE_GLSL}
-${MINERAL_HEAD}`;
+${MINERAL_HEAD}
+${TOOL_HEAD}`;
 
 // THE PATTERNS of the rare glazes (glazes.js `pattern`; uFinP.z which, uFinP.w the model's scale, uFinB the pattern's colour), in the
 // part's own space, so they sit on the body as a glaze sits on a pot. Each is how the real one forms in the kiln:
@@ -133,7 +138,7 @@ const PATTERN = `
 const COLOR = {
   // P.x: how much of the painting's light and shade to keep; P.y: its midpoint
   glaze: `finL = finLuma(diffuseColor.rgb); finShade = clamp(1.0 + (finL - uFinP.y) * uFinP.x, 0.25, 1.6);
-    if (uFinOn > 0.5) diffuseColor.rgb = uFinA * finShade;` + PATTERN, // (finL: the painting's own lightness; finShade: what of it the glaze keeps, for the patterns too)
+    if (uFinOn > 0.5) diffuseColor.rgb = uFinA * finShade;` + PATTERN + TOOL_COLOR, // (finL: the painting's own lightness; finShade: what of it the glaze keeps, for the patterns too)
   // A: the stone's colour; B: its second colour (opal's play, moonstone's glow); P.x: facets per unit; P.y: fire; P.z: play of colour; P.w: adularescence
   // uFinM / uFinC: the stone's mineral (vfx/stoneminerals.js); uFinPart: how much of the map's dark numerals to keep (a die's body)
   gem: `float finInk = mix(1.0, clamp(finLuma(diffuseColor.rgb) * 1.1, 0.0, 1.0), uFinPart);
@@ -150,13 +155,13 @@ const COLOR = {
 };
 // per kind: the surface itself (after the maps: metal and gloss), where a pattern is metal (silver spots, gold leaf) or a glassier film
 const SURFACE = {
-  glaze: `metalnessFactor = mix(metalnessFactor, 0.9, finPatM); roughnessFactor = mix(roughnessFactor, 0.12, finPatR); roughnessFactor = mix(roughnessFactor, 0.8, finPatRo);`,
+  glaze: `metalnessFactor = mix(metalnessFactor, 0.9, finPatM); roughnessFactor = mix(roughnessFactor, 0.12, finPatR); roughnessFactor = mix(roughnessFactor, 0.8, finPatRo);` + TOOL_SURFACE,
   gem: MINERAL_SURFACE,
 };
 // per kind: before the emissive map, and so before anything else adds light (the kintsugi's seams and the cracks' Lachryma,
 // courier/vessel/kintsugi.js, are added right after the map and must never be multiplied by a part's colour)
 const LIGHT_BEFORE = {
-  glaze: `if (uFinOn > 0.5 && uFinP.z > 5.5) { // an ownLight pattern: its painted light in its own colours (the vessel gave it white); the firing's glow kept
+  glaze: `if (uFinOn > 0.5 && uFinP.z > 5.5 && uFinP.z < 7.5) { // an ownLight pattern: its painted light in its own colours (the vessel gave it white); the firing's glow kept
       float fireK = clamp(1.0 - emissive.b / max(emissive.r, 1e-4), 0.0, 1.0); // (the kiln-orange the firing lerps from: vessel.js update)
       totalEmissiveRadiance *= mix(finEmC, vec3(1.0), fireK); }`,
 };
@@ -164,7 +169,7 @@ const LIGHT = {
   glaze: `totalEmissiveRadiance += finPatE;
     if (finPatS > 0.0) { float sl = 1.0 - abs(dot(normalize(normal), normalize(vViewPosition)));
       if (uFinP.z < 1.5) totalEmissiveRadiance += finSpectrum(0.5 + finPatH * 0.12 + sl * 0.25) * finPatS * 0.3;  // yohen's film: cyan to blue to violet as it turns
-      else totalEmissiveRadiance += uFinB * finPatS * 0.35 * sl * sl; }                                           // leaf gold, lit at a slant`,
+      else totalEmissiveRadiance += uFinB * finPatS * 0.35 * sl * sl; }                                           // leaf gold, lit at a slant` + TOOL_LIGHT,
   gem: `if (uFinOn > 0.5) {
     vec3 V = normalize(vViewPosition); vec3 fN = normalize(floor(vFinN * uFinP.x + 0.5));
     float h = fract(sin(dot(fN, vec3(12.9898, 78.233, 37.719))) * 43758.5453); // (a facet's own hash: which way it was cut)
@@ -194,7 +199,7 @@ const LIGHT = {
 };
 
 /** Does this kiln pattern paint the part in colours of its own (so its painted light should be in them, not the glaze's)? */
-export const ownLight = (pattern) => pattern >= 6;
+export const ownLight = (pattern) => pattern >= 6 && pattern <= 7; // (the tool patterns, 8 and up, are vfx/toolpatterns.js's)
 
 // ONE PROGRAM FOR EVERY KIND (the low-spec round, 2026-10-20: RENDER-INVENTORY 2.4, move 4): each kind's code sits in the one shader
 // behind a branch on `uFinKind` (a uniform, the same for a whole draw, so the branch costs next to nothing), and the key is the same
@@ -205,7 +210,7 @@ const branch = (parts) => Object.keys(FIN_KIND).filter((k) => parts[k]).map((k) 
 const FIN_DECL = `
   float finPatM = 0.0, finPatR = 0.0, finPatS = 0.0, finPatH = 0.0, finPatRo = 0.0; vec3 finPatE = vec3(0.0); // (S, H: a sheen for the light stage, and its hue; Ro: a matte patch)
   vec3 finEmC = uFinA; // (the colour the part is, unshaded: an ownLight pattern's painted light takes it)
-  float finL = 0.0, finShade = 1.0;`;
+  float finL = 0.0, finShade = 1.0;` + TOOL_DECL;
 
 export function dressFinish(m, kind) {
   if (m.userData.finish) return m.userData.finish;

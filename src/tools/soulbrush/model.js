@@ -21,6 +21,7 @@ import * as THREE from 'three';
 import { PALETTE } from '../../core/config.js';
 import { addOutline, OUTLINE_MAT_CHAR } from '../../render/outline.js';
 import { mergeStatic } from '../../render/merge.js';
+import { wearSkin } from '../../vfx/toolskinwear.js'; // (a tool's skin, looks only: Calissa's)
 
 const _a = new THREE.Color(), _b = new THREE.Color();
 export const BRUSH = { back: -0.3, ferrule: 0.78, root: 0.86, tip: 1.26, radius: 0.09 };
@@ -82,6 +83,7 @@ export class BrushModel {
     this.bendY = 0; this.bendZ = 0; this.ink = 0; this.wet = 1; this.inkSet = false;
     this.tipLocal = new THREE.Vector3(BRUSH.tip, 0, 0);
     this.setInk(0);
+    wearSkin('soulbrush', { wood: M.wood, wrap: M.wrap, bind: M.bind, brass: M.brass, hair: M.hair });
   }
 
   /** The tuft's lag: y bends the head toward -Y (the way a downswing leaves it), z toward +Z. */
