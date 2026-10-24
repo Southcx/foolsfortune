@@ -4,7 +4,7 @@
 // plum eye: vfx/cardbacks.js) or any of the twelve of the set (vfx/cardbackset.js: the four suits', the four islands', the four seasons').
 // The store itself is the vfx module's (the atlas and the pieces read it with no `game`); this is the player's side of it: the options
 // with their lines, what is open, the save (a settings section: a preference, kept across builds and both modes) and the chat command.
-// What opens a back is Dovina's (OPEN_WHEN below, empty until her rows land: docs/handoffs/dovina/2026-10-24-from-calissa-card-backs.md);
+// What opens a back is Dovina's (progress/cardbacks.js CARD_BACKS, read through game.cardBackOpen; OPEN_WHEN a fallback, empty);
 // until then every back is open in the DEBUG save only, and a deck's own back is always open.
 //
 //   game.cardBacks = new CardBackChoice(game)   .house / .arcana (the id worn)   .options(deck) -> [{ id, label, line, group, open, worn }]
@@ -37,7 +37,7 @@ export class CardBackChoice {
   /** Open to wear: a deck's own back, anything in the DEBUG save, or what Dovina's rule opens. */
   isOpen(id) {
     if (id === 'house' || id === 'arcana') return true;
-    return this.game.mode === 'debug' || OPEN_WHEN[id]?.(this.game) === true;
+    return this.game.mode === 'debug' || this.game.cardBackOpen?.(id) === true || OPEN_WHEN[id]?.(this.game) === true; // (Dovina's table: progress/cardbacks.js CARD_BACKS, through main.js's game.cardBackOpen)
   }
   /** A back no longer open (the DEBUG save's pick, kept in the settings, met in STORY) put back to the deck's own. */
   enforce() { for (const deck of BACK_DECKS) if (!this.isOpen(chosenBack(deck))) chooseBack(deck, BACK_DEFAULT[deck]); }
