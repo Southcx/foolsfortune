@@ -12,7 +12,7 @@
 //     fifteen times a good player (par.js, 2026-10-21; RAIL-STANDARDS.md 3).
 //   - A VOLLEY (the lock-on: RayStorm, RayCrisis) pays 50, doubling for every lock past the first, but only when every locked target
 //     is downed: eight locks, eight downs, 6,400. Greed checked by precision.
-//   - ABSORBING a shot of your own feeling (the ship's polarity: Ikaruga) pays 10 and fills the pool that the lances spend.
+//   - ABSORBING a shot of your own feeling (the ship's Astral and Umbral forms: Ikaruga's colour switch) pays 10 and fills the pool that the lances spend.
 //   - A DOWN IN ITS WINDUP pays x1.5 and cancels its volley (reading rewarded: RAIL-MODULES.md 1, rule 3; Calissa's research rule 10).
 //   - A HIT BREAKS THE CHAIN to nothing (`chainHit`): a hit costs something you can see fall, not just hull (the research's rule 22, the
 //     Gummi's medal level; our chain is that meter, so the word "medal" stays Star Fox's).
