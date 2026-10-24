@@ -8,7 +8,7 @@
 //   pots      one lap, alone, pots on the line: each smashed takes a real second off the time (world/raceway/pottrial.js).
 //   escape    the Gorge Run's crater, chased up out of it by the antlion (world/raceway/escape.js).
 //   licence   a test on a stretch of a track, under a rule (world/raceway/licences.js: Gran Turismo's licences).
-//   trim      one lap alone, from a flying start, against the ghost of your LAST trim run (not your best): the splits at each gate say
+//   trim      the test lap (Espada's name; the code keeps trim): one lap alone, from a flying start, against the ghost of your LAST test lap (not your best): the splits at each gate say
 //             what the tune changed (Forza Horizon's test drive; SKIFF-TUNING.md 2.5). Nothing is recorded.
 // A cup (world/raceway/cups.js) is three races in a row; the City Trial (world/raceway/citytrial.js) ends in one of these, drawn.
 //
@@ -27,7 +27,7 @@ export const MODES = {
   pots:     { label: 'Pot smash', line: 'One lap alone. Each pot smashed takes a second off your time.', laps: 1, ruleset: 'pots', record: true },
   escape:   { label: 'Escape',    line: 'The antlion wakes in the crater. Climb out before it reaches you.', laps: 1, ruleset: 'escape', record: true },
   licence:  { label: 'Licence',   line: 'A test on a stretch of track, under a rule.', laps: 1, ruleset: 'licence', record: true },
-  trim:     { label: 'Trim run',  line: 'One lap alone against your last trim run: the splits show what the tune changed.', laps: 1, flying: true, record: false, trim: true },
+  trim:     { label: 'Test lap',  line: 'One lap alone against your last test lap: the splits show what the tune changed.', laps: 1, flying: true, record: false, trim: true },
 };
 /** The flying start: metres before the line the board is set down, at what speed (m/s) it is pushed off. */
 export const FLY = { back: 220, push: 24 };

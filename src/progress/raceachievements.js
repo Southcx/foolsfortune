@@ -66,7 +66,7 @@ export function racewayAchievements({ C, H, F }) {
   F('rw44', 'skiff', 'The Raceway', 3, 'mechanic', 'Tall Order', 'Ride 30 race laps, or take gold in the Clean lap licence. Opens the Tall Mast.', any(['race.raceway.lap', 30], ['licence.clean.gold', 1]), 1);
   F('rw45', 'skiff', 'The Raceway', 3, 'mechanic', 'Short and Steady', 'Grind 2,000 metres of rail, or 200 in one go. Opens the Short Mast.', any(['skiff.grind.metres', 2000], ['skiff.grind.best', 200]), 1);
   F('rw46', 'skiff', 'The Raceway', 3, 'mechanic', 'Surf\'s Up', 'Let go of 25 carves at their third tier, or take gold in the Snake licence. Opens the Surf Fin.', any(['skiff.carve.tier3', 25], ['licence.snake.gold', 1]), 1);
-  F('rw47', 'skiff', 'The Raceway', 3, 'mechanic', 'Race Fin', 'Finish 15 races, or take gold in the Carve licence. Opens the Race Fin.', any(['race.raceway.finish', 15], ['licence.carve.gold', 1]), 1);
+  F('rw47', 'skiff', 'The Raceway', 3, 'mechanic', 'Race Regular', 'Finish 15 races, or take gold in the Carve licence. Opens the Race Fin.', any(['race.raceway.finish', 15], ['licence.carve.gold', 1]), 1);
   F('rw48', 'skiff', 'The Raceway', 4, 'mechanic', 'Bone Stock', 'Take gold on any track on the stock board: standard parts, the sheet at 0.', (L) => ['sun', 'gorge', 'coaster'].some((t) => L.get(`race.track.${t}.gold.stock`) > 0) ? 1 : 0, 1);
   F('rw49', 'skiff', 'The Raceway', 4, 'collect', 'Three Golds', 'Take gold on the Sun Circuit, the Gorge Run and the Coaster.', (L) => ['sun', 'gorge', 'coaster'].filter((t) => L.get(`race.track.${t}.gold`) > 0).length, 3);
 }

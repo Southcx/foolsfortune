@@ -22,10 +22,10 @@ export const TUNE = {
   step: 0.04, range: 3,
   sliders: {
     trim: { label: 'Sail trim', minus: 'Drives hard off the line', plus: 'Faster at the top', slot: 'sail', moves: { top: 0.25, accel: -1 } },
-    fin: { label: 'Fin', minus: 'Holds the sand, slow to slide', plus: 'Slides early, turns tight', slot: 'keel', moves: { grip: -1, carveRate: 1, turn: 0.35 } },
-    rake: { label: 'Rake', minus: 'Steady at speed', plus: 'Sharp turn-in, twitchy', slot: 'keel', moves: { turn: 0.5, wobble: -1 } },
-    ballast: { label: 'Ballast', minus: 'Light: quick, kicked about', plus: 'Heavy: carries speed, hits hard', slot: 'hull', moves: { mass: 1, accel: -0.5, coast: -0.75 } },
-    ride: { label: 'Ride', minus: 'Low: planted, stiff landings', plus: 'High: soaks landings, floats in the air', slot: 'hull', moves: { hover: 1, follow: -1 } },
+    fin: { label: 'Grip', minus: 'Holds the sand, slow to slide', plus: 'Slides early, turns tight', slot: 'keel', moves: { grip: -1, carveRate: 1, turn: 0.35 } },
+    rake: { label: 'Mast lean', minus: 'Steady at speed', plus: 'Sharp turn-in, twitchy', slot: 'keel', moves: { turn: 0.5, wobble: -1 } },
+    ballast: { label: 'Weight', minus: 'Light: quick, kicked about', plus: 'Heavy: carries speed, hits hard', slot: 'hull', moves: { mass: 1, accel: -0.5, coast: -0.75 } },
+    ride: { label: 'Ride height', minus: 'Low: planted, stiff landings', plus: 'High: soaks landings, floats in the air', slot: 'hull', moves: { hover: 1, follow: -1 } },
   },
 };
 export const STOCK_SHEET = Object.freeze(Object.fromEntries(Object.keys(TUNE.sliders).map((id) => [id, 0])));

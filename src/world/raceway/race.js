@@ -88,7 +88,7 @@ export class Race {
   }
   /** The race board's pages (raceboard.js). */
   openBoard() { this.board.open(); }
-  /** The ghost raced against: the best lap of this class on this track, or in a trim run the last trim lap (SKIFF-TUNING.md 2.4, 2.5). */
+  /** The ghost raced against: the best lap of this class on this track, or in a test lap the last test lap (SKIFF-TUNING.md 2.4, 2.5). */
   get bestLap() { return this.T ? this.bestLaps[`${this.T.id}.${this.mode?.trim ? 'trim' : this.cls}`] || null : null; }
   get skiff() { return this.game.player?.techs?.get?.('skiff'); }
 
@@ -199,7 +199,7 @@ export class Race {
   }
   lapDone() {
     const g = this.game, seconds = +this.lapT.toFixed(2), clean = this.mode.record && !this.ruleset, best = clean && (!this.bestLap || seconds < this.bestLap.seconds); // (a lap of practice or of a ruleset's is not the ghost's)
-    if (best || this.mode.trim) { this.bestLaps[`${this.T.id}.${this.mode.trim ? 'trim' : this.cls}`] = { seconds, splits: this.splits.slice(), frames: this.frames }; g.save?.dirty('raceGhost'); } // (a trim run's ghost is always the last one)
+    if (best || this.mode.trim) { this.bestLaps[`${this.T.id}.${this.mode.trim ? 'trim' : this.cls}`] = { seconds, splits: this.splits.slice(), frames: this.frames }; g.save?.dirty('raceGhost'); } // (a test lap's ghost is always the last one)
     this.traces = { prev: this.traces.last, last: { track: this.T.id, seconds, cls: this.cls, mode: this.modeId, samples: this.trace } }; this.trace = []; // (the run trace: this lap and the one before, for the GARAGE)
     this.laps.push(seconds);
     g.events?.emit('race.lap', { track: this.T.id, lap: this.lap, seconds, best, mode: this.modeId, recordClass: this.cls, place: this.rivals.on ? this.rivals.place : null, of: this.rivals.list.length + 1, by: 'courier' });

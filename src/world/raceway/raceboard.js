@@ -9,7 +9,7 @@
 //   GARAGE    the build: its class (STOCK or OPEN) and Performance Index on each track; the skiff's parts, slot by slot
 //             (progress/skiffparts.js): the open ones to choose, the shut ones with the achievement that opens each; the tune sheet
 //             (progress/skifftune.js: a slider's left half steps it toward its minus end, its right half toward its plus); the three
-//             setups (wear, keep, pin to a track); a trim run on each track; the last lap's telemetry, in numbers (its drawing: Calissa's).
+//             setups (wear, keep, pin to a track); a test lap on each track; the last lap's telemetry, in numbers (its drawing: Calissa's).
 // A row is a choice card's plain cousin (the index's rooms), its words placeholders for Espada's.
 //
 // Prior art: Mario Kart's mode select, Gran Turismo's world map of modes, Kirby Air Ride's top menu; the index's own room list.
@@ -116,8 +116,8 @@ export class RaceBoard {
       row(su, '⇩', `Keep what you wear as Setup ${i + 1}`, S ? 'It replaces what is kept.' : 'The parts and the sheet as they are now.', () => { P.saveSetup(i); this.open(); });
       if (S) { const at = R.tracks.findIndex((T) => P.pins[T.id] === i), next = R.tracks[at + 1]; row(su, '⚑', next ? `Pin Setup ${i + 1} to ${next.name}` : `Unpin Setup ${i + 1}`, 'Click again for the next track.', () => { if (at >= 0) P.pin(R.tracks[at].id, null); if (next) P.pin(next.id, i); this.open(); }); }
     }
-    const tr = grp('TRIM RUNS · one lap from a flying start against your last trim run: the splits say what the tune changed');
-    for (const T of R.tracks) row(tr, '⟲', `Trim run: ${T.name}`, this.race.bestLaps[`${T.id}.trim`] ? `Your last: ${clock(this.race.bestLaps[`${T.id}.trim`].seconds)}.` : 'No trim run yet: the first sets the ghost.', (menu) => this.go(menu, T.id, { mode: 'trim' }));
+    const tr = grp('TEST LAPS · one lap from a flying start against your last test lap: the splits say what the tune changed');
+    for (const T of R.tracks) row(tr, '⟲', `Test lap: ${T.name}`, this.race.bestLaps[`${T.id}.trim`] ? `Your last: ${clock(this.race.bestLaps[`${T.id}.trim`].seconds)}.` : 'No test lap yet: the first sets the ghost.', (menu) => this.go(menu, T.id, { mode: 'trim' }));
     const tel = grp('TELEMETRY · the last lap, and the one before');
     for (const [k, Tr] of [['Last lap', this.race.traces?.last], ['The lap before', this.race.traces?.prev]]) {
       if (!Tr?.samples?.length) { row(tel, '·', k, 'Ride a lap to see it.', null, true); continue; }
