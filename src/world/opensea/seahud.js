@@ -25,6 +25,6 @@ export class SeaHud {
     const doubt = v.doubt >= 1 ? ` ±${Math.floor(v.doubt)}` : '';
     this.el.textContent = `FUEL  ${'■'.repeat(bars)}${'□'.repeat(10 - bars)}  ${v.fuel.toFixed(1)}/${tank}\n`
       + `SQUARE ${v.at}${doubt}   CHARTED ${v.charted.size}/${R.grid.squares.length}\n`
-      + (R.sailing ? `${NAMES[R.helm.throttle]}   W/S sail · A/D rudder · F moor · R read the sky` : 'F at the ship: board') + `\nFINDS TO REPORT ${v.found.size}`;
+      + (R.sailing ? `${NAMES[R.helm.throttle]}   W/S sail · A/D rudder · F moor · R read the sky · E plate` : 'F at the ship: board') + `\nFINDS TO REPORT ${v.found.size}`;
   }
 }
