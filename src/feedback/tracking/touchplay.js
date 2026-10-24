@@ -10,6 +10,6 @@
 
 export function touchPlayRules({ on, log }) {
   on('touch.layout', (e) => log.say('system', e.set ? 'Your touch layout is kept.' : 'Every button is back where it started.', { key: e.set ? 'touch.layout.kept' : 'touch.layout.reset', throttle: 2 })); // (each its own key: a reset just after a keep is still said)
-  on('gyro.refused', () => log.say('system', 'Tilt to steer needs motion access, and it was refused: the setting is off.', { key: 'gyro.refused', throttle: 5 }));
-  on('gyro.unheard', () => log.say('system', 'Tilt to steer hears no motion sensor here.', { key: 'gyro.unheard', throttle: 60 }));
+  on('gyro.refused', () => log.say('system', 'Tilt to steer is off: the phone refused motion access. Allow it for this page in the browser\'s settings to use it.', { key: 'gyro.refused', throttle: 5 }));
+  on('gyro.unheard', () => log.say('system', 'Tilt to steer is off: this device has no motion sensor the page can read.', { key: 'gyro.unheard', throttle: 60 }));
 }
