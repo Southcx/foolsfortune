@@ -280,6 +280,7 @@ import { GardenMood } from './vfx/garden/gardenmood.js';
 import { GuestJars } from './vfx/garden/guestjars.js';
 import { CelestialTargets } from './vfx/celestialtargets.js';
 import { ReadingTable } from './ui/readingtable.js';
+import { CardBackChoice } from './ui/cardbackchoice.js';
 import { dangerPips } from './ui/dangerpips.js';
 import { ReadingView } from './vfx/readingview.js';
 import { installUndersideLook } from './ui/undersidelook.js';
@@ -894,6 +895,7 @@ async function main() {
   game.theme = theme;
   // the chat line in the log: words said aloud, /commands, emotes (chat.js, emotes.js)
   game.chat = new Chat(game);
+  game.cardBacks = new CardBackChoice(game); // (the back each deck wears, kept in the settings, and /cardback: ui/cardbackchoice.js)
   sightCommands(game); // (/sight: the Sight's waypoint on the chat line)
   game.perfReadout = new PerfReadout(game, { diag, renderer }); // (the phone measurement panel: ?perf, /perf, the knob visual.perfReadout; debug/perfreadout.js, MOBILE.md 10.3)
   game.startAt = new StartAt(game); // (?at=dunes|raceway|godhand|workshop: set down there after the title; debug/startat.js)

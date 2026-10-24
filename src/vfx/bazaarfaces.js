@@ -2,6 +2,7 @@
 // THE BAZAAR'S FACES (docs/plans/CASINO.md section 9; Dovina's handoff of 2026-10-15, items 2 to 5): every face Raku's tables show,
 // painted once into one canvas atlas, so the cards, the dice, the Zodiac tiles, the chips and the three cloths are one texture and one
 // stock material (vfx/bazaarpieces.js builds the bodies). No words: only what a real card, die, tile or chip carries.
+//   (THE FOOT, 2026-10-24: one row of sixteen cards at y 2048: the Arcana's own back and the twelve of the set's (vfx/cardbackset.js); three cells spare.)
 //   (GROWN 2026-10-15, the casino clarity pass, Calissa's brief section 5: the atlas is 2048 x 2048, grown to 2048 x 2304 on 2026-10-24 for the Arcana back's cell at its foot; cards 128 x 208 with a big corner
 //   index, dice faces 64 x 64, tiles 64 x 96, chips 64 x 64, SEAT CELLS (eight colours x rim, token, plate: vfx/seatlook.js), and DIM
 //   TWINS of the cards, dice faces and tiles, drawn smaller and sunk into the felt for what may not be touched. Words are the DOM's.)
@@ -39,6 +40,7 @@ import * as THREE from 'three';
 import { schillerInk } from './oxidation.js';
 import { SUIT_COLOURS } from '../progress/casino/table.js';
 import { drawHouseBack, drawArcanaBack } from './cardbacks.js';
+import { BACK_SET, backCell, onBackChange, drawBackSet } from './cardbackset.js';
 import { SEAT_NAMES, SEAT_KINDS, drawSeatCell, seatCellIndex } from './seatlook.js';
 
 const W = 2048, H = 2304; // (the foot, 2048 to 2304, holds the Arcana's back: one cell no row of the square had room for)
@@ -48,10 +50,11 @@ const AT = { card: { x: 0, y: 0, w: 128, h: 208, cols: 16 }, die: { x: 0, y: 104
   chip: { x: 0, y: 1456, s: 64 }, seat: { x: 512, y: 1456, s: 64 }, cloth: { x: 0, y: 1520, s: 256, cols: 5 },
   stone: { x: 1280, y: 1520, s: 64, cols: 12 }, // (your stones d4 .. d12, 40 cells in the 768 x 256 the five cloths leave)
   dimCard: { x: 0, y: 1776, w: 48, h: 78, cols: 42 }, dimDie: { x: 0, y: 1932, s: 32, cols: 64 }, dimTile: { x: 0, y: 1996, w: 32, h: 48 },
-  arcanaBack: { x: 0, y: 2048, w: 128, h: 208, cols: 1 } };
+  foot: { x: 0, y: 2048, w: 128, h: 208, cols: 16 } }; // (the foot's one row of sixteen cards: the Arcana's own back, then the twelve of the set: vfx/cardbackset.js)
 export const CARD_BACK = 78;
 const CARD_EDGE = 79;
-/** The Arcana's back (cardbacks.js): the Major Arcana face down, off the grid, in the atlas's foot. `card(ARCANA_BACK)` is its rect; it has no dim twin. */
+/** The Arcana's back (cardbacks.js): the Major Arcana face down, off the grid, in the atlas's foot. `card(ARCANA_BACK)` is the back the Arcana wears now
+ *  (cardbackset.js: its own, or one of the set at 81 .. 92, each a foot cell); the foot's backs have no dim twin. `card(CARD_BACK)` is the house deck's now. */
 export const ARCANA_BACK = 80;
 /** A Querent card ({ r: 1..14, s: 0..3 }) as its index in the deck: the 22 Major Arcana first, then the suits in the seat suits' order. */
 export const cardIndex = (c) => 22 + c.s * 14 + (c.r - 1);
@@ -87,7 +90,8 @@ export function bazaarAtlas() {
   const card = (i, draw) => cell(g, AT.card, i, () => { g.scale(2, 2); draw(); }); // (a card is drawn in its 64 x 104 frame, fired at 2x)
   for (let i = 0; i < 22; i++) card(i, () => major(g, i));
   for (let s = 0; s < 4; s++) for (let r = 1; r <= 14; r++) card(cardIndex({ r, s }), () => minor(g, r, s));
-  card(CARD_BACK, () => drawHouseBack(g)); cell(g, AT.arcanaBack, 0, () => { g.scale(2, 2); drawArcanaBack(g); }); card(CARD_EDGE, () => { g.fillStyle = K.cream; g.fillRect(0, 0, 64, 104); });
+  card(CARD_BACK, () => drawHouseBack(g)); cell(g, AT.foot, 0, () => { g.scale(2, 2); drawArcanaBack(g); });
+  BACK_SET.forEach((b, k) => cell(g, AT.foot, 1 + k, () => { g.scale(2, 2); drawBackSet(g, b.id); })); card(CARD_EDGE, () => { g.fillStyle = K.cream; g.fillRect(0, 0, 64, 104); });
   let k = 0; const dieAt = {};
   for (const key of SKIN_ORDER) { const atk = key.startsWith('atk'), sides = +key.replace('atk', ''); dieAt[key] = k; for (let f = 0; f < sides; f++, k++) dieCell(g, k, sides, f, atk ? DIE_SKINS.atk : DIE_SKINS[sides]); }
   dieAt.cup = k; dieCell(g, k++, 0, 0, DIE_SKINS.cup);
@@ -112,8 +116,17 @@ export function bazaarAtlas() {
   for (let c = 0; c < dieCount; c++) dim(AT.die.x + (c % AT.die.cols) * AT.die.s, AT.die.y + Math.floor(c / AT.die.cols) * AT.die.s, AT.die.s, AT.die.s,
     AT.dimDie.x + (c % AT.dimDie.cols) * AT.dimDie.s, AT.dimDie.y + Math.floor(c / AT.dimDie.cols) * AT.dimDie.s, AT.dimDie.s, AT.dimDie.s);
   for (let c = 0; c < 25; c++) dim(AT.tile.x + c * AT.tile.w, AT.tile.y, AT.tile.w, AT.tile.h, AT.dimTile.x + c * AT.dimTile.w, AT.dimTile.y, AT.dimTile.w, AT.dimTile.h);
-  const tex = new THREE.CanvasTexture(cv); tex.colorSpace = THREE.SRGBColorSpace; tex.magFilter = THREE.NearestFilter; tex.anisotropy = 4;
+  const dimHouse = () => { // (the house deck's dim twin is the back it wears now)
+    const c = backCell('house'), foot = c >= ARCANA_BACK;
+    dim(foot ? AT.foot.x + (c - ARCANA_BACK) * AT.foot.w : AT.card.x + (c % AT.card.cols) * AT.card.w, foot ? AT.foot.y : AT.card.y + Math.floor(c / AT.card.cols) * AT.card.h, AT.card.w, AT.card.h,
+      AT.dimCard.x + (CARD_BACK % AT.dimCard.cols) * AT.dimCard.w, AT.dimCard.y + Math.floor(CARD_BACK / AT.dimCard.cols) * AT.dimCard.h, AT.dimCard.w, AT.dimCard.h);
+  };
+  dimHouse();
+  const tex = new THREE.CanvasTexture(cv);
+  onBackChange((deck) => { if (deck === 'house') { dimHouse(); tex.needsUpdate = true; } }); tex.colorSpace = THREE.SRGBColorSpace; tex.magFilter = THREE.NearestFilter; tex.anisotropy = 4;
   const rect = (x, y, w, h, inset = 0.5) => [(x + inset) / W, 1 - (y + h - inset) / H, (x + w - inset) / W, 1 - (y + inset) / H];
+  const cardRect = (i, dim) => dim ? rect(AT.dimCard.x + (i % AT.dimCard.cols) * AT.dimCard.w, AT.dimCard.y + Math.floor(i / AT.dimCard.cols) * AT.dimCard.h, AT.dimCard.w, AT.dimCard.h)
+    : rect(AT.card.x + (i % AT.card.cols) * AT.card.w, AT.card.y + Math.floor(i / AT.card.cols) * AT.card.h, AT.card.w, AT.card.h);
   const chipIx = { 1: 0, 5: 1, 25: 2, gold: 3 };
   const dieCell_ = (skin, f) => dieAt[skin] + (skin === 'ash' ? 0 : f);
   let glow = null;
@@ -127,8 +140,7 @@ export function bazaarAtlas() {
       stoneCells(g2, dieAt, { body: '#000', ink: '#fff' });
       glow = new THREE.CanvasTexture(c2); glow.colorSpace = THREE.SRGBColorSpace; return glow;
     },
-    card: (i, dim = false) => i === ARCANA_BACK ? rect(AT.arcanaBack.x, AT.arcanaBack.y, AT.arcanaBack.w, AT.arcanaBack.h) : dim ? rect(AT.dimCard.x + (i % AT.dimCard.cols) * AT.dimCard.w, AT.dimCard.y + Math.floor(i / AT.dimCard.cols) * AT.dimCard.h, AT.dimCard.w, AT.dimCard.h)
-      : rect(AT.card.x + (i % AT.card.cols) * AT.card.w, AT.card.y + Math.floor(i / AT.card.cols) * AT.card.h, AT.card.w, AT.card.h),
+    card: (i, dim = false) => { if (i === ARCANA_BACK) i = backCell('arcana'); else if (i === CARD_BACK && !dim) i = backCell('house'); return i >= ARCANA_BACK ? rect(AT.foot.x + (i - ARCANA_BACK) * AT.foot.w, AT.foot.y, AT.foot.w, AT.foot.h) : cardRect(i, dim); },
     edge: () => ATLAS.card(CARD_EDGE),
     die: (skin, f, dim = false) => { const c = dieCell_(skin, f), A = /^stone(4|6|8|10|12)$/.test(skin) ? AT.stone : dim ? AT.dimDie : AT.die; return rect(A.x + (c % A.cols) * A.s, A.y + Math.floor(c / A.cols) * A.s, A.s, A.s, 1); },
     cup: () => { const c = dieAt.cup; return rect(AT.die.x + (c % AT.die.cols) * AT.die.s, AT.die.y + Math.floor(c / AT.die.cols) * AT.die.s, AT.die.s, AT.die.s, 8); },
