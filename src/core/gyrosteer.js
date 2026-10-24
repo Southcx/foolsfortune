@@ -12,7 +12,7 @@
 // the brake, the carve and the tricks keep their own controls.
 // iOS asks for motion access only inside a tap: the settings switch's tap asks at once, and with the switch kept on from before, the
 // first touch lifted after a load asks. A refusal turns the switch off and is said in the log (gyro.refused); a page that hears no
-// motion at all (a desk, or a frame that does not pass the sensors on) says so once (gyro.unheard).
+// motion at all (a desk, or a frame that does not pass the sensors on) turns it off too and says so (gyro.unheard).
 //
 // Prior art: Mario Kart Tour's gyro steering (optional, the phone the wheel, the drift still a touch); Asphalt's tilt steering, centred
 // where the phone lies at the start; the W3C DeviceMotion spec and iOS 13's DeviceMotionEvent.requestPermission (asked inside a tap).
@@ -59,13 +59,15 @@ export class GyroSteer {
   }
   refuse(why) {
     this.game.events?.emit('gyro.refused', { why, by: 'courier' });
-    if (this.game.settings) this.game.settings.set('gyro', false); else T.tech.skiff.gyro = false;
+    this.off();
   }
+  /** The switch turned off (refused, or nothing heard): the settings row shows it, and the switch's change stops the listening. */
+  off() { if (this.game.settings) this.game.settings.set('gyro', false); else T.tech.skiff.gyro = false; }
   listen() {
     if (this.listening || typeof globalThis.addEventListener !== 'function') return;
     globalThis.addEventListener('devicemotion', this.onMotion);
     globalThis.addEventListener('orientationchange', this.onTurn); globalThis.screen?.orientation?.addEventListener?.('change', this.onTurn);
-    this.listening = true; this.since = now();
+    this.listening = true; this.since = now(); this.unheardSaid = false;
   }
   /** Motion no longer listened to (the switch off): nothing is read, nothing kept. */
   stop() {
@@ -96,7 +98,7 @@ export class GyroSteer {
     if (!this.listening && !this.asks) this.listen(); // (no asking needed: heard at once)
     const L = this.game.actions?.live?.();
     if (this.input.device !== 'touch' || !L?.has('skiff')) { this.neutral = null; return null; }
-    if (this.listening && !this.g && !this.unheardSaid && now() - this.since > GYRO.unheard * 1000) { this.unheardSaid = true; this.game.events?.emit('gyro.unheard', { by: 'environment' }); }
+    if (this.listening && !this.g && !this.unheardSaid && now() - this.since > GYRO.unheard * 1000) { this.unheardSaid = true; this.game.events?.emit('gyro.unheard', { by: 'environment' }); this.off(); return null; }
     const a = this.angle(); if (a == null) return null;
     if (this.neutral == null) { this.neutral = a; this.awayAt = 0; } // (as the ride begins: where the phone lies is straight ahead)
     const d = wrap(a - this.neutral) * DEG, m = Math.abs(d);
