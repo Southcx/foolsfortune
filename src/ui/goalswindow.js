@@ -15,6 +15,7 @@
 // edge, shown a beat as it moves), Animal Crossing's Nook Miles+ (three a day, one out of the way), Jōmon cord-marked ware.
 //
 //   new GoalsWindow(game)   .show(seconds)   .hide()   .draw()      (game.goals.list(): [{ id, slot, first, name, desc, tier, cur, goal, frac, done }])
+//   clayDress(selector) -> CSS   (the Clay dress for any Brine frame)
 // ---------------------------------------------------------------------------------------
 import { brineFrame, dot, GOLD, SALT, INK, COUNT_FACE } from './brineframe.js';
 import { FONT } from './theme.js';
@@ -23,18 +24,22 @@ export const GOALS_LOOK = { ask: 8, set: 5, done: 4, fade: 0.35 }; // (real seco
 const SLOT_WORD = { near: 'CLOSE', elsewhere: 'ELSEWHERE', stretch: 'STRETCH', first: 'FIRST STEP' }; // (Espada's words, as the log says them: Close, Elsewhere, Stretch, First step)
 const TIER_WORD = [null, 'EASY', 'MEDIUM', 'HARD', 'ELITE', 'MASTER', 'GRANDMASTER'];
 
-const CSS = `
-.gw{position:fixed;left:calc(10*var(--d));top:calc(40*var(--d));z-index:3;width:calc(150*var(--d));pointer-events:none;
-  opacity:0;transform:translateX(calc(-6*var(--d)));transition:opacity ${GOALS_LOOK.fade}s,transform ${GOALS_LOOK.fade}s}
-.gw.on{opacity:1;transform:none}
-.gw.clay .bf-body{background:
+/** The Clay dress over a Brine frame (OVERLAY.md 15.4: Anagami's): unglazed earthenware, its grog speckled, the window colour fired faintly
+ *  into it, a cord-marked band; `sel` the window's host (shared by the turn card: ui/turncard.js). */
+export const clayDress = (sel) => `${sel} .bf-body{background:
     radial-gradient(circle,rgba(255,236,214,.18) 0 calc(.5*var(--d)),transparent calc(.6*var(--d))) 0 0/calc(4*var(--d)) calc(5*var(--d)),
     radial-gradient(circle,rgba(40,20,10,.35) 0 calc(.6*var(--d)),transparent calc(.7*var(--d))) calc(2*var(--d)) calc(1*var(--d))/calc(6*var(--d)) calc(7*var(--d)),
     linear-gradient(180deg,rgba(var(--jtop,104,50,32),.22),rgba(var(--jbot,34,15,9),.3)),
     linear-gradient(180deg,#7a4630,#4e2a1c)}
-.gw.clay .bf-rope{background:linear-gradient(180deg,rgba(255,230,200,.25),transparent 45%,rgba(0,0,0,.45)),
+${sel} .bf-rope{background:linear-gradient(180deg,rgba(255,230,200,.25),transparent 45%,rgba(0,0,0,.45)),
     repeating-linear-gradient(62deg,#a8664a 0 calc(1*var(--d)),#5c3020 calc(1*var(--d)) calc(2*var(--d))),#7a4630}
-.gw.clay .bf-tab{background:linear-gradient(180deg,#5c3424,#36190f)}
+${sel} .bf-tab{background:linear-gradient(180deg,#5c3424,#36190f)}`;
+
+const CSS = `
+.gw{position:fixed;left:calc(10*var(--d));top:calc(40*var(--d));z-index:3;width:calc(150*var(--d));pointer-events:none;
+  opacity:0;transform:translateX(calc(-6*var(--d)));transition:opacity ${GOALS_LOOK.fade}s,transform ${GOALS_LOOK.fade}s}
+.gw.on{opacity:1;transform:none}
+${clayDress('.gw.clay')}
 .gw-row{display:grid;grid-template-columns:1fr auto;column-gap:calc(4*var(--d));row-gap:var(--d);padding:calc(3*var(--d)) 0;transition:opacity .3s}
 .gw-row+.gw-row{border-top:var(--d) solid rgba(30,12,6,.45);box-shadow:inset 0 var(--d) 0 rgba(255,226,196,.08)}
 .gw.beat .gw-row:not(.hit){opacity:.45}
