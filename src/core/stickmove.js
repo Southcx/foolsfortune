@@ -25,14 +25,14 @@ export class StickMove {
 
   /** x right, y forward; their length is the push (past 1 is past the ring). `sprint`: the driver's own (the pad's latch); `steerFull`:
    *  the push that is a full steer (touch 1, the pad's 0.9). */
-  set(x, y, { sprint = false, steerFull = 1 } = {}) {
+  set(x, y, { sprint = false, steerFull = 1, noAD = false } = {}) {
     const push = Math.hypot(x, y), L = this.actions.live(), inp = this.input;
     if (push < STICK.dead) return this.clear();
     this.on = true;
     const ux = x / push, uy = y / push, skiff = L.has('skiff');
     inp.axes.moveX = ux; inp.axes.moveY = uy; // (a unit direction: the core movement's own speeds)
     inp.axes.steer = clamp(x / steerFull, -1, 1);
-    this.key('KeyD', ux > STICK.key); this.key('KeyA', ux < -STICK.key);
+    this.key('KeyD', !noAD && ux > STICK.key); this.key('KeyA', !noAD && ux < -STICK.key); // (noAD: the glide's thumb is the bank, progress/skifftouch.js)
     this.key('KeyW', !skiff && uy > STICK.key); this.key('KeyS', !skiff && uy < -STICK.key);
     const foot = L.has('foot');
     this.key('AltLeft', foot && push < STICK.walk);
