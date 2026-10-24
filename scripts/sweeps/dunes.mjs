@@ -186,7 +186,7 @@ await run('busk', async () => {
   const said = await ds(`logSince(${JSON.stringify(m)})`);
   S.check('busk: F without the Crucibelle worn says why, and begins nothing', !w.rhythm && said.some((t) => /Crucibelle/.test(t)), { rhythm: w.rhythm, said });
   // with it
-  await S.ev(() => __game.game.belt.equip('crucibelle', 'sub', { quiet: true }));
+  await S.ev(() => __game.game.belt.equip('crucibelle', 'main', { quiet: true }));
   await S.ticks(4);
   const audio = await unlockAudio();
   S.note('busk: the sound unlocked (headless)', audio);

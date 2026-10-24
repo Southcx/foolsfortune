@@ -354,7 +354,7 @@ const snR = await bs('snap()');
 S.check('siege: raiders sent off do not come back as clapperjars', snR.clappers <= sg0.clappers, `clapperjars ${sg0.clappers} before the raid -> ${snR.clappers} after (creatures/clappers.js hit(): every clapperjar downed, a dismissed raider too, queues fx.after(respawn) a new one out of the kiln on its floor, 0 for a raider (world/basement/raids.js: no clapperjar floor at the siege's height, so Math.max(0, -1)), the workshop's: every raid grows the workshop's clapperjars)`);
 const gOff = await bs('god()'), hOff = await bs('hud()');
 S.check('siege after ~: back to the Courier', gOff.state === 'off' && !gOff.handShown && !gOff.jar?.shown, gOff);
-S.check('siege after ~: the HUD is the psygun\'s again', hOff.god === 'none' && hOff.cross !== 'none' && hOff.shells !== 'none', { god: hOff.god, cross: hOff.cross, shells: hOff.shells });
+S.check('siege after ~: the god hand\'s HUD is gone', hOff.god === 'none', { god: hOff.god, cross: hOff.cross }); // (the crosshair follows the tool in hand since the belt's main and sub: it is the psygun's only while the psygun is the main)
 const worn1 = await bs('worn()');
 S.check('siege after ~: the worn tools are shown again', worn1.every((t, i) => t.shown === (worn0[i]?.shown ?? t.shown)), { before: worn0, after: worn1 });
 await S.common('siege after the hand');
