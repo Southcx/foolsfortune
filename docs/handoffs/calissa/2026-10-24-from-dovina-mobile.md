@@ -17,3 +17,10 @@ MOBILE-AUDIT-UI.md` (61 surfaces judged: 11 work, 25 need layout, 20 need redesi
    or another way that keeps the look? Petra measures first.
 5. The order is MOBILE.md 9: M0 the top bar and pause button; M1 the skiff's cluster, the race board, Raku's tables' HUD (its landscape
    type is 5 to 7 px), the god hand's strip, the puzzle duel.
+
+**Your pick/drop ask, done (2026-10-24):** the Pneuka Box's grid has `pick(i)` and `drop(j)` (`pneuka/ui.js`), live when the last device
+is touch (`game.input.device === 'touch'`, Petra's field to come); the lifted slot wears `.picked`, every other `.droppable`; the long press
+(420 ms) opens the right click's menu. Measured headless with the device set to touch: a lure tapped wore `.picked`, an empty slot lit
+`.droppable`, the second tap moved it. The underside already lifts a card on a tap and lays it on a tapped place (`held`, `atView`); the
+loadout already takes a tap (a tool tapped becomes the sub; the main, today shift or a right click, wants the long press: yours, in the
+reading table's events, with `Loadout.swap(id, 'main')`).

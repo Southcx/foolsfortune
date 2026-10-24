@@ -9,9 +9,10 @@
 // How it is used, as OSRS's inventory is: a LEFT CLICK does the obvious thing (with the Book open, store it; otherwise tie a curio
 // on the line), a RIGHT CLICK lists everything that can be done (Tie on, Store, Drop, Examine), a slot can be DRAGGED onto another
 // to swap them, and the line at the top says what a click would do before it is clicked. Examine writes to the log, as OSRS's does
-// to the chat (the log is the only text feedback: tracking.js).
+// to the chat (the log is the only text feedback: tracking.js). ON A TOUCH SCREEN (MOBILE.md 4.4, 4.5): a tap lifts a thing and a tap on a
+// slot puts it there (`pick(i)`, `drop(j)`: Calissa's look lifts `.picked` and lights `.droppable`); the long press is the right click.
 //
-// Prior art: Old School RuneScape's inventory (the grid, left click / right click menus, "Use X -> Y" in the hover line), its bank (Deposit
+// Prior art: Hearthstone's and Marvel Snap's tap, tap on glass; Old School RuneScape's inventory (the grid, left click / right click menus, "Use X -> Y" in the hover line), its bank (Deposit
 // inventory); the reading's own in ui/readingtable.js and pneuka/loadout.js.
 // ---------------------------------------------------------------------------------------
 import { SLOTS, FITTINGS, STORAGE, STORAGE_SHUT } from './box.js';
@@ -90,6 +91,8 @@ const CSS = `
 const SLOW = 0.1; // (the world at a tenth while the box is open: PNEUKA-BOX.md 5)
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; };
 const hex = (n) => `#${n.toString(16).padStart(6, '0')}`;
+
+const PRESS = 420; // (real ms: the long press, the choice card's own hold: ui/choicecard.js)
 
 export class PneukaUI {
   constructor(game) {
@@ -207,6 +210,18 @@ export class PneukaUI {
     px.style.transform = `${centre}${k < 1 ? `scale(${k.toFixed(3)})` : ''}`.trim();
   }
 
+  /** On a touch screen (the last device: MOBILE.md 6.1) a tap lifts a thing and a tap on a slot puts it there (Hearthstone's tap, tap);
+   *  the long press is the right click's menu. A mouse keeps its click and its drag. Calissa's look reads `.picked` and `.droppable`. */
+  get touch() { return this.game.input?.device === 'touch'; }
+  /** Lift the thing in slot i (again: put it down where it was). */
+  pick(i) { if (this.pressed) { this.pressed = false; return; } this.picked = this.picked === i || !this.box.slots[i] ? null : i; this.render(); }
+  /** Put the lifted thing in slot j (a swap if it holds one). True if it moved. */
+  drop(j) {
+    if (this.pressed) { this.pressed = false; return false; }
+    const from = this.picked; this.picked = null; if (from == null || from === j) { this.render(); return false; }
+    this.box.swap(from, j); this.render(); return true;
+  }
+
   icon(id) { const it = itemOf(id); return it ? `<img src="${itemIcon(this.game, id)}" alt="">` : ''; }
 
   invPane() {
@@ -222,14 +237,18 @@ export class PneukaUI {
         d.draggable = true;
         const acts = () => this.actions(i);
         d.onmouseenter = () => { const a = acts(); this.say(`${a[0].label} <b>${it.name}</b>${a.length > 1 ? ` / ${a.length - 1} more option${a.length > 2 ? 's' : ''}` : ''}`); };
-        d.onclick = () => { acts()[0]?.run(); this.render(); };
+        d.onclick = () => { if (this.touch) { this.picked == null ? this.pick(i) : this.drop(i); return; } acts()[0]?.run(); this.render(); };
         d.oncontextmenu = (e) => { e.preventDefault(); this.menu(e, it.name, acts()); };
+        d.onpointerdown = (e) => { if (e.pointerType !== 'touch') return; clearTimeout(this.pressT); this.pressT = setTimeout(() => { this.pressed = true; this.menu(e, it.name, acts()); }, PRESS); }; // (the long press: the second verb, MOBILE.md 4.4)
+        d.onpointerup = d.onpointercancel = () => clearTimeout(this.pressT);
         d.ondragstart = (e) => { e.dataTransfer.setData('text/plain', String(i)); d.classList.add('drag'); };
         d.ondragend = () => d.classList.remove('drag');
       }
       d.ondragover = (e) => { e.preventDefault(); d.classList.add('over'); };
       d.ondragleave = () => d.classList.remove('over');
       d.ondrop = (e) => { e.preventDefault(); const from = +e.dataTransfer.getData('text/plain'); if (Number.isFinite(from)) { box.swap(from, i); this.render(); } };
+      if (!it) d.onclick = () => { if (this.picked != null) this.drop(i); };
+      if (this.picked === i) d.classList.add('picked'); else if (this.picked != null) d.classList.add('droppable');
       d.onmouseleave = () => this.say('&nbsp;');
       grid.appendChild(d);
     });
