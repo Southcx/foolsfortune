@@ -122,7 +122,7 @@ export class Lockheart extends HeldTool {
     this.cof.group.traverse((o) => { if (o.isMesh && o.geometry.boundingSphere?.radius > 0.02) addOutline(o); });
     this.model.group.add(this.cof.group);
     this.cof.group.traverse((o) => this.game.present?.shadeOne(o, true, T.visual.smooth !== false)); // (smooth-shaded now, not at present's walk: its program is the warm one, not one compiled in play; Calissa measured)
-    unwear(this.coffinSkin); this.coffinSkin = wearSkin('lockheart', { body: this.cof.group.children[0]?.material, trim: this.cof.lid.children[0]?.material }); // (the box, and the lid and bail: pneuka/thingmodels.js buildCoffin)
+    unwear(this.coffinSkin); this.coffinSkin = wearSkin('lockheart', { body: [this.cof.group.children[0]?.material, this.cof.lid.children[0]?.material] }); // (the box and the lid, its face and the bail with it, the body's: pneuka/thingmodels.js buildCoffin)
     this.coffinId = id;
     this.rest?.wake();
     return this.cof;
