@@ -1,0 +1,250 @@
+# MOBILE: the whole game on a phone, one build with mouse and keyboard
+
+**Asked:** the owner, 2026-10-24: "let's get fuckin crazy mode on it and evaluate what systems we can make mobile friendly, how to do it, and
+plan for eventual full mobile play that integrates with the mouse+keyboard build". The owner steers the game from screenshots on a phone;
+the first aim is that they can **play** what we build, there.
+
+**Owners:** this plan is Dovina's (what is played, how each system maps to a thumb, the order); the input layer, rendering, performance,
+the save and publishing are Petra's; the HUD's layout and every control's look are Calissa's; sound, its recovery and haptics are
+Wanda's (asked); the words on the controls and the help are Espada's. Nothing here is built by Dovina outside her own files.
+
+**Evidence:** three audits of the code, 2026-10-24 (`docs/plans/research/MOBILE-AUDIT-INPUT.md`, `-UI.md`, `-PERF.md`; summarised in
+section 2): every input verb (`core/input.js` and 322 key reads), every window and HUD element (61 surfaces), and the rendering, memory,
+boot, audio, save and platform state. Nothing has been measured on a phone yet; section 7 starts there.
+
+---
+
+## 1. The verdict
+
+1. **It can be done, and the game's own shape helps.** Every input already goes through one small, plain layer (`game.input`: sets of
+   held and pressed keys, a look delta, a cursor, a wheel), and three drivers that are not a keyboard already write it (the agent, the
+   replay, the siblings' `VirtualKeys`). A touch driver is the fourth. The 480-line present means a phone shades about half a megapixel
+   whatever its screen. Sound is all synthesised (nothing to download). The save is small (about 6 KB fresh).
+2. **The walls are not input.** They are CPU (draw calls: 679 GL calls in the workshop on desktop, a third of them the shadow pass, a
+   third of the main pass outline hulls; never measured on a phone), boot (one 13.3 MB script, about 190 shader programs compiled at
+   start), and memory (a 273 to 294 MB heap, the Raceway 450+). These are measured on the owner's phone first (section 7), before any
+   target is set: ambition first, cost after (CLAUDE.md).
+3. **One game, one build, one save.** No mobile edition. The input is chosen by the last device touched (a finger, a key, a stick), and the
+   HUD follows it; the rules never change by device (DESIGN.md 22: base change bad). Where a finger is worse at something, the game offers
+   the assists it already has (the lock-on's aim assist, the knacks), never a different rule.
+4. **Some systems get better on a phone, and those come first**: everything the cursor already drives (the god hand, the Spirit Garden,
+   the puzzle duel, Raku's tables, the track editor and the haunt), and the verbs that are drawn (Celestial mode's sigils, a miracle's
+   sign, Blade Mode's cut: a finger draws better than a mouse delta does). Then the Solar Skiff, which a phone racer has taught everyone
+   to play with two thumbs. The cutlass fight and free aim are last.
+5. **Gamepad comes in the same layer, nearly free.** A Bluetooth pad on a phone (and on desktop) is the cheapest full-precision mobile
+   input there is; Sky: Children of the Light's reviewers said its pad support is what made the phone version feel right.
+
+## 2. What the audits found (the facts the plan stands on)
+
+| area | state now | consequence |
+| --- | --- | --- |
+| input | keyboard + mouse with pointer lock only; no touch, no gamepad, no coarse-pointer code; losing the lock is the pause | a touch mode must not pause on "no lock"; look must come from a finger |
+| peak inputs at once | on foot 5; cutlass 6 to 7; rod with a fish 6; Solar Skiff 5 (8 with grabs); the rail 6 to 7; helm 4; god hand 3 to 4; duel 2; tables 1 | the skiff, helm, god hand, duel and tables fit two thumbs as they are; the cutlass and the rail need the context to choose |
+| hardest verbs | free aim while holding others; timing windows (parry 0.25 s, late pop, toll on the beat, roll); chords (carve, rod fight, cutlass specials); mouse-delta cursors (Blade Mode, Celestial mode, the order wheel, the quick pick); RMB and MMB as held verbs; keys with no pointer route (digits, Esc, Tab, Enter, `~`, X, R, F, Z, T, Y) | each gets a touch form in section 4 |
+| windows | 61 surfaces: 11 work, 25 need layout, 20 need redesign, 5 dev-only. Hover carries information in 23 handlers and 37 rules; right-click is required in about 10 places; HTML5 drag in the Pneuka Box, the reading table and the underside; the map pans by mouse-move and zooms by wheel | a press-and-hold detail (the choice cards already have one, 420 ms) replaces hover; tap-to-pick-then-tap-to-place replaces drag; a long press replaces right-click |
+| HUD sizing | five sizing systems, all keyed to height; in portrait the Lachrimeter is 58% of the width, the Sight 77%, the psygun cylinder off the left edge; no safe areas | one layout manager with safe areas and thumb zones (Calissa's) |
+| settings | the player's real settings (sensitivity, graphics, volume) live only in the Tab panel (lil-gui) | a settings window reachable by touch |
+| render | 480-line present (a phone draws about 1039 x 480); tiers High/Low/Minimum and dynamic resolution exist; an iPhone auto-detects as High (4x MSAA twice, 8 lamps, PCF shadows); Minimum still needs half-float render targets | a phone tier and a fixed detector; a direct-to-canvas fallback |
+| boot | 30.8 MB dist; about 23.5 MB on the boot path (11.3 MB gzipped); one 13.3 MB `game.js`; about 190 programs compiled behind a text screen (22 s of a 59 s boot on SwiftShader) | lazy rooms, shader warm-up spread, a progress bar; measured on the phone |
+| memory | heap 273 to 294 MB, budget 320; the Raceway 452 to 467 MB inside | measured on the phone; rooms let go as the Raceway's ground already is |
+| audio | synthesised (zero bytes); unlock on a gesture is right; about 5 convolvers and 3 compressors live; no recovery from an iOS interruption or a hidden tab | Wanda's: resume on return, fewer reverbs on a phone |
+| save | localStorage, written whole per scope, 5 s ledger debounce; no flush on `pagehide`; a failed write is silent; iOS evicts a non-installed page's storage after 7 days | flush on hide, say when a write fails, the export code offered |
+| platform | bare viewport meta; no `touch-action`, fullscreen, orientation, safe area, manifest, wake lock or context-lost handling | the plumbing of M0 |
+
+## 3. Prior art, and what to take
+
+| game | what it does | take |
+| --- | --- | --- |
+| **Mario Kart Tour** (Nintendo, 2019) | the kart accelerates by itself; one finger's sideways slide steers and starts a drift; Smart Steering keeps you on the road, switchable; gyro optional; manual drift for experts | auto-sail; steering as a slide from where the thumb lands; the carve as a hard steer; the assist as a switch the player owns |
+| **Asphalt 9's TouchDrive** (Gameloft, 2018) | the game steers; you choose a route at each fork with a swipe, and press drift and nitro; manual steering is still there | a route choice by swipe at the cavern's fork; never the default |
+| **Rocket League Sideswipe** (Psyonix, 2021) | a mobile-only redesign: a stick, two buttons, and swipes on the right side for flips | swipes on the right half for the skiff's sideways verbs (the shoulder) |
+| **Genshin Impact** (HoYoverse, 2020) | one account across PC and phone; a floating left stick, a right-half look drag, contextual buttons; on-screen buttons hide the view | one save across devices; floating stick, look drag, few buttons at a time |
+| **Call of Duty Mobile / PUBG Mobile / Fortnite** | a fire button you can drag to aim; aim assist; a layout editor where the player moves and sizes every button | the drag-to-aim fire button; a layout editor (M5) |
+| **Brawl Stars** (Supercell) | tap a skill to auto-aim it at the nearest target, drag it to aim by hand | tap = assisted, drag = manual, for the psygun's shell and the cutlass's specials |
+| **Sky: Children of the Light** (thatgamecompany) | the touch camera was its weakest part by its own reviews; its pad support is what made it | the camera follows by itself unless the right thumb takes it; pad support from M0 |
+| **Alto's Odyssey** (Snowman) | one tap to jump, hold for tricks: a whole board game on one thumb | the skiff's hop and glide on one held button |
+| **Metal Gear Rising's Blade Mode** on a stick, **Fruit Ninja** on glass | a cut along a line | Blade Mode's cut as a swipe across the screen |
+| **Hearthstone / Marvel Snap** | drag a card to play it, or tap then tap the target; press and hold to read | the Pneuka Box, the reading table, the underside, the house's choice cards |
+| **Minecraft (Bedrock)** | the same world on keyboard, pad and touch; tap to break, hold to place; split controls option | one world; long press for the second verb |
+
+## 4. The touch grammar (one set of rules for every system)
+
+1. **Two zones and a cluster.** The left half of the screen is the move zone: a thumb landing anywhere makes a floating stick there
+   (Genshin's). The right half is the look zone: a drag turns the camera. In the right half's bottom corner sits the **cluster**: at most
+   four buttons, the context's verbs (section 5), the main one largest under the thumb (96 px), the others round it (72 px). Nothing is
+   smaller than 44 px (Apple's and Google's minimum hit target).
+2. **Context decides the buttons.** The cluster shows only what the moment can use (on the skiff: HOP, FLARE, BRAKE; in the air: HOP, NOSE,
+   TAIL; at a rail: NOSE, TAIL). It is the same list the keyboard player already has, cut to the moment; the game tells the HUD what is
+   live (each system declares its context: section 6).
+3. **Every verb keeps its rule.** A held key is a held button; a released key a released button; a timed press a timed press. Windows are
+   never widened for a finger; latency is measured first (section 7), and if a window is out of reach the answer is an assist the game
+   already grants (Held Breath for the parry), switched by the player.
+4. **The second verb is a long press.** Right-click, hover and "examine" become a press held 0.42 s (the choice card's own, `choicecard.js`):
+   it opens the detail or the menu; a tap does the first verb.
+5. **Drag becomes tap, tap.** In any window that drags (the Pneuka Box, the reading table, the underside, the composer), a tap lifts a
+   thing (it rises and glows) and a tap on a place puts it there; a real drag still works.
+6. **Drawn verbs are drawn.** Wherever the game reads a mouse delta as a stroke (Blade Mode's cut, Celestial mode, a miracle's sign, the god
+   hand's arts, the press's lever), the finger draws it on the screen where it is seen.
+7. **Keys with no place get a home.** The windows (Codex, Pneuka Box, map, settings, chat) are icons in a top bar, small and out of the
+   thumbs' way (the pause menu holds them too); the chat line opens a real field (the phone's keyboard); the digits become a strip of the
+   context's choices (chambers, domains, arts, lures), a swipe or a tap.
+8. **The camera helps.** On a phone the camera follows by itself (the chase's own behaviour), and the right thumb takes it only while it
+   drags; let go, it eases back (Sky's lesson). Aim-heavy contexts turn the lock-on on by default (it already has aim assist).
+9. **The HUD makes room.** The instruments (the Lachrimeter, the Sight, a tool's own UI) step out of the thumbs' zones on a phone, in a
+   layout keyed to the screen's shorter side and its safe areas (Calissa's: section 6.3).
+10. **Landscape for action, either for the rest.** The action modes are landscape (a 222 x 480 portrait buffer is too narrow to steer by);
+    the windows, the god hand, the garden, the duel and Raku's tables also work in portrait.
+
+## 5. Every system, judged
+
+Green: works on touch as it is or with the grammar alone. Amber: needs its own mapping (given). Red: needs design work before it plays well.
+
+| system | verdict | how on touch | phase |
+| --- | --- | --- | --- |
+| windows: Index, race board, dialogue, shops, Codex pages, choice cards, pause | green after layout | taps already work (emulated clicks); sizes and the long press | M1 |
+| Raku's tables and the table view | green | tap a piece, long press its tip; the action bar is already buttons; the HUD's type needs the shorter-side unit (landscape type is 5 to 7 px now) | M1 |
+| the puzzle duel | green | tap a cell, drag a path (pointer events), tool moves as a strip, END TURN a button; hover becomes the drag's own preview | M1 |
+| the track editor, the haunt | green | pointer events already; a pinch zooms, two fingers pan; the panel as a drawer | M1 |
+| the god hand | green (better) | the finger is the hand: drag to shape, a strip of domains and arts, the art wheel a long press, a miracle drawn with two fingers held (in place of MMB), pinch to zoom, two-finger drag to pan | M1 |
+| the Spirit Garden | green (better) | the hand as above; the Pneuka Jar's hop on the left stick | M2 |
+| **the Solar Skiff and the Raceway** | amber, specified (section 8) | the first action mode on a phone | **M1** |
+| on foot (the core movement) | amber | left stick moves (its push sets walk, run, sprint); JUMP, CROUCH (slide at a run), DASH; F's interact as a USE button that names its thing; ladders, hanging, swimming read the stick as they read W A S D | M2 |
+| the Pneuka Box, the reading table, the underside | red to green | tap, tap (section 4.5); the hover line becomes the detail on a long press; the window laid out for the screen, not shrunk to 0.4 | M2 |
+| the map | red to green | one finger pans, two pinch; a long press sets the waypoint (a tap after the long press's menu clears it) | M2 |
+| the Veritome | amber (better) | the lens a button (hold to raise), the shutter a tap anywhere on the right half, pinch to zoom: the phone is a camera | M3 |
+| Celestial mode, Blade Mode, a miracle's sign | green (better) | drawn (section 4.6) | M3 |
+| the psygun | amber | aim by look drag with the lock-on on; the FIRE button is dragged to aim while held (CoD Mobile); a chamber strip; the shell tapped (assisted) or dragged (aimed: Brawl Stars) | M3 |
+| the Sondelass: cutlass | red | the string on ATTACK; the special on a SPECIAL button whose swipe direction picks forward or back (in place of W / S held); the guard and parry on GUARD; the lock-on on; Blade Mode drawn | M3 |
+| the Sondelass: rod and angling | amber | cast by a held button and a release; the fight's A / D, S, W on the left stick (its own axes), reel and crank on the right | M3 |
+| the Sondelass: hook | amber | aim at the hook's mark (it already snaps), fire, hold to reel | M3 |
+| the Soul Brush | amber | the club on ATTACK; paint and mop a toggle; Celestial mode drawn | M3 |
+| the Dreamvane, the Lockheart | amber | each a held main verb and a tapped second; the Lockheart's wheel of odds turned by a finger round it | M3 |
+| the Crucibelle | green (better) | five notes as five pads on the right; the toll on the beat a pad of its own: an instrument on glass | M3 |
+| the rhythm mode and busking | amber | ten lanes as ten pads in two rows (a phone's width), notes are single | M3 |
+| the rail (the crossing) | amber | the ship on the left stick; FIRE held; the lock-on sweep a drag across the screen with the right thumb (release fires); ROLL and FORM buttons; the surge a button that lights when full | M4 |
+| the open sea's helm | green after mapping | throttle up and down as two buttons (W / S are taps already), rudder on the stick, the gun on FIRE with the camera aimed by the right thumb | M4 |
+| reprogramming (a typed macro) | red | its hidden input made a real field so the phone's keyboard opens; the composer's right-click rotate a long press | M4 |
+| the seal picker (the title) | red | the name typed into a real field (it reads keys A to Z now) | M1 (it is the first screen) |
+| the party's order wheel, the brush's quick pick | amber | a long press opens the wheel where the thumb is; slide to a wedge, let go | M3 |
+| settings (Tab, lil-gui) | red | a settings window in the house's dress, reachable from the pause menu and the top bar: sensitivity, the camera's follow, graphics, volume, the touch layout | M1 |
+| QAIS (F8) | amber | a corner button in DEBUG builds, so the owner files reports from the phone | M1 |
+
+## 6. The architecture (Petra's, proposed; each to be settled in the discussion, section 10)
+
+### 6.1 Actions and axes
+- The input layer gains **actions** and **axes** beside its keys: `input.action('hop')` (held, pressed, released) and `input.axis('moveX')`
+  (-1 .. 1). Keyboard, mouse, touch and pad all write them; the keyboard's own codes stay readable, so nothing breaks while systems move
+  over one at a time. A table of bindings (`ACTIONS`: id, keys, mouse button, pad button, touch control, its context) is the one place
+  that says what each verb is on each device.
+- Analog axes matter for two systems at once: the skiff's steering and the Courier's walk-run-sprint read a stick's push (today they read
+  binary keys). The core movement is unchanged on a keyboard: full push equals the key.
+- **The touch driver** writes the same fields the agent, replay and siblings write (a synthetic tap held at least one fixed step), and the
+  look delta from the right half's drag. Replays then record touch play for free.
+- **The pad driver**: the Gamepad API, polled once a frame; standard mapping.
+- **The last device wins**: the input layer reports `input.device` (keyboard, touch, pad); the HUD and the help follow it.
+
+### 6.2 A touch mode for the shell
+- No pointer lock on touch, and its loss is not the pause; the pause is a button. `cursorFree` contexts take the finger as the cursor.
+- The platform's plumbing: `viewport-fit=cover`, `touch-action: none` on the canvas, no pinch-zoom or pull-to-refresh of the page,
+  `env(safe-area-inset-*)`, `dvh` in place of `vh`, a fullscreen button, landscape asked for in the action modes, a wake lock while
+  playing, `pagehide` and `visibilitychange` flushing the save, a failed save write said in the log, WebGL context loss and restore handled
+  with a message (and the warm-up repaid behind it).
+- Installing to the home screen (a manifest) would give fullscreen and lift iOS's 7-day storage eviction; whether the published page's
+  host allows it is Petra's to find out.
+
+### 6.3 The HUD's layout (Calissa's)
+- One layout manager places every corner instrument, window and the touch controls inside the safe area, with the thumbs' zones reserved
+  when the device is touch; its unit is keyed to the screen's **shorter side**, not its height, so portrait stops overflowing.
+- The touch controls are the house's, never stock: in the System's type and the island's dress, the cluster's main button the largest,
+  each lit by its state (a held HOP glows as it loads the spring). No words where a glyph says it; a label where it does not (Espada's).
+- Windows: one breakpoint family for coarse pointers (44 px targets, 14 px least type, the long press for detail), the Pneuka Box and the
+  underside laid out for a phone instead of shrunk.
+
+### 6.4 Performance (Petra's, measured first)
+- A **phone tier** beside High, Low and Minimum: MSAA off, the shadow at a lower rate and size, fewer lamps, the outline hulls only near
+  the camera (a third of the main pass's draws now), a frame cap at 30 with steady pacing if 60 is out of reach. Its contents come from
+  the measurement, never before it.
+- The detector reads touch and the screen (an iPhone now lands on High); a direct-to-canvas path where half-float targets are missing.
+- Boot: rooms loaded when first entered (as the Raceway's ground, the garden and a Well floor already are), the shader warm-up shown as a
+  progress bar and spread, the workbench out of the published bundle.
+
+### 6.5 Sound (Wanda's, asked)
+- Resume after an interruption (a call, Siri, the tab hidden) and on return; the schedulers' lookahead made safe for a throttled tab.
+- A phone budget for reverbs (five convolvers live now).
+- **Haptics** as an avenue of feedback where the device has it (Android's `navigator.vibrate`; iOS web has none): a pop's perfect moment,
+  a parry, a hit taken, the trick combo banked. Every number that matters has two avenues or more (CLAUDE.md); a buzz is a third. Wanda's
+  ear for when a sound wants a body to feel it.
+
+## 7. Measure first (the owner's phone is the test bench)
+
+1. **A phone readout**: `?perf` on the URL shows the F3 panel's numbers in a corner (fps, frame ms, draw calls, heap, the tier), since a
+   phone has no F3. The owner opens the published build on their phone at four places (the workshop, the Dunes, the Raceway, the god hand)
+   and sends a screenshot of each. That is the baseline every target is set from.
+2. **Headless touch**: Playwright's `hasTouch` and `isMobile` with a phone's viewport, so the sweeps and the stress test can drive the
+   touch driver (Dovina's sweeps gain a touch pass per room as each phase lands).
+3. **Latency**: a timing probe on the phone (a tap to the frame that shows it) before any timing window is judged reachable.
+
+## 8. The Solar Skiff on touch (the first action mode, specified)
+
+The skiff peaks at five inputs at once (eight with the air's grabs), its verbs are a racer's, and racing is where phones have the deepest
+prior art. Landscape. Every rule as on the keyboard (`courier/skiff/skiff.js`, `boardrules.js`); only the bindings differ.
+
+| verb (keyboard) | touch | why |
+| --- | --- | --- |
+| hoist the sail (W held) | **on by itself while riding** (the sail is up unless BRAKE is held) | Mario Kart Tour's auto-accelerate; holding a thumb down only to go wastes a thumb |
+| furl, brake (S) | **BRAKE**, held (cluster, left of HOP) | |
+| the manual (W and S with a combo live) | BRAKE held while a combo is live (the sail being up already) | the same chord, one button |
+| steer (A / D) | **the left thumb's slide** from where it landed: analog, full at 60 px | Mario Kart Tour's slide |
+| the carve (Q / E held on the sand at speed, its side) | **slide past the outer ring** (beyond 90 px) on that side: the carve begins and loads its tiers; slide back inside to let it go (its push) | MK Tour: the slide that steers is the slide that drifts |
+| the shoulder (Q / E tapped twice) | **a swipe** left or right on the right half | Rocket League Sideswipe's right-side swipes |
+| crouch the springs, hop (Space held, let go) | **HOP**, held and let go (96 px, the cluster's heart) | Alto's one-button board |
+| the late pop, perfect pop | HOP let go just after the crest, as on the keyboard | the same window: measured on the phone before judged |
+| glide (Space held in the air) | HOP held in the air | |
+| spin and the glide's bank and pitch (A / D, W / S, Q / E in the air) | the left thumb, all directions | |
+| the solar flare (Shift held) | **FLARE**, held (cluster, above HOP) | |
+| spend a banked flare (C) | **BOOST**, which appears only while a flare is banked (the combo's suns over the stern say so too) | context decides the buttons |
+| grab nose / tail (LMB / RMB held in the air), double (both) | in the air FLARE and BRAKE become **NOSE** and **TAIL**; both held is the double | the air has no use for brakes |
+| a grind trick (LMB / RMB double-clicked on a rail) | on a rail NOSE and TAIL stay up: double-tap them | |
+| the grind's balance (A / D) | the left thumb | |
+| aftertouch in a bail | the left thumb | |
+| the camera (mouse) | follows by itself; the right half's drag looks round and eases back on release | Sky's lesson |
+| summon / recall (Y), step off (F) | a SKIFF button in the top bar when on foot in the Dunes or the Raceway; STEP OFF in the pause menu | out of the thumbs' way |
+| back to the last gate (R), retire (R held), restart (Backspace), rewind (Backspace held, practice) | the race's own small bar at the top: BACK, RESTART (hold to rewind in practice), RETIRE (hold) | Trackmania's restart is one press: keep it one tap |
+| the race board, the start pillar (F) | USE, naming its thing ("Race board") | |
+| a route at the cavern's fork | the steering itself (as now); no TouchDrive | the skill is the steering |
+
+**The assist (a question for the owner, section 11):** Mario Kart Tour's Smart Steering keeps a kart off the walls. The skiff has none.
+By the design laws an assist is a knack: earned, optional, switched, never gating. A **Steady Keel** knack (the board leans back toward the
+line's centre when no steer is given, and never past it) would serve a thumb and a keyboard alike; its count way and feat way would be the
+Raceway's first race finished and first lap under bronze.
+
+## 9. The phases
+
+| phase | what | who | the owner can then |
+| --- | --- | --- | --- |
+| **M0** foundations | actions and axes; the touch and pad drivers; touch mode for the shell (no lock, pause button, top bar); the platform plumbing; save flush; the `?perf` readout; headless touch for the sweeps | Petra (input, shell, render, save); Calissa (the top bar's and pause button's look); Dovina (the bindings table's contents) | open the build on the phone, move, look, open every window, send perf screenshots |
+| **M1** first play | the Solar Skiff and the Raceway on touch (section 8); the race board, the Index, dialogue and every M1 window sized; Raku's tables; the puzzle duel; the god hand; the track editor and haunt; the seal picker's name field; a settings window; QAIS's corner button | Dovina (the skiff's and the modes' contexts, the cluster's lists), Petra (the drivers' hooks into the skiff and the god hand), Calissa (the cluster, the layout manager, the windows), Espada (the words) | **race on the phone**, play the tables, the god hand, the duels, build tracks |
+| **M2** the island on foot | the core movement on the stick and the cluster; USE; the Pneuka Box, the map and the Codex for touch; the Spirit Garden | as M1 | walk the island, manage the kit, tend the garden |
+| **M3** the tools | each tool's context and cluster (section 5); the drawn verbs; the Crucibelle's pads; the rhythm mode | Dovina (each tool's mapping, with each tool's owner), Petra, Calissa | fight, photograph, fish, paint, play music |
+| **M4** the sea | the rail and the open sea's helm; reprogramming's field | as above, with Wanda for the rail's cue | cross the Emocean |
+| **M5** parity | a layout editor (move and size the cluster: CoD's and PUBG's), gyro steering as an option (Mario Kart Tour's), haptics everywhere they help, the phone tier tuned from the measurements | all | play the whole game on the phone as well as on the desk |
+
+## 10. To settle with Petra (sent 2026-10-24; her answers recorded here when they come)
+
+1. Actions and axes in `core/input.js`, or a module beside it; the bindings table's home and its owner (Dovina writes the contents).
+2. The touch mode's shell: pause, pointer lock, `cursorFree`, the top bar.
+3. The phone readout (`?perf`) and the four-place baseline on the owner's phone; whether the published page's host allows fullscreen,
+   orientation and a manifest.
+4. The phone tier's candidates (MSAA, the shadow pass, outline hulls near only, a 30 fps cap) and the detector's fix for iPhones.
+5. Boot: lazy rooms, the warm-up's progress and spread, the workbench out of the published bundle.
+6. Save on `pagehide`, failed-write notice.
+7. Headless touch in the sweeps and the stress test.
+8. M0's order and size: what lands in her next round.
+
+## 11. Questions for the owner (in Dovina's digest)
+
+1. **Your phone**: which (iPhone or Android, which model)? The baseline and the tier are set from it.
+2. **Steady Keel**: a steering assist knack for the skiff (section 8), earned and switchable, on every device. Yes?
+3. **Landscape only for the action modes** (the skiff, on foot, the rail), either way for windows, the god hand, the garden, duels and tables?
+4. **A gamepad** on the phone: do you have one? With the pad driver in M0 it would let you play most of the game before the touch
+   clusters land (the digit-key choices wait for their strips).

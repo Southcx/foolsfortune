@@ -830,6 +830,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the Anim Lab** (`AnimLab`, `src/workbench/animstage.js`; `/workbench`, MODELS) — the Workbench's stage that plays a stance, a move, an emote or a
   clip on the game's own animation stack as a take, stepped and scrubbed front, side and top. *Not:* the movement lab, the pose audit. → detail
 
+- **touch play / an input action / an axis / the last device** (plain names, a plan; `docs/plans/MOBILE.md`) — the game on a phone, one build and one save with mouse and keyboard / a verb as the input layer names it (`hop`, `flare`), bound to a key, a button, a touch control and a pad button alike; always "an input action" in full / an analog input from -1 to 1 (a stick's push, a slide's) / the device last touched (keyboard, touch, pad), which the HUD and the help follow. *Not:* a creature's mind's actions, a mode.
+- **the move zone / the look zone / the cluster / the top bar** (plain names, a plan; MOBILE.md 4) — the left half of a phone's screen, where a thumb makes a floating stick / the right half, where a drag turns the camera / at most four buttons in the right half's corner, the context's verbs, the main one largest / the strip of window icons (Codex, Pneuka Box, map, settings, chat) out of the thumbs' way. *Not:* the slot row, the action bar (Raku's tables'), the HUD's instruments.
 - **a label / a lore name** (`name` / `lore` on a data table; `docs/plans/CLARITY.md`) — what the UI calls a thing (a genre word: *Grapple*,
   *Bomb*) / the world's name for it (*the hook*, *the toll*). The UI shows only the label. *Not:* two things.
 
