@@ -121,6 +121,11 @@
       <div class="warn" id="lockwarn">Pointer lock unavailable here: look follows the cursor instead.</div>
     </div>
   </div>
-  <script type="module" src="./src/main.js"></script>
+  <script type="module">
+    // THE LOADER: the game's code (main.js and all it imports, some 13 MB) fetched and run only once the page itself has loaded, so the
+    // page has answered its host before the long parse begins (a phone's viewer gave up on the frame about 2 real s in, 2026-10-24).
+    const go = () => import('./src/main.js');
+    if (document.readyState === 'complete') setTimeout(go, 0); else addEventListener('load', () => setTimeout(go, 0), { once: true });
+  </script>
 </body>
 </html>
