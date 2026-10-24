@@ -16,6 +16,7 @@
 // inventory); the reading's own in ui/readingtable.js and pneuka/loadout.js.
 // ---------------------------------------------------------------------------------------
 import { SLOTS, FITTINGS, STORAGE, STORAGE_SHUT } from './box.js';
+import { longPressOn } from '../core/elementlongpress.js';
 import { oddsOf, rates, OUTCOMES, HEARTS } from '../tools/lockheart/table.js';
 import { itemOf } from './items.js';
 import { itemIcon } from './icons.js';
@@ -92,7 +93,6 @@ const SLOW = 0.1; // (the world at a tenth while the box is open: PNEUKA-BOX.md 
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; };
 const hex = (n) => `#${n.toString(16).padStart(6, '0')}`;
 
-const PRESS = 420; // (real ms: the long press, the choice card's own hold: ui/choicecard.js)
 
 export class PneukaUI {
   constructor(game) {
@@ -214,10 +214,9 @@ export class PneukaUI {
    *  the long press is the right click's menu. A mouse keeps its click and its drag. Calissa's look reads `.picked` and `.droppable`. */
   get touch() { return this.game.input?.device === 'touch'; }
   /** Lift the thing in slot i (again: put it down where it was). */
-  pick(i) { if (this.pressed) { this.pressed = false; return; } this.picked = this.picked === i || !this.box.slots[i] ? null : i; this.render(); }
+  pick(i) { this.picked = this.picked === i || !this.box.slots[i] ? null : i; this.render(); }
   /** Put the lifted thing in slot j (a swap if it holds one). True if it moved. */
   drop(j) {
-    if (this.pressed) { this.pressed = false; return false; }
     const from = this.picked; this.picked = null; if (from == null || from === j) { this.render(); return false; }
     this.box.swap(from, j); this.render(); return true;
   }
@@ -239,8 +238,7 @@ export class PneukaUI {
         d.onmouseenter = () => { const a = acts(); this.say(`${a[0].label} <b>${it.name}</b>${a.length > 1 ? ` / ${a.length - 1} more option${a.length > 2 ? 's' : ''}` : ''}`); };
         d.onclick = () => { if (this.touch) { this.picked == null ? this.pick(i) : this.drop(i); return; } acts()[0]?.run(); this.render(); };
         d.oncontextmenu = (e) => { e.preventDefault(); this.menu(e, it.name, acts()); };
-        d.onpointerdown = (e) => { if (e.pointerType !== 'touch') return; clearTimeout(this.pressT); this.pressT = setTimeout(() => { this.pressed = true; this.menu(e, it.name, acts()); }, PRESS); }; // (the long press: the second verb, MOBILE.md 4.4)
-        d.onpointerup = d.onpointercancel = () => clearTimeout(this.pressT);
+        longPressOn(d, (e) => this.menu(e, it.name, acts()), this.game); // (the long press: the second verb, MOBILE.md 4.4; the lift's click and Android's own contextmenu swallowed)
         d.ondragstart = (e) => { e.dataTransfer.setData('text/plain', String(i)); d.classList.add('drag'); };
         d.ondragend = () => d.classList.remove('drag');
       }

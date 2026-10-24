@@ -24,6 +24,8 @@ import { refLap } from '../../progress/skiffruler.js';
  *  so a par of 0.9 asks for some ten real seconds of wrecks over three laps); the camera's height over the leader and its lean. */
 export const HAUNT = { laps: 3, parK: 0.9, camH: 70, camBack: 38 };
 
+const ndcOf = (x, y) => ({ x: (x / innerWidth) * 2 - 1, y: -(y / innerHeight) * 2 + 1 });
+
 export class Haunt {
   constructor(game) {
     this.game = game; this.on = false; this.wrecks = 0; this.lane = 1; this.dir = 1; this.ndc = null;
@@ -42,8 +44,8 @@ export class Haunt {
     R.traps.use(T); Rv.go(); R.traps.haunt('courier'); R.track = T; this.T = T;
     this.par = Math.round(this.refOf(T) * HAUNT.parK);
     const el = (this.canvas = g.renderer?.domElement);
-    this.onMove = (e) => { this.ndc = { x: (e.clientX / innerWidth) * 2 - 1, y: -(e.clientY / innerHeight) * 2 + 1 }; };
-    this.onDown = (e) => { if (e.button === 0 && this.on) this.click(); };
+    this.onMove = (e) => { if (e.pointerType !== 'touch') this.ndc = ndcOf(e.clientX, e.clientY); };
+    this.onDown = (e) => { if (e.button === 0 && this.on && e.pointerType !== 'touch') this.click(); }; // (a finger: update(), as the touch cursor makes it)
     el?.addEventListener('pointermove', this.onMove); el?.addEventListener('pointerdown', this.onDown);
     g.events?.emit('haunt.start', { track: T.id, traps: R.traps.list.length, by: 'courier' });
     return true;
@@ -92,6 +94,7 @@ export class Haunt {
     if (In?.wasPressed('KeyE')) { this.lane = Math.min(2, this.lane + 1); this.dir = 1; }
     if (In?.wasPressed('Space')) this.fireNext();
     if (In?.wasPressed('Backspace')) { this.stop('retired'); return; }
+    if (In?.device === 'touch' && In.wasPressed('Mouse0')) { this.ndc = ndcOf(In.mx, In.my); this.click(); } // (a tap fires the trap under it: MOBILE.md 8.5)
     Rv.update(dt, this.race);
     // the camera over the leader, leaning back along its way
     const lead = Rv.list.reduce((a, r) => (!a || r.d > a.d ? r : a), null);

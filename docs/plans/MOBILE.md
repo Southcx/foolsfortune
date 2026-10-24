@@ -374,6 +374,10 @@ which is closer to Black & White's hand than a mouse ever was. Every rule stays 
 - **Me:** the ctx rows in `core/bindings.js` and tap-to-go's rule. **Built:** `world/garden/tapgo.js` and `realm.goTo(point)`. The
   Jar hops toward the point with the hop unchanged, and lets it go on any key or stick, when picked up, on another planetoid, or after 12
   real s. Measured headless: 5.8 m covered in about a real second, no errors. Petra's touch driver calls `realm.goTo` on a tap with WALK up.
+- **Built in v265 (Petra's M1):** the touch cursor (`core/touchcursor.js`: a finger is the hand, the long press RMB, two fingers the
+  camera's, the two-finger tap undo, SIGN's follow), the garden's gestures and tap to go wired, the art bar wired to the hand, the god
+  hand's long-press wheel and two-finger pan, the duel's push and kick swipes, the map's gestures, an element's long press
+  (`core/elementlongpress.js`).
 
 ## 8.4 The god hand on touch (M1)
 
@@ -420,6 +424,10 @@ The editor is pointer events already (8.2's finger as the hand).
 - **Gestures:** a long press takes a thing out (RMB). Two fingers pan (W A S D) and a pinch zooms. The minimap's drag stays as it is.
 - **The haunt:** a tap on a trap fires it, as the click does now.
 - **The paste box:** a real field already, so the phone's keyboard and paste work.
+- **Built (Dovina, after v265):** the editor and the haunt skip the DOM's touch pointers and read the touch cursor in their `update()`
+  (`input.mx / my`, LMB a tap or a drag, RMB the long press, the wheel the pinch, `touchDrag` the two-finger pan). The drawer: on touch
+  the panel folds under the log's ticker to a row (open, Undo, Leave) and the selected thing's line and buttons. Measured headless on a
+  phone held landscape: a tap lays a point, a pinch zooms 130 to 40 m, two fingers pan, a long press on a point takes it out.
 
 ## 8.8 On foot (M2): the cluster
 
