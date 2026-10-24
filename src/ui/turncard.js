@@ -3,7 +3,7 @@
 // upright shows this card instead of the play, and nothing runs under it). Shown when the device is touch, the phone is upright and an
 // action mode is up: on foot in the world, the Solar Skiff, the rail. Never over what works upright: a window (the Codex, the Pneuka
 // Box, the map, the index, the shop, QAIS, the kiln's, the dialogue box, a reprogramming, the pause menu, the chat line), the god hand,
-// the Spirit Garden, a seat at Raku's tables, a puzzle duel, the title.
+// the Spirit Garden, a seat at Raku's tables, a puzzle duel, the title and the seal picker.
 //
 // While it stands the game is held: `game.hudLayout.turnHeld` is true (main.js's modalOpen reads it, so the tick pauses as under the
 // Codex) and the bus hears `hud.turn` { on } when it comes and goes. Turned back, the play goes on from where it stood.
@@ -68,7 +68,7 @@ export class TurnCard {
   upright() {
     const g = this.game, B = document.body.classList, ov = document.getElementById('overlay');
     return !!(g.title?.active || g.codex?.open || g.indexMenu?.open || g.cartography?.open || g.pneukaUI?.open || g.shopUI?.open || g.qais?.open
-      || g.kilnUI?.open || g.dialogue?.open || g.reprogram?.open || g.log?.typing || (ov && ov.style.display !== 'none')
+      || g.kilnUI?.open || g.dialogue?.open || g.reprogram?.open || g.sealPicker?.isOpen || g.log?.typing || (ov && ov.style.display !== 'none')
       || g.god?.active || g.godhand?.active || g.realm?.active || g.duel?.active || B.contains('bztable-seated'));
   }
 
