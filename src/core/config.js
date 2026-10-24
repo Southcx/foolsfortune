@@ -371,6 +371,7 @@ export const DEFAULTS = {
     creatureTags: 'scan', // a creature's tag (vfx/creaturetags.js): 'scan' (the Veritome's lens raised, and the lock-on) | 'lockon' (the lock-on only) | 'off' (a setting: Calissa)
     arrowCamera: true, // the arrow keys turn and tilt the camera as well as the mouse (PHOTO-MODE.md step 1; a setting)
     creatureTagsMinimal: false, // a creature's tag with the least on it: its sprite, name and health line only (a setting)
+    perfReadout: false, // the performance readout, a corner panel of the frame, the display, the machine and what the host allows (debug/perfreadout.js; also ?perf and /perf; a setting)
     shake: 'full', // every camera's shake (the rail's, the Courier's, the god hand's): 'full' | 'half' | 'off' (a setting: the Game Accessibility Guidelines, RAIL-STANDARDS.md 1)
   },
   audio: {

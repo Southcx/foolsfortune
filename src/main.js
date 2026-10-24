@@ -187,7 +187,8 @@ import { Vfx } from './vfx/vfx.js';
 import { Auras } from './vfx/auras.js';
 import { Temper } from './vfx/temper.js';
 import { Cine, applyCineOverrides } from './cine/sequence.js';
-import { Workbench, applyVfxOverrides } from './workbench/workbench.js';
+import { applyVfxOverrides } from './workbench/overrides.js'; // (the edits kept from the workbench, put in at boot; the workbench itself is fetched on its first open: debug/workbenchloader.js)
+import { installWorkbenchLoader } from './debug/workbenchloader.js';
 import { WireCompass } from './vfx/wirecompass.js';
 import { VaneHud } from './vfx/vanehud.js';
 import { CrucibelleHud } from './vfx/crucibellehud.js';
@@ -211,6 +212,13 @@ import { AI } from './creatures/ai/index.js';
 import { Stun } from './creatures/stun.js';
 import { BUILD } from './core/progress.js';
 import { Save } from './core/save.js';
+import { CloudSave } from './core/cloudsave.js';
+import { Actions } from './core/actions.js';
+import { TouchDriver } from './core/touchdriver.js';
+import { PadDriver } from './core/paddriver.js';
+import { installPlatform } from './core/platform.js';
+import { TouchBar } from './feedback/touchbar.js';
+import { installContextLoss } from './render/contextloss.js';
 import { Agent } from './agent/agent.js';
 import { installPlaces } from './world/places.js';
 import { installReplay } from './debug/replay.js';
@@ -325,6 +333,8 @@ import { Overture } from './cine/overture.js';
 import { OVERTURE_TITLE } from './cine/overture.board.js';
 import { TRACKS as SOUNDTRACKS } from './music/soundtest.js';
 import { Diag } from './debug/diag.js';
+import { PerfReadout } from './debug/perfreadout.js';
+import { StartAt } from './debug/startat.js';
 import { Qais } from './debug/qais/qais.js';
 import { installConsoleRing } from './debug/qais/attach.js';
 import { MacroBook } from './tools/veritome/mind/macros.js';
@@ -375,6 +385,7 @@ async function main() {
   reseed(seedArg != null ? +seedArg >>> 0 : (Date.now() ^ Math.floor(performance.now() * 1000)) >>> 0); // (the session's seed: every chance the simulation takes follows from it: core/rng.js)
   const save = new Save(); // (everything the game keeps, in one place: core/save.js)
   const freshBuild = save.boot(BUILD, save.unstash('mode') || save.lastMode()); // (a new build starts its progress afresh: the player's and the world's; and the save is the mode's chosen on the title, DEBUG or STORY: DEBUG-MODE.md section 2)
+  const cloud = new CloudSave(save, { build: BUILD, mode: save.mode }); await cloud.boot(); // (the same save on every device: the published page's private store, 1.5 real s at most before anything loads: core/cloudsave.js)
   loadTuning();
   const machine = detectMachine(), graphicsTier = applyBootTier(machine); // (the quality tier, read from the machine before anything is built: render/graphics.js)
   installTheme(); // (the windows' look, the faces, the glove: ui/theme.js)
@@ -425,7 +436,7 @@ async function main() {
   const stats = { broken: 0, total: 0 };
   const events = new Events();
   const game = {
-    scene, physics, fx, hud, camera, renderer, stats, events, save,
+    scene, physics, fx, hud, camera, renderer, stats, events, save, cloud,
     reseed, get seed() { return sessionSeed(); }, // (the simulation's chance: core/rng.js; the stress test and replays set it)
     ledger: new Stats(save), // (the quiet ledger: everything counted; see stats.js; kept in the save's player scope)
     listenerDistance: (p) => camera.position.distanceTo(p),
@@ -579,6 +590,11 @@ async function main() {
   game.death = new Death(game); // (the vessel shatters, and is made whole in the workshop: courier/vessel/death.js)
 
   const input = new Input(renderer.domElement);
+  game.actions = new Actions(game, input); // (an input action read whatever device gave it; a control resolved by the live context: core/actions.js, core/bindings.js)
+  game.touch = new TouchDriver(game, input, game.actions, renderer.domElement); game.pad = new PadDriver(game, input, game.actions); // (a phone's thumbs and a pad, pressing the keys the game reads: MOBILE.md 10)
+  input.onBlur = () => { game.touch.release(); game.pad.release(); game.actions.release(); };
+  input.onDevice = (device) => game.events.emit('input.device', { device, by: 'courier' }); // (the device last touched: the touch bar, the help and the HUD follow it)
+  document.addEventListener('visibilitychange', () => { if (document.hidden) input.onBlur(); });
   addEventListener('keydown', (e) => game.qais?.keysFirst?.(e), true); // (QAIS first, before every window's own key listener: F8 over any window, and its Esc its own, R7)
   game.replay = new Replay(input); // (what was pressed, kept to play again: core/replay.js; its commands are registered as the game is built)
   const player = new Player(physics, camera, input);
@@ -684,6 +700,7 @@ async function main() {
   game.guestJars = new GuestJars(game); // (a guest visiting your garden as their own Pneuka Jar in their glazes; Petra's runtime calls show: vfx/garden/guestjars.js)
   game.gardenMood = new GardenMood(game); // (the Inner Realm's one mood: the hour, the season and the briar every garden look reads: vfx/garden/gardenmood.js)
   const cursorFree = () => !!(god.active || game.realm?.active || game.duel?.active || game.trackEditor?.active || game.haunt?.on); // (the hand's cursor is the pointer: no lock taken, no pause on its loss)
+  game.cursorFree = cursorFree; // (a finger is the cursor there: core/touchdriver.js)
   input.wantLock = () => !cursorFree() && !modalOpen() && !game.kilnUI?.open && !game.dialogue?.open && !game.pneukaUI?.open && !game.shopUI?.open && !game.qais?.open; // (a refused lock is retried only if the game still wants one: core/input.js)
   game.lock = new LockOn(game); // (Z-targeting: the camera and the blade hold one thing)
   // what the chevron points at: anything F would act on from here
@@ -866,6 +883,8 @@ async function main() {
   // the chat line in the log: words said aloud, /commands, emotes (chat.js, emotes.js)
   game.chat = new Chat(game);
   sightCommands(game); // (/sight: the Sight's waypoint on the chat line)
+  game.perfReadout = new PerfReadout(game, { diag, renderer }); // (the phone measurement panel: ?perf, /perf, the knob visual.perfReadout; debug/perfreadout.js, MOBILE.md 10.3)
+  game.startAt = new StartAt(game); // (?at=dunes|raceway|godhand|workshop: set down there after the title; debug/startat.js)
   mudraCommands(game); // (/mudra: the god hand holds one of its poses, DEBUG: godhand/mudras.js)
   installCalibrateButtons(game); // (the Sight's TRACK buttons, set by a plate's pick and a charted room: ui/calibratebutton.js)
   game.skiffParts = new SkiffParts(game); game.skiffPaint = new SkiffPaint(game); game.trackEditor = new TrackEditor(game); game.haunt = new Haunt(game); // (made tracks and the haunt mode: world/raceway/editor.js, haunt.js; TRACK-EDITOR.md) game.skiffSettings = new SkiffSettings(game); game.poolCaps = new PoolCaps(game); // (the Solar Skiff's garage and settings, after the chat line they speak on: progress/skiffparts.js, courier/skiff/skiffsettings.js; caps on the pool, a cracked region 5% of its max until mended: progress/poolcaps.js)
@@ -940,13 +959,16 @@ async function main() {
     game.vfx.play(name, { pos: P.pos.clone().addScaledVector(f, 2).setY(P.pos.y + 1), dir: f.clone().negate(), tint: tint ? parseInt(tint.replace('#', ''), 16) : 0xffd76a, floor: P.pos.y });
     game.events.emit('vfx.test', { fx: name, found: game.vfx.has(name) });
   } });
-  game.workbench = new Workbench(game);
+  installWorkbenchLoader(game); // (game.workbench: a stand-in until the first open fetches the studio)
   game.chat.add('overture', { help: "the overture's trailer, here and now (the music from the sound test when it has it)", run: () => {
     const tr = SOUNDTRACKS.find((x) => x.score?.title === OVERTURE_TITLE);
     if (tr && game.music) { if (!game.music.on) game.music.setOn(true); game.music.pick = tr.score; }
     game.overture.start({ own: !tr });
   } });
   for (const m of [game.ledger, system, game.veritome?.book, game.cartography]) if (m?.save) save.writer(() => m.save()); // (they write their own keys on timers of their own, until each has a section: core/save.js)
+  save.watchPage(() => cloud.flushNow()); // (a hidden or closed page writes everything now: a phone may never come back to the tab, MOBILE.md 10)
+  { let said = false; save.onFail = (key, why) => { if (!said) { said = true; events.emit('save.fail', { key, why, by: 'environment' }); } }; } // (a write the browser refused: said once)
+  cloud.attach(game); installContextLoss(renderer, game); // (the cloud's word at boot said now; the graphics context lost and given back: render/contextloss.js)
   const replays = (game.replays = installReplay(game, { player, frame: () => clock.frame, time: { get: () => simTime, set: (v) => { simTime = v; events.time = v; } } })); // (recording from the start of play, /replay, /record: debug/replay.js)
   game.chat.add('goto', { debug: true, help: 'stand at a place (/goto well.mouth) or a point (/goto x y z yaw: the stand line of a QAIS report)', run: (a) => {
     const n = a.map(Number), point = a.length >= 3 && n.slice(0, 3).every(Number.isFinite);
@@ -1016,6 +1038,8 @@ async function main() {
     if (!cursorFree()) input.requestLock(); // (the hand's and the garden's cursor is free: GARDEN-SWEEP #10)
   };
   overlay.addEventListener('click', start);
+  game.pause = () => { if (!started || overlay.style.display !== 'none' || game.title?.active) return; overlay.style.display = 'flex'; input.enabled = false; input.onBlur(); }; // (the touch bar's pause: no lock to lose on a phone, MOBILE.md 4)
+  installPlatform(game); game.touchBar = new TouchBar(game); // (the phone's page: no zoom or scroll, the screen kept awake, which way it is turned; the pause and the windows' buttons: core/platform.js, feedback/touchbar.js)
   game.help = new HelpMenu(document.getElementById('help'), () => overlay.style.display !== 'none' && !game.title?.active); // (the pause menu's pages: feedback/help/)
   // --- the title: THE FOOL'S PRECIPICE (title/): drawn instead of the game until a choice is made ---
   const [tCharG, tGunG] = await Promise.all([loader.parseAsync(bytes(courierB64), ''), loader.parseAsync(bytes(gunB64), '')]);
@@ -1265,6 +1289,7 @@ async function main() {
   // One simulation + animation frame. Split out so tests can drive exact frame rates.
   function tick(dt) {
     clock.frame++;
+    game.touch.update(); game.pad.update(game.rawDt || dt); // (the thumbs' and the pad's state as this tick's keys, before anything reads them)
     game.agent?.update(dt); // (an AI player's intent becomes this tick's input, before anything reads it: agent/agent.js)
     dt = replays.tick(dt); // (recorded, or fed from a replay: the input and the dt this tick runs on)
     game.rawDt = dt;
@@ -1343,6 +1368,7 @@ async function main() {
     system.tick(dt);
     game.ledger.tick(dt);
     save.flush(); // (whatever changed this frame, written whole: core/save.js)
+    cloud.update(game.rawDt || dt); // (and what changed sent to the cloud, at most once a real minute: core/cloudsave.js)
     game.tracking.update(dt);
     game.achievements.tick(dt);
     game.log.tick(dt);
@@ -1469,6 +1495,7 @@ async function main() {
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;
 
     diag.update(game.rawDt);
+    game.startAt.update(game.rawDt); // (?at=godhand waits here for solid ground)
 
     hud.update(dt, {
       speed: Math.hypot(player.vel.x, player.vel.z),
@@ -1508,7 +1535,7 @@ async function main() {
   window.__hideUI = (level) => game.ui.set(level);
   window.__game = { THREE, RAPIER, T, scene, camera, renderer, post: game.post, draw: () => { game.graphics.beforeDraw(); if (game.readingScene?.active) game.readingScene.render(); else game.post.render(scene, camera); }, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, trial, course, techs, game, events, movers, system, codex, pneuka: game.pneuka, ledger: game.ledger, log: game.log, manual: false, hideUI: (level) => game.ui.set(level), zones: game.zones, lights: game.lights };
   mark('ready');
-  if (window.__game.manual && game.title?.active) { game.title.active = false; game.mode ||= save.mode || 'debug'; if (game.mode === 'debug') game.pneuka.debugKit(); game.title.ui.close(); game.ui.want('title', false); } // (a test drive goes straight to the world)
+  if (window.__game.manual && game.title?.active) { game.title.active = false; game.mode ||= save.mode || 'debug'; if (game.mode === 'debug') game.pneuka.debugKit(); game.title.ui.close(); game.ui.want('title', false); game.startAt.apply(); } // (a test drive goes straight to the world; ?at= is its start)
   window.__ready = true;
 }
 

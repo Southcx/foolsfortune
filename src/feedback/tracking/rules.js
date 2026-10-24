@@ -40,6 +40,8 @@ import { raceModeRules } from './racemodes.js';
 import { casinoRules } from './casino.js';
 import { duelRules } from './duel.js';
 import { graphicsRules } from './graphics.js';
+import { perfReadoutRules } from './perfreadout.js';
+import { startAtRules } from './startat.js';
 import { familiarityRules } from './familiarity.js';
 import { sealRules } from './seals.js';
 import { spreadRules } from './spreads.js';
@@ -49,6 +51,7 @@ import { stunRules } from './stun.js';
 import { sightRules } from './sight.js';
 import { goalsRules } from './goals.js';
 import { worldShellRules } from './worldshells.js';
+import { saveRules } from './save.js';
 
 /** The ledger as the crossing's rules see it: inc, hi, lo and first do nothing while the showcase or a practice crossing sails. */
 function atSea(ctx) {
@@ -84,6 +87,8 @@ export function areaRules(ctx) {
   casinoRules(ctx); // (Raku's bazaar: the chips, the tables, what happens at them: docs/plans/CASINO.md)
   duelRules(ctx); // (a puzzle duel with an aberrant: docs/plans/PUZZLE-DUELS.md)
   graphicsRules(ctx); // (the graphics tier, dynamic resolution: render/graphics.js)
+  perfReadoutRules(ctx); // (/perf: the performance readout, debug/perfreadout.js; nothing counted)
+  startAtRules(ctx); // (?at=: where the Courier was set down, debug/startat.js; nothing counted)
   lockheartRules(ctx); // (the Lockheart's Overload recoil) // (the god hand's matter, miracles, epics and the island's rejection)
   voyageRules(sea);
   gardenRules(ctx);
@@ -93,6 +98,7 @@ export function areaRules(ctx) {
   testroomRules(ctx);
   brushRules(ctx); // (the Soul Brush's load: paint, mop, the Lachrymato Bottles, the stains)
   worldShellRules(ctx); // (the World shells: found from blots, drawn on the place, a dry click)
+  saveRules(ctx); // (where your save is kept: the browser, the cloud; the graphics context lost and given back)
   qaisRules(ctx); // (QAIS: a report filed, a round sent, /goto; nothing counted)
   partyRules(ctx); // (the siblings: coop/party.js)
   skiffRules(ctx); // (the Solar Skiff's summon, parking, recall and bail: courier/skiff/skiff.js)

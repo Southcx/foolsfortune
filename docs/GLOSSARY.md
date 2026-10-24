@@ -832,6 +832,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the kit** (the `kit` section) — the Pneuka Box and the belt, kept as one. *Not:* the Lockheart's kit.
 - **the tuning panel** (Tab, `src/debug/tuning.js`) — live sliders and actions. A **setting** is the player's own preference; a **knob** is any
   other number; a knob off its default is tuned. → detail
+- **the perf readout / the host** (plain names; `PerfReadout`, `game.perfReadout`, `src/debug/perfreadout.js`, `hostprobe.js`; `?perf`, `/perf`, the knob `visual.perfReadout`; MOBILE.md 10.3) — a corner panel, top-left, of the frame's numbers (the F3 panel's, read), the display, the machine and what the host allows, each present or MISSING, for a screenshot on a phone / the browser and the frame the page sits in. *Not:* the F3 panel (`Diag`), the Lachrimeter, the co-op host (the world's owner).
+- **a start place** (plain name; `?at=dunes|raceway|godhand|workshop`, `StartAt`, `game.startAt`, `src/debug/startat.js`) — where a tester's URL sets the Courier down after the title's choice, through `game.places.travel` (the god hand: `god.toggle`), in either save mode; the travel's own counts put back. *Not:* /goto (DEBUG), the Index, a Shrine.
 - **the Anim Lab** (`AnimLab`, `src/workbench/animstage.js`; `/workbench`, MODELS) — the Workbench's stage that plays a stance, a move, an emote or a
   clip on the game's own animation stack as a take, stepped and scrubbed front, side and top. *Not:* the movement lab, the pose audit. → detail
 

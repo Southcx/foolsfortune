@@ -19,16 +19,27 @@
 // DYNAMIC RESOLUTION, under any tier: when the frame keeps missing the display's refresh, the lines step down toward the floor; when it
 // keeps making it with room to spare, back up toward the tier's own. Never below the floor, never above the tier, nothing compiled.
 //
+// A PHONE OR TABLET (MOBILE.md 10, step 7): an iPhone reports its GPU as "Apple GPU", six cores and no `deviceMemory`, which matched
+// nothing above and booted it on High (480 lines, MSAA 4 twice, 8 lamps, a PCF shadow every frame). The machine now also says whether it
+// is touch (`navigator.maxTouchPoints` above 0 AND `(pointer: coarse)`: a touchscreen laptop whose first pointer is the mouse is not) and
+// whether it is mobile (touch, plus a phone's or tablet's GPU string (Apple GPU, Mali, Adreno, PowerVR), platform (Android, iPhone, iPad,
+// an iPad passing as a Mac) or a screen whose short side is under 900 CSS px). A mobile machine boots on Low, never High; the Minimum
+// rules (software GL, no half-float targets, two cores, 2 GB) still come first, and the player's own tier or `?graphics=` still stands.
+// There is no phone tier here: Low is the stand-in until the owner's measurements on the phone say what one holds (MOBILE.md 10, 4).
+// Every machine that is not touch reads exactly as before: `mobile` is false for it, and the rows of `tierFor` for it are untouched.
+//
 // Prior art: Unreal's scalability groups and its auto-detection; the PC preset row (Low / Medium / High / Custom, a knob moved by hand
 // turns the preset Custom); dynamic resolution scaling on consoles (Wipeout HD's dynamic framebuffer, Halo 5, every Switch port);
-// leafcanopy.js's own renderer-string test for software GL.
+// leafcanopy.js's own renderer-string test for software GL; pmndrs' detect-gpu (the GPU's string and a mobile flag choosing a tier);
+// CSS Media Queries Level 4's `(pointer: coarse)`; web.dev's adaptive loading (`deviceMemory` and `hardwareConcurrency` read together,
+// no one of them alone).
 //
-//   detectMachine() -> { renderer, cores, memory, software, integrated, floatTargets, maxSamples }
+//   detectMachine() -> { renderer, cores, memory, software, integrated, floatTargets, maxSamples, touch, mobile }
 //   tierFor(machine) -> 'high' | 'low' | 'minimum'      GRAPHICS_TIERS      TIER_KEYS (the T.visual knobs a tier owns)
 //   const tier = applyBootTier(machine)   (before the renderer is made)
 //   game.graphics = new Graphics(game, { renderer, camera, tier, machine })   .update(rawDt)   .observe(rawDt) (the title's frames: the
 //   display's refresh)   .beforeDraw()   .setTier(name)
-//   Events: graphics.tier { tier, chosen, renderer, by: 'environment' }, graphics.lines { lines, by: 'environment' }
+//   Events: graphics.tier { tier, chosen, renderer, touch, mobile, by }, graphics.lines { lines, by: 'environment' }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { T, DEFAULTS } from '../core/config.js';
@@ -45,20 +56,47 @@ export const TIER_KEYS = ['resolution', 'shadows', 'shadowRes', 'shadowFilter', 
 export const LINE_STEPS = [480, 440, 400, 360, 320, 270];
 const DYN = { window: 2, down: 3, up: 10, upAfterDown: 30, miss: 1.25, make: 1.06, slowest: 18 }; // (real s of samples; real s over before a step down, under before a step up; no step up for this long after one down; the median interval against the display's refresh that counts as missing it, as making it; ms a frame must pass to count as slow at all)
 
+/** A phone's or tablet's GPU, by the string it gives. Safari says "Apple GPU" for every iPhone, iPad and Apple-silicon Mac alike, so it
+ *  counts only with touch (a Mac has none). */
+const MOBILE_GPU = /apple gpu|mali|adreno|powervr/i;
+/** A phone's or tablet's platform, by the user agent (an iPad in desktop mode says Mac: see `touchFacts`). */
+const MOBILE_PLATFORM = /android|iphone|ipad|ipod|\bmobile\b/i;
+/** A screen whose short side (CSS px) is under this is a phone's or a small tablet's. */
+export const MOBILE_SHORT_SIDE = 900;
+
+/** Touch and the platform, from what the browser says: `touch` is touch points AND a coarse first pointer; `platformMobile` is the
+ *  user agent hints, the user agent, or an iPad in desktop mode (platform MacIntel with more than one touch point). */
+function touchFacts() {
+  const n = navigator, points = n.maxTouchPoints || 0;
+  let coarse = false; try { coarse = !!matchMedia('(pointer: coarse)').matches; } catch { /* no media queries */ }
+  const platformMobile = n.userAgentData?.mobile === true || MOBILE_PLATFORM.test(n.userAgent || '') || (n.platform === 'MacIntel' && points > 1);
+  const short = Math.min(screen.width || Infinity, screen.height || Infinity);
+  return { touch: points > 0 && coarse, platformMobile, short };
+}
+
 /** What the machine says about itself, read from a throwaway context before the game's own is made. */
 export function detectMachine() {
-  const m = { renderer: '', cores: navigator.hardwareConcurrency || 0, memory: navigator.deviceMemory || 0, software: false, integrated: false, floatTargets: true, maxSamples: 4 };
+  const m = { renderer: '', cores: navigator.hardwareConcurrency || 0, memory: navigator.deviceMemory || 0, software: false, integrated: false, floatTargets: true, maxSamples: 4, touch: false, mobile: false };
+  let noContext = false;
   try {
     const c = document.createElement('canvas'), gl = c.getContext('webgl2');
-    if (!gl) return { ...m, software: true, floatTargets: false };
-    const info = gl.getExtension('WEBGL_debug_renderer_info');
-    m.renderer = String(info ? gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER));
-    m.floatTargets = !!gl.getExtension('EXT_color_buffer_float');
-    m.maxSamples = gl.getParameter(gl.MAX_SAMPLES) || 0;
-    gl.getExtension('WEBGL_lose_context')?.loseContext();
+    if (!gl) noContext = true;
+    else {
+      const info = gl.getExtension('WEBGL_debug_renderer_info');
+      m.renderer = String(info ? gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER));
+      m.floatTargets = !!gl.getExtension('EXT_color_buffer_float');
+      m.maxSamples = gl.getParameter(gl.MAX_SAMPLES) || 0;
+      gl.getExtension('WEBGL_lose_context')?.loseContext();
+    }
   } catch { /* no context: the defaults stand */ }
-  m.software = /swiftshader|llvmpipe|softpipe|software|basic render/i.test(m.renderer);
+  if (noContext) { m.software = true; m.floatTargets = false; }
+  m.software = m.software || /swiftshader|llvmpipe|softpipe|software|basic render/i.test(m.renderer);
   m.integrated = /intel|mali|adreno|powervr|videocore|radeon(\(tm\))? (vega \d\b|graphics)|uhd|iris/i.test(m.renderer) && !/arc a\d/i.test(m.renderer);
+  try {
+    const t = touchFacts();
+    m.touch = t.touch;
+    m.mobile = t.touch && (MOBILE_GPU.test(m.renderer) || t.platformMobile || t.short < MOBILE_SHORT_SIDE);
+  } catch { /* no navigator or screen: not touch */ }
   return m;
 }
 
@@ -66,7 +104,7 @@ export function detectMachine() {
  *  and dynamic resolution corrects the rest in play. */
 export function tierFor(m) {
   if (m.software || !m.floatTargets || (m.cores && m.cores <= 2) || (m.memory && m.memory <= 2)) return 'minimum';
-  if (m.integrated || (m.cores && m.cores <= 4) || (m.memory && m.memory <= 4)) return 'low';
+  if (m.mobile || m.integrated || (m.cores && m.cores <= 4) || (m.memory && m.memory <= 4)) return 'low'; // (m.mobile: a phone or tablet, never High; false on every machine that is not touch)
   return 'high';
 }
 
@@ -97,7 +135,7 @@ export class Graphics {
     this.dynLines = null; this.samples = []; this.overT = 0; this.underT = 0; this.sinceDown = Infinity; this.checkT = 0; this.cullT = 0; this.frame = 0;
     this.applyShadowRate();
     const chosen = T.visual.graphics;
-    queueMicrotask(() => game.events?.emit('graphics.tier', { tier, chosen, renderer: machine.renderer, by: 'environment' }));
+    queueMicrotask(() => game.events?.emit('graphics.tier', { tier, chosen, renderer: machine.renderer, touch: !!machine.touch, mobile: !!machine.mobile, by: 'environment' }));
   }
 
   /** The sun's map redrawn every n frames (n 1: every frame, three's own). */
@@ -122,7 +160,7 @@ export class Graphics {
     this.tier = target; this.dynLines = null;
     this.game.present?.apply(); this.applyShadowRate();
     const after = { lightSlots: V.lightSlots, shadows: V.shadows, shadowFilter: V.shadowFilter, glow: V.glow > 0 || V.grade > 0, msaa: V.msaa, antialias: V.antialias };
-    this.game.events?.emit('graphics.tier', { tier: target, chosen: name, renderer: this.machine.renderer, restart: JSON.stringify(before) !== JSON.stringify(after), by: 'courier' });
+    this.game.events?.emit('graphics.tier', { tier: target, chosen: name, renderer: this.machine.renderer, touch: !!this.machine.touch, mobile: !!this.machine.mobile, restart: JSON.stringify(before) !== JSON.stringify(after), by: 'courier' });
     return JSON.stringify(before) !== JSON.stringify(after);
   }
 
