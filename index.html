@@ -7,16 +7,19 @@
   <script>
     // THE BOOT WATCH (a phone that will not open the game: Dovina's ask, 2026-10-24): from the first byte to the title, before any module
     // runs, so an error in the bundle's own evaluation or in the renderer's making is shown on screen, not a blank page. Each boot stage
-    // (main.js's `mark`) is said under the loading line and kept as a breadcrumb in the tab's session storage, which outlives the page's
-    // process: when a phone kills a tab for its memory and loads it again, the box says where the last load stopped. A load that leaves
-    // the page (pagehide) forgets it. The breadcrumb is the tab's own and outlives nothing else, so it is kept here, never in the save
-    // (which does not exist yet when this runs). After `ready` errors are the game's own box's (main.js reportError).
+    // (main.js's `mark`) is said under the loading line and kept as a breadcrumb in the tab's session storage and the page's local
+    // storage (the Claude app may open the page again in a fresh view, where session storage is new): when a phone kills a page for its
+    // memory and it is opened again, the box says where the last load stopped. A load that leaves the page (pagehide) forgets it. The
+    // breadcrumb is a crash's note, not the game's state, and must be written before any module (the save among them) exists, so it is
+    // kept here, never in the save. After `ready` errors are the game's own box's (main.js reportError).
     //   window.__bootWatch.stage(name)   .fail(error)   .build   .stages [[name, ms]]   (main.js's mark() calls stage; its start's catch, fail)
     (function () {
       var KEY = 'ff.bootWatch', t0 = Date.now(), W = window.__bootWatch = { stages: [], done: false }, box = null, line = null;
-      var store = null; try { store = window.sessionStorage; store.getItem(KEY); } catch (e) { store = null; }
-      var put = function (o) { try { if (store) store.setItem(KEY, JSON.stringify(o)); } catch (e) { /* full or refused */ } };
-      var last = null; try { last = store && JSON.parse(store.getItem(KEY) || 'null'); } catch (e) { last = null; }
+      var stores = [];
+      try { window.sessionStorage.getItem(KEY); stores.push(window.sessionStorage); } catch (e) { /* none */ }
+      try { window.localStorage.getItem(KEY); stores.push(window.localStorage); } catch (e) { /* none */ }
+      var put = function (o) { for (var i = 0; i < stores.length; i++) { try { stores[i].setItem(KEY, JSON.stringify(o)); } catch (e) { /* full or refused */ } } };
+      var last = null; for (var i = 0; i < stores.length && !last; i++) { try { last = JSON.parse(stores[i].getItem(KEY) || 'null'); } catch (e) { last = null; } }
       var show = function (text) {
         if (!document.body) { document.addEventListener('DOMContentLoaded', function () { show(text); }); return; }
         if (!box) { box = document.createElement('div'); box.id = 'bootwatch';
