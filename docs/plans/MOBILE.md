@@ -483,6 +483,16 @@ The save is already one format on every platform: `core/save.js`'s sections, and
     ago: LOAD"). A real hour of play is never lost silently.
   - **Settings are per device**, never synced: a phone's graphics tier and touch layout are not the desk's.
   - **Signed out, or `db` absent:** localStorage alone, as now. The log says once that the save is kept on this device only.
+- **Petra's refinements (2026-10-24):**
+  1. **Boot never waits on the db.** `claude.use('db')` resolves late, and as null after 10 real s. So boot reads localStorage as now,
+     and the cloud read gets 1.5 real s before the title. A cloud save that answers later and was played longer is offered as the loser
+     copy is ("Your save from another device, N real hours ago: LOAD"). It never swaps under a running game.
+  2. **"Played longer" is the ledger's play time**, kept in the save itself. A section's `at` only says when it was written.
+  3. **`device` is a random id kept in the settings section** (local, one a browser). Its label in the Codex ("your desktop", "your
+     phone") is read from the user agent when the save is written.
+  - **For `?perf`:** `navigator.storage.persisted()` and `estimate()`, standalone mode (`display-mode`), and whether fullscreen,
+    orientation lock, wake lock and vibrate exist. A missing one is reported as missing.
+  - **M0 as a whole waits on the owner's go.**
 - **The ledger's 5 s debounce** and the save's flush already land in M0 (section 10, answer 6). The cloud write is M0's step 2 too: the
   same hook, one more writer. It goes before touch play, because the owner's phone storage is the one at risk (11.1).
 - **What I check** (the sweeps' touch lane): a save written on one page and read on a fresh one; a section from an old build refused;
