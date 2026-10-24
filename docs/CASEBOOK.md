@@ -849,3 +849,5 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
     own weight, so its shape is not evidence of its length; and a width meant for the screen is a pixel count, scaled once.
 288. **A text the game asks you to paste is pasted somewhere that holds it.** Measure the longest thing a
     field must take against its `maxlength`, and test the path the player uses (the field), not only the function behind it.
+289. **The audio context is asked to run again whenever it stops.** A phone interrupts it (a call, a hidden tab):
+    resume on visibility and on every state change, and arm the next gesture when the browser refuses; schedule on the context's clock.
