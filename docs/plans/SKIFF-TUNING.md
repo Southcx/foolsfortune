@@ -245,3 +245,23 @@ price }`), chosen at the race board's PAINT tab. What opens each:
 | its length | short; long | 10 races won | free |
 
 The looks (Calissa's) read `game.skiffPaint.worn` and `colourOf(kind)`.
+
+**T8, Calissa's looks ruled (Dovina, 2026-10-24).** Her trims, hull paintings and sets (`vfx/skifftrims/`, `vfx/skiffhulls.js`,
+`vfx/skiffsets.js`) are rows in `PAINT` now. Looks only; nothing touches the handling.
+
+| kind | rows | opened by | price |
+| --- | --- | --- | --- |
+| trail | petals, embers, ink, starlight, frost | 25 races finished; 10 scorches; a win on a track you made; 25 perfect pops; 50 near misses | free |
+| ribbon | helix, comet, paper chain | a grab held 4 real s; a combo of 10,000; 5 wagers won | free |
+| length (the pennant's shape) | swallowtail, carp, prayer flags | both cups won; 50 glides; all seven feelings awakened | free |
+| wrap (new) | bare hull; pinstripes, roundel, flames, kintsugi | 500 m of rail ground; 10 hot laps; 20 solar starts; 10 wrecks | free |
+| hull (new) | the maker's; urushi, driftwood, celadon, teak, obsidian, festival | 3 hull firings; 20 open-sea squares; 10 gaps; full buoy power; 10 night races; 50 City Trial patches | a firing's, each change |
+
+- **Pinstripes** opens on rail ground, not on 3 wins: Waves already opens there. **Hulls cost a firing** (a repaint, her suggestion) and
+  wraps are free (a hull painting is the sink; a wrap is an overglaze on it). The opens are spread across the craft; no cup opens a hull.
+- **A set is a full livery** (`SET_RULES`): the **count way** is owning every piece of it (completes it once), the **feat way** a thing
+  bigger than the pieces: Kintsugi 10 cracks mended, Driftwood 3 herds, Celadon 5 licences, Matsuri 3 City Trials, Racing both cups and
+  25 wins, Obsidian 3 haunted races. It is worn whole (`setOpen`) only with both, so a slot is never refused. A card back is not a paint
+  kind (`game.cardBacks`) and stays out of sets.
+- **Not built (not mine):** the SET button on the PAINT tab, the ledger counter `skiff.set.<id>` and an achievement a set and one for all
+  six (tracking and achievements are Petra's and mine to add once the counter is written).
