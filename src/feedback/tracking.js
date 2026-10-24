@@ -46,6 +46,7 @@ import { SLOTS } from '../pneuka/box.js';
 import { PAIRS } from '../progress/toolpairs.js';
 import { areaRules } from './tracking/rules.js';
 import { RATINGS, overall } from '../ui/rating.js';
+import { helpLine } from './help/devicehelp.js';
 const plural = (n, w) => `${n} ${n === 1 ? w : `${w.replace(/([^aeiou])y$/, '$1ie')}s`}`; // (slip jellies, not jellys: QA-A)
 const an = (w) => (/^[aeiou]/i.test(w) ? 'an ' : 'a ') + w;
 const clock = (t) => `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, '0')}`;
@@ -297,7 +298,10 @@ export class Tracking {
     // the room they walk into, said as they enter it (the wire compass asks: vfx/wirecompass.js); the same room again only after a while
     const entered = new Map();
     on('place.enter', (e) => { if (g.realm?.active) return; const now = e.t ?? 0; if (now - (entered.get(e.room) ?? -1e9) < 90) return; entered.set(e.room, now); log.say('explore', `You enter ${e.room}.`, { key: 'place', win: 1 }); }); // (no room of the workshop is entered from the garden: GARDEN-SWEEP #8)
-    on('room.help', (e) => { if (HELP[e.room] && !helped.has(e.room)) { helped.add(e.room); log.say('system', HELP[e.room] + (g.mode === 'debug' && HELP[`${e.room}.debug`] ? ` ${HELP[`${e.room}.debug`]}` : '')); } });
+    on('room.help', (e) => { // (in the words of the device last touched: feedback/help/devicehelp.js; said again in a room if the device changed)
+      const dev = g.input?.device || 'keyboard', line = helpLine(e.room, dev, HELP[e.room]), k = `${e.room}:${dev}`;
+      if (line && !helped.has(k)) { helped.add(k); log.say('system', line + (dev === 'keyboard' && g.mode === 'debug' && HELP[`${e.room}.debug`] ? ` ${HELP[`${e.room}.debug`]}` : '')); }
+    });
     on('circuit.enter', (e) => { L.inc(`circuit.${e.id}.enter`); L.inc('circuit.enter'); log.say('circuit', `You enter ${e.title}.${e.par ? ` Gold under ${e.par.gold} s, silver ${e.par.silver}, bronze ${e.par.bronze}.` : ''}${e.best ? ` Your best: ${fx(e.best)} s.` : ''}`); }); // (the circuit panel's targets, now in the log: the owner, 2026-10-07)
     on('circuit.gate', (e) => {
       L.inc('circuit.gate');

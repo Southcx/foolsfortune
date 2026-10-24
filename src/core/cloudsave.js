@@ -34,7 +34,7 @@ import { now } from './calendar.js';
  *  day); part: characters a document holds (under the store's 256 KiB once escaped). */
 export const CLOUD = { boot: 1500, every: 60, keep: 3600, part: 180000 };
 
-const labelOf = (ua = navigator.userAgent || '') => (/iPhone|Android.+Mobile/i.test(ua) ? 'your phone' : /iPad|Android|Tablet/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) ? 'your tablet' : 'your desktop');
+const labelOf = (ua = navigator.userAgent || '') => (/iPhone|Android.+Mobile/i.test(ua) ? 'your phone' : /iPad|Android|Tablet/i.test(ua) || (/Macintosh/.test(ua) && navigator.maxTouchPoints > 1) ? 'your tablet' : 'your computer');
 const rid = () => (globalThis.crypto?.randomUUID?.() || `${now()}-${performance.now()}`).replace(/[^a-z0-9]/gi, '').slice(0, 16); // (an id, not the simulation's chance)
 const withTimeout = (p, ms) => Promise.race([p, new Promise((r) => setTimeout(() => r(undefined), ms))]);
 
