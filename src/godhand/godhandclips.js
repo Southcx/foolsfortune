@@ -21,11 +21,15 @@
 // Prior art: Black & White's hand (one hand as your whole presence: grab, pat, slap, point), the clapperjar's crossfaded clips
 // (creatures/clappers.js), and Unity's Animator (a state's clip, its loop or its exit, chosen by the game's own state).
 //
-//   const C = new GodHandClips(god, gltf)   C.update(dt)   C.play('wave')   C.move   C.hit   C.done
+// A mudra (godhand/mudras.js) may be held over whatever plays: laid on after the mixer, the limits run again after it; none held, nothing
+// changes. When one is taken is Dovina's (nothing here listens for it); `/mudra <key|off>` tries them in DEBUG.
+//
+//   const C = new GodHandClips(god, gltf)   C.update(dt)   C.play('wave')   C.move   C.hit   C.done   C.mudra('gyan' | null)   C.heldMudra
 //   (built in godhand.js buildHand; ticked by godhand.js updateHand and applyCamera in the world, by world/garden/hand.js pose in the garden)
 // ---------------------------------------------------------------------------------------
 import { RigClips } from '../courier/anim/rigclips.js';
 import { godhandLimits } from '../courier/anim/rom.js';
+import { MudraPose } from './mudras.js';
 
 // (frames at 30 fps: a held stretch is rocked between its two frames until let go; `out` is played on from there; a `firm` once, a blow,
 // is played through before anything the chooser wants)
@@ -70,7 +74,9 @@ export class GodHandClips {
     this.god = god; this.game = god.game;
     const bones = {}; gltf.scene.traverse((o) => { if (o.isBone) bones[o.name] = o; });
     const rest = new Map(Object.values(bones).map((b) => [b, b.quaternion.clone()]));
-    this.R = new RigClips(gltf.scene, gltf.animations, HAND_MOVES, { limits: godhandLimits(bones, (b) => rest.get(b)) });
+    this.limits = godhandLimits(bones, (b) => rest.get(b));
+    this.R = new RigClips(gltf.scene, gltf.animations, HAND_MOVES, { limits: this.limits });
+    this.mudras = new MudraPose(this.game, bones, gltf.animations); // (built at the rig's rest)
     this.held = null; this.stroke = null;
     const on = (n, fn) => this.game.events?.on(n, fn);
     const world = () => this.god.controlling && !this.game.realm?.active, garden = () => !!this.game.realm?.active;
@@ -103,6 +109,9 @@ export class GodHandClips {
   get hit() { return this.R.hit; }
   get done() { return this.R.done; }
   play(move, opts) { return this.R.play(move, { again: true, ...opts }); }
+  /** Hold a mudra over the clips (its key: godhand/mudras.js MUDRAS), or let it go (null); blended in and out over 0.2 real s. */
+  mudra(key) { return this.mudras.hold(key); }
+  get heldMudra() { return this.mudras.key; }
 
   /** Once a frame while the hand is drawn: the clip the mode wants, then the mixer and the limits. */
   update(dt) {
@@ -110,6 +119,7 @@ export class GodHandClips {
     if (realm?.active) this.garden(realm);
     else if (this.god.controlling) this.world();
     this.R.update(dt);
+    if (this.mudras.apply(dt)) this.limits.apply(); // (a pose held or fading: the joint limits again after it)
   }
 
   /** Go to `want` unless a once is still playing; a held clip that is no longer wanted is let go first. `urgent` cuts a once short,
