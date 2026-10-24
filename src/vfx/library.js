@@ -16,6 +16,8 @@ import { RACEWAY_CAVERN_EFFECTS } from './racewaycaverneffects.js'; // (a crysta
 import { RACEWAY_PROPS_EFFECTS } from './racewaypropseffects.js'; // (the vein lanes, the pots, the antlion chaser, the patches: vfx/racewayprops.js plays them)
 import { RACEWAY_KNOCK_EFFECTS } from './racewayknockeffects.js'; // (clay struck at speed: a rival bumped or taken down, a pot's plume: vfx/racewayrivals.js, vfx/racewayprops.js)
 import { RACEWAY_PARK_EFFECTS } from './racewayparkeffects.js'; // (the antlion's maw snapping: vfx/racewaypark.js plays it)
+import { DUNES_DRESS_EFFECTS } from './dunes/effects.js'; // (the dust devils' scuff, a fulgurite's strike and glint: vfx/dunes/)
+import { RACEWAY_DRESS_EFFECTS } from './raceway/effects.js'; // (the race's fireworks, a Raceway lantern catching: vfx/raceway/)
 import { SKIFF_BOARD_EFFECTS } from './skiffboardeffects.js'; // (the board's stakes: the scorch, the hull, a wreck, the manual; the buoys: vfx/skiffboardlooks.js, vfx/racewaybuoys.js)
 import { RACEWAY_SIPHON_EFFECTS } from './racewaysiphoneffects.js'; // (the siphon arches' draw, drink and gulp: vfx/racewaysiphons.js plays them)
 import { PSYGUN_VARIANT_EFFECTS } from './psygunvarianteffects.js'; // (the psygun variants' flare, pentacle and reveal: tools/psygun/variantplay.js, vfx/flarereveal.js)
@@ -770,6 +772,8 @@ export const LIBRARY = {
   ...RACEWAY_EFFECTS,
   ...RACEWAY_CAVERN_EFFECTS,
   ...RACEWAY_PARK_EFFECTS,
+  ...DUNES_DRESS_EFFECTS,
+  ...RACEWAY_DRESS_EFFECTS,
   ...SKIFF_BOARD_EFFECTS,
   ...RACEWAY_PROPS_EFFECTS,
   ...RACEWAY_KNOCK_EFFECTS,

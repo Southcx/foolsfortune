@@ -113,6 +113,8 @@ import { WorldLooks } from './vfx/worldshells.js';
 import { RacewayCavern } from './vfx/racewaycavern.js';
 import { RacewayPark } from './vfx/racewaypark.js';
 import { RacewayProps } from './vfx/racewayprops.js';
+import { DunesDress } from './vfx/dunes/index.js';
+import { RacewayDress } from './vfx/raceway/index.js';
 import { RacewayFog } from './vfx/racewayfog.js';
 import { LachrimeterTube } from './vfx/lachrimetertube.js'; import { SpiritualLink } from './vfx/spirituallink.js'; import { PsygunCylinder } from './vfx/psyguncylinder.js'; import { SondelassGuard } from './vfx/sondelassguard.js'; import { SightLook } from './vfx/sight.js'; import { CreatureTags } from './vfx/creaturetags.js'; import { TitlePlacard } from './vfx/titleplacard.js'; import { SealImprints } from './vfx/sealimprint.js'; import { SealPicker } from './ui/sealpicker.js'; import { RailReadout } from './ui/railreadout.js'; import { GoalsWindow } from './ui/goalswindow.js'; import { HudLayout } from './ui/hudlayout.js';
 import { RailResults } from './ui/railresults.js'; // (round 6's overlay pieces: OVERLAY.md 10.5c)
@@ -885,6 +887,7 @@ async function main() {
   game.bound = new Bound(game); // (the Figments caught, waiting in the Jar for the garden: creatures/bound.js)
   game.catchLook = new CatchLook({ fx: game.fx }); scene.add(game.catchLook.group); // (Calissa's: one look for the hand's catch and the coffin's, vfx/catch.js)
   game.crystals = new Crystals(game); // (Lachryma set hard in the sand: the Dreamvane's: world/dunes/crystals.js)
+  game.dunesDress = new DunesDress(game); game.racewayDress = new RacewayDress(game); // (the living dressing, looks only: the Dunes' dust devils, mirage, geodes and fulgurites; the Raceway's spectators, banners, lanterns and fireworks: vfx/dunes/, vfx/raceway/)
   game.folk = new Folk(game, clapG);
   placePeople(game, game.folk);
   game.dialogue = new Dialogue(game);
@@ -1160,6 +1163,7 @@ async function main() {
   const seaFightAt = (game.seaFightLook?.parked() || []).map((o) => { o.visible = true; return o; }); // (the fight's shots: the rail's program, warmed with it)
   const parkIslets = game.seaLooks?.prewarm?.() ?? (() => {}); // (the islets' and the shallows' programs, 50 m down: vfx/opensea/isletlooks.js)
   const parkSquall = game.squallLine?.prewarm?.() ?? (() => {}); // (the squall line's program, and the rain's: vfx/opensea/squallline.js)
+  const parkDress = [game.dunesDress.prewarm(), game.racewayDress.prewarm()]; // (the dust devils' and the Dunes' mirage's two programs, and the dressing's materials: vfx/dunes/, vfx/raceway/)
   const parkSandfall = prewarmSandfall(scene); // (the Raceway's sandfall, one copy 50 m down: its one program, vfx/racewaysandfall.js)
   const parkMatterLook = prewarmMatterLook(scene); // (the god hand's matter, ball and creations: one program, vfx/godhand/matterlook.js)
   const parkBracelet = game.bracelets.prewarm(); // (the bracelet's glazes, charms, flash and aura, 50 m down: vfx/braceletwear.js)
@@ -1191,7 +1195,7 @@ async function main() {
   if (!window.__noPrime) primeDraw(renderer, scene, camera, game.post.target); // (a test harness may skip it: it is a long frame on a software GL)
   parkWell?.(); // (after the prime: drawn once, so the driver has finished with its programs too)
   if (wipe) wipe.visible = false;
-  parkWeather?.(); parkDrain(); parkDuel(); parkSpawnLook(); parkCracks(); parkFigmentTelegraphs(); parkCasterS1toS5(); parkCaster.forEach((f) => f()); parkShellLooks(); parkBracelet(); parkMatterLook(); parkSandfall(); parkIslets(); parkSquall(); seaFightAt.forEach((o) => (o.visible = false));
+  parkWeather?.(); parkDrain(); parkDuel(); parkSpawnLook(); parkCracks(); parkFigmentTelegraphs(); parkCasterS1toS5(); parkCaster.forEach((f) => f()); parkShellLooks(); parkBracelet(); parkMatterLook(); parkSandfall(); parkDress.forEach((f) => f()); parkIslets(); parkSquall(); seaFightAt.forEach((o) => (o.visible = false));
   for (const o of brushLooks) o.visible = false;
   seaLooks.forEach((o, i) => { o.visible = false; o.position.copy(seaAt[i]); });
   for (const o of gardenLooks) o.visible = false;
@@ -1524,6 +1528,7 @@ async function main() {
     game.temper.update();
     game.vfx.update(game.rawDt || dt);
     game.racewayLooks.update(game.rawDt || dt);
+    game.dunesDress.update(game.rawDt || dt); game.racewayDress.update(game.rawDt || dt); // (vfx/dunes/, vfx/raceway/)
     game.skiffSlipArc.update(game.rawDt || dt);
     game.worldLooks.update(dt);
     game.racewayCavern.update(game.rawDt || dt); game.racewayFog.update(game.rawDt || dt); game.racewayProps.update(game.rawDt || dt); game.racewayPark.update(); game.racewaySiphons.update(game.rawDt || dt); // (the vein lanes, the pots, the antlion chaser, the patches: vfx/racewayprops.js)
