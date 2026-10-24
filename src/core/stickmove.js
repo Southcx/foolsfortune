@@ -25,7 +25,8 @@ export class StickMove {
 
   /** x right, y forward; their length is the push (past 1 is past the ring). `sprint`: the driver's own (the pad's latch); `steerFull`:
    *  the push that is a full steer (touch 1, the pad's 0.9); `outer` and `carve`: what a stick that measures its own band says (the touch
-   *  controls' ring, ui/touch/stick.js: past its band; -1, 0, 1), in place of the push's; `noAD`: Dovina's (the glide's thumb). */
+   *  controls' ring, ui/touch/stick.js: past its band; -1, 0, 1), in place of the push's; `noAD`: the glide's thumb is the bank
+   *  (progress/skifftouch.js), so A / D are let go. */
   set(x, y, { sprint = false, steerFull = 1, outer = null, carve = null, noAD = false } = {}) {
     const push = Math.hypot(x, y), L = this.actions.live(), inp = this.input;
     if (push < STICK.dead) return this.clear();
