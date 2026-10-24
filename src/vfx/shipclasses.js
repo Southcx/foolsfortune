@@ -26,7 +26,7 @@
 // Prior art: the real classes (USS Constitution's and the Endymion class's proportions, the Arleigh Burke class, the late galleon, a
 // VLCC with its house aft and bulbous bow), and the four references as each line above says.
 //
-//   shipLook(id, { env }) -> a Sloop or a ShipClassLook (the same API: group, body, set, fold, polarity, hurt, hoist, scars, keelMat,
+//   shipLook(id, { env }) -> a Sloop or a ShipClassLook (the same API: group, body, set, fold, feeling, hurt, hoist, scars, keelMat,
 //   mouth, gunAt, length, beam, helmCradles, helmCradle, helmCradleSpots, helmWake, dispose; shipkit/shiplook.js)
 //   SHIP_FORMS[id] (each class's numbers: length, beam, draft, helm, dives, hull, rig)   new ShipClassLook(id, { env })
 // ---------------------------------------------------------------------------------------
@@ -255,7 +255,6 @@ for (const S of Object.values(SHIP_FORMS)) if (!(S.helm || []).every(([x, , z]) 
 
 export class ShipClassLook extends ShipLook {
   constructor(id, { env = null } = {}) { const S = SHIP_FORMS[id]; if (!S) throw new Error(`no ship form ${id}`); super(S, { env }); this.form = S; }
-  polarity(hex) { return this.feeling(hex); } // (the ship's feeling, by the rail's name for it)
 }
 
 /** The look of a hull by its class: the sloop's own, or one of the four here. */

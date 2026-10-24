@@ -72,8 +72,8 @@ export function cameraAt(seg, t, anchors, yaw, out = { pos: new THREE.Vector3(),
 const STORE = 'ff.cine.overrides';
 export const PRISTINE_SEQUENCES = JSON.parse(JSON.stringify(SEQUENCES));
 /** Sequences edited in the workbench, kept in this browser: put back into the data at boot, so the world plays them too. */
-export function applyCineOverrides() {
-  try { const o = JSON.parse(localStorage.getItem(STORE) || '{}'); for (const [k, v] of Object.entries(o)) SEQUENCES[k] = v; } catch { /* none */ }
+export function applyCineOverrides(save) {
+  try { const o = save?.keyed?.(STORE, 'settings').json({}) || {}; for (const [k, v] of Object.entries(o)) SEQUENCES[k] = v; } catch { /* none */ }
 }
 export const CINE_STORE = STORE;
 

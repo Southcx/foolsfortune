@@ -56,7 +56,7 @@ export class Mooring {
     const s = this.look(P.ship || 'sloop'), open = !!g.indexMenu?.open;
     if (this.paged && !open) this.mounts.show(P.chosen?.at(-1) ?? null); // (a page shut under the pointer sends no leave: the mount taken aboard, whatever it was over)
     this.paged = open;
-    if (this.cur !== s) { this.hide(); this.cur = s; s.polarity(this.feel = COLOR[g.weather?.at?.(best.island)?.aspect] ?? 0xffc65c); }
+    if (this.cur !== s) { this.hide(); this.cur = s; s.feeling(this.feel = COLOR[g.weather?.at?.(best.island)?.aspect] ?? 0xffc65c); }
     // alongside the pier's end on its south side, the bow out to sea (the pier faces the land: its yaw), a little inland of the end
     const { j, island } = best, yaw = j.yaw ?? 0, out = _f.set(-Math.sin(yaw), 0, -Math.cos(yaw)), side = _r.set(out.z, 0, -out.x);
     const sea = j.top - (DECK[island] ?? 1.3), half = (s.beam ?? 2.4) / 2;
