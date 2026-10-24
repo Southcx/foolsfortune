@@ -39,44 +39,46 @@
 // Animator's override layers, a pose weighted over the base layer).
 //
 //   const M = new MudraPose(game, bones, gltf.animations)   M.hold('gyan' | null, strength = 1)   M.apply(dt)   M.key   M.weight
-//   godHandClips.mudra('abhaya')   godHandClips.mudra(null)   MUDRAS.gyan.label   mudraCommands(game)   (/mudra <key|off>, DEBUG)
+//   godHandClips.mudra('abhaya')   godHandClips.mudra(null)   MUDRAS.gyan.label (progress/mudras.js)   mudraCommands(game)   (/mudra <key|off>, DEBUG)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { MUDRAS } from '../progress/mudras.js';
 
 const BASE = { idle: { clip: 'idle', frame: 0 }, point: { clip: 'point', frame: 20 }, block: { clip: 'block', frame: 20 }, open: { clip: 'release', frame: 16 } };
 
-export const MUDRAS = {
-  gyan: { label: 'index touch', domain: 'ouranurgy', base: BASE.idle, fingers: {
+/** Each mudra's frame on the rig: its base clip frame, the finger bones' turns and how it faces the view (its label and domain: Dovina's MUDRAS). */
+export const MUDRA_FRAMES = {
+  gyan: { base: BASE.idle, fingers: {
     thumb01R: [0, 0.012, -0.014], thumb02R: [-0.006, 0, 0.106], thumb03R: [0, 0, 0.02],
     f_index01R: [0, 0, 0.483], f_index02R: [0, 0, 0.349], f_index03R: [0, 0, 0.083] },
     face: { lead: 'fingers', fingers: 'up', palm: 'view' } },
-  shuni: { label: 'middle touch', domain: 'alteration', base: BASE.idle, fingers: {
+  shuni: { base: BASE.idle, fingers: {
     thumb01R: [-0.321, 0.068, 0.008], thumb02R: [-0.155, 0, 0.277], thumb03R: [0, 0, 0.087],
     f_middle02R: [0, 0, 0.827], f_middle03R: [0, 0, 0.214] },
     face: { lead: 'fingers', fingers: 'up', palm: 'view' } },
-  surya: { label: 'ring touch', domain: 'divination', base: BASE.idle, fingers: {
+  surya: { base: BASE.idle, fingers: {
     thumb01R: [-0.781, 0.419, 0.092], thumb02R: [-0.176, 0, 0.261], thumb03R: [0, 0, 0.086],
     f_ring01R: [0.002, 0, 0.494], f_ring02R: [0, 0, 0.373], f_ring03R: [0, 0, 0.098] },
     face: { lead: 'fingers', fingers: 'up', palm: 'view' } },
-  buddhi: { label: 'little touch', domain: 'spellscription', base: BASE.idle, fingers: {
+  buddhi: { base: BASE.idle, fingers: {
     thumb01R: [-0.794, 0.302, 0.093], thumb02R: [-0.233, 0, 0.378], thumb03R: [0, 0, -0.085],
     f_pinky01R: [0.663, 0, 0.39], f_pinky02R: [0, 0, 0.005], f_pinky03R: [0, 0, -0.054] },
     face: { lead: 'fingers', fingers: 'up', palm: 'view' } },
-  prana: { label: 'breath', domain: 'possession', base: BASE.idle, fingers: {
+  prana: { base: BASE.idle, fingers: {
     thumb01R: [-0.652, 0.103, 0.218], thumb02R: [-0.278, 0, 0.482], thumb03R: [0, 0, -0.047],
     f_ring01R: [0.021, 0, 0.737], f_ring02R: [0, 0, 0.596], f_ring03R: [0, 0, 0.098],
     f_pinky01R: [0.672, 0, 0.466], f_pinky02R: [0, 0, 0.03], f_pinky03R: [0, 0, -0.053] },
     face: { lead: 'fingers', fingers: 'up', palm: 'view' } },
-  bhumisparsha: { label: 'earth touch', domain: 'manifestation', base: BASE.open, fingers: {},
+  bhumisparsha: { base: BASE.open, fingers: {},
     face: { lead: 'fingers', fingers: 'down', palm: 'away' } },
-  karana: { label: 'horns', domain: 'psychokinesis', base: BASE.point, fingers: { // (the little finger raised out of the pointing fist, the thumb laid over the middle and ring)
+  karana: { base: BASE.point, fingers: { // (the little finger raised out of the pointing fist, the thumb laid over the middle and ring)
     f_pinky01R: [0.024, 0.38, -1.284], f_pinky02R: [-0.137, 0.3, -1.379], f_pinky03R: [-0.937, 0.163, -0.384], thumb01R: [0.212, -0.046, 0] },
     face: { lead: 'fingers', fingers: 'up', palm: 'view' } },
-  abhaya: { label: 'open palm', domain: null, shows: 'palm die', base: BASE.block, fingers: {},
+  abhaya: { base: BASE.block, fingers: {},
     face: { lead: 'fingers', fingers: 'up', palm: 'view' } },
-  varada: { label: 'giving hand', domain: null, shows: "a miracle's release", base: BASE.open, fingers: {},
+  varada: { base: BASE.open, fingers: {},
     face: { lead: 'fingers', fingers: 'down', palm: 'view' } },
-  dhyana: { label: 'rest', domain: null, shows: 'rest (the Dissonance Level ebbing)', base: BASE.idle, fingers: {},
+  dhyana: { base: BASE.idle, fingers: {},
     face: { lead: 'palm', palm: 'up', fingers: 'away' } },
 };
 
@@ -97,7 +99,7 @@ export class MudraPose {
 
   /** Hold a pose (its key) or let it go (null). Returns false for a key that is no mudra. */
   hold(key, strength = 1) {
-    if (key != null && !MUDRAS[key]) return false;
+    if (key != null && !MUDRA_FRAMES[key]) return false;
     this.key = key ?? null; this.want = Math.max(0, Math.min(1, strength)); // (how far in it is held: Dovina's 1 struck, 0.4 a light hold)
     if (key) (this.turns ||= new Map()).set(key, this.want >= 1); // (Dovina, 2026-10-24: only a struck pose turns the hand; a light hold leaves the wrist aiming, the cursor)
     if (key && !this.layers.has(key)) this.layers.set(key, 0);
@@ -110,7 +112,7 @@ export class MudraPose {
   target(key) {
     let T = this.targets.get(key);
     if (T) return T;
-    const M = MUDRAS[key], clip = M.base && this.clips.get(M.base.clip);
+    const M = MUDRA_FRAMES[key], clip = M.base && this.clips.get(M.base.clip);
     T = new Map();
     for (const [name, b] of Object.entries(this.bones)) if (!SKIP.has(name)) T.set(b, this.rest.get(b).clone());
     if (clip) for (const tr of clip.tracks) {
@@ -137,7 +139,7 @@ export class MudraPose {
       this.layers.set(key, w);
       const k = w * w * (3 - 2 * w), T = this.target(key), hand = this.bones.handR;
       for (const [b, q] of T) if (b !== hand) b.quaternion.slerp(q, k);
-      if (hand && this.turns?.get(key) !== false) hand.quaternion.slerp(MUDRAS[key].face ? _o.copy(this.faced(MUDRAS[key].face, T.get(hand))) : T.get(hand), k);
+      if (hand && this.turns?.get(key) !== false) hand.quaternion.slerp(MUDRA_FRAMES[key].face ? _o.copy(this.faced(MUDRA_FRAMES[key].face, T.get(hand))) : T.get(hand), k);
     }
     return true;
   }
@@ -169,11 +171,11 @@ export class MudraPose {
 
 /** `/mudra <key|off>` on the chat line (DEBUG): the hand holds a pose so the owner can try each one. */
 export function mudraCommands(game) {
-  const keys = Object.keys(MUDRAS);
-  game.chat?.add?.('mudra', { debug: true, help: `the god hand holds a mudra (DEBUG): /mudra ${keys.join(' | ')} | off`, run: ([k]) => {
+  const keys = Object.keys(MUDRA_FRAMES);
+  game.chat?.add?.('mudra', { debug: true, help: `the god hand holds a mudra (DEBUG): /mudra ${keys.map((k) => `${k} (${MUDRAS[k]?.label ?? k})`).join(' | ')} | off`, run: ([k]) => {
     const C = game.god?.handClips; if (!C) return;
     const key = !k || k === 'off' ? null : String(k).toLowerCase();
-    if (key && !MUDRAS[key]) { game.log?.say('warn', `There is no mudra ${k}: ${keys.join(', ')}.`, { key: 'mudra.no', throttle: 1 }); return; }
+    if (key && !MUDRA_FRAMES[key]) { game.log?.say('warn', `There is no mudra ${k}: ${keys.join(', ')}.`, { key: 'mudra.no', throttle: 1 }); return; }
     C.mudra(key);
   } });
 }

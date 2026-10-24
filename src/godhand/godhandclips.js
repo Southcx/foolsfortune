@@ -109,7 +109,7 @@ export class GodHandClips {
   get hit() { return this.R.hit; }
   get done() { return this.R.done; }
   play(move, opts) { return this.R.play(move, { again: true, ...opts }); }
-  /** Hold a mudra over the clips (its key: godhand/mudras.js MUDRAS), or let it go (null); blended in and out over 0.2 real s. */
+  /** Hold a mudra over the clips (its key: godhand/mudras.js MUDRA_FRAMES), or let it go (null); blended in and out over 0.2 real s. */
   mudra(key, strength = 1) { return this.mudras.hold(key, strength); }
   get heldMudra() { return this.mudras.key; }
 
