@@ -57,7 +57,7 @@ export function clusterContext(game) {
     return [moving ? 'jump' : null, use].filter(Boolean);
   }
   if (T?.active || g.god?.controlling) return [];
-  return use ? [use] : [];
+  return ['dash', use].filter(Boolean); // (on foot: DASH, the Shift press, Dovina's ruling 2026-10-24; the air dash is the core movement's, so it is always there)
 }
 
 export class TouchCluster {

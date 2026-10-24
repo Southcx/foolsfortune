@@ -5,6 +5,7 @@
 //   the Solar Skiff  hop      the board on its springs, an arrow up off it        flare  the sun, its rays
 //                    brake    the sail furled down its mast                       boost  a banked sun thrown forward, its streaks
 //                    nose     the board, its nose lit (the hand's end)            tail   the board, its tail lit
+//   on foot          dash     a body leaning into the way, speed lines behind
 //   the garden       jump     the Pneuka Jar under an arrow up                    walk   a dotted hop to a ring on the ground
 //                    grab     an open hand                                        pull   ground raised under an arrow up
 //                    press    ground pressed under an arrow down                  smooth a hump eased flat by a sweep
@@ -104,6 +105,22 @@ export const TOUCH_ART = {
     '...##.....##..',
     '..............',
     '..............',
+    '..............',
+  ],
+  dash: [ // (DASH: the foot's Shift press, the air dash and the crouched roll: a body leaning into the way, speed lines behind)
+    '..............',
+    '.........##...',
+    '........####..',
+    '-.......####..',
+    '.........##...',
+    '--....######..',
+    '.....########.',
+    '-.......####..',
+    '........#####.',
+    '--.....###.##.',
+    '......###...#.',
+    '-....###......',
+    '.....##.......',
     '..............',
   ],
   jump: [
