@@ -3,7 +3,7 @@ from PIL import Image
 import painter as P
 from painter import hexc, ss, fbm, gnoise, warp, blur, wash, ramp
 
-OUT = '/tmp/sky/'  # (run: cd scripts/skypaint && python3 skies.py <name ...>; numpy and Pillow; the chosen go to src/assets/sky_feeling_<name>.webp)
+OUT = '/tmp/sky/'
 
 def band(lat, lo, hi, soft=0.15):
     return ss(lo - soft, lo + soft, lat) * (1 - ss(hi - soft, hi + soft, lat))
@@ -177,15 +177,16 @@ def gall(D, lat, lon):
     el = lat / (np.pi / 2)
     img = wash(img, (0.55 + 0.45 * ss(-0.05, 1.0, el)), '#9a72d0', 0.95, rim=0.0, gran=1.0, grain=gr)
     img = wash(img, ss(0.35, 1.0, el) * 0.9, '#5a2f96', 0.8, rim=0.0, gran=1.1, grain=gr)
-    img = wash(img, band(lat, -0.05, 0.12, 0.08), '#b9c46a', 0.6, rim=0.6, rim_r=3, gran=0.5, grain=gr)     # the sour green
-    # the curds: rounded lumps in rows (a mackerel sky), each its own drop
-    cellD = warp(D, 0.12, 2.0, 101) * np.array([10, 18, 10], np.float32)
-    lump = fbm(cellD, 2, seed=102)
-    region = ss(-0.2, 0.15, fbm(D * 1.6, 3, seed=103)) * band(lat, 0.1, 0.9, 0.12)
-    drops = ss(0.12, 0.2, lump) * region
-    img = wash(img, drops, '#4a2a7a', 0.7, rim=2.2, rim_r=2, gran=1.6, grain=gr)
-    skin = ss(0.22, 0.36, lump + 0.08 * (lat - 0.4)) * drops
-    img = img * (1 - skin[..., None] * 0.55) + hexc('#e9dcf0') * skin[..., None] * 0.55
+    img = wash(img, band(lat, -0.05, 0.14, 0.08), '#a8c040', 0.75, rim=0.3, rim_r=4, gran=0.5, grain=gr)     # the sour green
+    # the curds: soft swollen lumps in rows (a mackerel sky curdled), laid wet into wet: big, overlapping, their rims only a little darker
+    cellD = warp(D, 0.18, 1.6, 101) * np.array([5, 9, 5], np.float32)
+    lump = fbm(cellD, 3, seed=102)
+    region = ss(-0.3, 0.1, fbm(D * 1.4, 3, seed=103)) * band(lat, 0.06, 0.95, 0.14)
+    drops = ss(0.0, 0.22, lump) * region
+    img = wash(img, drops, '#4f2d86', 0.75, rim=0.9, rim_r=4, gran=1.8, grain=gr)
+    skin = ss(0.18, 0.45, lump + 0.1 * (lat - 0.4)) * drops
+    img = img * (1 - skin[..., None] * 0.45) + hexc('#d9c4ea') * skin[..., None] * 0.45
+    img = wash(img, ss(0.25, 0.5, lump) * region * band(lat, 0.0, 0.3, 0.1), '#8a9a3a', 0.35, rim=0.0, gran=1.0, grain=gr)  # the curds' sour underbellies
     img = below(img, lat, '#7d6a9a', 0.75)
     return img
 
