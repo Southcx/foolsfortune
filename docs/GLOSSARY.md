@@ -575,6 +575,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   DEBUG save to start a test there. *Not:* a debug chest (items only), a replay.
 - **the ledger** (`src/progress/stats.js`) — every count the game keeps. An **achievement** (`src/progress/achievements.js`) is a predicate over
   the ledger, never a flag.
+- **what opens a look** (plain name; `COSMETICS`, `cosmeticOpen`, `game.cosmeticOpen`, `src/progress/cosmetics.js`) — one row a cosmetic look (a tool's skin, a Jar part, a flourish, an instrument's housing): a predicate over the ledger and a hint, opened by the thing it pictures, never by cubes. *Not:* an achievement, a glaze's `got`, a card back's table (`cardbacks.js`).
 - **the log** (`src/feedback/gamelog.js`, rules in `tracking.js`) — the only narration (what happened); **the chat line** is its typing.
 - **the domains** (`src/progress/domains.js`, `game.psyche`) — the seven skills of the Courier's psyche: Ouranurgy, Manifestation, Divination,
   Psychokinesis, Possession, Alteration, Spellscription. No new domains, ever. *Retired:* Spellcasting. → detail
