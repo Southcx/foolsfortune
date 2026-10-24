@@ -73,6 +73,7 @@ export const DEFAULTS = {
   camera: {
     sensitivity: 1.0,
     follow: 0.5, // on touch, how quickly the camera swings back behind a moving Courier once the look thumb lets go, 0 (never) to 1 (courier/camfollow.js; a setting)
+    lockAuto: true, // on touch, with a tool drawn, the lock-on takes the nearest foe in front by itself (courier/lockon.js; a setting: MOBILE.md 8.9)
     adsSensMult: 0.65,
     fpFov: 78,
     fpAdsFov: 54,

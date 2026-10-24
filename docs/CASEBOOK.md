@@ -856,3 +856,6 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 291. **A press owed after the lift keeps its loop running.** Whatever a gesture earns when the fingers lift (a tap's
     click, a two-finger tap's undo) is made by the next frame's update; the caller asks the gesture whether it owes anything, not
     whether a finger is down. A check that calls the update by hand cannot see this: drive it with real touches.
+292. **An adapter carries what its readers ask.** A reader that asks a wrapped thing for a field (the Sondelass's form through the
+    belt's adapter) gets `undefined`, never an error; give the adapter the field (or the thing behind it), and test the reader
+    through the adapter, not the thing.

@@ -29,6 +29,7 @@ export class Celestial {
     this.queue = [];
     this.restT = -1;
     this.drew = 0;
+    this.touchAt = null; // (a finger on the paper, in CSS px: the brush under it, core/touchtools.js; null, the mouse's deltas move it)
   }
   get game() { return this.tool.game; }
   get P() { return this.tool.P; }
@@ -51,7 +52,7 @@ export class Celestial {
     if (!this.active) return;
     const g = this.game, P = this.P;
     if (this.canvas.drawing || this.canvas.pending().length) this.read(); // (a drawing still wet when the brush lifts is read too)
-    this.active = false;
+    this.active = false; this.touchAt = null;
     g.time.free('brush');
     P.lookScale.brush = 1;
     this.canvas.show(false); g.celestialTargets?.hide();
@@ -72,10 +73,10 @@ export class Celestial {
     const took = g.lachryma.drain(ask, 'brush');
     if (!inp.isDown('Mouse2')) return this.exit('let go');
     if (took < ask * 0.5) return this.exit('empty');
-    // the brush's point follows the mouse
-    const W = cv.size.w, H = cv.size.h;
-    this.x = Math.min(W - 2, Math.max(2, this.x + inp.dx * SENS));
-    this.y = Math.min(H - 2, Math.max(2, this.y + inp.dy * SENS));
+    // the brush's point follows the mouse, or sits under the finger (the paper is the whole screen: canvas.js)
+    const W = cv.size.w, H = cv.size.h, F = this.touchAt;
+    this.x = Math.min(W - 2, Math.max(2, F ? F.x * W / innerWidth : this.x + inp.dx * SENS));
+    this.y = Math.min(H - 2, Math.max(2, F ? F.y * H / innerHeight : this.y + inp.dy * SENS));
     cv.cursor(this.x, this.y, g.lachryma.available / 20);
     this.tool.techniques.showTargets(W, H); // (what a dot can mark, drawn over the paper: vfx/celestialtargets.js)
     if (inp.isDown('Mouse0') && this.queue.length < QUEUE_MAX) {

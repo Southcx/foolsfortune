@@ -20,6 +20,7 @@ import { T, saveTuning } from './config.js';
 export const SETTING_ROWS = [
   { id: 'look', path: 'camera.sensitivity', kind: 'slider', min: 0.2, max: 3, step: 0.05, label: 'Look sensitivity', line: 'How far the camera turns for how far you drag.' },
   { id: 'follow', path: 'camera.follow', kind: 'slider', min: 0, max: 1, step: 0.05, label: 'Camera follow', line: 'How quickly the camera swings back behind you after you stop dragging.' },
+  { id: 'lockAuto', path: 'camera.lockAuto', kind: 'switch', label: 'Lock-on on touch', line: 'With a tool drawn on a phone, the lock-on takes the nearest foe in front by itself.' }, // (words a placeholder: Espada's)
   { id: 'graphics', path: 'visual.graphics', kind: 'choice', choices: [['auto', 'Auto'], ['high', 'High'], ['low', 'Low'], ['minimum', 'Minimum']], label: 'Graphics', line: 'Lower runs smoother and cooler; higher looks finer.', lines: { auto: 'Picked for this device.' } },
   { id: 'volume', path: 'audio.volume', kind: 'slider', min: 0, max: 1.5, step: 0.05, label: 'Volume', line: 'How loud the game plays, music and sound together.' },
   { id: 'haptics', path: 'audio.haptics', kind: 'switch', label: 'Haptics', line: 'Small buzzes when you hop, land, hit or are hit. Only on devices that can buzz.' },
