@@ -830,3 +830,5 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
     ring) raycasts only on its strips: pick against a solid quad behind it, or fall back to the nearest anchor within reach.
 280. **A new achievement's sub goes into `CATS` in the same commit.** The Codex lists a category by its subs; the load
     guard adds a missing one and says so on the console, so boot the page once (or import achievements.js) after adding a sub.
+NEW:audio-context-recovers. **The audio context is asked to run again whenever it stops.** A phone interrupts it (a call, a hidden tab):
+    resume on visibility and on every state change, and arm the next gesture when the browser refuses; schedule on the context's clock.

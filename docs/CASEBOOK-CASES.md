@@ -3624,3 +3624,12 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   guard (achievements.js, after R57) caught it and pushed the sub itself. Nothing was hidden; the console was dirty.
 - **Fix:** "The Spread" added to GENERAL's subs in `CATS`. Importing achievements.js now logs no error.
 - **Rule:** 280
+
+### 2026-10-24 · Sound gone after an iOS interruption or a hidden tab (Wanda, from Dovina's mobile audit)
+- **Seen (read, not yet on a phone):** the audit (`docs/plans/research/MOBILE-AUDIT-PERF.md` 4) found nothing to resume the audio context
+  after a call or Siri on iOS (state `interrupted`) or a tab hidden and shown again; the 50 ms schedulers run on throttled timers meanwhile.
+- **Cause (read):** `sfx.unlock()` resumed the context only on the title's click; nothing else asked again.
+- **Fix:** audio/core.js `recover()`: a hidden page suspends the context and a visible one resumes it; any state but running resumes
+  after a quarter of a real second, and if the browser wants a gesture first, on the next touch, click or key. The schedulers read the
+  context's clock, so the suspended stretch is skipped. Checked headless: suspended, resumed by itself.
+- **Rule:** NEW:audio-context-recovers

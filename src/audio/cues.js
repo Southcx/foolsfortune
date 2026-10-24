@@ -8,6 +8,7 @@
 //
 //   hearEvents(game, sfx)   (once, at boot)
 // ---------------------------------------------------------------------------------------
+import { installHaptics } from './haptics.js';
 import { gardenState } from './garden.js';
 import { today } from '../core/calendar.js';
 import { feelingOfKind } from './mycelium.js';
@@ -223,4 +224,5 @@ const RULES = {
 
 export function hearEvents(game, sfx) {
   for (const [name, fn] of Object.entries(RULES)) game.events.on(name, (e) => fn(sfx, e, game));
+  installHaptics(game);
 }
