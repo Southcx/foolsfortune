@@ -139,7 +139,9 @@ const COLOR = {
   gem: `float finInk = mix(1.0, clamp(finLuma(diffuseColor.rgb) * 1.1, 0.0, 1.0), uFinPart);
     if (uFinOn > 0.5) { vec3 fN = normalize(floor(vFinN * uFinP.x + 0.5)); float ndvF = abs(dot(fN, normalize(vViewPosition)));
     diffuseColor.rgb = uFinA * (0.35 + 0.65 * ndvF); }` + MINERAL_COLOR + `
-    if (uFinOn > 0.5) diffuseColor.rgb *= finInk;`,
+    if (uFinOn > 0.5) { // (the numerals: pressed dark into a pale stone, inlaid pale gold in a dark one, where dark ink would vanish)
+      float finDark = 1.0 - smoothstep(0.22, 0.45, finLuma(uFinA));
+      diffuseColor.rgb = mix(diffuseColor.rgb * finInk, mix(diffuseColor.rgb, vec3(0.93, 0.84, 0.62), 1.0 - finInk), finDark); }`,
   // A: root colour; B: tip colour; P.x: ombre (0 none, 1 full); P.y: the hair's height range (root at 1, tip at 0, object units)
   hair: `if (uFinOn > 0.5) { float tip = clamp(1.0 - (vFinObj.y - uFinP.w) / max(0.001, uFinP.y), 0.0, 1.0);
     diffuseColor.rgb = mix(uFinA, mix(uFinA, uFinB, smoothstep(0.45, 0.95, tip)), uFinP.x); }`, // (a dip: one colour most of the way, turning near the ends)
@@ -166,8 +168,9 @@ const LIGHT = {
   gem: `if (uFinOn > 0.5) {
     vec3 V = normalize(vViewPosition); vec3 fN = normalize(floor(vFinN * uFinP.x + 0.5));
     float h = fract(sin(dot(fN, vec3(12.9898, 78.233, 37.719))) * 43758.5453); // (a facet's own hash: which way it was cut)
-    float glint = pow(max(0.0, dot(reflect(-V, fN), normalize(vec3(0.3, 0.8, 0.5)))), 24.0);
-    totalEmissiveRadiance += uFinA * 0.18 + glint * (vec3(1.0) + finSpectrum(h + dot(V, fN)) * uFinP.y * 2.0) * 0.9;
+    vec3 gL = normalize(vec3(0.3, 0.8, 0.5)); // (a spot where the true surface catches the light, and only a little of the facet's own flash: a whole facet lit white edge to edge read as a hole)
+    float glint = pow(max(0.0, dot(reflect(-V, normalize(normal)), gL)), 60.0) * 0.8 + pow(max(0.0, dot(reflect(-V, fN), gL)), 24.0) * 0.28;
+    totalEmissiveRadiance += uFinA * 0.18 + glint * (mix(vec3(1.0), uFinA, 0.35) + finSpectrum(h + dot(V, fN)) * uFinP.y * 2.0) * 0.9;
     totalEmissiveRadiance += finSpectrum(h * 3.0 + dot(V, vFinN) * 1.5) * uFinP.z * 0.45;                    // opal: play of colour
     totalEmissiveRadiance += uFinB * uFinP.w * pow(1.0 - abs(dot(normalize(normal), V)), 2.0) * 0.9;          // moonstone: the blue glow
   }` + MINERAL_LIGHT,
