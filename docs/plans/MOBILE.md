@@ -225,6 +225,13 @@ export const ACTIONS = [
 ];
 ```
 
+- **Precedence** (Petra, 2026-10-24). A pad button or a tile resolves to the first live ctx in this order that binds it: `race`,
+  `skiff.rail`, `skiff.air`, `skiff`, `foot`, `any`.
+  - A narrower ctx shadows a wider one **button by button, never whole**. In the air, X is the nose (`skiff.air`) while A is still the
+    hop's glide (`skiff`). In a race, Back is the restart while the other `any` rows still work.
+  - A mouse row is pressed as `keys[0] ?? mouse`. `input.js` keeps `Mouse0` to `Mouse2` in the same `down` set as the keys.
+  - One button may carry a hold and a double in the same ctx (LB: carveL held, shoulderL twice). Both press KeyQ, and the game already
+    tells a hold from a double.
 - **Two keys, two meanings.** Space, Shift, C, E, Q, F, R and Y mean one thing on foot and another riding. The ctx column is what lets a pad
   button or a tile press the right code. Where a pad button carries two (X: flare on the sand, nose in the air), it is the same physical
   button pressing the code its ctx names, as section 8 says for the tiles.
@@ -314,6 +321,52 @@ prior art. Landscape. Every rule as on the keyboard (`courier/skiff/skiff.js`, `
 By the design laws an assist is a knack: earned, optional, switched, never gating. A **Steady Keel** knack (the board leans back toward the
 line's centre when no steer is given, and never past it) would serve a thumb and a keyboard alike; its count way and feat way would be the
 Raceway's first race finished and first lap under bronze.
+
+## 8.2 The Spirit Garden on touch (M1, either orientation; the owner, section 11)
+
+The garden is a cursor game already (`world/garden/hand.js`: "the cursor is the hand, always"). On a phone **the finger is the hand**,
+which is closer to Black & White's hand than a mouse ever was. Every rule stays as on the keyboard; only the bindings differ. Prior art:
+- Animal Crossing Pocket Camp and Stardew Valley mobile: tap the ground to walk there.
+- Townscaper: tap to place.
+- Viva Piñata: one hand, tools on a bar.
+- Monument Valley: two fingers turn the world.
+- Procreate: two-finger tap to undo.
+
+| verb (keyboard and mouse) | touch | why |
+| --- | --- | --- |
+| hop the Pneuka Jar (W A S D) | **tap the ground with no art up** (the bar's first slot, WALK): the Jar hops toward it, again until it is there. In landscape the move area also hops it as a stick | Pocket Camp's tap-to-go; a phone held upright has no left thumb free |
+| high jump (Space) | **JUMP**, a tile shown only while the Jar is moving or on a launch lotus | the cluster rule: context decides the buttons |
+| an art (1 .. 9, 0) | **the art bar**: ten glazed tiles along the bottom edge (portrait) or the right edge (landscape), WALK first; tap to pick, tap the lit one again to put it down (WALK) | Viva Piñata's tool bar; the keys' order kept, so the desk and the phone teach each other |
+| use the art (LMB: press, drag, release) | **one finger** on the planetoid: press, drag, lift | the hand already reads press, drag and release |
+| the second verb (RMB: flick a spirit, clear paint, drink water) | **a long press** (420 ms, the ring filling under the finger), then drag or lift | section 4's one grammar for the right button |
+| pet a spirit (a quick tap with GRAB) | a quick tap (under 0.22 real s, `HAND.tap`) | the same window |
+| turn the choice (R: decor, ground, feeling) | **a two-finger twist** while placing; elsewhere a TURN tile beside the lit art | Townscaper's twist; the tile for what a twist can't say (the next feeling) |
+| brush size (Shift + wheel) | a size slider beside the art bar while a shaping art or PAINT is lit | a pinch is the camera's |
+| a spring / a drain (Shift or Ctrl + LMB / RMB with WATER) | a SPRING / DRAIN toggle beside WATER | no chord on glass |
+| turn the camera, zoom (Q / E, wheel) | **two fingers**: drag to turn, pinch to zoom | Monument Valley and every maps app |
+| the overhead view (~) | a top-bar tile, OVERHEAD; there one finger pans | |
+| first person (Z) | the pause menu | rare, and it costs a thumb |
+| undo (Ctrl+Z) | **two-finger tap**, and an UNDO tile at the art bar's end | Procreate's undo |
+| put a planetoid back (Ctrl+Backspace twice) | the pause menu, with a confirm | it destroys work: never one gesture |
+| use (F: the gate, the shed, a spirit's page) | **USE**, naming its thing ("Shed", a spirit's name), shown when the chevron is on one | section 4 |
+| the press at the Athanor (drag the lever, RMB flick) | drag the lever with a finger; flick is a long press | the press is already a drag |
+| the Pneuka Box (P), pause (Esc) | the top bar, the pause button | section 4 |
+
+- **Two fingers never reach the hand.** A second finger down cancels the first finger's stroke before it lands; nothing is shaped by a
+  pinch. The ring of the long press is the only wait, and it shows.
+- **Portrait:** the art bar along the bottom over the safe area; the log's ticker at the top; the planetoid in the middle third.
+  **Landscape:** the art bar down the right edge, the move area on the left for the Jar.
+- **The harmony's thorns, the decor grid and the shed** need no new verb: pruning is GRAB, placing is PLACE, the shed is USE.
+- **The god hand over the island** shares this grammar: the finger is the hand, the art bar is its domains and arts, two fingers turn and
+  zoom. Its miracle sign (MMB held) is drawn with one finger after a SIGN tile is held, and the epic sign with SIGN held twice. Its own
+  table follows when the god hand's turn comes in M1.
+
+**Who builds what:**
+- **Petra:** the touch driver's garden ctx (`garden`, `garden.overhead`). The two-finger gestures go to the camera (`gardencam.js`) and
+  undo, before the hand sees them.
+- **Calissa:** the art bar and its tiles, the size slider, the TURN and SPRING / DRAIN tiles, and the long press's ring.
+- **Me:** the ctx rows in `core/bindings.js` and tap-to-go's rule (`realm.js` reads a target point when no art is up; the hop is
+  unchanged).
 
 ## 9. The phases
 
@@ -476,6 +529,16 @@ The save is already one format on every platform: `core/save.js`'s sections, and
     ago: LOAD"). A real hour of play is never lost silently.
   - **Settings are per device**, never synced: a phone's graphics tier and touch layout are not the desk's.
   - **Signed out, or `db` absent:** localStorage alone, as now. The log says once that the save is kept on this device only.
+- **Petra's refinements (2026-10-24):**
+  1. **Boot never waits on the db.** `claude.use('db')` resolves late, and as null after 10 real s. So boot reads localStorage as now,
+     and the cloud read gets 1.5 real s before the title. A cloud save that answers later and was played longer is offered as the loser
+     copy is ("Your save from another device, N real hours ago: LOAD"). It never swaps under a running game.
+  2. **"Played longer" is the ledger's play time**, kept in the save itself. A section's `at` only says when it was written.
+  3. **`device` is a random id kept in the settings section** (local, one a browser). Its label in the Codex ("your desktop", "your
+     phone") is read from the user agent when the save is written.
+  - **For `?perf`:** `navigator.storage.persisted()` and `estimate()`, standalone mode (`display-mode`), and whether fullscreen,
+    orientation lock, wake lock and vibrate exist. A missing one is reported as missing.
+  - **M0 as a whole waits on the owner's go.**
 - **The ledger's 5 s debounce** and the save's flush already land in M0 (section 10, answer 6). The cloud write is M0's step 2 too: the
   same hook, one more writer. It goes before touch play, because the owner's phone storage is the one at risk (11.1).
 - **What I check** (the sweeps' touch lane): a save written on one page and read on a fresh one; a section from an old build refused;

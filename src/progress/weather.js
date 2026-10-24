@@ -145,7 +145,11 @@ export class Weather {
   }
   at(place, ms = calNow()) { return weatherAt(place, ms); }
   /** Where a position stands: its place, its exposure, and that place's weather (nothing falls on a roofed place, but its mood is there). */
-  here(pos) { const p = placeOf(pos); return p ? { ...p, ...weatherAt(p.place) } : { place: null, exposure: 'open', ...weatherAt(null) }; }
+  here(pos) { // (a World shell's draw thins the weather round its aim for a game hour: worldDraw.weatherK, Calissa's, CASTER-SHELLS.md 7.1)
+    const p = placeOf(pos), w = p ? { ...p, ...weatherAt(p.place) } : { place: null, exposure: 'open', ...weatherAt(null) };
+    const k = pos ? this.game.worldDraw?.weatherK?.(pos) ?? 1 : 1;
+    return k === 1 ? w : { ...w, strength: (w.strength || 0) * k };
+  }
   /** The sky as data (Petra's render/daylight.js and Calissa's sky read the same numbers): the day's phase and the weather over a place. */
   sky(ms = calNow(), place = this.here(this.game.player?.pos).place) { const w = weatherAt(place, ms); return { phase: w.phase, dayPhase: w.dayPhase, light: lightAt(ms), aspect: w.aspect, strength: w.strength }; }
   /** What can be known of a place's weather ahead: a block each, as far as Divination widens the forecast. */

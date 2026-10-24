@@ -406,8 +406,13 @@ Calissa's new modules. The dry click and the hook in the runner: Petra's (`shell
   - wd3 *The Place Is the Price* (Elite): fire each of the nine.
   - Full Rack already counts them as kinds.
 
-### 7.5 Not built yet
-- The draw's reading and wiping, the thin modifier, the alterations and the looks (Calissa).
-- The dry click and the scaled numbers in the runner (Petra).
-- Until both land, a World shell fires as its old row: free of the pool, at k 1.
-
+### 7.5 As built (Calissa, claude/calissa-art-cups d428d56b; the dry click in shells.js)
+- **Built:** the draw, the thin look and patch (`game.worldDraw`, its `weatherK(pos)` read by `game.weather.here()` and so by every rule
+  that asks the weather there), the alterations, Rift's spring, and the cylinder plate's draw fill. Measured headless by Calissa: all nine
+  fired on a draw, `shell.draw` carried k, feeling and from, later draws filled from a spring at the cap, Calm took the weather to 0.
+- **Not yet:**
+  - **`erodible` tags.** Nothing carries one, so Weather Away opens nothing yet. What may carry it: the god hand's creations, the
+    Dunes ruins' broken walls, a Well floor's clay baffles. Never a room's bounding walls, a floor, or anything a sweep's route needs.
+    The tags are set where those things are built (Petra's).
+  - **`game.breakables.mend(at, r, { gold, by })`** (Petra's `world/props/breakables.js`). Bloom grows its thicket and mends nothing
+    until it exists.

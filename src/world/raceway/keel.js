@@ -26,8 +26,9 @@ export function keelSteer(game, skiff) {
   const race = game.race, T = race?.running ? race.T : null;
   if (!T || !game.raceway?.active || skiff.air || skiff.carve || skiff.grind?.on) return 0;
   const P = game.player, lx = P.pos.x - RW.x, lz = P.pos.z - RW.z;
-  const n = T.nearest(lx, lz, skiff.keelS ?? null); if (!n) return 0;
-  skiff.keelS = n.s;
+  const hint = skiff.keelS?.T === T ? skiff.keelS.s : null; // (the last s on this track only: a hint from another race would search the wrong stretch)
+  const n = T.nearest(lx, lz, hint); if (!n) return 0;
+  skiff.keelS = { T, s: n.s };
   const F = T.frame(n.s); if (n.d > F.w * 2) return 0; // (well off the line, in the sand: no line to lean toward)
   const A = T.frame((n.s + KEEL.ahead) % T.length);
   const want = Math.atan2(A.x - lx, A.z - lz), along = Math.atan2(F.fx, F.fz);
