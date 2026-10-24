@@ -197,14 +197,79 @@ Chaos digs it up cheap and Law buys it dear; the hauler lives in between. Letty'
 
 ## 4. How a Courier drinks
 
-- **The stones** set in the Courier (the kiln's STONES region) are where Lachryma enters: a pot breathes through its glaze, a Courier
-  drinks through its stones. The set decides how much, how fast, which feeling, and where overflow goes. **The Maker's Stones** are the
-  Prince's balanced choice; every other stone is a trade, its virtue from what old lapidaries believed: amethyst (*a-methystos*, "not
-  drunk": slow and clear; in Entropolis a charm the good half of rave culture sells), citrine, moonstone, onyx, emerald, sapphire, ruby,
-  diamond, opal. Blurbs are in `courier/vessel/glazes.js`. Look and function one choice: *open* (a glamour is the owner's call).
+- **The stones, the Pneuka stones** *(merged by the owner, 2026-10-23: "Conceptually merge the Pneuka stones with the stones that are
+  determining how Lachryma is processed")*: seven pieces of solid Lachryma set in the Courier (the kiln's STONES region), cut in the
+  shapes of the standard dice set. They are where Lachryma enters: a pot breathes through its glaze, a Courier drinks through its
+  stones. The set decides how much, how fast, which feeling, and where overflow goes. **The Maker's Stones** are the Prince's balanced
+  choice; every other set is a trade, its virtue from what old lapidaries believed: amethyst (*a-methystos*, "not drunk": slow and
+  clear; in Entropolis a charm the good half of rave culture sells), citrine, moonstone, onyx, emerald, sapphire, ruby, diamond, opal.
+  A ruby set is seven ruby dice, and it drinks as rubies do. Blurbs are in `courier/vessel/glazes.js`; the rules in `progress/stones.js`.
+  - **Why dice** *(the suits ruled by the owner, 2026-10-23)*. Lachryma set solid takes the shapes chance takes. Four dice are the
+    suits: the d4 fire (Wands, the sharpest, Plato's fire), the d6 earth (Pentacles, Plato's cube; a cube of Lachrymite is the
+    currency, so a coin was always a die), the d8 air (Swords, Plato's air), the d10 water (Cups). **The d20 is the Major Arcana**, I
+    the Magician to XX Judgement, twenty faces for twenty cards: the owner's way of fitting the Majors to a d20, with the alpha and the
+    omega set apart. **The Fool** (0) stands outside the die because the Fool is you, the one who throws it. **The World** (XXI) stands
+    outside it because the World is what every throw is for: the whole, never one face of it. **The d12 is the zodiac**, the Western and the
+    Chinese both *(the owner, 2026-10-23)*: twelve faces, twelve signs from Aries to Pisces and twelve animals from the Rat to the Pig,
+    East and West on one die as the running hand is. It is the solid Plato kept for "the whole heaven" and its figures. The d100 is two d10s thrown together.
+    Seven stones, as there are seven feelings, seven domains and seven sockets on the bracelet.
+  - **They roll.** Any chance thrown for you is thrown on your stones, never an unseen number: a duel's Flee on your d20, your own set
+    at Raku's tables, opal's little game in every drink. Opal's set was dice before it had faces.
+  - **In the god hand**, the set is gathered into one die in the palm (the hole the owner left there), growing d4 to d20 (DICE.md 4).
+    The first dice were knucklebones, astragali thrown in the hand to read fate, and in the hand each stone is a **knucklebone** with
+    its own finger *(the owner, 2026-10-23)*: **the d4 the little finger, the d6 the ring finger, the d8 the middle finger, the d10 the
+    index finger** (the suits climb the hand: fire, earth, air, water), **the d12 the thumb**, and **the d20 the palm**, where the Major
+    Arcana are read. The palm die is the palm's own stone. The d100 (two d10s) has no finger yet: *open*.
+    - **Palmistry** *(taken in by the owner, 2026-10-23)*. The hand already carries the seven classical planets, and the planets are
+      the domains' (CLASSES.md 5), so the god hand is the psyche drawn as a hand. Five sit at the fingers' roots, two on the palm:
+
+      | where | palmistry's mount | planet | domain | knucklebone |
+      | --- | --- | --- | --- | --- |
+      | the index finger | Jupiter | Jupiter | Ouranurgy | d10, Cups |
+      | the middle finger | Saturn | Saturn | Alteration | d8, Swords |
+      | the ring finger | Apollo | the Sun | Divination | d6, Pentacles |
+      | the little finger | Mercury | Mercury | Spellscription | d4, Wands |
+      | the thumb's root | Venus | Venus | Manifestation | d12, the zodiac |
+      | the palm's heart | Mars (the plain and the two mounts) | Mars | Psychokinesis | d20, the Majors |
+      | the palm's outer edge | Luna | the Moon | Possession | d20, the Majors |
+
+      **Divination is the Sun's, Possession the Moon's** (ruled by the owner, 2026-10-24): Helios who sees all and Apollo's oracle;
+      the lunatic, the moonstruck, the High Priestess's veil, and the Chariot (Cancer, the Moon's sign) driving beasts not its own.
+      The Moon's mount on the outer palm is where palmists read the imagination and the unconscious, the Emocean's own
+      country.
+    - *Proposals, Dovina's to make rules of if wanted:*
+      - **The four great lines as four readings of your play**, read from the ledger as the Assay is: the life line (how far you have
+        gone: the explored area, the crossings), the head line (what you know: the neuralese glossed, the bestiary), the heart line (the
+        feelings awakened, the bonds in the garden), the fate line (Saturn's: the achievements). The god hand's palm is an opening (where
+        the palm die sits), so the lines cannot be drawn across it (the owner, 2026-10-24): they would run round the opening's rim, or be
+        read in the Codex instead. Still a proposal.
+      - **The hand's element**, palmistry's four hand shapes (earth square and short-fingered, air square and long, fire long-palmed
+        and short, water long and long): the god hand takes the shape of the suit you lean on most.
+  - **Mudras: the god hand's poses** *(Espada's, 2026-10-24, on the owner's "mudras could be a rich vein"; **ruled by the owner,
+    2026-10-24: "They all seem right to me"**; sent to Dovina and Calissa to build)*.
+    A mudra is a hand held in a meaning, from the iconography of India and of Buddhism, and in Japan the kuji-in's nine seals. The god
+    hand cannot show lines on its open palm, but it can hold a pose, and the poses are where the hand's lore lives.
+    - **The finger-to-thumb mudras are a planet in a sign.** Modern hand-yoga gives four fingers a planet each, as palmistry does, and
+      a mudra joins that finger to the thumb (said plainly: a modern practice, not old scripture): Gyan, index to thumb (Jupiter, so
+      Ouranurgy); Shuni, middle to thumb (Saturn, Alteration); Surya, ring to thumb (the Sun, Divination); Buddhi, little finger to thumb
+      (Mercury, Spellscription). Since our thumb is the d12, the zodiac, every such mudra is a planet touching a sign, which is how
+      astrology reads a chart. So a domain's pose shows its planet and its knucklebone together.
+    - **The others, by meaning:** Prana (ring and little fingers to the thumb: *prana* is breath, *pneuma*'s cousin) for Possession,
+      breath sent into another; Bhumisparsha (the fingertips touching the ground, calling the earth to witness) for Manifestation,
+      raising the island's matter; Karana (index and little finger raised, pushing obstacles away) for Psychokinesis; **Abhaya**
+      ("have no fear": the palm raised and turned outward) for the moment the palm die is shown, since the god hand's palm is an
+      opening and Abhaya is the one mudra that shows the palm; **Varada** (the palm down and open, granting) for a miracle let go, paid
+      as a release; **Dhyana** (the hand at rest, meditation) for the quiet that lets the Dissonance Level ebb.
+    - **Care.** These are living sacred gestures, so the rule is the script's: draw from them, never mislabel one, never put one to a
+      cruel or comic use. The names stay in the Codex with what each means; on screen the label is plain ("open palm", "earth touch").
+    - **Whose:** the poses are Calissa's to look at (the hand's clips); a pose that does something is Dovina's to rule. A pose is a look
+      first: the hand's controls stay as they are.
+  - **The name.** *Pneuka* is *pneuma*, breath: breath's stones in the breath's jar. "Stone" is three things at once: the gemstone (the
+    set's mineral), the die (stones were cast before bones were), and stoneware (clay fired hard, the folk's own tier). On screen the
+    label is plain: **dice**.
 - **The words**: **the draught** is the feeling last drunk (a drink, and a draught under a door). A stone is **heady** when what you
-  drink goes to your head. Too much and you are **brimming** (a vessel full past its brim; pushed toward Prismatic): "You are
-  brimming." · "You settle." Never "drunk".
+  drink goes to your head. Too much and the pool **overflows** (pushed toward Prismatic): "Your pool overflows." · "You settle." Never
+  "drunk" ("brimming" until 2026-10-19).
 - **The Lachrymato Bottles** (the owner's name): a *lachrymatory* is an old tear bottle mourners filled. Worn on the upper back: a
   reserve the Soul Brush paints from and mops into. Glass: a broken shield can crack one.
 - **Blots and blotlings** *(code says stain)*: spilled crude soaks in as a blot (a stain, and an inkblot a mind reads shapes

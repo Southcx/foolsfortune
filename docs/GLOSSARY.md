@@ -17,7 +17,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   and on the Emocean the ships. *Not:* "the player" in player text.
 - **the stones / the Pneuka stones** (`src/progress/stones.js`; the owner, 2026-10-23: one thing; `docs/plans/DICE.md`) — where Lachryma enters
   the vessel and a release leaves it: the pool's size, regen and costs, the magnet's reach, overflow; one set at a time, its mineral its
-  trade; seven dice of solid Lachryma, the standard set (each die its solid's suit), and the chance rolled for you is thrown on them.
+  trade; seven dice of solid Lachryma, the standard set (each die its solid's suit), and the chance rolled for you is thrown on them (on screen: dice; in the god hand, a knucklebone a finger, LORE.md 4).
   **The palm die** (`PalmDie`, `game.palmDie`, `src/progress/dice.js`): the stones in the god hand's form, one die in its palm that
   condenses the overflow past the Lockheart into cubes, capped a game day by its size, and grows d4 to d20 on what it condensed. *Not:* a stone in the world,
   Raku's dice set (the house's). → detail
