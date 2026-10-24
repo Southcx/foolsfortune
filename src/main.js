@@ -337,6 +337,7 @@ import { Cradles } from './world/cradles.js';
 import { Sight, sightCommands } from './progress/sight.js';
 import { mudraCommands } from './godhand/mudras.js';
 import { installCalibrateButtons } from './ui/calibratebutton.js';
+import { installTouchControls } from './ui/touch/index.js';
 import { base64Buffer } from './core/base64.js';
 const CASTER_SHADERS = import.meta.glob('./vfx/caster/*.js', { eager: true }); // (the caster shaders: each module's prewarm(game), compiled in the warm-up)
 
@@ -1146,6 +1147,7 @@ async function main() {
   game.sightLook = new SightLook(game); game.creatureTags = new CreatureTags(game); game.titlePlacard = new TitlePlacard(game); game.sealImprints = new SealImprints(game); game.sealPicker = new SealPicker(game); // (the overlay's instruments, tags, placard and seal: OVERLAY.md 10.5c, HANKO.md)
   game.railReadout = new RailReadout(game); game.railResults = new RailResults(game); // (the crossing's score aboard and the trip's results window, built on first use: ui/railreadout.js, ui/railresults.js; RAIL-STANDARDS.md 6)
   game.goalsWindow = new GoalsWindow(game); // (the game day's three goals as a System window, on /goals and a beat at goals.set and goal.done: ui/goalswindow.js)
+  installTouchControls(game); // (touch play's controls, their look: built only once touch is on, ui/touch/index.js)
   game.overlayScene.compile(); // (the overlay's meshes, against the canvas they are drawn into)
   game.post.compile(); // (the glow's own passes: a scene of their own, which compileAsync(scene) does not see)
   if (!window.__noPrime) primeDraw(renderer, scene, camera, game.post.target); // (a test harness may skip it: it is a long frame on a software GL)
