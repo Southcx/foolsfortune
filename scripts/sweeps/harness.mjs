@@ -75,7 +75,8 @@ async function serverUp(url) {
 }
 
 export async function open(room, { touch = false } = {}) {
-  const OUT = path.resolve(args.out || path.join(os.tmpdir(), 'sweeps', room)), SHOTS = path.join(OUT, 'shots');
+  touch = touch || !!args.phone; // (--phone: every sweep as a phone held landscape, the page the touch sweep already uses)
+  const OUT = path.resolve(args.out || path.join(os.tmpdir(), 'sweeps', args.phone ? room + '-phone' : room)), SHOTS = path.join(OUT, 'shots');
   fs.mkdirSync(SHOTS, { recursive: true });
   const url = process.env.URL || 'http://127.0.0.1:5173/', seed = +args.seed || 1;
   await serverUp(url);
