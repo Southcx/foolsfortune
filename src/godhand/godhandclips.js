@@ -24,7 +24,7 @@
 // A mudra (godhand/mudras.js) may be held over whatever plays: laid on after the mixer, the limits run again after it; none held, nothing
 // changes. When one is taken is Dovina's (nothing here listens for it); `/mudra <key|off>` tries them in DEBUG.
 //
-//   const C = new GodHandClips(god, gltf)   C.update(dt)   C.play('wave')   C.move   C.hit   C.done   C.mudra('gyan' | null)   C.heldMudra
+//   const C = new GodHandClips(god, gltf)   C.update(dt)   C.play('wave')   C.move   C.hit   C.done   C.mudra('gyan' | null, strength)   C.heldMudra
 //   (built in godhand.js buildHand; ticked by godhand.js updateHand and applyCamera in the world, by world/garden/hand.js pose in the garden)
 // ---------------------------------------------------------------------------------------
 import { RigClips } from '../courier/anim/rigclips.js';
@@ -110,7 +110,7 @@ export class GodHandClips {
   get done() { return this.R.done; }
   play(move, opts) { return this.R.play(move, { again: true, ...opts }); }
   /** Hold a mudra over the clips (its key: godhand/mudras.js MUDRAS), or let it go (null); blended in and out over 0.2 real s. */
-  mudra(key) { return this.mudras.hold(key); }
+  mudra(key, strength = 1) { return this.mudras.hold(key, strength); }
   get heldMudra() { return this.mudras.key; }
 
   /** Once a frame while the hand is drawn: the clip the mode wants, then the mixer and the limits. */
@@ -119,6 +119,8 @@ export class GodHandClips {
     if (realm?.active) this.garden(realm);
     else if (this.god.controlling) this.world();
     this.R.update(dt);
+    const HP = this.god?.game?.handPose; // (Dovina's rule, progress/mudras.js: which pose and how far; read on a change, so /mudra holds until the next)
+    if (HP && HP.pose !== this.hp) { this.hp = HP.pose; this.mudras.hold(HP.pose?.id ?? null, HP.pose?.strength ?? 1); }
     if (this.mudras.apply(dt)) this.limits.apply(); // (a pose held or fading: the joint limits again after it)
   }
 
