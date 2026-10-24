@@ -15,7 +15,8 @@
 //   LENT (the Sondelass as the sub, R: tools/belt.js): fired from the hand, it reels on its own (Zelda's Hookshot): an anchor draws them
 //   to it, a catch is brought to them and dropped; R again lets go
 //
-// The rope is a real one (vfx/rope.js): a chain that hangs with slack and pulls straight when loaded, glowing amber with its load.
+// The rope is a real one (vfx/rope.js): slack is its only curve: told its spare line, it hangs with it and is dead straight without
+// (hung from overhead, hand to hook), glowing amber with its load.
 // It costs a little Lachryma to throw and a little to reel. The grapnel is drawn large (2.4x the one on the tool) with a light on it
 // and a ribbon behind it, because it has to be seen at 40 m.
 //
@@ -165,7 +166,7 @@ export class Hookshot {
       if (_d.lengthSq() > 1e-6) this.grap.quaternion.setFromUnitVectors(_e.set(1, 0, 0), _d.normalize());
       if (this.phase === 'out') this.grap.rotateX(this.spin);
       this.grap.position.copy(this.pos); this.grap.updateMatrixWorld(true);
-      this.line.set(_t, this.pos, { tension: taut, aspect: LOAD, helix, cam: cam.position, dt, time: performance.now() / 1000 });
+      this.line.set(_t, this.pos, { tension: taut, aspect: LOAD, helix, cam: cam.position, fov: cam.fov, lines: g.renderer?.domElement?.height, dt, time: performance.now() / 1000 });
     }
     this.glow.material.opacity = Math.min(1, this.pos.distanceTo(_t) / 6) * (0.55 + 0.35 * Math.max(0, 1 - this.latchT * 3));
     void P;
@@ -191,7 +192,7 @@ export class Hookshot {
     // line beyond the straight: what was paid out past the bite is taken in the moment it bites (the reel's ratchet)
     if (a.mode === 'anchor' && (!P.grounded || this.reeling || this.chest(_c).distanceTo(end) >= this.L - 0.15)) { slack = 0; taut = 1; load = Math.max(load, 0.75); }
     const helix = Math.max(0, 1 - this.latchT * 3.2); // (the last of the coils runs out as it goes taut)
-    this.line.set(tip, end, { tension: 0.1 + taut * (0.25 + 0.6 * load), slack, aspect: LOAD, helix: helix * 0.7, cam: cam.position, dt, time: performance.now() / 1000 });
+    this.line.set(tip, end, { tension: 0.1 + taut * (0.25 + 0.6 * load), slack, aspect: LOAD, helix: helix * 0.7, cam: cam.position, fov: cam.fov, lines: g.renderer?.domElement?.height, dt, time: performance.now() / 1000 });
   }
 
   /** Where the line is fast: the anchor, or the catch's own hitch (it moves). */

@@ -217,3 +217,7 @@ export function dressFinish(m, kind) {
   m.needsUpdate = true;
   return (m.userData.finish = u);
 }
+/** The glaze's kiln patterns as GLSL for another surface to draw (the Solar Skiff's sail: vfx/skiffpaintlook.js): the head (the noise,
+ *  the cells, the eyes, the uniforms and the vFinObj / vFinN varyings), the outputs' declarations, and the pattern block, which reads
+ *  and writes `diffuseColor`. */
+export const FIN_PATTERN_GLSL = { head: HEAD, decl: FIN_DECL, pattern: PATTERN };

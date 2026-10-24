@@ -843,3 +843,7 @@ NEW:move-is-not-set-down. **A move in play is not a setting down.** A warp, a sh
     `course.teleport` is for setting the Courier down (rule 202), and resets what that resets.
 NEW:camera-inside-the-haze. **A scripted camera stays inside the far plane and the haze.** Before hanging a camera far out, read the
     house camera's far (200 m) and the zone's fog; show the rest as a map, not as a view.
+NEW:slack-only-curve. **A rope's slack is its only curve, and it is told, never left to the solver.** The caller says how much line
+    there is beyond the span (m); with none it is drawn as the straight segment, unsimulated; a chain only while there is real slack,
+    eased by `smoothstep(slack, 0.3, 0)`, and its belly held to the sag that slack can make. A few-pass Verlet chain stretches under its
+    own weight, so its shape is not evidence of its length; and a width meant for the screen is a pixel count, scaled once.
