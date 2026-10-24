@@ -34,6 +34,10 @@ export function anglingRules({ on, L, log, where }) {
   on('angle.notice', () => L.inc('angle.notice'));
   on('angle.warn', () => log.say('warn', 'The line trembles: something surfaces and shudders. Brace!', { key: 'awarn', throttle: 4 }));
   on('angle.thrash', () => L.inc('angle.thrash'));
+  on('angle.brace', () => L.inc('angle.brace'));
+  on('angle.crank', () => L.inc('angle.crank'));
+  on('angle.retrieve.fast', () => L.inc('angle.retrieve.fast'));
+  on('angle.pump', () => { L.inc('angle.pump'); log.say('angle', 'You pump the rod and win back line.', { key: 'pump', win: 4, fmt: (n) => `You pump the rod and win back line (×${n}).` }); }); // (the words a placeholder for Espada's)
   on('angle.bolt', () => { L.inc('angle.bolt'); log.say('angle', 'It bolts at the last moment!', { key: 'bolt', throttle: 3 }); });
   on('angle.breach', () => { L.inc('angle.breach'); log.say('god', 'The water tears open: something enormous breaches!', { key: 'breach', throttle: 4 }); });
   on('angle.spent', () => log.say('angle', 'It has stopped fighting.', { key: 'spent', throttle: 3 }));

@@ -834,3 +834,7 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
     `overflow`) and a constant in a consumer drift apart; every consumer reads the row, and a new row is wired where it is written.
 282. **After a merge, a look re-reads the fields it borrows.** Optional chaining turns a renamed field into a quiet
     default (the Fool, nought, nothing drawn); grep the merged diff for the names your file reads from another division's state.
+NEW:slack-only-curve. **A rope's slack is its only curve, and it is told, never left to the solver.** The caller says how much line
+    there is beyond the span (m); with none it is drawn as the straight segment, unsimulated; a chain only while there is real slack,
+    eased by `smoothstep(slack, 0.3, 0)`, and its belly held to the sag that slack can make. A few-pass Verlet chain stretches under its
+    own weight, so its shape is not evidence of its length; and a width meant for the screen is a pixel count, scaled once.

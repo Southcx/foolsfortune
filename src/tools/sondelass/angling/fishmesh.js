@@ -9,7 +9,7 @@
 // Skin marks ride the same sweep as the body's vertices (skinAt), so they swim with it. Prior art: a sculpin's and a pike's shapes, the
 // paint motifs' curds and craquelure (Calissa's), Okami's ink lines that sit on a body and move with it.
 //   const m = buildFish(species, sizeCm)      m.group (nose toward +X, up +Y)
-//   m.swim(dt, speed, turn)                   the swimming motion
+//   m.swim(dt, speed, turn)                   the swimming motion       m.phase   the tail's beat (radians)
 //   m.glow(0..1)                              the halo and the core (aware, sounded, hooked)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -210,6 +210,8 @@ export function buildFish(sp, cm) {
   let phase = simRand() * 6.28;
   const api = {
     group, length: L, halo, lantern, head,
+    /** The tail's beat (radians, running): the fishing line's core pulses with it (line.js). */
+    get phase() { return phase; },
     swim(dt, speed = 0.5, turn = 0) {
       phase += dt * B.freq * (0.35 + Math.min(2.2, speed * 0.7));
       const amp = B.amp * L * (0.55 + Math.min(1, speed * 0.3));
