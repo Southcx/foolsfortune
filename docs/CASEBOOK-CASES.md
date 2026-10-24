@@ -3787,3 +3787,14 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   88.5 MB; textures 190 to 138 MB.
 - **Rule:** 294
 
+
+### 2026-10-24 · A stone's reach was read by nothing (Dovina, reading the stones for the dice; fixed by Petra)
+- **Seen (read):** progress/stones.js gives every stone a `reach` (amethyst 0.8, onyx 0.85, moonstone 1.3 by night and 0.9 by day, a
+  ruby's 1.5), and its header says it "multiplies the bauble magnet's radius"; courier/lachryma.js pulled baubles in at
+  `T.lachryma.magnetRadius` (3.2 m) whatever stone was worn. No file read `reach`.
+- **Cause (read):** the stones reach the pool through one modifier (`modifier(id, { night })`, handed to `addModifier('stones', ...)`),
+  and the modifier carried the pool's numbers only; the bauble magnet asked the config, never the pool.
+- **Fix:** the pool's modifiers carry `reachMult` (courier/lachryma.js's header), and the bauble magnet's radius is
+  `magnetRadius x product(reachMult)`: 1 with none, 0.8 with amethyst's. The stones' `modifier()` sets it from the stone's reach and
+  the phase's (progress/stones.js, Dovina's line), so a stone changed or night falling changes the reach with the pool's other numbers.
+- **Rule:** 295

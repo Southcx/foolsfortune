@@ -865,3 +865,6 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 294. **A canvas drawn once is baked.** Its texture lets the canvas go once uploaded (render/bakedcanvas.js); a canvas
     redrawn in play stays a CanvasTexture. Count a page's memory by its owners (canvases by the module that made them), not in sum.
 
+295. **A field a table promises has a reader.** A row's number its header says does something (a stone's
+    `reach`, "multiplies the bauble magnet's radius") is grepped for its reader before it ships; carry it by the channel its readers
+    already ask (the pool's modifiers), never a second path beside it.

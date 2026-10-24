@@ -7,7 +7,8 @@
 //   - spend() is all-or-nothing, drain() takes what it can (continuous use)
 //   - reserve()/commit()/refund() lets a mechanic hold energy while it winds
 //     up (a charge) and give it back if cancelled
-//   - modifiers stack: { regenMult, costMult: { tag|'*': x }, maxBonus, regenDelayMult }
+//   - modifiers stack: { regenMult, costMult: { tag|'*': x }, maxBonus, regenDelayMult, reachMult (the bauble magnet's radius: a
+//     stone's reach, progress/stones.js modifier()) }
 //   - events: change, spend, gain, empty, full, overflow, denied
 // ---------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -194,6 +195,7 @@ export class Baubles {
 
   update(dt) {
     const g = this.game, L = T.lachryma;
+    const reach = L.magnetRadius * (g.lachryma?.product((m) => m.reachMult) ?? 1); // (the worn stone's reach, by day or night: the pool's modifiers)
     const chest = g.player.renderPos.clone();
     chest.y += 1.05;
     for (let i = this.list.length - 1; i >= 0; i--) {
@@ -210,7 +212,7 @@ export class Baubles {
         if (b.age > OX.gone) { this.remove(i); continue; }
         // magnet: once close enough (and a moment after spawning), fly to the courier
         const d = b.root.position.distanceTo(chest);
-        if (b.age > L.magnetDelay && d < L.magnetRadius && !b.claimed) this.beginAbsorb(b);
+        if (b.age > L.magnetDelay && d < reach && !b.claimed) this.beginAbsorb(b);
       } else if (b.state === 'absorb') {
         // ease in, accelerating, stretching along the path
         b.t += dt;
