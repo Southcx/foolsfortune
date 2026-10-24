@@ -79,6 +79,90 @@ export const GLOVES = {
 export const WINDOWS = ['#codex .cx', '#indexmenu .im', '#pneuka .px', '#shop .px', '#pneuka .menu', '#overlay .card', '#mapui .side', '#mapui .legend', '#chatlog', '#dialogue .dw', '#workbench .wb', '#bugmarkup .bm', '#qais .qw'];
 const W = (suffix = '') => WINDOWS.map((s) => `html body ${s}${suffix}`).join(',\n');
 
+// THE WINDOWS ON A PHONE (docs/plans/MOBILE.md 4.1, 4.4, 5 "windows", 6.3): the same windows, dressed for a finger and an arm's length
+// under the body classes the HUD layout sets on touch (ui/hudlayout.js: .hud-touch, .hud-portrait, .hud-landscape; --safe-*). Four rules:
+//   PRESSES    every thing a finger presses is 44 x 44 px at least (Apple's 44 pt, Material's 48 dp); a row of tabs that would wrap into
+//              a wall becomes one strip that scrolls sideways (the App Store's and Material's scrollable tabs).
+//   TYPE       nothing under 14 px: every text in a window is raised to max(14 px, its parent's size), the sizes already above it left
+//              as they were (the titles, the glyphs, the card's name: PHONE_KEEP); a text field is 16 px (iOS zooms on a smaller one).
+//   ROOM       inside the safe area (env(safe-area-inset-*) as --safe-*), never wider than it: a window scrolls inside itself (its
+//              overscroll held), never the page.
+//   NO HOVER   a hover's detail is a long press (the choice card's 420 ms, ui/choicecard.js); the glove (a mouse's and a key's pointer)
+//              is put away, and a tapped card does not keep its hover look.
+// Prior art: Apple's Human Interface Guidelines (44 pt hit targets, safe areas, Dynamic Type's floor), Material's touch targets and
+// scrollable tabs, WCAG 2.2's target size (2.5.8), and the web's own `max()`, `env()` and `overscroll-behavior`.
+const T = 'html body.hud-touch';
+const PHONE_WINS = ['#codex', '#indexmenu', '#shop', '#overlay'];
+/** What keeps its own size on a phone: sizes already above the floor (titles, glyphs, numbers drawn big), and SVG's own units. */
+const PHONE_KEEP = 'h1, h2, .room .n, .row .g, .snd .no, .card > h3, .cc-name, .lg-head b, .snd b, .st-sum b, .song .n, .go .opt, .hint, .lore, .logo, .logo *, svg, svg *';
+const tap = (sel) => sel.split(',').map((s) => `${T} ${s.trim()}`).join(', ');
+const PHONE_CSS = `
+/* ROOM: the safe area round every window; a window scrolls inside itself */
+${tap('#indexmenu, #codex, #shop, #overlay')} { box-sizing: border-box; padding: var(--safe-t, 0px) var(--safe-r, 0px) var(--safe-b, 0px) var(--safe-l, 0px); }
+${tap('#dialogue')} { padding-left: var(--safe-l, 0px); padding-right: var(--safe-r, 0px); padding-bottom: calc(var(--safe-b, 0px) + 12px); }
+${tap('#indexmenu .im, #codex .cx, #shop .px, #overlay .card')} { max-width: calc(100% - 16px); max-height: calc(100% - 16px); overscroll-behavior: contain; -webkit-overflow-scrolling: touch; }
+${tap('#indexmenu .im, #codex .cx')} { width: calc(100% - 16px); padding: 12px 12px 14px; }
+${T}.hud-portrait #indexmenu .im, ${T}.hud-portrait #codex .cx { max-height: calc(100% - 24px); }
+${tap('#indexmenu[data-aside] .im')} { width: min(400px, calc(100% - 16px)); }
+${tap('#shop .px')} { padding: 12px 12px 10px; }
+${T}.hud-portrait :is(#indexmenu, #shop) header { flex-wrap: wrap; row-gap: 4px; } /* (upright the line goes under the title, not into a column beside it) */
+${T}.hud-portrait :is(#indexmenu, #shop) header h2 { flex: 1; }
+${T}.hud-portrait :is(#indexmenu, #shop) header .sub { order: 3; flex: 1 0 100%; max-width: none; }
+${tap('#shop .shelf')} { width: min(330px, 100%); }
+${tap('#shop .cols')} { gap: 10px; }
+${tap('#shop .pane')} { max-width: 100%; box-sizing: border-box; }
+${tap('#shop .hover')} { height: auto; min-height: 1.45em; }
+${tap('#overlay .card')} { padding: 14px 14px 0; max-height: calc(100% - 96px); }
+${tap('#overlay .logo small')} { display: none; }
+${tap('#overlay .logo b')} { font-size: 34px; }
+${T}.hud-portrait #overlay .card { max-height: calc(100% - 150px); }
+${T}.hud-landscape #overlay .logo { display: none; } /* (on its side the title would sit on the top bar: the pause is its pages, under the bar) */
+${T}.hud-landscape #overlay { padding-top: calc(var(--safe-t, 0px) + 56px); justify-content: flex-start; }
+${T}.hud-landscape #overlay .card { max-height: calc(100% - 8px); }
+${tap('#help')} { min-height: 0; flex-direction: column; }
+${tap('#help .hl')} { flex: 0 0 auto; flex-direction: row; border: 0; padding: 0 0 4px; }
+${tap('#overlay .go')} { margin: 10px -14px 0; padding: 6px 0 calc(6px + var(--safe-b, 0px)); }
+${tap('#codex .body')} { gap: 10px; }
+${tap('#codex .card')} { padding: 10px 12px; min-width: 0; }
+/* TYPE: nothing under 14 px; a text field 16 px */
+${PHONE_WINS.map((w) => `${T} ${w} :not(${PHONE_KEEP})`).join(', ')} { font-size: max(14px, 1em) !important; }
+${PHONE_WINS.map((w) => `${T} ${w} :is(.hint, .lore)`).join(', ')} { font-size: max(15px, 1.12em) !important; }
+${tap('#codex textarea, #indexmenu textarea, #indexmenu input, #codex input')} { font-size: 16px !important; }
+/* PRESSES: 44 x 44 at least */
+${tap(`#indexmenu .x, #codex .x, #shop .x, #codex .switch, #codex button, #shop button, #codex .lg-cat, #codex .lg-filter i, #codex .vtpages > span,
+  #codex .st-chip.st-socket, #overlay .go .opt, #help .hl > div, #overlay summary`)} { min-height: 44px; min-width: 44px; box-sizing: border-box; }
+${tap('#indexmenu .x, #codex .x, #shop .x, #codex .switch, #codex .lg-filter i, #codex .vtpages > span, #overlay .go .opt, #help .hl > div, #overlay summary')} { display: inline-flex; align-items: center; justify-content: center; }
+${tap('#indexmenu .x, #codex .x, #shop .x')} { padding: 0 12px; }
+${tap('#overlay summary')} { display: flex; justify-content: flex-start; }
+${tap('#indexmenu .room, #codex .row, #codex .var, #dialogue .opt, #shop .good')} { min-height: 44px; box-sizing: border-box; }
+${tap('#dialogue .opt')} { display: flex; align-items: center; }
+${T}.hud-portrait #dialogue .choices { padding-left: 8px; }
+${tap('#dialogue .choices')} { max-height: max(100px, calc(100vh - 220px)); overflow-y: auto; overscroll-behavior: contain; } /* (on its side a long ask scrolls, the name's tab kept on screen) */
+${T}.hud-landscape #dialogue .text { font-size: 19px; min-height: 2.2em; }
+${T}.hud-landscape #dialogue { padding-bottom: calc(var(--safe-b, 0px) + 10px); }
+${T}.hud-portrait #codex .rec-grid { grid-template-columns: minmax(0, 1fr); }
+${T}.hud-portrait #codex .lg-body { grid-template-columns: minmax(0, 1fr); } /* (the STATS shelf upright: its list no wider than the window) */
+${T}.hud-portrait #codex .ach { grid-template-columns: 34px minmax(0, 1fr) auto; }
+${T}.hud-portrait #codex .ach .nv { min-width: 0; }
+${tap('#codex footer textarea')} { min-height: 44px; }
+${tap('#shop .good')} { grid-template-columns: 44px minmax(0, 1fr) auto; }
+${tap('#shop .pr button')} { padding: 0 10px; }
+${tap('#shop .grid')} { grid-template-columns: repeat(4, 52px); }
+/* the tab strips: one row that scrolls sideways (the Codex's shelves, the race board's tabs, the help's pages, the Veritome's pages) */
+${tap('#codex .shelf, #indexmenu .im > header + .rooms[style], #help .hl, #codex .vtpages')} { display: flex !important; flex-wrap: nowrap; overflow-x: auto; overscroll-behavior-x: contain;
+  scrollbar-width: none; gap: 4px 6px; -webkit-overflow-scrolling: touch; }
+${tap('#codex .shelf::-webkit-scrollbar, #indexmenu .im > header + .rooms[style]::-webkit-scrollbar, #help .hl::-webkit-scrollbar, #codex .vtpages::-webkit-scrollbar')} { display: none; }
+${tap('#codex .shelf .tab')} { flex: none; display: inline-flex; align-items: center; min-height: 44px; min-width: 44px; padding: 0 10px; box-sizing: border-box; letter-spacing: .16em; }
+${tap('#codex .shelf .tab.on')} { border-bottom-width: 3px; padding-bottom: 0; }
+${tap('#indexmenu .im > header + .rooms[style] > .room')} { flex: none; padding: 0 14px; justify-content: center; }
+${tap('#help .hl > div, #codex .vtpages > span')} { flex: none; padding: 0 12px; }
+/* NO HOVER: no glove, no tap highlight, no callout; a tapped card keeps no hover look (its detail is the long press's) */
+${T} #jglove { display: none !important; }
+${tap(`${WINDOWS.join(', ')}, #overlay, #dialogue`)} { -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; }
+${T} .cc:hover:not(.held):not(:focus-visible) .cc-detail { display: none; }
+${T} .cc:hover:not(.held):not(.sel):not(.equipped) { border-color: rgba(255,230,200,.22); }
+`;
+
 const CSS = () => `
 @font-face { font-family: 'M PLUS Rounded 1c'; font-weight: 400 600; src: url(data:font/woff2;base64,${fUi}) format('woff2'); }
 @font-face { font-family: 'M PLUS Rounded 1c'; font-weight: 700 900; src: url(data:font/woff2;base64,${fUiBold}) format('woff2'); }
@@ -113,7 +197,7 @@ ${W(' .hint')}, ${W(' .lore')}, ${W(' .card p em')} { font-family: var(--f-lore)
 ${W()}, #overlay, #codex, #pneuka, #indexmenu { cursor: var(--jcur); }
 html.jgrab, html.jgrab * { cursor: var(--jcur-grab) !important; }
 #jglove.on { display: block; }
-`;
+${PHONE_CSS}`;
 
 class Theme {
   constructor() {
