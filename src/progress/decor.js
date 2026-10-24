@@ -94,7 +94,7 @@ export const DECOR = {
   slabBridge: P('Slab Bridge', 'teapath', 'medium', 4, ['shop', 'wish']),
   teaBenchParasol: P('Tea Bench', 'teapath', 'medium', 4, ['shop', 'visitor']),
   mossHillock: P('Moss Hillock', 'teapath', 'medium', 4, ['gift', 'wish']),
-  bambooWaterPipe: P('Deer Scarer', 'teapath', 'centre', 4, ['lotus', 'wish']),
+  deerScarer: P('Deer Scarer', 'teapath', 'centre', 4, ['lotus', 'wish']),
   // a kiln yard (the pottery's yard, not the workshop's kiln station)
   woodPile: P('Wood Pile', 'kilnyard', 'small', 4, ['shop', 'gift']),
   saggarStack: P('Saggar Stack', 'kilnyard', 'small', 4, ['shop', 'gift']),

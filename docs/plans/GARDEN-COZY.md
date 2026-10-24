@@ -299,7 +299,7 @@ make a garden.
   - **The sets:** Tea Path (8 pieces, 280 cubes, centre Deer Scarer), Kiln Yard (8, 248, Tunnel Kiln), Stargazer (8, 264, Constellation
     Pavement); 792 cubes, 99 minutes of play. Prices are `priceOf` (small 8, medium 24, centre 160); none is set by hand.
   - **Renamed (Espada's ruling):** Calissa's "Teahouse" is the Tea Path (set id `teapath`; Tea Garden is the desire set and Tea House its
-    centre, and `teahouse` read as `teaHouse`), and her "Water Pipe" is the Deer Scarer (label only: its piece id stays `bambooWaterPipe`,
+    centre, and `teahouse` read as `teaHouse`), and her "Water Pipe" is the Deer Scarer (its piece id `deerScarer` since Calissa renamed her model key; it was `bambooWaterPipe`,
     the key of her model in `decorpieces/teahouse.js`). Two labels qualified for the glossary: "Lattice Fence" is Bamboo Lattice Fence, "Glaze Bucket" is
     Dipping Bucket (glaze is the Courier's word).
   - **How they open:** by play, at a lake lotus (D6, "a decor set's recipe at each lotus"): Tea Path at 1 lotus, Kiln Yard at 2,
