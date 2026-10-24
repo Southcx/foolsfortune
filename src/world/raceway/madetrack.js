@@ -13,12 +13,12 @@
 //
 //   R.made = new MadeTrack(R)   .set(def) -> T (the built track, id 'made') | null   .clear()   .T   .def   .rule(id)   .heightAt(lx, lz) -> y | null
 //   .reshape() (the lot's ground to the track: after the park's ground is built again)   .medals { gold, silver, bronze } (real s, three laps)
-//   .ref (the ruler's reference race, real s)   .group
+//   .ref (the ruler's reference race, real s)   .ghost (the maker's lap, if the code carried it: race.js races it)   .group
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../../core/physics.js';
 import { RW } from './track.js';
-import { LOT, MEDAL_K, buildTrack, hashOf } from '../../progress/trackdef.js';
+import { LOT, MEDAL_K, buildTrack, hashOf, isValidated } from '../../progress/trackdef.js';
 import { refLap } from '../../progress/skiffruler.js';
 import { kitSink, kitOf, marksOf, nearAdd, nearDrop } from './kit.js';
 import { railsOf, railMesh, ringsOf } from './railsrings.js';
@@ -40,6 +40,9 @@ export class MadeTrack {
     // the ruler's reference race, and medals at the Sun Circuit's ratio to its own (MEDAL_K: 0.718 for gold)
     this.ref = refLap(T, () => 1, { race: true }).seconds;
     this.medals = Object.fromEntries(Object.entries(MEDAL_K).map(([m, k]) => [m, Math.round(this.ref * k)]));
+    // the maker's ghost, if the code carried one for this geometry (trackdef.js CARRY): raced when you have no lap of your own here
+    const G = isValidated(def) ? def.author.ghost : null;
+    this.ghost = G?.length > 2 ? { seconds: def.author.seconds, maker: true, frames: G.map(([t, x, y, z, yaw]) => [t, RW.x + LOT.x + x, RW.y + LOT.y + y, RW.z + LOT.z + z, yaw]) } : null;
     this.reshape();
     const group = (this.group = new THREE.Group()); group.userData.zone = 'raceway'; g.scene.add(group);
     const add = (o) => group.add(o);
@@ -64,7 +67,7 @@ export class MadeTrack {
     const mine = (x) => x.track !== 'made';
     R.geysers = R.geysers.filter(mine); R.plates = R.plates.filter(mine); R.pillars = (R.pillars || []).filter(mine); R.rails = R.rails.filter(mine); R.rings = R.rings.filter(mine);
     for (const N of this.near) nearDrop(R, N); this.near = [];
-    const had = !!this.T; this.T = null; this.def = null;
+    const had = !!this.T; this.T = null; this.def = null; this.ghost = null;
     if (had) this.reshape();
   }
   /** Whether a track's rule (trackdef.js RULES) holds on the made track. */

@@ -12,7 +12,7 @@
 // Kart's item hits (a spin-out a rival recovers from: the takedown's `wreck`).
 //
 //   R.traps = new Traps(R)   .use(T | null) (a track's traps up; null: the made track's again, if any)   .build(T)   .clear()   .T   .list
-//   .haunt(mode: null | 'bots' | 'courier')   .fire(i, opts?) -> bool
+//   .haunt(mode: null | 'bots' | 'courier' | 'recorded', plan?)   .fire(i, opts?) -> bool
 //   .gripAt(x, z) -> multiplier   .update(dt)   .nearest(lx, lz) (park-local) -> index | -1   events: trap.tell { kind, i, by }, trap.fire { kind, i, by,
 //   possessor }, trap.hit { kind, target: 'courier' | 'rival', who, by, possessor }, trap.parry { by }, trap.stun { kind, by }, trap.warp { from, to, back, by }
 // ---------------------------------------------------------------------------------------
@@ -54,9 +54,23 @@ export class Traps {
     this.list = []; this.balls = [];
   }
   /** Who holds the traps: none (each on its own cycle), the siblings as bots, or you. */
-  haunt(mode) {
-    this.mode = mode || null;
-    this.list.forEach((Tp, k) => { Tp.clock = this.mode ? new TrapClock(Tp.kind) : null; Tp.haunter = this.mode === 'bots' ? HAUNTERS[k % HAUNTERS.length] : null; Tp.wrath = 0; Tp.quiet = 0; });
+  /** Who holds the traps: none (each on its own cycle), the siblings as bots, you, or a recorded haunt (`plan`: trackdef.js `haunt`, the
+   *  maker's fires replayed against the rider: each fire when the rider is on its lap and as near the trap as the leader was). */
+  haunt(mode, plan = null) {
+    this.mode = mode || null; this.plan = mode === 'recorded' && plan ? plan.fires.map(([i, lap, gap, lane, dir]) => ({ i, lap, gap, lane, dir, done: false })) : null;
+    const by = { name: plan?.by || 'the maker' };
+    this.list.forEach((Tp, k) => { Tp.clock = this.mode ? new TrapClock(Tp.kind) : null; Tp.haunter = this.mode === 'bots' ? HAUNTERS[k % HAUNTERS.length] : this.mode === 'recorded' ? by : null; Tp.wrath = 0; Tp.quiet = 0; });
+  }
+  /** The recorded haunt's fires due now: the rider on the fire's lap, within its metres of the trap (or just past them: a fire missed by a
+   *  frame still goes, a fire passed by more than 30 m is let go). */
+  replay(you, L) {
+    const lap = Math.max(0, (this.game.race?.lap ?? 1) - 1);
+    for (const F of this.plan) {
+      if (F.done || F.lap !== lap) continue; const Tp = this.list[F.i]; if (!Tp) { F.done = true; continue; }
+      const gap = ((Tp.s - you.s) % L + L) % L; if (gap > F.gap + 2) continue;
+      if (gap < F.gap - 30) { F.done = true; continue; }
+      if (this.fire(F.i, { lane: F.lane, dir: F.dir })) F.done = true;
+    }
   }
 
   // ---------------------------------------------------------------- where things are
@@ -134,6 +148,7 @@ export class Traps {
       if (Tp.phase === 'active' || Tp.kind === 'pendulum') for (const x of racers) this.act(Tp, x, dt, L);
       if (Tp.kind === 'turret' && Tp.phase === 'active' && was !== 'active') this.cast(Tp, racers);
     }
+    if (this.mode === 'recorded' && this.plan && you) this.replay(you, L);
     this.stepBalls(dt, you);
   }
   /** A bot haunter's choice for one trap this frame (progress/trapbot.js): the rider's gap to it and speed, its grace, its roll. */

@@ -5,7 +5,7 @@
 // (JSON: frames [x, y, z, speed, s], marks [{ kind, x, z, ... }]) that scripts/raceway/map.mjs draws over the park.
 //   node scripts/raceway/drive.mjs [--track sun|gorge|coaster] [--laps 1] [--cave (lap 2 through the cavern)] [--rail <id> (onto that
 //   coaster rail at its start, and ride it out)] [--solo (no rivals)] [--mode race|hotlap|practice|pots|escape|licence] [--test <licence id>]
-//   [--cup clay|sibling] [--city (the City Trial)] [--roster siblings] [--made <a track code> (a made track: --track made)] [--trace out.json] [--secs 400] [--clock ms]
+//   [--cup clay|sibling] [--city (the City Trial)] [--roster siblings] [--made <a track code> (a made track: --track made)] [--code-out <file> (the made track's code after the run: its author ghost, its haunt)] [--haunt (after the run, a haunt of the made track, the next trap fired every third of a real second)] [--trace out.json] [--secs 400] [--clock ms]
 // The autopilot steers at a point ahead on the line (on the sand A / D, gliding Q / E), runs the sail full, never spins in the air: a
 // test of the course, not of a player.
 // ---------------------------------------------------------------------------------------
@@ -13,7 +13,7 @@ import { chromium } from 'playwright';
 import { writeFileSync } from 'node:fs';
 
 const args = process.argv.slice(2), opt = (k, d) => { const i = args.indexOf(`--${k}`); return i >= 0 ? (args[i + 1] && !args[i + 1].startsWith('--') ? args[i + 1] : true) : d; };
-const cfg = { solo: !!opt('solo', false), track: opt('track', 'sun'), laps: +opt('laps', 1), cave: !!opt('cave', false), rail: opt('rail', null), trace: opt('trace', null), mode: opt('mode', 'race'), test: opt('test', null), cup: opt('cup', null), city: !!opt('city', false), roster: opt('roster', 'clapperjars'), made: opt('made', null), secs: +opt('secs', 400), clock: opt('clock', '1791160275000') };
+const cfg = { solo: !!opt('solo', false), track: opt('track', 'sun'), laps: +opt('laps', 1), cave: !!opt('cave', false), rail: opt('rail', null), trace: opt('trace', null), mode: opt('mode', 'race'), test: opt('test', null), cup: opt('cup', null), city: !!opt('city', false), roster: opt('roster', 'clapperjars'), made: opt('made', null), codeOut: opt('code-out', null), haunt: !!opt('haunt', false), secs: +opt('secs', 400), clock: opt('clock', '1791160275000') };
 const b = await chromium.launch(), p = await b.newPage({ viewport: { width: 640, height: 400 } }), errs = [];
 p.on('pageerror', (e) => errs.push(e.message + ' ' + (e.stack || '').split('\n')[1]));
 p.on('console', (m) => { if (m.type() === 'error' && !/Failed to load/.test(m.text())) errs.push('console: ' + m.text().slice(0, 200)); });
@@ -69,7 +69,19 @@ const r = await p.evaluate(async (cfg) => {
     if (cfg.cup) { if (ev['cup.finish'] || ev['cup.end']) break; } else if (cfg.city) { if (ev['citytrial.end']) break; }
     else if (!cfg.rail && !g.race.running && (ev['race.finish'] || ev['race.end'])) break;
   }
-  return { build: Math.round(build), t: +t.toFixed(1), track: T.id, laps: g.race.laps, ev, marks: marks.slice(0, 60), maxV: +maxV.toFixed(1), airS: +(air / 60).toFixed(1), grindS: +(grindT / 60).toFixed(1), railRide, frames, cond: R.condition?.key, rivals: g.race.rivals.list.map((r) => ({ i: r.i, d: Math.round(r.d), v: +r.v.toFixed(1), done: r.done })), place: g.race.rivals.place, pool: { min: Math.round(pool.min), end: Math.round(g.lachryma.value), max: Math.round(g.lachryma.max) } };
+  // the made track's maker: what the run kept (the author ghost) and, with --haunt, a haunt played and kept with it
+  let made = null;
+  if (cfg.made) {
+    const E = g.trackEditor, M = R.made; made = { makerGhost: !!M.ghost, trapsMode: g.raceway.traps.mode, author: E.slots[0]?.author ? { seconds: E.slots[0].author.seconds, ghost: E.slots[0].author.ghost?.length || 0 } : null };
+    if (cfg.haunt) {
+      for (let k = 0; k < 600 && g.race.running; k++) G.tick(1 / 60); E.wear(0); const hv = []; g.events.on('haunt.end', (e) => hv.push(e));
+      const ok = g.haunt.start('made'); for (let i = 0; i < 60 * 600 && g.haunt.on; i++) { if (i % 20 === 0) g.haunt.fireNext(); G.tick(1 / 60); }
+      made.haunt = { started: ok, end: hv[0] ? { wrecks: hv[0].wrecks, kept: hv[0].kept, held: hv[0].held } : null, fires: E.slots[0]?.haunt?.fires?.length || 0 };
+    }
+    made.code = E.codeOf(0);
+  }
+  return { made, build: Math.round(build), t: +t.toFixed(1), track: T.id, laps: g.race.laps, ev, marks: marks.slice(0, 60), maxV: +maxV.toFixed(1), airS: +(air / 60).toFixed(1), grindS: +(grindT / 60).toFixed(1), railRide, frames, cond: R.condition?.key, rivals: g.race.rivals.list.map((r) => ({ i: r.i, d: Math.round(r.d), v: +r.v.toFixed(1), done: r.done })), place: g.race.rivals.place, pool: { min: Math.round(pool.min), end: Math.round(g.lachryma.value), max: Math.round(g.lachryma.max) } };
 }, cfg);
 if (cfg.trace && r.frames) writeFileSync(cfg.trace, JSON.stringify({ frames: r.frames, marks: r.marks }));
+if (cfg.codeOut && r.made?.code) writeFileSync(cfg.codeOut, r.made.code); if (r.made) r.made.code = r.made.code ? `${r.made.code.length} chars` : null;
 delete r.frames; console.log(JSON.stringify(r, null, 1)); console.log('errors', errs.slice(0, 8)); await b.close();

@@ -8,12 +8,17 @@
 // park's own ground is reshaped there to the track's corridor (world/raceway/madetrack.js), so the board rides it as it rides the
 // Sun Circuit, and its kit, rails, rings and marks are built by the park's own builders. It is kept as
 //   { v: 2, name, points: [[x, z, y, halfWidth]], pieces: [{ kind, u, lat, u2?, lat2? }], traps: [{ kind, u, lat, period, offset, u2? }],
-//     rules: [id], author: { seconds, hash } | null }
+//     rules: [id], author: { seconds, hash, ghost?: [[t, x, y, z, yaw]] } | null, haunt: { hash, by, fires: [[trap, lap, gap, lane, dir]], wrecks } | null }
 // in lot metres (x, z from its middle; y over its floor); a piece or trap is placed by `u`, its share of the line's length from the start,
 // and `lat`, metres right of the line, so it slides with the line when the line is edited. `toTrackDef` turns it into the track.js
 // definition (the start at the first point, eight gates spaced by length, each piece its house feature: progress/trackpieces.js, each
 // trap a `traps` feature). A track is VALIDATED (Trackmania's rule, Mario Maker's clear check) when its author has ridden it to the line
 // on the track as it now stands (`author.hash` the hash of its geometry: an edit unvalidates it); only a validated track is shared.
+// THE CODE CARRIES ITS MAKER (Trackmania's author ghost; Dark Souls' and Mario Maker's asynchronous play; Crawl's haunting, made
+// asynchronous): the author's validate lap as a ghost (`author.ghost`, lot metres, two frames a real second), and the maker's own haunt
+// (`haunt`: each trap the maker fired in the haunt, with the leader's lap and its metres short of the trap), so whoever loads the code races
+// the maker's ghost and, in the haunted race, is haunted by the maker: the traps fire at them where the maker fired them at the leader. Both
+// are kept only for the geometry they were made on (`hash`).
 //
 // Prior art: Trackmania's validation and author time; ModNation Racers' road laid as a line and the ground fitted round it; Super Mario
 // Maker's clear check and its limits; LittleBigPlanet Karting's thermometer (the budget); a share code as Trackmania's track code.
@@ -21,6 +26,7 @@
 //   LOT   MADE   MEDAL_K   RULES   blankTrack(name) -> def   toTrackDef(def, L?, gates?) -> track.js def   buildTrack(def) -> T
 //   gatesFor(T) -> [[cp, at]]   budgetOf(def) -> { used, max }   validate(def, T) -> { ok, errors: [{ code, text, x?, z? }] }
 //   hashOf(def) -> string   isValidated(def) -> bool   shareCode(def) -> 'FF2-...'   readCode(code) -> def | null   cleanDef(any) -> def | null
+//   CARRY (what the code carries of its maker)   hauntOf(def) -> its haunt, if made on this geometry
 // ---------------------------------------------------------------------------------------
 import { track } from '../world/raceway/track.js';
 import { featureOf } from './trackpieces.js';
@@ -30,6 +36,8 @@ import { TRAPS, TRAP } from './traps.js';
 /** The build lot: its middle in the park's local metres, its half-size, the blend back to the sand round it, its floor's height. */
 export const LOT = { x: -830, z: 240, half: 240, blend: 40, y: 20 };
 /** A made track's limits: slots kept, points, length (m), half-width (m), the tightest bend's radius (m), gates, the budget, edge margin. */
+/** What the code carries of its maker: ghost frames at most (two a real second: a lap of eight real minutes), haunt fires at most. */
+export const CARRY = { ghostHz: 2, ghost: 960, fires: 240 };
 export const MADE = { slots: 3, points: [4, 48], length: [500, 3200], width: [5, 16], defaultWidth: 10, rise: 30, climb: 0.35, bend: 14, gates: 8, budget: 100, margin: 6, startClear: 60, maxRules: 3 };
 // (rise: metres a point may stand over the lot's floor; climb: the steepest grade between two points the line may climb, 1 in 3, the
 // Sun Circuit's switchbacks' own; a drop may be any: it is a jump)
@@ -124,6 +132,8 @@ export function hashOf(def) {
   return h.toString(36);
 }
 export const isValidated = (def) => !!def?.author && def.author.hash === hashOf(def);
+/** The maker's haunt, if it was made on the track as it now stands (a haunt of an older line would fire its traps in the wrong places). */
+export const hauntOf = (def) => (def?.haunt?.fires?.length && def.haunt.hash === hashOf(def) ? def.haunt : null);
 
 /** Anything read back (the save, a pasted code) made into a well-formed def, or null (a version-1 def, laid by x and z before made
  *  tracks were house tracks, is not read: progress resets on every build, and no code of one was ever shared). */
@@ -138,7 +148,10 @@ export function cleanDef(d) {
       period: r1(num(P.period, TRAPS[P.kind].cycle.min, TRAPS[P.kind].cycle.max, TRAPS[P.kind].cycle.period)), offset: r1(num(P.offset, 0, 30)),
       ...(TRAPS[P.kind].pair ? { u2: u3(P.u2 ?? P.u) } : {}) })),
     rules: (d.rules || []).filter((id) => RULES[id]).slice(0, MADE.maxRules),
-    author: d.author && Number.isFinite(+d.author.seconds) ? { seconds: +(+d.author.seconds).toFixed(2), hash: String(d.author.hash || '') } : null,
+    author: d.author && Number.isFinite(+d.author.seconds) ? { seconds: +(+d.author.seconds).toFixed(2), hash: String(d.author.hash || ''),
+      ...(Array.isArray(d.author.ghost) && d.author.ghost.length > 2 ? { ghost: d.author.ghost.slice(0, CARRY.ghost).filter((f) => Array.isArray(f) && f.length === 5 && f.every(Number.isFinite)).map((f) => [r1(f[0]), r1(f[1]), r1(f[2]), r1(f[3]), Math.round(f[4] * 100) / 100]) } : {}) } : null,
+    haunt: d.haunt && Array.isArray(d.haunt.fires) && d.haunt.fires.length ? { hash: String(d.haunt.hash || ''), by: String(d.haunt.by || 'the maker').slice(0, 24), wrecks: Math.max(0, d.haunt.wrecks | 0),
+      fires: d.haunt.fires.slice(0, CARRY.fires).filter((f) => Array.isArray(f) && f.length === 5 && f.every(Number.isFinite)).map(([i, lap, gap, lane, dir]) => [i | 0, Math.max(0, Math.min(9, lap | 0)), r1(Math.max(0, gap)), Math.max(0, Math.min(2, lane | 0)), dir < 0 ? -1 : 1]) } : null,
   };
 }
 
@@ -148,10 +161,17 @@ const b64 = (s) => (typeof btoa === 'function' ? btoa(unescape(encodeURIComponen
 const unb64 = (s) => { const t = s.replace(/-/g, '+').replace(/_/g, '/'); return typeof atob === 'function' ? decodeURIComponent(escape(atob(t))) : Buffer.from(t, 'base64').toString('utf8'); };
 const sum4 = (s) => { let h = 7; for (let i = 0; i < s.length; i++) h = (h * 31 + s.charCodeAt(i)) % 1679616; return h.toString(36).padStart(4, '0'); };
 
+const chunk = (a, k) => { const out = []; for (let i = 0; i + k <= (a?.length || 0); i += k) out.push(a.slice(i, i + k)); return out; };
+// a ghost packed small: each frame [t, x, y, z, yaw] as whole tenths (yaw hundredths), each the change from the frame before (a lap's
+// frames move a little each: the numbers stay short)
+const GQ = [10, 10, 10, 10, 100];
+const packGhost = (G) => { const out = [], last = [0, 0, 0, 0, 0]; for (const f of G) for (let k = 0; k < 5; k++) { const q = Math.round(f[k] * GQ[k]); out.push(q - last[k]); last[k] = q; } return out; };
+const unpackGhost = (a) => { const out = [], last = [0, 0, 0, 0, 0]; for (const f of chunk(a, 5)) out.push(f.map((d, k) => (last[k] += d) / GQ[k])); return out; };
 export function shareCode(def) {
   const c = [2, def.name, def.points.flat(), def.pieces.map((P) => [KINDS_P.indexOf(P.kind), P.u, P.lat, ...(P.u2 != null ? [P.u2, P.lat2] : [])]),
     def.traps.map((P) => [KINDS_T.indexOf(P.kind), P.u, P.lat, P.period, P.offset, ...(P.u2 != null ? [P.u2] : [])]),
-    def.rules.map((id) => KINDS_R.indexOf(id)), def.author ? [def.author.seconds, def.author.hash] : 0];
+    def.rules.map((id) => KINDS_R.indexOf(id)), def.author ? [def.author.seconds, def.author.hash, ...(def.author.ghost ? [packGhost(def.author.ghost)] : [])] : 0,
+    def.haunt ? [def.haunt.hash, def.haunt.by, def.haunt.fires.flat(), def.haunt.wrecks] : 0];
   const body = b64(JSON.stringify(c));
   return `FF2-${body}-${sum4(body)}`;
 }
@@ -162,6 +182,7 @@ export function readCode(code) {
     const pts = []; for (let i = 0; i + 3 < c[2].length; i += 4) pts.push([c[2][i], c[2][i + 1], c[2][i + 2], c[2][i + 3]]);
     return cleanDef({ v: 2, name: c[1], points: pts, pieces: c[3].map((a) => ({ kind: KINDS_P[a[0]], u: a[1], lat: a[2], ...(a.length > 3 ? { u2: a[3], lat2: a[4] } : {}) })),
       traps: c[4].map((a) => ({ kind: KINDS_T[a[0]], u: a[1], lat: a[2], period: a[3], offset: a[4], ...(a.length > 5 ? { u2: a[5] } : {}) })),
-      rules: c[5].map((i) => KINDS_R[i]), author: c[6] ? { seconds: c[6][0], hash: c[6][1] } : null });
+      rules: c[5].map((i) => KINDS_R[i]), author: c[6] ? { seconds: c[6][0], hash: c[6][1], ...(c[6][2] ? { ghost: unpackGhost(c[6][2]) } : {}) } : null,
+      haunt: c[7] ? { hash: c[7][0], by: c[7][1], fires: chunk(c[7][2], 5), wrecks: c[7][3] } : null });
   } catch { return null; }
 }

@@ -33,6 +33,7 @@ export function trackEditorRules({ on, L, log }) {
   on('trap.warp', (e) => { if (e.target !== 'courier') return; L.inc(e.back ? 'trap.warp.back' : 'trap.warp.on'); log.say('skiff', e.back ? 'The portal throws you back.' : 'The portal carries you on.', { key: 'trap.warp', throttle: 2 }); });
   on('haunt.end', (e) => {
     L.inc('haunt.end'); L.hi('haunt.wrecks.best', e.wrecks || 0); if (e.held) L.inc('haunt.held');
-    log.say('record', e.held ? `You held them off: no rival finished inside par (${clock(e.par)}). ${e.wrecks} wrecks.` : `${e.winner} broke through in ${clock(e.seconds)}. ${e.wrecks} wrecks.`, { key: 'haunt.end', throttle: 2 });
+    log.say('record', (e.held ? `You held them off: no rival finished inside par (${clock(e.par)}). ${e.wrecks} wrecks.` : `${e.winner} broke through in ${clock(e.seconds)}. ${e.wrecks} wrecks.`) + (e.kept ? ' Your haunt is kept with the track: its code carries it.' : ''), { key: 'haunt.end', throttle: 2 });
+    if (e.kept) L.inc('haunt.kept');
   });
 }

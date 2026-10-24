@@ -29,7 +29,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RW } from './track.js';
-import { LOT, MADE, RULES, blankTrack, budgetOf, validate, hashOf, isValidated, shareCode, readCode, cleanDef } from '../../progress/trackdef.js';
+import { LOT, MADE, RULES, CARRY, blankTrack, budgetOf, validate, hashOf, isValidated, shareCode, readCode, cleanDef } from '../../progress/trackdef.js';
 import { PIECES, PIECE_KINDS } from '../../progress/trackpieces.js';
 import { TRAPS, TRAP_KINDS } from '../../progress/traps.js';
 import { GOD_POWERS } from '../../progress/godpowers.js';
@@ -50,6 +50,7 @@ const CSS = `
 #tedit button:disabled { opacity: .35; cursor: default; }
 #tedit .bar { height: 8px; border: 1px solid rgba(255,178,122,.5); margin: 4px 0; } #tedit .bar i { display: block; height: 100%; background: #ffb27a; }
 #tedit .map canvas { display: block; width: 256px; height: 256px; border: 1px solid rgba(255,178,122,.35); cursor: crosshair; image-rendering: pixelated; }
+#tedit textarea.code { width: 100%; box-sizing: border-box; font: 11px/1.3 monospace; color: inherit; background: rgba(0,0,0,.35); border: 1px solid rgba(255,178,122,.35); border-radius: 3px; resize: vertical; }
 #tedit .err { color: #ff9a7a; } #tedit .ok { color: #9ae0a0; } #tedit .dim { opacity: .7; }
 `;
 
@@ -67,16 +68,31 @@ export class TrackEditor {
     game.events?.on('race.finish', (e) => {
       if (e.track !== 'made' || !e.validate) return;
       const def = this.slots[this.slot]; if (!def || `made.${hashOf(def)}` !== e.made) return;
-      def.author = { seconds: e.seconds, hash: hashOf(def) }; game.save?.dirty('madeTracks');
+      def.author = { seconds: e.seconds, hash: hashOf(def), ...(this.ghostOf(game.race?.validateLap) || {}) }; game.save?.dirty('madeTracks');
       game.events?.emit('track.validate', { seconds: e.seconds, by: 'courier' });
     });
     if (typeof document !== 'undefined' && !document.getElementById('tedit-css')) { const st = document.createElement('style'); st.id = 'tedit-css'; st.textContent = CSS; document.head.appendChild(st); }
   }
   get R() { return this.game.raceway; }
+  /** The validate lap as the maker's ghost the code carries: thinned to CARRY.ghostHz, in lot metres (y over the lot's floor). */
+  ghostOf(lap) {
+    const F = lap?.frames; if (!F?.length) return null; const every = Math.max(1, Math.round(F.length / Math.max(1, lap.seconds) / CARRY.ghostHz));
+    const r1 = (v) => Math.round(v * 10) / 10;
+    return { ghost: F.filter((_, i) => i % every === 0).slice(0, CARRY.ghost).map(([t, x, y, z, yaw]) => [r1(t), r1(x - RW.x - LOT.x), r1(y - RW.y - LOT.y), r1(z - RW.z - LOT.z), Math.round(yaw * 100) / 100]) };
+  }
+  /** A slot's share code (its maker's ghost and haunt with it), or null. */
+  codeOf(slot = this.slot) { const d = this.slots[slot]; return d ? shareCode(d) : null; }
+  /** A haunt played on the worn track kept with it (haunt.js): the trap fires, for whoever loads its code; false if the track has changed. */
+  keepHaunt(rec) {
+    const def = this.slots[this.slot], T = this.R?.made?.T; if (!def || !T || `made.${hashOf(def)}` !== T.key || !rec?.fires?.length) return false;
+    const best = def.haunt?.hash === hashOf(def) ? def.haunt : null; if (best && best.wrecks > rec.wrecks) return false; // (the maker's best haunt is the one shared)
+    def.haunt = { hash: hashOf(def), by: rec.by || 'the maker', fires: rec.fires.slice(0, CARRY.fires), wrecks: rec.wrecks | 0 }; this.game.save?.dirty('madeTracks');
+    return true;
+  }
   /** Lend the chat line /edit (at the Raceway: open the editor on the last slot). */
   commands() {
     const g = this.game; this.cmds = true;
-    g.chat?.add('edit', { help: 'the track editor at the Raceway: /edit, /edit 2 (a slot), /edit name <words>, /edit code <a track code>, /edit off', run: (a) => {
+    g.chat?.add('edit', { help: 'the track editor at the Raceway: /edit, /edit 2 (a slot), /edit name <words>, /edit off (a track code: Load code in the editor, or on the race board)', run: (a) => {
       if (a[0] === 'off') { if (this.recording) { this.recording = null; return g.log?.say('info', 'You stop laying the line.', { key: 'edit', throttle: 1 }); } return this.close(); }
       if (a[0] === 'name') { const n = a.slice(1).join(' ').slice(0, 32); if (!n) return; const D = this.active ? this.def : this.slots[this.slot]; if (D) { D.name = n; if (this.active) this.commit(); else g.save?.dirty('madeTracks'); g.log?.say('info', `The track is called ${n}.`, { key: 'edit', throttle: 1 }); } return; }
       if (a[0] === 'code') { if (this.load(a[1] || '', this.active ? this.slot : null) && this.active) { this.close(false); this.open(this.slot); } return; }
@@ -295,6 +311,7 @@ export class TrackEditor {
       <h3>CHECKS</h3><div>${V.ok ? '<span class="ok">It rides.</span>' : V.errors.slice(0, 5).map((e) => `<div class="err">${e.text}</div>`).join('')}</div>
       ${T ? `<div class="dim">Medals: gold ${this.R.made.medals.gold} s, silver ${this.R.made.medals.silver} s, bronze ${this.R.made.medals.bronze} s (three laps, from the ruler).${D.author ? ` Author ${D.author.seconds} s (one lap).` : ''}</div>` : ''}
       <h3>RUNS</h3><div class="row">${btn('Test ride', false, 'run:practice', !V.ok)}${btn('Validate', false, 'run:validate', !V.ok, 'Ride it once to the line, alone: your time is its author time.')}${btn('Haunted race', false, 'run:haunted', !V.ok || !D.traps.length, 'Race the clapperjars while the siblings possess its traps.')}${btn('Haunt', false, 'run:haunt', !V.ok || !D.traps.length, 'The clapperjars race it; you possess its traps.')}</div>
+      ${this.pasting ? `<h3>LOAD A CODE INTO SLOT ${this.slot + 1}</h3><textarea class="code" rows="4" spellcheck="false" placeholder="FF2-..."></textarea><div class="row">${btn('Paste', false, 'paste', !navigator.clipboard?.readText, 'From the clipboard.')}${btn('Load', false, 'loadit')}${btn('Cancel', false, 'nopaste')}</div>` : ''}
       <h3>KEEP</h3><div class="row">${btn('Save', false, 'save')}${btn('Share code', false, 'share', !isValidated(D), isValidated(D) ? '' : 'Validate it first.')}${btn('Load code', false, 'loadcode')}${btn('Undo', false, 'undo', !this.undo.length)}${btn('Leave', false, 'leave')}</div>
       <div class="dim" style="margin-top:6px">WASD or the arrows pan, the wheel zooms. LMB places or drags, RMB takes out, Delete too, Ctrl+Z undoes. Pieces and traps sit on the line and slide with it.</div>`;
     el.querySelectorAll('button').forEach((b) => { b.onclick = () => this.act(b.dataset.a); });
@@ -362,7 +379,10 @@ export class TrackEditor {
     else if (k === 'name') { g.log?.say('info', 'Type /edit name and the name on the chat line.', { key: 'edit.name', throttle: 1 }); return; }
     else if (k === 'save') { this.store(); g.log?.say('info', `Kept in slot ${this.slot + 1}.`, { key: 'edit.save', throttle: 1 }); }
     else if (k === 'share') { this.store(); const code = shareCode(this.slots[this.slot]); navigator.clipboard?.writeText?.(code).catch?.(() => {}); g.log?.say('info', `Its code is copied: ${code.slice(0, 24)}...`, { key: 'edit.share', throttle: 1 }); g.events?.emit('track.share', { by: 'courier' }); }
-    else if (k === 'loadcode') { g.log?.say('info', 'Type /edit code and paste the code on the chat line: it loads into this slot.', { key: 'edit.code', throttle: 1 }); return; }
+    else if (k === 'loadcode') { this.pasting = true; } // (a code is longer than the chat line takes: a box of its own, and the clipboard's Paste for a phone)
+    else if (k === 'nopaste') { this.pasting = false; }
+    else if (k === 'paste') { navigator.clipboard?.readText?.().then((t) => { const ta = this.el?.querySelector('textarea.code'); if (ta) ta.value = t.trim(); }).catch(() => g.log?.say('warn', 'The clipboard would not give it up: paste it into the box.', { key: 'edit.code', throttle: 1 })); return; }
+    else if (k === 'loadit') { const t = this.el?.querySelector('textarea.code')?.value || ''; if (this.load(t, this.slot)) { this.pasting = false; this.close(false); this.open(this.slot); } return; }
     else if (k === 'undo') { if (this.undo.length) { this.def = JSON.parse(this.undo.pop()); this.sel = null; this.commit(); } return; }
     else if (k === 'leave') { this.close(); return; }
     this.panel();

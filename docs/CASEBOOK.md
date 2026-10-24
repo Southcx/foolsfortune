@@ -847,3 +847,5 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
     there is beyond the span (m); with none it is drawn as the straight segment, unsimulated; a chain only while there is real slack,
     eased by `smoothstep(slack, 0.3, 0)`, and its belly held to the sag that slack can make. A few-pass Verlet chain stretches under its
     own weight, so its shape is not evidence of its length; and a width meant for the screen is a pixel count, scaled once.
+NEW:a-field-fits-what-it-is-for. **A text the game asks you to paste is pasted somewhere that holds it.** Measure the longest thing a
+    field must take against its `maxlength`, and test the path the player uses (the field), not only the function behind it.

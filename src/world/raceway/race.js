@@ -29,6 +29,7 @@ import * as THREE from 'three';
 import { ECON } from '../../progress/econ/table.js';
 import { conditionAt } from './conditions.js';
 import { Rivals } from './rivals.js';
+import { hauntOf } from '../../progress/trackdef.js';
 import { MODES, FLY } from './modes.js';
 import { Flyover } from './flyover.js';
 import { Rewind } from './rewind.js';
@@ -89,7 +90,9 @@ export class Race {
   /** The race board's pages (raceboard.js). */
   openBoard() { this.board.open(); }
   /** The ghost raced against: the best lap of this class on this track, or in a test lap the last test lap (SKIFF-TUNING.md 2.4, 2.5). */
-  get bestLap() { return this.T ? this.bestLaps[`${this.T.key || this.T.id}.${this.mode?.trim ? 'trim' : this.cls}`] || null : null; } // (a made track's by its geometry: T.key)
+  get ownLap() { return this.T ? this.bestLaps[`${this.T.key || this.T.id}.${this.mode?.trim ? 'trim' : this.cls}`] || null : null; } // (a made track's by its geometry: T.key)
+  /** The ghost raced against: your own best lap, or on a made track you have no lap on, its maker's (the validate lap the code carried). */
+  get bestLap() { return this.ownLap || (this.T?.id === 'made' && !this.mode?.trim ? this.R?.made?.ghost || null : null); }
   get skiff() { return this.game.player?.techs?.get?.('skiff'); }
 
   offer() {
@@ -116,7 +119,10 @@ export class Race {
     this.rivals.start(T, opts.solo || this.solo || !M.rivals, opts.roster || 'clapperjars'); this.solo = false;
     this.pi = this.cls === 'open' ? g.skiffParts?.pi?.(T) ?? 100 : 100; // (OPEN: the rivals answer your build by half its edge, SKIFF-TUNING.md 2.4)
     if (this.pi !== 100) for (const r of this.rivals.list) r.skill *= Math.sqrt(this.pi / 100);
-    if (T.id === 'made' || M.haunted) { R.traps?.use(T); R.traps?.haunt(M.haunted ? 'bots' : null); } // (a made track's traps always; a park track's only in the haunted race, where the siblings possess them: trapbot.js)
+    if (T.id === 'made' || M.haunted) { // (a made track's traps always; a park track's only in the haunted race, where the siblings possess them: trapbot.js)
+      const kept = M.haunted && T.id === 'made' ? hauntOf(R.made.def) : null; // (a made track's maker's haunt, if its code carried one: the maker haunts you)
+      R.traps?.use(T); R.traps?.haunt(M.haunted ? (kept ? 'recorded' : 'bots') : null, kept);
+    }
     this.rewind.clear(); ruleset?.begin?.(this, plan);
     if (M.flyover && !opts.again) this.flyover.begin(T, R);
     g.events?.emit('race.start', { track: T.id, mode: modeId, rivals: this.rivals.list.length, condition: C.key, light: C.key.split('.')[0], aspect: C.aspect, cup: !!opts.cup, city: !!opts.city, by: 'courier' });
@@ -199,7 +205,8 @@ export class Race {
     if (this.ruleset?.gate?.(this, i)) this.finish(); // (a licence test ends at its gate)
   }
   lapDone() {
-    const g = this.game, seconds = +this.lapT.toFixed(2), clean = this.mode.record && !this.ruleset, best = clean && (!this.bestLap || seconds < this.bestLap.seconds); // (a lap of practice or of a ruleset's is not the ghost's)
+    const g = this.game, seconds = +this.lapT.toFixed(2), clean = this.mode.record && !this.ruleset, best = clean && (!this.ownLap || seconds < this.ownLap.seconds); // (a lap of practice or of a ruleset's is not the ghost's)
+    if (this.mode.validate) this.validateLap = { seconds, frames: this.frames }; // (the author's lap: the editor keeps it with the track, its ghost for whoever loads the code)
     if (best || this.mode.trim) { this.bestLaps[`${this.T.key || this.T.id}.${this.mode.trim ? 'trim' : this.cls}`] = { seconds, splits: this.splits.slice(), frames: this.frames }; g.save?.dirty('raceGhost'); } // (a test lap's ghost is always the last one)
     this.traces = { prev: this.traces.last, last: { track: this.T.id, seconds, cls: this.cls, mode: this.modeId, samples: this.trace } }; this.trace = []; // (the run trace: this lap and the one before, for the GARAGE)
     this.laps.push(seconds);
@@ -226,7 +233,7 @@ export class Race {
     if (this.skiff) this.skiff.hold = false;
     this.flyover.stop(); this.rewind.clear(); this.ruleset?.stop?.(this);
     this.rivals.stop(); this.running = false; this.state = 'idle';
-    if (this.R?.traps?.mode === 'bots') this.R.traps.haunt(null); // (the haunted race's haunters let go of the traps)
+    if (this.R?.traps?.mode === 'bots' || this.R?.traps?.mode === 'recorded') this.R.traps.haunt(null); // (the haunted race's haunters let go of the traps)
     this.R?.traps?.use(null); // (a park track's traps taken down again: only the made track keeps its own)
   }
   /** Through a portal (world/raceway/traps.js): from s to s, on or back; the gates passed or given back with it, so a

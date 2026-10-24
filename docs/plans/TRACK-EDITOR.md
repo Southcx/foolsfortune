@@ -211,3 +211,21 @@ pieces added on top of the ground. Now a made track IS a house track:
 - **Not yet:** the traps' and pieces' looks and tells beyond placeholders (Calissa), their sounds (Wanda), their names (Espada), the
   party mode and live guests (W4, W5), Read showing a possessed trap's next intent, trap kinds opened by achievement (they open with
   their god powers for now), fords and bridges on a made track (the lot's ground is only raised, never cut).
+
+## 13. Asynchronous haunts (round of 2026-10-24, the owner: "Both")
+
+Crawl's possession is a person's, not a bot's; with no live guests yet, the person is carried in the code (Trackmania's author ghost,
+Dark Souls' messages, Mario Maker's shared levels):
+
+- **The maker's ghost.** A validate run keeps its lap with the track (`author.ghost`: two frames a real second, lot metres, packed as
+  whole tenths each the change from the frame before). Whoever loads the code races it when they have no lap of their own there
+  (`race.bestLap` falls back to `made.ghost`; your own best is `race.ownLap`, and beating the maker is never needed to keep it).
+- **A kept haunt.** In the haunt on a made track, every trap you fire is written down: the trap, the leader's lap, how many metres short of
+  the trap the leader was, your lane and side (`haunt.js shoot`). At the haunt's end the best by wrecks is kept with the track
+  (`editor.js keepHaunt`, `def.haunt`, only for this geometry: `hauntOf`). Its code carries it; a haunted race on a track that carries one
+  is possessed by it (`traps.js` mode `'recorded'`): each fire goes when the rider is on its lap and as near the trap as the leader was.
+- **Pasting a code**: a code is longer than the chat line takes (200), so the editor's Load code opens a box of its own with the
+  clipboard's Paste (a phone's way); the race board's Load a code opens it. `/edit code` is gone from the help.
+- **Measured** (`drive.mjs --made ... --mode validate --haunt --code-out`, then a fresh page `--made <that code> --mode haunted`): the
+  maker's validate lap 61.4 s (132 ghost frames), a haunt of 7 wrecks kept with 28 fires; the code 3,651 characters (13,667 before the
+  ghost was packed). The friend's race: the maker's ghost loaded, 25 traps fired by "the maker", 9 hits, three laps 53.2, 51.9, 52.2 s.

@@ -7,7 +7,7 @@
 //   LICENCES  the tests (licences.js), each with the medal you hold.
 //   TRIALS    the escape (escape.js) and the City Trial (citytrial.js).
 //   BUILD     your made tracks (world/raceway/editor.js, TRACK-EDITOR.md): three slots, each to edit, test, validate, race, race haunted
-//             by the siblings, or haunt yourself (world/raceway/haunt.js); a code pasted on the chat line (/edit code ...) loads one.
+//             by the siblings, or haunt yourself (world/raceway/haunt.js); a code pasted in the editor's box loads one (its maker's ghost and haunt with it).
 //   PAINT     what the board wears (progress/skiffpaint.js): the sail's dye and pattern, your seal on it, the trail, the ribbon, the
 //             pennant and its length; the shut ones with what opens them; a dye's price (a firing's) said before it is paid; a choice
 //             hovered is shown on the board before it is worn (Calissa's preview, vfx/skiffpaintlook.js).
@@ -26,7 +26,7 @@ import { CUPS } from './cups.js';
 import { LICENCES } from './licences.js';
 import { PARTS, SLOTS } from '../../progress/skiffparts.js';
 import { PAINT } from '../../progress/skiffpaint.js';
-import { isValidated, budgetOf } from '../../progress/trackdef.js';
+import { isValidated, budgetOf, hauntOf } from '../../progress/trackdef.js';
 import { TUNE, SETUPS, SLIDE, tuneMult } from '../../progress/skifftune.js';
 import { tuneSheet, runTrace } from '../../ui/garagesheet.js';
 import { skiffPaintPreview } from '../../vfx/skiffpaintlook.js';
@@ -168,9 +168,10 @@ export class RaceBoard {
       row(rows, '∞', 'Test ride', 'Laps until you retire. Nothing is recorded.', run(i, 'practice'));
       row(rows, '✓', 'Validate', 'Ride it once to the line, alone: your time is its author time, and it can be shared.', run(i, 'validate'));
       row(rows, '◇', 'Race', 'Three laps against the clapperjars, its traps on their own cycles. No cubes: a made track pays in records.', run(i, 'race'), !v);
-      row(rows, '☠', 'Haunted race', 'Three laps against the clapperjars; the siblings possess its traps against you.', run(i, 'haunted'), !v || !D.traps.length);
+      const kept = hauntOf(D);
+      row(rows, '☠', 'Haunted race', kept ? `Three laps against the clapperjars, haunted by ${kept.by}: the traps fire where they fired them (${kept.wrecks} wrecks in their haunt).` : 'Three laps against the clapperjars; the siblings possess its traps against you.', run(i, 'haunted'), !v || !D.traps.length);
       row(rows, '◎', 'Haunt', 'The clapperjars race it; you possess its traps (LMB on one, or Space for the next ahead; Q / E its lane or side).', run(i, 'haunt'), !v || !D.traps.length);
     }
-    row(grp('SHARED TRACKS'), '⇩', 'Load a code', 'Type /edit code and paste a track code on the chat line: it loads into the first empty slot.', null, true);
+    row(grp('SHARED TRACKS'), '⇩', 'Load a code', 'Paste a track code (FF2-...): it loads into the first empty slot, with its maker\'s ghost and haunt if it carries them.', (menu) => { menu.close(); const i = E.slots.findIndex((x) => !x); E.open(i >= 0 ? i : E.slot); E.act('loadcode'); });
   }
 }

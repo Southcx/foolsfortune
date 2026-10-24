@@ -3706,3 +3706,12 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   the grapnel in flight 0 mm, hung 0 mm (slack 0 and 0.02 m); a limp line (0.2) 0.64 m; bowed with 0.6 m of slack 1.65 m (the sag
   0.6 m allows); widths 2.00 px, 3.00 px with a fish on, the grapnel's 3.27 px, at every distance.
 - **Rule:** 287
+
+### 2026-10-24 · A track code could never be pasted (Dovina, measuring the code's size)
+- **Seen:** the editor and the race board told you to paste a track code with `/edit code <code>`; a bare made track's code is about
+  600 characters, one carrying its maker's ghost about 3,600.
+- **Cause (read):** the chat line's input is `maxlength="200"` (feedback/gamelog.js), so the paste was cut short and its check failed:
+  "That is not a track code." every time. Headless tests loaded codes through `trackEditor.load` and never through the chat line.
+- **Fix:** the editor's Load code opens a box of its own in its panel, with the clipboard's Paste (a phone's way too); the race board's
+  Load a code opens it; `/edit code` is gone from the help.
+- **Rule:** NEW:a-field-fits-what-it-is-for
