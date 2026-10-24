@@ -15,7 +15,7 @@
 //   m.glow(0..1)                            the halo and the skin's own light (aware, sounded, hooked)
 //   m.setStamina(0..1)                      the fight's stamina: the beat's rate, and under a third the ride and the roll
 //   m.setPose('swim' | 'flank' | 'held')    eased over about a quarter of a real second; 'held' wriggles in two hands (the catch)
-//   m.pose                                  the pose asked for        m.dispose()   (its material; the shared geometry stays)
+//   m.pose  m.phase                         the pose asked for; the tail's beat (radians)        m.dispose()   (its material; the shared geometry stays)
 //   prewarmFish()                           a parked body, so the one program is compiled at boot (main.js)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -73,6 +73,7 @@ export function buildFish(sp, cm) {
   const api = {
     group, length: L, halo, lantern: null, head: { position: new THREE.Vector3(L * 0.5, 0, 0) }, mesh,
     get pose() { return asked; },
+    get phase() { return phase; }, // (the tail's beat, radians: the line's core pulses with it, angler.js)
     setPose(p) { if (POSES.includes(p)) asked = p; },
     setStamina(k) { stamina = THREE.MathUtils.clamp(k, 0, 1); },
     swim(dt, speed = 0.5, turn = 0) {

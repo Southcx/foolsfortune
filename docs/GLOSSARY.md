@@ -191,6 +191,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   the Sondelass's moves the Courier has slotted: LMB's string of normals, RMB's specials (tapped, with W, with S). *Not:* the kit. → detail
 - **the hook's mark** (`HookMark`, `src/vfx/hookmark.js`) — the ring on the point the hook would bite, within its reach, while the hook form is
   in hand; brackets close on it for a catch. *Not:* the chevron, the lock-on reticle. → detail
+- **the rod's hands / the pump / the crank / the fast retrieve / the line's core** (plain names; `RodHands`, `rodBend`, `angling/rodhands.js`; `PUMP`, `CRANK`, `angling/fight.js`; `FishingLine`, `angling/line.js`; ANGLING.md 1, 2) — the movement keys as the rod's tip while a fish is on (A / D side pressure, S pulls back and held braces, W drops) / S, then W + LMB: the line the haul banked taken up free / Shift + LMB on a fish: more line, more load / Shift + LMB before a bite: the lure home at 3x / the bright thread inside a fished line's sheath, the fish's stamina, drawn back toward the hook as it tires. *Not:* the reel (LMB), the guard (V), the posture (C).
 - **a guard break** (`hit.guardBreak`, `breakGuard()`, `tools/moveset.js`) — a blow that opens a guard (Strawman's) for a beat and lands
   through it: the cutlass's Guard Break and Guard Crush. *Not:* the guard (V), nor the parry. → detail
 - **the loadout editor** (`tools/sondelass/loadouteditor.js`; kept by `game.sondelassLoadout`, save section `sondelassLoadout`; what is open:

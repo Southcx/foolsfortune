@@ -9,7 +9,8 @@
 //            guard, in time: parry · E (the blink) cancels any move
 //   ROD      hold LMB to charge a cast, release to throw · 4-0 / wheel: the lure's aspect (each once known) · - / =: the lure tied on ·
 //            wheel (lure out): its depth · RMB sinks it · MMB sounds
-//            a fish on: the movement keys are the rod's (A/D lean, S haul, W bow, C brace), LMB reels, RMB gives line
+//            a fish on: the movement keys are the rod's tip (A/D lean, S haul, held braces, W bow), LMB reels, Shift + LMB cranks,
+//            RMB gives line; S then W + LMB pumps (angling/rodhands.js). Before a bite, Shift + LMB is the fast retrieve
 //   HOOK     LMB fires the grapnel: it bites, and the line stays. Hold LMB to reel (yourself to an anchor, a loose thing to you),
 //            hold RMB to pay out, tap RMB to let go, Space to jump off it; A/D/W/S pump a swing (tools/sondelass/grapple.js)
 //

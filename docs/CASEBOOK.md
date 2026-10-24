@@ -837,3 +837,7 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 NEW:matter-edge-iso. **A height field's edge is cut where its value crosses, never at a cell.** A skin shown or hidden a vertex at
     a time cuts at the cells' midpoints and its triangles' diagonals (a sawtooth); write the value itself (unclamped) where the cut
     reads it, and lay the empty side on the ground it meets, so the rasterizer interpolates the crossing (marching squares).
+NEW:slack-only-curve. **A rope's slack is its only curve, and it is told, never left to the solver.** The caller says how much line
+    there is beyond the span (m); with none it is drawn as the straight segment, unsimulated; a chain only while there is real slack,
+    eased by `smoothstep(slack, 0.3, 0)`, and its belly held to the sag that slack can make. A few-pass Verlet chain stretches under its
+    own weight, so its shape is not evidence of its length; and a width meant for the screen is a pixel count, scaled once.
