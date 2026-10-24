@@ -16,7 +16,11 @@
 //               space: the dye's glaze if it has one, else the first worn on the vessel's body, trim or mask). The Eye Cup's eye is
 //               laid out on the Courier's body, so on the sail it is one oculus at the luff's head (eyecup.js eyeCupMask, the mask's
 //               eye moved there and scaled: a boat's painted eye, the prow's kin); the jelly crown's dip is the sail dipped to its
-//               lower quarter.
+//               lower quarter. Eight more (vfx/skiffsailpatterns.js, the owner's "more sails, new paintjobs", 2026-10-24): waves
+//               (seigaiha), a sunburst, diamonds (harlequin), a checker down the leech, kintsugi's gold seams, constellations on a
+//               night sky, flames from the foot, and a two-tone split; each in the dye with its second (the accent, gold, the deep, cream).
+//     CUT       the sail's silhouette (vfx/skiffsailcut.js: stock, lateen, junk, crab-claw), the same cloth and bones: its geometry
+//               swapped and its yard moved by the hoist (pose); a junk's battens drawn across the cloth here.
 //     SPIRAL    the owner's spiral is always kept, on top of the dye and the pattern: in its own terracotta, or, where the dye is too
 //               near it to read (luminance contrast, WCAG's ratio), reserved in the cloth's cream, as a resist under a dye.
 //     SEAL      your seal (world/cradles.js `mine`; vfx/sealface.js drawSealFace) stamped in the sail's lower aft corner, clear of the
@@ -49,6 +53,8 @@ import { FIN_PATTERN_GLSL } from './finish.js';
 import { drawSealFace } from './sealface.js';
 import { featTint } from './oxidation.js';
 import { LACHRYMA_TINT } from './racewayeffects.js';
+import { SAIL_PATTERNS, SAIL_PATTERN_GLSL } from './skiffsailpatterns.js';
+import { SailCut, cutBattens } from './skiffsailcut.js';
 
 /** The numbers. The cloth's painting in its UVs (glTF's, v down): the sail is u 0.015..0.735 (luff to leech), v 0.02..0.98 (yard to
  *  boom), the pennant's strip u past `penU`; `metres` the sail's metres a unit of u and of v (2.05 m of boom over 0.74 u, 1.91 m of hoist
@@ -67,11 +73,12 @@ export const SKIFF_PAINT_LOOK = {
   kiln: 0.4, dip: 0.72,
   sheen: 0.35, metal: 0.3,
   pennant: { band: 0.6, long: 1.6 },
+  batten: { half: 0.02, wood: 0x4a3222 }, night: 0x0d1530, deep: 0.16, near: 0.2,
   trail: { film: 0.3, rate: 0.3 },
   ribbon: { n: 40, life: 0.55, width: 0.34, alpha: 0.85, film: 0.35, rate: 0.6, along: 0.04, stern: [0, 0.35, -1.75], step: 0.12 },
 };
 const L = SKIFF_PAINT_LOOK;
-const PATTERNS = { solid: 0, stripe: 1, chevron: 2, motif: 3, kiln: 4, oculus: 5 };
+const PATTERNS = { solid: 0, stripe: 1, chevron: 2, motif: 3, kiln: 4, oculus: 5, ...SAIL_PATTERNS }; // (6 .. 13: vfx/skiffsailpatterns.js)
 
 // ---- the bake: one draw of the painting through the choices into the cloth's texture
 const lin = (hex) => new THREE.Color(hex); // (THREE.Color takes hex as sRGB and keeps it linear: the shader's working space)
@@ -90,9 +97,11 @@ const FRAG = /* glsl */`
 uniform sampler2D uCloth; uniform sampler2D uSeal; uniform sampler2D uPmH; uniform vec4 uPmWin;
 uniform vec3 uDye; uniform vec3 uAccent; uniform vec3 uInk; uniform vec3 uSealInk; uniform vec3 uPen; uniform vec3 uPenBand;
 uniform float uDyeOn; uniform float uKeepSpiral; uniform float uPat; uniform float uMotif; uniform float uSealOn; uniform float uPenOn;
+uniform vec3 uSecond; uniform vec3 uGold; uniform vec3 uDeep; uniform vec3 uCream; uniform vec3 uBatten;
 varying vec2 vUv;
 ${FIN_PATTERN_GLSL.head}
 ${PAINT_LOOK_HEAD}
+${SAIL_PATTERN_GLSL}
 float spLuma(vec3 c) { return dot(c, vec3(0.2126, 0.7152, 0.0722)); }
 float spBand(float x, float a, float b, float w) { return smoothstep(a - w, a + w, x) * (1.0 - smoothstep(b - w, b + w, x)); }
 void main() {
@@ -122,9 +131,17 @@ void main() {
       float r = length(e), blk;
       vec3 eye = eyeCupMask(muv, 1.0, aa / ${L.oculus.s.toFixed(3)}, uFinB, blk);
       cloth = mix(cloth, eye * min(lc, 1.0), 1.0 - smoothstep(0.056 * ${L.oculus.s.toFixed(3)} - aa, 0.056 * ${L.oculus.s.toFixed(3)} + aa, r));
+    } else if (pat >= 6) { // (the eight more: vfx/skiffsailpatterns.js, in the sail's metres from the luff's foot, y up)
+      vec2 pm = vec2((vUv.x - 0.015) * ${L.metres[0].toFixed(3)}, (0.98 - vUv.y) * ${L.metres[1].toFixed(3)});
+      cloth = sailPattern(pat, uDyeOn > 0.5 ? uDye : ${glslLin(L.cream)}, pm, lc, uSecond, uGold, uDeep, uCream);
     }
     vec3 ink = uKeepSpiral > 0.5 ? c : uInk * min(spLuma(c) / spLuma(${glslLin(L.terracotta)}), 1.0); // (a resist: the cream, shaded as the spiral was)
     c = mix(cloth, ink, spiral);
+    if (uBatten.x > 0.5) { // (a junk sail's battens across the cloth, over the spiral: vfx/skiffsailcut.js)
+      float bd = min(abs(vUv.y - uBatten.y), abs(vUv.y - uBatten.z)) * ${L.metres[1].toFixed(3)}, bm = ${L.batten.half.toFixed(3)};
+      c = mix(c, ${glslLin(L.batten.wood)} * min(lr, 1.0), 1.0 - smoothstep(bm - 0.0065, bm + 0.0065, bd));
+      c = mix(c, ${glslLin(L.batten.wood)} * 2.2 * min(lr, 1.0), 0.8 * (1.0 - smoothstep(0.003, 0.008, bd))); // (its round catching the light)
+    }
     if (uSealOn > 0.5) {
       vec2 s = (vUv - vec2(${L.seal.c[0].toFixed(3)}, ${L.seal.c[1].toFixed(3)})) / ${(2 * L.seal.r).toFixed(4)} + 0.5;
       if (s.x > 0.0 && s.y > 0.0 && s.x < 1.0 && s.y < 1.0) c = mix(c, uSealInk * min(lr, 1.0), texture2D(uSeal, s).a * 0.9); // (a stamp: the grain through it)
@@ -151,6 +168,7 @@ export class SkiffPaintLook {
     this.base = this.mat ? { rough: this.mat.roughness, metal: this.mat.metalness } : null;
     this.pen = 1; this.wakeOwn = null; this.trailC = new THREE.Color(); this.dyeHex = null;
     this.ribbon = new Ribbon(game?.scene);
+    this.cut = new SailCut(skiff); // (the sail's cut: vfx/skiffsailcut.js)
     const E = game?.events;
     this.offs = ['skiff.paint', 'vessel.fire', 'seal.carve'].map((ev) => E?.on?.(ev, () => this.apply()));
     this.apply();
@@ -179,7 +197,9 @@ export class SkiffPaintLook {
     // the pennant
     const penHex = W.pennant === 'gold' ? L.gold : W.pennant && W.pennant !== 'own' ? (COLOR[W.pennant] ?? null) : null;
     const sealOn = W.seal === 'on' && !!g?.cradles?.mine;
-    const stock = dye == null && pat === 0 && !sealOn && penHex == null;
+    // the cut (vfx/skiffsailcut.js: the cloth's silhouette and the yard; the stock cut for an id it does not know), and its battens
+    this.cut?.set(W.cut); const battens = cutBattens(this.cut?.id);
+    const stock = dye == null && pat === 0 && !sealOn && penHex == null && !battens;
     const M = this.mat; if (!M) return;
     // the glaze's sheen, a hint
     M.roughness = glaze ? THREE.MathUtils.lerp(this.base.rough, glaze.rough ?? this.base.rough, L.sheen) : this.base.rough;
@@ -188,7 +208,12 @@ export class SkiffPaintLook {
     const r = g?.renderer; if (!r) return;
     const cloth = dye ?? L.cream;
     const accent = dye == null ? lin(L.cream).multiplyScalar(0.45) : contrast(dye, 0x000000) > 6 ? lin(dye).multiplyScalar(0.45) : lin(dye).lerp(lin(L.cream), 0.6);
-    const keep = dye == null || contrast(cloth, L.terracotta) >= contrast(cloth, L.cream);
+    // the eight more patterns' colours: the second (the accent), gold (or the dye's own shade where the dye is gold's near kin), the
+    // deep (the dye darkened toward a night: the constellations' sky, the checker's dark), and the cream (or the deep, on a cream dye)
+    const near = (a, b) => { const x = lin(a), y = lin(b); return Math.hypot(x.r - y.r, x.g - y.g, x.b - y.b) < L.near; };
+    const deep = lin(cloth).multiplyScalar(L.deep).lerp(lin(L.night), 0.35);
+    const field = pat === PATTERNS.constellations ? `#${deep.getHexString()}` : cloth; // (the spiral's ink chosen against the sky there)
+    const keep = (dye == null && field === cloth) || contrast(field, L.terracotta) >= contrast(field, L.cream);
     const sealInk = contrast(cloth, L.vermilion) >= 1.5 ? L.vermilion : L.cream;
     if (sealOn) this.sealTex(g.cradles.mine);
     this.bake(r, {
@@ -196,6 +221,8 @@ export class SkiffPaintLook {
       uPat: pat, uMotif: motif, uSealOn: sealOn ? 1 : 0, uSealInk: lin(sealInk),
       uPen: lin(penHex ?? L.red), uPenBand: lin(penHex ?? L.red).lerp(lin(L.cream), L.pennant.band), uPenOn: penHex == null ? 0 : 1,
       uFinA: lin(cloth), uFinB: lin(kilnG?.color2 ?? 0x1c1410), uFinP: new THREE.Vector4(0, 0.5, pat === 4 ? kilnG.pattern : 0, L.kiln),
+      uSecond: accent, uGold: near(cloth, L.gold) ? lin(cloth).multiplyScalar(0.45) : lin(L.gold), uDeep: deep, uCream: near(cloth, L.cream) ? deep : lin(L.cream),
+      uBatten: new THREE.Vector3(battens ? 1 : 0, battens?.[0] ?? 0, battens?.[1] ?? 0),
     });
     this.setMap(this.rt.texture);
   }
@@ -234,7 +261,10 @@ export class SkiffPaintLook {
   }
 
   /** The pennant's length: each link's offset from the one before it, longer (after the pose: boat.js own). */
-  pose(B) { if (this.pen !== 1 && B) for (let i = 1; i <= 5; i++) B[`pennant_${i}`]?.position.multiplyScalar(this.pen); }
+  pose(B) {
+    if (this.pen !== 1 && B) for (let i = 1; i <= 5; i++) B[`pennant_${i}`]?.position.multiplyScalar(this.pen);
+    this.cut?.pose(B, this.skiff.L); // (the yard where the cut wears it, by the hoist)
+  }
 
   /** Per frame, once the board is placed (boat.js placePennant): the trail's colour on the wake, and the ribbon. */
   frame(t) {
@@ -261,7 +291,7 @@ export class SkiffPaintLook {
 
   dispose() {
     for (const off of this.offs || []) off?.();
-    this.setMap(this.tex); this.rt?.dispose(); this.bakeMat?.dispose(); this.quad?.geometry.dispose(); this.sealT?.dispose(); this.ribbon.dispose();
+    this.setMap(this.tex); this.cut?.dispose(); this.rt?.dispose(); this.bakeMat?.dispose(); this.quad?.geometry.dispose(); this.sealT?.dispose(); this.ribbon.dispose();
   }
 }
 const _v = new THREE.Vector3(), _fc = new THREE.Color();

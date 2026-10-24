@@ -501,7 +501,7 @@ export class RacewayLooks {
     const body = cloneSkinned(model), drop = [];
     body.traverse((o) => { if (o.userData?.isOutline) drop.push(o); }); // (the inverted hulls: a hologram has no ink line)
     for (const o of drop) o.parent?.remove(o);
-    body.traverse((o) => { if (o.isMesh) { o.frustumCulled = false; o.castShadow = o.receiveShadow = false; } });
+    body.traverse((o) => { if (o.isMesh) { o.frustumCulled = false; o.castShadow = o.receiveShadow = false; if (o.geometry?.userData?.stockCloth) o.geometry = o.geometry.userData.stockCloth; } }); // (the stock cut: the ghost's yard is not moved, vfx/skiffsailcut.js)
     G.placeholder = [...G.group.children]; for (const c of G.placeholder) c.visible = false;
     body.name = 'raceway-ghost'; G.group.add(body); G.body = body;
     const C = RACEWAY_LOOK.ghost;
