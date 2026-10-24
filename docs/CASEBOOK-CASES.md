@@ -3765,3 +3765,13 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** fl9 is an `H` (a best); my5 and my6 read `L.best('myggdrasil.caps')`. The probe: 726 of 727 earnable, the last one (lg5)
   reads the game's tech list and is earnable in play.
 - **Rule:** NEW:ledger-kind-matches
+
+### 2026-10-24 · Three more achievements no one could earn (Dovina, `reachable.mjs --strict`, triaged by hand)
+- **Seen:** with templated writes counted as nothing, the probe listed 234; read template by template, three were real: Toxic Symbiosis
+  (oc3), Pilgrim (sb2), Every Kind (sb3).
+- **Cause (read):** oc3 read `crude.route.entra.margarite`, but a route is keyed by the port a cask was bought at, and no port sells
+  Entropolis crude (its casks are loot, keyed `convoy` or `pirates`). sb2 asked for 10 Seal Book pages when the game has six cradles that
+  give one (four Shrines, two piers). sb3 asks for an engine cradle, and none is built yet.
+- **Fix:** `crude.field.<field>.<island>` counted beside the route (tracking/voyage.js) and oc3 reads it; sb2's goal is 6; sb3 hidden
+  until the first engine cradle (HANKO.md's Weir sluice).
+- **Rule:** NEW:goal-within-the-world

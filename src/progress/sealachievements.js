@@ -13,7 +13,7 @@ export const sealBookPages = (L) => L.firstCount?.('seal.book.') ?? 0;
 
 export function sealAchievements({ C, F }) {
   C('sb1', 'explore', 'The Seal Book', 1, 'count', 'First Imprint', 'Set your seal in a cradle.', 'seal.set', 1);
-  F('sb2', 'explore', 'The Seal Book', 2, 'collect', 'Pilgrim', 'Fill 10 pages of your Seal Book.', sealBookPages, 10);
-  F('sb3', 'explore', 'The Seal Book', 2, 'collect', 'Every Kind', 'Seal a threshold, an engine and a body.', (L) => SEAL_KINDS.filter((k) => L.get(`seal.kind.${k}`) > 0).length, 3);
+  F('sb2', 'explore', 'The Seal Book', 2, 'collect', 'Pilgrim', 'Fill 6 pages of your Seal Book.', sealBookPages, 6); // (the cradles that give a page today: four Shrines and two piers; raise it as cradles are built)
+  F('sb3', 'explore', 'The Seal Book', 2, 'collect', 'Every Kind', 'Seal a threshold, an engine and a body.', (L) => SEAL_KINDS.filter((k) => L.get(`seal.kind.${k}`) > 0).length, 3, { hidden: true }); // (hidden until the first engine cradle is built: HANKO.md's Weir sluice)
   C('sb4', 'explore', 'The Seal Book', 3, 'endure', 'Long Haul', 'Seal into cradles 200 times.', 'seal.set', 200);
 }

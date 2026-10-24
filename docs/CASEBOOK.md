@@ -859,3 +859,6 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 NEW:ledger-kind-matches. **A predicate reads a key in the kind it was written.** `inc` is read by `get`, `hi` and `lo` by `best`,
     `first` by `has`; a key read in another kind reads nothing, forever. Run `node scripts/reachable.mjs` after adding an achievement,
     an art or a knack.
+NEW:goal-within-the-world. **An achievement's key and goal are ones the built game can produce.** A templated key is written only
+    for the values its variable really takes (read the emitter and its table); a count is no bigger than the things that exist. Run
+    `node scripts/reachable.mjs --strict` and read the templates it names.

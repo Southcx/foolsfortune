@@ -36,7 +36,7 @@ export function voyageRules({ on, L, log }) {
   on('crude.buy', (e) => { if (e.by === 'courier') L.inc('crude.bought', e.units || 1); });
   on('crude.sell', (e) => {
     if (e.by !== 'courier') return;
-    L.inc(`crude.sold.${e.island}`, e.units || 1); L.inc(`crude.route.${e.from}.${e.island}`, e.units || 1);
+    L.inc(`crude.sold.${e.island}`, e.units || 1); L.inc(`crude.route.${e.from}.${e.island}`, e.units || 1); L.inc(`crude.field.${e.field}.${e.island}`, e.units || 1); // (by the crude's field, whoever sold it you: loot carries no port)
     haul += e.profit || 0; if (haul > 0) L.hi('crude.profit', haul);
   });
   on('cogitomap.sell', (e) => { if (e.by !== 'courier') return; L.inc('cogitomap.sold'); L.inc(`cogitomap.sold.${e.island}`); });

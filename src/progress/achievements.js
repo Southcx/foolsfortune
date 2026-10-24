@@ -597,7 +597,7 @@ export function buildAchievements(game) {
   C('rl12', 'emocean', 'Sea Stages', 2, 'count', 'Bait Ball', 'Scatter a shoal by downing its Conductor.', 'rail.end.scattered', 1);
   C('oc1', 'emocean', 'Crude', 1, 'count', 'Black Gold', 'Sell crude Lachryma at Margarite.', 'crude.sold.margarite', 1);
   H('oc2', 'emocean', 'Crude', 3, 'count', 'Gusher', 'Make 100 cubes on one cargo of crude.', 'crude.profit', 100);
-  C('oc3', 'emocean', 'Crude', 4, 'mechanic', 'Toxic Symbiosis', 'Sell crude from Entropolis at Margarite.', 'crude.route.entra.margarite', 1, { hidden: true });
+  C('oc3', 'emocean', 'Crude', 4, 'mechanic', 'Toxic Symbiosis', 'Sell crude from Entropolis at Margarite.', 'crude.field.entra.margarite', 1, { hidden: true }); // (by its field: no port sells Entropolis crude, so its route key was never written)
   C('oc4', 'emocean', 'Crude', 2, 'mechanic', 'Slick', 'Spill crude in the Emocean.', 'crude.spill', 1, { hidden: true });
 
   // ---------------------------------------------------------------- COLLECTION (the log: slots, shared by every way of getting them)
