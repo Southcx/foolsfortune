@@ -293,6 +293,7 @@ import { SeaFightLook } from './vfx/opensea/seafightlook.js';
 import { SeaHull } from './ui/seahull.js';
 import { Race } from './world/raceway/race.js';
 import { SkiffParts } from './progress/skiffparts.js';
+import { SkiffPaint } from './progress/skiffpaint.js';
 import { PoolCaps } from './progress/poolcaps.js';
 import { SkiffSettings } from './courier/skiff/skiffsettings.js';
 import { SoulAlchemy } from './progress/alchemy.js';
@@ -861,7 +862,7 @@ async function main() {
   sightCommands(game); // (/sight: the Sight's waypoint on the chat line)
   mudraCommands(game); // (/mudra: the god hand holds one of its poses, DEBUG: godhand/mudras.js)
   installCalibrateButtons(game); // (the Sight's TRACK buttons, set by a plate's pick and a charted room: ui/calibratebutton.js)
-  game.skiffParts = new SkiffParts(game); game.skiffSettings = new SkiffSettings(game); game.poolCaps = new PoolCaps(game); // (the Solar Skiff's garage and settings, after the chat line they speak on: progress/skiffparts.js, courier/skiff/skiffsettings.js; caps on the pool, a cracked region 5% of its max until mended: progress/poolcaps.js)
+  game.skiffParts = new SkiffParts(game); game.skiffPaint = new SkiffPaint(game); game.skiffSettings = new SkiffSettings(game); game.poolCaps = new PoolCaps(game); // (the Solar Skiff's garage and settings, after the chat line they speak on: progress/skiffparts.js, courier/skiff/skiffsettings.js; caps on the pool, a cracked region 5% of its max until mended: progress/poolcaps.js)
   // the party: the siblings (coop/party.js), each a Courier of its own: the rig's model is parsed when one is called, never at boot
   const makeRig = async () => { // (another Courier's rig: a sibling's or a guest's, its model parsed when it comes, never at boot)
     const [cG, gG] = await Promise.all([loader.parseAsync(bytes(courierB64), ''), loader.parseAsync(bytes(gunB64), '')]);

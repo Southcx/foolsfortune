@@ -288,6 +288,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   sliders, each one trade, 0 the board as it came / the Performance Index, a build's reference race against stock's (100) / STOCK (standard
   parts, the sheet at 0) or OPEN, each keeping its own bests, medals and ghost / the parts and the sheet kept by name, pinnable to a track /
   a flying lap against your last test lap's ghost (Espada's words, 2026-10-24; the sliders Sail trim, Grip, Mast lean, Weight, Ride height) / a lap's speed, slip, sail and grip sampled. *Not:* a class (the spread's), the garage.
+- **the skiff's paint** (plain name; `PAINT`, `SkiffPaint`, `game.skiffPaint`, `src/progress/skiffpaint.js`; the race board's PAINT tab) — what the Solar Skiff wears beside its hull glaze: the sail's dye (the cloth, a feeling's, a glaze of yours; a firing's price a change), its pattern, your seal on it, the trail on the sand and the ribbon in the air, the pennant and its length; each opened by play, none touching the handling. *Not:* a hull glaze, a part, paint (a feeling's, on the ground).
 - **a cap on the pool / a siphon** (`capOf`, `PoolCaps`, `progress/poolcaps.js` / working name, Espada's; `SIPHONS`,
   `world/raceway/siphons.js`) — a modifier lowering the pool's max from a source you can see (each cracked region of the vessel: 5%
   until mended) / an arch across a Raceway track that drinks the pool to a quarter as you pass under it, standing only in the Pit lane licence. *Not:* the shield, the regen.

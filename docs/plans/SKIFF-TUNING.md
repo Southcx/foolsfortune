@@ -230,3 +230,18 @@ The design laws apply: arts and their kin only by achievement, a count way and a
 
 **Names (Espada, 2026-10-24; strings only, plain until the owner calls it settled):** the sliders Sail trim, Grip (code `fin`), Mast lean
 (`rake`), Weight (`ballast`), Ride height (`ride`); the trim run is the **test lap** (code `MODES.trim`); rw47 Race Regular.
+
+**T8, Dovina's half, built (2026-10-24):** `progress/skiffpaint.js` (`game.skiffPaint`, save `skiffPaint`, event `skiff.paint { kind, value,
+price }`), chosen at the race board's PAINT tab. What opens each:
+
+| choice | options | opened by | price |
+| --- | --- | --- | --- |
+| the sail's dye | the cloth; the seven feelings'; every glaze you own | awakening to that feeling; owning the glaze | a firing's (the vessel's `cost`) each change |
+| the sail's pattern | solid; stripe; chevron; the feeling's motif; your kiln pattern | the Clay Cup; the Sibling Cup; gold at the Raceway; wearing a rare glaze with a kiln pattern | free |
+| your seal on the sail | off; on | choosing your seal | free |
+| the trail on the sand | the sand's own; Lachryma; the hull's glaze | 8 tricks banked in one combo; a combo of 3,000 | free |
+| the ribbon in the air | off; on | a grab held 2 real s | free |
+| the pennant | as made; gold; the seven feelings' | a cup won; a spirit of that feeling let go home (the farewell) | free |
+| its length | short; long | 10 races won | free |
+
+The looks (Calissa's) read `game.skiffPaint.worn` and `colourOf(kind)`.
