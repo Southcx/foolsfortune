@@ -1,7 +1,7 @@
 """The eye at the zenith (the owner's convention, 2026-10-24: a thin strip along the top edge, so looking straight up you meet an iris and a
 pupil: the eye is the window to the soul, and an Island of Ego is a mind's). In the owner's paintings the pupil reaches about 3.5 degrees
 from the zenith and the iris about 9. Here: a dark pupil, an iris of radial fibres in the feeling's colour with a paler collarette and a
-dark limbal ring, a catchlight, feathered into the sky round it; drawn with the painting's own grain (watercolour granulation or oil
+dark limbal ring and no catchlight, feathered into the sky round it; drawn with the painting's own grain (watercolour granulation or oil
 streaks along the fibres)."""
 import numpy as np
 from painter import hexc, ss, gnoise, fbm
@@ -27,8 +27,6 @@ def eye(img, D, lat, lon, colour, medium='oil', pupil='#0b0910'):
     iris = iris * (1 + (0.08 if medium == 'water' else 0.05) * grain[..., None])
     pm = 1 - ss(PUPIL - 0.008, PUPIL + 0.008, th)
     out = iris * (1 - pm[..., None]) + hexc(pupil) * pm[..., None]
-    # a catchlight on the pupil's rim, toward one side (the sky's light in the eye)
-    cl = np.exp(-((th - PUPIL * 0.75) / 0.012) ** 2 - ((np.angle(np.exp(1j * (lon - 0.8)))) / 0.25) ** 2)
-    out = out + (1 - out) * cl[..., None] * 0.8
+    # no catchlight (the owner, 2026-10-24: a shine makes it too plainly an eye; keep it ambiguous)
     k = 1 - ss(IRIS, IRIS + FEATHER, th + 0.01 * fib)                                 # the eye over the sky, its edge feathered
     return img * (1 - k[..., None]) + out * k[..., None]
