@@ -9,7 +9,7 @@
 // What the ray did not find (a hole, a drop off the island) is void: matter poured there falls away.
 //
 // Prior art: From Dust's layered terrain mesh and its liquids drawn as a second skin; Rapier's height field (one collider, rebuilt a few
-// times a real second, rather than a box a cell).
+// times a real second, rather than a box a cell); marching squares' edge interpolation for where the skin ends (its alpha the thickness).
 //
 //   game.matter = new IslandMatter(game)   matter.ensure(at) -> field   matter.field   matter.update(dt)   matter.surfaceAt(x, z)
 // ---------------------------------------------------------------------------------------
@@ -21,8 +21,10 @@ import { matterMaterial, matterAttrs, lachrymaSkin, liquidDepth } from '../vfx/g
 /** `relay`: how far from the field's centre the hand may work before a new field is laid; `lookHz` and `colliderHz`: how often the
  *  meshes and the collider follow the simulation (a few times a real second is enough for ground that flows at walking pace);
  *  `sampleUp`/`sampleDown`: the ray's start above the jar and its reach (a roof higher than `sampleUp` is skipped, as the god hand's
- *  cutaway skips it). */
-export const FIELD = { relay: 22, lookHz: 12, colliderHz: 3, mendColliderEvery: 5, sampleUp: 6, sampleDown: 18, show: 0.02, hide: 0.12 };
+ *  cutaway skips it). `edge`: metres of thickness over which the skin's alpha runs 0.5 to 1.5 (the cut at `show`); `step`: the most the
+ *  authored ground may rise or fall between an empty cell and its neighbour with matter for the skin to feather onto it (more, a wall
+ *  or a crate's side, and the empty cell's vertex stays under the ground, as before). */
+export const FIELD = { relay: 22, lookHz: 12, colliderHz: 3, mendColliderEvery: 5, sampleUp: 6, sampleDown: 18, show: 0.02, hide: 0.12, edge: 0.04, step: 0.25 };
 
 
 export class IslandMatter {
@@ -110,10 +112,19 @@ export class IslandMatter {
       this.seenV = gv;
       const geo = this.mesh.geometry, P = geo.attributes.position.array, C = geo.attributes.color.array, NR = geo.attributes.normal.array, ML = geo.attributes.aMl.array;
       const lb = this.lastBb, i0 = Math.min(b[0], lb?.[0] ?? b[0]), i1 = Math.max(b[1], lb?.[1] ?? b[1]), j0 = Math.min(b[2], lb?.[2] ?? b[2]), j1 = Math.max(b[3], lb?.[3] ?? b[3]);
+      const on = (k) => F.amount(k) > FIELD.show && !F.void[k];
       for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {
-        const k = j * n + i, a = F.amount(k), shown = a > FIELD.show && !F.void[k];
-        P[k * 3 + 1] = shown ? F.base[k] + a : F.base[k] - FIELD.hide;
-        C[k * 4 + 3] = shown ? 1 : 0;
+        const k = j * n + i, a = F.amount(k), shown = on(k);
+        // the edge (CASEBOOK 283): an empty cell beside matter on level ground lies on the authored ground, not under
+        // it, and the alpha is the thickness itself (0.5 at FIELD.show, unclamped), so the cut runs where the thickness crosses it,
+        // interpolated across each triangle (marching squares' edge interpolation, done by the rasterizer) instead of a staircase
+        let edge = false;
+        if (!shown && !F.void[k]) for (let dj = -1; dj <= 1 && !edge; dj++) for (let di = -1; di <= 1; di++) {
+          const ii = i + di, jj = j + dj, q = jj * n + ii;
+          if (ii >= 0 && jj >= 0 && ii < n && jj < n && on(q) && Math.abs(F.base[q] - F.base[k]) < FIELD.step) { edge = true; break; }
+        }
+        P[k * 3 + 1] = shown || edge ? F.base[k] + a : F.base[k] - FIELD.hide;
+        C[k * 4 + 3] = F.void[k] ? 0 : 0.5 + (a - FIELD.show) / FIELD.edge;
         ML[k * 4] = a > 0 ? F.loose[k] / a : 0; ML[k * 4 + 1] = Math.min(1, a / 0.3); // (the loose share; the thickness, for the lip)
       }
       for (let j = j0; j <= j1; j++) for (let i = i0; i <= i1; i++) {

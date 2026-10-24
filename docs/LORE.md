@@ -214,7 +214,7 @@ Chaos digs it up cheap and Law buys it dear; the hauler lives in between. Letty'
     East and West on one die as the running hand is. It is the solid Plato kept for "the whole heaven" and its figures. The d100 is two d10s thrown together.
     Seven stones, as there are seven feelings, seven domains and seven sockets on the bracelet.
   - **They roll.** Any chance thrown for you is thrown on your stones, never an unseen number: a duel's Flee on your d20, your own set
-    at Raku's tables, opal's little game in every drink. Opal's set was dice before it had faces.
+    at Raku's tables, opal's little game in every drink. Opal's set was dice before it had faces. When the island answers the god hand, it rolls against your palm die; and Luck, the surprise you have lived through, may throw a failed Flee again (Dovina's rules, built 2026-10-24).
   - **In the god hand**, the set is gathered into one die in the palm (the hole the owner left there), growing d4 to d20 (DICE.md 4).
     The first dice were knucklebones, astragali thrown in the hand to read fate, and in the hand each stone is a **knucklebone** with
     its own finger *(the owner, 2026-10-23)*: **the d4 the little finger, the d6 the ring finger, the d8 the middle finger, the d10 the

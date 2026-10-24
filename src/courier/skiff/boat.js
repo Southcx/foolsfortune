@@ -27,6 +27,7 @@
 //   skiff.pose(rider, s) or skiff.posePhase(clip, t)         // after the rider is posed (skiff.js animate)
 //   skiff.group.position / .quaternion                       // where it is
 //   skiff.stakes({ heat, luff, wear, tilt, roll })            // the board's rules worn on it (vfx/skiffboardlooks.js, each frame)
+//   skiff.partsLook()                                       // the mast and the fins as worn (in own(): MAST and FIN, SKIFF_PARTS_LOOK)
 //   skiff.flash(k, colour?, dur?)   skiff.broken = bool   skiff.setHullMap(tex | null)   skiff.cleanHull (the hull's unworn material)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -202,6 +203,7 @@ export class Skiff {
   // ------------------------------------------------------------------ the hull's glaze (Calissa's: fired at the kiln, vfx/hullglaze.js)
   /** The hull in the glaze fired on it (Dovina's `game.skiffParts.glaze()`; none until it is there), and again whenever one is fired. */
   hullGlaze(game) {
+    this.game = game; // (the parts worn are asked each frame: partsLook)
     this.model?.traverse((o) => { if (!this.hullMat && o.isMesh && !o.userData.isOutline && o.material?.name === 'Skiff_Hull') this.hullMat = o.material; });
     const apply = (id) => { // (and the hull at rest in it kept: applyStakes wears it from there each frame, never over it)
       glazeHull(this.hullMat, id ? (game?.vessel?.glaze?.(id) ?? id) : null);
@@ -364,5 +366,22 @@ export class Skiff {
       }
     }
     this.rom.apply();
+    this.partsLook();
+  }
+
+  /** The mast and the fins as worn (Dovina's MAST and FIN slots, progress/skiffparts.js): each mast section's rise lengthened or shortened,
+   *  so the telescope folds the same in the summon and the recall; the stern's four fins drawn long and slim (Surf) or deep and broad
+   *  (Race). Over the clip's pose, which writes every bone each frame, so nothing builds up. */
+  partsLook() {
+    const C = this.game?.skiffParts?.chosen, B = this.bone; if (!C || !B) return;
+    const m = SKIFF_PARTS_LOOK.mast[C.mast], f = SKIFF_PARTS_LOOK.fin[C.fin];
+    if (m) for (const n of ['mast_2', 'mast_3', 'mast_4', 'finial']) if (B[n]) B[n].position.y *= m;
+    if (f) for (let i = 1; i <= 4; i++) { const b = B[`fin_${i}`]; if (b) b.scale.set(b.scale.x * f[0], b.scale.y * f[1], b.scale.z * f[2]); }
   }
 }
+
+/** The partner slots' looks: a mast section's rise (x), a fin's scale (its width, its length out of the stern, its depth). */
+export const SKIFF_PARTS_LOOK = {
+  mast: { 'mast.tall': 1.16, 'mast.short': 0.84 },
+  fin: { 'fin.surf': [0.8, 1.4, 0.8], 'fin.race': [1.35, 1.12, 1.35] },
+};

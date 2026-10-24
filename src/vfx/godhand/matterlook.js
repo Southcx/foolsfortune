@@ -7,6 +7,11 @@
 //                        orange peel's tooth; the loose layer (the sand) grained by the peel, its grit by the specks, paler where the
 //                        wind sorted it; the two blended cell by cell by the loose share. THE SEAM where it thins onto the authored
 //                        ground is a lip: a contact shade and the clay wetter there, as a heap's foot is, never a hard colour cut.
+//                        THE EDGE itself is a contour, not the cells: godhand/islandmatter.js lays an empty cell beside matter on the
+//                        authored ground and writes the thickness as the vertex alpha (0.5 at the cut), so the alpha test cuts where the
+//                        interpolated thickness crosses it (marching squares' edge interpolation, left to the rasterizer); here the cut
+//                        wanders by the atlas's wide pooling near the lip, so a heap's foot feathers out in lobes as poured sand or slip
+//                        does. A hard cut, never alpha to coverage (SwiftShader speckles it: leafcanopy.js), stable while the matter rests.
 //   A CREATION           raised, greenware: leather-hard clay, matte, a little darker where it is wetter. SET (on Anagami it looks
 //                        fired: REGISTERS.md 6) it is the anagama's ware: the body toasted, the flame's FLASHING blushing across it, ASH
 //                        specks on what faced the fire, and the natural ash glaze (ROOM_GLAZES.ash, the kilns' own) pooling glassy on top
@@ -21,7 +26,10 @@
 // Prior art: the room glaze atlas and its triplanar taps (vfx/surfaces.js: Geiss, GPU Gems 3 ch. 1) and the ash glaze's row
 // (vfx/roomglazes.js); frostbisque.js's crazing net (Worley's F2 - F1) and its pixel fade; From Dust's matter drawn as layered skins;
 // the anagama's firing as it really marks a pot (Bizen's hi-iro flashing and goma ash, Shigaraki's bidoro glass running in beads);
-// greenware's leather-hard to bone-dry, the clay paling and crazing as it dries.
+// greenware's leather-hard to bone-dry, the clay paling and crazing as it dries. The edge: Lorensen and Cline's marching cubes and its 2D
+// marching squares (the crossing interpolated along each edge rather than snapped to the cell; Dual Contouring's lesson, Ju et al. 2002,
+// that the surface belongs where the field crosses, not on the grid), From Dust's and Populous's matter thinning into the land, and
+// Horizon Zero Dawn's terrain blending (a noise-broken height threshold where two grounds meet, never a straight seam).
 //
 //   matterMaterial(role, island?)   role: 'ground' | 'creation' | 'set' | 'lachryma': a shared MeshStandardMaterial (userData.shared)
 //   matterAttrs(geo, count)          gives a geometry the look's attributes (`aMl`: loose share, thickness, craze; and a white `color`)
@@ -94,6 +102,7 @@ const FRAG = /* glsl */`
       loose = mix(loose, mlLooseGrit, A.a * 0.5);
       col = mix(firm, loose, s) * (1.0 - lip * mix(0.2, 0.1, s)); // (the lip: a contact shade where it thins onto the authored ground)
       mlRough = mix(mlRoughs.x - 0.22 * clamp(damp + lip * 0.6, 0.0, 1.0), mlRoughs.y, s);
+      diffuseColor.a += (mlWide - 0.5) * 0.7 * lip; // (the feathered edge: the cut wanders with the atlas's wide pooling, fixed in the world)
     } else if (mlKind < 1.5) { // A CREATION
       col = mlFirm * (0.86 + 0.28 * A.b);
       col = mix(col, mlFirmDamp, smoothstep(0.55, 0.9, pool) * 0.35);

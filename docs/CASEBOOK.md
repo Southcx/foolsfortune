@@ -834,6 +834,9 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
     `overflow`) and a constant in a consumer drift apart; every consumer reads the row, and a new row is wired where it is written.
 282. **After a merge, a look re-reads the fields it borrows.** Optional chaining turns a renamed field into a quiet
     default (the Fool, nought, nothing drawn); grep the merged diff for the names your file reads from another division's state.
+283. **A height field's edge is cut where its value crosses, never at a cell.** A skin shown or hidden a vertex at
+    a time cuts at the cells' midpoints and its triangles' diagonals (a sawtooth); write the value itself (unclamped) where the cut
+    reads it, and lay the empty side on the ground it meets, so the rasterizer interpolates the crossing (marching squares).
 NEW:trap-has-a-way-past. **Every trap, held or not, leaves a way past.** A possessed trap that can catch the same rider again at once
     is a wall; it spares whom it just caught until they are past it.
 NEW:move-is-not-set-down. **A move in play is not a setting down.** A warp, a shove or a portal moves the body and keeps its state;
