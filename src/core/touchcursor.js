@@ -19,7 +19,7 @@
 // Prior art: Procreate (the two-finger tap's undo), every maps app (one finger pans, two pinch and twist), iOS's haptic touch (the long
 // press as the second button), Black & White's hand on a cursor.
 //
-//   new TouchCursor(game, input)   .down(touch)   .moveTo(touch)   .up(touch)   .has(id)   .update()   .release()   .state()   CURSOR
+//   new TouchCursor(game, input)   .down(touch)   .moveTo(touch)   .up(touch)   .has(id)   .busy   .update()   .release()   .state()   CURSOR
 // ---------------------------------------------------------------------------------------
 
 /** slop: px a finger may move and still be a tap or a long press; long: ms to the long press (the choice card's 420); notch: the log of
@@ -36,6 +36,9 @@ export class TouchCursor {
     this.first = null; this.two = null; this.held = null; this.tap = 0; this.keys = null;
   }
   has(id) { return this.fingers.has(id); }
+  /** Anything still to do in `update()`: a finger down, a gesture under way, or a press it earned still to make or let go (a tap's
+   *  LMB, a two-finger tap's Ctrl+Z: both are made after the fingers have lifted). */
+  get busy() { return !!(this.fingers.size || this.mode || this.tap || this.keys); }
 
   down(t) {
     const p = pt(t), f = { x0: p.x, y0: p.y, x: p.x, y: p.y, t0: performance.now() };

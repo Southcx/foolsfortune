@@ -3745,3 +3745,13 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   holders is as it was. Checked in node: the latch's first hold an edge, a second state hold none, a person's press an edge, the key
   down until both let go.
 - **Rule:** 290
+
+### 2026-10-24 · A two-finger tap never undid in the garden (Petra, the M1 probe with real touches)
+- **Seen:** in the M1 probe (CDP touches, a phone's 844 x 390 view), two fingers tapped together in the Spirit Garden left the undo
+  list as it was (1 then 2 with the probe's entry, still 2 after). In node, with `update()` called by hand, the same tap pressed Ctrl+Z.
+- **Cause (measured):** the cursor earns the tap's Ctrl+Z when the fingers lift and makes it in its next `update()`, but by then no
+  finger was down and its mode was cleared, and core/touchdriver.js called `update()` only while `fingers.size || mode`. The press was
+  owed and never made. The one-finger tap escaped only because its mode stays `done` until its LMB is let go.
+- **Fix:** `TouchCursor.busy` (a finger down, a gesture under way, a tap's LMB or a two-finger tap's keys still to press or let go),
+  and the driver calls `update()` while it is true. The probe: the two-finger tap undoes (2 to 1), 10 of 10.
+- **Rule:** 291

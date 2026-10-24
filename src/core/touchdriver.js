@@ -75,7 +75,7 @@ export class TouchDriver {
   /** Once a frame, before the game reads its input: the move area's push as the moves. While touch play's controls are up, their stick
    *  owns the move area (ui/touch/stick.js: it reports x, y, outer and carve) and is read instead of this driver's own. */
   update() {
-    if (this.cursor.fingers.size || this.cursor.mode) { if (this.game.cursorFree?.()) this.cursor.update(); else this.cursor.release(); } // (the pointer no longer free under a finger: it lets go)
+    if (this.cursor.busy) { if (this.game.cursorFree?.()) this.cursor.update(); else this.cursor.release(); } // (the pointer no longer free under a finger: it lets go; a press earned after the lift is still made)
     const UI = this.game.touchUI, S = UI?.on ? UI.stick : null;
     let x = 0, y = 0, held = false;
     if (S) { this.active = true; held = !!S.active; if (held) { x = S.x; y = S.y; } }

@@ -4,14 +4,15 @@ The owner, 2026-10-24: "Utilize the rest of the weekly budget on codebase cleanu
 coordinate with your sisters for everything you need." The plan is `docs/plans/MOBILE.md`; its section 5 judges every system and section 9
 gives the phases. This note says who does what, in order. One build is published as each phase can be played on the owner's iPhone.
 
-## Now: v265 (M0 and the skiff on touch), then v266 (M1)
+## Now: v265 (M0 and Petra's M1 together)
 
 - **v265:** the input layer, the drivers, the shell, the cloud save, `?perf`, the touch controls, the skiff on touch, the seal's real
-  field (Calissa's). QAIS tests T198 to T203.
-- **On main for v266 (Petra's M1, built):** the touch cursor (a drag LMB, a tap a click, a long press RMB, two fingers the camera),
-  the garden's gestures and art bar wired, the god hand's gestures, the duel's swipe, REPORT, `game.settings`, the camera's follow on
-  touch, and the map on pointer events (M2). Waiting on Calissa for the god hand's strip, the settings window and three top bar
-  tiles (skiff, god hand, survey: a phone has no other way to summon the board).
+  field (Calissa's); and Petra's M1: the touch cursor (a drag LMB, a tap a click, a long press RMB, two fingers the camera), the
+  garden's gestures and art bar wired, the god hand's gestures, the duel's swipe, REPORT, `game.settings`, the camera's follow on
+  touch, the map on pointer events (M2), a long press on a window's element (`core/elementlongpress.js`), and the reprogram field
+  focused in the tap. QAIS tests T198 to T207.
+- **Waiting on Calissa:** the god hand's strip, the settings window, three top bar tiles (skiff, god hand, survey: a phone has no
+  other way to summon the board or raise the hand), and the tables' long press for a piece's tip (the table view acts on pointerdown).
 
 ## M1, first play (MOBILE.md 5 and 9)
 
@@ -32,6 +33,7 @@ gives the phases. This note says who does what, in order. One build is published
 | the on-foot cluster (JUMP, CROUCH, DASH, USE naming its thing) | Dovina (lists), Calissa (tiles); the driver presses them already |
 | the map on touch: one finger pans, two pinch, long press sets the waypoint | Petra (`feedback/cartography.js` on pointer events: **built**) |
 | the Pneuka Box, the reading table, the underside: tap, tap; long press detail; laid out for the screen | Dovina (the Box's rules), Calissa (layout) |
+| DASH in the air under the sprint's Shift (a pad's latch, touch's stick): a person's press is always an edge (casebook rule 290) | Petra (**built**, core/input.js) |
 
 ## M3 to M5 (in order, after M2 is played)
 

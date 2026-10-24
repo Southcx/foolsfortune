@@ -853,3 +853,6 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
     resume on visibility and on every state change, and arm the next gesture when the browser refuses; schedule on the context's clock.
 290. **A press a person makes is an edge, whatever else holds the key.** Count a key's holders for its down state, but a
     control pressed by a hand always gives `wasPressed`; only a holder's own state (a latch, a stick's keys) is refused a second edge.
+291. **A press owed after the lift keeps its loop running.** Whatever a gesture earns when the fingers lift (a tap's
+    click, a two-finger tap's undo) is made by the next frame's update; the caller asks the gesture whether it owes anything, not
+    whether a finger is down. A check that calls the update by hand cannot see this: drive it with real touches.
