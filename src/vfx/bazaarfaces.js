@@ -20,6 +20,10 @@
 //   - THE CLOTHS: felt, a gold border, the game's sigil: Querent the querent's spread (the Celtic Cross), Zodiac the wheel of the twelve
 //     signs round a sun, Event Horizon a black hole in its accretion ring, Supernova Run a star bursting in shock rings, Nebula Bluff a
 //     nebula's cloud round six pale stars (the six dice of a set).
+//   - YOUR STONES (GROWN 2026-10-24, the palm die's numerals): the stone skin, a pale body the stones' mineral tints and dark numerals,
+//     at every size (`stone4` .. `stone20`: the d20 in the dice's rows, the rest in the free corner of the cloths' row, AT.stone), so the
+//     palm die, the fingers' stones and the flee's d20 are Raku's bodies; and `glow()`, a half-size mask of the stone skins' numerals
+//     alone, white on black (an emissive map: the flee's numerals lit gold on the dark tsuitate).
 //   - THE SPENT DIE: one cell of grey, crazed clay with no numeral (`die('ash')`, every face), worn by a die decaying or lost in Supernova
 //     Run's reaction (vfx/bazaarlayoutastroll.js).
 //
@@ -27,7 +31,7 @@
 // layouts, playing cards' corner indices, Chessex's and Crystal Caste's dice (opposite faces summing to one more than the sides, the
 // underlined 6 and 9), casino chips' edge inserts (Paulson's), Shut the Box's numbered tiles, the title's own card back.
 //
-//   bazaarAtlas() -> { tex, card(i, dim?), die(skin, face, dim?), tile(n, state, dim?), chip(kind, part), cup(), cloth(id), seat(colour, kind) }
+//   bazaarAtlas() -> { tex, glow(), card(i, dim?), die(skin, face, dim?), tile(n, state, dim?), chip(kind, part), cup(), cloth(id), seat(colour, kind) }
 //   (each a uv rect [u0, v0, u1, v1]; `dim` asks the sunk twin)
 //   CARD_BACK   cardIndex(c) (a Querent card { r, s } -> its index)   DIE_SKINS   SUIT_INK
 // ---------------------------------------------------------------------------------------
@@ -41,6 +45,7 @@ const W = 2048, H = 2048;
  *  of 64, five cloths of 256 in a row, then the dim twins (cards 48 x 78, dice 32, tiles 32 x 48) in the foot. */
 const AT = { card: { x: 0, y: 0, w: 128, h: 208, cols: 16 }, die: { x: 0, y: 1040, s: 64, cols: 32 }, tile: { x: 0, y: 1360, w: 64, h: 96 },
   chip: { x: 0, y: 1456, s: 64 }, seat: { x: 512, y: 1456, s: 64 }, cloth: { x: 0, y: 1520, s: 256, cols: 5 },
+  stone: { x: 1280, y: 1520, s: 64, cols: 12 }, // (your stones d4 .. d12, 40 cells in the 768 x 256 the five cloths leave)
   dimCard: { x: 0, y: 1776, w: 48, h: 78, cols: 42 }, dimDie: { x: 0, y: 1932, s: 32, cols: 64 }, dimTile: { x: 0, y: 1996, w: 32, h: 48 } };
 export const CARD_BACK = 78;
 const CARD_EDGE = 79;
@@ -56,11 +61,17 @@ export const DIE_SKINS = {
   4: { body: '#7fb7a0', ink: '#1c3a30' }, 6: { body: '#efe6d2', ink: '#5a1e2a' }, 8: { body: '#2f5aa8', ink: '#f2d27a' },
   10: { body: '#7a3e18', ink: '#f4e3c0' }, 12: { body: '#a8322a', ink: '#f2d27a' }, 20: { body: '#2a1a3a', ink: null },
   atk: { body: '#d9a441', ink: '#3a1a12' }, cup: { body: '#3b2418', ink: '#d9a441' },
-  stone: { body: '#f6f2ec', ink: '#241820' }, // (your own d20: a pale body a stone's colour tints, its numerals dark: vfx/duelview/flee.js)
+  stone: { body: '#f6f2ec', ink: '#241820' }, // (your own dice: a pale body a stone's colour tints, its numerals dark: vfx/godhand/palmdie.js, vfx/duelview/flee.js)
 };
 /** The cloths in the atlas, in their order (an unknown table's id falls back to the first). */
 const CLOTHS = ['querent', 'zodiac', 'eventhorizon', 'supernova', 'nebula'];
 const SKIN_ORDER = ['4', '6', '8', '10', '12', '20', 'atk4', 'atk6', 'atk8', 'atk10', 'atk12', 'atk20'];
+const STONE_SIDES = [4, 6, 8, 10, 12]; // (the stone skin's sizes in AT.stone, in this order; the d20 is in the dice's rows)
+/** Paint every stone cell (its own d20 in the dice's rows, the rest in AT.stone) in `skin`: the atlas's, and the glow mask's. */
+function stoneCells(g, dieAt, skin) {
+  for (let f = 0; f < 20; f++) dieCell(g, dieAt.stone20 + f, 20, f, skin);
+  for (const n of STONE_SIDES) for (let f = 0; f < n; f++) dieCell(g, dieAt[`stone${n}`] + f, n, f, skin, AT.stone);
+}
 
 let ATLAS = null;
 /** The one atlas (painted on first ask; shared by every table). */
@@ -78,7 +89,9 @@ export function bazaarAtlas() {
   dieAt.cup = k; dieCell(g, k++, 0, 0, DIE_SKINS.cup);
   dieAt.ash = k; ashCell(g, k++);
   const dieCount = k;
-  dieAt.stone20 = k; for (let f = 0; f < 20; f++, k++) dieCell(g, k, 20, f, DIE_SKINS.stone); // (after dieCount: no dim twin, the dim rows are full)
+  dieAt.stone20 = k; k += 20; // (after dieCount: no dim twin, the dim rows are full)
+  let j = 0; for (const n of STONE_SIDES) { dieAt[`stone${n}`] = j; j += n; } // (indices in AT.stone)
+  stoneCells(g, dieAt, DIE_SKINS.stone);
   for (let n = 1; n <= 12; n++) for (const [j, st] of ['open', 'locked'].entries()) tileCell(g, (n - 1) * 2 + j, n, st);
   tileCell(g, 24, 0, 'back');
   [['1', '#efe6d2', '#5a1e2a'], ['5', '#b8322a', '#f4e3c0'], ['25', '#2f5aa8', '#e8c35a'], ['gold', '#e8c35a', '#7a4a12']].forEach(([, body, ink], j) => chipCells(g, j, body, ink));
@@ -99,12 +112,21 @@ export function bazaarAtlas() {
   const rect = (x, y, w, h, inset = 0.5) => [(x + inset) / W, 1 - (y + h - inset) / H, (x + w - inset) / W, 1 - (y + inset) / H];
   const chipIx = { 1: 0, 5: 1, 25: 2, gold: 3 };
   const dieCell_ = (skin, f) => dieAt[skin] + (skin === 'ash' ? 0 : f);
+  let glow = null;
   ATLAS = {
     tex, canvas: cv,
+    /** The stone skins' numerals alone, white on black, at half size (the same uvs): painted on first ask. */
+    glow: () => {
+      if (glow) return glow;
+      const c2 = document.createElement('canvas'); c2.width = W / 2; c2.height = H / 2;
+      const g2 = c2.getContext('2d'); g2.fillStyle = '#000'; g2.fillRect(0, 0, W / 2, H / 2); g2.scale(0.5, 0.5);
+      stoneCells(g2, dieAt, { body: '#000', ink: '#fff' });
+      glow = new THREE.CanvasTexture(c2); glow.colorSpace = THREE.SRGBColorSpace; return glow;
+    },
     card: (i, dim = false) => dim ? rect(AT.dimCard.x + (i % AT.dimCard.cols) * AT.dimCard.w, AT.dimCard.y + Math.floor(i / AT.dimCard.cols) * AT.dimCard.h, AT.dimCard.w, AT.dimCard.h)
       : rect(AT.card.x + (i % AT.card.cols) * AT.card.w, AT.card.y + Math.floor(i / AT.card.cols) * AT.card.h, AT.card.w, AT.card.h),
     edge: () => ATLAS.card(CARD_EDGE),
-    die: (skin, f, dim = false) => { const c = dieCell_(skin, f), A = dim ? AT.dimDie : AT.die; return rect(A.x + (c % A.cols) * A.s, A.y + Math.floor(c / A.cols) * A.s, A.s, A.s, 1); },
+    die: (skin, f, dim = false) => { const c = dieCell_(skin, f), A = /^stone(4|6|8|10|12)$/.test(skin) ? AT.stone : dim ? AT.dimDie : AT.die; return rect(A.x + (c % A.cols) * A.s, A.y + Math.floor(c / A.cols) * A.s, A.s, A.s, 1); },
     cup: () => { const c = dieAt.cup; return rect(AT.die.x + (c % AT.die.cols) * AT.die.s, AT.die.y + Math.floor(c / AT.die.cols) * AT.die.s, AT.die.s, AT.die.s, 8); },
     tile: (n, st, dim = false) => { const c = st === 'back' ? 24 : (n - 1) * 2 + (st === 'locked' ? 1 : 0), A = dim ? AT.dimTile : AT.tile; return rect(A.x + c * A.w, A.y, A.w, A.h); },
     chip: (kind, part) => rect(AT.chip.x + (chipIx[kind] * 2 + (part === 'edge' ? 1 : 0)) * AT.chip.s, AT.chip.y, AT.chip.s, AT.chip.s, 1),
@@ -222,8 +244,8 @@ function back(g) {
 
 // ------------------------------------------------------------------ the dice
 /** One face of a die: its glaze, its numeral (or the d6's pips; the d4's three corner numbers, read from the vertex on top). */
-function dieCell(g, c, sides, f, skin) {
-  const S = 32, x0 = AT.die.x + (c % AT.die.cols) * AT.die.s, y0 = AT.die.y + Math.floor(c / AT.die.cols) * AT.die.s;
+function dieCell(g, c, sides, f, skin, A = AT.die) {
+  const S = 32, x0 = A.x + (c % A.cols) * A.s, y0 = A.y + Math.floor(c / A.cols) * A.s;
   g.save(); g.translate(x0, y0); g.scale(2, 2); g.beginPath(); g.rect(0, 0, S, S); g.clip(); // (drawn in a 32 frame, fired at 2x)
   box(g, 0, 0, S, S, skin.body);
   const ink = skin.ink || sch(f / Math.max(1, sides));
