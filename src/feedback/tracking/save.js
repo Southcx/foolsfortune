@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // TRACKING, THE SAVE: the log's lines for where your save is kept (core/save.js, core/cloudsave.js) and for the graphics context lost
-// and given back (render/contextloss.js). Nothing is counted: none of it is the Courier's doing. Words are placeholders for Espada's.
+// and given back (render/contextloss.js). Nothing is counted: none of it is the Courier's doing. Words are Espada's (2026-10-24).
 //
 //   saveRules({ on, log })   (tracking/rules.js calls it)
 //   events read: save.fail { key, why }   save.cloud { state, from?, ago? }   render.lost   render.restored { after }
@@ -13,10 +13,10 @@ export function saveRules({ on, log }) {
     const from = e.from || 'another device';
     const line = {
       local: 'Your save is kept on this device only.',
-      took: `Your save from ${from} is loaded (${ago(e.ago ?? 0)}).`,
-      kept: `Your save from ${from} was played less: it is kept in the Codex for a game day.`,
-      offer: `Your save from ${from}, ${ago(e.ago ?? 0)}, is in the Codex: LOAD it there, or keep this one.`,
-      failed: 'Your save could not reach the cloud: it is kept on this device for now.',
+      took: `Your save from ${from} was played longer, so it is the one loaded (${ago(e.ago ?? 0)}). This one is kept in the Codex for a game day.`,
+      kept: `Your save from ${from} was played less, so this one stays. The other is kept in the Codex for a game day.`,
+      offer: `Your save from ${from}, ${ago(e.ago ?? 0)}, was played longer than this one. LOAD it in the Codex, or keep this one.`,
+      failed: 'Your save could not be copied online just now. It is kept on this device, and the copy is tried again later.',
     }[e.state];
     if (line) log.say(e.state === 'failed' || e.state === 'local' ? 'warn' : 'system', line, { key: `save.cloud.${e.state}`, throttle: 30 });
   });
