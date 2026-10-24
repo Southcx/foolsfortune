@@ -45,6 +45,8 @@ export const SHOULDER = { tap: 0.25, push: 7, reach: 3.5, cool: 1 };
 /** Aftertouch: its push on the tumbling body (m/s a real second), for how long into the bail (real s), its reach to a rival (m). */
 export const AFTER = { push: 9, dur: 1.4, reach: 2.6 };
 /** The near miss: within `r` metres of a thing's side, from `speed` m/s, its points, real seconds before the same thing counts again. */
+/** A made track's Thirst rule: Lachryma a real second the pool gives up while racing it. */
+export const THIRST = 3;
 export const NEAR = { r: 1.3, speed: 18, points: 40, again: 2 };
 
 const _v = new THREE.Vector3();
@@ -59,10 +61,15 @@ export class BoardRules {
   mult(key) { const g = this.game; return (g.skiffParts?.mult(key) ?? 1) * (g.cityTrial?.mult(key) ?? 1) * (this.here ? g.raceway.buoys?.mult(key) ?? 1 : 1); } // (the parts, the City Trial's patches, the buoys' power)
 
   /** The ground's grip under the board: water, a vein lane's Lachrymite, or the sand. */
-  surfaceGrip(onWater) { return onWater ? SURFACE.water : this.veinT > 0 ? SURFACE.vein : SURFACE.sand; }
+  surfaceGrip(onWater) {
+    const R = this.here ? this.game.raceway : null, p = this.S.P?.pos, onMade = R?.track && R.track === R.made?.T;
+    const k = (p && R?.traps?.gripAt(p.x, p.z)) ?? 1, rule = onMade && R.made.rule('slick') ? 0.67 : 1; // (a gusher's slick; a made track's Slick sand rule: TRACK-EDITOR.md 4, 5)
+    return (onWater ? SURFACE.water : this.veinT > 0 ? SURFACE.vein : SURFACE.sand) * k * rule;
+  }
   /** Each ride step: the cooldowns run down. (The pool keeps its own regen, race or not: the owner, 2026-10-14.) */
   step(dt) {
     this.shoulderT = Math.max(0, this.shoulderT - dt); this.veinT = Math.max(0, (this.veinT || 0) - dt);
+    if (this.racing && this.madeRule('thirst')) this.game.lachryma?.drain?.(THIRST * dt, 'thirst'); // (Thirst: the made track's rule)
     for (const [k, t] of this.near) if ((t - dt) <= 0) this.near.delete(k); else this.near.set(k, t - dt);
   }
 
@@ -86,7 +93,10 @@ export class BoardRules {
   }
 
   /** The flare asked for this step: allowed unless the sail is luffing from a scorch; the scorch built while flaring, cooled while not. */
+  /** On a made track whose rule this is (trackdef.js RULES: the stele at its start says so). */
+  madeRule(id) { const R = this.here ? this.game.raceway : null; return !!R?.track && R.track === R.made?.T && R.made.rule(id); }
   flare(dt, want) {
+    if (want && this.madeRule('noflare')) return false; // (No flares: the made track's rule)
     if (this.luffT > 0) { this.luffT -= dt; this.scorch = Math.max(0, this.scorch - SCORCH.cool * dt); return false; }
     if (!want) { this.scorch = Math.max(0, this.scorch - SCORCH.cool * dt); return false; }
     this.scorch += SCORCH.build * dt;

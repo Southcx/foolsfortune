@@ -45,6 +45,8 @@ import { fieldOf, fieldJob } from './parkfield.js';
 import { Gaps } from './gaps.js';
 import { Buoys } from './buoys.js';
 import { Siphons } from './siphons.js';
+import { MadeTrack } from './madetrack.js';
+import { Traps } from './traps.js';
 
 const WIND = { speed: 8 }; // (the course wind's strength; its way is the track's, turned by the track's own angle)
 const OFF = { far: 40, secs: 3 }; // (metres past a track's edge, and real seconds there, before the board is set back on the track)
@@ -61,6 +63,7 @@ export class Raceway {
     this.sun = 1; this.condition = null; this.condT = 0; this.pitT = 0;
     this.wind = { dir: new THREE.Vector2(1, 0), speed: WIND.speed, gust: 1 };
     this.built = false; this.releasers = [];
+    this.made = new MadeTrack(this); this.traps = new Traps(this); // (a made track on the build lot, and its traps: TRACK-EDITOR.md; madetrack.js, traps.js)
     this.gaps = new Gaps(this); this.buoys = new Buoys(this); this.siphons = new Siphons(this); // (the named jumps, the buoy runs, the siphons: gaps.js, buoys.js, siphons.js)
     this.geysers = []; this.plates = []; this.rails = []; this.rings = []; this.decks = []; this.pits = []; this.sandfalls = []; this.pillars = [];
     const F = this.T.frame(this.T.line);
@@ -73,15 +76,15 @@ export class Raceway {
   /** Is the Courier here? */
   get active() { const p = this.game.player?.pos; if (!p) return false; return Math.abs(p.x - RW.x) < RW.half + 60 && Math.abs(p.z - RW.z) < RW.half + 60 && p.y < -150 && p.y > -600; }
   /** The track the race runs on, or the one the Courier is on. */
-  trackOf(id) { return this.P.track(id); }
+  trackOf(id) { return id === 'made' ? this.made.T : this.P.track(id); }
 
   /** World height of the ground at world x, z: the field's own samples where it is built (what is drawn and collided), else the function. */
   heightAt(x, z) {
     const lx = x - RW.x, lz = z - RW.z, G = this.grid;
-    if (!G || Math.abs(lx) >= RW.half || Math.abs(lz) >= RW.half) return RW.y + this.P.heightAt(lx, lz);
+    if (!G || Math.abs(lx) >= RW.half || Math.abs(lz) >= RW.half) return RW.y + this.P.heightAt(lx, lz) + this.made.rise(lx, lz);
     const fx = (lx + RW.half) / RW.step, fz = (lz + RW.half) / RW.step, i = Math.floor(fx), j = Math.floor(fz), u = fx - i, v = fz - j, n = G.n, H = G.heights;
     const h00 = H[i * n + j], h10 = H[(i + 1) * n + j], h01 = H[i * n + j + 1], h11 = H[(i + 1) * n + j + 1];
-    return RW.y + (h00 * (1 - u) + h10 * u) * (1 - v) + (h01 * (1 - u) + h11 * u) * v;
+    return RW.y + (h00 * (1 - u) + h10 * u) * (1 - v) + (h01 * (1 - u) + h11 * u) * v + this.made.rise(lx, lz); // (a made track's ramps and hills: madetrack.js)
   }
   /** The height a board rides at: the ground, the water over it (the lakes, the fords: skimmed), or the bridge deck the Courier is on. */
   rideHeight(x, z) {
@@ -153,7 +156,7 @@ export class Raceway {
    *  strings hang (Calissa's look). [{ side: -1 | 1, pts: [Vector3], hide: Uint8Array }], left then right; `hide` marks the points
    *  that lie where another line's running surface is (the cavern's fork and merge: a string there would cut across the other road). */
   edgeLines(step = 4, line = 'main', trackId = 'sun') {
-    const T = this.P.track(trackId), Bn = line === 'cavern' ? T.branch : null, len = Bn ? Bn.length : T.length, out = [{ side: -1, pts: [], hide: [] }, { side: 1, pts: [], hide: [] }];
+    const T = this.trackOf(trackId), Bn = line === 'cavern' ? T.branch : null, len = Bn ? Bn.length : T.length, out = [{ side: -1, pts: [], hide: [] }, { side: 1, pts: [], hide: [] }];
     const other = (lx, lz) => { // (on the running surface of the line not drawn: the branch's for the main, the main's for the branch)
       if (Bn) { const n = T.nearest(lx, lz, null, 2); return n && n.d < T.frame(n.s).w + 1.5; }
       const b = T.branch?.nearest(lx, lz); return !!b && b.sb > 1 && b.sb < T.branch.length - 1 && b.d < T.branch.frame(b.sb).w + 1.5;
@@ -175,7 +178,7 @@ export class Raceway {
     for (const P of this.plates) {
       if (P.track !== T.id || P.line !== this.line) continue;
       const u = P.line === 'cavern' ? this.sb - P.s0 : ((this.s - P.s0) % L + L) % L;
-      if (u >= 0 && u <= P.s1 - P.s0 && Math.abs(this.lat - P.lat) < P.w && pos.y - this.heightAt(pos.x, pos.z) < 2) { P.power = P.vein ? 1 : this.sun; return P; }
+      if (u >= 0 && u <= P.s1 - P.s0 && Math.abs(this.lat - P.lat) < P.w && pos.y - this.heightAt(pos.x, pos.z) < 2) { P.power = P.vein ? 1 : this.sun * (P.track === 'made' && this.made.def?.rules?.includes('plates2') ? 2 : 1); return P; }
     }
     return null;
   }
@@ -225,7 +228,7 @@ export class Raceway {
     flyRings(this, dt, this.prevP); (this.prevP ||= new THREE.Vector3()).copy(g.player.pos);
     this.barrier.update(dt);
     stepPits(this, dt);
-    this.gaps.update(dt); this.buoys.update(dt); this.siphons.update(dt);
+    this.gaps.update(dt); this.buoys.update(dt); this.siphons.update(dt); this.traps.update(dt);
     const P = g.player, lx = P.pos.x - RW.x, lz = P.pos.z - RW.z;
     // the hour and the weather (conditions.js), read a few times a real second
     if ((this.condT -= dt) <= 0) { this.condT = 0.5; this.condition = conditionAt(g); this.sun = this.condition.sun; }
@@ -233,7 +236,7 @@ export class Raceway {
     // which track: the race's while racing; else the nearest line, kept until another's is nearer by KEEP metres
     const race = g.race?.running ? g.race.T : null;
     let T = race || this.track, n = (this.d < 60 && this.line === 'main' ? T.nearest(lx, lz, this.s) : null) || T.nearest(lx, lz);
-    if (!race) for (const T2 of this.tracks) { if (T2 === T) continue; const n2 = T2.nearest(lx, lz); if (n2 && (!n || n2.d < n.d - KEEP)) { T = T2; n = n2; } }
+    if (!race) for (const T2 of this.made.T ? [...this.tracks, this.made.T] : this.tracks) { if (T2 === T) continue; const n2 = T2.nearest(lx, lz); if (n2 && (!n || n2.d < n.d - KEEP)) { T = T2; n = n2; } }
     if (T !== this.track) { this.track = T; this.line = 'main'; this.branchIn = false; }
     // on the cavern's branch when they are nearer its line than the circuit's (by 3 m: no flicker where the two run as one at the fork and merge)
     const Bn = T.branch, nb = Bn?.nearest(lx, lz), bw = nb ? Bn.frame(nb.sb).w : 0;

@@ -14,6 +14,7 @@
 import { sandAt, track, SUN, CONTROL, FEATURES, BRANCH } from './track.js';
 import { GORGE } from './tracks/gorge.js';
 import { COASTER } from './tracks/coaster.js';
+import { LOT } from '../../progress/trackdef.js';
 
 /** The park's own shapes (local metres; y over the layer's floor). The hub: where the Index sets you down, a plaza flattened among the
  *  tracks' starts. An antlion pit: a cone whose sides stand at the sand's angle of repose (tan 33 degrees: dry sand will not lie steeper,
@@ -51,6 +52,8 @@ export function park() {
     let h = sandAt(x, z);
     { const d = Math.hypot(x - H.x, z - H.z); if (d < H.r + H.blend) h += (H.y - h) * (1 - sstep(H.r, H.r + H.blend, d)); }
     for (const Cr of PARK.craters) { const d = Math.hypot(x - Cr.x, z - Cr.z); if (d < Cr.r + 60) h = Math.min(h, craterAt(Cr, d)); }
+    // the build lot (progress/trackdef.js LOT: TRACK-EDITOR.md 3): a square laid flat for made tracks, blended back to the sand round it
+    { const d = Math.max(Math.abs(x - LOT.x), Math.abs(z - LOT.z)); if (d < LOT.half + LOT.blend) h += (LOT.y - h) * (1 - sstep(LOT.half, LOT.half + LOT.blend, d)); }
     return h;
   }
   /** The ground with every track pulled in, before the park's cut shapes. */

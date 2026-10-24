@@ -30,6 +30,7 @@ export function raceRules({ on, L, log }) {
   on('raceway.enter', () => log.say('info', 'The Raceway. Three tracks round the hub: the Sun Circuit to the south-west, the Gorge Run to the south-east, the Coaster to the north-east. F at a track\'s start pillar begins a race of three laps. Y brings the Solar Skiff.', { key: 'rw.enter', throttle: 30 }));
   on('raceway.pit', (e) => { L.inc('raceway.pit'); log.say('warn', 'The antlion takes you. The sand slides to its jaws: keep your speed on the slope.', { key: 'rw.pit', throttle: 4 }); });
   on('race.start', (e) => {
+    if (e.track === 'made') return; // (a made track's: tracking/trackeditor.js, never the park's counts)
     if (e.mode && e.mode !== 'race') return; // (the other modes: racemodes.js)
     L.inc('race.raceway.start'); L.inc(`race.track.${e.track || 'sun'}.start`); log.say('skiff', `${TRACK_NAMES[e.track] || 'The race'}: to the line. Ready your sail.`, { key: 'race.start', throttle: 2 });
     const says = [LIGHT_SAYS[e.light], WEATHER_SAYS[e.aspect]].filter(Boolean); if (says.length) log.say('skiff', says.join(' '), { key: 'race.cond', throttle: 2 });

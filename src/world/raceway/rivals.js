@@ -104,7 +104,7 @@ export class Rivals {
 
   update(dt, race) {
     if (!this.on || !this.list.length) return;
-    const g = this.game, T = this.T, L = T.length, B = RIVAL.band, me = this.mine(race), running = race.state === 'run';
+    const g = this.game, T = this.T, L = T.length, B = RIVAL.band, me = this.meOf ? this.meOf() : this.mine(race), running = race.state === 'run'; // (meOf: the haunt mode's, with no rider of yours: haunt.js)
     if (running && this.go0 != null) this.go0 += dt;
     for (const r of this.list) {
       r.cool = Math.max(0, r.cool - dt);

@@ -12,7 +12,7 @@
 // ---------------------------------------------------------------------------------------
 
 const clock = (s) => { const m = Math.floor(s / 60), r = s - m * 60; return `${m}:${r < 10 ? '0' : ''}${r.toFixed(2)}`; };
-const TRACKS = { sun: 'the Sun Circuit', gorge: 'the Gorge Run', coaster: 'the Coaster' }; // (working names: Espada's)
+const TRACKS = { sun: 'the Sun Circuit', gorge: 'the Gorge Run', coaster: 'the Coaster', made: 'your track' }; // (working names: Espada's)
 const ORD = (n) => `${n}${n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th'}`;
 const CUP_NAMES = { clay: 'the Clay Cup', sibling: 'the Sibling Cup' };
 const FAILS = { flare: 'You flared: the test asked for none.', snakes: 'Not enough snaking carves.', grind: 'Not enough rail ground.', trick: 'No spin landed square.', pool: 'Your pool ran too low.', lane: 'You never rode the recharge strip.', slow: 'Slower than bronze.', bail: 'You bailed.', bump: 'You touched a rival.', wall: 'You hit a wall.', land: 'You landed hard.' };
