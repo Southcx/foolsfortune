@@ -71,7 +71,7 @@ export class TurnCard {
   upright() {
     const g = this.game, B = document.body.classList, ov = document.getElementById('overlay');
     return !!(g.title?.active || g.codex?.open || g.indexMenu?.open || g.cartography?.open || g.pneukaUI?.open || g.shopUI?.open || g.qais?.open
-      || g.kilnUI?.open || g.dialogue?.open || g.reprogram?.open || g.sealPicker?.isOpen || g.log?.typing || (ov && ov.style.display !== 'none')
+      || g.kilnUI?.open || g.dialogue?.open || g.reprogram?.open || g.sealPicker?.isOpen || g.settingsWindow?.isOpen || g.log?.typing || (ov && ov.style.display !== 'none')
       || g.god?.active || g.godhand?.active || g.realm?.active || g.duel?.active || B.contains('bztable-seated'));
   }
 

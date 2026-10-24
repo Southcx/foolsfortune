@@ -294,6 +294,10 @@ export class SightLook {
     this.build();
     this.slot = S.add(this.frame, { anchor: 'tr', x: 0, y: 0, z: 0, update: (dt, slot) => this.update(dt, slot) });
     game.events?.on?.('place.enter', (e) => { if (e?.room) { this.room = e.room; this.layer = e.layer || ''; this.platesDirty = true; } });
+    // the Spirit Garden is entered at a Shrine, not through place.enter: the plate says the garden (your Inner Realm's name once given), and the room again on leaving
+    const garden = () => { if (!this.away) this.away = { room: this.room, layer: this.layer }; this.room = game.realm?.name || 'Spirit Garden'; this.layer = ''; this.platesDirty = true; };
+    game.events?.on?.('garden.enter', garden); game.events?.on?.('realm.name', () => { if (this.away) garden(); });
+    game.events?.on?.('garden.leave', () => { if (this.away) { ({ room: this.room, layer: this.layer } = this.away); this.away = null; this.platesDirty = true; } });
     const fonts = ['600 14px Cinzel', '14px DotGothic16', "14px 'Jersey 15'"];
     Promise.all(fonts.map((f) => document.fonts?.load?.(f).catch(() => null))).then(() => { this.platesDirty = true; this.themeId = null; });
   }

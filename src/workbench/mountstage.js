@@ -29,7 +29,7 @@ export function mountStage(game) {
   const sea = new CrudeSea({ env, size: 420, cells: 120, y: 0 }); sea.set({ calm: 0.75 }); root.add(sea.mesh);
   const plank = new THREE.MeshStandardMaterial({ color: 0x8a6a48, roughness: 0.9 });
   const moored = HULLS.map((H) => {
-    const s = shipLook(H.id, { env }); s.polarity(COLOR[H.feel]); s.group.position.set(H.x, 0, 0); root.add(s.group);
+    const s = shipLook(H.id, { env }); s.feeling(COLOR[H.feel]); s.group.position.set(H.x, 0, 0); root.add(s.group);
     const half = (s.beam ?? 2.4) / 2, jx = H.x - (half + 1.6 + 1.6), jetty = new THREE.Mesh(new THREE.BoxGeometry(3.2, 0.3, 34), plank); // (alongside on its left, as the mooring lays it: 1.6 m off the jetty's side)
     jetty.position.set(jx, DECK - 0.15, (s.length ?? 7) * 0.32 - 17); root.add(jetty); // (its end a third of the hull ahead of the hull's middle, as at the pier)
     const P = new MountPreview(); root.add(P.mesh);

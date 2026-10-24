@@ -40,7 +40,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { cardTpl, dieTpl, dieRest, chipTpl, tileTpl, cupTpl, PIECE, tierScale } from './bazaarpieces.js';
-import { cardIndex, CARD_BACK } from './bazaarfaces.js';
+import { cardIndex, CARD_BACK, ARCANA_BACK } from './bazaarfaces.js';
 import { seatColour } from './seatlook.js';
 import { selectable } from '../progress/casino/coach/index.js';
 import { handIds } from '../progress/casino/coach/querent.js';
@@ -153,11 +153,11 @@ function querent(out, S, V, P, R, ctx, T) {
         put(out, { id: `oh:${q}:${i}`, tpl: cardTpl(c ? cardIndex(c) : CARD_BACK, sw, sh), p: [hx, 0.004 + i * 0.002, hz], q: c ? UP(a) : DOWN(a + Math.PI), act: targetOf(q), from: [hx * 1.3, 0.3, hz * 1.3] }, { tier: 'S', role: 'seats' });
       }
     }
-    const ids = q === 0 ? V.mine : Array(Q.arcana).fill(CARD_BACK), mine = C?.extra?.arcana || [];
+    const ids = q === 0 ? V.mine : Array(Q.arcana).fill(ARCANA_BACK), mine = C?.extra?.arcana || [];
     ids.forEach((id, i) => {
       const [ax, az] = q === 0 ? [ARCANA_COLUMN[0], ARCANA_COLUMN[1] - i * ARCANA_COLUMN[2]] : seatAt(q, n, 1.25, -0.75 - i * 0.05), tier = q === 0 ? 'M' : 'S', [aw, ah] = cardSize(tier);
-      put(out, { id: `arc:${q}:${i}`, tpl: cardTpl(id === CARD_BACK ? CARD_BACK : id, aw, ah), p: [ax, 0.004 + i * 0.002, az], q: id === CARD_BACK ? DOWN(a + Math.PI) : UP(), act: q ? targetOf(q) : null },
-        { tier, role: 'seats', owner: q, tip: id === CARD_BACK ? { label: `${T.names[q]}'S MAJOR ARCANA`, line: 'Power-ups they won when someone stole from them.' } : null });
+      put(out, { id: `arc:${q}:${i}`, tpl: cardTpl(id, aw, ah), p: [ax, 0.004 + i * 0.002, az], q: id === ARCANA_BACK ? DOWN(a + Math.PI) : UP(), act: q ? targetOf(q) : null },
+        { tier, role: 'seats', owner: q, tip: id === ARCANA_BACK ? { label: `${T.names[q]}'S MAJOR ARCANA`, line: 'Power-ups they won when someone stole from them.' } : null });
       if (q === 0 && mine[i]) anchor(out, `arcana:${i}`, ax + aw / 2 + 0.03, 0.01, az, { kind: 'arcana', text: mine[i].name, sub: mine[i].does });
     });
   }

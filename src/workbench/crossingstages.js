@@ -50,7 +50,7 @@ export function crossingStage(id, game) {
   dome.frustumCulled = false; dome.renderOrder = -10; root.add(dome);
   const sea = new CrudeSea({ env, size: 300, cells: 120, y: 0 }); root.add(sea.mesh);
   // the ship: the sloop at half its sea size, its glow the feeling's
-  const ship = new Sloop({ env }); ship.group.scale.setScalar(0.45); ship.polarity(COLOR.wonder); root.add(ship.group);
+  const ship = new Sloop({ env }); ship.group.scale.setScalar(0.45); ship.feeling(COLOR.wonder); root.add(ship.group);
   // above: the False Light at anchor (its keel under the crude), three monoliths of labradorite standing out of it, wired in the Mind's line
   const brig = new BrigLook({ env }); brig.group.scale.setScalar(0.6); brig.group.position.set(15, 0, 34); brig.group.rotation.y = 0.25; root.add(brig.group); warpObject(brig.group);
   const stone = warpMaterial(new THREE.MeshStandardMaterial({ color: 0x0d0b13, roughness: 0.3, metalness: 0.5, envMap: env, envMapIntensity: 0.6 }));

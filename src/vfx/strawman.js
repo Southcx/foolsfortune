@@ -18,7 +18,7 @@
 //   THE MOVES  it fights back without a skeleton (vfx/strawmanmoves.js: the table, the keys, the numbers): the rock on its ball, the
 //               sleeves on their shoulders, the sack a beat behind on its neck, the hat nodding on its base, and a turn about the ball
 //
-//   const S = new StrawmanModel()   scene.add(S.group)   S.hit(point, dir, power = 1)   S.update(dt)   S.dispose()   (dt: sim seconds,
+//   const S = new StrawmanModel()   scene.add(S.group)   S.hit(point, dir, power = 1)   S.flinch() (a blow's white flash)   S.update(dt)   S.dispose()   (dt: sim seconds,
 //   the clock the windups count in: creatures.js)
 //   rockStep(a, av, dt, k?, damp?)   ROCK   (the roly-poly's spring on its ball, one step: Strawman's, and the status bench's roly-polies')
 //   S.ring(point) -> 0 | 1 | 2 | 3   (which ring of the target a point is on: 1 the bull, 0 off it)   S.height (2.45 m)
@@ -133,7 +133,8 @@ export class StrawmanModel {
     this.bodyMat = M(std(0xffffff, { map: sackTexture({ target: true }), emissive: 0x000000 }));
     const body = new THREE.Mesh(new THREE.LatheGeometry(prof, 28), this.bodyMat); body.rotation.y = Math.PI; body.scale.set(1, 1, 0.85); sack.add(body); // (the lathe's u 0.5 is at -z: turned, the target faces +z, the front)
     this.body = body;
-    const head = new THREE.Mesh(new THREE.SphereGeometry(0.23, 24, 16), M(std(0xffffff, { map: sackTexture({ face: true }) })));
+    this.headMat = M(std(0xffffff, { map: sackTexture({ face: true }) }));
+    const head = new THREE.Mesh(new THREE.SphereGeometry(0.23, 24, 16), this.headMat);
     head.position.set(0.03, 0.24, 0.04); head.scale.set(1, 0.92, 0.9); head.rotation.set(0.05, -Math.PI / 2, -0.12); sack.add(head); this.head = head;
     // the cord and the heart
     const cord = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.008, 6, 24), M(std(0x1c1418))); cord.rotation.x = Math.PI / 2 - 0.35; cord.position.set(0, 0.0, 0.03); sack.add(cord);
@@ -152,7 +153,7 @@ export class StrawmanModel {
     this.height = 2.45;
     // the rock: two angles (x, z) on a spring round the ball; the sack's swing: two more, softer, a beat behind
     this.a = new THREE.Vector2(); this.av = new THREE.Vector2(); this.s = new THREE.Vector2(); this.sv = new THREE.Vector2();
-    this.flash = 0;
+    this.flash = 0; this.flinchN = 0; // (the flinch: frames left of a blow's white flash, vfx/blowfeel.js)
     // what strikes, each worn with the parry mark while its blow can be answered: a sleeve, the hat, or both sleeves at once (one mark
     // over the two: a stand-in outside the scene graph whose traverse visits both and whose frame is a point between the shoulders, so
     // the window's glint finds the higher cuff: vfx/parrymark.js reads only traverse, matrixWorld and worldToLocal)
@@ -261,6 +262,10 @@ export class StrawmanModel {
     this.flash = Math.max(0, this.flash - dt * 2.5);
     this.bodyMat.emissive.setRGB(0.9, 0.35, 0.2).multiplyScalar(this.flash * 0.6);
     if (tell > 0) this.bodyMat.emissive.setRGB(1.0, 0.6, 0.1).multiplyScalar(0.35 * tell); // (a move's tell: amber, pulsing, on the whole sack)
+    // the flinch: a blow's white flash, counted in drawn frames (one whole, one half: a frame and a half), never in sim seconds, so a
+    // hit-stop holds the body still without holding the flash on it
+    if (this.flinchN > 0) { const w = this.flinchN >= 2 ? 1 : 0.5; this.bodyMat.emissive.setRGB(1, 0.97, 0.9).multiplyScalar(0.8 * w); this.headMat.emissive.setRGB(1, 0.97, 0.9).multiplyScalar(0.6 * w); this.flinchN--; }
+    else this.headMat.emissive.setRGB(0, 0, 0);
     // the straw: falls, tumbles, and is gone
     const m = new THREE.Matrix4(), q = new THREE.Quaternion(), one = new THREE.Vector3(1, 1, 1);
     let n = 0;
@@ -273,6 +278,9 @@ export class StrawmanModel {
     this.motes = this.motes.filter((s) => s.t <= s.life);
     this.puffs.count = n; this.puffs.instanceMatrix.needsUpdate = true;
   }
+
+  /** A blow's flinch: the sack and the head flash white for a frame and a half (vfx/blowfeel.js asks it, on every blow that lands). */
+  flinch() { this.flinchN = 2; }
 
   /** A move's follow-through: an impulse to the rock's spring (`rock`, and `tip`, a push off upright), the sack's, the hat's. */
   kick(K) {

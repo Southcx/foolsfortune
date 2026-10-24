@@ -274,8 +274,9 @@ export class Workbench {
     this.say(edited ? 'edited here (kept in this browser): REVERT puts the library\'s back' : '');
   }
 
-  overrides() { try { return JSON.parse(localStorage.getItem(STORE) || '{}'); } catch { return {}; } }
-  saveOverrides(o) { try { localStorage.setItem(STORE, JSON.stringify(o)); } catch { /* private window */ } }
+  overrides() { return this.game.save?.keyed(STORE, 'settings').json({}) || {}; }
+  saveOverrides(o) { this.game.save?.keyed(STORE, 'settings').put(o); }
+  cineEdits() { return this.game.save?.keyed(CINE_STORE, 'settings'); } // (the sequences edited here: the save's key, settings scope)
   say(t) { if (this.note) this.note.textContent = t; }
 
   act(a, btn) {
@@ -500,7 +501,7 @@ export class Workbench {
     this.edit.value = JSON.stringify(S, null, 1);
     const len = this.segLen(S);
     this.scrub.max = String(len.toFixed(2));
-    const edited = JSON.parse(localStorage.getItem(CINE_STORE) || '{}')[seq];
+    const edited = (this.cineEdits()?.json({}) || {})[seq];
     this.say(edited ? 'this sequence is edited here (kept in this browser): REVERT puts the file\'s back' : '');
     this.drawPath();
     this.cineStart(seg);
@@ -539,11 +540,11 @@ export class Workbench {
       try {
         const S = JSON.parse(this.edit.value);
         SEQUENCES[this.cseq].segments[this.cseg] = S;
-        const o = JSON.parse(localStorage.getItem(CINE_STORE) || '{}'); o[this.cseq] = SEQUENCES[this.cseq]; localStorage.setItem(CINE_STORE, JSON.stringify(o));
+        const o = this.cineEdits()?.json({}) || {}; o[this.cseq] = SEQUENCES[this.cseq]; this.cineEdits()?.put(o);
         this.say('applied: here and in the world (kept in this browser)'); this.drawPath(); this.scrub.max = String(this.segLen(S).toFixed(2)); this.cineStart(this.cseg); C.playing = true;
       } catch (e) { this.say(`not applied: ${e.message}`); }
     } else if (a === 'revert' && this.cseq) {
-      const o = JSON.parse(localStorage.getItem(CINE_STORE) || '{}'); delete o[this.cseq]; localStorage.setItem(CINE_STORE, JSON.stringify(o));
+      const o = this.cineEdits()?.json({}) || {}; delete o[this.cseq]; this.cineEdits()?.put(o);
       SEQUENCES[this.cseq] = JSON.parse(JSON.stringify(PRISTINE_SEQUENCES[this.cseq]));
       this.loadSegment(`${this.cseq}|${this.cseg}`); this.say('reverted to the file');
     } else if (a === 'copy' && this.cseq) this.copy(`  '${this.cseq}': ${JSON.stringify(SEQUENCES[this.cseq], null, 1)},\n`, 'copied: paste it into cine/sequences.js');

@@ -25,7 +25,7 @@ export function shipStage(game) {
   const dome = new THREE.Mesh(new THREE.SphereGeometry(330, 32, 16), game.sky.domeMaterial(new THREE.Vector3(-0.55, 0.3, -0.78)));
   dome.frustumCulled = false; dome.renderOrder = -10; root.add(dome);
   const sea = new CrudeSea({ env, size: 200, cells: 90, y: 0 }); sea.set({ calm: 0.7 }); root.add(sea.mesh);
-  const ships = SHIP_ORDER.map((id, i) => { const s = shipLook(id, { env }); s.polarity(COLOR[FEEL[id]]); s.group.position.set((i - 2) * 9, 0, (2 - i) * 14); root.add(s.group); return s; });
+  const ships = SHIP_ORDER.map((id, i) => { const s = shipLook(id, { env }); s.feeling(COLOR[FEEL[id]]); s.group.position.set((i - 2) * 9, 0, (2 - i) * 14); root.add(s.group); return s; });
   const was = { fog: S.fog, bg: S.background };
   S.fog = new THREE.FogExp2(new THREE.Color(0xcbb9a6), 0.006); S.background = new THREE.Color(0x2a2230);
   const at = new THREE.Vector3(), look = new THREE.Vector3();

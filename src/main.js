@@ -229,6 +229,7 @@ import { Replay } from './core/replay.js';
 import { reseed, sessionSeed } from './core/rng.js';
 import { Dissolve } from './vfx/dissolve.js';
 import { FigmentScatter } from './vfx/figmentscatter.js';
+import { BlowFeel } from './vfx/blowfeel.js';
 import { DuelView } from './vfx/duelview.js';
 import { SpawnLook } from './vfx/spawnlook.js';
 import { GateRing } from './vfx/gatering.js';
@@ -340,6 +341,7 @@ import { Qais } from './debug/qais/qais.js';
 import { installConsoleRing } from './debug/qais/attach.js';
 import { installReportButton } from './debug/qais/reportbutton.js';
 import { Settings } from './core/settings.js';
+import { SettingsWindow } from './ui/settingswindow.js';
 import { installLayoutKeep } from './core/layoutkeep.js';
 import { MacroBook } from './tools/veritome/mind/macros.js';
 import { trimShadows } from './render/shadowtrim.js';
@@ -394,7 +396,7 @@ async function main() {
   const cloud = new CloudSave(save, { build: BUILD, mode: save.mode }); await cloud.boot(); // (the same save on every device: the published page's private store, 1.5 real s at most before anything loads: core/cloudsave.js)
   loadTuning(save); // (the tuning kept under its own key, through the save: core/config.js)
   const machine = detectMachine(), graphicsTier = applyBootTier(machine); // (the quality tier, read from the machine before anything is built: render/graphics.js)
-  installTheme(); // (the windows' look, the faces, the glove: ui/theme.js)
+  installTheme(save); // (the windows' look, the faces, the glove: ui/theme.js)
   installToon(T.visual.toon ?? 1); // (the soft cel ramp on every lit material, before anything compiles: render/toon.js)
   await fontsReady();
   const renderer = new THREE.WebGLRenderer({ antialias: T.visual.antialias !== false, powerPreference: 'high-performance' });
@@ -610,13 +612,13 @@ async function main() {
   const system = new System(game);
   game.system = system;
   // (every effect, by name: vfx/vfx.js, the looks in vfx/library.js; before the tools, which ask it for their swings)
-  applyVfxOverrides(); // (effects edited in the workbench, kept in this browser)
+  applyVfxOverrides(save); // (effects edited in the workbench, kept in this browser)
   game.vfx = new Vfx(game);
   game.skiffSlipArc = new SkiffSlipArc(game); // (the slip arc under the board while you ride: vfx/skiffsliparc.js)
   game.worldLooks = new WorldLooks(game); // (the World shells' draw and alterations: vfx/worldshells.js; the draw itself tools/psygun/worlddraw.js)
   game.racewayLooks = new RacewayLooks(game); // (the Raceway's sun plates, countdown lamps, gates' marks, carve sparks and ghost: dressed by the Raceway, vfx/racewaylooks.js)
   game.racewayCavern = new RacewayCavern(game); game.racewayFog = new RacewayFog(game); game.racewayPark = new RacewayPark(game); game.racewayProps = new RacewayProps(game); game.racewaySiphons = new RacewaySiphons(game); // (the cavern's stone, crystals, veins and dark, and Dread's fog on the course: vfx/racewaycavern.js, vfx/racewayfog.js)
-  applyCineOverrides(); game.cine = new Cine(game); // (cinematic events as data: cine/sequences.js)
+  applyCineOverrides(save); game.cine = new Cine(game); // (cinematic events as data: cine/sequences.js)
   game.auras = new Auras(game); // (a status, shown round whatever has it: vfx/auras.js)
   game.temper = new Temper(game); // (a creature's mental state and agitation, shown with its body: vfx/temper.js)
   const weapon = new Weapon(game);
@@ -662,7 +664,7 @@ async function main() {
   const codex = new Codex(game);
   game.codex = codex;
   codex.onClose = () => { if (input.enabled && !cursorFree()) input.requestLock(); };
-  const modalOpen = () => !!(game.codex?.open || game.indexMenu?.open || game.cartography?.open || game.pneukaUI?.open || game.shopUI?.open || game.qais?.open || game.hudLayout?.turnHeld); // (and the turn card: an action mode held upright on a phone, ui/turncard.js)
+  const modalOpen = () => !!(game.codex?.open || game.indexMenu?.open || game.cartography?.open || game.pneukaUI?.open || game.shopUI?.open || game.qais?.open || game.settingsWindow?.isOpen || game.hudLayout?.turnHeld); // (and the settings window; and the turn card: an action mode held upright on a phone, ui/turncard.js)
   // Any window or cover at all: a window that pauses, the kiln's, the dialogue box, a seam or the maw wipe under way, a crossing, a
   // reprogramming, the Opening. A window opens only when none is (or to close itself): one window at a time (SWEEPS group 2).
   const windowOpen = () => modalOpen() || !!(game.kilnUI?.open || game.dialogue?.open || game.seam?.busy || game.mawWipe?.active || game.aberrantWipe?.active || game.emocean?.stage.active || game.reprogram?.open || game.lockheartCine?.active);
@@ -808,6 +810,7 @@ async function main() {
     if (group === 'lachryma' || group === '*') { lachryma.baseMax = T.lachryma.max; lachryma.regenRate = T.lachryma.regenRate; lachryma.regenDelay = T.lachryma.regenDelay; }
   };
   game.knobChanged = knobChanged; game.settings = new Settings(game); game.touchLayoutKeep = installLayoutKeep(game); // (the settings window's rows: core/settings.js; the touch layout the layout editor makes, kept in the settings scope: core/layoutkeep.js)
+  game.settingsWindow = new SettingsWindow(game); // (the settings window: its dress, ui/settingswindow.js)
   const gui = buildTuningPanel(knobChanged, {
     copyJSON: () => navigator.clipboard?.writeText(JSON.stringify(T, null, 2)).then(() => game.log.say('system', 'Settings copied to the clipboard.', { key: 'settings.copy', throttle: 1 })),
     resetRoom,
@@ -868,6 +871,7 @@ async function main() {
   game.stun = new Stun(game); // (a mind knocked out of itself, for anything that can be: stun.js)
   game.dissolve = new Dissolve(game); // (a zandatsu's pieces, come undone into Lachryma: vfx/dissolve.js)
   game.spawnLook = new SpawnLook(game); // (how a creature comes in: the island's own rise from the ground, an Egregore or a stray tears in from midair: vfx/spawnlook.js)
+  game.blowFeel = new BlowFeel(game); // (a melee blow's weight, looks only: its sparks, ring, ribbon flare, camera kick, flinch: vfx/blowfeel.js)
   game.figmentScatter = new FigmentScatter(game); // (a Figment's death: snapped, its wire, motes into the air and the ground: vfx/figmentscatter.js)
   game.jellies = new SlipJellies(game, await loader.parseAsync(bytes(jellyB64), ''));
   // (their homes over 45 m from the busker's mat on Grog's pier, a slip jelly's leash and sight together: it was 32, the owner's R9)

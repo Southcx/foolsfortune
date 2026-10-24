@@ -1,3 +1,16 @@
+// ---------------------------------------------------------------------------------------
+// FX: the old one-shot bursts of the game, kept as one class (`game.fx`): a bullet's tracer and muzzle flash, an impact's sparks, dust and
+// decal, a shatter's chips, a shockwave, a beam, a slash, a push wave, a mark's burst, the charge's tick and the big explosion. The
+// particles themselves are the VFX system's now (`game.fx.vfx`, vfx/vfx.js: `add`, `alpha` and `foam` are adapters that keep the old
+// emit's meaning); what stays here is the geometry that is not a particle (tracers, trails, rings, decals, flash lights) and the chips.
+// Its one job: the world's bursts, asked by name from the code that causes them.
+// Prior art: the muzzle flash of crossed star quads, tracer lines and bullet-hole decals every shooter since Quake has used, with
+// shockwave rings and debris chips in the seventh generation's cheap way (additive quads, a few pooled instances).
+//
+//   const fx = new FX(scene)   fx.tracer(from, to)   fx.muzzleFlash(pos, dir)   fx.impact(point, normal, { color, sparks, dust, decal })
+//   fx.shatterBurst(center, size, dir)   fx.shockwave(center, radius)   fx.beam(from, to, power)   fx.explosion(center, radius)
+//   fx.update(dt, camera)   (main.js draws it once a frame)
+// ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { T, PALETTE } from '../core/config.js';
 

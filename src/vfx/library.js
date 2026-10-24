@@ -21,8 +21,12 @@ import { RACEWAY_SIPHON_EFFECTS } from './racewaysiphoneffects.js'; // (the siph
 import { PSYGUN_VARIANT_EFFECTS } from './psygunvarianteffects.js'; // (the psygun variants' flare, pentacle and reveal: tools/psygun/variantplay.js, vfx/flarereveal.js)
 import { PUZZLE_EFFECTS } from './opensea/puzzleeffects.js'; // (the islets' caches dug: the sand thrown up and the find's glint, vfx/opensea/puzzlelooks.js)
 import { ANGLING_EFFECTS } from './anglingeffects.js'; // (the catch leaving the water: tools/sondelass/angling/catchlift.js)
+import { BLOW_FEEL_EFFECTS } from './blowfeeleffects.js'; // (a melee blow's weight, and Strawman's straw: vfx/blowfeel.js plays them)
 const L = (o) => o; // (a layer: only for readability)
 const GLAZES = [0x2f6db5, 0x4f9a7a, 0xe0b030, 0xc84a3a, 0xf3efe6, 0x6a4a9a, 0x2a8ab0]; // (the glazes' own colours: the Hailstorm's shards)
+
+// (each damage type's colour, for a look that wears it beside its own motif: a blow's ring, vfx/blowfeel.js; the damage looks' own)
+export const DAMAGE_TINT = { impact: 0xf2e6c8, ego: 0xa8c0ff, influence: 0xf2a0b8, illusion: 0x38c78c, delirium: 0xd04ac0 };
 
 export const LIBRARY = {
   // =============================================================================================== HITS (the start of combat's)
@@ -773,4 +777,5 @@ export const LIBRARY = {
   ...PSYGUN_VARIANT_EFFECTS,
   ...PUZZLE_EFFECTS,
   ...ANGLING_EFFECTS,
+  ...BLOW_FEEL_EFFECTS,
 };

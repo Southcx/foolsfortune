@@ -129,7 +129,9 @@ export class Cutlass {
       trail: this.trail, segment: (a, b) => this.tool.model.bladeSegment(a, b), ghosts: this.ghosts,
       catalogue: SONDELASS_MOVES, loadout: () => this.loadout?.get() || SONDELASS_LOADOUT, wraps: { stinger: (row, { paid }) => this.stinger(paid) }, // (the loadout chosen, checked against the catalogue and what is open; the default where none is: MELEE-LOADOUT.md phase 3)
       drawn: () => this.tool.drawT > 0.02 && this.tool.form === 'cutlass', onBlinkCancel: () => this.blinkCancel(),
+      onHit: (kind, ent, at, dir, h, c) => g.blowFeel?.land('cutlass', kind, ent, at, dir, h, c, this.feel), // (a blow's weight, looks only: vfx/blowfeel.js)
     });
+    this.feel = { swing: this.trail, segment: (a, b) => this.tool.model.bladeSegment(a, b) };
     this.blade = new BladeMode(this);
     this.rmb = null; // an RMB press waiting for the free way: { want: 'tap' | 'forward' | 'back' | 'iaido', t }
     this.iai = null; this.iaiW = 0; // the iaido's charge ({ t: real s held, full }), and its pose's weight
@@ -321,6 +323,7 @@ export class Cutlass {
       this.stHit.add(c); struck++;
       // (its row's 3.0 a strike, not 2.2x it: ruled in MELEE-LOADOUT-EARNING.md, the stinger is a gap-closer that should not out-damage the string)
       g.creatures.strike(c, _p.clone(), dir.clone(), STING.power, 'sliced'); this.moves.markBlow(this.stBlow, 'creature', c);
+      g.blowFeel?.sting(c, _p, dir, this.trail); // (the pierce's look: vfx/blowfeel.js)
       g.events?.emit('cut.hit', { what: c.kind, combo: 'stinger' });
     }
     // (a thrust goes THROUGH: one light check at its first contact, never a stop per thing pierced, which would stall the lunge)
