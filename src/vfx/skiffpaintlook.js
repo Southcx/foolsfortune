@@ -24,6 +24,7 @@
 //               from the boat's left, as a stamp through cloth reads backwards from the other side.
 //     PENNANT   the pennant's strip recoloured (gold: the house's gold line; or a feeling's colour), its band paled in it; its length
 //               the pennant chain's links set further apart (pose, after the clip and the code's ripple: boat.js own).
+//   THE HULL    a hull painting (`hull`: vfx/skiffhulls.js), the hull's map swapped through the board's setHullPainting.
 //   THE TRAIL   the wake on sand (world/ground/wake.js) in its own colour, Lachryma's (the house liquid's tint with the film walking
 //               through it, as the boost's glow walks: boat.js SKIFF_BOOST_GLOW), or the hull glaze's colour; set on the wake's colour
 //               each frame (its lines, band and bubbles).
@@ -49,6 +50,7 @@ import { FIN_PATTERN_GLSL } from './finish.js';
 import { drawSealFace } from './sealface.js';
 import { featTint } from './oxidation.js';
 import { LACHRYMA_TINT } from './racewayeffects.js';
+import { wearHull } from './skiffhulls.js';
 
 /** The numbers. The cloth's painting in its UVs (glTF's, v down): the sail is u 0.015..0.735 (luff to leech), v 0.02..0.98 (yard to
  *  boom), the pennant's strip u past `penU`; `metres` the sail's metres a unit of u and of v (2.05 m of boom over 0.74 u, 1.91 m of hoist
@@ -162,6 +164,7 @@ export class SkiffPaintLook {
   /** The choices made into the cloth, the pennant's length and the trail's kind: at load and on every `skiff.paint`. */
   apply() {
     const W = this.worn, g = this.game;
+    wearHull(this.skiff, W.hull); // (a hull painting: vfx/skiffhulls.js; the owner's when none is worn or Dovina's catalogue lacks the kind)
     this.pen = W.length === 'long' ? L.pennant.long : 1;
     this.trail = W.trail || 'own'; this.ribbonOn = W.ribbon === 'on';
     // the dye
