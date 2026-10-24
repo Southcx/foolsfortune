@@ -28,3 +28,7 @@ Sun ring, Mercury little finger, Venus the thumb's root, Mars the palm's heart, 
 puts every domain on the god hand, with its knucklebone. LORE.md 4 has the table and two proposals for you if you want them as rules:
 the four great lines as four ledger readings (life, head, heart, fate), and the god hand's shape by the suit you lean on (palmistry's
 four elemental hands). The Sun and Moon rows still wait on the Divination and Possession swap.
+
+**Ruled 2026-10-24:** Divination is the Sun's (the Sun card, rules Leo: Strength), Possession the Moon's (the High Priestess, rules
+Cancer: the Chariot). CLASSES.md 5's table is yours to swap. The palm lines can't be drawn on the god hand's palm (it is an opening):
+if you take them up, round the opening's rim or in the Codex.

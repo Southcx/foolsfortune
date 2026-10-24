@@ -227,20 +227,22 @@ Chaos digs it up cheap and Law buys it dear; the hauler lives in between. Letty'
       | --- | --- | --- | --- | --- |
       | the index finger | Jupiter | Jupiter | Ouranurgy | d10, Cups |
       | the middle finger | Saturn | Saturn | Alteration | d8, Swords |
-      | the ring finger | Apollo | the Sun | Possession (Divination if the swap is ruled) | d6, Pentacles |
+      | the ring finger | Apollo | the Sun | Divination | d6, Pentacles |
       | the little finger | Mercury | Mercury | Spellscription | d4, Wands |
       | the thumb's root | Venus | Venus | Manifestation | d12, the zodiac |
       | the palm's heart | Mars (the plain and the two mounts) | Mars | Psychokinesis | d20, the Majors |
-      | the palm's outer edge | Luna | the Moon | Divination (Possession if the swap is ruled) | d20, the Majors |
+      | the palm's outer edge | Luna | the Moon | Possession | d20, the Majors |
 
-      The swap (Divination to the Sun, Possession to the Moon) is Espada's proposal, still the owner's to rule; the hand reads true
-      either way. The Moon's mount on the outer palm is where palmists read the imagination and the unconscious, the Emocean's own
+      **Divination is the Sun's, Possession the Moon's** (ruled by the owner, 2026-10-24): Helios who sees all and Apollo's oracle;
+      the lunatic, the moonstruck, the High Priestess's veil, and the Chariot (Cancer, the Moon's sign) driving beasts not its own.
+      The Moon's mount on the outer palm is where palmists read the imagination and the unconscious, the Emocean's own
       country.
     - *Proposals, Dovina's to make rules of if wanted:*
       - **The four great lines as four readings of your play**, read from the ledger as the Assay is: the life line (how far you have
         gone: the explored area, the crossings), the head line (what you know: the neuralese glossed, the bestiary), the heart line (the
-        feelings awakened, the bonds in the garden), the fate line (Saturn's: the achievements). Drawn on the god hand's palm, deepening
-        as they grow.
+        feelings awakened, the bonds in the garden), the fate line (Saturn's: the achievements). The god hand's palm is an opening (where
+        the palm die sits), so the lines cannot be drawn across it (the owner, 2026-10-24): they would run round the opening's rim, or be
+        read in the Codex instead. Still a proposal.
       - **The hand's element**, palmistry's four hand shapes (earth square and short-fingered, air square and long, fire long-palmed
         and short, water long and long): the god hand takes the shape of the suit you lean on most.
   - **The name.** *Pneuka* is *pneuma*, breath: breath's stones in the breath's jar. "Stone" is three things at once: the gemstone (the
