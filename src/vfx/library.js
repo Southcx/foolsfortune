@@ -20,6 +20,7 @@ import { SKIFF_BOARD_EFFECTS } from './skiffboardeffects.js'; // (the board's st
 import { RACEWAY_SIPHON_EFFECTS } from './racewaysiphoneffects.js'; // (the siphon arches' draw, drink and gulp: vfx/racewaysiphons.js plays them)
 import { PSYGUN_VARIANT_EFFECTS } from './psygunvarianteffects.js'; // (the psygun variants' flare, pentacle and reveal: tools/psygun/variantplay.js, vfx/flarereveal.js)
 import { PUZZLE_EFFECTS } from './opensea/puzzleeffects.js'; // (the islets' caches dug: the sand thrown up and the find's glint, vfx/opensea/puzzlelooks.js)
+import { ANGLING_EFFECTS } from './anglingeffects.js'; // (the catch leaving the water: tools/sondelass/angling/catchlift.js)
 const L = (o) => o; // (a layer: only for readability)
 const GLAZES = [0x2f6db5, 0x4f9a7a, 0xe0b030, 0xc84a3a, 0xf3efe6, 0x6a4a9a, 0x2a8ab0]; // (the glazes' own colours: the Hailstorm's shards)
 
@@ -771,4 +772,5 @@ export const LIBRARY = {
   ...RACEWAY_SIPHON_EFFECTS,
   ...PSYGUN_VARIANT_EFFECTS,
   ...PUZZLE_EFFECTS,
+  ...ANGLING_EFFECTS,
 };

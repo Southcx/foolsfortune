@@ -286,6 +286,7 @@ export class Sondelass extends Tech {
     }
     // the rod out and nothing cast: the free hand holds what is tied on (luremodels.js), the way an angler holds the lure before a cast
     this.heldLurePose(ch, phase === 'held' && this.form === 'rod' && !this.angler?.lure?.active && this.leftW < 0.3 && !this.P.fp);
+    if (this.angler?.lift?.active) this.angler.lift.hands(ch); // (the catch held up in both hands, the rod let go: angling/catchlift.js)
     // in first person: in the view, swung along the stroke's arc (tools/viewmodel.js)
     if (this.P.fp && drawT > 0.001) fpToolMatrix(this.game.camera, { draw: Math.min(1, drawT / 0.6), ...(this.form === 'cutlass' ? this.cutlass.fpArc() : this.angler?.casting ? { arc: 'raise', u: 0.6 } : null) }, M);
     // place the tool
