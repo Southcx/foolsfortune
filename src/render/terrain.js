@@ -20,6 +20,7 @@
 //   const t = new ChunkTerrain({ height: (x, z) => y, half: 520, step: 2.5, chunk: 32, outer: 900, outerStep: 20, material })
 //   t.mesh              (in the field's local frame: place it)          t.update(camLocalX, camLocalZ)
 //   t.heights, t.n      the samples, column-major (x rows), for a physics height field of (t.n - 1) x (t.n - 1) cells over 2 * half
+//   t.setRegion(i0, j0, n, hs)   n x n samples rewritten from (i0, j0), drawn and sent to the card (the made track's build lot)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
@@ -146,5 +147,32 @@ export class ChunkTerrain {
     this.geometry.setDrawRange(0, n);
     this.triangles = n / 3;
     return true;
+  }
+
+  /** Heights `hs` (n x n, column-major as `heights`: i along x) written from sample (i0, j0): the kept samples, the drawn vertices (a
+   *  chunk edge's skirt foot following, as deep as it hung), the normals one sample round, and only those rows sent to the card. The
+   *  ranges add to any already pending (the renderer clears them once uploaded), so two writes in one frame both land. (Dovina's made
+   *  track writes the build lot through it: world/raceway/madetrack.js.) */
+  setRegion(i0, j0, n, hs) {
+    const N = this.n, C = this.chunk, H = this.heights, pos = this.geometry.attributes.position, nor = this.geometry.attributes.normal;
+    const P = pos.array, Nn = nor.array, sk = this.skirtAt, edge = (I, J) => I % C === 0 || J % C === 0;
+    for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) {
+      const I = i0 + i, J = j0 + j, y = hs[i * n + j], o = (J * N + I) * 3, was = P[o + 1];
+      H[I * N + J] = y; P[o + 1] = y;
+      if (edge(I, J)) { const s = sk(I, J) * 3 + 1; P[s] = y - (was - P[s]); }
+    }
+    const Hc = (I, J) => H[Math.min(N - 1, Math.max(0, I)) * N + Math.min(N - 1, Math.max(0, J))];
+    const Ia = Math.max(0, i0 - 1), Ib = Math.min(N - 1, i0 + n), Ja = Math.max(0, j0 - 1), Jb = Math.min(N - 1, j0 + n);
+    for (let J = Ja; J <= Jb; J++) for (let I = Ia; I <= Ib; I++) {
+      const nx = Hc(I - 1, J) - Hc(I + 1, J), nz = Hc(I, J - 1) - Hc(I, J + 1), ny = 2 * this.step, l = Math.hypot(nx, ny, nz), o = (J * N + I) * 3;
+      Nn[o] = nx / l; Nn[o + 1] = ny / l; Nn[o + 2] = nz / l;
+      if (edge(I, J)) Nn.set([Nn[o], Nn[o + 1], Nn[o + 2]], sk(I, J) * 3);
+    }
+    // the skirt feet are numbered in row order: one run from the first chunk edge at or before (Ia, Ja) to the last at or after (Ib, Jb)
+    const s0 = sk(Ia - (Ia % C), Ja), s1 = sk(Math.min(N - 1, Ib + ((C - (Ib % C)) % C)), Jb);
+    for (const A of [pos, nor]) {
+      for (let J = Ja; J <= Jb; J++) A.addUpdateRange((J * N + Ia) * 3, (Ib - Ia + 1) * 3);
+      A.addUpdateRange(s0 * 3, (s1 - s0 + 1) * 3); A.needsUpdate = true;
+    }
   }
 }

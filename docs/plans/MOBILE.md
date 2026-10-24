@@ -418,7 +418,7 @@ Veritome's keeps no things, the skiff's teaches the carve, the grabs, the banked
 1. **Recovery is built** (`audio/core.js recover()`): a hidden page suspends the audio context and a visible one resumes it; any stop
    (iOS's `interrupted`, a suspend nobody asked for) resumes after 0.25 real s, or on the next touch, click or key if the browser wants a
    gesture; the schedulers run on the context's clock, so a suspended stretch is skipped, never piled up (casebook
-   NEW:audio-context-recovers; headless only, not yet on a phone).
+   289; headless only, not yet on a phone).
 2. **Haptics are Wanda's** (`audio/haptics.js`, off the bus, 120 ms between buzzes): a perfect pop [12]; a parry [10, 40, 14]; a combo
    banked [12, 50, 28]; a hit taken (a crack, not your own) [36]; the shield broken [30, 60, 30]; shattered [80, 40, 160]; the hull struck
    at sea [40]; a line snapped [24]; a fish's lift [16, 60, 30] (a record or legend [16, 60, 16, 60, 40]). Off with `T.audio.haptics =

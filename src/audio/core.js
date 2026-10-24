@@ -6,6 +6,8 @@
 //   sfx.main (the music's, the interface's and the voices' way out)   sfx.master (the world's effects')   sfx.out(gain, verb, ui)   sfx.verbSendMain   sfx.duckEffects(to = 0.35, fade = 0.4) / sfx.duckEffects(1) to restore   sfx.setFog(k)   sfx.setUnder(on)
 import { T } from '../core/config.js';
 
+const GESTURES = ['pointerdown', 'touchend', 'keydown']; // (what may wake a context the browser holds until a gesture)
+
 export class Sfx {
   constructor() {
     this.ctx = null;
@@ -40,6 +42,25 @@ export class Sfx {
     this.noiseBuf = this.makeNoise(2);
     // the held loops (the skiff's run, its grind, wet sand, a shell's field): one bus, silenced while a menu is over the game
     this.loopBus = this.ctx.createGain(); this.loopBus.connect(this.master);
+    this.recover();
+  }
+
+  /** The context kept alive on a phone (docs/plans/MOBILE.md 6.5): a hidden tab suspends it (its timers are throttled and nothing it
+   *  schedules would land in time) and a visible one resumes it; an iOS interruption (a call, Siri: state 'interrupted', or 'suspended'
+   *  with nobody asking) is resumed when it ends, and if the browser wants a gesture first, on the next touch, click or key. The
+   *  schedulers' clock is the context's, so a suspended stretch is simply skipped: nothing piles up. */
+  recover() {
+    if (typeof document === 'undefined' || this._recover) return;
+    const c = this.ctx, R = this._recover = { hidden: false, armed: false };
+    const resume = () => { if (!R.hidden && c.state !== 'running' && c.state !== 'closed') c.resume().catch(() => {}).then(() => { if (c.state !== 'running') arm(); }); };
+    const onGesture = () => { R.armed = false; for (const k of GESTURES) window.removeEventListener(k, onGesture, true); resume(); };
+    const arm = () => { if (R.armed) return; R.armed = true; for (const k of GESTURES) window.addEventListener(k, onGesture, true); };
+    document.addEventListener('visibilitychange', () => {
+      R.hidden = document.hidden;
+      if (R.hidden) { if (c.state === 'running') c.suspend().catch(() => {}); } else resume();
+    });
+    window.addEventListener('pageshow', () => { R.hidden = document.hidden; resume(); });
+    c.addEventListener?.('statechange', () => { if (!R.hidden && c.state !== 'running') setTimeout(resume, 250); });
   }
 
   /** A menu is over the game (the ambience asks, audio/ambience.js menusUp): every held loop falls silent until it is gone. A loop that is
