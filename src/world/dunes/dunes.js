@@ -371,7 +371,7 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
     mergeStatic(this.group);
   }
 
-  /** A ruin taken apart (breakables.js removeAny): out of the batch, out of the world. */
+  /** A ruin taken apart (world/props/potslicing.js removeAny): out of the batch, out of the world. */
   /** A gust: the wind swings round to blow toward `dir` (Vector2, x/z) for `dur` seconds, stronger, then back (the Galestorm). */
   gust(dir, dur = 10) { this.gustA = Math.atan2(dir.y, dir.x); this.gustDur = dur; this.gustT = dur; }
 

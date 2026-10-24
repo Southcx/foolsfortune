@@ -26,7 +26,7 @@ const RISE = 0.15; // (of the view's height: the reading lifted clear of the Box
 const AT = { pos: [0, 2.4, 6.6], look: [0, 1.0, 0], from: [0, -1.9, 0.6], fromLook: [0, -4.5, 0] };
 const DEG = Math.PI / 180, OFF = [AT.pos[0] - AT.look[0], AT.pos[1] - AT.look[1], AT.pos[2] - AT.look[2]];
 /** The arrow keys orbit the camera round the Courier for a shot (docs/plans/PHOTO-MODE.md step 1, the world's own rates and ease,
- *  courier/player.js ARROWS; the setting visual.arrowCamera): left and right all the way round, up and down kept between just under
+ *  courier/player/view.js ARROWS; the setting visual.arrowCamera): left and right all the way round, up and down kept between just under
  *  the level of the heart (the cloth stays under their feet) and high over them. */
 const ARROWS = { yaw: 90 * DEG, pitch: 60 * DEG, ease: 0.15, low: -8 * DEG, high: 70 * DEG, r: Math.hypot(...OFF), elev: Math.atan2(OFF[1], Math.hypot(OFF[0], OFF[2])) };
 const smooth = (x) => { x = THREE.MathUtils.clamp(x, 0, 1); return x * x * (3 - 2 * x); };

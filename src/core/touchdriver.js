@@ -13,6 +13,9 @@
 //                   shutter, two fingers the wheel where a tool reads it (core/touchtools.js).
 //   THE TILT        with gyro steering on, the Solar Skiff steered by turning the phone, fed to the stick as a sideways push where no thumb
 //                   pushes it (core/gyrosteer.js); a lifted touch is the tap iOS asks motion access in.
+//   THE LANES       while the rhythm mode plays, the screen is its ten pads, five a hand, each finger its lane's until it lifts, judged on
+//                   the touch's own moment (core/touchlanes.js). `screenTaken()` says the whole screen is a tool's (the lanes, Celestial
+//                   mode's paper), so the touch controls' stick stands aside.
 // Every touch is the driver's alone (`preventDefault`): no page scroll, no zoom, no mouse echo after a tap (core/input.js also refuses
 // one within 0.8 real s of a touch).
 //
@@ -20,12 +23,13 @@
 // camera drag; Pointer Events' and Touch Events' identifiers for multitouch; VirtualKeys (coop/sibling.js) driving by key codes.
 //
 //   game.touch = new TouchDriver(game, input, actions, el)   .update()   .bind(id, el)   .control(id, on)   .release()   .active   .tools   .gyro
-//   .state() -> { move, look, cursor } (the move area's origin and thumb, for the stick's look: Calissa's; the cursor's mode)   TOUCH
+//   .state() -> { move, look, cursor } (the move area's origin and thumb, for the stick's look: Calissa's; the cursor's mode)   .screenTaken()   .lanes   TOUCH
 // ---------------------------------------------------------------------------------------
 import { StickMove, STICK } from './stickmove.js';
 import { TouchCursor } from './touchcursor.js';
 import { TouchTools } from './touchtools.js';
 import { GyroSteer } from './gyrosteer.js';
+import { TouchLanes } from './touchlanes.js';
 import { skiffTouchKeys } from '../progress/skifftouch.js';
 
 /** r: px of drag for a full push; follow: past this many r the origin is dragged along; look: camera px per px of drag. */
@@ -38,6 +42,7 @@ export class TouchDriver {
     this.move = null; this.look = null; this.look2 = null; this.cursor = new TouchCursor(game, input);
     this.tools = new TouchTools(game, input, actions, TOUCH.look); // (a second look finger, `look2`, is the wheel's pinch where a tool reads it)
     this.gyro = new GyroSteer(game, input); this.tilted = false; // (the tilt as the skiff's steer, a setting: core/gyrosteer.js)
+    this.lanes = new TouchLanes(game, actions); // (the rhythm mode's ten pads: core/touchlanes.js)
     this.active = false; // (a touch seen this session: the shell's touch mode follows `input.device`)
     const opt = { passive: false };
     el.addEventListener('touchstart', (e) => this.start(e), opt);
@@ -52,6 +57,7 @@ export class TouchDriver {
     if (!this.input.enabled) return;
     for (const t of e.changedTouches) {
       const at = { id: t.identifier, x0: t.clientX, y0: t.clientY, x: t.clientX, y: t.clientY };
+      if (this.lanes.down(t, e.timeStamp)) continue; // (the rhythm mode's pads: the whole screen, judged on this touch's own moment)
       if (this.game.cursorFree?.()) { this.cursor.down(t); continue; }
       if (this.tools.paper && !this.look) { this.look = at; this.tools.lookDown(at); continue; } // (Celestial mode's paper: the whole screen is drawn on)
       if (t.clientX < innerWidth / 2) { if (!this.move) this.move = at; }
@@ -78,6 +84,7 @@ export class TouchDriver {
   end(e) {
     e.preventDefault();
     for (const t of e.changedTouches) {
+      if (this.lanes.up(t)) continue;
       if (this.cursor.has(t.identifier)) this.cursor.up(t);
       else if (this.move?.id === t.identifier) { this.move = null; this.stick.clear(); }
       else if (this.look?.id === t.identifier) { this.tools.lookUp(this.look); this.look = null; if (this.look2) { this.look2 = null; this.tools.pinch(null); } }
@@ -90,6 +97,7 @@ export class TouchDriver {
    *  owns the move area (ui/touch/stick.js: it reports x, y, outer and carve) and is read instead of this driver's own. */
   update() {
     if (this.cursor.busy) { if (this.game.cursorFree?.()) this.cursor.update(); else this.cursor.release(); } // (the pointer no longer free under a finger: it lets go; a press earned after the lift is still made)
+    if (!this.lanes.active) this.lanes.release(); // (the song ended under a finger: its lane let go)
     this.tools.update();
     const UI = this.game.touchUI, S = UI?.on ? UI.stick : null;
     let x = 0, y = 0, held = false;
@@ -126,8 +134,10 @@ export class TouchDriver {
   control(id, on) { this.seen(); return this.tools.tile(id, on) ? null : this.actions.press('touch', id, on); } // (a tool's own first: SPECIAL's swipe)
   /** Everything let go (the page hidden, the window lost its focus). */
   release() {
-    this.cursor.release(); this.tools.release();
+    this.cursor.release(); this.tools.release(); this.lanes.release();
     this.move = null; this.look = null; this.look2 = null; this.stick.clear(); this.skiffKeys(null); this.tilted = false;
   }
   state() { return { move: this.move && { ...this.move }, look: !!this.look, cursor: this.cursor.state() }; }
+  /** Whether the whole screen is a tool's now (the rhythm mode's pads, Celestial mode's paper): the touch controls' stick stands aside. */
+  screenTaken() { return this.lanes.active || !!this.tools.paper; }
 }

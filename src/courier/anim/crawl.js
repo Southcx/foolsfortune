@@ -14,7 +14,7 @@
 //                times their own, the rest cadence; held where they are when the move stops.
 //   THE BODY     while the crawl is on, the gait's feet (the foot IK's planting and locks) and the prowl's head give way to it by its
 //                weight: hands, knees and feet are where the clips put them, on flat ground.
-//   THE CLEARANCE the belly lies 2.2 m long on a capsule 0.27 m in radius (player.js's PRONE_HALF: the body is Petra's), so a wall near
+//   THE CLEARANCE the belly lies 2.2 m long on a capsule 0.27 m in radius (courier/player/capsule.js's PRONE_HALF: the body is Petra's), so a wall near
 //                pokes fingers, shins or toes through it (measured at a plain wall, the capsule's axis 0.32 m off the plane: fingers
 //                0.64 m through crawling straight at it, shins 0.15 m along it, toes 0.92 m turning to face away). 48 rays from the
 //                axis find the surfaces inside CRAWL.outline (the belly's reach about the axis by angle, a convex polygon); each such

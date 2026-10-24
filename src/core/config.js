@@ -239,7 +239,7 @@ export const DEFAULTS = {
     maxChunk: 3,
     shardLife: 14,
     maxShards: 420, // (shards with bodies: the oldest go first)
-    flyR: 0.075, // a shard smaller than this (bounding radius, m) is a chip with no body (breakables.js updateFlyers)
+    flyR: 0.075, // a shard smaller than this (bounding radius, m) is a chip with no body (world/props/potshards.js updateFlyers)
     maxFlyers: 600,
     chips: 18,
     dust: 1.0,
