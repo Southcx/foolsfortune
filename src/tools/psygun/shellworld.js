@@ -9,7 +9,7 @@
 //   Thunderhead its cloud fed by the weather drawn; at the cap, a storm cell (two clouds)
 //   Rift        takes its creature as before; the hole stays a SPRING of liquid Lachryma for a game hour (a source at the cap)
 //   Upfall      the column lifts the ground's loose matter too (sand and the paint it drew, as drops)
-//   Weather Away erosion over a place: things tagged `erodible` (core/tags.js) soften and let you through, closing after a game hour
+//   Weather Away erosion over a place: a ball worn out of the hand's creations and its raised matter (the authored ground never moves)
 //   Bloom       a thicket grows from the drawn Lachryma, and pots in reach are mended in gold
 //   Golem       risen from the matter, its size by the draw
 //   Calm        the weather drawn first; within the draw's reach it is fair for a game hour (a thin patch that takes it all)
@@ -24,7 +24,6 @@
 import * as THREE from 'three';
 import { sfx } from '../../audio/sfx.js';
 import { RAPIER, GROUPS } from '../../core/physics.js';
-import { registered } from '../../core/tags.js';
 import { DRAW, scaledN } from '../../progress/combat/worldshells.js';
 import { WorldDraw, GAME_HOUR } from './worlddraw.js';
 import { LANDS } from './shellpayloads.js';
@@ -33,7 +32,7 @@ import { DEPLOYABLES } from './shelldeployables.js';
 import { SPLIT_CHAIN } from './shellsplitchain.js';
 import { BODIES } from './shellbodies.js';
 import { CASTERS_OWN } from './shellcastersown.js';
-import { shellRand, moveCourier } from './shellkit.js';
+import { shellRand } from './shellkit.js';
 import { foesNear } from './shellpayloads.js';
 
 export const WORLD_IDS = ['glassmaker', 'volcano', 'thunderhead', 'rift', 'upfall', 'weatherAway', 'bloom', 'golem', 'calm'];
@@ -42,11 +41,11 @@ const BASE_FIRES = { glassmaker: SPACETIME.fires.glassmaker, volcano: DEPLOYABLE
 const BASE_LANDS = { rift: SPACETIME.lands.rift, bloom: SPACETIME.lands.bloom, upfall: BODIES.lands.upfall, weatherAway: LANDS.weatherAway };
 
 /** The World alterations' numbers: the glass bridge (its length a share of its size, its rise, its melt at the end, real s), the cone
- *  (radius and height at k 1), Weather Away's reach at k 1 (m), Bloom's mend reach, the storm cell's second cloud's offset (m). */
+ *  (radius and height at k 1), Weather Away's reach and depth at k 1 (m), Bloom's mend reach, the storm cell's second cloud's offset (m). */
 export const WORLD_ALTER = {
   glass: { long: 1.7, wide: 0.7, rise: 0.38, melt: 12, last: GAME_HOUR },
   cone: { r: 3.2, h: 3.4 },
-  erode: { r: 3, last: GAME_HOUR, close: 3 },
+  erode: { r: 1.6, depth: 1.2 },
   bloom: { mend: 6 },
   cell: { offset: 5 },
 };
@@ -95,15 +94,6 @@ function raiseCone(g, at, r, h) {
 function coneBody(g, at, r, h) {
   const m = new THREE.Mesh(new THREE.ConeGeometry(r, h, 14, 1, true).translate(0, h / 2, 0), new THREE.MeshStandardMaterial({ color: 0x8c4a33, roughness: 0.9, side: THREE.DoubleSide }));
   m.position.copy(at); m.userData.zoneFree = true; g.scene.add(m); return m;
-}
-
-/** Anything inside a closing box pushed out to its nearest free side (the rescue, counted: Player.guard's way). */
-function pushOut(g, box) {
-  const P = g.player, p = P?.pos; if (!p || !box.containsPoint(p)) return;
-  const out = [['x', box.min.x - 0.6], ['x', box.max.x + 0.6], ['z', box.min.z - 0.6], ['z', box.max.z + 0.6]];
-  const [ax, v] = out.reduce((a, b) => (Math.abs(p[b[0]] - b[1]) < Math.abs(p[a[0]] - a[1]) ? b : a));
-  moveCourier(g, p.clone().setComponent(ax === 'x' ? 0 : 2, v), { stop: true });
-  g.events?.emit('courier.rescue', { cause: 'erosion', by: 'environment' });
 }
 
 const FIRES = {
@@ -157,20 +147,16 @@ const LANDS_WORLD = {
   },
   // Upfall: as before, and the ground's loose matter rises with it (sand, and the paint it drew as drops)
   upfall: (R, row, at, ...rest) => { BASE_LANDS.upfall(R, row, at, ...rest); R.game.worldLooks?.lift?.(at, row.n.r, row.n.dur, row.world); },
-  // Weather Away: as before on a body; and things tagged erodible within reach soften and let you through, closing after a game hour
+  // Weather Away: as before on a body; and the place worn away (Dovina's ruling, 2026-10-24: it eats matter, never flips a collider): a
+  // ball out of the hand's creations (poured back as loose matter) and the hand's raised layers corroded; the authored ground never moves
   weatherAway: (R, row, at, ...rest) => {
     BASE_LANDS.weatherAway(R, row, at, ...rest);
     if (!row.world) return;
-    const g = R.game, A = WORLD_ALTER.erode, reach = A.r * (row.world.k ?? 1);
-    for (const ent of registered('erodible')) {
-      const box = ent.box || (ent.mesh && new THREE.Box3().setFromObject(ent.mesh)); if (!box || ent.eroded) continue;
-      if (box.distanceToPoint(at) > reach) continue;
-      const cols = ent.colliders || (ent.collider ? [ent.collider] : []); ent.eroded = true;
-      for (const c of cols) c.setSensor?.(true);
-      g.worldLooks?.erode?.(ent, A.last);
-      g.events?.emit('shell.erode', { at: [at.x, at.y, at.z], by: 'courier' });
-      R.timed({ t: A.last, every: 1, end: () => { for (const c of cols) c.setSensor?.(false); pushOut(g, box); ent.eroded = false; g.worldLooks?.erode?.(ent, 0); } });
-    }
+    const g = R.game, A = WORLD_ALTER.erode, k = row.world.k ?? 1, r = A.r * k;
+    g.creations?.erode?.(at, r);
+    g.matter?.field?.corrode?.(at.x, at.z, r, A.depth * k);
+    g.worldLooks?.erode?.(at, r);
+    g.events?.emit('shell.erode', { at: [at.x, at.y, at.z], r: Math.round(r * 10) / 10, by: 'courier' });
   },
   // Bloom: as before on the creatures, and a thicket grows from the drawn Lachryma; pots in reach are mended in gold
   bloom: (R, row, at, ...rest) => {

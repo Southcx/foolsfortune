@@ -9,13 +9,13 @@
 //   the spring         a Rift's hole as a pool of liquid Lachryma (the house liquid, vfx/water.js 'lachryma'), shrinking at its end
 //   the thicket        stems and leaves of the drawn feeling's colour grown from the ground round Bloom's point, gilded tips, wilting
 //   the lift           sand grains and drops of the drawn paint rising in Upfall's column
-//   erosion            an erodible thing gone soft: its body faded and dusted while you can pass through it
+//   erosion            a puff of the matter Weather Away wore away
 //   the fair           Calm's ring of clear gold on the ground (the weather's look thins itself: vfx/weather.js reads the draw)
 // No words (world marks and effects only). Prior art: Okami's brush pulling ink from the world, Breath of the Wild's Magnesis lines
 // (what is moved, shown by a stream), From Dust (matter that flows and is worn away), Ghibli's sudden gardens (Totoro's sprouting).
 //
 //   game.worldLooks = new WorldLooks(game)   .draw(w, row)   .glassBridge(W, L, world) -> mesh   .melt(mesh, m)   .sandAt(at, W, L)
-//   .vent(top, dur, world)   .storm(at, dur, world)   .fair(at, r, dur)   .spring(s)   .lift(at, r, dur, world)   .erode(ent, last)
+//   .vent(top, dur, world)   .storm(at, dur, world)   .fair(at, r, dur)   .spring(s)   .lift(at, r, dur, world)   .erode(at, r)
 //   .thicket(at, r, dur, world)   .update(dt)   .clear()   WORLD_LOOK (the numbers)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -121,12 +121,8 @@ export class WorldLooks {
     });
   }
 
-  /** An erodible thing gone soft (last > 0: faded and dusted for `last` real s; 0: whole again). */
-  erode(ent, last) {
-    const mats = []; ent.mesh?.traverse?.((o) => { if (o.material) mats.push(...[].concat(o.material)); });
-    for (const m of mats) { m.userData.worldOpacity ??= m.opacity; m.transparent = true; m.opacity = last > 0 ? m.userData.worldOpacity * 0.35 : m.userData.worldOpacity; m.needsUpdate = true; }
-    if (last > 0 && ent.mesh) { const b = new THREE.Box3().setFromObject(ent.mesh); b.getCenter(_p); this.game.pulse?.emit?.(_p.clone(), b.getSize(_s).length() * 0.5, L.sand, { life: 1 }); }
-  }
+  /** Weather Away's wearing: a puff of the worn matter and a ring of dust where the ball was taken. */
+  erode(at, r) { this.game.fx?.shockwave?.(at, r); this.game.pulse?.emit?.(at, r * 1.2, L.sand, { life: 1.1 }); }
 
   /** Bloom's thicket: stems in the drawn feeling's colour, gold at the tips, grown up round the point, wilting at its end. */
   thicket(at, r, dur, world) {
