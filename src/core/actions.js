@@ -30,6 +30,7 @@ export class Actions {
     if (sk?.riding) { L.add('skiff'); if (sk.air) L.add('skiff.air'); if (sk.grind?.on) L.add('skiff.rail'); }
     else if (!g.god?.active && !g.realm?.active && !g.emocean?.active) L.add('foot');
     if (g.race?.running) L.add('race');
+    if (g.rhythm?.active) L.add('rhythm'); // (the rhythm mode's lanes: Wanda's music/rhythm, the digits as pads)
     this.cache = L; this.cacheFrame = frame;
     return L;
   }

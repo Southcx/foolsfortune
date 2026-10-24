@@ -19,6 +19,7 @@
 //   .state() -> { move, look, cursor } (the move area's origin and thumb, for the stick's look: Calissa's)   TOUCH
 // ---------------------------------------------------------------------------------------
 import { StickMove } from './stickmove.js';
+import { skiffTouchKeys } from '../progress/skifftouch.js';
 
 /** r: px of drag for a full push; follow: past this many r the origin is dragged along; look: camera px per px of drag. */
 export const TOUCH = { r: 60, follow: 1.6, look: 1.4 };
@@ -74,11 +75,27 @@ export class TouchDriver {
    *  owns the move area (ui/touch/stick.js: it reports x, y, outer and carve) and is read instead of this driver's own. */
   update() {
     const UI = this.game.touchUI, S = UI?.on ? UI.stick : null;
-    if (S) { this.active = true; if (S.active) this.stick.set(S.x, S.y, { outer: !!S.outer, carve: S.carve || 0 }); else this.stick.clear(); if (!this.move) return; }
-    const m = this.move;
-    if (!m) return;
-    if (this.game.cursorFree?.()) { this.move = null; this.stick.clear(); return; } // (the pointer came free under a held thumb: the stick lets go)
-    this.stick.set((m.x - m.x0) / TOUCH.r, -(m.y - m.y0) / TOUCH.r);
+    let x = 0, y = 0, held = false;
+    if (S) { this.active = true; held = !!S.active; if (held) { x = S.x; y = S.y; } }
+    else {
+      const m = this.move;
+      if (m && this.game.cursorFree?.()) { this.move = null; this.stick.clear(); } // (the pointer came free under a held thumb: the stick lets go)
+      if (this.move) { held = true; x = (m.x - m.x0) / TOUCH.r; y = -(m.y - m.y0) / TOUCH.r; }
+    }
+    // (the Solar Skiff's auto-sail and glide: Dovina's rules, progress/skifftouch.js; BRAKE read from the tile itself, never from S, which
+    //  the glide's own pitch holds)
+    const sk = this.active && this.input.device === 'touch' ? skiffTouchKeys(this.game.techs?.get?.('skiff'), { x, y, brake: this.actions.held.has('touch:brake') }) : null;
+    this.skiffKeys(sk);
+    if (held) this.stick.set(x, y, S ? { outer: !!S.outer, carve: S.carve || 0, noAD: !!sk?.noAD } : { noAD: !!sk?.noAD });
+    else if (S) this.stick.clear();
+  }
+  /** The skiff's keys from its touch rules, held while they say so (`null`: none held). */
+  skiffKeys(want) {
+    this.sk ||= new Set();
+    for (const c of ['KeyW', 'KeyS', 'KeyQ', 'KeyE']) {
+      const on = !!want?.[c]; if (on === this.sk.has(c)) continue;
+      if (on) this.sk.add(c); else this.sk.delete(c); this.input.hold(c, on);
+    }
   }
   /** A tile bound to a control id: held while touched. */
   bind(id, el) {
@@ -90,7 +107,7 @@ export class TouchDriver {
   /** Everything let go (the page hidden, the window lost its focus). */
   release() {
     if (this.cursor) { this.cursor = null; this.input.hold('Mouse0', false); }
-    this.move = null; this.look = null; this.stick.clear();
+    this.move = null; this.look = null; this.stick.clear(); this.skiffKeys(null);
   }
   state() { return { move: this.move && { ...this.move }, look: !!this.look, cursor: !!this.cursor }; }
 }

@@ -651,7 +651,7 @@ async function main() {
   // the System's voice: the few things that matter, said aloud (audio/voice/voice.js)
   game.voice = new SystemVoice(game);
   // the music: a theme where there is one (music/: the Dunes for now), under everything, paused for the rave
-  game.music = new MusicPlayer(sfx);
+  game.music = new MusicPlayer(sfx, save);
   game.ambience = new Ambience(game); // (the weather and the hour heard where the Courier stands, and handed to the music: audio/ambience.js)
   hearHaggling(game, new Clayese(sfx), PEOPLE.find((p) => p.id === 'raku').voice); // (Raku's voice for the shop's bargaining: npc/clayese.js)
   hearEvents(game, sfx); // (the sounds events make: audio/cues.js)

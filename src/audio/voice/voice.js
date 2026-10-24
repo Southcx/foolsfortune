@@ -25,6 +25,7 @@ import { itemOf } from '../../pneuka/items.js';
 import { BY_SPECIES } from '../../tools/sondelass/angling/species.js';
 import { synthesize } from './speech/synth.js';
 import { sfx } from '../sfx.js';
+import { keepSetting } from '../keep.js';
 
 const KEY = 'foolsfortune.voice.v2';
 // (a little above the middle of a speaking voice; a touch of brightness; even pace)
@@ -35,14 +36,14 @@ export class SystemVoice {
   constructor(game) {
     this.game = game;
     this.settings = { ...DEFAULTS };
-    try { Object.assign(this.settings, JSON.parse(localStorage.getItem(KEY) || '{}')); } catch { /* defaults */ }
+    this.kept = keepSetting(game.save, 'voice', KEY, { dump: () => ({ ...this.settings }), load: (d) => Object.assign(this.settings, d), fresh: () => { this.settings = { ...DEFAULTS }; } }); // (the save's settings scope: audio/keep.js)
     this.queue = []; this.busyUntil = 0; this.last = new Map(); this.analysed = new Map();
     this.rules();
   }
   get ok() { return this.settings.on; }
   set(o) {
     Object.assign(this.settings, o);
-    try { localStorage.setItem(KEY, JSON.stringify(this.settings)); } catch { /* this session only */ }
+    this.kept();
   }
 
   /** Say a line: dropped if the voice is off, the page hidden, the line said too recently, or too many already wait. */

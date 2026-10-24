@@ -44,8 +44,8 @@ export const ADOPTED = {
     'foolsfortune.trial', 'foolsfortune.flash', 'foolsfortune.vessel', 'foolsfortune.psygun',
     'foolsfortune.pneuka'], // (the box's, the belt's and the Lockheart's keys before their sections: cleared, never written again)
   world: ['foolsfortune.shops', 'foolsfortune.ground', 'foolsfortune.wells'], // (the ground's and the Wells' keys before their sections: likewise)
-  settings: ['foolsfortune.windows', 'foolsfortune.voice', 'foolsfortune.music', 'foolsfortune.rhythm', 'foolsfortune.tuning', 'foolsfortune.help',
-    'foolsfortune.log', 'ff.vfx.overrides', 'ff.cine.overrides'],
+  settings: ['foolsfortune.windows', 'foolsfortune.tuning', 'foolsfortune.help', 'foolsfortune.log', 'ff.vfx.overrides', 'ff.cine.overrides'],
+  // (the voice's, the music's and the rhythm mode's keys are sections now: audio/keep.js takes the old key in once and deletes it)
 };
 const fnv = (t) => { let h = 0x811c9dc5; for (let i = 0; i < t.length; i++) h = Math.imul(h ^ t.charCodeAt(i), 16777619); return (h >>> 0).toString(16).padStart(8, '0'); };
 const scopeOfKey = (k) => Object.keys(ADOPTED).find((s) => ADOPTED[s].some((p) => k === p || k.startsWith(`${p}.`)));

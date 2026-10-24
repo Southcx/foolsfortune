@@ -43,7 +43,7 @@ export const ACTIONS = [
   { id: 'secondary', mouse: 'Mouse2',     pad: 'LT',    touch: 'aim',        ctx: 'foot', how: 'hold' },  // (the tool's RMB. M3 per tool)
   { id: 'parry',    keys: ['KeyV'],       pad: 'RB',    touch: 'parry',      ctx: 'foot', how: 'tap' },   // (the kick with nothing in hand, once learned)
   { id: 'blink',    keys: ['KeyE'],       pad: 'LB',    touch: 'blink',      ctx: 'foot', how: 'tap' },   // (once learned)
-  { id: 'dash',     keys: ['ShiftLeft'],  pad: 'LS',                         ctx: 'foot', how: 'tap' },   // (a press: the air dash, the crouched roll. Touch: open, below)
+  { id: 'dash',     keys: ['ShiftLeft'],  pad: 'LS',    touch: 'dash',       ctx: 'foot', how: 'tap' },   // (a press: the air dash, the crouched roll; on touch a DASH tile, always on foot: the dash is the core movement's, MOBILE.md 6.1.1)
   { id: 'view',     keys: ['KeyZ'],       pad: 'Up',                         ctx: 'foot', how: 'tap' },   // (first / third person; touch: the pause menu)
   { id: 'shoulder', keys: ['KeyO'],       pad: 'Left',                       ctx: 'foot', how: 'tap' },   // (touch: the pause menu)
   { id: 'skiff',    keys: ['KeyY'],       pad: 'Down',  touch: 'top.skiff',  ctx: 'foot', how: 'tap' },   // (summon / recall: in the Dunes and the Raceway)
@@ -67,10 +67,118 @@ export const ACTIONS = [
   { id: 'recall',   keys: ['KeyY'],       pad: 'Down',  touch: 'top.skiff',  ctx: 'skiff', how: 'tap' },
   { id: 'toGate',   keys: ['KeyR'],       pad: 'Left',  touch: 'menu.back',  ctx: 'race', how: 'tap' },  // (held: retire, RETIRE in the pause menu on touch)
   { id: 'restart',  keys: ['Backspace'],  pad: 'Back',  touch: 'menu.restart', ctx: 'race', how: 'tap' }, // (held in practice: the rewind; Back is the Box off a race)
+  // ---- the god hand (M1: MOBILE.md 8.4). One finger is the hand (the cursor); a long press is RMB (the art wheel); two fingers pan, pinch
+  //      zooms (the wheel), a twist turns the view (Q / E): the driver's gestures. A domain tapped again goes through its arts, as its key.
+  { id: 'ghD1',     keys: ['Digit1'],                   touch: 'gh.d1',      ctx: 'godhand', how: 'tap' },  // (Ouranurgy)
+  { id: 'ghD2',     keys: ['Digit2'],                   touch: 'gh.d2',      ctx: 'godhand', how: 'tap' },  // (Manifestation)
+  { id: 'ghD3',     keys: ['Digit3'],                   touch: 'gh.d3',      ctx: 'godhand', how: 'tap' },  // (Divination)
+  { id: 'ghD4',     keys: ['Digit4'],                   touch: 'gh.d4',      ctx: 'godhand', how: 'tap' },  // (Psychokinesis)
+  { id: 'ghD5',     keys: ['Digit5'],                   touch: 'gh.d5',      ctx: 'godhand', how: 'tap' },  // (Possession)
+  { id: 'ghD6',     keys: ['Digit6'],                   touch: 'gh.d6',      ctx: 'godhand', how: 'tap' },  // (Alteration)
+  { id: 'ghD7',     keys: ['Digit7'],                   touch: 'gh.d7',      ctx: 'godhand', how: 'tap' },  // (Spellscription)
+  { id: 'ghAlt',    keys: ['ShiftLeft'],                touch: 'gh.alt',     ctx: 'godhand', how: 'hold' }, // (an art's other way: Hasten stops time, Transmute your feeling, Telekinesis raises; shown for those arts only)
+  { id: 'ghSign',   mouse: 'Mouse1',                    touch: 'gh.sign',    ctx: 'godhand', how: 'hold' }, // (held: one finger draws a miracle's sign; with ALT held, the epic's)
+  { id: 'ghSurvey', keys: ['KeyN'],                     touch: 'top.survey', ctx: 'godhand', how: 'tap' },
+  // ---- the Spirit Garden (M1: MOBILE.md 8.2). One finger is the hand; a long press is RMB; two fingers turn and zoom; a two-finger tap undoes.
+  { id: 'gaArt1',   keys: ['Digit1'],                   touch: 'ga.a1',      ctx: 'garden', how: 'tap' },   // (GRAB .. PAINT, the bar's order: hand.js ARTS; the lit one tapped again puts it down, WALK)
+  { id: 'gaArt2',   keys: ['Digit2'],                   touch: 'ga.a2',      ctx: 'garden', how: 'tap' },
+  { id: 'gaArt3',   keys: ['Digit3'],                   touch: 'ga.a3',      ctx: 'garden', how: 'tap' },
+  { id: 'gaArt4',   keys: ['Digit4'],                   touch: 'ga.a4',      ctx: 'garden', how: 'tap' },
+  { id: 'gaArt5',   keys: ['Digit5'],                   touch: 'ga.a5',      ctx: 'garden', how: 'tap' },
+  { id: 'gaArt6',   keys: ['Digit6'],                   touch: 'ga.a6',      ctx: 'garden', how: 'tap' },
+  { id: 'gaArt7',   keys: ['Digit7'],                   touch: 'ga.a7',      ctx: 'garden', how: 'tap' },
+  { id: 'gaArt8',   keys: ['Digit8'],                   touch: 'ga.a8',      ctx: 'garden', how: 'tap' },
+  { id: 'gaArt9',   keys: ['Digit9'],                   touch: 'ga.a9',      ctx: 'garden', how: 'tap' },
+  { id: 'gaArt10',  keys: ['Digit0'],                   touch: 'ga.a10',     ctx: 'garden', how: 'tap' },
+  { id: 'gaTurn',   keys: ['KeyR'],                     touch: 'ga.turn',    ctx: 'garden', how: 'tap' },   // (the choice turned: decor, ground, feeling)
+  { id: 'gaSpring', keys: ['ShiftLeft'],                touch: 'ga.spring',  ctx: 'garden', how: 'hold' },  // (with WATER: a spring)
+  { id: 'gaDrain',  keys: ['ControlLeft'],              touch: 'ga.drain',   ctx: 'garden', how: 'hold' },  // (with WATER: a drain)
+  { id: 'gaUndo',   keys: ['KeyZ'], mods: ['ControlLeft'], touch: 'ga.undo', ctx: 'garden', how: 'tap' },   // (and the two-finger tap)
+  { id: 'gaJump',   keys: ['Space'],                    touch: 'jump',       ctx: 'garden', how: 'tap' },
+  { id: 'gaUse',    keys: ['KeyF'],                     touch: 'use',        ctx: 'garden', how: 'tap' },
+  { id: 'gaTop',    keys: ['Backquote'],                touch: 'top.topview', ctx: 'garden', how: 'tap' }, // (TOP VIEW: the garden's ~ is the overhead view)
+  // ---- the puzzle duel (M1: MOBILE.md 8.5). One finger is the cursor: a cell tapped, a path dragged; a long press drops a piece (RMB); a
+  //      swipe that starts on the Courier steps it (W A S D), a long press then a swipe kicks (Shift held): the driver's gestures.
+  { id: 'duShoot',  keys: ['KeyX'],                     touch: 'du.shoot',   ctx: 'duel', how: 'tap' },     // (the strip shows the worn tools' moves only)
+  { id: 'duGrab',   keys: ['KeyQ'],                     touch: 'du.grab',    ctx: 'duel', how: 'tap' },
+  { id: 'duDrill',  keys: ['KeyK'],                     touch: 'du.drill',   ctx: 'duel', how: 'tap' },
+  { id: 'duPaint',  keys: ['KeyG'],                     touch: 'du.paint',   ctx: 'duel', how: 'tap' },
+  { id: 'duDelay',  keys: ['KeyU'],                     touch: 'du.delay',   ctx: 'duel', how: 'tap' },
+  { id: 'duHold',   keys: ['KeyI'],                     touch: 'du.hold',    ctx: 'duel', how: 'tap' },
+  { id: 'duSend',   keys: ['KeyI'], mods: ['ShiftLeft'], touch: 'du.send',   ctx: 'duel', how: 'tap' },
+  { id: 'duRotate', keys: ['KeyR'],                     touch: 'du.rotate',  ctx: 'duel', how: 'tap' },     // (shown while a piece is under the last touch)
+  { id: 'duEnd',    keys: ['Space'],                    touch: 'du.end',     ctx: 'duel', how: 'tap' },     // (END TURN, the cluster's largest)
+  { id: 'duFinish', keys: ['KeyF'],                     touch: 'du.finish',  ctx: 'duel', how: 'tap' },     // (shown on a broken foe)
+  { id: 'duFlee',   keys: ['KeyE'],                     touch: 'du.flee',    ctx: 'duel', how: 'tap' },
+  { id: 'duForm',   keys: ['Backquote'],                touch: 'du.form',    ctx: 'duel', how: 'tap' },     // (hand / Courier)
+  { id: 'duYield',  keys: ['Backspace'],                touch: 'menu.yield', ctx: 'duel', how: 'hold' },    // (held 1.5 real s; in the pause menu)
+  // ---- the rhythm mode and busking (M3, Wanda's: ten lanes as ten pads in two rows; a held pad is a held lane, music/rhythm/rhythm.js)
+  { id: 'rhLane1', keys: ['Digit1'], touch: 'rh.l1', ctx: 'rhythm', how: 'hold' },
+  { id: 'rhLane2', keys: ['Digit2'], touch: 'rh.l2', ctx: 'rhythm', how: 'hold' },
+  { id: 'rhLane3', keys: ['Digit3'], touch: 'rh.l3', ctx: 'rhythm', how: 'hold' },
+  { id: 'rhLane4', keys: ['Digit4'], touch: 'rh.l4', ctx: 'rhythm', how: 'hold' },
+  { id: 'rhLane5', keys: ['Digit5'], touch: 'rh.l5', ctx: 'rhythm', how: 'hold' },
+  { id: 'rhLane6', keys: ['Digit6'], touch: 'rh.l6', ctx: 'rhythm', how: 'hold' },
+  { id: 'rhLane7', keys: ['Digit7'], touch: 'rh.l7', ctx: 'rhythm', how: 'hold' },
+  { id: 'rhLane8', keys: ['Digit8'], touch: 'rh.l8', ctx: 'rhythm', how: 'hold' },
+  { id: 'rhLane9', keys: ['Digit9'], touch: 'rh.l9', ctx: 'rhythm', how: 'hold' },
+  { id: 'rhLane10', keys: ['Digit0'], touch: 'rh.l10', ctx: 'rhythm', how: 'hold' },
+  // ---- the tools in hand (M3: MOBILE.md 8.7). Each ctx is a main tool drawn (its form for the Sondelass); narrower than foot, so a tile
+  //      means the tool's verb while it is out and the foot's while it is stowed. FIRE dragged while held aims (the driver's).
+  { id: 'psFire',   mouse: 'Mouse0',      pad: 'RT',    touch: 'fire',       ctx: 'tool.psygun', how: 'hold' },  // (held and let go: the charge)
+  { id: 'psAim',    mouse: 'Mouse2',      pad: 'LT',    touch: 'aim',        ctx: 'tool.psygun', how: 'hold' },  // (the sights; the Carbine's breath is ALT while scoped)
+  { id: 'psShell',  mouse: 'Mouse1',      pad: 'RB',    touch: 'shell',      ctx: 'tool.psygun', how: 'hold' },  // (the chambered shell: tapped assisted; held, the seeker paints)
+  { id: 'psFan',    keys: ['KeyQ'],                     touch: 'ps.fan',     ctx: 'tool.psygun', how: 'tap' },   // (once learned)
+  { id: 'psBreath', keys: ['ShiftLeft'],                touch: 'ps.breath',  ctx: 'tool.psygun', how: 'hold' },  // (the Carbine scoped)
+  { id: 'psCh1',    keys: ['Digit1'],                   touch: 'ps.ch1',     ctx: 'tool.psygun', how: 'tap' },   // (the chamber strip: the cylinder's own order)
+  { id: 'psCh2',    keys: ['Digit2'],                   touch: 'ps.ch2',     ctx: 'tool.psygun', how: 'tap' },
+  { id: 'psCh3',    keys: ['Digit3'],                   touch: 'ps.ch3',     ctx: 'tool.psygun', how: 'tap' },
+  { id: 'psCh4',    keys: ['Digit4'],                   touch: 'ps.ch4',     ctx: 'tool.psygun', how: 'tap' },
+  { id: 'psCh5',    keys: ['Digit5'],                   touch: 'ps.ch5',     ctx: 'tool.psygun', how: 'tap' },
+  { id: 'psCh6',    keys: ['Digit6'],                   touch: 'ps.ch6',     ctx: 'tool.psygun', how: 'tap' },
+  { id: 'psCh7',    keys: ['Digit7'],                   touch: 'ps.ch7',     ctx: 'tool.psygun', how: 'tap' },
+  { id: 'cuAttack', mouse: 'Mouse0',      pad: 'RT',    touch: 'fire',       ctx: 'tool.cutlass', how: 'hold' }, // (ATTACK: the string)
+  { id: 'cuSpecial', mouse: 'Mouse2',     pad: 'LT',    touch: 'aim',        ctx: 'tool.cutlass', how: 'tap' },  // (SPECIAL: swiped up, the forward special (W held); down, the back one (S held): the driver's)
+  { id: 'cuLock',   mouse: 'Mouse1',                    touch: 'lock',       ctx: 'tool.cutlass', how: 'tap' },  // (the lock-on; a flick on the look area changes the target)
+  { id: 'cuForm1',  keys: ['Digit1'],                   touch: 'so.cutlass', ctx: 'tool.cutlass', how: 'tap' },  // (the form strip: cutlass, rod, hook)
+  { id: 'cuForm2',  keys: ['Digit2'],                   touch: 'so.rod',     ctx: 'tool.cutlass', how: 'tap' },
+  { id: 'cuForm3',  keys: ['Digit3'],                   touch: 'so.hook',    ctx: 'tool.cutlass', how: 'tap' },
+  { id: 'roCast',   mouse: 'Mouse0',      pad: 'RT',    touch: 'fire',       ctx: 'tool.rod', how: 'hold' },     // (CAST: held and let go; a tap twitches; fish on: REEL)
+  { id: 'roSink',   mouse: 'Mouse2',      pad: 'LT',    touch: 'aim',        ctx: 'tool.rod', how: 'hold' },     // (SINK before a bite; GIVE LINE with a fish on)
+  { id: 'roPing',   mouse: 'Mouse1',                    touch: 'ro.ping',    ctx: 'tool.rod', how: 'hold' },     // (tap: a ping; held: the ring)
+  { id: 'roCrank',  mouse: 'Mouse0', mods: ['ShiftLeft'], touch: 'ro.crank', ctx: 'tool.rod', how: 'hold' },     // (fish on: the crank; before a bite: the fast retrieve)
+  { id: 'roLure',   keys: ['Equal'],                    touch: 'ro.lure',    ctx: 'tool.rod', how: 'tap' },      // (the next lure; the lure ring's feeling a long press: the driver's wheel)
+  { id: 'roForm1',  keys: ['Digit1'],                   touch: 'so.cutlass', ctx: 'tool.rod', how: 'tap' },
+  { id: 'roForm3',  keys: ['Digit3'],                   touch: 'so.hook',    ctx: 'tool.rod', how: 'tap' },
+  { id: 'hoFire',   mouse: 'Mouse0',      pad: 'RT',    touch: 'fire',       ctx: 'tool.hook', how: 'hold' },    // (FIRE at the hook's mark; held: REEL)
+  { id: 'hoAim',    mouse: 'Mouse2',      pad: 'LT',    touch: 'aim',        ctx: 'tool.hook', how: 'hold' },    // (held: aim, paying out after 0.2 s; tapped: let go)
+  { id: 'hoForm1',  keys: ['Digit1'],                   touch: 'so.cutlass', ctx: 'tool.hook', how: 'tap' },
+  { id: 'hoForm2',  keys: ['Digit2'],                   touch: 'so.rod',     ctx: 'tool.hook', how: 'tap' },
+  { id: 'brClub',   mouse: 'Mouse0',      pad: 'RT',    touch: 'fire',       ctx: 'tool.brush', how: 'hold' },   // (ATTACK: the club; on the ground, paint or mop)
+  { id: 'brFlick',  mouse: 'Mouse2',      pad: 'LT',    touch: 'aim',        ctx: 'tool.brush', how: 'tap' },    // (tapped: the flick; held: Celestial mode, one finger then draws: the driver's)
+  { id: 'brPaint',  keys: ['Digit1'],                   touch: 'br.paint',   ctx: 'tool.brush', how: 'tap' },    // (PAINT and MOP: one toggle tile, its two faces)
+  { id: 'brMop',    keys: ['Digit2'],                   touch: 'br.mop',     ctx: 'tool.brush', how: 'tap' },
+  { id: 'brLock',   mouse: 'Mouse1',                    touch: 'lock',       ctx: 'tool.brush', how: 'tap' },
+  { id: 'veLens',   mouse: 'Mouse2',      pad: 'LT',    touch: 'aim',        ctx: 'tool.veritome', how: 'hold' }, // (LENS held; with it up, a tap anywhere on the right half is the shutter: the driver's)
+  { id: 'veShutter', mouse: 'Mouse0',     pad: 'RT',    touch: 'fire',       ctx: 'tool.veritome', how: 'tap' },
+  { id: 'veFlash',  keys: ['Digit1'],                   touch: 've.flash',   ctx: 'tool.veritome', how: 'tap' },
+  { id: 'veMind',   mouse: 'Mouse1',                    touch: 've.mind',    ctx: 'tool.veritome', how: 'tap' },  // (REPROGRAM: shown by a stunned mind)
+  { id: 'dvPick',   mouse: 'Mouse0',      pad: 'RT',    touch: 'fire',       ctx: 'tool.dreamvane', how: 'hold' }, // (the pick: held, let go full)
+  { id: 'dvDowse',  mouse: 'Mouse2',      pad: 'LT',    touch: 'aim',        ctx: 'tool.dreamvane', how: 'hold' }, // (held: dowse; tapped: the fork)
+  { id: 'dvSurvey', mouse: 'Mouse1',                    touch: 'dv.survey',  ctx: 'tool.dreamvane', how: 'tap' },
+  { id: 'crToll',   mouse: 'Mouse0',      pad: 'RT',    touch: 'fire',       ctx: 'tool.crucibelle', how: 'tap' }, // (TOLL, on the beat)
+  { id: 'crOctave', mouse: 'Mouse2',      pad: 'LT',    touch: 'aim',        ctx: 'tool.crucibelle', how: 'hold' }, // (the octave up, held under a note)
+  { id: 'crN1',     keys: ['Digit1'],                   touch: 'cr.n1',      ctx: 'tool.crucibelle', how: 'tap' },  // (the five pads, an instrument on glass)
+  { id: 'crN2',     keys: ['Digit2'],                   touch: 'cr.n2',      ctx: 'tool.crucibelle', how: 'tap' },
+  { id: 'crN3',     keys: ['Digit3'],                   touch: 'cr.n3',      ctx: 'tool.crucibelle', how: 'tap' },
+  { id: 'crN4',     keys: ['Digit4'],                   touch: 'cr.n4',      ctx: 'tool.crucibelle', how: 'tap' },
+  { id: 'crN5',     keys: ['Digit5'],                   touch: 'cr.n5',      ctx: 'tool.crucibelle', how: 'tap' },
+  { id: 'lhHoover', mouse: 'Mouse0',      pad: 'RT',    touch: 'fire',       ctx: 'tool.lockheart', how: 'hold' }, // (held: hoover; tapped: the flail)
+  { id: 'lhOpen',   mouse: 'Mouse2',      pad: 'LT',    touch: 'aim',        ctx: 'tool.lockheart', how: 'hold' }, // (OPEN; the wheel of odds turned by a finger round it: the driver's)
 ];
 
 /** The precedence: the first live ctx in this order that binds a pad button or a touch control wins it (MOBILE.md 6.1.1). */
-export const CTX_ORDER = ['race', 'skiff.rail', 'skiff.air', 'skiff', 'foot', 'any'];
+export const CTX_ORDER = ['race', 'skiff.rail', 'skiff.air', 'skiff', 'rhythm', 'duel', 'godhand', 'garden', 'tool.psygun', 'tool.cutlass', 'tool.rod', 'tool.hook', 'tool.brush', 'tool.veritome', 'tool.dreamvane', 'tool.crucibelle', 'tool.lockheart', 'foot', 'any'];
 /** The Gamepad API's standard mapping, by the table's names. */
 export const PAD_BUTTONS = { A: 0, B: 1, X: 2, Y: 3, LB: 4, RB: 5, LT: 6, RT: 7, Back: 8, Start: 9, LS: 10, RS: 11, Up: 12, Down: 13, Left: 14, Right: 15 };
 

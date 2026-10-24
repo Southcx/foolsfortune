@@ -26,7 +26,7 @@
 // progress/rail/setpieces.js. When the ship has borne all it can, THE CONTINUE (below) is an arcade's coin.
 //
 // Prior art, the love letter: Star Fox 64 (two-minute stages, a hit counter and a medal, a breather, the all-range turn), Ikaruga
-// (polarity, chains of three, chapters that each teach one idea), Einhander (the 2.5D camera that swings mid-stage, gunpods taken off
+// (its black-and-white switch, our Astral and Umbral forms; chains of three, chapters that each teach one idea), Einhander (the 2.5D camera that swings mid-stage, gunpods taken off
 // the enemy), Sin & Punishment (the free reticle, the sword that sends shots back), Mushihime-sama and DoDonPachi (the bullet pattern
 // as choreography, point-blank pay), RayStorm and RayCrisis (the lock-on sweep, its doubling bonus), Kingdom Hearts 1 and 2's Gummi
 // Ship (the world map's hop as a rail stage, set pieces as the stage's heart), Rez (everything on the beat), Panzer Dragoon (the look
@@ -63,7 +63,7 @@ export const SWING = { bars: 1 };
 export const ACTS = [
   { id: 'launch',   from: 0,  to: 9,   view: 'chase', teaches: 'the ship: moving in the box, the two reticles, the barrel roll' },
   { id: 'schools',  from: 9,  to: 26,  view: 'chase', teaches: 'the gun, and the lock-on sweep (a school is eight in a line)' },
-  { id: 'pincer',   from: 26, to: 36,  view: 'above', teaches: 'polarity: shots of your feeling are drunk, the other one hurts' },
+  { id: 'pincer',   from: 26, to: 36,  view: 'above', teaches: 'the forms: shots of your feeling are drunk, the other one hurts' },
   { id: 'darters',  from: 36, to: 50,  view: 'free',  teaches: 'the parry: darters spit outlined shots at the camera; a roll in time sends them home' },
   { id: 'breather', from: 50, to: 62,  view: 'chase', teaches: 'the sea itself: flotsam to gather, the reckoning\'s marks, a breath' },
   { id: 'setpiece', from: 62, to: 96, view: null,    teaches: 'everything at once' },

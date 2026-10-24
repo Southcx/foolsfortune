@@ -28,7 +28,7 @@ import { placeOf, windowOpen } from './areas.js';
 export const CLUSTER = { gap: 10, margin: 6, jumpSpeed: 0.6, clear: 84 };
 
 /** What F does at each source, said plainly where its offer gives no label of its own (courier/interact.js sources; placeholders). */
-const USE_WORDS = { npc: 'TALK', chest: 'CHEST', item: 'TAKE', find: 'TAKE', carry: 'LIFT', push: 'PUSH', kiln: 'KILN', well: 'WELL', ostracon: 'READ', purser: 'PURSER', bazaar: 'TABLE', skiff: 'SKIFF', solar: 'START' };
+const USE_WORDS = { npc: 'TALK', chest: 'CHEST', item: 'TAKE', find: 'TAKE', carry: 'LIFT', push: 'PUSH', kiln: 'KILN', well: 'DOWN', ostracon: 'READ', purser: 'PURSER', bazaar: 'TABLE', skiff: 'SKIFF', solar: 'START' };
 const GARDEN_WORDS = { gate: 'GATE', shed: 'SHED', press: 'PRESS', athanor: 'PRESS', shrine: 'SHRINE' };
 
 /** USE's words for the thing the chevron is on now, or null when it is on nothing. */
@@ -57,7 +57,7 @@ export function clusterContext(game) {
     return [moving ? 'jump' : null, use].filter(Boolean);
   }
   if (T?.active || g.god?.controlling) return [];
-  return use ? [use] : [];
+  return ['dash', use].filter(Boolean); // (on foot: DASH, the Shift press, Dovina's ruling 2026-10-24; the air dash is the core movement's, so it is always there)
 }
 
 export class TouchCluster {

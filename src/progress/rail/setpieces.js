@@ -114,7 +114,7 @@ export const LEVIATHAN = {
  *  in (the Umbral) by turns of `bars`, `rise` metres over the crude and `depth` under it, a `swing` of a bar between.
  *  HOW IT IS HURT (Dovina's ruling, the point of the leg): only from the world it is in. A shot of the Astral form strikes it risen, of
  *  the Umbral form dived; the other glances off (no harm, the resist mark). Crossing the surface (within `band` metres of it) it is
- *  open to both and takes `surface` times: **the surface strike**, Ikaruga's polarity switch made a timing (catch it as it breaches or
+ *  open to both and takes `surface` times: **the surface strike**, Ikaruga's colour switch made a timing (catch it as it breaches or
  *  sounds). So the leg asks you to follow it down and up on its beat, and a ship that cannot dive (the tanker, the galleon) can hurt it
  *  only risen and at the surface: half the window, the price of a heavy hull (PASSAGE.md 11).
  *  `hp` in shots (a lance is LANCE shots): measured (Petra's scripts/charybdistest.mjs, 2026-10-08), a scripted expert who follows it
