@@ -21,7 +21,8 @@
 //
 //   new TouchTile(id, { size, word, glyph, corner, onPress(id, down, inside) })   .place(x, y, size, w?)   .set({ charge, ember, pips,
 //   lit, dim, hidden })   .label(word, corner) (a named tile, glyph null: its thing's label large, a small word in its corner: USE)
-//   .widthFor(size)   .update(now)   .release()   .el   TILE (the numbers)   tileWord(id) (the words under glyphs: MOBILE.md 8.3, Espada's)
+//   .face({ glyph, word, corner, tint }) (a face changed in place)   option fit (a glyph's tile as wide as its word)   option tint (one
+//   glaze colour: a note pad's)   .widthFor(size)   .update(now)   .release()   .el   TILE (the numbers)   tileWord(id) (the words under glyphs: MOBILE.md 8.3, Espada's)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { uiIcon } from '../icons/icons.js';
@@ -55,13 +56,18 @@ const glaze = () => {
   const s = getComputedStyle(document.documentElement), v = (k, d) => (s.getPropertyValue(k).trim() || d);
   return { top: v('--jtop', '104,50,32'), bot: v('--jbot', '34,15,9') };
 };
+/** A glaze of one colour (a note pad's: its note's), deep in the middle and darker where it pools: as the window colour's two stops. */
+const tinted = (hex) => {
+  const r = (hex >> 16) & 255, g = (hex >> 8) & 255, b = hex & 255, k = (v, m) => Math.round(v * m);
+  return { top: `${k(r, 0.92)},${k(g, 0.92)},${k(b, 0.92)}`, bot: `${k(r, 0.42)},${k(g, 0.42)},${k(b, 0.42)}` };
+};
 /** A small seeded stream (the grog's speckles fall the same on every tile of a size). */
 const seeded = (n) => () => ((n = (n * 1664525 + 1013904223) >>> 0) / 4294967296);
 
 const BODIES = new Map();
 /** The tile's body (foot, face, glaze, glyph, word) at a size and state, drawn once and kept. */
-function body(w, h, dpr, { glyph, pal, word, corner, pressed }) {
-  const G = glaze(), key = `${w}x${h}|${dpr}|${glyph}|${pal}|${word}|${corner}|${pressed}|${G.top}|${G.bot}`;
+function body(w, h, dpr, { glyph, pal, word, corner, pressed, tint }) {
+  const G = tint != null ? tinted(tint) : glaze(), key = `${w}x${h}|${dpr}|${glyph}|${pal}|${word}|${corner}|${pressed}|${G.top}|${G.bot}`;
   if (BODIES.has(key)) return BODIES.get(key);
   const f = TILE.foot, c = document.createElement('canvas'), s = Math.min(w, h);
   c.width = Math.round(w * dpr); c.height = Math.round((h + f) * dpr);
@@ -129,8 +135,9 @@ function rimPoints(W, Hh) {
 const _c = new THREE.Color(), _e = new THREE.Color(TILE.ember);
 
 export class TouchTile {
-  constructor(id, { size = TILE.size, word, glyph, corner = null, onPress = null } = {}) {
+  constructor(id, { size = TILE.size, word, glyph, corner = null, onPress = null, fit = false, tint = null } = {}) {
     tileStyle();
+    this.fit = fit; this.tint = tint;
     this.id = id; this.glyph = glyph === undefined ? id : glyph; this.word = word === undefined ? tileWord(this.glyph || id) : word; this.corner = corner; this.onPress = onPress;
     this.size = Math.max(TILE.min, size); this.w = this.size;
     this.state = { charge: 0, ember: 0, pips: 0, lit: false, dim: false, hidden: true, pressed: false };
@@ -162,17 +169,26 @@ export class TouchTile {
 
   /** A named tile's words: its thing's label and the corner's. Redrawn only when they change. */
   label(word, corner = this.corner) { if (word === this.word && corner === this.corner) return this; this.word = word; this.corner = corner; this.dirty = true; return this; }
-  /** How wide a named tile wants to be for its label (its height `size`): never narrower than square. */
+  /** A face changed in place (a tool's verb on FIRE, DRAW turned STOW, a duel's FORM): its glyph, word, corner and tint, any of them;
+   *  redrawn only when one changes. */
+  face({ glyph = this.glyph, word = this.word, corner = this.corner, tint = this.tint } = {}) {
+    if (glyph === this.glyph && word === this.word && corner === this.corner && tint === this.tint) return this;
+    this.glyph = glyph; this.word = word; this.corner = corner; this.tint = tint; this.dirty = true; return this;
+  }
+  /** How wide a named tile wants to be for its label (its height `size`): never narrower than square. A glyph's tile is square, unless
+   *  made to `fit` its word (a word wider than the tile: GIVE LINE, REPROGRAM), so the word is never shrunk under the least type. */
   widthFor(size = this.size) {
-    if (this.glyph || !this.word) return size;
-    const g = (TouchTile.measure ||= document.createElement('canvas').getContext('2d')); g.font = `${TILE.big}px ${FONT.sys}`;
-    return Math.max(size, Math.ceil(g.measureText(this.word).width + size * 0.5));
+    if (!this.word || (this.glyph && !this.fit)) return size;
+    const g = (TouchTile.measure ||= document.createElement('canvas').getContext('2d')), big = !this.glyph;
+    g.font = `${big ? TILE.big : TILE.word}px ${FONT.sys}`;
+    return Math.max(size, Math.ceil(g.measureText(this.word).width + size * (big ? 0.5 : 0.34)));
   }
 
   /** Stand at (x, y), its top left in CSS px, at a size (its height; a named tile as wide as its label wants), never under the least. */
   place(x, y, size = this.size, w = null) {
     size = Math.max(TILE.min, Math.round(size)); w = Math.max(size, Math.round(w ?? this.widthFor(size)));
     if (size !== this.size || w !== this.w) { this.size = size; this.w = w; this.dirty = true; }
+    this.x = Math.round(x); this.y = Math.round(y); // (where it stands, kept: a neighbour lays itself by it without reading the page)
     this.el.style.width = `${w}px`; this.el.style.height = `${size + TILE.foot}px`;
     this.el.style.transform = `translate(${Math.round(x)}px, ${Math.round(y)}px)`;
   }
@@ -198,7 +214,7 @@ export class TouchTile {
     this.drawnAt = now; this.dirty = false;
     const S = this.state, w = this.w, h = this.size, f = TILE.foot, dpr = Math.max(1, Math.min(3, (typeof devicePixelRatio === 'number' && devicePixelRatio) || 1));
     for (const cv of [this.bodyCv, this.rimCv]) { const W = Math.round(w * dpr), H = Math.round((h + f) * dpr); if (cv.width !== W || cv.height !== H) { cv.width = W; cv.height = H; cv.style.width = `${w}px`; cv.style.height = `${h + f}px`; this.lastBody = null; } }
-    const B = body(w, h, dpr, { glyph: this.glyph, pal: S.lit || S.pressed ? 'gold' : this.iconPal || 'clay', word: this.word, corner: this.corner, pressed: S.pressed });
+    const B = body(w, h, dpr, { glyph: this.glyph, pal: S.lit || S.pressed ? 'gold' : this.iconPal || 'clay', word: this.word, corner: this.corner, pressed: S.pressed, tint: this.tint });
     if (this.lastBody !== B) { const g = this.bodyCv.getContext('2d'); g.clearRect(0, 0, this.bodyCv.width, this.bodyCv.height); g.drawImage(B, 0, 0); this.lastBody = B; }
     this.drawRim(now, w, h, dpr, S.pressed ? f : 0);
   }

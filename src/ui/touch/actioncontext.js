@@ -1,0 +1,127 @@
+// ---------------------------------------------------------------------------------------
+// WHAT THE ACTION MODES SHOW ON GLASS: the cluster's faces and the strip's on foot, with a tool in hand and in a puzzle duel (docs/plans/
+// MOBILE.md 8.5, 8.8, 8.9; the words Espada's, 8.3), read from the moment, read only. Each entry is a tile: its id the binding's touch
+// control (core/bindings.js `touch`: the driver presses it through the live ctx), its face (a glyph `touch.<glyph>`, a word, a corner),
+// and its state (lit, dim, a note pad's tint). The cluster (cluster.js) and the strip (strip.js) lay them out; nothing here moves.
+//   ON FOOT       JUMP (the main), CROUCH, DASH, and the fourth by context: USE naming its thing, else PARRY once learned (the kick),
+//                 else BLINK once learned. At the cluster's top edge, small: DRAW (STOW while the main is out) and LEND (the sub's verb,
+//                 SUB_GIFTS) while a sub is worn.
+//   A TOOL OUT    FIRE and AIM in the tool's own verbs and glyphs (FIRE / AIM, ATTACK / SPECIAL, CAST or REEL / SINK or GIVE LINE, THROW or
+//                 REEL / PAY OUT, ATTACK / FLICK, PHOTO / LENS, PICK / DOWSE, TOLL / HIGH, HOOVER / OPEN), the third its own (SHELL, LOCK,
+//                 PING, JUMP off the hook, REPROGRAM by a stunned mind, SURVEY), PARRY the fourth; the strip the tool's (the chambers and
+//                 FAN, BREATH scoped; the Sondelass's forms; LURE and CRANK; PAINT or MOP; FLASH; the Crucibelle's five note pads, each in
+//                 its note's colour, its number small), BLINK at its end once learned.
+//   A PUZZLE DUEL END TURN (the main; dim on the foe's turn), FINISHER on a broken foe, FLEE, FORM (what you would become: HAND or
+//                 COURIER); the strip the worn tools' moves (dim in the hand's form: they are the Courier's), ROTATE first while a piece
+//                 is under the last touch in the hand's form.
+// The tool's name small in FIRE's corner (8.3) is left out: at 72 px it lands on the glyph; the glyph is the tool's own.
+//
+// Prior art: Genshin Impact's attack and skill tiles changing with the character, Call of Duty Mobile's fire button by weapon, Into the
+// Breach's strip of moves with END TURN the largest; the cluster's own reading of the skiff (cluster.js clusterContext).
+//
+//   footCluster(game) toolCluster(game, tool) duelCluster(game) -> [entry]   stripOf(game) -> [entry]   beltPairOf(game) -> [entry]
+//   inHandCtx(game) -> 'psygun' | 'cutlass' | 'rod' | 'hook' | 'brush' | 'veritome' | 'dreamvane' | 'crucibelle' | 'lockheart' | null
+//   entry { id, glyph, word, corner, lit, dim, tint }   ACTION_TILES (the words and glyphs by tool)
+// ---------------------------------------------------------------------------------------
+import { SUB_GIFTS } from '../../progress/toolpairs.js';
+import { DEGREE_COLOR } from '../../tools/crucibelle/songs.js';
+
+/** By tool in hand: FIRE's and AIM's faces, the third (or null), and what the faces become in their other moment. */
+export const ACTION_TILES = {
+  psygun: { fire: ['psfire', 'FIRE'], aim: ['psaim', 'AIM'], third: { id: 'shell', glyph: 'shell', word: 'SHELL' } },
+  cutlass: { fire: ['cuattack', 'ATTACK'], aim: ['cuspecial', 'SPECIAL'], third: { id: 'lock', glyph: 'lock', word: 'LOCK' } },
+  rod: { fire: ['cast', 'CAST'], aim: ['sink', 'SINK'], fishOn: { fire: 'REEL', aim: 'GIVE LINE' }, third: { id: 'ro.ping', glyph: 'ping', word: 'PING' } },
+  hook: { fire: ['throw', 'THROW'], aim: ['payout', 'PAY OUT'], reeling: 'REEL', third: { id: 'jump', glyph: 'jump', word: null } },
+  brush: { fire: ['club', 'ATTACK'], aim: ['flick', 'FLICK'], third: { id: 'lock', glyph: 'lock', word: 'LOCK' } },
+  veritome: { fire: ['photo', 'PHOTO'], aim: ['lens', 'LENS'], third: { id: 've.mind', glyph: 'mind', word: 'REPROGRAM' } },
+  dreamvane: { fire: ['pick', 'PICK'], aim: ['dowse', 'DOWSE'], third: { id: 'dv.survey', glyph: 'survey', word: 'SURVEY' } },
+  crucibelle: { fire: ['toll', 'TOLL'], aim: ['high', 'HIGH'], third: null },
+  lockheart: { fire: ['hoover', 'HOOVER'], aim: ['open', 'OPEN'], third: null },
+};
+/** The duel's moves by the tool that brings them (progress/duel/couriertools.js), in the keys' order. */
+const DUEL_MOVES = [
+  ['psygun', 'du.shoot', 'psfire', 'SHOOT'], ['sondelass', 'du.grab', 'throw', 'GRAB'], ['dreamvane', 'du.drill', 'drill', 'DRILL'],
+  ['soulbrush', 'du.paint', 'paint', 'PAINT'], ['crucibelle', 'du.delay', 'delay', 'DELAY'], ['lockheart', 'du.hold', 'hold', 'HOLD'],
+  ['lockheart', 'du.send', 'send', 'SEND'],
+];
+const FORMS = [['so.cutlass', 'sofcutlass', 'cutlass'], ['so.rod', 'sofrod', 'rod'], ['so.hook', 'sofhook', 'hook']];
+
+const techs = (g) => g.techs || g.player?.techs;
+const learned = (g, id) => { const t = techs(g)?.get?.(id); return !!t && (t.usable ? t.usable() : !!t.enabled); };
+const E = (id, glyph, word = null, more = {}) => ({ id, glyph, word, ...more });
+
+/** The ctx word of the tool in the hands (the bindings' `tool.<id>` without its prefix), or null. */
+export function inHandCtx(g) {
+  const t = g?.belt?.inHand; if (!t) return null;
+  return t.id === 'sondelass' ? t.form || 'cutlass' : t.id === 'soulbrush' ? 'brush' : t.id;
+}
+
+/** On foot, nothing in the hands: JUMP, CROUCH, DASH, the fourth by context (USE, else PARRY, else BLINK). */
+export function footCluster(g, use) {
+  const fourth = use ? 'use' : learned(g, 'kick') ? E('parry', 'parry', 'PARRY') : learned(g, 'blink') ? E('blink', 'blink', 'BLINK') : null;
+  return [E('jump', 'jump'), E('crouch', 'crouch', 'CROUCH'), E('dash', 'dash'), fourth];
+}
+
+/** A tool out: FIRE and AIM in its verbs, its third, PARRY the fourth. */
+export function toolCluster(g, ctx) {
+  const T = ACTION_TILES[ctx]; if (!T) return null;
+  const tool = g.belt?.inHand, fire = E('fire', T.fire[0], T.fire[1]), aim = E('aim', T.aim[0], T.aim[1]);
+  if (ctx === 'rod' && tool?.angler?.state === 'fight') { fire.word = T.fishOn.fire; aim.word = T.fishOn.aim; }
+  if (ctx === 'hook' && tool?.hookshot?.reeling) fire.word = T.reeling;
+  let third = T.third ? { ...T.third } : null;
+  if (third?.id === 've.mind' && !g.reprogram?.target?.()) third = null; // (REPROGRAM: shown by a stunned mind)
+  return [fire, aim, third, E('parry', 'parry', 'PARRY')];
+}
+
+/** A puzzle duel: END TURN, FINISHER on a broken foe, FLEE, FORM. */
+export function duelCluster(g) {
+  const D = g.duel, s = D?.state; if (!s) return [];
+  const S = s.sides[0], broken = (s.sides[1]?.depth || 0) > 0, mine = !!D.mine;
+  return [
+    E('du.end', 'endturn', 'END TURN', { dim: !mine }),
+    broken ? E('du.finish', 'finisher', 'FINISHER', { dim: !mine }) : null,
+    E('du.flee', 'flee', 'FLEE', { dim: !mine }),
+    S.form === 'hand' ? E('du.form', 'formcourier', 'COURIER', { dim: !mine }) : E('du.form', 'grab', 'HAND', { dim: !mine }),
+  ];
+}
+
+/** DRAW (STOW while the main is out) and LEND (the sub's verb) at the cluster's top edge, on foot. */
+export function beltPairOf(g) {
+  const B = g.belt; if (!B?.main || g.duel?.active) return [];
+  const out = !!B.inHand && B.inHand.id === B.main, gift = B.sub ? SUB_GIFTS[B.sub] : null;
+  return [
+    gift ? E('lend', 'lend', gift.verb.toUpperCase()) : null,
+    out ? E('tool', 'stow', 'STOW', { lit: true }) : E('tool', 'draw', 'DRAW'),
+  ].filter(Boolean);
+}
+
+/** The strip over the cluster: the tool's own row, or the duel's moves. */
+export function stripOf(g) {
+  if (g.duel?.active) return duelStrip(g);
+  const ctx = inHandCtx(g); if (!ctx) return [];
+  const out = [], tool = g.belt.inHand;
+  if (ctx === 'psygun') {
+    const S = g.shells, n = S?.gun?.chambers ?? S?.chambers?.length ?? 0;
+    for (let i = 0; i < Math.min(7, n); i++) out.push(E(`ps.ch${i + 1}`, 'chamber', String(i + 1), { lit: S.selected === i }));
+    out.push(E('ps.fan', 'fan', 'FAN'));
+    if (g.weapon?.play?.scoped) out.push(E('ps.breath', 'breath', 'BREATH'));
+  } else if (ctx === 'cutlass' || ctx === 'rod' || ctx === 'hook') {
+    for (const [id, glyph, form] of FORMS) out.push(E(id, glyph, null, { lit: form === ctx }));
+    if (ctx === 'rod') out.push(E('ro.lure', 'lure', 'LURE'), E('ro.crank', 'crank', 'CRANK'));
+  } else if (ctx === 'brush') {
+    const mode = (tool?.load || tool?.tech?.load)?.mode || 'paint';
+    out.push(mode === 'paint' ? E('br.mop', 'brmop', 'MOP') : E('br.paint', 'paint', 'PAINT')); // (one tile, its two faces: the one it goes to)
+  } else if (ctx === 'veritome') out.push(E('ve.flash', 'flash', 'FLASH'));
+  else if (ctx === 'crucibelle') for (let i = 0; i < 5; i++) out.push(E(`cr.n${i + 1}`, null, null, { corner: String(i + 1), tint: DEGREE_COLOR[i], pad: true }));
+  if (learned(g, 'blink')) out.push(E('blink', 'blink', 'BLINK'));
+  return out;
+}
+
+function duelStrip(g) {
+  const D = g.duel, s = D.state; if (!s) return [];
+  const S = s.sides[0], worn = S.tools ? new Set(S.tools) : null, hand = S.form === 'hand', out = [];
+  const cell = D.hover, piece = hand && cell ? s.board?.at?.(cell.x, cell.y) : null;
+  if (piece && piece.kind !== 'body') out.push(E('du.rotate', 'rotate', 'ROTATE', { dim: !D.mine }));
+  for (const [tool, id, glyph, word] of DUEL_MOVES) if (!worn || worn.has(tool)) out.push(E(id, glyph, word, { dim: hand || !D.mine }));
+  return out;
+}
