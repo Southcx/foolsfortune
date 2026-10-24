@@ -81,7 +81,7 @@ export class ShopUI {
     const cols = el('div', 'cols');
 
     // the shelf
-    const shelf = el('div', 'pane'); shelf.appendChild(el('h4', '', `<span>ON THE SHELF</span><span>${D.haggle ? 'right click to haggle' : 'fair prices'}</span>`));
+    const shelf = el('div', 'pane'); shelf.appendChild(el('h4', '', `<span>ON THE SHELF</span><span>${D.haggle ? 'HAGGLE talks a price down' : 'fair prices'}</span>`));
     const list = el('div', 'shelf');
     for (const [id, base] of shelfOf(this.shop)) {
       const it = itemOf(id), n = S.stockOf(this.shop, id), p = S.price(this.shop, id);
@@ -90,7 +90,7 @@ export class ShopUI {
       const pr = el('div', 'pr', p == null ? 'none left' : `${p}<small>CUBES</small>`);
       if (D.haggle && p != null) { const b = el('button', '', 'HAGGLE'); b.onclick = (e) => { e.stopPropagation(); S.haggle(this.shop, id); }; pr.appendChild(b); }
       row.appendChild(pr);
-      row.onmouseenter = () => this.say(p == null ? `${keeper} has no <b>${it.name}</b> left. (It comes back in time.)` : `Buy <b>${it.name}</b> for <b>${p}</b> cubes${D.haggle ? ' · right click: haggle' : ''}`);
+      row.onmouseenter = () => this.say(p == null ? `${keeper} has no <b>${it.name}</b> left. (It comes back in time.)` : `Buy <b>${it.name}</b> for <b>${p}</b> cubes${D.haggle ? ' · or HAGGLE for less' : ''}`);
       row.onmouseleave = () => this.say('&nbsp;');
       row.onclick = () => { if (p != null) S.buy(this.shop, id); };
       row.oncontextmenu = (e) => { e.preventDefault(); if (D.haggle && p != null) S.haggle(this.shop, id); };
@@ -109,7 +109,7 @@ export class ShopUI {
     shelf.appendChild(list); cols.appendChild(shelf);
 
     // their box: what they could sell
-    const inv = el('div', 'pane'); inv.appendChild(el('h4', '', `<span>YOUR PNEUKA BOX</span><span>click to sell</span>`));
+    const inv = el('div', 'pane'); inv.appendChild(el('h4', '', `<span>YOUR PNEUKA BOX</span><span>choose a thing to sell</span>`));
     const grid = el('div', 'grid');
     box.slots.forEach((s, i) => {
       const it = s && itemOf(s.id), v = it ? S.offer(this.shop, s.id, s.data) : 0;
