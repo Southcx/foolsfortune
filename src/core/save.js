@@ -208,8 +208,12 @@ export class Save {
     for (const [k, v] of Object.entries(keys || {})) if (k === RECORD.player || k === RECORD.world || ['player', 'world'].includes(scopeOfKey(k))) this.write(k, v);
     for (const scope of ['player', 'world']) this.records[scope] = this.read(RECORD[scope]) || { v: 1, sections: {} };
   }
-  /** The play time the stored progress holds (the ledger's, real s): what decides which of two saves was played longer. */
-  played() { return this.records.player?.sections?.ledger?.data?.play ?? 0; }
+  /** The play time the stored progress holds (the ledger's, real s): what decides which of two saves was played longer. `keys`: of a
+   *  snapshot of the progress (`progress()`), not what is stored now. */
+  played(keys = null) {
+    if (!keys) return this.records.player?.sections?.ledger?.data?.play ?? 0;
+    try { return JSON.parse(keys[RECORD.player] || 'null')?.sections?.ledger?.data?.play ?? 0; } catch { return 0; }
+  }
   /** A page hidden or closed (a phone backgrounding the tab, a tab shut): everything written now, the timers' keys too; `then` after. */
   watchPage(then) {
     const now = () => { this.flush({ all: true }); then?.(); };

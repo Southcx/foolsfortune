@@ -119,7 +119,9 @@ export class CloudSave {
   flushNow() { if (this.state === 'on' && !this.waiting) this.upload(); }
 
   async upload() {
-    if (this.busy || this.save.holds.size) return; this.busy = true;
+    if (this.save.holds.size) return;
+    if (this.busy) { this.again = true; return; } // (asked while one is in flight: run again when it ends, with what is stored then)
+    this.busy = true; this.again = false;
     try {
       const cur = this.save.progress(), changed = Object.keys(cur).filter((k) => cur[k] !== this.sent[k]), gone = Object.keys(this.sent).filter((k) => !(k in cur));
       if (!changed.length && !gone.length) return;
@@ -132,7 +134,7 @@ export class CloudSave {
         keys[k] = { gen, parts };
       }
       for (const k of gone) { if (keys[k]) stale.push([k, keys[k]]); delete keys[k]; }
-      const M = { ...base, label: labelOf(), played: this.save.played(), keys };
+      const M = { ...base, label: labelOf(), played: this.save.played(cur), keys }; // (the play time of the save as sent, not as it is by now)
       await this.metaRef().set(M); // (the commit: from here the cloud is this save)
       for (const k of changed) this.sent[k] = cur[k];
       for (const k of gone) delete this.sent[k];
@@ -141,7 +143,7 @@ export class CloudSave {
     } catch (e) {
       if (!this.failed) { this.failed = true; this.emit('failed', { why: e?.code || 'error' }); } // (said once; the browser's copy is the save meanwhile)
       if (e?.code === 'invalid_argument' || e?.code === 'quota_exceeded' || e?.code === 'revoked') this.state = 'local'; // (may not write here: the browser alone)
-    } finally { this.busy = false; }
+    } finally { this.busy = false; if (this.again && this.state === 'on' && !this.waiting) this.upload(); }
   }
 
   /** The other save (the Codex's LOAD): put in place whole, and the page reloads; the one played now is kept in its place a game day. */
