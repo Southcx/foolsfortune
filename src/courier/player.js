@@ -188,6 +188,9 @@ export class Player {
 
   /** Somewhere we know is clear (the guard's fallback): after a teleport, where we are now. */
   markSafe() { this.safe.pos.copy(this.pos); this.safe.shape = this.shape; this.safe.t = 0; }
+  /** Moved in play, not set down (CASEBOOK move-is-not-set-down): the body sent to `v` with its state, its ride and its tools kept, its fall
+   *  and its safe spot taken from there (a portal's warp, a sibling's catch-up). Setting the Courier down is `course.teleport`. */
+  moveTo(v, vel = null) { this.pos.copy(v); this.prevPos.copy(v); this.renderPos.copy(v); if (vel) this.vel.copy(vel); this.airPeak = v.y; this.airT = 0; this.place(); this.markSafe(); }
 
   respawn(why = 'fall') {
     this.ev('courier.respawn', { why });

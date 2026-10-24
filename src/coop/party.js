@@ -92,7 +92,7 @@ export class Party {
     const def = SIBLINGS.find((s) => s.id === id);
     const S = new Sibling(this.game, { id, color: def.color, look: lookOf(id), rig, seen: this.seen });
     this.list.push(S); this.reslot(); this.dirty();
-    if (at) { S.body.pos.copy(at); S.body.prevPos.copy(at); S.body.renderPos.copy(at); S.body.place(); S.body.markSafe(); } else S.warp(this.game.player);
+    if (at) S.body.moveTo(at); else S.warp(this.game.player);
     this.game.events.emit('party.call', { sibling: id, by: 'courier' });
     return S;
   }

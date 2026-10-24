@@ -24,7 +24,7 @@ import { GROUPS } from '../core/physics.js';
 
 const KEEP = { r: 3.2, row: 1.8, guard: 2, scout: 10, side: 1.4, back: 0.45, slowR: 3, sprintAt: 6, idle: 0.35, catchUp: 28, catchUpY: 9, backWarp: 12, stuckJump: 0.35, stuckWarp: 3, noProgress: 6, progress: 0.5 };
 const STAY = new Set(['hold', 'go']); // (orders that stand where told: never warped to the leader)
-const _goal = new THREE.Vector3(), _v = new THREE.Vector3(), _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3();
+const _goal = new THREE.Vector3(), _v = new THREE.Vector3(), _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _still = new THREE.Vector3(); // (_still: a body moved and stopped)
 
 export class Follow {
   /** body: the sibling's Player; keys: its VirtualKeys; slot: its place in the arc (0..of-1). */
@@ -81,15 +81,14 @@ export class Follow {
     const B = this.body, hit = B.physics.raycast({ x: at.x, y: at.y + 3, z: at.z }, { x: 0, y: -1, z: 0 }, 8, B.collider, GROUPS.controllerQuery, (c) => !c.isSensor());
     this.stuck = 0; this.since = 0; this.best = Infinity; this.keys.release();
     if (!hit || hit.normal.y < 0.6) return false;
-    B.pos.set(at.x, hit.point.y, at.z); B.prevPos.copy(B.pos); B.renderPos.copy(B.pos); B.vel.set(0, 0, 0); B.place(); B.markSafe();
+    B.moveTo(_a.set(at.x, hit.point.y, at.z), _still);
     return true;
   }
 
   /** Set down in the slot (found on the ground under it, or beside the leader if there is none). */
   warp(leader) {
     const B = this.body, g = this.slotOf(leader, _goal), hit = B.physics.raycast({ x: g.x, y: leader.pos.y + 2, z: g.z }, { x: 0, y: -1, z: 0 }, 6, B.collider, GROUPS.controllerQuery, (c) => !c.isSensor());
-    B.pos.copy(hit && hit.normal.y > 0.6 ? _a.set(g.x, hit.point.y, g.z) : leader.pos);
-    B.prevPos.copy(B.pos); B.renderPos.copy(B.pos); B.vel.set(0, 0, 0); B.place(); B.markSafe();
+    B.moveTo(hit && hit.normal.y > 0.6 ? _a.set(g.x, hit.point.y, g.z) : _a.copy(leader.pos), _still);
     this.stuck = 0; this.since = 0; this.best = Infinity; this.keys.release();
   }
 }

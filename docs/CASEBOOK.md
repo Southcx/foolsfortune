@@ -837,13 +837,13 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 283. **A height field's edge is cut where its value crosses, never at a cell.** A skin shown or hidden a vertex at
     a time cuts at the cells' midpoints and its triangles' diagonals (a sawtooth); write the value itself (unclamped) where the cut
     reads it, and lay the empty side on the ground it meets, so the rasterizer interpolates the crossing (marching squares).
-NEW:trap-has-a-way-past. **Every trap, held or not, leaves a way past.** A possessed trap that can catch the same rider again at once
+284. **Every trap, held or not, leaves a way past.** A possessed trap that can catch the same rider again at once
     is a wall; it spares whom it just caught until they are past it.
-NEW:move-is-not-set-down. **A move in play is not a setting down.** A warp, a shove or a portal moves the body and keeps its state;
+285. **A move in play is not a setting down.** A warp, a shove or a portal moves the body and keeps its state;
     `course.teleport` is for setting the Courier down (rule 202), and resets what that resets.
-NEW:camera-inside-the-haze. **A scripted camera stays inside the far plane and the haze.** Before hanging a camera far out, read the
+286. **A scripted camera stays inside the far plane and the haze.** Before hanging a camera far out, read the
     house camera's far (200 m) and the zone's fog; show the rest as a map, not as a view.
-NEW:slack-only-curve. **A rope's slack is its only curve, and it is told, never left to the solver.** The caller says how much line
+287. **A rope's slack is its only curve, and it is told, never left to the solver.** The caller says how much line
     there is beyond the span (m); with none it is drawn as the straight segment, unsimulated; a chain only while there is real slack,
     eased by `smoothstep(slack, 0.3, 0)`, and its belly held to the sag that slack can make. A few-pass Verlet chain stretches under its
     own weight, so its shape is not evidence of its length; and a width meant for the screen is a pixel count, scaled once.
