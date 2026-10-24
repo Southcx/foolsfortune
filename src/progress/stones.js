@@ -13,6 +13,10 @@
 //   - the DRAUGHT: the feeling of the Lachryma last drunk (the weather where it was drunk: progress/weather.js). Your blows of that
 //     feeling's damage type build their status faster. TINT is how strongly a stone takes the place's feeling.
 //
+// The stones are dice (the owner, 2026-10-23: "merge the Pneuka stones with the stones"; docs/plans/DICE.md): a set is seven dice of
+// solid Lachryma in the standard set's shapes, its mineral its trade (the rows below), and the chance rolled for the Courier is thrown on
+// them; the god hand holds them as one palm die. Nothing below changes for it.
+//
 // Prior art: Dark Souls' rings and FFXI's gear (a slot that trades one number for another, never a straight upgrade); Path of Exile's
 // keystones (a large gain paid for with a real loss); Darkest Dungeon's stress (a meter that is power and danger at once); Breath of the
 // Wild's elixirs (what you take in changes what you can do, for a while); the old lapidaries (amethyst against drunkenness, citrine the

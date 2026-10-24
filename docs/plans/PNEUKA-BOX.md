@@ -15,7 +15,7 @@ are added below as they happen.
 **The rule** (TOOLS-TOGETHER.md 8, ruled 2026-10-22 and 23):
 - Two tools are worn: the **main**, in hand with all its verbs, and the **sub**, which lends the main one verb on **R** and one passive.
 - The other five wait in the Pneuka Box.
-- You swap at a Shrine or at the Pneuka Box, out of a fight (still open: the owner has not ruled where).
+- You swap anywhere the Pneuka Box opens, out of a fight (the owner ruled, 2026-10-23: anywhere out of a fight).
 - Every pair of tools is one of 21 cards, the Major Arcana I to XXI, and each pair's special is opened by an achievement.
 
 **What the Box is today** (`pneuka/box.js`, `pneuka/ui.js`; OSRS's inventory):
@@ -51,7 +51,7 @@ are added below as they happen.
 3. **The five tools not worn,** as choices you can see. A swap shows what changes (compare arrows, `ChoiceCard`).
 4. **The pocket:** the 56 slots, stacks, the hover line, left click and right click, drag to swap, and drop.
 5. **The bank:** the Book beside the box with the Veritome open (store, take out, STORE ALL).
-6. **Where a swap is refused:** in a fight, or away from a Shrine or the Box (if the owner rules that). The refusal is said at the point
+6. **Where a swap is refused:** in a fight, a puzzle duel, at sea, mid-race or at a table; never for being away from a Shrine (the owner ruled, 2026-10-23: anywhere out of a fight). The refusal is said at the point
    of use.
 7. **The keys:** what each freed key does now, if anything. A key left empty is better than a key that surprises.
 8. **The house rules:**

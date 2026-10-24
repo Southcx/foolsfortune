@@ -5,11 +5,12 @@
 //  - THE COMPENDIUM keeps the best photograph of every kind of thing (a better one replaces it).
 //  - THE BESTIARY learns every fact a creature in it shows (bestiary.js): what it was doing, if that is something not yet known.
 //    A creature has to be well in the picture for that (two stars or more): a speck at the edge teaches nothing.
-//  - THE BOOK is given a card for every Arcana whose sitting the plate satisfies, and a creature's card when that creature is the
-//    main subject of a plate of three stars or more (Wind Waker's figurines: a good enough pictograph is a likeness). In one batch a
-//    card is given once, however many plates earn it, so a roll of the same thing is not a stack of the same card.
+//  - THE COLLECTION (progress/collection.js) binds a card for every Arcana whose sitting the plate satisfies, and a creature's card when
+//    that creature is the main subject of a plate of three stars or more (Wind Waker's figurines: a good enough pictograph is a
+//    likeness). In one batch a card is earned once, however many plates earn it; one already bound condenses into cubes.
 //
-// The darkroom only decides; the Book keeps (book.js) and the events tell the ledger and the log (tracking.js).
+// The darkroom only decides; the Book keeps the photographs and facts (book.js), the collection the cards, and the events tell the ledger
+// and the log (tracking.js).
 //
 // Prior art: Pokémon Snap's report (Professor Oak judges the whole roll after the course, shot by shot, and only the best of each
 // Pokémon goes in the album), Dark Cloud 2's scoops (a photograph of the right thing becomes an idea when it is looked at), Wind
@@ -41,8 +42,9 @@ export function appraise(game, book, plates) {
       if (s.stars < 2) continue;
       for (const f of book.bestiary.learn(s)) { r.facts.push(f); out.facts++; ev?.emit('bestiary.fact', { creature: f.creature, fact: f.fact, battle: f.battle }); }
     }
-    // the Book: the Arcana whose sittings these are, and a likeness of the main subject
-    const earn = (id) => { if (given.has(id)) return; given.add(id); if (book.give(id, 'darkroom')) { r.cards.push(id); out.cards++; } };
+    // the collection (progress/collection.js): the Arcana whose sittings these are, and a likeness of the main subject; one bound already
+    // condenses into cubes
+    const earn = (id) => { if (given.has(id)) return; given.add(id); if (game.collection?.bind(id, 'darkroom')) { r.cards.push(id); out.cards++; } };
     for (const A of arcana) if (sits(shot, A.sitting)) earn(A.id);
     const main = shot.subjects[0], cr = main && creatureOf(main);
     if (cr && CREATURES[cr] && main.stars >= 3) earn(`creature.${cr}`);

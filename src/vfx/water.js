@@ -35,6 +35,7 @@
 // Fantasy X (a painted sky in the water, a palette chosen, not simulated).
 //
 //   const w = makeWaterMaterial(sky, 'water' | 'lachryma');   w.uniforms.uTime.value = t;   SOUR_U.uSour.value = 0..1 (the curdled film)
+//   aDepth at 100 and over: the god hand's code for its Lachryma (WATER_TINTS: a feeling's tint, or none drawn), uTints its colours
 //   waterGeometry(volume)   -> a plane with `aDepth` (metres to the floor; 0 at the edge) for the volume { x0, x1, z0, z1, surface, bottom, depthAt? }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -43,6 +44,9 @@ import { RIPPLE_U, RIPPLE_GLSL } from './ripples.js';
 
 /** The curdled film's strength, shared by every liquid material (vfx/weather.js sets it where Gall falls). */
 export const SOUR_U = { uSour: { value: 0 } };
+/** The god hand's code in `aDepth` (vfx/godhand/matterlook.js `liquidDepth`): n * 100 + strength (0..9) * 10 + depth, n `none` (Lachryma
+ *  untinted), `first` + i (a tint of `uTints[i]`: the seven feelings, then ice) or `hide` (no Lachryma: discarded). */
+export const WATER_TINTS = { none: 1, first: 2, hide: 10 };
 const SOUR_GLSL = /* glsl */`
 uniform float uSour;
 // the curdled skin: two slow taps of the owner's noise thresholded into blotches (clots), with a ragged rim; 0 where none lies
@@ -57,19 +61,26 @@ const VERT = `
 #include <common>
 #include <fog_pars_vertex>
 attribute float aDepth;
-uniform float uTime; uniform float uAmp; uniform float uFreq; uniform float uSpeed;
-varying vec3 vW; varying float vDepth; varying float vH; varying vec3 vN; varying float vGloss;
+uniform float uTime; uniform float uAmp; uniform float uFreq; uniform float uSpeed; uniform vec3 uTints[8];
+varying vec3 vW; varying float vDepth; varying float vH; varying vec3 vN; varying float vGloss; varying vec4 vTint; varying float vHide;
 void main() {
+  // aDepth below 100 is a depth (every pool); at 100 and over it is the god hand's code (WATER_TINTS): n * 100 + strength * 10 + depth
+  float dep = aDepth; vTint = vec4(0.0); vHide = 0.0;
+  if (dep >= 100.0) {
+    float n = floor(dep / 100.0), r = dep - n * 100.0, s = floor(r / 10.0); dep = r - s * 10.0;
+    vHide = step(9.5, n); int ti = int(n) - 2;
+    if (ti >= 0 && ti < 8) vTint = vec4(uTints[ti], s / 9.0);
+  }
   vec4 wp = modelMatrix * vec4(position, 1.0);
   float f = uFreq, t = uTime * uSpeed;
   float a1 = wp.x * 1.3 * f + t * 1.5, a2 = wp.z * 1.7 * f - t * 1.2, a3 = (wp.x + wp.z) * 0.8 * f + t * 0.9;
-  float calm = smoothstep(0.0, 0.7, aDepth);            // (the water lies still against the shore)
+  float calm = smoothstep(0.0, 0.7, dep);            // (the water lies still against the shore)
   float h = uAmp * (0.5 * sin(a1) + 0.4 * sin(a2) + 0.3 * sin(a3)) * calm;
   float dx = uAmp * calm * (0.5 * 1.3 * f * cos(a1) + 0.3 * 0.8 * f * cos(a3));
   float dz = uAmp * calm * (0.4 * 1.7 * f * cos(a2) + 0.3 * 0.8 * f * cos(a3));
   wp.y += h;
   vN = normalize(vec3(-dx * 1.6, 1.0, -dz * 1.6));
-  vW = wp.xyz; vDepth = aDepth; vH = h / max(uAmp, 1e-4);
+  vW = wp.xyz; vDepth = dep; vH = h / max(uAmp, 1e-4);
   vGloss = smoothstep(-0.6, 0.6, sin(wp.x * 0.23 + wp.z * 0.07 + t * 0.05) * sin(wp.z * 0.19 - wp.x * 0.11 - t * 0.04) + 0.3 * sin((wp.x - wp.z) * 0.41 + t * 0.07)); // (the gloss's slow field, rougher and smoother patches tens of metres across: a vertex has all the detail it needs)
   vec4 mvPosition = viewMatrix * wp;
   gl_Position = projectionMatrix * mvPosition;
@@ -80,12 +91,13 @@ const FRAG = `
 #include <common>
 #include <fog_pars_fragment>
 uniform sampler2D uSky; uniform vec3 uSun; uniform float uMaxDepth; uniform float uTime; uniform float uLachryma;
-varying vec3 vW; varying float vDepth; varying float vH; varying vec3 vN; varying float vGloss;
+varying vec3 vW; varying float vDepth; varying float vH; varying vec3 vN; varying float vGloss; varying vec4 vTint; varying float vHide;
 //SKYGLSL
 //LIQUIDGLSL
 //RIPPLEGLSL
 //SOURGLSL
 void main() {
+  if (vHide > 0.5) discard; // (the god hand's Lachryma where there is none: its edge cut half way to the dry cell)
   vec3 V = normalize(cameraPosition - vW);
   bool under = !gl_FrontFacing;
   float dist = length(cameraPosition - vW), far = smoothstep(18.0, 70.0, dist); // (far water calms: Sunshine's distance change)
@@ -172,6 +184,7 @@ void main() {
   }
   alpha = smoothstep(0.0, 0.3, vDepth) * 0.97 + foam * 0.3;                    // (the water paints its own floor: it fades only at the very edge, onto the real sand)
   }
+  col = mix(col, vTint.rgb * (0.3 + 0.7 * fres) + col * 0.4, vTint.a * 0.55); // (the god hand's Lachryma: its leading feeling, or its ice)
   if (under) { col *= 0.55; alpha = 0.55; }
   gl_FragColor = vec4(col, clamp(alpha, 0.0, 1.0));
   #include <tonemapping_fragment>
@@ -185,6 +198,7 @@ export function makeWaterMaterial(sky, kind = 'water') {
     uTime: { value: 0 }, uSky: { value: sky?.texture ?? null }, uSun: { value: new THREE.Vector3(0.35, 0.9, -0.25) },
     ...liquidUniforms(), uLachryma: { value: lach ? 1 : 0 }, uAmp: { value: lach ? 0.05 : 0.035 }, uFreq: { value: lach ? 0.55 : 1.0 }, uSpeed: { value: lach ? 0.32 : 1.0 }, uMaxDepth: { value: 6 },
   }]);
+  uniforms.uTints = { value: Array.from({ length: 8 }, () => new THREE.Color(0)) }; // (filled by vfx/godhand/matterlook.js; merge would clone an array of colours as plain objects)
   Object.assign(uniforms, RIPPLE_U, SOUR_U); // (the ripple tank's and the curdled film's, shared as they are: merge would have copied them)
   return new THREE.ShaderMaterial({ name: lach ? 'liquid-lachryma' : 'liquid-water',
     uniforms, vertexShader: VERT, fragmentShader: FRAG.replace('//SKYGLSL', sky?.GLSL ?? '').replace('//LIQUIDGLSL', LIQUID_GLSL).replace('//RIPPLEGLSL', RIPPLE_GLSL).replace('//SOURGLSL', SOUR_GLSL),

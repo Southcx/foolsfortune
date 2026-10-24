@@ -26,7 +26,8 @@
 // street, Rez's Area 5 and Child of Eden's warped tunnels, Codrops' "Animated Heat Distortion Effects with WebGL" (Lucas Bebber, 2016:
 // the frame sampled through scrolling noise, masked), a lens's lateral chromatic aberration (red and blue apart, worst at the edges).
 //
-//   game.stormWarp = new StormWarp(game)   .set({ storm, weather, mind, anywhere })   .update(rawDt, camera) (each frame)   .k (applied)
+//   game.stormWarp = new StormWarp(game)   .set({ storm, weather, mind, anywhere, veil })   .update(rawDt, camera) (each frame)   .k (applied)
+//   veil: 0..1, the VEIL alone, anywhere, never the bend (a squall on the open sea: vfx/opensea/squallline.js; its light leans to the rain's slate)
 //   .quiet()                     every shared uniform and the veil at nothing (the workbench opening: its stages set their own)
 //   warpMaterial(mat)            a material of the environment bends (and takes the Umbral's caustics: vfx/umbral.js): build time, before the warm-up
 //   deepMaterial(mat)            the same program, never bent: the caustics only (the ship, a foe)
@@ -78,7 +79,7 @@ export const STORM_U = { uStormBend: { value: 0 }, uStormSway: { value: 0 }, uSt
 export const STORM = { bend: 0.1, sway: 0.028, whorl: 0.18, haze: 1, split: 1, ease: 1.2, seat: 0.4 }; // (at 1, the storm wall: the far world turned 10 degrees at most, 3 degrees a real second at most; past that the horizon swims)
 /** The Courier's mental state's weight on the storm, Stoic to Prismatic. */
 const MIND_K = [0.65, 0.82, 1, 1.18, 1.36];
-const GOLD_WHITE = new THREE.Color(1.0, 0.92, 0.74);
+const GOLD_WHITE = new THREE.Color(1.0, 0.92, 0.74), SLATE = new THREE.Color(0.66, 0.71, 0.78); // (the veil's light: the storm's gold-white; a squall's rain-slate)
 
 export const STORM_GLSL = /* glsl */`
 uniform float uStormBend, uStormSway, uStormWhorl, uStormT, uStormOn;
@@ -190,13 +191,13 @@ const smooth = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a
 export class StormWarp {
   constructor(game) {
     this.game = game;
-    this.target = { storm: 0, weather: 0, aspect: null, mind: null };
-    this.k = 0; this.t = 0; this.anywhere = false;
+    this.target = { storm: 0, weather: 0, aspect: null, mind: null, veil: 0 };
+    this.vk = 0; this.k = 0; this.t = 0; this.anywhere = false;
     this.tint = GOLD_WHITE.clone();
   }
 
   /** The storm's three sources (each kept until it is set again). */
-  set({ storm, weather, mind, anywhere } = {}) {
+  set({ storm, weather, mind, anywhere, veil } = {}) {
     const S = this.target;
     if (storm !== undefined) S.storm = THREE.MathUtils.clamp(+storm || 0, 0, 1);
     if (weather !== undefined) {
@@ -205,6 +206,7 @@ export class StormWarp {
     }
     if (mind !== undefined) S.mind = mind;
     if (anywhere !== undefined) this.anywhere = !!anywhere;
+    if (veil !== undefined) S.veil = THREE.MathUtils.clamp(+veil || 0, 0, 1);
   }
 
   /** The mental state as a number on the creatures' scale (-2 Stoic .. +2 Prismatic): given, named, or the Courier's own. */
@@ -229,22 +231,24 @@ export class StormWarp {
     const want = here ? this.wanted() * THREE.MathUtils.clamp(T.visual.warp ?? 1, 0, 1) : 0;
     this.k = here ? THREE.MathUtils.damp(this.k, want, STORM.ease, raw) : 0; // (out of the rail at once: nothing leaks into the dunes)
     if (this.k < 1e-3 && want === 0) this.k = 0;
-    const k = this.k, t = this.t, U = STORM_U;
+    this.vk = THREE.MathUtils.damp(this.vk, this.target.veil * THREE.MathUtils.clamp(T.visual.warp ?? 1, 0, 1), STORM.ease, raw); if (this.vk < 1e-3 && !this.target.veil) this.vk = 0;
+    const k = this.k, t = this.t, U = STORM_U, vk = this.vk;
     U.uStormBend.value = STORM.bend * k * (1 + 0.25 * Math.sin(t * 0.37));
     U.uStormSway.value = STORM.sway * k;
     U.uStormWhorl.value = STORM.whorl * k * Math.sin(t * 0.29);
     U.uStormT.value = t;
     // the veil: haze and split by the strength; its light gold-white, leaning to the waypoint's weather
     const V = this.game.glitch?.veil; if (!V) return;
-    V.haze = STORM.haze * k; V.split = STORM.split * k; V.t = t;
+    V.haze = STORM.haze * Math.max(k, vk); V.split = STORM.split * Math.max(k, 0.6 * vk); V.t = t;
     this.tint.copy(GOLD_WHITE); if (this.target.aspect && COLOR[this.target.aspect] != null) this.tint.lerp(_c.setHex(COLOR[this.target.aspect]), 0.25 * this.target.weather);
+    if (vk > k) this.tint.lerp(SLATE, Math.min(1, vk / Math.max(0.05, vk + k)));
     V.light.copy(this.tint);
   }
 
   /** Every shared uniform and the veil at nothing, at once: for a scene the rail's loop does not run (the workbench opening; casebook
    *  rule 15, a module-wide uniform is everyone's). The game's next frame writes them again. */
   quiet() {
-    this.k = 0; for (const u of Object.values(STORM_U)) u.value = 0; DEEP_U.uDeepOn.value = 0;
+    this.k = 0; this.vk = 0; for (const u of Object.values(STORM_U)) u.value = 0; DEEP_U.uDeepOn.value = 0;
     const V = this.game.glitch?.veil; if (V) { V.haze = 0; V.split = 0; V.below = 0; V.line = -1; }
   }
 

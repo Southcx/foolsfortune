@@ -820,3 +820,17 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 
 276. **A state's change event is read against the state, not trusted as a change.** Requests that race (a
     window's close, a stale retry) make the browser fire `pointerlockchange` with nothing changed; compare with what was held first.
+
+277. **What a window works on is updated while the window is open.** `tick` returns early under `modalOpen()`, before the
+    world's updates; a service the window drives (the laid spread under the Box's window) is updated in that branch too.
+
+278. **A rotation set whole keeps the turns composed before it.** A branch that sets an orientation from a frame (a rail's,
+    a surface's) replaces the quaternion; any turn stacked on earlier (a boardslide's yaw) is multiplied back on after it.
+279. **A pick target is the whole shape the player aims at, not its drawing.** An outline (a hollow frame, a
+    ring) raycasts only on its strips: pick against a solid quad behind it, or fall back to the nearest anchor within reach.
+280. **A new achievement's sub goes into `CATS` in the same commit.** The Codex lists a category by its subs; the load
+    guard adds a missing one and says so on the console, so boot the page once (or import achievements.js) after adding a sub.
+281. **A number two systems split is read from its one row by both.** A share written in data (a stone's
+    `overflow`) and a constant in a consumer drift apart; every consumer reads the row, and a new row is wired where it is written.
+282. **After a merge, a look re-reads the fields it borrows.** Optional chaining turns a renamed field into a quiet
+    default (the Fool, nought, nothing drawn); grep the merged diff for the names your file reads from another division's state.

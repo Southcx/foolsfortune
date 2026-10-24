@@ -24,10 +24,15 @@
 //             ledge; the NOSE GRIND is the crouch with no hand, the spine leant out over the bow (NOSE.lean, spread as the reach's lean
 //             is), the weight on the front foot over the nose pressed to the rail. The 50-50 (`fifty`, both trucks on the rail, the
 //             board flat) is the crouch centred over the keel with no hand and no lean, both arms swung out from the shoulders toward
-//             bow and stern a little below level (FIFTY), the palms opened and passed through rom.js. Eased in and out by a grab's rates
+//             bow and stern a little below level (FIFTY), the palms opened and passed through rom.js. The BOARDSLIDE (`board`, the board
+//             turned across the rail by skiff.js's slideYaw, the rider with it as the unit's child, so they straddle the rail with it
+//             between the feet, facing along it) is the 50-50's crouch and arms out, and the shoulders and head turned toward where the
+//             rail runs (BOARD: spread from spine001 to the head, the neck then held by character.js holdNeck), over the shoulder when
+//             the back is to the travel (THPS's backside boardslide's look). Eased in and out by a grab's rates
 //
 // Prior art: SSX's and Tony Hawk's grabs and grinds (THPS's nosegrind leans the body over the front truck; its tailslide reaches back;
-// its 50-50 rides centred with the arms out, as a skater balances a ledge, and a tightrope walker's arms) (a held air pose, the hand to the board's edge, the board tweaked under it), Unity's Animation
+// its 50-50 rides centred with the arms out, as a skater balances a ledge, and a tightrope walker's arms; its boardslide straddles the
+// rail, the board under the middle, the chest along the rail and the head turned to look down it) (a held air pose, the hand to the board's edge, the board tweaked under it), Unity's Animation
 // Rigging Two Bone IK and Unreal's hand IK on a prop (a hand onto a handle, the animated pose kept under it), and the skiff's own ollie
 // cut (rider.js: the crouch frame with its lift taken off the hips, casebook rule 19).
 //
@@ -51,12 +56,15 @@ export const GRIPS = {
   },
 };
 const HANDS = { nose: ['L'], tail: ['R'], double: ['L', 'R'] };
-// a grind trick (skiff.js grindTrick: 'nose' | 'tail'): the tail slide's hand is the tail grab's; the nose grind's lean over the bow (rad)
+// a grind trick (skiff.js grindTrick: 'nose' | 'tail' | 'board', and 'fifty' as the rider is handed the plain grind): the tail slide's hand is the tail grab's; the nose grind's lean over the bow (rad)
 const GRIND_HANDS = { tail: 'tail' };
 const NOSE = { lean: 0.38 };
 // the 50-50: each upper arm swung toward its side (the body's, bow and stern on a side-on rider) this far below level and this far ahead
 // of the chest (rad), at most `max` from the clip's; the fingers opened this much about their hinges (rad, negative: open)
 const FIFTY = { drop: 0.4, ahead: 0.15, max: 1.6, open: -0.2 };
+// the boardslide: the most the body turns toward the rail's way (rad, about the board's up), each bone's share of it, from the hips up;
+// a travel more than `behind` off the chest is taken over the bow's shoulder (the front, the left), never flipped shoulder to shoulder
+const BOARD = { look: 1.25, behind: 2.4, rate: 10, share: [['spine001', 0.12], ['spine002', 0.16], ['spine003', 0.22], ['spine004', 0.18], ['head', 0.32]] };
 const UNDER = { legs: 'Skiff_Ollie', at: 0.23, arms: 'kneel', armsAt: 0.5 }; // (the ollie's crouch, rider.js OLLIE.crouch)
 const REACH = { in: 14, out: 9, curl: 0.9, thumb: 0.35, palm: 0.025, wrap: 0.25, twist: 0.6, poleAt: 0.3, bent: 0.03, open: 0.6 };
 // (rates per real second; curl rad; the palm this far out from the rail's edge, m; how far the fingers turn out over it; the most the hand
@@ -75,6 +83,8 @@ export class GrabReach {
     this.dbl = 0; // (how far the grips are the double's: eased, so a nose turned double slides the front hand along the rail)
     this.nose = 0; // (the nose grind's lean over the bow, 0..1)
     this.fifty = 0; // (the 50-50's arms out, 0..1)
+    this.board = 0; // (the boardslide's arms out and look down the rail, 0..1)
+    this.look = 0; // (the boardslide's turn toward the rail's way now, rad: eased, so a turn round never snaps)
     this.U = ch.clips.pose(); this.V = ch.clips.pose();
     this.upper = ch.clips.mask({ spine001: 1, spine002: 1, spine003: 1, spine004: 1, spine005: 1, head: 1, 'upper_arm*': 1, 'forearm*': 1, 'hand*': 1, 'f_*': 1, 'thumb*': 1 });
     // each hand's fingers and their limits (the Courier's own table, courier/anim/rom.js): curled about the hinge, clamped by it
@@ -91,6 +101,7 @@ export class GrabReach {
   /** In Rider.ride, after the ollie and the glide: each hand's weight eased, then the under-pose blended into A by the larger. */
   pose(R, A, s, dt) {
     const trick = s.grindTrick || null; // (on a rail: skiff.js passes it only while grinding)
+    this.dt = dt;
     const g = s.grab && s.air ? s.grab : GRIND_HANDS[trick] ? { kind: GRIND_HANDS[trick] } : null, want = g ? HANDS[g.kind] || [] : [];
     for (const side of ['L', 'R']) {
       const on = want.includes(side);
@@ -102,7 +113,9 @@ export class GrabReach {
     if (this.nose < 1e-3 && trick !== 'nose') this.nose = 0;
     this.fifty = damp(this.fifty, trick === 'fifty' ? 1 : 0, trick === 'fifty' ? REACH.in : REACH.out, dt);
     if (this.fifty < 1e-3 && trick !== 'fifty') this.fifty = 0;
-    this.under = Math.max(this.weight, this.nose, this.fifty);
+    this.board = damp(this.board, trick === 'board' ? 1 : 0, trick === 'board' ? REACH.in : REACH.out, dt);
+    if (this.board < 1e-3 && trick !== 'board') this.board = 0;
+    this.under = Math.max(this.weight, this.nose, this.fifty, this.board);
     if (this.under <= 0.01) return;
     const C = this.ch.clips, U = this.U;
     if (!C.clips[UNDER.legs]) return;
@@ -145,7 +158,7 @@ export class GrabReach {
   /** In the skiff's hands(): the lean toward the grips, each hand onto its grip, its fingers over the rail. */
   reach(ch, tech) {
     const wMax = this.weight;
-    if ((wMax < 1e-3 && this.nose < 1e-3 && this.fifty < 1e-3) || !tech.skiff?.group) return;
+    if ((wMax < 1e-3 && this.nose < 1e-3 && this.fifty < 1e-3 && this.board < 1e-3) || !tech.skiff?.group) return;
     const M = this.frame(tech.skiff, this._M ||= new THREE.Matrix4());
     const sides = ['L', 'R'].filter((s) => this.w[s] > 1e-3), B = ch.bones;
     ch.root.updateMatrixWorld(true);
@@ -154,7 +167,9 @@ export class GrabReach {
       const up = _up.set(0, 1, 0).transformDirection(M), bow = _h.set(0, 0, 1).transformDirection(M), ax = _k.crossVectors(up, bow).normalize();
       for (const [b, k] of LEAN.share) if (B[b]) { ch.rotW(B[b], ax, NOSE.lean * k * smooth(Math.min(1, this.nose))); B[b].updateMatrixWorld(true); }
     }
-    if (this.fifty > 1e-3) this.armsOut(ch, smooth(Math.min(1, this.fifty)));
+    const out = Math.max(this.fifty, this.board);
+    if (out > 1e-3) this.armsOut(ch, smooth(Math.min(1, out)));
+    if (this.board > 1e-3) this.slideLook(ch, tech, M, smooth(Math.min(1, this.board)));
     // the lean: the spine bent from the hips toward the grips by what the arms are short of them; for the double, toward the hand
     // further short the more (each side's shoulder and grip weighed by its shortfall), by the larger shortfall. In LEAN.passes, each
     // measured again from where the last left the shoulders (an arc of the shortfall's length closes less than the shortfall)
@@ -211,7 +226,7 @@ export class GrabReach {
       arm.hand.updateMatrixWorld(true);
     }
     // the sheet runs to the left hand (skiff.js afterPose draws it before the hands are set): drawn again to where that hand went
-    if ((this.w.L > 1e-3 || this.nose > 1e-3 || this.fifty > 1e-3) && tech.skiff.rope?.visible) tech.skiff.drawRope(tech.game.scene, ch.arm.L.hand.getWorldPosition(_a));
+    if ((this.w.L > 1e-3 || this.nose > 1e-3 || this.fifty > 1e-3 || this.board > 1e-3) && tech.skiff.rope?.visible) tech.skiff.drawRope(tech.game.scene, ch.arm.L.hand.getWorldPosition(_a));
   }
 
   /** The 50-50's balance: each upper arm swung from the clip's toward its side of the body, a little below level and ahead of the chest
@@ -227,6 +242,28 @@ export class GrabReach {
       for (const { j } of this.fingers[s]) { j.bone.quaternion.multiply(_q.setFromAxisAngle(j.hinge, FIFTY.open * w)); ch.limits.limit(j); }
       arm.hand.updateMatrixWorld(true);
     }
+  }
+
+  /** The boardslide's look: the chest and head turned about the board's up toward the way the rail runs under it (the coaster rail's
+   *  tangent, else the board's travel), by `w`; past BOARD.behind, over the bow's shoulder; then the neck held (character.js). */
+  slideLook(ch, tech, M, w) {
+    const up = _up.set(0, 1, 0).transformDirection(M), fq = ch.root.getWorldQuaternion(_fq);
+    const fwd = _h.set(0, 0, 1).applyQuaternion(fq).projectOnPlane(up).normalize();
+    const src = tech.grind?.on && tech.railFwd ? tech.railFwd : tech.v, way = src ? _k.copy(src).projectOnPlane(up) : _k.set(0, 0, 0);
+    let want = 0;
+    if (way.lengthSq() > 0.25) {
+      way.normalize();
+      want = Math.atan2(_d.crossVectors(fwd, way).dot(up), fwd.dot(way));
+      if (Math.abs(want) > BOARD.behind) { // (the back to the travel: over the bow's shoulder, whichever way is shorter to it)
+        const bow = _e.set(0, 0, 1).transformDirection(M).projectOnPlane(up).normalize();
+        want = Math.sign(_d.crossVectors(fwd, bow).dot(up) || 1) * BOARD.look;
+      }
+    }
+    want = THREE.MathUtils.clamp(want, -BOARD.look, BOARD.look);
+    this.look = damp(this.look, want, BOARD.rate, this.dt || 1 / 60); // (eased: the rail's way swings little, a turn round is a beat)
+    const B = ch.bones;
+    for (const [b, k] of BOARD.share) if (B[b]) { ch.rotW(B[b], up, this.look * k * w); B[b].updateMatrixWorld(true); }
+    ch.holdNeck?.();
   }
 
   /** How far to lean (rad) and about what (into _k, the world): from the hips, the shoulders toward the grips by their shortfall. */

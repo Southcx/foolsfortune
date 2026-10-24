@@ -33,6 +33,7 @@ import { EGREGORES } from './opensea/safari.js';
 import { MIRACLES, EPICS, GOD_POWERS, POWER_EVENTS } from './godpowers.js';
 import { racewayAchievements } from './raceachievements.js';
 import { sealAchievements } from './sealachievements.js';
+import { spreadAchievements } from './spreadachievements.js';
 const FOUNDING_SHELLS = CASTER_SHELLS.filter((r) => r.family === 'founding').map((r) => r.id);
 
 export const TIERS = [null, { name: 'Easy', pts: 1 }, { name: 'Medium', pts: 2 }, { name: 'Hard', pts: 3 }, { name: 'Elite', pts: 4 }, { name: 'Master', pts: 5 }, { name: 'Grandmaster', pts: 6 }];
@@ -55,7 +56,7 @@ export const CATS = [
   { id: 'psyche', name: 'THE DOMAINS', subs: ['Levels'] },
   { id: 'garden', name: 'THE SPIRIT GARDEN', subs: ['The Press', 'The Garden', 'The Mycelium', 'The Spirits', 'The Firings', "The Garden's Life"] },
   { id: 'sky', name: 'THE SKY', subs: ['Weather', 'The Day'] },
-  { id: 'general', name: 'GENERAL', subs: ['Time', 'Persistence', 'Achievements'] },
+  { id: 'general', name: 'GENERAL', subs: ['Time', 'Persistence', 'The Spread', 'The Stones', 'Achievements'] },
 ];
 
 // what the points buy: a standing, named in the manner of the studio's own trade (a title is the reward, as in FFXIV)
@@ -349,8 +350,8 @@ export function buildAchievements(game) {
   C('vs4', 'veritome', 'The Bestiary', 4, 'collect', 'Understood', 'Understand the clapperjar: every fact.', 'bestiary.u.clapper', 4, { title: 'the Naturalist' });
   F('vs5', 'veritome', 'The Bestiary', 4, 'collect', 'Under the Surface', 'Study five kinds of fish.', (L) => L.under('bestiary.u.fish.').filter(([, v]) => v >= 3).length, 5);
   C('vb1', 'veritome', 'The Book', 1, 'count', 'Bound', 'Bind your first card into the Book.', 'card.pages', 1);
-  C('vb2', 'veritome', 'The Book', 3, 'collect', 'Half the Arcana', 'Fill eleven Arcana pages.', 'card.pages.arcana', 11);
-  C('vb3', 'veritome', 'The Book', 5, 'collect', 'The Major Arcana', 'Fill all twenty-two Arcana pages.', 'card.pages.arcana', 22, { title: 'the Fool Who Read the World' });
+  C('vb2', 'veritome', 'The Book', 3, 'collect', 'Half the Arcana', 'Bind eleven Major Arcana.', 'card.pages.arcana', 11);
+  C('vb3', 'veritome', 'The Book', 5, 'collect', 'The Major Arcana', 'Bind the twenty-one Major Arcana beside the Fool (the Fool is you, bound from the start).', 'card.pages.arcana', 21, { title: 'the Fool Who Read the World' }); // (21: the Fool's card is bound with no card.get, Petra's 8f2b9e2)
   C('vb4', 'veritome', 'The Book', 3, 'collect', 'Portraitist', 'Bind five creature cards.', 'card.pages.creature', 5);
   C('vb5', 'veritome', 'The Book', 2, 'mechanic', 'Banked', 'Store something in the Veritome from the Pneuka Box.', 'item.store', 1);
   C('vb7', 'veritome', 'The Book', 1, 'mechanic', 'Something Old', 'Tie a curio on as a lure.', 'lure.tie.curio', 1);
@@ -716,6 +717,7 @@ export function buildAchievements(game) {
   C('ss2', 'general', 'Persistence', 3, 'endure', 'Creature of Habit', 'Play in 20 sessions.', 'sessions', 20, { cur: (L) => L.sessions });
   C('rs1', 'general', 'Persistence', 1, 'count', 'Try, Try Again', 'Fall out of the world 10 times.', 'courier.respawn.fall', 10);
   C('rs2', 'general', 'Persistence', 3, 'endure', 'Bottomless', 'Fall out of the world 100 times.', 'courier.respawn.fall', 100);
+  spreadAchievements({ C, H }); // (the spread's classes, the day's card and the palm die: progress/spreadachievements.js)
   F('am1', 'general', 'Achievements', 1, 'collect', 'A Start', 'Complete 10 achievements.', (L, g, a) => a.count(), 10);
   F('am2', 'general', 'Achievements', 3, 'collect', 'Halfway Up the Wall', 'Complete 50 achievements.', (L, g, a) => a.count(), 50);
   F('am3', 'general', 'Achievements', 5, 'collect', 'A Full Wall', 'Complete 100 achievements.', (L, g, a) => a.count(), 100);

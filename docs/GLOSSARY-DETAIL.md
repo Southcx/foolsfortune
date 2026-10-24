@@ -118,7 +118,7 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   Veritome's cards (say "the Book").
 - **draught** (`draughtOf`, `DRAUGHT`): the feeling of the Lachryma last drunk (the weather where it was drunk); a blow of that feeling's
   damage type builds its status faster; it fades over a real minute. *Not:* a drink of crude (a cask).
-- **dupe**: a curio a chest gives that is already held to its card's limit; it is condensed into cubes instead (`ECON.dupe`). **Dupe
+- **dupe**: a curio a chest gives that is already held to its limit (`CURIO_LIMIT` by tier, `world/treasure/treasure.js`); it is condensed into cubes instead (`ECON.dupe`). **Dupe
   protection** is the bias toward curios not yet held.
 - **faucet / drain**: where cubes come into the world / leave it. **A minute of play** is the economy's unit (`docs/ECONOMY.md`).
 - **the five feelings** (the aspects of Lachryma: wonder, mirth, desire, grief, dread; **desire** was "hunger" until 2026-10-05, and
@@ -412,8 +412,9 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   appraised, never a consumable, and a full one is the shutter's one refusal; there is no film since 2026-10-06);
   the **darkroom** (where plates are appraised); the **date stamp** (the Veritome's clock: the game day and game hour in the lens's corner
   and on every plate, the owner, 2026-10-06); the **Flash** (dazzles and stuns; a photograph never does); **reprogramming**
-  (below). Its pages: **the Book** (the bank: things kept as **cards**), the **Compendium** (appraised entries), the **bestiary** (facts per
-  creature), the **Major Arcana** (twenty-two designated cards).
+  (below). What it knows is **the Book** (`book.js`): the memory, the **Compendium** (appraised entries) and the **bestiary** (facts per
+  creature). Since the owner's ruling of 2026-10-23 it keeps no cards and no things: a card a plate earns is bound in **the collection**
+  (`progress/collection.js`, the Codex's THE ARCANA), and a thing kept for good goes in the Pneuka Box's storage at a Shrine.
 - **windup** (code: `creatures.windup(c, ...)`, `c.windup`): a creature's telegraphed blow, listed while it can be answered; a parry in
   its window breaks it off (`creatures.parried`). *Not:* an attack's own phase name (the jelly's `'wind'`), which is the body's.
 - **Figment attack telegraph** (code: `figmentMarkOf`, Dovina's data, `progress/combat/figmenttelegraphs.js`; drawn by
@@ -1272,8 +1273,8 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   **ripple** running out to reach the ring on the next beat; a small ring under each creature and clapperjar a toll would stagger now.
   In the Bomb's coral on the mount preview's line (`vfx/railmark.js`, the wire), no program of its own; gone on a stow or a swap.
   *Not:* the toll's smoke ring (the particles as it rings), the Bomb's blast ring (a mount's preview), the pendulum.
-- **the Pneuka Box** (P, `src/pneuka/`): the inventory (56 slots) and what is worn. With the Veritome out, **the bank** (the Book) opens
-  beside it. *Not:* the Veritome; the Veritome is the bank, not the inventory.
+- **the Pneuka Box** (P, `src/pneuka/`): the inventory (56 slots) and what is worn. At a Shrine's STORAGE row, **its storage**
+  (`box.storage`) opens beside it: any thing, stacked by kind. *Not:* the Veritome, which keeps nothing.
 - **rating** (`src/ui/rating.js`): the maker's word that pops over the rhythm mode's line on each judged press, from its grade, how near
   it came and the combo, worst to best: Miss!, OK..., Nice!, Great!, Excellent, Awesome, Perfect, Wow. **The set's rating**: one of the
   same words for a whole song played through, from its accuracy, said in the log at its end. *Not:* a grade (the judge's four).

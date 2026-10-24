@@ -31,7 +31,7 @@ export const SPACE = {
       if (L.a.distanceTo(L.b) < 3) return;
       const g = P.game, r = P.ramp('portal', 'r'), life = P.ramp('portal', 'dur'), col = P.domainColour('portal');
       P.cap('portal', Math.round(P.ramp('portal', 'pairs')));
-      const ends = [L.a.clone(), L.b.clone()], rings = ends.map((e) => P.ring(e, r, col)), rest = new WeakMap();
+      const ends = [L.a.clone(), L.b.clone()], look = g.godhandLooks?.portal(ends, r, col), rings = look ? [] : ends.map((e) => P.ring(e, r, col)), rest = new WeakMap(); // (the eyes: vfx/godhand/portalpair.js)
       let t = 0;
       const pass = (thing, from, to, pos) => {
         if ((rest.get(thing) ?? 0) > t) return;
@@ -62,9 +62,10 @@ export const SPACE = {
             if (Math.abs(da - db) > 0.02) { const got = F.take(ends[hi].x, ends[hi].z, r, 1.5 * dt, ['w']); if (got.water > 0) F.pour(ends[lo].x, ends[lo].z, r, got.water, { kind: 'water', feeling: got.feeling }); }
           }
           for (const m of rings) m.rotation.z += dt * 1.5;
+          look?.update(dt, t, life);
           return t >= life;
         },
-        dispose() { rings.forEach((m) => P.drop(m)); },
+        dispose() { look?.dispose(); rings.forEach((m) => P.drop(m)); },
       });
       P.emit('portal', { len: +L.a.distanceTo(L.b).toFixed(1) });
     },

@@ -46,8 +46,9 @@ export const WILL = {
       const g = P.game, F = P.F; if (!F || L.a.distanceTo(L.b) < 3) return;
       P.cap('muster', 1);
       const a = L.a.clone(), b = L.b.clone(), n = Math.round(P.ramp('muster', 'n')), dur = P.ramp('muster', 'dur'), load = WORKER.load * P.ramp('muster', 'rate');
-      const geo = new THREE.CylinderGeometry(0.22, 0.3, 0.7, 7), mat = new THREE.MeshStandardMaterial({ color: 0xb06a44, roughness: 0.9 });
-      const crew = Array.from({ length: n }, (_, i) => { const m = new THREE.Mesh(geo, mat); g.scene.add(m); return { m, p: a.clone().lerp(b, i / n), toB: i % 2 === 0, carry: null }; });
+      const look = g.godhandLooks?.crew(n, a, b, P.domainColour('muster')); // (hatched clapperjars: vfx/godhand/crew.js; else clay cylinders)
+      const geo = look ? null : new THREE.CylinderGeometry(0.22, 0.3, 0.7, 7), mat = look ? null : new THREE.MeshStandardMaterial({ color: 0xb06a44, roughness: 0.9 });
+      const crew = Array.from({ length: n }, (_, i) => { const m = look ? null : new THREE.Mesh(geo, mat); if (m) g.scene.add(m); return { m, p: a.clone().lerp(b, i / n), toB: i % 2 === 0, carry: null, h: Math.atan2(b.x - a.x, b.z - a.z) }; });
       let t = 0, moved = 0;
       P.keep({
         id: 'muster',
@@ -60,13 +61,14 @@ export const WILL = {
               if (w.toB && w.carry) { for (const kind of ['firm', 'loose', 'water']) if (w.carry[kind] > 0) F.pour(b.x, b.z, WORKER.r, w.carry[kind], { kind, feeling: w.carry.feeling }); moved += w.carry.firm + w.carry.loose + w.carry.water; w.carry = null; }
               else if (!w.toB) { const got = F.take(a.x, a.z, WORKER.r, load); if (got.firm + got.loose + got.water > 0.01) w.carry = got; }
               w.toB = !w.toB;
-            } else w.p.addScaledVector(d.multiplyScalar(1 / dist), Math.min(dist, WORKER.speed * dt));
+            } else { w.h = Math.atan2(d.x, d.z); w.p.addScaledVector(d.multiplyScalar(1 / dist), Math.min(dist, WORKER.speed * dt)); }
             const y = F.groundAt(w.p.x, w.p.z); w.p.y = Number.isFinite(y) ? y : w.p.y;
-            w.m.position.set(w.p.x, w.p.y + 0.35 + (w.carry ? Math.abs(Math.sin(t * 9)) * 0.08 : 0), w.p.z);
+            if (look) look.at(crew.indexOf(w), w.p, w.h, w.carry);
+            else w.m.position.set(w.p.x, w.p.y + 0.35 + (w.carry ? Math.abs(Math.sin(t * 9)) * 0.08 : 0), w.p.z);
           }
           return t >= dur;
         },
-        dispose() { for (const w of crew) g.scene.remove(w.m); geo.dispose(); mat.dispose(); g.events?.emit('god.muster.done', { moved: +moved.toFixed(2), by: 'courier' }); },
+        dispose() { look?.dispose(); for (const w of crew) if (w.m) g.scene.remove(w.m); geo?.dispose(); mat?.dispose(); g.events?.emit('god.muster.done', { moved: +moved.toFixed(2), by: 'courier' }); },
       });
       P.emit('muster', { n });
     },

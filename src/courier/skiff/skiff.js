@@ -661,6 +661,7 @@ export class Skiffing extends Tech {
     if (this.grind.on && this.railUp) { // (on a coaster rail: stood on the rail's up, along its tangent, through banks and loops: grind.js)
       const zf = _g1.copy(this.railFwd), yu = _g2.copy(this.railUp).addScaledVector(zf, -this.railUp.dot(zf)).normalize(), xr = _g3.crossVectors(yu, zf).normalize();
       unitQ.setFromRotationMatrix(_m4.makeBasis(xr, yu, zf));
+      unitQ.multiply(qA.setFromAxisAngle(UP, this.slideYaw)); // (a boardslide's quarter turn kept: the rail's frame replaces the heading's)
     }
     qC.setFromAxisAngle(Z, rv + Math.sin(this.time * 30) * 0.02 * this.landDip);
     unitQ.multiply(qC);

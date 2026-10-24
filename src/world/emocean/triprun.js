@@ -295,7 +295,7 @@ export class TripRun {
       case 'bounty': this.bounty = { waypoint: a.waypoint, cubes: a.cubes ?? 0 }; ev('passage.posted', { waypoint: a.waypoint, type: this.chart.waypoints[a.waypoint]?.type, cubes: a.cubes ?? 0 }); break; // (its pay is the ask's: encounters.js postedBounty, Dovina's)
       case 'sellRutter': {
         const i = (box?.slots || []).findIndex((x) => x?.id === 'rutter'); if (i < 0) break;
-        box.take(i); g.cubes?.earn(a.cubes, 'sell'); ev('rutter.sell', { cubes: a.cubes, to: 'letty' }); break;
+        box.take(i); const paid = Math.round(a.cubes * (g.laidSpread?.worthK ?? 1)); g.cubes?.earn(paid, 'sell'); ev('rutter.sell', { cubes: paid, to: 'letty' }); break; // (Pentacles' tally: progress/laidspread.js)
       }
       case 'hiddenLeg': this.hidden = { form: a.form, pays: a.pays, k: null }; ev('passage.dive', { form: a.form, pays: a.pays }); break;
       case 'crew': ev('passage.crew', { slots: a.slots, legs: a.legs }); break; // (a hand aboard; the mount they man waits on the pier's loadout carrying a spare: next round)

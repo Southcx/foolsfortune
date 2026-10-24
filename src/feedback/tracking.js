@@ -358,10 +358,9 @@ export class Tracking {
     });
     on('card.get', (e) => {
       L.inc('card.get'); L.inc(`card.got.${e.card}`);
-      if (e.first) { L.inc('card.pages'); L.inc(`card.pages.${e.section}`); }
-      log.say('gain', e.page ? `${CARD(e.card)} is bound into page ${VCARD[e.card]?.page} of the Book (rank ${e.rank}).` : `A copy of ${CARD(e.card)} goes into a free slot.`, { key: `cget.${e.card}`, throttle: 1 });
+      L.inc('card.pages'); L.inc(`card.pages.${e.section}`); // (a card is bound once: every card.get is its first, progress/collection.js)
+      log.say('gain', `${CARD(e.card)} is bound into your collection (rank ${e.rank}).`, { key: `cget.${e.card}`, throttle: 1 });
     });
-    on('card.drift', (e) => { L.inc('card.drift'); log.say('info', e.from === 'time' ? `${CARD(e.card)} was never bound, and is gone.` : `Another ${CARD(e.card)}; the Book has no room for it, and it drifts away.`, { key: `cdrift.${e.card}`, throttle: 4 }); });
     // ---- the Pneuka Box: what they carry (src/pneuka/)
     const ITEM = (id) => itemOf(id)?.name || CARD(id);
     on('item.get', (e) => {
@@ -447,8 +446,8 @@ export class Tracking {
     on('item.full', (e) => { L.inc('pneuka.full'); log.say('warn', `Your Pneuka Box is full. The ${ITEM(e.item)} falls at your feet.`, {}); });
     on('item.drop', (e) => { L.inc('item.drop'); log.say('info', `You drop the ${ITEM(e.item)}.`, { key: 'idrop', fmt: (n) => `You drop ${n} things.` }); });
     on('item.examine', (e) => log.say('info', itemOf(e.item)?.examine || VCARD[e.item]?.lore || 'Nothing remarkable.', {}));
-    on('item.store', (e) => { L.inc('item.store'); log.say('gain', `You store the ${ITEM(e.item)} in the Veritome.`, { key: 'istore', fmt: (n) => `You store ${n} things in the Veritome.` }); });
-    on('item.withdraw', (e) => { L.inc('item.withdraw'); log.say('gain', `You take the ${ITEM(e.item)} out of the Veritome.`, { key: 'iwd', fmt: (n) => `You take ${n} things out of the Veritome.` }); });
+    on('item.store', (e) => { L.inc('item.store'); log.say('gain', `You store the ${ITEM(e.item)}.`, { key: 'istore', fmt: (n) => `You store ${n} things.` }); });
+    on('item.withdraw', (e) => { L.inc('item.withdraw'); log.say('gain', `You take the ${ITEM(e.item)} out of your storage.`, { key: 'iwd', fmt: (n) => `You take ${n} things out of your storage.` }); });
     on('lure.untie', (e) => { L.inc('lure.untie'); log.say('info', `You untie the ${ITEM(e.lure)} and put it in your Pneuka Box.`, { key: 'luntie', throttle: 0.2 }); });
     // the tools: the main and the sub (tools/belt.js equip; the pair's card, progress/toolpairs.js)
     const TOOLNAME = (t) => ({ psygun: 'Psygun', sondelass: 'Sondelass', soulbrush: 'Soul Brush', veritome: 'Veritome', dreamvane: 'Dreamvane', crucibelle: 'Crucibelle', lockheart: 'Lockheart' }[t] || t);
@@ -523,7 +522,7 @@ export class Tracking {
     on('item.fit', (e) => { L.inc('item.fit'); log.say('info', e.socket === 'keys' ? `You put ${an(ITEM(e.item).toLowerCase())} on the Lockheart's ring.` : e.socket === 'heart' ? `You hang ${ITEM(e.item).toLowerCase()} on the Lockheart's chain.` : `You fit the ${ITEM(e.item).toLowerCase()} to the Crucibelle.`, { key: `ifit.${e.item}`, throttle: 0.2 }); });
     on('item.unfit', (e) => log.say('info', `You take the ${ITEM(e.item).toLowerCase()} off, into your Pneuka Box.`, { key: 'iunfit', throttle: 0.2 }));
     on('lure.tie', (e) => { L.inc('lure.tie'); if (e.curio) L.inc('lure.tie.curio'); log.say('info', `You tie the ${e.curio ? ITEM(e.lure) : (LURES.find((l) => l.id === e.lure)?.name.toLowerCase() || e.lure)} onto the line.`, { key: 'ltie', throttle: 0.2 }); });
-    on('card.condense', (e) => { L.inc('card.condense'); log.say('loot', `A spare ${CARD(e.card)} condenses into ${plural(e.cubes, 'Lachryma cube')}.`, { tone: '#ffd98a' }); });
+    on('card.condense', (e) => { L.inc('card.condense'); log.say('loot', `${CARD(e.card)} is bound already: it condenses into ${plural(e.cubes, 'Lachryma cube')}.`, { tone: '#ffd98a' }); });
 
     // ---- the Soul Brush: the club, the brush slide, Celestial mode, the sigils (src/tools/soulbrush/soulbrush.js, src/tools/soulbrush/)
     on('brush.draw', () => { L.inc('brush.draw'); log.say('info', 'You draw the Soul Brush.', { key: 'bdraw', throttle: 2 }); });
@@ -683,7 +682,7 @@ export class Tracking {
     on('shrine.find', (e) => { if (e.by !== 'courier') return; L.inc('shrine.found'); L.inc(`shrine.found.${e.shrine}`); log.say('explore', `You find ${g.shrines?.get(e.shrine)?.name || 'a Shrine'}.`); });
     on('shrine.rest', (e) => { if (e.by === 'courier') { L.inc('shrine.rest'); log.say('info', 'You rest at the Shrine.', { key: 'shrinerest', throttle: 4 }); } });
     on('shrine.travel', (e) => { if (e.by === 'courier') { L.inc('shrine.travel'); log.say('explore', `You travel to ${g.shrines?.get(e.to)?.name || 'the Shrine'}.`); } });
-    on('shrine.bank', (e) => { if (e.by === 'courier') { L.inc('shrine.bank'); log.say('info', 'The Veritome opens beside your Pneuka Box: the bank.', { key: 'shrinebank', throttle: 4 }); } });
+    on('shrine.storage', (e) => { if (e.by === 'courier') { L.inc('shrine.storage'); log.say('info', 'Your storage opens beside your Pneuka Box.', { key: 'shrinestorage', throttle: 4 }); } });
     on('garden.enter', (e) => { if (e.by === 'courier') L.inc('garden.enter'); });
     on('vessel.refire', (e) => { L.inc('vessel.refire'); log.say('info', `The kiln mends your cracks, for ${plural(e.cost, 'cube')}.`, {}); });
     on('vessel.crack', (e) => { L.inc('vessel.cracks'); L.inc(`vessel.crack.${e.region}`); log.say('battle', `The blow cracks ${PART[e.region] || 'you'}.`, { key: `crack.${e.region}`, throttle: 1.5 }); });

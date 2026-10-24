@@ -1,51 +1,44 @@
 // ---------------------------------------------------------------------------------------
-// THE CARDS: the catalogue of everything the Veritome can hold. The Veritome is the Courier's inventory, and a card is how a thing is
-// kept in it: this is Greed Island's Book (Hunter x Hunter), made formal at the scale of a prototype.
+// THE CARDS: the catalogue of what can be bound into the collection (progress/collection.js, shown in the Codex). The Veritome earns a card
+// when a plate is appraised (tools/veritome/darkroom.js), but keeps none: it is observation and reprogramming only (the owner's ruling of
+// 2026-10-23, docs/plans/SPREADS.md 6). Greed Island's Book (Hunter x Hunter) made formal at the scale of a prototype, its limits dropped
+// to one:
 //
-//  - DESIGNATED PAGES. Every kind of card has a numbered page of its own (000 onward), grouped in SECTIONS: the Major Arcana (truths
-//    photographed), the Curios (things found in chests), the Creatures (portraits good enough to be a card, as Wind Waker's Carlov
-//    makes a figurine of whoever is in a good pictograph). A page with its card in it is FILLED; the Book's completion is its pages.
-//  - RANK (SS, S, A to H) is how hard a card is to come by; LIMIT is how many copies of it the Book may hold (the page, and spares).
-//  - FORM. A card with an item form ('item') is a thing kept: it is STORED from the Pneuka Box (pneuka/box.js) and TAKEN OUT into it
-//    again, the Book being the bank. A card with no item form is a picture of something known (an Arcana, a creature): it is only
-//    ever a card.
-//  - WORTH: what a spare copy condenses into, in Lachryma cubes (Greed Island's shops buy cards; here the Book condenses them).
+//  - DESIGNATED PAGES. Every card has a numbered page of its own (000 onward), grouped in SECTIONS: the Major Arcana (truths
+//    photographed: what a spread lays, progress/spreads.js) and the Creatures (portraits good enough to be a card, as Wind Waker's Carlov
+//    makes a figurine of whoever is in a good pictograph). A card is bound once; curios are things in the Pneuka Box, not cards.
+//  - RANK (SS, S, A to H) is how hard a card is to come by: a Major's sets its footprint's size on the board (RANK_CELLS).
+//  - WORTH: what a second photograph of a card already bound condenses into, in Lachryma cubes.
 //
-// New sections go on the end of the numbering (the .hack-style "offline MMO" layers to come will add theirs), so a page's number is
-// stable once given.
+// New sections go on the end of the numbering, so a page's number is stable once given.
 //
 //   CARDS (in page order)   CARD[id]   SECTIONS   WORTH[rank]   cardArt(id, w, h, { back }) -> canvas (drawn once, cached)
 // ---------------------------------------------------------------------------------------
 import { ARCANA, EMBLEM } from './arcana.js';
 import { ECON } from '../../progress/econ/table.js';
-import { CURIOS, TIERS as CHEST_TIERS } from '../../world/treasure/treasure.js';
 import { CREATURES } from './bestiary.js';
 
 export const WORTH = ECON.condense; // (progress/econ/table.js: the rebalance of R38 cut it to about a quarter at the top)
-export const FREE_SLOTS = 20;
 
-const CURIO_RANK = ['F', 'D', 'B', 'A', 'S'], CURIO_LIMIT = [3, 3, 2, 1, 1];
-const FISH_RANK = ['G', 'E', 'D', 'B', 'A', 'SS'], FISH_LIMIT = [3, 3, 3, 2, 1, 1];
+const FISH_RANK = ['G', 'E', 'D', 'B', 'A', 'SS'];
 
 export const SECTIONS = [
   { id: 'arcana', name: 'THE MAJOR ARCANA', blurb: 'Truths of the workshop, photographed. Each page is a riddle until its sitting is caught in a photo and appraised.' },
-  { id: 'curio', name: 'CURIOS', blurb: 'Things with a life behind them, found in chests. A curio goes into the Pneuka Box (P); stored in the Veritome it is a card here.' },
   { id: 'creature', name: 'CREATURES', blurb: 'A portrait good enough to be a card: a creature as the main subject of a photograph of three stars or more.' },
 ];
 
 export const CARDS = [];
 const add = (c) => { CARDS.push({ ...c, num: CARDS.length, page: String(CARDS.length).padStart(3, '0') }); };
-for (const a of ARCANA) add({ id: `arcana.${a.id}`, section: 'arcana', key: a.id, name: a.name, rank: a.rank, limit: a.limit, form: 'none', roman: a.roman, hint: a.hint, lore: a.lore, sitting: a.sitting });
-for (const c of CURIOS) add({ id: `curio.${c.id}`, section: 'curio', key: c.id, name: c.name, rank: CURIO_RANK[c.tier], limit: CURIO_LIMIT[c.tier], form: 'item', tier: c.tier, glyph: c.glyph, hint: `found in ${CHEST_TIERS[c.tier].name} chests`, lore: c.blurb });
+for (const a of ARCANA) add({ id: `arcana.${a.id}`, section: 'arcana', key: a.id, name: a.name, rank: a.rank, roman: a.roman, hint: a.hint, lore: a.lore, sitting: a.sitting });
 for (const [id, C] of Object.entries(CREATURES)) {
   const fish = !!C.fish;
-  add({ id: `creature.${id}`, section: 'creature', key: id, name: C.name, rank: fish ? FISH_RANK[C.tier] : 'G', limit: fish ? FISH_LIMIT[C.tier] : 3, form: 'none', glyph: C.glyph, fish: C.fish || null,
+  add({ id: `creature.${id}`, section: 'creature', key: id, name: C.name, rank: fish ? FISH_RANK[C.tier] : 'G', glyph: C.glyph, fish: C.fish || null,
     hint: fish ? 'a fish, photographed well, in the water or clear of it' : 'a clapperjar, the main subject of a good photograph', lore: C.blurb });
 }
 export const CARD = Object.fromEntries(CARDS.map((c) => [c.id, c]));
 
 // ---- the art ------------------------------------------------------------------------------------
-const FIELD = { arcana: ['#2b2050', '#14102a'], curio: ['#3a2216', '#1c0f09'], creature: ['#163028', '#0b1813'] };
+const FIELD = { arcana: ['#2b2050', '#14102a'], creature: ['#163028', '#0b1813'] };
 const CACHE = new Map();
 
 /** A card face (a canvas, w x h), drawn once and kept. `back`: the Book's back instead (an empty page). */
@@ -77,7 +70,6 @@ export function cardArt(id, w = 120, h = 200, { back = false } = {}) {
   g.save(); g.translate(ox, oy); g.scale(S, S);
   g.strokeStyle = gold; g.fillStyle = gold; g.lineWidth = 0.035; g.lineCap = 'round'; g.lineJoin = 'round';
   if (A.section === 'arcana') (EMBLEM[A.key] || (() => {}))(g);
-  else if (A.section === 'curio') { g.font = '0.62px serif'; g.textAlign = 'center'; g.textBaseline = 'middle'; g.fillStyle = hexOf(CHEST_TIERS[A.tier].rgb); g.fillText(A.glyph, 0.5, 0.5); g.strokeStyle = gold; C(g, 0.5, 0.5, 0.44); }
   else if (A.fish) fishEmblem(g, CREATURES[A.key]);
   else jarEmblem(g);
   g.restore();
@@ -88,7 +80,6 @@ export function cardArt(id, w = 120, h = 200, { back = false } = {}) {
   return c;
 }
 
-const hexOf = (n) => `#${n.toString(16).padStart(6, '0')}`;
 function roundRect(g, x, y, w, h, r) { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); }
 const C = (g, x, y, r) => { g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); g.stroke(); };
 function jarEmblem(g) {

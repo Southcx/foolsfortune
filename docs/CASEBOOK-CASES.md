@@ -3586,3 +3586,61 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** a `pointerlockchange` that leaves the lock as it was is not passed on (core/input.js). Measured: 0 pauses in 48 picks, the
   lock held again after each. Dovina's sweep note and its clearing of the pause can go.
 - **Rule:** 276
+
+### 2026-10-23 · The laid spread was not recounted while the Pneuka Box's window was open (the reading view's probe, headless)
+- **Seen:** with the Box's window open and the Box turned over, the reading view stayed at k 0 and built no positions over 5 ticks; a
+  card laid from the window would not have moved the board or the tallies until the window shut.
+- **Cause (measured, the view's state logged a tick at a time):** `tick` returns at its top while `modalOpen()` (the Codex, the Index,
+  the map, the Box's window ...), before the world's updates. `laidSpread.update` (f5f90f3) sat with the world's, so the window it serves
+  never saw it run.
+- **Fix:** the modal branch updates the laid spread and the reading view too (main.js). Measured: the view opens in 0.7 real s, its
+  positions built and picked, the cloth lit as the face (10 cells of 10).
+- **Rule:** 277
+
+### 2026-10-23 · A boardslide played with the board along the rail (Calissa, read from the code)
+- **Seen:** a boardslide's board stayed along the rail instead of across it, and the rider's new boardslide stance (grabreach.js) twisted
+  about 72° toward a rail running along the board.
+- **Cause (read, then measured by Calissa's builder with the patch applied headless):** `slideYaw` (±π/2 for a boardslide) is composed
+  into the heading's quaternion, but every grind step copies the rail's up (`railUp`, skiff.js), and the grind branch then sets the unit's
+  rotation whole from the rail's frame (`setFromRotationMatrix`), dropping it. On every rail, not only the coaster's.
+- **Fix:** the quarter turn is multiplied back on after the rail's frame (skiff.js). With it, the board lies across the rail and the rider
+  faces down it (the builder's headless check); not run again here.
+- **Rule:** 278
+
+### 2026-10-23 · A card held over an empty place of the reading view was not laid (Dovina, measured headless)
+- **Seen:** with a card picked, a click in the middle of an empty place of the reading view did nothing; the same probe had laid a card
+  while the cards were still flying in.
+- **Cause (measured):** an empty place is drawn as a hollow frame (`frameGeo`, four thin strips, vfx/readingview.js), and the frame
+  itself is the pickable; `readingScene.pickAt` at the place's anchor (its middle) returned null, while a scan on an 8 px grid found no
+  strip once the cards had settled. Mid-flight the strips happened to cross the grid.
+- **Fix:** pneuka/underside.js `nearPlace`: a held or dragged card that touches nothing goes to the nearest place within 40 px of the
+  point. Checked headless: the Priestess picked from the bar, laid in the Past by a click at its anchor. A solid pickable behind the
+  frame came after (Calissa, 9edac754): `pickAt` at the middle of an empty place now returns it; the fallback stays for a near miss.
+- **Rule:** 279
+
+### 2026-10-23 · Two console errors at boot from the spread's achievements (Petra, read from the page)
+- **Seen:** at boot, `achievements: "sc1" is in the sub "The Spread", not in CATS`, twice.
+- **Cause (read):** sc1 to sc3 (SPREADS.md 11) were added under GENERAL's new sub "The Spread" without adding it to `CATS`; the load
+  guard (achievements.js, after R57) caught it and pushed the sub itself. Nothing was hidden; the console was dirty.
+- **Fix:** "The Spread" added to GENERAL's subs in `CATS`. Importing achievements.js now logs no error.
+- **Rule:** 280
+
+### 2026-10-23 · The Lockheart drank 0.8 of overflow whatever the stone (Petra; Dovina found it with the palm die)
+- **Seen:** the stones' rows give the Lockheart's share of overflow by stone (the Maker's 0.8, onyx 1, amethyst 0, with amethyst's
+  bleed 1), but on onyx and amethyst the coffin drank as on the Maker's; the palm die (progress/dice.js) reads the row, so the two
+  disagreed on what was left.
+- **Cause (read):** lockheart.js's overflow hook fed a constant `e.amount * 0.8`; nothing read `overflow.lockheart` until the palm die.
+  Onyx's and amethyst's overflow trades were written and never wired.
+- **Fix:** the hook feeds the worn stone's `overflow.lockheart` (stones.js `stoneOf`). Measured headless, the Lockheart worn, 50 of
+  overflow: the Maker's 40 to the coffin and 10 to the palm die; onyx 50 and 0; amethyst 0 and 0.
+- **Rule:** 281
+
+### 2026-10-23 · The reading view's class card always showed the Fool (Calissa; Petra and Dovina found it)
+- **Seen:** whatever was laid, the class's card behind the Courier stayed the Fool; and had a Major been read, 'arcana.emperor' would
+  have drawn the Page of Cups.
+- **Cause (read):** vfx/readingview.js read `laidSpread.court`, renamed `laidSpread.class` in ac35a3d while the card was built on the
+  old name (the two commits crossed); `?.` turned the missing field into null, so the Fool. `classCell` split ids on the dot and took
+  'arcana' as a court's rank.
+- **Fix:** it reads `laidSpread.class`; an `arcana.<card>` id is a Major by its number; a Major's tint is the suit it `lifts`.
+  Measured headless: a Celtic Cross reads `arcana.justice`, cell 11; 'arcana.emperor' 4; 'queen.wands' 76.
+- **Rule:** 282

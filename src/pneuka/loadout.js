@@ -21,8 +21,8 @@ const CARD = {
   psygun: { name: 'Psygun', label: 'gun', lines: ['LMB shoots · held, a charge', 'MMB: the quick taps · wheel: the cylinder'] },
   sondelass: { name: 'Sondelass', label: 'blade', lines: ['1 · 2 · 3: cutlass, rod, hook', 'RMB: the specials'] },
   soulbrush: { name: 'Soul Brush', label: 'brush', lines: ['RMB held: Celestial mode', '1: paint · 2: mop'] },
-  veritome: { name: 'Veritome', label: 'camera', lines: ['1: the Flash', 'wheel: the lens'] },
-  dreamvane: { name: 'Dreamvane', label: 'rod', lines: ['MMB: the survey', 'wheel: the dowse'] },
+  veritome: { name: 'Veritome', label: 'camera', lines: ['1: the Flash', 'RMB: the lens · wheel: its zoom'] },
+  dreamvane: { name: 'Dreamvane', label: 'dowsing rod', lines: ['MMB: the survey', 'wheel: the dowse'] },
   crucibelle: { name: 'Crucibelle', label: 'bell', lines: ['1 to 5: the notes', 'the toll on the beat'] },
   lockheart: { name: 'Lockheart', label: 'coffin', lines: ['wheel: the keyring', 'the wheel of odds'] },
 };

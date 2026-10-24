@@ -12,7 +12,8 @@ than about 1.5x the aim**, except luck (a prismatic chest is a windfall).
 
 - **Faucets**: slip jelly bursts and zandatsu cores (`ECON.jelly`), crystals (`ECON.crystal`), chests (`ECON.chest`), a curio
   already held (`ECON.dupe`), condensing a spare card (`ECON.condense`), selling to the folk (`ECON.fish`, `.curio`), the Lockheart's
-  CUBES (`ECON.lockheart`). `/grant` (DEBUG) is not income.
+  CUBES (`ECON.lockheart`), the palm die's condensing of overflow (`PALM`, `progress/dice.js`: capped a game day by its size, at
+  most 40 cubes a real hour at a d20; DICE.md 4). `/grant` (DEBUG) is not income.
 - **Drains**: the Tithe (`ECON.tithe.cost`), the shops (`ECON.goods`), the kiln (firing, mending, bought looks), the Spirit Garden
   (the long sink that never fills: OSRS's Construction, FFXIV's housing).
 - **Converters** (Machinations): the Tithe and the Lockheart turn cubes or Lachryma into chances; condensing turns cards into cubes.

@@ -33,7 +33,7 @@ import { ECON } from '../econ/table.js';
 /** How many of each a sea deals (a sea has about 18 islets: 3 pairs take 6, 3 line-ups 3, 2 echoes 4; the rest keep their secret alone). */
 export const PUZZLE_COUNT = { pairs: 3, lineups: 3, echoes: 2 };
 /** The pair: its find's tier; how near (m) a carved thing must be come to count as seen; the shapes and colours it is carved in. */
-export const PAIR = { tier: 'rare', seen: 6, shapes: ['urn', 'fish', 'bell', 'wheel', 'hand', 'moon'], colours: [0xd4a53c, 0x9fe8f0, 0xe07a5f, 0x9be36a, 0xb49be6, 0xe8e2d0] };
+export const PAIR = { tier: 'rare', seen: 6, shapes: ['urn', 'fish', 'bell', 'wheel', 'hand', 'moon'], colours: [0xd4a53c, 0x2f8f9d, 0xe07a5f, 0x9be36a, 0xb49be6, 0x3e3a8c] }; // (the pale cyan and the white washed out on the sand: Calissa, 2026-10-23; deep teal and indigo now)
 /** The line-up: the arcs' distances out from the spot (m); how near the spot you stand (m), how close your look to the line (rad);
  *  the ring's apparent half-angle (rad), and how far up the line looks (rad). Four arcs a quarter each: from anywhere else they are four broken pieces. */
 export const LINEUP = { dists: [60, 100, 150, 220], stand: 1.4, aim: 0.07, size: 0.1, pitch: 0.12 }; // (far, so the camera a few metres behind the eye sees nearly the same ring; pitched over the size, so the ring's foot is above the eye)
