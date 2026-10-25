@@ -17,6 +17,7 @@
 //   window.__game (the test harness's handle: tick(dt), draw(), game)   window.__boot (ms at each stage of loading)
 // ---------------------------------------------------------------------------------------
 import './render/threefixes.js'; // (first: shims for the pinned three, in place before any module builds a geometry)
+import './vfx/programkeys.js'; // (before any material is made: classes that compile one shader share one program key)
 import { BUILD } from './core/progress.js';
 import { bootSave, bootSaveKeeping } from './boot/save.js';
 import { bootRenderer, bootPresentation } from './boot/renderer.js';

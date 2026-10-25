@@ -45,10 +45,10 @@ import * as THREE from 'three';
 import { Sprites } from './sprites.js';
 import { hasTag } from '../core/tags.js';
 import { Trail } from './trail.js';
-import { meshFx } from './meshfx.js';
+import { meshFx, FX_V, FX_F, fxUniforms } from './meshfx.js';
 import { LIBRARY } from './library.js';
 import { sfx } from '../audio/sfx.js';
-import { LAB_GLSL, mindTime, mindTick } from './labradorite.js';
+import { mindTime, mindTick } from './labradorite.js';
 import { featTint } from './oxidation.js';
 import { ladderOf } from './shelllooks/tiers.js';
 
@@ -103,23 +103,19 @@ export function vfxTexture(name) {
   return (TEX[name] = t);
 }
 export const vfxTextureNames = () => Object.keys(TEX_SRC);
-const DECAL_V = 'varying vec2 vUv; varying vec3 vW; void main() { vUv = uv; vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }';
-const DECAL_F = `uniform sampler2D uMap; uniform vec3 uTint; uniform float uK, uLabradorite, uGlow;
-varying vec2 vUv; varying vec3 vW;
-${LAB_GLSL}
-void main() {
-  float a = texture2D(uMap, vUv).a * uK;
-  if (a < 0.003) discard;
-  vec3 c = mix(uTint, labSoft(labPhase(vW, normalize(cameraPosition - vW)) + length(vUv - 0.5) * 1.5) * 1.3, uLabradorite) * uGlow;
-  gl_FragColor = vec4(c * a, a);
-}`;
+// (a decal is drawn in the baked meshes' program (vfx/meshfx.js FX_V, FX_F): its texture's alpha only, its phase outward from its
+// middle, added; the program audit, 2026-10-25)
+const DECAL_V = FX_V, DECAL_F = FX_F;
+const decalUniforms = (u) => fxUniforms({ uUseRgb: { value: 0 }, uPhR: { value: 1 }, uPhN: { value: 0 }, uGain: { value: 1.3 }, ...u });
 let _quad = null;
+/** The decal's quad: a plane with the shared program's colour attribute (all ones). */
+const decalQuad = () => _quad ||= (() => { const g = new THREE.PlaneGeometry(1, 1); g.setAttribute('color', new THREE.Float32BufferAttribute(new Float32Array(g.attributes.position.count * 4).fill(1), 4)); return g; })();
 /** One decal kept by the shells' warm-up (vfx/shelllooks/warmup.js), so the decal's program is compiled on the loading screen and never
  *  released between two blows (the casebook's rules 17, 18). It draws nothing (its k is 0). */
 export function decalWarmMesh() {
-  const u = { uMap: { value: vfxTexture('shockring') }, uTint: { value: new THREE.Color(0xffffff) }, uK: { value: 0 }, uLabradorite: { value: 0 }, uGlow: { value: 1 }, uMindT: mindTime };
+  const u = decalUniforms({ uMap: { value: vfxTexture('shockring') }, uTint: { value: new THREE.Color(0xffffff) }, uK: { value: 0 }, uLabradorite: { value: 0 }, uGlow: { value: 1 }, uMindT: mindTime });
   const mat = new THREE.ShaderMaterial({ uniforms: u, vertexShader: DECAL_V, fragmentShader: DECAL_F, transparent: true, depthWrite: false, side: THREE.DoubleSide, fog: false, blending: THREE.CustomBlending, blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, blendEquation: THREE.AddEquation });
-  const m = new THREE.Mesh(_quad ||= new THREE.PlaneGeometry(1, 1), mat); m.userData.moodExempt = true; m.renderOrder = 4;
+  const m = new THREE.Mesh(decalQuad(), mat); m.userData.moodExempt = true; m.renderOrder = 4;
   return m;
 }
 
@@ -363,11 +359,11 @@ export class Vfx {
       case 'caster': { const M = CASTER[L.shader]; s.mesh = (M?.layer ? M.layer(g, L, { ...ctx, pos: h.pos, tint: color(L.tint ?? 'tint', ctx) }) : M?.vfxLayer?.(g, h, L, color)) || null; break; }
       case 'decal': {
         const map = vfxTexture(L.tex); if (!map) break;
-        const u = { uMap: { value: map }, uTint: { value: new THREE.Color(color(L.tint ?? 'tint', ctx)) }, uK: { value: 0 }, uLabradorite: { value: L.labradorite ?? 0 }, uGlow: { value: L.glow ?? 1.4 }, uMindT: mindTime };
+        const u = decalUniforms({ uMap: { value: map }, uTint: { value: new THREE.Color(color(L.tint ?? 'tint', ctx)) }, uK: { value: 0 }, uLabradorite: { value: L.labradorite ?? 0 }, uGlow: { value: L.glow ?? 1.4 }, uMindT: mindTime });
         const mat = new THREE.ShaderMaterial({ uniforms: u, vertexShader: DECAL_V, fragmentShader: DECAL_F, transparent: true, depthWrite: false, depthTest: !ctx.throughWalls, side: THREE.DoubleSide, fog: false, blending: THREE.CustomBlending, blendEquation: THREE.AddEquation,
           // (added light; or `blend: 'darken'`, the ground burnt under it: what is there times one less the tint, the same program)
           ...(L.blend === 'darken' ? { blendSrc: THREE.ZeroFactor, blendDst: THREE.OneMinusSrcColorFactor } : { blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor }) });
-        const m = new THREE.Mesh(_quad ||= new THREE.PlaneGeometry(1, 1), mat);
+        const m = new THREE.Mesh(decalQuad(), mat);
         m.renderOrder = L.order ?? 4; m.frustumCulled = false; m.userData.moodExempt = true; m.visible = false;
         g.scene.add(m);
         s.mesh = { group: m, u, set: (k) => { u.uK.value = Math.max(0, k); m.visible = k > 0.002; }, update: () => mindTick(), dispose: () => { m.parent?.remove(m); mat.dispose(); } };

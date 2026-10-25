@@ -21,11 +21,12 @@ import { surfaceTexture } from '../render/triplanar.js';
 import { LAB_GLSL, mindTime } from './labradorite.js';
 import { froude } from './cavekit.js';
 import { layOnGround } from './dunemaw.js';
+import { matteMaterial } from './matte.js';
 
 /** The dish's sand, combed toward the pool the slide runs to. */
 export function bowlSand({ scale = 0.25 } = {}) {
   const u = { uT: { value: 0 }, uPool: { value: new THREE.Vector2() }, uSlide: { value: 0 }, uPhase: { value: 0 }, uScale: { value: scale }, uSand: { value: surfaceTexture('sand') } };
-  const m = new THREE.MeshStandardMaterial({ name: 'bowl-sand', color: 0xffffff, roughness: 0.95 });
+  const m = matteMaterial({ name: 'bowl-sand', color: 0xffffff }); // (Lambert: matte, no metal, no env, its patch never reads roughness; half the GLSL of Standard and 0.5 to 0.7 of its cost a lit pixel, vfx/matte.js; the program audit, 2026-10-25)
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, u);
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vBwW;').replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\nvBwW = (modelMatrix * vec4(transformed, 1.0)).xyz;');

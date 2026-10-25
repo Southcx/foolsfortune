@@ -120,7 +120,7 @@ export class ShipLook {
   hurt(k) {
     if (Math.abs(k - (this.hurtK ?? 0)) < 1e-3) return; this.hurtK = k;
     for (const m of this.mats) {
-      if (!m.isMeshStandardMaterial) continue;
+      if (!m.isMeshStandardMaterial && !m.isMeshLambertMaterial) continue; // (the sails and vanes are Lambert: vfx/matte.js)
       const b = (m.userData.hurtBase ||= { transparent: m.transparent, opacity: m.opacity, depthWrite: m.depthWrite, em: m.emissive.clone(), emI: m.emissiveIntensity });
       m.transparent = b.transparent || k > 0.01; m.opacity = b.opacity * (1 - 0.45 * k); m.depthWrite = k > 0.01 ? false : b.depthWrite;
       m.emissive.copy(b.em).lerp(_pc.setRGB(0.85, 0.9, 1.0), 0.5 * k); m.emissiveIntensity = b.emI + 0.6 * k;

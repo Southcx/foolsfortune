@@ -89,7 +89,7 @@ export class DuelBoard {
     new CrystalFrets(this.beads); this.beads.frustumCulled = false; this.beads.count = 0; this.beads.name = 'duel-ap';
     // the EmO columns, up the frame's outer members
     const bar = new THREE.PlaneGeometry(0.045, 1); bar.translate(0, 0.5, 0);
-    this.emoBars = [0, 1].map((side) => { const m = new THREE.Mesh(bar, new THREE.MeshBasicMaterial({ name: 'duel-emo', fog: false, toneMapped: false })); m.position.set((side ? 1 : -1) * (W / 2 + b / 2), base, lip + 0.003); m.scale.y = 0.001; return m; });
+    this.emoBars = [0, 1].map((side) => { const m = new THREE.Mesh(bar, new THREE.MeshBasicMaterial({ name: 'duel-emo', toneMapped: false })); m.position.set((side ? 1 : -1) * (W / 2 + b / 2), base, lip + 0.003); m.scale.y = 0.001; return m; }); // (fogged like the world's opaque basic program it shares: at the board's few metres fog shows nothing; the program audit)
     this.meshes = [frame, boss, this.head, this.foot, kin, this.slab, this.beads, ...this.emoBars, ...this.lips];
     this.group.add(...this.meshes);
     this.built = `${w}x${h}`; this.W = W; this.H = H;

@@ -154,18 +154,26 @@ function potsherdGeometry(word) {
   return g;
 }
 
-// ---- one program for every potsherd: the face's texture, the inside's throwing lines, the raw edge; the black smooth, the clay rough
-function potsherdMaterial(tex) {
-  const m = new THREE.MeshStandardMaterial({ name: 'ostracon', map: tex, roughness: 1, metalness: 0 });
+// ---- one program for every potsherd: the face's texture, the inside's throwing lines, the raw edge; the black smooth, the clay rough.
+// Every painted black-figure ware shares it (the Spirit Garden's lekythoi, vfx/garden/lekythos.js): `gloss` is where the black's shine
+// gives way to the clay's matt [rough at black, rough at clay, lum from, lum to], a uniform; with no `aFace` attribute a piece reads 0
+// (its painted face), so the potsherd's inside and edge never show on it.
+const POTSHERD_GLOSS = [0.26, 0.88, 0.012, 0.05];
+function potsherdMaterial(tex) { return blackFigureMaterial(tex); }
+/** A Standard material for any painted black-figure ware (a potsherd, a lekythos): one program. */
+export function blackFigureMaterial(tex, gloss = POTSHERD_GLOSS, name = 'ostracon') {
+  const m = new THREE.MeshStandardMaterial({ name, map: tex, roughness: 1, metalness: 0 });
+  const uGloss = { value: new THREE.Vector4(...gloss) };
   m.onBeforeCompile = (sh) => {
+    sh.uniforms.uGloss = uGloss;
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nattribute float aFace;\nvarying float vFace;\nvarying vec3 vPotsherd;')
       .replace('#include <begin_vertex>', '#include <begin_vertex>\nvFace = aFace; vPotsherd = position;');
-    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vFace;\nvarying vec3 vPotsherd;')
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', '#include <common>\nvarying float vFace;\nvarying vec3 vPotsherd;\nuniform vec4 uGloss;')
       .replace('#include <map_fragment>', `#include <map_fragment>
 float potsherdLum = dot(diffuseColor.rgb, vec3(0.2126, 0.7152, 0.0722));
 if (vFace > 1.5) { diffuseColor.rgb = ${linear(0xe3ad84)} * (0.9 + 0.1 * sin(vPotsherd.x * 70.0 + vPotsherd.y * 90.0)); potsherdLum = 1.0; }
 else if (vFace > 0.5) { float ph = vPotsherd.y * 260.0, aa = 1.0 - smoothstep(0.5, 1.5, fwidth(ph)); diffuseColor.rgb = ${linear(0xb75a35)} * (1.0 - 0.08 * aa * (0.5 + 0.5 * sin(ph))); potsherdLum = 1.0; }`)
-      .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = mix(0.26, 0.88, smoothstep(0.012, 0.05, potsherdLum));');
+      .replace('#include <roughnessmap_fragment>', '#include <roughnessmap_fragment>\nroughnessFactor = mix(uGloss.x, uGloss.y, smoothstep(uGloss.z, uGloss.w, potsherdLum));');
   };
   m.customProgramCacheKey = () => 'ostracon';
   return m;

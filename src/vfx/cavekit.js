@@ -30,6 +30,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { LAB_GLSL, mindTime } from './labradorite.js';
 import { LIQUID_GLSL, liquidUniforms } from './liquid.js';
+import { matteMaterial } from './matte.js';
 
 const STONE = 0x9b7a5c, PALE = 0xd8c4a4;
 /** A particle grown k times (Froude: size by k, speed and time by √k, gravity left real). */
@@ -37,7 +38,7 @@ export function froude(o, k) { if (k <= 1) return o; const f = Math.sqrt(k); o.s
 
 /** A material that shows a seam and stages of cracks glowing with the Lachryma (shared by the pillar and the stalactite). */
 export function seamed(color, u, { seam = 1, flat = true } = {}) {
-  const m = new THREE.MeshStandardMaterial({ color, roughness: 0.9, flatShading: flat });
+  const m = matteMaterial({ color, flatShading: flat }); // (Lambert: matte, no metal, no env, its patch never reads roughness; half the GLSL of Standard and 0.5 to 0.7 of its cost a lit pixel, vfx/matte.js; the program audit, 2026-10-25)
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, u);
     sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying vec3 vCkP;').replace('#include <begin_vertex>', '#include <begin_vertex>\nvCkP = position;');
@@ -54,7 +55,7 @@ export function seamed(color, u, { seam = 1, flat = true } = {}) {
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
   totalEmissiveRadiance += labradorite(vCkP.y * 0.3 + uMindT * 0.08) * ckGlow * (1.0 - uSpent) * 0.9;`);
   };
-  m.customProgramCacheKey = () => `cave-seamed-${seam}`;
+  m.customProgramCacheKey = () => 'cave-seamed'; // (one program: `seam` is only ever its default, and it is not in the GLSL)
   return m;
 }
 

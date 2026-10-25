@@ -34,6 +34,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { WARE, paintMeander, paintTongues, paintPalmette, paintLikeness, paintStele } from '../blackfigure.js';
+import { blackFigureMaterial } from '../ostracon.js';
 import { wheelColour } from '../wheelcolour.js';
 import { COLOR } from '../../progress/weather.js';
 
@@ -48,21 +49,10 @@ const PROFILE = [[0, 0], [0.098, 0], [0.104, 0.008], [0.104, 0.022], [0.096, 0.0
 const TOP = 0.958;
 const AT = { reserve: 0.172, field: 0.195, meander: [0.548, 0.606], shoulder: 0.62, neck: 0.69 };
 
-const MAT_KEY = 'garden-lekythos-1';
 let PARKED = null;
 const PAINTINGS = new Map(), GEOS = new Map(); // (kind|colour -> { map, mat, users }; height -> { geo, users })
-const ROUGH = /* glsl */`
-  {
-    float lumK = dot(diffuseColor.rgb, vec3(0.299, 0.587, 0.114));
-    roughnessFactor = mix(0.3, 0.86, smoothstep(0.015, 0.09, lumK)); // (the black is glossy, the white and the colours matt)
-  }
-`;
-function potMaterial(map) {
-  const m = new THREE.MeshStandardMaterial({ name: 'garden-lekythos', map, roughness: 0.8, metalness: 0 });
-  m.onBeforeCompile = (sh) => { sh.fragmentShader = sh.fragmentShader.replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>\n${ROUGH}`); };
-  m.customProgramCacheKey = () => MAT_KEY;
-  return m;
-}
+// (the black is glossy, the white and the colours matt: the potsherd's own program, its gloss edges the lekythos's; the program audit, 2026-10-25)
+const potMaterial = (map) => blackFigureMaterial(map, [0.3, 0.86, 0.015, 0.09], 'garden-lekythos');
 
 /** A colour from anything the callers hold; a feeling's canon colour when it holds none. */
 function toColour(c, feeling) {
