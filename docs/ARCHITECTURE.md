@@ -26,6 +26,7 @@ file came from.
 ```
 src/
   main.js        the composition root: builds the services, registers the techs, runs the frame        (Petra)
+  boot/          the boot stages main.js runs in order, one function a stage: the save .. the frame    (Petra)
   core/          services every module may use, and nothing of the game itself                         (Petra)
   courier/       the Courier: body, animation, moves (techs), vessel, the pool, the skiff, the ship      (Petra)
   tools/         the belt, the held-tool base, and one folder per tool                                  (Petra; shared parts)
@@ -175,6 +176,6 @@ What fails goes back to its division with the reason and the fix. Petra does not
 
 ## Open restructuring
 
-`main.js` split into boot stages and `tracking.js` by domain (begun: `feedback/tracking/*.js`), Petra's; the course and the room teleports
+`tracking.js` split by domain (begun: `feedback/tracking/*.js`), Petra's; the course and the room teleports
 into `world/basement/course.js` and `world/rooms.js`, Petra's; the old particles folded into the VFX system, Calissa's; the in-game words
 the glossary retires, Espada's.
