@@ -445,3 +445,15 @@ missing one). The rivals got minds of their own (a blocker, a rail hog, a gamble
 siblings race as the hard field. One race engine runs every mode (a race, a hot lap, practice with a rewind, a pot smash, the escape, the
 licences), and above it the cups, Kirby Air Ride's City Trial and a wager whose odds are the ledger's read of you, so getting better beats
 the house until it learns (section 22's law, as an economy). The garage's parts are trades opened by achievements, never upgrades.
+
+## 25. Areas: the world as rooms of a walk (the owner, 2026-10-25, through Calissa; docs/plans/AREAS.md, a plan)
+
+The owner chose FFXII's zones over an open world: dense areas a minute or two across, each built on entry and disposed on exit, with a
+short transition at an edge you can see, and the iPhone XR as the floor. From FFXII: the unit, the seen edge, one condition per area
+that changes what it holds (the Giza Plains' seasons), the rare game met only under a condition, and creatures that stay behind at an
+edge. From Monster Hunter: the numbered map of small, dense zones. From Spyro and Banjo-Kazooie: a checklist of N of M with the total
+always shown. From Xenoblade and Ys VIII: blank slots until found, and a region charted whole as an achievement (never cubes). From
+Animal Crossing: the clock runs while you are away, and an area is caught up on entry, so nothing ticks unloaded. The rule that keeps
+"dispose" from turning into "forget": an area holds only drawing and physics, and every state that lasts belongs to its system and the
+save. The Dunes become five areas round the Weir; the open sea and the Raceway park each stay one, since a sail and a lap must not be
+cut.

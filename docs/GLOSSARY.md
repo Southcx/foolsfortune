@@ -400,6 +400,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   **Kaolin Anagami** the ego it is.
 - **layer** (`LAYERS`, `src/feedback/cartography.js`) — one level of the map: the upper floor, the ground floor, the basement, the Dunes, the Great
   Dunemaw; and places at the Dunes' height told apart by their render zone, not their height (the Raceway, Margarite's dock).
+- **an area** (plain name, a plan; `docs/plans/AREAS.md`; events `area.enter`, `area.leave`) — what is built on entry and disposed on exit, a minute or two's walk across, its edges seen and crossed with a short transition (FFXII's): a layer holds areas, an area holds rooms; the Dunes as five (the Weir, the shore, the crystal ridges, the Gnomon flats, the ruins). *Not:* the explored area (the map's, always in full), a zone (a render zone), a room, `time.area.<layer>` (the ledger's time on a layer).
 - **room** — a named place inside a layer, said by the log as you enter it (`place.enter` carries `room`); also what the Index sends you to.
 - **place** (`game.places`, `src/world/places.js`) — a named spot anything can be sent to by id (`well.mouth`, `kiln`). A point, *not* a room.
 - **zone** (`src/render/zones.js`) — a render zone: what is drawn from where the camera is. *Not:* the explored area, the Zone of Influence, nor a crystal's fret. →
@@ -640,7 +641,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the overlay's scene** (`OverlayScene`, `game.overlayScene`, `src/render/overlayscene.js`) — the overlay's own 3D layer: meshes in CSS
   pixels, anchored to the view or a DOM element, lit by its own light, drawn into the canvas after the glow and the grade (OVERLAY.md 15.2). *Not:* the world's scene, the HTML HUD over it.
 - **the Sight / its waypoint** (`game.sight`, `src/progress/sight.js`; the instrument Calissa's; OVERLAY.md 16) — the instrument top-right: compass,
-  barometer and clock in one / what its needle points to, calibrated to a place or creature you know, or home; it spins when uncalibrated (Jack Sparrow's compass). *Not:* the wire compass, the map.
+  barometer and clock in one / what its needle points to, calibrated to a place or creature you know, a point on ground you have charted (the map's one waypoint, MAP.md 3), or home; it spins when uncalibrated (Jack Sparrow's compass). *Not:* the wire compass, the map.
 - **the Sight's calibrate button** (plain name; `calibrateButton`, `installCalibrateButtons`, `src/ui/calibratebutton.js`) — a TRACK button set beside a thing you could want (a Veritome plate's creature, a charted room on the map) that calibrates the Sight to it (`game.sight.calibrate`), TRACKING and lit gold while it is the waypoint, pressed again to stop; a refusal said where pressed. *Not:* the Sight, its waypoint, `/sight`.
 - **familiarity** (working name, Espada's and the owner's; `familiarityOf`, `src/progress/familiarity.js`; OVERLAY.md 13) — how well the
   Courier knows a kind of creature, 0 UNKNOWN to 4 UNDERSTOOD, from photographs or downs: what its tag and a blow's readout may show. *Not:* the bestiary's understanding (one of its two avenues).
@@ -926,6 +927,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | seal | your seal (the Pneuka Jar's base, HANKO.md); an attribute's seal (the potter's chop on the press's kerb); a sealed room (the stele's) | "your seal"; "an attribute's seal"; "a sealed room" |
 | suit | a division's (Petra pentacles, Wanda wands, Calissa cups, Espada swords); a house card's (Raku's tables); an item's (the spread board's, SPREADS.md) | "a division's suit", "a house card's suit", "an item's suit" |
 | cut | a Raceway cut (a stretch between steep walls); the paid cut (`paidCut`); a sail's cut (its silhouette, `SailCut`) | "a cut" is the Raceway's; "the paid cut"; "a sail's cut" |
+| area | an area (what loads together, AREAS.md); the explored area (the map's ground explored); the ledger's `time.area.<layer>` (time on a layer); the HUD layout's areas (the move and look areas, `areas.strip`) | "an area" is AREAS.md's; "the explored area" in full; "time on a layer"; "the move area", "the strip's room" |
 | ring | a Solar Skiffing ring (`SolarRing`); a rail ring (`G.ring`); the spirit press's hue ring; an intensity ring (the wheel of feelings); a lane mark's rings; the ring (the orbit's ten slots, `ORBIT`); the jet ring (`JetRing`, the jets' gauge at the feet) | "a Solar Skiffing ring", "a rail ring", "the hue ring", "an intensity ring", "the jet ring" |
 
 ## 12. Retired words
