@@ -28,7 +28,12 @@
 //   sky.feeling(aspect | null, k 0..1, dt)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { bakedCanvasTexture } from '../render/bakedcanvas.js';
 import { warpMaterial } from './stormwarp.js';
+/** The width of the copy the sky's PMREM is filtered from (its cube's face a quarter of it). */
+const ENV_W = 512;
+/** A feeling's sky drawn at this fraction of its painting. */
+const FEELING_SCALE = 0.5;
 import { NIGHT_GLSL, NIGHT_UNIFORMS } from './nightsky.js';
 import skyB64 from '../assets/sky.webp?b64';
 import dayB64 from '../assets/sky_day.webp?b64';
@@ -93,7 +98,13 @@ export class Sky {
     if (F.shown && F.shown !== aspect) target = 0;              // (the one shown goes first)
     else if (ready) { F.shown = aspect; target = want; }
     F.k += (target - F.k) * (1 - Math.exp(-dt * FEELING_SKY.rate * 3));
-    if (F.k < 0.002 && target === 0) { F.k = 0; if (F.shown !== aspect) F.shown = ready ? aspect : null; }
+    if (F.k < 0.002 && target === 0) {
+      F.k = 0;
+      if (F.shown !== aspect) {
+        const gone = F.shown; F.shown = ready ? aspect : null;
+        if (gone && gone !== F.shown && F.tex[gone]) { F.tex[gone].dispose(); delete F.tex[gone]; delete F.loading[gone]; } // (faded out: let go, 8 MB on the GPU each; loaded again if its weather falls again. Its small copy stays)
+      }
+    }
     G.uFeeling.value = F.shown ? F.k : 0;
     if (F.shown) {
       G.uSkyFeeling.value = F.tex[F.shown];
@@ -104,11 +115,15 @@ export class Sky {
   async loadFeeling(aspect) {
     try {
       const { default: b64 } = await FEELING_SKIES[aspect].load();
-      const t = await new THREE.TextureLoader().loadAsync(`data:image/webp;base64,${b64}`);
+      const im = (await new THREE.TextureLoader().loadAsync(`data:image/webp;base64,${b64}`)).image;
+      // (drawn at 1024 x 512, the owner's own paintings' size, over which it comes in: 2 MB on the GPU where the 2048 painting was 8; at
+      // the 480-line present a sky's texel is magnified at either size. A baked canvas, its pixels let go once on the GPU:
+      // render/bakedcanvas.js. The resolution pass, 2026-10-25, docs/plans/art/texture-budget.md)
+      const t = bakedCanvasTexture((g, w, h) => g.drawImage(im, 0, 0, w, h), im.width, im.height, { scale: FEELING_SCALE });
       t.colorSpace = THREE.SRGBColorSpace; t.wrapS = THREE.RepeatWrapping; t.wrapT = THREE.ClampToEdgeWrapping; t.minFilter = t.magFilter = THREE.LinearFilter; t.generateMipmaps = false;
       this.game.renderer?.initTexture?.(t); // (uploaded now, not at its first frame)
       const c = document.createElement('canvas'); c.width = this.W || 128; c.height = this.H || 64;
-      const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(t.image, 0, 0, c.width, c.height);
+      const g = c.getContext('2d', { willReadFrequently: true }); g.drawImage(im, 0, 0, c.width, c.height);
       this.feel.px[aspect] = g.getImageData(0, 0, c.width, c.height).data;
       this.feel.tex[aspect] = t;
     } catch (e) { console.warn(`the sky of ${aspect}`, e); }
@@ -134,9 +149,13 @@ export class Sky {
     this.horizon.copy(this.average(0.44, 0.56));
     this.zenith.copy(this.average(0.86, 0.96));
     // the filtered copy for reflections (one small cost, once)
+    // (from a 512-wide copy: three's PMREM takes its cube's face from the equirect's width / 4, so a 128 face, 1.5 MB of half floats
+    // where the full painting's 256 face was 6; it lights glossy cubes and chests' metal, never a mirror. The resolution pass, 2026-10-25)
+    const ec = document.createElement('canvas'); ec.width = ENV_W; ec.height = ENV_W / 2; ec.getContext('2d').drawImage(im, 0, 0, ec.width, ec.height);
+    const et = new THREE.CanvasTexture(ec); et.colorSpace = THREE.SRGBColorSpace; et.mapping = THREE.EquirectangularReflectionMapping;
     const pm = new THREE.PMREMGenerator(this.game.renderer);
-    this.env = pm.fromEquirectangular(tex).texture;
-    pm.dispose();
+    this.env = pm.fromEquirectangular(et).texture;
+    pm.dispose(); et.dispose();
     return this;
   }
 

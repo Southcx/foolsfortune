@@ -21,6 +21,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { bakedCanvasTexture } from '../render/bakedcanvas.js';
+import { T } from '../core/config.js';
 
 export const SHAPES = { soft: 0, core: 1, star4: 2, sparkle: 3, streak: 4, ring: 5, ringthin: 6, puff: 7, shard: 8, diamond: 9, glint: 10, swirl: 11, petal: 12, crescent: 13, chip: 14, bubble: 15, hex: 16, facet: 17, drip: 18, ripple: 19, disc: 20, talisman: 21, moth: 22, leaf: 23, die: 24, comb: 25 };
 
@@ -97,7 +98,7 @@ export function atlas() {
     }
   });
   };
-  _atlas = bakedCanvasTexture(paint, C * 8, C * 4); // (drawn once: its pixels let go once on the GPU, render/bakedcanvas.js)
+  _atlas = bakedCanvasTexture(paint, C * 8, C * 4, { scale: Math.min(1, T.visual.labelScale ?? 1) }); // (drawn once: its pixels let go once on the GPU, render/bakedcanvas.js; at the tier's labelScale, 512 x 256 on Low and Minimum: the resolution pass, 2026-10-25)
   _atlas.colorSpace = THREE.NoColorSpace; _atlas.generateMipmaps = true; _atlas.minFilter = THREE.LinearMipmapLinearFilter; _atlas.anisotropy = 2;
   return _atlas;
 }
