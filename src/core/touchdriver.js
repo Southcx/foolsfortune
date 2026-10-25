@@ -16,6 +16,8 @@
 //   THE LANES       while the rhythm mode plays, the screen is its ten pads, five a hand, each finger its lane's until it lifts, judged on
 //                   the touch's own moment (core/touchlanes.js). `screenTaken()` says the whole screen is a tool's (the lanes, Celestial
 //                   mode's paper), so the touch controls' stick stands aside.
+//   THE SWIPES      a quick flick sideways on the look area presses the row the live context gives it (on the Solar Skiff the shoulder,
+//                   Q or E tapped twice): core/touchswipes.js.
 // Every touch is the driver's alone (`preventDefault`): no page scroll, no zoom, no mouse echo after a tap (core/input.js also refuses
 // one within 0.8 real s of a touch).
 //
@@ -23,13 +25,14 @@
 // camera drag; Pointer Events' and Touch Events' identifiers for multitouch; VirtualKeys (coop/sibling.js) driving by key codes.
 //
 //   game.touch = new TouchDriver(game, input, actions, el)   .update()   .bind(id, el)   .control(id, on)   .release()   .active   .tools   .gyro
-//   .state() -> { move, look, cursor } (the move area's origin and thumb, for the stick's look: Calissa's; the cursor's mode)   .screenTaken()   .lanes   TOUCH
+//   .state() -> { move, look, cursor } (the move area's origin and thumb, for the stick's look: Calissa's; the cursor's mode)   .screenTaken()   .lanes   .swipes   TOUCH
 // ---------------------------------------------------------------------------------------
 import { StickMove, STICK } from './stickmove.js';
 import { TouchCursor } from './touchcursor.js';
 import { TouchTools } from './touchtools.js';
 import { GyroSteer } from './gyrosteer.js';
 import { TouchLanes } from './touchlanes.js';
+import { TouchSwipes } from './touchswipes.js';
 import { skiffTouchKeys } from '../progress/skifftouch.js';
 
 /** r: px of drag for a full push; follow: past this many r the origin is dragged along; look: camera px per px of drag. */
@@ -43,6 +46,7 @@ export class TouchDriver {
     this.tools = new TouchTools(game, input, actions, TOUCH.look); // (a second look finger, `look2`, is the wheel's pinch where a tool reads it)
     this.gyro = new GyroSteer(game, input); this.tilted = false; // (the tilt as the skiff's steer, a setting: core/gyrosteer.js)
     this.lanes = new TouchLanes(game, actions); // (the rhythm mode's ten pads: core/touchlanes.js)
+    this.swipes = new TouchSwipes(game, input, actions); // (a flick on the look area as its row: the skiff's shoulder, core/touchswipes.js)
     this.active = false; // (a touch seen this session: the shell's touch mode follows `input.device`)
     const opt = { passive: false };
     el.addEventListener('touchstart', (e) => this.start(e), opt);
@@ -61,7 +65,7 @@ export class TouchDriver {
       if (this.game.cursorFree?.()) { this.cursor.down(t); continue; }
       if (this.tools.paper && !this.look) { this.look = at; this.tools.lookDown(at); continue; } // (Celestial mode's paper: the whole screen is drawn on)
       if (t.clientX < innerWidth / 2) { if (!this.move) this.move = at; }
-      else if (!this.look) { this.look = at; this.tools.lookDown(at); }
+      else if (!this.look) { this.look = at; this.tools.lookDown(at); this.swipes.down(at, e.timeStamp); }
       else if (!this.look2 && this.tools.wantsWheel()) { this.look2 = at; this.look.pinched = true; this.tools.pinch(this.look, at); }
     }
   }
@@ -76,6 +80,7 @@ export class TouchDriver {
         if (d > far) { m.x0 = m.x - (dx / d) * far; m.y0 = m.y - (dy / d) * far; } // (the stick follows a thumb that ran past it)
       } else if (l?.id === t.identifier) {
         const dx = t.clientX - l.x, dy = t.clientY - l.y; l.x = t.clientX; l.y = t.clientY;
+        this.swipes.move(l, e.timeStamp); // (a flick across on the skiff is its shoulder: the look turns all the same)
         if (this.look2) this.tools.pinch(l, this.look2); // (two fingers are the wheel: the view is not turned)
         else if (!this.tools.lookMove(l)) { this.input.dx += dx * TOUCH.look; this.input.dy += dy * TOUCH.look; }
       } else if (this.look2?.id === t.identifier) { this.look2.x = t.clientX; this.look2.y = t.clientY; this.tools.pinch(l, this.look2); }
@@ -99,6 +104,7 @@ export class TouchDriver {
     if (this.cursor.busy) { if (this.game.cursorFree?.()) this.cursor.update(); else this.cursor.release(); } // (the pointer no longer free under a finger: it lets go; a press earned after the lift is still made)
     if (!this.lanes.active) this.lanes.release(); // (the song ended under a finger: its lane let go)
     this.tools.update();
+    this.swipes.update();
     const UI = this.game.touchUI, S = UI?.on ? UI.stick : null;
     let x = 0, y = 0, held = false;
     if (S) { this.active = true; held = !!S.active; if (held) { x = S.x; y = S.y; } }
