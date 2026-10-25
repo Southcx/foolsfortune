@@ -22,6 +22,7 @@
 //   npm run perf              measure what changed since the last run, compare, exit 1 if a budget or a tolerance is broken
 //   npm run perf -- --full    measure every place, whatever changed
 //   npm run perf -- --only dunes,well   measure these places
+//   npm run perf -- --plan    say what would be measured and why, and stop
 //   npm run perf -- --record  measure everything and write today's numbers as the baseline (Petra, when a build is published)
 // ---------------------------------------------------------------------------------------
 import fs from 'fs';
@@ -67,6 +68,8 @@ if (record || process.argv.includes('--full') || !cache?.commit || !git(`cat-fil
 else if (onlyArg) { want = new Set(onlyArg.split(',').filter((p) => PLACES.includes(p))); why = 'asked'; }
 else {
   const changed = new Set(git(`diff --name-only ${cache.commit} HEAD`).split('\n').filter(Boolean));
+  const hashOf = (f) => (fs.existsSync(path.join(ROOT, f)) ? git(`hash-object -- '${f}'`).trim() : null);
+  for (const f of [...changed]) if (cache.dirty?.[f] && hashOf(f) === cache.dirty[f]) changed.delete(f); // (committed as it was measured dirty)
   for (const [f, h] of Object.entries(dirty)) if (cache.dirty?.[f] !== h) changed.add(f); // (dirty now, and not as it was measured)
   for (const f of Object.keys(cache.dirty || {})) if (!(f in dirty)) changed.add(f); // (dirty then, put back since)
   want = new Set();
@@ -76,6 +79,7 @@ else {
   why = `${moved.length} file(s) that run changed since ${cache.commit.slice(0, 7)}${moved.length ? `: ${moved.slice(0, 6).join(', ')}${moved.length > 6 ? ', ...' : ''}` : ''}`;
 }
 console.log(`perf: measuring ${want.size ? [...want].join(', ') : 'nothing'} (${why})`);
+if (process.argv.includes('--plan')) process.exit(0); // (what would be measured, and why: nothing run)
 if (!want.size) { console.log('perf: OK (nothing the game runs changed since the last run; npm run perf -- --full to measure anyway)'); process.exit(0); }
 
 // hard budgets (docs/ARCHITECTURE.md, "Budgets"): a sixth-generation console's frame, roughly
