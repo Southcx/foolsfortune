@@ -15,13 +15,14 @@ import * as THREE from 'three';
 import { PALETTE } from '../../core/config.js';
 import armorB64 from '../../assets/courier/courier_armor.png?b64';
 import maskB64 from '../../assets/courier/courier_mask.png?b64';
+import { fitToTier } from '../../vfx/tierscale.js';
 
 // The maker's paintings of the armour and the mask (source_assets/courier_armor.png, courier_mask.png). In Blender they were drawn
 // unlit (an emission shader), the light painted in; here they take the game's light, and the same painting glows back a share of
 // itself (PAINT_LIGHT) so its painted values hold in the shadowed side of the cel ramp instead of sinking to black.
 const PAINT_LIGHT = 0.45;
 function painting(b64) {
-  const t = new THREE.TextureLoader().load(`data:image/png;base64,${b64}`);
+  const t = new THREE.TextureLoader().load(`data:image/png;base64,${b64}`, fitToTier); // (at the tier's size: half on Low and Minimum, vfx/tierscale.js; the 1024 armour 4.2 MB lighter on a phone)
   t.colorSpace = THREE.SRGBColorSpace;
   t.flipY = false; // (glTF's UV convention)
   t.anisotropy = 4;

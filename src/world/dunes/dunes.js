@@ -29,6 +29,7 @@ import { PropBatch } from '../../render/propbatch.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { tag, register } from '../../core/tags.js';
 import { MATERIALS } from '../props/pottery.js';
+import { phoneByPage } from '../../render/graphics.js';
 
 export const DUNE = { x: 2000, y: -420, z: 0, half: 520, step: 2.5, outer: 900, layerBelow: -150 };
 const WIND_AT = 0.55; // (radians) the way the wind blows toward, on average
@@ -115,7 +116,7 @@ export class Dunes {
     this.mix = 0; // 0 workshop light .. 1 dune light
     this.t = 0;
     this.wind = { dir: new THREE.Vector2(Math.cos(WIND_AT), Math.sin(WIND_AT)), speed: 8, gust: 1 };
-    this.trail = new TrailMap(game.renderer, { size: 96, res: 512, life: 26 });
+    this.trail = new TrailMap(game.renderer, { size: 96, res: phoneByPage() ? 256 : 512, life: 26 }); // (a phone: 4.2 -> 1 MB on the GPU, a print's texel 0.19 -> 0.38 m)
     this.marks = new SandMarks(game, this.trail, SAND);
     this.buildTerrain();
     this.buildSky();
