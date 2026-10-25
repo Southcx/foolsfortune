@@ -27,7 +27,7 @@
 //   .write()  .pick(raycaster) -> id   .mesh
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { bazaarAtlas, CARD_BACK, D4_FACES, D4_CORNERS } from './bazaarfaces.js';
+import { bazaarAtlas, stoneAtlas, CARD_BACK, D4_FACES, D4_CORNERS } from './bazaarfaces.js';
 import { backCell } from './cardbackset.js';
 
 /** The sizes (metres: a table's pieces read from a seat's camera, so bigger than life by about three). */
@@ -103,7 +103,7 @@ export function dieFaces(sides) {
 /** A die of `sides` in a skin ('4', 'atk6', ...: bazaarfaces.js DIE_SKINS), radius PIECE.die. */
 export function dieTpl(sides, skin = String(sides), k = 1, dim = false) {
   return memo(`die:${skin}:${sides}:${k}:${dim}`, () => { // (the spent skin is one cell for every size: keyed by both)
-    const A = bazaarAtlas(), b = builder(), R = PIECE.die * k, F = dieFaces(sides);
+    const A = /^stone\d+$/.test(skin) ? stoneAtlas() : bazaarAtlas(), b = builder(), R = PIECE.die * k, F = dieFaces(sides); // (your stones from their own small atlas)
     for (const f of F) {
       const [u0, v0, u1, v1] = A.die(skin, f.value - 1, dim), cu = (u0 + u1) / 2, cv = (v0 + v1) / 2, hu = (u1 - u0) / 2, hv = (v1 - v0) / 2;
       const P = f.poly.map((v) => v.clone().multiplyScalar(R).toArray());
