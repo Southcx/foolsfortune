@@ -16,11 +16,13 @@
 function gpuLine(renderer, game) {
   const m = renderer.info.memory, P = renderer.properties, seen = new Set();
   let px = 0;
+  const geos = new Set(); let gb = 0;
+  const geo = (g) => { if (!g || geos.has(g)) return; geos.add(g); if (g.index) gb += g.index.array.byteLength; for (const a of Object.values(g.attributes || {})) gb += a.array?.byteLength || 0; };
   const tex = (t) => { if (!t?.isTexture || seen.has(t)) return; seen.add(t); if (!P.get(t).__webglInit) return; const im = t.userData?.baked || t.image || {}; px += (im.width || 0) * (im.height || 0) * (t.generateMipmaps ? 4 / 3 : 1); };
-  const mats = (o) => { for (const mt of [].concat(o.material || [])) { for (const v of Object.values(mt)) tex(v); if (mt.uniforms) for (const u of Object.values(mt.uniforms)) tex(u?.value); } };
+  const mats = (o) => { geo(o.geometry); for (const mt of [].concat(o.material || [])) { for (const v of Object.values(mt)) tex(v); if (mt.uniforms) for (const u of Object.values(mt.uniforms)) tex(u?.value); } };
   try { game.scene?.traverse(mats); game.overlayScene?.scene?.traverse(mats); } catch { /* counted what could be */ }
   const where = game.zones?.current ?? '?', res = game.areas?.stats?.().filter((a) => a.resident).map((a) => a.id).join(',') || '-';
-  return `GPU then: ${m.geometries} geometries, ${m.textures} textures (about ${Math.round(px * 4 / 1048576)} MB of the scene's), ${renderer.info.programs?.length ?? '?'} programs; in ${where}; resident ${res}; tier ${game.graphics?.tier ?? '?'}`;
+  return `GPU then: ${m.geometries} geometries (about ${Math.round(gb / 1048576)} MB of the scene's), ${m.textures} textures (about ${Math.round(px * 4 / 1048576)} MB of the scene's), ${renderer.info.programs?.length ?? '?'} programs; JS heap ${Math.round((performance.memory?.usedJSHeapSize || 0) / 1048576) || '?'} MB; in ${where}; resident ${res}; tier ${game.graphics?.tier ?? '?'}`;
 }
 
 export function installContextLoss(renderer, game) {

@@ -17,6 +17,7 @@ import { Shells } from '../tools/psygun/shells.js';
 import { Cartography } from '../feedback/cartography.js';
 import { Codex } from '../feedback/codex/codex.js';
 import { PneukaBox } from '../pneuka/box.js';
+import { IconWarm } from './iconwarm.js';
 import { KilnUI } from '../courier/vessel/kilnui.js';
 import { Shops } from '../progress/shop/shops.js';
 import { ShopUI } from '../progress/shop/ui.js';
@@ -48,6 +49,7 @@ export function bootPneuka(game, made) {
   // the Pneuka Box: what they carry (P), what lies on the ground, and the window; the Veritome is its bank (pneuka/)
   game.ground = new GroundItems(game);
   game.pneuka = new PneukaBox(game);
+  game.iconWarm = new IconWarm(game); // (the Box's pictures made ahead in quiet frames: boot/iconwarm.js)
   game.collection = new Collection(game); // (the cards bound, kept in the Codex: progress/collection.js; the Veritome keeps none)
   game.laidSpread = new LaidSpread(game); // (the spread laid on the Box's underside, its four tallies the modifiers: progress/laidspread.js)
   game.belt.tick(); game.pneuka.seed(); game.pneuka.reconcile(); // (a new Courier: the Magician's pair worn, the made lures in the box; and two tools worn, never one twice)

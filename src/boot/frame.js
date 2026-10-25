@@ -372,6 +372,7 @@ export function bootFrame(game, made) {
     game.mood.end(game.rawDt); // (and the room's lights borrowed again, just before the draw)
     game.zones.update(game.rawDt); // (what is drawn: the zone the camera is in, and what can be seen from it)
     game.areas.update(game.rawDt); // (and what is held on the GPU: the area the camera is in, and its neighbours)
+    game.iconWarm.update(game.rawDt); // (the Pneuka Box's pictures made in quiet frames, one at a time: boot/iconwarm.js)
     game.lights.update(game.rawDt); // (and the lamps that light it: after everything has set its own)
     game.present.update(game.rawDt); // (new things shaded to match)
     game.courierSquash.press(dt, player); // (last: the drawn body's settle after a hard landing, laid on once everything has read the pose)

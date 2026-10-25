@@ -29,9 +29,9 @@
 // nothing above and booted it on High (480 lines, MSAA 4 twice, 8 lamps, a PCF shadow every frame). The machine now also says whether it
 // is touch (`navigator.maxTouchPoints` above 0 AND `(pointer: coarse)`: a touchscreen laptop whose first pointer is the mouse is not) and
 // whether it is mobile (touch, plus a phone's or tablet's GPU string (Apple GPU, Mali, Adreno, PowerVR), platform (Android, iPhone, iPad,
-// an iPad passing as a Mac) or a screen whose short side is under 900 CSS px). A mobile machine boots on Low, never High; the Minimum
-// rules (software GL, no half-float targets, two cores, 2 GB) still come first, and the player's own tier or `?graphics=` still stands.
-// There is no phone tier here: Low is the stand-in until the owner's measurements on the phone say what one holds (MOBILE.md 10, 4).
+// an iPad passing as a Mac) or a screen whose short side is under 900 CSS px). A mobile machine boots on Minimum (on Low until v274: the
+// owner's iPhone XR took the graphics back after 235 real s of play, its box's line 1126 geometries, 194 textures, 222 programs, Low's
+// shadow, glow and MSAA); the player's own tier or `?graphics=` still stands.
 // Every machine that is not touch reads exactly as before: `mobile` is false for it, and the rows of `tierFor` for it are untouched.
 //
 // Prior art: Unreal's scalability groups and its auto-detection; the PC preset row (Low / Medium / High / Custom, a knob moved by hand
@@ -110,7 +110,8 @@ export function detectMachine() {
  *  and dynamic resolution corrects the rest in play. */
 export function tierFor(m) {
   if (m.software || !m.floatTargets || (m.cores && m.cores <= 2) || (m.memory && m.memory <= 2)) return 'minimum';
-  if (m.mobile || m.integrated || (m.cores && m.cores <= 4) || (m.memory && m.memory <= 4)) return 'low'; // (m.mobile: a phone or tablet, never High; false on every machine that is not touch)
+  if (m.mobile) return 'minimum'; // (a phone or tablet: the owner's iPhone XR lost its graphics on Low at 235 real s, v274; false on every machine that is not touch)
+  if (m.integrated || (m.cores && m.cores <= 4) || (m.memory && m.memory <= 4)) return 'low';
   return 'high';
 }
 
