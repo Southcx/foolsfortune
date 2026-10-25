@@ -68,6 +68,18 @@ const blocks = []; { let from = 0;
     const ctx = /'ride'/.test(cond) ? 'skiff' : /realm/.test(cond) ? 'garden' : /god\.controlling/.test(cond) ? null : 'foot';
     if (ctx && ids.length) blocks.push({ ctx, ids });
   } }
+// the action modes' faces (ui/touch/actioncontext.js, Calissa's, since cb451fc): footCluster on foot, toolCluster with a tool out (FIRE, AIM, its
+// third), duelCluster and DUEL_MOVES in a duel, each tile `E('id', ...)` or `{ id: 'x', ...}`
+const action = read('src/ui/touch/actioncontext.js');
+if (action) {
+  const body = (name) => action.match(new RegExp(`export function ${name}[\\s\\S]*?\\n}\\n`))?.[0] || '';
+  const tileIds = (src) => [...src.matchAll(/E\('([\w.]+)'/g), ...src.matchAll(/id: '([\w.]+)'/g)].map((m) => m[1]);
+  const foot = [...tileIds(body('footCluster')), ...tileIds(body('beltPairOf'))]; if (/\buse\b/.test(body('footCluster'))) foot.push('use');
+  blocks.push({ ctx: 'foot', ids: foot });
+  const tools = [...tileIds(body('toolCluster')), 'fire', 'aim', 'parry', 'blink', ...tileIds(action.match(/export const ACTION_TILES = \{[\s\S]*?\n\};/)?.[0] || ''), ...tileIds(body('stripOf'))];
+  for (const t of ['psygun', 'cutlass', 'rod', 'hook', 'brush', 'veritome', 'dreamvane', 'crucibelle', 'lockheart']) blocks.push({ ctx: `tool.${t}`, ids: tools });
+  blocks.push({ ctx: 'duel', ids: [...tileIds(body('duelCluster')), ...lits(action.match(/const DUEL_MOVES = \[([\s\S]*?)\];/)?.[1] || '').filter((x) => x.startsWith('du.'))] });
+}
 const clusterIds = new Set(blocks.flatMap((b) => b.ids));
 const ctxCovers = (b, ctx) => b === ctx || (b === 'skiff' && ctx.startsWith('skiff'));
 const drawn = new Set([...clusterIds, ...TOP.map((x) => `top.${x}`), ...BAR.map((x) => `art.${x}`)]);
