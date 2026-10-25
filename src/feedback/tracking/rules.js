@@ -1,7 +1,9 @@
 // ---------------------------------------------------------------------------------------
 // TRACKING, THE RULE FILES: every `feedback/tracking/*.js` beside tracking.js, called in one place and in a fixed order (the crossing's
-// tally before the voyage's "You make port"). A new area's rules are a file here and a line below, so tracking.js keeps its own
-// rules only. Each takes what it needs from one context: `on` (the bus), `L` (the ledger), `log`, `g` (the game), `where()`.
+// tally before the voyage's "You make port"). A new area's rules are a file here and a line below. tracking.js keeps only what
+// installs them. The order is the bus's order, so it is kept: the lead rules (once inline in tracking.js), each area's, the trail rules
+// (inline too, after the areas). Each takes what it needs from one context: `on` (the bus), `L` (the ledger), `log`, `g` (the game),
+// `where()` and `track` (the Tracking: the break chain, the pending record announcements, the room clock, `note`).
 //
 //   areaRules(ctx)   (tracking.js listen() calls it once)
 // The crossing's rules (rail, voyage, passage) see the ledger through `atSea`: held still while the showcase crossing sails (DEBUG only,
@@ -15,12 +17,12 @@ import { railRules } from './rail.js';
 import { gardenRules } from './garden.js';
 import { weatherRules } from './weather.js';
 import { dunemawRules } from './dunemaw.js';
-import { placeRules } from './place.js';
+import { placeRules, placeEnterRules } from './place.js';
 import { testroomRules } from './testroom.js';
 import { qaisRules } from './qais.js';
-import { brushRules } from './brush.js';
+import { brushRules, brushToolRules } from './brush.js';
 import { partyRules } from './party.js';
-import { skiffRules } from './skiff.js';
+import { skiffRules, skiffSailingRules } from './skiff.js';
 import { moveRules } from './moves.js';
 import { heldStrikeRules } from './heldstrikes.js';
 import { blowRules } from './blows.js';
@@ -30,8 +32,8 @@ import { passageRules } from './passage.js';
 import { wispRules } from './wisps.js';
 import { poolRules } from './pool.js';
 import { pairRules } from './pairs.js';
-import { godRules } from './god.js';
-import { lockheartRules } from './lockheart.js';
+import { godRules, godHandRules } from './god.js';
+import { lockheartRules, lockheartOutcomeRules } from './lockheart.js';
 import { raceRules } from './race.js';
 import { openSeaRules } from './opensea.js';
 import { seaSerpentRules } from './seaserpent.js';
@@ -58,6 +60,30 @@ import { goalsRules } from './goals.js';
 import { worldShellRules } from './worldshells.js';
 import { saveRules } from './save.js';
 import { roomHelpRules } from './roomhelp.js';
+import { breakRules } from './breaks.js';
+import { gunShotRules, psygunVariantRules } from './gunshots.js';
+import { groundMovementRules } from './groundmovement.js';
+import { movementArtRules } from './movementarts.js';
+import { mapRules } from './maps.js';
+import { courseRules } from './course.js';
+import { systemLineRules, commandEchoRules } from './systemlines.js';
+import { veritomeRules } from './veritome.js';
+import { itemRules } from './items.js';
+import { chatLineRules } from './chatline.js';
+import { folkRules } from './folk.js';
+import { jellyRules } from './jellies.js';
+import { creatureStatusRules } from './creaturestatus.js';
+import { reprogramRules } from './reprogram.js';
+import { toolRules } from './tools.js';
+import { dreamvaneRules } from './dreamvane.js';
+import { crucibelleRules } from './crucibelle.js';
+import { rhythmRules } from './rhythm.js';
+import { sondelassRules } from './sondelass.js';
+import { treasureRules } from './treasure.js';
+import { standingRules } from './standing.js';
+import { shopRules } from './shop.js';
+import { vesselRules } from './vessel.js';
+import { shrineRules } from './shrines.js';
 
 /** The ledger as the crossing's rules see it: inc, hi, lo and first do nothing while the showcase or a practice crossing sails. */
 function atSea(ctx) {
@@ -68,6 +94,31 @@ function atSea(ctx) {
 
 export function areaRules(ctx) {
   const sea = atSea(ctx);
+  // (the lead rules, once tracking.js's own: 24 files, in the order they stood there)
+  breakRules(ctx);
+  gunShotRules(ctx);
+  groundMovementRules(ctx);
+  movementArtRules(ctx);
+  skiffSailingRules(ctx);
+  godHandRules(ctx);
+  mapRules(ctx);
+  courseRules(ctx);
+  systemLineRules(ctx);
+  placeEnterRules(ctx);
+  veritomeRules(ctx);
+  itemRules(ctx);
+  chatLineRules(ctx);
+  folkRules(ctx);
+  jellyRules(ctx);
+  creatureStatusRules(ctx);
+  reprogramRules(ctx);
+  toolRules(ctx);
+  dreamvaneRules(ctx);
+  crucibelleRules(ctx);
+  rhythmRules(ctx);
+  lockheartOutcomeRules(ctx);
+  brushToolRules(ctx);
+  sondelassRules(ctx);
   poolRules(ctx); // (the pool: spent, gained, low, empty)
   pairRules(ctx); // (/pairs: the 21 cards a main and a sub make)
   anglingRules(ctx);
@@ -119,4 +170,12 @@ export function areaRules(ctx) {
   heldStrikeRules(ctx); // (the toll string, the flail, the book bash: the held tools on the combo engine)
   blowRules(ctx); // (the unarmed V's blows and the psygun's whip, fan and flourish)
   figmentTelegraphRules(ctx); // (a windup read, and Divination's ladder said as it is climbed)
+  // (the trail rules, once tracking.js's own, after every area's)
+  treasureRules(ctx);
+  standingRules(ctx);
+  shopRules(ctx);
+  psygunVariantRules(ctx);
+  vesselRules(ctx);
+  shrineRules(ctx);
+  commandEchoRules(ctx);
 }

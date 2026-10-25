@@ -97,8 +97,9 @@ Three files every division touches, so three files kept short:
 
 - **`main.js`** builds the services and registers the techs. It is the composition root, not a place for features. A feature lives in
   its own module and is constructed here in one line. (Phase 2 splits its boot into stages.)
-- **`tracking.js`** holds the log's rules. (Phase 2 splits it into one rules file per domain under `feedback/tracking/`, so a division
-  adds a rule in its own domain's file.)
+- **`tracking.js`** installs the log's rules and keeps what they share (the break chain, the record notes, the per-frame sampler); the rules
+  are one file per domain under `feedback/tracking/`, called in order from `tracking/rules.js`, so a division adds a rule in its own
+  domain's file.
 - **`config.js`** holds the tuning numbers of feel (movement, combat timings). Petra's; the core movement is the gold standard.
 
 ## The save
@@ -176,6 +177,5 @@ What fails goes back to its division with the reason and the fix. Petra does not
 
 ## Open restructuring
 
-`tracking.js` split by domain (begun: `feedback/tracking/*.js`), Petra's; the course and the room teleports
-into `world/basement/course.js` and `world/rooms.js`, Petra's; the old particles folded into the VFX system, Calissa's; the in-game words
+The course and the room teleports into `world/basement/course.js` and `world/rooms.js`, Petra's; the old particles folded into the VFX system, Calissa's; the in-game words
 the glossary retires, Espada's.
