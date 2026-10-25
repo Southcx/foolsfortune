@@ -3885,3 +3885,13 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   so the glow and flame keep their own materials (the body wears the look: one program a kind, as the header says). The palm die's
   `prewarm()` (vfx/godhand/palmdie.js), called in boot/warmup.js. Perf: 20 compiled after the warm-up (the garden's own, as before).
 - **Rule:** 302
+
+### 2026-10-25 · On the iPhone the game loaded from the store, then its WebGL context came back lost (the owner's screenshot, v269; fixed by Petra)
+- **Seen:** "The game could not start (main, 2.1 s): null is not an object (evaluating 'r.getShaderPrecisionFormat(r.VERTEX_SHADER,r.HIGH_FLOAT).precision')", from blob: URLs, so the store route itself worked.
+- **Cause (read, not measured on the phone):** three.js reads a shader precision from the context as the renderer is made; WebKit returns
+  null for it only from a lost context. The renderer was handed a context already lost: the likeliest reasons are memory (the loader
+  had just unpacked all thirty files at once) or WebKit turning WebGL off for the page after an earlier crash.
+- **Fix:** boot/renderer.js makes its own context (`CONTEXT_TRIES`): a lost one is given 1.5 real s to be restored, then a plainer one is
+  asked for, and a refusal by all says what each try gave. The loader unpacks three files at a time, the biggest first, letting each
+  file's strings go once it is a blob. Verified headless with the first context forced lost and every asset refused: boot to ready.
+- **Rule:** 303
