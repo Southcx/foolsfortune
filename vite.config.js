@@ -1,18 +1,34 @@
 import { defineConfig } from 'vite';
 import { readFileSync } from 'node:fs';
+import { basename } from 'node:path';
 
-// `import b64 from './model.glb?b64'` -> base64 string. Models ship inside the JS
-// bundle so the build works on hosts that won't serve .glb files.
-const base64Assets = () => ({
-  name: 'base64-assets',
-  enforce: 'pre',
-  load(id) {
-    if (!id.endsWith('?b64')) return null;
-    const file = id.slice(0, -4);
-    this.addWatchFile(file);
-    return `export default ${JSON.stringify(readFileSync(file).toString('base64'))};`;
-  },
-});
+// `import b64 from './model.glb?b64'` -> base64 string. In the dev server the string is inlined. In the build each asset is a file of
+// its own (`<name>.b64-<hash>.txt`, the base64 text) and the module awaits it from the page (`__ffText`, index.html's loader): the 7 MB
+// of models and pictures that sat inside main.js as string literals (half its 14 MB: parsed, and its source held, by a phone at boot)
+// now load beside it, those the boot needs fetched at once in parallel (`__ffEager`, laid in the page below), the rest (a dynamic
+// import's: the skies, the hulls, the area cards, the Solar Skiff) only when asked. The text stays base64, so no caller changes.
+const base64Assets = () => {
+  let build = false;
+  const refs = new Map(); // file -> the emitted asset's reference
+  return {
+    name: 'base64-assets',
+    enforce: 'pre',
+    configResolved(c) { build = c.command === 'build'; },
+    load(id) {
+      if (!id.endsWith('?b64')) return null;
+      const file = id.slice(0, -4);
+      this.addWatchFile(file);
+      const b64 = readFileSync(file).toString('base64');
+      if (!build) return `export default ${JSON.stringify(b64)};`;
+      if (!refs.has(file)) refs.set(file, this.emitFile({ type: 'asset', name: `${basename(file)}.b64.txt`, source: b64 }));
+      return `export default await globalThis.__ffText("__FF_B64:${refs.get(file)}:");`;
+    },
+    renderChunk(code) {
+      if (!code.includes("__FF_B64:")) return null;
+      return { code: code.replace(/__FF_B64:([^:"]+):/g, (_, ref) => this.getFileName(ref).replace(/^assets\//, '')), map: null };
+    },
+  };
+};
 
 // The bundles' last non-ASCII characters (esbuild's ascii charset leaves a regex literal's alone: ten of them, 92 bytes) as \u escapes,
 // which mean the same in a string, a template and a regex (a surrogate pair as its two halves): WebKit holds a script's source as
@@ -35,10 +51,15 @@ const loaderEntry = () => ({
   name: 'ff-loader-entry',
   apply: 'build',
   enforce: 'post',
-  transformIndexHtml(html) {
+  transformIndexHtml(html, ctx) {
+    // (the base64 assets the boot's own chunks await, fetched as soon as the loader has chosen its way in: the entry and every chunk it
+    //  imports statically; a dynamic import's are fetched when it is asked)
+    const B = ctx.bundle || {}, seen = new Set(), eager = new Set();
+    const walk = (f) => { const c = B[f]; if (!c || c.type !== 'chunk' || seen.has(f)) return; seen.add(f); for (const m of c.code.matchAll(/__ffText\("([^"]+\.txt)"\)/g)) eager.add(m[1]); c.imports.forEach(walk); };
+    walk('assets/game.js'); (B['assets/game.js']?.dynamicImports || []).forEach(walk); // (the entry is a shim that imports main.js dynamically)
     const tag = /<script type="module" crossorigin src="\.\/assets\/game\.js"><\/script>\s*/;
     if (!tag.test(html)) throw new Error('ff-loader-entry: the entry tag is not where the loader expects it');
-    return html.replace(tag, '').replace('<head>', `<head>\n  <script>window.__ffEntry = './assets/game.js'; window.__ffBuild = ${JSON.stringify(BUILD_ID)};</script>`);
+    return html.replace(tag, '').replace('<head>', `<head>\n  <script>window.__ffEntry = './assets/game.js'; window.__ffBuild = ${JSON.stringify(BUILD_ID)}; window.__ffEager = ${JSON.stringify([...eager].sort())};</script>`);
   },
 });
 

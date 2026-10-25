@@ -73,7 +73,7 @@ export function bootFrame(game, made) {
         game.title.scene.update(dt); game.music.follow(chooseTitleMusic(game)); // (music/choose.js, music/title.js)
         O?.update(dt); O?.titleFrame(game.title.scene); // (the overture's last bars: the crane and the logo fired)
         if (game.title.scene.state === 'dive') game.title.ui.fade((game.title.scene.st - 0.5) / 0.6);
-        game.title.scene.render(); game.graphics.observe(rawFrame); input.endFrame(); diag.frameEnd(); // (the title's cheap frames: the display's refresh, render/graphics.js)
+        game.title.scene.render(); game.graphics.observe(rawFrame); game.fieldReport?.frame(rawFrame); input.endFrame(); diag.frameEnd(); // (the title's cheap frames: the display's refresh, render/graphics.js)
         return;
       }
       if (O?.active) O.update(dt); // (`/overture` in the world: its trailer on a clock of its own)
@@ -214,6 +214,7 @@ export function bootFrame(game, made) {
     game.ledger.tick(dt);
     save.flush(); // (whatever changed this frame, written whole: core/save.js)
     cloud.update(game.rawDt || dt); // (and what changed sent to the cloud, at most once a real minute: core/cloudsave.js)
+    game.fieldReport?.frame(game.rawDt || dt); // (this load's field report: debug/fieldreport.js)
     game.tracking.update(dt);
     game.achievements.tick(dt);
     game.log.tick(dt);

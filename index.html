@@ -19,7 +19,7 @@
       try { window.sessionStorage.getItem(KEY); stores.push(window.sessionStorage); } catch (e) { /* none */ }
       try { window.localStorage.getItem(KEY); stores.push(window.localStorage); } catch (e) { /* none */ }
       var put = function (o) { for (var i = 0; i < stores.length; i++) { try { stores[i].setItem(KEY, JSON.stringify(o)); } catch (e) { /* full or refused */ } } };
-      var last = null; for (var i = 0; i < stores.length && !last; i++) { try { last = JSON.parse(stores[i].getItem(KEY) || 'null'); } catch (e) { last = null; } }
+      var last = null; for (var i = 0; i < stores.length && !last; i++) { try { last = JSON.parse(stores[i].getItem(KEY) || 'null'); } catch (e) { last = null; } } W.last = last; // (the last load's note, for the field report: debug/fieldreport.js)
       var show = function (text) {
         if (!document.body) { document.addEventListener('DOMContentLoaded', function () { show(text); }); return; }
         if (!box) { box = document.createElement('div'); box.id = 'bootwatch';
@@ -69,8 +69,13 @@
     //   window.__ffFile(name) -> the URL of a built asset by its file name (the files' folder, or its blob)
     (function () {
       var E = window.__ffEntry, B = window.__ffBuild, W = window.__bootWatch; if (!E) return;
-      var base = new URL('./assets/', document.baseURI).href, blobs = {};
+      var base = new URL('./assets/', document.baseURI).href, blobs = {}, texts = {}, readText = null;
       window.__ffFile = function (n) { return blobs[n] || base + n; };
+      // (a base64 asset's text by its file name (vite.config.js base64Assets): fetched from the files' folder, or read from the store when
+      //  the files are refused; asked early by `eager` (the boot's own), handed to the module that awaits it and let go of here)
+      var fetchText = function (n) { return readText ? readText(n) : fetch(base + n).then(function (r) { if (!r.ok) throw new Error('could not load ' + n + ' (' + r.status + ')'); return r.text(); }); };
+      window.__ffText = function (n) { var p = texts[n] || fetchText(n); delete texts[n]; return p; };
+      var eager = function () { (window.__ffEager || []).forEach(function (n) { if (!texts[n]) { texts[n] = fetchText(n); texts[n].catch(function () {}); } }); };
       var fail = function (e) { if (W && W.fail) W.fail(e); else throw e; };
       var bytes = function (b64) { var s = atob(b64), n = s.length, u = new Uint8Array(n); for (var i = 0; i < n; i++) u[i] = s.charCodeAt(i); return u; };
       var fromStore = async function (why) {
@@ -84,25 +89,50 @@
         // (three files at a time, the biggest first, each file's strings let go once it is a blob: a phone's memory at its peak is what
         // a few files take, not all thirty: the owner's XR handed back a lost WebGL context right after the whole build was unpacked at once)
         names.sort(function (a, b) { return man.files[b].len - man.files[a].len; });
-        var one = async function (name) {
+        var unzip = async function (name) {
           var f = man.files[name], parts = [];
+          if (!f) throw new Error('the store holds no ' + name + ' for this build');
           for (var i = 0; i < f.n; i++) parts.push(db.doc('pack/' + B + '.' + f.id + '.' + i).get());
           var b64 = (await Promise.all(parts)).map(function (s) { return (s.data() || {}).b || ''; }).join(''); parts = null;
           var zipped = bytes(b64); b64 = null;
           var raw = await new Response(new Blob([zipped]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer(); zipped = null;
           if (raw.byteLength !== f.len) throw new Error('the store\'s copy of ' + name + ' is ' + raw.byteLength + ' bytes, not ' + f.len);
-          blobs[name] = URL.createObjectURL(new Blob([raw], { type: f.mime }));
+          return raw;
+        };
+        // (each file unpacked once a build and kept on the device in the Cache Storage, keyed by the build: the next load reads it from
+        //  there, not 23 MB of base64 from the store again; another build's cache deleted. Where the cache is refused, the store each time.)
+        var cache = null, hits = 0;
+        try {
+          if (window.caches) {
+            cache = await caches.open('ff.pack.' + B);
+            caches.keys().then(function (ks) { ks.forEach(function (k) { if (k.indexOf('ff.pack.') === 0 && k !== 'ff.pack.' + B) caches.delete(k); }); }).catch(function () {});
+          }
+        } catch (e) { cache = null; }
+        var file = async function (name) {
+          var f = man.files[name], key = base + name;
+          if (cache && f) { try { var hit = await cache.match(key); if (hit) { var b = await hit.blob(); if (b.size === f.len) { hits++; return b; } } } catch (e) { /* unpacked again */ } }
+          var blob = new Blob([await unzip(name)], { type: f.mime });
+          if (cache) cache.put(key, new Response(blob, { headers: { 'content-type': f.mime } })).catch(function () {});
+          return blob;
+        };
+        // (a base64 asset is read straight into its text when asked, never kept as a blob: the boot's are asked below, the rest when a
+        //  dynamic import wants them, so the phone unpacks at boot only what the boot runs)
+        readText = function (name) { return file(name).then(function (b) { return b.text(); }); };
+        names = names.filter(function (n) { return !/\.txt$/.test(n); });
+        var one = async function (name) {
+          blobs[name] = URL.createObjectURL(await file(name));
           if (/\.js$/.test(name)) imports[name] = blobs[name];
         };
         var lane = async function () { while (next < names.length) await one(names[next++]); };
         await Promise.all([lane(), lane(), lane()]);
         var map = document.createElement('script'); map.type = 'importmap'; map.textContent = JSON.stringify({ imports: imports });
         document.head.appendChild(map);
-        if (W) W.stage('store read');
+        if (W) W.stage(hits ? 'store read (' + hits + ' of ' + names.length + ' from the device)' : 'store read');
+        eager();
         await import(man.entry);
       };
       fetch(E, { method: 'HEAD', cache: 'no-store' })
-        .then(function (r) { if (!r.ok) throw new Error(String(r.status)); var s = document.createElement('script'); s.type = 'module'; s.src = E; document.head.appendChild(s); })
+        .then(function (r) { if (!r.ok) throw new Error(String(r.status)); eager(); var s = document.createElement('script'); s.type = 'module'; s.src = E; document.head.appendChild(s); })
         .catch(function (why) { fromStore((why && why.message) || why).catch(fail); });
     })();
   </script>

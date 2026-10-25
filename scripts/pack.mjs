@@ -22,7 +22,7 @@ const arg = (k, d) => { const i = process.argv.indexOf(k); return i > 0 ? proces
 const OUT = path.resolve(arg('--out', path.join(ROOT, 'dist-pack')));
 /** chunk: base64 characters a document (its limit is 256 KiB serialized); batchBytes and batchDocs: a database batch's limits, with room. */
 export const PACK = { chunk: 190000, batchBytes: 900000, batchDocs: 45, entry: 'game.js' };
-const MIME = { js: 'text/javascript', bin: 'application/octet-stream', webp: 'image/webp', png: 'image/png', json: 'application/json', css: 'text/css' };
+const MIME = { js: 'text/javascript', txt: 'text/plain', bin: 'application/octet-stream', webp: 'image/webp', png: 'image/png', json: 'application/json', css: 'text/css' };
 
 const html = fs.readFileSync(path.join(DIST, 'index.html'), 'utf8');
 const build = (html.match(/__ffBuild = "([^"]+)"/) || [])[1];
