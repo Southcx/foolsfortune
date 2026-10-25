@@ -8,14 +8,23 @@
 // geometry (the room glaze atlas, a prop's mesh used in two places) stays resident. Building and disposing the content itself is the
 // next stage, area by area (ARCHITECTURE.md's order).
 //
+// DEHYDRATION (stage 1.5, on a phone or `?dehydrate=1`; the owner, 2026-10-25: the iPhone took the graphics back at 125 real s on
+// Minimum, 82 MB of geometry held): an area let go also gives up the page's copy of its geometry. Each geometry nothing outside the area
+// draws has its arrays packed into a Blob (a browser keeps a blob's bytes out of the page's own heap: WebKit in its network process,
+// Chromium on disk past a size) and its attributes left empty; drawn again, `prepare` reads the Blob back and puts the arrays where
+// they were. The objects, materials, colliders and every reference to them stay: only the bytes leave. Not dehydrated: a skinned or
+// batched mesh, an attribute marked dynamic (code writes it while away), anything under 64 KB.
+//
 // Prior art: the streaming residency of every console engine (Unreal's level streaming keeps a level's actors while its GPU copies come
 // and go; id Tech's megatexture pages); three.js's own dispose(), which drops the GPU's copy and keeps the source, re-uploaded on use.
 //
 //   game.areas = new Areas(game)   .register(id, { zones: [...], near: [...] })   .update(rawDt) (each tick)   .prepare(id)   .settle()
-//   .resident(id) -> bool   .stats() -> [{ id, resident, evicted: { geometries, textures, mb } }]   .lastMs (the last pass, real ms)
+//   .resident(id) -> bool   .stats() -> [{ id, resident, dryMB, evicted: { geometries, textures, mb } }]   .lastMs (the last pass, real ms)
+//   .dehydrate (on a phone)   .dryBytes (held in blobs now)
 // ---------------------------------------------------------------------------------------
 
-const GRACE = 3; // (real seconds out of an area and its neighbours before it is let go: a step back through a door costs nothing)
+const GRACE = 3;
+const DRY_MIN = 65536; // (bytes: a geometry smaller than this keeps its arrays, the blob's own cost not worth it) // (real seconds out of an area and its neighbours before it is let go: a step back through a door costs nothing)
 const SLICE = 2; // (real ms a frame the pass over the scene may take when nothing covers the view: about 40 ms whole, perf v273's ticks)
 
 const _texOf = (m, out) => {
@@ -34,6 +43,8 @@ export class Areas {
   constructor(game) {
     this.game = game;
     this.map = new Map();
+    this.dehydrate = !!game.graphics?.machine?.mobile || (typeof location !== 'undefined' && new URLSearchParams(location.search).get('dehydrate') === '1');
+    this.dryBytes = 0; // (the bytes now held in blobs, not the page)
   }
 
   /** An area: the render zones it is (render/zones.js), and the ones from which it can be seen or walked into (kept resident there). */
@@ -57,8 +68,9 @@ export class Areas {
     const J = this.job; if (!J) return;
     const t0 = performance.now(), Z = this.game.zones, owner = J.owner, texs = [], SHARED = 'shared';
     const own = (res, A) => { const o = owner.get(res); if (o === undefined) owner.set(res, A); else if (o !== A) owner.set(res, SHARED); };
+    const skip = J.skip || (J.skip = new Set());
     const walk = (root, A) => root.traverse((o) => {
-      if (o.geometry) own(o.geometry, A);
+      if (o.geometry) { own(o.geometry, A); if (o.isSkinnedMesh || o.isBatchedMesh || o.isInstancedMesh || o.isPoints || o.morphTargetInfluences) skip.add(o.geometry); }
       if (o.material) { texs.length = 0; for (const m of Array.isArray(o.material) ? o.material : [o.material]) _texOf(m, texs); for (const t of texs) own(t, A); }
     });
     while (J.i < J.roots.length) {
@@ -75,6 +87,7 @@ export class Areas {
       if (res.isTexture) { if (unkept(res)) continue; A.evicted.bytes += texBytes(res); A.evicted.texs.push(res); } else { A.evicted.bytes += geoBytes(res); A.evicted.geos.push(res); }
       res.dispose();
     }
+    if (this.dehydrate) for (const A of J.due) this.dry(A, J.skip);
     this.job = null;
     this.lastMs = +(J.ms + performance.now() - t0).toFixed(1);
   }
@@ -84,7 +97,52 @@ export class Areas {
     const A = typeof id === 'string' ? this.map.get(id) : id; if (!A || A.resident) return;
     const r = this.game.renderer;
     if (r?.initTexture) for (const t of A.evicted?.texs || []) { try { r.initTexture(t); } catch { /* (drawn, it uploads anyway) */ } }
+    if (A.dry) this.wet(A);
     A.resident = true; A.away = 0; A.evicted = null;
+  }
+
+  /** The area's own geometries' arrays packed into one Blob, their attributes left empty (see DEHYDRATION). */
+  dry(A, skip) {
+    const parts = [], rec = [];
+    let off = 0;
+    for (const g of A.evicted?.geos || []) {
+      if (skip?.has(g) || g.userData?.keepArrays || geoBytes(g) < DRY_MIN) continue;
+      const attrs = [];
+      const take = (name, a) => {
+        if (!a?.array || a.isInterleavedBufferAttribute || a.usage !== 35044 || a.array.byteLength === 0) return false; // (35044: StaticDrawUsage; code writes a dynamic one)
+        const b = a.array; parts.push(new Uint8Array(b.buffer, b.byteOffset, b.byteLength).slice());
+        attrs.push({ name, a, C: b.constructor, off, len: b.length, count: a.count }); off += b.byteLength;
+        return true;
+      };
+      const all = [['index', g.index], ...Object.entries(g.attributes)].filter(([, a]) => a);
+      if (!all.every(([, a]) => !a.isInterleavedBufferAttribute && a.usage === 35044 && a.array?.byteLength)) continue; // (all or nothing: a half-dried geometry is never drawn)
+      for (const [n, a] of all) take(n, a);
+      if (!g.boundingSphere) g.computeBoundingSphere(); if (!g.boundingBox) g.computeBoundingBox(); // (kept: culling and rays read them, not the arrays)
+      for (const e of attrs) { e.a.array = new e.C(0); e.a.count = 0; }
+      g.userData.dry = true;
+      rec.push({ g, attrs });
+    }
+    if (!rec.length) return;
+    A.dry = { blob: new Blob(parts), rec, bytes: off };
+    this.dryBytes += off;
+  }
+
+  /** The arrays back from the Blob (async: behind the seam's cover, or a step before the door). */
+  wet(A) {
+    const D = A.dry; A.dry = null; if (!D) return;
+    this.dryBytes -= D.bytes;
+    const put = (buf) => {
+      for (const { g, attrs } of D.rec) {
+        for (const e of attrs) {
+          const cur = e.name === 'index' ? g.index : g.attributes[e.name];
+          if (cur !== e.a) continue; // (replaced while away: the new one stands)
+          e.a.array = new e.C(buf.slice(e.off, e.off + e.len * e.C.BYTES_PER_ELEMENT)); e.a.count = e.count; e.a.needsUpdate = true;
+        }
+        g.userData.dry = false;
+        g.dispose(); // (any buffer three made of the empty arrays meanwhile is let go: it is made again at the arrays' size)
+      }
+    };
+    D.blob.arrayBuffer().then(put, (err) => console.warn('areas: an area could not be read back', A.id, err));
   }
 
   update(dt) {
@@ -110,5 +168,5 @@ export class Areas {
     if (due.length) this.evict(due);
   }
 
-  stats() { return [...this.map.values()].map((A) => ({ id: A.id, resident: A.resident, evicted: A.evicted ? { geometries: A.evicted.geos.length, textures: A.evicted.texs.length, mb: +(A.evicted.bytes / 1048576).toFixed(1) } : null })); }
+  stats() { return [...this.map.values()].map((A) => ({ id: A.id, resident: A.resident, dryMB: A.dry ? +(A.dry.bytes / 1048576).toFixed(1) : 0, evicted: A.evicted ? { geometries: A.evicted.geos.length, textures: A.evicted.texs.length, mb: +(A.evicted.bytes / 1048576).toFixed(1) } : null })); }
 }

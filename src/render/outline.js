@@ -61,8 +61,9 @@ export function ensureSmoothNormals(geometry) {
  *  the ones past its reach (render/graphics.js). */
 export const OUTLINES = new Set();
 
-/** Returns the outline mesh (added as a child of `mesh`). Works for Mesh and SkinnedMesh. */
+/** Returns the outline mesh (added as a child of `mesh`), or null for a prop's hull on a tier without them. Works for Mesh and SkinnedMesh. */
 export function addOutline(mesh, material = OUTLINE_MAT) {
+  if (material === OUTLINE_MAT && T.visual.outlines === false) return null; // (the tier without props' hulls, a phone's: no smooth normals, no draw; the owner, 2026-10-25)
   ensureSmoothNormals(mesh.geometry);
   let o;
   if (mesh.isSkinnedMesh) {

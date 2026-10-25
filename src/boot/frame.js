@@ -51,8 +51,10 @@ export function bootFrame(game, made) {
   let acc = 0;
   let last = performance.now();
   const clock = (game.clock = made.clock); // (the frame count, on the game for what must step once a frame however many call it: world/bazaar/session.js)
+  const CAP = 1000 / 30 - 3; // (a phone's frame at 30 a real second: half the work and the heat, the PS2 era's own rate; the owner, 2026-10-25)
   function frame(now) {
     requestAnimationFrame(frame);
+    if (game.graphics?.machine?.mobile && now - last < CAP) return; // (a display at 60 or 120: every other refresh skipped whole)
     // (the first rAF timestamp can be earlier than the performance.now() taken at startup)
     const rawFrame = (now - last) / 1000, dt = THREE.MathUtils.clamp(rawFrame, 0, 0.05); // (the raw interval for dynamic resolution: render/graphics.js)
     last = now;
