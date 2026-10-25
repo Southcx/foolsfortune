@@ -20,6 +20,22 @@ import { buildFish } from '../tools/sondelass/angling/fishmesh.js';
 import { psygunIconModel, psygunModelFor } from '../vfx/psygunmodels.js';
 
 const CACHE = new Map(), S = 96, R = 2; // (drawn at twice the size and scaled down: smooth edges without a multisampled target)
+// (each icon is drawn with copies of its model's materials, all let go together once the task that drew them ends: drawn with the world's
+//  own, every material kept a second program for the icon's lights for good, +12 programs and 12 compiled in play, perf v275)
+const COPIES = [];
+let flushing = false;
+function copyMaterials(group) {
+  group.traverse((o) => {
+    if (!o.material) return;
+    const one = (m) => {
+      const c = m.clone(); COPIES.push(c);
+      if (c.uniforms) for (const k in c.uniforms) { const v = m.uniforms?.[k]?.value; if (v?.isTexture) c.uniforms[k].value = v; } // (a ShaderMaterial's clone copies its textures: the original's kept, never a second upload)
+      return c;
+    };
+    o.material = Array.isArray(o.material) ? o.material.map(one) : one(o.material);
+  });
+  if (!flushing) { flushing = true; queueMicrotask(() => { flushing = false; for (const c of COPIES.splice(0)) c.dispose(); }); }
+}
 
 export function itemIcon(game, id) { return iconOf(game, id, itemOf(id)); }
 /** A tool's picture (the loadout's: the seven are not items, tools/belt.js), rendered from a copy of the model they wear. */
@@ -43,6 +59,7 @@ function render(game, it) {
   scene.add(new THREE.HemisphereLight(0xffffff, 0x40444c, 1.8)); // (neutral: warm light on dark materials read every icon brown, Calissa's 2026-10-19)
   const key = new THREE.DirectionalLight(0xffffff, 2.4); key.position.set(1.2, 2, 1.6); scene.add(key);
   const rim = new THREE.DirectionalLight(0xffb27a, 1.2); rim.position.set(-1.5, 0.6, -1.2); scene.add(rim);
+  copyMaterials(m.group);
   scene.add(m.group);
   m.group.updateMatrixWorld(true);
   const box = new THREE.Box3().setFromObject(m.group), c = box.getCenter(new THREE.Vector3()), size = box.getSize(new THREE.Vector3()).length();

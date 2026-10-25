@@ -66,6 +66,7 @@ export async function bootTitle(game, made) {
     title.mode = mode; // (what DEBUG lends is the lend panel's: progress/lend.js; STORY lends nothing)
     if (mode === 'debug') game.pneuka.debugKit(); // (and the whole kit in the box: pneuka/box.js)
     game.mode = mode;
+    game.iconWarm?.warmAll(); // (the Box's pictures made here, behind the title, not at its first opening: boot/iconwarm.js)
     const go = () => { input.requestLock(); if (resumed) endTitle(); else titleScene.dive(() => endTitle()); };
     if (!game.cradles.mine) { game.sealPicker.open(go); return; } // (your seal, carved once: ui/sealpicker.js, HANKO.md 5)
     go(); // (the lock within the click or the key: a browser only grants it to a gesture)
