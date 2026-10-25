@@ -151,6 +151,6 @@ export function makeGlowOutline(color, thickness, xray = false) {
       .replace('#include <common>', '#include <common>\nattribute vec3 smoothNormal;\nuniform float uOutline;')
       .replace('#include <begin_vertex>', '#include <begin_vertex>\ntransformed += normalize(smoothNormal) * uOutline;');
   };
-  m.customProgramCacheKey = () => (xray ? 'glow-xray' : 'glow-outline');
+  m.customProgramCacheKey = () => 'outline'; // (the props' hull's own patch, its uniform this material's: blending, depth and opacity are no program's; side is three's own define: Calissa's program audit, 2026-10-25)
   return m;
 }

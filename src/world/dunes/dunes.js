@@ -167,7 +167,7 @@ export class Dunes {
     this.uniforms = { uTime: { value: 0 }, uWind: { value: new THREE.Vector2(Math.cos(WIND_AT), Math.sin(WIND_AT)) }, uSun: { value: new THREE.Vector3(-0.55, 0.3, -0.78).normalize() },
       uOasis: { value: new THREE.Vector4(DUNE.x + OASIS.x, DUNE.z + OASIS.z, OASIS.flat, DUNE.y + POND.surface) },
       uGlow: { value: 1 } }; // (the glints and the rim follow the sun: at night the sand does not shine, Calissa's R46 note)
-    const mat = new THREE.MeshStandardMaterial({ color: 0xe8b070, roughness: 0.92, metalness: 0 });
+    const mat = g.graphics?.machine?.mobile ? new THREE.MeshLambertMaterial({ color: 0xe8b070 }) : new THREE.MeshStandardMaterial({ color: 0xe8b070, roughness: 0.92, metalness: 0 }); // (a phone's sand matte: its patch writes colour and the ripple normal only, never roughness; Lambert at half the GLSL and 0.5 to 0.7 of the lit cost on the most pixels in the Dunes, Calissa's program audit, 2026-10-25; elsewhere Standard until the owner has seen the dawn's grazing sheen without it)
     const U = this.uniforms;
     mat.onBeforeCompile = (sh) => {
       Object.assign(sh.uniforms, U, this.trail.uniforms);
