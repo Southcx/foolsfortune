@@ -14,19 +14,17 @@
 // zone. The more of a place you have walked and surveyed, the more you can do in it, and the
 // higher its tier, the deeper the arts that work there.
 //
-// Also here: the
-// map screen (M; drag to pan, wheel to zoom, click to set a waypoint, right click to clear it).
+// The map screen (M) is feedback/mapscreen.js, its look ui/mapdress/: it reads the cells, the anchors and the thread kept here.
 // Ariadne's Thread (a knack, progress/knacks.js): the way walked since the last Shrine rested at, a point every 3 m, a loop cut off
 // where the way crosses itself (so it is the way back, not the way wandered), drawn on the map from you to that Shrine; switched off,
 // nothing is drawn. Prior art: the thread itself, and Hansel's pebbles; kept for the session only (after a reload, a straight line).
-// The Raceway's layer draws its tracks as roads with their names at their starts (`drawTracks`), as a racing game's course map does.
+// The Raceway's tracks are handed to the map as roads with their names (`tracksOf`), as a racing game's course map does.
 // ---------------------------------------------------------------------------------------
-import { calibrateButton } from '../ui/calibratebutton.js';
 import * as THREE from 'three';
 import { T, PALETTE } from '../core/config.js';
 import { sfx } from '../audio/sfx.js';
-import { FONT } from '../ui/theme.js';
 import { zoneOf } from '../render/zonemap.js';
+import { MapScreen } from './mapscreen.js';
 
 const LAYERS = [
   { id: 'well', name: 'THE GREAT DUNEMAW', below: -700, cell: 2, sight: 7 }, // (a Well's floor, far below the Dunes: world/well/dunemaw.js)
@@ -43,37 +41,16 @@ const LAYERS = [
 const BY_ZONE = Object.fromEntries(LAYERS.filter((l) => l.zone).map((l) => [l.zone, l]));
 const LAYER_BY_ID = Object.fromEntries(LAYERS.map((l) => [l.id, l]));
 const KEY = 'foolsfortune.map.v1';
-/** The map on touch: a long press's wait (ms, the choice card's), how far a finger may move and still be one (CSS px), how near the
- *  waypoint a long press clears it (CSS px). */
-const MAP_TOUCH = { long: 420, still: 10, reach: 28 };
 const _v = new THREE.Vector3(), _v2 = new THREE.Vector3();
 const staticOnly = (c) => !c.isSensor() && !c.parent()?.isDynamic();
 
-const CSS = `
-#mapui { position: fixed; inset: 0; z-index: 9; display: none; background: rgba(20,9,6,.9); cursor: grab; user-select: none; font-size: 12px; letter-spacing: .08em; }
-#mapui.open { display: block; }
-#mapui canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
-#mapui .bar { position: absolute; left: 0; right: 0; top: 0; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 12px 18px; background: linear-gradient(rgba(20,9,6,.95), rgba(20,9,6,0)); pointer-events: none; }
-#mapui .bar > * { pointer-events: auto; }
-#mapui h2 { margin: 0; font-size: 18px; letter-spacing: .24em; color: var(--accent); font-weight: normal; flex: 1; }
-#mapui button { font: inherit; color: var(--ink); background: rgba(28,13,8,.8); border: 1px solid rgba(255,178,122,.5); padding: 5px 12px; border-radius: 3px; cursor: var(--jcur-pointer, pointer); letter-spacing: .1em; }
-#mapui button.on { background: rgba(var(--jsel),.45); border-color: var(--accent); }
-#mapui button:hover { background: rgba(var(--jsel),.35); }
-#mapui .side { position: absolute; left: 18px; bottom: 16px; padding: 10px 14px; background: rgba(28,13,8,.82); border: 1px solid rgba(255,178,122,.3); border-radius: 4px; max-width: 320px; line-height: 1.6; cursor: default; }
-#mapui .side b { color: #fff1dc; font-weight: normal; }
-#mapui .side .bar2 { display: inline-block; width: 70px; height: 5px; background: rgba(28,13,8,.9); border: 1px solid rgba(255,178,122,.3); margin: 0 8px; vertical-align: middle; }
-#mapui .side .bar2 i { display: block; height: 100%; background: linear-gradient(90deg, #c46a45, #ffe0a0); }
-#mapui .legend { position: absolute; right: 18px; bottom: 16px; padding: 8px 12px; background: rgba(28,13,8,.82); border: 1px solid rgba(255,178,122,.3); border-radius: 4px; opacity: .85; }
-`;
 
-const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; };
 
 export class Cartography {
   constructor(game) {
     this.game = game;
     this.cells = Object.fromEntries(LAYERS.map((l) => [l.id, new Map()]));
     this.anchors = []; // { name, tag, x, y, z, layer, covered }
-    this.waypoint = null; // { x, z, layer }
     this.thread = []; // (Ariadne's Thread: { x, y, z } walked since the last rest)
     for (const n of ['shrine.rest', 'shrine.travel']) game.events?.on(n, () => { this.thread.length = 0; }); // (travel makes that Shrine the last)
     this.tickT = 0;
@@ -81,12 +58,10 @@ export class Cartography {
     this.dirty = false;
     this.pulses = [];
     this.pulseCool = 0;
-    this.open = false;
-    this.view = { layer: 'ground', x: 0, z: 0, scale: 6, follow: true };
     this.stats = { charted: 0, understood: 0 };
     this.keep = game.save?.keyed?.(KEY, 'player') || null; // (the explored area, too big for the player's record: its own key, through the save)
     this.load();
-    this.buildMap();
+    this.screen = new MapScreen(game, this); // (the map screen, M: feedback/mapscreen.js)
     this.buildPulseFx();
   }
 
@@ -179,7 +154,13 @@ export class Cartography {
   }
 
   /** While a menu has the game paused (the map redraws, pans and zooms). */
-  tickModal() { if (this.open) this.drawMap(); }
+  tickModal() { this.screen.tick(); }
+  get open() { return this.screen.open; }
+  show() { this.screen.show(); }
+  hide() { this.screen.hide(); }
+  toggle() { this.screen.toggle(); }
+  /** The Sight's waypoint on the chart's layers ({ x, z, layer }): the map keeps no mark of its own (MAP.md 3); the wire compass reads it. */
+  get waypoint() { const w = this.game.sight?.waypoint; return w?.pos ? { x: w.pos.x, z: w.pos.z, layer: this.layerOf(w.pos).id } : null; }
 
   update(dt) {
     const g = this.game, P = g.player;
@@ -189,7 +170,7 @@ export class Cartography {
     if (this.tickT <= 0) { this.tickT = 0.16; this.passive(0.16); this.spool(P.pos); }
     if (this.dirty && (this.saveT -= dt) <= 0) { this.saveT = 6; this.save(); }
     this.headYaw = g.god?.controlling ? g.god.cam.yaw + Math.PI : P.yaw; // (the view's own facing: the map's arrow)
-    if (this.open) this.drawMap();
+    this.screen.tick();
   }
 
   /** Ariadne's Thread: a point every 3 m; where the way comes back within 3 m of an older point, the loop between is cut. */
@@ -202,34 +183,12 @@ export class Cartography {
     if (T.length > 800) T.splice(0, T.length - 800); // (a very long way: its oldest end let go)
   }
 
-  /** The thread drawn on the map's layer: from the Shrine rested at, along the way walked, to you. */
-  drawThread(c, l, V, P) {
-    const s = this.game.shrines, sh = s?.get?.(s.last); if (!sh || !this.game.knacks?.on('ariadnesThread')) return;
-    const pts = [sh.pos, ...this.thread, P.pos];
-    c.save(); c.strokeStyle = 'rgba(231,196,106,.85)'; c.lineWidth = 2; c.lineJoin = 'round';
-    if (!this.thread.length) c.setLineDash([4, 5]); // (after a reload: only the way it lies)
-    c.beginPath(); let pen = false, prev = null;
-    for (const q of pts) {
-      if (this.layerOf(q).id !== l.id) { pen = false; prev = q; continue; }
-      if (prev && this.thread.length && q !== pts[1] && Math.hypot(q.x - prev.x, q.z - prev.z) > 30) pen = false; // (a seam or a fall: no line across it)
-      const sx = (q.x - V.x) * V.scale, sy = (q.z - V.z) * V.scale;
-      if (pen) c.lineTo(sx, sy); else c.moveTo(sx, sy); pen = true; prev = q;
-    }
-    c.stroke(); c.restore();
-  }
 
-  /** The Raceway's tracks on its layer (Dovina's round-six ask): each line as a road at its width, its name at its start. The points are
-   *  taken once (a frame every 10 m, `raceway.local` to the world), since a track never moves. */
-  drawTracks(c, l, V) {
-    const R = this.game.raceway; if (l.id !== 'raceway' || !R?.tracks?.length) return;
-    this.trackPts ||= R.tracks.map((T) => { const pts = []; for (let s = 0; s < T.length; s += 10) { const F = T.frame(s), p = R.local(F.x, F.z); pts.push({ x: p.x, z: p.z, w: F.w }); } const F0 = T.frame(T.line), p0 = R.local(F0.x, F0.z); return { name: T.name || T.id, pts, start: { x: p0.x, z: p0.z } }; });
-    c.save(); c.lineJoin = c.lineCap = 'round'; c.font = `500 12px ${FONT.ui}`; c.textAlign = 'center';
-    for (const [pass, style] of [[0, 'rgba(20,8,4,.7)'], [1, 'rgba(231,196,106,.55)']]) for (const K of this.trackPts) {
-      c.strokeStyle = style; c.lineWidth = Math.max(2, 2 * K.pts[0].w * V.scale) + (pass ? 0 : 3);
-      c.beginPath(); K.pts.forEach((q, i) => { const sx = (q.x - V.x) * V.scale, sy = (q.z - V.z) * V.scale; if (i) c.lineTo(sx, sy); else c.moveTo(sx, sy); }); c.closePath(); c.stroke();
-    }
-    for (const K of this.trackPts) { const sx = (K.start.x - V.x) * V.scale, sy = (K.start.z - V.z) * V.scale; c.fillStyle = '#ffe0a0'; c.fillRect(sx - 4, sy - 4, 8, 8); c.fillStyle = 'rgba(251,227,207,.9)'; c.fillText(K.name, sx, sy - 9); }
-    c.restore();
+  /** The Raceway's tracks as roads for the map: a point every 10 m (`raceway.local` to the world) at its half width, taken once (a track
+   *  never moves). */
+  tracksOf() {
+    const R = this.game.raceway; if (!R?.tracks?.length) return [];
+    return (this.trackPts ||= R.tracks.map((T) => { const pts = []; for (let s = 0; s < T.length; s += 10) { const F = T.frame(s), p = R.local(F.x, F.z); pts.push({ x: p.x, z: p.z, w: F.w }); } return { name: T.name || T.id, pts }; }));
   }
 
   /** Walking about: what is near and in sight is slowly sensed, and charted with a little time (never past .5). */
@@ -390,242 +349,7 @@ export class Cartography {
   /** After the anchors are in: the ones already mapped in an earlier session. */
   restoreAnchors() { if (this.doneTags) for (const a of this.anchors) if (this.doneTags.has(a.tag)) { a.done = true; a.cov = 1; } }
 
-  /** Paint the known cells of a layer around (x0, z0) into a context whose origin is the view's centre. */
-  paint(c, l, x0, z0, scale, S, { cellsOnly = false, halfW = S / 2, halfH = S / 2, rotated = true } = {}) {
-    const cs = l.cell, px = cs * scale;
-    const nx = Math.ceil(halfW / px) + 2, nz = Math.ceil(halfH / px) + 2;
-    const cx = Math.floor(x0 / cs), cz = Math.floor(z0 / cs);
-    const R = Math.hypot(halfW, halfH);
-    for (let dx = -nx; dx <= nx; dx++) {
-      for (let dz = -nz; dz <= nz; dz++) {
-        const cell = this.cell(l, cx + dx, cz + dz);
-        if (!cell || cell.k < 0.05) continue;
-        const wx = (cx + dx) * cs - x0, wz = (cz + dz) * cs - z0;
-        const sx = wx * scale, sy = wz * scale;
-        const t = Cartography.tierOfK(cell.k);
-        c.fillStyle = cell.w ? 'rgba(20,9,6,.95)' : t >= 3 ? 'rgba(255,214,150,.85)' : t === 2 ? 'rgba(214,140,90,.7)' : 'rgba(150,90,60,.45)';
-        c.fillRect(sx, sy, px + 0.6, px + 0.6);
-        if (cell.w) { c.fillStyle = 'rgba(255,178,122,.35)'; c.fillRect(sx, sy, px + 0.6, Math.max(1, px * 0.18)); }
-      }
-    }
-  }
 
-  // ------------------------------------------------------------------ the map screen
-  buildMap() {
-    const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st); // (the map's own rules, with the map: the compass's builder carried them until it was retired, CASEBOOK 2026-10-19)
-    const root = el('div');
-    root.id = 'mapui';
-    this.canvas = document.createElement('canvas');
-    root.appendChild(this.canvas);
-    this.mctx = this.canvas.getContext('2d');
-    const bar = el('div', 'bar');
-    bar.appendChild(el('h2', '', 'MAP'));
-    this.layerBtns = {};
-    for (const l of LAYERS) {
-      const b = el('button', '', l.name);
-      b.onclick = () => { this.view.layer = l.id; this.view.follow = false; this.centreOnLayer(); };
-      bar.appendChild(b);
-      this.layerBtns[l.id] = b;
-    }
-    const close = el('button', '', 'CLOSE (M)');
-    close.onclick = () => this.hide();
-    bar.appendChild(close);
-    root.appendChild(bar);
-    this.side = el('div', 'side');
-    root.appendChild(this.side);
-    root.appendChild(el('div', 'legend', '<span style="opacity:.9">▒</span> sensed &nbsp; <span style="color:#d68c5a">■</span> charted &nbsp; <span style="color:#ffd696">■</span> understood &nbsp; <span style="color:#ffe0a0">◆</span> waypoint'));
-    document.body.appendChild(root);
-    this.root = root;
-    // pointer events, so a finger works as the mouse does (docs/plans/MOBILE.md 9, M2): a drag pans; two fingers pinch to zoom and pan
-    // by their middle; on touch a long press sets the waypoint (on it, clears it) where a click does with the mouse
-    root.style.touchAction = 'none';
-    this.fingers = new Map();
-    root.addEventListener('pointerdown', (e) => {
-      e.stopPropagation();
-      if (e.pointerType === 'touch') return this.fingerDown(e);
-      this.drag = { x: e.clientX, y: e.clientY, moved: 0, button: e.button }; root.style.cursor = 'grabbing';
-    });
-    addEventListener('pointerup', (e) => {
-      if (e.pointerType === 'touch') return this.fingerUp(e);
-      if (!this.open || !this.drag) return;
-      const d = this.drag; this.drag = null; root.style.cursor = '';
-      if (d.moved < 5 && e.target === this.canvas) this.mark(e.clientX, e.clientY, d.button === 2);
-    });
-    addEventListener('pointercancel', (e) => { if (e.pointerType === 'touch') this.fingerUp(e, true); });
-    addEventListener('pointermove', (e) => {
-      if (e.pointerType === 'touch') return this.fingerMove(e);
-      if (!this.open || !this.drag) return;
-      const dx = e.clientX - this.drag.x, dy = e.clientY - this.drag.y;
-      this.drag.moved += Math.abs(dx) + Math.abs(dy);
-      this.drag.x = e.clientX; this.drag.y = e.clientY;
-      this.pan(dx, dy);
-    });
-    root.addEventListener('wheel', (e) => { e.preventDefault(); e.stopPropagation(); this.view.scale = THREE.MathUtils.clamp(this.view.scale * Math.exp(-e.deltaY * 0.0012), 0.5, 40); }, { passive: false });
-    root.addEventListener('contextmenu', (e) => e.preventDefault());
-    // (M opens and closes it, here, in the key's own event: closing hands the mouse back with a pointer lock request, which the
-    // browser only grants inside a user gesture. Handling it a frame later in the game loop is what lost the mouse before.)
-    addEventListener('keydown', (e) => {
-      if (e.repeat) return;
-      const g = this.game, tag = document.activeElement?.tagName;
-      if (this.open && (e.code === 'KeyM' || e.code === 'Escape')) { this.hide(); e.preventDefault(); e.stopImmediatePropagation(); return; } // (spent: the pause menu does not open under it, GARDEN-SWEEP #9)
-      if (!this.open && e.code === 'KeyM' && g.input.enabled && tag !== 'INPUT' && tag !== 'TEXTAREA' && !(g.windowOpen ? g.windowOpen() : g.codex?.open || g.indexMenu?.open)) { this.show(); e.preventDefault(); }
-    });
-  }
-
-  toggle() { this.open ? this.hide() : this.show(); }
-
-  /** The view moved by a drag of (dx, dy) CSS px. */
-  pan(dx, dy) { this.view.x -= dx / this.view.scale; this.view.z -= dy / this.view.scale; this.view.follow = false; }
-  /** The waypoint set where (x, y) is on screen, or cleared. */
-  mark(x, y, clear = false) {
-    const p = this.screenToWorld(x, y);
-    this.waypoint = clear ? null : { x: p.x, z: p.z, layer: this.view.layer };
-    sfx.click?.();
-  }
-  // ---- fingers (MAP_TOUCH: the long press's wait and its stillness, the waypoint's reach for a clear)
-  fingerDown(e) {
-    if (!this.open || this.fingers.size >= 2) return;
-    this.fingers.set(e.pointerId, { x: e.clientX, y: e.clientY, x0: e.clientX, y0: e.clientY, t0: performance.now() });
-    const L = this.game.touchUI?.longPress;
-    clearTimeout(this.pressT); L?.cancel();
-    if (this.fingers.size === 1 && e.target === this.canvas) {
-      L?.show(e.clientX, e.clientY, { ms: MAP_TOUCH.long });
-      this.pressT = setTimeout(() => this.longPress(e.pointerId), MAP_TOUCH.long);
-    }
-  }
-  fingerMove(e) {
-    const f = this.fingers.get(e.pointerId); if (!f || !this.open) return;
-    const others = [...this.fingers.entries()].filter(([id]) => id !== e.pointerId);
-    if (others.length) { // (two fingers: the pinch about their middle, and their middle's drag)
-      const o = others[0][1], d0 = Math.hypot(f.x - o.x, f.y - o.y) || 1, d1 = Math.hypot(e.clientX - o.x, e.clientY - o.y) || 1;
-      this.view.scale = THREE.MathUtils.clamp(this.view.scale * (d1 / d0), 0.5, 40);
-      this.pan((e.clientX - f.x) / 2, (e.clientY - f.y) / 2);
-    } else this.pan(e.clientX - f.x, e.clientY - f.y);
-    f.x = e.clientX; f.y = e.clientY;
-    if (Math.hypot(f.x - f.x0, f.y - f.y0) > MAP_TOUCH.still) { clearTimeout(this.pressT); this.game.touchUI?.longPress?.cancel(); }
-  }
-  fingerUp(e, cancel = false) {
-    if (!this.fingers.delete(e.pointerId)) return;
-    clearTimeout(this.pressT); if (!cancel) this.game.touchUI?.longPress?.cancel();
-  }
-  /** A finger held still: the waypoint set there, or cleared if it was on it. */
-  longPress(id) {
-    const f = this.fingers.get(id); if (!f || !this.open || this.fingers.size !== 1) return;
-    const W = this.waypoint, at = W && W.layer === this.view.layer ? this.worldToScreen(W.x, W.z) : null;
-    this.mark(f.x, f.y, !!at && Math.hypot(at.x - f.x, at.y - f.y) < MAP_TOUCH.reach);
-  }
-
-  show() {
-    const P = this.game.player, l = this.layerOf(P.pos);
-    this.open = true;
-    this.root.classList.add('open');
-    document.exitPointerLock?.();
-    this.view.layer = l.id; this.view.x = P.pos.x; this.view.z = P.pos.z; this.view.follow = true;
-    this.view.scale = l.id === 'dunes' ? 1.2 : 6;
-    this.resize();
-    this.drawMap(true);
-  }
-
-  hide() {
-    if (!this.open) return;
-    this.open = false;
-    this.root.classList.remove('open');
-    this.canvas.width = this.canvas.height = 0; this.drawn = null; // (its pixels let go while closed: a full screen at the device's ratio, 6 to 16 MB)
-    this.onClose?.();
-  }
-
-  centreOnLayer() {
-    const l = LAYER_BY_ID[this.view.layer];
-    const cells = [...this.cells[l.id].values()];
-    if (cells.length) {
-      let sx = 0, sz = 0;
-      for (const c of cells) { sx += (c.ix + 0.5) * l.cell; sz += (c.iz + 0.5) * l.cell; }
-      this.view.x = sx / cells.length; this.view.z = sz / cells.length;
-    }
-    this.view.scale = l.id === 'dunes' ? 1.2 : 6;
-  }
-
-  resize() {
-    const dpr = Math.min(2, devicePixelRatio || 1);
-    this.canvas.width = Math.round(innerWidth * dpr); this.canvas.height = Math.round(innerHeight * dpr);
-    this.dpr = dpr;
-  }
-
-  screenToWorld(sx, sy) {
-    return { x: this.view.x + (sx - innerWidth / 2) / this.view.scale, z: this.view.z + (sy - innerHeight / 2) / this.view.scale };
-  }
-  worldToScreen(x, z) { return { x: innerWidth / 2 + (x - this.view.x) * this.view.scale, y: innerHeight / 2 + (z - this.view.z) * this.view.scale }; }
-
-  /** Drawn only when what it shows has changed (it was every frame while open: about 12,000 cell lookups a frame in the Dunes). */
-  drawMap(force = false) {
-    const c = this.mctx, V = this.view, P = this.game.player;
-    if (V.follow) { V.x = P.pos.x; V.z = P.pos.z; }
-    const W = innerWidth, H = innerHeight, wp = this.waypoint, pins = this.game.veritome?.book.pins?.length || 0;
-    const key = `${V.layer} ${V.x.toFixed(2)} ${V.z.toFixed(2)} ${V.scale.toFixed(3)} ${W}x${H} ${this.rev || 0} ${this.thread.length} ${pins} ${wp ? `${wp.x},${wp.z}` : '-'} ${P.pos.x.toFixed(1)},${P.pos.z.toFixed(1)},${(this.headYaw ?? P.yaw).toFixed(2)} ${!!this.game.god?.active} ${this.anchors.reduce((n, a) => n + (a.done ? 1 : 0), 0)}`;
-    if (!force && key === this.drawn) return;
-    this.drawn = key;
-    if (this.canvas.width !== Math.round(W * (this.dpr || 1))) this.resize();
-    const l = LAYER_BY_ID[V.layer];
-    c.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
-    c.clearRect(0, 0, W, H);
-    // parchment ground
-    c.fillStyle = '#2a140d'; c.fillRect(0, 0, W, H);
-    c.save();
-    c.translate(W / 2, H / 2);
-    this.paint(c, l, V.x, V.z, V.scale, W, { halfW: W / 2, halfH: H / 2 });
-    this.drawTracks(c, l, V);
-    // named places
-    c.font = `500 12px ${FONT.ui}`; c.textAlign = 'center';
-    for (const a of this.anchors) {
-      if (a.layer !== l.id) continue;
-      const cell = this.cell(l, Math.floor(a.x / l.cell), Math.floor(a.z / l.cell));
-      const near = (() => { const n = 3; let best = 0; for (let dx = -n; dx <= n; dx++) for (let dz = -n; dz <= n; dz++) { const cc = this.cell(l, Math.floor(a.x / l.cell) + dx, Math.floor(a.z / l.cell) + dz); if (cc && cc.k > best) best = cc.k; } return best; })();
-      if (near < 0.08) continue;
-      const sx = (a.x - V.x) * V.scale, sy = (a.z - V.z) * V.scale;
-      c.fillStyle = a.done ? '#ffe0a0' : '#ffb27a';
-      c.beginPath(); c.arc(sx, sy, 4, 0, Math.PI * 2); c.fill();
-      c.fillStyle = 'rgba(251,227,207,.9)';
-      c.fillText(a.name, sx, sy - 9);
-    }
-    // the photographs (the Veritome's): a small brass frame where each was taken, turned the way the lens looked, brighter for more stars
-    for (const p of this.game.veritome?.book.pins || []) {
-      if (this.layerOf(p).id !== l.id) continue;
-      const sx = (p.x - V.x) * V.scale, sy = (p.z - V.z) * V.scale;
-      c.save(); c.translate(sx, sy); c.rotate(Math.PI - p.yaw);
-      c.globalAlpha = 0.45 + 0.15 * (p.stars || 0);
-      c.strokeStyle = '#e7c46a'; c.lineWidth = 1.5; c.strokeRect(-5, -4, 10, 8);
-      c.beginPath(); c.arc(0, 0, 2.2, 0, Math.PI * 2); c.stroke();
-      c.beginPath(); c.moveTo(-3, -4); c.lineTo(0, -9); c.lineTo(3, -4); c.stroke();
-      c.restore();
-    }
-    c.globalAlpha = 1;
-    // the waypoint
-    if (this.waypoint && this.waypoint.layer === l.id) {
-      const sx = (this.waypoint.x - V.x) * V.scale, sy = (this.waypoint.z - V.z) * V.scale;
-      c.fillStyle = '#ffe0a0'; c.save(); c.translate(sx, sy); c.rotate(Math.PI / 4); c.fillRect(-6, -6, 12, 12); c.restore();
-    }
-    this.drawThread(c, l, V, P);
-    // you (and the jar's tether)
-    if (this.layerOf(P.pos).id === l.id) {
-      const sx = (P.pos.x - V.x) * V.scale, sy = (P.pos.z - V.z) * V.scale;
-      c.save(); c.translate(sx, sy); c.rotate(Math.PI - (this.headYaw ?? P.yaw));
-      c.fillStyle = '#fff1dc'; c.beginPath(); c.moveTo(0, -11); c.lineTo(8, 9); c.lineTo(0, 4); c.lineTo(-8, 9); c.closePath(); c.fill();
-      c.restore();
-      const zr = T.explored.baseRadius * V.scale;
-      if (this.game.god?.active) { c.strokeStyle = 'rgba(255,214,150,.6)'; c.setLineDash([6, 6]); c.beginPath(); c.arc(sx, sy, zr, 0, Math.PI * 2); c.stroke(); c.setLineDash([]); }
-    }
-    c.restore();
-    for (const [id, b] of Object.entries(this.layerBtns)) b.classList.toggle('on', id === l.id);
-    // the side panel: what you know
-    const here = this.layerOf(P.pos);
-    const track = (a) => a.done && this.game.places?.get?.(a.tag); // (a charted room that is a place: the Sight's TRACK beside it, ui/calibratebutton.js)
-    const rows = this.anchors.filter((a) => a.layer === l.id).sort((a, b) => b.cov - a.cov).slice(0, 9).map((a) => `<span${track(a) ? ` data-place="${a.tag}"` : ''}>${a.done ? '◆' : '◇'} <b>${a.name}</b><span class="bar2"><i style="width:${Math.round(a.cov * 100)}%"></i></span>${Math.round(a.cov * 100)}%</span>`).join('<br>');
-    const html = `<b>${l.name}</b>${here.id === l.id ? ' · you are here' : ''}<br>${rows || '<span style="opacity:.6">nothing charted here yet</span>'}<br><span style="opacity:.6">${this.stats.charted} cells charted · ${this.stats.understood} understood</span>`;
-    if (html !== this.sideHtml) { // (rebuilt only when it reads differently: a button made every frame cannot be clicked)
-      this.side.innerHTML = this.sideHtml = html;
-      for (const e of this.side.querySelectorAll('[data-place]')) calibrateButton(e, { place: e.dataset.place }, this.game);
-    }
-  }
 }
 
 
