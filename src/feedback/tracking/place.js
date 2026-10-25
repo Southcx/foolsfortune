@@ -7,6 +7,7 @@
 // Espada's. feedback/tracking/rules.js calls it.
 //
 //   placeRules({ on, log })
+//   placeEnterRules({ on, L, log, g })
 // ---------------------------------------------------------------------------------------
 
 const ART = { walk: 'Walk: tap the ground, and your Pneuka Jar hops there.', grab: 'Grab: lift your Pneuka Jar, a spirit or a feature. Tap a spirit to pet it; the right button flicks it.', paint: 'Paint: lay a ground on the clay; the right button clears it. R turns the ground.', water: 'Water: pour with the left button, drink with the right; Shift sets a spring, Ctrl a drain. R turns the feeling.', flatten: 'Flatten: level the clay to where the stroke began.', roughen: 'Roughen: break up the clay.', pull: 'Pull: raise the clay.', press: 'Press: lower the clay.', carve: 'Carve: cut a channel for water.', smooth: 'Smooth: make the clay level.', place: 'Place: put a feature in a plot.' };
@@ -40,4 +41,11 @@ export function placeRules({ on, log }) {
   on('garden.grant', (e) => { if (e.by === 'courier') log.say('info', `The ${e.kind === 'bed' ? 'terrace' : 'pavilion'} gives you one more ${e.kind}.`); }); // (Dovina's: progress/garden.js grant)
   on('trial.solar.start', (e) => log.say('info', `The Gnomon's shadow starts to move. Time: 90 real seconds. Rings lit: ${e.lit} of 24.`, { key: 'solar.start', throttle: 1 }));
   on('trial.solar.end', (e) => log.say('info', e.why === 'time' ? "The Gnomon's shadow crosses the dial. Time is up." : 'You leave the course.', { key: 'solar.end', throttle: 1 }));
+}
+
+export function placeEnterRules({ on, L, log, g }) {
+  // the room they walk into, said as they enter it (the wire compass asks: vfx/wirecompass.js); the same room again only after a while
+  const entered = new Map();
+  on('place.enter', (e) => { if (g.realm?.active) return; const now = e.t ?? 0; if (now - (entered.get(e.room) ?? -1e9) < 90) return; entered.set(e.room, now); log.say('explore', `You enter ${e.room}.`, { key: 'place', win: 1 }); }); // (no room of the workshop is entered from the garden: GARDEN-SWEEP #8)
+  on('title.enter', (e) => { L.inc('title.enter'); L.inc(`title.enter.${e.mode}`); }); // (the lines, welcome first: tracking/place.js)
 }

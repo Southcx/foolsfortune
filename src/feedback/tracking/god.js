@@ -5,7 +5,9 @@
 // placeholders for Espada's.
 //
 //   godRules({ on, L, log })
+//   godHandRules({ on, L, log })
 // ---------------------------------------------------------------------------------------
+import { plural } from './lineformat.js';
 import { MIRACLES, EPICS, GOD_POWERS, POWER_EVENTS } from '../../progress/godpowers.js';
 
 // the domains' other powers, counted alike (`god.power.<id>`); what each says, where it says anything (placeholders for Espada's)
@@ -65,4 +67,22 @@ export function godRules({ on, L, log }) {
     L.inc('god.rejection.beaten');
     log.say('god', 'You put down the island\'s answer. It lets you be, for now.');
   });
+}
+
+export function godHandRules({ on, L, log }) {
+  // ---- the hand
+  on('god.enter', () => { L.inc('god.enter'); log.say('god', 'God hand active.'); });
+  on('god.exit', () => { L.inc('god.exit'); log.say('god', 'God hand inactive.'); });
+  on('god.grab', (e) => { L.inc('god.grab'); if (e.clapper) L.inc('god.grab.clapper'); });
+  on('god.throw', (e) => { L.inc('god.throw'); L.hi('god.throw.speed', e.speed); });
+  on('god.select', (e) => L.inc(`god.select.${e.id}`));
+  on('god.sunder', (e) => { L.inc('god.sunder'); L.inc('god.cuts', e.cuts); L.hi('god.cuts.best', e.cuts); log.say('god', e.cuts ? `Your blade cleaves ${plural(e.cuts, 'clapperjar')}.` : 'The blade finds nothing.', { key: 'sund', win: 1 }); });
+  on('god.swell', () => L.inc('god.swell'));
+  on('god.wring', () => L.inc('god.wring'));
+  on('god.manifest', (e) => { L.inc('god.manifest'); L.hi('god.manifest.len', e.len); log.say('god', 'You raise a wall of clay.', { key: 'mani', win: 1.5 }); });
+  on('god.raid', (e) => { L.inc('god.raid'); L.hi('god.wave.max', e.wave); log.say('god', `Raid, wave ${e.wave}: ${plural(e.n, 'clapperjar')} approach.`); });
+  on('god.wave', (e) => { L.inc('god.wave'); log.say('god', `Wave ${e.wave} is cleared.`); });
+  on('jar.hit', (e) => { L.inc('jar.hit'); L.inc('jar.damage', e.amount || 0); L.inc(`jar.hit.${e.kind}`); }); // (the god hand's jar: GLOSSARY)
+  on('jar.shatter', () => { L.inc('jar.shatter'); log.say('hurt', 'Your Pneuka Jar breaks.'); });
+  on('jar.reforge', () => { L.inc('jar.reforge'); log.say('god', 'Your Pneuka Jar is reforged.'); });
 }
