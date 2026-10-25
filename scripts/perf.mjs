@@ -11,8 +11,18 @@
 // Prior art: Unreal's `stat unit` and `stat scenerendering` (game, draw, GPU; draw calls and primitives), the frame budgets of console
 // certification (a fixed cost per frame, checked on every build), and Chromium's perf bots (a recorded baseline, a tolerance, an alert).
 //
-//   npm run perf              measure, compare, exit 1 if a budget or a tolerance is broken
-//   npm run perf -- --record  write today's numbers as the baseline (Petra, when a build is published)
+// Only what a change can move is drawn again (the owner, 2026-10-25: "why are we not only running performance on chunks that have been
+// affected by changes?"). The run keeps its last numbers in node_modules/.cache/perf.json with the commit and the dirty files' hashes they
+// were taken at; the files changed since are mapped to the places they can move (SCOPE below: an area's own files its place, anything
+// shared all of them), and a place nothing touched is carried from that run, marked "carried". The route is walked whole every time
+// (its ticks are cheap and the heaps need it); what costs is SwiftShader's draws, 20 timed a place (was 60, with 40 warm: 10 now), and
+// the built game's heap is read with 3 draws a place, only when dist/ is newer than the last reading. Prior art: every build system's
+// incremental cache (make's mtimes, Bazel's content hashes), Chromium's perf bots bisecting only what a CL touched.
+//
+//   npm run perf              measure what changed since the last run, compare, exit 1 if a budget or a tolerance is broken
+//   npm run perf -- --full    measure every place, whatever changed
+//   npm run perf -- --only dunes,well   measure these places
+//   npm run perf -- --record  measure everything and write today's numbers as the baseline (Petra, when a build is published)
 // ---------------------------------------------------------------------------------------
 import fs from 'fs';
 import path from 'path';
@@ -23,6 +33,50 @@ import { execSync } from 'child_process';
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const BASE = path.join(ROOT, 'scripts', 'perf-baseline.json');
 const record = process.argv.includes('--record');
+const PLACES = ['workshop', 'dunes', 'well', 'garden', 'crossing', 'spectacle'];
+const CACHE = path.join(ROOT, 'node_modules', '.cache', 'perf.json');
+const t00 = Date.now(), stage = {}; // (real seconds a stage took, said at the end: where a run's time goes)
+
+// What a changed file can move. The first prefix that matches wins; a file under src/ that matches none is shared: every place.
+// [] is a file no measured place draws (another area's own): the workshop is measured for it, for the boot's programs and heap.
+const SCOPE = [
+  [['docs/', 'tests/', 'source_assets/', 'scripts/sweeps/', 'scripts/stress', 'scripts/casino', 'scripts/economy', 'scripts/spreads', 'README', 'CLAUDE.md', '.claude/'], null], // (nothing the game runs)
+  [['src/world/well/', 'src/vfx/dunemaw', 'src/creatures/jelly/', 'src/progress/combat/dunemaw'], ['well']],
+  [['src/world/garden/', 'src/vfx/garden/', 'src/progress/garden', 'src/progress/harmony', 'src/progress/decor', 'src/progress/spiritlife', 'src/progress/mycelium', 'src/progress/seasons'], ['garden']],
+  [['src/world/emocean/', 'src/progress/rail/', 'src/vfx/railfoes', 'src/vfx/railhazards', 'src/vfx/voxels/', 'src/vfx/shipkit/', 'src/vfx/crossinglook', 'src/vfx/railshots', 'src/vfx/refitsweep', 'src/vfx/railfoemarks', 'src/vfx/telegraph', 'src/vfx/bossparts', 'src/vfx/partcraze', 'src/courier/ship/', 'src/music/legs', 'src/ui/railreadout', 'src/ui/railresults'], ['crossing', 'spectacle']],
+  [['src/world/dunes/', 'src/vfx/dunes/', 'src/creatures/wisp/'], ['dunes']],
+  [['src/world/basement/', 'src/world/props/', 'src/world/level.js', 'src/world/testroom/', 'src/world/treasury'], ['workshop']],
+  [['src/world/raceway/', 'src/vfx/raceway', 'src/world/bazaar/', 'src/vfx/bazaar', 'src/world/opensea/', 'src/vfx/opensea/', 'src/creatures/seaserpent/', 'src/world/duel/', 'src/vfx/duelview', 'src/progress/casino/', 'src/progress/duel/', 'src/world/emocean/margarite', 'src/workbench/'], []],
+];
+const scopeOf = (f) => {
+  for (const [prefixes, places] of SCOPE) if (prefixes.some((x) => f.startsWith(x))) return places;
+  return f.startsWith('src/') || f === 'index.html' || f.startsWith('vite') || f.startsWith('package') || f === 'scripts/perf.mjs' ? PLACES : null; // (other scripts: nothing the game runs)
+};
+const git = (a) => { try { return execSync(`git ${a}`, { cwd: ROOT, stdio: ['ignore', 'pipe', 'ignore'] }).toString(); } catch { return ''; } };
+const dirtyNow = () => { // ({ path: blob hash } of every file differing from HEAD, untracked ones too)
+  const files = [...new Set([...git('diff --name-only HEAD').split('\n'), ...git('ls-files --others --exclude-standard').split('\n')].filter((f) => f && fs.existsSync(path.join(ROOT, f))))];
+  const hashes = files.length ? git(`hash-object -- ${files.map((f) => `'${f}'`).join(' ')}`).trim().split('\n') : [];
+  return Object.fromEntries(files.map((f, i) => [f, hashes[i]]));
+};
+const head = git('rev-parse HEAD').trim(), dirty = dirtyNow();
+let cache = null;
+try { cache = JSON.parse(fs.readFileSync(CACHE, 'utf8')); } catch { /* the first run */ }
+const onlyArg = process.argv.find((a, i) => process.argv[i - 1] === '--only');
+let want, why;
+if (record || process.argv.includes('--full') || !cache?.commit || !git(`cat-file -t ${cache.commit}`).trim()) { want = new Set(PLACES); why = record ? 'recording' : cache ? 'full' : 'no last run kept'; }
+else if (onlyArg) { want = new Set(onlyArg.split(',').filter((p) => PLACES.includes(p))); why = 'asked'; }
+else {
+  const changed = new Set(git(`diff --name-only ${cache.commit} HEAD`).split('\n').filter(Boolean));
+  for (const [f, h] of Object.entries(dirty)) if (cache.dirty?.[f] !== h) changed.add(f); // (dirty now, and not as it was measured)
+  for (const f of Object.keys(cache.dirty || {})) if (!(f in dirty)) changed.add(f); // (dirty then, put back since)
+  want = new Set();
+  const moved = [];
+  for (const f of changed) { const s = scopeOf(f); if (!s) continue; moved.push(f); (s.length ? s : ['workshop']).forEach((p) => want.add(p)); }
+  for (const p of PLACES) if (!cache.out?.[p]) want.add(p); // (never measured: measured now)
+  why = `${moved.length} file(s) that run changed since ${cache.commit.slice(0, 7)}${moved.length ? `: ${moved.slice(0, 6).join(', ')}${moved.length > 6 ? ', ...' : ''}` : ''}`;
+}
+console.log(`perf: measuring ${want.size ? [...want].join(', ') : 'nothing'} (${why})`);
+if (!want.size) { console.log('perf: OK (nothing the game runs changed since the last run; npm run perf -- --full to measure anyway)'); process.exit(0); }
 
 // hard budgets (docs/ARCHITECTURE.md, "Budgets"): a sixth-generation console's frame, roughly
 const BUDGET = { calls: 450, tris: 1_000_000, programs: 212, heapMB: 600, heapBuiltMB: 320 }; // (programs 202 -> 212, 2026-10-25, Petra on Calissa's reasons (docs/handoffs/petra/2026-10-25-from-calissa-perf.md): the aberrant's look on four bodies, the Pneuka Jar's look, the palm die, the dust devil, the Dunes' mirage, the footprint flourishes, the weather's impacts and lens drops, each its own chain; folding them is a uniform-mode ubershader, which the well measured at +127% draw on every pixel; measured on 6dab822: draw -35 to -42% against fe20e89, late compiles 20 (was 21), boot 69.7 s (was 100.6)) // (programs 200 -> 202, 2026-10-24, Petra: the round's merges since a0a7697 (184 files), +4 in every place, all warmed at boot, 21 compiled after as before; by name against a0a7697, one MeshStandardMaterial and two MeshBasicMaterial variants, two ShaderMaterials, the caster lightning now warmed on the route (the heat haze and the ostracon sparkle off it); an A/B of the two commits, one tree at a time on one host: draw +7 to +8%, tick +6 to +8%, boot the same; perf's +30 to 66% that day the host's, v264's own commit measured 46% slower than at its baseline) // (heapMB 500 -> 600 and heapBuiltMB 320 new, 2026-10-21, the owner's ruling through Dovina: the dev server's heap holds every module's source and grows with the code; what a player's page holds is the built game's, measured here since over the same route (vite preview of dist/, gc'd), about 270 MB when last read by hand) // (programs 196 -> 200, 2026-10-19, Petra: board v11's looks, the duel's view and the domains' clash, the aberrant wipe (a screen volume), the Soul Brush's desk; +4 in all four places (178 -> 182, the garden 195 -> 199), all warmed at boot, 17 compiled after as before (the garden's own); timings 5 to 20% under v226's) // (heapMB 485 -> 500, 2026-10-19, the owner's word, with the Spirit Garden built on its first entry instead of at boot: world/garden/realm.js build()) (programs 192 -> 196, heapMB 445 -> 485, 2026-10-18, Petra: the overlay's pieces (Calissa's tube, Sight, placard, tags, the Shrine gate's cradles, OVERLAY.md 15), cut to 3 programs of their own and the gate's 1, all warmed before play, 0 compiled after; the dev heap 480, the built game 312.5 -> 325 MB over the same route (vite preview, gc'd, b059d84 -> c77baa2, two runs each). Calls stay 450: the 12 over in the workshop are to be cut) (programs 191 -> 192, 2026-10-13, Petra: the bracelet batched into one body program (Calissa's), for 14 to 30 draw calls fewer a place) (heapMB 435 -> 445, 2026-10-13, Petra: the dev heap 436 with Dovina's SPINE and god powers (53 files, +2,400 lines of source); the built game measured 270 MB, gc'd) (programs 189 -> 191, 2026-10-13, Petra: the bracelet's glazes, charms, flash and aura (Calissa's vfx/bracelet*.js, the owner's BRACELET.md), warmed at boot) (programs 192 -> 189, 2026-10-13, Calissa's three folds: the rave's cones into the chests' beam, the map's lines into its fills, the Dunemaw's pool and maw one) (programs 184 -> 192, heapMB 415 -> 435, 2026-10-13, Petra: v176-v177's looks for the ten heavy shells and the Lantern Wisp, all warmed at boot (0 compiled after), 192 in all four places; the dev heap 428 with that round's source, the god hand's matter +1; measured at f7dbda4 and 2ed3be2) // (programs 177 -> 184, 2026-10-12, Petra: the caster shells' looks warmed at boot so none compiles in play (Calissa's vfx/shelllooks/warmup.js: late compiles 12 -> 1); measured 179 at the workshop's boot, 184 with five shells' looks alive; headless, not perf) // (programs 164 -> 177, 2026-10-12, Petra on the owner's word through Calissa, "the budget can be expanded": the caster shaders S1 to S10, vfx/caster/, 13 programs, all warmed, 0 compiled late) // (heap 395 -> 415, 2026-10-12, the owner: the paint map's kept copy, docs/plans/PAINT.md) // (programs 164 -> 165 at v138, Petra: the stain's program, every slick's (vfx/slicks.js), warmed at boot again; it was compiled in play at the first spill, a hitch the count did not see. Back to 164 at v139: Calissa's v137 folds, 163 measured, 0 compiled late) // (tris 350k -> 1M, 2026-10-12, Petra on the owner's word: the GPU idled at 88k on an RTX 3060 Ti; calls kept at 450, ~26 µs each on Firefox's CPU)
@@ -63,7 +117,7 @@ try {
     return { page, bootS };
   };
   // (the route, run in the page: `full` false stops at the heap after the three places, which is all the built game is asked for)
-  const measure = (full) => {
+  const measure = ({ full, want }) => {
     const G = __game, R = G.renderer;
     let calls = 0, tris = 0;
     const rr = R.render.bind(R); R.render = (s, c) => { rr(s, c); calls += R.info.render.calls; tris += R.info.render.triangles; };
@@ -86,34 +140,39 @@ try {
     // (a draw is timed up to a 1-pixel readPixels: without the sync the timer read the GPU's queue, a cheap frame or a blocked one by
     // chance, not the frame; CASEBOOK rule 236, measured by Calissa 2026-10-18)
     const gl = R.getContext(), px = new Uint8Array(4), sync = () => gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
-    const place = () => {
-      for (let i = 0; i < 40; i++) { G.tick(1 / 60); G.draw(); }
+    // (a place not wanted is walked through and not drawn; the built game's is drawn 3 times, for its heap; a measured one draws 10 warm
+    // frames of 40 and 20 timed of 60 ticks, every third: SwiftShader's draw is the run's cost, 1 to 2 real s a frame)
+    const place = (key) => {
+      if (!full) { for (let i = 0; i < 40; i++) { G.tick(1 / 60); if (i % 13 === 0) G.draw(); } return null; }
+      if (!want.includes(key)) { for (let i = 0; i < 40; i++) G.tick(1 / 60); return null; }
+      for (let i = 0; i < 40; i++) { G.tick(1 / 60); if (i % 4 === 0) G.draw(); }
       sync();
       const tk = [], dr = [];
       let fc = 0, ft = 0;
       for (let i = 0; i < 60; i++) {
         let t = performance.now(); G.tick(1 / 60); tk.push(performance.now() - t);
+        if (i % 3) continue;
         calls = 0; tris = 0; t = performance.now(); G.draw(); sync(); dr.push(performance.now() - t); fc = calls; ft = tris;
       }
       const st = tk.slice().sort((x, y) => x - y); // (the frame's worst as well as its middle: a hitch is a frame, Unreal's stat unitgraph, the benchmarks' 1% low)
       return { tick: +med(tk).toFixed(2), tickP95: +st[Math.floor(st.length * 0.95)].toFixed(2), tickMax: +st[st.length - 1].toFixed(2), draw: +med(dr).toFixed(1), calls: fc, tris: ft, programs: R.info.programs?.length || 0, geos: R.info.memory.geometries, tex: R.info.memory.textures, loose: loose() };
     };
-    const workshop = place();
+    const workshop = place('workshop');
     G.course.toDunes(); for (let i = 0; i < 60; i++) G.tick(1 / 60);
-    const dunes = place();
+    const dunes = place('dunes');
     // the Great Dunemaw's bottom floor, standing in a hall when it has one (docs/plans/DUNEMAW.md's budget is for a hall: 60 draws, 120k triangles)
     const W = G.game.well; W.enter(); W.goTo(3); for (let i = 0; i < 30; i++) G.tick(1 / 60);
     const hall = W.cur.cells.find((c) => c.hall != null);
     if (hall) G.course.teleport(new G.THREE.Vector3(hall.x, hall.y + 2, hall.z), 0, { keepPool: true });
     for (let i = 0; i < 30; i++) G.tick(1 / 60);
-    const well = place();
+    const well = place('well');
     if (window.gc) { gc(); gc(); }
     const heapMB = Math.round((performance.memory?.usedJSHeapSize || 0) / 1e6); // (before the garden: the same three places the baseline measured)
     if (!full) return { heapMB };
     // the Spirit Garden, standing at the gate on the Dantian (Calissa's survey item 31: its planetoids, water, rain and plants)
     const Gm = G.game, Rm = Gm.realm;
     if (Rm) { Rm.enter(Gm.shrines?.get?.(Gm.shrines.last) || null); for (let i = 0; i < 200; i++) G.tick(1 / 60); Rm.setName?.('Siva Lon'); Gm.indexMenu?.close?.(); for (let i = 0; i < 30; i++) G.tick(1 / 60); }
-    const garden = Rm?.active ? place() : null;
+    const garden = Rm?.active ? place('garden') : null;
     if (window.gc) { gc(); gc(); } // (the live heap, not the live heap plus this run's garbage)
     const heapGardenMB = Math.round((performance.memory?.usedJSHeapSize || 0) / 1e6);
     // a crossing: the showcase crossing's chase leg on the galleon, six bars in (the heaviest hull and the roster's chase foes, Calissa's
@@ -126,7 +185,7 @@ try {
       const L = E.trip?.layout?.legs?.[1];
       if (L) { E.t = (L.at + 6) * 1.5; for (let i = 0; i < 120; i++) G.tick(1 / 60); }
     }
-    const crossing = E?.stage?.active ? place() : null;
+    const crossing = E?.stage?.active ? place('crossing') ?? 'walked' : null;
     // the spectacle (RAIL-FLOW.md 10.4: measured before any cut): a swarm of 48 in frame and every other foe of the leg downed at once
     // into its voxels (Calissa's batch), the leg's own shots in flight
     let spectacle = null;
@@ -134,12 +193,15 @@ try {
       E.waves.spawn({ role: 'swarm', formation: 'river', count: 48, cls: 0 }, 0);
       for (let i = 0; i < 90; i++) G.tick(1 / 60);
       for (const f of [...E.waves.foes]) if (f.alive && f.form && f.form !== 'swarm') E.waves.strike(f, 1e6, { cause: 'shot' });
-      spectacle = place();
+      spectacle = place('spectacle');
     }
-    return { workshop, dunes, well, garden, crossing, spectacle, heapMB, heapGardenMB, lateProgs: (R.info.programs?.length || 0) - bootProgs, lateNames: (R.info.programs || []).filter((q) => !bootSet.has(q)).map((q) => q.name || q.type || '?') };
+    return { workshop, dunes, well, garden, crossing: crossing === 'walked' ? null : crossing, spectacle, heapMB, heapGardenMB, lateProgs: (R.info.programs?.length || 0) - bootProgs, lateNames: (R.info.programs || []).filter((q) => !bootSet.has(q)).map((q) => q.name || q.type || '?') };
   };
+  let t = Date.now();
   const dev = await boot(url);
-  out = await dev.page.evaluate(measure, true);
+  stage.boot = (Date.now() - t) / 1000; t = Date.now();
+  out = await dev.page.evaluate(measure, { full: true, want: [...want] });
+  stage.route = (Date.now() - t) / 1000;
   out.bootS = +dev.bootS.toFixed(1);
   await dev.page.close();
   // the built game's heap: dist/ (npm run build, which the gate runs first) served by vite preview, over the same three places, gc'd.
@@ -149,16 +211,32 @@ try {
   else {
     const newest = (d) => fs.readdirSync(d, { withFileTypes: true }).reduce((m, e) => Math.max(m, e.isDirectory() ? newest(path.join(d, e.name)) : fs.statSync(path.join(d, e.name)).mtimeMs), 0);
     if (newest(path.join(ROOT, 'src')) > fs.statSync(DIST).mtimeMs) stale = true;
+    const distAt = fs.statSync(DIST).mtimeMs;
+    if (!record && cache?.distAt === distAt && cache.out?.heapBuiltMB != null) out.heapBuiltMB = cache.out.heapBuiltMB, out.carriedBuilt = true; // (the same dist/ as last run's reading)
+    else {
+    t = Date.now();
     built = await preview({ root: ROOT, logLevel: 'error', preview: { host: '127.0.0.1', port: 4180, strictPort: false } });
     const B = await boot(built.resolvedUrls.local[0]);
-    out.heapBuiltMB = (await B.page.evaluate(measure, false)).heapMB;
+    out.heapBuiltMB = (await B.page.evaluate(measure, { full: false, want: [] })).heapMB;
     await B.page.close();
+    stage.built = (Date.now() - t) / 1000;
+    }
+    out.distAt = distAt;
   }
 } finally {
   await browser.close();
   await server.close();
   await built?.close();
 }
+
+// ---- carry what was not measured from the last run, and keep this one for the next
+const carried = [];
+for (const p of PLACES) if (!out[p] && !want.has(p) && cache?.out?.[p]) { out[p] = cache.out[p]; carried.push(p); }
+if (carried.length) { out.lateProgs = cache.out.lateProgs; out.lateNames = cache.out.lateNames; } // (a place not drawn compiled nothing: the count is a whole run's)
+// (the heaps are read after places drawn: one walked through undrawn holds less, so they are carried unless their places were all drawn)
+if (['workshop', 'dunes', 'well'].some((p) => !want.has(p)) && cache?.out?.heapMB != null) { out.heapMB = cache.out.heapMB; carried.push('all'); }
+if (!want.has('garden') && cache?.out?.heapGardenMB != null) out.heapGardenMB = cache.out.heapGardenMB;
+if (!errs.length) { fs.mkdirSync(path.dirname(CACHE), { recursive: true }); fs.writeFileSync(CACHE, JSON.stringify({ commit: head, dirty, distAt: out.distAt, out })); }
 
 // ---- compare
 let base = null;
@@ -170,11 +248,11 @@ const cmp = (label, key, now, was, tol, budget) => {
   const moved = was != null && tol != null && d > tol;
   if (over) fails.push(`${label} ${key} ${now} is over the budget (${budget})`);
   if (moved) fails.push(`${label} ${key} ${now} is ${(d * 100).toFixed(0)}% above the baseline (${was})`);
-  rows.push(`  ${(label + ' ' + key).padEnd(18)} ${String(now).padStart(9)}   ${was == null ? '' : `was ${String(was).padStart(8)}  ${d >= 0 ? '+' : ''}${(d * 100).toFixed(0)}%`}${over || moved ? '   <-- ' : ''}`);
+  rows.push(`  ${(label + ' ' + key).padEnd(18)} ${String(now).padStart(9)}   ${was == null ? '' : `was ${String(was).padStart(8)}  ${d >= 0 ? '+' : ''}${(d * 100).toFixed(0)}%`}${over || moved ? '   <-- ' : ''}${(carried.includes(label) && key !== 'bootS') || (label === 'garden' && key === 'heapMB' && !want.has('garden')) || (label === 'built' && out.carriedBuilt) ? '   (carried)' : ''}`);
 };
 const WELL_BUDGET = { calls: 88, tris: 400000 }; // (tris 150k -> 400k, 2026-10-12, with the main budget: a hall's calls are the limit, not its triangles) // (raised 120k -> 150k at v137, Petra: the owner's 25 rooms on the bottom floor (was about 10) are all in view from a central hall, the walls drawn twice with their outline; the sand cut 32 -> 24 samples a room and the sets merged a quadrant at a time, 170k -> 140k measured.)
 // (a floor of the Great Dunemaw, standing in a hall: docs/plans/DUNEMAW.md. Measured 2026-10-06: 67 calls, 56,412 tris, the walls merged per set and the sand one mesh a floor; the budget is that with 20% to spare. Raised 80 to 88 on 2026-10-07: 79 to 85 measured, of which the Courier's belt is about 30 in every zone (the Veritome's rest bake 10, the Sondelass's 6, the Soul Brush's 6 at rest and 11 awake, the psygun's 2); rest bakes merged by material are the cut)
-for (const p of ['workshop', 'dunes', 'well', 'garden', 'crossing', 'spectacle']) {
+for (const p of PLACES) {
   const n = out[p], b = base?.[p] || {}; if (!n) { fails.push(`${p}: not measured (the scene did not open)`); continue; }
   for (const k of ['tick', 'tickP95', 'tickMax', 'draw', 'calls', 'tris', 'programs', 'geos', 'tex']) if (n[k] != null) cmp(p, k, n[k], b[k], TOL[k], p === 'well' ? WELL_BUDGET[k] ?? BUDGET[k] : BUDGET[k]);
 }
@@ -191,8 +269,9 @@ for (const p of ['workshop', 'dunes', 'well', 'garden', 'crossing', 'spectacle']
 if (errs.length) { console.log(`page errors: ${errs.slice(0, 3).join(' | ')}`); fails.push('the page threw'); }
 if (record) {
   const build = (() => { try { return execSync('git rev-parse --short HEAD', { cwd: ROOT }).toString().trim(); } catch { return '?'; } })();
-  const { lateNames, ...keep } = out; fs.writeFileSync(BASE, JSON.stringify({ when: new Date().toISOString().slice(0, 16), build, ...keep, workshop: { ...keep.workshop, loose: undefined }, dunes: { ...keep.dunes, loose: undefined }, well: { ...keep.well, loose: undefined }, garden: keep.garden && { ...keep.garden, loose: undefined }, crossing: keep.crossing && { ...keep.crossing, loose: undefined }, spectacle: keep.spectacle && { ...keep.spectacle, loose: undefined } }, null, 1) + '\n');
+  const { lateNames, distAt, carriedBuilt, ...keep } = out; fs.writeFileSync(BASE, JSON.stringify({ when: new Date().toISOString().slice(0, 16), build, ...keep, workshop: { ...keep.workshop, loose: undefined }, dunes: { ...keep.dunes, loose: undefined }, well: { ...keep.well, loose: undefined }, garden: keep.garden && { ...keep.garden, loose: undefined }, crossing: keep.crossing && { ...keep.crossing, loose: undefined }, spectacle: keep.spectacle && { ...keep.spectacle, loose: undefined } }, null, 1) + '\n');
   console.log('baseline recorded');
 }
 console.log(fails.length ? `\nperf: OVER\n  ${fails.join('\n  ')}` : '\nperf: OK');
+console.log(`  time: ${Object.entries(stage).map(([k, v]) => `${k} ${v.toFixed(0)} s`).join(', ')}, all ${((Date.now() - t00) / 1000).toFixed(0)} s${carried.length ? `; carried from the last run: ${carried.filter((p) => p !== 'all').join(', ')}` : ''}`);
 process.exit(fails.length && !record ? 1 : 0);
