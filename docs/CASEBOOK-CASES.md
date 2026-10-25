@@ -3839,3 +3839,11 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   before it sets them down. world/basement/basement.js `teleport`: a seal standing is ended first, in place. Basement sweep 403/4 to
   407/0.
 - **Rule:** 298
+
+### 2026-10-25 · The pool caps and the skiff's settings were never built (the main.js split's builder, read; fixed by Petra)
+- **Seen (read):** in main.js, `game.skiffSettings = new SkiffSettings(game); game.poolCaps = new PoolCaps(game);` stood after the
+  track editor line's comment (17b4e64, 2026-10-24), so neither ran: a cracked region capped nothing, and `/skiff invert` had no reader.
+- **Cause (read):** the check's swallowed-code pattern (casebook 240) caught a call or a `const` after a comment, not a property set to
+  a new thing, nor a swallowed line that ends in its own comment.
+- **Fix:** boot/chat.js: the two on a line of their own; scripts/check.mjs's pattern widened (it finds the old line; 0 on the tree).
+- **Rule:** 299

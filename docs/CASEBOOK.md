@@ -876,3 +876,6 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 298. **Setting the Courier down elsewhere ends every hold on them first.** A state that will put the
     body back somewhere when it ends (a cradle's step out) is ended where they stand before a teleport, and a second "now" finishes
     what a first slow call began; never let a running exit undo a later move.
+299. **The swallowing check reads a set as well as a call.** A system built as `game.x = new X(game)` and
+    put after a comment on the same line never exists, with no error; the check (scripts/check.mjs 14) now finds an assignment of a new
+    thing, and a line that ends in a comment of its own.

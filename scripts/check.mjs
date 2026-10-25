@@ -236,7 +236,7 @@ try {
 // ---- 14. a comment that swallows code (casebook rule 240): `x(); // (why) y();` reads as one statement and silences y() with no error.
 // Found twice at once on 2026-10-20 (a stinger's blow never marked; a wall never wiped for 8 days): code after a comment's closing
 // parenthesis, ending in ; or }, is a hard error. A comment goes at the line's end or on its own line.
-const SWALLOWED = /\)\s+(?:const |let |if \(|return |this\.|[A-Za-z_$][\w$]*(?:\.[\w$]+)+\()[^\n]*[;}]\s*$/;
+const SWALLOWED = /\)\s+(?:const |let |if \(|return |this\.|[A-Za-z_$][\w$]*(?:\.[\w$]+)+(?:\(|\s*=\s*new\s))[^\n]*?[;}]\s*(?:\/\/.*)?$/; // (a call, or a property set to a new thing, ending the line or followed by a comment of its own: casebook 299)
 for (const [f, src] of text) src.split('\n').forEach((l, i) => {
   const s = l.trimStart(); if (s.startsWith('//') || s.startsWith('*') || s.startsWith('/*')) return;
   const j = l.indexOf(' // '); if (j >= 0 && SWALLOWED.test(l.slice(j + 4))) add('comment.swallows', f, i + 1, 'code after a comment on the same line never runs: move the comment to its own line (casebook rule 240)', true);

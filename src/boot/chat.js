@@ -12,8 +12,8 @@ import { SkiffParts } from '../progress/skiffparts.js';
 import { SkiffPaint } from '../progress/skiffpaint.js';
 import { TrackEditor } from '../world/raceway/editor.js';
 import { Haunt } from '../world/raceway/haunt.js';
-import { PoolCaps } from '../progress/poolcaps.js'; // (unused: named inside the comment of the line in bootChat that builds the garage, so never built; as in main.js)
-import { SkiffSettings } from '../courier/skiff/skiffsettings.js'; // (unused: named inside the comment of the line in bootChat that builds the garage, so never built; as in main.js)
+import { PoolCaps } from '../progress/poolcaps.js';
+import { SkiffSettings } from '../courier/skiff/skiffsettings.js';
 import { PerfReadout } from '../debug/perfreadout.js';
 import { StartAt } from '../debug/startat.js';
 import { sightCommands } from '../progress/sight.js';
@@ -36,5 +36,6 @@ export function bootChat(game, made) {
   game.startAt = new StartAt(game); // (?at=dunes|raceway|godhand|workshop: set down there after the title; debug/startat.js)
   mudraCommands(game); // (/mudra: the god hand holds one of its poses, DEBUG: godhand/mudras.js)
   installCalibrateButtons(game); // (the Sight's TRACK buttons, set by a plate's pick and a charted room: ui/calibratebutton.js)
-  game.skiffParts = new SkiffParts(game); game.skiffPaint = new SkiffPaint(game); skiffSetCommands(game); game.trackEditor = new TrackEditor(game); game.haunt = new Haunt(game); // (made tracks and the haunt mode: world/raceway/editor.js, haunt.js; TRACK-EDITOR.md) game.skiffSettings = new SkiffSettings(game); game.poolCaps = new PoolCaps(game); // (the Solar Skiff's garage and settings, after the chat line they speak on: progress/skiffparts.js, courier/skiff/skiffsettings.js; caps on the pool, a cracked region 5% of its max until mended: progress/poolcaps.js)
+  game.skiffParts = new SkiffParts(game); game.skiffPaint = new SkiffPaint(game); skiffSetCommands(game); game.trackEditor = new TrackEditor(game); game.haunt = new Haunt(game); // (made tracks and the haunt mode: world/raceway/editor.js, haunt.js; TRACK-EDITOR.md)
+  game.skiffSettings = new SkiffSettings(game); game.poolCaps = new PoolCaps(game); // (the Solar Skiff's garage and settings, after the chat line they speak on: progress/skiffparts.js, courier/skiff/skiffsettings.js; caps on the pool, a cracked region 5% of its max until mended: progress/poolcaps.js)
 }
