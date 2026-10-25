@@ -29,6 +29,7 @@ import { PropBatch } from '../../render/propbatch.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { tag, register } from '../../core/tags.js';
 import { MATERIALS } from '../props/pottery.js';
+import { phoneByPage } from '../../render/graphics.js';
 
 export const DUNE = { x: 2000, y: -420, z: 0, half: 520, step: 2.5, outer: 900, layerBelow: -150 };
 const WIND_AT = 0.55; // (radians) the way the wind blows toward, on average
@@ -115,7 +116,7 @@ export class Dunes {
     this.mix = 0; // 0 workshop light .. 1 dune light
     this.t = 0;
     this.wind = { dir: new THREE.Vector2(Math.cos(WIND_AT), Math.sin(WIND_AT)), speed: 8, gust: 1 };
-    this.trail = new TrailMap(game.renderer, { size: 96, res: 512, life: 26 });
+    this.trail = new TrailMap(game.renderer, { size: 96, res: phoneByPage() ? 256 : 512, life: 26 }); // (a phone: 4.2 -> 1 MB on the GPU, a print's texel 0.19 -> 0.38 m)
     this.marks = new SandMarks(game, this.trail, SAND);
     this.buildTerrain();
     this.buildSky();
@@ -167,7 +168,7 @@ export class Dunes {
     this.uniforms = { uTime: { value: 0 }, uWind: { value: new THREE.Vector2(Math.cos(WIND_AT), Math.sin(WIND_AT)) }, uSun: { value: new THREE.Vector3(-0.55, 0.3, -0.78).normalize() },
       uOasis: { value: new THREE.Vector4(DUNE.x + OASIS.x, DUNE.z + OASIS.z, OASIS.flat, DUNE.y + POND.surface) },
       uGlow: { value: 1 } }; // (the glints and the rim follow the sun: at night the sand does not shine, Calissa's R46 note)
-    const mat = new THREE.MeshStandardMaterial({ color: 0xe8b070, roughness: 0.92, metalness: 0 });
+    const mat = g.graphics?.machine?.mobile ? new THREE.MeshLambertMaterial({ color: 0xe8b070 }) : new THREE.MeshStandardMaterial({ color: 0xe8b070, roughness: 0.92, metalness: 0 }); // (a phone's sand matte: its patch writes colour and the ripple normal only, never roughness; Lambert at half the GLSL and 0.5 to 0.7 of the lit cost on the most pixels in the Dunes, Calissa's program audit, 2026-10-25; elsewhere Standard until the owner has seen the dawn's grazing sheen without it)
     const U = this.uniforms;
     mat.onBeforeCompile = (sh) => {
       Object.assign(sh.uniforms, U, this.trail.uniforms);

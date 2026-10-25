@@ -135,15 +135,19 @@ export class Glow {
 
   resize() {
     const s = this.r.getDrawingBufferSize(this.size), w = Math.max(1, s.x), h = Math.max(1, s.y);
-    if (this.scene.width === w && this.scene.height === h) return;
-    this.scene.setSize(w, h);
-    for (const t of this.acc) t.setSize(w, h);
-    this.accFresh = true;
+    const bloom = (T.visual.glow ?? 0) > 0.001;
+    if (this.scene.width === w && this.scene.height === h && this.bloomSized === bloom) return;
+    if (this.scene.width !== w || this.scene.height !== h) { this.scene.setSize(w, h); if (this.acc[0].width > 1) this.sizeAcc(); }
     this.comp.uniforms.uTexel.value.set(1 / Math.max(1, w), 1 / Math.max(1, h));
-    this.half.setSize(Math.max(1, w >> 1), Math.max(1, h >> 1));
-    for (const t of this.q) t.setSize(Math.max(1, w >> 2), Math.max(1, h >> 2));
-    for (const t of this.e) t.setSize(Math.max(1, w >> 3), Math.max(1, h >> 3));
+    // (the bloom chain and the feedback pair sized only while used, 1 x 1 otherwise: on Minimum, no glow, 5.2 -> 2.2 MB on an emulated
+    // iPhone XR; setSize lets the old buffers go)
+    const k = bloom ? 1 : 0, sz = (d) => (k ? Math.max(1, w >> d) : 1), sy = (d) => (k ? Math.max(1, h >> d) : 1);
+    this.half.setSize(sz(1), sy(1));
+    for (const t of this.q) t.setSize(sz(2), sy(2));
+    for (const t of this.e) t.setSize(sz(3), sy(3));
+    this.bloomSized = bloom;
   }
+  sizeAcc() { for (const t of this.acc) t.setSize(this.scene.width, this.scene.height); this.accFresh = true; }
   pass(mat, out) { this.quad.material = mat; this.r.setRenderTarget(out); this.r.render(this.fs, this.cam); }
   downTo(src, out, first = false) {
     const u = this.down.uniforms; u.tSrc.value = src.texture; u.uTexel.value.set(1 / src.width, 1 / src.height); u.uFirst.value = first;
@@ -166,6 +170,7 @@ export class Glow {
     let src = this.scene;
     const A = this.accum;
     if (A.amt > 0.001) {
+      if (this.acc[0].width !== this.scene.width || this.acc[0].height !== this.scene.height) this.sizeAcc(); // (sized at its first use)
       const m = this.accMat.uniforms, out = this.acc[this.accW], prev = this.acc[1 - this.accW];
       m.tCur.value = this.scene.texture; m.tPrev.value = prev.texture; m.uAmt.value = this.accFresh ? 0 : A.amt; m.uZoom.value = A.zoom; m.uSpin.value = A.spin;
       this.pass(this.accMat, out);

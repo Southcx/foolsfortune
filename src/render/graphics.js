@@ -82,6 +82,12 @@ function touchFacts() {
   return { touch: points > 0 && coarse, platformMobile, short };
 }
 
+/** A phone by the page alone (touch and the platform or the screen, no GPU string): for what is sized at module load, before
+ *  detectMachine runs (the paint walls' atlas). The same answer as `mobile` but for a touch laptop with a phone's GPU string. */
+export function phoneByPage() {
+  try { const t = touchFacts(); return t.touch && (t.platformMobile || t.short < MOBILE_SHORT_SIDE); } catch { return false; }
+}
+
 /** What the machine says about itself, read from a throwaway context before the game's own is made. */
 export function detectMachine() {
   const m = { renderer: '', cores: navigator.hardwareConcurrency || 0, memory: navigator.deviceMemory || 0, software: false, integrated: false, floatTargets: true, maxSamples: 4, touch: false, mobile: false };
