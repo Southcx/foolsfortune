@@ -29,6 +29,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { bakedCanvasTexture } from '../render/bakedcanvas.js';
+import { tierSize } from './tierscale.js';
 import { warpMaterial } from './stormwarp.js';
 /** The width of the copy the sky's PMREM is filtered from (its cube's face a quarter of it). */
 const ENV_W = 512;
@@ -151,7 +152,8 @@ export class Sky {
     // the filtered copy for reflections (one small cost, once)
     // (from a 512-wide copy: three's PMREM takes its cube's face from the equirect's width / 4, so a 128 face, 1.5 MB of half floats
     // where the full painting's 256 face was 6; it lights glossy cubes and chests' metal, never a mirror. The resolution pass, 2026-10-25)
-    const ec = document.createElement('canvas'); ec.width = ENV_W; ec.height = ENV_W / 2; ec.getContext('2d').drawImage(im, 0, 0, ec.width, ec.height);
+    const ec = document.createElement('canvas'); ec.width = tierSize(ENV_W, 128); ec.height = ec.width / 2; // (256 on a phone: a 64 face, vfx/tierscale.js)
+    ec.getContext('2d').drawImage(im, 0, 0, ec.width, ec.height);
     const et = new THREE.CanvasTexture(ec); et.colorSpace = THREE.SRGBColorSpace; et.mapping = THREE.EquirectangularReflectionMapping;
     const pm = new THREE.PMREMGenerator(this.game.renderer);
     this.env = pm.fromEquirectangular(et).texture;

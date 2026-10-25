@@ -57,6 +57,9 @@ export class RacewayBanners {
     this.lay(R, true);
   }
 
+  /** The banners taken down (stage 2's teardown): out of the group, their cloth let go; the materials kept. */
+  clear() { for (const S of this.sets || []) { S.mesh.parent?.remove(S.mesh); S.mesh.geometry.dispose(); S.mesh.dispose(); } this.sets = null; this.built = false; }
+
   update(dt, R) {
     if (!this.built) this.build(R); if (!this.built) return;
     this.t += dt;

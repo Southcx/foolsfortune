@@ -87,6 +87,12 @@ export class RacewaySpectators {
     this.pose(0, true);
   }
 
+  /** The laid crowds taken down (stage 2's teardown): their meshes out and their geometry let go; the listeners and materials kept, laid again on the next frame the Raceway is active. */
+  clear() {
+    for (const m of this.all || []) { m.parent?.remove(m); m.geometry.dispose(); m.dispose(); }
+    this.all = this.bodies = this.lids = this.eyes = this.arms = null; this.crowds = []; this.jars = []; this.built = false;
+  }
+
   /** The crowds near `pos` cheer up to `k` (0..1), within `r` metres. */
   cheerAt(pos, k, r) { for (const C of this.crowds) { const d = Math.hypot(pos.x - C.x, pos.z - C.z) - C.r; if (d < r) C.cheer = Math.max(C.cheer, k * (1 - Math.max(0, d) / r * 0.5)); } }
   cheerStarts(k) { const p = this.game.player?.pos; for (const C of this.crowds) if (C.start && (!p || Math.hypot(p.x - C.x, p.z - C.z) < 400)) C.cheer = Math.max(C.cheer, k); }

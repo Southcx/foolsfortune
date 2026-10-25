@@ -38,6 +38,7 @@ const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _s = new THREE.Vect
 export class Poles {
   constructor(parent) { this.parent = parent; this.list = []; this.mat = std(0x5a3a2a, 'raceway-poles'); }
   add(x, y, z, h, r) { this.list.push([x, y, z, h, r]); }
+  clear() { if (this.mesh) { this.mesh.parent?.remove(this.mesh); this.mesh.geometry.dispose(); this.mesh.dispose(); } this.mesh = null; this.list = []; }
   finish() {
     if (this.mesh || !this.list.length) return;
     const geo = bare(new THREE.CylinderGeometry(0.8, 1, 1, 6).translate(0, 0.5, 0));
@@ -79,6 +80,13 @@ export class RacewayLanterns {
     const firsts = groups[0].filter((l, i) => i % 3 === 0).slice(0, LIGHT.lamps);
     this.lamps = firsts.map((l) => { const L = new THREE.PointLight(LIGHT.glow, 0, LIGHT.range, 2); L.position.set(l.x, l.y - 0.1, l.z); L.name = 'raceway-lantern-lamp'; this.parent.add(L); this.game.lights?.adopt?.(L); return L; }); // (adopted at once: a real light for even a frame would rebuild every lit program)
     this.on = groups.map(() => 0);
+  }
+  /** The lanterns taken down (stage 2's teardown): their meshes and lamps out of the group (the budget forgets them: the dressing's
+   *  teardown asks it), their geometry let go; the materials kept. */
+  clear() {
+    for (const m of [...(this.bodies || []), ...(this.caps ? [this.caps] : [])]) { m.parent?.remove(m); m.geometry.dispose(); m.dispose(); }
+    for (const L of this.lamps || []) L.parent?.remove(L);
+    this.bodies = this.caps = this.groups = null; this.lamps = []; this.on = []; this.built = false;
   }
   /** A lantern hung on its arm, facing the road. */
   at(l) { _e.set(0, l.yaw, 0); _q.setFromEuler(_e); return _m.compose(_p.set(l.x, l.y, l.z), _q, _s.setScalar(1)); }

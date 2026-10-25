@@ -46,6 +46,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { capOf } from '../progress/poolcaps.js';
 import { BOTTLES } from '../progress/brushload.js';
 import { T } from '../core/config.js';
+import { tierSize } from './tierscale.js';
 import { theme, THEMES, FONT } from '../ui/theme.js';
 import { BlinkPearls, PEARL_KIND } from './lachrimeter/blinkpearls.js';
 import { CubePlate, PLATE_W, PLATE_H } from './lachrimeter/cubeplate.js';
@@ -175,7 +176,7 @@ export function overlayStd(env, o = {}, phys = false) {
 export function overlayEnv(renderer, src) {
   // (filtered from a 256-wide copy, whatever it is drawn at: a 64 face, 0.7 MB of half floats where the 512-wide's 128 was 1.5; the
   // instruments are 150 to 190 lines tall and their metal blurs it anyway. The resolution pass, 2026-10-25)
-  const c = cv(ENV_W, ENV_W / 2); c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
+  const w = tierSize(ENV_W, 64), c = cv(w, w / 2); c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
   const t = new THREE.CanvasTexture(c); t.mapping = THREE.EquirectangularReflectionMapping; t.colorSpace = THREE.SRGBColorSpace;
   const pm = new THREE.PMREMGenerator(renderer), e = pm.fromEquirectangular(t).texture; pm.dispose(); t.dispose(); return e;
 }

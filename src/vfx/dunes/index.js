@@ -15,7 +15,12 @@
 //
 // Prior art: each part's header; the house's way of hanging a family of looks off one reader (vfx/weatherfx/index.js).
 //
+// AREAS (stage 2, render/areas.js): `build(game)` makes the group and its four parts, `teardown(game)` takes them down whole (every
+// geometry let go, the group out of the scene); a part's materials are made again with it and compile to the programs already linked
+// at boot, so coming back compiles nothing. Safe to call twice; built from the constructor until the Dunes' area builds it (Petra's).
+//
 //   game.dunesDress = new DunesDress(game)   (main.js, once the crystals are laid)   .update(dt)   .prewarm() -> undo (the boot's compile)
+//   .build(game)   .teardown(game)   .built
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { DustDevils } from './dustdevils.js';
@@ -34,17 +39,31 @@ const smooth = THREE.MathUtils.smoothstep;
 
 export class DunesDress {
   constructor(game) {
-    this.game = game; this.t = 0; this.readT = 0;
+    this.game = game; this.t = 0; this.readT = 0; this.group = null;
+    this.s = { light: 1, hour: 12, want: 0, desire: 0, fury: 0, mirage: 0, night: 0, colour: new THREE.Color(WHEN.violet), sky: new THREE.Color(0xcfe6ea) };
+    this.build(game);
+  }
+
+  get built() { return !!this.group; }
+  /** The group and its parts made and in the scene. */
+  build(game = this.game) {
+    if (this.group) return;
     this.group = new THREE.Group(); this.group.name = 'dunes-dress'; this.group.userData.zone = 'dunes';
     game.scene.add(this.group);
     this.devils = new DustDevils(game, this.group);
     this.mirage = new DunesMirage(game, this.group);
     this.geodes = new Geodes(game, this.group);
     this.fulgurites = new Fulgurites(game, this.group);
-    this.s = { light: 1, hour: 12, want: 0, desire: 0, fury: 0, mirage: 0, night: 0, colour: new THREE.Color(WHEN.violet), sky: new THREE.Color(0xcfe6ea) };
+  }
+  /** All of it taken down: every geometry let go (an instanced mesh's instances too), the group out of the scene. */
+  teardown(game = this.game) {
+    if (!this.group) return;
+    this.group.traverse((o) => { o.geometry?.dispose(); if (o.isInstancedMesh) o.dispose(); });
+    game.scene.remove(this.group);
+    this.group = this.devils = this.mirage = this.geodes = this.fulgurites = null;
   }
 
-  prewarm() { const u = [this.devils.prewarm(), this.mirage.prewarm(), this.geodes.prewarm(), this.fulgurites.prewarm()]; return () => u.forEach((f) => f()); }
+  prewarm() { if (!this.group) return () => {}; const u = [this.devils.prewarm(), this.mirage.prewarm(), this.geodes.prewarm(), this.fulgurites.prewarm()]; return () => u.forEach((f) => f()); }
 
   /** The hour and the weather, read twice a real second. */
   read() {
@@ -62,6 +81,7 @@ export class DunesDress {
 
   update(dt) {
     const g = this.game, D = g.dunes;
+    if (!this.group) return;
     if (!D || D.mix < 0.01) { if (this.group.visible) { this.group.visible = false; this.devils.clear(); } return; }
     this.group.visible = true;
     this.t += dt;
