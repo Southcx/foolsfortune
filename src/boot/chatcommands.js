@@ -47,7 +47,7 @@ export function bootChatCommands(game) {
   game.chat.add('overture', { help: "the overture's trailer, here and now (the music from the sound test when it has it)", run: () => {
     const tr = SOUNDTRACKS.find((x) => x.score?.title === OVERTURE_TITLE);
     if (tr && game.music) { if (!game.music.on) game.music.setOn(true); game.music.pick = tr.score; }
-    game.overture.start({ own: !tr });
+    import('../cine/overture.js').then(({ Overture }) => (game.overture ||= new Overture(game)).start({ own: !tr })); // (loaded on asking: it no longer plays on the title)
   } });
 }
 

@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // BOOT TITLE: the title and the pointer lock. The overlay and the pointer lock (what takes the mouse, what gives it back, Esc and the
 // pause menu), the help pages, the title (THE FOOL'S PRECIPICE, drawn instead of the game until a choice is made) and its end, the
-// overture's trailer, and the resize rule. Whether play has begun and whether the tuning panel is open are `play`, which the tick reads.
+// resize rule (the overture's trailer is /overture's now). Whether play has begun and whether the tuning panel is open are `play`, which the tick reads.
 //
 // Prior art: the staged start of an engine (Unreal's FEngineLoop::PreInit then Init, Unity's Awake then Start): one function a stage, run
 // in order by main.js, each handed `made`, what the stages before it made, and returning what the stages after it read.
@@ -16,7 +16,6 @@ import gunB64 from '../assets/psygun.glb?b64';
 import { installPlatform } from '../core/platform.js';
 import { TitleScene } from '../title/scene.js';
 import { TitleUI } from '../title/ui.js';
-import { Overture } from '../cine/overture.js';
 
 export async function bootTitle(game, made) {
   const { save, renderer, camera, loader, bytes, clapG, clipPack, input, modalOpen, god, cursorFree, replays } = made;
@@ -75,7 +74,8 @@ export async function bootTitle(game, made) {
   if (resumed && resumed === save.mode && !replays.pending) { const wait = setInterval(() => { if (!window.__ready) return; clearInterval(wait); if (title.active) choose(resumed, true); }, 100); } // (once the boot is done: main.js sets __ready)
   titleScene.onMenu = () => title.ui.showMenu();
   if (replays.pending) { endTitle(true); overlay.style.display = 'none'; input.enabled = true; play.started = true; } // (a replay is played from the start of play: no title)
-  game.overture = new Overture(game); // (the overture's trailer, on its first note: cine/overture.js, docs/boards/OVERTURE.md)
+  // (the overture's trailer no longer plays on the title (the owner, 2026-10-25: it ran the world and mounted the Solar Skiff behind the title while
+  // the game loaded); `/overture` loads and plays it: boot/chatcommands.js)
   let selfRelease = false; // (the next unlock is the game's own: see below)
   input.onLockChange = (locked, why) => {
     // (no lock under a window that frees the mouse: while the pointer is locked the browser keeps Esc for itself, so a window opened

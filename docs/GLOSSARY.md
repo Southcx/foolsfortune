@@ -799,7 +799,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   its grain frozen / a body of hard light, scanlined, slipping / a lava-lamp metaball crusting as it cools / one mesh torn in the glitch.
   The first two are **screen volumes** (`post.volumes`, `render/glow.js`): a pass drawn only while one is alive. *Not:* the glitch (the screen's).
 - **the overture** (`OVERTURE`, `src/music/overture.js`) — the title's opening cue, "Fortune Favours the Fool", handing on into the title theme;
-  **the trailer** (`game.overture`) is the cinematic cut to it. *Not:* "the opening" (the Lockheart's). → detail
+  **the trailer** (`game.overture`) is the cinematic cut to it, played only by `/overture` (not on the title since 2026-10-25). *Not:* "the opening" (the Lockheart's). → detail
 - **score** (`src/music/*.js`) — a piece of music written as data. **Track**: a score as the sound test lists it. **Cue**: the score a place or
   moment calls for (`src/music/choose.js`).
 - **the ambience** (`game.ambience`, `src/audio/ambience.js`) — what the weather and game hour sound like where the Courier stands. *Not:* the

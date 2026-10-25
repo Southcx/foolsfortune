@@ -63,7 +63,6 @@ export function bootFrame(game, made) {
       diag.frameStart();
       if (game.workbench?.open) { game.workbench.frame(dt); input.endFrame(); diag.frameEnd(); return; } // (the workbench instead of the world: workbench/)
       const O = game.overture;
-      if (game.title?.active && O && !O.active && !O.seen && O.hearing()) O.start(); // (the overture's first note: its trailer, once a session)
       if (game.title?.active && O?.world) { // (the trailer: the world run behind the title for it, the title's music kept)
         O.update(dt); tick(dt); game.music.follow(chooseTitleMusic(game));
         game.post.render(scene, camera); O.afterRender(renderer.domElement);
