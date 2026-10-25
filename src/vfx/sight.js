@@ -35,6 +35,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { bakedCanvasTexture } from '../render/bakedcanvas.js';
+import { T } from '../core/config.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { DAY_MS, now as calNow } from '../core/calendar.js';
 import { COLOR, phaseAt } from '../progress/weather.js';
@@ -47,6 +48,11 @@ const EL = 12 * Math.PI / 180, TILT = 23.44 * Math.PI / 180, RG = 1.0, RL = 0.96
 const PPU = 150 / 4.6; // (dots a unit at the 480-line present: round six's scale, the instrument about 150 lines tall)
 const ORIGIN = [85.4, 76.5]; // (the globe's heart: dots left of the right edge, dots down from the top: the mock's real-size frame)
 const RI = 1.10, RO = 1.46, PI0 = 1.15, PO = 1.335, TEXR = 1.5, TN = 1024, Q = 0.5; // (the dial; its canvases drawn at half the mock's)
+// (THE RESOLUTION PASS, 2026-10-25, docs/plans/art/texture-budget.md: the instrument is about 150 lines tall, its dial about 98 across and
+// a disc's face about 60, so the dial and the phase plates are drawn at a quarter of the mock (256 px, QD), the rete at a quarter, and
+// the discs' atlas and bumps at half (a quarter on Low and Minimum: the tier's labelScale), each still above the lines it covers)
+const QD = 0.25;
+const discScale = () => 0.5 * Math.min(1, T.visual.labelScale ?? 1);
 const PHASES = [{ id: 'night', a: 20, b: 29 }, { id: 'dawn', a: 5, b: 7 }, { id: 'day', a: 7, b: 18 }, { id: 'dusk', a: 18, b: 20 }];
 const hookA = 12 - 3.2;
 const COUNT = `'Jersey 15', ${FONT.sys}`; // (the count face, src/ui/theme.js)
@@ -170,7 +176,7 @@ function reteTex() {
 }
 /** The dial's glazed band, in the window colour (the mock's verdigris is the verdigris window colour exactly). */
 function dialTex(c, L) {
-  const x = c.getContext('2d'), R = rng(31); x.setTransform(Q, 0, 0, Q, 0, 0); x.fillStyle = `rgb(${L.top})`; x.fillRect(0, 0, TN, TN);
+  const x = c.getContext('2d'), R = rng(31); x.setTransform(c.width / TN, 0, 0, c.width / TN, 0, 0); x.fillStyle = `rgb(${L.top})`; x.fillRect(0, 0, TN, TN);
   for (let i = 0; i < 70; i++) { const px = R() * TN, py = R() * TN, rr = 30 + R() * 120, g = x.createRadialGradient(px, py, 0, px, py, rr); g.addColorStop(0, R() < 0.5 ? `rgba(${L.midR},.35)` : `rgba(${L.bot},.45)`); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(px - rr, py - rr, 2 * rr, 2 * rr); }
   for (let i = 0; i < 3000; i++) { x.fillStyle = R() < 0.6 ? 'rgba(0,0,0,.22)' : `rgba(${L.hiR},.12)`; x.fillRect(R() * TN, R() * TN, 1.5, 1.5); }
   const ctr = TN / 2, u = TN / (2 * TEXR);
@@ -203,7 +209,7 @@ function emblem(x, id, s, gold) {
 const PLATE_LOOK = { night: { a: '#141018', b: '#05040a', gold: '#e8bc56' }, dawn: { a: '#c98f86', b: '#8e5a52', gold: '#fff0d8' }, day: { a: '#efe6d4', b: '#c9bca4', gold: '#b8782e' }, dusk: { a: '#d9772e', b: '#8a3a14', gold: '#ffe0a0' } };
 /** The four phase plates on one texture: redrawn when the phase or the sky changes, the current one rimmed in the film. */
 function drawPlates(c, cur, sky, t) {
-  const x = c.getContext('2d'), R = rng(13), u = TN / (2 * TEXR), ctr = TN / 2; x.setTransform(Q, 0, 0, Q, 0, 0); x.clearRect(0, 0, TN, TN);
+  const x = c.getContext('2d'), R = rng(13), u = TN / (2 * TEXR), ctr = TN / 2; x.setTransform(c.width / TN, 0, 0, c.width / TN, 0, 0); x.clearRect(0, 0, TN, TN);
   for (const ph of PHASES) {
     const L = PLATE_LOOK[ph.id], path = new Path2D(), n = 60;
     for (let i = 0; i <= n; i++) { const [px, py] = tp(...P(ph.a + (ph.b - ph.a) * i / n, PO + 0.02)); i ? path.lineTo(px, py) : path.moveTo(px, py); }
@@ -321,7 +327,7 @@ export class SightLook {
     const glass = (back) => overlayShader(SGLASS, { uTime: { value: 0 }, uBack: { value: back ? 1 : 0 }, uSgTint: tint }, { cull: back ? 2 : 1, depthWrite: false });
     this.gBack = new THREE.Mesh(glassGeo, glass(1)); this.gBack.renderOrder = 1; this.gFront = new THREE.Mesh(glassGeo, glass(0)); this.gFront.renderOrder = 5; root.add(this.gBack, this.gFront);
     // the rete, faint, turning once a game day
-    let rete0 = reteTex(); const reteMap = bakedCanvasTexture((g) => { g.drawImage(rete0 || reteTex(), 0, 0); rete0 = null; }, rete0.width, rete0.height); // (drawn once: its pixels let go once on the GPU, render/bakedcanvas.js)
+    let rete0 = reteTex(); const reteMap = bakedCanvasTexture((g) => { g.drawImage(rete0 || reteTex(), 0, 0); rete0 = null; }, rete0.width, rete0.height, { scale: 0.5 }); // (drawn once: its pixels let go once on the GPU, render/bakedcanvas.js)
     this.reteMat = overlayShader(RETE, { uTex: { value: reteMap }, uTime: { value: 0 }, uOp: { value: 0.3 } }, { cull: 1, depthWrite: false, blending: THREE.AdditiveBlending });
     this.rete = new THREE.Mesh(new THREE.CircleGeometry(0.93, 64), this.reteMat); this.rete.position.z = -0.18; this.rete.renderOrder = 2;
     const reteHold = new THREE.Group(); reteHold.rotation.x = -EL; reteHold.add(this.rete); root.add(reteHold);
@@ -339,7 +345,7 @@ export class SightLook {
     // the discs: the anode above, the cathode below
     const tex = (c, rep) => { const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; if (rep) { t.wrapS = THREE.RepeatWrapping; t.repeat.set(rep, 1); } return t; };
     // the two discs, one mesh on one atlas (their faces, their rims thrice round, their undersides; the faces' bumps beside): one draw
-    const AW = 1024, AH = 656, atlas = cv(AW, AH), bumps = cv(AW, AH), ax = atlas.getContext('2d'), bx = bumps.getContext('2d'); bx.fillStyle = '#808080'; bx.fillRect(0, 0, AW, AH);
+    const AW = 1024, AH = 656, AS = discScale(), atlas = cv(AW * AS, AH * AS), bumps = cv(AW * AS, AH * AS), ax = atlas.getContext('2d'), bx = bumps.getContext('2d'); ax.scale(AS, AS); bx.scale(AS, AS); bx.fillStyle = '#808080'; bx.fillRect(0, 0, AW, AH); // (drawn in AW x AH units at AS of it: discScale)
     const region = (g, [x0, y0, w, h], grp) => { const uv = g.attributes.uv, { start, count } = g.groups[grp], seen = new Set();
       for (let i = start; i < start + count; i++) { const v = g.index.getX(i); if (seen.has(v)) continue; seen.add(v); uv.setXY(v, (x0 + uv.getX(v) * w) / AW, 1 - (y0 + h) / AH + uv.getY(v) * h / AH); } };
     const discs = ['anode', 'cathode'].map((kind, k) => {
@@ -354,6 +360,7 @@ export class SightLook {
       const boss = keep(new THREE.Mesh(new THREE.CylinderGeometry(0.075, 0.09, 0.06, 24)), bronze); boss.position.y = (an ? 1 : -1) * (DT / 2 + 0.02); holder.add(boss); metal.push(boss);
       return g;
     });
+    ax.setTransform(1, 0, 0, 1, 0, 0); bx.setTransform(1, 0, 0, 1, 0, 0); // (back to its own pixels: an instrument skin repaints the atlas pixel for pixel, vfx/instrumentskins.js)
     const discMap = tex(atlas), discMat = this.std({ map: discMap, bumpMap: new THREE.CanvasTexture(bumps), bumpScale: 0.018, roughness: 0.6, clearcoat: 0.33, clearcoatRoughness: 0.4 }, true);
     tilt.add(new THREE.Mesh(mergeGeometries(discs), discMat));
     discs.forEach((g) => g.dispose());
@@ -406,10 +413,10 @@ export class SightLook {
     const planarUV = (g) => { const p = g.attributes.position, uv = new Float32Array(p.count * 2); for (let i = 0; i < p.count; i++) { uv[i * 2] = p.getX(i) / (2 * TEXR) + 0.5; uv[i * 2 + 1] = p.getY(i) / (2 * TEXR) + 0.5; } g.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); return g; };
     { const s = new THREE.Shape(); s.absarc(0, 0, RO, 0, Math.PI * 2, false); const hole = new THREE.Path(); hole.absarc(0, 0, RI, 0, Math.PI * 2, true); s.holes.push(hole);
       const g = new THREE.ExtrudeGeometry(s, { depth: 0.08, bevelEnabled: true, bevelThickness: 0.015, bevelSize: 0.015, bevelSegments: 1, curveSegments: 72 }); g.translate(0, 0, -0.04);
-      this.dialC = cv(TN * Q, TN * Q); this.dialMap = tex(this.dialC); this.dialMat = this.std({ map: this.dialMap, roughness: 0.42, clearcoat: 0.7, clearcoatRoughness: 0.2 }, true);
+      this.dialC = cv(TN * QD, TN * QD); this.dialMap = tex(this.dialC); this.dialMat = this.std({ map: this.dialMap, roughness: 0.42, clearcoat: 0.7, clearcoatRoughness: 0.2 }, true);
       ringGrp.add(new THREE.Mesh(planarUV(g), this.dialMat)); }
     for (const rr of [RO + 0.012, RI - 0.012]) { const t = keep(new THREE.Mesh(new THREE.TorusGeometry(rr, 0.02, 5, 80)), bronze); ringGrp.add(t); metal.push(t); }
-    this.plateC = cv(TN * Q, TN * Q); this.plateMap = tex(this.plateC);
+    this.plateC = cv(TN * QD, TN * QD); this.plateMap = tex(this.plateC);
     this.plateMat = this.std({ map: this.plateMap, emissiveMap: this.plateMap, emissive: 0xffffff, emissiveIntensity: 0.12, roughness: 0.35, clearcoat: 0.85, clearcoatRoughness: 0.15 }, true);
     { const GAP = 0.06, sector = (h0, h1) => { const s = new THREE.Shape(), n = Math.max(8, Math.ceil((h1 - h0) * 6)); for (let i = 0; i <= n; i++) { const [x, y] = P(h0 + (h1 - h0) * i / n, PO); i ? s.lineTo(x, y) : s.moveTo(x, y); } for (let i = n; i >= 0; i--) { const [x, y] = P(h0 + (h1 - h0) * i / n, PI0); s.lineTo(x, y); } s.closePath(); return s; };
       const gs = PHASES.map((ph) => { const g = new THREE.ExtrudeGeometry(sector(ph.a + GAP, ph.b - GAP), { depth: 0.035, bevelEnabled: true, bevelThickness: 0.01, bevelSize: 0.008, bevelSegments: 1 }); g.translate(0, 0, 0.045); return planarUV(g); });

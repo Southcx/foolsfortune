@@ -131,7 +131,8 @@ function gradientMap(src, dst, ramp) {
 }
 /** A layer over the repainted discs: raku's crackle and copper lustre, or a wood's grain. */
 function overlay(c, kind) {
-  const x = c.getContext('2d'), w = c.width, h = c.height; let s = 97; const R = () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
+  // (drawn in the 1024-wide atlas's units whatever the atlas is drawn at: vfx/sight.js discScale, the resolution pass)
+  const x = c.getContext('2d'), q = c.width / 1024, w = 1024, h = c.height / q; x.save(); x.setTransform(q, 0, 0, q, 0, 0); let s = 97; const R = () => { s = (s * 16807) % 2147483647; return s / 2147483647; };
   if (kind === 'craze') {
     for (const [col, n] of [['rgba(210,110,40,.32)', 26], ['rgba(40,170,150,.22)', 18], ['rgba(150,60,170,.18)', 12]]) for (let i = 0; i < n; i++) { const px = R() * w, py = R() * h, r = 20 + R() * 70, g = x.createRadialGradient(px, py, 0, px, py, r); g.addColorStop(0, col); g.addColorStop(1, 'rgba(0,0,0,0)'); x.fillStyle = g; x.fillRect(px - r, py - r, 2 * r, 2 * r); }
     x.strokeStyle = 'rgba(232,220,200,.5)'; x.lineWidth = 1;
@@ -140,6 +141,7 @@ function overlay(c, kind) {
     for (let i = 0; i < 700; i++) { const py = R() * h, px = R() * w, l = 40 + R() * 160; x.globalAlpha = 0.12 + R() * 0.2; x.strokeStyle = R() < 0.5 ? '#1a0c04' : '#c89058'; x.lineWidth = 0.6 + R() * 1.2; x.beginPath(); x.moveTo(px, py); x.bezierCurveTo(px + l / 3, py + (R() - 0.5) * 6, px + 2 * l / 3, py + (R() - 0.5) * 6, px + l, py); x.stroke(); }
     x.globalAlpha = 1;
   }
+  x.restore();
 }
 const lin = (hex) => new THREE.Color().setHex(hex); // (as seen: taken to the working space, linear)
 const b8 = (v) => Math.round(Math.min(1, Math.max(0, v)) * 255);

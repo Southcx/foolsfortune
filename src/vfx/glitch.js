@@ -38,6 +38,8 @@
 //   .veil = { haze 0..1, split 0..1, t, light (Color), below 0..1, line (0..1 up the frame, or -1), deep (Color) }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+
+const RELEASE_AFTER = 3; // (real seconds untorn before the history targets are let go)
 import { T } from '../core/config.js';
 
 const VERT = 'varying vec2 vUv; void main() { vUv = uv; gl_Position = vec4(position.xy, 0.0, 1.0); }';
@@ -188,7 +190,12 @@ export class Glitch {
     // the seed jumps a few times a second, at an uneven pace (a stutter, not a glide)
     if ((this.seedT -= raw) <= 0) { this.seed = (this.seed + 1 + Math.floor(Math.random() * 7)) % 997; this.seedT = 0.1 + Math.random() * 0.067; } // (6 to 10 steps a second)
     if (this.atWorld && camera) { const v = this.atWorld.clone().project(camera); this.at.set(v.x * 0.5 + 0.5, v.y * 0.5 + 0.5); }
-    if (!this.on) this.fresh = true;
+    if (!this.on) {
+      this.fresh = true;
+      // (its two half-float targets, the frame's size each: 6.25 MB at 853 x 480, let go once it has been still a while and made again at
+      // the next tear; the resolution pass, 2026-10-25, docs/plans/art/texture-budget.md)
+      if (this.hist && (this.idle = (this.idle || 0) + raw) > RELEASE_AFTER) { for (const t of this.hist) t.dispose(); this.hist = null; this.w = this.h = 0; }
+    } else this.idle = 0;
   }
 
   /** The glow's screen hook (render/glow.js): the frame in, the torn frame out (this pass's own target, kept as the next mosh's past). */

@@ -17,6 +17,18 @@ import { base64Bytes } from '../core/base64.js';
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { LAB_GLSL, mindTime, mindTick } from './labradorite.js';
+import { bakedCanvasTexture } from '../render/bakedcanvas.js';
+
+/** A baked mesh's texture drawn again at half its size (the resolution pass, 2026-10-25, docs/plans/art/texture-budget.md: eight 512
+ *  textures, 10.7 MB on the GPU, for small tiling textures scrolled over an effect a few metres across), a baked canvas that lets its
+ *  pixels go once on the GPU (render/bakedcanvas.js); the glTF's own texture let go. glTF's v runs down: no flip. */
+function halved(map) {
+  const im = map?.image; if (!im?.width) return map;
+  const t = bakedCanvasTexture((g, w, h) => g.drawImage(im, 0, 0, w, h), im.width, im.height, { scale: 0.5 });
+  t.flipY = false; t.name = map.name; t.offset.copy(map.offset); t.repeat.copy(map.repeat);
+  map.dispose();
+  return t;
+}
 // (every baked mesh in src/assets/vfx/, by its file name: a new one is in the game the moment it is baked)
 const SOURCES = Object.fromEntries(Object.entries(import.meta.glob('../assets/vfx/*.glb', { query: '?b64', import: 'default', eager: true }))
   .map(([f, b64]) => [f.split('/').pop().replace(/\.glb$/, ''), b64]));
@@ -55,7 +67,7 @@ class MeshFx {
       let mesh = null;
       gltf.scene.traverse((o) => { if (o.isMesh && !mesh) mesh = o; });
       if (!mesh) continue;
-      const map = mesh.material.map;
+      const map = halved(mesh.material.map);
       if (map) { map.wrapS = map.wrapT = THREE.RepeatWrapping; map.colorSpace = THREE.SRGBColorSpace; map.anisotropy = 4; map.needsUpdate = true; }
       if (!mesh.geometry.attributes.color) { // (always a colour to multiply by)
         const n = mesh.geometry.attributes.position.count;
