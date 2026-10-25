@@ -177,7 +177,7 @@ Each area has a page in the map (M): its checklist.
 
 | who | ask | Dovina's pick |
 | --- | --- | --- |
-| the owner | the Dunes as five areas: the Weir as the hub, the shore, the crystal ridges, the Gnomon flats, the ruins | yes |
+| the owner | the Dunes as five areas: the Weir as the hub, the shore, the crystal ridges, the Gnomon flats, the ruins | **ruled yes** (the owner, 2026-10-25, relayed by Calissa; the round is the map overhaul: `docs/plans/MAP.md`) |
 | the owner | creatures do not follow across an edge (FFXII's) | yes |
 | the owner | the checklist shows totals (N of M), never positions | yes |
 | the owner | the open sea and the Raceway park stay one area each | yes |
