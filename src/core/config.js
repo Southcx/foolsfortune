@@ -364,6 +364,7 @@ export const DEFAULTS = {
     outlineReach: 0, // props' outline hulls drawn within this many metres; 0 draws them all (render/graphics.js)
     lightSlots: 8, // point lights lit at once (render/lightbudget.js)
     labelScale: 0.75, // baked labels' canvases drawn at this fraction of their pixels (render/bakedcanvas.js; boot only): a phone's memory
+    debris: 1, // a broken pot's share of shards and chips, its sherds coarser below 1 (render/graphics.js; boot only)
     textureScale: 1, // other baked canvases' and atlases' resolution, the same way (render/graphics.js; boot only)
     toon: 1, // the soft cel ramp on direct light, 0 (the plain cosine) to 1 (render/toon.js)
     glow: 0.45, // the PS2 glow (render/glow.js): 0 is off
