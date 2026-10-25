@@ -37,7 +37,7 @@ export class Overture {
     const st = document.createElement('style'); st.textContent = 'body.overture #godarts { display: none !important; }'; document.head.appendChild(st); // (the HUD steps out: hideui.js; the god hand's bar too)
     // any key or click while it plays: straight to the title (taken here, before the title's own keys see it)
     const skip = (e) => { if (!this.active || e.repeat) return; e.stopImmediatePropagation(); e.preventDefault?.(); this.skip(); };
-    addEventListener('keydown', skip, true); addEventListener('mousedown', skip, true);
+    addEventListener('keydown', skip, true); addEventListener('pointerdown', skip, true); // (pointerdown: a tap's mouse event may never come, casebook 304)
   }
 
   // ---------------------------------------------------------------- the clock

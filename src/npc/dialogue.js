@@ -115,7 +115,7 @@ export class Dialogue {
     r.innerHTML = '<div class="dw"><div class="name"></div><div class="text"></div><div class="choices"></div><div class="more"></div></div>';
     document.body.appendChild(r);
     this.el = { name: r.querySelector('.name'), text: r.querySelector('.text'), choices: r.querySelector('.choices') };
-    r.addEventListener('mousedown', (e) => { e.stopPropagation(); if (!e.target.closest('.opt')) this.advance(); });
+    r.addEventListener('mousedown', (e) => e.stopPropagation()); r.addEventListener('pointerdown', (e) => { e.stopPropagation(); if (!e.target.closest('.opt')) this.advance(); }); // (pointerdown for the act: a phone drops the mouse event of a quick second tap, casebook 304)
     this.cam = new THREE.Vector3(); this.look = new THREE.Vector3();
   }
 
@@ -175,7 +175,7 @@ export class Dialogue {
       this.el.choices.replaceChildren(...opts.map((c, i) => {
         const d = document.createElement('div'); d.className = `opt${i === 0 ? ' sel' : ''}`; d.innerHTML = `<b>${i + 1}</b>${this.say(c)}`;
         d.addEventListener('mouseenter', () => this.pick(i, false));
-        d.addEventListener('mousedown', (e) => { e.stopPropagation(); this.pick(i, false); this.choose(); });
+        d.addEventListener('pointerdown', (e) => { e.stopPropagation(); this.pick(i, false); this.choose(); });
         return d;
       }));
       this.root.classList.add('ask'); this.root.classList.remove('done');

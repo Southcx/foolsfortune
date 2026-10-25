@@ -110,11 +110,11 @@ export class GameLog {
     addEventListener('pointerup', () => { if (this.dragging) { this.dragging = false; this.pinned = atEnd(); } });
     this.body.addEventListener('scroll', () => { if (this.dragging || !this.pinned) this.pinned = atEnd(); }, { passive: true });
     this.tabEls = [...root.querySelectorAll('.tab')];
-    this.tabEls.forEach((t, i) => t.addEventListener('mousedown', (e) => { e.preventDefault(); this.setTab(i); })); // (a click on a tab, the line kept open: its focus is not lost to the click)
+    this.tabEls.forEach((t, i) => t.addEventListener('pointerdown', (e) => { e.preventDefault(); this.setTab(i); })); // (a click on a tab, the line kept open: its focus is not lost to the click)
     this.foot = root.querySelector('.n');
     // minimised: only the tab strip (new lines light their tab); the button, or \\ (kept between visits)
     this.minEl = root.querySelector('.min');
-    this.minEl.addEventListener('mousedown', (e) => { e.stopPropagation(); e.preventDefault(); this.setMini(!this.mini); });
+    this.minEl.addEventListener('pointerdown', (e) => { e.stopPropagation(); e.preventDefault(); this.setMini(!this.mini); });
     // (kept as the save's `logView` section, the settings'; a save with none takes in the key the log once wrote itself, and deletes it)
     const S = game?.save, old = S?.keyed?.('foolsfortune.log.mini', 'settings');
     S?.section('logView', { scope: 'settings', version: 1, dump: () => ({ mini: !!this.mini }), load: (s) => this.setMini(!!s.mini, false),

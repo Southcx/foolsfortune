@@ -123,12 +123,46 @@ What a frame may cost. `npm run perf` measures them; the gate holds every push t
 | --- | --- | --- |
 | draw calls a frame (every pass) | 450: the owner's RTX 3060 Ti on Firefox (which reports it as a GTX 980: Firefox buckets the GPU name) spends about 26 µs a call on the CPU (177 calls, 4.68 ms, 2026-10-12), so 450 is about 12 ms of a 16.7 ms frame with the tick beside it; merge, batch and instance rather than raise it | +8% |
 | triangles a frame | 1,000,000 (the owner, 2026-10-12: "get a lil crazy with the level geometry"; at 480 lines the GPU idled at 88k, the frame on vsync with 4 ms of CPU; was 350,000) | +8% |
-| shader programs alive | 200: one shared program a look, every one compiled in the warm-up; raised only by a commit that names the looks and the reason (196 to 200, 2026-10-19: board v11's duel view and domains' clash, the aberrant wipe, the Soul Brush's desk, all warm at boot; 192 to 196, 2026-10-18: the overlay's pieces; 191 to 192, 2026-10-13: the bracelet's merged body, which cut its draw calls from ~17 to 2 a form; 189 to 191, 2026-10-13: the bracelet's glazes, charms, flash and aura, warm at boot; 192 to 189, 2026-10-13: Calissa folded three; the last raise: the ten heavy shells' looks (ground rings, scorch, debris, the mega meteor) and the Lantern Wisp's, warm at boot, 184 to 192, 2026-10-13; before it, the caster shells' looks parked warm at boot, 177 to 184, 2026-10-12; before it, the caster shaders S1 to S10, heat haze, bubbles, lightning, frost and bisque, the rift, lensing, the time grade, the hologram, molten, the corrupted body, 164 to 177, 2026-10-12) | +6% |
+| shader programs alive | 212 (202 to 212, 2026-10-25, on Calissa's reasons; scripts/perf.mjs BUDGET): one shared program a look, every one compiled in the warm-up; raised only by a commit that names the looks and the reason (196 to 200, 2026-10-19: board v11's duel view and domains' clash, the aberrant wipe, the Soul Brush's desk, all warm at boot; 192 to 196, 2026-10-18: the overlay's pieces; 191 to 192, 2026-10-13: the bracelet's merged body, which cut its draw calls from ~17 to 2 a form; 189 to 191, 2026-10-13: the bracelet's glazes, charms, flash and aura, warm at boot; 192 to 189, 2026-10-13: Calissa folded three; the last raise: the ten heavy shells' looks (ground rings, scorch, debris, the mega meteor) and the Lantern Wisp's, warm at boot, 184 to 192, 2026-10-13; before it, the caster shells' looks parked warm at boot, 177 to 184, 2026-10-12; before it, the caster shaders S1 to S10, heat haze, bubbles, lightning, frost and bisque, the rift, lensing, the time grade, the hologram, molten, the corrupted body, 164 to 177, 2026-10-12) | +6% |
 | JS heap, the built game | 320 MB (the owner, 2026-10-21): what a player's page holds, `dist/` under vite preview after the workshop, the Dunes and a Dunemaw hall, gc'd; 293 MB at v258 (331 before the prop batches started small: render/propbatch.js) | +12% |
 | JS heap, the dev server | 600 MB (the owner, 2026-10-21; was 500): the same route on the dev server, which also holds every module's source text and source map, so it grows with the code; the built game's is the one a player feels. Earlier raises are in `scripts/perf.mjs` | +12% |
 | tick and draw time (software renderer, relative) | none | +25% |
 | a module | 800 lines | the baseline only falls |
 
+
+## Areas (built on entry, disposed on exit)
+
+Ruled by Petra, 2026-10-25, on the owner's ask (through Calissa: FFXII's zone transitions and loading screens are fine; revisitable
+chunks over an empty open world; the XR the floor). What an area is for play is Dovina's (`docs/plans/AREAS.md`); this is the engine.
+
+**Measured first** (the built game at High, 2026-10-25, geometry buffers and texture pixels by render zone, all resident at once): the
+basement 10 MB of geometry and 116 MB of textures (128 sign labels at 512 x 160, about 56 MB; the duel's flee canvas at 2048 x 2304
+with its 1024 x 1152 glow, about 31 MB, parked there by the warm-up); the workshop 33 + 17; the Dunes 8 + 15; nothing in any one place
+(sky, terrain, the Courier) 12 + 10; the bazaar 11 + 3. The JS heap at boot is 73 MB and moves under 4 MB when a place is disposed:
+what a phone's tab pays is the buffers and the textures, which the JS heap does not count. So the memory is in the basement and the
+workshop, not the Dunes: the Dunes' split is for play and for density, and the first area to dispose is the basement.
+
+**The unit.** An area is content, not code: a module keeps its code loaded (a few KB) and builds what it draws and collides with on
+entry, and disposes it on exit (geometry, textures, its own materials, its colliders, its lamps' slots). A program goes when its last
+material does. No dynamic import per area: the pack and the iOS loader (index.html, `scripts/pack.mjs`) stay as they are, every file
+unpacked once; what an area frees is what it built.
+- `game.areas` (to build): `register(id, { build(game) -> handle, dispose(handle), doors })`, `enter(id, door)`, `current`; the
+  build runs under the seam, the old area disposed first, then the new one built, then its programs compiled (`renderer.compileAsync`)
+  before the cover lifts.
+- **The transition is the seam** (`render/seam.js`, `seam.cross(fn, { kind: 'area' })`): a kind with a wipe of its own crosses under it
+  (`game.areaWipe`, Calissa's: the Gate's hoops, the name in the System's type, the card of where you go). The seam already holds the
+  cover until the new place's first frame is drawn.
+- **Resident always:** the Courier and the belt, the overlay, the shared programs (the finish, the liquid, particles, the toon ramp),
+  the save and every system's state. An area holds drawing and physics only (Dovina's A1); a system catches up from the clock on entry
+  (A4, `area.enter { id, from, away, by }`).
+- **No look assumes another area is loaded** (Calissa's rule, adopted). A warm-up parks only resident looks; an area's own looks are
+  compiled at its entry, behind the cover.
+- **Budgets per area:** `npm run perf` measures one area at a time with the others unbuilt; the heap budget becomes the resident set
+  plus the largest area. A run of the whole route is kept for the gate's history until every place is an area.
+
+**Order, by what each frees:** the basement (126 MB), the bazaar, Margarite and the crossing (built at boot, parked hidden), the Dunes
+as Dovina's five, then the workshop's rooms. The garden, a Dunemaw floor and the Raceway park already build on entry: they are moved
+onto `game.areas` as they are.
 
 ## The gate
 
