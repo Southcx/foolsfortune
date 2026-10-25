@@ -3873,7 +3873,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   now (`finFlags`) and carried in its program key; the material's onBeforeRender asks for a recompile when the flags move. Nothing
   worn, the lean program. Measured: 1753 ms settled, boot 60.5 s (fe20e89 60.4); every family worn at once compiled and drew clean
   (5 programs, no error) and went back. Perf, this host: the well 1637 ms, boot 61.7 s.
-- **Rule:** NEW:branch-is-not-free
+- **Rule:** 301
 
 ### 2026-10-25 · The aberrant Wisp and the palm die compiled in play (Petra's perf at v268; fixed by Calissa)
 - **Seen (measured):** programs compiled after the warm-up 21 to 24: LW_Glow-aberrant, LW_Flame-aberrant (the Dunes' aberrant Wisp)
@@ -3884,4 +3884,4 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** vfx/aberrantlook.js: one `dressParts` for hold and prewarm, and `sigOf` reads every map and switch three keys a program by,
   so the glow and flame keep their own materials (the body wears the look: one program a kind, as the header says). The palm die's
   `prewarm()` (vfx/godhand/palmdie.js), called in boot/warmup.js. Perf: 20 compiled after the warm-up (the garden's own, as before).
-- **Rule:** NEW:warm-what-play-wears
+- **Rule:** 302

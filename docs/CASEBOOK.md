@@ -882,9 +882,9 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 300. **A host may refuse every file but the page.** The page's own script must be able to boot the game
     from the database alone (the pack); a built file is asked for by name at run time, never by a URL baked in, and no module tag
     loads before the import map is laid. Publish the pack with every build.
-NEW:branch-is-not-free. **A uniform branch is not free.** A software GL (the gate's SwiftShader) and a phone's small GPU run every
+301. **A uniform branch is not free.** A software GL (the gate's SwiftShader) and a phone's small GPU run every
     branch's code on every pixel; an ubershader's rarely-worn families go behind a define keyed by what the material wears now (and a
     recompile asked for when that changes), never only behind an `if` on a uniform. Measure a shared program close up after adding to it.
-NEW:warm-what-play-wears. **The warm-up dresses a look with the function play dresses it with.** A prewarm that copies
+302. **The warm-up dresses a look with the function play dresses it with.** A prewarm that copies
     the rule (the main part only, a material dressed later on first show) misses what play adds; call the same dressing function, and
     show a look that is first dressed on its first frame (the palm die) dressed, 50 m down, for the compile.
