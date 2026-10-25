@@ -873,3 +873,6 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 297. **An achievement's key and goal are ones the built game can produce.** A templated key is written only
     for the values its variable really takes (read the emitter and its table); a count is no bigger than the things that exist. Run
     `node scripts/reachable.mjs --strict` and read the templates it names.
+298. **Setting the Courier down elsewhere ends every hold on them first.** A state that will put the
+    body back somewhere when it ends (a cradle's step out) is ended where they stand before a teleport, and a second "now" finishes
+    what a first slow call began; never let a running exit undo a later move.

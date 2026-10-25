@@ -89,7 +89,8 @@ export class Cradles {
    *  threshold travelling, its arch opening the Spirit Garden): the move that follows sets the Courier down. */
   unseal(why = 'f', by = 'courier', { now = false } = {}) {
     const g = this.game, c = this.sealed, J = this.jar;
-    if (!c || this.phase === 'out') return false;
+    if (!c) return false;
+    if (this.phase === 'out') { if (now) this.stepOut(false); return now; } // (already on the way out: `now` ends it where the Courier stands)
     this.phase = 'out'; this.t = 0;
     if (J?.alive && !now) J.clips?.R.play('dismiss');
     c.onUnseal?.(c, why);
@@ -102,10 +103,10 @@ export class Cradles {
   stepOut(place = true) {
     const g = this.game, c = this.sealed, P = g.player, J = this.jar;
     const at = c.at.clone().add(new THREE.Vector3(Math.sin(c.yaw), 0, Math.cos(c.yaw)).multiplyScalar(STEP)); // (from the ground point, not the seat: a seat may stand high)
+    this.sealed = null; this.phase = null; // (out first: the teleport below asks whether a seal stands)
     if (J) J.group.visible = false;
     P.freeze = false; g.character.setHidden(false);
     if (place) g.course?.teleport ? g.course.teleport(at, c.yaw, { keepPool: true }) : P.pos.copy(at);
-    this.sealed = null; this.phase = null;
     if (this.wrecked) { this.wrecked = false; g.vesselDamage?.hit({ dir: new THREE.Vector3(Math.sin(c.yaw), 0, Math.cos(c.yaw)), k: 0.6, why: 'wreck', by: 'environment' }); } // (a body that failed throws the Jar clear, cracked)
   }
 

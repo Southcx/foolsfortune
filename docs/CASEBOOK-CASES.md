@@ -3827,3 +3827,15 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** `crude.field.<field>.<island>` counted beside the route (tracking/voyage.js) and oc3 reads it; sb2's goal is 6; sb3 hidden
   until the first engine cradle (HANKO.md's Weir sluice).
 - **Rule:** 297
+
+### 2026-10-25 · The course never split after the Shrine's page (Dovina's basement sweep; fixed by Petra)
+- **Seen (measured):** the basement sweep's four course checks failed on every tree: no splits, no lap, the log saying "You rest at
+  the Shrine" twice. Replayed: after the Bisque Shrine's page was shut with Esc the Courier stayed sealed and hidden; `unseal(..., { now:
+  true })` did nothing; travel to the Index landed them back in front of the Shrine, and the next F sealed them in again.
+- **Cause (read):** shutting the page began the slow unseal (`phase 'out'`, the Jar's dismiss), and `unseal` returned at once while
+  one was running, so `now` was ignored; when the out phase ended, `stepOut` teleported the Courier to the cradle's front, undoing the
+  travel made meanwhile.
+- **Fix:** world/cradles.js: `unseal(..., { now })` during the out phase ends it where the Courier stands; `stepOut` clears the seal
+  before it sets them down. world/basement/basement.js `teleport`: a seal standing is ended first, in place. Basement sweep 403/4 to
+  407/0.
+- **Rule:** 298

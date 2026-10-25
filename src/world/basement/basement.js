@@ -588,6 +588,7 @@ export class Course {
   teleport(v, yaw, { keepPool = false } = {}) {
     const p = this.game.player;
     this.game.god?.forceOff?.(); // (set down elsewhere, the hand is let go: its view was left 36 m off in the siege, SWEEPS group 4)
+    if (this.game.cradles?.sealed) this.game.cradles.unseal('travel', 'courier', { now: true }); // (set down elsewhere, out of any cradle first, where they stand: its step out would put them back in front of it, world/cradles.js)
     p.pos.copy(v); p.prevPos.copy(v); p.renderPos.copy(v);
     p.vel.set(0, 0, 0);
     p.airPeak = v.y; p.airT = 0; // (a jump taken where they were is not a fall where they arrive: a 400 m 'drop' rolled them past the Well's mouth)
