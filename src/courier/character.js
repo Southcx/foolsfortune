@@ -1,4 +1,33 @@
-// The Courier: materials, the psygun, and animation (clips + IK corrections, below).
+// ---------------------------------------------------------------------------------------
+// THE COURIER'S RIG: the Courier as drawn and as animated. The glTF body dressed (a material for each region the kiln can finish, the
+// outlines, the first-person hide), its skeleton measured at rest, the psygun's model with its iron sights; and each frame `animate`,
+// the pose: the clips mixed (the idle, walk, jog and sprint on one shared phase, the crouch, the slide, the air, the mantle, the aim
+// and the gun's moves over the upper body), the moves' own poses blended in through `s.techs`, then the procedural layer on the posed
+// body (the hips turned toward the move, the chest toward the aim, the head's look, the feet onto the ground); and after it
+// `poseHands` (the gun drawn, held and aimed, a hand on a wall or a ledge, the joint limits last). IK only corrects the animated pose
+// (CLAUDE.md, Animation): every chain bends toward its animated elbow or knee, so a limb cannot flip, and rom.js has the last word on
+// every posed joint. The same class is a sibling's rig (coop/sibling.js: its own fade and dissolve), the title's Courier and the Anim
+// Lab's.
+//
+// This file keeps the Character: its state, the constructor, the small methods and `animate`, which is one pass and stays whole. Every
+// other job is a part, a module in courier/character/ that takes the Character first; the class keeps a method of each name, a line
+// that hands itself to its part (the moves, the tools, the siblings and the pose audit call them):
+//   bodymaterials.js  the maker's paintings and the materials of the body's regions, which glaze region a mesh is, the first-person tag
+//   gunpoints.js      the psygun model's named points (GUN_POINTS, exported from here as before)
+//   scratch.js        the vectors, quaternions and matrix the parts share, the sides, the smoothstep
+//   animsetup.js      the clips, masks and layers' modules built (initAnim); a pose mirrored left to right and written to the bones
+//   rigmeasure.js     the rig measured: each gait's speed and contacts, the soles, the gun's sockets, the holster
+//   bonehelpers.js    a bone turned, aimed or set in the world, the two-bone IK solve, the head's turn held to a neck's range
+//   feet.js           the feet onto the ground (stride warping, foot locks, the hips' drop), the knees kept in
+//   hands.js          a hand reached to a pose, the gun as held, and the hands and the gun after the pose (poseHands)
+//
+// Prior art: clips blended in layers with an aim offset over the upper body (Unreal's and Unity's animation layers), stride and
+// orientation warping and foot locking against skating (Unreal Engine 5's warping nodes; the footskate cleanup of Kovar, Schreiner and
+// Gleicher, 2002), the analytic two-bone solve with a pole (Maya's and Blender's IK handles), a joint-limit pass last (rom.js).
+//
+//   const ch = new Character(scene, charGltf, gunGltf, animPack, { uniforms, fpHide })     ch.animate(dt, s)     ch.poseHands(o)
+//   ch.gunPoint(name, out)   ch.setFirstPerson(fp)   ch.setHidden(h)   ch.snapshot(material)   ch.reachHand(side, pos, quat, w)
+// ---------------------------------------------------------------------------------------
 import { courierLimits } from './anim/rom.js';
 import { LimbHinges } from './anim/hinges.js';
 import { BodyProxies } from './anim/bodyproxies.js';
@@ -9,100 +38,21 @@ import * as THREE from 'three';
 import { addRim } from '../render/toon.js';
 import { T, PALETTE, DEG } from '../core/config.js';
 import { addOutline, applyFpHide, fpHideUniform, OUTLINE_MAT_FPHIDE, OUTLINE_MAT_CHAR, withFade, COURIER_RIG, rigOutlines } from '../render/outline.js';
-import { Clips, Track } from './anim/animator.js';
-import { authorAll } from './anim/authored.js';
-import { bakeStances } from './anim/stances.js';
-import { Airborne } from './anim/airborne.js';
-import { IdleBreaks } from './anim/idlebreak.js';
-import { Hurt } from './anim/hurt.js';
-import { LendGesture } from './anim/lendgesture.js';
-import { MantleClips } from './anim/mantle.js';
-import { Prowl, PROWL } from './anim/prowl.js';
-import { Crawl } from './anim/crawl.js';
-import armorB64 from '../assets/courier/courier_armor.png?b64';
-import maskB64 from '../assets/courier/courier_mask.png?b64';
+import { PROWL } from './anim/prowl.js';
 import { dressFiligree } from '../vfx/filigree.js';
 import { installVesselDice } from '../vfx/vesseldice.js';
+import { GUN_POINTS } from './character/gunpoints.js';
+import { MATS, OUTLINED, regionOf, tagFpHide } from './character/bodymaterials.js';
+import { UP, LR, _v1, _v2, _v3, _v4, _q1, _q2, smooth } from './character/scratch.js';
+import { initAnim, initMirror, mirrorPose, applyPose } from './character/animsetup.js';
+import { analyseGait, measureSoles, contactAt, computeSockets, computeHolster } from './character/rigmeasure.js';
+import { rot, rotW, turnW, setWorldQuat, aimBone, handQuat, solveLeg, solve2, holdNeck } from './character/bonehelpers.js';
+import { footIK, guardKnees } from './character/feet.js';
+import { reachHand, handFromGun, heldGun, poseHands } from './character/hands.js';
 
+export { GUN_POINTS }; // (the psygun's models, the weapon and the gun's moves import it from here)
 
-const STRETCH = 0.16; // how far a shoulder joint may travel toward a reach the arm alone cannot make
-// foot placement's springs (1/s): a foot's ground offset, the hips' drop for the stance foot, the hips' drop for a leg's reach
-const FOOT_FOLLOW = 20, PELVIS_FOLLOW = 10, REACH_FOLLOW = 12;
-const SOLE_MAX = 0.06; // m: the most the sole is raised onto the ground under it (footIK)
-// m: the same while a tech kneels (st.footDown): the stoop blended into the kneel puts the back toe up to 10.6 cm under the floor on
-// the way down and up (the carry's set-down, measured)
-const SOLE_KNEEL = 0.14;
 const START_SWAP = 0.15; // s: the idle to the moving loops (or back) takes at least this long
-const NECK_TURN = 64 * DEG; // the most the head turns on the neck against the chest (a neck's own range is about 70 to 80: the pose audit holds it to 70)
-const UP = new THREE.Vector3(0, 1, 0);
-const LR = ['L', 'R'], POLE_REST = { fwd: 0.1, out: 0, up: 0 }; // (the sides and the knees' resting pole, made once: a literal in a loop is an object a frame)
-const _v1 = new THREE.Vector3(), _v2 = new THREE.Vector3(), _v3 = new THREE.Vector3(), _v4 = new THREE.Vector3();
-const _v5 = new THREE.Vector3(), _v6 = new THREE.Vector3();
-const _q1 = new THREE.Quaternion(), _q2 = new THREE.Quaternion();
-const _m1 = new THREE.Matrix4();
-const _s2S = new THREE.Vector3(), _s2T = new THREE.Vector3(), _s2P = new THREE.Vector3(), _s2E = new THREE.Vector3(); // (solve2's)
-const _abP = new THREE.Vector3(), _abC = new THREE.Vector3(), _abT = new THREE.Vector3(), _abQ1 = new THREE.Quaternion(), _abQ2 = new THREE.Quaternion(), _abQ3 = new THREE.Quaternion(); // (aimBone's)
-const _rhQ = new THREE.Quaternion(), _rhP = new THREE.Vector3(), _rhT = new THREE.Vector3(), _rhPole = new THREE.Vector3(), _rhS = new THREE.Vector3(), _rhSh = new THREE.Vector3(); // (reachHand's own: it runs a hand or two every frame, and made six objects a call)
-
-// The maker's paintings of the armour and the mask (source_assets/courier_armor.png, courier_mask.png). In Blender they were drawn
-// unlit (an emission shader), the light painted in; here they take the game's light, and the same painting glows back a share of
-// itself (PAINT_LIGHT) so its painted values hold in the shadowed side of the cel ramp instead of sinking to black.
-const PAINT_LIGHT = 0.45;
-function painting(b64) {
-  const t = new THREE.TextureLoader().load(`data:image/png;base64,${b64}`);
-  t.colorSpace = THREE.SRGBColorSpace;
-  t.flipY = false; // (glTF's UV convention)
-  t.anisotropy = 4;
-  return t;
-}
-let PAINT = null;
-const paint = () => (PAINT ||= { armor: painting(armorB64), mask: painting(maskB64) });
-const painted = (map) => new THREE.MeshStandardMaterial({ map, emissiveMap: map, emissive: 0xffffff, emissiveIntensity: PAINT_LIGHT, roughness: 0.7, metalness: 0.0 });
-
-const MATS = {
-  Courier_Armor: () => painted(paint().armor),
-  CourierEnergy: () => new THREE.MeshStandardMaterial({ color: PALETTE.cream, roughness: 0.4, emissive: PALETTE.glow, emissiveIntensity: 0.18 }),
-  CourierEnergyShell: () => new THREE.MeshStandardMaterial({ color: PALETTE.pale, roughness: 0.3, transparent: true, opacity: 0.22, depthWrite: false }),
-  CourierMask: () => painted(paint().mask),
-};
-const OUTLINED = new Set(['Courier_Armor', 'CourierMask', 'Kiritohair']);
-/** Which glaze region a mesh of the Courier is (courier/vessel/glazes.js REGIONS), or null (the Lachryma of their body is never glazed). */
-function regionOf(o, matName, isArmor) {
-  if (isArmor) return matName === 'Courier_Armor' ? 'body' : 'trim';
-  if (o.name === 'Courier_Mask') return 'mask';
-  if (o.name === 'Kiritohair') return 'hair';
-  if (o.name === 'Courier_Stones') return 'stones'; // (gems, not trim: the kiln sets stones in them, vfx/finish.js)
-  if (o.name === 'Courier_Skin_Core') return 'skin'; // (the Lachryma of the body: the kiln gives it tones, never a glaze)
-  return null;
-}
-
-export const GUN_POINTS = {
-  // in gun-model units (multiply by gunScale for metres); +X barrel, +Y up, +Z right
-  muzzle: new THREE.Vector3(0.36, 0.027, 0),
-  eject: new THREE.Vector3(0.0, 0.09, 0.03),
-  magwell: new THREE.Vector3(-0.25, -0.18, 0),
-  sightY: 0.118,
-  gripR: new THREE.Vector3(-0.34, -0.13, 0.04),
-  gripL: new THREE.Vector3(-0.27, -0.15, -0.075),
-};
-
-// First person shows only the hands on the gun: every other vertex of the body is
-// discarded (per vertex, by skin weight) so the camera never sees the torso from inside.
-const HAND_BONE = /^(hand|f_|thumb)/;
-function tagFpHide(mesh, isArmor) {
-  const g = mesh.geometry;
-  const si = g.attributes.skinIndex, sw = g.attributes.skinWeight;
-  const bones = mesh.skeleton?.bones;
-  const out = new Float32Array(g.attributes.position.count).fill(1);
-  if (!isArmor && si && bones) {
-    for (let i = 0; i < si.count; i++) {
-      let w = 0;
-      for (let k = 0; k < 4; k++) if (HAND_BONE.test(bones[si.getComponent(i, k)]?.name || '')) w += sw.getComponent(i, k);
-      out[i] = 1 - w;
-    }
-  }
-  g.setAttribute('fpHide', new THREE.BufferAttribute(out, 1));
-}
 
 export class Character {
   /** opts (a second rig: a sibling, coop/sibling.js): `uniforms`, its own fade and dissolve (render/outline.js rigUniforms); `fpHide: false`,
@@ -300,12 +250,16 @@ export class Character {
     if (this.fpMode) this.bones.head.scale.setScalar(0.001);
   }
 
-  rot(bone, axisChar, angle) {
-    if (!angle) return;
-    _v1.copy(axisChar).applyQuaternion(this.restCharInv.get(bone));
-    _q1.setFromAxisAngle(_v1.normalize(), angle);
-    bone.quaternion.multiply(_q1);
-  }
+  // a bone turned, aimed or set, the two-bone IK solve, the head's turn held: bonehelpers.js
+  rot(bone, axisChar, angle) { rot(this, bone, axisChar, angle); }
+  rotW(bone, axisWorld, angle) { rotW(this, bone, axisWorld, angle); }
+  turnW(bone, qWorld) { turnW(this, bone, qWorld); }
+  setWorldQuat(bone, qWorld) { setWorldQuat(this, bone, qWorld); }
+  aimBone(bone, child, point) { aimBone(this, bone, child, point); }
+  handQuat(arm, dirWorld, palmWorld) { return handQuat(this, arm, dirWorld, palmWorld); }
+  solveLeg(leg, target, pole) { solveLeg(this, leg, target, pole); }
+  solve2(upper, mid, end, a, b, target, pole) { solve2(this, upper, mid, end, a, b, target, pole); }
+  holdNeck() { holdNeck(this); }
 
   // =========================================================================
   // Animation.
@@ -321,271 +275,17 @@ export class Character {
   // chain bends toward its *animated* elbow or knee, so limbs can't flip.
   // =========================================================================
 
-  initAnim(pack) {
-    const C = (this.clips = new Clips(pack));
-    const B = this.bones;
-    this.driven = C.bones.map((n) => B[n]);
-    this.P = { base: C.pose(), tmp: C.pose(), tmp2: C.pose(), air: C.pose(), up: C.pose(), up2: C.pose() };
-    this.MASK_UPPER = C.mask({ spine001: 0.3, spine002: 0.65, spine003: 1, spine004: 0.6, spine005: 0.55, head: 0.5, 'upper_arm*': 1, 'forearm*': 1, 'hand*': 1, 'f_*': 1, 'thumb*': 1 });
-    // (one arm and the head: for the moves that hold the body to something with the other hand)
-    this.MASK_ARM = {};
-    for (const s of LR) {
-      const t = { head: 0.35, spine005: 0.3, spine004: 0.25 };
-      for (const n of C.bones) if (n.endsWith(s) && /^(upper_arm|forearm|hand|f_|thumb)/.test(n)) t[n] = 1;
-      this.MASK_ARM[s] = C.mask(t);
-    }
-    this.initMirror(); // (before the idles: the baked upright's right arm is its left's mirror)
-    this.air = new Airborne(this); // (the air: take-off, fall, flip, kick-off, dash, landings: anim/airborne.js)
-    this.airTrack = this.air.track;
-    this.idles = new IdleBreaks(this); // (the idle, the fighting stance, the idle breaks: anim/idlebreak.js)
-    this.hurt = new Hurt(this); // (a blow taken: anim/hurt.js)
-    this.lendGesture = new LendGesture(this); // (the sub's verb lent on R: anim/lendgesture.js)
-    this.mantle = new MantleClips(this); // (over a ledge: anim/mantle.js)
-    this.slideTrack = new Track(C, new Set(['slideLoop']));
-    this.prowl = new Prowl(this); // (the crouch on the move: its loop, the hips' lift and the cat's still head: anim/prowl.js)
-    const L = (a, b) => this.restPos.get(B[a]).distanceTo(this.restPos.get(B[b]));
-    this.leg = {
-      L: { thigh: B.thighL, shin: B.shinL, foot: B.footL, a: L('thighL', 'shinL'), b: L('shinL', 'footL') },
-      R: { thigh: B.thighR, shin: B.shinR, foot: B.footR, a: L('thighR', 'shinR'), b: L('shinR', 'footR') },
-    };
-    // palm centre of each hand, in the hand's own frame (the gun grip and wall contacts use it)
-    for (const s of LR) {
-      const a = this.arm[s];
-      const h = this.restPos.get(a.hand), m = this.restPos.get(B[`f_middle01${s}`]);
-      const n = new THREE.Vector3(0, -1, 0); // T-pose palms face down
-      const w = h.clone().lerp(m, 0.6).addScaledVector(n, 0.025);
-      a.palmPt = w.sub(h).applyQuaternion(this.restCharInv.get(a.hand));
-    }
-    this.ankleRest = this.restPos.get(B.footL).y;
-    this.toeRest = this.restPos.get(B.toeL).y;
-    this.gait = {};
-    for (const n of ['walk', 'jog', 'sprint', PROWL.clip]) this.gait[n] = this.analyseGait(n);
-    this.crawl = new Crawl(this); // (on all fours, when player.js has a body for it: anim/crawl.js)
-    this.lock = { L: { w: 0, on: false, lost: false, p: new THREE.Vector3() }, R: { w: 0, on: false, lost: false, p: new THREE.Vector3() } };
-    this.st = { phi: 0, gs: 0, warp: 0, theta: 0, turn: 0, dip: 0, dipV: 0, sliding: false, yawOff: 0 };
-    this.airT = 0;
-    this.resetPose();
-    authorAll(this); // (clips the libraries lack: built once here, from key poses solved on this very skeleton)
-    bakeStances(this); // (each Lachryma tool's own idle: UAL idles modified, courier/anim/stances.js)
-  }
-
-  /**
-   * Left/right mirroring of poses (for the gun in the left hand, and anything else that
-   * wants a mirrored clip). Works in character space: each bone takes its partner's
-   * rotation reflected across the body's midplane, corrected so the rest pose maps to
-   * itself (the rig's left and right bones don't share axis conventions).
-   */
-  initMirror() {
-    const d = this.driven, idx = new Map(d.map((b, i) => [b, i]));
-    const partner = (n) => (/L$/.test(n) ? n.slice(0, -1) + 'R' : /R$/.test(n) ? n.slice(0, -1) + 'L' : n);
-    const M = (q) => new THREE.Quaternion(q.x, -q.y, -q.z, q.w); // reflect x
-    this.mir = d.map((b, i) => {
-      const j = idx.get(this.bones[partner(b.name)]) ?? i;
-      const par = idx.has(b.parent) ? idx.get(b.parent) : -1;
-      const parentRest = par < 0 ? b.parent.getWorldQuaternion(new THREE.Quaternion()) : null; // (root at identity here)
-      const C = M(this.restCharQ.get(d[j])).invert().multiply(this.restCharQ.get(b));
-      return { j, par, parentRest, C };
-    });
-    this._mq = d.map(() => new THREE.Quaternion());
-    this._mq2 = d.map(() => new THREE.Quaternion());
-  }
-
-  mirrorPose(src, dst) {
-    const d = this.driven, mir = this.mir, cq = this._mq, cq2 = this._mq2;
-    // FK: character-space rotations of the source pose (bones are in parent-first order)
-    for (let i = 0; i < d.length; i++) {
-      const m = mir[i];
-      _q1.fromArray(src.q, i * 4);
-      cq[i].copy(m.par < 0 ? m.parentRest : cq[m.par]).multiply(_q1);
-    }
-    for (let i = 0; i < d.length; i++) {
-      const m = mir[i], q = cq[m.j];
-      cq2[i].set(q.x, -q.y, -q.z, q.w).multiply(m.C);
-    }
-    for (let i = 0; i < d.length; i++) {
-      const m = mir[i];
-      _q1.copy(m.par < 0 ? m.parentRest : cq2[m.par]).invert().multiply(cq2[i]);
-      _q1.toArray(dst.q, i * 4);
-    }
-    dst.p[0] = -src.p[0]; dst.p[1] = src.p[1]; dst.p[2] = src.p[2];
-    return dst;
-  }
-
-  applyPose(pose) {
-    const d = this.driven, q = pose.q;
-    for (let i = 0; i < d.length; i++) d[i].quaternion.fromArray(q, i * 4);
-    this.bones.spine.position.fromArray(pose.p);
-  }
-
-  /**
-   * Measure a locomotion loop on the Courier. An in-place clip is authored so the
-   * planted foot slides back under the hips at the speed the character is meant to
-   * travel, so that's the clip's ground speed: played at speed / groundSpeed the feet
-   * stay put. Also records where the left heel strikes (so every loop can share one
-   * phase) and each foot's contact curve over the cycle (for foot locking).
-   */
-  analyseGait(name) {
-    const C = this.clips, c = C.clips[name], B = this.bones, p = this.P.tmp;
-    this.root.position.set(0, 0, 0); this.root.rotation.set(0, 0, 0);
-    this.soles ||= this.measureSoles(); // (footIK's soles: read once, in the rest pose)
-    const fr = [];
-    for (let f = 0; f < c.n - 1; f++) {
-      this.applyPose(C.sample(name, f / C.fps, p));
-      this.root.updateMatrixWorld(true);
-      const g = (b) => b.getWorldPosition(new THREE.Vector3());
-      fr.push({ L: g(B.footL), R: g(B.footR), tL: g(B.toeL), tR: g(B.toeR) });
-    }
-    const n = fr.length, contact = {};
-    let best = -1e9, off = 0, vsum = 0, wsum = 0;
-    for (const s of LR) {
-      // planted: the lowest point of the foot (heel or toe) near its lowest, and the foot
-      // travelling backward under the body (a foot coming down at the end of a swing is
-      // low too, but still moving forward)
-      const h = fr.map((f) => Math.min(f[s].y - this.ankleRest, f['t' + s].y - this.toeRest));
-      const lo = Math.min(...h);
-      const raw = h.map((y, f) => {
-        const dz = fr[(f + 1) % n][s].z - fr[(f + n - 1) % n][s].z;
-        return (1 - smooth(0.04, 0.09, y - lo)) * smooth(0, -0.01, dz);
-      });
-      contact[s] = raw.map((c, f) => (raw[(f + n - 1) % n] + 2 * c + raw[(f + 1) % n]) / 4); // soften the edges
-      for (let f = 0; f < n; f++) {
-        const w = contact[s][f] > 0.9 ? 1 : 0; // mid-stance only
-        if (!w) continue;
-        vsum += w * -(fr[(f + 1) % n][s].z - fr[(f + n - 1) % n][s].z) * C.fps / 2;
-        wsum += w;
-      }
-    }
-    for (let f = 0; f < n; f++) if (fr[f].L.z - fr[f].R.z > best) { best = fr[f].L.z - fr[f].R.z; off = f / n; }
-    const speed = wsum > 0 ? vsum / wsum : 1;
-    this.resetPose();
-    return { speed, dur: c.dur, cycle: speed * c.dur, off, contact, n };
-  }
-
-  /** The soles as the skin has them: each foot's skinned vertices (by their strongest bone: foot, toe, heel), those within 4 cm of the
-   *  rest pose's lowest densely and the rest thinly, in that bone's own frame, so a posed foot's lowest point is read where the mesh is (a heel struck toe-up goes lower
-   *  than its ankle bone says), and `rest`, that lowest point at rest. Read once, in the rest pose. */
-  measureSoles() {
-    this.resetPose();
-    this.root.position.set(0, 0, 0); this.root.rotation.set(0, 0, 0);
-    this.root.updateMatrixWorld(true);
-    const all = { L: [], R: [] }, v = new THREE.Vector3();
-    this.root.traverse((m) => {
-      if (!m.isSkinnedMesh || m.userData.isOutline) return;
-      const si = m.geometry.attributes.skinIndex, sw = m.geometry.attributes.skinWeight;
-      if (!si) return;
-      for (let i = 0; i < si.count; i++) {
-        let b = -1, w = 0;
-        for (let k = 0; k < 4; k++) { const x = sw.getComponent(i, k); if (x > w) { w = x; b = si.getComponent(i, k); } }
-        const bone = m.skeleton.bones[b], side = /^(foot|toe|heel02)([LR])$/.exec(bone?.name || '')?.[2];
-        if (!side) continue;
-        m.getVertexPosition(i, v); v.applyMatrix4(m.matrixWorld);
-        all[side].push([bone, v.clone()]);
-      }
-    });
-    let rest = 1e9;
-    for (const s of LR) for (const [, w] of all[s]) rest = Math.min(rest, w.y);
-    const out = { rest };
-    for (const s of LR) {
-      // (the sole densely, and the rest of the foot thinly: a foot pointed back in a kneel lies on its instep and toes' tops, which stand
-      //  over 4 cm up at rest; read only the sole, the back toe went 4.5 cm into the floor getting up from the set-down's knee)
-      const near = all[s].filter(([, w]) => w.y < rest + 0.04), top = all[s].filter(([, w]) => w.y >= rest + 0.04);
-      const thin = (a, n) => { const step = Math.max(1, Math.floor(a.length / n)); return a.filter((_, i) => i % step === 0); };
-      out[s] = [...thin(near, 120), ...thin(top, 60)].map(([b, w]) => [b, w.applyMatrix4(_m1.copy(b.matrixWorld).invert())]);
-    }
-    return out;
-  }
-
-  /** Contact weight (0..1) of foot s at loop phase u (0..1 of the clip). */
-  contactAt(g, s, u) {
-    const f = ((u % 1) + 1) % 1 * g.n;
-    const i = Math.floor(f), k = f - i;
-    const a = g.contact[s][i % g.n], b = g.contact[s][(i + 1) % g.n];
-    return a + (b - a) * k;
-  }
-
-  /** Right-hand gun socket and left-hand support grip, measured from the pistol aim pose. */
-  computeSockets() {
-    const C = this.clips, B = this.bones;
-    this.root.updateMatrixWorld(true);
-    const saveP = this.root.position.clone(), saveQ = this.root.quaternion.clone();
-    this.root.position.set(0, 0, 0); this.root.quaternion.identity();
-    this.resetPose();
-    this.applyPose(C.sample('aimMid', 0, this.P.tmp));
-    this.root.updateMatrixWorld(true);
-    const gunQ = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(
-      new THREE.Vector3(0, 0, 1), new THREE.Vector3(0, 1, 0), new THREE.Vector3(-1, 0, 0)));
-    const palm = (s) => this.arm[s].palmPt.clone().applyMatrix4(this.arm[s].hand.matrixWorld);
-    const gunPos = palm('R').sub(GUN_POINTS.gripR.clone().multiplyScalar(this.gunScale).applyQuaternion(gunQ));
-    const G = new THREE.Matrix4().compose(gunPos, gunQ, new THREE.Vector3(1, 1, 1));
-    this.socketR = new THREE.Matrix4().copy(B.handR.matrixWorld).invert().multiply(G);
-    this.socketRInv = this.socketR.clone().invert();
-    // support hand: the clip's hand orientation, palm centred on the gun's support grip
-    const lq = B.handL.getWorldQuaternion(new THREE.Quaternion());
-    const gl = GUN_POINTS.gripL.clone().multiplyScalar(this.gunScale).applyMatrix4(G);
-    const lp = gl.sub(this.arm.L.palmPt.clone().applyQuaternion(lq));
-    this.socketL = G.clone().invert().multiply(new THREE.Matrix4().compose(lp, lq, new THREE.Vector3(1, 1, 1)));
-    // the same grip mirrored: gun in the left hand, right hand supporting. The gun itself
-    // isn't mirrored (it's the same gun), so its side axis flips back: S * G * D
-    this.resetPose();
-    this.applyPose(this.mirrorPose(C.sample('aimMid', 0, this.P.tmp), this.P.tmp2));
-    this.root.updateMatrixWorld(true);
-    const S = new THREE.Matrix4().makeScale(-1, 1, 1), D = new THREE.Matrix4().makeScale(1, 1, -1);
-    const GL = S.clone().multiply(G).multiply(D);
-    this.socketLH = new THREE.Matrix4().copy(B.handL.matrixWorld).invert().multiply(GL);
-    this.socketLHInv = this.socketLH.clone().invert();
-    const rq = B.handR.getWorldQuaternion(new THREE.Quaternion());
-    const gr = GUN_POINTS.gripL.clone().setZ(-GUN_POINTS.gripL.z).multiplyScalar(this.gunScale).applyMatrix4(GL);
-    const rp = gr.sub(this.arm.R.palmPt.clone().applyQuaternion(rq));
-    this.socketRS = GL.clone().invert().multiply(new THREE.Matrix4().compose(rp, rq, new THREE.Vector3(1, 1, 1)));
-    this.resetPose();
-    this.root.position.copy(saveP); this.root.quaternion.copy(saveQ);
-    this.root.updateMatrixWorld(true);
-  }
-
-  /**
-   * Holster socket relative to the pelvis bone: across the small of the back like a
-   * fanny pack, barrel to the left (muzzle dipped), grip out on the right where the
-   * drawing hand finds it. Defined by where the grip sits (arms this short reach the
-   * back only up at the lumbar).
-   */
-  computeHolster() {
-    const H = T.weapon.holster;
-    this.resetPose();
-    const saveP = this.root.position.clone(), saveQ = this.root.quaternion.clone();
-    this.root.position.set(0, 0, 0); this.root.quaternion.identity();
-    this.root.updateMatrixWorld(true);
-    const pelvisInv = new THREE.Matrix4().copy(this.bones.spine.matrixWorld).invert();
-    // gun frame: +X barrel to the character's left, +Y the gun's top up, side plate against the back
-    const xg = new THREE.Vector3(1, 0, 0), yg = new THREE.Vector3(0, 1, 0), zg = new THREE.Vector3(0, 0, 1);
-    const q = new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(xg, yg, zg));
-    q.premultiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 0, 1), -H.tilt * DEG)); // muzzle dips
-    q.premultiply(new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), H.wrap * DEG)); // hugs the waist
-    const grip = GUN_POINTS.gripR.clone().multiplyScalar(this.gunScale).applyQuaternion(q);
-    const pos = new THREE.Vector3(H.x, H.y, H.z).sub(grip);
-    this.holsterLocal = pelvisInv.multiply(new THREE.Matrix4().compose(pos, q, new THREE.Vector3(1, 1, 1)));
-    this.root.position.copy(saveP); this.root.quaternion.copy(saveQ);
-    this.root.updateMatrixWorld(true);
-  }
-
-  /** Rotate a bone about a world-space axis through its own origin. */
-  rotW(bone, axisWorld, angle) {
-    if (!angle) return;
-    bone.parent.getWorldQuaternion(_q1).invert();
-    _v1.copy(axisWorld).applyQuaternion(_q1);
-    bone.quaternion.premultiply(_q2.setFromAxisAngle(_v1.normalize(), angle));
-  }
-
-  /** Apply a world-space rotation to a bone (about its origin). */
-  turnW(bone, qWorld) {
-    bone.parent.getWorldQuaternion(_q1);
-    const qp = _q2.copy(_q1).invert().multiply(qWorld).multiply(_q1);
-    bone.quaternion.premultiply(qp);
-  }
-
-  setWorldQuat(bone, qWorld) {
-    bone.parent.getWorldQuaternion(_q1).invert();
-    bone.quaternion.copy(_q1.multiply(qWorld));
-  }
+  // the animation's setup, a pose mirrored and written to the bones: animsetup.js
+  initAnim(pack) { initAnim(this, pack); }
+  initMirror() { initMirror(this); }
+  mirrorPose(src, dst) { return mirrorPose(this, src, dst); }
+  applyPose(pose) { applyPose(this, pose); }
+  // the rig measured (the gaits, the soles, the gun's sockets, the holster): rigmeasure.js
+  analyseGait(name) { return analyseGait(this, name); }
+  measureSoles() { return measureSoles(this); }
+  contactAt(g, s, u) { return contactAt(this, g, s, u); }
+  computeSockets() { computeSockets(this); }
+  computeHolster() { computeHolster(this); }
 
   /**
    * s: { pos, yaw, velocity, vy, grounded, wall (signed), slide, mantle, mantleT, dash, crouch,
@@ -854,460 +554,16 @@ export class Character {
     st.dt = dt;
   }
 
-  /** The head's turn about its own length against the chest (spine003), from rest (the pose audit's neck measure), held to NECK_TURN by
-   *  turning the head back about its own length: a look laid over a clip's own swing went to 88 degrees. */
-  holdNeck() {
-    const B = this.bones;
-    this.root.updateMatrixWorld(true);
-    this._neckRest ||= this.restCharQ.get(B.spine003).clone().invert().multiply(this.restCharQ.get(B.head)).invert();
-    B.spine003.getWorldQuaternion(_q1); B.head.getWorldQuaternion(_q2);
-    _q1.invert().multiply(_q2).premultiply(this._neckRest);
-    if (_q1.w < 0) _q1.set(-_q1.x, -_q1.y, -_q1.z, -_q1.w);
-    const turn = 2 * Math.atan2(_q1.y, _q1.w), over = Math.abs(turn) - NECK_TURN;
-    if (over > 0) this.rotW(B.head, _v1.set(0, 1, 0).applyQuaternion(_q2), -Math.sign(turn) * over); // (about the head's own length)
-  }
-
-  /**
-   * Feet: stride warping (reach further along the move), ground contact (slopes,
-   * stairs: the hips drop for the lower foot), and foot locking - a foot the cycle
-   * says is planted stays where it landed until the cycle lifts it (or the body gets
-   * too far away), so nothing skates while speeding up, turning or blending.
-   */
-  footIK(dt, s, planted, stretch, speed, gaitW) {
-    const root = this.root, st = this.st;
-    const K = (this.fk ||= { mdir: new THREE.Vector3(), F: { L: new THREE.Vector3(), R: new THREE.Vector3() }, off: { L: new THREE.Vector3(), R: new THREE.Vector3() }, off0: { L: new THREE.Vector3(), R: new THREE.Vector3() }, t: { L: new THREE.Vector3(), R: new THREE.Vector3() }, v: new THREE.Vector3(), pole: new THREE.Vector3(), fq: new THREE.Quaternion(), offs: {}, offs0: {}, d: { L: 0, R: 0 }, anim: {}, tgt: {} }); // (the foot IK's own objects, kept: it runs every frame, and made a dozen a frame)
-    const mdir = K.mdir.set(s.velocity.x, 0, s.velocity.z);
-    const doStride = Math.abs(stretch) > 0.01 && speed > 0.3;
-    if (doStride) mdir.normalize();
-    const offs = K.offs, offs0 = K.offs0, d = K.d, anim = K.anim; d.L = 0; d.R = 0;
-    for (const k of LR) {
-      const leg = this.leg[k];
-      const F = leg.foot.getWorldPosition(K.F[k]);
-      const off = K.off[k].set(0, 0, 0);
-      if (doStride) off.addScaledVector(mdir, _v1.subVectors(F, s.pos).dot(mdir) * stretch);
-      if (planted > 0.05 && s.ground) {
-        const gy = s.ground(F.x + off.x, F.z + off.z, s.pos.y + 0.6);
-        if (gy !== null) d[k] = THREE.MathUtils.clamp(gy - s.pos.y, -0.45, 0.45) * planted;
-      }
-      // (the ground under a foot, smoothed over time: a ray at a swinging foot jumps as the foot crosses a step, a ripple or a
-      // triangle's edge, and the raw jump went straight into the leg. A slope reads the same, just without the jolts)
-      const fd = (st.footD ||= { L: 0, R: 0 });
-      fd[k] = THREE.MathUtils.damp(fd[k], d[k], FOOT_FOLLOW, dt); d[k] = fd[k];
-      offs[k] = off;
-      offs0[k] = K.off0[k].copy(off);
-      anim[k] = F.add(off);
-    }
-    // foot locks (world space); a teleport drops them
-    if (st.lockPos && st.lockPos.distanceToSquared(s.pos) > 1) for (const k of LR) { this.lock[k].on = false; this.lock[k].w = 0; }
-    (st.lockPos = st.lockPos || new THREE.Vector3()).copy(s.pos);
-    const lockable = T.anim.footLock && planted > 0.9 && gaitW > 0.25;
-    for (const k of LR) {
-      const L = this.lock[k];
-      if (L.on && s.groundVel) L.p.addScaledVector(s.groundVel, dt); // (a locked foot rides its platform)
-      const want = lockable && st.contact[k] > 0.6;
-      if (!want) L.lost = false;
-      if (want && !L.on && !L.lost) { L.on = true; L.p.copy(anim[k]); L.w = 1; } // (locks where the foot is: no pop)
-      // (let go when the body has run 0.35 m off it, a start or a turn outrunning the cycle: eased off, and not caught again until the
-      //  cycle lifts that foot. Caught again at once, it jumped to the clip's foot in one frame: 30 to 38 cm in a start, casebook 2026-10-10)
-      if (L.on && (!want || (L.p.x - anim[k].x) ** 2 + (L.p.z - anim[k].z) ** 2 > 0.35 * 0.35)) { L.on = false; L.lost = want; }
-      L.w = THREE.MathUtils.damp(L.w, L.on ? 1 : 0, L.on ? 30 : 16, dt);
-      if (L.w > 0.001) { offs[k].x += (L.p.x - anim[k].x) * L.w; offs[k].z += (L.p.z - anim[k].z) * L.w; }
-    }
-    // absolute targets, then drop the hips for the lower foot and for reach (a long
-    // stride with the hips at clip height would straighten the legs and drag the feet)
-    const tgt = K.tgt;
-    for (const k of LR) { const t = (tgt[k] = K.t[k].copy(anim[k])); t.x += offs[k].x - offs0[k].x; t.y += d[k]; t.z += offs[k].z - offs0[k].z; } // (the clip's foot, less its stride offset, plus the offset as locked and the ground)
-    // the sole kept on the floor: the skin's lowest point of each foot (its posed turn kept through the leg's IK, so its place against the
-    // ankle is the clip's) raised to the ground under that point when the clip and the offsets above would put it under, by `planted`
-    // and at most SOLE_MAX (a toe over a stair's nose is not stood on the step). The ground under the ankle is not the ground under a
-    // heel struck toe-up or a toe on a slope: walking up a ramp the toes went 3.8 cm into it, down it the heels 5.8 (CASEBOOK
-    // 215)
-    if (this.soles && planted > 0.05 && s.ground) {
-      for (const k of LR) {
-        const F = this.leg[k].foot.getWorldPosition(_v1);
-        let lo = null;
-        const S = this.soles[k];
-        for (let i = 0; i < S.length; i++) { const w = _v2.copy(S[i][1]).applyMatrix4(S[i][0].matrixWorld); if (!lo || w.y < lo.y) lo = (this._soleLo ||= new THREE.Vector3()).copy(w); } // (by index: a pair destructured is an iterator a vertex)
-        if (!lo) continue;
-        const x = tgt[k].x + lo.x - F.x, z = tgt[k].z + lo.z - F.z, y = tgt[k].y + lo.y - F.y;
-        const gy = s.ground(x, z, s.pos.y + 0.6);
-        if (gy === null) continue;
-        if (gy > y) tgt[k].y += Math.min(st.footDown > 0 ? SOLE_KNEEL : SOLE_MAX, gy - y) * planted;
-        // (and let down on to it while a tech kneels, by how much of the body is the kneel's (st.footDown: the carry's set-down): a clip
-        //  that kneels in the air on this rig, 7 to 9 cm up, measured)
-        else if (st.footDown > 0) tgt[k].y -= Math.min(SOLE_MAX, y - gy) * planted * st.footDown;
-      }
-    }
-    // the hips drop for the lower foot it stands on: weighted by each foot's stance (the clip's contact), so the swinging foot over a
-    // lower patch of ground does not pull the hips down mid-stride; then sprung, not snapped (the alternating feet on a slope made the
-    // hips jump a few centimetres every step: Petra measured 20 mm a frame on a Dunemaw ramp at a run, R46)
-    const wL = 0.3 + 0.7 * (st.contact?.L ?? 1), wR = 0.3 + 0.7 * (st.contact?.R ?? 1);
-    st.pelvis = THREE.MathUtils.damp(st.pelvis || 0, -Math.min(0, d.L * wL, d.R * wR), PELVIS_FOLLOW, dt);
-    let drop = st.pelvis - (st.prowlLift || 0); // (the prowl's hips raised over its clip's squat: PROWL.lift)
-    let reach = 0;
-    for (const k of LR) {
-      const leg = this.leg[k];
-      const v = leg.thigh.getWorldPosition(K.v).sub(tgt[k]);
-      v.y -= drop;
-      const R = (leg.a + leg.b) * 0.985, l2 = v.lengthSq();
-      if (l2 > R * R) {
-        const disc = v.y * v.y - (l2 - R * R);
-        reach = Math.max(reach, disc > 0 ? v.y - Math.sqrt(disc) : 0.12);
-      }
-    }
-    st.reachDrop = THREE.MathUtils.damp(st.reachDrop || 0, Math.min(0.12, reach) * (1 - (st.crawlW || 0)), REACH_FOLLOW, dt); // (a crawl's legs lie straight behind: its clip's, not a reach) // (one rate both ways: 40 down and 10 up pumped the hips once a stride)
-    drop += st.reachDrop;
-    if (drop !== 0) { root.position.y -= drop; root.updateMatrixWorld(true); }
-    const fwd = _v4.set(0, 0, 1).applyQuaternion(root.quaternion);
-    const left = _v5.set(1, 0, 0).applyQuaternion(root.quaternion), rootUp = _v6.set(0, 1, 0).applyQuaternion(root.quaternion);
-    for (const k of LR) {
-      const leg = this.leg[k];
-      const target = tgt[k];
-      if (target.distanceToSquared(leg.foot.getWorldPosition(_v1)) < 1e-6) continue;
-      // the knee bends toward the state's own pole (poles.js): forward, and never flared out
-      const PF = st.pole || POLE_REST;
-      const pole = leg.shin.getWorldPosition(K.pole).addScaledVector(fwd, PF.fwd).addScaledVector(left, PF.out * (k === 'L' ? 1 : -1)).addScaledVector(rootUp, PF.up);
-      const fq = leg.foot.getWorldQuaternion(K.fq);
-      this.solveLeg(leg, target, pole);
-      this.setWorldQuat(leg.foot, fq);
-      leg.foot.updateMatrixWorld(true);
-    }
-  }
-
-  /**
-   * The last look at the knees: a knee that has ended up further to the outside of the hip-to-foot line than the state allows
-   * (poles.js) is bent back in by re-solving the leg with its pole pulled across. Rig-independent: it measures where the knee
-   * is. `k` is how much of the pose is the body's own (0 when a tech has taken the body over: a ladder, a hang, the skiff).
-   */
-  guardKnees(k) {
-    const PF = this.st.pole;
-    if (!PF || k < 0.05) return;
-    const root = this.root;
-    const left = _v5.set(1, 0, 0).applyQuaternion(root.quaternion);
-    for (const side of LR) {
-      const leg = this.leg[side];
-      root.updateMatrixWorld(true);
-      const hip = leg.thigh.getWorldPosition(_v1), knee = leg.shin.getWorldPosition(_v2), foot = leg.foot.getWorldPosition(_v3);
-      const ab = _v4.subVectors(foot, hip), t = THREE.MathUtils.clamp(_v6.subVectors(knee, hip).dot(ab) / Math.max(1e-6, ab.lengthSq()), 0, 1);
-      const dev = _v6.copy(knee).sub(hip).addScaledVector(ab, -t); // (from the line to the knee)
-      const out = dev.dot(left) * (side === 'L' ? 1 : -1);
-      const over = out - PF.maxOut;
-      if (over <= 0.005) continue;
-      const fq = leg.foot.getWorldQuaternion(new THREE.Quaternion());
-      const pole = knee.clone().addScaledVector(left, -(side === 'L' ? 1 : -1) * over * 1.6 * k);
-      const tgt = foot.clone();
-      this.solveLeg(leg, tgt, pole);
-      this.setWorldQuat(leg.foot, fq);
-      leg.foot.updateMatrixWorld(true);
-    }
-  }
-
-  solveLeg(leg, target, pole) { this.solve2(leg.thigh, leg.shin, leg.foot, leg.a, leg.b, target, pole); }
-
-  // analytic two-bone IK: the mid joint bends toward `pole`
-  solve2(upper, mid, end, a, b, target, pole) {
-    const S = upper.getWorldPosition(_s2S);
-    const toT = _s2T.subVectors(target, S);
-    let d = toT.length();
-    const dir = toT.divideScalar(d || 1);
-    // (never fully straight: a limb at its full length has no bend direction, and hyperextends or flips on the next frame)
-    d = THREE.MathUtils.clamp(d, Math.abs(a - b) + 1e-3, (a + b) * 0.99);
-    const x = (a * a - b * b + d * d) / (2 * d);
-    const h = Math.sqrt(Math.max(0, a * a - x * x));
-    const pv = _s2P.subVectors(pole, S);
-    pv.addScaledVector(dir, -pv.dot(dir));
-    if (pv.lengthSq() < 1e-8) pv.set(0, -1, 0).addScaledVector(dir, dir.y);
-    pv.normalize();
-    const elbow = _s2E.copy(S).addScaledVector(dir, x).addScaledVector(pv, h);
-    this.aimBone(upper, mid, elbow);
-    this.aimBone(mid, end, _s2E.copy(S).addScaledVector(dir, d)); // (the elbow is set by now: its scratch reused for the end)
-  }
+  // the feet and the knees: feet.js
+  footIK(dt, s, planted, stretch, speed, gaitW) { footIK(this, dt, s, planted, stretch, speed, gaitW); }
+  guardKnees(k) { guardKnees(this, k); }
 
   chestPoint(target) { return this.bones.spine004.getWorldPosition(target); }
   shoulder(side, target) { return this.arm[side].upper.getWorldPosition(target); }
 
-  /**
-   * Reach a hand toward a world pose with weight w. The elbow bends toward where the
-   * animation had it (a little down), so the solution stays on the animated side.
-   * `shift` moves the shoulder onto the first-person camera rig (view-model arms) -
-   * only in first person, where nothing but the hands is drawn.
-   */
-  reachHand(side, pos, quat, w, shift = 0, poleOverride = null) {
-    if (w <= 0.001) return;
-    if (this.reachMark) this.reached[side] = Math.max(this.reached[side], w); // (a hand set on something this frame: the wrist's ease leaves its turn alone)
-    const arm = this.arm[side];
-    const hq = arm.hand.getWorldQuaternion(_rhQ);
-    const hp = arm.hand.getWorldPosition(_rhP);
-    const target = _rhT.copy(hp).lerp(pos, w);
-    const pole = poleOverride ? _rhPole.copy(poleOverride) : arm.fore.getWorldPosition(_rhPole).add(_v1.set(0, -0.12, 0));
-    if (shift > 0 && this.fpCam) {
-      // first person: view-model arms. The shoulders hang off the camera, not the animated
-      // body, so the hands never inherit the run cycle; only the hands are drawn anyway.
-      const cq = this.fpCam.quaternion;
-      const S = _v1.set(-arm.side * 0.2, -0.3, 0.06).applyQuaternion(cq).add(this.fpCam.position);
-      const cur = arm.upper.getWorldPosition(_rhS);
-      const sh = _rhSh.copy(S).sub(cur).multiplyScalar(shift);
-      arm.upper.parent.getWorldQuaternion(_q1).invert();
-      arm.upper.position.add(sh.applyQuaternion(_q1));
-      arm.upper.updateMatrixWorld(true);
-      pole.copy(S).add(_v3.set(-arm.side * 0.45, -0.35, 0).applyQuaternion(cq));
-    }
-    // the shoulder's ball joint: what the arm can't reach, the shoulder gives (up to STRETCH), the way
-    // a posed figure's shoulder is pushed toward the reach
-    if (!(shift > 0 && this.fpCam)) {
-      const S = arm.upper.getWorldPosition(_rhS);
-      const d = S.distanceTo(target), L = (arm.a + arm.b) * 0.96;
-      if (d > L) {
-        const give = Math.min(d - L, STRETCH);
-        const sh = _rhSh.copy(target).sub(S).normalize().multiplyScalar(give);
-        arm.upper.parent.getWorldQuaternion(_q1).invert();
-        arm.upper.position.add(sh.applyQuaternion(_q1));
-        arm.upper.updateMatrixWorld(true);
-      }
-    }
-    this.solve2(arm.upper, arm.fore, arm.hand, arm.a, arm.b, target, pole);
-    this.setWorldQuat(arm.hand, hq.slerp(quat, w));
-    arm.hand.updateMatrixWorld(true);
-  }
-
-  /**
-   * Where a hand has to be for the gun at world matrix M. kind: 'R' right hand holding,
-   * 'L' left hand supporting, 'LH' left hand holding, 'RS' right hand supporting.
-   */
-  handFromGun(M, kind, pos, quat) {
-    const S = kind === 'R' ? this.socketRInv : kind === 'L' ? this.socketL : kind === 'LH' ? this.socketLHInv : this.socketRS;
-    _m1.multiplyMatrices(M, S).decompose(pos, quat, _v4);
-  }
-
-  /** The gun as held: in the right hand, the left, or on its way between them (h 0..1). */
-  heldGun(h, out) {
-    const B = this.bones;
-    if (h <= 0.001) return out.multiplyMatrices(B.handR.matrixWorld, this.socketR);
-    if (h >= 0.999) return out.multiplyMatrices(B.handL.matrixWorld, this.socketLH);
-    const a = new THREE.Matrix4().multiplyMatrices(B.handR.matrixWorld, this.socketR);
-    const b = new THREE.Matrix4().multiplyMatrices(B.handL.matrixWorld, this.socketLH);
-    const pa = new THREE.Vector3(), qa = new THREE.Quaternion(), pb = new THREE.Vector3(), qb = new THREE.Quaternion();
-    a.decompose(pa, qa, _v4); b.decompose(pb, qb, _v4);
-    const k = smooth(0, 1, h);
-    return out.compose(pa.lerp(pb, k), qa.slerp(qb, k), _v4.set(1, 1, 1));
-  }
-
-  /**
-   * Hands and gun, after animate(). o: {
-   *   drawT: 0 holstered .. 1 in hand (the hand reaches the hip first, then the gun comes up),
-   *   upper: pistol layer weight, fw: first-person weight, fpPos/fpQ: first-person gun pose,
-   *   aimPoint, reloading, leftOverride/leftBlend (first-person reload: support hand to the belt),
-   *   wallPoint/wallNormal/wallSide, ledge {point, right}, mantleT
-   * }
-   */
-  poseHands(o) {
-    if (!this.socketR) this.computeSockets();
-    if (!this.holsterLocal) this.computeHolster();
-    const B = this.bones, st = this.st, root = this.root;
-    const HOLD = T.weapon.drawGrab;
-    const inHand = o.drawT > HOLD;
-    this.reached.L = this.reached.R = 0;
-    const Mg = new THREE.Matrix4(), gp = new THREE.Vector3(), gq = new THREE.Quaternion();
-    const hp = new THREE.Vector3(), hq = new THREE.Quaternion();
-    const rq = root.quaternion;
-    const C = (x, y, z) => new THREE.Vector3(x, y, z).applyQuaternion(rq); // char-space direction -> world
-    // the draw: reach back to the small of the back (the shoulder turns back to help),
-    // grab, and whip the gun round the right side up to where the animation holds it
-    const reachW = inHand ? 0 : smooth(0, HOLD, o.drawT);
-    const whipU = inHand ? smooth(HOLD, 1, o.drawT) : 0; // 0 at the holster .. 1 in the animated hand
-    const twist = inHand ? Math.sin(Math.PI * Math.min(1, whipU * 1.3)) * 0.6 + (1 - whipU) * 0.4 : reachW;
-    if (twist > 0.001 && o.drawT < 1) {
-      const upW = _v3.set(0, 1, 0);
-      this.rotW(B.spine001, upW, -T.weapon.drawTwist * DEG * 0.5 * twist);
-      this.rotW(B.spine003, upW, -T.weapon.drawTwist * DEG * 0.5 * twist);
-      this.rotW(B.spine001, C(-1, 0, 0), -8 * DEG * twist); // lean back a touch into the reach
-      root.updateMatrixWorld(true);
-    }
-    const holster = _m1.multiplyMatrices(B.spine.matrixWorld, this.holsterLocal).clone();
-    const hs = inHand ? st.hand : 0; // which hand holds it (0 right .. 1 left)
-    const shR = this.shoulder('R', new THREE.Vector3());
-    const drawPole = shR.clone().add(C(-0.5, -0.25, -0.35)); // elbow out and back
-
-    // 1) turn the chest so the barrel lines up with the crosshair
-    const wAim = (o.upper || 0) * (inHand ? 1 : 0) * (o.reloading ? 0.3 : 1) * (1 - (o.fw || 0)) * (o.aimTurn ?? 1);
-    if (wAim > 0.01 && o.aimPoint) {
-      for (let it = 0; it < 2; it++) {
-        this.heldGun(hs, Mg).decompose(gp, gq, _v4);
-        const bar = new THREE.Vector3(1, 0, 0).applyQuaternion(gq);
-        const muzzle = GUN_POINTS.muzzle.clone().multiplyScalar(this.gunScale).applyMatrix4(Mg);
-        const want = o.aimPoint.clone().sub(muzzle);
-        if (want.length() < 0.8) break;
-        want.normalize();
-        const q = new THREE.Quaternion().setFromUnitVectors(bar, want);
-        const ang = 2 * Math.acos(THREE.MathUtils.clamp(q.w, -1, 1));
-        const lim = 55 * DEG;
-        const k = wAim * (ang > lim ? lim / ang : 1);
-        this.turnW(B.spine003, new THREE.Quaternion().slerp(q, k));
-        root.updateMatrixWorld(true);
-      }
-    }
-
-    // 1b) pinned to something (a ladder, a ledge): the gun arm alone swings to the aim, the torso stays
-    if (o.aimArm === 'R' && inHand && (o.fw || 0) < 0.5 && o.aimPoint) {
-      const k = smooth(HOLD, 1, o.drawT) * (o.upper || 0);
-      if (k > 0.02) {
-        const sh = this.shoulder('R', new THREE.Vector3());
-        const dir = o.aimPoint.clone().sub(sh).normalize();
-        const pos = sh.clone().addScaledVector(dir, 0.66).addScaledVector(UP, -0.05); // (arm out straight: the shoulder gives what the arm can't)
-        const x = dir.clone(), y = UP.clone().addScaledVector(dir, -UP.dot(dir)).normalize();
-        const G = new THREE.Matrix4().makeBasis(x, y, new THREE.Vector3().crossVectors(x, y));
-        G.setPosition(pos);
-        this.handFromGun(G, 'R', hp, hq);
-        this.reachHand('R', hp, hq, k);
-      }
-    }
-
-    // 2) the right hand: to the holster to draw / put away, else wherever the animation has it
-    if (reachW > 0.001) {
-      this.handFromGun(holster, 'R', hp, hq);
-      this.reachHand('R', hp, hq, reachW, 0, drawPole);
-    } else if (inHand && whipU < 1) {
-      // the whip: a curve from the holster grip, out round the right hip, to the animated hand
-      const gpos = new THREE.Vector3(), gquat = new THREE.Quaternion();
-      this.handFromGun(holster, 'R', gpos, gquat);
-      const apos = B.handR.getWorldPosition(new THREE.Vector3()), aquat = B.handR.getWorldQuaternion(new THREE.Quaternion());
-      const side = root.position.clone().add(C(-0.5, 1.05, -0.05));
-      const u = whipU, a = (1 - u) * (1 - u), b = 2 * u * (1 - u), c = u * u;
-      const p = gpos.multiplyScalar(a).addScaledVector(side, b).addScaledVector(apos, c);
-      const q = gquat.slerp(aquat, smooth(0.15, 0.85, u));
-      this.reachHand('R', p, q, 1, 0, drawPole.lerp(B.forearmR.getWorldPosition(new THREE.Vector3()).add(_v1.set(0, -0.12, 0)), u));
-    }
-    if (inHand) this.heldGun(hs, Mg);
-    else Mg.copy(holster);
-    Mg.decompose(gp, gq, _v4);
-    // first person: the view-model pose (the gun rises out of the holster as it's drawn)
-    const fwG = (o.fw || 0) * (inHand ? smooth(HOLD, 0.9, o.drawT) : 0);
-    if (fwG > 0 && o.fpPos) { gp.lerp(o.fpPos, fwG); gq.slerp(o.fpQ, fwG); }
-    this.gun.position.copy(gp);
-    this.gun.quaternion.copy(gq);
-    this.gun.updateMatrixWorld(true);
-
-    // 3) hands on the gun wherever it went (a no-op in third person, where it's already in the hand)
-    const shift = (o.fw || 0) > 0.5 ? 1 : 0;
-    this.fpCam = o.camera;
-    // holding: the right hand while hs < 0.5, the left after; mid-swap both are on it
-    const holdR = inHand ? 1 - smooth(0.55, 0.85, hs) : 0, holdL = inHand ? smooth(0.15, 0.45, hs) : 0;
-    const swapping = hs > 0.001 && hs < 0.999;
-    if (holdR > 0.001 && (fwG > 0.001 || swapping)) {
-      this.handFromGun(this.gun.matrixWorld, 'R', hp, hq);
-      this.reachHand('R', hp, hq, holdR, shift);
-    }
-    if (holdL > 0.001 && (fwG > 0.001 || swapping)) {
-      this.handFromGun(this.gun.matrixWorld, 'LH', hp, hq);
-      this.reachHand('L', hp, hq, holdL, shift);
-    }
-    // the support hand: on the grip when aiming, off it for reloads and contacts
-    const supSide = hs < 0.5 ? 'L' : 'R';
-    let wL = Math.max(o.upper || 0, fwG) * (inHand ? smooth(HOLD, 1, o.drawT) : 0) * Math.abs(1 - 2 * hs) * (o.aimArm ? 0 : 1); // (one-handed: the other hand is holding on)
-    if (o.reloading && fwG < 0.5) wL = 0; // the reload clip drives it
-    let contactL = 0, contactR = 0;
-    // wall: the wall-side hand flat on the wall, a little ahead (unless it's holding the gun)
-    const wallSide = o.wallSide > 0 ? 'R' : 'L';
-    const wallW = st.aw * (o.wallPoint ? 1 : 0) * (1 - (wallSide === 'R' ? holdR : holdL));
-    if (wallW > 0.01) {
-      const n = o.wallNormal;
-      const fwd = new THREE.Vector3(0, 0, 1).applyQuaternion(root.quaternion);
-      const dir = fwd.clone().addScaledVector(UP, 0.8).addScaledVector(n, -fwd.dot(n)).normalize();
-      const q = this.handQuat(this.arm[wallSide], dir, n.clone().negate());
-      const p = o.wallPoint.clone().addScaledVector(n, 0.02).sub(this.arm[wallSide].palmPt.clone().applyQuaternion(q));
-      this.reachHand(wallSide, p, q, wallW);
-      if (wallSide === 'L') contactL = wallW; else contactR = wallW;
-      // and the wall-side foot, while the run's cycle has it down, set on the wall (a light correction: a sole put on the surface it
-      // is near, never more than a hand's breadth away; the sprint cycle is what moves the legs)
-      const leg = this.leg[wallSide], ck = smooth(0.45, 0.8, st.contact?.[wallSide] ?? 0) * st.aw * (o.wallPoint ? 1 : 0);
-      if (ck > 0.01) {
-        leg.foot.updateMatrixWorld(true);
-        const F = leg.foot.getWorldPosition(_v1), off = _v2.subVectors(F, o.wallPoint).dot(n) - 0.07;
-        if (Math.abs(off) < 0.22) {
-          const fq = leg.foot.getWorldQuaternion(new THREE.Quaternion());
-          const tgt = F.clone().addScaledVector(n, -off * ck);
-          const pole = leg.shin.getWorldPosition(new THREE.Vector3()).addScaledVector(n, 0.25).addScaledVector(fwd, 0.1);
-          this.solveLeg(leg, tgt, pole);
-          this.setWorldQuat(leg.foot, fq);
-          leg.foot.updateMatrixWorld(true);
-        }
-      }
-    }
-    // ledge: both hands plant on the lip during the first part of the vault
-    const ledgeW = (o.ledge ? st.mn : 0) * (1 - smooth(0.45, 0.75, o.mantleT ?? 1));
-    if (ledgeW > 0.01) {
-      const fwd = new THREE.Vector3(0, 0, 1).applyQuaternion(root.quaternion);
-      for (const side of LR) {
-        if ((side === 'R' ? holdR : holdL) > 0.5) continue;
-        const sg = side === 'L' ? 1 : -1;
-        const q = this.handQuat(this.arm[side], fwd, new THREE.Vector3(0, -1, 0));
-        const p = o.ledge.point.clone().addScaledVector(o.ledge.right, -sg * 0.22).addScaledVector(fwd, 0.08)
-          .sub(this.arm[side].palmPt.clone().applyQuaternion(q)).add(new THREE.Vector3(0, 0.02, 0));
-        this.reachHand(side, p, q, ledgeW);
-        if (side === 'L') contactL = Math.max(contactL, ledgeW); else contactR = Math.max(contactR, ledgeW);
-      }
-    }
-    wL *= 1 - (supSide === 'L' ? contactL : contactR);
-    if (wL > 0.001) {
-      this.handFromGun(this.gun.matrixWorld, supSide === 'L' ? 'L' : 'RS', hp, hq);
-      if (o.leftBlend > 0 && o.leftOverride) hp.lerp(o.leftOverride, o.leftBlend);
-      this.reachHand(supSide, hp, hq, wL, shift);
-    }
-    // flat fingers on a surface
-    for (const [side, k] of [['L', contactL], ['R', contactR]]) {
-      if (k <= 0.01) continue;
-      for (const f of this.arm[side].fingers) f.quaternion.slerp(this.rest.get(f).q, k * 0.85);
-    }
-    this.gunHeld = holdR > 0.5; // (techs leave a hand that's holding the gun alone)
-    // the hands and forearms out of the body before what they hold is placed from them (anim/standoff.js): a hand holding the gun or set
-    // on something by now (the draw, a wall, a ledge, the gun's support) stays where it is. Not in first person (the view-model's arms)
-    const tp = (o.fw || 0) < 0.5, dtA = st.dt ?? 1 / 60;
-    const tool = o.techs?.game?.belt?.inHand, tt = tool && tool.id !== 'psygun' ? o.techs.get?.(tool.id) : null, rides = tt && (tt.drawT ?? 0) > 0.02 ? (tt.ridesHand === undefined ? 'R' : tt.ridesHand) : null;
-    if (tp) { this.reachMark = false; this.standoff.apply({ L: Math.max(this.reached.L, holdL), R: Math.max(this.reached.R, holdR) }); this.reachMark = true; }
-    o.techs?.hands(this, o);
-    if (!o.techs?.unitFrame?.()) this.guardKnees((1 - Math.min(1, o.techs?.override || 0)) * (1 - (st.crawlW || 0)));
-    // (each wrist within its range, anim/wristease.js: a hand something rides or the IK set (the tool's hand, the gun's, a hand on a haft, a
-    //  pot or a wall) keeps its place and turn and the elbow swings for it; then the knees and elbows back on their hinge, the joints
-    //  where they are, the legs and the arms always (anim/hinges.js: every clip set is repaired); then a free hand's palm turned about its
-    //  fingers' line and a bend past range eased back, and that free hand kept out of the body once more, its fingers moved)
-    const bound = { L: Math.max(this.reached.L, holdL, rides === 'L' ? 1 : 0), R: Math.max(this.reached.R, holdR, rides === 'R' ? 1 : 0) };
-    if (tp) this.wrists.apply(dtA, bound);
-    this.hinges.apply(dtA, 1, 1);
-    if (tp) {
-      this.wrists.relax(dtA, bound);
-      this.reachMark = false; this.standoff.apply(bound); this.reachMark = true;
-    }
-    // (the limits last, after the knee guard: CLAUDE.md. A tech that owns the body, a ladder, a pole, has posed the hands to its own
-    //  handholds, and keeps them; one whose hands are a tool's, `limitsLast` (the hook's line: tools/sondelass/grapple.js), does not.
-    //  CROSSING, Calissa's: the hang's fingers were 5 to 42 degrees past their range, unclamped)
-    if ((o.techs?.override || 0) < 0.5 || o.techs?.active?.limitsLast) this.limits.apply();
-    root.updateMatrixWorld(true);
-  }
-
-  // rotate `bone` (in world space) so that `child` lands on `point`
-  aimBone(bone, child, point) {
-    bone.updateMatrixWorld(true);
-    const p = bone.getWorldPosition(_abP);
-    const c = child.getWorldPosition(_abC);
-    const from = c.sub(p).normalize();
-    const to = _abT.copy(point).sub(p).normalize();
-    const swing = _abQ1.setFromUnitVectors(from, to);
-    const wq = bone.getWorldQuaternion(_abQ2);
-    const parentQ = bone.parent.getWorldQuaternion(_abQ3);
-    bone.quaternion.copy(parentQ.invert().multiply(swing.multiply(wq)));
-    bone.updateMatrixWorld(true);
-  }
-
-  /** World rotation for a hand whose fingers point along dirWorld with the palm facing palmWorld. */
-  handQuat(arm, dirWorld, palmWorld) {
-    const y1 = dirWorld.clone().normalize();
-    const n1 = palmWorld.clone().addScaledVector(y1, -palmWorld.dot(y1)).normalize();
-    const y0 = new THREE.Vector3(0, 1, 0);
-    const n0 = arm.palmLocal.clone().addScaledVector(y0, -arm.palmLocal.dot(y0)).normalize();
-    const M0 = new THREE.Matrix4().makeBasis(y0, n0, new THREE.Vector3().crossVectors(y0, n0));
-    const M1 = new THREE.Matrix4().makeBasis(y1, n1, new THREE.Vector3().crossVectors(y1, n1));
-    return new THREE.Quaternion().setFromRotationMatrix(M1.multiply(M0.transpose()));
-  }
+  // the hands and the gun: hands.js
+  reachHand(side, pos, quat, w, shift, poleOverride) { reachHand(this, side, pos, quat, w, shift, poleOverride); }
+  handFromGun(M, kind, pos, quat) { handFromGun(this, M, kind, pos, quat); }
+  heldGun(h, out) { return heldGun(this, h, out); }
+  poseHands(o) { poseHands(this, o); }
 }
-
-function smooth(a, b, t) { const x = THREE.MathUtils.clamp((t - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); }
