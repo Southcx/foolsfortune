@@ -30,13 +30,17 @@
 // carousel (Bayol's and Savage's gallopers, here clay jars); Kirby Air Ride's and Mario Party's wheels of fortune; the house's own kit
 // (vfx/racewaypark.js's builder of coloured triangles, its lajvardina blue and gold).
 //
-//   game.bazaarHall = new BazaarHall(game)   (main.js, after game.bazaar)   .update(dt)
+// AREAS (stage 2, render/areas.js): `build(game)` lays the hall (its meshes, outline and colliders) and `teardown(game)` takes it all
+// down, the materials kept (their programs stay compiled, so coming back compiles nothing); both are safe to call twice. Built from the
+// constructor until the bazaar's own area builds it (Dovina's: her room's build and teardown call these).
+//
+//   game.bazaarHall = new BazaarHall(game)   (main.js, after game.bazaar)   .update(dt)   .build(game)   .teardown(game)   .built
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { BAZAAR } from '../world/bazaar/bazaar.js';
 import { TABLES } from '../world/bazaar/session.js';
 import { featTint, SCHILLER } from './oxidation.js';
-import { addOutline } from '../render/outline.js';
+import { addOutline, OUTLINES } from '../render/outline.js';
 import { zoneOf } from '../render/zonemap.js';
 import { RAPIER, GROUPS } from '../core/physics.js';
 
@@ -123,10 +127,17 @@ function suitGlyph(k) {
 
 export class BazaarHall {
   constructor(game) {
-    this.game = game; this.t = 0;
-    const B = BAZAAR, Bz = game.bazaar;
+    this.game = game; this.t = 0; this.built = false;
     this.stone = new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.5, flatShading: true }); // (the kit's parameters: its program)
     this.glowMat = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, vertexColors: true }); // (the rope's and the chest model's: their program)
+    this.neonMats = [0, 1, 2, 3].map(() => new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, vertexColors: true }));
+    this.build(game);
+  }
+
+  /** The hall laid: its meshes in the scene, its outline, its colliders; Dovina's placeholders out. */
+  build(game = this.game) {
+    if (this.built) return; this.built = true;
+    const B = BAZAAR, Bz = game.bazaar;
     const S = new Tris(), F = new Tris(), L = new Tris(), N = [new Tris(), new Tris(), new Tris(), new Tris()];
     this.floor(F); this.stalls(S, L, N); this.neonBands(N); this.strings(S, L); this.cage(S, L, N); this.gate(S, L); this.plinths(S);
     const wheel = new Tris(), rotor = new Tris(); this.wheelOfFortune(S, L, wheel); this.carousel(S, rotor); this.d20(S);
@@ -137,7 +148,7 @@ export class BazaarHall {
     };
     this.meshes = [put(F, this.stone), put(S, this.stone, 0, 0, 0, true), put(L, this.glowMat)];
     this.dome = put(dome, this.glowMat, 0, B.wall - 2, 0); this.dome.scale.y = B.dome / H.dome.r;
-    this.neon = N.map((T) => put(T, new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, vertexColors: true })));
+    this.neon = N.map((T, k) => put(T, this.neonMats[k]));
     this.wheel = put(wheel, this.stone, 0, H.wheel.y, H.wheel.z); this.rotor = put(rotor, this.stone, H.carousel.x, 0, H.carousel.z);
     // Dovina's placeholders these replace: her dome and neon tori out of the scene; her lamps (the light budget's) to the lanterns' warmth
     if (Bz) {
@@ -147,11 +158,24 @@ export class BazaarHall {
     this.colliders(game);
   }
 
+  /** The hall taken down: every mesh out of the scene and its geometry let go (its outline's too), its colliders removed; the materials
+   *  kept. Dovina's placeholders are hers to build again with her room. */
+  teardown(game = this.game) {
+    if (!this.built) return; this.built = false;
+    for (const m of [...this.meshes, this.dome, ...this.neon, this.wheel, this.rotor]) {
+      const o = m.userData.outline; if (o) { OUTLINES.delete(o); m.userData.outline = null; }
+      m.parent?.remove(m); m.geometry.dispose();
+    }
+    this.meshes = this.neon = []; this.dome = this.wheel = this.rotor = null;
+    const W = game.level?.physics?.world; for (const c of this.cols || []) W?.removeCollider(c, false); this.cols = [];
+  }
+
   /** Solid where the Courier would walk through the dress: the stalls' counters, the curtain behind the gate, the carousel, the d20. */
   colliders(game) {
     const Lv = game.level, B = BAZAAR; if (!Lv?.physics || !Lv.fixedBody) return;
-    const cuboid = (x, y, z, hx, hy, hz, ry = 0) => { const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, ry, 0)); Lv.physics.world.createCollider(RAPIER.ColliderDesc.cuboid(hx, hy, hz).setTranslation(B.x + x, B.y + y, B.z + z).setRotation(q).setCollisionGroups(GROUPS.static).setFriction(0.9), Lv.fixedBody); };
-    const cyl = (x, z, r, h) => Lv.physics.world.createCollider(RAPIER.ColliderDesc.cylinder(h / 2, r).setTranslation(B.x + x, B.y + h / 2, B.z + z).setCollisionGroups(GROUPS.static), Lv.fixedBody);
+    this.cols = [];
+    const cuboid = (x, y, z, hx, hy, hz, ry = 0) => { const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, ry, 0)); this.cols.push(Lv.physics.world.createCollider(RAPIER.ColliderDesc.cuboid(hx, hy, hz).setTranslation(B.x + x, B.y + y, B.z + z).setRotation(q).setCollisionGroups(GROUPS.static).setFriction(0.9), Lv.fixedBody)); };
+    const cyl = (x, z, r, h) => this.cols.push(Lv.physics.world.createCollider(RAPIER.ColliderDesc.cylinder(h / 2, r).setTranslation(B.x + x, B.y + h / 2, B.z + z).setCollisionGroups(GROUPS.static), Lv.fixedBody));
     for (const a of this.stallAngles()) { const r = H.stallR - 2; cuboid(Math.cos(a) * r, 0.6, Math.sin(a) * r, 3, 0.6, 1.9, -a + Math.PI / 2); }
     cuboid(0, 8, B.r - 0.8, 5.2, 8, 0.4);
     cyl(H.carousel.x, H.carousel.z, H.carousel.r + 0.2, 6.8); cyl(H.d20.x, H.d20.z, 2.1, 5.6);
@@ -360,7 +384,7 @@ export class BazaarHall {
   }
 
   update(dt) {
-    if (zoneOf(this.game.camera.position) !== 'bazaar') return;
+    if (!this.built || zoneOf(this.game.camera.position) !== 'bazaar') return;
     const t = (this.t += dt);
     this.dome.rotation.y = t * 0.006;
     this.wheel.rotation.z = -(t * 0.5 + Math.sin(t * 0.21) * 1.2);
