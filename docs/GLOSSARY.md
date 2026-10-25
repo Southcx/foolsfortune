@@ -409,6 +409,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the basement** — below the workshop: the hub, the course, the movement lab, the lap circuits, the siege. *Not:* "the lab".
 - **the hub** — the basement's centre, where the Index stands. **The Index** (`src/feedback/indexmenu.js`): the console there; F, and pick a room.
 - **a Well's danger mark** (plain name; `dangerPips`, `src/ui/dangerpips.js`) — its FOE's class as vermilion pips before a Well's row at the Index (the Great Dunemaw: two); a world mark that warns and never gates. *Not:* a stun's stars, the Dissonance arc.
+- **the area wipe / an area card** (plain names; `AreaWipe`, `game.areaWipe`, `src/vfx/areawipe.js` / `AREA_CARDS`, `src/vfx/areacards.js`; the seam's kind `area`, `/areawipe`) — a change of area covered: slabs of the island's dress closing in from the edges (how you left leads), on them the Gate's hoops round the card of where you go, its layer and name, and a thread of the film filling with the load; then parting outward / that card, a painted vignette (procedural until painted). *Not:* the maw wipe, the gate-out, an area (Dovina's, Petra's `game.areas`).
 - **the Gate's hoops / the gate-out** (`GateRing`, `game.gateRing`, `src/vfx/gatering.js`) — three glazed hoops turning round a pale sphere over
   the Index / bands of light climbing the Courier as a room is chosen there, under the seam, and coming down over them on arrival. *Not:* a ring.
 - **the course** — the basement's loop of eight stations (checkpoints), with laps and splits.

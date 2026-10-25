@@ -41,6 +41,7 @@ import { AwakeningLook } from '../vfx/awakeninglook.js';
 import { GodhandLooks } from '../vfx/godhand/godhandlooks.js';
 import { PalmDieLook } from '../vfx/godhand/palmdie.js';
 import { MawWipe } from '../vfx/mawwipe.js';
+import { AreaWipe } from '../vfx/areawipe.js';
 import { AberrantWipe } from '../vfx/aberrantwipe.js';
 import { Daturas } from '../vfx/datura.js';
 import { Shore } from '../vfx/shore.js';
@@ -75,6 +76,7 @@ export async function bootWorld(game, made) {
     game.daturas = new Daturas(game, [{ ...at(-2.2), n: 9 }, { ...at(-1.75, 1.18), n: 6 }, { ...at(-2.6, 1.1), n: 7 }]);
   }
   game.mawWipe = new MawWipe(game); // (the seam into a Well, covered: close(onCovered), then open() when the floor is built)
+  game.areaWipe = new AreaWipe(game); // (the seam's kind 'area': a change of area covered by the island's frame, the card and the name; DOM, vfx/areawipe.js)
   game.aberrantWipe = new AberrantWipe(game); // (the battle transition into a puzzle duel with an aberrant: catch, bug, crackle on close(onCovered, { foe }), the shatter on open(); a screen volume of the glow, vfx/aberrantwipe.js)
   game.weatherLook = new WeatherLook(game); // (the weather's and the hour's look: reads game.weather; with none, the painting as it is)
   game.godhandLooks = new GodhandLooks(game); // (the god powers' marks, the miracles' falls, the drawn sign: vfx/godhand/godhandlooks.js)
