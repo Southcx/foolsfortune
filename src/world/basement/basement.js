@@ -26,7 +26,7 @@
 //   wings open to each other through arches (world/basement/techwing.js ARCHES): the hands, the
 //   rigging, the techs, the clockwork mill and the kiln stack. One Index entry.
 //
-// The runtime lives beside it: the course (world/basement/course.js, `Course`, re-exported here for its one importer) and the Index's
+// The runtime lives beside it: the course (world/basement/course.js, `Course`) and the Index's
 // rooms (world/rooms.js).
 //
 // Distances are sized at ~85% of what the controller measured at default
@@ -39,7 +39,6 @@ import { ROOM_GLAZE_ID as RG } from '../../vfx/roomglazes.js'; // (the hub's sal
 import { bakedCanvasTexture } from '../../render/bakedcanvas.js';
 import { TR } from '../testroom/layout.js';
 
-export { Course } from './course.js'; // (the runtime moved to course.js; boot/course.js still asks for it here)
 
 
 export const BASE_Y = -14;
