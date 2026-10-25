@@ -9,8 +9,9 @@
 //                it. How you left leads the close: an arch, a door or a gap closes like doors (the sides first), a sandfall from above
 //                (the top first), a crest from the top and bottom together; anything else, all four at once. Then `onCovered`.
 //   THE CARD     (held) on the clay ground, the destination: the Gate's three glazed hoops (vfx/gatering.js: celadon, shino, oribe)
-//                turning slowly round a small painted card of where you go (vfx/areacards.js AREA_CARDS; procedural placeholders
-//                until the painted cards come), its layer small in the System's dot face over the name set in Cinzel, and under it a
+//                turning slowly round a small painted card of where you go (vfx/areacards.js AREA_CARDS: its painting, asked for
+//                as the frame closes; drawn from its palette if the painting is not there by the close's end; the card comes in
+//                once it stands), its layer small in the System's dot face over the name set in Cinzel, and under it a
 //                thread of the film (the labradorite's schiller, OVERLAY.md 10.4): filled by the seam's progress when it is given
 //                (`progress()` 0..1, never going back), else breathing, a glint running along it. The card drifts, the hoops turn,
 //                the thread moves: held for 0.2 or for many real seconds it never looks stuck.
@@ -37,7 +38,7 @@
 // ---------------------------------------------------------------------------------------
 import { dot, FILM, GOLD, SALT } from '../ui/brineframe.js';
 import { FONT } from '../ui/theme.js';
-import { cardOf, drawAreaCard } from './areacards.js';
+import { cardOf, showAreaCard } from './areacards.js';
 
 export const AREA_WIPE = { close: 0.55, cardIn: 0.5, cardAt: 0.3, read: 0.6, cardOut: 0.18, open: 0.55, card: [320, 180] }; // (real seconds; the card's canvas in px)
 const LEAD = { // how you left leads the close: each side's delay, a fraction of the close (top, right, bottom, left)
@@ -94,7 +95,7 @@ export class AreaWipe {
   constructor(game) {
     this.game = game;
     this.el = null; // (built the first time it closes)
-    this.phase = null; this.t = 0; this.held = 0; this.ot = 0; this.cb = null; this.wantOpen = false; this.prog = 0; this.opts = {};
+    this.phase = null; this.t = 0; this.held = 0; this.ot = 0; this.cb = null; this.wantOpen = false; this.prog = 0; this.opts = {}; this.cardT = null;
   }
 
   make() {
@@ -119,7 +120,8 @@ export class AreaWipe {
     opts = opts || {};
     const A = cardOf(opts.to), name = opts.name ?? A.name ?? '';
     const $ = this.$, [cw, ch] = AREA_WIPE.card;
-    $.canvas.width = cw; $.canvas.height = ch; drawAreaCard($.canvas, opts.to, { name });
+    $.canvas.width = cw; $.canvas.height = ch; this.cardT = null;
+    showAreaCard($.canvas, opts.to, { name, wait: AREA_WIPE.close }, () => { this.cardT = this.phase ? this.t : 0; }); // (the card comes in once it stands; at once when it stood before the close began)
     $.name.textContent = name; $.name.style.display = name ? '' : 'none';
     $.layer.textContent = A.layer || ''; $.layer.style.display = $.layer.textContent ? '' : 'none';
     this.el.dataset.dress = A.dress === 'brine' ? 'brine' : 'clay';
@@ -163,7 +165,7 @@ export class AreaWipe {
     } else {
       const u = this.t / W.close;
       side = this.lead.map((d) => ease((u - d) / (1 - d)));
-      heart = ease((this.t - W.cardAt) / W.cardIn);
+      heart = this.cardT == null ? 0 : ease((this.t - Math.max(W.cardAt, this.cardT)) / W.cardIn);
     }
     const [kt, kr, kb, kl] = side;
     $.t.style.transform = `translateY(${(kt - 1) * 100}%)`; $.b.style.transform = `translateY(${(1 - kb) * 100}%)`;
