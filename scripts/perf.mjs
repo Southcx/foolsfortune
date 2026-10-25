@@ -147,6 +147,7 @@ try {
     // (a place not wanted is walked through and not drawn; the built game's is drawn 3 times, for its heap; a measured one draws 10 warm
     // frames of 40 and 20 timed of 60 ticks, every third: SwiftShader's draw is the run's cost, 1 to 2 real s a frame)
     const place = (key) => {
+      G.game.areas?.settle(); // (every area not here let go now: a route walked without draws passes in real milliseconds, so a GRACE of real seconds never ran out and a place was measured with the last one's dressing still built)
       if (!full) { for (let i = 0; i < 40; i++) { G.tick(1 / 60); if (i % 13 === 0) G.draw(); } return null; }
       if (!want.includes(key)) { for (let i = 0; i < 40; i++) G.tick(1 / 60); return null; }
       for (let i = 0; i < 40; i++) { G.tick(1 / 60); if (i % 4 === 0) G.draw(); }
