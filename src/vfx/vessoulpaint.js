@@ -3,11 +3,11 @@
 // with gears, braided rope round the fingers, the porthole ring on its back, the brass gear plate at the wrist) and the Pneuka Jar
 // (courier_pneukajar_base.png: three bands round it, the face with its eyes and the crown's dot, the ornate middle with its circle,
 // the arches below), as the house's painted material: the painting as the colour and, at the same strength the Courier's armour and
-// mask take (character.js PAINT_LIGHT), as a share of its own glow, so its painted values hold on the shadowed side instead of
+// mask take (courier/character/bodymaterials.js PAINT_LIGHT), as a share of its own glow, so its painted values hold on the shadowed side instead of
 // sinking to black. Mipmapped, so the rope's braid and the gears never crawl at a distance. The Jar's five gems are not painted:
 // they stay the core's light (godhand/jar.js coreMat). Both fit their meshes' UVs (checked: each UV wireframe laid over its image).
 //
-// Prior art: the Courier's paintings (courier/character.js painted()), hand-painted textures over a lit toon base as in Wind Waker
+// Prior art: the Courier's paintings (courier/character/bodymaterials.js painted()), hand-painted textures over a lit toon base as in Wind Waker
 // and Okami's sumi-e ink, which glow a little of their own colour back so the paint reads in shade.
 //
 //   const m = godHandPainting()   const j = pneukaJarPainting()   paintFlash(j, flash)  (a blow's flash, a mend's warmth: -1 .. 1)
@@ -20,7 +20,7 @@ import { withFade, rigUniforms } from '../render/outline.js';
 import handB64 from '../assets/courier/courier_godhand_base.png?b64';
 import jarB64 from '../assets/courier/courier_pneukajar_base.png?b64';
 
-export const PAINT_LIGHT = 0.45; // (the share of itself a painting glows back: the Courier's, character.js)
+export const PAINT_LIGHT = 0.45; // (the share of itself a painting glows back: the Courier's, courier/character/bodymaterials.js)
 
 function painting(b64) {
   const t = new THREE.TextureLoader().load(`data:image/png;base64,${b64}`);

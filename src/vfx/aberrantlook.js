@@ -24,7 +24,7 @@
 // Cost: ONE program a kind of aberrant body (the slip jelly and its blotlings, the Lantern Wisp, a clapperjar), shared by every
 // aberrant of that kind, and one for the tsuitate's idol (`aberrantFigurine`): the body's main material is given a copy whose
 // onBeforeCompile runs the original's first (the jelly's deformer, the rim's define) and then this one's, keyed `<its key>|aberrant1`.
-// Warmed at boot (`prewarm()`: one body of each kind present wears its copy through the compile; the copies are kept, so the
+// Warmed at boot (`prewarm()`: one body of each kind present wears its copies through the compile, every part hold() dresses; the copies are kept, so the
 // programs live). The shadow is the blob shadow's program (vfx/blobshadow.js, the same parameters), the shards the data drain's
 // cubes' (vfx/datadrain.js: MeshBasicMaterial, unlit, instanced, its colours per instance): no program of their own.
 // Rule 242: nothing shared is changed; the body's original material stays where its look writes it, synced to the copy each frame.
@@ -134,7 +134,9 @@ function lookCopy(m, U) {
 }
 
 /** What decides a part's program, beside its key: so a part is dressed only where its main part's program would draw it. */
-const sigOf = (o, m) => [m.type, !!m.map, !!m.vertexColors, !!m.flatShading, !!o.isSkinnedMesh, !!m.transparent, m.side, JSON.stringify(m.defines || {}), m.customProgramCacheKey?.call(m)].join('|');
+// (every map and switch three keys a program by, so a part is dressed only where it would share the main part's program: the Wisp's
+// glow and flame, its own maps, were dressed as two programs of their own, measured 2026-10-25)
+const sigOf = (o, m) => [m.type, !!m.map, !!m.emissiveMap, !!m.alphaMap, !!m.normalMap, !!m.bumpMap, !!m.aoMap, !!m.lightMap, !!m.envMap, !!m.specularMap, !!m.roughnessMap, !!m.metalnessMap, m.alphaTest > 0, !!m.alphaHash, m.fog !== false, m.toneMapped !== false, !!m.vertexColors, !!m.flatShading, !!o.isSkinnedMesh, !!o.morphTargetInfluences?.length, !!o.geometry?.attributes?.color, !!m.transparent, m.side, JSON.stringify(m.defines || {}), m.customProgramCacheKey?.call(m)].join('|');
 
 /** The duel's idol (its own material, hooked in place): the look on the tsuitate's figurine, off when the inversion is compared. */
 export function aberrantFigurine(mat, { height = 0.84, y0 = -0.42, flat = 1, seed = 1.7 } = {}) {
@@ -158,6 +160,29 @@ function shadowGradient() {
   x.fillStyle = g; x.fillRect(0, 0, S, S);
   const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; t.name = 'aberrant-shadow';
   return t;
+}
+
+/** Every part of a body its main part's program draws given the look's copy (one copy a material): what hold() dresses, and what the
+ *  boot's warm-up compiles, one function for both (the warm-up dressed the main part alone while play dressed the Wisp's glow and flame
+ *  too: two programs compiled in play, 2026-10-25; they are their own programs, with their emissive maps, so `sigOf` now leaves them be). */
+function dressParts(c, mesh, U, list, casts = null) {
+  const mains = new Set(mesh ? (Array.isArray(mesh.material) ? mesh.material : [mesh.material]) : []);
+  const sigs = new Set([...mains].filter(lit).map((m) => sigOf(mesh, m))); // (a body of many parts, the Wisp's: every part its main part's program draws)
+  const copies = new Map();
+  (c.root || c.body)?.traverse?.((o) => {
+    if (!o.isMesh) return;
+    if (casts && o.castShadow) { casts.push(o); o.castShadow = false; } // (its true shadow off: the wrong one is drawn instead)
+    if (!o.material || o.name?.startsWith?.('databug')) return;
+    const mats = Array.isArray(o.material) ? o.material : [o.material];
+    mats.forEach((m, slot) => {
+      if (!mains.has(m) && !(lit(m) && sigs.has(sigOf(o, m)))) return; // (only what the body's own program draws: one program a kind)
+      let k = copies.get(m); if (k === undefined) { k = lookCopy(m, U); copies.set(m, k); }
+      if (!k) return;
+      list.push({ o, slot: Array.isArray(o.material) ? slot : -1, m, k });
+      if (Array.isArray(o.material)) { o.material = o.material.slice(); o.material[slot] = k; } else o.material = k;
+    });
+  });
+  return list;
 }
 
 const KEEP = []; // (the boot's copies, never disposed: their programs live while one exists)
@@ -192,22 +217,7 @@ export class AberrantLook {
     let H = 1, y0 = 0;
     if (mesh?.geometry) { mesh.geometry.computeBoundingBox(); const bb = mesh.geometry.boundingBox; H = Math.max(1e-3, bb.max.y - bb.min.y); y0 = bb.min.y; }
     const U = uniformsFor(H, y0, seed);
-    const mains = new Set(mesh ? (Array.isArray(mesh.material) ? mesh.material : [mesh.material]) : []);
-    const sigs = new Set([...mains].filter(lit).map((m) => sigOf(mesh, m))); // (a body of many parts, the Wisp's: every part its main part's program draws)
-    const copies = new Map();
-    (c.root || c.body)?.traverse?.((o) => {
-      if (!o.isMesh) return;
-      if (o.castShadow) { casts.push(o); o.castShadow = false; } // (its true shadow off: the wrong one is drawn instead)
-      if (!o.material || o.name?.startsWith?.('databug')) return;
-      const mats = Array.isArray(o.material) ? o.material : [o.material];
-      mats.forEach((m, slot) => {
-        if (!mains.has(m) && !(lit(m) && sigs.has(sigOf(o, m)))) return; // (only what the body's own program draws: one program a kind)
-        let k = copies.get(m); if (k === undefined) { k = lookCopy(m, U); copies.set(m, k); }
-        if (!k) return;
-        list.push({ o, slot: Array.isArray(o.material) ? slot : -1, m, k });
-        if (Array.isArray(o.material)) { o.material = o.material.slice(); o.material[slot] = k; } else o.material = k;
-      });
-    });
+    dressParts(c, mesh, U, list, casts);
     const shadow = new THREE.Mesh(this.shadowGeo, this.shadowMat); shadow.name = 'aberrant-shadow'; shadow.castShadow = shadow.receiveShadow = false; shadow.renderOrder = 1; shadow.userData.zoneFree = true; shadow.visible = false;
     this.game.scene?.add(shadow);
     const n = Math.min(ABERRANT_LOOK.shards, this.free.length), shards = [];
@@ -297,18 +307,17 @@ export class AberrantLook {
     for (const kind of [g.wisps?.list?.[0], g.jellies?.list?.[0], g.clappers?.list?.[0]]) {
       if (!kind) continue;
       const mesh = mainMesh(kind); if (!mesh) continue;
-      const mats = Array.isArray(mesh.material) ? mesh.material : [mesh.material];
-      const U = uniformsFor(1, 0, 0, 0, { value: 1 });
-      const ks = mats.map((m) => lookCopy(m, U));
-      if (!ks.some(Boolean)) continue;
-      swaps.push({ mesh, was: mesh.material }); KEEP.push(...ks.filter(Boolean));
-      mesh.material = Array.isArray(mesh.material) ? mats.map((m, i) => ks[i] || m) : ks[0];
-      for (let o = mesh; o; o = o.parent) if (!o.visible) { o.visible = true; shown.push(o); }
+      const list = dressParts(kind, mesh, uniformsFor(1, 0, 0, 0, { value: 1 }), []); // (every part hold() would dress, as it would)
+      if (!list.length) continue;
+      swaps.push(list); KEEP.push(...new Set(list.map((e) => e.k)));
+      for (const { o } of list) for (let p = o; p; p = p.parent) if (!p.visible) { p.visible = true; shown.push(p); }
     }
     const parked = new THREE.Mesh(this.shadowGeo, this.shadowMat); parked.position.set(0, -50, 0); parked.castShadow = parked.receiveShadow = false; g.scene?.add(parked);
     this.shards.setMatrixAt(0, _m.compose(_v.set(0, -50, 0), _q.identity(), _s.set(0.1, 0.1, 0.1))); this.shards.instanceMatrix.needsUpdate = true;
     return () => {
-      for (const s of swaps) s.mesh.material = s.was;
+      for (const list of swaps) for (const e of list) {
+        if (e.slot >= 0 && Array.isArray(e.o.material)) { e.o.material = e.o.material.slice(); e.o.material[e.slot] = e.m; } else if (e.o.material === e.k) e.o.material = e.m;
+      }
       for (const o of shown) o.visible = false;
       parked.parent?.remove(parked);
       this.shards.setMatrixAt(0, _m.makeScale(0, 0, 0)); this.shards.instanceMatrix.needsUpdate = true;

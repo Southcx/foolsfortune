@@ -2,7 +2,7 @@
 (source_assets/clapperjar_base.png, 256 square, painted on the mesh's UVMap) -> src/assets/clapperjar_base.png as one channel of grey.
 It is grey so the jar's own colour tints it (vfx/greytint.js); the owner's file is RGBA with r = g = b and no alpha, so one channel
 keeps every value at under half the bytes (12,035 -> 5,876). The glb carries no image: clappers.js imports the texture (?b64), as
-character.js does the Courier's paintings (a texture inside the glb cost twice the bytes: Blender writes the RGBA file).
+courier/character/bodymaterials.js does the Courier's paintings (a texture inside the glb cost twice the bytes: Blender writes the RGBA file).
 
 Usage:  python3 -I scripts/export_clapperjar.py [source_assets/clapperjar.blend]     (the glb and the texture)
         python3 -I scripts/export_clapperjar.py --texture                            (the texture only)
