@@ -98,7 +98,7 @@ export function atlas() {
     }
   });
   };
-  _atlas = bakedCanvasTexture(paint, C * 8, C * 4, { scale: Math.min(1, T.visual.labelScale ?? 1) }); // (drawn once: its pixels let go once on the GPU, render/bakedcanvas.js; at the tier's labelScale, 512 x 256 on Low and Minimum: the resolution pass, 2026-10-25)
+  _atlas = bakedCanvasTexture(paint, C * 8, C * 4, { scale: Math.min(1, T.visual.textureScale ?? 1) }); // (drawn once: its pixels let go once on the GPU, render/bakedcanvas.js; at the tier's textureScale, 512 x 256 on Low and Minimum: the resolution pass, 2026-10-25)
   _atlas.colorSpace = THREE.NoColorSpace; _atlas.generateMipmaps = true; _atlas.minFilter = THREE.LinearMipmapLinearFilter; _atlas.anisotropy = 2;
   return _atlas;
 }

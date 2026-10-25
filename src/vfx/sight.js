@@ -50,9 +50,9 @@ const ORIGIN = [85.4, 76.5]; // (the globe's heart: dots left of the right edge,
 const RI = 1.10, RO = 1.46, PI0 = 1.15, PO = 1.335, TEXR = 1.5, TN = 1024, Q = 0.5; // (the dial; its canvases drawn at half the mock's)
 // (THE RESOLUTION PASS, 2026-10-25, docs/plans/art/texture-budget.md: the instrument is about 150 lines tall, its dial about 98 across and
 // a disc's face about 60, so the dial and the phase plates are drawn at a quarter of the mock (256 px, QD), the rete at a quarter, and
-// the discs' atlas and bumps at half (a quarter on Low and Minimum: the tier's labelScale), each still above the lines it covers)
+// the discs' atlas and bumps at half (a quarter on Low and Minimum: the tier's textureScale), each still above the lines it covers)
 const QD = 0.25;
-const discScale = () => 0.5 * Math.min(1, T.visual.labelScale ?? 1);
+const discScale = () => 0.5 * Math.min(1, T.visual.textureScale ?? 1);
 const PHASES = [{ id: 'night', a: 20, b: 29 }, { id: 'dawn', a: 5, b: 7 }, { id: 'day', a: 7, b: 18 }, { id: 'dusk', a: 18, b: 20 }];
 const hookA = 12 - 3.2;
 const COUNT = `'Jersey 15', ${FONT.sys}`; // (the count face, src/ui/theme.js)
