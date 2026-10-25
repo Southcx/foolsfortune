@@ -226,7 +226,7 @@ export class Bracelet {
     this.flashMesh.renderOrder = 4; this.flashMesh.visible = false; this.flashMesh.frustumCulled = false; this.ring.add(this.flashMesh);
     // the aura round the Pneuka Jar: a soft ring sprite at the ring's heart, brief, while a power is spending (drawn only while it shows)
     if (aura) {
-      this.auraMat = new THREE.SpriteMaterial({ map: S.ringTex, color: 0xffffff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, fog: false });
+      this.auraMat = new THREE.SpriteMaterial({ map: S.ringTex, color: 0xffffff, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }); // (fogged like the level's sprites, whose program it shares: on the wrist, fog shows nothing)
       this.aura = new THREE.Sprite(this.auraMat); this.aura.scale.setScalar(6.5); this.aura.renderOrder = 2; this.aura.visible = false; this.object.add(this.aura);
     }
     this.object.traverse((o) => { if (o.isMesh) { o.castShadow = false; o.receiveShadow = false; } });

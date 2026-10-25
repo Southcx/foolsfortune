@@ -33,7 +33,9 @@ function halved(map) {
 const SOURCES = Object.fromEntries(Object.entries(import.meta.glob('../assets/vfx/*.glb', { query: '?b64', import: 'default', eager: true }))
   .map(([f, b64]) => [f.split('/').pop().replace(/\.glb$/, ''), b64]));
 
-const V = /* glsl */`
+// (one program for a baked mesh's effect and a library decal (vfx/vfx.js): their differences are uniforms, arithmetic only, never a
+// mode (the program audit, 2026-10-25). A decal passes uPhR 1, uPhN 0, uUseRgb 0, uGain 1.3; a mesh the defaults)
+export const FX_V = /* glsl */`
 attribute vec4 color;
 varying vec2 vUv; varying vec4 vCol; varying vec3 vW; varying vec3 vN;
 uniform vec2 uScroll;
@@ -42,18 +44,22 @@ void main() {
   vec4 w = modelMatrix * vec4(position, 1.0); vW = w.xyz; vN = normalize(mat3(modelMatrix) * normal);
   gl_Position = projectionMatrix * viewMatrix * w;
 }`;
-const F = /* glsl */`
-uniform sampler2D uMap; uniform vec3 uTint; uniform float uOpacity, uK, uLabradorite, uAdd;
+export const FX_F = /* glsl */`
+uniform sampler2D uMap; uniform vec3 uTint; uniform float uOpacity, uK, uLabradorite, uAdd, uGain, uGlow, uUseRgb, uPhR, uPhN;
 varying vec2 vUv; varying vec4 vCol; varying vec3 vW; varying vec3 vN;
 ${LAB_GLSL}
 void main() {
   vec4 t = texture2D(uMap, vUv);
   float a = t.a * vCol.a * uOpacity * uK;
+  if (a < 0.003) discard;
   vec3 view = normalize(cameraPosition - vW);
-  vec3 c = t.rgb * vCol.rgb * mix(uTint, labSoft(labPhase(vW, view) + 0.3 * dot(vN, view)) * 1.4, uLabradorite);
+  float ph = labPhase(vW, view) + uPhN * 0.3 * dot(vN, view) + uPhR * 1.5 * length(vUv - 0.5); // (a mesh's phase runs with its facing, a decal's outward from its middle)
+  vec3 c = mix(vec3(1.0), t.rgb, uUseRgb) * vCol.rgb * mix(uTint, labSoft(ph) * uGain, uLabradorite) * uGlow;
   // (additive: the colour carries the alpha; alpha blending: straight)
-  gl_FragColor = uAdd > 0.5 ? vec4(c * a, a) : vec4(c, a);
+  gl_FragColor = vec4(c * mix(1.0, a, uAdd), a);
 }`;
+/** The shared program's uniforms past a caller's own: a baked mesh's defaults. */
+export const fxUniforms = (u) => ({ uOpacity: { value: 1 }, uAdd: { value: 1 }, uGain: { value: 1.4 }, uGlow: { value: 1 }, uUseRgb: { value: 1 }, uPhR: { value: 0 }, uPhN: { value: 1 }, uScroll: { value: new THREE.Vector2() }, ...u });
 
 class MeshFx {
   constructor() { this.src = {}; }
@@ -85,12 +91,12 @@ class MeshFx {
     const S = this.src[name];
     if (!S) return null;
     const M = S.meta, add = (M.blend || 'additive') !== 'alpha' && M.blend !== 'opaque';
-    const u = {
+    const u = fxUniforms({
       uMap: { value: S.map }, uTint: { value: new THREE.Color(tint) }, uOpacity: { value: opacity }, uK: { value: 0 }, uLabradorite: { value: labradorite },
-      uAdd: { value: add ? 1 : 0 }, uScroll: { value: new THREE.Vector2() }, uMindT: mindTime,
-    };
+      uAdd: { value: add ? 1 : 0 }, uMindT: mindTime,
+    });
     const mat = new THREE.ShaderMaterial({
-      uniforms: u, vertexShader: V, fragmentShader: F, transparent: true, depthWrite: false, fog: false,
+      uniforms: u, vertexShader: FX_V, fragmentShader: FX_F, transparent: true, depthWrite: false, fog: false,
       side: M.side === 'front' ? THREE.FrontSide : THREE.DoubleSide,
       blending: add ? THREE.CustomBlending : THREE.NormalBlending,
       ...(add ? { blendSrc: THREE.OneFactor, blendDst: THREE.OneFactor, blendEquation: THREE.AddEquation } : {}),

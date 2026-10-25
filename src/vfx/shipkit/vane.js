@@ -14,6 +14,7 @@
 //   FURL (the sail, 0 furled .. 1 full, at or under which a ship's canvas is stowed: the mooring's)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { matteMaterial } from '../matte.js';
 
 /** The sail (0 furled .. 1 full) at or under which a ship's canvas is furled (`set`; the mooring passes 0, the workbench's moored
  *  hulls 0.15); every sail over it is drawn hoisted that far. */
@@ -23,7 +24,7 @@ const SAIL = 0xf6e6c8;
 export function sailMaterial(lotus, { vane = false, fill = SAIL, edge = 0xffffff, fillA = 0.38 } = {}) {
   const u = { uFill: { value: 0.6 }, uSide: { value: 1 }, uLotus: { value: lotus }, uT: { value: 0 },
     uEdge: { value: vane ? 1 : 0 }, uEdgeCol: { value: new THREE.Color(edge) }, uFillA: { value: vane ? fillA : 1 }, uBellyN: { value: vane ? 1 : 0 } };
-  const m = new THREE.MeshStandardMaterial({ color: vane ? fill : SAIL, roughness: 0.9, side: THREE.DoubleSide, forceSinglePass: true, transparent: vane, depthWrite: !vane });
+  const m = matteMaterial({ color: vane ? fill : SAIL, side: THREE.DoubleSide, forceSinglePass: true, transparent: vane, depthWrite: !vane }); // (Lambert: matte, no metal, no env, cloth whose patch never reads roughness; half the GLSL of Standard and 0.5 to 0.7 of its cost a lit pixel, vfx/matte.js; the program audit, 2026-10-25)
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, u);
     sh.vertexShader = sh.vertexShader

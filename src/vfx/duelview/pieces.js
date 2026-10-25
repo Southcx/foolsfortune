@@ -71,7 +71,7 @@ export class DuelPieces {
     const idol = foeIdol();
     this.foe = new THREE.Group(); this.foe.add(new THREE.Mesh(idol, this.foeMat), new THREE.Mesh(ledgeGeometry(), M.clayVc));
     const cast = new THREE.Mesh(idol, this.castMat); cast.position.set(0.07, 0.02, -0.03); this.foe.add(cast);
-    const eye = new THREE.BoxGeometry(0.08, 0.05, 0.02), eyeMat = new THREE.MeshBasicMaterial({ color: 0xfff3e0, fog: false, toneMapped: false });
+    const eye = new THREE.BoxGeometry(0.08, 0.05, 0.02), eyeMat = new THREE.MeshBasicMaterial({ color: 0xfff3e0, toneMapped: false }); // (fog as the world's basic program: at the board's few metres it shows nothing, and a program is saved)
     for (const x of [-0.08, 0.08]) { const e = new THREE.Mesh(eye, eyeMat); e.position.set(x, 0.04, 0.1); this.foe.add(e); }
     for (const b of [this.courier, this.foe]) { b.scale.setScalar(cs); b.visible = false; this.group.add(b); }
     this.list = []; this.cells = []; this.ids = new Map(); this.board = { w: 20, h: 20 }; this.t = 0; this.bodyHidden = [false, false];
