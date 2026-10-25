@@ -16,11 +16,13 @@
 import * as THREE from 'three';
 import { OPPOSITE, ASPECTS, COLOR } from '../../progress/weather.js';
 import { paintMotifCode } from '../../vfx/paintmotifs.js';
+import { phoneByPage } from '../../render/graphics.js';
 
 /** A: the atlas's side in cells (1024: 65,536 m² of wall at 0.25 m); CELL: a cell's side (m), the floor's; BIG: a face over this (m²) is
  *  charted at twice the cell (the build's walls measured 2026-10-12: 1,788 faces, 102,869 m², 222 of them over 50 m² holding 86% of it); LIFE, SLICK_LIFE: real seconds
  *  paint and a slick last; UP_HZ: uploads a second at most; HASH: the spatial hash's cell (m). */
-export const PAINT_WALLS = { A: 1024, CELL: 0.25, BIG: 50, LIFE: 150, SLICK_LIFE: 40, UP_HZ: 4, HASH: 4 };
+const PHONE = phoneByPage(); // (a phone: the same wall area in a quarter of the cells, 0.5 m each: 12 MB of the page's arrays and 6 of the GPU's -> a quarter, Calissa's measure 2026-10-25)
+export const PAINT_WALLS = { A: PHONE ? 512 : 1024, CELL: PHONE ? 0.5 : 0.25, BIG: 50, LIFE: 150, SLICK_LIFE: 40, UP_HZ: 4, HASH: 4 };
 const { A, CELL } = PAINT_WALLS, FLAT = 0x3b2b22;
 const COLORS = ASPECTS.map((a) => new THREE.Color(COLOR[a]));
 const _r = new THREE.Vector3(), _c = new THREE.Color();

@@ -127,18 +127,16 @@ export class Raceway {
     // what the build put in the world (before Calissa's looks dress it: those come and go by her own release), kept so the teardown takes exactly that away (the ground's own terrain and body are releaseGround's)
     this.owned = ownedSince(g, mark, { skip: [this.terrain], skipBodies: [this.groundBody] });
     g.racewayLooks?.dress(this); t = lap('looks', t); // (Calissa's: the sun plates' glyphs, the arch's lamps, the gates' marks; the slabs hidden)
-    g.racewayDress?.build?.(this); // (Calissa's race-day dressing comes and goes with the park: vfx/raceway/index.js)
   }
   /** The park torn down (render/areas.js, stage 2: AREAS.md A1), a few real seconds after the camera and its neighbours leave: the ground
-   *  given back (its releasers told, so every look that dresses the park undresses), Calissa's race-day dressing taken down, and every
-   *  object, body and collider the build put in the world taken out, their geometry and the materials nothing left in the scene still
-   *  uses disposed. The tracks, the field, the bests and a made track stay (they are data); built again on the next arrival. */
+   *  given back (its releasers told, so every look that dresses the park undresses; Calissa's race-day dressing is taken down beside
+   *  this in boot/services.js), and every object, body and collider the build put in the world taken out, their geometry and the
+   *  materials nothing left in the scene still uses disposed (world/areaown.js). The tracks, the field, the bests and a made track stay (they are data); built again on the next arrival. */
   teardown() {
     if (!this.built) return;
     const g = this.game;
     if (g.race?.running) g.race.end?.('left');
     this.releaseGround(); this.awayT = 0;
-    g.racewayDress?.teardown?.(this);
     takeAway(g, this.owned);
     this.owned = null; this.barrier = null; this.cavern = null; this.siphons.on = null; this.buoys.group = null;
     this.geysers = []; this.plates = []; this.rails = []; this.rings = []; this.decks = []; this.pits = []; this.sandfalls = []; this.pillars = [];

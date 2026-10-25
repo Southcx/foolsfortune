@@ -17,13 +17,14 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { withFade, rigUniforms } from '../render/outline.js';
+import { fitToTier } from './tierscale.js';
 import handB64 from '../assets/courier/courier_godhand_base.png?b64';
 import jarB64 from '../assets/courier/courier_pneukajar_base.png?b64';
 
 export const PAINT_LIGHT = 0.45; // (the share of itself a painting glows back: the Courier's, courier/character/bodymaterials.js)
 
 function painting(b64) {
-  const t = new THREE.TextureLoader().load(`data:image/png;base64,${b64}`);
+  const t = new THREE.TextureLoader().load(`data:image/png;base64,${b64}`, fitToTier); // (at the tier's size: half on a phone, vfx/tierscale.js)
   t.colorSpace = THREE.SRGBColorSpace;
   t.flipY = false; // (glTF's UV convention)
   t.generateMipmaps = true; t.minFilter = THREE.LinearMipmapLinearFilter; t.magFilter = THREE.LinearFilter;

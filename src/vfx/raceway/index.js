@@ -11,7 +11,12 @@
 //
 // Prior art: each part's header; the house's way of dressing the park after it is laid (vfx/racewayprops.js).
 //
+// AREAS (stage 2, render/areas.js): `build(game)` lays it at once if the park is there (else on its first active frame, as before) and
+// `teardown(game)` takes the laid parts down (meshes, lamps, geometry), keeping the parts, their listeners and materials, and the
+// fireworks (they answer a race won). Safe to call twice; the Raceway's area (Petra's) calls them.
+//
 //   game.racewayDress = new RacewayDress(game)   (main.js)   .update(dt)   .prewarm() -> undo (the boot's compile: one of each draw, parked)
+//   .build(game)   .teardown(game)   .built
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RacewaySpectators } from './spectators.js';
@@ -22,7 +27,7 @@ import { lightAt } from '../../progress/weather.js';
 
 export class RacewayDress {
   constructor(game) {
-    this.game = game; this.readT = 0; this.light = 1;
+    this.game = game; this.readT = 0; this.light = 1; this.built = true;
     this.group = new THREE.Group(); this.group.name = 'raceway-dress'; this.group.userData.zone = 'raceway';
     game.scene.add(this.group);
     this.poles = new Poles(this.group);
@@ -40,10 +45,22 @@ export class RacewayDress {
     return () => { for (const o of park) this.game.scene.remove(o); geo.dispose(); };
   }
 
+  /** Laid again, at once where the park's tracks are there (behind the cover), else on its first active frame. */
+  build(game = this.game) {
+    this.built = true; const R = game.raceway;
+    if (R?.tracks?.length && !this.spectators.built) { this.spectators.build(R); this.banners.build(R); this.lanterns.build(R); this.poles.finish(); }
+  }
+  /** The laid parts taken down; the light budget forgets the lanterns' lamps. */
+  teardown(game = this.game) {
+    if (!this.built) return; this.built = false;
+    this.spectators.clear(); this.banners.clear(); this.lanterns.clear(); this.poles.clear();
+    game.lights?.forget?.();
+  }
+
   update(dt) {
     const R = this.game.raceway;
     this.fireworks.update(dt, R);
-    if (!R?.active) { this.group.visible = false; return; }
+    if (!R?.active || !this.built) { this.group.visible = false; return; }
     this.group.visible = true;
     if ((this.readT -= dt) <= 0) { this.readT = 0.5; this.light = lightAt(); }
     const first = !this.spectators.built;
