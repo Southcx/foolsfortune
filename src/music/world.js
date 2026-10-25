@@ -32,13 +32,16 @@
 //   import { WorldBand } from './world.js'   (band.js mixes it in: B.sitar(t, dur, midi, vel, { meend, to }) ...)
 // ---------------------------------------------------------------------------------------
 const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
+/** The sitar's jawari: an uneven clipper (soft up, hard down), made once. */
+const JAWARI = (() => { const c = new Float32Array(512); for (let i = 0; i < 512; i++) { const x = (i / 511) * 2 - 1; c[i] = x > 0 ? Math.tanh(x * 2.2) : Math.tanh(x * 5) * 0.75; } return c; })();
 
 export class WorldBand {
   /** A glaze crazing: dry, high ticks scattered over `dur` seconds, thinning as they go. */
   crackle(t, v = 0.3, { dur = 0.5 } = {}) {
     const o = this.out(this.bus.dry, 0.25, { verb: 0.2 });
-    for (let k = 0; k < 18; k++) {
-      const s = t + Math.pow(k / 18, 1.6) * dur, g = this.ctx.createGain(), a = v * (0.4 + Math.random() * 0.6);
+    const n = this.phone ? 9 : 18; // (a phone's mixer: half the pops)
+    for (let k = 0; k < n; k++) {
+      const s = t + Math.pow(k / n, 1.6) * dur, g = this.ctx.createGain(), a = v * (0.4 + Math.random() * 0.6);
       g.gain.setValueAtTime(a, s); g.gain.exponentialRampToValueAtTime(0.0001, s + 0.008); g.connect(o);
       const bp = this.filt('bandpass', 3000 + Math.random() * 5000, 4); this.noise(s, s + 0.012, bp); bp.connect(g);
     }
@@ -50,21 +53,19 @@ export class WorldBand {
     const g = c.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.004);
     g.gain.exponentialRampToValueAtTime(v * 0.4, t + 0.35); g.gain.exponentialRampToValueAtTime(0.0001, end);
     // the jawari: the buzz (an uneven clipper) and its overtone sweeping down from high to low
-    const sh = c.createWaveShaper(), curve = new Float32Array(512);
-    for (let i = 0; i < 512; i++) { const x = (i / 511) * 2 - 1; curve[i] = x > 0 ? Math.tanh(x * 2.2) : Math.tanh(x * 5) * 0.75; }
-    sh.curve = curve;
+    const sh = c.createWaveShaper(); sh.curve = JAWARI; // (one curve for every note)
     const sweep = this.filt('bandpass', f * 9, 3.5); sweep.frequency.setValueAtTime(Math.min(9000, f * 11), t); sweep.frequency.exponentialRampToValueAtTime(Math.max(400, f * 2.2), t + Math.min(1.6, d * 0.6));
     const body = this.filt('lowpass', Math.min(9000, f * 8), 0.7), mix = c.createGain(); mix.gain.value = 1;
     const dc = this.filt('highpass', Math.max(50, f * 0.7), 0.7); // (the uneven clipper leaves an offset and a rumble under the note: taken out)
     g.connect(sh); sh.connect(sweep).connect(mix); sh.connect(body).connect(mix); mix.connect(dc).connect(o);
-    for (const [type, a, r] of [['sawtooth', 0.7, 1], ['square', 0.25, 1.003]]) {
+    for (const [type, a, r] of this.phone ? [['sawtooth', 0.85, 1]] : [['sawtooth', 0.7, 1], ['square', 0.25, 1.003]]) { // (a phone's mixer: the saw alone)
       const og = c.createGain(); og.gain.value = a; og.connect(g);
       const x = this.osc(type, f * r, t, end, og);
       if (to != null) { const tb = t + dur * meend; x.frequency.setValueAtTime(f * r, tb); x.frequency.exponentialRampToValueAtTime(hz(to) * r, tb + Math.max(0.12, dur * 0.4)); }
     }
     const pk = c.createGain(); pk.gain.setValueAtTime(v * 0.5, t); pk.gain.exponentialRampToValueAtTime(0.0001, t + 0.025); pk.connect(o); // (the mizrab, the wire plectrum)
     const hp = this.filt('highpass', 3500); this.noise(t, t + 0.03, hp); hp.connect(pk);
-    if (taraf) { // (the sympathetic strings: the note's octave and fifth, waking a little after it and ringing on)
+    if (taraf && !this.phone) { // (the sympathetic strings: the note's octave and fifth, waking a little after it and ringing on)
       const tg = c.createGain(); tg.gain.setValueAtTime(0.0001, t); tg.gain.linearRampToValueAtTime(v * 0.05 * taraf, t + 0.25); tg.gain.exponentialRampToValueAtTime(0.0001, end + 1);
       tg.connect(o); for (const r of [2, 3]) this.osc('sine', f * r, t, end + 1, tg);
     }
@@ -185,8 +186,8 @@ export class WorldBand {
     const lp = this.filt('lowpass', 3800, 0.7), dry = c.createGain(), wet = c.createGain(); dry.gain.value = 0.6; wet.gain.value = 0.6;
     g.connect(lp); lp.connect(dry).connect(o);
     let node = lp; const lfo = c.createOscillator(); lfo.frequency.value = rate; lfo.start(t); lfo.stop(end + 0.05);
-    for (const fc of [300, 700, 1300, 2200]) { const ap = this.filt('allpass', fc, 0.6), lg = c.createGain(); lg.gain.value = fc * 0.6; lfo.connect(lg).connect(ap.frequency); node.connect(ap); node = ap; }
-    node.connect(wet).connect(o);
+    for (const fc of this.phone ? [] : [300, 700, 1300, 2200]) { const ap = this.filt('allpass', fc, 0.6), lg = c.createGain(); lg.gain.value = fc * 0.6; lfo.connect(lg).connect(ap.frequency); node.connect(ap); node = ap; }
+    if (node !== lp) node.connect(wet).connect(o); else dry.gain.value = 0.85; // (a phone's mixer: no phaser stages, the dry guitar alone)
     for (const n of notes) for (const [type, a] of [['sawtooth', 0.5], ['triangle', 0.7]]) {
       const og = c.createGain(); og.gain.value = a; og.connect(g);
       const x = this.osc(type, hz(n), t, end, og);

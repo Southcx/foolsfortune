@@ -25,6 +25,7 @@ import { Band } from './band.js';
 const UNDER_HZ = 650; // (the music heard from under the crude)
 const BASS = new Set(['upright', 'moog', 'sub', 'growl', 'pick', 'pizz', 'eight']); // (what the night's thinning takes down with the drums)
 const LEAD = 0.25, LEAD_MAX = 0.6; // (real seconds of notes made ahead of the audio clock: more when the timer runs late, a throttled tab)
+const PHONE_LEAD = 0.45, PHONE_LEAD_MAX = 1.0; // (a phone's: its frames run long, so the notes are made further ahead and never fall behind)
 const HITS = new Set(['kick', 'snare', 'clap', 'hat', 'shaker', 'crash', 'impact', 'taiko', 'ride', 'brush', 'hammer', 'stomp', 'huh', 'scrape', 'bongo', 'timbale', 'tabla', 'bodhran', 'bubble', 'bigkick', 'bigsnare', 'tom', 'gang', 'crackle', 'tick', 'ohat', 'snap']);
 
 export class Arranger {
@@ -36,10 +37,10 @@ export class Arranger {
     this.spb = 60 / S.bpm;
     this.bus = ctx.createGain(); this.bus.gain.value = 0.0001;
     this.duckG = ctx.createGain();
-    this.sweep = ctx.createBiquadFilter(); this.sweep.type = 'lowpass'; this.sweep.frequency.value = 18000; this.sweep.Q.value = 0.9;
+    this.sweep = ctx.createBiquadFilter(); this.sweep.type = 'lowpass'; this.sweep.frequency.value = Math.min(18000, ctx.sampleRate / 2); this.sweep.Q.value = 0.9;
     const glue = ctx.createDynamicsCompressor(); glue.threshold.value = -16; glue.ratio.value = 3; glue.attack.value = 0.01; glue.release.value = 0.2;
     // under the crude (the rail's Umbral form) the music is heard through the sea: a low-pass; breaching lifts the top back (setUnder)
-    this.depth = ctx.createBiquadFilter(); this.depth.type = 'lowpass'; this.depth.frequency.value = this.under ? UNDER_HZ : 20000; this.depth.Q.value = 0.6;
+    this.depth = ctx.createBiquadFilter(); this.depth.type = 'lowpass'; this.depth.frequency.value = this.under ? UNDER_HZ : Math.min(20000, ctx.sampleRate / 2); this.depth.Q.value = 0.6;
     this.lift = ctx.createBiquadFilter(); this.lift.type = 'highshelf'; this.lift.frequency.value = 5000; this.lift.gain.value = 0;
     this.bus.connect(this.sweep).connect(this.depth).connect(this.lift).connect(glue).connect(this.duckG).connect(this.sfx.main ?? this.sfx.master); // (the music's own way out: it never ducks with the effects)
     const dry = ctx.createGain(); dry.connect(this.bus);
@@ -58,7 +59,9 @@ export class Arranger {
     // a second band heard through the crude: an event marked `deep` plays here (a foe under the surface: music/legs.js, Charybdis)
     const deepLp = ctx.createBiquadFilter(); deepLp.type = 'lowpass'; deepLp.frequency.value = 520; deepLp.Q.value = 0.7; deepLp.connect(this.bus);
     const ddry = ctx.createGain(), dpump = ctx.createGain(); ddry.connect(deepLp); dpump.connect(deepLp);
+    this.graph = [this.bus, this.duckG, this.sweep, this.depth, this.lift, glue, dry, pump, verb, vin, vlp, ein, dl, dr, fb, elp, pl, pr, deepLp, ddry, dpump]; // (let go whole when the cue has faded: stop())
     this.deepBand = new Band(ctx, { dry: ddry, pump: dpump, verb: vin, echo: ein, kicked: () => {} }, this.sfx.noiseBuf);
+    this.band.phone = this.deepBand.phone = !!this.sfx.phone; // (a phone's mixer: the heaviest instruments play fewer voices, music/rock.js)
   }
   /** The sidechain: the synths and the bass dip under each kick of a section that pumps. */
   kicked(t) {
@@ -81,9 +84,9 @@ export class Arranger {
   stop(fade = 2) {
     if (!this.alive) return;
     this.alive = false; clearInterval(this.timer); this.queue = [];
-    const ctx = this.ctx, bus = this.bus;
+    const ctx = this.ctx, bus = this.bus, graph = this.graph || [bus];
     bus.gain.cancelScheduledValues(ctx.currentTime); bus.gain.setTargetAtTime(0.0001, ctx.currentTime, fade / 3);
-    setTimeout(() => { try { bus.disconnect(); } catch { /* gone */ } }, fade * 1000 + 800);
+    setTimeout(() => { for (const n of graph) try { n.disconnect(); } catch { /* gone */ } }, fade * 1000 + 800); // (the whole cue's graph let go, its echo's loop cut, its reverb freed: casebook NEW:audio-graph-let-go)
   }
   follow(score) {
     if (score && score === this.finished) return; // (a one-shot that has played does not start again by itself)
@@ -112,7 +115,7 @@ export class Arranger {
     this.under = on;
     if (!this.alive || !this.depth) return;
     const t = this.ctx.currentTime, f = this.depth.frequency, half = (this.spb || 0.375) * 2;
-    f.cancelScheduledValues(t); f.setValueAtTime(f.value, t); f.exponentialRampToValueAtTime(on ? UNDER_HZ : 20000, t + half);
+    f.cancelScheduledValues(t); f.setValueAtTime(f.value, t); f.exponentialRampToValueAtTime(on ? UNDER_HZ : Math.min(20000, this.ctx.sampleRate / 2), t + half);
     const g = this.lift.gain; g.cancelScheduledValues(t); g.setValueAtTime(g.value, t);
     if (!on) { g.linearRampToValueAtTime(5, t + half); g.setTargetAtTime(0, t + half, 0.6); } // (the breach: a lift of air, settling)
     else g.setTargetAtTime(0, t, 0.1);
@@ -124,9 +127,10 @@ export class Arranger {
     const ctx = this.ctx;
     if (this.ended && ctx.currentTime > this.endAt) { this.finished = this.score; this.stop(0.3); this.onEnd?.(this.score); return; }
     if (this.next < ctx.currentTime - 0.2) { this.next = ctx.currentTime + 0.1; this.queue = []; } // (fallen behind: start afresh, never a pile of stale notes)
-    while (this.next < ctx.currentTime + LEAD_MAX) this.step();
+    const [lead, leadMax] = this.sfx.phone ? [PHONE_LEAD, PHONE_LEAD_MAX] : [LEAD, LEAD_MAX];
+    while (this.next < ctx.currentTime + leadMax) this.step();
     const now = performance.now(), gap = this.lastRun ? (now - this.lastRun) / 1000 : 0; this.lastRun = now;
-    this.drain(ctx.currentTime + Math.min(LEAD_MAX, Math.max(LEAD, gap * 1.5)));
+    this.drain(ctx.currentTime + Math.min(leadMax, Math.max(lead, gap * 1.5)));
   }
   /** Make the queued notes due before `until` (audio-clock seconds), in time order. */
   drain(until) {
@@ -147,7 +151,7 @@ export class Arranger {
       const f = this.sweep.frequency;
       f.cancelScheduledValues(t0);
       if (sec.sweep) { f.setValueAtTime(sec.sweep[0], t0); f.exponentialRampToValueAtTime(sec.sweep[1], t0 + sec.bars * beats * spb - 0.05); }
-      else f.setValueAtTime(18000, t0);
+      else f.setValueAtTime(Math.min(18000, this.ctx.sampleRate / 2), t0);
       if (!sec.pump) { this.pumpG.gain.cancelScheduledValues(t0); this.pumpG.gain.setValueAtTime(1, t0); }
     }
     const n0 = (this.queue ||= []).length;
