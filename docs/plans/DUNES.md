@@ -7,3 +7,4 @@
 - **The Solar Skiffing trial: built** (`world/dunes/solar.js`), begun at the Gnomon's foot.
 - **Bigger: not built.** Proposed 1,600 m across (`DUNE.half` 520 to 800, the barrier out to match). It moves the shore, the jetty and
   the crossing's start (all placed against the barrier's 480 m), so it waits on the owner's yes and Petra's measure of the terrain's cost.
+- **Withdrawn (Dovina, 2026-10-25):** the bigger ground. More Dunes come as more areas past the barrier, never a bigger ground (`docs/plans/AREAS.md` 5).
