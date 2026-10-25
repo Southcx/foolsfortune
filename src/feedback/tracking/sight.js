@@ -9,7 +9,7 @@ export function sightRules({ on, L, log, g }) {
     if (e.by !== 'courier') return;
     if (e.from === 'off') { log.say('system', 'The Sight\'s needle loosens and spins.', { key: 'sight', throttle: 2 }); return; }
     L.inc('sight.calibrate'); L.inc(`sight.calibrate.${e.from}`);
-    const name = g?.places?.get(e.id)?.name || e.id;
+    const name = e.from === 'point' ? 'your mark on the map' : g?.places?.get(e.id)?.name || e.id;
     log.say('system', e.from === 'kind' ? `The Sight's needle hunts for the nearest ${name}.` : `The Sight's needle swings toward ${name}.`, { key: 'sight', throttle: 2 });
   });
 }

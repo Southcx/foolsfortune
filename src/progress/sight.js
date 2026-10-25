@@ -7,13 +7,14 @@
 //   a place you know of: a room you have charted (`room.<id>` firsts), or a cradle whose seal is in your Seal Book (`seal.book.<id>`)
 //   a kind of creature you know (familiarity 1 or more): the nearest living one on the ground you have explored, else it spins
 //   home: the last Shrine whose seal you received (the Seal Book's latest Shrine page)
+//   a point: a spot on ground you have charted (the map's click or long press: docs/plans/MAP.md 3), the map's own waypoint retired
 // Uncalibrated, or calibrated to something it cannot find, the needle spins slowly: the compass when you do not know what you want.
 // One waypoint at a time; it is not kept by the save (a session's want, not a record).
 //
 // Prior art: Jack Sparrow's compass (it points to what you want most), Pirates of the Caribbean's "you don't know what you want"; the
 // Legend of Zelda's map pins; Breath of the Wild's Sheikah Sensor, calibrated by showing it a photographed subject (the Compendium).
 //
-//   game.sight = new Sight(game)   .calibrate({ place } | { kind } | { home: true }) -> { ok, why? }   .clear()   .waypoint -> { name, pos, from, id } | null
+//   game.sight = new Sight(game)   .calibrate({ place } | { kind } | { home: true } | { point: { x, y, z } }) -> { ok, why? }   .clear()   .waypoint -> { name, pos, from, id } | null
 //   sightCommands(game)   (`/sight <place or kind>`, `/sight home`, `/sight off`)
 // ---------------------------------------------------------------------------------------
 import { familiarityOf } from './familiarity.js';
@@ -36,6 +37,11 @@ export class Sight {
       if (!knownPlace(L, src.place)) return { ok: false, why: 'You do not know where that is yet.' };
       return this.set({ from: 'place', id: src.place });
     }
+    if (src.point) {
+      const p = src.point, tier = g.cartography?.tierAt?.(p.x, p.y ?? 0, p.z)?.tier ?? 0;
+      if (tier < 2) return { ok: false, why: 'You have not charted that ground yet.' }; // (charted: the map's middle tier, cartography.js)
+      return this.set({ from: 'point', id: `${Math.round(p.x)},${Math.round(p.z)}`, pos: { x: p.x, y: p.y ?? 0, z: p.z } });
+    }
     if (src.kind) {
       if (familiarityOf(L, src.kind).level < 1) return { ok: false, why: 'You do not know that creature yet.' };
       return this.set({ from: 'kind', id: src.kind });
@@ -54,6 +60,7 @@ export class Sight {
       for (const c of g.creatures?.list || []) { if (c.kind !== w.id || c.alive === false) continue; const d = c.pos.distanceToSquared(P); if (d < bd) { bd = d; best = c; } }
       return best ? { name: best.name || w.id, pos: best.pos.clone(), from: 'kind', id: w.id } : null;
     }
+    if (w.from === 'point') return { name: 'your mark', pos: { ...w.pos }, from: 'point', id: w.id }; // (a plain { x, y, z }: the needle copies it)
     const pos = g.places?.pos(w.id) ?? g.cradles?.list?.find((c) => c.id === w.id || c.book === w.id)?.pos?.clone?.() ?? null;
     return pos ? { name: g.places?.get(w.id)?.name || w.id, pos, from: w.from, id: w.id } : null;
   }
