@@ -3895,3 +3895,11 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   asked for, and a refusal by all says what each try gave. The loader unpacks three files at a time, the biggest first, letting each
   file's strings go once it is a blob. Verified headless with the first context forced lost and every asset refused: boot to ready.
 - **Rule:** 303
+
+### 2026-10-25 · PRESS START would not take a tap on the iPhone (the owner, v269; reproduced headless on an emulated iPhone; fixed by Petra)
+- **Seen:** the title came up on the phone, and tapping it did nothing.
+- **Cause (measured on the emulated phone):** the title started on `mousedown`. The first press only woke the sound and changed nothing on
+  screen, and the browser made no `mousedown` from the second tap (touchstart, pointerdown and click came; the compatibility mouse event
+  did not), so the tap that should start was lost.
+- **Fix:** title/ui.js starts on `pointerdown`; a touch wakes the sound and starts in one press. Verified: one tap, then the menu.
+- **Rule:** 304

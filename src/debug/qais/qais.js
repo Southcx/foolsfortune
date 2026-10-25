@@ -53,7 +53,7 @@ export class Qais {
     this.foot = document.createElement('div');
     Object.assign(this.foot.style, { flex: 'none', padding: '6px 6px 0', fontSize: '11px', opacity: '.6' });
     W.root.querySelector('.qw').append(this.foot);
-    this.root.addEventListener('mousedown', (e) => { if (e.target === this.root) this.close(); });
+    this.root.addEventListener('pointerdown', (e) => { if (e.target === this.root) this.close(); });
     document.body.appendChild(this.root);
   }
 

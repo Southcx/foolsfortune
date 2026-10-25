@@ -885,6 +885,8 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 303. **A WebGL context can be handed over already lost.** The renderer makes its own, checks
     `isContextLost()`, waits for a restore, then asks again plainer; a refusal says what each try gave. Unpack a build a few files at
     a time on a phone, never all at once.
+304. **A tap is not a mouse.** Listen for `pointerdown` (or `click`), never `mousedown` alone: a phone's
+    browser drops the mouse event it makes from a tap that follows another. A press that changes nothing on screen reads as dead on a phone.
 301. **A uniform branch is not free.** A software GL (the gate's SwiftShader) and a phone's small GPU run every
     branch's code on every pixel; an ubershader's rarely-worn families go behind a define keyed by what the material wears now (and a
     recompile asked for when that changes), never only behind an `if` on a uniform. Measure a shared program close up after adding to it.

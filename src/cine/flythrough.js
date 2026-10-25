@@ -38,7 +38,7 @@ export class Flythrough {
     this.game = game; this.run = null;
     game.events?.on?.('well.floor', () => setTimeout(() => this.floor(), 0)); // (after the floor is built and the Courier stands on it)
     this.skip = () => { if (this.run && this.run.t > 0.25) this.stop(); };
-    addEventListener('keydown', this.skip); addEventListener('mousedown', this.skip);
+    addEventListener('keydown', this.skip); addEventListener('pointerdown', this.skip);
   }
 
   get active() { return !!this.run; }
@@ -91,5 +91,5 @@ export class Flythrough {
     if (x >= 1) this.stop();
   }
 
-  dispose() { this.stop(); removeEventListener('keydown', this.skip); removeEventListener('mousedown', this.skip); }
+  dispose() { this.stop(); removeEventListener('keydown', this.skip); removeEventListener('pointerdown', this.skip); }
 }
