@@ -101,7 +101,7 @@ The checklist is AREAS.md 6, drawn on the area's page.
   | the ruins | rooms charted, ostraca (2), crystals sung (10), geysers ridden (2), night find (1) | Wisps drift through the ruins at night, and one of them may go wrong. |
 
 - **The ledger:** each row reads one key per thing, set once that thing is done (`room.<id>`, `vantage.<id>`, `chest.<id>`,
-  `shrine.found.<id>`, `ostracon.<word>`, `fish.kg.<species>`, `trial.medal.<medal>`). Three keys are not written yet:
+  `shrine.found.<id>`, `ostracon.<word>`, `fish.kg.<species>`, `trial.solar.<medal>`, the Solar Skiffing trial's). Three keys are not written yet:
   - crystals sung: `crystal.sweet.at.<id>`, which needs an id on `crystal.harvest`;
   - geysers ridden: `geyser.ride.<id>`, which needs the geyser's id and the rider on `geyser.launch`;
   - the night find: its event.

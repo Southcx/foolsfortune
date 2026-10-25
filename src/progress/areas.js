@@ -43,7 +43,7 @@ export const CHECKLIST_ROWS = {
   crystal: { label: 'Crystals sung', key: 'crystal.sweet.at.<id>', needs: 'an id on crystal.harvest (world/dunes/crystals.js)' },
   geyser: { label: 'Geysers ridden', key: 'geyser.ride.<id>', needs: 'an id and the rider on geyser.launch (world/dunes/geysers.js)' },
   fish: { label: 'Fish caught', key: 'fish.kg.<species>', of: 23 },
-  medal: { label: 'Trial medals', key: 'trial.medal.<medal>', of: 3 },
+  medal: { label: 'Trial medals', key: 'trial.solar.<medal>', of: 3 },
   rare: { label: 'Night find', key: 'area.<area>.rare', needs: 'the condition-bound find\'s event (AREAS.md 5)' },
 };
 export const CHECKLIST_KINDS = Object.keys(CHECKLIST_ROWS);
