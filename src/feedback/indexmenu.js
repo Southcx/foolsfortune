@@ -10,7 +10,7 @@ import { sfx } from '../audio/sfx.js';
 
 /** A page's line in the words of the device last touched: on touch a click is a tap, and the keys' parts go (CLOSE stands in the
  *  corner). Plain placeholders until Espada's words (MOBILE.md 8.3). */
-const TOUCH_SUB = [[/, or its key \(or arrows \+ Enter\)/g, ''], [/\s*·\s*F closes/g, ''], [/\bclick\b/g, 'tap'], [/\bClick\b/g, 'Tap']];
+const TOUCH_SUB = [[/, or its key \(or arrows \+ Enter\)/g, ''], [/\s*·\s*F closes/g, ''], [/\s*·\s*(?:B to close|Esc, F or B closes|the arrow keys turn the pages)/g, ''], [/\bclick\b/g, 'tap'], [/\bClick\b/g, 'Tap']]; // (the Codex's, the SONDELASS shelf's, the help's)
 export const subFor = (sub, device) => (device === 'touch' ? TOUCH_SUB.reduce((t, [re, to]) => t.replace(re, to), String(sub)) : sub);
 
 

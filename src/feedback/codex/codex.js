@@ -16,6 +16,7 @@ import { renderTools } from '../../tools/codexpage.js';
 import { renderLoadoutShelf } from '../../tools/sondelass/loadouteditor.js';
 import { renderSoundTest } from '../../music/soundtest.js';
 import { lendPanel, lentMark, saveName } from '../../ui/lendpanel.js';
+import { subFor } from '../indexmenu.js';
 
 
 const CSS = `
@@ -118,7 +119,7 @@ export class Codex {
 
     const head = el('header');
     head.appendChild(el('h2', '', 'THE CODEX'));
-    head.appendChild(el('span', 'sub', 'the Veritome\'s own pages · arts are learned by doing · B to close'));
+    head.appendChild(el('span', 'sub', subFor('the Veritome\'s own pages · arts are learned by doing · B to close', this.game.input?.device))); // (on touch the key goes: CLOSE stands in the corner)
     // the lend panel (DEBUG only: ui/lendpanel.js, its shelf below): in place of the ALL ARTS switch
     if (this.game.mode === 'debug' && this.game.lend) {
       const n = Object.values(this.game.lend.state).filter(Boolean).length;

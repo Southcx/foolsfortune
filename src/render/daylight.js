@@ -5,6 +5,8 @@
 // background) from the values they were built with, which are the maker's dusk; the dunes go on blending that with the workshop's own
 // light as you come and go (`dunes.mix`), so a roofed room keeps its own light. The weather over the place dims and tints it (the
 // weather look's `fogOf` and its sky exposure), and a far bolt in the pall lifts it a little (`look.lift`), never a flash.
+// By night the moon's phase lights the ground as it lights the dome (vfx/nightsky.js `MOON`, the sky's `uMoon`: Calissa's): a full moon's
+// sand a little brighter and cooler, a new moon's darker.
 //
 // Prior art: Wind Waker's and Majora's Mask's time of day (the sun's colour and the fog keyed by the hour, blended between a few
 // authored keys, never computed from physics), Okami's painted skies graded by the hour, and the sixth generation's habit of tinting
@@ -15,6 +17,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { hourGrade, fogOf, lightOf } from '../vfx/weather.js';
+import { MOON } from '../vfx/nightsky.js';
 
 // the keys: the maker's dusk is the base (dunes.js `away`); the day and the night are blended over it by the hour. Their horizons are
 // the owner's paintings' own (sky_day.webp about #b8d4e8, sky_night.webp about #280a17), so the fog melts into the sky at every hour
@@ -56,6 +59,8 @@ export class Daylight {
     for (const k of COLOURS) T[k].copy(B[k]).lerp(D[k], d).lerp(N[k], n);
     T.fogD = B.fogD * THREE.MathUtils.lerp(1, DAY.fogK, d) * THREE.MathUtils.lerp(1, NIGHT.fogK, n);
     for (const k of ['hemiI', 'ambI', 'sunI']) T[k] = THREE.MathUtils.lerp(THREE.MathUtils.lerp(B[k], D[k], d), N[k], n);
+    const moon = Math.min(1, (this.game.sky?.G?.uMoon?.value.z || 0) / MOON.lift); // (0 at new moon .. 1 full: the sky's own lift, vfx/nightsky.js)
+    T.hemiI *= 1 + 1.5 * MOON.lift * moon * n; T.sunI *= THREE.MathUtils.lerp(1, 0.7 + 0.6 * moon, n); // (the night's "sun" is the moon: 0.7 new .. 1.3 full; Calissa's numbers)
     // the weather over the place: its fog's colour and thickness, and the light dimmed as its sky is (a pall darkens, a sunshower warms)
     const a = sky.aspect, s = sky.strength || 0, F = a ? fogOf(a, s) : null, expo = a ? lightOf(a, s) : 1; // (the heavy look's exposure eased in: a heavy Dread dims the sand with its sky, vfx/weather.js lightOf)
     if (F) { T.fog.lerp(_c.copy(F.colour), 0.8 * s); T.bg.lerp(_c, 0.5 * s); T.fogD *= F.density; }

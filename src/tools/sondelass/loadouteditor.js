@@ -26,6 +26,7 @@ import { SLOTS, slotsOpen, slotOpening, moveStatus, moveOpening } from './loadou
 import { labelOf, lineOf, effectKeyword, numbersOf, SPECIAL_SLOTS, ordinal } from './loadoutwords.js';
 import { ChoiceCard, cardList, slotRow } from '../../ui/choicecard.js';
 import { lentMark } from '../../ui/lendpanel.js';
+import { subFor } from '../../feedback/indexmenu.js';
 
 /** The page's words (placeholders for Espada's; CLARITY.md section 7: a window's title says what you can do there). */
 const PAGE = { title: 'BUILD YOUR STRING', sub: 'pick a slot, then a move · Esc or F closes' };
@@ -172,6 +173,6 @@ export function showLoadoutPage(game) {
 
 /** The editor as the Codex's SONDELASS shelf. */
 export function renderLoadoutShelf(codex, cx) {
-  cx.appendChild(make('div', 'shelf', `THE SONDELASS · ${PAGE.title} · Esc, F or B closes`));
+  cx.appendChild(make('div', 'shelf', subFor(`THE SONDELASS · ${PAGE.title} · Esc, F or B closes`, codex.game.input?.device))); // (on touch the keys go)
   loadoutEditor(codex.game).render(cx, { redraw: () => codex.render() });
 }

@@ -10,6 +10,7 @@
 // ---------------------------------------------------------------------------------------
 import { PAGES, rowsOf, notesOf } from './pages.js';
 import { sfx } from '../../audio/sfx.js';
+import { subFor } from '../indexmenu.js';
 
 const KEY = 'foolsfortune.help.page';
 const CSS = `
@@ -75,6 +76,6 @@ export class HelpMenu {
     const rows = rowsOf(p).map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('');
     const notes = notesOf(p).map((n) => `<p class="note">${esc(n)}</p>`).join('');
     this.page.innerHTML = `<h1>${esc(p.title)}${p.key ? `<small>${esc(p.key)}</small>` : ''}</h1><p>${esc(p.lead)}</p><table>${rows}</table>${notes}`
-      + `<div class="turn">${this.at + 1} / ${PAGES.length} · the arrow keys turn the pages</div>`;
+      + `<div class="turn">${esc(subFor(`${this.at + 1} / ${PAGES.length} · the arrow keys turn the pages`, document.body.classList.contains('hud-touch') ? 'touch' : 'keyboard'))}</div>`; // (on touch the pages are a strip of tabs: ui/hudlayout.js's body class)
   }
 }

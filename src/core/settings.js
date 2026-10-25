@@ -6,23 +6,28 @@
 // on the panel does (main.js `game.knobChanged`: the graphics tier set, the volume applied) and says so on the bus. What a setting does
 // is read where it bites, as ever: the look (courier/player.js), the camera's follow on touch (courier/camfollow.js), render/graphics.js,
 // the sound (audio/core.js), the haptics (audio/haptics.js), the screen's shake (config.js shakeOf).
+// A row of a preference its own module keeps (the instruments' skin: vfx/instrumentskins.js, in its own save section) has `get` and
+// `set` of its own in place of a path, and its choices may be read from the game as the window opens (what is open to wear by then).
 //
 // Prior art: every console game's options page (a few rows, each a label, a line and its control; Celeste's and Hades' among the
 // plainest), Unreal's game user settings (the preferences apart from the tuning), Apple's settings rows (a label and a footnote line).
 //
-//   game.settings = new Settings(game)   .rows   .row(id)   .get(id)   .set(id, value)   .run(id)   .available(id)   SETTING_ROWS
+//   game.settings = new Settings(game)   .rows (as drawn now)   .row(id)   .get(id)   .set(id, value)   .run(id)   .available(id)   SETTING_ROWS
 //   Events: setting.change { id, value, by }
 // ---------------------------------------------------------------------------------------
 import { T, saveTuning } from './config.js';
 
-/** The rows, in the window's order. `path` is the setting in T; a slider has min, max and step; a choice its [value, label] pairs and
- *  a line of its own where one needs it; an action runs and keeps nothing. Words marked (placeholder) are Petra's until Espada's. */
+/** The rows, in the window's order. `path` is the setting in T, or `get(game)` and `set(game, value)` where its module keeps it; a
+ *  slider has min, max and step; a choice its [value, label] pairs (or `choices(game)` returning them) and a line of its own where one
+ *  needs it; an action runs and keeps nothing. Words marked (placeholder) are Petra's until Espada's. */
 export const SETTING_ROWS = [
   { id: 'look', path: 'camera.sensitivity', kind: 'slider', min: 0.2, max: 3, step: 0.05, label: 'Look sensitivity', line: 'How far the camera turns for how far you drag.' },
   { id: 'follow', path: 'camera.follow', kind: 'slider', min: 0, max: 1, step: 0.05, label: 'Camera follow', line: 'How quickly the camera swings back behind you after you stop dragging.' },
   { id: 'lockAuto', path: 'camera.lockAuto', kind: 'switch', label: 'Auto lock-on', line: 'On a phone, with a tool drawn, the lock-on finds the nearest foe in front of you by itself.' }, // (Espada's words)
   { id: 'gyro', path: 'tech.skiff.gyro', kind: 'switch', label: 'Tilt to steer', line: 'On the Solar Skiff, turn the phone like a steering wheel to steer. Your thumb on the stick still works too.' }, // (core/gyrosteer.js; Espada's words)
   { id: 'graphics', path: 'visual.graphics', kind: 'choice', choices: [['auto', 'Auto'], ['high', 'High'], ['low', 'Low'], ['minimum', 'Minimum']], label: 'Graphics', line: 'Lower runs smoother and cooler; higher looks finer.', lines: { auto: 'Picked for this device.' } },
+  { id: 'instruments', kind: 'choice', label: 'Instruments', line: 'What the Sight and the Lachrimeter are made of. Only their housing changes.', // (Calissa's words, Espada's to rule)
+    choices: (g) => (g.instrumentSkins?.choices || []).filter(([id]) => g.instrumentSkins.isOpen(id)), get: (g) => g.instrumentSkins?.id, set: (g, id) => g.instrumentSkins?.set(id) }, // (vfx/instrumentskins.js keeps it: its own save section, its own line in the log)
   { id: 'volume', path: 'audio.volume', kind: 'slider', min: 0, max: 1.5, step: 0.05, label: 'Volume', line: 'How loud the game plays, music and sound together.' },
   { id: 'haptics', path: 'audio.haptics', kind: 'switch', label: 'Haptics', line: 'Small buzzes when you hop, land, hit or are hit. Only on devices that can buzz.' },
   { id: 'shake', path: 'visual.shake', kind: 'choice', choices: [['full', 'Full'], ['half', 'Half'], ['off', 'Off']], label: 'Screen shake', line: 'How hard the view shakes when a blow lands or you land hard.' }, // (Espada's words)
@@ -32,15 +37,27 @@ const BY_ID = new Map(SETTING_ROWS.map((r) => [r.id, r]));
 const split = (path) => { const k = path.split('.'); return { obj: k.slice(0, -1).reduce((o, p) => o?.[p], T), leaf: k.at(-1), group: k[0] }; };
 
 export class Settings {
-  constructor(game) { this.game = game; this.rows = SETTING_ROWS; }
+  constructor(game) { this.game = game; }
+  /** The rows as the window draws them now: a row's choices read from the game, a choice with nothing to choose between left out. */
+  get rows() { return SETTING_ROWS.map((r) => (typeof r.choices === 'function' ? { ...r, choices: this.choices(r.id) } : r)).filter((r) => r.kind !== 'choice' || r.choices.length > 1); }
   row(id) { return BY_ID.get(id) || null; }
-  get(id) { const r = this.row(id); if (!r?.path) return undefined; const { obj, leaf } = split(r.path); return obj?.[leaf]; }
+  /** A choice row's [value, label] pairs, as they stand now. */
+  choices(id) { const r = this.row(id), c = r?.choices; return typeof c === 'function' ? c(this.game) || [] : c || []; }
+  get(id) { const r = this.row(id); if (r?.get) return r.get(this.game); if (!r?.path) return undefined; const { obj, leaf } = split(r.path); return obj?.[leaf]; }
   /** A row set to `value` (a slider's clamped to its range and step, a choice's one of its values, a switch's true or false). */
   set(id, value) {
-    const r = this.row(id); if (!r?.path) return false;
+    const r = this.row(id); if (!r) return false;
+    if (r.set) { // (kept by its own module, in its own save section: never in the tuning)
+      if (r.kind === 'choice' && !this.choices(id).some(([c]) => c === value)) return false;
+      if (this.get(id) === value) return true;
+      if (r.set(this.game, value) === false) return false;
+      this.game.events?.emit('setting.change', { id, value, by: 'courier' });
+      return true;
+    }
+    if (!r.path) return false;
     let v = value;
     if (r.kind === 'slider') { v = Math.min(r.max, Math.max(r.min, +value || 0)); v = +(Math.round(v / r.step) * r.step).toFixed(4); }
-    else if (r.kind === 'choice') { if (!r.choices.some(([c]) => c === value)) return false; }
+    else if (r.kind === 'choice') { if (!this.choices(id).some(([c]) => c === value)) return false; }
     else if (r.kind === 'switch') v = !!value;
     const { obj, leaf, group } = split(r.path); if (!obj) return false;
     if (obj[leaf] === v) return true;

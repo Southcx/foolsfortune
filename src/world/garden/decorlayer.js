@@ -29,7 +29,7 @@ import { DECOR_GRID, cellsOf, cellAt, dirAt, tangentAt, regionOf, regionCells } 
  *  over); the batch's first capacity (it grows as pieces are placed). */
 export const FOOT = { small: 0.45, medium: 0.95, large: 1.45, centre: 1.95, fixed: 2.2, plot: 1.6, pick: 1.2, solid: ['medium', 'large', 'centre'], cap: 32 };
 /** Each set's placeholder colour (the looks are Calissa's): the five feelings' sets in their feelings' warmth, the plain in stone. */
-export const SET_COLOR = { plain: 0xa89a86, wonder: 0x7fa86a, mirth: 0xd8794e, desire: 0xc9a356, grief: 0x7f93ad, dread: 0x5b8f8c, sound: 0xc8a050, season: 0xe0a2b4, briar: 0x5d5a32 };
+export const SET_COLOR = { plain: 0xa89a86, wonder: 0x7fa86a, mirth: 0xd8794e, desire: 0xc9a356, grief: 0x7f93ad, dread: 0x5b8f8c, sound: 0xc8a050, season: 0xe0a2b4, briar: 0x5d5a32, teapath: 0x8fa070, kilnyard: 0xc07848, stargazer: 0x4f5d9a }; // (the last three Calissa's: sage, terracotta, night indigo)
 export const TINT = [1, 0.8, 1.2, 0.62]; // (a piece's four tints: as it is, darker, paler, deep)
 const UNDO = 50; // (decor's undo stack, Petra's depth: GARDEN-COZY.md D2)
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(1, 1, 1), _p = new THREE.Vector3(), _n = new THREE.Vector3(), _t = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Color(), _push = new THREE.Vector3(), _Y = new THREE.Vector3(0, 1, 0);

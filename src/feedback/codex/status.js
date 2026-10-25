@@ -33,6 +33,7 @@ const CSS = `
 #codex .st-next { fill: none; stroke: rgba(255,241,220,.45); stroke-dasharray: 3 3; stroke-width: 1; }
 #codex .st-poly { stroke-width: 1.5; }
 #codex .st-label { font: 600 9px var(--f-title); letter-spacing: .12em; fill: #fbe3cf; }
+#codex .st-key { stroke: #1c0d08; stroke-width: 2; }
 #codex .st-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 8px; }
 #codex .st-chip { display: inline-flex; align-items: baseline; gap: 6px; padding: 3px 8px; border: 1px solid rgba(255,178,122,.25); border-radius: 3px; font-size: 11px; letter-spacing: .06em; background: rgba(28,13,8,.4); }
 #codex .st-chip i { font-style: normal; display: inline-flex; align-self: center; }
@@ -46,18 +47,21 @@ const CSS = `
 let styled = false;
 const hex = (n) => `#${n.toString(16).padStart(6, '0')}`;
 
-/** A radar of `axes` ([{ name, value 0..1, next 0..1, colour }]), its rings at `rings` (0..1). */
-function radar(axes, rings, fill, stroke) {
+/** A radar of `axes` ([{ name, value 0..1, next 0..1, colour }]), its rings at `rings` (0..1). On touch (`keyed`) its names are not
+ *  written round it: a phone draws it too small for them to be read (Calissa's ask: 9 px), so each tip wears its axis's colour, the key
+ *  to the chips under it that name it, and the chart takes the whole width. */
+function radar(axes, rings, fill, stroke, keyed = false) {
   const R = 110, C = 150, n = axes.length, pt = (i, r) => { const a = -Math.PI / 2 + (i / n) * Math.PI * 2; return [C + Math.cos(a) * R * r, C + Math.sin(a) * R * r]; };
   const poly = (f) => axes.map((ax, i) => pt(i, Math.max(0.02, f(ax))).map((v) => v.toFixed(1)).join(',')).join(' ');
-  let s = `<svg viewBox="-80 0 460 300" role="img">`; // (wide enough for the side labels)
+  let s = keyed ? '<svg viewBox="15 15 270 270" role="img">' : '<svg viewBox="-80 0 460 300" role="img">'; // (wide enough for the side labels; keyed, the chart and its tips only)
   for (const r of rings) s += `<polygon class="st-grid" points="${axes.map((_, i) => pt(i, r).join(',')).join(' ')}"/>`;
   axes.forEach((_, i) => { const [x, y] = pt(i, 1); s += `<line class="st-axis" x1="${C}" y1="${C}" x2="${x}" y2="${y}"/>`; });
   s += `<polygon class="st-next" points="${poly((a) => a.next)}"/><polygon class="st-poly" points="${poly((a) => a.value)}" style="fill:${fill};stroke:${stroke}"/>`;
   axes.forEach((ax, i) => {
     const [x, y] = pt(i, Math.max(0.02, ax.value)), [lx, ly] = pt(i, 1.2);
     s += `<circle cx="${x}" cy="${y}" r="4" fill="${ax.colour}"/>`;
-    s += `<text class="st-label" x="${lx}" y="${ly + 3}" text-anchor="${Math.abs(lx - C) < 8 ? 'middle' : lx > C ? 'start' : 'end'}">${ax.name.toUpperCase()}</text>`;
+    if (keyed) { const [tx, ty] = pt(i, 1.12); s += `<circle class="st-key" cx="${tx.toFixed(1)}" cy="${ty.toFixed(1)}" r="9" fill="${ax.colour}"><title>${ax.name}</title></circle>`; }
+    else s += `<text class="st-label" x="${lx}" y="${ly + 3}" text-anchor="${Math.abs(lx - C) < 8 ? 'middle' : lx > C ? 'start' : 'end'}">${ax.name.toUpperCase()}</text>`;
   });
   return `${s}</svg>`;
 }
@@ -90,7 +94,7 @@ function bracelet(codex) {
 
 export function renderStatus(codex, host) {
   if (!styled) { const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st); styled = true; }
-  const g = codex.game, P = g.psyche, Al = g.alchemy, ranks = ECON.alchemy.ranks;
+  const g = codex.game, P = g.psyche, Al = g.alchemy, ranks = ECON.alchemy.ranks, keyed = g.input?.device === 'touch'; // (on touch the radars are keyed by colour: radar())
   const wrap = document.createElement('div'); wrap.className = 'st-wrap';
   // the domains: a level a domain (1..99), the way to the next level as the faint ring
   const doms = DOMAIN_ORDER.map((id) => {
@@ -100,7 +104,7 @@ export function renderStatus(codex, host) {
   const total = doms.reduce((n, d) => n + d.lv, 0), world = doms.every((d) => d.lv >= MAX_LEVEL);
   const a = document.createElement('div'); a.className = 'st-card';
   a.innerHTML = `<h3>THE DOMAINS</h3><div class="st-sum"><b>${total}</b>total level of ${MAX_LEVEL * 7}${world ? ' · THE WORLD' : ''}</div>`
-    + radar(doms, [33, 66, 99].map((l) => l / MAX_LEVEL), world ? 'rgba(212,165,60,.85)' : 'rgba(255,178,122,.28)', world ? '#d4a53c' : '#ffb27a') // (the Codex's amber; The World's gold)
+    + radar(doms, [33, 66, 99].map((l) => l / MAX_LEVEL), world ? 'rgba(212,165,60,.85)' : 'rgba(255,178,122,.28)', world ? '#d4a53c' : '#ffb27a', keyed) // (the Codex's amber; The World's gold)
     + `<div class="st-chips">${doms.map((d) => `<span class="st-chip"><i style="background:${d.colour}"></i>${d.name}<b>${d.lv}</b><small>${d.lv >= MAX_LEVEL ? 'max' : `${Math.round(d.into * 100)}% to ${d.lv + 1}`}</small></span>`).join('')}</div>`;
   // Soul Alchemy's attributes: a rank each (0..ranks), its seasoning toward the next as the faint ring
   const atts = Object.values(ATTRIBUTES).map((t) => {
@@ -110,7 +114,7 @@ export function renderStatus(codex, host) {
   const soul = Al?.colour ? wheelSRGB(Al.colour.h, Al.colour.s).map((v) => Math.round(v * 255)) : [201, 168, 130]; // (your soul colour fills it: the shape is your soul)
   const b = document.createElement('div'); b.className = 'st-card';
   b.innerHTML = `<h3>SOUL ALCHEMY</h3><div class="st-sum"><b>${atts.reduce((n, t) => n + t.r, 0)}</b>ranks of ${ranks * 7}</div>`
-    + radar(atts, [1 / 3, 2 / 3, 1], `rgba(${soul.join(',')},.35)`, `rgb(${soul.join(',')})`)
+    + radar(atts, [1 / 3, 2 / 3, 1], `rgba(${soul.join(',')},.35)`, `rgb(${soul.join(',')})`, keyed)
     + `<div class="st-chips">${atts.map((t) => `<span class="st-chip" title="${t.does}"><i style="background:${t.colour}"></i>${t.name}<b>${t.r}/${ranks}</b><small>seasoning ${Math.round(t.s * 100)}</small></span>`).join('')}</div>`;
   wrap.append(a, b, bracelet(codex));
   host.appendChild(wrap);
