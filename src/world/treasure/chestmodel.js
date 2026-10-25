@@ -74,7 +74,7 @@ export class ChestRig {
     this.orbit = null; this.rings = []; this.pulse = []; // (things that move on their own: see update)
 
     const track = (o) => { (o.isMaterial ? this.mats : this.geos).push(o); return o; };
-    const std = (color, o = {}) => track(new THREE.MeshStandardMaterial({ color, roughness: 0.72, metalness: 0, ...(o.metalness > 0.3 ? { envMap: sky, envMapIntensity: 0.9 } : {}), ...o }));
+    const std = (color, o = {}) => track(new THREE.MeshStandardMaterial({ color, roughness: 0.72, metalness: 0, side: THREE.DoubleSide, ...(o.metalness > 0.3 ? { envMap: sky, envMapIntensity: 0.9 } : {}), ...o })); // (every piece double-sided: one program, not two, for a chest's few faces)
     const glowMat = (o = {}) => track(new THREE.MeshBasicMaterial({ color: T.glow, ...o }));
     this.oil = tier === 4 ? oilMaterial({ env: sky, envIntensity: 0.3, uni: { uOil: { value: 0.55 }, uOilPow: { value: 3.2 }, uHue: { value: 0 } } }) : null;
     if (this.oil) this.mats.push(this.oil.mat);
