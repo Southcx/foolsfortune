@@ -43,6 +43,7 @@ import { featTint, SCHILLER } from './oxidation.js';
 import { addOutline, OUTLINES } from '../render/outline.js';
 import { zoneOf } from '../render/zonemap.js';
 import { RAPIER, GROUPS } from '../core/physics.js';
+import { freeBazaarAtlas } from './bazaarfaces.js';
 
 /** The numbers: the kiln glazes; the dome (radius, gores, the warm horizon, the zenith); the floor (the tiles' size, their grout); the
  *  stalls' angles off the gate (radians, both sides); the neon bands (radius, height); the lantern strings; the props' places (local m). */
@@ -161,6 +162,7 @@ export class BazaarHall {
   /** The hall taken down: every mesh out of the scene and its geometry let go (its outline's too), its colliders removed; the materials
    *  kept. Dovina's placeholders are hers to build again with her room. */
   teardown(game = this.game) {
+    freeBazaarAtlas(); // (the house atlas's GPU copy, built or not: uploaded again when a table next draws, vfx/bazaarfaces.js)
     if (!this.built) return; this.built = false;
     for (const m of [...this.meshes, this.dome, ...this.neon, this.wheel, this.rotor]) {
       const o = m.userData.outline; if (o) { OUTLINES.delete(o); m.userData.outline = null; }

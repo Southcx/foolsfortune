@@ -32,6 +32,7 @@
 // layouts, playing cards' corner indices, Chessex's and Crystal Caste's dice (opposite faces summing to one more than the sides, the
 // underlined 6 and 9), casino chips' edge inserts (Paulson's), Shut the Box's numbered tiles, the title's own card back.
 //
+//   freeBazaarAtlas()   (its GPU copies let go: painted and uploaded again on next use)
 //   bazaarAtlas() -> { tex, glow(), card(i, dim?), die(skin, face, dim?), tile(n, state, dim?), chip(kind, part), cup(), cloth(id), seat(colour, kind) }
 //   (each a uv rect [u0, v0, u1, v1]; `dim` asks the sunk twin)
 //   cardFace(i) -> a 128 x 208 canvas of one card, painted alone at full size (the atlas is drawn at ATLAS_SCALE: ui/readingtable.js)
@@ -157,6 +158,10 @@ function paintAtlas(g, dieAt, dieCount) {
 /** The one atlas (painted on first ask; shared by every table). A baked canvas (render/bakedcanvas.js: a phone's memory, Petra's
  *  measure 2026-10-24, 22.5 MB of canvas held beside its GPU copy): its pixels go once the GPU has them, painted again only when asked
  *  for (`canvas`, a change of the house deck's back). A reader of `canvas` calls `release()` when done with it. */
+/** The house atlas's GPU copies let go, if it was made (a phone's memory, 2026-10-25: 6.3 MB at 1024 x 1152, its glow mask as much again if made, on an emulated
+ *  iPhone XR, kept on the GPU after the bazaar was left). The hall's teardown calls it. */
+export function freeBazaarAtlas() { ATLAS?.free(); }
+
 export function bazaarAtlas() {
   if (ATLAS) return ATLAS;
   const { dieAt, dieCount } = dieLayout();
@@ -174,6 +179,9 @@ export function bazaarAtlas() {
     /** The painted canvas (painted again if it already went to the GPU); `release()` when done with it. */
     get canvas() { return tex.image; },
     release: () => { tex.source.data = null; },
+    /** Its GPU copies let go (the hall's teardown: the atlas and the glow mask are baked canvases, painted and uploaded again the next
+     *  time a table, a reading or a piece draws with them, so nothing need ask first). */
+    free: () => { tex.dispose(); glow?.dispose(); },
     /** The stone skins' numerals alone, white on black, at half size (the same uvs): painted on first ask. */
     glow: () => {
       if (glow) return glow;
