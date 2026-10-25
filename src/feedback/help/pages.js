@@ -9,7 +9,7 @@
 // Hunter's Notes and Breath of the Wild's Hints (the manual inside the pause, read by topic), and Okami's brush-technique scrolls (a
 // page per technique, the stroke drawn).
 //
-//   PAGES = [{ id, title, key?, src, lead, rows: [[keys, what]], notes?: [text] }]
+//   PAGES = [{ id, title, key?, src, lead, rows: [[keys, what]], notes?: [text], touch?: { title, lead, rows, notes? } (the page on a phone) }]
 // ---------------------------------------------------------------------------------------
 import { SONGS } from '../../tools/crucibelle/songs.js';
 import { TECHNIQUES } from '../../tools/soulbrush/techniques.js';
@@ -42,6 +42,23 @@ export const PAGES = [
       ['Tab', 'the tuning panel; the last checkpoint, the hub, the room set again'],
       ['F2 · F3 · F4', 'the interface off · the performance panel · copy a report'],
     ],
+    // (on a phone this page is the touch one: feedback/help/menu.js shows `touch` over the page while the last device is touch.
+    //  Placeholder words, Petra's until Espada's: MOBILE.md 4, 8)
+    touch: {
+      title: 'THE TOUCH CONTROLS',
+      lead: 'The workshop on Anagami Island, as a sandbox: break every pot. On a phone your thumbs play it: the left half moves you, the right half looks, and the buttons in the bottom right corner are what the moment asks for.',
+      rows: [
+        ['the left half', 'move: your thumb lands anywhere and is the stick; push past its ring to sprint'],
+        ['the right half', 'look: drag to turn the camera'],
+        ['the buttons, bottom right', 'what the moment asks for: on foot JUMP, CROUCH, DASH, and USE (it names what it is used on); with a tool out its verbs and PARRY'],
+        ['the strip over them', 'your two tools: tap one to draw it'],
+        ['the top bar', 'the Codex, the Pneuka Box, the map, the settings, the chat line and the pause'],
+        ['a long press', 'the second verb, where a mouse would right click'],
+        ['two fingers', 'in the Spirit Garden and over the god hand: drag to turn, pinch to zoom; tap with two to undo'],
+        ['a flick sideways', 'on the Solar Skiff, the shoulder'],
+        ['the pause menu', 'first or third person, the other shoulder, stepping off the skiff, a race\'s BACK, RESTART and RETIRE, a duel\'s GIVE UP'],
+      ],
+    },
   },
   {
     id: 'move', title: 'THE CORE MOVEMENT', src: 'courier/player.js',

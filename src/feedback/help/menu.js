@@ -28,8 +28,12 @@ const CSS = `
 #help .hp .note { opacity: .82; font-size: 12px; margin: 8px 0 0; }
 #help .hp .turn { margin-top: 10px; font-size: 11px; opacity: .55; letter-spacing: .08em; }
 @media (max-width: 620px) { #help { flex-direction: column; } #help .hl { flex: 0 0 auto; flex-direction: row; flex-wrap: wrap; border: 0; padding: 0; } }
+body.hud-touch #help .hl .kb, body:not(.hud-touch) #help .hl .tc { display: none; } /* (a page with a touch side: its name by the device) */
 `;
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+/** Whether the last device is touch (ui/hudlayout.js's body class), and a page as that device reads it (its `touch` side on a phone). */
+const onTouch = () => typeof document !== 'undefined' && document.body.classList.contains('hud-touch');
+const view = (p) => (p.touch && onTouch() ? { ...p, ...p.touch } : p);
 
 export class HelpMenu {
   /** `root` is the menu's #help; `isOpen()` says whether the pause menu is up (the keys turn the pages only then). */
@@ -44,7 +48,11 @@ export class HelpMenu {
     if (!document.getElementById('helpcss')) { const st = document.createElement('style'); st.id = 'helpcss'; st.textContent = CSS; document.head.appendChild(st); }
     root.innerHTML = '<div class="hl"></div><div class="hp"></div>';
     this.list = root.querySelector('.hl'); this.page = root.querySelector('.hp');
-    this.list.innerHTML = PAGES.map((p, i) => `<div data-i="${i}">${esc(p.title.replace(/^THE /, ''))}${p.key ? `<b>${esc(p.key)}</b>` : ''}</div>`).join('');
+    const name = (t) => esc(t.replace(/^THE /, ''));
+    this.list.innerHTML = PAGES.map((p, i) => `<div data-i="${i}">${p.touch ? `<span class="kb">${name(p.title)}</span><span class="tc">${name(p.touch.title)}</span>` : name(p.title)}${p.key ? `<b>${esc(p.key)}</b>` : ''}</div>`).join('');
+    // (the page drawn again when the last device changes: a phone's first touch, ui/hudlayout.js's body class)
+    this.touch = onTouch();
+    new MutationObserver(() => { if (onTouch() !== this.touch) { this.touch = onTouch(); this.render(); } }).observe(document.body, { attributes: true, attributeFilter: ['class'] });
     // (a click on the pages turns them and is kept from the card's own click, which resumes the game)
     root.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -71,11 +79,11 @@ export class HelpMenu {
   turn(d) { this.show((this.at + d + PAGES.length) % PAGES.length); }
 
   render() {
-    const p = PAGES[this.at];
+    const p = view(PAGES[this.at]);
     for (const d of this.list.children) d.classList.toggle('on', +d.dataset.i === this.at);
     const rows = rowsOf(p).map(([k, v]) => `<tr><td>${esc(k)}</td><td>${esc(v)}</td></tr>`).join('');
     const notes = notesOf(p).map((n) => `<p class="note">${esc(n)}</p>`).join('');
     this.page.innerHTML = `<h1>${esc(p.title)}${p.key ? `<small>${esc(p.key)}</small>` : ''}</h1><p>${esc(p.lead)}</p><table>${rows}</table>${notes}`
-      + `<div class="turn">${esc(subFor(`${this.at + 1} / ${PAGES.length} · the arrow keys turn the pages`, document.body.classList.contains('hud-touch') ? 'touch' : 'keyboard'))}</div>`; // (on touch the pages are a strip of tabs: ui/hudlayout.js's body class)
+      + `<div class="turn">${esc(subFor(`${this.at + 1} / ${PAGES.length} · the arrow keys turn the pages`, onTouch() ? 'touch' : 'keyboard'))}</div>`; // (on touch the pages are a strip of tabs)
   }
 }
