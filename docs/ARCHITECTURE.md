@@ -160,6 +160,14 @@ unpacked once; what an area frees is what it built.
 - **Budgets per area:** `npm run perf` measures one area at a time with the others unbuilt; the heap budget becomes the resident set
   plus the largest area. A run of the whole route is kept for the gate's history until every place is an area.
 
+**Stage 1, built (2026-10-25): eviction** (`render/areas.js`). Each built-at-boot place is registered as an area of render zones with
+its neighbours; out of an area and its neighbours for 3 real s (at once while the seam covers the view), its geometry and textures that
+nothing outside it draws are disposed in one pass over the scene (40 real ms headless for seven areas), and uploaded again on entry
+before the first frame (a baked canvas draws itself again: the bazaar's house atlas about 3 real s headless, under the cover). The end
+of the warm-up lets go of every area not beside the camera. Measured (the built game, estimated GPU bytes): standing in the Dunes, about
+101 MB let go (the bazaar 35, the workshop 30, the basement 29, the Throwing Room 4, Margarite and the circuits 1 each); in the workshop
+at boot, about 50 MB. The warm-up's peak is unchanged: stage 2 (building on entry) is what lowers it.
+
 **Order, by what each frees:** the basement (126 MB), the bazaar, Margarite and the crossing (built at boot, parked hidden), the Dunes
 as Dovina's five, then the workshop's rooms. The garden, a Dunemaw floor and the Raceway park already build on entry: they are moved
 onto `game.areas` as they are.

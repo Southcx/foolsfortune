@@ -35,6 +35,7 @@ import { AI } from '../creatures/ai/index.js';
 import { reseed, sessionSeed } from '../core/rng.js';
 import { DuelView } from '../vfx/duelview.js';
 import { Zones } from '../render/zones.js';
+import { Areas } from '../render/areas.js';
 import { theme } from '../ui/theme.js';
 import { px, PX_CSS } from '../ui/pixel.js';
 import { Glow } from '../render/glow.js';
@@ -101,6 +102,12 @@ export async function bootServices(made) {
   };
 
   game.zones = new Zones(game); // (only the place you are in, and what can be seen from it, is drawn: render/zones.js)
+  // (and only the area you are in, or beside, is held on the GPU: render/areas.js; the garden, a Well's floors and the crossing build on entry already)
+  game.areas = new Areas(game)
+    .register('workshop', { zones: ['workshop'], near: ['basement', 'testroom'] }).register('testroom', { zones: ['testroom'], near: ['workshop'] })
+    .register('basement', { zones: ['basement'], near: ['workshop', 'testroom'] }).register('circuits', { zones: ['circuits'] })
+    .register('dunes', { zones: ['dunes', 'beach'] }).register('raceway', { zones: ['raceway'] })
+    .register('bazaar', { zones: ['bazaar'] }).register('margarite', { zones: ['margarite'] });
   game.time = new TimeScale(game); // (who slows the world, and by how much: see core/time.js)
   game.log = new GameLog(game); // (the one place for text feedback; see gamelog.js)
   game.renderer = renderer; // (for a warm-up made later than boot: the Spirit Garden's, world/garden/realm.js build())

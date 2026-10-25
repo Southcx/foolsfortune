@@ -146,6 +146,7 @@ export async function bootWarmup(game, made) {
   for (const o of gardenLooks) o.visible = false;
   renderer.setRenderTarget(null);
   game.zones.enabled = true; game.zones.t = 0;
+  game.zones.update(0); game.areas.settle(); // (the areas the warm-up drew and the camera is not in or beside let go again: render/areas.js)
   mark('shaders');
   document.getElementById('loading').remove();
 }
