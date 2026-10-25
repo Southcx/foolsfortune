@@ -110,6 +110,16 @@ export class PalmDieLook {
     }
   }
 
+  /** For the boot's warm-up: dressed in the stones you wear and shown 50 m down, so its finish program is compiled with the rest (it was
+   *  first dressed on the first frame the hand showed, in the Spirit Garden: a compile in play, perf 2026-10-25). */
+  prewarm() {
+    this.dress(); if (!this.sides) this.shape(20);
+    const at = this.mesh.parent, was = this.mesh.visible, scene = this.game.scene;
+    if (!at && scene) { scene.add(this.mesh); this.mesh.position.set(0, -50, 0); this.mesh.userData.zoneFree = true; }
+    this.mesh.visible = true;
+    return () => { if (!at) this.mesh.removeFromParent(); this.mesh.visible = was; };
+  }
+
   update(dt) {
     const bone = this.game.god?.hand?.bones?.handR, P = this.game.palmDie, B = this.game.god?.hand?.bones;
     if (B?.handR && this.hand !== B) { this.hand = B; this.setFingers(B); }

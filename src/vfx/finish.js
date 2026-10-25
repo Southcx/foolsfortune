@@ -38,6 +38,23 @@ import { MINERAL_HEAD, MINERAL_COLOR, MINERAL_SURFACE, MINERAL_LIGHT } from './s
 import { TOOL_HEAD, TOOL_DECL, TOOL_COLOR, TOOL_SURFACE, TOOL_LIGHT } from './toolpatterns.js';
 import { SKIN_HEAD, SKIN_DECL, SKIN_COLOR, SKIN_SURFACE, SKIN_LIGHT_PRE, SKIN_LIGHT, SKIN_VERTEX } from './skinpatterns.js';
 
+// WHAT IS COMPILED IN (2026-10-25, measured: docs/CASEBOOK-CASES.md, "The well's frame doubled"): each family of patterns sits behind
+// a define, and a material's program carries only the families its finish wears now: the kiln patterns (FIN_KILN), a tool skin's
+// (FIN_TOOL), a stone's mineral (FIN_MINERAL), a skin's pattern (FIN_SKINPAT). A uniform branch is free on a desktop GPU, but a
+// software GL (SwiftShader, the gate's) and a phone's small GPU pay for every branch's code on every pixel: with all four families in
+// the one program the Courier's body cost 2.9 s a frame close up in a Well's hall, 0.45 s without them. Nothing worn, the program is
+// the lean one every part shares; a pattern put on changes the key (its material's onBeforeRender sees the flags move and asks for a
+// recompile), so the first firing of a patterned skin or the first patterned tool skin compiles its program once, at the kiln or the
+// Pneuka Box, not in a fight.
+const gate = (def, glsl) => (glsl ? `\n#ifdef ${def}\n${glsl}\n#endif\n` : '');
+/** The families a finish wears now, as its key's suffix: K kiln pattern, T tool skin, M mineral, S skin pattern. */
+function finFlags(u) {
+  if (u.uFinOn.value < 0.5) return '';
+  const k = u.uFinKind.value, z = u.uFinP.value.z;
+  return (k === 0 && z > 0.5 && z < 7.5 ? 'K' : '') + (k === 0 && u.uFinPart.value > 2.5 ? 'T' : '') + (k === 1 && u.uFinM.value.x > 0.5 ? 'M' : '') + (k === 3 && u.uFinM.value.x > 0.5 ? 'S' : '');
+}
+const FLAG_DEFS = { K: 'FIN_KILN', T: 'FIN_TOOL', M: 'FIN_MINERAL', S: 'FIN_SKINPAT' };
+
 const HEAD = `
 varying vec3 vFinObj; varying vec3 vFinN;
 uniform float uFinOn; uniform vec3 uFinA; uniform vec3 uFinB; uniform vec4 uFinP; uniform vec4 uFinS; uniform float uFinPart;
@@ -140,12 +157,12 @@ const PATTERN = `
 const COLOR = {
   // P.x: how much of the painting's light and shade to keep; P.y: its midpoint
   glaze: `finL = finLuma(diffuseColor.rgb); finShade = clamp(1.0 + (finL - uFinP.y) * uFinP.x, 0.25, 1.6);
-    if (uFinOn > 0.5) diffuseColor.rgb = uFinA * finShade;` + PATTERN + TOOL_COLOR, // (finL: the painting's own lightness; finShade: what of it the glaze keeps, for the patterns too)
+    if (uFinOn > 0.5) diffuseColor.rgb = uFinA * finShade;` + gate('FIN_KILN', PATTERN) + gate('FIN_TOOL', TOOL_COLOR), // (finL: the painting's own lightness; finShade: what of it the glaze keeps, for the patterns too)
   // A: the stone's colour; B: its second colour (opal's play, moonstone's glow); P.x: facets per unit; P.y: fire; P.z: play of colour; P.w: adularescence
   // uFinM / uFinC: the stone's mineral (vfx/stoneminerals.js); uFinPart: how much of the map's dark numerals to keep (a die's body)
   gem: `float finInk = mix(1.0, clamp(finLuma(diffuseColor.rgb) * 1.1, 0.0, 1.0), uFinPart);
     if (uFinOn > 0.5) { vec3 fN = normalize(floor(vFinN * uFinP.x + 0.5)); float ndvF = abs(dot(fN, normalize(vViewPosition)));
-    diffuseColor.rgb = uFinA * (0.35 + 0.65 * ndvF); }` + MINERAL_COLOR + `
+    diffuseColor.rgb = uFinA * (0.35 + 0.65 * ndvF); }` + gate('FIN_MINERAL', MINERAL_COLOR) + `
     if (uFinOn > 0.5) { // (the numerals: pressed dark into a pale stone, inlaid pale gold in a dark one, where dark ink would vanish)
       float finDark = 1.0 - smoothstep(0.22, 0.45, finLuma(uFinA));
       diffuseColor.rgb = mix(diffuseColor.rgb * finInk, mix(diffuseColor.rgb, vec3(0.93, 0.84, 0.62), 1.0 - finInk), finDark); }`,
@@ -153,13 +170,13 @@ const COLOR = {
   hair: `if (uFinOn > 0.5) { float tip = clamp(1.0 - (vFinObj.y - uFinP.w) / max(0.001, uFinP.y), 0.0, 1.0);
     diffuseColor.rgb = mix(uFinA, mix(uFinA, uFinB, smoothstep(0.45, 0.95, tip)), uFinP.x); }`, // (a dip: one colour most of the way, turning near the ends)
   // A: the body's colour; B: its glow; P.x: inner light; P.y: rim; P.z: sheen (0 none, 1 pearl, 2 aurora); then a skin's pattern over it
-  skin: `if (uFinOn > 0.5) { diffuseColor.rgb = uFinA * (1.0 - 0.12 * uFinP.w); }` + SKIN_COLOR, // (P.w: translucency; a translucent body shows a little less of its face)
+  skin: `if (uFinOn > 0.5) { diffuseColor.rgb = uFinA * (1.0 - 0.12 * uFinP.w); }` + gate('FIN_SKINPAT', SKIN_COLOR), // (P.w: translucency; a translucent body shows a little less of its face)
 };
 // per kind: the surface itself (after the maps: metal and gloss), where a pattern is metal (silver spots, gold leaf) or a glassier film
 const SURFACE = {
-  glaze: `metalnessFactor = mix(metalnessFactor, 0.9, finPatM); roughnessFactor = mix(roughnessFactor, 0.12, finPatR); roughnessFactor = mix(roughnessFactor, 0.8, finPatRo);` + TOOL_SURFACE,
-  gem: MINERAL_SURFACE,
-  skin: SKIN_SURFACE,
+  glaze: `metalnessFactor = mix(metalnessFactor, 0.9, finPatM); roughnessFactor = mix(roughnessFactor, 0.12, finPatR); roughnessFactor = mix(roughnessFactor, 0.8, finPatRo);` + gate('FIN_TOOL', TOOL_SURFACE),
+  gem: gate('FIN_MINERAL', MINERAL_SURFACE),
+  skin: gate('FIN_SKINPAT', SKIN_SURFACE),
 };
 // per kind: before the emissive map, and so before anything else adds light (the kintsugi's seams and the cracks' Lachryma,
 // courier/vessel/kintsugi.js, are added right after the map and must never be multiplied by a part's colour)
@@ -172,7 +189,7 @@ const LIGHT = {
   glaze: `totalEmissiveRadiance += finPatE;
     if (finPatS > 0.0) { float sl = 1.0 - abs(dot(normalize(normal), normalize(vViewPosition)));
       if (uFinP.z < 1.5) totalEmissiveRadiance += finSpectrum(0.5 + finPatH * 0.12 + sl * 0.25) * finPatS * 0.3;  // yohen's film: cyan to blue to violet as it turns
-      else totalEmissiveRadiance += uFinB * finPatS * 0.35 * sl * sl; }                                           // leaf gold, lit at a slant` + TOOL_LIGHT,
+      else totalEmissiveRadiance += uFinB * finPatS * 0.35 * sl * sl; }                                           // leaf gold, lit at a slant` + gate('FIN_TOOL', TOOL_LIGHT),
   gem: `if (uFinOn > 0.5) {
     vec3 V = normalize(vViewPosition); vec3 fN = normalize(floor(vFinN * uFinP.x + 0.5));
     float h = fract(sin(dot(fN, vec3(12.9898, 78.233, 37.719))) * 43758.5453); // (a facet's own hash: which way it was cut)
@@ -181,20 +198,20 @@ const LIGHT = {
     totalEmissiveRadiance += uFinA * 0.18 + glint * (mix(vec3(1.0), uFinA, 0.35) + finSpectrum(h + dot(V, fN)) * uFinP.y * 2.0) * 0.9;
     totalEmissiveRadiance += finSpectrum(h * 3.0 + dot(V, vFinN) * 1.5) * uFinP.z * 0.45;                    // opal: play of colour
     totalEmissiveRadiance += uFinB * uFinP.w * pow(1.0 - abs(dot(normalize(normal), V)), 2.0) * 0.9;          // moonstone: the blue glow
-  }` + MINERAL_LIGHT,
+  }` + gate('FIN_MINERAL', MINERAL_LIGHT),
   hair: `if (uFinOn > 0.5) {
     vec3 V = normalize(vViewPosition); vec3 R = reflect(-V, normalize(normal));
     float band = exp(-pow((R.y - 0.35) * 5.0, 2.0)) * max(0.0, normal.y * 0.5 + 0.5); // (the sheen band, riding the reflection's height)
     vec3 sheen = uFinP.z > 0.5 ? finSpectrum(R.y * 1.2 + vFinObj.y * 2.0) : mix(uFinA, vec3(1.0), 0.6);
     totalEmissiveRadiance += sheen * band * uFinP.z * 0.14 + mix(uFinA, vec3(1.0), 0.5) * band * (1.0 - min(1.0, uFinP.z)) * 0.18;
   }`,
-  skin: SKIN_LIGHT_PRE + `if (uFinOn > 0.5) {
+  skin: gate('FIN_SKINPAT', SKIN_LIGHT_PRE) + `if (uFinOn > 0.5) {
     vec3 V = normalize(vViewPosition); float ndv = abs(dot(normalize(normal), V)), rim = pow(1.0 - ndv, 2.0);
     totalEmissiveRadiance += uFinB * (uFinP.x * 0.35 + rim * uFinP.y);
     if (uFinP.z > 1.5) totalEmissiveRadiance += finSpectrum(rim * 0.8 + vFinObj.y) * rim * 0.5;              // aurora
     else if (uFinP.z > 0.5) totalEmissiveRadiance += mix(vec3(1.0, 0.92, 0.95), vec3(0.85, 0.9, 1.0), rim) * rim * 0.35; // pearl
     totalEmissiveRadiance += finSkSSS * uFinP.w * (0.06 + pow(1.0 - ndv, 1.5) * 0.4);                           // translucency: warm light (or the tone's undertone) through the thin edges
-  }` + SKIN_LIGHT + `
+  }` + gate('FIN_SKINPAT', SKIN_LIGHT) + `
   if (uFinS.w > 0.0) { // the soul colour (Soul Alchemy): the Lachryma lit from inside in it, on any skin, the maker's own too; grey is none
     float ndvS = abs(dot(normalize(normal), normalize(vViewPosition)));
     totalEmissiveRadiance += uFinS.rgb * uFinS.w * (0.22 + 1.1 * pow(1.0 - ndvS, 2.0));
@@ -223,17 +240,21 @@ export function dressFinish(m, kind) {
   m.onBeforeCompile = (sh, r) => {
     prev?.call(m, sh, r);
     Object.assign(sh.uniforms, u);
+    const defs = [...finFlags(u)].map((f) => `#define ${FLAG_DEFS[f]}`).join('\n');
+    if (defs) { sh.vertexShader = `${defs}\n${sh.vertexShader}`; sh.fragmentShader = `${defs}\n${sh.fragmentShader}`; }
     sh.vertexShader = sh.vertexShader
       .replace('#include <common>', '#include <common>\nvarying vec3 vFinObj; varying vec3 vFinN; varying vec3 vFinE; uniform int uFinKind;')
       .replace('#include <begin_vertex>', '#include <begin_vertex>\nvFinObj = position; vFinN = normal;')
-      .replace('#include <project_vertex>', `#include <project_vertex>\n${SKIN_VERTEX}`);
+      .replace('#include <project_vertex>', `#include <project_vertex>\n${gate('FIN_SKINPAT', SKIN_VERTEX)}`);
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', `#include <common>\n${HEAD}\n${SKIN_HEAD}\nuniform int uFinKind;`)
       .replace('#include <color_fragment>', `#include <color_fragment>\n${FIN_DECL_ALL}\n${branch(COLOR)}`)
       .replace('#include <metalnessmap_fragment>', `#include <metalnessmap_fragment>\n${branch(SURFACE)}`)
       .replace('#include <emissivemap_fragment>', `${branch(LIGHT_BEFORE)}\n#include <emissivemap_fragment>\n${branch(LIGHT)}`);
   };
-  m.customProgramCacheKey = () => `${prevKey ? prevKey() : ''}-fin`;
+  m.customProgramCacheKey = () => { const f = (m.userData.finKeyed = finFlags(u)); return `${prevKey ? prevKey() : ''}-fin${f}`; };
+  const prevRender = m.onBeforeRender; // (a pattern put on or taken off since the key was made: ask for the program that has it)
+  m.onBeforeRender = function (...a) { prevRender.apply(this, a); if (m.userData.finKeyed !== undefined && finFlags(u) !== m.userData.finKeyed) { m.userData.finKeyed = finFlags(u); m.needsUpdate = true; } };
   m.needsUpdate = true;
   return (m.userData.finish = u);
 }
