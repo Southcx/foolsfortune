@@ -78,16 +78,22 @@
         if (!db) throw new Error('the game\'s files were refused here (' + why + ') and its store cannot be reached');
         var man = (await db.doc('pack/' + B + '.manifest').get()).data();
         if (!man) throw new Error('the game\'s files were refused here (' + why + ') and this build is not in its store');
-        var imports = {};
-        await Promise.all(Object.keys(man.files).map(async function (name) {
+        var imports = {}, names = Object.keys(man.files), next = 0;
+        // (three files at a time, the biggest first, each file's strings let go once it is a blob: a phone's memory at its peak is what
+        // a few files take, not all thirty: the owner's XR handed back a lost WebGL context right after the whole build was unpacked at once)
+        names.sort(function (a, b) { return man.files[b].len - man.files[a].len; });
+        var one = async function (name) {
           var f = man.files[name], parts = [];
           for (var i = 0; i < f.n; i++) parts.push(db.doc('pack/' + B + '.' + f.id + '.' + i).get());
-          var b64 = (await Promise.all(parts)).map(function (s) { return (s.data() || {}).b || ''; }).join('');
-          var raw = await new Response(new Blob([bytes(b64)]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
+          var b64 = (await Promise.all(parts)).map(function (s) { return (s.data() || {}).b || ''; }).join(''); parts = null;
+          var zipped = bytes(b64); b64 = null;
+          var raw = await new Response(new Blob([zipped]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer(); zipped = null;
           if (raw.byteLength !== f.len) throw new Error('the store\'s copy of ' + name + ' is ' + raw.byteLength + ' bytes, not ' + f.len);
           blobs[name] = URL.createObjectURL(new Blob([raw], { type: f.mime }));
           if (/\.js$/.test(name)) imports[name] = blobs[name];
-        }));
+        };
+        var lane = async function () { while (next < names.length) await one(names[next++]); };
+        await Promise.all([lane(), lane(), lane()]);
         var map = document.createElement('script'); map.type = 'importmap'; map.textContent = JSON.stringify({ imports: imports });
         document.head.appendChild(map);
         if (W) W.stage('store read');

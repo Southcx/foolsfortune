@@ -39,7 +39,9 @@ function liningGeometry() {
     const a = (k / 13) * Math.PI * 2 + (k % 3) * 0.4, el = 0.2 + 0.55 * ((k * 0.618) % 1), r = 0.8;
     d.set(Math.cos(a) * Math.cos(el), -Math.sin(el), Math.sin(a) * Math.cos(el)); // (a point on the inside of the bowl)
     const h = 0.28 + 0.22 * ((k * 0.37) % 1), w = 0.07 + 0.04 * ((k * 0.71) % 1);
-    const s = mergeGeometries([bare(new THREE.CylinderGeometry(w, w, h * 0.7, 6).translate(0, h * 0.35, 0)), bare(new THREE.ConeGeometry(w, h * 0.3, 6).translate(0, h * 0.85, 0))]);
+    // (open-ended: the prism's foot stands behind the bowl's inner face and its top under the tip's, so neither cap is ever seen; 36
+    // triangles a point became 18, the 72 halves' 33,696 a Dunes frame 16,848, 2026-10-25)
+    const s = mergeGeometries([bare(new THREE.CylinderGeometry(w, w, h * 0.7, 6, 1, true).translate(0, h * 0.35, 0)), bare(new THREE.ConeGeometry(w, h * 0.3, 6, 1, true).translate(0, h * 0.85, 0))]);
     q.setFromUnitVectors(up, d.clone().negate().add(new THREE.Vector3(0, 0.35, 0)).normalize()); // (pointing in and up, to the mouth)
     s.applyQuaternion(q).translate(d.x * r, d.y * r, d.z * r); parts.push(s);
   }

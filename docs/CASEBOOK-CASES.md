@@ -3858,3 +3858,40 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   unzips each file into a blob, lays one import map of them all and imports the entry. Asset URLs are asked of the page at run time
   (`renderBuiltUrl`, `__ffFile`). Verified headless with every asset 403'd: boot to ready, 141 docs read, 1 import map.
 - **Rule:** 300
+
+### 2026-10-25 · The well's frame doubled (Petra's perf at v268; found and fixed by Calissa)
+- **Seen (measured, `npm run perf`):** the Great Dunemaw's hall drew in 5164 ms against 2276 at fe20e89 (+127%, SwiftShader) with
+  its triangles +2%; boot 100.6 s to 168.7 s. On one host, back to back (rule 4): v268 4465 ms settled in the hall, fe20e89 1886; the
+  Courier hidden 1433 and 1419, so the Courier's eight MeshStandard parts cost 2.9 s against 0.45 s. The camera stands 1.58 m from
+  the Courier in a hall, so the body fills the frame there; in the open it is small, which is why only the well moved.
+- **Cause (measured):** the vessel's one finish program (vfx/finish.js, every kind behind a branch on `uFinKind`) took three new
+  families of patterns in the round: the tool skins' (toolpatterns.js), the stones' minerals (stoneminerals.js) and the skins'
+  (skinpatterns.js), about 650 lines of GLSL. SwiftShader runs every branch's code on every pixel; `uFinOn` 0 changed nothing (4450).
+  Each stubbed out alone: skins 3075, tools 3387, minerals 3873; all three 2012; with the old kiln patterns too 1771. The compile of
+  that program was most of the boot's growth (the shaders stage 40 to 72 s, the prime draw 21 to 36 s).
+- **Fix:** vfx/finish.js: each family behind a define (FIN_KILN, FIN_TOOL, FIN_MINERAL, FIN_SKINPAT) set from what the finish wears
+  now (`finFlags`) and carried in its program key; the material's onBeforeRender asks for a recompile when the flags move. Nothing
+  worn, the lean program. Measured: 1753 ms settled, boot 60.5 s (fe20e89 60.4); every family worn at once compiled and drew clean
+  (5 programs, no error) and went back. Perf, this host: the well 1637 ms, boot 61.7 s.
+- **Rule:** 301
+
+### 2026-10-25 · The aberrant Wisp and the palm die compiled in play (Petra's perf at v268; fixed by Calissa)
+- **Seen (measured):** programs compiled after the warm-up 21 to 24: LW_Glow-aberrant, LW_Flame-aberrant (the Dunes' aberrant Wisp)
+  and palm-die (the god hand's, in the Spirit Garden).
+- **Cause (read, then measured):** `AberrantLook.prewarm` dressed each body's main part alone, while `hold` dressed every part of the
+  same signature, the Wisp's glow and flame too; and those two have emissive maps (and the flame an alpha test) the signature did not
+  read, so each was a program of its own. The palm die took its finish (`dressFinish`) on the first frame the hand was shown.
+- **Fix:** vfx/aberrantlook.js: one `dressParts` for hold and prewarm, and `sigOf` reads every map and switch three keys a program by,
+  so the glow and flame keep their own materials (the body wears the look: one program a kind, as the header says). The palm die's
+  `prewarm()` (vfx/godhand/palmdie.js), called in boot/warmup.js. Perf: 20 compiled after the warm-up (the garden's own, as before).
+- **Rule:** 302
+
+### 2026-10-25 · On the iPhone the game loaded from the store, then its WebGL context came back lost (the owner's screenshot, v269; fixed by Petra)
+- **Seen:** "The game could not start (main, 2.1 s): null is not an object (evaluating 'r.getShaderPrecisionFormat(r.VERTEX_SHADER,r.HIGH_FLOAT).precision')", from blob: URLs, so the store route itself worked.
+- **Cause (read, not measured on the phone):** three.js reads a shader precision from the context as the renderer is made; WebKit returns
+  null for it only from a lost context. The renderer was handed a context already lost: the likeliest reasons are memory (the loader
+  had just unpacked all thirty files at once) or WebKit turning WebGL off for the page after an earlier crash.
+- **Fix:** boot/renderer.js makes its own context (`CONTEXT_TRIES`): a lost one is given 1.5 real s to be restored, then a plainer one is
+  asked for, and a refusal by all says what each try gave. The loader unpacks three files at a time, the biggest first, letting each
+  file's strings go once it is a blob. Verified headless with the first context forced lost and every asset refused: boot to ready.
+- **Rule:** 303

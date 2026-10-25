@@ -20,13 +20,43 @@ import { installTheme, fontsReady } from '../ui/theme.js';
 import { installToon } from '../render/toon.js';
 import { installShadowKinds } from '../render/shadowkinds.js';
 
+/** The ways a context is asked for, in order: the game's own, then plain (the owner's iPhone, 2026-10-25, handed back a context already
+ *  lost, and three.js read a null precision from it); `wait` real ms for a lost one to be restored before the next way is tried. */
+export const CONTEXT_TRIES = [
+  { antialias: true, powerPreference: 'high-performance' },
+  { antialias: false, powerPreference: 'default' },
+  { antialias: false, powerPreference: 'low-power' },
+];
+const CONTEXT_WAIT = 1500;
+
+/** A WebGL2 context that is alive, on a canvas of its own: each way tried, a lost one given `CONTEXT_WAIT` to be restored; refused by
+ *  all, an error that says what each way gave, so a phone's screenshot names it. */
+async function liveContext(aa) {
+  const seen = [];
+  for (const want of CONTEXT_TRIES) {
+    if (want.antialias && !aa) continue;
+    const canvas = document.createElement('canvas');
+    let gl = null;
+    try { gl = canvas.getContext('webgl2', { ...want, alpha: false, stencil: false, depth: true }); } catch (e) { seen.push(`${want.powerPreference}: threw ${e.message}`); continue; }
+    if (!gl) { seen.push(`${want.powerPreference}${want.antialias ? '+aa' : ''}: none`); continue; }
+    if (gl.isContextLost()) {
+      const back = await new Promise((done) => { const t = setTimeout(() => done(false), CONTEXT_WAIT); canvas.addEventListener('webglcontextrestored', () => { clearTimeout(t); done(true); }, { once: true }); canvas.addEventListener('webglcontextlost', (e) => e.preventDefault(), { once: true }); });
+      if (!back || gl.isContextLost()) { seen.push(`${want.powerPreference}${want.antialias ? '+aa' : ''}: lost`); continue; }
+    }
+    if (seen.length) console.warn('webgl: took', want, 'after', seen.join('; '));
+    return { canvas, context: gl };
+  }
+  throw new Error(`no live WebGL2 context (${seen.join('; ')}); the browser may have turned WebGL off for this page after a crash: close the tab, open it again`);
+}
+
 export async function bootRenderer(made) {
   const { save } = made;
   const machine = detectMachine(), graphicsTier = applyBootTier(machine); // (the quality tier, read from the machine before anything is built: render/graphics.js)
   installTheme(save); // (the windows' look, the faces, the glove: ui/theme.js)
   installToon(T.visual.toon ?? 1); // (the soft cel ramp on every lit material, before anything compiles: render/toon.js)
   await fontsReady();
-  const renderer = new THREE.WebGLRenderer({ antialias: T.visual.antialias !== false, powerPreference: 'high-performance' });
+  const { canvas, context } = await liveContext(T.visual.antialias !== false);
+  const renderer = new THREE.WebGLRenderer({ canvas, context });
   renderer.debug.checkShaderErrors = !import.meta.env.PROD; // (the published build does not wait on each program's link log: a stall per program on a slow driver; the dev server still checks)
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.setSize(innerWidth, innerHeight);

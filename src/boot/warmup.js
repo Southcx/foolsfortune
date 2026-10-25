@@ -106,6 +106,7 @@ export async function bootWarmup(game, made) {
   const parkMatterLook = prewarmMatterLook(scene); // (the god hand's matter, ball and creations: one program, vfx/godhand/matterlook.js)
   const parkJarLook = game.pneukaJarLook.prewarm(); // (the Jar's look's one program, the Jar shown 50 m down for the compile: vfx/pneukajar/look.js)
   const parkBracelet = game.bracelets.prewarm(); // (the bracelet's glazes, charms, flash and aura, 50 m down: vfx/braceletwear.js)
+  const parkPalmDie = game.palmDieLook?.prewarm?.() ?? (() => {}); // (the palm die in its finish, 50 m down: vfx/godhand/palmdie.js; Calissa's, 2026-10-25)
   game.present.shade(true); try { await renderer.compileAsync(scene, camera); } catch (e) { console.warn('shader warm-up', e); } // (the scene's programs linked in parallel first: the shell looks' Portal draw below draws the whole scene, which linked them one at a time, 72 of 182, the render inventory 2026-10-19)
   const parkShellLooks = await prewarmShellLooks(game); // (what the caster shells show in play, kept alive so it is never compiled twice: vfx/shelllooks/warmup.js)
   const parkFigmentTelegraphs = game.figmentTelegraphs.prewarm(); // (one Figment attack telegraph and one of its glyphs, 50 m under the world: their one program)
@@ -139,7 +140,7 @@ export async function bootWarmup(game, made) {
   if (!window.__noPrime) primeDraw(renderer, scene, camera, game.post.target); // (a test harness may skip it: it is a long frame on a software GL)
   parkWell?.(); // (after the prime: drawn once, so the driver has finished with its programs too)
   if (wipe) wipe.visible = false;
-  parkWeather?.(); parkDrain(); parkDuel(); parkSpawnLook(); parkCracks(); parkFigmentTelegraphs(); parkCasterS1toS5(); parkCaster.forEach((f) => f()); parkShellLooks(); parkBracelet(); parkJarLook(); parkMatterLook(); parkSandfall(); parkDress.forEach((f) => f()); parkIslets(); parkSquall(); parkEgregores(); seaFightAt.forEach((o) => (o.visible = false));
+  parkWeather?.(); parkDrain(); parkDuel(); parkSpawnLook(); parkCracks(); parkFigmentTelegraphs(); parkCasterS1toS5(); parkCaster.forEach((f) => f()); parkShellLooks(); parkBracelet(); parkPalmDie(); parkJarLook(); parkMatterLook(); parkSandfall(); parkDress.forEach((f) => f()); parkIslets(); parkSquall(); parkEgregores(); seaFightAt.forEach((o) => (o.visible = false));
   for (const o of brushLooks) o.visible = false;
   seaLooks.forEach((o, i) => { o.visible = false; o.position.copy(seaAt[i]); });
   for (const o of gardenLooks) o.visible = false;
