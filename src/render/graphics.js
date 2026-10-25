@@ -16,6 +16,10 @@
 //                  2026-10-24 (the basement's 162 labels, 51 MB of canvas and their GPU copies); built once, so a change waits too
 //   textureScale   other baked canvases' and atlases' resolution (the Weir's tally board, the Sight's discs, the particles' atlas: Calissa's
 //                  ask, 2026-10-25); built once, as labelScale. High's labels at 0.75: 20.4 MB of labels at 1 (Calissa's measure)
+//   outlines       props' inverted hulls built at all (render/outline.js; characters' always): off on Minimum and on a phone (the owner,
+//                  2026-10-25: their smooth normals and a second draw each); built once, so a change waits for the next start
+//   debris         a broken pot's share of shards and chips, and how coarse its sherds (world/props/potshards.js; the owner, 2026-10-25:
+//                  "increasing pot sherd size and reducing the number of active shards" on a phone); the shard batch is sized at boot
 // The ones that change which shaders exist (light slots, shadows on or off and their filter, glow, the canvas's antialias, MSAA) are
 // read once, before the warm-up: a change in play says so and waits for the next start. Resolution, shadow size and rate and the
 // outline reach change at once.
@@ -27,9 +31,9 @@
 // nothing above and booted it on High (480 lines, MSAA 4 twice, 8 lamps, a PCF shadow every frame). The machine now also says whether it
 // is touch (`navigator.maxTouchPoints` above 0 AND `(pointer: coarse)`: a touchscreen laptop whose first pointer is the mouse is not) and
 // whether it is mobile (touch, plus a phone's or tablet's GPU string (Apple GPU, Mali, Adreno, PowerVR), platform (Android, iPhone, iPad,
-// an iPad passing as a Mac) or a screen whose short side is under 900 CSS px). A mobile machine boots on Low, never High; the Minimum
-// rules (software GL, no half-float targets, two cores, 2 GB) still come first, and the player's own tier or `?graphics=` still stands.
-// There is no phone tier here: Low is the stand-in until the owner's measurements on the phone say what one holds (MOBILE.md 10, 4).
+// an iPad passing as a Mac) or a screen whose short side is under 900 CSS px). A mobile machine boots on Minimum (on Low until v274: the
+// owner's iPhone XR took the graphics back after 235 real s of play, its box's line 1126 geometries, 194 textures, 222 programs, Low's
+// shadow, glow and MSAA); the player's own tier or `?graphics=` still stands.
 // Every machine that is not touch reads exactly as before: `mobile` is false for it, and the rows of `tierFor` for it are untouched.
 //
 // Prior art: Unreal's scalability groups and its auto-detection; the PC preset row (Low / Medium / High / Custom, a knob moved by hand
@@ -50,12 +54,12 @@ import { T, DEFAULTS } from '../core/config.js';
 import { OUTLINES } from './outline.js';
 
 export const GRAPHICS_TIERS = {
-  high:    { lines: 480, floor: 400, msaa: 4, antialias: true,  lightSlots: 8, shadows: true,  shadowRes: 1024, shadowFilter: 'pcf',   shadowEvery: 1, glow: true,  outlineReach: 0,  labelScale: 0.75, textureScale: 1 },
-  low:     { lines: 400, floor: 320, msaa: 2, antialias: false, lightSlots: 4, shadows: true,  shadowRes: 512,  shadowFilter: 'basic', shadowEvery: 2, glow: true,  outlineReach: 30, labelScale: 0.5, textureScale: 0.5 },
-  minimum: { lines: 360, floor: 270, msaa: 0, antialias: false, lightSlots: 2, shadows: false, shadowRes: 512,  shadowFilter: 'basic', shadowEvery: 2, glow: false, outlineReach: 15, labelScale: 0.5, textureScale: 0.5 },
+  high:    { lines: 480, floor: 400, msaa: 4, antialias: true,  lightSlots: 8, shadows: true,  shadowRes: 1024, shadowFilter: 'pcf',   shadowEvery: 1, glow: true,  outlineReach: 0,  labelScale: 0.75, textureScale: 1, debris: 1, outlines: true },
+  low:     { lines: 400, floor: 320, msaa: 2, antialias: false, lightSlots: 4, shadows: true,  shadowRes: 512,  shadowFilter: 'basic', shadowEvery: 2, glow: true,  outlineReach: 30, labelScale: 0.5, textureScale: 0.5, debris: 1, outlines: true },
+  minimum: { lines: 360, floor: 270, msaa: 0, antialias: false, lightSlots: 2, shadows: false, shadowRes: 512,  shadowFilter: 'basic', shadowEvery: 2, glow: false, outlineReach: 15, labelScale: 0.5, textureScale: 0.5, debris: 0.25, outlines: false },
 };
 /** The T.visual knobs a tier sets: one moved by hand turns the setting 'custom'. */
-export const TIER_KEYS = ['resolution', 'shadows', 'shadowRes', 'shadowFilter', 'shadowEvery', 'lightSlots', 'glow', 'grade', 'msaa', 'outlineReach', 'labelScale', 'textureScale'];
+export const TIER_KEYS = ['resolution', 'shadows', 'shadowRes', 'shadowFilter', 'shadowEvery', 'lightSlots', 'glow', 'grade', 'msaa', 'outlineReach', 'labelScale', 'textureScale', 'debris', 'outlines'];
 /** The line counts dynamic resolution steps through (render/present.js RESOLUTIONS has each). */
 export const LINE_STEPS = [480, 440, 400, 360, 320, 270];
 const DYN = { window: 2, down: 3, up: 10, upAfterDown: 30, miss: 1.25, make: 1.06, slowest: 18 }; // (real s of samples; real s over before a step down, under before a step up; no step up for this long after one down; the median interval against the display's refresh that counts as missing it, as making it; ms a frame must pass to count as slow at all)
@@ -108,7 +112,8 @@ export function detectMachine() {
  *  and dynamic resolution corrects the rest in play. */
 export function tierFor(m) {
   if (m.software || !m.floatTargets || (m.cores && m.cores <= 2) || (m.memory && m.memory <= 2)) return 'minimum';
-  if (m.mobile || m.integrated || (m.cores && m.cores <= 4) || (m.memory && m.memory <= 4)) return 'low'; // (m.mobile: a phone or tablet, never High; false on every machine that is not touch)
+  if (m.mobile) return 'minimum'; // (a phone or tablet: the owner's iPhone XR lost its graphics on Low at 235 real s, v274; false on every machine that is not touch)
+  if (m.integrated || (m.cores && m.cores <= 4) || (m.memory && m.memory <= 4)) return 'low';
   return 'high';
 }
 
@@ -120,6 +125,7 @@ export function applyBootTier(machine, override = new URLSearchParams(location.s
   if (V.graphics === 'custom') return 'custom';
   const name = V.graphics === 'auto' || !GRAPHICS_TIERS[V.graphics] ? tierFor(machine) : V.graphics;
   writeTier(V, name);
+  if (machine.mobile) { V.debris = Math.min(V.debris, 0.25); V.outlines = false; } // (a phone's debris, whatever its tier: world/props/potshards.js debrisK)
   return name;
 }
 
@@ -128,7 +134,7 @@ export function writeTier(V, name) {
   const t = GRAPHICS_TIERS[name]; if (!t) return;
   V.resolution = String(t.lines === 480 ? 'ps2' : t.lines);
   V.shadows = t.shadows; V.shadowRes = t.shadowRes; V.shadowFilter = t.shadowFilter; V.shadowEvery = t.shadowEvery;
-  V.lightSlots = t.lightSlots; V.msaa = Math.min(t.msaa, 8); V.outlineReach = t.outlineReach; V.labelScale = t.labelScale; V.textureScale = t.textureScale;
+  V.lightSlots = t.lightSlots; V.msaa = Math.min(t.msaa, 8); V.outlineReach = t.outlineReach; V.labelScale = t.labelScale; V.textureScale = t.textureScale; V.debris = t.debris; V.outlines = t.outlines;
   V.glow = t.glow ? DEFAULTS.visual.glow : 0; V.grade = DEFAULTS.visual.grade; // (the grade stays: with it the frame still draws into the one target, so no second set of programs is compiled for the canvas, +70 measured)
   V.antialias = t.antialias;
 }
@@ -159,11 +165,11 @@ export class Graphics {
     const V = T.visual;
     if (name === 'custom') return false;
     const target = name === 'auto' ? tierFor(this.machine) : name;
-    const before = { lightSlots: V.lightSlots, shadows: V.shadows, shadowFilter: V.shadowFilter, glow: V.glow > 0 || V.grade > 0, msaa: V.msaa, antialias: V.antialias, labelScale: V.labelScale, textureScale: V.textureScale };
+    const before = { lightSlots: V.lightSlots, shadows: V.shadows, shadowFilter: V.shadowFilter, glow: V.glow > 0 || V.grade > 0, msaa: V.msaa, antialias: V.antialias, labelScale: V.labelScale, textureScale: V.textureScale, debris: V.debris };
     writeTier(V, target);
     this.tier = target; this.dynLines = null;
     this.game.present?.apply(); this.applyShadowRate();
-    const after = { lightSlots: V.lightSlots, shadows: V.shadows, shadowFilter: V.shadowFilter, glow: V.glow > 0 || V.grade > 0, msaa: V.msaa, antialias: V.antialias, labelScale: V.labelScale, textureScale: V.textureScale };
+    const after = { lightSlots: V.lightSlots, shadows: V.shadows, shadowFilter: V.shadowFilter, glow: V.glow > 0 || V.grade > 0, msaa: V.msaa, antialias: V.antialias, labelScale: V.labelScale, textureScale: V.textureScale, debris: V.debris };
     this.game.events?.emit('graphics.tier', { tier: target, chosen: name, renderer: this.machine.renderer, touch: !!this.machine.touch, mobile: !!this.machine.mobile, restart: JSON.stringify(before) !== JSON.stringify(after), by: 'courier' });
     return JSON.stringify(before) !== JSON.stringify(after);
   }

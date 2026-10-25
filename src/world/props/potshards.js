@@ -24,6 +24,12 @@ import { fracturePieces, keyOf } from './pottery.js';
 import { safeHullPoints } from '../../tools/slicing.js';
 import { stream, randDir } from '../../core/rng.js';
 import { shardMat, glazeMat } from './potmaterials.js';
+
+/** A broken pot's share of debris on this machine: the tier's `debris`, and a phone's 0.25 whatever its tier (the owner, 2026-10-25:
+ *  bigger sherds and fewer of them on a mobile client; PS1-style, the pieces that matter simulated and the rest let go). */
+export const debrisK = (game) => Math.min(T.visual.debris ?? 1, game?.graphics?.machine?.mobile ? 0.25 : 1);
+/** The shard and chip caps at that share. */
+export const debrisCaps = (game) => { const k = debrisK(game); return { shards: Math.max(24, Math.round(T.shatter.maxShards * k)), flyers: Math.max(32, Math.round(T.shatter.maxFlyers * k)), k }; };
 import { COURIER_CAUSES } from './potdamage.js';
 const simRand = stream('world/props/breakables'); // (the simulation's chance: core/rng.js, the same twice; the breakables' one stream, drawn from by every part)
 
@@ -76,9 +82,9 @@ export const POT_SHARDS = {
     const dirN = (dir ? dir.clone() : new THREE.Vector3(0, -1, 0)).normalize();
 
     // overloaded? merge into chunkier shards
-    const load = this.shards.length / T.shatter.maxShards;
+    const cap = debrisCaps(this.game), load = this.shards.length / cap.shards;
     const extra = T.shatter.maxChunk - 3 + (load > 0.5 ? 2 : 0) + (load > 0.8 ? 3 : 0);
-    const pieces = fracturePieces(P, hitLocal, Math.max(0, extra));
+    const pieces = fracturePieces(P, hitLocal, Math.max(0, extra), 1 / Math.sqrt(cap.k)); // (below 1, a coarser grid: at 0.25, sherds 4x the area)
 
     // porcelain: only a few slivers survive, the rest puffs into glittering dust
     if (pieces.length > M.keep) {
@@ -142,8 +148,8 @@ export const POT_SHARDS = {
       if (slot == null) return;
       const down = this.physics.raycast(worldC, _down, 6, undefined, undefined, (k) => !k.isSensor() && !k.parent()?.isDynamic());
       const spin = randDir(simRand, new THREE.Vector3()).multiplyScalar(T.shatter.spin * power * heavy * simRand());
-      this.flyers.push({ mesh: proxy, sb, slot, vel, spin, r: geo.boundingSphere.radius, floor: down ? down.point.y : worldC.y - 6, age: 0, life: T.shatter.shardLife * 0.6 * (0.8 + simRand() * 0.4), rest: false });
-      while (this.flyers.length > T.shatter.maxFlyers) { const f = this.flyers.shift(); f.sb.give(f.slot); }
+      this.flyers.push({ mesh: proxy, sb, slot, vel, spin, r: geo.boundingSphere.radius, floor: down ? down.point.y : worldC.y - 6, age: 0, life: T.shatter.shardLife * Math.sqrt(debrisK(this.game)) * 0.6 * (0.8 + simRand() * 0.4), rest: false });
+      while (this.flyers.length > debrisCaps(this.game).flyers) { const f = this.flyers.shift(); f.sb.give(f.slot); }
       return;
     }
     const flat = safeHullPoints(local, 0.004);
@@ -178,11 +184,11 @@ export const POT_SHARDS = {
       mesh.quaternion.copy(bodyRot);
       this.scene.add(mesh);
     } else geo.dispose(); // (its data is in the batch now)
-    const ent = { type: 'shard', body, mesh, slot, sb: slot == null ? null : sb, age: 0, life: T.shatter.shardLife * (0.8 + simRand() * 0.4), sound: M.sound, M, baseColor: color };
+    const ent = { type: 'shard', body, mesh, slot, sb: slot == null ? null : sb, age: 0, life: T.shatter.shardLife * Math.sqrt(debrisK(this.game)) * (0.8 + simRand() * 0.4), sound: M.sound, M, baseColor: color };
     ent.sync = this.physics.addSynced(body, mesh);
     this.physics.register(col, ent);
     this.shards.push(ent);
-    while (this.shards.length > T.shatter.maxShards) this.removeShard(this.shards.shift());
+    while (this.shards.length > debrisCaps(this.game).shards) this.removeShard(this.shards.shift());
   },
 
   removeShard(s) {

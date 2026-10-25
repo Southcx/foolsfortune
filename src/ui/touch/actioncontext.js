@@ -25,6 +25,7 @@
 // ---------------------------------------------------------------------------------------
 import { SUB_GIFTS } from '../../progress/toolpairs.js';
 import { DEGREE_COLOR } from '../../tools/crucibelle/songs.js';
+import { useLabel } from './cluster.js';
 
 /** By tool in hand: FIRE's and AIM's faces, the third (or null), and what the faces become in their other moment. */
 export const ACTION_TILES = {
@@ -56,8 +57,11 @@ export function inHandCtx(g) {
   return t.id === 'sondelass' ? t.form || 'cutlass' : t.id === 'soulbrush' ? 'brush' : t.id;
 }
 
-/** On foot, nothing in the hands: JUMP, CROUCH, DASH, the fourth by context (USE, else PARRY, else BLINK). */
+/** On foot, nothing in the hands: JUMP, CROUCH, DASH, the fourth by context (USE, else PARRY, else BLINK); carrying, THROW and PUT DOWN. */
 export function footCluster(g, use) {
+  const C = g?.player?.techs?.get?.('carry') || g?.techs?.get?.('carry');
+  if (g?.techs?.active?.id === 'push') return [E('use', null, 'PUSH'), E('jump', 'jump'), E('crouch', 'crouch', 'CROUCH')]; // (F held is the push: the chevron's USE is gone while it runs, and a tile swapped out lets go; the touch audit, 2026-10-25)
+  if (C?.engaged) return [E('fire', 'throw', 'THROW'), E('use', null, 'PUT DOWN'), E('jump', 'jump'), E('crouch', 'crouch', 'CROUCH')]; // (a pot in both hands: the fire button throws it, F sets it down, courier/moves/carry.js; the owner's iPhone, v274)
   const fourth = use ? 'use' : learned(g, 'kick') ? E('parry', 'parry', 'PARRY') : learned(g, 'blink') ? E('blink', 'blink', 'BLINK') : null;
   return [E('jump', 'jump'), E('crouch', 'crouch', 'CROUCH'), E('dash', 'dash'), fourth];
 }
@@ -89,7 +93,9 @@ export function duelCluster(g) {
 export function beltPairOf(g) {
   const B = g.belt; if (!B?.main || g.duel?.active) return [];
   const out = !!B.inHand && B.inHand.id === B.main, gift = B.sub ? SUB_GIFTS[B.sub] : null;
+  const use = out && g.interact?.cur ? useLabel(g) : null; // (a tool drawn: the cluster is the tool's, so F's thing is offered up here)
   return [
+    use ? E('use', null, use.word) : null,
     gift ? E('lend', 'lend', gift.verb.toUpperCase()) : null,
     out ? E('tool', 'stow', 'STOW', { lit: true }) : E('tool', 'draw', 'DRAW'),
   ].filter(Boolean);
@@ -98,7 +104,8 @@ export function beltPairOf(g) {
 /** The strip over the cluster: the tool's own row, or the duel's moves. */
 export function stripOf(g) {
   if (g.duel?.active) return duelStrip(g);
-  const ctx = inHandCtx(g); if (!ctx) return [];
+  const ctx = inHandCtx(g);
+  if (!ctx) return learned(g, 'blink') && (learned(g, 'kick') || g.interact?.cur) ? [E('blink', 'blink', 'BLINK')] : []; // (nothing in hand: the cluster's fourth is USE or PARRY first, so BLINK stands here)
   const out = [], tool = g.belt.inHand;
   if (ctx === 'psygun') {
     const S = g.shells, n = S?.gun?.chambers ?? S?.chambers?.length ?? 0;
@@ -113,6 +120,7 @@ export function stripOf(g) {
     out.push(mode === 'paint' ? E('br.mop', 'brmop', 'MOP') : E('br.paint', 'paint', 'PAINT')); // (one tile, its two faces: the one it goes to)
   } else if (ctx === 'veritome') out.push(E('ve.flash', 'flash', 'FLASH'));
   else if (ctx === 'crucibelle') for (let i = 0; i < 5; i++) out.push(E(`cr.n${i + 1}`, null, null, { corner: String(i + 1), tint: DEGREE_COLOR[i], pad: true }));
+  if (ctx !== 'hook') out.push(E('jump', 'jump'), E('crouch', 'crouch')); // (a tool drawn keeps the core movement's two: a ladder's kick-off, a hang's drop, a slide; the hook's third is JUMP)
   if (learned(g, 'blink')) out.push(E('blink', 'blink', 'BLINK'));
   return out;
 }

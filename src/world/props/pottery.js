@@ -380,10 +380,10 @@ export const keyOf = (x, y, z) => `${Math.round(x * 2000)},${Math.round(y * 2000
  * merge into shards. Each shard = hull(outer points + matching inner points).
  * Returns [{ points, innerKeys, colors: Map(key->k), small }].
  */
-export function fracturePieces(P, hitLocal, extraChunk = 0) {
+export function fracturePieces(P, hitLocal, extraChunk = 0, coarse = 1) {
   const M = P.M;
   const size = Math.max(P.height, P.rMax * 2);
-  const cell = M.cell * THREE.MathUtils.clamp(Math.sqrt(size / 0.5), 0.8, 1.7);
+  const cell = M.cell * coarse * THREE.MathUtils.clamp(Math.sqrt(size / 0.5), 0.8, 1.7); // (coarse: a phone's bigger sherds, potshards.js debrisK)
   const S = THREE.MathUtils.clamp(Math.round((2 * Math.PI * P.rMax) / cell), 5, 30);
   const Rn = THREE.MathUtils.clamp(Math.round(P.len / cell), 2, 24);
   const us = [];

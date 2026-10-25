@@ -28,7 +28,7 @@ import { COURIER_CAUSES, FRAGILE, POT_DAMAGE } from './potdamage.js';
 import { ropeGeo, ropeMat, POT_ROPES } from './potropes.js';
 import { POT_BUILDING } from './potbuilding.js';
 import { POT_SLICING } from './potslicing.js';
-import { POT_SHARDS } from './potshards.js';
+import { POT_SHARDS, debrisCaps } from './potshards.js';
 import { POT_WRECKS } from './potwrecks.js';
 import { POT_REST } from './potrest.js';
 const simRand = stream('world/props/breakables'); // (the simulation's chance: core/rng.js, the same twice; the breakables' one stream, drawn from by every part)
@@ -49,7 +49,8 @@ export class Breakables {
     this.shards = [];
     this.flyers = []; // the chips without bodies (spawnShard)
     // every loose shard in one draw per look (render/shardbatch.js): slots reserved once, filled when a pot breaks
-    this.shardBatch = { earth: new ShardBatch(scene, shardMat, { slots: T.shatter.maxShards + T.shatter.maxFlyers, verts: 192 }), glass: new ShardBatch(scene, glazeMat, { slots: 160, verts: 192 }) };
+    const cap = debrisCaps(game); // (sized once at boot from this machine's share of debris)
+    this.shardBatch = { earth: new ShardBatch(scene, shardMat, { slots: cap.shards + cap.flyers, verts: 192 }), glass: new ShardBatch(scene, glazeMat, { slots: 160, verts: 192 }) };
     this.debris = new Set(); // non-breakable dynamic props (crates, bricks) for explosions
     this.ropes = new Set();
     this.slices = [];

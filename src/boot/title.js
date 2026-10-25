@@ -57,16 +57,22 @@ export async function bootTitle(game, made) {
   title.end = endTitle; // (tests and the profiler skip the title: tools/ and the scratch harness)
   title.ui = new TitleUI(game, {
     onStart: () => titleScene.go(),
-    onChoose: (mode) => {
-      if (mode !== save.mode) { save.flush({ all: true }); save.stash('mode', mode); location.reload(); return; } // (the other mode's save: put in place at boot, before anything reads it)
-      title.mode = mode; // (what DEBUG lends is the lend panel's: progress/lend.js; STORY lends nothing)
-      if (mode === 'debug') game.pneuka.debugKit(); // (and the whole kit in the box: pneuka/box.js)
-      game.mode = mode;
-      if (!game.cradles.mine) { game.sealPicker.open(() => { input.requestLock(); titleScene.dive(() => endTitle()); }); return; } // (your seal, carved once: ui/sealpicker.js, HANKO.md 5)
-      input.requestLock(); // (within the click or the key: a browser only grants the lock to a gesture)
-      titleScene.dive(() => endTitle());
-    },
+    onChoose: (mode) => choose(mode),
   });
+  // (a choice of the other mode reloads the page to put its save in place; the reload goes straight on into that mode, not through the
+  // title again: on a phone the title twice was the boot twice, the owner's iPhone, v273)
+  function choose(mode, resumed = false) {
+    if (mode !== save.mode) { save.flush({ all: true }); save.stash('mode', mode); save.stash('titleChoice', mode); location.reload(); return; } // (the other mode's save: put in place at boot, before anything reads it)
+    title.mode = mode; // (what DEBUG lends is the lend panel's: progress/lend.js; STORY lends nothing)
+    if (mode === 'debug') game.pneuka.debugKit(); // (and the whole kit in the box: pneuka/box.js)
+    game.mode = mode;
+    game.iconWarm?.warmAll(); // (the Box's pictures made here, behind the title, not at its first opening: boot/iconwarm.js)
+    const go = () => { input.requestLock(); if (resumed) endTitle(); else titleScene.dive(() => endTitle()); };
+    if (!game.cradles.mine) { game.sealPicker.open(go); return; } // (your seal, carved once: ui/sealpicker.js, HANKO.md 5)
+    go(); // (the lock within the click or the key: a browser only grants it to a gesture)
+  }
+  const resumed = save.unstash('titleChoice');
+  if (resumed && resumed === save.mode && !replays.pending) { const wait = setInterval(() => { if (!window.__ready) return; clearInterval(wait); if (title.active) choose(resumed, true); }, 100); } // (once the boot is done: main.js sets __ready)
   titleScene.onMenu = () => title.ui.showMenu();
   if (replays.pending) { endTitle(true); overlay.style.display = 'none'; input.enabled = true; play.started = true; } // (a replay is played from the start of play: no title)
   game.overture = new Overture(game); // (the overture's trailer, on its first note: cine/overture.js, docs/boards/OVERTURE.md)

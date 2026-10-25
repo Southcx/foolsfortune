@@ -137,7 +137,11 @@ export async function bootWarmup(game, made) {
   game.touchShell = new TouchShell(game); // (what those controls do: a tile pressed through the bindings, the top bar's windows by their keys: feedback/touchshell.js)
   game.overlayScene.compile(); // (the overlay's meshes, against the canvas they are drawn into)
   game.post.compile(); // (the glow's own passes: a scene of their own, which compileAsync(scene) does not see)
-  if (!window.__noPrime) primeDraw(renderer, scene, camera, game.post.target); // (a test harness may skip it: it is a long frame on a software GL)
+  // (a test harness may skip it: it is a long frame on a software GL. A phone skips it too: it uploads every area's geometry and textures
+  // at once, about 250 MB before the areas let the far ones go, and an iPhone took the graphics back 12 real s after it, v272, the
+  // owner's screenshot. The programs are still all built above; a phone uploads an area's pieces when they are first drawn, behind
+  // the seam: render/areas.js)
+  if (!window.__noPrime && !game.graphics?.machine?.mobile) primeDraw(renderer, scene, camera, game.post.target);
   parkWell?.(); // (after the prime: drawn once, so the driver has finished with its programs too)
   if (wipe) wipe.visible = false;
   parkWeather?.(); parkDrain(); parkDuel(); parkSpawnLook(); parkCracks(); parkFigmentTelegraphs(); parkCasterS1toS5(); parkCaster.forEach((f) => f()); parkShellLooks(); parkBracelet(); parkPalmDie(); parkJarLook(); parkMatterLook(); parkSandfall(); parkDress.forEach((f) => f()); parkIslets(); parkSquall(); parkEgregores(); seaFightAt.forEach((o) => (o.visible = false));
@@ -146,6 +150,7 @@ export async function bootWarmup(game, made) {
   for (const o of gardenLooks) o.visible = false;
   renderer.setRenderTarget(null);
   game.zones.enabled = true; game.zones.t = 0;
+  game.iconWarm?.warmAll(); // (the tools' and a kept save's pictures, under the loading screen: boot/iconwarm.js)
   game.zones.update(0); game.areas.settle(); // (the areas the warm-up drew and the camera is not in or beside let go again: render/areas.js)
   mark('shaders');
   document.getElementById('loading').remove();

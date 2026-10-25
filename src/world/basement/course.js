@@ -9,6 +9,7 @@
 //
 //   new Course(game) -> { teleport(v, yaw, opts), goTo(i), touch(i), update(dt), respawnHere(), calibration(), rooms, menu, ... }
 // ---------------------------------------------------------------------------
+import { wholeOf } from '../../render/zonemap.js';
 import * as THREE from 'three';
 import { PALETTE, T } from '../../core/config.js';
 import { sfx } from '../../audio/sfx.js';
@@ -158,6 +159,7 @@ export class Course {
   /** Put the Courier at `v` facing `yaw`, everything they were doing let go. The pool is refilled (save-scumming is allowed between
    *  rooms) unless `keepPool` (a Well's floors: going deeper is not a rest). */
   teleport(v, yaw, { keepPool = false } = {}) {
+    this.game.areas?.ensureAt(wholeOf(v)); // (a room that builds itself on entry, built before the Courier lands in it: render/areas.js stage 2)
     const p = this.game.player;
     this.game.god?.forceOff?.(); // (set down elsewhere, the hand is let go: its view was left 36 m off in the siege, SWEEPS group 4)
     if (this.game.cradles?.sealed) this.game.cradles.unseal('travel', 'courier', { now: true }); // (set down elsewhere, out of any cradle first, where they stand: its step out would put them back in front of it, world/cradles.js)

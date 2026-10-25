@@ -146,7 +146,12 @@ workshop, not the Dunes: the Dunes' split is for play and for density, and the f
 entry, and disposes it on exit (geometry, textures, its own materials, its colliders, its lamps' slots). A program goes when its last
 material does. No dynamic import per area: the pack and the iOS loader (index.html, `scripts/pack.mjs`) stay as they are, every file
 unpacked once; what an area frees is what it built.
-- `game.areas` (to build): `register(id, { build(game) -> handle, dispose(handle), doors })`, `enter(id, door)`, `current`; the
+- **Built, 2026-10-25 (v277):** `register(id, { zones, near, build(game), teardown(game) })`: an area given both is built when the
+  camera is in it or beside it (`ensureAt(zone)`, called by `course.teleport` before a move, builds where a teleport lands) and torn down
+  a GRACE (3 real s) away; one without stays built and is evicted (GPU) and, on a phone, **dehydrated** (its geometry's arrays packed
+  into a Blob, put back on approach: measured identical, triangle for triangle). Each area's owner converts its own module to `build` /
+  `teardown`; the module stays alive and answers nothing while torn down.
+- `game.areas` (the plan's first form): `register(id, { build(game) -> handle, dispose(handle), doors })`, `enter(id, door)`, `current`; the
   build runs under the seam, the old area disposed first, then the new one built, then its programs compiled (`renderer.compileAsync`)
   before the cover lifts.
 - **The transition is the seam** (`render/seam.js`, `seam.cross(fn, { kind: 'area' })`): a kind with a wipe of its own crosses under it

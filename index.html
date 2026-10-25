@@ -42,6 +42,7 @@
         put({ stage: name === 'ready' || name === 'first frame' ? 'playing' : name, s: Math.round((Date.now() - t0) / 1000), build: W.build || '', ua: navigator.userAgent });
         if (name === 'ready') W.done = true;
       };
+      W.show = show; // (the game's own lines in the same box: the GPU's count when the graphics are taken back, render/contextloss.js)
       W.stage('html');
       var said = {};
       var report = function (what) { if (W.done) return; var msg = String(what); if (said[msg]) return; said[msg] = 1;
