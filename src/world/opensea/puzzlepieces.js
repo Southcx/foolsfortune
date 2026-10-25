@@ -83,9 +83,11 @@ export class PuzzlePieces {
     });
     this.sync();
     // the Dreamvane's ground strike or Dreamquake (dreamvane.js emits it; F digs too, and never misses)
-    this.game.events?.on?.('dreamvane.strike', (e) => { if (room.active && e?.at) this.unearth(_b.fromArray(e.at), e.r ?? 3.2, 'pick'); });
-    this.game.events?.on?.('crucibelle.note', (e) => this.note(e));
+    this.offs = [this.game.events?.on?.('dreamvane.strike', (e) => { if (room.active && e?.at) this.unearth(_b.fromArray(e.at), e.r ?? 3.2, 'pick'); }),
+      this.game.events?.on?.('crucibelle.note', (e) => this.note(e))];
   }
+  /** The room's teardown (opensea.js takes the meshes away): the caches' signatures and the listeners let go. */
+  dispose() { for (const C of this.caches) this.game.signatures?.remove(C.sig); for (const off of this.offs) off?.(); }
 
   // ---------------------------------------------------------------- each frame, on foot
   update(dt) {

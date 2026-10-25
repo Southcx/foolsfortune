@@ -10,7 +10,7 @@
 // Prior art: Pokemon Snap's professor (paid for the picture), Pokemon GO's nests (the same herds for everyone that game day), Monster
 // Hunter's posted investigations, Red Dead Redemption 2's legendary animals told by rumour.
 //
-//   new SeaHerds(room)   .update(dt)   .helmPlate()   .list (the game day's herds, each { id, square, cls, n, bodies })   .dump() / .load(d) (the room's save)
+//   new SeaHerds(room)   .update(dt)   .helmPlate()   .dispose() (the room's teardown)   .list (the game day's herds, each { id, square, cls, n, bodies })   .dump() / .load(d) (the room's save)
 //   events (each with `by`): sea.herds { day, n, herds: [{ id, squares, way }] }, sea.herd { id, square, cubes }, sea.herd.paid { cubes, n }, sea.plate {} (a plate from the helm)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -31,17 +31,18 @@ export class SeaHerds {
     this.state = { day: -1, posted: false, met: [], owed: 0, owedN: 0 };
     this.game.scene?.add(this.group);
     const ev = this.game.events;
-    ev?.on?.('photo.take', () => { if (this.room.active) this.plate(); });
-    ev?.on?.('sea.dock', (e) => { if ((e.by ?? 'courier') === 'courier') this.docked(); });
+    this.offs = [ev?.on?.('photo.take', () => { if (this.room.active) this.plate(); }), ev?.on?.('sea.dock', (e) => { if ((e.by ?? 'courier') === 'courier') this.docked(); })];
   }
+  /** The room's teardown (opensea.js): the bodies cleared, the group off the scene, the listeners let go. */
+  dispose() { this.clearBodies(); this.list = []; this.game.scene?.remove(this.group); for (const off of this.offs) off?.(); }
+  clearBodies() { for (const H of this.list) { if (H.herd) { this.group.remove(H.herd.group); H.herd.dispose?.(); continue; } for (const b of H.bodies) { this.group.remove(b.group); b.group.traverse?.((o) => o.geometry?.dispose?.()); } } }
 
   dump() { return { ...this.state }; }
   load(d) { this.state = { day: -1, posted: false, met: [], owed: 0, owedN: 0, ...(d || {}) }; }
 
   /** The game day's herds laid (once a game day): yesterday's bodies cleared, a herd's met state carried in the save. */
   lay(day) {
-    this.day = day;
-    for (const H of this.list) { if (H.herd) { this.group.remove(H.herd.group); H.herd.dispose?.(); continue; } for (const b of H.bodies) { this.group.remove(b.group); b.group.traverse?.((o) => o.geometry?.dispose?.()); } }
+    this.day = day; this.clearBodies();
     if (this.state.day !== day) this.state = { ...this.state, day, posted: false, met: [] }; // (what was owed is still owed: it pays at the next dock)
     const R = this.room, r = seeded((R.seed * 31 + day * 977) >>> 0);
     this.list = herdsOf(R.grid, day, R.seed).map((h) => {

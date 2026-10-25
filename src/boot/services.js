@@ -106,8 +106,9 @@ export async function bootServices(made) {
   game.areas = new Areas(game)
     .register('workshop', { zones: ['workshop'], near: ['basement', 'testroom'] }).register('testroom', { zones: ['testroom'], near: ['workshop'] })
     .register('basement', { zones: ['basement'], near: ['workshop', 'testroom'] }).register('circuits', { zones: ['circuits'] })
-    .register('dunes', { zones: ['dunes', 'beach'] }).register('raceway', { zones: ['raceway'] })
-    .register('bazaar', { zones: ['bazaar'], build: (g) => g.bazaar?.build(), teardown: (g) => g.bazaar?.teardown() }).register('margarite', { zones: ['margarite'] });
+    .register('dunes', { zones: ['dunes', 'beach'] }).register('raceway', { zones: ['raceway'], build: (g) => g.raceway?.build(), teardown: (g) => g.raceway?.teardown() })
+    .register('bazaar', { zones: ['bazaar'], build: (g) => g.bazaar?.build(), teardown: (g) => g.bazaar?.teardown() }).register('margarite', { zones: ['margarite'] })
+    .register('opensea', { zones: ['opensea'], build: (g) => g.opensea?.build(), teardown: (g) => g.opensea?.teardown() });
   game.time = new TimeScale(game); // (who slows the world, and by how much: see core/time.js)
   game.log = new GameLog(game); // (the one place for text feedback; see gamelog.js)
   game.renderer = renderer; // (for a warm-up made later than boot: the Spirit Garden's, world/garden/realm.js build())
