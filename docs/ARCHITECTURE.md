@@ -176,6 +176,5 @@ What fails goes back to its division with the reason and the fix. Petra does not
 
 ## Open restructuring
 
-`tracking.js` split by domain (begun: `feedback/tracking/*.js`), Petra's; the course and the room teleports
-into `world/basement/course.js` and `world/rooms.js`, Petra's; the old particles folded into the VFX system, Calissa's; the in-game words
+`tracking.js` split by domain (begun: `feedback/tracking/*.js`), Petra's; the old particles folded into the VFX system, Calissa's; the in-game words
 the glossary retires, Espada's.
