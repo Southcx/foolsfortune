@@ -3847,3 +3847,14 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   a new thing, nor a swallowed line that ends in its own comment.
 - **Fix:** boot/chat.js: the two on a line of their own; scripts/check.mjs's pattern widened (it finds the old line; 0 on the tree).
 - **Rule:** 299
+
+### 2026-10-25 · The game never loaded on the owner's iPhone (Dovina's probe on the owner's XR; fixed by Petra)
+- **Seen:** on iOS 18.7 the published page showed its loading line and stopped; the desk and Android loaded the same build.
+- **Cause (measured, Dovina's probe rows 0 and 7 to 13):** there the artifact host answers every supporting file 403 (`/_blob` 404),
+  so `assets/game.js` and everything it imports never arrive; the inline page, the database, DecompressionStream, blob: modules and an
+  import map laid before any module all work.
+- **Fix:** the build carries no module tag (vite.config.js `loaderEntry`); index.html's loader asks `HEAD ./assets/game.js`, and when it
+  is refused reads the build packed into the database (`scripts/pack.mjs`: gzip, base64, 190 000 characters a doc, collection `pack`),
+  unzips each file into a blob, lays one import map of them all and imports the entry. Asset URLs are asked of the page at run time
+  (`renderBuiltUrl`, `__ffFile`). Verified headless with every asset 403'd: boot to ready, 141 docs read, 1 import map.
+- **Rule:** 300

@@ -57,6 +57,47 @@
       window.addEventListener('pagehide', function () { put({ stage: 'left' }); });
     })();
   </script>
+  <script>
+    // THE PAGE'S TWO WAYS IN (the owner's iPhone, 2026-10-25: on iOS the host answers every supporting file 403 while this page runs;
+    // Dovina's probe found the way): in the built page (vite.config.js `__ffEntry`, `__ffBuild`) the game's files are tried first, and
+    // when they do not answer, the same build is read from the artifact's database, where scripts/pack.mjs put it as gzip in base64
+    // chunks: each file unzipped into a blob, one import map from each script's bare name to its blob (laid before any module loads:
+    // no module tag stands in the built page), the other files handed out by `__ffFile`, and the entry imported by its name. In the
+    // dev server nothing here runs.
+    //   window.__ffFile(name) -> the URL of a built asset by its file name (the files' folder, or its blob)
+    (function () {
+      var E = window.__ffEntry, B = window.__ffBuild, W = window.__bootWatch; if (!E) return;
+      var base = new URL('./assets/', document.baseURI).href, blobs = {};
+      window.__ffFile = function (n) { return blobs[n] || base + n; };
+      var fail = function (e) { if (W && W.fail) W.fail(e); else throw e; };
+      var bytes = function (b64) { var s = atob(b64), n = s.length, u = new Uint8Array(n); for (var i = 0; i < n; i++) u[i] = s.charCodeAt(i); return u; };
+      var fromStore = async function (why) {
+        if (W) W.stage('store');
+        var use = window.claude && window.claude.use;
+        var db = use ? await use('db') : null;
+        if (!db) throw new Error('the game\'s files were refused here (' + why + ') and its store cannot be reached');
+        var man = (await db.doc('pack/' + B + '.manifest').get()).data();
+        if (!man) throw new Error('the game\'s files were refused here (' + why + ') and this build is not in its store');
+        var imports = {};
+        await Promise.all(Object.keys(man.files).map(async function (name) {
+          var f = man.files[name], parts = [];
+          for (var i = 0; i < f.n; i++) parts.push(db.doc('pack/' + B + '.' + f.id + '.' + i).get());
+          var b64 = (await Promise.all(parts)).map(function (s) { return (s.data() || {}).b || ''; }).join('');
+          var raw = await new Response(new Blob([bytes(b64)]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer();
+          if (raw.byteLength !== f.len) throw new Error('the store\'s copy of ' + name + ' is ' + raw.byteLength + ' bytes, not ' + f.len);
+          blobs[name] = URL.createObjectURL(new Blob([raw], { type: f.mime }));
+          if (/\.js$/.test(name)) imports[name] = blobs[name];
+        }));
+        var map = document.createElement('script'); map.type = 'importmap'; map.textContent = JSON.stringify({ imports: imports });
+        document.head.appendChild(map);
+        if (W) W.stage('store read');
+        await import(man.entry);
+      };
+      fetch(E, { method: 'HEAD', cache: 'no-store' })
+        .then(function (r) { if (!r.ok) throw new Error(String(r.status)); var s = document.createElement('script'); s.type = 'module'; s.src = E; document.head.appendChild(s); })
+        .catch(function (why) { fromStore((why && why.message) || why).catch(fail); });
+    })();
+  </script>
   <style>
     :root { --ink: #fbe3cf; --accent: #ffb27a; --bg: #2a140d; --panel: rgba(42, 20, 13, 0.82); }
     html, body { margin: 0; height: 100%; overflow: hidden; background: var(--bg); color: var(--ink);

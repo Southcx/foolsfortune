@@ -26,17 +26,37 @@ const asciiOnly = () => ({
   },
 });
 
+// The page's two ways in (the owner's iPhone, 2026-10-25: the host answers every supporting file 403 on iOS, the inline page runs; Dovina's
+// probe): the built page keeps no module tag of its own, only a marker of its entry and build (`window.__ffEntry`, `__ffBuild`) for
+// index.html's classic loader, which takes the files when they answer and the artifact's database when they do not (scripts/pack.mjs
+// packs dist there). An import map is honoured only before any module loads, so the loader must choose first: no module tag may start.
+const BUILD_ID = process.env.FF_BUILD || Date.now().toString(36);
+const loaderEntry = () => ({
+  name: 'ff-loader-entry',
+  apply: 'build',
+  enforce: 'post',
+  transformIndexHtml(html) {
+    const tag = /<script type="module" crossorigin src="\.\/assets\/game\.js"><\/script>\s*/;
+    if (!tag.test(html)) throw new Error('ff-loader-entry: the entry tag is not where the loader expects it');
+    return html.replace(tag, '').replace('<head>', `<head>\n  <script>window.__ffEntry = './assets/game.js'; window.__ffBuild = ${JSON.stringify(BUILD_ID)};</script>`);
+  },
+});
+
 export default defineConfig({
   base: './',
   // (the bundles in ASCII, every other character escaped: one non-ASCII byte made WebKit hold a script's whole source as 16-bit text,
   //  27 MB for game.js's 13.4; a phone's memory, 2026-10-24)
   esbuild: { charset: 'ascii' },
   // (each build's own id: progress belongs to the build it was earned in, src/core/progress.js)
-  define: { __BUILD__: JSON.stringify(Date.now().toString(36)) },
-  plugins: [base64Assets(), asciiOnly()],
+  define: { __BUILD__: JSON.stringify(BUILD_ID) },
+  plugins: [base64Assets(), asciiOnly(), loaderEntry()],
+  // (a built asset's URL asked of the page at run time: the files' folder, or the blob the database route made; no preload helper, which
+  //  resolves against import.meta.url and a blob: module has none to resolve against)
+  experimental: { renderBuiltUrl: (file, { hostType }) => (hostType === 'js' ? { runtime: `globalThis.__ffFile(${JSON.stringify(file.replace(/^assets\//, ''))})` } : { relative: true }) },
   build: {
     target: 'es2022',
     chunkSizeWarningLimit: 5000,
+    modulePreload: false,
     // (the libraries in chunks of their own, leaves that import nothing of the game's: the host takes 16 MiB a file; game.js passed it at
     // v209 (16,786,559 bytes) and three.js went out; at v214 it stood 615 KB short, and Rapier (its wasm inlined, 4.3 MB) went out too)
     rollupOptions: { output: { entryFileNames: 'assets/game.js', manualChunks: (id) => (id.includes('/node_modules/three/') ? 'three' : id.includes('/node_modules/@dimforge/') ? 'rapier' : undefined) } },

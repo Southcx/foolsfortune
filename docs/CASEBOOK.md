@@ -879,3 +879,6 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 299. **The swallowing check reads a set as well as a call.** A system built as `game.x = new X(game)` and
     put after a comment on the same line never exists, with no error; the check (scripts/check.mjs 14) now finds an assignment of a new
     thing, and a line that ends in a comment of its own.
+300. **A host may refuse every file but the page.** The page's own script must be able to boot the game
+    from the database alone (the pack); a built file is asked for by name at run time, never by a URL baked in, and no module tag
+    loads before the import map is laid. Publish the pack with every build.

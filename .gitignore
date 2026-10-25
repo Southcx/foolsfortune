@@ -8,3 +8,4 @@ dist/
 gate-report.txt
 .scratch/
 .claude/worktrees/
+dist-pack/
