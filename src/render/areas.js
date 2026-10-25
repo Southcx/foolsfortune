@@ -16,6 +16,7 @@
 // ---------------------------------------------------------------------------------------
 
 const GRACE = 3; // (real seconds out of an area and its neighbours before it is let go: a step back through a door costs nothing)
+const SLICE = 2; // (real ms a frame the pass over the scene may take when nothing covers the view: about 40 ms whole, perf v273's ticks)
 
 const _texOf = (m, out) => {
   if (!m) return;
@@ -43,26 +44,39 @@ export class Areas {
 
   resident(id) { return this.map.get(id)?.resident ?? true; }
 
-  /** Let the GPU copies of every area in `due` go, in one pass over the scene: only what nothing outside them draws. */
-  evict(due) {
-    const t0 = performance.now(), Z = this.game.zones, owner = new Map(), texs = [], SHARED = 'shared';
+  /** Let the GPU copies of every area in `due` go: only what nothing outside them draws. A pass over the scene, at once (`now`: behind a
+   *  cover, or the end of the warm-up) or a few real ms a frame (`SLICE`), so play never pays its tens of ms in one tick (perf, v273). */
+  evict(due, now = true) {
+    const job = this.job = { due, owner: new Map(), roots: [...this.game.scene.children], i: 0, ms: 0 }; job.had = new Set(job.roots);
+    if (now) this.step(Infinity);
+    return job;
+  }
+
+  /** The eviction under way, carried on for `budget` real ms; finished, its GPU copies let go. */
+  step(budget) {
+    const J = this.job; if (!J) return;
+    const t0 = performance.now(), Z = this.game.zones, owner = J.owner, texs = [], SHARED = 'shared';
     const own = (res, A) => { const o = owner.get(res); if (o === undefined) owner.set(res, A); else if (o !== A) owner.set(res, SHARED); };
     const walk = (root, A) => root.traverse((o) => {
       if (o.geometry) own(o.geometry, A);
       if (o.material) { texs.length = 0; for (const m of Array.isArray(o.material) ? o.material : [o.material]) _texOf(m, texs); for (const t of texs) own(t, A); }
     });
-    for (const o of this.game.scene.children) {
+    while (J.i < J.roots.length) {
+      const o = J.roots[J.i++]; if (o.parent !== this.game.scene) continue; // (taken out since the job began)
       const z = o.userData.zoneFree ? null : o.userData.zone !== undefined ? o.userData.zone : Z.place(o, false);
-      walk(o, (z !== null && due.find((A) => A.zones.has(z))) || SHARED);
+      walk(o, (z !== null && J.due.find((A) => A.zones.has(z))) || SHARED);
+      if (performance.now() - t0 > budget) { J.ms += performance.now() - t0; return; }
     }
     const ov = this.game.overlayScene?.scene; if (ov) walk(ov, SHARED);
-    for (const A of due) { A.resident = false; A.evicted = { geos: [], texs: [], bytes: 0 }; }
+    for (const o of this.game.scene.children) if (!J.had.has(o)) walk(o, SHARED); // (added since the job began: kept, whatever they are)
+    for (const A of J.due) { A.resident = false; A.evicted = { geos: [], texs: [], bytes: 0 }; }
     for (const [res, A] of owner) {
       if (A === SHARED) continue;
       if (res.isTexture) { if (unkept(res)) continue; A.evicted.bytes += texBytes(res); A.evicted.texs.push(res); } else { A.evicted.bytes += geoBytes(res); A.evicted.geos.push(res); }
       res.dispose();
     }
-    this.lastMs = +(performance.now() - t0).toFixed(1);
+    this.job = null;
+    this.lastMs = +(J.ms + performance.now() - t0).toFixed(1);
   }
 
   /** Upload the area's textures again now (behind a cover: the seam, a door), not on the first frame that draws them. */
@@ -77,14 +91,16 @@ export class Areas {
     const cur = this.game.zones?.current;
     if (cur === undefined || cur === null) return; // (nowhere yet, or between places: nothing changes)
     const covered = !!this.game.seam?.busy, due = [];
+    if (this.job && this.job.due.some((A) => A.zones.has(cur) || A.near.has(cur))) this.job = null; // (came back before it finished: nothing let go)
+    if (this.job) { this.step(covered ? Infinity : SLICE); return; }
     for (const A of this.map.values()) {
       const here = A.zones.has(cur) || A.near.has(cur);
       if (here) { A.away = 0; if (!A.resident) this.prepare(A); continue; }
       if (!A.resident) continue;
       A.away += dt;
-      if (covered || A.away >= GRACE) due.push(A); // (at once behind a cover: the pass is a few tens of real ms)
+      if (covered || A.away >= GRACE) due.push(A);
     }
-    if (due.length) this.evict(due);
+    if (due.length) this.evict(due, covered); // (at once behind a cover; else sliced over frames)
   }
 
   /** Let every area go that is neither here nor beside here, now (the end of the warm-up, under the loading screen: boot drew them all). */
