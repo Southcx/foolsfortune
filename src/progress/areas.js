@@ -12,7 +12,7 @@
 //   DUNES_AREAS[id] = { name, bearing: [from, to] | null, r: [inner, outer], meets: [id], back }   (bearing null: the hub, all round)
 //   areaAt(lx, lz) -> id | null      (a point in the Dunes' frame; null past the barrier)
 //   bearingOf(lx, lz) -> degrees in (-180, 180]      inBearing(b, [from, to]) -> bool (the sector's arc, through 180 when from > to)
-//   CHECKLIST_KINDS: the kinds an area's checklist counts (AREAS.md 6), each the ledger's `area.<id>.<kind>`
+//   CHECKLIST_ROWS[kind] = { label, key, of?, needs? }   AREA_PAGE[area] = { rows: [kind], line }   (an area's page on the map: MAP.md 4)
 // ---------------------------------------------------------------------------------------
 
 /** hub: the Weir's radius; barrier: where every field area ends (world/dunes/dunes.js, the barrier's ring). */
@@ -31,8 +31,31 @@ export const DUNES_AREAS = {
     back: 'the night: the Wisps and an aberrant one; ostraca to gloss; the sealed room' },
 };
 
-/** The kinds an area's checklist counts (AREAS.md 6); a kind an area holds none of is left off its page. */
-export const CHECKLIST_KINDS = ['chest', 'vantage', 'ostracon', 'crystal', 'geyser', 'rare', 'charted'];
+/** An area's checklist (AREAS.md 6, MAP.md 4): its rows in order, each a kind of thing counted N of M. A row's `key` is the ledger entry
+ *  for one thing by its id, set once that thing is done; its total is the things of that kind standing in the area, counted from
+ *  the world by `areaAt` (scripts/areas.mjs measures them). `needs` marks a row whose per-thing key is not written yet (MAP.md 4). */
+export const CHECKLIST_ROWS = {
+  rooms: { label: 'Rooms charted', key: 'room.<id>' },
+  vantage: { label: 'Vantage points', key: 'vantage.<id>' },
+  chest: { label: 'Chests', key: 'chest.<id>' },
+  shrine: { label: 'Shrines', key: 'shrine.found.<id>' },
+  ostracon: { label: 'Ostraca', key: 'ostracon.<word>' },
+  crystal: { label: 'Crystals sung', key: 'crystal.sweet.at.<id>', needs: 'an id on crystal.harvest (world/dunes/crystals.js)' },
+  geyser: { label: 'Geysers ridden', key: 'geyser.ride.<id>', needs: 'an id and the rider on geyser.launch (world/dunes/geysers.js)' },
+  fish: { label: 'Fish caught', key: 'fish.kg.<species>', of: 23 },
+  medal: { label: 'Trial medals', key: 'trial.medal.<medal>', of: 3 },
+  rare: { label: 'Night find', key: 'area.<area>.rare', needs: 'the condition-bound find\'s event (AREAS.md 5)' },
+};
+export const CHECKLIST_KINDS = Object.keys(CHECKLIST_ROWS);
+
+/** Each Dunes area's checklist rows, in the order its page shows them, and its line to come back for (placeholder words, Espada's to rule). */
+export const AREA_PAGE = {
+  weir: { rows: ['rooms', 'fish', 'vantage', 'chest', 'shrine', 'crystal'], line: 'Different fish rise in different weather and at different hours.' },
+  shore: { rows: ['rooms', 'vantage', 'crystal', 'geyser'], line: 'The sea\'s weather reaches the shore first, and the crossings leave from its jetty.' },
+  ridges: { rows: ['rooms', 'crystal', 'geyser'], line: 'Struck crystals grow back, and Fury\'s lightning leaves glass in the sand.' },
+  flats: { rows: ['rooms', 'medal', 'vantage', 'shrine', 'crystal', 'geyser', 'ostracon'], line: 'The Great Dunemaw lays out new floors every game day.' },
+  ruins: { rows: ['rooms', 'ostracon', 'crystal', 'geyser', 'rare'], line: 'Wisps drift through the ruins at night, and one of them may go wrong.' },
+};
 
 export const bearingOf = (lx, lz) => { const b = Math.atan2(lz, lx) * 180 / Math.PI; return b <= -180 ? 180 : b; };
 

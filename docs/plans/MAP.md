@@ -88,7 +88,25 @@ The checklist is AREAS.md 6, drawn on the area's page.
 - **The Raceway park:** its own rows, its tracks' gold medals, N of M.
 - **A Great Dunemaw floor has no checklist.** It is laid fresh each game day, and its charting is cleared on every run (`clear('well')`).
   Its page shows the run's floors only.
-- **The ledger:** `area.<id>.<kind>`, written by the same events that count each thing already.
+- **Each Dunes area's page** (`AREA_PAGE` and `CHECKLIST_ROWS`, `src/progress/areas.js`): its rows in order, its totals as the ground
+  holds them today (`scripts/areas.mjs`, 2026-10-25, before the re-lay; "live" means counted from the world when the page opens), and
+  its line to come back for (placeholder words, Espada's to rule).
+
+  | area | rows, in order (total today) | its line to come back for |
+  | --- | --- | --- |
+  | the Weir | rooms charted (live), fish caught (23), vantage points (1), chests (1), Shrines (1), crystals sung (1) | Different fish rise in different weather and at different hours. |
+  | the shore | rooms charted, vantage points (1), crystals sung (3), geysers ridden (1) | The sea's weather reaches the shore first, and the crossings leave from its jetty. |
+  | the crystal ridges | rooms charted, crystals sung (1), geysers ridden (3) | Struck crystals grow back, and Fury's lightning leaves glass in the sand. |
+  | the Gnomon flats | rooms charted, trial medals (3), vantage points (1), Shrines (1), crystals sung (3), geysers ridden (4), ostraca (1) | The Great Dunemaw lays out new floors every game day. |
+  | the ruins | rooms charted, ostraca (2), crystals sung (10), geysers ridden (2), night find (1) | Wisps drift through the ruins at night, and one of them may go wrong. |
+
+- **The ledger:** each row reads one key per thing, set once that thing is done (`room.<id>`, `vantage.<id>`, `chest.<id>`,
+  `shrine.found.<id>`, `ostracon.<word>`, `fish.kg.<species>`, `trial.medal.<medal>`). Three keys are not written yet:
+  - crystals sung: `crystal.sweet.at.<id>`, which needs an id on `crystal.harvest`;
+  - geysers ridden: `geyser.ride.<id>`, which needs the geyser's id and the rider on `geyser.launch`;
+  - the night find: its event.
+- **The totals will move** when the Dunes' things are re-laid to the cut (AREAS.md 5): ten crystals in the ruins and one in the ridges
+  is the seed's accident, not the design.
 - **The achievements:** half of an area and all of it; for a layer, every area whole (AREAS.md 6).
 
 ## 5. Per layer or per area
