@@ -26,30 +26,25 @@
 //   wings open to each other through arches (world/basement/techwing.js ARCHES): the hands, the
 //   rigging, the techs, the clockwork mill and the kiln stack. One Index entry.
 //
+// The runtime lives beside it: the course (world/basement/course.js, `Course`) and the Index's
+// rooms (world/rooms.js).
+//
 // Distances are sized at ~85% of what the controller measured at default
 // tuning (see RUBRIC), so a clean human input makes them.
 // ---------------------------------------------------------------------------
-import { SIEGE_SPAWN, inSiege } from './siege.js';
-import { WEIR_SPAWN, inWeir } from '../../tools/sondelass/angling/weir.js';
 import * as THREE from 'three';
 import { PALETTE, T } from '../../core/config.js';
-import { sfx } from '../../audio/sfx.js';
 import { FONT } from '../../ui/theme.js';
-import { TECH_CPS, TECH_PITS } from './techwing.js';
-import { MILL_CPS, MILL_PITS } from './mill.js';
-import { IndexMenu } from '../../feedback/indexmenu.js';
 import { ROOM_GLAZE_ID as RG } from '../../vfx/roomglazes.js'; // (the hub's salt-glazed walls, the Index's celadon: Calissa's room glazes)
-import { addOutline } from '../../render/outline.js';
 import { bakedCanvasTexture } from '../../render/bakedcanvas.js';
-import { RAPIER, GROUPS } from '../../core/physics.js';
-import { RIG_CPS, HAND_CPS, RIG_PITS } from './rigwing.js';
 import { TR } from '../testroom/layout.js';
-import { FOE } from '../../progress/combat/dunemaw.js';
+
 
 
 export const BASE_Y = -14;
 export const HOLE = { x0: 4.5, x1: 9, z0: -15.5, z1: -12.4 }; // ground-floor hole, runs to the south wall
-const HUB = 20, OUT = 36, P = 3; // hub half-size, outer half-size, platform height
+export const HUB = 20; // hub half-size
+const OUT = 36, P = 3; // outer half-size, platform height
 const Wt = 0.5; // wall thickness
 
 // measured at default tuning (takeoff to landing at the same height, metres)
@@ -63,7 +58,7 @@ export const RUBRIC = [
 
 // room checkpoints (feet position relative to the basement floor, facing yaw) in loop order;
 // `zone` (x0, x1, z0, z1) is the trigger: the whole entrance, so any line through it counts
-const CHECKPOINTS = [
+export const CHECKPOINTS = [
   { room: 1, name: 'run / slide / hop', pos: [-17, 0, -30], yaw: Math.PI / 2, zone: [-20, -16.5, -36, -20] },
   { room: 2, name: 'mantle', pos: [22.5, 0, -28], yaw: Math.PI / 2, zone: [20.3, 23.5, -36, -20] },
   { room: 3, name: 'gaps', pos: [30, P, -18], yaw: 0, zone: [26, 34, -20, -17] },
@@ -74,7 +69,7 @@ const CHECKPOINTS = [
   { room: 8, name: 'low', pos: [-33, P, -21.2], yaw: Math.PI, zone: [-36, -24, -24, -20.3] },
 ];
 // reset floors (x0, x1, z0, z1) -> checkpoint index
-const PITS = [
+export const PITS = [
   [[20, OUT, -20, 20], 2], [[20, OUT, 20, OUT], 3], [[-HUB, HUB, 20, OUT], 4], [[-OUT, -HUB, 20, OUT], 5], [[-OUT, -HUB, -20, 20], 6],
 ];
 
@@ -371,356 +366,4 @@ export function spawnBasement(Bk) {
   const kinds = ['jar', 'amphora', 'pitcher', 'melon', 'spindle'];
   const spots = [[-12, -35.2], [-1, -35.2], [6, -35.2], [16, -35.2], [-10, -20.8], [5, -20.8], [12, -20.8]];
   spots.forEach(([x, z], i) => Bk.spawn({ kind: kinds[i % kinds.length], pos: [x, B + 0.002, z], color: i % 2 ? C.potLight : C.pot, respawn: 6 }));
-}
-
-// ---- runtime: checkpoints, reset floors, the index console, speed gates, splits ---------
-const STORE = 'courseBests'; // (the save's section)
-
-export class Course {
-  constructor(game) {
-    this.game = game;
-    this.current = -1; // last checkpoint touched
-    this.t = 0;
-    this.running = false;
-    this.lapT = null; // running lap time (from room 1's checkpoint)
-    this.lapRooms = new Set();
-    this.best = {};
-    game.save?.section(STORE, { scope: 'player', version: 1, dump: () => this.best, load: (s) => { this.best = { ...s }; }, reset: () => { this.best = {}; } }); // (the splits' bests, the player's)
-    // the ring's checkpoints (a lap, with splits), then the tech lab's (no splits)
-    this.ringN = CHECKPOINTS.length;
-    this.cps = [...CHECKPOINTS, ...TECH_CPS.map((c) => ({ ...c, tech: true })), ...MILL_CPS.map((c) => ({ ...c, tech: true })), ...RIG_CPS.map((c) => ({ ...c, tech: true })), ...HAND_CPS.map((c) => ({ ...c, tech: true }))]
-      .map((c) => ({ ...c, v: new THREE.Vector3(c.pos[0], BASE_Y + c.pos[1], c.pos[2]) }));
-    this.millN = this.ringN + TECH_CPS.length; // (index of the mill's first checkpoint)
-    this.rigN = this.millN + MILL_CPS.length; // (the rigging's, then the hands')
-    this.handN = this.rigN + RIG_CPS.length;
-    this.pits = [...PITS, ...TECH_PITS.map(([r, i, below]) => [r, i + this.ringN, below]), ...MILL_PITS.map(([r, i, below]) => [r, i + this.millN, BASE_Y + below]), ...RIG_PITS.map(([r, i, below]) => [r, i + this.rigN, BASE_Y + below])];
-    this.millSpawn = { v: new THREE.Vector3(39, BASE_Y, -47.2), yaw: Math.PI / 2 };
-    this.weirSpawn = { v: new THREE.Vector3(...WEIR_SPAWN.pos), yaw: WEIR_SPAWN.yaw }; // (the Weir is the dunes' oasis now)
-    this.siegeSpawn = { v: new THREE.Vector3(SIEGE_SPAWN.pos[0], BASE_Y + SIEGE_SPAWN.pos[1], SIEGE_SPAWN.pos[2]), yaw: SIEGE_SPAWN.yaw };
-    this.hubSpawn = { v: new THREE.Vector3(0, BASE_Y, -10), yaw: 0 };
-    this.labSpawn = { v: new THREE.Vector3(0, BASE_Y, -38), yaw: Math.PI };
-    this.gates = [
-      { axis: 'x', at: -8, a0: -36, a1: -20, y: [0, 3] },
-      { axis: 'x', at: 18, a0: -36, a1: -20, y: [0, 3] },
-      { axis: 'z', at: -4.5, a0: -33.2, a1: -26.8, y: [2, 8] },
-    ];
-    this.prev = new THREE.Vector3();
-    // (no banner: the course's timing is the log's: every station, split and lap is said there; the owner, 2026-10-07)
-    this.buildConsole();
-    this.buildBoard();
-  }
-
-  // metrics board on the hub's south wall: live values from the tuning, and the rubric
-  buildBoard() {
-    const c = document.createElement('canvas');
-    c.width = 1024; c.height = 640;
-    this.board = { c, tex: new THREE.CanvasTexture(c) };
-    const m = new THREE.Mesh(new THREE.PlaneGeometry(12, 7.5), new THREE.MeshBasicMaterial({ map: this.board.tex, transparent: true }));
-    m.position.set(-11, BASE_Y + 4.6, -HUB + 0.27);
-    this.game.scene.add(m);
-    this.refreshBoard();
-  }
-
-  /** The calibration numbers (the board's, and the Index's panel): live values from the tuning, and the measured chains. */
-  calibration() {
-    const M = T.movement;
-    const v = M.jumpVelocity, G = M.gravity;
-    const air = (2 * v) / G, h = (v * v) / (2 * G), h2 = h + ((v * M.airJumpMult) ** 2) / (2 * G);
-    return {
-      live: [
-        ['walk / sprint / crouch', `${M.walkSpeed} / ${M.sprintSpeed} / ${M.crouchSpeed} m/s`],
-        ['slide boost / top speed', `${M.slideSpeed} / ${M.maxSpeed} m/s`],
-        ['wallrun speed / time', `${M.wallrunSpeed} m/s / ${M.wallrunMaxTime} s`],
-        ['jump height / double', `${h.toFixed(2)} / ${h2.toFixed(2)} m`],
-        ['sprint jump (flat)', `${(M.sprintSpeed * air).toFixed(2)} m`],
-        ['step / mantle / jump+mantle', `${M.stepHeight} / ${M.mantleMax} / ${(h + M.mantleMax).toFixed(2)} m`],
-        ['stand / crouch height', '1.7 / 1.35 m'],
-        ['dash', `${M.dashSpeed} m/s, ${M.dashCost} Lachryma`],
-      ],
-      chains: RUBRIC.map(([k, d]) => [k, `${d} m`]),
-    };
-  }
-
-  refreshBoard() {
-    const g = this.board.c.getContext('2d'), { live, chains } = this.calibration();
-    g.clearRect(0, 0, 1024, 640);
-    g.fillStyle = 'rgba(28,13,8,0.82)';
-    g.fillRect(0, 0, 1024, 640);
-    g.strokeStyle = '#ffb27a'; g.lineWidth = 3; g.strokeRect(6, 6, 1012, 628);
-    g.fillStyle = '#ffb27a'; g.font = `700 38px ${FONT.title}`;
-    g.fillText('METRICS', 30, 58);
-    g.fillStyle = '#ffb27a'; g.font = `700 25px ${FONT.title}`;
-    g.fillText('LIVE (from the tuning panel)', 30, 104);
-    g.font = `23px ${FONT.sys}`;
-    live.forEach(([k, val], i) => { g.fillStyle = '#e8ab86'; g.fillText(k, 30, 140 + i * 31); g.fillStyle = '#fff1dc'; g.fillText(val, 470, 140 + i * 31); });
-    g.fillStyle = '#ffb27a'; g.font = `700 25px ${FONT.title}`;
-    g.fillText('MEASURED CHAINS (default tuning)', 30, 424);
-    g.font = `21px ${FONT.sys}`;
-    chains.forEach(([k, d], i) => {
-      const col = i % 2, row = Math.floor(i / 2);
-      g.fillStyle = '#e8ab86'; g.fillText(k, 30 + col * 500, 458 + row * 32);
-      g.fillStyle = '#fff1dc'; g.fillText(d, 30 + col * 500 + 380, 458 + row * 32);
-    });
-    this.board.tex.needsUpdate = true;
-  }
-
-  // the index: one console in the hub's first room. F at it opens a menu of the rooms; one teleport
-  // each (the stations inside a room are checkpoints: the Tab panel goes back to the last one you touched)
-  buildConsole() {
-    const S = this.game.scene, B = BASE_Y, cx = 0, cz = -6;
-    // the rooms the menu lists (the course's eight stations and the lab's five wings are one room each: R and the rings inside them do
-    // the rest)
-    this.rooms = [
-      { id: 'workshop', code: 'KeyK', tag: 'K', name: 'THE WORKSHOP', blurb: 'back up to the kiln, the folk and the pots, where you woke', group: 'THE HUB', spawn: 'workshop' }, // (the basement's way up: QA-C found none but a Shrine's page)
-      { id: 'course', code: 'Digit1', tag: '1', name: 'THE COURSE', blurb: 'one loop, eight stations: run · mantle · gaps · wallrun · zigzag · climb · speed · low · splits and laps', group: 'THE HUB', cp: 0 },
-      { id: 'lab', code: 'KeyL', tag: 'L', name: 'THE MOVEMENT LAB', blurb: 'one hall, five wings: the hands · the rigging · the techs · the clockwork mill · the kiln stack', group: 'THE HUB', spawn: 'lab' },
-      { id: 'braid', code: 'KeyB', tag: 'B', name: 'THE BRAID', blurb: 'three lines over a pit: beams, bars, blinks · change at any junction', group: 'LAP CIRCUITS', spawn: 'circuit' },
-      { id: 'millrace', code: 'KeyC', tag: 'C', name: 'THE MILL RACE', blurb: 'the mill in one loop: cogs, a fork, the ferris wheel, the steam', group: 'LAP CIRCUITS', spawn: 'circuit', circuit: 'mill' },
-      { id: 'spindle', code: 'KeyP', tag: 'P', name: 'THE SPINDLE', blurb: 'up through a chain of skills, down a long chute', group: 'LAP CIRCUITS', spawn: 'circuit' },
-      { id: 'siege', code: 'KeyS', tag: 'S', name: 'THE SIEGE', blurb: 'the hand\'s arena: raids come here, and only here', group: 'THE HAND', spawn: 'siege' },
-      { id: 'dunes', code: 'KeyD', tag: 'D', name: 'THE DUNES', blurb: 'an oasis in a sand sea: Solar Skiffing (Y) · the Weir\'s pools and the Sondelass\'s rod · the gate to Raku\'s bazaar', group: 'THE OPEN', spawn: 'dunes' },
-      { id: 'shore', code: 'KeyE', tag: 'E', name: 'THE SHORE', blurb: 'due east of the oasis the sand runs down to the Emocean: the jetty, and the sea to the horizon', group: 'THE OPEN', spawn: 'shore' },
-      { id: 'opensea', code: 'KeyO', tag: 'O', name: 'THE OPEN SEA', blurb: 'the Emocean off the lanes: sail at a free helm, chart squares, land on islets, report finds at a dock', group: 'THE OPEN', spawn: 'opensea' },
-      { id: 'raceway', code: 'KeyR', tag: 'R', name: 'THE RACEWAY', blurb: 'the Solar Skiff\'s test circuit: three laps against the clock, F at the start\'s pillar · the sandfall drop', group: 'THE OPEN', spawn: 'raceway' },
-      { id: 'bazaar', code: 'KeyG', tag: 'G', name: "RAKU'S BAZAAR", blurb: 'the casino under the dome: Querent, Zodiac, Event Horizon · chips at Raku\'s cage', group: 'THE OPEN', spawn: 'bazaar' },
-      { id: 'dunemaw', code: 'KeyW', tag: 'W', name: 'THE GREAT DUNEMAW', blurb: 'the Well in the sand, north-west of the oasis: F at its mouth goes down', group: 'THE OPEN', spawn: 'dunemaw', danger: FOE.cls }, // (its FOE's class as the Index row's pips: ui/dangerpips.js)
-    ];
-    this.menu = new IndexMenu(this.game, this.rooms, (id) => (!id.startsWith('debug.') && this.game.gateRing?.depart(() => this.goRoom(id))) || this.goRoom(id), () => this.calibration()); // (the gate-out under the seam: vfx/gatering.js; the DEBUG rows go at once)
-    this.game.indexMenu = this.menu;
-    this.console = { x: cx, z: cz };
-    this.game.interact?.add('index', (P) => { // (the hub's Index offers the chevron as every other F does: SWEEPS group 8)
-      if (this.menu.open || this.game.god?.controlling) return null;
-      const d = Math.hypot(P.pos.x - cx, P.pos.z - cz);
-      return Math.abs(P.pos.y - BASE_Y) < 0.5 && d < 2.3 ? { pos: new THREE.Vector3(cx, BASE_Y + 1.9, cz), d } : null;
-    });
-    // the console: a pedestal with a lit face, on a glowing ring
-    const ped = new THREE.Mesh(new THREE.BoxGeometry(1.6, 1.1, 0.8), this.game.level.mat(RG.index));
-    ped.position.set(cx, B + 0.55, cz);
-    addOutline(ped);
-    const ring2 = new THREE.Mesh(new THREE.TorusGeometry(1.5, 0.05, 4, 36), glowMat);
-    ring2.rotation.x = Math.PI / 2;
-    ring2.position.set(cx, B + 0.04, cz);
-    const disc = new THREE.Mesh(new THREE.CircleGeometry(1.5, 32), new THREE.MeshBasicMaterial({ color: PALETTE.glow, transparent: true, opacity: 0.22 }));
-    disc.rotation.x = -Math.PI / 2;
-    disc.position.set(cx, B + 0.03, cz);
-    S.add(ped, ring2, disc);
-    this.consoleDisc = disc;
-    const body = this.game.physics.world.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(cx, B + 0.55, cz));
-    this.game.physics.world.createCollider(RAPIER.ColliderDesc.cuboid(0.8, 0.55, 0.4).setCollisionGroups(GROUPS.static), body);
-    label(S, 'INDEX', [cx, B + 0.72, cz - 0.41], { rotY: Math.PI, width: 1.4, vertical: true }); // (a sign names a place; what the keys do is the log's to say: room.help)
-    label(S, 'INDEX', [0, B + 3.2, -4.4], { rotY: Math.PI, width: 3, vertical: true });
-  }
-
-  goRoom(id) {
-    const r = this.rooms.find((x) => x.id === id);
-    if (!r) return;
-    this.game.circuits?.leave();
-    if (r.spawn === 'circuit') { this.game.circuits.enter(r.circuit || r.id); return; }
-    if (r.spawn === 'debug') { this.game.debugChests?.go(r.kit); return; } // (the Index's DEBUG rows: debug/debugchest.js)
-    if (r.spawn === 'workshop') { this.teleport(this.game.player.spawn, 0); this.running = false; this.current = -1; this.lapT = null; sfx.geyser(); }
-    else if (r.spawn === 'lab') this.toLab();
-    else if (r.spawn === 'mill') this.toMill();
-    else if (r.spawn === 'dunes') this.toDunes();
-    else if (r.spawn === 'siege') this.toSiege();
-    else if (r.spawn === 'weir') this.toWeir();
-    else if (r.spawn === 'dunemaw') this.toDunemaw();
-    else if (r.spawn === 'shore') this.toShore();
-    else if (r.spawn === 'bazaar') { this.game.bazaar?.arrive(); this.running = false; this.current = -1; this.lapT = null; }
-    else if (r.spawn === 'opensea') { this.game.opensea?.arrive(); this.running = false; this.current = -1; this.lapT = null; }
-    else if (r.spawn === 'raceway') { this.game.raceway?.arrive(); this.running = false; this.current = -1; this.lapT = null; sfx.geyser(); }
-    else this.goTo(r.cp, 'geyser');
-  }
-
-  toLab() {
-    this.teleport(this.labSpawn.v, this.labSpawn.yaw);
-    this.running = false;
-    this.current = -1;
-    this.lapT = null;
-    sfx.geyser();
-  }
-
-  /** The open layer: the sand sea. You arrive on foot at the oasis, by the pier (Y brings the Solar Skiff). */
-  toDunes() {
-    const D = this.game.dunes;
-    this.game.player.killY = D.center.y - 90; // (before the next step: it is far below the world's end)
-    this.teleport(D.spawnPoint(), 0);
-    this.running = false;
-    this.current = -1;
-    this.lapT = null;
-    sfx.geyser();
-  }
-
-  /** The Weir is the dunes' oasis: the same arrival. */
-  toWeir() { this.toDunes(); }
-  /** The open layer, set down beside the Great Dunemaw's mouth, facing it (world/well/dunemaw.js). */
-  toDunemaw() {
-    this.toDunes();
-    const W = this.game.well; if (!W?.mouthPos) return;
-    const at = W.mouthSpot(); this.teleport(at.pos, at.yaw + Math.PI);
-  }
-
-  /** The open layer, set down on the beach at the jetty's foot, facing the sea (world/dunes/beach.js). */
-  toShore() {
-    this.toDunes();
-    const at = this.game.dunes.beach?.landing(); if (at) this.teleport(at.pos, at.yaw);
-  }
-
-  toSiege() {
-    this.teleport(this.siegeSpawn.v, this.siegeSpawn.yaw);
-    this.running = false;
-    this.current = -1;
-    this.lapT = null;
-    sfx.geyser();
-  }
-
-  toMill() {
-    this.teleport(this.millSpawn.v, this.millSpawn.yaw);
-    this.running = false;
-    this.current = -1;
-    this.lapT = null;
-    sfx.geyser();
-  }
-
-  inBasement() { const g = this.game; return g.player.pos.y < -2 && !g.well?.active && !g.dunes?.active && !g.realm?.active && !g.emocean?.stage.active; } // (the Wells, the Dunes and the garden lie lower still: the hub's help was said in the Dunemaw)
-
-  /** Put the Courier at `v` facing `yaw`, everything they were doing let go. The pool is refilled (save-scumming is allowed between
-   *  rooms) unless `keepPool` (a Well's floors: going deeper is not a rest). */
-  teleport(v, yaw, { keepPool = false } = {}) {
-    const p = this.game.player;
-    this.game.god?.forceOff?.(); // (set down elsewhere, the hand is let go: its view was left 36 m off in the siege, SWEEPS group 4)
-    if (this.game.cradles?.sealed) this.game.cradles.unseal('travel', 'courier', { now: true }); // (set down elsewhere, out of any cradle first, where they stand: its step out would put them back in front of it, world/cradles.js)
-    p.pos.copy(v); p.prevPos.copy(v); p.renderPos.copy(v);
-    p.vel.set(0, 0, 0);
-    p.airPeak = v.y; p.airT = 0; // (a jump taken where they were is not a fall where they arrive: a 400 m 'drop' rolled them past the Well's mouth)
-    p.yaw = yaw; p.pitch = 0; p.bodyYaw = yaw;
-    p.wallrun = null; p.mantle = null; p.sliding = false; p.dashT = 0; p.riding = null; p.platform = null; p.exiting = 0;
-    p.techs?.reset();
-    p.standUp(); // (arrived on their feet: a shatter on the belly was made whole still prone)
-    const hs = p.techs?.get?.('sondelass')?.hookshot; // (a line out does not come along: it would drag the Courier back across the world)
-    if (hs?.att) hs.release('stow');
-    hs?.cancel?.();
-    this.game.character?.setHidden(false);
-    p.airJumps = T.movement.airJumps; p.dashCharges = T.movement.dashCharges; p.slideBoostCd = 0;
-    p.place();
-    p.markSafe();
-    if (!keepPool) this.game.lachryma.reset(); // save-scumming is allowed here
-    this.game.fx.absorbSparkle(v.clone().setY(v.y + 1));
-    this.prev.copy(v);
-  }
-
-  goTo(i, sound = 'dash') {
-    const cp = this.cps[i];
-    if (this.current !== i) this.lapRooms.clear();
-    this.current = i;
-    this.teleport(cp.v, cp.yaw);
-    this.t = 0;
-    this.running = true;
-    if (i === 0) this.lapT = 0;
-    sfx[sound]();
-  }
-
-  respawn() { if (this.current < 0) this.toHub(); else this.goTo(this.current); }
-
-  toHub() {
-    this.game.circuits?.leave();
-    this.teleport(this.hubSpawn.v, this.hubSpawn.yaw);
-    this.running = false;
-    this.current = -1;
-    this.lapT = null;
-    sfx.geyser();
-  }
-
-  touch(i) {
-    if (i === this.current && this.running) return;
-    if (this.cps[i].tech) {
-      // a tech station: somewhere to come back to, no splits
-      this.current = i; this.t = 0; this.running = true; this.lapT = null; this.lapRooms.clear();
-      this.game.events?.emit('course.station', { room: this.cps[i].room, title: this.cps[i].name });
-      sfx.lockOn(2);
-      return;
-    }
-    const g = this.game, n = this.ringN;
-    const prev = this.current;
-    const inOrder = this.running && prev >= 0 && prev < n && (prev + 1) % n === i;
-    if (inOrder) {
-      // a clean split: straight from the previous room's checkpoint
-      const key = `room${this.cps[prev].room}`, t = this.t;
-      const pb = !(this.best[key] <= t);
-      if (pb) this.best[key] = t;
-      g.events?.emit('course.split', { room: this.cps[prev].room, time: t, pb, best: this.best[key] });
-      this.lapRooms.add(prev);
-    } else this.lapRooms.clear();
-    if (i === 0) {
-      // full lap: every room in order, back to room 1
-      if (inOrder && this.lapT !== null && this.lapRooms.size === n) {
-        const lap = this.lapT;
-        const pb = !(this.best.lap <= lap);
-        if (pb) this.best.lap = lap;
-        g.events?.emit('course.lap', { time: lap, pb });
-      }
-      this.lapT = 0;
-      this.lapRooms.clear();
-    }
-    this.game.save?.dirty(STORE);
-    this.current = i;
-    this.t = 0;
-    this.running = true;
-    sfx.lockOn(2);
-  }
-
-  /** Back to the last checkpoint (or the start of a circuit, the dunes, the siege): the Tab panel's action (it was R). */
-  respawnHere() {
-    const g = this.game, p = g.player;
-    if (g.circuits?.active) g.circuits.restart(); else if (g.well?.active) g.well.toArrival(); else if (g.dunes.active) this.toDunes(); else if (g.opensea?.active) g.opensea.respawn(); else if (g.raceway?.active) g.raceway.respawn(); else if (g.bazaar?.here) g.bazaar.arrive(); else if (inSiege(p.pos)) this.toSiege(); else this.respawn();
-  }
-
-  update(dt) {
-    const g = this.game, p = g.player, inp = g.input;
-    const here = this.inBasement();
-    if (!here) { this.running = false; this.prev.copy(p.pos); this.placeHelp(); return; } // (the Weir's, the Dunes' and the skiff's help are said out there too)
-    this.t += dt;
-    if (this.lapT !== null) this.lapT += dt;
-
-    const feet = p.pos;
-    // checkpoints
-    this.cps.forEach((cp, i) => {
-      const [x0, x1, z0, z1] = cp.zone;
-      if (Math.abs(feet.y - cp.v.y) < 1.5 && feet.x > x0 && feet.x < x1 && feet.z > z0 && feet.z < z1) this.touch(i);
-    });
-    // reset floors
-    // (a pit's own trigger height if it has one: the lab's are dug below its floor, where
-    // the ring's are the basement floor itself under raised rooms)
-    for (const [[x0, x1, z0, z1], cpi, below = BASE_Y + 0.4] of this.pits) {
-      if (feet.y < below && feet.x > x0 && feet.x < x1 && feet.z > z0 && feet.z < z1) {
-        this.goTo(cpi, 'fizzle');
-        g.events?.emit('course.reset', {});
-        return;
-      }
-    }
-    // the index console
-    const cs = this.console, nearConsole = Math.abs(feet.y - BASE_Y) < 0.5 && Math.hypot(feet.x - cs.x, feet.z - cs.z) < 2.3;
-    this.consoleDisc.material.opacity = nearConsole ? 0.55 : 0.22;
-    if (this.game.interact?.cur?.id === 'index' && p.peekLatch?.('KeyF')) { p.latch('KeyF'); this.menu.show(); return; }
-    // speed gates
-    for (const gt of this.gates) {
-      const a = gt.axis === 'x' ? this.prev.x : this.prev.z, b = gt.axis === 'x' ? feet.x : feet.z;
-      const side = gt.axis === 'x' ? feet.z : feet.x;
-      const hy = feet.y - BASE_Y;
-      if ((a - gt.at) * (b - gt.at) < 0 && side > gt.a0 && side < gt.a1 && hy > gt.y[0] - 0.5 && hy < gt.y[1]) {
-        g.events?.emit('course.gate', { speed: Math.hypot(p.vel.x, p.vel.z) });
-      }
-    }
-    this.prev.copy(feet);
-
-    this.placeHelp();
-    signHelp(g, p.pos);
-  }
-
-  /** What the keys do in each place, said once by the log on arriving there (room.help -> tracking.js), not kept on the screen. Asked
-   *  every frame wherever the Courier is: the Weir and the Dunes are not the basement (QA-A, 2026-10-22: their lines were never said). */
-  placeHelp() {
-    const g = this.game, p = g.player;
-    const place = g.circuits?.active ? null : inSiege(p.pos) ? 'siege' : g.techs?.active?.id === 'skiff' ? 'skiff' : inWeir(p.pos) ? 'weir' : g.dunes.active ? 'dunes' : this.inBasement() ? 'hub' : null;
-    if (place !== this.place) { this.place = place; if (place) g.events?.emit('room.help', { room: place }); }
-  }
 }

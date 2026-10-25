@@ -134,8 +134,13 @@ import { measureSwing, sweep as sweepArc, magnet, targets } from './melee.js';
 import { MOVES as RULES, unlocked } from '../progress/combat/moves.js';
 import { Afterimages } from '../vfx/afterimage.js';
 import { featTint } from '../vfx/oxidation.js';
+import { blowWeight } from '../vfx/blowfeel.js';
 import { stream } from '../core/rng.js';
 import { T } from '../core/config.js';
+
+/** The hit-stop's length by the blow's weight class (vfx/blowfeel.js blowWeight; Calissa's ask, 2026-10-25): a light blow stops
+ *  shorter, a finisher longest, the stop grown with the blow as Sakurai's (a share of the length the damage gives). */
+export const STOP_BY_WEIGHT = { light: 0.8, heavy: 1.2, launcher: 1.15, finisher: 1.6 };
 const fxRand = stream('tools/moveset.fx'); // (the look's chance: the afterimage's and the ribbon's hue, never the simulation's)
 
 const STATUS_DUR = { stagger: 0.8, airborne: 1.6, trip: 1.0 }; // (how long a move's status holds, real seconds; each creature decides what it means)
@@ -647,7 +652,7 @@ export class Moveset {
     const R = this.rule(def), n = R?.hits || 1;
     if (n > 1 && def.track) { const [a, b] = def.track.strike, k = def.parts ? def.parts.filter((p) => c.t >= p).length - 1 : Math.floor(((c.t - a) / Math.max(1e-3, b - a)) * n); if (k > (c.part ?? 0) && k < n) { c.part = k; this.hit.clear(); } } // (`parts`: where each hit begins, the clip's own stabs)
     sweepArc(g, P, c.yaw ?? P.bodyYaw, def.track, c.tPrev, c.t, { reach: def.reach ?? this.S.reach ?? 0.6, pad: STRIKE_PAD, seen: this.hit, hit: (kind, ent, at, dir) => { struck++; this.blow(kind, ent, at, dir, def.hit, c); } });
-    if (struck) this.impact(def.hit.dmg ?? 1, c);
+    if (struck) this.impact(def.hit.dmg ?? 1, c, def.hit);
   }
 
   /** A blast around them (a plunge's landing, a slam): everything within R struck, thrown out and up. */
@@ -661,7 +666,7 @@ export class Moveset {
     }
     g.fx?.shockwave?.(P.pos.clone(), R);
     P.shake = Math.max(P.shake, 0.3);
-    if (struck) this.impact((h?.dmg ?? 1) * 1.3, this.cur);
+    if (struck) this.impact((h?.dmg ?? 1) * 1.3, this.cur, h);
   }
 
   /** One blow on one thing: its damage, its knock (the launcher's lift, the plunge's spike), its event. */
@@ -713,12 +718,12 @@ export class Moveset {
   lifted(c) { if (c?.kind !== 'launcher' || c.lifted) return; c.lifted = true; this.game.events?.emit('move.launch', { tool: this.S.rules || this.id, by: 'courier' }); }
 
   /** What a hit does to the world: the sound, the shake, the flash, and the stop. */
-  impact(dmg, c) {
-    const g = this.game, P = this.P;
+  impact(dmg, c, h) {
+    const g = this.game, P = this.P, k = STOP_BY_WEIGHT[blowWeight(c, h)] ?? 1;
     sfx.cutHit?.(dmg);
     P.shake = Math.max(P.shake, 0.12 * dmg);
     if (this.S.segment) { this.S.segment(_a, _b); g.fx?.slash?.(_a.clone(), _b.clone(), _up); }
-    g.time.pulse('hit', 0.07, 0.035 + 0.03 * dmg * (c?.def.stop ?? 1), { release: 0.12 });
+    g.time.pulse('hit', 0.07, k * (0.035 + 0.03 * dmg * (c?.def.stop ?? 1)), { release: 0.12 });
   }
 
   /** The upper-body layer while an upper move (or its recovery) plays: { pose, w } | null. */

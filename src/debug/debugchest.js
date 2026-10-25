@@ -40,7 +40,7 @@ export class DebugChests {
     for (const kit of Object.keys(DEBUG_KITS)) { // (a garden chest's place goes by go(): travel() would set the Courier down in the garden's zone outside it)
       game.places?.add(`debug.${kit}`, { name: `the debug chest: ${kit}`, at: () => this.get(kit)?.pos.clone() ?? null, near: 1.4, note: `F: ${DEBUG_KITS[kit].for}`, via: GARDEN.has(DEBUG_KITS[kit].at) ? () => this.go(kit) : null });
     }
-    // the Index: a DEBUG heading under the rooms (world/basement/basement.js goRoom sends 'debug' here)
+    // the Index: a DEBUG heading under the rooms (world/rooms.js goRoom sends 'debug' here)
     const rooms = game.course?.rooms;
     const order = Object.keys(DEBUG_KITS).sort((a, b) => GARDEN.has(DEBUG_KITS[a].at) - GARDEN.has(DEBUG_KITS[b].at)); // (the garden's last: they go in at a Shrine)
     if (rooms) order.forEach((kit, i) => rooms.push({ id: `debug.${kit}`, code: i < 8 ? `Digit${i + 2}` : undefined, tag: i < 8 ? String(i + 2) : 'DBG', name: `DEBUG CHEST: ${kit.toUpperCase()}`, blurb: DEBUG_KITS[kit].for, group: 'DEBUG', spawn: 'debug', kit }));

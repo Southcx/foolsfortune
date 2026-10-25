@@ -10,7 +10,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { Trial } from '../world/trial.js';
-import { Course } from '../world/basement/basement.js';
+import { Course } from '../world/basement/course.js';
 import { Circuits } from '../world/basement/circuits.js';
 import { Tracking } from '../feedback/tracking.js';
 import { Achievements } from '../progress/achievements.js';

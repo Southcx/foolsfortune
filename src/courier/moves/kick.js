@@ -97,7 +97,7 @@ class FistMoves extends Moveset {
     }
     g.fx?.shockwave?.(P.pos.clone(), R);
     P.shake = Math.max(P.shake, 0.3);
-    if (struck) this.impact((h?.dmg ?? 1) * 1.3, this.cur);
+    if (struck) this.impact((h?.dmg ?? 1) * 1.3, this.cur, h);
   }
 }
 
