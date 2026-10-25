@@ -88,7 +88,7 @@ await S.common('hub at the Index');
 
 const chevAtIndex = await S.ev(() => ({ cur: __game.game.interact?.cur?.id || null, shown: !!__game.game.interact?.chevron?.group?.visible }));
 S.check('hub Index: the interact chevron is offered at the console', chevAtIndex.cur != null && chevAtIndex.shown,
-  `interact.cur=${chevAtIndex.cur}, chevron shown=${chevAtIndex.shown} (world/basement/basement.js update(): F is read from its own nearConsole test, never offered to courier/interact.js, so no chevron marks the console; the Throwing Room's Index offers 'testroom.index')`);
+  `interact.cur=${chevAtIndex.cur}, chevron shown=${chevAtIndex.shown} (world/basement/course.js update(): F is read from its own nearConsole test, never offered to courier/interact.js, so no chevron marks the console; the Throwing Room's Index offers 'testroom.index')`);
 
 await S.press('KeyF', 3);
 let d = await S.sw('dom()');
@@ -252,7 +252,7 @@ const away = await bs('hud()');
 S.check('course: its banner goes when the Courier leaves the basement', away.course === 'none', `#course display ${away.course}: "${away.courseText}"`);
 await atIndex(); await S.ticks(10);
 const back = await bs('hud()'), bc = await bs('course()');
-S.check('course: back at the hub, no stale course station banner', back.course === 'none' && !bc.running, `#course display ${back.course} "${back.courseText}", course.running=${bc.running} (world/basement/basement.js:656 sets #course to block on every frame in the basement; :699 hides it only when running changes, so once a run ends the last banner stays up)`);
+S.check('course: back at the hub, no stale course station banner', back.course === 'none' && !bc.running, `#course display ${back.course} "${back.courseText}", course.running=${bc.running} (no #course element is drawn any more: the owner cut the course's banner, 2026-10-07; a fail here means one came back)`);
 await controllable('course');
 
 // ================================================================== 5. the movement lab's wings: every tech station stands on solid ground
@@ -321,7 +321,7 @@ S.phase = 'siege';
 await S.closeAll(); await S.go('siege'); await S.ticks(30);
 await S.common('siege');
 const hs0 = await bs('hud()'); await S.ticks(60); const hs1 = await bs('hud()'), cSiege = await bs('course()');
-S.check('siege: no course station banner in the arena', hs1.course === 'none', `#course "${hs0.courseText}" then, 60 ticks on, "${hs1.courseText}" (course.running=${cSiege.running}, current=${cSiege.current}: world/basement/basement.js:656 shows #course on every frame in the basement, and :699 hides it only when running changes)`);
+S.check('siege: no course station banner in the arena', hs1.course === 'none', `#course "${hs0.courseText}" then, 60 ticks on, "${hs1.courseText}" (course.running=${cSiege.running}, current=${cSiege.current}: no #course element is drawn any more: the owner cut the course's banner, 2026-10-07; a fail here means one came back)`);
 const sg0 = await bs('snap()'), worn0 = await bs('worn()');
 /** Take the hand, and bring the first wave on now (the raid clock set to a second: the wave's own spawn is what is tested). */
 const raid = async (label) => {
@@ -366,7 +366,7 @@ const gHub = await bs('god()'), jvHub = await bs('jarView()'), snHub = await bs(
 await S.common('hub after leaving a raid', { courier: false });
 S.check('siege left mid-raid (the hub): the raid stops', snHub.raiders === 0, `${snHub.raiders} raiders alive, god ${gHub.state}, raids here=${gHub.here}`);
 S.check('siege left mid-raid (the hub): the Pneuka Jar is in view', gHub.state === 'off' || jvHub.onScreen,
-  `god ${gHub.state}; Pneuka Jar at ${JSON.stringify(gHub.jar?.pos)} projects to ${JSON.stringify(jvHub.ndc)}; the hand's view is centred ${jvHub.focusToJar} m from it at ${JSON.stringify(jvHub.focus)} (world/basement/basement.js teleport() moves the Courier and the Pneuka Jar, never god.cam.focus, which the tether holds T.god.range = 36 m off)`);
+  `god ${gHub.state}; Pneuka Jar at ${JSON.stringify(gHub.jar?.pos)} projects to ${JSON.stringify(jvHub.ndc)}; the hand's view is centred ${jvHub.focusToJar} m from it at ${JSON.stringify(jvHub.focus)} (world/basement/course.js teleport() moves the Courier and the Pneuka Jar, never god.cam.focus, which the tether holds T.god.range = 36 m off)`);
 S.check('siege left mid-raid (the hub): the Courier is not shown beside the Pneuka Jar', gHub.state === 'off' || jvHub.courierHidden,
   `god ${gHub.state}, character.hidden=${jvHub.courierHidden} (teleport() calls character.setHidden(false); godhand.js hides the Courier only while entering)`);
 if (gHub.state !== 'off') { await S.press('Backquote', 4); await S.ticks(90); }
