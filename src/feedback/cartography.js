@@ -53,7 +53,7 @@ const CSS = `
 #mapui { position: fixed; inset: 0; z-index: 9; display: none; background: rgba(20,9,6,.9); cursor: grab; user-select: none; font-size: 12px; letter-spacing: .08em; }
 #mapui.open { display: block; }
 #mapui canvas { position: absolute; inset: 0; width: 100%; height: 100%; }
-#mapui .bar { position: absolute; left: 0; right: 0; top: 0; display: flex; gap: 10px; align-items: center; padding: 12px 18px; background: linear-gradient(rgba(20,9,6,.95), rgba(20,9,6,0)); pointer-events: none; }
+#mapui .bar { position: absolute; left: 0; right: 0; top: 0; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; padding: 12px 18px; background: linear-gradient(rgba(20,9,6,.95), rgba(20,9,6,0)); pointer-events: none; }
 #mapui .bar > * { pointer-events: auto; }
 #mapui h2 { margin: 0; font-size: 18px; letter-spacing: .24em; color: var(--accent); font-weight: normal; flex: 1; }
 #mapui button { font: inherit; color: var(--ink); background: rgba(28,13,8,.8); border: 1px solid rgba(255,178,122,.5); padding: 5px 12px; border-radius: 3px; cursor: var(--jcur-pointer, pointer); letter-spacing: .1em; }
@@ -128,8 +128,8 @@ export class Cartography {
   learn(l, ix, iz, k, wall, h) {
     const c = this.cell(l, ix, iz, true);
     const before = Cartography.tierOfK(c.k);
-    if (k > c.k) c.k = Math.min(1, k);
-    if (wall) c.w = 1;
+    if (k > c.k) { c.k = Math.min(1, k); this.rev = (this.rev || 0) + 1; } // (rev: the map is drawn again only when something on it changed)
+    if (wall && !c.w) { c.w = 1; this.rev = (this.rev || 0) + 1; }
     if (h !== undefined && !c.h) c.h = h;
     if (c.k > 0.02) this.dirty = true;
     const after = Cartography.tierOfK(c.k);
@@ -433,7 +433,7 @@ export class Cartography {
     root.appendChild(bar);
     this.side = el('div', 'side');
     root.appendChild(this.side);
-    root.appendChild(el('div', 'legend', '<span style="opacity:.9">▒</span> sensed &nbsp; <span style="color:#d68c5a">■</span> charted &nbsp; <span style="color:#ffd696">■</span> understood &nbsp; <span style="color:#ffe0a0">◆</span> waypoint<br><span style="opacity:.6">drag · wheel · click sets waypoint · right click clears · the Dreamvane surveys (MMB) · on touch: drag to pan · pinch to zoom · hold to set or clear the waypoint</span>'));
+    root.appendChild(el('div', 'legend', '<span style="opacity:.9">▒</span> sensed &nbsp; <span style="color:#d68c5a">■</span> charted &nbsp; <span style="color:#ffd696">■</span> understood &nbsp; <span style="color:#ffe0a0">◆</span> waypoint'));
     document.body.appendChild(root);
     this.root = root;
     // pointer events, so a finger works as the mouse does (docs/plans/MOBILE.md 9, M2): a drag pans; two fingers pinch to zoom and pan
@@ -523,13 +523,14 @@ export class Cartography {
     this.view.layer = l.id; this.view.x = P.pos.x; this.view.z = P.pos.z; this.view.follow = true;
     this.view.scale = l.id === 'dunes' ? 1.2 : 6;
     this.resize();
-    this.drawMap();
+    this.drawMap(true);
   }
 
   hide() {
     if (!this.open) return;
     this.open = false;
     this.root.classList.remove('open');
+    this.canvas.width = this.canvas.height = 0; this.drawn = null; // (its pixels let go while closed: a full screen at the device's ratio, 6 to 16 MB)
     this.onClose?.();
   }
 
@@ -555,11 +556,16 @@ export class Cartography {
   }
   worldToScreen(x, z) { return { x: innerWidth / 2 + (x - this.view.x) * this.view.scale, y: innerHeight / 2 + (z - this.view.z) * this.view.scale }; }
 
-  drawMap() {
+  /** Drawn only when what it shows has changed (it was every frame while open: about 12,000 cell lookups a frame in the Dunes). */
+  drawMap(force = false) {
     const c = this.mctx, V = this.view, P = this.game.player;
-    if (this.canvas.width !== Math.round(innerWidth * (this.dpr || 1))) this.resize();
-    const l = LAYER_BY_ID[V.layer], W = innerWidth, H = innerHeight;
     if (V.follow) { V.x = P.pos.x; V.z = P.pos.z; }
+    const W = innerWidth, H = innerHeight, wp = this.waypoint, pins = this.game.veritome?.book.pins?.length || 0;
+    const key = `${V.layer} ${V.x.toFixed(2)} ${V.z.toFixed(2)} ${V.scale.toFixed(3)} ${W}x${H} ${this.rev || 0} ${this.thread.length} ${pins} ${wp ? `${wp.x},${wp.z}` : '-'} ${P.pos.x.toFixed(1)},${P.pos.z.toFixed(1)},${(this.headYaw ?? P.yaw).toFixed(2)} ${!!this.game.god?.active} ${this.anchors.reduce((n, a) => n + (a.done ? 1 : 0), 0)}`;
+    if (!force && key === this.drawn) return;
+    this.drawn = key;
+    if (this.canvas.width !== Math.round(W * (this.dpr || 1))) this.resize();
+    const l = LAYER_BY_ID[V.layer];
     c.setTransform(this.dpr, 0, 0, this.dpr, 0, 0);
     c.clearRect(0, 0, W, H);
     // parchment ground

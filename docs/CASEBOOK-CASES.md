@@ -3903,3 +3903,11 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   did not), so the tap that should start was lost.
 - **Fix:** title/ui.js starts on `pointerdown`; a touch wakes the sound and starts in one press. Verified: one tap, then the menu.
 - **Rule:** 304
+
+### 2026-10-25 · The map had no CLOSE on a phone in landscape (Calissa's board, map-board-v1.md E; fixed by Petra)
+- **Seen:** on a phone held sideways the map opened with no CLOSE on screen, and its legend lay over its side panel.
+- **Cause (measured headless at 844 x 390):** the map's top bar was one row that could not wrap, nine layer buttons and CLOSE last, so
+  CLOSE stood past the screen's right edge; the legend's controls line ran the width of the screen into the side panel.
+- **Fix:** the bar wraps (CLOSE on the second row, at x 582 to 678 of 844); the controls line moved to the help's map row. The map is
+  drawn again only when what it shows changes, and its canvas let go when it closes.
+- **Rule:** 305

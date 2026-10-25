@@ -265,6 +265,7 @@ export const PAGES = [
       ['P', 'the Pneuka Box: what you carry and wear (left click uses, right click lists the rest); tools are worn to the belt from here'],
       ['B', 'the Codex: the arts, the ledger and records, the tools, the Veritome\'s binder'],
       ['M', 'the map; what is mapped is the explored area'],
+      ['on the map', 'drag to pan, the wheel or a pinch to zoom; a click (on touch, a long press) sets the waypoint, a right click (or a long press on it) clears it; the Dreamvane surveys (MMB)'],
       ['Enter', 'the chat line: words are said aloud, /commands are done (/help lists them)'],
     ],
     notes: ['Everything that happens is written in the log, at the foot of the screen.'],
