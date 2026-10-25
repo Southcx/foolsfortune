@@ -34,6 +34,7 @@
 //
 //   bazaarAtlas() -> { tex, glow(), card(i, dim?), die(skin, face, dim?), tile(n, state, dim?), chip(kind, part), cup(), cloth(id), seat(colour, kind) }
 //   (each a uv rect [u0, v0, u1, v1]; `dim` asks the sunk twin)
+//   cardFace(i) -> a 128 x 208 canvas of one card, painted alone at full size (the atlas is drawn at ATLAS_SCALE: ui/readingtable.js)
 //   CARD_BACK (the house deck's back)   ARCANA_BACK (the Major Arcana's, face down)   cardIndex(c) (a Querent card { r, s } -> its index)   DIE_SKINS   SUIT_INK
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -45,6 +46,10 @@ import { BACK_SET, backCell, onBackChange, drawBackSet } from './cardbackset.js'
 import { SEAT_NAMES, SEAT_KINDS, drawSeatCell, seatCellIndex } from './seatlook.js';
 
 const W = 2048, H = 2304; // (the foot, 2048 to 2304, holds the Arcana's back: one cell no row of the square had room for)
+/** The atlas drawn at this fraction of W x H (the resolution pass, 2026-10-25: an iPhone's memory; docs/plans/art/texture-budget.md): a card
+ *  painted in its 64 x 104 frame lands at 1x, not 2x, 24 MB on the GPU become 6. Its painter still draws in W x H units; a reader that
+ *  shows one face in the page (ui/readingtable.js) paints it alone at full size (`cardFace`). */
+const ATLAS_SCALE = 0.5;
 /** Where each kind of face lies in the atlas (pixels). 128 x 208 cards (16 x 5), 64 dice (32 x 5), 64 x 96 tiles, 64 chips, 24 seat cells
  *  of 64, five cloths of 256 in a row, then the dim twins (cards 48 x 78, dice 32, tiles 32 x 48) in the foot. */
 const AT = { card: { x: 0, y: 0, w: 128, h: 208, cols: 16 }, die: { x: 0, y: 1040, s: 64, cols: 32 }, tile: { x: 0, y: 1360, w: 64, h: 96 },
@@ -134,7 +139,8 @@ function paintAtlas(g, dieAt, dieCount) {
   CLOTHS.forEach((id, j) => clothCell(g, j, id));
   // the dim twins: the same faces, smaller, desaturated and sunk toward the felt's ink (a piece the table will not take right now)
   const dim = (sx, sy, sw, sh, dx, dy, dw, dh) => { // (an opaque source, so the veil is exact)
-    g.save(); g.imageSmoothingEnabled = true; g.drawImage(cv, sx, sy, sw, sh, dx, dy, dw, dh);
+    const px = cv.width / W; // (the source rect in the canvas's own pixels: the atlas may be drawn at ATLAS_SCALE)
+    g.save(); g.imageSmoothingEnabled = true; g.drawImage(cv, sx * px, sy * px, sw * px, sh * px, dx, dy, dw, dh);
     g.globalCompositeOperation = 'saturation'; g.fillStyle = 'rgba(128,128,128,0.8)'; g.fillRect(dx, dy, dw, dh);
     g.globalCompositeOperation = 'source-over'; g.fillStyle = 'rgba(23,17,31,0.58)'; g.fillRect(dx, dy, dw, dh); g.restore();
   };
@@ -154,7 +160,7 @@ function paintAtlas(g, dieAt, dieCount) {
 export function bazaarAtlas() {
   if (ATLAS) return ATLAS;
   const { dieAt, dieCount } = dieLayout();
-  const tex = bakedCanvasTexture((g) => paintAtlas(g, dieAt, dieCount), W, H);
+  const tex = bakedCanvasTexture((g) => paintAtlas(g, dieAt, dieCount), W, H, { scale: ATLAS_SCALE });
   onBackChange((deck) => { if (deck === 'house') { tex.source.data = null; tex.needsUpdate = true; } }); // (painted again with the new back on its next upload)
   tex.colorSpace = THREE.SRGBColorSpace; tex.magFilter = THREE.NearestFilter; tex.anisotropy = 4;
   const rect = (x, y, w, h, inset = 0.5) => [(x + inset) / W, 1 - (y + h - inset) / H, (x + w - inset) / W, 1 - (y + inset) / H];
@@ -187,6 +193,22 @@ export function bazaarAtlas() {
 }
 
 // ------------------------------------------------------------------ drawing helpers (a cell's own coordinates)
+/** One card of the atlas (`i` as `card(i)` takes it: a face 0..77, the house back 78, the edge 79, the Arcana's own back 80, a set back
+ *  81 ..) painted alone on a 128 x 208 canvas, the atlas's cell at full size, for the page (ui/readingtable.js), never cropped from the
+ *  atlas (drawn at ATLAS_SCALE, and painted whole to crop one). */
+export function cardFace(i) {
+  const c = document.createElement('canvas'); c.width = AT.card.w; c.height = AT.card.h;
+  const g = c.getContext('2d'); g.imageSmoothingEnabled = false; g.fillStyle = K.deep; g.fillRect(0, 0, c.width, c.height);
+  g.save(); g.scale(2, 2);
+  if (i < 22) major(g, i);
+  else if (i === CARD_BACK) drawHouseBack(g);
+  else if (i === CARD_EDGE) { g.fillStyle = K.cream; g.fillRect(0, 0, 64, 104); }
+  else if (i === ARCANA_BACK) drawArcanaBack(g);
+  else if (i > ARCANA_BACK) drawBackSet(g, BACK_SET[i - ARCANA_BACK - 1]?.id);
+  else { for (let s = 0; s < 4; s++) for (let r = 1; r <= 14; r++) if (cardIndex({ r, s }) === i) minor(g, r, s); }
+  g.restore();
+  return c;
+}
 function cell(g, A, i, draw) { g.save(); g.translate(A.x + (i % A.cols) * A.w, A.y + Math.floor(i / A.cols) * A.h); g.beginPath(); g.rect(0, 0, A.w, A.h); g.clip(); draw(); g.restore(); }
 const fill = (g, c) => { g.fillStyle = c; g.fill(); };
 const circ = (g, x, y, r, c) => { g.beginPath(); g.arc(x, y, r, 0, Math.PI * 2); fill(g, c); };

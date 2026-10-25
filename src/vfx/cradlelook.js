@@ -26,6 +26,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { mergeStatic } from '../render/merge.js';
+import { bakedCanvasTexture } from '../render/bakedcanvas.js';
 import { THEMES, theme } from '../ui/theme.js';
 
 /** The cradle in its own units: radius, height, the well's radius and depth (round six's). */
@@ -36,17 +37,19 @@ export const CRADLE_JAR = 0.28 / 0.37;
 export const cradleFoot = (scale = CRADLE_JAR) => CRADLE_FORM.R * 1.03 * scale;
 
 export function rng(seed) { let s = seed >>> 0 || 1; return () => { s ^= s << 13; s ^= s >>> 17; s ^= s << 5; return ((s >>> 0) % 100000) / 100000; }; }
-const canvas = (w, h) => { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; };
 /** A clay glaze drawn on a canvas: its base, pools and breaks of colour, specks (the gate's clay and sill, and the cradle's). */
 export function clayGlaze(base, pool, brk, speck, seed) {
-  const c = canvas(512, 512), x = c.getContext('2d'), R = rng(seed);
+  // (a baked canvas at half its 512 units, the resolution pass, 2026-10-25: a gate's clay and a cradle's well are a metre or two, and the
+  // pools and specks read the same at 256; drawn again the same, from its seed, if ever asked for)
+  const t = bakedCanvasTexture((x) => { const R = rng(seed);
   x.fillStyle = base; x.fillRect(0, 0, 512, 512);
   for (let i = 0; i < 70; i++) {
     const px = R() * 512, py = R() * 512, r = 20 + R() * 90, g = x.createRadialGradient(px, py, 0, px, py, r);
     g.addColorStop(0, R() < 0.5 ? pool : brk); g.addColorStop(1, 'rgba(0,0,0,0)'); x.globalAlpha = 0.25 + R() * 0.35; x.fillStyle = g; x.fillRect(px - r, py - r, 2 * r, 2 * r);
   }
   x.globalAlpha = 1; for (let i = 0; i < 900; i++) { x.fillStyle = R() < 0.7 ? speck : 'rgba(240,235,220,.5)'; x.fillRect(R() * 512, R() * 512, 1 + R() * 1.5, 1 + R() * 1.5); }
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  }, 512, 512, { scale: 0.5 });
+  t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; t.wrapS = t.wrapT = THREE.RepeatWrapping;
   return t;
 }
 

@@ -33,7 +33,7 @@
 //              .book carries its own heading (h4), .pane a list pane's rows (the FITTED pane))
 // ---------------------------------------------------------------------------------------
 import { iconEl, hasIcon } from './icons/icons.js';
-import { bazaarAtlas } from '../vfx/bazaarfaces.js';
+import { cardFace } from '../vfx/bazaarfaces.js';
 import { backCell } from '../vfx/cardbackset.js';
 import { drawSealFace } from '../vfx/sealface.js';
 import { toolIcon } from '../pneuka/icons.js';
@@ -41,8 +41,6 @@ import { toolIcon } from '../pneuka/icons.js';
 export const REFUSE = { hold: 1.4, press: 0.16 };      // (real s the seal stays; real s it takes to come down)
 export const RT_CLASSES = { window: 'rt-clay', tray: 'rt-tray', slot: 'rt-slot', book: 'rt-book', pane: 'rt-pane' };
 const ROMAN = ['', 'I', 'II', 'III', 'IV', 'V', 'VI', 'VII', 'VIII', 'IX', 'X', 'XI', 'XII', 'XIII', 'XIV', 'XV', 'XVI', 'XVII', 'XVIII', 'XIX', 'XX', 'XXI'];
-const CARD = { w: 128, h: 208, cols: 16, foot: 80, footY: 2048 }; // (cards 80 and up: the atlas's foot, the back the Arcana wears among them: vfx/cardbackset.js)
- // (the house deck's cells in its atlas: vfx/bazaarfaces.js AT.card)
 const VERMILION = '#e0442a';
 
 const CSS = `
@@ -147,9 +145,7 @@ export class ReadingTable {
   /** The house deck's face of a Major Arcana (n 1..21) or its back, as a canvas the size of the atlas cell. */
   face(n, down) {
     const i = down ? backCell('arcana') : n, key = down ? `back:${i}` : n; if (this.faces.has(key)) return this.copy(this.faces.get(key));
-    const A = bazaarAtlas(), foot = i >= CARD.foot, c = make('canvas'); c.width = CARD.w; c.height = CARD.h;
-    c.getContext('2d').drawImage(A.canvas, foot ? (i - CARD.foot) * CARD.w : (i % CARD.cols) * CARD.w, foot ? CARD.footY : Math.floor(i / CARD.cols) * CARD.h, CARD.w, CARD.h, 0, 0, CARD.w, CARD.h);
-    if (!this.releasing) { this.releasing = true; setTimeout(() => { this.releasing = false; A.release(); }, 0); } // (the atlas's canvas let go again once this turn's faces are cut: render/bakedcanvas.js)
+    const c = cardFace(i); // (painted alone at the cell's full size: the atlas itself is drawn at half, vfx/bazaarfaces.js, and was painted whole to crop one)
     this.faces.set(key, c); return this.copy(c);
   }
   copy(src) { const c = make('canvas'); c.width = src.width; c.height = src.height; c.getContext('2d').drawImage(src, 0, 0); return c; }

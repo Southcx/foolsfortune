@@ -41,6 +41,7 @@
 //   (picture: one of blackfigure.js's ids, 'drink' .. 'hush'; left out, the word's own from PICTURES; unknown, the meander)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { bakedCanvasTexture } from '../render/bakedcanvas.js';
 import { runeStrokes } from '../tools/veritome/mind/runes.js';
 import { WARE, PICTURES, paintPicture, paintMeander, paintFrieze, paintTongues, paintPalmette, paintRosette } from './blackfigure.js';
 
@@ -64,6 +65,13 @@ function noise3(x, y, z) {
 }
 const linear = (hex) => { const c = new THREE.Color(hex); return `vec3(${c.r.toFixed(4)}, ${c.g.toFixed(4)}, ${c.b.toFixed(4)})`; };
 function canvasTexture(c, repeat = false) { const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; if (repeat) t.wrapS = t.wrapT = THREE.RepeatWrapping; return t; }
+/** A canvas painted once, as a baked canvas at half its pixels (the resolution pass, 2026-10-25, docs/plans/art/texture-budget.md), its
+ *  painter's canvas drawn in at its full size's units and let go (render/bakedcanvas.js). */
+function halfTexture(paint, w, h, repeat = false) {
+  const t = bakedCanvasTexture((g) => g.drawImage(paint(), 0, 0, w, h), w, h, { scale: 0.5 });
+  t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; if (repeat) t.wrapS = t.wrapT = THREE.RepeatWrapping;
+  return t;
+}
 function sheet(w, h) { const c = document.createElement('canvas'); c.width = w; c.height = h; return c; }
 
 // ---- the potsherd's face: a piece of a painted pot, its zones bent to the pot's curve and turned as it broke; the graffito; the wear
@@ -303,13 +311,18 @@ function sandstoneTile() {
   return (TILE = c);
 }
 let BODY = null;
-function steleBody() { if (!BODY) { const t = canvasTexture(sandstoneTile(), true); BODY = { tex: t, mat: new THREE.MeshStandardMaterial({ name: 'stele-sandstone', map: t, roughness: 0.95 }) }; BODY.mat.userData.shared = true; } return BODY.mat; } // (shared: a parent that disposes what it holds, as the bowl does, leaves it)
+function steleBody() { if (!BODY) { const t = halfTexture(() => sandstoneTile(), FW, FH / 2, true); BODY = { tex: t, mat: new THREE.MeshStandardMaterial({ name: 'stele-sandstone', map: t, roughness: 0.95 }) }; BODY.mat.userData.shared = true; } return BODY.mat; } // (its tile at 400 texels a metre, was 800: the resolution pass; shared: a parent that disposes what it holds, as the bowl does, leaves it)
 
 // ---- the stele's sandstone laid as a wall: the town's isodomic ashlar (courses of one height, each block cut from the stone at its own
 // place, its arrises worn, sand in the joints), or the plain stone for a monolith; a box takes it at one density, its UVs in metres
 // along the axis each face looks down (layStone)
 const AW = 2.4, AH = 2.1, APX = 400; // (the ashlar's tile in metres, three courses of 0.7 m; texels a metre)
 let ASHLAR = null;
+/** The ashlar as a baked canvas at half its texels (200 a metre, the resolution pass, 2026-10-25: at the 480-line present a wall a
+ *  stride away shows about 160 lines a metre), drawn in its full size's units so its joints keep their width; the drawn tile let go. */
+function ashlarTexture() {
+  return halfTexture(() => { const c = ashlarTile(); ASHLAR = null; return c; }, AW * APX, AH * APX, true);
+}
 function ashlarTile() {
   if (ASHLAR) return ASHLAR;
   const W = AW * APX, H = AH * APX, c = sheet(W, H), g = c.getContext('2d'), rnd = seeded('ashlar'), T = sandstoneTile();
@@ -348,7 +361,7 @@ const STONES = {};
  *  tile of metres; a box laid in it takes its UVs in metres from `layStone`. Shared, one per kind. */
 export function sandstoneMaterial({ ashlar = false } = {}) {
   const key = ashlar ? 'ashlar' : 'plain'; if (STONES[key]) return STONES[key];
-  const tex = ashlar ? canvasTexture(ashlarTile(), true) : (steleBody(), BODY.tex.clone()); // (the plain stone is the stele's own picture: a clone shares its upload)
+  const tex = ashlar ? ashlarTexture() : (steleBody(), BODY.tex.clone()); // (the plain stone is the stele's own picture: a clone shares its upload)
   tex.repeat.set(1 / (ashlar ? AW : TW), 1 / (ashlar ? AH : TH));
   const m = new THREE.MeshStandardMaterial({ name: `sandstone-${key}`, map: tex, roughness: 0.95 });
   m.userData.shared = true;
@@ -461,7 +474,8 @@ export class Stele {
   constructor({ words = [] } = {}) {
     this.group = new THREE.Group(); this.group.name = 'stele';
     this.slab = new THREE.Group(); this.group.add(this.slab);
-    this.faceTex = canvasTexture(paintStele(words.map((w) => (Array.isArray(w) ? w.map((x) => String(x).toUpperCase()) : String(w).toUpperCase()))));
+    const lines = words.map((w) => (Array.isArray(w) ? w.map((x) => String(x).toUpperCase()) : String(w).toUpperCase()));
+    this.faceTex = halfTexture(() => paintStele(lines), FW, FH); // (320 x 560 for a face 0.8 x 1.4 m: still above the lines it covers read up close)
     this.faceMat = new THREE.MeshStandardMaterial({ name: 'stele-face', map: this.faceTex, roughness: 0.93 });
     const body = steleBody();
     this.mesh = new THREE.Mesh(steleGeometry(), [body, body, body, body, this.faceMat, body]);

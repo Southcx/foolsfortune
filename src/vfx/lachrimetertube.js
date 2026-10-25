@@ -57,6 +57,9 @@ const CP = { x: -1.6, len: 0.98 }; // (the cube plate's window on the plinth's f
 const BORE = 0.124; // (the bore's Lachryma)
 // how it stands on the 480-line frame: 32 lines a unit (192 lines tall at most), the mock's eye (a three-quarter turn, a little above)
 const SKIN = { w: 544, h: 1024, plate: [0, 0, 288, 1024], glaze: [288, 0, 256, 256], brass: [288, 256, 128, 128] }; // (the still body's atlas: tex px)
+// (the still body's atlas drawn at SKIN_K of its tex px (the resolution pass, 2026-10-25): its plate's 1024 rows cover about 120 lines,
+// so 512 still oversample them twice, and with no mipmaps half the texels minify with less crawl; the instruments' env copy's width)
+const SKIN_K = 0.5, ENV_W = 256;
 const LINES = 32, YAW = 0.42, PITCH = 0.08, GAP = 6; // (lines to the frame's bottom edge)
 const CLEAR = 18, WIDE = 3.5; // (CSS px from the right edge: the corner, as the HUD's own margin; the tube's width in its units, the cube plate and the Bottles' rack included: the psygun's cylinder steps left by it)
 const RIGHT = 1.1, FOOT = 1.3, HEIGHT = 5.9; // (units: the plinth's right corner as turned, the plinth's foot below the bulb, the whole height)
@@ -169,7 +172,10 @@ export function overlayStd(env, o = {}, phys = false) {
   const m = new THREE.MeshPhysicalMaterial({ ...base, ...o, side: THREE.FrontSide }); if (!(m.clearcoat > 0)) m.clearcoat = 1e-4; return m;
 }
 /** An equirect canvas as an instrument's environment (PMREM'd; 512 px wide, so every instrument's env map is the same size). */
-export function overlayEnv(renderer, c) {
+export function overlayEnv(renderer, src) {
+  // (filtered from a 256-wide copy, whatever it is drawn at: a 64 face, 0.7 MB of half floats where the 512-wide's 128 was 1.5; the
+  // instruments are 150 to 190 lines tall and their metal blurs it anyway. The resolution pass, 2026-10-25)
+  const c = cv(ENV_W, ENV_W / 2); c.getContext('2d').drawImage(src, 0, 0, c.width, c.height);
   const t = new THREE.CanvasTexture(c); t.mapping = THREE.EquirectangularReflectionMapping; t.colorSpace = THREE.SRGBColorSpace;
   const pm = new THREE.PMREMGenerator(renderer), e = pm.fromEquirectangular(t).texture; pm.dispose(); t.dispose(); return e;
 }
@@ -288,7 +294,7 @@ export class LachrimeterTube {
     // the brass, the plinth's glaze and the scale plate on one atlas (and their roughness and metalness on a small one beside it), so the
     // instrument's still body is one mesh: one draw. The plate's region 288 x 1024, the glaze's 256 square, the brass's 128.
     this.glazeC = cv(256, 256); this.brassC = mottle(cv(128, 128), '#a37c34', [['#c9a253', 0.5], ['#3f8a74', 0.45], ['#5b4218', 0.4]], 50);
-    this.plateC = cv(288, 1024); drawPlate(this.plateC); this.skinC = cv(SKIN.w, SKIN.h); this.skinT = tex(this.skinC);
+    this.plateC = cv(288, 1024); drawPlate(this.plateC); this.skinC = cv(SKIN.w * SKIN_K, SKIN.h * SKIN_K); this.skinT = tex(this.skinC);
     { const o = cv(SKIN.w / 8, SKIN.h / 8), x = o.getContext('2d'); // (roughness in green, metalness in blue, a region each: MeshStandardMaterial's channels)
       for (const [k, r, m] of [['plate', 0.22, 0], ['glaze', 0.32, 0.05], ['brass', 0.38, 0.85]]) { const [x0, y0, w, h] = SKIN[k]; x.fillStyle = `rgb(255,${Math.round(r * 255)},${Math.round(m * 255)})`; x.fillRect(x0 / 8, y0 / 8, w / 8, h / 8); }
       this.ormC = o; this.ormT = new THREE.CanvasTexture(o); this.ormT.magFilter = this.ormT.minFilter = THREE.NearestFilter; this.ormT.generateMipmaps = false; }
@@ -523,7 +529,7 @@ export class LachrimeterTube {
   }
 
   /** The atlas drawn again from its three canvases (at build, a change of window colour, the fonts in). */
-  skin() { if (!this.skinC) return; const x = this.skinC.getContext('2d'); for (const [k, c] of [['plate', this.plateC], ['glaze', this.glazeC], ['brass', this.brassC]]) { const [x0, y0, w, h] = SKIN[k]; x.drawImage(c, x0, y0, w, h); } this.skinT.needsUpdate = true; }
+  skin() { if (!this.skinC) return; const x = this.skinC.getContext('2d'); for (const [k, c] of [['plate', this.plateC], ['glaze', this.glazeC], ['brass', this.brassC]]) { const [x0, y0, w, h] = SKIN[k]; x.drawImage(c, x0 * SKIN_K, y0 * SKIN_K, w * SKIN_K, h * SKIN_K); } this.skinT.needsUpdate = true; }
 
   /** The plinth's glaze in the window colour (ui/theme.js): its top as the base, its frame's light and dark mottled through. */
   glazeTheme() {
