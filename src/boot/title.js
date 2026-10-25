@@ -60,16 +60,25 @@ export async function bootTitle(game, made) {
   });
   // (a choice of the other mode reloads the page to put its save in place; the reload goes straight on into that mode, not through the
   // title again: on a phone the title twice was the boot twice, the owner's iPhone, v273)
+  const watch = (at) => { try { window.__bootWatch?.moment?.(at); } catch { /* the page's own note */ } }; // (index.html's boot watch: the moment a killed tab was at)
   function choose(mode, resumed = false) {
+    if (mode !== save.mode && save.switchFresh(mode) && game.cloud) game.cloud.mode = mode; // (nothing to swap: taken up in place, the cloud's doc the new mode's)
     if (mode !== save.mode) { save.flush({ all: true }); save.stash('mode', mode); save.stash('titleChoice', mode); location.reload(); return; } // (the other mode's save: put in place at boot, before anything reads it)
     title.mode = mode; // (what DEBUG lends is the lend panel's: progress/lend.js; STORY lends nothing)
     if (mode === 'debug') game.pneuka.debugKit(); // (and the whole kit in the box: pneuka/box.js)
     game.mode = mode;
     game.iconWarm?.warmAll(); // (the Box's pictures made here, behind the title, not at its first opening: boot/iconwarm.js)
-    const go = () => { input.requestLock(); if (resumed) endTitle(); else titleScene.dive(() => endTitle()); };
-    if (!game.cradles.mine) { game.sealPicker.open(go); return; } // (your seal, carved once: ui/sealpicker.js, HANKO.md 5)
+    const go = () => { input.requestLock(); watch('the dive into the world'); const into = () => { endTitle(); window.__bootWatch?.stage?.('first frame'); }; if (resumed) into(); else titleScene.dive(into); };
+    if (!game.cradles.mine) { // (your seal, carved once: ui/sealpicker.js, HANKO.md 5)
+      game.sealPicker.open(go); watch('the seal carving');
+      const f = document.getElementById('sealpicker-name'); // (the phone's field: where a tab killed by iOS was, the next load says)
+      f?.addEventListener('focus', () => watch('the seal carving, typing a name'));
+      f?.addEventListener('blur', () => watch('the seal carving, the keyboard put away'));
+      return;
+    }
     go(); // (the lock within the click or the key: a browser only grants it to a gesture)
   }
+  { const t = setInterval(() => { if (!window.__ready) return; clearInterval(t); if (title.active) watch('the title'); }, 250); } // (after boot's own 'ready')
   const resumed = save.unstash('titleChoice');
   if (resumed && resumed === save.mode && !replays.pending) { const wait = setInterval(() => { if (!window.__ready) return; clearInterval(wait); if (title.active) choose(resumed, true); }, 100); } // (once the boot is done: main.js sets __ready)
   titleScene.onMenu = () => title.ui.showMenu();

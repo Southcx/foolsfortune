@@ -3929,3 +3929,16 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   The heaviest cues on a phone now 20 to 39% of real time (from 31 to 58% at the desk's rate before).
 - **Rule:** NEW:audio-amps-standing
 - **Rule:** NEW:audio-graph-let-go
+
+### 2026-10-25 · The page reloaded at "Done" on the seal's keyboard (the owner's iPhone XR, v281; fixed in part by Petra)
+- **Seen:** title, DEBUG, the seal carving; a name typed and "Done" tapped on the iOS keyboard; the whole page loaded again.
+- **Cause, as measured:** no code reloads there (the field is in no form; Enter only blurs it; the one `location.reload` is the title's
+  mode switch). Emulated (iPhone XR landscape) the same steps keep the page. What a real iPhone adds is the keyboard going away: a storm
+  of resizes, each a new drawing buffer and the glow's targets, in a tab already booted twice (picking the other mode reloaded the page,
+  and on a new build the stored mode is often the other one). A page out of memory on iOS is reloaded by Safari. Not reproduced on the
+  device: the measure is the next report.
+- **Fix:** the mode switch is made in place when there is nothing to swap (core/save.js `switchFresh`: no progress stored, the other
+  mode's shelf empty; a new build wipes both), so the first pick of DEBUG no longer boots the game twice; the render size waits 150 real
+  ms after the last resize (render/present.js); the boot watch names the moment a killed tab was at after boot (`moment`: the title, the
+  seal carving, typing, the keyboard put away, the dive), said on the next load.
+- **Rule:** NEW:one-boot-a-tab

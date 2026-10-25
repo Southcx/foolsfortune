@@ -57,7 +57,8 @@ export class Presentation {
     this.mats = new WeakSet(); this.geos = new WeakMap();
     this.dynLines = null; // (dynamic resolution's lines, under the setting's: render/graphics.js)
     this.scanT = 0;
-    addEventListener('resize', () => this.apply());
+    let wait = 0; // (a phone's keyboard or bar sliding fires a storm of resizes, each a new drawing buffer and the glow's targets: one apply, 150 real ms after the last)
+    addEventListener('resize', () => { clearTimeout(wait); wait = setTimeout(() => this.apply(), 150); });
   }
 
   /** The render size, the upscale filter, the shadow map, and the shading of everything in the scene. */

@@ -113,7 +113,8 @@ export class CloudSave {
   }
   keepOther(o) { this.kept.other = { ...o, mode: this.mode, until: now() + CLOUD.keep * 1000 }; this.save.dirty('cloud'); }
 
-  attach(game) { this.game = game; for (const e of this.events.splice(0)) game.events?.emit('save.cloud', e); }
+  attach(game) { this.game = game; game.cloud = this; // (the Codex's SAVE shelf and the title's in-place switch read it)
+    for (const e of this.events.splice(0)) game.events?.emit('save.cloud', e); }
   /** Once a frame: the changed keys go up at most once a real minute. */
   update(dt) { if (this.state !== 'on' || this.waiting) return; if ((this.dirtyT += dt) >= CLOUD.every) { this.dirtyT = 0; this.upload(); } }
   /** The page is going (save.watchPage): what changed goes up now, as far as the page lets it. */

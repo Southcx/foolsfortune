@@ -899,3 +899,5 @@ NEW:audio-amps-standing. **A heavy processor (an amp, a clipper, a reverb) stand
     measure a cue's render against real time (an offline render) before adding a per-note chain.
 NEW:audio-graph-let-go. **A cue's graph is let go whole when it has faded.** Disconnect every node it built (an echo's feedback loop keeps
     the rest alive), and make shared buffers (a reverb's impulse) once.
+NEW:one-boot-a-tab. **A choice on the title never boots the game a second time in the same tab when nothing needs swapping.** A phone
+    holds one boot's memory at a time; reload only when there is stored progress to put away, and say where a killed tab was.

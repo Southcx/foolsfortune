@@ -12,7 +12,7 @@
     // memory and it is opened again, the box says where the last load stopped. A load that leaves the page (pagehide) forgets it. The
     // breadcrumb is a crash's note, not the game's state, and must be written before any module (the save among them) exists, so it is
     // kept here, never in the save. After `ready` errors are the game's own box's (main.js reportError).
-    //   window.__bootWatch.stage(name)   .fail(error)   .build   .stages [[name, ms]]   (main.js's mark() calls stage; its start's catch, fail)
+    //   window.__bootWatch.stage(name)   .moment(name) (after boot)   .fail(error)   .build   .stages [[name, ms]]   (main.js's mark() calls stage; its start's catch, fail)
     (function () {
       var KEY = 'ff.bootWatch', t0 = Date.now(), W = window.__bootWatch = { stages: [], done: false }, box = null, line = null;
       var stores = [];
@@ -34,7 +34,7 @@
         line.textContent = name + ' · ' + ((Date.now() - t0) / 1000).toFixed(1) + ' s';
       };
       if (last && last.stage && last.stage !== 'left') {
-        show('Last time, the game stopped while ' + (last.stage === 'playing' ? 'playing' : 'starting, at "' + last.stage + '"') + ', '
+        show('Last time, the game stopped ' + (last.stage === 'playing' ? 'while playing' : last.stage.indexOf('at:') === 0 ? 'at ' + last.stage.slice(3) : 'while starting, at "' + last.stage + '"') + ', '
           + (last.s || 0) + ' s in (' + (last.build || '?') + '). A phone does this when it runs out of memory; closing other apps and tabs may help.');
       }
       W.stage = function (name) {
@@ -42,6 +42,7 @@
         put({ stage: name === 'ready' || name === 'first frame' ? 'playing' : name, s: Math.round((Date.now() - t0) / 1000), build: W.build || '', ua: navigator.userAgent });
         if (name === 'ready') W.done = true;
       };
+      W.moment = function (name) { put({ stage: 'at:' + name, s: Math.round((Date.now() - t0) / 1000), build: W.build || '', ua: navigator.userAgent }); }; // (after boot: the title, the seal's field, the world's first frame; the note a killed tab leaves)
       W.show = show; // (the game's own lines in the same box: the GPU's count when the graphics are taken back, render/contextloss.js)
       W.stage('html');
       var said = {};

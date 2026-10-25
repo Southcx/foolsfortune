@@ -90,6 +90,19 @@ export class Save {
     this.mode = MODES.includes(mode) ? mode : cur;
     return !!was && was !== build; // (a first visit has nothing to clear, and is not told it was cleared)
   }
+  /** `mode` taken up here and now, with no reload, when there is nothing to swap: the progress in place empty and `mode`'s shelf empty
+   *  (a new build wipes both, so the title's first pick of the other mode): true if done. Anything kept on either side and it is false:
+   *  the caller reloads, as before (the owner's iPhone, 2026-10-25: the reload was a second boot in one tab, and the tab was lost). */
+  switchFresh(mode) {
+    if (!MODES.includes(mode) || mode === this.mode) return mode === this.mode;
+    const shelf = this.read(SHELF + mode);
+    if (shelf && Object.keys(shelf).length) return false;
+    for (const scope of ['player', 'world']) if (Object.keys(this.records[scope]?.sections || {}).length) return false; // (a boot's own defaults may be dirty; nothing of play is stored yet)
+    if (this.store) for (let i = 0; i < this.store.length; i++) { const k = this.store.key(i); if (k !== RECORD.player && k !== RECORD.world && ['player', 'world'].includes(scopeOfKey(k))) return false; }
+    this.write(MODE_KEY, mode); this.mode = mode;
+    return true;
+  }
+
   /** The progress stored now (player and world, records and adopted keys) put on `mode`'s shelf, and taken out of the way. */
   shelve(mode) {
     const keys = {};
