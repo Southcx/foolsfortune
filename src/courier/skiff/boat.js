@@ -185,7 +185,7 @@ export class Skiff {
       m.castShadow = true;
       m.receiveShadow = src.name === 'Skiff_Hull';
       m.frustumCulled = false; // (the summon starts the hull 1.3 m down and the recall flies the root 1.5 m up: never culled by its rest box)
-      // outlined but the cloth (as the old sail) and the Lachryma (as the Courier's own: character.js OUTLINED): the flare and the sigil are
+      // outlined but the cloth (as the old sail) and the Lachryma (as the Courier's own: courier/character/bodymaterials.js OUTLINED): the flare and the sigil are
       // opened by a bone scaled a thousandfold, and an inverted hull's offset is skinned with its bone (render/outline.js), so theirs would
       // open a thousandfold too (CASEBOOK, 2026-10-08)
       if (src.name === 'Skiff_Hull' || src.name === 'Skiff_Parts') addOutline(m);
