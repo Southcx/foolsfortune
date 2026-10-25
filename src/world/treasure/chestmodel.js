@@ -44,21 +44,21 @@ const SEALED = { wood: 0x2a1a16, band: 0xd8c8b8, trim: 0xf3e6d8, glow: 0xfff0e6 
 
 const rbox = (w, h, d, r = 0.02) => new RoundedBoxGeometry(w, h, d, 2, r);
 
-/** The bands of the prismatic chest: the hue runs round the spectrum, each band (its step in the vertex colour's red) behind the last. */
-function prismMaterial() {
-  const m = new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, vertexColors: true });
-  const hue = (m.userData.hue = { value: 0 });
-  m.onBeforeCompile = (sh) => {
-    sh.uniforms.uHue = hue;
-    sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', `#include <common>
-uniform float uHue;
-vec3 jHsl( float h, float s, float l ) { vec3 k = clamp( abs( mod( h * 6.0 + vec3( 0.0, 4.0, 2.0 ), 6.0 ) - 3.0 ) - 1.0, 0.0, 1.0 ); return l + s * ( k - 0.5 ) * ( 1.0 - abs( 2.0 * l - 1.0 ) ); }`)
-      .replace('#include <color_fragment>', `#include <color_fragment>
-diffuseColor.rgb = jHsl( fract( uHue + vColor.r ), 0.85, 0.6 ); // (as Color.setHSL did it, in the working (linear) space)`);
-  };
-  m.customProgramCacheKey = () => 'chest-prism';
-  return m;
+/** The bands of the prismatic chest: the hue runs round the spectrum, each band behind the last. A stock material (the bazaar hall's
+ *  program: basic, vertex colours, double-sided); each band's step is kept beside its vertex colours and the colours are written from
+ *  the hue on the CPU (prismTick: a dozen steps, a dozen setHSL a frame), not in a program of its own (the program audit, 2026-10-25). */
+function prismMaterial() { return new THREE.MeshBasicMaterial({ color: 0xffffff, side: THREE.DoubleSide, vertexColors: true }); }
+const _pc = new THREE.Color();
+/** Each band's colour from the hue: its step (kept in userData.prismK, carried through the merge in the colour's red) round the spectrum. */
+function prismTick(geos, hue) {
+  for (const g of geos) {
+    const col = g.attributes.color, K = (g.userData.prismK ||= Float32Array.from({ length: col.count }, (_, i) => col.getX(i))), cache = new Map();
+    for (let i = 0; i < col.count; i++) {
+      let c = cache.get(K[i]); if (!c) { _pc.setHSL((hue + K[i]) % 1, 0.85, 0.6); c = [_pc.r, _pc.g, _pc.b]; cache.set(K[i], c); }
+      col.setXYZ(i, c[0], c[1], c[2]);
+    }
+    col.needsUpdate = true;
+  }
 }
 
 export class ChestRig {
@@ -177,6 +177,7 @@ export class ChestRig {
     // the parts that never move against each other are baked into one mesh per look (render/merge.js): ~80 draws become ~20
     mergeStatic(this.body, { keep: new Set([this.keyhole, this.floorGlow]) });
     mergeStatic(this.lid);
+    if (this.prismMat) { this.prismGeos = []; this.root.traverse((o) => { if (o.isMesh && o.material === this.prismMat) this.prismGeos.push(o.geometry); }); prismTick(this.prismGeos, this.hue); }
     // (the lights that are out most of the time: three.js draws a transparent mesh at opacity 0 all the same, so they are switched off
     // while they are dark, ten-odd draws a chest)
     const dim = new Set([this.seamMat, this.floorGlow.material, this.pool.material, this.halo.material]);
@@ -270,7 +271,7 @@ export class ChestRig {
     if (this.prismMat) {
       this.hue = (this.hue + dt * 0.06) % 1;
       this.prism.forEach((m, i) => m.color.setHSL((this.hue + i * 0.09) % 1, 0.85, 0.6));
-      if (this.prismMat) this.prismMat.userData.hue.value = this.hue;
+      prismTick(this.prismGeos, this.hue);
       this.halo.material.color.setHSL((this.hue + 0.3) % 1, 0.8, 0.6);
       if (this.oil) this.oil.uni.uHue.value = this.hue;
     }
