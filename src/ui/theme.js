@@ -116,7 +116,7 @@ ${tap('#overlay .card')} { padding: 14px 14px 0; max-height: calc(100% - 96px); 
 ${tap('#overlay .logo small')} { display: none; }
 ${tap('#overlay .logo b')} { font-size: 34px; }
 ${T}.hud-portrait #overlay .card { max-height: calc(100% - 150px); }
-${T}.hud-landscape #overlay .logo { display: none; } /* (on its side the title would sit on the top bar: the pause is its pages, under the bar) */
+${T}.hud-landscape #overlay .logo, ${T}.hud-portrait #overlay .logo { display: none; } /* (either way up the title would sit on the top bar's icons: the pause is its pages, under the bar; Petra's yes, 2026-10-24) */
 ${T}.hud-landscape #overlay { padding-top: calc(var(--safe-t, 0px) + 56px); justify-content: flex-start; }
 ${T}.hud-landscape #overlay .card { max-height: calc(100% - 8px); }
 ${tap('#help')} { min-height: 0; flex-direction: column; }

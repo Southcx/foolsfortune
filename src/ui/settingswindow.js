@@ -8,21 +8,25 @@
 //   a switch   a clay toggle, its pip slid to the gold end when on
 //   an action  a button; a tap asks the row's confirm in place (its words, YES and NO), and runs only on YES; dimmed where it cannot
 //              run yet (the layout's reset waits on the layout editor: `settings.available`)
+//   the touch layout   the window's own row on touch (above the settings' rows): EDIT opens the touch layout editor in its place
+//              (ui/touchlayouteditor.js); the window stays open under it (the game held as for any window) and comes back when it closes
 // What a setting does is the settings' own (game.settings.set); this window only draws and asks. No stock control: the range input,
 // the select and the checkbox are all drawn here.
 //
 // Prior art: Celeste's and Hades' options pages (a label, a line, the control, nothing else), Apple's settings rows (a footnote line
 // under each), the house's goals window and turn card for the dress (ui/goalswindow.js, ui/turncard.js).
 //
-//   game.settingsWindow = new SettingsWindow(game)   .open()   .close()   .toggle()   .isOpen   SETTINGS_WINDOW
+//   game.settingsWindow = new SettingsWindow(game)   .open()   .close()   .toggle()   .isOpen   .editLayout()   SETTINGS_WINDOW
 // ---------------------------------------------------------------------------------------
 import { brineFrame, GOLD, COUNT_FACE } from './brineframe.js';
 import { clayDress } from './goalswindow.js';
 import { FONT } from './theme.js';
 import { sfx } from '../audio/sfx.js';
+import { TouchLayoutEditor } from './touchlayouteditor.js';
 
 /** The window's numbers: CSS px a frame dot, its width at most, a target's least height, the type's least size. */
-export const SETTINGS_WINDOW = { d: 2, w: 520, target: 44, type: 14, title: 'SETTINGS' };
+export const SETTINGS_WINDOW = { d: 2, w: 520, target: 44, type: 14, title: 'SETTINGS',
+  layout: { label: 'Touch layout', line: 'Move the buttons and the stick, and size the buttons.', edit: 'EDIT' } }; // (the layout row's words: placeholders, Espada's)
 
 const T = SETTINGS_WINDOW;
 const CSS = `
@@ -68,7 +72,14 @@ const make = (tag, cls, text) => { const e = document.createElement(tag); if (cl
 const fmt = (r, v) => (r.max <= 3 ? (+v).toFixed(2) : String(Math.round(v)));
 
 export class SettingsWindow {
-  constructor(game) { this.game = game; this.root = null; this.isOpen = false; this.onKey = (e) => { if (this.isOpen && e.code === 'Escape') { e.preventDefault(); e.stopPropagation(); this.close(); } }; }
+  constructor(game) {
+    this.game = game; this.root = null; this.isOpen = false;
+    this.onKey = (e) => {
+      if (!this.isOpen || e.code !== 'Escape') return;
+      e.preventDefault(); e.stopPropagation();
+      const E = this.game.touchLayoutEditor; if (E?.isOpen) E.close(false); else this.close(); // (Escape leaves the editor first: nothing kept)
+    };
+  }
 
   build() {
     if (this.root || typeof document === 'undefined') return;
@@ -89,6 +100,11 @@ export class SettingsWindow {
   /** The rows drawn again from the settings as they stand. */
   draw() {
     const S = this.game.settings; this.rows.textContent = '';
+    if (this.game.hudLayout?.touch) { // (the touch layout editor: only where there is a touch layout to edit)
+      const W = T.layout, row = make('div', 'sw-row'), label = make('div', 'sw-label'), box = make('div', 'sw-ask'), b = make('div', 'sw-btn', W.edit);
+      label.append(make('span', null, W.label)); b.dataset.layoutEdit = ''; b.onclick = () => this.editLayout(); box.append(b);
+      row.append(label, make('div', 'sw-line', W.line), box); this.rows.append(row);
+    }
     if (!S) { this.rows.append(make('div', 'sw-line', 'No settings here.')); return; }
     for (const r of S.rows) {
       const row = make('div', 'sw-row'), label = make('div', 'sw-label'), name = make('span', null, r.label);
@@ -154,8 +170,18 @@ export class SettingsWindow {
     document.exitPointerLock?.();
     sfx.menuOpen?.();
   }
+  /** The touch layout editor opened in the window's place; the window back when it closes. */
+  editLayout() {
+    const E = (this.game.touchLayoutEditor ||= new TouchLayoutEditor(this.game));
+    if (!this.root) return false;
+    this.root.hidden = true;
+    const ok = E.open(() => { if (this.isOpen) { this.root.hidden = false; this.draw(); } });
+    if (!ok) this.root.hidden = false;
+    return ok;
+  }
   close() {
     if (!this.isOpen) return;
+    if (this.game.touchLayoutEditor?.isOpen) this.game.touchLayoutEditor.close(false);
     this.isOpen = false; this.root.hidden = true;
     removeEventListener('keydown', this.onKey, true);
     sfx.menuBack?.();

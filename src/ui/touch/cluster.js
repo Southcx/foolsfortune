@@ -13,6 +13,8 @@
 //              while the sail luffs; BOOST stands the banked suns (`combo.stocks`, 0..3); a held tile is lit.
 //   USE        its thing's label (the source's own `label` if it gives one, else the plain word for what F does there: TALK, CHEST,
 //              SHED, a spirit's name), USE small in its corner; a thing with no label is USE alone (MOBILE.md 8.3).
+//   KEPT       a layout kept by the touch layout editor (hudlayout.js `custom`): each slot at its kept centre, the tiles scaled by its
+//              scale (never under 44 px), clamped off the corner instruments and each other (hudlayout.js clampRect).
 // Hidden off touch, under a window, and with no context.
 //
 // Prior art: Mario Kart Tour's and Alto's one-thumb clusters, Genshin Impact's (an attack button with the skill and burst round it),
@@ -66,6 +68,23 @@ export function clusterContext(game) {
 }
 const entryOf = (e) => (typeof e === 'string' ? { id: e } : e);
 
+/** The four slots' default places in the cluster's area `A` (each [x, y, size], CSS px), stepped off `avoid` (the art bar, the god
+ *  hand's strip) while it stands. The touch layout editor starts from these too (ui/touchlayouteditor.js). */
+export function defaultSpots(A, avoid = null) {
+  const G = CLUSTER.gap, M = CLUSTER.margin, V = avoid;
+  let right = A.x + A.w - M, bottom = A.y + A.h - M - TILE.foot;
+  if (V) { if (V.portrait) bottom = Math.min(bottom, V.y - CLUSTER.clear); else right = Math.min(right, V.x - CLUSTER.clear); }
+  const mainS = TILE.main, s = TILE.size, mx = right - mainS, my = bottom - mainS;
+  return [
+    [mx, my, mainS],
+    [mx + (mainS - s) / 2 + 4, my - G - s - TILE.foot, s],
+    [mx - G - s, my + (mainS - s) - 2, s],
+    [mx - G / 2 - s, my - G / 2 - s - TILE.foot, s], // (up and to the left, clear of the main's corner and of its two neighbours)
+  ];
+}
+
+const screenTaken = (g) => g.touch?.screenTaken?.(); // (true while the rhythm mode's pads or Celestial mode's paper hold the whole screen: Petra's core/touch)
+
 export class TouchCluster {
   constructor(game) {
     this.game = game; this.auto = true; this.ids = []; this.tiles = new Map(); this.shown = false;
@@ -96,29 +115,27 @@ export class TouchCluster {
 
   /** Lay the shown tiles out in the cluster's area (the main in its corner, the others round it). */
   layout() {
-    const A = placeOf(this.game).areas.cluster, G = CLUSTER.gap, M = CLUSTER.margin;
-    let right = A.x + A.w - M, bottom = A.y + A.h - M - TILE.foot;
-    const V = this.avoid; // (the art bar and its side strip, while they stand: the cluster steps off them)
-    if (V) { if (V.portrait) bottom = Math.min(bottom, V.y - CLUSTER.clear); else right = Math.min(right, V.x - CLUSTER.clear); }
-    const mainS = TILE.main, s = TILE.size;
-    const mx = right - mainS, my = bottom - mainS;
-    const spots = [
-      [mx, my, mainS],
-      [mx + (mainS - s) / 2 + 4, my - G - s - TILE.foot, s],
-      [mx - G - s, my + (mainS - s) - 2, s],
-      [mx - G / 2 - s, my - G / 2 - s - TILE.foot, s], // (up and to the left, clear of the main's corner and of its two neighbours)
-    ];
+    const spots = defaultSpots(placeOf(this.game).areas.cluster, this.avoid);
+    const L = this.game.hudLayout, C = L?.touch ? L.custom : null, k = C ? L.clusterScale(C) : 1, placed = [];
+    const V = this.avoid, keepOff = V ? [V] : [];
     this.ids.forEach((id, i) => {
-      const t = this.tile(id), [x, y, size] = spots[i], w = t.widthFor(size);
-      t.place(x + size - w, y, size, w); // (a wide one keeps its right edge)
+      const t = this.tile(id), [sx, sy, s0] = spots[i];
+      if (C) { // (the kept layout: the slot's centre, its size scaled, clamped off the instruments and the tiles placed before it)
+        const size = Math.max(TILE.min, Math.round(s0 * k)), w = t.widthFor(size), c = C.slots?.[i] ? L.fromFrac(C.slots[i]) : { x: sx + s0 / 2, y: sy + s0 / 2 };
+        const q = L.clampRect({ x: c.x - w / 2, y: c.y - (size + TILE.foot) / 2, w, h: size + TILE.foot }, [...keepOff, ...placed]);
+        t.place(q.x, q.y, size, w); placed.push(q);
+      } else { const w = t.widthFor(s0); t.place(sx + s0 - w, sy, s0, w); } // (a wide one keeps its right edge)
       t.set({ hidden: !this.shown });
     });
   }
 
   /** Each frame: read the moment (while auto), stand down under a window or off touch, and put each tile's state on it. */
   update(now, on) {
-    const g = this.game, show = !!on && !windowOpen(g);
-    if (this.auto) this.set(show ? clusterContext(g) : []);
+    // (the screen taken, Petra's ruling 2026-10-24: the rhythm mode's pads take every touch, so the cluster stands down; Celestial mode's
+    //  paper lives only while AIM is held, so AIM alone stays: core/touchlanes.js, core/touchtools.js)
+    const taken = !!screenTaken(this.game), pads = taken && !!this.game.rhythm?.active;
+    const g = this.game, show = !!on && !windowOpen(g) && !pads;
+    if (this.auto) this.set(show ? (taken ? (clusterContext(g) || []).filter((e) => (e?.id ?? e) === 'aim') : clusterContext(g)) : []);
     if (show !== this.shown) { this.shown = show; for (const id of this.ids) this.tile(id).set({ hidden: !show }); }
     if (!show) return;
     const T = g.player?.techs?.get?.('skiff') || g.techs?.get?.('skiff');
