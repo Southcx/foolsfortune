@@ -17,9 +17,11 @@
 // (vfx/racewaysandfall.js: one copy under the world for main.js's compile, kept, never disposed).
 //
 //   game.seaLooks = new SeaLooks(game)   const park = game.seaLooks.prewarm() (before the compile)   park() (after the prime draw)
-//   game.seaLooks.update(dt)   (each frame: dresses the islets once, the first frame the open sea's things exist)
+//   game.seaLooks.update(dt)   (each frame: dresses the islets the first frame a new set of the open sea's things exists)
+//   game.seaLooks.teardown(game)   (areas stage 2, render/areas.js; called by opensea.teardown: the looks' meshes and geometry let go, the
+//   fixed body and its colliders removed; the materials kept, so a build again compiles nothing; safe twice)
 //   isletMaterial() (the islet program: every copy one program, its key "isletlook"; the puzzles and the Egregores draw with it too)
-//   .dressed   .tris { kit: [n, ...] }   isletLook({ kit, rad, id, away? }) -> { geo, colliders, shallows?, tris } (one islet, off-scene)
+//   .dressed (the props object dressed, or null)   .tris { kit: [n, ...] }   isletLook({ kit, rad, id, away? }) -> { geo, colliders, shallows?, tris } (one islet, off-scene)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../../core/physics.js';
@@ -75,7 +77,7 @@ export function isletLook({ kit, rad, id, away = null }) {
 
 export class SeaLooks {
   constructor(game) {
-    this.game = game; this.dressed = false; this.tris = {}; this.looks = [];
+    this.game = game; this.dressed = null; this.tris = {}; this.looks = []; this.body = null;
     this.mat = isletMaterial(); this.wet = shallowsMaterial();
   }
 
@@ -89,13 +91,23 @@ export class SeaLooks {
   }
 
   update() {
-    if (this.dressed) return;
-    const P = this.game.opensea?.props; if (!P) return;
-    this.dress(P); this.dressed = true;
+    const P = this.game.opensea?.props;
+    if (!P || this.dressed === P) return;
+    if (this.dressed) this.teardown(this.game); // (the room was built again: a new set of things)
+    this.dress(P); this.dressed = P;
+  }
+
+  /** The looks taken down: meshes out of the scene, their geometry let go, the fixed body and its colliders removed. The secrets'
+   *  meshes are the room's (its teardown lets them go). */
+  teardown(game = this.game) {
+    for (const m of this.looks) { game.scene.remove(m); m.geometry.dispose(); }
+    this.looks.length = 0; this.tris = {};
+    if (this.body) { game.physics?.world?.removeRigidBody(this.body); this.body = null; }
+    this.dressed = null;
   }
 
   dress(P) {
-    const g = this.game, W = g.physics?.world, body = W?.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(0, 0, 0));
+    const g = this.game, W = g.physics?.world, body = this.body = W?.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(0, 0, 0)) || null;
     const add = (mesh) => { mesh.userData.zone = 'opensea'; g.scene.add(mesh); this.looks.push(mesh); return mesh; };
     for (const isl of P.islets) {
       const mark = P.marks.find((m) => m.feature === isl.feature); if (mark) mark.mesh.visible = false;
