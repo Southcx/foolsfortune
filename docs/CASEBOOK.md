@@ -895,3 +895,7 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 302. **The warm-up dresses a look with the function play dresses it with.** A prewarm that copies
     the rule (the main part only, a material dressed later on first show) misses what play adds; call the same dressing function, and
     show a look that is first dressed on its first frame (the palm die) dressed, 50 m down, for the compile.
+NEW:audio-amps-standing. **A heavy processor (an amp, a clipper, a reverb) stands for the band's life, not a note's.** Notes play into it;
+    measure a cue's render against real time (an offline render) before adding a per-note chain.
+NEW:audio-graph-let-go. **A cue's graph is let go whole when it has faded.** Disconnect every node it built (an echo's feedback loop keeps
+    the rest alive), and make shared buffers (a reverb's impulse) once.

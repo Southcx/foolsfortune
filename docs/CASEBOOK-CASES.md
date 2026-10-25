@@ -3911,3 +3911,21 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the bar wraps (CLOSE on the second row, at x 582 to 678 of 844); the controls line moved to the help's map row. The map is
   drawn again only when what it shows changes, and its canvas let go when it closes.
 - **Rule:** 305
+
+### 2026-10-25 · The music too heavy for a phone's audio thread (Wanda, from the owner's iPhone XR: "audio lagging")
+- **Seen:** the owner hears the audio lag on an iPhone XR; Petra could not measure the audio's memory headless.
+- **Cause (measured, Chromium offline renders on this container's CPU):** not memory (every sound is synthesised: three AudioBuffers,
+  1.9 MB: the effects' noise and two reverb impulses) but the audio thread's work. The overture took 128% of real time to render (it
+  could not keep up on this CPU); 63% of it was the rhythm guitar, which built a whole amp (a 2x oversampled clipper and seven filters)
+  for every chord on each side, 89 amps in 20 s. Typical cues took 10 to 35%, about 56 oscillators and buffer sources live at once,
+  175 gains and 110 filters made a second. Every cue's start also made a fresh 3.2 s stereo reverb impulse (1.1 MB and its FFT) and
+  left its old graph (its echo's feedback loop, its reverb) connected after the fade.
+- **Fix:** music/rock.js: one standing amp a side (muted or open), one lead amp, one bass drive, made once a band and played into by
+  every note (the overture 128% -> 47%). audio/core.js: a reverb impulse made once a length and shared; a cue's whole graph let go after
+  its fade (arranger.js, player.js). On a phone (`sfx.phone`: the platform, or `?phoneaudio=1`): the mixer at 32 kHz with a balanced
+  buffer, reverbs no longer than 1.2 s, at most 10 sounds begun in 250 ms, the heaviest instruments thinned (the rhythm guitar's saw
+  alone, strings two players a note, the hum two voices, the supersaw three, the piano four partials on one string, the sitar its saw
+  without sympathetic strings, the phase guitar dry, the crackle half its pops), and the arranger's notes made 0.45 to 1.0 s ahead.
+  The heaviest cues on a phone now 20 to 39% of real time (from 31 to 58% at the desk's rate before).
+- **Rule:** NEW:audio-amps-standing
+- **Rule:** NEW:audio-graph-let-go

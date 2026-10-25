@@ -41,15 +41,21 @@ export class RockBand {
     return pre;
   }
 
+  /** A side's standing amp and cabinet (palm-muted or open), made once a band and played into by every chug, as one amp is by one guitar
+   *  (an amp a chord was 63% of the overture's whole render: an amp is a 2x oversampled clipper and seven filters; casebook NEW:audio-amps-standing). */
+  rigAmp(pan, mute) {
+    return this.standing(`rig:${pan}:${mute ? 1 : 0}`, () => this.amp(this.out(this.bus.dry, mute ? 0.05 : 0.042, { verb: mute ? 0.05 : 0.18, pan }), { drive: mute ? 5 : 3.5, low: 100 }));
+  }
+  /** A node the rig keeps standing for the band's life (an amp, a bass's drive), made on first use by `make`. */
+  standing(key, make) { const A = (this.amps ||= {}); return A[key] || (A[key] = make()); }
   chug(t, dur, m, v = 0.5, { mute = false, fifth = true, pan = 0.75 } = {}) {
     const c = this.ctx, notes = [m, ...(fifth ? [m + 7, m + 12] : [])];
     const len = mute ? Math.min(dur, 0.16) : dur, rel = mute ? 0.06 : 0.25;
     for (const [side, cents, late] of [[-1, -4, 0], [1, 5, 0.007]]) {
       const s = t + late, g = c.createGain(), end = this.env(g, s, 0.004, v, len, rel);
-      const o = this.out(this.bus.dry, mute ? 0.05 : 0.042, { verb: mute ? 0.05 : 0.18, pan: side * pan });
       const tone = this.filt('lowpass', mute ? 650 : 3200, mute ? 1.1 : 0.6); // (the palm on the strings)
-      g.connect(tone).connect(this.amp(o, { drive: mute ? 5 : 3.5, low: 100 })); // (the bass guitar has the floor)
-      for (const n of notes) for (const [type, a] of [['sawtooth', 0.6], ['square', 0.25]]) {
+      g.connect(tone).connect(this.rigAmp(side * pan, mute)); // (into the side's standing amp: the bass guitar has the floor)
+      for (const n of notes) for (const [type, a] of this.phone ? [['sawtooth', 0.85]] : [['sawtooth', 0.6], ['square', 0.25]]) { // (a phone's mixer: the saw alone, half the voices)
         const og = c.createGain(); og.gain.value = a / notes.length; og.connect(g);
         this.osc(type, hz(n) * Math.pow(2, cents / 1200), s, end, og);
       }
@@ -58,8 +64,7 @@ export class RockBand {
 
   shred(t, dur, m, v = 0.5, { bend = 0, bendAt = 0.3, from = 0, vib = 0.03, pinch = false, dive = 0, pan = 0.12, verb = 0.45, echo = 0.32 } = {}) {
     const c = this.ctx, f = hz(m), g = c.createGain(), end = this.env(g, t, 0.005, v, dur, 0.22);
-    const o = this.out(this.bus.dry, 0.06, { verb, echo, pan });
-    g.connect(this.amp(o, { drive: 4, high: 6000, mid: 1600, low: 180 }));
+    g.connect(this.standing(`lead:${pan}:${verb}:${echo}`, () => this.amp(this.out(this.bus.dry, 0.06, { verb, echo, pan }), { drive: 4, high: 6000, mid: 1600, low: 180 }))); // (the lead's one amp)
     for (const [type, a, d] of [['sawtooth', 0.7, 1], ['square', 0.3, 1.003], ['sawtooth', 0.15, 2.002]]) {
       const og = c.createGain(); og.gain.value = a; og.connect(g);
       const x = this.osc(type, f * d * Math.pow(2, from / 12), t, end, og);
@@ -76,10 +81,10 @@ export class RockBand {
 
   pick(t, dur, m, v = 0.5, { pan = 0 } = {}) {
     const c = this.ctx, f = hz(m), g = c.createGain(), end = this.env(g, t, 0.004, v, dur * 0.9, 0.08);
-    const o = this.out(this.bus.pump, 0.065, { pan }), floor = this.filt('highpass', 38, 0.7); floor.connect(o); // (the drive saturates: the level is set here, not by the velocity)
+    const o = this.standing(`bass:${pan}`, () => this.out(this.bus.pump, 0.065, { pan })); // (the drive saturates: the level is set here, not by the velocity)
+    const drive = this.standing(`bassdrive:${pan}`, () => { const sh = c.createWaveShaper(), floor = this.filt('highpass', 38, 0.7); sh.curve = this.drive; sh.connect(floor).connect(o); return sh; });
     const lp = this.filt('lowpass', 1600, 1.2); lp.frequency.setValueAtTime(1600, t); lp.frequency.exponentialRampToValueAtTime(380, t + 0.25);
-    const sh = c.createWaveShaper(); sh.curve = this.drive;
-    g.connect(lp).connect(sh).connect(floor);
+    g.connect(lp).connect(drive);
     this.osc('sawtooth', f, t, end, g); this.osc('square', f * 1.002, t, end, g);
     const sg = c.createGain(); this.env(sg, t, 0.006, v * 0.3, Math.min(dur * 0.9, 0.18), 0.06); sg.connect(o); this.osc('sine', f, t, end, sg); // (the sub: the note's thump, not a drone)
     const kg = c.createGain(); kg.gain.setValueAtTime(v * 0.3, t); kg.gain.exponentialRampToValueAtTime(0.0001, t + 0.015); kg.connect(o);

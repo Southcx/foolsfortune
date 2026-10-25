@@ -151,7 +151,7 @@ export class Band {
     const c = this.ctx, g = c.createGain(), end = this.env(g, t, 0.02, v, dur, 0.25);
     const o = this.out(this.bus.pump, 0.03, { verb: 0.25 });
     const lp = this.filt('lowpass', cutoff, 0.6); g.connect(lp).connect(o);
-    for (const m of notes) for (const d of [-0.012, -0.005, 0, 0.006, 0.013]) {
+    for (const m of notes) for (const d of this.phone ? [-0.012, 0, 0.013] : [-0.012, -0.005, 0, 0.006, 0.013]) { // (a phone's mixer: three saws, not five)
       const p = c.createStereoPanner(); p.pan.value = d * 50; p.connect(g);
       this.osc('sawtooth', hz(m) * (1 + d), t, end, p);
     }
@@ -194,11 +194,11 @@ export class Band {
     const o = this.out(this.bus.dry, 0.34, { verb: 0.45, pan: pan || Math.max(-0.5, Math.min(0.5, (m - 60) / 50)) });
     const lp = this.filt('lowpass', Math.min(12000, 1800 + v * 7000 + f * 2)); lp.connect(o);
     const end = off + 0.25;
-    for (let n = 1; n <= 6; n++) {
+    for (let n = 1; n <= (this.phone ? 4 : 6); n++) { // (a phone's mixer: four partials, each one string)
       const fn = n * f * Math.sqrt(1 + B * n * n);
       if (fn > 14000) break;
       const a = Math.pow(n, -1.25) * (n === 1 ? 1 : 0.35 + v * 0.65), tau = T / (1 + (n - 1) * 0.7);
-      for (const d of [1, 1.0007]) {
+      for (const d of this.phone ? [1] : [1, 1.0007]) {
         const g = c.createGain(); g.connect(lp);
         g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(a * v * 0.5, t + 0.003);
         g.gain.setTargetAtTime(0.0001, t + 0.003, tau); g.gain.setTargetAtTime(0.0001, off, 0.06);
@@ -216,7 +216,7 @@ export class Band {
     const lp = this.filt('lowpass', bright, 0.5); g.connect(lp).connect(o);
     for (const n of notes) {
       const f = hz(n);
-      for (const [d, p] of [[0.996, -0.3], [1, 0], [1.005, 0.3]]) {
+      for (const [d, p] of this.phone ? [[0.996, -0.3], [1.005, 0.3]] : [[0.996, -0.3], [1, 0], [1.005, 0.3]]) { // (a phone's mixer: two players a note, not three)
         const pn = c.createStereoPanner(); pn.pan.value = p; pn.connect(g);
         const x = this.osc('sawtooth', f * d, t, end, pn);
         this.vib(x, t, f * d, 0.006, 5.3 + d, Math.min(0.4, dur * 0.3), end);
@@ -378,7 +378,7 @@ export class Band {
     const [a1, a2] = open ? [750, 1150] : [300, 870]; // ("aah" / "mm-oo")
     const f1 = this.filt('bandpass', a1, 3), f2 = this.filt('bandpass', a2, 5), g = c.createGain();
     this.env(g, t, attack, v, dur, 0.5); f1.connect(g); f2.connect(g); g.connect(o);
-    for (const m of [].concat(notes)) for (const det of [-9, 4, 11]) {
+    for (const m of [].concat(notes)) for (const det of this.phone ? [-9, 11] : [-9, 4, 11]) { // (a phone's mixer: two voices a note)
       const x = this.osc('sawtooth', hz(m), t, t + dur + 0.6, f1); x.connect(f2); x.detune.value = det;
       this.vib(x, t, hz(m), 0.006, 4.6 + det * 0.05, 0.4, t + dur + 0.6);
     }
