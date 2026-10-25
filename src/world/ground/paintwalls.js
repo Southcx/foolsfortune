@@ -30,9 +30,9 @@ export class PaintWalls {
     this.k = new Float32Array(A * A); this.asp = new Int8Array(A * A).fill(-1); this.kind = new Uint8Array(A * A); // (0 paint, 1 crude that keeps, 2 a slick)
     this.charts = []; this.hash = new Map(); this.live = new Set(); this.full = 0; this.demand = 0; this.pending = []; // (the wall area asked for, m²; the faces not yet packed)
     this.px = 0; this.py = 0; this.row = 0; // (the shelf packer: the cursor and the row's height)
-    this.colData = new Uint8Array(A * A * 4); this.hData = new Float32Array(A * A);
+    this.colData = new Uint8Array(A * A * 4); this.hData = new Uint16Array(A * A); // (half floats: a motif's code and its dryness fit in 11 bits; 2 MB, not R32F's 4: Calissa's measure)
     this.colTex = new THREE.DataTexture(this.colData, A, A, THREE.RGBAFormat); this.colTex.magFilter = this.colTex.minFilter = THREE.LinearFilter;
-    this.hTex = new THREE.DataTexture(this.hData, A, A, THREE.RedFormat, THREE.FloatType); this.hTex.magFilter = this.hTex.minFilter = THREE.NearestFilter;
+    this.hTex = new THREE.DataTexture(this.hData, A, A, THREE.RedFormat, THREE.HalfFloatType); this.hTex.magFilter = this.hTex.minFilter = THREE.NearestFilter;
     this.colTex.needsUpdate = this.hTex.needsUpdate = true;
     this.dirty = false; this.upT = 0;
   }
@@ -189,7 +189,7 @@ export class PaintWalls {
       if (this.asp[m] < 0) _c.setHex(FLAT); else _c.copy(COLORS[this.asp[m]]);
       const al = Math.min(1, kd === 1 ? Math.max(p, 0.6) : p);
       C[o] = Math.round(_c.r * al * 255); C[o + 1] = Math.round(_c.g * al * 255); C[o + 2] = Math.round(_c.b * al * 255); C[o + 3] = Math.round(al * 255);
-      Hh[m] = paintMotifCode(this.asp[m], kd, p);
+      Hh[m] = THREE.DataUtils.toHalfFloat(paintMotifCode(this.asp[m], kd, p));
     }
     this.wrote = [...this.live];
     this.colTex.needsUpdate = this.hTex.needsUpdate = true;

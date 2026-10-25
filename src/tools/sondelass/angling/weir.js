@@ -199,25 +199,26 @@ export class Weir {
 
   // ---- the tally board (on its stone on the north beach)
   buildBoard() {
-    const c = document.createElement('canvas'); c.width = 1400; c.height = 620;
+    const k = 0.5, c = document.createElement('canvas'); c.width = 1400 * k; c.height = 620 * k; // (drawn in 1400 x 620 units at half the pixels: 4.4 MB with mips at full, 1.1 at half, Calissa's measure; a quarter could not be read)
     const tex = new THREE.CanvasTexture(c);
     const m = new THREE.Mesh(new THREE.PlaneGeometry(12, 12 * 620 / 1400), new THREE.MeshBasicMaterial({ map: tex, transparent: true }));
     m.position.set(TALLY_AT[0], B + 3.2, TALLY_AT[2] + 0.07); m.rotation.y = Math.PI; // (on the tally's stone's water face, 3 cm proud of it: read from TALLY_AT, never its own numbers: the stone moved 10 m with the pond in R46 and the board stayed, the owner's R1)
     this.game.scene.add(m);
-    return { c, tex, v: -1, m };
+    return { c, tex, v: -1, m, k };
   }
 
   drawBoard() {
-    const L = this.game.ledger, b = this.board, g = b.c.getContext('2d');
-    g.clearRect(0, 0, b.c.width, b.c.height);
-    g.fillStyle = 'rgba(28,13,8,.86)'; g.fillRect(0, 0, b.c.width, b.c.height);
-    g.strokeStyle = '#ffb27a'; g.lineWidth = 5; g.strokeRect(8, 8, b.c.width - 16, b.c.height - 16);
+    const L = this.game.ledger, b = this.board, g = b.c.getContext('2d'), W = 1400, H = 620; // (its units: the canvas is k of them)
+    g.setTransform(b.k, 0, 0, b.k, 0, 0);
+    g.clearRect(0, 0, W, H);
+    g.fillStyle = 'rgba(28,13,8,.86)'; g.fillRect(0, 0, W, H);
+    g.strokeStyle = '#ffb27a'; g.lineWidth = 5; g.strokeRect(8, 8, W - 16, H - 16);
     g.fillStyle = '#ffb27a'; g.font = `700 42px ${FONT.title}`; g.textAlign = 'left';
     g.fillText('THE TALLY', 40, 68);
     g.fillStyle = '#fbe3cf'; g.font = `26px ${FONT.sys}`; g.textAlign = 'right';
-    g.fillText(`${L.get('fish.total')} landed · ${L.under('fish.sp.').filter(([, v]) => v > 0).length}/${SPECIES.length} kinds`, b.c.width - 40, 66);
+    g.fillText(`${L.get('fish.total')} landed · ${L.under('fish.sp.').filter(([, v]) => v > 0).length}/${SPECIES.length} kinds`, W - 40, 66);
     // (two rows, as many columns as that takes: twelve kinds since Gall's and Fury's, so six of 220 px)
-    const cols = Math.ceil(SPECIES.length / 2), step = Math.floor((b.c.width - 80) / cols), w = step - 16, cx = w / 2;
+    const cols = Math.ceil(SPECIES.length / 2), step = Math.floor((W - 80) / cols), w = step - 16, cx = w / 2;
     SPECIES.forEach((sp, i) => {
       const col = i % cols, row = Math.floor(i / cols), x = 40 + col * step, y = 110 + row * 250;
       const n = L.get(`fish.sp.${sp.id}`), cm = L.best(`fish.cm.${sp.id}`);

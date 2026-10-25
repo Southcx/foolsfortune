@@ -363,7 +363,8 @@ export const DEFAULTS = {
     antialias: true, // the canvas's own (boot only)
     outlineReach: 0, // props' outline hulls drawn within this many metres; 0 draws them all (render/graphics.js)
     lightSlots: 8, // point lights lit at once (render/lightbudget.js)
-    labelScale: 1, // baked labels' canvases drawn at this fraction of their pixels (render/bakedcanvas.js; boot only): a phone's memory
+    labelScale: 0.75, // baked labels' canvases drawn at this fraction of their pixels (render/bakedcanvas.js; boot only): a phone's memory
+    textureScale: 1, // other baked canvases' and atlases' resolution, the same way (render/graphics.js; boot only)
     toon: 1, // the soft cel ramp on direct light, 0 (the plain cosine) to 1 (render/toon.js)
     glow: 0.45, // the PS2 glow (render/glow.js): 0 is off
     grade: 1, // the colour grade after it: shadows toward indigo, light toward the kiln's warmth
