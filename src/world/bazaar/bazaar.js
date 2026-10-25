@@ -1,19 +1,25 @@
 // ---------------------------------------------------------------------------------------
 // RAKU'S BAZAAR (working name, Espada's to rule; docs/plans/CASINO.md section 9; the owner, 2026-10-15: "split off the Treasury section of
 // The Weir and give Raku his own bizarre bazaar casino area", "Gold Saucer all the way"): Raku's casino, a round hall under a dome, a
-// zone of its own far south of the workshop (Petra's place for it: BAZAAR). Built with the level's static geometry at boot, as Margarite's
-// dock is. In it: Raku's cage (chips for cubes and back: progress/casino/chips.js), a table for each game of the casino (F at one sits
+// zone of its own far south of the workshop (Petra's place for it: BAZAAR). An area of its own (render/areas.js, stage 2: docs/plans/AREAS.md
+// A1): the hall is built when the camera comes to it (`build`) and torn down whole a few real seconds after it leaves (`teardown`): its
+// geometry merged by colour in its own group, its own materials, its colliders, its lamps; only the Weir's gate in the Dunes, the save's
+// preference and the module itself stay, and a query while it is down answers nothing. In it: Raku's cage (chips for cubes and back: progress/casino/chips.js), a table for each game of the casino (F at one sits
 // you down: world/bazaar/session.js), the Treasury's slot on the north side (Petra moves the Weir's Treasury here at the merge), and a gate
 // on the south wall back to the Weir, whose twin stands where the Treasury stood. Two ways in: the Index's row, and that gate.
 // The look is a placeholder: the Gold Saucer's dome, neon and lanterns are Calissa's to make (docs/handoffs/calissa/).
 //
 // Prior art: Final Fantasy VII's Gold Saucer (a casino and carnival under a dome, a hub of minigames), Like a Dragon's and Yakuza's
-// casinos (a table walked up to is a game sat down at), Margarite's dock (the house's way to build a far room at boot).
+// casinos (a table walked up to is a game sat down at), FFXII's areas (built on entry, gone on leaving: AREAS.md).
 //
 //   BAZAAR (where it stands; its tables, cage, gate and the Treasury's slot)   game.bazaar = new Bazaar(game)   .here   .arrive()
-//   .update(dt)   .spot(id) -> { pos, yaw }
+//   .update(dt)   .spot(id) -> { pos, yaw }   .build()   .teardown()   .built (render/areas.js: boot/services.js registers the pair)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
+import { RAPIER, GROUPS } from '../../core/physics.js';
+import { dress } from '../../vfx/surfaces.js';
+import { addOutline } from '../../render/outline.js';
 import { zoneOf } from '../../render/zonemap.js';
 import { TableSession, TABLES } from './session.js';
 import { OX, OY, OZ, NORTH_BEACH } from '../../tools/sondelass/angling/weir.js';
@@ -34,38 +40,9 @@ const C = { floor: 0x3a2030, inlay: 0xd9a441, wall: 0x2a1426, trim: 0xf2c14e, cl
 
 export class Bazaar {
   constructor(game) {
-    this.game = game;
-    const B = BAZAAR, L = game.level, y = B.y, X = (x) => B.x + x, Z = (z) => B.z + z;
-    // the floor: one slab, an inlaid ring of gold round the middle (a placeholder for the Gold Saucer's tiles)
-    L.box([X(0), y - 0.5, Z(0)], [B.r * 2 + 4, 1, B.r * 2 + 4], C.floor);
-    for (let k = 0; k < 24; k++) { const a = (k / 24) * Math.PI * 2; L.box([X(Math.cos(a) * 18), y + 0.01, Z(Math.sin(a) * 18)], [4.6, 0.02, 0.5], C.inlay, { collide: false, outline: false, rotY: -a + Math.PI / 2 }); }
-    // the wall: sixteen panels round the hall, a gap at the south for the gate
-    for (let k = 0; k < 16; k++) {
-      const a = (k / 16) * Math.PI * 2, cx = Math.cos(a) * B.r, cz = Math.sin(a) * B.r; if (cz > B.r * 0.9) continue; // (the gate's gap, south)
-      L.box([X(cx), y + B.wall / 2, Z(cz)], [2 * B.r * Math.tan(Math.PI / 16) + 0.4, B.wall, 1.2], C.wall, { rotY: -a + Math.PI / 2 });
-      L.box([X(cx * 0.985), y + B.wall - 0.6, Z(cz * 0.985)], [2 * B.r * Math.tan(Math.PI / 16), 0.5, 0.4], C.trim, { collide: false, rotY: -a + Math.PI / 2 });
-    }
-    for (const s of [-1, 1]) L.box([X(s * 9), y + B.wall / 2, Z(B.r - 1)], [8, B.wall, 1.2], C.wall); // (either side of the gate)
-    // the dome: drawn only, a sky of its own (a placeholder: Calissa's Gold Saucer)
-    const dome = new THREE.Mesh(new THREE.SphereGeometry(B.r + 2, 32, 12, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x140a24, side: THREE.BackSide }));
-    dome.scale.y = B.dome / (B.r + 2); dome.position.set(X(0), y + B.wall - 2, Z(0)); dome.userData.zone = 'bazaar'; game.scene.add(dome); this.dome = dome;
-    // neon bands round the wall's top, and lamps of the light budget among the tables (render/lightbudget.js)
-    this.neon = [];
-    for (let k = 0; k < 4; k++) {
-      const ring = new THREE.Mesh(new THREE.TorusGeometry(B.r - 1.5 - k * 0.4, 0.12, 6, 64), new THREE.MeshBasicMaterial({ color: C.neon[k] }));
-      ring.rotation.x = Math.PI / 2; ring.position.set(X(0), y + B.wall - 2.5 - k * 0.7, Z(0)); ring.userData.zone = 'bazaar'; game.scene.add(ring); this.neon.push(ring);
-    }
-    this.lamps = [];
-    for (let k = 0; k < 6; k++) { const a = (k / 6) * Math.PI * 2 + 0.3, l = new THREE.PointLight(C.neon[k % 4], 22, 34, 1.4); l.position.set(X(Math.cos(a) * 30), y + 9, Z(Math.sin(a) * 30)); game.scene.add(l); this.lamps.push(l); }
-    // Raku's cage: chips for cubes, and back
-    L.box([X(B.cage.x), y + 0.55, Z(B.cage.z)], [7, 1.1, 1.4], C.cage);
-    L.box([X(B.cage.x), y + 2.6, Z(B.cage.z - 0.6)], [7, 3, 0.2], C.trim, { collide: false });
-    // the tables (session.js TABLES: where each stands), a round cloth on a plinth
-    for (const T of TABLES) { L.cylinder([X(T.at.x), y + 0.45, Z(T.at.z)], T.r, 0.9, C.cage); L.cylinder([X(T.at.x), y + 0.92, Z(T.at.z)], T.r - 0.15, 0.06, C.cloth, 24, false); }
-    // the gate back to the Weir: an arch in the south wall's gap
-    for (const s of [-1, 1]) L.box([X(B.gate.x + s * 3.2), y + 3.5, Z(B.gate.z)], [0.9, 7, 0.9], C.gate);
-    L.box([X(B.gate.x), y + 7.4, Z(B.gate.z)], [7.3, 0.8, 0.9], C.gate);
-    // its twin on the Weir's north beach, beside the Treasury: through it, the bazaar
+    this.game = game; this.built = false; this.neon = []; this.lamps = [];
+    const B = BAZAAR, L = game.level;
+    // its twin gate on the Weir's north beach, beside the Treasury: through it, the bazaar (the Dunes' ground, built with them at boot)
     const wx = OX + B.weirGate.x, wz = OZ + B.weirGate.z;
     for (const s of [-1, 1]) L.box([wx + s * 2.4, OY + 2.8, wz], [0.7, 5.6, 0.7], C.gate);
     L.box([wx, OY + 5.9, wz], [5.5, 0.6, 0.7], C.gate);
@@ -74,6 +51,72 @@ export class Bazaar {
     // the tables' own preference (the bots' pace: session.js SPEEDS), kept with the settings, not the progress
     this.prefs = { speed: 'normal' };
     game.save?.section('casinoPrefs', { scope: 'settings', version: 1, dump: () => ({ ...this.prefs }), load: (d) => Object.assign(this.prefs, d || {}), reset: () => { this.prefs.speed = 'normal'; } });
+  }
+
+  /** The hall built (render/areas.js calls it as the camera comes to it, or a teleport lands in it): every piece in one group of its own,
+   *  the boxes and cylinders merged by colour (as the level's static batches are), their colliders kept to be taken out again. */
+  build() {
+    if (this.built) return;
+    const g = this.game, B = BAZAAR, y = B.y, X = (x) => B.x + x, Z = (z) => B.z + z, phys = g.physics;
+    const hall = this.hall = new THREE.Group(); hall.name = 'bazaarHall'; hall.userData.zone = 'bazaar';
+    const geos = new Map(), cols = this.colliders = [], body = g.level?.fixedBody;
+    const put = (geo, color, { outline = true, shadow = true } = {}) => { const k = `${color}_${outline}_${shadow}`; if (!geos.has(k)) geos.set(k, { color, outline, shadow, list: [] }); geos.get(k).list.push(geo.index ? geo.toNonIndexed() : geo); };
+    const collide = (cd) => { if (phys && body) cols.push(phys.world.createCollider(cd.setCollisionGroups(GROUPS.static).setFriction(0.9), body)); };
+    const box = (pos, size, color, { rotY = 0, collide: c = true, outline = true } = {}) => {
+      const q = new THREE.Quaternion().setFromEuler(new THREE.Euler(0, rotY, 0)), geo = new THREE.BoxGeometry(...size);
+      geo.applyMatrix4(new THREE.Matrix4().compose(new THREE.Vector3(...pos), q, new THREE.Vector3(1, 1, 1))); put(geo, color, { outline });
+      if (c) collide(RAPIER.ColliderDesc.cuboid(size[0] / 2, size[1] / 2, size[2] / 2).setTranslation(...pos).setRotation(q));
+    };
+    const cylinder = (pos, r, h, color, segs = 10, outline = true) => { const geo = new THREE.CylinderGeometry(r, r, h, segs); geo.translate(...pos); put(geo, color, { outline }); collide(RAPIER.ColliderDesc.cylinder(h / 2, r).setTranslation(...pos)); };
+    // the floor: one slab, an inlaid ring of gold round the middle (a placeholder for the Gold Saucer's tiles)
+    box([X(0), y - 0.5, Z(0)], [B.r * 2 + 4, 1, B.r * 2 + 4], C.floor);
+    for (let k = 0; k < 24; k++) { const a = (k / 24) * Math.PI * 2; box([X(Math.cos(a) * 18), y + 0.01, Z(Math.sin(a) * 18)], [4.6, 0.02, 0.5], C.inlay, { collide: false, outline: false, rotY: -a + Math.PI / 2 }); }
+    // the wall: sixteen panels round the hall, a gap at the south for the gate
+    for (let k = 0; k < 16; k++) {
+      const a = (k / 16) * Math.PI * 2, cx = Math.cos(a) * B.r, cz = Math.sin(a) * B.r; if (cz > B.r * 0.9) continue; // (the gate's gap, south)
+      box([X(cx), y + B.wall / 2, Z(cz)], [2 * B.r * Math.tan(Math.PI / 16) + 0.4, B.wall, 1.2], C.wall, { rotY: -a + Math.PI / 2 });
+      box([X(cx * 0.985), y + B.wall - 0.6, Z(cz * 0.985)], [2 * B.r * Math.tan(Math.PI / 16), 0.5, 0.4], C.trim, { collide: false, rotY: -a + Math.PI / 2 });
+    }
+    for (const s of [-1, 1]) box([X(s * 9), y + B.wall / 2, Z(B.r - 1)], [8, B.wall, 1.2], C.wall); // (either side of the gate)
+    // Raku's cage: chips for cubes, and back
+    box([X(B.cage.x), y + 0.55, Z(B.cage.z)], [7, 1.1, 1.4], C.cage);
+    box([X(B.cage.x), y + 2.6, Z(B.cage.z - 0.6)], [7, 3, 0.2], C.trim, { collide: false });
+    // the tables (session.js TABLES: where each stands), a round cloth on a plinth
+    for (const T of TABLES) { cylinder([X(T.at.x), y + 0.45, Z(T.at.z)], T.r, 0.9, C.cage); cylinder([X(T.at.x), y + 0.92, Z(T.at.z)], T.r - 0.15, 0.06, C.cloth, 24, false); }
+    // the gate back to the Weir: an arch in the south wall's gap
+    for (const s of [-1, 1]) box([X(B.gate.x + s * 3.2), y + 3.5, Z(B.gate.z)], [0.9, 7, 0.9], C.gate);
+    box([X(B.gate.x), y + 7.4, Z(B.gate.z)], [7.3, 0.8, 0.9], C.gate);
+    for (const { color, outline, shadow, list } of geos.values()) {
+      const merged = mergeGeometries(list.map((q) => { q.deleteAttribute('uv'); return q; }), false); for (const q of list) q.dispose();
+      const m = new THREE.Mesh(merged, dress(new THREE.MeshStandardMaterial({ color, roughness: 0.92, metalness: 0, flatShading: true }), color));
+      m.receiveShadow = true; m.castShadow = shadow; if (outline) addOutline(m); hall.add(m);
+    }
+    // the dome: drawn only, a sky of its own (a placeholder: Calissa's Gold Saucer)
+    const dome = new THREE.Mesh(new THREE.SphereGeometry(B.r + 2, 32, 12, 0, Math.PI * 2, 0, Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0x140a24, side: THREE.BackSide }));
+    dome.scale.y = B.dome / (B.r + 2); dome.position.set(X(0), y + B.wall - 2, Z(0)); hall.add(dome); this.dome = dome;
+    // neon bands round the wall's top, and lamps of the light budget among the tables (render/lightbudget.js adopts them from the scene)
+    for (let k = 0; k < 4; k++) {
+      const ring = new THREE.Mesh(new THREE.TorusGeometry(B.r - 1.5 - k * 0.4, 0.12, 6, 64), new THREE.MeshBasicMaterial({ color: C.neon[k] }));
+      ring.rotation.x = Math.PI / 2; ring.position.set(X(0), y + B.wall - 2.5 - k * 0.7, Z(0)); hall.add(ring); this.neon.push(ring);
+    }
+    for (let k = 0; k < 6; k++) { const a = (k / 6) * Math.PI * 2 + 0.3, l = new THREE.PointLight(C.neon[k % 4], 22, 34, 1.4); l.position.set(X(Math.cos(a) * 30), y + 9, Z(Math.sin(a) * 30)); hall.add(l); this.lamps.push(l); }
+    g.scene.add(hall);
+    this.built = true;
+  }
+
+  /** The hall torn down (render/areas.js, a few real seconds after the camera and its neighbours leave): the group out of the scene, its
+   *  geometry and its own materials disposed (the dressing's shared textures are the room glaze atlas's, kept), its colliders taken out.
+   *  A seat at a table is closed first. The module stays, answering as a hall with nothing in it. */
+  teardown() {
+    if (!this.built) return;
+    const g = this.game, phys = g.physics;
+    this.close();
+    if (this.hall) {
+      g.scene.remove(this.hall);
+      this.hall.traverse((o) => { if (o.geometry && !o.userData.isOutline) o.geometry.dispose(); if (o.material && !o.userData.isOutline) for (const m of [].concat(o.material)) m.dispose(); });
+    }
+    for (const c of this.colliders || []) phys?.world?.removeCollider(c, false);
+    this.hall = null; this.dome = null; this.neon = []; this.lamps = []; this.colliders = []; this.built = false;
   }
 
   /** Is the Courier in the hall (its zone)? */
@@ -99,7 +142,7 @@ export class Bazaar {
     g.interact.add('bazaar', () => {
       if (g.dialogue?.open || this.session?.open || g.god?.controlling) return null;
       const P = g.player.pos, B = BAZAAR; let best = null;
-      if (!this.here) { const d = Math.hypot(P.x - this.weirGate.x, P.z - this.weirGate.z); return d < 3.2 && Math.abs(P.y - this.weirGate.y) < 4 ? { pos: this.weirGate.clone().setY(this.weirGate.y + 4.5), d, ref: 'weirgate' } : null; } // (the Weir's gate in)
+      if (!this.here || !this.built) { if (this.here) return null; const d = Math.hypot(P.x - this.weirGate.x, P.z - this.weirGate.z); return d < 3.2 && Math.abs(P.y - this.weirGate.y) < 4 ? { pos: this.weirGate.clone().setY(this.weirGate.y + 4.5), d, ref: 'weirgate' } : null; } // (the Weir's gate in)
       const near = (ref, x, z, reach, h) => { const d = Math.hypot(P.x - (B.x + x), P.z - (B.z + z)); if (d < reach && (!best || d < best.d)) best = { pos: new THREE.Vector3(B.x + x, B.y + h, B.z + z), d, ref }; };
       near('cage', B.cage.x, B.cage.z + 1.2, 2.6, 3);
       near('gate', B.gate.x, B.gate.z - 1, 3.2, 4);
