@@ -6,13 +6,12 @@ as much as for a 13 MB one, and all of them fail at 0.1 s. The inline page itsel
 load .../assets/game.js" is not size, memory or the contract: the host never serves the files. The likely cause is Safari blocking
 cookies in the claudeusercontent frame. That is not proven, and it is not ours to fix.
 
-**What works on the phone** (the probe, https://claude.ai/artifact/Gro6i8YTcqNpovZtB8K9py, contract 0.2.90, rows 7 to 13):
+**What works on the phone** (the probe, https://claude.ai/artifact/Gro6i8YTcqNpovZtB8K9py, contract 0.2.90, rows 0 and 7 to 13):
 - code made in the page as `blob:` URLs, as a classic script (4 MB in 0.4 s) and as a module (`import()`);
 - `DecompressionStream('gzip')`;
 - **the artifact's database** (`claude.use('db')`): 0.7 MB of base64 in 4 docs read in 0.2 s, unzipped, every byte matching
   (sha-256). Database reads go through claude.ai itself, not through the frame's own server.
-- **Row 0, pending the owner's run:** an import map laid before any module, with a page-made module importing another by a bare
-  name.
+- **an import map** laid before any module (row 0): a page-made module importing another by a bare name, ok on the phone.
 
 **The route.** The game ships its bytes in the database, and the page builds the module graph from blob URLs.
 - **Limits:** a doc is 256 KiB serialized, so a chunk is about 190 KB of base64. The database holds 100 MB and 25,000 docs. An
