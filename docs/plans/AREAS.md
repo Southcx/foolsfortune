@@ -117,8 +117,28 @@ can go round. The sizes are 50 to 145 degrees of a ring 360 m deep: 200 to 550 m
 - **The contents follow the cut.** The ruins, crystals, geysers and ostraca are scattered by seed round the whole ring today. Each kind is
   re-laid inside the areas given above, at A2's density. The crystals, geysers and ostraca keep their counts (18, 10, 6). The
   ruins' 91 pieces gather in the ruins, with a few left as landmarks elsewhere.
-- **Check:** the Solar Skiffing trial's loop (r 170) must sit wholly inside the Gnomon flats. The sector is about 470 m wide at r 300,
-  so it should fit. Petra measures it when the loop is placed.
+- **Measured (`scripts/areas.mjs`, 2026-10-25, the game read headless; the areas as data in `src/progress/areas.js`):**
+
+  | area | things today | ground over 40 m from any thing |
+  | --- | --- | --- |
+  | the Weir | 1 crystal, 2 columns, 5 places, 1 vantage, the Float Shrine | 50% |
+  | the shore | 3 crystals, 1 geyser, 3 columns, 2 places | 74% |
+  | the crystal ridges | 1 crystal, 3 geysers, 12 columns | 67% |
+  | the Gnomon flats | 3 crystals, 4 geysers, 1 ostracon, 13 columns, the Gnomon, the mouth, the Lamp Shrine, 1 vantage | 49% |
+  | the ruins | 10 crystals, 2 geysers, 2 ostraca, 18 columns | 54% |
+
+  - **Half to three quarters of every area is empty ground** by A2's measure: the owner's "open worlds feel empty", in numbers.
+  - **A2's target:** under 10% of each area's ground over 40 m from a thing.
+  - **The seed's scatter disagrees with the cut.** The crystal ridges hold one crystal, and the ruins hold ten.
+  - **The script undercounts the ruins.** It counts their 48 columns but not their obelisks and arches, whose positions are not kept, so
+    the ruins' empty share reads high.
+- **The Solar Skiffing trial's loop does not fit (measured).** Its centre stands 200 m from the Gnomon toward the oasis, so its 24 rings
+  fall 12 in the Gnomon flats, 8 in the crystal ridges and 4 in the Weir: it passes within a few metres of the oasis. **Proposed (the
+  trial is Dovina's, after the owner's yes):**
+  - move its centre to r 300 at bearing -160, about 170 m from the Gnomon's foot;
+  - shrink it to r 130, with a wobble of 20.
+  - Its rings then run 150 to 450 m out and between bearings -130 and +170, all inside the flats. It is shorter by a quarter, which the
+    medals' times answer for.
 - **Bigger later:** more Dunes are more areas past the barrier, never a bigger ground. The proposal in DUNES.md to make the one ground
   1,600 m across is withdrawn.
 - **The condition-bound find (FFXII's rare game), one an area:** a creature or a thing met only under its condition, counted on the
@@ -166,4 +186,4 @@ Each area has a page in the map (M): its checklist.
 | Calissa | the transition's look; each edge as a thing in the world; each area's dressing loaded and left with it | |
 | Espada | the areas' names when the owner calls them settled; the log's line on reaching one | |
 | Wanda | the ambience and the cue handed over at an edge, as the music clock allows | |
-| Dovina (next) | the per-area contents lists and checklist totals as data; `scripts/areas.mjs` (density per A2, totals); the achievements; the catch-up for blots and crystals with their owners | |
+| Dovina (next) | the per-area contents lists and checklist totals as data (`src/progress/areas.js` holds the cut; `scripts/areas.mjs` measures it); the achievements; the catch-up for blots and crystals with their owners; the trial's loop moved | |
