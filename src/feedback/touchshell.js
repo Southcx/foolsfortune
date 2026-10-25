@@ -10,11 +10,15 @@
 //               the pause menu (`game.pause`: a phone has no pointer lock to lose).
 //   THE ART BAR (the Spirit Garden's, ui/touch/artbar.js) is the hand's: `touch.art { id }` sets its art (WALK, no art, included),
 //               `touch.mod { mod }` WATER's SPRING or DRAIN, `touch.size { size }` the stroke's size (world/garden/hand.js).
+//   THE PAUSE MENU holds the verbs with no tile (FIRST PERSON, SHOULDER, STEP OFF, BACK, RESTART, RETIRE, GIVE UP, PUT BACK): its row of
+//               them, by what is live, is feedback/help/pauseverbs.js, made here (`.verbs`).
 //
 // Prior art: the virtual gamepad layer of the mobile ports (the view reports, the input layer decides); VirtualKeys (coop/sibling.js).
 //
-//   game.touchShell = new TouchShell(game)   .open(what)   .tile(id, down)   OPENS (what -> code)   events read: touch.art, touch.mod, touch.size
+//   game.touchShell = new TouchShell(game)   .open(what)   .tile(id, down)   .verbs (the pause menu's)   OPENS (what -> code)   events read: touch.art, touch.mod, touch.size
 // ---------------------------------------------------------------------------------------
+
+import { PauseVerbs } from './help/pauseverbs.js';
 
 /** The top bar's windows, by the key the keyboard opens each with. */
 export const OPENS = { codex: 'KeyB', box: 'KeyP', map: 'KeyM', chat: 'Enter', overhead: 'Backquote', godhand: 'Backquote', skiff: 'KeyY', survey: 'KeyN' }; // (godhand: the hand raised or let go, ~; skiff: summoned or recalled, Y; survey: the hand's, N)
@@ -32,6 +36,7 @@ export class TouchShell {
     E?.on('touch.size', (e) => hand()?.setSize(e.size));
     // (the bar starts on WALK: on touch the hand comes into the garden with no art up, so the bar and the hand agree)
     E?.on('garden.enter', () => { if (game.input?.device === 'touch') hand()?.setArt('walk'); });
+    if (typeof document !== 'undefined') this.verbs = new PauseVerbs(game, document.getElementById('overlay')); // (the pause menu's verbs on touch)
   }
   /** A tile pressed or let go (every touch tile reports here: ui/touch/presses.js). */
   tile(id, down) {

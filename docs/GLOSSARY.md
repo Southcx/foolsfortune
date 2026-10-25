@@ -605,6 +605,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 ## 9. What the game shows and sounds
 
 - **the pause menu** (Esc) — the help pages and the controls. *Retired:* "pause card".
+- **the pause menu's verbs** (plain name; `PauseVerbs`, `PAUSE_VERBS`, `src/feedback/help/pauseverbs.js`) — on touch, the verbs with no tile as a row atop the pause menu, by what is live (FIRST PERSON, SHOULDER, STEP OFF, BACK, RESTART, RETIRE, GIVE UP, PUT BACK): a key verb holds its key while the finger is down; a call is the game's own path, confirmed where it loses or destroys. *Not:* the cluster, the top bar.
 - **the Pneuka Box** (P, `src/pneuka/`) — the inventory (56 slots) and what is worn; at a Shrine's STORAGE row, its storage opens beside it.
   *Not:* the Veritome.
 - **the Box's storage** (`box.storage`, `storageOpen`, `openStorage`, `src/pneuka/box.js`; save section `storage`) — the Pneuka Box's long-term
