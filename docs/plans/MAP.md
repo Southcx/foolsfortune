@@ -30,6 +30,11 @@ The player's goal at each scale:
 
 ## 2. The levels
 
+**Ruled (the owner, 2026-10-25, relayed by Calissa; her board: `docs/plans/art/map-board-v1.jpg` on claude/calissa-art-cups):**
+- **The island is B1, the glazed ring,** because a ring lets an Island of Ego change how many areas it has.
+- **An area's page is the ink scroll, laid out as board C.**
+
+
 - **The island (the top level).** Anagami's places as a graph:
   - the nodes: the workshop, the basement, the Dunes (its five areas as one cluster round the Weir), the Great Dunemaw, the Raceway
     park, Raku's Bazaar;
