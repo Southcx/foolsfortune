@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Map Dress Harness</title>
+<!--
+  THE MAP'S DRESS, ITS HARNESS (Calissa's; src/ui/mapdress/). The map's window, island level, area's page and checklist fed fake data
+  (scripts/mapdress-fake.js: the Dunes' five areas and the other places; the Gnomon flats' page from made-up cells). Not the game: a
+  page to look at the dress alone, through the dev server (npm run dev, then /scripts/mapdress-harness.html?view=island|area), and the
+  page scripts/mapdress-shot.mjs shoots for the contact sheet. Drag pans the area's page, the wheel zooms it, a tap on a visited node
+  of the island goes into it (only the Gnomon flats has a page here), ISLAND goes back.
+-->
+<style>
+@font-face { font-family: 'Cinzel'; font-weight: 400 900; src: url(/src/assets/fonts/cinzel.woff2) format('woff2'); }
+@font-face { font-family: 'DotGothic16'; src: url(/src/assets/fonts/dotgothic16.woff2) format('woff2'); }
+@font-face { font-family: 'Jersey 15'; src: url(/src/assets/fonts/jersey15.woff2) format('woff2'); }
+@font-face { font-family: 'IM Fell English'; font-style: italic; src: url(/src/assets/fonts/fellitalic.woff2) format('woff2'); }
+@font-face { font-family: 'M PLUS Rounded 1c'; font-weight: 400 600; src: url(/src/assets/fonts/mplusround500.woff2) format('woff2'); }
+@font-face { font-family: 'M PLUS Rounded 1c'; font-weight: 700 900; src: url(/src/assets/fonts/mplusround800.woff2) format('woff2'); }
+:root { --jtop: 104,50,32; --jbot: 34,15,9; }
+html, body { margin: 0; height: 100%; overflow: hidden; background: radial-gradient(circle at 40% 30%, #6b5a44, #2a2016 70%); }
+</style>
+</head>
+<body>
+<script type="module">
+import { mapWindow, islandLook, islandHit, areaPage } from '/src/ui/mapdress/index.js';
+import { GRAPH, FLATS } from '/scripts/mapdress-fake.js';
+
+const q = new URLSearchParams(location.search);
+let view = q.get('view') || 'island', hits = [];
+const V = { x: 0, z: 0, scale: 1 };
+const fitArea = (w, h) => { const b = FLATS.page.bounds; V.scale = Math.min(w / (b.x1 - b.x0), h / (b.z1 - b.z0)) * 0.96; V.x = (b.x0 + b.x1) / 2; V.z = (b.z0 + b.z1) / 2; };
+const win = mapWindow({ closeKey: 'M', onIsland: () => go('island'), onClose: () => setTimeout(() => go(view), 600) });
+
+function draw() {
+  const c = win.canvas; if (!c) return;
+  const { w, h } = win.box(), dpr = Math.min(2, devicePixelRatio || 1);
+  if (c.width !== Math.round(w * dpr) || c.height !== Math.round(h * dpr)) { c.width = Math.round(w * dpr); c.height = Math.round(h * dpr); }
+  const ctx = c.getContext('2d');
+  if (view === 'island') window.__hits = hits = islandLook(ctx, GRAPH, { w, h, dpr }).hits;
+  else areaPage(ctx, FLATS.page, { ...V, w, h, dpr });
+}
+function go(v) {
+  view = v; win.open();
+  if (v === 'island') win.island({ title: 'Anagami Island', sub: 'THE ISLAND · 1 OF 9 PLACES WHOLE · GAME HOUR 14' });
+  else win.area({ title: FLATS.title, path: FLATS.path.map((s) => s.toUpperCase()), rows: FLATS.rows, line: FLATS.line });
+  requestAnimationFrame(() => { const { w, h } = win.box(); fitArea(w, h); draw(); bind(); window.__ready = true; });
+}
+let bound = null;
+function bind() {
+  const c = win.canvas; if (!c || bound === c) return; bound = c;
+  let drag = null;
+  c.addEventListener('pointerdown', (e) => { drag = { x: e.clientX, y: e.clientY, moved: 0 }; c.setPointerCapture(e.pointerId); });
+  c.addEventListener('pointermove', (e) => { if (!drag || view !== 'area') return; const dx = e.clientX - drag.x, dy = e.clientY - drag.y; drag.moved += Math.abs(dx) + Math.abs(dy); drag.x = e.clientX; drag.y = e.clientY; V.x -= dx / V.scale; V.z -= dy / V.scale; draw(); });
+  c.addEventListener('pointerup', (e) => {
+    if (drag && drag.moved < 5 && view === 'island') { const r = c.getBoundingClientRect(), hit = islandHit(hits, e.clientX - r.left, e.clientY - r.top); if (hit?.id === 'flats') go('area'); }
+    drag = null;
+  });
+  c.addEventListener('wheel', (e) => { if (view !== 'area') return; e.preventDefault(); V.scale *= Math.exp(-e.deltaY * 0.0012); draw(); }, { passive: false });
+}
+win.onResize = () => draw();
+await document.fonts.load('700 14px Cinzel'); await document.fonts.load('18px "Jersey 15"'); await document.fonts.load('italic 14px "IM Fell English"'); await document.fonts.load('14px DotGothic16');
+go(view);
+</script>
+</body>
+</html>
