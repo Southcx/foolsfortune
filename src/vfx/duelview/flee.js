@@ -25,7 +25,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { bazaarMaterials, dieTpl, dieRest, PIECE } from '../bazaarpieces.js';
-import { bazaarAtlas } from '../bazaarfaces.js';
+import { stoneAtlas } from '../bazaarfaces.js';
 import { dressFinish } from '../finish.js';
 import { dressStone } from '../stoneminerals.js';
 import { fleeOdds, FLEE } from '../../progress/duel/flee.js';
@@ -65,7 +65,7 @@ export class DuelFlee {
     this.oddsP = plate(56, 22, 0.56); this.rollP = plate(76, 74, 0.62); this.group.add(this.oddsP.mesh, this.rollP.mesh);
     const T = dieTpl(20, 'stone20', DIE_K), geo = new THREE.BufferGeometry();
     geo.setAttribute('position', new THREE.BufferAttribute(T.pos, 3)); geo.setAttribute('normal', new THREE.BufferAttribute(T.nrm, 3)); geo.setAttribute('uv', new THREE.BufferAttribute(T.uv, 2));
-    this.stoneMat = new THREE.MeshStandardMaterial({ name: 'flee-stone', map: bazaarAtlas().tex, emissiveMap: bazaarAtlas().glow(), emissive: NUMERAL, emissiveIntensity: 1.6, roughness: 0.12, metalness: 0.05 }); // (its numerals alone lit gold: the atlas's glow mask, so the face read against the 15 reads on the dark tsuitate)
+    this.stoneMat = new THREE.MeshStandardMaterial({ name: 'flee-stone', map: stoneAtlas().tex, emissiveMap: stoneAtlas().glow(), emissive: NUMERAL, emissiveIntensity: 1.6, roughness: 0.12, metalness: 0.05 }); // (its numerals alone lit gold: the atlas's glow mask, so the face read against the 15 reads on the dark tsuitate)
     this.die = new THREE.Mesh(geo, this.stoneMat); this.die.visible = false; this.die.castShadow = false; this.group.add(this.die);
     this.run = null; this.linger = 0; this.t = 0; this.board = { w: 20, h: 20 };
   }

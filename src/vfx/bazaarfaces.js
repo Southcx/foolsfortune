@@ -81,6 +81,28 @@ function stoneCells(g, dieAt, skin) {
   for (const n of STONE_SIDES) for (let f = 0; f < n; f++) dieCell(g, dieAt[`stone${n}`] + f, n, f, skin, AT.stone);
 }
 
+/** Your stones on their own (a phone's memory, Petra's measure 2026-10-25: the palm die and the flee's d20 held the whole 2048 x 2304
+ *  house atlas and its glow on the GPU from boot, about 31 MB, for 60 cells): the stone skin's faces, d20 then d4 .. d12, at the atlas's
+ *  cell size, 512 x 512, baked; its glow the same cells' numerals white on black. `die(skin, f)` the face's uvs here. */
+const STONE_AT = { x: 0, y: 0, s: 64, cols: 8 };
+let STONES = null;
+export function stoneAtlas() {
+  if (STONES) return STONES;
+  const at = {}; let k = 0; for (const n of [20, ...STONE_SIDES]) { at[n] = k; k += n; }
+  const W = STONE_AT.cols * STONE_AT.s, H = Math.ceil(k / STONE_AT.cols) * STONE_AT.s;
+  const paint = (skin, ground) => (g) => { g.imageSmoothingEnabled = false; g.fillStyle = ground; g.fillRect(0, 0, W, H); for (const n of [20, ...STONE_SIDES]) for (let f = 0; f < n; f++) dieCell(g, at[n] + f, n, f, skin, STONE_AT); };
+  const tex = bakedCanvasTexture(paint(DIE_SKINS.stone, K.deep), W, H);
+  tex.colorSpace = THREE.SRGBColorSpace; tex.magFilter = THREE.NearestFilter; tex.anisotropy = 4;
+  const rect = (x, y, w, h, inset) => [(x + inset) / W, 1 - (y + h - inset) / H, (x + w - inset) / W, 1 - (y + inset) / H];
+  let glow = null;
+  STONES = {
+    tex,
+    glow: () => { if (!glow) { glow = bakedCanvasTexture(paint({ body: '#000', ink: '#fff' }, '#000'), W, H); glow.colorSpace = THREE.SRGBColorSpace; } return glow; },
+    die: (skin, f) => { const c = at[+String(skin).replace('stone', '')] + f, S = STONE_AT.s; return rect(STONE_AT.x + (c % STONE_AT.cols) * S, STONE_AT.y + Math.floor(c / STONE_AT.cols) * S, S, S, 1); },
+  };
+  return STONES;
+}
+
 let ATLAS = null;
 /** Where each die skin's faces start in the die cells (laid out before any painting, so the uvs never wait on a canvas). */
 function dieLayout() {

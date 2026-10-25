@@ -28,7 +28,7 @@ import * as THREE from 'three';
 import { GLAZES } from '../../courier/vessel/glazes.js';
 import { SUIT_LOOK } from '../readingview.js';
 import { dieTpl, dieFace, PIECE } from '../bazaarpieces.js';
-import { bazaarAtlas } from '../bazaarfaces.js';
+import { stoneAtlas } from '../bazaarfaces.js';
 import { dressFinish } from '../finish.js';
 import { dressStone } from '../stoneminerals.js';
 
@@ -69,7 +69,7 @@ export class PalmDieLook {
   constructor(game) {
     this.game = game; this.bone = null; this.sides = 0; this.t = 0; this.glint = 0; this.cut = 1; this.next = 0;
     this.geos = {};
-    this.mat = new THREE.MeshStandardMaterial({ name: 'palm-die', map: bazaarAtlas().tex, roughness: 0.12, metalness: 0.05, flatShading: true, emissiveIntensity: 0.25 }); // (the stone skin's pale body, tinted by the mineral; its numerals dark)
+    this.mat = new THREE.MeshStandardMaterial({ name: 'palm-die', map: stoneAtlas().tex, roughness: 0.12, metalness: 0.05, flatShading: true, emissiveIntensity: 0.25 }); // (the stone skin's pale body, tinted by the mineral; its numerals dark)
     this.crack = new THREE.LineBasicMaterial({ color: 0xffffff, transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false });
     this.mesh = new THREE.Mesh(undefined, this.mat); this.mesh.name = 'palm-die'; this.mesh.castShadow = false;
     this.edges = new THREE.LineSegments(undefined, this.crack); this.mesh.add(this.edges);
