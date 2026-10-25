@@ -52,7 +52,7 @@ try {
     }
     const tier = { graphics: G.game?.graphics?.tier ?? g.graphics?.tier, mobile: g.graphics?.machine?.mobile, textureScale: G.T?.visual?.textureScale };
     // the area dressings, each way once
-    const geos = () => R.info.memory.geometries, trip = {};
+    const geos = () => { const seen = new Set(); g.scene.traverse((o) => o.geometry && seen.add(o.geometry)); return seen.size; }, trip = {}; // (geometries in the scene: an area not drawn uploads nothing, so the renderer's count would not move)
     for (const [k, o] of [['bazaarHall', g.bazaarHall], ['dunesDress', g.dunesDress], ['racewayDress', g.racewayDress]]) {
       if (!o?.teardown) { trip[k] = 'none'; continue; }
       const a = geos(); o.teardown(g); for (let i = 0; i < 3; i++) { G.tick(1 / 60); G.draw(); }

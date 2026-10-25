@@ -19,61 +19,64 @@
 //   P.clear()   PRINT_CELLS (kind -> atlas cell)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { bakedCanvasTexture } from '../render/bakedcanvas.js';
+import { tierScale } from './tierscale.js';
 
 /** The prints' atlas, 4 x 2 cells of 128 px, drawn in colour (a print's tint multiplies it). */
 export const PRINT_CELLS = { blossom: 0, scorch: 1, comb: 2, comb2: 3, paw: 4, puddle: 5 };
 const CELL = 128;
 
 function printAtlas() {
-  const c = Object.assign(document.createElement('canvas'), { width: CELL * 4, height: CELL * 2 }), g = c.getContext('2d');
-  let seed = 31; const r = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
-  const cell = (i, draw) => { g.save(); g.translate((i % 4) * CELL + CELL / 2, Math.floor(i / 4) * CELL + CELL / 2); draw(CELL / 2); g.restore(); };
-  const hex = (x, y, rr, rot = 0) => { g.beginPath(); for (let k = 0; k < 6; k++) { const a = rot + (k / 6) * Math.PI * 2; g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } g.closePath(); };
-  // a blossom: five petals, notched at the tip as a cherry's are, round a gold heart
-  cell(PRINT_CELLS.blossom, (R) => {
-    for (let k = 0; k < 5; k++) {
-      g.save(); g.rotate((k / 5) * Math.PI * 2);
-      g.fillStyle = '#fff'; g.beginPath(); g.moveTo(0, 0); g.bezierCurveTo(R * 0.5, -R * 0.25, R * 0.42, -R * 0.82, R * 0.1, -R * 0.84); g.lineTo(0, -R * 0.72); g.lineTo(-R * 0.1, -R * 0.84); g.bezierCurveTo(-R * 0.42, -R * 0.82, -R * 0.5, -R * 0.25, 0, 0); g.fill();
-      g.strokeStyle = 'rgba(230,150,175,0.8)'; g.lineWidth = R * 0.03; g.beginPath(); g.moveTo(0, -R * 0.12); g.lineTo(0, -R * 0.55); g.stroke();
-      g.restore();
-    }
-    g.fillStyle = '#ffd76a'; g.beginPath(); g.arc(0, 0, R * 0.16, 0, Math.PI * 2); g.fill();
-    g.fillStyle = '#c8783a'; for (let k = 0; k < 7; k++) { const a = (k / 7) * Math.PI * 2; g.beginPath(); g.arc(Math.cos(a) * R * 0.24, Math.sin(a) * R * 0.24, R * 0.035, 0, Math.PI * 2); g.fill(); }
-  });
-  // a kiln-ash scorch: a charred sole, its splash of soot, and embers still in it
-  cell(PRINT_CELLS.scorch, (R) => {
-    const gr = g.createRadialGradient(0, 0, 0, 0, 0, R * 0.8);
-    gr.addColorStop(0, 'rgba(26,18,14,0.95)'); gr.addColorStop(0.55, 'rgba(40,30,24,0.8)'); gr.addColorStop(1, 'rgba(90,80,72,0)');
-    g.save(); g.scale(0.62, 1); g.fillStyle = gr; g.beginPath(); g.arc(0, 0, R * 0.8, 0, Math.PI * 2); g.fill(); g.restore();
-    g.fillStyle = 'rgba(40,30,24,0.6)';
-    for (let k = 0; k < 14; k++) { const a = r() * Math.PI * 2, d = R * (0.45 + r() * 0.4), w = R * (0.02 + r() * 0.03); g.beginPath(); g.ellipse(Math.cos(a) * d * 0.62, Math.sin(a) * d, w * 2.2, w, a, 0, Math.PI * 2); g.fill(); }
-    g.fillStyle = 'rgba(200,190,180,0.55)'; for (let k = 0; k < 20; k++) { const a = r() * Math.PI * 2, d = R * (0.3 + r() * 0.5); g.beginPath(); g.arc(Math.cos(a) * d * 0.62, Math.sin(a) * d, R * 0.025, 0, Math.PI * 2); g.fill(); }
-    g.fillStyle = 'rgba(255,140,60,0.95)'; for (let k = 0; k < 6; k++) { const a = r() * Math.PI * 2, d = R * r() * 0.35; g.beginPath(); g.arc(Math.cos(a) * d * 0.62, Math.sin(a) * d, R * (0.025 + r() * 0.03), 0, Math.PI * 2); g.fill(); }
-  });
-  // two cells of the Comb (the neuralese stamp script on hex cells): a ring of seven, some filled, read as a mark of the System's
-  for (const [i, on] of [[PRINT_CELLS.comb, [1, 1, 0, 1, 0, 1, 0]], [PRINT_CELLS.comb2, [0, 1, 1, 0, 1, 0, 1]]]) cell(i, (R) => {
-    g.strokeStyle = '#fff'; g.fillStyle = '#fff'; g.lineWidth = R * 0.06; hex(0, 0, R * 0.9, Math.PI / 6); g.stroke();
-    const rr = R * 0.25;
-    [[0, 0], [0, -2], [1.73, -1], [1.73, 1], [0, 2], [-1.73, 1], [-1.73, -1]].forEach(([x, y], k) => {
-      hex(x * rr * 0.96, y * rr * 0.96, rr * 0.82, 0);
-      if (on[k]) g.fill(); else { g.lineWidth = R * 0.035; g.stroke(); }
+  // (a baked canvas at the tier's size, half on a phone: render/bakedcanvas.js, vfx/tierscale.js)
+  const t = bakedCanvasTexture((g) => {
+    let seed = 31; const r = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+    const cell = (i, draw) => { g.save(); g.translate((i % 4) * CELL + CELL / 2, Math.floor(i / 4) * CELL + CELL / 2); draw(CELL / 2); g.restore(); };
+    const hex = (x, y, rr, rot = 0) => { g.beginPath(); for (let k = 0; k < 6; k++) { const a = rot + (k / 6) * Math.PI * 2; g.lineTo(x + Math.cos(a) * rr, y + Math.sin(a) * rr); } g.closePath(); };
+    // a blossom: five petals, notched at the tip as a cherry's are, round a gold heart
+    cell(PRINT_CELLS.blossom, (R) => {
+      for (let k = 0; k < 5; k++) {
+        g.save(); g.rotate((k / 5) * Math.PI * 2);
+        g.fillStyle = '#fff'; g.beginPath(); g.moveTo(0, 0); g.bezierCurveTo(R * 0.5, -R * 0.25, R * 0.42, -R * 0.82, R * 0.1, -R * 0.84); g.lineTo(0, -R * 0.72); g.lineTo(-R * 0.1, -R * 0.84); g.bezierCurveTo(-R * 0.42, -R * 0.82, -R * 0.5, -R * 0.25, 0, 0); g.fill();
+        g.strokeStyle = 'rgba(230,150,175,0.8)'; g.lineWidth = R * 0.03; g.beginPath(); g.moveTo(0, -R * 0.12); g.lineTo(0, -R * 0.55); g.stroke();
+        g.restore();
+      }
+      g.fillStyle = '#ffd76a'; g.beginPath(); g.arc(0, 0, R * 0.16, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#c8783a'; for (let k = 0; k < 7; k++) { const a = (k / 7) * Math.PI * 2; g.beginPath(); g.arc(Math.cos(a) * R * 0.24, Math.sin(a) * R * 0.24, R * 0.035, 0, Math.PI * 2); g.fill(); }
     });
-  });
-  // a paw: the heel pad and four toes, pressed in
-  cell(PRINT_CELLS.paw, (R) => {
-    g.fillStyle = 'rgba(255,255,255,0.95)';
-    g.beginPath(); g.moveTo(0, R * 0.05); g.bezierCurveTo(R * 0.42, R * 0.02, R * 0.48, R * 0.62, 0, R * 0.62); g.bezierCurveTo(-R * 0.48, R * 0.62, -R * 0.42, R * 0.02, 0, R * 0.05); g.fill();
-    for (const [x, y, s] of [[-0.42, -0.16, 0.15], [-0.15, -0.5, 0.16], [0.15, -0.5, 0.16], [0.42, -0.16, 0.15]]) { g.beginPath(); g.ellipse(R * x, R * y, R * s * 0.85, R * s * 1.15, x * 0.6, 0, Math.PI * 2); g.fill(); }
-  });
-  // a puddle of glaze: an uneven pool, its wet lip lighter, a highlight on it
-  cell(PRINT_CELLS.puddle, (R) => {
-    g.fillStyle = 'rgba(200,200,200,1)'; g.beginPath();
-    for (let k = 0; k <= 24; k++) { const a = (k / 24) * Math.PI * 2, rr = R * (0.62 + 0.18 * Math.sin(a * 3 + 0.7) + 0.08 * Math.sin(a * 5)); g.lineTo(Math.cos(a) * rr * 0.8, Math.sin(a) * rr); }
-    g.fill();
-    g.strokeStyle = 'rgba(255,255,255,0.9)'; g.lineWidth = R * 0.05; g.stroke();
-    g.fillStyle = 'rgba(255,255,255,1)'; g.beginPath(); g.ellipse(-R * 0.18, -R * 0.25, R * 0.14, R * 0.06, -0.6, 0, Math.PI * 2); g.fill();
-  });
-  const t = new THREE.CanvasTexture(c);
+    // a kiln-ash scorch: a charred sole, its splash of soot, and embers still in it
+    cell(PRINT_CELLS.scorch, (R) => {
+      const gr = g.createRadialGradient(0, 0, 0, 0, 0, R * 0.8);
+      gr.addColorStop(0, 'rgba(26,18,14,0.95)'); gr.addColorStop(0.55, 'rgba(40,30,24,0.8)'); gr.addColorStop(1, 'rgba(90,80,72,0)');
+      g.save(); g.scale(0.62, 1); g.fillStyle = gr; g.beginPath(); g.arc(0, 0, R * 0.8, 0, Math.PI * 2); g.fill(); g.restore();
+      g.fillStyle = 'rgba(40,30,24,0.6)';
+      for (let k = 0; k < 14; k++) { const a = r() * Math.PI * 2, d = R * (0.45 + r() * 0.4), w = R * (0.02 + r() * 0.03); g.beginPath(); g.ellipse(Math.cos(a) * d * 0.62, Math.sin(a) * d, w * 2.2, w, a, 0, Math.PI * 2); g.fill(); }
+      g.fillStyle = 'rgba(200,190,180,0.55)'; for (let k = 0; k < 20; k++) { const a = r() * Math.PI * 2, d = R * (0.3 + r() * 0.5); g.beginPath(); g.arc(Math.cos(a) * d * 0.62, Math.sin(a) * d, R * 0.025, 0, Math.PI * 2); g.fill(); }
+      g.fillStyle = 'rgba(255,140,60,0.95)'; for (let k = 0; k < 6; k++) { const a = r() * Math.PI * 2, d = R * r() * 0.35; g.beginPath(); g.arc(Math.cos(a) * d * 0.62, Math.sin(a) * d, R * (0.025 + r() * 0.03), 0, Math.PI * 2); g.fill(); }
+    });
+    // two cells of the Comb (the neuralese stamp script on hex cells): a ring of seven, some filled, read as a mark of the System's
+    for (const [i, on] of [[PRINT_CELLS.comb, [1, 1, 0, 1, 0, 1, 0]], [PRINT_CELLS.comb2, [0, 1, 1, 0, 1, 0, 1]]]) cell(i, (R) => {
+      g.strokeStyle = '#fff'; g.fillStyle = '#fff'; g.lineWidth = R * 0.06; hex(0, 0, R * 0.9, Math.PI / 6); g.stroke();
+      const rr = R * 0.25;
+      [[0, 0], [0, -2], [1.73, -1], [1.73, 1], [0, 2], [-1.73, 1], [-1.73, -1]].forEach(([x, y], k) => {
+        hex(x * rr * 0.96, y * rr * 0.96, rr * 0.82, 0);
+        if (on[k]) g.fill(); else { g.lineWidth = R * 0.035; g.stroke(); }
+      });
+    });
+    // a paw: the heel pad and four toes, pressed in
+    cell(PRINT_CELLS.paw, (R) => {
+      g.fillStyle = 'rgba(255,255,255,0.95)';
+      g.beginPath(); g.moveTo(0, R * 0.05); g.bezierCurveTo(R * 0.42, R * 0.02, R * 0.48, R * 0.62, 0, R * 0.62); g.bezierCurveTo(-R * 0.48, R * 0.62, -R * 0.42, R * 0.02, 0, R * 0.05); g.fill();
+      for (const [x, y, s] of [[-0.42, -0.16, 0.15], [-0.15, -0.5, 0.16], [0.15, -0.5, 0.16], [0.42, -0.16, 0.15]]) { g.beginPath(); g.ellipse(R * x, R * y, R * s * 0.85, R * s * 1.15, x * 0.6, 0, Math.PI * 2); g.fill(); }
+    });
+    // a puddle of glaze: an uneven pool, its wet lip lighter, a highlight on it
+    cell(PRINT_CELLS.puddle, (R) => {
+      g.fillStyle = 'rgba(200,200,200,1)'; g.beginPath();
+      for (let k = 0; k <= 24; k++) { const a = (k / 24) * Math.PI * 2, rr = R * (0.62 + 0.18 * Math.sin(a * 3 + 0.7) + 0.08 * Math.sin(a * 5)); g.lineTo(Math.cos(a) * rr * 0.8, Math.sin(a) * rr); }
+      g.fill();
+      g.strokeStyle = 'rgba(255,255,255,0.9)'; g.lineWidth = R * 0.05; g.stroke();
+      g.fillStyle = 'rgba(255,255,255,1)'; g.beginPath(); g.ellipse(-R * 0.18, -R * 0.25, R * 0.14, R * 0.06, -0.6, 0, Math.PI * 2); g.fill();
+    });
+  }, CELL * 4, CELL * 2, { scale: tierScale() });
   t.colorSpace = THREE.SRGBColorSpace; t.generateMipmaps = true; t.minFilter = THREE.LinearMipmapLinearFilter; t.anisotropy = 4;
   return t;
 }

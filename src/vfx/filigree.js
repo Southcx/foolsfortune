@@ -25,11 +25,12 @@
 import * as THREE from 'three';
 import filigreeB64 from '../assets/courier/courier_filigree.png?b64';
 import { LAB_GLSL, mindTime, mindTick } from './labradorite.js';
+import { fitToTier } from './tierscale.js';
 
 let _tex = null;
 function masks() {
   if (_tex) return _tex;
-  _tex = new THREE.TextureLoader().load(`data:image/png;base64,${filigreeB64}`);
+  _tex = new THREE.TextureLoader().load(`data:image/png;base64,${filigreeB64}`, fitToTier); // (at the tier's size: half on a phone, vfx/tierscale.js)
   _tex.flipY = false; // (glTF's UV convention, as the armour's painting)
   _tex.colorSpace = THREE.NoColorSpace; // (masks, not colours)
   _tex.anisotropy = 4;
