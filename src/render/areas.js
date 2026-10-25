@@ -48,26 +48,29 @@ export class Areas {
   }
 
   /** An area: the render zones it is (render/zones.js), and the ones from which it can be seen or walked into (kept resident there). */
-  register(id, { zones, near = [], build = null, teardown = null }) {
-    this.map.set(id, { id, zones: new Set(zones), near: new Set(near), resident: true, away: 0, evicted: null, build, teardown, built: !build });
+  register(id, { zones, near = [], build = null, teardown = null, boot = false, evict = false }) {
+    this.map.set(id, { id, zones: new Set(zones), near: new Set(near), resident: true, away: 0, evicted: null, build, teardown, built: !build || boot, evict });
     return this;
   }
 
   /** STAGE 2 (an area that builds itself: `build(game)` makes its content, sync, where the seam or a door covers it; `teardown(game)`
    *  takes it all down, geometry, colliders and listeners, its module left empty but alive): built when the camera is in it or beside it
    *  (or a teleport lands in it: `ensureAt`), torn down a GRACE away from it. Its owner's module must answer while torn down (a query
-   *  about it returns nothing). Areas without `build` stay built from boot (stage 1 and dehydration). */
+   *  about it returns nothing). Areas without `build` stay built from boot (stage 1 and dehydration). `boot`: its build already ran at
+   *  boot (its parts made from their constructors; build and teardown safe twice), so the warm-up's settle takes it down. `evict`: what
+   *  is torn down is only part of it (a dressing over a ground still built at boot), and the rest is evicted (and dried) as stage 1's. */
   ensure(A) {
     if (!A || A.built || !A.build) return;
-    try { A.build(this.game); A.built = true; A.resident = true; A.away = 0; this.game.events?.emit('area.build', { area: A.id, by: 'environment' }); }
+    try { A.build(this.game); A.built = true; if (!A.evict) A.resident = true; A.away = 0; this.game.events?.emit('area.build', { area: A.id, by: 'environment' }); }
     catch (e) { console.warn('areas: build failed', A.id, e); }
   }
   /** The area a point lands in, built now (a teleport, the Index, a Shrine: course.teleport calls it before the move). */
-  ensureAt(zone) { for (const A of this.map.values()) if (A.zones.has(zone) || A.near.has(zone)) this.ensure(A); }
+  ensureAt(zone) { for (const A of this.map.values()) if (A.zones.has(zone) || A.near.has(zone)) { this.ensure(A); if (A.evict && !A.resident) this.prepare(A); } }
   down(A) {
     if (!A.built || !A.teardown) return;
     try { A.teardown(this.game); } catch (e) { console.warn('areas: teardown failed', A.id, e); }
-    A.built = false; A.resident = false; A.dry = null; A.evicted = null;
+    A.built = false;
+    if (!A.evict) { A.resident = false; A.dry = null; A.evicted = null; } // (an evicting area's rest keeps its own state: stage 1 lets it go)
     this.game.events?.emit('area.teardown', { area: A.id, by: 'environment' });
   }
 
@@ -171,9 +174,10 @@ export class Areas {
     if (this.job) { this.step(covered ? Infinity : SLICE); return; }
     for (const A of this.map.values()) {
       const here = A.zones.has(cur) || A.near.has(cur);
-      if (here) { A.away = 0; if (!A.built) this.ensure(A); else if (!A.resident) this.prepare(A); continue; }
-      if (A.teardown) { if (A.built && (A.away += dt) >= GRACE) this.down(A); continue; } // (stage 2: taken down whole, not evicted)
-      if (!A.resident) continue;
+      if (here) { A.away = 0; if (!A.built) this.ensure(A); if (!A.resident) this.prepare(A); continue; }
+      if (A.teardown && !A.evict) { if (A.built && (A.away += dt) >= GRACE) this.down(A); continue; } // (stage 2: taken down whole, not evicted)
+      if (A.teardown && A.built && A.away + dt >= GRACE) this.down(A); // (its dressing down, then its ground evicted below)
+      if (!A.resident) { if (A.teardown) A.away += dt; continue; }
       A.away += dt;
       if (covered || A.away >= GRACE) due.push(A);
     }
@@ -184,7 +188,7 @@ export class Areas {
   settle() {
     const cur = this.game.zones?.current; if (cur === undefined || cur === null) return;
     for (const A of this.map.values()) if (A.teardown && A.built && !A.zones.has(cur) && !A.near.has(cur)) this.down(A);
-    const due = [...this.map.values()].filter((A) => A.resident && !A.teardown && !A.zones.has(cur) && !A.near.has(cur));
+    const due = [...this.map.values()].filter((A) => A.resident && (!A.teardown || A.evict) && !A.zones.has(cur) && !A.near.has(cur));
     if (due.length) this.evict(due);
   }
 

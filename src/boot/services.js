@@ -106,8 +106,9 @@ export async function bootServices(made) {
   game.areas = new Areas(game)
     .register('workshop', { zones: ['workshop'], near: ['basement', 'testroom'] }).register('testroom', { zones: ['testroom'], near: ['workshop'] })
     .register('basement', { zones: ['basement'], near: ['workshop', 'testroom'] }).register('circuits', { zones: ['circuits'] })
-    .register('dunes', { zones: ['dunes', 'beach'] }).register('raceway', { zones: ['raceway'] })
-    .register('bazaar', { zones: ['bazaar'], build: (g) => g.bazaar?.build(), teardown: (g) => g.bazaar?.teardown() }).register('margarite', { zones: ['margarite'] });
+    .register('dunes', { zones: ['dunes', 'beach'], boot: true, evict: true, build: (g) => g.dunesDress?.build(g), teardown: (g) => g.dunesDress?.teardown(g) }) // (the ground stays, evicted; its dressing comes and goes)
+    .register('raceway', { zones: ['raceway'], boot: true, evict: true, build: (g) => g.racewayDress?.build(g), teardown: (g) => g.racewayDress?.teardown(g) })
+    .register('bazaar', { zones: ['bazaar'], boot: true, evict: true, build: (g) => { g.bazaar?.build(); g.bazaarHall?.build(g); }, teardown: (g) => { g.bazaar?.teardown(); g.bazaarHall?.teardown(g); } }) // (Dovina's hall and Calissa's dress together; the Treasury's static evicted with the zone).register('margarite', { zones: ['margarite'] });
   game.time = new TimeScale(game); // (who slows the world, and by how much: see core/time.js)
   game.log = new GameLog(game); // (the one place for text feedback; see gamelog.js)
   game.renderer = renderer; // (for a warm-up made later than boot: the Spirit Garden's, world/garden/realm.js build())
