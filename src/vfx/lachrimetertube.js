@@ -295,7 +295,7 @@ export class LachrimeterTube {
     // the brass, the plinth's glaze and the scale plate on one atlas (and their roughness and metalness on a small one beside it), so the
     // instrument's still body is one mesh: one draw. The plate's region 288 x 1024, the glaze's 256 square, the brass's 128.
     this.glazeC = cv(256, 256); this.brassC = mottle(cv(128, 128), '#a37c34', [['#c9a253', 0.5], ['#3f8a74', 0.45], ['#5b4218', 0.4]], 50);
-    this.plateC = cv(288, 1024); drawPlate(this.plateC); this.skinC = cv(SKIN.w * SKIN_K, SKIN.h * SKIN_K); this.skinT = tex(this.skinC);
+    this.plateC = cv(288, 1024); drawPlate(this.plateC); this.skK = SKIN_K * Math.min(1, T.visual.textureScale ?? 1); this.skinC = cv(SKIN.w * this.skK, SKIN.h * this.skK); this.skinT = tex(this.skinC); // (skK: half again on a phone, the tier's textureScale)
     { const o = cv(SKIN.w / 8, SKIN.h / 8), x = o.getContext('2d'); // (roughness in green, metalness in blue, a region each: MeshStandardMaterial's channels)
       for (const [k, r, m] of [['plate', 0.22, 0], ['glaze', 0.32, 0.05], ['brass', 0.38, 0.85]]) { const [x0, y0, w, h] = SKIN[k]; x.fillStyle = `rgb(255,${Math.round(r * 255)},${Math.round(m * 255)})`; x.fillRect(x0 / 8, y0 / 8, w / 8, h / 8); }
       this.ormC = o; this.ormT = new THREE.CanvasTexture(o); this.ormT.magFilter = this.ormT.minFilter = THREE.NearestFilter; this.ormT.generateMipmaps = false; }
@@ -353,7 +353,7 @@ export class LachrimeterTube {
     still.push(onto(at(roundBox(3.24, 0.8, 0.9, 0.07), [-0.62, -0.88, 0]), 'glaze', true), onto(at(roundBox(1.2, 0.14, 0.7, 0.04), [0, -0.42, 0]), 'glaze', true)); // (widened left for the cube plate)
     add(mergeGeometries(still), body); still.forEach((g) => g.dispose()); this.skin();
     // the count: the VFD's face and its glass
-    this.vfdC = cv(512, 160); this.vfdT = tex(this.vfdC);
+    this.vfdC = cv(tierSize(512), tierSize(160)); this.vfdT = tex(this.vfdC); // (drawn to its own size: 256 x 80 on a phone)
     add(new THREE.PlaneGeometry(1.66, 0.52), basic(0xffffff, { map: this.vfdT })).position.set(0, -0.88, 0.6);
     glasses.push(glassOf(at(new THREE.CylinderGeometry(0.31, 0.31, 1.72, 28, 1, true), [0, -0.88, 0.6], [0, 0, Math.PI / 2], [1, 1, 0.62]), 0.03, 0.45));
     // the cube plate: its Nixie window (the cube and the balance: vfx/lachrimeter/cubeplate.js) and its glass
@@ -530,7 +530,7 @@ export class LachrimeterTube {
   }
 
   /** The atlas drawn again from its three canvases (at build, a change of window colour, the fonts in). */
-  skin() { if (!this.skinC) return; const x = this.skinC.getContext('2d'); for (const [k, c] of [['plate', this.plateC], ['glaze', this.glazeC], ['brass', this.brassC]]) { const [x0, y0, w, h] = SKIN[k]; x.drawImage(c, x0 * SKIN_K, y0 * SKIN_K, w * SKIN_K, h * SKIN_K); } this.skinT.needsUpdate = true; }
+  skin() { if (!this.skinC) return; const x = this.skinC.getContext('2d'); for (const [k, c] of [['plate', this.plateC], ['glaze', this.glazeC], ['brass', this.brassC]]) { const [x0, y0, w, h] = SKIN[k]; x.drawImage(c, x0 * this.skK, y0 * this.skK, w * this.skK, h * this.skK); } this.skinT.needsUpdate = true; }
 
   /** The plinth's glaze in the window colour (ui/theme.js): its top as the base, its frame's light and dark mottled through. */
   glazeTheme() {
