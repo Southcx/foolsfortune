@@ -13,7 +13,7 @@
 // Prior art: The Legend of Zelda: The Wind Waker (the Great Sea charted square by square, an islet a square, the King of Red Lions
 // moored at its shore); Sunless Sea (fuel and the dark, port reports); Sea of Thieves (the sloop moored, the crew stepping off).
 //
-//   game.opensea = new OpenSea(game)   .active   .sailing   .arrive(island = 'anagami')   .respawn()   .update(dt)   .grid   .voyage   .helm   .seed
+//   game.opensea = new OpenSea(game)   .build()   .teardown() (render/areas.js stage 2: boot/services.js registers the pair)   .active   .sailing   .arrive(island = 'anagami')   .respawn()   .update(dt)   .grid   .voyage   .helm   .seed
 //   events (each with `by`): opensea.enter, opensea.board, opensea.moor { islet? quay? }, sea.* (seatrip.js), sea.secret { kind }, sea.fuel.low,
 //   sea.stele { islet, words, line }, seaserpent.paid { cubes, hull, of }  (a serpent sunk: progress/opensea/seaserpent.js serpentPay); the islets' puzzles and caches: puzzlepieces.js (`.pieces`); the herds: herds.js (`.herds`)
 // ---------------------------------------------------------------------------------------
@@ -30,6 +30,7 @@ import { today, now } from '../../core/calendar.js';
 import { stream } from '../../core/rng.js';
 import { buildSeaProps, squareCentre, SEA } from './seaprops.js';
 import { Helm } from './helm.js';
+import { markWorld, ownedSince, takeAway } from '../areaown.js';
 import { SeaHud } from './seahud.js';
 import { PuzzlePieces } from './puzzlepieces.js';
 import { SeaHerds } from './herds.js';
@@ -75,14 +76,35 @@ export class OpenSea {
   }
   dirty() { this.game.save?.dirty?.('openSea'); }
 
+  /** The room laid (render/areas.js stage 2, AREAS.md A1: on entry, or by arrive()): the islets and quays, the ship, the puzzles, the herds. */
   build() {
     if (this.built) return; this.built = true;
-    this.props = buildSeaProps(this);
-    this.helm = new Helm(this, 'sloop');
-    this.hud = new SeaHud(this);
+    const g = this.game;
+    this.hud ||= new SeaHud(this); // (a DOM line, kept: nothing of the GPU's)
+    if (!this.props) { const m = markWorld(g); this.props = buildSeaProps(this); this.propsOwned = ownedSince(g, m); }
+    const mark = markWorld(g);
+    this.helm = new Helm(this, this.ship || 'sloop');
     this.pieces = new PuzzlePieces(this); // (the islets' puzzles and the buried caches: puzzlepieces.js)
     this.herds = new SeaHerds(this); this.herds.load(this.herdState); // (the game day's herds on the water and the board: herds.js)
+    this.owned = ownedSince(g, mark);
     const q = this.props.quays.anagami; this.helm.placeAt(q.pos.clone().setY(SEA.y).add(_v.set(0, 0, 16)), Math.PI / 2);
+  }
+  /** The room torn down a few real seconds after the camera leaves it (render/areas.js stage 2): the ship, the puzzles' pieces and the
+   *  herds taken away (their listeners let go, the herds' state kept for the save), and the islets and quays with Calissa's dressing of
+   *  them (`game.seaLooks.teardown`) when she can take it down; until then the islets stay laid, so her dressing still sits on them.
+   *  The voyage, the chart, the finds and the puzzles' progress are data and stay; laid again on the next arrival. */
+  teardown() {
+    if (!this.built) return;
+    const g = this.game;
+    if (this.sailing) this.unseal();
+    this.hud?.show(false); this.ship = this.helm?.ship;
+    this.herdState = this.herds?.dump() ?? this.herdState;
+    this.herds?.dispose(); this.pieces?.dispose(); // (the ship and its wake are in the scene: taken away with the rest)
+    takeAway(g, this.owned);
+    const looks = g.seaLooks;
+    if (!looks?.dressed || looks.teardown) { looks?.teardown?.(g); takeAway(g, this.propsOwned); this.props = null; this.propsOwned = null; }
+    this.owned = null; this.helm = null; this.pieces = null; this.herds = null; this.moored = null;
+    this.built = false;
   }
 
   /** From the Index, a pier (Petra's: world/emocean/pier.js) or the respawn: onto that island's quay (Anagami's if it has none on this

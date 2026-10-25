@@ -92,12 +92,15 @@ Garden and a Great Dunemaw floor are built on first entry. A floor and the park'
 | the basement | the hub (the Index, the course, the lab, the lap circuits); the siege | the hole up; the Index to every room | at boot |
 | the Dunes | five: section 5 | between neighbours; the Weir to all four | at boot, one ground of 1,040 m |
 | the Great Dunemaw | the mouth (in the Gnomon flats); floors 1 to 3; the FOE's bowl | each floor's sandfall down; the way up | a floor at a time (built, disposed) |
-| the Raceway | the park (one area: section 7) | the Index; the hub's race board | on first entry; the ground is dropped after 10 s away |
-| Raku's Bazaar | the bazaar | its gate on the Weir's north beach | at boot |
-| the Emocean | a crossing (one area); Margarite's dock; the open sea (one area) | the jetty's pier; the docks | the crossing at boot, hidden; the open sea on first entry |
+| the Raceway | the park (one area: section 7) | the Index; the hub's race board | on entry, torn down after (stage 2, 2026-10-25: `raceway.teardown`); the ground is dropped after 10 s away |
+| Raku's Bazaar | the bazaar | its gate on the Weir's north beach | on entry, torn down after (stage 2, 2026-10-25); the gate at boot with the Dunes |
+| the Emocean | a crossing (one area); Margarite's dock; the open sea (one area) | the jetty's pier; the docks | the crossing at boot, hidden; the open sea on entry, torn down after (stage 2, 2026-10-25: the ship, the herds, the puzzles; the islets once their dressing can go too) |
 | the Spirit Garden | the garden (one area) | a Shrine | on first entry |
 
-**To change:** the Dunes become five areas. Margarite, the bazaar and the parked crossing become built on entry and disposed on exit
+**How a room tears down** (`world/areaown.js`): the world marked before its build; what is new after it is the build's own, and the
+teardown takes exactly that away. A look laid over the room after its build comes and goes by its own build and teardown.
+
+**To change:** the Dunes become five areas. Margarite and the parked crossing become built on entry and disposed on exit
 like the rest. That is Petra's call, measured.
 
 ## 5. The Dunes as five areas

@@ -28,7 +28,7 @@
 //   game.raceway = new Raceway(game)   .active   .heightAt(x, z)   .rideHeight(x, z)   .normalAt   .wind   .tracks   .track   .s   .d   .lat
 //   .gaps (gaps.js)   .buoys (buoys.js)   .line ('main' | 'cavern')   .sb   .sun (0..1)   .condition (conditions.js)   .edgeLines(step, line?, trackId?) -> [{ side, pts, hide }]
 //   .plateAt(pos) -> plate | null (a vein lane's has `lane`)   .nearThings(pos) -> [{ key, x, y, z, r, what }]   .glideAt(pos) -> bool   .rails   .rings   .pillars   .arrive()   .respawn(s?)   .update(dt)   .T (the Sun Circuit)
-//   .buildGround()   .releaseGround()   .onRelease(fn) (told when the ground is given back)   .pick(ray) -> { x, z, y } park-local | null
+//   .build()   .teardown() (render/areas.js stage 2: boot/services.js registers the pair)   .buildGround()   .releaseGround()   .onRelease(fn) (told when the ground is given back)   .pick(ray) -> { x, z, y } park-local | null
 //   .made (a made track on the build lot: madetrack.js)   .traps (the traps of the track that has them now: traps.js)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -48,6 +48,7 @@ import { Buoys } from './buoys.js';
 import { Siphons } from './siphons.js';
 import { MadeTrack } from './madetrack.js';
 import { Traps } from './traps.js';
+import { markWorld, ownedSince, takeAway } from '../areaown.js';
 
 const WIND = { speed: 8 }; // (the course wind's strength; its way is the track's, turned by the track's own angle)
 const OFF = { far: 40, secs: 3 }; // (metres past a track's edge, and real seconds there, before the board is set back on the track)
@@ -113,6 +114,7 @@ export class Raceway {
   build() {
     if (this.built) return; this.built = true;
     const g = this.game, P = this.P, ms = (this.buildMs = {}), lap = (k, t0) => { ms[k] = Math.round(performance.now() - t0); return performance.now(); };
+    const mark = markWorld(g); // (what stood before: the build's own is what is new after, AREAS.md A1: world/areaown.js)
     let t = performance.now();
     this.buildGround(); t = lap('terrain', t);
     this.barrier = new Barrier(g, { center: this.center, radius: RW.edge, y0: RW.y - 120, y1: RW.y + 300 });
@@ -122,7 +124,25 @@ export class Raceway {
     this.decks = buildDecks(this); buildWater(this); this.pits = buildPits(this); t = lap('features', t); // (the bridges, the water, the antlion pits: features.js)
     this.cavern = buildCavern(this); t = lap('cavern', t); // (its roof, stalactites and crystals: world/raceway/cavern.js)
     this.buoys.build(); this.siphons.build(); t = lap('buoys', t); // (the buoy runs' poles and floats, the siphons' arches: buoys.js, siphons.js)
+    // what the build put in the world (before Calissa's looks dress it: those come and go by her own release), kept so the teardown takes exactly that away (the ground's own terrain and body are releaseGround's)
+    this.owned = ownedSince(g, mark, { skip: [this.terrain], skipBodies: [this.groundBody] });
     g.racewayLooks?.dress(this); t = lap('looks', t); // (Calissa's: the sun plates' glyphs, the arch's lamps, the gates' marks; the slabs hidden)
+    g.racewayDress?.build?.(this); // (Calissa's race-day dressing comes and goes with the park: vfx/raceway/index.js)
+  }
+  /** The park torn down (render/areas.js, stage 2: AREAS.md A1), a few real seconds after the camera and its neighbours leave: the ground
+   *  given back (its releasers told, so every look that dresses the park undresses), Calissa's race-day dressing taken down, and every
+   *  object, body and collider the build put in the world taken out, their geometry and the materials nothing left in the scene still
+   *  uses disposed. The tracks, the field, the bests and a made track stay (they are data); built again on the next arrival. */
+  teardown() {
+    if (!this.built) return;
+    const g = this.game;
+    if (g.race?.running) g.race.end?.('left');
+    this.releaseGround(); this.awayT = 0;
+    g.racewayDress?.teardown?.(this);
+    takeAway(g, this.owned);
+    this.owned = null; this.barrier = null; this.cavern = null; this.siphons.on = null; this.buoys.group = null;
+    this.geysers = []; this.plates = []; this.rails = []; this.rings = []; this.decks = []; this.pits = []; this.sandfalls = []; this.pillars = [];
+    this.built = false;
   }
   /** The ground: the terrain on the field's heights (the field worked out in idle time after boot, prefetch: parkfield.js, or here) and
    *  its physics height field. Built at the first visit and again after each release. */
