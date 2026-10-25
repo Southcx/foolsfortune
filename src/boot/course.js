@@ -41,7 +41,7 @@ export function bootCourse(game, made) {
       const at = r.spawn === 'lab' ? course.labSpawn.v : r.spawn === 'mill' ? course.millSpawn.v : r.spawn === 'dunes' ? game.dunes.spawnPoint() : r.spawn === 'shore' ? game.dunes.beach?.landing().pos : r.spawn === 'siege' ? course.siegeSpawn.v : r.spawn === 'weir' ? course.weirSpawn.v : course.cps[r.cp]?.v;
       if (at) carto.addAnchor(r.name, r.id, at);
     }
-    carto.addAnchor('THE SPIRE', 'spire', game.dunes.spire.clone().setY(game.dunes.heightAt(game.dunes.spire.x, game.dunes.spire.z) + 1));
+    carto.addAnchor('THE GNOMON', 'gnomon', game.dunes.spire.clone().setY(game.dunes.heightAt(game.dunes.spire.x, game.dunes.spire.z) + 1));
     carto.restoreAnchors();
   }
   // what is counted and what is said about it, then the achievements over the counts
