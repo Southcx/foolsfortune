@@ -18,18 +18,19 @@
 // ---------------------------------------------------------------------------------------
 import { sfx } from '../../audio/sfx.js';
 
-/** The verbs in the row's order. `ctx`: the live context that shows it; `key`: the code held while the finger is down, or `call`: the
- *  game's own path; `when`: narrower still; `confirm`: the question a second tap answers. A `word` may be read from the game. */
+/** The verbs in the row's order. `row`: the bindings row it stands for on touch (core/bindings.js; PUT BACK has none: a chord asked twice);
+ *  `ctx`: the live context that shows it; `key`: the code held while the finger is down, or `call`: the game's own path; `when`:
+ *  narrower still; `confirm`: the question a second tap answers. A `word` may be read from the game. */
 export const PAUSE_VERBS = [
-  { id: 'view', ctx: ['foot', 'garden'], key: 'KeyZ', word: (g) => (g.player?.fp ? 'THIRD PERSON' : 'FIRST PERSON') },
-  { id: 'shoulder', ctx: ['foot'], key: 'KeyO', word: 'SHOULDER' },
+  { id: 'view', row: 'view', ctx: ['foot', 'garden'], key: 'KeyZ', word: (g) => (g.player?.fp ? 'THIRD PERSON' : 'FIRST PERSON') },
+  { id: 'shoulder', row: 'shoulder', ctx: ['foot'], key: 'KeyO', word: 'SHOULDER' },
   { id: 'putBack', ctx: ['garden'], word: 'PUT BACK', confirm: 'Put this planetoid back as it began?', when: (g) => !!g.realm?.jarBody?.planet,
     call: (g) => { const R = g.realm, P = R?.jarBody?.planet; if (P) R.resetPlanetoid(P); } }, // (undone with UNDO, as Ctrl+Z: realm.js keeps it)
-  { id: 'stepOff', ctx: ['skiff'], key: 'KeyF', word: 'STEP OFF' },
-  { id: 'back', ctx: ['race'], key: 'KeyR', word: 'BACK' },
-  { id: 'restart', ctx: ['race'], key: 'Backspace', word: (g) => (g.race?.mode?.rewind ? 'RESTART (HOLD: REWIND)' : 'RESTART') },
-  { id: 'retire', ctx: ['race'], word: 'RETIRE', call: (g) => { if (g.race?.running) g.race.end('retired'); } },
-  { id: 'giveUp', ctx: ['duel'], word: 'GIVE UP', confirm: 'Give up the duel? It counts as a loss.', call: (g) => { if (g.duel?.active) g.duel.yield(); } },
+  { id: 'stepOff', row: 'stepOff', ctx: ['skiff'], key: 'KeyF', word: 'STEP OFF' },
+  { id: 'back', row: 'toGate', ctx: ['race'], key: 'KeyR', word: 'BACK' },
+  { id: 'restart', row: 'restart', ctx: ['race'], key: 'Backspace', word: (g) => (g.race?.mode?.rewind ? 'RESTART (HOLD: REWIND)' : 'RESTART') },
+  { id: 'retire', row: 'toGate', ctx: ['race'], word: 'RETIRE', call: (g) => { if (g.race?.running) g.race.end('retired'); } },
+  { id: 'giveUp', row: 'duYield', ctx: ['duel'], word: 'GIVE UP', confirm: 'Give up the duel? It counts as a loss.', call: (g) => { if (g.duel?.active) g.duel.yield(); } },
 ];
 /** The least a key is held (real ms), so the frame after reads it down as well as pressed (RESTART is read on its release). */
 const LEAST_HELD = 60;
