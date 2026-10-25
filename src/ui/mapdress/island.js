@@ -53,6 +53,9 @@ function shownOf(graph, ways, byId) {
   return shown;
 }
 
+/** Bearings for a tile with no placed thing to hang toward (radians, the canvas's frame): east, west, then the diagonals, then north and south. */
+const OPEN_BEARINGS = [0, Math.PI, -Math.PI / 4, -3 * Math.PI / 4, Math.PI / 4, 3 * Math.PI / 4, -Math.PI / 2, Math.PI / 2];
+
 /** The layout: the cluster's ring and every other node's tile, in CSS px. */
 function layout(graph, byId, ways, shown, W, H) {
   const L = ISLAND_LOOK, kids = new Map();
@@ -108,7 +111,9 @@ function layout(graph, byId, ways, shown, W, H) {
     for (const n of pending) {
       const ang = angleToward(n);
       if (ang == null && guard < 4) { next.push(n); continue; }
-      const t = ang ?? (-Math.PI / 2 + (tiles.length / Math.max(1, free.length)) * Math.PI * 2);
+      // meeting only the hub (a disc, every bearing alike), or nothing placed: the first open bearing, the sides first, so tiles off
+      // one anchor fan out instead of stacking
+      const t = ang ?? (OPEN_BEARINGS.find((b) => tiles.every((o) => o.fixed || Math.abs(Math.atan2(Math.sin(o.bearing - b), Math.cos(o.bearing - b))) > 0.5)) ?? (-Math.PI / 2 + (tiles.length / Math.max(1, free.length)) * Math.PI * 2));
       const Rr = ring ? ring.R : tileW * 0.6;
       const sides = W / 2 - Rr >= tileW + L.gap + L.pad, rows = H / 2 - Rr >= tileH + L.gap + L.pad;
       const lane = sides && (Math.abs(Math.cos(t)) > 0.35 || !rows) ? 'radial' : rows ? 'rows' : 'radial'; // (no room beside the ring: above or below it)
@@ -116,7 +121,7 @@ function layout(graph, byId, ways, shown, W, H) {
       let tile;
       if (lane === 'rows') { const up = Math.sin(t) > 0 ? 1 : -1; tile = { node: n, lane, x: cx + Math.cos(t) * Rr, y: cy + up * (Rr + L.gap * 0.6 + tileH / 2 + kin * (tileH + 10)) }; }
       else { const d = Rr + L.gap + support(t) + kin * (support(t) * 2 + L.gap * 0.5); tile = { node: n, lane, x: cx + Math.cos(t) * d, y: cy + Math.sin(t) * d }; }
-      tiles.push(tile); place.set(n.id, { kind: 'tile', t: tile, angle: t });
+      tile.bearing = t; tiles.push(tile); place.set(n.id, { kind: 'tile', t: tile, angle: t });
     }
     pending = next;
   }
@@ -126,7 +131,12 @@ function layout(graph, byId, ways, shown, W, H) {
     for (let i = 0; i < tiles.length; i++) for (let j = i + 1; j < tiles.length; j++) {
       const A = tiles[i], B = tiles[j], ox = tileW + 10 - Math.abs(A.x - B.x), oy = tileH + 10 - Math.abs(A.y - B.y);
       if (ox <= 0 || oy <= 0) continue;
-      const [ax, ay] = ox < oy ? [Math.sign(B.x - A.x || 1) * ox / 2, 0] : [0, Math.sign(B.y - A.y || 1) * oy / 2];
+      // apart along the shallower overlap, unless the box's edge holds a tile there (a pile against the top): then along the other
+      const sx = Math.sign(B.x - A.x || (i % 2 ? -1 : 1)), sy = Math.sign(B.y - A.y || 1);
+      const atEdge = (T, d, axis) => !T.fixed && (axis === 'x' ? (d > 0 ? T.x >= maxX - 0.5 : T.x <= minX + 0.5) : (d > 0 ? T.y >= maxY - 0.5 : T.y <= minY + 0.5));
+      const held = (axis) => { const d = axis === 'x' ? sx : sy; return atEdge(A, -d, axis) || atEdge(B, d, axis); };
+      const alongX = ox < oy ? !held('x') || held('y') : held('y') && !held('x');
+      const [ax, ay] = alongX ? [sx * ox / 2, 0] : [0, sy * oy / 2];
       if (!A.fixed) { A.x -= B.fixed ? ax * 2 : ax; A.y -= B.fixed ? ay * 2 : ay; }
       if (!B.fixed) { B.x += A.fixed ? ax * 2 : ax; B.y += A.fixed ? ay * 2 : ay; }
     }
