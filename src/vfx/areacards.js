@@ -1,8 +1,11 @@
 // ---------------------------------------------------------------------------------------
 // THE AREA CARDS: the small painted vignette of where you are going, set on the area wipe's held cover (vfx/areawipe.js) above the
-// destination's name. The painted cards come later (Calissa's, one an area, `art`: an image URL under assets/); until then each is drawn
-// here, once a crossing, from its row's palette and motif onto the wipe's one small canvas: a sky, its sun or moon, a far silhouette in
-// the motif's shape, a near ground, paper grain, and a ragged brushed edge (the card is a painting, not a screenshot).
+// destination's name. Each is painted (Calissa's, one an area: `art`, its webp under assets/areacards/, 320 x 180 with the print's
+// ragged edge in its alpha, painted by scripts/areacards/paint.py in the feelings' skies' hand, from the row's palette). The painting is
+// asked for when the wipe closes (a lazy chunk, base64 as the skies' are, so the page's pack carries it on iOS) and drawn into the wipe's
+// one small canvas; if it is not there within the close (0.55 real s) or fails, the card is drawn here from its row's palette and motif
+// instead: a sky, its sun or moon, a far silhouette in the motif's shape, a near ground, paper grain, and a ragged brushed edge. Nothing
+// is kept between crossings but the chunk the module loader holds (one painting's string, about 15 KB, once it has been shown).
 //
 // The rows' names are the plain ones of Dovina's plan (docs/plans/AREAS.md 4 and 5; src/progress/areas.js, DUNES_AREAS): placeholders
 // until the owner calls the areas settled and Espada names them. `layer` is the line set small over the name; `dress` is the island's
@@ -13,8 +16,9 @@
 // painted location cards of Okami (Clover, 2006: sumi-e with a ragged brush edge, washi grain) and of the Ace Attorney "location" slates,
 // Persona 5's calendar card (the place shown before it is entered), and the tarot's small vignette above a card's title.
 //
-//   AREA_CARDS[id] = { name, layer, dress, motif, sky: [top, horizon], sun, far, near, ink, art? }
+//   AREA_CARDS[id] = { name, layer, dress, motif, sky: [top, horizon], sun, far, near, ink, art?: () => import(webp?b64) }
 //   cardOf(id) -> a row (an exact id, then its last part after '.', then its first; else the neutral row)
+//   showAreaCard(canvas, id, { name, wait }?, done?) -> the row   (the painting, else drawn; done('art' | 'drawn') once it stands)
 //   drawAreaCard(canvas, id, { name }?) -> the row drawn   (the canvas's own size; deterministic from the id)
 // ---------------------------------------------------------------------------------------
 
@@ -22,22 +26,22 @@ const ROW = (name, layer, motif, sky, sun, far, near, extra = {}) => ({ name, la
 
 export const AREA_CARDS = {
   // the Dunes (Dovina's five: AREAS.md 5)
-  weir: ROW('the Weir', 'the Dunes', 'oasis', ['#7fb6c9', '#f2d2a2'], '#fff2c8', '#c9925e', '#a8683e'),
-  shore: ROW('the shore', 'the Dunes', 'water', ['#5f9fc0', '#f4dcb4'], '#fff6dc', '#3f7f98', '#d8b07a'),
-  ridges: ROW('the crystal ridges', 'the Dunes', 'ridge', ['#6a5aa0', '#e8b8a8'], '#ffe0f0', '#8a5ab0', '#b47a52'),
-  flats: ROW('the Gnomon flats', 'the Dunes', 'flats', ['#d07a3a', '#f6d79a'], '#fff0b8', '#b8743e', '#e0aa66'),
-  ruins: ROW('the ruins', 'the Dunes', 'ruins', ['#2a2650', '#c98a6a'], '#f3e2ff', '#5a3a4a', '#8a5a40'),
+  weir: ROW('the Weir', 'the Dunes', 'oasis', ['#7fb6c9', '#f2d2a2'], '#fff2c8', '#c9925e', '#a8683e', { art: () => import('../assets/areacards/weir.webp?b64') }),
+  shore: ROW('the shore', 'the Dunes', 'water', ['#5f9fc0', '#f4dcb4'], '#fff6dc', '#3f7f98', '#d8b07a', { art: () => import('../assets/areacards/shore.webp?b64') }),
+  ridges: ROW('the crystal ridges', 'the Dunes', 'ridge', ['#6a5aa0', '#e8b8a8'], '#ffe0f0', '#8a5ab0', '#b47a52', { art: () => import('../assets/areacards/ridges.webp?b64') }),
+  flats: ROW('the Gnomon flats', 'the Dunes', 'flats', ['#d07a3a', '#f6d79a'], '#fff0b8', '#b8743e', '#e0aa66', { art: () => import('../assets/areacards/flats.webp?b64') }),
+  ruins: ROW('the ruins', 'the Dunes', 'ruins', ['#2a2650', '#c98a6a'], '#f3e2ff', '#5a3a4a', '#8a5a40', { art: () => import('../assets/areacards/ruins.webp?b64') }),
   // the rest of the map (AREAS.md 4)
-  workshop: ROW('the workshop', 'Anagami Island', 'room', ['#3a1c12', '#9a5a32'], '#ffb46a', '#5c2e1c', '#2a140c'),
-  hub: ROW('the hub', 'the basement', 'hoops', ['#1e1a2a', '#4a3a3a'], '#f1d2b0', '#6c9682', '#2a2420'),
-  siege: ROW('the siege', 'the basement', 'room', ['#24141a', '#6a3030'], '#ff8a5a', '#40202a', '#1a0c10'),
-  raceway: ROW('the Raceway park', 'the Raceway', 'track', ['#4a8ac0', '#f2cc8e'], '#fff4d0', '#c08048', '#d89c5a'),
-  bazaar: ROW('Raku\'s Bazaar', 'Anagami Island', 'dome', ['#2a1440', '#b0503a'], '#ffd36a', '#6a2a50', '#3a1a20'),
-  garden: ROW('the Spirit Garden', 'your Pneuka Jar', 'planet', ['#1a2a4a', '#6a8aa8'], '#fff2d8', '#4f7a4a', '#2f5c3e'),
-  dunemaw: ROW('the Great Dunemaw', 'the Dunes', 'maw', ['#1a0e20', '#4a2a3a'], '#7fdcff', '#3a1a2a', '#0e0710'),
-  crossing: ROW('a crossing', 'the Emocean', 'water', ['#1a2a40', '#7a6a8a'], '#d8f0ff', '#2a3a5a', '#17111f', { dress: 'brine' }),
-  margarite: ROW('Margarite\'s dock', 'Margarite', 'water', ['#3a4a6a', '#e8d8e8'], '#fffaf0', '#8a8aa0', '#4a4a5a', { dress: 'brine' }),
-  opensea: ROW('the open sea', 'the Emocean', 'water', ['#204a6a', '#a8c8d0'], '#ffffff', '#2a5a70', '#17111f', { dress: 'brine' }),
+  workshop: ROW('the workshop', 'Anagami Island', 'room', ['#3a1c12', '#9a5a32'], '#ffb46a', '#5c2e1c', '#2a140c', { art: () => import('../assets/areacards/workshop.webp?b64') }),
+  hub: ROW('the hub', 'the basement', 'hoops', ['#1e1a2a', '#4a3a3a'], '#f1d2b0', '#6c9682', '#2a2420', { art: () => import('../assets/areacards/hub.webp?b64') }),
+  siege: ROW('the siege', 'the basement', 'room', ['#24141a', '#6a3030'], '#ff8a5a', '#40202a', '#1a0c10', { art: () => import('../assets/areacards/siege.webp?b64') }),
+  raceway: ROW('the Raceway park', 'the Raceway', 'track', ['#4a8ac0', '#f2cc8e'], '#fff4d0', '#c08048', '#d89c5a', { art: () => import('../assets/areacards/raceway.webp?b64') }),
+  bazaar: ROW('Raku\'s Bazaar', 'Anagami Island', 'dome', ['#2a1440', '#b0503a'], '#ffd36a', '#6a2a50', '#3a1a20', { art: () => import('../assets/areacards/bazaar.webp?b64') }),
+  garden: ROW('the Spirit Garden', 'your Pneuka Jar', 'planet', ['#1a2a4a', '#6a8aa8'], '#fff2d8', '#4f7a4a', '#2f5c3e', { art: () => import('../assets/areacards/garden.webp?b64') }),
+  dunemaw: ROW('the Great Dunemaw', 'the Dunes', 'maw', ['#1a0e20', '#4a2a3a'], '#7fdcff', '#3a1a2a', '#0e0710', { art: () => import('../assets/areacards/dunemaw.webp?b64') }),
+  crossing: ROW('a crossing', 'the Emocean', 'water', ['#1a2a40', '#7a6a8a'], '#d8f0ff', '#2a3a5a', '#17111f', { dress: 'brine', art: () => import('../assets/areacards/crossing.webp?b64') }),
+  margarite: ROW('Margarite\'s dock', 'Margarite', 'water', ['#3a4a6a', '#e8d8e8'], '#fffaf0', '#8a8aa0', '#4a4a5a', { dress: 'brine', art: () => import('../assets/areacards/margarite.webp?b64') }),
+  opensea: ROW('the open sea', 'the Emocean', 'water', ['#204a6a', '#a8c8d0'], '#ffffff', '#2a5a70', '#17111f', { dress: 'brine', art: () => import('../assets/areacards/opensea.webp?b64') }),
 };
 const NEUTRAL = ROW('', '', 'dunes', ['#4a3a5a', '#c89a7a'], '#fff0d8', '#8a5a4a', '#5a3428');
 
@@ -155,5 +159,25 @@ export function drawAreaCard(canvas, id, { name } = {}) {
   band(g, W, H, A.near, (u) => 0.86 + 0.03 * Math.sin(u * 5 + 1.3));
   for (let i = 0; i < W * H / 60; i++) { g.fillStyle = r() < 0.5 ? 'rgba(255,240,220,.08)' : 'rgba(30,12,6,.09)'; g.fillRect(r() * W, r() * H, 1, 1); } // (the paper's grain)
   brushEdge(g, W, H, r);
+  return A;
+}
+
+/** The card for a crossing: its painting when it comes within `wait` real seconds, else drawn here. `done(how)` once, as it stands. A
+ *  later call on the same canvas wins: a painting arriving for an earlier crossing is dropped. */
+let shown = 0;
+export function showAreaCard(canvas, id, { name, wait = 0.55 } = {}, done) {
+  const A = cardOf(id), ticket = canvas.__areaCard = ++shown;
+  let settled = false, timer = 0;
+  const settle = (how, img) => {
+    if (settled) return; settled = true; clearTimeout(timer);
+    if (canvas.__areaCard !== ticket) return;
+    const g = how === 'art' && canvas.width ? canvas.getContext('2d') : null;
+    if (g) { g.clearRect(0, 0, canvas.width, canvas.height); g.drawImage(img, 0, 0, canvas.width, canvas.height); } else { how = 'drawn'; drawAreaCard(canvas, id, { name }); }
+    done?.(how);
+  };
+  if (!A.art || typeof Image === 'undefined') { settle('drawn'); return A; }
+  timer = setTimeout(() => settle('drawn'), wait * 1000);
+  A.art().then(({ default: b64 }) => new Promise((res, rej) => { const img = new Image(); img.onload = () => res(img); img.onerror = rej; img.src = `data:image/webp;base64,${b64}`; }))
+    .then((img) => settle('art', img), () => settle('drawn'));
   return A;
 }
