@@ -22,6 +22,7 @@
 import * as THREE from 'three';
 import { LAB_GLSL, mindTime } from './labradorite.js';
 import { LIQUID_GLSL, liquidUniforms } from './liquid.js';
+import { matteMaterial } from './matte.js';
 
 /** The Great Dunemaw's mood, shared by every floor's materials (docs/plans/DUNEMAW.md, the look): uDepth 0 on floor 1 (the soft verse:
  *  the colours at a third, everything slow) to 1 on floor 3 (the wall: full cry, drifting, the light climbing the terraces); uSlam
@@ -98,7 +99,7 @@ function floorMaterial(env, u) {
 // colour, rippled by the owner's sand-ripple photograph (the liquid pack's B channel) along the floor, and in the troughs the Lachryma
 // shows through: the labradorite's colours in the hollows, more the deeper the floor.
 function sandMaterial(u) {
-  const m = new THREE.MeshStandardMaterial({ name: 'dunemaw-sand', color: 0xd9a066, roughness: 0.92, metalness: 0 });
+  const m = matteMaterial({ name: 'dunemaw-sand', color: 0xd9a066 }); // (Lambert: matte, no metal, no env, its patch never reads roughness; half the GLSL of Standard and 0.5 to 0.7 of its cost a lit pixel, vfx/matte.js; the program audit, 2026-10-25)
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, u, MOOD, liquidUniforms());
     sh.vertexShader = sh.vertexShader
