@@ -28,7 +28,7 @@
 //   game.raceway = new Raceway(game)   .active   .heightAt(x, z)   .rideHeight(x, z)   .normalAt   .wind   .tracks   .track   .s   .d   .lat
 //   .gaps (gaps.js)   .buoys (buoys.js)   .line ('main' | 'cavern')   .sb   .sun (0..1)   .condition (conditions.js)   .edgeLines(step, line?, trackId?) -> [{ side, pts, hide }]
 //   .plateAt(pos) -> plate | null (a vein lane's has `lane`)   .nearThings(pos) -> [{ key, x, y, z, r, what }]   .glideAt(pos) -> bool   .rails   .rings   .pillars   .arrive()   .respawn(s?)   .update(dt)   .T (the Sun Circuit)
-//   .build()   .teardown() (render/areas.js stage 2: boot/services.js registers the pair)   .buildGround()   .releaseGround()   .onRelease(fn) (told when the ground is given back)   .pick(ray) -> { x, z, y } park-local | null
+//   .build()   .teardown() (render/areas.js stage 2: boot/services.js registers the pair)   .prepare(ms) -> bool   .fieldProgress (the field behind a cover)   .buildGround()   .releaseGround()   .onRelease(fn) (told when the ground is given back)   .pick(ray) -> { x, z, y } park-local | null
 //   .made (a made track on the build lot: madetrack.js)   .traps (the traps of the track that has them now: traps.js)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -147,7 +147,7 @@ export class Raceway {
   buildGround() {
     if (this.chunks) return;
     const g = this.game, P = this.P, t0 = performance.now();
-    const field = this.field || fieldOf(P); this.field = field;
+    const field = this.field || (this.fieldJob && this.fieldJob.step(() => true) ? this.fieldJob.field : fieldOf(P)); this.field = field; // (the prefetch's rows kept: only what is left is worked)
     const N = field.n, onGrid = (x, z) => { const fi = (x + RW.half) / RW.step, fj = (z + RW.half) / RW.step, i = Math.round(fi), j = Math.round(fj); return Math.abs(fi - i) < 1e-4 && Math.abs(fj - j) < 1e-4 && i >= 0 && j >= 0 && i < N && j < N ? field.h[j * N + i] : P.heightAt(x, z); };
     // the Dunes' own sand material on a field of this place's heights, and its height field to stand on
     const mat = g.dunes?.terrain?.material || new THREE.MeshStandardMaterial({ color: 0xe8b070, roughness: 0.92 });
@@ -179,6 +179,18 @@ export class Raceway {
     const slice = (dl) => { if (this.field) return; if (job.step(() => dl.timeRemaining() > 1)) { this.field = job.field; this.fieldFrom = 'idle'; } else idle(slice); };
     idle(slice);
   }
+  /** The field finished behind a cover (the area wipe's hold: Petra's seam), `ms` real milliseconds a call, so an arrival before the
+   *  idle prefetch is done never works the rest at once (the iPhone XR's lost graphics, v283: CASEBOOK NEW:memory-bound-by-view).
+   *  True once the field is whole; `.fieldProgress` (0..1) fills the wipe's thread. arrive() needs nothing of it: it works what is
+   *  left at once, as before. */
+  prepare(ms = 12) {
+    if (this.field) return true;
+    if (!this.fieldJob) this.prefetch();
+    const end = performance.now() + ms, job = this.fieldJob;
+    if (job.step(() => performance.now() < end)) { this.field = job.field; this.fieldFrom = this.fieldFrom || 'cover'; }
+    return !!this.field;
+  }
+  get fieldProgress() { return this.field ? 1 : this.fieldJob?.progress ?? 0; }
 
   /** A track's two edges as world points every `step` metres, a metre over the ground at the running surface's edge: where the edge
    *  strings hang (Calissa's look). [{ side: -1 | 1, pts: [Vector3], hide: Uint8Array }], left then right; `hide` marks the points

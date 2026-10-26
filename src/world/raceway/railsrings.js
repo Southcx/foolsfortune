@@ -29,6 +29,9 @@ import { COMBO } from '../../courier/skiff/combo.js';
 export const RING = { r: 3.2, add: 8, dur: 1.0, kick: 3, again: 6 };
 const STEP = 2, POST = 8; // (metres between a rail's points; between its columns)
 
+/** A unit box, unindexed (position and normal: what paint() leaves), the lintels' template; made once. */
+let lintelBox = null; const LINTEL_BOX = () => (lintelBox ||= new THREE.BoxGeometry(1, 1, 1).toNonIndexed());
+const _m = new THREE.Matrix4(), _nm = new THREE.Matrix3(), _a = new THREE.Vector3(), _mid = new THREE.Vector3(), _up = new THREE.Vector3(0, 1, 0);
 const paint = (geo, color) => {
   const g = geo.index ? geo.toNonIndexed() : geo, c = new THREE.Color(color), n = g.attributes.position.count, a = new Float32Array(n * 3);
   for (let i = 0; i < n; i++) c.toArray(a, i * 3);
@@ -54,11 +57,23 @@ export function railPath(R, def, T = R.T) {
  *  space, vertex-coloured: the caller draws them). The park's tracks in buildRails, a made track's in madetrack.js. */
 export function railsOf(R, T, geos) {
   const rails = [];
-  const lintels = (pts, ups) => { for (let i = 0; i < pts.length - 1; i++) {
-    const p = pts[i], q = pts[i + 1], len = p.distanceTo(q); if (len < 1e-3) continue;
-    const m = new THREE.Matrix4().lookAt(p, q, ups ? ups[i] : new THREE.Vector3(0, 1, 0)).setPosition(p.clone().lerp(q, 0.5));
-    geos.push(paint(new THREE.BoxGeometry(0.5, 0.32, len + 0.05).applyMatrix4(m), ups ? 0x5a3a8a : 0x8a4a3a));
-  } };
+  const lintels = (pts, ups) => { // (every segment's box written into one geometry: a box, a copy and a colour array a segment was 25 MB of garbage an arrival)
+    const T0 = LINTEL_BOX(), tp = T0.attributes.position.array, tn = T0.attributes.normal.array, nv = tp.length / 3;
+    const pos = new Float32Array(tp.length * (pts.length - 1)), nor = new Float32Array(pos.length); let o = 0;
+    for (let i = 0; i < pts.length - 1; i++) {
+      const p = pts[i], q = pts[i + 1], len = p.distanceTo(q); if (len < 1e-3) continue;
+      _m.lookAt(p, q, ups ? ups[i] : _up).setPosition(_mid.copy(p).lerp(q, 0.5)); _nm.getNormalMatrix(_m); const L = len + 0.05;
+      for (let k = 0; k < nv; k++, o += 3) {
+        _a.set(tp[k * 3] * 0.5, tp[k * 3 + 1] * 0.32, tp[k * 3 + 2] * L).applyMatrix4(_m); pos[o] = _a.x; pos[o + 1] = _a.y; pos[o + 2] = _a.z;
+        _a.set(tn[k * 3], tn[k * 3 + 1], tn[k * 3 + 2]).applyMatrix3(_nm).normalize(); nor[o] = _a.x; nor[o + 1] = _a.y; nor[o + 2] = _a.z;
+      }
+    }
+    if (!o) return;
+    const geo = new THREE.BufferGeometry(), c = new THREE.Color(ups ? 0x5a3a8a : 0x8a4a3a), col = new Float32Array(o);
+    for (let k = 0; k < o; k += 3) c.toArray(col, k);
+    geo.setAttribute('position', new THREE.BufferAttribute(o < pos.length ? pos.slice(0, o) : pos, 3)); geo.setAttribute('normal', new THREE.BufferAttribute(o < nor.length ? nor.slice(0, o) : nor, 3)); geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    geos.push(geo);
+  };
   const columns = (pts, cum, ups) => { for (let d = 0; d <= cum[cum.length - 1]; d += POST) {
     let i = 0; while (i < pts.length - 2 && cum[i + 1] < d) i++;
     if (ups && ups[i].y < 0.85) continue; // (no column under a loop's sides or top, nor a steep bank)
