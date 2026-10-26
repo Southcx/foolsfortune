@@ -29,7 +29,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { bakedCanvasTexture } from '../render/bakedcanvas.js';
-import { tierSize } from './tierscale.js';
+import { tierSize, tierScale, fitToTier } from './tierscale.js';
 import { warpMaterial } from './stormwarp.js';
 /** The width of the copy the sky's PMREM is filtered from (its cube's face a quarter of it). */
 const ENV_W = 512;
@@ -120,7 +120,7 @@ export class Sky {
       // (drawn at 1024 x 512, the owner's own paintings' size, over which it comes in: 2 MB on the GPU where the 2048 painting was 8; at
       // the 480-line present a sky's texel is magnified at either size. A baked canvas, its pixels let go once on the GPU:
       // render/bakedcanvas.js. The resolution pass, 2026-10-25, docs/plans/art/texture-budget.md)
-      const t = bakedCanvasTexture((g, w, h) => g.drawImage(im, 0, 0, w, h), im.width, im.height, { scale: FEELING_SCALE });
+      const t = bakedCanvasTexture((g, w, h) => g.drawImage(im, 0, 0, w, h), im.width, im.height, { scale: FEELING_SCALE * tierScale() }); // (a quarter on a phone: vfx/tierscale.js)
       t.colorSpace = THREE.SRGBColorSpace; t.wrapS = THREE.RepeatWrapping; t.wrapT = THREE.ClampToEdgeWrapping; t.minFilter = t.magFilter = THREE.LinearFilter; t.generateMipmaps = false;
       this.game.renderer?.initTexture?.(t); // (uploaded now, not at its first frame)
       const c = document.createElement('canvas'); c.width = this.W || 128; c.height = this.H || 64;
@@ -131,14 +131,14 @@ export class Sky {
   }
 
   async load() {
-    const tex = await new THREE.TextureLoader().loadAsync(`data:image/webp;base64,${skyB64}`);
+    const tex = fitToTier(await new THREE.TextureLoader().loadAsync(`data:image/webp;base64,${skyB64}`)); // (the paintings at the tier's size: 512 x 256 on a phone, vfx/tierscale.js)
     tex.colorSpace = THREE.SRGBColorSpace;
     tex.mapping = THREE.EquirectangularReflectionMapping;
     tex.wrapS = THREE.RepeatWrapping; tex.wrapT = THREE.ClampToEdgeWrapping;
     tex.minFilter = THREE.LinearFilter; tex.magFilter = THREE.LinearFilter; tex.generateMipmaps = false; // (no mipmaps: the atan seam would show as a line)
     this.texture = tex;
     const [day, night] = await Promise.all([dayB64, nightB64].map((b) => new THREE.TextureLoader().loadAsync(`data:image/webp;base64,${b}`)));
-    for (const t of [day, night]) { t.colorSpace = THREE.SRGBColorSpace; t.wrapS = THREE.RepeatWrapping; t.wrapT = THREE.ClampToEdgeWrapping; t.minFilter = t.magFilter = THREE.LinearFilter; t.generateMipmaps = false; }
+    for (const t of [day, night]) { fitToTier(t); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = THREE.RepeatWrapping; t.wrapT = THREE.ClampToEdgeWrapping; t.minFilter = t.magFilter = THREE.LinearFilter; t.generateMipmaps = false; }
     this.G.uSkyDay.value = day; this.G.uSkyNight.value = night;
     // a small copy in memory: what colour is the sky in a direction (for the fog, and for things that tint by it)
     const im = tex.image, W = 128, H = 64;

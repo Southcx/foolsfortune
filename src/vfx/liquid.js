@@ -38,6 +38,7 @@
 import * as THREE from 'three';
 import packB64 from '../assets/liquid_pack.webp?b64';
 import pack2B64 from '../assets/liquid_pack2.webp?b64';
+import { tierSize } from './tierscale.js';
 
 const _tex = {};
 function pack(key, b64) {
@@ -45,7 +46,8 @@ function pack(key, b64) {
   // (the fourth channel is data, not coverage: decoded as an ImageBitmap with premultiplyAlpha 'none', so a browser that premultiplies
   // an <img> on decode (WebKit) cannot zero the colour under the texels whose alpha is 0, more than half of them)
   const t = _tex[key] = new THREE.Texture();
-  const L = new THREE.ImageBitmapLoader(); L.setOptions({ premultiplyAlpha: 'none', colorSpaceConversion: 'none' });
+  const L = new THREE.ImageBitmapLoader(); const n = tierSize(512, 64); // (at the tier's size, 256 on a phone: resized by the decoder itself, so the data in alpha is never premultiplied by a canvas)
+  L.setOptions({ premultiplyAlpha: 'none', colorSpaceConversion: 'none', ...(n < 512 ? { resizeWidth: n, resizeHeight: n, resizeQuality: 'high' } : {}) });
   L.load(`data:image/webp;base64,${b64}`, (bmp) => { t.image = bmp; t.needsUpdate = true; });
   t.flipY = false; // (an ImageBitmap is never flipped on upload; the noise tiles either way)
   t.wrapS = t.wrapT = THREE.RepeatWrapping;
