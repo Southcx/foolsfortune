@@ -20,7 +20,8 @@
 // (5.4) into the English title cut rough in Cinzel and gilded (arriving 6.5 to 7.4), settled (8.0), the System's hanko burned in the
 // window colour (8.4), held, the exit up into the light (11.0). A title not in TITLES skips the writing and the comb: the cut sweeps in
 // on its own. Any key dismisses it once settled (to the exit). One at a time: the rest wait in a queue, and nothing starts on the title
-// screen or in a cinematic. It never pauses play and adds no log line (the log already says the title: tracking.js).
+// screen, in a cinematic or in a live moment (`game.liveMoment()`: one up then leaves at once, and comes again if unsettled). It never
+// pauses play and adds no log line (the log already says the title: tracking.js).
 //
 // Events, for Wanda's sound: `placard.beat { k, tier }`, k one of descend, contact, write, comb, settle, seal, exit (write and comb only
 // when the title is written; a beat a dismissal skips is not sent).
@@ -631,7 +632,6 @@ export class TitlePlacard {
     this.r = S.r; this.S = S; this.frame = new THREE.Group(); this.slot = S.add(this.frame, { anchor: 'c', x: 0, y: 0, z: 0, update: (dt, slot) => this.update(dt, slot) }); // (empty until the first title: its layers' programs are made then, not at boot)
     this.frame.userData.overlayHidden = true;
   }
-
   /** One title to hand down (achievement.unlock's payload, or one by hand): it waits its turn. */
   show(e) { if (!e?.title) return; this.queue.push({ title: String(e.title), tier: e.tier || 1, id: e.id || null, ach: e.ach || null, tierName: e.tierName || null, points: e.points || null }); }
   dismiss() { if (this.active && this.t >= T_SETTLE && this.t < T_EXIT) { this.t = T_EXIT; this.beat = BEATS.findIndex((b) => b[0] === 'exit'); } }
@@ -672,7 +672,6 @@ export class TitlePlacard {
     const t = new THREE.CanvasTexture(c); t.mapping = THREE.EquirectangularReflectionMapping; t.colorSpace = THREE.SRGBColorSpace;
     const pm = new THREE.PMREMGenerator(this.r); this.env = pm.fromEquirectangular(t).texture; pm.dispose(); t.dispose(); return this.env;
   }
-
   /** The island's dress where the Courier stands (see the header); Clay when the game cannot tell. */
   dressHere() { const g = this.game; if (g.emocean?.stage?.active) return 'brine'; return DRESS_OF_ZONE[g.zones?.whole] || 'clay'; }
 
@@ -699,23 +698,24 @@ export class TitlePlacard {
   }
 
   update(dt, slot) {
-    const g = this.game, B = document.body.classList, busy = !!(g.title?.active || B.contains('cine'));
+    const g = this.game, B = document.body.classList, busy = !!(g.title?.active || B.contains('cine') || g.liveMoment?.()); // (a race, a trial, a crossing, a duel, a FOE under way: core/livemoment.js; the owner, v296: never mid-race)
     if (!this.active && !this.building && !this.pending) { if (!this.queue.length || busy) { this.frame.userData.overlayHidden = true; return; } this.begin(this.queue.shift()); }
     if (this.building) {
       const b = this.building; this.frame.userData.overlayHidden = true;
-      if (!b.it) return;
+      if (busy || !b.it) return; // (its slices wait out a live moment too)
       const t0 = performance.now(); let r; do r = b.it.next(); while (!r.done && performance.now() - t0 < 6);
       if (!r.done) return;
       // its programs compiled against its own target (not the canvas: a target is drawn linear and untoned), then it begins
       const V = r.value; V.tier = b.e.tier; this.scene.environment = V.env; this.scene.add(V.root); this.targets(slot); this.building = null; this.pending = V;
       const rr = this.r, was = rr.getRenderTarget(); rr.setRenderTarget(this.rt);
-      const go = () => { if (this.pending !== V) return; this.pending = null; this.active = V; this.t = 0; this.age = 0; this.beat = 0; };
+      const go = () => { if (this.pending !== V) return; this.pending = null; this.active = V; this.activeE = b.e; this.t = 0; this.age = 0; this.beat = 0; };
       const asy = (sc, cam, into) => (rr.compileAsync ? rr.compileAsync(sc, cam, into) : (rr.compile(sc, cam, into), null)); // (and the stage's layers, against the canvas)
       try { const p = asy(this.scene, this.cam); rr.setRenderTarget(null); Promise.all([p, asy(this.frame, this.S.camera, this.S.scene)]).then(go, go); } catch { go(); }
       rr.setRenderTarget(was);
     }
     if (this.pending) { this.frame.userData.overlayHidden = true; return; }
     const V = this.active; if (!V) return;
+    if (busy && this.t < T_EXIT) { if (this.t < T_SETTLE && this.activeE) this.queue.unshift(this.activeE); this.t = T_EXIT; this.beat = BEATS.findIndex((b) => b[0] === 'exit'); } // (a live moment began under it)
     this.frame.userData.overlayHidden = false;
     this.t += dt; this.age += dt;
     if (!V.hand && this.t >= T_W0 && this.t < T_ARR0 - 0.3) this.t = T_ARR0 - 0.3; // (no running hand: no writing, no comb)
