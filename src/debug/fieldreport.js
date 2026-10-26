@@ -7,6 +7,9 @@
 //                    last (how the load before this one ended: index.html's boot watch note), boot (its stages, real ms),
 //                    moments [[what, real s]] (the boot watch's moments after boot, the graphics lost and given back, each zone entered,
 //                    each shader program linked after the first frame and each frame over FIELD.longFrame real ms),
+//                    slow [[ms, real s, the events emitted since the frame before]] (the last FIELD.slows frames over FIELD.slow real ms once
+//                    play began: what the frame was doing, by what it said; the owner's iPhone XR, v296: "some slowdown when achievements
+//                    unlock in rapid succession"),
 //                    errors [[message, real s]] (the first few after boot), samples [{ s, fps, med, worst, geos, tex, programs, heap,
 //                    zone, areas, lines }], ended ('hidden' | 'left', s),
 //                    firsts [{ s, what, in, zone, dry, f }] (at a loss, newest first: each material first drawn since play began),
@@ -25,8 +28,9 @@
 import { now } from '../core/calendar.js';
 
 /** every / later: real s between writes, before and after the first five real minutes; keep: loads kept; samples, moments, errors: rows kept
- *  a report (the newest samples, the first moments and errors). */
-export const FIELD = { every: 30, later: 120, early: 300, keep: 30, samples: 40, moments: 80, errors: 8, longFrame: 300, firsts: 60, frames: 30 };
+ *  a report (the newest samples, the first moments and errors); slow, slows: a slow frame's real ms, and how many are kept (the newest);
+ *  glCheck: real s between GL error checks (getError makes the CPU wait for the card: on iOS a round trip to the GPU process). */
+export const FIELD = { every: 30, later: 120, early: 300, keep: 30, samples: 40, moments: 80, errors: 8, longFrame: 300, firsts: 60, frames: 30, slow: 100, slows: 32, glCheck: 15 };
 
 const rid = () => (globalThis.crypto?.randomUUID?.() || `${now()}${performance.now()}`).replace(/[^a-z0-9]/gi, '').slice(0, 12);
 const sec = () => Math.round(performance.now() / 100) / 10;
@@ -41,8 +45,10 @@ export class FieldReport {
       build: W?.build || game.build || '', at: now(), ua: navigator.userAgent, device: game.input?.device ?? null,
       screen: [screen.width, screen.height], view: [innerWidth, innerHeight], dpr: devicePixelRatio,
       standalone: !!(matchMedia?.('(display-mode: standalone)').matches || navigator.standalone), framed: window.top !== window,
-      last: W?.last || null, boot: (W?.stages || []).map(([n, ms]) => [n, ms]), moments: [], errors: [], samples: [], ended: null,
+      last: W?.last || null, boot: (W?.stages || []).map(([n, ms]) => [n, ms]), moments: [], errors: [], samples: [], slow: [], ended: null,
     };
+    // every event since the frame before, by name, so a slow frame says what it was doing
+    this.heard = new Map(); game.events?.on?.('*', (e) => { if (this.heard.has(e.name) || this.heard.size < 24) this.heard.set(e.name, (this.heard.get(e.name) || 0) + 1); });
     // (the boot watch's moments after boot are this load's too)
     if (W?.moment) { const m = W.moment; W.moment = (name) => { this.moment(name); if (name === 'the dive into the world') this.watching = true; return m(name); }; }
     game.events?.on?.('render.lost', (e) => { this.lost = true; this.moment(`the graphics taken back${e?.why ? ` (${e.why})` : ''}`); this.keepLast(); this.write(true); });
@@ -98,10 +104,16 @@ export class FieldReport {
       this.lastMem = [m.geometries, m.textures];
     }
     this.drawsNow = 0; this.vertsNow = 0;
-    // a GL error, once a real second (getError waits on the card: never every frame)
-    const now1 = performance.now();
-    if (this.gl && !this.lost && now1 - (this.errAt || 0) > 1000) { this.errAt = now1; const e = this.gl.getError(); if (e && !this.gl.isContextLost()) this.error(`a GL error 0x${e.toString(16)} in ${this.game.zones?.current ?? '?'}`); }
-    const z = this.game.zones?.current ?? null; if (z !== this.zone) { this.zone = z; this.moment(`in ${z}`); } // (where it was, as it went)
+    // a slow frame once play began, with what was said since the frame before (its work, or the timers' between)
+    if (this.watching && rawDt * 1000 > FIELD.slow && rawDt < 30) {
+      this.doc.slow.push([Math.round(rawDt * 1000), sec(), [...this.heard].map(([k, n]) => (n > 1 ? `${k} x${n}` : k)).join(', ')]);
+      if (this.doc.slow.length > FIELD.slows) this.doc.slow.shift();
+    }
+    this.heard.clear();
+    // a GL error, every FIELD.glCheck real s and at each zone entered (getError waits on the card: never every frame, nor every second)
+    const now1 = performance.now(), z = this.game.zones?.current ?? null;
+    if (this.gl && !this.lost && (z !== this.zone || now1 - (this.errAt || 0) > FIELD.glCheck * 1000)) { this.errAt = now1; const e = this.gl.getError(); if (e && !this.gl.isContextLost()) this.error(`a GL error 0x${e.toString(16)} in ${z ?? '?'}`); }
+    if (z !== this.zone) { this.zone = z; this.moment(`in ${z}`); } // (where it was, as it went)
     // the last things before a loss: each shader program linked after boot (by its material's name) and each long frame
     const P = this.r?.info?.programs;
     if (P && this.progs !== undefined && P.length !== this.progs) { const fresh = P.slice(this.progs).map((p) => p.name || '?'); this.moment(`programs ${this.progs} -> ${P.length}${fresh.length ? `: ${fresh.slice(0, 4).join(', ')}` : ''}`); }
