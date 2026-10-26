@@ -3942,3 +3942,17 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   ms after the last resize (render/present.js); the boot watch names the moment a killed tab was at after boot (`moment`: the title, the
   seal carving, typing, the keyboard put away, the dive), said on the next load.
 - **Rule:** NEW:one-boot-a-tab
+
+### 2026-10-26 · The graphics taken back on arriving at the Raceway (the owner's iPhone XR, v283; Petra)
+- **Seen:** DEBUG loads and plays at 30 fps; the Index's THE RACEWAY row, and 0.3 to 2 real s after arriving the box says the device
+  took the graphics back (twice, both in the field reports: 260 and 358 geometries, "about 107 MB of the scene's").
+- **Cause (measured headless as the XR, scripts' census of the scene's geometry by mesh):** the park's ground was one vertex buffer of
+  every sample of its 2.6 km (render/terrain.js: 1.12 million vertices, 30.7 MB, on the card and again in the page), although the camera
+  draws only 513 m round it and the full detail within 90 m. Its setup also tested the levels 4.9 million times to size the index, a
+  destructured array a test: 178 MB of garbage inside the arrival, beside the park's own build (Dovina's track and ground sampling,
+  Calissa's dressing: the heap's peak 185 MB over its start in the dev build).
+- **Fix:** render/terrain.js keeps vertices only for the chunks at a drawn level, each in a slot of a pool of its level's size, written
+  when it changes level (the same triangles, positions and normals at every camera: compared triangle by triangle); the pools sized on
+  81 cameras over the middle chunk; the levels indexed, not destructured. The park's ground 30.7 MB -> 1.9 MB of vertices; its garbage
+  178 -> 26 MB. The Dunes' ground the same way. The builders' garbage and the rails' outline normals on a phone handed to Dovina and Calissa.
+- **Rule:** NEW:memory-bound-by-view

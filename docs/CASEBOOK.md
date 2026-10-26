@@ -901,3 +901,5 @@ NEW:audio-graph-let-go. **A cue's graph is let go whole when it has faded.** Dis
     the rest alive), and make shared buffers (a reverb's impulse) once.
 NEW:one-boot-a-tab. **A choice on the title never boots the game a second time in the same tab when nothing needs swapping.** A phone
     holds one boot's memory at a time; reload only when there is stored progress to put away, and say where a killed tab was.
+NEW:memory-bound-by-view. **What a place holds in memory is bound by what the view can hold, never by the size of the world.** A field, a
+  terrain or a pool is kept for what is drawn now (slots written as the view moves), and a phone's crash is read as the biggest single thing first.
