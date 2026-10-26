@@ -86,7 +86,7 @@ export function renderLedger(codex, cx) {
   codex.lcat ||= 'all'; codex.lshow ||= 'all';
   for (const c of all) {
     const list = c.id === 'all' ? A.list : A.list.filter((a) => a.cat === c.id);
-    const d = list.filter((a) => L.done[a.id] !== undefined).length; // (done at play time 0 is 0)
+    const d = list.filter((a) => A.done(a.id)).length; // (done: earned, or lent in DEBUG: progress/achievements.js)
     const row = el('div', `lg-cat${codex.lcat === c.id ? ' on' : ''}`, `${c.name}<span>${d}/${list.length}</span>`);
     row.onclick = () => { codex.lcat = c.id; codex.render(); };
     cats.appendChild(row);
@@ -106,12 +106,12 @@ export function renderLedger(codex, cx) {
   for (const c of cat ? [cat] : CATS) {
     for (const sub of c.subs) {
       const rows = A.list.filter((a) => a.cat === c.id && a.sub === sub)
-        .filter((a) => codex.lshow === 'all' || (codex.lshow === 'done') === (L.done[a.id] !== undefined))
+        .filter((a) => codex.lshow === 'all' || (codex.lshow === 'done') === A.done(a.id))
         .sort((a, b) => a.tier - b.tier);
       if (!rows.length) continue;
       main.appendChild(el('div', 'lg-sub', `${cat ? '' : `${c.name} · `}${sub.toUpperCase()}`));
       for (const a of rows) {
-        const done = L.done[a.id] !== undefined;
+        const done = A.done(a.id), earned = A.earned(a.id); // (lent in DEBUG: done without a time of its own)
         const [v, , f] = A.progress(a);
         const hide = a.hidden && !done;
         const T0 = TIERS[a.tier];
@@ -119,7 +119,7 @@ export function renderLedger(codex, cx) {
           `<span class="pt t${a.tier}" title="${T0.name}">${T0.pts}</span>`
           + `<span><div class="nm">${hide ? '???' : a.name}<em>${TYPES[a.type].toUpperCase()}${a.title && !hide ? ` · TITLE: ${a.title.toUpperCase()}` : ''}</em></div>`
           + `<div class="ds">${hide ? 'A hidden achievement.' : a.desc}</div>${done ? '' : `<div class="bar"><i style="width:${Math.round(f * 100)}%"></i></div>`}</span>`
-          + `<span class="nv">${done ? `DONE<small>after ${dur(L.done[a.id])}</small>` : hide ? '' : value(a, v)}</span>`);
+          + `<span class="nv">${done ? `DONE<small>${earned ? `after ${dur(L.done[a.id])}` : 'lent'}</small>` : hide ? '' : value(a, v)}</span>`);
         main.appendChild(row);
       }
     }

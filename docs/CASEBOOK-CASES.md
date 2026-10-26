@@ -4030,3 +4030,26 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   held its immutable storage (texStorage2D) and the 512 upload failed (GL 1281, grey for good); the texture is disposed before its image
   is set. Measured by Petra in Playwright's WebKit: the joined bytes match Chromium's.
 - **Rule:** NEW:data-never-in-alpha
+
+### 2026-10-26 · The title placard came down mid-race (the owner's iPhone XR, v296; Petra, Calissa, Wanda)
+- **Seen:** "the placard can descend at very unfortunate timing (like in the middle of a live race)".
+- **Cause (as measured):** its gate (vfx/titleplacard.js) held only on the title screen and in a cinematic; the game had no one question
+  for "something under way the player is steering", so a race, a crossing, a duel or a fight never held it, and the System's voice said
+  each achievement at its unlock whatever was on.
+- **Fix:** core/livemoment.js: `game.liveMoment()` names what is under way (a race, a trial, a crossing, a duel, the rhythm mode, a sea
+  fight, the FOE awake, a fight: a blow landed either way in the last 6 real s or one winding up within 15 m), or null. The placard's queue
+  and build wait on it, one up leaves at once and comes again if unsettled (Calissa); the voice says only a titled achievement, held until
+  its placard descends (Wanda). Measured headless: a title queued at a race's start stayed queued, unbuilt and unsaid, and came down 15
+  frames after race.end, its line said once.
+- **Rule:** NEW:popup-waits-live-moment
+
+### 2026-10-26 · DEBUG's lent things announced as new (the owner: "a bunch of log entries spam the log ... like kiln glazes")
+- **Seen:** loading DEBUG, the log filled with lines such as "A new glaze is yours".
+- **Cause (as far as measured):** not reproduced on a fresh save (a DEBUG load wrote 5 ordinary lines). Two sources found: the vessel
+  snapshots the glazes it owns a real second into its updates and says each one new after it, so a snapshot taken before the title's
+  choice (no mode, nothing lent) says every lent glaze at once; and every achievement completed in DEBUG's first minutes (every art lent,
+  the whole kit) was announced with its log lines, its glaze and its voice.
+- **Fix:** the vessel snapshots silently while no mode is chosen and while glazes are lent; DEBUG lends achievements (the lend panel's
+  Achievements row; Dovina's gate in progress/achievements.js: done while lent, nothing announced, no rank.up), the Codex's shelf
+  showing them "DONE / lent". Measured headless: no glaze said over 70 frames of a DEBUG load; 712 of 712 done, no achievement line.
+- **Rule:** NEW:lent-is-silent

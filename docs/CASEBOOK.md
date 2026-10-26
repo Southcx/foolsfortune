@@ -914,3 +914,7 @@ NEW:uniform-array-constant-index. **A uniform array is never read at a computed 
   the iPhone is bisected in the box room, one pool a pad, before it is guessed at.
 NEW:data-never-in-alpha. **A texture's data never rides in an image's alpha channel on its way in.** Save it opaque (the fourth channel
   beside the other three) and join it in the page; a decoder may premultiply, convert or drop an alpha, and WebKit does.
+NEW:popup-waits-live-moment. **Nothing comes over the view while the player is steering against a clock or a foe: it asks
+  `game.liveMoment()` and waits.** A new timed mode adds its row there (core/livemoment.js); a pop-up's sound waits with its pop-up.
+NEW:lent-is-silent. **What DEBUG lends is never announced as earned.** A snapshot of what is owned is taken only once the mode is known,
+  and again silently while a lend holds; a lend never writes the ledger.
