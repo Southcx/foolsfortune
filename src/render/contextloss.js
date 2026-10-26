@@ -8,7 +8,7 @@
 // Prior art: the WebGL spec's own recipe (webglcontextlost with preventDefault, then webglcontextrestored), three.js's
 // WebGLRenderer context-restore path, and the console rule that a lost device is a pause, not a crash.
 //
-//   installContextLoss(renderer, game)   Events: render.lost { by: 'environment' }, render.restored { after: real s, by: 'environment' }
+//   installContextLoss(renderer, game)   Events: render.lost { why (WebKit's statusMessage, when given), by: 'environment' }, render.restored { after: real s, by: 'environment' }
 // ---------------------------------------------------------------------------------------
 
 /** What the GPU held when it was taken back, one line for the page's box (a phone's crash, read off its screenshot: the owner's iPhone,
@@ -33,7 +33,7 @@ export function installContextLoss(renderer, game) {
     lostAt = performance.now();
     try { game.save?.flush({ all: true }); } catch { /* its own business */ }
     try { window.__bootWatch?.show?.(gpuLine(renderer, game)); } catch { /* the box is the page's */ }
-    game.events?.emit('render.lost', { by: 'environment' });
+    game.events?.emit('render.lost', { why: e.statusMessage || '', by: 'environment' }); // (WebKit's reason, when it gives one)
   });
   el.addEventListener('webglcontextrestored', () => {
     game.events?.emit('render.restored', { after: Math.round((performance.now() - lostAt) / 100) / 10, by: 'environment' });

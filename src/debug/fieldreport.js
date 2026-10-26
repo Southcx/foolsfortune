@@ -17,13 +17,14 @@
 // Prior art: Firebase Performance Monitoring's per-session traces, MetricKit's daily payloads (iOS), the Web Vitals library's report on
 // visibilitychange, and a crash reporter's "previous session ended unexpectedly" breadcrumb (Crashlytics, Sentry).
 //
+//   ?hide=word,word   draws whose material or object name holds a word are skipped (a suspect tried on the phone, a load each)
 //   const field = new FieldReport(game, { renderer, cloud })   field.frame(rawDt)   (each frame, boot/frame.js)
 // ---------------------------------------------------------------------------------------
 import { now } from '../core/calendar.js';
 
 /** every / later: real s between writes, before and after the first five real minutes; keep: loads kept; samples, moments, errors: rows kept
  *  a report (the newest samples, the first moments and errors). */
-export const FIELD = { every: 30, later: 120, early: 300, keep: 30, samples: 40, moments: 80, errors: 8, longFrame: 300 };
+export const FIELD = { every: 30, later: 120, early: 300, keep: 30, samples: 40, moments: 80, errors: 8, longFrame: 300, firsts: 24 };
 
 const rid = () => (globalThis.crypto?.randomUUID?.() || `${now()}${performance.now()}`).replace(/[^a-z0-9]/gi, '').slice(0, 12);
 const sec = () => Math.round(performance.now() / 100) / 10;
@@ -41,8 +42,28 @@ export class FieldReport {
       last: W?.last || null, boot: (W?.stages || []).map(([n, ms]) => [n, ms]), moments: [], errors: [], samples: [], ended: null,
     };
     // (the boot watch's moments after boot are this load's too)
-    if (W?.moment) { const m = W.moment; W.moment = (name) => { this.moment(name); return m(name); }; }
-    game.events?.on?.('render.lost', () => { this.moment('the graphics taken back'); this.write(true); });
+    if (W?.moment) { const m = W.moment; W.moment = (name) => { this.moment(name); if (name === 'the dive into the world') this.watching = true; return m(name); }; }
+    game.events?.on?.('render.lost', (e) => { this.moment(`the graphics taken back${e?.why ? ` (${e.why})` : ''}`); this.moment(`drawn first just before: ${this.firsts.map(([w, s]) => `${w} @${s}`).join('; ')}`); this.write(true); });
+    // what the frame began drawing for the first time since play began (each material once, the warm-up's postage stamp aside): a draw that
+    // stalls a phone's GPU shows here, the newest last (the owner's iPhone XR, v286: lost on turning the camera in the workshop with no
+    // shader compiled and no slow frame in the 22 real s before)
+    this.firsts = []; this.drawn = new Set();
+    const R = renderer, direct = R?.renderBufferDirect;
+    // `?hide=a,b`: draws whose material or object name (or material type) holds one of the words are skipped, so a suspect can be tried
+    // on the phone itself, a load each (the gate's bisection, never a player's setting)
+    const hide = (typeof location !== 'undefined' ? new URLSearchParams(location.search).get('hide') || '' : '').toLowerCase().split(',').map((w) => w.trim()).filter(Boolean);
+    if (hide.length) this.moment(`hiding ${hide.join(', ')}`);
+    const hidden = (m, o) => { const k = `${m.name} ${m.type} ${o?.name || ''}`.toLowerCase(); return hide.some((w) => k.includes(w)); };
+    if (direct) R.renderBufferDirect = (camera, scene, geometry, material, object, group) => {
+      if (hide.length && material && hidden(material, object)) return;
+      if (this.watching && material && !this.drawn.has(material.uuid)) {
+        this.drawn.add(material.uuid);
+        const n = geometry?.index?.count ?? geometry?.attributes?.position?.count ?? 0, inst = object?.count > 1 ? ` x${object.count}` : '';
+        this.firsts.push([`${material.name || material.type}/${object?.name || object?.type || '?'} v${n}${inst}`, sec()]);
+        if (this.firsts.length > FIELD.firsts) this.firsts.shift();
+      }
+      return direct.call(R, camera, scene, geometry, material, object, group);
+    };
     game.events?.on?.('render.restored', (e) => this.moment(`the graphics given back after ${e.after} s`));
     game.events?.on?.('seam.lift', (e) => { const R = game.raceway; this.moment(`cover lifted (${e.kind}): ${e.staged} staged, ${e.textures} textures, ${e.ms} ms${R?.buildMs && game.zones?.current === 'raceway' ? `; raceway ${JSON.stringify(R.buildMs)} field ${R.fieldFrom || 'travel'}` : ''}`); });
     addEventListener('error', (e) => this.error(e?.error?.message || e?.message || 'an error'));
