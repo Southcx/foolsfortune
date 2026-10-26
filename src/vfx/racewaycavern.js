@@ -190,10 +190,10 @@ export class RacewayCavern {
   cutStone(R) {
     const mesh = R.cavern.mesh; if (!mesh) return;
     const roof = [...this.roofParts(R), ...this.pillarParts(R)], skin = this.skinGeometry(R);
-    const outlined = ensureSmoothNormals(mergeGeometries(roof));
-    const geo = mergeGeometries([...roof.map((g) => g.clone()), ...(skin ? [skin] : [])]);
+    const outlined = mesh.userData.outline ? ensureSmoothNormals(mergeGeometries(roof)) : null; // (the hull's normals only where a hull is drawn: NEW:memory-bound-by-view)
+    const geo = mergeGeometries(skin ? [...roof, skin] : roof); // (merging copies: no clone of the roof first)
     this.old = { mesh, geo: mesh.geometry, outline: mesh.userData.outline?.geometry };
-    mesh.geometry = geo; if (mesh.userData.outline) mesh.userData.outline.geometry = outlined; // (the outline round the slabs and dripstone only: the skin lies on the sand)
+    mesh.geometry = geo; if (outlined) mesh.userData.outline.geometry = outlined; // (the outline round the slabs and dripstone only: the skin lies on the sand)
     for (const g of roof) g.dispose();
   }
   *roofParts(R) {
@@ -280,8 +280,9 @@ export class RacewayCavern {
     const pos = [], cols = [], m = K.sub;
     const emit = (A, B, Cc) => { // (one of the terrain's triangles, split m x m on its plane: no T-junction, every edge split alike)
       const P = (u, v) => { const w = 1 - u - v; return { p: _s.set(0, 0, 0).addScaledVector(A.p, w).addScaledVector(B.p, u).addScaledVector(Cc.p, v).clone(), y: A.y * w + B.y * u + Cc.y * v, sb: A.sb * w + B.sb * u + Cc.sb * v, lat: A.lat * w + B.lat * u + Cc.lat * v }; };
-      const vs = []; for (let a = 0; a <= m; a++) { vs[a] = []; for (let b = 0; b <= m - a; b++) vs[a][b] = P(a / m, b / m); }
-      const put = (...t) => { for (const q of t) { q.p.toArray(pos, pos.length); this.stone(q).toArray(cols, cols.length); } };
+      const lit = (q) => { const c = this.stone(q); q.r = c.r; q.g = c.g; q.b = c.b; return q; }; // (a point's colour worked once, not once a triangle it is a corner of: Petra's measure, 22 MB of heap, 2026-10-26)
+      const vs = []; for (let a = 0; a <= m; a++) { vs[a] = []; for (let b = 0; b <= m - a; b++) vs[a][b] = lit(P(a / m, b / m)); }
+      const put = (...t) => { for (const q of t) { pos.push(q.p.x, q.p.y, q.p.z); cols.push(q.r, q.g, q.b); } };
       for (let a = 0; a < m; a++) for (let b = 0; b < m - a; b++) { put(vs[a][b], vs[a + 1][b], vs[a][b + 1]); if (b < m - a - 1) put(vs[a + 1][b], vs[a + 1][b + 1], vs[a][b + 1]); }
     };
     for (let j = j0; j < j1; j++) for (let i = i0; i < i1; i++) {

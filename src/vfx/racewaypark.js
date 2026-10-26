@@ -246,29 +246,33 @@ export class RacewayPark {
   /** Her coaster lintels, their columns and the tower's placeholder cut out of the rail mesh; every other rail left as it is. */
   cutCoaster(R, rails, towers) {
     const mesh = R.railMesh; if (!mesh) return;
-    const cell = 2, grid = new Map(), key = (x, z) => `${Math.floor(x / cell)},${Math.floor(z / cell)}`;
+    const cell = 2, grid = new Map(), ck = (ix, iz) => (ix + 4096) * 8192 + (iz + 4096), key = (x, z) => ck(Math.floor(x / cell), Math.floor(z / cell)); // (a small integer, never a string nor a double: test runs 9 cells a vertex over the whole rail mesh, Petra's 200 MB of heap, 2026-10-26)
     for (const r of rails) for (const p of r.pts) { const k = key(p.x, p.z); (grid.get(k) || grid.set(k, []).get(k)).push(p); }
-    const test = (x, y, z) => { // (-> 0: not the coaster's; 1: under or on it; 2: on its lintel)
-      for (const Tw of towers) if (Math.hypot(x - Tw.x, z - Tw.z) < Tw.r + 0.3 && y < Tw.top + 0.5) return 2;
-      let best = 0, cx = Math.floor(x / cell), cz = Math.floor(z / cell);
-      for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++) for (const p of grid.get(`${cx + i},${cz + j}`) || []) {
-        if (Math.hypot(x - p.x, z - p.z) > 0.95 || y > p.y + 0.6) continue;
-        best = Math.max(best, Math.abs(y - p.y) < 0.8 ? 2 : 1);
+    const test = (x, y, z) => { // (-> 0: not the coaster's; 1: under or on it; 2: on its lintel. Indexed loops and squares: no iterator, no hypot, it runs a vertex)
+      for (let t = 0; t < towers.length; t++) { const Tw = towers[t], dx = x - Tw.x, dz = z - Tw.z, r = Tw.r + 0.3; if (dx * dx + dz * dz < r * r && y < Tw.top + 0.5) return 2; }
+      let best = 0; const cx = Math.floor(x / cell), cz = Math.floor(z / cell);
+      for (let i = -1; i <= 1; i++) for (let j = -1; j <= 1; j++) {
+        const L = grid.get(ck(cx + i, cz + j)); if (!L) continue;
+        for (let k = 0; k < L.length; k++) {
+          const p = L[k], dx = x - p.x, dz = z - p.z;
+          if (dx * dx + dz * dz > 0.9025 || y > p.y + 0.6) continue;
+          if (Math.abs(y - p.y) < 0.8) return 2; best = 1;
+        }
       }
       return best;
     };
     const cut = (geo) => {
-      const pos = geo.attributes.position, idx = geo.index, nT = (idx ? idx.count : pos.count) / 3, keep = [];
+      const pos = geo.attributes.position, idx = geo.index, nT = (idx ? idx.count : pos.count) / 3, keep = new Uint32Array(nT * 3); let nk = 0; // (kept corners, in one typed array)
       const v = (t, c) => (idx ? idx.getX(t * 3 + c) : t * 3 + c);
       for (let t = 0; t < nT; t++) {
         const a = v(t, 0), b = v(t, 1), c = v(t, 2), ta = test(pos.getX(a), pos.getY(a), pos.getZ(a)), tb = test(pos.getX(b), pos.getY(b), pos.getZ(b)), tc = test(pos.getX(c), pos.getY(c), pos.getZ(c));
         const ext = Math.max(Math.abs(pos.getX(a) - pos.getX(b)), Math.abs(pos.getX(a) - pos.getX(c)), Math.abs(pos.getZ(a) - pos.getZ(b)), Math.abs(pos.getZ(a) - pos.getZ(c)));
         const gone = ta && tb && tc && ((ta === 2 && tb === 2 && tc === 2) || ext < 0.8);
-        if (!gone) keep.push(a, b, c);
+        if (!gone) { keep[nk++] = a; keep[nk++] = b; keep[nk++] = c; }
       }
-      if (keep.length === nT * 3) return null;
+      if (nk === nT * 3) return null;
       const g = new THREE.BufferGeometry();
-      for (const [name, A] of Object.entries(geo.attributes)) { const s = A.itemSize, arr = new A.array.constructor(keep.length * s); keep.forEach((k, i) => { for (let j = 0; j < s; j++) arr[i * s + j] = A.array[k * s + j]; }); g.setAttribute(name, new THREE.BufferAttribute(arr, s, A.normalized)); }
+      for (const [name, A] of Object.entries(geo.attributes)) { const s = A.itemSize, arr = new A.array.constructor(nk * s); for (let i = 0; i < nk; i++) { const k = keep[i]; for (let j = 0; j < s; j++) arr[i * s + j] = A.array[k * s + j]; } g.setAttribute(name, new THREE.BufferAttribute(arr, s, A.normalized)); }
       return g;
     };
     const old = mesh.geometry, ol = mesh.userData.outline, oldOl = ol?.geometry, geo = cut(old); if (!geo) return;

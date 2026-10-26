@@ -92,6 +92,18 @@ export const RACEWAY_LOOK = {
   wake: [0.5, 0.8, 1.1],
 };
 const UP = new THREE.Vector3(0, 1, 0);
+const _rm = new THREE.Matrix4();
+/** The rails' six painted pieces, made once: the lintel's four strips a unit long down z (the body, its top at +0.12; the drip line
+ *  under; the glaze thinning to the edge; worn through where the keel runs), the column a unit tall, the capital. */
+let _railTpl = null;
+function railPieces() {
+  if (_railTpl) return _railTpl;
+  const C = RACEWAY_LOOK.rail, arr = (g, colour) => { const p = painted(g, colour); const t = { pos: p.attributes.position.array, nor: p.attributes.normal.array, col: new THREE.Color(colour).toArray() }; p.dispose(); return t; };
+  const strips = [arr(new THREE.BoxGeometry(0.54, 0.24, 1), C.body), arr(new THREE.BoxGeometry(0.6, 0.07, 1).translate(0, -0.12, 0), C.drip),
+    arr(new THREE.BoxGeometry(0.46, 0.03, 1).translate(0, 0.13, 0), C.edge), arr(new THREE.BoxGeometry(0.24, 0.03, 1).translate(0, 0.155, 0), C.worn)];
+  const column = arr(new THREE.CylinderGeometry(0.2, 0.28, 1, 6), C.clay), capital = arr(new THREE.BoxGeometry(0.62, 0.16, 0.62), C.capital);
+  return (_railTpl = { strips, column, capital, lintel: strips.reduce((n, t) => n + t.pos.length / 3, 0), post: (column.pos.length + capital.pos.length) / 3 });
+}
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion(), _s = new THREE.Vector3(), _v = new THREE.Vector3(), _c = new THREE.Color(), _c2 = new THREE.Color();
 const GLOW = new THREE.Color(RACEWAY_LOOK.colour.glow);
 const damp = (a, b, k, dt) => a + (b - a) * (1 - Math.exp(-k * dt));
@@ -310,31 +322,55 @@ export class RacewayLooks {
     if (R.buoys?.group && !R.buoys.group.userData.dressed) this.buoys.dress(R); // (round 6: the buoys as the Raceway's kit)
     return this;
   }
-  /** The rails' lintels and columns as glazed stone: a new geometry for her mesh (and its outline), the same material made glossier. */
+  /** The rails' lintels and columns as glazed stone: a new geometry for her mesh (and its outline), the same material made glossier.
+   *  Written straight into one set of arrays from six painted templates (a phone's memory, Petra's measure 2026-10-26: a box, a matrix
+   *  and a clone a segment held 102 MB of heap through the park's arrival on an iPhone XR); the hull's smooth normals only where a hull
+   *  is drawn (NEW:memory-bound-by-view). */
   glazeRails(R) {
-    const mesh = R.railMesh, C = RACEWAY_LOOK.rail, parts = [];
+    const mesh = R.railMesh, C = railPieces(), K = RACEWAY_LOOK.rail;
+    let nv = 0; const posts = [];
     for (const rail of R.rails) {
       const { pts, cum } = rail, n = pts.length - 1;
-      for (let i = 0; i < n; i++) {
-        const p = pts[i], q = pts[i + 1], len = p.distanceTo(q) + 0.05, m = new THREE.Matrix4().lookAt(p, q, UP).setPosition(p.clone().lerp(q, 0.5));
-        parts.push(painted(new THREE.BoxGeometry(0.54, 0.24, len).applyMatrix4(m), C.body)); // (the body, its top at +0.12)
-        parts.push(painted(new THREE.BoxGeometry(0.6, 0.07, len).translate(0, -0.12, 0).applyMatrix4(m), C.drip)); // (the drip line under)
-        parts.push(painted(new THREE.BoxGeometry(0.46, 0.03, len).translate(0, 0.13, 0).applyMatrix4(m), C.edge)); // (the glaze thinning to the edge)
-        parts.push(painted(new THREE.BoxGeometry(0.24, 0.03, len).translate(0, 0.155, 0).applyMatrix4(m), C.worn)); // (worn through where the keel runs)
-      }
-      for (let d = 0; d <= cum[n]; d += C.post) {
+      nv += n * C.lintel;
+      for (let d = 0; d <= cum[n]; d += K.post) {
         let i = 0; while (i < n - 1 && cum[i + 1] < d) i++;
         const p = pts[i].clone().lerp(pts[i + 1], (d - cum[i]) / Math.max(1e-6, cum[i + 1] - cum[i])), foot = R.heightAt(p.x, p.z) - 0.4, h = p.y - 0.15 - foot;
-        if (h <= 0.2) continue;
-        parts.push(painted(new THREE.CylinderGeometry(0.2, 0.28, h, 6).translate(p.x, foot + h / 2, p.z), C.clay));
-        parts.push(painted(new THREE.BoxGeometry(0.62, 0.16, 0.62).translate(p.x, p.y - 0.23, p.z), C.capital));
+        if (h > 0.2) { posts.push(p.x, p.y, p.z, foot, h); nv += C.post; }
       }
     }
-    if (!parts.length) return;
-    const geo = ensureSmoothNormals(mergeGeometries(parts)), old = mesh.geometry;
-    mesh.geometry = geo; if (mesh.userData.outline) mesh.userData.outline.geometry = geo;
-    old.dispose(); for (const g of parts) g.dispose();
-    mesh.material.roughness = C.roughness; mesh.userData.glazed = true;
+    if (!nv) return;
+    const pos = new Float32Array(nv * 3), nor = new Float32Array(nv * 3), col = new Float32Array(nv * 3), e = _rm.elements;
+    let o = 0;
+    const put = (T, sx, sy, sz, tx, ty, tz, rot) => { // (a template scaled, turned by _rm's basis where `rot`, and moved)
+      const P = T.pos, N = T.nor, c = T.col;
+      for (let i = 0; i < P.length; i += 3, o += 3) {
+        const x = P[i] * sx, y = P[i + 1] * sy, z = P[i + 2] * sz, nx = N[i], ny = N[i + 1], nz = N[i + 2];
+        if (rot) {
+          pos[o] = e[0] * x + e[4] * y + e[8] * z + tx; pos[o + 1] = e[1] * x + e[5] * y + e[9] * z + ty; pos[o + 2] = e[2] * x + e[6] * y + e[10] * z + tz;
+          nor[o] = e[0] * nx + e[4] * ny + e[8] * nz; nor[o + 1] = e[1] * nx + e[5] * ny + e[9] * nz; nor[o + 2] = e[2] * nx + e[6] * ny + e[10] * nz;
+        } else { pos[o] = x + tx; pos[o + 1] = y + ty; pos[o + 2] = z + tz; nor[o] = nx; nor[o + 1] = ny; nor[o + 2] = nz; }
+        col[o] = c[0]; col[o + 1] = c[1]; col[o + 2] = c[2];
+      }
+    };
+    for (const rail of R.rails) {
+      const { pts } = rail, n = pts.length - 1;
+      for (let i = 0; i < n; i++) {
+        const p = pts[i], q = pts[i + 1], len = p.distanceTo(q) + 0.05;
+        _rm.lookAt(p, q, UP); const mx = (p.x + q.x) / 2, my = (p.y + q.y) / 2, mz = (p.z + q.z) / 2;
+        for (const T of C.strips) put(T, 1, 1, len, mx, my, mz, true); // (the body, the drip line under, the glaze thinning to the edge, worn where the keel runs)
+      }
+    }
+    for (let k = 0; k < posts.length; k += 5) {
+      const x = posts[k], y = posts[k + 1], z = posts[k + 2], foot = posts[k + 3], h = posts[k + 4];
+      put(C.column, 1, h, 1, x, foot + h / 2, z, false); put(C.capital, 1, 1, 1, x, y - 0.23, z, false);
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('normal', new THREE.BufferAttribute(nor, 3)); geo.setAttribute('color', new THREE.BufferAttribute(col, 3));
+    geo.computeBoundingSphere();
+    const old = mesh.geometry;
+    mesh.geometry = geo; if (mesh.userData.outline) { ensureSmoothNormals(geo); mesh.userData.outline.geometry = geo; }
+    old.dispose();
+    mesh.material.roughness = K.roughness; mesh.userData.glazed = true;
   }
 
   // ---------------------------------------------------------------- the grind
