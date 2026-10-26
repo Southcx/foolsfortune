@@ -255,8 +255,14 @@ export class RacewayLooks {
   /** Built over a Raceway's placeholders (raceway.js build, after buildMarks): her plate slabs hidden, the glyphs and lamps placed. */
   dress(R) { for (const _ of this.dressSteps(R)); return this; }
   /** dress() as steps (the seam's staged arrival, Petra's and Dovina's 2026-10-26: one step a frame under the cover), yielding the part
-   *  just laid: 'plates', 'marks', 'strings', 'rails', 'buoys'. `yield*` it from the Raceway's own build. */
+   *  just laid: 'plates', 'marks', 'strings', 'rails', 'buoys'. `yield*` it from the Raceway's own build. While it runs (`dressing`)
+   *  update() stands back past the board's own looks: the frames tick under the seam's cover between steps, and a half-laid dressing
+   *  (the plates without their marks) is never read; nor is it dressed again whole by the release's path. */
   *dressSteps(R) {
+    this.dressing = true; this.released = false;
+    try { yield* this.laySteps(R); } finally { this.dressing = false; }
+  }
+  *laySteps(R) {
     this.undress();
     const parent = this.parent || this.game.scene, L = RACEWAY_LOOK, T = R.T;
     // the plates: where her slabs lie, tilted to the sand under them, the glyph's +Z along the track
@@ -558,7 +564,7 @@ export class RacewayLooks {
   // ---------------------------------------------------------------- per frame
   update(dt) {
     this.t += dt;
-    { const Rw = this.game.raceway; this.hookRelease(Rw); if (this.released && Rw?.built && Rw.active) { this.released = false; this.dress(Rw); } }
+    { const Rw = this.game.raceway; this.hookRelease(Rw); if (this.released && !this.dressing && Rw?.built && Rw.active) { this.released = false; this.dress(Rw); } }
     { const B = this.boardOf(); // (round 3: the boost's look and the combo's gauge, wherever the skiff is ridden)
       this.boost(B);
       const power = B && this.game.raceway?.active ? this.game.raceway.buoys?.power || 0 : 0; // (the buoys' power: round 6)
@@ -569,6 +575,7 @@ export class RacewayLooks {
       if (this.balance) { if (B) this.balance.attach(B.group); this.balance.update(dt, bal, { t: this.t, camera: this.game.camera }); } }
     this.stakes?.update(dt);
     if (this.ghost) { this.tryGhost(); if (this.ghost.holo && this.ghost.group.visible) this.ghost.holo.update(dt); }
+    if (this.dressing) return; // (half laid: dressSteps is still running under the cover)
     if (this.strings) { // (the board's place on the line, and the hour's cool, asked once a real second)
       if ((this.nightT += dt) > 1) { this.nightT = 0; this.nightK = this.nightOf(); }
       const R = this.R, near = this.boardOf() && R && R.s != null;
