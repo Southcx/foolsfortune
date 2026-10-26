@@ -909,3 +909,6 @@ NEW:instanced-by-capacity. **An instanced attribute is sized to the instances th
   Count is how many draw now and may be 0 at setup; WebKit refuses a draw past an attribute's length where Chromium is silent.
 NEW:frame-shape-with-size. **The camera's aspect is set where the render size is set, and only there, after the size has settled.** A
   boot path that skips a stage (the box room) or an event that comes before the new size (a phone turned) leaves the frame stretched.
+NEW:uniform-array-constant-index. **A uniform array is never read at a computed index on Apple's GPU path: on a phone the reads go through
+  constant indices (render/constantindex.js does it for every shader).** A new shader needs nothing; a crash at a shader's first draw on
+  the iPhone is bisected in the box room, one pool a pad, before it is guessed at.

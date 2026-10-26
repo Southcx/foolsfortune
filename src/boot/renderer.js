@@ -8,7 +8,7 @@
 // Prior art: the staged start of an engine (Unreal's FEngineLoop::PreInit then Init, Unity's Awake then Start): one function a stage, run
 // in order by main.js, each handed `made`, what the stages before it made, and returning what the stages after it read.
 //
-//   await bootRenderer(made) -> { machine, graphicsTier, renderer, scene, camera, hemi, amb, sun }
+//   await bootRenderer(made) -> { machine, graphicsTier, renderer, scene, camera, hemi, amb, sun, constantIndex }
 //   bootPresentation(game, made) -> nothing
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -19,6 +19,7 @@ import { Graphics, detectMachine, applyBootTier, shadowTypeOf } from '../render/
 import { installTheme, fontsReady } from '../ui/theme.js';
 import { installToon } from '../render/toon.js';
 import { installShadowKinds } from '../render/shadowkinds.js';
+import { installConstantIndex } from '../render/constantindex.js';
 
 /** The ways a context is asked for, in order: the game's own, then plain (the owner's iPhone, 2026-10-25, handed back a context already
  *  lost, and three.js read a null precision from it); `wait` real ms for a lost one to be restored before the next way is tried. */
@@ -56,6 +57,9 @@ export async function bootRenderer(made) {
   installToon(T.visual.toon ?? 1); // (the soft cel ramp on every lit material, before anything compiles: render/toon.js)
   await fontsReady();
   const { canvas, context } = await liveContext(T.visual.antialias !== false);
+  // on a phone, every uniform array read at a computed index read at constant ones instead, before anything compiles (the owner's iPhone XR
+  // lost the graphics at the first draw of each shader that read one so: render/constantindex.js); a desk's shaders go through untouched
+  const constantIndex = installConstantIndex(context, { on: machine.mobile });
   const renderer = new THREE.WebGLRenderer({ canvas, context });
   // the first vertex as the provoking one: Apple's ANGLE on Metal emulates GL's last-vertex convention by rewriting index data, and a
   // WebKit engineer advises the extension for good performance on Apple devices (WebKit bugs 286297 and 289601: contexts lost on iOS 18
@@ -90,7 +94,7 @@ export async function bootRenderer(made) {
   sun.shadow.bias = -0.0004;
   sun.shadow.normalBias = 0.02;
   scene.add(sun, sun.target);
-  return { machine, graphicsTier, renderer, scene, camera, hemi, amb, sun };
+  return { machine, graphicsTier, renderer, scene, camera, hemi, amb, sun, constantIndex };
 }
 
 export function bootPresentation(game, made) {

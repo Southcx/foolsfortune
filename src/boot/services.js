@@ -44,7 +44,7 @@ import { typeOf } from '../progress/combat/types.js';
 import { OverlayScene } from '../render/overlayscene.js';
 
 export async function bootServices(made) {
-  const { mark, save, cloud, renderer, scene, camera } = made;
+  const { mark, save, cloud, renderer, scene, camera, constantIndex } = made;
   const physics = new Physics();
   await physics.init();
   mark('physics');
@@ -59,7 +59,7 @@ export async function bootServices(made) {
   const stats = { broken: 0, total: 0 };
   const events = new Events();
   const game = {
-    scene, physics, fx, hud, camera, renderer, stats, events, save, cloud,
+    scene, physics, fx, hud, camera, renderer, stats, events, save, cloud, constantIndex, // (constantIndex: render/constantindex.js, on a phone)
     reseed, get seed() { return sessionSeed(); }, // (the simulation's chance: core/rng.js; the stress test and replays set it)
     ledger: new Stats(save), // (the quiet ledger: everything counted; see stats.js; kept in the save's player scope)
     listenerDistance: (p) => camera.position.distanceTo(p),

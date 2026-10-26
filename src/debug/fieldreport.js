@@ -124,6 +124,7 @@ export class FieldReport {
       heap: performance.memory ? Math.round(performance.memory.usedJSHeapSize / 1048576) : null,
       zone: g.zones?.current ?? null, areas: g.areas?.stats?.().filter((a) => a.resident).map((a) => a.id).join(',') || '',
       lines: g.present?.dynLines ?? null, tier: g.graphics?.tier ?? null,
+      ci: g.constantIndex?.on ? g.constantIndex.arrays.size : null, // (uniform arrays read at constant indices so far: render/constantindex.js)
     });
     if (this.doc.samples.length > FIELD.samples) this.doc.samples.splice(1, 1); // (the first kept: the load's own beginning)
     this.frames = [];

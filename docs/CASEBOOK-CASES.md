@@ -4002,3 +4002,18 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the camera's aspect is set in `Presentation.apply()` beside the render size, which also listens for `orientationchange` and the
   visual viewport's resize; the title's handler is gone. Headless, the box loaded at 414 x 896 (0.462) and read 2.164 after the turn.
 - **Rule:** NEW:frame-shape-with-size
+
+### 2026-10-26 · The iPhone took the graphics back at the first draw of a shader that read a uniform array at a computed index (the owner; Petra)
+- **Seen:** the owner's iPhone XR (iOS 18.7, the Claude app, Safari and Chrome alike) lost the WebGL context 0.1 to 0.5 real s after the
+  first draw of the basement's water (v289, three runs of three), and at the Raceway after the crude sea's; turning the camera was what
+  brought them into view. Nothing in Chromium or WebKit on Linux showed it.
+- **Cause, measured on the phone in the box room (boot/box.js, v291 to v295, one pool a pad):** the water lost the graphics whatever its
+  textures, held cut short anywhere before its tint, and held whole with its vertex shader's `vTint = vec4(uTints[ti], ...)` read at
+  constant indices (`ti == 0 ? uTints[0] : ...`), the same picture; lost with `uTints[ti]`. The crude sea's vertex shader reads `uW[i]`
+  and `uC[i]` so. The vessel's kintsugi reads `uDmg[dR]` in its fragment shader and drew all along: the vertex stage is the likely
+  trigger, but both are covered. three.js's own shaders never read so (it unrolls its loops).
+- **Fix:** render/constantindex.js, on a phone: every shader's uniform arrays read at a computed index get a helper reading them at
+  constant indices (a binary chain of ifs), and those reads call it; a desk's shaders go untouched. With it forced on, the whole game's
+  210 programs compiled without an error (workshop, basement, Raceway, Dunes, bazaar), 25 of them rewritten, 30 arrays; the box's frame
+  with the water drawn read the same to the channel with it on and off (0 of 1,121,760).
+- **Rule:** NEW:uniform-array-constant-index
