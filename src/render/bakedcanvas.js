@@ -9,8 +9,9 @@
 // Prior art: three.js's own `Texture.onUpdate` (called once the upload is done) and its Source (the image a texture's upload reads);
 // the GPU-only static texture of every engine (Unity's Texture2D.Apply(makeNoLongerReadable), Unreal's discarded CPU copy).
 //
-//   bakedCanvasTexture(paint, w, h, { scale })  -> THREE.CanvasTexture   paint(ctx2d, w, h) draws in w x h units, called once (and again
-//                                                only if the pixels are asked for after they went)   .userData.baked { width, height }
+//   bakedCanvasTexture(paint, w, h, { scale })  -> THREE.CanvasTexture   paint(ctx2d, w, h) draws in w x h units, called on the first read
+//                                                of its pixels (the upload, as a rule), and again only if they are asked for after they went)
+//                                                .userData.baked { width, height }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
@@ -25,11 +26,11 @@ function drawn(paint, w, h, scale) {
 }
 
 export function bakedCanvasTexture(paint, w, h, { scale = 1 } = {}) {
-  const t = new THREE.CanvasTexture(drawn(paint, w, h, scale));
+  const t = new THREE.CanvasTexture();
   const src = t.source;
-  let canvas = src.data;
+  let canvas = null; // (not painted until first asked for: a label of a place not yet seen holds no pixels, v289's census as the XR: 171 canvases, 27 MB, painted at boot for rooms never drawn)
   Object.defineProperty(src, 'data', { configurable: true, enumerable: true, get: () => (canvas ||= drawn(paint, w, h, scale)), set: (v) => { canvas = v; } });
   t.onUpdate = () => { canvas = null; }; // (on the GPU now: the canvas let go; asked for again, it is drawn again)
-  t.userData.baked = { width: canvas.width, height: canvas.height }; // (its size, for a reader that must not draw it again to ask: the perf's and a probe's counts)
+  t.userData.baked = { width: Math.max(1, Math.round(w * scale)), height: Math.max(1, Math.round(h * scale)) }; // (its size, for a reader that must not draw it to ask: the perf's and a probe's counts)
   return t;
 }
