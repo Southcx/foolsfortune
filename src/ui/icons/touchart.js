@@ -17,6 +17,7 @@
 //   the top bar      codex    a closed book                                       box    a crate, its lid
 //                    map      a map folded in three                               settings  a gear
 //                    chat     a speech balloon                                    pause  two bars
+//                    menu     three bars (the top bar folded to one tab)          more   three dots (the cluster's strip folded)
 //                    overhead an eye looking down on a planetoid (TOP VIEW, the garden only)
 //                    skiff    the board under its sail (summon or recall)          godhand  the hand over the ground (raise or let go)
 //                    survey   an eye over the ground's layers (the hand's survey)
@@ -505,6 +506,38 @@ export const TOUCH_ART = {
     '........#####.',
     '.......####...',
     '.......###....',
+    '..............',
+  ],
+  menu: [
+    '..............',
+    '..............',
+    '..............',
+    '..##########..',
+    '..##########..',
+    '..............',
+    '..##########..',
+    '..##########..',
+    '..............',
+    '..##########..',
+    '..##########..',
+    '..............',
+    '..............',
+    '..............',
+  ],
+  more: [
+    '..............',
+    '..............',
+    '..............',
+    '..............',
+    '..............',
+    '..............',
+    '..##..##..##..',
+    '..##..##..##..',
+    '..............',
+    '..............',
+    '..............',
+    '..............',
+    '..............',
     '..............',
   ],
   pause: [

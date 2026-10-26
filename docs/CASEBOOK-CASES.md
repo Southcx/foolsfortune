@@ -3971,3 +3971,15 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   modules' share of the trip: about 380 MB to about 40 MB, most of that the new geometry itself; the rails carry position, normal and
   colour only on a phone.
 - **Rule:** NEW:memory-bound-by-view
+
+### 2026-10-26 · GRAPPLE's and DRAW's words cut off, the tiles crowding the view (the owner's iPhone XR, the Raceway; Calissa)
+- **Seen:** in the owner's screenshot the belt's pair's words stood cut off at the tiles' feet, DRAW's tile half hidden, BLINK over both;
+  the owner asked for smaller tiles and menus that fold away.
+- **Cause (measured headless as the XR, the same screen):** a glyph with a word on a 44 px tile was sized by the tile alone (0.55 of
+  it, a whole number of device pixels), so glyph and word together stood taller than the face and the word's baseline fell under its
+  foot; the cluster's tiles (96 and 72 px) and the open rows left the thumbs' half of a landscape phone crowded.
+- **Fix:** ui/touch/tile.js sizes a worded glyph to the room its word leaves and keeps the baseline inside the face; the cluster 80 and
+  60 px (hudlayout.js the same, a kept layout's least scale 0.75: 45 px), the strip's tiles 44; the top bar folds to a MENU tab and
+  PAUSE (opened by a tap, folded by a choice, a tap or six real seconds untouched); the strip folds a tool's own row of two or more
+  to a MORE tab, the core moves and BLINK kept out.
+- **Rule:** NEW:word-inside-the-face

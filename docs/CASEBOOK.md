@@ -903,3 +903,5 @@ NEW:one-boot-a-tab. **A choice on the title never boots the game a second time i
     holds one boot's memory at a time; reload only when there is stored progress to put away, and say where a killed tab was.
 NEW:memory-bound-by-view. **What a place holds in memory is bound by what the view can hold, never by the size of the world.** A field, a
   terrain or a pool is kept for what is drawn now (slots written as the view moves), and a phone's crash is read as the biggest single thing first.
+NEW:word-inside-the-face. **A tile's glyph is sized to the room its word leaves, never to the tile alone.** The word's baseline stays
+  inside the face at the least size (44 px), and a row that crowds a phone's thumbs folds to one tab before any tile shrinks under 44.

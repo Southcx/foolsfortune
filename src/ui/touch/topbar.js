@@ -7,6 +7,8 @@
 //              CHAT, TOP VIEW in the Spirit Garden only (MOBILE.md 8.2), and PAUSE apart at the end. A tile whose window is open is lit.
 //   A TAP      let go on the tile it went down on: `game.events.emit('touch.open', { what, by })`, then `game.touchShell?.open?.(what)`
 //              (Petra's shell wires what each opens: `what` is codex, box, map, settings, chat, overhead or pause), then `onOpen(what)`.
+//   FOLDED     (the owner, 2026-10-26: "retractable menus", more room) one MENU tab and PAUSE at the area's left end; a tap on MENU opens
+//              the row (MENU lit at its head), a window chosen or MENU tapped again folds it, and so do FOLD_S real seconds untouched.
 // Hidden off touch; it stays up under a window (it is how a window is closed again).
 //
 // Prior art: the menu strips of the mobile ports (Genshin Impact's and Honkai's icon row along the top, Pokémon GO's corner ball), the
@@ -32,7 +34,7 @@ export const TOP_BAR = {
     overhead: (g) => !!(g.realm?.active && g.realm?.camera?.view === 'overhead'), godhand: (g) => !!g.god?.active,
     skiff: (g) => { const T = g.player?.techs?.get?.('skiff') || g.techs?.get?.('skiff'); return !!T?.active; }, pause: () => { const o = document.getElementById('overlay'); return !!o && o.style.display !== 'none'; },
   },
-  gap: 6, pauseGap: 14, h: 44, // (h: one row's height, the layout's own topBar.h)
+  gap: 6, pauseGap: 14, h: 44, fold: 6, // (h: one row's height, the layout's own topBar.h; fold: real seconds an opened row stays untouched)
 };
 
 const CSS = `
@@ -55,10 +57,22 @@ export function shelf() {
 
 export class TouchTopBar {
   constructor(game) {
-    this.game = game; this.onOpen = null; this.tiles = new Map(); this.shown = false; this.ids = [];
+    this.game = game; this.onOpen = null; this.tiles = new Map(); this.shown = false; this.ids = []; this.folded = true; this.touched = 0;
     this.shelf = shelf();
-    for (const id of [...TOP_BAR.ids, 'pause']) this.tiles.set(id, new TouchTile(`top.${id}`, { size: TILE.small, glyph: id, word: null, onPress: (_, down, inside) => { if (!down && inside) this.open(id); } }));
+    for (const id of [...TOP_BAR.ids, 'pause']) this.tiles.set(id, new TouchTile(`top.${id}`, { size: TILE.small, glyph: id, word: null, onPress: (_, down, inside) => { if (!down && inside) { if (id !== 'pause') this.fold(true); this.open(id); } } }));
+    this.tiles.set('menu', new TouchTile('top.menu', { size: TILE.small, glyph: 'menu', word: null, onPress: (_, down, inside) => { if (!down && inside) this.fold(!this.folded); } }));
   }
+
+  /** Folded to the MENU tab (and PAUSE), or the row opened. */
+  fold(on) {
+    if (this.folded === !!on) return;
+    this.folded = !!on; this.touched = performance.now() / 1000;
+    for (const id of TOP_BAR.ids) if (on) this.tiles.get(id).set({ hidden: true });
+    this.shown = !this.shown; // (laid again, shown again: the next update)
+    this.relayout();
+  }
+  /** What stands now, in order: MENU, the windows while open, PAUSE. */
+  get items() { return this.folded ? ['menu', 'pause'] : ['menu', ...this.ids, 'pause']; }
 
   /** A window asked for: said on the bus, handed to the shell, and to the listener. */
   open(what) {
@@ -72,11 +86,12 @@ export class TouchTopBar {
   /** Lay the shelf and its tiles in the top bar's area: one row centred, PAUSE apart at the end; wrapped into rows from the top where the
    *  area is too narrow for one (upright, beside the Sight). */
   relayout() {
-    const A = placeOf(this.game).areas.topBar, s = TILE.small, G = TOP_BAR.gap, items = [...this.ids, 'pause'], n = items.length;
+    const A = placeOf(this.game).areas.topBar, s = TILE.small, G = TOP_BAR.gap, items = this.items, n = items.length;
     const one = n * s + (n - 1) * G + (TOP_BAR.pauseGap - G) + 16;
     const per = one <= A.w ? n : Math.max(1, Math.floor((A.w - 16 + G) / (s + G))), rows = Math.ceil(n / per), F = TILE.foot;
     const W = per === n ? one : per * s + (per - 1) * G + 16, H = rows * (s + F) + (rows - 1) * G + 8;
-    const x0 = per === n ? A.x + (A.w - W) / 2 : A.x, y0 = rows === 1 ? A.y + (Math.min(A.h, TOP_BAR.h) - H) / 2 : A.y;
+    const all = this.ids.length + 2, full = all * s + (all - 1) * G + (TOP_BAR.pauseGap - G) + 16; // (folded, the tab stands where the opened row's MENU does: the row unfolds from it)
+    const x0 = per === n ? A.x + (A.w - (this.folded && full <= A.w ? full : W)) / 2 : A.x, y0 = rows === 1 ? A.y + (Math.min(A.h, TOP_BAR.h) - H) / 2 : A.y;
     Object.assign(this.shelf.style, { transform: `translate(${Math.round(x0)}px, ${Math.round(y0)}px)`, width: `${Math.round(W)}px`, height: `${Math.round(H)}px` });
     this.shelf.style.setProperty('--h', `${Math.min(H, s + F + 8)}px`);
     items.forEach((id, i) => {
@@ -90,9 +105,14 @@ export class TouchTopBar {
     if (ids.join() !== this.ids.join()) { this.ids = ids; this.relayout(); for (const id of TOP_BAR.ids) if (!ids.includes(id)) this.tiles.get(id).set({ hidden: true }); this.shown = !on; }
     if (!!on !== this.shown) {
       this.shown = !!on; this.shelf.classList.toggle('off', !on);
-      for (const id of [...this.ids, 'pause']) this.tiles.get(id).set({ hidden: !on });
+      for (const id of this.items) this.tiles.get(id).set({ hidden: !on });
     }
     if (!on) return;
-    for (const id of [...this.ids, 'pause']) { const t = this.tiles.get(id); let lit = false; try { lit = !!TOP_BAR.open[id]?.(g); } catch { /* not there */ } t.set({ lit: lit || t.state.pressed }); t.update(now); }
+    if (!this.folded && now - this.touched > TOP_BAR.fold) this.fold(true); // (left open and untouched: folded again)
+    for (const id of this.items) {
+      const t = this.tiles.get(id); let lit = false; try { lit = id === 'menu' ? !this.folded : !!TOP_BAR.open[id]?.(g); } catch { /* not there */ }
+      if (t.state.pressed) this.touched = now;
+      t.set({ lit: lit || t.state.pressed }); t.update(now);
+    }
   }
 }
