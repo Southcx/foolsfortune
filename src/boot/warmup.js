@@ -24,6 +24,7 @@ import { SightLook } from '../vfx/sight.js';
 import { InstrumentSkins, INSTRUMENT_SKIN_ORDER } from '../vfx/instrumentskins.js';
 import { CreatureTags } from '../vfx/creaturetags.js';
 import { TitlePlacard } from '../vfx/titleplacard.js';
+import { installLiveMoment } from '../core/livemoment.js';
 import { SealImprints } from '../vfx/sealimprint.js';
 import { SealPicker } from '../ui/sealpicker.js';
 import { RailReadout } from '../ui/railreadout.js';
@@ -127,6 +128,7 @@ export async function bootWarmup(game, made) {
   game.sondelassGuard = new SondelassGuard(game); // (the Sondelass's own UI, board v9)
   game.lockheartReliquary = new LockheartReliquary(game); // (the Lockheart's own UI, board v10 in its B orientation: vfx/lockheartreliquary.js)
   game.soulBrushDesk = new SoulBrushDesk(game); // (the Soul Brush's own UI, board v11: the scholar's desk, vfx/soulbrushdesk.js)
+  installLiveMoment(game); // (game.liveMoment(): what is under way that a pop-up must wait out, a race, a crossing, a duel ...: core/livemoment.js)
   game.sightLook = new SightLook(game); game.creatureTags = new CreatureTags(game); game.titlePlacard = new TitlePlacard(game); game.sealImprints = new SealImprints(game); game.sealPicker = new SealPicker(game); // (the overlay's instruments, tags, placard and seal: OVERLAY.md 10.5c, HANKO.md)
   game.instrumentSkins = new InstrumentSkins(game); // (the instruments' housing as one set, a preference kept in the settings: vfx/instrumentskins.js)
   game.chat.add('instruments', { debug: true, help: `the instruments' skin: /instruments ${INSTRUMENT_SKIN_ORDER.join(' | ')}; /instruments alone lists them`, run: ([id]) => {
