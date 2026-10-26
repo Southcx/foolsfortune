@@ -5,7 +5,8 @@
 // from the artifact's owner: the owner's own loads are the owner's to read, and through the owner the gate's):
 //   field.<load>   { build, at, device, ua, screen, view, dpr, tier, machine, standalone, framed,
 //                    last (how the load before this one ended: index.html's boot watch note), boot (its stages, real ms),
-//                    moments [[what, real s]] (the boot watch's moments after boot, the graphics lost and given back, each zone entered),
+//                    moments [[what, real s]] (the boot watch's moments after boot, the graphics lost and given back, each zone entered,
+//                    each shader program linked after the first frame and each frame over FIELD.longFrame real ms),
 //                    errors [[message, real s]] (the first few after boot), samples [{ s, fps, med, worst, geos, tex, programs, heap,
 //                    zone, areas, lines }], ended ('hidden' | 'left', s) }
 //   field.index    { ids }   the last FIELD.keep loads; an older report is deleted when a new one starts.
@@ -22,7 +23,7 @@ import { now } from '../core/calendar.js';
 
 /** every / later: real s between writes, before and after the first five real minutes; keep: loads kept; samples, moments, errors: rows kept
  *  a report (the newest samples, the first moments and errors). */
-export const FIELD = { every: 30, later: 120, early: 300, keep: 30, samples: 40, moments: 40, errors: 8 };
+export const FIELD = { every: 30, later: 120, early: 300, keep: 30, samples: 40, moments: 80, errors: 8, longFrame: 300 };
 
 const rid = () => (globalThis.crypto?.randomUUID?.() || `${now()}${performance.now()}`).replace(/[^a-z0-9]/gi, '').slice(0, 12);
 const sec = () => Math.round(performance.now() / 100) / 10;
@@ -57,6 +58,11 @@ export class FieldReport {
   frame(rawDt) {
     if (rawDt > 0 && rawDt < 2) this.frames.push(rawDt * 1000);
     const z = this.game.zones?.current ?? null; if (z !== this.zone) { this.zone = z; this.moment(`in ${z}`); } // (where it was, as it went)
+    // the last things before a loss: each shader program linked after boot (by its material's name) and each long frame
+    const P = this.r?.info?.programs;
+    if (P && this.progs !== undefined && P.length !== this.progs) { const fresh = P.slice(this.progs).map((p) => p.name || '?'); this.moment(`programs ${this.progs} -> ${P.length}${fresh.length ? `: ${fresh.slice(0, 4).join(', ')}` : ''}`); }
+    if (P) this.progs = P.length;
+    if (rawDt * 1000 > FIELD.longFrame && rawDt < 30) this.moment(`a frame of ${Math.round(rawDt * 1000)} ms`);
     const t = performance.now() / 1000;
     if (t < this.nextT) return;
     if (!this.on) { if (!this.cloud?.db || !this.cloud?.uid || navigator.webdriver) { this.nextT = t + 5; return; } this.on = true; this.start(); }
