@@ -134,10 +134,20 @@ export class SystemVoice {
   // ---------------------------------------------------------------- what the System says, and when
   rules() {
     const g = this.game, on = (k, f) => g.events?.on(k, (e) => { try { f(e || {}); } catch (err) { console.warn('voice', k, err); } });
+    const titles = new Map(); // achievement id -> its title's line, waiting for the placard
     on('achievement.unlock', (e) => {
-      // only an achievement that awards a title is said aloud, as its placard comes down (the owner, 2026-10-26); the rest is the log's
+      // only an achievement that awards a title is said aloud (the owner, 2026-10-26); the rest is the log's. The line is held until
+      // its placard descends: the placard waits out a live moment (core/livemoment.js), and the voice waits with it.
       if (!e.title) return;
-      this.say(e.ach ? `Notice. Title acquired: ${e.title}, for ${e.ach}.` : `Notice. Title acquired: ${e.title}.`, { key: `title.${e.id}` });
+      titles.set(e.id, e.ach ? `Notice. Title acquired: ${e.title}, for ${e.ach}.` : `Notice. Title acquired: ${e.title}.`);
+    });
+    on('placard.beat', (e) => {
+      if (e.k !== 'descend') return;
+      const id = e.id ?? titles.keys().next().value; // (until the beat carries its id, the oldest held title is the one descending)
+      const line = titles.get(id);
+      if (line == null) return; // (a placard re-queued unsettled descends again: said once)
+      titles.delete(id);
+      this.say(line, { key: `title.${id}` });
     });
     on('rank.up', (e) => this.say(`Notice. Your rank has risen. You are now known as a ${e.rank}.`, { key: 'rank' }));
     on('system.unlock', (e) => {
