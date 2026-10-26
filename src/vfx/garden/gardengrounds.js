@@ -42,6 +42,7 @@ import * as THREE from 'three';
 import { GROUND } from '../../progress/realm.js';
 import { COLOR, phaseAt } from '../../progress/weather.js';
 import { liquidTexture2, liquidUniforms, LIQUID_GLSL } from '../liquid.js';
+import { dataPackTexture } from '../datapack.js';
 
 /** The five grounds' look (colours as hex, sRGB): a ramp from `lo` (its hollows) to `hi` (its tops) over its height between `ramp`'s two
  *  edges; `rough`, `metal`; its height drawn from the ground pack's channels at two scales (`fine`, every 2 m, and `coarse`, every 5.4 m
@@ -63,13 +64,11 @@ let packTex = null;
 /** The ground pack: four grey channels of data, repeat-wrapped and mipmapped, fetched beside the bundle (never inlined: no string kept in the heap) the first time it is asked for (the first planetoid made). */
 export function groundPackTexture() {
   if (packTex) return packTex;
-  const t = packTex = new THREE.Texture();
-  t.flipY = false; t.wrapS = t.wrapT = THREE.RepeatWrapping; t.colorSpace = THREE.NoColorSpace; t.anisotropy = 4; // (an ImageBitmap is never flipped; the noise tiles either way)
-  if (typeof window !== 'undefined') {
-    // (the fourth channel is data: decoded with premultiplyAlpha 'none', as vfx/liquid.js decodes its packs, so no texel's colour is lost under a zero alpha)
-    const L = new THREE.ImageBitmapLoader(); L.setOptions({ premultiplyAlpha: 'none', colorSpaceConversion: 'none' });
-    L.load(new URL('../../assets/ground_pack.webp', import.meta.url).href, (bmp) => { t.image = bmp; t.needsUpdate = true; }, undefined, (e) => console.warn('gardengrounds: the ground pack did not load', e));
-  }
+  // (the fourth channel is data: saved opaque two halves wide and read back exact (vfx/datapack.js), as vfx/liquid.js reads its packs:
+  // WebKit spoiled the ImageBitmap decode with premultiplyAlpha 'none', 2026-10-26)
+  const t = packTex = typeof window !== 'undefined'
+    ? dataPackTexture(new URL('../../assets/ground_pack.webp', import.meta.url).href, { onError: (e) => console.warn('gardengrounds: the ground pack did not load', e) })
+    : new THREE.Texture();
   return t;
 }
 

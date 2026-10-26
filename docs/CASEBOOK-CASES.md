@@ -4017,3 +4017,16 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   210 programs compiled without an error (workshop, basement, Raceway, Dunes, bazaar), 25 of them rewritten, 30 arrays; the box's frame
   with the water drawn read the same to the channel with it on and off (0 of 1,121,760).
 - **Rule:** NEW:uniform-array-constant-index
+
+### 2026-10-26 · The liquid packs drawn black on iOS (the owner's iPhone XR, iOS 18.7; Petra's handoff; Calissa)
+- **Seen:** the box room's teal pad (the game's water) hitched half a real second, then drew its panels black.
+- **Cause (as far as measured):** the packs keep data in their fourth channel and were decoded by `THREE.ImageBitmapLoader` with
+  `premultiplyAlpha: 'none'`, `colorSpaceConversion: 'none'` and the decoder's own resize; WebKit's createImageBitmap is the part not
+  trusted (which option it fails on was not measured: no WebKit here).
+- **Fix:** no browser is asked to keep an alpha as data any more. The packs (liquid 1 and 2, the garden's ground pack) are saved opaque,
+  two halves wide, the fourth channel on the right (scripts/datapack.py, from the bakes); vfx/datapack.js draws one into a canvas, reads
+  the bytes back and joins them into an RGBA DataTexture, averaging two by two for a phone's tier. Read back in Chromium: byte-exact
+  against the old packs (each channel's sum and a position hash). At the gate (Petra): the 1x1 stand-in, once drawn before the load,
+  held its immutable storage (texStorage2D) and the 512 upload failed (GL 1281, grey for good); the texture is disposed before its image
+  is set. Measured by Petra in Playwright's WebKit: the joined bytes match Chromium's.
+- **Rule:** NEW:data-never-in-alpha

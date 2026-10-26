@@ -19,6 +19,8 @@
 import os, sys
 import numpy as np
 from PIL import Image
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from datapack import save_split  # (saved opaque, two halves wide: the fourth channel is data, src/vfx/datapack.js)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 NOISE = os.path.join(ROOT, 'source_assets', 'vfx', 'Noise_Gradients')
@@ -46,7 +48,7 @@ def main():
         a = load(n)
         chans.append(np.full((SIZE, SIZE), 0.5) if a is None else resize(level(a)))
     rgba = np.stack(chans, -1)
-    Image.fromarray((rgba * 255).round().astype(np.uint8), 'RGBA').save(OUT, 'WEBP', lossless=True, exact=True, method=6)
+    save_split((rgba * 255).round().astype(np.uint8), OUT)
     print(f'bake_ground: {OUT} ({os.path.getsize(OUT) // 1024} KB, {SIZE}px)')
 
 if __name__ == '__main__':

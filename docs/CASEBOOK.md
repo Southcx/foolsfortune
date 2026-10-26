@@ -912,3 +912,5 @@ NEW:frame-shape-with-size. **The camera's aspect is set where the render size is
 NEW:uniform-array-constant-index. **A uniform array is never read at a computed index on Apple's GPU path: on a phone the reads go through
   constant indices (render/constantindex.js does it for every shader).** A new shader needs nothing; a crash at a shader's first draw on
   the iPhone is bisected in the box room, one pool a pad, before it is guessed at.
+NEW:data-never-in-alpha. **A texture's data never rides in an image's alpha channel on its way in.** Save it opaque (the fourth channel
+  beside the other three) and join it in the page; a decoder may premultiply, convert or drop an alpha, and WebKit does.
