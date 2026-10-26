@@ -26,6 +26,7 @@
 //   and brought down to the ground as the wheel lands (Lock_Opening's slam, timed to the landing); for a second spin, up again
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { bakedCanvasTexture } from '../../render/bakedcanvas.js';
 import { Tech } from '../../courier/moves/techs.js';
 import { Gestures, Crossfade } from '../toolbody.js';
 import { buildThing } from '../../pneuka/thingmodels.js';
@@ -41,8 +42,12 @@ const _v = new THREE.Vector3(), _l = new THREE.Vector3(), _f = new THREE.Vector3
 
 /** The circle drawn on the ground: rings, a seven-pointed star (seven for luck), and ticks round it, gold on black, added light. */
 function circleTexture() {
-  const c = document.createElement('canvas'); c.width = c.height = 512;
-  const g = c.getContext('2d'), m = 256;
+  const t = bakedCanvasTexture((g) => paintCircle(g), 512, 512); // (painted once: the canvas let go once the card has it, render/bakedcanvas.js)
+  t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
+  return t;
+}
+function paintCircle(g) {
+  const m = 256;
   g.translate(m, m); g.strokeStyle = '#fff'; g.lineCap = 'round';
   for (const [r, w] of [[250, 6], [236, 2], [170, 3], [158, 1.5], [70, 3]]) { g.lineWidth = w; g.beginPath(); g.arc(0, 0, r, 0, Math.PI * 2); g.stroke(); }
   g.lineWidth = 3; g.beginPath();
@@ -50,8 +55,6 @@ function circleTexture() {
   g.stroke();
   for (let i = 0; i < 49; i++) { const a = (i / 49) * Math.PI * 2, r0 = i % 7 ? 240 : 222; g.lineWidth = i % 7 ? 2 : 4; g.beginPath(); g.moveTo(Math.cos(a) * r0, Math.sin(a) * r0); g.lineTo(Math.cos(a) * 250, Math.sin(a) * 250); g.stroke(); }
   for (let i = 0; i < 7; i++) { const a = (i / 7) * Math.PI * 2 - Math.PI / 2; g.beginPath(); g.arc(Math.cos(a) * 203, Math.sin(a) * 203, 14, 0, Math.PI * 2); g.stroke(); }
-  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4;
-  return t;
 }
 
 export class Ultimate {
