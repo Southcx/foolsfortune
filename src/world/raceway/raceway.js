@@ -28,7 +28,7 @@
 //   game.raceway = new Raceway(game)   .active   .heightAt(x, z)   .rideHeight(x, z)   .normalAt   .wind   .tracks   .track   .s   .d   .lat
 //   .gaps (gaps.js)   .buoys (buoys.js)   .line ('main' | 'cavern')   .sb   .sun (0..1)   .condition (conditions.js)   .edgeLines(step, line?, trackId?) -> [{ side, pts, hide }]
 //   .plateAt(pos) -> plate | null (a vein lane's has `lane`)   .nearThings(pos) -> [{ key, x, y, z, r, what }]   .glideAt(pos) -> bool   .rails   .rings   .pillars   .arrive()   .respawn(s?)   .update(dt)   .T (the Sun Circuit)
-//   .build()   .teardown() (render/areas.js stage 2: boot/services.js registers the pair)   .buildGround()   .releaseGround()   .onRelease(fn) (told when the ground is given back)   .pick(ray) -> { x, z, y } park-local | null
+//   .build()   .buildSteps() (a generator, a piece a yield)   .teardown() (render/areas.js stage 2: boot/services.js registers the pair)   .prepare(ms) -> bool   .fieldProgress (the field behind a cover)   .buildGround()   .releaseGround()   .onRelease(fn) (told when the ground is given back)   .pick(ray) -> { x, z, y } park-local | null
 //   .made (a made track on the build lot: madetrack.js)   .traps (the traps of the track that has them now: traps.js)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -111,22 +111,35 @@ export class Raceway {
   at(s, T = this.track) { const F = T.frame(s); return { pos: this.local(F.x, F.z), yaw: Math.atan2(F.fx, F.fz), w: F.w }; }
 
   // ------------------------------------------------------------------ built the first time it is entered
-  build() {
-    if (this.built) return; this.built = true;
-    const g = this.game, P = this.P, ms = (this.buildMs = {}), lap = (k, t0) => { ms[k] = Math.round(performance.now() - t0); return performance.now(); };
+  /** The park laid all at once (render/areas.js stage 2's build; a staged arrival runs the same steps a frame each: buildSteps). A build
+   *  already under way is finished. */
+  build() { if (this.built) return; const it = this.stepping || this.stepsOf(); while (!it.next().done); }
+  /** The one build under way, as a generator kept on the park, so build() and the seam step the same one. */
+  stepsOf() { if (!this.stepping) { const it = this.buildSteps(); this.stepping = { next: () => { const r = it.next(); if (r.done) this.stepping = null; return r; }, [Symbol.iterator]() { return this; } }; } return this.stepping; }
+  /** The park laid as steps, one yield between pieces, for the seam to run a frame each under its cover (Petra's `seam.stage`: the
+   *  iPhone XR lost its graphics on an arrival done in one frame, v284). The field first, a slice a step if the idle prefetch has not
+   *  finished it; `built` is true only once every piece stands (update() runs nothing of a half-laid park). */
+  *buildSteps() {
+    if (this.built) return;
+    const g = this.game, ms = (this.buildMs = {}), lap = (k, t0) => { ms[k] = Math.round(performance.now() - t0); return performance.now(); };
     const mark = markWorld(g); // (what stood before: the build's own is what is new after, AREAS.md A1: world/areaown.js)
     let t = performance.now();
-    this.buildGround(); t = lap('terrain', t);
+    while (!this.prepare(6)) yield 'field'; // (the field a slice a step: parkfield.js)
+    t = lap('field', t); yield 'field';
+    this.buildGround(); t = lap('terrain', t); yield 'terrain';
     this.barrier = new Barrier(g, { center: this.center, radius: RW.edge, y0: RW.y - 120, y1: RW.y + 300 });
-    t = lap('barrier', t);
-    this.rails = buildRails(this); this.rings = buildRings(this); t = lap('rails', t); // (the grind's rails, the coaster rails and the sun rings: railsrings.js; before the kit, which keeps its columns off them)
-    buildKit(this); buildMarks(this); t = lap('kit', t); // (every track's furniture: kit.js)
-    this.decks = buildDecks(this); buildWater(this); this.pits = buildPits(this); t = lap('features', t); // (the bridges, the water, the antlion pits: features.js)
-    this.cavern = buildCavern(this); t = lap('cavern', t); // (its roof, stalactites and crystals: world/raceway/cavern.js)
-    this.buoys.build(); this.siphons.build(); t = lap('buoys', t); // (the buoy runs' poles and floats, the siphons' arches: buoys.js, siphons.js)
+    t = lap('barrier', t); yield 'barrier';
+    this.rails = buildRails(this); this.rings = buildRings(this); t = lap('rails', t); yield 'rails'; // (the grind's rails, the coaster rails and the sun rings: railsrings.js; before the kit, which keeps its columns off them)
+    buildKit(this); buildMarks(this); t = lap('kit', t); yield 'kit'; // (every track's furniture: kit.js)
+    this.decks = buildDecks(this); buildWater(this); this.pits = buildPits(this); t = lap('features', t); yield 'features'; // (the bridges, the water, the antlion pits: features.js)
+    this.cavern = buildCavern(this); t = lap('cavern', t); yield 'cavern'; // (its roof, stalactites and crystals: world/raceway/cavern.js)
+    this.buoys.build(); this.siphons.build(); t = lap('buoys', t); yield 'buoys'; // (the buoy runs' poles and floats, the siphons' arches: buoys.js, siphons.js)
     // what the build put in the world (before Calissa's looks dress it: those come and go by her own release), kept so the teardown takes exactly that away (the ground's own terrain and body are releaseGround's)
     this.owned = ownedSince(g, mark, { skip: [this.terrain], skipBodies: [this.groundBody] });
-    g.racewayLooks?.dress(this); t = lap('looks', t); // (Calissa's: the sun plates' glyphs, the arch's lamps, the gates' marks; the slabs hidden)
+    this.built = true;
+    const L = g.racewayLooks; // (Calissa's: the sun plates' glyphs, the arch's lamps, the gates' marks; the slabs hidden; her steps when she has them)
+    if (L?.dressSteps) yield* L.dressSteps(this); else L?.dress(this);
+    lap('looks', t);
   }
   /** The park torn down (render/areas.js, stage 2: AREAS.md A1), a few real seconds after the camera and its neighbours leave: the ground
    *  given back (its releasers told, so every look that dresses the park undresses; Calissa's race-day dressing is taken down beside
@@ -147,7 +160,7 @@ export class Raceway {
   buildGround() {
     if (this.chunks) return;
     const g = this.game, P = this.P, t0 = performance.now();
-    const field = this.field || fieldOf(P); this.field = field;
+    const field = this.field || (this.fieldJob && this.fieldJob.step(() => true) ? this.fieldJob.field : fieldOf(P)); this.field = field; // (the prefetch's rows kept: only what is left is worked)
     const N = field.n, onGrid = (x, z) => { const fi = (x + RW.half) / RW.step, fj = (z + RW.half) / RW.step, i = Math.round(fi), j = Math.round(fj); return Math.abs(fi - i) < 1e-4 && Math.abs(fj - j) < 1e-4 && i >= 0 && j >= 0 && i < N && j < N ? field.h[j * N + i] : P.heightAt(x, z); };
     // the Dunes' own sand material on a field of this place's heights, and its height field to stand on
     const mat = g.dunes?.terrain?.material || new THREE.MeshStandardMaterial({ color: 0xe8b070, roughness: 0.92 });
@@ -175,10 +188,24 @@ export class Raceway {
   prefetch() {
     if (this.field || this.fieldJob) return;
     const job = (this.fieldJob = fieldJob(this.P));
-    const idle = typeof requestIdleCallback === 'function' ? (f) => requestIdleCallback(f, { timeout: 1000 }) : (f) => setTimeout(() => f({ timeRemaining: () => 4 }), 50);
+    // (no requestIdleCallback on iOS Safari: the fallback's slice has a real 4 ms deadline; `() => 4` never ran out, and the whole field
+    // was worked in one task 12 s after boot, a 1.6 s frame in the owner's field reports, v284)
+    const idle = typeof requestIdleCallback === 'function' ? (f) => requestIdleCallback(f, { timeout: 1000 }) : (f) => setTimeout(() => { const end = performance.now() + 4; f({ timeRemaining: () => Math.max(0, end - performance.now()) }); }, 50);
     const slice = (dl) => { if (this.field) return; if (job.step(() => dl.timeRemaining() > 1)) { this.field = job.field; this.fieldFrom = 'idle'; } else idle(slice); };
     idle(slice);
   }
+  /** The field finished behind a cover (the area wipe's hold: Petra's seam), `ms` real milliseconds a call, so an arrival before the
+   *  idle prefetch is done never works the rest at once (the iPhone XR's lost graphics, v283: CASEBOOK NEW:memory-bound-by-view).
+   *  True once the field is whole; `.fieldProgress` (0..1) fills the wipe's thread. arrive() needs nothing of it: it works what is
+   *  left at once, as before. */
+  prepare(ms = 12) {
+    if (this.field) return true;
+    if (!this.fieldJob) this.prefetch();
+    const end = performance.now() + ms, job = this.fieldJob;
+    if (job.step(() => performance.now() < end)) { this.field = job.field; this.fieldFrom = this.fieldFrom || 'cover'; }
+    return !!this.field;
+  }
+  get fieldProgress() { return this.field ? 1 : this.fieldJob?.progress ?? 0; }
 
   /** A track's two edges as world points every `step` metres, a metre over the ground at the running surface's edge: where the edge
    *  strings hang (Calissa's look). [{ side: -1 | 1, pts: [Vector3], hide: Uint8Array }], left then right; `hide` marks the points
@@ -221,7 +248,14 @@ export class Raceway {
 
   /** Into the Raceway from the Index: set down on foot at the hub, among the tracks' starts. */
   arrive() {
-    const g = this.game; this.build(); this.buildGround();
+    const g = this.game;
+    // (under a seam that stages, the park is laid a step a frame under its cover and the arrival finishes after: Petra's render/seam.js)
+    if (!this.built && g.seam?.busy && g.seam.stage) { const R = this; g.seam.stage((function* () { yield* R.stepsOf(); R.landed(); })()); return; }
+    this.build(); this.landed();
+  }
+  /** The arrival once the park stands: the ground built if it was given back, the Courier set down at the hub. */
+  landed() {
+    const g = this.game; this.buildGround();
     g.player.killY = RW.y - 120;
     const H = this.P.hub, to = this.local(H.x - 8, H.z - 8);
     to.y += 0.05;

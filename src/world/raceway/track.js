@@ -106,11 +106,16 @@ const STEP = 2; // (metres between samples of the line)
 // ---- the Dunes' kind of sand (world/dunes/dunes.js localHeight, its noise kept here so the track needs nothing of three.js)
 const hash = (x, z) => { let h = (Math.imul(x, 374761393) + Math.imul(z, 668265263)) | 0; h = Math.imul(h ^ (h >>> 13), 1274126177); return ((h ^ (h >>> 16)) >>> 0) / 4294967296; };
 const smooth = (t) => t * t * (3 - 2 * t);
-function vnoise(x, z) {
-  const ix = Math.floor(x), iz = Math.floor(z), fx = x - ix, fz = z - iz, a = hash(ix, iz), b = hash(ix + 1, iz), c = hash(ix, iz + 1), d = hash(ix + 1, iz + 1);
-  const u = smooth(fx), v = smooth(fz); return a + (b - a) * u + (c - a) * v + (a - b - c + d) * u * v;
+const len2 = (x, z) => Math.sqrt(x * x + z * z); // (Math.hypot boxes its arguments: 400 MB a field of it, measured 2026-10-26)
+/** Value noise, its octaves summed (vnoise written into the loop: a double returned from a call that is not inlined is boxed). */
+function fbm(x, z, oct) {
+  let s = 0, a = 0.5, f = 1;
+  for (let i = 0; i < oct; i++) {
+    const X = x * f, Z = z * f, ix = Math.floor(X), iz = Math.floor(Z), fx = X - ix, fz = Z - iz, p = hash(ix, iz), b = hash(ix + 1, iz), c = hash(ix, iz + 1), d = hash(ix + 1, iz + 1);
+    const u = fx * fx * (3 - 2 * fx), v = fz * fz * (3 - 2 * fz); s += a * (p + (b - p) * u + (c - p) * v + (p - b - c + d) * u * v); a *= 0.5; f *= 2.03;
+  }
+  return s;
 }
-function fbm(x, z, oct = 3) { let s = 0, a = 0.5, f = 1; for (let i = 0; i < oct; i++) { s += a * vnoise(x * f, z * f); a *= 0.5; f *= 2.03; } return s; }
 const sstep = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 function duneProfile(f) { const c = 0.74; if (f < c) { const t = f / c; return Math.pow(t, 1.25) * (0.92 + 0.08 * t); } return 1 - smooth(Math.min(1, ((f - c) / (1 - c)) * 1.05)); }
 const WIND_AT = 0.55;
@@ -121,7 +126,7 @@ export function sandAt(x, z) {
   const s = (px * wx + pz * wz) / 112 + (fbm(px * 0.006 + 53, pz * 0.006 + 9, 3) - 0.43) * 3.4;
   const amp = 5 + 11 * fbm(px * 0.0032 + 55, pz * 0.0032 - 2, 2);
   let h = duneProfile(s - Math.floor(s)) * amp + (fbm(px * 0.0022 + 50, pz * 0.0022 + 7, 3) - 0.43) * 18 + 16;
-  const far = sstep(RW.edge + 40, RW.outer, Math.hypot(x, z)); h += far * far * 110;
+  const far = sstep(RW.edge + 40, RW.outer, len2(x, z)); h += far * far * 110;
   return h;
 }
 
@@ -161,10 +166,14 @@ function catmull(P0, P1, P2, P3, out) {
 /** Each 16 m cell's candidates: every sample of a line whose segment can come within `reach` of a point in it (built once: the field asks
  *  200,000 times). */
 const CELL = 16, cellKey = (cx, cz) => cx * 100003 + cz;
+/** A sampled array at sample i, u of the way to i2. */
+const mix = (A, i, i2, u) => A[i] + (A[i2] - A[i]) * u;
+/** The last projection's u (d2Of's), in place: a double in a closure's `let` is boxed each time it is written. */
+const PU = new Float64Array(1);
 function nearMap(X, Z, N, reach, closed = true) {
   const M = new Map(), rc = Math.ceil(reach / CELL), half = CELL * 0.71;
   for (let i = 0; i < N - (closed ? 0 : 1); i++) { const cx = Math.floor(X[i] / CELL), cz = Math.floor(Z[i] / CELL); for (let a = -rc; a <= rc; a++) for (let b = -rc; b <= rc; b++) {
-    const mx = (cx + a + 0.5) * CELL, mz = (cz + b + 0.5) * CELL; if (Math.hypot(mx - X[i], mz - Z[i]) > reach + half + STEP) continue;
+    const mx = (cx + a + 0.5) * CELL, mz = (cz + b + 0.5) * CELL; if (len2(mx - X[i], mz - Z[i]) > reach + half + STEP) continue;
     const k = cellKey(cx + a, cz + b); let l = M.get(k); if (!l) M.set(k, (l = [])); l.push(i); } }
   return M;
 }
@@ -235,31 +244,29 @@ export function track(def = { ...SUN, control: CONTROL, features: FEATURES, bran
   /** The line's nearest point to (x, z): its s, the signed distance to its right (lat), the distance, the sample. Searched near `hintS`
    *  (within 80 m of it) when given, so a lap's progress never jumps to a switchback's other leg. */
   function nearest(x, z, hintS = null, cells = rc) {
-    let best = null;
-    const test = (i) => {
-      const i2 = (i + 1) % N, ax = X[i], az = Z[i], bx = X[i2] - ax, bz = Z[i2] - az, l2 = bx * bx + bz * bz;
-      const u = Math.max(0, Math.min(1, ((x - ax) * bx + (z - az) * bz) / l2)), px = ax + bx * u, pz = az + bz * u, d = Math.hypot(x - px, z - pz);
-      if (!best || d < best.d) best = { i, u, d, s: (i + u) * ds, lat: (x - px) * -FZ[i] + (z - pz) * FX[i] };
-    };
-    if (hintS != null) { const c = Math.round(hintS / ds), w = Math.round(80 / ds); for (let k = -w; k <= w; k++) test((c + k + N) % N); return best; }
-    const cx = Math.floor(x / CELL), cz = Math.floor(z / CELL);
-    for (let a = -cells; a <= cells; a++) for (let b = -cells; b <= cells; b++) { const L2 = G.get(key(cx + a, cz + b)); if (L2) for (const i of L2) test(i); }
-    return best;
+    let bi = -1, bu = 0, bd = Infinity; // (the best so far as scalars: one object a call, at the end)
+    const test = (i) => { const d = d2Of(X, Z, N, i, x, z); if (d < bd) { bd = d; bi = i; bu = PU[0]; } };
+    if (hintS != null) { const c = Math.round(hintS / ds), w = Math.round(80 / ds); for (let k = -w; k <= w; k++) test((c + k + N) % N); }
+    else { const cx = Math.floor(x / CELL), cz = Math.floor(z / CELL);
+      for (let a = -cells; a <= cells; a++) for (let b = -cells; b <= cells; b++) { const L2 = G.get(key(cx + a, cz + b)); if (L2) for (let k = 0; k < L2.length; k++) test(L2[k]); } }
+    if (bi < 0) return null;
+    const i2 = (bi + 1) % N, px = X[bi] + (X[i2] - X[bi]) * bu, pz = Z[bi] + (Z[i2] - Z[bi]) * bu;
+    return { i: bi, u: bu, d: Math.sqrt(bd), s: (bi + bu) * ds, lat: (x - px) * -FZ[bi] + (z - pz) * FX[bi] };
   }
   /** The corridor's ground at a sample, `lat` metres to its right (its surface, its berm, and the berm's top beyond); `on`: on its running
    *  surface. */
+  const CO = { cy: 0, alpha: 0, on: false }; // (corridor's answer, written in place: the field asks a million times)
   const corridor = (i, u, lat) => {
-    const i2 = (i + 1) % N, lerp = (A) => A[i] + (A[i2] - A[i]) * u;
-    const y = lerp(Y), w = lerp(W), bk = lerp(BK), bh = lerp(BH), bw = lerp(BMW), bb = lerp(BMB), a = Math.abs(lat), edge = y - bk * Math.sign(lat) * Math.min(a, w);
-    const cy = a <= w ? y - bk * lat + rampAt(u < 0.5 ? i : i2, lat) : edge + bh * sstep(0, bw, a - w);
-    return { cy, alpha: 1 - sstep(w + bw, w + bw + bb, a), on: a <= w };
+    const i2 = (i + 1) % N;
+    const y = mix(Y, i, i2, u), w = mix(W, i, i2, u), bk = mix(BK, i, i2, u), bh = mix(BH, i, i2, u), bw = mix(BMW, i, i2, u), bb = mix(BMB, i, i2, u), a = Math.abs(lat), edge = y - bk * Math.sign(lat) * Math.min(a, w);
+    CO.cy = a <= w ? y - bk * lat + rampAt(u < 0.5 ? i : i2, lat) : edge + bh * sstep(0, bw, a - w);
+    CO.alpha = 1 - sstep(w + bw, w + bw + bb, a); CO.on = a <= w; return CO;
   };
   const NEAR = nearMap(X, Z, N, reach);
   const apart = (s1, s2) => Math.abs(((s1 - s2 + L * 1.5) % L) - L / 2), R2 = reach * reach;
-  let pu = 0; // (the last projection's u)
-  const d2Of = (Xa, Za, n, i, x, z) => {
+  const d2Of = (Xa, Za, n, i, x, z) => { // (the last projection's u in PU[0]: a captured `let` of a double is boxed at every write)
     const i2 = (i + 1) % n, ax = Xa[i], az = Za[i], bx = Xa[i2] - ax, bz = Za[i2] - az;
-    pu = Math.max(0, Math.min(1, ((x - ax) * bx + (z - az) * bz) / (bx * bx + bz * bz))); const ex = x - ax - bx * pu, ez = z - az - bz * pu; return ex * ex + ez * ez;
+    const u = Math.max(0, Math.min(1, ((x - ax) * bx + (z - az) * bz) / (bx * bx + bz * bz))); PU[0] = u; const ex = x - ax - bx * u, ez = z - az - bz * u; return ex * ex + ez * ez;
   };
   const latOf = (Xa, Za, FXa, FZa, n, i, u, x, z) => { const i2 = (i + 1) % n; return (x - Xa[i] - (Xa[i2] - Xa[i]) * u) * -FZa[i] + (z - Za[i] - (Za[i2] - Za[i]) * u) * FXa[i]; };
 
@@ -285,16 +292,17 @@ export function track(def = { ...SUN, control: CONTROL, features: FEATURES, bran
     for (let i = 0; i < BN; i++) { const w = BW[i] + B.wall, l = ground(BX[i] + BFZ[i] * w, BZ[i] - BFX[i] * w), r = ground(BX[i] - BFZ[i] * w, BZ[i] + BFX[i] * w); BWH[i] = Math.max(BERM.h, Math.min(l, r) - BY[i] + 0.5); }
   }
   const breach = Math.max(...BW) + B.wall + B.blend + 4, BNEAR = nearMap(BX, BZ, BN, breach, false), BR2 = breach * breach;
+  const COB = { cy: 0, alpha: 0, on: false }; // (written in place, as the line's)
   const corridorB = (i, u, lat) => {
-    const i2 = Math.min(BN - 1, i + 1), lerp = (A) => A[i] + (A[i2] - A[i]) * u, y = lerp(BY), w = lerp(BW), wh = lerp(BWH), a = Math.abs(lat);
-    return { cy: a <= w ? y : y + wh * sstep(0, B.wall, a - w), alpha: 1 - sstep(w + B.wall, w + B.wall + B.blend, a), on: a <= w };
+    const i2 = Math.min(BN - 1, i + 1), y = mix(BY, i, i2, u), w = mix(BW, i, i2, u), wh = mix(BWH, i, i2, u), a = Math.abs(lat);
+    COB.cy = a <= w ? y : y + wh * sstep(0, B.wall, a - w); COB.alpha = 1 - sstep(w + B.wall, w + B.wall + B.blend, a); COB.on = a <= w; return COB;
   };
   /** The branch's nearest point to (x, z): { sb (metres along it), lat, d, i }, or null past its reach. */
   function nearestB(x, z) {
-    let best = null;
-    for (let i = 0; i < BN - 1; i++) { const d2 = d2Of(BX, BZ, BN, i, x, z); if (!best || d2 < best.d2) best = { i, u: pu, d2 }; }
-    if (!best) return null;
-    const { i, u } = best; return { i, sb: (i + u) * bds, d: Math.sqrt(best.d2), lat: latOf(BX, BZ, BFX, BFZ, BN, i, u, x, z) };
+    let i = -1, u = 0, bd = Infinity;
+    for (let k = 0; k < BN - 1; k++) { const d2 = d2Of(BX, BZ, BN, k, x, z); if (d2 < bd) { bd = d2; i = k; u = PU[0]; } }
+    if (i < 0) return null;
+    return { i, sb: (i + u) * bds, d: Math.sqrt(bd), lat: latOf(BX, BZ, BFX, BFZ, BN, i, u, x, z) };
   }
   /** The branch at metres `sb` along it, as frame() answers for the line; and the place on the line it stands for (the race's). */
   function frameB(sb) {
@@ -304,37 +312,43 @@ export function track(def = { ...SUN, control: CONTROL, features: FEATURES, bran
   const mainOfB = (sb) => (bs0 + (Math.max(0, Math.min(BL, sb)) / BL) * bspan) % L;
   return { id: B.id, def: B, length: BL, ds: bds, N: BN, X: BX, Z: BZ, Y: BY, W: BW, wall: BWH, FX: BFX, FZ: BFZ, from: bs0, to: bs1, span: bspan, nearest: nearestB, frame: frameB, mainOf: mainOfB,
     pull(x, z) { const bl = BNEAR.get(cellKey(Math.floor(x / CELL), Math.floor(z / CELL))); if (!bl) return null; let bi = -1, bu = 0, bd = BR2;
-      for (let k = 0; k < bl.length; k++) { const i = bl[k], d = d2Of(BX, BZ, BN, i, x, z); if (d < bd) { bd = d; bi = i; bu = pu; } }
+      for (let k = 0; k < bl.length; k++) { const i = bl[k], d = d2Of(BX, BZ, BN, i, x, z); if (d < bd) { bd = d; bi = i; bu = PU[0]; } }
       return bi < 0 ? null : corridorB(bi, bu, latOf(BX, BZ, BFX, BFZ, BN, bi, bu, x, z)); } };
   }
 
   /** What the line pulls the ground toward at local x, z, without the sand: the nearest two legs of the corridor (points of the line more
    *  than 100 m apart along it), each pulling to its own surface by its weight (all of it inside its berm), then the branch's gorge.
-   *  { sum, wt } a weighted sum to add to the sand's (weight 1), and `on`: the running surface's height where the point is on one (a
-   *  running surface wins over another's berm or wall; two running surfaces: their mean). null where it reaches nothing. */
+   *  { sum, wt } a weighted sum to add to the sand's (weight 1), and `on` (with `hasOn`): the running surface's height where the point is
+   *  on one (a running surface wins over another's berm or wall; two running surfaces: their mean). null where it reaches nothing.
+   *  The answer is one object written in place (read it before the next call): the field asks a million times, and nothing is made. */
+  const PO = { sum: 0, wt: 0, on: 0, hasOn: false };
+  const leg = (i, u, first, x, z) => { // (one leg of the corridor into PO)
+    if (DECK[i]) return; const c = corridor(i, u, latOf(X, Z, FX, FZ, N, i, u, x, z));
+    if (first && c.on) { PO.on = c.cy; PO.hasOn = true; } if (c.alpha <= 0) return;
+    const k = c.alpha >= 0.999 ? 1e6 : c.alpha / (1 - c.alpha); PO.sum += c.cy * k; PO.wt += k;
+  };
   function pull(x, z) {
     const list = NEAR.get(cellKey(Math.floor(x / CELL), Math.floor(z / CELL)));
-    let sum = 0, wt = 0, onY = null, any = false;
+    PO.sum = 0; PO.wt = 0; PO.on = 0; PO.hasOn = false; let any = false;
     if (list) {
       let ai = -1, au = 0, ad = R2, bi = -1, bu = 0, bd = R2;
-      for (let k = 0; k < list.length; k++) { const i = list[k], d = d2Of(X, Z, N, i, x, z); if (d < ad) { ad = d; ai = i; au = pu; } }
+      for (let k = 0; k < list.length; k++) { const i = list[k], d = d2Of(X, Z, N, i, x, z); if (d < ad) { ad = d; ai = i; au = PU[0]; } }
       if (ai >= 0) {
         any = true; const as = (ai + au) * ds;
-        for (let k = 0; k < list.length; k++) { const i = list[k], d = d2Of(X, Z, N, i, x, z); if (d < bd && apart((i + pu) * ds, as) > 100) { bd = d; bi = i; bu = pu; } }
-        const one = (i, u, first) => { if (DECK[i]) return; const c = corridor(i, u, latOf(X, Z, FX, FZ, N, i, u, x, z)); if (first && c.on) onY = c.cy; if (c.alpha <= 0) return; const k = c.alpha >= 0.999 ? 1e6 : c.alpha / (1 - c.alpha); sum += c.cy * k; wt += k; };
-        one(ai, au, true); if (bi >= 0) one(bi, bu, false);
+        for (let k = 0; k < list.length; k++) { const i = list[k], d = d2Of(X, Z, N, i, x, z); if (d < bd && apart((i + PU[0]) * ds, as) > 100) { bd = d; bi = i; bu = PU[0]; } }
+        leg(ai, au, true, x, z); if (bi >= 0) leg(bi, bu, false, x, z);
       }
     }
     const c = branch?.pull(x, z);
     if (c) {
       any = true;
-      if (c.on) return { sum: 0, wt: 0, on: onY == null ? c.cy : (onY + c.cy) / 2 };
-      if (onY == null && c.alpha > 0) { const k = c.alpha >= 0.999 ? 1e6 : c.alpha / (1 - c.alpha); sum += c.cy * k; wt += k; }
+      if (c.on) { PO.on = PO.hasOn ? (PO.on + c.cy) / 2 : c.cy; PO.hasOn = true; PO.sum = 0; PO.wt = 0; return PO; }
+      if (!PO.hasOn && c.alpha > 0) { const k = c.alpha >= 0.999 ? 1e6 : c.alpha / (1 - c.alpha); PO.sum += c.cy * k; PO.wt += k; }
     }
-    return any ? { sum, wt, on: onY } : null;
+    return any ? PO : null;
   }
   /** The ground at local x, z with this track alone on the sand (the park's own heightAt nests every track: park.js). */
-  function heightAt(x, z) { const P = pull(x, z); if (!P) return ground(x, z); if (P.on != null) return P.on; return (ground(x, z) + P.sum) / (1 + P.wt); }
+  function heightAt(x, z) { const P = pull(x, z); if (!P) return ground(x, z); if (P.hasOn) return P.on; const sum = P.sum, wt = P.wt; return (ground(x, z) + sum) / (1 + wt); }
   /** The line at s: where it is, which way it runs, its half-width and the wind's angle off it. */
   function frame(s) {
     const t = (((s % L) + L) % L) / ds, i = Math.floor(t) % N, i2 = (i + 1) % N, u = t - Math.floor(t), lerp = (A) => A[i] + (A[i2] - A[i]) * u;
