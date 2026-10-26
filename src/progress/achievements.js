@@ -722,9 +722,9 @@ export function buildAchievements(game) {
   C('rs1', 'general', 'Persistence', 1, 'count', 'Try, Try Again', 'Fall out of the world 10 times.', 'courier.respawn.fall', 10);
   C('rs2', 'general', 'Persistence', 3, 'endure', 'Bottomless', 'Fall out of the world 100 times.', 'courier.respawn.fall', 100);
   spreadAchievements({ C, H }); // (the spread's classes, the day's card and the palm die: progress/spreadachievements.js)
-  F('am1', 'general', 'Achievements', 1, 'collect', 'A Start', 'Complete 10 achievements.', (L, g, a) => a.count(), 10);
-  F('am2', 'general', 'Achievements', 3, 'collect', 'Halfway Up the Wall', 'Complete 50 achievements.', (L, g, a) => a.count(), 50);
-  F('am3', 'general', 'Achievements', 5, 'collect', 'A Full Wall', 'Complete 100 achievements.', (L, g, a) => a.count(), 100);
+  F('am1', 'general', 'Achievements', 1, 'collect', 'A Start', 'Complete 10 achievements.', (L, g, a) => a.count(true), 10);
+  F('am2', 'general', 'Achievements', 3, 'collect', 'Halfway Up the Wall', 'Complete 50 achievements.', (L, g, a) => a.count(true), 50);
+  F('am3', 'general', 'Achievements', 5, 'collect', 'A Full Wall', 'Complete 100 achievements.', (L, g, a) => a.count(true), 100);
   const seen = new Set();
   for (const t of tiers) { if (seen.has(t.id)) console.error(`achievements: the id "${t.id}" is used twice (ledger.done is keyed by id)`); seen.add(t.id); }
   // the Codex lists a category by its subs, so a sub missing from CATS hid its achievements (the Dreamvane's and three more, until R57)
@@ -739,17 +739,19 @@ export class Achievements {
     this.L = game.ledger;
     this.list = buildAchievements(game);
     this.by = Object.fromEntries(this.list.map((a) => [a.id, a]));
-    this.seenVersion = -1;
-    this.t = 0;
-    this.rank = this.rankIndex();
+    this.seenVersion = -1; this.t = 0;
+    this.rank = this.rankIndex(); this.wasLent = this.lent;
     this.silent = true;
     this.check(); // (whatever was already done, silently: the log stays quiet on load)
     this.silent = false;
   }
 
-  /** Done, and when (the play time it was done at, which can be 0: so ask `!== undefined`, never truthiness). */
-  done(id) { return this.L.done[id] !== undefined; }
-  count() { return this.list.filter((a) => this.done(a.id)).length; }
+  /** Done: earned, or lent in the DEBUG save (the lend panel's Achievements row: the owner, 2026-10-26, "all unlocked in debug mode, much
+   *  like abilities are lent"; every title yours). `earned`: by play, as the ledger has it (the play time it was done at, which can be
+   *  0: ask `!== undefined`), what the goals lay from. */
+  done(id) { return this.lent || this.earned(id); }
+  earned(id) { return this.L.done[id] !== undefined; } get lent() { return !!this.game.lend?.has?.('achievements'); }
+  count(earned = false) { return this.list.filter((a) => (earned ? this.earned(a.id) : this.done(a.id))).length; } // (earned: by play alone, as the achievements about achievements count, so a lend never writes them)
   get points() { return this.list.reduce((n, a) => n + (this.done(a.id) ? TIERS[a.tier].pts : 0), 0); }
   get maxPoints() { return this.list.reduce((n, a) => n + TIERS[a.tier].pts, 0); }
   rankIndex() { let r = 0; RANKS.forEach(([p], i) => { if (this.points >= p) r = i; }); return r; }
@@ -766,26 +768,24 @@ export class Achievements {
   isDone(a) { const [, , f] = this.progress(a); return f >= 1 - 1e-9; }
 
   tick(dt) {
-    this.t += dt;
-    if (this.t < 0.6) return;
-    this.t = 0;
+    this.t += dt; if (this.t < 0.6) return; this.t = 0;
+    if (this.lent !== this.wasLent) { this.wasLent = this.lent; this.rank = this.rankIndex(); } // (the lend switched: the standing set again, silently)
     if (this.L.version !== this.seenVersion) this.check();
   }
 
   check() {
     this.seenVersion = this.L.version;
+    const quiet = this.lent; // (lent: what play earns is still written, by play alone, but nothing is announced and the standing moves silently)
     let again = true, guard = 0;
     while (again && guard++ < 4) { // (the achievements-about-achievements can complete in a chain)
       again = false;
       for (const a of this.list) {
-        if (this.done(a.id) || !this.isDone(a)) continue;
-        this.L.done[a.id] = this.L.play;
-        this.L.touch();
-        again = true;
-        if (!this.silent) this.announce(a);
+        if (this.earned(a.id) || !this.isDone(a)) continue;
+        this.L.done[a.id] = this.L.play; this.L.touch(); again = true;
+        if (!this.silent && !quiet) this.announce(a);
       }
     }
-    if (!this.silent) {
+    if (!this.silent && !quiet) {
       const r = this.rankIndex();
       if (r > this.rank) { this.rank = r; this.game.events?.emit('rank.up', { rank: RANKS[r][1], by: 'courier' }); }
     } else this.rank = this.rankIndex();
