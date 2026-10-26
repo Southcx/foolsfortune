@@ -43,6 +43,7 @@ import { buildKit, buildMarks, GEYSER, nearThings } from './kit.js';
 import { buildDecks, deckAt, buildWater, buildPits, stepPits } from './features.js';
 import { conditionAt } from './conditions.js';
 import { fieldOf, fieldJob } from './parkfield.js';
+import { phoneByPage } from '../../render/graphics.js';
 import { Gaps } from './gaps.js';
 import { Buoys } from './buoys.js';
 import { Siphons } from './siphons.js';
@@ -52,7 +53,7 @@ import { markWorld, ownedSince, takeAway } from '../areaown.js';
 
 const WIND = { speed: 8 }; // (the course wind's strength; its way is the track's, turned by the track's own angle)
 const OFF = { far: 40, secs: 3 }; // (metres past a track's edge, and real seconds there, before the board is set back on the track)
-const PREFETCH_AFTER = 12; // (real seconds after the Raceway is made (at boot) before its field is worked out in a worker)
+const PREFETCH_AFTER = 12; // (real seconds after the Raceway is made (at boot) before its field is worked out in idle time; a desk's only)
 const RELEASE = { after: 10 }; // (real seconds away before the ground is given back: a respawn or a short trip out never rebuilds it)
 const KEEP = 12; // (metres nearer another track's line must be before the Courier is counted on it: no flicker where two run close)
 
@@ -70,7 +71,9 @@ export class Raceway {
     this.geysers = []; this.plates = []; this.rails = []; this.rings = []; this.decks = []; this.pits = []; this.sandfalls = []; this.pillars = [];
     const F = this.T.frame(this.T.line);
     this.startPillar = this.local(F.x + F.fz * (F.w + 7), F.z - F.fx * (F.w + 7)); // (the Sun Circuit's: left of its line, beyond the berm)
-    if (typeof setTimeout !== 'undefined') setTimeout(() => this.prefetch(), PREFETCH_AFTER * 1000); // (the field worked out in idle time once the boot has settled)
+    // (the field worked out in idle time once the boot has settled, on a desk; on a phone only on the way here, under the seam's cover
+    // (buildSteps' slices): 4.5 MB held from boot and 0.5 GB of churn to make it were the iPhone XR's to spare, Petra's census, v288)
+    if (typeof setTimeout !== 'undefined' && !phoneByPage()) setTimeout(() => this.prefetch(), PREFETCH_AFTER * 1000);
   }
   get center() { return new THREE.Vector3(RW.x, RW.y, RW.z); }
   /** A local point (metres from the Raceway's middle) on the ground, in the world. */
