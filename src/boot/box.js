@@ -57,18 +57,19 @@ import { causticTexture } from '../vfx/liquid.js';
 /** The box's room: 20 m a side and 5 m high round the Courier's spawn, a pillar and a ledge to move against. */
 export const BOX = { at: [0, 0, -11.5], w: 20, h: 5, wall: 0.4, floor: 0xb8875f, walls: 0xd9b48c, prop: 0x8a5a3c };
 /** The water test (the owner's v289 field reports: the liquid library's code, vfx/liquid.js, was drawn for the first time 0.1 to 0.5 real
- *  s before each of the three losses, and the Raceway's v287 loss came after the crude sea's, which shares it). v291: the game's water
- *  lost with its `textureGrad` taps made plain and without; v292: lost again reading noise made here, while the liquid packs alone on
- *  flat panels held (drawn black: the ImageBitmaps do not upload on the owner's phone, a matter of their own). So it is the water's
- *  program. Now cut: four pools along the back wall, each the game's water material with its fragment shader stopped at a point (the
- *  rest never compiled), shown a real second after its pad's moment is written to the field report. Left to right as you face them:
- *  1 the vertex shader and the discard; 2 and the normals (liqNormal, liqRipple, the ripple field); 3 and the sky, Fresnel and the sun;
- *  4 the whole shader but its discard. `at` is metres from the box's middle: the pool's centre, its pad 4 m nearer. */
+ *  s before each of the three losses). v291: the game's water lost with its `textureGrad` taps made plain and without; v292: lost again
+ *  reading noise made here, while the liquid packs alone on flat panels held (drawn black: the ImageBitmaps do not upload on the owner's
+ *  phone, a matter of their own); v293: the water's fragment shader cut short after its vertex shader and discard, after its normals and
+ *  after its sky all held, and the whole of it but its discard was lost. So it is in what comes after: the colour, in its two halves
+ *  (Lachryma's and the water's: one program, a uniform choosing). Now the Lachryma half taken out and the water half cut: four pools, each
+ *  shown a real second after its pad's moment is written to the field report. Left to right as you face them: 1 the water half to its
+ *  absorption; 2 and the floor's caustics; 3 and the crest, the gloss and the sun; 4 the whole water half with its foam, film and tail.
+ *  `at` is metres from the box's middle: the pool's centre, its pad 4 m nearer. */
 export const BOX_POOLS = [
-  { id: '1', name: 'box-water-cut-vertex', at: [-7.5, -6.5], cut: 'if (vHide > 0.5) discard;', out: 'normalize(vN) * 0.5 + 0.5', pad: 0xf2efe6 },
-  { id: '2', name: 'box-water-cut-normals', at: [-2.5, -6.5], cut: 'if (under) N = -N;', out: 'N * 0.5 + 0.5', pad: 0xe9c94a },
-  { id: '3', name: 'box-water-cut-sky', at: [2.5, -6.5], cut: 'float graze =', out: 'sky * (0.3 + fres) + vec3(pow(sp, 60.0)) * graze', pad: 0xe08a3c },
-  { id: '4', name: 'box-water-no-discard', at: [7.5, -6.5], drop: 'if (vHide > 0.5) discard;', pad: 0xc0392b },
+  { id: '5', name: 'box-water-only-absorption', at: [-7.5, -6.5], cut: 'vec3 water = mix(deep, body, T.g);', out: 'water', pad: 0xf2efe6 },
+  { id: '6', name: 'box-water-only-caustics', at: [-2.5, -6.5], cut: 'vec3 caus = liqCaustics(', out: 'caus + water * 0.3', pad: 0xe9c94a },
+  { id: '7', name: 'box-water-only-sun', at: [2.5, -6.5], cut: 'col += min(sunC * mix(0.12, 1.0, graze), vec3(0.7));', out: 'col', pad: 0xe08a3c },
+  { id: '8', name: 'box-water-only-whole', at: [7.5, -6.5], pad: 0xc0392b },
 ];
 const FIXED = 1 / 60;
 const CAP = 1000 / 30 - 3; // (a phone's frame at 30 a real second, as the game's: boot/frame.js)
@@ -103,21 +104,25 @@ function noiseTexture(seed) {
   return t;
 }
 
-/** One of BOX_POOLS made: the game's water material (vfx/water.js) on a 3.6 by 3 m plane, 1.5 m deep to its painted floor, its packs
- *  swapped for noiseTexture (the ImageBitmaps draw black on the phone), its fragment shader cut after `cut` (writing `out`) or with `drop`
- *  taken out. The cut's text is looked for in the shader as it stands; not found, the field report says so and the whole shader is drawn. */
+/** The game's water program (vfx/water.js) with its Lachryma half taken out: what comes before the colour (`head`), the water half's own
+ *  body laid in place of the uniform branch, and what comes after (`tail`); null if the shader's text is not as it stood (2026-10-26). */
+function waterHalf(fs) {
+  const a = fs.indexOf('  vec3 col; float alpha;\n', fs.indexOf('void main() {')), e = fs.indexOf('  } else {\n  // WATER', a), tl = fs.indexOf('  col = mix(col, vTint', e);
+  if (a < 0 || e < 0 || tl < 0) return null;
+  return { head: fs.slice(0, a + 25), body: fs.slice(e + 11, fs.lastIndexOf('  }\n', tl)), tail: fs.slice(tl) };
+}
+
+/** One of BOX_POOLS made: the game's water material on a 3.6 by 3 m plane, 1.5 m deep to its painted floor, its packs swapped for
+ *  noiseTexture (the ImageBitmaps draw black on the phone), its fragment shader the water half only (waterHalf), cut after `cut`
+ *  (writing `out`) or whole. Not found, the field report says so and the whole shader is drawn. */
 function makePool(game, sky, p) {
   const [x, y, z] = BOX.at, cx = x + p.at[0], cz = z + p.at[1];
   const v = { x0: cx - 1.8, x1: cx + 1.8, z0: cz - 1.5, z1: cz + 1.5, surface: y + 0.03, bottom: y - 1.5 };
   const mat = makeWaterMaterial(sky, 'water'); mat.name = p.name;
   mat.uniforms.uLiq.value = noiseTexture(0x9e3779b9); mat.uniforms.uLiq2.value = noiseTexture(0x85ebca6b);
-  const fs = mat.fragmentShader, main = fs.indexOf('void main() {');
-  if (p.cut) {
-    const i = fs.indexOf(p.cut, main), j = i < 0 ? -1 : fs.indexOf('\n', i);
-    if (j < 0) game.fieldReport?.moment(`pool ${p.id}: its cut not found, drawn whole`);
-    else mat.fragmentShader = `${fs.slice(0, j + 1)}  gl_FragColor = vec4(${p.out}, 1.0);\n  #include <tonemapping_fragment>\n  #include <colorspace_fragment>\n  #include <fog_fragment>\n}\n`;
-  }
-  if (p.drop) { if (fs.includes(p.drop)) mat.fragmentShader = fs.replace(p.drop, ''); else game.fieldReport?.moment(`pool ${p.id}: its line not found, drawn whole`); }
+  const W = waterHalf(mat.fragmentShader), i = W && p.cut ? W.body.indexOf(p.cut) : -1, j = i < 0 ? -1 : W.body.indexOf('\n', i);
+  if (!W || (p.cut && j < 0)) game.fieldReport?.moment(`pool ${p.id}: its cut not found, drawn whole`);
+  else mat.fragmentShader = p.cut ? `${W.head}${W.body.slice(0, j + 1)}  gl_FragColor = vec4(${p.out}, 1.0);\n  #include <tonemapping_fragment>\n  #include <colorspace_fragment>\n  #include <fog_fragment>\n}\n` : `${W.head}${W.body}${W.tail}`;
   const obj = new THREE.Mesh(waterGeometry(v), mat); obj.position.set(cx, v.surface, cz); obj.renderOrder = 2;
   obj.name = p.name; game.scene.add(obj);
   game.fieldReport?.moment(`pool ${p.id} shown (${p.name})`);
