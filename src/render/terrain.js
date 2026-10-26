@@ -23,6 +23,8 @@
 //   t.mesh              (in the field's local frame: place it)          t.update(camLocalX, camLocalZ)
 //   t.heights, t.n      the samples, column-major (x rows), for a physics height field of (t.n - 1) x (t.n - 1) cells over 2 * half
 //   t.setRegion(i0, j0, n, hs)   n x n samples rewritten from (i0, j0), drawn and sent to the card (the made track's build lot)
+//   new ChunkTerrain({ ..., staged: true, at: [x, z] }) then t.steps()   the same build as a generator, a slice a yield (each well
+//                       under 10 ms on a desk: the samples 128 rows a step, the first chunks 24 a step)
 //   t.vertexBytes       the vertex pools' bytes (what the card holds for it, the index aside)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -30,14 +32,27 @@ import * as THREE from 'three';
 const LEVELS = 4;
 
 export class ChunkTerrain {
-  constructor({ height, half, step, chunk = 32, outer = 0, outerStep = 20, material, ranges = [90, 200, 380], skirt = 8 }) {
+  /** `staged`: nothing built yet; `steps()` builds it a slice a yield (a staged arrival under the seam's cover: render/seam.js), the
+   *  mesh and the heights standing from the first. `at`: the field-frame point (x, z) the first levels are chosen for. */
+  constructor(opts) {
+    this.opts = opts;
+    if (!opts.staged) for (const _ of this.steps());
+  }
+
+  /** The build as steps: the samples a band of rows a step, the outer ring, the pools, the first chunks a batch a step, the index. */
+  *steps() {
+    const { height, half, step, chunk = 32, outer = 0, outerStep = 20, material, ranges = [90, 200, 380], skirt = 8, at = [0, 0] } = this.opts;
     this.half = half; this.step = step; this.chunk = chunk; this.ranges = ranges; this.skirt = skirt;
     const cells = Math.round((2 * half) / step);
     if (cells % chunk) throw new Error('ChunkTerrain: the field must be a whole number of chunks');
     const N = (this.n = cells + 1), C = (this.chunks = cells / chunk);
     // ---- the samples (column-major: i along x the row)
     const heights = (this.heights = new Float32Array(N * N));
-    for (let i = 0; i < N; i++) for (let j = 0; j < N; j++) heights[i * N + j] = height(-half + i * step, -half + j * step);
+    this.geometry = new THREE.BufferGeometry();
+    this.mesh = new THREE.Mesh(this.geometry, material);
+    this.mesh.frustumCulled = false; this.geometry.setDrawRange(0, 0);
+    for (let i = 0; i < N; i++) { for (let j = 0; j < N; j++) heights[i * N + j] = height(-half + i * step, -half + j * step); if (i % 128 === 127) yield 'heights'; }
+    yield 'heights';
     // ---- the outer ring: a coarse grid with the field's square left out (its inner edge lies on the field's edge, a little lower)
     const oN = outer > half ? Math.round((2 * outer) / outerStep) + 1 : 0;
     this.outerN = oN;
@@ -45,11 +60,14 @@ export class ChunkTerrain {
     if (oN) {
       const os = outerStep, oh = (oN - 1) / 2;
       const hAt = (x, z) => (Math.abs(x) <= half && Math.abs(z) <= half ? height(x, z) - 0.4 : height(x, z));
-      for (let j = 0; j < oN; j++) for (let i = 0; i < oN; i++) {
-        const x = (i - oh) * os, z = (j - oh) * os, o = (j * oN + i) * 3;
-        outerPos[o] = x; outerPos[o + 1] = hAt(x, z); outerPos[o + 2] = z;
-        const e = os * 0.5, nx = hAt(x - e, z) - hAt(x + e, z), nz = hAt(x, z - e) - hAt(x, z + e), l = Math.hypot(nx, 2 * e, nz);
-        outerNor[o] = nx / l; outerNor[o + 1] = (2 * e) / l; outerNor[o + 2] = nz / l;
+      for (let j = 0; j < oN; j++) {
+        for (let i = 0; i < oN; i++) {
+          const x = (i - oh) * os, z = (j - oh) * os, o = (j * oN + i) * 3;
+          outerPos[o] = x; outerPos[o + 1] = hAt(x, z); outerPos[o + 2] = z;
+          const e = os * 0.5, nx = hAt(x - e, z) - hAt(x + e, z), nz = hAt(x, z - e) - hAt(x, z + e), l = Math.hypot(nx, 2 * e, nz);
+          outerNor[o] = nx / l; outerNor[o + 1] = (2 * e) / l; outerNor[o + 2] = nz / l;
+        }
+        if (j % 24 === 23) yield 'outer';
       }
       for (let j = 0; j < oN - 1; j++) for (let i = 0; i < oN - 1; i++) {
         const x0 = (i - oh) * os, z0 = (j - oh) * os;
@@ -59,6 +77,7 @@ export class ChunkTerrain {
       }
     }
     this.outerPos = outerPos; this.outerNor = outerNor; this.outerIdxLocal = Uint32Array.from(outerIdx);
+    yield 'outer';
     // ---- the chunks: where each stands, its level now and its slot
     this.lists = [];
     for (let cj = 0; cj < C; cj++) for (let ci = 0; ci < C; ci++) {
@@ -76,7 +95,6 @@ export class ChunkTerrain {
       for (let l = 0; l < LEVELS; l++) most[l] = Math.max(most[l], per[l]);
       mostIdx = Math.max(mostIdx, n);
     }
-    this.geometry = new THREE.BufferGeometry();
     this.allocate(most.map((m) => Math.ceil(m * 1.15) + 2));
     this.index = new THREE.BufferAttribute(new Uint32Array(Math.ceil(mostIdx * 1.15) + this.outerIdxLocal.length), 1);
     this.index.setUsage(THREE.DynamicDrawUsage);
@@ -84,11 +102,16 @@ export class ChunkTerrain {
     const R = Math.max(half, outer) * 1.5;
     this.geometry.boundingSphere = new THREE.Sphere(new THREE.Vector3(), R);
     this.geometry.boundingBox = new THREE.Box3(new THREE.Vector3(-R, -50, -R), new THREE.Vector3(R, 400, R));
-    this.mesh = new THREE.Mesh(this.geometry, material);
-    this.mesh.frustumCulled = false;
     this.last = new THREE.Vector2(1e9, 1e9);
     this.triangles = 0;
-    this.update(0, 0, true);
+    yield 'pools';
+    // the first chunks filled a batch a step (update then finds them at their levels and writes only the index)
+    let k = 0;
+    for (const c of this.lists) {
+      const lv = this.levelAt(c, at[0], at[1]);
+      if (lv < LEVELS) { c.lv = lv; c.slot = this.free[lv].pop(); this.fillChunk(c); if (++k % 24 === 0) yield 'chunks'; }
+    }
+    this.update(at[0], at[1], true);
   }
 
   /** Vertices a chunk's slot holds at a level: its samples ((k + 1)^2) and its four skirts' feet (k + 1 each). */
