@@ -97,7 +97,7 @@ export class Goals {
   get onPath() { return this.game.mode === 'story'; }
   rows() {
     const A = this.A; if (!A) return [];
-    return A.list.map((a) => ({ id: a.id, cat: a.cat, sub: a.sub, tier: a.tier, hidden: !!a.hidden, frac: A.done(a.id) ? 1 : A.progress(a)[2], goal: a.dir === 'down' ? Infinity : a.goal }));
+    return A.list.map((a) => ({ id: a.id, cat: a.cat, sub: a.sub, tier: a.tier, hidden: !!a.hidden, frac: A.earned(a.id) ? 1 : A.progress(a)[2], goal: a.dir === 'down' ? Infinity : a.goal }));
   }
   /** A new game day lays three goals (yesterday's categories kept out of ELSEWHERE); a goal done since the last look is said, once. */
   update(dt = 0) {
@@ -107,7 +107,7 @@ export class Goals {
     if (this.s.day !== day) {
       const avoid = this.s.cats || [], rows = this.rows(), path = this.onPath ? firstSteps(rows) : [];
       // a goal left open carries over the turn once, in its slot (QA-A: the game day turned 20 game minutes in and took two open goals)
-      const kept = path.length || this.s.day == null ? [] : (this.s.goals || []).filter((g) => !g.path && !g.carried && !this.A.done(g.id)).map((g) => ({ ...g, carried: true }));
+      const kept = path.length || this.s.day == null ? [] : (this.s.goals || []).filter((g) => !g.path && !g.carried && !this.A.earned(g.id)).map((g) => ({ ...g, carried: true }));
       const fresh = pickGoals(rows, { day, avoid }).filter((p) => !kept.some((k) => k.slot === p.slot || k.id === p.id));
       const picks = path.length ? path.map((id, i) => ({ id, slot: SLOTS[i], first: true, path: true })) : [...kept, ...fresh].sort((x, y) => SLOTS.indexOf(x.slot) - SLOTS.indexOf(y.slot));
       this.s = { day, goals: picks, cats: picks.map((p) => this.A.by[p.id]?.cat).filter(Boolean), said: [] };
@@ -116,13 +116,13 @@ export class Goals {
       return;
     }
     for (const g of this.s.goals) {
-      if (this.s.said.includes(g.id) || !this.A.done(g.id)) continue;
+      if (this.s.said.includes(g.id) || !this.A.earned(g.id)) continue;
       this.s.said.push(g.id); this.game.save?.dirty('goals');
-      this.game.events?.emit('goal.done', { id: g.id, slot: g.slot, ach: this.A.by[g.id]?.name, all: this.s.goals.every((x) => this.A.done(x.id)), first: !!g.path, by: 'courier' });
+      this.game.events?.emit('goal.done', { id: g.id, slot: g.slot, ach: this.A.by[g.id]?.name, all: this.s.goals.every((x) => this.A.earned(x.id)), first: !!g.path, by: 'courier' });
     }
     // the first path refills: a step done gives its place to the next undone one (said once, after the done line)
     if (!this.s.goals.some((g) => g.path)) return;
-    const live = this.s.goals.filter((g) => !this.A.done(g.id)).map((g) => g.id), done = this.s.goals.filter((g) => g.path && this.A.done(g.id) && this.s.said.includes(g.id));
+    const live = this.s.goals.filter((g) => !this.A.earned(g.id)).map((g) => g.id), done = this.s.goals.filter((g) => g.path && this.A.earned(g.id) && this.s.said.includes(g.id));
     if (!done.length) return;
     const next = this.onPath ? firstSteps(this.rows(), { have: live }) : [];
     for (const g of done) {
@@ -135,6 +135,6 @@ export class Goals {
   list() {
     const A = this.A; if (!A) return [];
     return this.s.goals.map((g) => { const a = A.by[g.id]; if (!a) return null; const [cur, goal, frac] = A.progress(a);
-      return { id: g.id, slot: g.slot, first: !!g.first, name: a.name, desc: g.path && FIRST.where[g.id] ? `${a.desc} ${FIRST.where[g.id]}` : a.desc, tier: a.tier, cur, goal, frac: A.done(g.id) ? 1 : frac, done: A.done(g.id) }; }).filter(Boolean);
+      return { id: g.id, slot: g.slot, first: !!g.first, name: a.name, desc: g.path && FIRST.where[g.id] ? `${a.desc} ${FIRST.where[g.id]}` : a.desc, tier: a.tier, cur, goal, frac: A.earned(g.id) ? 1 : frac, done: A.earned(g.id) }; }).filter(Boolean);
   }
 }
