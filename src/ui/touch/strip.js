@@ -6,8 +6,11 @@
 //   THE STRIP        the tool's own row (the chambers, FAN; the forms, LURE, CRANK; PAINT or MOP; FLASH; the Crucibelle's five note pads)
 //                    or the duel's moves (ROTATE first), BLINK at its end: one row over the pair on a clay shelf (the top bar's), right-
 //                    aligned to the cluster, down to 44 px to keep one row, its end then beside the pair (left of it), rows upward only past that
-//                    (the look area too narrow); 48 px a tile (the note pads 56,
+//                    (the look area too narrow); 44 px a tile (the note pads 52,
 //                    an instrument on glass), never under 44. The lit one (the chamber chosen, the form in hand) in the schiller.
+//   FOLDED           (the owner, 2026-10-26: "retractable menus") a tool's row of two or more folds to one MORE tab (three dots),
+//                    the core moves and BLINK kept beside it; a tap on MORE opens the row (MORE lit at its head), a tap again folds it. Kept folded
+//                    or open until tapped (a row in use is not taken away mid-fight).
 // Every press reports through touchTiles with the binding's touch id (core/bindings.js); the driver resolves it in the live ctx. Hidden
 // off touch, under a window, and with nothing to show.
 //
@@ -25,18 +28,31 @@ import { placeOf, windowOpen } from './areas.js';
 import { shelf } from './topbar.js';
 import { stripOf, beltPairOf } from './actioncontext.js';
 
-/** The numbers (CSS px): the strip's tile, a note pad, the pair's; the gaps; the shelf's padding; the room kept off the look area's edge. */
-export const STRIP = { size: 48, pad: 56, pair: TILE.small, gap: 6, rowGap: 8, shelf: 6, edge: 8, margin: 6 };
+/** The numbers (CSS px): the strip's tile (44, the least: 48 until the owner asked for room, 2026-10-26), a note pad, the pair's; the gaps; the shelf's padding; the room kept off the look area's edge. */
+const MORE = 'strip.more';
+/** The core movement's verbs and BLINK, never folded away (a jump hidden behind a tap mid-fight is no jump). */
+const STAYS = new Set(['blink', 'jump', 'crouch', 'dash', 'parry', 'use']);
+/** The tool's own row, folded to its MORE tab (or opened behind it) where it has two or more tiles; what STAYS stands after it. */
+function folding(entries, folded) {
+  const stay = entries.filter((e) => STAYS.has(e.id)), row = entries.filter((e) => !STAYS.has(e.id));
+  if (row.length < 2) return entries;
+  return [{ id: MORE, glyph: 'more', word: null, lit: !folded }, ...(folded ? [] : row), ...stay];
+}
+
+export const STRIP = { size: 44, pad: 52, pair: TILE.small, gap: 6, rowGap: 8, shelf: 6, edge: 8, margin: 6 };
 
 export class TouchStrip {
   constructor(game) {
-    this.game = game; this.tiles = new Map(); this.ids = []; this.pair = []; this.entries = []; this.shown = false; this.key = '';
+    this.game = game; this.tiles = new Map(); this.ids = []; this.pair = []; this.entries = []; this.shown = false; this.key = ''; this.folded = true;
     this.shelf = shelf();
   }
 
   tile(e) {
     let t = this.tiles.get(e.id);
-    if (!t) { t = new TouchTile(e.id, { size: STRIP.size, glyph: e.glyph ?? null, word: e.word ?? null, corner: e.corner ?? null, tint: e.tint ?? null, fit: true, onPress: (tid, down) => touchTiles.report(this.game, tid, down) }); this.tiles.set(e.id, t); }
+    if (!t) {
+      const onPress = e.id === MORE ? (tid, down, inside) => { if (!down && inside) { this.folded = !this.folded; this.relayout(); } } : (tid, down) => touchTiles.report(this.game, tid, down);
+      t = new TouchTile(e.id, { size: STRIP.size, glyph: e.glyph ?? null, word: e.word ?? null, corner: e.corner ?? null, tint: e.tint ?? null, fit: true, onPress }); this.tiles.set(e.id, t);
+    }
     t.face({ glyph: e.glyph ?? null, word: e.word ?? null, corner: e.corner ?? null, tint: e.tint ?? null });
     return t;
   }
@@ -95,7 +111,7 @@ export class TouchStrip {
   /** Each frame: read the moment, lay out what changed, put each tile's state on it. `cb` the cluster's bounds (or null). */
   update(now, on, cb) {
     const g = this.game, show = !!on && !windowOpen(g) && !g.touch?.screenTaken?.(); // (the pads or the paper hold the screen: the strip stands down, Petra's ruling)
-    const entries = show ? stripOf(g) : [], pair = show ? beltPairOf(g) : [];
+    const entries = show ? folding(stripOf(g), this.folded) : [], pair = show ? beltPairOf(g) : [];
     const all = [...pair, ...entries];
     for (const e of all) this.tile(e);
     const ids = entries.map((e) => e.id), pids = pair.map((e) => e.id);

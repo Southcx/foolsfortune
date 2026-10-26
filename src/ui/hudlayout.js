@@ -19,7 +19,7 @@
 //
 // THE KEPT LAYOUT (MOBILE.md 9, M5; the touch layout editor, ui/touchlayouteditor.js; kept by Petra's core/layoutkeep.js): read on boot,
 // on `touch.layout` and on every poll (a save loaded late says nothing). Its shape is ours:
-//   { v: 1, landscape: PART, portrait: PART }   PART { scale (0.7..1.3, the cluster's tiles), slots: [{ fx, fy }] x 4 (each cluster
+//   { v: 1, landscape: PART, portrait: PART }   PART { scale (0.75..1.3, the cluster's tiles), slots: [{ fx, fy }] x 4 (each cluster
 //   slot's centre), stick: { fx, fy } (the stick's home) }   fx, fy fractions of the safe area's bounds, so it survives another phone.
 // A kept place is clamped on every read: inside the bounds, off every corner instrument, the top bar and the log (clampRect), never under
 // 44 px. Nothing kept moves the instruments: they keep the default cluster's reservation.
@@ -50,15 +50,15 @@ export const HUD_LAYOUT = {
   gutter: 8,            // (CSS px inside the safe area, every side: the layout margin)
   gap: 8,               // (CSS px between two things placed)
   topBar: { h: 44 },    // (the strip of window icons: one 44 px target tall, left of the Sight)
-  // the cluster: the main tile (96) in the corner, the three others (72) on an arc round its centre at 180, 135 and 90 degrees
+  // the cluster: the main tile (80) in the corner, the three others (60) on an arc round its centre at 180, 135 and 90 degrees
   // (left, up-left, up), `ring` from it; its rect is the arc's bounds: main / 2 + ring + side / 2 = 180 px square
-  cluster: { main: 96, side: 72, gap: 12, get ring() { return this.main / 2 + this.gap + this.side / 2; }, get size() { return this.main / 2 + this.ring + this.side / 2; } },
+  cluster: { main: 80, side: 60, gap: 10, get ring() { return this.main / 2 + this.gap + this.side / 2; }, get size() { return this.main / 2 + this.ring + this.side / 2; } },
   artBar: { t: 60, side: 170 }, // (its thickness, CSS px: a 44 px tile and its margin, along the bottom upright; down the right edge on its side, three columns
                         //  of tiles wide from under the Sight to the foot, the cluster beside it: ten tiles never fit between the Sight and the cluster)
   log: { lines: 2, line: 18, pad: 6, maxW: 420 },
   strip: { budget: 180, minW: 150, side: 0.25 }, // (the strip's room: up to 180 px over the cluster (its pair and two rows), at least 150 wide; the bottom row
                         //  reaching left to a quarter of the view)
-  custom: { scale: [0.7, 1.3], stick: { fx: 0.18, fy: 0.72 }, ring: 60 }, // (the kept layout: the cluster's scale range (72 x 0.7 = 50 px, over 44); the stick's
+  custom: { scale: [0.75, 1.3], stick: { fx: 0.18, fy: 0.72 }, ring: 60 }, // (the kept layout: the cluster's scale range (60 x 0.75 = 45 px, over 44); the stick's
                         //  home by default, low in the move area; the ring kept clear round it (the stick's full push, ui/touch/stick.js STICK.full)) // (the ticker: two lines of 18 px (16 px type), at most 420 px wide)
   poll: 0.25,           // (real seconds between reads of the device, the garden and the hand, and the turn card's check)
   // the instruments, in lines of the 480-line present (their own unit); `scale` su a line on touch (0.2: a 390 px phone's 0.78 CSS px a

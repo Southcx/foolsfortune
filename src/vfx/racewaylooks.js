@@ -50,7 +50,7 @@
 //
 //   game.racewayLooks = new RacewayLooks(game, opts?)   .update(dt)   (main.js; opts for the Workbench: parent, vfx, events, race, board,
 //     skiffModel, player)
-//   racewayLooks.dress(raceway)       the sun plates, the arch's lamps and the gates' marks, built over Dovina's placeholders (hidden)
+//   racewayLooks.dress(raceway)       (or yield* racewayLooks.dressSteps(raceway): one part a step) the sun plates, the arch's lamps and the gates' marks, built over Dovina's placeholders (hidden)
 //   racewayLooks.dressGhost(group)    the ghost's group worn as the skiff's hologram (as soon as the skiff's model is parsed)
 //   racewayLooks.plateHit(i)          sun plate i flashes and rings (heard on skiff.plate, the plate under the Courier found)
 //   racewayLooks.pop(e) / comboLink(e) / comboBank() / comboDrop()   round 3's moments (heard on their events)
@@ -253,7 +253,10 @@ export class RacewayLooks {
 
   // ---------------------------------------------------------------- the sun plates, the arch's lamps, the gates' marks
   /** Built over a Raceway's placeholders (raceway.js build, after buildMarks): her plate slabs hidden, the glyphs and lamps placed. */
-  dress(R) {
+  dress(R) { for (const _ of this.dressSteps(R)); return this; }
+  /** dress() as steps (the seam's staged arrival, Petra's and Dovina's 2026-10-26: one step a frame under the cover), yielding the part
+   *  just laid: 'plates', 'marks', 'strings', 'rails', 'buoys'. `yield*` it from the Raceway's own build. */
+  *dressSteps(R) {
     this.undress();
     const parent = this.parent || this.game.scene, L = RACEWAY_LOOK, T = R.T;
     // the plates: where her slabs lie, tilted to the sand under them, the glyph's +Z along the track
@@ -274,6 +277,7 @@ export class RacewayLooks {
     glyphGeo.dispose(); glowGeo.dispose();
     B.glyph.name = 'raceway-plates'; B.glow.name = 'raceway-plates-glow'; B.glyph.receiveShadow = true; B.glow.renderOrder = 3;
     for (const m of [B.glyph, B.glow]) { m.userData.zone = 'raceway'; m.frustumCulled = false; parent.add(m); }
+    yield 'plates';
     // the start arch's lamps and the gates' marks, as raceway.js builds the arch and the pillars (her numbers: the arch 3 m outside the
     // track's edge and 11 m over the higher foot, the lintel 1.4 m deep and 2 m thick over it; a gate's pillar 2.5 m outside, 8 m tall
     // from 1.5 m under its foot, 1.5 m square)
@@ -299,12 +303,14 @@ export class RacewayLooks {
     this.gateK = {}; this.gateFlash = {};
     for (const Tk of R.tracks || [T]) { this.gateK[Tk.id ?? 'sun'] = Tk.gates.map(() => 0); this.gateFlash[Tk.id ?? 'sun'] = Tk.gates.map(() => 0); }
     this.R = R;
-    return this.dressRound2(R);
+    yield 'marks';
+    yield* this.round2Steps(R);
   }
 
   // ---------------------------------------------------------------- round 2: the edge strings, the rails' glaze, the rings
   /** What the Raceway has of them: the edge strings strung on edgeLines, the rail mesh re-cut as glazed stone, the rings kept for passes. */
-  dressRound2(R) {
+  dressRound2(R) { for (const _ of this.round2Steps(R)); return this; }
+  *round2Steps(R) {
     this.R = R;
     if (R.edgeLines) { // (every track's two edges in the one set of draws, each its track's group; on a bridge's deck, hung over the deck)
       this.strings?.dispose();
@@ -317,10 +323,10 @@ export class RacewayLooks {
         }
       }
       this.strings = new RacewayEdgeStrings({ parent: this.parent || this.game.scene, zone: 'raceway' }).build(lines, step);
+      yield 'strings';
     }
-    if (R.railMesh && R.rails?.length && !R.railMesh.userData.glazed) this.glazeRails(R);
-    if (R.buoys?.group && !R.buoys.group.userData.dressed) this.buoys.dress(R); // (round 6: the buoys as the Raceway's kit)
-    return this;
+    if (R.railMesh && R.rails?.length && !R.railMesh.userData.glazed) { this.glazeRails(R); yield 'rails'; }
+    if (R.buoys?.group && !R.buoys.group.userData.dressed) { this.buoys.dress(R); yield 'buoys'; } // (round 6: the buoys as the Raceway's kit)
   }
   /** The rails' lintels and columns as glazed stone: a new geometry for her mesh (and its outline), the same material made glossier.
    *  Written straight into one set of arrays from six painted templates (a phone's memory, Petra's measure 2026-10-26: a box, a matrix

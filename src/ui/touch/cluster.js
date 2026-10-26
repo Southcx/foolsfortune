@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // THE CLUSTER'S LOOK: the context's verbs as glazed tiles in the right half's bottom corner (docs/plans/MOBILE.md 4.1, 4.2, 8, 8.2; the
-// HUD layout's `areas.cluster`), at most four, the main one largest under the thumb (96 px), the others round it (72 px):
+// HUD layout's `areas.cluster`), at most four, the main one largest under the thumb (80 px), the others round it (60 px):
 //   SLOTS      0 the main, in the corner; 1 above it; 2 left of it; 3 between them, up and to the left. A named tile (USE) is as wide
 //              as its label and keeps its right edge where a square one would.
 //   CONTEXT    `set(ids)` shows a list (slot order); while `auto` (the default until the driver takes it) the cluster reads the moment

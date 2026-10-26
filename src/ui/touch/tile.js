@@ -29,9 +29,9 @@ import { uiIcon } from '../icons/icons.js';
 import { schillerInk, SCHILLER } from '../../vfx/oxidation.js';
 import { FONT } from '../theme.js';
 
-/** The numbers (CSS px): the cluster's main tile, the others, the least, the least type; the rim's width, the foot's depth; the ember
+/** The numbers (CSS px): the cluster's main tile, the others (80 and 60 since the owner's ask for room, 2026-10-26: 96 and 72 before), the least, the least type; the rim's width, the foot's depth; the ember
  *  and gold; the rim's samples; the share of a tile the glyph may fill. */
-export const TILE = { main: 96, size: 72, small: 44, min: 44, word: 14, big: 18, rim: 4, foot: 3, ember: '#ff7a2a', gold: '#ffd36a', ink: '#17111f', samples: 72, glyph: 0.55 };
+export const TILE = { main: 80, size: 60, small: 44, min: 44, word: 14, big: 18, rim: 4, foot: 3, ember: '#ff7a2a', gold: '#ffd36a', ink: '#17111f', samples: 72, glyph: 0.55 };
 
 /** The words under the glyphs that need one (Espada's words, MOBILE.md 8.3; which glyphs need one is Calissa's call, Espada's to
  *  overrule: the glyph says HOP, FLARE, BOOST, JUMP, WALK, UNDO and the arts alone). */
@@ -103,10 +103,11 @@ function body(w, h, dpr, { glyph, pal, word, corner, pressed, tint }) {
   };
   if (glyph) { // the glyph, at a whole number of device pixels an art pixel; the word under it
     const icon = uiIcon(glyph.includes('.') ? glyph : `touch.${glyph}`, pal), wordH = word ? TILE.word + 2 : 0;
-    const k = Math.max(1, Math.round((s * TILE.glyph * dpr) / Math.max(icon.width, 1))); // (the nearest whole number: a 44 px tile's glyph is not left at 1x)
-    const iw = icon.width * k, ih = icon.height * k, cx = Math.round((w * dpr - iw) / 2), cy = Math.round(((h - wordH) * dpr - ih) / 2 + y0 * dpr + (word ? s * 0.03 * dpr : 0));
+    const pad = Math.max(3, s * 0.08), room = (h - wordH - 2 * pad) * dpr; // (the glyph and its word inside the face: the owner's GRAPPLE and DRAW, 2026-10-26, had their words cut off at 44 px)
+    const k = Math.max(1, Math.min(Math.round((s * TILE.glyph * dpr) / Math.max(icon.width, 1)), Math.floor(room / Math.max(icon.height, 1)))); // (a whole number, never past the room the word leaves)
+    const iw = icon.width * k, ih = icon.height * k, cx = Math.round((w * dpr - iw) / 2), cy = Math.round(((h - wordH) * dpr - ih) / 2 + y0 * dpr + (word ? pad * 0.5 * dpr : 0));
     g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.imageSmoothingEnabled = false; g.drawImage(icon, cx, cy, iw, ih); g.restore();
-    if (word) text(word, w / 2, cy / dpr + ih / dpr + TILE.word, TILE.word);
+    if (word) text(word, w / 2, Math.min(cy / dpr + ih / dpr + TILE.word, y0 + h - pad), TILE.word);
   } else if (word) text(word, w / 2, y0 + h / 2 + TILE.big * 0.36 + (corner ? TILE.word * 0.3 : 0), TILE.big); // (a named tile: its thing's label, larger)
   if (corner) { g.globalAlpha = 0.72; text(corner, inset + 2, y0 + inset + TILE.word - 1, TILE.word, 'left'); g.globalAlpha = 1; } // (USE, small in the corner)
   if (BODIES.size > 256) BODIES.clear(); // (a window-colour change leaves the old ones behind: let them go wholesale)
