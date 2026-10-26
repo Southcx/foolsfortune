@@ -4,8 +4,9 @@
 // control (core/bindings.js `touch`: the driver presses it through the live ctx), its face (a glyph `touch.<glyph>`, a word, a corner),
 // and its state (lit, dim, a note pad's tint). The cluster (cluster.js) and the strip (strip.js) lay them out; nothing here moves.
 //   ON FOOT       JUMP (the main), CROUCH, DASH, and the fourth by context: USE naming its thing, else PARRY once learned (the kick),
-//                 else BLINK once learned. At the cluster's top edge, small: DRAW (STOW while the main is out) and LEND (the sub's verb,
-//                 SUB_GIFTS) while a sub is worn.
+//                 else BLINK once learned. At the cluster's top edge, small: DRAW (STOW while the main is out), LEND (the sub's verb,
+//                 SUB_GIFTS) and SWAP while a sub is worn, SKIFF at the Raceway and in the Dunes. The strip and the pair stand only on
+//                 foot (the owner, 2026-10-26: riding, BLINK and the hook are not to be had).
 //   A TOOL OUT    FIRE and AIM in the tool's own verbs and glyphs (FIRE / AIM, ATTACK / SPECIAL, CAST or REEL / SINK or GIVE LINE, THROW or
 //                 REEL / PAY OUT, ATTACK / FLICK, PHOTO / LENS, PICK / DOWSE, TOLL / HIGH, HOOVER / OPEN), the third its own (SHELL, LOCK,
 //                 PING, JUMP off the hook, REPROGRAM by a stunned mind, SURVEY), PARRY the fourth; the strip the tool's (the chambers and
@@ -47,6 +48,8 @@ const DUEL_MOVES = [
 ];
 const FORMS = [['so.cutlass', 'sofcutlass', 'cutlass'], ['so.rod', 'sofrod', 'rod'], ['so.hook', 'sofhook', 'hook']];
 
+/** On foot (the bindings' ctx): the strip and the belt's pair stand only there (riding the Solar Skiff, LEND, DRAW and BLINK cannot be done). */
+const onFoot = (g) => { const L = g.actions?.live?.(); return L ? L.has('foot') : !g.techs?.get?.('skiff')?.riding; };
 const techs = (g) => g.techs || g.player?.techs;
 const learned = (g, id) => { const t = techs(g)?.get?.(id); return !!t && (t.usable ? t.usable() : !!t.enabled); };
 const E = (id, glyph, word = null, more = {}) => ({ id, glyph, word, ...more });
@@ -89,13 +92,18 @@ export function duelCluster(g) {
   ];
 }
 
-/** DRAW (STOW while the main is out) and LEND (the sub's verb) at the cluster's top edge, on foot. */
+/** DRAW (STOW while the main is out), LEND (the sub's verb) and SWAP (main and sub traded, Belt.swap) at the cluster's top edge, on foot;
+ *  SKIFF (the top bar's, folded under MENU on a phone) where the board may be summoned: the Raceway or the Dunes. */
 export function beltPairOf(g) {
-  const B = g.belt; if (!B?.main || g.duel?.active) return [];
+  if (g.duel?.active || !onFoot(g)) return [];
+  const B = g.belt, skiff = g.raceway?.active || g.dunes?.active ? E('skiff', 'skiff', 'SKIFF') : null;
+  if (!B?.main) return skiff ? [skiff] : [];
   const out = !!B.inHand && B.inHand.id === B.main, gift = B.sub ? SUB_GIFTS[B.sub] : null;
   const use = out && g.interact?.cur ? useLabel(g) : null; // (a tool drawn: the cluster is the tool's, so F's thing is offered up here)
   return [
     use ? E('use', null, use.word) : null,
+    skiff,
+    B.sub ? E('swap', 'swap', 'SWAP') : null,
     gift ? E('lend', 'lend', gift.verb.toUpperCase()) : null,
     out ? E('tool', 'stow', 'STOW', { lit: true }) : E('tool', 'draw', 'DRAW'),
   ].filter(Boolean);
@@ -104,6 +112,7 @@ export function beltPairOf(g) {
 /** The strip over the cluster: the tool's own row, or the duel's moves. */
 export function stripOf(g) {
   if (g.duel?.active) return duelStrip(g);
+  if (!onFoot(g)) return [];
   const ctx = inHandCtx(g);
   if (!ctx) return learned(g, 'blink') && (learned(g, 'kick') || g.interact?.cur) ? [E('blink', 'blink', 'BLINK')] : []; // (nothing in hand: the cluster's fourth is USE or PARRY first, so BLINK stands here)
   const out = [], tool = g.belt.inHand;

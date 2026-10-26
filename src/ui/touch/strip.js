@@ -1,8 +1,8 @@
 // ---------------------------------------------------------------------------------------
 // THE CLUSTER'S STRIP AND THE BELT'S PAIR: the small tiles over the cluster (docs/plans/MOBILE.md 4.7 "the digits become a strip of the
 // context's choices", 8.5, 8.8, 8.9), what ui/touch/actioncontext.js reads, laid out here:
-//   THE BELT'S PAIR  DRAW (STOW while the main is out) and LEND (the sub's verb) at the cluster's top edge, 44 px, right-aligned to it,
-//                    as wide as their words (`fit`: the least type is never shrunk).
+//   THE BELT'S PAIR  DRAW (STOW while the main is out), LEND (the sub's verb), SWAP and SKIFF (the top bar's, opened from here) at the
+//                    cluster's top edge, 44 px, right-aligned to it, as wide as their words (`fit`: the least type is never shrunk).
 //   THE STRIP        the tool's own row (the chambers, FAN; the forms, LURE, CRANK; PAINT or MOP; FLASH; the Crucibelle's five note pads)
 //                    or the duel's moves (ROTATE first), BLINK at its end: one row over the pair on a clay shelf (the top bar's), right-
 //                    aligned to the cluster, down to 44 px to keep one row, its end then beside the pair (left of it), rows upward only past that
@@ -50,7 +50,9 @@ export class TouchStrip {
   tile(e) {
     let t = this.tiles.get(e.id);
     if (!t) {
-      const onPress = e.id === MORE ? (tid, down, inside) => { if (!down && inside) { this.folded = !this.folded; this.relayout(); } } : (tid, down) => touchTiles.report(this.game, tid, down);
+      const onPress = e.id === MORE ? (tid, down, inside) => { if (!down && inside) { this.folded = !this.folded; this.relayout(); } }
+        : e.id === 'skiff' ? (tid, down, inside) => { if (!down && inside) this.game.touchUI?.topBar?.open('skiff'); } // (what the top bar's SKIFF presses: folded under MENU on a phone)
+          : (tid, down) => touchTiles.report(this.game, tid, down);
       t = new TouchTile(e.id, { size: STRIP.size, glyph: e.glyph ?? null, word: e.word ?? null, corner: e.corner ?? null, tint: e.tint ?? null, fit: true, onPress }); this.tiles.set(e.id, t);
     }
     t.face({ glyph: e.glyph ?? null, word: e.word ?? null, corner: e.corner ?? null, tint: e.tint ?? null });
