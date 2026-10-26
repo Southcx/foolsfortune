@@ -14,9 +14,11 @@
 // ---------------------------------------------------------------------------------------
 import { phoneByPage } from '../render/graphics.js';
 
-/** Whether this load is the box room: `?box=1` anywhere; a phone unless `?world=1` (or `?box=0`) asks for the game or a test drives it. */
+/** Whether this load is the box room: `?box=1` anywhere; a phone unless `?world=1` (or `?box=0`) asks for the game, the box's gold pad
+ *  asked for it once (`ff.world` in session storage, cleared as it is read), or a test drives it. */
 export function boxWanted(phone) {
   const q = typeof location !== 'undefined' ? new URLSearchParams(location.search) : new URLSearchParams();
+  try { if (sessionStorage.getItem('ff.world') === '1') { sessionStorage.removeItem('ff.world'); return false; } } catch { /* no session storage */ } // (the box room's gold pad: the whole game, this load only)
   if (q.get('box') === '1') return true;
   if (q.get('world') === '1' || q.get('box') === '0') return false;
   if (typeof navigator !== 'undefined' && navigator.webdriver) return false;

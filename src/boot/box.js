@@ -52,27 +52,21 @@ import { HudLayout } from '../ui/hudlayout.js';
 import { BUILD } from '../core/progress.js';
 import { makeWaterMaterial, waterGeometry } from '../vfx/water.js';
 import { SKY_GLSL } from '../vfx/sky.js';
-import { causticTexture } from '../vfx/liquid.js';
+import { liquidTexture, liquidTexture2, causticTexture } from '../vfx/liquid.js';
 
 /** The box's room: 20 m a side and 5 m high round the Courier's spawn, a pillar and a ledge to move against. */
 export const BOX = { at: [0, 0, -11.5], w: 20, h: 5, wall: 0.4, floor: 0xb8875f, walls: 0xd9b48c, prop: 0x8a5a3c };
-/** The water test (the owner's v289 field reports: the liquid library's code, vfx/liquid.js, was drawn for the first time 0.1 to 0.5 real
- *  s before each of the three losses). v291: the game's water lost with its `textureGrad` taps made plain and without; v292: lost reading
- *  noise made here, the liquid packs alone held (drawn black: the ImageBitmaps do not upload on the owner's phone, a matter of their
- *  own); v293: cut after its vertex shader, its normals or its sky it held, whole but its discard it was lost; v294: the water half alone
- *  held to its absorption, its caustics and its sun, and was lost whole (foam, film, tint). Every pool that held never read `vTint`, so the
- *  compiler dropped the vertex shader's `uTints[ti]`, a uniform array read at an index worked out in the shader (the crude sea, the other
- *  loss, reads `uW[i]`, `uC[i]`, `uAbove[i]` so; three.js unrolls its own). Now four pools, each the whole water half with one change:
- *  1 the tint line taken out; 2 the tint kept, its array read at constant indices (`ti == 0 ? uTints[0] : ...`, the same result); 3 the
- *  miasma's film taken out; 4 the foam taken out. Left to right as you face them, each shown a real second after its pad's moment is
- *  written to the field report. `at` is metres from the box's middle: the pool's centre, its pad 4 m nearer. */
-const TINT_AT_CONSTANT = 'if (ti >= 0 && ti < 8) vTint = vec4(ti == 0 ? uTints[0] : ti == 1 ? uTints[1] : ti == 2 ? uTints[2] : ti == 3 ? uTints[3] : ti == 4 ? uTints[4] : ti == 5 ? uTints[5] : ti == 6 ? uTints[6] : uTints[7], s / 9.0);';
+/** The water test, and what it found (the owner's iPhone XR, iOS 18.7, v291 to v295): the game's water lost the graphics at its first draw
+ *  whatever its textures, held cut short anywhere before its tint, and held whole with its vertex shader's `uTints[ti]` read at constant
+ *  indices: a uniform array read at an index worked out in the shader is what the phone's GPU process cannot take. render/constantindex.js
+ *  now rewrites every such read on a phone. The test left standing: the game's water exactly as it is (its packs and both halves), shown
+ *  a real second after its pad's moment is written to the field report; and the gold pad, which reloads this tab into the whole game
+ *  once (`ff.world`, boot/entry.js). `at` is metres from the box's middle: the pool's centre, its pad 4 m nearer. */
 export const BOX_POOLS = [
-  { id: '9', name: 'box-water-no-tint', at: [-7.5, -6.5], pad: 0xf2efe6, edits: [{ part: 'frag', from: '  col = mix(col, vTint.rgb', with: '' }] },
-  { id: '10', name: 'box-water-tint-at-constant', at: [-2.5, -6.5], pad: 0xe9c94a, edits: [{ part: 'vert', from: 'if (ti >= 0 && ti < 8) vTint = vec4(uTints[ti], s / 9.0);', with: TINT_AT_CONSTANT }] },
-  { id: '11', name: 'box-water-no-film', at: [2.5, -6.5], pad: 0xe08a3c, edits: [{ part: 'frag', from: "  if (uSour > 0.001) { // the miasma's film: a mottled skin", to: '  alpha = smoothstep(0.0, 0.3, vDepth)', with: '' }] },
-  { id: '12', name: 'box-water-no-foam', at: [7.5, -6.5], pad: 0xc0392b, edits: [{ part: 'frag', from: 'float foam = liqFoam(', with: 'float foam = 0.0;' }] },
+  { id: 'W', name: 'box-water-game', at: [5, -6.5], pad: 0x2f9e8f },
 ];
+/** The gold pad: the whole game, this tab, once. Metres from the box's middle. */
+export const BOX_GAME_PAD = { at: [-5, -2.5], colour: 0xd4a017 };
 const FIXED = 1 / 60;
 const CAP = 1000 / 30 - 3; // (a phone's frame at 30 a real second, as the game's: boot/frame.js)
 
@@ -84,6 +78,7 @@ function buildBox(level) {
   level.box([x + 4, y + 1.5, z + 4], [1.2, 3, 1.2], BOX.prop); // (a pillar: wallrun, latch)
   level.box([x - 5, y + 0.6, z + 5], [4, 1.2, 2], BOX.prop); // (a ledge: mantle, hang)
   for (const p of BOX_POOLS) level.box([x + p.at[0], y + 0.01, z + p.at[1] + 4], [1.4, 0.02, 1.4], p.pad, { outline: false, collide: false }); // (the pools' pads)
+  level.box([x + BOX_GAME_PAD.at[0], y + 0.01, z + BOX_GAME_PAD.at[1]], [2, 0.02, 2], BOX_GAME_PAD.colour, { outline: false, collide: false }); // (the gold pad: the whole game)
   level.finalizeStatic();
 }
 
@@ -96,47 +91,12 @@ function skyStandIn() {
   return { texture, GLSL: SKY_GLSL };
 }
 
-/** A noise texture made here, as a pack is laid out (four channels of unrelated noise, repeat-wrapped, mipmapped, anisotropy 4): the
- *  pack's place in the shader without its ImageBitmap. */
-function noiseTexture(seed) {
-  const n = 256, d = new Uint8Array(n * n * 4); let h = seed >>> 0;
-  for (let i = 0; i < d.length; i++) { h ^= h << 13; h >>>= 0; h ^= h >>> 17; h ^= h << 5; h >>>= 0; d[i] = h & 255; }
-  const t = new THREE.DataTexture(d, n, n); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.magFilter = THREE.LinearFilter; t.minFilter = THREE.LinearMipmapLinearFilter;
-  t.generateMipmaps = true; t.anisotropy = 4; t.needsUpdate = true;
-  return t;
-}
-
-/** The game's water program (vfx/water.js) with its Lachryma half taken out: what comes before the colour (`head`), the water half's own
- *  body laid in place of the uniform branch, and what comes after (`tail`); null if the shader's text is not as it stood (2026-10-26). */
-function waterHalf(fs) {
-  const a = fs.indexOf('  vec3 col; float alpha;\n', fs.indexOf('void main() {')), e = fs.indexOf('  } else {\n  // WATER', a), tl = fs.indexOf('  col = mix(col, vTint', e);
-  if (a < 0 || e < 0 || tl < 0) return null;
-  return { head: fs.slice(0, a + 25), body: fs.slice(e + 11, fs.lastIndexOf('  }\n', tl)), tail: fs.slice(tl) };
-}
-
-/** One edit of a pool's shader: the text from `from` up to `to` (or the end of `from`'s line) replaced by `with`; the text unchanged and
- *  false if `from` (or `to` after it) is not found. */
-function editShader(text, e) {
-  const i = text.indexOf(e.from); if (i < 0) return [text, false];
-  const j = e.to ? text.indexOf(e.to, i) : text.indexOf('\n', i); if (j < 0) return [text, false];
-  return [text.slice(0, i) + e.with + text.slice(j), true];
-}
-
-/** One of BOX_POOLS made: the game's water material on a 3.6 by 3 m plane, 1.5 m deep to its painted floor, its packs swapped for
- *  noiseTexture (the ImageBitmaps draw black on the phone), its fragment shader the water half only (waterHalf) and whole, with the
- *  pool's `edits`. An edit not found is said in the field report and the pool drawn without it. */
+/** One of BOX_POOLS made: the game's water material (vfx/water.js) exactly as the game draws it, on a 3.6 by 3 m plane 1.5 m deep to
+ *  its painted floor. */
 function makePool(game, sky, p) {
   const [x, y, z] = BOX.at, cx = x + p.at[0], cz = z + p.at[1];
   const v = { x0: cx - 1.8, x1: cx + 1.8, z0: cz - 1.5, z1: cz + 1.5, surface: y + 0.03, bottom: y - 1.5 };
   const mat = makeWaterMaterial(sky, 'water'); mat.name = p.name;
-  mat.uniforms.uLiq.value = noiseTexture(0x9e3779b9); mat.uniforms.uLiq2.value = noiseTexture(0x85ebca6b);
-  const W = waterHalf(mat.fragmentShader);
-  if (!W) game.fieldReport?.moment(`pool ${p.id}: the water half not found, drawn whole`);
-  else mat.fragmentShader = `${W.head}${W.body}${W.tail}`;
-  for (const e of p.edits || []) {
-    const key = e.part === 'vert' ? 'vertexShader' : 'fragmentShader', [text, ok] = editShader(mat[key], e);
-    if (ok) mat[key] = text; else game.fieldReport?.moment(`pool ${p.id}: its edit at "${e.from.slice(0, 30)}" not found`);
-  }
   const obj = new THREE.Mesh(waterGeometry(v), mat); obj.position.set(cx, v.surface, cz); obj.renderOrder = 2;
   obj.name = p.name; game.scene.add(obj);
   game.fieldReport?.moment(`pool ${p.id} shown (${p.name})`);
@@ -218,10 +178,17 @@ function boxFrame(game, made) {
   addEventListener('error', (ev) => report(ev.error || ev.message));
   const ads = 0; // (the psygun is never aimed in: its update is the game's, not run here)
   const sky = skyStandIn(), pools = new Map(); // (BOX_POOLS shown so far, by id)
-  causticTexture(); // (the caustics' cells baked now, as the game's world bakes them at boot: a pool's first draw finds them ready)
+  liquidTexture(); liquidTexture2(); causticTexture(); // (the liquid library's textures loaded now, as the game's world loads them at boot: the pool's first draw finds them ready)
   const padAt = (p) => [BOX.at[0] + p.at[0], BOX.at[2] + p.at[1] + 4];
   // (a pad stood on: its moment written to the field report first, and the pool shown a real second after, so a loss cannot take the
   //  word of which one with it: v291's two losses wrote nothing after them)
+  // (the gold pad: its moment written, then the tab reloaded into the whole game once: boot/entry.js reads and clears `ff.world`)
+  let toGame = false;
+  const toTheGame = () => {
+    toGame = true; game.fieldReport?.moment('the gold pad: to the whole game');
+    try { sessionStorage.setItem('ff.world', '1'); } catch { /* no session storage: the box stays */ return; }
+    Promise.resolve(game.fieldReport?.write(true)).catch(() => {}).then(() => location.reload());
+  };
   const showPool = (p) => {
     pools.set(p.id, null);
     game.fieldReport?.moment(`pad ${p.id} stood on: ${p.name} in 1 s`);
@@ -270,6 +237,7 @@ function boxFrame(game, made) {
     game.zones.update(dt); game.lights.update(dt); game.present.update(dt);
     game.courierSquash.press(dt, player);
     for (const p of BOX_POOLS) { const [px, pz] = padAt(p); if (!pools.has(p.id) && player.grounded && Math.abs(player.pos.x - px) < 0.7 && Math.abs(player.pos.z - pz) < 0.7) showPool(p); }
+    if (!toGame && player.grounded && Math.abs(player.pos.x - (BOX.at[0] + BOX_GAME_PAD.at[0])) < 1 && Math.abs(player.pos.z - (BOX.at[2] + BOX_GAME_PAD.at[1])) < 1) toTheGame();
     for (const m of pools.values()) { const u = m?.material?.uniforms?.uTime; if (u) u.value += dt; }
     input.endFrame();
   }
