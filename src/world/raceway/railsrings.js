@@ -110,11 +110,12 @@ export function railMesh(geos) {
   const mesh = new THREE.Mesh(mergeGeometries(geos), new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.9, flatShading: true }));
   mesh.castShadow = mesh.receiveShadow = true; mesh.userData.zone = 'raceway'; addOutline(mesh); return mesh;
 }
-export function buildRails(R) {
-  const geos = [], rails = [];
-  for (const T of R.tracks) rails.push(...railsOf(R, T, geos));
+export function buildRails(R) { const out = []; for (const _ of railSteps(R, out)); return out; }
+/** The same a track a yield, then the mesh (a staged arrival: raceway.js buildSteps), the rails pushed onto `out`. */
+export function* railSteps(R, out) {
+  const geos = [];
+  for (const T of R.tracks) { out.push(...railsOf(R, T, geos)); yield 'rails'; }
   if (geos.length) { const mesh = railMesh(geos); R.game.scene.add(mesh); R.railMesh = mesh; }
-  return rails;
 }
 
 /** One track's sun rings, hung where its features say (a drop's on a glide's line from its first lip), numbered on from `i0`. */
@@ -130,11 +131,9 @@ export function ringsOf(R, T, add, i0 = 0) {
   }
   return out;
 }
-export function buildRings(R) {
-  const out = [];
-  for (const T of R.tracks) out.push(...ringsOf(R, T, (o) => R.game.scene.add(o), out.length));
-  return out;
-}
+export function buildRings(R) { const out = []; for (const _ of ringSteps(R, out)); return out; }
+/** The same a track a yield, the rings pushed onto `out`. */
+export function* ringSteps(R, out) { for (const T of R.tracks) { out.push(...ringsOf(R, T, (o) => R.game.scene.add(o), out.length)); yield 'rings'; } }
 
 /** Each frame: the rings turn, and one flown through (the step since the last crossing its plane inside it, on the skiff) pushes. */
 export function flyRings(R, dt, prev) {

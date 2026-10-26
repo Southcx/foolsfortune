@@ -28,7 +28,7 @@
 //   game.raceway = new Raceway(game)   .active   .heightAt(x, z)   .rideHeight(x, z)   .normalAt   .wind   .tracks   .track   .s   .d   .lat
 //   .gaps (gaps.js)   .buoys (buoys.js)   .line ('main' | 'cavern')   .sb   .sun (0..1)   .condition (conditions.js)   .edgeLines(step, line?, trackId?) -> [{ side, pts, hide }]
 //   .plateAt(pos) -> plate | null (a vein lane's has `lane`)   .nearThings(pos) -> [{ key, x, y, z, r, what }]   .glideAt(pos) -> bool   .rails   .rings   .pillars   .arrive()   .respawn(s?)   .update(dt)   .T (the Sun Circuit)
-//   .build()   .buildSteps() (a generator, a piece a yield)   .teardown() (render/areas.js stage 2: boot/services.js registers the pair)   .prepare(ms) -> bool   .fieldProgress (the field behind a cover)   .buildGround()   .releaseGround()   .onRelease(fn) (told when the ground is given back)   .pick(ray) -> { x, z, y } park-local | null
+//   .build()   .buildSteps() (a generator, a piece a yield)   .teardown() (render/areas.js stage 2: boot/services.js registers the pair)   .prepare(ms) -> bool   .fieldProgress (the field behind a cover)   .buildGround()   .groundSteps() (a generator)   .releaseGround()   .onRelease(fn) (told when the ground is given back)   .pick(ray) -> { x, z, y } park-local | null
 //   .made (a made track on the build lot: madetrack.js)   .traps (the traps of the track that has them now: traps.js)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -37,7 +37,7 @@ import { ChunkTerrain } from '../../render/terrain.js';
 import { Barrier } from '../dunes/barrier.js';
 import { RW, BRANCH } from './track.js';
 import { park } from './park.js';
-import { buildRails, buildRings, flyRings } from './railsrings.js';
+import { railSteps, ringSteps, flyRings } from './railsrings.js';
 import { buildCavern } from './cavern.js';
 import { buildKit, buildMarks, GEYSER, nearThings } from './kit.js';
 import { buildDecks, deckAt, buildWater, buildPits, stepPits } from './features.js';
@@ -126,10 +126,10 @@ export class Raceway {
     let t = performance.now();
     while (!this.prepare(6)) yield 'field'; // (the field a slice a step: parkfield.js)
     t = lap('field', t); yield 'field';
-    this.buildGround(); t = lap('terrain', t); yield 'terrain';
+    yield* this.groundSteps(); this.buildGround(); t = lap('terrain', t); yield 'terrain'; // (buildGround: nothing left, or the ground was already standing)
     this.barrier = new Barrier(g, { center: this.center, radius: RW.edge, y0: RW.y - 120, y1: RW.y + 300 });
     t = lap('barrier', t); yield 'barrier';
-    this.rails = buildRails(this); this.rings = buildRings(this); t = lap('rails', t); yield 'rails'; // (the grind's rails, the coaster rails and the sun rings: railsrings.js; before the kit, which keeps its columns off them)
+    this.rails = []; this.rings = []; yield* railSteps(this, this.rails); yield 'rails'; yield* ringSteps(this, this.rings); t = lap('rails', t); yield 'rings'; // (the grind's rails, the coaster rails and the sun rings: railsrings.js; before the kit, which keeps its columns off them)
     buildKit(this); buildMarks(this); t = lap('kit', t); yield 'kit'; // (every track's furniture: kit.js)
     this.decks = buildDecks(this); buildWater(this); this.pits = buildPits(this); t = lap('features', t); yield 'features'; // (the bridges, the water, the antlion pits: features.js)
     this.cavern = buildCavern(this); t = lap('cavern', t); yield 'cavern'; // (its roof, stalactites and crystals: world/raceway/cavern.js)
@@ -157,20 +157,29 @@ export class Raceway {
   }
   /** The ground: the terrain on the field's heights (the field worked out in idle time after boot, prefetch: parkfield.js, or here) and
    *  its physics height field. Built at the first visit and again after each release. */
-  buildGround() {
-    if (this.chunks) return;
-    const g = this.game, P = this.P, t0 = performance.now();
-    const field = this.field || (this.fieldJob && this.fieldJob.step(() => true) ? this.fieldJob.field : fieldOf(P)); this.field = field; // (the prefetch's rows kept: only what is left is worked)
-    const N = field.n, onGrid = (x, z) => { const fi = (x + RW.half) / RW.step, fj = (z + RW.half) / RW.step, i = Math.round(fi), j = Math.round(fj); return Math.abs(fi - i) < 1e-4 && Math.abs(fj - j) < 1e-4 && i >= 0 && j >= 0 && i < N && j < N ? field.h[j * N + i] : P.heightAt(x, z); };
-    // the Dunes' own sand material on a field of this place's heights, and its height field to stand on
-    const mat = g.dunes?.terrain?.material || new THREE.MeshStandardMaterial({ color: 0xe8b070, roughness: 0.92 });
-    const TR = (this.chunks = new ChunkTerrain({ height: onGrid, half: RW.half, step: RW.step, chunk: 32, outer: RW.outer, outerStep: 20, material: mat }));
-    this.grid = { n: TR.n, heights: TR.heights };
-    const mesh = (this.terrain = TR.mesh); mesh.position.set(RW.x, RW.y, RW.z); mesh.receiveShadow = true; mesh.userData.zone = 'raceway'; g.scene.add(mesh);
-    this.groundBody = g.physics.world.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(RW.x, RW.y, RW.z));
-    g.physics.world.createCollider(RAPIER.ColliderDesc.heightfield(TR.n - 1, TR.n - 1, TR.heights, { x: RW.half * 2, y: 1, z: RW.half * 2 }).setFriction(0.9).setCollisionGroups(GROUPS.static), this.groundBody);
-    this.groundMs = Math.round(performance.now() - t0); this.awayT = 0;
-    if (this.made.T) this.made.reshape(); // (the lot's ground to the made track again: the field kept is the park's own)
+  buildGround() { if (this.chunks) return; const it = this.groundIt || this.groundSteps(); while (!it.next().done); }
+  /** The ground as steps (Petra's staged ChunkTerrain: render/terrain.js, a slice a yield): the field finished, the terrain's chunks
+   *  laid the landing's first, then the mesh and its height field put in the world at once. One under way at a time (`groundIt`,
+   *  finished by buildGround()); `chunks` stands only once the ground does, so nothing reads half a ground. */
+  *groundSteps() {
+    if (this.chunks || this.groundIt) return;
+    const it = (function* (R) {
+      const g = R.game, P = R.P, t0 = performance.now();
+      const field = R.field || (R.fieldJob && R.fieldJob.step(() => true) ? R.fieldJob.field : fieldOf(P)); R.field = field; // (the prefetch's rows kept: only what is left is worked)
+      const N = field.n, onGrid = (x, z) => { const fi = (x + RW.half) / RW.step, fj = (z + RW.half) / RW.step, i = Math.round(fi), j = Math.round(fj); return Math.abs(fi - i) < 1e-4 && Math.abs(fj - j) < 1e-4 && i >= 0 && j >= 0 && i < N && j < N ? field.h[j * N + i] : P.heightAt(x, z); };
+      // the Dunes' own sand material on a field of this place's heights, and its height field to stand on
+      const mat = g.dunes?.terrain?.material || new THREE.MeshStandardMaterial({ color: 0xe8b070, roughness: 0.92 });
+      const H = P.hub, TR = new ChunkTerrain({ height: onGrid, half: RW.half, step: RW.step, chunk: 32, outer: RW.outer, outerStep: 20, material: mat, staged: true, at: [H.x - 8, H.z - 8] }); // (at: the hub, where arrive() sets the Courier down)
+      yield* TR.steps();
+      R.chunks = TR; R.grid = { n: TR.n, heights: TR.heights };
+      const mesh = (R.terrain = TR.mesh); mesh.position.set(RW.x, RW.y, RW.z); mesh.receiveShadow = true; mesh.userData.zone = 'raceway'; g.scene.add(mesh);
+      R.groundBody = g.physics.world.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(RW.x, RW.y, RW.z));
+      g.physics.world.createCollider(RAPIER.ColliderDesc.heightfield(TR.n - 1, TR.n - 1, TR.heights, { x: RW.half * 2, y: 1, z: RW.half * 2 }).setFriction(0.9).setCollisionGroups(GROUPS.static), R.groundBody);
+      R.groundMs = Math.round(performance.now() - t0); R.awayT = 0;
+      if (R.made.T) R.made.reshape(); // (the lot's ground to the made track again: the field kept is the park's own)
+    })(this);
+    this.groundIt = { next: () => { const r = it.next(); if (r.done) this.groundIt = null; return r; }, [Symbol.iterator]() { return this; } };
+    yield* this.groundIt;
   }
   /** The ground given back: the terrain's arrays and GPU buffers and the height field's body; the field is kept, for the next arrival. */
   releaseGround() {
