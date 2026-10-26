@@ -25,6 +25,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { COLOR } from '../../progress/weather.js';
+import { letGo } from '../letgo.js';
 
 export const CELL = 20; // (dots a cell spans; a mark is drawn centred in its cell)
 const K = 4, PX = CELL * K, COLS = 8, TAU = Math.PI * 2, D = Math.PI / 180;
@@ -83,18 +84,21 @@ export function guardAtlas() {
   EFFECTS.forEach((e) => names.push(`notch.${e}`, `notchFill.${e}`));
   for (let j = 0; j < 3; j++) names.push(`win.${j}`, `winFill.${j}`);
   names.push('lure.ball', 'lure.star', 'lure.spoon', 'lure.tear', 'pawl', 'echo', 'dot', 'bar', 'disc', 'star', 'pot');
-  const rows = Math.ceil(names.length / COLS), c = document.createElement('canvas');
-  c.width = COLS * PX; c.height = rows * PX;
-  const x = c.getContext('2d'), cells = new Map();
-  names.forEach((n, i) => {
-    const cx = (i % COLS) * PX, cy = Math.floor(i / COLS) * PX;
-    cells.set(n, [cx / c.width, 1 - (cy + PX) / c.height, (cx + PX) / c.width, 1 - cy / c.height]);
-    x.save(); x.beginPath(); x.rect(cx, cy, PX, PX); x.clip(); x.translate(cx + PX / 2, cy + PX / 2); x.scale(K, K); x.lineJoin = 'round'; x.lineCap = 'round';
-    draw(x, n);
-    x.restore();
-  });
-  const tex = new THREE.CanvasTexture(c); tex.colorSpace = THREE.SRGBColorSpace; tex.generateMipmaps = true; tex.minFilter = THREE.LinearMipmapLinearFilter; tex.magFilter = THREE.LinearFilter; tex.anisotropy = 1;
-  ATLAS = { tex, canvas: c, cell: (n) => cells.get(n) || cells.get('dot') };
+  const rows = Math.ceil(names.length / COLS), W = COLS * PX, H = rows * PX, cells = new Map();
+  names.forEach((n, i) => { const cx = (i % COLS) * PX, cy = Math.floor(i / COLS) * PX; cells.set(n, [cx / W, 1 - (cy + PX) / H, (cx + PX) / W, 1 - cy / H]); });
+  const paint = () => {
+    const c = document.createElement('canvas'); c.width = W; c.height = H;
+    const x = c.getContext('2d');
+    names.forEach((n, i) => {
+      const cx = (i % COLS) * PX, cy = Math.floor(i / COLS) * PX;
+      x.save(); x.beginPath(); x.rect(cx, cy, PX, PX); x.clip(); x.translate(cx + PX / 2, cy + PX / 2); x.scale(K, K); x.lineJoin = 'round'; x.lineCap = 'round';
+      draw(x, n);
+      x.restore();
+    });
+    return c;
+  };
+  const tex = letGo(new THREE.CanvasTexture(paint()), paint); tex.colorSpace = THREE.SRGBColorSpace; tex.generateMipmaps = true; tex.minFilter = THREE.LinearMipmapLinearFilter; tex.magFilter = THREE.LinearFilter; tex.anisotropy = 1; // (painted once, its canvas let go once uploaded: vfx/letgo.js)
+  ATLAS = { tex, get canvas() { return tex.image; }, cell: (n) => cells.get(n) || cells.get('dot') };
   return ATLAS;
 }
 

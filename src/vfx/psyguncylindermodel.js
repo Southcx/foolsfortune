@@ -26,6 +26,7 @@ import { overlayKind, overlayShader, overlayStd } from './lachrimetertube.js';
 import { SHELL_COLOR } from '../pneuka/thingmodels.js';
 import { SHELL_TYPES } from '../tools/psygun/shells.js';
 import { FONT } from '../ui/theme.js';
+import { letGo } from './letgo.js';
 
 const TAU = Math.PI * 2;
 export const F = 0.28; // (the cylinder's face, z, in its own units: radius 1)
@@ -93,8 +94,9 @@ export function glyph2d(x, id, cx, cy, s) { x.save(); x.translate(cx, cy); glyph
 const GTEX = new Map();
 function glyphTex(id) {
   if (GTEX.has(id)) return GTEX.get(id);
-  const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d'); x.translate(64, 64); glyph(x, id, 100, 'key'); glyph(x, id, 100, 'fill');
-  const t = new THREE.CanvasTexture(c); t.generateMipmaps = false; t.minFilter = THREE.LinearFilter; GTEX.set(id, t); return t;
+  const paint = () => { const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d'); x.translate(64, 64); glyph(x, id, 100, 'key'); glyph(x, id, 100, 'fill'); return c; };
+  const t = letGo(new THREE.CanvasTexture(paint()), paint); // (its canvas let go once uploaded: vfx/letgo.js)
+  t.generateMipmaps = false; t.minFilter = THREE.LinearFilter; GTEX.set(id, t); return t;
 }
 
 // ---------- the steel: case-hardening's mottle (blues, straws, browns) over a gunmetal ground ----------

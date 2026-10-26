@@ -43,6 +43,7 @@
 import * as THREE from 'three';
 import { bakedCanvasTexture } from '../render/bakedcanvas.js';
 import { runeStrokes } from '../tools/veritome/mind/runes.js';
+import { letGo as letGoCanvas } from './letgo.js';
 import { WARE, PICTURES, paintPicture, paintMeander, paintFrieze, paintTongues, paintPalmette, paintRosette } from './blackfigure.js';
 
 // the potsherd (metres: across, up, thick, the pot's radius where it broke) and its face's canvas; the stele's shaft (across, high, deep),
@@ -64,7 +65,7 @@ function noise3(x, y, z) {
   return l(l(l(h(X, Y, Z), h(X + 1, Y, Z), su), l(h(X, Y + 1, Z), h(X + 1, Y + 1, Z), su), sv), l(l(h(X, Y, Z + 1), h(X + 1, Y, Z + 1), su), l(h(X, Y + 1, Z + 1), h(X + 1, Y + 1, Z + 1), su), sv), sw);
 }
 const linear = (hex) => { const c = new THREE.Color(hex); return `vec3(${c.r.toFixed(4)}, ${c.g.toFixed(4)}, ${c.b.toFixed(4)})`; };
-function canvasTexture(c, repeat = false) { const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; if (repeat) t.wrapS = t.wrapT = THREE.RepeatWrapping; return t; }
+function canvasTexture(paint, repeat = false) { const t = letGoCanvas(new THREE.CanvasTexture(paint()), paint); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 8; if (repeat) t.wrapS = t.wrapT = THREE.RepeatWrapping; return t; }
 /** A canvas painted once, as a baked canvas at half its pixels (the resolution pass, 2026-10-25, docs/plans/art/texture-budget.md), its
  *  painter's canvas drawn in at its full size's units and let go (render/bakedcanvas.js). */
 function halfTexture(paint, w, h, repeat = false) {
@@ -182,7 +183,7 @@ else if (vFace > 0.5) { float ph = vPotsherd.y * 260.0, aa = 1.0 - smoothstep(0.
 const FACES = new Map();
 function faceFor(word, picture) {
   const key = `${word}|${picture}`; let F = FACES.get(key);
-  if (!F) { const geo = potsherdGeometry(word), tex = canvasTexture(paintFace(word, picture, geo.userData.outline)); F = { key, tex, mat: potsherdMaterial(tex), geo, n: 0 }; FACES.set(key, F); }
+  if (!F) { const geo = potsherdGeometry(word), tex = canvasTexture(() => paintFace(word, picture, geo.userData.outline)); F = { key, tex, mat: potsherdMaterial(tex), geo, n: 0 }; FACES.set(key, F); } // (the face's canvas let go once uploaded: vfx/letgo.js)
   F.n++; return F;
 }
 function letGo(F) { if (--F.n > 0) return; F.mat.dispose(); F.tex.dispose(); F.geo.dispose(); FACES.delete(F.key); }

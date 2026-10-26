@@ -15,6 +15,7 @@
 import * as THREE from 'three';
 import { toneGrid } from '../../ui/icons/hand.js';
 import { ANSWER_ART, STATUS_ART, FIGMENT_MARK_ART } from '../../ui/icons/figmenttelegraphart.js';
+import { letGo } from '../letgo.js';
 
 export const ATLAS = { cols: 8, rows: 4, cell: 64, scale: 3, inset: 0.125 };
 export const ATLAS_IDS = [
@@ -27,6 +28,13 @@ let tex = null;
 /** The atlas, painted on first use and kept (a canvas texture: one upload). */
 export function figmentTelegraphAtlas() {
   if (tex) return tex;
+  tex = letGo(new THREE.CanvasTexture(paintAtlas()), paintAtlas); // (painted once, its canvas let go once uploaded: vfx/letgo.js)
+  tex.flipY = false; tex.colorSpace = THREE.NoColorSpace; // (greys read as numbers: the program colours them)
+  tex.minFilter = THREE.LinearMipmapLinearFilter; tex.magFilter = THREE.LinearFilter; tex.anisotropy = 4; tex.generateMipmaps = true;
+  tex.userData.shared = true;
+  return tex;
+}
+function paintAtlas() {
   const { cols, rows, cell, scale } = ATLAS, c = document.createElement('canvas');
   c.width = cols * cell; c.height = rows * cell;
   const g = c.getContext('2d'), img = g.createImageData(c.width, c.height);
@@ -39,9 +47,5 @@ export function figmentTelegraphAtlas() {
     }
   });
   g.putImageData(img, 0, 0);
-  tex = new THREE.CanvasTexture(c);
-  tex.flipY = false; tex.colorSpace = THREE.NoColorSpace; // (greys read as numbers: the program colours them)
-  tex.minFilter = THREE.LinearMipmapLinearFilter; tex.magFilter = THREE.LinearFilter; tex.anisotropy = 4; tex.generateMipmaps = true;
-  tex.userData.shared = true;
-  return tex;
+  return c;
 }

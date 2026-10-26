@@ -17,6 +17,7 @@
 //   (w, h: metres; wall: the old wall's colour; back: how far behind the origin the wall's face is; seed: a string, the same break each time)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { letGo } from './letgo.js';
 
 const PXM = 320, FACE = 0.004, FLAKE_D = 0.018, LIE = 6, SHRINK = 1; // (texels a metre; the skim's face proud of the wall; a flake's thickness; real seconds a flake lies, then shrinks away)
 const G = 9.8;
@@ -127,7 +128,7 @@ export class PlasterPatch {
     this.rim = outline(w, h, rnd);
     const shape = new THREE.Shape(this.rim.map(([x, y]) => new THREE.Vector2(x, y)));
     this.geo = new THREE.ShapeGeometry(shape, 2); uvFromXY(this.geo, w, h);
-    this.skimTex = texture(paintSkim(w, h, this.rim, wc, rnd));
+    this.skimTex = letGo(texture(paintSkim(w, h, this.rim, wc, rnd)), () => paintSkim(w, h, this.rim, wc, rnd)); // (its canvas let go once uploaded: vfx/letgo.js)
     this.skimMat = new THREE.MeshStandardMaterial({ name: 'plaster-skim', map: this.skimTex, roughness: 0.96, polygonOffset: true, polygonOffsetFactor: -1, polygonOffsetUnits: -2 });
     this.patch = new THREE.Mesh(this.geo, this.skimMat); this.patch.position.z = FACE - back; this.patch.receiveShadow = true; this.patch.name = 'plaster-skim';
     this.group.add(this.patch);

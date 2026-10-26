@@ -50,6 +50,7 @@ import { tierSize } from './tierscale.js';
 import { theme, THEMES, FONT } from '../ui/theme.js';
 import { BlinkPearls, PEARL_KIND } from './lachrimeter/blinkpearls.js';
 import { CubePlate, PLATE_W, PLATE_H } from './lachrimeter/cubeplate.js';
+import { letGo } from './letgo.js';
 
 // the instrument's own units (the mock's): the bulb at the origin, the scale from Y0 (empty) to Y1 (full), the plate behind
 const Y0 = 0.55, Y1 = 3.55, yOf = (p) => Y0 + (Y1 - Y0) * p;
@@ -299,7 +300,7 @@ export class LachrimeterTube {
     { const o = cv(SKIN.w / 8, SKIN.h / 8), x = o.getContext('2d'); // (roughness in green, metalness in blue, a region each: MeshStandardMaterial's channels)
       for (const [k, r, m] of [['plate', 0.22, 0], ['glaze', 0.32, 0.05], ['brass', 0.38, 0.85]]) { const [x0, y0, w, h] = SKIN[k]; x.fillStyle = `rgb(255,${Math.round(r * 255)},${Math.round(m * 255)})`; x.fillRect(x0 / 8, y0 / 8, w / 8, h / 8); }
       this.ormC = o; this.ormT = new THREE.CanvasTexture(o); this.ormT.magFilter = this.ormT.minFilter = THREE.NearestFilter; this.ormT.generateMipmaps = false; }
-    const crazeT = tex(crazeCanvas());
+    const crazeT = letGo(tex(crazeCanvas()), crazeCanvas); // (painted once, its canvas let go once uploaded: vfx/letgo.js)
     const glowC = cv(64, 64); { const x = glowC.getContext('2d'), g = x.createRadialGradient(32, 32, 0, 32, 32, 32); g.addColorStop(0, 'rgba(220,250,255,1)'); g.addColorStop(0.25, 'rgba(120,200,255,.55)'); g.addColorStop(1, 'rgba(90,60,255,0)'); x.fillStyle = g; x.fillRect(0, 0, 64, 64); }
 
     const body = overlayStd(ENV, { map: this.skinT, roughnessMap: this.ormT, metalnessMap: this.ormT, roughness: 1, metalness: 1, envMapIntensity: 0.9 });

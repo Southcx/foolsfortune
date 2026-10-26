@@ -11,6 +11,7 @@
 //   tierSize(n, min) n scaled, rounded, at least min
 // ---------------------------------------------------------------------------------------
 import { T } from '../core/config.js';
+import { letGo } from './letgo.js';
 
 export const tierScale = () => Math.min(1, T.visual.textureScale ?? 1);
 export const tierSize = (n, min = 1) => Math.max(min, Math.round(n * tierScale()));
@@ -18,9 +19,7 @@ export const tierSize = (n, min = 1) => Math.max(min, Math.round(n * tierScale()
 export function fitToTier(t) {
   const k = tierScale(), im = t?.image;
   if (k >= 1 || !im?.width) return t;
-  const c = document.createElement('canvas');
-  c.width = Math.max(1, Math.round(im.width * k)); c.height = Math.max(1, Math.round(im.height * k));
-  c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
-  t.image = c; t.needsUpdate = true;
-  return t;
+  const paint = () => { const c = document.createElement('canvas'); c.width = Math.max(1, Math.round(im.width * k)); c.height = Math.max(1, Math.round(im.height * k)); c.getContext('2d').drawImage(im, 0, 0, c.width, c.height); return c; };
+  t.image = paint(); t.needsUpdate = true;
+  return letGo(t, paint); // (the canvas let go once uploaded: vfx/letgo.js)
 }

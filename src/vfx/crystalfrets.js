@@ -73,7 +73,7 @@ totalEmissiveRadiance = mix(totalEmissiveRadiance, mix(fGlow, max(fGlow, fC * uF
 /** The frets of every spire of one InstancedMesh: where they stand, whether drawn, and what is lit. */
 export class CrystalFrets {
   constructor(mesh) {
-    const n = mesh.count;
+    const n = mesh.instanceMatrix?.count ?? mesh.count; // (the instances it can hold, not how many it draws now: the duel's pieces set count 0 first, and WebKit refuses an instanced draw past an attribute's length)
     this.fret = new THREE.InstancedBufferAttribute(new Float32Array(n * 4), 4); // (floor y, span, drawn 0..1, the fifth fret's light)
     this.lit = new THREE.InstancedBufferAttribute(new Float32Array(n * 4), 4); // (the light of the first four frets)
     for (let i = 0; i < n; i++) this.fret.array[i * 4 + 1] = 1; // (never a span of nothing: the shader divides by it)

@@ -30,6 +30,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { LAB_GLSL, mindTime } from './labradorite.js';
+import { letGo } from './letgo.js';
 
 /** The urn's glaze: ru ware's sky-blue celadon, crazed; and in the red channel the cracks, their stage as the grey (1, 2 or 3 thirds). */
 function urnTexture() {
@@ -54,6 +55,7 @@ function urnTexture() {
   const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.NoColorSpace; t.wrapS = THREE.RepeatWrapping; t.anisotropy = 4;
   return t;
 }
+const urnTextureLetGo = () => { const t = urnTexture(); return letGo(t, () => urnTexture().image); }; // (its canvas let go once uploaded: vfx/letgo.js)
 
 /** The broken lip's jag at angle a: round forty sides, straight between them as a fracture runs (vfx/finish.js finLip copies it). */
 const JAG = (a) => 0.12 * Math.abs(Math.sin(a * 7.0)) + 0.08 * Math.abs(Math.sin(a * 17.0 + 1.3)) + 0.05 * Math.sin(a * 31.0);
@@ -79,7 +81,7 @@ function urnGeometry() {
 
 export class UrnCrown {
   constructor({ radius = 0.5 } = {}) {
-    this.u = { uStage: { value: 0 }, uFlash: { value: 0 }, uTell: { value: 0 }, uUrnR: { value: radius }, uMindT: mindTime, uCrack: { value: urnTexture() } }; // (uUrnR: the urn's radius in the world, set each update)
+    this.u = { uStage: { value: 0 }, uFlash: { value: 0 }, uTell: { value: 0 }, uUrnR: { value: radius }, uMindT: mindTime, uCrack: { value: urnTextureLetGo() } }; // (uUrnR: the urn's radius in the world, set each update)
     const m = this.mat = new THREE.MeshStandardMaterial({ name: 'urn-crown', color: 0x9cc7c8, roughness: 0.3, metalness: 0.0, side: THREE.DoubleSide });
     m.onBeforeCompile = (sh) => {
       Object.assign(sh.uniforms, this.u);

@@ -905,3 +905,5 @@ NEW:memory-bound-by-view. **What a place holds in memory is bound by what the vi
   terrain or a pool is kept for what is drawn now (slots written as the view moves), and a phone's crash is read as the biggest single thing first.
 NEW:word-inside-the-face. **A tile's glyph is sized to the room its word leaves, never to the tile alone.** The word's baseline stays
   inside the face at the least size (44 px), and a row that crowds a phone's thumbs folds to one tab before any tile shrinks under 44.
+NEW:instanced-by-capacity. **An instanced attribute is sized to the instances the mesh holds (`instanceMatrix.count`), never to `mesh.count`.**
+  Count is how many draw now and may be 0 at setup; WebKit refuses a draw past an attribute's length where Chromium is silent.

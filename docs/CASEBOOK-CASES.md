@@ -3983,3 +3983,12 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   PAUSE (opened by a tap, folded by a choice, a tap or six real seconds untouched); the strip folds a tool's own row of two or more
   to a MORE tab, the core moves and BLINK kept out.
 - **Rule:** NEW:word-inside-the-face
+
+### 2026-10-26 · WebKit refused the duel's gems: an instanced attribute sized to the count drawn, not the room (Petra's WebKit probe; Calissa)
+- **Seen:** real WebKit as the iPhone XR refused 12 draws at boot, `glDrawArraysInstanced: Vertex buffer is not big enough`, the duel
+  board's gem families (duel-wonder, -fury, -mirth, -desire: 33 to 47 instances); Chromium said nothing.
+- **Cause:** vfx/crystalfrets.js `CrystalFrets` sized its `aFret` and `aLit` from `mesh.count`, and the duel's pieces set `count = 0`
+  before attaching them (count is how many are drawn now, not how many the mesh holds): two attributes of length 0 under 33 to 47
+  instances.
+- **Fix:** sized from `mesh.instanceMatrix.count` (the room), which every user of the frets now gets.
+- **Rule:** NEW:instanced-by-capacity
