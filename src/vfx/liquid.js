@@ -4,7 +4,7 @@
 // and whatever comes next all move the same way and catch the light the same way:
 //
 //   THE PACKS the owner's noise photographs, baked tileable by scripts/bake_liquid.py (src/assets/liquid_pack.webp, 512 px, four grey
-//             channels): R the oil MARBLING (cells and veins), G the BUBBLES (rings and foam), B the SAND RIPPLES, A the marbling's
+//             channels, saved opaque two halves wide: vfx/datapack.js): R the oil MARBLING (cells and veins), G the BUBBLES (rings and foam), B the SAND RIPPLES, A the marbling's
 //             VEINS (its bright ridges: the film's veins); and a second pack from the owner's noise gradients
 //             (liquid_pack2.webp: R a dense caustic net, G a finer one, B wind-streaked ripples, A soft glowing cells)
 //   NORMALS   two layers of the marbling scrolled against each other at different scales and angles, their slope taken by finite
@@ -39,21 +39,14 @@ import * as THREE from 'three';
 import packB64 from '../assets/liquid_pack.webp?b64';
 import pack2B64 from '../assets/liquid_pack2.webp?b64';
 import { tierSize } from './tierscale.js';
+import { dataPackTexture } from './datapack.js';
 
 const _tex = {};
 function pack(key, b64) {
-  if (_tex[key]) return _tex[key];
-  // (the fourth channel is data, not coverage: decoded as an ImageBitmap with premultiplyAlpha 'none', so a browser that premultiplies
-  // an <img> on decode (WebKit) cannot zero the colour under the texels whose alpha is 0, more than half of them)
-  const t = _tex[key] = new THREE.Texture();
-  const L = new THREE.ImageBitmapLoader(); const n = tierSize(512, 64); // (at the tier's size, 256 on a phone: resized by the decoder itself, so the data in alpha is never premultiplied by a canvas)
-  L.setOptions({ premultiplyAlpha: 'none', colorSpaceConversion: 'none', ...(n < 512 ? { resizeWidth: n, resizeHeight: n, resizeQuality: 'high' } : {}) });
-  L.load(`data:image/webp;base64,${b64}`, (bmp) => { t.image = bmp; t.needsUpdate = true; });
-  t.flipY = false; // (an ImageBitmap is never flipped on upload; the noise tiles either way)
-  t.wrapS = t.wrapT = THREE.RepeatWrapping;
-  t.colorSpace = THREE.NoColorSpace; // (data, not colour)
-  t.anisotropy = 4;
-  return t;
+  // (the fourth channel is data, not coverage: the pack is saved opaque, its fourth channel as the right half (scripts/datapack.py), and
+  // read back exact by vfx/datapack.js; at the tier's size, 256 on a phone, averaged there, never by the decoder: WebKit drew the
+  // ImageBitmap decode with premultiplyAlpha 'none' and a resize black, the owner's iPhone XR, 2026-10-26)
+  return (_tex[key] ||= dataPackTexture(`data:image/webp;base64,${b64}`, { size: tierSize(512, 64) }));
 }
 /** The first pack, loaded once and shared: repeat-wrapped, mipmapped (the far water reads as its average, never as noise). */
 export function liquidTexture() { return pack('a', packB64); }
