@@ -3956,3 +3956,18 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   81 cameras over the middle chunk; the levels indexed, not destructured. The park's ground 30.7 MB -> 1.9 MB of vertices; its garbage
   178 -> 26 MB. The Dunes' ground the same way. The builders' garbage and the rails' outline normals on a phone handed to Dovina and Calissa.
 - **Rule:** NEW:memory-bound-by-view
+
+### 2026-10-26 · The Raceway's looks' garbage on arriving at the park (the owner's iPhone XR, v283; Calissa, from Petra's measure)
+- **Seen:** the same arrival as the case above; Petra's heap sampler (collected included, as the XR) put about 380 MB of it in my
+  Raceway looks: the coaster cut's `test` 200 MB, the rails' glaze 102 MB, `painted` 26 MB, the cavern's `stone` 22 MB; and the rails'
+  glaze, the park's biggest mesh (228k vertices), carried `smoothNormal` (2.7 MB) on a phone, where no hull is drawn.
+- **Cause (measured, scratchpad probe: one trip workshop to park as the XR, the same sampler):** a string key built per cell, nine cells
+  a vertex, over the whole rail mesh, with an iterator and `Math.hypot` a point (vfx/racewaypark.js `cutCoaster`); a BoxGeometry, a
+  Matrix4, two clones and a merge per rail segment (vfx/racewaylooks.js `glazeRails`); the cavern's skin coloured once per triangle a
+  point is a corner of (up to six) where once does (vfx/racewaycavern.js `skinGeometry`); `ensureSmoothNormals` with no hull to read it.
+- **Fix:** the cut's grid keyed by a small integer, its test in indexed loops with squared distances, its kept corners in one typed
+  array; the rails written straight into one set of arrays from six painted templates made once (the same vertices); the skin's colour
+  worked once a point; the hull's smooth normals only where `mesh.userData.outline` exists (the rails, the cavern's roof). The three
+  modules' share of the trip: about 380 MB to about 40 MB, most of that the new geometry itself; the rails carry position, normal and
+  colour only on a phone.
+- **Rule:** NEW:memory-bound-by-view
