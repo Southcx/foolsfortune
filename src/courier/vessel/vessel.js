@@ -147,10 +147,11 @@ export class Vessel {
     this.t += dt;
     if (this.t > 1) {
       this.t = 0;
-      // an achievement's glaze, said once when it is earned
+      // an achievement's glaze, said once when it is earned; nothing said behind the title (no mode yet: what is owned is not known) nor
+      // while DEBUG lends every glaze (the owner, 2026-10-26: "when debug is loaded a bunch of log entries spam the log ... like kiln glazes")
       const now = this.owned().map((g) => g.id);
-      if (!this.known) this.known = new Set(now);
-      for (const id of now) if (!this.known.has(id)) { this.known.add(id); this.game.events?.emit('glaze.earn', { glaze: id }); }
+      if (!this.known || !this.game.mode || this.game.lend?.has('glazes')) this.known = new Set(now);
+      else for (const id of now) if (!this.known.has(id)) { this.known.add(id); this.game.events?.emit('glaze.earn', { glaze: id }); }
     }
     this.soulGlow(dt);
     if (this.fireT > 0) {
