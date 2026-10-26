@@ -75,7 +75,9 @@
       //  the files are refused; asked early by `eager` (the boot's own), handed to the module that awaits it and let go of here)
       var fetchText = function (n) { return readText ? readText(n) : fetch(base + n).then(function (r) { if (!r.ok) throw new Error('could not load ' + n + ' (' + r.status + ')'); return r.text(); }); };
       window.__ffText = function (n) { var p = texts[n] || fetchText(n); delete texts[n]; return p; };
-      var eager = function () { (window.__ffEager || []).forEach(function (n) { if (!texts[n]) { texts[n] = fetchText(n); texts[n].catch(function () {}); } }); };
+      var ask = function (list) { (list || []).forEach(function (n) { if (!texts[n]) { texts[n] = fetchText(n); texts[n].catch(function () {}); } }); };
+      var eager = function () { ask(window.__ffEager); };
+      window.__ffPrefetch = function (route) { ask((window.__ffEagerBy || {})[route]); }; // (src/boot/entry.js, once it has chosen the box room or the game)
       var fail = function (e) { if (W && W.fail) W.fail(e); else throw e; };
       var bytes = function (b64) { var s = atob(b64), n = s.length, u = new Uint8Array(n); for (var i = 0; i < n; i++) u[i] = s.charCodeAt(i); return u; };
       var fromStore = async function (why) {
@@ -206,7 +208,7 @@
   <script type="module">
     // THE LOADER: the game's code (main.js and all it imports, some 13 MB) fetched and run only once the page itself has loaded, so the
     // page has answered its host before the long parse begins (a phone's viewer gave up on the frame about 2 real s in, 2026-10-24).
-    const go = () => import('./src/main.js');
+    const go = () => import('./src/boot/entry.js'); // (the box room on a phone, the game elsewhere: src/boot/entry.js)
     if (document.readyState === 'complete') setTimeout(go, 0); else addEventListener('load', () => setTimeout(go, 0), { once: true });
   </script>
 </body>

@@ -60,7 +60,8 @@ for (const [f, src] of text) {
   catch (e) { const m = e.errors?.[0]; add('module.parse', f, m?.location?.line || 1, `does not parse: ${m?.text || e.message}`, true); }
 }
 
-// ---- 1. the import graph: every relative import resolves; every module is imported by something (main.js is the root)
+// ---- 1. the import graph: every relative import resolves; every module is imported by something (the page's entry, imported by
+//      index.html's loader, is the root; main.js is the game's)
 const imported = new Set();
 const IMPORT = /(?:(?:import|export)\s[^'";]*?from\s*|import\s*\(\s*|^\s*import\s*)['"](\.{1,2}\/[^'"]+)['"]/gm;
 const code = (src) => src.replace(/\/\*[\s\S]*?\*\/|\/\/[^\n]*/g, (c) => c.replace(/[^\n]/g, ' ')); // (comments blanked, positions kept; one pass, left to right, so a `/*` inside a line comment opens nothing)
@@ -75,6 +76,7 @@ for (const [f, raw] of text) {
     imported.add(t);
   }
 }
+for (const m of fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8').matchAll(/import\(\s*['"](\.\/src\/[^'"?]+)['"]/g)) imported.add(path.resolve(ROOT, m[1])); // (the page's own imports)
 for (const tool of fs.readdirSync(path.join(ROOT, 'scripts')).filter((x) => /\.m?js$/.test(x))) {
   const src = fs.readFileSync(path.join(ROOT, 'scripts', tool), 'utf8');
   for (const m of src.matchAll(/['"](\.\.\/src\/[^'"?]+)['"]/g)) imported.add(path.resolve(ROOT, 'scripts', m[1]));
@@ -174,6 +176,7 @@ for (const [f, raw] of text) {
   importsOf.set(f, { out, three: /^\s*import[^;]*from\s*['"](three|three\/[^'"]*|@dimforge\/[^'"]*)['"]/m.test(src) });
 }
 const viaThree = new Set();
+for (const m of fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8').matchAll(/import\(\s*['"](\.\/src\/[^'"?]+)['"]/g)) imported.add(path.resolve(ROOT, m[1])); // (the page's own imports)
 for (const tool of fs.readdirSync(path.join(ROOT, 'scripts')).filter((x) => /\.m?js$/.test(x))) {
   const tsrc = fs.readFileSync(path.join(ROOT, 'scripts', tool), 'utf8');
   if (/from\s*['"](three|playwright)['"]/.test(tsrc)) continue; // (a script that loads the renderer or a browser on purpose)

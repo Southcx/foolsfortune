@@ -26,7 +26,7 @@ file came from.
 ```
 src/
   main.js        the composition root: builds the services, registers the techs, runs the frame        (Petra)
-  boot/          the boot stages main.js runs in order, one function a stage: the save .. the frame    (Petra)
+  boot/          the boot stages in order (the save .. the frame); entry.js: the box room or the game  (Petra)
   core/          services every module may use, and nothing of the game itself                         (Petra)
   courier/       the Courier: body, animation, moves (techs), vessel, the pool, the skiff, the ship      (Petra)
   tools/         the belt, the held-tool base, and one folder per tool                                  (Petra; shared parts)

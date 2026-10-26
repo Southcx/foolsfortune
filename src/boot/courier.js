@@ -49,7 +49,7 @@ export async function bootCourier(game, made) {
   mark('gltf');
   const clappers = new Clappers(game, clapG);
   game.clappers = clappers;
-  clappers.spawnAll();
+  if (!made.box) clappers.spawnAll(); // (none in the box room: boot/box.js)
   const clipPack = await loadClips({ packs: [animsB64, cmuB64] }); // (the Courier's own suite, fetched; the UAL and mocap packs widened to its bones: courier/anim/suite.js)
   mark('clappers+anims');
   game.clipPack = clipPack; // (its `social` resolves when the emotes, dances, flirts and taunts are in)

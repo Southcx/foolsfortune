@@ -53,13 +53,21 @@ const loaderEntry = () => ({
   enforce: 'post',
   transformIndexHtml(html, ctx) {
     // (the base64 assets the boot's own chunks await, fetched as soon as the loader has chosen its way in: the entry and every chunk it
-    //  imports statically; a dynamic import's are fetched when it is asked)
-    const B = ctx.bundle || {}, seen = new Set(), eager = new Set();
-    const walk = (f) => { const c = B[f]; if (!c || c.type !== 'chunk' || seen.has(f)) return; seen.add(f); for (const m of c.code.matchAll(/__ffText\("([^"]+\.txt)"\)/g)) eager.add(m[1]); c.imports.forEach(walk); };
-    walk('assets/game.js'); (B['assets/game.js']?.dynamicImports || []).forEach(walk); // (the entry is a shim that imports main.js dynamically)
+    //  imports statically; then each route's (boot/entry.js: the box room or main.js), fetched once the entry has chosen it
+    //  (`__ffPrefetch(route)`), the other's never; a dynamic import's are fetched when it is asked)
+    const B = ctx.bundle || {};
+    const walk = (f, into, seen = new Set()) => { const c = B[f]; if (!c || c.type !== 'chunk' || seen.has(f)) return into; seen.add(f); for (const m of c.code.matchAll(/__ffText\("([^"]+\.txt)"\)/g)) into.add(m[1]); c.imports.forEach((i) => walk(i, into, seen)); return into; };
+    const shim = B['assets/game.js'], starts = ['assets/game.js', ...(shim?.dynamicImports || [])]; // (the entry is a shim that imports boot/entry.js dynamically)
+    const eager = new Set(); for (const f of starts) walk(f, eager);
+    const by = {};
+    for (const f of starts) for (const d of B[f]?.dynamicImports || []) {
+      const route = { box: 'box', main: 'main' }[B[d]?.name]; // (a dynamic entry's chunk is named for its module)
+      if (route) by[route] = [...walk(d, new Set())].filter((n) => !eager.has(n)).sort();
+    }
+    if (!by.box || !by.main) throw new Error('ff-loader-entry: the entry\'s two routes (boot/box.js, main.js) are not where the loader expects them');
     const tag = /<script type="module" crossorigin src="\.\/assets\/game\.js"><\/script>\s*/;
     if (!tag.test(html)) throw new Error('ff-loader-entry: the entry tag is not where the loader expects it');
-    return html.replace(tag, '').replace('<head>', `<head>\n  <script>window.__ffEntry = './assets/game.js'; window.__ffBuild = ${JSON.stringify(BUILD_ID)}; window.__ffEager = ${JSON.stringify([...eager].sort())};</script>`);
+    return html.replace(tag, '').replace('<head>', `<head>\n  <script>window.__ffEntry = './assets/game.js'; window.__ffBuild = ${JSON.stringify(BUILD_ID)}; window.__ffEager = ${JSON.stringify([...eager].sort())}; window.__ffEagerBy = ${JSON.stringify(by)};</script>`);
   },
 });
 
