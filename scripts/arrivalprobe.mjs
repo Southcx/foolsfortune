@@ -55,13 +55,13 @@ try {
     let peak = h0, frames = 0, worst = 0;
     const depart = () => g.course.goRoom(room);
     if (!(g.gateRing?.depart(depart))) g.seam?.cross(depart) || depart();
-    do { const t = performance.now(); G.tick(1 / 30); if (!g.seam?.covering) G.draw(); worst = Math.max(worst, performance.now() - t); frames++; peak = Math.max(peak, performance.memory.usedJSHeapSize); await new Promise((r) => setTimeout(r, 0)); } while (g.seam?.busy && frames < 1500);
+    const ph = []; do { const t = performance.now(), p0 = g.seam?.job?.phase; G.tick(1 / 30); if (!g.seam?.covering) G.draw(); const d = performance.now() - t; if (d > 200) ph.push(`${p0}:${Math.round(d)}`); worst = Math.max(worst, d); frames++; peak = Math.max(peak, performance.memory.usedJSHeapSize); await new Promise((r) => setTimeout(r, 0)); } while (g.seam?.busy && frames < 1500);
     for (let i = 0; i < 20; i++) { G.tick(1 / 30); G.draw(); }
     gc(); const h1 = performance.memory.usedJSHeapSize, g1 = geo();
     const fresh = [];
     for (const r of window.__madeTex) { const t = r.deref(); if (!t || u0.has(t) || !R.properties.get(t)?.__webglTexture) continue; const im = t.userData?.baked || t.image || {}; const w = im.width || t.width || 0, h = im.height || t.height || 0, bpp = t.type === 1015 ? 16 : t.type === 1016 ? 8 : 4; fresh.push({ mb: (w * h * (im.depth || 1) * bpp * (t.generateMipmaps && t.minFilter >= 1007 ? 4 / 3 : 1)) / 1e6, s: `${w}x${h} ${t.__maker || t.name || ''}` }); }
     const sum = (a) => a.reduce((x, y) => x + y.b, 0) / 1e6;
-    return { zone: g.zones?.current, frames, worst: Math.round(worst), heap: [h0, peak, h1].map((b) => Math.round(b / 1048576)), geo: [sum(g0), sum(g1)], big: g1.sort((a, b) => b.b - a.b), fresh: fresh.sort((a, b) => b.mb - a.mb), lifts, buildMs: g.raceway?.buildMs, programs: R.info.programs?.length, mem: R.info.memory };
+    return { slow: ph, zone: g.zones?.current, frames, worst: Math.round(worst), heap: [h0, peak, h1].map((b) => Math.round(b / 1048576)), geo: [sum(g0), sum(g1)], big: g1.sort((a, b) => b.b - a.b), fresh: fresh.sort((a, b) => b.mb - a.mb), lifts, buildMs: g.raceway?.buildMs, programs: R.info.programs?.length, mem: R.info.memory };
   }, room);
   const { profile } = await cdp.send('HeapProfiler.stopSampling');
   const by = new Map();
@@ -70,7 +70,7 @@ try {
   const mb = (x) => x.toFixed(2).padStart(6);
   console.log(`arrival at ${room}: in ${res.zone}; ${res.frames} frames under the cover, the longest ${res.worst} ms; programs ${res.programs}; GPU ${JSON.stringify(res.mem)}`);
   console.log(`heap MB (dev): before ${res.heap[0]}, peak ${res.heap[1]}, after ${res.heap[2]}; scene geometry MB ${res.geo[0].toFixed(1)} -> ${res.geo[1].toFixed(1)}`);
-  console.log(`cover lifts: ${JSON.stringify(res.lifts)}; build ms ${JSON.stringify(res.buildMs || {})}`);
+  console.log(`slow frames (phase:ms): ${res.slow.join(" ")}`); console.log(`cover lifts: ${JSON.stringify(res.lifts)}; build ms ${JSON.stringify(res.buildMs || {})}`);
   console.log(`textures first uploaded on the way in (${res.fresh.length}, ${res.fresh.reduce((a, r) => a + r.mb, 0).toFixed(1)} MB):`); for (const r of res.fresh.slice(0, top)) console.log(`  ${mb(r.mb)} MB  ${r.s}`);
   console.log('largest meshes after:'); for (const r of res.big.slice(0, top)) console.log(`  ${mb(r.b / 1e6)} MB  v${r.v} ${r.vis ? '' : '(hidden) '}${r.who}`);
   console.log('allocated on the way in, by function (garbage included):'); for (const [k, v] of [...by].sort((a, b) => b[1] - a[1]).slice(0, top)) console.log(`  ${mb(v / 1048576)} MB  ${k}`);
