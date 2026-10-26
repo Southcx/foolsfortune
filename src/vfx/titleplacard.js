@@ -23,8 +23,8 @@
 // screen, in a cinematic or in a live moment (`game.liveMoment()`: one up then leaves at once, and comes again if unsettled). It never
 // pauses play and adds no log line (the log already says the title: tracking.js).
 //
-// Events, for Wanda's sound: `placard.beat { k, tier }`, k one of descend, contact, write, comb, settle, seal, exit (write and comb only
-// when the title is written; a beat a dismissal skips is not sent).
+// Events, for Wanda's sound: `placard.beat { k, tier, title, id }` (id the achievement's), k one of descend, contact, write, comb,
+// settle, seal, exit (write and comb only when written; a beat a dismissal skips is not sent; one re-queued beats again from descend).
 //
 // How it is drawn: the placard is its own little scene (its lights, an environment for the glazes and the gold, the mock's perspective
 // camera) rendered into a target the size of the 480-line present, and a glow pass of its lit parts at half that; one full-view quad in
@@ -706,7 +706,7 @@ export class TitlePlacard {
       const t0 = performance.now(); let r; do r = b.it.next(); while (!r.done && performance.now() - t0 < 6);
       if (!r.done) return;
       // its programs compiled against its own target (not the canvas: a target is drawn linear and untoned), then it begins
-      const V = r.value; V.tier = b.e.tier; this.scene.environment = V.env; this.scene.add(V.root); this.targets(slot); this.building = null; this.pending = V;
+      const V = r.value; V.tier = b.e.tier; V.title = b.e.title; V.id = b.e.id; this.scene.environment = V.env; this.scene.add(V.root); this.targets(slot); this.building = null; this.pending = V;
       const rr = this.r, was = rr.getRenderTarget(); rr.setRenderTarget(this.rt);
       const go = () => { if (this.pending !== V) return; this.pending = null; this.active = V; this.activeE = b.e; this.t = 0; this.age = 0; this.beat = 0; };
       const asy = (sc, cam, into) => (rr.compileAsync ? rr.compileAsync(sc, cam, into) : (rr.compile(sc, cam, into), null)); // (and the stage's layers, against the canvas)
@@ -720,7 +720,7 @@ export class TitlePlacard {
     this.t += dt; this.age += dt;
     if (!V.hand && this.t >= T_W0 && this.t < T_ARR0 - 0.3) this.t = T_ARR0 - 0.3; // (no running hand: no writing, no comb)
     const t = this.t;
-    while (this.beat < BEATS.length && t >= BEATS[this.beat][1]) { const [k] = BEATS[this.beat++]; if ((k === 'write' || k === 'comb') && !V.hand) continue; g.events?.emit?.('placard.beat', { k, tier: V.tier }); }
+    while (this.beat < BEATS.length && t >= BEATS[this.beat][1]) { const [k] = BEATS[this.beat++]; if ((k === 'write' || k === 'comb') && !V.hand) continue; g.events?.emit?.('placard.beat', { k, tier: V.tier, title: V.title, id: V.id }); }
     if (t >= T_END) { this.scene.remove(V.root); V.dispose(); this.active = null; this.frame.userData.overlayHidden = true; return; }
     this.frame_(V, t, dt, slot);
   }
