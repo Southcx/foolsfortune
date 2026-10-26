@@ -907,3 +907,5 @@ NEW:word-inside-the-face. **A tile's glyph is sized to the room its word leaves,
   inside the face at the least size (44 px), and a row that crowds a phone's thumbs folds to one tab before any tile shrinks under 44.
 NEW:instanced-by-capacity. **An instanced attribute is sized to the instances the mesh holds (`instanceMatrix.count`), never to `mesh.count`.**
   Count is how many draw now and may be 0 at setup; WebKit refuses a draw past an attribute's length where Chromium is silent.
+NEW:frame-shape-with-size. **The camera's aspect is set where the render size is set, and only there, after the size has settled.** A
+  boot path that skips a stage (the box room) or an event that comes before the new size (a phone turned) leaves the frame stretched.

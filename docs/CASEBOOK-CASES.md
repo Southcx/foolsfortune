@@ -3992,3 +3992,13 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   instances.
 - **Fix:** sized from `mesh.instanceMatrix.count` (the room), which every user of the frets now gets.
 - **Rule:** NEW:instanced-by-capacity
+
+### 2026-10-26 · A phone turned after loading kept the frame's shape it loaded in (the owner's iPhone, the box room; Petra)
+- **Seen:** loaded upright and turned flat (or the reverse), the box room drew the Courier squashed: the picture filled the screen but
+  kept the aspect of the orientation it loaded in.
+- **Cause:** the camera's aspect was set by a resize handler in boot/title.js, a stage the box room never runs; and where it ran it
+  read `innerWidth` at the event, which iOS may still give as the old size on a turn. The render size itself was already set by the
+  Presentation's own handler, 150 real ms after the last resize (render/present.js).
+- **Fix:** the camera's aspect is set in `Presentation.apply()` beside the render size, which also listens for `orientationchange` and the
+  visual viewport's resize; the title's handler is gone. Headless, the box loaded at 414 x 896 (0.462) and read 2.164 after the turn.
+- **Rule:** NEW:frame-shape-with-size

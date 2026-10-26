@@ -18,7 +18,7 @@ import { TitleScene } from '../title/scene.js';
 import { TitleUI } from '../title/ui.js';
 
 export async function bootTitle(game, made) {
-  const { save, renderer, camera, loader, bytes, clapG, clipPack, input, modalOpen, god, cursorFree, replays } = made;
+  const { save, renderer, loader, bytes, clapG, clipPack, input, modalOpen, god, cursorFree, replays } = made;
   // --- overlay / pointer lock -----------------------------------------------
   const overlay = document.getElementById('overlay');
   const overlayUp = () => overlay.style.display !== 'none' && !window.__game?.manual;
@@ -117,9 +117,6 @@ export async function bootTitle(game, made) {
     if (input.enabled && !input.locked && !play.guiOpen && !modalOpen() && !game.log?.typing && !cursorFree() && !game.reprogram?.open && !game.kilnUI?.open) input.requestLock();
   });
 
-  addEventListener('resize', () => {
-    camera.aspect = innerWidth / innerHeight;
-    camera.updateProjectionMatrix();
-  }); // (the render size itself is the Presentation's: render/present.js)
+  // (the render size and the camera's shape on a resize are the Presentation's: render/present.js)
   return { overlayUp, play };
 }

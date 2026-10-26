@@ -58,10 +58,11 @@ export class Presentation {
     this.dynLines = null; // (dynamic resolution's lines, under the setting's: render/graphics.js)
     this.scanT = 0;
     let wait = 0; // (a phone's keyboard or bar sliding fires a storm of resizes, each a new drawing buffer and the glow's targets: one apply, 150 real ms after the last)
-    addEventListener('resize', () => { clearTimeout(wait); wait = setTimeout(() => this.apply(), 150); });
+    const later = () => { clearTimeout(wait); wait = setTimeout(() => this.apply(), 150); };
+    addEventListener('resize', later); addEventListener('orientationchange', later); globalThis.visualViewport?.addEventListener?.('resize', later); // (a phone turned: iOS may give the old size with the first event, so the apply waits and reads it then)
   }
 
-  /** The render size, the upscale filter, the shadow map, and the shading of everything in the scene. */
+  /** The render size and the camera's shape, the upscale filter, the shadow map, and the shading of everything in the scene. */
   apply() {
     const r = this.renderer, V = T.visual;
     const set = RESOLUTIONS[V.resolution] ?? 480, lines = this.dynLines ? (set ? Math.min(set, this.dynLines) : this.dynLines) : set;
@@ -69,6 +70,7 @@ export class Presentation {
     const ratio = lines ? Math.min(dpr, lines / Math.min(innerWidth, innerHeight)) : dpr; // (the lines on the short side: a phone held upright draws as many pixels as held flat, and the overlay's type as sharp; a landscape window is as ever)
     r.setPixelRatio(ratio);
     r.setSize(innerWidth, innerHeight);
+    const cam = this.game.camera; if (cam?.isPerspectiveCamera) { cam.aspect = innerWidth / innerHeight; cam.updateProjectionMatrix(); } // (the frame's shape with its size, here only: the owner's phone turned after loading kept the shape it loaded in, 2026-10-26)
     r.domElement.style.imageRendering = V.upscale === 'pixel' ? 'pixelated' : 'auto';
     if (this.game.fx) this.game.fx.pixelRatio = ratio;
     const sr = V.shadowRes || 1024, sh = this.sun.shadow;
