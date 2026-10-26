@@ -57,6 +57,10 @@ export async function bootRenderer(made) {
   await fontsReady();
   const { canvas, context } = await liveContext(T.visual.antialias !== false);
   const renderer = new THREE.WebGLRenderer({ canvas, context });
+  // the first vertex as the provoking one: Apple's ANGLE on Metal emulates GL's last-vertex convention by rewriting index data, and a
+  // WebKit engineer advises the extension for good performance on Apple devices (WebKit bugs 286297 and 289601: contexts lost on iOS 18
+  // through that path). Nothing here is drawn flat, so the picture does not change.
+  try { const pv = context.getExtension('WEBGL_provoking_vertex'); pv?.provokingVertexWEBGL(pv.FIRST_VERTEX_CONVENTION_WEBGL); } catch { /* not offered: GL's way stands */ }
   renderer.debug.checkShaderErrors = !import.meta.env.PROD; // (the published build does not wait on each program's link log: a stall per program on a slow driver; the dev server still checks)
   renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
   renderer.setSize(innerWidth, innerHeight);

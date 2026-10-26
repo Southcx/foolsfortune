@@ -8,7 +8,9 @@
 //                    moments [[what, real s]] (the boot watch's moments after boot, the graphics lost and given back, each zone entered,
 //                    each shader program linked after the first frame and each frame over FIELD.longFrame real ms),
 //                    errors [[message, real s]] (the first few after boot), samples [{ s, fps, med, worst, geos, tex, programs, heap,
-//                    zone, areas, lines }], ended ('hidden' | 'left', s) }
+//                    zone, areas, lines }], ended ('hidden' | 'left', s),
+//                    firsts [{ s, what, in, zone, dry, f }] (at a loss, newest first: each material first drawn since play began),
+//                    frames { cols, rows } (at a loss: the last FIELD.frames frames' draws, vertices, new geometries and textures) }
 //   field.index    { ids }   the last FIELD.keep loads; an older report is deleted when a new one starts.
 // Written at the title, then on FIELD.every real seconds for the first five real minutes and on FIELD.later after, and when the page is
 // hidden (a phone may never come back to the tab); one write at a time. Nothing here when the store is absent (the dev server, a test,
@@ -24,7 +26,7 @@ import { now } from '../core/calendar.js';
 
 /** every / later: real s between writes, before and after the first five real minutes; keep: loads kept; samples, moments, errors: rows kept
  *  a report (the newest samples, the first moments and errors). */
-export const FIELD = { every: 30, later: 120, early: 300, keep: 30, samples: 40, moments: 80, errors: 8, longFrame: 300, firsts: 24 };
+export const FIELD = { every: 30, later: 120, early: 300, keep: 30, samples: 40, moments: 80, errors: 8, longFrame: 300, firsts: 60, frames: 30 };
 
 const rid = () => (globalThis.crypto?.randomUUID?.() || `${now()}${performance.now()}`).replace(/[^a-z0-9]/gi, '').slice(0, 12);
 const sec = () => Math.round(performance.now() / 100) / 10;
@@ -43,11 +45,11 @@ export class FieldReport {
     };
     // (the boot watch's moments after boot are this load's too)
     if (W?.moment) { const m = W.moment; W.moment = (name) => { this.moment(name); if (name === 'the dive into the world') this.watching = true; return m(name); }; }
-    game.events?.on?.('render.lost', (e) => { this.moment(`the graphics taken back${e?.why ? ` (${e.why})` : ''}`); this.moment(`drawn first just before: ${this.firsts.map(([w, s]) => `${w} @${s}`).join('; ')}`); this.write(true); });
+    game.events?.on?.('render.lost', (e) => { this.lost = true; this.moment(`the graphics taken back${e?.why ? ` (${e.why})` : ''}`); this.keepLast(); this.write(true); });
     // what the frame began drawing for the first time since play began (each material once, the warm-up's postage stamp aside): a draw that
     // stalls a phone's GPU shows here, the newest last (the owner's iPhone XR, v286: lost on turning the camera in the workshop with no
     // shader compiled and no slow frame in the 22 real s before)
-    this.firsts = []; this.drawn = new Set();
+    this.firsts = []; this.drawn = new Set(); this.ring = []; this.gl = renderer?.getContext?.() || null;
     const R = renderer, direct = R?.renderBufferDirect;
     // `?hide=a,b`: draws whose material or object name (or material type) holds one of the words are skipped, so a suspect can be tried
     // on the phone itself, a load each (the gate's bisection, never a player's setting)
@@ -56,10 +58,13 @@ export class FieldReport {
     const hidden = (m, o) => { const k = `${m.name} ${m.type} ${o?.name || ''}`.toLowerCase(); return hide.some((w) => k.includes(w)); };
     if (direct) R.renderBufferDirect = (camera, scene, geometry, material, object, group) => {
       if (hide.length && material && hidden(material, object)) return;
+      this.drawsNow = (this.drawsNow || 0) + 1; this.vertsNow = (this.vertsNow || 0) + (geometry?.index?.count ?? geometry?.attributes?.position?.count ?? 0) * (object?.isInstancedMesh ? object.count : 1);
       if (this.watching && material && !this.drawn.has(material.uuid)) {
         this.drawn.add(material.uuid);
         const n = geometry?.index?.count ?? geometry?.attributes?.position?.count ?? 0, inst = object?.count > 1 ? ` x${object.count}` : '';
-        this.firsts.push([`${material.name || material.type}/${object?.name || object?.type || '?'} v${n}${inst}`, sec()]);
+        let path = '', p = object?.parent; for (let d = 0; p && d < 4; d++, p = p.parent) if (p.name) path = `${p.name}/${path}`;
+        let z = object; while (z && z.userData?.zone === undefined) z = z.parent;
+        this.firsts.push({ s: sec(), what: `${material.name || material.type}/${object?.name || object?.type || '?'} v${n}${inst}`, in: path, zone: z?.userData?.zone ?? null, dry: !!geometry?.userData?.dry, f: this.frameNo });
         if (this.firsts.length > FIELD.firsts) this.firsts.shift();
       }
       return direct.call(R, camera, scene, geometry, material, object, group);
@@ -72,12 +77,30 @@ export class FieldReport {
     addEventListener('pagehide', () => { this.doc.ended = ['left', sec()]; this.write(true); });
   }
 
+  /** At a loss: the materials first drawn (newest first) and the last frames' work, into the report whole (FIELD.firsts, FIELD.frames). */
+  keepLast() {
+    this.doc.firsts = this.firsts.slice().reverse();
+    this.doc.frames = { cols: ['frame', 's', 'draws', 'vertices (indices x instances)', 'new geometries', 'new textures', 'ms'], rows: this.ring.slice() };
+  }
+
   moment(what) { if (this.doc.moments.length < FIELD.moments) this.doc.moments.push([String(what).slice(0, 240), sec()]); }
   error(what) { if (this.doc.errors.length < FIELD.errors) this.doc.errors.push([String(what).slice(0, 200), sec()]); }
 
   /** Each frame: its real length kept for the next sample; the first write once the cloud save holds the store. */
   frame(rawDt) {
     if (rawDt > 0 && rawDt < 2) this.frames.push(rawDt * 1000);
+    // the last frames' work, kept for a loss: draws, vertices, and what was made on the card since the frame before
+    const I = this.r?.info; this.frameNo = (this.frameNo || 0) + 1;
+    if (I && !this.lost) {
+      const m = I.memory, g0 = this.lastMem?.[0] ?? m.geometries, t0 = this.lastMem?.[1] ?? m.textures;
+      this.ring.push([this.frameNo, sec(), this.drawsNow || 0, this.vertsNow || 0, m.geometries - g0, m.textures - t0, Math.round(rawDt * 1000)]);
+      if (this.ring.length > FIELD.frames) this.ring.shift();
+      this.lastMem = [m.geometries, m.textures];
+    }
+    this.drawsNow = 0; this.vertsNow = 0;
+    // a GL error, once a real second (getError waits on the card: never every frame)
+    const now1 = performance.now();
+    if (this.gl && !this.lost && now1 - (this.errAt || 0) > 1000) { this.errAt = now1; const e = this.gl.getError(); if (e && !this.gl.isContextLost()) this.error(`a GL error 0x${e.toString(16)} in ${this.game.zones?.current ?? '?'}`); }
     const z = this.game.zones?.current ?? null; if (z !== this.zone) { this.zone = z; this.moment(`in ${z}`); } // (where it was, as it went)
     // the last things before a loss: each shader program linked after boot (by its material's name) and each long frame
     const P = this.r?.info?.programs;

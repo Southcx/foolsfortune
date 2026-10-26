@@ -42,6 +42,7 @@ import { TouchShell } from '../feedback/touchshell.js';
 import { trimShadows } from '../render/shadowtrim.js';
 import { installTouchControls } from '../ui/touch/index.js';
 import { prewarmEgregores } from '../vfx/opensea/egregorebodies.js';
+import { installFirstDraws } from '../render/firstdraws.js';
 
 const CASTER_SHADERS = import.meta.glob('../vfx/caster/*.js', { eager: true }); // (the caster shaders: each module's prewarm(game), compiled in the warm-up)
 
@@ -153,6 +154,7 @@ export async function bootWarmup(game, made) {
   game.zones.enabled = true; game.zones.t = 0;
   game.iconWarm?.warmAll(); // (the tools' and a kept save's pictures, under the loading screen: boot/iconwarm.js)
   game.zones.update(0); game.areas.settle(); // (the areas the warm-up drew and the camera is not in or beside let go again: render/areas.js)
+  game.firstDraws = installFirstDraws(game, renderer, { frameTarget: () => game.post.target }); // (a phone's first draws let in a few a frame from here on: render/firstdraws.js)
   mark('shaders');
   document.getElementById('loading').remove();
 }

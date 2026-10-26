@@ -9,7 +9,8 @@
 // SEAM.slice real ms (the garbage of one has a frame to be collected before the next), then the WARM-UP: the textures now in view that
 // the card has never had are uploaded a few MB a frame. While either runs under the plain cover the world is not drawn (`covering`:
 // boot/frame.js), so nothing is uploaded at once behind it; the hold's frames then draw the place before it is shown. A step that throws is said in the console and its steps dropped; past SEAM.most
-// real s what is left runs at once (never a cover that does not lift).
+// real s what is left runs at once (never a cover that does not lift). On a phone the place is drawn behind the cover all along, its
+// first draws a few a frame (render/firstdraws.js), and the hold lasts until none is waiting.
 //
 // Prior art: the console way of hiding a load inside a transition (Metroid Prime's doors and elevators, Jak and Daxter's streamed
 // world behind a fade, the RPG battle wipe), timed on the game's own clock so a playtest and a replay step through it the same.
@@ -65,7 +66,7 @@ export class Seam {
     } else if (J.phase === 'warm') {
       this.warm(J);
     } else if (J.phase === 'hold') {
-      if (--J.n <= 0) { this.lifted(J); if (J.wipe) { J.wipe.open(); this.job = null; } else { J.phase = 'back'; J.t = 0; } }
+      if (--J.n <= 0 && (!this.game.firstDraws?.pending || performance.now() - (J.start ?? 0) > SEAM.most * 1000)) { this.lifted(J); if (J.wipe) { J.wipe.open(); this.job = null; } else { J.phase = 'back'; J.t = 0; } }
     } else {
       J.t += dt; this.el.style.opacity = String(Math.max(0, 1 - J.t / J.back));
       if (J.t >= J.back) { this.el.style.opacity = '0'; this.job = null; }
