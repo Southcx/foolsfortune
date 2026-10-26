@@ -4053,3 +4053,22 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   Achievements row; Dovina's gate in progress/achievements.js: done while lent, nothing announced, no rank.up), the Codex's shelf
   showing them "DONE / lent". Measured headless: no glaze said over 70 frames of a DEBUG load; 712 of 712 done, no achievement line.
 - **Rule:** NEW:lent-is-silent
+
+### 2026-10-26 · The belt's pair and BLINK on the Solar Skiff (the owner's mobile round 1, via Petra)
+- **Seen:** riding the Solar Skiff at the Raceway on a phone, the cluster's top edge still carried LEND, DRAW and BLINK, none of which
+  can be done on the board.
+- **Cause (as measured):** ui/touch/actioncontext.js's `stripOf` and `beltPairOf` read the belt and the tool in hand, never the input
+  context; riding, the live contexts are { any, skiff } and every press of those tiles resolved to nothing.
+- **Fix:** both return nothing unless `game.actions.live()` has `foot`. Measured headless (XR landscape, the Raceway): on foot the pair
+  is SKIFF, SWAP, LEND, DRAW and BLINK; riding, only the top bar's MENU and PAUSE and the log's tab stand.
+- **Rule:** NEW:tile-asks-the-ctx
+
+### 2026-10-26 · The reading table not taking a finger (the owner: "input being offset or not properly registering when pressing and dragging")
+- **Seen:** on an iPhone the Pneuka Box's hand of tool cards could not be dragged onto MAIN or SUB, and a tap swapped a card in as the
+  sub at once.
+- **Cause (as measured):** ui/readingtable.js moved cards by HTML5 drag (`draggable`, `dataTransfer`), which iOS Safari never starts for
+  a finger; the only touch path left was the click, which is the mouse's pick.
+- **Fix:** a pointer that is not a mouse lifts a card on a tap (held, its preview shown) and drops it on the place tapped next, or
+  carries it by a pointer-event drag (the place found with `elementFromPoint`, a ghost under the finger); both say `drop` as the mouse's
+  drag did. The click a finger's lift makes is ignored.
+- **Rule:** NEW:touch-never-html5-drag

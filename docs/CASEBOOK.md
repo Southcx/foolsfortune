@@ -918,3 +918,7 @@ NEW:popup-waits-live-moment. **Nothing comes over the view while the player is s
   `game.liveMoment()` and waits.** A new timed mode adds its row there (core/livemoment.js); a pop-up's sound waits with its pop-up.
 NEW:lent-is-silent. **What DEBUG lends is never announced as earned.** A snapshot of what is owned is taken only once the mode is known,
   and again silently while a lend holds; a lend never writes the ledger.
+NEW:tile-asks-the-ctx. **A touch tile stands only where its press means something: it asks `game.actions.live()`, never the belt or the
+  tool alone.** A row that cannot be done in the live context is not drawn.
+NEW:touch-never-html5-drag. **Nothing a finger moves rides on HTML5 drag and drop.** iOS Safari never starts it for a touch; a drag is
+  pointer events (down, move, up) with the target found under the finger, and a tap-to-lift beside it.
