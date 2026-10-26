@@ -921,3 +921,7 @@ NEW:lent-is-silent. **What DEBUG lends is never announced as earned.** A snapsho
 NEW:aim-from-the-camera. **An assist that turns the view onto a target aims from the camera, not the body, whenever the shot's ray
   is the screen's middle.** An over-the-shoulder camera is a shoulder's width off the body; a touch assist never takes the aim from a
   finger that is turning the view.
+NEW:tile-asks-the-ctx. **A touch tile stands only where its press means something: it asks `game.actions.live()`, never the belt or the
+  tool alone.** A row that cannot be done in the live context is not drawn.
+NEW:touch-never-html5-drag. **Nothing a finger moves rides on HTML5 drag and drop.** iOS Safari never starts it for a touch; a drag is
+  pointer events (down, move, up) with the target found under the finger, and a tap-to-lift beside it.

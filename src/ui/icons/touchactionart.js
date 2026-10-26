@@ -3,6 +3,7 @@
 // footcontext.js says which stands when), 14 x 14 in the icons' hand (ui/icons/hand.js), spread into TOUCH_ART (touchart.js) as
 // 'touch.<id>'. Each is the verb's own picture; the word under it (Espada's, MOBILE.md 8.3) is the tile's, only where the glyph needs one.
 //   on foot     crouch  a body crouched, an arrow down      parry  a blow turned off an arc        blink  a body gone in a spark
+//               swap    the main's arrow out, the sub's back under it
 //               draw    a hilt out of its sheath, up        stow   a hilt into its sheath, down    lend   a hand passing a spark up
 //   psygun      psfire  the gun and its flash                psaim  the sights' ring               shell  a shell, its cap lit
 //               fan     three rounds fanned off the hammer   breath a breath held, its bar         chamber the cylinder, one chamber lit
@@ -134,6 +135,22 @@ export const TOUCH_ACTION_ART = {
     '..########....',
     '...######.....',
     '..............',
+  ],
+  swap: [
+    '..............',
+    '.........#....',
+    '.........##...',
+    '..##########..',
+    '..###########.',
+    '..##########..',
+    '.........##...',
+    '...+.....#....',
+    '..++..........',
+    '.++++++++++...',
+    '+++++++++++...',
+    '.++++++++++...',
+    '..++..........',
+    '...+..........',
   ],
   // ---- the psygun
   psfire: [

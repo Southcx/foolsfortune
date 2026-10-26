@@ -28,6 +28,9 @@
 //       preview: { id, as: 'main' | 'sub', rows: [{ what, from?, to, up? }], pair: { n, name, open, line } } | null,
 //       locked: bool }                                                    (a swap would be refused now: the positions dim, nothing lifts)
 //   T.on('hover', ({ id } | null))   T.on('pick', ({ id, button }))   T.on('drop', ({ id, as }))   (a hand card dropped on a position)
+//   On touch (a pointer not a mouse: HTML5 drag never fires for a finger on iOS) a card is tapped to lift it (held, its preview shown)
+//   and a place tapped (MAIN or SUB) to drop it there, or dragged by the finger onto a place (pointer events, the place found under it
+//   with elementFromPoint, a ghost of the tool under the finger); both say 'drop' as the mouse's drag does. The place decides main or sub.
 //   T.refuse(as)    (the seal pressed over 'main' or 'sub'; lifted after REFUSE.hold real s)
 //   RT_CLASSES.window / .tray / .slot / .book / .pane   (the Clay dress for the window's own parts: add the class, the look follows;
 //              .book carries its own heading (h4), .pane a list pane's rows (the FITTED pane))
@@ -109,6 +112,11 @@ const CSS = `
 .rt.locked .rt-t{cursor:not-allowed;filter:saturate(.6) brightness(.9)}
 .rt.locked .rt-main,.rt.locked .rt-subwrap{filter:saturate(.75)}
 .rt-drop{outline:2px dashed #ffd36a;outline-offset:6px}
+.rt-t{touch-action:none;-webkit-touch-callout:none;user-select:none;-webkit-user-select:none}
+.rt-t.held{box-shadow:0 0 0 2px #2a140c,0 0 0 4px #ffd36a,0 0 18px 4px rgba(255,211,106,.55),0 14px 22px rgba(0,0,0,.55)}
+.rt.holding .rt-main,.rt.holding .rt-subwrap{outline:2px dashed rgba(255,211,106,.7);outline-offset:6px}
+.rt-ghost{position:fixed;left:0;top:0;z-index:60;pointer-events:none;width:72px;height:72px;margin:-36px 0 0 -36px;border-radius:10px;
+  background:radial-gradient(circle at 40% 35%,rgba(255,243,208,.95),rgba(214,170,104,.85));box-shadow:0 0 0 2px #ffd36a,0 10px 18px rgba(0,0,0,.5);display:grid;place-items:center}
 .rt-preview{position:absolute;left:372px;top:470px;width:186px;padding:9px 10px;border-radius:4px;font-size:11px;line-height:1.45;color:#efe6d2;
   background:linear-gradient(180deg,#3a2016,#2a140c);box-shadow:0 0 0 1px rgba(255,211,106,.5),0 8px 18px rgba(0,0,0,.5)}
 .rt-preview h4{margin:0 0 5px;font:700 10px/1 Georgia,serif;letter-spacing:.2em;color:#ffd36a;text-transform:uppercase}
@@ -136,6 +144,7 @@ function toolArt(game, id, px) {
 export class ReadingTable {
   constructor(game) {
     this.game = game; this.handlers = {}; this.state = null; this.faces = new Map(); this.sealUrl = null; this.sealKey = '';
+    this.held = null; this.finger = null; this.tapAt = -1e9; // (touch: the card lifted by a tap, the finger on a card, when the last finger lifted)
     style();
     this.el = typeof document === 'undefined' ? null : make('div', 'rt');
   }
@@ -163,6 +172,8 @@ export class ReadingTable {
   draw(state) {
     if (!this.el) return; this.state = state;
     const el = this.el; el.replaceChildren(); el.classList.toggle('locked', !!state.locked);
+    if (this.held && !(state.shelf || []).some((t) => t.id === this.held)) this.held = null; // (worn now, or gone: nothing held)
+    el.classList.toggle('holding', !!this.held);
     el.append(make('div', 'rt-altar'), make('div', 'rt-thread'));
     const pos = (text, l, t) => { const p = make('span', 'rt-pos', text); p.style.left = `${l}px`; p.style.top = `${t}px`; return p; };
     el.append(pos('MAIN', 58, 128), pos('SUB, CROSSED', 300, 414), pos('THE PAIR', 398, 294));
@@ -223,16 +234,17 @@ export class ReadingTable {
   hand(shelf, lifted) {
     const h = make('div', 'rt-hand'), n = shelf.length, mid = (n - 1) / 2;
     shelf.forEach((t, i) => {
-      const c = make('div', `rt-t${t.id === lifted ? ' lift' : ''}`), k = i - mid;
+      const c = make('div', `rt-t${t.id === lifted || t.id === this.held ? ' lift' : ''}${t.id === this.held ? ' held' : ''}`), k = i - mid;
       c.style.left = `${8 + i * 62}px`;
-      c.style.transform = t.id === lifted ? 'translateY(-34px)' : `rotate(${k * 7}deg) translateY(${Math.abs(k) * 4}px)`;
+      c.style.transform = t.id === lifted || t.id === this.held ? 'translateY(-34px)' : `rotate(${k * 7}deg) translateY(${Math.abs(k) * 4}px)`;
       const art = make('div', 'art'); art.append(toolArt(this.game, t.id, 3));
       c.append(make('div', 'nm', t.name), art, make('div', 'gl', `R · ${t.verb}`));
       if (t.note) c.append(make('div', 'gl', t.note));
       c.draggable = !this.state?.locked;
-      c.addEventListener('pointerenter', () => this.emit('hover', { id: t.id }));
-      c.addEventListener('pointerleave', () => this.emit('hover', null));
-      c.addEventListener('click', (e) => this.emit('pick', { id: t.id, button: e.button, shift: e.shiftKey }));
+      c.addEventListener('pointerenter', (e) => { if (e.pointerType === 'mouse') this.emit('hover', { id: t.id }); });
+      c.addEventListener('pointerleave', (e) => { if (e.pointerType === 'mouse') this.emit('hover', null); });
+      c.addEventListener('pointerdown', (e) => this.fingerDown(e, t.id));
+      c.addEventListener('click', (e) => { if (this.touched()) return; this.emit('pick', { id: t.id, button: e.button, shift: e.shiftKey }); });
       c.addEventListener('dragstart', (e) => { e.dataTransfer?.setData('text/plain', t.id); this.dragging = t.id; });
       c.addEventListener('dragend', () => { this.dragging = null; for (const d of this.el.querySelectorAll('.rt-drop')) d.classList.remove('rt-drop'); });
       h.append(c);
@@ -240,7 +252,46 @@ export class ReadingTable {
     return h;
   }
 
+  /** The click a finger's lift makes is the finger's own (it lifted or dropped already). */
+  touched() { return performance.now() - this.tapAt < 700; }
+
+  /** A finger down on a hand card: a tap lifts it (or lowers it again), a drag carries it to a place. */
+  fingerDown(e, id) {
+    if (e.pointerType === 'mouse' || this.finger) return;
+    e.preventDefault();
+    const F = (this.finger = { id, pid: e.pointerId, x: e.clientX, y: e.clientY, moved: false, ghost: null, over: null });
+    const move = (ev) => {
+      if (ev.pointerId !== F.pid) return;
+      if (!F.moved && Math.hypot(ev.clientX - F.x, ev.clientY - F.y) < 10) return;
+      ev.preventDefault();
+      if (!F.moved) { F.moved = true; F.ghost = make('div', 'rt-ghost'); F.ghost.append(toolArt(this.game, id, 3)); document.body.append(F.ghost); }
+      F.ghost.style.transform = `translate(${ev.clientX}px, ${ev.clientY}px)`;
+      const at = this.placeAt(ev.clientX, ev.clientY);
+      if (at?.el !== F.over) { F.over?.classList.remove('rt-drop'); F.over = at?.el || null; F.over?.classList.add('rt-drop'); }
+    };
+    const end = (ev) => {
+      if (ev.pointerId !== F.pid) return;
+      document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', end); document.removeEventListener('pointercancel', end);
+      this.finger = null; this.tapAt = performance.now(); F.ghost?.remove(); F.over?.classList.remove('rt-drop');
+      if (ev.type === 'pointercancel') return;
+      if (F.moved) { const at = this.placeAt(ev.clientX, ev.clientY); if (at) this.dropHeld(id, at.as); return; }
+      this.held = this.held === id ? null : id; // (a tap: lifted, or lowered again)
+      this.emit('hover', this.held ? { id } : null);
+      if (this.state) this.draw(this.state);
+    };
+    document.addEventListener('pointermove', move, { passive: false }); document.addEventListener('pointerup', end); document.addEventListener('pointercancel', end);
+  }
+
+  /** The place (MAIN or SUB) under a point on the page, if any. */
+  placeAt(x, y) { const el = document.elementFromPoint(x, y)?.closest?.('[data-as]'); return el && this.el?.contains(el) ? { el, as: el.dataset.as } : null; }
+
+  /** A card set down on a place: said as the mouse's drop is, and nothing held after. */
+  dropHeld(id, as) {
+    this.held = null; this.emit('drop', { id, as }); this.emit('hover', null);
+  }
+
   dropTarget(el, as) {
+    el.addEventListener('click', () => { if (this.held) this.dropHeld(this.held, as); }); // (touch: a card lifted, the place tapped)
     el.addEventListener('dragover', (e) => { if (!this.dragging) return; e.preventDefault(); el.classList.add('rt-drop'); });
     el.addEventListener('dragleave', () => el.classList.remove('rt-drop'));
     el.addEventListener('drop', (e) => { e.preventDefault(); el.classList.remove('rt-drop'); const id = this.dragging || e.dataTransfer?.getData('text/plain'); if (id) this.emit('drop', { id, as }); });
