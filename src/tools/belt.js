@@ -25,7 +25,9 @@
 //
 //   game.belt.add(tool)   game.belt.get(id)   game.belt.main / .sub (ids)   game.belt.pair (pairOf(main, sub): the card)
 //   game.belt.equip(id, 'main' | 'sub', { quiet }) -> true | false (refused: the log says why)   game.belt.mayEquip(id) -> null | the reason
-//   game.belt.isWorn(id) (main or sub)   game.belt.isMain(id)   game.belt.keys(input) (X and R, once a frame on foot: main.js; event tool.lend)
+//   game.belt.isWorn(id) (main or sub)   game.belt.isMain(id)   game.belt.keys(input) (X, R and H, once a frame on foot: main.js; event tool.lend)
+//   game.belt.swap() -> true | false   the main and the sub change places (H; on touch the belt's pair's SWAP): the new main comes out if the
+//   old one was out, and the swap rule may refuse it (the log says why)
 //   game.belt.inHand   game.belt.mayDraw(tool)   game.belt.draw(tool)   game.belt.hands (Dexterity: every draw and stow times this)
 //   game.belt.allows('kick')   game.belt.others(tool)   game.belt.hipSide(id)   game.belt.hideWorn()   game.belt.only (the Anim Lab's)
 //   game.belt.mainHand ('R' | 'L': the hand the main is held in, drawn)   game.belt.freeHand (the other: where a lent verb's gesture goes)
@@ -34,6 +36,7 @@ import { TOOL_IDS, START, pairOf, swapRefusal } from '../progress/toolpairs.js';
 
 /** X draws and stows the main; R is the sub's verb, on the press (PNEUKA-BOX.md 5: Gulp is a parry, so R can never wait for its release). */
 export const DRAW_KEY = 'KeyX', LEND_KEY = 'KeyR';
+export const SWAP_KEY = 'KeyH'; // (the main and the sub change places: the owner, 2026-10-26, "a hotkey and button for both desktop and mobile that allows swapping between your Main and Sub tool")
 /** Which hip each hip tool hangs at by choice (R: their right). Two worn on the same side: the one first in the belt's order (TOOL_IDS)
  *  keeps it, the other goes to the other hip, its holster mirrored (the owner, 2026-10-06). */
 export const HIP_SIDE = { veritome: 'R', soulbrush: 'L', crucibelle: 'L' };
@@ -80,6 +83,16 @@ export class ToolBelt {
     return true;
   }
 
+  /** The main and the sub change places; the new main drawn if the old one was in the hands. */
+  swap() {
+    if (!this.main || !this.sub) return false;
+    const was = this.get(this.main), out = !!(was && (was.wants || was.drawT > 0.02));
+    if (!this.equip(this.sub, 'main')) return false;
+    const m = this.get(this.main), busy = !!this.game.techs?.active?.handsBusy || !!this.game.techs?.get?.('carry')?.item;
+    if (out && m && !busy) this.draw(m);
+    return true;
+  }
+
   /** X and R, read once a frame while the Courier is on foot and theirs (main.js, before the psygun reads its own keys): X draws the main
    *  or puts away whatever is out; R lends the sub's verb. Both hands taken (a ladder, a carry), lying down, a window open: neither. */
   keys(inp) {
@@ -92,6 +105,7 @@ export class ToolBelt {
       else if (m && !busy) this.draw(m); // (anything else still going back, an old main just set aside, is put away by the draw)
       else this.inHand?.stow();
     }
+    if (inp.wasPressed(SWAP_KEY)) this.swap();
     if (inp.wasPressed(LEND_KEY) && !busy) {
       const t = this.get(this.sub);
       if (t?.lend?.()) this.game.events?.emit('tool.lend', { tool: t.id, main: this.main, by: 'courier' }); // (each verb says what it did by its own event: shot.fire, hook.fire, flash.fire ...)

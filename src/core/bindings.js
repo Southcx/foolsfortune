@@ -39,6 +39,7 @@ export const ACTIONS = [
   { id: 'use',      keys: ['KeyF'],       pad: 'X',     touch: 'use',        ctx: 'foot', how: 'hold' },  // (shown only with a chevron; held: the push)
   { id: 'draw',     keys: ['KeyX'],       pad: 'Y',     touch: 'tool',       ctx: 'foot', how: 'tap' },   // (draw / stow the main)
   { id: 'lend',     keys: ['KeyR'],       pad: 'RS',    touch: 'lend',       ctx: 'foot', how: 'tap' },   // (the sub's verb; a parry for Gulp: never waits for release)
+  { id: 'swap',     keys: ['KeyH'],                     touch: 'swap',       ctx: 'foot', how: 'tap' },   // (the main and the sub change places: tools/belt.js swap; touch: the belt's pair's SWAP tile, Calissa's)
   { id: 'primary',  mouse: 'Mouse0',      pad: 'RT',    touch: 'fire',       ctx: 'foot', how: 'hold' },  // (the tool's LMB; the carry's throw. M3 per tool)
   { id: 'secondary', mouse: 'Mouse2',     pad: 'LT',    touch: 'aim',        ctx: 'foot', how: 'hold' },  // (the tool's RMB. M3 per tool)
   { id: 'parry',    keys: ['KeyV'],       pad: 'RB',    touch: 'parry',      ctx: 'foot', how: 'tap' },   // (the kick with nothing in hand, once learned)

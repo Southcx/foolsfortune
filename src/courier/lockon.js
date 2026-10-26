@@ -16,7 +16,12 @@
 //   roly-polies: world/testroom/), added by the room that owns it; its lock is never counted (`lock.on { training }`)
 // ON TOUCH (docs/plans/MOBILE.md 8.9: how a thumb aims, every phone action game's aim assist; a setting, `camera.lockAuto`, never a knack):
 // with a tool drawn, the lock takes the nearest foe in front by itself (never a pot), every LOCK_AUTO.every real s while it holds none;
-// let go by hand, it waits LOCK_AUTO.hold real s before it takes one again.
+// let go by hand, it waits LOCK_AUTO.hold real s before it takes one again. A finger turning the view is aiming by hand: the lock takes
+// nothing while it does and for LOCK_AUTO.quiet real s after, and a drag of LOCK_AUTO.away px on a held lock lets it go (look away to let
+// go: the owner, 2026-10-26, "psygun aiming gets disrupted when automatic lock-on occurs, and there's no easy way to disengage").
+// THE GUN ON THE LOCK: with the psygun drawn the camera is turned so the screen's middle (the crosshair, the shot's ray) is on the
+// target, from the camera itself; turned from the Courier's eye, the over-the-shoulder camera held the target a shoulder's width left of
+// the crosshair and the shots went right of it (the owner's phone, v297).
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { Reticle } from '../tools/sondelass/angling/reticle.js';
@@ -26,16 +31,18 @@ import { T } from '../core/config.js';
 
 const RANGE = 18, KEEP = 26, GOLD = 0xffd76a;
 /** every: real s between the touch lock's looks for a foe; hold: real s it waits after the lock was let go by hand. */
-export const LOCK_AUTO = { every: 0.3, hold: 3 };
+/** quiet: real s after a finger last turned the view before it may take one; away: px (of the view's turn, input.dx) a drag on a held
+ *  lock runs up, fading at `fade` a real s, to let it go. */
+export const LOCK_AUTO = { every: 0.3, hold: 3, quiet: 0.8, away: 90, fade: 4 };
 const wrap = (a) => Math.atan2(Math.sin(a), Math.cos(a));
-const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _f = new THREE.Vector3(), _e = new THREE.Vector3();
+const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _f = new THREE.Vector3(), _e = new THREE.Vector3(), _q = new THREE.Quaternion();
 
 export class LockOn {
   constructor(game) {
     this.game = game;
     this.target = null;
     this.reticle = new Reticle(game.scene, { mind: true }); // (the Mind's: black labradorite, docs/ART.md precept 3)
-    this.flickCool = 0; this.blocked = 0; this.losT = 0; this.t = 0; this.autoWait = 0;
+    this.flickCool = 0; this.blocked = 0; this.losT = 0; this.t = 0; this.autoWait = 0; this.dragged = 0; // (dragged: the touch's look away, run up)
     this.assist = true;
     this.extra = new Set(); // (lock targets added by their owners: `add`)
     game.player.lookScale = game.player.lookScale || { lock: 1, blade: 1 };
@@ -166,7 +173,13 @@ export class LockOn {
     this.t += dt;
     this.flickCool -= dt;
     const t = this.target;
-    if (!t) { this.reticle.hide(); this.reticle.update(dt, g.camera); P.lookScale.lock = 1; this.autoLock(dt); return; }
+    const touch = g.input?.device === 'touch', turned = touch ? Math.hypot(inp.dx || 0, inp.dy || 0) : 0; // (a finger turning the view: aiming by hand)
+    if (!t) {
+      this.reticle.hide(); this.reticle.update(dt, g.camera); P.lookScale.lock = 1; this.dragged = 0;
+      if (turned > 0) this.autoWait = Math.max(this.autoWait, LOCK_AUTO.quiet); // (never taken out from under an aim)
+      this.autoLock(dt); return;
+    }
+    if (touch) { this.dragged = this.dragged * Math.exp(-dt * LOCK_AUTO.fade) + turned; if (this.dragged > LOCK_AUTO.away) { this.dragged = 0; this.release(); this.reticle.update(dt, g.camera); return; } } // (looked away: let go)
     if (!this.alive(t)) { this.release('gone'); this.reticle.update(dt, g.camera); return; }
     this.pointOf(t, _a);
     const dist = _a.distanceTo(P.pos);
@@ -177,16 +190,24 @@ export class LockOn {
     // the camera does the work: it keeps the target in the middle, a little from above; the mouse is quiet
     this.shownOf(t, _a);
     if (this.assist) {
-      const eye = _b.set(P.renderPos.x, P.renderPos.y + 1.3, P.renderPos.z);
+      const gun = g.belt?.inHand?.id === 'psygun' && !P.fp; // (the gun on the lock: the crosshair on the target, from the camera)
+      const eye = gun ? g.camera.getWorldPosition(_b) : _b.set(P.renderPos.x, P.renderPos.y + 1.3, P.renderPos.z);
       const to = _f.copy(_a).sub(eye);
-      const yawT = Math.atan2(to.x, to.z), pitchT = THREE.MathUtils.clamp(Math.atan2(to.y, Math.hypot(to.x, to.z)) * 0.7 - 0.1, -0.5, 0.55);
-      const k = 1 - Math.exp(-dt * 5.5);
-      P.yaw += wrap(yawT - P.yaw) * k;
-      P.pitch += (pitchT - P.pitch) * k * 0.7;
+      const yawTo = Math.atan2(to.x, to.z), pitchTo = Math.atan2(to.y, Math.hypot(to.x, to.z));
+      if (gun) { // (the camera's own forward turned onto the target: whatever offsets the rig adds to the Courier's yaw and pitch)
+        const f = _e.set(0, 0, -1).applyQuaternion(g.camera.getWorldQuaternion(_q));
+        const k = 1 - Math.exp(-dt * 9);
+        P.yaw += wrap(yawTo - Math.atan2(f.x, f.z)) * k;
+        P.pitch = THREE.MathUtils.clamp(P.pitch + (pitchTo - Math.atan2(f.y, Math.hypot(f.x, f.z))) * k, -1.2, 1.2);
+      } else {
+        const pitchT = THREE.MathUtils.clamp(pitchTo * 0.7 - 0.1, -0.5, 0.55), k = 1 - Math.exp(-dt * 5.5);
+        P.yaw += wrap(yawTo - P.yaw) * k;
+        P.pitch += (pitchT - P.pitch) * k * 0.7;
+      }
       P.lookScale.lock = 0.2;
     }
     // a hard flick moves the lock
-    if (this.flickCool <= 0 && Math.abs(inp.dx) > 90 && P.lookScale.blade !== 0) { this.flickCool = 0.45; this.cycle(inp.dx > 0 ? 1 : -1); }
+    if (!touch && this.flickCool <= 0 && Math.abs(inp.dx) > 90 && P.lookScale.blade !== 0) { this.flickCool = 0.45; this.cycle(inp.dx > 0 ? 1 : -1); }
     if (inp.wheel && this.flickCool <= 0) { this.flickCool = 0.3; this.cycle(inp.wheel > 0 ? 1 : -1); }
     const r = t.type === 'clapper' ? 0.6 : t.type === 'creature' ? Math.max(0.6, (t.ref.radius ?? 0.5) * 1.6) : Math.max(0.5, (t.ref.P?.rMax ?? 0.3) * 2.2);
     this.reticle.set({ pos: _a, size: r, color: GOLD, icon: 'none', lock: 1, stam: 0 });

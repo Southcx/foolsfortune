@@ -918,3 +918,6 @@ NEW:popup-waits-live-moment. **Nothing comes over the view while the player is s
   `game.liveMoment()` and waits.** A new timed mode adds its row there (core/livemoment.js); a pop-up's sound waits with its pop-up.
 NEW:lent-is-silent. **What DEBUG lends is never announced as earned.** A snapshot of what is owned is taken only once the mode is known,
   and again silently while a lend holds; a lend never writes the ledger.
+NEW:aim-from-the-camera. **An assist that turns the view onto a target aims from the camera, not the body, whenever the shot's ray
+  is the screen's middle.** An over-the-shoulder camera is a shoulder's width off the body; a touch assist never takes the aim from a
+  finger that is turning the view.

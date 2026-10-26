@@ -4053,3 +4053,16 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   Achievements row; Dovina's gate in progress/achievements.js: done while lent, nothing announced, no rank.up), the Codex's shelf
   showing them "DONE / lent". Measured headless: no glaze said over 70 frames of a DEBUG load; 712 of 712 done, no achievement line.
 - **Rule:** NEW:lent-is-silent
+
+### 2026-10-26 · The lock-on held the target off the crosshair, and the touch lock took the aim (the owner's iPhone XR, v297; Petra)
+- **Seen:** "In lock-on, the reticle is offset right from the target, making most shots miss"; "Psygun aiming gets disrupted when
+  automatic lock-on occurs, and there's no easy way to disengage lock-on."
+- **Cause (as read):** courier/lockon.js turned the view toward the target from the Courier's eye (renderPos + 1.3 m), but the camera
+  stands a shoulder's width to the right and looks along the same yaw, and the psygun shoots down the screen's middle: the target sat
+  left of the crosshair, the shots right of it, by the shoulder's offset. Its pitch was also damped (x 0.7 - 0.1) for the melee framing.
+  On touch the auto lock took the nearest foe every 0.3 real s whatever the look thumb was doing, and a held lock had no touch release
+  (the flick cycled targets instead).
+- **Fix:** with the psygun drawn in the third person the assist aims from the camera's own position, full pitch, a little faster (9 a
+  real s); a finger turning the view keeps the auto lock off for 0.8 real s after it lifts, and a look-away drag of 90 px (fading at 4 a
+  real s) lets a held lock go; the flick's cycle is the desk's only. The melee framing is as it was.
+- **Rule:** NEW:aim-from-the-camera
