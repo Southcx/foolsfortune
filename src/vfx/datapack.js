@@ -41,7 +41,7 @@ export function dataPackTexture(src, { size = null, onError = null } = {}) {
       img.data[o] = px[i]; img.data[o + 1] = px[i + 1]; img.data[o + 2] = px[i + 2]; img.data[o + 3] = px[j];
     }
     while (size && img.width > size && img.width > 1) img = halve(img.data, img.width, img.height);
-    t.image = img; t.needsUpdate = true;
+    t.dispose(); t.image = img; t.needsUpdate = true; // (the 1x1 stand-in's storage let go first: three allocates a DataTexture's storage once (texStorage2D), so a stand-in drawn before the load would hold it at 1x1 for good, Petra's probe, GL error 1281)
   };
   im.onerror = (e) => (onError ? onError(e) : console.warn('dataPackTexture: did not load', e));
   im.src = src;

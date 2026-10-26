@@ -4026,5 +4026,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** no browser is asked to keep an alpha as data any more. The packs (liquid 1 and 2, the garden's ground pack) are saved opaque,
   two halves wide, the fourth channel on the right (scripts/datapack.py, from the bakes); vfx/datapack.js draws one into a canvas, reads
   the bytes back and joins them into an RGBA DataTexture, averaging two by two for a phone's tier. Read back in Chromium: byte-exact
-  against the old packs (each channel's sum and a position hash).
+  against the old packs (each channel's sum and a position hash). At the gate (Petra): the 1x1 stand-in, once drawn before the load,
+  held its immutable storage (texStorage2D) and the 512 upload failed (GL 1281, grey for good); the texture is disposed before its image
+  is set. Measured by Petra in Playwright's WebKit: the joined bytes match Chromium's.
 - **Rule:** NEW:data-never-in-alpha
