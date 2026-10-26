@@ -50,9 +50,21 @@ import { installTouchControls } from '../ui/touch/index.js';
 import { TouchShell } from '../feedback/touchshell.js';
 import { HudLayout } from '../ui/hudlayout.js';
 import { BUILD } from '../core/progress.js';
+import { makeWaterMaterial, waterGeometry } from '../vfx/water.js';
+import { SKY_GLSL } from '../vfx/sky.js';
+import { liquidTexture, liquidTexture2, causticTexture } from '../vfx/liquid.js';
 
 /** The box's room: 20 m a side and 5 m high round the Courier's spawn, a pillar and a ledge to move against. */
 export const BOX = { at: [0, 0, -11.5], w: 20, h: 5, wall: 0.4, floor: 0xb8875f, walls: 0xd9b48c, prop: 0x8a5a3c };
+/** The water test (the owner's v289 field reports: the liquid library's code, vfx/liquid.js, was drawn for the first time 0.1 to 0.5 real
+ *  s before each of the three losses, and the Raceway's v287 loss came after the crude sea's, which shares it): two pools behind the
+ *  spawn, each drawn only once its pad is stood on, so the report's first draws say which one the graphics went after. A, the left pad
+ *  as you face them: the game's water with its three `textureGrad` taps read plainly and its textures without anisotropic filtering;
+ *  B, the right pad: the game's water as it is. `at` is metres from the box's middle: the pool's centre, its pad 4 m nearer. */
+export const BOX_POOLS = [
+  { id: 'A', name: 'box-water-plain', at: [-5, -6.5], plain: true, pad: 0x7fb2d9 },
+  { id: 'B', name: 'box-water-game', at: [5, -6.5], plain: false, pad: 0x2f9e8f },
+];
 const FIXED = 1 / 60;
 const CAP = 1000 / 30 - 3; // (a phone's frame at 30 a real second, as the game's: boot/frame.js)
 
@@ -63,7 +75,35 @@ function buildBox(level) {
   for (const [dx, dz, sx, sz] of [[0, -half, w, wall], [0, half, w, wall], [-half, 0, wall, w], [half, 0, wall, w]]) level.box([x + dx, y + h / 2, z + dz], [sx, h, sz], BOX.walls);
   level.box([x + 4, y + 1.5, z + 4], [1.2, 3, 1.2], BOX.prop); // (a pillar: wallrun, latch)
   level.box([x - 5, y + 0.6, z + 5], [4, 1.2, 2], BOX.prop); // (a ledge: mantle, hang)
+  for (const p of BOX_POOLS) level.box([x + p.at[0], y + 0.01, z + p.at[1] + 4], [1.4, 0.02, 1.4], p.pad, { outline: false, collide: false }); // (the pools' pads)
   level.finalizeStatic();
+}
+
+/** The sky the water reflects, in place of the game's painted one (drawn before the water in the game, so not what is tested): a small
+ *  gradient with the sky's own `skyUv`. */
+function skyStandIn() {
+  const w = 4, h = 16, d = new Uint8Array(w * h * 4);
+  for (let j = 0; j < h; j++) for (let i = 0; i < w; i++) { const k = j / (h - 1), o = (j * w + i) * 4; d[o] = 110 + 110 * k; d[o + 1] = 150 + 80 * k; d[o + 2] = 200 + 50 * k; d[o + 3] = 255; }
+  const texture = new THREE.DataTexture(d, w, h); texture.magFilter = texture.minFilter = THREE.LinearFilter; texture.needsUpdate = true;
+  return { texture, GLSL: SKY_GLSL };
+}
+
+/** One of BOX_POOLS made and shown: the game's water material (vfx/water.js) on a 6 by 4 m plane, 1.5 m deep to its painted floor; A's
+ *  taps made plain. Made when its pad is first stood on, so its first draw is that moment's. */
+function makePool(game, sky, p) {
+  const [x, y, z] = BOX.at, cx = x + p.at[0], cz = z + p.at[1];
+  const v = { x0: cx - 3, x1: cx + 3, z0: cz - 2, z1: cz + 2, surface: y + 0.03, bottom: y - 1.5 };
+  const mat = makeWaterMaterial(sky, 'water'); mat.name = p.name;
+  if (p.plain) {
+    let n = 0;
+    mat.fragmentShader = mat.fragmentShader.replace(/textureGrad\((\w+), ([^,]+), [^)]*\)/g, (m, tex, uv) => { n++; return `texture2D(${tex}, ${uv})`; });
+    for (const k of ['uLiq', 'uLiq2', 'uLiqC']) { const t = mat.uniforms[k]?.value; if (t) { t.anisotropy = 1; t.needsUpdate = true; } } // (the material's own copies: merge cloned them)
+    game.fieldReport?.moment(`pool ${p.id}: ${n} textureGrad taps made plain, anisotropy 1`);
+  }
+  const mesh = new THREE.Mesh(waterGeometry(v), mat); mesh.name = p.name; mesh.position.set(cx, v.surface, cz); mesh.renderOrder = 2;
+  game.scene.add(mesh);
+  game.fieldReport?.moment(`pool ${p.id} shown (${p.name})`);
+  return mesh;
 }
 
 /** The box's boot, as main.js's for the game: the timings (`window.__boot`), the boot watch's stages and its failure. */
@@ -120,6 +160,7 @@ async function bootBox(made) {
   installTouchControls(game);
   game.touchShell = new TouchShell(game);
   game.fieldReport = new FieldReport(game, { renderer, cloud });
+  game.fieldReport.watching = true; // (first draws kept from the start: the box has no title's dive to begin them)
   game.firstDraws = installFirstDraws(game, renderer, { frameTarget: () => game.post.target });
   try { await renderer.compileAsync(scene, camera); } catch { /* compiled at the first frame instead */ }
   document.getElementById('loading')?.remove();
@@ -139,6 +180,9 @@ function boxFrame(game, made) {
   const report = (e) => { const m = `${e?.message || e}`; if (errors.has(m)) return; errors.add(m); console.error(e); game.fieldReport?.error(m); };
   addEventListener('error', (ev) => report(ev.error || ev.message));
   const ads = 0; // (the psygun is never aimed in: its update is the game's, not run here)
+  const sky = skyStandIn(), pools = new Map(); // (BOX_POOLS shown so far, by id)
+  liquidTexture(); liquidTexture2(); causticTexture(); // (the liquid library's textures loaded now, as the game's world loads them at boot: a pool's first draw finds them ready)
+  const padAt = (p) => [BOX.at[0] + p.at[0], BOX.at[2] + p.at[1] + 4];
   function tick(dt) {
     game.touch.update(); game.pad.update(dt);
     game.rawDt = dt;
@@ -181,6 +225,8 @@ function boxFrame(game, made) {
     game.fieldReport?.frame(dt);
     game.zones.update(dt); game.lights.update(dt); game.present.update(dt);
     game.courierSquash.press(dt, player);
+    for (const p of BOX_POOLS) { const [px, pz] = padAt(p); if (!pools.has(p.id) && player.grounded && Math.abs(player.pos.x - px) < 0.7 && Math.abs(player.pos.z - pz) < 0.7) pools.set(p.id, makePool(game, sky, p)); }
+    for (const m of pools.values()) m.material.uniforms.uTime.value += dt;
     input.endFrame();
   }
   function frame(now) {
