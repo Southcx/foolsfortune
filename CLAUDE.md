@@ -76,6 +76,10 @@ Build it as a modular piece with a small interface, not a one-off. Free assets o
   the body or the world, the overlay, a sound, and the log when it changes.
 - **Ambition first, cost after** (the owner, 2026-10-15): a look is built to its target and measured at the gate (`npm run perf`); a
   cut comes from a measurement, never before one. Each art pass adds a layer, judged against the style bible, not against what exists.
+- **The desk's look is never cut for the phone** (the owner, 2026-10-26: "I just don't want to gut a bunch of shaders and start impacting
+  the quality of the desktop client"). A fix that is a net good on both (less memory, less garbage, a load in slices) is shared; one that
+  lowers a look (a shader made simpler, a texture smaller, a pass dropped) goes behind the phone's tier or `machine.mobile`, the desk's
+  look as it was.
 - **Raku's tables** (the owner, 2026-10-15) were the overlay's first case: the rules, the how-tos, rolling numbers and slot reels at a
   seat (`docs/plans/CASINO-CLARITY.md`). What happens there still goes to the log too.
 - **World marks carry no words**: glyph pops (`vfx/glyphs.js`), the interact chevron, the lock-on reticle, the letterbox, the
