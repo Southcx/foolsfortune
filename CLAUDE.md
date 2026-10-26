@@ -119,6 +119,8 @@ Build it as a modular piece with a small interface, not a one-off. Free assets o
   **No new checks for a mechanic in flux** (the list below); a check is written once the owner calls it settled, or for a crash, a save
   loss or a bug the owner reported. A sweep check that fails on a mechanic in flux is updated or deleted, never fixed around.
   **In flux now** (the owner edits this line): the Emocean's rail and crossing; the Spirit Garden; the Great Dunemaw's fight.
+- **QAIS tests are for the owner's long sessions** (the owner, 2026-10-26): a quick back-and-forth (the phone's rendering now, or any
+  build that crashes within a minute) is asked and answered in chat, with no QAIS test; QAIS tests come back once the build holds.
 - **A debug chest beside every feature sent for a test session** (the owner, 2026-10-08; `docs/plans/DEBUG-CHESTS.md`): what its QAIS
   tests need (items and cubes, never state), within a few metres of the thing, in the magenta-and-black missing-texture checker so it
   is never mistaken for the game's; the asking division writes its kit beside the QAIS test, nothing it gives is counted, and it goes
