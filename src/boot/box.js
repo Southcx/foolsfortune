@@ -57,13 +57,16 @@ import { liquidTexture, liquidTexture2, causticTexture } from '../vfx/liquid.js'
 /** The box's room: 20 m a side and 5 m high round the Courier's spawn, a pillar and a ledge to move against. */
 export const BOX = { at: [0, 0, -11.5], w: 20, h: 5, wall: 0.4, floor: 0xb8875f, walls: 0xd9b48c, prop: 0x8a5a3c };
 /** The water test (the owner's v289 field reports: the liquid library's code, vfx/liquid.js, was drawn for the first time 0.1 to 0.5 real
- *  s before each of the three losses, and the Raceway's v287 loss came after the crude sea's, which shares it): two pools behind the
- *  spawn, each drawn only once its pad is stood on, so the report's first draws say which one the graphics went after. A, the left pad
- *  as you face them: the game's water with its three `textureGrad` taps read plainly and its textures without anisotropic filtering;
- *  B, the right pad: the game's water as it is. `at` is metres from the box's middle: the pool's centre, its pad 4 m nearer. */
+ *  s before each of the three losses, and the Raceway's v287 loss came after the crude sea's, which shares it). v291's pools, the game's
+ *  water with its `textureGrad` taps made plain and without anisotropy (A) and as it is (B), were both lost on the owner's iPhone while
+ *  the plain box held: the taps are not it. Both still read the liquid packs, the only textures the game decodes as ImageBitmaps (resized
+ *  by the decoder, alpha not premultiplied, no colour conversion: vfx/liquid.js). So now the two halves apart, each shown only once its
+ *  pad is stood on, after its moment is written to the field report: C, the left pad as you face them: the game's water as it is, its
+ *  two packs swapped for noise textures made here (no ImageBitmap); D, the right pad: no water, two flat panels showing the two packs as
+ *  the game decodes them. `at` is metres from the box's middle: the pool's centre, its pad 4 m nearer. */
 export const BOX_POOLS = [
-  { id: 'A', name: 'box-water-plain', at: [-5, -6.5], plain: true, pad: 0x7fb2d9 },
-  { id: 'B', name: 'box-water-game', at: [5, -6.5], plain: false, pad: 0x2f9e8f },
+  { id: 'C', name: 'box-water-own-noise', at: [-5, -6.5], kind: 'shader', pad: 0x7fb2d9 },
+  { id: 'D', name: 'box-liquid-packs', at: [5, -6.5], kind: 'bitmaps', pad: 0x2f9e8f },
 ];
 const FIXED = 1 / 60;
 const CAP = 1000 / 30 - 3; // (a phone's frame at 30 a real second, as the game's: boot/frame.js)
@@ -88,22 +91,37 @@ function skyStandIn() {
   return { texture, GLSL: SKY_GLSL };
 }
 
-/** One of BOX_POOLS made and shown: the game's water material (vfx/water.js) on a 6 by 4 m plane, 1.5 m deep to its painted floor; A's
- *  taps made plain. Made when its pad is first stood on, so its first draw is that moment's. */
+/** A noise texture made here, as a pack is laid out (four channels of unrelated noise, repeat-wrapped, mipmapped, anisotropy 4): the
+ *  pack's place in the shader without its ImageBitmap. */
+function noiseTexture(seed) {
+  const n = 256, d = new Uint8Array(n * n * 4); let h = seed >>> 0;
+  for (let i = 0; i < d.length; i++) { h ^= h << 13; h >>>= 0; h ^= h >>> 17; h ^= h << 5; h >>>= 0; d[i] = h & 255; }
+  const t = new THREE.DataTexture(d, n, n); t.wrapS = t.wrapT = THREE.RepeatWrapping; t.magFilter = THREE.LinearFilter; t.minFilter = THREE.LinearMipmapLinearFilter;
+  t.generateMipmaps = true; t.anisotropy = 4; t.needsUpdate = true;
+  return t;
+}
+
+/** One of BOX_POOLS made: C the game's water material (vfx/water.js) on a 6 by 4 m plane, 1.5 m deep to its painted floor, its packs
+ *  swapped for noiseTexture; D two 2.5 m panels, MeshBasicMaterial, each mapped with one of the packs (vfx/liquid.js) as the game holds
+ *  it. */
 function makePool(game, sky, p) {
   const [x, y, z] = BOX.at, cx = x + p.at[0], cz = z + p.at[1];
-  const v = { x0: cx - 3, x1: cx + 3, z0: cz - 2, z1: cz + 2, surface: y + 0.03, bottom: y - 1.5 };
-  const mat = makeWaterMaterial(sky, 'water'); mat.name = p.name;
-  if (p.plain) {
-    let n = 0;
-    mat.fragmentShader = mat.fragmentShader.replace(/textureGrad\((\w+), ([^,]+), [^)]*\)/g, (m, tex, uv) => { n++; return `texture2D(${tex}, ${uv})`; });
-    for (const k of ['uLiq', 'uLiq2', 'uLiqC']) { const t = mat.uniforms[k]?.value; if (t) { t.anisotropy = 1; t.needsUpdate = true; } } // (the material's own copies: merge cloned them)
-    game.fieldReport?.moment(`pool ${p.id}: ${n} textureGrad taps made plain, anisotropy 1`);
+  let obj;
+  if (p.kind === 'shader') {
+    const v = { x0: cx - 3, x1: cx + 3, z0: cz - 2, z1: cz + 2, surface: y + 0.03, bottom: y - 1.5 };
+    const mat = makeWaterMaterial(sky, 'water'); mat.name = p.name;
+    mat.uniforms.uLiq.value = noiseTexture(0x9e3779b9); mat.uniforms.uLiq2.value = noiseTexture(0x85ebca6b);
+    obj = new THREE.Mesh(waterGeometry(v), mat); obj.position.set(cx, v.surface, cz); obj.renderOrder = 2;
+  } else {
+    obj = new THREE.Group();
+    for (const [i, tex] of [liquidTexture(), liquidTexture2()].entries()) {
+      const m = new THREE.Mesh(new THREE.PlaneGeometry(2.5, 2.5), new THREE.MeshBasicMaterial({ name: `${p.name}-${i + 1}`, map: tex }));
+      m.position.set(cx + (i ? 1.5 : -1.5), y + 1.4, cz); obj.add(m);
+    }
   }
-  const mesh = new THREE.Mesh(waterGeometry(v), mat); mesh.name = p.name; mesh.position.set(cx, v.surface, cz); mesh.renderOrder = 2;
-  game.scene.add(mesh);
+  obj.name = p.name; game.scene.add(obj);
   game.fieldReport?.moment(`pool ${p.id} shown (${p.name})`);
-  return mesh;
+  return obj;
 }
 
 /** The box's boot, as main.js's for the game: the timings (`window.__boot`), the boot watch's stages and its failure. */
@@ -183,6 +201,13 @@ function boxFrame(game, made) {
   const sky = skyStandIn(), pools = new Map(); // (BOX_POOLS shown so far, by id)
   liquidTexture(); liquidTexture2(); causticTexture(); // (the liquid library's textures loaded now, as the game's world loads them at boot: a pool's first draw finds them ready)
   const padAt = (p) => [BOX.at[0] + p.at[0], BOX.at[2] + p.at[1] + 4];
+  // (a pad stood on: its moment written to the field report first, and the pool shown a real second after, so a loss cannot take the
+  //  word of which one with it: v291's two losses wrote nothing after them)
+  const showPool = (p) => {
+    pools.set(p.id, null);
+    game.fieldReport?.moment(`pad ${p.id} stood on: ${p.name} in 1 s`);
+    Promise.resolve(game.fieldReport?.write(true)).catch(() => {}).then(() => new Promise((r) => setTimeout(r, 1000))).then(() => pools.set(p.id, makePool(game, sky, p)));
+  };
   function tick(dt) {
     game.touch.update(); game.pad.update(dt);
     game.rawDt = dt;
@@ -225,8 +250,8 @@ function boxFrame(game, made) {
     game.fieldReport?.frame(dt);
     game.zones.update(dt); game.lights.update(dt); game.present.update(dt);
     game.courierSquash.press(dt, player);
-    for (const p of BOX_POOLS) { const [px, pz] = padAt(p); if (!pools.has(p.id) && player.grounded && Math.abs(player.pos.x - px) < 0.7 && Math.abs(player.pos.z - pz) < 0.7) pools.set(p.id, makePool(game, sky, p)); }
-    for (const m of pools.values()) m.material.uniforms.uTime.value += dt;
+    for (const p of BOX_POOLS) { const [px, pz] = padAt(p); if (!pools.has(p.id) && player.grounded && Math.abs(player.pos.x - px) < 0.7 && Math.abs(player.pos.z - pz) < 0.7) showPool(p); }
+    for (const m of pools.values()) { const u = m?.material?.uniforms?.uTime; if (u) u.value += dt; }
     input.endFrame();
   }
   function frame(now) {
