@@ -21,6 +21,8 @@
 import os, sys
 import numpy as np
 from PIL import Image
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from datapack import save_split  # (saved opaque, two halves wide: the fourth channel is data, src/vfx/datapack.js)
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SRC = os.path.join(ROOT, 'source_assets', 'liquid')
@@ -84,14 +86,14 @@ def main():
         chans.append(resize(seamless(level(square(soften(a))))))
     chans.append(veins(chans[0]))
     rgba = np.stack(chans, -1)
-    Image.fromarray((rgba * 255).astype(np.uint8), 'RGBA').save(OUT, 'WEBP', lossless=True, exact=True, method=6)  # (lossless and exact: the fourth channel is data, not alpha, so what is under a 'transparent' pixel is kept)
+    save_split((rgba * 255).astype(np.uint8), OUT)  # (lossless and exact: the fourth channel is data, not alpha, so what is under a 'transparent' pixel is kept)
     print(f'bake_liquid: {OUT} ({os.path.getsize(OUT) // 1024} KB, {SIZE}px)')
     # the second pack: these tile already (their edges match), so they are only levelled and scaled
     chans = []
     for n in CHANNELS2:
         a = load(n, NOISE)
         chans.append(np.full((SIZE, SIZE), 0.5) if a is None else resize(level(a)))
-    Image.fromarray((np.stack(chans, -1) * 255).astype(np.uint8), 'RGBA').save(OUT2, 'WEBP', lossless=True, exact=True, method=6)
+    save_split((np.stack(chans, -1) * 255).astype(np.uint8), OUT2)
     print(f'bake_liquid: {OUT2} ({os.path.getsize(OUT2) // 1024} KB, {SIZE}px)')
 
 if __name__ == '__main__':
