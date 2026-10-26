@@ -30,13 +30,15 @@ import { keepSetting } from '../keep.js';
 const KEY = 'foolsfortune.voice.v2';
 // (a little above the middle of a speaking voice; a touch of brightness; even pace)
 export const DEFAULTS = { on: true, pitch: 185, rate: 1, volume: 0.9 };
-const MAX_QUEUE = 4, DELAY = 0.35;
+const MAX_QUEUE = 4, DELAY = 0.35, WORKER_WAIT = 3; // (WORKER_WAIT: real seconds a line may take in the worker before it is made here)
 
 export class SystemVoice {
   constructor(game) {
     this.game = game;
     this.settings = { ...DEFAULTS };
     this.kept = keepSetting(game.save, 'voice', KEY, { dump: () => ({ ...this.settings }), load: (d) => Object.assign(this.settings, d), fresh: () => { this.settings = { ...DEFAULTS }; } }); // (the save's settings scope: audio/keep.js)
+    this.jobs = new Map(); this.jobN = 0; this.workerMade = null; this.workerGone = false;
+    setTimeout(() => this.worker(), 8000); // (made a while after boot, so the first line is not kept waiting for it)
     this.queue = []; this.busyUntil = 0; this.last = new Map(); this.analysed = new Map();
     this.rules();
   }
@@ -62,18 +64,42 @@ export class SystemVoice {
     if (!q) return;
     const ctx = sfx.ctx;
     if (!ctx || ctx.state !== 'running' || !this.ok) { this.queue.length = 0; return; }
-    const t0 = Math.max(ctx.currentTime + 0.02, this.busyUntil);
-    const dur = this.speak(q.text, q.tone, t0);
-    this.busyUntil = t0 + dur + 0.25;
-    this.game.events?.emit('voice.say', { line: q.text });
-    setTimeout(() => { this.queue.shift(); this.pump(); }, (this.busyUntil - ctx.currentTime) * 1000);
+    this.render(q.text).then((r) => {
+      if (this.queue[0] !== q) return; // (the queue was let go while the line was made)
+      if (!r || ctx.state !== 'running' || !this.ok) { this.queue.shift(); this.pump(); return; }
+      const t0 = Math.max(ctx.currentTime + 0.02, this.busyUntil);
+      const dur = this.speak(r, q.tone, t0);
+      this.busyUntil = t0 + dur + 0.25;
+      this.game.events?.emit('voice.say', { line: q.text });
+      setTimeout(() => { this.queue.shift(); this.pump(); }, (this.busyUntil - ctx.currentTime) * 1000);
+    });
   }
 
-  /** Render the line and play it (after its chime) at audio time t0; returns how long it lasts. */
-  speak(text, tone, t0) {
+  /** A line's samples ({ fs, samples }, or null), made in the voice's worker (speech/synthworker.js) so no line costs a frame; on the
+   *  main thread only where no worker can be made, or one fails or keeps a line past WORKER_WAIT real seconds. */
+  render(text) {
+    const opts = { f0: this.settings.pitch, rate: this.settings.rate };
+    const here = () => { try { return synthesize(text, opts); } catch (e) { console.warn('voice', e); return null; } };
+    if (this.workerGone) return Promise.resolve(here());
+    return this.worker().then((w) => new Promise((done) => {
+      if (!w || this.workerGone) { done(here()); return; }
+      const id = ++this.jobN, late = setTimeout(() => { if (this.jobs.delete(id)) done(here()); }, WORKER_WAIT * 1000);
+      this.jobs.set(id, (m) => { clearTimeout(late); done(m.error ? here() : { fs: m.fs, samples: m.samples }); });
+      w.postMessage({ id, text, opts });
+    }));
+  }
+  /** The voice's worker, made once (a promise of it, or of null where none can be made). */
+  worker() {
+    return this.workerMade ||= import('./speech/synthworker.js?worker&inline').then(({ default: W }) => {
+      const w = new W(); w.onmessage = (e) => { const job = this.jobs.get(e.data?.id); if (job) { this.jobs.delete(e.data.id); job(e.data); } };
+      w.onerror = () => { this.workerGone = true; for (const job of this.jobs.values()) job({ error: 'worker' }); this.jobs.clear(); };
+      return w;
+    }).catch(() => { this.workerGone = true; return null; });
+  }
+
+  /** Play a rendered line (after its chime) at audio time t0; returns how long it lasts. */
+  speak(r, tone, t0) {
     const ctx = sfx.ctx;
-    let r;
-    try { r = synthesize(text, { f0: this.settings.pitch, rate: this.settings.rate }); } catch (e) { console.warn('voice', e); return 0; }
     const buf = ctx.createBuffer(1, r.samples.length, r.fs); buf.copyToChannel(r.samples, 0);
     const chime = this.chime(t0, tone), start = t0 + chime;
     const src = ctx.createBufferSource(); src.buffer = buf;
