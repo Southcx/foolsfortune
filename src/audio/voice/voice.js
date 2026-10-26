@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// THE SYSTEM'S VOICE: the few things that matter, said aloud. An achievement, a skill learned, a creature's analysis finished, a rank
+// THE SYSTEM'S VOICE: the few things that matter, said aloud. A title earned, a skill learned, a creature's analysis finished, a rank
 // S card bound, the Pneuka Box full: the log still writes its line (it is the only TEXT feedback, gamelog.js), and the System also
 // says it, once, in a calm, even voice that begins "Notice." The rest of the game stays quiet: a voice that talks all the time is
 // one nobody listens to.
@@ -135,9 +135,9 @@ export class SystemVoice {
   rules() {
     const g = this.game, on = (k, f) => g.events?.on(k, (e) => { try { f(e || {}); } catch (err) { console.warn('voice', k, err); } });
     on('achievement.unlock', (e) => {
-      if (!e.ach) return;
-      this.say(`Notice. Achievement acquired: ${e.ach}.`, { key: `ach.${e.id}` });
-      if (e.title) this.say(`Title acquired: ${e.title}.`, { key: `title.${e.id}` });
+      // only an achievement that awards a title is said aloud, as its placard comes down (the owner, 2026-10-26); the rest is the log's
+      if (!e.title) return;
+      this.say(e.ach ? `Notice. Title acquired: ${e.title}, for ${e.ach}.` : `Notice. Title acquired: ${e.title}.`, { key: `title.${e.id}` });
     });
     on('rank.up', (e) => this.say(`Notice. Your rank has risen. You are now known as a ${e.rank}.`, { key: 'rank' }));
     on('system.unlock', (e) => {
