@@ -80,7 +80,7 @@ export function bootFrame(game, made) {
       diag.begin('sim'); tick(dt); diag.end('sim');
       game.graphics.update(rawFrame); game.graphics.beforeDraw();
       diag.begin('draw'); // (the PS2 glow and the grade over the frame: render/glow.js; the reading instead of the world while the Box is turned over)
-      if (game.readingScene?.active) game.readingScene.render(); else game.post.render(scene, window.__debugCam || camera);
+      if (game.readingScene?.active) game.readingScene.render(); else if (!game.seam?.covering) game.post.render(scene, window.__debugCam || camera); // (under the shut cover while an arrival is staged: nothing drawn, render/seam.js)
       diag.end('draw');
       if (O?.active) O.afterRender(renderer.domElement);
       game.veritome?.afterRender(renderer.domElement); // (a photograph is the frame just drawn)

@@ -43,13 +43,14 @@ export class FieldReport {
     if (W?.moment) { const m = W.moment; W.moment = (name) => { this.moment(name); return m(name); }; }
     game.events?.on?.('render.lost', () => { this.moment('the graphics taken back'); this.write(true); });
     game.events?.on?.('render.restored', (e) => this.moment(`the graphics given back after ${e.after} s`));
+    game.events?.on?.('seam.lift', (e) => { const R = game.raceway; this.moment(`cover lifted (${e.kind}): ${e.staged} staged, ${e.textures} textures, ${e.ms} ms${R?.buildMs && game.zones?.current === 'raceway' ? `; raceway ${JSON.stringify(R.buildMs)} field ${R.fieldFrom || 'travel'}` : ''}`); });
     addEventListener('error', (e) => this.error(e?.error?.message || e?.message || 'an error'));
     addEventListener('unhandledrejection', (e) => this.error(e?.reason?.message || String(e?.reason || 'a promise failed')));
     document.addEventListener('visibilitychange', () => { if (document.hidden) { this.doc.ended = ['hidden', sec()]; this.write(true); } else this.doc.ended = null; });
     addEventListener('pagehide', () => { this.doc.ended = ['left', sec()]; this.write(true); });
   }
 
-  moment(what) { if (this.doc.moments.length < FIELD.moments) this.doc.moments.push([String(what).slice(0, 80), sec()]); }
+  moment(what) { if (this.doc.moments.length < FIELD.moments) this.doc.moments.push([String(what).slice(0, 240), sec()]); }
   error(what) { if (this.doc.errors.length < FIELD.errors) this.doc.errors.push([String(what).slice(0, 200), sec()]); }
 
   /** Each frame: its real length kept for the next sample; the first write once the cloud save holds the store. */
