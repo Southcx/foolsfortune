@@ -92,24 +92,27 @@
         var unzip = async function (name) {
           var f = man.files[name], parts = [];
           if (!f) throw new Error('the store holds no ' + name + ' for this build');
-          for (var i = 0; i < f.n; i++) parts.push(db.doc('pack/' + B + '.' + f.id + '.' + i).get());
+          for (var i = 0; i < f.n; i++) parts.push(db.doc('pack/' + (f.doc || B + '.' + f.id) + '.' + i).get()); // (by content hash since v284)
           var b64 = (await Promise.all(parts)).map(function (s) { return (s.data() || {}).b || ''; }).join(''); parts = null;
           var zipped = bytes(b64); b64 = null;
           var raw = await new Response(new Blob([zipped]).stream().pipeThrough(new DecompressionStream('gzip'))).arrayBuffer(); zipped = null;
           if (raw.byteLength !== f.len) throw new Error('the store\'s copy of ' + name + ' is ' + raw.byteLength + ' bytes, not ' + f.len);
           return raw;
         };
-        // (each file unpacked once a build and kept on the device in the Cache Storage, keyed by the build: the next load reads it from
-        //  there, not 23 MB of base64 from the store again; another build's cache deleted. Where the cache is refused, the store each time.)
-        var cache = null, hits = 0;
+        // (each file unpacked once and kept on the device in the Cache Storage, keyed by its name and content hash: the next load, and the
+        //  next build where the file did not change, reads it from there, not from the store; what no file of this build names is deleted.
+        //  Where the cache is refused, the store each time.)
+        var cache = null, hits = 0, keyOf = function (name) { return base + name + '?' + man.files[name].sha; };
         try {
           if (window.caches) {
-            cache = await caches.open('ff.pack.' + B);
-            caches.keys().then(function (ks) { ks.forEach(function (k) { if (k.indexOf('ff.pack.') === 0 && k !== 'ff.pack.' + B) caches.delete(k); }); }).catch(function () {});
+            cache = await caches.open('ff.pack');
+            caches.keys().then(function (ks) { ks.forEach(function (k) { if (k.indexOf('ff.pack.') === 0) caches.delete(k); }); }).catch(function () {}); // (the per-build caches before v284)
+            var wanted = {}; Object.keys(man.files).forEach(function (n) { wanted[keyOf(n)] = 1; });
+            cache.keys().then(function (rs) { rs.forEach(function (r) { if (!wanted[r.url]) cache.delete(r); }); }).catch(function () {});
           }
         } catch (e) { cache = null; }
         var file = async function (name) {
-          var f = man.files[name], key = base + name;
+          var f = man.files[name], key = f && keyOf(name);
           if (cache && f) { try { var hit = await cache.match(key); if (hit) { var b = await hit.blob(); if (b.size === f.len) { hits++; return b; } } } catch (e) { /* unpacked again */ } }
           var blob = new Blob([await unzip(name)], { type: f.mime });
           if (cache) cache.put(key, new Response(blob, { headers: { 'content-type': f.mime } })).catch(function () {});
