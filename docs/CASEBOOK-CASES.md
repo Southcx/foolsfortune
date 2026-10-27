@@ -4223,3 +4223,11 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** a feeling's step of the duel's key (`FEELING_STEP`, over the cue's root through `sfx.musicGrid`), a limit a feeling, and the
   chain, the orbs and the pinch keyed alike.
 - **Rule:** NEW:sound-keyed-by-the-kernels-names
+
+### 2026-10-27 · The duel's view threw on a duel skill's Grab (Dovina's live probe, before push)
+- **Seen:** `TypeError: Cannot read properties of undefined (reading '0')` in the duel view's tool beat, every tick after a Grab skill.
+- **Cause (as measured):** the skill emitted `grab { id, from }` for each junk hooked out; the view's `grab` beat (vfx/duelview/toolbeats.js)
+  is the classic Grab's, which moves a piece `from` -> `to`, and read `e.to[0]`. The same name, a different shape.
+- **Fix:** the skill's events take the shape of a beat that does what they do (`hold { id, at }` removes a piece: the Grab skill's),
+  and the skills with no beat yet get names of their own (`blast`, `vein`), which the view plays as a pause until Calissa's beats.
+- **Rule:** NEW:new-event-new-name

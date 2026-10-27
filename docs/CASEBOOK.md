@@ -948,3 +948,5 @@ NEW:lookahead-own-copy. **A lookahead copies a duel with the kernel's `cloneStat
   kernel writes (the undo stack, the log): a forecast or a preview must not reach into the real turn.
 NEW:sound-keyed-by-the-kernels-names. **A sound keyed by an engine's value reads the engine's own table for its names.** A table of
   its own in the bank drifts when the engine renames; import or mirror the engine's list, and let an unknown name be heard as wrong.
+NEW:new-event-new-name. **A kernel event with a new shape takes a new name.** A consumer keyed by an event's type reads its fields; an
+  event that reuses a name must carry every field that name's consumers read, or it is a new name the consumers skip until they learn it.

@@ -27,7 +27,15 @@ export const LESSON = {
     { id: 'tool',   did: (ev, a) => TOOLS.has(a.kind) },                                  // a tool's move: one that bends the clearing
     { id: 'chain',  did: (ev, a, side) => ev.some((e) => e.type === 'chain' && e.side === side && e.step >= 2) }, // a chain: what falls clears again, junk doubled
   ],
+  // the one-gesture duel's (PUZZLE-DUELS.md 22): drag, clear, chain, fire a skill once one is charged; `ask` Espada's words, 2026-10-27
+  dragSteps: [
+    { id: 'drag',   ask: 'Drag a gem: every gem it passes trades places with it.', did: (ev, a) => a.kind === 'drag' },                                   // a gem dragged: everything it passes swaps
+    { id: 'clear',  ask: 'Line up 3 of one colour, or 4 touching, to clear them.', did: (ev, a, side) => mine(ev, side, 'chain') }, // a clear: 3 in a line or 4 touching
+    { id: 'chain',  ask: 'Clear so the gems that fall clear again: that is a chain.', did: (ev, a, side) => ev.some((e) => e.type === 'chain' && e.side === side && e.step >= 2) },
+    { id: 'skill',  ask: 'A skill is full: fire it from its tile beside the board.', did: (ev, a) => a.kind === 'skill' },                                 // a charged skill fired
+  ],
 };
+export const stepsOf = (s) => (s.style === 'drag' ? LESSON.dragSteps : LESSON.steps);
 
 /** Is the lesson due? Until the first puzzle duel won (the ledger's `duel.won`, tracking/duel.js). */
 export const lessonDue = (L) => !(L?.get?.('duel.won') > 0);
@@ -38,11 +46,11 @@ export const lessonOf = (on) => (on ? { step: 0, idle: LESSON.idle } : null);
 /** After an action of the side learning (side 0): the step done, if it was, and the next asked. Done out of order counts too (a
  *  person who chains before running has learned the chain). */
 export function lessonAct(s, side, a, events) {
-  const L = s.lesson, out = []; if (!L || side !== 0 || L.step >= LESSON.steps.length) return out;
-  const st = LESSON.steps[L.step];
+  const L = s.lesson, steps = stepsOf(s), out = []; if (!L || side !== 0 || L.step >= steps.length) return out;
+  const st = steps[L.step];
   if (!st.did(events, a, side)) return out;
   L.step++;
-  const next = LESSON.steps[L.step]?.id ?? null;
+  const next = steps[L.step]?.id ?? null;
   out.push({ type: 'lesson.step', side, step: L.step - 1, id: st.id, next });
   if (!next) out.push({ type: 'lesson.done', side });
   return out;

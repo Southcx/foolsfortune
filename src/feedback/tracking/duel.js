@@ -4,9 +4,14 @@
 // The words are Espada's (docs/LORE.md, "The puzzle duel's words"); the log says "duel", the genre's word.
 //
 //   duel.pull { foe }   duel.slip   duel.open { kind, feeling }   duel.break { kind, depth }   duel.flee { roll, reroll, need, ok }   duel.end { kind, won, how, turns, atOnce }   duel.undo { left }   (each with `by`)
+//   the one-gesture duel (PUZZLE-DUELS.md 22): duel.chain { step, weak } (each step from 2)   duel.skill { tool }   duel.charge { tool } (a skill full)   duel.land { n, kind } (by creature)   duel.allclear { n }
 //
 //   duelRules({ on, L, log })   (feedback/tracking/rules.js calls it)
 // ---------------------------------------------------------------------------------------
+
+import { SKILLS } from '../../progress/duel/skills.js';
+
+const skillLabel = (tool) => SKILLS[tool]?.label || tool;
 
 export function duelRules({ on, L, log }) {
   // the pull (world/duel/duelfoes.js): its look and sound say it; the log says only an escape (a plain placeholder line, Espada's to word)
@@ -27,4 +32,14 @@ export function duelRules({ on, L, log }) {
     if (e.won) log.say('battle', e.how === 'finisher' ? 'You drain the Figment.' : 'You win the duel. The Figment is mended.');
     else log.say('battle', e.how === 'yield' ? 'You yield the duel.' : 'You lose the duel. The Figment pushes your mind out.');
   });
+  // the one-gesture duel's moments (the session re-emits the kernel's: world/duel/duelsession.js run()); the lines Espada's (2026-10-27).
+  // A chain is said from its fourth step only, and a landing of three or more: the small ones are the board's to show and the sound's to say.
+  on('duel.chain', (e) => {
+    if (e.by !== 'courier') return; L.inc(`duel.chain.${Math.min(8, e.step)}`); if (e.weak) L.inc('duel.chain.weak');
+    if (e.step >= 4) log.say('battle', `A chain of ${e.step}.`, { key: 'duel.chain', throttle: 1 });
+  });
+  on('duel.skill', (e) => { if (e.by !== 'courier') return; L.inc('duel.skill'); L.inc(`duel.skill.${e.tool}`); log.say('battle', `You use ${skillLabel(e.tool)}.`, { key: 'duel.skill', throttle: 0.5 }); });
+  on('duel.charge', (e) => { if (e.by !== 'courier') return; log.say('battle', `${skillLabel(e.tool)} is ready.`, { key: `duel.charge.${e.tool}`, throttle: 2 }); });
+  on('duel.land', (e) => { L.inc('duel.landed', e.n); if (e.n >= 3) log.say('battle', `${e.n} pieces of junk land on your side.`, { key: 'duel.land', throttle: 1 }); });
+  on('duel.allclear', (e) => { if (e.by !== 'courier') return; L.inc('duel.allclear'); log.say('battle', 'All clear: your half of the board is empty.'); });
 }

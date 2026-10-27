@@ -13,6 +13,7 @@
 //   fall(board) -> events   clears(board, rs) -> { cells: Set, events }   pinch(board, side) -> events   ACTIONS[kind] = { cost, legal, apply }
 // ---------------------------------------------------------------------------------------
 import { DIRS, KINDS, hasTag } from './board.js';
+import { DUEL_BREAK } from './duelbreak.js';
 
 const key = (x, y) => x + ',' + y;
 const unkey = (k) => k.split(',').map(Number);
@@ -142,9 +143,13 @@ export const ACTIONS = {
   drag: { form: 'hand', cost: (a) => Math.max(1, Math.ceil((a.path.length - 1) / 3)), // (Terra Battle: a piece dragged along a path swaps with each it passes)
     legal: (s, side, a) => { const b = s.board, P = a.path; if (!P || P.length < 2 || !hasTag(b.at(...P[0]), 'swappable')) return false;
       for (let i = 0; i < P.length; i++) { const [x, y] = P[i]; if (!mineIn(b, side, x, y)) return false; if (i && Math.abs(x - P[i - 1][0]) + Math.abs(y - P[i - 1][1]) !== 1) return false;
-        const q = b.at(x, y); if (i && q && !hasTag(q, 'swappable')) return false; }
+        const q = b.at(x, y); if (i && q && !hasTag(q, 'swappable') && q.kind !== 'orb') return false; }
       return true; },
-    apply: (s, side, a) => { for (let i = 1; i < a.path.length; i++) s.board.swap(a.path[i - 1], a.path[i]); return [{ type: 'drag', side, path: a.path }]; } },
+    apply: (s, side, a) => { const b = s.board, S = s.sides[side], ev = [{ type: 'drag', side, path: a.path }];
+      for (let i = 1; i < a.path.length; i++) { const [x, y] = a.path[i], q = b.at(x, y); // (an orb the dragged gem passes over is drunk: Lachryma to the pool, PUZZLE-DUELS.md 22)
+        if (q?.kind === 'orb') { b.set(x, y, null); S.pool = Math.min(DUEL_BREAK.poolMax, S.pool + DUEL_BREAK.orb); S.drunk = (S.drunk || 0) + 1; ev.push({ type: 'orb.drink', side, at: [x, y], pool: S.pool }); }
+        b.swap(a.path[i - 1], a.path[i]); }
+      return ev; } },
   rotate: { form: 'hand', cost: 1, // (Hexic: a 2x2 turned clockwise)
     legal: (s, side, a) => { const b = s.board, [x, y] = a.at; return [[0, 0], [1, 0], [1, 1], [0, 1]].every(([dx, dy]) => mineIn(b, side, x + dx, y + dy) && (!b.at(x + dx, y + dy) || hasTag(b.at(x + dx, y + dy), 'swappable'))); },
     apply: (s, side, a) => { const b = s.board, [x, y] = a.at, q = [[0, 0], [1, 0], [1, 1], [0, 1]].map(([dx, dy]) => b.at(x + dx, y + dy));

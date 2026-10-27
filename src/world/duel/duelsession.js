@@ -8,6 +8,12 @@
 // a full side, the finisher or the turn cap; losing is a shatter (the owner, 2026-10-19), winning drains the Figment and mends it, and a flee
 // that gets away (flee.js, section 15) leaves you both whole.
 //
+// The one-gesture duel (DUEL.style 'drag', the default since 2026-10-27, PUZZLE-DUELS.md 22; South: "anything and everything that would
+// improve this module"): the hand's DRAG is the only board verb (a press onto a neighbour is a drag of one step), there are no forms and
+// the Courier stands off the board; the worn pair are two skills (1 and 2, or a tool's own key below), charged by your clears and fired
+// as a free action, at the cell clicked when it asks one (RMB lets an armed skill go); a tap skips the foe's beats; idle a while, the
+// hint lights the best drag (view.hint). Its moments go on the bus: duel.chain, duel.skill, duel.charge, duel.land, duel.allclear.
+// The classic controls below hold for a ruleset that asks `style: 'classic'`.
 // The controls (the forms: PUZZLE-DUELS.md 4 and 11; the god hand is the cursor, the owner on board v11):
 //   the god hand      LMB on a piece and onto a neighbour: SWAP; held across three or more cells: DRAG; R: ROTATE the 2x2 under the
 //                     hand (its top-left); RMB on an empty cell: DROP the next queued piece; F: the FINISHER on a broken foe
@@ -36,6 +42,7 @@ import * as THREE from 'three';
 import { newDuel, act, endTurn, legalActions, undo } from '../../progress/duel/duel.js';
 import { luckOf } from '../../progress/luck.js';
 import { intentOf, hintOf, HINT, play as botPlay } from '../../progress/duel/bot.js';
+import { SKILLS, skillsOf } from '../../progress/duel/skills.js';
 import { lessonDue } from '../../progress/duel/lesson.js';
 import { rulesetOf } from '../../progress/duel/rulesets.js';
 import { DUEL_VIEW, cellLocal } from '../../vfx/duelview/layout.js';
@@ -47,6 +54,8 @@ export const DUEL_ROOM = { beat: 0.55, beatTouch: 0.35, slop: 8, yieldHold: 1.5,
 const KEYS_KEPT = /^(Escape|Tab|F\d+|KeyB)$/; // (what a duel leaves to the rest of the game: the pause, the tuning panel, QAIS, the Codex)
 const TOOL_KEYS = { KeyX: 'shoot', KeyQ: 'grab', KeyK: 'drill', KeyG: 'paint', KeyU: 'delay', KeyI: 'hold', KeyT: 'tune', KeyV: 'read' };
 const WALK = { KeyW: 'N', KeyS: 'S', KeyA: 'W', KeyD: 'E' };
+/** In the one-gesture duel (PUZZLE-DUELS.md 22) a tool's key or tile arms its skill: each move's key names the tool that owns it. */
+const MOVE_TOOL = { shoot: 'psygun', grab: 'sondelass', drill: 'dreamvane', paint: 'soulbrush', delay: 'crucibelle', tune: 'crucibelle', hold: 'lockheart', send: 'lockheart', read: 'veritome' };
 const _v = new THREE.Vector3(), _ndc = new THREE.Vector3();
 
 export class DuelSession {
@@ -153,6 +162,7 @@ export class DuelSession {
     if (input.wasPressed('KeyE')) return this.take({ kind: 'flee' });
     if (input.isDown('Backspace')) { if ((this.yieldT += raw) >= DUEL_ROOM.yieldHold) return this.yield(); } else this.yieldT = 0;
     this.arm(S.form !== 'hand' && input.isDown('KeyG')); // (Paint armed while G or du.paint is held: its reach and greying, the view's glows)
+    if (s.style === 'drag') { const k = this.skillInput(input, cell); if (k) return; }
     if (S.form === 'hand') {
       if (input.wasPressed('Mouse0') && cell) { this.press = cell; this.path = [cell]; this.pressAt = [input.mx, input.my]; this.view?.select?.(this.path); }
       if (this.press && this.pressAt && Math.hypot(input.mx - this.pressAt[0], input.my - this.pressAt[1]) >= DUEL_ROOM.slop) this.pressAt = null; // (a tap never drags a gem by a hair: DUEL_ROOM.slop px first)
@@ -208,6 +218,26 @@ export class DuelSession {
       return this.take({ kind });
     }
   }
+  /** The one-gesture duel's skills (PUZZLE-DUELS.md 22): 1 and 2 (or a tool's own key, or its tile on touch) arm the worn pair's first
+   *  or second; a skill that takes no cell fires at once, one that takes a cell fires at the next tap on your half; the same key again lets
+   *  it go. Not charged: a dry tick. True when the input was the skill's. */
+  skillInput(input, cell) {
+    const s = this.state, K = skillsOf(s, 0); let tool = null;
+    if (input.wasPressed('Digit1')) tool = K[0]?.tool; else if (input.wasPressed('Digit2')) tool = K[1]?.tool;
+    for (const [k, kind] of Object.entries(TOOL_KEYS)) if (input.wasPressed(k)) tool = MOVE_TOOL[kind];
+    if (tool) {
+      const k = K.find((x) => x.tool === tool);
+      if (!k || !k.ready) { sfx.dryFire?.(); this.armSkill(null); return true; }
+      if (this.armedSkill === tool) { this.armSkill(null); return true; }
+      if (SKILLS[tool].target !== 'cell') { this.armSkill(null); this.take({ kind: 'skill', tool }); return true; }
+      this.armSkill(tool); return true;
+    }
+    if (this.armedSkill && input.wasPressed('Mouse0') && cell) { const t = this.armedSkill; this.armSkill(null); this.take({ kind: 'skill', tool: t, at: [cell.x, cell.y] }); return true; }
+    if (this.armedSkill && input.wasPressed('Mouse2')) { this.armSkill(null); return true; }
+    return !!this.armedSkill; // (armed: the board's other input waits for the target)
+  }
+  /** The skill armed (its tile gold, its reach drawn: the view's `armSkill`), or null. */
+  armSkill(tool) { if (tool === this.armedSkill) return; this.armedSkill = tool || null; const V = this.view; if (typeof V?.armSkill === 'function') V.armSkill(this.armedSkill); }
   /** The view told once a change whether a Paint is armed. */
   arm(on) { if (on === !!this.armed) return; this.armed = on; const V = this.view; if (typeof V?.armPaint === 'function') V.armPaint(on); }
   /** On touch a cell is picked, then placed (a thumb covers a 15 px cell): the first tap rings it, a tap on a neighbour swaps with it, a
@@ -289,6 +319,13 @@ export class DuelSession {
     for (const e of events) {
       if (e.type === 'duelBreak') this.game.events?.emit('duel.break', { kind: this.foe?.kind, depth: e.depth, by: e.side === 1 ? 'courier' : 'creature' }); // (the room maps a side to `by`: PUZZLE-DUELS.md 13.1)
       if (e.type === 'flee' && e.ok && e.roll === 20) this.atOnce = true; // (a natural 20: the log says "You flee at once." instead)
+      // the one-gesture duel's big moments on the bus (PUZZLE-DUELS.md 22.4): the haptics and the sound hear them (audio/haptics.js,
+      // Wanda's), the ledger counts them (tracking/duel.js)
+      if (e.side === 0 && e.type === 'chain' && e.step >= 2) this.game.events?.emit('duel.chain', { step: e.step, weak: !!e.weak, by: 'courier' });
+      if (e.side === 0 && e.type === 'skill') this.game.events?.emit('duel.skill', { tool: e.tool, by: 'courier' });
+      if (e.side === 0 && e.type === 'charge' && e.ready) this.game.events?.emit('duel.charge', { tool: e.tool, by: 'courier' });
+      if (e.side === 0 && e.type === 'land' && e.n) this.game.events?.emit('duel.land', { n: e.n, kind: e.kind, by: 'creature' });
+      if (e.side === 0 && e.type === 'allclear') this.game.events?.emit('duel.allclear', { n: e.n, by: 'courier' });
       if (e.type === 'flee') this.game.events?.emit('duel.flee', { roll: e.roll, reroll: e.reroll ?? null, need: e.need, ok: e.ok, by: e.side === 0 ? 'courier' : 'creature' });
     }
     const done = () => { this.busy = false; this.botRun = false; if (!this.active) return; if (this.state.winner !== null) this.finish(); else this.intent(); };
