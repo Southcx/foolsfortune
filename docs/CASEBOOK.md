@@ -927,9 +927,16 @@ NEW:touch-never-html5-drag. **Nothing a finger moves rides on HTML5 drag and dro
   pointer events (down, move, up) with the target found under the finger, and a tap-to-lift beside it.
 NEW:fit-to-the-room-as-it-stands. **A camera fitted to the room the controls leave is fitted again as they change**, never once at
   an open that comes before them; and a control is measured as drawn, not by the rect reserved for it.
+NEW:spar-and-cloth-one-side. **A rig's spar, cloth and streamer read one sign for leeward**, measured in the ship's frame, never
+  each turned on its own convention.
 NEW:place-from-the-measure. **A thing set beside another is placed from their measures (a quay's face, a hull's half beam), never a
   bare offset.** A bare number is right for one size and wrong for the next.
 NEW:one-choice-a-load. **A choice that reloads the page is taken once a load, and its menu stops listening once it is made.** A window
   opened over a menu (a name typed, a confirm) must not reach the menu's keys behind it.
 NEW:hull-is-a-footprint. **A body that can be long is hit by its footprint, never by the distance to its middle.** A point test written
   for a 7 m hull misses most of a 35 m one.
+NEW:audio-one-shot-let-go. **A one-shot's nodes are let go when its source ends, and a phone hears a blow once.** Disconnect the source
+  and its private chain on `ended`; on a phone, a hit, its damage and its stun's tick share one budget, so a gun's hail never stacks
+  three sounds a hit. A band's instrument takes one note an event unless it says it takes a chord.
+NEW:event-name-searched-first. **A new event's name is searched for on the bus before it is emitted.** An emit under a name already taken
+  counts and sounds as the other thing; grep `'<name>'` across `src/` first.

@@ -4110,6 +4110,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Rule:** NEW:one-choice-a-load
 
 
+
 ### 2026-10-27 · A big ship hit only near its middle on the open sea (found at the gate, after the hulls went to life size; Petra)
 - **Seen:** reading the fight's hull tests after the 5x hulls: the spit hit within 3.6 m of the hull's middle, the ram when its ring held
   the ship's middle, the coil within 13 m of it. On a 35 m sloop, a glob landing on the bow or the stern passed through the deck.
@@ -4126,3 +4127,52 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the view eases the duel's shot toward a fit taken every quarter real second while the duel is open on touch; the fit's top
   is the log as drawn. Measured after: the cells' centre at x 318, the frame's top 37 px under the log.
 - **Rule:** NEW:fit-to-the-room-as-it-stands
+
+### 2026-10-27 · A big ship hit only near its middle on the open sea (found at the gate, after the hulls went to life size; Petra)
+- **Seen:** reading the fight's hull tests after the 5x hulls: the spit hit within 3.6 m of the hull's middle, the ram when its ring held
+  the ship's middle, the coil within 13 m of it. On a 35 m sloop, a glob landing on the bow or the stern passed through the deck.
+- **Cause (as read):** every test was a distance from `helm.pos`, a point, written when the hull was 7 m long.
+- **Fix:** `helm.hullDist(p)`, the distance to the hull's footprint (its length along the heading, its beam across, 0 inside); the ram,
+  the coil and the spit ask it, and the spit hits within 1.2 m of the footprint and under the deck's height plus 3 m.
+- **Rule:** NEW:hull-is-a-footprint
+
+
+### 2026-10-27 · The audio breaking down once the ship's gun fires on the open sea (the owner's iPhone; Wanda)
+- **Seen:** "audio processing breaks down after combat is initiated and the ship's gun starts firing" (relayed by Calissa).
+- **Cause (as measured, then not yet measured):** headless on a desk (the open sea boarded, a sea serpent called, the gun held, the hits
+  landed at the gun's rate, the phone's mixer and a 4x slower CPU tried too): the audio clock kept real time, no voice was left
+  sounding, the cue's notes were not late. The owner's field reports from v299 to v303 on the open sea show 30 fps and a worst frame of
+  50 ms, so the main thread was not starving the music; what is left is the phone's audio thread. Found on the way: the hunt section's
+  coiled bar gave the brass a chord (an array) where it takes one note, and each threw a non-finite frequency every bar
+  (music/opensea.js). And each hit at the gun's eight a real second sets off three sounds (the struck sound, the damage, the stun's tick),
+  each a new chain that stays connected after it has sounded. Whether the iPhone's audio thread chokes on those, or on something else,
+  is not measured yet: the watch below will say.
+- **Fix:** the coiled brass played as three notes; every one-shot's source, filter and envelope disconnected when its source ends
+  (core.js `letGo`); on a phone, a blow's sounds share one budget, one each 90 real ms (`hitOk`); and the audio's health watched
+  (audio/health.js): the audio clock against the wall clock each 2 real s, and a fall behind or a stopped context written into the
+  field report with what was sounding, the zone and the cue's section.
+- **Rule:** NEW:audio-one-shot-let-go
+
+### 2026-10-27 · The parry at sea reached only round the hull's middle (found at the gate with the crew; Petra)
+- **Seen:** reading the parry for Espada's hand: a spit was sent back only within 7 m of the hull's middle, so a glob falling on a 35 m
+  sloop's bow or stern could not be parried at all, though it hit (the hull's test already went by the footprint).
+- **Cause (as read):** the parry's reach was a distance from `helm.pos`, the same point test NEW:hull-is-a-footprint retired for the hits.
+- **Fix:** the parry measures from the footprint (`helm.hullDist`), its reach x1.5 with Espada aboard. Measured: a spit 9 m off the bow's
+  tip sent back.
+- **Rule:** NEW:hull-is-a-footprint (the same rule: every test against the hull, the parry's too)
+
+### 2026-10-27 · A fore-and-aft sail's boom set to windward (found building the open sea's wind; Calissa)
+- **Seen:** reading the rig against the new wind: the vanes bellied and the pennant streamed to leeward, the boom swung the other way.
+- **Cause (as measured):** at the helm with a beam wind (its way +x in the ship's frame, `side` 1), the boom's end stood at x -7.84 and
+  the vanes' normals at +x: `boomYaw` turned +Y by `side`, and a +Y turn takes a spar along -z to -x; the clews followed the boom.
+  Never seen before the wind: `side` was always 1 and nothing else showed which way leeward was.
+- **Fix:** the boom's yaw, the main's clew and the fore-and-aft clew all take +x by `side`, the belly's side. Measured after, with the wind
+  to -x: boom end -7.84, vanes -0.85 and -0.99, the pennant's tip -6.27: all to leeward.
+- **Rule:** NEW:spar-and-cloth-one-side
+
+### 2026-10-27 · A broadside's timing event named over the discovery event (caught by Calissa before the merge; Wanda)
+- **Seen:** b30e657c's broadside rule emitted `sea.report { at, side }` for the muzzles' flash; `sea.report` is already Dovina's discovery
+  reported at a dock (progress/opensea/seatrip.js), counted in the ledger (tracking/opensea.js) and rung as the dock's coin (cues.js).
+- **Cause (as read):** a new event named without searching the bus for the name first.
+- **Fix:** the broadside's moment is `sea.boom { at, side }`; nothing else uses the name.
+- **Rule:** NEW:event-name-searched-first

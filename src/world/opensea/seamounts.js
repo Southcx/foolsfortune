@@ -37,7 +37,8 @@ export class SeaMounts {
     for (const k in this.cd) this.cd[k] = Math.max(0, this.cd[k] - dt);
     const W = this.worn;
     W.forEach((t, i) => { if (!SEA_MOUNTS[t].passive && I.wasPressed(KEYS[i])) this.fire(t, H); });
-    if (W.includes('dreamvane') && (this.pingT -= dt) <= 0) { this.pingT = SEA_MOUNTS.dreamvane.cooldown; this.sonar(H); }
+    if ((W.includes('dreamvane') || this.fight.crew.has('calissa')) && (this.pingT -= dt) <= 0) // (Calissa's hand reads the water as the vane does)
+      { this.pingT = SEA_MOUNTS.dreamvane.cooldown; this.sonar(H); }
     this.tend(dt);
   }
 

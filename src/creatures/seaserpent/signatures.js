@@ -32,7 +32,7 @@ export const SIGNATURES = {
   circle: {
     wind(S, c, m, T) {
       c.goUnder = 0.6; c.wantRear = 0;
-      S.game.creatures.windup(c, { at: T, radius: SIGNATURE.circle.r, eta: m.windup, kind: 'circle', parry: false, read: false });
+      S.game.creatures.windup(c, { at: T, radius: SIGNATURE.circle.r, eta: c.attack.t, kind: 'circle', parry: false, read: false });
     },
     tick(S, c, dt) {
       const A = c.attack, H = ship(S); if (H) orbit(c, H.pos, SIGNATURE.circle.r, 1, c.row.speed);
@@ -55,7 +55,7 @@ export const SIGNATURES = {
   coilWorld: {
     wind(S, c, m, T) {
       c.goUnder = 0; c.wantRear = 0.5;
-      S.game.creatures.windup(c, { at: T, radius: SIGNATURE.coilWorld.r0, eta: m.windup, kind: 'coilWorld', parry: false, area: { shape: 'circle', radius: SIGNATURE.coilWorld.r0, at: 'courier' }, type: 'impact', answer: 'out' });
+      S.game.creatures.windup(c, { at: T, radius: SIGNATURE.coilWorld.r0, eta: c.attack.t, kind: 'coilWorld', parry: false, area: { shape: 'circle', radius: SIGNATURE.coilWorld.r0, at: 'courier' }, type: 'impact', answer: 'out' });
     },
     tick(S, c, dt) {
       const A = c.attack, H = ship(S); if (H) orbit(c, H.pos, SIGNATURE.coilWorld.r0, 1, c.row.speed * 1.2);

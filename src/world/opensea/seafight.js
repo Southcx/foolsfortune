@@ -19,9 +19,12 @@
 //                mends it. Kept by the save (`seaFight`).
 //   THE COIL     while the serpent is wrapped round the hull, the helm turns at half and makes half its way (a modifier on the helm:
 //                `helm.mods`, its source the coil); shooting the head breaks it.
-//   WHERE THEY LIVE   a lair is a square the sea serpent lives in (safari.js `sightings`: two rows off the lanes and wilder), one in four
-//                of them; within 380 m of one a serpent rises there, out of the water's notice beyond 900 m it is gone again. One at a
-//                time. Down, a lair is empty until the next game day.
+//   WHERE THEY LIVE   the game day's lairs (Dovina's seabeasts.js lairsOf: the serpent's, the akhlut's, Jormungandr's that moves a game
+//                day; the dock's rumour is one of them); within 380 m of one its beast rises there, out of the water's notice beyond
+//                900 m it is gone again. One at a time. Down, a lair is empty until the next game day.
+//   THE CREW     a hand a sibling in your party (Dovina's SEA_CREW, progress/rail/mounts.js): Petra mends a hit a real minute out of a
+//                fight, Wanda reloads the broadside x0.75, Calissa reads the water (dives pinged), Espada widens the parry's reach x1.5,
+//                Dovina shows a windup 0.5 s sooner (`crewLead`). Event: sea.mend { hull, by }.
 //
 // Prior art: The Legend of Zelda: The Wind Waker's boat cannon (aimed with the camera, the height found for you), Sea of Thieves'
 //   Megalodon fight (a hull that takes hits, a hunter circling), Sin & Punishment's returned shot (the parry), Star Fox 64's hits borne.
@@ -32,28 +35,29 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { SHIPS } from '../../progress/rail/ships.js';
-import { sightings } from '../../progress/opensea/safari.js';
 import { tow } from '../../progress/opensea/seatrip.js';
 import { today } from '../../core/calendar.js';
 import { squareCentre } from './seaprops.js';
 import { SeaSerpents } from '../../creatures/seaserpent/seaserpent.js';
 import { LANCE_COLOR } from '../../courier/ship/shots.js';
 import { SeaMounts, MOUNTING } from './seamounts.js';
+import { SEA_CREW } from '../../progress/rail/mounts.js';
 import { CHAIN_BEASTS } from '../../creatures/seaserpent/seaserpent.js';
+import { lairsOf as beastLairs } from '../../progress/opensea/seabeasts.js';
 import { stream } from '../../core/rng.js';
 const simRand = stream('world/opensea/seafight'); // (the simulation's chance: core/rng.js, the same twice)
 
 /** gun: a shot each `every` real s, its speed (m/s), life (s), radius (m), power, the aim's cone (rad) and reach (m), how high over the deck
- *  it leaves (m); glob: the spit's speed (m/s), its fall (m/s each s), life (s), radius (m), the parry's reach from the hull (m), its speed
+ *  it leaves (m); glob: the spit's speed (m/s), its fall (m/s each s), life (s), radius (m), the parry's reach from the hull's footprint (m), its speed
  *  sent back and its power; hurt: how near the hull's footprint a glob hits (m, helm.hullDist); knock: the ram's (a share of the way kept, the yaw thrown, rad);
  *  coil: the helm's turn and way while wrapped; broadside: a side's reload (real s), its shots' speed, life,
- *  radius and power, the aim's cone off the beam (rad) and reach (m), each gun's scatter, and how square to a side the camera must look (|cos|); lair: one in `every` of the serpent's squares, risen within `near` m, gone past `far` m. */
+ *  radius and power, the aim's cone off the beam (rad) and reach (m), each gun's scatter, and how square to a side the camera must look (|cos|); lair: a beast risen within `near` m of its lair, gone past `far` m. */
 export const SEA_FIGHT = {
-  gun: { every: 0.125, speed: 90, life: 1.5, r: 0.3, power: 0.25, cone: 0.16, reach: 150, from: 1.4 }, // (power: at the rail's cadence a perfect aim on the head sank it in 10 s at 1; at 0.25 about 40 s)
+  gun: { every: 0.125, speed: 90, life: 1.5, r: 0.3, power: 0.5, cone: 0.16, reach: 150, from: 1.4 }, // (power: 0.5, Dovina's 14.6: the bow gun alone 2 to 2.5 real min a serpent, the broadside used well about 1)
   broadside: { reload: 4, speed: 75, life: 2.4, r: 0.6, power: 3, cone: 0.6, reach: 180, spread: 0.04, beam: 0.45 }, // (ruled: OPEN-SEA.md 14.6; a side's guns are the hull's, SHIPS[ship].guns)
   glob: { speed: 24, fall: 7, life: 5, r: 0.7, reach: 7, back: 46, power: 3 },
   hurt: 1.2, knock: { keep: 0.25, yaw: 0.35 }, coil: { turn: 0.5, speed: 0.5 },
-  lair: { every: 4, near: 380, far: 900 }, noise: { radius: 90, every: 1 },
+  lair: { near: 380, far: 900 }, noise: { radius: 90, every: 1 },
 };
 const GN = SEA_FIGHT.gun, GL = SEA_FIGHT.glob, CAP = { shots: 64, globs: 6 };
 const _d = new THREE.Vector3(), _a = new THREE.Vector3(), _b = new THREE.Vector3(), _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(1, 1, 1);
@@ -73,9 +77,14 @@ export class SeaFight {
     game.save?.section('seaFight', { scope: 'player', version: 1, dump: () => ({ hull: this.hull, down: [...this.down] }), load: (d) => { this.hull = d?.hull ?? SHIPS.sloop.bears; this.down = new Map(d?.down || []); }, reset: () => { this.hull = SHIPS.sloop.bears; this.down.clear(); } });
     game.events?.on?.('sea.dock', () => this.mend());
     game.events?.on?.('seaserpent.down', (e) => { if (e.lair) { this.down.set(e.lair, today()); this.dirty(); } });
+    game.events?.on?.('seabeast.down', (e) => { if (e.lair) { this.down.set(e.lair, today()); this.dirty(); } });
   }
   get room() { return this.game.opensea; }
   get serpent() { return this.serpents.list.find((c) => c.alive) || null; }
+  /** The crew aboard: the siblings in your party that have a hand at sea. */
+  get crew() { return new Set((this.game.party?.list || []).map((S) => S.id).filter((id) => SEA_CREW[id])); }
+  /** How much sooner a beast's windup shows (real s): Dovina's hand. */
+  crewLead() { return this.crew.has('dovina') ? SEA_CREW.dovina.foresight.lead : 0; }
   get bears() { return (SHIPS[this.room?.helm?.ship || 'sloop']?.bears ?? 6) + (this.game.shipParts?.mult?.('bears') ?? 0); } // (a part may add to the hull: salvage.js)
   dirty() { this.game.save?.dirty?.('seaFight'); }
   mend() { this.mounts.refill(); if (this.hull !== this.bears) { this.hull = this.bears; this.dirty(); } }
@@ -89,6 +98,7 @@ export class SeaFight {
     this.lairsOf(R);
     if ((this.spawnT -= dt) <= 0) { this.spawnT = 1; this.tend(R); }
     this.serpents.update(dt);
+    this.tendCrew(dt);
     if (R.sailing) { this.gun(dt, g.input, H); this.broadside(dt, g.input, H); this.mounts.update(dt, g.input, H); this.parry(g.input, H); }
     if (this.serpent?.coiled && R.sailing) H.mods?.set('coil', SEA_FIGHT.coil); else H.mods?.delete('coil');
     this.fly(dt, H);
@@ -105,17 +115,17 @@ export class SeaFight {
   }
 
   // ---------------------------------------------------------------- where serpents live
+  /** The game day's lairs of the beasts this chassis carries (Dovina's lairsOf, progress/opensea/seabeasts.js: a territory kept, the legend
+   *  moving a game day; the rumour posted at the dock is one of them, so the beast posted is the beast there). */
   lairsOf(R) {
-    if (this.lairs && this.lairsSeed === R.seed) return this.lairs;
-    this.lairsSeed = R.seed;
-    const hash = (sq) => ((sq.col * 73856093) ^ (sq.row * 19349663) ^ R.seed) >>> 0;
-    const fit = R.grid.squares.filter((sq) => sightings(sq, { phase: 'day', weather: null }).some((s) => s.id === 'seaSerpent'));
-    let picked = fit.filter((sq) => hash(sq) % SEA_FIGHT.lair.every === 0);
-    if (!picked.length && fit.length) picked = [fit.reduce((a, b) => (hash(a) < hash(b) ? a : b))];
-    this.lairs = picked.map((sq) => {
-      const at = squareCentre(sq.col, sq.row).setY(R.helm?.pos.y ?? 0);
+    const day = today();
+    if (this.lairs && this.lairsSeed === R.seed && this.lairsDay === day) return this.lairs;
+    this.lairsSeed = R.seed; this.lairsDay = day;
+    const bySq = new Map(R.grid.squares.map((sq) => [sq.id, sq]));
+    this.lairs = beastLairs(R.grid, R.seed, day).filter((l) => CHAIN_BEASTS.includes(l.id) && bySq.has(l.square)).map((l) => {
+      const sq = bySq.get(l.square), at = squareCentre(sq.col, sq.row).setY(R.helm?.pos.y ?? 0);
       for (const isl of R.props?.islets || []) if (Math.hypot(isl.pos.x - at.x, isl.pos.z - at.z) < isl.r + 80) at.x += isl.r + 120; // (open water, off its islet)
-      return { id: sq.id, pos: at };
+      return { id: `${l.id}:${l.square}`, beast: l.id, pos: at };
     });
     return this.lairs;
   }
@@ -126,7 +136,7 @@ export class SeaFight {
     if (live.length) return;
     const day = today();
     const lair = this.lairs.find((l) => this.down.get(l.id) !== day && Math.hypot(l.pos.x - P.x, l.pos.z - P.z) < SEA_FIGHT.lair.near);
-    if (lair) this.serpents.spawn(lair.pos.clone(), { lair: lair.id });
+    if (lair) this.serpents.spawn(lair.pos.clone(), { lair: lair.id, beast: lair.beast });
   }
   /** DEBUG's `/serpent`: one risen 120 m off the bow, sure of you. */
   spawnSerpent(beast = 'seaSerpent') {
@@ -160,7 +170,7 @@ export class SeaFight {
     if (aim) _d.subVectors(aim, from).normalize(); else _d.set(Math.sin(yaw), 0.015, Math.cos(yaw)).normalize();
     if (this.shots.length >= CAP.shots) this.shots.shift();
     this.shots.push({ pos: from.clone(), prev: from.clone(), vel: _d.clone().multiplyScalar(GN.speed), t: GN.life, power: GN.power * (this.mounts.takeGulp() ? MOUNTING.gulp.k : 1) }); // (a spit gulped goes back on the next shot)
-    g.seaFightLook?.muzzle(from, _d); // (the look's: vfx/opensea/seafightlook.js)
+    g.seaFightLook?.muzzle(from, _d, this.shots[this.shots.length - 1]); // (the look's: vfx/opensea/seafightlook.js; the shot itself its third, light or heavy)
     if (this.noiseT <= 0) { this.noiseT = SEA_FIGHT.noise.every; g.ai?.stimuli.emit('noise', H.pos, { radius: SEA_FIGHT.noise.radius, strength: 1, by: 'courier', source: g.player }); }
   }
 
@@ -177,7 +187,7 @@ export class SeaFight {
     if (Math.abs(dot) < BS.beam) return; // (looking fore or aft: no side bears)
     const k = dot > 0 ? 0 : 1, side = k ? 'starboard' : 'port', sg = k ? -1 : 1, nx = sg * cy, nz = -sg * sy;
     if (rl[k] > 0) { g.events?.emit('sea.broadside.dry', { side, left: +rl[k].toFixed(1), by: 'courier' }); return; }
-    rl[k] = BS.reload;
+    rl[k] = BS.reload * (this.crew.has('wanda') ? SEA_CREW.wanda.reload : 1); // (Wanda at the guns)
     const bear = Math.atan2(nx, nz); let aim = null, best = BS.cone;
     for (const c of this.serpents.list) {
       if (!c.alive) continue;
@@ -196,7 +206,7 @@ export class SeaFight {
       _a.x += (simRand() - 0.5) * BS.spread; _a.y += (simRand() - 0.5) * BS.spread * 0.5; _a.z += (simRand() - 0.5) * BS.spread; _a.normalize();
       if (this.shots.length >= CAP.shots) this.shots.shift();
       this.shots.push({ pos: from, prev: from.clone(), vel: _a.clone().multiplyScalar(BS.speed), t: BS.life, power: BS.power, r: BS.r, heavy: true });
-      g.seaFightLook?.muzzle(from, _a);
+      g.seaFightLook?.muzzle(from, _a, this.shots[this.shots.length - 1]);
     }
     g.events?.emit('sea.broadside', { side, guns, aimed: !!aim, by: 'courier' });
     g.ai?.stimuli.emit('noise', H.pos, { radius: SEA_FIGHT.noise.radius * 1.5, strength: 1.4, by: 'courier', source: g.player });
@@ -205,16 +215,17 @@ export class SeaFight {
   // ---------------------------------------------------------------- the parry at the helm
   parry(I, H) {
     if (!I.wasPressed('KeyV')) return;
-    const g = this.game; let hit = null, bd = Infinity;
+    const g = this.game, reach = GL.reach * (this.crew.has('espada') ? SEA_CREW.espada.parry : 1); let hit = null, bd = Infinity; // (Espada's riposte)
+    _a.copy(H.pos).setY(H.pos.y + 1);
     for (const b of this.globs) {
       if (b.back) continue;
-      const d = b.pos.distanceTo(_a.copy(H.pos).setY(H.pos.y + 1)); if (d > GL.reach || d >= bd) continue;
+      const d = H.hullDist(b.pos); if (d > reach || d >= bd) continue; // (from the hull's footprint, not its middle: NEW:hull-is-a-footprint)
       if (b.vel.dot(_b.subVectors(_a, b.pos)) <= 0) continue; // (only one still coming)
       bd = d; hit = b;
     }
     if (!hit) return;
     hit.back = true; hit.t = GL.life; hit.mark?.clear(); hit.mark = null;
-    g.events?.emit('move.parry', { tool: H.ship, how: 'return', what: 'shot', d: +bd.toFixed(2), reach: GL.reach, by: 'courier' });
+    g.events?.emit('move.parry', { tool: H.ship, how: 'return', what: 'shot', d: +bd.toFixed(2), reach, by: 'courier' });
   }
 
   // ---------------------------------------------------------------- what the serpent's moves do
@@ -224,6 +235,13 @@ export class SeaFight {
     if ((move === 'ram' || move === 'rise' || move === 'breach') && hit) { H.speed *= SEA_FIGHT.knock.keep; H.yaw += (simRand() < 0.5 ? -1 : 1) * SEA_FIGHT.knock.yaw; for (let i = 0; i < hits; i++) this.hullHit(move); }
     else if ((move === 'coil' || move === 'coilWorld') && hit) for (let i = 0; i < hits; i++) this.hullHit(move);
     else if (move === 'spit') { const n = c.row?.moves?.spit?.every ?? 1; for (let i = 0; i < n; i++) this.spit(c, H, n > 1 ? (i - (n - 1) / 2) * 0.22 : 0); } // (a fan of `every`: one aimed true)
+  }
+  /** Petra's hand: a hit mended each `mend.every` real s while no beast lives nearby. */
+  tendCrew(dt) {
+    if (!this.crew.has('petra') || this.serpents.list.some((c) => c.alive) || this.hull >= this.bears) { this.mendT = 0; return; }
+    if ((this.mendT = (this.mendT || 0) + dt) < SEA_CREW.petra.mend.every) return;
+    this.mendT = 0; this.hull++; this.dirty();
+    this.game.events?.emit('sea.mend', { hull: this.hull, of: this.bears, by: 'courier' });
   }
   serpentFree() { this.room?.helm?.mods?.delete('coil'); }
   /** A glob thrown in an arc at where the ship will be when it lands. */
@@ -260,8 +278,8 @@ export class SeaFight {
     for (let i = this.shots.length - 1; i >= 0; i--) {
       const s = this.shots[i]; s.prev.copy(s.pos); s.pos.addScaledVector(s.vel, dt); s.t -= dt;
       const hit = S.partsHit(s.prev, s.pos, s.r ?? GN.r);
-      if (hit) { g.creatures.strike(hit.c, hit.point, _d.copy(s.vel).normalize(), s.power ?? GN.power, 'shot', 'courier'); g.seaFightLook?.hit(hit.point, _d); this.shots.splice(i, 1); continue; }
-      if (s.t <= 0 || s.pos.y < S.surf(s.pos.x, s.pos.z) - 0.2) { if (s.t > 0) g.seaFightLook?.splash(s.pos, 'shot'); this.shots.splice(i, 1); }
+      if (hit) { g.creatures.strike(hit.c, hit.point, _d.copy(s.vel).normalize(), s.power ?? GN.power, 'shot', 'courier'); g.seaFightLook?.hit(hit.point, _d, s); this.shots.splice(i, 1); continue; }
+      if (s.t <= 0 || s.pos.y < S.surf(s.pos.x, s.pos.z) - 0.2) { if (s.t > 0) g.seaFightLook?.splash(s.pos, 'shot', s); this.shots.splice(i, 1); }
     }
     for (let i = this.globs.length - 1; i >= 0; i--) {
       const b = this.globs[i]; b.t -= dt;

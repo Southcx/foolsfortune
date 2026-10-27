@@ -83,7 +83,7 @@ const hunt = (st, M, i) => {
   const c = M.prog[i % 4], r = note(M, c, -1), ev = [E('taiko', 0, 1, null, 0.6), E('taiko', 3, 1, null, 0.5), ...[1, 2, 4, 5].map((b) => E('bodhran', b, 1, null, 0.3)),
     E('upright', 0, 1.5, r, 0.5), E('upright', 3, 1.5, r, 0.45),
     ...[0, 1.5, 3, 4.5].map((b, k) => E('brass', b, 1.3, note(M, k % 2 ? c + 5 : c, 0), 0.16, { stab: true }))];
-  if (st.coiled) ev.push(E('brass', 0, 5.8, [note(M, 0, 0), note(M, 1, 0), note(M, 3, 0)], 0.1), E('strings', 0, 6, [note(M, 0, 1), note(M, 0, 1) + 6], 0.07, { attack: 0.1 }));
+  if (st.coiled) ev.push(...[0, 1, 3].map((d) => E('brass', 0, 5.8, note(M, d, 0), 0.1)), E('strings', 0, 6, [note(M, 0, 1), note(M, 0, 1) + 6], 0.07, { attack: 0.1 })); // (the brass plays one note an event: a chord is three)
   else ev.push(...TUNE[i % 8].slice(0, 2).map(([b, d, deg]) => E('fiddle', b, d * 0.6, note(M, deg, 1), 0.3, { pan: 0.2, vib: 0.006 })));
   if (i % 4 === 3) ev.push(E('crash', 5, 1, null, 0.2), E('riser', 3, 3, null, 0.15));
   return ev;

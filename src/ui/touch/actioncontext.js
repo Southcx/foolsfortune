@@ -14,11 +14,13 @@
 //                 its note's colour, its number small), BLINK at its end once learned.
 //   AT THE HELM   (the open sea's free helm, ctx `helm`: the stick is the rudder) FIRE (the ship's gun) and PARRY (the spit sent back)
 //                 while a sea serpent hunts the hull, else USE naming MOOR or DOCK where F would; the throttle's two, each worded with
-//                 the step it goes to (STOP .. FULL), dim at its end. The strip: FIX (the sky read, the Dreamvane worn) and PLATE (the
-//                 Veritome worn), and USE while a serpent holds the cluster.
+//                 the step it goes to (STOP .. FULL), dim at its end. The strip: BROADSIDE first (the side the camera looks over fires,
+//                 its rim filling with that side's reload; dim while no side bears, the readier side's reload shown), FIX (the sky read,
+//                 the Dreamvane worn) and PLATE (the Veritome worn), and USE while a serpent holds the cluster.
 //   A PUZZLE DUEL END TURN (the main; dim on the foe's turn), FINISHER on a broken foe, FLEE, FORM (what you would become: HAND or
 //                 COURIER); the strip the worn tools' moves (dim in the hand's form: they are the Courier's), ROTATE first while a piece
-//                 is under the last touch in the hand's form.
+//                 is under the last touch in the hand's form; TUNE lit while its song holds, READ only where Dread's fog hides the foe; the
+//                 first duel's step asked (lesson.js) lit on its tile (FORM, ROTATE, the tools' moves).
 // The tool's name small in FIRE's corner (8.3) is left out: at 72 px it lands on the glyph; the glyph is the tool's own.
 //
 // Prior art: Genshin Impact's attack and skill tiles changing with the character, Call of Duty Mobile's fire button by weapon, Into the
@@ -26,12 +28,15 @@
 //
 //   footCluster(game) toolCluster(game, tool) duelCluster(game) helmCluster(game) -> [entry]   stripOf(game) -> [entry]   beltPairOf(game) -> [entry]
 //   inHandCtx(game) -> 'psygun' | 'cutlass' | 'rod' | 'hook' | 'brush' | 'veritome' | 'dreamvane' | 'crucibelle' | 'lockheart' | null
-//   entry { id, glyph, word, corner, lit, dim, tint }   ACTION_TILES (the words and glyphs by tool)
+//   entry { id, glyph, word, corner, lit, dim, tint, charge }   broadsideOf(game) -> { side, charge, bears }   ACTION_TILES (the words and glyphs by tool)
 // ---------------------------------------------------------------------------------------
+import * as THREE from 'three';
 import { SUB_GIFTS } from '../../progress/toolpairs.js';
 import { DEGREE_COLOR } from '../../tools/crucibelle/songs.js';
 import { useLabel } from './cluster.js';
 import { ROOM } from '../../world/opensea/opensea.js';
+import { SEA_FIGHT } from '../../world/opensea/seafight.js';
+import { LESSON } from '../../progress/duel/lesson.js';
 
 /** By tool in hand: FIRE's and AIM's faces, the third (or null), and what the faces become in their other moment. */
 export const ACTION_TILES = {
@@ -48,9 +53,11 @@ export const ACTION_TILES = {
 /** The duel's moves by the tool that brings them (progress/duel/couriertools.js), in the keys' order. */
 const DUEL_MOVES = [
   ['psygun', 'du.shoot', 'psfire', 'SHOOT'], ['sondelass', 'du.grab', 'throw', 'GRAB'], ['dreamvane', 'du.drill', 'drill', 'DRILL'],
-  ['soulbrush', 'du.paint', 'paint', 'PAINT'], ['crucibelle', 'du.delay', 'delay', 'DELAY'], ['lockheart', 'du.hold', 'hold', 'HOLD'],
-  ['lockheart', 'du.send', 'send', 'SEND'],
+  ['soulbrush', 'du.paint', 'paint', 'PAINT'], ['crucibelle', 'du.tune', 'tune', 'TUNE'], ['crucibelle', 'du.delay', 'delay', 'DELAY'],
+  ['lockheart', 'du.hold', 'hold', 'HOLD'], ['lockheart', 'du.send', 'send', 'SEND'], ['veritome', 'du.read', 'read', 'READ'],
 ];
+/** The first duel's step asked (lesson.js, PUZZLE-DUELS.md 18.3), lit on its tile: no words but the verb's own. */
+const askedOf = (s) => { const L = s?.lesson; return L && L.step < LESSON.steps.length && s.toMove === 0 ? LESSON.steps[L.step].id : null; };
 const FORMS = [['so.cutlass', 'sofcutlass', 'cutlass'], ['so.rod', 'sofrod', 'rod'], ['so.hook', 'sofhook', 'hook']];
 
 /** On foot (the bindings' ctx): the strip and the belt's pair stand only there (riding the Solar Skiff, LEND, DRAW and BLINK cannot be done). */
@@ -93,7 +100,7 @@ export function duelCluster(g) {
     E('du.end', 'endturn', 'END TURN', { dim: !mine }),
     broken ? E('du.finish', 'finisher', 'FINISHER', { dim: !mine }) : null,
     E('du.flee', 'flee', 'FLEE', { dim: !mine }),
-    S.form === 'hand' ? E('du.form', 'formcourier', 'COURIER', { dim: !mine }) : E('du.form', 'grab', 'HAND', { dim: !mine }),
+    S.form === 'hand' ? E('du.form', 'formcourier', 'COURIER', { dim: !mine, lit: askedOf(s) === 'form' }) : E('du.form', 'grab', 'HAND', { dim: !mine }),
   ];
 }
 
@@ -118,10 +125,21 @@ export function helmCluster(g) {
   return [use ? E('use', null, use) : null, up, down];
 }
 
-/** The helm's strip: FIX with the Dreamvane worn, PLATE with the Veritome, USE while a serpent holds the cluster. */
+/** The broadside's side now (seafight.js `broadside`'s own test: the camera's look on port's normal, past SEA_FIGHT.broadside.beam), and
+ *  its reload as a charge 0..1 (1 loaded); no side bearing, the readier side's, `bears` false. */
+export function broadsideOf(g) {
+  const F = g.seaFight, H = g.opensea?.helm, BS = SEA_FIGHT.broadside; if (!F?.reload || !H) return null;
+  const d = g.camera?.getWorldDirection?.(_look), dot = d ? d.x * Math.cos(H.yaw) - d.z * Math.sin(H.yaw) : 0, bears = Math.abs(dot) >= BS.beam;
+  const k = bears ? (dot > 0 ? 0 : 1) : F.reload[0] <= F.reload[1] ? 0 : 1;
+  return { side: k ? 'starboard' : 'port', charge: Math.max(0, Math.min(1, 1 - F.reload[k] / BS.reload)), bears };
+}
+const _look = new THREE.Vector3();
+
+/** The helm's strip: BROADSIDE, FIX with the Dreamvane worn, PLATE with the Veritome, USE while a serpent holds the cluster. */
 function helmStrip(g) {
-  const use = g.seaFight?.serpent ? helmUse(g) : null;
-  return [use ? E('use', null, use) : null, worn(g, 'dreamvane') ? E('fix', 'fix', 'FIX') : null, worn(g, 'veritome') ? E('plate', 'photo', 'PLATE') : null].filter(Boolean);
+  const use = g.seaFight?.serpent ? helmUse(g) : null, B = broadsideOf(g);
+  return [use ? E('use', null, use) : null, B ? E('broadside', 'broadside', 'BROADSIDE', { charge: B.charge, dim: !B.bears }) : null,
+    worn(g, 'dreamvane') ? E('fix', 'fix', 'FIX') : null, worn(g, 'veritome') ? E('plate', 'photo', 'PLATE') : null].filter(Boolean);
 }
 
 /** DRAW (STOW while the main is out), LEND (the sub's verb) and SWAP (main and sub traded, Belt.swap) at the cluster's top edge, on foot;
@@ -171,7 +189,12 @@ function duelStrip(g) {
   const D = g.duel, s = D.state; if (!s) return [];
   const S = s.sides[0], worn = S.tools ? new Set(S.tools) : null, hand = S.form === 'hand', out = [];
   const cell = D.hover, piece = hand && cell ? s.board?.at?.(cell.x, cell.y) : null;
-  if (piece && piece.kind !== 'body') out.push(E('du.rotate', 'rotate', 'ROTATE', { dim: !D.mine }));
-  for (const [tool, id, glyph, word] of DUEL_MOVES) if (!worn || worn.has(tool)) out.push(E(id, glyph, word, { dim: hand || !D.mine }));
+  const ask = askedOf(s), fogged = !!s.rs?.fog && s.rs.fog.side !== 0; // (Read only where Dread's fog hides the foe: couriertools.js)
+  if (piece && piece.kind !== 'body') out.push(E('du.rotate', 'rotate', 'ROTATE', { dim: !D.mine, lit: ask === 'move' }));
+  for (const [tool, id, glyph, word] of DUEL_MOVES) {
+    if ((worn && !worn.has(tool)) || (id === 'du.read' && !fogged)) continue;
+    const spent = (id === 'du.tune' && !!S.tune) || (id === 'du.read' && S.read > 0); // (a song sung this turn, a read still open: lit, not again)
+    out.push(E(id, glyph, word, { dim: hand || !D.mine || spent, lit: (!hand && ask === 'tool') || (id === 'du.tune' && !!S.tune) }));
+  }
   return out;
 }

@@ -14,9 +14,11 @@
 //              bow with the head low, the spit rears the head and opens the jaw, the dive arcs it down head first, the tail last.
 //   THE HIDE   ONE mesh whose vertices are rewritten on the CPU each frame: rings swept along a Catmull-Rom through the joints, the
 //              normals analytic (a ring's own frame, carried down the body by parallel transport), a dorsal ridge of fin spines,
-//              thinning to a whip at the tail. The head and its jaw are two small meshes of the same material (FoeKit, kit.js).
+//              thinning to a whip at the tail. The head and its jaw are two meshes of the same material (FoeKit, kit.js), built at
+//              the 30 m serpent's size and scaled by K whole; the hide's rest frame is divided by K, so the crazing reads as it did.
 //   THE WATER  where a joint breaks or goes back through the surface, a disturbance on the water's service (`game.water.disturb`:
-//              the ripple tank's rings and the dive's crown, vfx/waterfx.js); the ram throws a bow wave of them.
+//              the ripple tank's rings and the dive's crown, vfx/waterfx.js), three across a thick joint's breadth; the ram throws
+//              a bow wave of them off both cheeks.
 //
 // One material (the rail foes' body program, materials.js, with a rest-frame coordinate so the crazing stays on the hide as it bends)
 // and one halo material (the throat's glow): 4 draws (hide, head, jaw, the throat's halo).
@@ -26,10 +28,13 @@
 // parallel-transport frame of every tube-along-a-curve (Hanson and Ma, 1995; three.js's TubeGeometry frames); Monster Hunter's Lagiacrus
 // and Plesioth (a sea beast read by the water it breaks).
 //
-//   const s = new SeaSerpentBody(game, { segments = 14, length = 30, seaY? })   (in game.scene, zone 'opensea', hidden until driven)
+//   const s = new SeaSerpentBody(game, { segments = 20, length = 105, seaY? })   (in game.scene, zone 'opensea', hidden until driven;
+//   what the game passes wins: SEA_SERPENT's)   SERPENT_LOOK.scale (K, 3.5): the look's every length x K against the 30 m serpent it
+//   was drawn at, for the ships at 5x (the sloop about 35 m): the hide 3.7 m thick, the head about 12 m long, reared 21 m over the sea
 //   s.drive({ head: Vector3, heading, rise: 0..1, move: null|'ram'|'spit'|'coil'|'dive', k: 0..1, coil?: { centre: Vector3, r } })
+//   (on the hunt's beats 0 and 3, music/clock.js, the hide's film flares and, under, a ring leaves the head: ostinato())
 //   s.update(dt)   s.hit('head'|'coil', k)   (k = 1 - hp / hpMax: a flash, and its crazing)   s.down()   (sinks, spots out over 3 s)
-//   s.headPos (Vector3, the skull's centre)   s.headRadius   s.segmentsAt() -> [Vector3] (the joints, live; read only)   s.radii
+//   s.headPos (Vector3, the skull's centre)   s.headRadius (1.3 K: 4.55 m)   s.segmentsAt() -> [Vector3] (the joints, live; read only)   s.radii
 //   s.tris   s.dispose()
 //   heading: forward is (sin h, 0, cos h), the helm's. head: its x and z are the head's place; the body sets its height from rise and
 //   the move (the head's y is ignored); under the coil the head lies on the coil, at the side of coil.centre the mind's head is.
@@ -40,8 +45,11 @@ import { FoeKit, PAL, HALO_CH, haloGeometry, slab } from '../railfoes/kit.js';
 import { FILM } from '../oxidation.js';
 import { SEA } from '../../world/opensea/seaprops.js';
 
-const RINGS = 60, SIDES = 12, HIST = 512, STEP = 0.2; // (rings along the hide, vertices a ring; the head's path: points kept, metres apart)
-const RMAX = 1.05;                                    // (the hide's radius at its thickest, metres)
+/** The look's size against the ships (the sloop's hull about 35 m since the ships went 5x): every length below is the 30 m serpent's x K. */
+export const SERPENT_LOOK = { scale: 3.5 };
+const K = SERPENT_LOOK.scale;                         // (lengths only: never times, angles or 0..1 shares)
+const RINGS = 60, SIDES = 12, HIST = 512, STEP = 0.2 * K; // (rings along the hide, vertices a ring; the head's path: points kept, metres apart)
+const RMAX = 1.05 * K;                                // (the hide's radius at its thickest, metres: 3.7)
 const CRUDE_GLOW = new THREE.Color(0x7a3ce0);         // (crude's violet lit from within: the spit's throat)
 const SPOTS = 0.4;                                    // (the pearl spots' glow: faint, the film's)
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _t = new THREE.Vector3(), _n = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Color();
@@ -51,7 +59,7 @@ const sstep = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a)
 const lerp = (a, b, t) => a + (b - a) * t;
 
 /** The hide's radius along it, s 0 the neck .. 1 the tail's whip. */
-const radiusAt = (s) => (0.78 + 0.22 * sstep(0, 0.12, s)) * RMAX * Math.pow(1 - s, 1.25) * (s < 0.97 ? 1 : 1 - (s - 0.97) * 20) + 0.035;
+const radiusAt = (s) => (0.78 + 0.22 * sstep(0, 0.12, s)) * RMAX * Math.pow(1 - s, 1.25) * (s < 0.97 ? 1 : 1 - (s - 0.97) * 20) + 0.035 * K;
 
 /** The rail foes' body program with a rest coordinate: the crazing's cells read the hide's straight pose, so they ride on it. */
 function serpentMaterial() {
@@ -109,7 +117,7 @@ function asUnit(geo, u) {
 }
 
 export class SeaSerpentBody {
-  constructor(game, { segments = 14, length = 30, seaY = SEA.y } = {}) {
+  constructor(game, { segments = 20, length = 105, seaY = SEA.y } = {}) {
     this.game = game; this.S = segments; this.L = length; this.d = length / (segments - 1); this.seaY = seaY;
     this.joints = Array.from({ length: segments }, () => new THREE.Vector3());
     this.radii = Float32Array.from({ length: segments }, (_, i) => radiusAt(i / (segments - 1)));
@@ -117,7 +125,7 @@ export class SeaSerpentBody {
     this.hx = new Float32Array(HIST); this.hz = new Float32Array(HIST); this.hn = 0; this.h0 = 0; // (the head's path, a ring buffer)
     this.cmd = { head: new THREE.Vector3(), heading: 0, rise: 0, move: null, k: 0, coil: null };
     this.coilW = 0; this.phase = 0; this.speed = 0; this.moved = 0; this.t = 0; this.placed = false; this.dead = -1; this.bowT = 0; this.splashes = 0;
-    this.flash = [0, 0]; this.hurt = [0, 0]; this.headPos = new THREE.Vector3(); this.headRadius = 1.3; this.last = new THREE.Vector3();
+    this.flash = [0, 0]; this.hurt = [0, 0]; this.headPos = new THREE.Vector3(); this.headRadius = 1.3 * K; this.last = new THREE.Vector3();
 
     this.mat = serpentMaterial(); this.u = this.mat.userData.u;
     this.haloMat = haloMaterial(); this.hu = this.haloMat.userData.u; this.hu.uAspect.value.copy(CRUDE_GLOW);
@@ -125,8 +133,8 @@ export class SeaSerpentBody {
     this.hide = new THREE.Mesh(this.buildHide(), this.mat);
     const H = buildHead(), J = buildJaw();
     this.head = new THREE.Mesh(asUnit(H.geo, 1), this.mat);
-    this.jaw = new THREE.Mesh(asUnit(J.geo, 1), this.mat); this.jaw.position.set(0, -0.22, 0.42); this.head.add(this.jaw);
-    this.halo = new THREE.Mesh(haloGeometry(H.halos.map((h) => ({ ...h, unit: 1 }))), this.haloMat); this.halo.frustumCulled = false; this.head.add(this.halo);
+    this.jaw = new THREE.Mesh(asUnit(J.geo, 1), this.mat); this.jaw.position.set(0, -0.22, 0.42); this.head.add(this.jaw); this.head.scale.setScalar(K); // (the head built at the 30 m serpent's size, scaled whole)
+    this.halo = new THREE.Mesh(haloGeometry(H.halos.map((h) => ({ ...h, size: h.size * K, unit: 1 }))), this.haloMat); this.halo.frustumCulled = false; this.head.add(this.halo);
     for (const m of [this.hide, this.head, this.jaw, this.halo]) m.userData.zone = 'opensea';
     this.group.add(this.hide, this.head);
     this.tris = this.hide.geometry.index.count / 3 + H.tris + J.tris + H.halos.length * 2;
@@ -149,13 +157,13 @@ export class SeaSerpentBody {
         _c.setHex(PAL.hide).lerp(BELLY, sstep(-0.15, -0.6, up)); if (up > 0.95) _c.setHex(PAL.hideD);
         col[v * 3] = _c.r; col[v * 3 + 1] = _c.g; col[v * 3 + 2] = _c.b;
         if ((j === 3 || j === 9) && i % 3 === 1 && s > 0.04 && s < 0.86) { setC(v, PAL.pearl); fx[v * 4] = SPOTS; } // (the flanks' pearl line)
-        rest[v * 3] = Math.sin(a) * r; rest[v * 3 + 1] = up * r; rest[v * 3 + 2] = -s * this.L;
+        rest[v * 3] = Math.sin(a) * r / K; rest[v * 3 + 1] = up * r / K; rest[v * 3 + 2] = -s * this.L / K; // (the rest frame in the head's units, so the crazing's cells are the head's size)
         if (i < RINGS - 1) { const a0 = v, b0 = i * SIDES + (j + 1) % SIDES, c0 = a0 + SIDES, d0 = b0 + SIDES; idx.push(a0, b0, c0, b0, d0, c0); }
       }
     }
     spines.forEach((ri, q) => { // (each spine two faces, one a side, so a single-sided material shows it from both)
       const base = nT + q * 6, s = ri / (RINGS - 1), r = radiusAt(s);
-      for (let m = 0; m < 6; m++) { setC(base + m, PAL.hideD); const z = -s * this.L; rest[(base + m) * 3 + 1] = r * 1.3; rest[(base + m) * 3 + 2] = z; }
+      for (let m = 0; m < 6; m++) { setC(base + m, PAL.hideD); const z = -s * this.L / K; rest[(base + m) * 3 + 1] = r * 1.3 / K; rest[(base + m) * 3 + 2] = z; }
       idx.push(base, base + 1, base + 2, base + 3, base + 5, base + 4);
     });
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3).setUsage(THREE.DynamicDrawUsage));
@@ -172,7 +180,7 @@ export class SeaSerpentBody {
   drive({ head, heading = 0, rise = 0, move = null, k = 0, coil = null } = {}) {
     const C = this.cmd; C.head.copy(head); C.heading = heading; C.rise = Math.min(1, Math.max(0, rise)); C.move = move; C.k = Math.min(1, Math.max(0, k)); C.coil = coil;
     const jump = Math.hypot(head.x - this.hx[this.h0], head.z - this.hz[this.h0]);
-    if (!this.placed || this.hn === 0 || jump > 20) this.place(head, heading);
+    if (!this.placed || this.hn === 0 || jump > 20 * K) this.place(head, heading);
     else this.moved += Math.hypot(head.x - this.last.x, head.z - this.last.z);
     this.last.copy(head);
     if (Math.hypot(head.x - this.hx[this.h0], head.z - this.hz[this.h0]) >= STEP) this.push(head.x, head.z);
@@ -180,9 +188,9 @@ export class SeaSerpentBody {
 
   /** Placed (or moved too far to swim there): the path laid straight behind the heading, the body under. */
   place(head, heading) {
-    this.hn = 0; const fx = Math.sin(heading), fz = Math.cos(heading), n = Math.ceil((this.L + 6) / STEP);
+    this.hn = 0; const fx = Math.sin(heading), fz = Math.cos(heading), n = Math.ceil((this.L + 6 * K) / STEP);
     for (let i = n; i >= 0; i--) this.push(head.x - fx * i * STEP, head.z - fz * i * STEP);
-    for (let i = 0; i < this.S; i++) { this.yS[i] = this.seaY - 3; this.above[i] = 0; }
+    for (let i = 0; i < this.S; i++) { this.yS[i] = this.seaY - 3 * K; this.above[i] = 0; }
     this.placed = true; this.group.visible = this.dead < 3;
   }
   push(x, z) { this.h0 = (this.h0 + 1) % HIST; this.hx[this.h0] = x; this.hz[this.h0] = z; this.hn = Math.min(HIST, this.hn + 1); }
@@ -215,23 +223,23 @@ export class SeaSerpentBody {
     const ram = C.move === 'ram' ? C.k : 0, spit = C.move === 'spit' ? C.k : 0, dive = C.move === 'dive' ? C.k : -1;
     let rise = C.rise; if (C.move === 'spit') rise = Math.max(rise, 0.9); if (ram) rise = Math.max(rise, 0.5 + 0.4 * ram);
     this.speed += (this.moved / Math.max(dt, 1e-4) - this.speed) * (1 - Math.exp(-dt * 4)); this.moved = 0;
-    this.phase += dt * (this.speed + 1.5) / 10 * Math.PI * 2; // (the humps' wave runs tailward as fast as it swims, and a little more: they hold in the water, drifting back)
+    this.phase += dt * (this.speed + 1.5 * K) / (10 * K) * Math.PI * 2; // (the humps' wave runs tailward as fast as it swims, and a little more: they hold in the water, drifting back)
     // the head's height
-    let headY = sea - 2.4 + 8.4 * Math.pow(rise, 1.2);
-    if (ram) headY = sea + lerp(-2.4, 0.15, ram);
+    let headY = sea + K * (-2.4 + 8.4 * Math.pow(rise, 1.2));
+    if (ram) headY = sea + K * lerp(-2.4, 0.15, ram);
     // each joint's height: the humps, the neck to the head, the dive's arc, the sinking
-    const depth = lerp(-2.6, -0.9, rise), A = lerp(0, 2.3, rise) * (ram ? 1.25 : 1), neck = 3 + 6 * rise;
+    const depth = K * lerp(-2.6, -0.9, rise), A = K * lerp(0, 2.3, rise) * (ram ? 1.25 : 1), neck = K * (3 + 6 * rise);
     for (let i = 0; i < this.S; i++) {
-      const sL = i * d, s = sL / L, env = sstep(0, 4, sL) * (1 - 0.45 * s);
-      let y = sea + depth + A * env * Math.sin((sL / 10) * Math.PI * 2 - this.phase);
+      const sL = i * d, s = sL / L, env = sstep(0, 4 * K, sL) * (1 - 0.45 * s);
+      let y = sea + depth + A * env * Math.sin((sL / (10 * K)) * Math.PI * 2 - this.phase);
       y = lerp(y, headY, 1 - sstep(0, neck, sL));
       if (dive >= 0) {
-        const p = dive * (L + 8) - 2;
-        if (sL < p) y = sea - 1.2 - (p - sL) * 0.55;
-        y += 1.8 * Math.exp(-(((sL - p) / 3.5) ** 2)) * (1 - dive * 0.5);
-        if (dive > 0.7) y += 3.5 * Math.sin(Math.PI * (dive - 0.7) / 0.3) * sstep(0.75, 1, s);
+        const p = dive * (L + 8 * K) - 2 * K;
+        if (sL < p) y = sea - 1.2 * K - (p - sL) * 0.55; // (0.55 a slope: the arc's angle, kept)
+        y += 1.8 * K * Math.exp(-(((sL - p) / (3.5 * K)) ** 2)) * (1 - dive * 0.5);
+        if (dive > 0.7) y += 3.5 * K * Math.sin(Math.PI * (dive - 0.7) / 0.3) * sstep(0.75, 1, s);
       }
-      if (this.dead >= 0) y -= 1.6 * dead * dead + 0.8 * dead * (1 - s);
+      if (this.dead >= 0) y -= K * (1.6 * dead * dead + 0.8 * dead * (1 - s));
       this.yS[i] += (y - this.yS[i]) * (1 - Math.exp(-dt * 6));
     }
     // follow the leader: each joint on the head's path, its spacing kept in 3D
@@ -251,8 +259,21 @@ export class SeaSerpentBody {
     U.uParts.value[1].y = live * sstep(0.45, 0.55, rise) * (dive >= 0 ? 1 - sstep(0, 0.3, dive) : 1);
     U.uStates.value[1].x = spit; this.hu.uStates.value[1].x = spit * live;
     const f = 0.5 + 0.5 * Math.sin(this.t * 0.21), F0 = FILM[0], F1 = FILM[1], out = this.dead < 0 ? 1 : Math.max(0, 1 - dead / 3);
-    U.uAspect.value.setRGB(lerp(F0[0], F1[0], f), lerp(F0[1], F1[1], f), lerp(F0[2], F1[2], f)).lerp(CRUDE_GLOW, spit).multiplyScalar(out);
+    const beat = this.ostinato(dt, rise);
+    U.uAspect.value.setRGB(lerp(F0[0], F1[0], f), lerp(F0[1], F1[1], f), lerp(F0[2], F1[2], f)).lerp(CRUDE_GLOW, spit).multiplyScalar(out * (1 + 1.6 * beat));
     this.hu.uAspect.value.copy(CRUDE_GLOW).multiplyScalar(out);
+  }
+
+  /** The hunt's ostinato seen (Wanda's: its bass and taiko on beats 0 and 3 of the sea's 6/8, read off the heard clock, music/clock.js): the
+   *  hide's film flaring on each, and a ring off the head while it swims under, so it is seen coming before it rises (Jaws' barrels). */
+  ostinato(dt, rise) {
+    const C = this.game.music?.clock?.(), under = this.dead < 0 ? 1 - sstep(0.3, 0.6, rise) : 0;
+    this.beatK = (this.beatK || 0) * Math.exp(-dt * 7);
+    if (C) {
+      const b = Math.floor(C.beat), on = C.beats === 6 ? b === 0 || b === 3 : b % 2 === 0;
+      if (b !== this.beatAt) { this.beatAt = b; if (on) { this.beatK = 1; const W = this.game.water; if (under > 0.5 && W?.disturb) W.disturb(this.headPos.x, this.headPos.z, 0.35, 'wake', this.seaY); } }
+    }
+    return this.beatK * (0.35 + 0.65 * under);
   }
 
   /** The coil: the joints drawn onto a helix round the centre, the head reared over the ship on its inside. */
@@ -261,8 +282,8 @@ export class SeaSerpentBody {
     const th0 = Math.atan2(C.head.z - c.z, C.head.x - c.x), fx = Math.sin(C.heading), fz = Math.cos(C.heading);
     const sign = fx * -Math.sin(th0) + fz * Math.cos(th0) >= 0 ? 1 : -1; // (the body trails behind the way the head goes round)
     for (let i = 0; i < this.S; i++) {
-      const sL = i * this.d, head = 1 - sstep(0, 6, sL), rr = r * (1 - 0.3 * head) + this.radii[i] * 0.6, th = th0 - sign * sL / rr;
-      const y = this.seaY - 0.3 + 0.75 * Math.sin(sL * 0.85 - this.t * 1.5) * (1 - head) - 0.02 * sL + 4.2 * head;
+      const sL = i * this.d, head = 1 - sstep(0, 6 * K, sL), rr = r * (1 - 0.3 * head) + this.radii[i] * 0.6, th = th0 - sign * sL / rr;
+      const y = this.seaY + K * (-0.3 + 0.75 * Math.sin(sL * 0.85 / K - this.t * 1.5) * (1 - head) + 4.2 * head) - 0.02 * sL; // (0.02 a slope, kept)
       _v.set(c.x + Math.cos(th) * rr, y, c.z + Math.sin(th) * rr);
       this.joints[i].lerp(_v, w);
     }
@@ -298,7 +319,7 @@ export class SeaSerpentBody {
     const base0 = RINGS * SIDES;
     this.spines.forEach((ri, q) => {
       const R0 = this.ringP[ri], R1 = this.ringP[Math.min(RINGS - 1, ri + 2)], Nn = this.ringN[ri], B = this.ringB[ri], T = this.ringT[ri], r = radiusAt(ri / (RINGS - 1));
-      const hgt = 0.15 + r * 0.55, e = 0.025;
+      const hgt = 0.15 * K + r * 0.55, e = 0.025 * K;
       for (let side = 0; side < 2; side++) {
         const o = side ? -e : e, b = (base0 + q * 6 + side * 3) * 3;
         _v.copy(R0).addScaledVector(Nn, r * 0.8).addScaledVector(B, o); P[b] = _v.x; P[b + 1] = _v.y; P[b + 2] = _v.z;
@@ -324,20 +345,28 @@ export class SeaSerpentBody {
     this.headPos.set(0, 0.1, 1.2).applyMatrix4(H.matrixWorld);
   }
 
-  /** The water: a disturbance where a joint breaks or goes back through the surface, and the ram's bow wave. */
+  /** The water: a disturbance where a joint breaks or goes back through the surface, and the ram's bow wave. A disturbance has a
+   *  strength, never a size (courier/moves/env.js: 0..1, its crown the Courier's), so a joint wider than half the thickest breaks
+   *  the water at three points across its breadth, and the bow wave at the head's two cheeks, each laid a 1.3 K m of the head's way. */
   water(dt, ram) {
     const W = this.game.water; if (!W?.disturb || this.dead > 1.5) return;
     this.splashes = Math.max(0, this.splashes - dt * 8);
     for (let i = 0; i < this.S; i++) {
-      const j = this.joints[i], r = this.radii[i], up = j.y + r * 0.6 > this.seaY && j.y - r < this.seaY + 0.4 ? 1 : 0;
+      const j = this.joints[i], r = this.radii[i], up = j.y + r * 0.6 > this.seaY && j.y - r < this.seaY + 0.4 * K ? 1 : 0;
       this.splashT[i] = Math.max(0, this.splashT[i] - dt);
-      if (up !== this.above[i] && this.splashT[i] <= 0 && this.splashes < 6) {
-        W.disturb(j.x, j.z, 0.25 + 0.6 * r / RMAX, up ? 'dive' : 'wake', this.seaY); this.splashT[i] = 0.5; this.splashes++;
+      if (up !== this.above[i] && this.splashT[i] <= 0 && this.splashes < 12) {
+        const o = this.joints[Math.min(this.S - 1, i + 1)], ax = j.z - o.z, az = o.x - j.x, al = Math.hypot(ax, az) || 1, n = r > RMAX * 0.5 ? 1 : 0;
+        for (let q = -n; q <= n; q++) W.disturb(j.x + (ax / al) * q * r * 0.8, j.z + (az / al) * q * r * 0.8, 0.25 + 0.6 * r / RMAX, up ? 'dive' : 'wake', this.seaY);
+        this.splashT[i] = 0.5; this.splashes += 1 + 2 * n;
       }
       this.above[i] = up;
     }
     this.bowT -= dt;
-    if (ram > 0.4 && this.bowT <= 0) { this.bowT = 0.14; W.disturb(this.headPos.x, this.headPos.z, 0.5 + 0.5 * ram, 'dive', this.seaY); }
+    if (ram > 0.4 && this.bowT <= 0) {
+      this.bowT = Math.min(0.5, (1.3 * K) / Math.max(this.speed, 3)); // (a ring every 1.3 K m the head goes: the 30 m serpent's 0.14 s at its ram)
+      const h = this.cmd.heading, cx = Math.cos(h) * this.headRadius * 0.7, cz = -Math.sin(h) * this.headRadius * 0.7;
+      for (const s of [-1, 1]) W.disturb(this.headPos.x + cx * s, this.headPos.z + cz * s, 0.5 + 0.5 * ram, 'dive', this.seaY);
+    }
   }
 
   dispose() {

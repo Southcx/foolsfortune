@@ -47,8 +47,8 @@ const simRand = stream('creatures/seaserpent'); // (the simulation's chance: cor
  *  is its head's breadth and the hull's: a hard turn at the ring's first sight clears it), the coil's chase (x its speed: a ship at
  *  full sail outruns it, one at cruise does not; it whips round at `coilTurn` x its turn while it coils). */
 export const SERPENT_BODY = {
-  headR: 1.5, tailR: 0.45, hump: 1.3, humpLen: 5, humpSpeed: 1.7, headUp: 3.4, deep: 8, dive: 0.9, rearRate: 1.4, turn: 1.15, accel: 7,
-  poise: 6, stunFor: 0.7, sink: 5, wakeAt: 3, ram: 4, coil: 10, coilChase: 1.45, coilTurn: 3,
+  headR: 5.2, tailR: 1.6, hump: 4.5, humpLen: 17, humpSpeed: 1.7, headUp: 12, deep: 20, dive: 0.9, rearRate: 1.4, turn: 0.8, accel: 7,
+  poise: 6, stunFor: 0.7, sink: 5, wakeAt: 8, ram: 14, coil: 30, coilChase: 1.45, coilTurn: 3, // (3.5x, against the sloop's 35 m hull: Calissa's body, 2026-10-27; the coil scaled by the hull's length over 35)
 };
 /** The other chain-bodied beasts on the same chassis (OPEN-SEA.md 14.3; placeholders until Calissa's bodies give theirs): the akhlut short
  *  and quick, Jormungandr a ring's worth of serpent; `segments` and `length` (m) beside the body's numbers (the serpent's from SEA_SERPENT). */
@@ -200,15 +200,15 @@ export class SeaSerpents {
     // its wake from the head while it swims near the top (none at rest, none deep): the water says where it is going
     const W = c.wakeBody, near = H.y > this.surf(H.p.x, H.p.z) - B.wakeAt;
     W.position.set(H.p.x, this.surf(H.p.x, H.p.z), H.p.z); W.rotation.set(0, c.yaw, 0);
-    if (dt > 0) c.wake.update(dt, { group: W, speed: near && c.dying == null ? c.speed : 0, length: 4, beam: 2.4 }, this.game.emocean?.sea);
+    if (dt > 0) c.wake.update(dt, { group: W, speed: near && c.dying == null ? c.speed : 0, length: B.headR * 2.6, beam: B.headR * 1.6 }, this.game.emocean?.sea);
   }
 
   /** Calissa's body driven: the head's place and heading, how far up (`rise`), the move under way and how far through it; then its
    *  joints read back into the spine, so the shots, the aim and the wake go by what is drawn. */
   drive(c, dt) {
     const B0 = c.body, S = c.spine, A = c.attack, ship = this.game.opensea?.helm, B = c.B, N = c.N;
-    const move = c.coiled ? 'coil' : A?.move ?? null, k = A ? 1 - A.t / c.row.moves[A.move].windup : c.coiled ? Math.min(1, c.coiled.k / 0.6) : 0;
-    _coil.centre = ship?.pos ?? S[0].p;
+    const move = c.coiled ? 'coil' : A?.move ?? null, k = A ? 1 - A.t / (A.T || c.row.moves[A.move].windup) : c.coiled ? Math.min(1, c.coiled.k / 0.6) : 0;
+    _coil.centre = ship?.pos ?? S[0].p; _coil.r = B.coil * ((ship?.look?.length ?? 35) / 35); // (the helix round the hull, as long as it is)
     B0.drive({ head: S[0].p, heading: c.yaw, rise: 1 - c.under, move, k, coil: move === 'coil' ? _coil : null });
     if (dt > 0) B0.update(dt);
     const J = B0.segmentsAt();
@@ -216,7 +216,7 @@ export class SeaSerpents {
     S[0].y = S[0].p.y = B0.headPos.y; S[0].r = B0.headRadius;
     const W = c.wakeBody, H = B0.headPos, top = this.surf(H.x, H.z), near = H.y > top - B.wakeAt;
     W.position.set(H.x, top, H.z); W.rotation.set(0, c.yaw, 0);
-    if (dt > 0) c.wake.update(dt, { group: W, speed: near && c.dying == null ? c.speed : 0, length: 4, beam: 2.4 }, this.game.emocean?.sea);
+    if (dt > 0) c.wake.update(dt, { group: W, speed: near && c.dying == null ? c.speed : 0, length: B.headR * 2.6, beam: B.headR * 1.6 }, this.game.emocean?.sea); // (a wake as broad as the head)
   }
 
   // ---------------------------------------------------------------- what it is struck by
@@ -271,23 +271,25 @@ export class SeaSerpents {
   windUp(c, move, target) {
     const g = this.game, m = c.row.moves[move], B = c.B; if (!m || c.attack || c.coiled || c.held || !c.alive) return false;
     const T = target?.pos ?? target, ship = g.opensea?.helm;
-    const A = (c.attack = { move, t: m.windup, target: T, at: new THREE.Vector3() });
+    const lead = g.seaFight?.crewLead?.() ?? 0; // (Dovina aboard: every windup shown that much sooner: SEA_CREW)
+    const A = (c.attack = { move, t: m.windup + lead, T: m.windup + lead, target: T, at: new THREE.Vector3() });
     c.cd[move] = m.cooldown;
     if (move === 'ram' || move === 'rise' || move === 'breach') { // (the ring where it will break the surface: where the bow will be when the windup runs out; the breach leads it `lead` s more)
       const v = ship ? _a.set(Math.sin(ship.yaw), 0, Math.cos(ship.yaw)).multiplyScalar(ship.speed * (m.windup + (m.lead ?? 0.2))) : _a.set(0, 0, 0);
       A.at.copy(T).add(v); A.at.y = this.surf(A.at.x, A.at.z);
       c.goUnder = 1; c.wantRear = 0;
-      g.creatures.windup(c, { at: A.at, radius: B.ram, eta: m.windup, kind: move, parry: false, area: { shape: 'circle', radius: B.ram, at: 'courier' }, type: 'impact', answer: move === 'breach' ? 'speed' : 'out' });
+      g.creatures.windup(c, { at: A.at, radius: B.ram, eta: c.attack.t, kind: move, parry: false, area: { shape: 'circle', radius: B.ram, at: 'courier' }, type: 'impact', answer: move === 'breach' ? 'speed' : 'out' });
     } else if (move === 'spit') {
       c.goUnder = 0; c.wantRear = 1; c.habit = 'spit';
-      g.creatures.windup(c, { at: c.pos, radius: 2, eta: m.windup, kind: 'spit', parry: false, area: { shape: 'line', width: 2.5, length: Math.max(8, c.pos.distanceTo(T)) }, type: 'impact', answer: 'parry' });
+      g.creatures.windup(c, { at: c.pos, radius: B.headR, eta: c.attack.t, kind: 'spit', parry: false, area: { shape: 'line', width: B.headR * 1.6, length: Math.max(8, c.pos.distanceTo(T)) }, type: 'impact', answer: 'parry' });
     } else if (move === 'coil') { // (it rings the ship: the ring closes on the hull where it is now; out of it before it closes, no wrap)
       A.at = T; c.goUnder = 0; c.wantRear = 0.4; c.habit = 'coil';
-      g.creatures.windup(c, { at: T, radius: B.coil, eta: m.windup, kind: 'coil', parry: false, area: { shape: 'circle', radius: B.coil, at: 'courier' }, type: 'impact', answer: 'out' });
+      const cr = B.coil * ((ship?.look?.length ?? 35) / 35); // (the coil's ring scaled by the hull it wraps)
+      g.creatures.windup(c, { at: T, radius: cr, eta: c.attack.t, kind: 'coil', parry: false, area: { shape: 'circle', radius: cr, at: 'courier' }, type: 'impact', answer: 'out' });
     } else if (SIGNATURES[move]) SIGNATURES[move].wind(this, c, m, T);
     else if (move === 'dive') {
       c.wantRear = 0;
-      g.creatures.windup(c, { at: c.pos, radius: 2, eta: m.windup, kind: 'dive', parry: false, read: false });
+      g.creatures.windup(c, { at: c.pos, radius: 2, eta: c.attack.t, kind: 'dive', parry: false, read: false });
     }
     g.events?.emit('seaserpent.wind', { id: c.kind, move, by: 'creature' });
     return true;
@@ -315,7 +317,7 @@ export class SeaSerpents {
       c.want.addScaledVector(_a, 1.5); const w = c.want.length(), cap = c.row.speed * B.coilChase;
       if (w > cap) c.want.multiplyScalar(cap / w);
       if (A.t > 0) return;
-      const hit = !!ship && (ship.hullDist?.(c.pos) ?? c.pos.distanceTo(_b.copy(ship.pos).setY(c.pos.y))) <= B.coil + 3;
+      const hit = !!ship && (ship.hullDist?.(c.pos) ?? c.pos.distanceTo(_b.copy(ship.pos).setY(c.pos.y))) <= B.coil * ((ship.look?.length ?? 35) / 35) + 3;
       c.attack = null; g.creatures.unwind(c);
       if (hit) { c.coiled = { t: c.row.moves.coil.hold, hits: 0, k: 0 }; this.finish(c, 'coil', true); g.events?.emit('seaserpent.coil', { by: 'creature' }); }
       else { this.finish(c, 'coil', false); c.habit = null; }
@@ -337,7 +339,7 @@ export class SeaSerpents {
     const C = c.coiled, ship = this.game.opensea?.helm; C.t -= dt; C.k += dt;
     if (!ship || C.t <= 0) return this.free(c, 'time');
     c.goUnder = 0; c.wantRear = 1;
-    const a = c.yaw + dt * 1.2, r = 5; // (the head circles over the deck)
+    const a = c.yaw + dt * 1.2, r = Math.max(5, (ship.look?.beam ?? 2.4) / 2); // (the head circles over the deck, its beam's half out)
     _a.set(ship.pos.x + Math.sin(a) * r, 0, ship.pos.z + Math.cos(a) * r);
     c.want.subVectors(_a, c.pos).setY(0).multiplyScalar(3);
   }

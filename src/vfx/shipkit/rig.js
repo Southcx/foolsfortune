@@ -131,7 +131,7 @@ export class Rig {
     this.sailNow = sail; if (this.vaneMesh) this.poseVanes(sail, side);
     return true;
   }
-  boomYaw(B, sail, side) { return side * (0.3 + 0.25 * sail); }
+  boomYaw(B, sail, side) { return -side * (0.3 + 0.25 * sail); } // (the boom to leeward, +x by side: a +Y turn takes its aft end to -x)
   /** The boom's frame: on the lowest segment at its height (never below the deck: stowed, it lies on it), level (the mast's rake undone), swung to the wind. */
   boomMatrix(B, sail, side, out) { const M = this.masts[B.mast]; return this.mastMatrix(M, out).multiply(_bm.makeTranslation(0, Math.max(M.posed[0] + B.h, 0.12 * this.k), 0)).multiply(_bm.makeRotationX(M.rake)).multiply(_bm.makeRotationY(this.boomYaw(B, sail, side))); }
 
@@ -170,14 +170,14 @@ export class Rig {
       return;
     }
     if (W.kind === 'jib') {
-      const head = this.mastPoint(mi, M.height * W.head, _w), tack = V(...W.tack), clew = V(-side * (W.clewX ?? 0.35 * this.k), W.clew[1], W.clew[2]);
+      const head = this.mastPoint(mi, M.height * W.head, _w), tack = V(...W.tack), clew = V(side * (W.clewX ?? 0.35 * this.k), W.clew[1], W.clew[2]);
       A.copy(tack).lerp(head, s); B.copy(clew).lerp(head, s);
       return;
     }
     // lateen: the yard's fore end (F) to its aft end (H) along A; the clew (C) low aft
     const Y = M.yards[W.yard], h = M.base[Y.seg] + Y.at * M.segs[Y.seg].len, [f, a, tilt] = Y.lateen;
     const F = this.mastPoint(mi, h - Math.sin(tilt) * f, V(), 0, Math.cos(tilt) * f, Y.seg), H = this.mastPoint(mi, h + Math.sin(tilt) * a, V(), 0, -Math.cos(tilt) * a, Y.seg);
-    const C = this.mastPoint(mi, M.base[0] + (W.clewH ?? 0.6 * this.k), V(), -side * 0.2 * this.k, -(W.clewZ ?? a * 0.8));
+    const C = this.mastPoint(mi, M.base[0] + (W.clewH ?? 0.6 * this.k), V(), side * 0.2 * this.k, -(W.clewZ ?? a * 0.8));
     A.copy(F).lerp(H, s); B.copy(F).lerp(C, s);
   }
 

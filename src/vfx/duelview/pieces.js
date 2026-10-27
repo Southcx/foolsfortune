@@ -2,7 +2,7 @@
 // THE DUEL'S PIECES (the duel's view: vfx/duelview.js): every piece on a puzzle duel's board as one instance of its family's mesh
 // (CLAUDE.md: many copies of a prop are a batch), so a full board of 400 is about ten draws. Each piece the view shows is a VISUAL
 // (`v`): its kind, colour and side, the cell it is drawn at (fractional while it moves), and what a beat does to it (a squash, a lift,
-// a flash, a flip, a spin, a scale). `cells` is the view's own copy of the board (where each visual will be once the beat in hand is
+// a flash, a flip, a spin, a scale; and what the view's glows lay on it: a hum, a grey, a pick). `cells` is the view's own copy of the board (where each visual will be once the beat in hand is
 // done), so the beats (vfx/duelview/beats.js) can follow an event that names only a cell. The bodies are two figurines, not instances:
 // the Courier's in white clay with a ring of the film turning round it, the foe's idol in its feeling with its data bug's magenta cast
 // slid off it (vfx/databug.js's 'cast', drawn here as the mock drew it). An ember (Dread's junk) is a coal of glazed clay, its count in
@@ -31,7 +31,7 @@ import { gemGeometry, emberGeometry, pipGeometry, junkGeometry, stoneGeometry, b
 
 const CLAY = { junk: 0x93552f, stone: 0x4c4856, bomb: 0x2c2224 };
 const EMBER = [0x3a2a24, 0x6a3020, 0xb0401c, 0xff5a1e], PIP = 0xffb24a; // (an ember's glaze by its count, cooling to its last: 0 cold .. 3 fresh)
-const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _p = new THREE.Vector3(), _s = new THREE.Vector3(), _c = new THREE.Color(), _w = new THREE.Color(1, 1, 1), _t = new THREE.Vector3(), _o = new THREE.Vector3();
+const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _p = new THREE.Vector3(), _s = new THREE.Vector3(), _c = new THREE.Color(), _w = new THREE.Color(1, 1, 1), _g = new THREE.Color(), _t = new THREE.Vector3(), _o = new THREE.Vector3();
 
 /** The Lachrymite of the gems and beads (one program with the crystals'), and the clay's. Module-wide: made once, never disposed. */
 let MATS = null;
@@ -93,7 +93,7 @@ export class DuelPieces {
 
   /** A new visual at a cell (and in the model there). */
   add(kind, { id = null, colour = null, side = null, count = null } = {}, x = 0, y = 0) {
-    const v = { id, kind, colour, side, count, cool: 0, x, y, cx: x, cy: y, s: 1, sx: 1, sy: 1, lift: 0, flash: 0, flip: 0, spin: 0, dx: 0, dy: 0, hidden: false, seed: hash(id ?? x * 31 + y, 4.7) };
+    const v = { id, kind, colour, side, count, cool: 0, x, y, cx: x, cy: y, s: 1, sx: 1, sy: 1, lift: 0, flash: 0, hum: 0, grey: 0, pick: 0, flip: 0, spin: 0, dx: 0, dy: 0, hidden: false, seed: hash(id ?? x * 31 + y, 4.7) };
     this.list.push(v); if (id != null) this.ids.set(id, v);
     if (this.in(x, y)) { this.cells[this.idx(x, y)] = v; v.cx = x; v.cy = y; }
     return v;
@@ -121,10 +121,11 @@ export class DuelPieces {
     this.courier.visible = this.foe.visible = false;
     for (const v of this.list) {
       if (v.hidden) continue;
-      cellLocal(v.x + v.dx, v.y + v.dy, B, _p); _p.z += v.lift * cs;
+      cellLocal(v.x + v.dx, v.y + v.dy, B, _p); _p.z += (v.lift + v.pick * 0.55) * cs;
+      const hum = v.hum ? v.hum * Math.exp(-((this.t + v.seed * 0.12) % 0.6) / 0.16) : 0, grow = (1 + 0.09 * hum) * (1 + 0.1 * v.pick); // (a hum: a bell's strike each 0.6 real s, decaying, a wave across by its seed; a pick lifts and swells it: glows.js, marks.js)
       if (v.kind === 'body') {
         const b = v.side === 0 ? this.courier : this.foe; if (this.bodyHidden[v.side]) continue;
-        b.visible = true; b.position.copy(_p); b.scale.set(cs * v.s * v.sx, cs * v.s * v.sy, cs * v.s);
+        b.visible = true; b.position.copy(_p); b.scale.set(cs * v.s * v.sx * grow, cs * v.s * v.sy * grow, cs * v.s * grow);
         if (v.side === 0) this.ring.rotation.z = this.t * 0.6; else b.rotation.z = Math.sin(this.t * 1.3 + v.seed * 6) * 0.08;
         continue;
       }
@@ -135,13 +136,15 @@ export class DuelPieces {
       const mesh = this.fam[key]; if (!mesh || n[key] >= mesh.instanceMatrix.count) continue;
       const i = n[key]++;
       _e.set(0, v.flip, v.spin + (v.kind === 'orb' ? Math.sin(this.t * 1.7 + v.seed * 9) * 0.15 : 0)); _q.setFromEuler(_e);
-      const big = v.kind === 'orb' ? 1.2 : 1; _s.set(cs * v.s * v.sx * big, cs * v.s * v.sy * big, cs * v.s * big);
+      const big = (v.kind === 'orb' ? 1.2 : 1) * grow; _s.set(cs * v.s * v.sx * big, cs * v.s * v.sy * big, cs * v.s * big);
       mesh.setMatrixAt(i, _m.compose(_p, _q, _s));
       if (v.kind === 'gem') feelColour(v.colour, _c); else if (v.kind === 'orb') featTint(this.t * 0.3 + v.seed, _c, { bright: 1.9 }); // (the film's flash, walking)
       else if (v.kind === 'ember') { const k = Math.max(0, Math.min(3, v.count ?? 3)); _c.setHex(EMBER[k]).multiplyScalar(1 + 0.15 * Math.sin(this.t * 3 + v.seed * 9) * (k / 3)); }
       else _c.setHex(CLAY[v.kind] ?? CLAY.junk);
       if (v.cool) { v.cool = Math.max(0, v.cool - dt / 0.5); _c.lerp(_w, v.cool * 0.6); }
       if (v.flash) _c.lerp(_w, Math.min(1, v.flash));
+      if (hum) _c.lerp(_w, hum * 0.35);
+      if (v.grey) { const l = 0.3 * _c.r + 0.55 * _c.g + 0.15 * _c.b; _c.lerp(_g.setRGB(l, l, l), v.grey * 0.8).multiplyScalar(1 - v.grey * 0.45); } // (a colour none of which a Paint could reach: greyed, glows.js)
       mesh.setColorAt(i, _c);
       if (v.kind === 'ember' && v.craze > 0) n.craze = drawCrazing(this.fam.craze, n.craze, v, _p, _q, cs * v.s, this.t); // (before the pips: they take _q)
       if (v.kind === 'ember') { const pips = this.fam.pip, k = Math.max(0, Math.min(3, v.count ?? 3)); // (its count: pips across its face, glowing)
