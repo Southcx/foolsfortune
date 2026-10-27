@@ -34,7 +34,7 @@ import { sm, clamp01, cellLocal } from './layout.js';
  *  shot's (1/s); kick: { break, allclear, end }: [z, real s] whipped to; shake: m and rad at trauma 1, its drain (1/s); domeFar, domeNear:
  *  the domains' clash's radius (m) in the arena and at the nearest in the board view, domeMargin past the camera. */
 export const STAGE = {
-  arenaScale: 0.46, lift: 0.32, tilt: 0.16, arenaYaw: 0.42, foeTurn: 0.62, intro: 1.5, pinch: 1.5, wheel: 0.0028, settle: 0.35, ease: 5, follow: 9,
+  arenaScale: 0.6, lift: 0.28, tilt: 0.14, arenaYaw: 0.3, foeTurn: 0.62, intro: 1.5, pinch: 1.5, wheel: 0.0028, settle: 0.35, ease: 5, follow: 9,
   kick: { break: [0.12, 1.5], allclear: [0, 2.1], end: [0, 99], finisher: [0.2, 2.4] },
   shake: { pos: 0.07, roll: 0.035, drain: 1.5 },
   domeFar: 18, domeNear: 5.5, domeMargin: 1.6,
@@ -109,9 +109,9 @@ export class DuelStage {
   arenaShot(out) {
     const V = this.view, g = V.game, cam = g.camera, tan = Math.tan(((cam?.fov ?? 70) * Math.PI) / 360), asp = cam?.aspect || 16 / 9;
     const a = g.player?.pos ? _a.copy(g.player.pos) : _a.copy(V.centre).addScaledVector(V.u, -1.5), b = V.foe?.pos ? _b.copy(V.foe.pos) : _b.copy(V.centre).addScaledVector(V.u, 1.5);
-    const span = a.distanceTo(b) / 2 + 1.15, look = _m.copy(a).lerp(b, 0.5).setY(V.centre.y + 0.95);
-    const d = Math.max(span / (tan * asp), 1.35 / tan) * 1.08, dir = _d.copy(V.face).applyAxisAngle(UP, -STAGE.arenaYaw);
-    out.look.copy(look); out.pos.copy(look).addScaledVector(dir, d).addScaledVector(UP, 0.75 + d * 0.12);
+    const span = a.distanceTo(b) / 2 + 0.75, look = _m.copy(a).lerp(b, 0.5).setY(V.centre.y + 0.9);
+    const d = Math.max(span / (tan * asp), 1.2 / tan), dir = _d.copy(V.face).applyAxisAngle(UP, -STAGE.arenaYaw);
+    out.look.copy(look); out.pos.copy(look).addScaledVector(dir, d).addScaledVector(UP, 0.35 + d * 0.06);
     return out;
   }
 

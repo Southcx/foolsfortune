@@ -25,7 +25,7 @@ import { cellLocal, sm, clamp01 } from './layout.js';
 
 /** dur: the pour (real s); open: the Jar's mouth before the stream leaves; beads: the stream's length; gap: its beads' spacing on the
  *  curve; arc: the curve's rise over its middle (m); size: a bead's radius (m). */
-export const DIVE = { dur: 0.62, open: 0.12, beads: 26, gap: 0.028, arc: 1.1, size: 0.07 };
+export const DIVE = { dur: 0.62, open: 0.12, beads: 26, gap: 0.028, arc: 1.1, size: 0.11 };
 const UP = new THREE.Vector3(0, 1, 0);
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(), _c = new THREE.Color(), _p = new THREE.Vector3();
 
