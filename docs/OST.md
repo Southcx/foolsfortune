@@ -134,6 +134,9 @@ their Clayese scales; the System's skill and achievement jingles (the chime and 
   container's CPU; a heavy processor (an amp, a clipper, a reverb) stands for the band's life and notes play into it. **A phone's mixer**
   (`sfx.phone`, `PHONE` in `audio/core.js`; `?phoneaudio=1` on a desk): 32 kHz, reverbs at most 1.2 s, 10 sounds begun in 250 ms, the
   heaviest instruments thinned (`this.phone` in the band), the arranger's notes made further ahead.
+  A blow's sounds (struck, damage, the stun's tick) share one budget on a phone, one each 90 real ms (`hitOk`); every one-shot lets
+  its nodes go when it ends; the audio's health (`audio/health.js`) writes into the field report when the audio clock falls behind real
+  time or the context stops, with the zone and the cue's section.
 - **Levels:** each section has a `gain`. Rendered offline (`scripts/render_score.mjs`) and measured: a quiet opening or a jingle about
   -31 dB RMS, a theme's body -24 to -29, a fight -17 to -23; a climax about twice a verse.
 - **The low end:** under about 45% of the energy below 120 Hz (a looser limit is allowed for a hit). A sustained sub at full level
