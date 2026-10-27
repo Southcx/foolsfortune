@@ -946,3 +946,7 @@ NEW:lookahead-own-stream. **A lookahead owns its own stream.** A preview, an int
   (`quietStream`), never by drawing the real stream: looking must not change the odds, and a replay must replay.
 NEW:lookahead-own-copy. **A lookahead copies a duel with the kernel's `cloneState`, never a spread.** A `{ ...s }` shares every array the
   kernel writes (the undo stack, the log): a forecast or a preview must not reach into the real turn.
+NEW:lookahead-own-stream. **A lookahead owns its own stream.** A preview, an intent or a bot's search is seeded from the state it copies
+  (`quietStream`), never by drawing the real stream: looking must not change the odds, and a replay must replay.
+NEW:territory-is-sight-and-leash. **A territorial creature sees all it would defend, and moves only on a ship inside it.** Its sight is its
+  zone x its leash, never the zone alone; a move that would carry it out of its leash (a rise, a breach) is not begun.

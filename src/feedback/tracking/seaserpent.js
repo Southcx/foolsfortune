@@ -31,7 +31,7 @@ export function seaSerpentRules({ on, L, log }) {
     log.say('battle', `${beast(e.id)[0].toUpperCase()}${beast(e.id).slice(1)} sinks.`, { key: 'sbdown', throttle: 1 });
     first(`seabeast.${e.id}`, `Logged: your first of ${beast(e.id)} sunk. Its part can be forged at a quay (/forge).`);
   });
-  on('seabeast.paid', (e) => { if (e.by !== 'courier') return; if (e.hull >= e.of) L.inc(`seabeast.down.whole.${e.id}`); log.say('gain', `${beast(e.id)[0].toUpperCase()}${beast(e.id).slice(1)} pays ${e.cubes} cubes (your hull kept ${e.hull} of ${e.of}).`, { key: 'sb.paid', throttle: 1 }); });
+  on('seabeast.paid', (e) => { if (e.by !== 'courier') return; if (e.hull >= e.of) L.inc(`seabeast.down.whole.${e.id}`); log.say('gain', `Sinking ${beast(e.id)} pays ${e.cubes} cubes. Your hull came through able to take ${e.hull} of ${e.of} hits.`, { key: 'sb.paid', throttle: 1 }); });
   on('sea.hull', (e) => { L.inc('sea.hull.hit'); log.say('warn', `Your hull takes a hit: it can take ${e.hull} more.`, { key: 'sshull', throttle: 0.5 }); });
   on('sea.hull.broken', (e) => { L.inc('sea.hull.broken'); log.say('warn', `Your hull gives. A tug tows you to the lane, mended, for ${e.fee} cubes.`, { key: 'sshullb', throttle: 2 }); });
 }

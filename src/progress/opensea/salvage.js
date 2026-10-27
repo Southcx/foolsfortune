@@ -46,13 +46,13 @@ export const SHIP_PARTS = {
     storm:     { name: 'Storm sail', does: 'Strong in a gale, weak in light airs', rig: { lo: 0.55, hi: 1.2 } },
     // forged from a beast (forge.js): the kraken's draws in light airs and spills a gale; the world serpent's points high, starves in light airs
     krakenSail: { name: 'Kraken sail', does: 'Draws in light airs; spills a strong wind', rig: { lo: 1.8, hi: 0.6 }, from: 'forge' },
-    worldSail:  { name: 'World-serpent sail', does: 'Points high and runs well; starves in light airs', rig: { irons: (35 * Math.PI) / 180, best: (120 * Math.PI) / 180, run: 0.9, lo: 0.6, hi: 1.1 }, from: 'forge' },
+    worldSail:  { name: 'Jormungandr sail', does: 'Points high and runs well; starves in light airs', rig: { irons: (35 * Math.PI) / 180, best: (120 * Math.PI) / 180, run: 0.9, lo: 0.6, hi: 1.1 }, from: 'forge' },
   },
   keel: {
     stock:   { name: 'Keel', does: 'As built' },
     deep:    { name: 'Deep keel', does: 'Tracks through currents; turns slower', mult: { rip: 0.5, turn: 0.85 } },
     shallow: { name: 'Shallow keel', does: 'Turns fast; currents push it more', mult: { rip: 1.3, turn: 1.25 } },
-    serpentKeel: { name: 'Serpent keel', does: 'Turns fast and tracks a current; a little slower', mult: { rip: 0.9, turn: 1.2, cruise: 0.95 }, from: 'forge' },
+    serpentKeel: { name: 'Sea serpent keel', does: 'Turns fast and tracks a current; a little slower', mult: { rip: 0.9, turn: 1.2, cruise: 0.95 }, from: 'forge' },
   },
   hull: {
     stock:  { name: 'Hull', does: 'As built' },
