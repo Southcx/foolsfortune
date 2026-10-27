@@ -14,6 +14,8 @@
 //   THE BROADSIDE  the heavy shots (`heavy`), their guns' mouths, spouts and hits, and the gun ports they leave by: vfx/opensea/broadsidelook.js,
 //                 handed the heavy ones here. A moment is the broadside's when the runtime says so (`{ heavy }` or the shot itself as a third
 //                 argument), else when the shot it belongs to is heavy (the one leaving from that point for a muzzle or a splash, the one flying that way near it for a hit).
+//   THE MOUNTS    keys 1 and 2's tools at sea (the harpoon, the toll, the gulp, sonar, the flash, the slick): vfx/opensea/seamounts.js, drawn
+//                 each frame after the shots (it reads them: a gulped shot's wake, a slick a shot sets alight).
 //
 // Prior art: the rail's own shots (Touhou's and Cave's core and edge; Rez's lasers; Cuphead's pink parry, ours the parry mark), The Wind
 // Waker's cannon at sea (a puff at the muzzle, a ring of spray where a shot lands short), Sea of Thieves' splash on a near miss.
@@ -21,13 +23,14 @@
 //   game.seaFightLook = new SeaFightLook(game)
 //   .draw(fight)   (each frame: fight.shots [{ pos, vel }], fight.globs [{ pos, vel, back }])
 //   (it installs the sea beasts' bodies: game.makeSeaBeast, game.makeKraken, /beastlook; vfx/opensea/beasts/index.js)
-//   .muzzle(from, dir, heavy?)   .hit(point, dir, heavy?)   .splash(pos, 'shot' | 'glob', heavy?)   .hull(pos)   .parked() -> [mesh] (the warm-up)   .broadside (its look)
+//   .muzzle(from, dir, heavy?)   .hit(point, dir, heavy?)   .splash(pos, 'shot' | 'glob', heavy?)   .hull(pos)   .parked() -> [mesh] (the warm-up)   .broadside   .mounts (their looks)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RailShots } from '../railshots.js';
 import { LANCE_COLOR } from '../../courier/ship/shots.js';
 import { BroadsideLook } from './broadsidelook.js';
 import { installSeaBeasts } from './beasts/index.js';
+import { SeaMountsLook } from './seamounts.js';
 
 export const SEA_FIGHT_LOOK = { globR: 0.85, sparks: 10, chips: 6 }; // (the glob's drawn head (m): its hit sphere is 0.7, drawn a little larger, as the rail's are)
 
@@ -40,10 +43,10 @@ export class SeaFightLook {
     this.shots.mesh.userData.zone = 'opensea'; this.shots.mesh.renderOrder = 60;
     this.shots.color(LANCE_COLOR);
     this.gold = new THREE.Color(LANCE_COLOR);
-    this.broadside = new BroadsideLook(game); this.heavy = []; this.fight = null;
+    this.broadside = new BroadsideLook(game); this.mounts = new SeaMountsLook(game); this.heavy = []; this.fight = null;
     this.beasts = installSeaBeasts(game); // (the sea beasts' bodies, game.makeSeaBeast and game.makeKraken, and their look test: beasts/index.js)
   }
-  parked() { return [...this.shots.parked(), ...this.broadside.parked()]; }
+  parked() { return [...this.shots.parked(), ...this.broadside.parked(), ...this.mounts.parked()]; }
   /** Whether a moment is the broadside's: said (`{ heavy }`, or the shot), else found among the fight's shots by `test`. */
   isHeavy(said, test) { if (said != null) return typeof said === 'object' ? !!said.heavy : !!said; const f = this.fight || this.game.seaFight; return !!f?.shots?.some((s) => s.heavy && test(s)); }
 
@@ -65,6 +68,7 @@ export class SeaFightLook {
     S.count = n;
     S.show(m + n > 0);
     S.update(this.game.rawDt ?? 1 / 60, this.game.camera);
+    const R = this.game.opensea; this.mounts.draw(fight, this.game.rawDt ?? 1 / 60, !!(R?.built && R.active));
   }
 
   /** A needle leaves the bow: a small flash and a few sparks along the aim. */
