@@ -159,9 +159,9 @@ export class DuelView {
    *  the controls over their lower halves. */
   touchShot(B, tan) {
     const L = this.game.hudLayout, V = L.view, R = L.duelLayout?.(B)?.board; if (!V?.w || !V?.h || !R?.h) return null;
-    const { cs, base, border } = DUEL_VIEW, Hm = base + B.h * cs + border + 0.02, k = R.h / Hm, d = V.h / (2 * k * tan); // (k: CSS px a metre at d)
+    const { cs, base, border } = DUEL_VIEW, Hm = R.m?.h ?? B.h * cs + border, k = R.h / Hm, d = V.h / (2 * k * tan); // (k: CSS px a metre at d; the slab and its border fill the height, the clay feet run off below: a phone has no room for legs, South, 2026-10-27)
     const right = _w.crossVectors(this.face, UP).negate().normalize(), dx = (R.x + R.w / 2 - V.w / 2) / k, dy = (R.y + R.h / 2 - V.h / 2) / k;
-    const look = this.centre.clone().setY(this.centre.y + Hm / 2).addScaledVector(right, -dx).addScaledVector(UP, dy);
+    const look = this.centre.clone().setY(this.centre.y + base + (B.h * cs) / 2).addScaledVector(right, -dx).addScaledVector(UP, dy);
     return { pos: look.clone().addScaledVector(this.face, d), look };
   }
   /** On touch, the duel's shot kept to the room as it stands: the session frames it once at the open, before the duel's own tiles

@@ -74,7 +74,7 @@ export const HUD_LAYOUT = {
                         //  home by default, low in the move area; the ring kept clear round it (the stick's full push, ui/touch/stick.js STICK.full)) // (the ticker: two lines of 18 px (16 px type), at most 420 px wide)
   // the duel's phone screen: the board's padding off the safe height's ends, the least flank, the tiles (the tools' at most and least, END
   // TURN, FINISHER and FORM, FLEE), the tube's height (a phone held sideways), the tiles' foot; the top bar's tile, gap, PAUSE's gap and pad (topbar.js)
-  duel: { pad: 3, flankMin: 120, tool: 60, toolMin: 44, end: 80, side: 60, flee: 48, tube: 96, foot: 3, bar: { s: 44, gap: 6, pause: 14, pad: 16 }, clear: 8, ash: 0.02 },
+  duel: { pad: 3, flankMin: 120, tool: 60, toolMin: 44, end: 80, side: 60, flee: 48, tube: 96, foot: 3, bar: { s: 44, gap: 6, pause: 14, pad: 16 }, clear: 8, rim: 0.5 },
   poll: 0.25,           // (real seconds between reads of the device, the garden and the hand, and the turn card's check)
   // the instruments, in lines of the 480-line present (their own unit); `scale` su a line on touch (0.2: a 390 px phone's 0.78 CSS px a
   // line, the desk's 1080 lines are 2.25)
@@ -185,12 +185,12 @@ export class HudLayout {
   duelLayout(b = this.game.duel?.state?.board) {
     if (!this.touch || !b?.w || !b?.h) return null;
     const H = HUD_LAYOUT, D = H.duel, gap = H.gap, V = this.view, S = this.safe, B = this.bounds, F = D.foot, T = D.bar;
-    const { cs, border, base } = DUEL_VIEW, Wm = b.w * cs + 2 * border, Hm = base + b.h * cs + border + D.ash; // (the whole tsuitate: its feet on the ground to its ash run, edge to edge: the coordinator's audit, 2026-10-27)
+    const { cs, border } = DUEL_VIEW, rim = 2 * border * D.rim, Wm = b.w * cs + rim, Hm = b.h * cs + rim; // (the slab and a share of its border, edge to edge: the feet and the ash run go off the screen's foot, the cells as big as the height allows; South, 2026-10-27)
     let board, left, right;
     if (!this.portrait) {
       const safeH = V.h - S.t - S.b, maxW = V.w - 2 * (Math.max(S.l, S.r) + H.gutter + gap + D.flankMin); // (centred: both flanks as wide as the narrower)
       let hp = safeH - 2 * D.pad, wp = (hp * Wm) / Hm; if (wp > maxW) { wp = maxW; hp = (wp * Hm) / Wm; }
-      board = rect((V.w - wp) / 2, S.t + (safeH - hp) / 2, wp, hp);
+      board = rect((V.w - wp) / 2, S.t + (safeH - hp) / 2, wp, hp); board.m = { w: Wm, h: Hm }; // (its size in metres: the duel's camera fits these to the rect, duelview.js touchShot)
       left = rect(B.x, B.y, board.x - gap - B.x, B.h); right = rect(board.x + board.w + gap, B.y, B.x + B.w - board.x - board.w - gap, B.h);
     } else { // (upright: the turn card holds the game, ui/turncard.js; still laid out: the board across under the top bar, the flanks under it)
       const wp = B.w, hp = (wp * Hm) / Wm, y = B.y + H.topBar.h + gap; board = rect(B.x, y, wp, hp);
