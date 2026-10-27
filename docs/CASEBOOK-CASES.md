@@ -4169,3 +4169,19 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the parry measures from the footprint (`helm.hullDist`), its reach x1.5 with Espada aboard. Measured: a spit 9 m off the bow's
   tip sent back.
 - **Rule:** NEW:hull-is-a-footprint (the same rule: every test against the hull, the parry's too)
+
+### 2026-10-27 · A fore-and-aft sail's boom set to windward (found building the open sea's wind; Calissa)
+- **Seen:** reading the rig against the new wind: the vanes bellied and the pennant streamed to leeward, the boom swung the other way.
+- **Cause (as measured):** at the helm with a beam wind (its way +x in the ship's frame, `side` 1), the boom's end stood at x -7.84 and
+  the vanes' normals at +x: `boomYaw` turned +Y by `side`, and a +Y turn takes a spar along -z to -x; the clews followed the boom.
+  Never seen before the wind: `side` was always 1 and nothing else showed which way leeward was.
+- **Fix:** the boom's yaw, the main's clew and the fore-and-aft clew all take +x by `side`, the belly's side. Measured after, with the wind
+  to -x: boom end -7.84, vanes -0.85 and -0.99, the pennant's tip -6.27: all to leeward.
+- **Rule:** NEW:spar-and-cloth-one-side
+
+### 2026-10-27 · A broadside's timing event named over the discovery event (caught by Calissa before the merge; Wanda)
+- **Seen:** b30e657c's broadside rule emitted `sea.report { at, side }` for the muzzles' flash; `sea.report` is already Dovina's discovery
+  reported at a dock (progress/opensea/seatrip.js), counted in the ledger (tracking/opensea.js) and rung as the dock's coin (cues.js).
+- **Cause (as read):** a new event named without searching the bus for the name first.
+- **Fix:** the broadside's moment is `sea.boom { at, side }`; nothing else uses the name.
+- **Rule:** NEW:event-name-searched-first

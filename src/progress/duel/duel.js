@@ -13,6 +13,7 @@
 //   settle(state, side) -> { steps, junk, events }   legalActions(state, side) -> actions   cloneState(state)
 //   preview(state, action) -> { junk, steps, cleared } | null   (what one action would make, on a copy: shown before it is chosen)
 //   newDuel's `board` ({ w, h, perColumn, landCap }) over the ruleset's, and `lesson` (lesson.js) for the first duel
+//   undo(state) -> events | null (the last action this turn taken back)   marginOf(state) -> junk's multiplier now   weaknessOf(state) -> { weak, resists, k } | null   (PUZZLE-DUELS.md 19)
 // ---------------------------------------------------------------------------------------
 import { Board, COLOURS, piece, hasTag } from './board.js';
 import { fall, clears, resolve, pinch, ACTIONS as BOARD_ACTIONS } from './rules.js';
@@ -22,6 +23,7 @@ import { emberKind, tickEmbers } from './dread.js';
 import { FLEE_ACTION } from './flee.js';
 import { lessonOf, lessonAct, lessonTurn } from './lesson.js';
 import { seeded } from '../../core/rng.js';
+import { OPPOSITE } from '../weather.js';
 
 /** Every action a side may take: the board's (rules.js), the Courier's run and tools (couriertools.js), the god hand's finisher (duelbreak.js),
  *  and the flee (flee.js). */
@@ -38,6 +40,12 @@ export const DUEL = {
   perColumn: 3,    // junk landed that moves the line one column (4 at 3 AP; 3 since 5 AP made offsetting strong: the simulator)
   turnCap: 200,    // turns a side before the line's place decides it (a ply is one side's turn)
   fill: 0.4,       // each side's share of cells filled at the start
+  // the genre's folds (PUZZLE-DUELS.md 19; a ruleset may set its own or `false`):
+  refund: { size: 5, chain: 3, max: 1 }, // an action point back for a clear of `size` (5: a cluster of 4 is the Wisp's plain clear) or a chain step of `chain`, `max` a turn (Puzzle Quest's extra turn, Persona's One More)
+  trickle: 2,      // pool to a side for each chain step past the first (Puzzle Quest's mana: the Courier's tools fed by play, not only by breaks)
+  allClear: 6,     // junk for leaving no gem on your half (Puyo's all clear)
+  weakness: { k: [1.5, 0.5] }, // a gem of the Figment's weak colour counts 1.5 in your clears, of its own feeling 0.5 (weaknessOf)
+  margin: { after: 10, step: 0.25 }, // past `after` turns a side, junk counts `step` more a turn (Puyo Puyo Tetris's margin time: a duel ends)
 };
 
 /** A junk count from one settle's chain steps: a step clearing n gems gives (n - 2) x 2^(step - 1) (Puyo's chain power, simplified). */
@@ -107,11 +115,46 @@ export function settle(s) {
     const hot = clears(s.board, s.rs, tune); if (!hot.size) break;
     const { cleared, events: ev } = resolve(s.board, hot, s.rs);
     events.push(...ev);
-    for (const side of [0, 1]) if (cleared[side]) { steps[side]++; junk[side] += junkOf(cleared[side], steps[side]); events.push({ type: 'chain', side, step: steps[side], cleared: cleared[side] }); }
+    const weak = weaknessOf(s), hit = [0, 0], eff = [...cleared];
+    if (weak) for (const e of ev) if (e.type === 'clear' && e.side === 0 && (e.colour === weak.weak || e.colour === weak.resists)) { const k = e.colour === weak.weak ? weak.k[0] : weak.k[1]; eff[0] += k - 1; if (k > 1) hit[0]++; }
+    for (const side of [0, 1]) if (cleared[side]) { steps[side]++; junk[side] += junkOf(eff[side], steps[side]); events.push({ type: 'chain', side, step: steps[side], cleared: cleared[side], ...(hit[side] ? { weak: hit[side] } : {}) }); }
     const h = s.board.hash(); if (seen.has(h)) { s.capHits++; events.push({ type: 'settle.loop' }); break; } seen.add(h);
   }
-  for (const side of [0, 1]) s.sides[side].sent += junk[side];
+  const mk = marginOf(s), trickle = s.rs.trickle ?? DUEL.trickle;
+  for (const side of [0, 1]) {
+    s.sides[side].sent += Math.round(junk[side] * mk);
+    if (trickle && steps[side] >= 2) { const S = s.sides[side]; S.pool = Math.min(100, S.pool + trickle * (steps[side] - 1)); events.push({ type: 'trickle', side, pool: S.pool, n: trickle * (steps[side] - 1) }); }
+  }
   return { steps, junk, events };
+}
+
+/** A Figment's weakness (PUZZLE-DUELS.md 19.2; Persona's, Puzzle & Dragons' wheel): the feeling opposite its own (the wheel of feelings'
+ *  OPPOSITE) when that colour is on its board, and its own feeling it resists. Your clears of the weak colour count `k[0]` gems each,
+ *  of the resisted `k[1]` (side 0 is the Courier's: the ruleset is the Figment's). A ruleset may name its own (`weak`, `resists`) or `weak: false`. */
+export function weaknessOf(s) {
+  const rs = s.rs, D = DUEL.weakness; if (rs.weak === false || !D) return null;
+  const on = COLOURS.slice(0, Math.min(COLOURS.length, rs.colours)), weak = rs.weak ?? OPPOSITE[rs.feeling], resists = rs.resists ?? rs.feeling;
+  const w = on.includes(weak) ? weak : null, r = on.includes(resists) ? resists : null;
+  return w ? { weak: w, resists: r, k: D.k } : null; // (no weak colour on its board, no resisting either: a weakness is the pair or nothing)
+}
+
+/** Margin time's multiplier on junk now: 1 until `after` turns a side, then `step` more each turn (PUZZLE-DUELS.md 19). */
+export function marginOf(s) {
+  const M = s.rs.margin === false ? null : s.rs.margin ?? DUEL.margin; if (!M) return 1;
+  return 1 + M.step * Math.max(0, Math.floor((s.ply - 1) / 2) - M.after);
+}
+
+/** The turn as it stood before the last action: a copy kept for undo (no draw from the stream: nothing hidden is learned by it). */
+function snapOf(s) {
+  return { board: s.board.clone(), sides: s.sides.map((S) => ({ ...S, forms: [...S.forms], at: S.at && [...S.at], queue: S.queue.map((p) => ({ ...p })) })),
+    apLeft: s.apLeft, winner: s.winner, lesson: s.lesson && { ...s.lesson }, refunded: s.refunded || 0, chainFrom: s.chainFrom };
+}
+
+/** Undo the side's last action this turn (Into the Breach's reset, a step at a time): free, until the turn ends or a die is thrown. */
+export function undo(s) {
+  const u = s.undo?.pop(); if (!u) return null;
+  Object.assign(s, u);
+  return [{ type: 'undo', side: s.toMove, left: s.undo.length }];
 }
 
 /** One action by the side to move: refused (null) if it is not legal, not its form's, or costs more than the points left. */
@@ -121,14 +164,29 @@ export function act(s, a) {
   const side = s.toMove, A = ACTIONS[a.kind]; if (!A) return null;
   if (A.form && A.form !== s.sides[side].form) return null;
   const cost = costOf(a); if (cost > s.apLeft || !A.legal(s, side, a)) return null;
+  (s.undo ||= []).push(snapOf(s));
   s.apLeft -= cost;
   const before = s.sides[side].pool, events = A.apply(s, side, a);
   if (!events.length) events.push({ type: a.kind, side });
   if (s.sides[side].pool < before) Object.assign(events[0], { spent: before - s.sides[side].pool, pool: s.sides[side].pool }); // (what a spend cost, on its own event)
   if (s.rs.pincer) events.push(...pinch(s.board, side));
   events.push(...settle(s).events);
+  events.push(...bonusOf(s, side, events));
+  if (a.kind === 'flee' || s.winner !== null) s.undo = []; // (a die thrown, or the duel decided: no taking it back)
   if (s.lesson) events.push(...lessonAct(s, side, a, events));
   return events;
+}
+
+/** What a big play earns the mover at once (PUZZLE-DUELS.md 19): an action point back for a clear of `refund.size` or a chain step of
+ *  `refund.chain` (at most `refund.max` a turn), and junk for an all clear (no gem left on your half after a clear). */
+function bonusOf(s, side, events) {
+  const out = [], R = s.rs.refund === false ? null : s.rs.refund ?? DUEL.refund, mine = events.filter((e) => e.type === 'chain' && e.side === side);
+  if (R && mine.length && (s.refunded || 0) < R.max && mine.some((e) => e.cleared >= R.size || e.step >= R.chain)) {
+    s.refunded = (s.refunded || 0) + 1; s.apLeft += 1; out.push({ type: 'refund', side, ap: 1, why: mine.some((e) => e.step >= R.chain) ? 'chain' : 'size' });
+  }
+  const AC = s.rs.allClear === false ? 0 : s.rs.allClear ?? DUEL.allClear;
+  if (AC && mine.length) { let left = 0; s.board.each((p, x) => { if (s.board.mine(side, x) && hasTag(p, 'matches')) left++; }); if (!left) { s.sides[side].sent += AC; out.push({ type: 'allclear', side, n: AC }); } }
+  return out;
 }
 
 /** The turn's end: the mover's junk cancels what waits for it, the rest waits for the other side; what still waits for the mover
@@ -146,7 +204,7 @@ export function endTurn(s) {
     s.ply++;
     if (s.ply > DUEL.turnCap * 2) { const d = s.board.line - s.board.w / 2; s.winner = d > 0 ? 0 : d < 0 ? 1 : -1; events.push({ type: 'duel.cap', winner: s.winner }); }
   }
-  s.toMove = foe; const next = startTurn(s, foe); s.apLeft = next.ap; events.push(next.event);
+  s.toMove = foe; s.undo = []; s.refunded = 0; const next = startTurn(s, foe); s.apLeft = next.ap; events.push(next.event);
   if (s.lesson) events.push(...lessonTurn(s, foe));
   if (s.winner === null) events.push(...drip(s, foe));
   topQueue(s, foe);
@@ -228,7 +286,7 @@ export function legalActions(s, side = s.toMove, { drags = 24 } = {}) {
 
 /** A copy of a duel to try actions on (a bot's lookahead), with a stream of its own seeded from the real one's next draw. */
 export function cloneState(s) {
-  const c = { ...s, board: s.board.clone(), sides: s.sides.map((S) => ({ ...S, forms: [...S.forms], at: S.at && [...S.at], queue: S.queue.map((p) => ({ ...p })) })), log: [], lesson: s.lesson && { ...s.lesson } };
+  const c = { ...s, board: s.board.clone(), sides: s.sides.map((S) => ({ ...S, forms: [...S.forms], at: S.at && [...S.at], queue: S.queue.map((p) => ({ ...p })) })), log: [], undo: [], lesson: s.lesson && { ...s.lesson } }; // (its own undo: a lookahead never writes into the real turn's)
   c.r = seeded(Math.floor(s.r() * 2 ** 31));
   return c;
 }

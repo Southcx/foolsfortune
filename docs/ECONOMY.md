@@ -176,6 +176,15 @@ each with a hue, a saturation and a path at the spirit press (DESIGN.md section 
   the players, with nothing to the house, so it is even, like Zodiac: what you win there, the folk lost.
 - First wins pay once, ever, as the Raceway's tests do: to be set when the medals are, with the cloth.
 
+## The night's folds (2026-10-27, South's research round)
+
+- **The first today** (`progress/firsttoday.js`): a minute of play once a module a game day, ten modules: at most 80 cubes a game day
+  (0.17x the aim, and only for ten different things in one real hour). No streak.
+- **Habits at sea** (`opensea/habits.js`): 0.15 of a hunt a habit's first plate, 44 habits, about 900 cubes once: bounded.
+- **The docks' demand** (`seatrip.js DEMAND`): x1.25 to x1.5 on the kinds a dock wants; the sea's fees at most half again: bounded.
+- **The rumour's bounty**: a beast's whole-hull pay again, once a game day (36 to 60 cubes for the serpent).
+- **Salvage**: a wreck's crates once (1 to 4 minutes of play each by tier), then one a game day: the charted sea's small renewable faucet.
+
 ## Measuring it
 
 - **F3**'s `econ` line (and F4's report): cubes an hour in and out, the aim, the top three faucets and top two drains. It reads only

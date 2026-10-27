@@ -476,3 +476,17 @@ cut.
   the ship's parts as trades (the skiff garage's rule), beasts with one signature each whose answer is a tool (the myth is the
   mechanic: the umibozu's bottomless ladle), the mounts given arcs so where the ship lies is the fight (Sea of Thieves' broadsides),
   and a drift bottle's note that teaches dead reckoning from a written bearing (Sea of Thieves' riddles).
+
+## 27. The genre's folds (South, 2026-10-27: "Poke around the modules, see what's there to improve ... determine what else we can fold in")
+
+Three research passes over the prior art (the versus puzzle and tactics games; the sea, safari and hunting games; the games that tie
+many activities into one progression) ranked what to fold in by fun per build effort. Built the same night:
+- **The collection log** (Old School RuneScape, Yakuza 0): every module's finds as slots read from the ledger; a COLLECTIONS shelf;
+  four achievements over it. COLLECTION-LOG.md.
+- **The first today** (FFXIV's roulette bonus): a minute of play once a module a game day, no streak.
+- **The puzzle duel** (Into the Breach, Puzzle Quest, Persona, Puyo): undo within the turn, an action point back for a big play, pool
+  from chains, the all clear, margin time, a Figment's weakness (the opposite feeling). PUZZLE-DUELS.md 19.
+- **The open sea** (New Pokemon Snap, Sunless Sea, DREDGE): habits as research, the docks' demand, the night a class wilder. OPEN-SEA.md 15.
+Refused, as the laws already say: streaks and wall-clock gates, a second currency, missables, power from checklists, unbounded luck.
+Ranked next: bundles that restore the Workshop (Stardew, Dark Cloud 2's Georama), photo to invention (Dark Cloud 2), a stakes ladder
+per module (Hades' heat, Balatro's stakes), clue fog and power gems in the duel, parts from beasts and square completion at sea.
