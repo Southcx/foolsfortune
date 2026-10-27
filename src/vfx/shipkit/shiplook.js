@@ -17,7 +17,7 @@
 //
 //   new ShipLook(spec, { env })   .group .body .length .beam .scale .deckY .keelMat .mouth .gunAt .helmCradles .helmCradle .rig .hullMat .sail
 //   .set({ sail, heel, side, glow, t, form, roll })   .fold(u | null)   .feeling(hex)   .hurt(k)   .scars({ open, gilt })   .hoist(medal)
-//   .helmCradleSpots()   .helmWake(on, i)   .helmTick(t)   .deckHeight(z)   .crewSpots() -> [[x, z, y]]   .dispose()   .stats() -> { tris, draws }
+//   .ports(side) -> [Vector3] (the broadside's muzzles, world; .gunPorts its lids and guns: shipkit/gunports.js)   .helmCradleSpots()   .helmWake(on, i)   .helmTick(t)   .deckHeight(z)   .crewSpots() -> [[x, z, y]]   .dispose()   .stats() -> { tris, draws }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { Mesher, deckAt } from './hullkit.js';
@@ -30,6 +30,7 @@ import { addOutline } from '../../render/outline.js';
 import { keepTrue } from '../stormwarp.js';
 import { causticsOn } from '../umbral.js';
 import { CradleLook, cradleFoot } from '../cradlelook.js';
+import { GunPorts } from './gunports.js';
 
 let blank = null; // (a 1x1 clear texture: the vanes with no lotus; made once, never disposed)
 const blankTex = () => (blank ||= new THREE.DataTexture(new Uint8Array(4), 1, 1));
@@ -47,8 +48,10 @@ export class ShipLook {
     const M = new Mesher(), wrote = spec.write(M, this) || {}, engines = wrote.engines ?? spec.engines ?? [];
     const foot = cradleFoot();
     for (const [i, h] of (spec.helm || []).entries()) writeCore(M, { at: h, r: foot, seed: i + 1, ...spec.core });
+    this.gunPorts = new GunPorts(this, spec); this.gunPorts.write(M); // (the broadside's ports in the hull's mesh; their lids and guns after: shipkit/gunports.js)
     const hull = this.hullMesh = new THREE.Mesh(track(M.geometry()), this.hullMat); hull.name = 'ship-hull'; hull.castShadow = true; hull.receiveShadow = true;
     this.body.add(hull); addOutline(hull);
+    if (this.gunPorts.mesh) this.body.add(this.gunPorts.mesh);
     // the rig and its vanes
     const V = spec.vane || {};
     this.sail = spec.rig?.vanes?.length ? track(sailMaterial(V.lotus ? vfxTexture('circle_lotus') : blankTex(), { vane: true, fill: V.fill, edge: V.edge, fillA: V.fillA, belly: 0.55 * this.scale })) : null;
@@ -113,6 +116,9 @@ export class ShipLook {
     const raw = this.helmT == null ? 0 : THREE.MathUtils.clamp(t - this.helmT, 0, 0.1); this.helmT = t;
     for (const c of this.helmCradles) c.update(raw);
   }
+  /** The broadside's muzzles on a side ('port' | 'starboard'), world space, one a gun (world/opensea/seafight.js asks; shipkit/gunports.js). */
+  ports(side) { return this.gunPorts.ports(side); }
+
   /** Each helm cradle's well floor, world space (where the Pneuka Jar sits). */
   helmCradleSpots() { return this.helmCradles.map((c) => c.seat()); }
   /** The helm's cradle `i` sealed (the tines close, it lights in the window colour) or unsealed (false). */
@@ -159,6 +165,7 @@ export class ShipLook {
     this.group.parent?.remove(this.group);
     for (const g of this.geos) g.dispose?.(); for (const m of this.mats) m.dispose?.();
     for (const c of this.helmCradles) c.dispose(); // (the cradles' shared materials stay)
+    this.gunPorts.dispose();
   }
 }
 const _pc = new THREE.Color();

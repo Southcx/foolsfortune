@@ -14,8 +14,9 @@
 //                 its note's colour, its number small), BLINK at its end once learned.
 //   AT THE HELM   (the open sea's free helm, ctx `helm`: the stick is the rudder) FIRE (the ship's gun) and PARRY (the spit sent back)
 //                 while a sea serpent hunts the hull, else USE naming MOOR or DOCK where F would; the throttle's two, each worded with
-//                 the step it goes to (STOP .. FULL), dim at its end. The strip: FIX (the sky read, the Dreamvane worn) and PLATE (the
-//                 Veritome worn), and USE while a serpent holds the cluster.
+//                 the step it goes to (STOP .. FULL), dim at its end. The strip: BROADSIDE first (the side the camera looks over fires,
+//                 its rim filling with that side's reload; dim while no side bears, the readier side's reload shown), FIX (the sky read,
+//                 the Dreamvane worn) and PLATE (the Veritome worn), and USE while a serpent holds the cluster.
 //   A PUZZLE DUEL END TURN (the main; dim on the foe's turn), FINISHER on a broken foe, FLEE, FORM (what you would become: HAND or
 //                 COURIER); the strip the worn tools' moves (dim in the hand's form: they are the Courier's), ROTATE first while a piece
 //                 is under the last touch in the hand's form.
@@ -26,12 +27,14 @@
 //
 //   footCluster(game) toolCluster(game, tool) duelCluster(game) helmCluster(game) -> [entry]   stripOf(game) -> [entry]   beltPairOf(game) -> [entry]
 //   inHandCtx(game) -> 'psygun' | 'cutlass' | 'rod' | 'hook' | 'brush' | 'veritome' | 'dreamvane' | 'crucibelle' | 'lockheart' | null
-//   entry { id, glyph, word, corner, lit, dim, tint }   ACTION_TILES (the words and glyphs by tool)
+//   entry { id, glyph, word, corner, lit, dim, tint, charge }   broadsideOf(game) -> { side, charge, bears }   ACTION_TILES (the words and glyphs by tool)
 // ---------------------------------------------------------------------------------------
+import * as THREE from 'three';
 import { SUB_GIFTS } from '../../progress/toolpairs.js';
 import { DEGREE_COLOR } from '../../tools/crucibelle/songs.js';
 import { useLabel } from './cluster.js';
 import { ROOM } from '../../world/opensea/opensea.js';
+import { SEA_FIGHT } from '../../world/opensea/seafight.js';
 
 /** By tool in hand: FIRE's and AIM's faces, the third (or null), and what the faces become in their other moment. */
 export const ACTION_TILES = {
@@ -118,10 +121,21 @@ export function helmCluster(g) {
   return [use ? E('use', null, use) : null, up, down];
 }
 
-/** The helm's strip: FIX with the Dreamvane worn, PLATE with the Veritome, USE while a serpent holds the cluster. */
+/** The broadside's side now (seafight.js `broadside`'s own test: the camera's look on port's normal, past SEA_FIGHT.broadside.beam), and
+ *  its reload as a charge 0..1 (1 loaded); no side bearing, the readier side's, `bears` false. */
+export function broadsideOf(g) {
+  const F = g.seaFight, H = g.opensea?.helm, BS = SEA_FIGHT.broadside; if (!F?.reload || !H) return null;
+  const d = g.camera?.getWorldDirection?.(_look), dot = d ? d.x * Math.cos(H.yaw) - d.z * Math.sin(H.yaw) : 0, bears = Math.abs(dot) >= BS.beam;
+  const k = bears ? (dot > 0 ? 0 : 1) : F.reload[0] <= F.reload[1] ? 0 : 1;
+  return { side: k ? 'starboard' : 'port', charge: Math.max(0, Math.min(1, 1 - F.reload[k] / BS.reload)), bears };
+}
+const _look = new THREE.Vector3();
+
+/** The helm's strip: BROADSIDE, FIX with the Dreamvane worn, PLATE with the Veritome, USE while a serpent holds the cluster. */
 function helmStrip(g) {
-  const use = g.seaFight?.serpent ? helmUse(g) : null;
-  return [use ? E('use', null, use) : null, worn(g, 'dreamvane') ? E('fix', 'fix', 'FIX') : null, worn(g, 'veritome') ? E('plate', 'photo', 'PLATE') : null].filter(Boolean);
+  const use = g.seaFight?.serpent ? helmUse(g) : null, B = broadsideOf(g);
+  return [use ? E('use', null, use) : null, B ? E('broadside', 'broadside', 'BROADSIDE', { charge: B.charge, dim: !B.bears }) : null,
+    worn(g, 'dreamvane') ? E('fix', 'fix', 'FIX') : null, worn(g, 'veritome') ? E('plate', 'photo', 'PLATE') : null].filter(Boolean);
 }
 
 /** DRAW (STOW while the main is out), LEND (the sub's verb) and SWAP (main and sub traded, Belt.swap) at the cluster's top edge, on foot;
