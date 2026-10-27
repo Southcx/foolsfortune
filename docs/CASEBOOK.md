@@ -952,3 +952,6 @@ NEW:new-event-new-name. **A kernel event with a new shape takes a new name.** A 
   event that reuses a name must carry every field that name's consumers read, or it is a new name the consumers skip until they learn it.
 
 NEW:baseline-reproduced-before-blamed. **A perf delta is blamed on code only after the baseline's commit is measured again the same way.** If the old commit now reads the new number, the baseline was a state, not a cost: name the state, make the measure wait for it, and record again.
+
+NEW:touch-pick-then-confirm. **On touch, a choice that spends is picked, then confirmed.** A tap fires the hover and the click together,
+  so a window that says a price on hover and acts on click must, on touch, pick on the first tap and act on a tap on the picked one.

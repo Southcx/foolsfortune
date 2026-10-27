@@ -4241,3 +4241,11 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** perf ticks until the spawn look's runs are done before it measures the well; the well's call budget 88 -> 96 on the
   measurement, the baseline recorded again (91).
 - **Rule:** NEW:baseline-reproduced-before-blamed
+
+### 2026-10-27 · On a phone, a shop bought or sold on the first tap (Calissa's phone-windows note, 2026-10-24; routed by Petra)
+- **Seen:** a tap on a good or a box slot in a keeper's window bought or sold it at once, its price never read.
+- **Cause (as read):** a phone's tap fires the emulated `mouseenter` (the price line) and the `click` together; the window acted on the
+  click as a mouse's (src/progress/shop/ui.js), so the line meant to come before the choice came with it.
+- **Fix:** on touch (`input.device === 'touch'`) the first tap picks (`.sel`, the line said with "tap again to buy" or "to sell"), a tap
+  on the picked one acts; a long press still haggles. Measured headless as a phone: 500 cubes after the first tap, 477 after the second.
+- **Rule:** NEW:touch-pick-then-confirm
