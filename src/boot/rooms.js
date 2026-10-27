@@ -25,6 +25,9 @@ import { SeaSerpentBody } from '../vfx/opensea/seaserpentbody.js';
 import { installSeaBeasts } from '../vfx/opensea/beasts/index.js';
 import { SeaLooks } from '../vfx/opensea/isletlooks.js';
 import { PuzzleLooks } from '../vfx/opensea/puzzlelooks.js';
+import { BottleLooks } from '../vfx/opensea/bottlelooks.js';
+import { SalvageLooks } from '../vfx/opensea/salvagelooks.js';
+import { ShipPartWear } from '../vfx/shipkit/partlooks.js';
 import { SquallLine } from '../vfx/opensea/squallline.js';
 import { egregoreBody } from '../vfx/opensea/egregorebodies.js';
 import { SeaFightLook } from '../vfx/opensea/seafightlook.js';
@@ -68,6 +71,7 @@ export function bootRooms(game, made) {
     game.makeEgregoreHerd = (o) => new EgregoreHerd(o); // (a herd of them in its square, scattering and regrouping round the ship: update(dt, { ship }); vfx/opensea/egregoreherd.js)
     game.seaLooks = new SeaLooks(game); // (the open sea's islets dressed over Dovina's placeholders: vfx/opensea/isletlooks.js)
     game.puzzleLooks = new PuzzleLooks(game); game.squallLine = new SquallLine(game); // (the islets' puzzles dressed, the dig's moment; a front's squall line: vfx/opensea/puzzlelooks.js, squallline.js)
+    game.bottleLooks = new BottleLooks(game); game.salvageLooks = new SalvageLooks(game); game.shipPartWear = new ShipPartWear(game); // (the drift bottles, the wrecks and the haul, the ship's parts worn at the free helm: vfx/opensea/bottlelooks.js, salvagelooks.js, vfx/shipkit/partlooks.js)
     game.opensea = new OpenSea(game); // (the Emocean off the lanes, built the first time it is entered: world/opensea/, docs/plans/OPEN-SEA.md)
     game.seaFightLook = new SeaFightLook(game); game.seaHull = new SeaHull(game); // (the fight's needles, globs, splashes and the hull's pips: vfx/opensea/seafightlook.js, ui/seahull.js)
     game.seaFight = new SeaFight(game); // (what fights at the free helm: the gun, the parry, the hull, the sea serpent: world/opensea/seafight.js)

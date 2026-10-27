@@ -240,6 +240,7 @@ export function bootFrame(game, made) {
     game.opensea?.update(dt); // (the free helm: before the camera, which rides its shot)
     game.seaLooks?.update(dt); // (dresses the islets once, the first frame game.opensea.props exists)
     game.puzzleLooks?.update(dt); // (dresses the islets' puzzles once they exist, and plays a dig)
+    game.bottleLooks?.update(dt); game.salvageLooks?.update(dt); game.shipPartWear?.update(); // (the drift bottles bobbing and read, the wrecks and the haul, the parts worn)
     game.seaFight?.update(dt); // (the ship's gun, the serpent's mind and body, the hull)
     game.seaHull?.update(game.rawDt);
     game.realm?.update(dt); // (the garden: the Jar, the hand and its own camera)
