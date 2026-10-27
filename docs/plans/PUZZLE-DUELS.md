@@ -692,3 +692,17 @@ Prior art: Puzzle & Dragons (the drag, the orb change, active skills charged by 
 from matches), Candy Crush (the striped candy, the colour bomb), Puyo Puyo Fever (a meter filled by chains), Tetris Effect (the perfect
 clear).
 
+### 22.6 The practice duel: Strawman at the sparring circle (South, 2026-10-27 via Petra: "test more basic implementations of the puzzle duel module")
+Petra's session opens a practice duel with a foe marked `c.practice` (Strawman's aberrant stance); every `duel.*` event carries
+`practice: true`; no pool change, no shatter, no drain. Mine:
+- **Its rulesets** (`rulesets.js`): `strawman`, the duel with nothing but its core: 10 x 8 (an 8 x 8's halves of 4 columns made Shot
+  and Vein near useless and the bot won 2 in 3), 4 colours, plain gravity both halves, runs of 3 and any 4 touching, no fog, embers or
+  bombs, a bot weighing 2 actions a point that acts **every other turn** (`bot.every: 2`); `strawmanIdle`, a foe that never acts
+  (`bot.idle`). `PRACTICE { idle, plain, wisp }` is the lectern's pick (`rulesetOf(c, pick)`), `wisp` the Lantern Wisp's own board.
+  Measured (the stand-in at sample 3, 20 to 30 duels): plain, Lockheart + Veritome 14 of 20; at every turn and sample 4 it won 10 to
+  15 of 30, too hard for a dummy.
+- **It never counts**: tracking/duel.js says a practice duel in the log but keeps nothing on the ledger; first-today pays nothing for
+  it; a Luck re-roll thrown there is not spent.
+- **The lesson** runs in practice when due, and finishing it there counts (`duel.lesson`, the one count practice keeps: the lesson is
+  what you know, not a record); `lessonDue` is false after a duel won or the lesson finished once.
+

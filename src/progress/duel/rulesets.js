@@ -6,8 +6,9 @@
 // Prior art: Puzzle Fighter's and Puyo's characters (one drop pattern each), Noon's arenas, Dr. Mario's viruses per level.
 //
 //   RULESETS[name] -> { feeling, board?: { w, h, perColumn, landCap }, run, cluster, gravity(x, y, board), bombs, blast, pincer, colours, drip, queue, fog, embers, bot }
-//   bot: the score's weights (bot.js W), and `sample`: actions it weighs a point (its cleverness: 60 if not said)
-//   rulesetOf(creature) -> a ruleset: its kind's own (KIND_RULESETS: an aberrant Lantern Wisp's), else its feeling's, else fury's
+//   bot: the score's weights (bot.js W), `sample`: actions it weighs a point (its cleverness: 60 if not said), `idle`: it never acts, `every`: it acts one turn in that many
+//   PRACTICE { idle, plain, wisp } -> a RULESETS key: the practice duel's difficulty (Strawman's)
+//   rulesetOf(creature, practice?) -> a ruleset: a practice pick's (PRACTICE), else its kind's own (KIND_RULESETS: an aberrant Lantern Wisp's, Strawman's), else its feeling's, else fury's
 // ---------------------------------------------------------------------------------------
 import { DIRS } from './board.js';
 
@@ -36,13 +37,26 @@ export const RULESETS = {
   // on the board, so the Wisp's weakness (fury, the opposite of its dread) is still there to chase.
   lanternwisp: { feeling: 'dread', board: { w: 12, h: 9, perColumn: 2, landCap: 6 }, match: 3, cluster: 4, gravity: (x, y, b) => (b.sideOf(x) === 0 ? DIRS.S : DIRS.N), colours: 4, drip: 4,
     fog: { side: 1, light: 3 }, embers: { from: 1, count: 3 }, bot: { pairs: 0.8, sample: 8 } }, // (8 since the lookaheads stopped drawing the duel's own dice, 19.4: the stand-in wins 58 of 80, as it did)
+  // STRAWMAN'S PRACTICE DUEL (South, 2026-10-27, via Petra: "test more basic implementations of the puzzle duel module"): the duel with
+  // nothing but its core, for testing the duel itself at the sparring circle. The smallest board that still chains (8 x 8, a half of
+  // 4 columns: three colours chained too easily, five too rarely), plain gravity on both halves, runs of 3 and any 4 touching (the
+  // Wisp's gentle rule), no fog, no embers, no bombs. Its bot weighs few actions (a plain player, never a clever one); `strawmanIdle`
+  // never acts, for trying the verbs and the skills with no pressure (Puzzle & Dragons' training dungeon, Tetris's practice).
+  strawman: { feeling: 'fury', board: { w: 10, h: 8, perColumn: 2, landCap: 5 }, match: 3, cluster: 4, gravity: () => DIRS.S, colours: 4, drip: 3,
+    bot: { sample: 2, every: 2 } },
+  strawmanIdle: { feeling: 'fury', board: { w: 10, h: 8, perColumn: 2, landCap: 5 }, match: 3, cluster: 4, gravity: () => DIRS.S, colours: 4, drip: 3,
+    bot: { idle: true } },
 };
 
 /** A creature kind's own ruleset, where it has one (`c.kind` -> a RULESETS key). */
-export const KIND_RULESETS = { wisp: 'lanternwisp' };
+export const KIND_RULESETS = { wisp: 'lanternwisp', strawman: 'strawman' };
+
+/** The practice duel's difficulty, for a pick at the lectern (Petra's to wire): the ruleset a choice loads, easiest first. 'wisp' is
+ *  the Lantern Wisp's own board met in practice (its fog and embers), to rehearse the real fight. */
+export const PRACTICE = { idle: 'strawmanIdle', plain: 'strawman', wisp: 'lanternwisp' };
 
 /** The ruleset a creature brings to a duel: its kind's own (an aberrant Lantern Wisp's), else its feeling's (`c.grade`, a blotling's
  *  weather), else fury's. */
-export function rulesetOf(c) {
-  return RULESETS[KIND_RULESETS[c?.kind]] || RULESETS[c?.grade] || RULESETS.fury;
+export function rulesetOf(c, practice = null) {
+  return RULESETS[PRACTICE[practice]] || RULESETS[KIND_RULESETS[c?.kind]] || RULESETS[c?.grade] || RULESETS.fury;
 }
