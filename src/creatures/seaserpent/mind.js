@@ -28,7 +28,6 @@ import * as THREE from 'three';
 import { st } from '../creatures.js';
 import { enraged } from '../../progress/combat/emo.js';
 import { AWARE, curve, norm, steer } from '../ai/index.js';
-import { SEA_SERPENT } from '../../progress/opensea/seaserpent.js';
 import { stream } from '../../core/rng.js';
 const simRand = stream('creatures/seaserpent/mind'); // (the simulation's chance: core/rng.js, the same twice)
 
@@ -42,9 +41,13 @@ const rnd = (a, b) => a + simRand() * (b - a);
 const hd = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
 
 export function seaSerpentMind(S) {
-  const g = S.game, C = SERPENT_MIND, MV = SEA_SERPENT.moves, SP = SEA_SERPENT.speed;
+  const g = S.game, C = SERPENT_MIND;
   const ship = () => (g.opensea?.sailing ? g.opensea.helm : null);
   const distHome = (x) => hd(x.c.pos, x.c.home);
+  /** Its size against the serpent's (the keep band and the moves' ranges grow with it) and how far from home it hunts (a territorial
+   *  beast its zone times its leash: OPEN-SEA.md 14.3, Monster Hunter's; the serpent SERPENT_MIND.leash). */
+  const sizeOf = (c) => Math.sqrt(Math.max(1, c.B.headR / 1.5));
+  const leashOf = (c) => (c.row.zone ? c.row.zone * (c.row.leash ?? 1.5) : C.leash);
   /** The ship it knows of, if it means to hunt it: sure enough of it, or holding a grudge, and lately. */
   const foe = (x) => {
     const f = x.mem.fact(x.P);
@@ -55,11 +58,18 @@ export function seaSerpentMind(S) {
   /** Which move now, if any: each its gate, its cooldown, and a weight (seaserpent.js `windUp` lays it on the water). */
   const pickMove = (x, d) => {
     const c = x.c, H = ship(); if (!H) return null;
+    const MV = c.row.moves, P = c.row.phases, k = sizeOf(c);
+    const allowed = P ? (P.find((p) => c.hp / c.maxHp > p.until) || P[P.length - 1]).moves : Object.keys(MV); // (a legend's phase by its hp left)
+    const can = (m) => !!MV[m] && allowed.includes(m) && (c.cd[m] ?? 0) <= 0;
     const opts = [];
-    if (c.cd.coil <= 0 && d < 26 && H.speed < H.cruise * 1.2) opts.push(['coil', 1.6]);
-    if (c.cd.ram <= 0 && d > 22 && d < 90 && H.speed > 3) opts.push(['ram', 1]);
-    if (c.cd.spit <= 0 && d > 12 && d < 80) opts.push(['spit', 1.4]);
-    if (c.cd.dive <= 0 && d < 70) opts.push(['dive', 0.7]);
+    if (can('coil') && c.B.coil > 0 && d < (c.B.coil + 16) * k && H.speed < H.cruise * 1.2) opts.push(['coil', 1.6]);
+    if (can('ram') && d > 22 * k && d < 90 * k && H.speed > 3) opts.push(['ram', 1]);
+    if (can('rise') && d > 22 * k && d < 120 * k) opts.push(['rise', 1]);
+    if (can('breach') && d > 25 * k && d < 110 * k && H.speed > 2) opts.push(['breach', 1.4]);
+    if (can('spit') && d > 12 * k && d < 80 * k) opts.push(['spit', 1.4]);
+    if (can('dive') && d < 70 * k) opts.push(['dive', 0.7]);
+    if (can('circle') && d < 220) opts.push(['circle', 1.2]);
+    if (can('coilWorld') && d < 160) opts.push(['coilWorld', 1.5]);
     for (const o of opts) if (o[0] === c.lastMove) o[1] *= 0.3; // (seldom the same move twice running)
     let sum = 0; for (const o of opts) sum += o[1];
     let r = simRand() * sum; for (const o of opts) if ((r -= o[1]) <= 0) return o[0];
@@ -72,22 +82,22 @@ export function seaSerpentMind(S) {
 
   act({
     id: 'hunt', hunt: true, weight: 1.8, cooldown: 1,
-    when: (x) => !st(x.c, 'calm') && !st(x.c, 'charm') && !st(x.c, 'forget') && !!ship() && !!foe(x) && distHome(x) < C.leash,
+    when: (x) => !st(x.c, 'calm') && !st(x.c, 'charm') && !st(x.c, 'forget') && !!ship() && !!foe(x) && distHome(x) < leashOf(x.c),
     consider: [(x) => curve.logistic(0.35, 9)(Math.max(0, Math.min(1, 0.5 + 0.6 * foe(x).grudge - 0.7 * x.drives.get('fear') - 0.4 * x.drives.get('rest')) * (x.c.traits.bold ?? 1)))],
-    lock: (x) => !!x.c.attack || !!x.c.coiled,
+    lock: (x) => !!x.c.attack || !!x.c.coiled || !!x.c.held,
     enter: (x) => {
       const c = x.c; x.bb.breath = rnd(1, 2); x.bb.dir = c.id % 2 ? 1 : -1; x.bb.underT = 0;
       if ((c.risenT ?? -99) < x.now - 30) { c.risenT = x.now; g.events?.emit('seaserpent.rise', { by: 'creature' }); glyph(x, 'bang1', 0xff9a4a); }
     },
     tick: (x, dt) => {
-      const c = x.c, f = foe(x), H = ship(), b = x.bb;
-      if (c.attack || c.coiled) return 'run';
+      const c = x.c, f = foe(x), H = ship(), b = x.bb, SP = c.row.speed, k = sizeOf(c), keep = [C.keep[0] * k, C.keep[1] * k];
+      if (c.attack || c.coiled || c.held) return 'run';
       if (!f || !H) return 'done';
-      if (distHome(x) > C.leash) { f.aware = Math.min(f.aware, 0.3); return 'fail'; }
+      if (distHome(x) > leashOf(c)) { f.aware = Math.min(f.aware, 0.3); return 'fail'; }
       const F = x.now - f.seenAt < 1 ? H.pos : f.pos, d = hd(c.pos, F);
       if (b.underT > 0) { // (dived: it runs under to the ship's flank and comes up there)
         b.underT -= dt; c.goUnder = 1;
-        _o.set(Math.sin(H.yaw + b.dir * 1.6), 0, Math.cos(H.yaw + b.dir * 1.6)).multiplyScalar(C.keep[0]).add(F);
+        _o.set(Math.sin(H.yaw + b.dir * 1.6), 0, Math.cos(H.yaw + b.dir * 1.6)).multiplyScalar(keep[0]).add(F);
         steer.arrive(c.want, c.pos, _o, SP * 1.3, 6);
         if (b.underT <= 0) { c.goUnder = 0; b.breath = rnd(0.6, 1.2); }
         return 'run';
@@ -96,9 +106,9 @@ export function seaSerpentMind(S) {
       if ((b.rearT = (b.rearT ?? rnd(2, 4)) - dt) <= 0) { b.rearT = rnd(2.5, 4.5); b.reared = !b.reared && simRand() < 0.6; }
       c.wantRear = b.reared ? 0.7 : 0;
       _hv.set(Math.sin(H.yaw) * H.speed, 0, Math.cos(H.yaw) * H.speed);
-      if (d > C.keep[1]) steer.pursue(_w, c.pos, F, _hv, SP, 2); else if (d < C.keep[0]) steer.flee(_w, c.pos, F, SP * 0.7); else _w.set(0, 0, 0);
-      steer.orbit(_o, c.pos, F, (C.keep[0] + C.keep[1]) / 2, b.dir, 1);
-      steer.blend(c.want, [[_w, 1], [_o, d > C.keep[1] * 1.6 ? 0.2 : 1]], SP * 1.15);
+      if (d > keep[1]) steer.pursue(_w, c.pos, F, _hv, SP, 2); else if (d < keep[0]) steer.flee(_w, c.pos, F, SP * 0.7); else _w.set(0, 0, 0);
+      steer.orbit(_o, c.pos, F, (keep[0] + keep[1]) / 2, b.dir, 1);
+      steer.blend(c.want, [[_w, 1], [_o, d > keep[1] * 1.6 ? 0.2 : 1]], SP * 1.15);
       b.breath -= dt * (enraged(c.emo) ? 1.6 : 1);
       if (b.breath <= 0) {
         const m = pickMove(x, d);
@@ -115,18 +125,18 @@ export function seaSerpentMind(S) {
     consider: [(x) => norm(x.drives.get('fear'), C.fearFlees, 1)],
     enter: (x) => { x.c.goUnder = 1; x.bb.t = 0; },
     exit: (x) => { const f = x.mem.fact(x.P); if (f) f.grudge = Math.min(1, f.grudge + 0.4); }, // (it comes back for you)
-    tick: (x, dt) => { const c = x.c; x.bb.t += dt; c.goUnder = 1; steer.arrive(c.want, c.pos, c.home, SP * 1.2, 10); return x.drives.get('fear') > C.fearFlees * 0.4 || x.bb.t < 10 ? 'run' : 'done'; },
+    tick: (x, dt) => { const c = x.c; x.bb.t += dt; c.goUnder = 1; steer.arrive(c.want, c.pos, c.home, c.row.speed * 1.2, 10); return x.drives.get('fear') > C.fearFlees * 0.4 || x.bb.t < 10 ? 'run' : 'done'; },
   });
   act({
     id: 'stalk', weight: 1.2, cooldown: 4,
-    when: (x) => { const f = x.mem.fact(x.P); return !!ship() && !!f && f.aware >= AWARE.SUSPECT * 0.6 && !foe(x) && distHome(x) < C.leash; },
+    when: (x) => { const f = x.mem.fact(x.P); return !!ship() && !!f && f.aware >= AWARE.SUSPECT * 0.6 && !foe(x) && distHome(x) < leashOf(x.c); },
     consider: [(x) => 0.4 + 0.6 * x.drives.get('curiosity')],
     enter: (x) => { x.bb.t = 0; x.bb.up = false; },
     tick: (x, dt) => {
       const c = x.c, f = x.mem.fact(x.P), b = x.bb; b.t += dt;
       if (!f || b.t > 25) return 'done';
       const d = hd(c.pos, f.pos);
-      if (d > 70 && !b.up) { c.goUnder = 0.9; steer.arrive(c.want, c.pos, f.pos, SP, 10); return 'run'; }
+      if (d > 70 && !b.up) { c.goUnder = 0.9; steer.arrive(c.want, c.pos, f.pos, c.row.speed, 10); return 'run'; }
       if (!b.up) { b.up = true; b.upT = 0; if ((c.askedT ?? -99) < x.now - 8) { c.askedT = x.now; glyph(x, 'ask'); } }
       b.upT += dt; c.goUnder = 0; c.wantRear = 0.8; c.want.set(0, 0, 0); // (up, its head out of the water, looking)
       return b.upT > 5 ? 'done' : 'run';
@@ -137,7 +147,7 @@ export function seaSerpentMind(S) {
     when: (x) => !!x.mem.interest(),
     consider: [(x) => 0.3 + 0.7 * x.drives.get('curiosity')],
     enter: (x) => { x.bb.i = x.mem.interest(); x.bb.t = 0; },
-    tick: (x, dt) => { const c = x.c, b = x.bb; b.t += dt; if (!b.i || b.t > 20) { x.mem.done(b.i); return 'fail'; } c.goUnder = 0.8; steer.arrive(c.want, c.pos, b.i.pos, SP * 0.8, 8); if (hd(c.pos, b.i.pos) < 12) { x.mem.done(b.i); x.drives.sat('curiosity', 0.4); return 'done'; } return 'run'; },
+    tick: (x, dt) => { const c = x.c, b = x.bb; b.t += dt; if (!b.i || b.t > 20) { x.mem.done(b.i); return 'fail'; } c.goUnder = 0.8; steer.arrive(c.want, c.pos, b.i.pos, c.row.speed * 0.8, 8); if (hd(c.pos, b.i.pos) < 12) { x.mem.done(b.i); x.drives.sat('curiosity', 0.4); return 'done'; } return 'run'; },
   });
   act({ id: 'go home', weight: 1.1, when: (x) => distHome(x) > C.roamR, consider: [(x) => norm(distHome(x), C.roamR, C.leash)], tick: (x) => { const c = x.c; c.goUnder = 0.6; steer.arrive(c.want, c.pos, c.home, C.roam * 1.6, 10); return distHome(x) < C.roamR * 0.5 ? 'done' : 'run'; } });
   act({
@@ -159,7 +169,7 @@ export function seaSerpentMind(S) {
     /** A gun's report reaches it (an interest, kept by memory), or its own kind's death: a fright. */
     heard(c, s, reach) {
       if (s.kind === 'noise' && s.by === 'courier') { c.drives.add('curiosity', 0.2 * reach); c.brain.signal(); }
-      if (s.kind === 'death' && s.source !== c && s.source?.kind === 'seaSerpent') c.drives.add('fear', 0.3 * reach);
+      if (s.kind === 'death' && s.source !== c && s.source?.kind === c.kind) c.drives.add('fear', 0.3 * reach);
     },
     /** What it watches: the ship, as the Courier sealed in at its helm, as loud as its sail (`SERPENT_MIND.loud`); ashore, nothing. */
     sees(c, out) {
