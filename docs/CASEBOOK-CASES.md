@@ -4147,6 +4147,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Rule:** NEW:spar-and-cloth-one-side
 
 
+
 ### 2026-10-27 · The audio breaking down once the ship's gun fires on the open sea (the owner's iPhone; Wanda)
 - **Seen:** "audio processing breaks down after combat is initiated and the ship's gun starts firing" (relayed by Calissa).
 - **Cause (as measured, then not yet measured):** headless on a desk (the open sea boarded, a sea serpent called, the gun held, the hits
@@ -4180,3 +4181,4 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the boom's yaw, the main's clew and the fore-and-aft clew all take +x by `side`, the belly's side. Measured after, with the wind
   to -x: boom end -7.84, vanes -0.85 and -0.99, the pennant's tip -6.27: all to leeward.
 - **Rule:** NEW:spar-and-cloth-one-side
+

@@ -2,21 +2,27 @@
 // THE SEA BEASTS' BODIES, MADE BY ID (docs/plans/OPEN-SEA.md 14.3): `game.makeSeaBeast(id, { segments, length })` for Petra's chain
 // chassis (creatures/seaserpent/seaserpent.js: drive/update/hit/down, headPos, headRadius, segmentsAt, radii), a small table of makers a
 // beast (another body adds its line to BEAST_LOOKS); an id with none falls through to the sea serpent's body at that length. The
-// umibozu is not a chain: `game.makeUmibozu({ seaY })`, its own drive (beasts/umibozu.js). And a DEBUG look at them without a mind:
-// `/beastlook akhlut | umibozu | both | off`, beside the ship (moored or sailing), each running its moves on a loop
-// (`window.__beastTest`: { show(which), pose(which, move, k, rise), step(dt), list }).
+// umibozu and the kraken are not chains: `game.makeUmibozu({ seaY })` (beasts/umibozu.js), `game.makeKraken(o)` (beasts/kraken.js),
+// each its own drive. And a DEBUG look at them without a mind: `/beastlook akhlut | umibozu | both | kraken | worldSerpent | off`,
+// beside the ship (moored or sailing), each running its moves on a loop (`window.__beastTest`: { show(which), pose(which, move, k,
+// rise), step(dt), list }; the kraken's and Jormungandr's: `.chain`, a BeastLookTest, ticked by the fight's look).
 //
-// Prior art: the safari's body maker (egregorebodies.js, `game.makeEgregore`) and the serpent's (`game.makeSeaSerpent`, boot/rooms.js).
+// Prior art: the safari's body maker (egregorebodies.js, `game.makeEgregore`), the serpent's (`game.makeSeaSerpent`, boot/rooms.js) and
+// the rail's foe bodies by role (vfx/railfoes.js railFoeBody(role)): one maker a kind, a plain one for a kind not drawn yet.
 //
-//   installSeaBeasts(game)   BEAST_LOOKS { [id]: (game, o) => body }   makeSeaBeast(game, id, o)
+//   installSeaBeasts(game) -> tester (once a game: rooms.js and the fight's look both ask)   BEAST_LOOKS { [id]: (game, o) => body }
+//   makeSeaBeast(game, id, o)   tester.tick(dt)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { SeaSerpentBody } from '../seaserpentbody.js';
 import { AkhlutBody } from './akhlut.js';
 import { UmibozuBody } from './umibozu.js';
+import { KrakenBody } from './kraken.js';
+import { JormungandrBody } from './jormungandr.js';
 
 export const BEAST_LOOKS = {
   wolfWhale: (game, o) => new AkhlutBody(game, o),
+  worldSerpent: (game, o) => new JormungandrBody(game, o),
 };
 export function makeSeaBeast(game, id, o = {}) { return (BEAST_LOOKS[id] || ((g, oo) => new SeaSerpentBody(g, oo)))(game, o); }
 
@@ -64,14 +70,62 @@ class BeastTest {
   }
 }
 
+const clamp01 = (x) => Math.min(1, Math.max(0, x));
+const _v = new THREE.Vector3();
+
+/** The look test: a body beside the ship, its moves on a loop (the kraken's 14 real s, Jormungandr's 38). */
+class BeastLookTest {
+  constructor(game) { this.game = game; this.body = null; this.kind = null; this.lt = 0; this.centre = new THREE.Vector3(); }
+  start(kind = 'kraken') {
+    this.stop(); const H = this.game.opensea?.helm; if (!H) return 'board a ship on the open sea first';
+    this.kind = kind === 'kraken' || kind === 'bigSquid' ? 'kraken' : 'worldSerpent'; this.lt = 0; this.centre.copy(H.pos);
+    this.body = this.kind === 'kraken' ? this.game.makeKraken() : this.game.makeSeaBeast('worldSerpent', {});
+    return `${this.kind}'s look beside the ship (the look only: nothing hits)`;
+  }
+  stop() { this.body?.dispose(); this.body = null; }
+  tick(dt) {
+    const B = this.body, H = this.game.opensea?.helm; if (!B || !H) return;
+    this.lt += dt;
+    if (this.kind === 'kraken') {
+      const t = this.lt % 14, grasp = t < 9 ? clamp01((t - 1) / 2.5) : 0, slam = (a) => (t > a && t < a + 2.2 ? clamp01((t - a) / 2) : 0);
+      const arms = [0, 1, 2, 3, 4, 5].map((id) => ({ id, move: null, k: 0 }));
+      arms[0].move = arms[3].move = grasp ? 'grasp' : null; arms[0].k = arms[3].k = grasp;
+      if (slam(2)) { arms[1].move = 'slam'; arms[1].k = slam(2); }
+      if (slam(6)) { arms[4].move = 'slam'; arms[4].k = slam(6); }
+      B.drive({ hull: H, open: t > 5 && t < 13, move: t > 10 && t < 11.5 ? 'ink' : null, k: clamp01((t - 10) / 1), arms });
+      B.hit('arm2', 0.6);
+    } else {
+      const t = this.lt % 38, C = this.centre;
+      if (t < 12 || t >= 18) { // (circle at Petra's 125 m, then the coil of the world closing 120 to 15 m over 20 real s)
+        const world = t >= 18, r = world ? 120 + (15 - 120) * clamp01((t - 18) / 20) : 125, a = (world ? (t - 18) * 0.35 : t * 0.112) + 0.4;
+        const head = _v.set(C.x + Math.cos(a) * r, C.y, C.z + Math.sin(a) * r), heading = Math.atan2(-Math.sin(a), Math.cos(a));
+        B.drive({ head, heading, rise: 1, move: world ? 'coilWorld' : 'circle', k: 1, ring: { centre: C, r } });
+      } else { // (rise, then the spit's fan, 90 m off the bow)
+        const f = _v.set(Math.sin(H.yaw), 0, Math.cos(H.yaw)), head = new THREE.Vector3().copy(H.pos).addScaledVector(f, 90);
+        const k = clamp01((t - 12) / 1.6), spit = t > 15;
+        B.drive({ head, heading: H.yaw + Math.PI, rise: 1, move: spit ? 'spit' : 'rise', k: spit ? clamp01((t - 15) / 1.1) : k });
+      }
+    }
+    B.update(dt);
+  }
+}
+
 export function installSeaBeasts(game) {
+  if (game.seaBeastTest) return game.seaBeastTest;
   game.makeSeaBeast = (id, o) => makeSeaBeast(game, id, o);
   game.makeUmibozu = (o) => new UmibozuBody(game, o);
-  const T = new BeastTest(game);
+  game.makeKraken = (o) => new KrakenBody(game, o);
+  const T = new BeastTest(game), C = new BeastLookTest(game); T.chain = C; T.tick = (dt) => C.tick(dt); game.seaBeastTest = T;
   if (typeof window !== 'undefined') window.__beastTest = T;
+  const say = (s) => game.log?.say?.('info', s, { key: 'beastlook', throttle: 0 });
   const register = () => {
     if (!game.chat?.add) return false;
-    game.chat.add('beastlook', { debug: true, help: "the sea beasts' bodies on a loop beside the ship, no mind: /beastlook akhlut | umibozu | both | off (DEBUG; on the open sea)", run: ([w] = []) => T.show(String(w || 'both')) });
+    game.chat.add('beastlook', { debug: true, help: "the sea beasts' bodies on a loop beside the ship, no mind: /beastlook akhlut | umibozu | both | kraken | worldSerpent | off (DEBUG; on the open sea)", run: ([w] = []) => {
+      const k = String(w || 'both');
+      if (k === 'off') { T.show('none'); C.stop(); say('The beast look is off.'); return; }
+      if (k === 'kraken' || k === 'bigSquid' || k === 'worldSerpent' || k === 'jormungandr') { say(C.start(k === 'jormungandr' ? 'worldSerpent' : k)); return; }
+      T.show(k);
+    } });
     return true;
   };
   let tries = 0; const again = () => { if (!register() && tries++ < 40) setTimeout(again, 500); }; again(); // (the chat may be booted after the rooms)
