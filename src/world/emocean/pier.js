@@ -29,6 +29,7 @@ import * as THREE from 'three';
 import { NODES } from '../../progress/econ/emocean.js';
 import { slotsOf, mountable } from '../../progress/rail/mounts.js';
 import { ChoiceCard, cardList, slotRow } from '../../ui/choicecard.js';
+import { SHIP_PARTS, PART_SLOTS } from '../../progress/opensea/salvage.js';
 import { mountRow, mountRows } from '../../ui/mountcards.js';
 import { SHIPS, canSail } from '../../progress/rail/ships.js';
 import { today } from '../../core/calendar.js';
@@ -152,6 +153,13 @@ export class Pier {
         d.onclick = () => { this.ship = id; this.open(at); };
         sb.appendChild(d);
       }
+      // the ship's parts (Dovina's: progress/opensea/salvage.js, OPEN-SEA.md 14.4): a sail, a keel and a hull fitting, each a trade, worn at a
+      // dock; a choice card a part, the one worn EQUIPPED, one not yet found LOCKED (found in salvage); click one owned to wear it
+      const SP = g.shipParts, pb = SP ? el('div') : null;
+      if (SP) for (const slot of PART_SLOTS) {
+        const rows = Object.entries(SHIP_PARTS[slot]).map(([id, P]) => ({ id, name: P.name, does: P.does, state: SP.worn[slot] === id ? 'equipped' : SP.has(id) ? 'ready' : 'locked', opens: SP.has(id) ? undefined : 'Found in salvage at sea.' }));
+        pb.append(cardList(rows.map((row) => new ChoiceCard(row, { onPick: () => { if (row.state === 'ready' && SP.wear(slot, row.id)) this.open(at); } }))));
+      }
       // the mounts: the hull's worth of worn tools aboard, as the slot row and a choice card each (click one to take it aboard or ashore: ui/choicecard.js)
       const { can, chosen } = this.mounts(), mb = el('div'), n = slotsOf(this.ship);
       const take = (t) => { this.chosen = chosen.includes(t) ? chosen.filter((x) => x !== t) : [...chosen, t].slice(-n); this.open(at); };
@@ -161,7 +169,7 @@ export class Pier {
       mb.append(slotRow({ slots: n, filled: chosen.map((t, i) => mountRow(t, { slot: i + 1 })), always: mountRow('psygun'), onPick: (i) => take(chosen[i]) }), cardList(cards));
       mb.firstChild.style.marginBottom = '6px';
       g.mooring?.preview(chosen.at(-1) ?? null);
-      const out = [el('div', 'grp', `SET SAIL FROM ${(NODES[at]?.name || at).toUpperCase()}: A CROSSING`), box, ...(sea ? [el('div', 'grp', 'OR SAIL FREE'), sea] : []), ...(show ? [el('div', 'grp', 'SHOWCASE (DEBUG)'), show] : []), ...(prb ? [el('div', 'grp', 'PRACTICE'), prb] : []), el('div', 'grp', 'THE SHIP'), sb, el('div', 'grp', can.length ? `MOUNTS: ${n === 1 ? 'KEY 1' : `KEYS 1 TO ${n}`} AT SEA` : 'WEAR A TOOL TO MOUNT IT'), mb];
+      const out = [el('div', 'grp', `SET SAIL FROM ${(NODES[at]?.name || at).toUpperCase()}: A CROSSING`), box, ...(sea ? [el('div', 'grp', 'OR SAIL FREE'), sea] : []), ...(show ? [el('div', 'grp', 'SHOWCASE (DEBUG)'), show] : []), ...(prb ? [el('div', 'grp', 'PRACTICE'), prb] : []), el('div', 'grp', 'THE SHIP'), sb, ...(pb ? [el('div', 'grp', "THE SHIP'S PARTS: WORN FROM THIS DOCK"), pb] : []), el('div', 'grp', can.length ? `MOUNTS: ${n === 1 ? 'KEY 1' : `KEYS 1 TO ${n}`} AT SEA` : 'WEAR A TOOL TO MOUNT IT'), mb];
       for (const e of out) im.appendChild(e);
     }, { title: 'THE PIER', sub: 'click to choose · F closes', aside: { left: 'right', right: 'left' }[g.mooring?.side()] }); // (the page set to the side away from the moored hull, not over it: a mount's preview is seen as it is chosen)
     if (y) { const im = this.menu?.root?.querySelector('.im'); if (im) im.scrollTop = y; }
