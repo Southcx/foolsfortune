@@ -94,17 +94,17 @@ export class BroadsideLook {
   muzzle(from, dir) {
     const fx = this.fx; if (!fx?.add) return;
     _a.crossVectors(dir, UP); if (_a.lengthSq() < 1e-6) _a.set(1, 0, 0); _a.normalize(); _b.crossVectors(_a, dir).normalize();
-    this.wind(_w);
-    fx.add.emit({ pos: from.clone().addScaledVector(dir, 0.5), vel: dir.clone().multiplyScalar(4), life: 0.09, size: 1.8, sizeEnd: 0.6, color: 0xfff1c8, alpha: 1, drag: 4, floor: -1e9 });
-    fx.add.emit({ pos: from.clone().addScaledVector(dir, 1.4), vel: dir.clone().multiplyScalar(8), life: 0.12, size: 1.2, sizeEnd: 0.2, color: B.ember, alpha: 0.9, drag: 4, floor: -1e9 });
+    this.wind(_w); const K = Math.max(1, 0.55 * (this.game?.opensea?.helm?.look?.scale || 1)); // (the gun's smoke at the hull's size: a 5x sloop's guns are 12 pounders, not pistols)
+    fx.add.emit({ pos: from.clone().addScaledVector(dir, 0.5 * K), vel: dir.clone().multiplyScalar(4 * K), life: 0.09, size: 1.8 * K, sizeEnd: 0.6 * K, color: 0xfff1c8, alpha: 1, drag: 4, floor: -1e9 });
+    fx.add.emit({ pos: from.clone().addScaledVector(dir, 1.4 * K), vel: dir.clone().multiplyScalar(8 * K), life: 0.12, size: 1.2 * K, sizeEnd: 0.2 * K, color: B.ember, alpha: 0.9, drag: 4, floor: -1e9 });
     for (let i = 0; i < 7; i++) fx.add.emit({ pos: from.clone(), vel: _v.copy(dir).multiplyScalar(14 + Math.random() * 10).add(V(rnd(2.5), rnd(2.5), rnd(2.5))).clone(), life: 0.18 + Math.random() * 0.12, size: 0.14, sizeEnd: 0.02, color: i % 2 ? B.gold : B.ember, alpha: 1, drag: 3, gravity: 4, floor: -1e9 });
     if (!fx.alpha) return;
     for (let i = 0; i < B.ring.n; i++) { // (the ring blown out round the muzzle, square to the aim)
       const a = (i / B.ring.n) * Math.PI * 2, o = _v.copy(_a).multiplyScalar(Math.cos(a)).addScaledVector(_b, Math.sin(a));
-      fx.alpha.emit({ pos: from.clone().addScaledVector(dir, 0.9).addScaledVector(o, 0.3), vel: o.clone().multiplyScalar(B.ring.speed * (0.85 + Math.random() * 0.3)).addScaledVector(dir, 5).add(_w), life: 1.3 + Math.random() * 0.4, size: 0.6, sizeEnd: 2.4, color: B.smoke, alpha: 0.5, drag: 3.2, gravity: -0.3, floor: -1e9 });
+      fx.alpha.emit({ pos: from.clone().addScaledVector(dir, 0.9 * K).addScaledVector(o, 0.3 * K), vel: o.clone().multiplyScalar(B.ring.speed * K * (0.85 + Math.random() * 0.3)).addScaledVector(dir, 5 * K).add(_w), life: 1.6 + Math.random() * 0.5, size: 0.6 * K, sizeEnd: 2.4 * K, color: B.smoke, alpha: 0.5, drag: 3.2, gravity: -0.3, floor: -1e9 });
     }
-    for (let i = 0; i < B.bank.n; i++) { // (the bank: slower, bigger, longer, carried off on the wind)
-      fx.alpha.emit({ pos: from.clone().addScaledVector(dir, 1.5 + i * 1.6).add(V(rnd(0.5), rnd(0.3), rnd(0.5))), vel: dir.clone().multiplyScalar(2.2).add(_w).add(V(0, 0.35, 0)), life: B.bank.life + Math.random(), size: 1.4, sizeEnd: 4.6, color: B.smoke, alpha: 0.36, drag: 0.22, gravity: -0.2, floor: -1e9 });
+    for (let i = 0; i < B.bank.n + 2; i++) { // (the bank: slower, bigger, longer, carried off on the wind)
+      fx.alpha.emit({ pos: from.clone().addScaledVector(dir, (1.5 + i * 1.6) * K).add(V(rnd(0.5 * K), rnd(0.3 * K), rnd(0.5 * K))), vel: dir.clone().multiplyScalar(2.2 * K).add(_w).add(V(0, 0.35 * K, 0)), life: B.bank.life * 1.5 + Math.random(), size: 1.4 * K, sizeEnd: 4.6 * K, color: B.smoke, alpha: 0.36, drag: 0.22, gravity: -0.2, floor: -1e9 });
     }
   }
 
