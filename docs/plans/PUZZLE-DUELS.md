@@ -482,3 +482,33 @@ drip still falls; `lesson.idle`), and six steps are asked one at a time, each do
 rotate or drop), **clear** (3 in a line or 4 touching), **form** (the Courier on the board), **run**, **tool** (any tool's move),
 **chain** (a clear of step 2 or more). `lesson.step { side, step, id, next }` says one done and the next asked; `lesson.done` at the end.
 What the view shows is Calissa's: the step asked as the verb lit (its tile or key glowing), with no words but the verb's own label.
+
+## 19. The genre's folds (South, 2026-10-27: "do some genre research on the types of games we've used as prior art and determine what else we can fold in")
+
+A research pass over the versus puzzle and tactics games (Puyo Puyo Tetris, Tetris 99, Super Puzzle Fighter II, Puzzle Quest, Gems of
+War, Puzzle & Dragons, Into the Breach, Balatro, Slay the Spire, Hexcells) ranked what to fold in by fun per build effort. Built, the
+first five (each in `DUEL`, a ruleset may set its own or `false`):
+
+- **Undo within the turn** (Into the Breach's reset; Baba Is You): `undo(state)` takes the last action back, a step at a time, points
+  and pool returned, free until the turn ends, a die is thrown (the Flee) or the duel is decided. The drip is laid at the turn's start,
+  so nothing hidden is learned. On a phone, a misplaced drag no longer costs the turn. Event `undo { side, left }`.
+- **An action point back for a big play** (Puzzle Quest's extra turn, Persona 5's One More): a clear of 5 or more, or a chain step of
+  3 or more, refunds 1 AP, once a turn (`refund`). Measured with the bots: 0.22 refunds a turn on the Wisp, 0.33 on Mirth, 0.36 on
+  Fury. Event `refund { side, ap, why }`. It is also what makes a Shoot that sets up a chain worth its point.
+- **Pool from chains** (Puzzle Quest's mana): each chain step past the first puts 2 in your pool (`trickle`), so the Courier's tools are
+  fed by play and not only by breaks. Event `trickle { side, pool, n }`.
+- **The all clear** (Puyo): no gem left on your half after a clear sends 6 junk more (`allClear`). Rare by design. Event `allclear`.
+- **Margin time** (Puyo Puyo Tetris): past 10 turns a side, junk counts a quarter more each turn (`margin`, `marginOf(state)`), so a
+  stalled duel ends. Fury's bots ran 11.2 turns a side before the folds and 4.9 after.
+
+**Measured** (the Wisp, 24 duels, the stand-in kept to the hand at 8 actions a point): you win 13 or 14 of 24 with the folds and 14
+without, so they do not tip the balance; they change how a turn feels. A note on the measure: since the tools' moves (section 18) the
+stand-in's sample of 8 is spread over many more moves, and with both forms it wins 9 of 24; at 16 a point it wins 18. The tools did not
+make the Wisp stronger; they made the stand-in's sampling thinner. A person chooses, a sampler dilutes.
+
+**Next, ranked, not built:** clue fog (Hexcells: the foe's half shows its counts by row and column, Read gives the cells, familiarity
+adds clues); a colour each Figment is weak to and one it resists, from the wheel of feelings (Persona, Puzzle & Dragons), so colour
+means more than matching; power gems (Puzzle Fighter: a 2 x 2 of one colour fused, clearing all its colour touching); a catch-up seed
+for a broken side (Puyo's Fever: a break snowballs today); charms as hooks on clears (Balatro's jokers) from the bracelet and the laid
+spread; a mended Figment lending its rule family as a charm (Mega Man); a Figment's phases by its breaks; a chain power table per
+ruleset in place of the doubling (Puyo's capped table).
