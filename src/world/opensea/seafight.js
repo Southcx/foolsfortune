@@ -170,7 +170,7 @@ export class SeaFight {
     if (aim) _d.subVectors(aim, from).normalize(); else _d.set(Math.sin(yaw), 0.015, Math.cos(yaw)).normalize();
     if (this.shots.length >= CAP.shots) this.shots.shift();
     this.shots.push({ pos: from.clone(), prev: from.clone(), vel: _d.clone().multiplyScalar(GN.speed), t: GN.life, power: GN.power * (this.mounts.takeGulp() ? MOUNTING.gulp.k : 1) }); // (a spit gulped goes back on the next shot)
-    g.seaFightLook?.muzzle(from, _d); // (the look's: vfx/opensea/seafightlook.js)
+    g.seaFightLook?.muzzle(from, _d, this.shots[this.shots.length - 1]); // (the look's: vfx/opensea/seafightlook.js; the shot itself its third, light or heavy)
     if (this.noiseT <= 0) { this.noiseT = SEA_FIGHT.noise.every; g.ai?.stimuli.emit('noise', H.pos, { radius: SEA_FIGHT.noise.radius, strength: 1, by: 'courier', source: g.player }); }
   }
 
@@ -206,7 +206,7 @@ export class SeaFight {
       _a.x += (simRand() - 0.5) * BS.spread; _a.y += (simRand() - 0.5) * BS.spread * 0.5; _a.z += (simRand() - 0.5) * BS.spread; _a.normalize();
       if (this.shots.length >= CAP.shots) this.shots.shift();
       this.shots.push({ pos: from, prev: from.clone(), vel: _a.clone().multiplyScalar(BS.speed), t: BS.life, power: BS.power, r: BS.r, heavy: true });
-      g.seaFightLook?.muzzle(from, _a);
+      g.seaFightLook?.muzzle(from, _a, this.shots[this.shots.length - 1]);
     }
     g.events?.emit('sea.broadside', { side, guns, aimed: !!aim, by: 'courier' });
     g.ai?.stimuli.emit('noise', H.pos, { radius: SEA_FIGHT.noise.radius * 1.5, strength: 1.4, by: 'courier', source: g.player });
@@ -278,8 +278,8 @@ export class SeaFight {
     for (let i = this.shots.length - 1; i >= 0; i--) {
       const s = this.shots[i]; s.prev.copy(s.pos); s.pos.addScaledVector(s.vel, dt); s.t -= dt;
       const hit = S.partsHit(s.prev, s.pos, s.r ?? GN.r);
-      if (hit) { g.creatures.strike(hit.c, hit.point, _d.copy(s.vel).normalize(), s.power ?? GN.power, 'shot', 'courier'); g.seaFightLook?.hit(hit.point, _d); this.shots.splice(i, 1); continue; }
-      if (s.t <= 0 || s.pos.y < S.surf(s.pos.x, s.pos.z) - 0.2) { if (s.t > 0) g.seaFightLook?.splash(s.pos, 'shot'); this.shots.splice(i, 1); }
+      if (hit) { g.creatures.strike(hit.c, hit.point, _d.copy(s.vel).normalize(), s.power ?? GN.power, 'shot', 'courier'); g.seaFightLook?.hit(hit.point, _d, s); this.shots.splice(i, 1); continue; }
+      if (s.t <= 0 || s.pos.y < S.surf(s.pos.x, s.pos.z) - 0.2) { if (s.t > 0) g.seaFightLook?.splash(s.pos, 'shot', s); this.shots.splice(i, 1); }
     }
     for (let i = this.globs.length - 1; i >= 0; i--) {
       const b = this.globs[i]; b.t -= dt;

@@ -61,7 +61,7 @@ export class Helm {
     this.rudder += (steer - this.rudder) * Math.min(1, dt * 4);
     let turnK = this.game.shipParts?.mult('turn') ?? 1, wayK = 1; for (const m of this.mods.values()) { turnK *= m.turn ?? 1; wayK *= m.speed ?? 1; }
     const parts = this.game.shipParts; // (the sail, keel and hull worn: progress/opensea/salvage.js)
-    this.sail = wind ? sailOf(this.yaw, wind, parts?.rig()) : null;
+    this.sail = wind ? sailOf(this.yaw, wind, parts?.rig()) : null; this.wind = wind;
     const target = THROTTLE[this.throttle] * this.cruise * wayK * (this.sail?.speedK ?? 1);
     this.speed += Math.sign(target - this.speed) * Math.min(Math.abs(target - this.speed), HELM.accel * dt);
     this.yaw += this.rudder * HELM.turn * turnK * dt * Math.min(1.4, 0.25 + this.speed / this.cruise);
@@ -88,7 +88,7 @@ export class Helm {
     const pitch = Math.max(-HELM.pitchMax, Math.min(HELM.pitchMax, Math.atan2(stern - bow, L)));
     const roll = Math.atan2(port - star, B) * 0.6 - this.rudder * Math.min(1, this.speed / this.cruise) * 0.12;
     const G = this.look.group; G.position.copy(this.pos); G.rotation.set(pitch, this.yaw, roll, 'YXZ');
-    this.look.set?.({ sail: 0.15 + 0.85 * (this.throttle / 3), fill: this.sail ? this.sail.share : 1, luff: this.sail?.point === 'irons' ? 1 : 0, heel: roll, side: 1, glow: 0.35, t: this.t });
+    this.look.set?.({ sail: 0.15 + 0.85 * (this.throttle / 3), fill: this.sail ? this.sail.share : 1, luff: this.sail?.point === 'irons' ? 1 : 0, heel: roll, side: 1, glow: 0.35, t: this.t, ...(this.wind ? { wind: this.wind.to - this.yaw, windK: this.wind.k } : {}) }); // (the wind relative to the hull: Calissa's sails and pennant)
     if (dt > 0) this.wake.update(dt, { group: G, speed: this.speed, length: L, beam: B }, sea);
   }
 
