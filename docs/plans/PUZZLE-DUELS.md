@@ -76,7 +76,7 @@ engine can load, and each aberrant Figment brings the two or three that are its 
 |---|---|---|---|
 | **the Courier** | a body on a cell of your side | **run** up to four cells 1, **push** a run of pieces one cell 1, **kick** one piece to slide until blocked 2, and its tools (section 11) | Noon, Bomberman, Sokoban, Mr. Driller |
 | **the god hand** | over your side | **the finisher** on a broken foe 2 (section 11), **swap** two neighbours 1, **drag** a piece along a path, swapping with each it passes 1 a 3 cells, **rotate** a 2 × 2 1, **drop** the next queued piece down a lane 1 | Bejeweled, Terra Battle, Hexic, Tetris |
-| (switching form) | | 1 | |
+| (switching form) | | 0 (free since 2026-10-26, section 17; was 1) | |
 
 The Pneuka Jar as a form (a piece you protect, Dr. Mario's virus turned round) is a later module.
 
@@ -352,3 +352,73 @@ Ruled, with the numbers:
 
 The events: `duel.pull { foe, by: 'creature' }` when a pull starts from nothing, `duel.slip { by: 'courier' }` when one drains away before
 it filled (the log's line: "You pull away from the aberrant."). These are plain placeholders for Espada.
+
+## 17. The aberrant Lantern Wisp made gentler (the owner on the phone, 2026-10-26, relayed by Calissa)
+
+The owner's words: "reduce the difficulty of the enemy Aberrant"; "having the tiles only match to linear match-3 style combos instead of all
+adjacent same-color clusters makes it very difficult"; switching between the hand and the Courier, "why it costs AP to switch"; "the enemy is
+racking up double digit points every turn when I manage like, six". The explainer for the owner: https://claude.ai/artifact/V2jdQy5xhps8gHy67CV8Rb.
+
+**Measured first** (a scratch harness on the kernel, 8 to 20 duels a row: side 0 a bot weighing 8 actions a point, standing in for the
+owner at about 6 junk a turn; side 1 the Wisp):
+
+| the Wisp's rules | you, junk a turn | the Wisp | you win | turns a side |
+| --- | --- | --- | --- | --- |
+| as it was: runs of 3, 4 colours, the bot weighing 60 actions a point | 5.6 | 13.5 | 1 of 8 | |
+| clusters of 3, 4 colours, the bot at 60 | 13.9 | 34.6 | 1 of 10 | |
+| clusters of 3, 4 colours, the bot at 8 | 35.8 | 11.7 | 14 of 20 | 3.9 |
+| clusters of 3, 5 colours, the bot at 8 | 9.9 | 10.4 | 11 of 20 | 7.0 |
+| clusters of 3, 5 colours, the bot at 4 | 9.5 | 6.1 | 12 of 20 | 8.5 |
+| **runs of 3 and clusters of 4, 5 colours, the bot at 6 (ruled)** | **9.4** | **3.3** | **15 of 20** | **6.3** |
+
+The gap was the bot's search, not the rules: 60 actions tried a point (300 a turn) finds the chain moves a person does not, and junk
+doubles each chain step (`junkOf`). The stand-in sees the whole board and takes no embers, so in play the Wisp keeps a little more edge.
+
+
+**The swing of one move** (`preview`, the best single action on the opening board, 12 seeds): runs of 3 at 4 colours 9 to 112 junk;
+clusters of 3 at 5 colours **52 to 770** (one lucky move decides the duel, and a board that chains itself is hard to read on a phone);
+clusters of 3 at 6 colours 14 to 153; runs of 3 and clusters of 4 at 5 colours 10 to 183.
+
+**Ruled (Dovina):**
+- **Runs of 3, and any 4 touching in any shape** on the Wisp's board (`match: 3, cluster: 4`, Puyo's rule; Mirth's already). An L of 3
+  does not count: clusters of 3 were measured and refused for the swing above. 4 touching forgives every shape a person sees.
+- **5 colours** on it, up from 4, so a cluster is a find and not the board's weather.
+- **Its bot weighs 6 actions a point** (`rs.bot.sample`; 60 for a ruleset that does not say). A Figment's cleverness is now its
+  ruleset's: the first aberrant met is the gentlest, the later ones set by their own.
+- **Switching form is free** (`ACTIONS.form.cost` 0): a form is which verbs you hold, and a price on that read as a tax on learning them.
+  The bot keeps its own small reluctance to switch (`W.form`), so it does not dither.
+- **A move's worth shown before it is chosen**: `preview(state, action) -> { junk, steps, cleared }` (duel.js), tried on a copy, for the
+  view to draw on the hovered move (Calissa's).
+
+
+### 17.4 The board is the Figment's (the owner on the phone, 2026-10-27, relayed by Calissa and Petra)
+
+The owner: "increasing the size of the tsuitate board" on a phone. Calissa's camera now fits the slab into the room the controls leave
+(`touchShot`, vfx/duelview.js); on an iPhone XR held flat that room is about 680 by 330 CSS px, so 20 rows give a cell of about 16 px.
+A finger wants 40. The camera cannot grow it further; only fewer cells can.
+
+**Ruled (Dovina):**
+- **One board on every device.** A duel is the same on the desk and the phone (one save, a guest on either, bests comparable). The phone
+  is never given a different game.
+- **A ruleset carries its board** (`board: { w, h, perColumn, landCap }`, read by `newDuel`; 20 x 20, 3 and 9 when it says nothing).
+  `perColumn` is the junk landed that moves the Line a column, `landCap` the junk that lands at once (three columns' worth). EmO a junk
+  landed is scaled by `perColumn` (duelbreak.js), so a column's worth fills as much on any board.
+- **The Lantern Wisp's board is 14 x 14**, 2 a column, 6 at once: the first aberrant met is the smallest, and every cell is 1.4x as big
+  (about 23 px on the XR). Later Figments set their own, 20 at most.
+
+**Measured** (the same harness, 24 duels a row, the stand-in at 8 actions a point, the Wisp at 6):
+
+| the Wisp's board | you, junk a turn | the Wisp | you win | turns a side | longest chain |
+| --- | --- | --- | --- | --- | --- |
+| 20 x 20, 3 a column (17's ruling) | 9.4 | 3.3 | 15 of 20 | 6.3 | 5, 5 |
+| 16 x 16, 3 a column | 4.9 | 2.0 | 19 of 24 | 6.0 | 4, 5 |
+| 14 x 14, 3 a column | 2.2 | 1.9 | 13 of 20 | 11.7 | 4, 5 |
+| **14 x 14, 2 a column, 6 at once (ruled)** | **2.7** | **1.7** | **17 of 24** | **7.1** | **4, 5** |
+| 12 x 12, 2 a column, 6 at once | 1.7 | 1.3 | 12 of 20 | 8.9 | 3, 3 |
+| 20 x 10 (wide and short), 2 a column | 1.7 | 1.3 | 14 of 24 | 16.6 | 3, 4 |
+
+14 keeps the duel as long and as winnable as 20 did, with chains as deep; 12 loses the chains, and a wide short board drags. Junk a
+turn falls with the cells, but a column costs 2, so the Line moves about as fast for the side's 7 columns as it did for 10.
+
+**Still open, not a rule:** 23 px is under a thumb. What closes the rest is the input's, not the board's: a loupe over the finger, or
+pick-then-place with the picked piece lifted. Calissa's and Petra's call.
