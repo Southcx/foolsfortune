@@ -43,29 +43,29 @@ function blast(s, side, cells, by) {
 }
 
 export const SKILLS = {
-  psygun: { need: 9, label: 'Shot', line: 'Clears three rows', target: 'cell',
+  psygun: { need: 9, label: 'Shot', line: 'Clears the three rows through a cell: gems, junk and embers', target: 'cell',
     apply: (s, side, a) => { const b = s.board, cells = []; for (let dy = -1; dy <= 1; dy++) for (let x = 0; x < b.w; x++) if (mineIn(b, side, x, a.at[1] + dy)) cells.push([x, a.at[1] + dy]); return [{ type: 'blast', side, at: a.at, rows: [a.at[1] - 1, a.at[1] + 1] }, ...blast(s, side, cells, 'blast')]; } },
-  dreamvane: { need: 10, label: 'Vein', line: 'Clears every gem of one colour', target: 'cell',
+  dreamvane: { need: 10, label: 'Vein', line: 'Clears every gem of one colour on your half', target: 'cell',
     legal: (s, side, a) => !!gemAt(s.board, side, a.at),
     apply: (s, side, a) => { const b = s.board, colour = b.at(...a.at).colour, cells = []; b.each((p, x, y) => { if (b.mine(side, x) && hasTag(p, 'matches') && p.colour === colour) cells.push([x, y]); }); return [{ type: 'vein', side, at: a.at, colour }, ...blast(s, side, cells, 'vein')]; } },
-  soulbrush: { need: 8, label: 'Paint', line: 'Paints the 3 x 3 the colour of its middle', target: 'cell',
+  soulbrush: { need: 8, label: 'Paint', line: 'Turns the 3 x 3 round a gem to that gem\'s colour', target: 'cell',
     legal: (s, side, a) => !!gemAt(s.board, side, a.at),
     apply: (s, side, a) => { const b = s.board, colour = b.at(...a.at).colour, ev = [{ type: 'recolour', side, colour, at: a.at, n: 0 }];
       for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) { const x = a.at[0] + dx, y = a.at[1] + dy, p = gemAt(b, side, [x, y]);
         if (p && p.colour !== colour) { ev.push({ type: 'paint', side, id: p.id, at: [x, y], from: p.colour, colour }); p.colour = colour; } }
       ev[0].n = ev.length - 1; return ev; } },
-  sondelass: { need: 6, label: 'Grab', line: 'Hooks the junk out of a 5 x 5 and throws it back', target: 'cell',
+  sondelass: { need: 6, label: 'Grab', line: 'Hooks the junk out of a 5 x 5 and throws it across', target: 'cell',
     legal: (s, side, a) => onSide(s.board, side, a.at) && grabbed(s, side, a.at).length > 0,
     apply: (s, side, a) => { const b = s.board, got = grabbed(s, side, a.at), ev = [];
       for (const [x, y] of got) { const p = b.at(x, y); b.set(x, y, null); ev.push({ type: 'hold', side, id: p.id, at: [x, y], by: 'grab' }); }
       s.sides[side].sent += got.length; ev.push({ type: 'hold.send', side, n: got.length }); return ev; } },
-  crucibelle: { need: 7, label: 'Tune', line: 'Its colour clears in any 3 touching, two turns', target: 'cell',
+  crucibelle: { need: 7, label: 'Tune', line: 'One colour clears at any 3 touching, this turn and your next', target: 'cell',
     legal: (s, side, a) => !!gemAt(s.board, side, a.at),
     apply: (s, side, a) => { const S = s.sides[side], colour = s.board.at(...a.at).colour; S.tune = colour; S.tuneLeft = 2; return [{ type: 'tune', side, colour, need: 3, turns: 2 }]; } },
-  lockheart: { need: 8, label: 'Hold', line: 'Throws the junk waiting for you back', target: null, max: 9,
+  lockheart: { need: 8, label: 'Hold', line: 'Throws the junk about to land on you straight back', target: null, max: 9,
     legal: (s, side) => s.sides[side].pending > 0,
     apply: (s, side) => { const S = s.sides[side], n = Math.min(S.pending, SKILLS.lockheart.max); S.pending -= n; S.sent += n; return [{ type: 'hold.send', side, n, from: 'pending' }]; } },
-  veritome: { need: 7, label: 'Read', line: 'Two action points back; the fog lifts three turns', target: null,
+  veritome: { need: 7, label: 'Read', line: 'Two action points back, and the fog lifts for three turns', target: null,
     apply: (s, side) => { s.apLeft += 2; s.sides[side].read = Math.max(s.sides[side].read || 0, 6); return [{ type: 'read', side, plies: 6, ap: 2 }]; } },
 };
 export const SKILL_TOOLS = Object.keys(SKILLS);

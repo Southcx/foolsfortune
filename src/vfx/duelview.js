@@ -36,6 +36,8 @@
 //   pointOf(cell) -> Vector3           a cell's centre on the slab's face, in the world (the god hand's cursorAt; its normal: `face`)
 //   refuse(action)                     an illegal action: the cell's rim shaken in the dry ink, no words (marks.js)
 //   resync(state)                      the board and pieces stood again from a restored state (undo), the clash kept: juice.js rewind
+//   armSkill(tool | null)              the one-gesture duel's armed skill: its reach under the finger (skillcast.js), the cast on `skill`
+//   skip(state)                        the foe's turn skipped: its queued beats dropped, the board stood as the state is
 //   hint(h | null)                     the idle hint (bot.js hintOf): its move's piece nudging its way, its clears pulsing; any play lets it go
 //   stage (stage.js: the zoom from the arena to the board view, the director's camera; the session asks stage.eatTap(cell) before a
 //   tap acts)   dive (formdive.js: the Pneuka Jar at your spot in the hand's form, the pour into the board and out of it)
@@ -45,6 +47,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { COLOR } from '../progress/weather.js';
+import { sfx } from '../audio/sfx.js';
 import { newDuel } from '../progress/duel/duel.js';
 import { RULESETS, KIND_RULESETS, rulesetOf } from '../progress/duel/rulesets.js';
 import { visibleTo } from '../progress/duel/dread.js';
@@ -64,6 +67,7 @@ import { DuelForesight } from './duelview/foresight.js';
 import { DuelJuice } from './duelview/juice.js';
 import { DuelStage } from './duelview/stage.js';
 import { FormDive } from './duelview/formdive.js';
+import { reachOf } from './duelview/skillcast.js';
 
 const TEAR = 0x7fdcff, COURIER_HEX = '#9fd8ff', UP = new THREE.Vector3(0, 1, 0);
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _c = new THREE.Color(), _r = new THREE.Ray(), _inv = new THREE.Matrix4();
@@ -118,7 +122,7 @@ export class DuelView {
     if (!this.isOpen && !this.closing) return;
     this.isOpen = false; this.beats.clear(); this.intentDraw.clear(); this.foresight.clear(); this.worth.clear(); this.glows.clear(); this.tune = [null, null]; this.marks.hover(null); this.marks.select([]); this.marks.stars(0, 0); this.marks.stars(1, 0);
     this.game.spiritualLink?.detach(this); this.clash.collapse(); this.closing = !now;
-    this.flee.clear(); this.marks.refuse(null); this.juice.clear(); this.stage.close(); this.dive.close();
+    this.flee.clear(); this.marks.refuse(null); this.juice.clear(); this.stage.close(); this.dive.close(); this.armed = null;
     this.clash.dome.scale.setScalar(DUEL_VIEW.radius); this.clash.U.uRadius.value = DUEL_VIEW.radius;
     if (now) { this.clash.open = [0, 0]; this.clash.update(0); this.root.visible = false; this.bursts.clear(); }
   }
@@ -130,6 +134,7 @@ export class DuelView {
   hint(h) {
     for (const v of this.pieces.list) { v.hint = 0; v.hintDir = null; }
     if (!this.isOpen || !h?.action) return;
+    sfx.duelEvent?.({ type: 'hint' }); // (Wanda's breath of the key's fifth, at most once in 10 real s)
     const P = this.pieces, a = h.action, DV = { N: [0, -1], S: [0, 1], E: [1, 0], W: [-1, 0] }, at = (c) => (c ? P.at(c[0], c[1]) : null);
     for (const c of h.cells || []) { const v = at(c); if (v) v.hint = 1; }
     if (a.kind === 'swap' && a.at) { const d = DV[a.dir] || [1, 0], v = at(a.at), w = at([a.at[0] + d[0], a.at[1] + d[1]]); if (v) { v.hint = 1; v.hintDir = d; } if (w) { w.hint = 1; w.hintDir = [-d[0], -d[1]]; } }
@@ -157,7 +162,16 @@ export class DuelView {
     const { cs, base } = DUEL_VIEW, B = this.state.board, x = Math.floor(_v.x / cs + B.w / 2), y = Math.floor(B.h - (_v.y - base) / cs);
     return x >= 0 && y >= 0 && x < B.w && y < B.h ? { x, y } : null;
   }
-  hover(cell) { this.marks.hover(this.isOpen ? cell : null); }
+  hover(cell) { this.marks.hover(this.isOpen ? cell : null); if (this.armed) this.showReach(cell); }
+  /** A skill armed (the session's armSkill, the one-gesture duel): its reach under the finger as it moves (skillcast.js reachOf); null
+   *  lets it go. */
+  armSkill(tool) { this.armed = this.isOpen ? tool || null : null; this.showReach(this.armed ? this.marks.hovered : null); }
+  showReach(cell) {
+    for (const v of this.pieces.list) v.prev = 0;
+    const cells = this.armed && cell ? reachOf(this.state, this.armed, cell) : [];
+    for (const [x, y] of cells) { const v = this.pieces.at(x, y); if (v) v.prev = 1; }
+    this.marks.select(cells.map(([x, y]) => ({ x, y })));
+  }
 
   /** The camera that reads the board: square to its face on the `face` side (the Courier's half on the left), a little above its middle
    *  and looking a hair down, as near as a cell of about 14 dots of the 480 lines (never under 12), far enough for the frame, the odds
@@ -247,6 +261,13 @@ export class DuelView {
   resync(state) {
     if (!this.isOpen || !state) return; this.state = state;
     this.intentDraw.clear(); this.foresight.clear(); this.worth.clear(); this.marks.select([]); this.juice.rewind(state);
+  }
+
+  /** The foe's turn skipped by a tap (the session's, Dovina's 21.1): the queued beats dropped and the board stood as the state is, at
+   *  once, with a short shake so the jump reads as the turn landing. */
+  skip(state) {
+    if (!this.isOpen || !state) return;
+    this.beats.clear(); this.juice.clear(); this.worth.clear(); this.state = state; this.settleUp(); this.stage.jolt(0.2);
   }
 
   /** The play queue ran dry: the view is made to agree with the duel as it stands (anything the beats did not follow is put right). */

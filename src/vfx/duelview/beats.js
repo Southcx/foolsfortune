@@ -23,6 +23,8 @@
 //   turn       a side's points: the beads it lost crack, one by one
 //   ember      Dread's junk lands as embers (`land` with kind 'ember'); `ember.cool`: the coal crazes (0.3), cracks open and turns, its gem
 //              inside (0.5)
+//   skills     the one-gesture duel's (skillcast.js): `skill` the cast (the Jar's pour into the cell), `blast { rows }` the Shot's beam,
+//              `vein` the Vein's sparks; nothing a skill plays is spent
 //   big plays  refund (ONE MORE), allclear, a weak or resisted chain step, trickle, undo: juice.js
 //   flee       a d20 thrown before the board landing on its roll, its reasons counted in against 15 (2.2 or so: flee.js); fled: the
 //              clash folds softly with no winner and the tsuitate folds away (1.4)
@@ -45,6 +47,7 @@ import { FLEE } from '../../progress/duel/flee.js';
 import { JUICE_EVENTS } from './juice.js';
 import { gemColour } from './pieces.js';
 import { DIVE } from './formdive.js';
+import { castBeat, blastBeat, veinBeat } from './skillcast.js';
 
 const ACTS = new Set(['swap', 'drag', 'rotate', 'drop', 'push', 'kick', 'form']);
 const COST = { swap: 1, rotate: 1, drop: 1, push: 1, kick: 2, form: 1, run: 1, shot: 1, grab: 1, drill: 1, paint: 2, delay: 2, hold: 1, 'hold.send': 1, 'duel.finisher': 2 };
@@ -82,6 +85,10 @@ export class DuelBeats {
     const E = job.events; if (job.i >= E.length) return null;
     const e = E[job.i], run = (pred) => { const out = []; while (job.i < E.length && pred(E[job.i])) out.push(E[job.i++]); return out; };
     const V = this.view;
+    if (e.type === 'skill') { job.i++; job.skill = true; return castBeat(this, e); } // (the one-gesture duel's cast, free: nothing after it in this play is spent, skillcast.js)
+    if (e.type === 'blast' && e.rows) { job.i++; return blastBeat(this, e); }
+    if (e.type === 'vein') { job.i++; return veinBeat(this, e); }
+    if (e.type === 'charge') { job.i++; return { events: [e], dur: 0 }; }
     if (e.type === 'fall') return this.fall(run((x) => x.type === 'fall'));
     if (e.type === 'clear' || e.type === 'break' || e.type === 'blast') { const it = run((x) => x.type === 'clear' || x.type === 'break' || x.type === 'blast'); return this.clears(it, run((x) => x.type === 'chain')); }
     if (e.type === 'chain') return this.clears([], run((x) => x.type === 'chain'));
@@ -90,14 +97,14 @@ export class DuelBeats {
     if (ACTS.has(e.type)) { job.i++; V.spend(e.side, e.type === 'drag' ? Math.max(1, Math.ceil((e.path.length - 1) / 3)) : COST[e.type], e); return this.action(e); }
     if (e.type === 'run') { job.i++; V.spend(e.side, 1, e); return this.runPath(e, run((x) => x.type === 'orb.drink')); }
     if (TOOL_BEATS2.has(e.type)) { job.i++; // (the tools that bend the clearing: toolbeats2.js)
-      if (e.type === 'shot') { V.spend(e.side, 1, e, 5); const pops = run((x) => x.type === 'blast' || ((x.type === 'clear' || x.type === 'break') && x.by === 'shot')); return shotBeat(this, e, pops, run((x) => x.type === 'chain' && x.step === 1 && x.side === e.side)); }
-      if (e.type === 'recolour') { V.spend(e.side, 2, e, 10); return paintBeat(this, e, run((x) => x.type === 'paint')); }
-      if (e.type === 'tune') { V.spend(e.side, 1, e, 8); return tuneBeat(this, e); }
+      if (e.type === 'shot') { this.pay(job, e.side, 1, e, 5); const pops = run((x) => x.type === 'blast' || ((x.type === 'clear' || x.type === 'break') && x.by === 'shot')); return shotBeat(this, e, pops, run((x) => x.type === 'chain' && x.step === 1 && x.side === e.side)); }
+      if (e.type === 'recolour') { this.pay(job, e.side, 2, e, 10); return paintBeat(this, e, run((x) => x.type === 'paint')); }
+      if (e.type === 'tune') { this.pay(job, e.side, 1, e, 8); return tuneBeat(this, e); }
       if (e.type === 'tune.end') return tuneEndBeat(this, e);
-      V.spend(e.side, 1, e); return readBeat(this, e); }
+      this.pay(job, e.side, 1, e); return readBeat(this, e); }
     if (JUICE_EVENTS.has(e.type)) { job.i++; return V.juice.beat(this, e); } // (the big plays: refund, allclear, trickle, undo: juice.js)
     if (e.type.startsWith('lesson.')) { job.i++; this.view.glows?.lessonBeat?.(e); return { events: [e], dur: e.type === 'lesson.idle' ? 0.3 : 0.05 }; } // (the lesson's steps: the asked verb lit, glows.js)
-    if (TOOL_EVENTS.has(e.type)) { const it = run((x) => x.type === e.type); V.spend(e.side, COST[e.type] ?? 1, e, POOL[e.type]); return toolBeat(this, it); }
+    if (TOOL_EVENTS.has(e.type)) { const it = run((x) => x.type === e.type); this.pay(job, e.side, COST[e.type] ?? 1, e, POOL[e.type]); return toolBeat(this, it); }
     if (e.type === 'land') { job.i++; return this.land(e); }
     if (e.type === 'line') { job.i++; return this.line(e); }
     if (e.type === 'shift') { job.i++; return this.step(V.pieces.bodyAt(e.side), e.to, 0.28, [e]); }
@@ -116,6 +123,9 @@ export class DuelBeats {
     if (e.type === 'duel.full' || e.type === 'duel.line' || e.type === 'duel.cap') { job.i++; return { events: [e], dur: 0.4, step: (u) => { if (e.winner === 0) V.board.won(sm(u)); } }; }
     job.i++; return { events: [e], dur: 0 }; // (settle.cap, settle.loop, and anything newer than this view: shown as nothing)
   }
+
+  /** An action point and the pool's bead spent, unless the play is a skill's (free: PUZZLE-DUELS.md 22). */
+  pay(job, ...a) { if (!job.skill) this.view.spend(...a); }
 
   /** A body or piece stepping to a cell (shift, a walk). */
   step(v, to, dur, events) {
