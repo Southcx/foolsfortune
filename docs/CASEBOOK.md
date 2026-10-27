@@ -946,3 +946,5 @@ NEW:lookahead-own-stream. **A lookahead owns its own stream.** A preview, an int
   (`quietStream`), never by drawing the real stream: looking must not change the odds, and a replay must replay.
 NEW:lookahead-own-copy. **A lookahead copies a duel with the kernel's `cloneState`, never a spread.** A `{ ...s }` shares every array the
   kernel writes (the undo stack, the log): a forecast or a preview must not reach into the real turn.
+NEW:sound-keyed-by-the-kernels-names. **A sound keyed by an engine's value reads the engine's own table for its names.** A table of
+  its own in the bank drifts when the engine renames; import or mirror the engine's list, and let an unknown name be heard as wrong.

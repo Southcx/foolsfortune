@@ -5,7 +5,10 @@
 //           step 3, the octave and a shimmer from 5); the foe's a square wave an octave down
 //   LINE    'line' { line } (the boundary slid a column toward whoever took the garbage): a stone block dragged a beat, a thud, panned to
 //           where the line now stands
-//   CLEAR   'clear' { colour }: a glassy pop, its pitch by the gem's colour; a settle's many come as one shimmer (throttled)
+//   CLEAR   'clear' { colour, side }: a glassy pop, its pitch the gem's feeling as a step of the duel's key (the cue's root), so clears
+//           of different feelings chord; a limit a feeling. 'chain' { weak } (a weak colour's hit) a brighter edge on its step
+//   BEATS   'allclear' (the key's chord blooming up), 'refund' (an action point back: a coin's two notes), 'turn' (a woodblock, high
+//           yours, low the foe's), 'ember.cool' (a hiss and a glassy note), 'hint' (the idle hint: a breath of the fifth, once in 10 s)
 //   and the rest: fall (a soft patter), break (junk cracking: clay), blast (a bomb), pinch (junk turned to a gem: a clay crack resolving
 //   up into glass), land (garbage arriving: a heavy fall, by count), offset (incoming garbage cancelled: two tones meeting and cancelling),
 //   send (garbage thrown: a whoosh), and the duel's end (duel.line, duel.full, duel.cap)
@@ -32,8 +35,12 @@
 // Every method runs on the Sfx itself (`this.ctx`, `this.out`, `this.noise`, `this.tone`, `this.allow`: audio/core.js).
 const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
 const PENTA = [0, 4, 7, 9];
-const chainNote = (step) => 72 + PENTA[(step - 1) % 4] + 12 * Math.floor((step - 1) / 4); // (C5 E5 G5 A5 C6 ...)
-const COLOUR_NOTE = { red: 79, orange: 81, yellow: 84, green: 86, blue: 88, purple: 91, white: 93 };
+const chainNote = (step, root = 72) => root + PENTA[(step - 1) % 4] + 12 * Math.floor((step - 1) / 4); // (C5 E5 G5 A5 C6 ... from the duel's root)
+// a gem's feeling as a step of the duel's key (major pentatonic over the cue's root), so clears of different feelings chord: the
+// Lantern Wisp's four (wonder, mirth, desire, fury) a 6/9 chord; the rest above it. The board's colours are feelings (duel/board.js).
+const FEELING_STEP = { wonder: 0, mirth: 4, desire: 7, fury: 9, gall: 14, grief: 16, dread: 19 };
+/** The duel's root: the cue's own key when one plays (sfx.musicGrid, audio/cues.js hearEvents), else C5; kept within C5 .. B5. */
+function duelRoot(s) { const r = s.musicGrid?.()?.root; return r == null ? 72 : 72 + ((((r - 72) % 12) + 12) % 12); }
 const sidePan = (side) => (side === 1 ? 0.45 : side === 0 ? -0.45 : 0);
 
 export class PuzzleDuelSounds {
@@ -46,9 +53,14 @@ export class PuzzleDuelSounds {
   /** One of the engine's events, as the view plays it. */
   duelEvent(e = {}) {
     switch (e.type) {
-      case 'chain': return this.duelChain(e.step, e.side);
+      case 'chain': return this.duelChain(e.step, e.side, !!e.weak);
       case 'line': return this.duelLine(e.line, e.w);
-      case 'clear': return this.duelClear(e.colour);
+      case 'clear': return this.duelClear(e.colour, e.side);
+      case 'allclear': return this.duelAllClear(e.side);
+      case 'refund': return this.duelRefund(e.side);
+      case 'turn': return this.duelTurn(e.side);
+      case 'ember.cool': return this.duelEmberCool();
+      case 'hint': return this.duelHint();
       case 'fall': return this.duelFall();
       case 'break': return this.duelJunkBreak();
       case 'duelBreak': return this.duelFigmentBreak(e.depth);
@@ -70,10 +82,11 @@ export class PuzzleDuelSounds {
     }
   }
   /** A chain's step: a note higher each, fuller as it climbs. */
-  duelChain(step = 1, side = 0) {
+  duelChain(step = 1, side = 0, weak = false) {
     if (!this.ok() || !this.allow('duelChain', 12)) return;
-    const n = Math.max(1, step | 0), foe = side === 1, t = this.ctx.currentTime, d = this.duelOut(0.32 + 0.03 * Math.min(6, n), 0.35 + 0.05 * Math.min(6, n), sidePan(side));
-    const m = chainNote(n) - (foe ? 12 : 0), type = foe ? 'square' : 'triangle', g = foe ? 0.05 : 0.11;
+    const n = Math.max(1, step | 0), foe = side === 1, t = this.ctx.currentTime, d = this.duelOut(0.32 + 0.045 * Math.min(8, n), 0.35 + 0.05 * Math.min(6, n), sidePan(side));
+    const m = chainNote(n, duelRoot(this)) - (foe ? 12 : 0), type = foe ? 'square' : 'triangle', g = foe ? 0.05 : 0.11;
+    if (weak && !foe) { this.tone(t, 0.22, { f0: hz(m + 12), type: 'sawtooth', gain: 0.025, dest: d }); this.noise(t, 0.05, { type: 'highpass', f0: 6000, gain: 0.12, dest: d }); } // (a weak colour's hit: a brighter edge)
     this.tone(t, 0.3, { f0: hz(m - 0.5), f1: hz(m), type, gain: g, dest: d }); // (a little scoop up into the note)
     if (n >= 3) this.tone(t + 0.02, 0.3, { f0: hz(m + 7), type, gain: g * 0.5, dest: d });
     if (n >= 5) { this.tone(t + 0.04, 0.45, { f0: hz(m + 12), gain: g * 0.4, dest: d }); for (let k = 0; k < 4; k++) this.tone(t + 0.05 + k * 0.03, 0.2, { f0: hz(m + 24 + PENTA[k]), gain: 0.012, dest: d }); }
@@ -86,11 +99,43 @@ export class PuzzleDuelSounds {
     this.tone(t + 0.22, 0.25, { f0: 90, f1: 50, gain: 0.45, dest: d }); this.noise(t + 0.22, 0.06, { type: 'lowpass', f0: 900, gain: 0.25, dest: d });
   }
   /** A gem cleared: a glassy pop at its colour's note. */
-  duelClear(colour) {
-    if (!this.ok() || !this.allow('duelClear', 14)) return;
-    const t = this.ctx.currentTime, d = this.duelOut(0.22, 0.3), m = COLOUR_NOTE[colour] ?? 84;
+  duelClear(colour, side = 0) {
+    if (!this.ok() || !this.allow(`duelClear.${colour}`, 10)) return; // (a limit a feeling: three colours at once are a chord, not one pop)
+    const t = this.ctx.currentTime, d = this.duelOut(0.22, 0.3, sidePan(side) * 0.5), m = duelRoot(this) + 12 + (FEELING_STEP[colour] ?? 0) - (side === 1 ? 12 : 0);
     this.noise(t, 0.02, { type: 'bandpass', f0: 5000, q: 2, gain: 0.15, dest: d });
     [1, 2.76].forEach((r, j) => this.tone(t, 0.18, { f0: hz(m) * r, gain: j ? 0.01 : 0.04, dest: d }));
+  }
+  /** Your half cleared of gems (`allclear`): the key's chord blooming up in a run and held, bright. */
+  duelAllClear(side = 0) {
+    if (!this.ok() || !this.allow('duelAllClear', 1)) return;
+    const t = this.ctx.currentTime, d = this.duelOut(0.36, 0.6, sidePan(side) * 0.4), r = duelRoot(this) - (side === 1 ? 12 : 0);
+    [0, 4, 7, 12, 16, 19, 24].forEach((st, k) => this.tone(t + k * 0.05, 0.9 - k * 0.06, { f0: hz(r + st), type: 'triangle', gain: 0.07, dest: d }));
+    this.tone(t + 0.35, 1.4, { f0: hz(r), gain: 0.06, dest: d }); this.tone(t + 0.35, 1.4, { f0: hz(r + 7), gain: 0.04, dest: d });
+  }
+  /** An action point given back for a big play: two quick notes up, a coin dropped in a slot. */
+  duelRefund(side = 0) {
+    if (!this.ok() || !this.allow('duelRefund', 3)) return;
+    const t = this.ctx.currentTime, d = this.duelOut(0.26, 0.2, sidePan(side) * 0.5), r = duelRoot(this) + 12;
+    this.tone(t, 0.08, { f0: hz(r + 7), type: 'square', gain: 0.04, dest: d }); this.tone(t + 0.07, 0.25, { f0: hz(r + 12), type: 'square', gain: 0.045, dest: d });
+  }
+  /** The turn passed: a soft woodblock, high for yours, low for the foe's. */
+  duelTurn(side = 0) {
+    if (!this.ok() || !this.allow('duelTurn', 3)) return;
+    const t = this.ctx.currentTime, d = this.duelOut(0.2, 0.15, sidePan(side) * 0.6);
+    this.tone(t, 0.05, { f0: side === 1 ? 420 : 760, f1: side === 1 ? 380 : 700, type: 'triangle', gain: 0.25, dest: d }); this.noise(t, 0.015, { type: 'bandpass', f0: side === 1 ? 900 : 1800, q: 4, gain: 0.1, dest: d });
+  }
+  /** An ember cooled into its gem: the coal's hiss, then a glassy note as it sets. */
+  duelEmberCool() {
+    if (!this.ok() || !this.allow('duelEmberCool', 4)) return;
+    const t = this.ctx.currentTime, d = this.duelOut(0.22, 0.35);
+    this.noise(t, 0.4, { type: 'highpass', f0: 3500, f1: 6000, gain: 0.08, attack: 0.02, dest: d });
+    this.tone(t + 0.35, 0.5, { f0: hz(duelRoot(this) + 19), gain: 0.04, dest: d });
+  }
+  /** The idle hint glowing: a breath of the key's fifth, barely there, never insistent. */
+  duelHint() {
+    if (!this.ok() || !this.allow('duelHint', 0.1)) return;
+    const t = this.ctx.currentTime, d = this.duelOut(0.12, 0.6);
+    this.riser(t, 0.6, { f0: hz(duelRoot(this) + 7) * 0.99, f1: hz(duelRoot(this) + 7), type: 'sine', gain: 0.03, dest: d });
   }
   duelFall() {
     if (!this.ok() || !this.allow('duelFall', 10)) return;
@@ -111,7 +156,7 @@ export class PuzzleDuelSounds {
   /** Junk pinched into a gem: the crack, resolving up into glass. */
   duelPinch(colour) {
     if (!this.ok() || !this.allow('duelPinch', 8)) return;
-    const t = this.ctx.currentTime, d = this.duelOut(0.28, 0.3), m = COLOUR_NOTE[colour] ?? 84;
+    const t = this.ctx.currentTime, d = this.duelOut(0.28, 0.3), m = duelRoot(this) + 12 + (FEELING_STEP[colour] ?? 0);
     this.noise(t, 0.04, { type: 'bandpass', f0: 1600, q: 1.2, gain: 0.25, dest: d });
     this.tone(t + 0.04, 0.25, { f0: hz(m - 5), f1: hz(m), gain: 0.05, dest: d });
   }
@@ -167,7 +212,7 @@ export class PuzzleDuelSounds {
     const now = this.ctx.currentTime, d = this.duelOut(0.28, 0.3, sidePan(0));
     const wall = performance.now(); // (a run is measured in real time: the audio clock can run ahead of it)
     this._orbRun = wall - (this._orbAt ?? -1e9) < 600 ? (this._orbRun || 0) + 1 : 0; this._orbAt = wall;
-    const m = chainNote(1 + Math.min(11, this._orbRun)) + 12;
+    const m = chainNote(1 + Math.min(11, this._orbRun), duelRoot(this)) + 12;
     this.tone(now, 0.08, { f0: hz(m), type: 'square', gain: 0.025, dest: d }); this.tone(now + 0.06, 0.25, { f0: hz(m + 4), type: 'square', gain: 0.025, dest: d });
   }
   duelOrbFade() {

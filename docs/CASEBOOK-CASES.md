@@ -4215,3 +4215,11 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the forecast copies with the kernel's `cloneState` (its own quiet stream and `undo: []`); the view's other `{ ...s, r }`
   copies (glows.js `quiet`, worth.js) dropped for the kernel's `preview` and `cloneState`.
 - **Rule:** NEW:lookahead-own-copy
+
+### 2026-10-27 · Every gem's clear in a puzzle duel the same note (found reading for Dovina's sound bar; Wanda)
+- **Seen:** (by reading, not yet by ear) clears of different colours could never chord.
+- **Cause (as read):** audio/puzzleduel.js keyed a clear's note by `COLOUR_NOTE` (red, orange, yellow ...); the board's colours are the
+  feelings (`COLOURS`, progress/duel/board.js: wonder .. dread), so every lookup missed and fell back to one note; the pinch the same.
+- **Fix:** a feeling's step of the duel's key (`FEELING_STEP`, over the cue's root through `sfx.musicGrid`), a limit a feeling, and the
+  chain, the orbs and the pinch keyed alike.
+- **Rule:** NEW:sound-keyed-by-the-kernels-names
