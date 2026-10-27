@@ -25,6 +25,7 @@ import { noticed } from '../../progress/opensea/discoveries.js';
 import { newVoyage, sailTo, takeFix, dock, tow, burnOf, frontAt } from '../../progress/opensea/seatrip.js';
 import { SHIPS } from '../../progress/rail/ships.js';
 import { beastPay } from '../../progress/opensea/seabeasts.js';
+import { RUMOUR } from '../../progress/opensea/migrations.js';
 import { phaseAt } from '../../progress/weather.js';
 import { today, now } from '../../core/calendar.js';
 import { stream } from '../../core/rng.js';
@@ -61,6 +62,11 @@ export class OpenSea {
       if (e.by !== 'courier') return;
       const of = (SHIPS[this.helm?.ship || 'sloop']?.bears ?? 6) + game.shipParts.mult('bears'), hull = game.seaFight?.hull ?? of, cubes = beastPay(id, hull, of);
       game.cubes?.earn(cubes, id === 'seaSerpent' ? 'serpent' : 'seabeast'); game.events?.emit(id === 'seaSerpent' ? 'seaserpent.paid' : 'seabeast.paid', { id, cubes, hull, of, by: 'courier' });
+      const R = this.herds?.rumour(), day = today(); // (the board's rumour: that beast sunk in its square this game day pays its bounty once, migrations.js)
+      if (R && R.id === id && R.square === this.voyage.at && this.rumourPaid !== day) {
+        this.rumourPaid = day; const bounty = Math.round(RUMOUR.bounty * beastPay(id, of, of)); game.cubes?.earn(bounty, 'bounty');
+        game.events?.emit('sea.rumour.paid', { id, cubes: bounty, by: 'courier' }); this.dirty();
+      }
     };
     game.events?.on?.('seaserpent.down', (e) => paid('seaSerpent', e));
     game.events?.on?.('seabeast.down', (e) => paid(e.id, e));
@@ -70,11 +76,11 @@ export class OpenSea {
   dump() {
     const v = this.voyage;
     return { at: v.at, fuel: v.fuel, doubt: v.doubt, charted: [...v.charted], found: [...v.found], reported: [...v.reported], claimed: [...this.claimed],
-      puzzle: Object.fromEntries(Object.entries(this.puzzle).map(([k, set]) => [k, [...set]])), herds: this.herds ? this.herds.dump() : this.herdState, salvaged: this.salvaged };
+      puzzle: Object.fromEntries(Object.entries(this.puzzle).map(([k, set]) => [k, [...set]])), herds: this.herds ? this.herds.dump() : this.herdState, salvaged: this.salvaged, rumourPaid: this.rumourPaid ?? -1 };
   }
   load(d) {
     this.voyage = newVoyage({ grid: this.grid, port: 'anagami' });
-    this.salvaged = { ...(d?.salvaged || {}) };
+    this.salvaged = { ...(d?.salvaged || {}) }; this.rumourPaid = d?.rumourPaid ?? -1;
     this.claimed = new Set(d?.claimed || []); this.puzzle = freshPuzzle(d?.puzzle); this.pieces?.sync(); this.herdState = d?.herds || null; this.herds?.load(this.herdState);
     if (!d) return;
     const v = this.voyage; v.at = d.at || v.at; v.fuel = d.fuel ?? v.fuel; v.doubt = d.doubt ?? 0;
@@ -193,6 +199,7 @@ export class OpenSea {
       const quay = Object.entries(this.props.quays).find(([, q]) => q.pos.distanceTo(_v.copy(H.pos).setY(q.top)) < ROOM.quay + this.halfHull());
       const wreck = !quay && this.nearWreck(H.pos);
       if (quay) this.dockAt(quay[0], quay[1]);
+      else if (this.pieces.pickBottle(H.pos, this.halfHull())) { /* a drift bottle's note read (puzzlepieces.js) */ }
       else if (wreck) this.salvage(wreck);
       else if (isl) { const d = _v.copy(H.pos).sub(isl.pos).setY(0).normalize(); H.placeAt(isl.pos.clone().addScaledVector(d, isl.r + (H.look.beam ?? 2.4) / 2 + 1.5).setY(SEA.y), Math.atan2(d.x, d.z) + Math.PI / 2); this.stepOff({ islet: isl.feature.id, kit: isl.islet?.kit }, isl.pos.clone().addScaledVector(d, isl.r - 1.5).setY(isl.top + 0.05), Math.atan2(-d.x, -d.z)); } // (moored broadside to the shore, a stride off it)
       else g.log?.say?.('info', 'Nothing to moor to here.', { key: 'sea.moor', throttle: 3 });

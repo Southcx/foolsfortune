@@ -391,9 +391,9 @@ clusters of 3 at 6 colours 14 to 153; runs of 3 and clusters of 4 at 5 colours 1
   view to draw on the hovered move (Calissa's).
 
 
-### 17.4 The board is the Figment's (the owner on the phone, 2026-10-27, relayed by Calissa and Petra)
+### 17.4 The board is the Figment's (South on the phone, 2026-10-27, relayed by Calissa and Petra)
 
-The owner: "increasing the size of the tsuitate board" on a phone. Calissa's camera now fits the slab into the room the controls leave
+South: "increasing the size of the tsuitate board" on a phone. Calissa's camera now fits the slab into the room the controls leave
 (`touchShot`, vfx/duelview.js); on an iPhone XR held flat that room is about 680 by 330 CSS px, so 20 rows give a cell of about 16 px.
 A finger wants 40. The camera cannot grow it further; only fewer cells can.
 
@@ -423,9 +423,9 @@ turn falls with the cells, but a column costs 2, so the Line moves about as fast
 **Still open, not a rule:** 23 px is under a thumb. What closes the rest is the input's, not the board's: a loupe over the finger, or
 pick-then-place with the picked piece lifted. Calissa's and Petra's call.
 
-## 18. The tools bend the clearing; the intent; the first duel as a lesson (the owner, 2026-10-27, relayed by Calissa)
+## 18. The tools bend the clearing; the intent; the first duel as a lesson (South, 2026-10-27, relayed by Calissa)
 
-The owner: "Tell Dovina especially to utilize the lachryma tools to help dictate how the tile clearing mechanics work. Like the Soul
+South: "Tell Dovina especially to utilize the lachryma tools to help dictate how the tile clearing mechanics work. Like the Soul
 Brush being able to recolor the suit of a given gem class, that sort of thing"; "implement the updated mechanics as outlined" (the
 preview, the intent through the fog, the first duel as a lesson); "we're probably going to need a smaller board size with larger cells
 for mobile" (17.4: the Wisp's board is 14 x 14 on every device; `newDuel({ board })` takes `{ w, h, perColumn, landCap }` over the

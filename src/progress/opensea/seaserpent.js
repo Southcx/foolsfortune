@@ -30,9 +30,9 @@ import { ECON } from '../econ/table.js';
 export const SEA_SERPENT = {
   cls: 2,                 // (Marlin: econ/emocean.js CLASSES)
   hp: 60,                 // (hits of the ship's gun to sink it: about two real minutes of a sloop's fire with the head up a third of the time)
-  segments: 14, length: 30, speed: 9,   // (metres a real second swimming; the sloop cruises at about 10, so it keeps pace and cannot outrun a full sail)
+  segments: 20, length: 105, speed: 9,  // (3.5 times the first body, so it reads against the 35 m hull at life size: Calissa's ask, 2026-10-27; metres a real second swimming: the sloop cruises at about 10, so it keeps pace and cannot outrun a full sail)
   weak: 'head',           // (the head takes x3; the coils x0.5)
-  sense: 120,             // (metres: inside it, it hunts)
+  sense: 200,             // (metres: inside it, it hunts; 120 when it was 30 m long, raised with the body so it notices the hull from as many of its own lengths)
   give: { minutes: 6, kept: [0.75, 1.25], bountyCls: 2, material: 'serpent scale' },  // (a kill's pay: 6 minutes of play at the aim, x0.75 .. x1.25 by the hull kept: 36 to 60 cubes; bounty and material not wired)
   moves: {
     ram:   { windup: 1.4, hits: 1, answer: 'steer', cooldown: 6 },      // (rises under the bow's path: the ring is where it breaks the surface)

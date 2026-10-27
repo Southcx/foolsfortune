@@ -341,7 +341,7 @@ Section 9's open call is taken: the safari keeps paying through herds.
     a class 3), a second plate paid nothing more; the dock posted the board and paid 240.
 
 
-## 14. The rework: the wind, the mounts, the beasts, salvage (2026-10-27; the owner: "the ship combat feels shallow, and the module itself feels underwhelming/underbaked")
+## 14. The rework: the wind, the mounts, the beasts, salvage (2026-10-27; South: "the ship combat feels shallow, and the module itself feels underwhelming/underbaked")
 
 **Why it was shallow** (Dovina's read, sent to Calissa and Petra the same night):
 1. Sailing had no decision: a throttle and a rudder on an empty plane.
@@ -429,3 +429,36 @@ runtime is to come.
   cannot aim the bow gun while you look over a side. The broadside wins when you put the head on your beam: x3 there is 27 at once,
   the most one moment can do. Raking the coils (x0.5) is 4.5, worse than holding the bow gun on the head. Where the ship lies decides it.
 - The rest of Petra's numbers stand (speed 75, life 2.4, radius 0.6, cone 0.6, reach 180, spread 0.04, beam 0.45).
+
+### 14.7 The drift bottle's riddle (built: `isletpuzzles.js` `riddles`, `riddleText`; `puzzlepieces.js` bottles)
+
+- **Two a sea**, dealt with the puzzles: a bottle adrift 2 or 3 squares off an islet (its own spot in that square). F alongside at the
+  helm reads its note, said in the log: the way there in the sea's own words ("2 squares north and 2 squares east: an atoll. Dig where the
+  dowse sings.": the dock board's own words for a herd's bearing).
+- **Read, it unseals a cache on that islet**, never under rare, that only the Dreamvane's dowse then finds (the caches' rule, section
+  12). The note is the map; the dowse is the spade. It teaches dead reckoning from a written bearing.
+- `sea.bottle { id, islet, text }`; ledger `sea.bottle`; achievement Message in a Bottle (sea14). Calissa: `pieces.bottles[].mesh` to dress.
+- Prior art: Sea of Thieves' riddle maps; Wind Waker's treasure charts; a message in a bottle.
+- Measured headless: the note read, the bottle gone, its cache's signature alive only after; a second F does nothing.
+
+### 14.8 Calissa's proposal ruled, and the fight's length (2026-10-27)
+
+Calissa's opening (broadsides, the tools as mounts, the siblings as crew, the serpent rescaled and in phases, a rumour a game day,
+weather that matters) and mine were one plan; what is ruled:
+- **The serpent at 3.5x** (Calissa's ask): `SEA_SERPENT.length` 30 -> 105 m, `segments` 14 -> 20, so it reads against the 35 m hull;
+  its `sense` 120 -> 200 m with it. Its speed and moves stand.
+- **How long a serpent fight lasts:** about a real minute with the broadside used well (the head on your beam), two to two and a half
+  with the bow gun alone. Petra measured the gun alone at about 4.5 real minutes, so **the bow gun's power goes 0.25 -> 0.5**; the
+  broadside as 14.6 (a sloop's 3 guns at 3, 4 s a side) scales Petra's 30 s at 6 guns of 2 every 3.5 s to about 45 s.
+- **The crew** (`SEA_CREW`, `progress/rail/mounts.js`): a sibling in your party lends the ship one hand, its division's: Petra mends
+  the hull between fights (a hit a real minute), Wanda reloads the broadside x0.75, Calissa shows the dives, Espada widens the spit's
+  parry x1.5, Dovina shows a windup 0.5 s sooner. None is a weapon. Runtime Petra's, poses Calissa's.
+- **The rumour** (`rumourOf`, `migrations.js`): one beast a game day posted on the dock's board in one square (`sea.rumour { id,
+  squares, way }`); sunk there that game day, it pays its kill's whole-hull pay again as a bounty, once (`sea.rumour.paid`). Only the
+  sea serpent for now (`RUMOUR.ids`); each beast joins as its runtime lands. Petra: the rumour's square must raise its beast (a lair
+  for the game day).
+- **The serpent in phases, parts that break** (Calissa's 4): yes, as the beasts' rows have them (14.3); the serpent's own phases are
+  Petra's and Calissa's to build against its four moves; its parts take the boss law's gold line.
+- **Weather that matters:** the fronts are gales already (14.1); fog hiding the herds is held for later (a look first, then a rule).
+- **What South gets first:** the wind and the broadside (in), then the mounts by arc, then the serpent's phases, then the crew, then
+  the other beasts.
