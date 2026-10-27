@@ -143,7 +143,8 @@ export class DuelView {
    *  control stands over a cell; the bodies may leave the frame. */
   touchShot(B, tan) {
     const L = this.game.hudLayout, V = L.view, A = L.areas, gap = 8; if (!V?.w || !V?.h) return null;
-    const lefts = [L.box?.('sight'), L.box?.('lachrimeterTube'), A.cluster, A.strip].filter((r) => r && r.w > 0).map((r) => r.x);
+    const tiles = typeof document === 'undefined' ? [] : [...document.querySelectorAll('.tt:not(.hidden)')].map((e) => e.getBoundingClientRect()).filter((r) => r.width > 0 && r.left > V.w / 2 && r.top > A.topBar.y + A.topBar.h); // (the controls as they stand, not the rooms reserved for them: the strip's room reaches half across)
+    const lefts = [L.box?.('sight'), L.box?.('lachrimeterTube'), A.cluster, ...tiles.map((r) => ({ x: r.left, w: r.width }))].filter((r) => r && r.w > 0).map((r) => r.x);
     const x0 = L.bounds.x, x1 = Math.min(L.bounds.x + L.bounds.w, ...lefts) - gap;
     const y0 = Math.max(A.topBar.y + A.topBar.h, L.log ? L.log.y + L.log.h : 0) + gap, y1 = L.bounds.y + L.bounds.h;
     if (x1 - x0 < 120 || y1 - y0 < 120) return null;
@@ -224,7 +225,8 @@ export class DuelView {
   /** The far end of the spiritual link while open: the board's Courier in its form, or the god hand over its half (overlay px, y up). */
   linkAt(out) {
     const cam = this.game.camera; if (!this.isOpen || !cam) return null;
-    if (this.forms[0] === 'courier' && this.pieces.bodyAt(0)) this.headOf(0, _v); else this.handPoint(0, _v);
+    const B = this.state.board, { cs, base, border, lip } = DUEL_VIEW; // (the frame's lower corner on the bulb's side: the thread lands on the clay, never across a cell; the owner, 2026-10-27)
+    _v.set((B.w * cs) / 2 + border * 0.5, base - border * 0.5, lip);
     this.frame.localToWorld(_v).project(cam); if (_v.z > 1 || _v.z < -1) return null;
     return out.set((_v.x + 1) / 2 * innerWidth, -((1 - _v.y) / 2) * innerHeight, 0);
   }

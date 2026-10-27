@@ -138,7 +138,7 @@ const DF = 8; // (the forecastle's break)
 const DB = { z0: -2.5, z1: 4.5, w: 4.0, h: 2.75 }; // (the superstructure block: a Courier's walk each side of it)
 const dTop = () => deckAt(DESTROYER_HULL, 1) + DB.h - 0.1;
 const DESTROYER = {
-  id: 'destroyer', length: len('destroyer'), beam: 6.0, draft: 1.7, scale: SCALE, panel: 2.8, dives: true, hull: DESTROYER_HULL, pennantScale: 5,
+  id: 'destroyer', length: len('destroyer'), beam: 6.0, draft: 1.7, scale: SCALE, panel: 2.8, dives: true, hull: DESTROYER_HULL, pennantScale: 3.2,
   engineGlow: D.glow, core: { crystal: 0xffffff, collar: D.joint, frame: D.joint, plate: 0.3, apex: 2.2, k: 1.6 },
   helm: [[0, deckAt(DESTROYER_HULL, -7.75) + 0.3 - 0.14, -7.75]], gun: [0, deckAt(DESTROYER_HULL, 10.5) + 1.5, 10.5], pennant: { mast: 0 },
   crew: crewOn(DESTROYER_HULL, [[-2.2, -11], [2.2, -11], [-2.5, 0], [2.5, 2], [0, 6], [0, -4.5], [1.2, 12.5]]),
@@ -263,7 +263,7 @@ const HOUSE = { z0: -27.5, z1: -18.5, w: 7.0, h1: 3.0, z2: -21, w2: 6.4, h2: 2.8
 const houseY = () => deckAt(TANKER_HULL, -23) - 0.2;
 const houseRoof = () => houseY() + HOUSE.h1 + HOUSE.h2 + HOUSE.h3;
 const TANKER = {
-  id: 'tanker', length: len('tanker'), beam: 9.5, draft: 3.5, scale: SCALE, panel: 4.6, plank: 0.32, dives: false, hull: TANKER_HULL, pennantScale: 5,
+  id: 'tanker', length: len('tanker'), beam: 9.5, draft: 3.5, scale: SCALE, panel: 4.6, plank: 0.32, dives: false, hull: TANKER_HULL, pennantScale: 3.2,
   engineGlow: K.glow, vane: { fill: 0xfff0d8, edge: K.glow, fillA: 0.3 },
   core: { crystal: 0xffffff, collar: K.joint, frame: K.grey, plate: 0.3, apex: 2.2, k: 1.6 },
   helm: [[0, houseRoof() - 0.14, -22.4]], gun: [0, deckAt(TANKER_HULL, 23.6) + 1.75, 23.6], pennant: { mast: 0 },
