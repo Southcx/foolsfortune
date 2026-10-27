@@ -77,7 +77,7 @@ export class DuelSession {
    *  board between you. */
   begin(c) {
     const g = this.game; if (this.active || this.pending || !c?.alive) return false;
-    const ruleset = rulesetOf(c), feeling = c.grade ?? ruleset.feeling ?? 'fury';
+    const ruleset = rulesetOf(c, c.practice ? (c.practicePick || 'plain') : null), feeling = c.grade ?? ruleset.feeling ?? 'fury';
     this.pending = true; this.pendingFoe = c; this.pocket(c);
     const go = () => { this.pending = false; this.pendingFoe = null; this.open(c, feeling, ruleset); };
     if (!g.seam?.cross(go, { kind: 'aberrant', foe: c })) go();
@@ -332,6 +332,7 @@ export class DuelSession {
       if (e.side === 0 && e.type === 'skill') this.emit('duel.skill', { tool: e.tool, by: 'courier' });
       if (e.side === 0 && e.type === 'charge' && e.ready) this.emit('duel.charge', { tool: e.tool, by: 'courier' });
       if (e.side === 0 && e.type === 'land' && e.n) this.emit('duel.land', { n: e.n, kind: e.kind, by: 'creature' });
+      if (e.side === 0 && e.type === 'lesson.done') this.emit('duel.lesson', { by: 'courier' }); // (counted even in practice: lessonDue reads it)
       if (e.side === 0 && e.type === 'allclear') this.emit('duel.allclear', { n: e.n, by: 'courier' });
       if (e.type === 'flee') this.emit('duel.flee', { roll: e.roll, reroll: e.reroll ?? null, need: e.need, ok: e.ok, by: e.side === 0 ? 'courier' : 'creature' });
     }
