@@ -51,9 +51,9 @@ export class SeaRings {
     const thin = new THREE.RingGeometry(0.988, 1, 160); thin.rotateX(-Math.PI / 2);
     const face = new THREE.RingGeometry(0.8, 1, 48);
     const wall = new THREE.CylinderGeometry(1, 1, 1, 128, 1, true); wall.translate(0, 0.5, 0);
-    this.geo = { thick, thin, face, wall }; const fade = fadeTexture();
+    this.geo = { thick, thin, face, wall }; const fade = fadeTexture(), white = new THREE.DataTexture(new Uint8Array([255, 255, 255, 255]), 1, 1); white.needsUpdate = true;
     this.pool = Array.from({ length: RL.cap.rings }, () => {
-      const mat = new THREE.MeshBasicMaterial({ transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, fog: false });
+      const mat = new THREE.MeshBasicMaterial({ transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, alphaMap: white, fog: false }); // (a white alpha map: the wall's own program, one fewer (Petra's census, 2026-10-27))
       const wm = new THREE.MeshBasicMaterial({ transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, alphaMap: fade, fog: false });
       const m = new THREE.Mesh(thick, mat), w = new THREE.Mesh(wall, wm);
       for (const x of [m, w]) { x.visible = false; x.frustumCulled = false; x.renderOrder = 4; x.userData.zone = 'opensea'; sc?.add(x); }
