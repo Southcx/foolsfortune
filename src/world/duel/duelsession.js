@@ -140,6 +140,11 @@ export class DuelSession {
   /** Your input this frame, as the kernel's actions. */
   controls(raw, input) {
     const s = this.state, S = s.sides[0], cell = this.hover;
+    if ((input.touchDrag?.fingers ?? 0) >= 2) { // (two fingers are the stage's pinch, never a swap: the press and path let go)
+      if (this.press || this.path.length) { this.press = null; this.path = []; this.view?.select?.([]); this.show(null); }
+      this.swipe = null; return;
+    }
+    if (cell && input.wasPressed('Mouse0') && this.view?.stage?.eatTap?.(cell)) return; // (in the arena a tap on the board zooms in, not acts: Calissa's duel stage)
     if (input.wasPressed('Backquote') || (!cell && input.wasPressed('Mouse0') && this.onBody(input))) return this.take({ kind: 'form', to: S.form === 'hand' ? 'courier' : 'hand' }); // (on touch a tap on the Courier's body does as du.form)
     if (input.wasPressed('Space')) return this.endMine();
     if (input.wasPressed('KeyZ') && (input.isDown('ControlLeft') || input.isDown('ControlRight'))) return this.takeBack();
