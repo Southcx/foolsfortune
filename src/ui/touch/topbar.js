@@ -6,7 +6,7 @@
 //   THE TILES  44 px glazed tiles (the least: Apple's and Google's target), a glyph each and no word: CODEX, PNEUKA BOX, MAP, SETTINGS,
 //              CHAT, TOP VIEW in the Spirit Garden only (MOBILE.md 8.2), and PAUSE apart at the end. A tile whose window is open is lit.
 //   A TAP      let go on the tile it went down on: `game.events.emit('touch.open', { what, by })`, then `game.touchShell?.open?.(what)`
-//              (Petra's shell wires what each opens: `what` is codex, box, map, settings, chat, overhead or pause), then `onOpen(what)`.
+//              (Petra's shell wires what each opens: `what` is codex, box, map, settings, overhead or pause), then `onOpen(what)`.
 //   FOLDED     (the owner, 2026-10-26: "retractable menus", more room) one MENU tab and PAUSE at the area's left end; a tap on MENU opens
 //              the row (MENU lit at its head), a window chosen or MENU tapped again folds it, and so do FOLD_S real seconds untouched.
 // Hidden off touch; it stays up under a window (it is how a window is closed again).
@@ -23,7 +23,7 @@ import { placeOf } from './areas.js';
 /** The windows in order (the glyph is `touch.<id>`), whether each stands only in the garden, and what says it is open; the gap before
  *  PAUSE (CSS px). */
 export const TOP_BAR = {
-  ids: ['codex', 'box', 'map', 'settings', 'chat', 'overhead', 'skiff', 'godhand', 'survey'],
+  ids: ['codex', 'box', 'map', 'settings', 'overhead', 'skiff', 'godhand', 'survey'], // (no `chat`: the ticker's tap opens the chat line, the log's tile folds it: South, 2026-10-27, two balloons on the bar)
   // where a tile stands (the rest always): TOP VIEW in the garden; the board on foot or riding; the hand outside the garden; its survey in the hand
   when: {
     overhead: (g) => !!g.realm?.active, skiff: (g) => !g.realm?.active && !g.god?.active && !g.emocean?.stage?.active, godhand: (g) => !g.realm?.active,

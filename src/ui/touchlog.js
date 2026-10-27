@@ -1,7 +1,8 @@
 // ---------------------------------------------------------------------------------------
 // THE LOG'S TICKER: the log (feedback/gamelog.js, Petra's, untouched) worn on a phone (docs/plans/MOBILE.md 10, Calissa's answers 1).
 // On touch it stands top left under the top bar as a two-line ticker, the newest two lines, each on one line, clear of the steering
-// thumb; a tap opens it full as a sheet (its tabs, its scroll), a tap on the sheet folds it back. The log is the only narration, so the
+// thumb; a tap opens it full as a sheet WITH the chat line (South, 2026-10-27: one balloon on the top bar, the ticker the way into the
+// chat), and the sheet folds back when the line closes. The log is the only narration, so the
 // ticker stays readable: 16 px type, 14 px the least anywhere in it. All of it is CSS under body.hud-touch (ui/hudlayout.js sets the
 // class and the ticker's place as --hud-log-x / -y / -w) and one class on the log's own element, `hud-sheet`. On the desk: nothing.
 // RETRACTABLE (the owner, 2026-10-26: "the chat log is a little cumbersome and should be retractable"; its tile on the top bar beside MENU,
@@ -70,8 +71,11 @@ export class TouchLog {
     el.addEventListener('click', (e) => {
       if (!this.layout.touch || el.classList.contains('typing')) return;
       if (e.target?.closest?.('.tabs, .line, .min')) return;
-      this.setSheet(!this.sheet);
+      if (this.sheet) { this.setSheet(false); return; }
+      this.setSheet(true); this.game.log?.open?.(); // (the log full and its chat line: the ticker is the way in)
     });
+    let typing = el.classList.contains('typing'); // (the line closed, by send, Esc or a tap away: the sheet it opened folds with it)
+    new MutationObserver(() => { const now = el.classList.contains('typing'); if (typing && !now && this.sheet && !this.layout.duelR) this.setSheet(false); typing = now; }).observe(el, { attributes: true, attributeFilter: ['class'] });
     return el;
   }
 

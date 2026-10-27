@@ -21,7 +21,9 @@
 // invasion's tint (the world coloured by whose world it is), Bayonetta's Witch Time (the world shifted round a fight, then given back).
 // The noise is Dave Hoskins' "Hash without Sine" (Shadertoy 4djSRW, MIT), as vfx/paintmotifs.js; the voronoi edge is Inigo Quilez's.
 //
-//   const D = new DomainClash()   D.dome (the sphere's mesh)   D.slabMaterial(gravityTexture, w, h) -> the slab's material
+// THE GROUND (South, 2026-10-27: a puzzle duel is its own instance, so nothing of the world stands under the bodies): a disc at the board's
+// foot in the same program (mode 2), each half's ground laid flat under its owner, a pool of its own light under each body, its rim faded.
+//   const D = new DomainClash()   D.dome (the sphere's mesh)   D.ground (the disc's)   D.groundTo(radius)   D.slabMaterial(gravityTexture, w, h) -> the slab's material
 //   (the slab's fog: a texture of the cells, r hidden, g the lantern's light: Dread's, vfx/duelview/board.js setFog)
 //   D.setFoe(aspect)   D.setPlane(pointWorld, normalWorld, centreWorld)   D.setLine(column)   D.flash(side)   D.won(k)
 //   D.unfold(originCourier, originFoe)   D.push(receiverSide)   D.collapse(slower = 1)   D.update(dt) -> still showing?   D.open (0..1 each side)
@@ -130,9 +132,11 @@ void main() {
     gl_FragColor = vec4(col, 1.0);
     return;
   }
-  // ---- the clash: an inside-out sphere round the arena
+  // ---- the clash: an inside-out sphere round the arena (mode 0), or its ground under the bodies (mode 2: a disc at the board's foot)
   vec3 dir = normalize(vW - uCentre);
   vec2 q = vec2(atan(dir.z, dir.x) * 6.0, dir.y * 6.0) * (uRadius / 18.0);
+  float fl = step(1.5, uMode);
+  if (fl > 0.5) { q = (vW.xz - uCentre.xz) * 0.55; dir = normalize(vec3(dir.x, 0.22, dir.z)); } // (the ground's pattern laid flat, lit as the sphere's band at its foot)
   float k = smoothstep(-0.05, 0.05, sd);
   float ph = labPhase(vW * 0.35, vView);
   // the Courier's: Lachryma's deep, the film in slow curtains, a few motes turning
@@ -159,11 +163,16 @@ void main() {
   float rim = mix(exp(-abs(rC - covC) * 1.2) * step(0.001, uOpen.x) * (1.0 - step(0.999, uOpen.x)), exp(-abs(rF - covF) * 1.2) * step(0.001, uOpen.y) * (1.0 - step(0.999, uOpen.y)), k);
   col += mix(labSoft(ph) * 1.4, uFoe * 2.0, k) * rim;
   float a = mix(inC, inF, k) * mix(0.62, 0.95, smoothstep(0.0, 0.35, dir.y)) * uFade;
+  if (fl > 0.5) { // the ground: a pool of each side's own light under its body, the disc fading out at its rim
+    float pC = exp(-pow(length(vW.xz - uOriginC.xz) / 1.5, 2.0)), pF = exp(-pow(length(vW.xz - uOriginF.xz) / 1.5, 2.0));
+    col += labSoft(ph) * pC * 0.9 * uOpen.x + uFoe * pF * 1.3 * uOpen.y;
+    a = clamp(a * 0.85 + (pC * uOpen.x + pF * uOpen.y) * 0.35, 0.0, 1.0) * (1.0 - smoothstep(0.55, 1.0, length(vUv - 0.5) * 2.0)) * uFade;
+  }
   if (a < 0.004) discard;
   gl_FragColor = vec4(col, a);
 }`;
 
-/** The clash's sphere or the slab, by mode: one program (the same source, side and blending; the uniforms shared by reference). */
+/** The clash's sphere, the slab or the ground, by mode: one program (the same source, side and blending; the uniforms shared by reference). */
 function clashMaterial(mode, shared) {
   return new THREE.ShaderMaterial({
     name: mode ? 'duel-slab' : 'duel-clash', uniforms: { ...shared, uMode: { value: mode } }, vertexShader: V, fragmentShader: F,
@@ -185,6 +194,9 @@ export class DomainClash {
     };
     const dome = (this.dome = new THREE.Mesh(new THREE.SphereGeometry(1, 64, 32), clashMaterial(0, this.U)));
     dome.name = 'duel-clash'; dome.frustumCulled = false; dome.renderOrder = -10; dome.scale.setScalar(DUEL_VIEW.radius); dome.visible = false;
+    const disc = new THREE.CircleGeometry(1, 64); disc.rotateX(-Math.PI / 2);
+    const ground = (this.ground = new THREE.Mesh(disc, clashMaterial(2, this.U))); // (South, 2026-10-27, via Petra: the duel is its own instance, so the bodies stand on the clash's own ground)
+    ground.name = 'duel-ground'; ground.frustumCulled = false; ground.renderOrder = -9; ground.visible = false;
     this.open = [0, 0]; this.want = 0; this.pushK = 0; this.flashK = [0, 0]; this.t = 0;
     this.setFoe('fury');
   }
@@ -212,7 +224,9 @@ export class DomainClash {
   won(k) { this.U.uWon.value = k; }
 
   /** The duel opens: each half unfolds from its owner. */
-  unfold(originC, originF) { this.slower = 1; this.U.uOriginC.value.copy(originC); this.U.uOriginF.value.copy(originF); this.want = 1; this.dome.visible = true; this.U.uFade.value = 1; }
+  unfold(originC, originF) { this.slower = 1; this.U.uOriginC.value.copy(originC); this.U.uOriginF.value.copy(originF); this.want = 1; this.dome.visible = this.ground.visible = true; this.U.uFade.value = 1; }
+  /** The ground's reach (m): past both bodies, its rim faded. */
+  groundTo(r) { this.ground.scale.setScalar(r); }
   /** A `line`: the seam pushes into the half that gave ground (the receiver's). */
   push(receiver) { this.pushK = 1; this.U.uPushSide.value = receiver === 0 ? -1 : 1; }
   /** The domains fold away (`slower`: times their closing, a fled duel's soft fold). */
@@ -228,7 +242,7 @@ export class DomainClash {
     for (let i = 0; i < 2; i++) this.flashK[i] = Math.max(0, this.flashK[i] - dt / 0.35);
     U.uFlash.value.set(this.flashK[0] * 0.8, this.flashK[1] * 0.8);
     const shown = this.want > 0 || this.open[0] > 0 || this.open[1] > 0;
-    this.dome.visible = shown;
+    this.dome.visible = this.ground.visible = shown;
     return shown;
   }
 }
