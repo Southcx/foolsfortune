@@ -927,3 +927,5 @@ NEW:touch-never-html5-drag. **Nothing a finger moves rides on HTML5 drag and dro
   pointer events (down, move, up) with the target found under the finger, and a tap-to-lift beside it.
 NEW:place-from-the-measure. **A thing set beside another is placed from their measures (a quay's face, a hull's half beam), never a
   bare offset.** A bare number is right for one size and wrong for the next.
+NEW:one-choice-a-load. **A choice that reloads the page is taken once a load, and its menu stops listening once it is made.** A window
+  opened over a menu (a name typed, a confirm) must not reach the menu's keys behind it.

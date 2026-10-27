@@ -4094,3 +4094,18 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   The moored ship is also F's offer now (`opensea.ship`: its chevron, and a double tap's target).
 - **Rule:** NEW:place-from-the-measure
 
+### 2026-10-27 · DEBUG reloading in a loop; the seal carving reloading the page (the owner's iPhone, v300; Petra)
+- **Seen:** "attempting to go into debug mode does the same multiple loop load, and entering a name at the seal carving causes the game
+  to reload and bypassed the hold to carve prompt".
+- **Cause (as measured, then read):** the field reports of six v300 loads: each booted to ready with no error; the ones that reached the
+  seal carving ended in a clean unload (pagehide) just after "typing a name, the keyboard put away"; the next load came straight into
+  the seal carving (the resumed choice). The title's choice of the other mode stashes it and reloads; the reload resumes it directly
+  (boot/title.js), never through the menu's pick, so the menu (title/ui.js) was not marked chosen and still heard every key. The name's
+  first letter woke the sound and the next pressed PRESS START (the menu came up behind the seal picker), and the keyboard's Done, an
+  Enter, picked the menu's hot row, STORY: the other mode again, so another reload, and the title back. Reproduced headless (STORY on
+  the device, DEBUG picked, three letters typed, Enter): one navigation after the typing before the fix, none after. Not new in v300: the resumed path is older (v273), but v300's
+  loads swapped saves where v299's did not.
+- **Fix:** `choose()` takes one choice a load (none while the seal picker is open, none other than the one made) and marks the menu
+  chosen; the menu hears no key and no tap once chosen.
+- **Rule:** NEW:one-choice-a-load
+

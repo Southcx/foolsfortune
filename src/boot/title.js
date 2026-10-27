@@ -62,6 +62,8 @@ export async function bootTitle(game, made) {
   // title again: on a phone the title twice was the boot twice, the owner's iPhone, v273)
   const watch = (at) => { try { window.__bootWatch?.moment?.(at); } catch { /* the page's own note */ } }; // (index.html's boot watch: the moment a killed tab was at)
   function choose(mode, resumed = false) {
+    if (game.sealPicker?.isOpen || (title.ui?.chosen && title.ui.chosen !== mode)) return; // (one choice a load: the seal carving's typing once reached the menu behind it, and Enter picked STORY and reloaded, v300)
+    if (title.ui) title.ui.chosen = mode; // (the menu takes no other pick, the resumed choice's too)
     if (mode !== save.mode && save.switchFresh(mode) && game.cloud) game.cloud.mode = mode; // (nothing to swap: taken up in place, the cloud's doc the new mode's)
     if (mode !== save.mode) { save.flush({ all: true }); save.stash('mode', mode); save.stash('titleChoice', mode); location.reload(); return; } // (the other mode's save: put in place at boot, before anything reads it)
     title.mode = mode; // (what DEBUG lends is the lend panel's: progress/lend.js; STORY lends nothing)

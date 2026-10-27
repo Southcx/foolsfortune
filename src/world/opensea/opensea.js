@@ -31,7 +31,6 @@ import { stream } from '../../core/rng.js';
 import { buildSeaProps, squareCentre, SEA } from './seaprops.js';
 import { Helm } from './helm.js';
 import { markWorld, ownedSince, takeAway } from '../areaown.js';
-import { SeaHud } from './seahud.js';
 import { PuzzlePieces } from './puzzlepieces.js';
 import { SeaHerds } from './herds.js';
 import { steleWords } from '../../progress/opensea/isletpuzzles.js';
@@ -80,7 +79,6 @@ export class OpenSea {
   build() {
     if (this.built) return; this.built = true;
     const g = this.game;
-    this.hud ||= new SeaHud(this); // (a DOM line, kept: nothing of the GPU's)
     if (!this.offered) { this.offered = true; g.interact?.add('opensea.ship', (P) => this.shipOffer(P)); } // (the moored ship as F's offer: its chevron, a double tap's target)
     if (!this.props) { const m = markWorld(g); this.props = buildSeaProps(this); this.propsOwned = ownedSince(g, m); }
     const mark = markWorld(g);
@@ -98,7 +96,7 @@ export class OpenSea {
     if (!this.built) return;
     const g = this.game;
     if (this.sailing) this.unseal();
-    this.hud?.show(false); this.ship = this.helm?.ship;
+    this.ship = this.helm?.ship;
     this.herdState = this.herds?.dump() ?? this.herdState;
     this.herds?.dispose(); this.pieces?.dispose(); // (the ship and its wake are in the scene: taken away with the rest)
     takeAway(g, this.owned);
@@ -153,14 +151,12 @@ export class OpenSea {
 
   // ---------------------------------------------------------------- each frame
   update(dt) {
-    if (!this.built || !this.active) { this.hud?.show(false); if (this.herds) this.herds.group.visible = false; return; }
+    if (!this.built || !this.active) { if (this.herds) this.herds.group.visible = false; return; }
     const g = this.game, I = g.input, P = g.player;
-    this.hud.show(true);
     if (this.sailing) this.sail(dt, I, P); else this.walk(I, P);
     this.phenomena(dt);
     this.pieces.update(dt);
     this.herds.update(dt);
-    this.hud.update(dt);
   }
 
   sail(dt, I, P) {

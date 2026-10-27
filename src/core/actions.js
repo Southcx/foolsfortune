@@ -38,8 +38,8 @@ export class Actions {
     else if (g.god?.active) L.add('godhand');
     else if (g.emocean?.stage?.active) L.add('rail'); // (the crossing: the ship on the stick, the sweep on the look area, core/touchtools.js)
     else if (!g.emocean?.active) {
-      if (g.opensea?.sailing) L.add('helm'); // (the open sea's free helm, narrower than foot: the stick the rudder, W / S the throttle's taps)
-      L.add('foot'); const t = g.belt?.inHand; if (t) L.add(toolCtx(t));
+      if (g.opensea?.sailing) L.add('helm'); // (the open sea's free helm: the stick the rudder, W / S the throttle's taps; not on foot, so no foot tile shows there)
+      else { L.add('foot'); const t = g.belt?.inHand; if (t) L.add(toolCtx(t)); }
     }
     if (g.race?.running) L.add('race');
     if (g.rhythm?.active) L.add('rhythm'); // (the rhythm mode's lanes: Wanda's music/rhythm, the digits as pads)

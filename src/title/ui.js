@@ -51,7 +51,7 @@ export class TitleUI {
     this.items = []; this.hot = 0; this.page = 'main';
     this.key = (e) => this.onKey(e);
     addEventListener('keydown', this.key, true);
-    el.addEventListener('pointerdown', (e) => { if (e.isPrimary && e.button === 0 && !this.menuOn) { e.preventDefault(); if (e.pointerType === 'touch') this.woke = true; this.start(); } }); // (a tap wakes the sound and starts in one: the wake's press shows nothing, and on a phone a tap that changes nothing reads as dead) (pointerdown, not mousedown: a phone's browser drops the mouse event it makes from a tap that comes soon after another, and the second tap, the one that starts, was lost: the owner's iPhone, 2026-10-25)
+    el.addEventListener('pointerdown', (e) => { if (e.isPrimary && e.button === 0 && !this.menuOn && !this.chosen) { e.preventDefault(); if (e.pointerType === 'touch') this.woke = true; this.start(); } }); // (a tap wakes the sound and starts in one: the wake's press shows nothing, and on a phone a tap that changes nothing reads as dead) (pointerdown, not mousedown: a phone's browser drops the mouse event it makes from a tap that comes soon after another, and the second tap, the one that starts, was lost: the owner's iPhone, 2026-10-25)
     game.theme?.watch?.(el, { sound: false });
   }
   get menuOn() { return this.el.classList.contains('menuon'); }
@@ -119,7 +119,7 @@ export class TitleUI {
     this.onChoose?.(it.id);
   }
   onKey(e) {
-    if (!this.el.isConnected || this.closed || this.game.codex?.open) return;
+    if (!this.el.isConnected || this.closed || this.game.codex?.open || this.chosen) return; // (chosen: the keys are the seal carving's, not PRESS START's or the menu's)
     e.stopPropagation();
     if (!this.menuOn) { if (!['ShiftLeft', 'ShiftRight', 'AltLeft', 'AltRight', 'ControlLeft', 'ControlRight', 'MetaLeft', 'MetaRight', 'Tab'].includes(e.code)) { e.preventDefault(); this.start(); } return; }
     if (['ArrowUp', 'KeyW'].includes(e.code)) { e.preventDefault(); this.setHot(this.hot - 1); }
