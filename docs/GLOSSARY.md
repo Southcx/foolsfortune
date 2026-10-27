@@ -370,7 +370,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **Figment / Egregore** — a Figment is a thought-construct of an island's own psyche (made up); an Egregore a thought-form of the Emocean (real
   human myth). One at large is a stray or an aberrant. → detail
 - **a puzzle duel / the Line / junk / a duel ruleset** (the genre's words, the owner, 2026-10-19: no lore names; `newDuel`, `src/progress/duel/`;
-  `RULESETS`, `rulesetOf`; `docs/plans/PUZZLE-DUELS.md`) — an aberrant Figment's fight as a turn-based versus puzzle on a board of its Figment's (20 × 20 unless its ruleset says; the Lantern Wisp's 14 × 14) / the
+  `RULESETS`, `rulesetOf`; `docs/plans/PUZZLE-DUELS.md`) — an aberrant Figment's fight as a turn-based versus puzzle on a board of its Figment's (20 × 20 unless its ruleset says; the Lantern Wisp's 12 × 9, 4 colours) / the
   column boundary between the sides, your zone of control and the score, pushed a column a 3 junk landed (9 at most at once) / what a clear
   sends across / the rules one Figment brings. Its words: a **match** (three in a line, `rs.match`), a piece's **kick**, the Courier's **run**
   (up to four cells), a **break** (`duelBreak`, `duelbreak.js`: a side's EmO broken by a big push, its stun a depth deeper), an **orb**
