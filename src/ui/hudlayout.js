@@ -24,6 +24,16 @@
 // A kept place is clamped on every read: inside the bounds, off every corner instrument, the top bar and the log (clampRect), never under
 // 44 px. Nothing kept moves the instruments: they keep the default cluster's reservation.
 //
+// THE DUEL'S PHONE SCREEN (South, 2026-10-27: "the board needs to be the largest thing on screen ... with enough padding to feature the
+// courier and Aberrant"; L.duel, L.duelR): while a puzzle duel is open on touch, a layout of its own. The board's frame fills the safe
+// height (`duel.pad` off each end) and is centred on the screen, the two bodies in the flanks either side; nothing else of the world's HUD
+// stands (the Sight is down, the log's ticker folded behind the top bar's LOG, the cluster, the strip and the belt's pair stood down),
+// and the duel's own tiles stand in the flanks (ui/touch/duelscreen.js): LEFT the top bar at its top (wrapped to the flank, UNDO in its
+// free slot beside PAUSE, Into the Breach's top-left undo), the worn tools' moves under it in two columns, the Lachrimeter's tube small
+// at its foot and FORM beside it under the Courier; RIGHT FLEE small at the top (a long press: far from END TURN), FINISHER over END
+// TURN, END TURN the largest at the bottom corner under the right thumb, its rim the action points left (`apPips`). No tile enters
+// `board`. Its rects, CSS px: { board, left, right, topBar, undo, tools, form, tube, flee, finisher, endTurn, apPips, log, inst }.
+//
 // Prior art: Apple's Human Interface Guidelines on safe areas and layout margins (the insets read from env(safe-area-inset-*), the
 // controls inside them, 44 pt the least target); Genshin Impact's mobile HUD (the floating stick on the left half, the camera drag on the
 // right, the verbs in one cluster under the right thumb, the minimap and menus clear of both thumbs at the top); Mario Kart Tour's (the
@@ -38,6 +48,7 @@
 //   L.place(id, { w, h }?) -> { x, y, scale, w, h }   the box's top left (CSS px), CSS px a line, the box's size (CSS px)
 //   L.areas.strip  L.stripArea(cb) -> { left, right, top, base, sideLeft }   L.obstacles() -> [rect]   L.clampRect(r, extra?, bounds?)
 //   L.custom (this orientation's kept PART, or null)   L.clusterScale()   L.fromFrac({ fx, fy }) -> { x, y }   L.toFrac(x, y)
+//   L.duel (touch and a duel open)   L.duelR (its rects, or null)   L.duelLayout(board?) -> rects | null   L.toolSpots(R, n) -> [{ x, y, s }]
 //   L.stickHome() -> { x, y }   L.resetLayout() (the settings' `layout` row: the kept layout already forgotten, lay out again)
 //   L.on('change', fn) -> off()  on a resize, an orientation change, a device change, the garden or the hand coming up
 //   document.body: .hud-touch .hud-portrait .hud-landscape, and the CSS vars --su --safe-t --safe-r --safe-b --safe-l
@@ -45,6 +56,7 @@
 // ---------------------------------------------------------------------------------------
 import { TouchLog } from './touchlog.js';
 import { TurnCard } from './turncard.js';
+import { DUEL_VIEW } from '../vfx/duelview/layout.js';
 
 export const HUD_LAYOUT = {
   gutter: 8,            // (CSS px inside the safe area, every side: the layout margin)
@@ -60,6 +72,9 @@ export const HUD_LAYOUT = {
                         //  reaching left to a quarter of the view)
   custom: { scale: [0.75, 1.3], stick: { fx: 0.18, fy: 0.72 }, ring: 60 }, // (the kept layout: the cluster's scale range (60 x 0.75 = 45 px, over 44); the stick's
                         //  home by default, low in the move area; the ring kept clear round it (the stick's full push, ui/touch/stick.js STICK.full)) // (the ticker: two lines of 18 px (16 px type), at most 420 px wide)
+  // the duel's phone screen: the board's padding off the safe height's ends, the least flank, the tiles (the tools' at most and least, END
+  // TURN, FINISHER and FORM, FLEE), the tube's height (a phone held sideways), the tiles' foot; the top bar's tile, gap, PAUSE's gap and pad (topbar.js)
+  duel: { pad: 3, flankMin: 120, tool: 60, toolMin: 44, end: 80, side: 60, flee: 48, tube: 96, foot: 3, bar: { s: 44, gap: 6, pause: 14, pad: 16 }, clear: 8, ash: 0.02 },
   poll: 0.25,           // (real seconds between reads of the device, the garden and the hand, and the turn card's check)
   // the instruments, in lines of the 480-line present (their own unit); `scale` su a line on touch (0.2: a 390 px phone's 0.78 CSS px a
   // line, the desk's 1080 lines are 2.25)
@@ -77,7 +92,7 @@ const rect = (x, y, w, h) => ({ x, y, w: Math.max(0, w), h: Math.max(0, h) });
 export class HudLayout {
   constructor(game) {
     this.game = game;
-    this.touch = false; this.portrait = false; this.turnHeld = false;
+    this.touch = false; this.portrait = false; this.turnHeld = false; this.duel = false; this.duelR = null;
     this.view = { w: 0, h: 0 }; this.safe = { t: 0, r: 0, b: 0, l: 0 }; this.su = 1;
     this.areas = { move: rect(0, 0, 0, 0), look: rect(0, 0, 0, 0), cluster: rect(0, 0, 0, 0), topBar: rect(0, 0, 0, 0), artBar: rect(0, 0, 0, 0), strip: rect(0, 0, 0, 0) };
     this.log = rect(0, 0, 0, 0); this.bounds = rect(0, 0, 0, 0);
@@ -94,6 +109,7 @@ export class HudLayout {
     globalThis.visualViewport?.addEventListener?.('resize', read);
     try { matchMedia('(pointer: coarse)').addEventListener('change', read); } catch { /* an old engine: the poll still reads it */ }
     game.events?.on?.('input.device', read); game.events?.on?.('touch.layout', read);
+    game.events?.on?.('duel.open', read); game.events?.on?.('duel.end', read); // (the duel's phone screen at once, not at the next poll)
     this.timer = setInterval(() => { this.read(); this.turnCard.check(); }, HUD_LAYOUT.poll * 1000);
     this.read(true);
   }
@@ -118,11 +134,11 @@ export class HudLayout {
   read(force = false) {
     const cs = this.probe ? getComputedStyle(this.probe) : null, px = (v) => Math.round(parseFloat(v) || 0);
     const safe = cs ? { t: px(cs.paddingTop), r: px(cs.paddingRight), b: px(cs.paddingBottom), l: px(cs.paddingLeft) } : { t: 0, r: 0, b: 0, l: 0 };
-    const w = Math.round(innerWidth), h = Math.round(innerHeight), touch = this.isTouch(), art = this.artUp();
+    const w = Math.round(innerWidth), h = Math.round(innerHeight), touch = this.isTouch(), art = this.artUp(), db = this.game.duel?.active ? this.game.duel.state?.board : null;
     let kept = null; try { kept = this.game.touchLayoutKeep?.get?.() ?? null; } catch { /* no keep */ }
-    const sig = `${w}x${h}|${safe.t},${safe.r},${safe.b},${safe.l}|${touch}|${art}|${kept ? JSON.stringify(kept) : ''}`;
+    const sig = `${w}x${h}|${safe.t},${safe.r},${safe.b},${safe.l}|${touch}|${art}|${db ? `${db.w}x${db.h}` : ''}|${kept ? JSON.stringify(kept) : ''}`;
     if (sig === this.sig && !force) return;
-    this.sig = sig; this.kept = kept && kept.v === 1 ? kept : null; this.view = { w, h }; this.safe = safe; this.touch = touch; this.portrait = h > w; this.art = art;
+    this.sig = sig; this.kept = kept && kept.v === 1 ? kept : null; this.view = { w, h }; this.safe = safe; this.touch = touch; this.portrait = h > w; this.art = art; this.duel = touch && !!db;
     this.su = Math.max(1, Math.min(w - safe.l - safe.r, h - safe.t - safe.b) / 100);
     this.layout(); this.dress();
     if (!touch) this.turnCard.check();
@@ -159,7 +175,49 @@ export class HudLayout {
       const Z = this.stripArea(null, [sb, A.topBar, this.log].filter(Boolean)), top = Math.max(Z.top, Z.base - H.strip.budget);
       A.strip = rect(Z.left, top, Z.right - Z.left, Z.base - top);
     }
+    this.duelR = this.duel ? this.duelLayout() : null;
+    if (this.duelR) { A.topBar = this.duelR.topBar; A.cluster = rect(0, 0, 0, 0); A.strip = rect(0, 0, 0, 0); this.log = this.duelR.log; } // (the duel's own: the cluster and the strip stand down)
     this.rects.clear();
+  }
+
+  /** The duel's phone screen for a board (the kernel's, its w and h; the duel open now by default), or null off touch: its rects (CSS
+   *  px). The board's frame (the tsuitate's, vfx/duelview/layout.js DUEL_VIEW) fills the safe height and stands centred on the screen. */
+  duelLayout(b = this.game.duel?.state?.board) {
+    if (!this.touch || !b?.w || !b?.h) return null;
+    const H = HUD_LAYOUT, D = H.duel, gap = H.gap, V = this.view, S = this.safe, B = this.bounds, F = D.foot, T = D.bar;
+    const { cs, border, base } = DUEL_VIEW, Wm = b.w * cs + 2 * border, Hm = base + b.h * cs + border + D.ash; // (the whole tsuitate: its feet on the ground to its ash run, edge to edge: the coordinator's audit, 2026-10-27)
+    let board, left, right;
+    if (!this.portrait) {
+      const safeH = V.h - S.t - S.b, maxW = V.w - 2 * (Math.max(S.l, S.r) + H.gutter + gap + D.flankMin); // (centred: both flanks as wide as the narrower)
+      let hp = safeH - 2 * D.pad, wp = (hp * Wm) / Hm; if (wp > maxW) { wp = maxW; hp = (wp * Hm) / Wm; }
+      board = rect((V.w - wp) / 2, S.t + (safeH - hp) / 2, wp, hp);
+      left = rect(B.x, B.y, board.x - gap - B.x, B.h); right = rect(board.x + board.w + gap, B.y, B.x + B.w - board.x - board.w - gap, B.h);
+    } else { // (upright: the turn card holds the game, ui/turncard.js; still laid out: the board across under the top bar, the flanks under it)
+      const wp = B.w, hp = (wp * Hm) / Wm, y = B.y + H.topBar.h + gap; board = rect(B.x, y, wp, hp);
+      const y1 = y + hp + gap, h1 = B.y + B.h - y1; left = rect(B.x, y1, B.w / 2 - gap / 2, h1); right = rect(B.x + B.w / 2 + gap / 2, y1, B.w / 2 - gap / 2, h1);
+    }
+    // the top bar wrapped to the flank as topbar.js lays it (MENU, LOG, PAUSE folded); UNDO in the slot its last row leaves free, else under it
+    const tbA = this.portrait ? rect(B.x, B.y, B.w, H.topBar.h) : rect(left.x, left.y, left.w, H.topBar.h), n = 3;
+    const one = n * T.s + (n - 1) * T.gap + (T.pause - T.gap) + T.pad, per = one <= tbA.w ? n : Math.max(1, Math.floor((tbA.w - T.pad + T.gap) / (T.s + T.gap))), rows = Math.ceil(n / per);
+    const tbH = per === n ? T.s + 8 : rows * (T.s + F) + (rows - 1) * T.gap + 8, free = n % per;
+    const c = D.clear - T.gap; // (UNDO kept 8 px off the top bar's tiles, which stand 6 apart)
+    const undo = free && per < n ? rect(tbA.x + 8 + free * (T.s + T.gap) + c, tbA.y + 4 + (rows - 1) * (T.s + F + T.gap) + c, T.s, T.s + F)
+      : this.portrait ? rect(left.x, left.y, T.s, T.s + F) : rect(left.x + 8, tbA.y + tbH + Math.max(gap, D.clear), T.s, T.s + F);
+    const tube = rect(left.x, left.y + left.h - D.tube, (D.tube * HUD_LAYOUT.instruments.lachrimeterTube.w) / HUD_LAYOUT.instruments.lachrimeterTube.h, D.tube);
+    const form = rect(left.x + left.w - D.side, left.y + left.h - D.side - F, D.side, D.side + F);
+    const y0 = this.portrait ? undo.y + undo.h + gap : Math.max(tbA.y + tbH, undo.y + undo.h) + gap, tools = rect(left.x, y0, left.w, Math.min(form.y, tube.y) - gap - y0);
+    const flee = rect(right.x + right.w - D.flee, right.y, D.flee, D.flee + F), endTurn = rect(right.x + right.w - D.end, right.y + right.h - D.end - F, D.end, D.end + F);
+    const finisher = rect(right.x + right.w - D.side, endTurn.y - gap - D.side - F, D.side, D.side + F);
+    const log = rect(B.x, tbA.y + tbH + gap, Math.min(H.log.maxW, B.w), H.log.lines * H.log.line + H.log.pad); // (the sheet's top: the ticker itself is folded in a duel)
+    const inst = { lachrimeterTube: { ...tube, scale: tube.h / HUD_LAYOUT.instruments.lachrimeterTube.h } };
+    return { board, left, right, topBar: tbA, undo, tools, form, tube, flee, finisher, endTurn, apPips: endTurn, log, inst };
+  }
+
+  /** `n` tiles in rect `R`, two columns from its top left, as large as fit (the duel's `tool` at most, `toolMin` least): [{ x, y, s }]. */
+  toolSpots(R, n) {
+    const D = HUD_LAYOUT.duel, gap = HUD_LAYOUT.gap, cols = n > 1 ? 2 : 1, rows = Math.ceil(n / cols); if (!n || !R) return [];
+    const s = Math.max(D.toolMin, Math.floor(Math.min(D.tool, (R.w - (cols - 1) * gap) / cols, (R.h - (rows - 1) * gap) / rows - D.foot)));
+    return Array.from({ length: n }, (_, i) => ({ x: R.x + (i % cols) * (s + gap), y: R.y + Math.floor(i / cols) * (s + D.foot + gap), s }));
   }
 
   /** Where the cluster's strip may stand over cluster bounds `cb` (null: the default cluster's area): its rows between `left` and
@@ -185,8 +243,9 @@ export class HudLayout {
   obstacles() {
     if (!this.touch) return [];
     const out = [this.areas.topBar, this.log];
+    if (this.duelR) out.push(this.duelR.board);
     if (this.art) out.push(this.areas.artBar);
-    for (const id of this.specs.keys()) { const r = this.box(id); if (r) out.push(r); }
+    for (const id of this.specs.keys()) { if (this.duelR && !this.duelR.inst[id]) continue; const r = this.box(id); if (r) out.push(r); } // (a duel: only the instruments it shows, the Sight's box freed)
     return out.filter((r) => r && r.w > 0 && r.h > 0);
   }
 
@@ -232,7 +291,7 @@ export class HudLayout {
   dress() {
     if (typeof document === 'undefined') return;
     const b = document.body, s = b.style, S = this.safe;
-    b.classList.toggle('hud-touch', this.touch); b.classList.toggle('hud-portrait', this.portrait); b.classList.toggle('hud-landscape', !this.portrait);
+    b.classList.toggle('hud-touch', this.touch); b.classList.toggle('hud-duel', !!this.duelR); b.classList.toggle('hud-portrait', this.portrait); b.classList.toggle('hud-landscape', !this.portrait);
     s.setProperty('--su', `${this.su.toFixed(2)}px`);
     s.setProperty('--safe-t', `${S.t}px`); s.setProperty('--safe-r', `${S.r}px`); s.setProperty('--safe-b', `${S.b}px`); s.setProperty('--safe-l', `${S.l}px`);
     s.setProperty('--hud-log-x', `${Math.round(this.log.x)}px`); s.setProperty('--hud-log-y', `${Math.round(this.log.y)}px`); s.setProperty('--hud-log-w', `${Math.round(this.log.w)}px`);
@@ -241,7 +300,9 @@ export class HudLayout {
   /** What nothing else may enter on touch. */
   reserved() {
     if (!this.touch) return [];
-    const A = this.areas, V = this.view, out = [A.cluster, rect(0, V.h / 2, V.w / 4, V.h / 2), A.topBar];
+    const A = this.areas, V = this.view;
+    if (this.duelR) return [A.topBar, this.duelR.board, this.duelR.tube]; // (a duel: the board's, the thumbs' quarter is the left flank's)
+    const out = [A.cluster, rect(0, V.h / 2, V.w / 4, V.h / 2), A.topBar];
     if (this.art) out.push(A.artBar); else if (A.strip?.w) out.push(A.strip);
     return out;
   }
@@ -259,6 +320,7 @@ export class HudLayout {
   }
 
   box(id, depth = 0) {
+    if (this.duelR?.inst[id]) return this.duelR.inst[id]; // (the duel's phone screen: the tube small at the left flank's foot)
     if (this.rects.has(id)) return this.rects.get(id);
     const spec = this.specs.get(id); if (!spec || depth > 4) return null;
     this.rects.set(id, null); // (a cycle reads as nothing)

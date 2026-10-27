@@ -61,7 +61,7 @@ export class TouchTopBar {
     this.shelf = shelf();
     for (const id of [...TOP_BAR.ids, 'pause']) this.tiles.set(id, new TouchTile(`top.${id}`, { size: TILE.small, glyph: id, word: null, onPress: (_, down, inside) => { if (!down && inside) { if (id !== 'pause') this.fold(true); this.open(id); } } }));
     this.tiles.set('menu', new TouchTile('top.menu', { size: TILE.small, glyph: 'menu', word: null, onPress: (_, down, inside) => { if (!down && inside) this.fold(!this.folded); } }));
-    this.tiles.set('log', new TouchTile('top.log', { size: TILE.small, glyph: 'chat', word: null, onPress: (_, down, inside) => { const L = game.hudLayout?.touchLog; if (!down && inside && L) L.fold(!L.folded); } })); // (the log's fold on the bar beside MENU: South, 2026-10-27, it stood alone under the bar)
+    this.tiles.set('log', new TouchTile('top.log', { size: TILE.small, glyph: 'chat', word: null, onPress: (_, down, inside) => { const L = game.hudLayout?.touchLog; if (!down && inside && L) { if (game.hudLayout.duelR) L.setSheet(!L.sheet); else L.fold(!L.folded); } } })); // (the log's fold on the bar beside MENU: South, 2026-10-27, it stood alone under the bar)
   }
 
   /** Folded to the MENU tab (and PAUSE), or the row opened. */
@@ -111,7 +111,7 @@ export class TouchTopBar {
     if (!on) return;
     if (!this.folded && now - this.touched > TOP_BAR.fold) this.fold(true); // (left open and untouched: folded again)
     for (const id of this.items) {
-      const t = this.tiles.get(id); let lit = false; try { lit = id === 'menu' ? !this.folded : id === 'log' ? !g.hudLayout?.touchLog?.folded : !!TOP_BAR.open[id]?.(g); } catch { /* not there */ }
+      const t = this.tiles.get(id); let lit = false; try { lit = id === 'menu' ? !this.folded : id === 'log' ? (g.hudLayout?.duelR ? !!g.hudLayout.touchLog?.sheet : !g.hudLayout?.touchLog?.folded) : !!TOP_BAR.open[id]?.(g); } catch { /* not there */ }
       if (t.state.pressed) this.touched = now;
       t.set({ lit: lit || t.state.pressed }); t.update(now);
     }

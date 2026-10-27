@@ -141,7 +141,7 @@ export class DuelView {
 
   /** The camera that reads the board: square to its face on the `face` side (the Courier's half on the left), a little above its middle
    *  and looking a hair down, as near as a cell of about 14 dots of the 480 lines (never under 12), far enough for the frame, the odds
-   *  plate and both bodies in the world. */
+   *  plate and both bodies in the world. On touch, the duel's phone screen's (touchShot). */
   frameShot() {
     if (!this.isOpen) return null;
     const cam = this.game.camera, B = this.state.board, { cs, base, border } = DUEL_VIEW, top = base + B.h * cs + border + 0.45;
@@ -153,22 +153,15 @@ export class DuelView {
     const d = Math.min(far, Math.max(want, near)), look = this.centre.clone().setY(this.centre.y + top / 2);
     return { pos: look.clone().addScaledVector(this.face, d).setY(look.y + 0.35), look };
   }
-  /** On touch (the owner, 2026-10-27: "increasing the size of the tsuitate board"): the slab and its frame filling the room left of the
-   *  right column (the Sight, the Lachrimeter, the cluster and its strip) and under the top bar and the log, square to its face, so no
-   *  control stands over a cell; the bodies may leave the frame. */
+  /** On touch (South, 2026-10-27: "the board needs to be the largest thing on screen ... with enough padding to feature the courier and
+   *  Aberrant"): the duel's phone screen (ui/hudlayout.js duelLayout): the whole tsuitate, its feet on the ground to its ash run, filling
+   *  the board's rect (the safe height, centred on the screen), square to its face; the two bodies stand in the flanks either side and
+   *  the controls over their lower halves. */
   touchShot(B, tan) {
-    const L = this.game.hudLayout, V = L.view, A = L.areas, gap = 8; if (!V?.w || !V?.h) return null;
-    const tiles = typeof document === 'undefined' ? [] : [...document.querySelectorAll('.tt:not(.hidden)')].map((e) => e.getBoundingClientRect()).filter((r) => r.width > 0 && r.left > V.w / 2 && r.top > A.topBar.y + A.topBar.h); // (the controls as they stand, not the rooms reserved for them: the strip's room reaches half across)
-    const lefts = [L.box?.('lachrimeterTube'), A.cluster, ...tiles.map((r) => ({ x: r.left, w: r.width }))].filter((r) => r && r.w > 0).map((r) => r.x);
-    const x0 = L.bounds.x, x1 = Math.min(L.bounds.x + L.bounds.w, ...lefts) - gap;
-    const logEl = typeof document === 'undefined' ? null : document.getElementById('chatlog')?.getBoundingClientRect(), logB = logEl?.height > 0 && logEl.left < V.w / 2 ? logEl.bottom : 0; // (the log as drawn: its dress stands taller than the rect the layout keeps for it)
-    const folded = typeof document !== 'undefined' && document.body.classList.contains('log-folded'); // (the log folded to its tab: its rect stays reserved in the layout, but nothing stands there)
-    const y0 = Math.max(A.topBar.y + A.topBar.h, L.log && !folded ? L.log.y + L.log.h : 0, logB) + gap, y1 = L.bounds.y + L.bounds.h;
-    if (x1 - x0 < 120 || y1 - y0 < 120) return null;
-    const { cs, base, border } = DUEL_VIEW, Wb = B.w * cs + 2 * border, Hb = B.h * cs + 2 * border, fill = 0.97;
-    const d = Math.max((Hb * V.h) / (2 * tan * fill * (y1 - y0)), (Wb * V.h) / (2 * tan * fill * (x1 - x0))), k = V.h / (2 * d * tan); // (k: CSS px a metre at d)
-    const right = _w.crossVectors(this.face, UP).negate().normalize(), dx = ((x0 + x1) / 2 - V.w / 2) / k, dy = ((y0 + y1) / 2 - V.h / 2) / k;
-    const look = this.centre.clone().setY(this.centre.y + base + (B.h * cs) / 2).addScaledVector(right, -dx).addScaledVector(UP, dy);
+    const L = this.game.hudLayout, V = L.view, R = L.duelLayout?.(B)?.board; if (!V?.w || !V?.h || !R?.h) return null;
+    const { cs, base, border } = DUEL_VIEW, Hm = base + B.h * cs + border + 0.02, k = R.h / Hm, d = V.h / (2 * k * tan); // (k: CSS px a metre at d)
+    const right = _w.crossVectors(this.face, UP).negate().normalize(), dx = (R.x + R.w / 2 - V.w / 2) / k, dy = (R.y + R.h / 2 - V.h / 2) / k;
+    const look = this.centre.clone().setY(this.centre.y + Hm / 2).addScaledVector(right, -dx).addScaledVector(UP, dy);
     return { pos: look.clone().addScaledVector(this.face, d), look };
   }
   /** On touch, the duel's shot kept to the room as it stands: the session frames it once at the open, before the duel's own tiles
@@ -178,9 +171,10 @@ export class DuelView {
     if ((this.fitT = (this.fitT || 0) - dt) <= 0) { this.fitT = 0.25; this.fit = this.frameShot(); }
     if (!this.fit) return; const k = 1 - Math.exp(-6 * dt); shot.pos.lerp(this.fit.pos, k); shot.look.lerp(this.fit.look, k);
   }
-  /** A cell's centre on the slab's face, in the world. */
+  /** A cell's centre on the slab's face, in the world; null on touch, where the god hand does not hover over the board (the session's
+   *  cursorAt asks here: pick-then-place has no use for a hand over a third of the foe's half, the coordinator's audit 2026-10-27). */
   pointOf(cell) {
-    if (!this.isOpen || !cell) return null;
+    if (!this.isOpen || !cell || this.game.hudLayout?.touch) return null;
     const x = cell.x ?? cell[0], y = cell.y ?? cell[1]; return this.frame.localToWorld(cellLocal(x, y, this.board3, new THREE.Vector3()).setZ(0));
   }
   /** An illegal action's look: its cell's rim (the action's cell, the Courier's figurine's for its moves, else the hovered one) shaken
@@ -261,7 +255,8 @@ export class DuelView {
   linkAt(out) {
     const cam = this.game.camera; if (!this.isOpen || !cam) return null;
     const B = this.state.board, { cs, base, border, lip } = DUEL_VIEW; // (the frame's lower corner on the bulb's side: the thread lands on the clay, never across a cell; the owner, 2026-10-27)
-    _v.set((B.w * cs) / 2 + border * 0.5, base - border * 0.5, lip);
+    const sx = this.game.hudLayout?.duelR ? -1 : 1; // (the duel's phone screen: the tube stands in the left flank, so the thread lands on the left foot)
+    _v.set(sx * ((B.w * cs) / 2 + border * 0.5), base - border * 0.5, lip);
     this.frame.localToWorld(_v).project(cam); if (_v.z > 1 || _v.z < -1) return null;
     return out.set((_v.x + 1) / 2 * innerWidth, -((1 - _v.y) / 2) * innerHeight, 0);
   }

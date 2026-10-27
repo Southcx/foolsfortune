@@ -7,7 +7,7 @@
 // RETRACTABLE (the owner, 2026-10-26: "the chat log is a little cumbersome and should be retractable"; its tile on the top bar beside MENU,
 // South, 2026-10-27: ui/touch/topbar.js `top.log`): a 44 px clay tile (the balloon,
 // touch.chat) at the ticker's left end, the ticker beside it; a tap on the tile folds the ticker away to the tile alone, a tap again
-// brings it back. Kept on this device (save section `touchLog`, scope settings); the chat line opened shows the log whatever the fold.
+// brings it back. IN A DUEL (the duel's phone screen, ui/hudlayout.js): the ticker never stands; LOG opens the sheet over the board and folds it. Kept on this device (save section `touchLog`, scope settings); the chat line opened shows the log whatever the fold.
 //
 // Prior art: a news ticker (the newest line, one line each, under the masthead); Genshin Impact's and Honkai Star Rail's mobile chat
 // preview (two lines at the screen's top that open the full chat on a tap); iOS's sheets (a pane over the view, its own scroll).
@@ -35,7 +35,8 @@ body.hud-touch #chatlog.hud-sheet .tab{padding:10px 10px 8px}
 body.hud-touch #chatlog .foot{font-size:14px}
 body.hud-touch #chatlog.hud-sheet .foot .keys{display:none}
 body.hud-touch #chatlog .ts{font-size:14px}
-body.hud-touch.log-tab.log-folded #chatlog:not(.typing){display:none}
+body.hud-touch.log-tab.log-folded #chatlog:not(.typing):not(.hud-sheet){display:none}
+body.hud-touch.hud-duel #chatlog:not(.typing):not(.hud-sheet){display:none}
 `;
 
 export class TouchLog {
