@@ -25,12 +25,12 @@
 //
 //   game.duel = new DuelSession(game)   .begin(creature)   .update(raw, input)   .active   .state   .close(outcome)
 //   The view is told: view.pendingAction(action | null), the action under the finger before it is chosen (a swap or drag as the press
-//   builds, a run on hover); on touch the board is DUEL.phone's size when Dovina sets it (`{ w, h, line }`, duel.js).
+//   builds, a run on hover). The board's size is the ruleset's own (`board`, rulesets.js: every device the same).
 //   Events (with `by`): duel.open { kind, feeling }, duel.break { kind, depth }, duel.flee { roll, reroll, need, ok }, duel.end { kind, won, how,
 //   turns } (how 'fled': away, both whole; tracking.js says each)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { newDuel, act, endTurn, legalActions, DUEL } from '../../progress/duel/duel.js';
+import { newDuel, act, endTurn, legalActions } from '../../progress/duel/duel.js';
 import { luckOf } from '../../progress/luck.js';
 import { plan as botPlan, play as botPlay } from '../../progress/duel/bot.js';
 import { rulesetOf } from '../../progress/duel/rulesets.js';
@@ -68,8 +68,7 @@ export class DuelSession {
     const g = this.game, P = g.player, pool = g.lachryma;
     const tools = (g.belt?.tools || []).filter((t) => g.belt.isWorn(t.id)).map((t) => t.id);
     this.startPool = Math.round(Math.min(100, pool?.available ?? 30));
-    const board = g.input?.device === 'touch' ? DUEL.phone : null; // (on touch a smaller board of larger cells, `{ w, h, line }`: Dovina's to size; the owner, 2026-10-27)
-    this.state = newDuel({ ...board, ruleset, seed: Math.floor(duelRand() * 2 ** 31), forms: ['hand', 'courier'], pool: [this.startPool, 30], tools: [tools, []],
+    this.state = newDuel({ ruleset, seed: Math.floor(duelRand() * 2 ** 31), forms: ['hand', 'courier'], pool: [this.startPool, 30], tools: [tools, []],
       luck: [g.ledger ? Math.min(2, Math.floor(luckOf(g.ledger).level / 10)) : 0, 0], // (Luck's sway on a flee, 0..2: a tenth of its level, as ruled)
       rerolls: [g.rerolls?.left() ?? 0, 0] }); // (Luck's re-rolls left this game day: a failed Flee is thrown again, progress/duel/flee.js)
     this.foe = c; this.feeling = feeling; this.active = true; this.busy = false; this.botT = -1; this.press = null; this.path = []; this.yieldT = 0; this.swipe = null; this.shown = null;
