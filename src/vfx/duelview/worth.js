@@ -15,7 +15,6 @@ import * as THREE from 'three';
 import { act, cloneState, preview } from '../../progress/duel/duel.js';
 import { mindLineMaterial } from '../labradorite.js';
 import { DUEL_VIEW, cellLocal } from './layout.js';
-import { quiet } from './glows.js';
 
 export class DuelWorth {
   constructor(view) {
@@ -27,8 +26,8 @@ export class DuelWorth {
 
   show(s, a) {
     this.clear(); if (!s || !a || s.toMove !== 0) return null;
-    const p = preview(quiet(s, 23), a); if (!p || (!p.cleared && !p.junk)) return p;
-    const c = cloneState(quiet(s, 23)), ev = act(c, a) || [], cells = ev.filter((e) => e.type === 'clear' && e.side === 0).map((e) => e.at); // (the cells: the same try, its events kept)
+    const p = preview(s, a); if (!p || (!p.cleared && !p.junk)) return p;
+    const c = cloneState(s), ev = act(c, a) || [], cells = ev.filter((e) => e.type === 'clear' && e.side === 0).map((e) => e.at); // (the cells: the same try, its events kept)
     const B = this.view.board3, cs = DUEL_VIEW.cs;
     cells.forEach((at, i) => { let r = this.rims[i]; if (!r) { r = this.rims[i] = new THREE.Mesh(this.view.marks.rimGeo, this.mat); r.renderOrder = 6; this.group.add(r); }
       r.visible = true; cellLocal(at[0], at[1], B, r.position); r.position.z += 0.02; r.scale.setScalar(cs * 0.94); r.userData.k = i; });

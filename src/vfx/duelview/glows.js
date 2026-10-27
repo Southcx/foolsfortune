@@ -19,13 +19,10 @@ import { hasTag } from '../../progress/duel/board.js';
 import { legalActions, preview } from '../../progress/duel/duel.js';
 import { LESSON } from '../../progress/duel/lesson.js';
 import { TOOL_RULES } from '../../progress/duel/couriertools.js';
-import { seeded } from '../../core/rng.js';
 import { DUEL_VIEW, cellLocal } from './layout.js';
 import { Strokes } from './intent.js';
 
 const _a = new THREE.Vector3(), _b = new THREE.Vector3();
-/** A duel with a stream of its own, for tries that must never draw from the duel's (the kernel's cloneState takes the next draw). */
-export const quiet = (s, k = 5) => ({ ...s, r: seeded(k) });
 
 export class DuelGlows {
   constructor(view) {
@@ -80,8 +77,8 @@ export class DuelGlows {
   hintFor(s, ask) {
     const key = ask + '|' + s.board.hash() + '|' + s.apLeft; if (key === this.hintKey) return this.hint || [];
     this.hintKey = key; this.hint = null; let best = null, bestV = 0;
-    const tries = legalActions(s, 0, { drags: 0 }).filter((a) => a.kind === 'swap').slice(0, 260);
-    for (const a of tries) { const p = preview(quiet(s, 17), a); if (!p || !p.cleared) continue; const v = (ask === 'chain' && p.steps >= 2 ? 100 : 0) + p.steps * 10 + p.cleared; if (v > bestV) { bestV = v; best = a; } }
+    const tries = legalActions(s, 0, { drags: 0 }).filter((a) => a.kind === 'swap').slice(0, 260); // (no drags sampled: only the swaps are tried here)
+    for (const a of tries) { const p = preview(s, a); if (!p || !p.cleared) continue; const v = (ask === 'chain' && p.steps >= 2 ? 100 : 0) + p.steps * 10 + p.cleared; if (v > bestV) { bestV = v; best = a; } }
     if (best) { const d = { N: [0, -1], S: [0, 1], E: [1, 0], W: [-1, 0] }[best.dir]; this.hint = [best.at, [best.at[0] + d[0], best.at[1] + d[1]]]; }
     return this.hint || [];
   }
