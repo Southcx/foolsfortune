@@ -20,12 +20,14 @@
 //
 //   game.seaFightLook = new SeaFightLook(game)
 //   .draw(fight)   (each frame: fight.shots [{ pos, vel }], fight.globs [{ pos, vel, back }])
+//   (it installs the sea beasts' bodies: game.makeSeaBeast, game.makeKraken, /beastlook; vfx/opensea/beasts/index.js)
 //   .muzzle(from, dir, heavy?)   .hit(point, dir, heavy?)   .splash(pos, 'shot' | 'glob', heavy?)   .hull(pos)   .parked() -> [mesh] (the warm-up)   .broadside (its look)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RailShots } from '../railshots.js';
 import { LANCE_COLOR } from '../../courier/ship/shots.js';
 import { BroadsideLook } from './broadsidelook.js';
+import { installSeaBeasts } from './beasts/index.js';
 
 export const SEA_FIGHT_LOOK = { globR: 0.85, sparks: 10, chips: 6 }; // (the glob's drawn head (m): its hit sphere is 0.7, drawn a little larger, as the rail's are)
 
@@ -39,6 +41,7 @@ export class SeaFightLook {
     this.shots.color(LANCE_COLOR);
     this.gold = new THREE.Color(LANCE_COLOR);
     this.broadside = new BroadsideLook(game); this.heavy = []; this.fight = null;
+    this.beasts = installSeaBeasts(game); // (the sea beasts' bodies, game.makeSeaBeast and game.makeKraken, and their look test: beasts/index.js)
   }
   parked() { return [...this.shots.parked(), ...this.broadside.parked()]; }
   /** Whether a moment is the broadside's: said (`{ heavy }`, or the shot), else found among the fight's shots by `test`. */
@@ -47,6 +50,7 @@ export class SeaFightLook {
   /** This frame's needles and globs, as the runtime holds them. */
   draw(fight) {
     const S = this.shots, shots = fight.shots, globs = fight.globs, H = this.heavy; this.fight = fight; H.length = 0;
+    this.beasts.tick(this.game.rawDt ?? 1 / 60); // (the /beastlook test's body, when one is out)
     let m = 0;
     for (const s of shots) { if (s.heavy) H.push(s); else if (m < S.gunCap) S.gun(m++, s.pos, s.vel); } // (the needles; the round shot is the broadside's)
     S.guns = m;

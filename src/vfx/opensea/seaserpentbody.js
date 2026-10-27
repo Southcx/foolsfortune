@@ -62,7 +62,7 @@ const lerp = (a, b, t) => a + (b - a) * t;
 const radiusAt = (s) => (0.78 + 0.22 * sstep(0, 0.12, s)) * RMAX * Math.pow(1 - s, 1.25) * (s < 0.97 ? 1 : 1 - (s - 0.97) * 20) + 0.035 * K;
 
 /** The rail foes' body program with a rest coordinate: the crazing's cells read the hide's straight pose, so they ride on it. */
-function serpentMaterial() {
+export function serpentMaterial() {
   const m = bodyMaterial({ death: 'sink', roughness: 0.42, metalness: 0.08 }), base = m.onBeforeCompile;
   m.onBeforeCompile = (sh, r) => {
     base(sh, r);
