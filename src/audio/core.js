@@ -15,7 +15,11 @@ function isPhone() {
   try { const n = navigator; return /[?&]phoneaudio=1/.test(location.search) || n.userAgentData?.mobile === true || /android|iphone|ipad|ipod|\bmobile\b/i.test(n.userAgent || '') || (n.platform === 'MacIntel' && (n.maxTouchPoints || 0) > 1); } catch { return false; }
 }
 
-export const PHONE = { rate: 32000, verb: 1.2, burst: 10, window: 250 };
+export const PHONE = { rate: 32000, verb: 1.2, burst: 10, window: 250, hit: 90 }; // (hit: real ms between two of a blow's sounds, hitOk)
+
+/** A one-shot's nodes let go once its source has ended (CASEBOOK NEW:audio-one-shot-let-go): the source, its filter and its envelope
+ *  disconnected, so the graph holds only what still sounds. Nothing else was ever connected to them. */
+const letGo = (src, ...rest) => { src.onended = () => { src.disconnect(); for (const n of rest) n.disconnect(); }; };
 
 export class Sfx {
   constructor() {
@@ -135,6 +139,7 @@ export class Sfx {
   /** A sound's way out: the effects bus (the world's: ducked and fogged), or with `ui` straight to main (the interface: never fogged). */
   out(gain, verb = 0.5, ui = false) {
     if (this.phone) (this.starts ||= []).push(performance.now()); // (a sound begun: the phone's budget, ok())
+    this.begun = (this.begun || 0) + 1; // (counted for the audio's health: audio/health.js)
     const g = this.ctx.createGain();
     g.gain.value = gain;
     g.connect(ui ? this.main : this.route || this.master); // (`route`: a sound made somewhere else, panned and rolled off: audio/positional.js)
@@ -158,7 +163,7 @@ export class Sfx {
     env.gain.setValueAtTime(0.0001, t);
     env.gain.exponentialRampToValueAtTime(gain, t + attack);
     env.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    src.connect(flt).connect(env).connect(dest);
+    src.connect(flt).connect(env).connect(dest); letGo(src, flt, env);
     src.start(t, Math.random() * Math.max(0, 1.9 - dur), dur + 0.05);
   }
 
@@ -170,7 +175,7 @@ export class Sfx {
     const env = this.ctx.createGain();
     env.gain.setValueAtTime(gain, t);
     env.gain.exponentialRampToValueAtTime(0.0001, t + dur);
-    o.connect(env).connect(dest);
+    o.connect(env).connect(dest); letGo(o, env);
     o.start(t); o.stop(t + dur + 0.02);
   }
 
@@ -183,6 +188,16 @@ export class Sfx {
     return S.length < PHONE.burst;
   }
 
+  /** A blow's sound may sound (a hit, its damage, its stun's tick): on a desk always; on a phone one of them each PHONE.hit real ms, so a
+   *  gun landing eight times a real second (the fight at the helm, world/opensea/seafight.js) is heard as a hail, not as three stacked
+   *  sounds a hit, and the phone's audio thread keeps up (the owner, 2026-10-26: "audio processing breaks down after ... the ship's gun
+   *  starts firing"). */
+  hitOk() {
+    if (!this.phone) return true;
+    const now = performance.now(); if (now - (this._hitAt ?? -1e9) < PHONE.hit) return false;
+    this._hitAt = now; return true;
+  }
+
   /** A gliding tone that swells as it climbs (a riser): `tone` only decays, and a build-up has to grow. */
   riser(t, dur, { f0 = 100, f1 = 800, type = 'sawtooth', gain = 0.2, q = 0, dest }) {
     const o = this.ctx.createOscillator(), env = this.ctx.createGain();
@@ -191,7 +206,7 @@ export class Sfx {
     env.gain.setValueAtTime(0.0001, t); env.gain.exponentialRampToValueAtTime(gain, t + dur * 0.92); env.gain.linearRampToValueAtTime(0.0001, t + dur + 0.03);
     let n = o;
     if (q > 0) { const f = this.ctx.createBiquadFilter(); f.type = 'lowpass'; f.Q.value = q; f.frequency.setValueAtTime(f0 * 2, t); f.frequency.exponentialRampToValueAtTime(f1 * 5, t + dur); o.connect(f); n = f; }
-    n.connect(env).connect(dest);
+    n.connect(env).connect(dest); letGo(o, ...(n === o ? [] : [n]), env);
     o.start(t); o.stop(t + dur + 0.06);
   }
 }

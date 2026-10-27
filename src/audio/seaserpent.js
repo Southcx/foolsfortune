@@ -5,6 +5,8 @@
 //   ITS TELLS   each move's windup in its own sound, so the ear knows what is coming: the ram (water drawn up into a wall, a rising
 //               rush), the spit (a gurgle building in the throat), the coil (scales grinding, the body tightening), the dive (a great
 //               breath in, then the hush)
+//   NEW BEASTS  the wolf whale's and the world serpent's moves (rise, breach, circle, coilWorld) as their nearest kin; a breach and the
+//               world-coil closing their own
 //   ITS MOVES   the ram breaking the surface (a crash of crude), the spit (a wet glob thrown), the coil closing on the hull (timbers
 //               groaning; a miss, a slap of water), the dive (a plunge and the hiss of the foam)
 //   STRUCK      the head: a meaty thud and a shriek; the coil: a clank off its scales. Freed: the line of it snapping loose. Down: a
@@ -16,6 +18,10 @@
 //   sfx.seaSerpentRise() .seaSerpentWind(move) .seaSerpentMove(move, hit) .seaSerpentHit(part) .seaSerpentFree() .seaSerpentDown()
 //   sfx.seaHullHit(left) .seaHullBroken()
 // ---------------------------------------------------------------------------------------
+
+/** The new beasts' moves (Petra's, creatures/seaserpent/signatures.js) heard as the serpent's: a breach and a rise are a ram from below,
+ *  the circle a coil drawn wide, Jormungandr's world-coil a coil. */
+const WIND_AS = { breach: 'ram', rise: 'ram', circle: 'coil', coilWorld: 'coil' };
 
 export class SeaSerpentSounds {
   seaSerpentRise() {
@@ -29,6 +35,7 @@ export class SeaSerpentSounds {
   seaSerpentWind(move = 'ram') {
     if (!this.ok() || !this.allow('seaSerpentWind', 3)) return;
     const t = this.ctx.currentTime, d = this.out(0.34, 0.45);
+    move = WIND_AS[move] || move; // (the wolf whale's and the world serpent's moves heard as their nearest kin)
     if (move === 'ram') { this.noise(t, 1.1, { type: 'bandpass', f0: 200, f1: 1600, q: 0.9, gain: 0.35, attack: 0.9, dest: d }); this.tone(t, 1.1, { f0: 50, f1: 90, gain: 0.3, dest: d }); }
     else if (move === 'spit') { for (let i = 0; i < 8; i++) this.tone(t + i * 0.09, 0.08, { f0: 120 + i * 30 + Math.random() * 40, f1: 300 + i * 40, gain: 0.15, dest: d }); this.noise(t, 0.8, { type: 'bandpass', f0: 500, f1: 1200, q: 3, gain: 0.15, attack: 0.5, dest: d }); }
     else if (move === 'coil') { for (let i = 0; i < 6; i++) this.noise(t + i * 0.13, 0.11, { type: 'bandpass', f0: 900 + i * 120, q: 6, gain: 0.25, attack: 0.03, dest: d }); this.tone(t, 0.9, { f0: 80, f1: 120, type: 'sawtooth', gain: 0.05, dest: d }); }
@@ -38,13 +45,16 @@ export class SeaSerpentSounds {
   seaSerpentMove(move = 'ram', hit = false) {
     if (!this.ok() || !this.allow('seaSerpentMove', 3)) return;
     const t = this.ctx.currentTime, d = this.out(0.48, 0.5);
+    if (move === 'breach' || move === 'rise') { this.noise(t, 1.4, { type: 'lowpass', f0: 3500, f1: 300, gain: 0.6, dest: d }); this.tone(t, 0.9, { f0: 70, f1: 30, gain: 0.6, dest: d }); this.noise(t + 0.5, 1.6, { type: 'highpass', f0: 2500, f1: 1200, gain: 0.12, attack: 0.2, dest: d }); return; } // (out of the crude whole, and the rain of it falling back)
+    if (move === 'coilWorld') { this.tone(t, 2.4, { f0: 45, f1: 32, type: 'sawtooth', gain: 0.08, dest: d }); for (let i = 0; i < 8; i++) this.noise(t + i * 0.22, 0.18, { type: 'bandpass', f0: 250 + Math.random() * 250, q: 8, gain: hit ? 0.32 : 0.15, dest: d }); return; } // (the world's ring closed: every timber at once)
+    move = WIND_AS[move] || move;
     if (move === 'ram') { this.noise(t, 0.9, { type: 'lowpass', f0: 3000, f1: 400, gain: 0.55, dest: d }); this.tone(t, 0.6, { f0: 90, f1: 40, gain: 0.55, dest: d }); }
     else if (move === 'spit') { this.noise(t, 0.12, { type: 'bandpass', f0: 700, f1: 300, q: 2, gain: 0.4, dest: d }); this.tone(t, 0.2, { f0: 220, f1: 90, gain: 0.25, dest: d }); }
     else if (move === 'coil') { if (hit) { this.tone(t, 1.2, { f0: 70, f1: 50, type: 'sawtooth', gain: 0.07, dest: d }); for (let i = 0; i < 5; i++) this.noise(t + 0.1 + i * 0.18, 0.15, { type: 'bandpass', f0: 300 + Math.random() * 300, q: 8, gain: 0.3, dest: d }); } else this.noise(t, 0.4, { type: 'lowpass', f0: 1500, f1: 500, gain: 0.35, dest: d }); }
     else { this.noise(t, 0.5, { type: 'lowpass', f0: 2000, f1: 300, gain: 0.45, dest: d }); this.noise(t + 0.3, 1.4, { type: 'highpass', f0: 3000, f1: 1500, gain: 0.12, attack: 0.1, dest: d }); }
   }
   seaSerpentHit(part = 'head') {
-    if (!this.ok() || !this.allow('seaSerpentHit', 8)) return;
+    if (!this.ok() || !this.allow('seaSerpentHit', 8) || !this.hitOk()) return; // (hitOk: a phone hears a blow once, core.js)
     const t = this.ctx.currentTime, d = this.out(0.34, 0.3);
     if (part === 'coil') { this.noise(t, 0.04, { type: 'bandpass', f0: 2800, q: 5, gain: 0.4, dest: d }); this.tone(t, 0.12, { f0: 900, f1: 1200, type: 'triangle', gain: 0.06, dest: d }); }
     else { this.tone(t, 0.2, { f0: 110, f1: 60, gain: 0.45, dest: d }); this.tone(t + 0.04, 0.35, { f0: 700, f1: 1400, type: 'sawtooth', gain: 0.04, dest: d }); }

@@ -126,7 +126,7 @@ export class WorldMomentSounds {
   /** A stun's meter filled to `meter` (0..1); `depth` above 0 when it deepens one already down. */
   stunBuildTick(meter = 0.5, depth = 0) {
     const k = num(meter, 0.5, 0, 1);
-    if (k >= 1 || !this.ok() || !this.allow('stunBuildTick', 8)) return; // (a full meter is the sting's: audio/damage.js)
+    if (k >= 1 || !this.ok() || !this.allow('stunBuildTick', 8) || !this.hitOk()) return; // (hitOk: a phone hears a blow once, core.js) // (a full meter is the sting's: audio/damage.js)
     const t = this.ctx.currentTime, d = this.out(0.07, 0.15), f = (num(depth, 0, 0, 3) > 0 ? 420 : 600) * Math.pow(2, k * 1.5);
     this.tone(t, 0.035, { f0: f, f1: f * 1.04, type: 'triangle', gain: 0.25, dest: d });
     this.noise(t, 0.006, { type: 'highpass', f0: 5000, gain: 0.1, dest: d });
