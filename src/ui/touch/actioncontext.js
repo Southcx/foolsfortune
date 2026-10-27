@@ -15,7 +15,8 @@
 //   AT THE HELM   (the open sea's free helm, ctx `helm`: the stick is the rudder) FIRE (the ship's gun) and PARRY (the spit sent back)
 //                 while a sea serpent hunts the hull, else USE naming MOOR or DOCK where F would; the throttle's two, each worded with
 //                 the step it goes to (STOP .. FULL), dim at its end. The strip: BROADSIDE first (the side the camera looks over fires,
-//                 its rim filling with that side's reload; dim while no side bears, the readier side's reload shown), FIX (the sky read,
+//                 its rim filling with that side's reload; dim while no side bears, the readier side's reload shown), the worn mounts
+//                 (`mount.1`, `mount.2`: each its mount's glyph, its cooldown on the rim, the toll's charges as pips), FIX (the sky read,
 //                 the Dreamvane worn) and PLATE (the Veritome worn), and USE while a serpent holds the cluster.
 //   A PUZZLE DUEL END TURN (the main; dim on the foe's turn), FINISHER on a broken foe, FLEE, FORM (what you would become: HAND or
 //                 COURIER); the strip the worn tools' moves (dim in the hand's form: they are the Courier's), ROTATE first while a piece
@@ -28,7 +29,7 @@
 //
 //   footCluster(game) toolCluster(game, tool) duelCluster(game) helmCluster(game) -> [entry]   stripOf(game) -> [entry]   beltPairOf(game) -> [entry]
 //   inHandCtx(game) -> 'psygun' | 'cutlass' | 'rod' | 'hook' | 'brush' | 'veritome' | 'dreamvane' | 'crucibelle' | 'lockheart' | null
-//   entry { id, glyph, word, corner, lit, dim, tint, charge }   broadsideOf(game) -> { side, charge, bears }   ACTION_TILES (the words and glyphs by tool)
+//   entry { id, glyph, word, corner, lit, dim, tint, charge }   broadsideOf(game) -> { side, charge, bears }   mountsOf(game) -> [entry]   ACTION_TILES (the words and glyphs by tool)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { SUB_GIFTS } from '../../progress/toolpairs.js';
@@ -36,6 +37,7 @@ import { DEGREE_COLOR } from '../../tools/crucibelle/songs.js';
 import { useLabel } from './cluster.js';
 import { ROOM } from '../../world/opensea/opensea.js';
 import { SEA_FIGHT } from '../../world/opensea/seafight.js';
+import { SEA_MOUNTS } from '../../progress/rail/mounts.js';
 import { LESSON } from '../../progress/duel/lesson.js';
 
 /** By tool in hand: FIRE's and AIM's faces, the third (or null), and what the faces become in their other moment. */
@@ -135,10 +137,23 @@ export function broadsideOf(g) {
 }
 const _look = new THREE.Vector3();
 
-/** The helm's strip: BROADSIDE, FIX with the Dreamvane worn, PLATE with the Veritome, USE while a serpent holds the cluster. */
+/** The mounts at sea by their tiles (world/opensea/seamounts.js: keys 1 and 2 fire the worn tools in order, main first; a passive one,
+ *  sonar, has none): its glyph (ui/icons/touchmountart.js) and word (placeholders, Espada's), its cooldown as the rim's charge (1 ready),
+ *  the toll's charges left as pips, dim while it cannot be paid (no charge left, the pool short of its cost). */
+const MOUNT_FACES = { sondelass: ['mharpoon', 'HARPOON'], crucibelle: ['mtoll', 'TOLL'], lockheart: ['mgulp', 'GULP'], veritome: ['mflash', 'FLASH'], soulbrush: ['mslick', 'SLICK'], dreamvane: ['msonar', 'SONAR'] };
+export function mountsOf(g) {
+  const F = g.seaFight?.mounts; if (!F) return [];
+  return F.worn.map((t, i) => {
+    const M = SEA_MOUNTS[t], face = MOUNT_FACES[t]; if (!M || M.passive || !face || i > 1) return null;
+    const cd = F.cd?.[t] || 0, left = M.charges ? M.charges - (F.used?.[t] || 0) : null, pool = g.lachryma?.available;
+    return E(`mount.${i + 1}`, face[0], face[1], { corner: String(i + 1), charge: M.cooldown ? Math.max(0, Math.min(1, 1 - cd / M.cooldown)) : 1, pips: left ?? 0, dim: left === 0 || (M.cost > 0 && pool != null && pool < M.cost) });
+  }).filter(Boolean);
+}
+
+/** The helm's strip: BROADSIDE, the worn mounts (1, 2), FIX with the Dreamvane worn, PLATE with the Veritome, USE while a serpent holds the cluster. */
 function helmStrip(g) {
   const use = g.seaFight?.serpent ? helmUse(g) : null, B = broadsideOf(g);
-  return [use ? E('use', null, use) : null, B ? E('broadside', 'broadside', 'BROADSIDE', { charge: B.charge, dim: !B.bears }) : null,
+  return [use ? E('use', null, use) : null, B ? E('broadside', 'broadside', 'BROADSIDE', { charge: B.charge, dim: !B.bears }) : null, ...mountsOf(g),
     worn(g, 'dreamvane') ? E('fix', 'fix', 'FIX') : null, worn(g, 'veritome') ? E('plate', 'photo', 'PLATE') : null].filter(Boolean);
 }
 
