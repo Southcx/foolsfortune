@@ -20,10 +20,12 @@
 //                                          walls?, places: [{ x, z, name, charted }], plates: [{ x, z, yaw, stars }], thread: { pts: [{ x, z }],
 //                                          dashed }, you: { x, z, yaw }, waypoint: { x, z } | null, edges: [{ x, z, dir, name, visited, down }],
 //                                          tracks?: [{ name, pts: [{ x, z, w }] }], godhand: { x, z, r } | null, key?: bool }
+//                                  (the open sea's page also carries your seal on each square done: seaseals.js, read from its own source)
 //                                  view: { x, z, scale (CSS px a metre), w, h (CSS px), dpr }
 //   disposeAreaPage()
 // ---------------------------------------------------------------------------------------
 import { INK, FACE, GOLD, glaze, tone, hash, paperPattern, disposePaper } from './ink.js';
+import { sealsOnPage } from './seaseals.js';
 
 /** The page's numbers: the sketch's long side at most (px), a cell's disc against its size, the least type (CSS px), words. */
 export const SKETCH = { max: 1024, disc: 0.74, bleed: 0.98, type: 14, chevron: 13,
@@ -166,6 +168,7 @@ export function areaPage(ctx, page, view) {
     ctx.imageSmoothingEnabled = true;
     ctx.drawImage(cache.canvas, sx(cache.x0), sy(cache.z0), cache.canvas.width / cache.ppm * V.scale, cache.canvas.height / cache.ppm * V.scale);
   }
+  sealsOnPage(ctx, page, sx, sy, V.scale); // (the open sea's done squares, your seal on each: ui/mapdress/seaseals.js)
   // what the labels keep clear of: you, the waypoint, each edge's chevron and chip, every place's dot
   const taken = [], box = (x, y, r) => taken.push([x - r, y - r, x + r, y + r]);
   const Y = page.you, wp = page.waypoint;
