@@ -10,6 +10,7 @@
 // Advance Wars and Into the Breach's smoke; the will-o'-the-wisp of the fens, a light that shows you only what it wants you to see.
 //
 //   visibleTo(state, viewer, x, y) -> bool   emberKind(state, sender) -> 'ember' | 'junk'   tickEmbers(state, side) -> events
+//   fogShows(state, viewer, x, y) -> 'all' | 'shape' (a fogged cell shows that a piece is there, never its colour: PUZZLE-DUELS.md 20)
 //   rs.fog = { side, light }   rs.embers = { from, count }   clues(state, viewer, familiarity?) -> { rows, cols, colours } | null (clue fog)
 // ---------------------------------------------------------------------------------------
 import { COLOURS, KINDS } from './board.js';
@@ -21,6 +22,11 @@ export function visibleTo(s, viewer, x, y) {
   const at = s.sides[F.side].at; if (!at) return false;
   return Math.abs(x - at[0]) + Math.abs(y - at[1]) <= (F.light ?? 3);
 }
+
+/** How a cell is shown to a side: 'all' within sight, else 'shape': the fog hides a gem's colour and kind, never that the cell holds a
+ *  piece (South's phone redo, 2026-10-27: a blank half read as nothing at phone size; Tetris 99's and Puyo's opponents' stacks show
+ *  their height). The view draws a 'shape' cell as a plain stone of the fog. */
+export const fogShows = (s, viewer, x, y) => (visibleTo(s, viewer, x, y) ? 'all' : 'shape');
 
 /** What a side's junk lands as: embers if the ruleset says this side sends them. */
 export const emberKind = (s, sender) => (s.rs.embers && s.rs.embers.from === sender ? 'ember' : 'junk');

@@ -9,14 +9,16 @@
 //
 //   plan(state, side?, { sample }) -> actions   play(state, { sample }) -> events (acts its turn and ends it)   score(state, side) -> number
 //   intentOf(state, side?) -> { actions, junk, cells, hits } (its next turn as the view draws it over the fog: PUZZLE-DUELS.md 18.2)
+//   hintOf(state, side?, { sample, form }) -> { action, junk, cells } | null (the idle hint: one good move in the form you hold, 21.3)
 // ---------------------------------------------------------------------------------------
 import { hasTag } from './board.js';
-import { act, endTurn, legalActions, cloneState, DUEL } from './duel.js';
+import { act, endTurn, legalActions, cloneState, DUEL, ACTIONS } from './duel.js';
 import { FINISHER } from './duelbreak.js';
 import { fleeOdds } from './flee.js';
 
 /** Actions always tried, never left to the sample: few, and each can change the fight (a form switch, the finisher). */
 const ALWAYS = new Set(['form', 'finisher']);
+const ACT_FORM = Object.fromEntries(Object.entries(ACTIONS).map(([k, A]) => [k, A.form]).filter(([, f]) => f)); // (which form each action belongs to)
 const W = { junk: 10, pairs: 0.5, room: 6, pending: 4, pool: 1.2, finisher: 60, stun: 25, stagger: 6, coffin: 3, orbs: 0, form: 3 };
 
 /** How good the board is for a side: junk it has made this turn, same-colour neighbours (chains to come), its room, less what waits
@@ -102,4 +104,19 @@ export function intentOf(s, side = 1 - s.toMove, opts = {}) {
     }
   }
   return { actions, junk: c.sides[side].sent - before, cells, hits };
+}
+
+/** The idle hint (PUZZLE-DUELS.md 21.3; Candy Crush and Bejeweled show a move after a few idle seconds, Puzzle & Dragons' "skyfall"
+ *  practice board): the action in the form you hold now that sends the most junk, tried on quiet copies (never the duel's own dice), ties
+ *  to the bot's score; null when nothing clears. The view lights it after HINT.idle real s with no touch, and lets it go at the next. */
+export const HINT = { idle: 6, sample: 40 };
+export function hintOf(s, side = s.toMove, { sample = HINT.sample, form = s.sides[side].form } = {}) {
+  const all = legalActions(s, side).filter((a) => !['form', 'flee', 'finisher'].includes(a.kind) && (ACT_FORM[a.kind] ?? form) === form);
+  const r = cloneState(s).r; let best = null;
+  for (let i = 0; i < sample && all.length; i++) {
+    const a = all.splice(r.int(all.length), 1)[0], t = cloneState(s), before = t.sides[side].sent, ev = act(t, a); if (!ev) continue;
+    const junk = t.sides[side].sent - before; if (junk <= 0) continue;
+    const v = junk * 1000 + score(t, side); if (!best || v > best.v) best = { v, action: a, junk, cells: ev.filter((e) => e.type === 'clear' && e.side === side).map((e) => e.at) };
+  }
+  return best && { action: best.action, junk: best.junk, cells: best.cells };
 }

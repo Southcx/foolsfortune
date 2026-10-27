@@ -21,6 +21,7 @@
 //
 //   new ShipLook(spec, { env })   .group .body .length .beam .scale .deckY .keelMat .mouth .gunAt .helmCradles .helmCradle .rig .hullMat .sail
 //   .set({ sail, heel, side, glow, t, form, roll, fill, luff, wind, windK })   .wind(rel | null, k)   .fold(u | null)   .feeling(hex)   .hurt(k)   .scars({ open, gilt })   .hoist(medal)
+//   .wearParts({ sail, hull, keel }) (the open sea's parts, a look only: shipkit/partlooks.js; never called, the ship is as built)
 //   .ports(side) -> [Vector3] (the broadside's muzzles, world; .gunPorts its lids and guns: shipkit/gunports.js)   .helmCradleSpots()   .helmWake(on, i)   .helmTick(t)   .deckHeight(z)   .crewSpots() -> [[x, z, y]]   .dispose()   .stats() -> { tris, draws }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -35,6 +36,7 @@ import { keepTrue } from '../stormwarp.js';
 import { causticsOn } from '../umbral.js';
 import { CradleLook, cradleFoot } from '../cradlelook.js';
 import { GunPorts } from './gunports.js';
+import { ShipPartLooks } from './partlooks.js';
 
 let blank = null; // (a 1x1 clear texture: the vanes with no lotus; made once, never disposed)
 const blankTex = () => (blank ||= new THREE.DataTexture(new Uint8Array(4), 1, 1));
@@ -104,7 +106,7 @@ export class ShipLook {
     this.foldU = st.u;
     if (this.rig) {
       this.rig.pose({ u: st.u, hatch: st.hatch, sail: furled ? 1 : sail, side: side < 0 ? -1 : 1 });
-      if (this.rig.vaneMesh) this.rig.vaneMesh.visible = !furled && st.u < 0.995;
+      if (this.rig.vaneMesh) this.rig.vaneMesh.visible = !furled && st.u < 0.995 && !this.parts?.hidesVanes; // (a lateen or a storm sail strikes the class's vanes)
       const P = this.spec.pennant ?? { mast: 0 }; this.rig.topOf(P.mast, this.pennant.position); this.pennant.position.y += 0.05;
     } else if (this.spec.pennant?.at) this.pennant.position.set(...this.spec.pennant.at);
     this.pennant.visible = st.u < 0.6 || !!this.spec.pennant?.at;
@@ -112,8 +114,12 @@ export class ShipLook {
     if (this.sail) { const u = this.sail.userData.u, f = THREE.MathUtils.clamp(fill, 0, 1), l = THREE.MathUtils.clamp(luff, 0, 1); u.uFill.value = furled ? 0 : sail * (0.25 + 0.75 * f) * (1 - 0.7 * l); u.uSide.value = 1; u.uT.value = t; u.uLuff.value = furled ? 0 : l; }
     this.mouth.opacity = 0.35 + 0.6 * glow; this.keelMat.opacity = 0.12 + 0.35 * glow;
     const hu = this.hullMat.userData.u; hu.uFeel.value.copy(this.keelMat.color); hu.uFeelK.value = 0.55 + 0.6 * glow; // (the core lit in the ship's feeling, as the rail tints the keel)
+    this.parts?.pose({ sail, fill, luff, side, t, furled, u: st.u, rel: this.windRel });
     this.helmTick(t);
   }
+
+  /** The ship's parts worn (the open sea's: progress/opensea/salvage.js SHIP_PARTS), drawn over the class (shipkit/partlooks.js). */
+  wearParts(worn) { (this.parts ||= new ShipPartLooks(this)).wear(worn); return this; }
 
   /** The wind in the ship's frame: `rel` the yaw it blows toward less the ship's (null: none, the look as it was), k its strength 0..1. */
   wind(rel, k = 0) { this.windRel = rel == null ? null : rel; this.windK = THREE.MathUtils.clamp(k || 0, 0, 1); return this; }
@@ -186,7 +192,7 @@ export class ShipLook {
     this.group.parent?.remove(this.group);
     for (const g of this.geos) g.dispose?.(); for (const m of this.mats) m.dispose?.();
     for (const c of this.helmCradles) c.dispose(); // (the cradles' shared materials stay)
-    this.gunPorts.dispose();
+    this.gunPorts.dispose(); this.parts?.dispose();
   }
 }
 const _pc = new THREE.Color();

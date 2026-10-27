@@ -46,7 +46,7 @@ export function seaSerpentMind(S) {
   const distHome = (x) => hd(x.c.pos, x.c.home);
   /** Its size against the serpent's (the keep band and the moves' ranges grow with it) and how far from home it hunts (a territorial
    *  beast its zone times its leash: OPEN-SEA.md 14.3, Monster Hunter's; the serpent SERPENT_MIND.leash). */
-  const sizeOf = (c) => Math.sqrt(Math.max(1, c.B.headR / 1.5));
+  const sizeOf = (c) => c.B.size ?? Math.sqrt(Math.max(1, c.B.headR / 1.5)); // (a shape names its own: shapes.js)
   const leashOf = (c) => (c.row.zone ? c.row.zone * (c.row.leash ?? 1.5) : C.leash);
   /** The ship it knows of, if it means to hunt it: sure enough of it, or holding a grudge, and lately. */
   const foe = (x) => {
@@ -58,6 +58,7 @@ export function seaSerpentMind(S) {
   /** Which move now, if any: each its gate, its cooldown, and a weight (seaserpent.js `windUp` lays it on the water). */
   const pickMove = (x, d) => {
     const c = x.c, H = ship(); if (!H) return null;
+    if (c.row.zone && hd(H.pos, c.home) > leashOf(c)) return null; // (a territorial beast moves on a ship only inside what it defends)
     const MV = c.row.moves, P = c.row.phases, k = sizeOf(c);
     const allowed = P ? (P.find((p) => c.hp / c.maxHp > p.until) || P[P.length - 1]).moves : Object.keys(MV); // (a legend's phase by its hp left)
     const can = (m) => !!MV[m] && allowed.includes(m) && (c.cd[m] ?? 0) <= 0;
@@ -70,6 +71,11 @@ export function seaSerpentMind(S) {
     if (can('dive') && d < 70 * k) opts.push(['dive', 0.7]);
     if (can('circle') && d < 220) opts.push(['circle', 1.2]);
     if (can('coilWorld') && d < 160) opts.push(['coilWorld', 1.5]);
+    const reach = c.B.reach ?? 0; // (the shapes' moves: the umibozu's grip when up and near, the kraken's arms and ink while it holds beside the hull)
+    if (can('grip') && d < reach && c.under < 0.3) opts.push(['grip', 1.8]);
+    if (can('grasp') && c.engaged && d < reach) opts.push(['grasp', 1.3]);
+    if (can('slam') && c.engaged && d < reach) opts.push(['slam', 1.2]);
+    if (can('ink') && c.engaged) opts.push(['ink', 0.6]);
     for (const o of opts) if (o[0] === c.lastMove) o[1] *= 0.3; // (seldom the same move twice running)
     let sum = 0; for (const o of opts) sum += o[1];
     let r = simRand() * sum; for (const o of opts) if ((r -= o[1]) <= 0) return o[0];
@@ -90,7 +96,7 @@ export function seaSerpentMind(S) {
       if ((c.risenT ?? -99) < x.now - 30) { c.risenT = x.now; g.events?.emit('seaserpent.rise', { by: 'creature' }); glyph(x, 'bang1', 0xff9a4a); }
     },
     tick: (x, dt) => {
-      const c = x.c, f = foe(x), H = ship(), b = x.bb, SP = c.row.speed, k = sizeOf(c), keep = [C.keep[0] * k, C.keep[1] * k];
+      const c = x.c, f = foe(x), H = ship(), b = x.bb, SP = c.row.speed, k = sizeOf(c), keep = c.B.keep ?? [C.keep[0] * k, C.keep[1] * k];
       if (c.attack || c.coiled || c.held) return 'run';
       if (!f || !H) return 'done';
       if (distHome(x) > leashOf(c)) { f.aware = Math.min(f.aware, 0.3); return 'fail'; }

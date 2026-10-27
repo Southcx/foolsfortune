@@ -29,8 +29,13 @@ export const RULESETS = {
   // 60. Clusters of 3 were measured and refused: one move at the opening could make 52 to 770 junk (runs only: 9 to 112).
   // Its board 14 x 14 (PUZZLE-DUELS.md 17.4: the phone's cells 1.4x as big, on every device), a column a 2 junk and 6 landing at once:
   // a duel as long as the 20's (7 turns a side to 6.3) and as winnable (the stand-in 14 of 20 to 15).
-  lanternwisp: { feeling: 'dread', board: { w: 14, h: 14, perColumn: 2, landCap: 6 }, match: 3, cluster: 4, gravity: (x, y, b) => (b.sideOf(x) === 0 ? DIRS.S : DIRS.N), colours: 5, drip: 4,
-    fog: { side: 1, light: 3 }, embers: { from: 1, count: 3 }, bot: { pairs: 0.8, sample: 6 } },
+  // Its board 12 x 9 and 4 colours since South's phone redo (2026-10-27, PUZZLE-DUELS.md 20: the board the largest thing on screen,
+  // its cells 44 px, the touch minimum, at the full height of a phone held sideways): measured over 40 duels against this bot, 14 x 14
+  // with 5 colours let the stand-in win 17 and chain 4 to 5 deep; 12 x 10 with 5 colours fell to chains of 3 (too few cells for five
+  // colours to meet); 4 colours put the depth back (chains of 4 on both sides) and the stand-in wins 24, 7.9 turns a side. Fury stays
+  // on the board, so the Wisp's weakness (fury, the opposite of its dread) is still there to chase.
+  lanternwisp: { feeling: 'dread', board: { w: 12, h: 9, perColumn: 2, landCap: 6 }, match: 3, cluster: 4, gravity: (x, y, b) => (b.sideOf(x) === 0 ? DIRS.S : DIRS.N), colours: 4, drip: 4,
+    fog: { side: 1, light: 3 }, embers: { from: 1, count: 3 }, bot: { pairs: 0.8, sample: 8 } }, // (8 since the lookaheads stopped drawing the duel's own dice, 19.4: the stand-in wins 58 of 80, as it did)
 };
 
 /** A creature kind's own ruleset, where it has one (`c.kind` -> a RULESETS key). */

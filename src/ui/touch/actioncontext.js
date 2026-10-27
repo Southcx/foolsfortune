@@ -15,10 +15,12 @@
 //   AT THE HELM   (the open sea's free helm, ctx `helm`: the stick is the rudder) FIRE (the ship's gun) and PARRY (the spit sent back)
 //                 while a sea serpent hunts the hull, else USE naming MOOR or DOCK where F would; the throttle's two, each worded with
 //                 the step it goes to (STOP .. FULL), dim at its end. The strip: BROADSIDE first (the side the camera looks over fires,
-//                 its rim filling with that side's reload; dim while no side bears, the readier side's reload shown), FIX (the sky read,
+//                 its rim filling with that side's reload; dim while no side bears, the readier side's reload shown), the worn mounts
+//                 (`mount.1`, `mount.2`: each its mount's glyph, its cooldown on the rim, the toll's charges as pips), FIX (the sky read,
 //                 the Dreamvane worn) and PLATE (the Veritome worn), and USE while a serpent holds the cluster.
-//   A PUZZLE DUEL END TURN (the main; dim on the foe's turn), FINISHER on a broken foe, FLEE, FORM (what you would become: HAND or
-//                 COURIER); the strip the worn tools' moves (dim in the hand's form: they are the Courier's), ROTATE first while a piece
+//   A PUZZLE DUEL (the duel's phone screen: ui/touch/duelscreen.js lays these in the flanks, the cluster and the strip stand down)
+//                 END TURN (the main; dim on the foe's turn; its rim the action points left), FINISHER on a broken foe, FLEE, UNDO, FORM
+//                 (what you would become: HAND or COURIER); the worn tools' moves (duelTools) (dim in the hand's form: they are the Courier's), ROTATE first while a piece
 //                 is under the last touch in the hand's form; TUNE lit while its song holds, READ only where Dread's fog hides the foe; the
 //                 first duel's step asked (lesson.js) lit on its tile (FORM, ROTATE, the tools' moves).
 // The tool's name small in FIRE's corner (8.3) is left out: at 72 px it lands on the glyph; the glyph is the tool's own.
@@ -26,9 +28,9 @@
 // Prior art: Genshin Impact's attack and skill tiles changing with the character, Call of Duty Mobile's fire button by weapon, Into the
 // Breach's strip of moves with END TURN the largest; the cluster's own reading of the skiff (cluster.js clusterContext).
 //
-//   footCluster(game) toolCluster(game, tool) duelCluster(game) helmCluster(game) -> [entry]   stripOf(game) -> [entry]   beltPairOf(game) -> [entry]
+//   footCluster(game) toolCluster(game, tool) duelCluster(game) duelTools(game) helmCluster(game) -> [entry]   stripOf(game) -> [entry]   beltPairOf(game) -> [entry]
 //   inHandCtx(game) -> 'psygun' | 'cutlass' | 'rod' | 'hook' | 'brush' | 'veritome' | 'dreamvane' | 'crucibelle' | 'lockheart' | null
-//   entry { id, glyph, word, corner, lit, dim, tint, charge }   broadsideOf(game) -> { side, charge, bears }   ACTION_TILES (the words and glyphs by tool)
+//   entry { id, glyph, word, corner, lit, dim, tint, charge }   broadsideOf(game) -> { side, charge, bears }   mountsOf(game) -> [entry]   ACTION_TILES (the words and glyphs by tool)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { SUB_GIFTS } from '../../progress/toolpairs.js';
@@ -36,7 +38,9 @@ import { DEGREE_COLOR } from '../../tools/crucibelle/songs.js';
 import { useLabel } from './cluster.js';
 import { ROOM } from '../../world/opensea/opensea.js';
 import { SEA_FIGHT } from '../../world/opensea/seafight.js';
+import { SEA_MOUNTS } from '../../progress/rail/mounts.js';
 import { LESSON } from '../../progress/duel/lesson.js';
+import { legalActions } from '../../progress/duel/duel.js';
 
 /** By tool in hand: FIRE's and AIM's faces, the third (or null), and what the faces become in their other moment. */
 export const ACTION_TILES = {
@@ -97,9 +101,10 @@ export function duelCluster(g) {
   const D = g.duel, s = D?.state; if (!s) return [];
   const S = s.sides[0], broken = (s.sides[1]?.depth || 0) > 0, mine = !!D.mine;
   return [
-    E('du.end', 'endturn', 'END TURN', { dim: !mine }),
+    E('du.end', 'endturn', 'END TURN', { dim: !mine, charge: mine && S.ap > 0 ? s.apLeft / S.ap : 0 }), // (its rim the action points left)
     broken ? E('du.finish', 'finisher', 'FINISHER', { dim: !mine }) : null,
     E('du.flee', 'flee', 'FLEE', { dim: !mine }),
+    E('du.undo', 'undo', 'UNDO', { dim: !mine || !s.undo?.length }), // (the last action this turn taken back: dim with nothing to take back)
     S.form === 'hand' ? E('du.form', 'formcourier', 'COURIER', { dim: !mine, lit: askedOf(s) === 'form' }) : E('du.form', 'grab', 'HAND', { dim: !mine }),
   ];
 }
@@ -135,10 +140,23 @@ export function broadsideOf(g) {
 }
 const _look = new THREE.Vector3();
 
-/** The helm's strip: BROADSIDE, FIX with the Dreamvane worn, PLATE with the Veritome, USE while a serpent holds the cluster. */
+/** The mounts at sea by their tiles (world/opensea/seamounts.js: keys 1 and 2 fire the worn tools in order, main first; a passive one,
+ *  sonar, has none): its glyph (ui/icons/touchmountart.js) and word (placeholders, Espada's), its cooldown as the rim's charge (1 ready),
+ *  the toll's charges left as pips, dim while it cannot be paid (no charge left, the pool short of its cost). */
+const MOUNT_FACES = { sondelass: ['mharpoon', 'HARPOON'], crucibelle: ['mtoll', 'TOLL'], lockheart: ['mgulp', 'GULP'], veritome: ['mflash', 'FLASH'], soulbrush: ['mslick', 'SLICK'], dreamvane: ['msonar', 'SONAR'] };
+export function mountsOf(g) {
+  const F = g.seaFight?.mounts; if (!F) return [];
+  return F.worn.map((t, i) => {
+    const M = SEA_MOUNTS[t], face = MOUNT_FACES[t]; if (!M || M.passive || !face || i > 1) return null;
+    const cd = F.cd?.[t] || 0, left = M.charges ? M.charges - (F.used?.[t] || 0) : null, pool = g.lachryma?.available;
+    return E(`mount.${i + 1}`, face[0], face[1], { corner: String(i + 1), charge: M.cooldown ? Math.max(0, Math.min(1, 1 - cd / M.cooldown)) : 1, pips: left ?? 0, dim: left === 0 || (M.cost > 0 && pool != null && pool < M.cost) });
+  }).filter(Boolean);
+}
+
+/** The helm's strip: BROADSIDE, the worn mounts (1, 2), FIX with the Dreamvane worn, PLATE with the Veritome, USE while a serpent holds the cluster. */
 function helmStrip(g) {
   const use = g.seaFight?.serpent ? helmUse(g) : null, B = broadsideOf(g);
-  return [use ? E('use', null, use) : null, B ? E('broadside', 'broadside', 'BROADSIDE', { charge: B.charge, dim: !B.bears }) : null,
+  return [use ? E('use', null, use) : null, B ? E('broadside', 'broadside', 'BROADSIDE', { charge: B.charge, dim: !B.bears }) : null, ...mountsOf(g),
     worn(g, 'dreamvane') ? E('fix', 'fix', 'FIX') : null, worn(g, 'veritome') ? E('plate', 'photo', 'PLATE') : null].filter(Boolean);
 }
 
@@ -161,7 +179,7 @@ export function beltPairOf(g) {
 
 /** The strip over the cluster: the tool's own row, or the duel's moves. */
 export function stripOf(g) {
-  if (g.duel?.active) return duelStrip(g);
+  if (g.duel?.active) return []; // (the duel's moves stand in the duel's phone screen: duelscreen.js)
   if (atHelm(g)) return helmStrip(g);
   if (!onFoot(g)) return [];
   const ctx = inHandCtx(g);
@@ -185,16 +203,29 @@ export function stripOf(g) {
   return out;
 }
 
-function duelStrip(g) {
+/** A puzzle duel's tool moves: the worn tools' (the kernel's `S.tools`: couriertools.js `wears`), ROTATE first under a picked piece in the
+ *  hand's form; dim where the moment or the form refuses them, lit while one is held (a song sung, a read open). */
+export function duelTools(g) {
   const D = g.duel, s = D.state; if (!s) return [];
-  const S = s.sides[0], worn = S.tools ? new Set(S.tools) : null, hand = S.form === 'hand', out = [];
-  const cell = D.hover, piece = hand && cell ? s.board?.at?.(cell.x, cell.y) : null;
+  const S = s.sides[0], worn = S.tools ? new Set(S.tools) : null, hand = S.form === 'hand', out = [], legal = legalKinds(s);
+  const cell = D.picked || D.hover, piece = hand && cell ? s.board?.at?.(cell.x, cell.y) : null; // (on touch the picked cell: pick, then ROTATE)
   const ask = askedOf(s), fogged = !!s.rs?.fog && s.rs.fog.side !== 0; // (Read only where Dread's fog hides the foe: couriertools.js)
-  if (piece && piece.kind !== 'body') out.push(E('du.rotate', 'rotate', 'ROTATE', { dim: !D.mine, lit: ask === 'move' }));
+  if (hand) out.push(E('du.rotate', 'rotate', 'ROTATE', { dim: !D.mine || !piece || piece.kind === 'body', lit: ask === 'move' })); // (always first in the hand's form: the column never shifts under the thumb)
+  if (hand) return out; // (the hand's form shows the hand's verbs only: the Courier's tools stand down until you dive in, South 2026-10-27: "UI hidden when not in use")
   for (const [tool, id, glyph, word] of DUEL_MOVES) {
     if ((worn && !worn.has(tool)) || (id === 'du.read' && !fogged)) continue;
     const spent = (id === 'du.tune' && !!S.tune) || (id === 'du.read' && S.read > 0); // (a song sung this turn, a read still open: lit, not again)
-    out.push(E(id, glyph, word, { dim: hand || !D.mine || spent, lit: (!hand && ask === 'tool') || (id === 'du.tune' && !!S.tune) }));
+    const held = (id === 'du.tune' && !!S.tune) || (id === 'du.paint' && !!D.armed); // (the armed one gold: a song holding, a Paint's reach up)
+    out.push(E(id, glyph, word, { dim: hand || !D.mine || spent || !legal.has(id.slice(3)), lit: (!hand && ask === 'tool') || held }));
   }
   return out;
+}
+
+/** The kinds the kernel would take from the Courier's side now (legalActions, progress/duel/duel.js), asked once a change of the turn. */
+let legalMemo = { s: null, key: '', kinds: new Set() };
+function legalKinds(s) {
+  const key = `${s.ply}|${s.toMove}|${s.apLeft}|${s.sides[0].form}|${s.undo?.length ?? 0}|${s.sides[0].tune ? 1 : 0}|${s.sides[0].read ?? 0}`;
+  if (legalMemo.s === s && legalMemo.key === key) return legalMemo.kinds;
+  let kinds = new Set(); try { if (s.toMove === 0 && s.winner == null && s.sides[0].form !== 'hand') kinds = new Set(legalActions(s, 0, { drags: 0 }).map((a) => a.kind)); } catch { /* a state the kernel cannot read: nothing legal */ }
+  legalMemo = { s, key, kinds }; return kinds;
 }

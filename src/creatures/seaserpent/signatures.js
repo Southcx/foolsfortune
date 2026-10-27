@@ -7,6 +7,7 @@
 //               head running round it; the ship outside it as it runs is free (`escape`), inside at the end takes the move's hits; the
 //               head shot for `breaks` while it closes breaks it (its head at the peak).
 // Each is { wind(S, c, m, target), tick(S, c, dt) (the windup), hold(S, c, dt) (after it: `c.held`), struck(S, c, dmg), end(S, c, why) }.
+// `c.held` is { move, t, hold, centre, r, ... }: the body draws the ring from its centre and r (vfx/opensea/beasts/).
 // The breach (the akhlut's) is the ram led further ahead (seaserpent.js `windUp`); the umibozu's grip and the kraken's arms wait for their
 // bodies. Prior art: Shadow of the Colossus's Phalanx and Monster Hunter's Dalamadur (a body that is the arena), Sea of Thieves' Megalodon.
 //
@@ -38,12 +39,12 @@ export const SIGNATURES = {
       const A = c.attack, H = ship(S); if (H) orbit(c, H.pos, SIGNATURE.circle.r, 1, c.row.speed);
       if (A.t > 0) return;
       c.attack = null; S.game.creatures.unwind(c);
-      c.held = { move: 'circle', t: c.row.moves.circle.hold, dir: c.id % 2 ? 1 : -1, hitT: 0 };
+      c.held = { move: 'circle', t: c.row.moves.circle.hold, hold: c.row.moves.circle.hold, centre: (H ? H.pos : c.pos).clone(), r: SIGNATURE.circle.r, dir: c.id % 2 ? 1 : -1, hitT: 0 };
     },
     hold(S, c, dt) {
       const Hd = c.held, H = ship(S); Hd.t -= dt; Hd.hitT -= dt;
       if (!H || Hd.t <= 0) return this.end(S, c, 'time');
-      c.goUnder = 0; orbit(c, H.pos, SIGNATURE.circle.r, Hd.dir, c.row.speed);
+      c.goUnder = 0; Hd.centre.copy(H.pos); orbit(c, H.pos, SIGNATURE.circle.r, Hd.dir, c.row.speed); // (the ring follows the ship: the body reads Hd.centre and Hd.r)
       if (Hd.hitT > 0) return;
       for (let i = 0; i < c.N; i++) { // (a part of it up and against the hull: crossing its ring is a ram)
         if (!S.exposed(c, i)) continue;
@@ -61,13 +62,13 @@ export const SIGNATURES = {
       const A = c.attack, H = ship(S); if (H) orbit(c, H.pos, SIGNATURE.coilWorld.r0, 1, c.row.speed * 1.2);
       if (A.t > 0) return;
       c.attack = null; S.game.creatures.unwind(c);
-      c.held = { move: 'coilWorld', t: c.row.moves.coilWorld.hold, hold: c.row.moves.coilWorld.hold, centre: (H ? H.pos : c.pos).clone(), dmg: 0, dir: 1 };
+      c.held = { move: 'coilWorld', t: c.row.moves.coilWorld.hold, hold: c.row.moves.coilWorld.hold, centre: (H ? H.pos : c.pos).clone(), r: SIGNATURE.coilWorld.r0, dmg: 0, dir: 1 };
     },
     /** The ring now: its radius from r0 to r1 as the hold runs out. */
     radius(Hd) { const W = SIGNATURE.coilWorld, k = 1 - Hd.t / Hd.hold; return W.r0 + (W.r1 - W.r0) * k; },
     hold(S, c, dt) {
       const Hd = c.held, H = ship(S), W = SIGNATURE.coilWorld; Hd.t -= dt;
-      const r = this.radius(Hd); c.goUnder = 0; c.wantRear = 0.6; orbit(c, Hd.centre, r, Hd.dir, c.row.speed * 1.4);
+      const r = (Hd.r = this.radius(Hd)); c.goUnder = 0; c.wantRear = 0.6; orbit(c, Hd.centre, r, Hd.dir, c.row.speed * 1.4);
       if (!H) return this.end(S, c, 'time');
       if (Math.hypot(H.pos.x - Hd.centre.x, H.pos.z - Hd.centre.z) > r + W.margin + (H.look?.length ?? 7) / 2) return this.end(S, c, 'escape');
       if (Hd.t > 0) return;

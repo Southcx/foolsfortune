@@ -21,7 +21,8 @@ import { RACEWAY_DRESS_EFFECTS } from './raceway/effects.js'; // (the race's fir
 import { SKIFF_BOARD_EFFECTS } from './skiffboardeffects.js'; // (the board's stakes: the scorch, the hull, a wreck, the manual; the buoys: vfx/skiffboardlooks.js, vfx/racewaybuoys.js)
 import { RACEWAY_SIPHON_EFFECTS } from './racewaysiphoneffects.js'; // (the siphon arches' draw, drink and gulp: vfx/racewaysiphons.js plays them)
 import { PSYGUN_VARIANT_EFFECTS } from './psygunvarianteffects.js'; // (the psygun variants' flare, pentacle and reveal: tools/psygun/variantplay.js, vfx/flarereveal.js)
-import { PUZZLE_EFFECTS } from './opensea/puzzleeffects.js'; // (the islets' caches dug: the sand thrown up and the find's glint, vfx/opensea/puzzlelooks.js)
+import { PUZZLE_EFFECTS } from './opensea/puzzleeffects.js';
+import { SALVAGE_EFFECTS } from './opensea/salvageeffects.js'; // (the haul's moment and the drift bottle's glint: vfx/opensea/salvagelooks.js, bottlelooks.js) // (the islets' caches dug: the sand thrown up and the find's glint, vfx/opensea/puzzlelooks.js)
 import { ANGLING_EFFECTS } from './anglingeffects.js'; // (the catch leaving the water: tools/sondelass/angling/catchlift.js)
 import { BLOW_FEEL_EFFECTS } from './blowfeeleffects.js'; // (a melee blow's weight, and Strawman's straw: vfx/blowfeel.js plays them)
 import { FLOURISH_EFFECTS } from './flourisheffects.js'; // (the Courier's flourishes: a step's, a dash's, the shatter's, the aura's, the arrival's: vfx/flourishes.js)
@@ -781,6 +782,7 @@ export const LIBRARY = {
   ...RACEWAY_SIPHON_EFFECTS,
   ...PSYGUN_VARIANT_EFFECTS,
   ...PUZZLE_EFFECTS,
+  ...SALVAGE_EFFECTS,
   ...ANGLING_EFFECTS,
   ...BLOW_FEEL_EFFECTS,
   ...FLOURISH_EFFECTS,

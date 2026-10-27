@@ -3,7 +3,8 @@
 // told"): the action under the finger or the pointer before it is chosen (the session's `pendingAction`: a swap or drag as the press
 // builds, a run on hover), tried on a quiet copy (Dovina's `preview`, duel.js, handed a stream of its own so a hover never changes the
 // duel's chances). The cells it would clear glow (a rim of the film's light, breathing) and beside the finger's cell, in the System's
-// type (the count face, marks.js), what it would send: "+N", and under it "xS" when the clear would chain (S its steps). No words; nothing
+// type (the count face, marks.js), what it would send: "+N", and under it "xS" when the clear would chain (S its steps); and each
+// piece that would go swells on a pulsing bright keyline where it stands now (pieces.js `prev`). No words; nothing
 // when it would clear nothing or is not legal. Cleared on null.
 //
 // Prior art: Puyo Puyo's chain counter (the steps shown as they come), Puzzle Quest's match preview (the gems that would go lit as you
@@ -15,7 +16,6 @@ import * as THREE from 'three';
 import { act, cloneState, preview } from '../../progress/duel/duel.js';
 import { mindLineMaterial } from '../labradorite.js';
 import { DUEL_VIEW, cellLocal } from './layout.js';
-import { quiet } from './glows.js';
 
 export class DuelWorth {
   constructor(view) {
@@ -23,16 +23,17 @@ export class DuelWorth {
     this.mat = mindLineMaterial({ opacity: 0.9, depthTest: true, bright: 2.2 }); this.rims = []; this.t = 0; this.shown = 0;
     this.plus = V.marks.label(); this.steps = V.marks.label(); for (const L of [this.plus, this.steps]) { L.group.visible = false; this.group.add(L.group); }
   }
-  clear() { for (const r of this.rims) r.visible = false; this.plus.group.visible = this.steps.group.visible = false; this.shown = 0; }
+  clear() { for (const r of this.rims) r.visible = false; this.plus.group.visible = this.steps.group.visible = false; this.shown = 0; for (const v of this.lit || []) v.prev = 0; this.lit = []; }
 
   show(s, a) {
     this.clear(); if (!s || !a || s.toMove !== 0) return null;
-    const p = preview(quiet(s, 23), a); if (!p || (!p.cleared && !p.junk)) return p;
-    const c = cloneState(quiet(s, 23)), ev = act(c, a) || [], cells = ev.filter((e) => e.type === 'clear' && e.side === 0).map((e) => e.at); // (the cells: the same try, its events kept)
+    const p = preview(s, a); if (!p || (!p.cleared && !p.junk)) return p;
+    const c = cloneState(s), ev = act(c, a) || [], cells = ev.filter((e) => e.type === 'clear' && e.side === 0).map((e) => e.at); // (the cells: the same try, its events kept)
     const B = this.view.board3, cs = DUEL_VIEW.cs;
     cells.forEach((at, i) => { let r = this.rims[i]; if (!r) { r = this.rims[i] = new THREE.Mesh(this.view.marks.rimGeo, this.mat); r.renderOrder = 6; this.group.add(r); }
       r.visible = true; cellLocal(at[0], at[1], B, r.position); r.position.z += 0.02; r.scale.setScalar(cs * 0.94); r.userData.k = i; });
     this.shown = cells.length;
+    for (const e of ev) { if (e.type !== 'clear' || e.side !== 0) continue; const v = this.view.pieces.byId(e.id); if (v && v.kind !== 'body') { v.prev = 1; this.lit.push(v); } } // (the gems that would go, by their ids where they stand now: their keylines pulsing bright, their silhouettes swelling, pieces.js)
     const end = a.kind === 'swap' ? [a.at[0] + ({ E: 1, W: -1 }[a.dir] || 0), a.at[1] + ({ S: 1, N: -1 }[a.dir] || 0)] : a.path?.[a.path.length - 1] || a.at || [B.w / 4, B.h / 2];
     const hex = this.view.sideHex(0), x = Math.min(end[0] + 1.3, B.w - 1), y = Math.max(end[1] - 1.1, 0.4);
     this.plus.set('+' + p.junk, hex); this.plus.group.visible = true; cellLocal(x, y, B, this.plus.group.position); this.plus.group.position.z += 0.08; this.plus.group.scale.setScalar(cs * 1.25);

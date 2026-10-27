@@ -18,14 +18,15 @@
 // "filterable procedurals"); the planks: a holystoned frigate's deck (the Constitution's, laid fore and aft, butts staggered by the
 // shipwright's rule of three) and a carvel hull's strakes.
 //
-//   const m = hullMaterial({ env, panel, plank })   m.userData.u: { uFeel (the feeling's colour), uFeelK, uSelfK, uPanel, uPlank, uOpen, uGilt }
+//   const m = hullMaterial({ env, panel, plank })   m.userData.u: { uFeel (the feeling's colour), uFeelK, uSelfK, uPanel, uPlank, uOpen, uGilt,
+//   uPale (0..1: the light hull's bleached paint, shipkit/partlooks.js; 0 as built) }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
 export const HULL_KEY = 'ship-hull';
 
 export function hullMaterial({ env = null, panel = 0.9, plank = 0.3, roughness = 0.5, metalness = 0.15 } = {}) {
-  const u = { uFeel: { value: new THREE.Color(0xffc65c) }, uFeelK: { value: 1 }, uSelfK: { value: 1 }, uPanel: { value: panel }, uPlank: { value: plank }, uOpen: { value: 0 }, uGilt: { value: 0 } };
+  const u = { uFeel: { value: new THREE.Color(0xffc65c) }, uFeelK: { value: 1 }, uSelfK: { value: 1 }, uPanel: { value: panel }, uPlank: { value: plank }, uOpen: { value: 0 }, uGilt: { value: 0 }, uPale: { value: 0 } };
   const m = new THREE.MeshStandardMaterial({ vertexColors: true, roughness, metalness, envMap: env, envMapIntensity: 0.35, transparent: true, depthWrite: true });
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, u);
@@ -33,7 +34,7 @@ export function hullMaterial({ env = null, panel = 0.9, plank = 0.3, roughness =
       .replace('#include <common>', '#include <common>\nvarying vec3 vShipP; varying vec3 vShipN;')
       .replace('#include <begin_vertex>', '#include <begin_vertex>\nvShipP = position; vShipN = objectNormal;');
     sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', '#include <common>\nuniform vec3 uFeel; uniform float uFeelK, uSelfK, uPanel, uPlank, uOpen, uGilt; varying vec3 vShipP; varying vec3 vShipN;')
+      .replace('#include <common>', '#include <common>\nuniform vec3 uFeel; uniform float uFeelK, uSelfK, uPanel, uPlank, uOpen, uGilt, uPale; varying vec3 vShipP; varying vec3 vShipN;')
       .replace('#include <color_fragment>', `
   diffuseColor.rgb *= vColor.rgb; // (the alpha is the code, not a cut-out)
   float shipCode = vColor.a;
@@ -41,6 +42,7 @@ export function hullMaterial({ env = null, panel = 0.9, plank = 0.3, roughness =
   float shipPlank = step(0.115, shipCode) * (1.0 - step(0.15, shipCode));
   float shipSelf = step(0.15, shipCode) * (1.0 - step(0.6, shipCode)) * clamp((shipCode - 0.2) / 0.4, 0.0, 1.0);
   float shipFeel = step(0.6, shipCode) * clamp((shipCode - 0.6) / 0.4, 0.0, 1.0);
+  diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.86, 0.8, 0.7) * (0.72 + 0.4 * dot(vColor.rgb, vec3(0.333))), uPale * (1.0 - step(0.15, shipCode)) * 0.85); // (the light hull: its paint bleached to ash, the lit parts kept)
   float shipFw = fwidth(vShipP.z), shipD = abs(fract(vShipP.z / uPanel + 0.5) - 0.5) * uPanel, shipW = 0.012 + 0.045 * uOpen;
   float shipLine = shipPanel * (1.0 - smoothstep(shipW, shipW + shipFw * 1.2, shipD)) * (1.0 - smoothstep(uPanel * 0.08, uPanel * 0.25, shipFw));
   vec3 shipNa = abs(vShipN); float shipFlat = step(0.7, shipNa.y), shipFace = (1.0 - shipFlat) * step(shipNa.x, shipNa.z); // (a deck: boards along z; a side: strakes level; a face across the ship: boards along x)

@@ -142,6 +142,13 @@ their Clayese scales; the System's skill and achievement jingles (the chime and 
   flash; a dry touch-hole hisses; the worn tools at sea each have a voice (the harpoon's chain and bite, the Crucibelle's foghorn on the
   cue's root and fifth, the sonar's ping and echo, the fire paint thrown); a mend is three mallet knocks. The wolf whale's and the world
   serpent's moves are heard as the serpent's nearest kin, a breach and the world-coil closing with their own.
+  The umibozu and the kraken (`seaserpent.hold`, `.break`, `.free` how): two wet palms on the gunwale or an arm wrapping and the timbers
+  giving; the pour glugging over the rail, the ink's burst and bloom; an arm shot off (higher the fewer left); the Lockheart gulping the
+  pour down, or the arm sliding off as you sail out of its waters.
+- **The puzzle duel's sound bar** (Dovina's PUZZLE-DUELS.md 21; `audio/puzzleduel.js`). Every note in the duel's key, the cue's root
+  (`sfx.musicGrid`): a chain climbs the pentatonic step by step and louder, a weak colour's hit with a brighter edge; a clear is its
+  feeling's step, so the Lantern Wisp's four clear as a 6/9 chord; an all clear blooms the chord up; a refund a coin's two notes; the
+  turn a woodblock, high yours, low the foe's; an ember cooling hisses and sets; the idle hint a breath of the fifth (`{ type: 'hint' }`).
 - **Levels:** each section has a `gain`. Rendered offline (`scripts/render_score.mjs`) and measured: a quiet opening or a jingle about
   -31 dB RMS, a theme's body -24 to -29, a fight -17 to -23; a climax about twice a verse.
 - **The low end:** under about 45% of the energy below 120 Hz (a looser limit is allowed for a hit). A sustained sub at full level

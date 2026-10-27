@@ -7,10 +7,11 @@
 //
 //   seaAchievements({ C, F })   (achievements.js calls it inside buildAchievements)
 // ---------------------------------------------------------------------------------------
-import { SHIP_PARTS, PART_SLOTS } from './opensea/salvage.js';
+import { SALVAGE_PARTS } from './opensea/salvage.js';
+import { FORGE_PARTS } from './opensea/forge.js';
 import { EGREGORES } from './opensea/safari.js';
 
-const PARTS = PART_SLOTS.flatMap((s) => Object.keys(SHIP_PARTS[s]).filter((id) => id !== 'stock'));
+const PARTS = SALVAGE_PARTS;
 
 export function seaAchievements({ C, F }) {
   // the open sea (progress/opensea/; OPEN-SEA.md 8 and 13): charting, the whole sea, the migrations; names placeholders for Espada's
@@ -29,5 +30,16 @@ export function seaAchievements({ C, F }) {
   C('sea11', 'emocean', 'The Open Sea', 2, 'mechanic', 'Cat\'s Paw', 'Sail into 20 gusts.', 'sea.gust', 20);
   F('sea12', 'emocean', 'The Open Sea', 3, 'collect', 'Fitted Out', 'Find every ship\'s part: three sails, two keels, two hulls.', (L) => PARTS.filter((id) => L.get(`ship.part.${id}`) > 0).length, PARTS.length);
   C('sea13', 'emocean', 'The Open Sea', 2, 'count', 'Refit', 'Fit a part to your ship at a quay.', 'ship.part.wear', 1);
+  // the forge (opensea/forge.js; OPEN-SEA.md 14.10): a beast's part forged from the beasts sunk
+  C('sea15', 'emocean', 'The Open Sea', 2, 'count', 'Carved', 'Forge a beast\'s part at a quay.', 'ship.forge', 1);
+  F('sea16', 'emocean', 'The Open Sea', 4, 'collect', 'Trophy Hull', 'Forge every beast\'s part: the serpent\'s, the akhlut\'s, the umibozu\'s, the kraken\'s and Jormungandr\'s.', (L) => FORGE_PARTS.filter((id) => L.get(`ship.part.${id}`) > 0).length, FORGE_PARTS.length);
+  // the umibozu and the kraken in play (Petra's v314, creatures/seaserpent/shapes.js; counts tracking/seaserpent.js)
+  C('sea21', 'emocean', 'The Open Sea', 3, 'mechanic', 'A Ladle with No Bottom', 'Drink the umibozu\'s pour with the Lockheart\'s gulp until it lets go.', 'seabeast.free.gulp', 1);
+  C('sea22', 'emocean', 'The Open Sea', 3, 'endure', 'Eight Arms Short', 'Shoot 12 of the kraken\'s arms off.', 'seabeast.break', 12);
+  // a square completed (opensea/squares.js; OPEN-SEA.md 15.5): everything in it found, taken and salvaged
+  C('sea18', 'emocean', 'The Open Sea', 2, 'count', 'Every Stone', 'Complete a square of the open sea: everything in it found.', 'sea.square.done', 1);
+  C('sea19', 'emocean', 'The Open Sea', 4, 'endure', 'Cartographer', 'Complete 20 squares of the open sea.', 'sea.square.done', 20);
+  C('sea20', 'emocean', 'The Open Sea', 4, 'mechanic', 'Edge of the Map', 'Complete a square of the open sea\'s wildest class (3).', 'sea.square.done.c3', 1);
+  C('sea17', 'emocean', 'The Open Sea', 2, 'count', 'Bigger Fish', 'Sink a beast of the sea other than a serpent.', 'seabeast.down', 1);
   C('sea14', 'emocean', 'The Open Sea', 2, 'count', 'Message in a Bottle', 'Read the note in a drift bottle.', 'sea.bottle', 1);
 }

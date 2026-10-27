@@ -7,8 +7,8 @@
 //              itself, read only: the Solar Skiff on the sand HOP, FLARE, BRAKE and BOOST while a flare is banked; in the air or on a
 //              rail HOP, NOSE, TAIL (and BOOST); in the Spirit Garden JUMP while the Pneuka Jar moves, and USE naming its thing while the
 //              interact chevron is on one; on foot, with a tool in hand and in a puzzle duel what ui/touch/actioncontext.js reads
-//              (JUMP, CROUCH, DASH and USE / PARRY / BLINK; FIRE and AIM in the tool's verbs, its third, PARRY; END TURN, FINISHER, FLEE,
-//              FORM). A tile swapped out while held lets go first.
+//              (JUMP, CROUCH, DASH and USE / PARRY / BLINK; FIRE and AIM in the tool's verbs, its third, PARRY; in a puzzle duel
+//              nothing: the duel's phone screen, duelscreen.js). A tile swapped out while held lets go first.
 //   STATE      HOP's rim fills as the springs load (the skiff's `charge`); FLARE embers toward the scorch (`rules.scorch`) and goes dim
 //              while the sail luffs; BOOST stands the banked suns (`combo.stocks`, 0..3); a held tile is lit.
 //   USE        its thing's label (the source's own `label` if it gives one, else the plain word for what F does there: TALK, CHEST,
@@ -26,7 +26,7 @@
 import { TouchTile, TILE } from './tile.js';
 import { touchTiles } from './presses.js';
 import { placeOf, windowOpen } from './areas.js';
-import { footCluster, toolCluster, duelCluster, helmCluster, inHandCtx } from './actioncontext.js';
+import { footCluster, toolCluster, helmCluster, inHandCtx } from './actioncontext.js';
 
 /** The numbers (CSS px): the gap between tiles, the margin off the area's corner; the Jar's least speed for JUMP (m/s); the room kept
  *  clear of the art bar's edge (its side strip stands there). */
@@ -61,7 +61,7 @@ export function clusterContext(game) {
     const J = g.realm.jarBody, moving = !!J && !J.held && (J.vel?.length?.() || 0) > CLUSTER.jumpSpeed;
     return [moving ? 'jump' : null, use].filter(Boolean);
   }
-  if (g.duel?.active) return duelCluster(g).filter(Boolean);
+  if (g.duel?.active) return []; // (the duel's phone screen holds its tiles: duelscreen.js)
   if (g.opensea?.sailing) return helmCluster(g).filter(Boolean); // (the open sea's helm: its own verbs, the stick the rudder alone)
   if (T?.active || g.god?.controlling || g.duel?.pending || g.emocean?.stage?.active) return [];
   const ctx = inHandCtx(g), tool = ctx && toolCluster(g, ctx);

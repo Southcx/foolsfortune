@@ -43,6 +43,7 @@ import { TouchShell } from '../feedback/touchshell.js';
 import { trimShadows } from '../render/shadowtrim.js';
 import { installTouchControls } from '../ui/touch/index.js';
 import { prewarmEgregores } from '../vfx/opensea/egregorebodies.js';
+import { prewarmSeaBeasts } from '../vfx/opensea/beasts/warm.js';
 import { installFirstDraws } from '../render/firstdraws.js';
 
 const CASTER_SHADERS = import.meta.glob('../vfx/caster/*.js', { eager: true }); // (the caster shaders: each module's prewarm(game), compiled in the warm-up)
@@ -105,6 +106,7 @@ export async function bootWarmup(game, made) {
   const parkSquall = game.squallLine?.prewarm?.() ?? (() => {}); // (the squall line's program, and the rain's: vfx/opensea/squallline.js)
   const parkDress = [game.dunesDress.prewarm(), game.racewayDress.prewarm()]; // (the dust devils' and the Dunes' mirage's two programs, and the dressing's materials: vfx/dunes/, vfx/raceway/)
   const parkEgregores = prewarmEgregores(scene); // (the safari Egregores' one program, every species: vfx/opensea/egregorekit.js)
+  const parkBeasts = prewarmSeaBeasts(game); // (the sea beasts' fight program, 'egregore-beast', one akhlut 50 m down: vfx/opensea/beasts/warm.js)
   const parkSandfall = prewarmSandfall(scene); // (the Raceway's sandfall, one copy 50 m down: its one program, vfx/racewaysandfall.js)
   const parkMatterLook = prewarmMatterLook(scene); // (the god hand's matter, ball and creations: one program, vfx/godhand/matterlook.js)
   const parkJarLook = game.pneukaJarLook.prewarm(); // (the Jar's look's one program, the Jar shown 50 m down for the compile: vfx/pneukajar/look.js)
@@ -148,7 +150,7 @@ export async function bootWarmup(game, made) {
   if (!window.__noPrime && !game.graphics?.machine?.mobile) primeDraw(renderer, scene, camera, game.post.target);
   parkWell?.(); // (after the prime: drawn once, so the driver has finished with its programs too)
   if (wipe) wipe.visible = false;
-  parkWeather?.(); parkDrain(); parkDuel(); parkSpawnLook(); parkCracks(); parkFigmentTelegraphs(); parkCasterS1toS5(); parkCaster.forEach((f) => f()); parkShellLooks(); parkBracelet(); parkPalmDie(); parkJarLook(); parkMatterLook(); parkSandfall(); parkDress.forEach((f) => f()); parkIslets(); parkSquall(); parkEgregores(); seaFightAt.forEach((o) => (o.visible = false));
+  parkWeather?.(); parkDrain(); parkDuel(); parkSpawnLook(); parkCracks(); parkFigmentTelegraphs(); parkCasterS1toS5(); parkCaster.forEach((f) => f()); parkShellLooks(); parkBracelet(); parkPalmDie(); parkJarLook(); parkMatterLook(); parkSandfall(); parkDress.forEach((f) => f()); parkIslets(); parkSquall(); parkEgregores(); parkBeasts(); seaFightAt.forEach((o) => (o.visible = false));
   for (const o of brushLooks) o.visible = false;
   seaLooks.forEach((o, i) => { o.visible = false; o.position.copy(seaAt[i]); });
   for (const o of gardenLooks) o.visible = false;

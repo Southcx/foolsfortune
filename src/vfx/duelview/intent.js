@@ -16,16 +16,15 @@
 //   const I = new DuelIntent(parent, marks)   I.show(state, plan, side, foeAspect, { whole }) -> { junk }   Strokes (quads in the board's frame)   I.clear()   I.update(dt)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { act, junkOf } from '../../progress/duel/duel.js';
-import { seeded } from '../../core/rng.js';
+import { act, junkOf, cloneState } from '../../progress/duel/duel.js';
 import { DUEL_VIEW, cellLocal, feelColour } from './layout.js';
 
 const INK = 0x17111f, FAINT = 0.42, DIRS = { N: [0, -1], S: [0, 1], E: [1, 0], W: [-1, 0] };
 const _a = new THREE.Vector3(), _b = new THREE.Vector3();
 
-/** A copy of a duel to play a plan on, with a stream of its own (the kernel's cloneState draws from the real one's). */
+/** A copy of a duel to play a plan on: the kernel's (its own quiet stream and its own undo, never the real turn's). */
 function quietCopy(s, side) {
-  const c = { ...s, board: s.board.clone(), sides: s.sides.map((S) => ({ ...S, forms: [...S.forms], at: S.at && [...S.at], queue: S.queue.map((p) => ({ ...p })) })), log: [], r: seeded(911) };
+  const c = cloneState(s);
   c.toMove = side; c.apLeft = 99; c.winner = null; return c;
 }
 

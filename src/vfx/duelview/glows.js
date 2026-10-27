@@ -11,21 +11,21 @@
 // Prior art: Puzzle Quest's idle hint (a move that would match shimmers when you wait), Into the Breach's tutorial (the one verb lit),
 // the Crucibelle's toll's reach (vfx/tollreach.js: a reach drawn on the ground while it can be used), the crystals' frets (a note a colour).
 //
+//   THE WEAK COLOUR AND THE FORESIGHT ON THE GEMS: the weak colour (weaknessOf) and the Line handed to the pieces each frame (pieces.js:
+//                   a gold keyline and a glint on that colour's gems on your half), and the foe's planned clears (the foresight's
+//                   `cells`, read as foresight.js is handed them) as a Set the pieces draw with a bold keyline and their colour through the fog
 //   const G = new DuelGlows(view)   G.update(dt)   G.armPaint(on)   G.lessonBeat(event)   G.clear()   G.asked -> lesson step id | null
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { mindLineMaterial } from '../labradorite.js';
 import { hasTag } from '../../progress/duel/board.js';
-import { legalActions, preview } from '../../progress/duel/duel.js';
+import { legalActions, preview, weaknessOf } from '../../progress/duel/duel.js';
 import { LESSON } from '../../progress/duel/lesson.js';
 import { TOOL_RULES } from '../../progress/duel/couriertools.js';
-import { seeded } from '../../core/rng.js';
 import { DUEL_VIEW, cellLocal } from './layout.js';
 import { Strokes } from './intent.js';
 
 const _a = new THREE.Vector3(), _b = new THREE.Vector3();
-/** A duel with a stream of its own, for tries that must never draw from the duel's (the kernel's cloneState takes the next draw). */
-export const quiet = (s, k = 5) => ({ ...s, r: seeded(k) });
 
 export class DuelGlows {
   constructor(view) {
@@ -43,6 +43,7 @@ export class DuelGlows {
   update(dt) {
     const V = this.view, s = V.state; if (!s || !V.isOpen) return;
     const P = V.pieces, L = V.lineCol ?? s.board.line, S = s.sides[0], body = P.bodyAt(0), idle = !V.busy, mine = s.toMove === 0 && s.winner === null;
+    this.watchForesight(); P.weak = weaknessOf(s)?.weak || null; P.line = L; P.fore = idle ? this.fore : null;
     const hum = new Map(), grey = new Set();
     for (const side of [0, 1]) { const c = V.tune[side]; if (c) for (const v of P.list) if (v.kind === 'gem' && v.colour === c && (side === 0 ? v.cx < L : v.cx >= L)) hum.set(v, 1); }
     // Paint's reach
@@ -64,6 +65,14 @@ export class DuelGlows {
     for (const v of P.list) { v.hum += ((hum.get(v) || 0) - v.hum) * k; if (v.hum < 1e-3) v.hum = 0; v.grey += ((grey.has(v) ? 1 : 0) - v.grey) * k; if (v.grey < 1e-3) v.grey = 0; }
   }
 
+  /** The foresight's cells as it is handed them (its show and clear wrapped once: foresight.js keeps none of its own). */
+  watchForesight() {
+    const F = this.view.foresight; if (!F || F.watched) return; F.watched = true; this.fore = null;
+    const show = F.show.bind(F), clear = F.clear.bind(F);
+    F.show = (s, I, a) => { this.fore = I?.cells?.length ? new Set(I.cells.map((c) => c[0] + ',' + c[1])) : null; return show(s, I, a); };
+    F.clear = () => { this.fore = null; return clear(); };
+  }
+
   /** The cells of your half a Paint reaches, outlined: an edge where a reached cell meets one that is not. */
   buildReach(cx, cy, R, L) {
     this.dropReach(); const B = this.view.board3, cs = DUEL_VIEW.cs, z = DUEL_VIEW.front + 0.045, w = cs * 0.07, S = new Strokes();
@@ -80,8 +89,8 @@ export class DuelGlows {
   hintFor(s, ask) {
     const key = ask + '|' + s.board.hash() + '|' + s.apLeft; if (key === this.hintKey) return this.hint || [];
     this.hintKey = key; this.hint = null; let best = null, bestV = 0;
-    const tries = legalActions(s, 0, { drags: 0 }).filter((a) => a.kind === 'swap').slice(0, 260);
-    for (const a of tries) { const p = preview(quiet(s, 17), a); if (!p || !p.cleared) continue; const v = (ask === 'chain' && p.steps >= 2 ? 100 : 0) + p.steps * 10 + p.cleared; if (v > bestV) { bestV = v; best = a; } }
+    const tries = legalActions(s, 0, { drags: 0 }).filter((a) => a.kind === 'swap').slice(0, 260); // (no drags sampled: only the swaps are tried here)
+    for (const a of tries) { const p = preview(s, a); if (!p || !p.cleared) continue; const v = (ask === 'chain' && p.steps >= 2 ? 100 : 0) + p.steps * 10 + p.cleared; if (v > bestV) { bestV = v; best = a; } }
     if (best) { const d = { N: [0, -1], S: [0, 1], E: [1, 0], W: [-1, 0] }[best.dir]; this.hint = [best.at, [best.at[0] + d[0], best.at[1] + d[1]]]; }
     return this.hint || [];
   }

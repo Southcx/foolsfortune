@@ -16,7 +16,8 @@
 //   toolBeat(beats, events) -> a phase (beats.js's form)   TOOL_EVENTS
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { DUEL_VIEW, cellLocal, feelColour, sm, lerp } from './layout.js';
+import { DUEL_VIEW, cellLocal, sm, lerp } from './layout.js';
+import { gemColour } from './pieces.js';
 
 export const TOOL_EVENTS = new Set(['shot', 'grab', 'drill', 'paint', 'delay', 'hold', 'hold.send']);
 const CLAY = 0x93552f;
@@ -24,7 +25,7 @@ const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Color()
 
 export function toolBeat(T, it) {
   const V = T.view, P = V.pieces, B = V.board3, X = V.bursts, e = it[0], body = P.bodyAt(e.side), bx = body ? body.cx : 0, by = body ? body.cy : 0, ma = DUEL_VIEW.ma;
-  const pop = (v, hex = null) => { if (!v) return; cellLocal(v.x, v.y, B, _a); X.burst(_a, hex ?? (v.kind === 'gem' ? feelColour(v.colour, _c).getHex() : CLAY), 5, { speed: 1, life: 0.4 }); P.remove(v); };
+  const pop = (v, hex = null) => { if (!v) return; cellLocal(v.x, v.y, B, _a); X.burst(_a, hex ?? (v.kind === 'gem' ? gemColour(v.colour, _c).getHex() : CLAY), 5, { speed: 1, life: 0.4 }); P.remove(v); };
   if (e.type === 'shot') {
     const v = P.byId(e.id) || P.at(e.at[0], e.at[1]); if (v) P.move(v, -1, -1); let popped = false, last = -1;
     return { events: it, dur: 0.4 + ma, step: (u, age) => { const f = Math.min(1, age / 0.22), x = lerp(bx, e.at[0], f), k = Math.floor(f * 8);
@@ -47,7 +48,7 @@ export function toolBeat(T, it) {
   if (e.type === 'paint') {
     const vs = it.map((d) => ({ d, v: P.byId(d.id) || P.at(d.at[0], d.at[1]) })).filter((q) => q.v); let swept = false;
     return { events: it, dur: 0.5 + ma, step: (u, age) => {
-      if (!swept && age >= 0.0) { swept = true; for (let i = 0; i < 18; i++) { const a = (i / 18) * Math.PI * 2; cellLocal(bx + Math.cos(a) * 1.5, by + Math.sin(a) * 1.5, B, _a); X.burst(_a, feelColour(e.colour, _c).getHex(), 1, { speed: 0.1, life: 0.35, fall: 0, spread: 0, size: 0.03 }); } }
+      if (!swept && age >= 0.0) { swept = true; for (let i = 0; i < 18; i++) { const a = (i / 18) * Math.PI * 2; cellLocal(bx + Math.cos(a) * 1.5, by + Math.sin(a) * 1.5, B, _a); X.burst(_a, gemColour(e.colour, _c).getHex(), 1, { speed: 0.1, life: 0.35, fall: 0, spread: 0, size: 0.03 }); } }
       const f = Math.max(0, (age - 0.3) / 0.2); for (const q of vs) { q.v.flash = f < 0.5 ? f * 2 : 2 - f * 2; if (f >= 0.5) { q.v.kind = 'gem'; q.v.colour = q.d.colour; } } },
       end: () => { for (const q of vs) { q.v.kind = 'gem'; q.v.colour = q.d.colour; q.v.flash = 0; } } };
   }

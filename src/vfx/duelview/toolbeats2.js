@@ -21,7 +21,8 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { junkOf } from '../../progress/duel/duel.js';
-import { DUEL_VIEW, cellLocal, feelColour, sm, lerp } from './layout.js';
+import { DUEL_VIEW, cellLocal, sm, lerp } from './layout.js';
+import { gemColour } from './pieces.js';
 import { Strokes } from './intent.js';
 
 export const TOOL_BEATS2 = new Set(['shot', 'recolour', 'tune', 'tune.end', 'read']);
@@ -39,7 +40,7 @@ export function shotBeat(T, e, pops, chains) {
   const mid = (() => { const own = q.filter((r) => r.p.type === 'clear' && r.p.side === e.side), n = Math.max(1, own.length); return own.length ? cellLocal(own.reduce((s, r) => s + r.p.at[0], 0) / n, own.reduce((s, r) => s + r.p.at[1], 0) / n, B, new THREE.Vector3()) : cellLocal(e.at[0], e.at[1], B, new THREE.Vector3()); })();
   const popOne = (r) => { r.done = true; const v = r.v; cellLocal(r.p.at[0], r.p.at[1], B, _a);
     if (r.p.type === 'break') X.burst(_a, CLAY, 6, { speed: 0.7, life: 0.5, fall: 6, size: 0.03 });
-    else { X.burst(_a, v?.kind === 'gem' || r.p.colour ? feelColour(r.p.colour || v?.colour, _c).getHex() : 0xe8dcc8, 6, { speed: 1.2, life: 0.42 }); X.burst(_a, 0xffffff, 2, { speed: 0.3, life: 0.16, fall: 0, size: 0.03 }); }
+    else { X.burst(_a, v?.kind === 'gem' || r.p.colour ? gemColour(r.p.colour || v?.colour, _c).getHex() : 0xe8dcc8, 6, { speed: 1.2, life: 0.42 }); X.burst(_a, 0xffffff, 2, { speed: 0.3, life: 0.16, fall: 0, size: 0.03 }); }
     if (v) P.remove(v); };
   return { events: [e, ...pops, ...chains], dur: last + 0.42 + DUEL_VIEW.ma, step: (u, age) => {
     const f = Math.min(1, age / fly), x = lerp(bx + d[0] * 0.4, e.at[0], f), y = lerp(by + d[1] * 0.4, e.at[1], f), k = Math.floor(f * dist * 2);
@@ -53,7 +54,7 @@ export function shotBeat(T, e, pops, chains) {
 
 /** The Soul Brush's Paint: the sumi wave out over the reach, each gem re-glazed as it passes. */
 export function paintBeat(T, e, paints) {
-  const V = T.view, P = V.pieces, B = V.board3, X = V.bursts, [bx, by] = bodyCell(V, e.side), R = 4, per = 0.07, hex = feelColour(e.colour, _c).getHex();
+  const V = T.view, P = V.pieces, B = V.board3, X = V.bursts, [bx, by] = bodyCell(V, e.side), R = 4, per = 0.07, hex = gemColour(e.colour, _c).getHex();
   const q = paints.map((p) => ({ p, v: P.byId(p.id) || P.at(p.at[0], p.at[1]), t: 0.1 + (Math.abs(p.at[0] - bx) + Math.abs(p.at[1] - by)) * per, done: false })).filter((r) => r.v);
   const ring = []; for (let d = 1; d <= R; d++) for (let i = 0; i < d * 4; i++) { const s = i / (d * 4), a = s * Math.PI * 2; ring.push({ x: bx + Math.cos(a) * d * 0.95, y: by + Math.sin(a) * d * 0.95, t: 0.1 + d * per, done: false }); }
   const flip = (r) => { r.done = true; r.v.kind = 'gem'; r.v.colour = r.p.colour; r.v.flash = 0.9; cellLocal(r.v.x, r.v.y, B, _a); X.burst(_a, hex, 3, { speed: 0.4, life: 0.3, fall: 0, size: 0.024 }); };
@@ -66,7 +67,7 @@ export function paintBeat(T, e, paints) {
 
 /** The Crucibelle's Tune: rings in the note's colour, and the colour's hum on your half held (the view's `tune`, glows.js). */
 export function tuneBeat(T, e) {
-  const V = T.view, B = V.board3, [bx, by] = bodyCell(V, e.side), hex = feelColour(e.colour, _c).getHex(); let rang = 0;
+  const V = T.view, B = V.board3, [bx, by] = bodyCell(V, e.side), hex = gemColour(e.colour, _c).getHex(); let rang = 0;
   V.tune[e.side] = e.colour;
   return { events: [e], dur: 0.5 + DUEL_VIEW.ma, step: (u, age) => { while (rang < 3 && age >= rang * 0.1) { rang++; cellLocal(bx, by, B, _a); V.bursts.burst(_a, hex, 22, { speed: 1.4 + rang * 0.5, life: 0.5, fall: 0, spread: 0 }); } } };
 }

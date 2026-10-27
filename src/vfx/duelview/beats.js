@@ -3,8 +3,11 @@
 // played as the board v11 mock plays them, phase by phase: a run of one kind of event is one phase (every fall of a settle pass falls
 // together; a pass's clears burst together), with a beat of stillness (ma) between. The timings are the mock's (board v11, figure 09):
 //   the action 0.26 (swap on a shallow arc, rotate a quarter round its corner, drag along its path, drop down its lane, push and kick)
-//   fall       free fall from rest (the first cell in 0.08), then a squash along the gravity's axis (0.07)
-//   clear      a flash (0.09: white, swelling 12%), then five shards of its colour; break: clay chips that fall; blast: its cross of
+//   fall       free fall from rest (the first cell in 0.08), stretched as it gathers speed, then a squash along the gravity's axis
+//              (0.07) and a puff of dust where it lands
+//   cascade    a chain's second step on (CASCADE): its clear 0.2 so each lands on about a quarter second, its count swelling a step (gold
+//              from the fourth: Puzzle & Dragons' combo counter)
+//   clear      a flash (0.09: white almost at once, swelling 16%), then seven shards of its colour and a white spark; break: clay chips that fall; blast: its cross of
 //              sparks first, the clears it makes 0.14 later; a duel's chain: its numeral from the clear's middle (rising, 0.9)
 //   pinch      the junk flips like an Othello disc, its back the new colour (0.34)
 //   land       junk thrown over the Line's head into its cells (0.035 apart); line: the Line steps a column (0.40, overshoot 1.4),
@@ -20,6 +23,7 @@
 //   turn       a side's points: the beads it lost crack, one by one
 //   ember      Dread's junk lands as embers (`land` with kind 'ember'); `ember.cool`: the coal crazes (0.3), cracks open and turns, its gem
 //              inside (0.5)
+//   big plays  refund (ONE MORE), allclear, a weak or resisted chain step, trickle, undo: juice.js
 //   flee       a d20 thrown before the board landing on its roll, its reasons counted in against 15 (2.2 or so: flee.js); fled: the
 //              clash folds softly with no winner and the tsuitate folds away (1.4)
 // Each event goes to Wanda's `sfx.duelEvent(e)` at the moment it is played (guarded: it may not be built yet).
@@ -34,16 +38,21 @@
 import * as THREE from 'three';
 import { sfx } from '../../audio/sfx.js';
 import { junkOf } from '../../progress/duel/duel.js';
-import { DUEL_VIEW, cellLocal, feelColour, sm, ease, lerp, hash } from './layout.js';
+import { DUEL_VIEW, cellLocal, sm, ease, lerp, hash } from './layout.js';
 import { toolBeat, TOOL_EVENTS } from './toolbeats.js';
 import { TOOL_BEATS2, shotBeat, paintBeat, tuneBeat, tuneEndBeat, readBeat } from './toolbeats2.js';
 import { FLEE } from '../../progress/duel/flee.js';
+import { JUICE_EVENTS } from './juice.js';
+import { gemColour } from './pieces.js';
+import { DIVE } from './formdive.js';
 
 const ACTS = new Set(['swap', 'drag', 'rotate', 'drop', 'push', 'kick', 'form']);
 const COST = { swap: 1, rotate: 1, drop: 1, push: 1, kick: 2, form: 1, run: 1, shot: 1, grab: 1, drill: 1, paint: 2, delay: 2, hold: 1, 'hold.send': 1, 'duel.finisher': 2 };
 const POOL = { shot: 5, grab: 5, drill: 3, paint: 10, delay: 15, 'hold.send': 5 }; // (this branch's kernel: a spend's price, when its event carries no `spent`)
 const DV = { N: [0, -1], S: [0, 1], E: [1, 0], W: [-1, 0] };
-const CLAY = 0x93552f, GOLD = 0xffd76a, TEAR = 0x7fdcff;
+/** clear: a cascade step's clear after the first (real s); grow: the step count's swell a step; maxSize: its largest (cells). */
+export const CASCADE = { clear: 0.2, grow: 0.42, maxSize: 4.2 };
+const CLAY = 0x93552f, GOLD = 0xffd76a, TEAR = 0x7fdcff, DUST = 0xcfc3b0;
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Color();
 
 export class DuelBeats {
@@ -59,7 +68,7 @@ export class DuelBeats {
         if (!this.job) { this.job = this.jobs.shift() || null; if (!this.job) return; }
         this.phase = this.next(this.job);
         if (!this.phase) { const j = this.job; this.job = null; if (!this.jobs.length) this.view.settleUp(); j.resolve(); continue; }
-        this.phase.age = 0; for (const e of this.phase.events || []) sfx.duelEvent?.(e);
+        this.phase.age = 0; for (const e of this.phase.events || []) { sfx.duelEvent?.(e); this.view.stage?.event?.(e); } // (the director's answer: stage.js)
       }
       const P = this.phase; P.age += dt; dt = 0;
       P.step?.(Math.min(1, P.age / P.dur), P.age);
@@ -86,6 +95,7 @@ export class DuelBeats {
       if (e.type === 'tune') { V.spend(e.side, 1, e, 8); return tuneBeat(this, e); }
       if (e.type === 'tune.end') return tuneEndBeat(this, e);
       V.spend(e.side, 1, e); return readBeat(this, e); }
+    if (JUICE_EVENTS.has(e.type)) { job.i++; return V.juice.beat(this, e); } // (the big plays: refund, allclear, trickle, undo: juice.js)
     if (e.type.startsWith('lesson.')) { job.i++; this.view.glows?.lessonBeat?.(e); return { events: [e], dur: e.type === 'lesson.idle' ? 0.3 : 0.05 }; } // (the lesson's steps: the asked verb lit, glows.js)
     if (TOOL_EVENTS.has(e.type)) { const it = run((x) => x.type === e.type); V.spend(e.side, COST[e.type] ?? 1, e, POOL[e.type]); return toolBeat(this, it); }
     if (e.type === 'land') { job.i++; return this.land(e); }
@@ -122,29 +132,33 @@ export class DuelBeats {
     const dur = T + DUEL_VIEW.squash + DUEL_VIEW.ma;
     return { events: F, dur, step: (u, age) => { for (const m of mv) {
       const t = Math.min(age, m.tf), dist = Math.min(m.d, 0.5 * G * t * t); m.v.x = m.from[0] + m.dir[0] * dist; m.v.y = m.from[1] + m.dir[1] * dist;
-      let sx = 1, sy = 1; if (age > m.tf) { const q = Math.min(1, (age - m.tf) / DUEL_VIEW.squash), k = Math.sin(Math.PI * q) * 0.16; if (m.dir[0]) { sx = 1 - k; sy = 1 + k * 0.6; } else { sy = 1 - k; sx = 1 + k * 0.6; } }
+      let sx = 1, sy = 1, k = 0;
+      if (age <= m.tf) k = -Math.min(0.16, (G * t) / 220); // (stretched along the fall as it gathers speed)
+      else { const q = Math.min(1, (age - m.tf) / DUEL_VIEW.squash); k = Math.sin(Math.PI * q) * 0.22; // (squashed on landing, Puyo's bounce)
+        if (!m.landed) { m.landed = true; if (m.d >= 1 && m.v.kind !== 'body') { cellLocal(m.to[0] + m.dir[0] * 0.45, m.to[1] + m.dir[1] * 0.45, this.view.board3, _a); this.view.bursts.burst(_a, DUST, 3, { speed: 0.35, life: 0.28, fall: 0, spread: 0.05, size: 0.016 }); } } } // (a puff of dust where it lands)
+      if (m.dir[0]) { sx = 1 - k; sy = 1 + k * 0.6; } else { sy = 1 - k; sx = 1 + k * 0.6; }
       m.v.sx = sx; m.v.sy = sy; } },
       end: () => { for (const m of mv) { m.v.x = m.to[0]; m.v.y = m.to[1]; m.v.sx = m.v.sy = 1; } } };
   }
 
   clears(it, chains) {
-    const V = this.view, P = V.pieces, X = V.bursts, B = V.board3, hasB = it.some((c) => c.type === 'blast'), cd = hasB ? 0.14 : 0, dur = (hasB ? 0.56 : 0.42) + DUEL_VIEW.ma;
+    const V = this.view, P = V.pieces, X = V.bursts, B = V.board3, hasB = it.some((c) => c.type === 'blast'), cd = hasB ? 0.14 : 0, step = Math.max(1, ...chains.map((c) => c.step || 1)), dur = (hasB ? 0.56 : step >= 2 ? CASCADE.clear : 0.42) + DUEL_VIEW.ma; // (a cascade's steps on a quarter-second beat, the board waiting for each: Puzzle & Dragons')
     const gone = [];
     for (const c of it) { if (c.type === 'blast') continue; const v = P.at(c.at[0], c.at[1]) || P.byId(c.id); if (!v) continue; P.move(v, -1, -1); gone.push({ v, c, popped: false }); }
     const marks = chains.map((ch) => { const cells = it.filter((q) => q.type === 'clear' && q.side === ch.side); const n = Math.max(1, cells.length);
       const cx = cells.reduce((a, q) => a + q.at[0], 0) / n, cy = cells.reduce((a, q) => a + q.at[1], 0) / n; return { ch, at: cellLocal(cells.length ? cx : B.w / 2, cells.length ? cy : B.h / 2, B, new THREE.Vector3()), shown: false }; });
-    let blasted = false;
+    let blasted = false; V.juice?.note(it);
     return { events: [...it, ...chains], dur, step: (u, age) => {
       if (hasB && !blasted) { blasted = true; for (const c of it.filter((q) => q.type === 'blast')) { cellLocal(c.at[0], c.at[1], B, _a);
         for (const [dx, dy] of Object.values(DV)) for (let r = 0; r <= (V.state?.rs?.blast || 2); r++) { _b.copy(_a); _b.x += dx * r * DUEL_VIEW.cs; _b.y -= dy * r * DUEL_VIEW.cs; X.burst(_b, r ? 0xc8402a : 0xfff2e0, 3, { speed: 0.6, life: 0.32, fall: 0 }); } } }
       for (const g of gone) {
-        if (!g.popped && age < cd + 0.09) { const f = Math.max(0, (age - cd) / 0.09); g.v.flash = f; g.v.s = 1 + 0.12 * f; }
+        if (!g.popped && age < cd + 0.09) { const f = Math.max(0, (age - cd) / 0.09); g.v.flash = Math.min(1, f * 2.5); g.v.s = 1 + 0.16 * f; } // (white almost at once, swelling: the beat before the pop, Bejeweled's)
         else if (!g.popped) { g.popped = true; cellLocal(g.v.x, g.v.y, B, _a);
           if (g.c.type === 'break') X.burst(_a, CLAY, 6, { speed: 0.7, life: 0.5, fall: 6, size: 0.03 });
-          else X.burst(_a, g.v.kind === 'gem' ? feelColour(g.v.colour, _c).getHex() : 0xe8dcc8, 5, { speed: 1.1, life: 0.42 });
+          else { X.burst(_a, g.v.kind === 'gem' ? gemColour(g.v.colour, _c).getHex() : 0xe8dcc8, 7, { speed: 1.2, life: 0.42 }); X.burst(_a, 0xffffff, 2, { speed: 0.3, life: 0.14, fall: 0, size: 0.03 }); }
           P.remove(g.v); }
       }
-      for (const m of marks) if (!m.shown && age >= cd + 0.1) { m.shown = true; V.marks.numeral(String(m.ch.step), m.at, V.sideHex(m.ch.side)); V.sent[m.ch.side] += junkOf(m.ch.cleared, m.ch.step); V.showCounts(); }
+      for (const m of marks) if (!m.shown && age >= cd + 0.1) { m.shown = true; V.marks.numeral(String(m.ch.step), m.at, m.ch.step >= 4 ? '#ffd76a' : V.sideHex(m.ch.side), { size: Math.min(CASCADE.maxSize, 1.6 + CASCADE.grow * (m.ch.step - 1)), dur: 0.9 + 0.08 * m.ch.step }); V.juice?.chainHit(m.ch, m.at, it); V.sent[m.ch.side] += junkOf(m.ch.cleared, m.ch.step); V.showCounts(); }
     }, end: () => { for (const g of gone) if (!g.popped) P.remove(g.v); } };
   }
 
@@ -183,9 +197,9 @@ export class DuelBeats {
       while (at(c) && at(c) !== body) { run.push({ v: at(c), from: [...c], to: [c[0] + d[0], c[1] + d[1]] }); c = [c[0] + d[0], c[1] + d[1]]; }
       mv.push(...run); if (body) mv.push({ v: body, from: [e.to[0] - d[0], e.to[1] - d[1]], to: e.to }); }
     else if (e.type === 'kick') { const v = P.byId(e.id); if (v) mv.push({ v, from: [v.cx, v.cy], to: e.to }); }
-    else if (e.type === 'form') { const body = P.bodyAt(e.side); if (body) { cellLocal(body.x, body.y, V.board3, _a); V.bursts.burst(_a, V.filmHex(0.1), 12, { speed: 0.9, life: 0.4, fall: 0, spread: 0.2 }); } V.form(e.side, e.to); }
+    else if (e.type === 'form') { V.form(e.side, e.to); if (e.side === 0 && V.dive) V.dive.start(e.to); else { const body = P.bodyAt(e.side); if (body) { cellLocal(body.x, body.y, V.board3, _a); V.bursts.burst(_a, V.filmHex(0.1), 12, { speed: 0.9, life: 0.4, fall: 0, spread: 0.2 }); } } } // (your form: the Jar's pour, formdive.js)
     for (const m of mv) if (!m.grow) P.move(m.v, -1, -1); for (const m of mv) P.move(m.v, m.to[0], m.to[1]);
-    const dur = (e.type === 'kick' ? 0.28 + 0.03 * Math.hypot(mv[0]?.to[0] - mv[0]?.from[0] || 0, mv[0]?.to[1] - mv[0]?.from[1] || 0) : 0.26) + DUEL_VIEW.ma;
+    const dur = e.type === 'form' && e.side === 0 && V.dive ? DIVE.open + DIVE.dur + DUEL_VIEW.ma : (e.type === 'kick' ? 0.28 + 0.03 * Math.hypot(mv[0]?.to[0] - mv[0]?.from[0] || 0, mv[0]?.to[1] - mv[0]?.from[1] || 0) : 0.26) + DUEL_VIEW.ma;
     return { events: [e], dur, step: (u) => { const s = sm(Math.min(1, u * 1.15)); for (const m of mv) {
       let px, py;
       if (m.rot) { const a0 = Math.atan2(m.from[1] - m.rot[1], m.from[0] - m.rot[0]), r = Math.SQRT1_2; px = m.rot[0] + Math.cos(a0 + s * Math.PI / 2) * r; py = m.rot[1] + Math.sin(a0 + s * Math.PI / 2) * r; }
@@ -281,7 +295,7 @@ export class DuelBeats {
     return { events: [e], dur: 1.95, step: (u, age) => {
       if (!crackled) { crackled = true; V.clash.flash(foe); for (const v of half) { cellLocal(v.x, v.y, B, _a); if (hash(v.cx, v.cy) < 0.35) V.bursts.burst(_a, [0xf1e7d0, 0x9cc8a8, 0x3a2a22][Math.floor(hash(v.cy, v.cx) * 3)], 2, { speed: 0.9, life: 0.45, fall: 5, size: 0.025 }); } }
       if (age >= 1.0 && age < 1.7) { const want = Math.floor(((age - 1.0) / 0.7) * half.length);
-        while (stripped < Math.min(want, half.length)) { const v = half[stripped++]; cellLocal(v.x, v.y, B, _a); V.bursts.spiral(_a, hand, v.kind === 'gem' ? feelColour(v.colour, _c).getHex() : CLAY, 0, 0.35); P.remove(v); }
+        while (stripped < Math.min(want, half.length)) { const v = half[stripped++]; cellLocal(v.x, v.y, B, _a); V.bursts.spiral(_a, hand, v.kind === 'gem' ? gemColour(v.colour, _c).getHex() : CLAY, 0, 0.35); P.remove(v); }
         V.pieces.hideBody(foe, Math.floor(age * 8) % 2 === 1); }
       if (age >= 1.7) { V.pieces.hideBody(foe, true); V.setLine(lerp(lineFrom, home, sm((age - 1.7) / 0.2))); if (e.side === 0) V.board.won(sm((age - 1.7) / 0.2)); }
     }, end: () => { for (const v of half.slice(stripped)) P.remove(v); V.setLine(home); V.pieces.hideBody(foe, true); V.finisherDone = true; } };
