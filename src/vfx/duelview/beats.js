@@ -20,6 +20,7 @@
 //   turn       a side's points: the beads it lost crack, one by one
 //   ember      Dread's junk lands as embers (`land` with kind 'ember'); `ember.cool`: the coal crazes (0.3), cracks open and turns, its gem
 //              inside (0.5)
+//   big plays  refund (ONE MORE), allclear, a weak or resisted chain step, trickle, undo: juice.js
 //   flee       a d20 thrown before the board landing on its roll, its reasons counted in against 15 (2.2 or so: flee.js); fled: the
 //              clash folds softly with no winner and the tsuitate folds away (1.4)
 // Each event goes to Wanda's `sfx.duelEvent(e)` at the moment it is played (guarded: it may not be built yet).
@@ -38,6 +39,7 @@ import { DUEL_VIEW, cellLocal, feelColour, sm, ease, lerp, hash } from './layout
 import { toolBeat, TOOL_EVENTS } from './toolbeats.js';
 import { TOOL_BEATS2, shotBeat, paintBeat, tuneBeat, tuneEndBeat, readBeat } from './toolbeats2.js';
 import { FLEE } from '../../progress/duel/flee.js';
+import { JUICE_EVENTS } from './juice.js';
 
 const ACTS = new Set(['swap', 'drag', 'rotate', 'drop', 'push', 'kick', 'form']);
 const COST = { swap: 1, rotate: 1, drop: 1, push: 1, kick: 2, form: 1, run: 1, shot: 1, grab: 1, drill: 1, paint: 2, delay: 2, hold: 1, 'hold.send': 1, 'duel.finisher': 2 };
@@ -86,6 +88,7 @@ export class DuelBeats {
       if (e.type === 'tune') { V.spend(e.side, 1, e, 8); return tuneBeat(this, e); }
       if (e.type === 'tune.end') return tuneEndBeat(this, e);
       V.spend(e.side, 1, e); return readBeat(this, e); }
+    if (JUICE_EVENTS.has(e.type)) { job.i++; return V.juice.beat(this, e); } // (the big plays: refund, allclear, trickle, undo: juice.js)
     if (e.type.startsWith('lesson.')) { job.i++; this.view.glows?.lessonBeat?.(e); return { events: [e], dur: e.type === 'lesson.idle' ? 0.3 : 0.05 }; } // (the lesson's steps: the asked verb lit, glows.js)
     if (TOOL_EVENTS.has(e.type)) { const it = run((x) => x.type === e.type); V.spend(e.side, COST[e.type] ?? 1, e, POOL[e.type]); return toolBeat(this, it); }
     if (e.type === 'land') { job.i++; return this.land(e); }
@@ -133,7 +136,7 @@ export class DuelBeats {
     for (const c of it) { if (c.type === 'blast') continue; const v = P.at(c.at[0], c.at[1]) || P.byId(c.id); if (!v) continue; P.move(v, -1, -1); gone.push({ v, c, popped: false }); }
     const marks = chains.map((ch) => { const cells = it.filter((q) => q.type === 'clear' && q.side === ch.side); const n = Math.max(1, cells.length);
       const cx = cells.reduce((a, q) => a + q.at[0], 0) / n, cy = cells.reduce((a, q) => a + q.at[1], 0) / n; return { ch, at: cellLocal(cells.length ? cx : B.w / 2, cells.length ? cy : B.h / 2, B, new THREE.Vector3()), shown: false }; });
-    let blasted = false;
+    let blasted = false; V.juice?.note(it);
     return { events: [...it, ...chains], dur, step: (u, age) => {
       if (hasB && !blasted) { blasted = true; for (const c of it.filter((q) => q.type === 'blast')) { cellLocal(c.at[0], c.at[1], B, _a);
         for (const [dx, dy] of Object.values(DV)) for (let r = 0; r <= (V.state?.rs?.blast || 2); r++) { _b.copy(_a); _b.x += dx * r * DUEL_VIEW.cs; _b.y -= dy * r * DUEL_VIEW.cs; X.burst(_b, r ? 0xc8402a : 0xfff2e0, 3, { speed: 0.6, life: 0.32, fall: 0 }); } } }
@@ -144,7 +147,7 @@ export class DuelBeats {
           else X.burst(_a, g.v.kind === 'gem' ? feelColour(g.v.colour, _c).getHex() : 0xe8dcc8, 5, { speed: 1.1, life: 0.42 });
           P.remove(g.v); }
       }
-      for (const m of marks) if (!m.shown && age >= cd + 0.1) { m.shown = true; V.marks.numeral(String(m.ch.step), m.at, V.sideHex(m.ch.side)); V.sent[m.ch.side] += junkOf(m.ch.cleared, m.ch.step); V.showCounts(); }
+      for (const m of marks) if (!m.shown && age >= cd + 0.1) { m.shown = true; V.marks.numeral(String(m.ch.step), m.at, V.sideHex(m.ch.side)); V.juice?.chainHit(m.ch, m.at, it); V.sent[m.ch.side] += junkOf(m.ch.cleared, m.ch.step); V.showCounts(); }
     }, end: () => { for (const g of gone) if (!g.popped) P.remove(g.v); } };
   }
 
