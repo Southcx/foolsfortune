@@ -931,3 +931,5 @@ NEW:place-from-the-measure. **A thing set beside another is placed from their me
   bare offset.** A bare number is right for one size and wrong for the next.
 NEW:one-choice-a-load. **A choice that reloads the page is taken once a load, and its menu stops listening once it is made.** A window
   opened over a menu (a name typed, a confirm) must not reach the menu's keys behind it.
+NEW:hull-is-a-footprint. **A body that can be long is hit by its footprint, never by the distance to its middle.** A point test written
+  for a 7 m hull misses most of a 35 m one.

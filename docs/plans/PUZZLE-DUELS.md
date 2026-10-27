@@ -76,7 +76,7 @@ engine can load, and each aberrant Figment brings the two or three that are its 
 |---|---|---|---|
 | **the Courier** | a body on a cell of your side | **run** up to four cells 1, **push** a run of pieces one cell 1, **kick** one piece to slide until blocked 2, and its tools (section 11) | Noon, Bomberman, Sokoban, Mr. Driller |
 | **the god hand** | over your side | **the finisher** on a broken foe 2 (section 11), **swap** two neighbours 1, **drag** a piece along a path, swapping with each it passes 1 a 3 cells, **rotate** a 2 × 2 1, **drop** the next queued piece down a lane 1 | Bejeweled, Terra Battle, Hexic, Tetris |
-| (switching form) | | 1 | |
+| (switching form) | | 0 (free since 2026-10-26, section 17; was 1) | |
 
 The Pneuka Jar as a form (a piece you protect, Dr. Mario's virus turned round) is a later module.
 
@@ -352,3 +352,133 @@ Ruled, with the numbers:
 
 The events: `duel.pull { foe, by: 'creature' }` when a pull starts from nothing, `duel.slip { by: 'courier' }` when one drains away before
 it filled (the log's line: "You pull away from the aberrant."). These are plain placeholders for Espada.
+
+## 17. The aberrant Lantern Wisp made gentler (the owner on the phone, 2026-10-26, relayed by Calissa)
+
+The owner's words: "reduce the difficulty of the enemy Aberrant"; "having the tiles only match to linear match-3 style combos instead of all
+adjacent same-color clusters makes it very difficult"; switching between the hand and the Courier, "why it costs AP to switch"; "the enemy is
+racking up double digit points every turn when I manage like, six". The explainer for the owner: https://claude.ai/artifact/V2jdQy5xhps8gHy67CV8Rb.
+
+**Measured first** (a scratch harness on the kernel, 8 to 20 duels a row: side 0 a bot weighing 8 actions a point, standing in for the
+owner at about 6 junk a turn; side 1 the Wisp):
+
+| the Wisp's rules | you, junk a turn | the Wisp | you win | turns a side |
+| --- | --- | --- | --- | --- |
+| as it was: runs of 3, 4 colours, the bot weighing 60 actions a point | 5.6 | 13.5 | 1 of 8 | |
+| clusters of 3, 4 colours, the bot at 60 | 13.9 | 34.6 | 1 of 10 | |
+| clusters of 3, 4 colours, the bot at 8 | 35.8 | 11.7 | 14 of 20 | 3.9 |
+| clusters of 3, 5 colours, the bot at 8 | 9.9 | 10.4 | 11 of 20 | 7.0 |
+| clusters of 3, 5 colours, the bot at 4 | 9.5 | 6.1 | 12 of 20 | 8.5 |
+| **runs of 3 and clusters of 4, 5 colours, the bot at 6 (ruled)** | **9.4** | **3.3** | **15 of 20** | **6.3** |
+
+The gap was the bot's search, not the rules: 60 actions tried a point (300 a turn) finds the chain moves a person does not, and junk
+doubles each chain step (`junkOf`). The stand-in sees the whole board and takes no embers, so in play the Wisp keeps a little more edge.
+
+
+**The swing of one move** (`preview`, the best single action on the opening board, 12 seeds): runs of 3 at 4 colours 9 to 112 junk;
+clusters of 3 at 5 colours **52 to 770** (one lucky move decides the duel, and a board that chains itself is hard to read on a phone);
+clusters of 3 at 6 colours 14 to 153; runs of 3 and clusters of 4 at 5 colours 10 to 183.
+
+**Ruled (Dovina):**
+- **Runs of 3, and any 4 touching in any shape** on the Wisp's board (`match: 3, cluster: 4`, Puyo's rule; Mirth's already). An L of 3
+  does not count: clusters of 3 were measured and refused for the swing above. 4 touching forgives every shape a person sees.
+- **5 colours** on it, up from 4, so a cluster is a find and not the board's weather.
+- **Its bot weighs 6 actions a point** (`rs.bot.sample`; 60 for a ruleset that does not say). A Figment's cleverness is now its
+  ruleset's: the first aberrant met is the gentlest, the later ones set by their own.
+- **Switching form is free** (`ACTIONS.form.cost` 0): a form is which verbs you hold, and a price on that read as a tax on learning them.
+  The bot keeps its own small reluctance to switch (`W.form`), so it does not dither.
+- **A move's worth shown before it is chosen**: `preview(state, action) -> { junk, steps, cleared }` (duel.js), tried on a copy, for the
+  view to draw on the hovered move (Calissa's).
+
+
+### 17.4 The board is the Figment's (the owner on the phone, 2026-10-27, relayed by Calissa and Petra)
+
+The owner: "increasing the size of the tsuitate board" on a phone. Calissa's camera now fits the slab into the room the controls leave
+(`touchShot`, vfx/duelview.js); on an iPhone XR held flat that room is about 680 by 330 CSS px, so 20 rows give a cell of about 16 px.
+A finger wants 40. The camera cannot grow it further; only fewer cells can.
+
+**Ruled (Dovina):**
+- **One board on every device.** A duel is the same on the desk and the phone (one save, a guest on either, bests comparable). The phone
+  is never given a different game.
+- **A ruleset carries its board** (`board: { w, h, perColumn, landCap }`, read by `newDuel`; 20 x 20, 3 and 9 when it says nothing).
+  `perColumn` is the junk landed that moves the Line a column, `landCap` the junk that lands at once (three columns' worth). EmO a junk
+  landed is scaled by `perColumn` (duelbreak.js), so a column's worth fills as much on any board.
+- **The Lantern Wisp's board is 14 x 14**, 2 a column, 6 at once: the first aberrant met is the smallest, and every cell is 1.4x as big
+  (about 23 px on the XR). Later Figments set their own, 20 at most.
+
+**Measured** (the same harness, 24 duels a row, the stand-in at 8 actions a point, the Wisp at 6):
+
+| the Wisp's board | you, junk a turn | the Wisp | you win | turns a side | longest chain |
+| --- | --- | --- | --- | --- | --- |
+| 20 x 20, 3 a column (17's ruling) | 9.4 | 3.3 | 15 of 20 | 6.3 | 5, 5 |
+| 16 x 16, 3 a column | 4.9 | 2.0 | 19 of 24 | 6.0 | 4, 5 |
+| 14 x 14, 3 a column | 2.2 | 1.9 | 13 of 20 | 11.7 | 4, 5 |
+| **14 x 14, 2 a column, 6 at once (ruled)** | **2.7** | **1.7** | **17 of 24** | **7.1** | **4, 5** |
+| 12 x 12, 2 a column, 6 at once | 1.7 | 1.3 | 12 of 20 | 8.9 | 3, 3 |
+| 20 x 10 (wide and short), 2 a column | 1.7 | 1.3 | 14 of 24 | 16.6 | 3, 4 |
+
+14 keeps the duel as long and as winnable as 20 did, with chains as deep; 12 loses the chains, and a wide short board drags. Junk a
+turn falls with the cells, but a column costs 2, so the Line moves about as fast for the side's 7 columns as it did for 10.
+
+**Still open, not a rule:** 23 px is under a thumb. What closes the rest is the input's, not the board's: a loupe over the finger, or
+pick-then-place with the picked piece lifted. Calissa's and Petra's call.
+
+## 18. The tools bend the clearing; the intent; the first duel as a lesson (the owner, 2026-10-27, relayed by Calissa)
+
+The owner: "Tell Dovina especially to utilize the lachryma tools to help dictate how the tile clearing mechanics work. Like the Soul
+Brush being able to recolor the suit of a given gem class, that sort of thing"; "implement the updated mechanics as outlined" (the
+preview, the intent through the fog, the first duel as a lesson); "we're probably going to need a smaller board size with larger cells
+for mobile" (17.4: the Wisp's board is 14 x 14 on every device; `newDuel({ board })` takes `{ w, h, perColumn, landCap }` over the
+ruleset's, for a room that must, and the Line starts at `w / 2`).
+
+### 18.1 The tools' moves (couriertools.js)
+
+Each tool that bends the clearing is a modifier with its source on the board (DESIGN.md 22): the rule is the same, a tool changes it
+for you, where you stand, for a while.
+
+| tool | move | AP, pool | what it does | prior art |
+| --- | --- | --- | --- | --- |
+| the psygun | **Shoot** `{ dir }` | 1, 5 | a shot down a row or column from the Courier (toward the foe by default); the first piece it meets pops with every gem of its colour touching it, any number. A pop is a clear: junk beside it breaks, a bomb goes off. On your half a pop of 3 or more is the chain's first step (what falls after counts from step 2); on the foe's it scores them nothing, but what falls after is theirs | SameGame, Collapse; Meteos' risk |
+| the Soul Brush | **Paint** `{ from, colour }` | 2, 10 | every gem of one colour within 4 cells of the Courier (walking) repainted another; `from` defaults to the colour nearest the Courier | Columns' magic jewel, as a class (the owner's) |
+| the Crucibelle | **Tune** `{ colour }` | 1, 8 | a song: that colour clears at any 3 touching on your half until your turn ends (its landing included); one a turn | the crystals' frets: a note is a colour |
+| the Crucibelle | **Delay** | 2, 15 | the toll: the foe loses a point from its next turn (2 at most) | Tetris 99's badges |
+| the Sondelass | **Grab** | 1, 5 | the first piece past the Line in the Courier's row hooked to your half: steal the gem the foe's intent needs | Magical Drop |
+| the Dreamvane | **Drill** `{ dir }` | 1, 3 | the pick breaks up to three pieces in a line | Mr. Driller |
+| the Lockheart | **Hold** / **Send** | 1, 0 / 1, 5 | junk beside the Courier into the coffin (12 at most) / all it holds thrown at the foe | Tetris's hold |
+| the Veritome | **Read** | 1, 0 | Dread's fog lifted for you, this turn and the foe's next (`visibleTo`); only where a fog hides the foe | the Veritome is observation only |
+
+**Measured** (the swing of one move: the best single action of a kind on the opening board, 16 seeds, the Wisp's rules; median / 90th
+percentile / most junk):
+
+| move | the Wisp | Fury (runs only) | Grief |
+| --- | --- | --- | --- |
+| the hand's best swap (1 AP) | 8 / 15 / 27 | 22 / 45 / 112 | 4 / 8 / 20 |
+| Paint, the whole half (refused) | 19 / 32 / 35 | | |
+| Paint, within 2 | 1 / 3 / 9 | | |
+| **Paint, within 4 (ruled)** | **7 / 15 / 19** | 5 / 10 / 18 | 3 / 6 / 15 |
+| Tune | 1 / 7 / 11 | 16 / 25 / 71 | 4 / 5 / 24 |
+| Shoot | 0 / 1 / 1 | 0 / 0 / 1 | 0 / 0 / 0 |
+
+Paint within 4 is worth about the hand's best swap for twice the points and some pool: the Courier's way to do what the hand does, from
+where the Courier stands. Tune is worth most where the rules are strict (Fury's runs only), so the Crucibelle is the answer to a hard
+board. Shoot makes little on its own: it is the setup (a gap that brings a fall) and the denial (a pop across the Line breaks the group
+the foe's intent was going to clear), so its worth shows with the intent drawn.
+
+The Courier's moves also took the bot's sampled actions (paint 20 ways, tune 5, shoot 4): the simulator's bots use paint and the form
+switch a lot. A person's choice is the view's to make easy (Calissa): each move greyed where it is not legal, its preview on hover.
+
+### 18.2 The intent (bot.js `intentOf`)
+
+`intentOf(state, side = the foe) -> { actions, junk, cells, hits }`: the foe's plan for its next turn tried on a copy, the junk it would
+send, the cells of its half it would clear (drawn through Dread's fog: Divination sees intent, not ground) and the cells it would move.
+Redrawn after each of your actions; a forecast, never a promise (rule 6 above). It costs one plan: about 40 real ms on the Wisp's board
+at its 6 samples a point, about 140 on a ruleset with 60 (the desk's numbers: call it after an action, never a frame). The Veritome's
+Read shows the ground under it as well.
+
+### 18.3 The first duel as a lesson (lesson.js)
+
+`lessonDue(ledger)`: until the first puzzle duel won (`duel.won`). `newDuel({ lesson: true })`: the foe's first turn passes idle (its
+drip still falls; `lesson.idle`), and six steps are asked one at a time, each done by doing it, never locked: **move** (a swap, drag,
+rotate or drop), **clear** (3 in a line or 4 touching), **form** (the Courier on the board), **run**, **tool** (any tool's move),
+**chain** (a clear of step 2 or more). `lesson.step { side, step, id, next }` says one done and the next asked; `lesson.done` at the end.
+What the view shows is Calissa's: the step asked as the verb lit (its tile or key glowing), with no words but the verb's own label.

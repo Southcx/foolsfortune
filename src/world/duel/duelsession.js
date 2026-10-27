@@ -14,7 +14,9 @@
 //   the Courier       LMB on a cell up to four away: RUN there; W A S D: PUSH that way, with Shift: KICK (or a drag from the Courier
 //                     its way, from RMB held there a KICK: a finger's swipe on touch, MOBILE.md 8.5); each worn tool on its own
 //                     key: X Shoot (the psygun), Q Grab (the Sondelass), K Drill the way last faced (the Dreamvane), G Paint in the Soul
-//                     Brush's feeling (its pick), U Delay (the Crucibelle), I Hold, Shift+I Send (the Lockheart)
+//                     Brush's feeling (its pick; the colour under the pointer repainted, else the nearest), U Delay and T Tune (the
+//                     Crucibelle: the colour under the pointer), I Hold, Shift+I Send (the Lockheart), V Read (the Veritome); X shoots
+//                     down the row or column the pointer is on, else toward the foe (PUZZLE-DUELS 18.1)
 //   both              ~ switches form (1 point), E flees (a d20 against 15, 3 points a failed try), Space ends the turn, Backspace
 //                     held 1.5 real s yields (a loss: the shatter)
 // While it runs the Courier is held as the crossing holds them (main.js `aboard`), and every key it reads is spent so no tool sees it.
@@ -24,13 +26,16 @@
 // intent drawn while you plan).
 //
 //   game.duel = new DuelSession(game)   .begin(creature)   .update(raw, input)   .active   .state   .close(outcome)
+//   The view is told: view.pendingAction(action | null), the action under the finger before it is chosen (a swap or drag as the press
+//   builds, a run on hover). The board's size is the ruleset's own (`board`, rulesets.js: every device the same).
 //   Events (with `by`): duel.open { kind, feeling }, duel.break { kind, depth }, duel.flee { roll, reroll, need, ok }, duel.end { kind, won, how,
 //   turns } (how 'fled': away, both whole; tracking.js says each)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { newDuel, act, endTurn, legalActions } from '../../progress/duel/duel.js';
 import { luckOf } from '../../progress/luck.js';
-import { plan as botPlan, play as botPlay } from '../../progress/duel/bot.js';
+import { intentOf, play as botPlay } from '../../progress/duel/bot.js';
+import { lessonDue } from '../../progress/duel/lesson.js';
 import { rulesetOf } from '../../progress/duel/rulesets.js';
 import { DUEL_VIEW, cellLocal } from '../../vfx/duelview/layout.js';
 import { stream } from '../../core/rng.js';
@@ -39,7 +44,7 @@ const duelRand = stream('world/duel/duelsession'); // (the duel's seed: the sess
 
 export const DUEL_ROOM = { beat: 0.55, yieldHold: 1.5, apart: 6, standOff: 5 }; // (the bot's beat, real s; the yield's hold; the two set this far apart under the seam, m; the camera off the board's face, m)
 const KEYS_KEPT = /^(Escape|Tab|F\d+|KeyB)$/; // (what a duel leaves to the rest of the game: the pause, the tuning panel, QAIS, the Codex)
-const TOOL_KEYS = { KeyX: 'shoot', KeyQ: 'grab', KeyK: 'drill', KeyG: 'paint', KeyU: 'delay', KeyI: 'hold' };
+const TOOL_KEYS = { KeyX: 'shoot', KeyQ: 'grab', KeyK: 'drill', KeyG: 'paint', KeyU: 'delay', KeyI: 'hold', KeyT: 'tune', KeyV: 'read' };
 const WALK = { KeyW: 'N', KeyS: 'S', KeyA: 'W', KeyD: 'E' };
 const _v = new THREE.Vector3(), _ndc = new THREE.Vector3();
 
@@ -68,8 +73,8 @@ export class DuelSession {
     this.startPool = Math.round(Math.min(100, pool?.available ?? 30));
     this.state = newDuel({ ruleset, seed: Math.floor(duelRand() * 2 ** 31), forms: ['hand', 'courier'], pool: [this.startPool, 30], tools: [tools, []],
       luck: [g.ledger ? Math.min(2, Math.floor(luckOf(g.ledger).level / 10)) : 0, 0], // (Luck's sway on a flee, 0..2: a tenth of its level, as ruled)
-      rerolls: [g.rerolls?.left() ?? 0, 0] }); // (Luck's re-rolls left this game day: a failed Flee is thrown again, progress/duel/flee.js)
-    this.foe = c; this.feeling = feeling; this.active = true; this.busy = false; this.botT = -1; this.press = null; this.path = []; this.yieldT = 0; this.swipe = null;
+      rerolls: [g.rerolls?.left() ?? 0, 0], lesson: lessonDue(g.ledger) }); // (the first duel a lesson until one is won: lesson.js, PUZZLE-DUELS 18.3) // (Luck's re-rolls left this game day: a failed Flee is thrown again, progress/duel/flee.js)
+    this.foe = c; this.feeling = feeling; this.active = true; this.busy = false; this.botT = -1; this.press = null; this.path = []; this.yieldT = 0; this.swipe = null; this.shown = null;
     for (const t of g.belt?.tools || []) if (t.wants || t.drawT > 0) t.stow(); // (nothing in the hands: the board is the fight)
     g.techs?.get('carry')?.drop?.();
     P.vel.set(0, 0, 0);
@@ -144,10 +149,10 @@ export class DuelSession {
         const last = this.path[this.path.length - 1];
         if (!sameCell(cell, last) && Math.abs(cell.x - last.x) + Math.abs(cell.y - last.y) === 1) { this.path.push(cell); this.view?.select?.(this.path); }
       }
+      this.show(this.press ? actionOfPath(this.path) : null);
       if (this.press && !input.isDown('Mouse0')) {
-        const P = this.path; this.press = null; this.path = []; this.view?.select?.([]);
-        if (P.length === 2) return this.take({ kind: 'swap', at: [P[0].x, P[0].y], dir: dirOf(P[0], P[1]) });
-        if (P.length > 2) return this.take({ kind: 'drag', path: P.map((c) => [c.x, c.y]) });
+        const P = this.path; this.press = null; this.path = []; this.view?.select?.([]); this.show(null);
+        const a = actionOfPath(P); if (a) return this.take(a);
       }
       if (input.wasPressed('KeyR') && cell) return this.take({ kind: 'rotate', at: [cell.x, cell.y] });
       if (input.wasPressed('Mouse2') && cell) return this.take({ kind: 'drop', at: [cell.x, cell.y] });
@@ -171,13 +176,27 @@ export class DuelSession {
       }
       return;
     }
-    if (input.wasPressed('Mouse0') && cell) { const path = this.runTo(cell); if (path) return this.take({ kind: 'run', path }); }
+    if (!sameCell(cell, this.shownAt)) { this.shownAt = cell; const path = cell && !onMe ? this.runTo(cell) : null; this.show(path ? { kind: 'run', path } : null); } // (the run under the pointer, before it is chosen)
+    if (input.wasPressed('Mouse0') && cell) { const path = this.runTo(cell); if (path) { this.show(null); this.shownAt = null; return this.take({ kind: 'run', path }); } }
     for (const [k, kind] of Object.entries(TOOL_KEYS)) if (input.wasPressed(k)) {
       if (kind === 'drill') return this.take({ kind, dir: this.face });
-      if (kind === 'paint') return this.take({ kind, colour: this.game.player?.techs?.get?.('soulbrush')?.load?.aspect || 'wonder' });
+      const under = cell && s.board.at(cell.x, cell.y)?.colour; // (the colour under the pointer, when it is on a gem)
+      if (kind === 'shoot') { const d = this.lineTo(cell); return this.take(d ? { kind, dir: d } : { kind }); } // (down the row or column the pointer is on; else toward the foe)
+      if (kind === 'paint') { // (the brush's colour over the colour under the pointer; else a legal repaint into it, else any)
+        const colour = this.game.player?.techs?.get?.('soulbrush')?.load?.aspect || 'wonder', P = legalActions(s, 0).filter((a) => a.kind === 'paint');
+        return this.take(P.find((a) => a.from === under && a.colour === colour) || P.find((a) => a.colour === colour) || P.find((a) => a.from === under) || P[0] || { kind, colour });
+      }
+      if (kind === 'tune') { const colour = under || legalActions(s, 0).find((a) => a.kind === 'tune')?.colour; return colour ? this.take({ kind, colour }) : undefined; }
       if (kind === 'hold' && shift) return this.take({ kind: 'send' });
       return this.take({ kind });
     }
+  }
+  /** The way from the Courier to `cell` when it is on the Courier's row or column, else null. */
+  lineTo(cell) {
+    const at = this.state.sides[0].at; if (!cell || !at || (cell.x === at[0] && cell.y === at[1])) return null;
+    if (cell.y === at[1]) return cell.x > at[0] ? 'E' : 'W';
+    if (cell.x === at[0]) return cell.y > at[1] ? 'S' : 'N';
+    return null;
   }
   /** A run's path to `cell` (the kernel's own: up to four cells from where you stand). */
   runTo(cell) {
@@ -191,6 +210,12 @@ export class DuelSession {
     const ev = act(this.state, a);
     if (!ev) { sfx.dryFire?.(); this.view?.refuse?.(a); return; }
     this.run(ev);
+  }
+  /** The action under the finger or the pointer, before it is chosen (a swap or drag as the press builds, a run on hover), told to the view
+   *  once a change, null when let go: the view draws what it would bring from Dovina's preview (duel.js). */
+  show(a) {
+    const key = a ? JSON.stringify(a) : null; if (key === this.shown) return;
+    this.shown = key; const V = this.view; if (typeof V?.pendingAction === 'function') V.pendingAction(a); // (not `pending`: the view keeps its junk counts by that name)
   }
   endMine() { this.run(endTurn(this.state)); }
   /** Events played by the view (awaited: nothing is taken meanwhile), then the forecast and the end. */
@@ -210,7 +235,13 @@ export class DuelSession {
     const g = this.game, c = this.foe, P = g.player; if (!g.cine || !c) return;
     g.cine.play('reprogram.drain', { id: 'duel.drain', yaw: Math.atan2(c.pos.x - P.pos.x, c.pos.z - P.pos.z), anchors: { courier: () => P.pos, veritome: () => P.pos.clone().setY(P.pos.y + 1.2), creature: () => c.pos } });
   }
-  intent() { if (this.state.toMove === 0 && this.state.winner === null) this.view?.intent?.(botPlan(this.state, 1)); }
+  /** The foe's forecast after each of your actions (bot.js intentOf: { actions, junk, cells, hits }, one plan, ~40 real ms on the Wisp's
+   *  board: never a frame). Kept as `foresight` for the view; its `intent` is handed the actions until it takes the whole. */
+  intent() {
+    if (this.state.toMove !== 0 || this.state.winner !== null) return;
+    const I = this.foresight = intentOf(this.state, 1), V = this.view;
+    V?.intent?.(V.intentWhole ? I : I.actions);
+  }
 
   /** The god hand over the board: shown in the hand form, at the hovered cell, palm to the board (godhand.js cursorAt). */
   cursorHand(raw) {
@@ -265,3 +296,5 @@ export class DuelSession {
 
 const sameCell = (a, b) => (!a && !b) || (!!a && !!b && a.x === b.x && a.y === b.y);
 const dirOf = (a, b) => (b.x > a.x ? 'E' : b.x < a.x ? 'W' : b.y > a.y ? 'S' : 'N');
+/** A press's path as the kernel's action: two cells a swap, more a drag, one nothing yet. */
+const actionOfPath = (P) => (P.length === 2 ? { kind: 'swap', at: [P[0].x, P[0].y], dir: dirOf(P[0], P[1]) } : P.length > 2 ? { kind: 'drag', path: P.map((c) => [c.x, c.y]) } : null);

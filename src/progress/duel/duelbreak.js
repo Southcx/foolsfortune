@@ -14,10 +14,11 @@
 //   DUEL_BREAK, FINISHER   onLanding(s, side, n) -> events   startTurn(s, side) -> { ap, event }   endOwnTurn(s, side) -> events   FINISHER_ACTION
 // ---------------------------------------------------------------------------------------
 import { piece } from './board.js';
+const DUEL_PER = 3; // (duel.js's DUEL.perColumn, the board of 20's: EmO a junk is scaled by a board's own)
 
 export const DUEL_BREAK = {
   junk: 8,           // junk landed at once that breaks a side (a critical push)
-  emoPerJunk: 0.05,  // EmO a junk landed adds (20 landed fill it); EmO full breaks a side too, and falls back to half
+  emoPerJunk: 0.05,  // EmO a junk landed adds on a board of 20 (20 landed fill it; a smaller board's scaled by its perColumn: a column's worth fills as much); EmO full breaks a side too, and falls back to half
   emoDecay: 0.1,     // EmO lost at the end of a side's own turn
   turns: 2,          // a side's own turns a break's stun holds (a new break while down refreshes it and goes a depth deeper)
   apLost: [0, 1, 2, Infinity], // action points a side loses at each stun depth: none, dazed, stunned, out cold (its turn passes)
@@ -32,7 +33,7 @@ export const FINISHER = { ap: 2, pool: [60, 40, 20] };
 /** Junk has landed on a side: its EmO rises, and a big enough landing (or a full EmO) breaks it. */
 export function onLanding(s, side, n) {
   const S = s.sides[side], events = [];
-  S.emo = Math.min(1, (S.emo || 0) + n * DUEL_BREAK.emoPerJunk);
+  S.emo = Math.min(1, (S.emo || 0) + n * DUEL_BREAK.emoPerJunk * (DUEL_PER / (s.perColumn || DUEL_PER)));
   const critical = n >= DUEL_BREAK.junk, full = S.emo >= 1;
   if (!critical && !full) return events;
   if (full) S.emo = 0.5;

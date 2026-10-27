@@ -4118,3 +4118,11 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the view eases the duel's shot toward a fit taken every quarter real second while the duel is open on touch; the fit's top
   is the log as drawn. Measured after: the cells' centre at x 318, the frame's top 37 px under the log.
 - **Rule:** NEW:fit-to-the-room-as-it-stands
+
+### 2026-10-27 · A big ship hit only near its middle on the open sea (found at the gate, after the hulls went to life size; Petra)
+- **Seen:** reading the fight's hull tests after the 5x hulls: the spit hit within 3.6 m of the hull's middle, the ram when its ring held
+  the ship's middle, the coil within 13 m of it. On a 35 m sloop, a glob landing on the bow or the stern passed through the deck.
+- **Cause (as read):** every test was a distance from `helm.pos`, a point, written when the hull was 7 m long.
+- **Fix:** `helm.hullDist(p)`, the distance to the hull's footprint (its length along the heading, its beam across, 0 inside); the ram,
+  the coil and the spit ask it, and the spit hits within 1.2 m of the footprint and under the deck's height plus 3 m.
+- **Rule:** NEW:hull-is-a-footprint

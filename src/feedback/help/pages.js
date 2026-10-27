@@ -43,7 +43,7 @@ export const PAGES = [
       ['F2 · F3 · F4', 'the interface off · the performance panel · copy a report'],
     ],
     // (on a phone this page is the touch one: feedback/help/menu.js shows `touch` over the page while the last device is touch.
-    //  Placeholder words, Petra's until Espada's: MOBILE.md 4, 8)
+    //  Espada's words, MOBILE.md 4, 8)
     touch: {
       title: 'THE TOUCH CONTROLS',
       lead: 'The workshop on Anagami Island, as a sandbox: break every pot. On a phone your thumbs play it: the left half moves you, the right half looks, and the buttons in the bottom right corner are what the moment asks for.',
@@ -51,7 +51,8 @@ export const PAGES = [
         ['the left half', 'move: your thumb lands anywhere and is the stick; push past its ring to sprint'],
         ['the right half', 'look: drag to turn the camera'],
         ['the buttons, bottom right', 'what the moment asks for: on foot JUMP, CROUCH, DASH, and USE (it names what it is used on); with a tool out its verbs and PARRY'],
-        ['the strip over them', 'your two tools: tap one to draw it'],
+        ['DRAW · LEND, atop the buttons', 'DRAW takes your main tool in hand (STOW puts it back); LEND does your sub tool\'s one verb'],
+        ['the row above them', 'the drawn tool\'s own moves (its chambers, its forms, LURE, PAINT or MOP, FLASH), and BLINK at its end once learned'],
         ['the top bar', 'the Codex, the Pneuka Box, the map, the settings, the chat line and the pause'],
         ['a long press', 'the second verb, where a mouse would right click'],
         ['two fingers', 'in the Spirit Garden and over the god hand: drag to turn, pinch to zoom; tap with two to undo'],
@@ -211,6 +212,22 @@ export const PAGES = [
       ['Q Q · E E (the Raceway)', 'the shoulder: a shove to that side'],
     ],
     notes: ['Strike a wall hard, land too hard or land a spin crooked and you are thrown off: the board stops where it slides, parked.'],
+    touch: {
+      title: 'SOLAR SKIFFING',
+      lead: 'A skiff for the dune sea. On a phone the sail fills by itself; your thumbs steer, hop and flare. Hold the phone sideways.',
+      rows: [
+        ['the skiff button (top bar)', 'in the Dunes: call the board up out of the sand · riding: recall it'],
+        ['your left thumb', 'steer: slide from where it lands; past the outer ring, carve to that side, and slide back in for a push'],
+        ['hold BRAKE', 'let the sail down and slow'],
+        ['hold HOP, let go', 'crouch the springs, and hop; held in the air, glide'],
+        ['hold FLARE', 'the solar flare: faster, for Lachryma'],
+        ['BOOST', 'shown while a flare is banked from your trick combo: spend it, a push at once'],
+        ['NOSE · TAIL', 'in the air, FLARE and BRAKE become the grabs: hold one, or both; let go before you land'],
+        ['a swipe on the right half', 'the shoulder (the Raceway): a shove to that side'],
+        ['USE', 'at the race board or the start pillar'],
+        ['the pause menu', 'step off the board; in a race, BACK to the last gate, RESTART, RETIRE'],
+      ],
+    },
   },
   {
     id: 'godhand', title: 'THE GOD HAND', key: '~', src: 'godhand/',
@@ -222,6 +239,20 @@ export const PAGES = [
       ['N', 'a survey from your Pneuka Jar'],
       ...ARTS.map((a) => [a.key, `${a.name}: ${a.blurb}`]),
     ],
+    touch: {
+      title: 'THE GOD HAND',
+      lead: 'You change into your Pneuka Jar, and your finger is a hand over the world. God Arts work only in the explored area: the ground you have explored. Either way up.',
+      rows: () => [
+        ['one finger on the ground', 'use the art: press, drag, let go'],
+        ['the strip', 'the seven domains: tap one for its art, again for its next art'],
+        ['a long press', 'the art wheel, where the finger rests: slide to an art and let go'],
+        ['hold ALT', 'shown when the art has another way'],
+        ['hold SIGN', 'draw a miracle\'s sign with one finger; with ALT held too, an epic\'s'],
+        ['two fingers', 'drag to pan · pinch to zoom · twist to turn the view'],
+        ['SURVEY (top bar)', 'a survey from your Pneuka Jar'],
+        ...ARTS.map((a) => [a.name, a.blurb]),
+      ],
+    },
   },
   {
     id: 'garden', title: 'THE SPIRIT GARDEN', src: 'world/garden/',
@@ -257,6 +288,24 @@ export const PAGES = [
       'Carve one stroke that closes on itself, 40 m or more, and it is a track for races.',
       'Water held deep on the side facing a linked planetoid spills over to it.',
     ],
+    touch: {
+      title: 'THE SPIRIT GARDEN',
+      lead: 'Your Inner Realm is inside your Pneuka Jar: small worlds where your spirits live. Go in at a Shrine. On a phone your finger is the god hand. Either way up.',
+      rows: [
+        ['tap the ground (WALK)', 'your Pneuka Jar hops there'],
+        ['JUMP', 'jump high: shown while the Jar moves or stands on a launch lotus'],
+        ['the art bar', 'WALK first, then the ten arts: tap one to pick it, tap it again to put it down'],
+        ['one finger, with an art up', 'use it where you touch: drag for a stroke'],
+        ['a long press', 'the second verb, where a mouse would right click: clear the ground, drink water, flick a spirit'],
+        ['TURN', 'paint: the next ground · water: the next feeling (or twist two fingers while placing)'],
+        ['SPRING · DRAIN', 'beside water: set a spring or a drain'],
+        ['the size slider', 'the size of a stroke'],
+        ['UNDO', 'undo the last stroke (or tap with two fingers)'],
+        ['two fingers', 'drag to turn · pinch to zoom'],
+        ['TOP VIEW (top bar)', 'the view from overhead: one finger pans it'],
+        ['USE', 'it names what is there: the gate takes you out; SHED, a spirit, the press'],
+      ],
+    },
   },
   {
     id: 'mind', title: 'THE BOX, THE CODEX, THE MAP', src: 'pneuka/, feedback/codex/, feedback/cartography.js, feedback/chat.js',
