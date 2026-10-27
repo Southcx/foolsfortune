@@ -668,7 +668,8 @@ quiet copies) is handed to the view (`view.hint(h | null)`). The bus gets the mo
 | classic psygun + Soul Brush (before) | 22/30 | 3.2 vs 2.1 | none (Paint half the junk) |
 | psygun + Dreamvane | 18/30 | 2.8 vs 2.5 | Shot 0.9 (6.4), Vein 0.2 (8.0) |
 | Lockheart + Veritome | 25/30 | 2.8 vs 2.5 | Read 1.1, Hold 0.8 (4.8) |
-| Soul Brush + psygun, Sondelass + Crucibelle | (measuring: the Paint and Tune skills look further ahead and run slow) | |
+| psygun + Soul Brush (12 duels) | 6/12 | 3.2 vs 2.8 | Shot 0.7 (6.1), Paint 0.3 (12.5) |
+| Sondelass + Crucibelle | (measuring: Tune's lookahead runs slow) | | |
 Duels run 5 to 6 turns a side against the classic's 7.3: shorter, and every turn has its one big move. A pair is a playstyle, not a
 power: the attackers (Shot, Vein) win by sending, the defenders (Hold, Grab) by refusing, the Read by the extra moves.
 
