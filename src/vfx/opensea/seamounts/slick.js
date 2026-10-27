@@ -100,7 +100,7 @@ export class SlickLook {
     P.busy = true; P.mesh.visible = true;
     const U = P.mat.uniforms; U.uColor.value.setHex(aspect ? COLOR[aspect] : SL.ink); U.uMotif.value = aspect ? PAINT_MOTIF[aspect] : 0; U.uSeed.value = Math.random() * 50;
     U.uBurn.value = 0; U.uChar.value = 0; U.uFront.value = 0; U.uK.value = 0; U.uGrow.value = 0;
-    this.looks.set(s, { s, P, life: e.life || s.t || 20, age: 0, gone: -1, burnT: 0, burn: 0, flameA: 0, smokeA: 0, born: M.t });
+    this.looks.set(s, { s, P, life: e.life || s.life || s.t || 20, age: 0, gone: -1, burnT: 0, burn: 0, flameA: 0, smokeA: 0, born: M.t });
     M.game.water?.disturb?.(s.at.x, s.at.z, 0.5, 'land', M.surf(s.at.x, s.at.z));
   }
   oldest() { let o = null; for (const L of this.looks.values()) if (!o || L.born < o.born) o = L; if (!o) return null; this.free(o); return o.P; }

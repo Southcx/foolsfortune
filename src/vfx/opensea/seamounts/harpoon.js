@@ -52,7 +52,8 @@ export class HarpoonLook {
     let c = null, at = null;
     if (e.hit === 'beast') for (const b of S?.list || []) if (b.alive && b.tether > 0 && (!c || b.tether > c.tether)) c = b;
     if (c) { at = S.at(c, 0).clone(); for (const l of this.lines) if (l.c === c) l.phase = 'gone'; }
-    else if (e.hit === 'crate') { let bd = Infinity; for (const m of M.game.opensea?.props?.marks || []) if (m.feature?.kind === 'wreck') { const d = m.mesh.position.distanceTo(H.pos); if (d < bd) { bd = d; at = m.mesh.position.clone(); } } }
+    // (a crate: at the wreck hooked, `e.wreck`, Petra's v315; else the nearest)
+    else if (e.hit === 'crate') { let bd = Infinity; for (const m of M.game.opensea?.props?.marks || []) if (m.feature?.kind === 'wreck' && (e.wreck == null || m.feature.id === e.wreck)) { const d = m.mesh.position.distanceTo(H.pos); if (d < bd) { bd = d; at = m.mesh.position.clone(); } } }
     const side = at ? M.sideOf(at) : M.camSide();
     if (!at) { at = M.shipPoint(side * (M.beam * 0.5 + HL.miss), 0, M.L * 0.25); at.y = M.surf(at.x, at.z); }
     const from = this.railFor(at, side, new THREE.Vector3());
