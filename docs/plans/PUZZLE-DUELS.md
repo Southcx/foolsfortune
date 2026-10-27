@@ -611,7 +611,7 @@ So:
   found on quiet copies (the duel's own dice untouched); 4.4 ms, found on 30 of 30 opening boards. The view lights it after `HINT.idle`
   (6 real s) with no touch and lets it go at the next.
 
-### 21.4 Proposed (South to rule): one gesture, tools as charged skills, the dive as the cast
+### 21.4 Proposed, then ruled (section 22): one gesture, tools as charged skills, the dive as the cast
 
 1. **The hand has one gesture: drag a gem along a path** (Puzzle & Dragons; Terra Battle's drag), its cost by length as now. Swap,
    rotate and drop leave the phone and the desk alike (measured above: no loss).
@@ -622,3 +622,69 @@ So:
 5. Then: the cascade's beat and its rising sound (Wanda), the idle hint's glow, the foe's turn skippable by a tap.
 
 Until South rules, nothing more is built on the Courier's movement (no D-pad, no swipe polish).
+
+## 22. The one-gesture duel (built 2026-10-27; South: "You have permission to design, draft, and implement anything and everything that would improve this module. Visual feedback, physical feedback, game design synergistic loops")
+
+Section 21.4 built as the default (`DUEL.style = 'drag'`; a ruleset may still ask `style: 'classic'` for the forms and the old verbs).
+
+### 22.1 The rules
+1. **One board verb: drag.** The hand drags a gem along a path, its cost by length as before; a press onto a neighbour is a drag of
+   one step (the swap kept as its shortest form). Rotate and drop are gone from this style; so are the forms, run, push and kick.
+2. **The Courier stands off the board.** No body on side 0; the foe keeps its body (Dread's lantern, its kick target stays the foe's).
+3. **An orb is drunk by the drag**: a dragged gem passing over one takes it (the break's Lachryma reaches the pool with no run).
+4. **The worn pair are two skills** (`progress/duel/skills.js`), each a free action (no action point) when full, at a cell of your
+   half where it asks one. A skill spent starts from nothing.
+
+| tool | skill (plain label) | does | need |
+| --- | --- | --- | --- |
+| the psygun | Shot | the three rows through the cell clear: gems, junk, embers (a striped candy, widened) | 9 |
+| the Dreamvane | Vein | every gem of the cell's colour on your half clears (a colour bomb) | 10 |
+| the Soul Brush | Paint | the 3 x 3 round the cell takes the middle gem's colour (P&D's orb change) | 8 |
+| the Sondelass | Grab | every junk and ember in the 5 x 5 round the cell is hooked out and thrown across | 6 |
+| the Crucibelle | Tune | the cell's colour clears in any 3 touching, this turn and your next | 7 |
+| the Lockheart | Hold | the junk waiting to land on you (up to 9) is thrown back at once | 8 |
+| the Veritome | Read | two action points back; the fog lifts for three of your turns | 7 |
+
+5. **Charge** (`chargeFrom`, after every settle, both sides): a point a gem you clear, a weak gem its weakness's `k`, and a chain's
+   step from the second adds its step again (a chain of 4 adds 2+3+4 over its gems). A skill's own Shot or Vein charges nothing (no
+   skill fires itself). Skill skips grind: a chain fills a skill in one move; a plain match still fills it in three or four.
+6. A Shot or Vein clear is a clear: junk beside it breaks, a bomb goes off, and it counts as the chain's first step, so what falls after
+   it chains on from 2 (`s.chainFrom`).
+
+### 22.2 The session (Petra's file, edited with South's leave)
+Keys 1 and 2 (or the tool's own key) arm a skill; an untargeted one fires at once, an armed one fires at the cell clicked, RMB lets it
+go. A tap or click during the foe's turn skips its beats (`view.skip`). Idle 6 real s on your turn, the hint (`hintOf`, 40 drags tried on
+quiet copies) is handed to the view (`view.hint(h | null)`). The bus gets the moments for the log, the sound and the phone's buzz:
+`duel.chain { step, weak }` (each step from 2), `duel.skill { tool }`, `duel.charge { tool }` (a skill full), `duel.land { n, kind }`
+(by `creature`), `duel.allclear { n }`.
+
+### 22.3 Measured (`scratchpad duel/drag.mjs`: the stand-in at sample 3, a person's play, against the shipped bot; the Lantern Wisp, 30 duels a pair)
+| pair | wins | junk a turn (you vs it) | skills fired a duel (junk a fire) |
+| --- | --- | --- | --- |
+| classic psygun + Soul Brush (before) | 22/30 | 3.2 vs 2.1 | none (Paint half the junk) |
+| psygun + Dreamvane | 18/30 | 2.8 vs 2.5 | Shot 0.9 (6.4), Vein 0.2 (8.0) |
+| Lockheart + Veritome | 25/30 | 2.8 vs 2.5 | Read 1.1, Hold 0.8 (4.8) |
+| Soul Brush + psygun, Sondelass + Crucibelle | (measuring: the Paint and Tune skills look further ahead and run slow) | |
+Duels run 5 to 6 turns a side against the classic's 7.3: shorter, and every turn has its one big move. A pair is a playstyle, not a
+power: the attackers (Shot, Vein) win by sending, the defenders (Hold, Grab) by refusing, the Read by the extra moves.
+
+### 22.4 What the other divisions are asked (the handoffs, docs/HANDOFFS.md)
+- **Calissa (the view):** two skill tiles beside the board filling to `need` (`skillsOf(s, 0)`), lit full; `view.armSkill(tool | null)`
+  (the cell under the finger previews the skill's reach), `view.hint(h)`, `view.skip()`; the dive as the cast (the Courier diving into the
+  board on `skill`); the kernel's events `skill`, `charge`, `blast { at, rows }` (Shot), `vein { at, colour }` (Vein), `recolour` + `paint`, `hold { by: 'grab' }` (Grab, on the classic Hold beat for now), `tune { turns }`,
+  `hold.send { from: 'pending' }`, `read { ap }`; no Courier figure on side 0; `stepsOf(s)` in place of `LESSON.steps` (glows.js).
+- **Wanda (sound and touch):** the cascade's rising ladder on `duel.chain`, a cast on `duel.skill`, a ready chime on `duel.charge`, a
+  thud by `n` on `duel.land`, a fanfare on `duel.allclear`; the phone's buzz on the same (MOMENTS).
+- **Espada (words):** the seven skill labels and lines (plain now: Shot, Vein, Paint, Grab, Tune, Hold, Read), the lesson's four drag
+  steps, the log lines (tracking/duel.js), the eight achievements (du1 to du8).
+- **Petra (the gate):** the session's edits are above; the classic path is kept whole behind `style`.
+
+### 22.5 The ledger and the achievements (progress/duelachievements.js, BATTLE's "Puzzle Duels")
+Counts: `duel.chain.<step>` (2 to 8), `duel.chain.weak`, `duel.skill`, `duel.skill.<tool>`, `duel.landed`, `duel.allclear`. Achievements:
+win one (du1), break a Figment (du2), a chain of 4 (du3) and of 6 (du4), fire a skill (du5) and all seven (du6), an all clear (du7), win
+25 (du8): each worth having has a count way and a feat way.
+
+Prior art: Puzzle & Dragons (the drag, the orb change, active skills charged by play), Terra Battle (the drag's path), Puzzle Quest (mana
+from matches), Candy Crush (the striped candy, the colour bomb), Puyo Puyo Fever (a meter filled by chains), Tetris Effect (the perfect
+clear).
+
