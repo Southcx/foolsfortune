@@ -131,11 +131,27 @@ export class DuelView {
     if (!this.isOpen) return null;
     const cam = this.game.camera, B = this.state.board, { cs, base, border } = DUEL_VIEW, top = base + B.h * cs + border + 0.45;
     const tan = Math.tan(((cam?.fov ?? 70) * Math.PI) / 360), asp = cam?.aspect || 16 / 9, lines = 480;
+    const fit = this.game.hudLayout?.touch ? this.touchShot(B, tan) : null; if (fit) return fit; // (a phone: the board as large as the room the controls leave)
     const far = (cs * lines) / (2 * 12 * tan), want = (cs * lines) / (2 * 14 * tan); // (a cell 12 dots at most this far; 14 here)
     const reach = this.foe?.pos ? _w.copy(this.foe.pos).sub(this.centre).setY(0).length() : 0, halfW = Math.max((B.w * cs) / 2 + border + 0.2, reach + 0.5);
     const near = Math.max((top / 2 + 0.15) / tan, halfW / (tan * asp));
     const d = Math.min(far, Math.max(want, near)), look = this.centre.clone().setY(this.centre.y + top / 2);
     return { pos: look.clone().addScaledVector(this.face, d).setY(look.y + 0.35), look };
+  }
+  /** On touch (the owner, 2026-10-27: "increasing the size of the tsuitate board"): the slab and its frame filling the room left of the
+   *  right column (the Sight, the Lachrimeter, the cluster and its strip) and under the top bar and the log, square to its face, so no
+   *  control stands over a cell; the bodies may leave the frame. */
+  touchShot(B, tan) {
+    const L = this.game.hudLayout, V = L.view, A = L.areas, gap = 8; if (!V?.w || !V?.h) return null;
+    const lefts = [L.box?.('sight'), L.box?.('lachrimeterTube'), A.cluster, A.strip].filter((r) => r && r.w > 0).map((r) => r.x);
+    const x0 = L.bounds.x, x1 = Math.min(L.bounds.x + L.bounds.w, ...lefts) - gap;
+    const y0 = Math.max(A.topBar.y + A.topBar.h, L.log ? L.log.y + L.log.h : 0) + gap, y1 = L.bounds.y + L.bounds.h;
+    if (x1 - x0 < 120 || y1 - y0 < 120) return null;
+    const { cs, base, border } = DUEL_VIEW, Wb = B.w * cs + 2 * border, Hb = B.h * cs + 2 * border, fill = 0.97;
+    const d = Math.max((Hb * V.h) / (2 * tan * fill * (y1 - y0)), (Wb * V.h) / (2 * tan * fill * (x1 - x0))), k = V.h / (2 * d * tan); // (k: CSS px a metre at d)
+    const right = _w.crossVectors(this.face, UP).negate().normalize(), dx = ((x0 + x1) / 2 - V.w / 2) / k, dy = ((y0 + y1) / 2 - V.h / 2) / k;
+    const look = this.centre.clone().setY(this.centre.y + base + (B.h * cs) / 2).addScaledVector(right, -dx).addScaledVector(UP, dy);
+    return { pos: look.clone().addScaledVector(this.face, d), look };
   }
   /** A cell's centre on the slab's face, in the world. */
   pointOf(cell) {
