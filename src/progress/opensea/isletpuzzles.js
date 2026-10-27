@@ -24,6 +24,7 @@
 //
 //   dealPuzzles(islets: [{ id, kit, tier }], seed) -> { pairs: [{ id, a, b, shape, colour }], lineups: [{ id, islet, bearing, pitch,
 //     size, dists }], echoes: [{ id, hear, play, phrase }], caches: [{ id, islet, tier, sealed? }] }
+//   riddles: [{ id, islet, kit, bottle: [col, row], offset }]   riddleText(riddle) -> the bottle's note   RIDDLE
 //   steleWords(isletId, seed, words) -> [3 words]   phraseHeard(phrase, played) -> 0..n (how many of the phrase's notes the last
 //   played ones match, from the start)   cachePay(tier) -> cubes   PAIR  LINEUP  ECHO  CACHE
 // ---------------------------------------------------------------------------------------
@@ -31,7 +32,7 @@ import { seeded } from '../../core/rng.js';
 import { ECON } from '../econ/table.js';
 
 /** How many of each a sea deals (a sea has about 18 islets: 3 pairs take 6, 3 line-ups 3, 2 echoes 4; the rest keep their secret alone). */
-export const PUZZLE_COUNT = { pairs: 3, lineups: 3, echoes: 2 };
+export const PUZZLE_COUNT = { pairs: 3, lineups: 3, echoes: 2, riddles: 2 };
 /** The pair: its find's tier; how near (m) a carved thing must be come to count as seen; the shapes and colours it is carved in. */
 export const PAIR = { tier: 'rare', seen: 6, shapes: ['urn', 'fish', 'bell', 'wheel', 'hand', 'moon'], colours: [0xd4a53c, 0x2f8f9d, 0xe07a5f, 0x9be36a, 0xb49be6, 0x3e3a8c] }; // (the pale cyan and the white washed out on the sand: Calissa, 2026-10-23; deep teal and indigo now)
 /** The line-up: the arcs' distances out from the spot (m); how near the spot you stand (m), how close your look to the line (rad);
@@ -39,6 +40,9 @@ export const PAIR = { tier: 'rare', seen: 6, shapes: ['urn', 'fish', 'bell', 'wh
 export const LINEUP = { dists: [60, 100, 150, 220], stand: 1.4, aim: 0.07, size: 0.1, pitch: 0.12 }; // (far, so the camera a few metres behind the eye sees nearly the same ring; pitched over the size, so the ring's foot is above the eye)
 /** The echo: notes a phrase; how near (m) the singing stone sings and the listening stone listens; the gap between sung notes (real s). */
 export const ECHO = { notes: 4, hear: 7, listen: 8, gap: 0.55 };
+/** The drift bottle's riddle (OPEN-SEA.md 14.7; Sea of Thieves' riddle maps): a bottle adrift `away` squares off its islet, its note the
+ *  way there in the sea's own words; read, it unseals a cache on that islet (never under `floor`) that only the dowse then finds. */
+export const RIDDLE = { away: [2, 3], floor: 'rare', reach: 20, kits: { rock: 'a bare rock', atoll: 'an atoll', stack: 'a sea stack', ruin: 'a ruin', lighthouse: 'a dead lighthouse', sandbar: 'a sandbar that shows at low water' } };
 /** The caches: which kits bury one (a rock only sometimes), and the echo's floor tier. */
 export const CACHE = { kits: { atoll: 1, sandbar: 1, rock: 0.35 }, echoFloor: 'rare', dig: 1.6 };
 
@@ -51,7 +55,7 @@ const hash = (s, seed) => { let h = 2166136261; for (const c of String(s)) { h ^
 export function dealPuzzles(islets, seed = 1) {
   const r = seeded(hash('puzzles', seed)), pool = [...islets].sort((a, b) => (a.id < b.id ? -1 : 1));
   for (let i = pool.length - 1; i > 0; i--) { const j = r.int(i + 1); [pool[i], pool[j]] = [pool[j], pool[i]]; }
-  const take = () => pool.shift() || null, out = { pairs: [], lineups: [], echoes: [], caches: [] };
+  const take = () => pool.shift() || null, out = { pairs: [], lineups: [], echoes: [], caches: [], riddles: [] };
   for (let i = 0; i < PUZZLE_COUNT.pairs; i++) {
     const a = take(), b = take(); if (!a || !b) break;
     out.pairs.push({ id: `pair:${i}`, a: a.id, b: b.id, shape: PAIR.shapes[i % PAIR.shapes.length], colour: PAIR.colours[(i * 2 + 1) % PAIR.colours.length] });
@@ -67,11 +71,32 @@ export function dealPuzzles(islets, seed = 1) {
     out.echoes.push({ id: `echo:${i}`, hear: hear.id, play: play.id, phrase });
     out.caches.push({ id: `cache:echo:${i}`, islet: play.id, tier: TIERS[Math.max(TIERS.indexOf(play.tier), TIERS.indexOf(CACHE.echoFloor))], sealed: `echo:${i}` });
   }
+  for (let i = 0; i < PUZZLE_COUNT.riddles; i++) {
+    const s = take(); if (!s) break;
+    const [c, row] = squareOf(s); let bottle = null;
+    for (let k = 0; k < 16 && !bottle; k++) { // (a way at least RIDDLE.away[0] squares long that stays on the sea's grid, 9 by 7)
+      const a = r.range(0, Math.PI * 2), d = RIDDLE.away[0] + r.int(RIDDLE.away[1] - RIDDLE.away[0] + 1), bc = Math.round(c + Math.cos(a) * d) + 0, br = Math.round(row + Math.sin(a) * d) + 0; // (+ 0: never a -0 in the save)
+      if (bc >= 0 && bc <= 8 && br >= 0 && br <= 6 && Math.max(Math.abs(bc - c), Math.abs(br - row)) >= RIDDLE.away[0]) bottle = [bc, br];
+    }
+    if (!bottle) bottle = [c < 4 ? c + 2 : c - 2, row];
+    out.riddles.push({ id: `riddle:${i}`, islet: s.id, kit: s.kit, bottle, offset: [r.range(-120, 120), r.range(-120, 120)] });
+    out.caches.push({ id: `cache:riddle:${i}`, islet: s.id, tier: TIERS[Math.max(TIERS.indexOf(s.tier), TIERS.indexOf(RIDDLE.floor))], sealed: `riddle:${i}` });
+  }
   for (const i of islets) {
     const p = CACHE.kits[i.kit] ?? 0; if (!p || out.caches.some((c) => c.islet === i.id)) continue;
     if (seeded(hash(`cache:${i.id}`, seed))() < p) out.caches.push({ id: `cache:${i.id}`, islet: i.id, tier: i.tier || 'common' });
   }
   return out;
+}
+
+/** A bottle's note: the way from where it drifted to its islet, in the board's words (squares north or south, east or west, as the
+ *  dock's board gives a herd's), and what the islet is. */
+export function riddleText(rd) {
+  const [c, row] = squareOf({ id: rd.islet }), [bc, br] = rd.bottle, dc = c - bc, dr = row - br; // (the board's own words: rows grow south, columns east; herds.js bearing)
+  const sq = (n) => `${n} square${n === 1 ? '' : 's'}`, parts = [];
+  if (dr) parts.push(`${sq(Math.abs(dr))} ${dr > 0 ? 'south' : 'north'}`);
+  if (dc) parts.push(`${sq(Math.abs(dc))} ${dc > 0 ? 'east' : 'west'}`);
+  return `From where I drifted, ${parts.join(' and ') || 'here'}: ${RIDDLE.kits[rd.kit] || 'an islet'}. Dig where the dowse sings.`;
 }
 
 /** A sea stele's three words: drawn from the ostraca's words by the islet, so the same stone says the same thing. */

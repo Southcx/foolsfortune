@@ -457,3 +457,22 @@ Animal Crossing: the clock runs while you are away, and an area is caught up on 
 "dispose" from turning into "forget": an area holds only drawing and physics, and every state that lasts belongs to its system and the
 save. The Dunes become five areas round the Weir; the open sea and the Raceway park each stay one, since a sail and a lap must not be
 cut.
+
+## 26. Tools that bend the rules; a sea with weather in it (South, 2026-10-27, through Calissa; PUZZLE-DUELS.md 17.4 and 18, OPEN-SEA.md 14)
+
+- **A puzzle duel's board is its Figment's**, one board on every device (a duel is the same game on the desk and the phone): the
+  Lantern Wisp's 14 x 14, measured to be as long and as winnable as the 20's with chains as deep, its cells 1.4x as big.
+- **The tools bend the clearing** (South: "utilize the lachryma tools to help dictate how the tile clearing mechanics work"), each
+  a modifier with its source on the board, never a new base rule: the psygun's Shoot pops a touching group (SameGame), the Soul Brush's
+  Paint repaints one colour within 4 cells (Columns' magic jewel, as a class; the whole half measured at a median 19 junk a stroke and
+  refused), the Crucibelle's Tune lets one colour clear at 3 for a turn (the crystals' frets: a note is a colour), the Veritome's Read
+  lifts Dread's fog. Measured by the swing of one move against the hand's best swap.
+- **The first duel is a lesson** (Ikaruga's prologue, Into the Breach's tutorial island): the foe's first turn idle, six verbs asked one
+  at a time and done by doing them, nothing locked. **The foe's intent is shown** (Into the Breach), drawn through the fog.
+- **The open sea has wind** (a real polar diagram; Wind Waker, Sea of Thieves, Pirates!): the point of sail decides the way and the fuel
+  (the engine burns what the sail does not carry), so a heading is a decision and the points of sail are the lesson. Gusts to chase,
+  rips to ride. The base burn was raised so a sailor who ignores the wind pays as before: skill skips grind.
+- **The sea is worth sailing for:** salvage at wrecks (one crate a game day once a wreck is emptied, the charted sea's small faucet),
+  the ship's parts as trades (the skiff garage's rule), beasts with one signature each whose answer is a tool (the myth is the
+  mechanic: the umibozu's bottomless ladle), the mounts given arcs so where the ship lies is the fight (Sea of Thieves' broadsides),
+  and a drift bottle's note that teaches dead reckoning from a written bearing (Sea of Thieves' riddles).

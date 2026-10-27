@@ -10,7 +10,10 @@
 // Prior art: Jurai's Light Hawk Wings (light as a sail), the Dorgenark's literal sails in space, Skies of Arcadia's sail-like fins; the
 // sail's own draft and flutter from vfx/sloop.js (where it was first written).
 //
-//   sailMaterial(lotus, { vane, fill, edge, fillA, belly }) -> MeshStandardMaterial   m.userData.u: { uFill, uSide, uLotus, uT, uEdge, uEdgeCol, uFillA, uBellyN, uBelly }
+// THE LUFF (OPEN-SEA.md 14, the wind): `uLuff` 0..1, head to wind, the cloth gone slack: a fast ripple runs along its free edge (the
+// leech, or a square sail's foot: uv.y 1, away from what it hangs from) and a slower shiver over the whole, and the cloth pales and thins.
+// At 0 the sail is exactly as it was (every other caller never sets it).
+//   sailMaterial(lotus, { vane, fill, edge, fillA, belly }) -> MeshStandardMaterial   m.userData.u: { uFill, uSide, uLotus, uT, uEdge, uEdgeCol, uFillA, uBellyN, uBelly, uLuff }
 //   (belly: the draft's depth in metres at full fill, 0.55 for a sail of the first hulls' size; a ship five times as long passes five times it)
 //   FURL (the sail, 0 furled .. 1 full, at or under which a ship's canvas is stowed: the mooring's)
 // ---------------------------------------------------------------------------------------
@@ -24,20 +27,22 @@ const SAIL = 0xf6e6c8;
 
 export function sailMaterial(lotus, { vane = false, fill = SAIL, edge = 0xffffff, fillA = 0.38, belly = 0.55 } = {}) {
   const u = { uFill: { value: 0.6 }, uSide: { value: 1 }, uLotus: { value: lotus }, uT: { value: 0 },
-    uEdge: { value: vane ? 1 : 0 }, uEdgeCol: { value: new THREE.Color(edge) }, uFillA: { value: vane ? fillA : 1 }, uBellyN: { value: vane ? 1 : 0 }, uBelly: { value: belly } };
+    uEdge: { value: vane ? 1 : 0 }, uEdgeCol: { value: new THREE.Color(edge) }, uFillA: { value: vane ? fillA : 1 }, uBellyN: { value: vane ? 1 : 0 }, uBelly: { value: belly }, uLuff: { value: 0 } };
   const m = matteMaterial({ color: vane ? fill : SAIL, side: THREE.DoubleSide, forceSinglePass: true, transparent: vane, depthWrite: !vane }); // (Lambert: matte, no metal, no env, cloth whose patch never reads roughness; half the GLSL of Standard and 0.5 to 0.7 of its cost a lit pixel, vfx/matte.js; the program audit, 2026-10-25)
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, u);
     sh.vertexShader = sh.vertexShader
-      .replace('#include <common>', '#include <common>\nuniform float uFill, uSide, uT, uBellyN, uBelly; varying vec2 vSailUv;')
+      .replace('#include <common>', '#include <common>\nuniform float uFill, uSide, uT, uBellyN, uBelly, uLuff; varying vec2 vSailUv;')
       .replace('#include <begin_vertex>', `#include <begin_vertex>
 vSailUv = uv;
 float belly = sin(uv.x * 3.14159) * sin(uv.y * 3.14159 * 0.92 + 0.12); // (fullest a third of the way back, low: a real sail's draft)
 vec3 sailWay = uBellyN > 0.5 ? normalize(objectNormal) : vec3(1.0, 0.0, 0.0);
 transformed += sailWay * (uSide * uFill * belly * uBelly);
-transformed.x += sin(uT * 3.0 + uv.y * 4.0) * 0.022 * uBelly * uv.x;`);
+transformed.x += sin(uT * 3.0 + uv.y * 4.0) * 0.022 * uBelly * uv.x;
+if (uLuff > 0.001) { float sailFree = smoothstep(0.35, 1.0, uv.y), sailU = uv.x > 1.5 ? uv.x - 2.0 : uv.x; // (the free edge flogs; the whole cloth shivers)
+  transformed += sailWay * uLuff * uBelly * (sin(uT * 21.0 + sailU * 17.0 + uv.y * 5.0) * 0.32 * sailFree * sailFree + sin(uT * 9.0 + sailU * 7.0 - uv.y * 6.0) * 0.07 * belly); }`);
     sh.fragmentShader = sh.fragmentShader
-      .replace('#include <common>', '#include <common>\nuniform sampler2D uLotus; uniform float uEdge, uFillA; uniform vec3 uEdgeCol; varying vec2 vSailUv;')
+      .replace('#include <common>', '#include <common>\nuniform sampler2D uLotus; uniform float uEdge, uFillA, uLuff; uniform vec3 uEdgeCol; varying vec2 vSailUv;')
       .replace('#include <color_fragment>', `#include <color_fragment>
 float sailLotus = 0.0;
 { vec2 q = (vSailUv - vec2(0.42, 0.5)) / vec2(0.62, 0.5) + 0.5; sailLotus = all(greaterThan(q, vec2(0.0))) && all(lessThan(q, vec2(1.0))) ? texture2D(uLotus, q).a : 0.0;
@@ -45,7 +50,8 @@ float sailLotus = 0.0;
 vec2 sailEu = vec2(vSailUv.x > 1.5 ? vSailUv.x - 2.0 : vSailUv.x, vSailUv.y);
 float sailE = min(min(sailEu.x, 1.0 - sailEu.x), min(sailEu.y, 1.0 - sailEu.y));
 float sailEdge = (1.0 - smoothstep(0.02, 0.05 + fwidth(sailE) * 1.5, sailE)) * uEdge;
-diffuseColor.a *= mix(1.0, max(max(uFillA, sailEdge), sailLotus * 0.9), uEdge);`)
+diffuseColor.a *= mix(1.0, max(max(uFillA, sailEdge), sailLotus * 0.9), uEdge);
+diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.86, 0.86, 0.84), 0.35 * uLuff); diffuseColor.a *= 1.0 - 0.35 * uLuff * (1.0 - sailEdge); // (slack: paler and thinner, the rim kept)`)
       .replace('#include <emissivemap_fragment>', `#include <emissivemap_fragment>
 totalEmissiveRadiance += uEdgeCol * (sailEdge * 1.4 + uEdge * 0.14) + vec3(0.89, 0.6, 0.18) * sailLotus * uEdge * 0.35;`);
   };

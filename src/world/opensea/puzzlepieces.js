@@ -6,6 +6,8 @@
 //   a LINE-UP's spot on an islet's shore (a flat stone) and its four arcs hung over the water, each at its distance and scaled to it, so
 //     from the spot's eye they close into one ring: stand on the spot and look along it and it is a fix and the squares round charted
 //     (`sea.lineup`);
+//   a DRIFT BOTTLE adrift a few squares off its islet: F alongside at the helm reads its note (the way there), which unseals a cache on
+//     that islet for the dowse (`sea.bottle`; Sea of Thieves' riddle maps);
 //   an ECHO's two stones: the singing one sings its phrase (in the Crucibelle's own voice and the degrees' colours, a note glyph a
 //     note) when you come near; the listening one has a socket a note, lit as the Crucibelle's notes played near it match the phrase
 //     from its start; the whole phrase and its cache rises and pays (`sea.echo.hear`, `sea.echo`, `sea.dig`);
@@ -21,10 +23,12 @@
 //   new PuzzlePieces(room)   .update(dt)   .interact(P) -> bool (F)   .unearth(point, r) -> n   .deal   (the looks: game.puzzleLooks dresses
 //   .pairs[].at[].mesh, .lineups[].stone / .arcs, .echoes[].hearAt.mesh / .playAt.mesh / .sockets, and draws the dig and the opened box)
 //   events (each with `by`): sea.pair.half { id, shape }, sea.pair { id, shape, tier }, sea.lineup { id, charted }, sea.echo.hear { id },
-//   sea.echo { id }, sea.dig { id, tier, cubes, how }
+//   sea.echo { id }, sea.dig { id, tier, cubes, how }, sea.bottle { id, islet, text }   .pickBottle(pos, reach) -> bool (F at the helm)
+//   .bottles[].mesh (a drift bottle, the looks' to dress)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { dealPuzzles, phraseHeard, cachePay, PAIR, LINEUP, ECHO, CACHE } from '../../progress/opensea/isletpuzzles.js';
+import { dealPuzzles, phraseHeard, cachePay, riddleText, PAIR, LINEUP, ECHO, CACHE, RIDDLE } from '../../progress/opensea/isletpuzzles.js';
+import { squareCentre, SEA } from './seaprops.js';
 import { neighbours } from '../../progress/opensea/seagrid.js';
 import { takeFix } from '../../progress/opensea/seatrip.js';
 import { today } from '../../core/calendar.js';
@@ -74,6 +78,12 @@ export class PuzzlePieces {
       const hear = stoneAt(E.hear), play = stoneAt(E.play);
       const sockets = E.phrase.map((_, k) => { const s = add(new THREE.Mesh(new THREE.SphereGeometry(0.13, 8, 6), mat(0x2a2620, { emissive: 0x000000 }))); s.position.copy(play.mesh.position).add(_a.set((k - (E.phrase.length - 1) / 2) * 0.3, 1.25, 0).applyAxisAngle(Y, play.mesh.rotation.y)); return s; });
       return { ...E, hearAt: hear, playAt: play, sockets, sungT: 0 };
+    });
+    // the drift bottles (OPEN-SEA.md 14.7): one adrift in its square, its note the way to a sealed cache
+    this.bottles = this.deal.riddles.map((rd, k) => {
+      const at = squareCentre(rd.bottle[0], rd.bottle[1], new THREE.Vector3()).add(_a.set(rd.offset[0], 0, rd.offset[1])).setY(SEA.y + 0.2);
+      const mesh = add(new THREE.Mesh(new THREE.CylinderGeometry(0.18, 0.22, 0.8, 8), mat(0x5fa88a, { emissive: 0x1a3a2a }))); mesh.position.copy(at); mesh.rotation.z = 1.2 + k;
+      return { ...rd, at, mesh };
     });
     // the caches: buried, a signature for the dowse
     this.caches = this.deal.caches.map((c) => {
@@ -176,8 +186,17 @@ export class PuzzlePieces {
     m.position.copy(C.ground).setY(C.ground.y + 0.2); this.game.scene.add(m);
   }
   /** The looks from the state (built, loaded, or reset by a new build): lit arcs and sockets, the dug caches' boxes. */
+  /** F at the helm alongside a drift bottle (opensea.js asks first at sea): its note read, its cache unsealed. */
+  pickBottle(pos, reach) {
+    const S = this.room.puzzle, B = this.bottles.find((b) => !S.solved.has(b.id) && Math.hypot(b.at.x - pos.x, b.at.z - pos.z) < RIDDLE.reach + reach);
+    if (!B) return false;
+    S.solved.add(B.id); this.room.dirty(); this.sync();
+    this.emit('sea.bottle', { id: B.id, islet: B.islet, text: riddleText(B) });
+    return true;
+  }
   sync() {
     const S = this.room.puzzle;
+    for (const B of this.bottles || []) B.mesh.visible = !S.solved.has(B.id);
     for (const L of this.lineups) for (const a of L.arcs) a.material.emissive.setHex(S.solved.has(L.id) ? 0x6a5a30 : 0x000000);
     for (const E of this.echoes) this.light(E, S.solved.has(E.id) ? E.phrase.length : 0);
     for (const C of this.caches) if (S.dug.has(C.id)) this.opened(C); else if (C.box) C.box.visible = false;

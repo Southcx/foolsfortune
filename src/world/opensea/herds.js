@@ -11,10 +11,10 @@
 // Hunter's posted investigations, Red Dead Redemption 2's legendary animals told by rumour.
 //
 //   new SeaHerds(room)   .update(dt)   .helmPlate()   .dispose() (the room's teardown)   .list (the game day's herds, each { id, square, cls, n, bodies })   .dump() / .load(d) (the room's save)
-//   events (each with `by`): sea.herds { day, n, herds: [{ id, squares, way }] }, sea.herd { id, square, cubes }, sea.herd.paid { cubes, n }, sea.plate {} (a plate from the helm)
+//   events (each with `by`): sea.herds { day, n, herds: [{ id, squares, way }] }, sea.rumour { id, squares, way } (the game day's posted beast), sea.herd { id, square, cubes }, sea.herd.paid { cubes, n }, sea.plate {} (a plate from the helm)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { herdsOf, herdFee } from '../../progress/opensea/migrations.js';
+import { herdsOf, herdFee, rumourOf } from '../../progress/opensea/migrations.js';
 import { squareCentre, SEA } from './seaprops.js';
 import { today } from '../../core/calendar.js';
 import { seeded } from '../../core/rng.js';
@@ -63,10 +63,16 @@ export class SeaHerds {
   /** A dock: the board posted (once a game day), and what the herds met since the last dock paid. */
   docked() {
     const g = this.game, S = this.state;
-    if (!S.posted) { S.posted = true; g.events?.emit('sea.herds', { day: this.day, n: this.list.length, herds: this.list.map((H) => this.bearing(H)), by: 'courier' }); }
+    if (!S.posted) {
+      S.posted = true; g.events?.emit('sea.herds', { day: this.day, n: this.list.length, herds: this.list.map((H) => this.bearing(H)), by: 'courier' });
+      const R = this.rumour(); if (R) g.events?.emit('sea.rumour', { ...this.bearing(R), by: 'courier' }); // (the game day's named beast: migrations.js rumourOf)
+    }
     if (S.owed > 0) { g.cubes?.earn(S.owed, 'herd'); g.events?.emit('sea.herd.paid', { cubes: S.owed, n: S.owedN, by: 'courier' }); S.owed = 0; S.owedN = 0; }
     this.room.dirty();
   }
+
+  /** The game day's rumour (migrations.js rumourOf): one beast posted in one square. */
+  rumour() { return rumourOf(this.room.grid, this.day, this.room.seed); }
 
   /** Where a herd lies from where the ship stands: the species, how many squares, and the way (rows grow south, columns east). */
   bearing(H) {
