@@ -510,11 +510,11 @@ a sea (10.2 broken off), the fuel and the charting unchanged.
   sunk enough of it, for cubes. A trade like every part, its myth in its numbers:
   | part | from | carves | cubes | does |
   | --- | --- | --- | --- | --- |
-  | Serpent keel (`serpentKeel`) | the sea serpent | 3 | 120 (15 min) | turns 1.2x and tracks a current (0.9x its push); 0.95x way |
+  | Sea serpent keel (`serpentKeel`) | the sea serpent | 3 | 120 (15 min) | turns 1.2x and tracks a current (0.9x its push); 0.95x way |
   | Akhlut hull (`akhlutHull`) | the akhlut | 3 | 120 | the fastest hull, 1.12x way; one hit fewer, 0.9x turn |
   | Umibozu hull (`monkHull`) | the umibozu | 3 | 120 | two hits more; 0.85x way (it holds the sea it pours) |
   | Kraken sail (`krakenSail`) | the kraken | 3 | 240 (30 min) | draws in light airs (the wind's 0.3 reads 0.43), spills a gale (0.9 reads 0.65) |
-  | World-serpent sail (`worldSail`) | Jormungandr | 1 | 480 (60 min) | points to 35 degrees, best at 120, runs at 0.9; starves in light airs |
+  | Jormungandr sail (`worldSail`) | Jormungandr | 1 | 480 (60 min) | points to 35 degrees, best at 120, runs at 0.9; starves in light airs |
 - **A carve** is a beast sunk; sunk with the hull whole it is two (skill skips grind; grind closes the gap). Read from the ledger
   (`seabeast.down.<id>`, `seabeast.down.whole.<id>`; the serpent's `seaserpent.down`, `.whole`), nothing kept beside it.
 - **The price** is a drain: a class 2 part about three of its kills' pay (4.5 to 7.5 minutes each), so a part is a session's aim.
