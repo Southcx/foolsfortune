@@ -6,7 +6,8 @@
 //   LINE    'line' { line } (the boundary slid a column toward whoever took the garbage): a stone block dragged a beat, a thud, panned to
 //           where the line now stands
 //   CLEAR   'clear' { colour, side }: a glassy pop, its pitch the gem's feeling as a step of the duel's key (the cue's root), so clears
-//           of different feelings chord; a limit a feeling. 'chain' { weak } (a weak colour's hit) a brighter edge on its step
+//           of different feelings chord; a limit a feeling and one for all; ducked under a chain step that lands with it (deeper the
+//           higher the step), so the step is the line heard and a cascade is a climb, not a pile. 'chain' { weak } (a weak colour's hit) a brighter edge on its step
 //   BEATS   'allclear' (the key's chord blooming up), 'refund' (an action point back: a coin's two notes), 'turn' (a woodblock, high
 //           yours, low the foe's), 'ember.cool' (a hiss and a glassy note), 'hint' (the idle hint: a breath of the fifth, once in 10 s)
 //   and the rest: fall (a soft patter), break (junk cracking: clay), blast (a bomb), pinch (junk turned to a gem: a clay crack resolving
@@ -33,7 +34,7 @@
 //           Courier, a heartbeat quickening as the pull fills, and a pair of detuned tones closing in on each other a fifth higher (the
 //           aberrant's data bug heard: two notes almost one); on the loop bus, so a menu hushes it. duel.slip lets it go with a falling
 //           breath; duel.open (the pull full, the duel begun) snaps it shut on a caught-frame crack and a low boom
-// No view or room yet (PUZZLE-DUELS.md 8): nothing calls these until one exists.
+// The duel's view (vfx/duelview/beats.js, Calissa's) calls duelEvent with each event as it plays it.
 // Prior art: Puyo Puyo's chain voices (each step a higher call: the step is heard before it is counted), Tetris Effect's notes on the
 // key, Puzzle Fighter's gem shatter and counter-gem thud, Meteos's launch.
 // Every method runs on the Sfx itself (`this.ctx`, `this.out`, `this.noise`, `this.tone`, `this.allow`: audio/core.js).
@@ -95,7 +96,8 @@ export class PuzzleDuelSounds {
   /** A chain's step: a note higher each, fuller as it climbs. */
   duelChain(step = 1, side = 0, weak = false) {
     if (!this.ok() || !this.allow('duelChain', 12)) return;
-    const n = Math.max(1, step | 0), foe = side === 1, t = this.ctx.currentTime, d = this.duelOut(0.32 + 0.045 * Math.min(8, n), 0.35 + 0.05 * Math.min(6, n), sidePan(side));
+    const n = Math.max(1, step | 0), foe = side === 1, t = this.ctx.currentTime; this._duelStep = { t, n };
+    const d = this.duelOut(0.32 + 0.045 * Math.min(8, n), 0.35 + 0.05 * Math.min(6, n), sidePan(side));
     const m = chainNote(n, duelRoot(this)) - (foe ? 12 : 0), type = foe ? 'square' : 'triangle', g = foe ? 0.05 : 0.11;
     if (weak && !foe) { this.tone(t, 0.22, { f0: hz(m + 12), type: 'sawtooth', gain: 0.025, dest: d }); this.noise(t, 0.05, { type: 'highpass', f0: 6000, gain: 0.12, dest: d }); } // (a weak colour's hit: a brighter edge)
     this.tone(t, 0.3, { f0: hz(m - 0.5), f1: hz(m), type, gain: g, dest: d }); // (a little scoop up into the note)
@@ -111,8 +113,12 @@ export class PuzzleDuelSounds {
   }
   /** A gem cleared: a glassy pop at its colour's note. */
   duelClear(colour, side = 0) {
-    if (!this.ok() || !this.allow(`duelClear.${colour}`, 10)) return; // (a limit a feeling: three colours at once are a chord, not one pop)
-    const t = this.ctx.currentTime, d = this.duelOut(0.22, 0.3, sidePan(side) * 0.5), m = duelRoot(this) + 12 + (FEELING_STEP[colour] ?? 0) - (side === 1 ? 12 : 0);
+    if (!this.ok() || !this.allow(`duelClear.${colour}`, 10) || !this.allow('duelClearAll', 28)) return; // (a limit a feeling: three colours at once are a chord, not one pop; and all of them, so a board-wide cascade cannot pile)
+    queueMicrotask(() => this.duelClearNow(colour, side)); // (after the phase's other events: its chain step comes after its clears, and the duck needs to know it)
+  }
+  duelClearNow(colour, side = 0) {
+    const t = this.ctx.currentTime, st = this._duelStep, under = st && st.n >= 2 && t - st.t < 0.15 ? Math.max(0.3, 0.8 - 0.08 * st.n) : 1; // (the duck: a cascade's clears tucked under its step, more the higher it climbs; a plain match stays bright)
+    const d = this.duelOut(0.22 * under, 0.3, sidePan(side) * 0.5), m = duelRoot(this) + 12 + (FEELING_STEP[colour] ?? 0) - (side === 1 ? 12 : 0);
     this.noise(t, 0.02, { type: 'bandpass', f0: 5000, q: 2, gain: 0.15, dest: d });
     [1, 2.76].forEach((r, j) => this.tone(t, 0.18, { f0: hz(m) * r, gain: j ? 0.01 : 0.04, dest: d }));
   }

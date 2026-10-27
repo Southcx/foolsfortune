@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // WHAT PLAYS WHERE: the one place that says which cue the game is in (main.js asks it every frame and hands the answer to
 // MusicPlayer.follow). In order: the main theme over the title and the pause; nothing while a chest's rave, the God Hand or the rhythm
-// mode has the floor; a hop's stage on the Emocean; the battle; a Well's floor; the battle while they are in a fight (game.combat: it starts on a notice and eases off after the last threat); the dive under the water (the Shallows, the Deep below a few metres or in the
+// mode has the floor; a puzzle duel's own cue; a hop's stage on the Emocean; the battle; a Well's floor; the battle while they are in a fight (game.combat: it starts on a notice and eases off after the last threat); the dive under the water (the Shallows, the Deep below a few metres or in the
 // Well's Lachryma); a shanty on the Solar Skiff (the next work song each time the sail goes up); the Dunes' theme in the dunes; the work song in the workshop.
 // A dive waits a moment before it takes over (and before it lets go), so a duck under the surface does not cut the place's music.
 //
@@ -33,6 +33,7 @@ import { phaseAt } from '../progress/weather.js';
 import { OPEN_SEA, setSea } from './opensea.js';
 import { READING, setReading } from './reading.js';
 import { DRAFTING } from './drafting.js';
+import { DUEL, hearDuel } from './duel.js';
 import { seasonOf } from '../progress/seasons.js';
 
 const DWELL_IN = 1.5, DWELL_OUT = 2.5; // (seconds under before the dive's music starts; seconds up before it stops)
@@ -52,6 +53,7 @@ export function chooseMusic(game, { overlay = false } = {}) {
   if (T?.active || (T?.outcome && game.garden?.inside && A?.alive && A.score === KILN)) { setKiln(T); return KILN; }
   if (game.garden?.awakening) return AWAKENING; // (a fossil woken by the Crucibelle's song: once, then the garden again)
   if (game.garden?.inside) { setGarden({ phase: phaseAt(), draught: strongest(game.draught), season: seasonNow(), rain: game.realm?.waterworks?.rain?.() ?? 0, briar: game.harmony?.briarK?.() ?? 0 }); return GARDEN; } // (the Inner Realm: the day's phase, your draught, the season, its rain and the planetoid's briar, music/garden.js)
+  if (game.duel?.active) { hearDuel(game); return DUEL; } // (a puzzle duel open: its own cue, the Line's sections and the chain's heat, practice held calm: music/duel.js)
   if (game.emocean?.stage?.active && game.emocean.stage.legs?.length) { hearRail(game); const st = game.emocean.stage, enc = st.encounter || st.campfire; setEncounter(enc && !enc.chosen); setFoeUnder(st.foe?.under); const B = st.boss; setBoss(B ? (B.down ? 'down' : B.enraged && !B.fell ? 'enraged' : 'up') : null); // (a boss's peak holds until it falls: stage.boss { enraged, fell, down }, RAIL-FLOW.md 5; fallen, the enrage layer drops while the ship comes round)
     setTrip({ lowFuel: st.fuel != null && st.fuel < 0.25, adrift: st.adrift, figures: game.emocean.figures }); return tripCue(game.emocean.stage.legs); } // (the rollercoaster: a cue a leg, music/legs.js)
   if (game.emocean?.stage?.active) return stageCue(game.emocean.stage.seconds ?? 150, game.emocean.stage.setPieces ?? game.emocean.stage.setPiece); // (a hop's rail is paced to its cue, so the fight on it is the cue: music/emocean.js)
