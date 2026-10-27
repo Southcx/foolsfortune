@@ -98,18 +98,23 @@ void main() {
     vec2 c = vec2(vUv.x * uGrid.x, (1.0 - vUv.y) * uGrid.y);
     float fwx = max(fwidth(c.x), 1e-4), k = smoothstep(-fwx, fwx, c.x - uLine), yy = c.y / uGrid.y;
     float ph = labPhase(vW * 0.6, vView);
-    vec3 cour = mix(srgb(vec3(0.129, 0.086, 0.243)), srgb(vec3(0.067, 0.043, 0.125)), yy);
-    cour += labSoft(ph + c.x * 0.02) * (0.03 + 0.06 * smoothstep(0.2, 1.0, sin(dot(c, vec2(0.35, -0.25)) + t * 0.2)));
-    vec3 foe = mix(uFoe, srgb(vec3(0.051, 0.039, 0.071)), 0.74 + 0.12 * yy);
+    // the slab is neutral and calm under the gems (South, 2026-10-27: the tint washed them to one colour): a charcoal near #141418, a
+    // breath of each side's own at most (the film's sheen on yours, the foe's feeling on its), the tint itself on the frame and the dome
+    vec3 cour = mix(srgb(vec3(0.085, 0.085, 0.1)), srgb(vec3(0.066, 0.066, 0.078)), yy);
+    cour += labSoft(ph + c.x * 0.02) * 0.012;
+    vec3 foe = mix(srgb(vec3(0.085, 0.08, 0.085)), uFoe, 0.06) * (1.0 - 0.15 * yy);
     vec3 col = mix(cour, foe, k);
     col = mix(col, vec3(1.0), (1.0 - k) * uFlash.x + k * uFlash.y);
     vec2 f = fract(c) - 0.5; float fw = max(fwidth(c.y), fwx);
     float grid = 1.0 - smoothstep(0.0, fw * 1.2, 0.5 - max(abs(f.x), abs(f.y)));
-    col = mix(col, srgb(vec3(0.91, 0.86, 0.78)), grid * 0.06);
-    vec2 g = texture2D(uGrav, (floor(c) + 0.5) / uGrid).xy * (255.0 / 127.0) - 1.0; // (the cell's gravity: the grain of the slab)
-    if (dot(g, g) > 0.25) { g = normalize(g); float b = dot(f, g), a = dot(f, vec2(-g.y, g.x));
-      float ch = (1.0 - smoothstep(0.018, 0.018 + fw, abs(b - 0.12 + abs(a) * 0.8))) * step(abs(a), 0.12); // (one short chevron low in the cell, pointing the way things go: a V and the grid above it read as a heart)
-      col = mix(col, srgb(vec3(0.91, 0.86, 0.78)), ch * 0.1); } // (the grain: faint, so it never reads as a pattern of its own)
+    col *= 1.0 + 0.06 * mod(floor(c.x) + floor(c.y), 2.0); // (a quiet checker: the cells read without lines of their own)
+    col = mix(col, srgb(vec3(0.91, 0.86, 0.78)), grid * 0.03);
+    vec2 cc = floor(c), g = texture2D(uGrav, (cc + 0.5) / uGrid).xy * (255.0 / 127.0) - 1.0; // (the cell's gravity: shown only at the half's back wall)
+    if (dot(g, g) > 0.25) { g = normalize(g); vec2 nx = cc + floor(g + 0.5); float wall = 1.0;
+      if (nx.x >= 0.0 && nx.y >= 0.0 && nx.x < uGrid.x && nx.y < uGrid.y) { vec2 gn = texture2D(uGrav, (nx + 0.5) / uGrid).xy * (255.0 / 127.0) - 1.0; wall = 1.0 - step(-0.5, dot(gn, g)); } // (the edge, or a neighbour falling the other way: the Line between halves that fall toward each other)
+      float b = dot(f, g), a = dot(f, vec2(-g.y, g.x));
+      float ch = (1.0 - smoothstep(0.02, 0.02 + fw, abs(b - 0.3 + abs(a) * 0.7))) * step(abs(a), 0.2); // (a faint arrow against the wall the half falls to, never in every cell)
+      col = mix(col, srgb(vec3(0.91, 0.86, 0.78)), ch * 0.16 * wall); }
     // Dread's fog (dread.js visibleTo): the hidden ground under ink marbling (suminagashi, the pall's colours), the lantern's pool warm
     vec4 fg = texture2D(uFog, vec2(vUv.x, 1.0 - vUv.y)); float fog = fg.r, lamp = fg.g;
     if (fog + lamp > 0.001) {

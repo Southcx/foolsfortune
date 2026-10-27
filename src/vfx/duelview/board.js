@@ -2,9 +2,9 @@
 // THE TSUITATE (the duel's view: vfx/duelview.js): a puzzle duel's board as a made thing standing in the world (the owner's pick A,
 // 2026-10-19): a single-panel screen whose face is a slab of Lachrymite 20 cells by 20, in a frame of Anagami's clay (OVERLAY.md 15.4's
 // Clay dress: fired terracotta, an ash run along its top, a kintsugi seam, bronze bosses at its corners) on two clay feet. On it:
-//   THE SLAB        drawn by the domains' clash's program in its slab mode (vfx/duelview/domains.js): the Courier's half Lachryma's deep
-//                   with the film's sheen, the foe's its feeling fired dark, the cells' faint grid, each cell's gravity etched as a
-//                   chevron (the board's own map, board.grav), the Line a seam of the film's light
+//   THE SLAB        drawn by the domains' clash's program in its slab mode (vfx/duelview/domains.js): a calm neutral charcoal under the
+//                   gems (the tint is the frame's and the dome's: South, 2026-10-27), a quiet checker for the cells, the gravity shown
+//                   only as a faint arrow against the wall each half falls to (the board's own map, board.grav), the Line a seam of the film
 //   THE LINE'S BEADS a brass bead at the Line's head and foot on the frame, sliding with it
 //   THE AP BEADS    five Lachrymite beads a side in the frame's foot (DUEL.ap): the Courier's in the film, the foe's in its feeling, dark
 //                   when spent, cracked black when a stun or a delay took them (the `turn` event's `lost`)
