@@ -4152,3 +4152,11 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   (audio/health.js): the audio clock against the wall clock each 2 real s, and a fall behind or a stopped context written into the
   field report with what was sounding, the zone and the cue's section.
 - **Rule:** NEW:audio-one-shot-let-go
+
+### 2026-10-27 · The parry at sea reached only round the hull's middle (found at the gate with the crew; Petra)
+- **Seen:** reading the parry for Espada's hand: a spit was sent back only within 7 m of the hull's middle, so a glob falling on a 35 m
+  sloop's bow or stern could not be parried at all, though it hit (the hull's test already went by the footprint).
+- **Cause (as read):** the parry's reach was a distance from `helm.pos`, the same point test NEW:hull-is-a-footprint retired for the hits.
+- **Fix:** the parry measures from the footprint (`helm.hullDist`), its reach x1.5 with Espada aboard. Measured: a spit 9 m off the bow's
+  tip sent back.
+- **Rule:** NEW:hull-is-a-footprint (the same rule: every test against the hull, the parry's too)
