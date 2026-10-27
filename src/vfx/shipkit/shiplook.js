@@ -11,12 +11,16 @@
 // The core's crystals and the keel take the ship's feeling: `feeling(hex)` (the rail's older name for it is the classes' alias), and every frame the keel's colour as the rail tints it.
 // Prior art: as each part's module says; the shared-kit way of every console-era vehicle roster (one material, one rig, data a class).
 //
+// THE WIND (OPEN-SEA.md 14; the open sea's helm, world/opensea/helm.js): `set({ fill, luff })` bellies the vanes by how full the sail
+// draws (0..1, the point of sail's share) and flogs them head to wind (luff 1: vane.js `uLuff`); `wind(rel, k)` (or `set({ wind, windK })`)
+// gives the wind's way in the ship's frame (the yaw it blows toward less the ship's), so the fore-and-aft vanes belly to leeward and the
+// pennant streams downwind, longer and tauter by its strength, flapping faster. Given no wind, all is as it was (the rail's crossing).
 // THE SIZE (the owner, 2026-10-27: "about five times larger ... host a crew of six courier-sized entities or more"): each class authored
 // at its life size (the sloop 35 m), `scale` its length over the first hulls' (the sloop's 7 m), for the runtime's framing to read from
 // one number; `deckY` the main deck amidships and `deckHeight(z)` along it (ship frame, m), `crewSpots()` six or more places on deck.
 //
 //   new ShipLook(spec, { env })   .group .body .length .beam .scale .deckY .keelMat .mouth .gunAt .helmCradles .helmCradle .rig .hullMat .sail
-//   .set({ sail, heel, side, glow, t, form, roll })   .fold(u | null)   .feeling(hex)   .hurt(k)   .scars({ open, gilt })   .hoist(medal)
+//   .set({ sail, heel, side, glow, t, form, roll, fill, luff, wind, windK })   .wind(rel | null, k)   .fold(u | null)   .feeling(hex)   .hurt(k)   .scars({ open, gilt })   .hoist(medal)
 //   .helmCradleSpots()   .helmWake(on, i)   .helmTick(t)   .deckHeight(z)   .crewSpots() -> [[x, z, y]]   .dispose()   .stats() -> { tris, draws }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -76,6 +80,7 @@ export class ShipLook {
     const pen = track(new THREE.PlaneGeometry(1.4, 0.24, 12, 1)); pen.translate(-0.7, 0, 0);
     this.pennant = new THREE.Mesh(pen, track(new THREE.MeshStandardMaterial({ color: 0xc2432b, emissive: 0x6a1a10, emissiveIntensity: 0.25, side: THREE.DoubleSide, roughness: 0.6 })));
     this.pennant.name = 'ship-pennant'; this.pennant.scale.setScalar(spec.pennantScale ?? 1); this.body.add(this.pennant);
+    this.penS = spec.pennantScale ?? 1; this.penBase = Float32Array.from(pen.attributes.position.array); this.windRel = null; this.windK = 0; this.penFlap = false; // (the streamer's flat shape, waved on the CPU: 26 vertices)
     // the gun (the psygun's mount: the rail fires from here)
     this.gunAt = new THREE.Object3D(); this.gunAt.position.set(...(spec.gun || [0, 0.8, spec.length * 0.3])); this.body.add(this.gunAt);
     // the Umbral's caustics over the hull (their overlay lies only on an opaque host: the hull is turned transparent after)
@@ -88,8 +93,10 @@ export class ShipLook {
 
   /** Per frame: sail hoisted (0 .. FURL stowed: the vanes go out like a lamp, the masts stand bare), heel, the wind's side, the drive's
    *  glow, time; and the fold's inputs, `form` and `roll` (see the header). */
-  set({ sail = 1, heel = 0, side = 1, glow = 0.6, t = 0, form, roll = 0 } = {}) {
+  set({ sail = 1, heel = 0, side = 1, glow = 0.6, t = 0, form, roll = 0, fill = 1, luff = 0, wind, windK } = {}) {
     this.body.rotation.z = heel;
+    if (wind !== undefined) this.wind(wind, windK ?? this.windK);
+    const rel = this.windRel, blown = rel != null; if (blown) side = Math.sin(rel) < 0 ? -1 : 1; // (the belly to leeward: the rig's +x a side, rig.js poseVanes)
     const furled = sail <= FURL, st = this.drive.step({ form, roll, t });
     this.foldU = st.u;
     if (this.rig) {
@@ -98,11 +105,25 @@ export class ShipLook {
       const P = this.spec.pennant ?? { mast: 0 }; this.rig.topOf(P.mast, this.pennant.position); this.pennant.position.y += 0.05;
     } else if (this.spec.pennant?.at) this.pennant.position.set(...this.spec.pennant.at);
     this.pennant.visible = st.u < 0.6 || !!this.spec.pennant?.at;
-    this.pennant.rotation.y = Math.PI / 2 + (side < 0 ? -1 : 1) * 0.6 + Math.sin(t * 6) * 0.08;
-    if (this.sail) { const u = this.sail.userData.u; u.uFill.value = furled ? 0 : sail; u.uSide.value = 1; u.uT.value = t; }
+    if (blown) this.streamPennant(rel, this.windK, t); else { if (this.penFlap) this.streamPennant(null, 0, t); this.pennant.rotation.y = Math.PI / 2 + (side < 0 ? -1 : 1) * 0.6 + Math.sin(t * 6) * 0.08; }
+    if (this.sail) { const u = this.sail.userData.u, f = THREE.MathUtils.clamp(fill, 0, 1), l = THREE.MathUtils.clamp(luff, 0, 1); u.uFill.value = furled ? 0 : sail * (0.25 + 0.75 * f) * (1 - 0.7 * l); u.uSide.value = 1; u.uT.value = t; u.uLuff.value = furled ? 0 : l; }
     this.mouth.opacity = 0.35 + 0.6 * glow; this.keelMat.opacity = 0.12 + 0.35 * glow;
     const hu = this.hullMat.userData.u; hu.uFeel.value.copy(this.keelMat.color); hu.uFeelK.value = 0.55 + 0.6 * glow; // (the core lit in the ship's feeling, as the rail tints the keel)
     this.helmTick(t);
+  }
+
+  /** The wind in the ship's frame: `rel` the yaw it blows toward less the ship's (null: none, the look as it was), k its strength 0..1. */
+  wind(rel, k = 0) { this.windRel = rel == null ? null : rel; this.windK = THREE.MathUtils.clamp(k || 0, 0, 1); return this; }
+
+  /** The pennant downwind: turned to the wind's way (its tail is its -x: rotation rel + PI/2), lengthened by the strength and waved along
+   *  its run, a slow lazy flap in a breath of air, a fast tight one in a gale; null lays it back flat (the rail's). */
+  streamPennant(rel, k, t) {
+    const P = this.pennant, a = P.geometry.attributes.position, b = this.penBase;
+    if (rel == null) { a.array.set(b); a.needsUpdate = true; this.penFlap = false; P.scale.setScalar(this.penS); return; }
+    this.penFlap = true; P.rotation.y = rel + Math.PI / 2;
+    const w = 5 + 9 * k, amp = 0.16 * (1.15 - 0.6 * k), droop = 0.35 * (1 - k) * (1 - k);
+    for (let i = 0; i < a.count; i++) { const x0 = b[i * 3], f = -x0 / 1.4, wave = Math.sin(t * w - f * 7) * amp * f; a.setXYZ(i, x0, b[i * 3 + 1] - droop * f * f, wave); }
+    a.needsUpdate = true; P.scale.set(this.penS * (0.7 + 0.7 * k), this.penS, this.penS);
   }
 
   /** The mast fold forced to u (0 out .. 1 stowed; the hatch follows on a hull that dives), or let go (null) to the form and the roll. */
@@ -145,7 +166,7 @@ export class ShipLook {
   hoist(medal) {
     const col = { none: 0xc2432b, bronze: 0xb0703a, silver: 0xd8dde6, gold: 0xf2c84a, platinum: 0xe8f4ff }[medal] ?? 0xc2432b;
     const m = this.pennant.material; m.color.setHex(col); m.emissive.setHex(col).multiplyScalar(0.35); m.emissiveIntensity = medal && medal !== 'none' ? 0.8 : 0.25;
-    this.pennant.scale.setScalar((this.spec.pennantScale ?? 1) * (medal && medal !== 'none' ? 1.6 : 1));
+    this.penS = (this.spec.pennantScale ?? 1) * (medal && medal !== 'none' ? 1.6 : 1); this.pennant.scale.setScalar(this.penS);
   }
 
   /** Its cost as drawn now: triangles and draws (outlines counted; the caustics' overlay is the Umbral's only). */

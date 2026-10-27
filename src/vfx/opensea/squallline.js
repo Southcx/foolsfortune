@@ -18,7 +18,8 @@
 // sea; Sea of Thieves' storms (a wall you sail into, the rain round the ship within); the house's own camera-wrapped rain (weather.js)
 // and the sky marks drawn at the back of the depth (weather.js `ringMesh`).
 //
-//   game.squallLine = new SquallLine(game)   .update(dt, camera) (each frame)   .prewarm() -> hide   .inside (0..1, eased)   .edges { lead, trail } (x, m)
+//   game.squallLine = new SquallLine(game)   (it makes the wind on the water too, game.windWater: vfx/opensea/windwater.js, updated and warmed with it)
+//   .update(dt, camera) (each frame)   .prewarm() -> hide   .inside (0..1, eased)   .edges { lead, trail } (x, m)
 //   SQUALL (its numbers)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -30,6 +31,7 @@ import { now } from '../../core/calendar.js';
 import { SEA } from '../../world/opensea/seaprops.js';
 import { makeRain, rainTo, fallsOf } from '../weather.js';
 import { Overhead } from '../overhead.js';
+import { WindWater } from './windwater.js';
 
 const G = ECON.openSea.grid;
 /** height: the cloud's top over the sea (m); shelf: how far the shelf cloud leans out ahead of the leading edge (m); veil: the storm's
@@ -115,7 +117,7 @@ function wallGeometry() {
 }
 
 export class SquallLine {
-  constructor(game) { this.game = game; this.made = false; this.inside = 0; this.alpha = 0; this.t = 0; this.edges = { lead: null, trail: null }; this.veiling = false; }
+  constructor(game) { this.game = game; game.windWater = this.wind = new WindWater(game); this.made = false; this.inside = 0; this.alpha = 0; this.t = 0; this.edges = { lead: null, trail: null }; this.veiling = false; }
 
   make() {
     this.made = true;
@@ -133,11 +135,12 @@ export class SquallLine {
   /** Made and shown for the boot's compile (its own program; the rain's is the weather's); returns what hides it. */
   prewarm() {
     if (!this.made) this.make();
-    this.mesh.visible = this.rain.obj.visible = true;
-    return () => { this.mesh.visible = this.rain.obj.visible = false; };
+    this.mesh.visible = this.rain.obj.visible = true; const wind = this.wind.prewarm();
+    return () => { this.mesh.visible = this.rain.obj.visible = false; wind(); };
   }
 
   update(dt, camera = this.game.camera) {
+    this.wind.update(dt, camera); // (the wind on the water, the open sea's other look: vfx/opensea/windwater.js)
     const S = this.game.opensea, cam = camera?.position;
     const here = S?.built && cam && zoneOf(cam) === 'opensea';
     if (!here) { if (this.made) this.mesh.visible = this.rain.obj.visible = false; this.inside = 0; this.edges.lead = null; this.veil(0); return; }

@@ -17,6 +17,8 @@
 //                   dimmed inside a Well (no sky).
 //   the yoke        the Dissonance Level (`game.rejection.level`, 0..5): an arc creeping down its outer edge from the anode, five
 //                   studs lit one a level, flashing over into the cathode at 5.
+//   the wind vane  at the open sea's helm only: the wind's arrow on the rim where it blows from, the points of sail as a band round it,
+//                   the bow's mark on it (vfx/sightwind.js)
 //   the place plate the room (`place.enter`'s room) and its layer, and the weather's name in its colour, glazed in the window colour.
 // Hidden with the HUD (F2: the overlay scene's own rule), on the title, in the god hand, on the rail's crossing and in a cinematic.
 //
@@ -40,6 +42,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { DAY_MS, now as calNow } from '../core/calendar.js';
 import { COLOR, phaseAt } from '../progress/weather.js';
 import { FONT, THEMES, theme } from '../ui/theme.js';
+import { SightWind } from './sightwind.js';
 import { overlayKind, overlayShader, overlayFlat, overlayStd, overlayEnv } from './lachrimetertube.js'; // (the overlay's one shader and its lit parts' set-ups)
 
 const GAME_HOUR = DAY_MS / 24, LIN = THREE.LinearSRGBColorSpace;
@@ -300,7 +303,7 @@ export class SightLook {
     this.v3 = new THREE.Vector3(); this.f3 = new THREE.Vector3(); this.arcT = 0; this.R = rng(7);
     const S = game.overlayScene; if (!S || typeof document === 'undefined') return;
     this.env = envOf(S.r);
-    this.build();
+    this.build(); this.windVane = new SightWind(this); // (at the open sea's helm, the wind: vfx/sightwind.js)
     this.slot = S.add(this.frame, { anchor: 'tr', x: 0, y: 0, z: 0, update: (dt, slot) => this.update(dt, slot) });
     game.events?.on?.('place.enter', (e) => { if (e?.room) { this.room = e.room; this.layer = e.layer || ''; this.platesDirty = true; } });
     // the Spirit Garden is entered at a Shrine, not through place.enter: the plate says the garden (your Inner Realm's name once given), and the room again on leaving
@@ -515,7 +518,7 @@ export class SightLook {
     this.t += dt; const t = this.t;
     if ((this.themeT -= dt) <= 0) { this.themeT = 1; if (theme.id !== this.themeId) { this.themeId = theme.id; const L = look(); dialTex(this.dialC, L); this.dialMap.needsUpdate = true; glazeTubeTex(this.yokeC, 57, SEAMS, L); this.yokeMap.needsUpdate = true; this.platesDirty = true; } }
     this.gBack.material.uniforms.uTime.value = this.gFront.material.uniforms.uTime.value = t;
-    this.weather(dt, t); this.clock(t); this.dissonance(dt, t); this.steer(dt, t); this.skinTick?.(dt);
+    this.weather(dt, t); this.clock(t); this.dissonance(dt, t); this.steer(dt, t); this.windVane?.update(dt); this.skinTick?.(dt);
     if (this.platesDirty) { this.platesDirty = false; this.drawWaypointPlate(); this.drawPlacePlate(); }
   }
 
