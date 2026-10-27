@@ -11,12 +11,15 @@
 // Prior art: Puzzle Quest's idle hint (a move that would match shimmers when you wait), Into the Breach's tutorial (the one verb lit),
 // the Crucibelle's toll's reach (vfx/tollreach.js: a reach drawn on the ground while it can be used), the crystals' frets (a note a colour).
 //
+//   THE WEAK COLOUR AND THE FORESIGHT ON THE GEMS: the weak colour (weaknessOf) and the Line handed to the pieces each frame (pieces.js:
+//                   a gold keyline and a glint on that colour's gems on your half), and the foe's planned clears (the foresight's
+//                   `cells`, read as foresight.js is handed them) as a Set the pieces draw with a bold keyline and their colour through the fog
 //   const G = new DuelGlows(view)   G.update(dt)   G.armPaint(on)   G.lessonBeat(event)   G.clear()   G.asked -> lesson step id | null
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { mindLineMaterial } from '../labradorite.js';
 import { hasTag } from '../../progress/duel/board.js';
-import { legalActions, preview } from '../../progress/duel/duel.js';
+import { legalActions, preview, weaknessOf } from '../../progress/duel/duel.js';
 import { LESSON } from '../../progress/duel/lesson.js';
 import { TOOL_RULES } from '../../progress/duel/couriertools.js';
 import { DUEL_VIEW, cellLocal } from './layout.js';
@@ -40,6 +43,7 @@ export class DuelGlows {
   update(dt) {
     const V = this.view, s = V.state; if (!s || !V.isOpen) return;
     const P = V.pieces, L = V.lineCol ?? s.board.line, S = s.sides[0], body = P.bodyAt(0), idle = !V.busy, mine = s.toMove === 0 && s.winner === null;
+    this.watchForesight(); P.weak = weaknessOf(s)?.weak || null; P.line = L; P.fore = idle ? this.fore : null;
     const hum = new Map(), grey = new Set();
     for (const side of [0, 1]) { const c = V.tune[side]; if (c) for (const v of P.list) if (v.kind === 'gem' && v.colour === c && (side === 0 ? v.cx < L : v.cx >= L)) hum.set(v, 1); }
     // Paint's reach
@@ -59,6 +63,14 @@ export class DuelGlows {
     if ((ask === 'run' || ask === 'form' || ask === 'tool') && body) hum.set(body, 1);
     const k = Math.min(1, dt * 5);
     for (const v of P.list) { v.hum += ((hum.get(v) || 0) - v.hum) * k; if (v.hum < 1e-3) v.hum = 0; v.grey += ((grey.has(v) ? 1 : 0) - v.grey) * k; if (v.grey < 1e-3) v.grey = 0; }
+  }
+
+  /** The foresight's cells as it is handed them (its show and clear wrapped once: foresight.js keeps none of its own). */
+  watchForesight() {
+    const F = this.view.foresight; if (!F || F.watched) return; F.watched = true; this.fore = null;
+    const show = F.show.bind(F), clear = F.clear.bind(F);
+    F.show = (s, I, a) => { this.fore = I?.cells?.length ? new Set(I.cells.map((c) => c[0] + ',' + c[1])) : null; return show(s, I, a); };
+    F.clear = () => { this.fore = null; return clear(); };
   }
 
   /** The cells of your half a Paint reaches, outlined: an edge where a reached cell meets one that is not. */
