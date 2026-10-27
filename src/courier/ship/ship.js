@@ -44,7 +44,10 @@ import { axes, planeOf, VIEW_RIGS, CRUISE, reachOf } from './views.js';
 import { SHIPS } from '../../progress/rail/ships.js';
 
 const D2R = Math.PI / 180;
-export const SCALE = 0.24; // (the sloop is 7 m: at the rail it is a 1.7 m ship, its hurtbox 0.35 m)
+export const SCALE = 0.24; // (the first sloop was 7 m: at the rail it is a 1.7 m ship, its hurtbox 0.35 m)
+/** A hull's look at the rail's size: the hulls are modelled at their life size (`look.scale` their length over the first 7 m sloop's,
+ *  Calissa's 5x of 2026-10-27), and the rail keeps the size it was tuned at (the hurtbox, the tether, every foe's reach). */
+export const railScale = (look) => SCALE / (look?.scale || 1);
 const damp = THREE.MathUtils.damp, clamp = THREE.MathUtils.clamp;
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _n = new THREE.Vector3(), _sp = new THREE.Vector3(), _st = new THREE.Vector3();
 /** The view's own frame in the rail's: which way is ahead and which is the screen's right (astern is mirrored). */
@@ -82,7 +85,7 @@ export class Ship {
 
   build(scene) {
     this.look = new Sloop({ env: this.game.sky?.env || null });
-    this.look.group.scale.setScalar(SCALE); this.look.group.visible = false; this.look.group.userData.zoneFree = true; overShots(this.look.group);
+    this.look.group.scale.setScalar(railScale(this.look)); this.look.group.visible = false; this.look.group.userData.zoneFree = true; overShots(this.look.group);
     scene.add(this.look.group);
     // the two reticles and the lock marks (placeholders for Calissa's: rings that face the camera)
     const ring = (r, w, c, o) => { const m = new THREE.Mesh(new THREE.RingGeometry(r - w, r, 24), new THREE.MeshBasicMaterial({ color: c, transparent: true, opacity: o, depthTest: false, depthWrite: false })); m.renderOrder = 20; m.visible = false; m.userData.zoneFree = true; m.frustumCulled = false; scene.add(m); return m; };
@@ -119,7 +122,7 @@ export class Ship {
   dress(id) {
     if (!this.look) return;
     const L = (this.looks ||= { sloop: this.look }), was = this.look; // (the looks by hull, the sloop's first)
-    if (!L[id]) { L[id] = shipLook(id, { env: this.game.sky?.env || null }); L[id].group.scale.setScalar(SCALE); L[id].group.userData.zoneFree = true; overShots(L[id].group); }
+    if (!L[id]) { L[id] = shipLook(id, { env: this.game.sky?.env || null }); L[id].group.scale.setScalar(railScale(L[id])); L[id].group.userData.zoneFree = true; overShots(L[id].group); }
     if (L[id] === was) return;
     const now = L[id]; now.group.visible = was.group.visible; was.group.visible = false;
     if (!now.group.parent) was.group.parent?.add(now.group);

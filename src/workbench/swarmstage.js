@@ -34,7 +34,7 @@ const RIGS = { chase: { pos: V(0, CRUISE + 2.2, -7.5), look: V(0, CRUISE + 1.0, 
 
 /** What every stage of the crossing stands on: a patch of the crude, the ship over it, and a frame for the workbench to fit. */
 function base(obj, { frame }) {
-  const ship = new Sloop(); ship.group.scale.setScalar(SHIP_SCALE); ship.group.position.set(0, CRUISE, 0); obj.add(ship.group);
+  const ship = new Sloop(); ship.group.scale.setScalar(SHIP_SCALE / (ship.scale || 1)); ship.group.position.set(0, CRUISE, 0); obj.add(ship.group);
   const fr = new THREE.Mesh(new THREE.BoxGeometry(...frame.size), new THREE.MeshBasicMaterial()); fr.position.set(...frame.at); fr.visible = false; obj.add(fr); // (only for the workbench's framing: never drawn)
   obj.userData.rigs = RIGS;
   const late = { sea: null };

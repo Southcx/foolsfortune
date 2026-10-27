@@ -27,7 +27,7 @@ export function encounterStage(id, game) {
   const dome = new THREE.Mesh(new THREE.SphereGeometry(330, 32, 16), game.sky.domeMaterial(new THREE.Vector3(-0.55, 0.3, -0.78)));
   dome.frustumCulled = false; dome.renderOrder = -10; root.add(dome);
   const sea = new CrudeSea({ env, size: 300, cells: 120, y: 0 }); root.add(sea.mesh);
-  const ship = new Sloop({ env }); ship.group.scale.setScalar(SCALE); ship.feeling(COLOR.wonder); root.add(ship.group);
+  const ship = new Sloop({ env }); ship.group.scale.setScalar(SCALE / (ship.scale || 1)); ship.feeling(COLOR.wonder); root.add(ship.group);
   const ids = id === 'crossing:encounters' ? TABLEAU_IDS : [id.split('.')[1]];
   const sets = ids.map((e) => { const s = buildTableau(e, { env, hull: 'sloop', feel: 'wonder' }); s.holder = new THREE.Group(); s.holder.add(s.group); s.holder.visible = false; root.add(s.holder); return { id: e, s }; });
   const was = { fog: S.fog, bg: S.background };

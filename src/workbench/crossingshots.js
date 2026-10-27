@@ -53,7 +53,7 @@ export function crossingShotsStage() {
   obj.add(stormDome());
   const sea = blackCrude(); obj.add(sea);
   // the ship and its hurtbox
-  const ship = new Sloop(); ship.group.scale.setScalar(SHIP_SCALE); ship.group.position.set(0, CRUISE, 0); obj.add(ship.group);
+  const ship = new Sloop(); ship.group.scale.setScalar(SHIP_SCALE / (ship.scale || 1)); ship.group.position.set(0, CRUISE, 0); obj.add(ship.group);
   ship.feeling?.(COLOR.mirth);
   // the looks
   const S = new RailShots({ cap: 400, guns: 64 }), R = new ItanoRibbons({ max: 16 }), T = new TelegraphMarks();
