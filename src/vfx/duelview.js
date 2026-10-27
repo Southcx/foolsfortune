@@ -162,7 +162,8 @@ export class DuelView {
     const lefts = [L.box?.('sight'), L.box?.('lachrimeterTube'), A.cluster, ...tiles.map((r) => ({ x: r.left, w: r.width }))].filter((r) => r && r.w > 0).map((r) => r.x);
     const x0 = L.bounds.x, x1 = Math.min(L.bounds.x + L.bounds.w, ...lefts) - gap;
     const logEl = typeof document === 'undefined' ? null : document.getElementById('chatlog')?.getBoundingClientRect(), logB = logEl?.height > 0 && logEl.left < V.w / 2 ? logEl.bottom : 0; // (the log as drawn: its dress stands taller than the rect the layout keeps for it)
-    const y0 = Math.max(A.topBar.y + A.topBar.h, L.log ? L.log.y + L.log.h : 0, logB) + gap, y1 = L.bounds.y + L.bounds.h;
+    const folded = typeof document !== 'undefined' && document.body.classList.contains('log-folded'); // (the log folded to its tab: its rect stays reserved in the layout, but nothing stands there)
+    const y0 = Math.max(A.topBar.y + A.topBar.h, L.log && !folded ? L.log.y + L.log.h : 0, logB) + gap, y1 = L.bounds.y + L.bounds.h;
     if (x1 - x0 < 120 || y1 - y0 < 120) return null;
     const { cs, base, border } = DUEL_VIEW, Wb = B.w * cs + 2 * border, Hb = B.h * cs + 2 * border, fill = 0.97;
     const d = Math.max((Hb * V.h) / (2 * tan * fill * (y1 - y0)), (Wb * V.h) / (2 * tan * fill * (x1 - x0))), k = V.h / (2 * d * tan); // (k: CSS px a metre at d)
