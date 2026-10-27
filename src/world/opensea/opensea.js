@@ -15,7 +15,7 @@
 //
 //   game.opensea = new OpenSea(game)   .build()   .teardown() (render/areas.js stage 2: boot/services.js registers the pair)   .active   .sailing   .arrive(island = 'anagami')   .respawn()   .update(dt)   .grid   .voyage   .helm   .seed
 //   events (each with `by`): opensea.enter, opensea.board, opensea.moor { islet? quay? }, sea.* (seatrip.js), sea.secret { kind }, sea.fuel.low,
-//   sea.stele { islet, words, line }, seaserpent.paid { cubes, hull, of }  (a serpent sunk: progress/opensea/seaserpent.js serpentPay); the islets' puzzles and caches: puzzlepieces.js (`.pieces`); the herds: herds.js (`.herds`)
+//   sea.stele { islet, words, line }, seaserpent.paid and seabeast.paid { id, cubes, hull, of }  (a beast sunk: progress/opensea/seabeasts.js beastPay), sea.luff, sea.gust, sea.rip (the wind: wind.js), sea.salvage, ship.part (salvage.js); the islets' puzzles and caches: puzzlepieces.js (`.pieces`); the herds: herds.js (`.herds`)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { zoneOf } from '../../render/zonemap.js';
@@ -24,12 +24,14 @@ import { seaGrid, squareAt } from '../../progress/opensea/seagrid.js';
 import { noticed } from '../../progress/opensea/discoveries.js';
 import { newVoyage, sailTo, takeFix, dock, tow, burnOf, frontAt } from '../../progress/opensea/seatrip.js';
 import { SHIPS } from '../../progress/rail/ships.js';
-import { serpentPay } from '../../progress/opensea/seaserpent.js';
+import { beastPay } from '../../progress/opensea/seabeasts.js';
 import { phaseAt } from '../../progress/weather.js';
 import { today, now } from '../../core/calendar.js';
 import { stream } from '../../core/rng.js';
 import { buildSeaProps, squareCentre, SEA } from './seaprops.js';
 import { Helm } from './helm.js';
+import { windAt, gustsNear, gustAt, gusted, ripsOf, ripPush } from '../../progress/opensea/wind.js';
+import { SALVAGE, cratesOf, crateOf, ShipParts, SHIP_PARTS, PART_SLOTS } from '../../progress/opensea/salvage.js';
 import { markWorld, ownedSince, takeAway } from '../areaown.js';
 import { PuzzlePieces } from './puzzlepieces.js';
 import { SeaHerds } from './herds.js';
@@ -37,11 +39,11 @@ import { steleWords } from '../../progress/opensea/isletpuzzles.js';
 import { WORD_SPLIT } from '../../progress/ostraca.js';
 import { FUNCTIONS } from '../../tools/veritome/mind/functions.js';
 
-const G = ECON.openSea.grid, seedRand = stream('opensea/seed');
+const G = ECON.openSea.grid, seedRand = stream('opensea/seed'), salvageRand = stream('opensea/salvage');
 /** reach: how near (m) to the ship's side F boards it; moor: how near an islet's shore the ship may moor; quay: how near a quay F docks;
  *  secret: how near an islet's secret F takes it; current: m a real s the current pushes a square of doubt; edge: m past the grid the sea pushes back. */
 export const ROOM = { reach: 8, moor: 22, quay: 40, secret: 2.6, current: 0.5, edge: 120, lowFuel: 3 };
-const _v = new THREE.Vector3();
+const _v = new THREE.Vector3(), _c = new THREE.Vector3();
 const freshPuzzle = (d = {}) => ({ seen: new Set(d.seen || []), solved: new Set(d.solved || []), heard: new Set(d.heard || []), dug: new Set(d.dug || []) });
 
 export class OpenSea {
@@ -51,23 +53,28 @@ export class OpenSea {
     game.save?.section('openSeaSeed', { scope: 'world', version: 1, dump: () => ({ seed: this.seed }), load: (d) => { if (d?.seed) this.seed = d.seed; }, reset: () => {} });
     this.grid = seaGrid(this.seed);
     this.voyage = newVoyage({ grid: this.grid, port: 'anagami' });
+    game.shipParts = new ShipParts(game); this.salvaged = {}; // (the sea's salvage and the ship's parts: OPEN-SEA.md 14.4)
     game.save?.section('openSea', { scope: 'player', version: 1, dump: () => this.dump(), load: (d) => this.load(d), reset: () => this.load(null) });
-    // a serpent the Courier sank pays by the hull kept (seaserpent.js serpentPay; Petra's fight: world/opensea/seafight.js)
-    game.events?.on?.('seaserpent.down', (e) => {
+    // a beast the Courier sank pays by the hull kept (seabeasts.js beastPay; the serpent's fight Petra's: world/opensea/seafight.js; the
+    // other beasts' runtime is to come and emits seabeast.down { id }, OPEN-SEA.md 14.3)
+    const paid = (id, e) => {
       if (e.by !== 'courier') return;
-      const of = SHIPS[this.helm?.ship || 'sloop']?.bears ?? 6, hull = game.seaFight?.hull ?? of, cubes = serpentPay(hull, of);
-      game.cubes?.earn(cubes, 'serpent'); game.events?.emit('seaserpent.paid', { cubes, hull, of, by: 'courier' });
-    });
+      const of = (SHIPS[this.helm?.ship || 'sloop']?.bears ?? 6) + game.shipParts.mult('bears'), hull = game.seaFight?.hull ?? of, cubes = beastPay(id, hull, of);
+      game.cubes?.earn(cubes, id === 'seaSerpent' ? 'serpent' : 'seabeast'); game.events?.emit(id === 'seaSerpent' ? 'seaserpent.paid' : 'seabeast.paid', { id, cubes, hull, of, by: 'courier' });
+    };
+    game.events?.on?.('seaserpent.down', (e) => paid('seaSerpent', e));
+    game.events?.on?.('seabeast.down', (e) => paid(e.id, e));
   }
   get active() { return this.sailing || zoneOf(this.game.player.pos) === 'opensea'; }
 
   dump() {
     const v = this.voyage;
     return { at: v.at, fuel: v.fuel, doubt: v.doubt, charted: [...v.charted], found: [...v.found], reported: [...v.reported], claimed: [...this.claimed],
-      puzzle: Object.fromEntries(Object.entries(this.puzzle).map(([k, set]) => [k, [...set]])), herds: this.herds ? this.herds.dump() : this.herdState };
+      puzzle: Object.fromEntries(Object.entries(this.puzzle).map(([k, set]) => [k, [...set]])), herds: this.herds ? this.herds.dump() : this.herdState, salvaged: this.salvaged };
   }
   load(d) {
     this.voyage = newVoyage({ grid: this.grid, port: 'anagami' });
+    this.salvaged = { ...(d?.salvaged || {}) };
     this.claimed = new Set(d?.claimed || []); this.puzzle = freshPuzzle(d?.puzzle); this.pieces?.sync(); this.herdState = d?.herds || null; this.herds?.load(this.herdState);
     if (!d) return;
     const v = this.voyage; v.at = d.at || v.at; v.fuel = d.fuel ?? v.fuel; v.doubt = d.doubt ?? 0;
@@ -153,6 +160,7 @@ export class OpenSea {
 
   // ---------------------------------------------------------------- each frame
   update(dt) {
+    if (!this.partsChatted && this.game.chat?.add) { this.partsChatted = true; this.chatParts(this.game); } // (the chat may come after the room at boot)
     if (!this.built || !this.active) { if (this.herds) this.herds.group.visible = false; return; }
     const g = this.game, I = g.input, P = g.player;
     if (this.sailing) this.sail(dt, I, P); else this.walk(I, P);
@@ -164,7 +172,15 @@ export class OpenSea {
   sail(dt, I, P) {
     const g = this.game, v = this.voyage, H = this.helm;
     const sq = this.squareAt(H.pos), cur = sq ? this.currentAt(sq) : null;
-    H.update(dt, I, cur);
+    if (!this.wind || (this.windT -= dt) <= 0) { // (the hour's wind, asked a few times a real second: it veers over a game hour)
+      const hour = now() / 150000; this.windT = 0.5; this.wind = windAt(this.seed, hour, { front: frontAt(this.grid, this.seed, hour).has(v.at) });
+      this.gusts = gustsNear(this.seed, H.pos.x, H.pos.z, now() / 1000, this.wind, 500); // (the cat's paws near the ship: Calissa draws these)
+    }
+    const gust = gustAt(this.gusts, H.pos.x, H.pos.z);
+    if (gust > 0.3 && !this.inGust) this.game.events?.emit('sea.gust', { k: Math.round(gust * 100) / 100, by: 'courier' });
+    this.inGust = gust > 0.3;
+    H.update(dt, I, cur, gusted(this.wind, gust));
+    this.luffs(dt, H);
     this.keepIn(H);
     this.bump(H);
     H.camera(dt, I); H.hold(P);
@@ -175,7 +191,9 @@ export class OpenSea {
     if (I.wasPressed('KeyF')) {
       const isl = this.nearIslet(H.pos, ROOM.moor + this.halfHull());
       const quay = Object.entries(this.props.quays).find(([, q]) => q.pos.distanceTo(_v.copy(H.pos).setY(q.top)) < ROOM.quay + this.halfHull());
+      const wreck = !quay && this.nearWreck(H.pos);
       if (quay) this.dockAt(quay[0], quay[1]);
+      else if (wreck) this.salvage(wreck);
       else if (isl) { const d = _v.copy(H.pos).sub(isl.pos).setY(0).normalize(); H.placeAt(isl.pos.clone().addScaledVector(d, isl.r + (H.look.beam ?? 2.4) / 2 + 1.5).setY(SEA.y), Math.atan2(d.x, d.z) + Math.PI / 2); this.stepOff({ islet: isl.feature.id, kit: isl.islet?.kit }, isl.pos.clone().addScaledVector(d, isl.r - 1.5).setY(isl.top + 0.05), Math.atan2(-d.x, -d.z)); } // (moored broadside to the shore, a stride off it)
       else g.log?.say?.('info', 'Nothing to moor to here.', { key: 'sea.moor', throttle: 3 });
     }
@@ -193,9 +211,43 @@ export class OpenSea {
     if (home) { const go = () => g.places?.travel?.('workshop'); g.seam?.cross(go) || go(); }
   }
 
-  /** Into a new square: the voyage's step (fuel, charting, finds), with no teleporting drift: here the current is the drift. */
+  // ---------------------------------------------------------------- salvage (progress/opensea/salvage.js; OPEN-SEA.md 14.4)
+  nearWreck(pos) { return this.props.marks.find((m) => m.feature.kind === 'wreck' && _v.copy(m.mesh.position).setY(pos.y).distanceTo(pos) < SALVAGE.reach + this.halfHull()); }
+  /** F alongside a wreck with the Sondelass worn (the hook): a crate hauled up. Its first salvage gives its tier's crates; then one a game day. */
+  salvage(m) {
+    const g = this.game, B = g.belt, f = m.feature;
+    if (B && B.main !== 'sondelass' && B.sub !== 'sondelass') return g.log?.say?.('warn', 'Wear the Sondelass to hook what the wreck holds.', { key: 'sea.salvage', throttle: 4 });
+    const day = today(), S = (this.salvaged[f.id] ||= { day, left: cratesOf(f.tier, true) });
+    if (S.left <= 0 && S.day < day) { S.day = day; S.left = cratesOf(f.tier, false); }
+    if (S.left <= 0) return g.log?.say?.('info', 'Nothing more comes up from this wreck today.', { key: 'sea.salvage', throttle: 4 });
+    S.left--; const crate = crateOf(salvageRand, f.tier, g.shipParts.owned);
+    if (crate.part && !g.shipParts.give(crate.part, 'salvage')) crate.cubes = Math.round(SALVAGE.cubes[f.tier] * ECON.perMinute);
+    if (crate.cubes) g.cubes?.earn(crate.cubes, 'salvage');
+    g.events?.emit('sea.salvage', { wreck: f.id, tier: f.tier, cubes: crate.cubes || 0, part: crate.cubes ? null : crate.part, left: S.left, by: 'courier' });
+    this.dirty();
+  }
+  /** /shippart: the parts you own and wear; worn only at a quay (a dock's work). */
+  chatParts(game) {
+    game.chat?.add?.('shippart', { help: 'the ship\'s parts: /shippart lists them; /shippart <part> wears one, moored at a quay', run: (args = []) => {
+      const P = game.shipParts, id = Array.isArray(args) ? args[0] : String(args || '').trim().split(/\s+/)[0];
+      if (!id) return game.log?.say?.('info', `Worn: ${PART_SLOTS.map((s) => SHIP_PARTS[s][P.worn[s]].name).join(', ')}. Owned: ${[...P.owned].map((p) => PART_SLOTS.map((s) => SHIP_PARTS[s][p]?.name).find(Boolean)).join(', ') || 'none yet (salvage finds them)'}.`);
+      const slot = PART_SLOTS.find((s) => SHIP_PARTS[s][id]); if (!slot) return game.log?.say?.('warn', `No ship's part "${id}".`);
+      if (!this.moored?.quay) return game.log?.say?.('warn', 'Parts are fitted at a quay.', { key: 'ship.part', throttle: 2 });
+      if (!P.wear(slot, id)) game.log?.say?.('warn', 'You have not found that part.', { key: 'ship.part', throttle: 2 });
+    } });
+  }
+
+  /** Head to wind under way: the sail luffs, said once in a while (the sail's look shows it always; the log when it starts). */
+  luffs(dt, H) {
+    const irons = H.sail?.point === 'irons' && H.throttle > 0 && H.speed > 1;
+    if (irons && !this.inIrons) this.game.events?.emit('sea.luff', { from: H.sail && Math.round((this.wind.from * 180) / Math.PI), by: 'courier' });
+    this.inIrons = irons;
+  }
+
+  /** Into a new square: the voyage's step (fuel, charting, finds), with no teleporting drift: here the current is the drift. The fuel is
+   *  the share of the way the wind did not carry (wind.js). */
   enter(sq, full) {
-    const v = this.voyage, ev = sailTo(v, sq, { full, r: () => 1, phase: phaseAt(), gameDay: today() });
+    const v = this.voyage, ev = sailTo(v, sq, { full, r: () => 1, phase: phaseAt(), gameDay: today(), burnK: this.helm.takeBurnK() });
     const t = ev.find((e) => e.type === 'sea.tow'); if (t) { this.game.cubes?.spend(Math.min(t.fee, this.game.cubes.balance ?? 0), 'tow'); this.emit(ev); return this.towed(); }
     this.emit(ev); this.dirty();
     if (v.fuel < burnOf(this.helm.ship) * ROOM.lowFuel && !this.lowSaid) { this.lowSaid = true; this.game.events?.emit('sea.fuel.low', { fuel: v.fuel, by: 'courier' }); }
@@ -243,6 +295,9 @@ export class OpenSea {
   }
   /** The current where you are lost: a square's own direction, as strong as your doubt. */
   currentAt(sq) {
+    this.rips ||= ripsOf(this.grid, this.seed); const rip = this.rips.get(sq.id);
+    if (rip) { const c = squareCentre(sq.col, sq.row, _c), p = ripPush(rip, this.helm.pos.x - c.x, this.helm.pos.z - c.z); if (p) { if (!this.inRip) this.game.events?.emit('sea.rip', { square: sq.id, by: 'courier' }); this.inRip = true; return _v.set(p.x, 0, p.z).clone(); } }
+    this.inRip = false;
     const d = this.voyage.doubt; if (d <= 0) return null;
     const a = ((sq.col * 92821) ^ (sq.row * 68917) ^ this.seed) % 628 / 100;
     return _v.set(Math.sin(a), 0, Math.cos(a)).multiplyScalar(ROOM.current * d).clone();

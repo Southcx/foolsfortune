@@ -138,7 +138,8 @@ export const ECON = {
    *  about two hours of the aim, front-loaded: exploration is a bounded faucet, the safari and the hunts what stays. */
   openSea: {
     grid: { cols: 9, rows: 7, lane: 3 },
-    squareS: 40, burn: 0.25, full: 1.5, measureMin: 0.8, towMin: 6,
+    squareS: 40, burn: 0.35, full: 1.5, // (burn: a square's measures at no sail; the wind spares up to 0.8 of it, progress/opensea/wind.js: 0.35 x a heedless sailor's 0.71 is the 0.25 of before)
+    measureMin: 0.8, towMin: 6,
     discovery: { common: 0.75, uncommon: 1.5, rare: 3.5, legend: 12, halfLife: 6 },
     plate: [0.05, 0.1, 0.2, 0.35],
     fix: { drift: 0.35, max: 2 },  // (squares of doubt a square sailed with no fix, at most `max`: dead reckoning; a fix clears it)
