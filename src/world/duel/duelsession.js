@@ -27,7 +27,8 @@
 //
 //   game.duel = new DuelSession(game)   .begin(creature)   .update(raw, input)   .active   .state   .close(outcome)
 //   The view is told: view.pendingAction(action | null), the action under the finger before it is chosen (a swap or drag as the press
-//   builds, a run on hover). The board's size is the ruleset's own (`board`, rulesets.js: every device the same).
+//   builds, a run on hover), and view.armPaint(on) while a Paint is held (G, du.paint). The board's size is the ruleset's own (`board`,
+//   rulesets.js: every device the same).
 //   Events (with `by`): duel.open { kind, feeling }, duel.break { kind, depth }, duel.flee { roll, reroll, need, ok }, duel.end { kind, won, how,
 //   turns } (how 'fled': away, both whole; tracking.js says each)
 // ---------------------------------------------------------------------------------------
@@ -143,6 +144,7 @@ export class DuelSession {
     if (input.wasPressed('Space')) return this.endMine();
     if (input.wasPressed('KeyE')) return this.take({ kind: 'flee' });
     if (input.isDown('Backspace')) { if ((this.yieldT += raw) >= DUEL_ROOM.yieldHold) return this.yield(); } else this.yieldT = 0;
+    this.arm(S.form !== 'hand' && input.isDown('KeyG')); // (Paint armed while G or du.paint is held: its reach and greying, the view's glows)
     if (S.form === 'hand') {
       if (input.wasPressed('Mouse0') && cell) { this.press = cell; this.path = [cell]; this.view?.select?.(this.path); }
       if (this.press && input.isDown('Mouse0') && cell) {
@@ -197,6 +199,8 @@ export class DuelSession {
       return this.take({ kind });
     }
   }
+  /** The view told once a change whether a Paint is armed. */
+  arm(on) { if (on === !!this.armed) return; this.armed = on; const V = this.view; if (typeof V?.armPaint === 'function') V.armPaint(on); }
   /** On touch a cell is picked, then placed (a thumb covers a 15 px cell): the first tap rings it, a tap on a neighbour swaps with it, a
    *  tap on it again lets it go, a tap elsewhere picks that one instead. */
   pickTap(cell) {
@@ -294,7 +298,7 @@ export class DuelSession {
   /** Down with the board, back to the world: the pool as it stands, the Figment drained (you won) or calmed (it did); a loss shatters. */
   close({ won = false, how = 'yield' } = {}) {
     const g = this.game, c = this.foe, s = this.state; if (!this.active) return;
-    this.active = false; this.busy = false; this.how = null;
+    this.active = false; this.busy = false; this.how = null; this.armed = false;
     this.view?.close?.(); g.god?.hideCursor?.();
     g.cinema?.unshot('duel'); document.body.classList.remove('duel');
     if (g.input?.enabled) g.input.requestLock?.();
