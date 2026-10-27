@@ -10,5 +10,5 @@ the classic beats today (probed headless: every skill fired, view and board agre
    Today `blast` and `vein` play as a pause (unknown names); `recolour`, `tune` and `read` call `V.spend`, which drops the pool readout
    though a skill costs nothing: skip the spend when the event follows a `skill`.
 4. **No Courier figure on side 0** (`sides[0].at` is null); `view.hint(h)` with `{ action, junk, cells }`; `stepsOf(state)` in place of
-   `LESSON.steps` in glows.js (the drag lesson's steps: drag, clear, chain, skill).
+   `LESSON.steps` in glows.js and ui/touch/actioncontext.js `askedOf` (the drag lesson's steps: drag, clear, chain, skill; each has Espada's `ask` line if the view wants words).
 Delete this note when done.
