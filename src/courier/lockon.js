@@ -120,6 +120,20 @@ export class LockOn {
     return true;
   }
 
+  /** The lock target drawn nearest a screen point (CSS px), within `px` of it and in clear sight, or null: a finger's double tap
+   *  (core/touchdoubletap.js) names what it means where the lock's own pick would weigh the view's middle. */
+  pickAt(x, y, px = 70) {
+    const g = this.game, W = innerWidth, H = innerHeight; let best = null, bd = px;
+    g.camera.getWorldPosition(_e);
+    for (const t of this.candidates()) {
+      this.shownOf(t, _a); if (_a.distanceTo(_e) > KEEP) continue;
+      _b.copy(_a).project(g.camera); if (_b.z > 1) continue; // (behind the camera)
+      const d = Math.hypot((_b.x * 0.5 + 0.5) * W - x, (0.5 - _b.y * 0.5) * H - y);
+      if (d < bd && this.clear(this.pointOf(t, _f), t.ref)) { bd = d; best = t; }
+    }
+    return best;
+  }
+
   set(t, auto = false) {
     this.target = t; this.blocked = 0; this.losT = 0;
     this.reticle.flash = 1;

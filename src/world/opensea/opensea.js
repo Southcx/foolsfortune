@@ -81,13 +81,14 @@ export class OpenSea {
     if (this.built) return; this.built = true;
     const g = this.game;
     this.hud ||= new SeaHud(this); // (a DOM line, kept: nothing of the GPU's)
+    if (!this.offered) { this.offered = true; g.interact?.add('opensea.ship', (P) => this.shipOffer(P)); } // (the moored ship as F's offer: its chevron, a double tap's target)
     if (!this.props) { const m = markWorld(g); this.props = buildSeaProps(this); this.propsOwned = ownedSince(g, m); }
     const mark = markWorld(g);
     this.helm = new Helm(this, this.ship || 'sloop');
     this.pieces = new PuzzlePieces(this); // (the islets' puzzles and the buried caches: puzzlepieces.js)
     this.herds = new SeaHerds(this); this.herds.load(this.herdState); // (the game day's herds on the water and the board: herds.js)
     this.owned = ownedSince(g, mark);
-    const q = this.props.quays.anagami; this.helm.placeAt(q.pos.clone().setY(SEA.y).add(_v.set(0, 0, 16)), Math.PI / 2);
+    const q = this.props.quays.anagami; this.helm.placeAt(q.pos.clone().setY(SEA.y).add(_v.set(0, 0, this.alongside())), Math.PI / 2);
   }
   /** The room torn down a few real seconds after the camera leaves it (render/areas.js stage 2): the ship, the puzzles' pieces and the
    *  herds taken away (their listeners let go, the herds' state kept for the save), and the islets and quays with Calissa's dressing of
@@ -115,13 +116,22 @@ export class OpenSea {
     if (!this.props.quays[island]) island = 'anagami';
     const q = this.props.quays[island];
     if (q.square) { this.voyage.at = q.square; this.voyage.charted.add(q.square); this.dirty(); }
-    this.helm.placeAt(q.pos.clone().setY(SEA.y).add(_v.set(0, 0, 16)), Math.PI / 2); // (moored off the quay's seaward side)
+    this.helm.placeAt(q.pos.clone().setY(SEA.y).add(_v.set(0, 0, this.alongside())), Math.PI / 2); // (moored off the quay's seaward side)
     this.moored = { quay: island };
     g.player.killY = SEA.y - 90;
     g.course?.teleport(q.pos.clone().add(_v.set(0, 0.05, 5)), 0); // (at the quay's edge, the ship before you)
     g.events?.emit('opensea.enter', { by: 'courier' });
   }
   respawn() { this.arrive(); }
+  /** The moored ship as an offer to F (courier/interact.js): within the reach walk() boards from, never while sailing. */
+  shipOffer(P) {
+    const H = this.helm; if (!this.built || !this.active || this.sailing || !H) return null;
+    const d = P.pos.distanceTo(_v.copy(H.pos).setY(P.pos.y)); if (d >= ROOM.reach + (H.look.length ?? 7) / 2) return null;
+    return { pos: H.pos.clone().setY(H.pos.y + 2.2), d, ref: H };
+  }
+  /** m from a quay's middle to the moored ship's: the quay's seaward face (6 m out), half the hull's beam and a hand's breadth of water,
+   *  so the hull lies alongside and the step aboard is one stride (the owner, 2026-10-27: the ship stood 8 m off the quay at 16). */
+  alongside() { return 6 + (this.helm?.look?.beam ?? 2.4) / 2 + 0.4; }
 
   // ---------------------------------------------------------------- sealing in and stepping off
   board() {
@@ -208,7 +218,7 @@ export class OpenSea {
       d.fuelCost = Math.round(can * per); d.short = true;
     }
     this.lowSaid = false; this.emit(ev); this.dirty();
-    this.helm.placeAt(q.pos.clone().setY(SEA.y).add(_v.set(0, 0, 16)), this.helm.yaw);
+    this.helm.placeAt(q.pos.clone().setY(SEA.y).add(_v.set(0, 0, this.alongside())), this.helm.yaw);
     this.stepOff({ quay: island }, q.pos.clone().add(_v.set(0, 0.05, 5)), 0);
   }
   claim(isl) {

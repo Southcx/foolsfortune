@@ -18,6 +18,8 @@
 //                   mode's paper), so the touch controls' stick stands aside.
 //   THE SWIPES      a quick flick sideways on the look area presses the row the live context gives it (on the Solar Skiff the shoulder,
 //                   Q or E tapped twice): core/touchswipes.js.
+//   THE DOUBLE TAP  two quick still taps on a thing, either half: F on what it offers there, or the lock on what stands there
+//                   (core/touchdoubletap.js).
 // Every touch is the driver's alone (`preventDefault`): no page scroll, no zoom, no mouse echo after a tap (core/input.js also refuses
 // one within 0.8 real s of a touch).
 //
@@ -25,11 +27,12 @@
 // camera drag; Pointer Events' and Touch Events' identifiers for multitouch; VirtualKeys (coop/sibling.js) driving by key codes.
 //
 //   game.touch = new TouchDriver(game, input, actions, el)   .update()   .bind(id, el)   .control(id, on)   .release()   .active   .tools   .gyro
-//   .state() -> { move, look, cursor } (the move area's origin and thumb, for the stick's look: Calissa's; the cursor's mode)   .screenTaken()   .lanes   .swipes   TOUCH
+//   .state() -> { move, look, cursor } (the move area's origin and thumb, for the stick's look: Calissa's; the cursor's mode)   .screenTaken()   .lanes   .swipes   .dtap   TOUCH
 // ---------------------------------------------------------------------------------------
 import { StickMove, STICK } from './stickmove.js';
 import { TouchCursor } from './touchcursor.js';
 import { TouchTools } from './touchtools.js';
+import { TouchDoubleTap } from './touchdoubletap.js';
 import { GyroSteer } from './gyrosteer.js';
 import { TouchLanes } from './touchlanes.js';
 import { TouchSwipes } from './touchswipes.js';
@@ -47,6 +50,7 @@ export class TouchDriver {
     this.gyro = new GyroSteer(game, input); this.tilted = false; // (the tilt as the skiff's steer, a setting: core/gyrosteer.js)
     this.lanes = new TouchLanes(game, actions); // (the rhythm mode's ten pads: core/touchlanes.js)
     this.swipes = new TouchSwipes(game, input, actions); // (a flick on the look area as its row: the skiff's shoulder, core/touchswipes.js)
+    this.dtap = new TouchDoubleTap(game, input, el); // (two quick taps on a thing: use it or lock it, core/touchdoubletap.js)
     this.active = false; // (a touch seen this session: the shell's touch mode follows `input.device`)
     const opt = { passive: false };
     el.addEventListener('touchstart', (e) => this.start(e), opt);
@@ -104,7 +108,7 @@ export class TouchDriver {
     if (this.cursor.busy) { if (this.game.cursorFree?.()) this.cursor.update(); else this.cursor.release(); } // (the pointer no longer free under a finger: it lets go; a press earned after the lift is still made)
     if (!this.lanes.active) this.lanes.release(); // (the song ended under a finger: its lane let go)
     this.tools.update();
-    this.swipes.update();
+    this.swipes.update(); this.dtap.update();
     const UI = this.game.touchUI, S = UI?.on ? UI.stick : null;
     let x = 0, y = 0, held = false;
     if (S) { this.active = true; held = !!S.active; if (held) { x = S.x; y = S.y; } }

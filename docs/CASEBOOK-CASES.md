@@ -4085,3 +4085,12 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   carries it by a pointer-event drag (the place found with `elementFromPoint`, a ghost under the finger); both say `drop` as the mouse's
   drag did. The click a finger's lift makes is ignored.
 - **Rule:** NEW:touch-never-html5-drag
+
+### 2026-10-27 · The ship moored far off the quay on the open sea (the owner's iPhone, v299; Petra)
+- **Seen:** "the boat is positioned too far away from the dock in the Open Emocean section."
+- **Cause (as read):** world/opensea/opensea.js set the moored ship 16 m out from the quay's middle in three places (build, arrive,
+  dockAt); the quay is 12 m deep, so its seaward face stands 6 m out and the sloop's hull (beam 2.1 m) lay about 9 m off it.
+- **Fix:** `alongside()`: the quay's face, half the hull's beam and 0.4 m of water. Measured headless: the hull 0.4 m off the face.
+  The moored ship is also F's offer now (`opensea.ship`: its chevron, and a double tap's target).
+- **Rule:** NEW:place-from-the-measure
+
