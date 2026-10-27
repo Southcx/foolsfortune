@@ -4182,3 +4182,12 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Cause, as measured:** `cloneState` seeded each copy with `s.r()`; `legalActions` sampled drags from `s.r`. Ten bot turns of seed 9 ended on a different board with previews taken than without.
 - **Fix:** `quietStream(state, salt)` (progress/duel/duel.js): a lookahead's stream seeded from the state's own hash, drawing nothing from the duel; legalActions' drags from it too. The same seed now ends on the same board either way.
 - **Rule:** NEW:lookahead-own-stream
+
+### 2026-10-27 · The foe's forecast wrote into the real turn's undo (found wiring undo's look; Calissa)
+- **Seen:** reading the duel's view for undo: the forecast's copy (vfx/duelview/intent.js `quietCopy`) was `{ ...s }` with its own
+  board, sides and stream, but the real duel's `undo` array shared by reference.
+- **Cause (as read):** `act` pushes a snapshot onto `s.undo` before each action; on the copy that was the real turn's stack, so every
+  forecast drawn put the foe's plan's snapshots under the Courier's next Ctrl+Z (not measured in play: undo was bound the same round).
+- **Fix:** the forecast copies with the kernel's `cloneState` (its own quiet stream and `undo: []`); the view's other `{ ...s, r }`
+  copies (glows.js `quiet`, worth.js) dropped for the kernel's `preview` and `cloneState`.
+- **Rule:** NEW:lookahead-own-copy

@@ -23,7 +23,7 @@
 // Breach's reset turn (the board seen rewinding); hit-stop (the frames a fighting game holds on a heavy blow).
 //
 //   const J = new DuelJuice(view)   J.beat(beats, e) -> phase   J.note(clears)   J.chainHit(chain, local, clears)   J.scale(dt) -> dt
-//   J.update(dt)   J.clear()   J.prewarm()   JUICE_EVENTS
+//   J.rewind(state) (the view's resync)   J.update(dt)   J.clear()   J.prewarm()   JUICE_EVENTS
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { bakedCanvasTexture } from '../../render/bakedcanvas.js';
@@ -185,28 +185,37 @@ export class DuelJuice {
     return { events: [e], dur: 0.3 + DUEL_VIEW.ma };
   }
 
-  /** UNDO: the board as the kernel restored it, every piece sliding back from where it was drawn; a ripple of the film over the slab. */
-  undo(e) {
-    const V = this.view, s = V.state, P = V.pieces; if (!s) return { events: [e], dur: 0 };
-    const key = (v) => (v.kind === 'body' ? 'body' + v.side : v.id), was = new Map();
+  /** The board stood again from a restored turn (the session's `view.resync`, before its `undo` event plays): the pieces rebuilt from
+   *  the kernel's board, each drawn where it stood a moment ago (a new one at nothing), so nothing jumps until the undo beat slides them. */
+  rewind(s) {
+    const V = this.view, P = V.pieces, key = (v) => (v.kind === 'body' ? 'body' + v.side : v.id), was = new Map();
     for (const v of P.list) { const k = key(v); if (k != null) was.set(k, { x: v.x, y: v.y }); }
-    P.build(s.board, V.aspect); const mv = [], seen = new Set();
-    for (const v of P.list) { const k = key(v), o = k != null ? was.get(k) : null; seen.add(k);
-      if (o) { if (o.x !== v.cx || o.y !== v.cy) mv.push({ v, fx: o.x, fy: o.y }); } else { v.s = 0.01; mv.push({ v, grow: true }); } }
-    for (const [k, o] of was) if (!seen.has(k)) { cellLocal(o.x, o.y, V.board3, _a); V.bursts.burst(_a, V.filmHex(0.4), 4, { speed: 0.3, life: 0.35, fall: 0, spread: 0.1, size: 0.016 }); }
+    P.build(s.board, V.aspect); const seen = new Set();
+    for (const v of P.list) { const k = key(v), o = k != null ? was.get(k) : null; seen.add(k); if (o) { v.x = o.x; v.y = o.y; } else { v.s = 0.01; v.grow = true; } }
+    this.gone = [...was].filter(([k]) => !seen.has(k)).map(([, o]) => o);
     V.gravLine = s.board.line; V.board.setGravity(s.board); V.setLine(s.board.line);
     V.forms = s.sides.map((S) => S.form); V.tune = s.sides.map((S) => S.tune || null); V.readCounts(); V.readPoints(); V.readFight();
+    this.rewound = true;
+  }
+
+  /** UNDO: every piece sliding back from where it was drawn to where the restored turn stands; what the action made goes in a puff; a
+   *  ripple of the film over the slab; the steps left as pips (update). */
+  undo(e) {
+    const V = this.view, s = V.state; if (!s) return { events: [e], dur: 0 };
+    if (!this.rewound) this.rewind(s); this.rewound = false; // (no resync before it: stood again here)
+    const mv = V.pieces.list.filter((v) => v.grow || v.x !== v.cx || v.y !== v.cy).map((v) => ({ v, grow: v.grow, fx: v.x, fy: v.y }));
+    for (const o of this.gone || []) { cellLocal(o.x, o.y, V.board3, _a); V.bursts.burst(_a, V.filmHex(0.4), 4, { speed: 0.3, life: 0.35, fall: 0, spread: 0.1, size: 0.016 }); } this.gone = null;
     const D = this.dims(), R = this.ripple; R.position.set(0, D.base + D.H / 2, DUEL_VIEW.front + 0.04); R.visible = true;
     this.undoSeen = true; this.undoFlash = 1;
     return { events: [e], dur: 0.36 + DUEL_VIEW.ma, step: (u) => { const r = 1 - sm(u); // (a rewind's ease: fast off the mark, settling home)
       for (const m of mv) { if (m.grow) { m.v.s = 0.01 + 0.99 * sm(u); m.v.flash = 1 - u; continue; } m.v.x = lerp(m.v.cx, m.fx, r * r); m.v.y = lerp(m.v.cy, m.fy, r * r); m.v.spin = -0.6 * Math.sin(Math.PI * u); }
       R.scale.setScalar(Math.max(1e-3, lerp(D.cs, Math.hypot(D.W, D.H) * 0.55, sm(u)))); R.material.uniforms.uOpacity.value = 0.9 * (1 - u); },
-      end: () => { for (const m of mv) { m.v.x = m.v.cx; m.v.y = m.v.cy; m.v.s = 1; m.v.flash = 0; m.v.spin = 0; } R.visible = false; } };
+      end: () => { for (const m of mv) { m.v.x = m.v.cx; m.v.y = m.v.cy; m.v.s = 1; m.v.flash = 0; m.v.spin = 0; m.v.grow = false; } R.visible = false; } };
   }
 
   clear() {
     for (const p of this.pops) p.W.mesh.visible = false; this.pops.length = 0; this.flying.length = 0; this.motes.count = 0; this.last = [[], []];
-    this.hold = 0; this.brassK = 0; this.undoSeen = false; this.star.visible = this.ring.visible = this.sweep.visible = this.ripple.visible = false;
+    this.hold = 0; this.brassK = 0; this.undoSeen = false; this.rewound = false; this.gone = null; this.star.visible = this.ring.visible = this.sweep.visible = this.ripple.visible = false;
     this.weakPip.visible = this.resistPip.visible = false; for (const m of this.undoPips) m.visible = false; this.applyBrass(0);
   }
   applyBrass(k) { const b = this.view.board.brass; if (!b) return; b.emissive.setHex(BRASS).lerp(_c.setHex(GOLD), k); b.emissiveIntensity = 0.4 + 2.8 * k; }

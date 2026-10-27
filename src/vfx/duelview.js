@@ -35,6 +35,7 @@
 //                                      both halves and both bodies in view): for game.cinema.shot
 //   pointOf(cell) -> Vector3           a cell's centre on the slab's face, in the world (the god hand's cursorAt; its normal: `face`)
 //   refuse(action)                     an illegal action: the cell's rim shaken in the dry ink, no words (marks.js)
+//   resync(state)                      the board and pieces stood again from a restored state (undo), the clash kept: juice.js rewind
 //   hover(cell | null)   select(cells)   close()   update(rawDt) (main.js)   .isOpen .busy .face .root .state
 // THE FLEE (Dovina's, PUZZLE-DUELS.md 15; drawn by duelview/flee.js): the odds plate on the frame while you may flee, the 'flee' event's
 // d20 and its reasons, and 'duel.fled': the clash folding with no winner and the tsuitate folded away.
@@ -233,6 +234,13 @@ export class DuelView {
   readCounts() { const S = this.state.sides; this.sent = [S[0].sent || 0, S[1].sent || 0]; this.pending = [S[0].pending || 0, S[1].pending || 0]; this.showCounts(); }
   readPoints() { const s = this.state; for (const side of [0, 1]) { const S = s.sides[side], left = side === s.toMove ? s.apLeft : S.ap, lost = side === s.toMove ? this.board.ap[side][2] : 0; this.apShown[side] = left; this.board.setAP(side, left, S.ap, Math.min(lost, S.ap - left)); } }
   readFight() { const s = this.state; for (const side of [0, 1]) { const S = s.sides[side]; this.board.setEmo(side, S.emo); this.depth[side] = S.depth || 0; this.marks.stars(side, this.depth[side], this.headOf(side, _w)); } }
+
+  /** The duel stood again from a state the kernel restored (the session's undo, before its `undo` event plays): the board and pieces
+   *  rebuilt, the clash left standing; each piece kept where it was drawn until the undo beat slides it home (juice.js rewind). */
+  resync(state) {
+    if (!this.isOpen || !state) return; this.state = state;
+    this.intentDraw.clear(); this.foresight.clear(); this.worth.clear(); this.marks.select([]); this.juice.rewind(state);
+  }
 
   /** The play queue ran dry: the view is made to agree with the duel as it stands (anything the beats did not follow is put right). */
   settleUp() {
