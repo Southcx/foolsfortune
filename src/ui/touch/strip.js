@@ -3,7 +3,7 @@
 // context's choices", 8.5, 8.8, 8.9), what ui/touch/actioncontext.js reads, laid out here:
 //   THE BELT'S PAIR  DRAW (STOW while the main is out), LEND (the sub's verb), SWAP and SKIFF (the top bar's, opened from here) at the
 //                    cluster's top edge, 44 px, right-aligned to it, as wide as their words (`fit`: the least type is never shrunk).
-//   THE STRIP        the tool's own row (the chambers, FAN; the forms, LURE, CRANK; PAINT or MOP; FLASH; the Crucibelle's five note pads)
+//   THE STRIP        the tool's own row (the chambers, FAN; the forms, LURE, CRANK; PAINT or MOP; FLASH; the Crucibelle's five note pads; the helm's BROADSIDE, its rim its side's reload)
 //                    or the duel's moves (ROTATE first), BLINK at its end: one row over the pair on a clay shelf (the top bar's), right-
 //                    aligned to the cluster, down to 44 px to keep one row, its end then beside the pair (left of it), rows upward only past that
 //                    (the look area too narrow); 44 px a tile (the note pads 52,
@@ -31,7 +31,7 @@ import { stripOf, beltPairOf } from './actioncontext.js';
 /** The numbers (CSS px): the strip's tile (44, the least: 48 until the owner asked for room, 2026-10-26), a note pad, the pair's; the gaps; the shelf's padding; the room kept off the look area's edge. */
 const MORE = 'strip.more';
 /** The core movement's verbs and BLINK, never folded away (a jump hidden behind a tap mid-fight is no jump). */
-const STAYS = new Set(['blink', 'jump', 'crouch', 'dash', 'parry', 'use']);
+const STAYS = new Set(['blink', 'jump', 'crouch', 'dash', 'parry', 'use', 'broadside']); // (the broadside too: a fight's verb)
 /** The tool's own row, folded to its MORE tab (or opened behind it) where it has two or more tiles; what STAYS stands after it. */
 function folding(entries, folded) {
   const stay = entries.filter((e) => STAYS.has(e.id)), row = entries.filter((e) => !STAYS.has(e.id));
@@ -126,7 +126,7 @@ export class TouchStrip {
       if (this.shown) this.layout(cb); else this.shelf.classList.add('off');
     }
     if (!this.shown) { for (const t of this.tiles.values()) t.set({ hidden: true }); return; }
-    for (const e of all) { const t = this.tiles.get(e.id); t.set({ hidden: false, lit: t.state.pressed || !!e.lit, dim: !!e.dim }); t.update(now); }
+    for (const e of all) { const t = this.tiles.get(e.id); t.set({ hidden: false, lit: t.state.pressed || !!e.lit, dim: !!e.dim, charge: e.charge ?? 0 }); t.update(now); }
   }
 
   /** The layout changed: stand again at the next frame. */

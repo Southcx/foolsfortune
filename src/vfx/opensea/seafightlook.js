@@ -11,17 +11,21 @@
 //                 crude with a pale rim, the parry mark's ring round it (the one look that says "only the parry answers this"). Sent back
 //                 it is the Courier's: its outline gone, its core lit in the ship's colour. Falling short it bursts on the water (a dive's
 //                 crown and rings); on the hull it bursts dark and the deck shakes (the runtime's shake).
+//   THE BROADSIDE  the heavy shots (`heavy`), their guns' mouths, spouts and hits, and the gun ports they leave by: vfx/opensea/broadsidelook.js,
+//                 handed the heavy ones here. A moment is the broadside's when the runtime says so (`{ heavy }` or the shot itself as a third
+//                 argument), else when the shot it belongs to is heavy (the one leaving from that point for a muzzle or a splash, the one flying that way near it for a hit).
 //
 // Prior art: the rail's own shots (Touhou's and Cave's core and edge; Rez's lasers; Cuphead's pink parry, ours the parry mark), The Wind
 // Waker's cannon at sea (a puff at the muzzle, a ring of spray where a shot lands short), Sea of Thieves' splash on a near miss.
 //
 //   game.seaFightLook = new SeaFightLook(game)
 //   .draw(fight)   (each frame: fight.shots [{ pos, vel }], fight.globs [{ pos, vel, back }])
-//   .muzzle(from, dir)   .hit(point, dir)   .splash(pos, 'shot' | 'glob')   .hull(pos)   .parked() -> [mesh] (the warm-up)
+//   .muzzle(from, dir, heavy?)   .hit(point, dir, heavy?)   .splash(pos, 'shot' | 'glob', heavy?)   .hull(pos)   .parked() -> [mesh] (the warm-up)   .broadside (its look)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RailShots } from '../railshots.js';
 import { LANCE_COLOR } from '../../courier/ship/shots.js';
+import { BroadsideLook } from './broadsidelook.js';
 
 export const SEA_FIGHT_LOOK = { globR: 0.85, sparks: 10, chips: 6 }; // (the glob's drawn head (m): its hit sphere is 0.7, drawn a little larger, as the rail's are)
 
@@ -34,15 +38,19 @@ export class SeaFightLook {
     this.shots.mesh.userData.zone = 'opensea'; this.shots.mesh.renderOrder = 60;
     this.shots.color(LANCE_COLOR);
     this.gold = new THREE.Color(LANCE_COLOR);
+    this.broadside = new BroadsideLook(game); this.heavy = []; this.fight = null;
   }
-  parked() { return this.shots.parked(); }
+  parked() { return [...this.shots.parked(), ...this.broadside.parked()]; }
+  /** Whether a moment is the broadside's: said (`{ heavy }`, or the shot), else found among the fight's shots by `test`. */
+  isHeavy(said, test) { if (said != null) return typeof said === 'object' ? !!said.heavy : !!said; const f = this.fight || this.game.seaFight; return !!f?.shots?.some((s) => s.heavy && test(s)); }
 
   /** This frame's needles and globs, as the runtime holds them. */
   draw(fight) {
-    const S = this.shots, shots = fight.shots, globs = fight.globs;
-    const m = Math.min(shots.length, S.gunCap);
-    for (let i = 0; i < m; i++) S.gun(i, shots[i].pos, shots[i].vel);
+    const S = this.shots, shots = fight.shots, globs = fight.globs, H = this.heavy; this.fight = fight; H.length = 0;
+    let m = 0;
+    for (const s of shots) { if (s.heavy) H.push(s); else if (m < S.gunCap) S.gun(m++, s.pos, s.vel); } // (the needles; the round shot is the broadside's)
     S.guns = m;
+    this.broadside.draw(fight, H, this.game.rawDt ?? 1 / 60);
     let n = 0;
     for (const b of globs) {
       if (n >= S.cap) break;
@@ -56,13 +64,15 @@ export class SeaFightLook {
   }
 
   /** A needle leaves the bow: a small flash and a few sparks along the aim. */
-  muzzle(from, dir) {
+  muzzle(from, dir, heavy) {
+    if (this.isHeavy(heavy, (s) => s.pos === from)) { this.broadside.muzzle(from, dir); return; }
     const fx = this.game.fx; if (!fx?.add) return;
     for (let i = 0; i < 4; i++) fx.add.emit({ pos: from.clone(), vel: _v.copy(dir).multiplyScalar(6 + Math.random() * 6).add(new THREE.Vector3((Math.random() - 0.5) * 1.5, (Math.random() - 0.5) * 1.5, (Math.random() - 0.5) * 1.5)).clone(), life: 0.12, size: 0.16, sizeEnd: 0.02, color: this.gold.clone(), alpha: 0.9, drag: 6, gravity: 0 });
   }
 
   /** A needle (or a glob sent home) strikes the serpent: sparks in the ship's colour and the hide's chips. */
-  hit(point, dir) {
+  hit(point, dir, heavy) {
+    if (this.isHeavy(heavy, (s) => _v.copy(s.vel).normalize().dot(dir) > 0.9999 && s.pos.distanceToSquared(point) < 400)) { this.broadside.hit(point, dir); return; }
     const fx = this.game.fx; if (!fx) return;
     fx.impact?.(point, _v.copy(dir).negate().normalize(), { color: 0x9aa7b0, sparks: SEA_FIGHT_LOOK.chips, dust: 2 });
     if (!fx.add) return;
@@ -70,7 +80,8 @@ export class SeaFightLook {
   }
 
   /** Into the sea: a needle a pinprick, a glob falling short a burst (a dive's crown and its rings). */
-  splash(pos, kind = 'shot') {
+  splash(pos, kind = 'shot', heavy) {
+    if (kind === 'shot' && this.isHeavy(heavy, (s) => s.pos === pos)) { this.broadside.splash(pos); return; }
     const W = this.game.water; if (!W?.disturb) return;
     if (kind === 'glob') W.disturb(pos.x, pos.z, 1.2, 'dive', pos.y);
     else W.disturb(pos.x, pos.z, 0.15, 'stroke', pos.y);

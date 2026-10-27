@@ -6,6 +6,7 @@
 //               swap    the main's arrow out, the sub's back under it
 //               draw    a hilt out of its sheath, up        stow   a hilt into its sheath, down    lend   a hand passing a spark up
 //   the helm    throttleup / throttledown  two chevrons up or down over the water   fix  a star over the horizon, the sextant's arc
+//               broadside  a hull's side, three gun ports in it, their smoke blown up over them
 //   psygun      psfire  the gun and its flash                psaim  the sights' ring               shell  a shell, its cap lit
 //               fan     three rounds fanned off the hammer   breath a breath held, its bar         chamber the cylinder, one chamber lit
 //   Sondelass   cuattack the cutlass and its arc            cuspecial the blade and a burst        lock   the lock-on's brackets
@@ -184,6 +185,22 @@ export const TOUCH_ACTION_ART = {
     '.....####.....',
     '......##......',
     '-------------.',
+    '..............',
+  ],
+  broadside: [
+    '..............',
+    '.++..++..++...',
+    '++++++++++++..',
+    '.++..++..++...',
+    '..............',
+    '##############',
+    '#..##..##..###',
+    '#..##..##..###',
+    '##############',
+    '.############.',
+    '..##########..',
+    '..............',
+    '--------------',
     '..............',
   ],
   fix: [
