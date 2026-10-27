@@ -13,7 +13,8 @@
 //   orb   thrown from the broken body over the Line in arcs (0.05 apart, 0.5 each); fade: it lifts, swells and breaks (0.8)
 //   run      the figurine hops its path (0.11 a cell); each orb it crosses rings out, and a bead runs down the spiritual link
 //              into the Lachrimeter (vfx/spirituallink.js, reversed: a drink)
-//   the tools  shot, hook, drill, paint, delay, hold, hold's send: one small motion each (0.4 to 0.6)
+//   the tools  shot, hook, drill, paint, delay, hold, hold's send: one small motion each (0.4 to 0.6); the ones that bend the clearing
+//              (shot and its pop, recolour and its paints, tune and tune.end, read) in toolbeats2.js; lesson.*: the asked verb (glows.js)
 //   finisher       the crackle break and the data drain's beats on the board (vfx/datadrain.js DRAIN_BEATS), and the drain itself on the
 //              foe in the world: its half's pieces stripped into cubes spiralling up into the god hand, the Line home (1.9)
 //   turn       a side's points: the beads it lost crack, one by one
@@ -35,6 +36,7 @@ import { sfx } from '../../audio/sfx.js';
 import { junkOf } from '../../progress/duel/duel.js';
 import { DUEL_VIEW, cellLocal, feelColour, sm, ease, lerp, hash } from './layout.js';
 import { toolBeat, TOOL_EVENTS } from './toolbeats.js';
+import { TOOL_BEATS2, shotBeat, paintBeat, tuneBeat, tuneEndBeat, readBeat } from './toolbeats2.js';
 import { FLEE } from '../../progress/duel/flee.js';
 
 const ACTS = new Set(['swap', 'drag', 'rotate', 'drop', 'push', 'kick', 'form']);
@@ -78,6 +80,13 @@ export class DuelBeats {
     if (e.type === 'ember.cool') return this.cool(run((x) => x.type === 'ember.cool'));
     if (ACTS.has(e.type)) { job.i++; V.spend(e.side, e.type === 'drag' ? Math.max(1, Math.ceil((e.path.length - 1) / 3)) : COST[e.type], e); return this.action(e); }
     if (e.type === 'run') { job.i++; V.spend(e.side, 1, e); return this.runPath(e, run((x) => x.type === 'orb.drink')); }
+    if (TOOL_BEATS2.has(e.type)) { job.i++; // (the tools that bend the clearing: toolbeats2.js)
+      if (e.type === 'shot') { V.spend(e.side, 1, e, 5); const pops = run((x) => x.type === 'blast' || ((x.type === 'clear' || x.type === 'break') && x.by === 'shot')); return shotBeat(this, e, pops, run((x) => x.type === 'chain' && x.step === 1 && x.side === e.side)); }
+      if (e.type === 'recolour') { V.spend(e.side, 2, e, 10); return paintBeat(this, e, run((x) => x.type === 'paint')); }
+      if (e.type === 'tune') { V.spend(e.side, 1, e, 8); return tuneBeat(this, e); }
+      if (e.type === 'tune.end') return tuneEndBeat(this, e);
+      V.spend(e.side, 1, e); return readBeat(this, e); }
+    if (e.type.startsWith('lesson.')) { job.i++; this.view.glows?.lessonBeat?.(e); return { events: [e], dur: e.type === 'lesson.idle' ? 0.3 : 0.05 }; } // (the lesson's steps: the asked verb lit, glows.js)
     if (TOOL_EVENTS.has(e.type)) { const it = run((x) => x.type === e.type); V.spend(e.side, COST[e.type] ?? 1, e, POOL[e.type]); return toolBeat(this, it); }
     if (e.type === 'land') { job.i++; return this.land(e); }
     if (e.type === 'line') { job.i++; return this.line(e); }

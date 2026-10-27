@@ -19,7 +19,8 @@
 //                 the Dreamvane worn) and PLATE (the Veritome worn), and USE while a serpent holds the cluster.
 //   A PUZZLE DUEL END TURN (the main; dim on the foe's turn), FINISHER on a broken foe, FLEE, FORM (what you would become: HAND or
 //                 COURIER); the strip the worn tools' moves (dim in the hand's form: they are the Courier's), ROTATE first while a piece
-//                 is under the last touch in the hand's form.
+//                 is under the last touch in the hand's form; TUNE lit while its song holds, READ only where Dread's fog hides the foe; the
+//                 first duel's step asked (lesson.js) lit on its tile (FORM, ROTATE, the tools' moves).
 // The tool's name small in FIRE's corner (8.3) is left out: at 72 px it lands on the glyph; the glyph is the tool's own.
 //
 // Prior art: Genshin Impact's attack and skill tiles changing with the character, Call of Duty Mobile's fire button by weapon, Into the
@@ -35,6 +36,7 @@ import { DEGREE_COLOR } from '../../tools/crucibelle/songs.js';
 import { useLabel } from './cluster.js';
 import { ROOM } from '../../world/opensea/opensea.js';
 import { SEA_FIGHT } from '../../world/opensea/seafight.js';
+import { LESSON } from '../../progress/duel/lesson.js';
 
 /** By tool in hand: FIRE's and AIM's faces, the third (or null), and what the faces become in their other moment. */
 export const ACTION_TILES = {
@@ -51,9 +53,11 @@ export const ACTION_TILES = {
 /** The duel's moves by the tool that brings them (progress/duel/couriertools.js), in the keys' order. */
 const DUEL_MOVES = [
   ['psygun', 'du.shoot', 'psfire', 'SHOOT'], ['sondelass', 'du.grab', 'throw', 'GRAB'], ['dreamvane', 'du.drill', 'drill', 'DRILL'],
-  ['soulbrush', 'du.paint', 'paint', 'PAINT'], ['crucibelle', 'du.delay', 'delay', 'DELAY'], ['lockheart', 'du.hold', 'hold', 'HOLD'],
-  ['lockheart', 'du.send', 'send', 'SEND'],
+  ['soulbrush', 'du.paint', 'paint', 'PAINT'], ['crucibelle', 'du.tune', 'tune', 'TUNE'], ['crucibelle', 'du.delay', 'delay', 'DELAY'],
+  ['lockheart', 'du.hold', 'hold', 'HOLD'], ['lockheart', 'du.send', 'send', 'SEND'], ['veritome', 'du.read', 'read', 'READ'],
 ];
+/** The first duel's step asked (lesson.js, PUZZLE-DUELS.md 18.3), lit on its tile: no words but the verb's own. */
+const askedOf = (s) => { const L = s?.lesson; return L && L.step < LESSON.steps.length && s.toMove === 0 ? LESSON.steps[L.step].id : null; };
 const FORMS = [['so.cutlass', 'sofcutlass', 'cutlass'], ['so.rod', 'sofrod', 'rod'], ['so.hook', 'sofhook', 'hook']];
 
 /** On foot (the bindings' ctx): the strip and the belt's pair stand only there (riding the Solar Skiff, LEND, DRAW and BLINK cannot be done). */
@@ -96,7 +100,7 @@ export function duelCluster(g) {
     E('du.end', 'endturn', 'END TURN', { dim: !mine }),
     broken ? E('du.finish', 'finisher', 'FINISHER', { dim: !mine }) : null,
     E('du.flee', 'flee', 'FLEE', { dim: !mine }),
-    S.form === 'hand' ? E('du.form', 'formcourier', 'COURIER', { dim: !mine }) : E('du.form', 'grab', 'HAND', { dim: !mine }),
+    S.form === 'hand' ? E('du.form', 'formcourier', 'COURIER', { dim: !mine, lit: askedOf(s) === 'form' }) : E('du.form', 'grab', 'HAND', { dim: !mine }),
   ];
 }
 
@@ -185,7 +189,12 @@ function duelStrip(g) {
   const D = g.duel, s = D.state; if (!s) return [];
   const S = s.sides[0], worn = S.tools ? new Set(S.tools) : null, hand = S.form === 'hand', out = [];
   const cell = D.hover, piece = hand && cell ? s.board?.at?.(cell.x, cell.y) : null;
-  if (piece && piece.kind !== 'body') out.push(E('du.rotate', 'rotate', 'ROTATE', { dim: !D.mine }));
-  for (const [tool, id, glyph, word] of DUEL_MOVES) if (!worn || worn.has(tool)) out.push(E(id, glyph, word, { dim: hand || !D.mine }));
+  const ask = askedOf(s), fogged = !!s.rs?.fog && s.rs.fog.side !== 0; // (Read only where Dread's fog hides the foe: couriertools.js)
+  if (piece && piece.kind !== 'body') out.push(E('du.rotate', 'rotate', 'ROTATE', { dim: !D.mine, lit: ask === 'move' }));
+  for (const [tool, id, glyph, word] of DUEL_MOVES) {
+    if ((worn && !worn.has(tool)) || (id === 'du.read' && !fogged)) continue;
+    const spent = (id === 'du.tune' && !!S.tune) || (id === 'du.read' && S.read > 0); // (a song sung this turn, a read still open: lit, not again)
+    out.push(E(id, glyph, word, { dim: hand || !D.mine || spent, lit: (!hand && ask === 'tool') || (id === 'du.tune' && !!S.tune) }));
+  }
   return out;
 }

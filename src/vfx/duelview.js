@@ -8,7 +8,8 @@
 //
 // Its parts (src/vfx/duelview/): the layout's numbers (layout.js), the tsuitate (board.js), the pieces as instances (pieces.js, modelled
 // in piecemodels.js), the domains' clash (domains.js: the view's one program, the slab's too), the marks over the board (marks.js), the
-// foe's forecast (intent.js), the bursts (bursts.js), and the beats that play the kernel's events (beats.js, the tools' in toolbeats.js).
+// foe's forecast (intent.js) and its foresight (foresight.js), the move's worth (worth.js), the glows on the pieces (glows.js: a Tune's
+// hum, Paint's reach, the lesson's asked verb), the bursts (bursts.js), and the beats that play the kernel's events (beats.js, the tools' in toolbeats.js and toolbeats2.js).
 // This module is the interface and the wiring: where the board stands, which half is whose colour, the counts and points it shows, the
 // spiritual link's far end while the duel is open (the board's Courier, or the god hand over its half), and the foe's stars in the world.
 //
@@ -25,7 +26,10 @@
 //                                      or a yaw whose forward (sin yaw, 0, cos yaw) points at the Courier. The board's face looks along
 //                                      `face` (world): stand the camera on that side to read the Courier's half on the left
 //   play(events) -> Promise            the kernel's events, in order (act's, endTurn's, bot.play's), resolved once shown; queued
-//   intent(plan | null)                the foe's live forecast (bot.plan(state, 1)), its first step bold; null clears it
+//   intent(plan | intent | null)       the foe's live forecast: bot.plan's actions (its first step bold), or with `intentWhole` the
+//                                      kernel's intentOf { actions, junk, cells, hits } (foresight.js: its clears, hits and junk too)
+//   pendingAction(action | null)       the action under the finger before it is chosen: the move's worth (worth.js); armPaint(on)
+//   select(cells)                      one cell: picked (lifted, its ring, a tick into each neighbour); more: the drag's rims
 //   cellAt(ray) -> { x, y } | null     the cell a ray meets on the slab's face (the god hand's pick): a THREE.Ray, or { origin, dir }
 //   frameShot() -> { pos, look }       the camera that reads the board (from the `face` side, a cell at least 12 dots of the 480 lines,
 //                                      both halves and both bodies in view): for game.cinema.shot
@@ -50,6 +54,9 @@ import { DuelIntent } from './duelview/intent.js';
 import { DuelBursts } from './duelview/bursts.js';
 import { DuelBeats } from './duelview/beats.js';
 import { DuelFlee } from './duelview/flee.js';
+import { DuelGlows } from './duelview/glows.js';
+import { DuelWorth } from './duelview/worth.js';
+import { DuelForesight } from './duelview/foresight.js';
 
 const TEAR = 0x7fdcff, COURIER_HEX = '#9fd8ff', UP = new THREE.Vector3(0, 1, 0);
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _c = new THREE.Color(), _r = new THREE.Ray(), _inv = new THREE.Matrix4();
@@ -63,6 +70,8 @@ export class DuelView {
     this.board = new DuelBoard(this.frame, this.clash); this.pieces = new DuelPieces(this.frame); this.marks = new DuelMarks(this.frame);
     this.intentDraw = new DuelIntent(this.frame, this.marks); this.bursts = new DuelBursts(this.frame); this.beats = new DuelBeats(this);
     this.flee = new DuelFlee(this); this.folded = false;
+    this.glows = new DuelGlows(this); this.worth = new DuelWorth(this); this.foresight = new DuelForesight(this); this.tune = [null, null]; this.pendingKind = null;
+    this.intentWhole = true; // (the session hands intent() bot.js intentOf's whole: { actions, junk, cells, hits })
     this.u = new THREE.Vector3(1, 0, 0); this.face = new THREE.Vector3(0, 0, 1); this.centre = new THREE.Vector3();
     this.sent = [0, 0]; this.pending = [0, 0]; this.depth = [0, 0]; this.apShown = [5, 5]; this.forms = ['hand', 'hand']; this.lineCol = 10;
     this.linkEnd = (out) => this.linkAt(out);
@@ -88,7 +97,7 @@ export class DuelView {
     this.root.updateMatrixWorld(true); this.centre.copy(at);
     const B = state.board;
     this.board.build(B, this.aspect); this.pieces.build(B, this.aspect); this.marks.layout(B); this.clash.setFoe(this.aspect); this.flee.clear(); this.flee.layout(B);
-    this.forms = state.sides.map((S) => S.form);
+    this.forms = state.sides.map((S) => S.form); this.tune = state.sides.map((S) => S.tune || null); this.glows.clear(); this.worth.clear(); this.foresight.clear(); this.pendingKind = null;
     this.gravLine = B.line; this.setLine(B.line); this.fogCur = null; this.stepFog(0); // (the fog as it stands at once: nothing hidden shows for a frame)
     this.board.won(0); this.readCounts(); this.readPoints(); this.readFight();
     const half = (B.w * DUEL_VIEW.cs) / 2 + 2, oc = _w.copy(at).addScaledVector(this.u, -half), of = foe?.pos ? foe.pos.clone() : at.clone().addScaledVector(this.u, half);
@@ -99,7 +108,7 @@ export class DuelView {
   /** Fold the domains away and take the board down (at once, with `now`). */
   close(now = false) {
     if (!this.isOpen && !this.closing) return;
-    this.isOpen = false; this.beats.clear(); this.intentDraw.clear(); this.marks.hover(null); this.marks.select([]); this.marks.stars(0, 0); this.marks.stars(1, 0);
+    this.isOpen = false; this.beats.clear(); this.intentDraw.clear(); this.foresight.clear(); this.worth.clear(); this.glows.clear(); this.tune = [null, null]; this.marks.hover(null); this.marks.select([]); this.marks.stars(0, 0); this.marks.stars(1, 0);
     this.game.spiritualLink?.detach(this); this.clash.collapse(); this.closing = !now;
     this.flee.clear(); this.marks.refuse(null);
     if (now) { this.clash.open = [0, 0]; this.clash.update(0); this.root.visible = false; this.bursts.clear(); }
@@ -108,9 +117,13 @@ export class DuelView {
   play(events) { return this.isOpen ? this.beats.play(events) : Promise.resolve(); }
 
   intent(plan) {
-    if (!plan || !this.isOpen) { this.intentDraw.clear(); return; }
-    this.intentDraw.show(this.state, plan, 1, this.aspect); // (the foe's side: the Figment's is side 1)
+    if (!plan || !this.isOpen) { this.intentDraw.clear(); this.foresight.clear(); return; }
+    if (!Array.isArray(plan) && plan.actions) { this.intentDraw.show(this.state, plan.actions, 1, this.aspect, { whole: true }); this.foresight.show(this.state, plan, this.aspect); return; } // (the whole: foresight.js)
+    this.foresight.clear(); this.intentDraw.show(this.state, plan, 1, this.aspect); // (the foe's side: the Figment's is side 1)
   }
+  /** The action under the finger before it is chosen (the session's): its worth shown (worth.js); a Paint arms the reach (glows.js). */
+  pendingAction(a) { if (!this.isOpen) return; this.pendingKind = a?.kind || null; this.worth.show(this.state, a || null); }
+  armPaint(on) { this.glows.armPaint(on); }
 
   /** The cell a ray (world) meets on the slab's face, or null. */
   cellAt(ray) {
@@ -171,11 +184,15 @@ export class DuelView {
    *  in the dry ink, and the spiritual link slack. No words. */
   refuse(a = {}) {
     if (!this.isOpen) return;
-    const body = this.pieces.bodyAt(0), c = a.at || a.path?.[0] || (body && !a.at && ['push', 'kick', 'run', 'shoot', 'grab', 'drill', 'paint', 'delay', 'hold', 'send', 'flee'].includes(a.kind) ? [body.cx, body.cy] : null) || this.marks.hovered;
+    const body = this.pieces.bodyAt(0), c = a.at || a.path?.[0] || (body && !a.at && ['push', 'kick', 'run', 'shoot', 'grab', 'drill', 'paint', 'tune', 'read', 'delay', 'hold', 'send', 'flee'].includes(a.kind) ? [body.cx, body.cy] : null) || this.marks.hovered;
     if (c) this.marks.refuse({ x: c.x ?? c[0], y: c.y ?? c[1] });
     this.game.spiritualLink?.slack?.();
   }
-  select(cells) { this.marks.select(this.isOpen ? cells : []); }
+  select(cells) {
+    cells = this.isOpen ? cells || [] : []; this.marks.select(cells);
+    for (const v of this.pieces.list) v.pick = 0; // (one cell picked: its piece lifted, marks.js the ring)
+    if (cells.length === 1) { const c = cells[0], v = this.pieces.at(c.x ?? c[0], c.y ?? c[1]); if (v && v.kind !== 'body') v.pick = 1; }
+  }
 
   // ---- what the beats ask of the view
   setLine(col) {
@@ -225,7 +242,7 @@ export class DuelView {
       v.cool = 1; cellLocal(v.x, v.y, this.board3, _w); this.bursts.burst(_w, 0x2e1810, 4, { speed: 0.4, life: 0.4, fall: -1, size: 0.018 }); }
     if (this.finisherDone) { for (const v of [...this.pieces.list]) if (v.cx >= this.lineCol) this.pieces.remove(v); }
     else this.setLine(s.board.line);
-    this.forms = s.sides.map((S) => S.form); this.readCounts(); this.readPoints(); this.readFight();
+    this.forms = s.sides.map((S) => S.form); this.tune = s.sides.map((S) => S.tune || null); this.readCounts(); this.readPoints(); this.readFight();
     if (s.winner === 0) this.board.won(1);
     this.flee.odds(s);
   }
@@ -242,7 +259,7 @@ export class DuelView {
   update(dt) {
     if (!this.isOpen && !this.closing) return;
     dt = Math.min(dt || 0, 0.1);
-    this.beats.update(dt); this.stepFog(dt);
+    this.beats.update(dt); this.stepFog(dt); this.glows.update(dt); this.worth.update(dt); this.foresight.update(dt);
     const shown = this.clash.update(dt);
     this.board.update(dt); this.pieces.update(dt); this.marks.update(dt); this.bursts.update(dt); this.flee.update(dt);
     if (this.isOpen && !this.beats.busy) this.flee.odds(this.state);
@@ -281,6 +298,7 @@ export class DuelView {
     this.marks.numeral('3', new THREE.Vector3(0, 1, 0.1), '#ffffff'); this.marks.hover({ x: 2, y: 18 }); this.marks.stars(1, 2, new THREE.Vector3(0, 1, 0));
     this.bursts.burst(new THREE.Vector3(0, 1, 0), 0xffffff, 4);
     this.intentDraw.show(state, [{ kind: 'swap', at: [12, 18], dir: 'E' }, { kind: 'rotate', at: [12, 16] }], 1, this.aspect);
+    this.foresight.show(state, { actions: [], junk: 3, cells: [[12, 18], [13, 18]], hits: [[12, 18]] }, this.aspect); this.marks.pick({ x: 3, y: 3 }); this.glows.buildReach(4, 10, 4, 10);
     for (const side of [0, 1]) this.pieces.bodyAt(side); this.pieces.add('orb', { side: 0 }, 3, 3); this.pieces.add('stone', {}, 4, 3); this.pieces.add('bomb', {}, 5, 3);
     const coal = this.pieces.add('ember', { count: 2 }, 6, 3); coal.craze = 0.8; this.marks.refuse({ x: 7, y: 3 }); // (the crazing's quads, the dry rim)
     this.update(0.016); this.flee.prewarm(); this.flee.odds(state);
