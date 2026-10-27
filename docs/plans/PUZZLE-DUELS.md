@@ -514,8 +514,14 @@ ruleset whose weak colour is not on its board has neither (Fury, Mirth as they s
 resisting grief. It is the Soul Brush's best use: Paint the gems round you into the weak colour. `chain` events carry `weak` (how many
 weak gems the step had). Measured (the Wisp, the stand-in kept to the hand): 16 of 24 won with it, 13 without.
 
-**Next, ranked, not built:** clue fog (Hexcells: the foe's half shows its counts by row and column, Read gives the cells, familiarity
-adds clues); a colour each Figment is weak to and one it resists, from the wheel of feelings (Persona, Puzzle & Dragons), so colour
+### 19.3 Clue fog (built: `clues(state, viewer, familiarity)`, `dread.js`; Hexcells', Picross's margins)
+
+Dread's fog stays, but it becomes a thing to read: for each row and column of the fogged half, how many hidden cells hold a piece, and the
+hidden gems' tally by colour. From familiarity 2 (familiarity.js) the counts split gems from junk; the Veritome's Read still shows the
+cells whole. Into the Breach's promise (nothing hidden that you cannot reason about) kept without lifting the Wisp's fog. For the view
+(Calissa): the numbers in the tsuitate's margins over the fog, as a Picross board's.
+
+**Next, ranked, not built:** a colour each Figment is weak to and one it resists, from the wheel of feelings (Persona, Puzzle & Dragons), so colour
 means more than matching; power gems (Puzzle Fighter: a 2 x 2 of one colour fused, clearing all its colour touching); a catch-up seed
 for a broken side (Puyo's Fever: a break snowballs today); charms as hooks on clears (Balatro's jokers) from the bracelet and the laid
 spread; a mended Figment lending its rule family as a charm (Mega Man); a Figment's phases by its breaks; a chain power table per
