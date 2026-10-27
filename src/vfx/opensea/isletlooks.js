@@ -87,7 +87,8 @@ export class SeaLooks {
     const m = [new THREE.Mesh(a.geo, this.mat), new THREE.Mesh(b.shallows, this.wet)];
     m[0].castShadow = m[0].receiveShadow = true;
     for (const o of m) { o.position.set(0, -50, 0); o.userData.zoneFree = true; o.visible = true; this.game.scene.add(o); }
-    return () => { for (const o of m) o.visible = false; };
+    const bottle = this.game.bottleLooks?.prewarm?.(); // (the drift bottle's glass: vfx/opensea/bottlelooks.js)
+    return () => { for (const o of m) o.visible = false; bottle?.(); };
   }
 
   update() {
