@@ -4109,3 +4109,12 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   chosen; the menu hears no key and no tap once chosen.
 - **Rule:** NEW:one-choice-a-load
 
+
+### 2026-10-27 · The duel's board off centre and under the log on a phone (South's screenshot; Calissa)
+- **Seen:** on a phone in landscape the tsuitate stood a third left of the room the controls leave, its frame's top under the log.
+- **Cause (as measured):** XR landscape, 896 x 414, the 14 x 14 board: its cells' centre at x 228 against a free room centred on 344. The
+  session frames the shot once, at the open (duelsession.js), and the fit reads the tiles as they stand: then the foot's, not the
+  duel's that replace them a frame later. And the log as drawn reaches 26 px below the rect the layout keeps for it.
+- **Fix:** the view eases the duel's shot toward a fit taken every quarter real second while the duel is open on touch; the fit's top
+  is the log as drawn. Measured after: the cells' centre at x 318, the frame's top 37 px under the log.
+- **Rule:** NEW:fit-to-the-room-as-it-stands
