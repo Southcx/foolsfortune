@@ -138,7 +138,7 @@ their Clayese scales; the System's skill and achievement jingles (the chime and 
   its nodes go when it ends; the audio's health (`audio/health.js`) writes into the field report when the audio clock falls behind real
   time or the context stops, with the zone and the cue's section.
 - **The ship's fight at the helm** (`audio/seabattle.js`; Petra's `sea.*` events). A broadside ripples bow to stern on the cue's next
-  sixteenth, panned to its side (at most six guns on a phone), and tells its heard moment as `sea.report { at, side }` for the muzzles'
+  sixteenth, panned to its side (at most six guns on a phone), and tells its heard moment as `sea.boom { at, side }` for the muzzles'
   flash; a dry touch-hole hisses; the worn tools at sea each have a voice (the harpoon's chain and bite, the Crucibelle's foghorn on the
   cue's root and fifth, the sonar's ping and echo, the fire paint thrown); a mend is three mallet knocks. The wolf whale's and the world
   serpent's moves are heard as the serpent's nearest kin, a breach and the world-coil closing with their own.
