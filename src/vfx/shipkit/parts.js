@@ -27,11 +27,12 @@ export function pod(M, { x, y, z0, z1, r0, r1, sides = 8, body, band, nozzle = 0
   if (square) M.box([x, y, (z0 + z1) / 2], [r0 * 2, r0 * 1.7, z1 - z0], body, 0.1, { top: [0.86, 0.94] });
   else M.cyl([x, y, z0], [x, y, z1], r0, r1, sides, body, 0.1, { phase: Math.PI / sides });
   M.cyl([x, y, z1], [x, y, z1 + (z1 - z0) * 0.18], square ? r0 * 0.7 : r1, 0.02, sides, body, 0); // (its nose)
-  for (const k of [0.22, 0.6]) { const z = z0 + (z1 - z0) * k, rr = (square ? r0 * 1.04 : r0 + (r1 - r0) * k) * 1.06; M.cyl([x, y, z - 0.05], [x, y, z + 0.05], rr, rr, sides, band, 0, { phase: Math.PI / sides }); }
+  const bw = (z1 - z0) * 0.035, lip = (z1 - z0) * 0.05; // (a band's half width and the nozzle's lip: shares of the pod, so a pod of any size reads the same)
+  for (const k of [0.22, 0.6]) { const z = z0 + (z1 - z0) * k, rr = (square ? r0 * 1.04 : r0 + (r1 - r0) * k) * 1.06; M.cyl([x, y, z - bw], [x, y, z + bw], rr, rr, sides, band, 0, { phase: Math.PI / sides }); }
   const rn = (square ? r0 * 0.78 : r0 * 0.86);
-  M.cyl([x, y, z0 + 0.01], [x, y, z0 - 0.08], r0 * 0.98, rn, sides, nozzle, 0.5, { caps: false, phase: Math.PI / sides }); // (the nozzle's lit ring)
-  if (pylon) M.box([(x + pylon[0]) / 2, (y + pylon[1]) / 2, (z0 + z1) / 2 + (z1 - z0) * 0.05], [Math.abs(x - pylon[0]) + 0.05, Math.max(0.08, Math.abs(y - pylon[1]) + 0.08), (z1 - z0) * 0.55], pylonCol ?? body, 0, { top: [1, 0.7] });
-  return { at: [x, y, z0 - 0.08], r: rn * 0.96 };
+  M.cyl([x, y, z0 + lip * 0.12], [x, y, z0 - lip], r0 * 0.98, rn, sides, nozzle, 0.5, { caps: false, phase: Math.PI / sides }); // (the nozzle's lit ring)
+  if (pylon) M.box([(x + pylon[0]) / 2, (y + pylon[1]) / 2, (z0 + z1) / 2 + (z1 - z0) * 0.05], [Math.abs(x - pylon[0]) + 0.05, Math.max(r0 * 0.3, Math.abs(y - pylon[1]) + r0 * 0.3), (z1 - z0) * 0.55], pylonCol ?? body, 0, { top: [1, 0.7] });
+  return { at: [x, y, z0 - lip], r: rn * 0.96 };
 }
 
 /** A fin cut from its side-view outline (z, y points, convex or not: fanned from its first), `t` thick across x, at x. Its last edge
@@ -57,8 +58,9 @@ export function ports(M, hull, { zs, y, w = 0.16, h = 0.06, col, code = 0.45, fr
 
 /** The dark slot in the deck a mast stows into (its hatch closes over it: shipkit/rig.js). */
 export function slot(M, { x = 0, y, z, w, d, col = 0x0c0f16, lip = 0x3a4150 }) {
-  M.quad([x - w / 2, y + 0.006, z - d / 2], [x + w / 2, y + 0.006, z - d / 2], [x + w / 2, y + 0.006, z + d / 2], [x - w / 2, y + 0.006, z + d / 2], col, 0, [x, y - 1, z]);
-  for (const s of [1, -1]) M.box([x, y + 0.012, z + s * (d / 2 + 0.02)], [w + 0.08, 0.02, 0.04], lip, 0);
+  const k = w / 0.5; // (the lip's sizes as the sloop's half-metre slot had them, grown with the slot)
+  M.quad([x - w / 2, y + 0.006 * k, z - d / 2], [x + w / 2, y + 0.006 * k, z - d / 2], [x + w / 2, y + 0.006 * k, z + d / 2], [x - w / 2, y + 0.006 * k, z + d / 2], col, 0, [x, y - 1, z]);
+  for (const s of [1, -1]) M.box([x, y + 0.012 * k, z + s * (d / 2 + 0.02 * k)], [w + 0.08 * k, 0.02 * k, 0.04 * k], lip, 0);
 }
 
 /** A wing cut from its plan outline ([x, z] points, x outboard: fanned from its first), `t` thick, at height y, on both sides; its
