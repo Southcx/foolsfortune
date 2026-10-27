@@ -24,11 +24,13 @@
 // intent drawn while you plan).
 //
 //   game.duel = new DuelSession(game)   .begin(creature)   .update(raw, input)   .active   .state   .close(outcome)
+//   The view is told: view.pendingAction(action | null), the action under the finger before it is chosen (a swap or drag as the press
+//   builds, a run on hover); on touch the board is DUEL.phone's size when Dovina sets it (`{ w, h, line }`, duel.js).
 //   Events (with `by`): duel.open { kind, feeling }, duel.break { kind, depth }, duel.flee { roll, reroll, need, ok }, duel.end { kind, won, how,
 //   turns } (how 'fled': away, both whole; tracking.js says each)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { newDuel, act, endTurn, legalActions } from '../../progress/duel/duel.js';
+import { newDuel, act, endTurn, legalActions, DUEL } from '../../progress/duel/duel.js';
 import { luckOf } from '../../progress/luck.js';
 import { plan as botPlan, play as botPlay } from '../../progress/duel/bot.js';
 import { rulesetOf } from '../../progress/duel/rulesets.js';
@@ -66,10 +68,11 @@ export class DuelSession {
     const g = this.game, P = g.player, pool = g.lachryma;
     const tools = (g.belt?.tools || []).filter((t) => g.belt.isWorn(t.id)).map((t) => t.id);
     this.startPool = Math.round(Math.min(100, pool?.available ?? 30));
-    this.state = newDuel({ ruleset, seed: Math.floor(duelRand() * 2 ** 31), forms: ['hand', 'courier'], pool: [this.startPool, 30], tools: [tools, []],
+    const board = g.input?.device === 'touch' ? DUEL.phone : null; // (on touch a smaller board of larger cells, `{ w, h, line }`: Dovina's to size; the owner, 2026-10-27)
+    this.state = newDuel({ ...board, ruleset, seed: Math.floor(duelRand() * 2 ** 31), forms: ['hand', 'courier'], pool: [this.startPool, 30], tools: [tools, []],
       luck: [g.ledger ? Math.min(2, Math.floor(luckOf(g.ledger).level / 10)) : 0, 0], // (Luck's sway on a flee, 0..2: a tenth of its level, as ruled)
       rerolls: [g.rerolls?.left() ?? 0, 0] }); // (Luck's re-rolls left this game day: a failed Flee is thrown again, progress/duel/flee.js)
-    this.foe = c; this.feeling = feeling; this.active = true; this.busy = false; this.botT = -1; this.press = null; this.path = []; this.yieldT = 0; this.swipe = null;
+    this.foe = c; this.feeling = feeling; this.active = true; this.busy = false; this.botT = -1; this.press = null; this.path = []; this.yieldT = 0; this.swipe = null; this.shown = null;
     for (const t of g.belt?.tools || []) if (t.wants || t.drawT > 0) t.stow(); // (nothing in the hands: the board is the fight)
     g.techs?.get('carry')?.drop?.();
     P.vel.set(0, 0, 0);
@@ -144,10 +147,10 @@ export class DuelSession {
         const last = this.path[this.path.length - 1];
         if (!sameCell(cell, last) && Math.abs(cell.x - last.x) + Math.abs(cell.y - last.y) === 1) { this.path.push(cell); this.view?.select?.(this.path); }
       }
+      this.show(this.press ? actionOfPath(this.path) : null);
       if (this.press && !input.isDown('Mouse0')) {
-        const P = this.path; this.press = null; this.path = []; this.view?.select?.([]);
-        if (P.length === 2) return this.take({ kind: 'swap', at: [P[0].x, P[0].y], dir: dirOf(P[0], P[1]) });
-        if (P.length > 2) return this.take({ kind: 'drag', path: P.map((c) => [c.x, c.y]) });
+        const P = this.path; this.press = null; this.path = []; this.view?.select?.([]); this.show(null);
+        const a = actionOfPath(P); if (a) return this.take(a);
       }
       if (input.wasPressed('KeyR') && cell) return this.take({ kind: 'rotate', at: [cell.x, cell.y] });
       if (input.wasPressed('Mouse2') && cell) return this.take({ kind: 'drop', at: [cell.x, cell.y] });
@@ -171,7 +174,8 @@ export class DuelSession {
       }
       return;
     }
-    if (input.wasPressed('Mouse0') && cell) { const path = this.runTo(cell); if (path) return this.take({ kind: 'run', path }); }
+    if (!sameCell(cell, this.shownAt)) { this.shownAt = cell; const path = cell && !onMe ? this.runTo(cell) : null; this.show(path ? { kind: 'run', path } : null); } // (the run under the pointer, before it is chosen)
+    if (input.wasPressed('Mouse0') && cell) { const path = this.runTo(cell); if (path) { this.show(null); this.shownAt = null; return this.take({ kind: 'run', path }); } }
     for (const [k, kind] of Object.entries(TOOL_KEYS)) if (input.wasPressed(k)) {
       if (kind === 'drill') return this.take({ kind, dir: this.face });
       if (kind === 'paint') return this.take({ kind, colour: this.game.player?.techs?.get?.('soulbrush')?.load?.aspect || 'wonder' });
@@ -191,6 +195,12 @@ export class DuelSession {
     const ev = act(this.state, a);
     if (!ev) { sfx.dryFire?.(); this.view?.refuse?.(a); return; }
     this.run(ev);
+  }
+  /** The action under the finger or the pointer, before it is chosen (a swap or drag as the press builds, a run on hover), told to the view
+   *  once a change, null when let go: the view draws what it would bring from Dovina's preview (duel.js). */
+  show(a) {
+    const key = a ? JSON.stringify(a) : null; if (key === this.shown) return;
+    this.shown = key; const V = this.view; if (typeof V?.pendingAction === 'function') V.pendingAction(a); // (not `pending`: the view keeps its junk counts by that name)
   }
   endMine() { this.run(endTurn(this.state)); }
   /** Events played by the view (awaited: nothing is taken meanwhile), then the forecast and the end. */
@@ -265,3 +275,5 @@ export class DuelSession {
 
 const sameCell = (a, b) => (!a && !b) || (!!a && !!b && a.x === b.x && a.y === b.y);
 const dirOf = (a, b) => (b.x > a.x ? 'E' : b.x < a.x ? 'W' : b.y > a.y ? 'S' : 'N');
+/** A press's path as the kernel's action: two cells a swap, more a drag, one nothing yet. */
+const actionOfPath = (P) => (P.length === 2 ? { kind: 'swap', at: [P[0].x, P[0].y], dir: dirOf(P[0], P[1]) } : P.length > 2 ? { kind: 'drag', path: P.map((c) => [c.x, c.y]) } : null);
