@@ -535,3 +535,30 @@ stream is `quietStream(state, salt)`, seeded from the duel as it stands (its boa
 the same seed plays the same with or without previews and intents (checked: ten turns either way, one board). The bots' search changed
 with it (the stand-in won 67 of 80 against the Wisp at its 6 actions a point), so the Wisp's bot weighs 8: 58 of 80, as before. The
 casebook's rule: a lookahead owns its own stream.
+
+## 20. The phone redo: the rules' side (South via Calissa, 2026-10-27: "the board needs to be the largest thing on screen, doubled in size ... the gems need to be readily identifiable ... Don't be afraid to make radical changes")
+
+Calissa plans the layout (Puzzle Quest's: the board edge to edge vertically, the two bodies either side). The rules answer it so:
+
+- **The Lantern Wisp's board is 12 x 9, 4 colours, on every device** (one game, one save; `rulesets.js`). On an iPhone XR held sideways
+  (896 x 414 CSS px) a 9-row board at the full height is a 44 px cell, Apple's touch minimum, 528 x 396, leaving 184 px each side for the
+  Courier and the aberrant. Measured over 40 duels each against the shipped bot (sample 8), the stand-in (sample 3, hand and Courier):
+  | board, colours | the stand-in wins | longest chain (you, foe) | turns a side |
+  | --- | --- | --- | --- |
+  | 14 x 14, 5 (until now) | 17 | 4, 5 | 6.4 |
+  | 12 x 10, 5 | 23 | 3, 3 | 7.7 |
+  | 12 x 12, 5 | 15 | 4, 4 | 6.3 |
+  | 10 x 10, 4 | 24 | 3, 4 | 6.7 |
+  | 12 x 10, 4 | 20 | 4, 4 | 6.9 |
+  | **12 x 9, 4** | **24** | **4, 4** | **7.9** |
+  Fewer cells with five colours starve the chains (three colours meet too rarely); four colours put the depth back. The four are the
+  first four feelings (Wonder, Mirth, Desire, Fury); Fury stays on the board, so the Wisp's weakness (fury, its dread's opposite, 19.2)
+  is still there to chase. A Figment that brings 5 or more colours keeps a bigger board (its own `board`).
+- **The tools on screen:** a duel offers only the two worn tools' moves (`wears`, couriertools.js), so the screen needs those as buttons
+  and nothing else; Flee and Undo in a corner. No tray of seven.
+- **The fog shows shape, not colour** (`fogShows`, dread.js): a fogged cell is drawn as a plain stone of the fog, so the foe's half
+  reads as its stacks' height at phone size; the lantern's light (3 cells), Read, the clue counts (19.3) and the foresight give the
+  colours. The bot never reads the fog (it is the foe's own half).
+- **The gems' meanings:** a gem's colour is a feeling (`COLOURS`, board.js, in the display order); its silhouette is Calissa's, one a
+  feeling so the board reads in greyscale; the Wisp's weak colour (fury) wears the weakness mark.
+- **Measured live:** the Wisp's duel opened headless on the 12 x 9 board (the Line at 6), the view stood to it, the turn handed over.
