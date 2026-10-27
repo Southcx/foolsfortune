@@ -36,6 +36,7 @@
 //   pointOf(cell) -> Vector3           a cell's centre on the slab's face, in the world (the god hand's cursorAt; its normal: `face`)
 //   refuse(action)                     an illegal action: the cell's rim shaken in the dry ink, no words (marks.js)
 //   resync(state)                      the board and pieces stood again from a restored state (undo), the clash kept: juice.js rewind
+//   skip(state)                        the foe's turn skipped: its queued beats dropped, the board stood as the state is
 //   hint(h | null)                     the idle hint (bot.js hintOf): its move's piece nudging its way, its clears pulsing; any play lets it go
 //   stage (stage.js: the zoom from the arena to the board view, the director's camera; the session asks stage.eatTap(cell) before a
 //   tap acts)   dive (formdive.js: the Pneuka Jar at your spot in the hand's form, the pour into the board and out of it)
@@ -247,6 +248,13 @@ export class DuelView {
   resync(state) {
     if (!this.isOpen || !state) return; this.state = state;
     this.intentDraw.clear(); this.foresight.clear(); this.worth.clear(); this.marks.select([]); this.juice.rewind(state);
+  }
+
+  /** The foe's turn skipped by a tap (the session's, Dovina's 21.1): the queued beats dropped and the board stood as the state is, at
+   *  once, with a short shake so the jump reads as the turn landing. */
+  skip(state) {
+    if (!this.isOpen || !state) return;
+    this.beats.clear(); this.juice.clear(); this.worth.clear(); this.state = state; this.settleUp(); this.stage.jolt(0.2);
   }
 
   /** The play queue ran dry: the view is made to agree with the duel as it stands (anything the beats did not follow is put right). */
