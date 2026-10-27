@@ -152,6 +152,6 @@ export const ACTIONS = {
     legal: (s, side, a) => { const b = s.board, [x, y] = a.at; if (!mineIn(b, side, x, y) || b.at(x, y) || !s.sides[side].queue.length) return false;
       const [gx, gy] = b.grav(x, y), ux = x - gx, uy = y - gy; return !b.in(ux, uy) || !b.at(ux, uy) || (!gx && !gy); },
     apply: (s, side, a) => { const p = s.sides[side].queue.shift(); s.board.set(a.at[0], a.at[1], p); return [{ type: 'drop', side, id: p.id, at: a.at }]; } },
-  form: { form: null, cost: 1, legal: (s, side, a) => s.sides[side].forms.includes(a.to) && s.sides[side].form !== a.to,
+  form: { form: null, cost: 0, legal: (s, side, a) => s.sides[side].forms.includes(a.to) && s.sides[side].form !== a.to, // (free: a form is which verbs you hold, never a tax on learning them; the owner, 2026-10-26)
     apply: (s, side, a) => { s.sides[side].form = a.to; return [{ type: 'form', side, to: a.to }]; } },
 };

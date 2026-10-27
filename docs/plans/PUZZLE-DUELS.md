@@ -76,7 +76,7 @@ engine can load, and each aberrant Figment brings the two or three that are its 
 |---|---|---|---|
 | **the Courier** | a body on a cell of your side | **run** up to four cells 1, **push** a run of pieces one cell 1, **kick** one piece to slide until blocked 2, and its tools (section 11) | Noon, Bomberman, Sokoban, Mr. Driller |
 | **the god hand** | over your side | **the finisher** on a broken foe 2 (section 11), **swap** two neighbours 1, **drag** a piece along a path, swapping with each it passes 1 a 3 cells, **rotate** a 2 × 2 1, **drop** the next queued piece down a lane 1 | Bejeweled, Terra Battle, Hexic, Tetris |
-| (switching form) | | 1 | |
+| (switching form) | | 0 (free since 2026-10-26, section 17; was 1) | |
 
 The Pneuka Jar as a form (a piece you protect, Dr. Mario's virus turned round) is a later module.
 
@@ -352,3 +352,34 @@ Ruled, with the numbers:
 
 The events: `duel.pull { foe, by: 'creature' }` when a pull starts from nothing, `duel.slip { by: 'courier' }` when one drains away before
 it filled (the log's line: "You pull away from the aberrant."). These are plain placeholders for Espada.
+
+## 17. The aberrant Lantern Wisp made gentler (the owner on the phone, 2026-10-26, relayed by Calissa)
+
+The owner's words: "reduce the difficulty of the enemy Aberrant"; "having the tiles only match to linear match-3 style combos instead of all
+adjacent same-color clusters makes it very difficult"; switching between the hand and the Courier, "why it costs AP to switch"; "the enemy is
+racking up double digit points every turn when I manage like, six". The explainer for the owner: https://claude.ai/artifact/V2jdQy5xhps8gHy67CV8Rb.
+
+**Measured first** (a scratch harness on the kernel, 8 to 20 duels a row: side 0 a bot weighing 8 actions a point, standing in for the
+owner at about 6 junk a turn; side 1 the Wisp):
+
+| the Wisp's rules | you, junk a turn | the Wisp | you win | turns a side |
+| --- | --- | --- | --- | --- |
+| as it was: runs of 3, 4 colours, the bot weighing 60 actions a point | 5.6 | 13.5 | 1 of 8 | |
+| clusters of 3, 4 colours, the bot at 60 | 13.9 | 34.6 | 1 of 10 | |
+| clusters of 3, 4 colours, the bot at 8 | 35.8 | 11.7 | 14 of 20 | 3.9 |
+| clusters of 3, 5 colours, the bot at 8 | 9.9 | 10.4 | 11 of 20 | 7.0 |
+| **clusters of 3, 5 colours, the bot at 4 (ruled)** | **9.5** | **6.1** | **12 of 20** | **8.5** |
+
+The gap was the bot's search, not the rules: 60 actions tried a point (300 a turn) finds the chain moves a person does not, and junk
+doubles each chain step (`junkOf`). The stand-in sees the whole board and takes no embers, so in play the Wisp keeps a little more edge.
+
+**Ruled (Dovina):**
+- **Clusters of 3** on the Wisp's board (`cluster: 3`, runs of 3 kept; a run of 3 is a cluster of 3 anyway). Puyo's rule at three.
+- **5 colours** on it, up from 4: at 4, clusters of 3 chained the board empty (35 junk a turn, a duel over in 4 turns a side).
+- **Its bot weighs 4 actions a point** (`rs.bot.sample`; 60 for a ruleset that does not say). A Figment's cleverness is now its
+  ruleset's: the first aberrant met is the gentlest, the later ones set by their own.
+- **Switching form is free** (`ACTIONS.form.cost` 0): a form is which verbs you hold, and a price on that read as a tax on learning them.
+  The bot keeps its own small reluctance to switch (`W.form`), so it does not dither.
+- The simulator on the Wisp's rules, bot against bot (`node scripts/duel.mjs --rules lanternwisp --n 20`): no settle capped, 16.8 turns a
+  side, junk 6.1 a turn.
+
