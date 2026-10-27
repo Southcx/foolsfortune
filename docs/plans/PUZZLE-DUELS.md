@@ -627,6 +627,10 @@ Until South rules, nothing more is built on the Courier's movement (no D-pad, no
 
 Section 21.4 built as the default (`DUEL.style = 'drag'`; a ruleset may still ask `style: 'classic'` for the forms and the old verbs).
 
+**Ruled** (South to Petra, 2026-10-27 16:23 UTC: "I approve any and all updates to the puzzle duel module that you ultimately think
+improves the user experience of playing"): the one-gesture duel and the session's edits stand; published as Version 327. The forms' dive
+moves onto a skill's cast (Calissa's).
+
 ### 22.1 The rules
 1. **One board verb: drag.** The hand drags a gem along a path, its cost by length as before; a press onto a neighbour is a drag of
    one step (the swap kept as its shortest form). Rotate and drop are gone from this style; so are the forms, run, push and kick.
