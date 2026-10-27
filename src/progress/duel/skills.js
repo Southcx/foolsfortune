@@ -13,11 +13,14 @@
 //   Hold (the Lockheart)     the junk waiting to land on you (up to `max`) is taken into the coffin and thrown back at once
 //   Read (the Veritome)      two action points back, and the fog lifted for three of your turns
 // The needs were set by measure (scripts: PUZZLE-DUELS.md 22.3) so each fires about once in two or three turns of a person's play.
+// Each skill fires at most once a turn (`S.fired`, cleared at the turn's end: Puzzle & Dragons' cooldown in turns): with skyfall the
+// cascade after a Shot charged the skills again, and a turn ran to 9 actions, 4 of them skills (PUZZLE-DUELS.md 22.8).
 //
 // Prior art: Puzzle & Dragons' active skills (charged by play, fired free, the big play of a turn), Puzzle Quest's spells (mana from the
 // gems you match), Candy Crush's striped candies and colour bombs (a line, a colour), Puyo Puyo Fever's fever (a meter filled by chains).
 //
 //   SKILLS[tool] = { need, label, line, target: 'cell' | null, legal?(s, side, a), apply(s, side, a) -> events }
+//   canAct(s, side) -> bool (an action point left, or a skill that can fire: the session ends a turn with neither)
 //   SKILL_ACTION (duel.js ACTIONS.skill: { kind: 'skill', tool, at? })   chargeFrom(s, events) (settle's charge, both sides)   skillsOf(s, side) -> [{ tool, charge, need, ready }]
 //   events: skill { side, tool, at }, charge { side, tool, charge, need, ready } (a skill filled), and each skill's own: blast { at, rows } (Shot),
 //   vein { at, colour } (Vein), recolour + paint (Paint), hold { id, at, by: 'grab' } + hold.send (Grab: the classic beats, so the view keeps up),
@@ -80,14 +83,20 @@ function grabbed(s, side, at) {
 
 /** The skills a side wears now, each with its charge (the view's tiles, the bot's choices). */
 export function skillsOf(s, side) {
-  const S = s.sides[side]; return (S.tools || []).filter((t) => SKILLS[t]).map((tool) => ({ tool, ...SKILLS[tool], charge: S.charge?.[tool] || 0, ready: (S.charge?.[tool] || 0) >= SKILLS[tool].need }));
+  const S = s.sides[side]; return (S.tools || []).filter((t) => SKILLS[t]).map((tool) => ({ tool, ...SKILLS[tool], charge: S.charge?.[tool] || 0, ready: (S.charge?.[tool] || 0) >= SKILLS[tool].need && !(S.fired || []).includes(tool), fired: (S.fired || []).includes(tool) }));
+}
+
+/** Whether a side can still do anything this turn: an action point, or a ready skill with a target it takes. */
+export function canAct(s, side) {
+  if (s.apLeft > 0) return true;
+  return skillActions(s, side).some((a) => SKILL_ACTION.legal(s, side, a));
 }
 
 /** The free action that fires a skill: worn, charged, and its target (a cell of your half where it asks one) good. */
 export const SKILL_ACTION = { form: null, cost: 0,
-  legal: (s, side, a) => { const S = s.sides[side], K = SKILLS[a.tool]; if (!K || !(S.tools || []).includes(a.tool) || (S.charge?.[a.tool] || 0) < K.need) return false;
+  legal: (s, side, a) => { const S = s.sides[side], K = SKILLS[a.tool]; if (!K || !(S.tools || []).includes(a.tool) || (S.charge?.[a.tool] || 0) < K.need || (S.fired || []).includes(a.tool)) return false;
     if (K.target === 'cell' && !onSide(s.board, side, a.at)) return false; return K.legal ? K.legal(s, side, a) : true; },
-  apply: (s, side, a) => { const S = s.sides[side]; S.charge[a.tool] = 0; S.skills = (S.skills || 0) + 1; return [{ type: 'skill', side, tool: a.tool, at: a.at || null }, ...SKILLS[a.tool].apply(s, side, a)]; } };
+  apply: (s, side, a) => { const S = s.sides[side]; S.charge[a.tool] = 0; S.skills = (S.skills || 0) + 1; S.fired = [...(S.fired || []), a.tool]; /* (a new array: a lookahead's copy of the side shares the old one) */ return [{ type: 'skill', side, tool: a.tool, at: a.at || null }, ...SKILLS[a.tool].apply(s, side, a)]; } };
 
 const SKILL_BY = new Set(['blast', 'vein']); // (a skill's own blast charges nothing: no skill fires itself)
 

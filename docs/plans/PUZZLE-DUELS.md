@@ -730,3 +730,11 @@ With nothing done to it, an uncalmed refill set off chains of 22 steps (397 095 
 (the duel's start fill), Strawman's board `{ to: 0.5 }`. The view: a refill is `drip { side, id, at, colour, sky: true }`, the drip's own
 shape, its colour on it (it can be cleared in the same settle); Calissa's to drop it in from the edge.
 
+### 22.8 A turn that runs on (Petra's live probe, 2026-10-27: 28 actions in about a turn and a half)
+Measured in the kernel (`scratchpad duel/turnlen2.mjs`, the stand-in playing out every action point on Strawman's board): a turn
+averages 1.6 actions, but one ran to 9 with 4 skills fired: a Shot's blast, then skyfall's cascade after it, charged the worn skills
+again inside the same turn. **Each skill now fires at most once a turn** (`S.fired`, cleared at the turn's end): the longest turn
+is then 9 actions with 1 or 2 skills, the designed ceiling (5 action points, a refund, Read's 2 back, the two skills). A turn
+with nothing left to do is said by `canAct(s, side)` (an action point, or a skill ready with a target it takes): the session's to end
+it a beat after, so a spent turn never reads as a stuck duel (Petra's).
+

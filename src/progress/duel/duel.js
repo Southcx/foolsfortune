@@ -217,6 +217,7 @@ export function endTurn(s) {
     s.ply++;
     if (s.ply > DUEL.turnCap * 2) { const d = s.board.line - s.board.w / 2; s.winner = d > 0 ? 0 : d < 0 ? 1 : -1; events.push({ type: 'duel.cap', winner: s.winner }); }
   }
+  S.fired = []; // (each skill once a turn: skills.js)
   s.toMove = foe; s.undo = []; s.refunded = 0; const next = startTurn(s, foe); s.apLeft = next.ap; events.push(next.event);
   if (s.lesson) events.push(...lessonTurn(s, foe));
   if (s.winner === null) events.push(...drip(s, foe));
