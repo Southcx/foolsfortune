@@ -420,3 +420,12 @@ runtime is to come.
   bodies, the parts' looks on the hull.
 - **Wanda:** the wind in the rigging by point of sail; a gust's gasp; the beasts' voices.
 - **Espada:** the beasts' and the parts' names, once the owner calls it final.
+
+### 14.6 The broadside's numbers (Petra built it the same night, `seafight.js`, RMB; ruled by Dovina)
+
+- **Guns a side by ship class** (`SHIPS[ship].guns`): sloop 3, destroyer 4, frigate 5, galleon 8, tanker 2.
+- **Power 3 a ball, reload 4 real s a side** (was 1.2 and 3.5, placeholders). The reason: the bow gun puts about 2 hits a real second
+  on what it is aimed at (8 shots of 0.25), so 4 s of it is about 8. A sloop's volley that lands whole is 9, about the same, and you
+  cannot aim the bow gun while you look over a side. The broadside wins when you put the head on your beam: x3 there is 27 at once,
+  the most one moment can do. Raking the coils (x0.5) is 4.5, worse than holding the bow gun on the head. Where the ship lies decides it.
+- The rest of Petra's numbers stand (speed 75, life 2.4, radius 0.6, cone 0.6, reach 180, spread 0.04, beam 0.45).
