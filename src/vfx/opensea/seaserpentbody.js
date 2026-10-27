@@ -32,6 +32,7 @@
 //   what the game passes wins: SEA_SERPENT's)   SERPENT_LOOK.scale (K, 3.5): the look's every length x K against the 30 m serpent it
 //   was drawn at, for the ships at 5x (the sloop about 35 m): the hide 3.7 m thick, the head about 12 m long, reared 21 m over the sea
 //   s.drive({ head: Vector3, heading, rise: 0..1, move: null|'ram'|'spit'|'coil'|'dive', k: 0..1, coil?: { centre: Vector3, r } })
+//   (on the hunt's beats 0 and 3, music/clock.js, the hide's film flares and, under, a ring leaves the head: ostinato())
 //   s.update(dt)   s.hit('head'|'coil', k)   (k = 1 - hp / hpMax: a flash, and its crazing)   s.down()   (sinks, spots out over 3 s)
 //   s.headPos (Vector3, the skull's centre)   s.headRadius (1.3 K: 4.55 m)   s.segmentsAt() -> [Vector3] (the joints, live; read only)   s.radii
 //   s.tris   s.dispose()
@@ -258,8 +259,21 @@ export class SeaSerpentBody {
     U.uParts.value[1].y = live * sstep(0.45, 0.55, rise) * (dive >= 0 ? 1 - sstep(0, 0.3, dive) : 1);
     U.uStates.value[1].x = spit; this.hu.uStates.value[1].x = spit * live;
     const f = 0.5 + 0.5 * Math.sin(this.t * 0.21), F0 = FILM[0], F1 = FILM[1], out = this.dead < 0 ? 1 : Math.max(0, 1 - dead / 3);
-    U.uAspect.value.setRGB(lerp(F0[0], F1[0], f), lerp(F0[1], F1[1], f), lerp(F0[2], F1[2], f)).lerp(CRUDE_GLOW, spit).multiplyScalar(out);
+    const beat = this.ostinato(dt, rise);
+    U.uAspect.value.setRGB(lerp(F0[0], F1[0], f), lerp(F0[1], F1[1], f), lerp(F0[2], F1[2], f)).lerp(CRUDE_GLOW, spit).multiplyScalar(out * (1 + 1.6 * beat));
     this.hu.uAspect.value.copy(CRUDE_GLOW).multiplyScalar(out);
+  }
+
+  /** The hunt's ostinato seen (Wanda's: its bass and taiko on beats 0 and 3 of the sea's 6/8, read off the heard clock, music/clock.js): the
+   *  hide's film flaring on each, and a ring off the head while it swims under, so it is seen coming before it rises (Jaws' barrels). */
+  ostinato(dt, rise) {
+    const C = this.game.music?.clock?.(), under = this.dead < 0 ? 1 - sstep(0.3, 0.6, rise) : 0;
+    this.beatK = (this.beatK || 0) * Math.exp(-dt * 7);
+    if (C) {
+      const b = Math.floor(C.beat), on = C.beats === 6 ? b === 0 || b === 3 : b % 2 === 0;
+      if (b !== this.beatAt) { this.beatAt = b; if (on) { this.beatK = 1; const W = this.game.water; if (under > 0.5 && W?.disturb) W.disturb(this.headPos.x, this.headPos.z, 0.35, 'wake', this.seaY); } }
+    }
+    return this.beatK * (0.35 + 0.65 * under);
   }
 
   /** The coil: the joints drawn onto a helix round the centre, the head reared over the ship on its inside. */
