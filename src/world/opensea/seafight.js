@@ -7,6 +7,9 @@
 //                arrow keys swinging it (helm.js). The aim finds the height: a part of a serpent above the water within a few degrees of
 //                the aim is what the shot flies at (the head first), so the camera's bearing is the aim and the sea is not a wall.
 //                A shot under the water, or past its life, is gone. Each burst is heard (a `noise` stimulus): shooting draws a hunter.
+//   THE BROADSIDE RMB: the side the camera looks out over (port or starboard, within ~63 degrees of its beam) fires its guns at once, each side
+//                reloading on its own (Sid Meier's Pirates!, Black Flag): turn the hull to bring a side to bear. Its shots are heavy (`heavy`),
+//                aimed at the part nearest the beam. Events: sea.broadside { side, guns, aimed }, sea.broadside.dry { side, left }.
 //   THE SPIT     an outlined shot (courier/ship/shots.js's word): a glob of crude thrown in an arc at where the ship will be, wearing the
 //                parry mark (vfx/parrymark.js); V while it is within reach of the hull sends it back at the head, three blows' worth.
 //   THE HULL     the ship bears its class's hits (SHIPS.bears: the sloop six), as on the rail. The ram, the spit and the coil each take
@@ -38,15 +41,17 @@ const simRand = stream('world/opensea/seafight'); // (the simulation's chance: c
 
 /** gun: a shot each `every` real s, its speed (m/s), life (s), radius (m), power, the aim's cone (rad) and reach (m), how high over the deck
  *  it leaves (m); glob: the spit's speed (m/s), its fall (m/s each s), life (s), radius (m), the parry's reach from the hull (m), its speed
- *  sent back and its power; hurt: how near the hull's middle a glob hits (m); knock: the ram's (a share of the way kept, the yaw thrown, rad);
- *  coil: the helm's turn and way while wrapped; lair: one in `every` of the serpent's squares, risen within `near` m, gone past `far` m. */
+ *  sent back and its power; hurt: how near the hull's footprint a glob hits (m, helm.hullDist); knock: the ram's (a share of the way kept, the yaw thrown, rad);
+ *  coil: the helm's turn and way while wrapped; broadside: a side's reload (real s), its guns, their shots' speed, life,
+ *  radius and power, the aim's cone off the beam (rad) and reach (m), each gun's scatter, and how square to a side the camera must look (|cos|); lair: one in `every` of the serpent's squares, risen within `near` m, gone past `far` m. */
 export const SEA_FIGHT = {
   gun: { every: 0.125, speed: 90, life: 1.5, r: 0.3, power: 0.25, cone: 0.16, reach: 150, from: 1.4 }, // (power: at the rail's cadence a perfect aim on the head sank it in 10 s at 1; at 0.25 about 40 s)
+  broadside: { reload: 3.5, guns: 6, speed: 75, life: 2.4, r: 0.6, power: 1.2, cone: 0.6, reach: 180, spread: 0.04, beam: 0.45 }, // (placeholders: Dovina's to rule)
   glob: { speed: 24, fall: 7, life: 5, r: 0.7, reach: 7, back: 46, power: 3 },
-  hurt: 3.6, knock: { keep: 0.25, yaw: 0.35 }, coil: { turn: 0.5, speed: 0.5 },
+  hurt: 1.2, knock: { keep: 0.25, yaw: 0.35 }, coil: { turn: 0.5, speed: 0.5 },
   lair: { every: 4, near: 380, far: 900 }, noise: { radius: 90, every: 1 },
 };
-const GN = SEA_FIGHT.gun, GL = SEA_FIGHT.glob, CAP = { shots: 48, globs: 6 };
+const GN = SEA_FIGHT.gun, GL = SEA_FIGHT.glob, CAP = { shots: 64, globs: 6 };
 const _d = new THREE.Vector3(), _a = new THREE.Vector3(), _b = new THREE.Vector3(), _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(1, 1, 1);
 const _z = new THREE.Vector3(0, 0, 1), _hide = new THREE.Matrix4().makeScale(0, 0, 0);
 
@@ -54,7 +59,7 @@ export class SeaFight {
   constructor(game) {
     this.game = game; this.serpents = game.seaSerpents = new SeaSerpents(game);
     this.hull = SHIPS.sloop.bears; this.down = new Map(); // (lair id -> the game day its serpent went down)
-    this.shots = []; this.globs = []; this.fireT = 0; this.noiseT = 0; this.lairs = null; this.spawnT = 0; this.grounded = false;
+    this.shots = []; this.globs = []; this.reload = [0, 0]; this.fireT = 0; this.noiseT = 0; this.lairs = null; this.spawnT = 0; this.grounded = false;
     // the placeholders, drawn only without game.seaFightLook (Calissa's: vfx/opensea/seafightlook.js): the gun's needles in one instanced
     // draw, the globs as dark spheres wearing the parry mark
     this.needles = new THREE.InstancedMesh(new THREE.BoxGeometry(0.09, 0.09, 1.8), new THREE.MeshBasicMaterial({ color: LANCE_COLOR }), CAP.shots);
@@ -80,7 +85,7 @@ export class SeaFight {
     this.lairsOf(R);
     if ((this.spawnT -= dt) <= 0) { this.spawnT = 1; this.tend(R); }
     this.serpents.update(dt);
-    if (R.sailing) { this.gun(dt, g.input, H); this.parry(g.input, H); }
+    if (R.sailing) { this.gun(dt, g.input, H); this.broadside(dt, g.input, H); this.parry(g.input, H); }
     if (this.serpent?.coiled && R.sailing) H.mods?.set('coil', SEA_FIGHT.coil); else H.mods?.delete('coil');
     this.fly(dt, H);
     this.draw();
@@ -154,6 +159,44 @@ export class SeaFight {
     if (this.noiseT <= 0) { this.noiseT = SEA_FIGHT.noise.every; g.ai?.stimuli.emit('noise', H.pos, { radius: SEA_FIGHT.noise.radius, strength: 1, by: 'courier', source: g.player }); }
   }
 
+  // ---------------------------------------------------------------- the broadside
+  /** RMB: the side the camera looks out over fires all its guns at once (port or starboard, each reloading on its own), so the rudder is the
+   *  fight: turn to bring a side to bear. Each gun's shot flies at the exposed part nearest that beam (its height found), scattered a little;
+   *  the ports are the look's (`look.ports(side)`, world points, Calissa's) or spaced along the middle three-fifths of the hull's side. */
+  broadside(dt, I, H) {
+    const g = this.game, BS = SEA_FIGHT.broadside, rl = this.reload;
+    rl[0] = Math.max(0, rl[0] - dt); rl[1] = Math.max(0, rl[1] - dt);
+    if (!I.wasPressed('Mouse2')) return;
+    g.camera.getWorldDirection(_d);
+    const sy = Math.sin(H.yaw), cy = Math.cos(H.yaw), dot = _d.x * cy - _d.z * sy; // (the look on port's normal, (cos, 0, -sin))
+    if (Math.abs(dot) < BS.beam) return; // (looking fore or aft: no side bears)
+    const k = dot > 0 ? 0 : 1, side = k ? 'starboard' : 'port', sg = k ? -1 : 1, nx = sg * cy, nz = -sg * sy;
+    if (rl[k] > 0) { g.events?.emit('sea.broadside.dry', { side, left: +rl[k].toFixed(1), by: 'courier' }); return; }
+    rl[k] = BS.reload;
+    const bear = Math.atan2(nx, nz); let aim = null, best = BS.cone;
+    for (const c of this.serpents.list) {
+      if (!c.alive) continue;
+      for (let i = 0; i < c.spine.length; i++) {
+        if (!this.serpents.exposed(c, i)) continue;
+        const p = this.serpents.at(c, i), dist = Math.hypot(p.x - H.pos.x, p.z - H.pos.z); if (dist > BS.reach) continue;
+        let da = Math.atan2(p.x - H.pos.x, p.z - H.pos.z) - bear; while (da > Math.PI) da -= 2 * Math.PI; while (da < -Math.PI) da += 2 * Math.PI;
+        const sc = Math.abs(da) - (i === 0 ? 0.08 : 0); if (sc < best) { best = sc; aim = p; } // (the head favoured)
+      }
+    }
+    const L = H.look?.length ?? 7, half = (H.look?.beam ?? 2.4) / 2, y = H.pos.y + (H.look?.deckY || 1) + 0.2, ports = H.look?.ports?.(side);
+    for (let i = 0; i < BS.guns; i++) {
+      const t = (i / (BS.guns - 1) - 0.5) * L * 0.6;
+      const from = ports?.[i]?.clone?.() ?? new THREE.Vector3(H.pos.x + sy * t + nx * half, y, H.pos.z + cy * t + nz * half);
+      if (aim) _a.subVectors(aim, from).normalize(); else _a.set(nx, 0.03, nz);
+      _a.x += (simRand() - 0.5) * BS.spread; _a.y += (simRand() - 0.5) * BS.spread * 0.5; _a.z += (simRand() - 0.5) * BS.spread; _a.normalize();
+      if (this.shots.length >= CAP.shots) this.shots.shift();
+      this.shots.push({ pos: from, prev: from.clone(), vel: _a.clone().multiplyScalar(BS.speed), t: BS.life, power: BS.power, r: BS.r, heavy: true });
+      g.seaFightLook?.muzzle(from, _a);
+    }
+    g.events?.emit('sea.broadside', { side, guns: BS.guns, aimed: !!aim, by: 'courier' });
+    g.ai?.stimuli.emit('noise', H.pos, { radius: SEA_FIGHT.noise.radius * 1.5, strength: 1.4, by: 'courier', source: g.player });
+  }
+
   // ---------------------------------------------------------------- the parry at the helm
   parry(I, H) {
     if (!I.wasPressed('KeyV')) return;
@@ -209,8 +252,8 @@ export class SeaFight {
     const S = this.serpents, g = this.game;
     for (let i = this.shots.length - 1; i >= 0; i--) {
       const s = this.shots[i]; s.prev.copy(s.pos); s.pos.addScaledVector(s.vel, dt); s.t -= dt;
-      const hit = S.partsHit(s.prev, s.pos, GN.r);
-      if (hit) { g.creatures.strike(hit.c, hit.point, _d.copy(s.vel).normalize(), GN.power, 'shot', 'courier'); g.seaFightLook?.hit(hit.point, _d); this.shots.splice(i, 1); continue; }
+      const hit = S.partsHit(s.prev, s.pos, s.r ?? GN.r);
+      if (hit) { g.creatures.strike(hit.c, hit.point, _d.copy(s.vel).normalize(), s.power ?? GN.power, 'shot', 'courier'); g.seaFightLook?.hit(hit.point, _d); this.shots.splice(i, 1); continue; }
       if (s.t <= 0 || s.pos.y < S.surf(s.pos.x, s.pos.z) - 0.2) { if (s.t > 0) g.seaFightLook?.splash(s.pos, 'shot'); this.shots.splice(i, 1); }
     }
     for (let i = this.globs.length - 1; i >= 0; i--) {
@@ -221,7 +264,7 @@ export class SeaFight {
         b.pos.addScaledVector(b.vel, dt);
       } else {
         b.vel.y -= GL.fall * dt; b.pos.addScaledVector(b.vel, dt);
-        if (H && b.pos.distanceTo(_a.copy(H.pos).setY(H.pos.y + 1)) < SEA_FIGHT.hurt && this.room.sailing) { g.seaFightLook?.hull(b.pos); this.dropGlob(b); this.globs.splice(i, 1); this.hullHit('spit'); continue; }
+        if (H && H.hullDist(b.pos) < SEA_FIGHT.hurt && b.pos.y < H.pos.y + (H.look?.deckY || 1) + 3 && this.room.sailing) { g.seaFightLook?.hull(b.pos); this.dropGlob(b); this.globs.splice(i, 1); this.hullHit('spit'); continue; }
       }
       b.m.position.copy(b.pos);
       if (b.t <= 0 || b.pos.y < S.surf(b.pos.x, b.pos.z) - 0.5) { if (b.t > 0) g.seaFightLook?.splash(b.pos, 'glob'); this.dropGlob(b); this.globs.splice(i, 1); }

@@ -45,6 +45,13 @@ export class Helm {
   get full() { return this.throttle === 3; }
   placeAt(pos, yaw = 0) { this.pos.copy(pos); this.yaw = yaw; this.speed = 0; this.throttle = 0; this.pose(0); }
   show(on) { this.look.group.visible = on; }
+  /** m from `p` to the hull's footprint on the water, 0 inside it: its length along the heading, its beam across (a 35 m hull is no point:
+   *  the ram, the coil and the spit find its side, not its middle). */
+  hullDist(p) {
+    const dx = p.x - this.pos.x, dz = p.z - this.pos.z, s = Math.sin(this.yaw), c = Math.cos(this.yaw);
+    const along = Math.abs(dx * s + dz * c) - (this.look?.length ?? 7) / 2, across = Math.abs(dx * c - dz * s) - (this.look?.beam ?? 2.4) / 2;
+    return Math.hypot(Math.max(0, along), Math.max(0, across));
+  }
 
   /** One frame at the helm: the throttle and rudder from the keys, the current's push, the ship moved and posed on the sea. */
   update(dt, input, current = null, wind = null) {

@@ -18,6 +18,6 @@ export function seaSerpentRules({ on, L, log }) {
     log.say('battle', 'The sea serpent sinks.', { key: 'ssdown', throttle: 1 });
     first('seaserpent', 'Logged: your first sea serpent sunk. Another keeps its water from the next game day.');
   });
-  on('sea.hull', (e) => { L.inc('sea.hull.hit'); log.say('warn', `Your hull takes a hit: it bears ${e.hull} more.`, { key: 'sshull', throttle: 0.5 }); });
+  on('sea.hull', (e) => { L.inc('sea.hull.hit'); log.say('warn', `Your hull takes a hit: it can take ${e.hull} more.`, { key: 'sshull', throttle: 0.5 }); });
   on('sea.hull.broken', (e) => { L.inc('sea.hull.broken'); log.say('warn', `Your hull gives. A tug tows you to the lane, mended, for ${e.fee} cubes.`, { key: 'sshullb', throttle: 2 }); });
 }

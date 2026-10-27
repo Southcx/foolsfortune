@@ -3,6 +3,9 @@
 The owner's rules for every change. Each line is a rule; the reasons are kept short.
 
 ## Words and structure
+- **Call them South** (South, 2026-10-27: "you can call me South, or if you're feeling like you have to be respectful, Captain. I'm just steering
+  the boat, you guys are rowing like crazy"). Say South (or Captain) to them and of them in messages, reports and new writing, never "the owner";
+  the rulings already written as "the owner, <date>" stand as they are.
 - **`docs/GLOSSARY.md` is binding**: one word, one meaning, in code, docs, commits and messages. Name a new thing there first, in the same
   commit; a request that uses a word against the glossary is clarified before anything is built.
 - **The glossary stays short** (the owner, 2026-10-08: "I can barely read it"): one line a term in `docs/GLOSSARY.md`. Sub-parts, looks and

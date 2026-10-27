@@ -284,7 +284,7 @@ export class SeaSerpents {
       c.want.copy(_a).multiplyScalar(d > 1 ? (SEA_SERPENT.speed * 1.6) / d : 0);
       if (A.t <= 0.35) c.goUnder = 0;
       if (A.t > 0) return;
-      const hit = !!ship && ship.pos.distanceTo(_b.copy(A.at).setY(ship.pos.y)) <= B.ram + 0.5;
+      const hit = !!ship && (ship.hullDist?.(A.at) ?? ship.pos.distanceTo(_b.copy(A.at).setY(ship.pos.y))) <= B.ram + 0.5; // (the ring on any of the hull, not its middle)
       c.spine[0].p.x = A.at.x; c.spine[0].p.z = A.at.z; c.under = 0.3; c.goUnder = 0; c.wantRear = 1; // (it breaks the surface there)
       this.finish(c, 'ram', hit);
       c.attack = null; g.creatures.unwind(c);
@@ -300,7 +300,7 @@ export class SeaSerpents {
       c.want.addScaledVector(_a, 1.5); const w = c.want.length(), cap = SEA_SERPENT.speed * B.coilChase;
       if (w > cap) c.want.multiplyScalar(cap / w);
       if (A.t > 0) return;
-      const hit = !!ship && c.pos.distanceTo(_b.copy(ship.pos).setY(c.pos.y)) <= B.coil + 3;
+      const hit = !!ship && (ship.hullDist?.(c.pos) ?? c.pos.distanceTo(_b.copy(ship.pos).setY(c.pos.y))) <= B.coil + 3;
       c.attack = null; g.creatures.unwind(c);
       if (hit) { c.coiled = { t: M.coil.hold, hits: 0, k: 0 }; this.finish(c, 'coil', true); g.events?.emit('seaserpent.coil', { by: 'creature' }); }
       else { this.finish(c, 'coil', false); c.habit = null; }

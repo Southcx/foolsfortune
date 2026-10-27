@@ -106,6 +106,8 @@ export const ACTIONS = [
   { id: 'duPaint',  keys: ['KeyG'],                     touch: 'du.paint',   ctx: 'duel', how: 'tap' },
   { id: 'duDelay',  keys: ['KeyU'],                     touch: 'du.delay',   ctx: 'duel', how: 'tap' },
   { id: 'duHold',   keys: ['KeyI'],                     touch: 'du.hold',    ctx: 'duel', how: 'tap' },
+  { id: 'duTune',   keys: ['KeyT'],                     touch: 'du.tune',    ctx: 'duel', how: 'tap' },     // (the Crucibelle's song: the colour under the last touch)
+  { id: 'duRead',   keys: ['KeyV'],                     touch: 'du.read',    ctx: 'duel', how: 'tap' },     // (the Veritome: Dread's fog lifted)
   { id: 'duSend',   keys: ['KeyI'], mods: ['ShiftLeft'], touch: 'du.send',   ctx: 'duel', how: 'tap' },
   { id: 'duRotate', keys: ['KeyR'],                     touch: 'du.rotate',  ctx: 'duel', how: 'tap' },     // (shown while a piece is under the last touch)
   { id: 'duEnd',    keys: ['Space'],                    touch: 'du.end',     ctx: 'duel', how: 'tap' },     // (END TURN, the cluster's largest)
@@ -128,6 +130,7 @@ export const ACTIONS = [
   { id: 'heMoor',   keys: ['KeyF'],       pad: 'A',     touch: 'use',        ctx: 'helm', how: 'tap' },   // (moor, dock or board: USE names its thing)
   { id: 'heFix',    keys: ['KeyR'],       pad: 'Y',     touch: 'fix',        ctx: 'helm', how: 'tap' },   // (read the sky with the Dreamvane)
   { id: 'heFire',   mouse: 'Mouse0',      pad: 'RT',    touch: 'fire',       ctx: 'helm', how: 'hold' },  // (the ship's gun, aimed with the camera)
+  { id: 'heBroad',  mouse: 'Mouse2',      pad: 'LT',    touch: 'broadside',  ctx: 'helm', how: 'tap' },   // (the side the camera looks over fires at once: seafight.js)
   { id: 'heParry',  keys: ['KeyV'],       pad: 'B',     touch: 'parry',      ctx: 'helm', how: 'tap' },   // (the outlined spit sent back: seafight.js)
   { id: 'hePlate',  keys: ['KeyE'],       pad: 'X',     touch: 'plate',      ctx: 'helm', how: 'tap' },   // (a plate from the helm, the Veritome worn: world/opensea/herds.js)
   // ---- the rhythm mode and busking (M3, Wanda's: ten lanes as ten pads in two rows; a held pad is a held lane, music/rhythm/rhythm.js)
