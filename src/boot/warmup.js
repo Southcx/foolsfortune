@@ -150,7 +150,10 @@ export async function bootWarmup(game, made) {
   if (!window.__noPrime && !game.graphics?.machine?.mobile) primeDraw(renderer, scene, camera, game.post.target);
   parkWell?.(); // (after the prime: drawn once, so the driver has finished with its programs too)
   if (wipe) wipe.visible = false;
-  parkWeather?.(); parkDrain(); parkDuel(); parkSpawnLook(); parkCracks(); parkFigmentTelegraphs(); parkCasterS1toS5(); parkCaster.forEach((f) => f()); parkShellLooks(); parkBracelet(); parkPalmDie(); parkJarLook(); parkMatterLook(); parkSandfall(); parkDress.forEach((f) => f()); parkIslets(); parkSquall(); parkEgregores(); parkBeasts(); seaFightAt.forEach((o) => (o.visible = false));
+  // (the parks in the reverse of the warm-ups' order, as brackets close: each warm-up saves what it touches and its park puts that back,
+  // so a later one that saved what an earlier one had shown must be undone first. Out of order, the Jar look's park put back the Jar the
+  // duel's warm-up had stood at your feet, and it stood in the workshop from the load: CASEBOOK-CASES 2026-10-27, South's phone)
+  parkFigmentTelegraphs(); parkShellLooks(); parkPalmDie(); parkBracelet(); parkJarLook(); parkMatterLook(); parkSandfall(); parkBeasts(); parkEgregores(); [...parkDress].reverse().forEach((f) => f()); parkSquall(); parkIslets(); [...parkCaster].reverse().forEach((f) => f()); parkCasterS1toS5(); parkWeather?.(); parkCracks(); parkDuel(); parkDrain(); parkSpawnLook(); seaFightAt.forEach((o) => (o.visible = false));
   for (const o of brushLooks) o.visible = false;
   seaLooks.forEach((o, i) => { o.visible = false; o.position.copy(seaAt[i]); });
   for (const o of gardenLooks) o.visible = false;

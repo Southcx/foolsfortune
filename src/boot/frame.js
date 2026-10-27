@@ -81,7 +81,7 @@ export function bootFrame(game, made) {
       game.graphics.update(rawFrame); game.graphics.beforeDraw();
       diag.begin('draw'); // (the PS2 glow and the grade over the frame: render/glow.js; the reading instead of the world while the Box is turned over)
       game.firstDraws?.beginFrame(); // (a phone's first draws, a few a frame: render/firstdraws.js)
-      if (game.readingScene?.active) game.readingScene.render(); else if (!game.seam?.covering || game.firstDraws?.on) game.post.render(scene, window.__debugCam || camera); // (under the shut cover while an arrival is staged nothing is drawn, render/seam.js; but with the phone's budget it is, paced, so the place is drawn behind the cover)
+      if (game.readingScene?.active) game.readingScene.render(); else if (!game.seam?.covering || game.firstDraws?.on) { if (game.duelInstance?.active) game.duelInstance.render(scene, window.__debugCam || camera); else game.post.render(scene, window.__debugCam || camera); } // (under the shut cover while an arrival is staged nothing is drawn, render/seam.js; but with the phone's budget it is, paced, so the place is drawn behind the cover)
       diag.end('draw');
       if (O?.active) O.afterRender(renderer.domElement);
       game.veritome?.afterRender(renderer.domElement); // (a photograph is the frame just drawn)
@@ -385,7 +385,7 @@ export function bootFrame(game, made) {
 
   // handle for automated tests / console tinkering
   window.__hideUI = (level) => game.ui.set(level);
-  window.__game = { THREE, RAPIER, T, scene, camera, renderer, post: game.post, draw: () => { game.graphics.beforeDraw(); game.firstDraws?.beginFrame(); if (game.readingScene?.active) game.readingScene.render(); else game.post.render(scene, camera); }, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, trial, course, techs, game, events, movers, system, codex, pneuka: game.pneuka, ledger: game.ledger, log: game.log, manual: false, hideUI: (level) => game.ui.set(level), zones: game.zones, lights: game.lights };
+  window.__game = { THREE, RAPIER, T, scene, camera, renderer, post: game.post, draw: () => { game.graphics.beforeDraw(); game.firstDraws?.beginFrame(); if (game.readingScene?.active) game.readingScene.render(); else if (game.duelInstance?.active) game.duelInstance.render(scene, camera); else game.post.render(scene, camera); }, physics, player, weapon, character, breakables, level, input, fx, hud, resetRoom, stats, clock, tick, clappers, lachryma, baubles, shells, trial, course, techs, game, events, movers, system, codex, pneuka: game.pneuka, ledger: game.ledger, log: game.log, manual: false, hideUI: (level) => game.ui.set(level), zones: game.zones, lights: game.lights };
   mark('ready');
   if (window.__game.manual && game.title?.active) { game.title.active = false; game.mode ||= save.mode || 'debug'; if (game.mode === 'debug') game.pneuka.debugKit(); game.title.ui.close(); game.ui.want('title', false); game.startAt.apply(); } // (a test drive goes straight to the world; ?at= is its start)
   window.__ready = true;

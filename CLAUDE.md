@@ -117,6 +117,15 @@ Build it as a modular piece with a small interface, not a one-off. Free assets o
 - Stunning goes through `creatures/stun.js`; an ability a thinking opponent would refuse asks `stun.vulnerable` and shows the resist mark.
 
 ## Scope
+- **A puzzle duel is its own instance** (South, 2026-10-27: "featuring only the actors actively engaged"): only the tsuitate, the Pneuka
+  Jar and the foe are drawn (`render/duelinstance.js`), laid out so no body covers the board; nothing of the world in its frame.
+- **What a change makes obsolete goes in the same change** (South, 2026-10-27: "check to see if new updates render older code obsolete,
+  and remove the older versions"). A new control, tile, path, constant or look that replaces one removes the old; two of one thing on
+  screen (two chat icons) is a bug. Before pushing, ask what this replaces and grep for it.
+- **Look at it as a human, at full resolution** (South, 2026-10-27: "scrutinize the screenshots and ask yourself 'would this make sense
+  to a human?'"). Anything a player will see is checked in a screenshot at the device's full resolution (the phone's: 896 x 414 at 2x,
+  touch) before it is pushed, and read for what a person would see: a body over the board, a stray model, a doubled button. A probe's
+  numbers are not a look.
 - Raids belong to the Siege room. Every trial or minigame is begun from something in its own room, never a global key, and its interface
   goes away when you leave. The explored area is the ground explored (the Zone of Influence is a puzzle duel's side of the Line: the owner, 2026-10-20). The testing tools are the stress test (`scripts/stress.mjs`, it fuzzes) and the sweeps
   (`node scripts/sweeps/run.mjs`, every room entered, worked and left, one PASS/FAIL line a check).

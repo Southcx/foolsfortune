@@ -23,6 +23,7 @@ import { ReadingView } from '../vfx/readingview.js';
 import { installUndersideLook } from '../ui/undersidelook.js';
 import { Realm } from '../world/garden/realm.js';
 import { ReadingScene } from '../render/readingscene.js';
+import { DuelInstance } from '../render/duelinstance.js';
 import { Cradles } from '../world/cradles.js';
 import { Sight } from '../progress/sight.js';
 
@@ -40,6 +41,7 @@ export function bootGodHand(game, made) {
   game.dangerPips = dangerPips; // (a Well's danger mark, its FOE's class as pips: the Index's row puts dangerPips(cls) after its key tag, ui/dangerpips.js)
   game.readingView = new ReadingView(game); // (the Box flipped: the laid Majors orbiting the Courier, the cloth under their feet, the hand; its scene, game.readingScene, sets .group and calls update(dt): vfx/readingview.js)
   installUndersideLook(); // (the Box's underside dressed: Dovina's pneuka/underside.js classes, ui/undersidelook.js)
+  game.duelInstance = new DuelInstance(game); // (a puzzle duel drawn alone, its actors and nothing of the world: render/duelinstance.js)
   game.readingScene = new ReadingScene(game); // (the dark the reading view is drawn in while the Box is turned over: render/readingscene.js)
   game.celestialTargets = new CelestialTargets(game); // (Celestial mode's targets drawn over the paper: the brush hands its list each frame, vfx/celestialtargets.js)
   game.guestJars = new GuestJars(game); // (a guest visiting your garden as their own Pneuka Jar in their glazes; Petra's runtime calls show: vfx/garden/guestjars.js)

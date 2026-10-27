@@ -4249,3 +4249,24 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** on touch (`input.device === 'touch'`) the first tap picks (`.sel`, the line said with "tap again to buy" or "to sell"), a tap
   on the picked one acts; a long press still haggles. Measured headless as a phone: 500 cubes after the first tap, 477 after the second.
 - **Rule:** NEW:touch-pick-then-confirm
+
+### 2026-10-27 · A Pneuka Jar stood at the Courier's feet from the load (South's phone, v329)
+- **Seen:** in the workshop on loading, the god hand's Pneuka Jar standing in the Courier's legs, with nothing summoned.
+- **Cause (as measured):** two warm-ups touched the Jar and were parked out of order. The duel view's warm-up (boot/warmup.js) opens a
+  test duel, whose form's dive stands the Jar at your spot and shows it; the Jar look's warm-up, after it, saved "shown, at your feet"
+  as the state to put back. The parks ran duel first (hiding the Jar), Jar look second (showing it again where it had saved it).
+  A property trap on `jar.group.visible` read it shown before the title; after the fix, hidden.
+- **Fix:** the parks run in the reverse of the warm-ups' order, every one.
+- **Rule:** NEW:parks-reverse-order
+
+### 2026-10-27 · A puzzle duel's bodies stood over its board, the room behind it (South's phone, v329)
+- **Seen:** at the board view the Pneuka Jar's body covered the left of the board and Strawman the right; at the arena the room, its
+  chests and its walls stood round the duel.
+- **Cause (as measured):** the session set the two 2.7 m apart on a phone (1.35 m off the middle) in the board's own plane, and the
+  board is 3 m wide (1.5 m half) at 20 cells: both stood inside the slab. A practice Strawman was never moved at all. Nothing hid the
+  world: the duel was a pocket in its rules only.
+- **Fix:** the duel's instance (render/duelinstance.js): the world's objects not drawn while it is open; the bodies laid beyond the
+  slab's ends by their own measured size (on a phone, the flank's middle) and 0.6 m behind its face; a fixture moved with them and put
+  back once the board has folded. Seen at 896 x 414 at 2x: the board clear, you left, the foe right, no room.
+- **Rule:** NEW:actors-clear-of-the-board
+

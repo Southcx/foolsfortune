@@ -2,14 +2,15 @@
 // A PUZZLE DUEL IN THE WORLD (docs/plans/PUZZLE-DUELS.md section 8, Petra's half): the session that plays the kernel (progress/duel/,
 // Dovina's) against an aberrant Figment where it was met. Its pull filled (world/duel/duelfoes.js), the pocket closed (nothing outside
 // enters: `pocket`, PUZZLE-DUELS.md 16.1), the aberrant wipe (the seam's kind
-// 'aberrant', vfx/aberrantwipe.js), and the board stands between you, the camera
-// framing it; your turns are your input, its turns its bot's (a beat apart, so you can follow them); every action's events are played
+// 'aberrant', vfx/aberrantwipe.js), and the duel is drawn as its own instance (render/duelinstance.js, South 2026-10-27: only the
+// board, the Pneuka Jar and the foe, the world not drawn): the board square to the camera, you beyond its left end and the foe beyond
+// its right, each clear of the slab and a step behind its face, the foe put back where it stood at the end; your turns are your input, its turns its bot's (a beat apart, so you can follow them); every action's events are played
 // by the view (game.duelView, Calissa's: the board, the pieces, the domains' clash) before the next is taken. The duel ends on the Line,
 // a full side, the finisher or the turn cap; losing is a shatter (the owner, 2026-10-19), winning drains the Figment and mends it, and a flee
 // that gets away (flee.js, section 15) leaves you both whole.
 // A PRACTICE foe (`c.practice`: Strawman made aberrant at the sparring circle's lectern, South 2026-10-27) opens the same duel, counting
 // nothing: every duel.* event carries `practice: true` (tracking skips it), no pool is gained or spent, a loss shatters no one and a win
-// drains nothing; a fixture (`c.rooted`, or any practice foe) is not moved, the board standing between at the distance the pull left.
+// drains nothing; a fixture (`c.rooted`, or any practice foe) has its body moved into the layout with it and put back.
 // After any duel its foe pulls again only once you have stepped past the pull's far edge (duelfoes.js `rearm`).
 //
 // The one-gesture duel (DUEL.style 'drag', the default since 2026-10-27, PUZZLE-DUELS.md 22; South: "anything and everything that would
@@ -54,13 +55,15 @@ import { stream } from '../../core/rng.js';
 import { sfx } from '../../audio/sfx.js';
 const duelRand = stream('world/duel/duelsession'); // (the duel's seed: the session's own draw, the same twice)
 
-export const DUEL_ROOM = { beat: 0.55, beatTouch: 0.35, slop: 8, yieldHold: 1.5, apart: 6, apartTouch: 2.7, standOff: 5, bodyTap: 70, spent: 0.6 }; // (the bot's beat, real s; the yield's hold; the two set this far apart under the seam, m (on a phone's layout nearer, each about 1.35 m off the board's middle so both stand inside the duel screen's flanks: Calissa's, 2026-10-27, at 270 px a metre); the camera off the board's face, m; a tap this near the Courier's body on screen switches the form, px; a spent turn's wait before it ends itself, real s)
+export const DUEL_ROOM = { beat: 0.55, beatTouch: 0.35, slop: 8, yieldHold: 1.5, standOff: 5, bodyTap: 70, spent: 0.6, gap: 0.25, back: 0.6 }; // (the bot's beat, real s; the yield's hold; the camera off the board's face, m; a tap this near the Courier's body on screen switches the form, px; a spent turn's wait before it ends itself, real s; in the instance, a body's clearance off the slab's edge and how far it stands behind its face, m)
 const KEYS_KEPT = /^(Escape|Tab|F\d+|KeyB)$/; // (what a duel leaves to the rest of the game: the pause, the tuning panel, QAIS, the Codex)
 const TOOL_KEYS = { KeyX: 'shoot', KeyQ: 'grab', KeyK: 'drill', KeyG: 'paint', KeyU: 'delay', KeyI: 'hold', KeyT: 'tune', KeyV: 'read' };
 const WALK = { KeyW: 'N', KeyS: 'S', KeyA: 'W', KeyD: 'E' };
 /** In the one-gesture duel (PUZZLE-DUELS.md 22) a tool's key or tile arms its skill: each move's key names the tool that owns it. */
 const MOVE_TOOL = { shoot: 'psygun', grab: 'sondelass', drill: 'dreamvane', paint: 'soulbrush', delay: 'crucibelle', tune: 'crucibelle', hold: 'lockheart', send: 'lockheart', read: 'veritome' };
-const _v = new THREE.Vector3(), _ndc = new THREE.Vector3();
+const _v = new THREE.Vector3(), _ndc = new THREE.Vector3(), UP = new THREE.Vector3(0, 1, 0), _box = new THREE.Box3(), _size = new THREE.Vector3();
+/** A body's reach on the ground (half its wider side, m), measured from its meshes; `fallback` when it has none. */
+const radiusOf = (o, fallback) => { if (!o) return fallback; _box.setFromObject(o); if (_box.isEmpty()) return fallback; _box.getSize(_size); return THREE.MathUtils.clamp(Math.max(_size.x, _size.z) / 2, 0.25, 1.6); };
 
 export class DuelSession {
   constructor(game) {
@@ -96,15 +99,25 @@ export class DuelSession {
     g.techs?.get('carry')?.drop?.();
     P.vel.set(0, 0, 0);
     this.pin(c); // (it is in the duel, not the world, until it ends: its casts stopped, its mind held)
-    // under the seam the two are set apart along the line between them, and the board stands broadside between, your half nearest you
+    // under the seam the duel's instance (render/duelinstance.js, South 2026-10-27): only its actors drawn, laid out for the board. The
+    // tsuitate stands square to the camera with you on its left end and the foe on its right, each clear of the slab by its own size
+    // (on a phone, in the middle of the flank the screen leaves beside it) and a step behind its face, so no body ever covers the board
     const facing = P.pos.clone().sub(c.pos).setY(0); if (facing.lengthSq() < 1e-4) facing.set(0, 0, 1); facing.normalize();
-    if (!c.rooted && !c.practice) { c.pos.copy(P.pos).addScaledVector(facing, -(this.flanks ? DUEL_ROOM.apartTouch : DUEL_ROOM.apart)).setY(c.pos.y + (P.pos.y - c.pos.y) * 0.5); c.rb?.setNextKinematicTranslation?.(c.pos); } // (a fixture, Strawman in its circle, stays put: the board stands between at the distance the pull left)
-    if (typeof c.yaw === 'number') { c.yaw = Math.atan2(facing.x, facing.z); c.vel?.set?.(0, 0, 0); if (c.root) c.root.rotation.y = c.yaw; } // (turned to face you: a pinned body keeps the yaw it had, and a Wisp turns only toward its drift, now nothing: the owner's phone, 2026-10-27)
-    const at = P.pos.clone().lerp(c.pos, 0.5).setY(P.pos.y);
+    const u = facing.clone().negate(), face = new THREE.Vector3().crossVectors(u, UP).normalize(), B = this.state.board;
+    const half = (B.w * DUEL_VIEW.cs) / 2 + DUEL_VIEW.border, flank = this.flankRoom(B), root = c.root || c.model?.group || null;
+    const off = (r) => half + Math.max(r + DUEL_ROOM.gap, flank / 2);
+    const at = P.pos.clone().addScaledVector(u, off(radiusOf(g.god?.jar?.group, 0.45))).addScaledVector(face, DUEL_ROOM.back).setY(P.pos.y);
+    this.home = { c, pos: c.pos.clone(), yaw: c.yaw, root: root ? { o: root, pos: root.position.clone(), yaw: root.rotation.y } : null }; // (put back at the end)
+    const to = at.clone().addScaledVector(u, off(radiusOf(root, c.radius ?? 0.5))).addScaledVector(face, -DUEL_ROOM.back);
+    to.y = c.rooted || c.practice ? P.pos.y : c.pos.y + (P.pos.y - c.pos.y) * 0.5; // (a fixture on your floor; a flier halfway down to it)
+    if (root && (c.rooted || c.practice)) root.position.add(_v.copy(to).sub(c.pos)); // (a fixture does not place its own body: Strawman's group moved with it)
+    c.pos.copy(to); c.rb?.setNextKinematicTranslation?.(c.pos);
+    if (typeof c.yaw === 'number') { c.yaw = Math.atan2(facing.x, facing.z); c.vel?.set?.(0, 0, 0); if (c.root) c.root.rotation.y = c.yaw; } // (turned to face you)
+    const shards = g.scene.getObjectByName('aberrant-shards'), keep = [this.view?.root, this.view?.dive?.beads, g.god?.jar?.group, root, c.root, shards];
+    g.duelInstance?.open(() => keep);
     this.at = at; this.facing = facing;
     this.view?.open?.({ state: this.state, foe: c, at, facing });
-    // the camera on the board's face (the view's `face`: your half on the left), at its middle's height, far enough to hold both ends
-    const face = this.view?.face || new THREE.Vector3().crossVectors(facing.clone().negate(), _v.set(0, 1, 0)).normalize();
+    // the camera on the board's face (your half on the left), at its middle's height, far enough to hold both ends
     const mid = DUEL_VIEW.base + (this.state.board.h * DUEL_VIEW.cs) / 2;
     const shot = this.view?.frameShot?.() || { pos: at.clone().addScaledVector(face, DUEL_ROOM.standOff).setY(at.y + mid + 0.4), look: at.clone().setY(at.y + mid) }; // (the view's own framing, a cell 12 dots or more)
     g.cinema?.shot('duel', { pos: shot.pos, look: shot.look, bars: 0, ease: 4 });
@@ -258,7 +271,7 @@ export class DuelSession {
     this.view?.select?.(this.picked ? [this.picked] : []);
   }
   get touch() { return this.game.input?.device === 'touch'; }
-  /** The phone's layout (the duel screen's flanks, ui/touch/duelscreen.js): the bodies nearer, the hand's cursor hidden. */
+  /** The phone's layout (the duel screen's flanks, ui/touch/duelscreen.js): the bot's beat quicker, the hand's cursor hidden. */
   get flanks() { return !!this.game.hudLayout?.touch; }
   /** A tap on the Courier's body, off the board: the body's middle projected to the screen, within DUEL_ROOM.bodyTap px. */
   onBody(input) {
@@ -386,6 +399,18 @@ export class DuelSession {
     const how = this.how || (s.fled != null ? 'fled' : last ? last.type.slice(5) : 'line');
     this.close({ won, how });
   }
+  /** The foe put back where the duel found it (its body too when it is a fixture), its yaw as it was. */
+  putBack(H) {
+    if (!H?.c) return; const c = H.c;
+    c.pos.copy(H.pos); c.rb?.setNextKinematicTranslation?.(c.pos); if (typeof H.yaw === 'number') c.yaw = H.yaw;
+    if (H.root) { H.root.o.position.copy(H.root.pos); H.root.o.rotation.y = H.root.yaw; }
+  }
+  /** On a phone, the metres of the narrower flank the duel's screen leaves beside the board (ui/hudlayout.js duelLayout, at the scale
+   *  the view's touchShot frames it); on the desk 0 (its camera backs off to hold both bodies: vfx/duelview.js frameShot). */
+  flankRoom(B) {
+    const L = this.game.hudLayout, V = L?.view, R = L?.touch ? L.duelLayout?.(B)?.board : null; if (!R?.h || !V?.w) return 0;
+    const k = R.h / (R.m?.h ?? B.h * DUEL_VIEW.cs + DUEL_VIEW.border); return Math.max(0, Math.min(R.x, V.w - R.x - R.w)) / k;
+  }
   /** Down with the board, back to the world: the pool as it stands, the Figment drained (you won) or calmed (it did); a loss shatters. */
   close({ won = false, how = 'yield' } = {}) {
     const g = this.game, c = this.foe, s = this.state; if (!this.active) return;
@@ -395,6 +420,8 @@ export class DuelSession {
     if (g.input?.enabled) g.input.requestLock?.();
     const pool = g.lachryma, d = this.practice ? 0 : Math.round((s?.sides[0].pool ?? this.startPool) - this.startPool);
     if (pool && d > 0) pool.gain(d, 'duel'); else if (pool && d < 0) pool.spend(-d, 'duel');
+    const V = this.view, home = this.home; this.home = null; // (the instance held while the tsuitate folds away, then the world again and the foe where it stood)
+    if (g.duelInstance?.active) g.duelInstance.close(() => !V || (!V.closing && !V.root?.visible) || V.isOpen, () => this.putBack(home)); else this.putBack(home);
     this.unpin(c); this.release();
     const atOnce = how === 'fled' && this.atOnce; this.atOnce = false;
     this.emit('duel.end', { kind: c?.kind, won, how, turns: s ? Math.ceil(s.ply / 2) : 0, ...(atOnce ? { atOnce } : {}), by: won || how === 'fled' ? 'courier' : 'creature' });

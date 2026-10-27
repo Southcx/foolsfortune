@@ -955,3 +955,10 @@ NEW:baseline-reproduced-before-blamed. **A perf delta is blamed on code only aft
 
 NEW:touch-pick-then-confirm. **On touch, a choice that spends is picked, then confirmed.** A tap fires the hover and the click together,
   so a window that says a price on hover and acts on click must, on touch, pick on the first tap and act on a tap on the picked one.
+
+NEW:parks-reverse-order. **Warm-ups park in the reverse of their order.** Each saves what it touches and puts it back; a later one that
+saved what an earlier one had shown must be undone first, or the earlier one's look is put back for good.
+
+NEW:actors-clear-of-the-board. **A scene's actors are laid out from its board's measured size, never a fixed distance.** A body is
+placed beyond the thing the player must read, by the thing's width and the body's own, and a screenshot at the device's size proves it.
+
