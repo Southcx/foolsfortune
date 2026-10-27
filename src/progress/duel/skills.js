@@ -37,6 +37,7 @@ function blast(s, side, cells, by) {
   if (!keys.size) return [];
   const out = resolve(b, keys, s.rs);
   for (const e of out.events) if (e.type === 'clear' || e.type === 'break') e.by = by;
+  s.skyHoles = [[], []]; for (const e of out.events) if (e.type === 'clear' && e.colour) s.skyHoles[e.side].push(e.at); // (refilled by the settle after it: skyfall.js)
   const n = out.cleared[side];
   if (n >= 3) { s.sides[side].sent += Math.max(0, n - 2); out.events.push({ type: 'chain', side, step: 1, cleared: n, skill: by }); s.chainFrom = side === 0 ? [1, 0] : [0, 1]; }
   return out.events;
