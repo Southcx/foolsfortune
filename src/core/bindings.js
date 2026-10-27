@@ -106,6 +106,8 @@ export const ACTIONS = [
   { id: 'duPaint',  keys: ['KeyG'],                     touch: 'du.paint',   ctx: 'duel', how: 'tap' },
   { id: 'duDelay',  keys: ['KeyU'],                     touch: 'du.delay',   ctx: 'duel', how: 'tap' },
   { id: 'duHold',   keys: ['KeyI'],                     touch: 'du.hold',    ctx: 'duel', how: 'tap' },
+  { id: 'duTune',   keys: ['KeyT'],                     touch: 'du.tune',    ctx: 'duel', how: 'tap' },     // (the Crucibelle's song: the colour under the last touch)
+  { id: 'duRead',   keys: ['KeyV'],                     touch: 'du.read',    ctx: 'duel', how: 'tap' },     // (the Veritome: Dread's fog lifted)
   { id: 'duSend',   keys: ['KeyI'], mods: ['ShiftLeft'], touch: 'du.send',   ctx: 'duel', how: 'tap' },
   { id: 'duRotate', keys: ['KeyR'],                     touch: 'du.rotate',  ctx: 'duel', how: 'tap' },     // (shown while a piece is under the last touch)
   { id: 'duEnd',    keys: ['Space'],                    touch: 'du.end',     ctx: 'duel', how: 'tap' },     // (END TURN, the cluster's largest)
