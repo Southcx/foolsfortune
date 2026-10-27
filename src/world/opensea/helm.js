@@ -10,13 +10,15 @@
 // Prior art: The Legend of Zelda: The Wind Waker's King of Red Lions (sail and rudder, the sea ridden), Sea of Thieves' sloop (sail
 // trims and the wheel, momentum), Sid Meier's Pirates! (a few speeds, not a pedal); the rail's chase rig (courier/ship/views.js).
 //
-//   new Helm(room, ship = 'sloop')   .pos .yaw .speed .throttle (0..3) .look   .update(dt, input, current?) -> { full }   .placeAt(pos, yaw)
+//   new Helm(room, ship = 'sloop')   .pos .yaw .speed .throttle (0..3) .look   .update(dt, input, current?, wind?) -> { full }   .placeAt(pos, yaw)
+//   .sail (sailOf: the point of sail now, OPEN-SEA.md 14)   .takeBurnK() -> the burn's share over the way since last asked
 //   .camera(dt, input)   .hold(player)   .show(on)   .mods (Map: source -> { turn, speed }, what holds the helm)   THROTTLE (the four speeds, x the cruise)   HELM (the numbers)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { shipLook } from '../../vfx/shipclasses.js';
 import { ShipWake } from '../../vfx/rail.js';
 import { SHIPS } from '../../progress/rail/ships.js';
+import { sailOf } from '../../progress/opensea/wind.js';
 
 /** The throttle's four steps, as a share of cruise. */
 export const THROTTLE = [0, 0.5, 1, 1.5];
@@ -36,9 +38,10 @@ export class Helm {
     this.wake = new ShipWake(this.game);
     this.pos = new THREE.Vector3(); this.yaw = 0; this.speed = 0; this.throttle = 0; this.rudder = 0; this.t = 0;
     this.orbit = 0; this.tilt = 0.25; this.seaT = 0;
+    this.sail = null; this.burnWay = 0; this.burnSum = 0; // (the wind: wind.js; the burn's share averaged over the way sailed, for the next square's fuel)
     this.mods = new Map(); // (what holds the helm, by its source: { turn, speed } shares; the sea serpent's coil, world/opensea/seafight.js)
   }
-  get cruise() { return HELM.cruise * (SHIPS[this.ship]?.speed ?? 1.2) / 1.2; }
+  get cruise() { return HELM.cruise * (SHIPS[this.ship]?.speed ?? 1.2) / 1.2 * (this.game.shipParts?.mult('cruise') ?? 1); }
   get full() { return this.throttle === 3; }
   placeAt(pos, yaw = 0) { this.pos.copy(pos); this.yaw = yaw; this.speed = 0; this.throttle = 0; this.pose(0); }
   show(on) { this.look.group.visible = on; }
@@ -51,21 +54,27 @@ export class Helm {
   }
 
   /** One frame at the helm: the throttle and rudder from the keys, the current's push, the ship moved and posed on the sea. */
-  update(dt, input, current = null) {
+  update(dt, input, current = null, wind = null) {
     if (input.wasPressed('KeyW')) this.throttle = Math.min(3, this.throttle + 1);
     if (input.wasPressed('KeyS')) this.throttle = Math.max(0, this.throttle - 1);
     const steer = (input.isDown('KeyA') ? 1 : 0) - (input.isDown('KeyD') ? 1 : 0);
     this.rudder += (steer - this.rudder) * Math.min(1, dt * 4);
-    let turnK = 1, wayK = 1; for (const m of this.mods.values()) { turnK *= m.turn ?? 1; wayK *= m.speed ?? 1; }
-    const target = THROTTLE[this.throttle] * this.cruise * wayK;
+    let turnK = this.game.shipParts?.mult('turn') ?? 1, wayK = 1; for (const m of this.mods.values()) { turnK *= m.turn ?? 1; wayK *= m.speed ?? 1; }
+    const parts = this.game.shipParts; // (the sail, keel and hull worn: progress/opensea/salvage.js)
+    this.sail = wind ? sailOf(this.yaw, wind, parts?.rig()) : null;
+    const target = THROTTLE[this.throttle] * this.cruise * wayK * (this.sail?.speedK ?? 1);
     this.speed += Math.sign(target - this.speed) * Math.min(Math.abs(target - this.speed), HELM.accel * dt);
     this.yaw += this.rudder * HELM.turn * turnK * dt * Math.min(1.4, 0.25 + this.speed / this.cruise);
     _f.set(Math.sin(this.yaw), 0, Math.cos(this.yaw));
     this.pos.addScaledVector(_f, this.speed * dt);
-    if (current) this.pos.addScaledVector(current, dt);
+    const way = this.speed * dt; this.burnWay += way; this.burnSum += way * (this.sail?.burnK ?? 1);
+    if (current) this.pos.addScaledVector(current, dt * (this.game.shipParts?.mult('rip') ?? 1)); // (a keel tracks through a current, or is pushed more)
     this.pose(dt);
     return { full: this.full };
   }
+
+  /** The burn's share over the way sailed since last asked (1 with no way or no wind), and start again: a square's fuel (seatrip.js sailTo). */
+  takeBurnK() { const k = this.burnWay > 1 ? this.burnSum / this.burnWay : 1; this.burnWay = 0; this.burnSum = 0; return k; }
 
   /** The ship on the drawn sea: its height and its pitch and roll from the water under bow, stern and beam. */
   pose(dt) {
@@ -79,7 +88,7 @@ export class Helm {
     const pitch = Math.max(-HELM.pitchMax, Math.min(HELM.pitchMax, Math.atan2(stern - bow, L)));
     const roll = Math.atan2(port - star, B) * 0.6 - this.rudder * Math.min(1, this.speed / this.cruise) * 0.12;
     const G = this.look.group; G.position.copy(this.pos); G.rotation.set(pitch, this.yaw, roll, 'YXZ');
-    this.look.set?.({ sail: 0.15 + 0.85 * (this.throttle / 3), heel: roll, side: 1, glow: 0.35, t: this.t });
+    this.look.set?.({ sail: 0.15 + 0.85 * (this.throttle / 3), fill: this.sail ? this.sail.share : 1, luff: this.sail?.point === 'irons' ? 1 : 0, heel: roll, side: 1, glow: 0.35, t: this.t });
     if (dt > 0) this.wake.update(dt, { group: G, speed: this.speed, length: L, beam: B }, sea);
   }
 

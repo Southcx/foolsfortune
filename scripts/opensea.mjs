@@ -15,6 +15,7 @@ import { isletOf } from '../src/progress/opensea/islets.js';
 import { newVoyage, sailTo, takeFix, dock, burnOf, frontAt } from '../src/progress/opensea/seatrip.js';
 import { seeded } from '../src/core/rng.js';
 import { herdsOf, herdFee, MIGRATION } from '../src/progress/opensea/migrations.js';
+import { windAt, sailOf } from '../src/progress/opensea/wind.js';
 
 const args = process.argv.slice(2), opt = (k, d) => { const i = args.indexOf(`--${k}`); return i >= 0 ? args[i + 1] : d; };
 const seed0 = +opt('seed', 1), n = +opt('n', 10), hours = +opt('hours', 6), ship = opt('ship', 'sloop'), skill = +opt('skill', 0.5), sloppy = args.includes('--sloppy');
@@ -22,10 +23,15 @@ const O = ECON.openSea, AIM = ECON.perMinute * 60, ASPECTS = ['wonder', 'mirth',
 const HUNT = 0.25; // (a fight's spoils, its material, as a share of its class's hunt: the hunt's own worth includes finding it, and out here it finds you)
 const T = { square: O.squareS, photo: 20, land: 90, look: 15, fix: 10, fight: 120, dock: 60 };
 const phaseOf = (h) => { h %= 24; return h < 5 || h >= 19 ? 'night' : h < 7 ? 'dawn' : h < 17 ? 'day' : 'dusk'; };
+// A sailor who minds the wind (skill 0.5 and up): head to wind, two tacks 50 degrees either side, each leg 1/cos(50) as long (OPEN-SEA.md 14).
+const wise = skill >= 0.5;
+function tacked(yaw, hour, front) { let best = Infinity; for (const s of [-1, 1]) best = Math.min(best, sailOf(yaw + s * 0.87, windAt(seedNow, hour, { front })).burnK / Math.cos(0.87)); return best; }
+let seedNow = 1;
 const cheb = (a, b) => Math.max(Math.abs(a.col - b.col), Math.abs(a.row - b.row));
 
-const totals = { perHour: Array(hours).fill(0), fuelPerHour: Array(hours).fill(0), charted: [], found: 0, of: 0, tows: 0, fights: 0, lost: 0, plates: 0, drifts: 0, islets: 0, sea: 0, chartedAt: {} };
+const totals = { burnK: 0, steps: 0, perHour: Array(hours).fill(0), fuelPerHour: Array(hours).fill(0), charted: [], found: 0, of: 0, tows: 0, fights: 0, lost: 0, plates: 0, drifts: 0, islets: 0, sea: 0, chartedAt: {} };
 for (let seed = seed0; seed < seed0 + n; seed++) {
+  seedNow = seed;
   const grid = seaGrid(seed), r = seeded(seed * 7919), v = newVoyage({ grid, ship, port: 'anagami' });
   const ports = Object.entries(grid.ports).filter(([id]) => id !== 'entra').map(([, sq]) => squareAt(grid, ...sq.split(',').map(Number)));
   const best = {}, of = grid.squares.reduce((k, s) => k + s.features.length, 0);
@@ -35,8 +41,11 @@ for (let seed = seed0; seed < seed0 + n; seed++) {
   const nearestPort = (sq) => ports.reduce((a, p) => (cheb(sq, p) < cheb(sq, a) ? p : a), ports[0]);
   const ctx = () => { const gh = t / 150; return { phase: phaseOf(gh), weather: ASPECTS[Math.floor(gh / 3 + seed) % ASPECTS.length], front: frontAt(grid, seed, gh).has(v.at) }; };
   const step = (target) => {
-    const c = ctx(), before = v.at, ev = sailTo(v, target, { r, phase: c.phase, weather: c.weather, gameDay: Math.floor(t / 3600) });
-    t += T.square; if (ev.some((e) => e.type === 'sea.tow')) { totals.tows++; t += 300; }
+    const c = ctx(), before = v.at, from = here(), yaw = Math.atan2(target.col - from.col, target.row - from.row); // (the heading: columns along x, rows along z)
+    const sail = sailOf(yaw, windAt(seed, t / 150, { front: c.front })), k = wise ? Math.min(sail.burnK, tacked(yaw, t / 150, c.front)) : sail.burnK; // (the wind: OPEN-SEA.md 14)
+    const ev = sailTo(v, target, { r, phase: c.phase, weather: c.weather, gameDay: Math.floor(t / 3600), burnK: k });
+    totals.burnK += k; totals.steps++;
+    t += T.square / sail.speedK; if (ev.some((e) => e.type === 'sea.tow')) { totals.tows++; t += 300; }
     if (ev.some((e) => e.type === 'sea.drift')) totals.drifts++;
     const sq = here(), fresh = ev.some((e) => e.type === 'sea.chart');
     for (const e of ev) if (e.type === 'sea.find') { totals.found++; if (e.kind === 'islet') { const I = isletOf(sq.features.find((f) => f.id === e.id), seed); totals.islets++; t += T.land; book(I.secret === 'chest' ? 3 * ECON.perMinute : I.secret === 'nest' ? 2 * ECON.perMinute : ECON.perMinute); } else t += T.look; }
@@ -73,6 +82,7 @@ for (let seed = seed0; seed < seed0 + n; seed++) {
 const f = (x) => (x / n).toFixed(0);
 console.log(`OPEN SEA x${n} (${ship}, skill ${skill}${sloppy ? ', no fixes' : ''}): the sea's finds worth ${f(totals.sea)} cubes (${(totals.sea / n / AIM).toFixed(1)} h of the aim)`);
 console.log(`  pay an hour: ${totals.perHour.map((c, i) => `h${i + 1} ${f(c)} (${(c / n / AIM).toFixed(2)}x)`).join(', ')}`);
+console.log(`  the wind: a square's burn ${(totals.burnK / totals.steps).toFixed(2)} of a no-sail square's (${wise ? 'tacking when it pays' : 'heedless'})`);
 console.log(`  fuel and tows an hour: ${totals.fuelPerHour.map((c) => f(c)).join(', ')}; tows ${(totals.tows / n).toFixed(1)}; drifts ${(totals.drifts / n).toFixed(1)}`);
 console.log(`  found ${(totals.found / n).toFixed(1)} of ${(totals.of / n).toFixed(1)} features (islets landed ${(totals.islets / n).toFixed(1)}); plates paid ${(totals.plates / n).toFixed(1)}; fights ${(totals.fights / n).toFixed(1)} (${(totals.lost / n).toFixed(1)} broke off)`);
 console.log(`  charted (squares, of): ${totals.charted.slice(0, 5).map((c) => c.slice(0, 2).join('/')).join('  ')}; the whole sea charted at ${Object.values(totals.chartedAt).map((h) => h.toFixed(1)).join(', ')} h`);

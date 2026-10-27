@@ -6,7 +6,7 @@
 //   sea.report { id, tier, fee }  sea.dock { island, paid, fuelCost, short? }  sea.tow { to, fee }  sea.secret { kind }  sea.fuel.low { fuel }
 //   sea.pair.half { id, shape }  sea.pair { id, shape, tier }  sea.lineup { id, charted }  sea.echo.hear { id, notes }  sea.echo { id }
 //   sea.dig { id, tier, cubes, how }  sea.stele { islet, words, line }   sea.herds { day, n, herds }  sea.herd { id, square, cubes }  sea.herd.paid { cubes, n }   (the migrations)   seaserpent.paid { cubes, hull, of }   (the islets' puzzles and caches: world/opensea/puzzlepieces.js)
-//   (each with `by`)
+//   sea.luff { from } (head to wind under way)  sea.gust { k }  sea.rip { square }  sea.salvage { wreck, tier, cubes, part, left }  ship.part { slot, part, how }   (each with `by`)
 //
 //   openSeaRules({ on, L, log })   (feedback/tracking/rules.js calls it)
 // ---------------------------------------------------------------------------------------
@@ -16,8 +16,17 @@ const KIND = { islet: 'an islet', monument: 'a monument under the water', wreck:
 const ISLAND = { margarite: 'Margarite', anagami: 'Anagami', entra: 'Entropolis' };
 
 export function openSeaRules({ on, L, log }) {
-  on('opensea.enter', () => log.say('info', "The open sea, at Anagami's quay. F at the ship to board; W and S set the sail, A and D the rudder.", { key: 'sea.enter', throttle: 4 }));
+  on('opensea.enter', () => log.say('info', "The open sea, at Anagami's quay. F at the ship to board; W and S set the sail, A and D the rudder; across the wind the engine burns least.", { key: 'sea.enter', throttle: 4 }));
   on('opensea.board', () => L.inc('sea.board'));
+  // the wind (progress/opensea/wind.js; OPEN-SEA.md 14): head to wind the sail gives nothing and the engine burns it all
+  // salvage and the ship's parts (progress/opensea/salvage.js; OPEN-SEA.md 14.4)
+  const PART = { lateen: 'a lateen sail', spinnaker: 'a spinnaker', storm: 'a storm sail', deep: 'a deep keel', shallow: 'a shallow keel', scaled: 'a scaled hull', light: 'a light hull' };
+  on('sea.salvage', (e) => { if (e.by !== 'courier') return; L.inc('sea.salvage'); L.inc(`sea.salvage.${e.tier}`);
+    log.say('gain', e.part ? `You haul up a crate: ${PART[e.part] || 'a ship\'s part'}. Fit it at a quay (/shippart ${e.part}).` : `You haul up a crate: ${e.cubes} cubes.${e.left ? '' : ' The wreck gives no more today.'}`, { key: 'sea.salvage', throttle: 1 }); });
+  on('ship.part', (e) => { if (e.by !== 'courier') return; if (e.how === 'wear') { L.inc('ship.part.wear'); log.say('info', `Fitted: ${PART[e.part] || 'the part as built'}.`, { key: 'ship.part', throttle: 1 }); } else L.inc('ship.part'); });
+  on('sea.gust', (e) => { if (e.by === 'courier') L.inc('sea.gust'); }); // (a cat's paw caught: the sail and the water say it; the ledger counts it)
+  on('sea.rip', (e) => { if (e.by !== 'courier') return; L.inc('sea.rip'); log.say('info', 'A current takes the ship. Ride it, or steer out of its band.', { key: 'sea.rip', throttle: 60 }); });
+  on('sea.luff', (e) => { if (e.by !== 'courier') return; L.inc('sea.luff'); log.say('info', 'Your sail luffs: you are head to wind. Bear away and it fills.', { key: 'sea.luff', throttle: 30 }); });
   on('opensea.moor', (e) => { L.inc('sea.moor'); if (e.islet) log.say('info', `${landingLine(e.islet, e.kit)} (F at the ship to board again.)`, { key: 'sea.moor', throttle: 3 }); });
   on('sea.chart', (e) => { if (e.by !== 'courier') return; L.inc('sea.chart'); log.say('explore', 'You chart a new square of sea.', { key: 'sea.chart', throttle: 6 }); });
   on('sea.find', (e) => { if (e.by !== 'courier') return; L.inc(`sea.find.${e.tier}`); log.say('explore', `You find ${KIND[e.kind] || 'something'} (${e.tier}). Report it at a dock.`, { key: `sea.find.${e.id}`, throttle: 1 }); });
