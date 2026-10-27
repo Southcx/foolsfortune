@@ -4231,3 +4231,13 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the skill's events take the shape of a beat that does what they do (`hold { id, at }` removes a piece: the Grab skill's),
   and the skills with no beat yet get names of their own (`blast`, `vein`), which the view plays as a pause until Calissa's beats.
 - **Rule:** NEW:new-event-new-name
+
+### 2026-10-27 · The well's perf baseline read 76 calls; the same commit reads 93 (found ruling task 360; Petra)
+- **Seen:** perf put the Great Dunemaw's hall at 93 calls against a baseline of 76 and a budget of 88, as growth since 07ebaa5.
+- **Cause (as measured):** not growth. Every draw in the hall named by its object and material (a hook on `renderBufferDirect`) is the
+  same list at 07ebaa5 and at cba0d4f, 112 and 112, after the same route; perf itself at 07ebaa5 reads 93 today, 92 with the floor's
+  rise waited out. The floor's slip jellies were still rising when the hall was measured (the spawn look's crust, 15 draws, caught or
+  not by the tick count); what made the recorded 76 is not found.
+- **Fix:** perf ticks until the spawn look's runs are done before it measures the well; the well's call budget 88 -> 96 on the
+  measurement, the baseline recorded again (91).
+- **Rule:** NEW:baseline-reproduced-before-blamed

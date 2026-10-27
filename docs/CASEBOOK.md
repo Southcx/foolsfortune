@@ -950,3 +950,5 @@ NEW:sound-keyed-by-the-kernels-names. **A sound keyed by an engine's value reads
   its own in the bank drifts when the engine renames; import or mirror the engine's list, and let an unknown name be heard as wrong.
 NEW:new-event-new-name. **A kernel event with a new shape takes a new name.** A consumer keyed by an event's type reads its fields; an
   event that reuses a name must carry every field that name's consumers read, or it is a new name the consumers skip until they learn it.
+
+NEW:baseline-reproduced-before-blamed. **A perf delta is blamed on code only after the baseline's commit is measured again the same way.** If the old commit now reads the new number, the baseline was a state, not a cost: name the state, make the measure wait for it, and record again.
