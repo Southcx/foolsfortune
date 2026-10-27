@@ -37,7 +37,7 @@ export class DamageSounds {
 
   /** A blow's type, over its hit: type is impact, ego, influence, illusion or delirium; k (0..1) how hard. */
   damage(type = 'impact', k = 1, { pan = 0 } = {}) {
-    if (!this.ok() || !this.allow(`damage.${type}`, 12)) return;
+    if (!this.ok() || !this.allow(`damage.${type}`, 12) || !this.hitOk()) return; // (hitOk: a phone hears a blow once, core.js)
     const c = this.ctx, t = c.currentTime, v = 0.5 + 0.5 * Math.min(1, k), d = this.out(0.28 * v * (LIFT[type] || 1), type === 'impact' ? 0.15 : 0.45);
     let dest = d;
     if (pan) { const p = c.createStereoPanner(); p.pan.value = pan; p.connect(d); dest = p; }

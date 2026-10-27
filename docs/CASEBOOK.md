@@ -929,3 +929,6 @@ NEW:place-from-the-measure. **A thing set beside another is placed from their me
   bare offset.** A bare number is right for one size and wrong for the next.
 NEW:one-choice-a-load. **A choice that reloads the page is taken once a load, and its menu stops listening once it is made.** A window
   opened over a menu (a name typed, a confirm) must not reach the menu's keys behind it.
+NEW:audio-one-shot-let-go. **A one-shot's nodes are let go when its source ends, and a phone hears a blow once.** Disconnect the source
+  and its private chain on `ended`; on a phone, a hit, its damage and its stun's tick share one budget, so a gun's hail never stacks
+  three sounds a hit. A band's instrument takes one note an event unless it says it takes a chord.
