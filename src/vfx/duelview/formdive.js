@@ -16,7 +16,7 @@
 // down a curve into a mouth), Splatoon's squid dive into the ink (the splash ring where it enters), Persona's summon (the figure
 // broken out of the card).
 //
-//   const D = new FormDive(view)   D.open()   D.close()   D.start(to) ('courier' | 'hand': beats.js at the form event)   D.update(dt)
+//   const D = new FormDive(view)   D.open()   D.close()   D.cast(at) (a skill: skillcast.js)   D.start(to) ('courier' | 'hand': beats.js at the form event)   D.update(dt)
 //   DIVE (the knobs)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -85,6 +85,16 @@ export class FormDive {
     this.view.stage?.follow(to, DIVE.open + DIVE.dur + 0.25);
   }
 
+  /** A skill's cast (the one-gesture duel, skillcast.js): the stream poured from the Jar's mouth (its spit) down into the cell `at`; the
+   *  Jar stays where it stands. */
+  cast(at) {
+    if (!this.on) return;
+    const V = this.view; this.mouth(this.from); V.frame.localToWorld(cellLocal(at[0], at[1], V.board3, this.to));
+    this.mid.copy(this.from).lerp(this.to, 0.5).addScaledVector(UP, DIVE.arc * 0.8);
+    this.job = { to: 'cast', t: 0, landed: false }; const R = this.clips; if (R) R.play('spit', { again: true });
+    V.stage?.follow('courier', DIVE.dur + 0.2, this.to.clone());
+  }
+
   /** A point on the stream's curve (a quadratic Bezier, 0..1). */
   at(u, out) { const v = 1 - u; return out.copy(this.from).multiplyScalar(v * v).addScaledVector(this.mid, 2 * v * u).addScaledVector(this.to, u * u); }
 
@@ -92,6 +102,7 @@ export class FormDive {
     if (!this.on) return;
     if (!this.job) { if ((this.view.forms?.[0] ?? 'hand') !== this.shown) this.sync(); if (this.shown === 'hand') this.keepJar(); return; }
     const J = this.job, V = this.view; J.t += dt;
+    if (J.to === 'cast') { const u = J.t / DIVE.dur; this.draw(u, J.t); if (u >= 1.35) { this.job = null; this.beads.visible = false; } return; }
     const u = (J.t - (J.to === 'courier' ? DIVE.open : 0)) / DIVE.dur;
     if (J.to === 'courier' && J.t >= DIVE.open && !J.gone) { J.gone = true; const R = this.clips; if (R) R.play('dismiss', { again: true }); }
     if (J.to === 'courier' && J.gone && this.jar && J.t > DIVE.open + 0.42) this.jar.group.visible = false;

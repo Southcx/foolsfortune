@@ -36,6 +36,7 @@
 //   pointOf(cell) -> Vector3           a cell's centre on the slab's face, in the world (the god hand's cursorAt; its normal: `face`)
 //   refuse(action)                     an illegal action: the cell's rim shaken in the dry ink, no words (marks.js)
 //   resync(state)                      the board and pieces stood again from a restored state (undo), the clash kept: juice.js rewind
+//   armSkill(tool | null)              the one-gesture duel's armed skill: its reach under the finger (skillcast.js), the cast on `skill`
 //   skip(state)                        the foe's turn skipped: its queued beats dropped, the board stood as the state is
 //   hint(h | null)                     the idle hint (bot.js hintOf): its move's piece nudging its way, its clears pulsing; any play lets it go
 //   stage (stage.js: the zoom from the arena to the board view, the director's camera; the session asks stage.eatTap(cell) before a
@@ -66,6 +67,7 @@ import { DuelForesight } from './duelview/foresight.js';
 import { DuelJuice } from './duelview/juice.js';
 import { DuelStage } from './duelview/stage.js';
 import { FormDive } from './duelview/formdive.js';
+import { reachOf } from './duelview/skillcast.js';
 
 const TEAR = 0x7fdcff, COURIER_HEX = '#9fd8ff', UP = new THREE.Vector3(0, 1, 0);
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _c = new THREE.Color(), _r = new THREE.Ray(), _inv = new THREE.Matrix4();
@@ -120,7 +122,7 @@ export class DuelView {
     if (!this.isOpen && !this.closing) return;
     this.isOpen = false; this.beats.clear(); this.intentDraw.clear(); this.foresight.clear(); this.worth.clear(); this.glows.clear(); this.tune = [null, null]; this.marks.hover(null); this.marks.select([]); this.marks.stars(0, 0); this.marks.stars(1, 0);
     this.game.spiritualLink?.detach(this); this.clash.collapse(); this.closing = !now;
-    this.flee.clear(); this.marks.refuse(null); this.juice.clear(); this.stage.close(); this.dive.close();
+    this.flee.clear(); this.marks.refuse(null); this.juice.clear(); this.stage.close(); this.dive.close(); this.armed = null;
     this.clash.dome.scale.setScalar(DUEL_VIEW.radius); this.clash.U.uRadius.value = DUEL_VIEW.radius;
     if (now) { this.clash.open = [0, 0]; this.clash.update(0); this.root.visible = false; this.bursts.clear(); }
   }
@@ -160,7 +162,16 @@ export class DuelView {
     const { cs, base } = DUEL_VIEW, B = this.state.board, x = Math.floor(_v.x / cs + B.w / 2), y = Math.floor(B.h - (_v.y - base) / cs);
     return x >= 0 && y >= 0 && x < B.w && y < B.h ? { x, y } : null;
   }
-  hover(cell) { this.marks.hover(this.isOpen ? cell : null); }
+  hover(cell) { this.marks.hover(this.isOpen ? cell : null); if (this.armed) this.showReach(cell); }
+  /** A skill armed (the session's armSkill, the one-gesture duel): its reach under the finger as it moves (skillcast.js reachOf); null
+   *  lets it go. */
+  armSkill(tool) { this.armed = this.isOpen ? tool || null : null; this.showReach(this.armed ? this.marks.hovered : null); }
+  showReach(cell) {
+    for (const v of this.pieces.list) v.prev = 0;
+    const cells = this.armed && cell ? reachOf(this.state, this.armed, cell) : [];
+    for (const [x, y] of cells) { const v = this.pieces.at(x, y); if (v) v.prev = 1; }
+    this.marks.select(cells.map(([x, y]) => ({ x, y })));
+  }
 
   /** The camera that reads the board: square to its face on the `face` side (the Courier's half on the left), a little above its middle
    *  and looking a hair down, as near as a cell of about 14 dots of the 480 lines (never under 12), far enough for the frame, the odds

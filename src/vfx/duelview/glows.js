@@ -20,7 +20,7 @@ import * as THREE from 'three';
 import { mindLineMaterial } from '../labradorite.js';
 import { hasTag } from '../../progress/duel/board.js';
 import { legalActions, preview, weaknessOf } from '../../progress/duel/duel.js';
-import { LESSON } from '../../progress/duel/lesson.js';
+import { stepsOf } from '../../progress/duel/lesson.js';
 import { TOOL_RULES } from '../../progress/duel/couriertools.js';
 import { DUEL_VIEW, cellLocal } from './layout.js';
 import { Strokes } from './intent.js';
@@ -37,7 +37,7 @@ export class DuelGlows {
   dropReach() { if (this.reach) { this.view.frame.remove(this.reach); this.reach.geometry.dispose(); this.reach = null; } this.reachKey = null; }
 
   /** The lesson's step asked now (its id), or null. */
-  get asked() { const L = this.view.state?.lesson; return L && L.step < LESSON.steps.length ? LESSON.steps[L.step].id : null; }
+  get asked() { const s = this.view.state, L = s?.lesson, steps = s ? stepsOf(s) : []; return L && L.step < steps.length ? steps[L.step].id : null; }
   lessonBeat() { this.hintKey = null; } // (a step done: the hint found again once the board is still)
 
   update(dt) {

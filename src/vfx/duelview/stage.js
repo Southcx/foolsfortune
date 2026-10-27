@@ -77,6 +77,8 @@ export class DuelStage {
       case 'refund': this.fovKick = Math.min(9, this.fovKick + 3); this.jolt(0.1); break;
       case 'duel.line': case 'duel.full': case 'duel.cap': this.whip('end'); this.jolt(0.3); break;
       case 'kick': this.jolt(0.12); break;
+      case 'skill': if (e.side === 0) { this.fovKick = Math.min(10, this.fovKick + 5); this.jolt(0.25); } break; // (the cast: the board view's moment, formdive.js)
+      case 'charge': if (e.side === 0 && e.ready) this.jolt(0.08); break;
       case 'shot': case 'blast': this.jolt(0.16); break;
       default: break;
     }
@@ -84,7 +86,7 @@ export class DuelStage {
   jolt(k) { this.trauma = Math.min(1, this.trauma + k); }
   whip(kind) { const [z, dur] = STAGE.kick[kind]; this.kick = { z, until: this.t + dur, kind }; }
   /** The form's dive (formdive.js): the camera follows the Jar into the board (to 'courier') or out of it (to 'hand'). */
-  follow(to, dur) { this.dive = { to, t: 0, dur }; }
+  follow(to, dur, at = null) { this.dive = { to, t: 0, dur, at }; }
 
   /** Pinch and wheel to the zoom: followed while fingers are down, settled on the nearer end when they lift. */
   input(dt) {
@@ -140,7 +142,7 @@ export class DuelStage {
     look.addScaledVector(V.u, (foe * 0.6 + this.lean * 0.5) * reach); pos.addScaledVector(V.u, (foe * 0.6 + this.lean * 0.5) * reach * 0.6);
     if (this.dive) { // (the form's dive: the camera leans in after the Jar as it pours into the board, or back out with it)
       const D = this.dive; D.t += dt; const u = clamp01(D.t / D.dur), bell = Math.sin(Math.PI * u), at = V.pieces?.bodyAt?.(0);
-      if (at && V.frame) { const c = V.frame.localToWorld(cellLocal(at.x, at.y, V.board3, _c)); look.lerp(c, 0.35 * bell); pos.lerp(c, (D.to === 'courier' ? 0.22 : 0.12) * bell); }
+      if ((D.at || at) && V.frame) { const c = D.at ? _c.copy(D.at) : V.frame.localToWorld(cellLocal(at.x, at.y, V.board3, _c)); look.lerp(c, 0.35 * bell); pos.lerp(c, (D.to === 'courier' ? 0.22 : 0.12) * bell); }
       if (u >= 1) this.dive = null;
     }
     if (!this.started) { this.started = true; this.pos.copy(pos); this.look.copy(look); }
