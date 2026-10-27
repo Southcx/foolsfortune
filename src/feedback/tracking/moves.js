@@ -20,7 +20,7 @@ export function moveRules({ on, L, log }) {
   // move.special { tool, special, by }: a special used (its cost already paid)
   on('move.special', (e) => { if (e.by !== 'courier') return; L.inc('move.special'); L.inc(`move.special.${e.special}`); const s = MOVES[e.tool]?.special; if (s && s.id === e.special && !L.get(`move.special.${e.special}.said`)) { L.inc(`move.special.${e.special}.said`); log.say('gain', `A special: ${e.special}.`); } });
   // move.cut { tool, move, paid, cost, by }: a blow's recovery cut short for Lachryma (the paid cut, a working name); said once, to teach it
-  on('move.cut', (e) => { if (e.by !== 'courier' || !e.paid) return; L.inc('move.cut.paid'); if (L.first('move.cut.paid')) log.say('gain', `You cut the recovery short for ${e.cost} Lachryma: a press once the blade has struck.`); });
+  on('move.cut', (e) => { if (e.by !== 'courier' || !e.paid) return; L.inc('move.cut.paid'); if (L.first('move.cut.paid')) log.say('gain', `You pay ${e.cost} Lachryma to cut the recovery short.`); });
   // loadout.set { tool, slot, move, label, by }: a slot of the melee loadout filled or emptied (tools/sondelass/loadoutchosen.js, from the
   // loadout editor); a quiet line, its words placeholders for Espada's ("Your string's third blow is now Heavy Chop.")
   on('loadout.set', (e) => {

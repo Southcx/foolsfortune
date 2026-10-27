@@ -19,7 +19,7 @@ export function itemRules({ on, L, log }) {
     L.inc('item.get'); L.inc(`item.from.${e.from}`); L.hi('pneuka.used.best', e.used);
     if (e.used >= SLOTS) L.inc('pneuka.filled'); // (every slot of the Pneuka Box: pneuka/box.js SLOTS)
     if (e.from === 'ground') log.say('loot', `You pick up the ${ITEM(e.item)}.`, { tone: '#ffd98a' });
-    else if (e.from === 'chest') log.say('loot', `The ${ITEM(e.item)} goes into your Pneuka Box. (P)`, { tone: '#ffd98a' });
+    else if (e.from === 'chest') log.say('loot', `The ${ITEM(e.item)} goes into your Pneuka Box.`, { tone: '#ffd98a' });
     else if (e.from === 'catch') log.say('loot', `You keep the ${ITEM(e.item)} in your Pneuka Box. (Old Grog buys fish.)`, { key: 'fishkeep', fmt: (n) => `You keep ${n} fish in your Pneuka Box.` });
     first('pneuka', 'Logged: your first thing in the Pneuka Box. P opens it: left click uses, right click lists the rest.');
   });
