@@ -27,12 +27,12 @@ export const LESSON = {
     { id: 'tool',   did: (ev, a) => TOOLS.has(a.kind) },                                  // a tool's move: one that bends the clearing
     { id: 'chain',  did: (ev, a, side) => ev.some((e) => e.type === 'chain' && e.side === side && e.step >= 2) }, // a chain: what falls clears again, junk doubled
   ],
-  // the one-gesture duel's (PUZZLE-DUELS.md 22): drag, clear, chain, fire a skill once one is charged
+  // the one-gesture duel's (PUZZLE-DUELS.md 22): drag, clear, chain, fire a skill once one is charged; `ask` Espada's words, 2026-10-27
   dragSteps: [
-    { id: 'drag',   did: (ev, a) => a.kind === 'drag' },                                   // a gem dragged: everything it passes swaps
-    { id: 'clear',  did: (ev, a, side) => mine(ev, side, 'chain') },                     // a clear: 3 in a line or 4 touching
-    { id: 'chain',  did: (ev, a, side) => ev.some((e) => e.type === 'chain' && e.side === side && e.step >= 2) },
-    { id: 'skill',  did: (ev, a) => a.kind === 'skill' },                                 // a charged skill fired
+    { id: 'drag',   ask: 'Drag a gem: every gem it passes trades places with it.', did: (ev, a) => a.kind === 'drag' },                                   // a gem dragged: everything it passes swaps
+    { id: 'clear',  ask: 'Line up 3 of one colour, or 4 touching, to clear them.', did: (ev, a, side) => mine(ev, side, 'chain') }, // a clear: 3 in a line or 4 touching
+    { id: 'chain',  ask: 'Clear so the gems that fall clear again: that is a chain.', did: (ev, a, side) => ev.some((e) => e.type === 'chain' && e.side === side && e.step >= 2) },
+    { id: 'skill',  ask: 'A skill is full: fire it from its tile beside the board.', did: (ev, a) => a.kind === 'skill' },                                 // a charged skill fired
   ],
 };
 export const stepsOf = (s) => (s.style === 'drag' ? LESSON.dragSteps : LESSON.steps);
