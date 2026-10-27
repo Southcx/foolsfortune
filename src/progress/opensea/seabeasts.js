@@ -23,9 +23,12 @@
 //
 //   SEA_BEASTS[id] = { cls, hp, speed, sense? | zone?, leash?, weak, parts?, phases?, once?, give, moves: { [id]: { windup, hits?, shot?,
 //   answer, cooldown, hold?, lead?, fill?, every? } } }   beastPay(id, hullLeft, bears) -> cubes   ANSWERS (each answer and its mount)
+//   LAIRS[id] = { every | daily, when? }   lairsOf(grid, seed, day) -> [{ id, square, when? }] (where each beast lives: OPEN-SEA.md 14.9)
 // ---------------------------------------------------------------------------------------
 import { ECON } from '../econ/table.js';
 import { SEA_SERPENT } from './seaserpent.js';
+import { EGREGORES } from './safari.js';
+import { seeded } from '../../core/rng.js';
 
 /** Each answer a beast's move asks, and the mount that gives it at sea (SEA_MOUNTS); the helm's own answers need none. */
 export const ANSWERS = {
@@ -86,4 +89,33 @@ export function beastPay(id, hullLeft, bears) {
   const G = SEA_BEASTS[id]?.give; if (!G) return 0;
   const k = bears > 1 ? Math.max(0, Math.min(1, (hullLeft - 1) / (bears - 1))) : 1;
   return Math.round(G.minutes * ECON.perMinute * (G.kept[0] + (G.kept[1] - G.kept[0]) * k));
+}
+
+/** Where the beasts live (OPEN-SEA.md 14.9; Petra's ask, 2026-10-27: "where do the beasts live?"): each in the squares its myth allows
+ *  (safari.js `lives`: rows off the lanes, the Law or Chaos half) and no tamer than one class under it; one in `every` of those is its
+ *  lair, the same all build (a territory is kept: Monster Hunter's), or `daily` a game day (the legend moves). `when`: the hours or
+ *  weather it is up (the umibozu's calm night, or dread). One beast a square, the rarer placed first. */
+export const LAIRS = {
+  worldSerpent: { daily: 1 },
+  bigSquid:     { every: 3 },
+  seaMonk:      { every: 3, when: { phase: 'night', weather: 'dread' } }, // (up at night or under dread: either)
+  wolfWhale:    { every: 4 },
+  seaSerpent:   { every: 4 },   // (as seafight.js laid them first)
+};
+
+export function lairsOf(grid, seed = 1, day = 0) {
+  const out = [], used = new Set();
+  for (const [id, L] of Object.entries(LAIRS)) {
+    const E = EGREGORES[id]; if (!E) continue;
+    const fit = grid.squares.filter((sq) => !sq.lane && !used.has(sq.id) && sq.off >= E.lives.off && (!E.lives.law || Math.sign(sq.law) === E.lives.law || sq.law === 0) && sq.cls >= E.cls - 1);
+    if (!fit.length) continue;
+    let picked;
+    if (L.daily) { const r = seeded((seed * 911 + day * 7919) >>> 0); picked = Array.from({ length: L.daily }, () => fit[Math.floor(r() * fit.length)]); }
+    else {
+      const hash = (sq) => (Math.imul(sq.col + 1, 73856093) ^ Math.imul(sq.row + 1, 19349663) ^ Math.imul(id.length + id.charCodeAt(0), 83492791) ^ seed) >>> 0;
+      picked = fit.filter((sq) => hash(sq) % L.every === 0); if (!picked.length) picked = [fit.reduce((a, b) => (hash(a) < hash(b) ? a : b))];
+    }
+    for (const sq of picked) { if (used.has(sq.id)) continue; used.add(sq.id); out.push({ id, square: sq.id, ...(L.when ? { when: L.when } : {}) }); }
+  }
+  return out;
 }
