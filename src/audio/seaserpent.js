@@ -44,7 +44,7 @@ export class SeaSerpentSounds {
     else { this.noise(t, 0.5, { type: 'lowpass', f0: 2000, f1: 300, gain: 0.45, dest: d }); this.noise(t + 0.3, 1.4, { type: 'highpass', f0: 3000, f1: 1500, gain: 0.12, attack: 0.1, dest: d }); }
   }
   seaSerpentHit(part = 'head') {
-    if (!this.ok() || !this.allow('seaSerpentHit', 8)) return;
+    if (!this.ok() || !this.allow('seaSerpentHit', 8) || !this.hitOk()) return; // (hitOk: a phone hears a blow once, core.js)
     const t = this.ctx.currentTime, d = this.out(0.34, 0.3);
     if (part === 'coil') { this.noise(t, 0.04, { type: 'bandpass', f0: 2800, q: 5, gain: 0.4, dest: d }); this.tone(t, 0.12, { f0: 900, f1: 1200, type: 'triangle', gain: 0.06, dest: d }); }
     else { this.tone(t, 0.2, { f0: 110, f1: 60, gain: 0.45, dest: d }); this.tone(t + 0.04, 0.35, { f0: 700, f1: 1400, type: 'sawtooth', gain: 0.04, dest: d }); }
