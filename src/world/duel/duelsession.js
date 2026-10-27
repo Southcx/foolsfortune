@@ -35,7 +35,7 @@
 import * as THREE from 'three';
 import { newDuel, act, endTurn, legalActions, undo } from '../../progress/duel/duel.js';
 import { luckOf } from '../../progress/luck.js';
-import { intentOf, play as botPlay } from '../../progress/duel/bot.js';
+import { intentOf, hintOf, HINT, play as botPlay } from '../../progress/duel/bot.js';
 import { lessonDue } from '../../progress/duel/lesson.js';
 import { rulesetOf } from '../../progress/duel/rulesets.js';
 import { DUEL_VIEW, cellLocal } from '../../vfx/duelview/layout.js';
@@ -43,7 +43,7 @@ import { stream } from '../../core/rng.js';
 import { sfx } from '../../audio/sfx.js';
 const duelRand = stream('world/duel/duelsession'); // (the duel's seed: the session's own draw, the same twice)
 
-export const DUEL_ROOM = { beat: 0.55, yieldHold: 1.5, apart: 6, apartTouch: 2.7, standOff: 5, bodyTap: 70 }; // (the bot's beat, real s; the yield's hold; the two set this far apart under the seam, m (on a phone's layout nearer, each about 1.35 m off the board's middle so both stand inside the duel screen's flanks: Calissa's, 2026-10-27, at 270 px a metre); the camera off the board's face, m; a tap this near the Courier's body on screen switches the form, px)
+export const DUEL_ROOM = { beat: 0.55, beatTouch: 0.35, slop: 8, yieldHold: 1.5, apart: 6, apartTouch: 2.7, standOff: 5, bodyTap: 70 }; // (the bot's beat, real s; the yield's hold; the two set this far apart under the seam, m (on a phone's layout nearer, each about 1.35 m off the board's middle so both stand inside the duel screen's flanks: Calissa's, 2026-10-27, at 270 px a metre); the camera off the board's face, m; a tap this near the Courier's body on screen switches the form, px)
 const KEYS_KEPT = /^(Escape|Tab|F\d+|KeyB)$/; // (what a duel leaves to the rest of the game: the pause, the tuning panel, QAIS, the Codex)
 const TOOL_KEYS = { KeyX: 'shoot', KeyQ: 'grab', KeyK: 'drill', KeyG: 'paint', KeyU: 'delay', KeyI: 'hold', KeyT: 'tune', KeyV: 'read' };
 const WALK = { KeyW: 'N', KeyS: 'S', KeyA: 'W', KeyD: 'E' };
@@ -75,7 +75,7 @@ export class DuelSession {
     this.state = newDuel({ ruleset, seed: Math.floor(duelRand() * 2 ** 31), forms: ['hand', 'courier'], pool: [this.startPool, 30], tools: [tools, []],
       luck: [g.ledger ? Math.min(2, Math.floor(luckOf(g.ledger).level / 10)) : 0, 0], // (Luck's sway on a flee, 0..2: a tenth of its level, as ruled)
       rerolls: [g.rerolls?.left() ?? 0, 0], lesson: lessonDue(g.ledger) }); // (the first duel a lesson until one is won: lesson.js, PUZZLE-DUELS 18.3) // (Luck's re-rolls left this game day: a failed Flee is thrown again, progress/duel/flee.js)
-    this.foe = c; this.feeling = feeling; this.active = true; this.busy = false; this.botT = -1; this.press = null; this.path = []; this.yieldT = 0; this.swipe = null; this.shown = null; this.picked = null;
+    this.foe = c; this.feeling = feeling; this.active = true; this.busy = false; this.botT = -1; this.press = null; this.path = []; this.yieldT = 0; this.swipe = null; this.shown = null; this.picked = null; this.hinted = null; this.idleT = 0;
     for (const t of g.belt?.tools || []) if (t.wants || t.drawT > 0) t.stow(); // (nothing in the hands: the board is the fight)
     g.techs?.get('carry')?.drop?.();
     P.vel.set(0, 0, 0);
@@ -119,10 +119,12 @@ export class DuelSession {
     const s = this.state, g = this.game;
     this.pointer(input);
     if (!this.busy && s.winner === null) {
-      if (this.mine) this.controls(raw, input);
-      else if (this.botT < 0) this.botT = DUEL_ROOM.beat;
-      else if ((this.botT -= raw) <= 0) { this.botT = -1; this.run(botPlay(s)); }
+      if (this.mine) { this.idle(raw, input); this.controls(raw, input); }
+      else if (this.hinted) { this.hinted = null; this.idleT = 0; this.view?.hint?.(null); }
+      else if (this.botT < 0) this.botT = this.flanks ? DUEL_ROOM.beatTouch : DUEL_ROOM.beat;
+      else if ((this.botT -= raw) <= 0) { this.botT = -1; this.botRun = true; this.run(botPlay(s)); }
     }
+    else if (this.busy && this.botRun && input.wasPressed('Mouse0')) this.skip(); // (a tap in the foe's turn plays the rest at once)
     this.cursorHand(raw);
     for (const c of [...input.pressed]) if (!KEYS_KEPT.test(c)) input.spend(c); // (no tool, form or menu below sees what the duel took)
     if (g.player) g.player.vel.set(0, 0, 0);
@@ -152,12 +154,13 @@ export class DuelSession {
     if (input.isDown('Backspace')) { if ((this.yieldT += raw) >= DUEL_ROOM.yieldHold) return this.yield(); } else this.yieldT = 0;
     this.arm(S.form !== 'hand' && input.isDown('KeyG')); // (Paint armed while G or du.paint is held: its reach and greying, the view's glows)
     if (S.form === 'hand') {
-      if (input.wasPressed('Mouse0') && cell) { this.press = cell; this.path = [cell]; this.view?.select?.(this.path); }
-      if (this.press && input.isDown('Mouse0') && cell) {
+      if (input.wasPressed('Mouse0') && cell) { this.press = cell; this.path = [cell]; this.pressAt = [input.mx, input.my]; this.view?.select?.(this.path); }
+      if (this.press && this.pressAt && Math.hypot(input.mx - this.pressAt[0], input.my - this.pressAt[1]) >= DUEL_ROOM.slop) this.pressAt = null; // (a tap never drags a gem by a hair: DUEL_ROOM.slop px first)
+      if (this.press && !this.pressAt && input.isDown('Mouse0') && cell) {
         const last = this.path[this.path.length - 1];
         if (!sameCell(cell, last) && Math.abs(cell.x - last.x) + Math.abs(cell.y - last.y) === 1) { this.path.push(cell); this.view?.select?.(this.path); }
       }
-      this.show(this.press ? actionOfPath(this.path) : null);
+      this.show(this.press ? actionOfPath(this.path) : (this.hinted !== true && !this.view?.hint && this.hinted?.action) || null); // (the idle hint, where the view has no `hint` of its own, rides the preview)
       if (this.press && !input.isDown('Mouse0')) {
         const P = this.path; this.press = null; this.path = []; this.view?.select?.([]); this.show(null);
         const a = actionOfPath(P); if (a) { this.picked = null; return this.take(a); }
@@ -248,6 +251,21 @@ export class DuelSession {
   }
   /** The action under the finger or the pointer, before it is chosen (a swap or drag as the press builds, a run on hover), told to the view
    *  once a change, null when let go: the view draws what it would bring from Dovina's preview (duel.js). */
+  /** The idle hint (Dovina's hintOf, PUZZLE-DUELS.md 21): after HINT.idle real s of your turn with no press, the move that sends most
+   *  junk is lit (the view's `hint`, else its preview); the next press drops it. Asked once a wait, on quiet copies (4 ms). */
+  idle(raw, input) {
+    if (input.pressed.size || (input.touchDrag?.fingers ?? 0) > 0 || this.press) { this.idleT = 0; if (this.hinted) { this.hinted = null; const V = this.view; if (V?.hint) V.hint(null); else this.show(null); } return; }
+    if (this.hinted || (this.idleT = (this.idleT || 0) + raw) < HINT.idle) return;
+    const a = hintOf(this.state, 0); this.hinted = a || true; if (!a) return;
+    const V = this.view; if (V?.hint) V.hint(a); else this.show(a.action); // (hintOf's { action, junk, cells }: the view's hint takes the whole)
+  }
+  /** The foe's turn played out at once: its events dropped from the view's queue and the board stood again from the state (the kernel
+   *  already played the whole turn: bot.js play). The view's own `skip` where it has one. */
+  skip() {
+    const V = this.view; if (!V?.isOpen) return;
+    if (typeof V.skip === 'function') return V.skip(this.state);
+    V.beats?.clear?.(); if (typeof V.resync === 'function') V.resync(this.state);
+  }
   show(a) {
     const key = a ? JSON.stringify(a) : null; if (key === this.shown) return;
     this.shown = key; const V = this.view; if (typeof V?.pendingAction === 'function') V.pendingAction(a); // (not `pending`: the view keeps its junk counts by that name)
@@ -273,7 +291,7 @@ export class DuelSession {
       if (e.type === 'flee' && e.ok && e.roll === 20) this.atOnce = true; // (a natural 20: the log says "You flee at once." instead)
       if (e.type === 'flee') this.game.events?.emit('duel.flee', { roll: e.roll, reroll: e.reroll ?? null, need: e.need, ok: e.ok, by: e.side === 0 ? 'courier' : 'creature' });
     }
-    const done = () => { this.busy = false; if (!this.active) return; if (this.state.winner !== null) this.finish(); else this.intent(); };
+    const done = () => { this.busy = false; this.botRun = false; if (!this.active) return; if (this.state.winner !== null) this.finish(); else this.intent(); };
     const p = this.view?.play?.(events);
     if (p?.then) p.then(done, done); else done();
   }
