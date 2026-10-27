@@ -46,7 +46,7 @@ import * as THREE from 'three';
 import { newDuel, act, endTurn, legalActions, undo } from '../../progress/duel/duel.js';
 import { luckOf } from '../../progress/luck.js';
 import { intentOf, hintOf, HINT, play as botPlay } from '../../progress/duel/bot.js';
-import { SKILLS, skillsOf } from '../../progress/duel/skills.js';
+import { SKILLS, skillsOf, canAct } from '../../progress/duel/skills.js';
 import { lessonDue } from '../../progress/duel/lesson.js';
 import { rulesetOf } from '../../progress/duel/rulesets.js';
 import { DUEL_VIEW, cellLocal } from '../../vfx/duelview/layout.js';
@@ -54,7 +54,7 @@ import { stream } from '../../core/rng.js';
 import { sfx } from '../../audio/sfx.js';
 const duelRand = stream('world/duel/duelsession'); // (the duel's seed: the session's own draw, the same twice)
 
-export const DUEL_ROOM = { beat: 0.55, beatTouch: 0.35, slop: 8, yieldHold: 1.5, apart: 6, apartTouch: 2.7, standOff: 5, bodyTap: 70 }; // (the bot's beat, real s; the yield's hold; the two set this far apart under the seam, m (on a phone's layout nearer, each about 1.35 m off the board's middle so both stand inside the duel screen's flanks: Calissa's, 2026-10-27, at 270 px a metre); the camera off the board's face, m; a tap this near the Courier's body on screen switches the form, px)
+export const DUEL_ROOM = { beat: 0.55, beatTouch: 0.35, slop: 8, yieldHold: 1.5, apart: 6, apartTouch: 2.7, standOff: 5, bodyTap: 70, spent: 0.6 }; // (the bot's beat, real s; the yield's hold; the two set this far apart under the seam, m (on a phone's layout nearer, each about 1.35 m off the board's middle so both stand inside the duel screen's flanks: Calissa's, 2026-10-27, at 270 px a metre); the camera off the board's face, m; a tap this near the Courier's body on screen switches the form, px; a spent turn's wait before it ends itself, real s)
 const KEYS_KEPT = /^(Escape|Tab|F\d+|KeyB)$/; // (what a duel leaves to the rest of the game: the pause, the tuning panel, QAIS, the Codex)
 const TOOL_KEYS = { KeyX: 'shoot', KeyQ: 'grab', KeyK: 'drill', KeyG: 'paint', KeyU: 'delay', KeyI: 'hold', KeyT: 'tune', KeyV: 'read' };
 const WALK = { KeyW: 'N', KeyS: 'S', KeyA: 'W', KeyD: 'E' };
@@ -91,7 +91,7 @@ export class DuelSession {
       luck: [g.ledger ? Math.min(2, Math.floor(luckOf(g.ledger).level / 10)) : 0, 0], // (Luck's sway on a flee, 0..2: a tenth of its level, as ruled)
       rerolls: [g.rerolls?.left() ?? 0, 0], lesson: lessonDue(g.ledger) }); // (the first duel a lesson until one is won: lesson.js, PUZZLE-DUELS 18.3) // (Luck's re-rolls left this game day: a failed Flee is thrown again, progress/duel/flee.js)
     this.practice = !!c.practice; // (a practice foe, Strawman's: every duel.* event says so and counts nothing; no pool, no shatter, no drain)
-    this.foe = c; this.feeling = feeling; this.active = true; this.busy = false; this.botT = -1; this.press = null; this.path = []; this.yieldT = 0; this.swipe = null; this.shown = null; this.picked = null; this.hinted = null; this.idleT = 0;
+    this.foe = c; this.feeling = feeling; this.active = true; this.busy = false; this.botT = -1; this.press = null; this.path = []; this.yieldT = 0; this.swipe = null; this.shown = null; this.picked = null; this.hinted = null; this.idleT = 0; this.spentT = 0;
     for (const t of g.belt?.tools || []) if (t.wants || t.drawT > 0) t.stow(); // (nothing in the hands: the board is the fight)
     g.techs?.get('carry')?.drop?.();
     P.vel.set(0, 0, 0);
@@ -135,7 +135,9 @@ export class DuelSession {
     const s = this.state, g = this.game;
     this.pointer(input);
     if (!this.busy && s.winner === null) {
-      if (this.mine) { this.idle(raw, input); this.controls(raw, input); }
+      if (this.mine) { this.idle(raw, input); this.controls(raw, input);
+        // a spent turn (no AP, no skill with a target) ends itself a beat after the finger lifts (Puzzle & Dragons ends on release)
+        if (!this.busy && this.mine && !this.press && !canAct(s, 0)) { if ((this.spentT += raw) >= DUEL_ROOM.spent) { this.spentT = 0; this.endMine(); } } else this.spentT = 0; }
       else if (this.hinted) { this.hinted = null; this.idleT = 0; this.view?.hint?.(null); }
       else if (this.botT < 0) this.botT = this.flanks ? DUEL_ROOM.beatTouch : DUEL_ROOM.beat;
       else if ((this.botT -= raw) <= 0) { this.botT = -1; this.botRun = true; this.run(botPlay(s)); }
