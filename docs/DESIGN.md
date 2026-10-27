@@ -458,11 +458,11 @@ Animal Crossing: the clock runs while you are away, and an area is caught up on 
 save. The Dunes become five areas round the Weir; the open sea and the Raceway park each stay one, since a sail and a lap must not be
 cut.
 
-## 26. Tools that bend the rules; a sea with weather in it (the owner, 2026-10-27, through Calissa; PUZZLE-DUELS.md 17.4 and 18, OPEN-SEA.md 14)
+## 26. Tools that bend the rules; a sea with weather in it (South, 2026-10-27, through Calissa; PUZZLE-DUELS.md 17.4 and 18, OPEN-SEA.md 14)
 
 - **A puzzle duel's board is its Figment's**, one board on every device (a duel is the same game on the desk and the phone): the
   Lantern Wisp's 14 x 14, measured to be as long and as winnable as the 20's with chains as deep, its cells 1.4x as big.
-- **The tools bend the clearing** (the owner: "utilize the lachryma tools to help dictate how the tile clearing mechanics work"), each
+- **The tools bend the clearing** (South: "utilize the lachryma tools to help dictate how the tile clearing mechanics work"), each
   a modifier with its source on the board, never a new base rule: the psygun's Shoot pops a touching group (SameGame), the Soul Brush's
   Paint repaints one colour within 4 cells (Columns' magic jewel, as a class; the whole half measured at a median 19 junk a stroke and
   refused), the Crucibelle's Tune lets one colour clear at 3 for a turn (the crystals' frets: a note is a colour), the Veritome's Read

@@ -6,7 +6,7 @@
 //   sea.report { id, tier, fee }  sea.dock { island, paid, fuelCost, short? }  sea.tow { to, fee }  sea.secret { kind }  sea.fuel.low { fuel }
 //   sea.pair.half { id, shape }  sea.pair { id, shape, tier }  sea.lineup { id, charted }  sea.echo.hear { id, notes }  sea.echo { id }
 //   sea.dig { id, tier, cubes, how }  sea.stele { islet, words, line }   sea.herds { day, n, herds }  sea.herd { id, square, cubes }  sea.herd.paid { cubes, n }   (the migrations)   seaserpent.paid { cubes, hull, of }   (the islets' puzzles and caches: world/opensea/puzzlepieces.js)
-//   sea.luff { from } (head to wind under way)  sea.gust { k }  sea.rip { square }  sea.salvage { wreck, tier, cubes, part, left }  ship.part { slot, part, how }  sea.bottle { id, islet, text }   (each with `by`)
+//   sea.luff { from } (head to wind under way)  sea.gust { k }  sea.rip { square }  sea.salvage { wreck, tier, cubes, part, left }  ship.part { slot, part, how }  sea.bottle { id, islet, text }  sea.rumour { id, squares, way }  sea.rumour.paid { id, cubes }   (each with `by`)
 //
 //   openSeaRules({ on, L, log })   (feedback/tracking/rules.js calls it)
 // ---------------------------------------------------------------------------------------
@@ -24,6 +24,8 @@ export function openSeaRules({ on, L, log }) {
   on('sea.salvage', (e) => { if (e.by !== 'courier') return; L.inc('sea.salvage'); L.inc(`sea.salvage.${e.tier}`);
     log.say('gain', e.part ? `You haul up a crate: ${PART[e.part] || 'a ship\'s part'}. Fit it at a quay (/shippart ${e.part}).` : `You haul up a crate: ${e.cubes} cubes.${e.left ? '' : ' The wreck gives no more today.'}`, { key: 'sea.salvage', throttle: 1 }); });
   on('ship.part', (e) => { if (e.by !== 'courier') return; if (e.how === 'wear') { L.inc('ship.part.wear'); log.say('info', `Fitted: ${PART[e.part] || 'the part as built'}.`, { key: 'ship.part', throttle: 1 }); } else { L.inc('ship.part'); L.inc(`ship.part.${e.part}`); } });
+  on('sea.rumour', (e) => log.say('info', `The board's rumour: a ${kind(e.id)} ${e.squares ? `${e.squares} square${e.squares === 1 ? '' : 's'} ${e.way}` : 'in these waters'}. Sink it there today for the bounty.`, { key: 'sea.rumour', throttle: 1 }));
+  on('sea.rumour.paid', (e) => { if (e.by !== 'courier') return; L.inc('sea.rumour'); log.say('gain', `The rumour's bounty: ${e.cubes} cubes.`, { key: 'sea.rumour.paid', throttle: 1 }); });
   on('sea.bottle', (e) => { if (e.by !== 'courier') return; L.inc('sea.bottle'); log.say('explore', `A bottle adrift, a note inside: "${e.text}"`, { key: 'sea.bottle', throttle: 1 }); });
   on('sea.gust', (e) => { if (e.by === 'courier') L.inc('sea.gust'); }); // (a cat's paw caught: the sail and the water say it; the ledger counts it)
   on('sea.rip', (e) => { if (e.by !== 'courier') return; L.inc('sea.rip'); log.say('info', 'A current takes the ship. Ride it, or steer out of its band.', { key: 'sea.rip', throttle: 60 }); });

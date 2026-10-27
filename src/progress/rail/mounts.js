@@ -55,3 +55,15 @@ export const SEA_MOUNTS = {
   veritome:   { arc: 'bow', angle: 40, reach: 120, cost: 8, cooldown: 12, hold: 4, does: 'flash: a weak point held open, and a plate taken (in a habit, its bonus)' },
   soulbrush:  { arc: 'stern', reach: 30, cost: 10, cooldown: 15, hold: 20, does: 'a slick laid astern: a beast swimming through it is slowed by half for 3 s (kite it through your wake)' },
 };
+
+/** THE CREW AT THE FREE HELM (OPEN-SEA.md 14.8; Calissa's proposal, 2026-10-27: "the siblings as crew"): a sibling called into your party
+ *  (game.party, two at once) stands on deck at the hull's crew spots and lends the ship one thing, its division's: none is a weapon, each
+ *  is a hand. The runtime is Petra's (world/opensea/seafight.js), the poses Calissa's. reload: the broadside's reload x; mend: a hull's hit
+ *  mended every `every` real s out of a fight; parry: the spit's parry window x; foresight: a windup shown `lead` s sooner; sonar: dives shown. */
+export const SEA_CREW = {
+  petra:   { does: 'mends the hull between fights', mend: { every: 60 } },   // (pentacles: the stonemason patches)
+  wanda:   { does: 'reloads the broadside faster', reload: 0.75 },           // (wands: the band keeps time at the guns)
+  calissa: { does: 'reads the water: dives shown', sonar: true },            // (cups: the water's own)
+  espada:  { does: 'a wider window to send the spit back', parry: 1.5 },     // (swords: the riposte)
+  dovina:  { does: 'a windup shown sooner', foresight: { lead: 0.5 } },      // (trumps: the odds read ahead)
+};

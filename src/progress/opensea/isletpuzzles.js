@@ -89,14 +89,13 @@ export function dealPuzzles(islets, seed = 1) {
   return out;
 }
 
-/** A bottle's note: the way from where it drifted to its islet, in the sea's own words (the columns run from Margarite to Entropolis,
- *  the rows away from the lanes or toward them), and what the islet is. */
+/** A bottle's note: the way from where it drifted to its islet, in the board's words (squares north or south, east or west, as the
+ *  dock's board gives a herd's), and what the islet is. */
 export function riddleText(rd) {
-  const [c, row] = squareOf({ id: rd.islet }), [bc, br] = rd.bottle, dc = c - bc, off = Math.abs(row - 3) - Math.abs(br - 3), parts = [];
-  const sq = (n) => `${n} square${n === 1 ? '' : 's'}`;
-  if (dc) parts.push(`${sq(Math.abs(dc))} toward ${dc > 0 ? 'Entropolis' : 'Margarite'}`);
-  if (off) parts.push(`${sq(Math.abs(off))} ${off > 0 ? 'farther from the lanes' : 'nearer the lanes'}`);
-  else if (row !== br) parts.push(`across the lanes, as far from them as here`);
+  const [c, row] = squareOf({ id: rd.islet }), [bc, br] = rd.bottle, dc = c - bc, dr = row - br; // (the board's own words: rows grow south, columns east; herds.js bearing)
+  const sq = (n) => `${n} square${n === 1 ? '' : 's'}`, parts = [];
+  if (dr) parts.push(`${sq(Math.abs(dr))} ${dr > 0 ? 'south' : 'north'}`);
+  if (dc) parts.push(`${sq(Math.abs(dc))} ${dc > 0 ? 'east' : 'west'}`);
   return `From where I drifted, ${parts.join(' and ') || 'here'}: ${RIDDLE.kits[rd.kit] || 'an islet'}. Dig where the dowse sings.`;
 }
 

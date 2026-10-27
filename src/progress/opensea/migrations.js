@@ -11,6 +11,8 @@
 // animals told by rumour.
 //
 //   MIGRATION   herdsOf(grid, day, seed) -> [{ id, square, cls, n }]   herdFee(cls) -> cubes
+//   RUMOUR   rumourOf(grid, day, seed) -> { id, square, cls, bounty } | null: the game day's one named beast on the board (OPEN-SEA.md 14.8;
+//   Calissa's proposal, 2026-10-27: "a rumour each game day bringing a named Egregore to one square"), its kill paid a bounty once over its own pay
 // ---------------------------------------------------------------------------------------
 import { ECON } from '../econ/table.js';
 import { EGREGORES } from './safari.js';
@@ -41,3 +43,16 @@ export function herdsOf(grid, day = 0, seed = 1) {
 
 /** What a herd photographed pays, once: a share of a hunt of its class (ECON.hunt minutes at the aim). */
 export const herdFee = (cls = 0) => Math.round(MIGRATION.share * ECON.hunt.minutes[Math.max(0, Math.min(4, cls))] * ECON.perMinute);
+
+/** The rumour (OPEN-SEA.md 14.8): one fighting beast a game day posted on the dock's board in one square it lives in, its kill there that
+ *  game day paid `bounty` x its own kill's pay at a whole hull, once (Letty's marque: the bounty board's first posting). Only beasts the
+ *  sea can raise yet (`ids`: the sea serpent; the others join as their runtime lands); a legend `legend` game days in a hundred. */
+export const RUMOUR = { ids: ['seaSerpent'], bounty: 1, legend: 0 };
+
+export function rumourOf(grid, day = 0, seed = 1) {
+  const r = seeded((seed * 6271 + day * 15485863) >>> 0), ids = RUMOUR.ids.filter((id) => EGREGORES[id]); if (!ids.length) return null;
+  const id = ids[Math.floor(r() * ids.length)], E = EGREGORES[id], L = E.lives;
+  const ok = grid.squares.filter((sq) => sq.off >= L.off && (!L.law || Math.sign(sq.law) === L.law || sq.law === 0) && E.cls <= sq.cls + 1);
+  if (!ok.length) return null;
+  return { id, square: ok[Math.floor(r() * ok.length)].id, cls: E.cls };
+}
