@@ -33,6 +33,7 @@ import { buildSeaProps, squareCentre, SEA } from './seaprops.js';
 import { Helm } from './helm.js';
 import { windAt, gustsNear, gustAt, gusted, ripsOf, ripPush } from '../../progress/opensea/wind.js';
 import { SALVAGE, cratesOf, crateOf, ShipParts, SHIP_PARTS, PART_SLOTS } from '../../progress/opensea/salvage.js';
+import { FORGE, FORGE_PARTS, forgeable } from '../../progress/opensea/forge.js';
 import { markWorld, ownedSince, takeAway } from '../areaown.js';
 import { PuzzlePieces } from './puzzlepieces.js';
 import { SeaHerds } from './herds.js';
@@ -68,8 +69,9 @@ export class OpenSea {
         game.events?.emit('sea.rumour.paid', { id, cubes: bounty, by: 'courier' }); this.dirty();
       }
     };
-    game.events?.on?.('seaserpent.down', (e) => paid('seaSerpent', e));
-    game.events?.on?.('seabeast.down', (e) => paid(e.id, e));
+    // (after the sinking's own rules: the log says it sinks, then what it pays)
+    game.events?.on?.('seaserpent.down', (e) => queueMicrotask(() => paid('seaSerpent', e)));
+    game.events?.on?.('seabeast.down', (e) => queueMicrotask(() => paid(e.id, e)));
   }
   get active() { return this.sailing || zoneOf(this.game.player.pos) === 'opensea'; }
 
@@ -241,6 +243,18 @@ export class OpenSea {
       const slot = PART_SLOTS.find((s) => SHIP_PARTS[s][id]); if (!slot) return game.log?.say?.('warn', `No ship's part "${id}".`);
       if (!this.moored?.quay) return game.log?.say?.('warn', 'Parts are fitted at a quay.', { key: 'ship.part', throttle: 2 });
       if (!P.wear(slot, id)) game.log?.say?.('warn', 'You have not found that part.', { key: 'ship.part', throttle: 2 });
+    } });
+    // /forge: a beast's part made at a quay from the beasts you sank, for cubes (progress/opensea/forge.js; the pier's page may give it a card)
+    game.chat?.add?.('forge', { help: 'a beast\'s ship part: /forge lists them; /forge <part> forges one, moored at a quay', run: (args = []) => {
+      const P = game.shipParts, L = game.ledger, id = Array.isArray(args) ? args[0] : String(args || '').trim().split(/\s+/)[0];
+      const nameOf = (p) => PART_SLOTS.map((s) => SHIP_PARTS[s][p]?.name).find(Boolean);
+      if (!id) return game.log?.say?.('info', `The forge: ${FORGE_PARTS.map((p) => { const f = forgeable(L, p); return `${nameOf(p)} ${P.has(p) ? '(yours)' : `${Math.min(f.have, f.need)}/${f.need} carves, ${f.cubes} cubes`}`; }).join('; ')}. A beast sunk with your hull whole counts twice.`);
+      if (!FORGE[id]) return game.log?.say?.('warn', `No beast's part "${id}".`);
+      if (!this.moored?.quay) return game.log?.say?.('warn', 'Parts are forged at a quay.', { key: 'ship.forge', throttle: 2 });
+      if (P.has(id)) return game.log?.say?.('info', 'That part is already yours.', { key: 'ship.forge', throttle: 2 });
+      const f = forgeable(L, id); if (!f.ok) return game.log?.say?.('warn', `Not enough carves: ${f.have} of ${f.need}.`, { key: 'ship.forge', throttle: 2 });
+      if (!game.cubes?.spend(f.cubes, 'forge')) return game.log?.say?.('warn', `The forge asks ${f.cubes} cubes.`, { key: 'ship.forge', throttle: 2 });
+      P.give(id, 'forge');
     } });
   }
 

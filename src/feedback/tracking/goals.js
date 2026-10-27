@@ -6,14 +6,16 @@
 //   goalsRules({ on, L, log, g })   (tracking/rules.js calls it)
 // ---------------------------------------------------------------------------------------
 import { BY_ID } from '../../progress/skills.js';
+import { deviceText } from '../../progress/devicewords.js';
 
 const SLOT = { near: 'Close', elsewhere: 'Elsewhere', stretch: 'Stretch' };
 const n = (x) => (Number.isFinite(x) ? Math.round(x).toLocaleString('en-US') : '-');
 
 export function goalsRules({ on, L, log, g }) {
+  const said = (text) => { const t = deviceText(text, g.input?.device || 'keyboard'); return t[0].toUpperCase() + t.slice(1); }; // (a sentence may open on a key)
   on('goals.set', (e) => log.say('system', e.first ? 'Your first 3 goals are set. Type /goals to see them.' : (e.kept ? `A new game day: ${3 - e.kept} new goal${3 - e.kept === 1 ? '' : 's'}, ${e.kept} carried over. Type /goals to see them.` : '3 new goals for this game day. Type /goals to see them.'), { key: 'goals', throttle: 5 }));
   // the first path's refill (FIRST-HOUR.md 4): a step done gives way to the next (Espada's words, 2026-10-22)
-  on('goal.next', (e) => log.say('system', e.ach ? `Next goal: ${e.ach}.${e.where ? ` ${e.where}` : ''} Type /goals for all three.` : 'A new goal is set.', { key: 'goal.next', throttle: 1 }));
+  on('goal.next', (e) => log.say('system', e.ach ? `Next goal: ${e.ach}.${e.where ? ` ${said(e.where)}` : ''} Type /goals for all three.` : 'A new goal is set.', { key: 'goal.next', throttle: 1 })); // (the where's keys said for the device last touched)
   on('goals.ask', (e) => {
     if (!e.goals?.length) { log.say('system', 'No goals are set for this game day.', { key: 'goals.ask', throttle: 1 }); return; }
     for (const g of e.goals) { const label = g.first ? 'First step' : SLOT[g.slot] || 'Goal';
