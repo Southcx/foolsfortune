@@ -21,7 +21,7 @@ export function duelRules({ on: onAny, L: ledger, log }) {
   const on = (type, fn) => onAny(type, (e) => { L = e?.practice ? quiet : ledger; try { fn(e); } finally { L = ledger; } });
   // the pull (world/duel/duelfoes.js): its look and sound say it; the log says only an escape (a plain placeholder line, Espada's to word)
   on('duel.slip', (e) => { if (e.by !== 'courier') return; L.inc('duel.slip'); log.say('battle', 'You pull away from the aberrant.', { key: 'duel.slip', throttle: 2 }); });
-  on('duel.open', (e) => { L.inc('duel.open'); log.say('battle', e.practice ? 'Strawman stands for a practice duel.' : 'An aberrant Figment seizes your mind. The duel begins.'); }); // (the practice line a placeholder, Espada's to word)
+  on('duel.open', (e) => { L.inc('duel.open'); log.say('battle', e.practice ? 'Strawman stands wrong. A practice duel begins; nothing counts.' : 'An aberrant Figment seizes your mind. The duel begins.'); }); // (the practice line Espada's, 2026-10-27)
   on('duel.break', (e) => { if (e.by !== 'courier') return; L.inc('duel.break'); log.say('battle', 'You break the Figment.', { key: 'duel.break', throttle: 1 }); });
   on('duel.undo', (e) => { if (e.by !== 'courier') return; L.inc('duel.undo'); log.say('battle', 'You take back your last move.', { key: 'duel.undo', throttle: 1 }); }); // (a placeholder line, Espada's to word)
   // duel.flee { roll, reroll, need, ok, by }: the saving throw out (progress/duel/flee.js; the plan's lines, section 15); `reroll` the first roll

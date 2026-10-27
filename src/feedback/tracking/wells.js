@@ -50,7 +50,7 @@ export function wellRules({ on, L, log }) {
     const n = NAME(e.item);
     log.say('loot', `Found: ${AN(n)} ${n}. Climb out of the Well to keep it.`, { tone: '#ffd98a' });
   });
-  on('item.get', (e) => { if (e.from === 'well') log.say('loot', `The ${NAME(e.item)} goes into your Pneuka Box. (P)`, { tone: '#ffd98a' }); });
+  on('item.get', (e) => { if (e.from === 'well') log.say('loot', `The ${NAME(e.item)} goes into your Pneuka Box.`, { tone: '#ffd98a' }); });
   on('cogitomap.get', (e) => {
     if (e.by !== 'courier') return;
     L.inc('cogitomap.get'); L.hi('cogitomap.worth', e.worth); if ((L.get('well.enter') || 0) <= 1) L.inc('cogitomap.firstrun'); // (Ariadne's Thread's feat)

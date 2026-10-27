@@ -7,6 +7,7 @@
 //   a parry         two quick taps: the blow met and turned back
 //   a combo banked  a rising pair (short, then longer)
 //   a hit taken     one heavier pulse (a crack in the vessel); the shield broken, a double; shattered, a long fall
+//   a puzzle duel's skill fired, a chain of 4 and more (stronger by its step), the all clear, a load of 5 junk and more landing on you
 //   the hull struck at sea, a heavy pulse; a line snapped, a sharp one; a fish landed, the lift's beat
 // iOS (the owner's phone) has no Vibration API: the one web haptic it has is Safari 18's switch control (`<input type="checkbox" switch>`),
 // whose toggle gives the system's tick, one strength only. So there only the four that matter most tick, told apart by count (TICKS):
@@ -28,6 +29,10 @@ const MOMENTS = {
   'courier.shatter': () => [80, 40, 160],
   'sea.hull': () => [40],
   'angle.escape': (e) => (e.why === 'snap' ? [24] : null),
+  'duel.skill': () => [14, 40, 22], // (the one-gesture duel's big play: a dive)
+  'duel.chain': (e) => (e.step >= 4 ? [10 + 4 * Math.min(6, e.step)] : null),
+  'duel.allclear': () => [14, 50, 14, 50, 40],
+  'duel.land': (e) => (e.n >= 5 ? [30 + 3 * Math.min(10, e.n)] : null), // (a heavy load landing on you)
   'angle.lift': (e) => (e.quick ? null : e.legend || e.record ? [16, 60, 16, 60, 40] : [16, 60, 30]),
 };
 const GAP = 120; // (real ms between two buzzes at the least: a burst of events is felt once)
@@ -38,6 +43,8 @@ const TICKS = {
   'move.parry': () => [0, 70], // (two: met and turned)
   'skiff.combo.bank': () => [0, 110], // (two, spaced: the bank's pair)
   'angle.escape': (e) => (e.why === 'snap' ? [0, 45, 90] : null), // (three fast: the line going)
+  'duel.skill': () => [0], // (one: a skill fired)
+  'duel.allclear': () => [0, 120, 240], // (three, spaced: the half cleared)
 };
 
 /** iOS's tick: a hidden switch's label clicked (Safari 18), fired at once so it lands inside the touch's activation. Returns

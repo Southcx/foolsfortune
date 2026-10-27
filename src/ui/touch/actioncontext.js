@@ -39,7 +39,8 @@ import { useLabel } from './cluster.js';
 import { ROOM } from '../../world/opensea/opensea.js';
 import { SEA_FIGHT } from '../../world/opensea/seafight.js';
 import { SEA_MOUNTS } from '../../progress/rail/mounts.js';
-import { LESSON } from '../../progress/duel/lesson.js';
+import { stepsOf } from '../../progress/duel/lesson.js';
+import { skillsOf } from '../../progress/duel/skills.js';
 import { legalActions } from '../../progress/duel/duel.js';
 
 /** By tool in hand: FIRE's and AIM's faces, the third (or null), and what the faces become in their other moment. */
@@ -61,7 +62,7 @@ const DUEL_MOVES = [
   ['lockheart', 'du.hold', 'hold', 'HOLD'], ['lockheart', 'du.send', 'send', 'SEND'], ['veritome', 'du.read', 'read', 'READ'],
 ];
 /** The first duel's step asked (lesson.js, PUZZLE-DUELS.md 18.3), lit on its tile: no words but the verb's own. */
-const askedOf = (s) => { const L = s?.lesson; return L && L.step < LESSON.steps.length && s.toMove === 0 ? LESSON.steps[L.step].id : null; };
+const askedOf = (s) => { const L = s?.lesson, steps = s ? stepsOf(s) : []; return L && L.step < steps.length && s.toMove === 0 ? steps[L.step].id : null; };
 const FORMS = [['so.cutlass', 'sofcutlass', 'cutlass'], ['so.rod', 'sofrod', 'rod'], ['so.hook', 'sofhook', 'hook']];
 
 /** On foot (the bindings' ctx): the strip and the belt's pair stand only there (riding the Solar Skiff, LEND, DRAW and BLINK cannot be done). */
@@ -105,7 +106,7 @@ export function duelCluster(g) {
     broken ? E('du.finish', 'finisher', 'FINISHER', { dim: !mine }) : null,
     E('du.flee', 'flee', 'FLEE', { dim: !mine }),
     E('du.undo', 'undo', 'UNDO', { dim: !mine || !s.undo?.length }), // (the last action this turn taken back: dim with nothing to take back)
-    S.form === 'hand' ? E('du.form', 'formcourier', 'COURIER', { dim: !mine, lit: askedOf(s) === 'form' }) : E('du.form', 'grab', 'HAND', { dim: !mine }),
+    s.style === 'drag' ? null : S.form === 'hand' ? E('du.form', 'formcourier', 'COURIER', { dim: !mine, lit: askedOf(s) === 'form' }) : E('du.form', 'grab', 'HAND', { dim: !mine }),
   ];
 }
 
@@ -207,6 +208,7 @@ export function stripOf(g) {
  *  hand's form; dim where the moment or the form refuses them, lit while one is held (a song sung, a read open). */
 export function duelTools(g) {
   const D = g.duel, s = D.state; if (!s) return [];
+  if (s.style === 'drag') return skillTiles(g, s); // (the one-gesture duel: the worn pair as two skills, PUZZLE-DUELS.md 22)
   const S = s.sides[0], worn = S.tools ? new Set(S.tools) : null, hand = S.form === 'hand', out = [], legal = legalKinds(s);
   const cell = D.picked || D.hover, piece = hand && cell ? s.board?.at?.(cell.x, cell.y) : null; // (on touch the picked cell: pick, then ROTATE)
   const ask = askedOf(s), fogged = !!s.rs?.fog && s.rs.fog.side !== 0; // (Read only where Dread's fog hides the foe: couriertools.js)
@@ -216,9 +218,19 @@ export function duelTools(g) {
     if ((worn && !worn.has(tool)) || (id === 'du.read' && !fogged)) continue;
     const spent = (id === 'du.tune' && !!S.tune) || (id === 'du.read' && S.read > 0); // (a song sung this turn, a read still open: lit, not again)
     const held = (id === 'du.tune' && !!S.tune) || (id === 'du.paint' && !!D.armed); // (the armed one gold: a song holding, a Paint's reach up)
-    out.push(E(id, glyph, word, { dim: hand || !D.mine || spent || !legal.has(id.slice(3)), lit: (!hand && ask === 'tool') || held }));
+    if (D.mine && !spent && !held && !legal.has(id.slice(3))) continue; // (a move the kernel would refuse now is not on the glass: Dovina's ruling, 2026-10-27)
+    out.push(E(id, glyph, word, { dim: hand || !D.mine || spent, lit: (!hand && ask === 'tool') || held }));
   }
   return out;
+}
+
+/** The tool's key in the duel's bindings, by the move it owned (the session arms a skill by any of its tool's keys). */
+const SKILL_TILE = { psygun: ['du.shoot', 'psfire'], sondelass: ['du.grab', 'throw'], dreamvane: ['du.drill', 'drill'], soulbrush: ['du.paint', 'paint'], crucibelle: ['du.tune', 'tune'], lockheart: ['du.hold', 'hold'], veritome: ['du.read', 'read'] };
+/** The one-gesture duel's two skill tiles: the skill's label, its rim the charge filling to `need`, lit when full or armed, dim on the
+ *  foe's turn (Puzzle & Dragons' skill gauge on its portrait). */
+function skillTiles(g, s) {
+  const D = g.duel, ask = askedOf(s); return skillsOf(s, 0).map((K) => { const [id, glyph] = SKILL_TILE[K.tool] || ['du.shoot', 'psfire'];
+    return E(id, glyph, K.label.toUpperCase(), { charge: Math.min(1, K.charge / K.need), lit: (K.ready && !!D.mine) || D.armedSkill === K.tool || (ask === 'skill' && K.ready), dim: !D.mine || !K.ready }); });
 }
 
 /** The kinds the kernel would take from the Courier's side now (legalActions, progress/duel/duel.js), asked once a change of the turn. */

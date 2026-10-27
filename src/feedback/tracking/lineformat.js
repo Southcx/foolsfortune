@@ -4,10 +4,14 @@
 // kind). Moved out of tracking.js whole, unchanged. Pure: nothing here says or counts.
 //
 //   plural(n, word)   an(word)   clock(seconds)   fx(number, decimals)   CARD(id)   ITEM(id)   KIND(kind)
+//   said(g, text)   a line with {id}s (core/bindings.js) said as the device last touched calls each: a pad or touch with no word for
+//   one falls back to the key's, and a line that opens on one is capitalised (Espada's device words, 2026-10-27)
 // ---------------------------------------------------------------------------------------
 import { CARD as VCARD } from '../../tools/veritome/cards.js';
 import { itemOf } from '../../pneuka/items.js';
+import { deviceWord } from '../../progress/devicewords.js';
 
+export const said = (g, text) => { const dev = g?.input?.device || 'keyboard', t = String(text).replace(/\{([a-zA-Z0-9]+)\}/g, (m, id) => deviceWord(id, dev) ?? deviceWord(id, 'keyboard') ?? id); return t[0].toUpperCase() + t.slice(1); };
 export const fx = (v, d = 2) => Number(v).toFixed(d);
 export const plural = (n, w) => `${n} ${n === 1 ? w : `${w.replace(/([^aeiou])y$/, '$1ie')}s`}`; // (slip jellies, not jellys: QA-A)
 export const an = (w) => (/^[aeiou]/i.test(w) ? 'an ' : 'a ') + w;

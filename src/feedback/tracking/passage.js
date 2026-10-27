@@ -19,10 +19,10 @@ export function passageRules({ on, L, log }) {
   on('passage.posted', (e) => { if (e.by === 'courier') log.say('explore', `Letty posts a bounty on ${named(e.type)} ahead: ${e.cubes} cubes.`); });
   on('passage.bounty', (e) => { if (e.by !== 'courier') return; L.inc('passage.bounty'); log.say('gain', `Bounty paid: ${e.cubes} cubes.`); });
   on('rutter.sell', (e) => { if (e.by !== 'courier') return; L.inc('rutter.sell'); log.say('gain', `You sell Letty your route map for ${e.cubes} cubes.`); });
-  on('rutter.buy', (e) => { if (e.by !== 'courier') return; L.inc('rutter.buy'); log.say('gain', `You buy today's route map of this route for ${e.cubes} cubes.`); });
-  on('passage.dive', (e) => { if (e.by === 'courier') log.say('explore', 'You follow it down. The next section is sailed below.'); });
+  on('rutter.buy', (e) => { if (e.by !== 'courier') return; L.inc('rutter.buy'); log.say('gain', `You buy this game day's route map of this route for ${e.cubes} cubes.`); });
+  on('passage.dive', (e) => { if (e.by === 'courier') log.say('explore', 'You follow it down: the next section is sailed below the surface.'); });
   on('passage.crew', (e) => { if (e.by === 'courier') { L.inc('passage.crew'); log.say('explore', 'You take them aboard.'); } });
-  on('passage.ghost', (e) => { if (e.by === 'courier') log.say('explore', e.score != null ? `Your ghost sails beside you. Beat ${e.score} over the next section.` : 'The glass is empty: no double to race today.'); });
+  on('passage.ghost', (e) => { if (e.by === 'courier') log.say('explore', e.score != null ? `Your ghost sails beside you. Beat ${e.score} over the next section.` : 'The glass is empty: no double to race this game day.'); });
   on('passage.adrift', (e) => { L.inc('passage.adrift'); log.say('warn', e.relaid && e.types?.length ? `Your bunker is dry. You are adrift: the current takes you on to ${e.types.map(named).join(', then ')}.` : 'Your fuel is gone. You are adrift: the current takes you.'); });
   on('charybdis.rise', (e) => log.say('combat', e.feel ? `Charybdis rises, in ${e.feel}.` : 'Charybdis rises.')); // (Espada's line, the glossary's)
   on('charybdis.dive', () => log.say('combat', 'Charybdis dives.')); // (Espada's, LORE.md: its first dive only)

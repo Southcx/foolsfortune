@@ -149,6 +149,14 @@ their Clayese scales; the System's skill and achievement jingles (the chime and 
   (`sfx.musicGrid`): a chain climbs the pentatonic step by step and louder, a weak colour's hit with a brighter edge; a clear is its
   feeling's step, so the Lantern Wisp's four clear as a 6/9 chord; an all clear blooms the chord up; a refund a coin's two notes; the
   turn a woodblock, high yours, low the foe's; an ember cooling hisses and sets; the idle hint a breath of the fifth (`{ type: 'hint' }`).
+- **The Duel** (`music/duel.js`, `DUEL`; the sound test's `duel`): a puzzle duel's own cue, G major at 132, since the gems are its
+  notes (each feeling a step of G's major pentatonic, which is the FIVE's and the ANSWER's own): on your turn the Answer climbs on the
+  marimba, on the foe's the Five falls on dark strings and the backbeat holds its breath. Sections by the Line (`hearDuel`): EVEN near the
+  middle, AHEAD with it well onto the foe's half, PINCH (E minor, the same five notes) with your half nearly gone or six junk waiting; a
+  chain's heat (`duel.chain`) lays the hats and the 808 in at 3, a crash and the supersaw at 5, falling a step a bar. Strawman's practice
+  (`game.duel.practice`) stays in PRACTICE: no drums, no pinch, no peak. Measured: even -18.5 dB RMS, ahead -17.9, pinch -23.2 (peaks
+  -3), practice -29.3. The one-gesture duel's skills: a dive and the tool's voice, a ready chime, Shot's sweep, Vein's run, Tune's bell.
+  A cascade's clears are ducked under its chain step (deeper the higher it climbs; a plain match stays bright), so it reads as a climb.
 - **Levels:** each section has a `gain`. Rendered offline (`scripts/render_score.mjs`) and measured: a quiet opening or a jingle about
   -31 dB RMS, a theme's body -24 to -29, a fight -17 to -23; a climax about twice a verse.
 - **The low end:** under about 45% of the energy below 120 Hz (a looser limit is allowed for a hit). A sustained sub at full level

@@ -7,6 +7,10 @@
 // by the view (game.duelView, Calissa's: the board, the pieces, the domains' clash) before the next is taken. The duel ends on the Line,
 // a full side, the finisher or the turn cap; losing is a shatter (the owner, 2026-10-19), winning drains the Figment and mends it, and a flee
 // that gets away (flee.js, section 15) leaves you both whole.
+// A PRACTICE foe (`c.practice`: Strawman made aberrant at the sparring circle's lectern, South 2026-10-27) opens the same duel, counting
+// nothing: every duel.* event carries `practice: true` (tracking skips it), no pool is gained or spent, a loss shatters no one and a win
+// drains nothing; a fixture (`c.rooted`, or any practice foe) is not moved, the board standing between at the distance the pull left.
+// After any duel its foe pulls again only once you have stepped past the pull's far edge (duelfoes.js `rearm`).
 //
 // The one-gesture duel (DUEL.style 'drag', the default since 2026-10-27, PUZZLE-DUELS.md 22; South: "anything and everything that would
 // improve this module"): the hand's DRAG is the only board verb (a press onto a neighbour is a drag of one step), there are no forms and
@@ -64,6 +68,8 @@ export class DuelSession {
     this.press = null; this.path = []; this.yieldT = 0; this.face = 'E'; this.hover = null; this.swipe = null;
   }
   get view() { return this.game.duelView || null; }
+  /** A duel.* event on the bus, `practice` on it in a practice duel (tracking skips those: Strawman never counts). */
+  emit(name, p) { this.game.events?.emit(name, this.practice ? { ...p, practice: true } : p); }
   /** Your side's mover (side 0) while it is your turn. */
   get mine() { return this.state && this.state.toMove === 0 && this.state.winner === null; }
 
@@ -84,6 +90,7 @@ export class DuelSession {
     this.state = newDuel({ ruleset, seed: Math.floor(duelRand() * 2 ** 31), forms: ['hand', 'courier'], pool: [this.startPool, 30], tools: [tools, []],
       luck: [g.ledger ? Math.min(2, Math.floor(luckOf(g.ledger).level / 10)) : 0, 0], // (Luck's sway on a flee, 0..2: a tenth of its level, as ruled)
       rerolls: [g.rerolls?.left() ?? 0, 0], lesson: lessonDue(g.ledger) }); // (the first duel a lesson until one is won: lesson.js, PUZZLE-DUELS 18.3) // (Luck's re-rolls left this game day: a failed Flee is thrown again, progress/duel/flee.js)
+    this.practice = !!c.practice; // (a practice foe, Strawman's: every duel.* event says so and counts nothing; no pool, no shatter, no drain)
     this.foe = c; this.feeling = feeling; this.active = true; this.busy = false; this.botT = -1; this.press = null; this.path = []; this.yieldT = 0; this.swipe = null; this.shown = null; this.picked = null; this.hinted = null; this.idleT = 0;
     for (const t of g.belt?.tools || []) if (t.wants || t.drawT > 0) t.stow(); // (nothing in the hands: the board is the fight)
     g.techs?.get('carry')?.drop?.();
@@ -91,7 +98,7 @@ export class DuelSession {
     this.pin(c); // (it is in the duel, not the world, until it ends: its casts stopped, its mind held)
     // under the seam the two are set apart along the line between them, and the board stands broadside between, your half nearest you
     const facing = P.pos.clone().sub(c.pos).setY(0); if (facing.lengthSq() < 1e-4) facing.set(0, 0, 1); facing.normalize();
-    c.pos.copy(P.pos).addScaledVector(facing, -(this.flanks ? DUEL_ROOM.apartTouch : DUEL_ROOM.apart)).setY(c.pos.y + (P.pos.y - c.pos.y) * 0.5); c.rb?.setNextKinematicTranslation?.(c.pos);
+    if (!c.rooted && !c.practice) { c.pos.copy(P.pos).addScaledVector(facing, -(this.flanks ? DUEL_ROOM.apartTouch : DUEL_ROOM.apart)).setY(c.pos.y + (P.pos.y - c.pos.y) * 0.5); c.rb?.setNextKinematicTranslation?.(c.pos); } // (a fixture, Strawman in its circle, stays put: the board stands between at the distance the pull left)
     if (typeof c.yaw === 'number') { c.yaw = Math.atan2(facing.x, facing.z); c.vel?.set?.(0, 0, 0); if (c.root) c.root.rotation.y = c.yaw; } // (turned to face you: a pinned body keeps the yaw it had, and a Wisp turns only toward its drift, now nothing: the owner's phone, 2026-10-27)
     const at = P.pos.clone().lerp(c.pos, 0.5).setY(P.pos.y);
     this.at = at; this.facing = facing;
@@ -103,7 +110,7 @@ export class DuelSession {
     g.cinema?.shot('duel', { pos: shot.pos, look: shot.look, bars: 0, ease: 4 });
     document.exitPointerLock?.(); document.body.classList.add('duel'); // (the cursor is the hand: index.html hides the pointer over the canvas)
     this.intent();
-    g.events?.emit('duel.open', { kind: c.kind, feeling, by: 'courier' });
+    this.emit('duel.open', { kind: c.kind, feeling, by: 'courier' });
   }
 
   /** The pocket (the owner, 2026-10-20; PUZZLE-DUELS.md 16.1: "a special pocket dimension, a one-enemy Well"): nothing outside enters.
@@ -309,7 +316,7 @@ export class DuelSession {
     if (!ev) { sfx.dryFire?.(); return; }
     const V = this.view;
     if (typeof V?.resync === 'function') V.resync(this.state); else V?.open?.({ state: this.state, foe: this.foe, at: this.at, facing: this.facing });
-    this.game.events?.emit('duel.undo', { left: ev[0].left, by: 'courier' });
+    this.emit('duel.undo', { left: ev[0].left, by: 'courier' });
     this.run(ev);
   }
   /** Events played by the view (awaited: nothing is taken meanwhile), then the forecast and the end. */
@@ -317,16 +324,16 @@ export class DuelSession {
     this.busy = true;
     if (events.some((e) => e.type === 'duel.finisher')) this.drainCamera(); // (the finisher is the data drain: its own camera, cine/sequences.js)
     for (const e of events) {
-      if (e.type === 'duelBreak') this.game.events?.emit('duel.break', { kind: this.foe?.kind, depth: e.depth, by: e.side === 1 ? 'courier' : 'creature' }); // (the room maps a side to `by`: PUZZLE-DUELS.md 13.1)
+      if (e.type === 'duelBreak') this.emit('duel.break', { kind: this.foe?.kind, depth: e.depth, by: e.side === 1 ? 'courier' : 'creature' }); // (the room maps a side to `by`: PUZZLE-DUELS.md 13.1)
       if (e.type === 'flee' && e.ok && e.roll === 20) this.atOnce = true; // (a natural 20: the log says "You flee at once." instead)
       // the one-gesture duel's big moments on the bus (PUZZLE-DUELS.md 22.4): the haptics and the sound hear them (audio/haptics.js,
       // Wanda's), the ledger counts them (tracking/duel.js)
-      if (e.side === 0 && e.type === 'chain' && e.step >= 2) this.game.events?.emit('duel.chain', { step: e.step, weak: !!e.weak, by: 'courier' });
-      if (e.side === 0 && e.type === 'skill') this.game.events?.emit('duel.skill', { tool: e.tool, by: 'courier' });
-      if (e.side === 0 && e.type === 'charge' && e.ready) this.game.events?.emit('duel.charge', { tool: e.tool, by: 'courier' });
-      if (e.side === 0 && e.type === 'land' && e.n) this.game.events?.emit('duel.land', { n: e.n, kind: e.kind, by: 'creature' });
-      if (e.side === 0 && e.type === 'allclear') this.game.events?.emit('duel.allclear', { n: e.n, by: 'courier' });
-      if (e.type === 'flee') this.game.events?.emit('duel.flee', { roll: e.roll, reroll: e.reroll ?? null, need: e.need, ok: e.ok, by: e.side === 0 ? 'courier' : 'creature' });
+      if (e.side === 0 && e.type === 'chain' && e.step >= 2) this.emit('duel.chain', { step: e.step, weak: !!e.weak, by: 'courier' });
+      if (e.side === 0 && e.type === 'skill') this.emit('duel.skill', { tool: e.tool, by: 'courier' });
+      if (e.side === 0 && e.type === 'charge' && e.ready) this.emit('duel.charge', { tool: e.tool, by: 'courier' });
+      if (e.side === 0 && e.type === 'land' && e.n) this.emit('duel.land', { n: e.n, kind: e.kind, by: 'creature' });
+      if (e.side === 0 && e.type === 'allclear') this.emit('duel.allclear', { n: e.n, by: 'courier' });
+      if (e.type === 'flee') this.emit('duel.flee', { roll: e.roll, reroll: e.reroll ?? null, need: e.need, ok: e.ok, by: e.side === 0 ? 'courier' : 'creature' });
     }
     const done = () => { this.busy = false; this.botRun = false; if (!this.active) return; if (this.state.winner !== null) this.finish(); else this.intent(); };
     const p = this.view?.play?.(events);
@@ -383,15 +390,17 @@ export class DuelSession {
     this.view?.close?.(); g.god?.hideCursor?.();
     g.cinema?.unshot('duel'); document.body.classList.remove('duel');
     if (g.input?.enabled) g.input.requestLock?.();
-    const pool = g.lachryma, d = Math.round((s?.sides[0].pool ?? this.startPool) - this.startPool);
+    const pool = g.lachryma, d = this.practice ? 0 : Math.round((s?.sides[0].pool ?? this.startPool) - this.startPool);
     if (pool && d > 0) pool.gain(d, 'duel'); else if (pool && d < 0) pool.spend(-d, 'duel');
     this.unpin(c); this.release();
     const atOnce = how === 'fled' && this.atOnce; this.atOnce = false;
-    g.events?.emit('duel.end', { kind: c?.kind, won, how, turns: s ? Math.ceil(s.ply / 2) : 0, ...(atOnce ? { atOnce } : {}), by: won || how === 'fled' ? 'courier' : 'creature' });
-    if (won && c?.alive) { c.dataBugMended = true; c.aberrant = false; g.creatures.strike(c, c.pos.clone().setY(c.pos.y + (c.height ?? 1)), _v.set(0, 1, 0), 999, 'drain', 'courier'); }
+    this.emit('duel.end', { kind: c?.kind, won, how, turns: s ? Math.ceil(s.ply / 2) : 0, ...(atOnce ? { atOnce } : {}), by: won || how === 'fled' ? 'courier' : 'creature' });
+    if (g.duelFoes && c) g.duelFoes.rearm = c; // (no pull from it again until you have stepped past the pull's far edge)
+    if (this.practice) { if (c) c.emo = 0; } // (practice: both whole, nothing taken, it stands as it was)
+    else if (won && c?.alive) { c.dataBugMended = true; c.aberrant = false; g.creatures.strike(c, c.pos.clone().setY(c.pos.y + (c.height ?? 1)), _v.set(0, 1, 0), 999, 'drain', 'courier'); }
     else if (how === 'fled') { if (c) c.emo = 0; } // (away: both whole, no reward; it keeps its aberrance, calm, and drifts off)
     else if (!won) { if (c) c.emo = 0; g.death?.begin?.({ why: 'duel', by: 'creature' }); }
-    this.state = null; this.foe = null;
+    this.state = null; this.foe = null; this.practice = false;
   }
 }
 

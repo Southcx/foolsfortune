@@ -12,6 +12,7 @@
 //
 //   raceRules({ on, L, log })   (feedback/tracking/rules.js calls it)
 // ---------------------------------------------------------------------------------------
+import { said } from './lineformat.js';
 
 const clock = (s) => { const m = Math.floor(s / 60), r = s - m * 60; return `${m}:${r < 10 ? '0' : ''}${r.toFixed(2)}`; };
 const signed = (s) => `${s >= 0 ? '+' : '−'}${Math.abs(s).toFixed(2)}`;
@@ -26,8 +27,8 @@ const WEATHER_SAYS = {
   gall: 'The miasma: the air is thick and the sand clings.', grief: 'The long rain: the sand is wet, fast and slick; the sun is dim.', dread: 'The pall: fog over the course.',
 };
 
-export function raceRules({ on, L, log }) {
-  on('raceway.enter', () => log.say('info', 'The Raceway. Three tracks round the hub: the Sun Circuit to the south-west, the Gorge Run to the south-east, the Coaster to the north-east. F at a track\'s start pillar begins a race of three laps. Y brings the Solar Skiff.', { key: 'rw.enter', throttle: 30 }));
+export function raceRules({ on, L, log, g }) {
+  on('raceway.enter', () => log.say('info', said(g, 'The Raceway. Three tracks round the hub: the Sun Circuit to the south-west, the Gorge Run to the south-east, the Coaster to the north-east. {use} at a track\'s start pillar begins a race of three laps. {skiff} brings the Solar Skiff.'), { key: 'rw.enter', throttle: 30 }));
   on('raceway.pit', (e) => { L.inc('raceway.pit'); log.say('warn', 'The antlion takes you. The sand slides to its jaws: keep your speed on the slope.', { key: 'rw.pit', throttle: 4 }); });
   on('race.start', (e) => {
     if (e.track === 'made') return; // (a made track's: tracking/trackeditor.js, never the park's counts)
