@@ -34,6 +34,7 @@ import { MIRACLES, EPICS, GOD_POWERS, POWER_EVENTS } from './godpowers.js';
 import { racewayAchievements } from './raceachievements.js';
 import { sealAchievements } from './sealachievements.js';
 import { seaAchievements } from './seaachievements.js';
+import { logAchievements } from './logachievements.js';
 import { spreadAchievements } from './spreadachievements.js';
 const FOUNDING_SHELLS = CASTER_SHELLS.filter((r) => r.family === 'founding').map((r) => r.id);
 
@@ -53,7 +54,7 @@ export const CATS = [
   { id: 'battle', name: 'BATTLE', subs: ['Slip Jellies', 'Reprogramming', 'Out Cold', 'The Five Forces', 'The Crucibelle', 'The Lockheart', 'The Crowned', 'The Throwing Room'] },
   { id: 'explore', name: 'EXPLORATION', subs: ['Charting', 'Places', 'Shrines', 'The Dreamvane', 'The Wells', 'Folk', 'The Finds', 'Digging', 'The Seal Book'] },
   { id: 'emocean', name: 'THE EMOCEAN', subs: ['Sailing', 'Sea Stages', 'Crude', 'The Open Sea'] },
-  { id: 'collect', name: 'COLLECTION', subs: ['Logged'] },
+  { id: 'collect', name: 'COLLECTION', subs: ['Logged', 'The Collection Log'] },
   { id: 'psyche', name: 'THE DOMAINS', subs: ['Levels'] },
   { id: 'garden', name: 'THE SPIRIT GARDEN', subs: ['The Press', 'The Garden', 'The Mycelium', 'The Spirits', 'The Firings', "The Garden's Life"] },
   { id: 'sky', name: 'THE SKY', subs: ['Weather', 'The Day'] },
@@ -645,7 +646,7 @@ export function buildAchievements(game) {
   C('os3', 'explore', 'Digging', 4, 'collect', 'Broken English', 'Find every ostracon.', 'ostracon.found', 16);
   C('os4', 'explore', 'Digging', 3, 'mechanic', 'Set in Stone', 'Read a stele.', 'stele.read', 1);
   F('os5', 'explore', 'Digging', 5, 'collect', 'Epigrapher', 'Read both stelae and find every ostracon: every word glossed.', (L) => Math.min(16, L.get('ostracon.found')) + 3 * Math.min(2, L.get('stele.read')), 22, { title: 'Epigrapher' });
-  seaAchievements({ C, F }); // (the open sea's, sea1 to sea13: progress/seaachievements.js)
+  seaAchievements({ C, F }); logAchievements({ F }); // (the open sea's: progress/seaachievements.js; the collection log's: logachievements.js)
   // terraforming and the spirits' games (SPIRIT-GARDEN.md section 7, item 26): what the garden's new verbs are worth (names placeholders for Espada's)
   F('tf1', 'garden', 'The Garden', 2, 'collect', 'Five Grounds', 'Paint all five grounds: moss, ash, loam, slate and silt.', (L) => ['moss', 'ash', 'loam', 'slate', 'silt'].filter((k) => L.get(`garden.paint.${k}`) >= 1).length, 5);
   C('tf2', 'garden', 'The Garden', 1, 'count', 'Wellspring', 'Set a spring in your Inner Realm.', 'garden.water.spring', 1);
