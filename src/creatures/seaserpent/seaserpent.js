@@ -234,7 +234,7 @@ export class SeaSerpents {
     if (!c.alive) return 'blocked';
     const i = point ? this.partAt(c, point) : 0;
     if (!this.exposed(c, i)) return 'blocked'; // (under the water nothing reaches it)
-    const dmg = power * (i === 0 ? 3 : 0.5); // (the head the weak point, x3; the coils x0.5: seaserpent.js)
+    const dmg = power * (i === 0 ? 3 : 0.5) * (c.open > 0 ? 1.5 : 1); // (the head the weak point, x3; the coils x0.5: seaserpent.js; held open by a flash x1.5: seamounts.js)
     c.hp -= dmg; c.flash = 1; c.brain.signal();
     c.body?.hit(i === 0 ? 'head' : 'coil', Math.min(1, 1 - c.hp / c.maxHp));
     if (by === 'courier') { const f = c.mem.ensure(this.game.player, 'courier'); f.grudge = Math.min(1, f.grudge + 0.05 * dmg); f.aware = 1; }
@@ -284,7 +284,7 @@ export class SeaSerpents {
       c.want.copy(_a).multiplyScalar(d > 1 ? (SEA_SERPENT.speed * 1.6) / d : 0);
       if (A.t <= 0.35) c.goUnder = 0;
       if (A.t > 0) return;
-      const hit = !!ship && (ship.hullDist?.(A.at) ?? ship.pos.distanceTo(_b.copy(A.at).setY(ship.pos.y))) <= B.ram + 0.5; // (the ring on any of the hull, not its middle)
+      const hit = !(c.tether > 0) && !!ship && (ship.hullDist?.(A.at) ?? ship.pos.distanceTo(_b.copy(A.at).setY(ship.pos.y))) <= B.ram + 0.5; // (the ring on any of the hull, not its middle; a harpooned beast's ram is blunted: world/opensea/seamounts.js)
       c.spine[0].p.x = A.at.x; c.spine[0].p.z = A.at.z; c.under = 0.3; c.goUnder = 0; c.wantRear = 1; // (it breaks the surface there)
       this.finish(c, 'ram', hit);
       c.attack = null; g.creatures.unwind(c);
