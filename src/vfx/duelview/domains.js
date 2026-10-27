@@ -94,7 +94,7 @@ vec3 srgb(vec3 c) { return pow(c, vec3(2.2)); }
 void main() {
   float sd = dot(vW - uPlaneP, uPlaneN); // (the Line's plane: below nought the Courier's ground, above it the foe's)
   float t = uT;
-  if (uMode > 0.5) { // ---- the slab: the board's face (20 x 20 cells), split at the Line
+  if (uMode > 0.5) { // ---- the slab: the board's face (its ruleset's w x h cells, uGrid), split at the Line
     vec2 c = vec2(vUv.x * uGrid.x, (1.0 - vUv.y) * uGrid.y);
     float fwx = max(fwidth(c.x), 1e-4), k = smoothstep(-fwx, fwx, c.x - uLine), yy = c.y / uGrid.y;
     float ph = labPhase(vW * 0.6, vView);

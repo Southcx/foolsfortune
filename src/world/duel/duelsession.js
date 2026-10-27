@@ -74,7 +74,7 @@ export class DuelSession {
     this.state = newDuel({ ruleset, seed: Math.floor(duelRand() * 2 ** 31), forms: ['hand', 'courier'], pool: [this.startPool, 30], tools: [tools, []],
       luck: [g.ledger ? Math.min(2, Math.floor(luckOf(g.ledger).level / 10)) : 0, 0], // (Luck's sway on a flee, 0..2: a tenth of its level, as ruled)
       rerolls: [g.rerolls?.left() ?? 0, 0], lesson: lessonDue(g.ledger) }); // (the first duel a lesson until one is won: lesson.js, PUZZLE-DUELS 18.3) // (Luck's re-rolls left this game day: a failed Flee is thrown again, progress/duel/flee.js)
-    this.foe = c; this.feeling = feeling; this.active = true; this.busy = false; this.botT = -1; this.press = null; this.path = []; this.yieldT = 0; this.swipe = null; this.shown = null;
+    this.foe = c; this.feeling = feeling; this.active = true; this.busy = false; this.botT = -1; this.press = null; this.path = []; this.yieldT = 0; this.swipe = null; this.shown = null; this.picked = null;
     for (const t of g.belt?.tools || []) if (t.wants || t.drawT > 0) t.stow(); // (nothing in the hands: the board is the fight)
     g.techs?.get('carry')?.drop?.();
     P.vel.set(0, 0, 0);
@@ -152,9 +152,11 @@ export class DuelSession {
       this.show(this.press ? actionOfPath(this.path) : null);
       if (this.press && !input.isDown('Mouse0')) {
         const P = this.path; this.press = null; this.path = []; this.view?.select?.([]); this.show(null);
-        const a = actionOfPath(P); if (a) return this.take(a);
+        const a = actionOfPath(P); if (a) { this.picked = null; return this.take(a); }
+        if (this.touch && P.length === 1) return this.pickTap(P[0]); // (a tap, on touch: pick, then place)
       }
-      if (input.wasPressed('KeyR') && cell) return this.take({ kind: 'rotate', at: [cell.x, cell.y] });
+      const at = this.picked || cell; // (on touch the picked cell, else the one under the pointer)
+      if (input.wasPressed('KeyR') && at) return this.take({ kind: 'rotate', at: [at.x, at.y] });
       if (input.wasPressed('Mouse2') && cell) return this.take({ kind: 'drop', at: [cell.x, cell.y] });
       if (input.wasPressed('KeyF')) return this.take({ kind: 'finisher' });
       return;
@@ -177,7 +179,11 @@ export class DuelSession {
       return;
     }
     if (!sameCell(cell, this.shownAt)) { this.shownAt = cell; const path = cell && !onMe ? this.runTo(cell) : null; this.show(path ? { kind: 'run', path } : null); } // (the run under the pointer, before it is chosen)
-    if (input.wasPressed('Mouse0') && cell) { const path = this.runTo(cell); if (path) { this.show(null); this.shownAt = null; return this.take({ kind: 'run', path }); } }
+    if (input.wasPressed('Mouse0') && cell) {
+      const path = this.runTo(cell);
+      if (path && this.touch && !sameCell(cell, this.picked)) { this.picked = cell; this.shownAt = cell; this.view?.select?.([cell]); this.show({ kind: 'run', path }); return; } // (a tap marks the run; a second on it goes)
+      if (path) { this.picked = null; this.view?.select?.([]); this.show(null); this.shownAt = null; return this.take({ kind: 'run', path }); }
+    }
     for (const [k, kind] of Object.entries(TOOL_KEYS)) if (input.wasPressed(k)) {
       if (kind === 'drill') return this.take({ kind, dir: this.face });
       const under = cell && s.board.at(cell.x, cell.y)?.colour; // (the colour under the pointer, when it is on a gem)
@@ -191,6 +197,15 @@ export class DuelSession {
       return this.take({ kind });
     }
   }
+  /** On touch a cell is picked, then placed (a thumb covers a 15 px cell): the first tap rings it, a tap on a neighbour swaps with it, a
+   *  tap on it again lets it go, a tap elsewhere picks that one instead. */
+  pickTap(cell) {
+    const p = this.picked;
+    if (p && Math.abs(cell.x - p.x) + Math.abs(cell.y - p.y) === 1) { this.picked = null; this.view?.select?.([]); this.show(null); return this.take({ kind: 'swap', at: [p.x, p.y], dir: dirOf(p, cell) }); }
+    this.picked = p && sameCell(p, cell) ? null : cell;
+    this.view?.select?.(this.picked ? [this.picked] : []);
+  }
+  get touch() { return this.game.input?.device === 'touch'; }
   /** The way from the Courier to `cell` when it is on the Courier's row or column, else null. */
   lineTo(cell) {
     const at = this.state.sides[0].at; if (!cell || !at || (cell.x === at[0] && cell.y === at[1])) return null;
@@ -207,6 +222,7 @@ export class DuelSession {
 
   /** One of your actions: refused (a dry tick) or played, then the forecast drawn again. */
   take(a) {
+    this.picked = null;
     const ev = act(this.state, a);
     if (!ev) { sfx.dryFire?.(); this.view?.refuse?.(a); return; }
     this.run(ev);

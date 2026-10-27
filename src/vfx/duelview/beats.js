@@ -247,7 +247,7 @@ export class DuelBeats {
 
   /** The orbs shed onto a side, thrown from the broken side's body over the Line in arcs. */
   shower(it) {
-    const V = this.view, P = V.pieces, src = P.bodyAt(1 - it[0].side), sx = src ? src.cx : V.state.board.w / 2, sy = src ? src.cy : 10;
+    const V = this.view, P = V.pieces, src = P.bodyAt(1 - it[0].side), sx = src ? src.cx : V.state.board.w / 2, sy = src ? src.cy : V.state.board.h / 2;
     const q = it.map((e, k) => { const v = P.add('orb', { id: e.id, side: e.side }, e.at[0], e.at[1]); v.hidden = true; return { e, v, d: k * 0.05 }; });
     return { events: it, dur: 0.55 + it.length * 0.05 + DUEL_VIEW.ma, step: (u, age) => { for (const r of q) {
       const f = Math.max(0, Math.min(1, (age - r.d) / 0.5)); r.v.hidden = age < r.d; const s = sm(f);
