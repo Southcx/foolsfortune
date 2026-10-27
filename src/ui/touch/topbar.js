@@ -61,6 +61,7 @@ export class TouchTopBar {
     this.shelf = shelf();
     for (const id of [...TOP_BAR.ids, 'pause']) this.tiles.set(id, new TouchTile(`top.${id}`, { size: TILE.small, glyph: id, word: null, onPress: (_, down, inside) => { if (!down && inside) { if (id !== 'pause') this.fold(true); this.open(id); } } }));
     this.tiles.set('menu', new TouchTile('top.menu', { size: TILE.small, glyph: 'menu', word: null, onPress: (_, down, inside) => { if (!down && inside) this.fold(!this.folded); } }));
+    this.tiles.set('log', new TouchTile('top.log', { size: TILE.small, glyph: 'chat', word: null, onPress: (_, down, inside) => { const L = game.hudLayout?.touchLog; if (!down && inside && L) L.fold(!L.folded); } })); // (the log's fold on the bar beside MENU: South, 2026-10-27, it stood alone under the bar)
   }
 
   /** Folded to the MENU tab (and PAUSE), or the row opened. */
@@ -72,7 +73,7 @@ export class TouchTopBar {
     this.relayout();
   }
   /** What stands now, in order: MENU, the windows while open, PAUSE. */
-  get items() { return this.folded ? ['menu', 'pause'] : ['menu', ...this.ids, 'pause']; }
+  get items() { return this.folded ? ['menu', 'log', 'pause'] : ['menu', 'log', ...this.ids, 'pause']; }
 
   /** A window asked for: said on the bus, handed to the shell, and to the listener. */
   open(what) {
@@ -90,7 +91,7 @@ export class TouchTopBar {
     const one = n * s + (n - 1) * G + (TOP_BAR.pauseGap - G) + 16;
     const per = one <= A.w ? n : Math.max(1, Math.floor((A.w - 16 + G) / (s + G))), rows = Math.ceil(n / per), F = TILE.foot;
     const W = per === n ? one : per * s + (per - 1) * G + 16, H = rows * (s + F) + (rows - 1) * G + 8;
-    const all = this.ids.length + 2, full = all * s + (all - 1) * G + (TOP_BAR.pauseGap - G) + 16; // (folded, the tab stands where the opened row's MENU does: the row unfolds from it)
+    const all = this.ids.length + 3, full = all * s + (all - 1) * G + (TOP_BAR.pauseGap - G) + 16; // (folded, the tab stands where the opened row's MENU does: the row unfolds from it)
     const x0 = per === n ? A.x + (A.w - (this.folded && full <= A.w ? full : W)) / 2 : A.x, y0 = rows === 1 ? A.y + (Math.min(A.h, TOP_BAR.h) - H) / 2 : A.y;
     Object.assign(this.shelf.style, { transform: `translate(${Math.round(x0)}px, ${Math.round(y0)}px)`, width: `${Math.round(W)}px`, height: `${Math.round(H)}px` });
     this.shelf.style.setProperty('--h', `${Math.min(H, s + F + 8)}px`);
@@ -110,7 +111,7 @@ export class TouchTopBar {
     if (!on) return;
     if (!this.folded && now - this.touched > TOP_BAR.fold) this.fold(true); // (left open and untouched: folded again)
     for (const id of this.items) {
-      const t = this.tiles.get(id); let lit = false; try { lit = id === 'menu' ? !this.folded : !!TOP_BAR.open[id]?.(g); } catch { /* not there */ }
+      const t = this.tiles.get(id); let lit = false; try { lit = id === 'menu' ? !this.folded : id === 'log' ? !g.hudLayout?.touchLog?.folded : !!TOP_BAR.open[id]?.(g); } catch { /* not there */ }
       if (t.state.pressed) this.touched = now;
       t.set({ lit: lit || t.state.pressed }); t.update(now);
     }

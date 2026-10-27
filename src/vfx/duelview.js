@@ -159,7 +159,7 @@ export class DuelView {
   touchShot(B, tan) {
     const L = this.game.hudLayout, V = L.view, A = L.areas, gap = 8; if (!V?.w || !V?.h) return null;
     const tiles = typeof document === 'undefined' ? [] : [...document.querySelectorAll('.tt:not(.hidden)')].map((e) => e.getBoundingClientRect()).filter((r) => r.width > 0 && r.left > V.w / 2 && r.top > A.topBar.y + A.topBar.h); // (the controls as they stand, not the rooms reserved for them: the strip's room reaches half across)
-    const lefts = [L.box?.('sight'), L.box?.('lachrimeterTube'), A.cluster, ...tiles.map((r) => ({ x: r.left, w: r.width }))].filter((r) => r && r.w > 0).map((r) => r.x);
+    const lefts = [L.box?.('lachrimeterTube'), A.cluster, ...tiles.map((r) => ({ x: r.left, w: r.width }))].filter((r) => r && r.w > 0).map((r) => r.x);
     const x0 = L.bounds.x, x1 = Math.min(L.bounds.x + L.bounds.w, ...lefts) - gap;
     const logEl = typeof document === 'undefined' ? null : document.getElementById('chatlog')?.getBoundingClientRect(), logB = logEl?.height > 0 && logEl.left < V.w / 2 ? logEl.bottom : 0; // (the log as drawn: its dress stands taller than the rect the layout keeps for it)
     const folded = typeof document !== 'undefined' && document.body.classList.contains('log-folded'); // (the log folded to its tab: its rect stays reserved in the layout, but nothing stands there)

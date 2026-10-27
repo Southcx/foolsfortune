@@ -4,7 +4,8 @@
 // thumb; a tap opens it full as a sheet (its tabs, its scroll), a tap on the sheet folds it back. The log is the only narration, so the
 // ticker stays readable: 16 px type, 14 px the least anywhere in it. All of it is CSS under body.hud-touch (ui/hudlayout.js sets the
 // class and the ticker's place as --hud-log-x / -y / -w) and one class on the log's own element, `hud-sheet`. On the desk: nothing.
-// RETRACTABLE (the owner, 2026-10-26: "the chat log is a little cumbersome and should be retractable"): a 44 px clay tile (the balloon,
+// RETRACTABLE (the owner, 2026-10-26: "the chat log is a little cumbersome and should be retractable"; its tile on the top bar beside MENU,
+// South, 2026-10-27: ui/touch/topbar.js `top.log`): a 44 px clay tile (the balloon,
 // touch.chat) at the ticker's left end, the ticker beside it; a tap on the tile folds the ticker away to the tile alone, a tap again
 // brings it back. Kept on this device (save section `touchLog`, scope settings); the chat line opened shows the log whatever the fold.
 //
@@ -13,10 +14,8 @@
 //
 //   new TouchLog(game, layout)   (ui/hudlayout.js builds it)   .sheet   .setSheet(on)   .folded   .fold(on)
 // ---------------------------------------------------------------------------------------
-import { TouchTile, TILE } from './touch/tile.js';
 
 /** The tab's room beside the ticker (CSS px): the tile and its gap. */
-const TAB = TILE.small + 6;
 
 const CSS = `
 body.hud-touch #chatlog:not(.typing):not(.hud-sheet){left:var(--hud-log-x,12px);top:var(--hud-log-y,60px);bottom:auto;width:var(--hud-log-w,300px);height:auto;
@@ -36,7 +35,6 @@ body.hud-touch #chatlog.hud-sheet .tab{padding:10px 10px 8px}
 body.hud-touch #chatlog .foot{font-size:14px}
 body.hud-touch #chatlog.hud-sheet .foot .keys{display:none}
 body.hud-touch #chatlog .ts{font-size:14px}
-body.hud-touch.log-tab #chatlog:not(.typing):not(.hud-sheet){left:calc(var(--hud-log-x,12px) + ${TAB}px);width:calc(var(--hud-log-w,300px) - ${TAB}px)}
 body.hud-touch.log-tab.log-folded #chatlog:not(.typing){display:none}
 `;
 
@@ -53,11 +51,7 @@ export class TouchLog {
   /** The tab at the ticker's left end, on touch only; the body's classes say where the ticker stands and whether it is folded. */
   placeTab() {
     const on = !!this.layout.touch, R = this.layout.log, B = document.body.classList;
-    if (on && !this.tab) this.tab = new TouchTile('log.fold', { size: TILE.small, glyph: 'chat', word: null, onPress: (_, down, inside) => { if (!down && inside) this.fold(!this.folded); } });
     B.toggle('log-tab', on); B.toggle('log-folded', on && this.folded);
-    if (!this.tab) return;
-    if (on && R) this.tab.place(R.x, R.y, TILE.small);
-    this.tab.set({ hidden: !on }); this.tab.update(performance.now() / 1000);
   }
 
   /** The ticker folded away to its tab, or brought back; kept on this device. */
