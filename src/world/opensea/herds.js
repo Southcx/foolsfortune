@@ -11,10 +11,14 @@
 // Hunter's posted investigations, Red Dead Redemption 2's legendary animals told by rumour.
 //
 //   new SeaHerds(room)   .update(dt)   .helmPlate()   .dispose() (the room's teardown)   .list (the game day's herds, each { id, square, cls, n, bodies })   .dump() / .load(d) (the room's save)
-//   events (each with `by`): sea.herds { day, n, herds: [{ id, squares, way }] }, sea.rumour { id, squares, way } (the game day's posted beast), sea.herd { id, square, cubes }, sea.herd.paid { cubes, n }, sea.plate {} (a plate from the helm)
+//   events (each with `by`): sea.herds { day, n, herds: [{ id, squares, way }] }, sea.rumour { id, squares, way } (the game day's posted beast), sea.habit { id, habit, label, first, cubes } (a habit on a plate: habits.js), sea.herd { id, square, cubes }, sea.herd.paid { cubes, n }, sea.plate {} (a plate from the helm)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { herdsOf, herdFee, rumourOf } from '../../progress/opensea/migrations.js';
+import { habitNow, habitFee } from '../../progress/opensea/habits.js';
+import { EGREGORES } from '../../progress/opensea/safari.js';
+import { phaseAt } from '../../progress/weather.js';
+import { SEA_MOUNTS } from '../../progress/rail/mounts.js';
 import { squareCentre, SEA } from './seaprops.js';
 import { today } from '../../core/calendar.js';
 import { seeded } from '../../core/rng.js';
@@ -29,12 +33,13 @@ export class SeaHerds {
   constructor(room) {
     this.room = room; this.game = room.game; this.day = -1; this.list = []; this.group = new THREE.Group(); this.group.name = 'seaHerds';
     this.state = { day: -1, posted: false, met: [], owed: 0, owedN: 0 };
+    this.flashUntil = 0; this.offFlash = room.game.events?.on?.('sea.mount', (e) => { if (e.tool === 'veritome' && e.ok) this.flashUntil = performance.now() + (SEA_MOUNTS.veritome.hold ?? 4) * 1000; }); // (the flash shows a habit: habits.js)
     this.game.scene?.add(this.group);
     const ev = this.game.events;
     this.offs = [ev?.on?.('photo.take', () => { if (this.room.active) this.plate(); }), ev?.on?.('sea.dock', (e) => { if ((e.by ?? 'courier') === 'courier') this.docked(); })];
   }
   /** The room's teardown (opensea.js): the bodies cleared, the group off the scene, the listeners let go. */
-  dispose() { this.clearBodies(); this.list = []; this.game.scene?.remove(this.group); for (const off of this.offs) off?.(); }
+  dispose() { this.clearBodies(); this.list = []; this.game.scene?.remove(this.group); for (const off of this.offs) off?.(); this.offFlash?.(); }
   clearBodies() { for (const H of this.list) { if (H.herd) { this.group.remove(H.herd.group); H.herd.dispose?.(); continue; } for (const b of H.bodies) { this.group.remove(b.group); b.group.traverse?.((o) => o.geometry?.dispose?.()); } } }
 
   dump() { return { ...this.state }; }
@@ -94,14 +99,26 @@ export class SeaHerds {
     const g = this.game, cam = g.camera, R = this.room, S = this.state; if (!cam) return;
     const at = R.squareAt?.(R.sailing ? R.helm.pos : g.player.pos); if (!at) return;
     cam.getWorldDirection(_f);
+    const ship = R.sailing ? R.helm.pos : g.player.pos, ctx = { phase: phaseAt(), weather: g.weather?.here?.(ship)?.aspect || 'fair', full: !!R.helm?.full, flash: performance.now() < this.flashUntil };
     for (const H of this.list) {
-      if (H.square !== at.id || S.met.includes(H.square + ':' + H.id)) continue;
-      const seen = H.bodies.some((b) => { if (b.group.visible === false) return false; b.group.getWorldPosition(_v).sub(cam.position); const d = _v.length(); return d < HERD_LOOK.reach && _v.dot(_f) / Math.max(d, 1e-3) > HERD_LOOK.cone; });
+      if (H.square !== at.id) continue;
+      let near = Infinity;
+      const seen = H.bodies.some((b) => { if (b.group.visible === false) return false; b.group.getWorldPosition(_v); const ds = _v.distanceTo(ship); _v.sub(cam.position); const d = _v.length(); const inFrame = d < HERD_LOOK.reach && _v.dot(_f) / Math.max(d, 1e-3) > HERD_LOOK.cone; if (inFrame) near = Math.min(near, ds); return inFrame; });
       if (!seen) continue;
+      this.habit(H.id, { ...ctx, dist: near }); // (a habit showing, caught on the plate: research, habits.js)
+      if (S.met.includes(H.square + ':' + H.id)) continue;
       const cubes = herdFee(H.cls);
       S.met.push(H.square + ':' + H.id); S.owed += cubes; S.owedN++;
       g.events?.emit('sea.herd', { id: H.id, square: H.square, cubes, by: 'courier' }); R.dirty();
     }
+  }
+
+  /** A habit caught on a plate: its first time pays a share of a hunt of its class, owed until the next dock (habits.js). */
+  habit(species, ctx) {
+    const g = this.game, h = habitNow(species, ctx), L = g.ledger; if (!h) return;
+    const first = !(L?.get?.(`sea.habit.${species}.${h.id}`) > 0), cubes = first ? habitFee(EGREGORES[species]?.cls ?? 0) : 0;
+    if (cubes) { this.state.owed += cubes; this.state.owedN++; }
+    g.events?.emit('sea.habit', { id: species, habit: h.id, label: h.label, first, cubes, by: 'courier' }); this.room.dirty();
   }
 
   update(dt) {

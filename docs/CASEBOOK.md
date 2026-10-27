@@ -938,3 +938,7 @@ NEW:hull-is-a-footprint. **A body that can be long is hit by its footprint, neve
 NEW:audio-one-shot-let-go. **A one-shot's nodes are let go when its source ends, and a phone hears a blow once.** Disconnect the source
   and its private chain on `ended`; on a phone, a hit, its damage and its stun's tick share one budget, so a gun's hail never stacks
   three sounds a hit. A band's instrument takes one note an event unless it says it takes a chord.
+NEW:event-name-searched-first. **A new event's name is searched for on the bus before it is emitted.** An emit under a name already taken
+  counts and sounds as the other thing; grep `'<name>'` across `src/` first.
+NEW:lookahead-own-stream. **A lookahead owns its own stream.** A preview, an intent or a bot's search is seeded from the state it copies
+  (`quietStream`), never by drawing the real stream: looking must not change the odds, and a replay must replay.

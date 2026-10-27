@@ -30,7 +30,7 @@ export const RULESETS = {
   // Its board 14 x 14 (PUZZLE-DUELS.md 17.4: the phone's cells 1.4x as big, on every device), a column a 2 junk and 6 landing at once:
   // a duel as long as the 20's (7 turns a side to 6.3) and as winnable (the stand-in 14 of 20 to 15).
   lanternwisp: { feeling: 'dread', board: { w: 14, h: 14, perColumn: 2, landCap: 6 }, match: 3, cluster: 4, gravity: (x, y, b) => (b.sideOf(x) === 0 ? DIRS.S : DIRS.N), colours: 5, drip: 4,
-    fog: { side: 1, light: 3 }, embers: { from: 1, count: 3 }, bot: { pairs: 0.8, sample: 6 } },
+    fog: { side: 1, light: 3 }, embers: { from: 1, count: 3 }, bot: { pairs: 0.8, sample: 8 } }, // (8 since the lookaheads stopped drawing the duel's own dice, 19.4: the stand-in wins 58 of 80, as it did)
 };
 
 /** A creature kind's own ruleset, where it has one (`c.kind` -> a RULESETS key). */

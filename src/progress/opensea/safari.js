@@ -40,6 +40,9 @@ export const EGREGORES = {
 };
 
 /** The Egregores that may be met in a square now, with their weights (none where the sea is too tame for them). */
+/** The night at sea (OPEN-SEA.md 15.3; DREDGE's dusk, Sunless Sea's dark): a square holds a class wilder after dark. */
+export const NIGHT = { wilder: 1 };
+
 export function sightings(square, { phase = 'day', weather = null } = {}) {
   const out = [];
   for (const [id, E] of Object.entries(EGREGORES)) {
@@ -48,7 +51,7 @@ export function sightings(square, { phase = 'day', weather = null } = {}) {
     if (L.law && Math.sign(square.law) !== L.law && square.law !== 0) continue;
     if (L.phase && L.phase !== phase && !(L.weather && L.weather === weather)) continue;
     if (L.weather && !L.phase && L.weather !== weather) continue;
-    if (E.cls > square.cls + 1) continue; // (a square holds its class and one above: a front brings the one above in, LORE.md)
+    if (E.cls > square.cls + 1 + (phase === 'night' ? NIGHT.wilder : 0)) continue; // (a square holds its class and one above: a front brings the one above in, LORE.md; the night one more, OPEN-SEA.md 15.3)
     out.push({ id, weight: E.weight });
   }
   return out;

@@ -319,7 +319,7 @@ const RULES = {
   'rail.scatter': (s, e, g) => s.shoalScatter?.(g.music?.grid?.()),
   'sea.hull': (s, e) => s.seaHullHit?.(e.hull ?? 3), // (`hull`: the hits it can still bear)
   // the ship answering back (audio/seabattle.js): a broadside on the cue's next sixteenth, its heard moment told for the muzzles' flash
-  'sea.broadside': (s, e, g) => { const at = s.seaBroadside?.(e.side ?? 1, e.guns ?? 4, g.music?.grid?.()); if (at != null) g.events.emit('sea.report', { at: +at.toFixed(3), side: e.side ?? 1, by: 'courier' }); },
+  'sea.broadside': (s, e, g) => { const at = s.seaBroadside?.(e.side ?? 1, e.guns ?? 4, g.music?.grid?.()); if (at != null) g.events.emit('sea.boom', { at: +at.toFixed(3), side: e.side ?? 1, by: 'courier' }); },
   'sea.broadside.dry': (s) => s.seaBroadsideDry?.(),
   'sea.mount': (s, e, g) => s.seaMount?.(e.tool, e.ok !== false, g.music?.grid?.()),
   'sea.mend': (s, e) => s.seaMend?.(e.hull ?? 3, e.of ?? 6),

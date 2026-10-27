@@ -482,3 +482,56 @@ drip still falls; `lesson.idle`), and six steps are asked one at a time, each do
 rotate or drop), **clear** (3 in a line or 4 touching), **form** (the Courier on the board), **run**, **tool** (any tool's move),
 **chain** (a clear of step 2 or more). `lesson.step { side, step, id, next }` says one done and the next asked; `lesson.done` at the end.
 What the view shows is Calissa's: the step asked as the verb lit (its tile or key glowing), with no words but the verb's own label.
+
+## 19. The genre's folds (South, 2026-10-27: "do some genre research on the types of games we've used as prior art and determine what else we can fold in")
+
+A research pass over the versus puzzle and tactics games (Puyo Puyo Tetris, Tetris 99, Super Puzzle Fighter II, Puzzle Quest, Gems of
+War, Puzzle & Dragons, Into the Breach, Balatro, Slay the Spire, Hexcells) ranked what to fold in by fun per build effort. Built, the
+first five (each in `DUEL`, a ruleset may set its own or `false`):
+
+- **Undo within the turn** (Into the Breach's reset; Baba Is You): `undo(state)` takes the last action back, a step at a time, points
+  and pool returned, free until the turn ends, a die is thrown (the Flee) or the duel is decided. The drip is laid at the turn's start,
+  so nothing hidden is learned. On a phone, a misplaced drag no longer costs the turn. Event `undo { side, left }`.
+- **An action point back for a big play** (Puzzle Quest's extra turn, Persona 5's One More): a clear of 5 or more, or a chain step of
+  3 or more, refunds 1 AP, once a turn (`refund`). Measured with the bots: 0.22 refunds a turn on the Wisp, 0.33 on Mirth, 0.36 on
+  Fury. Event `refund { side, ap, why }`. It is also what makes a Shoot that sets up a chain worth its point.
+- **Pool from chains** (Puzzle Quest's mana): each chain step past the first puts 2 in your pool (`trickle`), so the Courier's tools are
+  fed by play and not only by breaks. Event `trickle { side, pool, n }`.
+- **The all clear** (Puyo): no gem left on your half after a clear sends 6 junk more (`allClear`). Rare by design. Event `allclear`.
+- **Margin time** (Puyo Puyo Tetris): past 10 turns a side, junk counts a quarter more each turn (`margin`, `marginOf(state)`), so a
+  stalled duel ends. Fury's bots ran 11.2 turns a side before the folds and 4.9 after.
+
+**Measured** (the Wisp, 24 duels, the stand-in kept to the hand at 8 actions a point): you win 13 or 14 of 24 with the folds and 14
+without, so they do not tip the balance; they change how a turn feels. A note on the measure: since the tools' moves (section 18) the
+stand-in's sample of 8 is spread over many more moves, and with both forms it wins 9 of 24; at 16 a point it wins 18. The tools did not
+make the Wisp stronger; they made the stand-in's sampling thinner. A person chooses, a sampler dilutes.
+
+### 19.2 A Figment's weakness (built: `weaknessOf`, `DUEL.weakness`; Persona's weaknesses, Puzzle & Dragons' colour wheel)
+
+Colour meant only matching. Now a Figment is weak to the feeling opposite its own (the wheel of feelings' `OPPOSITE`) when that colour
+is on its board, and resists its own: your gems of the weak colour count 1.5 in a clear, of the resisted 0.5. The pair or nothing: a
+ruleset whose weak colour is not on its board has neither (Fury, Mirth as they stand). The Wisp (dread) is weak to fury; Grief to mirth,
+resisting grief. It is the Soul Brush's best use: Paint the gems round you into the weak colour. `chain` events carry `weak` (how many
+weak gems the step had). Measured (the Wisp, the stand-in kept to the hand): 16 of 24 won with it, 13 without.
+
+### 19.3 Clue fog (built: `clues(state, viewer, familiarity)`, `dread.js`; Hexcells', Picross's margins)
+
+Dread's fog stays, but it becomes a thing to read: for each row and column of the fogged half, how many hidden cells hold a piece, and the
+hidden gems' tally by colour. From familiarity 2 (familiarity.js) the counts split gems from junk; the Veritome's Read still shows the
+cells whole. Into the Breach's promise (nothing hidden that you cannot reason about) kept without lifting the Wisp's fog. For the view
+(Calissa): the numbers in the tsuitate's margins over the fog, as a Picross board's.
+
+**Next, ranked, not built:** a colour each Figment is weak to and one it resists, from the wheel of feelings (Persona, Puzzle & Dragons), so colour
+means more than matching; power gems (Puzzle Fighter: a 2 x 2 of one colour fused, clearing all its colour touching); a catch-up seed
+for a broken side (Puyo's Fever: a break snowballs today); charms as hooks on clears (Balatro's jokers) from the bracelet and the laid
+spread; a mended Figment lending its rule family as a charm (Mega Man); a Figment's phases by its breaks; a chain power table per
+ruleset in place of the doubling (Puyo's capped table).
+
+### 19.4 A lookahead never draws the duel's dice (a bug, Calissa's builder, 2026-10-27)
+
+`cloneState` seeded each copy from the duel's own stream (`s.r()`), and `legalActions` sampled its drags from it: so a hover preview, the
+foe's intent after each action and the bot's search all moved the duel's chances, and a replay could not replay. Now a lookahead's
+stream is `quietStream(state, salt)`, seeded from the duel as it stands (its board, ply, mover and points), and nothing that asks draws:
+the same seed plays the same with or without previews and intents (checked: ten turns either way, one board). The bots' search changed
+with it (the stand-in won 67 of 80 against the Wisp at its 6 actions a point), so the Wisp's bot weighs 8: 58 of 80, as before. The
+casebook's rule: a lookahead owns its own stream.

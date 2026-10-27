@@ -473,3 +473,76 @@ weather that matters) and mine were one plan; what is ruled:
 - **The rumour** now picks among the game day's lairs of the beasts that run (the serpent, the akhlut, Jormungandr; not one with a
   `when`), so the beast posted is the beast there.
 - Petra: `lairsOf(grid, seed, today())` in place of seafight.js's own lairs, tended as the serpent's are.
+
+## 15. The genre's folds (2026-10-27; South: "do some genre research on the types of games we've used as prior art and determine what else we can fold in")
+
+A research pass (DREDGE, Sea of Thieves, The Wind Waker, Sunless Sea, Black Flag, Monster Hunter, New Pokemon Snap, Subnautica) ranked
+what to fold in. Built, the first three; the rest ranked below.
+
+### 15.1 Habits as research (`progress/opensea/habits.js`; New Pokemon Snap's research levels and illumina)
+
+- Each of the 11 species has **four habits**, each shown only under its own condition: an hour, a feeling's weather, how near you come,
+  the ship at full sail, or the Veritome's flash (the flash mount: New Pokemon Snap's illumina orb). The myths decide them: the selkie
+  sheds its skin at dusk, St Elmo's fire crowns the mast in a fury storm, the ningyo weeps pearls in grief, the umibozu asks for a ladle
+  when you come within 50 m, Jormungandr bites its tail at dawn.
+- **A plate catches a habit** (`habitNow(species, ctx)`, the most particular that holds): its first time pays 0.15 of a hunt of its class
+  (`habitFee`; 4 to 48 cubes), owed until the next dock with the herds' fees; `sea.habit { id, habit, label, first, cubes }`; the ledger
+  `sea.habit.<species>.<habit>`; a species' research level is how many of its four (`researchOf`).
+- **Why:** a sea that is charted had nothing left to find (section 9). Habits are 44 reasons to sail again at another hour and in other
+  weather, all data: the whole is about 900 cubes once, a bounded faucet.
+- For the looks (Calissa): a body playing a habit when its condition holds (`habitNow(species, ctx)` says which). The collection log has a
+  section for them (44 slots).
+
+### 15.2 What each dock wants (`DEMAND`, `seatrip.js`; Sunless Sea's port reports, Pirates!' price gaps)
+
+Margarite pays x1.5 for wrecks and x1.25 for monuments, Anagami x1.5 for islets and x1.25 for pairs, Entropolis x1.5 for phenomena and
+seeps. Where you report is a route to plan; the sea's fees stay bounded (at most half again on the kinds a dock wants). `sea.report`
+carries `wanted`.
+
+### 15.3 The night is wilder (`NIGHT`, `safari.js`; DREDGE's dusk, Sunless Sea's dark)
+
+After dark a square holds a class more (`sightings`): the beasts and the strange come in closer. Measured in the simulator: 16.8 fights
+a sea (10.2 broken off), the fuel and the charting unchanged.
+
+### 15.4 The forge: a beast's part (`FORGE`, `progress/opensea/forge.js`; Monster Hunter's hunt, carve, forge)
+
+- Each beast gives **one ship's part of its own**, forged at a quay (`/forge <part>`; the pier's page may give it a card) once you have
+  sunk enough of it, for cubes. A trade like every part, its myth in its numbers:
+  | part | from | carves | cubes | does |
+  | --- | --- | --- | --- | --- |
+  | Sea serpent keel (`serpentKeel`) | the sea serpent | 3 | 120 (15 min) | turns 1.2x and tracks a current (0.9x its push); 0.95x way |
+  | Akhlut hull (`akhlutHull`) | the akhlut | 3 | 120 | the fastest hull, 1.12x way; one hit fewer, 0.9x turn |
+  | Umibozu hull (`monkHull`) | the umibozu | 3 | 120 | two hits more; 0.85x way (it holds the sea it pours) |
+  | Kraken sail (`krakenSail`) | the kraken | 3 | 240 (30 min) | draws in light airs (the wind's 0.3 reads 0.43), spills a gale (0.9 reads 0.65) |
+  | Jormungandr sail (`worldSail`) | Jormungandr | 1 | 480 (60 min) | points to 35 degrees, best at 120, runs at 0.9; starves in light airs |
+- **A carve** is a beast sunk; sunk with the hull whole it is two (skill skips grind; grind closes the gap). Read from the ledger
+  (`seabeast.down.<id>`, `seabeast.down.whole.<id>`; the serpent's `seaserpent.down`, `.whole`), nothing kept beside it.
+- **The price** is a drain: a class 2 part about three of its kills' pay (4.5 to 7.5 minutes each), so a part is a session's aim.
+- Forged parts never come from a crate (`SALVAGE_PARTS`); the collection log's Ship parts section counts them; achievements sea15 to
+  sea17 (forge one, forge all five, sink a beast other than a serpent).
+- **The gap it closed:** a beast other than the serpent sank with no count and no log line (`seabeast.down` and `seabeast.paid` had no
+  rule); `tracking/seaserpent.js` keeps them now, and the room pays a beast after the log says it sank.
+- **Measured headless:** an akhlut sunk whole: 50 cubes, two carves; refused at sea and short of carves; at a quay with a third carve,
+  forged for 120 cubes, fitted: bears -1, way 1.12x.
+
+### 15.5 A square completed (`squares.js`; The Wind Waker's charts, No Man's Sky's survey)
+
+- A square with something in it (56 to 57 of the 63 on seeds 1 and 7) is **done** when it is charted, each feature in it found
+  (a phenomenon only at its hour or weather), each islet's secret taken and each wreck salvaged once: 2 or 3 asks a square. The herds
+  and habits move, so they never count toward a square (they are the collection log's).
+- Done, it pays once by its class (1, 1.5, 2, 3 minutes of play: about 800 cubes over the whole sea, once) and says so in the log;
+  `sea.square.done { square, cls, cubes, n, of }`; ledger `sea.square.done`, `.c<cls>`; achievements sea18 to sea20. The room asks
+  after each chart, find, secret and salvage, reading only its own record (`squaresDone` is the one thing saved for it).
+- **Calissa:** a completed square's chart stamped with your seal (the map's dress and the sea chart). **Espada:** the line's words.
+- **Measured headless:** a square with one islet: charted (not done), found (not done), its chest taken: done, 12 cubes, said after
+  the chest's own line; asked again, nothing.
+
+### 15.6 Next (ranked, not built)
+
+- **Small tells on the water** (Wind Waker's gulls, DREDGE's ripples, Raft's flotsam): birds over a wreck or a herd, bubbles over a
+  shoal (a fishing spot for the rod at sea), a light under the water. Calissa's looks over the room's data.
+- **Fragments** (Subnautica's blueprints): salvage gives fragments of a part in place of a crate's roll, a quay makes it from enough
+  (the beasts' half is built: 15.4).
+- **Capture or slay** (Monster Hunter): a harpooned, stunned beast towed home for a live fee, or its statue in the Spirit Garden.
+- **A song for the wind** (Wind Waker's Wind's Requiem): the Crucibelle sets the wind for a game hour at a Lachryma cost.
+- **Tall tales** (Sea of Thieves): a few authored chains through riddles, islets, a herd and a beast, their reward a look or a title.

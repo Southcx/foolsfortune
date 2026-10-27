@@ -4182,3 +4182,15 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   to -x: boom end -7.84, vanes -0.85 and -0.99, the pennant's tip -6.27: all to leeward.
 - **Rule:** NEW:spar-and-cloth-one-side
 
+### 2026-10-27 · A broadside's timing event named over the discovery event (caught by Calissa before the merge; Wanda)
+- **Seen:** b30e657c's broadside rule emitted `sea.report { at, side }` for the muzzles' flash; `sea.report` is already Dovina's discovery
+  reported at a dock (progress/opensea/seatrip.js), counted in the ledger (tracking/opensea.js) and rung as the dock's coin (cues.js).
+- **Cause (as read):** a new event named without searching the bus for the name first.
+- **Fix:** the broadside's moment is `sea.boom { at, side }`; nothing else uses the name.
+- **Rule:** NEW:event-name-searched-first
+
+## The duel's previews drew the duel's dice (2026-10-27, Dovina; found by Calissa's builder)
+- **Seen:** a hover preview, the foe's intent and the bot's search each advanced the puzzle duel's random stream, so looking at a move changed the next drip, and a replay of the same seed could not replay.
+- **Cause, as measured:** `cloneState` seeded each copy with `s.r()`; `legalActions` sampled drags from `s.r`. Ten bot turns of seed 9 ended on a different board with previews taken than without.
+- **Fix:** `quietStream(state, salt)` (progress/duel/duel.js): a lookahead's stream seeded from the state's own hash, drawing nothing from the duel; legalActions' drags from it too. The same seed now ends on the same board either way.
+- **Rule:** NEW:lookahead-own-stream
