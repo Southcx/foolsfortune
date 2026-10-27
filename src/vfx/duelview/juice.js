@@ -134,10 +134,10 @@ export class DuelJuice {
       this.mote(from, to, film ? TEAR : GOLD, { delay: i * 0.08, life: 0.38, size: 0.04, curl: 1.4, film, onLand: () => {
         landed++; V.apShown[side] += 1; const [, max, lost] = V.board.ap[side]; V.board.setAP(side, V.apShown[side], Math.max(max, V.apShown[side] + lost), lost);
         V.bursts.burst(to, film ? V.filmHex(0.2) : GOLD, 10, { speed: 0.8, life: 0.32, fall: 0, spread: 0.3, size: 0.02 }); V.bursts.burst(to, 0xffffff, 4, { speed: 0.3, life: 0.2, fall: 0, size: 0.03 }); } }); }
-    const D = this.dims(), row = V.board.apAt(side, 2, new THREE.Vector3()).setY(D.base - D.b * 0.3).setZ(D.lip + 0.06);
+    const D = this.dims(), row = V.board.apAt(side, 2, new THREE.Vector3()).setY(D.base + D.b * 0.4).setZ(D.lip + 0.06);
     let said = false;
-    return { events: [e], dur: 0.46 + n * 0.08 + DUEL_VIEW.ma, step: (u, age) => { if (!said && age >= 0.36) { said = true; this.word('ONE MORE', row, film ? 'film' : GOLD, { h: 0.095, dur: 0.8, rise: 0.07 }); } },
-      end: () => { if (!said) this.word('ONE MORE', row, film ? 'film' : GOLD, { h: 0.095, dur: 0.8 }); if (landed < n) { V.apShown[side] += n - landed; landed = n; } } };
+    return { events: [e], dur: 0.46 + n * 0.08 + DUEL_VIEW.ma, step: (u, age) => { if (!said && age >= 0.36) { said = true; this.word('ONE MORE', row, film ? 'film' : GOLD, { h: 0.2, dur: 0.8, rise: 0.09 }); } },
+      end: () => { if (!said) this.word('ONE MORE', row, film ? 'film' : GOLD, { h: 0.2, dur: 0.8 }); if (landed < n) { V.apShown[side] += n - landed; landed = n; } } };
   }
 
   /** ALL CLEAR: the half flashes, the board holds a beat, the gold runs out from the Line, the bosses flare, the frame says it. */
@@ -155,7 +155,7 @@ export class DuelJuice {
       const k = clamp01((age - 0.22) / 0.6), f = sm(k); R.visible = S.visible = age >= 0.18 && k < 1;
       R.scale.setScalar(Math.max(1e-3, lerp(D.cs, Math.hypot(span, D.H / 2) * 1.05, f))); R.material.opacity = (1 - k) * 0.9;
       S.position.x = lerp(D.lx, far, f); S.material.opacity = (1 - k * k) * 0.55;
-      if (!said && age >= 0.22) { said = true; this.word('ALL CLEAR', over, GOLD, { h: 0.13, dur: 1.3, rise: 0.04 }); }
+      if (!said && age >= 0.22) { said = true; this.word('ALL CLEAR', over, GOLD, { h: 0.26, dur: 1.3, rise: 0.06 }); }
     }, end: () => { R.visible = S.visible = false; } };
   }
 
@@ -167,11 +167,11 @@ export class DuelJuice {
       V.bursts.burst(at, hex, 16, { speed: 2.4, life: 0.28, fall: 0, spread: 0.15, size: 0.02 }); V.bursts.burst(at, 0xffffff, 6, { speed: 1.4, life: 0.18, fall: 0, spread: 0.1, size: 0.024 });
       this.star.position.copy(at).setZ(at.z + 0.05); this.star.rotation.z = hash(at.x, at.y) * 6.28; this.star.material.color.setHex(hex); this.starAge = 0; this.star.visible = true;
       this.hold = Math.max(this.hold, 0.08); this.weakFlare = 1;
-      this.word('WEAK', this.headAt(1, _a), hex, { h: 0.16, dur: 0.9, rise: 0.1 });
+      this.word('WEAK', this.headAt(1, _a), hex, { h: 0.3, dur: 0.9, rise: 0.12 });
     }
     const resisted = clears.filter((c) => c.type === 'clear' && c.side === 0 && c.colour === W.resists).length;
     if (resisted) { V.bursts.burst(at, DULL, 6, { speed: 0.5, life: 0.5, fall: 5, spread: 0.1, size: 0.022 });
-      this.word('RESIST', this.headAt(1, _a).add(_b.set(0, ch.weak ? -DUEL_VIEW.cs * 1.4 : 0, 0)), DULL, { h: 0.08, dur: 0.7, rise: 0.03, dim: 0.75 }); }
+      this.word('RESIST', this.headAt(1, _a).add(_b.set(0, ch.weak ? -DUEL_VIEW.cs * 2.4 : 0, 0)), DULL, { h: 0.16, dur: 0.7, rise: 0.04, dim: 0.75 }); }
   }
 
   /** Pool from a chain: motes off the step's cleared cells to the link's end (the Courier's), or into the foe's idol. */
