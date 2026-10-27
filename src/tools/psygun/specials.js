@@ -16,7 +16,8 @@ const simRand = stream('tools/psygun/specials'); // (the simulation's chance: co
 
 
 const UP = new THREE.Vector3(0, 1, 0);
-const _v = new THREE.Vector3(), _v2 = new THREE.Vector3();
+const _v = new THREE.Vector3(), _v2 = new THREE.Vector3(), _d = new THREE.Vector3();
+const DASH = 0.12, GAP = 0.08, PREVIEW_DASHES = 32; // (the ricochet preview's dashes, m: 5 m of bounce at most, 25 dashes)
 const HOT = new THREE.Color(PALETTE.hot), GLOW = new THREE.Color(PALETTE.glow);
 const ease = (x) => 1 - Math.pow(1 - x, 3);
 
@@ -46,8 +47,9 @@ export class Specials {
     this.bursting = []; // (marks bursting off a hit, until they are done)
 
     // ricochet ADS preview: where the first bounce goes
-    const g = new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()]);
-    this.preview = new THREE.Line(g, new THREE.LineDashedMaterial({ color: PALETTE.hot, dashSize: 0.12, gapSize: 0.08, transparent: true, opacity: 0, depthWrite: false }));
+    // (its dashes laid as segment pairs in a plain line material: the game's one LineDashedMaterial was a program of its own, Calissa's audit 2026-10-25)
+    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.BufferAttribute(new Float32Array(PREVIEW_DASHES * 6), 3)); g.setDrawRange(0, 0);
+    this.preview = new THREE.LineSegments(g, new THREE.LineBasicMaterial({ color: PALETTE.hot, transparent: true, opacity: 0, depthWrite: false }));
     this.preview.frustumCulled = false;
     this.preview.renderOrder = 6;
     this.previewDot = new THREE.Mesh(new THREE.RingGeometry(0.05, 0.075, 16), new THREE.MeshBasicMaterial({ forceSinglePass: true, color: PALETTE.hot, transparent: true, opacity: 0, depthWrite: false, side: THREE.DoubleSide }));
@@ -162,11 +164,13 @@ export class Specials {
     const h2 = g.physics.raycast(at, r, 5, g.player.collider, undefined, (c) => !c.isSensor());
     const end = h2 ? h2.point : at.clone().addScaledVector(r, 5);
     const pa = this.preview.geometry.attributes.position;
-    pa.setXYZ(0, hit.point.x, hit.point.y, hit.point.z);
-    pa.setXYZ(1, end.x, end.y, end.z);
-    pa.setXYZ(2, end.x, end.y, end.z);
-    pa.needsUpdate = true;
-    this.preview.computeLineDistances();
+    const len = hit.point.distanceTo(end), step = DASH + GAP, dashes = Math.min(PREVIEW_DASHES, Math.ceil(len / step));
+    for (let i = 0; i < dashes; i++) { // (a dash from i * step, DASH long, cut at the end)
+      const a = i * step / len, b = Math.min(1, (i * step + DASH) / len);
+      _d.lerpVectors(hit.point, end, a); pa.setXYZ(2 * i, _d.x, _d.y, _d.z);
+      _d.lerpVectors(hit.point, end, b); pa.setXYZ(2 * i + 1, _d.x, _d.y, _d.z);
+    }
+    pa.needsUpdate = true; this.preview.geometry.setDrawRange(0, 2 * dashes);
     this.previewDot.position.copy(hit.point).addScaledVector(n, 0.01);
     this.previewDot.quaternion.setFromUnitVectors(new THREE.Vector3(0, 0, 1), n);
     this.previewDot.material.color.set(tgt ? PALETTE.cream : PALETTE.hot);

@@ -13,7 +13,7 @@
 //   a slick (Soul Brush)      astern: a slick laid for `hold` real s; a beast swimming through it is slowed (the `slow` status) 3 s
 // A mount's arc on the hull: bow (within angle/2 of the heading), stern (of its reverse), beam (of either side), ring (all round); reach
 // from the hull's footprint (helm.hullDist). Its cost is from the pool; its cooldown and charges are kept here.
-// Events (`by` courier): sea.mount { tool, ok, why?, broke? [kind], drunk?, pour? (grips drunk), hit?, wreck? }, sea.sonar { beasts: [{ at, under }] },
+// Events (`by` courier): sea.mount { tool, ok, why?, broke? [kind], drunk?, pour? (grips drunk), hit?, wreck? }, sea.sonar { beasts: [{ at, under, surface, eta }] } (surface: where a beast wound up to rise breaks the water, else null),
 // sea.slick { at, r, life }; a slick in `.slicks` is { at, r, t (left), life (whole) }.
 // Prior art: Sea of Thieves' harpoon and its broadsides, Assassin's Creed IV's chase and mortar arcs, the rail's mounts (the same tools).
 //
@@ -27,6 +27,7 @@ const KEYS = ['Digit1', 'Digit2'];
  *  gulp: the bow shot's multiplier carried back; flash: the weak point's multiplier while open (read by seaserpent.js). */
 export const MOUNTING = { slick: { r: 10, astern: 6, slow: 3 }, toll: { stun: 2 }, gulp: { k: 3 }, flash: { k: 1.5 } };
 const _a = new THREE.Vector3();
+const RISES = new Set(['ram', 'rise', 'breach']); // (a beast's moves that come up through a ring: creatures/seaserpent/seaserpent.js windUp)
 
 export class SeaMounts {
   constructor(fight) { this.fight = fight; this.game = fight.game; this.cd = {}; this.used = {}; this.gulped = 0; this.pingT = 0; this.slicks = []; }
@@ -109,7 +110,10 @@ export class SeaMounts {
 
   sonar(H) {
     const S = this.fight.serpents, M = SEA_MOUNTS.dreamvane, beasts = [];
-    for (const c of S.list) if (c.alive && (c.under ?? 0) > 0.5 && H.hullDist(c.pos) <= M.reach) beasts.push({ at: c.pos.clone(), under: +c.under.toFixed(2) });
+    for (const c of S.list) if (c.alive && (c.under ?? 0) > 0.5 && H.hullDist(c.pos) <= M.reach) {
+      const A = c.attack, up = A && RISES.has(A.move) && A.at?.lengthSq() > 0; // (wound up to come up: where it breaks the surface and in how long, Calissa's ask 4)
+      beasts.push({ at: c.pos.clone(), under: +c.under.toFixed(2), surface: up ? A.at.clone() : null, eta: up ? +A.t.toFixed(2) : null });
+    }
     this.game.events?.emit('sea.sonar', { beasts, by: 'courier' });
   }
 
