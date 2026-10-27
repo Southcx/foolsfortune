@@ -5,6 +5,8 @@
 //   the action 0.26 (swap on a shallow arc, rotate a quarter round its corner, drag along its path, drop down its lane, push and kick)
 //   fall       free fall from rest (the first cell in 0.08), stretched as it gathers speed, then a squash along the gravity's axis
 //              (0.07) and a puff of dust where it lands
+//   cascade    a chain's second step on (CASCADE): its clear 0.2 so each lands on about a quarter second, its count swelling a step (gold
+//              from the fourth: Puzzle & Dragons' combo counter)
 //   clear      a flash (0.09: white almost at once, swelling 16%), then seven shards of its colour and a white spark; break: clay chips that fall; blast: its cross of
 //              sparks first, the clears it makes 0.14 later; a duel's chain: its numeral from the clear's middle (rising, 0.9)
 //   pinch      the junk flips like an Othello disc, its back the new colour (0.34)
@@ -42,11 +44,14 @@ import { TOOL_BEATS2, shotBeat, paintBeat, tuneBeat, tuneEndBeat, readBeat } fro
 import { FLEE } from '../../progress/duel/flee.js';
 import { JUICE_EVENTS } from './juice.js';
 import { gemColour } from './pieces.js';
+import { DIVE } from './formdive.js';
 
 const ACTS = new Set(['swap', 'drag', 'rotate', 'drop', 'push', 'kick', 'form']);
 const COST = { swap: 1, rotate: 1, drop: 1, push: 1, kick: 2, form: 1, run: 1, shot: 1, grab: 1, drill: 1, paint: 2, delay: 2, hold: 1, 'hold.send': 1, 'duel.finisher': 2 };
 const POOL = { shot: 5, grab: 5, drill: 3, paint: 10, delay: 15, 'hold.send': 5 }; // (this branch's kernel: a spend's price, when its event carries no `spent`)
 const DV = { N: [0, -1], S: [0, 1], E: [1, 0], W: [-1, 0] };
+/** clear: a cascade step's clear after the first (real s); grow: the step count's swell a step; maxSize: its largest (cells). */
+export const CASCADE = { clear: 0.2, grow: 0.42, maxSize: 4.2 };
 const CLAY = 0x93552f, GOLD = 0xffd76a, TEAR = 0x7fdcff, DUST = 0xcfc3b0;
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Color();
 
@@ -63,7 +68,7 @@ export class DuelBeats {
         if (!this.job) { this.job = this.jobs.shift() || null; if (!this.job) return; }
         this.phase = this.next(this.job);
         if (!this.phase) { const j = this.job; this.job = null; if (!this.jobs.length) this.view.settleUp(); j.resolve(); continue; }
-        this.phase.age = 0; for (const e of this.phase.events || []) sfx.duelEvent?.(e);
+        this.phase.age = 0; for (const e of this.phase.events || []) { sfx.duelEvent?.(e); this.view.stage?.event?.(e); } // (the director's answer: stage.js)
       }
       const P = this.phase; P.age += dt; dt = 0;
       P.step?.(Math.min(1, P.age / P.dur), P.age);
@@ -137,7 +142,7 @@ export class DuelBeats {
   }
 
   clears(it, chains) {
-    const V = this.view, P = V.pieces, X = V.bursts, B = V.board3, hasB = it.some((c) => c.type === 'blast'), cd = hasB ? 0.14 : 0, dur = (hasB ? 0.56 : 0.42) + DUEL_VIEW.ma;
+    const V = this.view, P = V.pieces, X = V.bursts, B = V.board3, hasB = it.some((c) => c.type === 'blast'), cd = hasB ? 0.14 : 0, step = Math.max(1, ...chains.map((c) => c.step || 1)), dur = (hasB ? 0.56 : step >= 2 ? CASCADE.clear : 0.42) + DUEL_VIEW.ma; // (a cascade's steps on a quarter-second beat, the board waiting for each: Puzzle & Dragons')
     const gone = [];
     for (const c of it) { if (c.type === 'blast') continue; const v = P.at(c.at[0], c.at[1]) || P.byId(c.id); if (!v) continue; P.move(v, -1, -1); gone.push({ v, c, popped: false }); }
     const marks = chains.map((ch) => { const cells = it.filter((q) => q.type === 'clear' && q.side === ch.side); const n = Math.max(1, cells.length);
@@ -153,7 +158,7 @@ export class DuelBeats {
           else { X.burst(_a, g.v.kind === 'gem' ? gemColour(g.v.colour, _c).getHex() : 0xe8dcc8, 7, { speed: 1.2, life: 0.42 }); X.burst(_a, 0xffffff, 2, { speed: 0.3, life: 0.14, fall: 0, size: 0.03 }); }
           P.remove(g.v); }
       }
-      for (const m of marks) if (!m.shown && age >= cd + 0.1) { m.shown = true; V.marks.numeral(String(m.ch.step), m.at, V.sideHex(m.ch.side)); V.juice?.chainHit(m.ch, m.at, it); V.sent[m.ch.side] += junkOf(m.ch.cleared, m.ch.step); V.showCounts(); }
+      for (const m of marks) if (!m.shown && age >= cd + 0.1) { m.shown = true; V.marks.numeral(String(m.ch.step), m.at, m.ch.step >= 4 ? '#ffd76a' : V.sideHex(m.ch.side), { size: Math.min(CASCADE.maxSize, 1.6 + CASCADE.grow * (m.ch.step - 1)), dur: 0.9 + 0.08 * m.ch.step }); V.juice?.chainHit(m.ch, m.at, it); V.sent[m.ch.side] += junkOf(m.ch.cleared, m.ch.step); V.showCounts(); }
     }, end: () => { for (const g of gone) if (!g.popped) P.remove(g.v); } };
   }
 
@@ -192,9 +197,9 @@ export class DuelBeats {
       while (at(c) && at(c) !== body) { run.push({ v: at(c), from: [...c], to: [c[0] + d[0], c[1] + d[1]] }); c = [c[0] + d[0], c[1] + d[1]]; }
       mv.push(...run); if (body) mv.push({ v: body, from: [e.to[0] - d[0], e.to[1] - d[1]], to: e.to }); }
     else if (e.type === 'kick') { const v = P.byId(e.id); if (v) mv.push({ v, from: [v.cx, v.cy], to: e.to }); }
-    else if (e.type === 'form') { const body = P.bodyAt(e.side); if (body) { cellLocal(body.x, body.y, V.board3, _a); V.bursts.burst(_a, V.filmHex(0.1), 12, { speed: 0.9, life: 0.4, fall: 0, spread: 0.2 }); } V.form(e.side, e.to); }
+    else if (e.type === 'form') { V.form(e.side, e.to); if (e.side === 0 && V.dive) V.dive.start(e.to); else { const body = P.bodyAt(e.side); if (body) { cellLocal(body.x, body.y, V.board3, _a); V.bursts.burst(_a, V.filmHex(0.1), 12, { speed: 0.9, life: 0.4, fall: 0, spread: 0.2 }); } } } // (your form: the Jar's pour, formdive.js)
     for (const m of mv) if (!m.grow) P.move(m.v, -1, -1); for (const m of mv) P.move(m.v, m.to[0], m.to[1]);
-    const dur = (e.type === 'kick' ? 0.28 + 0.03 * Math.hypot(mv[0]?.to[0] - mv[0]?.from[0] || 0, mv[0]?.to[1] - mv[0]?.from[1] || 0) : 0.26) + DUEL_VIEW.ma;
+    const dur = e.type === 'form' && e.side === 0 && V.dive ? DIVE.open + DIVE.dur + DUEL_VIEW.ma : (e.type === 'kick' ? 0.28 + 0.03 * Math.hypot(mv[0]?.to[0] - mv[0]?.from[0] || 0, mv[0]?.to[1] - mv[0]?.from[1] || 0) : 0.26) + DUEL_VIEW.ma;
     return { events: [e], dur, step: (u) => { const s = sm(Math.min(1, u * 1.15)); for (const m of mv) {
       let px, py;
       if (m.rot) { const a0 = Math.atan2(m.from[1] - m.rot[1], m.from[0] - m.rot[0]), r = Math.SQRT1_2; px = m.rot[0] + Math.cos(a0 + s * Math.PI / 2) * r; py = m.rot[1] + Math.sin(a0 + s * Math.PI / 2) * r; }

@@ -36,6 +36,9 @@
 //   pointOf(cell) -> Vector3           a cell's centre on the slab's face, in the world (the god hand's cursorAt; its normal: `face`)
 //   refuse(action)                     an illegal action: the cell's rim shaken in the dry ink, no words (marks.js)
 //   resync(state)                      the board and pieces stood again from a restored state (undo), the clash kept: juice.js rewind
+//   hint(h | null)                     the idle hint (bot.js hintOf): its move's piece nudging its way, its clears pulsing; any play lets it go
+//   stage (stage.js: the zoom from the arena to the board view, the director's camera; the session asks stage.eatTap(cell) before a
+//   tap acts)   dive (formdive.js: the Pneuka Jar at your spot in the hand's form, the pour into the board and out of it)
 //   hover(cell | null)   select(cells)   close()   update(rawDt) (main.js)   .isOpen .busy .face .root .state
 // THE FLEE (Dovina's, PUZZLE-DUELS.md 15; drawn by duelview/flee.js): the odds plate on the frame while you may flee, the 'flee' event's
 // d20 and its reasons, and 'duel.fled': the clash folding with no winner and the tsuitate folded away.
@@ -59,6 +62,8 @@ import { DuelGlows } from './duelview/glows.js';
 import { DuelWorth } from './duelview/worth.js';
 import { DuelForesight } from './duelview/foresight.js';
 import { DuelJuice } from './duelview/juice.js';
+import { DuelStage } from './duelview/stage.js';
+import { FormDive } from './duelview/formdive.js';
 
 const TEAR = 0x7fdcff, COURIER_HEX = '#9fd8ff', UP = new THREE.Vector3(0, 1, 0);
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _c = new THREE.Color(), _r = new THREE.Ray(), _inv = new THREE.Matrix4();
@@ -72,7 +77,7 @@ export class DuelView {
     this.board = new DuelBoard(this.frame, this.clash); this.pieces = new DuelPieces(this.frame); this.marks = new DuelMarks(this.frame);
     this.intentDraw = new DuelIntent(this.frame, this.marks); this.bursts = new DuelBursts(this.frame); this.beats = new DuelBeats(this);
     this.flee = new DuelFlee(this); this.folded = false;
-    this.glows = new DuelGlows(this); this.worth = new DuelWorth(this); this.foresight = new DuelForesight(this); this.juice = new DuelJuice(this); this.tune = [null, null]; this.pendingKind = null;
+    this.glows = new DuelGlows(this); this.worth = new DuelWorth(this); this.foresight = new DuelForesight(this); this.juice = new DuelJuice(this); this.stage = new DuelStage(this); this.dive = new FormDive(this); this.tune = [null, null]; this.pendingKind = null;
     this.intentWhole = true; // (the session hands intent() bot.js intentOf's whole: { actions, junk, cells, hits })
     this.u = new THREE.Vector3(1, 0, 0); this.face = new THREE.Vector3(0, 0, 1); this.centre = new THREE.Vector3();
     this.sent = [0, 0]; this.pending = [0, 0]; this.depth = [0, 0]; this.apShown = [5, 5]; this.forms = ['hand', 'hand']; this.lineCol = 10;
@@ -105,6 +110,7 @@ export class DuelView {
     const half = (B.w * DUEL_VIEW.cs) / 2 + 2, oc = _w.copy(at).addScaledVector(this.u, -half), of = foe?.pos ? foe.pos.clone() : at.clone().addScaledVector(this.u, half);
     oc.y += 1; of.y += 1; this.clash.unfold(oc, of);
     this.game.spiritualLink?.attach(this, this.linkEnd);
+    this.stage.open(); this.dive.open(); // (the arena first, the Jar at your spot: stage.js, formdive.js)
   }
 
   /** Fold the domains away and take the board down (at once, with `now`). */
@@ -112,11 +118,24 @@ export class DuelView {
     if (!this.isOpen && !this.closing) return;
     this.isOpen = false; this.beats.clear(); this.intentDraw.clear(); this.foresight.clear(); this.worth.clear(); this.glows.clear(); this.tune = [null, null]; this.marks.hover(null); this.marks.select([]); this.marks.stars(0, 0); this.marks.stars(1, 0);
     this.game.spiritualLink?.detach(this); this.clash.collapse(); this.closing = !now;
-    this.flee.clear(); this.marks.refuse(null); this.juice.clear();
+    this.flee.clear(); this.marks.refuse(null); this.juice.clear(); this.stage.close(); this.dive.close();
+    this.clash.dome.scale.setScalar(DUEL_VIEW.radius); this.clash.U.uRadius.value = DUEL_VIEW.radius;
     if (now) { this.clash.open = [0, 0]; this.clash.update(0); this.root.visible = false; this.bursts.clear(); }
   }
 
-  play(events) { return this.isOpen ? this.beats.play(events) : Promise.resolve(); }
+  play(events) { this.hint(null); return this.isOpen ? this.beats.play(events) : Promise.resolve(); }
+
+  /** The idle hint (bot.js hintOf { action, junk, cells }, lit by the session after HINT.idle with no touch): the move's piece leaning
+   *  its way and every cell it would clear pulsing softly, never words (Candy Crush's, Bejeweled's); null lets it go. */
+  hint(h) {
+    for (const v of this.pieces.list) { v.hint = 0; v.hintDir = null; }
+    if (!this.isOpen || !h?.action) return;
+    const P = this.pieces, a = h.action, DV = { N: [0, -1], S: [0, 1], E: [1, 0], W: [-1, 0] }, at = (c) => (c ? P.at(c[0], c[1]) : null);
+    for (const c of h.cells || []) { const v = at(c); if (v) v.hint = 1; }
+    if (a.kind === 'swap' && a.at) { const d = DV[a.dir] || [1, 0], v = at(a.at), w = at([a.at[0] + d[0], a.at[1] + d[1]]); if (v) { v.hint = 1; v.hintDir = d; } if (w) { w.hint = 1; w.hintDir = [-d[0], -d[1]]; } }
+    else if (a.path?.length > 1) { const [p0, p1] = a.path, v = at(p0); if (v) { v.hint = 1; v.hintDir = [Math.sign(p1[0] - p0[0]), Math.sign(p1[1] - p0[1])]; } for (const c of a.path.slice(1)) { const w = at(c); if (w) w.hint = Math.max(w.hint, 0.6); } }
+    else if (a.at) { const v = at(a.at); if (v) v.hint = 1; }
+  }
 
   intent(plan) {
     if (!plan || !this.isOpen) { this.intentDraw.clear(); this.foresight.clear(); return; }
@@ -164,13 +183,6 @@ export class DuelView {
     const right = _w.crossVectors(this.face, UP).negate().normalize(), dx = (R.x + R.w / 2 - V.w / 2) / k, dy = (R.y + R.h / 2 - V.h / 2) / k;
     const look = this.centre.clone().setY(this.centre.y + base + (B.h * cs) / 2).addScaledVector(right, -dx).addScaledVector(UP, dy);
     return { pos: look.clone().addScaledVector(this.face, d), look };
-  }
-  /** On touch, the duel's shot kept to the room as it stands: the session frames it once at the open, before the duel's own tiles
-   *  replace the foot's (the board sat a third off centre, the owner's phone, 2026-10-27); eased toward the fit, never cut. */
-  refit(dt) {
-    const shot = this.game.cinema?.shots?.get('duel'); if (!shot || !this.game.hudLayout?.touch) return;
-    if ((this.fitT = (this.fitT || 0) - dt) <= 0) { this.fitT = 0.25; this.fit = this.frameShot(); }
-    if (!this.fit) return; const k = 1 - Math.exp(-6 * dt); shot.pos.lerp(this.fit.pos, k); shot.look.lerp(this.fit.look, k);
   }
   /** A cell's centre on the slab's face, in the world (the session's cursorAt asks here; on touch it shows no hand). */
   pointOf(cell) {
@@ -268,13 +280,17 @@ export class DuelView {
     const held = this.juice.scale(dt), shown = this.clash.update(held); // (a big play's held beat: the board's motion all but stops, the beats run on: juice.js)
     this.board.update(held); this.pieces.update(held); this.marks.update(held); this.bursts.update(held); this.flee.update(dt); this.juice.update(dt);
     if (this.isOpen && !this.beats.busy) this.flee.odds(this.state);
-    if (this.isOpen && !this.closing) this.refit(dt);
+    const st = this.isOpen && !this.closing ? this.stage.update(dt) : this.lastStage || { scale: 1, lift: 0, tilt: 0 }; this.lastStage = st; this.dive.update(dt); // (the zoom and the director: stage.js; who stands where: formdive.js)
     for (const side of [0, 1]) if (this.depth[side]) this.marks.stars(side, this.depth[side], this.headOf(side, _w));
     const f = this.foe; if (this.isOpen && this.depth[1] > 0 && f?.alive !== false && f?.pos) this.game.stun?.dizzy?.set(f, f.head?.() || _w.copy(f.pos).setY(f.pos.y + 2), { stunned: true }); // (the same gold stars on the Figment in the world)
     if (this.closing && !shown) { this.closing = false; this.root.visible = false; this.bursts.clear(); }
     else if (this.folded) this.frame.scale.setScalar(0.001); // (a fled duel: the tsuitate folded away, flee.js)
-    else if (this.closing) { const k = Math.max(this.clash.open[0], this.clash.open[1]); this.frame.scale.setScalar(Math.max(0.001, k)); }
-    else if (!this.flee.folding) this.frame.scale.setScalar(1);
+    else if (this.closing) { const k = Math.max(this.clash.open[0], this.clash.open[1]); this.frame.scale.setScalar(Math.max(0.001, k * st.scale)); }
+    else if (!this.flee.folding) { // (the stage's tsuitate: drawn in, lifted and leaning back in the arena; full and square in the board view)
+      const bob = st.lift ? Math.sin(this.stage.t * 1.4) * 0.025 * (st.lift / 0.32) : 0;
+      this.frame.scale.setScalar(st.scale); this.frame.position.set(0, st.lift + bob, 0); this.frame.rotation.set(-st.tilt, 0, 0);
+      if (st.dome) { this.clash.dome.scale.setScalar(st.dome); this.clash.U.uRadius.value = st.dome; }
+    }
   }
 
   /** Dread's fog, cell by cell (0 seen .. 1 hidden), and the lantern's light, eased toward what visibleTo says now. */
@@ -307,6 +323,7 @@ export class DuelView {
     for (const side of [0, 1]) this.pieces.bodyAt(side); this.pieces.add('orb', { side: 0 }, 3, 3); this.pieces.add('stone', {}, 4, 3); this.pieces.add('bomb', {}, 5, 3);
     const coal = this.pieces.add('ember', { count: 2 }, 6, 3); coal.craze = 0.8; this.marks.refuse({ x: 7, y: 3 }); // (the crazing's quads, the dry rim)
     this.juice.prewarm(); this.update(0.016); this.flee.prewarm(); this.flee.odds(state);
-    return () => { this.close(true); this.frame.scale.setScalar(1); };
+    this.dive.from.set(0, -50, 0); this.dive.to.set(1, -49, 0); this.dive.mid.set(0.5, -48, 0); this.dive.draw(0.6, 0); // (the stream's program)
+    return () => { this.close(true); this.frame.scale.setScalar(1); this.frame.position.set(0, 0, 0); this.frame.rotation.set(0, 0, 0); this.dive.beads.visible = false; };
   }
 }
