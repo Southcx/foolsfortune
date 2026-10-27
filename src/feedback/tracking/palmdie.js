@@ -18,5 +18,5 @@ export function palmDieRules({ on, L, log }) {
     L.inc('palm.roll'); if (e.held) L.inc('palm.held', e.held);
     if (e.held) log.say('god', `Your palm die shows ${e.face} against the island's ${e.against}: ${e.held > 1 ? 'two' : 'one'} of its answer held off.`, { key: 'palm.roll', throttle: 4 });
   });
-  on('duel.flee', (e) => { if (e.reroll && e.by === 'courier') L.inc('luck.reroll'); });
+  on('duel.flee', (e) => { if (e.reroll && e.by === 'courier' && !e.practice) L.inc('luck.reroll'); });
 }

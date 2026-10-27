@@ -627,6 +627,10 @@ Until South rules, nothing more is built on the Courier's movement (no D-pad, no
 
 Section 21.4 built as the default (`DUEL.style = 'drag'`; a ruleset may still ask `style: 'classic'` for the forms and the old verbs).
 
+**Ruled** (South to Petra, 2026-10-27 16:23 UTC: "I approve any and all updates to the puzzle duel module that you ultimately think
+improves the user experience of playing"): the one-gesture duel and the session's edits stand; published as Version 327. The forms' dive
+moves onto a skill's cast (Calissa's).
+
 ### 22.1 The rules
 1. **One board verb: drag.** The hand drags a gem along a path, its cost by length as before; a press onto a neighbour is a drag of
    one step (the swap kept as its shortest form). Rotate and drop are gone from this style; so are the forms, run, push and kick.
@@ -664,7 +668,8 @@ quiet copies) is handed to the view (`view.hint(h | null)`). The bus gets the mo
 | classic psygun + Soul Brush (before) | 22/30 | 3.2 vs 2.1 | none (Paint half the junk) |
 | psygun + Dreamvane | 18/30 | 2.8 vs 2.5 | Shot 0.9 (6.4), Vein 0.2 (8.0) |
 | Lockheart + Veritome | 25/30 | 2.8 vs 2.5 | Read 1.1, Hold 0.8 (4.8) |
-| Soul Brush + psygun, Sondelass + Crucibelle | (measuring: the Paint and Tune skills look further ahead and run slow) | |
+| psygun + Soul Brush (12 duels) | 6/12 | 3.2 vs 2.8 | Shot 0.7 (6.1), Paint 0.3 (12.5) |
+| Sondelass + Crucibelle | (measuring: Tune's lookahead runs slow) | | |
 Duels run 5 to 6 turns a side against the classic's 7.3: shorter, and every turn has its one big move. A pair is a playstyle, not a
 power: the attackers (Shot, Vein) win by sending, the defenders (Hold, Grab) by refusing, the Read by the extra moves.
 
@@ -687,4 +692,18 @@ win one (du1), break a Figment (du2), a chain of 4 (du3) and of 6 (du4), fire a 
 Prior art: Puzzle & Dragons (the drag, the orb change, active skills charged by play), Terra Battle (the drag's path), Puzzle Quest (mana
 from matches), Candy Crush (the striped candy, the colour bomb), Puyo Puyo Fever (a meter filled by chains), Tetris Effect (the perfect
 clear).
+
+### 22.6 The practice duel: Strawman at the sparring circle (South, 2026-10-27 via Petra: "test more basic implementations of the puzzle duel module")
+Petra's session opens a practice duel with a foe marked `c.practice` (Strawman's aberrant stance); every `duel.*` event carries
+`practice: true`; no pool change, no shatter, no drain. Mine:
+- **Its rulesets** (`rulesets.js`): `strawman`, the duel with nothing but its core: 10 x 8 (an 8 x 8's halves of 4 columns made Shot
+  and Vein near useless and the bot won 2 in 3), 4 colours, plain gravity both halves, runs of 3 and any 4 touching, no fog, embers or
+  bombs, a bot weighing 2 actions a point that acts **every other turn** (`bot.every: 2`); `strawmanIdle`, a foe that never acts
+  (`bot.idle`). `PRACTICE { idle, plain, wisp }` is the lectern's pick (`rulesetOf(c, pick)`), `wisp` the Lantern Wisp's own board.
+  Measured (the stand-in at sample 3, 20 to 30 duels): plain, Lockheart + Veritome 14 of 20; at every turn and sample 4 it won 10 to
+  15 of 30, too hard for a dummy.
+- **It never counts**: tracking/duel.js says a practice duel in the log but keeps nothing on the ledger; first-today pays nothing for
+  it; a Luck re-roll thrown there is not spent.
+- **The lesson** runs in practice when due, and finishing it there counts (`duel.lesson`, the one count practice keeps: the lesson is
+  what you know, not a record); `lessonDue` is false after a duel won or the lesson finished once.
 

@@ -36,7 +36,7 @@ export class FirstToday {
     this.game = game; this.day = -1; this.done = new Set();
     game.save?.section('firstToday', { scope: 'player', version: 1, dump: () => ({ day: this.day, done: [...this.done] }),
       load: (d) => { this.day = d?.day ?? -1; this.done = new Set(d?.done || []); }, reset: () => { this.day = -1; this.done = new Set(); } });
-    for (const [id, M] of Object.entries(FIRST_TODAY.modules)) for (const type of M.on) game.events?.on?.(type, (e) => { if ((e?.by ?? 'courier') === 'courier') this.did(id); });
+    for (const [id, M] of Object.entries(FIRST_TODAY.modules)) for (const type of M.on) game.events?.on?.(type, (e) => { if ((e?.by ?? 'courier') === 'courier' && !e?.practice) this.did(id); }); // (a practice duel, Strawman's, pays nothing)
   }
   /** The modules not yet done this game day (the Index may show them: Petra's). */
   left() { this.turn(); return Object.keys(FIRST_TODAY.modules).filter((id) => !this.done.has(id)); }

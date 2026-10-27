@@ -6,7 +6,8 @@
 //   LINE    'line' { line } (the boundary slid a column toward whoever took the garbage): a stone block dragged a beat, a thud, panned to
 //           where the line now stands
 //   CLEAR   'clear' { colour, side }: a glassy pop, its pitch the gem's feeling as a step of the duel's key (the cue's root), so clears
-//           of different feelings chord; a limit a feeling. 'chain' { weak } (a weak colour's hit) a brighter edge on its step
+//           of different feelings chord; a limit a feeling and one for all; ducked under a chain step that lands with it (deeper the
+//           higher the step), so the step is the line heard and a cascade is a climb, not a pile. 'chain' { weak } (a weak colour's hit) a brighter edge on its step
 //   BEATS   'allclear' (the key's chord blooming up), 'refund' (an action point back: a coin's two notes), 'turn' (a woodblock, high
 //           yours, low the foe's), 'ember.cool' (a hiss and a glassy note), 'hint' (the idle hint: a breath of the fifth, once in 10 s)
 //   and the rest: fall (a soft patter), break (junk cracking: clay), blast (a bomb), pinch (junk turned to a gem: a clay crack resolving
@@ -25,11 +26,15 @@
 //   FLEE    'flee' { roll, ok } (a saving throw to escape, flee.js): a d20 thrown, rattling, landing; then what it says: a 20 a crit's
 //           bright run and a crown of bells, a 1 a dull clunk sagging down a tritone, a pass a light lift, a miss a soft drop;
 //           'duel.fled' the escape: a rush away
+//   SKILLS  the one-gesture duel's (PUZZLE-DUELS.md 22): 'skill' { tool } a swell diving into the board with the tool's voice on top;
+//           'charge' { ready } a skill full: a chime up to the octave (the foe's lower, quieter); 'blast' { rows } Shot's rows swept from
+//           the outer edge to the Line; 'vein' { colour } its note rippling down the octaves; 'recolour' Paint's stroke; 'tune' { colour }
+//           the colour's bell struck, 'tune.end' damped; 'read' a page turned, two coins and the fog lifting
 //   PULL    nearness opening a duel (PUZZLE-DUELS.md 16.3; world/duel/duelfoes.js `pull` 0..1, read each 50 ms): a held throb under the
 //           Courier, a heartbeat quickening as the pull fills, and a pair of detuned tones closing in on each other a fifth higher (the
 //           aberrant's data bug heard: two notes almost one); on the loop bus, so a menu hushes it. duel.slip lets it go with a falling
 //           breath; duel.open (the pull full, the duel begun) snaps it shut on a caught-frame crack and a low boom
-// No view or room yet (PUZZLE-DUELS.md 8): nothing calls these until one exists.
+// The duel's view (vfx/duelview/beats.js, Calissa's) calls duelEvent with each event as it plays it.
 // Prior art: Puyo Puyo's chain voices (each step a higher call: the step is heard before it is counted), Tetris Effect's notes on the
 // key, Puzzle Fighter's gem shatter and counter-gem thud, Meteos's launch.
 // Every method runs on the Sfx itself (`this.ctx`, `this.out`, `this.noise`, `this.tone`, `this.allow`: audio/core.js).
@@ -72,7 +77,14 @@ export class PuzzleDuelSounds {
       case 'duel.fled': return this.duelFled();
       case 'duel.finisher': return this.duelFinisher(e.depth);
       case 'run': case 'kick': case 'shot': case 'grab': case 'drill': case 'paint': case 'delay': case 'hold': case 'hold.send': return this.duelTool(e.type, e);
-      case 'blast': return this.duelBlast();
+      case 'blast': return e.rows ? this.duelShotRows(e.side) : this.duelBlast();
+      case 'skill': return this.duelSkill(e.tool, e.side);
+      case 'charge': return e.ready ? this.duelReady(e.tool, e.side) : null;
+      case 'vein': return this.duelVein(e.colour, e.side);
+      case 'recolour': return this.duelRecolour(e.side);
+      case 'tune': return this.duelTune(e.colour, e.side);
+      case 'tune.end': return this.duelTuneEnd(e.side);
+      case 'read': return this.duelRead(e.side);
       case 'pinch': return this.duelPinch(e.colour);
       case 'land': return this.duelLand(e.n, e.side);
       case 'offset': return this.duelOffset(e.n, e.side);
@@ -84,7 +96,8 @@ export class PuzzleDuelSounds {
   /** A chain's step: a note higher each, fuller as it climbs. */
   duelChain(step = 1, side = 0, weak = false) {
     if (!this.ok() || !this.allow('duelChain', 12)) return;
-    const n = Math.max(1, step | 0), foe = side === 1, t = this.ctx.currentTime, d = this.duelOut(0.32 + 0.045 * Math.min(8, n), 0.35 + 0.05 * Math.min(6, n), sidePan(side));
+    const n = Math.max(1, step | 0), foe = side === 1, t = this.ctx.currentTime; this._duelStep = { t, n };
+    const d = this.duelOut(0.32 + 0.045 * Math.min(8, n), 0.35 + 0.05 * Math.min(6, n), sidePan(side));
     const m = chainNote(n, duelRoot(this)) - (foe ? 12 : 0), type = foe ? 'square' : 'triangle', g = foe ? 0.05 : 0.11;
     if (weak && !foe) { this.tone(t, 0.22, { f0: hz(m + 12), type: 'sawtooth', gain: 0.025, dest: d }); this.noise(t, 0.05, { type: 'highpass', f0: 6000, gain: 0.12, dest: d }); } // (a weak colour's hit: a brighter edge)
     this.tone(t, 0.3, { f0: hz(m - 0.5), f1: hz(m), type, gain: g, dest: d }); // (a little scoop up into the note)
@@ -100,8 +113,12 @@ export class PuzzleDuelSounds {
   }
   /** A gem cleared: a glassy pop at its colour's note. */
   duelClear(colour, side = 0) {
-    if (!this.ok() || !this.allow(`duelClear.${colour}`, 10)) return; // (a limit a feeling: three colours at once are a chord, not one pop)
-    const t = this.ctx.currentTime, d = this.duelOut(0.22, 0.3, sidePan(side) * 0.5), m = duelRoot(this) + 12 + (FEELING_STEP[colour] ?? 0) - (side === 1 ? 12 : 0);
+    if (!this.ok() || !this.allow(`duelClear.${colour}`, 10) || !this.allow('duelClearAll', 28)) return; // (a limit a feeling: three colours at once are a chord, not one pop; and all of them, so a board-wide cascade cannot pile)
+    queueMicrotask(() => this.duelClearNow(colour, side)); // (after the phase's other events: its chain step comes after its clears, and the duck needs to know it)
+  }
+  duelClearNow(colour, side = 0) {
+    const t = this.ctx.currentTime, st = this._duelStep, under = st && st.n >= 2 && t - st.t < 0.15 ? Math.max(0.3, 0.8 - 0.08 * st.n) : 1; // (the duck: a cascade's clears tucked under its step, more the higher it climbs; a plain match stays bright)
+    const d = this.duelOut(0.22 * under, 0.3, sidePan(side) * 0.5), m = duelRoot(this) + 12 + (FEELING_STEP[colour] ?? 0) - (side === 1 ? 12 : 0);
     this.noise(t, 0.02, { type: 'bandpass', f0: 5000, q: 2, gain: 0.15, dest: d });
     [1, 2.76].forEach((r, j) => this.tone(t, 0.18, { f0: hz(m) * r, gain: j ? 0.01 : 0.04, dest: d }));
   }
@@ -136,6 +153,70 @@ export class PuzzleDuelSounds {
     if (!this.ok() || !this.allow('duelHint', 0.1)) return;
     const t = this.ctx.currentTime, d = this.duelOut(0.12, 0.6);
     this.riser(t, 0.6, { f0: hz(duelRoot(this) + 7) * 0.99, f1: hz(duelRoot(this) + 7), type: 'sine', gain: 0.03, dest: d });
+  }
+  /** A skill fired (the one-gesture duel, PUZZLE-DUELS.md 22): the Courier diving into the board, a swell up into it, and on its
+   *  top the worn tool's own voice in small (the psygun's crack, the dowser's ring, the brush's sweep, the grapnel's bite, the bell,
+   *  the coffin's lid, the book's pages). The skill's own effect (a blast, a vein, a paint) follows as its own event. */
+  duelSkill(tool = '', side = 0) {
+    if (!this.ok() || !this.allow('duelSkill', 3)) return;
+    const t = this.ctx.currentTime, foe = side === 1, d = this.duelOut(foe ? 0.26 : 0.4, 0.45, sidePan(side) * 0.5), r = duelRoot(this) - (foe ? 12 : 0), top = t + 0.22;
+    this.riser(t, 0.22, { f0: hz(r - 12), f1: hz(r + 12), type: 'sawtooth', gain: 0.035, dest: d }); this.noise(t, 0.24, { type: 'bandpass', f0: 600, f1: 3200, q: 0.8, gain: 0.14, attack: 0.15, dest: d }); // (the dive: a swell up into the board)
+    switch (tool) {
+      case 'psygun': this.noise(top, 0.03, { type: 'highpass', f0: 3000, gain: 0.4, dest: d }); this.tone(top, 0.18, { f0: 170, f1: 50, gain: 0.4, dest: d }); break;
+      case 'dreamvane': [0, 7, 12].forEach((st, k) => this.tone(top + k * 0.04, 0.7, { f0: hz(r + 12 + st), gain: 0.04, dest: d })); break; // (the fork struck: its ring)
+      case 'soulbrush': this.noise(top, 0.3, { type: 'bandpass', f0: 600, f1: 1800, q: 1, gain: 0.22, attack: 0.04, dest: d }); break;
+      case 'sondelass': this.noise(top, 0.12, { type: 'bandpass', f0: 1500, f1: 3800, q: 2, gain: 0.16, dest: d }); this.noise(top + 0.12, 0.015, { type: 'bandpass', f0: 4200, q: 8, gain: 0.5, dest: d }); break;
+      case 'crucibelle': [1, 2.4, 3.9].forEach((q, j) => this.tone(top, 1.3, { f0: hz(r) * q, gain: [0.1, 0.035, 0.018][j], dest: d })); break;
+      case 'lockheart': this.tone(top, 0.12, { f0: 130, f1: 70, gain: 0.4, dest: d }); this.noise(top, 0.05, { type: 'bandpass', f0: 2200, q: 4, gain: 0.3, dest: d }); break; // (the lid thrown open)
+      case 'veritome': for (let k = 0; k < 4; k++) this.noise(top + k * 0.05, 0.05, { type: 'bandpass', f0: 2600 + k * 300, q: 1.5, gain: 0.12, dest: d }); break; // (pages riffled)
+      default: this.tone(top, 0.3, { f0: hz(r + 12), type: 'triangle', gain: 0.08, dest: d });
+    }
+  }
+  /** A skill full (`charge` ready): a chime in the key, two notes up to the octave, so the ear knows the button is live before the eye
+   *  looks; the foe's an octave down and quieter (its skill is coming). */
+  duelReady(tool = '', side = 0) {
+    if (!this.ok() || !this.allow(`duelReady.${tool}`, 1)) return;
+    const t = this.ctx.currentTime, foe = side === 1, d = this.duelOut(foe ? 0.14 : 0.26, 0.6, sidePan(side) * 0.6), r = duelRoot(this) + (foe ? 0 : 12);
+    this.tone(t, 0.5, { f0: hz(r + 7), gain: 0.05, dest: d }); this.tone(t + 0.09, 0.9, { f0: hz(r + 12), gain: 0.06, dest: d }); this.tone(t + 0.09, 0.9, { f0: hz(r + 12) * 2.76, gain: 0.008, dest: d });
+  }
+  /** Shot's three rows cleared (`blast` with rows): a beam swept across the half, not a bomb: a bright sweep over a low punch. */
+  duelShotRows(side = 0) {
+    if (!this.ok() || !this.allow('duelShotRows', 3)) return;
+    const c = this.ctx, t = c.currentTime, d = this.duelOut(0.4, 0.35), p = c.createStereoPanner();
+    p.pan.setValueAtTime(side === 1 ? 0.7 : -0.7, t); p.pan.linearRampToValueAtTime(side === 1 ? 0.05 : -0.05, t + 0.3); p.connect(d); // (swept from the outer edge to the Line)
+    this.noise(t, 0.32, { type: 'bandpass', f0: 1200, f1: 5000, q: 2, gain: 0.3, dest: p }); this.tone(t, 0.3, { f0: 120, f1: 45, gain: 0.45, dest: d });
+    setTimeout(() => p.disconnect(), 1500);
+  }
+  /** Vein: every gem of one feeling found at once, the dowser's run: its note rippling down through the octaves it sits in. */
+  duelVein(colour, side = 0) {
+    if (!this.ok() || !this.allow('duelVein', 3)) return;
+    const t = this.ctx.currentTime, d = this.duelOut(0.32, 0.6, sidePan(side) * 0.4), m = duelRoot(this) + 24 + (FEELING_STEP[colour] ?? 0) - (side === 1 ? 12 : 0);
+    for (let k = 0; k < 6; k++) this.tone(t + k * 0.045, 0.4, { f0: hz(m - [0, 5, 12, 17, 24, 29][k]), type: 'triangle', gain: 0.05, dest: d });
+    this.noise(t, 0.4, { type: 'highpass', f0: 5000, f1: 2500, gain: 0.05, attack: 0.03, dest: d });
+  }
+  /** Paint's 3 x 3 taking one colour: a wet stroke, then the cells settling in one note. */
+  duelRecolour(side = 0) {
+    if (!this.ok() || !this.allow('duelRecolour', 3)) return;
+    const t = this.ctx.currentTime, d = this.duelOut(0.24, 0.35, sidePan(side) * 0.5);
+    this.noise(t, 0.25, { type: 'bandpass', f0: 800, f1: 1600, q: 1, gain: 0.15, attack: 0.03, dest: d }); this.tone(t + 0.2, 0.4, { f0: hz(duelRoot(this) + 12), gain: 0.035, dest: d });
+  }
+  /** Tune: the colour's note struck as the bell's (it clears at 3 now); and when it ends, the bell damped. */
+  duelTune(colour, side = 0) {
+    if (!this.ok() || !this.allow('duelTune', 2)) return;
+    const t = this.ctx.currentTime, d = this.duelOut(0.3, 0.7, sidePan(side) * 0.4), m = duelRoot(this) + (FEELING_STEP[colour] ?? 0) - (side === 1 ? 12 : 0);
+    [1, 2, 3.01].forEach((q, j) => this.tone(t, 1.6, { f0: hz(m) * q, gain: [0.08, 0.03, 0.015][j], dest: d }));
+  }
+  duelTuneEnd(side = 0) {
+    if (!this.ok() || !this.allow('duelTuneEnd', 2)) return;
+    const t = this.ctx.currentTime, d = this.duelOut(0.18, 0.2, sidePan(side) * 0.4);
+    this.tone(t, 0.12, { f0: hz(duelRoot(this)), f1: hz(duelRoot(this)) * 0.98, gain: 0.05, dest: d }); this.noise(t, 0.05, { type: 'lowpass', f0: 800, gain: 0.1, dest: d });
+  }
+  /** Read: two action points back (two coins, as a refund) under a page turned, the fog lifting in a soft rising air. */
+  duelRead(side = 0) {
+    if (!this.ok() || !this.allow('duelRead', 2)) return;
+    const t = this.ctx.currentTime, d = this.duelOut(0.24, 0.5, sidePan(side) * 0.5), r = duelRoot(this) + 12;
+    this.noise(t, 0.12, { type: 'bandpass', f0: 2400, f1: 1600, q: 1.2, gain: 0.12, dest: d }); this.noise(t + 0.05, 0.9, { type: 'highpass', f0: 1500, f1: 6000, gain: 0.04, attack: 0.3, dest: d });
+    [7, 12, 7, 12].forEach((st, k) => this.tone(t + 0.15 + k * 0.07, k % 2 ? 0.22 : 0.08, { f0: hz(r + st), type: 'square', gain: 0.035, dest: d }));
   }
   duelFall() {
     if (!this.ok() || !this.allow('duelFall', 10)) return;

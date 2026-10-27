@@ -37,8 +37,9 @@ export const LESSON = {
 };
 export const stepsOf = (s) => (s.style === 'drag' ? LESSON.dragSteps : LESSON.steps);
 
-/** Is the lesson due? Until the first puzzle duel won (the ledger's `duel.won`, tracking/duel.js). */
-export const lessonDue = (L) => !(L?.get?.('duel.won') > 0);
+/** Is the lesson due? Until the first puzzle duel won or the lesson finished once (the ledger's `duel.won`, `duel.lesson`: tracking/duel.js).
+ *  A practice duel (Strawman's) runs it too when due, and finishing it there counts: the lesson is what you know, not a record. */
+export const lessonDue = (L) => !(L?.get?.('duel.won') > 0 || L?.get?.('duel.lesson') > 0);
 
 /** The lesson's state for a new duel, or null. */
 export const lessonOf = (on) => (on ? { step: 0, idle: LESSON.idle } : null);

@@ -137,7 +137,7 @@ export class Rerolls {
       load: (d) => { this.day = d?.day ?? -1; this.used = +d?.used || 0; },
       reset: () => { this.day = -1; this.used = 0; },
     });
-    game.events?.on('duel.flee', (e) => { if (e.reroll && e.by === 'courier') this.spend(); }); // (the duel's kernel threw it again: flee.js)
+    game.events?.on('duel.flee', (e) => { if (e.reroll && e.by === 'courier' && !e.practice) this.spend(); }); // (a practice duel spends none) // (the duel's kernel threw it again: flee.js)
   }
   roll() { const d = today(); if (d !== this.day) { this.day = d; this.used = 0; } }
   left() { this.roll(); return Math.max(0, rerollsOf(this.game.ledger ? luckOf(this.game.ledger).bits : 0) - this.used); }

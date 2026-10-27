@@ -13,7 +13,7 @@ import { fx } from './lineformat.js';
 
 export function skiffRules({ on, L, log }) {
   for (const k of ['summon', 'mount', 'recall']) on(`skiff.${k}`, (e) => { if (e.by === 'courier') L.inc(`skiff.${k}`); });
-  on('skiff.park', (e) => { if (e.by !== 'courier') return; L.inc('skiff.park'); log.say('info', 'You leave the Solar Skiff hovering. F to step back on.', { key: 'skiff.park', throttle: 20 }); });
+  on('skiff.park', (e) => { if (e.by !== 'courier') return; L.inc('skiff.park'); log.say('info', 'You leave the Solar Skiff hovering where you stepped off.', { key: 'skiff.park', throttle: 20 }); });
   on('skiff.bail', (e) => { if (e.by === 'courier') { L.inc(`skiff.bail.${e.why}`); L.hi('skiff.bail.speed', e.speed || 0); } });
 }
 

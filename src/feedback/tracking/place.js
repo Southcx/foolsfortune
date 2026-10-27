@@ -6,28 +6,29 @@
 // The Solar Skiffing trial says its start and an end short of the last ring (world/dunes/solar.js). Words are placeholders for
 // Espada's. feedback/tracking/rules.js calls it.
 //
-//   placeRules({ on, log })
+//   placeRules({ on, log, g })
 //   placeEnterRules({ on, L, log, g })
 // ---------------------------------------------------------------------------------------
+import { said } from './lineformat.js';
 
-const ART = { walk: 'Walk: tap the ground, and your Pneuka Jar hops there.', grab: 'Grab: lift your Pneuka Jar, a spirit or a feature. Tap a spirit to pet it; the right button flicks it.', paint: 'Paint: lay a ground on the clay; the right button clears it. R turns the ground.', water: 'Water: pour with the left button, drink with the right; Shift sets a spring, Ctrl a drain. R turns the feeling.', flatten: 'Flatten: level the clay to where the stroke began.', roughen: 'Roughen: break up the clay.', pull: 'Pull: raise the clay.', press: 'Press: lower the clay.', carve: 'Carve: cut a channel for water.', smooth: 'Smooth: make the clay level.', place: 'Place: put a feature in a plot.' };
+const ART = { walk: 'Walk: tap the ground, and your Pneuka Jar hops there.', grab: 'Grab: lift your Pneuka Jar, a spirit or a feature. Tap a spirit to pet it, or flick it with the second button.', paint: 'Paint: lay a ground on the clay; the second button clears it. {gaTurn} turns the ground.', water: 'Water: pour with the first button, drink with the second; {gaSpring} sets a spring, {gaDrain} a drain. {gaTurn} turns the feeling.', flatten: 'Flatten: level the clay to where the stroke began.', roughen: 'Roughen: break up the clay.', pull: 'Pull: raise the clay.', press: 'Press: lower the clay.', carve: 'Carve: cut a channel for water.', smooth: 'Smooth: make the clay level.', place: 'Place: put a feature in a plot.' };
 
-export function placeRules({ on, log }) {
+export function placeRules({ on, log, g }) {
   // the welcome waits for the title to close (FIRST-HOUR.md 3: said at session.open it scrolled by under the title, unseen)
-  let fresh = false, said = false;
+  let fresh = false, welcomed = false;
   on('session.open', (e) => { fresh = !!e.fresh; });
   on('title.enter', (e) => {
-    if (said) return; said = true;
-    log.say('system', 'Welcome to the workshop. Press B for the Codex: arts, ledger and records.');
+    if (welcomed) return; welcomed = true;
+    log.say('system', said(g, 'Welcome to the workshop. {codex} opens the Codex: your arts, ledger and records.'));
     if (fresh) log.say('system', 'A new build of the game: your arts, ledger, records and Codex start afresh. (Settings are kept.)');
     // the mode's line points at the first step (FIRST-HOUR.md 3; Espada's words, 2026-10-22)
     log.say('system', e.mode === 'story' ? 'You wake in the workshop, beside a Shrine. Rest there first. Type /goals to see your first three goals.' : 'DEBUG: the sandbox. Every art is yours in the lab, every tool and every room.');
   });
   on('garden.refuse', (e) => log.say('warn', { god: 'Not while you are the god hand.', death: 'Not while your Pneuka Jar is broken.', stage: 'Not during a sea stage.', busy: 'Wait a moment.' }[e.why] || 'Not now.', { key: 'garden.refuse', throttle: 1 })); // (world/garden/realm.js)
   on('garden.jar.back', () => log.say('info', 'Your Pneuka Jar lands back at the gate.', { key: 'garden.jar.back', throttle: 2 })); // (thrown off into the sky: world/garden/realm.js)
-  on('garden.art', (e) => log.say('system', `Your hand: ${e.mode === 'decor' ? 'Decorate: set a garden piece. Click the ground for the catalogue.' : ART[e.art] || e.art}${e.ground ? ` Ground: ${e.ground}.` : ''}${e.feeling ? ` Water: ${e.feeling === 'draught' ? 'your last drink' : e.feeling}.` : ''}`, { key: 'garden.art', throttle: 0.3 })); // (words a placeholder, Espada's)
+  on('garden.art', (e) => log.say('system', said(g, `Your hand: ${e.mode === 'decor' ? 'Decorate: set a garden piece. Click the ground for the catalogue.' : ART[e.art] || e.art}${e.ground ? ` Ground: ${e.ground}.` : ''}${e.feeling ? ` Water: ${e.feeling === 'draught' ? 'your last drink' : e.feeling}.` : ''}`), { key: 'garden.art', throttle: 0.3 })); // (words a placeholder, Espada's)
   on('garden.reset.ask', () => log.say('warn', 'Again to put this planetoid back as it was: its clay, its ground and its water.', { key: 'garden.reset', throttle: 1 }));
-  on('garden.reset', () => log.say('info', 'The planetoid is back as it was. Ctrl+Z undoes it.', { key: 'garden.reset', throttle: 1 }));
+  on('garden.reset', () => log.say('info', said(g, 'The planetoid is back as it was. {gaUndo} undoes it.'), { key: 'garden.reset', throttle: 1 }));
   on('mind.brim', () => log.say('warn', 'Your pool overflows.', { key: 'mind.brim', throttle: 2 })); // (Espada's words, the glossary)
   on('mind.settle', () => log.say('info', 'You settle.', { key: 'mind.settle', throttle: 2 }));
   on('mind.state', (e) => log.say('info', `Your mental state: ${e.state}.`, { key: 'mind.state', throttle: 3 }));

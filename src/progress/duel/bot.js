@@ -42,6 +42,7 @@ export function score(s, side) {
 
 /** The side's best line of actions for its points now, found greedily on a copy (the duel itself is not changed). */
 export function plan(s, side = s.toMove, { sample = s.rs.bot?.sample ?? 60 } = {}) { // (a Figment's own cleverness, rulesets.js)
+  const B = s.rs.bot; if (side === 1 && (B?.idle || (B?.every > 1 && (s.ply >> 1) % B.every))) return []; // (a practice foe: never acts, or acts one turn of `every`: rulesets.js strawman)
   let c = cloneState(s); if (c.toMove !== side) { c.toMove = side; c.apLeft = DUEL.ap; } // (an intent: its next turn's plan)
   if (wantsToFlee(c, side)) return [{ kind: 'flee' }]; // (a roll is judged by its odds, never by a peek at its outcome)
   const out = [];
