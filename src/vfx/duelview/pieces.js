@@ -33,7 +33,7 @@
 //
 //   const P = new DuelPieces(parent)   P.build(kernelBoard, foeAspect)   P.at(x, y)   P.byId(id)   P.add(kind, props, x, y) -> v
 //   P.move(v, x, y) (the model only)   P.remove(v)   P.hideBody(side, hidden)   P.bodyAt(side) -> v   P.update(dt)   P.list
-//   P.weak (a colour | null) P.line P.fore (a Set of 'x,y': glows.js)   gemColour(aspect, out) -> THREE.Color (a gem's own colour)
+//   P.weak (a colour | null) P.line P.fore (a Set of 'x,y': glows.js) P.dormant (0..1: the Courier's figurine asleep in the hand's form, formdive.js)   gemColour(aspect, out) -> THREE.Color (a gem's own colour)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { crystalFretMaterial } from '../crystalfrets.js';
@@ -101,7 +101,8 @@ export class DuelPieces {
     fam('craze', new THREE.PlaneGeometry(1, 1), M.glow, N); // (a cooling coal's crazing: crazing.js)
     // the bodies: two figurines
     const cs = DUEL_VIEW.cs;
-    this.courier = new THREE.Group(); this.courier.add(new THREE.Mesh(courierFigurine(), M.clayVc));
+    this.courierMesh = new THREE.Mesh(courierFigurine(), M.clayVc); this.courier = new THREE.Group(); this.courier.add(this.courierMesh);
+    this.clayVc = M.clayVc; this.sleepMat = M.clayVc.clone(); this.sleepMat.name = 'duel-figurine-asleep'; this.sleepMat.color.setHex(0x6f7480); this.dormant = 0; // (the hand's form: the figurine asleep in a stone glaze, formdive.js)
     this.ring = new THREE.Mesh(new THREE.RingGeometry(0.44, 0.48, 28), mindLineMaterial({ opacity: 0.9, depthTest: true }));
     this.courier.add(this.ring);
     this.foeMat = aberrantFigurine(new THREE.MeshStandardMaterial({ name: 'duel-idol', color: 0xc80018, roughness: 0.5, metalness: 0.1, flatShading: true })); // (the aberrant's look on the idol: vfx/aberrantlook.js)
@@ -180,7 +181,8 @@ export class DuelPieces {
       if (v.kind === 'body') {
         const b = v.side === 0 ? this.courier : this.foe; if (this.bodyHidden[v.side]) continue;
         b.visible = true; b.position.copy(_p); b.scale.set(cs * v.s * v.sx * grow, cs * v.s * v.sy * grow, cs * v.s * grow);
-        if (v.side === 0) this.ring.rotation.z = t * 0.6; else b.rotation.z = Math.sin(t * 1.3 + v.seed * 6) * 0.08;
+        if (v.side === 0) { const d = this.dormant || 0; this.ring.rotation.z = t * 0.6; this.ring.visible = d < 0.5; this.courierMesh.material = d >= 0.5 ? this.sleepMat : this.clayVc; if (d >= 0.5) b.scale.y *= 0.92; }
+        else b.rotation.z = Math.sin(t * 1.3 + v.seed * 6) * 0.08;
         continue;
       }
       const gx = Math.round(v.x + v.dx), gy = Math.round(v.y + v.dy), seen = fore?.has(gx + ',' + gy);

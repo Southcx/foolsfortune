@@ -42,6 +42,7 @@ import { TOOL_BEATS2, shotBeat, paintBeat, tuneBeat, tuneEndBeat, readBeat } fro
 import { FLEE } from '../../progress/duel/flee.js';
 import { JUICE_EVENTS } from './juice.js';
 import { gemColour } from './pieces.js';
+import { DIVE } from './formdive.js';
 
 const ACTS = new Set(['swap', 'drag', 'rotate', 'drop', 'push', 'kick', 'form']);
 const COST = { swap: 1, rotate: 1, drop: 1, push: 1, kick: 2, form: 1, run: 1, shot: 1, grab: 1, drill: 1, paint: 2, delay: 2, hold: 1, 'hold.send': 1, 'duel.finisher': 2 };
@@ -63,7 +64,7 @@ export class DuelBeats {
         if (!this.job) { this.job = this.jobs.shift() || null; if (!this.job) return; }
         this.phase = this.next(this.job);
         if (!this.phase) { const j = this.job; this.job = null; if (!this.jobs.length) this.view.settleUp(); j.resolve(); continue; }
-        this.phase.age = 0; for (const e of this.phase.events || []) sfx.duelEvent?.(e);
+        this.phase.age = 0; for (const e of this.phase.events || []) { sfx.duelEvent?.(e); this.view.stage?.event?.(e); } // (the director's answer: stage.js)
       }
       const P = this.phase; P.age += dt; dt = 0;
       P.step?.(Math.min(1, P.age / P.dur), P.age);
@@ -192,9 +193,9 @@ export class DuelBeats {
       while (at(c) && at(c) !== body) { run.push({ v: at(c), from: [...c], to: [c[0] + d[0], c[1] + d[1]] }); c = [c[0] + d[0], c[1] + d[1]]; }
       mv.push(...run); if (body) mv.push({ v: body, from: [e.to[0] - d[0], e.to[1] - d[1]], to: e.to }); }
     else if (e.type === 'kick') { const v = P.byId(e.id); if (v) mv.push({ v, from: [v.cx, v.cy], to: e.to }); }
-    else if (e.type === 'form') { const body = P.bodyAt(e.side); if (body) { cellLocal(body.x, body.y, V.board3, _a); V.bursts.burst(_a, V.filmHex(0.1), 12, { speed: 0.9, life: 0.4, fall: 0, spread: 0.2 }); } V.form(e.side, e.to); }
+    else if (e.type === 'form') { V.form(e.side, e.to); if (e.side === 0 && V.dive) V.dive.start(e.to); else { const body = P.bodyAt(e.side); if (body) { cellLocal(body.x, body.y, V.board3, _a); V.bursts.burst(_a, V.filmHex(0.1), 12, { speed: 0.9, life: 0.4, fall: 0, spread: 0.2 }); } } } // (your form: the Jar's pour, formdive.js)
     for (const m of mv) if (!m.grow) P.move(m.v, -1, -1); for (const m of mv) P.move(m.v, m.to[0], m.to[1]);
-    const dur = (e.type === 'kick' ? 0.28 + 0.03 * Math.hypot(mv[0]?.to[0] - mv[0]?.from[0] || 0, mv[0]?.to[1] - mv[0]?.from[1] || 0) : 0.26) + DUEL_VIEW.ma;
+    const dur = e.type === 'form' && e.side === 0 && V.dive ? DIVE.open + DIVE.dur + DUEL_VIEW.ma : (e.type === 'kick' ? 0.28 + 0.03 * Math.hypot(mv[0]?.to[0] - mv[0]?.from[0] || 0, mv[0]?.to[1] - mv[0]?.from[1] || 0) : 0.26) + DUEL_VIEW.ma;
     return { events: [e], dur, step: (u) => { const s = sm(Math.min(1, u * 1.15)); for (const m of mv) {
       let px, py;
       if (m.rot) { const a0 = Math.atan2(m.from[1] - m.rot[1], m.from[0] - m.rot[0]), r = Math.SQRT1_2; px = m.rot[0] + Math.cos(a0 + s * Math.PI / 2) * r; py = m.rot[1] + Math.sin(a0 + s * Math.PI / 2) * r; }

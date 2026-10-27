@@ -211,6 +211,7 @@ export function duelTools(g) {
   const cell = D.picked || D.hover, piece = hand && cell ? s.board?.at?.(cell.x, cell.y) : null; // (on touch the picked cell: pick, then ROTATE)
   const ask = askedOf(s), fogged = !!s.rs?.fog && s.rs.fog.side !== 0; // (Read only where Dread's fog hides the foe: couriertools.js)
   if (hand) out.push(E('du.rotate', 'rotate', 'ROTATE', { dim: !D.mine || !piece || piece.kind === 'body', lit: ask === 'move' })); // (always first in the hand's form: the column never shifts under the thumb)
+  if (hand) return out; // (the hand's form shows the hand's verbs only: the Courier's tools stand down until you dive in, South 2026-10-27: "UI hidden when not in use")
   for (const [tool, id, glyph, word] of DUEL_MOVES) {
     if ((worn && !worn.has(tool)) || (id === 'du.read' && !fogged)) continue;
     const spent = (id === 'du.tune' && !!S.tune) || (id === 'du.read' && S.read > 0); // (a song sung this turn, a read still open: lit, not again)

@@ -6,6 +6,8 @@
 //   LEFT     UNDO beside the top bar (dim with nothing to take back, or on the foe's turn); the worn tools' moves (duelTools: ROTATE first
 //            in the hand's form) in two columns of tiles 44 to 60 px, dim where the kernel would refuse them, gold while held (a Paint's
 //            reach armed, a song holding); FORM at the flank's foot under the Courier (HAND or COURIER: what you would become).
+//   THE ZOOM the stage's arena (vfx/duelview/stage.js, the board drawn in) shows only END TURN, FLEE, FINISHER and FORM; the hand's form
+//            shows ROTATE alone, the Courier's form its tools (actioncontext.js duelTools): what is not in use is not on the glass.
 //   RIGHT    FLEE small at the top, taken only by a long press (the long press's ring, longpress.js: far from END TURN and never by
 //            accident); FINISHER over END TURN on a broken foe; END TURN the largest under the right thumb, its rim the action points left.
 // Every press reports through touchTiles with the binding's touch id (core/bindings.js `du.*`); the driver presses it in the duel's ctx.
@@ -49,7 +51,8 @@ export class TouchDuel {
   /** Each frame: read the duel, lay out what changed, put each tile's state on it. */
   update(now, on) {
     const g = this.game, L = g.hudLayout, R = L?.duelR, show = !!on && !!R && !!g.duel?.active && !windowOpen(g) && !L.touchLog?.sheet;
-    const top = show ? (duelCluster(g) || []).filter(Boolean) : [], tools = show ? duelTools(g) : [], bar = g.touchUI?.topBar;
+    const wide = !!g.duelView?.stage?.wide; // (the arena: the board drawn in, nothing to aim at; END TURN, FLEE, FINISHER and FORM only)
+    const top = show ? (duelCluster(g) || []).filter((e) => e && !(wide && e.id === 'du.undo')) : [], tools = show && !wide ? duelTools(g) : [], bar = g.touchUI?.topBar;
     const hideUndo = !!bar && !bar.folded; // (the top bar unfolded over UNDO's slot: it stands down until the row folds)
     const all = [...top.filter((e) => !(e.id === 'du.undo' && hideUndo)), ...tools];
     for (const e of all) this.tile(e);
