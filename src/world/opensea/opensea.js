@@ -193,6 +193,7 @@ export class OpenSea {
       const quay = Object.entries(this.props.quays).find(([, q]) => q.pos.distanceTo(_v.copy(H.pos).setY(q.top)) < ROOM.quay + this.halfHull());
       const wreck = !quay && this.nearWreck(H.pos);
       if (quay) this.dockAt(quay[0], quay[1]);
+      else if (this.pieces.pickBottle(H.pos, this.halfHull())) { /* a drift bottle's note read (puzzlepieces.js) */ }
       else if (wreck) this.salvage(wreck);
       else if (isl) { const d = _v.copy(H.pos).sub(isl.pos).setY(0).normalize(); H.placeAt(isl.pos.clone().addScaledVector(d, isl.r + (H.look.beam ?? 2.4) / 2 + 1.5).setY(SEA.y), Math.atan2(d.x, d.z) + Math.PI / 2); this.stepOff({ islet: isl.feature.id, kit: isl.islet?.kit }, isl.pos.clone().addScaledVector(d, isl.r - 1.5).setY(isl.top + 0.05), Math.atan2(-d.x, -d.z)); } // (moored broadside to the shore, a stride off it)
       else g.log?.say?.('info', 'Nothing to moor to here.', { key: 'sea.moor', throttle: 3 });

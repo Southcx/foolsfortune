@@ -429,3 +429,14 @@ runtime is to come.
   cannot aim the bow gun while you look over a side. The broadside wins when you put the head on your beam: x3 there is 27 at once,
   the most one moment can do. Raking the coils (x0.5) is 4.5, worse than holding the bow gun on the head. Where the ship lies decides it.
 - The rest of Petra's numbers stand (speed 75, life 2.4, radius 0.6, cone 0.6, reach 180, spread 0.04, beam 0.45).
+
+### 14.7 The drift bottle's riddle (built: `isletpuzzles.js` `riddles`, `riddleText`; `puzzlepieces.js` bottles)
+
+- **Two a sea**, dealt with the puzzles: a bottle adrift 2 or 3 squares off an islet (its own spot in that square). F alongside at the
+  helm reads its note, said in the log: the way there in the sea's own words ("3 squares toward Margarite and 1 square farther from the
+  lanes: a dead lighthouse. Dig where the dowse sings.").
+- **Read, it unseals a cache on that islet**, never under rare, that only the Dreamvane's dowse then finds (the caches' rule, section
+  12). The note is the map; the dowse is the spade. It teaches dead reckoning from a written bearing (the sea's columns and rows).
+- `sea.bottle { id, islet, text }`; ledger `sea.bottle`; achievement Message in a Bottle (sea14). Calissa: `pieces.bottles[].mesh` to dress.
+- Prior art: Sea of Thieves' riddle maps; Wind Waker's treasure charts; a message in a bottle.
+- Measured headless: the note read, the bottle gone, its cache's signature alive only after; a second F does nothing.

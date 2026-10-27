@@ -30,10 +30,10 @@ import { TIERS as CHEST_TIERS, CURIOS } from '../world/treasure/treasure.js';
 import { sfx } from '../audio/sfx.js';
 import { DOMAINS, levelOf } from './domains.js';
 import { DECOR } from './decor.js';
-import { EGREGORES } from './opensea/safari.js';
 import { MIRACLES, EPICS, GOD_POWERS, POWER_EVENTS } from './godpowers.js';
 import { racewayAchievements } from './raceachievements.js';
 import { sealAchievements } from './sealachievements.js';
+import { seaAchievements } from './seaachievements.js';
 import { spreadAchievements } from './spreadachievements.js';
 const FOUNDING_SHELLS = CASTER_SHELLS.filter((r) => r.family === 'founding').map((r) => r.id);
 
@@ -645,16 +645,7 @@ export function buildAchievements(game) {
   C('os3', 'explore', 'Digging', 4, 'collect', 'Broken English', 'Find every ostracon.', 'ostracon.found', 16);
   C('os4', 'explore', 'Digging', 3, 'mechanic', 'Set in Stone', 'Read a stele.', 'stele.read', 1);
   F('os5', 'explore', 'Digging', 5, 'collect', 'Epigrapher', 'Read both stelae and find every ostracon: every word glossed.', (L) => Math.min(16, L.get('ostracon.found')) + 3 * Math.min(2, L.get('stele.read')), 22, { title: 'Epigrapher' });
-  // the open sea (progress/opensea/; OPEN-SEA.md 8 and 13): charting, the whole sea, the migrations; names placeholders for Espada's
-  C('sea1', 'emocean', 'The Open Sea', 1, 'count', 'Off the Lanes', 'Chart a square of the open sea.', 'sea.chart', 1);
-  C('sea2', 'emocean', 'The Open Sea', 4, 'collect', 'Cartographer', 'Chart every square of the open sea.', 'sea.chart', 63, { title: 'Cartographer' });
-  C('sea3', 'emocean', 'The Open Sea', 2, 'count', 'Herd Watcher', 'Photograph ten herds from the dock\'s board.', 'sea.herd', 10);
-  F('sea4', 'emocean', 'The Open Sea', 3, 'collect', 'Migration Season', 'Photograph herds of six kinds of Egregore.', (L) => Object.keys(EGREGORES).filter((id) => L.get(`sea.herd.${id}`) >= 1).length, 6);
-  // the sea serpent (Petra's fight, world/opensea/seafight.js; its counts tracking/seaserpent.js, the whole hull tracking/opensea.js)
-  C('sea5', 'emocean', 'The Open Sea', 2, 'count', 'Something Long', 'Sink a sea serpent.', 'seaserpent.down', 1);
-  C('sea6', 'emocean', 'The Open Sea', 2, 'mechanic', 'Shake It Loose', 'Shoot a coiled sea serpent loose of your hull.', 'seaserpent.free.shot', 1);
-  C('sea7', 'emocean', 'The Open Sea', 3, 'mechanic', 'Not a Scratch', 'Sink a sea serpent with your hull whole.', 'seaserpent.down.whole', 1);
-  C('sea8', 'emocean', 'The Open Sea', 3, 'endure', 'Serpent Season', 'Sink 10 sea serpents.', 'seaserpent.down', 10);
+  seaAchievements({ C, F }); // (the open sea's, sea1 to sea13: progress/seaachievements.js)
   // terraforming and the spirits' games (SPIRIT-GARDEN.md section 7, item 26): what the garden's new verbs are worth (names placeholders for Espada's)
   F('tf1', 'garden', 'The Garden', 2, 'collect', 'Five Grounds', 'Paint all five grounds: moss, ash, loam, slate and silt.', (L) => ['moss', 'ash', 'loam', 'slate', 'silt'].filter((k) => L.get(`garden.paint.${k}`) >= 1).length, 5);
   C('tf2', 'garden', 'The Garden', 1, 'count', 'Wellspring', 'Set a spring in your Inner Realm.', 'garden.water.spring', 1);
