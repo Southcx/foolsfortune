@@ -10,6 +10,7 @@
 //
 //   raceModeRules({ on, L, log })   (feedback/tracking/rules.js calls it)
 // ---------------------------------------------------------------------------------------
+import { said } from './lineformat.js';
 
 const clock = (s) => { const m = Math.floor(s / 60), r = s - m * 60; return `${m}:${r < 10 ? '0' : ''}${r.toFixed(2)}`; };
 const TRACKS = { sun: 'the Sun Circuit', gorge: 'the Gorge Run', coaster: 'the Coaster', made: 'your track' }; // (working names: Espada's)
@@ -18,7 +19,7 @@ const CUP_NAMES = { clay: 'the Clay Cup', sibling: 'the Sibling Cup' };
 const FAILS = { flare: 'You flared: the test asked for none.', snakes: 'Not enough snaking carves.', grind: 'Not enough rail ground.', trick: 'No spin landed square.', pool: 'Your pool ran too low.', lane: 'You never rode the recharge strip.', slow: 'Slower than bronze.', bail: 'You bailed.', bump: 'You touched a rival.', wall: 'You hit a wall.', land: 'You landed hard.' };
 const STADIUM = { race: 'a race against the rivals', hotlap: 'a hot lap', pots: 'a pot smash', escape: 'the escape' };
 
-export function raceModeRules({ on, L, log }) {
+export function raceModeRules({ on, L, log, g }) {
   const say = (kind, text, key, throttle = 2) => log.say(kind, text, { key, throttle });
   // ---- the modes
   on('race.start', (e) => {
@@ -27,7 +28,7 @@ export function raceModeRules({ on, L, log }) {
     else if (e.mode === 'pots') say('skiff', `A pot smash on ${TRACKS[e.track]}: every pot you ride through takes a second off.`, 'rm.start');
     else if (e.mode === 'escape') say('skiff', 'The crater. Ride for the climb out.', 'rm.start');
     else if (e.mode === 'trim') say('skiff', `A test lap of ${TRACKS[e.track]}: your last test lap rides beside you, and each gate gives the split.`, 'rm.start');
-    if (e.mode !== 'race') say('info', 'Backspace starts again; R held retires.', 'rm.keys', 60);
+    if (e.mode !== 'race') say('info', g?.input?.device === 'touch' ? 'RESTART in the pause menu starts again; RETIRE retires.' : said(g, '{restart} starts again; holding {toGate} retires.'), 'rm.keys', 60);
   });
   on('race.restart', () => L.inc('race.restart'));
   on('race.rewind', (e) => { L.inc('race.rewind'); if (e.seconds > 0) say('info', `Rewound ${e.seconds} s.`, 'rm.rewind', 1); });

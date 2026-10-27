@@ -11,12 +11,13 @@
 //   openSeaRules({ on, L, log })   (feedback/tracking/rules.js calls it)
 // ---------------------------------------------------------------------------------------
 import { landingLine, secretLine } from '../../npc/isletlines.js';
+import { said } from './lineformat.js';
 
 const KIND = { islet: 'an islet', monument: 'a monument under the water', wreck: 'a wreck', phenomenon: 'something strange on the water', seep: 'a seep of crude' };
 const ISLAND = { margarite: 'Margarite', anagami: 'Anagami', entra: 'Entropolis' };
 
-export function openSeaRules({ on, L, log }) {
-  on('opensea.enter', () => log.say('info', "The open sea, at Anagami's quay. F at the ship to board; W and S set the sail, A and D the rudder; across the wind the engine burns least.", { key: 'sea.enter', throttle: 4 }));
+export function openSeaRules({ on, L, log, g }) {
+  on('opensea.enter', () => log.say('info', said(g, "The open sea, at Anagami's quay. {use} at the ship boards it; {heUp} and {heDown} set the sail, the stick or A and D the rudder; across the wind the engine burns least."), { key: 'sea.enter', throttle: 4 }));
   on('opensea.board', () => L.inc('sea.board'));
   // the wind (progress/opensea/wind.js; OPEN-SEA.md 14): head to wind the sail gives nothing and the engine burns it all
   // salvage and the ship's parts (progress/opensea/salvage.js; OPEN-SEA.md 14.4)
@@ -32,7 +33,7 @@ export function openSeaRules({ on, L, log }) {
   on('sea.gust', (e) => { if (e.by === 'courier') L.inc('sea.gust'); }); // (a cat's paw caught: the sail and the water say it; the ledger counts it)
   on('sea.rip', (e) => { if (e.by !== 'courier') return; L.inc('sea.rip'); log.say('info', 'A current takes the ship. Ride it, or steer out of its band.', { key: 'sea.rip', throttle: 60 }); });
   on('sea.luff', (e) => { if (e.by !== 'courier') return; L.inc('sea.luff'); log.say('info', 'Your sail luffs: you are head to wind. Bear away and it fills.', { key: 'sea.luff', throttle: 30 }); });
-  on('opensea.moor', (e) => { L.inc('sea.moor'); if (e.islet) log.say('info', `${landingLine(e.islet, e.kit)} (F at the ship to board again.)`, { key: 'sea.moor', throttle: 3 }); });
+  on('opensea.moor', (e) => { L.inc('sea.moor'); if (e.islet) log.say('info', said(g, `${landingLine(e.islet, e.kit)} ({use} at the ship to board again.)`), { key: 'sea.moor', throttle: 3 }); });
   on('sea.chart', (e) => { if (e.by !== 'courier') return; L.inc('sea.chart'); log.say('explore', 'You chart a new square of sea.', { key: 'sea.chart', throttle: 6 }); });
   on('sea.find', (e) => { if (e.by !== 'courier') return; L.inc(`sea.find.${e.tier}`); log.say('explore', `You find ${KIND[e.kind] || 'something'} (${e.tier}). Report it at a dock.`, { key: `sea.find.${e.id}`, throttle: 1 }); });
   on('sea.fix', (e) => { if (e.ok) { L.inc('sea.fix'); log.say('info', e.how === 'sky' ? 'You read the sky and know where you are.' : 'A landmark you know: you know where you are.', { key: 'sea.fix', throttle: 4 }); } else log.say('warn', 'The sky is hidden: no reading.', { key: 'sea.fix.no', throttle: 4 }); });

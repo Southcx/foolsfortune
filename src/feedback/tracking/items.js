@@ -5,13 +5,13 @@
 //
 //   itemRules({ on, L, log })   (feedback/tracking/rules.js calls it)
 // ---------------------------------------------------------------------------------------
-import { an, ITEM } from './lineformat.js';
+import { an, ITEM, said } from './lineformat.js';
 import { CARD as VCARD } from '../../tools/veritome/cards.js';
 import { itemOf } from '../../pneuka/items.js';
 import { LURES } from '../../tools/sondelass/angling/lures.js';
 import { SLOTS } from '../../pneuka/box.js';
 
-export function itemRules({ on, L, log }) {
+export function itemRules({ on, L, log, g }) {
   const first = (key, text) => { if (L.first(key)) log.say('record', text); };
   // ---- the Pneuka Box: what they carry (src/pneuka/)
   on('item.get', (e) => {
@@ -21,7 +21,7 @@ export function itemRules({ on, L, log }) {
     if (e.from === 'ground') log.say('loot', `You pick up the ${ITEM(e.item)}.`, { tone: '#ffd98a' });
     else if (e.from === 'chest') log.say('loot', `The ${ITEM(e.item)} goes into your Pneuka Box.`, { tone: '#ffd98a' });
     else if (e.from === 'catch') log.say('loot', `You keep the ${ITEM(e.item)} in your Pneuka Box. (Old Grog buys fish.)`, { key: 'fishkeep', fmt: (n) => `You keep ${n} fish in your Pneuka Box.` });
-    first('pneuka', 'Logged: your first thing in the Pneuka Box. P opens it: left click uses, right click lists the rest.');
+    first('pneuka', said(g, 'Logged: your first thing in the Pneuka Box. {box} opens it: the first button uses a thing, the second lists the rest.'));
   });
   on('item.full', (e) => { L.inc('pneuka.full'); log.say('warn', `Your Pneuka Box is full. The ${ITEM(e.item)} falls at your feet.`, {}); });
   on('item.drop', (e) => { L.inc('item.drop'); log.say('info', `You drop the ${ITEM(e.item)}.`, { key: 'idrop', fmt: (n) => `You drop ${n} things.` }); });
