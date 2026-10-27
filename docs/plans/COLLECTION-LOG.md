@@ -39,3 +39,12 @@ its N of M as a bar with the enough line marked, its slots as chips lit once had
   which modules are untouched today. No streaks (wall-clock gates are refused).
 - **Photo to invention** (Dark Cloud 2): two plates combined at a bench (the press or the kiln) make a recipe (a lure, a decor piece,
   a glaze).
+
+## 6. The first today (built: `progress/firsttoday.js`; FFXIV's Duty Roulette bonus)
+
+The first time each game day you do a module's own thing pays a minute of play at the aim (8 cubes), once: a fish landed, a race
+finished, a duel ended, a crossing sailed, the open sea (a square charted, a herd, a habit, a crate), a bed tended, a hand at Raku's
+tables, a miracle, a Well's floor, a crystal harvested. Ten modules: at most 80 cubes a game day, about a sixth of the aim, and only for
+trying ten things in one real hour. The game day is the play clock's, so nothing is owed for being away: no streak, no login, nothing
+lost by missing one. `firsttoday.paid { module, label, cubes, left }`, said in the log with how many are left; the ledger
+`firsttoday.<module>`; `game.firstToday.left()` for the Index to show what is untried tonight (Petra's, if wanted).

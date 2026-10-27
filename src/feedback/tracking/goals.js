@@ -19,6 +19,8 @@ export function goalsRules({ on, L, log, g }) {
     for (const g of e.goals) { const label = g.first ? 'First step' : SLOT[g.slot] || 'Goal';
       log.say('system', g.done ? `Goal (${label}): ${g.name}. Done.` : `Goal (${label}): ${g.name}. ${String(g.desc).replace(/\.$/, '')}. ${n(g.cur)} of ${n(g.goal)}.`, { key: `goal.${g.id}`, throttle: 0.5 }); }
   });
+  // the first of each module a game day (progress/firsttoday.js): counted, and said once a module
+  on('firsttoday.paid', (e) => { if (e.by !== 'courier') return; L.inc('firsttoday'); L.inc(`firsttoday.${e.module}`); log.say('gain', `First today: ${e.label}, ${e.cubes} cubes.${e.left ? ` ${e.left} more to try this game day.` : ' Every one tried this game day.'}`, { key: 'firsttoday', throttle: 1 }); });
   on('goal.done', (e) => {
     if (e.by !== 'courier') return;
     L.inc('goal.done'); L.inc(`goal.done.${e.slot}`);
