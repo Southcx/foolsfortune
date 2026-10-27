@@ -4184,6 +4184,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Rule:** NEW:spar-and-cloth-one-side
 
 
+
 ### 2026-10-27 · A broadside's timing event named over the discovery event (caught by Calissa before the merge; Wanda)
 - **Seen:** b30e657c's broadside rule emitted `sea.report { at, side }` for the muzzles' flash; `sea.report` is already Dovina's discovery
   reported at a dock (progress/opensea/seatrip.js), counted in the ledger (tracking/opensea.js) and rung as the dock's coin (cues.js).
@@ -4222,4 +4223,5 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the forecast copies with the kernel's `cloneState` (its own quiet stream and `undo: []`); the view's other `{ ...s, r }`
   copies (glows.js `quiet`, worth.js) dropped for the kernel's `preview` and `cloneState`.
 - **Rule:** NEW:lookahead-own-copy
+
 
