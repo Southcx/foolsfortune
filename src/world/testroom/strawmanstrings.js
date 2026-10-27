@@ -9,7 +9,7 @@
 //             (Strawman never hurts: a shove), counted as landed or not (`strawman.strike`). A parry breaks the blow off (the sleeve eases
 //             back) and the punish is the move's recovery; a one-two's first blow parried, its second still comes.
 //   THE LOADOUT the lectern's first row: the loadout editor's page (tools/sondelass/loadouteditor.js), the melee loadout chosen here
-//   THE STANCE still or guard (Strawman's mode), the lectern's next rows (it was F at Strawman, the owner moved it here: 2026-10-11)
+//   THE STANCE still, guard (Strawman's mode) or aberrant (a practice puzzle duel's foe: `aberrant`), the lectern's next rows (it was F at Strawman, the owner moved it here: 2026-10-11)
 //   A STRING  moves and pauses on a loop (STRAWMAN_STRINGS), picked at the circle's lectern (F: the page), run only while the Courier is
 //             inside the circle (step out and it stops: the ring is the rule), Strawman turning on its ball to face them between moves.
 //   THE TEMPO 0.25x, 0.5x or 1x (DEBUG only): the world slowed through game.time while a string runs, the Courier too (a study of the
@@ -37,7 +37,7 @@ const LECTERN_REACH = 1.8;
 const PAGE = { title: 'THE SPARRING CIRCLE', sub: 'your loadout, a stance or a string · F closes', aside: 'left' };
 /** Strawman's stances, the lectern's first rows (the owner, 2026-10-11: "Strawman setting should be moved to the nearby lectern"; it was
  *  F at Strawman). Words placeholders for Espada's. */
-const STANCES = [['still', 'Still', 'Takes every blow.'], ['guard', 'Guard', 'Blocks a blow from in front: strike from the side or behind.']];
+const STANCES = [['still', 'Still', 'Takes every blow.'], ['guard', 'Guard', 'Blocks a blow from in front: strike from the side or behind.'], ['aberrant', 'Aberrant', 'Stands wrong. Step close and the duel begins.']]; // (the third: a practice puzzle duel, South 2026-10-27; words placeholders for Espada's)
 const _v = new THREE.Vector3();
 
 export class StrawmanStrings {
@@ -150,6 +150,16 @@ export class StrawmanStrings {
     else this.attack(this.order?.[nth] ?? step.move);
   }
 
+  /** Strawman aberrant (the third stance): a practice puzzle duel's foe (the session's `practice`: nothing kept, nothing lost), worn in
+   *  the aberrant's look and its data bug (vfx/aberrantlook.js, vfx/databug.js: they read `aberrant` off the creature and draw its `root`);
+   *  another stance gives the look back. */
+  aberrant(on) {
+    const S = this.S, g = this.game;
+    if (on) { S.root ||= S.model?.group; S.aberrant = true; S.practice = true; S.dataBugMended = false; S.grade = null; S.setMode('still'); return; }
+    if (!S.aberrant) return;
+    S.aberrant = false; S.practice = false; g.dataBugs?.undress?.(S);
+  }
+
   /** The lectern's page: the melee loadout (its editor's page), Strawman's stance (still, guard), the four strings and none; in DEBUG,
    *  the tempo. */
   page(im, el) {
@@ -161,8 +171,8 @@ export class StrawmanStrings {
     im.appendChild(el('div', 'grp', 'STANCE · How Strawman takes a blow'));
     const sg = el('div', 'rooms');
     for (const [m, label, line] of STANCES) {
-      const r = el('div', 'room', `<span class="n">${m === this.S.mode ? '●' : '○'}</span><span><b>${label}</b><s>${line}</s></span>`);
-      r.onclick = () => { this.S.setMode(m); again(); };
+      const r = el('div', 'room', `<span class="n">${m === (this.S.aberrant ? 'aberrant' : this.S.mode) ? '●' : '○'}</span><span><b>${label}</b><s>${line}</s></span>`);
+      r.onclick = () => { this.aberrant(m === 'aberrant'); if (m !== 'aberrant') this.S.setMode(m); again(); };
       sg.appendChild(r);
     }
     im.appendChild(sg);
