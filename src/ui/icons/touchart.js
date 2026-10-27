@@ -34,6 +34,7 @@
 // ---------------------------------------------------------------------------------------
 import { grid } from './hand.js';
 import { TOUCH_ACTION_ART } from './touchactionart.js';
+import { TOUCH_MOUNT_ART } from './touchmountart.js';
 
 const R = (x, y, cx, cy) => Math.hypot(x + 0.5 - cx, y + 0.5 - cy);
 
@@ -557,4 +558,5 @@ export const TOUCH_ART = {
     '..............',
   ],
   ...TOUCH_ACTION_ART, // (on foot, the tools in hand, the puzzle duel: MOBILE.md 8.5, 8.8, 8.9)
+  ...TOUCH_MOUNT_ART, // (the mounts at the free helm: OPEN-SEA.md 14.2)
 };

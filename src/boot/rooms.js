@@ -22,8 +22,12 @@ import { Raceway } from '../world/raceway/raceway.js';
 import { OpenSea } from '../world/opensea/opensea.js';
 import { SeaFight } from '../world/opensea/seafight.js';
 import { SeaSerpentBody } from '../vfx/opensea/seaserpentbody.js';
+import { installSeaBeasts } from '../vfx/opensea/beasts/index.js';
 import { SeaLooks } from '../vfx/opensea/isletlooks.js';
 import { PuzzleLooks } from '../vfx/opensea/puzzlelooks.js';
+import { BottleLooks } from '../vfx/opensea/bottlelooks.js';
+import { SalvageLooks } from '../vfx/opensea/salvagelooks.js';
+import { ShipPartWear } from '../vfx/shipkit/partlooks.js';
 import { SquallLine } from '../vfx/opensea/squallline.js';
 import { egregoreBody } from '../vfx/opensea/egregorebodies.js';
 import { SeaFightLook } from '../vfx/opensea/seafightlook.js';
@@ -60,12 +64,14 @@ export function bootRooms(game, made) {
     game.solar = new SolarTrial(game); // (the Solar Skiffing trial, begun at the Gnomon's foot: world/dunes/solar.js)
     game.geysers = new Geysers(game); // (slip geysers: launch pads on a cycle, world/dunes/geysers.js)
     game.makeSeaSerpent = (o) => new SeaSerpentBody(game, o); // (the sea serpent's body for its mind to drive: vfx/opensea/seaserpentbody.js, drive/update/hit/down)
+    installSeaBeasts(game); // (the other sea beasts' bodies: game.makeSeaBeast(id, o) for the chain chassis, game.makeUmibozu(o), /beastlook: vfx/opensea/beasts/)
     game.cardBackOpen = (id) => cardBackOpen(id, game.ledger); // (what opens each of Calissa's card backs, for her picker's OPEN_WHEN: progress/cardbacks.js)
     game.cosmeticOpen = (kind, id) => cosmeticOpen(kind, id, game.ledger); // (what opens each of Calissa's tool skins, Jar parts, flourishes and instrument housings, for her OPEN_WHENs: progress/cosmetics.js)
     game.makeEgregore = (species, o) => egregoreBody(species, o); // (a safari Egregore's body, alive, for whatever lays a sighting on the water: update(dt, { speed, bend }), habit(name), dive(on); vfx/opensea/egregorebodies.js; nothing places them yet)
     game.makeEgregoreHerd = (o) => new EgregoreHerd(o); // (a herd of them in its square, scattering and regrouping round the ship: update(dt, { ship }); vfx/opensea/egregoreherd.js)
     game.seaLooks = new SeaLooks(game); // (the open sea's islets dressed over Dovina's placeholders: vfx/opensea/isletlooks.js)
     game.puzzleLooks = new PuzzleLooks(game); game.squallLine = new SquallLine(game); // (the islets' puzzles dressed, the dig's moment; a front's squall line: vfx/opensea/puzzlelooks.js, squallline.js)
+    game.bottleLooks = new BottleLooks(game); game.salvageLooks = new SalvageLooks(game); game.shipPartWear = new ShipPartWear(game); // (the drift bottles, the wrecks and the haul, the ship's parts worn at the free helm: vfx/opensea/bottlelooks.js, salvagelooks.js, vfx/shipkit/partlooks.js)
     game.opensea = new OpenSea(game); // (the Emocean off the lanes, built the first time it is entered: world/opensea/, docs/plans/OPEN-SEA.md)
     game.seaFightLook = new SeaFightLook(game); game.seaHull = new SeaHull(game); // (the fight's needles, globs, splashes and the hull's pips: vfx/opensea/seafightlook.js, ui/seahull.js)
     game.seaFight = new SeaFight(game); // (what fights at the free helm: the gun, the parry, the hull, the sea serpent: world/opensea/seafight.js)

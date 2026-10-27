@@ -31,7 +31,7 @@ import { stripOf, beltPairOf } from './actioncontext.js';
 /** The numbers (CSS px): the strip's tile (44, the least: 48 until the owner asked for room, 2026-10-26), a note pad, the pair's; the gaps; the shelf's padding; the room kept off the look area's edge. */
 const MORE = 'strip.more';
 /** The core movement's verbs and BLINK, never folded away (a jump hidden behind a tap mid-fight is no jump). */
-const STAYS = new Set(['blink', 'jump', 'crouch', 'dash', 'parry', 'use', 'broadside']); // (the broadside too: a fight's verb)
+const STAYS = new Set(['blink', 'jump', 'crouch', 'dash', 'parry', 'use', 'broadside', 'mount.1', 'mount.2']); // (the broadside and the mounts too: a fight's verbs)
 /** The tool's own row, folded to its MORE tab (or opened behind it) where it has two or more tiles; what STAYS stands after it. */
 function folding(entries, folded) {
   const stay = entries.filter((e) => STAYS.has(e.id)), row = entries.filter((e) => !STAYS.has(e.id));
@@ -126,7 +126,7 @@ export class TouchStrip {
       if (this.shown) this.layout(cb); else this.shelf.classList.add('off');
     }
     if (!this.shown) { for (const t of this.tiles.values()) t.set({ hidden: true }); return; }
-    for (const e of all) { const t = this.tiles.get(e.id); t.set({ hidden: false, lit: t.state.pressed || !!e.lit, dim: !!e.dim, charge: e.charge ?? 0 }); t.update(now); }
+    for (const e of all) { const t = this.tiles.get(e.id); t.set({ hidden: false, lit: t.state.pressed || !!e.lit, dim: !!e.dim, charge: e.charge ?? 0, pips: e.pips ?? 0 }); t.update(now); }
   }
 
   /** The layout changed: stand again at the next frame. */

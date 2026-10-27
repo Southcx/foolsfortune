@@ -30,10 +30,10 @@
 //   builds, a run on hover), and view.armPaint(on) while a Paint is held (G, du.paint). The board's size is the ruleset's own (`board`,
 //   rulesets.js: every device the same).
 //   Events (with `by`): duel.open { kind, feeling }, duel.break { kind, depth }, duel.flee { roll, reroll, need, ok }, duel.end { kind, won, how,
-//   turns } (how 'fled': away, both whole; tracking.js says each)
+//   turns }, duel.undo { left } (how 'fled': away, both whole; tracking.js says each)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { newDuel, act, endTurn, legalActions } from '../../progress/duel/duel.js';
+import { newDuel, act, endTurn, legalActions, undo } from '../../progress/duel/duel.js';
 import { luckOf } from '../../progress/luck.js';
 import { intentOf, play as botPlay } from '../../progress/duel/bot.js';
 import { lessonDue } from '../../progress/duel/lesson.js';
@@ -142,6 +142,7 @@ export class DuelSession {
     const s = this.state, S = s.sides[0], cell = this.hover;
     if (input.wasPressed('Backquote')) return this.take({ kind: 'form', to: S.form === 'hand' ? 'courier' : 'hand' });
     if (input.wasPressed('Space')) return this.endMine();
+    if (input.wasPressed('KeyZ') && (input.isDown('ControlLeft') || input.isDown('ControlRight'))) return this.takeBack();
     if (input.wasPressed('KeyE')) return this.take({ kind: 'flee' });
     if (input.isDown('Backspace')) { if ((this.yieldT += raw) >= DUEL_ROOM.yieldHold) return this.yield(); } else this.yieldT = 0;
     this.arm(S.form !== 'hand' && input.isDown('KeyG')); // (Paint armed while G or du.paint is held: its reach and greying, the view's glows)
@@ -238,6 +239,17 @@ export class DuelSession {
     this.shown = key; const V = this.view; if (typeof V?.pendingAction === 'function') V.pendingAction(a); // (not `pending`: the view keeps its junk counts by that name)
   }
   endMine() { this.run(endTurn(this.state)); }
+  /** The last action this turn taken back (free; none after the turn ends or a die is thrown). The view is stood again from the state
+   *  as it was (its own `resync` where it has one, else opened afresh where it stands), then the `undo` event played. */
+  takeBack() {
+    this.picked = null; this.show(null);
+    const ev = undo(this.state);
+    if (!ev) { sfx.dryFire?.(); return; }
+    const V = this.view;
+    if (typeof V?.resync === 'function') V.resync(this.state); else V?.open?.({ state: this.state, foe: this.foe, at: this.at, facing: this.facing });
+    this.game.events?.emit('duel.undo', { left: ev[0].left, by: 'courier' });
+    this.run(ev);
+  }
   /** Events played by the view (awaited: nothing is taken meanwhile), then the forecast and the end. */
   run(events) {
     this.busy = true;

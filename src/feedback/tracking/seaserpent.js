@@ -3,7 +3,7 @@
 // helm (world/opensea/seafight.js) and keep their counts (the other beasts too, seabeasts.js: the forge reads their carves): risen, struck (the head apart), coiled and shot loose, sunk; the hull's hits
 // and its breaking. Only the Courier's blows count (`by`). tracking/rules.js calls it. Words placeholders for Espada's.
 //
-//   seaSerpentRules({ on, L, log })
+//   seaSerpentRules({ on, L, log })   (also the shapes' seaserpent.hold { id, move }, seaserpent.break { id, part, left }, the free 'gulp')
 // ---------------------------------------------------------------------------------------
 export function seaSerpentRules({ on, L, log }) {
   const first = (key, text) => { if (L.first(key)) log.say('record', text); };
@@ -12,6 +12,10 @@ export function seaSerpentRules({ on, L, log }) {
   on('seaserpent.move', (e) => { if (e.move === 'ram' && !e.hit) log.say('battle', 'The sea serpent breaks the surface beside you.', { key: 'ssram', throttle: 6 }); });
   on('seaserpent.coil', () => { L.inc('seaserpent.coil'); log.say('battle', 'The sea serpent coils round your hull. The helm barely answers.', { key: 'sscoil', throttle: 4 }); });
   on('seaserpent.free', (e) => { if (e.how === 'shot') { L.inc('seaserpent.free.shot'); log.say('battle', 'You shoot it loose of the hull.', { key: 'ssfree', throttle: 4 }); } else if (e.how === 'time') log.say('battle', 'It lets go of the hull.', { key: 'ssfree', throttle: 4 }); });
+  // the shapes' holds and breaks (creatures/seaserpent/shapes.js): the umibozu's grip let go by a gulp, the kraken's arms shot off
+  on('seaserpent.hold', (e) => { L.inc(`seabeast.hold.${e.move}`); log.say('battle', e.move === 'grip' ? 'Huge hands close on your gunwale. The sea pours in.' : 'An arm wraps your hull. The helm barely answers.', { key: 'sshold', throttle: 4 }); });
+  on('seaserpent.free', (e) => { if (e.how !== 'gulp') return; L.inc('seabeast.free.gulp'); log.say('battle', 'Your Lockheart drinks the pour. The hands let go.', { key: 'ssfree', throttle: 4 }); });
+  on('seaserpent.break', (e) => { if (e.by !== 'courier') return; L.inc('seabeast.break'); log.say('battle', e.left ? 'You shoot an arm off.' : 'You shoot off its last arm.', { key: 'ssbreak', throttle: 1 }); });
   on('seaserpent.down', (e) => {
     if (e.by !== 'courier') return;
     L.inc('seaserpent.down');

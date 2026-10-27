@@ -36,6 +36,7 @@ import { Brain, Senses, Memory, Drives, rollTraits } from '../ai/index.js';
 import { SEA_SERPENT } from '../../progress/opensea/seaserpent.js';
 import { SEA_BEASTS } from '../../progress/opensea/seabeasts.js';
 import { SIGNATURES } from './signatures.js';
+import { SHAPES } from './shapes.js';
 import { ShipWake } from '../../vfx/rail.js';
 import { seaSerpentMind } from './mind.js';
 import { stream } from '../../core/rng.js';
@@ -57,8 +58,9 @@ export const BEAST_BODY = {
   wolfWhale: { ...SERPENT_BODY, segments: 8, length: 24, headR: 3.2, tailR: 1.1, hump: 1.6, humpLen: 7, headUp: 6, deep: 14, wakeAt: 5, ram: 10, coil: 0, turn: 1.5, accel: 10 },
   worldSerpent: { ...SERPENT_BODY, segments: 32, length: 240, headR: 8, tailR: 2.6, hump: 5, humpLen: 22, headUp: 18, deep: 30, wakeAt: 10, ram: 20, coil: 40, turn: 0.55, accel: 6, sink: 8 },
 };
-/** The beasts this chassis carries (the umibozu's and the kraken's bodies are not chains: to come with Calissa's looks). */
+/** The beasts this chassis carries as chains; the umibozu and the kraken ride it as shapes (shapes.js: parts in place of a spine). */
 export const CHAIN_BEASTS = Object.keys(BEAST_BODY);
+export const SEA_BEAST_IDS = [...CHAIN_BEASTS, ...Object.keys(SHAPES)];
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(), _up = new THREE.Vector3(0, 1, 0);
 const _look = new THREE.Matrix4(), _p = new THREE.Vector3(), _coil = { centre: null, r: 5 }; // (the coil's ring round the hull, for the look)
 const angleTo = (a, b) => { let d = b - a; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; return d; };
@@ -79,18 +81,19 @@ export class SeaSerpents {
 
   // ---------------------------------------------------------------- a body
   spawn(home, { yaw = simRand() * 6.28, lair = null, beast = 'seaSerpent' } = {}) {
-    const g = this.game, Mi = this.mind, row = SEA_BEASTS[beast] || SEA_SERPENT, B = BEAST_BODY[beast] || SERPENT_BODY;
-    const N = B.segments ?? SEA_SERPENT.segments, length = B.length ?? SEA_SERPENT.length, GAP = length / (N - 1);
-    const body = (beast === 'seaSerpent' ? g.makeSeaSerpent?.({ segments: N, length }) : g.makeSeaBeast?.(beast, { segments: N, length })) || null; // [look] Calissa's
+    const g = this.game, Mi = this.mind, row = SEA_BEASTS[beast] || SEA_SERPENT, shape = SHAPES[beast] || null;
+    const B = shape ? { ...SERPENT_BODY, ...shape.body } : BEAST_BODY[beast] || SERPENT_BODY;
+    const N = shape ? shape.parts.length : B.segments ?? SEA_SERPENT.segments, length = B.length ?? SEA_SERPENT.length, GAP = length / (N - 1);
+    const body = (shape ? shape.make(g) : beast === 'seaSerpent' ? g.makeSeaSerpent?.({ segments: N, length }) : g.makeSeaBeast?.(beast, { segments: N, length })) || null; // [look] Calissa's
     const look = body ? null : new THREE.InstancedMesh(this.geo, this.mat, N), eyes = body ? null : new THREE.InstancedMesh(this.geo, this.eyeMat, 2);
     const root = new THREE.Group(); root.userData.zone = 'opensea'; g.scene.add(root);
     if (look) { look.castShadow = true; look.frustumCulled = false; eyes.frustumCulled = false; root.add(look, eyes); }
     const traits = rollTraits(Mi.traits);
     const spine = [];
-    for (let i = 0; i < N; i++) spine.push({ p: new THREE.Vector3(home.x - Math.sin(yaw) * GAP * i, home.y, home.z - Math.cos(yaw) * GAP * i), r: B.headR + (B.tailR - B.headR) * Math.pow(i / (N - 1), 0.8), under: 1, y: home.y });
+    for (let i = 0; i < N; i++) spine.push({ p: new THREE.Vector3(home.x - Math.sin(yaw) * GAP * i, home.y, home.z - Math.cos(yaw) * GAP * i), r: B.headR + (B.tailR - B.headR) * Math.pow(i / (N - 1), 0.8), under: 1, y: home.y, id: shape?.parts[i] });
     const c = {
-      type: 'creature', kind: beast, name: beast === 'seaSerpent' ? 'sea serpent' : beast, id: NEXT++, row, B, N, GAP, root, look, eyes, body, lair,
-      home: home.clone(), pos: spine[0].p, vel: new THREE.Vector3(), want: new THREE.Vector3(), yaw, speed: 0, radius: B.headR, height: 2,
+      type: 'creature', kind: beast, name: beast === 'seaSerpent' ? 'sea serpent' : beast, id: NEXT++, row, B, N, GAP, root, look, eyes, body, lair, shape,
+      home: home.clone(), pos: shape ? home.clone() : spine[0].p, /* (a shape's place is its own: its parts are where its body draws them) */ vel: new THREE.Vector3(), want: new THREE.Vector3(), yaw, speed: 0, radius: B.headR, height: 2,
       alive: true, hp: row.hp, maxHp: row.hp, poise: B.poise * (traits.bold ?? 1), stunFor: B.stunFor, traits, rel: new Map(), loud: 1.4, affinity: null,
       spine, under: 1, goUnder: 1, rear: 0, wantRear: 0, phase: simRand() * 6.28, attack: null, coiled: null, habit: null, flash: 0, dying: null,
       cd: Object.fromEntries(Object.keys(row.moves).map((k, i) => [k, 1 + i])),
@@ -104,10 +107,11 @@ export class SeaSerpents {
       windUp: (move, target) => this.windUp(c, move, target),
     };
     const mem = new Memory({ hold: 6, ebb: 1 / 20, threatEbb: 1 / 60 });
-    const senses = new Senses(g, { sight: row.sense ?? row.zone ?? SEA_SERPENT.sense, fov: 360, feel: 30, hear: 1.6, eye: 1, rate: 2.2, every: 0.5, onHear: (s, reach) => Mi.heard(c, s, reach) });
+    const senses = new Senses(g, { sight: row.sense ?? (row.zone ? row.zone * (row.leash ?? 1.5) : SEA_SERPENT.sense), /* (a territorial beast watches all it would defend) */ fov: 360, feel: 30, hear: 1.6, eye: 1, rate: 2.2, every: 0.5, onHear: (s, reach) => Mi.heard(c, s, reach) });
     c.drives = new Drives(Mi.drives, traits);
     c.brain = new Brain(g, c, { senses, memory: mem, drives: c.drives, actions: Mi.actions, think: 0.25, near: 160, far: 420, sees: (out) => Mi.sees(c, out), mods: (ctx) => Mi.mods(ctx) });
     c.mem = mem;
+    shape?.init(this, c);
     Object.defineProperty(c, 'state', { get: () => (c.attack ? 'wind' : c.coiled ? 'coil' : c.brain?.action?.hunt ? 'chase' : c.brain?.action?.id || 'roam') });
     tag(c, 'hurtable', 'creature');
     g.creatures.add(c); g.ai?.add(c.brain);
@@ -134,7 +138,7 @@ export class SeaSerpents {
         if (c.brain.lod === 'far') c.want.set(0, 0, 0); // (out of mind's reach it lies where it is: the brain does not think out there)
         if (c.attack) this.attackTick(c, dt);
         if (c.coiled) this.coilTick(c, dt);
-        if (c.held) SIGNATURES[c.held.move]?.hold(this, c, dt); // (a move that holds the ship a while: circle, coilWorld)
+        if (c.held) (c.shape ?? SIGNATURES[c.held.move])?.hold(this, c, dt); // (a move that holds the ship a while: circle, coilWorld; the grip, the grasp)
         for (const k in c.cd) c.cd[k] -= dt;
       }
       this.swim(c, dt);
@@ -151,7 +155,7 @@ export class SeaSerpents {
     if (ws > 0.05) c.yaw += clamp(angleTo(c.yaw, Math.atan2(c.want.x, c.want.z)), -tr, tr);
     c.speed += clamp(ws - c.speed, -B.accel * dt, B.accel * dt);
     c.vel.set(Math.sin(c.yaw) * c.speed, 0, Math.cos(c.yaw) * c.speed);
-    const H = c.spine[0].p; H.x += c.vel.x * dt; H.z += c.vel.z * dt;
+    const H = c.shape ? c.pos : c.spine[0].p; H.x += c.vel.x * dt; H.z += c.vel.z * dt;
     for (const isl of this.game.opensea?.props?.islets || []) { // (no swimming through an islet: pushed out round its shore)
       _a.set(H.x - isl.pos.x, 0, H.z - isl.pos.z); const d = _a.length(), r = isl.r + 6;
       if (d < r) { _a.multiplyScalar((r - d) / Math.max(d, 1e-3)); H.add(_a); }
@@ -161,6 +165,7 @@ export class SeaSerpents {
     c.phase += B.humpSpeed * dt * (0.5 + Math.min(1, c.speed / c.row.speed));
     const S = c.spine;
     S[0].under = c.under;
+    if (c.shape) { c.shape.swim(this, c, dt); c.flash = Math.max(0, c.flash - dt * 4); return; }
     if (c.body) { c.flash = Math.max(0, c.flash - dt * 4); return; } // (the look lays the spine: pose() reads it back)
     for (let i = 1; i < N; i++) { // (follow the leader: each at its spacing behind the one before; the dive rolls down it)
       const a = S[i - 1], b = S[i];
@@ -183,6 +188,7 @@ export class SeaSerpents {
   /** The look: each segment an instance, faced along the spine; the head longer; the eyes either side of it. */
   pose(c, dt) {
     const S = c.spine, B = c.B, N = c.N, GAP = c.GAP;
+    if (c.shape) return c.shape.pose(this, c, dt);
     if (c.body) return this.drive(c, dt);
     for (let i = 0; i < N; i++) {
       const s = S[i], t = S[i === 0 ? 1 : i - 1];
@@ -207,9 +213,11 @@ export class SeaSerpents {
    *  joints read back into the spine, so the shots, the aim and the wake go by what is drawn. */
   drive(c, dt) {
     const B0 = c.body, S = c.spine, A = c.attack, ship = this.game.opensea?.helm, B = c.B, N = c.N;
-    const move = c.coiled ? 'coil' : A?.move ?? null, k = A ? 1 - A.t / (A.T || c.row.moves[A.move].windup) : c.coiled ? Math.min(1, c.coiled.k / 0.6) : 0;
+    const Hd = c.held, move = Hd?.move ?? (c.coiled ? 'coil' : A?.move ?? null);
+    const k = Hd ? 1 - Hd.t / (Hd.hold || 1) : A ? 1 - A.t / (A.T || c.row.moves[A.move].windup) : c.coiled ? Math.min(1, c.coiled.k / 0.6) : 0;
     _coil.centre = ship?.pos ?? S[0].p; _coil.r = B.coil * ((ship?.look?.length ?? 35) / 35); // (the helix round the hull, as long as it is)
-    B0.drive({ head: S[0].p, heading: c.yaw, rise: 1 - c.under, move, k, coil: move === 'coil' ? _coil : null });
+    const breach = A?.move === 'breach'; // (the akhlut's leap: its landing ring where the windup's ring is)
+    B0.drive({ head: S[0].p, heading: c.yaw, rise: 1 - c.under, move, k, coil: move === 'coil' ? _coil : null, held: Hd, ring: Hd?.centre ? { centre: Hd.centre, r: Hd.r } : null, land: breach ? A.at : undefined, landR: breach ? B.ram : undefined });
     if (dt > 0) B0.update(dt);
     const J = B0.segmentsAt();
     for (let i = 1; i < N && i < J.length; i++) { S[i].p.copy(J[i]); S[i].y = J[i].y; S[i].r = B0.radii[i]; }
@@ -225,7 +233,7 @@ export class SeaSerpents {
   rOf(c, i) { return i === 0 && c.body ? c.body.headRadius : c.spine[i].r; }
   /** Which part a point is on (0 the head), and whether it is above the water to be struck at all. */
   partAt(c, p) { let best = 0, bd = Infinity; for (let i = 0; i < c.N; i++) { const d = this.at(c, i).distanceToSquared(p); if (d < bd) { bd = d; best = i; } } return best; }
-  exposed(c, i) { const q = this.at(c, i); return q.y + this.rOf(c, i) * 0.6 > this.surf(q.x, q.z); }
+  exposed(c, i) { if (c.shape?.exposed) return c.shape.exposed(this, c, i); const q = this.at(c, i); return q.y + this.rOf(c, i) * 0.6 > this.surf(q.x, q.z); }
   /** What a shot flying from a to b (radius r) strikes first: the nearest exposed part along it. */
   partsHit(a, b, r = 0.2) {
     let best = null, bt = Infinity;
@@ -246,14 +254,17 @@ export class SeaSerpents {
     if (!c.alive) return 'blocked';
     const i = point ? this.partAt(c, point) : 0;
     if (!this.exposed(c, i)) return 'blocked'; // (under the water nothing reaches it)
-    const dmg = power * (i === 0 ? 3 : 0.5) * (c.open > 0 ? 1.5 : 1); // (the head the weak point, x3; the coils x0.5: seaserpent.js; held open by a flash x1.5: seamounts.js)
+    const raw = c.shape ? c.shape.damage(this, c, i, power) : power * (i === 0 ? 3 : 0.5); // (the head the weak point, x3; the coils x0.5: seaserpent.js; a shape's parts its own: shapes.js)
+    if (raw === 'blocked') return 'blocked';
+    const dmg = raw * (c.open > 0 ? 1.5 : 1); // (held open by a flash x1.5: seamounts.js)
     c.hp -= dmg; c.flash = 1; c.brain.signal();
-    c.body?.hit(i === 0 ? 'head' : 'coil', Math.min(1, 1 - c.hp / c.maxHp));
+    if (c.shape) c.shape.look(this, c, i); else c.body?.hit(i === 0 ? 'head' : 'coil', Math.min(1, 1 - c.hp / c.maxHp));
     if (by === 'courier') { const f = c.mem.ensure(this.game.player, 'courier'); f.grudge = Math.min(1, f.grudge + 0.05 * dmg); f.aware = 1; }
     c.drives.add('fear', dmg * 0.012);
     if (c.coiled && i === 0) { c.coiled.hits += dmg; if (c.coiled.hits >= 6) this.free(c, 'shot'); }
-    if (c.held && i === 0) SIGNATURES[c.held.move]?.struck?.(this, c, dmg); // (its head at the peak: the coil of the world broken)
-    this.game.events?.emit('seaserpent.hit', { id: c.kind, part: i === 0 ? 'head' : 'coil', dmg: +dmg.toFixed(1), hp: Math.max(0, +c.hp.toFixed(1)), cause, by });
+    if (c.held && c.shape) c.shape.struck(this, c, i, dmg); // (the umibozu's eyes shot loose of the hull)
+    else if (c.held && i === 0) SIGNATURES[c.held.move]?.struck?.(this, c, dmg); // (its head at the peak: the coil of the world broken)
+    this.game.events?.emit('seaserpent.hit', { id: c.kind, part: c.shape ? c.spine[i].id : i === 0 ? 'head' : 'coil', dmg: +dmg.toFixed(1), hp: Math.max(0, +c.hp.toFixed(1)), cause, by });
     if (c.hp <= 0) this.down(c, by, cause);
     return dmg;
   }
@@ -274,7 +285,8 @@ export class SeaSerpents {
     const lead = g.seaFight?.crewLead?.() ?? 0; // (Dovina aboard: every windup shown that much sooner: SEA_CREW)
     const A = (c.attack = { move, t: m.windup + lead, T: m.windup + lead, target: T, at: new THREE.Vector3() });
     c.cd[move] = m.cooldown;
-    if (move === 'ram' || move === 'rise' || move === 'breach') { // (the ring where it will break the surface: where the bow will be when the windup runs out; the breach leads it `lead` s more)
+    if (c.shape) c.shape.wind(this, c, move, m, T);
+    else if (move === 'ram' || move === 'rise' || move === 'breach') { // (the ring where it will break the surface: where the bow will be when the windup runs out; the breach leads it `lead` s more)
       const v = ship ? _a.set(Math.sin(ship.yaw), 0, Math.cos(ship.yaw)).multiplyScalar(ship.speed * (m.windup + (m.lead ?? 0.2))) : _a.set(0, 0, 0);
       A.at.copy(T).add(v); A.at.y = this.surf(A.at.x, A.at.z);
       c.goUnder = 1; c.wantRear = 0;
@@ -296,6 +308,7 @@ export class SeaSerpents {
   }
   attackTick(c, dt) {
     const A = c.attack, g = this.game, ship = g.opensea?.helm, B = c.B; A.t -= dt;
+    if (c.shape) return c.shape.tick(this, c, dt);
     if (A.move === 'ram' || A.move === 'rise' || A.move === 'breach') { // (it runs in under the ring and comes up through it)
       _a.subVectors(A.at, c.pos).setY(0); const d = _a.length();
       c.want.copy(_a).multiplyScalar(d > 1 ? (c.row.speed * 1.6) / d : 0);
@@ -352,6 +365,8 @@ export class SeaSerpents {
   cancel(c, why) {
     if (c.attack) { c.attack = null; this.game.creatures.unwind(c, why); }
     if (c.coiled) this.free(c, why);
-    if (c.held) SIGNATURES[c.held.move]?.end(this, c, why);
+    if (c.held) (c.shape ?? SIGNATURES[c.held.move])?.end(this, c, why);
   }
+  /** A shape's hold let go by an answer from outside it (the Lockheart's gulp on the umibozu's pour: seamounts.js). */
+  release(c, how) { if (c.held && c.shape) c.shape.end(this, c, how); }
 }

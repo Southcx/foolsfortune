@@ -42,6 +42,7 @@ export class BroadsideLook {
     game.scene?.add(this.balls);
     game.events?.on?.('sea.broadside', (e) => this.fired(e.side));
     game.events?.on?.('sea.broadside.dry', (e) => this.dry(e.side));
+    this.queued = []; game.events?.on?.('sea.boom', (e) => this.boom(e.at)); // (Wanda's: the broadside heard on the cue's sixteenth, its guns rippling bow to stern)
   }
   parked() { return [this.balls]; }
   get look() { return this.game.opensea?.helm?.look || null; }
@@ -51,7 +52,7 @@ export class BroadsideLook {
 
   /** Each frame: the heavy shots as balls with their trail, the ports driven by the fight's reload, the hull's shiver. */
   draw(fight, heavy, dt) {
-    this.t += dt;
+    this.t += dt; this.flashes();
     const M = this.balls, n = Math.min(heavy.length, B.ball.cap), fx = this.fx, trail = (this.trailN = (this.trailN + 1) % 3) === 0;
     for (let i = 0; i < n; i++) {
       const s = heavy[i]; _q.setFromUnitVectors(UP, _v.copy(s.vel).normalize()); M.setMatrixAt(i, _m.compose(s.pos, _q, _s.set(1, 1, 1)));
@@ -90,8 +91,15 @@ export class BroadsideLook {
     for (const p of pts) for (let i = 0; i < 2; i++) fx.alpha.emit({ pos: p.clone(), vel: V(rnd(0.4), 0.5 + Math.random() * 0.5, rnd(0.4)), life: 0.6, size: 0.18, sizeEnd: 0.7, color: 0x9c9a96, alpha: 0.32, drag: 2, floor: -1e9 });
   }
 
-  /** A heavy gun fires: the flash, its sparks, the ring of smoke and the bank left hanging downwind. */
-  muzzle(from, dir) {
+  /** A heavy gun fires: held a frame for the music's word (`sea.boom { at }`: real s until the boom is heard), then flashed with it, gun k
+   *  0.055 s after the last (its ripple, audio/seabattle.js); with no word by the next frame, at once. */
+  muzzle(from, dir) { this.queued.push({ from: from.clone(), dir: dir.clone(), t0: this.t, at: null }); }
+  boom(at) { let k = 0; for (const q of this.queued) if (q.at == null) q.at = this.t + Math.max(0, at || 0) + 0.055 * k++; }
+  flashes() {
+    if (!this.queued.length) return;
+    this.queued = this.queued.filter((q) => { const due = q.at != null ? this.t >= q.at : this.t > q.t0; if (due) this.fire(q.from, q.dir); return !due; });
+  }
+  fire(from, dir) {
     const fx = this.fx; if (!fx?.add) return;
     _a.crossVectors(dir, UP); if (_a.lengthSq() < 1e-6) _a.set(1, 0, 0); _a.normalize(); _b.crossVectors(_a, dir).normalize();
     this.wind(_w); const K = Math.max(1, 0.55 * (this.game?.opensea?.helm?.look?.scale || 1)); // (the gun's smoke at the hull's size: a 5x sloop's guns are 12 pounders, not pistols)
