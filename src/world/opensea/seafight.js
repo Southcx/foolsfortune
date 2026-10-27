@@ -42,7 +42,8 @@ import { SeaSerpents } from '../../creatures/seaserpent/seaserpent.js';
 import { LANCE_COLOR } from '../../courier/ship/shots.js';
 import { SeaMounts, MOUNTING } from './seamounts.js';
 import { SEA_CREW } from '../../progress/rail/mounts.js';
-import { CHAIN_BEASTS } from '../../creatures/seaserpent/seaserpent.js';
+import { SEA_BEAST_IDS } from '../../creatures/seaserpent/seaserpent.js';
+import { phaseAt } from '../../progress/weather.js';
 import { lairsOf as beastLairs } from '../../progress/opensea/seabeasts.js';
 import { stream } from '../../core/rng.js';
 const simRand = stream('world/opensea/seafight'); // (the simulation's chance: core/rng.js, the same twice)
@@ -92,7 +93,7 @@ export class SeaFight {
   // ---------------------------------------------------------------- each frame
   update(dt) {
     const g = this.game, R = this.room;
-    if (!this.chatted && g.chat?.add) { this.chatted = true; g.chat.add('serpent', { debug: true, help: 'a sea serpent risen 120 m off the bow (DEBUG; on the open sea, at the helm)', run: () => this.spawnSerpent() }); g.chat.add('beast', { debug: true, help: '/beast wolfWhale | worldSerpent: a sea beast risen off the bow (DEBUG; at the helm)', run: (a) => this.spawnSerpent(String(a?.[0] ?? a ?? 'wolfWhale').trim() || 'wolfWhale') }); }
+    if (!this.chatted && g.chat?.add) { this.chatted = true; g.chat.add('serpent', { debug: true, help: 'a sea serpent risen 120 m off the bow (DEBUG; on the open sea, at the helm)', run: () => this.spawnSerpent() }); g.chat.add('beast', { debug: true, help: '/beast wolfWhale | seaMonk | bigSquid | worldSerpent: a sea beast risen off the bow (DEBUG; at the helm)', run: (a) => this.spawnSerpent(String(a?.[0] ?? a ?? 'wolfWhale').trim() || 'wolfWhale') }); }
     if (!R?.built || !R.active) { if (this.serpents.list.length || this.shots.length || this.globs.length) this.clear(); return; }
     const H = R.helm;
     this.lairsOf(R);
@@ -110,7 +111,7 @@ export class SeaFight {
     for (const c of [...this.serpents.list]) this.serpents.remove(c);
     for (const s of this.shots) s.gone = true; this.shots.length = 0;
     for (const b of this.globs) this.dropGlob(b); this.globs.length = 0;
-    this.mounts.clear(); this.room?.helm?.mods?.delete('coil'); this.draw();
+    this.mounts.clear(); for (const k of ['coil', 'grip', 'grasp', 'kraken']) this.room?.helm?.mods?.delete(k); this.draw();
     if (this.grounded && this.game.figmentTelegraphs) { this.grounded = false; this.game.figmentTelegraphs.ground = null; }
   }
 
@@ -122,10 +123,10 @@ export class SeaFight {
     if (this.lairs && this.lairsSeed === R.seed && this.lairsDay === day) return this.lairs;
     this.lairsSeed = R.seed; this.lairsDay = day;
     const bySq = new Map(R.grid.squares.map((sq) => [sq.id, sq]));
-    this.lairs = beastLairs(R.grid, R.seed, day).filter((l) => CHAIN_BEASTS.includes(l.id) && bySq.has(l.square)).map((l) => {
+    this.lairs = beastLairs(R.grid, R.seed, day).filter((l) => SEA_BEAST_IDS.includes(l.id) && bySq.has(l.square)).map((l) => {
       const sq = bySq.get(l.square), at = squareCentre(sq.col, sq.row).setY(R.helm?.pos.y ?? 0);
       for (const isl of R.props?.islets || []) if (Math.hypot(isl.pos.x - at.x, isl.pos.z - at.z) < isl.r + 80) at.x += isl.r + 120; // (open water, off its islet)
-      return { id: `${l.id}:${l.square}`, beast: l.id, pos: at };
+      return { id: `${l.id}:${l.square}`, beast: l.id, pos: at, when: l.when || null };
     });
     return this.lairs;
   }
@@ -135,8 +136,13 @@ export class SeaFight {
     for (const c of live) if (c.alive && !c.brain.action?.hunt && Math.hypot(c.pos.x - P.x, c.pos.z - P.z) > SEA_FIGHT.lair.far) this.serpents.remove(c);
     if (live.length) return;
     const day = today();
-    const lair = this.lairs.find((l) => this.down.get(l.id) !== day && Math.hypot(l.pos.x - P.x, l.pos.z - P.z) < SEA_FIGHT.lair.near);
+    const lair = this.lairs.find((l) => this.down.get(l.id) !== day && this.upNow(l) && Math.hypot(l.pos.x - P.x, l.pos.z - P.z) < SEA_FIGHT.lair.near);
     if (lair) this.serpents.spawn(lair.pos.clone(), { lair: lair.id, beast: lair.beast });
+  }
+  /** Whether a lair's beast is up now: its `when` (the umibozu's calm night, or dread: seabeasts.js LAIRS), either one. */
+  upNow(l) {
+    const W = l.when; if (!W) return true;
+    return (!!W.phase && phaseAt() === W.phase) || (!!W.weather && this.game.weather?.now?.aspect === W.weather);
   }
   /** DEBUG's `/serpent`: one risen 120 m off the bow, sure of you. */
   spawnSerpent(beast = 'seaSerpent') {
@@ -144,7 +150,7 @@ export class SeaFight {
     if (!R?.sailing) { g.log?.say?.('warn', 'At the helm on the open sea only.', { key: 'serpent.cmd', throttle: 2 }); return; }
     for (const c of [...this.serpents.list]) this.serpents.remove(c);
     const H = R.helm, at = H.pos.clone().add(_a.set(Math.sin(H.yaw), 0, Math.cos(H.yaw)).multiplyScalar(120));
-    if (!CHAIN_BEASTS.includes(beast)) { g.log?.say?.('warn', `No such beast here: ${CHAIN_BEASTS.join(', ')}.`, { key: 'serpent.cmd', throttle: 2 }); return; }
+    if (!SEA_BEAST_IDS.includes(beast)) { g.log?.say?.('warn', `No such beast here: ${SEA_BEAST_IDS.join(', ')}.`, { key: 'serpent.cmd', throttle: 2 }); return; }
     const c = this.serpents.spawn(at, { yaw: H.yaw + Math.PI, beast });
     c.mem.see(g.player, 'courier', H.pos, 1); c.under = 0.4; c.goUnder = 0.1;
   }
@@ -233,7 +239,7 @@ export class SeaFight {
     const R = this.room, H = R?.helm; if (!H || !R.sailing) return;
     const hits = c.row?.moves?.[move]?.hits ?? 1; // (a beast's move its row's hits: the breach 2, the coil of the world 3)
     if ((move === 'ram' || move === 'rise' || move === 'breach') && hit) { H.speed *= SEA_FIGHT.knock.keep; H.yaw += (simRand() < 0.5 ? -1 : 1) * SEA_FIGHT.knock.yaw; for (let i = 0; i < hits; i++) this.hullHit(move); }
-    else if ((move === 'coil' || move === 'coilWorld') && hit) for (let i = 0; i < hits; i++) this.hullHit(move);
+    else if ((move === 'coil' || move === 'coilWorld' || move === 'grip' || move === 'grasp' || move === 'slam') && hit) for (let i = 0; i < hits; i++) this.hullHit(move); // (the grip's a pour each `fill` s: creatures/seaserpent/shapes.js)
     else if (move === 'spit') { const n = c.row?.moves?.spit?.every ?? 1; for (let i = 0; i < n; i++) this.spit(c, H, n > 1 ? (i - (n - 1) / 2) * 0.22 : 0); } // (a fan of `every`: one aimed true)
   }
   /** Petra's hand: a hit mended each `mend.every` real s while no beast lives nearby. */

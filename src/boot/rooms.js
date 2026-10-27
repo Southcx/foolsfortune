@@ -22,6 +22,7 @@ import { Raceway } from '../world/raceway/raceway.js';
 import { OpenSea } from '../world/opensea/opensea.js';
 import { SeaFight } from '../world/opensea/seafight.js';
 import { SeaSerpentBody } from '../vfx/opensea/seaserpentbody.js';
+import { installSeaBeasts } from '../vfx/opensea/beasts/index.js';
 import { SeaLooks } from '../vfx/opensea/isletlooks.js';
 import { PuzzleLooks } from '../vfx/opensea/puzzlelooks.js';
 import { SquallLine } from '../vfx/opensea/squallline.js';
@@ -60,6 +61,7 @@ export function bootRooms(game, made) {
     game.solar = new SolarTrial(game); // (the Solar Skiffing trial, begun at the Gnomon's foot: world/dunes/solar.js)
     game.geysers = new Geysers(game); // (slip geysers: launch pads on a cycle, world/dunes/geysers.js)
     game.makeSeaSerpent = (o) => new SeaSerpentBody(game, o); // (the sea serpent's body for its mind to drive: vfx/opensea/seaserpentbody.js, drive/update/hit/down)
+    installSeaBeasts(game); // (the other sea beasts' bodies: game.makeSeaBeast(id, o) for the chain chassis, game.makeUmibozu(o), /beastlook: vfx/opensea/beasts/)
     game.cardBackOpen = (id) => cardBackOpen(id, game.ledger); // (what opens each of Calissa's card backs, for her picker's OPEN_WHEN: progress/cardbacks.js)
     game.cosmeticOpen = (kind, id) => cosmeticOpen(kind, id, game.ledger); // (what opens each of Calissa's tool skins, Jar parts, flourishes and instrument housings, for her OPEN_WHENs: progress/cosmetics.js)
     game.makeEgregore = (species, o) => egregoreBody(species, o); // (a safari Egregore's body, alive, for whatever lays a sighting on the water: update(dt, { speed, bend }), habit(name), dive(on); vfx/opensea/egregorebodies.js; nothing places them yet)

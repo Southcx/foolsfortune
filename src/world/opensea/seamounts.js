@@ -5,7 +5,8 @@
 //   the harpoon (Sondelass)   across the beam: a beast tethered (`c.tether`, real s) cannot dive and its ram is blunted; with no beast in
 //                             the arc, a wreck within reach is hooked and its crate reeled aboard (the room's salvage)
 //   the toll (Crucibelle)     a ring round the hull: every windup inside it broken, its beast stunned 2 s; three charges, filled at a dock
-//   the gulp (Lockheart)      off the bow: a spit drunk; the next bow-gun shot carries it back (x3: `gulped`)
+//   the gulp (Lockheart)      off the bow: a spit drunk; the next bow-gun shot carries it back (x3: `gulped`); the umibozu's pour drunk
+//                             wherever it grips (its hold let go)
 //   sonar (Dreamvane)         passive: a ping each `cooldown` real s naming every beast under the water within reach (`sea.sonar`)
 //   flash (Veritome)          off the bow: a beast's weak point held open (`c.open`, real s: its blows x1.5, seaserpent.js)
 //   a slick (Soul Brush)      astern: a slick laid for `hold` real s; a beast swimming through it is slowed (the `slow` status) 3 s
@@ -90,6 +91,7 @@ export class SeaMounts {
     if (t === 'lockheart') {
       let n = 0;
       for (let i = F.globs.length - 1; i >= 0; i--) { const b = F.globs[i]; if (!b.back && this.inArc(M, H, b.pos)) { F.dropGlob(b); F.globs.splice(i, 1); n++; } }
+      for (const c of F.serpents.list) if (c.alive && c.held?.move === 'grip') { F.serpents.release(c, 'gulp'); n++; } // (the umibozu's pour drunk: a ladle with no bottom, shapes.js)
       this.gulped += n; return this.done(t, { drunk: n });
     }
     if (t === 'veritome') {

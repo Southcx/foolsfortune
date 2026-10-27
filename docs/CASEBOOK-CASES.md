@@ -4137,6 +4137,17 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Rule:** NEW:hull-is-a-footprint
 
 
+### 2026-10-27 · A fore-and-aft sail's boom set to windward (found building the open sea's wind; Calissa)
+- **Seen:** reading the rig against the new wind: the vanes bellied and the pennant streamed to leeward, the boom swung the other way.
+- **Cause (as measured):** at the helm with a beam wind (its way +x in the ship's frame, `side` 1), the boom's end stood at x -7.84 and
+  the vanes' normals at +x: `boomYaw` turned +Y by `side`, and a +Y turn takes a spar along -z to -x; the clews followed the boom.
+  Never seen before the wind: `side` was always 1 and nothing else showed which way leeward was.
+- **Fix:** the boom's yaw, the main's clew and the fore-and-aft clew all take +x by `side`, the belly's side. Measured after, with the wind
+  to -x: boom end -7.84, vanes -0.85 and -0.99, the pennant's tip -6.27: all to leeward.
+- **Rule:** NEW:spar-and-cloth-one-side
+
+
+
 ### 2026-10-27 · The audio breaking down once the ship's gun fires on the open sea (the owner's iPhone; Wanda)
 - **Seen:** "audio processing breaks down after combat is initiated and the ship's gun starts firing" (relayed by Calissa).
 - **Cause (as measured, then not yet measured):** headless on a desk (the open sea boarded, a sea serpent called, the gun held, the hits
@@ -4161,6 +4172,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   tip sent back.
 - **Rule:** NEW:hull-is-a-footprint (the same rule: every test against the hull, the parry's too)
 
+
 ### 2026-10-27 · A fore-and-aft sail's boom set to windward (found building the open sea's wind; Calissa)
 - **Seen:** reading the rig against the new wind: the vanes bellied and the pennant streamed to leeward, the boom swung the other way.
 - **Cause (as measured):** at the helm with a beam wind (its way +x in the ship's frame, `side` 1), the boom's end stood at x -7.84 and
@@ -4176,3 +4188,13 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Cause (as read):** a new event named without searching the bus for the name first.
 - **Fix:** the broadside's moment is `sea.boom { at, side }`; nothing else uses the name.
 - **Rule:** NEW:event-name-searched-first
+
+### 2026-10-27 · The territorial sea beasts lost a ship a few metres past their zone (found probing the umibozu; Petra)
+- **Seen:** headless, the umibozu hunting a cruising sloop rose once at its beam and then roamed; with the ship stopped 120 m from its
+  home it never hunted. The akhlut (shipped in v310) was built the same way.
+- **Cause (as measured):** the senses took `row.zone` as sight (50 m the umibozu, 60 the akhlut), so a ship leaving that circle was out of
+  sight within a few seconds; and its rise, a teleport under the water to the ship's beam, set it down 124 m from home, past its leash
+  (50 x 1.4 = 70 m), where the hunt fails at once.
+- **Fix:** a territorial beast's sight is its zone x its leash (seaserpent.js); the mind picks no move while the ship is outside the
+  leash (mind.js `pickMove`). Measured after: the umibozu inside its water rose 4 times and gripped 3, each a pour on the hull.
+- **Rule:** NEW:territory-is-sight-and-leash

@@ -940,3 +940,5 @@ NEW:audio-one-shot-let-go. **A one-shot's nodes are let go when its source ends,
   three sounds a hit. A band's instrument takes one note an event unless it says it takes a chord.
 NEW:event-name-searched-first. **A new event's name is searched for on the bus before it is emitted.** An emit under a name already taken
   counts and sounds as the other thing; grep `'<name>'` across `src/` first.
+NEW:territory-is-sight-and-leash. **A territorial creature sees all it would defend, and moves only on a ship inside it.** Its sight is its
+  zone x its leash, never the zone alone; a move that would carry it out of its leash (a rise, a breach) is not begun.
