@@ -172,10 +172,9 @@ export class DuelView {
     if ((this.fitT = (this.fitT || 0) - dt) <= 0) { this.fitT = 0.25; this.fit = this.frameShot(); }
     if (!this.fit) return; const k = 1 - Math.exp(-6 * dt); shot.pos.lerp(this.fit.pos, k); shot.look.lerp(this.fit.look, k);
   }
-  /** A cell's centre on the slab's face, in the world; null on touch, where the god hand does not hover over the board (the session's
-   *  cursorAt asks here: pick-then-place has no use for a hand over a third of the foe's half, the coordinator's audit 2026-10-27). */
+  /** A cell's centre on the slab's face, in the world (the session's cursorAt asks here; on touch it shows no hand). */
   pointOf(cell) {
-    if (!this.isOpen || !cell || this.game.hudLayout?.touch) return null;
+    if (!this.isOpen || !cell) return null;
     const x = cell.x ?? cell[0], y = cell.y ?? cell[1]; return this.frame.localToWorld(cellLocal(x, y, this.board3, new THREE.Vector3()).setZ(0));
   }
   /** An illegal action's look: its cell's rim (the action's cell, the Courier's figurine's for its moves, else the hovered one) shaken
