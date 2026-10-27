@@ -4136,3 +4136,12 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   the coil and the spit ask it, and the spit hits within 1.2 m of the footprint and under the deck's height plus 3 m.
 - **Rule:** NEW:hull-is-a-footprint
 
+
+### 2026-10-27 · A fore-and-aft sail's boom set to windward (found building the open sea's wind; Calissa)
+- **Seen:** reading the rig against the new wind: the vanes bellied and the pennant streamed to leeward, the boom swung the other way.
+- **Cause (as measured):** at the helm with a beam wind (its way +x in the ship's frame, `side` 1), the boom's end stood at x -7.84 and
+  the vanes' normals at +x: `boomYaw` turned +Y by `side`, and a +Y turn takes a spar along -z to -x; the clews followed the boom.
+  Never seen before the wind: `side` was always 1 and nothing else showed which way leeward was.
+- **Fix:** the boom's yaw, the main's clew and the fore-and-aft clew all take +x by `side`, the belly's side. Measured after, with the wind
+  to -x: boom end -7.84, vanes -0.85 and -0.99, the pennant's tip -6.27: all to leeward.
+- **Rule:** NEW:spar-and-cloth-one-side
