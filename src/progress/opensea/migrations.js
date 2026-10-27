@@ -17,6 +17,7 @@
 import { ECON } from '../econ/table.js';
 import { EGREGORES } from './safari.js';
 import { seeded } from '../../core/rng.js';
+import { lairsOf } from './seabeasts.js';
 
 /** How many herds a game day, how big (bodies), and what one pays: `share` of a hunt of its class (ECON.hunt). Measured against the aim
  *  in scripts/opensea.mjs: a sailor who works the board earns about 0.4x the aim after the sea is charted, less than fishing, more than
@@ -47,12 +48,12 @@ export const herdFee = (cls = 0) => Math.round(MIGRATION.share * ECON.hunt.minut
 /** The rumour (OPEN-SEA.md 14.8): one fighting beast a game day posted on the dock's board in one square it lives in, its kill there that
  *  game day paid `bounty` x its own kill's pay at a whole hull, once (Letty's marque: the bounty board's first posting). Only beasts the
  *  sea can raise yet (`ids`: the sea serpent; the others join as their runtime lands); a legend `legend` game days in a hundred. */
-export const RUMOUR = { ids: ['seaSerpent'], bounty: 1, legend: 0 };
+export const RUMOUR = { ids: ['seaSerpent', 'wolfWhale', 'worldSerpent'], bounty: 1 };
 
+/** The game day's rumour: one of its beasts' lairs that game day (seabeasts.js lairsOf), so the beast posted is the beast there. */
 export function rumourOf(grid, day = 0, seed = 1) {
-  const r = seeded((seed * 6271 + day * 15485863) >>> 0), ids = RUMOUR.ids.filter((id) => EGREGORES[id]); if (!ids.length) return null;
-  const id = ids[Math.floor(r() * ids.length)], E = EGREGORES[id], L = E.lives;
-  const ok = grid.squares.filter((sq) => sq.off >= L.off && (!L.law || Math.sign(sq.law) === L.law || sq.law === 0) && E.cls <= sq.cls + 1);
-  if (!ok.length) return null;
-  return { id, square: ok[Math.floor(r() * ok.length)].id, cls: E.cls };
+  const r = seeded((seed * 6271 + day * 15485863) >>> 0), lairs = lairsOf(grid, seed, day).filter((l) => RUMOUR.ids.includes(l.id) && !l.when);
+  if (!lairs.length) return null;
+  const L = lairs[Math.floor(r() * lairs.length)];
+  return { id: L.id, square: L.square, cls: EGREGORES[L.id].cls };
 }

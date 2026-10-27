@@ -134,6 +134,14 @@ their Clayese scales; the System's skill and achievement jingles (the chime and 
   container's CPU; a heavy processor (an amp, a clipper, a reverb) stands for the band's life and notes play into it. **A phone's mixer**
   (`sfx.phone`, `PHONE` in `audio/core.js`; `?phoneaudio=1` on a desk): 32 kHz, reverbs at most 1.2 s, 10 sounds begun in 250 ms, the
   heaviest instruments thinned (`this.phone` in the band), the arranger's notes made further ahead.
+  A blow's sounds (struck, damage, the stun's tick) share one budget on a phone, one each 90 real ms (`hitOk`); every one-shot lets
+  its nodes go when it ends; the audio's health (`audio/health.js`) writes into the field report when the audio clock falls behind real
+  time or the context stops, with the zone and the cue's section.
+- **The ship's fight at the helm** (`audio/seabattle.js`; Petra's `sea.*` events). A broadside ripples bow to stern on the cue's next
+  sixteenth, panned to its side (at most six guns on a phone), and tells its heard moment as `sea.report { at, side }` for the muzzles'
+  flash; a dry touch-hole hisses; the worn tools at sea each have a voice (the harpoon's chain and bite, the Crucibelle's foghorn on the
+  cue's root and fifth, the sonar's ping and echo, the fire paint thrown); a mend is three mallet knocks. The wolf whale's and the world
+  serpent's moves are heard as the serpent's nearest kin, a breach and the world-coil closing with their own.
 - **Levels:** each section has a `gain`. Rendered offline (`scripts/render_score.mjs`) and measured: a quiet opening or a jingle about
   -31 dB RMS, a theme's body -24 to -29, a fight -17 to -23; a climax about twice a verse.
 - **The low end:** under about 45% of the energy below 120 Hz (a looser limit is allowed for a hit). A sustained sub at full level

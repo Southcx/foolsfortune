@@ -188,6 +188,7 @@ export class Arranger {
   }
   /** One queued note made on its band. */
   make({ e, B, t, d, gain }) {
+    this.made = (this.made || 0) + 1; // (counted for the audio's health: audio/health.js)
     try {
       if (HITS.has(e.i)) B[e.i](t, (e.v ?? 0.6) * gain, e.o);
       else if (e.i === 'riser' || e.i === 'breath' || e.i === 'reverse' || e.i === 'whoosh') B[e.i](t, d, (e.v ?? 0.3) * gain, e.o);

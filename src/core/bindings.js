@@ -131,6 +131,8 @@ export const ACTIONS = [
   { id: 'heFix',    keys: ['KeyR'],       pad: 'Y',     touch: 'fix',        ctx: 'helm', how: 'tap' },   // (read the sky with the Dreamvane)
   { id: 'heFire',   mouse: 'Mouse0',      pad: 'RT',    touch: 'fire',       ctx: 'helm', how: 'hold' },  // (the ship's gun, aimed with the camera)
   { id: 'heBroad',  mouse: 'Mouse2',      pad: 'LT',    touch: 'broadside',  ctx: 'helm', how: 'tap' },   // (the side the camera looks over fires at once: seafight.js)
+  { id: 'heMount1', keys: ['Digit1'],       pad: 'LB',    touch: 'mount.1',    ctx: 'helm', how: 'tap' },   // (the main's mount at sea: seamounts.js)
+  { id: 'heMount2', keys: ['Digit2'],       pad: 'RB',    touch: 'mount.2',    ctx: 'helm', how: 'tap' },   // (the sub's)
   { id: 'heParry',  keys: ['KeyV'],       pad: 'B',     touch: 'parry',      ctx: 'helm', how: 'tap' },   // (the outlined spit sent back: seafight.js)
   { id: 'hePlate',  keys: ['KeyE'],       pad: 'X',     touch: 'plate',      ctx: 'helm', how: 'tap' },   // (a plate from the helm, the Veritome worn: world/opensea/herds.js)
   // ---- the rhythm mode and busking (M3, Wanda's: ten lanes as ten pads in two rows; a held pad is a held lane, music/rhythm/rhythm.js)

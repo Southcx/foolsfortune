@@ -9,6 +9,7 @@
 //   hearEvents(game, sfx)   (once, at boot)
 // ---------------------------------------------------------------------------------------
 import { installHaptics } from './haptics.js';
+import { installAudioHealth } from './health.js';
 import { gardenState } from './garden.js';
 import { today } from '../core/calendar.js';
 import { feelingOfKind } from './mycelium.js';
@@ -317,6 +318,11 @@ const RULES = {
   'rail.bite': (s, e, g) => s.shoalBite?.(e.bites, g.music?.grid?.()),
   'rail.scatter': (s, e, g) => s.shoalScatter?.(g.music?.grid?.()),
   'sea.hull': (s, e) => s.seaHullHit?.(e.hull ?? 3), // (`hull`: the hits it can still bear)
+  // the ship answering back (audio/seabattle.js): a broadside on the cue's next sixteenth, its heard moment told for the muzzles' flash
+  'sea.broadside': (s, e, g) => { const at = s.seaBroadside?.(e.side ?? 1, e.guns ?? 4, g.music?.grid?.()); if (at != null) g.events.emit('sea.report', { at: +at.toFixed(3), side: e.side ?? 1, by: 'courier' }); },
+  'sea.broadside.dry': (s) => s.seaBroadsideDry?.(),
+  'sea.mount': (s, e, g) => s.seaMount?.(e.tool, e.ok !== false, g.music?.grid?.()),
+  'sea.mend': (s, e) => s.seaMend?.(e.hull ?? 3, e.of ?? 6),
   'sea.hull.broken': (s) => s.seaHullBroken?.(),
   'goal.done': (s, e) => s.goalDone?.(e.slot ?? 0, !!e.all), // (a goal of the game day's three done; all three, the Answer whole: audio/ui.js)
   'goals.set': (s) => s.goalsSet?.(),
@@ -411,4 +417,5 @@ const RULES = {
 export function hearEvents(game, sfx) {
   for (const [name, fn] of Object.entries(RULES)) game.events.on(name, (e) => fn(sfx, e, game));
   installHaptics(game);
+  installAudioHealth(game, sfx); // (the mixer watched for falling behind, into the field report: audio/health.js)
 }
