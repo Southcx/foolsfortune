@@ -707,3 +707,26 @@ Petra's session opens a practice duel with a foe marked `c.practice` (Strawman's
 - **The lesson** runs in practice when due, and finishing it there counts (`duel.lesson`, the one count practice keeps: the lesson is
   what you know, not a record); `lessonDue` is false after a duel won or the lesson finished once.
 
+### 22.7 Skyfall (Petra's go, 2026-10-27; `progress/duel/skyfall.js`)
+The gems you clear fall back in from the board's far edge in the same settle, so what comes in can clear again: a free cascade, counted
+as the chain's next step (Puzzle & Dragons' skyfall, Candy Crush's refill). A half is never full (junk needs room to land; a side that
+cannot take it has lost), so the refill keeps a side at a **waterline** (`to`, a share of its cells) and never over it: junk sitting on a
+side keeps it over, so breaking junk still makes room. The drip only tops up to the waterline. A refill that would clear where it lands
+is recoloured (`calm`, the chance). The chain's junk stops doubling at step 5 (`CHAIN_CAP`, duel.js).
+
+Measured (`scratchpad duel/sky.mjs`, the stand-in at sample 3, Lockheart + Veritome):
+
+| board | skyfall | wins | turns a side | junk a turn (you vs it) | gems refilled an action | clears of 3+ steps |
+| --- | --- | --- | --- | --- | --- | --- |
+| Strawman 10 x 8 | none | 16/20 | 5.2 | 1.6 vs 0.4 | 0 | 0% |
+| Strawman | to 0.6, calm 0.8 | 19/20 | 3.7 | 20.5 vs 4.0 | 3.7 | 19% (chains to 8) |
+| Strawman | to 0.4, calm 0.95 | 15/20 | 7.8 | 2.2 vs 0.6 | 2.2 | 12% |
+| Strawman | **to 0.5, calm 0.95** | 17/20 | 5.3 | 3.4 vs 1.3 | 2.5 | 13% |
+| the Lantern Wisp 12 x 9 | none | 9/12 | 4.5 | 2.6 vs 2.6 | 0 | 4% |
+| the Lantern Wisp | to 0.5, calm 0.95 | 8/12 | 3.6 | 14.8 vs 8.1 | 3.8 | 30% |
+| the Lantern Wisp | **to 0.4, calm 0.95** | 8/12 | 4.6 | 5.3 vs 4.3 | 2.4 | 10% (chains to 4) |
+
+With nothing done to it, an uncalmed refill set off chains of 22 steps (397 095 junk a turn). Chosen: the default `{ to: 0.4, calm: 0.95 }`
+(the duel's start fill), Strawman's board `{ to: 0.5 }`. The view: a refill is `drip { side, id, at, colour, sky: true }`, the drip's own
+shape, its colour on it (it can be cleared in the same settle); Calissa's to drop it in from the edge.
+

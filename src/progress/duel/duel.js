@@ -25,6 +25,7 @@ import { lessonOf, lessonAct, lessonTurn } from './lesson.js';
 import { seeded } from '../../core/rng.js';
 import { OPPOSITE } from '../weather.js';
 import { SKILL_ACTION, chargeFrom, skillActions } from './skills.js';
+import { skyOf, skyfall, deficitOf } from './skyfall.js';
 
 /** Every action a side may take: the board's (rules.js), the Courier's run and tools (couriertools.js), the god hand's finisher (duelbreak.js),
  *  and the flee (flee.js). */
@@ -52,8 +53,10 @@ export const DUEL = {
   style: 'drag',   // 'drag': the one-gesture duel (PUZZLE-DUELS.md 22: the hand drags, the worn pair are charged skills, no Courier on the board); 'classic' the forms and the Courier's walk (sections 4 to 21), kept for the record and the measure
 };
 
-/** A junk count from one settle's chain steps: a step clearing n gems gives (n - 2) x 2^(step - 1) (Puyo's chain power, simplified). */
-export const junkOf = (n, step) => Math.max(0, n - 2) * 2 ** (step - 1);
+/** A junk count from one settle's chain steps: a step clearing n gems gives (n - 2) x 2^(step - 1) (Puyo's chain power, simplified),
+ *  the doubling stopping at step CHAIN_CAP (x16: skyfall's free cascades must not make a lucky drag a win by itself, PUZZLE-DUELS.md 22.7). */
+export const CHAIN_CAP = 5;
+export const junkOf = (n, step) => Math.max(0, n - 2) * 2 ** (Math.min(step, CHAIN_CAP) - 1);
 
 /** A new duel under a ruleset (rulesets.js). Each side's forms: the Courier, the god hand, or both (the owner, 2026-10-19); `ap` a number
  *  or one a side (a side of two players has two players' points: section 12); `tools` the tools a side wears (all, if not given). */
@@ -88,7 +91,7 @@ const gemOf = (s) => (s.rs.bombs && s.r.chance(s.rs.bombs) ? piece('bomb') : pie
 /** A side filled to DUEL.fill with gems, settled, and recoloured until nothing on it would clear at once. */
 function fillSide(s, side) {
   const b = s.board, cells = b.empty(side);
-  for (let n = Math.round(cells.length * DUEL.fill); n > 0; n--) {
+  for (let n = Math.round(cells.length * (skyOf(s)?.to ?? DUEL.fill)); n > 0; n--) { // (under skyfall, its waterline: skyfall.js)
     const [x, y] = cells.splice(s.r.int(cells.length), 1)[0];
     b.set(x, y, piece('gem', { colour: colourOf(s) }));
   }
@@ -114,12 +117,15 @@ const topQueue = (s, side) => { const Q = s.sides[side].queue; while (Q.length <
 export function settle(s) {
   const events = [], junk = [0, 0], steps = s.chainFrom ? [...s.chainFrom] : [0, 0], seen = new Set(), tune = s.sides.map((S) => S.tune || null);
   s.chainFrom = null; // (a shot's pop of your own was the chain's first step: what falls after it counts on from there)
+  const sky = skyOf(s); let holes = s.skyHoles || [[], []]; s.skyHoles = null; // (a skill's blast leaves its holes for this settle: skills.js)
   for (let pass = 0; ; pass++) {
     if (pass >= DUEL.settleCap) { s.capHits++; events.push({ type: 'settle.cap' }); break; }
     events.push(...fall(s.board));
+    if (sky) { events.push(...skyfall(s, holes, gemOf)); holes = [[], []]; } // (skyfall.js: the cleared gems back in from the far edge, to the waterline)
     const hot = clears(s.board, s.rs, tune); if (!hot.size) break;
     const { cleared, events: ev } = resolve(s.board, hot, s.rs);
     events.push(...ev);
+    if (sky) for (const e of ev) if (e.type === 'clear' && e.colour) holes[e.side].push(e.at);
     const weak = weaknessOf(s), hit = [0, 0], eff = [...cleared];
     if (weak) for (const e of ev) if (e.type === 'clear' && e.side === 0 && (e.colour === weak.weak || e.colour === weak.resists)) { const k = e.colour === weak.weak ? weak.k[0] : weak.k[1]; eff[0] += k - 1; if (k > 1) hit[0]++; }
     for (const side of [0, 1]) if (cleared[side]) { steps[side]++; junk[side] += junkOf(eff[side], steps[side]); events.push({ type: 'chain', side, step: steps[side], cleared: cleared[side], ...(hit[side] ? { weak: hit[side] } : {}) }); }
@@ -251,8 +257,8 @@ function moveLine(s, by) {
 
 /** A side's drip at the start of its turn: rs.drip new pieces at random empty cells of it (the well never runs dry). */
 function drip(s, side) {
-  const b = s.board, cells = b.empty(side), events = [];
-  for (let i = 0; i < s.rs.drip && cells.length; i++) {
+  const b = s.board, cells = b.empty(side), events = [], n = Math.min(s.rs.drip, deficitOf(s, side)); // (under skyfall, only to the waterline)
+  for (let i = 0; i < n && cells.length; i++) {
     const [x, y] = cells.splice(s.r.int(cells.length), 1)[0], p = gemOf(s); b.set(x, y, p); events.push({ type: 'drip', side, id: p.id, at: [x, y] });
   }
   events.push(...settle(s).events);
