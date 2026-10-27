@@ -10,7 +10,8 @@
 // Prior art: Jurai's Light Hawk Wings (light as a sail), the Dorgenark's literal sails in space, Skies of Arcadia's sail-like fins; the
 // sail's own draft and flutter from vfx/sloop.js (where it was first written).
 //
-//   sailMaterial(lotus, { vane, fill, edge, fillA }) -> MeshStandardMaterial   m.userData.u: { uFill, uSide, uLotus, uT, uEdge, uEdgeCol, uFillA, uBellyN }
+//   sailMaterial(lotus, { vane, fill, edge, fillA, belly }) -> MeshStandardMaterial   m.userData.u: { uFill, uSide, uLotus, uT, uEdge, uEdgeCol, uFillA, uBellyN, uBelly }
+//   (belly: the draft's depth in metres at full fill, 0.55 for a sail of the first hulls' size; a ship five times as long passes five times it)
 //   FURL (the sail, 0 furled .. 1 full, at or under which a ship's canvas is stowed: the mooring's)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -21,20 +22,20 @@ import { matteMaterial } from '../matte.js';
 export const FURL = 0.15;
 const SAIL = 0xf6e6c8;
 
-export function sailMaterial(lotus, { vane = false, fill = SAIL, edge = 0xffffff, fillA = 0.38 } = {}) {
+export function sailMaterial(lotus, { vane = false, fill = SAIL, edge = 0xffffff, fillA = 0.38, belly = 0.55 } = {}) {
   const u = { uFill: { value: 0.6 }, uSide: { value: 1 }, uLotus: { value: lotus }, uT: { value: 0 },
-    uEdge: { value: vane ? 1 : 0 }, uEdgeCol: { value: new THREE.Color(edge) }, uFillA: { value: vane ? fillA : 1 }, uBellyN: { value: vane ? 1 : 0 } };
+    uEdge: { value: vane ? 1 : 0 }, uEdgeCol: { value: new THREE.Color(edge) }, uFillA: { value: vane ? fillA : 1 }, uBellyN: { value: vane ? 1 : 0 }, uBelly: { value: belly } };
   const m = matteMaterial({ color: vane ? fill : SAIL, side: THREE.DoubleSide, forceSinglePass: true, transparent: vane, depthWrite: !vane }); // (Lambert: matte, no metal, no env, cloth whose patch never reads roughness; half the GLSL of Standard and 0.5 to 0.7 of its cost a lit pixel, vfx/matte.js; the program audit, 2026-10-25)
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, u);
     sh.vertexShader = sh.vertexShader
-      .replace('#include <common>', '#include <common>\nuniform float uFill, uSide, uT, uBellyN; varying vec2 vSailUv;')
+      .replace('#include <common>', '#include <common>\nuniform float uFill, uSide, uT, uBellyN, uBelly; varying vec2 vSailUv;')
       .replace('#include <begin_vertex>', `#include <begin_vertex>
 vSailUv = uv;
 float belly = sin(uv.x * 3.14159) * sin(uv.y * 3.14159 * 0.92 + 0.12); // (fullest a third of the way back, low: a real sail's draft)
 vec3 sailWay = uBellyN > 0.5 ? normalize(objectNormal) : vec3(1.0, 0.0, 0.0);
-transformed += sailWay * (uSide * uFill * belly * 0.55);
-transformed.x += sin(uT * 3.0 + uv.y * 4.0) * 0.012 * uv.x;`);
+transformed += sailWay * (uSide * uFill * belly * uBelly);
+transformed.x += sin(uT * 3.0 + uv.y * 4.0) * 0.022 * uBelly * uv.x;`);
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', '#include <common>\nuniform sampler2D uLotus; uniform float uEdge, uFillA; uniform vec3 uEdgeCol; varying vec2 vSailUv;')
       .replace('#include <color_fragment>', `#include <color_fragment>
