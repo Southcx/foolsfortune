@@ -490,3 +490,5 @@ many activities into one progression) ranked what to fold in by fun per build ef
 Refused, as the laws already say: streaks and wall-clock gates, a second currency, missables, power from checklists, unbounded luck.
 Ranked next: bundles that restore the Workshop (Stardew, Dark Cloud 2's Georama), photo to invention (Dark Cloud 2), a stakes ladder
 per module (Hades' heat, Balatro's stakes), clue fog and power gems in the duel, parts from beasts and square completion at sea.
+Built after: clue fog (PUZZLE-DUELS.md 19.3), the forge (a beast's part from its carves, OPEN-SEA.md 15.4), a square completed
+(OPEN-SEA.md 15.5).

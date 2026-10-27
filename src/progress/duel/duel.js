@@ -253,7 +253,7 @@ function drip(s, side) {
 
 /** Every legal action for a side now (within its points), for bots and the view's hints. Drags are sampled (paths of 2 to 4 steps). */
 export function legalActions(s, side = s.toMove, { drags = 24 } = {}) {
-  const b = s.board, S = s.sides[side], out = [], dirs = ['N', 'S', 'E', 'W'];
+  const b = s.board, S = s.sides[side], out = [], dirs = ['N', 'S', 'E', 'W'], dr = quietStream(s, 'drags'); // (the drags sampled from a quiet stream: asking what is legal draws nothing from the duel)
   const ok = (a) => { const A = ACTIONS[a.kind]; if (A.form && A.form !== S.form) return; if (costOf(a) <= s.apLeft && A.legal(s, side, a)) out.push(a); };
   for (const to of S.forms) if (to !== S.form) ok({ kind: 'form', to });
   if (S.form === 'courier' && S.at) {
@@ -276,18 +276,27 @@ export function legalActions(s, side = s.toMove, { drags = 24 } = {}) {
     for (let i = 0; i < drags; i++) {
       const own = []; b.each((p, x, y) => { if (b.mine(side, x) && hasTag(p, 'swappable')) own.push([x, y]); });
       if (!own.length) break;
-      const path = [s.r.pick(own)];
-      for (let n = 1 + s.r.int(3); n > 0; n--) { const [x, y] = path[path.length - 1], d = s.r.pick([[1, 0], [-1, 0], [0, 1], [0, -1]]); path.push([x + d[0], y + d[1]]); }
+      const path = [dr.pick(own)];
+      for (let n = 1 + dr.int(3); n > 0; n--) { const [x, y] = path[path.length - 1], d = dr.pick([[1, 0], [-1, 0], [0, 1], [0, -1]]); path.push([x + d[0], y + d[1]]); }
       ok({ kind: 'drag', path });
     }
   }
   return out;
 }
 
+/** A stream for a lookahead, seeded from the duel as it stands (its board, ply, points and a salt), so a preview, an intent or the
+ *  bot's search never draws from the duel's own stream: hovering cannot change the duel's chances, and a replay replays (Calissa's
+ *  builder found it, 2026-10-27). */
+export function quietStream(s, salt = '') {
+  let h = 2166136261; const key = `${salt}|${s.ply}|${s.toMove}|${s.apLeft}|${s.board.hash()}`;
+  for (let i = 0; i < key.length; i++) { h ^= key.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return seeded(h >>> 0);
+}
+
 /** A copy of a duel to try actions on (a bot's lookahead), with a stream of its own seeded from the real one's next draw. */
 export function cloneState(s) {
   const c = { ...s, board: s.board.clone(), sides: s.sides.map((S) => ({ ...S, forms: [...S.forms], at: S.at && [...S.at], queue: S.queue.map((p) => ({ ...p })) })), log: [], undo: [], lesson: s.lesson && { ...s.lesson } }; // (its own undo: a lookahead never writes into the real turn's)
-  c.r = seeded(Math.floor(s.r() * 2 ** 31));
+  c.r = quietStream(s, 'clone'); // (its own stream, read from the duel as it stands: the real one is never drawn by a lookahead)
   return c;
 }
 

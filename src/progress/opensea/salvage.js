@@ -5,7 +5,7 @@
 //             salvage of a wreck gives its tier's crates; after that the sea gives one more a game day (what the swell turns up), so the
 //             open sea keeps a small faucet once it is charted (section 9's open call). A crate is cubes, mostly; sometimes a ship's part.
 //   THE SHIP'S PARTS  a sail, a keel and a hull fitting, each a trade, never an upgrade (the skiff garage's rule, skiffparts.js): the sea
-//             feeds the ship you sail it in. A part is found in salvage (rare wrecks more often) or taken from a legend beast; worn at a
+//             feeds the ship you sail it in. A part is found in salvage (rare wrecks more often) or forged from the beasts sunk (forge.js); worn at a
 //             dock; it changes the polar the wind reads (wind.js `rig`), the helm's turn and way, the hull's hits.
 //
 // Prior art: Sea of Thieves (shipwrecks' crates and the harpoon that pulls them in), Subnautica (wrecks worth swimming to for what they
@@ -13,7 +13,7 @@
 // tracks through a current.
 //
 //   SALVAGE (its numbers)   cratesOf(tier, first) -> n   crateOf(r, tier) -> { cubes } | { part }   SHIP_PARTS[slot][id] = { name, does,
-//   rig?, mult? }   rigOf(worn) -> wind.js's rig   multOf(worn, key) -> number   game.shipParts = new ShipParts(game)   .owned .worn
+//   rig?, mult?, from? }   SALVAGE_PARTS   rigOf(worn) -> wind.js's rig   multOf(worn, key) -> number   game.shipParts = new ShipParts(game)   .owned .worn
 //   .has(id) .wear(slot, id) .give(id) -> bool (new)   .rig() .mult(key)   events: sea.salvage { wreck, tier, crate }, ship.part { slot, part, how }
 // ---------------------------------------------------------------------------------------
 import { ECON } from '../econ/table.js';
@@ -44,20 +44,28 @@ export const SHIP_PARTS = {
     lateen:    { name: 'Lateen sail', does: 'Points higher into the wind; slower running before it', rig: { irons: (30 * Math.PI) / 180, best: (95 * Math.PI) / 180, run: 0.55 } },
     spinnaker: { name: 'Spinnaker', does: 'Flies downwind; useless close to it', rig: { irons: (60 * Math.PI) / 180, best: (150 * Math.PI) / 180, run: 1 } },
     storm:     { name: 'Storm sail', does: 'Strong in a gale, weak in light airs', rig: { lo: 0.55, hi: 1.2 } },
+    // forged from a beast (forge.js): the kraken's draws in light airs and spills a gale; the world serpent's points high, starves in light airs
+    krakenSail: { name: 'Kraken sail', does: 'Draws in light airs; spills a strong wind', rig: { lo: 1.8, hi: 0.6 }, from: 'forge' },
+    worldSail:  { name: 'Jormungandr sail', does: 'Points high and runs well; starves in light airs', rig: { irons: (35 * Math.PI) / 180, best: (120 * Math.PI) / 180, run: 0.9, lo: 0.6, hi: 1.1 }, from: 'forge' },
   },
   keel: {
     stock:   { name: 'Keel', does: 'As built' },
     deep:    { name: 'Deep keel', does: 'Tracks through currents; turns slower', mult: { rip: 0.5, turn: 0.85 } },
     shallow: { name: 'Shallow keel', does: 'Turns fast; currents push it more', mult: { rip: 1.3, turn: 1.25 } },
+    serpentKeel: { name: 'Sea serpent keel', does: 'Turns fast and tracks a current; a little slower', mult: { rip: 0.9, turn: 1.2, cruise: 0.95 }, from: 'forge' },
   },
   hull: {
     stock:  { name: 'Hull', does: 'As built' },
     scaled: { name: 'Scaled hull', does: 'Bears one more hit; a little slower', mult: { bears: 1, cruise: 0.94 } },
     light:  { name: 'Light hull', does: 'Faster; bears one hit fewer', mult: { bears: -1, cruise: 1.08 } },
+    akhlutHull: { name: 'Akhlut hull', does: 'The fastest hull; bears one hit fewer and turns slower', mult: { bears: -1, cruise: 1.12, turn: 0.9 }, from: 'forge' },
+    monkHull:   { name: 'Umibozu hull', does: 'Bears two hits more; heavy and slow', mult: { bears: 2, cruise: 0.85 }, from: 'forge' },
   },
 };
 export const PART_SLOTS = Object.keys(SHIP_PARTS);
-const PART_IDS = PART_SLOTS.flatMap((slot) => Object.keys(SHIP_PARTS[slot]).filter((id) => id !== 'stock'));
+/** The parts salvage can give (a forged part, `from: 'forge'`, comes only from its beast: forge.js). */
+export const SALVAGE_PARTS = PART_SLOTS.flatMap((slot) => Object.entries(SHIP_PARTS[slot]).filter(([id, v]) => id !== 'stock' && v.from !== 'forge').map(([id]) => id));
+const PART_IDS = SALVAGE_PARTS;
 const slotOf = (id) => PART_SLOTS.find((slot) => SHIP_PARTS[slot][id]);
 
 /** What the worn sail does to the wind's polar (wind.js sailOf's `rig`), or null as built. */
@@ -78,7 +86,7 @@ export class ShipParts {
       reset: () => { this.owned = new Set(); this.worn = { sail: 'stock', keel: 'stock', hull: 'stock' }; } });
   }
   has(id) { return id === 'stock' || this.owned.has(id); }
-  /** A part found (salvage, a legend's spoils): true if it is new. */
+  /** A part found (salvage) or forged (forge.js, at a quay): true if it is new. */
   give(id, how = 'salvage') { const slot = slotOf(id); if (!slot || this.owned.has(id)) return false; this.owned.add(id); this.game.save?.dirty?.('shipParts'); this.game.events?.emit('ship.part', { slot, part: id, how, by: 'courier' }); return true; }
   /** A part worn (at a dock: the room asks): refused if not owned. */
   wear(slot, id) { if (!SHIP_PARTS[slot]?.[id] || !this.has(id)) return false; this.worn[slot] = id; this.game.save?.dirty?.('shipParts'); this.game.events?.emit('ship.part', { slot, part: id, how: 'wear', by: 'courier' }); return true; }

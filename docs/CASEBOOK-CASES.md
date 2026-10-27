@@ -4189,6 +4189,12 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the broadside's moment is `sea.boom { at, side }`; nothing else uses the name.
 - **Rule:** NEW:event-name-searched-first
 
+## The duel's previews drew the duel's dice (2026-10-27, Dovina; found by Calissa's builder)
+- **Seen:** a hover preview, the foe's intent and the bot's search each advanced the puzzle duel's random stream, so looking at a move changed the next drip, and a replay of the same seed could not replay.
+- **Cause, as measured:** `cloneState` seeded each copy with `s.r()`; `legalActions` sampled drags from `s.r`. Ten bot turns of seed 9 ended on a different board with previews taken than without.
+- **Fix:** `quietStream(state, salt)` (progress/duel/duel.js): a lookahead's stream seeded from the state's own hash, drawing nothing from the duel; legalActions' drags from it too. The same seed now ends on the same board either way.
+- **Rule:** NEW:lookahead-own-stream
+
 ### 2026-10-27 · The territorial sea beasts lost a ship a few metres past their zone (found probing the umibozu; Petra)
 - **Seen:** headless, the umibozu hunting a cruising sloop rose once at its beam and then roamed; with the ship stopped 120 m from its
   home it never hunted. The akhlut (shipped in v310) was built the same way.

@@ -526,3 +526,12 @@ means more than matching; power gems (Puzzle Fighter: a 2 x 2 of one colour fuse
 for a broken side (Puyo's Fever: a break snowballs today); charms as hooks on clears (Balatro's jokers) from the bracelet and the laid
 spread; a mended Figment lending its rule family as a charm (Mega Man); a Figment's phases by its breaks; a chain power table per
 ruleset in place of the doubling (Puyo's capped table).
+
+### 19.4 A lookahead never draws the duel's dice (a bug, Calissa's builder, 2026-10-27)
+
+`cloneState` seeded each copy from the duel's own stream (`s.r()`), and `legalActions` sampled its drags from it: so a hover preview, the
+foe's intent after each action and the bot's search all moved the duel's chances, and a replay could not replay. Now a lookahead's
+stream is `quietStream(state, salt)`, seeded from the duel as it stands (its board, ply, mover and points), and nothing that asks draws:
+the same seed plays the same with or without previews and intents (checked: ten turns either way, one board). The bots' search changed
+with it (the stand-in won 67 of 80 against the Wisp at its 6 actions a point), so the Wisp's bot weighs 8: 58 of 80, as before. The
+casebook's rule: a lookahead owns its own stream.
