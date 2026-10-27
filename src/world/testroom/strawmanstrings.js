@@ -38,6 +38,9 @@ const PAGE = { title: 'THE SPARRING CIRCLE', sub: 'your loadout, a stance or a s
 /** Strawman's stances, the lectern's first rows (the owner, 2026-10-11: "Strawman setting should be moved to the nearby lectern"; it was
  *  F at Strawman). Words placeholders for Espada's. */
 const STANCES = [['still', 'Still', 'Takes every blow.'], ['guard', 'Guard', 'Blocks a blow from in front: strike from the side or behind.'], ['aberrant', 'Aberrant', 'Stands wrong. Step close and the duel begins.']]; // (the third: a practice puzzle duel, South 2026-10-27; words placeholders for Espada's)
+/** The practice duel's difficulty, shown under the Aberrant row while it is worn (Dovina's PRACTICE, progress/duel/rulesets.js; read by the
+ *  duel's session at its open as `practicePick`). Words placeholders for Espada's. */
+const PRACTICE_PICKS = [['idle', 'Idle', 'It never moves. Try the verbs and the skills.'], ['plain', 'Plain', 'A small board and a plain player.'], ['wisp', 'Wisp', "The Lantern Wisp's board."]];
 const _v = new THREE.Vector3();
 
 export class StrawmanStrings {
@@ -176,6 +179,16 @@ export class StrawmanStrings {
       sg.appendChild(r);
     }
     im.appendChild(sg);
+    if (this.S.aberrant) {
+      im.appendChild(el('div', 'grp', 'PRACTICE · How hard the duel plays'));
+      const pg = el('div', 'rooms'), cur = this.S.practicePick || 'plain';
+      for (const [k, label, line] of PRACTICE_PICKS) {
+        const r = el('div', 'room', `<span class="n">${k === cur ? '●' : '○'}</span><span><b>${label}</b><s>${line}</s></span>`);
+        r.onclick = () => { this.S.practicePick = k; again(); };
+        pg.appendChild(r);
+      }
+      im.appendChild(pg);
+    }
     im.appendChild(el('div', 'grp', 'STRINGS · Pick one, then step into the circle'));
     const grid = el('div', 'rooms');
     const row = (id, label, line) => {

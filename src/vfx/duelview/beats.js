@@ -11,7 +11,8 @@
 //              sparks first, the clears it makes 0.14 later; a duel's chain: its numeral from the clear's middle (rising, 0.9)
 //   pinch      the junk flips like an Othello disc, its back the new colour (0.34)
 //   land       junk thrown over the Line's head into its cells (0.035 apart); line: the Line steps a column (0.40, overshoot 1.4),
-//              the domains' seam pushed; shift: the figurine steps clear; drip: a drop falling a cell into its gem (0.06 apart)
+//              the domains' seam pushed; shift: the figurine steps clear; drip: a drop falling a cell into its gem (0.06 apart), a skyfall refill
+//              (`sky`) a gem dropped from past the half's far edge, the columns staggered (SKY)
 //   break     its half flashes white, a gold ring out of its body, its stars (one a depth); the EmO column whites out
 //   orb   thrown from the broken body over the Line in arcs (0.05 apart, 0.5 each); fade: it lifts, swells and breaks (0.8)
 //   run      the figurine hops its path (0.11 a cell); each orb it crosses rings out, and a bead runs down the spiritual link
@@ -53,6 +54,8 @@ const ACTS = new Set(['swap', 'drag', 'rotate', 'drop', 'push', 'kick', 'form'])
 const COST = { swap: 1, rotate: 1, drop: 1, push: 1, kick: 2, form: 1, run: 1, shot: 1, grab: 1, drill: 1, paint: 2, delay: 2, hold: 1, 'hold.send': 1, 'duel.finisher': 2 };
 const POOL = { shot: 5, grab: 5, drill: 3, paint: 10, delay: 15, 'hold.send': 5 }; // (this branch's kernel: a spend's price, when its event carries no `spent`)
 const DV = { N: [0, -1], S: [0, 1], E: [1, 0], W: [-1, 0] };
+/** Skyfall's fall-in (Dovina's skyfall.js): col: a column's stagger after the one left of it (real s); fall: the fall's time for one cell, by the root of the cells fallen (free fall). */
+export const SKY = { col: 0.035, fall: 0.11 };
 /** clear: a cascade step's clear after the first (real s); grow: the step count's swell a step; maxSize: its largest (cells). */
 export const CASCADE = { clear: 0.2, grow: 0.42, maxSize: 4.2 };
 const CLAY = 0x93552f, GOLD = 0xffd76a, TEAR = 0x7fdcff, DUST = 0xcfc3b0;
@@ -261,12 +264,26 @@ export class DuelBeats {
     return { events: [e], dur: 0.45, step: (u) => V.setLine(lerp(from, to, ease(Math.min(1, u / 0.9), 1.4))), end: () => V.setLine(to) };
   }
 
-  /** The drip: a drop of Lachryma falling a cell and crystallising into its gem. */
+  /** The drip: a drop of Lachryma falling a cell and crystallising into its gem. A skyfall refill (`sky`, Dovina's skyfall.js) drops
+   *  instead from past the half's upstream edge (gravity's far end) down to its cell, a gem already, the columns staggered left to right
+   *  as Puzzle & Dragons' skyfall comes in; its colour is the event's (a refill can be cleared in the same settle). */
   drip(it) {
-    const V = this.view, P = V.pieces, q = it.map((e, k) => { const kn = V.known(e.id), v = P.add('orb', { id: e.id, colour: kn?.colour || 'mirth', side: e.side }, e.at[0], e.at[1]); v.hidden = true; const [gx, gy] = V.state.board.grav(e.at[0], e.at[1]); return { e, v, g: [gx, gy], d: k * 0.06, gem: false }; });
-    return { events: it, dur: 0.42 + it.length * 0.06 + DUEL_VIEW.ma, step: (u, age) => { for (const r of q) {
-      const f = Math.max(0, Math.min(1, (age - r.d) / 0.4)); r.v.hidden = age < r.d; const s = f * f;
+    const V = this.view, P = V.pieces, b = V.state.board, cols = [...new Set(it.filter((e) => e.sky).map((e) => e.at[0]))].sort((p, q) => p - q), stack = new Map();
+    const q = it.map((e, k) => {
+      const v = P.add(e.sky ? 'gem' : 'orb', { id: e.id, colour: e.colour || V.known(e.id)?.colour || 'mirth', side: e.side }, e.at[0], e.at[1]); v.hidden = true;
+      const [gx, gy] = b.grav(e.at[0], e.at[1]);
+      if (!e.sky) return { e, v, g: [gx, gy], d: k * 0.06, t: 0.4, gem: false };
+      let n = 1, x = e.at[0], y = e.at[1]; while (b.in(x - gx, y - gy) && n < 40) { x -= gx; y -= gy; n++; } // (cells to just past the far edge)
+      v.kind = 'gem'; return { e, v, n, gx, gy, col: x + ',' + y, sky: true };
+    });
+    for (const r of q.filter((r) => r.sky).sort((p, q) => q.n - p.n)) { // (a column's refills stacked past its edge, the deepest lowest: they fall as one block)
+      const i = stack.get(r.col) || 0; stack.set(r.col, i + 1); const D = r.n + i;
+      r.g = [r.gx * D, r.gy * D]; r.d = cols.indexOf(r.e.at[0]) * SKY.col; r.t = SKY.fall * Math.sqrt(D); }
+    const end = Math.max(0, ...q.map((r) => r.d + r.t));
+    return { events: it, dur: end + 0.02 + DUEL_VIEW.ma, step: (u, age) => { for (const r of q) {
+      const f = Math.max(0, Math.min(1, (age - r.d) / r.t)); r.v.hidden = age < r.d; const s = f * f;
       r.v.x = r.e.at[0] - r.g[0] * (1 - s); r.v.y = r.e.at[1] - r.g[1] * (1 - s);
+      if (r.sky) { r.v.flash = f >= 1 ? Math.max(0, 0.7 - (age - r.d - r.t) * 5) : 0; continue; } // (a glint as it lands)
       if (f > 0.75 && !r.gem) { r.gem = true; r.v.kind = 'gem'; r.v.flash = 1; } if (r.gem) r.v.flash = Math.max(0, 1 - (f - 0.75) * 4); } },
       end: () => { for (const r of q) { r.v.hidden = false; r.v.kind = 'gem'; r.v.flash = 0; r.v.x = r.e.at[0]; r.v.y = r.e.at[1]; } } };
   }
