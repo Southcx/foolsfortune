@@ -13,7 +13,7 @@
 // Prior art: Sunless Sea (fuel and the dark as the clock, port reports); FTL's fuel; The Legend of Zelda: The Wind Waker (the sea chart
 // filled square by square); real dead reckoning (a position carried forward from the last fix, its doubt growing with the distance).
 //
-//   newVoyage({ grid, ship, port, fuel? }) -> voyage   burnOf(ship, full) -> measures a square   sailTo(v, square, { full, r }) -> events
+//   newVoyage({ grid, ship, port, fuel? }) -> voyage   burnOf(ship, full) -> measures a square at no sail   sailTo(v, square, { full, r, burnK }) -> events
 //   takeFix(v, how) -> events ('landmark' | 'sky')   dock(v, island, gameDay) -> events (reports paid, the tank filled and paid for)
 //   tow(v) -> events   frontAt(grid, seed, gameHour) -> Set(square ids)   v = { at, fuel, doubt, charted, found, reported, cubes, spent }
 // ---------------------------------------------------------------------------------------
@@ -37,9 +37,9 @@ export function newVoyage({ grid, ship = 'sloop', port = 'anagami', fuel = null 
 }
 
 /** One step to a neighbouring square: the fuel burnt, the current's say if you are unsure where you are, the square charted. */
-export function sailTo(v, target, { full = false, r = seaRand, phase = 'day', weather = null, gameDay = 0 } = {}) {
+export function sailTo(v, target, { full = false, r = seaRand, phase = 'day', weather = null, gameDay = 0, burnK = 1 } = {}) {
   const events = [], from = squareAt(v.grid, ...v.at.split(',').map(Number));
-  const b = burnOf(v.ship, full);
+  const b = burnOf(v.ship, full) * burnK; // (burnK: the share of the square the wind did not carry, wind.js sailOf)
   if (v.fuel < b) return tow(v);
   v.fuel -= b; v.squares++;
   let to = target;

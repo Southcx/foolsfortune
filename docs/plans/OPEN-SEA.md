@@ -340,3 +340,83 @@ Section 9's open call is taken: the safari keeps paying through herds.
   - Measured headless: four herds laid (16 bodies); E with no Veritome worn refused; with it, the herd in frame met once (240 cubes,
     a class 3), a second plate paid nothing more; the dock posted the board and paid 240.
 
+
+## 14. The rework: the wind, the mounts, the beasts, salvage (2026-10-27; the owner: "the ship combat feels shallow, and the module itself feels underwhelming/underbaked")
+
+**Why it was shallow** (Dovina's read, sent to Calissa and Petra the same night):
+1. Sailing had no decision: a throttle and a rudder on an empty plane.
+2. The fight was one gun aimed with the camera against one beast with four moves; where the ship stood did not matter, and the
+   ship's own kit (the rail's mounts) never came to sea.
+3. Nothing out there was worth sailing for but cubes paid once (a find's fee, a herd's plate).
+
+### 14.1 The wind (built: `progress/opensea/wind.js`, the helm, the room)
+
+- **Each game hour has a wind** (`windAt`): a trade wind blowing toward the Chaos end, veering within about 60 degrees over the hours,
+  0.3 to 0.9 strong; inside a front, a gale (1). The same sea, the same wind for everyone.
+- **The point of sail** (`sailOf`): the sail gives way by the angle off the wind, on a real polar diagram: nothing under 40 degrees (in
+  irons), most at 110 (a broad reach), 0.75 running dead before it. The Lachryma engine makes up the rest **from the tank**: a square's
+  fuel is `burn x (1 - 0.8 x the sail's share)`, 0.2 of a no-sail square at best, all of it head to wind; and the way is 0.85x to
+  1.25x of cruise. The lesson is the points of sail and tacking (DESIGN.md 22).
+- **The base burn rose from 0.25 to 0.35** a square (`ECON.openSea.burn`) so a sailor who never minds the wind pays what the sea cost
+  before: measured, a heedless sailor's square is 0.69 of a no-sail one, and fuel a real hour 41 to 104 cubes against 40 to 111.
+  The simulator's sailor follows the grid square by square, so its tacking saves little (0.64 to 0.65); a person picking headings on
+  the water saves the most on a single leg (0.28 across a strong wind against 1.0 into it).
+- **Gusts** (`gustsNear`, `gustAt`): cat's paws, 35 to 70 m across, drifting downwind at 6 m/s over a 50 real s life; about six within
+  400 m at any time. Inside one the wind is up to 0.5 stronger: sail into one for a burst (`sea.gust`, counted, not said).
+- **Rips** (`ripsOf`, `ripPush`): one off-lane square in five holds a current, a band 70 m wide along a heading through its square,
+  pushing 4 m/s: ride it one way, fight it the other (`sea.rip`, said once a real minute).
+- **Said:** `sea.luff` when the sail goes slack head to wind under way ("Your sail luffs: you are head to wind. Bear away and it fills.").
+- **For the looks** (Calissa): `helm.look.set()` gets `fill` (0..1) and `luff` (1 in irons) beside `sail`; `helm.sail` is `{ off,
+  point, share, speedK, burnK }`; `game.opensea.wind` `{ to, from, k }` (yaws, forward (sin, cos)); `game.opensea.gusts` the cat's
+  paws near the ship `{ x, z, r, k }`; `game.opensea.rips` a Map by square of `{ yaw, off }` (its band through `squareCentre`).
+- Prior art: a real polar diagram; Wind Waker (the wind the one thing a sail cares about); Sea of Thieves (sail angle); Pirates!
+  (a ship's best point of sail); Sunless Sea (fuel as the clock).
+
+### 14.2 The mounts at the free helm (data: `SEA_MOUNTS`, `progress/rail/mounts.js`; runtime Petra's)
+
+The rail's tools come to sea, each with an arc, so the fight is where you put the ship: the psygun the bow gun (as built); the
+Sondelass a harpoon on the beam (a beast tethered cannot dive; a crate reeled in); the Crucibelle the toll ring (every windup inside
+broken, a parry at range, 3 a sortie); the Lockheart the gulp at the bow (a spit drunk and carried back x3; the umibozu's sea drunk out);
+the Dreamvane sonar (where a dive surfaces, 2 s early; salvage and caches under the water; through ink); the Veritome a flash at the
+bow (a weak point held open 4 s, a plate taken); the Soul Brush a slick astern (a beast through it slowed by half: kite it through
+your wake). The slots are the hull's, as on the rail.
+
+### 14.3 The beasts (data: `SEA_BEASTS`, `progress/opensea/seabeasts.js`; minds Petra's, bodies Calissa's)
+
+The serpent's four move kinds (ram, spit, coil, dive), each with its answer, and one signature a beast that is its myth:
+
+| beast | class, hp | speed | signature and its answer | a kill pays |
+| --- | --- | --- | --- | --- |
+| the sea serpent | 2, 60 | 9 | (as built: section 7) | 36 to 60 cubes |
+| the akhlut (`wolfWhale`) | 2, 45 | 11 | the breach: lands where the ship will be in 1.8 s; change speed, never course | 30 to 50 |
+| the umibozu (`seaMonk`) | 2, 50 | 4 | the grip: holds the hull 8 s, a hit each 4 s as it pours the sea in; the gulp drinks it out, or shoot its eyes (the tale's bottomless ladle) | 30 to 50 |
+| the kraken (`bigSquid`) | 3, 120 | 6 | six arms as parts (grasp, slam), the head open once two are off; its ink hides the water's tells, the sonar reads through | 72 to 120 |
+| Jormungandr (`worldSerpent`) | 4, 300 | 14 | three phases: it circles (its body a wall, open where it dives), rises (a fan of spit), coils the world (a ring closing over 20 s: out through the gap, or its head at the peak); once a game day a sea | 180 to 300 |
+
+Territorial beasts let you go past 1.4 to 1.6 times their zone (Monster Hunter's: a fight you choose). A kill pays by `beastPay` (the
+serpent's rule: minutes of play at the aim, x0.75 to x1.25 by the hull kept). The room pays `seabeast.down { id }` already; the beasts'
+runtime is to come.
+
+### 14.4 Salvage and the ship's parts (built: `progress/opensea/salvage.js`, the room)
+
+- **Salvage:** F alongside a wreck (within 30 m) with the Sondelass worn hauls a crate. The first salvage gives the wreck's tier's crates
+  (common 2, uncommon 3, rare 4, legend 6); after that it gives one a game day, so the charted sea keeps a small faucet (section 9's
+  open call). A crate is 1 to 4 minutes of play by tier (0.8 to 1.2x), or a ship's part (4% a common crate to 35% a legend's).
+  `sea.salvage { wreck, tier, cubes, part, left }`; ledger `sea.salvage`, `sea.salvage.<tier>`.
+- **The ship's parts** (`SHIP_PARTS`, `game.shipParts`, save `shipParts`): each a trade, none an upgrade (the skiff garage's rule):
+  - sails: the **lateen** points higher (in irons under 30 degrees), runs worse; the **spinnaker** flies downwind and is useless under 60;
+    the **storm sail** is strong in a gale and weak in light airs;
+  - keels: the **deep keel** tracks through a rip (half its push) and turns slower; the **shallow keel** turns fast and is pushed more;
+  - hulls: the **scaled hull** bears one hit more and is a little slower; the **light hull** is faster and bears one fewer.
+  - Fitted at a quay: `/shippart <id>` for now (the pier's page is Petra's to give it a choice card). `ship.part { slot, part, how }`.
+  - The hull's hits (`mult('bears')`) are added in the room's pay already; the fight's hull count is Petra's (seafight.js).
+- **Measured headless:** an uncommon wreck gave 3 crates (13, 11, 10 cubes), then nothing that game day; a part worn refused at sea, fitted at a quay.
+
+### 14.5 Asked
+
+- **Petra:** the mounts at the helm by arc (14.2); the territorial beasts' minds and the legend's phases (14.3); the harpoon's pull for a
+  crate (salvage works without it now: F); the pier's page for the parts; the fight's hull counting `game.shipParts.mult('bears')`.
+- **Calissa:** the sail's fill and luff, the wind on the Sight or the vane, gusts and rips on the water, a crate coming up, the beasts'
+  bodies, the parts' looks on the hull.
+- **Wanda:** the wind in the rigging by point of sail; a gust's gasp; the beasts' voices.
+- **Espada:** the beasts' and the parts' names, once the owner calls it final.
