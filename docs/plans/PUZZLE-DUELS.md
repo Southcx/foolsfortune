@@ -368,18 +368,25 @@ owner at about 6 junk a turn; side 1 the Wisp):
 | clusters of 3, 4 colours, the bot at 60 | 13.9 | 34.6 | 1 of 10 | |
 | clusters of 3, 4 colours, the bot at 8 | 35.8 | 11.7 | 14 of 20 | 3.9 |
 | clusters of 3, 5 colours, the bot at 8 | 9.9 | 10.4 | 11 of 20 | 7.0 |
-| **clusters of 3, 5 colours, the bot at 4 (ruled)** | **9.5** | **6.1** | **12 of 20** | **8.5** |
+| clusters of 3, 5 colours, the bot at 4 | 9.5 | 6.1 | 12 of 20 | 8.5 |
+| **runs of 3 and clusters of 4, 5 colours, the bot at 6 (ruled)** | **9.4** | **3.3** | **15 of 20** | **6.3** |
 
 The gap was the bot's search, not the rules: 60 actions tried a point (300 a turn) finds the chain moves a person does not, and junk
 doubles each chain step (`junkOf`). The stand-in sees the whole board and takes no embers, so in play the Wisp keeps a little more edge.
 
+
+**The swing of one move** (`preview`, the best single action on the opening board, 12 seeds): runs of 3 at 4 colours 9 to 112 junk;
+clusters of 3 at 5 colours **52 to 770** (one lucky move decides the duel, and a board that chains itself is hard to read on a phone);
+clusters of 3 at 6 colours 14 to 153; runs of 3 and clusters of 4 at 5 colours 10 to 183.
+
 **Ruled (Dovina):**
-- **Clusters of 3** on the Wisp's board (`cluster: 3`, runs of 3 kept; a run of 3 is a cluster of 3 anyway). Puyo's rule at three.
-- **5 colours** on it, up from 4: at 4, clusters of 3 chained the board empty (35 junk a turn, a duel over in 4 turns a side).
-- **Its bot weighs 4 actions a point** (`rs.bot.sample`; 60 for a ruleset that does not say). A Figment's cleverness is now its
+- **Runs of 3, and any 4 touching in any shape** on the Wisp's board (`match: 3, cluster: 4`, Puyo's rule; Mirth's already). An L of 3
+  does not count: clusters of 3 were measured and refused for the swing above. 4 touching forgives every shape a person sees.
+- **5 colours** on it, up from 4, so a cluster is a find and not the board's weather.
+- **Its bot weighs 6 actions a point** (`rs.bot.sample`; 60 for a ruleset that does not say). A Figment's cleverness is now its
   ruleset's: the first aberrant met is the gentlest, the later ones set by their own.
 - **Switching form is free** (`ACTIONS.form.cost` 0): a form is which verbs you hold, and a price on that read as a tax on learning them.
   The bot keeps its own small reluctance to switch (`W.form`), so it does not dither.
-- The simulator on the Wisp's rules, bot against bot (`node scripts/duel.mjs --rules lanternwisp --n 20`): no settle capped, 16.8 turns a
-  side, junk 6.1 a turn.
+- **A move's worth shown before it is chosen**: `preview(state, action) -> { junk, steps, cleared }` (duel.js), tried on a copy, for the
+  view to draw on the hovered move (Calissa's).
 

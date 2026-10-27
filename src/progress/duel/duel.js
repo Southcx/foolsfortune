@@ -11,6 +11,7 @@
 //   newDuel({ ruleset, seed, forms, ap, pool, tools }) -> state   act(state, action) -> events | null (illegal)   endTurn(state) -> events
 //   ACTIONS (the board's, the Courier's, the finisher)   costOf(action)
 //   settle(state, side) -> { steps, junk, events }   legalActions(state, side) -> actions   cloneState(state)
+//   preview(state, action) -> { junk, steps, cleared } | null   (what one action would make, on a copy: shown before it is chosen)
 // ---------------------------------------------------------------------------------------
 import { Board, COLOURS, piece, hasTag } from './board.js';
 import { fall, clears, resolve, pinch, ACTIONS as BOARD_ACTIONS } from './rules.js';
@@ -219,4 +220,13 @@ export function cloneState(s) {
   const c = { ...s, board: s.board.clone(), sides: s.sides.map((S) => ({ ...S, forms: [...S.forms], at: S.at && [...S.at], queue: S.queue.map((p) => ({ ...p })) })), log: [] };
   c.r = seeded(Math.floor(s.r() * 2 ** 31));
   return c;
+}
+
+/** What one action by the side to move would make, tried on a copy (the duel is not changed): its junk, its chain's steps and the gems it
+ *  clears, or null if it is not legal now. For the view to show a move's worth before it is chosen (PUZZLE-DUELS.md 17: the owner could
+ *  not see why the Figment scored so much; a chain's doubling is easier to learn shown than told). */
+export function preview(s, a) {
+  const c = cloneState(s), side = c.toMove, before = c.sides[side].sent, ev = act(c, a); if (!ev) return null;
+  let steps = 0, cleared = 0; for (const e of ev) if (e.type === 'chain' && e.side === side) { steps = Math.max(steps, e.step); cleared += e.cleared; }
+  return { junk: c.sides[side].sent - before, steps, cleared };
 }

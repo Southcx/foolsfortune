@@ -25,10 +25,10 @@ export const RULESETS = {
   // THE ABERRANT LANTERN WISP (PUZZLE-DUELS.md 14; the owner's test enemy, 2026-10-19): Dread's two rules, and its half of the board
   // burns upward (a flame's updraft: its pieces rise) while yours falls, two domains meeting at the Line. The first aberrant met, so
   // the gentlest (PUZZLE-DUELS.md 17, the owner on the phone, 2026-10-26: its bot outscored them about 2:1, "linear match-3 ... makes it
-  // very difficult"): any 3 touching clear (Puyo's rule at 3), 5 colours so a cluster is not everywhere (at 4 the board chained itself
-  // empty: 35 junk a turn, 4 turns a side), and a bot that weighs 4 actions a point, not 60 (scripts/duel.mjs; PUZZLE-DUELS.md 17).
-  lanternwisp: { feeling: 'dread', match: 3, cluster: 3, gravity: (x, y, b) => (b.sideOf(x) === 0 ? DIRS.S : DIRS.N), colours: 5, drip: 4,
-    fog: { side: 1, light: 3 }, embers: { from: 1, count: 3 }, bot: { pairs: 0.8, sample: 4 } },
+  // very difficult"): runs of 3 and any 4 touching in any shape (Puyo's rule), 5 colours, and a bot that weighs 6 actions a point, not
+  // 60. Clusters of 3 were measured and refused: one move at the opening could make 52 to 770 junk (runs only: 9 to 112).
+  lanternwisp: { feeling: 'dread', match: 3, cluster: 4, gravity: (x, y, b) => (b.sideOf(x) === 0 ? DIRS.S : DIRS.N), colours: 5, drip: 4,
+    fog: { side: 1, light: 3 }, embers: { from: 1, count: 3 }, bot: { pairs: 0.8, sample: 6 } },
 };
 
 /** A creature kind's own ruleset, where it has one (`c.kind` -> a RULESETS key). */
