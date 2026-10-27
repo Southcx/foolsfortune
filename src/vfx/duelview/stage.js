@@ -68,12 +68,13 @@ export class DuelStage {
     const s = this.view.state; if (!s) return;
     const mine = (side) => side === 0;
     switch (e.type) {
-      case 'chain': { const n = Math.min(6, e.step || 1); this.jolt(0.1 + 0.07 * n); this.fovKick = Math.min(9, this.fovKick + 1.6 * n); if (n >= 3) this.rollKick += (mine(e.side) ? 1 : -1) * 0.012 * n; break; }
+      case 'chain': { const n = Math.min(6, e.step || 1); this.jolt(0.1 + 0.07 * n + (e.weak ? 0.12 : 0)); this.fovKick = Math.min(9, this.fovKick + 1.6 * n); if (n >= 3) this.rollKick += (mine(e.side) ? 1 : -1) * 0.012 * n; break; }
       case 'duelBreak': this.jolt(0.55); this.whip('break'); this.rollKick += (e.side === 1 ? -1 : 1) * 0.06; break;
       case 'allclear': this.jolt(0.35); this.whip('allclear'); break;
       case 'line': { const d = Math.sign((e.line ?? 0) - (this.view.lineCol ?? e.line ?? 0)) || (e.side === 0 ? 1 : -1); this.lean = d; this.leanT = 0.9; this.jolt(0.18); break; } // (toward where it went: the side pushed back)
       case 'land': if (e.side === 0 || (e.at && e.at[0] < (this.view.lineCol ?? 0))) this.jolt(0.22); break;
-      case 'duel.finisher': this.whip('finisher'); break;
+      case 'duel.finisher': this.whip('finisher'); this.jolt(0.8); this.fovKick = 12; this.rollKick += 0.09; break; // (the super: sold hardest, Dovina's ruling)
+      case 'refund': this.fovKick = Math.min(9, this.fovKick + 3); this.jolt(0.1); break;
       case 'duel.line': case 'duel.full': case 'duel.cap': this.whip('end'); this.jolt(0.3); break;
       case 'kick': this.jolt(0.12); break;
       case 'shot': case 'blast': this.jolt(0.16); break;

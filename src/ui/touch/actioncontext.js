@@ -216,7 +216,8 @@ export function duelTools(g) {
     if ((worn && !worn.has(tool)) || (id === 'du.read' && !fogged)) continue;
     const spent = (id === 'du.tune' && !!S.tune) || (id === 'du.read' && S.read > 0); // (a song sung this turn, a read still open: lit, not again)
     const held = (id === 'du.tune' && !!S.tune) || (id === 'du.paint' && !!D.armed); // (the armed one gold: a song holding, a Paint's reach up)
-    out.push(E(id, glyph, word, { dim: hand || !D.mine || spent || !legal.has(id.slice(3)), lit: (!hand && ask === 'tool') || held }));
+    if (D.mine && !spent && !held && !legal.has(id.slice(3))) continue; // (a move the kernel would refuse now is not on the glass: Dovina's ruling, 2026-10-27)
+    out.push(E(id, glyph, word, { dim: hand || !D.mine || spent, lit: (!hand && ask === 'tool') || held }));
   }
   return out;
 }
