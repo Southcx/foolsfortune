@@ -3,7 +3,7 @@
 // audio/seaserpent.js). The ship answering back:
 //   A BROADSIDE   sea.broadside { side, guns }: the guns of one side going off in a ripple from bow to stern, each a low thump and a crack,
 //                 panned to that side, landing on the cue's next sixteenth (Rez), so a volley is a fill in the hunt's gallop. Its heard
-//                 moment is told as `sea.report { at, side }` (`at`: real s until it is heard) for the muzzles' flash (Calissa's).
+//                 moment is told as `sea.boom { at, side }` (`at`: real s until it is heard) for the muzzles' flash (Calissa's).
 //   NOT READY     sea.broadside.dry: a match snapped on an empty touch-hole, a hiss
 //   A MOUNT       sea.mount { tool, ok }: each worn tool's own voice at sea: the Lockheart's harpoon (a chain paid out, a bite), the
 //                 Crucibelle's foghorn (an instrument: a low horn on the cue's root and fifth, out over the water), the Dreamvane's sonar (a

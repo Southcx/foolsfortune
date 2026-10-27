@@ -4169,3 +4169,10 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the boom's yaw, the main's clew and the fore-and-aft clew all take +x by `side`, the belly's side. Measured after, with the wind
   to -x: boom end -7.84, vanes -0.85 and -0.99, the pennant's tip -6.27: all to leeward.
 - **Rule:** NEW:spar-and-cloth-one-side
+
+### 2026-10-27 · A broadside's timing event named over the discovery event (caught by Calissa before the merge; Wanda)
+- **Seen:** b30e657c's broadside rule emitted `sea.report { at, side }` for the muzzles' flash; `sea.report` is already Dovina's discovery
+  reported at a dock (progress/opensea/seatrip.js), counted in the ledger (tracking/opensea.js) and rung as the dock's coin (cues.js).
+- **Cause (as read):** a new event named without searching the bus for the name first.
+- **Fix:** the broadside's moment is `sea.boom { at, side }`; nothing else uses the name.
+- **Rule:** NEW:event-name-searched-first
