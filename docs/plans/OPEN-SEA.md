@@ -525,14 +525,24 @@ a sea (10.2 broken off), the fuel and the charting unchanged.
 - **Measured headless:** an akhlut sunk whole: 50 cubes, two carves; refused at sea and short of carves; at a quay with a third carve,
   forged for 120 cubes, fitted: bears -1, way 1.12x.
 
-### 15.5 Next (ranked, not built)
+### 15.5 A square completed (`squares.js`; The Wind Waker's charts, No Man's Sky's survey)
+
+- A square with something in it (56 to 57 of the 63 on seeds 1 and 7) is **done** when it is charted, each feature in it found
+  (a phenomenon only at its hour or weather), each islet's secret taken and each wreck salvaged once: 2 or 3 asks a square. The herds
+  and habits move, so they never count toward a square (they are the collection log's).
+- Done, it pays once by its class (1, 1.5, 2, 3 minutes of play: about 800 cubes over the whole sea, once) and says so in the log;
+  `sea.square.done { square, cls, cubes, n, of }`; ledger `sea.square.done`, `.c<cls>`; achievements sea18 to sea20. The room asks
+  after each chart, find, secret and salvage, reading only its own record (`squaresDone` is the one thing saved for it).
+- **Calissa:** a completed square's chart stamped with your seal (the map's dress and the sea chart). **Espada:** the line's words.
+- **Measured headless:** a square with one islet: charted (not done), found (not done), its chest taken: done, 12 cubes, said after
+  the chest's own line; asked again, nothing.
+
+### 15.6 Next (ranked, not built)
 
 - **Small tells on the water** (Wind Waker's gulls, DREDGE's ripples, Raft's flotsam): birds over a wreck or a herd, bubbles over a
   shoal (a fishing spot for the rod at sea), a light under the water. Calissa's looks over the room's data.
 - **Fragments** (Subnautica's blueprints): salvage gives fragments of a part in place of a crate's roll, a quay makes it from enough
   (the beasts' half is built: 15.4).
-- **Square completion** (No Man's Sky's survey, Wind Waker's charts): a square's every find, secret, herd and habit had, and its chart
-  is stamped with your seal.
 - **Capture or slay** (Monster Hunter): a harpooned, stunned beast towed home for a live fee, or its statue in the Spirit Garden.
 - **A song for the wind** (Wind Waker's Wind's Requiem): the Crucibelle sets the wind for a game hour at a Lachryma cost.
 - **Tall tales** (Sea of Thieves): a few authored chains through riddles, islets, a herd and a beast, their reward a look or a title.

@@ -15,7 +15,7 @@
 //
 //   game.opensea = new OpenSea(game)   .build()   .teardown() (render/areas.js stage 2: boot/services.js registers the pair)   .active   .sailing   .arrive(island = 'anagami')   .respawn()   .update(dt)   .grid   .voyage   .helm   .seed
 //   events (each with `by`): opensea.enter, opensea.board, opensea.moor { islet? quay? }, sea.* (seatrip.js), sea.secret { kind }, sea.fuel.low,
-//   sea.stele { islet, words, line }, seaserpent.paid and seabeast.paid { id, cubes, hull, of }  (a beast sunk: progress/opensea/seabeasts.js beastPay), sea.luff, sea.gust, sea.rip (the wind: wind.js), sea.salvage, ship.part (salvage.js); the islets' puzzles and caches: puzzlepieces.js (`.pieces`); the herds: herds.js (`.herds`)
+//   sea.stele { islet, words, line }, seaserpent.paid and seabeast.paid { id, cubes, hull, of }  (a beast sunk: progress/opensea/seabeasts.js beastPay), sea.luff, sea.gust, sea.rip (the wind: wind.js), sea.salvage, ship.part (salvage.js), sea.square.done { square, cls, cubes, n, of } (squares.js); the islets' puzzles and caches: puzzlepieces.js (`.pieces`); the herds: herds.js (`.herds`)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { zoneOf } from '../../render/zonemap.js';
@@ -34,6 +34,7 @@ import { Helm } from './helm.js';
 import { windAt, gustsNear, gustAt, gusted, ripsOf, ripPush } from '../../progress/opensea/wind.js';
 import { SALVAGE, cratesOf, crateOf, ShipParts, SHIP_PARTS, PART_SLOTS } from '../../progress/opensea/salvage.js';
 import { FORGE, FORGE_PARTS, forgeable } from '../../progress/opensea/forge.js';
+import { squareState, squarePay, counts } from '../../progress/opensea/squares.js';
 import { markWorld, ownedSince, takeAway } from '../areaown.js';
 import { PuzzlePieces } from './puzzlepieces.js';
 import { SeaHerds } from './herds.js';
@@ -72,17 +73,22 @@ export class OpenSea {
     // (after the sinking's own rules: the log says it sinks, then what it pays)
     game.events?.on?.('seaserpent.down', (e) => queueMicrotask(() => paid('seaSerpent', e)));
     game.events?.on?.('seabeast.down', (e) => queueMicrotask(() => paid(e.id, e)));
+    // a square completed (progress/opensea/squares.js; OPEN-SEA.md 15.5): asked again whenever something in it is had
+    this.squaresDone = new Set();
+    const featSq = () => (this.featSq ||= new Map(this.grid.squares.flatMap((sq) => sq.features.map((f) => [f.id, sq.id]))));
+    game.events?.on?.('sea.chart', (e) => queueMicrotask(() => this.checkSquare(e.square))); // (after the thing's own line)
+    for (const [type, key] of [['sea.find', 'id'], ['sea.secret', 'islet'], ['sea.salvage', 'wreck']]) game.events?.on?.(type, (e) => queueMicrotask(() => this.checkSquare(featSq().get(e[key]))));
   }
   get active() { return this.sailing || zoneOf(this.game.player.pos) === 'opensea'; }
 
   dump() {
     const v = this.voyage;
     return { at: v.at, fuel: v.fuel, doubt: v.doubt, charted: [...v.charted], found: [...v.found], reported: [...v.reported], claimed: [...this.claimed],
-      puzzle: Object.fromEntries(Object.entries(this.puzzle).map(([k, set]) => [k, [...set]])), herds: this.herds ? this.herds.dump() : this.herdState, salvaged: this.salvaged, rumourPaid: this.rumourPaid ?? -1 };
+      puzzle: Object.fromEntries(Object.entries(this.puzzle).map(([k, set]) => [k, [...set]])), herds: this.herds ? this.herds.dump() : this.herdState, salvaged: this.salvaged, rumourPaid: this.rumourPaid ?? -1, squaresDone: [...this.squaresDone] };
   }
   load(d) {
     this.voyage = newVoyage({ grid: this.grid, port: 'anagami' });
-    this.salvaged = { ...(d?.salvaged || {}) }; this.rumourPaid = d?.rumourPaid ?? -1;
+    this.salvaged = { ...(d?.salvaged || {}) }; this.rumourPaid = d?.rumourPaid ?? -1; this.squaresDone = new Set(d?.squaresDone || []);
     this.claimed = new Set(d?.claimed || []); this.puzzle = freshPuzzle(d?.puzzle); this.pieces?.sync(); this.herdState = d?.herds || null; this.herds?.load(this.herdState);
     if (!d) return;
     const v = this.voyage; v.at = d.at || v.at; v.fuel = d.fuel ?? v.fuel; v.doubt = d.doubt ?? 0;
@@ -341,6 +347,13 @@ export class OpenSea {
     if ((this.phT = (this.phT || 0) - dt) > 0) return; this.phT = 2;
     const phase = phaseAt();
     for (const m of this.props.marks) if (m.when) m.mesh.visible = noticed(m.feature, { phase });
+  }
+  /** A square done for the first time pays once by its class and says so (squares.js: what it asks is read from the room's own record). */
+  checkSquare(id) {
+    const sq = id && this.grid.squares.find((q) => q.id === id); if (!sq || !counts(sq) || this.squaresDone.has(id)) return;
+    if (!squareState(sq, { ...this.voyage, claimed: this.claimed, salvaged: this.salvaged }).done) return;
+    this.squaresDone.add(id); const cubes = squarePay(sq); this.game.cubes?.earn(cubes, 'square');
+    this.game.events?.emit('sea.square.done', { square: id, cls: sq.cls, cubes, n: this.squaresDone.size, of: this.grid.squares.filter(counts).length, by: 'courier' }); this.dirty();
   }
   emit(events) { for (const e of events) { const { type, ...rest } = e; this.game.events?.emit(type, rest); } }
 }

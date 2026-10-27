@@ -186,6 +186,8 @@ each with a hue, a saturation and a path at the spirit press (DESIGN.md section 
 - **Salvage**: a wreck's crates once (1 to 4 minutes of play each by tier), then one a game day: the charted sea's small renewable faucet.
 - **The forge** (`opensea/forge.js`): a drain the sea's hunters choose: 120 cubes a class 2 beast's part, 240 the kraken's, 480 the
   legend's (960 for all five), against 30 to 60 cubes a class 2 kill: the beasts' faucet is paid back into the ship that hunts them.
+- **A square completed** (`opensea/squares.js`): 1 to 3 minutes of play once a square by its class, about 800 cubes over the whole
+  sea: bounded, paid for going back at the hour a phenomenon wants.
 
 ## Measuring it
 

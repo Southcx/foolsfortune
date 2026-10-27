@@ -6,7 +6,7 @@
 //   sea.report { id, tier, fee }  sea.dock { island, paid, fuelCost, short? }  sea.tow { to, fee }  sea.secret { kind }  sea.fuel.low { fuel }
 //   sea.pair.half { id, shape }  sea.pair { id, shape, tier }  sea.lineup { id, charted }  sea.echo.hear { id, notes }  sea.echo { id }
 //   sea.dig { id, tier, cubes, how }  sea.stele { islet, words, line }   sea.herds { day, n, herds }  sea.herd { id, square, cubes }  sea.herd.paid { cubes, n }   (the migrations)   seaserpent.paid { cubes, hull, of }   (the islets' puzzles and caches: world/opensea/puzzlepieces.js)
-//   sea.luff { from } (head to wind under way)  sea.gust { k }  sea.rip { square }  sea.salvage { wreck, tier, cubes, part, left }  ship.part { slot, part, how }  sea.bottle { id, islet, text }  sea.rumour { id, squares, way }  sea.rumour.paid { id, cubes }  sea.habit { id, habit, label, first, cubes }   (each with `by`)
+//   sea.luff { from } (head to wind under way)  sea.gust { k }  sea.rip { square }  sea.salvage { wreck, tier, cubes, part, left }  ship.part { slot, part, how }  sea.bottle { id, islet, text }  sea.rumour { id, squares, way }  sea.rumour.paid { id, cubes }  sea.habit { id, habit, label, first, cubes }  sea.square.done { square, cls, cubes, n, of }   (each with `by`)
 //
 //   openSeaRules({ on, L, log })   (feedback/tracking/rules.js calls it)
 // ---------------------------------------------------------------------------------------
@@ -45,6 +45,7 @@ export function openSeaRules({ on, L, log }) {
   on('seaserpent.paid', (e) => { if (e.by !== 'courier') return; if (e.hull >= e.of) L.inc('seaserpent.down.whole'); log.say('gain', `The sea serpent pays ${e.cubes} cubes (your hull kept ${e.hull} of ${e.of}).`, { key: 'ss.paid', throttle: 1 }); }); // (Dovina's serpentPay; words a placeholder, Espada's)
   on('sea.herd', (e) => { if (e.by !== 'courier') return; L.inc('sea.herd'); L.inc(`sea.herd.${e.id}`); log.say('gain', `You photograph the herd: ${e.cubes} cubes when you next dock.`, { key: 'sea.herd', throttle: 2 }); });
   on('sea.dock', (e) => log.say('info', `${ISLAND[e.island] || 'The dock'}: ${e.paid ? `your reports pay ${e.paid} cubes` : 'nothing to report'}; ${e.short ? `you can pay for ${e.fuelCost} cubes of fuel` : `the tank filled for ${e.fuelCost} cubes`}.`, { key: 'sea.dock', throttle: 1 }));
+  on('sea.square.done', (e) => { if (e.by !== 'courier') return; L.inc('sea.square.done'); L.inc(`sea.square.done.c${e.cls}`); log.say('find', `Square ${e.square} charted whole: everything in it found. ${e.cubes} cubes; ${e.n} of ${e.of} squares done.`, { key: 'sea.square', throttle: 1 }); });
   on('sea.tow', (e) => { L.inc('sea.tow'); log.say('warn', `Your tank is dry: a tug tows you to the lane for ${e.fee} cubes.`, { key: 'sea.tow', throttle: 2 }); });
   on('sea.secret', (e) => { L.inc(`sea.secret.${e.kind}`); log.say('explore', secretLine(e.kind, e.islet), { key: 'sea.secret', throttle: 1 }); });
   on('sea.pair.half', (e) => log.say('explore', `A carved ${e.shape} stands here. It looks like one of a pair.`, { key: `sea.pair.${e.id}`, throttle: 2 }));
