@@ -462,3 +462,14 @@ weather that matters) and mine were one plan; what is ruled:
 - **Weather that matters:** the fronts are gales already (14.1); fog hiding the herds is held for later (a look first, then a rule).
 - **What South gets first:** the wind and the broadside (in), then the mounts by arc, then the serpent's phases, then the crew, then
   the other beasts.
+
+### 14.9 Where the beasts live (`LAIRS`, `lairsOf`, `seabeasts.js`; Petra's ask, 2026-10-27)
+
+- Each beast in the squares its myth allows (safari.js `lives`: rows off the lanes, the Law or Chaos half), off the lanes, no tamer than
+  one class under it; one in `every` of those is its lair, the same all build (a territory is kept), or `daily` a game day (the legend
+  moves). One beast a square, the rarer placed first: Jormungandr 1 a game day; the kraken one in 3; the umibozu one in 3, up only at
+  night or under dread (`when`); the akhlut one in 4; the sea serpent one in 4 (as seafight.js laid them). On seeds 1 and 7: 1, 2 to 3,
+  6 to 8, 2 to 3 and 4 to 7 lairs.
+- **The rumour** now picks among the game day's lairs of the beasts that run (the serpent, the akhlut, Jormungandr; not one with a
+  `when`), so the beast posted is the beast there.
+- Petra: `lairsOf(grid, seed, today())` in place of seafight.js's own lairs, tended as the serpent's are.
