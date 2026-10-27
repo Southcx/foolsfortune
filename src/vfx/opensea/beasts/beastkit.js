@@ -6,8 +6,10 @@
 //                the feeling's colour) taken whole and given what a fight needs, under its own cache key ('egregore-beast'): a vertex's
 //                PART (aPart: 0 the body, 1 the weak point, 2 a limb), and for each part the rail's fight looks (vfx/railfoes/
 //                materials.js): the hit's flicker, the GOLD LINE (0xffd36a) on its rim while it can be hit, the CRAZING (partcraze.js's
-//                cell net) opening as it is hurt, lit gold near the end; and a squint (the weak point's vertices drawn toward a height:
-//                the umibozu's eyes flinching).
+//                cell net) opening as it is hurt, lit gold near the end; a squint (the weak point's vertices drawn toward a height:
+//                the umibozu's eyes flinching); and a HIDE (uHide: x a sheet of sea water sliding down the body and its limbs in
+//                rivulets, the only gloss on a matte skin, roughness dropped and the albedo darkened along them; y the weak point's own
+//                glow tinted gold by its gold line: the umibozu's eyes brightening to it). All 0 by default: one program for all.
 //   THE SHAPES   a safari species' own geometry (egregoreshapes.js, egregoreshapes2.js: the same build, never a second akhlut), with
 //                what the fight adds built in the same kit, and each vertex's part written by a rule over where it is.
 //   THE WATER    a body breaking the surface or going back through it says so on the water's service (`game.water.disturb`: a
@@ -19,8 +21,9 @@
 // gold line and crazing in the body's own draw, no second skin); Sea of Thieves' Megalodon and Kraken (one body read by the water it
 // breaks); Monster Hunter's leviathans (Lagiacrus, Plesioth: a weak point that glows while it can be struck).
 //
-//   beastGeometry(shape, col, { extra(k), partOf(x, y, z, show) -> 0..3, seed }) -> { geo, tris }   beastMaterial(shape, col) -> material
-//   (userData.u: the egregore uniforms and uBeast[4] (x hurt, y gold line, z flash), uSquint (x a height, y how shut), uCraze)
+//   beastGeometry(shape, col, { extra(k), partOf(x, y, z, show, item) -> 0..3, seed }) -> { geo, tris }   (item: which k.add, in order)
+//   beastMaterial(shape, col, { roughness, craze }) -> material   (userData.u: the egregore uniforms and uBeast[4] (x hurt, y gold line,
+//   z flash), uSquint (x a height, y how shut), uCraze, uHide (x wet, y the weak point's glow to gold))
 //   setPart(u, i, hurt, line, flash)   crossings(game, pts, radii, state, dt, seaY, { budget })   landRing(colour) -> { mesh, set(at, r, k, on) }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -32,8 +35,9 @@ export function beastGeometry(S, col, { extra = null, partOf = () => 0, seed = 1
   const k = new EgregoreKit(S.L, { wave: S.waveW || 0 });
   if (S.build) S.build(k, col, seeded(seed));
   extra?.(k, col);
+  const ends = []; let acc = 0; for (const g of k.items) ends.push((acc += g.attributes.position.count));
   const b = k.build(), P = b.geo.attributes.position.array, sh = b.geo.attributes.aShow.array, n = sh.length, part = new Float32Array(n);
-  for (let i = 0; i < n; i++) part[i] = partOf(P[i * 3], P[i * 3 + 1], P[i * 3 + 2], sh[i]);
+  for (let i = 0, it = 0; i < n; i++) { while (it < ends.length - 1 && i >= ends[it]) it++; part[i] = partOf(P[i * 3], P[i * 3 + 1], P[i * 3 + 2], sh[i], it); }
   b.geo.setAttribute('aPart', new THREE.BufferAttribute(part, 1));
   b.geo.boundingSphere.radius += S.L * 0.3; // (a habit's part grown out and the carriage's bend: never culled while some of it shows)
   return b;
@@ -52,6 +56,7 @@ if (aPart > 0.5 && aPart < 1.5 && uSquint.y > 0.0) transformed.y = uSquint.x + (
 const FRAG_PARS = /* glsl */`
 uniform vec4 uBeast[4];
 uniform float uCraze;
+uniform vec4 uHide;
 varying float vBPart;
 float bHash(vec3 p) { p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
 float bCells(vec3 p) {
@@ -83,13 +88,25 @@ const FRAG = /* glsl */`
     diffuseColor.rgb *= 1.0 - 0.45 * max(sh, 0.0) - 0.5 * crack * (1.0 - lit);
     totalEmissiveRadiance += crack * mix(vec3(0.62, 0.46, 0.26) * 0.18, gold * 3.0, lit) + gold * 0.12 * smoothstep(0.7, 1.0, hk);
   }
+  if (uHide.y > 0.0 && abs(vBPart - 1.0) < 0.5) totalEmissiveRadiance += gold * vFx.x * BP.y * uHide.y;
+  if (uHide.x > 0.0 && abs(vBPart - 1.0) > 0.5) {
+    float a = atan(vObj.x, vObj.z), col = a * 23.0 + sin(a * 7.0 + vObj.y * 0.35) * 1.6 + sin(a * 3.0 - vObj.y * 0.2) * 2.4;
+    float s = 0.5 + 0.5 * sin(col), aw = fwidth(s) + 1e-4, rill = smoothstep(0.88 - aw, 0.98 + aw, s);
+    rill *= vBPart < 0.5 ? smoothstep(0.8, 2.2, length(vObj.xz)) : 1.0; // (none where the rills would meet at a crown)
+    float id = floor(col / 6.2831853 + 0.5), fl = fract(vObj.y * 0.22 + uT * 0.16 + fract(sin(id * 12.9898) * 43758.5453));
+    float sheet = smoothstep(0.0, 0.1, fl) * (1.0 - smoothstep(0.1, 0.9, fl));
+    float broad = smoothstep(0.6, 1.0, 0.5 + 0.5 * sin(vObj.y * 0.45 + uT * 0.6 + a * 3.0));
+    float wet = clamp(rill * (0.15 + 0.85 * sheet) + 0.12 * broad, 0.0, 1.0) * uHide.x;
+    roughnessFactor = mix(roughnessFactor, 0.36, wet);
+    diffuseColor.rgb *= 1.0 - 0.25 * wet;
+  }
 }
 `;
 
 /** The safari's program with the fight's parts (see the header); one program for every beast. */
 export function beastMaterial(S, col, { roughness = 0.36, craze = 4 } = {}) {
   const m = egregoreMaterial({ L: S.L, feel: new THREE.Color(col), wave: S.wave || [0, 0, 0], fin: S.fin || [0, 0, 0, 0], roughness }), base = m.onBeforeCompile, u = m.userData.u;
-  Object.assign(u, { uBeast: { value: [0, 1, 2, 3].map(() => new THREE.Vector4()) }, uSquint: { value: new THREE.Vector2() }, uCraze: { value: craze } });
+  Object.assign(u, { uBeast: { value: [0, 1, 2, 3].map(() => new THREE.Vector4()) }, uSquint: { value: new THREE.Vector2() }, uCraze: { value: craze }, uHide: { value: new THREE.Vector4() } });
   m.side = THREE.DoubleSide;
   m.onBeforeCompile = (sh, r) => {
     base(sh, r);
