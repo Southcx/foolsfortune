@@ -18,6 +18,7 @@
 //                     coming up through it by where it lies (oxidation.js schillerInk), and faintly lit in its own colour
 //          light      the hull's paint paled to bleached ash and its planks drawn half as wide (hullmaterial.js uPale, uPlank)
 //   KEEL   under the waterline, never seen at the helm's camera: no look (the deep and the shallow keel are numbers only)
+//   FORGE  the parts made from the beasts beaten (the kraken and Jormungandr sails, the akhlut and umibozu hulls): shipkit/forgelooks.js
 // The sails go out with the vanes: under FURL or with the masts folding (`set`'s `furled`, the fold's u) they are hidden.
 //
 // Prior art: real rigs, drawn as rigged: the lateen of a dhow and a felucca (a long yard slung at its third, the tack at the stem's
@@ -34,6 +35,7 @@ import * as THREE from 'three';
 import { Mesher, sideAt, loftAt } from './hullkit.js';
 import { sailMaterial } from './vane.js';
 import { schillerInk } from '../oxidation.js';
+import { isForgeSail, isForgeHull, buildForgeSail, buildForgeHull, poseForge } from './forgelooks.js';
 
 let blank = null; // (a 1x1 clear texture: the part sails carry no lotus; made once, never disposed)
 const blankTex = () => (blank ||= new THREE.DataTexture(new Uint8Array(4), 1, 1));
@@ -87,7 +89,9 @@ export class ShipPartLooks {
     if (rig && w.sail === 'spinnaker') this.buildSpinnaker(rig);
     if (rig && w.sail === 'storm') this.buildStorm(rig);
     if (w.hull === 'scaled' && this.look.spec.hull) this.buildScales();
-    this.hidesVanes = !!rig && (w.sail === 'lateen' || w.sail === 'storm');
+    if (rig && isForgeSail(w.sail)) buildForgeSail(this, rig, w.sail);
+    if (this.look.spec.hull && isForgeHull(w.hull)) buildForgeHull(this, w.hull);
+    this.hidesVanes = !!rig && (w.sail === 'lateen' || w.sail === 'storm' || isForgeSail(w.sail));
     this.paint();
     return this;
   }
@@ -98,7 +102,8 @@ export class ShipPartLooks {
     for (const it of this.items) it.mesh.geometry.dispose();
     this.group.clear(); // (the meshes and the spinnaker's pivot)
     for (const m of this.mats) m.dispose();
-    this.items = []; this.mats = []; this.hidesVanes = false;
+    for (const t of this.texs || []) t.dispose();
+    this.items = []; this.mats = []; this.texs = []; this.forge = []; this.hidesVanes = false;
   }
   add(kind, geo, mat, extra = {}) { const mesh = new THREE.Mesh(geo, mat); mesh.castShadow = kind !== 'scales'; mesh.receiveShadow = true; this.group.add(mesh); const it = { kind, mesh, ...extra }; this.items.push(it); return it; }
   sailMat(o) { const m = sailMaterial(blankTex(), o); m.userData.u.uBellyN.value = 1; this.mats.push(m); return m; } // (the belly along each sheet's own normal, in canvas and vane alike)
@@ -186,7 +191,7 @@ export class ShipPartLooks {
   // ---------------------------------------------------------------- each frame (ShipLook.set)
   pose({ sail = 1, fill = 1, luff = 0, side = 1, t = 0, furled = false, u = 0, rel = null } = {}) {
     const show = !furled && u < 0.02, sd = side < 0 ? -1 : 1, key = `${sd}|${sail.toFixed(2)}`;
-    for (const it of this.items) if (it.kind !== 'spar' && it.kind !== 'scales' && it.kind !== 'boomRoll') it.mesh.visible = show;
+    for (const it of this.items) if (it.kind !== 'spar' && it.kind !== 'scales' && it.kind !== 'boomRoll' && it.kind !== 'livery') it.mesh.visible = show;
     for (const it of this.items) if (it.kind === 'spar' && it.pivot) it.mesh.visible = show;
     if (key !== this.key) {
       this.key = key;
@@ -198,6 +203,7 @@ export class ShipPartLooks {
     }
     const f = THREE.MathUtils.clamp(fill, 0, 1), l = THREE.MathUtils.clamp(luff, 0, 1);
     for (const m of this.mats) { const U = m.userData.u; U.uFill.value = show ? sail * (0.25 + 0.75 * f) * (1 - 0.7 * l) : 0; U.uLuff.value = show ? l : 0; U.uT.value = t; }
+    poseForge(this, sd, show, rel);
     const sp = this.items.find((it) => it.kind === 'spinnaker');
     if (sp) { const want = rel == null ? 0 : THREE.MathUtils.clamp(Math.atan2(Math.sin(rel), Math.cos(rel)), -1.1, 1.1) * 0.8; sp.pivot.rotation.y += (want - sp.pivot.rotation.y) * 0.05; } // (swung round the mast to fly downwind, slowly)
   }

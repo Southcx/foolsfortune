@@ -79,9 +79,10 @@ export class SeaRings {
     const reach = (SEA_MOUNTS.crucibelle?.reach ?? 40) + M.L / 2, at = _v.copy(H.pos); at.y = M.surf(at.x, at.z) + 0.5;
     const T = RL.toll, base = { at, r0: M.L * 0.35, R: reach, run: T.run, wall: T.wall, ripple: true };
     this.ring({ ...base, color: T.gold, alpha: 1 }); this.ring({ ...base, color: T.bronze, alpha: 0.6, delay: T.echo, wall: T.wall * 0.5 });
-    if (!(e.broke > 0)) return;
+    const kinds = Array.isArray(e.broke) ? e.broke : null; if (!(kinds ? kinds.length : e.broke > 0)) return; // (Petra's v315: the kinds it broke; a count before)
     for (const [c, head] of winding) {
       if (!c.alive || c.attack) continue;
+      if (kinds && !kinds.includes(c.id) && !kinds.includes(c.kind)) continue;
       const d = H.hullDist?.(head) ?? head.distanceTo(H.pos); if (d > (SEA_MOUNTS.crucibelle?.reach ?? 40) + 2) continue;
       this.bursts.push({ c, head: head.clone(), t: -T.run * Math.min(1, (d + M.L / 2) / reach) });
     }

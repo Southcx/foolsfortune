@@ -95,7 +95,7 @@ export class DeckMounts {
     for (let i = 0; i < 12; i++) fx?.add?.emit({ pos: p.clone(), vel: new THREE.Vector3((Math.random() - 0.5) * 5, Math.random() * 2, (Math.random() - 0.5) * 5), life: 0.4, size: 0.18, sizeEnd: 0.03, color: 0xffe2a0, alpha: 1, drag: 2, gravity: 1, floor: -1e9 });
   }
   /** The gulp: the lid thrown up and the sea off the bow drawn in (a spit drunk, a fat blob with it). */
-  gulp(e) { this.gulpT = 0; this.pending = e.drunk || 0; this.spawnA = 0; }
+  gulp(e) { this.gulpT = 0; this.pending = (e.drunk || 0) + 3 * (e.pour || 0); this.spawnA = 0; } // (`pour`: the umibozu's grips drunk out of the hull, three fat blobs each)
 
   update(dt) {
     const M = this.M, B = D.bell, C = D.coffin; this.seat();
@@ -144,7 +144,7 @@ export class DeckMounts {
   carried(dt) {
     const M = this.M, fx = M.fx; if (!fx || !M.live) return;
     for (const s of M.fight?.shots || []) {
-      if (s.heavy || !(s.power > 1)) continue;
+      if (s.heavy || !(s.gulped ?? s.power > 1)) continue; // (`gulped`, Petra's v315; the power past plain before it)
       if (!this.seen.has(s)) {
         this.seen.add(s); this.gulpT = this.gulpT < 0 ? 0.9 : this.gulpT; // (the lid kicks)
         const p = this.coffinAt(_a);

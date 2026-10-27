@@ -21,6 +21,7 @@ export { areaPage, disposeAreaPage, SKETCH } from './areapage.js';
 export { checklist, CHECKLIST_LOOK } from './checklist.js';
 export { mapWindow, mapLayout, MAP_WINDOW } from './mapwindow.js';
 export { SILHOUETTES, INK } from './ink.js';
+export { SeaSeals, sealsOnPage, SEA_SEAL } from './seaseals.js';
 import { disposeAreaPage } from './areapage.js';
 
 /** Everything the dress holds while the map is open, let go. */
