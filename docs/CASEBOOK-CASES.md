@@ -4231,3 +4231,11 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the skill's events take the shape of a beat that does what they do (`hold { id, at }` removes a piece: the Grab skill's),
   and the skills with no beat yet get names of their own (`blast`, `vein`), which the view plays as a pause until Calissa's beats.
 - **Rule:** NEW:new-event-new-name
+
+### 2026-10-27 · On a phone, a shop bought or sold on the first tap (Calissa's phone-windows note, 2026-10-24; routed by Petra)
+- **Seen:** a tap on a good or a box slot in a keeper's window bought or sold it at once, its price never read.
+- **Cause (as read):** a phone's tap fires the emulated `mouseenter` (the price line) and the `click` together; the window acted on the
+  click as a mouse's (src/progress/shop/ui.js), so the line meant to come before the choice came with it.
+- **Fix:** on touch (`input.device === 'touch'`) the first tap picks (`.sel`, the line said with "tap again to buy" or "to sell"), a tap
+  on the picked one acts; a long press still haggles. Measured headless as a phone: 500 cubes after the first tap, 477 after the second.
+- **Rule:** NEW:touch-pick-then-confirm

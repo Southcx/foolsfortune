@@ -950,3 +950,5 @@ NEW:sound-keyed-by-the-kernels-names. **A sound keyed by an engine's value reads
   its own in the bank drifts when the engine renames; import or mirror the engine's list, and let an unknown name be heard as wrong.
 NEW:new-event-new-name. **A kernel event with a new shape takes a new name.** A consumer keyed by an event's type reads its fields; an
   event that reuses a name must carry every field that name's consumers read, or it is a new name the consumers skip until they learn it.
+NEW:touch-pick-then-confirm. **On touch, a choice that spends is picked, then confirmed.** A tap fires the hover and the click together,
+  so a window that says a price on hover and acts on click must, on touch, pick on the first tap and act on a tap on the picked one.

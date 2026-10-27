@@ -3,7 +3,10 @@
 // and the stock left (a row of beads: no numbers in the world, but this is a window the player opened). Right, the Courier's PNEUKA BOX,
 // each thing they could sell lit with what the keeper would pay. A click buys or sells; at Raku's a right click (or the HAGGLE button
 // by the price) talks the price down instead (progress/shop/haggle.js, in his own dialogue window). The line at the top says what a click
-// would do before it is clicked, as the box's window does. Esc, or walking away from the keeper, closes it.
+// would do before it is clicked, as the box's window does. Esc, or walking away from the keeper, closes it. On touch (the phone's tap
+// fires the hover and the click together) the first tap picks a good or a slot and says its price, a tap on the picked one buys or
+// sells, and a long press haggles (Calissa's phone-windows note, routed by Petra 2026-10-27; the store pages of mobile games, Stardew
+// Valley's on the phone: select, then confirm).
 //
 // Prior art: Old School RuneScape's shop interface (the stock beside the inventory, Value and Buy 1 on a click, the price on hover),
 // Recettear's counter, and the look of this game's own Pneuka Box window.
@@ -40,7 +43,7 @@ const CSS = `
 #shop .pr { text-align: right; font-size: 13px; color: #ffd98a; white-space: nowrap; } #shop .pr small { display: block; font-size: 9px; opacity: .6; color: #f6e2c8; letter-spacing: .1em; }
 #shop .grid { display: grid; grid-template-columns: repeat(4, 52px); gap: 5px; }
 #shop .slot { width: 52px; height: 52px; box-sizing: border-box; border: 1px solid rgba(255,178,122,.18); border-radius: 4px; background: rgba(40,18,10,.75); position: relative; }
-#shop .slot.can { cursor: var(--jcur-pointer, pointer); border-color: rgba(255,217,138,.55); } #shop .slot.can:hover { background: rgba(80,36,20,.8); border-color: #ffd98a; }
+#shop .slot.can { cursor: var(--jcur-pointer, pointer); border-color: rgba(255,217,138,.55); } #shop .slot.can:hover, #shop .slot.can.sel { background: rgba(80,36,20,.8); border-color: #ffd98a; }
 #shop .slot.no img { opacity: .35; filter: grayscale(.7); }
 #shop .slot img { position: absolute; inset: 3px; width: calc(100% - 6px); height: calc(100% - 6px); pointer-events: none; }
 #shop .slot .n { position: absolute; left: 3px; top: 1px; font-size: 11px; color: #ffef7a; text-shadow: 1px 1px 0 #000; pointer-events: none; }
@@ -67,13 +70,19 @@ export class ShopUI {
   show(shop) { this.shop = shop; this.open = true; this.root.classList.add('open'); document.exitPointerLock?.(); this.render(); }
   hide() { this.open = false; this.root.classList.remove('open'); this.root.replaceChildren(); this.onClose?.(); }
   say(html) { if (this.hoverEl) this.hoverEl.innerHTML = html; }
+  get touch() { return this.game.input?.device === 'touch'; }
+  /** A good or a slot clicked: at once with a mouse; on touch, picked first (.sel, its line said with what a second tap does), then done. */
+  tap(node, line, then, act) {
+    if (!this.touch || this.picked === node) { this.picked = null; return act(); }
+    this.picked?.classList.remove('sel'); this.picked = node; node.classList.add('sel'); this.say(`${line} · ${then}`);
+  }
   icon(id) { return itemOf(id) ? `<img src="${itemIcon(this.game, id)}" alt="">` : ''; }
 
   render() {
     if (!this.open) return;
     const g = this.game, S = g.shops, D = SHOPS[this.shop], box = g.pneuka, keeper = S.keeperName(this.shop);
-    this.root.replaceChildren();
-    const px = el('div', 'px');
+    this.root.replaceChildren(); this.picked = null;
+    const px = el('div', 'px'), haggleBy = this.touch ? 'long press: haggle' : 'right click: haggle';
     const head = el('header', '', `<h2>${D.name}</h2><span class="sub">${D.blurb}</span>`);
     const x = el('span', 'x', 'CLOSE (Esc)'); x.onclick = () => S.close(); head.appendChild(x);
     px.appendChild(head);
@@ -90,9 +99,10 @@ export class ShopUI {
       const pr = el('div', 'pr', p == null ? 'none left' : `${p}<small>CUBES</small>`);
       if (D.haggle && p != null) { const b = el('button', '', 'HAGGLE'); b.onclick = (e) => { e.stopPropagation(); S.haggle(this.shop, id); }; pr.appendChild(b); }
       row.appendChild(pr);
-      row.onmouseenter = () => this.say(p == null ? `${keeper} has no <b>${it.name}</b> left. (It comes back in time.)` : `Buy <b>${it.name}</b> for <b>${p}</b> cubes${D.haggle ? ' · or HAGGLE for less' : ''}`);
-      row.onmouseleave = () => this.say('&nbsp;');
-      row.onclick = () => { if (p != null) S.buy(this.shop, id); };
+      const line = p == null ? `${keeper} has no <b>${it.name}</b> left. (It comes back in time.)` : `Buy <b>${it.name}</b> for <b>${p}</b> cubes${D.haggle ? ` · or HAGGLE for less (${haggleBy})` : ''}`;
+      row.onmouseenter = () => { if (!this.picked) this.say(line); };
+      row.onmouseleave = () => { if (!this.picked) this.say('&nbsp;'); };
+      row.onclick = () => { if (p != null) this.tap(row, line, 'tap again to buy', () => S.buy(this.shop, id)); else this.say(line); };
       row.oncontextmenu = (e) => { e.preventDefault(); if (D.haggle && p != null) S.haggle(this.shop, id); };
       list.appendChild(row);
     }
@@ -101,9 +111,10 @@ export class ShopUI {
       const own = !!g.vessel?.has(G.id), p = own ? null : glazePrice('stoneware'), hex = `#${G.color.toString(16).padStart(6, '0')}`;
       const row = el('div', `good${own ? ' out' : ''}`, `<div class="ic"><i style="display:block;width:28px;height:28px;margin:6px;border-radius:50%;background:${hex};box-shadow:inset -4px -4px 0 rgba(0,0,0,.25)"></i></div><div class="nm">${G.name}<s>glaze</s></div>`);
       row.appendChild(el('div', 'pr', own ? 'yours' : `${p}<small>CUBES</small>`));
-      row.onmouseenter = () => this.say(own ? `<b>${G.name}</b> is yours: fire it at the kiln.` : `Buy <b>${G.name}</b> for <b>${p}</b> cubes: fire it at the kiln.`);
-      row.onmouseleave = () => this.say('&nbsp;');
-      row.onclick = () => { if (!own) S.buyGlaze(this.shop, G.id); };
+      const line = own ? `<b>${G.name}</b> is yours: fire it at the kiln.` : `Buy <b>${G.name}</b> for <b>${p}</b> cubes: fire it at the kiln.`;
+      row.onmouseenter = () => { if (!this.picked) this.say(line); };
+      row.onmouseleave = () => { if (!this.picked) this.say('&nbsp;'); };
+      row.onclick = () => { if (!own) this.tap(row, line, 'tap again to buy', () => S.buyGlaze(this.shop, G.id)); else this.say(line); };
       list.appendChild(row);
     }
     shelf.appendChild(list); cols.appendChild(shelf);
@@ -115,9 +126,10 @@ export class ShopUI {
       const it = s && itemOf(s.id), v = it ? S.offer(this.shop, s.id, s.data) : 0;
       const d = el('div', `slot${it ? (v ? ' can' : ' no') : ''}`, it ? `${this.icon(s.id)}${s.n > 1 ? `<span class="n">${s.n}</span>` : ''}${v ? `<span class="v">${v}</span>` : ''}` : '');
       if (it) {
-        d.onmouseenter = () => this.say(v ? `Sell <b>${it.name}</b> for <b>${v}</b> cubes${v < worthOf(s.id, s.data) ? ` <span style="opacity:.6">(it is worth ${worthOf(s.id, s.data)})</span>` : ''}` : `${keeper} will not buy <b>${it.name}</b>.`);
-        d.onmouseleave = () => this.say('&nbsp;');
-        d.onclick = () => { if (v) S.sell(this.shop, i); };
+        const line = v ? `Sell <b>${it.name}</b> for <b>${v}</b> cubes${v < worthOf(s.id, s.data) ? ` <span style="opacity:.6">(it is worth ${worthOf(s.id, s.data)})</span>` : ''}` : `${keeper} will not buy <b>${it.name}</b>.`;
+        d.onmouseenter = () => { if (!this.picked) this.say(line); };
+        d.onmouseleave = () => { if (!this.picked) this.say('&nbsp;'); };
+        d.onclick = () => { if (v) this.tap(d, line, 'tap again to sell', () => S.sell(this.shop, i)); else this.say(line); };
       }
       grid.appendChild(d);
     });
