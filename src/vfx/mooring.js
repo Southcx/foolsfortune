@@ -21,7 +21,7 @@ import { shipLook } from './shipclasses.js';
 import { MountPreview } from './mountpreview.js';
 import { COLOR } from '../progress/weather.js';
 
-const NEAR = 160, SIDE = 1.6, DECK = { anagami: 1.1, margarite: 1.6 }; // (metres: shown within; off the pier's side past the hull's half beam; a pier's deck over the crude: beach.js JETTY.deck, margarite.js MARGARITE.deck)
+const NEAR = 160, SIDE = 1.6, STERN = 12, DECK = { anagami: 1.1, margarite: 1.6 }; // (metres: shown within; off the pier's side past the hull's half beam; its stern inland of the pier's end; a pier's deck over the crude: beach.js JETTY.deck, margarite.js MARGARITE.deck)
 
 export class Mooring {
   constructor(game) {
@@ -60,7 +60,7 @@ export class Mooring {
     // alongside the pier's end on its south side, the bow out to sea (the pier faces the land: its yaw), a little inland of the end
     const { j, island } = best, yaw = j.yaw ?? 0, out = _f.set(-Math.sin(yaw), 0, -Math.cos(yaw)), side = _r.set(out.z, 0, -out.x);
     const sea = j.top - (DECK[island] ?? 1.3), half = (s.beam ?? 2.4) / 2;
-    this.at.copy(j.end).addScaledVector(out, -(s.length ?? 7) * 0.32).addScaledVector(side, 1.6 + half + SIDE); this.at.y = sea;
+    this.at.copy(j.end).addScaledVector(out, (s.length ?? 7) / 2 - STERN).addScaledVector(side, 1.6 + half + SIDE); this.at.y = sea; // (its stern STERN m inland of the pier's end, the rest out to sea: a hull of any length lies along the pier, never up the beach)
     const crude = g.emocean?.sea?.mesh?.visible ? g.emocean.sea : null, t = this.t;
     const bob = crude ? crude.heightAt(this.at.x, this.at.z) - crude.y : 0.12 * Math.sin(t * 0.8); // (heightAt is the world's, the crude's own y in it)
     s.group.position.set(this.at.x, sea + bob * 0.7, this.at.z);

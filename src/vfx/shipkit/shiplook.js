@@ -11,12 +11,16 @@
 // The core's crystals and the keel take the ship's feeling: `feeling(hex)` (the rail's older name for it is the classes' alias), and every frame the keel's colour as the rail tints it.
 // Prior art: as each part's module says; the shared-kit way of every console-era vehicle roster (one material, one rig, data a class).
 //
-//   new ShipLook(spec, { env })   .group .body .length .beam .keelMat .mouth .gunAt .helmCradles .helmCradle .rig .hullMat .sail
+// THE SIZE (the owner, 2026-10-27: "about five times larger ... host a crew of six courier-sized entities or more"): each class authored
+// at its life size (the sloop 35 m), `scale` its length over the first hulls' (the sloop's 7 m), for the runtime's framing to read from
+// one number; `deckY` the main deck amidships and `deckHeight(z)` along it (ship frame, m), `crewSpots()` six or more places on deck.
+//
+//   new ShipLook(spec, { env })   .group .body .length .beam .scale .deckY .keelMat .mouth .gunAt .helmCradles .helmCradle .rig .hullMat .sail
 //   .set({ sail, heel, side, glow, t, form, roll })   .fold(u | null)   .feeling(hex)   .hurt(k)   .scars({ open, gilt })   .hoist(medal)
-//   .helmCradleSpots()   .helmWake(on, i)   .helmTick(t)   .dispose()   .stats() -> { tris, draws }
+//   .helmCradleSpots()   .helmWake(on, i)   .helmTick(t)   .deckHeight(z)   .crewSpots() -> [[x, z, y]]   .dispose()   .stats() -> { tris, draws }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { Mesher } from './hullkit.js';
+import { Mesher, deckAt } from './hullkit.js';
 import { hullMaterial } from './hullmaterial.js';
 import { sailMaterial, FURL } from './vane.js';
 import { Rig, FoldDrive } from './rig.js';
@@ -32,13 +36,14 @@ const blankTex = () => (blank ||= new THREE.DataTexture(new Uint8Array(4), 1, 1)
 
 export class ShipLook {
   constructor(spec, { env = null } = {}) {
-    this.spec = spec; this.id = spec.id; this.length = spec.length; this.beam = spec.beam;
+    this.spec = spec; this.id = spec.id; this.length = spec.length; this.beam = spec.beam; this.scale = spec.scale ?? 1;
+    this.deckY = spec.hull ? this.deckHeight(0) : 0;
     this.group = new THREE.Group(); this.body = new THREE.Group(); this.group.add(this.body);
     this.group.name = `ship-${spec.id}`;
     this.mats = []; this.geos = [];
     const track = (o) => { (o.isMaterial ? this.mats : this.geos).push(o); return o; };
     // the hull and all that is bolted to it: one mesh
-    this.hullMat = track(hullMaterial({ env, panel: spec.panel ?? 0.9 }));
+    this.hullMat = track(hullMaterial({ env, panel: spec.panel ?? 0.9, plank: spec.plank ?? 0.3 }));
     const M = new Mesher(), wrote = spec.write(M, this) || {}, engines = wrote.engines ?? spec.engines ?? [];
     const foot = cradleFoot();
     for (const [i, h] of (spec.helm || []).entries()) writeCore(M, { at: h, r: foot, seed: i + 1, ...spec.core });
@@ -46,9 +51,9 @@ export class ShipLook {
     this.body.add(hull); addOutline(hull);
     // the rig and its vanes
     const V = spec.vane || {};
-    this.sail = spec.rig?.vanes?.length ? track(sailMaterial(V.lotus ? vfxTexture('circle_lotus') : blankTex(), { vane: true, fill: V.fill, edge: V.edge, fillA: V.fillA })) : null;
+    this.sail = spec.rig?.vanes?.length ? track(sailMaterial(V.lotus ? vfxTexture('circle_lotus') : blankTex(), { vane: true, fill: V.fill, edge: V.edge, fillA: V.fillA, belly: 0.55 * this.scale })) : null;
     if (spec.rig?.masts?.length) {
-      this.rig = new Rig({ ...spec.rig, hull: this.hullMat, sail: this.sail });
+      this.rig = new Rig({ unit: this.scale, ...spec.rig, hull: this.hullMat, sail: this.sail });
       this.body.add(this.rig.mesh); addOutline(this.rig.mesh); track(this.rig.mesh.geometry);
       if (this.rig.vaneMesh) { this.body.add(this.rig.vaneMesh); track(this.rig.vaneMesh.geometry); }
     } else this.rig = null;
@@ -112,6 +117,11 @@ export class ShipLook {
   helmCradleSpots() { return this.helmCradles.map((c) => c.seat()); }
   /** The helm's cradle `i` sealed (the tines close, it lights in the window colour) or unsealed (false). */
   helmWake(on = true, i = 0) { this.helmCradles[i]?.wake(on); }
+
+  /** The deck's height at z of the ship's frame (the lofted deck's centreline, its raised quarterdeck and forecastle included; m). */
+  deckHeight(z) { return deckAt(this.spec.hull, z); }
+  /** Places on deck a crew stands (ship frame [x, z, y], y the deck under them): the class's own, else six down the main deck. */
+  crewSpots() { return this.spec.crew ?? [-0.3, -0.1, 0.1, 0.3].flatMap((k, i) => [[this.beam * 0.18 * (i % 2 ? 1 : -1), k * this.length]]).concat([[0, 0], [0, 0.2 * this.length]]).map(([x, z]) => [x, z, this.deckHeight(z)]); }
 
   /** The ship's feeling (the crossing: your draught or its opposite, by form): the keel's light and the core's crystals take it. */
   feeling(hex) { _pc.setHex(hex); this.keelMat.color.copy(_pc); this.hullMat.userData.u.uFeel.value.copy(_pc); }
