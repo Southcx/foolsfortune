@@ -2,7 +2,7 @@
 // THE SHIP KIT'S MESHER: every static part of a ship of the Vessoul's (the sloop, frigate, tanker, destroyer and galleon: vfx/sloop.js,
 // vfx/shipclasses.js) written into ONE vertex-coloured geometry, so a hull and everything bolted to it is one draw (and one outline).
 // Each vertex carries its colour and a CODE in the colour's alpha, read by the hull's material (shipkit/hullmaterial.js):
-//   0      plain paint              0.1  a panelled plate (the panel lines are drawn on it)
+//   0      plain paint              0.1  a panelled plate (the panel lines are drawn on it)   0.125  planked (PLANK: a deck's boards, a side's strakes)
 //   0.2 .. 0.6  lit in its own colour (an engine's ring, a port, a lamp: 0.2 dark .. 0.6 full)
 //   0.6 .. 1    lit in the ship's feeling (the core, the keel line: 0.6 dark .. 1 full; the look's `feeling`)
 // Faceted where it is a plate (a face normal per triangle: the sixth generation's low-poly), smooth where it is turned (a pod, a spar);
@@ -19,6 +19,8 @@ import * as THREE from 'three';
 
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _d = new THREE.Vector3(), _n = new THREE.Vector3(), _r = new THREE.Vector3();
 const _col = new THREE.Color(), _nm = new THREE.Matrix3();
+/** The code of a planked surface (shipkit/hullmaterial.js draws its boards). */
+export const PLANK = 0.125;
 const v3 = (p, out) => (Array.isArray(p) ? out.set(p[0], p[1], p[2]) : out.copy(p));
 
 export class Mesher {

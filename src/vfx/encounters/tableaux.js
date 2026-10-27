@@ -79,9 +79,9 @@ function haunt(k, look, fill, line) {
 function ghostConvoy(k, { feel }) {
   const g = new THREE.Group(), fill = k.glow(0x9fe8d8, 0.12, { side: THREE.DoubleSide }), line = k.own(mindLineMaterial({ opacity: 0.85, depthTest: true, bright: 1.2 }));
   const ships = [['galleon', 0], ['frigate', -15], ['galleon', -30]].map(([id, z], i) => {
-    const s = shipLook(id, { env: k.env }); s.group.scale.setScalar(0.38); s.group.position.set(i % 2 ? 1.5 : 0, 0, z); haunt(k, s, fill, line); s.set({ sail: 0.7, side: -1, glow: 0.3 });
-    const lamp = k.mesh(s.group, new THREE.SphereGeometry(0.35, 8, 6), k.glow(0xbffff0, 0.9), 0, 3, -s.length * 0.52);
-    billboard(k, s.group, k.sprite(0x9fffe8, 0.55, true), 4, 0, 3, -s.length * 0.55);
+    const s = shipLook(id, { env: k.env }), S = s.scale ?? 1; s.group.scale.setScalar(0.38 / S); s.group.position.set(i % 2 ? 1.5 : 0, 0, z); haunt(k, s, fill, line); s.set({ sail: 0.7, side: -1, glow: 0.3 }); // (the hulls at their life size, shrunk to the tableau's: shipkit/shiplook.js scale)
+    const lamp = k.mesh(s.group, new THREE.SphereGeometry(0.35 * S, 8, 6), k.glow(0xbffff0, 0.9), 0, 3 * S, -s.length * 0.52);
+    billboard(k, s.group, k.sprite(0x9fffe8, 0.55, true), 4 * S, 0, 3 * S, -s.length * 0.55);
     g.add(s.group); return { s, lamp, z };
   });
   // the fog: sheets lying over the swell's crests (a quad standing in the crude would show its cut), and a few banks higher up
@@ -214,7 +214,7 @@ function pursersBarge(k) {
 
 function mirrorSea(k, { hull = 'sloop' }) {
   const s = shipLook(hull, { env: k.env }), silver = k.std(0xdfe5ee, { metalness: 1, roughness: 0.12, envMap: k.env }), line = k.own(mindLineMaterial({ opacity: 0.9, depthTest: true, bright: 1.3 }));
-  haunt(k, s, silver, line); s.group.scale.setScalar(0.24);
+  haunt(k, s, silver, line); s.group.scale.setScalar(0.24 / (s.scale ?? 1));
   const g = new THREE.Group(); g.add(s.group);
   return { group: g, subject: s.group, motion: 'alongside', at: [3.2, -3], vz: 1.1, calm: 1,
     tick(t, ctx) {

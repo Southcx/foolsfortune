@@ -130,6 +130,8 @@ export class OpenSea {
   /** m from a quay's middle to the moored ship's: the quay's seaward face (6 m out), half the hull's beam and a hand's breadth of water,
    *  so the hull lies alongside and the step aboard is one stride (the owner, 2026-10-27: the ship stood 8 m off the quay at 16). */
   alongside() { return 6 + (this.helm?.look?.beam ?? 2.4) / 2 + 0.4; }
+  /** Half the hull's length (m): reaches measured from its middle grow with it (the hulls at their life size, the sloop 35 m). */
+  halfHull() { return (this.helm?.look?.length ?? 7) / 2; }
 
   // ---------------------------------------------------------------- sealing in and stepping off
   board() {
@@ -171,10 +173,10 @@ export class OpenSea {
     if (I.wasPressed('KeyE')) this.herds.helmPlate(); // (a plate from the helm, the Veritome worn: herds.js)
     if (I.wasPressed('KeyR')) this.emit(takeFix(v, 'sky', { front: frontAt(this.grid, this.seed, now() / 150000).has(v.at) })), this.dirty();
     if (I.wasPressed('KeyF')) {
-      const isl = this.nearIslet(H.pos, ROOM.moor);
-      const quay = Object.entries(this.props.quays).find(([, q]) => q.pos.distanceTo(_v.copy(H.pos).setY(q.top)) < ROOM.quay);
+      const isl = this.nearIslet(H.pos, ROOM.moor + this.halfHull());
+      const quay = Object.entries(this.props.quays).find(([, q]) => q.pos.distanceTo(_v.copy(H.pos).setY(q.top)) < ROOM.quay + this.halfHull());
       if (quay) this.dockAt(quay[0], quay[1]);
-      else if (isl) { const d = _v.copy(H.pos).sub(isl.pos).setY(0).normalize(); H.pos.copy(isl.pos).addScaledVector(d, isl.r + 5).setY(SEA.y); H.pose(0); this.stepOff({ islet: isl.feature.id, kit: isl.islet?.kit }, isl.pos.clone().addScaledVector(d, isl.r - 1.5).setY(isl.top + 0.05), Math.atan2(-d.x, -d.z)); }
+      else if (isl) { const d = _v.copy(H.pos).sub(isl.pos).setY(0).normalize(); H.placeAt(isl.pos.clone().addScaledVector(d, isl.r + (H.look.beam ?? 2.4) / 2 + 1.5).setY(SEA.y), Math.atan2(d.x, d.z) + Math.PI / 2); this.stepOff({ islet: isl.feature.id, kit: isl.islet?.kit }, isl.pos.clone().addScaledVector(d, isl.r - 1.5).setY(isl.top + 0.05), Math.atan2(-d.x, -d.z)); } // (moored broadside to the shore, a stride off it)
       else g.log?.say?.('info', 'Nothing to moor to here.', { key: 'sea.moor', throttle: 3 });
     }
   }
@@ -214,7 +216,7 @@ export class OpenSea {
       d.fuelCost = Math.round(can * per); d.short = true;
     }
     this.lowSaid = false; this.emit(ev); this.dirty();
-    this.helm.placeAt(q.pos.clone().setY(SEA.y).add(_v.set(0, 0, this.alongside())), this.helm.yaw);
+    this.helm.placeAt(q.pos.clone().setY(SEA.y).add(_v.set(0, 0, this.alongside())), Math.PI / 2); // (broadside to the quay: a 35 m hull on its heading in would lie across it)
     this.stepOff({ quay: island }, q.pos.clone().add(_v.set(0, 0.05, 5)), 0);
   }
   claim(isl) {
@@ -254,8 +256,9 @@ export class OpenSea {
   /** A hull on an islet's shore or a quay stops short: no sailing through land. */
   bump(H) {
     const hit = (c, r) => { const d = _v.copy(H.pos).sub(c).setY(0), n = d.length(); if (n < r) { d.multiplyScalar((r - n) / Math.max(n, 1e-3)); H.pos.add(d); H.speed *= 0.2; return true; } return false; };
-    for (const i of this.props.islets) hit(i.pos, i.r + 4);
-    for (const q of Object.values(this.props.quays)) hit(q.pos, 15);
+    const half = (H.look.beam ?? 2.4) / 2 + 1; // (the hull's side, not its middle: a 10 m beam)
+    for (const i of this.props.islets) hit(i.pos, i.r + Math.max(4, half));
+    for (const q of Object.values(this.props.quays)) hit(q.pos, Math.max(15, this.alongside() + 0.5));
   }
   nearIslet(p, reach) { let best = null, bd = Infinity; for (const i of this.props.islets) { const d = Math.hypot(p.x - i.pos.x, p.z - i.pos.z) - i.r; if (d < reach && d < bd) { bd = d; best = i; } } return best; }
   phenomena(dt) {

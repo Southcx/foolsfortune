@@ -14,7 +14,8 @@
 // a square-rigger striking its topgallants, Macross's transformations (the centreline never lost), Jurai's Light Hawk Wings (the
 // vanes are light, so they close to their edge).
 //
-//   const R = new Rig({ masts, vanes, hatches, booms, hull, sail: [mat], side })   R.mesh (the spars and hatches)   R.vaneMesh
+//   const R = new Rig({ masts, vanes, hatches, booms, hull, sail: [mat], side, unit })   (unit: the class's size over the first hulls', the
+//   fittings' own small sizes grown by it: a collar, a cap, a hatch's thickness)   R.mesh (the spars and hatches)   R.vaneMesh
 //   R.pose({ u, hatch, sail, side, t })   R.topOf(mastIndex) -> Vector3 (the masthead, posed)   R.dispose()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -28,7 +29,8 @@ export class Rig {
   /** masts: [{ x, z, y0, rake, segs: [{ len, r0, r1, col }], mode, hinge, stub, strike, delay, blade, yards: [{ seg, at, w, r, col, pivot,
    *  lateen: [fore, aft, tilt] }], cap: col }]; vanes: [{ kind: 'square' | 'main' | 'jib' | 'lateen', mast, yard, drop, foot, lotus, ... }];
    *  hatches: [{ mast, w, d, col, seam }]; booms: [{ mast, h, len, r, col }]. `hull`: the hull's material; `sail`: the vanes' material. */
-  constructor({ masts = [], vanes = [], hatches = [], booms = [], hull, sail = null }) {
+  constructor({ masts = [], vanes = [], hatches = [], booms = [], hull, sail = null, unit = 1 }) {
+    const k = this.k = unit;
     this.masts = masts.map((M) => this.restOf(M)); this.vanes = vanes; this.hatches = hatches; this.booms = booms;
     this.ranges = []; const parts = [];
     const part = (kind, at, build) => { const M = new Mesher(); build(M); parts.push(M); this.ranges.push({ kind, ...at, M }); };
@@ -36,18 +38,18 @@ export class Rig {
       M.segs.forEach((S, i) => part('seg', { mast: mi, i }, (G) => {
         if (M.blade) G.box([0, S.len / 2, 0], [M.blade.t, S.len, M.blade.w], S.col, S.code ?? 0, { top: [1, 0.35], shift: [0, -M.blade.w * 0.3] });
         else G.cyl([0, 0, 0], [0, S.len, 0], S.r0, S.r1, 6, S.col, S.code ?? 0, { phase: Math.PI / 6 });
-        if (!M.blade && (i > 0 || M.segs.length === 1)) G.cyl([0, -0.02, 0], [0, 0.08, 0], S.r0 * 1.5, S.r0 * 1.3, 6, M.collar ?? S.col, 0); // (a collar at the joint: the dark-blue mechanical joint)
-        if (i === M.segs.length - 1 && M.cap != null) G.gem([0, S.len + 0.06, 0], Math.max(0.05, S.r1 * 1.4), 0.12, 0.05, 6, M.cap, 0.55);
+        if (!M.blade && (i > 0 || M.segs.length === 1)) G.cyl([0, -0.02 * k, 0], [0, 0.08 * k, 0], S.r0 * 1.5, S.r0 * 1.3, 6, M.collar ?? S.col, 0); // (a collar at the joint: the dark-blue mechanical joint)
+        if (i === M.segs.length - 1 && M.cap != null) G.gem([0, S.len + 0.06 * k, 0], Math.max(0.05 * k, S.r1 * 1.4), 0.12 * k, 0.05 * k, 6, M.cap, 0.55);
       }));
       M.yards.forEach((Y, j) => part('yard', { mast: mi, j }, (G) => {
         if (Y.lateen) { const [f, a, tilt] = Y.lateen; G.cyl([0, -Math.sin(tilt) * f, Math.cos(tilt) * f], [0, Math.sin(tilt) * a, -Math.cos(tilt) * a], Y.r * 1.2, Y.r * 0.7, 5, Y.col, Y.code ?? 0); }
-        else { G.cyl([-Y.w / 2 - 0.1, 0, 0], [Y.w / 2 + 0.1, 0, 0], Y.r, Y.r, 5, Y.col, Y.code ?? 0); G.box([0, 0, 0], [0.12, Y.r * 3, Y.r * 3], M.collar ?? Y.col, 0); }
+        else { G.cyl([-Y.w / 2 - 0.1 * k, 0, 0], [Y.w / 2 + 0.1 * k, 0, 0], Y.r, Y.r, 5, Y.col, Y.code ?? 0); G.box([0, 0, 0], [0.12 * k, Y.r * 3, Y.r * 3], M.collar ?? Y.col, 0); }
       }));
     });
     this.booms.forEach((B, bi) => part('boom', { bi }, (G) => { G.cyl([0, 0, 0], [0, 0, -B.len], B.r, B.r * 0.8, 6, B.col, 0); G.box([0, 0, 0], [B.r * 3, B.r * 3, B.r * 3], this.masts[B.mast].collar ?? B.col, 0); }));
     this.hatches.forEach((H, hi) => { for (const s of [1, -1]) part('hatch', { hi, s }, (G) => {
-      const pw = H.w / 2; G.box([0, 0, 0], [pw, 0.03, H.d], H.col, 0.1, { cols: { bottom: null } });
-      G.box([-s * (pw / 2 - 0.012), 0.017, 0], [0.024, 0.008, H.d * 0.96], H.seam, 0.2); // (its seam: lit as it shuts)
+      const pw = H.w / 2; G.box([0, 0, 0], [pw, 0.03 * k, H.d], H.col, 0.1, { cols: { bottom: null } });
+      G.box([-s * (pw / 2 - 0.012 * k), 0.017 * k, 0], [0.024 * k, 0.008 * k, H.d * 0.96], H.seam, 0.2); // (its seam: lit as it shuts)
     }); });
     // one geometry for the spars: the ranges laid end to end, their rest positions kept
     let n = 0; for (const r of this.ranges) { r.start = n; r.count = r.M.p.length / 3; n += r.count; }
@@ -106,8 +108,8 @@ export class Rig {
       if (M.mode === 'hinge') { M.angle = k * M.hinge; M.posed = M.base.slice(); }
       else {
         M.angle = 0;
-        if (M.strike === 'top') M.posed = M.base.map((b, i) => (i === 0 ? 0 : THREE.MathUtils.lerp(b, M.base[1] - M.segs[i].len + 0.25 + 0.03 * i, k))); // (struck: slid down beside the lower mast, its head just over the lower's)
-        else { const sink = (M.segs[0].len - M.stub) * k; M.posed = M.base.map((b, i) => (i === 0 ? -sink : THREE.MathUtils.lerp(b, -sink + 0.02 * i, k))); } // (each nested in the lowest, the lowest sunk to its stub)
+        if (M.strike === 'top') M.posed = M.base.map((b, i) => (i === 0 ? 0 : THREE.MathUtils.lerp(b, M.base[1] - M.segs[i].len + (0.25 + 0.03 * i) * this.k, k))); // (struck: slid down beside the lower mast, its head just over the lower's)
+        else { const sink = (M.segs[0].len - M.stub) * k; M.posed = M.base.map((b, i) => (i === 0 ? -sink : THREE.MathUtils.lerp(b, -sink + 0.02 * i * this.k, k))); } // (each nested in the lowest, the lowest sunk to its stub)
       }
     }
     const pos = this.mesh.geometry.attributes.position, nrm = this.mesh.geometry.attributes.normal, col = this.mesh.geometry.attributes.color;
@@ -115,7 +117,7 @@ export class Rig {
       if (r.kind === 'seg') { const M = this.masts[r.mast]; this.mastMatrix(M, _m).multiply(_m2.makeTranslation(0, M.posed[r.i], 0)); }
       else if (r.kind === 'yard') { const M = this.masts[r.mast], Y = M.yards[r.j], h = M.base[Y.seg] + Y.at * M.segs[Y.seg].len; this.mastMatrix(M, _m).multiply(_m2.makeTranslation(0, M.posed[Y.seg] + (h - M.base[Y.seg]), 0)); if (Y.pivot) _m.multiply(_m2.makeRotationY(M.yaw)); }
       else if (r.kind === 'boom') this.boomMatrix(this.booms[r.bi], sail, side, _m);
-      else { const H = this.hatches[r.hi], M = this.masts[H.mast], c = sm(0, 0.9, hatch), x = r.s * (H.w * 0.25 + (H.w * 0.5 + 0.04) * (1 - c)); _m.makeTranslation(M.x + x, M.y0 + 0.016, M.z);
+      else { const H = this.hatches[r.hi], M = this.masts[H.mast], c = sm(0, 0.9, hatch), x = r.s * (H.w * 0.25 + (H.w * 0.5 + 0.04 * this.k) * (1 - c)); _m.makeTranslation(M.x + x, M.y0 + 0.016 * this.k, M.z);
         const lit = sm(0.8, 1, hatch) * (1 - 0.45 * sm(0.98, 1, hatch)), code = 0.2 + 0.4 * lit; // (its seam lit on the last fifth, then held dimmer while it stays shut)
         for (const i of r.seam) col.setW(r.start + i, code);
         col.needsUpdate = true; }
@@ -131,7 +133,7 @@ export class Rig {
   }
   boomYaw(B, sail, side) { return side * (0.3 + 0.25 * sail); }
   /** The boom's frame: on the lowest segment at its height (never below the deck: stowed, it lies on it), level (the mast's rake undone), swung to the wind. */
-  boomMatrix(B, sail, side, out) { const M = this.masts[B.mast]; return this.mastMatrix(M, out).multiply(_bm.makeTranslation(0, Math.max(M.posed[0] + B.h, 0.12), 0)).multiply(_bm.makeRotationX(M.rake)).multiply(_bm.makeRotationY(this.boomYaw(B, sail, side))); }
+  boomMatrix(B, sail, side, out) { const M = this.masts[B.mast]; return this.mastMatrix(M, out).multiply(_bm.makeTranslation(0, Math.max(M.posed[0] + B.h, 0.12 * this.k), 0)).multiply(_bm.makeRotationX(M.rake)).multiply(_bm.makeRotationY(this.boomYaw(B, sail, side))); }
 
   /** Each vane: from what it hangs from (A) to its free edge (B), spread by how far it is hoisted and not folded. */
   poseVanes(sail, side) {
@@ -141,7 +143,7 @@ export class Rig {
       const edge = (s, outA, outB) => this.vaneEdge(W, M, s, side, outA, outB);
       for (let j = 0; j <= W.nv; j++) for (let i = 0; i <= W.nu; i++) {
         const s = i / W.nu, v = j / W.nv; edge(s, A, B); P.copy(A).lerp(B, v * spread);
-        if (W.kind === 'main' && v > 0) P.addScaledVector(_v.copy(B).sub(A).normalize(), 0.12 * Math.sin(Math.PI * s) * v * spread); // (a roach: the leech bowed out)
+        if (W.kind === 'main' && v > 0) P.addScaledVector(_v.copy(B).sub(A).normalize(), 0.12 * this.k * Math.sin(Math.PI * s) * v * spread); // (a roach: the leech bowed out)
         pos.setXYZ(W.at + j * (W.nu + 1) + i, P.x, P.y, P.z);
       }
       edge(0.5, A, B); edge(0.6, P, dv); du.copy(P).sub(A); dv.copy(B).sub(A); n.crossVectors(du, dv).normalize(); // (the plane's normal: the belly's way)
@@ -162,20 +164,20 @@ export class Rig {
       return;
     }
     if (W.kind === 'main') {
-      const Bm = this.booms[W.boom], lo = M.base[0] + Bm.h + 0.08, hi = M.height * (W.head ?? 0.97);
-      const head = this.mastPoint(mi, hi, _w), clew = V(0, 0.06, -Bm.len * 0.96).applyMatrix4(this.boomMatrix(Bm, this.sailNow ?? 1, side, _bm2));
+      const Bm = this.booms[W.boom], lo = M.base[0] + Bm.h + 0.08 * this.k, hi = M.height * (W.head ?? 0.97);
+      const head = this.mastPoint(mi, hi, _w), clew = V(0, 0.06 * this.k, -Bm.len * 0.96).applyMatrix4(this.boomMatrix(Bm, this.sailNow ?? 1, side, _bm2));
       this.mastPoint(mi, THREE.MathUtils.lerp(lo, hi, s), A); B.copy(clew).lerp(head, s);
       return;
     }
     if (W.kind === 'jib') {
-      const head = this.mastPoint(mi, M.height * W.head, _w), tack = V(...W.tack), clew = V(-side * (W.clewX ?? 0.35), W.clew[1], W.clew[2]);
+      const head = this.mastPoint(mi, M.height * W.head, _w), tack = V(...W.tack), clew = V(-side * (W.clewX ?? 0.35 * this.k), W.clew[1], W.clew[2]);
       A.copy(tack).lerp(head, s); B.copy(clew).lerp(head, s);
       return;
     }
     // lateen: the yard's fore end (F) to its aft end (H) along A; the clew (C) low aft
     const Y = M.yards[W.yard], h = M.base[Y.seg] + Y.at * M.segs[Y.seg].len, [f, a, tilt] = Y.lateen;
     const F = this.mastPoint(mi, h - Math.sin(tilt) * f, V(), 0, Math.cos(tilt) * f, Y.seg), H = this.mastPoint(mi, h + Math.sin(tilt) * a, V(), 0, -Math.cos(tilt) * a, Y.seg);
-    const C = this.mastPoint(mi, M.base[0] + (W.clewH ?? 0.6), V(), -side * 0.2, -(W.clewZ ?? a * 0.8));
+    const C = this.mastPoint(mi, M.base[0] + (W.clewH ?? 0.6 * this.k), V(), -side * 0.2 * this.k, -(W.clewZ ?? a * 0.8));
     A.copy(F).lerp(H, s); B.copy(F).lerp(C, s);
   }
 

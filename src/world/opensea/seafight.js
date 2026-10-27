@@ -41,7 +41,7 @@ const simRand = stream('world/opensea/seafight'); // (the simulation's chance: c
  *  sent back and its power; hurt: how near the hull's middle a glob hits (m); knock: the ram's (a share of the way kept, the yaw thrown, rad);
  *  coil: the helm's turn and way while wrapped; lair: one in `every` of the serpent's squares, risen within `near` m, gone past `far` m. */
 export const SEA_FIGHT = {
-  gun: { every: 0.125, speed: 90, life: 1.5, r: 0.3, power: 0.25, cone: 0.16, reach: 150, from: 2.4 }, // (power: at the rail's cadence a perfect aim on the head sank it in 10 s at 1; at 0.25 about 40 s)
+  gun: { every: 0.125, speed: 90, life: 1.5, r: 0.3, power: 0.25, cone: 0.16, reach: 150, from: 1.4 }, // (power: at the rail's cadence a perfect aim on the head sank it in 10 s at 1; at 0.25 about 40 s)
   glob: { speed: 24, fall: 7, life: 5, r: 0.7, reach: 7, back: 46, power: 3 },
   hurt: 3.6, knock: { keep: 0.25, yaw: 0.35 }, coil: { turn: 0.5, speed: 0.5 },
   lair: { every: 4, near: 380, far: 900 }, noise: { radius: 90, every: 1 },
@@ -134,7 +134,7 @@ export class SeaFight {
     const g = this.game; this.fireT -= dt; this.noiseT -= dt;
     if (!I.isDown('Mouse0') || this.fireT > 0) return;
     this.fireT = GN.every;
-    const from = _a.copy(H.pos).setY(H.pos.y + GN.from).addScaledVector(_b.set(Math.sin(H.yaw), 0, Math.cos(H.yaw)), 2);
+    const from = _a.copy(H.pos).setY(H.pos.y + (H.look?.deckY || 1) + GN.from).addScaledVector(_b.set(Math.sin(H.yaw), 0, Math.cos(H.yaw)), 2);
     g.camera.getWorldDirection(_d); const yaw = Math.atan2(_d.x, _d.z);
     let aim = null, best = GN.cone; // (the aim finds the height: an exposed part near the camera's bearing, the head favoured)
     for (const c of this.serpents.list) {

@@ -86,15 +86,15 @@ export class Helm {
     if (this.idle > HELM.recentre.after && !g.seaFight?.serpent) { // (untouched, it swings back astern: the shortest way round)
       const o = Math.atan2(Math.sin(this.orbit), Math.cos(this.orbit)); this.orbit = o - Math.sign(o) * Math.min(Math.abs(o), HELM.recentre.rate * dt);
     }
-    const a = this.yaw + Math.PI + this.orbit, C = HELM.cam;
+    const a = this.yaw + Math.PI + this.orbit, k = Math.sqrt(this.look.scale || 1), C = { back: HELM.cam.back * k, up: HELM.cam.up * k, ahead: HELM.cam.ahead * k, lean: HELM.cam.lean * k }; // (the chase grown with the hull: by the root of its scale, so the 35 m sloop is framed whole without the camera a stern's length away)
     _c.set(this.pos.x + Math.sin(a) * C.back * Math.cos(this.tilt), this.pos.y + C.up + Math.sin(this.tilt) * C.back, this.pos.z + Math.cos(a) * C.back * Math.cos(this.tilt));
     const lean = this.rudder * C.lean * Math.min(1, this.speed / this.cruise); // (it looks a little into the turn)
-    _l.set(this.pos.x + Math.sin(this.yaw) * C.ahead + Math.cos(this.yaw) * lean, this.pos.y + 1.5, this.pos.z + Math.cos(this.yaw) * C.ahead - Math.sin(this.yaw) * lean);
+    _l.set(this.pos.x + Math.sin(this.yaw) * C.ahead + Math.cos(this.yaw) * lean, this.pos.y + (this.look.deckY || 0) + 1.5, this.pos.z + Math.cos(this.yaw) * C.ahead - Math.sin(this.yaw) * lean);
     g.cinema?.shot('opensea', { pos: _c, look: _l, bars: 0, ease: 30 });
   }
 
   /** The Courier held at the helm (hidden by the room): where the zones, the weather and the sound think they are. */
   hold(P) {
-    P.pos.copy(this.pos).setY(this.pos.y + 1.2); P.prevPos?.copy(P.pos); P.renderPos?.copy(P.pos); P.vel?.set(0, 0, 0); P.place?.();
+    P.pos.copy(this.pos).setY(this.pos.y + (this.look.deckY || 0) + 1.2); // (on the deck, not in the hull: the hulls at their life size, deckY ~2.3 m) P.prevPos?.copy(P.pos); P.renderPos?.copy(P.pos); P.vel?.set(0, 0, 0); P.place?.();
   }
 }

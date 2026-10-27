@@ -22,12 +22,12 @@ const _v = new THREE.Vector3();
 export function shipStage(game) {
   const wb = game.workbench, S = wb?.scene; if (!S) return null;
   const env = game.sky?.env || null, root = new THREE.Group(); root.userData.placed = true; root.userData.bare = true;
-  const dome = new THREE.Mesh(new THREE.SphereGeometry(330, 32, 16), game.sky.domeMaterial(new THREE.Vector3(-0.55, 0.3, -0.78)));
+  const dome = new THREE.Mesh(new THREE.SphereGeometry(380, 32, 16), game.sky.domeMaterial(new THREE.Vector3(-0.55, 0.3, -0.78)));
   dome.frustumCulled = false; dome.renderOrder = -10; root.add(dome);
-  const sea = new CrudeSea({ env, size: 200, cells: 90, y: 0 }); sea.set({ calm: 0.7 }); root.add(sea.mesh);
-  const ships = SHIP_ORDER.map((id, i) => { const s = shipLook(id, { env }); s.feeling(COLOR[FEEL[id]]); s.group.position.set((i - 2) * 9, 0, (2 - i) * 14); root.add(s.group); return s; });
+  const sea = new CrudeSea({ env, size: 600, cells: 160, y: 0 }); sea.set({ calm: 0.7 }); root.add(sea.mesh);
+  const ships = SHIP_ORDER.map((id, i) => { const s = shipLook(id, { env }); s.feeling(COLOR[FEEL[id]]); s.group.position.set((i - 2) * 40, 0, (2 - i) * 70); root.add(s.group); return s; });
   const was = { fog: S.fog, bg: S.background };
-  S.fog = new THREE.FogExp2(new THREE.Color(0xcbb9a6), 0.006); S.background = new THREE.Color(0x2a2230);
+  S.fog = new THREE.FogExp2(new THREE.Color(0xcbb9a6), 0.0015); S.background = new THREE.Color(0x2a2230);
   const at = new THREE.Vector3(), look = new THREE.Vector3();
   root.userData.tick = (t) => {
     ships.forEach((s, i) => {
@@ -38,10 +38,10 @@ export function shipStage(game) {
     const v = root.userData.view || VIEWS[Math.floor(t / 4) % VIEWS.length];
     const [one, ang] = v.split('.'), k = SHIP_ORDER.indexOf(one); // (a hull alone: 'tanker.front', 'tanker.side', 'tanker.stern')
     if (k >= 0) { const s = ships[k], P = s.group.position, L = s.length; look.set(P.x, P.y + L * 0.12, P.z); at.copy(look).add(ang === 'side' ? _v.set(-L * 1.25, L * 0.12, 0) : ang === 'stern' ? _v.set(L * 0.6, L * 0.35, -L * 1.0) : _v.set(-L * 0.75, L * 0.18, L * 0.95)); }
-    else if (v === 'front') { at.set(-14, 4, 46); look.set(0, 1.5, 0); }
-    else if (v === 'side') { at.set(-46, 3, -6); look.set(0, 1.8, 0); }
-    else if (v === 'stern') { at.set(10, 7, -50); look.set(0, 1.2, 0); }
-    else { at.set(0, 70, 8); look.set(0, 0, 0); }
+    else if (v === 'front') { at.set(-70, 20, 230); look.set(0, 7, 0); }
+    else if (v === 'side') { at.set(-230, 15, -30); look.set(0, 9, 0); }
+    else if (v === 'stern') { at.set(50, 35, -250); look.set(0, 6, 0); }
+    else { at.set(0, 350, 40); look.set(0, 0, 0); }
     sea.update(t, at); mindTick(t);
   };
   root.userData.shot = (camera) => { camera.position.copy(at); camera.up.set(0, 1, 0); camera.lookAt(look); camera.fov = 50; camera.updateProjectionMatrix(); };
