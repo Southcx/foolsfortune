@@ -7,7 +7,9 @@
 //                 gold shards, a flash ring facing the eye, chips.
 //   SONAR         thin pale rings pinging out to the sonar's reach; where a beast under the water will come up (its breach's or ram's
 //                 ring when it has one, else where it is), a pale mark appears as the ping reaches it and breathes on the surface,
-//                 its rings closing in and motes rising, fading over a few real seconds. A world mark: no words.
+//                 its rings closing in and motes rising, fading over a few real seconds; a beast wound up to break the water (Petra's
+//                 `surface` and `eta`) is marked where it will, held until then, drawing in and breathing faster as it nears. A world
+//                 mark: no words.
 // Prior art: Subnautica's sonar (a ring out from the hull, what is under shown where it is), Metroid Prime's echo visor, Zelda's
 // Ocarina shockwave over water; the toll's reach on foot (vfx/tollreach.js) for the bell's ring.
 //
@@ -17,11 +19,11 @@ import * as THREE from 'three';
 import { SEA_MOUNTS } from '../../../progress/rail/mounts.js';
 
 /** toll: its colours, run (real s), the wall's height (m); sonar: its colour, run, how many pings and their stagger (real s);
- *  mark: its life (real s), radius x the beast's head; cap: rings and marks at once. */
+ *  mark: its life (real s), how long it outlives a timed one's breaking (`eta`), radius x the beast's head; cap: rings and marks at once. */
 export const SEA_RINGS_LOOK = {
   toll: { gold: 0xffd36a, bronze: 0xc8843a, run: 0.8, wall: 4, echo: 0.14 },
   sonar: { color: 0x9fe8e0, run: 2.4, pings: 3, stagger: 0.22, alpha: 0.42 },
-  mark: { life: 3.6, r: 2.2, min: 7, color: 0xd8fff6 }, cap: { rings: 12, marks: 6 },
+  mark: { life: 3.6, after: 1.0, r: 2.2, min: 7, color: 0xd8fff6 }, cap: { rings: 12, marks: 6 },
 };
 const RL = SEA_RINGS_LOOK;
 const _v = new THREE.Vector3();
@@ -103,8 +105,9 @@ export class SeaRings {
     for (const b of e?.beasts || []) {
       const P = this.markPool.find((p) => !p.busy); if (!P || !b?.at) break;
       let c = null, bd = 6; for (const x of M.serpents?.list || []) { const d = Math.hypot(x.pos.x - b.at.x, x.pos.z - b.at.z); if (x.alive && d < bd) { bd = d; c = x; } }
-      const d = H.hullDist?.(b.at) ?? Math.hypot(b.at.x - H.pos.x, b.at.z - H.pos.z);
-      P.busy = true; this.marks.push({ P, c, at: new THREE.Vector3(b.at.x, b.at.y, b.at.z), t: -S.run * Math.min(1, (d + M.L / 2) / reach), r: Math.max(RL.mark.min, (M.serpents?.rOf?.(c, 0) ?? 4) * RL.mark.r), dropT: 0 });
+      const p = b.surface ?? b.at, d = H.hullDist?.(p) ?? Math.hypot(p.x - H.pos.x, p.z - H.pos.z), t0 = -S.run * Math.min(1, (d + M.L / 2) / reach); // (where it breaks the water, Petra's `surface`, when it has wound up)
+      const eta = b.eta ?? null, life = eta != null ? Math.max(RL.mark.life, eta + t0 + RL.mark.after) : RL.mark.life; // (held until it breaks, then a beat)
+      P.busy = true; this.marks.push({ P, c, at: new THREE.Vector3(p.x, p.y, p.z), t: t0, eta: eta != null ? eta + t0 : null, life, r: Math.max(RL.mark.min, (M.serpents?.rOf?.(c, 0) ?? 4) * RL.mark.r), dropT: 0 });
     }
   }
 
@@ -127,12 +130,13 @@ export class SeaRings {
     const ML = RL.mark;
     for (const k of this.marks) {
       const P = k.P; k.t += dt;
-      if (!M.live || k.t >= ML.life) { P.busy = false; P.m.visible = false; k.done = true; continue; }
+      if (!M.live || k.t >= k.life) { P.busy = false; P.m.visible = false; k.done = true; continue; }
       if (k.t < 0) { P.m.visible = false; continue; }
       const A = k.c?.alive ? k.c.attack : null; if (A?.at && (A.move === 'ram' || A.move === 'rise' || A.move === 'breach')) k.at.copy(A.at); // (where it breaks the surface, when it has said)
       else if (k.c?.alive && (k.c.under ?? 0) > 0.5) k.at.set(k.c.pos.x, k.at.y, k.c.pos.z);
-      const fin = Math.min(1, k.t / 0.3) * Math.min(1, (ML.life - k.t) / 1.2);
-      P.m.visible = true; P.m.position.set(k.at.x, M.surf(k.at.x, k.at.z) + 0.3, k.at.z); P.m.scale.setScalar(k.r * (0.9 + 0.1 * Math.sin(k.t * 4)));
+      const fin = Math.min(1, k.t / 0.3) * Math.min(1, (k.life - k.t) / 1.2), left = k.eta != null ? Math.max(0, k.eta - k.t) : null;
+      const beat = left != null ? 4 + 14 / (1 + left) : 4; // (a timed mark's breath quickening as the breaking nears)
+      P.m.visible = true; P.m.position.set(k.at.x, M.surf(k.at.x, k.at.z) + 0.3, k.at.z); P.m.scale.setScalar(k.r * (left != null ? 0.75 + 0.25 * Math.min(1, left / 2) : 1) * (0.9 + 0.1 * Math.sin(k.t * beat)));
       P.mat.uniforms.uK.value = fin * 0.85; P.mat.uniforms.uTime.value = k.t;
       if ((k.dropT -= dt) <= 0) {
         k.dropT = 0.45; W?.disturb?.(k.at.x, k.at.z, 0.3, 'drop', M.surf(k.at.x, k.at.z));
