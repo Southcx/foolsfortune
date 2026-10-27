@@ -43,7 +43,7 @@ import { stream } from '../../core/rng.js';
 import { sfx } from '../../audio/sfx.js';
 const duelRand = stream('world/duel/duelsession'); // (the duel's seed: the session's own draw, the same twice)
 
-export const DUEL_ROOM = { beat: 0.55, yieldHold: 1.5, apart: 6, standOff: 5 }; // (the bot's beat, real s; the yield's hold; the two set this far apart under the seam, m; the camera off the board's face, m)
+export const DUEL_ROOM = { beat: 0.55, yieldHold: 1.5, apart: 6, apartTouch: 2.7, standOff: 5, bodyTap: 70 }; // (the bot's beat, real s; the yield's hold; the two set this far apart under the seam, m (on a phone's layout nearer, each about 1.35 m off the board's middle so both stand inside the duel screen's flanks: Calissa's, 2026-10-27, at 270 px a metre); the camera off the board's face, m; a tap this near the Courier's body on screen switches the form, px)
 const KEYS_KEPT = /^(Escape|Tab|F\d+|KeyB)$/; // (what a duel leaves to the rest of the game: the pause, the tuning panel, QAIS, the Codex)
 const TOOL_KEYS = { KeyX: 'shoot', KeyQ: 'grab', KeyK: 'drill', KeyG: 'paint', KeyU: 'delay', KeyI: 'hold', KeyT: 'tune', KeyV: 'read' };
 const WALK = { KeyW: 'N', KeyS: 'S', KeyA: 'W', KeyD: 'E' };
@@ -82,7 +82,7 @@ export class DuelSession {
     this.pin(c); // (it is in the duel, not the world, until it ends: its casts stopped, its mind held)
     // under the seam the two are set apart along the line between them, and the board stands broadside between, your half nearest you
     const facing = P.pos.clone().sub(c.pos).setY(0); if (facing.lengthSq() < 1e-4) facing.set(0, 0, 1); facing.normalize();
-    c.pos.copy(P.pos).addScaledVector(facing, -DUEL_ROOM.apart).setY(c.pos.y + (P.pos.y - c.pos.y) * 0.5); c.rb?.setNextKinematicTranslation?.(c.pos);
+    c.pos.copy(P.pos).addScaledVector(facing, -(this.flanks ? DUEL_ROOM.apartTouch : DUEL_ROOM.apart)).setY(c.pos.y + (P.pos.y - c.pos.y) * 0.5); c.rb?.setNextKinematicTranslation?.(c.pos);
     if (typeof c.yaw === 'number') { c.yaw = Math.atan2(facing.x, facing.z); c.vel?.set?.(0, 0, 0); if (c.root) c.root.rotation.y = c.yaw; } // (turned to face you: a pinned body keeps the yaw it had, and a Wisp turns only toward its drift, now nothing: the owner's phone, 2026-10-27)
     const at = P.pos.clone().lerp(c.pos, 0.5).setY(P.pos.y);
     this.at = at; this.facing = facing;
@@ -140,7 +140,7 @@ export class DuelSession {
   /** Your input this frame, as the kernel's actions. */
   controls(raw, input) {
     const s = this.state, S = s.sides[0], cell = this.hover;
-    if (input.wasPressed('Backquote')) return this.take({ kind: 'form', to: S.form === 'hand' ? 'courier' : 'hand' });
+    if (input.wasPressed('Backquote') || (!cell && input.wasPressed('Mouse0') && this.onBody(input))) return this.take({ kind: 'form', to: S.form === 'hand' ? 'courier' : 'hand' }); // (on touch a tap on the Courier's body does as du.form)
     if (input.wasPressed('Space')) return this.endMine();
     if (input.wasPressed('KeyZ') && (input.isDown('ControlLeft') || input.isDown('ControlRight'))) return this.takeBack();
     if (input.wasPressed('KeyE')) return this.take({ kind: 'flee' });
@@ -211,6 +211,15 @@ export class DuelSession {
     this.view?.select?.(this.picked ? [this.picked] : []);
   }
   get touch() { return this.game.input?.device === 'touch'; }
+  /** The phone's layout (the duel screen's flanks, ui/touch/duelscreen.js): the bodies nearer, the hand's cursor hidden. */
+  get flanks() { return !!this.game.hudLayout?.touch; }
+  /** A tap on the Courier's body, off the board: the body's middle projected to the screen, within DUEL_ROOM.bodyTap px. */
+  onBody(input) {
+    const P = this.game.player, cam = this.game.camera; if (!this.touch || !P || !cam || input.mx < 0) return false;
+    _ndc.copy(P.pos).setY(P.pos.y + 0.9).project(cam); if (_ndc.z > 1) return false;
+    const x = (_ndc.x + 1) / 2 * innerWidth, y = (1 - _ndc.y) / 2 * innerHeight;
+    return Math.abs(input.mx - x) < DUEL_ROOM.bodyTap && Math.abs(input.my - y) < DUEL_ROOM.bodyTap * 1.6;
+  }
   /** The way from the Courier to `cell` when it is on the Courier's row or column, else null. */
   lineTo(cell) {
     const at = this.state.sides[0].at; if (!cell || !at || (cell.x === at[0] && cell.y === at[1])) return null;
@@ -279,7 +288,7 @@ export class DuelSession {
   cursorHand(raw) {
     const g = this.game, H = g.god, s = this.state, hand = s && s.sides[0].form === 'hand' && s.toMove === 0;
     if (!H?.cursorAt) return;
-    const at = hand && this.hover && this.pointOf(this.hover);
+    const at = hand && !this.flanks && this.hover && this.pointOf(this.hover); // (on a phone no cursor: pick-then-place needs none, and it hid a third of the foe's half)
     if (at) H.cursorAt(at, this.view.face, raw, { press: this.press ? 1 : 0 }); else H.hideCursor?.();
   }
   /** A cell's centre on the board's face, in the world (the view's own layout: vfx/duelview/layout.js). */
