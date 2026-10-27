@@ -58,9 +58,9 @@ function starGeometry() {
   const p = [];
   for (let i = 0; i < 8; i++) {
     const a = (i / 8) * Math.PI * 2 + (hash(i, 3) - 0.5) * 0.5, r = 0.55 + 0.45 * hash(i, 7), w = 0.06, ca = Math.cos(a), sa = Math.sin(a);
-    p.push(-sa * w, ca * w, 0, ca * r, sa * r, 0, sa * w, -ca * w, 0);
+    p.push(sa * w, -ca * w, 0, ca * r, sa * r, 0, -sa * w, ca * w, 0); // (wound to face the view: one-sided, the board's glow program)
     const b = a + Math.PI / 8, rr = 0.3 + 0.15 * hash(i, 11), cb = Math.cos(b), sb = Math.sin(b), t = 0.025;
-    p.push(ca * rr * 0.9 - sa * t, sa * rr * 0.9 + ca * t, 0, cb * rr + sb * t, sb * rr - cb * t, 0, ca * rr * 0.9 + sa * t, sa * rr * 0.9 - ca * t, 0);
+    p.push(ca * rr * 0.9 + sa * t, sa * rr * 0.9 - ca * t, 0, cb * rr + sb * t, sb * rr - cb * t, 0, ca * rr * 0.9 - sa * t, sa * rr * 0.9 + ca * t, 0);
   }
   const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(p, 3)); return g;
 }
@@ -72,8 +72,8 @@ export class DuelJuice {
     this.words = new Map(); this.pops = []; this.last = [[], []]; this.hold = 0; this.brassK = 0; this.glintT = 0; this.undoSeen = false; this.undoFlash = 0;
     const add = (m, order = 7) => { m.visible = false; m.renderOrder = order; m.frustumCulled = false; this.group.add(m); return m; };
     const glow = (hex, extra = {}) => new THREE.MeshBasicMaterial({ name: 'duel-juice', color: hex, transparent: true, depthWrite: false, toneMapped: false, blending: THREE.AdditiveBlending, ...extra });
-    this.star = add(new THREE.Mesh(starGeometry(), glow(0xffffff, { side: THREE.DoubleSide })));
-    this.ring = add(new THREE.Mesh(new THREE.RingGeometry(0.9, 1, 64), glow(GOLD, { side: THREE.DoubleSide })));
+    this.star = add(new THREE.Mesh(starGeometry(), glow(0xffffff)));
+    this.ring = add(new THREE.Mesh(new THREE.RingGeometry(0.9, 1, 64), glow(GOLD)));
     this.sweep = add(new THREE.Mesh(new THREE.PlaneGeometry(1, 1), glow(GOLD)));
     this.ripple = add(new THREE.Mesh(new THREE.RingGeometry(0.86, 1, 64), mindLineMaterial({ opacity: 0, depthTest: true, bright: 1.6 })));
     // the motes (the trickle's drops and the refund's flying point): one instanced mesh in the bursts' program

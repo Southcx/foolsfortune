@@ -32,7 +32,7 @@ const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _m = new THREE.Matrix4
 export class FormDive {
   constructor(view) {
     this.view = view; this.game = view.game; this.on = false; this.shown = null; this.job = null;
-    const mat = new THREE.MeshBasicMaterial({ name: 'duel-dive', color: 0xffffff, transparent: true, opacity: 0.95, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false }); // (fogged as the basic program the board's glows share: nothing new compiles)
+    const mat = new THREE.MeshBasicMaterial({ name: 'duel-dive', color: 0xffffff, toneMapped: false }); // (opaque, fogged, instanced: the board's glows' own program (pieces.js `duel-glow`), so nothing new compiles; the program census)
     this.beads = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 1), mat, DIVE.beads); this.beads.name = 'duel-dive';
     this.beads.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(DIVE.beads * 3), 3); this.beads.frustumCulled = false;
     this.beads.visible = false; this.beads.count = 0; this.beads.userData.zoneFree = true; this.game.scene?.add(this.beads);
