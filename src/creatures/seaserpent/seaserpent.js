@@ -34,6 +34,8 @@ import { tag } from '../../core/tags.js';
 import { st } from '../creatures.js';
 import { Brain, Senses, Memory, Drives, rollTraits } from '../ai/index.js';
 import { SEA_SERPENT } from '../../progress/opensea/seaserpent.js';
+import { SEA_BEASTS } from '../../progress/opensea/seabeasts.js';
+import { SIGNATURES } from './signatures.js';
 import { ShipWake } from '../../vfx/rail.js';
 import { seaSerpentMind } from './mind.js';
 import { stream } from '../../core/rng.js';
@@ -48,8 +50,15 @@ export const SERPENT_BODY = {
   headR: 1.5, tailR: 0.45, hump: 1.3, humpLen: 5, humpSpeed: 1.7, headUp: 3.4, deep: 8, dive: 0.9, rearRate: 1.4, turn: 1.15, accel: 7,
   poise: 6, stunFor: 0.7, sink: 5, wakeAt: 3, ram: 4, coil: 10, coilChase: 1.45, coilTurn: 3,
 };
-const B = SERPENT_BODY, M = SEA_SERPENT.moves;
-const N = SEA_SERPENT.segments, GAP = SEA_SERPENT.length / (N - 1);
+/** The other chain-bodied beasts on the same chassis (OPEN-SEA.md 14.3; placeholders until Calissa's bodies give theirs): the akhlut short
+ *  and quick, Jormungandr a ring's worth of serpent; `segments` and `length` (m) beside the body's numbers (the serpent's from SEA_SERPENT). */
+export const BEAST_BODY = {
+  seaSerpent: SERPENT_BODY,
+  wolfWhale: { ...SERPENT_BODY, segments: 8, length: 24, headR: 3.2, tailR: 1.1, hump: 1.6, humpLen: 7, headUp: 6, deep: 14, wakeAt: 5, ram: 10, coil: 0, turn: 1.5, accel: 10 },
+  worldSerpent: { ...SERPENT_BODY, segments: 32, length: 240, headR: 8, tailR: 2.6, hump: 5, humpLen: 22, headUp: 18, deep: 30, wakeAt: 10, ram: 20, coil: 40, turn: 0.55, accel: 6, sink: 8 },
+};
+/** The beasts this chassis carries (the umibozu's and the kraken's bodies are not chains: to come with Calissa's looks). */
+export const CHAIN_BEASTS = Object.keys(BEAST_BODY);
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(), _up = new THREE.Vector3(0, 1, 0);
 const _look = new THREE.Matrix4(), _p = new THREE.Vector3(), _coil = { centre: null, r: 5 }; // (the coil's ring round the hull, for the look)
 const angleTo = (a, b) => { let d = b - a; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; return d; };
@@ -69,9 +78,10 @@ export class SeaSerpents {
   surf(x, z) { const g = this.game, sea = g.emocean?.sea; return sea ? sea.heightAt(x, z, g.emocean.seaT ?? 0) : (g.opensea?.helm?.pos.y ?? 0); }
 
   // ---------------------------------------------------------------- a body
-  spawn(home, { yaw = simRand() * 6.28, lair = null } = {}) {
-    const g = this.game, Mi = this.mind;
-    const body = g.makeSeaSerpent?.({ segments: N, length: SEA_SERPENT.length }) || null; // [look] Calissa's
+  spawn(home, { yaw = simRand() * 6.28, lair = null, beast = 'seaSerpent' } = {}) {
+    const g = this.game, Mi = this.mind, row = SEA_BEASTS[beast] || SEA_SERPENT, B = BEAST_BODY[beast] || SERPENT_BODY;
+    const N = B.segments ?? SEA_SERPENT.segments, length = B.length ?? SEA_SERPENT.length, GAP = length / (N - 1);
+    const body = (beast === 'seaSerpent' ? g.makeSeaSerpent?.({ segments: N, length }) : g.makeSeaBeast?.(beast, { segments: N, length })) || null; // [look] Calissa's
     const look = body ? null : new THREE.InstancedMesh(this.geo, this.mat, N), eyes = body ? null : new THREE.InstancedMesh(this.geo, this.eyeMat, 2);
     const root = new THREE.Group(); root.userData.zone = 'opensea'; g.scene.add(root);
     if (look) { look.castShadow = true; look.frustumCulled = false; eyes.frustumCulled = false; root.add(look, eyes); }
@@ -79,11 +89,11 @@ export class SeaSerpents {
     const spine = [];
     for (let i = 0; i < N; i++) spine.push({ p: new THREE.Vector3(home.x - Math.sin(yaw) * GAP * i, home.y, home.z - Math.cos(yaw) * GAP * i), r: B.headR + (B.tailR - B.headR) * Math.pow(i / (N - 1), 0.8), under: 1, y: home.y });
     const c = {
-      type: 'creature', kind: 'seaSerpent', name: 'sea serpent', id: NEXT++, root, look, eyes, body, lair,
+      type: 'creature', kind: beast, name: beast === 'seaSerpent' ? 'sea serpent' : beast, id: NEXT++, row, B, N, GAP, root, look, eyes, body, lair,
       home: home.clone(), pos: spine[0].p, vel: new THREE.Vector3(), want: new THREE.Vector3(), yaw, speed: 0, radius: B.headR, height: 2,
-      alive: true, hp: SEA_SERPENT.hp, poise: B.poise * (traits.bold ?? 1), stunFor: B.stunFor, traits, rel: new Map(), loud: 1.4, affinity: null,
+      alive: true, hp: row.hp, maxHp: row.hp, poise: B.poise * (traits.bold ?? 1), stunFor: B.stunFor, traits, rel: new Map(), loud: 1.4, affinity: null,
       spine, under: 1, goUnder: 1, rear: 0, wantRear: 0, phase: simRand() * 6.28, attack: null, coiled: null, habit: null, flash: 0, dying: null,
-      cd: { ram: 2, spit: 1, coil: 4, dive: 2 },
+      cd: Object.fromEntries(Object.keys(row.moves).map((k, i) => [k, 1 + i])),
       wake: new ShipWake(g), wakeBody: new THREE.Object3D(),
       center: (out) => out.copy(this.at(c, 0)),
       head: () => this.at(c, 0),
@@ -94,7 +104,7 @@ export class SeaSerpents {
       windUp: (move, target) => this.windUp(c, move, target),
     };
     const mem = new Memory({ hold: 6, ebb: 1 / 20, threatEbb: 1 / 60 });
-    const senses = new Senses(g, { sight: SEA_SERPENT.sense, fov: 360, feel: 30, hear: 1.6, eye: 1, rate: 2.2, every: 0.5, onHear: (s, reach) => Mi.heard(c, s, reach) });
+    const senses = new Senses(g, { sight: row.sense ?? row.zone ?? SEA_SERPENT.sense, fov: 360, feel: 30, hear: 1.6, eye: 1, rate: 2.2, every: 0.5, onHear: (s, reach) => Mi.heard(c, s, reach) });
     c.drives = new Drives(Mi.drives, traits);
     c.brain = new Brain(g, c, { senses, memory: mem, drives: c.drives, actions: Mi.actions, think: 0.25, near: 160, far: 420, sees: (out) => Mi.sees(c, out), mods: (ctx) => Mi.mods(ctx) });
     c.mem = mem;
@@ -124,6 +134,7 @@ export class SeaSerpents {
         if (c.brain.lod === 'far') c.want.set(0, 0, 0); // (out of mind's reach it lies where it is: the brain does not think out there)
         if (c.attack) this.attackTick(c, dt);
         if (c.coiled) this.coilTick(c, dt);
+        if (c.held) SIGNATURES[c.held.move]?.hold(this, c, dt); // (a move that holds the ship a while: circle, coilWorld)
         for (const k in c.cd) c.cd[k] -= dt;
       }
       this.swim(c, dt);
@@ -133,6 +144,7 @@ export class SeaSerpents {
 
   /** The head steered toward `want` (a turn it can make, a pace it can reach), the spine following, the humps running down it. */
   swim(c, dt) {
+    const B = c.B, N = c.N, GAP = c.GAP;
     const held = st(c, 'halt') > 0 || st(c, 'stun') > 0 || c.dying != null, slow = st(c, 'slow') ? 0.5 : 1;
     const ws = held ? 0 : Math.hypot(c.want.x, c.want.z) * slow;
     const tr = B.turn * (c.coiled || c.attack?.move === 'coil' ? B.coilTurn : 1) * dt;
@@ -146,7 +158,7 @@ export class SeaSerpents {
     }
     c.under += clamp(c.goUnder - c.under, -B.dive * dt, B.dive * dt);
     c.rear += clamp((c.under > 0.5 ? 0 : c.wantRear) - c.rear, -B.rearRate * dt, B.rearRate * dt);
-    c.phase += B.humpSpeed * dt * (0.5 + Math.min(1, c.speed / SEA_SERPENT.speed));
+    c.phase += B.humpSpeed * dt * (0.5 + Math.min(1, c.speed / c.row.speed));
     const S = c.spine;
     S[0].under = c.under;
     if (c.body) { c.flash = Math.max(0, c.flash - dt * 4); return; } // (the look lays the spine: pose() reads it back)
@@ -170,7 +182,7 @@ export class SeaSerpents {
 
   /** The look: each segment an instance, faced along the spine; the head longer; the eyes either side of it. */
   pose(c, dt) {
-    const S = c.spine;
+    const S = c.spine, B = c.B, N = c.N, GAP = c.GAP;
     if (c.body) return this.drive(c, dt);
     for (let i = 0; i < N; i++) {
       const s = S[i], t = S[i === 0 ? 1 : i - 1];
@@ -194,8 +206,8 @@ export class SeaSerpents {
   /** Calissa's body driven: the head's place and heading, how far up (`rise`), the move under way and how far through it; then its
    *  joints read back into the spine, so the shots, the aim and the wake go by what is drawn. */
   drive(c, dt) {
-    const B0 = c.body, S = c.spine, A = c.attack, ship = this.game.opensea?.helm;
-    const move = c.coiled ? 'coil' : A?.move ?? null, k = A ? 1 - A.t / M[A.move].windup : c.coiled ? Math.min(1, c.coiled.k / 0.6) : 0;
+    const B0 = c.body, S = c.spine, A = c.attack, ship = this.game.opensea?.helm, B = c.B, N = c.N;
+    const move = c.coiled ? 'coil' : A?.move ?? null, k = A ? 1 - A.t / c.row.moves[A.move].windup : c.coiled ? Math.min(1, c.coiled.k / 0.6) : 0;
     _coil.centre = ship?.pos ?? S[0].p;
     B0.drive({ head: S[0].p, heading: c.yaw, rise: 1 - c.under, move, k, coil: move === 'coil' ? _coil : null });
     if (dt > 0) B0.update(dt);
@@ -212,7 +224,7 @@ export class SeaSerpents {
   at(c, i) { return i === 0 && c.body ? c.body.headPos : c.spine[i].p; }
   rOf(c, i) { return i === 0 && c.body ? c.body.headRadius : c.spine[i].r; }
   /** Which part a point is on (0 the head), and whether it is above the water to be struck at all. */
-  partAt(c, p) { let best = 0, bd = Infinity; for (let i = 0; i < N; i++) { const d = this.at(c, i).distanceToSquared(p); if (d < bd) { bd = d; best = i; } } return best; }
+  partAt(c, p) { let best = 0, bd = Infinity; for (let i = 0; i < c.N; i++) { const d = this.at(c, i).distanceToSquared(p); if (d < bd) { bd = d; best = i; } } return best; }
   exposed(c, i) { const q = this.at(c, i); return q.y + this.rOf(c, i) * 0.6 > this.surf(q.x, q.z); }
   /** What a shot flying from a to b (radius r) strikes first: the nearest exposed part along it. */
   partsHit(a, b, r = 0.2) {
@@ -220,7 +232,7 @@ export class SeaSerpents {
     _b.subVectors(b, a); const L2 = _b.lengthSq() || 1;
     for (const c of this.list) {
       if (!c.alive) continue;
-      for (let i = 0; i < N; i++) {
+      for (let i = 0; i < c.N; i++) {
         if (!this.exposed(c, i)) continue;
         const q = this.at(c, i), t = clamp(_a.subVectors(q, a).dot(_b) / L2, 0, 1);
         _p.copy(a).addScaledVector(_b, t);
@@ -240,53 +252,56 @@ export class SeaSerpents {
     if (by === 'courier') { const f = c.mem.ensure(this.game.player, 'courier'); f.grudge = Math.min(1, f.grudge + 0.05 * dmg); f.aware = 1; }
     c.drives.add('fear', dmg * 0.012);
     if (c.coiled && i === 0) { c.coiled.hits += dmg; if (c.coiled.hits >= 6) this.free(c, 'shot'); }
-    this.game.events?.emit('seaserpent.hit', { part: i === 0 ? 'head' : 'coil', dmg: +dmg.toFixed(1), hp: Math.max(0, +c.hp.toFixed(1)), cause, by });
+    if (c.held && i === 0) SIGNATURES[c.held.move]?.struck?.(this, c, dmg); // (its head at the peak: the coil of the world broken)
+    this.game.events?.emit('seaserpent.hit', { id: c.kind, part: i === 0 ? 'head' : 'coil', dmg: +dmg.toFixed(1), hp: Math.max(0, +c.hp.toFixed(1)), cause, by });
     if (c.hp <= 0) this.down(c, by, cause);
     return dmg;
   }
   down(c, by = 'courier', cause = 'shot') {
     if (!c.alive) return;
     const g = this.game;
-    c.alive = false; c.dying = B.sink; this.cancel(c, 'down'); c.brain.end('down'); c.status.clear(); c.body?.down();
+    c.alive = false; c.dying = c.B.sink; this.cancel(c, 'down'); c.brain.end('down'); c.status.clear(); c.body?.down();
     g.ai?.stimuli.emit('death', c.pos, { radius: 200, strength: 1.4, by, source: c, ttl: 3 });
-    g.events?.emit('seaserpent.down', { cause, by, lair: c.lair, give: SEA_SERPENT.give });
+    if (c.kind === 'seaSerpent') g.events?.emit('seaserpent.down', { cause, by, lair: c.lair, give: SEA_SERPENT.give });
+    else g.events?.emit('seabeast.down', { id: c.kind, cause, by, lair: c.lair }); // (the room pays it: seabeasts.js beastPay)
   }
 
   // ---------------------------------------------------------------- the moves
   /** A move begun: its windup (the Figment attack telegraph's area on the water) and what it does when the windup runs out. */
   windUp(c, move, target) {
-    const g = this.game, m = M[move]; if (!m || c.attack || c.coiled || !c.alive) return false;
+    const g = this.game, m = c.row.moves[move], B = c.B; if (!m || c.attack || c.coiled || c.held || !c.alive) return false;
     const T = target?.pos ?? target, ship = g.opensea?.helm;
     const A = (c.attack = { move, t: m.windup, target: T, at: new THREE.Vector3() });
     c.cd[move] = m.cooldown;
-    if (move === 'ram') { // (the ring where it will break the surface: where the bow will be when the windup runs out)
-      const v = ship ? _a.set(Math.sin(ship.yaw), 0, Math.cos(ship.yaw)).multiplyScalar(ship.speed * (m.windup + 0.2)) : _a.set(0, 0, 0);
+    if (move === 'ram' || move === 'rise' || move === 'breach') { // (the ring where it will break the surface: where the bow will be when the windup runs out; the breach leads it `lead` s more)
+      const v = ship ? _a.set(Math.sin(ship.yaw), 0, Math.cos(ship.yaw)).multiplyScalar(ship.speed * (m.windup + (m.lead ?? 0.2))) : _a.set(0, 0, 0);
       A.at.copy(T).add(v); A.at.y = this.surf(A.at.x, A.at.z);
       c.goUnder = 1; c.wantRear = 0;
-      g.creatures.windup(c, { at: A.at, radius: B.ram, eta: m.windup, kind: 'ram', parry: false, area: { shape: 'circle', radius: B.ram, at: 'courier' }, type: 'impact', answer: 'out' });
+      g.creatures.windup(c, { at: A.at, radius: B.ram, eta: m.windup, kind: move, parry: false, area: { shape: 'circle', radius: B.ram, at: 'courier' }, type: 'impact', answer: move === 'breach' ? 'speed' : 'out' });
     } else if (move === 'spit') {
       c.goUnder = 0; c.wantRear = 1; c.habit = 'spit';
       g.creatures.windup(c, { at: c.pos, radius: 2, eta: m.windup, kind: 'spit', parry: false, area: { shape: 'line', width: 2.5, length: Math.max(8, c.pos.distanceTo(T)) }, type: 'impact', answer: 'parry' });
     } else if (move === 'coil') { // (it rings the ship: the ring closes on the hull where it is now; out of it before it closes, no wrap)
       A.at = T; c.goUnder = 0; c.wantRear = 0.4; c.habit = 'coil';
       g.creatures.windup(c, { at: T, radius: B.coil, eta: m.windup, kind: 'coil', parry: false, area: { shape: 'circle', radius: B.coil, at: 'courier' }, type: 'impact', answer: 'out' });
-    } else if (move === 'dive') {
+    } else if (SIGNATURES[move]) SIGNATURES[move].wind(this, c, m, T);
+    else if (move === 'dive') {
       c.wantRear = 0;
       g.creatures.windup(c, { at: c.pos, radius: 2, eta: m.windup, kind: 'dive', parry: false, read: false });
     }
-    g.events?.emit('seaserpent.wind', { move, by: 'creature' });
+    g.events?.emit('seaserpent.wind', { id: c.kind, move, by: 'creature' });
     return true;
   }
   attackTick(c, dt) {
-    const A = c.attack, g = this.game, ship = g.opensea?.helm; A.t -= dt;
-    if (A.move === 'ram') { // (it runs in under the ring and comes up through it)
+    const A = c.attack, g = this.game, ship = g.opensea?.helm, B = c.B; A.t -= dt;
+    if (A.move === 'ram' || A.move === 'rise' || A.move === 'breach') { // (it runs in under the ring and comes up through it)
       _a.subVectors(A.at, c.pos).setY(0); const d = _a.length();
-      c.want.copy(_a).multiplyScalar(d > 1 ? (SEA_SERPENT.speed * 1.6) / d : 0);
+      c.want.copy(_a).multiplyScalar(d > 1 ? (c.row.speed * 1.6) / d : 0);
       if (A.t <= 0.35) c.goUnder = 0;
       if (A.t > 0) return;
       const hit = !(c.tether > 0) && !!ship && (ship.hullDist?.(A.at) ?? ship.pos.distanceTo(_b.copy(A.at).setY(ship.pos.y))) <= B.ram + 0.5; // (the ring on any of the hull, not its middle; a harpooned beast's ram is blunted: world/opensea/seamounts.js)
-      c.spine[0].p.x = A.at.x; c.spine[0].p.z = A.at.z; c.under = 0.3; c.goUnder = 0; c.wantRear = 1; // (it breaks the surface there)
-      this.finish(c, 'ram', hit);
+      c.spine[0].p.x = A.at.x; c.spine[0].p.z = A.at.z; c.under = A.move === 'breach' ? 0 : 0.3; c.goUnder = 0; c.wantRear = 1; // (it breaks the surface there; the breach clear out of it)
+      this.finish(c, A.move, hit);
       c.attack = null; g.creatures.unwind(c);
       c.brain.signal();
     } else if (A.move === 'spit') {
@@ -297,14 +312,15 @@ export class SeaSerpents {
     } else if (A.move === 'coil') { // (it keeps pace with the ship and closes on its side: at full sail the ship outruns it)
       _a.subVectors(A.at, c.pos).setY(0); const d = _a.length();
       if (ship) c.want.set(Math.sin(ship.yaw) * ship.speed, 0, Math.cos(ship.yaw) * ship.speed); else c.want.set(0, 0, 0);
-      c.want.addScaledVector(_a, 1.5); const w = c.want.length(), cap = SEA_SERPENT.speed * B.coilChase;
+      c.want.addScaledVector(_a, 1.5); const w = c.want.length(), cap = c.row.speed * B.coilChase;
       if (w > cap) c.want.multiplyScalar(cap / w);
       if (A.t > 0) return;
       const hit = !!ship && (ship.hullDist?.(c.pos) ?? c.pos.distanceTo(_b.copy(ship.pos).setY(c.pos.y))) <= B.coil + 3;
       c.attack = null; g.creatures.unwind(c);
-      if (hit) { c.coiled = { t: M.coil.hold, hits: 0, k: 0 }; this.finish(c, 'coil', true); g.events?.emit('seaserpent.coil', { by: 'creature' }); }
+      if (hit) { c.coiled = { t: c.row.moves.coil.hold, hits: 0, k: 0 }; this.finish(c, 'coil', true); g.events?.emit('seaserpent.coil', { by: 'creature' }); }
       else { this.finish(c, 'coil', false); c.habit = null; }
-    } else if (A.move === 'dive') {
+    } else if (SIGNATURES[A.move]) SIGNATURES[A.move].tick(this, c, dt);
+    else if (A.move === 'dive') {
       if (A.t > 0) return;
       c.goUnder = 1; c.wantRear = 0; c.habit = null;
       c.attack = null; g.creatures.unwind(c);
@@ -313,7 +329,7 @@ export class SeaSerpents {
   }
   /** A move's blow lands or misses: the room's fight hears it (the hull, the knock, the glob: seafight.js). */
   finish(c, move, hit) {
-    this.game.events?.emit('seaserpent.move', { move, hit, by: 'creature' });
+    this.game.events?.emit('seaserpent.move', { id: c.kind, move, hit, by: 'creature' });
     this.game.seaFight?.serpentMove?.(c, move, hit);
   }
   /** Wrapped round the ship: it holds the hull, its head over the deck, until its time is up or the head is shot (`hurt`). */
@@ -334,5 +350,6 @@ export class SeaSerpents {
   cancel(c, why) {
     if (c.attack) { c.attack = null; this.game.creatures.unwind(c, why); }
     if (c.coiled) this.free(c, why);
+    if (c.held) SIGNATURES[c.held.move]?.end(this, c, why);
   }
 }

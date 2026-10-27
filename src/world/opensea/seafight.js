@@ -39,6 +39,7 @@ import { squareCentre } from './seaprops.js';
 import { SeaSerpents } from '../../creatures/seaserpent/seaserpent.js';
 import { LANCE_COLOR } from '../../courier/ship/shots.js';
 import { SeaMounts, MOUNTING } from './seamounts.js';
+import { CHAIN_BEASTS } from '../../creatures/seaserpent/seaserpent.js';
 import { stream } from '../../core/rng.js';
 const simRand = stream('world/opensea/seafight'); // (the simulation's chance: core/rng.js, the same twice)
 
@@ -82,7 +83,7 @@ export class SeaFight {
   // ---------------------------------------------------------------- each frame
   update(dt) {
     const g = this.game, R = this.room;
-    if (!this.chatted && g.chat?.add) { this.chatted = true; g.chat.add('serpent', { debug: true, help: 'a sea serpent risen 120 m off the bow (DEBUG; on the open sea, at the helm)', run: () => this.spawnSerpent() }); }
+    if (!this.chatted && g.chat?.add) { this.chatted = true; g.chat.add('serpent', { debug: true, help: 'a sea serpent risen 120 m off the bow (DEBUG; on the open sea, at the helm)', run: () => this.spawnSerpent() }); g.chat.add('beast', { debug: true, help: '/beast wolfWhale | worldSerpent: a sea beast risen off the bow (DEBUG; at the helm)', run: (a) => this.spawnSerpent(String(a?.[0] ?? a ?? 'wolfWhale').trim() || 'wolfWhale') }); }
     if (!R?.built || !R.active) { if (this.serpents.list.length || this.shots.length || this.globs.length) this.clear(); return; }
     const H = R.helm;
     this.lairsOf(R);
@@ -128,12 +129,13 @@ export class SeaFight {
     if (lair) this.serpents.spawn(lair.pos.clone(), { lair: lair.id });
   }
   /** DEBUG's `/serpent`: one risen 120 m off the bow, sure of you. */
-  spawnSerpent() {
+  spawnSerpent(beast = 'seaSerpent') {
     const R = this.room, g = this.game;
     if (!R?.sailing) { g.log?.say?.('warn', 'At the helm on the open sea only.', { key: 'serpent.cmd', throttle: 2 }); return; }
     for (const c of [...this.serpents.list]) this.serpents.remove(c);
     const H = R.helm, at = H.pos.clone().add(_a.set(Math.sin(H.yaw), 0, Math.cos(H.yaw)).multiplyScalar(120));
-    const c = this.serpents.spawn(at, { yaw: H.yaw + Math.PI });
+    if (!CHAIN_BEASTS.includes(beast)) { g.log?.say?.('warn', `No such beast here: ${CHAIN_BEASTS.join(', ')}.`, { key: 'serpent.cmd', throttle: 2 }); return; }
+    const c = this.serpents.spawn(at, { yaw: H.yaw + Math.PI, beast });
     c.mem.see(g.player, 'courier', H.pos, 1); c.under = 0.4; c.goUnder = 0.1;
   }
 
@@ -218,16 +220,18 @@ export class SeaFight {
   // ---------------------------------------------------------------- what the serpent's moves do
   serpentMove(c, move, hit) {
     const R = this.room, H = R?.helm; if (!H || !R.sailing) return;
-    if (move === 'ram' && hit) { H.speed *= SEA_FIGHT.knock.keep; H.yaw += (simRand() < 0.5 ? -1 : 1) * SEA_FIGHT.knock.yaw; this.hullHit('ram'); }
-    else if (move === 'coil' && hit) this.hullHit('coil');
-    else if (move === 'spit') this.spit(c, H);
+    const hits = c.row?.moves?.[move]?.hits ?? 1; // (a beast's move its row's hits: the breach 2, the coil of the world 3)
+    if ((move === 'ram' || move === 'rise' || move === 'breach') && hit) { H.speed *= SEA_FIGHT.knock.keep; H.yaw += (simRand() < 0.5 ? -1 : 1) * SEA_FIGHT.knock.yaw; for (let i = 0; i < hits; i++) this.hullHit(move); }
+    else if ((move === 'coil' || move === 'coilWorld') && hit) for (let i = 0; i < hits; i++) this.hullHit(move);
+    else if (move === 'spit') { const n = c.row?.moves?.spit?.every ?? 1; for (let i = 0; i < n; i++) this.spit(c, H, n > 1 ? (i - (n - 1) / 2) * 0.22 : 0); } // (a fan of `every`: one aimed true)
   }
   serpentFree() { this.room?.helm?.mods?.delete('coil'); }
   /** A glob thrown in an arc at where the ship will be when it lands. */
-  spit(c, H) {
+  spit(c, H, spread = 0) {
     const head = c.head(), g = this.game;
     const from = _a.copy(head).setY(head.y + 0.6), d0 = Math.hypot(H.pos.x - from.x, H.pos.z - from.z), T = Math.max(0.6, d0 / GL.speed);
     const to = _b.set(H.pos.x + Math.sin(H.yaw) * H.speed * T, H.pos.y + 1, H.pos.z + Math.cos(H.yaw) * H.speed * T);
+    if (spread) { const a = Math.atan2(to.x - from.x, to.z - from.z) + spread, dd = Math.hypot(to.x - from.x, to.z - from.z); to.x = from.x + Math.sin(a) * dd; to.z = from.z + Math.cos(a) * dd; } // (a fan's others thrown wide)
     const vel = new THREE.Vector3().subVectors(to, from).divideScalar(T); vel.y += 0.5 * GL.fall * T;
     if (this.globs.length >= CAP.globs) this.dropGlob(this.globs.shift());
     const m = this.pool.find((x) => !x.visible) || this.pool[0];
