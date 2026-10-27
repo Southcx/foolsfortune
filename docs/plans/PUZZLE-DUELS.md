@@ -506,6 +506,14 @@ without, so they do not tip the balance; they change how a turn feels. A note on
 stand-in's sample of 8 is spread over many more moves, and with both forms it wins 9 of 24; at 16 a point it wins 18. The tools did not
 make the Wisp stronger; they made the stand-in's sampling thinner. A person chooses, a sampler dilutes.
 
+### 19.2 A Figment's weakness (built: `weaknessOf`, `DUEL.weakness`; Persona's weaknesses, Puzzle & Dragons' colour wheel)
+
+Colour meant only matching. Now a Figment is weak to the feeling opposite its own (the wheel of feelings' `OPPOSITE`) when that colour
+is on its board, and resists its own: your gems of the weak colour count 1.5 in a clear, of the resisted 0.5. The pair or nothing: a
+ruleset whose weak colour is not on its board has neither (Fury, Mirth as they stand). The Wisp (dread) is weak to fury; Grief to mirth,
+resisting grief. It is the Soul Brush's best use: Paint the gems round you into the weak colour. `chain` events carry `weak` (how many
+weak gems the step had). Measured (the Wisp, the stand-in kept to the hand): 16 of 24 won with it, 13 without.
+
 **Next, ranked, not built:** clue fog (Hexcells: the foe's half shows its counts by row and column, Read gives the cells, familiarity
 adds clues); a colour each Figment is weak to and one it resists, from the wheel of feelings (Persona, Puzzle & Dragons), so colour
 means more than matching; power gems (Puzzle Fighter: a 2 x 2 of one colour fused, clearing all its colour touching); a catch-up seed

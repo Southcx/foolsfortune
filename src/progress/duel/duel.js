@@ -13,7 +13,7 @@
 //   settle(state, side) -> { steps, junk, events }   legalActions(state, side) -> actions   cloneState(state)
 //   preview(state, action) -> { junk, steps, cleared } | null   (what one action would make, on a copy: shown before it is chosen)
 //   newDuel's `board` ({ w, h, perColumn, landCap }) over the ruleset's, and `lesson` (lesson.js) for the first duel
-//   undo(state) -> events | null (the last action this turn taken back)   marginOf(state) -> junk's multiplier now   (PUZZLE-DUELS.md 19)
+//   undo(state) -> events | null (the last action this turn taken back)   marginOf(state) -> junk's multiplier now   weaknessOf(state) -> { weak, resists, k } | null   (PUZZLE-DUELS.md 19)
 // ---------------------------------------------------------------------------------------
 import { Board, COLOURS, piece, hasTag } from './board.js';
 import { fall, clears, resolve, pinch, ACTIONS as BOARD_ACTIONS } from './rules.js';
@@ -23,6 +23,7 @@ import { emberKind, tickEmbers } from './dread.js';
 import { FLEE_ACTION } from './flee.js';
 import { lessonOf, lessonAct, lessonTurn } from './lesson.js';
 import { seeded } from '../../core/rng.js';
+import { OPPOSITE } from '../weather.js';
 
 /** Every action a side may take: the board's (rules.js), the Courier's run and tools (couriertools.js), the god hand's finisher (duelbreak.js),
  *  and the flee (flee.js). */
@@ -43,6 +44,7 @@ export const DUEL = {
   refund: { size: 5, chain: 3, max: 1 }, // an action point back for a clear of `size` (5: a cluster of 4 is the Wisp's plain clear) or a chain step of `chain`, `max` a turn (Puzzle Quest's extra turn, Persona's One More)
   trickle: 2,      // pool to a side for each chain step past the first (Puzzle Quest's mana: the Courier's tools fed by play, not only by breaks)
   allClear: 6,     // junk for leaving no gem on your half (Puyo's all clear)
+  weakness: { k: [1.5, 0.5] }, // a gem of the Figment's weak colour counts 1.5 in your clears, of its own feeling 0.5 (weaknessOf)
   margin: { after: 10, step: 0.25 }, // past `after` turns a side, junk counts `step` more a turn (Puyo Puyo Tetris's margin time: a duel ends)
 };
 
@@ -113,7 +115,9 @@ export function settle(s) {
     const hot = clears(s.board, s.rs, tune); if (!hot.size) break;
     const { cleared, events: ev } = resolve(s.board, hot, s.rs);
     events.push(...ev);
-    for (const side of [0, 1]) if (cleared[side]) { steps[side]++; junk[side] += junkOf(cleared[side], steps[side]); events.push({ type: 'chain', side, step: steps[side], cleared: cleared[side] }); }
+    const weak = weaknessOf(s), hit = [0, 0], eff = [...cleared];
+    if (weak) for (const e of ev) if (e.type === 'clear' && e.side === 0 && (e.colour === weak.weak || e.colour === weak.resists)) { const k = e.colour === weak.weak ? weak.k[0] : weak.k[1]; eff[0] += k - 1; if (k > 1) hit[0]++; }
+    for (const side of [0, 1]) if (cleared[side]) { steps[side]++; junk[side] += junkOf(eff[side], steps[side]); events.push({ type: 'chain', side, step: steps[side], cleared: cleared[side], ...(hit[side] ? { weak: hit[side] } : {}) }); }
     const h = s.board.hash(); if (seen.has(h)) { s.capHits++; events.push({ type: 'settle.loop' }); break; } seen.add(h);
   }
   const mk = marginOf(s), trickle = s.rs.trickle ?? DUEL.trickle;
@@ -122,6 +126,16 @@ export function settle(s) {
     if (trickle && steps[side] >= 2) { const S = s.sides[side]; S.pool = Math.min(100, S.pool + trickle * (steps[side] - 1)); events.push({ type: 'trickle', side, pool: S.pool, n: trickle * (steps[side] - 1) }); }
   }
   return { steps, junk, events };
+}
+
+/** A Figment's weakness (PUZZLE-DUELS.md 19.2; Persona's, Puzzle & Dragons' wheel): the feeling opposite its own (the wheel of feelings'
+ *  OPPOSITE) when that colour is on its board, and its own feeling it resists. Your clears of the weak colour count `k[0]` gems each,
+ *  of the resisted `k[1]` (side 0 is the Courier's: the ruleset is the Figment's). A ruleset may name its own (`weak`, `resists`) or `weak: false`. */
+export function weaknessOf(s) {
+  const rs = s.rs, D = DUEL.weakness; if (rs.weak === false || !D) return null;
+  const on = COLOURS.slice(0, Math.min(COLOURS.length, rs.colours)), weak = rs.weak ?? OPPOSITE[rs.feeling], resists = rs.resists ?? rs.feeling;
+  const w = on.includes(weak) ? weak : null, r = on.includes(resists) ? resists : null;
+  return w ? { weak: w, resists: r, k: D.k } : null; // (no weak colour on its board, no resisting either: a weakness is the pair or nothing)
 }
 
 /** Margin time's multiplier on junk now: 1 until `after` turns a side, then `step` more each turn (PUZZLE-DUELS.md 19). */
