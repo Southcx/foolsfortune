@@ -43,8 +43,8 @@ export const RULESETS = {
   // Wisp's gentle rule), no fog, no embers, no bombs. Its bot weighs few actions (a plain player, never a clever one); `strawmanIdle`
   // never acts, for trying the verbs and the skills with no pressure (Puzzle & Dragons' training dungeon, Tetris's practice).
   strawman: { feeling: 'fury', board: { w: 10, h: 8, perColumn: 2, landCap: 5 }, match: 3, cluster: 4, gravity: () => DIRS.S, colours: 4, drip: 3,
-    bot: { sample: 2, every: 2 } },
-  strawmanIdle: { feeling: 'fury', board: { w: 10, h: 8, perColumn: 2, landCap: 5 }, match: 3, cluster: 4, gravity: () => DIRS.S, colours: 4, drip: 3,
+    skyfall: { to: 0.5, calm: 0.95 }, bot: { sample: 2, every: 2 } }, // (skyfall to half full: at 0.4 its duels ran 7.8 turns a side, at 0.5 5.3, as without it: PUZZLE-DUELS.md 22.7)
+  strawmanIdle: { feeling: 'fury', board: { w: 10, h: 8, perColumn: 2, landCap: 5 }, match: 3, cluster: 4, gravity: () => DIRS.S, colours: 4, drip: 3, skyfall: { to: 0.5, calm: 0.95 },
     bot: { idle: true } },
 };
 

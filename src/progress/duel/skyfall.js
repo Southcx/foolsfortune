@@ -22,8 +22,11 @@
 /** to: the waterline, a side refilled up to this share of its cells (the duel's start fill, so a clean side never thins). calm: the
  *  chance a new gem that would clear where it lands is recoloured so it does not (Candy Crush's refill is tilted the same way): with
  *  4 colours and any 4 touching clearing, a refill left alone cleared on arrival so often that one drag set off chains of 20 and more
- *  (measured: 22 steps, 397 095 junk a turn). At 0.8 a free cascade is a surprise, not the rule (PUZZLE-DUELS.md 22.7). */
-export const SKYFALL = { to: 0.6, calm: 0.8, on: false }; // (`on`: the one-gesture duel's default, off until its numbers are measured: a ruleset may ask `skyfall: SKYFALL` meanwhile)
+ *  (measured: 22 steps, 397 095 junk a turn); at 0.8 still 20 junk a turn on Strawman's board against 1.6. At 0.95, and the waterline at
+ *  the duel's start fill (0.4), the Lantern Wisp's duel keeps its length (4.6 turns a side against 4.5) and its odds (8 of 12 against 9),
+ *  both sides send about twice the junk, and a clear goes 3 steps or more one time in ten, not one in twenty-five (PUZZLE-DUELS.md 22.7).
+ *  A ruleset may carry its own (Strawman's board: 0.5) or `skyfall: false`. */
+export const SKYFALL = { to: 0.4, calm: 0.95, on: true }; // (`on`: the one-gesture duel's default)
 
 /** A duel's skyfall: its ruleset's (`skyfall: { to }`, or `false` for none), else the one-gesture duel's. */
 export const skyOf = (s) => (s.rs.skyfall === false ? null : s.rs.skyfall ?? (s.style === 'drag' && SKYFALL.on ? SKYFALL : null));
