@@ -390,3 +390,35 @@ clusters of 3 at 6 colours 14 to 153; runs of 3 and clusters of 4 at 5 colours 1
 - **A move's worth shown before it is chosen**: `preview(state, action) -> { junk, steps, cleared }` (duel.js), tried on a copy, for the
   view to draw on the hovered move (Calissa's).
 
+
+### 17.4 The board is the Figment's (the owner on the phone, 2026-10-27, relayed by Calissa and Petra)
+
+The owner: "increasing the size of the tsuitate board" on a phone. Calissa's camera now fits the slab into the room the controls leave
+(`touchShot`, vfx/duelview.js); on an iPhone XR held flat that room is about 680 by 330 CSS px, so 20 rows give a cell of about 16 px.
+A finger wants 40. The camera cannot grow it further; only fewer cells can.
+
+**Ruled (Dovina):**
+- **One board on every device.** A duel is the same on the desk and the phone (one save, a guest on either, bests comparable). The phone
+  is never given a different game.
+- **A ruleset carries its board** (`board: { w, h, perColumn, landCap }`, read by `newDuel`; 20 x 20, 3 and 9 when it says nothing).
+  `perColumn` is the junk landed that moves the Line a column, `landCap` the junk that lands at once (three columns' worth). EmO a junk
+  landed is scaled by `perColumn` (duelbreak.js), so a column's worth fills as much on any board.
+- **The Lantern Wisp's board is 14 x 14**, 2 a column, 6 at once: the first aberrant met is the smallest, and every cell is 1.4x as big
+  (about 23 px on the XR). Later Figments set their own, 20 at most.
+
+**Measured** (the same harness, 24 duels a row, the stand-in at 8 actions a point, the Wisp at 6):
+
+| the Wisp's board | you, junk a turn | the Wisp | you win | turns a side | longest chain |
+| --- | --- | --- | --- | --- | --- |
+| 20 x 20, 3 a column (17's ruling) | 9.4 | 3.3 | 15 of 20 | 6.3 | 5, 5 |
+| 16 x 16, 3 a column | 4.9 | 2.0 | 19 of 24 | 6.0 | 4, 5 |
+| 14 x 14, 3 a column | 2.2 | 1.9 | 13 of 20 | 11.7 | 4, 5 |
+| **14 x 14, 2 a column, 6 at once (ruled)** | **2.7** | **1.7** | **17 of 24** | **7.1** | **4, 5** |
+| 12 x 12, 2 a column, 6 at once | 1.7 | 1.3 | 12 of 20 | 8.9 | 3, 3 |
+| 20 x 10 (wide and short), 2 a column | 1.7 | 1.3 | 14 of 24 | 16.6 | 3, 4 |
+
+14 keeps the duel as long and as winnable as 20 did, with chains as deep; 12 loses the chains, and a wide short board drags. Junk a
+turn falls with the cells, but a column costs 2, so the Line moves about as fast for the side's 7 columns as it did for 10.
+
+**Still open, not a rule:** 23 px is under a thumb. What closes the rest is the input's, not the board's: a loupe over the finger, or
+pick-then-place with the picked piece lifted. Calissa's and Petra's call.

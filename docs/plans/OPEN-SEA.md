@@ -237,7 +237,7 @@ Dovina's room, as the Raceway is (`src/world/opensea/`; reached from the Index, 
   - on an islet, by its secret: take it (a chest pays 3 minutes of play; a fuel cache 3 measures; the rest say so in the log until their systems are wired);
   - on land, by the ship: board;
   - at a quay's post: go home to the workshop.
-- **A placeholder readout** (`seahud.js`): the fuel, the square and your doubt, the throttle, and the finds to report. Calissa's to replace.
+- **No readout of its own** (`seahud.js` was removed in v301 on the owner's word, "old UI info clutter"): the fuel, the square and your doubt are read where they already show (the Sight, the Lachrimeter, the log); a find to report is said in the log and waits at the dock.
 - **The log rules** are in `feedback/tracking/opensea.js`: plain placeholder lines for Espada.
 - **The save:** the voyage is kept (`openSea`, player scope); the sea's seed is the world's (`openSeaSeed`).
 - **The sweep** (`scripts/sweeps/opensea.mjs`) passes 14 of 14: enter, board, a square sailed at cruise (charted, fuel burnt), an islet
