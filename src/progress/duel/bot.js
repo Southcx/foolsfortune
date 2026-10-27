@@ -8,6 +8,7 @@
 // Puyo and Tetris AIs (score a placement by what it clears and what it leaves).
 //
 //   plan(state, side?, { sample }) -> actions   play(state, { sample }) -> events (acts its turn and ends it)   score(state, side) -> number
+//   intentOf(state, side?) -> { actions, junk, cells, hits } (its next turn as the view draws it over the fog: PUZZLE-DUELS.md 18.2)
 // ---------------------------------------------------------------------------------------
 import { hasTag } from './board.js';
 import { act, endTurn, legalActions, cloneState, DUEL } from './duel.js';
@@ -84,4 +85,21 @@ export function play(s, opts = {}) {
   }
   if (s.winner === null) events.push(...endTurn(s));
   return events;
+}
+
+/** A side's intent as the view draws it (PUZZLE-DUELS.md 18.2; Into the Breach): its plan for its next turn, tried on a copy, with the
+ *  junk it would send, the cells it would clear on its own half (`cells`, drawn through Dread's fog: Divination sees intent, not ground)
+ *  and the cells it would move or take (`hits`). A live forecast, redrawn after each of your actions, never a promise. */
+export function intentOf(s, side = 1 - s.toMove, opts = {}) {
+  const actions = plan(s, side, opts), c = cloneState(s); c.toMove = side; c.apLeft = DUEL.ap;
+  const before = c.sides[side].sent, cells = [], hits = [];
+  for (const a of actions) {
+    const ev = act(c, a); if (!ev) break;
+    for (const e of ev) {
+      if (e.type === 'clear' && e.side === side) cells.push(e.at);
+      if (e.side === side && (e.type === 'swap' || e.type === 'rotate' || e.type === 'drop')) hits.push(e.a || e.at);
+      if (e.side === side && e.type === 'drag') hits.push(e.path[0]);
+    }
+  }
+  return { actions, junk: c.sides[side].sent - before, cells, hits };
 }

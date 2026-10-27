@@ -14,9 +14,10 @@
 // ---------------------------------------------------------------------------------------
 import { COLOURS, KINDS } from './board.js';
 
-/** May a side be shown this cell? Its own half always; the fogged side's half only within `light` cells of that side's body. */
+/** May a side be shown this cell? Its own half always; the fogged side's half only within `light` cells of that side's body, or all of it
+ *  while the viewer has read it (the Veritome's READ, couriertools.js). */
 export function visibleTo(s, viewer, x, y) {
-  const F = s.rs.fog, b = s.board; if (!F || b.sideOf(x) !== F.side || viewer === F.side) return true;
+  const F = s.rs.fog, b = s.board; if (!F || b.sideOf(x) !== F.side || viewer === F.side || s.sides[viewer]?.read > 0) return true; // (read: the Veritome's READ)
   const at = s.sides[F.side].at; if (!at) return false;
   return Math.abs(x - at[0]) + Math.abs(y - at[1]) <= (F.light ?? 3);
 }

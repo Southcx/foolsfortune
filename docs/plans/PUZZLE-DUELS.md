@@ -422,3 +422,63 @@ turn falls with the cells, but a column costs 2, so the Line moves about as fast
 
 **Still open, not a rule:** 23 px is under a thumb. What closes the rest is the input's, not the board's: a loupe over the finger, or
 pick-then-place with the picked piece lifted. Calissa's and Petra's call.
+
+## 18. The tools bend the clearing; the intent; the first duel as a lesson (the owner, 2026-10-27, relayed by Calissa)
+
+The owner: "Tell Dovina especially to utilize the lachryma tools to help dictate how the tile clearing mechanics work. Like the Soul
+Brush being able to recolor the suit of a given gem class, that sort of thing"; "implement the updated mechanics as outlined" (the
+preview, the intent through the fog, the first duel as a lesson); "we're probably going to need a smaller board size with larger cells
+for mobile" (17.4: the Wisp's board is 14 x 14 on every device; `newDuel({ board })` takes `{ w, h, perColumn, landCap }` over the
+ruleset's, for a room that must, and the Line starts at `w / 2`).
+
+### 18.1 The tools' moves (couriertools.js)
+
+Each tool that bends the clearing is a modifier with its source on the board (DESIGN.md 22): the rule is the same, a tool changes it
+for you, where you stand, for a while.
+
+| tool | move | AP, pool | what it does | prior art |
+| --- | --- | --- | --- | --- |
+| the psygun | **Shoot** `{ dir }` | 1, 5 | a shot down a row or column from the Courier (toward the foe by default); the first piece it meets pops with every gem of its colour touching it, any number. A pop is a clear: junk beside it breaks, a bomb goes off. On your half a pop of 3 or more is the chain's first step (what falls after counts from step 2); on the foe's it scores them nothing, but what falls after is theirs | SameGame, Collapse; Meteos' risk |
+| the Soul Brush | **Paint** `{ from, colour }` | 2, 10 | every gem of one colour within 4 cells of the Courier (walking) repainted another; `from` defaults to the colour nearest the Courier | Columns' magic jewel, as a class (the owner's) |
+| the Crucibelle | **Tune** `{ colour }` | 1, 8 | a song: that colour clears at any 3 touching on your half until your turn ends (its landing included); one a turn | the crystals' frets: a note is a colour |
+| the Crucibelle | **Delay** | 2, 15 | the toll: the foe loses a point from its next turn (2 at most) | Tetris 99's badges |
+| the Sondelass | **Grab** | 1, 5 | the first piece past the Line in the Courier's row hooked to your half: steal the gem the foe's intent needs | Magical Drop |
+| the Dreamvane | **Drill** `{ dir }` | 1, 3 | the pick breaks up to three pieces in a line | Mr. Driller |
+| the Lockheart | **Hold** / **Send** | 1, 0 / 1, 5 | junk beside the Courier into the coffin (12 at most) / all it holds thrown at the foe | Tetris's hold |
+| the Veritome | **Read** | 1, 0 | Dread's fog lifted for you, this turn and the foe's next (`visibleTo`); only where a fog hides the foe | the Veritome is observation only |
+
+**Measured** (the swing of one move: the best single action of a kind on the opening board, 16 seeds, the Wisp's rules; median / 90th
+percentile / most junk):
+
+| move | the Wisp | Fury (runs only) | Grief |
+| --- | --- | --- | --- |
+| the hand's best swap (1 AP) | 8 / 15 / 27 | 22 / 45 / 112 | 4 / 8 / 20 |
+| Paint, the whole half (refused) | 19 / 32 / 35 | | |
+| Paint, within 2 | 1 / 3 / 9 | | |
+| **Paint, within 4 (ruled)** | **7 / 15 / 19** | 5 / 10 / 18 | 3 / 6 / 15 |
+| Tune | 1 / 7 / 11 | 16 / 25 / 71 | 4 / 5 / 24 |
+| Shoot | 0 / 1 / 1 | 0 / 0 / 1 | 0 / 0 / 0 |
+
+Paint within 4 is worth about the hand's best swap for twice the points and some pool: the Courier's way to do what the hand does, from
+where the Courier stands. Tune is worth most where the rules are strict (Fury's runs only), so the Crucibelle is the answer to a hard
+board. Shoot makes little on its own: it is the setup (a gap that brings a fall) and the denial (a pop across the Line breaks the group
+the foe's intent was going to clear), so its worth shows with the intent drawn.
+
+The Courier's moves also took the bot's sampled actions (paint 20 ways, tune 5, shoot 4): the simulator's bots use paint and the form
+switch a lot. A person's choice is the view's to make easy (Calissa): each move greyed where it is not legal, its preview on hover.
+
+### 18.2 The intent (bot.js `intentOf`)
+
+`intentOf(state, side = the foe) -> { actions, junk, cells, hits }`: the foe's plan for its next turn tried on a copy, the junk it would
+send, the cells of its half it would clear (drawn through Dread's fog: Divination sees intent, not ground) and the cells it would move.
+Redrawn after each of your actions; a forecast, never a promise (rule 6 above). It costs one plan: about 40 real ms on the Wisp's board
+at its 6 samples a point, about 140 on a ruleset with 60 (the desk's numbers: call it after an action, never a frame). The Veritome's
+Read shows the ground under it as well.
+
+### 18.3 The first duel as a lesson (lesson.js)
+
+`lessonDue(ledger)`: until the first puzzle duel won (`duel.won`). `newDuel({ lesson: true })`: the foe's first turn passes idle (its
+drip still falls; `lesson.idle`), and six steps are asked one at a time, each done by doing it, never locked: **move** (a swap, drag,
+rotate or drop), **clear** (3 in a line or 4 touching), **form** (the Courier on the board), **run**, **tool** (any tool's move),
+**chain** (a clear of step 2 or more). `lesson.step { side, step, id, next }` says one done and the next asked; `lesson.done` at the end.
+What the view shows is Calissa's: the step asked as the verb lit (its tile or key glowing), with no words but the verb's own label.

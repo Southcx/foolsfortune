@@ -12,6 +12,7 @@
 //   ACTIONS (the board's, the Courier's, the finisher)   costOf(action)
 //   settle(state, side) -> { steps, junk, events }   legalActions(state, side) -> actions   cloneState(state)
 //   preview(state, action) -> { junk, steps, cleared } | null   (what one action would make, on a copy: shown before it is chosen)
+//   newDuel's `board` ({ w, h, perColumn, landCap }) over the ruleset's, and `lesson` (lesson.js) for the first duel
 // ---------------------------------------------------------------------------------------
 import { Board, COLOURS, piece, hasTag } from './board.js';
 import { fall, clears, resolve, pinch, ACTIONS as BOARD_ACTIONS } from './rules.js';
@@ -19,6 +20,7 @@ import { COURIER_ACTIONS, runPaths } from './couriertools.js';
 import { onLanding, startTurn, endOwnTurn, FINISHER_ACTION } from './duelbreak.js';
 import { emberKind, tickEmbers } from './dread.js';
 import { FLEE_ACTION } from './flee.js';
+import { lessonOf, lessonAct, lessonTurn } from './lesson.js';
 import { seeded } from '../../core/rng.js';
 
 /** Every action a side may take: the board's (rules.js), the Courier's run and tools (couriertools.js), the god hand's finisher (duelbreak.js),
@@ -43,9 +45,9 @@ export const junkOf = (n, step) => Math.max(0, n - 2) * 2 ** (step - 1);
 
 /** A new duel under a ruleset (rulesets.js). Each side's forms: the Courier, the god hand, or both (the owner, 2026-10-19); `ap` a number
  *  or one a side (a side of two players has two players' points: section 12); `tools` the tools a side wears (all, if not given). */
-export function newDuel({ ruleset, seed = 1, forms = ['hand', 'courier'], line, w, h, ap = DUEL.ap, pool = DUEL.pool, tools = null, finisher = [true, false], flee = [true, false], luck = [0, 0], rerolls = [0, 0] } = {}) {
+export function newDuel({ ruleset, seed = 1, forms = ['hand', 'courier'], board: boardOver = null, lesson = false, line, w, h, ap = DUEL.ap, pool = DUEL.pool, tools = null, finisher = [true, false], flee = [true, false], luck = [0, 0], rerolls = [0, 0] } = {}) {
   const rs = { match: 3, cluster: 0, blast: 2, colours: 5, drip: 2, bombs: 0, queue: 3, pincer: false, ...ruleset };
-  const bd = { w: 20, h: 20, perColumn: DUEL.perColumn, landCap: DUEL.landCap, ...rs.board }; // (the board is the Figment's: PUZZLE-DUELS.md 17.4)
+  const bd = { w: 20, h: 20, perColumn: DUEL.perColumn, landCap: DUEL.landCap, ...rs.board, ...boardOver }; // (the board is the Figment's: PUZZLE-DUELS.md 17.4)
   w ??= bd.w; h ??= bd.h; line ??= w / 2;
   const r = seeded(seed);
   const board = new Board({ w, h, line });
@@ -54,6 +56,7 @@ export function newDuel({ ruleset, seed = 1, forms = ['hand', 'courier'], line, 
   const s = { board, rs, r, perColumn: bd.perColumn, landCap: bd.landCap, ply: 1, toMove: 0, winner: null, apLeft: 0, capHits: 0, log: [],
     sides: [0, 1].map((i) => ({ form: forms[0], forms: [...forms], at: null, queue: [], pending: 0, sent: 0, landed: 0, total: 0,
       ap: aps[i], pool: pools[i], tools: tools && (tools[i] || tools), emo: 0, depth: 0, stunLeft: 0, stagger: 0, coffin: 0, drunk: 0, breaks: 0, finisher: !!finisher[i], flee: !!flee[i], fleeFails: 0 })) };
+  s.lesson = lessonOf(lesson); // (the first duel as a lesson: lesson.js)
   s.luck = luck; // (each side's Luck, -2..2: luck.js's sway, passed in by the room)
   s.rerolls = [...rerolls]; // (each side's re-rolls left this game day: a failed Flee is thrown again, flee.js; the room hands in game.rerolls.left())
   for (const side of [0, 1]) {
@@ -96,11 +99,12 @@ const topQueue = (s, side) => { const Q = s.sides[side].queue; while (Q.length <
 /** The settle (PuzzleScript's loop): fall, then clear, again until nothing changes; each pass that clears is a chain step. Capped at
  *  DUEL.settleCap passes, and stopped if it sees one board twice. Junk is credited to the side the clears were on. */
 export function settle(s) {
-  const events = [], junk = [0, 0], steps = [0, 0], seen = new Set();
+  const events = [], junk = [0, 0], steps = s.chainFrom ? [...s.chainFrom] : [0, 0], seen = new Set(), tune = s.sides.map((S) => S.tune || null);
+  s.chainFrom = null; // (a shot's pop of your own was the chain's first step: what falls after it counts on from there)
   for (let pass = 0; ; pass++) {
     if (pass >= DUEL.settleCap) { s.capHits++; events.push({ type: 'settle.cap' }); break; }
     events.push(...fall(s.board));
-    const hot = clears(s.board, s.rs); if (!hot.size) break;
+    const hot = clears(s.board, s.rs, tune); if (!hot.size) break;
     const { cleared, events: ev } = resolve(s.board, hot, s.rs);
     events.push(...ev);
     for (const side of [0, 1]) if (cleared[side]) { steps[side]++; junk[side] += junkOf(cleared[side], steps[side]); events.push({ type: 'chain', side, step: steps[side], cleared: cleared[side] }); }
@@ -123,6 +127,7 @@ export function act(s, a) {
   if (s.sides[side].pool < before) Object.assign(events[0], { spent: before - s.sides[side].pool, pool: s.sides[side].pool }); // (what a spend cost, on its own event)
   if (s.rs.pincer) events.push(...pinch(s.board, side));
   events.push(...settle(s).events);
+  if (s.lesson) events.push(...lessonAct(s, side, a, events));
   return events;
 }
 
@@ -135,11 +140,14 @@ export function endTurn(s) {
   if (off) events.push({ type: 'offset', side, n: off });
   F.pending += S.sent; S.total += S.sent; if (S.sent) events.push({ type: 'send', side, n: S.sent }); S.sent = 0;
   if (S.pending) { const n = Math.min(S.pending, s.landCap); events.push(...land(s, side, n)); S.pending -= n; } // (the rest waits: it can still be offset)
+  if (S.tune) { events.push({ type: 'tune.end', side, colour: S.tune }); S.tune = null; } // (a song lasts the turn it was sung in, the landing included)
+  for (const X of s.sides) if (X.read > 0) X.read--;
   if (s.winner === null) {
     s.ply++;
     if (s.ply > DUEL.turnCap * 2) { const d = s.board.line - s.board.w / 2; s.winner = d > 0 ? 0 : d < 0 ? 1 : -1; events.push({ type: 'duel.cap', winner: s.winner }); }
   }
   s.toMove = foe; const next = startTurn(s, foe); s.apLeft = next.ap; events.push(next.event);
+  if (s.lesson) events.push(...lessonTurn(s, foe));
   if (s.winner === null) events.push(...drip(s, foe));
   topQueue(s, foe);
   s.log.push(...events);
@@ -192,9 +200,10 @@ export function legalActions(s, side = s.toMove, { drags = 24 } = {}) {
   for (const to of S.forms) if (to !== S.form) ok({ kind: 'form', to });
   if (S.form === 'courier' && S.at) {
     for (const path of runPaths(s, side)) ok({ kind: 'run', path });
-    for (const dir of dirs) for (const kind of ['push', 'kick', 'drill']) ok({ kind, dir });
-    for (const kind of ['shoot', 'grab', 'delay', 'hold', 'send']) ok({ kind });
-    for (const colour of COLOURS.slice(0, s.rs.colours)) ok({ kind: 'paint', colour });
+    for (const dir of dirs) for (const kind of ['push', 'kick', 'drill', 'shoot']) ok({ kind, dir });
+    for (const kind of ['grab', 'delay', 'hold', 'send', 'read']) ok({ kind });
+    const cs = COLOURS.slice(0, s.rs.colours);
+    for (const colour of cs) { ok({ kind: 'tune', colour }); for (const from of cs) if (from !== colour) ok({ kind: 'paint', from, colour }); }
   }
   if (S.form === 'hand') ok({ kind: 'finisher' });
   ok({ kind: 'flee' });
@@ -219,7 +228,7 @@ export function legalActions(s, side = s.toMove, { drags = 24 } = {}) {
 
 /** A copy of a duel to try actions on (a bot's lookahead), with a stream of its own seeded from the real one's next draw. */
 export function cloneState(s) {
-  const c = { ...s, board: s.board.clone(), sides: s.sides.map((S) => ({ ...S, forms: [...S.forms], at: S.at && [...S.at], queue: S.queue.map((p) => ({ ...p })) })), log: [] };
+  const c = { ...s, board: s.board.clone(), sides: s.sides.map((S) => ({ ...S, forms: [...S.forms], at: S.at && [...S.at], queue: S.queue.map((p) => ({ ...p })) })), log: [], lesson: s.lesson && { ...s.lesson } };
   c.r = seeded(Math.floor(s.r() * 2 ** 31));
   return c;
 }
