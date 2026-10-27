@@ -23,6 +23,7 @@ import { SHIP_PARTS, PART_SLOTS } from './opensea/salvage.js';
 import { STRAINS } from './mycelium.js';
 import { DECOR } from './decor.js';
 import { SECRETS } from './opensea/islets.js';
+import { HABITS } from './opensea/habits.js';
 
 /** A plain label from an id until a table gives one (camelCase and dots to words). */
 const words = (id) => String(id).replace(/[._]/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase();
@@ -33,6 +34,7 @@ const counted = (key) => (L, id) => L.get(`${key}.${id}`) > 0;
 export const LOG_SECTIONS = [
   { id: 'fish', label: 'Fish', slots: FISH.map((s) => ({ id: s.id, label: s.name })), has: counted('fish.sp') },
   { id: 'cards', label: 'Cards', slots: CARDS.map((c) => ({ id: c.id, label: c.name || words(c.id) })), has: counted('card.got') },
+  { id: 'habits', label: 'Habits at sea', slots: Object.entries(HABITS).flatMap(([sp, hs]) => hs.map((h) => ({ id: `${sp}.${h.id}`, label: `${words(sp)}: ${h.label}` }))), has: counted('sea.habit') },
   { id: 'herds', label: 'Herds at sea', slots: rows(EGREGORES, (v, k) => words(k)), has: counted('sea.herd') },
   { id: 'feelings', label: 'Feelings awakened', slots: ASPECTS.map((a) => ({ id: a, label: words(a) })), has: counted('feeling.known') },
   { id: 'weathers', label: 'Weathers seen', slots: [...ASPECTS.map((a) => ({ id: a, label: words(a) })), ...rows(AGATES, (v, k) => words(k))], has: (L, id) => L.get(`weather.seen.${id}`) > 0 || L.get(`weather.agate.${id}`) > 0 },

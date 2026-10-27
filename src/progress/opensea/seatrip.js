@@ -63,10 +63,15 @@ export function takeFix(v, how = 'sky', { front = false, weather = null } = {}) 
 }
 
 /** Into an island's port: every find reported for its fee (less for the game days it waited), the tank filled and paid for. */
+/** What each dock pays more for (OPEN-SEA.md 15.2; Sunless Sea's port reports, Pirates!' price gaps): the Law end's harbour wants the
+ *  sea's history (wrecks, monuments), Anagami its islets, the Chaos end its strangeness (phenomena, seeps). Where you report is a route. */
+export const DEMAND = { margarite: { wreck: 1.5, monument: 1.25 }, anagami: { islet: 1.5, pair: 1.25 }, entra: { phenomenon: 1.5, seep: 1.5 } };
+export const demandOf = (island, kind) => DEMAND[island]?.[kind] ?? 1;
+
 export function dock(v, island, gameDay = 0) {
   const events = [];
   let paid = 0;
-  for (const [id, f] of v.found) { const fee = discoveryFee(f.tier, gameDay - f.gameDay); paid += fee; v.reported.add(id); events.push({ type: 'sea.report', id, tier: f.tier, fee, by: 'courier' }); }
+  for (const [id, f] of v.found) { const fee = Math.round(discoveryFee(f.tier, gameDay - f.gameDay) * demandOf(island, f.kind)); paid += fee; v.reported.add(id); events.push({ type: 'sea.report', id, tier: f.tier, fee, wanted: demandOf(island, f.kind) > 1, by: 'courier' }); }
   v.found.clear();
   const need = SHIPS[v.ship].tank - v.fuel, cost = Math.round(need * measure());
   v.fuel = SHIPS[v.ship].tank; v.cubes += paid; v.spent += cost; v.doubt = 0;

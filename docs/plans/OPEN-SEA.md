@@ -473,3 +473,45 @@ weather that matters) and mine were one plan; what is ruled:
 - **The rumour** now picks among the game day's lairs of the beasts that run (the serpent, the akhlut, Jormungandr; not one with a
   `when`), so the beast posted is the beast there.
 - Petra: `lairsOf(grid, seed, today())` in place of seafight.js's own lairs, tended as the serpent's are.
+
+## 15. The genre's folds (2026-10-27; South: "do some genre research on the types of games we've used as prior art and determine what else we can fold in")
+
+A research pass (DREDGE, Sea of Thieves, The Wind Waker, Sunless Sea, Black Flag, Monster Hunter, New Pokemon Snap, Subnautica) ranked
+what to fold in. Built, the first three; the rest ranked below.
+
+### 15.1 Habits as research (`progress/opensea/habits.js`; New Pokemon Snap's research levels and illumina)
+
+- Each of the 11 species has **four habits**, each shown only under its own condition: an hour, a feeling's weather, how near you come,
+  the ship at full sail, or the Veritome's flash (the flash mount: New Pokemon Snap's illumina orb). The myths decide them: the selkie
+  sheds its skin at dusk, St Elmo's fire crowns the mast in a fury storm, the ningyo weeps pearls in grief, the umibozu asks for a ladle
+  when you come within 50 m, Jormungandr bites its tail at dawn.
+- **A plate catches a habit** (`habitNow(species, ctx)`, the most particular that holds): its first time pays 0.15 of a hunt of its class
+  (`habitFee`; 4 to 48 cubes), owed until the next dock with the herds' fees; `sea.habit { id, habit, label, first, cubes }`; the ledger
+  `sea.habit.<species>.<habit>`; a species' research level is how many of its four (`researchOf`).
+- **Why:** a sea that is charted had nothing left to find (section 9). Habits are 44 reasons to sail again at another hour and in other
+  weather, all data: the whole is about 900 cubes once, a bounded faucet.
+- For the looks (Calissa): a body playing a habit when its condition holds (`habitNow(species, ctx)` says which). The collection log has a
+  section for them (44 slots).
+
+### 15.2 What each dock wants (`DEMAND`, `seatrip.js`; Sunless Sea's port reports, Pirates!' price gaps)
+
+Margarite pays x1.5 for wrecks and x1.25 for monuments, Anagami x1.5 for islets and x1.25 for pairs, Entropolis x1.5 for phenomena and
+seeps. Where you report is a route to plan; the sea's fees stay bounded (at most half again on the kinds a dock wants). `sea.report`
+carries `wanted`.
+
+### 15.3 The night is wilder (`NIGHT`, `safari.js`; DREDGE's dusk, Sunless Sea's dark)
+
+After dark a square holds a class more (`sightings`): the beasts and the strange come in closer. Measured in the simulator: 16.8 fights
+a sea (10.2 broken off), the fuel and the charting unchanged.
+
+### 15.4 Next (ranked, not built)
+
+- **Small tells on the water** (Wind Waker's gulls, DREDGE's ripples, Raft's flotsam): birds over a wreck or a herd, bubbles over a
+  shoal (a fishing spot for the rod at sea), a light under the water. Calissa's looks over the room's data.
+- **Parts from beasts and fragments** (Monster Hunter, Subnautica's blueprints): salvage gives fragments, beasts give their parts, a quay
+  makes a ship's part from both (in place of a crate's roll).
+- **Square completion** (No Man's Sky's survey, Wind Waker's charts): a square's every find, secret, herd and habit had, and its chart
+  is stamped with your seal.
+- **Capture or slay** (Monster Hunter): a harpooned, stunned beast towed home for a live fee, or its statue in the Spirit Garden.
+- **A song for the wind** (Wind Waker's Wind's Requiem): the Crucibelle sets the wind for a game hour at a Lachryma cost.
+- **Tall tales** (Sea of Thieves): a few authored chains through riddles, islets, a herd and a beast, their reward a look or a title.
