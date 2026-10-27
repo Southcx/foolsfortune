@@ -9,7 +9,7 @@
 //
 // THE GEMS (South, 2026-10-27: "the gems need to be readily identifiable ... visually reactive in a way that shows what happens to
 // them"; PUZZLE-DUELS.md 20): colour leads, shape confirms, value separates. Each feeling's gem is its silhouette (piecemodels.js) in its
-// feeling's hue set on its own lightness step (GEM, Oklab L: Mirth 0.92, Wonder 0.82, Desire 0.70, Grief 0.62 (pushed to periwinkle,
+// feeling's hue set on its own lightness step (GEM, Oklab L: Mirth 0.84 (a true gold), Wonder 0.76 (a deep cyan: the pale steps read cream under the glow on a phone), Desire 0.70, Grief 0.62 (pushed to periwinkle,
 // off Wonder's cyan), Gall 0.55, Fury 0.52, Dread 0.47; the dark three on a pale keyline of their own hue, PALE), self-lit (no light or tint of the board's reaches it: the domains' clash stays on the frame and the dome), a soft
 // highlight at its top and a gloss spot, on a dark keyline that lifts it off the slab. The keyline is the state's voice:
 //   idle        a slow breathe, out of phase gem to gem (Bejeweled's idle glint)
@@ -45,7 +45,7 @@ import { aberrantFigurine } from '../aberrantlook.js';
 import { gemGeometry, keylineGeometry, plateGeometry, glintGeometry, emberGeometry, pipGeometry, junkGeometry, stoneGeometry, fogStoneGeometry, bombGeometry, orbGeometry, courierFigurine, foeIdol, ledgeGeometry } from './piecemodels.js';
 
 /** A gem's colour: its feeling's hue (progress/weather.js COLOR) on its own lightness step (Oklab L, chroma kept where sRGB allows). */
-export const GEM = { mirth: 0xfee296, wonder: 0x6cd5ed, desire: 0xf57141, grief: 0x6e76ee, gall: 0x8454c1, fury: 0xc5071a, dread: 0x3b6646 };
+export const GEM = { mirth: 0xf6c12a, wonder: 0x34c2ec, desire: 0xf57141, grief: 0x6e76ee, gall: 0x8454c1, fury: 0xc5071a, dread: 0x3b6646 };
 const PALE = { gall: 0xdfcdff, fury: 0xfdbfb8, dread: 0xb6e5c0 }; // (the dark three wear a pale keyline in their own hue: every gem 4.5:1 or more against the slab, counted at its rim)
 export const gemColour = (aspect, out = new THREE.Color()) => (GEM[aspect] !== undefined ? out.setHex(GEM[aspect]) : feelColour(aspect, out));
 const CLAY = { junk: 0x4a3f3a, stone: 0x4c4856, bomb: 0x2c2224 }, FOG = 0x5d605f;

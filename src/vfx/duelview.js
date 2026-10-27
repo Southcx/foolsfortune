@@ -120,7 +120,8 @@ export class DuelView {
 
   intent(plan) {
     if (!plan || !this.isOpen) { this.intentDraw.clear(); this.foresight.clear(); return; }
-    if (!Array.isArray(plan) && plan.actions) { this.intentDraw.show(this.state, plan.actions, 1, this.aspect, { whole: true }); this.foresight.show(this.state, plan, this.aspect); return; } // (the whole: foresight.js)
+    if (!Array.isArray(plan) && plan.actions) { this.intentDraw.show(this.state, this.game.hudLayout?.touch ? plan.actions.slice(0, 1) : plan.actions, 1, this.aspect, { whole: true }); // (a phone shows its next step only: five numbered steps buried the foe's half, South's phone 2026-10-27)
+       this.foresight.show(this.state, plan, this.aspect); return; } // (the whole: foresight.js)
     this.foresight.clear(); this.intentDraw.show(this.state, plan, 1, this.aspect); // (the foe's side: the Figment's is side 1)
   }
   /** The action under the finger before it is chosen (the session's): its worth shown (worth.js); a Paint arms the reach (glows.js). */
