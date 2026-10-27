@@ -925,6 +925,8 @@ NEW:tile-asks-the-ctx. **A touch tile stands only where its press means somethin
   tool alone.** A row that cannot be done in the live context is not drawn.
 NEW:touch-never-html5-drag. **Nothing a finger moves rides on HTML5 drag and drop.** iOS Safari never starts it for a touch; a drag is
   pointer events (down, move, up) with the target found under the finger, and a tap-to-lift beside it.
+NEW:fit-to-the-room-as-it-stands. **A camera fitted to the room the controls leave is fitted again as they change**, never once at
+  an open that comes before them; and a control is measured as drawn, not by the rect reserved for it.
 NEW:place-from-the-measure. **A thing set beside another is placed from their measures (a quay's face, a hull's half beam), never a
   bare offset.** A bare number is right for one size and wrong for the next.
 NEW:one-choice-a-load. **A choice that reloads the page is taken once a load, and its menu stops listening once it is made.** A window

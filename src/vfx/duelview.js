@@ -146,13 +146,21 @@ export class DuelView {
     const tiles = typeof document === 'undefined' ? [] : [...document.querySelectorAll('.tt:not(.hidden)')].map((e) => e.getBoundingClientRect()).filter((r) => r.width > 0 && r.left > V.w / 2 && r.top > A.topBar.y + A.topBar.h); // (the controls as they stand, not the rooms reserved for them: the strip's room reaches half across)
     const lefts = [L.box?.('sight'), L.box?.('lachrimeterTube'), A.cluster, ...tiles.map((r) => ({ x: r.left, w: r.width }))].filter((r) => r && r.w > 0).map((r) => r.x);
     const x0 = L.bounds.x, x1 = Math.min(L.bounds.x + L.bounds.w, ...lefts) - gap;
-    const y0 = Math.max(A.topBar.y + A.topBar.h, L.log ? L.log.y + L.log.h : 0) + gap, y1 = L.bounds.y + L.bounds.h;
+    const logEl = typeof document === 'undefined' ? null : document.getElementById('chatlog')?.getBoundingClientRect(), logB = logEl?.height > 0 && logEl.left < V.w / 2 ? logEl.bottom : 0; // (the log as drawn: its dress stands taller than the rect the layout keeps for it)
+    const y0 = Math.max(A.topBar.y + A.topBar.h, L.log ? L.log.y + L.log.h : 0, logB) + gap, y1 = L.bounds.y + L.bounds.h;
     if (x1 - x0 < 120 || y1 - y0 < 120) return null;
     const { cs, base, border } = DUEL_VIEW, Wb = B.w * cs + 2 * border, Hb = B.h * cs + 2 * border, fill = 0.97;
     const d = Math.max((Hb * V.h) / (2 * tan * fill * (y1 - y0)), (Wb * V.h) / (2 * tan * fill * (x1 - x0))), k = V.h / (2 * d * tan); // (k: CSS px a metre at d)
     const right = _w.crossVectors(this.face, UP).negate().normalize(), dx = ((x0 + x1) / 2 - V.w / 2) / k, dy = ((y0 + y1) / 2 - V.h / 2) / k;
     const look = this.centre.clone().setY(this.centre.y + base + (B.h * cs) / 2).addScaledVector(right, -dx).addScaledVector(UP, dy);
     return { pos: look.clone().addScaledVector(this.face, d), look };
+  }
+  /** On touch, the duel's shot kept to the room as it stands: the session frames it once at the open, before the duel's own tiles
+   *  replace the foot's (the board sat a third off centre, the owner's phone, 2026-10-27); eased toward the fit, never cut. */
+  refit(dt) {
+    const shot = this.game.cinema?.shots?.get('duel'); if (!shot || !this.game.hudLayout?.touch) return;
+    if ((this.fitT = (this.fitT || 0) - dt) <= 0) { this.fitT = 0.25; this.fit = this.frameShot(); }
+    if (!this.fit) return; const k = 1 - Math.exp(-6 * dt); shot.pos.lerp(this.fit.pos, k); shot.look.lerp(this.fit.look, k);
   }
   /** A cell's centre on the slab's face, in the world. */
   pointOf(cell) {
@@ -238,6 +246,7 @@ export class DuelView {
     const shown = this.clash.update(dt);
     this.board.update(dt); this.pieces.update(dt); this.marks.update(dt); this.bursts.update(dt); this.flee.update(dt);
     if (this.isOpen && !this.beats.busy) this.flee.odds(this.state);
+    if (this.isOpen && !this.closing) this.refit(dt);
     for (const side of [0, 1]) if (this.depth[side]) this.marks.stars(side, this.depth[side], this.headOf(side, _w));
     const f = this.foe; if (this.isOpen && this.depth[1] > 0 && f?.alive !== false && f?.pos) this.game.stun?.dizzy?.set(f, f.head?.() || _w.copy(f.pos).setY(f.pos.y + 2), { stunned: true }); // (the same gold stars on the Figment in the world)
     if (this.closing && !shown) { this.closing = false; this.root.visible = false; this.bursts.clear(); }
