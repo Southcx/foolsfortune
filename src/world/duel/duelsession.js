@@ -77,6 +77,7 @@ export class DuelSession {
     // under the seam the two are set apart along the line between them, and the board stands broadside between, your half nearest you
     const facing = P.pos.clone().sub(c.pos).setY(0); if (facing.lengthSq() < 1e-4) facing.set(0, 0, 1); facing.normalize();
     c.pos.copy(P.pos).addScaledVector(facing, -DUEL_ROOM.apart).setY(c.pos.y + (P.pos.y - c.pos.y) * 0.5); c.rb?.setNextKinematicTranslation?.(c.pos);
+    if (typeof c.yaw === 'number') { c.yaw = Math.atan2(facing.x, facing.z); c.vel?.set?.(0, 0, 0); if (c.root) c.root.rotation.y = c.yaw; } // (turned to face you: a pinned body keeps the yaw it had, and a Wisp turns only toward its drift, now nothing: the owner's phone, 2026-10-27)
     const at = P.pos.clone().lerp(c.pos, 0.5).setY(P.pos.y);
     this.at = at; this.facing = facing;
     this.view?.open?.({ state: this.state, foe: c, at, facing });
