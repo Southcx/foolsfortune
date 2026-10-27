@@ -5,6 +5,7 @@
 //   the harpoon (Sondelass)   across the beam: a beast tethered (`c.tether`, real s) cannot dive and its ram is blunted; with no beast in
 //                             the arc, a wreck within reach is hooked and its crate reeled aboard (the room's salvage)
 //   the toll (Crucibelle)     a ring round the hull: every windup inside it broken, its beast stunned 2 s; three charges, filled at a dock
+//                             (sea.mount's `broke`: the kinds it broke)
 //   the gulp (Lockheart)      off the bow: a spit drunk; the next bow-gun shot carries it back (x3: `gulped`); the umibozu's pour drunk
 //                             wherever it grips (its hold let go)
 //   sonar (Dreamvane)         passive: a ping each `cooldown` real s naming every beast under the water within reach (`sea.sonar`)
@@ -12,7 +13,8 @@
 //   a slick (Soul Brush)      astern: a slick laid for `hold` real s; a beast swimming through it is slowed (the `slow` status) 3 s
 // A mount's arc on the hull: bow (within angle/2 of the heading), stern (of its reverse), beam (of either side), ring (all round); reach
 // from the hull's footprint (helm.hullDist). Its cost is from the pool; its cooldown and charges are kept here.
-// Events (`by` courier): sea.mount { tool, ok, why? }, sea.sonar { beasts: [{ at, under }] }, sea.slick { at, r, life }.
+// Events (`by` courier): sea.mount { tool, ok, why?, broke? [kind], drunk?, pour? (grips drunk), hit?, wreck? }, sea.sonar { beasts: [{ at, under }] },
+// sea.slick { at, r, life }; a slick in `.slicks` is { at, r, t (left), life (whole) }.
 // Prior art: Sea of Thieves' harpoon and its broadsides, Assassin's Creed IV's chase and mortar arcs, the rail's mounts (the same tools).
 //
 //   new SeaMounts(fight)   .update(dt, input, helm)   .worn -> [tool]   .takeGulp() -> bool   .refill()   .slicks   .clear()
@@ -80,19 +82,19 @@ export class SeaMounts {
       const c = this.target(M, H);
       if (c) { c.tether = M.hold; return this.done(t, { hit: 'beast' }); }
       const R = g.opensea, wreck = R?.props?.marks?.find((m) => m.feature.kind === 'wreck' && this.inArc(M, H, m.mesh.position));
-      if (wreck) { R.salvage(wreck); return this.done(t, { hit: 'crate' }); }
+      if (wreck) { R.salvage(wreck); return this.done(t, { hit: 'crate', wreck: wreck.feature.id ?? null }); }
       return this.done(t, { hit: null });
     }
     if (t === 'crucibelle') {
-      let n = 0;
-      for (const c of F.serpents.list) if (c.alive && c.attack && this.inArc(M, H, c.pos)) { c.attack = null; C?.unwind(c, 'parry'); C?.apply?.(c, 'stun', MOUNTING.toll.stun); n++; }
-      return this.done(t, { broke: n });
+      const broke = [];
+      for (const c of F.serpents.list) if (c.alive && c.attack && this.inArc(M, H, c.pos)) { c.attack = null; C?.unwind(c, 'parry'); C?.apply?.(c, 'stun', MOUNTING.toll.stun); broke.push(c.kind); }
+      return this.done(t, { broke });
     }
     if (t === 'lockheart') {
       let n = 0;
       for (let i = F.globs.length - 1; i >= 0; i--) { const b = F.globs[i]; if (!b.back && this.inArc(M, H, b.pos)) { F.dropGlob(b); F.globs.splice(i, 1); n++; } }
-      for (const c of F.serpents.list) if (c.alive && c.held?.move === 'grip') { F.serpents.release(c, 'gulp'); n++; } // (the umibozu's pour drunk: a ladle with no bottom, shapes.js)
-      this.gulped += n; return this.done(t, { drunk: n });
+      let pour = 0; for (const c of F.serpents.list) if (c.alive && c.held?.move === 'grip') { F.serpents.release(c, 'gulp'); pour++; } // (the umibozu's pour drunk: a ladle with no bottom, shapes.js)
+      this.gulped += n; return this.done(t, { drunk: n, pour });
     }
     if (t === 'veritome') {
       const c = this.target(M, H); if (c) c.open = M.hold;
@@ -100,7 +102,7 @@ export class SeaMounts {
     }
     if (t === 'soulbrush') {
       const L = H.look?.length ?? 7, s = { at: H.pos.clone().addScaledVector(_a.set(Math.sin(H.yaw), 0, Math.cos(H.yaw)), -(L / 2 + MOUNTING.slick.astern)), r: MOUNTING.slick.r, t: M.hold };
-      this.slicks.push(s); g.events?.emit('sea.slick', { at: s.at, r: s.r, life: s.t, by: 'courier' });
+      s.life = s.t; this.slicks.push(s); g.events?.emit('sea.slick', { at: s.at, r: s.r, life: s.t, by: 'courier' }); // (`life` the whole, `t` what is left: the look reads both)
       return this.done(t);
     }
   }

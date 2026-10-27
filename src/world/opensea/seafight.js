@@ -175,7 +175,7 @@ export class SeaFight {
     }
     if (aim) _d.subVectors(aim, from).normalize(); else _d.set(Math.sin(yaw), 0.015, Math.cos(yaw)).normalize();
     if (this.shots.length >= CAP.shots) this.shots.shift();
-    this.shots.push({ pos: from.clone(), prev: from.clone(), vel: _d.clone().multiplyScalar(GN.speed), t: GN.life, power: GN.power * (this.mounts.takeGulp() ? MOUNTING.gulp.k : 1) }); // (a spit gulped goes back on the next shot)
+    this.shots.push({ pos: from.clone(), prev: from.clone(), vel: _d.clone().multiplyScalar(GN.speed), t: GN.life, ...(this.mounts.takeGulp() ? { power: GN.power * MOUNTING.gulp.k, gulped: true } : { power: GN.power }) }); // (a spit gulped goes back on the next shot, marked for the look)
     g.seaFightLook?.muzzle(from, _d, this.shots[this.shots.length - 1]); // (the look's: vfx/opensea/seafightlook.js; the shot itself its third, light or heavy)
     if (this.noiseT <= 0) { this.noiseT = SEA_FIGHT.noise.every; g.ai?.stimuli.emit('noise', H.pos, { radius: SEA_FIGHT.noise.radius, strength: 1, by: 'courier', source: g.player }); }
   }
