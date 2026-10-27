@@ -46,6 +46,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { COLOR } from '../progress/weather.js';
+import { sfx } from '../audio/sfx.js';
 import { newDuel } from '../progress/duel/duel.js';
 import { RULESETS, KIND_RULESETS, rulesetOf } from '../progress/duel/rulesets.js';
 import { visibleTo } from '../progress/duel/dread.js';
@@ -131,6 +132,7 @@ export class DuelView {
   hint(h) {
     for (const v of this.pieces.list) { v.hint = 0; v.hintDir = null; }
     if (!this.isOpen || !h?.action) return;
+    sfx.duelEvent?.({ type: 'hint' }); // (Wanda's breath of the key's fifth, at most once in 10 real s)
     const P = this.pieces, a = h.action, DV = { N: [0, -1], S: [0, 1], E: [1, 0], W: [-1, 0] }, at = (c) => (c ? P.at(c[0], c[1]) : null);
     for (const c of h.cells || []) { const v = at(c); if (v) v.hint = 1; }
     if (a.kind === 'swap' && a.at) { const d = DV[a.dir] || [1, 0], v = at(a.at), w = at([a.at[0] + d[0], a.at[1] + d[1]]); if (v) { v.hint = 1; v.hintDir = d; } if (w) { w.hint = 1; w.hintDir = [-d[0], -d[1]]; } }
