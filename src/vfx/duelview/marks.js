@@ -2,6 +2,7 @@
 // THE DUEL'S MARKS (the duel's view: vfx/duelview.js): what is laid over a puzzle duel's board that is not a piece. No words: the only
 // type is a number where one is read (CLAUDE.md: the overlay may carry numbers in the System's own type), in Jersey 15 (the count face,
 // src/ui/theme.js), drawn once into a glyph atlas (digits, the arrows, x and +) and set as quads.
+//   A PICKED CELL   one cell selected (touch's pick-then-place): a thick film ring breathing, a tick into each neighbour, its piece lifted
 //   A CELL RIM      the god hand's hover and its selection: a square of the film's light round a cell (the Mind's line, vfx/labradorite.js);
 //                   a refused action's: the same rim in the dry ink (the dull of a brush gone dry), shaken side to side and fading (0.32)
 //   A DUEL'S CHAIN  its step's numeral popping from the middle of its clear and rising 0.7 of a cell, the Courier's in the film's colour,
@@ -12,7 +13,7 @@
 // Prior art: Puyo Puyo's chain counter, Tetris 99's incoming-garbage meter (the waiting count by the well), Panel de Pon's chain number
 // over the panels that made it; the stunned stars of the cartoon, as vfx/dizzy.js.
 //
-//   const K = new DuelMarks(parent)   K.layout(board)   K.hover(cell | null)   K.select(cells)   K.refuse(cell | null)   K.numeral(text, local, hex)
+//   const K = new DuelMarks(parent)   K.layout(board)   K.hover(cell | null)   K.select(cells) (one cell: K.pick)   K.refuse(cell | null)   K.numeral(text, local, hex)
 //   K.counts(toCourier, toFoe, courierHex, foeHex, faint?)   K.stars(side, depth, local | null)   K.label(text, hex) -> a Label   K.update(dt)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -62,6 +63,15 @@ export class DuelMarks {
     this.rimGeo = new THREE.ShapeGeometry(s); this.rimMat = mindLineMaterial({ opacity: 1, depthTest: true, bright: 1.6 }); this.selMat = mindLineMaterial({ opacity: 0.85, depthTest: true, bright: 1.1 });
     this.hoverRim = new THREE.Mesh(this.rimGeo, this.rimMat); this.hoverRim.visible = false; this.hoverRim.renderOrder = 5; this.group.add(this.hoverRim);
     this.selRims = [];
+    // a picked cell (pick-then-place on touch, v306): a thick ring of the film, a cell and a tenth across (about 4 dots at 23 CSS px a
+    // cell), breathing, and a faint tick in each neighbour it could swap into, pointing out (a world mark, no words)
+    const ps = new THREE.Shape([new THREE.Vector2(-0.5, -0.5), new THREE.Vector2(0.5, -0.5), new THREE.Vector2(0.5, 0.5), new THREE.Vector2(-0.5, 0.5)]);
+    ps.holes.push(new THREE.Path([new THREE.Vector2(-0.32, -0.32), new THREE.Vector2(-0.32, 0.32), new THREE.Vector2(0.32, 0.32), new THREE.Vector2(0.32, -0.32)]));
+    this.pickMat = mindLineMaterial({ opacity: 1, depthTest: true, bright: 2 }); this.tickMat = mindLineMaterial({ opacity: 0.55, depthTest: true, bright: 1.2 });
+    this.pickRim = new THREE.Mesh(new THREE.ShapeGeometry(ps), this.pickMat); this.pickRim.visible = false; this.pickRim.renderOrder = 6; this.group.add(this.pickRim);
+    const tick = new THREE.BufferGeometry(); tick.setAttribute('position', new THREE.Float32BufferAttribute([-0.2, -0.16, 0, 0.2, -0.16, 0, 0, 0.18, 0], 3)); tick.computeVertexNormals();
+    this.ticks = [[0, -1], [1, 0], [0, 1], [-1, 0]].map(([dx, dy]) => { const m = new THREE.Mesh(tick, this.tickMat); m.userData.d = [dx, dy]; m.rotation.z = Math.atan2(-dy, dx) - Math.PI / 2; m.visible = false; m.renderOrder = 6; this.group.add(m); return m; });
+    this.picked = null; this.pickT = 0;
     this.dryMat = new THREE.MeshBasicMaterial({ name: 'duel-dry', color: 0x2b211d, transparent: true, opacity: 0.9, depthWrite: false, fog: false, toneMapped: false }); // (the dry ink: the cast's program)
     this.dryRim = new THREE.Mesh(this.rimGeo, this.dryMat); this.dryRim.visible = false; this.dryRim.renderOrder = 6; this.group.add(this.dryRim); this.dry = null; this.hovered = null;
     this.pops = []; this.free = [];
@@ -92,8 +102,18 @@ export class DuelMarks {
   /** The god hand's selection: a rim round each cell given. */
   select(cells = []) {
     cells = cells || [];
+    this.pick(cells.length === 1 ? cells[0] : null); if (cells.length === 1) cells = [];
     while (this.selRims.length < cells.length) { const m = new THREE.Mesh(this.rimGeo, this.selMat); m.renderOrder = 5; this.group.add(m); this.selRims.push(m); }
     this.selRims.forEach((m, i) => { const c = cells[i]; m.visible = !!c; if (!c) return; cellLocal(c.x ?? c[0], c.y ?? c[1], this.board, m.position); m.position.z += 0.01; m.scale.setScalar(DUEL_VIEW.cs * 0.86); });
+  }
+
+  /** One cell picked (a tap on touch, the press before a drag): its ring, and a tick into each neighbour on the board. null: none. */
+  pick(c) {
+    const cell = c ? { x: c.x ?? c[0], y: c.y ?? c[1] } : null; this.picked = cell; this.pickRim.visible = !!cell; for (const t of this.ticks) t.visible = false;
+    if (!cell) return; const cs = DUEL_VIEW.cs;
+    cellLocal(cell.x, cell.y, this.board, this.pickRim.position); this.pickRim.position.z += 0.016; this.pickRim.scale.setScalar(cs * 1.1);
+    for (const t of this.ticks) { const [dx, dy] = t.userData.d, x = cell.x + dx, y = cell.y + dy; if (x < 0 || y < 0 || x >= this.board.w || y >= this.board.h) continue;
+      t.visible = true; cellLocal(cell.x + dx * 0.78, cell.y + dy * 0.78, this.board, t.position); t.position.z += 0.014; t.scale.setScalar(cs); }
   }
 
   /** A refused action at a cell: the rim in the dry ink, shaken (four swings, narrowing) and fading over 0.32 real s. null: gone. */
@@ -122,6 +142,7 @@ export class DuelMarks {
   stars(side, depth, local = null) { const S = this.starSets[side]; S.depth = depth; if (local) S.at.copy(local); }
 
   update(dt) {
+    if (this.picked) { this.pickT += dt; const k = 1 + 0.06 * Math.sin(this.pickT * 6); this.pickRim.scale.setScalar(DUEL_VIEW.cs * 1.1 * k); for (const t of this.ticks) if (t.visible) t.scale.setScalar(DUEL_VIEW.cs * (0.9 + 0.12 * Math.sin(this.pickT * 6 + 1.6))); }
     const D = this.dry;
     if (D) { D.age += dt; const u = D.age / D.dur, r = this.dryRim;
       if (u >= 1) { this.dry = null; r.visible = false; }

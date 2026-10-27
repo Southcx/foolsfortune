@@ -6,14 +6,14 @@
 // would clear are rimmed in dashes, and the junk the plan would send waits faint on the Line's head, an arrow toward you.
 //   swap  a two-headed arrow       rotate  a ring round the 2 x 2 with its head      drag, run  the path, its head at the end
 //   drop  a chevron down its lane  form, delay, hold, hold's send, finisher  a ring at its body      push, kick, drill, shoot, hook  an arrow
-//   paint a square round the 3 x 3
+//   paint a diamond round its reach (4 cells walking)   shoot down a column  an arrow its way
 // What a step would clear is found by playing the plan on a quiet copy of the duel (the kernel's `act`, never its stream: the copy has
 // a stream of its own, so drawing a forecast never changes the duel's chances).
 //
 // Prior art: Into the Breach (the enemy's next move drawn on the board, numbered in the order it acts, its effect previewed on the
 // tiles; taken whole), Slay the Spire's intents (a foe's next move over its head, a promise there; here a forecast).
 //
-//   const I = new DuelIntent(parent, marks)   I.show(state, plan, side, foeAspect) -> { junk }   I.clear()   I.update(dt)
+//   const I = new DuelIntent(parent, marks)   I.show(state, plan, side, foeAspect, { whole }) -> { junk }   Strokes (quads in the board's frame)   I.clear()   I.update(dt)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { act, junkOf } from '../../progress/duel/duel.js';
@@ -30,7 +30,7 @@ function quietCopy(s, side) {
 }
 
 /** Quads in the board's frame, gathered into one geometry (a tier: bold or faint, ink or colour). */
-class Strokes {
+export class Strokes {
   constructor() { this.p = []; }
   seg(a, b, w) { const dx = b.x - a.x, dy = b.y - a.y, l = Math.hypot(dx, dy) || 1, nx = (-dy / l) * w / 2, ny = (dx / l) * w / 2, z = a.z;
     this.p.push(a.x + nx, a.y + ny, z, a.x - nx, a.y - ny, z, b.x + nx, b.y + ny, z, b.x + nx, b.y + ny, z, a.x - nx, a.y - ny, z, b.x - nx, b.y - ny, z); }
@@ -56,7 +56,7 @@ export class DuelIntent {
   }
 
   /** Draw a plan (kernel actions, in order) for `side` on the duel as it stands. Returns the junk it would send. */
-  show(s, plan, side = 1, foeAspect = 'fury') {
+  show(s, plan, side = 1, foeAspect = 'fury', { whole = false } = {}) { // (whole: the foresight draws the clears and the junk from the kernel's intentOf: foresight.js)
     this.clear(); if (!s || !plan?.length) return { junk: 0 };
     const cs = DUEL_VIEW.cs, B = s.board, z = DUEL_VIEW.front + 0.05, w = cs * 0.13;
     const at = (x, y, out) => { cellLocal(x, y, B, out); out.z = z; return out; };
@@ -74,13 +74,14 @@ export class DuelIntent {
       else if (a.kind === 'drag' || a.kind === 'run') { path(a.path); cells.push(a.path[0]); }
       else if (a.kind === 'drop') { const [gx, gy] = B.grav(a.at[0], a.at[1]); arrow(a.at[0] - gx * 0.45, a.at[1] - gy * 0.45, a.at[0] + gx * 0.35, a.at[1] + gy * 0.35); cells.push(a.at); }
       else if (['push', 'kick', 'drill'].includes(a.kind) && body) { const d = DIRS[a.dir], n = a.kind === 'push' ? 1 : a.kind === 'kick' ? 2 : 3; arrow(body[0] + d[0] * 0.5, body[1] + d[1] * 0.5, body[0] + d[0] * (n + 0.2), body[1] + d[1] * (n + 0.2)); cells.push(body); }
+      else if (a.kind === 'shoot' && body && a.dir && a.dir !== (side === 0 ? 'E' : 'W')) { const d = DIRS[a.dir]; arrow(body[0] + d[0] * 0.5, body[1] + d[1] * 0.5, body[0] + d[0] * 3, body[1] + d[1] * 3); cells.push(body); } // (a shot down a column: PUZZLE-DUELS 18.1)
       else if ((a.kind === 'shoot' || a.kind === 'grab') && body) { const toward = side === 0 ? 1 : -1, x1 = side === 0 ? B.line + 0.5 : B.line - 1.5; arrow(body[0] + toward * 0.5, body[1], x1, body[1]); cells.push(body); }
-      else if (a.kind === 'paint' && body) { draw((S, ww, dz) => { const P = [[-1.5, -1.5], [1.5, -1.5], [1.5, 1.5], [-1.5, 1.5]].map(([dx, dy]) => at(body[0] + dx, body[1] + dy, new THREE.Vector3()).setZ(z + dz)); for (let k = 0; k < 4; k++) S.seg(P[k], P[(k + 1) % 4], ww); }); cells.push(body); }
+      else if (a.kind === 'paint' && body) { draw((S, ww, dz) => { const r = 4.5, P = [[0, -r], [r, 0], [0, r], [-r, 0]].map(([dx, dy]) => at(body[0] + dx, body[1] + dy, new THREE.Vector3()).setZ(z + dz)); for (let k = 0; k < 4; k++) S.seg(P[k], P[(k + 1) % 4], ww); }); cells.push(body); } // (its reach: 4 cells walking, couriertools.js TOOL_RULES)
       else if (body) { ring(body[0], body[1], a.kind === 'finisher' ? 0.85 : 0.6); cells.push(body); }
       const ev = act(c, a) || [];
       for (const e of ev) {
         if (e.type === 'chain' && e.side === side) junk += junkOf(e.cleared, e.step);
-        if ((e.type === 'clear' || e.type === 'break') && e.side === side) draw((S, ww, dz) => { at(e.at[0], e.at[1], _a).z += dz; const C = _a.clone(), h = cs * 0.42;
+        if (!whole && (e.type === 'clear' || e.type === 'break') && e.side === side) draw((S, ww, dz) => { at(e.at[0], e.at[1], _a).z += dz; const C = _a.clone(), h = cs * 0.42;
           for (const [sx, sy, ex, ey] of [[-1, -1, -0.2, -1], [0.2, -1, 1, -1], [1, -1, 1, -0.2], [1, 0.2, 1, 1], [1, 1, 0.2, 1], [-0.2, 1, -1, 1], [-1, 1, -1, 0.2], [-1, -0.2, -1, -1]])
             S.seg(new THREE.Vector3(C.x + sx * h, C.y + sy * h, C.z), new THREE.Vector3(C.x + ex * h, C.y + ey * h, C.z), ww * 0.6); });
       }
@@ -95,7 +96,7 @@ export class DuelIntent {
         if (!S.p.length) continue; const mesh = new THREE.Mesh(S.geometry(), m); mesh.renderOrder = o; mesh.frustumCulled = false; this.group.add(mesh); this.meshes[name] = mesh;
       }
     }
-    if (junk > 0) { // (what the plan would send, faint on the Line's head, toward the other side)
+    if (junk > 0 && !whole) { // (what the plan would send, faint on the Line's head, toward the other side)
       const { base, border: b, lip } = DUEL_VIEW, x = (B.line - B.w / 2) * cs + (side === 1 ? -1 : 1) * cs * 1.4;
       this.junkL.set(side === 1 ? '<' + junk : junk + '>', '#' + this.mats.colB.color.getHexString()); this.junkL.group.visible = true;
       this.junkL.group.position.set(x, base + B.h * cs + b * 3.1, lip + 0.02); this.junkL.group.scale.setScalar(cs);
