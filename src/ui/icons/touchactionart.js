@@ -22,6 +22,7 @@
 //               send    the coffin, an arrow out             rotate four cells and a turning arrow  endturn an arrow to the bar (END TURN)
 //               tune    the bell, a note over it           read   an open book, an eye over it
 //               finisher a gem cracked by a burst            flee   an arrow out of a doorway       formhand / formcourier  what you become
+//               undo    an arrow curling back over itself (UNDO)
 // Where a glyph acts on matter the matter is '#', the part that does the thing '+', the ground and what waits '-' (touchart.js's rule).
 //
 // Prior art: touchart.js's glyphs (one picture a verb), the universal glyphs every phone and console already teaches (the crosshair, the
@@ -773,6 +774,7 @@ export const TOUCH_ACTION_ART = {
     '--------------',
     '..............',
   ],
+  undo: '..............|...+..........|..++..........|.++++++++.....|++++++++++....|.++++....++...|..++......++..|...+.......++.|...........++.|...........++.|..........++..|.....++++++...|.....+++++....|..............'.split('|'), // (the last action taken back: an arrow curling back over itself)
   tune: '.........+++..|.........+..+.|.....##..+....|....####.+....|...######++...|...######++...|...######.....|..########....|.##########...|..............|.-...++...-...|..............|..............|..............'.split('|'), // (the Crucibelle's song: the bell, a note over it)
   read: '..............|....++++++....|..++..##..++..|.+...####...+.|..++..##..++..|....++++++....|..............|.####....####.|#---##..##---#|#---#.##.#---#|#----#..#----#|######..######|......##......|..............'.split('|'), // (the Veritome's Read: the open book, an eye over it)
   formcourier: [

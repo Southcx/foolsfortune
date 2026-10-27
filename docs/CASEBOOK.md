@@ -940,7 +940,9 @@ NEW:audio-one-shot-let-go. **A one-shot's nodes are let go when its source ends,
   three sounds a hit. A band's instrument takes one note an event unless it says it takes a chord.
 NEW:event-name-searched-first. **A new event's name is searched for on the bus before it is emitted.** An emit under a name already taken
   counts and sounds as the other thing; grep `'<name>'` across `src/` first.
-NEW:lookahead-own-stream. **A lookahead owns its own stream.** A preview, an intent or a bot's search is seeded from the state it copies
-  (`quietStream`), never by drawing the real stream: looking must not change the odds, and a replay must replay.
 NEW:territory-is-sight-and-leash. **A territorial creature sees all it would defend, and moves only on a ship inside it.** Its sight is its
   zone x its leash, never the zone alone; a move that would carry it out of its leash (a rise, a breach) is not begun.
+NEW:lookahead-own-stream. **A lookahead owns its own stream.** A preview, an intent or a bot's search is seeded from the state it copies
+  (`quietStream`), never by drawing the real stream: looking must not change the odds, and a replay must replay.
+NEW:lookahead-own-copy. **A lookahead copies a duel with the kernel's `cloneState`, never a spread.** A `{ ...s }` shares every array the
+  kernel writes (the undo stack, the log): a forecast or a preview must not reach into the real turn.

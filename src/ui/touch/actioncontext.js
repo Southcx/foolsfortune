@@ -102,6 +102,7 @@ export function duelCluster(g) {
     E('du.end', 'endturn', 'END TURN', { dim: !mine }),
     broken ? E('du.finish', 'finisher', 'FINISHER', { dim: !mine }) : null,
     E('du.flee', 'flee', 'FLEE', { dim: !mine }),
+    E('du.undo', 'undo', 'UNDO', { dim: !mine || !s.undo?.length }), // (the last action this turn taken back: dim with nothing to take back)
     S.form === 'hand' ? E('du.form', 'formcourier', 'COURIER', { dim: !mine, lit: askedOf(s) === 'form' }) : E('du.form', 'grab', 'HAND', { dim: !mine }),
   ];
 }
