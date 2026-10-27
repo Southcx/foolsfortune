@@ -26,7 +26,7 @@
 import { TouchTile, TILE } from './tile.js';
 import { touchTiles } from './presses.js';
 import { placeOf, windowOpen } from './areas.js';
-import { footCluster, toolCluster, duelCluster, inHandCtx } from './actioncontext.js';
+import { footCluster, toolCluster, duelCluster, helmCluster, inHandCtx } from './actioncontext.js';
 
 /** The numbers (CSS px): the gap between tiles, the margin off the area's corner; the Jar's least speed for JUMP (m/s); the room kept
  *  clear of the art bar's edge (its side strip stands there). */
@@ -62,6 +62,7 @@ export function clusterContext(game) {
     return [moving ? 'jump' : null, use].filter(Boolean);
   }
   if (g.duel?.active) return duelCluster(g).filter(Boolean);
+  if (g.opensea?.sailing) return helmCluster(g).filter(Boolean); // (the open sea's helm: its own verbs, the stick the rudder alone)
   if (T?.active || g.god?.controlling || g.duel?.pending || g.emocean?.stage?.active) return [];
   const ctx = inHandCtx(g), tool = ctx && toolCluster(g, ctx);
   return (tool || footCluster(g, use)).filter(Boolean); // (on foot: DASH always, the Shift press, Dovina's ruling 2026-10-24: the air dash is the core movement's)

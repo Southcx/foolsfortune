@@ -5,6 +5,7 @@
 //   on foot     crouch  a body crouched, an arrow down      parry  a blow turned off an arc        blink  a body gone in a spark
 //               swap    the main's arrow out, the sub's back under it
 //               draw    a hilt out of its sheath, up        stow   a hilt into its sheath, down    lend   a hand passing a spark up
+//   the helm    throttleup / throttledown  two chevrons up or down over the water   fix  a star over the horizon, the sextant's arc
 //   psygun      psfire  the gun and its flash                psaim  the sights' ring               shell  a shell, its cap lit
 //               fan     three rounds fanned off the hammer   breath a breath held, its bar         chamber the cylinder, one chamber lit
 //   Sondelass   cuattack the cutlass and its arc            cuspecial the blade and a burst        lock   the lock-on's brackets
@@ -151,6 +152,55 @@ export const TOUCH_ACTION_ART = {
     '.++++++++++...',
     '..++..........',
     '...+..........',
+  ],
+  // ---- the helm (the open sea)
+  throttleup: [
+    '..............',
+    '......##......',
+    '.....####.....',
+    '....######....',
+    '...###..###...',
+    '..###....###..',
+    '......##......',
+    '.....####.....',
+    '....######....',
+    '...###..###...',
+    '..###....###..',
+    '..............',
+    '-------------.',
+    '..............',
+  ],
+  throttledown: [
+    '..............',
+    '..............',
+    '..###....###..',
+    '...###..###...',
+    '....######....',
+    '.....####.....',
+    '......##......',
+    '..###....###..',
+    '...###..###...',
+    '....######....',
+    '.....####.....',
+    '......##......',
+    '-------------.',
+    '..............',
+  ],
+  fix: [
+    '......+.......',
+    '.....+++......',
+    '..+++++++++...',
+    '....+++++.....',
+    '....++.++.....',
+    '..............',
+    '..#........#..',
+    '...#......#...',
+    '....##..##....',
+    '......##......',
+    '..............',
+    '--------------',
+    '..............',
+    '..............',
   ],
   // ---- the psygun
   psfire: [

@@ -12,6 +12,10 @@
 //                 PING, JUMP off the hook, REPROGRAM by a stunned mind, SURVEY), PARRY the fourth; the strip the tool's (the chambers and
 //                 FAN, BREATH scoped; the Sondelass's forms; LURE and CRANK; PAINT or MOP; FLASH; the Crucibelle's five note pads, each in
 //                 its note's colour, its number small), BLINK at its end once learned.
+//   AT THE HELM   (the open sea's free helm, ctx `helm`: the stick is the rudder) FIRE (the ship's gun) and PARRY (the spit sent back)
+//                 while a sea serpent hunts the hull, else USE naming MOOR or DOCK where F would; the throttle's two, each worded with
+//                 the step it goes to (STOP .. FULL), dim at its end. The strip: FIX (the sky read, the Dreamvane worn) and PLATE (the
+//                 Veritome worn), and USE while a serpent holds the cluster.
 //   A PUZZLE DUEL END TURN (the main; dim on the foe's turn), FINISHER on a broken foe, FLEE, FORM (what you would become: HAND or
 //                 COURIER); the strip the worn tools' moves (dim in the hand's form: they are the Courier's), ROTATE first while a piece
 //                 is under the last touch in the hand's form.
@@ -20,13 +24,14 @@
 // Prior art: Genshin Impact's attack and skill tiles changing with the character, Call of Duty Mobile's fire button by weapon, Into the
 // Breach's strip of moves with END TURN the largest; the cluster's own reading of the skiff (cluster.js clusterContext).
 //
-//   footCluster(game) toolCluster(game, tool) duelCluster(game) -> [entry]   stripOf(game) -> [entry]   beltPairOf(game) -> [entry]
+//   footCluster(game) toolCluster(game, tool) duelCluster(game) helmCluster(game) -> [entry]   stripOf(game) -> [entry]   beltPairOf(game) -> [entry]
 //   inHandCtx(game) -> 'psygun' | 'cutlass' | 'rod' | 'hook' | 'brush' | 'veritome' | 'dreamvane' | 'crucibelle' | 'lockheart' | null
 //   entry { id, glyph, word, corner, lit, dim, tint }   ACTION_TILES (the words and glyphs by tool)
 // ---------------------------------------------------------------------------------------
 import { SUB_GIFTS } from '../../progress/toolpairs.js';
 import { DEGREE_COLOR } from '../../tools/crucibelle/songs.js';
 import { useLabel } from './cluster.js';
+import { ROOM } from '../../world/opensea/opensea.js';
 
 /** By tool in hand: FIRE's and AIM's faces, the third (or null), and what the faces become in their other moment. */
 export const ACTION_TILES = {
@@ -92,6 +97,33 @@ export function duelCluster(g) {
   ];
 }
 
+/** The helm's throttle steps (helm.js THROTTLE's order), as the throttle tiles word them. */
+const THROTTLE_WORDS = ['STOP', 'SLOW', 'CRUISE', 'FULL'];
+const worn = (g, id) => g.belt?.main === id || g.belt?.sub === id;
+const atHelm = (g) => { const L = g.actions?.live?.(); return L ? L.has('helm') : !!g.opensea?.sailing; };
+
+/** What F does at the helm now (opensea.js sail: a quay within ROOM.quay, an islet within ROOM.moor), or null. */
+export function helmUse(g) {
+  const R = g.opensea, H = R?.helm; if (!H || !R.props) return null;
+  for (const q of Object.values(R.props.quays || {})) if (Math.hypot(q.pos.x - H.pos.x, q.pos.z - H.pos.z) < ROOM.quay) return 'DOCK';
+  return R.nearIslet?.(H.pos, ROOM.moor) ? 'MOOR' : null;
+}
+
+/** At the helm: FIRE and PARRY while a sea serpent hunts, else USE where F moors or docks; the throttle's two. */
+export function helmCluster(g) {
+  const H = g.opensea?.helm; if (!H) return [];
+  const t = H.throttle | 0, use = helmUse(g);
+  const up = E('throttle.up', 'throttleup', THROTTLE_WORDS[Math.min(3, t + 1)], { dim: t >= 3 }), down = E('throttle.down', 'throttledown', THROTTLE_WORDS[Math.max(0, t - 1)], { dim: t <= 0 });
+  if (g.seaFight?.serpent) return [E('fire', 'psfire', 'FIRE'), E('parry', 'parry', 'PARRY'), up, down];
+  return [use ? E('use', null, use) : null, up, down];
+}
+
+/** The helm's strip: FIX with the Dreamvane worn, PLATE with the Veritome, USE while a serpent holds the cluster. */
+function helmStrip(g) {
+  const use = g.seaFight?.serpent ? helmUse(g) : null;
+  return [use ? E('use', null, use) : null, worn(g, 'dreamvane') ? E('fix', 'fix', 'FIX') : null, worn(g, 'veritome') ? E('plate', 'photo', 'PLATE') : null].filter(Boolean);
+}
+
 /** DRAW (STOW while the main is out), LEND (the sub's verb) and SWAP (main and sub traded, Belt.swap) at the cluster's top edge, on foot;
  *  SKIFF (the top bar's, folded under MENU on a phone) where the board may be summoned: the Raceway or the Dunes. */
 export function beltPairOf(g) {
@@ -112,6 +144,7 @@ export function beltPairOf(g) {
 /** The strip over the cluster: the tool's own row, or the duel's moves. */
 export function stripOf(g) {
   if (g.duel?.active) return duelStrip(g);
+  if (atHelm(g)) return helmStrip(g);
   if (!onFoot(g)) return [];
   const ctx = inHandCtx(g);
   if (!ctx) return learned(g, 'blink') && (learned(g, 'kick') || g.interact?.cur) ? [E('blink', 'blink', 'BLINK')] : []; // (nothing in hand: the cluster's fourth is USE or PARRY first, so BLINK stands here)
