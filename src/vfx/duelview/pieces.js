@@ -33,7 +33,7 @@
 //
 //   const P = new DuelPieces(parent)   P.build(kernelBoard, foeAspect)   P.at(x, y)   P.byId(id)   P.add(kind, props, x, y) -> v
 //   P.move(v, x, y) (the model only)   P.remove(v)   P.hideBody(side, hidden)   P.bodyAt(side) -> v   P.update(dt)   P.list
-//   P.weak (a colour | null) P.line P.fore (a Set of 'x,y': glows.js) P.dormant (0..1: the Courier's figurine asleep in the hand's form, formdive.js)   gemColour(aspect, out) -> THREE.Color (a gem's own colour)
+//   v.hint (0..1: the idle hint's soft pulse) v.hintDir ([dx, dy]: its nudge)   P.weak (a colour | null) P.line P.fore (a Set of 'x,y': glows.js) P.dormant (0..1: the Courier's figurine asleep in the hand's form, formdive.js)   gemColour(aspect, out) -> THREE.Color (a gem's own colour)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { crystalFretMaterial } from '../crystalfrets.js';
@@ -50,7 +50,7 @@ const PALE = { gall: 0xdfcdff, fury: 0xfdbfb8, dread: 0xb6e5c0 }; // (the dark t
 export const gemColour = (aspect, out = new THREE.Color()) => (GEM[aspect] !== undefined ? out.setHex(GEM[aspect]) : feelColour(aspect, out));
 const CLAY = { junk: 0x4a3f3a, stone: 0x4c4856, bomb: 0x2c2224 }, FOG = 0x5d605f;
 const EMBER = [0x3a2a24, 0x6a3020, 0xb0401c, 0xff5a1e], PIP = 0xffb24a; // (an ember's glaze by its count, cooling to its last: 0 cold .. 3 fresh)
-const INK = 0x07060a, RIM = 0xff5a1e, GOLD = 0xffcf4a, PREVIEW = 0xfff4c8;
+const INK = 0x07060a, RIM = 0xff5a1e, GOLD = 0xffcf4a, PREVIEW = 0xfff4c8, HINT = 0xffe9a8;
 const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _e = new THREE.Euler(), _p = new THREE.Vector3(), _s = new THREE.Vector3(), _c = new THREE.Color(), _k = new THREE.Color(), _w = new THREE.Color(1, 1, 1), _g = new THREE.Color(), _t = new THREE.Vector3(), _o = new THREE.Vector3(), _f = new THREE.Color();
 
 /** The gems' face: self-lit, shaded from its own normals (the top bevel lit, the foot's shaded, a gradient down the face, a gloss spot). */
@@ -177,6 +177,7 @@ export class DuelPieces {
     for (const v of this.list) {
       if (v.hidden) continue;
       cellLocal(v.x + v.dx, v.y + v.dy, B, _p); _p.z += (v.lift + v.pick * 0.55) * cs;
+      if (v.hintDir) { const w = Math.max(0, Math.sin(t * 6)) ** 2 * 0.16 * cs; _p.x += v.hintDir[0] * w; _p.y -= v.hintDir[1] * w; } // (the idle hint's nudge: the piece leaning the way the move would take it, Candy Crush's)
       const hum = v.hum ? v.hum * Math.exp(-((t + v.seed * 0.12) % 0.6) / 0.16) : 0, grow = (1 + 0.09 * hum) * (1 + 0.12 * v.pick); // (a hum: a bell's strike each 0.6 real s, decaying, a wave across by its seed; a pick lifts and swells it: glows.js, marks.js)
       if (v.kind === 'body') {
         const b = v.side === 0 ? this.courier : this.foe; if (this.bodyHidden[v.side]) continue;
@@ -201,6 +202,7 @@ export class DuelPieces {
         if (seen) { _k.copy(this.foeHex).multiplyScalar(0.8 + 0.3 * Math.sin(t * 3 + v.seed * 4)); kx = Math.max(kx, 0.08); }
         if (v.prev) { _k.lerp(_f.setHex(PREVIEW), v.prev * (0.7 + 0.3 * pv)).multiplyScalar(1 + 0.6 * pv * v.prev); kx = Math.max(kx, 0.1 * v.prev); }
         if (v.pick) { _k.lerp(_w, v.pick); kx = Math.max(kx, 0.06 * v.pick); }
+        if (v.hint) { const hp = 0.5 + 0.5 * Math.sin(t * 4 - v.seed); _k.lerp(_f.setHex(HINT), v.hint * (0.45 + 0.5 * hp)); kx = Math.max(kx, 0.07 * hp * v.hint); _c.lerp(_w, 0.12 * hp * v.hint); } // (the idle hint: a soft pulse, never words)
         if (v.cool) _c.lerp(_w, v.cool * 0.6);
         if (v.flash) { const f = Math.min(1, v.flash); _c.lerp(_w, f); _k.lerp(_w, f); }
         if (hum) { _c.lerp(_w, hum * 0.35); _k.lerp(_w, hum * 0.7); }

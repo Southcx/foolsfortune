@@ -36,6 +36,7 @@
 //   pointOf(cell) -> Vector3           a cell's centre on the slab's face, in the world (the god hand's cursorAt; its normal: `face`)
 //   refuse(action)                     an illegal action: the cell's rim shaken in the dry ink, no words (marks.js)
 //   resync(state)                      the board and pieces stood again from a restored state (undo), the clash kept: juice.js rewind
+//   hint(h | null)                     the idle hint (bot.js hintOf): its move's piece nudging its way, its clears pulsing; any play lets it go
 //   stage (stage.js: the zoom from the arena to the board view, the director's camera; the session asks stage.eatTap(cell) before a
 //   tap acts)   dive (formdive.js: the Pneuka Jar at your spot in the hand's form, the pour into the board and out of it)
 //   hover(cell | null)   select(cells)   close()   update(rawDt) (main.js)   .isOpen .busy .face .root .state
@@ -122,7 +123,19 @@ export class DuelView {
     if (now) { this.clash.open = [0, 0]; this.clash.update(0); this.root.visible = false; this.bursts.clear(); }
   }
 
-  play(events) { return this.isOpen ? this.beats.play(events) : Promise.resolve(); }
+  play(events) { this.hint(null); return this.isOpen ? this.beats.play(events) : Promise.resolve(); }
+
+  /** The idle hint (bot.js hintOf { action, junk, cells }, lit by the session after HINT.idle with no touch): the move's piece leaning
+   *  its way and every cell it would clear pulsing softly, never words (Candy Crush's, Bejeweled's); null lets it go. */
+  hint(h) {
+    for (const v of this.pieces.list) { v.hint = 0; v.hintDir = null; }
+    if (!this.isOpen || !h?.action) return;
+    const P = this.pieces, a = h.action, DV = { N: [0, -1], S: [0, 1], E: [1, 0], W: [-1, 0] }, at = (c) => (c ? P.at(c[0], c[1]) : null);
+    for (const c of h.cells || []) { const v = at(c); if (v) v.hint = 1; }
+    if (a.kind === 'swap' && a.at) { const d = DV[a.dir] || [1, 0], v = at(a.at), w = at([a.at[0] + d[0], a.at[1] + d[1]]); if (v) { v.hint = 1; v.hintDir = d; } if (w) { w.hint = 1; w.hintDir = [-d[0], -d[1]]; } }
+    else if (a.path?.length > 1) { const [p0, p1] = a.path, v = at(p0); if (v) { v.hint = 1; v.hintDir = [Math.sign(p1[0] - p0[0]), Math.sign(p1[1] - p0[1])]; } for (const c of a.path.slice(1)) { const w = at(c); if (w) w.hint = Math.max(w.hint, 0.6); } }
+    else if (a.at) { const v = at(a.at); if (v) v.hint = 1; }
+  }
 
   intent(plan) {
     if (!plan || !this.isOpen) { this.intentDraw.clear(); this.foresight.clear(); return; }
