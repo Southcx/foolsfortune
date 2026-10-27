@@ -32,12 +32,13 @@ import { sm, clamp01, cellLocal } from './layout.js';
  *  the zoom on the foe's turn (from the board view); intro: real s held on the arena at the open; pinch: z a unit of the pinch's log
  *  scale; wheel: z a wheel delta; settle: real s after the wheel stops before it settles; ease: the zoom's rate (1/s); follow: the
  *  shot's (1/s); kick: { break, allclear, end }: [z, real s] whipped to; shake: m and rad at trauma 1, its drain (1/s); domeFar, domeNear:
- *  the domains' clash's radius (m) in the arena and at the nearest in the board view, domeMargin past the camera. */
+ *  the domains' clash's radius (m) in the arena and at the nearest in the board view, domeMargin past the camera; castZ: the zoom a skill's
+ *  cast is drawn back to; fixture: m more span in the arena when the foe stands fixed (Strawman's practice duel). */
 export const STAGE = {
   arenaScale: 0.6, lift: 0.28, tilt: 0.14, arenaYaw: 0.3, foeTurn: 0.62, intro: 1.5, pinch: 1.5, wheel: 0.0028, settle: 0.35, ease: 5, follow: 9,
   kick: { break: [0.12, 1.5], allclear: [0, 2.1], end: [0, 99], finisher: [0.2, 2.4] },
   shake: { pos: 0.07, roll: 0.035, drain: 1.5 },
-  domeFar: 18, domeNear: 5.5, domeMargin: 1.6,
+  domeFar: 18, domeNear: 5.5, domeMargin: 1.6, castZ: 0.5, fixture: 1.3,
 };
 const UP = new THREE.Vector3(0, 1, 0);
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _m = new THREE.Vector3(), _d = new THREE.Vector3(), _c = new THREE.Vector3();
@@ -77,7 +78,7 @@ export class DuelStage {
       case 'refund': this.fovKick = Math.min(9, this.fovKick + 3); this.jolt(0.1); break;
       case 'duel.line': case 'duel.full': case 'duel.cap': this.whip('end'); this.jolt(0.3); break;
       case 'kick': this.jolt(0.12); break;
-      case 'skill': if (e.side === 0) { this.fovKick = Math.min(10, this.fovKick + 5); this.jolt(0.25); } break; // (the cast: the board view's moment, formdive.js)
+      case 'skill': if (e.side === 0) { this.fovKick = Math.min(10, this.fovKick + 5); this.jolt(0.25); this.kick = { z: STAGE.castZ, until: this.t + 0.95, kind: 'cast' }; } break; // (drawn back to mid so the Jar's pour is seen from its mouth to the cell) // (the cast: the board view's moment, formdive.js)
       case 'charge': if (e.side === 0 && e.ready) this.jolt(0.08); break;
       case 'shot': case 'blast': this.jolt(0.16); break;
       default: break;
@@ -112,7 +113,8 @@ export class DuelStage {
   arenaShot(out) {
     const V = this.view, g = V.game, cam = g.camera, tan = Math.tan(((cam?.fov ?? 70) * Math.PI) / 360), asp = cam?.aspect || 16 / 9;
     const a = g.player?.pos ? _a.copy(g.player.pos) : _a.copy(V.centre).addScaledVector(V.u, -1.5), b = V.foe?.pos ? _b.copy(V.foe.pos) : _b.copy(V.centre).addScaledVector(V.u, 1.5);
-    const span = a.distanceTo(b) / 2 + 0.75, look = _m.copy(a).lerp(b, 0.5).setY(V.centre.y + 0.9);
+    const fixed = !!(V.game.duel?.practice || V.foe?.rooted || V.foe?.practice); // (a foe that stands where it is, Strawman: the two set nearer, so the shot opens wider)
+    const span = a.distanceTo(b) / 2 + 0.75 + (fixed ? STAGE.fixture : 0), look = _m.copy(a).lerp(b, 0.5).setY(V.centre.y + 0.9);
     const d = Math.max(span / (tan * asp), 1.2 / tan), dir = _d.copy(V.face).applyAxisAngle(UP, -STAGE.arenaYaw);
     out.look.copy(look); out.pos.copy(look).addScaledVector(dir, d).addScaledVector(UP, 0.35 + d * 0.06);
     return out;

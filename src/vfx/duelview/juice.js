@@ -71,7 +71,7 @@ export class DuelJuice {
     this.group = new THREE.Group(); this.group.name = 'duel-juice'; parent.add(this.group);
     this.words = new Map(); this.pops = []; this.last = [[], []]; this.hold = 0; this.brassK = 0; this.glintT = 0; this.undoSeen = false; this.undoFlash = 0;
     const add = (m, order = 7) => { m.visible = false; m.renderOrder = order; m.frustumCulled = false; this.group.add(m); return m; };
-    const glow = (hex, extra = {}) => new THREE.MeshBasicMaterial({ name: 'duel-juice', color: hex, transparent: true, depthWrite: false, toneMapped: false, fog: false, blending: THREE.AdditiveBlending, ...extra });
+    const glow = (hex, extra = {}) => new THREE.MeshBasicMaterial({ name: 'duel-juice', color: hex, transparent: true, depthWrite: false, toneMapped: false, blending: THREE.AdditiveBlending, ...extra });
     this.star = add(new THREE.Mesh(starGeometry(), glow(0xffffff, { side: THREE.DoubleSide })));
     this.ring = add(new THREE.Mesh(new THREE.RingGeometry(0.9, 1, 64), glow(GOLD, { side: THREE.DoubleSide })));
     this.sweep = add(new THREE.Mesh(new THREE.PlaneGeometry(1, 1), glow(GOLD)));
@@ -96,7 +96,7 @@ export class DuelJuice {
   /** A word in the System's type popping at a point: `hex` a colour or 'film' (walking), `h` its height (m), `dur` real s, `rise` (m). */
   word(text, at, hex, { h = 0.1, dur = 0.8, rise = 0.08, dim = 1 } = {}) {
     let W = this.words.get(text);
-    if (!W) { const { tex, aspect } = wordTexture(text); const mesh = new THREE.Mesh(new THREE.PlaneGeometry(aspect, 1), new THREE.MeshBasicMaterial({ name: 'duel-word', map: tex, transparent: true, depthWrite: false, toneMapped: false, fog: false })); mesh.renderOrder = 8; mesh.visible = false; this.group.add(mesh); W = { mesh }; this.words.set(text, W); }
+    if (!W) { const { tex, aspect } = wordTexture(text); const mesh = new THREE.Mesh(new THREE.PlaneGeometry(aspect, 1), new THREE.MeshBasicMaterial({ name: 'duel-word', map: tex, transparent: true, depthWrite: false, toneMapped: false })); mesh.renderOrder = 8; mesh.visible = false; this.group.add(mesh); W = { mesh }; this.words.set(text, W); }
     this.pops = this.pops.filter((p) => p.W !== W); // (one of a word at a time: a new one restarts it)
     this.pops.push({ W, at: at.clone(), hex, h, dur, rise, dim, age: 0 }); W.mesh.visible = true;
   }

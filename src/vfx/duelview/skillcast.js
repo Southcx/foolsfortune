@@ -44,7 +44,7 @@ export function castBeat(T, e) {
   let rang = false;
   return { events: [e], dur: e.side === 0 ? SKILL_LOOK.cast : 0.2, step: (u) => {
     if (rang || u < 0.82) return; rang = true; cellLocal(at[0], at[1], V.board3, _a);
-    V.bursts.burst(_a, SKILL_LOOK.film, 18, { speed: 1.4, life: 0.5, fall: 0, spread: 0.3 }); V.bursts.burst(_a, 0xffffff, 5, { speed: 0.4, life: 0.2, fall: 0, size: 0.05 });
+    V.bursts.burst(_a, SKILL_LOOK.film, 34, { speed: 2.2, life: 0.6, fall: 0, spread: 0.5, size: 0.045 }); V.bursts.burst(_a, SKILL_LOOK.gold, 14, { speed: 1.2, life: 0.45, fall: 2, size: 0.04 }); V.bursts.burst(_a, 0xffffff, 8, { speed: 0.5, life: 0.25, fall: 0, size: 0.07 }); V.stage?.jolt?.(0.3); // (the splash: the film thrown wide, gold under it, a white heart)
   } };
 }
 
