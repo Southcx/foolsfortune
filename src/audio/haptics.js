@@ -7,7 +7,7 @@
 //   a parry         two quick taps: the blow met and turned back
 //   a combo banked  a rising pair (short, then longer)
 //   a hit taken     one heavier pulse (a crack in the vessel); the shield broken, a double; shattered, a long fall
-//   a puzzle duel's skill fired, a chain of 4 and more (stronger by its step), the all clear, a load of 5 junk and more landing on you
+//   a puzzle duel's skill fired, a chain of 4 and more (stronger by its step), the all clear, junk landing on you (the aberrant's Hurl), its Reclaim
 //   the hull struck at sea, a heavy pulse; a line snapped, a sharp one; a fish landed, the lift's beat
 // iOS (the owner's phone) has no Vibration API: the one web haptic it has is Safari 18's switch control (`<input type="checkbox" switch>`),
 // whose toggle gives the system's tick, one strength only. So there only the four that matter most tick, told apart by count (TICKS):
@@ -32,7 +32,8 @@ const MOMENTS = {
   'duel.skill': () => [14, 40, 22], // (the one-gesture duel's big play: a dive)
   'duel.chain': (e) => (e.step >= 4 ? [10 + 4 * Math.min(6, e.step)] : null),
   'duel.allclear': () => [14, 50, 14, 50, 40],
-  'duel.land': (e) => (e.n >= 5 ? [30 + 3 * Math.min(10, e.n)] : null), // (a heavy load landing on you)
+  'duel.land': (e) => (e.n ? [24 + 4 * Math.min(10, e.n)] : null), // (junk landing on you: in the PvE duel, the aberrant's Hurl)
+  'duel.foe': (e) => (e.skill === 'reclaim' ? [40, 60, 40] : null), // (the Line hauled back)
   'angle.lift': (e) => (e.quick ? null : e.legend || e.record ? [16, 60, 16, 60, 40] : [16, 60, 30]),
 };
 const GAP = 120; // (real ms between two buzzes at the least: a burst of events is felt once)
