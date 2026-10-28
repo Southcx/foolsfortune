@@ -34,6 +34,7 @@ import { Knacks } from '../progress/knacks.js';
 import { Goals } from '../progress/goals.js';
 import { FirstToday } from '../progress/firsttoday.js';
 import { FoeSeen } from '../progress/foeseen.js';
+import { gardenBackdropOf } from '../progress/gardenbackdrop.js';
 import { Harmony } from '../progress/harmony.js';
 import { Decor } from '../progress/decor.js';
 import { SpiritLife } from '../progress/spiritlife.js';
@@ -72,6 +73,7 @@ export function bootProgress(game, made) {
   game.knacks = new Knacks(game); // (the assists earned, switched on or off: progress/knacks.js; the Crib Sheet first)
   game.goals = new Goals(game); // (the game day's three goals, from the achievements: progress/goals.js)
   game.firstToday = new FirstToday(game); // (the first of each module a game day pays a little: progress/firsttoday.js)
+  game.gardenBackdrop = () => gardenBackdropOf(game); // (your Spirit Garden as your half of a duel's backdrop: progress/gardenbackdrop.js, the view's to draw)
   game.foeSeen = new FoeSeen(game); // (the aberrants' foe skills you have seen, knowledge: the duel's badge tooltips, progress/foeseen.js)
   game.harmony = new Harmony(game); // (how calm or overgrown each planetoid of the Spirit Garden is: progress/harmony.js, GARDEN-COZY.md A)
   game.decor = new Decor(game); // (the garden's pieces: the catalogue, the shed's storage and the rating: progress/decor.js, GARDEN-COZY.md D)
