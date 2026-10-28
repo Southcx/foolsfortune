@@ -99,8 +99,8 @@ function body(w, h, dpr, { glyph, pal, word, corner, pressed, tint }) {
   rr(g, 1, y0 + 1, w - 2, h - 2, r); g.lineWidth = 1.5; g.strokeStyle = '#1c0d08'; g.stroke();
   const ink = pal === 'gold' ? TILE.gold : '#efe6d2', text = (t, x, y, px, a = 'center') => {
     g.font = `${px}px ${FONT.sys}`; g.textAlign = a; g.textBaseline = 'alphabetic';
-    const tw = g.measureText(t).width, room = w - 2 * Math.max(3, s * 0.06); if (tw > room) g.font = `${Math.max(7, Math.floor(px * room / tw))}px ${FONT.sys}`; // (a word wider than its tile shrinks to fit: never cut, never past its edge)
-    g.fillStyle = '#1c0d08'; g.fillText(t, x + 1, y + 1); g.fillStyle = ink; g.fillText(t, x, y);
+    const tw = g.measureText(t).width, room = w - 2 * (TILE.rim + Math.max(3, s * 0.06)); if (tw > room) g.font = `${Math.max(7, Math.floor(px * room / tw))}px ${FONT.sys}`; // (a word wider than its tile shrinks to fit, inside the charge rim drawn over the face's edge: never cut)
+    g.fillStyle = '#1c0d08'; g.fillText(t, x + 1, y + 1, room); g.fillStyle = ink; g.fillText(t, x, y, room); // (held to the room whatever the font: MANIFEST, MIRACLE and TRANSMUTE ran under the rim, Petra's v335)
   };
   if (glyph) { // the glyph, at a whole number of device pixels an art pixel; the word under it
     const icon = uiIcon(glyph.includes('.') ? glyph : `touch.${glyph}`, pal), wordH = word ? TILE.word + 2 : 0;
