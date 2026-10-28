@@ -34,10 +34,10 @@ export const LESSON = {
     { id: 'chain',  ask: 'Clear so the gems that fall clear again: that is a chain.', did: (ev, a, side) => ev.some((e) => e.type === 'chain' && e.side === side && e.step >= 2) },
     { id: 'skill',  ask: 'A skill is full: fire it from its tile beside the board.', did: (ev, a) => a.kind === 'skill' },                                 // a charged skill fired
   ],
-  // the PvE duel's (PUZZLE-DUELS.md 24): the same three, then a power cast before the drag (duel/powers.js); its `ask` a placeholder, Espada's to word
+  // the PvE duel's (PUZZLE-DUELS.md 24): the same three, then a power cast before the drag (duel/powers.js); its `ask` Espada's, 2026-10-28
   pveSteps: null,
 };
-LESSON.pveSteps = [...LESSON.dragSteps.slice(0, 3), { id: 'power', ask: 'Cast a power from its tile beside the board, then drag.', did: (ev, a) => a.kind === 'power' }];
+LESSON.pveSteps = [...LESSON.dragSteps.slice(0, 3), { id: 'power', ask: 'Pick a power beside the board, then drag on your half to cast it.', did: (ev, a) => a.kind === 'power' }];
 export const stepsOf = (s) => (s.style === 'classic' ? LESSON.steps : s.style === 'pve' ? LESSON.pveSteps : LESSON.dragSteps); // (the classic duel's forms and walk; the PvE duel's powers; the one-gesture duel's skills)
 
 /** Is the lesson due? Until the first puzzle duel won or the lesson finished once (the ledger's `duel.won`, `duel.lesson`: tracking/duel.js).

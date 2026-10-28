@@ -81,13 +81,13 @@ export const DUEL_POWERS = {
     apply: (s, side, a) => { const b = s.board, n = DUEL_POWERS.swap.size, A = patch(a.at, n), B = patch(a.to, n), moved = [];
       for (let i = 0; i < A.length; i++) { const p = b.at(...A[i]), q = b.at(...B[i]); if (p) moved.push({ id: p.id, from: A[i], to: B[i] }); if (q) moved.push({ id: q.id, from: B[i], to: A[i] }); b.swap(A[i], B[i]); }
       return [{ type: 'swap', side, a: a.at, b: a.to, size: n, moved }]; } },
-  manifest: { domain: 'manifestation', label: 'Manifest', line: 'Turns up to 3 junk or holes in a 3 x 3 into gems of one colour', cost: 20, rest: 2, target: 'cell', max: 3,
+  manifest: { domain: 'manifestation', label: 'Manifest', line: 'Turns up to 3 junk or holes in a 3 x 3 into gems of the colour you pick, or the one most round them', cost: 20, rest: 2, target: 'cell', max: 3,
     legal: (s, side, a) => mineIn(s.board, side, ...(a.at || [-1, -1])) && filled(s, side, a.at).length > 0 && (!a.colour || colours(s).includes(a.colour)),
     reach: (s, side, a) => filled(s, side, a.at),
     apply: (s, side, a) => { const b = s.board, cells = filled(s, side, a.at), colour = a.colour || manifestColour(s, side, cells), ev = { type: 'manifest', side, at: a.at, colour, cells: [] };
       for (const [x, y] of cells) { const was = b.at(x, y)?.kind || null, p = piece('gem', { colour }); b.set(x, y, p); ev.cells.push({ at: [x, y], id: p.id, was }); }
       return [ev]; } },
-  scan: { domain: 'divination', label: 'Scan', line: 'Shows the aberrant\'s next skill and puts it off two turns', cost: 15, rest: 3, target: null, delay: 2,
+  scan: { domain: 'divination', label: 'Scan', line: 'Shows the aberrant\'s next skill and puts it off 2 turns', cost: 15, rest: 3, target: null, delay: 2,
     legal: (s) => (s.foe?.moves || []).length > 0,
     reach: () => [],
     apply: (s, side) => { const m = [...s.foe.moves].sort((p, q) => p.left - q.left)[0]; m.left += DUEL_POWERS.scan.delay; return [{ type: 'scan', side, skill: m.skill, left: m.left, delay: DUEL_POWERS.scan.delay }]; } },
@@ -98,13 +98,13 @@ export const DUEL_POWERS = {
     apply: (s, side, a) => { const b = s.board, L = lineOf(b, side, a.at, a.dir), n = L.length, by = ((a.dir === 'E' || a.dir === 'S' ? 1 : -1) * (a.by ?? 1) % n + n) % n, was = L.map((c) => b.at(...c)), moved = [];
       L.forEach((c, i) => { const p = was[(i - by + n) % n]; b.set(c[0], c[1], p); if (p) moved.push({ id: p.id, from: L[(i - by + n) % n], to: c }); });
       return [{ type: 'lift', side, at: a.at, dir: a.dir, by: a.by ?? 1, moved }]; } },
-  herd: { domain: 'possession', label: 'Herd', line: 'Gems of one colour within 2 of a row or column come onto it', cost: 20, rest: 2, target: 'cell', span: 2,
+  herd: { domain: 'possession', label: 'Herd', line: 'Gems of one colour within 2 of the row or column you draw come onto it', cost: 20, rest: 2, target: 'cell', span: 2,
     legal: (s, side, a) => (a.dir === 'H' || a.dir === 'V') && !!gemAt(s.board, side, a.at) && herded(s, side, a).moves.length > 0,
     reach: (s, side, a) => lineOf(s.board, side, a.at, a.dir || 'H'),
     apply: (s, side, a) => { const b = s.board, { colour, moves } = herded(s, side, a), moved = [];
       for (const m of moves) { const p = b.at(...m.from), q = b.at(...m.to); b.swap(m.from, m.to); moved.push({ id: p.id, from: m.from, to: m.to }); if (q) moved.push({ id: q.id, from: m.to, to: m.from }); }
       return [{ type: 'herd', side, at: a.at, dir: a.dir, colour, moved }]; } },
-  transmute: { domain: 'alteration', label: 'Transmute', line: 'Every gem of one colour on your half turns to another, and none falls for 2 turns', cost: 25, rest: 3, target: 'cell', turns: 2,
+  transmute: { domain: 'alteration', label: 'Transmute', line: 'Every gem of one colour on your half turns to another, and none of the old colour falls for 2 turns', cost: 25, rest: 3, target: 'cell', turns: 2,
     legal: (s, side, a) => { const p = gemAt(s.board, side, a.at); return !!p && (!a.colour || (a.colour !== p.colour && colours(s).includes(a.colour))); },
     reach: (s, side, a) => { const p = gemAt(s.board, side, a.at), out = []; if (p) s.board.each((q, x, y) => { if (s.board.mine(side, x) && hasTag(q, 'matches') && q.colour === p.colour) out.push([x, y]); }); return out; },
     apply: (s, side, a) => { const b = s.board, from = b.at(...a.at).colour, colour = a.colour || mostOf(s, side, from), cells = [];
