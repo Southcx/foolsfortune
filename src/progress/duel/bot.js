@@ -12,7 +12,8 @@
 //   hintOf(state, side?, { sample, form }) -> { action, junk, cells } | null (the idle hint: one good move in the form you hold, 21.3)
 // ---------------------------------------------------------------------------------------
 import { hasTag } from './board.js';
-import { act, endTurn, legalActions, cloneState, DUEL, ACTIONS } from './duel.js';
+import { act, endTurn, legalActions, cloneState, DUEL, ACTIONS, foeTurn } from './duel.js';
+import { foeIntent } from './foeskills.js';
 import { FINISHER } from './duelbreak.js';
 import { fleeOdds } from './flee.js';
 
@@ -82,6 +83,7 @@ function lookPast(t, side, sample = 60) {
 
 /** The bot plays the side to move: its plan, replanned from wherever an action is refused, then the turn ends. */
 export function play(s, opts = {}) {
+  if (s.style === 'pve' && s.toMove === 1) return foeTurn(s); // (the PvE duel: the aberrant's turn is its foe skills, foeskills.js)
   const events = [], side = s.toMove;
   for (let guard = 0; guard < 8 && s.apLeft > 0 && s.winner === null; guard++) {
     const p = plan(s, side, opts); if (!p.length) break;
@@ -96,6 +98,7 @@ export function play(s, opts = {}) {
  *  junk it would send, the cells it would clear on its own half (`cells`, drawn through Dread's fog: Divination sees intent, not ground)
  *  and the cells it would move or take (`hits`). A live forecast, redrawn after each of your actions, never a promise. */
 export function intentOf(s, side = 1 - s.toMove, opts = {}) {
+  if (s.style === 'pve' && side === 1) return { actions: [], junk: 0, cells: [], hits: [], foe: foeIntent(s) }; // (the PvE duel's aberrant matches nothing: its intent is its foe skills' countdowns)
   const actions = plan(s, side, opts), c = cloneState(s); c.toMove = side; c.apLeft = DUEL.ap;
   const before = c.sides[side].sent, cells = [], hits = [];
   for (const a of actions) {
