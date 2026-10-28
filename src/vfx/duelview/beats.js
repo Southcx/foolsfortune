@@ -92,7 +92,7 @@ export class DuelBeats {
     if (e.type === 'blast' && e.rows) { job.i++; return blastBeat(this, e); }
     if (e.type === 'vein') { job.i++; return veinBeat(this, e); }
     if (e.type === 'charge') { job.i++; return { events: [e], dur: 0 }; }
-    if (e.type.startsWith('foe.')) { job.i++; return V.foeCast.beat(this, e); } // (the PvE duel's aberrant: its casts, its desperate flare, its stagger: foecast.js)
+    if (e.type.startsWith('foe.')) { const cut = V.cutIn.beat(e); if (cut) return cut; job.i++; const ph = V.foeCast.beat(this, e); if (V.cutIn.cut.has(e)) ph.events = []; return ph; } // (the PvE duel's aberrant: a skill's cut-in first, once (cutin.js), then its cast, its desperate flare, its stagger: foecast.js)
     if (e.type === 'fall') return this.fall(run((x) => x.type === 'fall'));
     if (e.type === 'clear' || e.type === 'break' || e.type === 'blast') { const it = run((x) => x.type === 'clear' || x.type === 'break' || x.type === 'blast'); return this.clears(it, run((x) => x.type === 'chain')); }
     if (e.type === 'chain') return this.clears([], run((x) => x.type === 'chain'));
@@ -255,14 +255,14 @@ export class DuelBeats {
       const f = Math.max(0, Math.min(1, (age - q.d) / 0.45)); q.v.hidden = age < q.d; const s = sm(f);
       q.v.x = lerp(fromX - 0.5, q.x, s); q.v.y = lerp(top, q.y, s) - Math.sin(Math.PI * s) * 1.5; q.v.spin = (1 - s) * 6 * (hash(q.x, q.y) - 0.5); q.v.lift = Math.sin(Math.PI * s) * 1.2;
       if (f >= 1 && !q.knocked) { q.knocked = true; cellLocal(q.x, q.y, B, _a); V.bursts.burst(_a, kind === 'ember' ? 0xff7a2a : CLAY, 3, { speed: 0.4, life: 0.3, fall: kind === 'ember' ? -1 : 5, size: 0.02 }); } } },
-      end: () => { for (const q of it) { q.v.hidden = false; q.v.x = q.x; q.v.y = q.y; q.v.spin = 0; q.v.lift = 0; } } };
+      end: () => { for (const q of it) { q.v.hidden = false; q.v.x = q.x; q.v.y = q.y; q.v.spin = 0; q.v.lift = 0; } if (V.state?.style === 'pve') V.readPush(true); } };
   }
 
   /** The Line steps a column (overshoot 1.4); the domains' seam pushes into the side that gave ground. */
   line(e) {
     const V = this.view, from = V.lineCol ?? V.state.board.line, to = e.line, receiver = 1 - e.side;
     V.clash.push(receiver); if (V.state?.style === 'pve') V.foeCast.conquest(Math.round(from), Math.round(to)); // (the battle of wills: a column taken or lost, foecast.js)
-    return { events: [e], dur: 0.45, step: (u) => V.setLine(lerp(from, to, ease(Math.min(1, u / 0.9), 1.4))), end: () => V.setLine(to) };
+    return { events: [e], dur: 0.45, step: (u) => V.setLine(lerp(from, to, ease(Math.min(1, u / 0.9), 1.4))), end: () => { V.setLine(to); if (V.state?.style === 'pve') V.readPush(true); } };
   }
 
   /** The drip: a drop of Lachryma falling a cell and crystallising into its gem. A skyfall refill (`sky`, Dovina's skyfall.js) drops
@@ -332,6 +332,7 @@ export class DuelBeats {
   /** A side's turn begins: its points, the lost ones cracking one by one. */
   turn(e) {
     const V = this.view, lost = e.lost || 0, max = e.ap + lost;
+    if (V.state?.style === 'pve') { V.readPush(true); return { events: [e], dur: 0.05 }; } // (no action points: the foot's beads are the push meters, duelview.js readPush)
     V.board.setAP(e.side, max, max, 0); V.apShown[e.side] = e.ap;
     let n = 0;
     return { events: [e], dur: lost ? 0.25 + lost * 0.14 : 0.05, step: (u, age) => { while (n < lost && age >= 0.1 + n * 0.14) { n++; V.board.crack(e.side, _a); V.bursts.burst(_a, 0x3a2a22, 4, { speed: 0.5, life: 0.35, fall: 4, size: 0.015 }); } },

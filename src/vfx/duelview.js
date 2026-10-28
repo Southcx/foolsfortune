@@ -52,7 +52,7 @@ import { newDuel } from '../progress/duel/duel.js';
 import { RULESETS, KIND_RULESETS, rulesetOf } from '../progress/duel/rulesets.js';
 import { visibleTo } from '../progress/duel/dread.js';
 import { filmColour } from './oxidation.js';
-import { DUEL_VIEW, cellLocal } from './duelview/layout.js';
+import { DUEL_VIEW, cellLocal, feelColour } from './duelview/layout.js';
 import { DomainClash } from './duelview/domains.js';
 import { DuelBoard } from './duelview/board.js';
 import { DuelPieces } from './duelview/pieces.js';
@@ -69,6 +69,7 @@ import { DuelStage } from './duelview/stage.js';
 import { FormDive } from './duelview/formdive.js';
 import { reachOf } from './duelview/skillcast.js';
 import { FoeCast } from './duelview/foecast.js';
+import { FoeCutIn } from './duelview/cutin.js';
 import { SkillGauges } from './duelview/skillgauges.js';
 
 const TEAR = 0x7fdcff, COURIER_HEX = '#9fd8ff', UP = new THREE.Vector3(0, 1, 0);
@@ -83,7 +84,7 @@ export class DuelView {
     this.board = new DuelBoard(this.frame, this.clash); this.pieces = new DuelPieces(this.frame); this.marks = new DuelMarks(this.frame);
     this.intentDraw = new DuelIntent(this.frame, this.marks); this.bursts = new DuelBursts(this.frame); this.beats = new DuelBeats(this);
     this.flee = new DuelFlee(this); this.folded = false;
-    this.glows = new DuelGlows(this); this.worth = new DuelWorth(this); this.foresight = new DuelForesight(this); this.juice = new DuelJuice(this); this.stage = new DuelStage(this); this.dive = new FormDive(this); this.gauges = new SkillGauges(this); this.foeCast = new FoeCast(this); this.tune = [null, null]; this.pendingKind = null;
+    this.glows = new DuelGlows(this); this.worth = new DuelWorth(this); this.foresight = new DuelForesight(this); this.juice = new DuelJuice(this); this.stage = new DuelStage(this); this.dive = new FormDive(this); this.gauges = new SkillGauges(this); this.foeCast = new FoeCast(this); this.cutIn = new FoeCutIn(this); this.tune = [null, null]; this.pendingKind = null;
     this.intentWhole = true; // (the session hands intent() bot.js intentOf's whole: { actions, junk, cells, hits })
     this.u = new THREE.Vector3(1, 0, 0); this.face = new THREE.Vector3(0, 0, 1); this.centre = new THREE.Vector3();
     this.sent = [0, 0]; this.pending = [0, 0]; this.depth = [0, 0]; this.apShown = [5, 5]; this.forms = ['hand', 'hand']; this.lineCol = 10;
@@ -117,7 +118,7 @@ export class DuelView {
     this.clash.groundTo(Math.max(oc.distanceTo(at), of.distanceTo(at)) + 3); // (the ground past both bodies: domains.js)
     oc.y += 1; of.y += 1; this.clash.unfold(oc, of);
     this.game.spiritualLink?.attach(this, this.linkEnd);
-    this.gauges.layout(this.board3); this.stage.open(); this.dive.open(); // (the gauges: skillgauges.js; the arena first, the Jar at your spot: stage.js, formdive.js)
+    this.gauges.layout(this.board3); this.stage.open(); this.dive.open(); this.cutIn.warm(); // (the gauges: skillgauges.js; the arena first, the Jar at your spot: stage.js, formdive.js)
   }
 
   /** Fold the domains away and take the board down (at once, with `now`). */
@@ -125,7 +126,7 @@ export class DuelView {
     if (!this.isOpen && !this.closing) return;
     this.isOpen = false; this.beats.clear(); this.intentDraw.clear(); this.foresight.clear(); this.worth.clear(); this.glows.clear(); this.tune = [null, null]; this.marks.hover(null); this.marks.select([]); this.marks.stars(0, 0); this.marks.stars(1, 0);
     this.game.spiritualLink?.detach(this); this.clash.collapse(); this.closing = !now;
-    this.flee.clear(); this.marks.refuse(null); this.juice.clear(); this.stage.close(); this.dive.close(); this.gauges.clear(); this.foeCast.clear(); this.armed = null;
+    this.flee.clear(); this.marks.refuse(null); this.juice.clear(); this.stage.close(); this.dive.close(); this.gauges.clear(); this.foeCast.clear(); this.cutIn.clear(); this.armed = null;
     this.clash.dome.scale.setScalar(DUEL_VIEW.radius); this.clash.U.uRadius.value = DUEL_VIEW.radius;
     if (now) { this.clash.open = [0, 0]; this.clash.update(0); this.root.visible = false; this.bursts.clear(); }
   }
@@ -267,7 +268,16 @@ export class DuelView {
   drainFoe() { const f = this.foe; if (f?.pos && this.game.dataDrain) { this.frame.localToWorld(this.handPoint(1, _w)); this.game.dataDrain.play(f, _w.clone()); } this.depth[1] = 0; }
 
   readCounts() { const S = this.state.sides; this.sent = [S[0].sent || 0, S[1].sent || 0]; this.pending = [S[0].pending || 0, S[1].pending || 0]; this.showCounts(); }
-  readPoints() { const s = this.state; for (const side of [0, 1]) { const S = s.sides[side], left = side === s.toMove ? s.apLeft : S.ap, lost = side === s.toMove ? this.board.ap[side][2] : 0; this.apShown[side] = left; this.board.setAP(side, left, S.ap, Math.min(lost, S.ap - left)); } }
+  readPoints() { const s = this.state; this.board.meter = s.style === 'pve'; if (this.board.meter) return this.readPush(); for (const side of [0, 1]) { const S = s.sides[side], left = side === s.toMove ? s.apLeft : S.ap, lost = side === s.toMove ? this.board.ap[side][2] : 0; this.apShown[side] = left; this.board.setAP(side, left, S.ap, Math.min(lost, S.ap - left)); } }
+  /** The PvE duel's foot (South, 2026-10-28: no action points): the same beads as two meters of one column each (`perColumn`), the
+   *  Courier's end your clears banked toward the Line's next step into the aberrant (`push`), the foe's end the junk landed on you toward
+   *  its step back (`landed`); a bead lit since the last read lights with a puff of its colour (`fx`). */
+  readPush(fx) {
+    const s = this.state; if (!s) return; const n = s.perColumn || 3, S = s.sides[0], v = [Math.min(n, S.push || 0), Math.min(n, S.landed || 0)];
+    for (const side of [0, 1]) { const was = this.board.ap[side][0];
+      if (fx) for (let k = was; k < v[side]; k++) { this.board.apAt(side, k, _w); this.bursts.burst(_w, side ? feelColour(this.board.foe, _c).getHex() : 0x7fdcff, 4, { speed: 0.5, life: 0.4, fall: -1, size: 0.016 }); }
+      this.apShown[side] = v[side]; this.board.setAP(side, v[side], n, 0); }
+  }
   readFight() { const s = this.state; for (const side of [0, 1]) { const S = s.sides[side]; this.board.setEmo(side, S.emo); this.depth[side] = S.depth || 0; this.marks.stars(side, this.depth[side], this.headOf(side, _w)); } }
 
   /** The duel stood again from a state the kernel restored (the session's undo, before its `undo` event plays): the board and pieces

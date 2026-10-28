@@ -7,7 +7,11 @@
 //                   only as a faint arrow against the wall each half falls to (the board's own map, board.grav), the Line a seam of the film
 //   THE LINE'S BEADS a brass bead at the Line's head and foot on the frame, sliding with it
 //   THE AP BEADS    five Lachrymite beads a side in the frame's foot (DUEL.ap): the Courier's in the film, the foe's in its feeling, dark
-//                   when spent, cracked black when a stun or a delay took them (the `turn` event's `lost`)
+//                   when spent, cracked black when a stun or a delay took them (the `turn` event's `lost`); in the PvE duel (no action
+//                   points, South 2026-10-28) no beads: the push meters (`B.meter`) are drawn on the Line's seam itself, where the
+//                   board view always shows it (the view crops the frame's top and foot): one column's worth (`perColumn`) each, filled
+//                   from the foot, yours on the seam's foe side (your clears banked toward the Line's next step), its on yours (the junk
+//                   landed on you) (domains.js uMeter, duelview.js readPush)
 //   THE EMO COLUMNS a side's EmO, a bar of its colour up the frame's outer edge, white at a break
 //   THE KINTSUGI    the frame's gold seam, lit when the Courier wins
 //   THE FLOOR LIPS  a darker clay ledge on the edge each half's gravity points to (the aberrant Lantern Wisp's half, burning upward:
@@ -43,7 +47,7 @@ function box(w, h, d, x, y, z, hex) {
 export class DuelBoard {
   constructor(parent, clash) {
     this.parent = parent; this.clash = clash; this.group = new THREE.Group(); this.group.name = 'duel-tsuitate'; parent.add(this.group);
-    this.built = null; this.ap = [[5, 5, 0], [5, 5, 0]]; this.emo = [0, 0]; this.white = [0, 0]; this.t = 0; this.cracks = [];
+    this.built = null; this.meter = false; this.ap = [[5, 5, 0], [5, 5, 0]]; this.emo = [0, 0]; this.white = [0, 0]; this.t = 0; this.cracks = [];
   }
 
   /** The frame, the slab and the beads for a board of w x h (made once a size). */
@@ -130,7 +134,7 @@ export class DuelBoard {
   }
 
   /** A side's beads: `left` lit of `max`, the last `lost` cracked. */
-  setAP(side, left, max = 5, lost = 0) { this.ap[side] = [left, max, lost]; }
+  setAP(side, left, max = 5, lost = 0) { this.ap[side] = [left, max, lost]; this.clash.setMeter(this.ap[0][0] / Math.max(1, this.ap[0][1]), this.ap[1][0] / Math.max(1, this.ap[1][1]), this.ap[0][1], this.meter); }
   /** One more of a side's beads cracked (the `turn` event's `lost`, one at a time): returns where, for a puff of chips. */
   crack(side, out = new THREE.Vector3()) {
     const A = this.ap[side]; A[2] = Math.min(A[1], A[2] + 1); A[0] = Math.min(A[0], A[1] - A[2]);
@@ -138,7 +142,9 @@ export class DuelBoard {
     return this.apAt(side, A[1] - A[2], out);
   }
   apAt(side, k, out = new THREE.Vector3()) {
-    const { base, border: b, lip } = DUEL_VIEW, W = this.W; return out.set(side ? W / 2 - 0.2 - k * 0.17 : -W / 2 + 0.2 + k * 0.17, base - b / 2, lip + 0.02);
+    const { base, border: b, lip } = DUEL_VIEW, W = this.W;
+    if (this.meter) { const { cs } = DUEL_VIEW, n = Math.max(1, this.ap[side][1]); return out.set((this.line - this.w / 2) * cs + (side ? -0.16 : 0.16) * cs, base + this.H * ((k + 0.5) / n), DUEL_VIEW.front); } // (a notch of the push meters on the Line's seam: domains.js)
+    return out.set(side ? W / 2 - 0.2 - k * 0.17 : -W / 2 + 0.2 + k * 0.17, base - b / 2, lip + 0.02);
   }
   setEmo(side, emo) { this.emo[side] = Math.max(0, Math.min(1, emo || 0)); }
   whiteEmo(side) { this.white[side] = 1; }
@@ -149,7 +155,7 @@ export class DuelBoard {
     this.t += dt;
     let n = 0;
     for (const side of [0, 1]) {
-      const [left, max, lost] = this.ap[side];
+      const [left, max, lost] = this.ap[side]; if (this.meter) continue;
       for (let k = 0; k < max && n < 16; k++) {
         const isLost = k >= max - lost, lit = !isLost && k < left, cr = this.cracks.find((c) => c.side === side && c.k === k && c.age < 0.4);
         this.apAt(side, k, _p); if (cr) _p.x += Math.sin(cr.age * 90) * 0.01 * (1 - cr.age / 0.4);

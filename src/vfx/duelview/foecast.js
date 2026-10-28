@@ -8,7 +8,7 @@
 //                    beat's own); PETRIFY a spiral to each gem, the gem greying and dropping to stone (its piece swapped for the junk's
 //                    id); SEAL a chain slammed down a column of yours, held while the column is sealed; SAP your skill troughs drained,
 //                    motes flying to it; RECLAIM a shove from its body to the Line (the line event after it the retreat)
-//   ITS MOMENTS      foe.desperate: a held beat, its half flashed, embers off it, DESPERATE over it; foe.stagger: a jolt, gold daze off
+//   ITS MOMENTS      foe.desperate (after its limit break's cut-in, cutin.js): its half flashed, embers off it; foe.stagger: a jolt, gold daze off
 //                    its head, STAGGER, its badges knocked back a turn
 //   THE CONQUEST     a column taken (a line event of yours): a sweep of the film down it, its frozen gems lit as they wake; one lost: the
 //                    sweep in its feeling, the other way
@@ -97,8 +97,7 @@ export class FoeCast {
     const V = this.view, at = this.head(new THREE.Vector3()), cs = this.cs;
     if (e.type === 'foe.stagger') { this.knock = 1; V.stage?.jolt?.(0.45); V.juice.word('STAGGER', _a.copy(at).add(_b.set(0, 0.2, 0.05)), GOLD, { h: 0.12, dur: 1 }); V.bursts.burst(at, GOLD, 14, { speed: 1.4, life: 0.6, fall: 0, spread: 0.3 }); V.bursts.burst(at, 0xffffff, 6, { speed: 0.5, life: 0.4, fall: 0, size: 0.05 }); return { events: [e], dur: FOE_CAST.stagger }; }
     if (e.type === 'foe.desperate') {
-      const hex = feelColour(V.aspect, _c).getHex(); this.burn = 1; V.clash.flash(1); V.stage?.jolt?.(1); V.juice.hold = 0.25;
-      V.juice.word('DESPERATE', _a.copy(at).add(_b.set(0, 0.25, 0.05)), hex, { h: 0.15, dur: 1.4 }); if (V.game.glitch?.pulse) V.game.glitch.pulse({ split: 0.18, tear: 0.12, dur: 0.35 });
+      const hex = feelColour(V.aspect, _c).getHex(); this.burn = 1; V.clash.flash(1); V.stage?.jolt?.(1); V.juice.hold = 0.25; // (its word, CORNERED, and the glitch: the limit break's cut-in before this, cutin.js)
       let k = 0; return { events: [e], dur: FOE_CAST.desperate, step: (u) => { while (k < Math.floor(u * 6)) { k++; V.bursts.burst(at, k % 2 ? EMBER : hex, 12, { speed: 2.2, life: 0.7, fall: -1, spread: 0.5 }); } } };
     }
     if (e.type !== 'foe.skill') return { events: [e], dur: 0 };

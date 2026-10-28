@@ -30,7 +30,8 @@ export class SkillGauges {
 
   /** Two troughs on the top member over your half, left of the Line's head. */
   layout(B) {
-    const { cs, base, border: b, lip } = DUEL_VIEW, W = B.w * cs, H = B.h * cs, x0 = -W / 2 + cs * 0.4, x1 = ((B.line ?? B.w / 2) - B.w / 2) * cs - cs * 0.9;
+    const line = this.view.lineCol ?? B.line ?? B.w / 2; this.laid = line;
+    const { cs, base, border: b, lip } = DUEL_VIEW, W = B.w * cs, H = B.h * cs, x0 = -W / 2 + cs * 0.4, x1 = (line - B.w / 2) * cs - cs * 0.9;
     const span = Math.max(cs * 2, x1 - x0), gap = cs * 0.3, w = (span - gap) / 2, y = base + H + b * 0.5, h = b * 0.36;
     this.slots.forEach((S, i) => { S.x = x0 + i * (w + gap); S.w = w;
       S.trough.position.set(S.x, y, lip + 0.004); S.trough.scale.set(w, h, 0.012);
@@ -42,6 +43,7 @@ export class SkillGauges {
   update(dt, s) {
     const K = s && oneGesture(s) ? skillsOf(s, 0) : [];
     this.group.visible = K.length > 0; if (!K.length) return;
+    if (this.laid !== this.view.lineCol && this.view.board3) this.layout(this.view.board3); // (the Line moved: the troughs make room)
     this.t += dt;
     this.slots.forEach((S, i) => {
       const k = K[i]; S.trough.visible = S.fill.visible = !!k; if (!k) return;
