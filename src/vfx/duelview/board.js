@@ -7,7 +7,11 @@
 //                   only as a faint arrow against the wall each half falls to (the board's own map, board.grav), the Line a seam of the film
 //   THE LINE'S BEADS a brass bead at the Line's head and foot on the frame, sliding with it
 //   THE AP BEADS    five Lachrymite beads a side in the frame's foot (DUEL.ap): the Courier's in the film, the foe's in its feeling, dark
-//                   when spent, cracked black when a stun or a delay took them (the `turn` event's `lost`)
+//                   when spent, cracked black when a stun or a delay took them (the `turn` event's `lost`); in the PvE duel (no action
+//                   points, South 2026-10-28) the same beads are the push meters (`B.meter`), one column's worth (`perColumn`) each,
+//                   flanking the Line's head on the top member where the board view always shows them: yours toward the foe, your
+//                   clears banked toward the Line's next step; its toward you, the junk landed on you (duelview.js readPush). The
+//                   frame's foot carries nothing then (the board view crops it)
 //   THE EMO COLUMNS a side's EmO, a bar of its colour up the frame's outer edge, white at a break
 //   THE KINTSUGI    the frame's gold seam, lit when the Courier wins
 //   THE FLOOR LIPS  a darker clay ledge on the edge each half's gravity points to (the aberrant Lantern Wisp's half, burning upward:
@@ -29,6 +33,8 @@ import { DUEL_VIEW, feelColour } from './layout.js';
 import { duelMaterials } from './pieces.js';
 
 const TERRACOTTA = [0x94603e, 0x7a4a30, 0x5a3322], ASH = 0xa7ad7c, FOOT = 0x5e3622, BACK = 0x3a2016;
+/** The PvE duel's push meters on the top member beside the Line's head (m from its centre; a bead's spacing). */
+export const METER = { from: 0.15, step: 0.12 };
 const SPENT = new THREE.Color(0x2a1a14), LOST = new THREE.Color(0x0c0808);
 const _m = new THREE.Matrix4(), _p = new THREE.Vector3(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(), _c = new THREE.Color();
 
@@ -43,7 +49,7 @@ function box(w, h, d, x, y, z, hex) {
 export class DuelBoard {
   constructor(parent, clash) {
     this.parent = parent; this.clash = clash; this.group = new THREE.Group(); this.group.name = 'duel-tsuitate'; parent.add(this.group);
-    this.built = null; this.ap = [[5, 5, 0], [5, 5, 0]]; this.emo = [0, 0]; this.white = [0, 0]; this.t = 0; this.cracks = [];
+    this.built = null; this.meter = false; this.ap = [[5, 5, 0], [5, 5, 0]]; this.emo = [0, 0]; this.white = [0, 0]; this.t = 0; this.cracks = [];
   }
 
   /** The frame, the slab and the beads for a board of w x h (made once a size). */
@@ -138,7 +144,9 @@ export class DuelBoard {
     return this.apAt(side, A[1] - A[2], out);
   }
   apAt(side, k, out = new THREE.Vector3()) {
-    const { base, border: b, lip } = DUEL_VIEW, W = this.W; return out.set(side ? W / 2 - 0.2 - k * 0.17 : -W / 2 + 0.2 + k * 0.17, base - b / 2, lip + 0.02);
+    const { base, border: b, lip } = DUEL_VIEW, W = this.W;
+    if (this.meter) { const h = this.head.position; return out.set(h.x + (side ? -1 : 1) * (METER.from + k * METER.step), h.y, lip + 0.02); } // (the push meters flank the Line's head: yours toward the foe, its toward you)
+    return out.set(side ? W / 2 - 0.2 - k * 0.17 : -W / 2 + 0.2 + k * 0.17, base - b / 2, lip + 0.02);
   }
   setEmo(side, emo) { this.emo[side] = Math.max(0, Math.min(1, emo || 0)); }
   whiteEmo(side) { this.white[side] = 1; }

@@ -1,0 +1,182 @@
+// ---------------------------------------------------------------------------------------
+// A FOE SKILL'S CUT-IN / THE LIMIT BREAK (plain names; South, 2026-10-28: "go full throttle on the aberrant's special attacks"; the
+// strongest "should feel like a limit break"): before each foe skill casts (foecast.js), the duel stops for a held beat while a band
+// tears across the screen: a slanted slab of ink in the aberrant's feeling, speed lines streaming through it, halftone at its edges,
+// a gold and feeling-coloured rim; on its right the aberrant itself, live, cut to its head in a strip (a second small render of its
+// own meshes under a key and a rim in its feeling, pushing in through the hold); on its left the skill's label in the System's type
+// (Espada's words: the label alone, HURL .. RECLAIM; the log carries the sentence), slammed down with its shadow in the feeling. Then
+// the band squashes to a line and is gone. `foe.desperate` is the limit break: a wider band, the screen round it dimmed, the frame
+// flashed in negative as CORNERED lands, a longer hold; the skills it casts at once come after it with no cut-in of their own.
+// The phase's event is `foe.cutin { skill, limit }` (a sting's hook: Wanda's).
+// Drawn on the overlay's scene (render/overlayscene.js: CSS px, after the grade, at the 480-line present), one plane, one program: the
+// band, the portrait and the word are all its fragment. The portrait's target and its proxies are built and drawn once at the duel's
+// open (`warm`), so neither program compiles at the moment it is wanted.
+// Prior art: Fire Emblem's and Super Robot Wars' eye-strip cut-ins, Persona 5's all-out attack slab and halftone, Final Fantasy VII's
+// limit break (the screen held, the name in the frame), Guilty Gear's super flash, Puzzle & Dragons' enemy skill banner; the creature
+// tags' own render of a creature's meshes alone (creaturetags.js sampleMesh).
+//
+//   const C = new FoeCutIn(view)   C.warm()   C.beat(e) -> phase | null (once an event)   C.clear()   CUT_IN (the knobs)
+// ---------------------------------------------------------------------------------------
+import * as THREE from 'three';
+import { FONT } from '../../ui/theme.js';
+import { FOE_SKILLS } from '../../progress/duel/foeskills.js';
+import { feelColour, sm, clamp01 } from './layout.js';
+
+/** in / hold / out: the band's beats (real s; the limit break's hold its own); band: its half height (of the screen's); y: its centre;
+ *  tilt: its slope; portrait: the strip's share of the width; rt: the portrait's target width (px); fov: the strip camera's (deg);
+ *  burst: real s after a limit break in which its own casts come without a cut-in. */
+export const CUT_IN = { in: 0.14, hold: 0.62, out: 0.16, limitHold: 1.05, band: 0.16, limitBand: 0.24, y: 0.4, tilt: -0.09, portrait: 0.44, rt: 512, fov: 24, burst: 4 };
+const INK = '#17111f', GOLD = new THREE.Color(0xffd36a);
+const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Color(), _bb = new THREE.Box3();
+
+const FRAG = /* glsl */`
+uniform sampler2D uPort, uWord; uniform vec2 uRes; uniform vec3 uFeel, uGold; uniform float uT, uIn, uOut, uLimit, uWordAsp, uSlam, uWordOn, uFlash, uDim, uDrift;
+uniform vec4 uBand; // (centre y px, half height px, slope, portrait share)
+varying vec2 vUv;
+float h21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
+void main() {
+  vec2 px = vec2(vUv.x, 1.0 - vUv.y) * uRes; float W = uRes.x;
+  float hh = uBand.y * (1.0 - 0.97 * uOut), yb = px.y - uBand.x - (px.x - W * 0.5) * uBand.z, by = yb / max(hh, 0.5);
+  float wipe = W * (1.0 - uIn * 1.2) + yb * 0.7; // (its leading edge, slanted, from the right)
+  vec4 o = vec4(0.0, 0.0, 0.0, uDim * (1.0 - uOut));
+  if (abs(by) <= 1.0 && px.x >= wipe) {
+    float bx = px.x / uRes.y;
+    vec3 c = mix(vec3(0.03, 0.02, 0.035), uFeel * 0.2, 0.4 + 0.3 * by);
+    float row = floor((by * 0.5 + 0.5) * 44.0), rh = h21(vec2(row, 3.0)), s = fract(bx * (0.6 + rh * 1.4) + uT * (2.2 + rh * 3.5) + rh);
+    float streak = smoothstep(0.0, 0.05, s) * (1.0 - smoothstep(0.05, 0.4, s)) * step(0.5, rh);
+    c += uFeel * streak * 0.6 + streak * 0.06;
+    vec2 cell = fract(px / 6.0) - 0.5; float edge = smoothstep(0.4, 1.0, abs(by)), r = edge * 0.5;
+    c = mix(c, uFeel * 0.55, (1.0 - smoothstep(r - 0.1, r, length(cell))) * edge * 0.75);
+    float pw = W * uBand.w, ph = 2.0 * uBand.y; vec2 p0 = vec2(W * (0.985 - uBand.w) + (1.0 - uIn) * W * 0.3 - uDrift, uBand.x - uBand.y + (px.x - W * 0.5) * uBand.z);
+    vec2 pu = (px - p0) / vec2(pw, ph);
+    if (pu.x > 0.0 && pu.x < 1.0 && pu.y > 0.0 && pu.y < 1.0) {
+      vec4 P = texture2D(uPort, vec2(pu.x, 1.0 - pu.y)); vec3 pc = P.rgb / (1.0 + P.rgb) * 1.45;
+      c = mix(c, pc, P.a * smoothstep(0.0, 0.3, pu.x));
+    }
+    float wh = min(2.0 * uBand.y * 0.62, W * 0.46 / uWordAsp) * uSlam, ww = wh * uWordAsp; vec2 wc = vec2(W * 0.3, uBand.x + (W * 0.3 - W * 0.5) * uBand.z);
+    vec2 wu = (px - wc) / vec2(ww, wh) + 0.5; wu.y += (px.x - wc.x) * uBand.z / wh;
+    vec2 su = wu - vec2(0.012, -0.06);
+    if (su.x > 0.0 && su.x < 1.0 && su.y > 0.0 && su.y < 1.0) c = mix(c, uFeel * 1.2, texture2D(uWord, vec2(su.x, 1.0 - su.y)).a * uWordOn * 0.9);
+    if (wu.x > 0.0 && wu.x < 1.0 && wu.y > 0.0 && wu.y < 1.0) { vec4 T = texture2D(uWord, vec2(wu.x, 1.0 - wu.y)); c = mix(c, T.rgb, T.a * uWordOn); }
+    float rim = (1.0 - abs(by)) * hh;
+    c = mix(c, uFeel * 1.5, 1.0 - smoothstep(2.0, 4.5, rim)); c = mix(c, uGold * 1.2, 1.0 - smoothstep(0.6, 1.8, rim));
+    c += vec3(1.0) * (1.0 - smoothstep(0.0, 24.0, px.x - wipe)) * (1.0 - uIn) * 2.0;
+    c = mix(c, vec3(1.0) - clamp(c, 0.0, 1.0), uFlash);
+    o = vec4(c, 1.0);
+  }
+  gl_FragColor = o;
+  #include <colorspace_fragment>
+}`;
+const VERT = /* glsl */`varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
+
+/** A label in the System's type, white with an ink keyline, on a transparent canvas (its aspect beside it). */
+function wordTexture(text) {
+  const H = 160, c = document.createElement('canvas'), x = c.getContext('2d'), font = `bold 120px ${FONT.sys}`;
+  x.font = font; const w = Math.ceil(x.measureText(text).width + 70); c.width = w; c.height = H;
+  const paint = () => { x.clearRect(0, 0, w, H); x.font = font; x.textAlign = 'center'; x.textBaseline = 'middle'; x.lineJoin = 'round';
+    x.lineWidth = 18; x.strokeStyle = INK; x.strokeText(text, w / 2, H / 2 + 6); x.fillStyle = '#ffffff'; x.fillText(text, w / 2, H / 2 + 6); };
+  paint(); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.minFilter = THREE.LinearFilter; t.generateMipmaps = false;
+  document.fonts?.load?.(font).then(() => { paint(); t.needsUpdate = true; }, () => {});
+  return { tex: t, aspect: w / H };
+}
+
+export class FoeCutIn {
+  constructor(view) { this.view = view; this.game = view.game; this.words = new Map(); this.seen = new WeakSet(); this.age = -1; this.limitAt = -99; this.t = 0; this.proxies = []; }
+
+  /** The plane on the overlay's scene, the portrait's target, scene, camera and lights: made once. */
+  ensure() {
+    const S = this.game.overlayScene; if (this.mesh || !S || typeof document === 'undefined') return !!this.mesh;
+    const g = new THREE.PlaneGeometry(1, 1); g.translate(0.5, -0.5, 0);
+    this.rt = new THREE.WebGLRenderTarget(CUT_IN.rt, CUT_IN.rt / 2, { type: THREE.HalfFloatType });
+    this.u = { uPort: { value: this.rt.texture }, uWord: { value: null }, uRes: { value: new THREE.Vector2(1, 1) }, uFeel: { value: new THREE.Color() }, uGold: { value: GOLD.clone() },
+      uT: { value: 0 }, uIn: { value: 0 }, uOut: { value: 0 }, uLimit: { value: 0 }, uWordAsp: { value: 3 }, uSlam: { value: 1 }, uWordOn: { value: 0 }, uFlash: { value: 0 }, uDim: { value: 0 }, uDrift: { value: 0 }, uBand: { value: new THREE.Vector4() } };
+    const mat = new THREE.ShaderMaterial({ name: 'duel-cutin', uniforms: this.u, vertexShader: VERT, fragmentShader: FRAG, transparent: true, depthTest: false, depthWrite: false });
+    this.mesh = new THREE.Mesh(g, mat); this.mesh.name = 'duel-cutin'; this.mesh.frustumCulled = false; this.mesh.renderOrder = 50; this.mesh.userData.overlayHidden = true;
+    this.slot = S.add(this.mesh, { anchor: 'tl', z: 400, update: (dt, slot) => this.frame(dt, slot) });
+    this.scene = new THREE.Scene(); this.cam = new THREE.PerspectiveCamera(CUT_IN.fov, 2, 0.05, 60);
+    this.key = new THREE.DirectionalLight(0xfff2e0, 2.6); this.rim = new THREE.DirectionalLight(0xffffff, 3.2); this.amb = new THREE.AmbientLight(0xffffff, 0.35);
+    this.scene.add(this.key, this.key.target, this.rim, this.rim.target, this.amb);
+    return true;
+  }
+
+  word(text) { let w = this.words.get(text); if (!w) { w = wordTexture(text); this.words.set(text, w); } return w; }
+
+  /** The foe's drawn meshes as proxies in the portrait's scene (its geometry, materials and skeleton shared), and its bounds. */
+  gather() {
+    for (const { p } of this.proxies) this.scene.remove(p); this.proxies.length = 0; this.box = null;
+    const f = this.view.foe, root = f?.root || f?.model?.group; if (!root) return false;
+    root.updateMatrixWorld(true); const box = new THREE.Box3();
+    root.traverseVisible((o) => {
+      if (!o.isMesh || o.isPoints || o.isSprite || !o.material || /databug|glint|aura|shadow|tag/i.test(o.name || '')) return;
+      let p; if (o.isSkinnedMesh && o.skeleton) { p = new THREE.SkinnedMesh(o.geometry, o.material); p.bind(o.skeleton, o.bindMatrix); p.bindMode = o.bindMode; } else p = new THREE.Mesh(o.geometry, o.material);
+      p.matrixAutoUpdate = false; p.matrix.copy(o.matrixWorld); p.frustumCulled = false; this.scene.add(p); this.proxies.push({ o, p });
+      if (!o.isSkinnedMesh) { if (!o.geometry.boundingBox) o.geometry.computeBoundingBox(); box.union(_bb.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld)); }
+    });
+    if (box.isEmpty() && f.pos) box.setFromCenterAndSize(_a.copy(f.pos).setY(f.pos.y + 1), _b.set(1, 2, 1));
+    this.box = box.isEmpty() ? null : box; return this.proxies.length > 0;
+  }
+
+  /** The strip's camera on the foe's head from in front of it (toward the Courier's end), a quarter turned, a little low; pushed in by `k`. */
+  aim(k, limit) {
+    const V = this.view, B = this.box; if (!B) return;
+    const size = B.getSize(_a), h = Math.max(0.4, size.y), ve = h * (limit ? 0.42 : 0.52), focus = B.getCenter(_b).setY(B.max.y - h * 0.3);
+    const yaw = (limit ? -0.18 : 0.32), dir = _a.copy(V.u).negate().setY(0).normalize().applyAxisAngle(THREE.Object3D.DEFAULT_UP, yaw);
+    const d = ve / 2 / Math.tan(THREE.MathUtils.degToRad(CUT_IN.fov / 2)) * (1 - 0.12 * k);
+    this.cam.position.copy(focus).addScaledVector(dir, d); this.cam.position.y -= ve * 0.12; this.cam.up.set(limit ? Math.sin(0.12) : 0, 1, 0); this.cam.lookAt(focus);
+    this.key.position.copy(this.cam.position).add(_a.set(-dir.z, 1.1, dir.x).multiplyScalar(d)); this.key.target.position.copy(focus);
+    this.rim.position.copy(focus).addScaledVector(dir, -d).setY(focus.y + d * 0.6); this.rim.target.position.copy(focus);
+    this.key.target.updateMatrixWorld(); this.rim.target.updateMatrixWorld();
+  }
+
+  /** The portrait's strip drawn (its target), the main renderer's state put back. */
+  shoot(aspect) {
+    const r = this.game.overlayScene?.r; if (!r || !this.proxies.length) return;
+    for (const { o, p } of this.proxies) { p.matrix.copy(o.matrixWorld); p.visible = o.visible; }
+    const h = Math.max(64, Math.round(CUT_IN.rt / Math.max(1, aspect))); if (this.rt.height !== h) this.rt.setSize(CUT_IN.rt, h);
+    this.cam.aspect = CUT_IN.rt / h; this.cam.updateProjectionMatrix();
+    const was = r.getRenderTarget(), auto = r.autoClear, cc = r.getClearColor(_c), ca = r.getClearAlpha(), cr = cc.clone();
+    try { r.setRenderTarget(this.rt); r.setClearColor(0x000000, 0); r.autoClear = true; r.clear(); r.render(this.scene, this.cam); }
+    finally { r.setRenderTarget(was); r.setClearColor(cr, ca); r.autoClear = auto; }
+  }
+
+  /** At the duel's open: the proxies gathered and drawn once and the band's program compiled, hidden. */
+  warm() {
+    if (this.view.state?.style !== 'pve' || !this.ensure()) return;
+    this.gather(); this.feel(); this.aim(0, false); this.shoot(2.5);
+    const S = this.game.overlayScene, r = S.r; this.mesh.visible = true; try { const was = r.getRenderTarget(); r.setRenderTarget(null); r.compile(this.mesh, S.camera); r.setRenderTarget(was); } catch { /* (a headless page without a context: drawn on first use) */ }
+    this.mesh.visible = false;
+  }
+
+  feel() { feelColour(this.view.aspect, this.u.uFeel.value); }
+
+  /** The cut-in's phase for a foe event, once an event: a skill's, or the limit break's; null for the rest. */
+  beat(e) {
+    if (this.seen.has(e) || !this.ensure()) return null; this.seen.add(e);
+    const limit = e.type === 'foe.desperate';
+    if (!limit && (e.type !== 'foe.skill' || this.t - this.limitAt < CUT_IN.burst)) return null;
+    const text = limit ? 'CORNERED' : (FOE_SKILLS[e.skill]?.label || e.skill || '').toUpperCase(); if (!text) return null;
+    if (limit) this.limitAt = this.t;
+    if (!this.proxies.length || !this.proxies[0].o.parent) this.gather();
+    const W = this.word(text); this.u.uWord.value = W.tex; this.u.uWordAsp.value = W.aspect; this.u.uLimit.value = limit ? 1 : 0; this.feel();
+    const dur = CUT_IN.in + (limit ? CUT_IN.limitHold : CUT_IN.hold) + CUT_IN.out; this.limit = limit; this.dur = dur; this.age = 0; this.mesh.userData.overlayHidden = false;
+    if (limit) { this.view.game.glitch?.pulse?.({ split: 0.12, tear: 0.08, dur: 0.25 }); }
+    return { events: [{ type: 'foe.cutin', side: 1, skill: limit ? 'desperate' : e.skill, limit }], dur, step: (u, age) => { this.age = age; }, end: () => this.hide() };
+  }
+
+  hide() { this.age = -1; if (this.mesh) { this.mesh.userData.overlayHidden = true; this.mesh.visible = false; } }
+  clear() { this.hide(); this.limitAt = -99; for (const { p } of this.proxies) this.scene?.remove(p); this.proxies.length = 0; }
+
+  /** The overlay's call each frame it is shown: the band laid out on the screen, its beats, the strip drawn. */
+  frame(dt, slot) {
+    this.t += dt; if (this.age < 0) return;
+    const w = slot.view.w, h = slot.view.h, u = this.u, a = this.age, L = this.limit, hold = L ? CUT_IN.limitHold : CUT_IN.hold;
+    this.mesh.scale.set(w, h, 1); u.uRes.value.set(w, h); u.uT.value = this.t;
+    const kin = sm(clamp01(a / CUT_IN.in)), kout = sm(clamp01((a - CUT_IN.in - hold) / CUT_IN.out)), kh = clamp01((a - CUT_IN.in) / hold);
+    u.uIn.value = kin; u.uOut.value = kout; u.uDim.value = L ? 0.5 * kin : 0; u.uDrift.value = kh * w * 0.02;
+    const band = (L ? CUT_IN.limitBand : CUT_IN.band) * h * (w < h ? 0.7 : 1); u.uBand.value.set(h * CUT_IN.y, band, CUT_IN.tilt, CUT_IN.portrait);
+    const ws = a - 0.08, slam = clamp01(1 - ws / 0.12); u.uWordOn.value = ws > 0 ? 1 : 0; u.uSlam.value = 1 + (L ? 1.6 : 1.1) * slam * slam;
+    u.uFlash.value = L && ws > 0.1 && ws < 0.17 ? 1 : 0;
+    if (L && ws > 0.1 && !this.shook) { this.shook = true; this.view.stage?.jolt?.(1); } if (a < 0.05) this.shook = false;
+    this.aim(kh, L); this.shoot((w * CUT_IN.portrait) / (2 * band));
+  }
+}

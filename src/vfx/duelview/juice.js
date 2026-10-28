@@ -119,7 +119,7 @@ export class DuelJuice {
   scale(dt) { if (this.hold <= 0) return dt; this.hold -= dt; return dt * 0.04; }
 
   beat(beats, e) {
-    if (e.type === 'refund') return this.refund(e);
+    if (e.type === 'refund') return this.view.state?.style === 'pve' ? { events: [e], dur: 0 } : this.refund(e); // (no action points in the PvE duel: nothing to fly back)
     if (e.type === 'allclear') return this.allclear(e);
     if (e.type === 'trickle') return this.trickle(e);
     if (e.type === 'undo') return this.undo(e);
