@@ -128,10 +128,10 @@ vec3 spiritAt(vec2 q, float t, vec3 c, float i) { if (dot(c, c) < 1e-4) return v
 vec3 garden(vec3 dir, vec2 q, float t, float fl) {
   float bloom = uGarden.y, briar = uGarden.z, day = uGarden.w;
   if (fl > 0.5) { // the ground: the meadow under the Jar, flowers by the bloom, thorn canes by the briar
-    float g = fbm(q * 1.3), patch = smoothstep(0.35, 0.75, fbm(q * 0.6 + 3.1));
+    float g = fbm(q * 1.3), clump = smoothstep(0.35, 0.75, fbm(q * 0.6 + 3.1));
     vec3 col = mix(uGGnd, uGGrass, 0.55 + 0.35 * g) * (0.35 + 0.65 * day);
     vec2 fc = fract(q * 3.0) - 0.5; float fh = h21(floor(q * 3.0)), flower = step(1.0 - 0.35 * bloom, fh) * (1.0 - smoothstep(0.08, 0.16, length(fc)));
-    col = mix(col, uGBloom * (0.6 + 0.4 * day), flower * patch);
+    col = mix(col, uGBloom * (0.6 + 0.4 * day), flower * clump);
     float cane = 1.0 - smoothstep(0.0, 0.06, abs(sin(q.x * 2.3 + fbm(q * 0.8) * 6.0) * cos(q.y * 1.7)));
     return mix(col, vec3(0.13, 0.09, 0.05) * (0.5 + 0.5 * day), cane * briar * 0.85);
   }
