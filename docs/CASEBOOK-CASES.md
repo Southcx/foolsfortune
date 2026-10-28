@@ -4295,3 +4295,11 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   (`/^duel\.(line|full|cap|finisher)$/`, duelsession.js `finish`); the kernel's new `duel.secret` was not on it, and the fallback is 'line'.
 - **Fix:** `secret` on the list, its id carried (`how: 'secret'`, the death hook gets `secret`). Read, not yet played through in a browser.
 - **Rule:** NEW:new-end-new-name
+
+### 2026-10-28 · A secret won by a drag still ended as a Line win (Dovina's live probe, after Petra's fix)
+- **Seen:** with `secret` on the session's list, a Lantern Wisp snuffed by a Miracle still ended `how: 'line'`; the bus carried
+  `duel.secret { done }`, so tracking counted it, but the end was named wrong.
+- **Cause (as measured):** the kernel logs a turn's events (`endTurn` pushes them to `s.log`) but never an action's; a secret is won
+  inside `act`, so its `duel.secret` never reached the log the session's finish reads, and the fallback said 'line'.
+- **Fix:** `act` logs its `duel.*` events whenever the action decided the duel (duel.js). The live probe now ends `how: 'secret'`.
+- **Rule:** NEW:an-end-is-logged-where-it-happens

@@ -968,3 +968,5 @@ NEW:ask-the-capability-not-the-name. **A check asks what a mode can do, never wh
 
 NEW:new-end-new-name. **A new way a thing can end is added wherever its ends are named.** The session's list of end events fell back to
 'line' for one it did not know; grep the old ends' names when a kernel adds one.
+NEW:an-end-is-logged-where-it-happens. **An end is written to the log by whatever made it.** The session reads ends from the duel's
+  log; the kernel logged a turn's events but not an action's, so a secret won by a drag was invisible to it and named the fallback.
