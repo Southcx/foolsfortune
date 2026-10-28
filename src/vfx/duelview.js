@@ -68,6 +68,7 @@ import { DuelJuice } from './duelview/juice.js';
 import { DuelStage } from './duelview/stage.js';
 import { FormDive } from './duelview/formdive.js';
 import { reachOf } from './duelview/skillcast.js';
+import { FoeCast } from './duelview/foecast.js';
 import { SkillGauges } from './duelview/skillgauges.js';
 
 const TEAR = 0x7fdcff, COURIER_HEX = '#9fd8ff', UP = new THREE.Vector3(0, 1, 0);
@@ -82,7 +83,7 @@ export class DuelView {
     this.board = new DuelBoard(this.frame, this.clash); this.pieces = new DuelPieces(this.frame); this.marks = new DuelMarks(this.frame);
     this.intentDraw = new DuelIntent(this.frame, this.marks); this.bursts = new DuelBursts(this.frame); this.beats = new DuelBeats(this);
     this.flee = new DuelFlee(this); this.folded = false;
-    this.glows = new DuelGlows(this); this.worth = new DuelWorth(this); this.foresight = new DuelForesight(this); this.juice = new DuelJuice(this); this.stage = new DuelStage(this); this.dive = new FormDive(this); this.gauges = new SkillGauges(this); this.tune = [null, null]; this.pendingKind = null;
+    this.glows = new DuelGlows(this); this.worth = new DuelWorth(this); this.foresight = new DuelForesight(this); this.juice = new DuelJuice(this); this.stage = new DuelStage(this); this.dive = new FormDive(this); this.gauges = new SkillGauges(this); this.foeCast = new FoeCast(this); this.tune = [null, null]; this.pendingKind = null;
     this.intentWhole = true; // (the session hands intent() bot.js intentOf's whole: { actions, junk, cells, hits })
     this.u = new THREE.Vector3(1, 0, 0); this.face = new THREE.Vector3(0, 0, 1); this.centre = new THREE.Vector3();
     this.sent = [0, 0]; this.pending = [0, 0]; this.depth = [0, 0]; this.apShown = [5, 5]; this.forms = ['hand', 'hand']; this.lineCol = 10;
@@ -124,7 +125,7 @@ export class DuelView {
     if (!this.isOpen && !this.closing) return;
     this.isOpen = false; this.beats.clear(); this.intentDraw.clear(); this.foresight.clear(); this.worth.clear(); this.glows.clear(); this.tune = [null, null]; this.marks.hover(null); this.marks.select([]); this.marks.stars(0, 0); this.marks.stars(1, 0);
     this.game.spiritualLink?.detach(this); this.clash.collapse(); this.closing = !now;
-    this.flee.clear(); this.marks.refuse(null); this.juice.clear(); this.stage.close(); this.dive.close(); this.gauges.clear(); this.armed = null;
+    this.flee.clear(); this.marks.refuse(null); this.juice.clear(); this.stage.close(); this.dive.close(); this.gauges.clear(); this.foeCast.clear(); this.armed = null;
     this.clash.dome.scale.setScalar(DUEL_VIEW.radius); this.clash.U.uRadius.value = DUEL_VIEW.radius;
     if (now) { this.clash.open = [0, 0]; this.clash.update(0); this.root.visible = false; this.bursts.clear(); }
   }
@@ -251,6 +252,9 @@ export class DuelView {
   headOf(side, out) { const v = this.pieces.bodyAt(side); return v ? cellLocal(v.x, v.y - 0.55, this.board3, out).setZ(DUEL_VIEW.front + 0.05) : out.set(0, -99, 0); }
   /** Where the god hand stands over a side's half (the board's frame): the finisher's cubes go up into it. */
   handPoint(side, out) { const B = this.board3, cs = DUEL_VIEW.cs, x = side === 1 ? (this.lineCol + B.w) / 2 : this.lineCol / 2; return out.set((x - B.w / 2) * cs, DUEL_VIEW.base + B.h * cs + 0.5, 0.35); }
+  /** The PvE duel's drag timer (the session's: 1 full .. 0 out, null hidden), a bar under your half (foecast.js). */
+  dragClock(k) { this.foeCast.timer(k); }
+
   /** What of mine draws during a duel but stood in the scene before it opened (South, 2026-10-27: the duel is its own instance,
    *  render/duelinstance.js): the data drain and its crackle break at the finisher, the foe's stun stars. For the session's keep list. */
   instanceKeep() {
@@ -311,7 +315,7 @@ export class DuelView {
     const held = this.juice.scale(dt), shown = this.clash.update(held); // (a big play's held beat: the board's motion all but stops, the beats run on: juice.js)
     this.board.update(held); this.pieces.update(held); this.marks.update(held); this.bursts.update(held); this.flee.update(dt); this.juice.update(dt);
     if (this.isOpen && !this.beats.busy) this.flee.odds(this.state);
-    const st = this.isOpen && !this.closing ? this.stage.update(dt) : this.lastStage || { scale: 1, lift: 0, tilt: 0 }; this.lastStage = st; this.dive.update(dt); if (this.isOpen) this.gauges.update(dt, this.state); // (the zoom and the director: stage.js; who stands where: formdive.js)
+    const st = this.isOpen && !this.closing ? this.stage.update(dt) : this.lastStage || { scale: 1, lift: 0, tilt: 0 }; this.lastStage = st; this.dive.update(dt); if (this.isOpen) this.gauges.update(dt, this.state); this.foeCast.update(dt); // (the zoom and the director: stage.js; who stands where: formdive.js)
     for (const side of [0, 1]) if (this.depth[side]) this.marks.stars(side, this.depth[side], this.headOf(side, _w));
     const f = this.foe; if (this.isOpen && this.depth[1] > 0 && f?.alive !== false && f?.pos) this.game.stun?.dizzy?.set(f, f.head?.() || _w.copy(f.pos).setY(f.pos.y + 2), { stunned: true }); // (the same gold stars on the Figment in the world)
     if (this.closing && !shown) { this.closing = false; this.root.visible = false; this.bursts.clear(); }
@@ -353,7 +357,7 @@ export class DuelView {
     this.foresight.show(state, { actions: [], junk: 3, cells: [[12, 18], [13, 18]], hits: [[12, 18]] }, this.aspect); this.marks.pick({ x: 3, y: 3 }); this.glows.buildReach(4, 10, 4, 10);
     for (const side of [0, 1]) this.pieces.bodyAt(side); this.pieces.add('orb', { side: 0 }, 3, 3); this.pieces.add('stone', {}, 4, 3); this.pieces.add('bomb', {}, 5, 3);
     const coal = this.pieces.add('ember', { count: 2 }, 6, 3); coal.craze = 0.8; this.marks.refuse({ x: 7, y: 3 }); // (the crazing's quads, the dry rim)
-    this.juice.prewarm(); this.update(0.016); this.flee.prewarm(); this.flee.odds(state);
+    this.juice.prewarm(); this.foeCast.fling(_w.set(0, 1, 0.1), new THREE.Vector3(1, 1, 0.1), 0x4a3326); this.update(0.016); this.flee.prewarm(); this.flee.odds(state);
     this.dive.from.set(0, -50, 0); this.dive.to.set(1, -49, 0); this.dive.mid.set(0.5, -48, 0); this.dive.draw(0.6, 0); // (the stream's program)
     return () => { this.close(true); this.frame.scale.setScalar(1); this.frame.position.set(0, 0, 0); this.frame.rotation.set(0, 0, 0); this.dive.beads.visible = false; };
   }

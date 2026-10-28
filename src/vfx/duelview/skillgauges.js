@@ -39,7 +39,7 @@ export class SkillGauges {
   clear() { this.group.visible = false; for (const S of this.slots) { S.k = 0; S.ready = false; S.flash = 0; } }
 
   update(dt, s) {
-    const K = s && s.style === 'drag' ? skillsOf(s, 0) : [];
+    const K = s && (s.style === 'drag' || s.style === 'pve') ? skillsOf(s, 0) : [];
     this.group.visible = K.length > 0; if (!K.length) return;
     this.t += dt;
     this.slots.forEach((S, i) => {
