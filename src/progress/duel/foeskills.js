@@ -17,7 +17,8 @@
 // Into the Breach's attacks drawn a turn ahead, Candy Crush's blockers.
 //
 //   FOE_SKILLS[id] = { label, line, fire(s, M, K) -> events }   foeOf(rs) -> s.foe   foeIntent(s) -> [{ skill, label, line, left, n }]
-//   K: the kernel's own helpers handed in by duel.js ({ moveLine, gemOf })   events: foe.skill { side: 1, skill, ... } and the skill's own
+//   K: the kernel's own helpers handed in by duel.js ({ moveLine, gemOf })   events: foe.skill { side: 1, skill, ... }, foe.soon { skill } (it fires
+//   on the aberrant's next turn), foe.desperate, foe.stagger
 // ---------------------------------------------------------------------------------------
 import { piece, hasTag } from './board.js';
 import { SKILLS } from './skills.js';
@@ -58,6 +59,7 @@ export function foeSkillsNow(s, K) {
   for (const m of F.moves) { if (--m.left > 0 || s.winner !== null) continue; m.left = m.every; events.push(...FOE_SKILLS[m.skill].fire(s, m, K)); }
   const D = F.desperate;
   if (D && !D.used && s.winner === null && s.board.w - s.board.line <= D.at) { D.used = true; events.push({ type: 'foe.desperate', side: 1 }); for (const m of D.moves) events.push(...FOE_SKILLS[m.skill].fire(s, m, K)); }
+  for (const m of F.moves) if (m.left === 1 && s.winner === null) events.push({ type: 'foe.soon', side: 1, skill: m.skill }); // (fires on its next turn: the last tick, Wanda's and the view's)
   return events;
 }
 

@@ -758,7 +758,8 @@ A skill's blast (Shot, Vein) is refilled wild (skyfall without the calm), so a s
 ### 23.3 The aberrant's turn: foe skills
 Each on its own countdown, shown over it (`foeIntent(s)`; `intentOf(s, 1).foe`): **Hurl** (junk landing on you after your next turn),
 **Petrify** (gems of yours turned to junk), **Seal** (a column you cannot drag on your next turn), **Sap** (half of each skill's charge),
-**Reclaim** (the Line pushed back a column), and a **desperate** flare once when its half is down to `at` columns. A big play of yours
+**Reclaim** (the Line pushed back a column), and a **desperate** flare once when its half is down to `at` columns. Each foe turn says
+`foe.soon { skill }` for every move that fires on its next turn (the last tick: a sound, the countdown's throb). A big play of yours
 (a chain of 4 or more, or 10 sent in a turn) **staggers** it: every countdown a turn later. The Veritome's Read does the same in PvE.
 The lesson's idle turn and a stun fire nothing.
 
