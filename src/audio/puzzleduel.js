@@ -28,8 +28,8 @@
 //           'duel.fled' the escape: a rush away
 //   FOE     the PvE duel's aberrant (PUZZLE-DUELS.md 23), from the right and below the key: 'foe.skill' { skill, n } (hurl a heave and
 //           a throw crossing to you, petrify gems' notes falling into knocks, seal a chain and a bolt, sap a chord bent down, reclaim a tug
-//           and a falling fifth); 'foe.desperate' a swelling roar; 'foe.stagger' a gong wobbling; a countdown's last tick (your turn
-//           begun with one due: `sfx.duelFoeSoon`) a tick-tock and a low bell; 'line' { side } a column won (rising) or lost (falling)
+//           and a falling fifth); 'foe.desperate' a swelling roar; 'foe.stagger' a gong wobbling; a countdown's last tick ('foe.soon',
+//           at the foe turn's end, one a turn whatever the count) a tick-tock and a low bell; 'line' { side } a column won (rising) or lost (falling)
 //   SKILLS  the one-gesture duel's (PUZZLE-DUELS.md 22): 'skill' { tool } a swell diving into the board with the tool's voice on top;
 //           'charge' { ready } a skill full: a chime up to the octave (the foe's lower, quieter); 'blast' { rows } Shot's rows swept from
 //           the outer edge to the Line; 'vein' { colour } its note rippling down the octaves; 'recolour' Paint's stroke; 'tune' { colour }
@@ -69,6 +69,7 @@ export class PuzzleDuelSounds {
       case 'refund': return this.duelRefund(e.side);
       case 'turn': return this.duelTurn(e.side);
       case 'foe.skill': return this.duelFoeSkill(e.skill, e.n);
+      case 'foe.soon': return this.duelFoeLastTick(); // (a foe skill on its last count, told in the foe's turn: it fires on its next)
       case 'foe.desperate': return this.duelFoeDesperate();
       case 'foe.stagger': return this.duelFoeStagger();
       case 'ember.cool': return this.duelEmberCool();
@@ -151,7 +152,6 @@ export class PuzzleDuelSounds {
     if (!this.ok() || !this.allow('duelTurn', 3)) return;
     const t = this.ctx.currentTime, d = this.duelOut(0.2, 0.15, sidePan(side) * 0.6);
     this.tone(t, 0.05, { f0: side === 1 ? 420 : 760, f1: side === 1 ? 380 : 700, type: 'triangle', gain: 0.25, dest: d }); this.noise(t, 0.015, { type: 'bandpass', f0: side === 1 ? 900 : 1800, q: 4, gain: 0.1, dest: d });
-    if (side === 0 && this.duelFoeSoon?.()) this.duelFoeLastTick(); // (your turn begun with a foe skill on its last count: it fires when this turn ends)
   }
   /** A foe skill's countdown on its last tick: a clock's tick-tock and a low bell a tritone off the key, so the ear knows before the eye. */
   duelFoeLastTick() {
