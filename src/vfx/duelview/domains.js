@@ -9,6 +9,9 @@
 //                   Fury's cracks of light under the hail, Gall's curds, Grief's long rain, Dread's marbling
 //   THE SEAM        where they meet, on the Line's plane: crackling light (ridged noise) that slides with the Line, and pushes (a ripple
 //                   into the half that gave ground, the seam widened and brightened) on every `line`
+//   AN ABERRANT'S OWN GROUND  in place of its feeling's on its side, by `setStyle(id, dark)`: 1 the Lantern Wisp's fens at night (black
+//                   water under fog, reeds against the sky, the lantern the one warm light on it and in the water), the dark closing in
+//                   as its secret goes (duelview/aberrants/wisp.js)
 // It collapses on close. The board's slab (vfx/duelview/board.js) is drawn by the same program in its other mode, split on the same
 // plane, so the Line's seam on the slab and the clash's seam are one cut.
 //
@@ -25,7 +28,7 @@
 // foot in the same program (mode 2), each half's ground laid flat under its owner, a pool of its own light under each body, its rim faded.
 //   const D = new DomainClash()   D.dome (the sphere's mesh)   D.ground (the disc's)   D.groundTo(radius)   D.slabMaterial(gravityTexture, w, h) -> the slab's material
 //   (the slab's fog: a texture of the cells, r hidden, g the lantern's light: Dread's, vfx/duelview/board.js setFog)
-//   D.setFoe(aspect)   D.setPlane(pointWorld, normalWorld, centreWorld)   D.setLine(column)   D.setMeter(push, landed, n, on)   D.flash(side)   D.won(k)
+//   D.setFoe(aspect)   D.setPlane(pointWorld, normalWorld, centreWorld)   D.setLine(column)   D.setMeter(push, landed, n, on)   D.setStyle(id, dark)   D.flash(side)   D.won(k)
 //   D.unfold(originCourier, originFoe)   D.push(receiverSide)   D.collapse(slower = 1)   D.update(dt) -> still showing?   D.open (0..1 each side)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -42,7 +45,7 @@ void main() {
 }`;
 
 const F = /* glsl */`
-uniform float uMode, uT, uRadius, uPush, uPushSide, uWon, uMotif, uLine, uFade; uniform vec4 uMeter;
+uniform float uMode, uT, uRadius, uPush, uPushSide, uWon, uMotif, uLine, uFade; uniform vec4 uMeter; uniform vec2 uStyle;
 uniform vec3 uPlaneP, uPlaneN, uCentre, uOriginC, uOriginF, uFoe, uFoeDeep, uHaze;
 uniform vec2 uOpen, uFlash, uGrid;
 uniform sampler2D uGrav, uFog;
@@ -93,6 +96,26 @@ vec3 foeLook(vec2 q, float t, float m) {
   return vec3((1.0 - smoothstep(0.0, 0.07, c)) * 0.55, 0.55, 0.0);
 }
 vec3 srgb(vec3 c) { return pow(c, vec3(2.2)); }
+// an aberrant's own ground (uStyle.x): 1 the Lantern Wisp's fens at night: black water under fog, reeds against the sky, the lantern the
+// one warm light on it and in the water; the dark closes in on it as its fuel goes (uStyle.y, the secret's k: aberrants/wisp.js)
+vec3 fens(vec3 dir, vec2 q, float t, float fl, float dark) {
+  vec3 lamp = vec3(1.0, 0.62, 0.26) * (1.0 - 0.9 * dark), fogC = vec3(0.10, 0.14, 0.12) * (1.0 - 0.7 * dark);
+  vec2 hz = normalize(dir.xz + 1e-4), ld = normalize((uOriginF - uCentre).xz + 1e-4); float yaw = 1.0 - dot(hz, ld); // (how far round from the lantern)
+  if (fl > 0.5) { // the ground: black water, rings spreading off the lantern's foot, its warm pool shrinking with the dark
+    float r = length(vW.xz - uOriginF.xz), ring = max(0.0, sin(r * 5.0 - t * 1.6)) * exp(-r * 0.35);
+    float pool = exp(-pow(r / mix(2.6, 0.6, dark), 2.0)), sheen = fbm(q * 2.2 + vec2(t * 0.05, 0.0));
+    return vec3(0.008, 0.016, 0.02) + lamp * (pool * 0.9 + ring * 0.12 * pool) + fogC * (0.25 + 0.3 * sheen) * (0.5 + dark);
+  }
+  float y = dir.y, above = step(0.0, y);
+  vec3 sky = mix(vec3(0.012, 0.03, 0.035), vec3(0.003, 0.006, 0.01), smoothstep(0.0, 0.7, y));
+  float bank = fbm(vec2(q.x * 0.35 + t * 0.015, y * 4.0)) * (1.0 - smoothstep(0.0, mix(0.35, 0.6, dark), abs(y)));
+  float rx = q.x * 7.0, rh = h21(vec2(floor(rx), 5.0)) * (0.05 + 0.09 * h21(vec2(floor(rx), 9.0)));
+  float reed = (1.0 - smoothstep(0.02, 0.07, abs(fract(rx) - 0.5) * (1.0 + 2.0 * y / max(rh, 0.01)))) * step(0.0, y) * step(y, rh) * step(0.55, h21(vec2(floor(rx), 2.0)));
+  vec3 water = vec3(0.004, 0.01, 0.014) + fogC * 0.3 * fbm(q * vec2(0.6, 3.0) + vec2(0.0, t * 0.06));
+  float glow = exp(-yaw * 18.0) * exp(-abs(y) * 5.0), refl = exp(-yaw * 40.0) * (1.0 - above) * (0.6 + 0.4 * sin(y * 90.0 + t * 3.0)) * exp(y * 3.0);
+  vec3 col = mix(water, sky, above) + fogC * bank * (0.9 + 0.8 * dark) + lamp * (glow * 0.8 + refl * 0.7);
+  return mix(col, vec3(0.0), reed * 0.9);
+}
 void main() {
   float sd = dot(vW - uPlaneP, uPlaneN); // (the Line's plane: below nought the Courier's ground, above it the foe's)
   float t = uT;
@@ -154,6 +177,7 @@ void main() {
   vec3 L = foeLook(q, t, uMotif);
   vec3 foe = mix(uHaze, uFoeDeep, smoothstep(-0.1, 0.5, dir.y));
   foe = foe * (1.0 - L.y * 0.55) + uFoe * L.x * 1.5 + vec3(0.95, 0.97, 1.0) * L.z;
+  if (uStyle.x > 0.5) foe = fens(normalize(vW - uCentre), q, t, fl, uStyle.y); // (an aberrant's own ground in place of its feeling's)
   vec3 col = mix(cour, foe, k);
   // the seam: crackling light on the Line's plane, pushed on a line
   vec3 along = normalize(cross(uPlaneN, vec3(0.0, 1.0, 0.0)));
@@ -171,7 +195,7 @@ void main() {
   float a = mix(inC, inF, k) * mix(0.62, 0.95, smoothstep(0.0, 0.35, dir.y)) * uFade;
   if (fl > 0.5) { // the ground: a pool of each side's own light under its body, the disc fading out at its rim
     float pC = exp(-pow(length(vW.xz - uOriginC.xz) / 1.5, 2.0)), pF = exp(-pow(length(vW.xz - uOriginF.xz) / 1.5, 2.0));
-    col += labSoft(ph) * pC * 0.9 * uOpen.x + uFoe * pF * 1.3 * uOpen.y;
+    col += labSoft(ph) * pC * 0.9 * uOpen.x + uFoe * pF * 1.3 * uOpen.y * (1.0 - step(0.5, uStyle.x)); // (the fens light their own pool)
     a = clamp(a * 0.85 + (pC * uOpen.x + pF * uOpen.y) * 0.35, 0.0, 1.0) * (1.0 - smoothstep(0.55, 1.0, length(vUv - 0.5) * 2.0)) * uFade;
   }
   if (a < 0.004) discard;
@@ -192,7 +216,7 @@ export class DomainClash {
     const clear = new THREE.DataTexture(new Uint8Array(4 * 4), 2, 2); clear.needsUpdate = true; // (no fog)
     this.U = {
       uT: { value: 0 }, uMindT: mindTime, uRadius: { value: DUEL_VIEW.radius }, uPush: { value: 0 }, uPushSide: { value: 1 }, uWon: { value: 0 },
-      uMotif: { value: 3 }, uLine: { value: 10 }, uFade: { value: 1 }, uMeter: { value: new THREE.Vector4() },
+      uMotif: { value: 3 }, uLine: { value: 10 }, uFade: { value: 1 }, uMeter: { value: new THREE.Vector4() }, uStyle: { value: new THREE.Vector2() },
       uPlaneP: { value: new THREE.Vector3() }, uPlaneN: { value: new THREE.Vector3(1, 0, 0) }, uCentre: { value: new THREE.Vector3() },
       uOriginC: { value: new THREE.Vector3() }, uOriginF: { value: new THREE.Vector3() },
       uFoe: { value: new THREE.Color() }, uFoeDeep: { value: new THREE.Color() }, uHaze: { value: new THREE.Color() },
@@ -225,6 +249,8 @@ export class DomainClash {
   /** The Line's plane in the world (a point on it and its normal toward the foe), and the arena's centre (the board's foot). */
   setPlane(p, n, centre) { this.U.uPlaneP.value.copy(p); this.U.uPlaneN.value.copy(n); if (centre) this.U.uCentre.value.copy(centre); } // (the sphere stands at its parent's origin: the board's foot)
   setLine(col) { this.U.uLine.value = col; }
+  /** An aberrant's own ground on its side (0 its feeling's; 1 the Lantern Wisp's fens) and how far its dark has closed in (0..1). */
+  setStyle(id, dark = 0) { this.U.uStyle.value.set(id, dark); }
   /** The PvE duel's push meters on the seam (0..1 each of a column's worth, `n` notches); `on` false hides them. */
   setMeter(push, landed, n, on = true) { this.U.uMeter.value.set(push, landed, n, on ? 1 : 0); }
   /** A half's flash (a break): white, fading over a third of a real second. */

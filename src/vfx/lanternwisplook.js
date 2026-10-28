@@ -14,6 +14,9 @@
 //   PUT OUT        through the Death clip (1.6 s) the flame gutters, sputtering lower, and its light with it; as the clip ends and the
 //                  model goes, `wisp.snuff`: the wick's smoke, its last embers and its Lachryma rising as motes.
 //
+//   THE FUEL       `c.look.dim` (0..1, its share left) and `c.look.gutter` (0..1, how hard it sputters): set by a puzzle duel's secret drawing
+//                  the lantern down (vfx/duelview/aberrants/wisp.js); 1 and 0 as made.
+//
 //   const look = new LanternWispLook(game)   look.dress(c) (at spawn)   look.bolt(from) -> the ember mesh (at release)   look.update(dt)
 //
 // Prior art: the guttering candle of every horror game (Amnesia's lantern oil running down: the light sputters before it goes), Dark
@@ -100,12 +103,14 @@ export class LanternWispLook {
     // how it feels: the tint and the flicker's pace ease toward the pose's
     const M = W.mood[c.pose] || W.mood.idle, e = Math.min(1, dt * 3);
     S.tint.lerp(_c.set(M.tint), e); S.k += (M.k - S.k) * e; S.quick += (M.quick - S.quick) * e;
-    S.ph += dt * S.quick;
+    S.ph += dt * S.quick * (1 + 1.5 * (S.gutter || 0));
     const f = W.flicker, t = S.ph + S.phase;
     const flick = 1 + f[0] * Math.sin(t * 7.3) + f[1] * Math.sin(t * 13.1 + 1.3) + f[2] * Math.sin(t * 23.7 + 2.1);
+    // the lantern's fuel (a duel's secret drawing it down, vfx/duelview/aberrants/wisp.js): `dim` its share left, `gutter` how hard it sputters
+    const gut = S.gutter || 0, sputter = 1 - gut * 0.6 * Math.max(0, Math.sin(this.t * 9 + S.phase) * Math.sin(this.t * 3.7 + S.phase * 2));
     // a blow taken: the body module sets c.flash to 1; it fades here
     c.flash = Math.max(0, (c.flash || 0) - dt * W.flash);
-    this.paint(c, S.k * flick * (1 + c.flash * 0.8), c.flash);
+    this.paint(c, S.k * flick * (S.dim ?? 1) * sputter * (1 + c.flash * 0.8), c.flash);
   }
 
   /** The flame and glow at `k` (1 its own), the light with them, and the clay's flash at `flash` (0..1). */
