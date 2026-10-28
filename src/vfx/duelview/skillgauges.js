@@ -11,6 +11,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { skillsOf } from '../../progress/duel/skills.js';
+import { oneGesture } from '../../progress/duel/duel.js';
 import { DUEL_VIEW } from './layout.js';
 
 const FILL = new THREE.Color(0x7fdcff), READY = new THREE.Color(0xffd76a), WHITE = new THREE.Color(1, 1, 1), TROUGH = 0x1c1018, _c = new THREE.Color(), _p = new THREE.Vector3();
@@ -39,7 +40,7 @@ export class SkillGauges {
   clear() { this.group.visible = false; for (const S of this.slots) { S.k = 0; S.ready = false; S.flash = 0; } }
 
   update(dt, s) {
-    const K = s && (s.style === 'drag' || s.style === 'pve') ? skillsOf(s, 0) : [];
+    const K = s && oneGesture(s) ? skillsOf(s, 0) : [];
     this.group.visible = K.length > 0; if (!K.length) return;
     this.t += dt;
     this.slots.forEach((S, i) => {
