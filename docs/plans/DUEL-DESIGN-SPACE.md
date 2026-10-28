@@ -37,7 +37,7 @@ retrodden or forgotten." One row per space: the idea, where it came from, what b
 | The Courier on the board: forms, the run, the tools' moves (Shoot, Grab, Drill, Paint, Tune, Delay, Hold, Send, Read) | Puzzle Quest's hero, Bomberman's kick | tabled (South, 2026-10-28) | 3a0de17c, c0850cdb, PD 11, 18 | the one gesture; "the Courier's form, the form's dive and the tools' moves are tabled" |
 | The worn pair as charged skills (Shot, Vein, Paint, Grab, Tune, Hold, Read) | P&D active skills, Candy Crush specials | built in `drag`; tabled in PvE | 6f3c094a, PD 22, 24.4 | the seven powers overlap them; nine big plays a turn is too many tiles |
 | A skill once a turn | P&D cooldowns | built | 4605a6b9 | skyfall recharged them mid-turn (9 actions, 4 skills) |
-| The god hand's seven powers as the PvE duel's big plays | P&D active skills, Puzzle Quest spells, GOD_POWERS | built | PD 24 (this round) | South's ask; one a domain |
+| The god hand's seven powers as the PvE duel's big plays | P&D active skills, Puzzle Quest spells, GOD_POWERS | built | 8a0f7856, PD 24 | South's ask; one a domain |
 | Powers paid from the pool, filled a point a gem cleared | Puzzle Quest's mana | built | PD 24.1 | the hand's powers cost Lachryma in the world |
 | Three powers a turn | P&D (no cap per turn) | tried, cut | PD 24.1 | the Wisp fell in 3 turns at any skill |
 | One power a turn, each resting its turns | P&D cooldowns | built | PD 24.1 | how well you drag matters again; a cast is a moment |
@@ -74,7 +74,7 @@ retrodden or forgotten." One row per space: the idea, where it came from, what b
 | Foe skills on countdowns (Hurl, Petrify, Seal, Sap, Reclaim) | P&D enemy skills, Into the Breach | built | d07b22d1, PD 23.3 | a battle of wills, not a race |
 | The desperate flare once, at its last columns | P&D's preemptive and last-stand skills, a limit break | built | d07b22d1 | the climax; Calissa's cut-in |
 | A stagger: a big play puts every countdown a turn later | P&D's delay | built | d07b22d1 | skill pays twice |
-| A foe skill's tooltip only once seen (knowledge) | Pokedex, Souls item text, Into the Breach | built | PD 24.5 (this round) | South: "observation first" |
+| A foe skill's tooltip only once seen (knowledge) | Pokedex, Souls item text, Into the Breach | built | 8a0f7856, PD 24.5 | South: "observation first" |
 | Scan counts a skill as seen | Divination's own power | built | PD 24.5 | the domain of seeing sees |
 | Seen as a ledger counter | the ledger | cut | PD 24.5 | the practice duel counts nothing, and Strawman's Hurl is the first met |
 
