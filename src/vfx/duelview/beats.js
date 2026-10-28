@@ -26,6 +26,7 @@
 //              inside (0.5)
 //   skills     the one-gesture duel's (skillcast.js): `skill` the cast (the Jar's pour into the cell), `blast { rows }` the Shot's beam,
 //              `vein` the Vein's sparks; nothing a skill plays is spent
+//   powers     power, swap (with `moved`), manifest, scan, lift, herd, transmute, miracle, drink: powercast.js
 //   big plays  refund (ONE MORE), allclear, a weak or resisted chain step, trickle, undo: juice.js
 //   flee       a d20 thrown before the board landing on its roll, its reasons counted in against 15 (2.2 or so: flee.js); fled: the
 //              clash folds softly with no winner and the tsuitate folds away (1.4)
@@ -45,6 +46,7 @@ import { DUEL_VIEW, cellLocal, sm, ease, lerp, hash } from './layout.js';
 import { toolBeat, TOOL_EVENTS } from './toolbeats.js';
 import { TOOL_BEATS2, shotBeat, paintBeat, tuneBeat, tuneEndBeat, readBeat } from './toolbeats2.js';
 import { FLEE } from '../../progress/duel/flee.js';
+import { POWER_EVENTS, powerBeat } from './powercast.js';
 import { JUICE_EVENTS } from './juice.js';
 import { gemColour } from './pieces.js';
 import { DIVE } from './formdive.js';
@@ -92,6 +94,7 @@ export class DuelBeats {
     if (e.type === 'blast' && e.rows) { job.i++; return blastBeat(this, e); }
     if (e.type === 'vein') { job.i++; return veinBeat(this, e); }
     if (e.type === 'charge') { job.i++; return { events: [e], dur: 0 }; }
+    if (POWER_EVENTS.has(e.type) && (e.type !== 'swap' || e.moved)) { job.i++; return powerBeat(this, e); } // (the PvE duel's powers: powercast.js; a power's swap carries `moved`, the classic swap does not)
     if (e.type.startsWith('foe.')) { const cut = V.cutIn.beat(e); if (cut) return cut; job.i++; const ph = V.foeCast.beat(this, e); if (V.cutIn.cut.has(e)) ph.events = []; return ph; } // (the PvE duel's aberrant: a skill's cut-in first, once (cutin.js), then its cast, its desperate flare, its stagger: foecast.js)
     if (e.type === 'fall') return this.fall(run((x) => x.type === 'fall'));
     if (e.type === 'clear' || e.type === 'break' || e.type === 'blast') { const it = run((x) => x.type === 'clear' || x.type === 'break' || x.type === 'blast'); return this.clears(it, run((x) => x.type === 'chain')); }

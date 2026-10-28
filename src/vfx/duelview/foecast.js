@@ -18,16 +18,26 @@
 // Terra Battle's boss gimmicks, a tug of war's rope (the Line), the duel's own skill casts (skillcast.js).
 //
 //   const F = new FoeCast(view)   F.beat(beats, e) -> phase   F.conquest(from, to)   F.timer(k | null)   F.update(dt)   F.clear()
-//   FOE_CAST (the knobs)
+//   F.pick(clientX, clientY) -> skill | null (a badge under a tap)   F.tip(skill, clientX, clientY) -> shown?   FOE_CAST (the knobs)   FOE_TIP
+//   THE TOOLTIP      a badge tapped: its label and line in the house's table tip, only for a skill seen (game.foeSeen); unseen, its badge a ?
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { FONT } from '../../ui/theme.js';
-import { foeIntent } from '../../progress/duel/foeskills.js';
+import { foeIntent, FOE_SKILLS } from '../../progress/duel/foeskills.js';
+import { showTableTip, hideTableTip } from '../../ui/tabletip.js';
 import { duelMaterials } from './pieces.js';
 import { DUEL_VIEW, cellLocal, feelColour, sm, clamp01, hash } from './layout.js';
 
 /** badge: a countdown's side (m, the board's frame); over: the row above the head; the casts' lengths (real s). */
-export const FOE_CAST = { badge: 0.24, gap: 0.035, over: 0.5, hurl: 0.75, petrify: 0.55, seal: 0.5, sap: 0.65, reclaim: 0.5, desperate: 1.3, stagger: 0.7, sweep: 0.6, shots: 24 };
+/** The badges' tooltips (Espada's words, docs/handoffs: the label over, this line under). */
+export const FOE_TIP = {
+  hurl: 'Junk lands on your half after your turn.',
+  petrify: 'Gems on your half turn to junk.',
+  seal: 'A column of yours locks for your next turn: nothing in it can be dragged.',
+  sap: 'Each skill you wear loses half its charge.',
+  reclaim: 'The Line moves a column toward you.',
+};
+export const FOE_CAST = { tip: 3, tapR: 30, badge: 0.24, gap: 0.035, over: 0.5, hurl: 0.75, petrify: 0.55, seal: 0.5, sap: 0.65, reclaim: 0.5, desperate: 1.3, stagger: 0.7, sweep: 0.6, shots: 24 };
 const GOLD = 0xffd36a, FILM = 0x9fd8ff, STONE = 0x9a948c, JUNK = 0x4a3326, EMBER = 0xff6a2a, INK = '#17111f';
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Color(), _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(), _w = new THREE.Vector3();
 
@@ -42,11 +52,11 @@ function glyph(x, skill) {
   x.restore();
 }
 
-/** A countdown badge's canvas: the glyph on dark clay and the turns left in gold. */
-function badgeTexture(skill, left) {
+/** A countdown badge's canvas: the glyph on dark clay (a ? for a skill not yet seen: progress/foeseen.js) and the turns left in gold. */
+function badgeTexture(skill, left, seen = true) {
   const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d');
   x.fillStyle = INK; x.beginPath(); x.arc(64, 64, 60, 0, Math.PI * 2); x.fill();
-  glyph(x, skill);
+  if (seen) glyph(x, skill); else { x.font = `bold 70px ${FONT.sys}`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.fillStyle = '#f4ecdc'; x.fillText('?', 58, 58); }
   x.fillStyle = '#2e1810'; x.beginPath(); x.arc(98, 98, 26, 0, Math.PI * 2); x.fill();
   x.font = `bold 42px ${FONT.sys}`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.lineWidth = 6; x.strokeStyle = INK; x.strokeText(String(left), 98, 100); x.fillStyle = '#ffd76a'; x.fillText(String(left), 98, 100);
   const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
@@ -145,15 +155,31 @@ export class FoeCast {
   /** The drag's timer (the session's): 1 full .. 0 out, null hidden. */
   timer(k) { this.timerK = k == null ? null : clamp01(k); }
 
-  clear() { this.flying.length = 0; this.shots.count = 0; this.chain.visible = false; this.sealX = null; this.timerK = null; this.knock = this.burn = 0; for (const b of this.badges) b.visible = false; for (const S of this.sweeps) { S.age = S.life = 1; S.m.visible = false; } this.trough.visible = this.fill.visible = false; }
+  clear() { if (this.tipT > 0) hideTableTip(); this.tipT = 0; this.flying.length = 0; this.shots.count = 0; this.chain.visible = false; this.sealX = null; this.timerK = null; this.knock = this.burn = 0; for (const b of this.badges) b.visible = false; for (const S of this.sweeps) { S.age = S.life = 1; S.m.visible = false; } this.trough.visible = this.fill.visible = false; }
 
-  badgeTex(skill, left) { const k = skill + ':' + left; let t = this.tex.get(k); if (!t) { t = badgeTexture(skill, left); this.tex.set(k, t); } return t; }
+  badgeTex(skill, left) { const seen = this.seen(skill), k = skill + ':' + left + (seen ? '' : '?'); let t = this.tex.get(k); if (!t) { t = badgeTexture(skill, left, seen); this.tex.set(k, t); } return t; }
+  seen(skill) { const F = this.view.game.foeSeen; return !F || F.seen(skill); }
+
+  /** The foe skill whose countdown badge is under a point of the page (client px), or null: for the session's tap (Petra's). */
+  pick(cx, cy) {
+    const cam = this.view.game.camera, cv = this.view.game.overlayScene?.r?.domElement; if (!cam || !cv) return null; const R = cv.getBoundingClientRect(), I = this.shown || [];
+    for (let i = 0; i < this.badges.length; i++) { const m = this.badges[i]; if (!m.visible || !I[i]) continue;
+      m.getWorldPosition(_w).project(cam); const x = R.left + (_w.x * 0.5 + 0.5) * R.width, y = R.top + (0.5 - _w.y * 0.5) * R.height;
+      if (Math.hypot(cx - x, cy - y) < FOE_CAST.tapR) return I[i].skill; }
+    return null;
+  }
+  /** A badge's tooltip (South, 2026-10-28: "only for a foe skill you have seen happen"): its label and Espada's line in the house's table
+   *  tip beside the point, for TIP_HOLD real s; a skill not yet seen shows nothing (false). */
+  tip(skill, cx, cy) {
+    if (!skill || !this.seen(skill) || !FOE_SKILLS[skill]) { hideTableTip(); return false; }
+    showTableTip({ label: FOE_SKILLS[skill].label.toUpperCase(), line: FOE_TIP[skill] || FOE_SKILLS[skill].line }, cx, cy); this.tipT = FOE_CAST.tip; return true;
+  }
 
   update(dt) {
     const V = this.view, s = V.state, cs = this.cs; this.t += dt; const t = this.t; this.boxT -= dt;
     const pve = !!(V.isOpen && s?.style === 'pve' && s.foe), D = this.dims();
     // its countdowns
-    const I = pve ? foeIntent(s) : []; this.knock = Math.max(0, this.knock - dt / 0.6); this.burn = Math.max(0, this.burn - dt / 1.6);
+    const I = pve ? foeIntent(s) : []; this.shown = I; if (this.tipT > 0 && (this.tipT -= dt) <= 0) hideTableTip(); this.knock = Math.max(0, this.knock - dt / 0.6); this.burn = Math.max(0, this.burn - dt / 1.6);
     const on = this.onScreen(), at = on ? this.head(_a).add(_b.set(0, FOE_CAST.over, 0.05)) : _a.set(D.W / 2 + D.b + FOE_CAST.badge * 0.75, D.top - FOE_CAST.badge, D.lip + 0.06); // (off the screen: a column in the flank beside the frame's foe end)
     const size = FOE_CAST.badge, n = Math.min(I.length, this.badges.length), step = size + FOE_CAST.gap, w0 = on ? -((n - 1) * step) / 2 : 0;
     this.badges.forEach((m, i) => { const it = I[i]; m.visible = !!it; if (!it) return;

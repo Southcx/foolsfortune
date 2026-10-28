@@ -36,9 +36,10 @@ export class TouchDuel {
     let t = this.tiles.get(e.id);
     if (!t) {
       const onPress = e.id === 'du.flee' ? (id, down, inside) => this.fleePress(t, down, inside) : (id, down) => touchTiles.report(this.game, id, down);
-      t = new TouchTile(e.id, { size: TILE.size, glyph: e.glyph ?? null, word: e.word ?? null, fit: true, onPress }); this.tiles.set(e.id, t);
+      t = new TouchTile(e.id, { size: TILE.size, glyph: e.glyph ?? null, word: e.word ?? null, corner: e.corner ?? null, fit: true, onPress }); this.tiles.set(e.id, t);
     }
-    t.face({ glyph: e.glyph ?? null, word: e.word ?? null });
+    if (e.pal && t.iconPal !== e.pal) { t.iconPal = e.pal; t.dirty = true; } // (a power tile: its domain's palette, gold when lit)
+    t.face({ glyph: e.glyph ?? null, word: e.word ?? null, corner: e.corner ?? null });
     return t;
   }
 

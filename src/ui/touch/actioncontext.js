@@ -42,6 +42,8 @@ import { SEA_MOUNTS } from '../../progress/rail/mounts.js';
 import { stepsOf } from '../../progress/duel/lesson.js';
 import { skillsOf } from '../../progress/duel/skills.js';
 import { legalActions, oneGesture } from '../../progress/duel/duel.js';
+import { powersOf } from '../../progress/duel/powers.js';
+import { DOMAIN_LOOK } from '../domainlook.js';
 
 /** By tool in hand: FIRE's and AIM's faces, the third (or null), and what the faces become in their other moment. */
 export const ACTION_TILES = {
@@ -208,6 +210,7 @@ export function stripOf(g) {
  *  hand's form; dim where the moment or the form refuses them, lit while one is held (a song sung, a read open). */
 export function duelTools(g) {
   const D = g.duel, s = D.state; if (!s) return [];
+  if (s.style === 'pve') return powerTiles(g, s); // (the PvE duel: the hand's seven powers, PUZZLE-DUELS.md 24)
   if (oneGesture(s)) return skillTiles(g, s); // (the one-gesture duel: the worn pair as two skills, PUZZLE-DUELS.md 22)
   const S = s.sides[0], worn = S.tools ? new Set(S.tools) : null, hand = S.form === 'hand', out = [], legal = legalKinds(s);
   const cell = D.picked || D.hover, piece = hand && cell ? s.board?.at?.(cell.x, cell.y) : null; // (on touch the picked cell: pick, then ROTATE)
@@ -231,6 +234,15 @@ const SKILL_TILE = { psygun: ['du.shoot', 'psfire'], sondelass: ['du.grab', 'thr
 function skillTiles(g, s) {
   const D = g.duel, ask = askedOf(s); return skillsOf(s, 0).map((K) => { const [id, glyph] = SKILL_TILE[K.tool] || ['du.shoot', 'psfire'];
     return E(id, glyph, K.label.toUpperCase(), { charge: Math.min(1, K.charge / K.need), lit: (K.ready && !!D.mine) || D.armedSkill === K.tool || (ask === 'skill' && K.ready), dim: !D.mine || !K.ready }); });
+}
+
+/** The PvE duel's seven power tiles (progress/duel/powers.js powersOf), in the domains' order: each in its domain's sign and palette
+ *  (DOMAIN_LOOK), its label under it and its pool cost in the corner; its rim the rest running out (full again when ready), gold while
+ *  armed, dim while resting, too dear, or one already cast this turn (Puzzle & Dragons' skill cooldowns on the team's portraits). */
+function powerTiles(g, s) {
+  const D = g.duel; return powersOf(s, 0).map((P) => { const L = DOMAIN_LOOK[P.domain] || {};
+    return E(`du.power.${P.id}`, L.icon || null, P.label.toUpperCase(), { corner: String(P.cost), pal: L.pal, charge: P.left ? 1 - P.left / Math.max(1, P.rest) : 1,
+      lit: D.armedPower === P.id, dim: !D.mine || !P.ready }); });
 }
 
 /** The kinds the kernel would take from the Courier's side now (legalActions, progress/duel/duel.js), asked once a change of the turn. */
