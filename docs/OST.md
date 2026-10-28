@@ -162,10 +162,10 @@ their Clayese scales; the System's skill and achievement jingles (the chime and 
   falling fifth; its stagger a gong wobbling out of tune. A countdown on its last tick (`foe.soon`,
   at the end of its turn) a tick-tock and a low bell a tritone off. A column won rises (the fifth and the octave), lost falls (minor,
   low). Measured offline, peaks: the skills -18 to -24 dB, the flare -14. The phone buzzes on Hurl's landing (`duel.land`) and Reclaim.
-- **The duel's cut-ins and powers** (`audio/duelcasts.js`; Petra's round of 2026-10-28): a foe skill's JRPG cut-in heard on the kernel's
-  foe.skill as a blade of air and an orchestra hit in its own chord below the key (its slam 0.12 real s after the event, `CUT_IN_LEAD`),
-  the skill's own sound 0.45 s after (`CUT_IN.gesture`); the desperate flare the limit break: a swell, the slam 1.1 s after the event, a
-  held minor cluster, the data stuttering. Measured peaks: the stings -13 dB, the limit break -8 (9 dB more RMS). The seven duel powers
+- **The duel's cut-ins and powers** (`audio/duelcasts.js`; Petra's round of 2026-10-28): a foe skill's JRPG cut-in (Calissa's own beat, `foe.cutin`) heard
+  as a blade of air and an orchestra hit in its own chord below the key, its slam on her word 0.08 real s in (`CUT_IN_LEAD`), rung through
+  her 0.62 s hold; the skill's own sound on its foe.skill after; the desperate one's (`limit`) the limit break: a swell into her negative
+  flash at 0.2 s, a held minor cluster through her 1.05 s hold, the data stuttering. Measured peaks: the stings -13 dB, the limit break -8 (9 dB more RMS). The seven duel powers
   each their god power's sound in small and a glass note on the key's fifth (`power` { domain }, a placeholder name until DUEL_POWERS):
   peaks -15 to -26 dB.
 - **Levels:** each section has a `gain`. Rendered offline (`scripts/render_score.mjs`) and measured: a quiet opening or a jingle about
