@@ -4279,3 +4279,11 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** `charge: { ...S.charge }` in both copies. Measured: a copy's skill and a hint leave the real charge at 9 and 10; fire and undo
   gives them back.
 - **Rule:** NEW:copy-every-mutable
+
+### 2026-10-28 · The PvE duel kept the classic duel's lesson and touch verbs (Petra's phone probe; Dovina's grep)
+- **Seen:** on the phone, a PvE duel showed UNDO, ROTATE, COURIER and END TURN and no skill tiles; read in the kernel, its first-duel
+  lesson asked for the Courier's form, which a PvE duel has not, so the lesson could never finish.
+- **Cause (as read):** the default style moved from 'drag' to 'pve' (duel.js `DUEL.style`), and every check that meant "one gesture"
+  asked `style === 'drag'` by name: lesson.js `stepsOf`, skyfall.js `skyOf`, and in Calissa's files the touch context and the gauges.
+- **Fix:** `oneGesture(s)` (duel.js: any style but 'classic'); lesson.js and skyfall.js ask it; Calissa's files asked to.
+- **Rule:** NEW:ask-the-capability-not-the-name

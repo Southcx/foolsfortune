@@ -31,7 +31,7 @@ export const ACTIONS = [
   { id: 'box',      keys: ['KeyP'],       pad: 'Back',  touch: 'top.box',    ctx: 'any', how: 'tap' },
   { id: 'map',      keys: ['KeyM'],                     touch: 'top.map',    ctx: 'any', how: 'tap' },
   { id: 'codex',    keys: ['KeyB'],                     touch: 'top.codex',  ctx: 'any', how: 'tap' },
-  { id: 'chat',     keys: ['Enter', 'Slash'],           touch: 'top.chat',   ctx: 'any', how: 'tap' },
+  { id: 'chat',     keys: ['Enter', 'Slash'],           touch: 'log',        ctx: 'any', how: 'tap' },
   { id: 'godhand',  keys: ['Backquote'],  pad: 'Right', touch: 'top.godhand', ctx: 'any', how: 'tap' },
   // ---- on foot (M2 for touch; the pad on day one)
   { id: 'jump',     keys: ['Space'],      pad: 'A',     touch: 'jump',       ctx: 'foot', how: 'hold' },  // (held: the mantle chain, the wall run)

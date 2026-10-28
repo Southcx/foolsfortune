@@ -35,7 +35,7 @@ export const LESSON = {
     { id: 'skill',  ask: 'A skill is full: fire it from its tile beside the board.', did: (ev, a) => a.kind === 'skill' },                                 // a charged skill fired
   ],
 };
-export const stepsOf = (s) => (s.style === 'drag' ? LESSON.dragSteps : LESSON.steps);
+export const stepsOf = (s) => (s.style === 'classic' ? LESSON.steps : LESSON.dragSteps); // (the classic duel's forms and walk; every other style is one gesture: the one-gesture duel and the PvE duel)
 
 /** Is the lesson due? Until the first puzzle duel won or the lesson finished once (the ledger's `duel.won`, `duel.lesson`: tracking/duel.js).
  *  A practice duel (Strawman's) runs it too when due, and finishing it there counts: the lesson is what you know, not a record. */
