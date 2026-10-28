@@ -26,6 +26,10 @@
 //   FLEE    'flee' { roll, ok } (a saving throw to escape, flee.js): a d20 thrown, rattling, landing; then what it says: a 20 a crit's
 //           bright run and a crown of bells, a 1 a dull clunk sagging down a tritone, a pass a light lift, a miss a soft drop;
 //           'duel.fled' the escape: a rush away
+//   FOE     the PvE duel's aberrant (PUZZLE-DUELS.md 23), from the right and below the key: 'foe.skill' { skill, n } (hurl a heave and
+//           a throw crossing to you, petrify gems' notes falling into knocks, seal a chain and a bolt, sap a chord bent down, reclaim a tug
+//           and a falling fifth); 'foe.desperate' a swelling roar; 'foe.stagger' a gong wobbling; a countdown's last tick (your turn
+//           begun with one due: `sfx.duelFoeSoon`) a tick-tock and a low bell; 'line' { side } a column won (rising) or lost (falling)
 //   SKILLS  the one-gesture duel's (PUZZLE-DUELS.md 22): 'skill' { tool } a swell diving into the board with the tool's voice on top;
 //           'charge' { ready } a skill full: a chime up to the octave (the foe's lower, quieter); 'blast' { rows } Shot's rows swept from
 //           the outer edge to the Line; 'vein' { colour } its note rippling down the octaves; 'recolour' Paint's stroke; 'tune' { colour }
@@ -59,11 +63,14 @@ export class PuzzleDuelSounds {
   duelEvent(e = {}) {
     switch (e.type) {
       case 'chain': return this.duelChain(e.step, e.side, !!e.weak);
-      case 'line': return this.duelLine(e.line, e.w);
+      case 'line': return this.duelLine(e.line, e.w, e.side);
       case 'clear': return this.duelClear(e.colour, e.side);
       case 'allclear': return this.duelAllClear(e.side);
       case 'refund': return this.duelRefund(e.side);
       case 'turn': return this.duelTurn(e.side);
+      case 'foe.skill': return this.duelFoeSkill(e.skill, e.n);
+      case 'foe.desperate': return this.duelFoeDesperate();
+      case 'foe.stagger': return this.duelFoeStagger();
       case 'ember.cool': return this.duelEmberCool();
       case 'hint': return this.duelHint();
       case 'fall': return this.duelFall();
@@ -105,11 +112,15 @@ export class PuzzleDuelSounds {
     if (n >= 5) { this.tone(t + 0.04, 0.45, { f0: hz(m + 12), gain: g * 0.4, dest: d }); for (let k = 0; k < 4; k++) this.tone(t + 0.05 + k * 0.03, 0.2, { f0: hz(m + 24 + PENTA[k]), gain: 0.012, dest: d }); }
   }
   /** The line pushed a column: a stone dragged and set down, panned to where it now stands (of w columns). */
-  duelLine(line = 10, w = 20) {
+  duelLine(line = 10, w = 20, side = null) {
     if (!this.ok() || !this.allow('duelLine', 4)) return;
     const t = this.ctx.currentTime, d = this.duelOut(0.4, 0.3, Math.max(-0.8, Math.min(0.8, (line / Math.max(1, w)) * 2 - 1)));
     this.noise(t, 0.22, { type: 'bandpass', f0: 350, f1: 220, q: 1.5, gain: 0.3, attack: 0.04, dest: d });
     this.tone(t + 0.22, 0.25, { f0: 90, f1: 50, gain: 0.45, dest: d }); this.noise(t + 0.22, 0.06, { type: 'lowpass', f0: 900, gain: 0.25, dest: d });
+    if (side == null) return;
+    const r = duelRoot(this); // (the battle of wills, PUZZLE-DUELS.md 23: `side` is whose push moved it)
+    if (side === 0) [0, 7, 12].forEach((st, k) => this.tone(t + 0.24 + k * 0.07, 0.4, { f0: hz(r + st), type: 'triangle', gain: 0.06, dest: d })); // (a column won: the key's fifth and octave rising, bright)
+    else [12, 8, 3].forEach((st, k) => this.tone(t + 0.24 + k * 0.1, 0.5, { f0: hz(r - 12 + st), type: 'square', gain: 0.03, dest: d })); // (a column lost: a minor fall, dark, low)
   }
   /** A gem cleared: a glassy pop at its colour's note. */
   duelClear(colour, side = 0) {
@@ -140,6 +151,59 @@ export class PuzzleDuelSounds {
     if (!this.ok() || !this.allow('duelTurn', 3)) return;
     const t = this.ctx.currentTime, d = this.duelOut(0.2, 0.15, sidePan(side) * 0.6);
     this.tone(t, 0.05, { f0: side === 1 ? 420 : 760, f1: side === 1 ? 380 : 700, type: 'triangle', gain: 0.25, dest: d }); this.noise(t, 0.015, { type: 'bandpass', f0: side === 1 ? 900 : 1800, q: 4, gain: 0.1, dest: d });
+    if (side === 0 && this.duelFoeSoon?.()) this.duelFoeLastTick(); // (your turn begun with a foe skill on its last count: it fires when this turn ends)
+  }
+  /** A foe skill's countdown on its last tick: a clock's tick-tock and a low bell a tritone off the key, so the ear knows before the eye. */
+  duelFoeLastTick() {
+    if (!this.ok() || !this.allow('duelFoeLastTick', 1)) return;
+    const t = this.ctx.currentTime + 0.12, d = this.duelOut(0.3, 0.4, 0.45), r = duelRoot(this) - 24;
+    [0, 0.28].forEach((dt, k) => this.noise(t + dt, 0.02, { type: 'bandpass', f0: k ? 1700 : 2300, q: 8, gain: 0.35, dest: d }));
+    [1, 2.4, 3.9].forEach((q, j) => this.tone(t + 0.56, 1.4, { f0: hz(r + 6) * q, gain: [0.09, 0.03, 0.015][j], dest: d }));
+  }
+  /** The aberrant's foe skills (PvE, PUZZLE-DUELS.md 23), from its side (right) and below the key: each its own gesture. */
+  duelFoeSkill(skill = '', n = 1) {
+    if (!this.ok() || !this.allow(`duelFoe.${skill}`, 2)) return;
+    const t = this.ctx.currentTime, d = this.duelOut({ hurl: 1, sap: 1, petrify: 0.65 }[skill] ?? 0.4, 0.45, 0.45), r = duelRoot(this) - 24; // (levelled by ear and meter: each within about 6 dB of the others)
+    switch (skill) {
+      case 'hurl': { // (a heave, then the throw crossing to your half, clay clattering in the air: what lands lands later)
+        this.tone(t, 0.3, { f0: 70, f1: 110, type: 'sawtooth', gain: 0.06, dest: d });
+        const c = this.ctx, p = c.createStereoPanner(); p.pan.setValueAtTime(0.6, t + 0.25); p.pan.linearRampToValueAtTime(-0.6, t + 0.75); p.connect(d);
+        this.noise(t + 0.25, 0.5, { type: 'bandpass', f0: 500, f1: 2400, q: 0.8, gain: 0.3, attack: 0.1, dest: p });
+        for (let k = 0; k < Math.min(6, Math.max(1, n | 0)); k++) this.noise(t + 0.35 + k * 0.06, 0.03, { type: 'bandpass', f0: 1400 + (k % 3) * 300, q: 3, gain: 0.18, dest: p });
+        setTimeout(() => p.disconnect(), 1800); break; }
+      case 'petrify': // (stone creeping over glass: each gem's note falling into a dull knock)
+        this.noise(t, 0.6, { type: 'bandpass', f0: 2200, f1: 300, q: 1.2, gain: 0.18, attack: 0.05, dest: d });
+        for (let k = 0; k < Math.min(5, Math.max(1, n | 0)); k++) { const at = t + 0.1 + k * 0.09; this.tone(at, 0.08, { f0: hz(r + 36 + PENTA[k % 4]), f1: hz(r + 24), gain: 0.04, dest: d }); this.tone(at + 0.07, 0.08, { f0: 180, f1: 110, type: 'triangle', gain: 0.18, dest: d }); }
+        break;
+      case 'seal': // (a heavy lock: a chain drawn across, the bolt shot home)
+        for (let k = 0; k < 7; k++) this.noise(t + k * 0.035, 0.02, { type: 'bandpass', f0: 2800 + (k % 2) * 500, q: 6, gain: 0.16, dest: d });
+        this.tone(t + 0.3, 0.2, { f0: 120, f1: 70, gain: 0.5, dest: d }); this.noise(t + 0.3, 0.05, { type: 'bandpass', f0: 1100, q: 2, gain: 0.35, dest: d });
+        break;
+      case 'sap': // (your skills drained: a bright chord bent down and out, a suck of air)
+        [0, 7, 12].forEach((st) => this.tone(t, 0.9, { f0: hz(r + 36 + st), f1: hz(r + 24 + st), gain: 0.035, dest: d }));
+        this.noise(t, 0.8, { type: 'bandpass', f0: 3000, f1: 400, q: 1, gain: 0.12, attack: 0.3, dest: d });
+        break;
+      case 'reclaim': // (the Line hauled back: a deep tug and a falling fifth)
+        this.noise(t, 0.35, { type: 'lowpass', f0: 600, f1: 200, gain: 0.35, attack: 0.15, dest: d });
+        this.tone(t + 0.1, 0.6, { f0: hz(r + 7), f1: hz(r), type: 'sawtooth', gain: 0.06, dest: d }); this.tone(t + 0.35, 0.4, { f0: 80, f1: 45, gain: 0.5, dest: d });
+        break;
+      default: this.tone(t, 0.4, { f0: hz(r + 6), f1: hz(r), type: 'square', gain: 0.05, dest: d });
+    }
+  }
+  /** Its last flare (`foe.desperate`): a low cluster swelling, a roar of noise, a hit. */
+  duelFoeDesperate() {
+    if (!this.ok() || !this.allow('duelFoeDesperate', 1)) return;
+    const t = this.ctx.currentTime, d = this.duelOut(0.45, 0.7, 0.4), r = duelRoot(this) - 24;
+    [0, 1, 6].forEach((st) => this.riser(t, 0.8, { f0: hz(r + st) * 0.5, f1: hz(r + st), type: 'sawtooth', gain: 0.04, q: 2, dest: d }));
+    this.noise(t + 0.2, 0.7, { type: 'lowpass', f0: 400, f1: 2500, gain: 0.25, attack: 0.5, dest: d });
+    this.tone(t + 0.8, 0.5, { f0: 90, f1: 35, gain: 0.6, dest: d });
+  }
+  /** It reels from your big play (`foe.stagger`): a struck gong wobbling out of tune and back. */
+  duelFoeStagger() {
+    if (!this.ok() || !this.allow('duelFoeStagger', 2)) return;
+    const t = this.ctx.currentTime, d = this.duelOut(0.5, 0.55, 0.45), r = duelRoot(this) - 12;
+    this.tone(t, 0.9, { f0: hz(r), f1: hz(r) * 0.94, gain: 0.08, dest: d }); this.tone(t, 0.9, { f0: hz(r) * 1.5, f1: hz(r) * 1.42, gain: 0.04, dest: d });
+    this.noise(t, 0.05, { type: 'lowpass', f0: 1500, gain: 0.3, dest: d });
   }
   /** An ember cooled into its gem: the coal's hiss, then a glassy note as it sets. */
   duelEmberCool() {

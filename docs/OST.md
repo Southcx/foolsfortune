@@ -157,6 +157,11 @@ their Clayese scales; the System's skill and achievement jingles (the chime and 
   (`game.duel.practice`) stays in PRACTICE: no drums, no pinch, no peak. Measured: even -18.5 dB RMS, ahead -17.9, pinch -23.2 (peaks
   -3), practice -29.3. The one-gesture duel's skills: a dive and the tool's voice, a ready chime, Shot's sweep, Vein's run, Tune's bell.
   A cascade's clears are ducked under its chain step (deeper the higher it climbs; a plain match stays bright), so it reads as a climb.
+- **The PvE duel's aberrant** (PUZZLE-DUELS.md 23; `audio/puzzleduel.js`): its foe skills from its side and below the key: Hurl a heave and
+  a throw crossing to you, Petrify gems' notes falling into knocks, Seal a chain and a bolt, Sap a chord bent down, Reclaim a tug and a
+  falling fifth; its last flare a swelling roar; its stagger a gong wobbling out of tune. A countdown on its last tick (`sfx.duelFoeSoon`,
+  read as your turn begins) a tick-tock and a low bell a tritone off. A column won rises (the fifth and the octave), lost falls (minor,
+  low). Measured offline, peaks: the skills -18 to -24 dB, the flare -14. The phone buzzes on Hurl's landing (`duel.land`) and Reclaim.
 - **Levels:** each section has a `gain`. Rendered offline (`scripts/render_score.mjs`) and measured: a quiet opening or a jingle about
   -31 dB RMS, a theme's body -24 to -29, a fight -17 to -23; a climax about twice a verse.
 - **The low end:** under about 45% of the energy below 120 Hz (a looser limit is allowed for a hit). A sustained sub at full level
