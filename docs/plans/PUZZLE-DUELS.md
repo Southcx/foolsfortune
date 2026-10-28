@@ -796,3 +796,79 @@ One-sided: a thinking player wins nearly always in 5 to 8 turns and sees the Wis
 Prior art: Puzzle & Dragons (one drag a turn under a timer, enemy skills on turn counters, jammers and binds, overkill), Terra Battle
 (a boss's gimmicks), Into the Breach (attacks drawn a turn ahead), Tug of war (the Line).
 
+
+## 24. The duel's powers: the god hand's seven, as puzzle moves (South, 2026-10-28, through Petra's round note: "God hand powers in the duel. One power per domain (seven) ... Strawman drops all seven feelings' gems. That is harder, and the seven powers are what bring it back down")
+
+Built in `src/progress/duel/powers.js` (`DUEL_POWERS`). Every design space this round opened or closed is in `docs/plans/DUEL-DESIGN-SPACE.md`.
+
+### 24.1 The seven
+
+Each is a power the god hand already has in the world (`GOD_POWERS`), made a move on your half. All are cast before the turn's drag,
+as a free action (the drag still ends the turn).
+
+| power | domain (the hand's power) | what it does | cost (pool) | rests (your turns) | target |
+| --- | --- | --- | --- | --- | --- |
+| Swap | Ouranurgy (Swap) | two 2 x 2 patches of your half trade places | 10 | 1 | two cells (each a patch's top-left), not overlapping |
+| Manifest | Manifestation (Manifest) | up to 3 junk, embers or holes in the 3 x 3 round a cell become gems of one colour (junk first, nearest first); the colour asked, else the one most round them | 20 | 2 | a cell (`colour` optional) |
+| Scan | Divination (Scan Intent) | the aberrant's soonest skill shown and put off 2 turns; it counts as seen (24.5) | 15 | 3 | none |
+| Lift | Psychokinesis (Lift Ground) | a row or a column of your half shifted 1 or more cells, wrapping round (Chuzzle) | 10 | 1 | a cell, a direction, `by` |
+| Herd | Possession (Herd) | for each cell of a row or column, the nearest gem of the colour at the cell within 2 across it comes onto it | 20 | 2 | a cell, `H` or `V` |
+| Transmute | Alteration (Transmute) | every gem of one colour on your half becomes another (asked, else the one most on your half), and no gem of it falls for 2 of your turns | 25 | 3 | a cell (`colour` optional) |
+| Miracle | Spellscription (the miracles) | the colour at the cell clears at any 2 touching on your half, this turn and your next | 35 | 4 | a cell |
+
+**What pays.** The pool: the Courier's own as the duel opens (the hand's powers cost Lachryma in the world too), and what a practice duel
+spends is put back as it never counted. Your clears fill it in the PvE duel: a point a gem (`PVE.drink`, Puzzle Quest's mana) on top of the
+trickle. A duel's pool is carried back to the world as it stands at the end (the session's, as before).
+
+**One a turn** (`POWERS_A_TURN`), and each **rests** its turns once cast (Puzzle & Dragons' cooldowns). With three a turn, a stand-in that
+searched the powers' targets won every Lantern Wisp duel in 3 turns, the fewest the Line allows, at any strength: how well you drag stopped
+mattering. With one, each cast is a moment of its own (the cut-in's and the sting's room).
+
+**All seven open from the first duel.** The world's level-1 powers are open from the start, and a duel you cannot win without them must not
+wait on a level. A domain's level widens its power: its cost falls to 0.6 of itself at 99 on the ramp's curve (`powerCost`; the room hands
+the levels in as `newDuel({ levels })`). One rule for all seven, so a number on a tile is always the cost.
+
+### 24.2 Strawman's seven gems; the Wisp's five
+
+Strawman (`RULESETS.strawman`, `strawmanIdle`) now drops all seven feelings' gems. The aberrant Lantern Wisp goes from 4 colours to 5: on
+4, a Transmute leaves 3 colours, and 3 colours chain without end (24.3).
+
+### 24.3 Measured (`scratchpad duel/powers.mjs`: a stand-in weighing K drags a turn and, with powers, each ready power at 6 targets by the best drag after it, Scan when a skill is a turn off, Miracle on the colour most on its half; pool 30 at the start; 16 duels a row)
+
+| board | K | powers | wins | turns a side |
+| --- | --- | --- | --- | --- |
+| Strawman, 4 colours (before) | 12 | none | 16 | 3.7 |
+| Strawman, 7 colours | 1 | none / all | 2 / 12 | 25.6 / 12.0 |
+| Strawman, 7 colours | 2 | none / all | 3 / 14 | 23.1 / 8.4 |
+| Strawman, 7 colours | 12 | none / all | 6 / 14 | 22.5 / 8.2 |
+| Wisp, 4 colours, all powers, 3 a turn | 1 to 12 | all | 16 | 3.0 to 3.3 |
+| Wisp, 5 colours | 1 | none / all | 2 / 15 | 18.9 / 4.9 |
+| Wisp, 5 colours | 2 | none / all | 4 / 15 | 17.9 / 4.8 |
+| Wisp, 5 colours | 12 | none / all | 9 / 16 | 17.2 / 6.4 |
+
+Each power alone on Strawman's seven (K = 4, before the one-a-turn rule and Manifest's cap of 3): none 3 wins; Swap 10; Manifest (filling
+the whole 3 x 3) 16 in 4.3 turns, so capped at 3 cells (12 alone); Lift 7; Herd 7; Transmute 13; Miracle 5; Scan 7. The searching stand-in
+values what it sees this turn, so it undervalues Scan and Miracle (both pay over turns); a person who knows them will cast them more.
+
+**Read.** Without powers both duels are now a grind a person loses more than wins; with them, one-sided as South asked (23), and long
+enough (5 to 8 turns) that the aberrant's countdowns come round: the Wisp's four skills fire at turns 1 to 4.
+
+### 24.4 The worn pair's skills, tabled in the PvE duel
+
+The PvE duel wears no skills (`newDuel` gives side 0 `tools: []` there, keeping what was worn as `worn`): seven power tiles and two skill
+tiles would be nine big plays a turn, and the skills overlap the powers (Paint and Transmute, Tune and Miracle, Read and Scan, Grab and
+Manifest). Their code stays for the one-gesture duel (`style: 'drag'`) and a PvP mode later. Parked: the worn pair's domains making their
+powers cheaper (DUEL-DESIGN-SPACE.md).
+
+### 24.5 A foe skill seen
+
+`src/progress/foeseen.js` (`game.foeSeen`, save section `foeSeen`, scope player): knowledge, not a count. A foe skill is seen once you have
+watched any aberrant use it in any duel, a practice duel too (`duel.foe`), or read it with Scan (`duel.power { power: 'scan', skill }`).
+Watched outranks scanned (`how`). Said once: `duel.seen { skill, how }` and a log line. The badge's tooltip (Calissa's) asks
+`game.foeSeen.seen(skill)`: until then its countdown and a ?, after its label and line (`FOE_SKILLS`).
+
+### 24.6 Events (the session puts them on the bus with `by`)
+
+The kernel's: `power { side, power, domain, cost, pool, at }` then the power's own (`swap`, `manifest`, `scan`, `lift`, `herd`, `transmute`,
+`miracle`, with the moved pieces' ids from and to), `transmute.end`, `drink { side, n, pool }`. The bus's: `duel.power { power, domain, cost,
+skill? (Scan's), by: 'courier' }`. Counted: `duel.power.<id>` (tracking/duel.js; practice counts nothing).

@@ -65,7 +65,7 @@ export const SKILLS = {
       s.sides[side].sent += got.length; ev.push({ type: 'hold.send', side, n: got.length }); return ev; } },
   crucibelle: { need: 7, label: 'Tune', line: 'One colour clears at any 3 touching, this turn and your next', target: 'cell',
     legal: (s, side, a) => !!gemAt(s.board, side, a.at),
-    apply: (s, side, a) => { const S = s.sides[side], colour = s.board.at(...a.at).colour; S.tune = colour; S.tuneLeft = 2; return [{ type: 'tune', side, colour, need: 3, turns: 2 }]; } },
+    apply: (s, side, a) => { const S = s.sides[side], colour = s.board.at(...a.at).colour; S.tune = colour; S.tuneLeft = 2; S.tuneNeed = null; return [{ type: 'tune', side, colour, need: 3, turns: 2 }]; } },
   lockheart: { need: 8, label: 'Hold', line: 'Throws the junk about to land on you straight back', target: null, max: 9,
     legal: (s, side) => s.sides[side].pending > 0,
     apply: (s, side) => { const S = s.sides[side], n = Math.min(S.pending, SKILLS.lockheart.max); S.pending -= n; S.sent += n; return [{ type: 'hold.send', side, n, from: 'pending' }]; } },
