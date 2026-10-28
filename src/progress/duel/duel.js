@@ -33,6 +33,9 @@ import { foeOf, foeSkillsNow, stagger } from './foeskills.js';
 export const ACTIONS = { ...BOARD_ACTIONS, ...COURIER_ACTIONS, finisher: FINISHER_ACTION, flee: FLEE_ACTION, skill: SKILL_ACTION };
 /** The one-gesture duel's verbs (PUZZLE-DUELS.md 22): the drag, the worn pair's skills, the finisher and the flee; a swap is a drag of one step. */
 const DRAG_VERBS = new Set(['drag', 'skill', 'finisher', 'flee']);
+/** Whether a duel is played by the hand's drag alone, with skills and no Courier on the board (the one-gesture duel and the PvE duel):
+ *  ask this, never one style by name, so the next style added does not strand a check (Petra, 2026-10-28). */
+export const oneGesture = (s) => !!s && s.style !== 'classic';
 const PVE_VERBS = new Set(['drag', 'skill', 'flee']);
 /** The PvE duel (PUZZLE-DUELS.md 23): the longest drag a turn takes (a finger's whole path under the session's timer), what a big play
  *  is (a chain this deep, or this much sent in one turn) that staggers the aberrant. */
@@ -56,7 +59,7 @@ export const DUEL = {
   weakness: { k: [1.5, 0.5] }, // a gem of the Figment's weak colour counts 1.5 in your clears, of its own feeling 0.5 (weaknessOf)
   margin: { after: 10, step: 0.25 }, // past `after` turns a side, junk counts `step` more a turn (Puyo Puyo Tetris's margin time: a duel ends)
   style: 'pve',    // 'pve': the battle of wills (PUZZLE-DUELS.md 23, South 2026-10-28: one drag a turn, no action points, the aberrant's foe skills, never its matches);
-  //               'drag': 'drag': the one-gesture duel (PUZZLE-DUELS.md 22: the hand drags, the worn pair are charged skills, no Courier on the board); 'classic' the forms and the Courier's walk (sections 4 to 21), kept for the record and the measure
+  //               'drag': the one-gesture duel (PUZZLE-DUELS.md 22: the hand drags, the worn pair are charged skills, no Courier on the board); 'classic' the forms and the Courier's walk (sections 4 to 21), kept for the record and the measure
 };
 
 /** A junk count from one settle's chain steps: a step clearing n gems gives (n - 2) x 2^(step - 1) (Puyo's chain power, simplified),
