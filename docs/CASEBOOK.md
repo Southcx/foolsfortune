@@ -970,3 +970,6 @@ NEW:new-end-new-name. **A new way a thing can end is added wherever its ends are
 'line' for one it did not know; grep the old ends' names when a kernel adds one.
 NEW:an-end-is-logged-where-it-happens. **An end is written to the log by whatever made it.** The session reads ends from the duel's
   log; the kernel logged a turn's events but not an action's, so a secret won by a drag was invisible to it and named the fallback.
+
+NEW:a-mode-is-matched-exactly. **A program shared by several meshes matches each one's mode exactly, never by a threshold.** The
+duel's ground disc (mode 2) fell into the slab's `> 0.5` branch and drew a board under the bodies.

@@ -102,12 +102,12 @@ vec3 srgb(vec3 c) { return pow(c, vec3(2.2)); }
 // an aberrant's own ground (uStyle.x): 1 the Lantern Wisp's fens at night: black water under fog, reeds against the sky, the lantern the
 // one warm light on it and in the water; the dark closes in on it as its fuel goes (uStyle.y, the secret's k: aberrants/wisp.js)
 vec3 fens(vec3 dir, vec2 q, float t, float fl, float dark) {
-  vec3 lamp = vec3(1.0, 0.62, 0.26) * (1.0 - 0.9 * dark), fogC = vec3(0.10, 0.14, 0.12) * (1.0 - 0.7 * dark);
+  vec3 lamp = srgb(vec3(1.0, 0.62, 0.26)) * 0.45 * (1.0 - 0.9 * dark), fogC = srgb(vec3(0.16, 0.22, 0.19)) * (1.0 - 0.7 * dark); // (linear and held low: the one warm light, never a wash under the glow)
   vec2 hz = normalize(dir.xz + 1e-4), ld = normalize((uOriginF - uCentre).xz + 1e-4); float yaw = 1.0 - dot(hz, ld); // (how far round from the lantern)
   if (fl > 0.5) { // the ground: black water, rings spreading off the lantern's foot, its warm pool shrinking with the dark
     float r = length(vW.xz - uOriginF.xz), ring = max(0.0, sin(r * 5.0 - t * 1.6)) * exp(-r * 0.35);
-    float pool = exp(-pow(r / mix(2.6, 0.6, dark), 2.0)), sheen = fbm(q * 2.2 + vec2(t * 0.05, 0.0));
-    return vec3(0.008, 0.016, 0.02) + lamp * (pool * 0.9 + ring * 0.12 * pool) + fogC * (0.25 + 0.3 * sheen) * (0.5 + dark);
+    float pool = exp(-pow(r / mix(1.3, 0.4, dark), 2.0)), sheen = fbm(q * 2.2 + vec2(t * 0.05, 0.0));
+    return vec3(0.008, 0.016, 0.02) + lamp * (pool * 0.6 + ring * 0.12 * pool) + fogC * (0.25 + 0.3 * sheen) * (0.5 + dark);
   }
   float y = dir.y, above = step(0.0, y);
   vec3 sky = mix(vec3(0.012, 0.03, 0.035), vec3(0.003, 0.006, 0.01), smoothstep(0.0, 0.7, y));
@@ -115,8 +115,8 @@ vec3 fens(vec3 dir, vec2 q, float t, float fl, float dark) {
   float rx = q.x * 7.0, rh = h21(vec2(floor(rx), 5.0)) * (0.05 + 0.09 * h21(vec2(floor(rx), 9.0)));
   float reed = (1.0 - smoothstep(0.02, 0.07, abs(fract(rx) - 0.5) * (1.0 + 2.0 * y / max(rh, 0.01)))) * step(0.0, y) * step(y, rh) * step(0.55, h21(vec2(floor(rx), 2.0)));
   vec3 water = vec3(0.004, 0.01, 0.014) + fogC * 0.3 * fbm(q * vec2(0.6, 3.0) + vec2(0.0, t * 0.06));
-  float glow = exp(-yaw * 18.0) * exp(-abs(y) * 5.0), refl = exp(-yaw * 40.0) * (1.0 - above) * (0.6 + 0.4 * sin(y * 90.0 + t * 3.0)) * exp(y * 3.0);
-  vec3 col = mix(water, sky, above) + fogC * bank * (0.9 + 0.8 * dark) + lamp * (glow * 0.8 + refl * 0.7);
+  float glow = exp(-yaw * 60.0) * exp(-abs(y) * 8.0), refl = exp(-yaw * 160.0) * (1.0 - above) * (0.6 + 0.4 * sin(y * 90.0 + t * 3.0)) * exp(y * 10.0); // (a narrow column of light on the black water, under the lantern only)
+  vec3 col = mix(water, sky, above) + fogC * bank * (0.9 + 0.8 * dark) + lamp * (glow * 0.22 + refl * 0.18); // (the camera looks down the lantern's bearing: kept faint, or the bloom washes the side)
   return mix(col, vec3(0.0), reed * 0.9);
 }
 // your half as your Spirit Garden (uGarden: on, bloom, briar, daylight; the garden's mood's colours, aberrants and gardenground.js): its sky
@@ -152,7 +152,7 @@ vec3 garden(vec3 dir, vec2 q, float t, float fl) {
 void main() {
   float sd = dot(vW - uPlaneP, uPlaneN); // (the Line's plane: below nought the Courier's ground, above it the foe's)
   float t = uT;
-  if (uMode > 0.5) { // ---- the slab: the board's face (its ruleset's w x h cells, uGrid), split at the Line
+  if (uMode > 0.5 && uMode < 1.5) { // ---- the slab: the board's face (its ruleset's w x h cells, uGrid), split at the Line
     vec2 c = vec2(vUv.x * uGrid.x, (1.0 - vUv.y) * uGrid.y);
     float fwx = max(fwidth(c.x), 1e-4), k = smoothstep(-fwx, fwx, c.x - uLine), yy = c.y / uGrid.y;
     float ph = labPhase(vW * 0.6, vView);
