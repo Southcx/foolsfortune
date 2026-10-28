@@ -143,7 +143,7 @@ export class DuelBoard {
   }
   apAt(side, k, out = new THREE.Vector3()) {
     const { base, border: b, lip } = DUEL_VIEW, W = this.W;
-    if (this.meter) { const { cs } = DUEL_VIEW, n = Math.max(1, this.ap[side][1]); return out.set((this.line - this.w / 2) * cs + (side ? -0.05 : 0.05) * cs, base + this.H * ((k + 0.5) / n), DUEL_VIEW.front); } // (a notch of the push meters on the Line's seam: domains.js)
+    if (this.meter) { const { cs } = DUEL_VIEW, n = Math.max(1, this.ap[side][1]); return out.set((this.line - this.w / 2) * cs + (side ? -0.16 : 0.16) * cs, base + this.H * ((k + 0.5) / n), DUEL_VIEW.front); } // (a notch of the push meters on the Line's seam: domains.js)
     return out.set(side ? W / 2 - 0.2 - k * 0.17 : -W / 2 + 0.2 + k * 0.17, base - b / 2, lip + 0.02);
   }
   setEmo(side, emo) { this.emo[side] = Math.max(0, Math.min(1, emo || 0)); }

@@ -131,8 +131,9 @@ void main() {
     col = mix(col, srgb(vec3(0.95, 0.76, 0.35)) * 1.4, core * uWon);
     if (uMeter.w > 0.5) { // (the PvE duel's push meters on the seam, filled from the foot: yours on its foe side in the film, the junk landed on you on yours in its feeling; a notch a junk)
       float sx = c.x - uLine, up = 1.0 - yy, n = max(uMeter.z, 1.0), seg = fract(up * n), notch = smoothstep(0.0, 0.03 * n, seg) * smoothstep(0.0, 0.03 * n, 1.0 - seg);
-      float mine = step(0.0, sx) * (1.0 - smoothstep(0.1, 0.1 + fwx, sx)) * step(up, uMeter.x), its = step(sx, 0.0) * (1.0 - smoothstep(0.1, 0.1 + fwx, -sx)) * step(up, uMeter.y);
-      col = mix(col, labSoft(ph + up) * 1.6 + 0.15, mine * notch); col = mix(col, uFoe * 1.5, its * notch);
+      float wR = step(0.06, sx) * (1.0 - smoothstep(0.26, 0.26 + fwx, sx)), wL = step(0.06, -sx) * (1.0 - smoothstep(0.26, 0.26 + fwx, -sx)); // (a slot each side of the seam's core)
+      col = mix(col, vec3(0.012), (wR + wL) * 0.85); col += vec3(0.05) * (wR + wL) * (1.0 - notch); // (the empty slot dark, its notches faint)
+      col = mix(col, labSoft(ph + up) * 2.2 + 0.25, wR * notch * step(up, uMeter.x)); col = mix(col, uFoe * 2.0 + 0.05, wL * notch * step(up, uMeter.y));
     }
     gl_FragColor = vec4(col, 1.0);
     return;

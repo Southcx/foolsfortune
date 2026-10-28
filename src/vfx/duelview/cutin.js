@@ -54,7 +54,7 @@ void main() {
       vec4 P = texture2D(uPort, vec2(pu.x, 1.0 - pu.y)); vec3 pc = P.rgb / (1.0 + P.rgb) * 1.45;
       c = mix(c, pc, P.a * smoothstep(0.0, 0.3, pu.x));
     }
-    float wh = min(2.0 * uBand.y * 0.62, W * 0.46 / uWordAsp) * uSlam, ww = wh * uWordAsp; vec2 wc = vec2(W * 0.3, uBand.x + (W * 0.3 - W * 0.5) * uBand.z);
+    float wh = min(2.0 * uBand.y * 0.6, W * 0.34 / uWordAsp) * uSlam, ww = wh * uWordAsp; vec2 wc = vec2(W * 0.34, uBand.x + (W * 0.34 - W * 0.5) * uBand.z); // (clear of the phone's left tiles)
     vec2 wu = (px - wc) / vec2(ww, wh) + 0.5; wu.y += (px.x - wc.x) * uBand.z / wh;
     vec2 su = wu - vec2(0.012, -0.06);
     if (su.x > 0.0 && su.x < 1.0 && su.y > 0.0 && su.y < 1.0) c = mix(c, uFeel * 1.2, texture2D(uWord, vec2(su.x, 1.0 - su.y)).a * uWordOn * 0.9);
@@ -120,7 +120,8 @@ export class FoeCutIn {
   /** The strip's camera on the foe's head from in front of it (toward the Courier's end), a quarter turned, a little low; pushed in by `k`. */
   aim(k, limit) {
     const V = this.view, B = this.box; if (!B) return;
-    const size = B.getSize(_a), h = Math.max(0.4, size.y), ve = h * (limit ? 0.42 : 0.52), focus = B.getCenter(_b).setY(B.max.y - h * 0.3);
+    const size = B.getSize(_a), h = Math.max(0.4, size.y), f = V.foe, hd = typeof f?.head === 'function' ? f.head() : null; // (its own head where it says, else high on its bounds)
+    const ve = Math.max(0.5, h * (limit ? 0.3 : 0.38)), focus = hd?.isVector3 ? _b.copy(hd).setY(hd.y - ve * 0.3) : B.getCenter(_b).setY(B.max.y - h * 0.22);
     const yaw = (limit ? -0.18 : 0.32), dir = _a.copy(V.u).negate().setY(0).normalize().applyAxisAngle(THREE.Object3D.DEFAULT_UP, yaw);
     const d = ve / 2 / Math.tan(THREE.MathUtils.degToRad(CUT_IN.fov / 2)) * (1 - 0.12 * k);
     this.cam.position.copy(focus).addScaledVector(dir, d); this.cam.position.y -= ve * 0.12; this.cam.up.set(limit ? Math.sin(0.12) : 0, 1, 0); this.cam.lookAt(focus);
