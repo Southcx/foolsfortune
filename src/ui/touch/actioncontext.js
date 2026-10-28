@@ -105,8 +105,8 @@ export function duelCluster(g) {
     E('du.end', 'endturn', 'END TURN', { dim: !mine, charge: mine && S.ap > 0 ? s.apLeft / S.ap : 0 }), // (its rim the action points left)
     broken ? E('du.finish', 'finisher', 'FINISHER', { dim: !mine }) : null,
     E('du.flee', 'flee', 'FLEE', { dim: !mine }),
-    E('du.undo', 'undo', 'UNDO', { dim: !mine || !s.undo?.length }), // (the last action this turn taken back: dim with nothing to take back)
-    s.style === 'drag' ? null : S.form === 'hand' ? E('du.form', 'formcourier', 'COURIER', { dim: !mine, lit: askedOf(s) === 'form' }) : E('du.form', 'grab', 'HAND', { dim: !mine }),
+    s.style === 'pve' ? null : E('du.undo', 'undo', 'UNDO', { dim: !mine || !s.undo?.length }), // (the PvE duel's drag is committed: no undo, PUZZLE-DUELS.md 23.1) // (the last action this turn taken back: dim with nothing to take back)
+    s.style === 'drag' || s.style === 'pve' ? null : S.form === 'hand' ? E('du.form', 'formcourier', 'COURIER', { dim: !mine, lit: askedOf(s) === 'form' }) : E('du.form', 'grab', 'HAND', { dim: !mine }),
   ];
 }
 
@@ -208,7 +208,7 @@ export function stripOf(g) {
  *  hand's form; dim where the moment or the form refuses them, lit while one is held (a song sung, a read open). */
 export function duelTools(g) {
   const D = g.duel, s = D.state; if (!s) return [];
-  if (s.style === 'drag') return skillTiles(g, s); // (the one-gesture duel: the worn pair as two skills, PUZZLE-DUELS.md 22)
+  if (s.style === 'drag' || s.style === 'pve') return skillTiles(g, s); // (the one-gesture duel: the worn pair as two skills, PUZZLE-DUELS.md 22)
   const S = s.sides[0], worn = S.tools ? new Set(S.tools) : null, hand = S.form === 'hand', out = [], legal = legalKinds(s);
   const cell = D.picked || D.hover, piece = hand && cell ? s.board?.at?.(cell.x, cell.y) : null; // (on touch the picked cell: pick, then ROTATE)
   const ask = askedOf(s), fogged = !!s.rs?.fog && s.rs.fog.side !== 0; // (Read only where Dread's fog hides the foe: couriertools.js)

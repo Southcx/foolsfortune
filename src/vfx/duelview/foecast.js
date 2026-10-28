@@ -2,8 +2,8 @@
 // THE ABERRANT'S CASTS (plain name; the PvE duel, PUZZLE-DUELS.md 23; South, 2026-10-28: "flashier and cinematic; a true battle of wills
 // complete with special moves from the Aberrant"): the foe's half of the battle drawn on and round the tsuitate.
 //   ITS COUNTDOWNS   a row of clay badges over its body (foeIntent: soonest first), each a skill's glyph and the turns left; the last
-//                    tick throbs, rimmed in ember. In the board view (its body off the screen) the row stands on the frame's top member
-//                    over its half. No words: the glyph and the number.
+//                    tick throbs, rimmed in ember. In the board view (its body off the screen) they stand as a column in the flank beside
+//                    the frame's foe end. No words: the glyph and the number.
 //   ITS CASTS        foe.skill from its body: HURL junk flung in arcs onto your half's top (it lands at your next turn's end, the land
 //                    beat's own); PETRIFY a spiral to each gem, the gem greying and dropping to stone (its piece swapped for the junk's
 //                    id); SEAL a chain slammed down a column of yours, held while the column is sealed; SAP your skill troughs drained,
@@ -12,7 +12,7 @@
 //                    its head, STAGGER, its badges knocked back a turn
 //   THE CONQUEST     a column taken (a line event of yours): a sweep of the film down it, its frozen gems lit as they wake; one lost: the
 //                    sweep in its feeling, the other way
-//   THE DRAG'S TIMER a bar on the frame's foot under your half, draining as the session says (`timer(k)`), ember near its end
+//   THE DRAG'S TIMER a bar standing beside the frame's Courier end, draining downward as the session says (`timer(k)`), ember near its end
 // Programs: the board's glow (instanced, its motes'), the juice's additive sweep, the word's map, the gauges' emo bars: nothing new.
 // Prior art: Puzzle & Dragons' enemy turn counters over the monster and its skill's cut-in, Into the Breach's attacks drawn a turn ahead,
 // Terra Battle's boss gimmicks, a tug of war's rope (the Line), the duel's own skill casts (skillcast.js).
@@ -76,17 +76,20 @@ export class FoeCast {
     this.trough = new THREE.Mesh(bar, new THREE.MeshBasicMaterial({ name: 'duel-emo', color: 0x1c1018, toneMapped: false })); // (the gauges' emo bars' program, skillgauges.js)
     this.fill = new THREE.Mesh(bar, new THREE.MeshBasicMaterial({ name: 'duel-emo', color: 0xffffff, toneMapped: false }));
     for (const m of [this.trough, this.fill]) { m.visible = false; this.group.add(m); }
-    this.timerK = null; this.knock = 0; this.burn = 0; this.t = 0; this.cs = cs;
+    this.timerK = null; this.knock = 0; this.burn = 0; this.t = 0; this.cs = cs; this.box = new THREE.Box3(); this.boxT = 0;
   }
 
-  /** Where its head is, in the board's frame (the foe's body in the world, else its figurine, else the half's middle over the top). */
-  head(out) {
-    const V = this.view, f = V.foe;
-    if (f?.pos) { const h = f.head?.(); _w.copy(h?.isVector3 ? h : f.pos); if (!h) _w.y += 1.4; return V.frame.worldToLocal(out.copy(_w)); }
-    return V.juice.headAt(1, out);
+  /** Where its head is in the world: the top of its drawn body (its root's bounds, measured twice a real second), else over its place. */
+  headWorld(out) {
+    const f = this.view.foe, o = f?.root || f?.model?.group || null;
+    if (o && this.boxT <= 0) { this.box.setFromObject(o); this.boxT = 0.5; }
+    if (o && !this.box.isEmpty()) return this.box.getCenter(out).setY(this.box.max.y + 0.1);
+    return f?.pos ? out.copy(f.pos).setY(f.pos.y + 1.4) : null;
   }
-  /** Whether the foe's head is on the screen (else the countdowns stand on the frame). */
-  onScreen() { const V = this.view, f = V.foe, cam = V.game.camera; if (!f?.pos || !cam) return false; _w.copy(f.pos); _w.y += 1.4; _w.project(cam); return Math.abs(_w.x) < 0.88 && Math.abs(_w.y) < 0.88 && _w.z < 1; }
+  /** Where its head is, in the board's frame (its body in the world, else its figurine, else the half's middle over the top). */
+  head(out) { const V = this.view, w = this.headWorld(_w); return w ? V.frame.worldToLocal(out.copy(w)) : V.juice.headAt(1, out); }
+  /** Whether the foe's head is on the screen (else the countdowns stand in the flank beside the frame). */
+  onScreen() { const cam = this.view.game.camera, w = this.headWorld(_w); if (!w || !cam) return false; w.project(cam); return Math.abs(w.x) < 0.86 && Math.abs(w.y) < 0.8 && w.z < 1; }
   dims() { const B = this.view.board3, { cs, base, border, lip } = DUEL_VIEW; return { B, cs, W: B.w * cs, top: base + B.h * cs, base, b: border, lip }; }
 
   /** The kernel's foe events as beats (beats.js hands them here). */
@@ -148,16 +151,16 @@ export class FoeCast {
   badgeTex(skill, left) { const k = skill + ':' + left; let t = this.tex.get(k); if (!t) { t = badgeTexture(skill, left); this.tex.set(k, t); } return t; }
 
   update(dt) {
-    const V = this.view, s = V.state, cs = this.cs; this.t += dt; const t = this.t;
+    const V = this.view, s = V.state, cs = this.cs; this.t += dt; const t = this.t; this.boxT -= dt;
     const pve = !!(V.isOpen && s?.style === 'pve' && s.foe), D = this.dims();
     // its countdowns
     const I = pve ? foeIntent(s) : []; this.knock = Math.max(0, this.knock - dt / 0.6); this.burn = Math.max(0, this.burn - dt / 1.6);
-    const on = this.onScreen(), at = on ? this.head(_a).add(_b.set(0, FOE_CAST.over, 0.05)) : _a.set(D.W / 2 - cs * 1.4, D.top + D.b + FOE_CAST.badge * 0.7, D.lip + 0.06);
-    const size = FOE_CAST.badge * (on ? 1 : 0.8), n = Math.min(I.length, this.badges.length), w0 = -((n - 1) * (size + FOE_CAST.gap)) / 2 - (on ? 0 : (n - 1) * (size + FOE_CAST.gap) / 2);
+    const on = this.onScreen(), at = on ? this.head(_a).add(_b.set(0, FOE_CAST.over, 0.05)) : _a.set(D.W / 2 + D.b + FOE_CAST.badge * 0.75, D.top - FOE_CAST.badge, D.lip + 0.06); // (off the screen: a column in the flank beside the frame's foe end)
+    const size = FOE_CAST.badge, n = Math.min(I.length, this.badges.length), step = size + FOE_CAST.gap, w0 = on ? -((n - 1) * step) / 2 : 0;
     this.badges.forEach((m, i) => { const it = I[i]; m.visible = !!it; if (!it) return;
       if (m.material.map !== this.badgeTex(it.skill, it.left)) { m.material.map = this.badgeTex(it.skill, it.left); m.material.needsUpdate = true; }
       const last = it.left <= 1, th = last ? 1 + 0.16 * Math.max(0, Math.sin(t * 7)) : 1;
-      m.position.set(at.x + w0 + i * (size + FOE_CAST.gap), at.y + this.knock * 0.06 * Math.sin(t * 30) + (i === 0 ? 0.02 : 0), at.z);
+      m.position.set(on ? at.x + w0 + i * step : at.x, (on ? at.y : at.y - i * step) + this.knock * 0.06 * Math.sin(t * 30), at.z);
       m.scale.setScalar(size * th * (1 + 0.25 * this.knock));
       m.material.color.setRGB(1, 1, 1); if (last) m.material.color.lerp(_c.setHex(EMBER), 0.25 + 0.25 * Math.sin(t * 7)); if (this.burn > 0) m.material.color.lerp(_c.setHex(EMBER), this.burn * 0.6); });
     // the seal's chain, held while its column is sealed
@@ -177,9 +180,9 @@ export class FoeCast {
     this.shots.count = k; this.shots.instanceMatrix.needsUpdate = true; if (this.shots.instanceColor) this.shots.instanceColor.needsUpdate = true;
     // the drag's timer
     const tk = pve ? this.timerK : null; this.trough.visible = this.fill.visible = tk != null;
-    if (tk != null) { const x0 = -D.W / 2 + cs * 0.4, w = ((V.lineCol ?? D.B.line) - 0.8) * cs - cs * 0.4 + cs * 0.4, y = D.base - D.b * 0.5;
-      this.trough.position.set(x0, y, D.lip + 0.004); this.trough.scale.set(Math.max(cs, w), D.b * 0.34, 0.012);
-      this.fill.position.set(x0, y, D.lip + 0.011); this.fill.scale.set(Math.max(0.001, Math.max(cs, w) * tk), D.b * 0.24, 0.012);
+    if (tk != null) { const x = -D.W / 2 - D.b - cs * 0.6, y0 = D.base, H = D.B.h * cs; // (a column beside the frame's Courier end, draining downward: the board view crops the frame's foot)
+      this.trough.position.set(x, y0, D.lip); this.trough.rotation.z = Math.PI / 2; this.trough.scale.set(H, cs * 0.5, 0.012);
+      this.fill.position.set(x, y0, D.lip + 0.007); this.fill.rotation.z = Math.PI / 2; this.fill.scale.set(Math.max(0.001, H * tk), cs * 0.36, 0.012);
       this.fill.material.color.setHex(tk > 0.3 ? FILM : EMBER).multiplyScalar(tk > 0.3 ? 1 : 1 + 0.4 * Math.sin(t * 14)); }
   }
 }
