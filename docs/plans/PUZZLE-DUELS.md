@@ -738,3 +738,60 @@ is then 9 actions with 1 or 2 skills, the designed ceiling (5 action points, a r
 with nothing left to do is said by `canAct(s, side)` (an action point, or a skill ready with a target it takes): the session's to end
 it a beat after, so a spent turn never reads as a stuck duel (Petra's).
 
+## 23. The PvE duel: a battle of wills (South, 2026-10-28: "points 1 and 2 with removing action points ... a true battle of wills complete with your aforementioned special moves from the Aberrant, rather than having them also play match 3. We can come circle back to the original mechanics for like a pvp mode, but pve can be much more one-sided in favor of the player")
+
+`DUEL.style = 'pve'` (the default; 'drag' and 'classic' kept for a versus mode). Kernel: duel.js, `progress/duel/foeskills.js`.
+
+### 23.1 Your turn
+One drag, any length (up to 48 steps; the session's timer is its real limit, Puzzle & Dragons' 4 to 6 real s), no action points. Your
+ready skills fire first, free, each once; the drag is the turn, and once it settles nothing is left (`canAct` false: the session ends it
+0.6 real s later). No undo: the drag is committed (Puzzle & Dragons). A Seal's column cannot be touched by the drag.
+
+### 23.2 The Line is the battle of wills
+The aberrant never matches: its half is its mind, frozen (no gravity, no clears, no drip). What you send at the turn's end pushes the
+Line into it, a column a `perColumn` (the Wisp 5, Strawman 4), **two columns a turn at most** (overkill lost: a free Paint alone did 17,
+four columns). A column taken is yours, its frozen gems falling into play: a conquest that can cascade. Nothing offsets in PvE: your
+clears always push, its junk always lands (Hold and Grab are the answer). Take its whole half and it is broken: you win. It wins by
+pushing the Line back to your edge (its junk landing, a column a `perColumn` landed, and Reclaim) or a full half.
+A skill's blast (Shot, Vein) is refilled wild (skyfall without the calm), so a skill feeds the drag after it. Skyfall is on in PvE.
+
+### 23.3 The aberrant's turn: foe skills
+Each on its own countdown, shown over it (`foeIntent(s)`; `intentOf(s, 1).foe`): **Hurl** (junk landing on you after your next turn),
+**Petrify** (gems of yours turned to junk), **Seal** (a column you cannot drag on your next turn), **Sap** (half of each skill's charge),
+**Reclaim** (the Line pushed back a column), and a **desperate** flare once when its half is down to `at` columns. A big play of yours
+(a chain of 4 or more, or 10 sent in a turn) **staggers** it: every countdown a turn later. The Veritome's Read does the same in PvE.
+The lesson's idle turn and a stun fire nothing.
+
+| aberrant | foe skills (every, first) | desperate |
+| --- | --- | --- |
+| the Lantern Wisp | Hurl 3 embers (2, 1), Petrify 3 (3, 2), Seal (4, 3), Reclaim (5, 4) | at 2 columns: Hurl 5, Petrify 4 |
+| Strawman, plain | Hurl 2 (3, 2), Petrify 2 (4, 3), Seal (5, 4) | none |
+| Strawman, idle | none | none |
+
+### 23.4 Measured (`scratchpad duel/pve.mjs`: a stand-in trying K drags a turn, its ready skills first at their best of 16 targets)
+| board | pair | K | wins | turns | foe skills a duel |
+| --- | --- | --- | --- | --- | --- |
+| the Wisp | psygun + Dreamvane | 6 | 15/16 | 5.3 | 4.7 |
+| the Wisp | Lockheart + Veritome | 6 | 15/16 | 8.3 | 7.0 |
+| the Wisp | Soul Brush + Sondelass | 2 (careless) | 11/16 | 8.6 | 9.4 |
+| the Wisp | Lockheart + Veritome | 1 (one drag tried) | 3/16 | 15.6 | 16.5 |
+| Strawman plain | psygun + Dreamvane | 6 | 16/16 | 4.8 | 1.6 |
+| Strawman idle | psygun + Dreamvane | 2 | 8/8 | 6.3 | 0 |
+One-sided: a thinking player wins nearly always in 5 to 8 turns and sees the Wisp's whole hand; a masher can lose. Skill damage alone
+(best of their targets): Paint 17, Vein 16, Shot 12, a good drag 9; Tune 2, Hold 3, Read 0 (it stalls instead).
+
+### 23.5 Asked of the others
+- **Petra (the session):** the drag's timer from the first move (5 real s, a bar draining; release or time out commits); the foe's turn
+  is `botPlay`, which in PvE calls `foeTurn` (no change needed); emit `duel.foe { skill, n, by: 'creature' }` on each `foe.skill` and
+  `duel.stagger { by: 'courier' }` on `foe.stagger`; until Calissa's beats land, `view.resync(state)` after a foe turn (Petrify swaps a
+  gem's piece for a junk piece of a new id).
+- **Calissa (the look):** the aberrant's countdowns over it (`foeIntent`), each foe skill as a cast from its body (Hurl: junk flung in
+  an arc; Petrify: gems greying to stone; Seal: a column chained; Sap: the skill tiles drained; Reclaim: the Line shoved back with the
+  domains' clash), `foe.desperate` its big moment, `foe.stagger` a reel; the Line's push as the battle of wills (each column taken a
+  conquest beat, its gems falling into your board); the drag's timer.
+- **Wanda:** a sound for each foe skill, the countdown's last tick, the stagger, a column won and lost.
+- **Espada:** the foe skills' words (plain now: Hurl, Petrify, Seal, Sap, Reclaim), the log's placeholder lines.
+
+Prior art: Puzzle & Dragons (one drag a turn under a timer, enemy skills on turn counters, jammers and binds, overkill), Terra Battle
+(a boss's gimmicks), Into the Breach (attacks drawn a turn ahead), Tug of war (the Line).
+

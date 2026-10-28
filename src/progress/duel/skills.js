@@ -11,7 +11,7 @@
 //   Grab (the Sondelass)     every piece of junk and every ember in the 5 x 5 round the cell is hooked out and thrown across as junk
 //   Tune (the Crucibelle)    the colour of the gem at the cell clears in any 3 touching, this turn and the next of yours
 //   Hold (the Lockheart)     the junk waiting to land on you (up to `max`) is taken into the coffin and thrown back at once
-//   Read (the Veritome)      two action points back, and the fog lifted for three of your turns
+//   Read (the Veritome)      two action points back, and the fog lifted for three of your turns (in the PvE duel: every foe skill a turn later)
 // The needs were set by measure (scripts: PUZZLE-DUELS.md 22.3) so each fires about once in two or three turns of a person's play.
 // Each skill fires at most once a turn (`S.fired`, cleared at the turn's end: Puzzle & Dragons' cooldown in turns): with skyfall the
 // cascade after a Shot charged the skills again, and a turn ran to 9 actions, 4 of them skills (PUZZLE-DUELS.md 22.8).
@@ -70,7 +70,9 @@ export const SKILLS = {
     legal: (s, side) => s.sides[side].pending > 0,
     apply: (s, side) => { const S = s.sides[side], n = Math.min(S.pending, SKILLS.lockheart.max); S.pending -= n; S.sent += n; return [{ type: 'hold.send', side, n, from: 'pending' }]; } },
   veritome: { need: 7, label: 'Read', line: 'Two action points back, and the fog lifts for three turns', target: null,
-    apply: (s, side) => { s.apLeft += 2; s.sides[side].read = Math.max(s.sides[side].read || 0, 6); return [{ type: 'read', side, plies: 6, ap: 2 }]; } },
+    apply: (s, side) => { s.sides[side].read = Math.max(s.sides[side].read || 0, 6);
+      if (s.style === 'pve') { for (const m of s.foe?.moves || []) m.left++; return [{ type: 'read', side, plies: 6, delay: 1 }]; } // (the PvE duel has no points: a read of its will puts every foe skill a turn off, PUZZLE-DUELS.md 23.3)
+      s.apLeft += 2; return [{ type: 'read', side, plies: 6, ap: 2 }]; } },
 };
 export const SKILL_TOOLS = Object.keys(SKILLS);
 
@@ -88,6 +90,7 @@ export function skillsOf(s, side) {
 
 /** Whether a side can still do anything this turn: an action point, or a ready skill with a target it takes. */
 export function canAct(s, side) {
+  if (s.style === 'pve' && side === 0) return !s.sides[0].dragged; // (the PvE duel: the turn is the drag; once it settles, nothing is left)
   if (s.apLeft > 0) return true;
   return skillActions(s, side).some((a) => SKILL_ACTION.legal(s, side, a));
 }

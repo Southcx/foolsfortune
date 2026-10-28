@@ -1,0 +1,68 @@
+// ---------------------------------------------------------------------------------------
+// A FOE SKILL: THE PVE DUEL'S ABERRANT (docs/plans/PUZZLE-DUELS.md 23; South, 2026-10-28: "a true battle of wills complete with your
+// aforementioned special moves from the Aberrant, rather than having them also play match 3 ... pve can be much more one-sided in favor
+// of the player"). In the PvE duel the aberrant never matches: its half of the board is its mind, frozen, and its turn is its foe skills,
+// each on a countdown you can see (Puzzle & Dragons' enemy skills and their turn counters; Into the Breach's telegraphed attacks), each
+// aimed at your half or at the Line between you. A big play of yours staggers it: every countdown waits a turn longer.
+//
+//   Hurl       junk thrown at your half: it lands at the end of your next turn unless your clears cancel it (a Wisp's are embers)
+//   Petrify    gems on your half turned to junk where they lie (Puzzle & Dragons' jammer orbs)
+//   Seal       a column of yours locked: no drag may touch it on your next turn (Puzzle & Dragons' bound orbs)
+//   Sap        each skill you wear loses half its charge
+//   Reclaim    the Line pushed back a column toward you (the aberrant takes a column of its mind back)
+// A ruleset's `foe`: { moves: [{ skill, every, first?, n? }], desperate?: { at, moves: [{ skill, n? }] } }: each move fires when its
+// countdown (`first`, then `every`) runs out; `desperate` fires once, when the aberrant's half is down to `at` columns.
+//
+// Prior art: Puzzle & Dragons' enemy skills (the countdown over the enemy, jammers, binds, skill delay), Terra Battle's boss gimmicks,
+// Into the Breach's attacks drawn a turn ahead, Candy Crush's blockers.
+//
+//   FOE_SKILLS[id] = { label, line, fire(s, M, K) -> events }   foeOf(rs) -> s.foe   foeIntent(s) -> [{ skill, label, line, left, n }]
+//   K: the kernel's own helpers handed in by duel.js ({ moveLine, gemOf })   events: foe.skill { side: 1, skill, ... } and the skill's own
+// ---------------------------------------------------------------------------------------
+import { piece, hasTag } from './board.js';
+import { SKILLS } from './skills.js';
+
+const gemsOf = (s) => { const out = []; s.board.each((p, x, y) => { if (p && s.board.mine(0, x) && hasTag(p, 'matches') && p.kind === 'gem') out.push([x, y]); }); return out; };
+
+export const FOE_SKILLS = {
+  hurl: { label: 'Hurl', line: 'Junk lands on your half after your next turn, less what your clears cancel',
+    fire: (s, M) => { s.sides[0].pending += M.n; return [{ type: 'foe.skill', side: 1, skill: 'hurl', n: M.n }]; } },
+  petrify: { label: 'Petrify', line: 'Gems on your half turn to junk',
+    fire: (s, M) => { const b = s.board, cells = gemsOf(s), at = [];
+      for (let i = 0; i < M.n && cells.length; i++) { const [x, y] = cells.splice(s.r.int(cells.length), 1)[0], was = b.at(x, y), p = piece('junk'); b.set(x, y, p); at.push({ at: [x, y], from: was.id, id: p.id, colour: was.colour }); }
+      return [{ type: 'foe.skill', side: 1, skill: 'petrify', n: at.length, cells: at }]; } },
+  seal: { label: 'Seal', line: 'A column of yours cannot be dragged on your next turn',
+    fire: (s) => { const b = s.board; let best = 0, bx = -1; for (let x = 0; x < b.line; x++) { let n = 0; for (let y = 0; y < b.h; y++) if (b.at(x, y)) n++; if (n > best) { best = n; bx = x; } }
+      if (bx < 0) return []; s.sides[0].sealed = bx; return [{ type: 'foe.skill', side: 1, skill: 'seal', x: bx, turns: 1 }]; } },
+  sap: { label: 'Sap', line: 'Each skill you wear loses half its charge',
+    fire: (s) => { const S = s.sides[0], lost = {}; for (const t of Object.keys(S.charge || {})) { if (!SKILLS[t]) continue; const was = S.charge[t]; S.charge[t] = Math.floor(was / 2); lost[t] = was - S.charge[t]; }
+      return [{ type: 'foe.skill', side: 1, skill: 'sap', lost }]; } },
+  reclaim: { label: 'Reclaim', line: 'The Line is pushed back a column toward you',
+    fire: (s, M, K) => [{ type: 'foe.skill', side: 1, skill: 'reclaim', n: 1 }, ...K.moveLine(s, -1)] },
+};
+
+/** The aberrant's countdowns for a new duel, from its ruleset's `foe` (none: it only stands there). */
+export function foeOf(rs) {
+  const F = rs.foe || { moves: [] };
+  return { moves: F.moves.map((m) => ({ ...m, left: m.first ?? m.every })), desperate: F.desperate ? { ...F.desperate, used: false } : null };
+}
+
+/** What the aberrant will do and when, soonest first (the view's countdowns over it; the intent drawn a turn ahead). */
+export function foeIntent(s) {
+  return (s.foe?.moves || []).map((m) => ({ skill: m.skill, label: FOE_SKILLS[m.skill].label, line: FOE_SKILLS[m.skill].line, left: m.left, n: m.n ?? null })).sort((a, b) => a.left - b.left);
+}
+
+/** The aberrant's turn: each countdown down one, the due skills fired, the desperate one once its half is small enough. */
+export function foeSkillsNow(s, K) {
+  const F = s.foe, events = []; if (!F) return events;
+  for (const m of F.moves) { if (--m.left > 0 || s.winner !== null) continue; m.left = m.every; events.push(...FOE_SKILLS[m.skill].fire(s, m, K)); }
+  const D = F.desperate;
+  if (D && !D.used && s.winner === null && s.board.w - s.board.line <= D.at) { D.used = true; events.push({ type: 'foe.desperate', side: 1 }); for (const m of D.moves) events.push(...FOE_SKILLS[m.skill].fire(s, m, K)); }
+  return events;
+}
+
+/** A big play staggers the aberrant (PUZZLE-DUELS.md 23.3): every countdown a turn longer. */
+export function stagger(s) {
+  for (const m of s.foe?.moves || []) m.left++;
+  return [{ type: 'foe.stagger', side: 1 }];
+}

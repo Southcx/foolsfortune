@@ -29,7 +29,7 @@
 export const SKYFALL = { to: 0.4, calm: 0.95, on: true }; // (`on`: the one-gesture duel's default)
 
 /** A duel's skyfall: its ruleset's (`skyfall: { to }`, or `false` for none), else the one-gesture duel's. */
-export const skyOf = (s) => (s.rs.skyfall === false ? null : s.rs.skyfall ?? (s.style === 'drag' && SKYFALL.on ? SKYFALL : null));
+export const skyOf = (s) => (s.rs.skyfall === false ? null : s.rs.skyfall ?? ((s.style === 'drag' || s.style === 'pve') && SKYFALL.on ? SKYFALL : null));
 
 /** How many gems a side is under its waterline (Infinity with no skyfall: the drip unbounded, as before). */
 export function deficitOf(s, side) {
@@ -52,7 +52,7 @@ function restOf(b, side, x, y) {
 }
 
 /** New gems for the holes a settle pass left, down their own lines, while each side is under its waterline. */
-export function skyfall(s, holes, newGem) {
+export function skyfall(s, holes, newGem, { wild = false } = {}) { // (wild: a skill's blast refilled uncalmed, so it feeds the drag after it: PUZZLE-DUELS.md 23.2)
   const b = s.board, events = [];
   for (const side of [0, 1]) {
     let n = Math.min(holes[side].length, deficitOf(s, side));
@@ -60,7 +60,7 @@ export function skyfall(s, holes, newGem) {
       if (n <= 0) break; if (!b.in(hx, hy) || !b.mine(side, hx)) continue; // (the Line moved past it in this settle)
       const at = restOf(b, side, hx, hy); if (!at) continue;
       const p = newGem(s); b.set(at[0], at[1], p); n--;
-      if (p.colour && clearsAt(b, side, at, s.rs) && s.r.chance(skyOf(s).calm ?? 0)) calmed(s, b, side, at, p);
+      if (!wild && p.colour && clearsAt(b, side, at, s.rs) && s.r.chance(skyOf(s).calm ?? 0)) calmed(s, b, side, at, p);
       events.push({ type: 'drip', side, id: p.id, at, colour: p.colour, sky: true });
     }
   }

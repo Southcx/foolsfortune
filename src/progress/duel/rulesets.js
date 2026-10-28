@@ -36,14 +36,20 @@ export const RULESETS = {
   // colours to meet); 4 colours put the depth back (chains of 4 on both sides) and the stand-in wins 24, 7.9 turns a side. Fury stays
   // on the board, so the Wisp's weakness (fury, the opposite of its dread) is still there to chase.
   lanternwisp: { feeling: 'dread', board: { w: 12, h: 9, perColumn: 2, landCap: 6 }, match: 3, cluster: 4, gravity: (x, y, b) => (b.sideOf(x) === 0 ? DIRS.S : DIRS.N), colours: 4, drip: 4,
-    fog: { side: 1, light: 3 }, embers: { from: 1, count: 3 }, bot: { pairs: 0.8, sample: 8 } }, // (8 since the lookaheads stopped drawing the duel's own dice, 19.4: the stand-in wins 58 of 80, as it did)
+    fog: { side: 1, light: 3 }, embers: { from: 1, count: 3 }, bot: { pairs: 0.8, sample: 8 },
+    // its foe skills in the PvE duel (foeskills.js; PUZZLE-DUELS.md 23.4): embers hurled every 2nd turn, gems petrified every 3rd, a
+    // column sealed every 4th, the Line reclaimed every 5th; at its last 2 columns, once, a flare of all it has
+    pve: { perColumn: 5 }, // (the PvE duel's push: 5 sent a column, two columns a turn at most: PUZZLE-DUELS.md 23.5)
+    foe: { moves: [{ skill: 'hurl', every: 2, first: 1, n: 3 }, { skill: 'petrify', every: 3, first: 2, n: 3 }, { skill: 'seal', every: 4, first: 3 }, { skill: 'reclaim', every: 5, first: 4 }],
+      desperate: { at: 2, moves: [{ skill: 'hurl', n: 5 }, { skill: 'petrify', n: 4 }] } } }, // (8 since the lookaheads stopped drawing the duel's own dice, 19.4: the stand-in wins 58 of 80, as it did)
   // STRAWMAN'S PRACTICE DUEL (South, 2026-10-27, via Petra: "test more basic implementations of the puzzle duel module"): the duel with
   // nothing but its core, for testing the duel itself at the sparring circle. The smallest board that still chains (8 x 8, a half of
   // 4 columns: three colours chained too easily, five too rarely), plain gravity on both halves, runs of 3 and any 4 touching (the
   // Wisp's gentle rule), no fog, no embers, no bombs. Its bot weighs few actions (a plain player, never a clever one); `strawmanIdle`
   // never acts, for trying the verbs and the skills with no pressure (Puzzle & Dragons' training dungeon, Tetris's practice).
   strawman: { feeling: 'fury', board: { w: 10, h: 8, perColumn: 2, landCap: 5 }, match: 3, cluster: 4, gravity: () => DIRS.S, colours: 4, drip: 3,
-    skyfall: { to: 0.5, calm: 0.95 }, bot: { sample: 2, every: 2 } }, // (skyfall to half full: at 0.4 its duels ran 7.8 turns a side, at 0.5 5.3, as without it: PUZZLE-DUELS.md 22.7)
+    skyfall: { to: 0.5, calm: 0.95 }, bot: { sample: 2, every: 2 }, pve: { perColumn: 4 },
+    foe: { moves: [{ skill: 'hurl', every: 3, first: 2, n: 2 }, { skill: 'petrify', every: 4, first: 3, n: 2 }, { skill: 'seal', every: 5, first: 4 }] } }, // (the plain dummy's: gentle, slow, no Reclaim) // (skyfall to half full: at 0.4 its duels ran 7.8 turns a side, at 0.5 5.3, as without it: PUZZLE-DUELS.md 22.7)
   strawmanIdle: { feeling: 'fury', board: { w: 10, h: 8, perColumn: 2, landCap: 5 }, match: 3, cluster: 4, gravity: () => DIRS.S, colours: 4, drip: 3, skyfall: { to: 0.5, calm: 0.95 },
     bot: { idle: true } },
 };

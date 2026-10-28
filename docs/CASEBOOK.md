@@ -961,4 +961,5 @@ saved what an earlier one had shown must be undone first, or the earlier one's l
 
 NEW:actors-clear-of-the-board. **A scene's actors are laid out from its board's measured size, never a fixed distance.** A body is
 placed beyond the thing the player must read, by the thing's width and the body's own, and a screenshot at the device's size proves it.
-
+NEW:copy-every-mutable. **A state's copy copies every object a move writes into.** A shallow copy shares nested objects; a field a
+  move mutates in place (a charge table, a counter map) must be copied with the state, or every lookahead writes into the real one.

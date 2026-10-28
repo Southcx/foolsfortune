@@ -4270,3 +4270,12 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   back once the board has folded. Seen at 896 x 414 at 2x: the board clear, you left, the foe right, no room.
 - **Rule:** NEW:actors-clear-of-the-board
 
+
+### 2026-10-28 · A duel's copy drained the real skill charge (Dovina, measuring the PvE duel)
+- **Seen:** a stand-in's skills fired on its copies but never in the duel: the real charge fell from 9 to 0 with no skill fired.
+- **Cause (as measured):** `cloneState` and the undo snapshot (`snapOf`, duel.js) copied each side shallowly, so `charge` was one object
+  shared by the duel and every copy; a skill tried on a copy (the idle hint, the bot's lookahead, a preview) zeroed the real charge, and
+  an undo never gave a fired skill's charge back. Live since the one-gesture duel (2026-10-27).
+- **Fix:** `charge: { ...S.charge }` in both copies. Measured: a copy's skill and a hint leave the real charge at 9 and 10; fire and undo
+  gives them back.
+- **Rule:** NEW:copy-every-mutable
