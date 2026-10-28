@@ -15,8 +15,10 @@ import { DUEL_POWERS } from '../../progress/duel/powers.js';
 import { FOE_SKILLS } from '../../progress/duel/foeskills.js';
 
 const skillLabel = (tool) => SKILLS[tool]?.label || tool;
-const SECRET_LINE = { snuff: { half: 'The lantern gutters.', done: 'You snuff the lantern. The Wisp goes out with it.' } };
-const FOE_LINE = { hurl: (e) => `The aberrant hurls ${e.n} pieces of junk. They land after your turn.`, petrify: (e) => `The aberrant turns ${e.n} of your gems to junk.`, // (Espada's, 2026-10-28; no offset in the PvE duel, so no "less what your clears cancel")
+const SECRET_LINE = { snuff: { half: 'The Wisp\'s lantern gutters.', done: 'You starve the lantern of Dread. It gutters out, and the Lantern Wisp with it.' } }; // (Espada's, 2026-10-28)
+/** An aberrant's own line for its death on the Line (ABERRANTS.md 2, layer 7), by its kind; Espada's. */
+const LINE_DEATH = { wisp: 'Its lantern cracks and the flame scatters. You win the duel; the Lantern Wisp is mended.' };
+const FOE_LINE = { kindle: (e) => `The Lantern Wisp kindles ${e.n} of your Dread gems into embers.`, hurl: (e) => `The aberrant hurls ${e.n} pieces of junk. They land after your turn.`, petrify: (e) => `The aberrant turns ${e.n} of your gems to junk.`, // (Espada's, 2026-10-28; no offset in the PvE duel, so no "less what your clears cancel")
   seal: () => 'The aberrant seals a column of yours: you cannot drag in it on your next turn.', sap: () => 'The aberrant saps your skills: each loses half its charge.', reclaim: () => 'The aberrant pushes the Line back a column toward you.' };
 
 export function duelRules({ on: onAny, L: ledger, log }) {
@@ -42,7 +44,7 @@ export function duelRules({ on: onAny, L: ledger, log }) {
     L.inc(e.won ? 'duel.won' : 'duel.lost');
     if (e.practice) { log.say('battle', e.won ? 'You win the practice duel. Nothing counts.' : 'You lose the practice duel. Nothing counts.'); return; } // (no shatter, no drain; Espada's)
     if (e.won && e.how === 'secret') return; // (its own line came with duel.secret)
-    if (e.won) log.say('battle', e.how === 'finisher' ? 'You drain the Figment.' : 'You win the duel. The Figment is mended.');
+    if (e.won) log.say('battle', e.how === 'finisher' ? 'You drain the Figment.' : LINE_DEATH[e.kind] || 'You win the duel. The Figment is mended.');
     else log.say('battle', e.how === 'yield' ? 'You yield the duel.' : 'You lose the duel. The Figment pushes your mind out.');
   });
   // the one-gesture duel's moments (the session re-emits the kernel's: world/duel/duelsession.js run()); the lines Espada's (2026-10-27).
@@ -63,7 +65,7 @@ export function duelRules({ on: onAny, L: ledger, log }) {
   // the duel's powers (PUZZLE-DUELS.md 24; duel/powers.js: the session's duel.power { power, domain, cost, skill? }) and a foe skill seen
   // (progress/foeseen.js: knowledge, so no count); Espada's lines, 2026-10-28
   on('duel.power', (e) => { if (e.by !== 'courier') return; L.inc(`duel.power.${e.power}`); log.say('battle', e.power === 'scan' && e.skill ? `You scan the aberrant: its ${FOE_SKILLS[e.skill]?.label || 'next skill'} comes 2 turns later.` : `You cast ${DUEL_POWERS[e.power]?.label || 'a power'}.`, { key: 'duel.power', throttle: 0.5 }); });
-  // an aberrant's secret win (secrets.js, ABERRANTS.md): its tell at half, its end; placeholder lines, Espada's to word
+  // an aberrant's secret win (secrets.js, ABERRANTS.md): its tell at half, its end
   on('duel.secret', (e) => {
     if (e.half) log.say('battle', SECRET_LINE[e.id]?.half || 'The aberrant falters.', { key: `duel.secret.${e.id}`, throttle: 1 });
     if (e.done) { L.inc(`duel.secret.${e.id}`); log.say('battle', SECRET_LINE[e.id]?.done || 'You find the aberrant\'s undoing.'); }

@@ -42,7 +42,7 @@ export const FOE_SKILLS = {
       return [{ type: 'foe.skill', side: 1, skill: 'sap', lost }]; } },
   reclaim: { label: 'Reclaim', line: 'Pushes the Line back a column toward you',
     fire: (s, M, K) => [{ type: 'foe.skill', side: 1, skill: 'reclaim', n: 1 }, ...K.moveLine(s, -1)] },
-  kindle: { label: 'Kindle', line: 'Burns Dread gems on your half into embers', // (placeholder words, Espada's)
+  kindle: { label: 'Kindle', line: 'Burns up to 3 Dread gems on your half into embers', // (Espada's, 2026-10-28)
     fire: (s, M) => { const b = s.board, cells = []; b.each((p, x, y) => { if (b.mine(0, x) && p.kind === 'gem' && p.colour === 'dread') cells.push([x, y]); }); const at = [];
       for (let i = 0; i < M.n && cells.length; i++) { const [x, y] = cells.splice(s.r.int(cells.length), 1)[0], was = b.at(x, y), p = piece('ember', { count: s.rs.embers?.count ?? 3 }); b.set(x, y, p); at.push({ at: [x, y], from: was.id, id: p.id, colour: was.colour }); }
       return [{ type: 'foe.skill', side: 1, skill: 'kindle', n: at.length, cells: at }]; } },
