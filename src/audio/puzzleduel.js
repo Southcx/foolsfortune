@@ -51,7 +51,7 @@ const FEELING_STEP = { wonder: 0, mirth: 4, desire: 7, fury: 9, gall: 14, grief:
 /** The duel's root: the cue's own key when one plays (sfx.musicGrid, audio/cues.js hearEvents), else C5; kept within C5 .. B5. */
 export function duelRoot(s) { const r = s.musicGrid?.()?.root; return r == null ? 72 : 72 + ((((r - 72) % 12) + 12) % 12); }
 /** gesture: real s after a cut-in's slam the skill's own sound plays: when its cast begins, the cut-in over (Calissa's vfx/duelview/cutin.js CUT_IN: in 0.14, held 0.62, out 0.16, slam at 0.12). */
-export const CUT_IN = { gesture: 0.8 };
+export const CUT_IN = { gesture: 0.8, burst: 4 }; // (burst: real s after foe.desperate its own casts come with no cut-in, so their sounds play at once)
 const sidePan = (side) => (side === 1 ? 0.45 : side === 0 ? -0.45 : 0);
 
 export class PuzzleDuelSounds {
@@ -70,8 +70,9 @@ export class PuzzleDuelSounds {
       case 'allclear': return this.duelAllClear(e.side);
       case 'refund': return this.duelRefund(e.side);
       case 'turn': return this.duelTurn(e.side);
-      case 'foe.skill': { const at = this.duelCutIn?.(e.skill) ?? 0; setTimeout(() => this.duelFoeSkill(e.skill, e.n), (at + CUT_IN.gesture) * 1000); return; } // (the view plays it at its cut-in's start: the sting, then the skill's own sound as its cast begins after the cut-in, audio/duelcasts.js)
-      case 'foe.desperate': return this.duelCutIn?.('desperate'); // (the limit break's cut-in)
+      case 'foe.skill': { if (performance.now() / 1000 - (this._duelDesperateAt ?? -1e9) < CUT_IN.burst) return this.duelFoeSkill(e.skill, e.n); // (the limit break's burst: no cut-in, its cast at once)
+        const at = this.duelCutIn?.(e.skill) ?? 0; setTimeout(() => this.duelFoeSkill(e.skill, e.n), (at + CUT_IN.gesture) * 1000); return; } // (the view plays it at its cut-in's start: the sting, then the skill's own sound as its cast begins after the cut-in, audio/duelcasts.js)
+      case 'foe.desperate': this._duelDesperateAt = performance.now() / 1000; return this.duelCutIn?.('desperate'); // (the limit break's cut-in)
       case 'power': return this.duelPower?.(e.domain, e); // (a duel power cast: audio/duelcasts.js)
       case 'foe.soon': return this.duelFoeLastTick(); // (a foe skill on its last count, told in the foe's turn: it fires on its next)
       case 'foe.stagger': return this.duelFoeStagger();
