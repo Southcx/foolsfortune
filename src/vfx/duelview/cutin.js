@@ -7,7 +7,7 @@
 // (Espada's words: the label alone, HURL .. RECLAIM; the log carries the sentence), slammed down with its shadow in the feeling. Then
 // the band squashes to a line and is gone. `foe.desperate` is the limit break: a wider band, the screen round it dimmed, the frame
 // flashed in negative as CORNERED lands, a longer hold; the skills it casts at once come after it with no cut-in of their own.
-// The phase's event is `foe.cutin { skill, limit }` (a sting's hook: Wanda's).
+// The phase carries the foe event itself (Wanda's stings key off it: the label slams on her hit), and the cast's phase after it none.
 // Drawn on the overlay's scene (render/overlayscene.js: CSS px, after the grade, at the 480-line present), one plane, one program: the
 // band, the portrait and the word are all its fragment. The portrait's target and its proxies are built and drawn once at the duel's
 // open (`warm`), so neither program compiles at the moment it is wanted.
@@ -24,8 +24,9 @@ import { feelColour, sm, clamp01 } from './layout.js';
 
 /** in / hold / out: the band's beats (real s; the limit break's hold its own); band: its half height (of the screen's); y: its centre;
  *  tilt: its slope; portrait: the strip's share of the width; rt: the portrait's target width (px); fov: the strip camera's (deg);
- *  burst: real s after a limit break in which its own casts come without a cut-in. */
-export const CUT_IN = { in: 0.14, hold: 0.62, out: 0.16, limitHold: 1.05, band: 0.16, limitBand: 0.24, y: 0.4, tilt: -0.09, portrait: 0.44, rt: 512, fov: 24, burst: 4 };
+ *  burst: real s after a limit break in which its own casts come without a cut-in; word / limitWord: when the label slams (real s from
+ *  the event: Wanda's stings land there, audio/duelcasts.js CUT_IN_LEAD; the limit break's after its 1.1 s swell). */
+export const CUT_IN = { in: 0.14, hold: 0.62, out: 0.16, limitHold: 1.45, word: 0.12, limitWord: 1.1, band: 0.16, limitBand: 0.24, y: 0.4, tilt: -0.09, portrait: 0.44, rt: 512, fov: 24, burst: 4 };
 const INK = '#17111f', GOLD = new THREE.Color(0xffd36a);
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Color(), _bb = new THREE.Box3();
 
@@ -81,7 +82,7 @@ function wordTexture(text) {
 }
 
 export class FoeCutIn {
-  constructor(view) { this.view = view; this.game = view.game; this.words = new Map(); this.seen = new WeakSet(); this.age = -1; this.limitAt = -99; this.t = 0; this.proxies = []; }
+  constructor(view) { this.view = view; this.game = view.game; this.words = new Map(); this.seen = new WeakSet(); this.cut = new WeakSet(); this.age = -1; this.limitAt = -99; this.t = 0; this.proxies = []; }
 
   /** The plane on the overlay's scene, the portrait's target, scene, camera and lights: made once. */
   ensure() {
@@ -160,7 +161,8 @@ export class FoeCutIn {
     const W = this.word(text); this.u.uWord.value = W.tex; this.u.uWordAsp.value = W.aspect; this.u.uLimit.value = limit ? 1 : 0; this.feel();
     const dur = CUT_IN.in + (limit ? CUT_IN.limitHold : CUT_IN.hold) + CUT_IN.out; this.limit = limit; this.dur = dur; this.age = 0; this.mesh.userData.overlayHidden = false;
     if (limit) { this.view.game.glitch?.pulse?.({ split: 0.12, tear: 0.08, dur: 0.25 }); }
-    return { events: [{ type: 'foe.cutin', side: 1, skill: limit ? 'desperate' : e.skill, limit }], dur, step: (u, age) => { this.age = age; }, end: () => this.hide() };
+    this.cut.add(e); return { events: [e], dur, // (the event itself: the sting and the director key off it here; its cast phase after says nothing again, beats.js)
+ step: (u, age) => { this.age = age; }, end: () => this.hide() };
   }
 
   hide() { this.age = -1; if (this.mesh) { this.mesh.userData.overlayHidden = true; this.mesh.visible = false; } }
@@ -172,9 +174,9 @@ export class FoeCutIn {
     const w = slot.view.w, h = slot.view.h, u = this.u, a = this.age, L = this.limit, hold = L ? CUT_IN.limitHold : CUT_IN.hold;
     this.mesh.scale.set(w, h, 1); u.uRes.value.set(w, h); u.uT.value = this.t;
     const kin = sm(clamp01(a / CUT_IN.in)), kout = sm(clamp01((a - CUT_IN.in - hold) / CUT_IN.out)), kh = clamp01((a - CUT_IN.in) / hold);
-    u.uIn.value = kin; u.uOut.value = kout; u.uDim.value = L ? 0.5 * kin : 0; u.uDrift.value = kh * w * 0.02;
+    u.uIn.value = kin; u.uOut.value = kout; u.uDim.value = L ? (0.3 + 0.25 * clamp01(a / CUT_IN.limitWord)) * kin : 0; u.uDrift.value = kh * w * 0.02;
     const band = (L ? CUT_IN.limitBand : CUT_IN.band) * h * (w < h ? 0.7 : 1); u.uBand.value.set(h * CUT_IN.y, band, CUT_IN.tilt, CUT_IN.portrait);
-    const ws = a - 0.08, slam = clamp01(1 - ws / 0.12); u.uWordOn.value = ws > 0 ? 1 : 0; u.uSlam.value = 1 + (L ? 1.6 : 1.1) * slam * slam;
+    const ws = a - (L ? CUT_IN.limitWord : CUT_IN.word) + 0.06, slam = clamp01(1 - ws / 0.06); u.uWordOn.value = ws > 0 ? 1 : 0; u.uSlam.value = 1 + (L ? 1.6 : 1.1) * slam * slam;
     u.uFlash.value = L && ws > 0.1 && ws < 0.17 ? 1 : 0;
     if (L && ws > 0.1 && !this.shook) { this.shook = true; this.view.stage?.jolt?.(1); } if (a < 0.05) this.shook = false;
     this.aim(kh, L); this.shoot((w * CUT_IN.portrait) / (2 * band));
