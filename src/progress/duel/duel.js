@@ -203,6 +203,7 @@ export function act(s, a) {
   events.push(...bonusOf(s, side, events));
   events.push(...secretStep(s, side, events)); // (an aberrant's secret win: secrets.js)
   if (a.kind === 'flee' || s.winner !== null) s.undo = []; // (a die thrown, or the duel decided: no taking it back)
+  if (s.winner !== null) s.log.push(...events.filter((e) => e.type.startsWith('duel.'))); // (an end made by an action, not a turn's end (a secret won by a drag), kept in the log the session's finish reads: endTurn logs its own)
   if (pve) { let gems = 0; for (const e of events) { if (e.type === 'chain' && e.side === 0) S0.turnStep = Math.max(S0.turnStep || 0, e.step); if (e.type === 'clear' && e.side === 0 && e.colour) gems++; }
     if (gems && PVE.drink) { S0.pool = Math.min(100, S0.pool + gems * PVE.drink); events.push({ type: 'drink', side, n: gems * PVE.drink, pool: S0.pool }); } // (your clears fill the pool the powers spend)
     if (a.kind !== 'skill' && a.kind !== 'power') { S0.dragged = true; s.undo = []; } } // (the drag, or a flee's throw, is the turn: what is left is the skills', and they come first)

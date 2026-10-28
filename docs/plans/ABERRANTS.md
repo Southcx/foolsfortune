@@ -91,6 +91,23 @@ Each needs a creature in the world first. The slip jelly and the clapperjar are 
 - **Clapperjar (Mirth).** It claps on the beat. Secret: clear on its rhythm, three turns in a row, keeping the Crucibelle's time.
 - **Strawman (practice).** A plain secret that teaches the idea, "clear every colour once", shown plainly from the start.
 
+## 7. Your half: the Spirit Garden (South, 2026-10-28)
+
+South: "the Courier/pneuka jar's Zone of Influence should be a representation of their Spirit Garden". The Spirit Garden is the world
+inside your Pneuka Jar, and in a duel you stand as the Jar. So when two minds clash, the domain you bring is the one you grew. The
+aberrant's half is its feeling's weather; yours is your garden, read at the duel's open by `game.gardenBackdrop()`
+(`progress/gardenbackdrop.js`):
+
+- **Season and hour:** the season's palette and the time of day.
+- **Harmony:** a calm garden (bloom) or an overgrown one (briar, its thorns at your side's edge).
+- **Decor:** the three sets and six pieces you placed most.
+- **Spirits:** up to four bound spirits standing at your side, in their feelings.
+
+A new save's garden is bare (`bare`), so its half is the deep and the film as before; it fills as the garden does.
+
+**A look only.** Nothing in the garden changes a duel's rules ("base change bad"; the Spirit Garden is in flux), and it adds no reason
+to tend the garden for a fight (South: no new reasons yet). Parked for later: a bound spirit lending a hand in a duel.
+
 ## 6. Asked of the divisions (handoffs in `docs/handoffs/<name>/`)
 
 - **Petra:**
@@ -98,6 +115,7 @@ Each needs a creature in the world first. The slip jelly and the clapperjar are 
   - puts the kernel's `secret.step`, `secret.half` and `duel.secret` on the bus as `duel.secret { id, k, half?, done?, by: 'courier' }`;
   - times both deaths as cinematics before the board folds.
 - **Calissa:**
+  - your half of the clash as your Spirit Garden (section 7, `game.gardenBackdrop()`);
   - the Wisp's Zone of Influence (the fens), its lantern dimming with `lightOf`;
   - Kindle's cast and cut-in;
   - its two deaths;
