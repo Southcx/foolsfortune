@@ -430,6 +430,7 @@ export class DuelSession {
   intent() {
     if (this.state.toMove !== 0 || this.state.winner !== null) return;
     const I = this.foresight = intentOf(this.state, 1), V = this.view;
+    if (this.state.style === 'pve') { V?.intent?.(null); return; } // (the PvE duel's aberrant never matches: its intent is its countdown badges, foecast.js; the old forecast drew a stray step "1")
     V?.intent?.(V.intentWhole ? I : I.actions);
   }
 
