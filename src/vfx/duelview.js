@@ -37,7 +37,7 @@
 //   refuse(action)                     an illegal action: the cell's rim shaken in the dry ink, no words (marks.js)
 //   resync(state)                      the board and pieces stood again from a restored state (undo), the clash kept: juice.js rewind
 //   armSkill(tool | null)              the one-gesture duel's armed skill: its reach under the finger (skillcast.js), the cast on `skill`
-//   armPower(id | null, { dir, by, colour, to }?)   the PvE duel's armed power: its reach under the finger (powerReach); casts: powercast.js
+//   armPower(id | null)   powerReach(action, cells, ok)   the PvE duel's armed power and its reach as the session reads the gesture; casts: powercast.js
 //   skip(state)                        the foe's turn skipped: its queued beats dropped, the board stood as the state is
 //   hint(h | null)                     the idle hint (bot.js hintOf): its move's piece nudging its way, its clears pulsing; any play lets it go
 //   stage (stage.js: the zoom from the arena to the board view, the director's camera; the session asks stage.eatTap(cell) before a
@@ -71,7 +71,6 @@ import { FormDive } from './duelview/formdive.js';
 import { reachOf } from './duelview/skillcast.js';
 import { FoeCast } from './duelview/foecast.js';
 import { FoeCutIn } from './duelview/cutin.js';
-import { powerReach } from '../progress/duel/powers.js';
 import { SkillGauges } from './duelview/skillgauges.js';
 
 const TEAR = 0x7fdcff, COURIER_HEX = '#9fd8ff', UP = new THREE.Vector3(0, 1, 0);
@@ -168,16 +167,23 @@ export class DuelView {
     const { cs, base } = DUEL_VIEW, B = this.state.board, x = Math.floor(_v.x / cs + B.w / 2), y = Math.floor(B.h - (_v.y - base) / cs);
     return x >= 0 && y >= 0 && x < B.w && y < B.h ? { x, y } : null;
   }
-  hover(cell) { this.marks.hover(this.isOpen ? cell : null); if (this.armed || this.armedPower) this.showReach(cell); }
+  hover(cell) { this.marks.hover(this.isOpen ? cell : null); if (this.armed) this.showReach(cell); }
   /** A skill armed (the session's armSkill, the one-gesture duel): its reach under the finger as it moves (skillcast.js reachOf); null
    *  lets it go. */
   armSkill(tool) { this.armed = this.isOpen ? tool || null : null; this.armedPower = null; this.showReach(this.armed ? this.marks.hovered : null); }
   /** A power armed (the PvE duel's: progress/duel/powers.js), with what its action carries beyond the cell (`dir`, `by`, `colour`, `to`):
    *  the cells it would touch under the finger (powerReach); null lets it go. */
-  armPower(id, more = {}) { this.armedPower = this.isOpen && id ? { power: id, ...more } : null; this.armed = null; this.showReach(this.armedPower ? this.marks.hovered : null); }
+  armPower(id) { this.armedPower = this.isOpen && id ? id : null; this.armed = null; this.powerReach(null, [], false); }
+  /** The armed power's reach as the session reads the gesture (once a change under the finger): its cells lit on the preview's keyline,
+   *  the pieces lifted only when the kernel would take it (`ok`). */
+  powerReach(action, cells = [], ok = false) {
+    for (const v of this.pieces.list) v.prev = 0;
+    if (ok) for (const [x, y] of cells) { const v = this.pieces.at(x, y); if (v) v.prev = 1; }
+    this.marks.select(cells.map(([x, y]) => ({ x, y })));
+  }
   showReach(cell) {
     for (const v of this.pieces.list) v.prev = 0;
-    const cells = !cell ? [] : this.armedPower ? powerReach(this.state, 0, { ...this.armedPower, at: [cell.x, cell.y] }) : this.armed ? reachOf(this.state, this.armed, cell) : [];
+    const cells = this.armed && cell ? reachOf(this.state, this.armed, cell) : [];
     for (const [x, y] of cells) { const v = this.pieces.at(x, y); if (v) v.prev = 1; }
     this.marks.select(cells.map(([x, y]) => ({ x, y })));
   }

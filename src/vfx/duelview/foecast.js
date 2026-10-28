@@ -18,7 +18,7 @@
 // Terra Battle's boss gimmicks, a tug of war's rope (the Line), the duel's own skill casts (skillcast.js).
 //
 //   const F = new FoeCast(view)   F.beat(beats, e) -> phase   F.conquest(from, to)   F.timer(k | null)   F.update(dt)   F.clear()
-//   F.pick(clientX, clientY) -> skill | null (a badge under a tap)   F.tip(skill, clientX, clientY) -> shown?   FOE_CAST (the knobs)   FOE_TIP
+//   F.tap(clientX, clientY) -> taken (the session's, on a press)   F.pick(clientX, clientY) -> skill | null   F.tip(skill, clientX, clientY) -> shown?   FOE_CAST (the knobs)   FOE_TIP
 //   THE TOOLTIP      a badge tapped: its label and line in the house's table tip, only for a skill seen (game.foeSeen); unseen, its badge a ?
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -168,6 +168,8 @@ export class FoeCast {
       if (Math.hypot(cx - x, cy - y) < FOE_CAST.tapR) return I[i].skill; }
     return null;
   }
+  /** The session's first look at a press (Mouse0, client px): a badge hit shows its tooltip (or nothing, unseen) and takes the press. */
+  tap(mx, my) { const skill = this.pick(mx, my); if (!skill) { if (this.tipT > 0) { hideTableTip(); this.tipT = 0; } return false; } this.tip(skill, mx, my); return true; }
   /** A badge's tooltip (South, 2026-10-28: "only for a foe skill you have seen happen"): its label and Espada's line in the house's table
    *  tip beside the point, for TIP_HOLD real s; a skill not yet seen shows nothing (false). */
   tip(skill, cx, cy) {
