@@ -159,9 +159,15 @@ their Clayese scales; the System's skill and achievement jingles (the chime and 
   A cascade's clears are ducked under its chain step (deeper the higher it climbs; a plain match stays bright), so it reads as a climb.
 - **The PvE duel's aberrant** (PUZZLE-DUELS.md 23; `audio/puzzleduel.js`): its foe skills from its side and below the key: Hurl a heave and
   a throw crossing to you, Petrify gems' notes falling into knocks, Seal a chain and a bolt, Sap a chord bent down, Reclaim a tug and a
-  falling fifth; its last flare a swelling roar; its stagger a gong wobbling out of tune. A countdown on its last tick (`foe.soon`,
+  falling fifth; its stagger a gong wobbling out of tune. A countdown on its last tick (`foe.soon`,
   at the end of its turn) a tick-tock and a low bell a tritone off. A column won rises (the fifth and the octave), lost falls (minor,
   low). Measured offline, peaks: the skills -18 to -24 dB, the flare -14. The phone buzzes on Hurl's landing (`duel.land`) and Reclaim.
+- **The duel's cut-ins and powers** (`audio/duelcasts.js`; Petra's round of 2026-10-28): a foe skill's JRPG cut-in heard on the kernel's
+  foe.skill as a blade of air and an orchestra hit in its own chord below the key (its slam 0.12 real s after the event, `CUT_IN_LEAD`),
+  the skill's own sound 0.45 s after (`CUT_IN.gesture`); the desperate flare the limit break: a swell, the slam 1.1 s after the event, a
+  held minor cluster, the data stuttering. Measured peaks: the stings -13 dB, the limit break -8 (9 dB more RMS). The seven duel powers
+  each their god power's sound in small and a glass note on the key's fifth (`power` { domain }, a placeholder name until DUEL_POWERS):
+  peaks -15 to -26 dB.
 - **Levels:** each section has a `gain`. Rendered offline (`scripts/render_score.mjs`) and measured: a quiet opening or a jingle about
   -31 dB RMS, a theme's body -24 to -29, a fight -17 to -23; a climax about twice a verse.
 - **The low end:** under about 45% of the energy below 120 Hz (a looser limit is allowed for a hit). A sustained sub at full level
