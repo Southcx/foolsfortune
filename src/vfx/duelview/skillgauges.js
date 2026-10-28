@@ -13,7 +13,6 @@ import * as THREE from 'three';
 import { skillsOf } from '../../progress/duel/skills.js';
 import { oneGesture } from '../../progress/duel/duel.js';
 import { DUEL_VIEW } from './layout.js';
-import { METER } from './board.js';
 
 const FILL = new THREE.Color(0x7fdcff), READY = new THREE.Color(0xffd76a), WHITE = new THREE.Color(1, 1, 1), TROUGH = 0x1c1018, _c = new THREE.Color(), _p = new THREE.Vector3();
 
@@ -31,8 +30,8 @@ export class SkillGauges {
 
   /** Two troughs on the top member over your half, left of the Line's head. */
   layout(B) {
-    const V = this.view, line = V.lineCol ?? B.line ?? B.w / 2, n = V.board?.meter ? V.state?.perColumn || 3 : 0; this.laid = line;
-    const { cs, base, border: b, lip } = DUEL_VIEW, W = B.w * cs, H = B.h * cs, x0 = -W / 2 + cs * 0.4, x1 = (line - B.w / 2) * cs - (n ? METER.from + n * METER.step : cs * 0.9); // (clear of the push meters by the Line's head: board.js)
+    const line = this.view.lineCol ?? B.line ?? B.w / 2; this.laid = line;
+    const { cs, base, border: b, lip } = DUEL_VIEW, W = B.w * cs, H = B.h * cs, x0 = -W / 2 + cs * 0.4, x1 = (line - B.w / 2) * cs - cs * 0.9;
     const span = Math.max(cs * 2, x1 - x0), gap = cs * 0.3, w = (span - gap) / 2, y = base + H + b * 0.5, h = b * 0.36;
     this.slots.forEach((S, i) => { S.x = x0 + i * (w + gap); S.w = w;
       S.trough.position.set(S.x, y, lip + 0.004); S.trough.scale.set(w, h, 0.012);

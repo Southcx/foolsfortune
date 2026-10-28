@@ -25,7 +25,7 @@
 // foot in the same program (mode 2), each half's ground laid flat under its owner, a pool of its own light under each body, its rim faded.
 //   const D = new DomainClash()   D.dome (the sphere's mesh)   D.ground (the disc's)   D.groundTo(radius)   D.slabMaterial(gravityTexture, w, h) -> the slab's material
 //   (the slab's fog: a texture of the cells, r hidden, g the lantern's light: Dread's, vfx/duelview/board.js setFog)
-//   D.setFoe(aspect)   D.setPlane(pointWorld, normalWorld, centreWorld)   D.setLine(column)   D.flash(side)   D.won(k)
+//   D.setFoe(aspect)   D.setPlane(pointWorld, normalWorld, centreWorld)   D.setLine(column)   D.setMeter(push, landed, n, on)   D.flash(side)   D.won(k)
 //   D.unfold(originCourier, originFoe)   D.push(receiverSide)   D.collapse(slower = 1)   D.update(dt) -> still showing?   D.open (0..1 each side)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -42,7 +42,7 @@ void main() {
 }`;
 
 const F = /* glsl */`
-uniform float uMode, uT, uRadius, uPush, uPushSide, uWon, uMotif, uLine, uFade;
+uniform float uMode, uT, uRadius, uPush, uPushSide, uWon, uMotif, uLine, uFade; uniform vec4 uMeter;
 uniform vec3 uPlaneP, uPlaneN, uCentre, uOriginC, uOriginF, uFoe, uFoeDeep, uHaze;
 uniform vec2 uOpen, uFlash, uGrid;
 uniform sampler2D uGrav, uFog;
@@ -129,6 +129,11 @@ void main() {
     float ridge = 1.0 - abs(fbm(vec2(c.y * 0.9 - t * 1.4, t * 0.3)) * 2.0 - 1.0);
     col += labSoft(ph + c.y * 0.05) * (core * 1.6 + exp(-d * 5.0) * (0.25 + 0.5 * pow(ridge, 4.0)) * (1.0 + uPush));
     col = mix(col, srgb(vec3(0.95, 0.76, 0.35)) * 1.4, core * uWon);
+    if (uMeter.w > 0.5) { // (the PvE duel's push meters on the seam, filled from the foot: yours on its foe side in the film, the junk landed on you on yours in its feeling; a notch a junk)
+      float sx = c.x - uLine, up = 1.0 - yy, n = max(uMeter.z, 1.0), seg = fract(up * n), notch = smoothstep(0.0, 0.03 * n, seg) * smoothstep(0.0, 0.03 * n, 1.0 - seg);
+      float mine = step(0.0, sx) * (1.0 - smoothstep(0.1, 0.1 + fwx, sx)) * step(up, uMeter.x), its = step(sx, 0.0) * (1.0 - smoothstep(0.1, 0.1 + fwx, -sx)) * step(up, uMeter.y);
+      col = mix(col, labSoft(ph + up) * 1.6 + 0.15, mine * notch); col = mix(col, uFoe * 1.5, its * notch);
+    }
     gl_FragColor = vec4(col, 1.0);
     return;
   }
@@ -186,7 +191,7 @@ export class DomainClash {
     const clear = new THREE.DataTexture(new Uint8Array(4 * 4), 2, 2); clear.needsUpdate = true; // (no fog)
     this.U = {
       uT: { value: 0 }, uMindT: mindTime, uRadius: { value: DUEL_VIEW.radius }, uPush: { value: 0 }, uPushSide: { value: 1 }, uWon: { value: 0 },
-      uMotif: { value: 3 }, uLine: { value: 10 }, uFade: { value: 1 },
+      uMotif: { value: 3 }, uLine: { value: 10 }, uFade: { value: 1 }, uMeter: { value: new THREE.Vector4() },
       uPlaneP: { value: new THREE.Vector3() }, uPlaneN: { value: new THREE.Vector3(1, 0, 0) }, uCentre: { value: new THREE.Vector3() },
       uOriginC: { value: new THREE.Vector3() }, uOriginF: { value: new THREE.Vector3() },
       uFoe: { value: new THREE.Color() }, uFoeDeep: { value: new THREE.Color() }, uHaze: { value: new THREE.Color() },
@@ -219,6 +224,8 @@ export class DomainClash {
   /** The Line's plane in the world (a point on it and its normal toward the foe), and the arena's centre (the board's foot). */
   setPlane(p, n, centre) { this.U.uPlaneP.value.copy(p); this.U.uPlaneN.value.copy(n); if (centre) this.U.uCentre.value.copy(centre); } // (the sphere stands at its parent's origin: the board's foot)
   setLine(col) { this.U.uLine.value = col; }
+  /** The PvE duel's push meters on the seam (0..1 each of a column's worth, `n` notches); `on` false hides them. */
+  setMeter(push, landed, n, on = true) { this.U.uMeter.value.set(push, landed, n, on ? 1 : 0); }
   /** A half's flash (a break): white, fading over a third of a real second. */
   flash(side) { this.flashK[side] = 1; }
   won(k) { this.U.uWon.value = k; }

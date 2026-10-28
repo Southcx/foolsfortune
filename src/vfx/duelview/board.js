@@ -8,10 +8,10 @@
 //   THE LINE'S BEADS a brass bead at the Line's head and foot on the frame, sliding with it
 //   THE AP BEADS    five Lachrymite beads a side in the frame's foot (DUEL.ap): the Courier's in the film, the foe's in its feeling, dark
 //                   when spent, cracked black when a stun or a delay took them (the `turn` event's `lost`); in the PvE duel (no action
-//                   points, South 2026-10-28) the same beads are the push meters (`B.meter`), one column's worth (`perColumn`) each,
-//                   flanking the Line's head on the top member where the board view always shows them: yours toward the foe, your
-//                   clears banked toward the Line's next step; its toward you, the junk landed on you (duelview.js readPush). The
-//                   frame's foot carries nothing then (the board view crops it)
+//                   points, South 2026-10-28) no beads: the push meters (`B.meter`) are drawn on the Line's seam itself, where the
+//                   board view always shows it (the view crops the frame's top and foot): one column's worth (`perColumn`) each, filled
+//                   from the foot, yours on the seam's foe side (your clears banked toward the Line's next step), its on yours (the junk
+//                   landed on you) (domains.js uMeter, duelview.js readPush)
 //   THE EMO COLUMNS a side's EmO, a bar of its colour up the frame's outer edge, white at a break
 //   THE KINTSUGI    the frame's gold seam, lit when the Courier wins
 //   THE FLOOR LIPS  a darker clay ledge on the edge each half's gravity points to (the aberrant Lantern Wisp's half, burning upward:
@@ -33,8 +33,6 @@ import { DUEL_VIEW, feelColour } from './layout.js';
 import { duelMaterials } from './pieces.js';
 
 const TERRACOTTA = [0x94603e, 0x7a4a30, 0x5a3322], ASH = 0xa7ad7c, FOOT = 0x5e3622, BACK = 0x3a2016;
-/** The PvE duel's push meters on the top member beside the Line's head (m from its centre; a bead's spacing). */
-export const METER = { from: 0.15, step: 0.12 };
 const SPENT = new THREE.Color(0x2a1a14), LOST = new THREE.Color(0x0c0808);
 const _m = new THREE.Matrix4(), _p = new THREE.Vector3(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(), _c = new THREE.Color();
 
@@ -136,7 +134,7 @@ export class DuelBoard {
   }
 
   /** A side's beads: `left` lit of `max`, the last `lost` cracked. */
-  setAP(side, left, max = 5, lost = 0) { this.ap[side] = [left, max, lost]; }
+  setAP(side, left, max = 5, lost = 0) { this.ap[side] = [left, max, lost]; this.clash.setMeter(this.ap[0][0] / Math.max(1, this.ap[0][1]), this.ap[1][0] / Math.max(1, this.ap[1][1]), this.ap[0][1], this.meter); }
   /** One more of a side's beads cracked (the `turn` event's `lost`, one at a time): returns where, for a puff of chips. */
   crack(side, out = new THREE.Vector3()) {
     const A = this.ap[side]; A[2] = Math.min(A[1], A[2] + 1); A[0] = Math.min(A[0], A[1] - A[2]);
@@ -145,7 +143,7 @@ export class DuelBoard {
   }
   apAt(side, k, out = new THREE.Vector3()) {
     const { base, border: b, lip } = DUEL_VIEW, W = this.W;
-    if (this.meter) { const h = this.head.position; return out.set(h.x + (side ? -1 : 1) * (METER.from + k * METER.step), h.y, lip + 0.02); } // (the push meters flank the Line's head: yours toward the foe, its toward you)
+    if (this.meter) { const { cs } = DUEL_VIEW, n = Math.max(1, this.ap[side][1]); return out.set((this.line - this.w / 2) * cs + (side ? -0.05 : 0.05) * cs, base + this.H * ((k + 0.5) / n), DUEL_VIEW.front); } // (a notch of the push meters on the Line's seam: domains.js)
     return out.set(side ? W / 2 - 0.2 - k * 0.17 : -W / 2 + 0.2 + k * 0.17, base - b / 2, lip + 0.02);
   }
   setEmo(side, emo) { this.emo[side] = Math.max(0, Math.min(1, emo || 0)); }
@@ -157,7 +155,7 @@ export class DuelBoard {
     this.t += dt;
     let n = 0;
     for (const side of [0, 1]) {
-      const [left, max, lost] = this.ap[side];
+      const [left, max, lost] = this.ap[side]; if (this.meter) continue;
       for (let k = 0; k < max && n < 16; k++) {
         const isLost = k >= max - lost, lit = !isLost && k < left, cr = this.cracks.find((c) => c.side === side && c.k === k && c.age < 0.4);
         this.apAt(side, k, _p); if (cr) _p.x += Math.sin(cr.age * 90) * 0.01 * (1 - cr.age / 0.4);
