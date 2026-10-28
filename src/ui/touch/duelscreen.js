@@ -37,7 +37,7 @@ export class TouchDuel {
     if (!t) {
       const power = e.id.startsWith('du.power.') ? e.id.slice(9) : null; // (a power tile arms its power, again lets it go: the session's armPower)
       const onPress = e.id === 'du.flee' ? (id, down, inside) => this.fleePress(t, down, inside) : power ? (id, down) => { const D = this.game.duel; if (down && D?.armPower) D.armPower(D.armedPower === power ? null : power); } : (id, down) => touchTiles.report(this.game, id, down);
-      t = new TouchTile(e.id, { size: TILE.size, glyph: e.glyph ?? null, word: e.word ?? null, corner: e.corner ?? null, fit: true, onPress }); this.tiles.set(e.id, t);
+      t = new TouchTile(e.id, { size: TILE.size, glyph: e.glyph ?? null, word: e.word ?? null, corner: e.corner ?? null, fit: !e.square, onPress }); this.tiles.set(e.id, t); // (a square one keeps its spot: the power tiles, two to a row)
     }
     if (e.pal && t.iconPal !== e.pal) { t.iconPal = e.pal; t.dirty = true; } // (a power tile: its domain's palette, gold when lit)
     t.face({ glyph: e.glyph ?? null, word: e.word ?? null, corner: e.corner ?? null });
