@@ -1,19 +1,19 @@
 // ---------------------------------------------------------------------------------------
 // THE PUZZLE DUEL'S BIG MOMENTS (PUZZLE-DUELS.md 23 and the round of 2026-10-28, South's): the stings under the aberrant's cut-ins and
 // the casts of the seven duel powers. A bank of the one mixer (audio/sfx.js); the duel's other sounds are audio/puzzleduel.js.
-//   A CUT-IN'S STING   duelCutIn(skill): the JRPG frame across the screen (Calissa's, its own beat before the cast), heard as a blade of air sweeping it in and an
+//   A CUT-IN'S STING   duelCutIn(skill): the JRPG frame across the screen (Calissa's, played before the cast), heard as a blade of air sweeping it in and an
 //                      orchestra hit in the foe's dark below the cue's key, each skill its own chord (Hurl a diminished stab, Petrify a
 //                      cluster over glass, Seal a tritone on an anvil, Sap a stab bent down, Reclaim a bare fifth hammered), then a
 //                      reversed cymbal's tail through its hold, into the skill's own sound (puzzleduel.js, on foe.skill after it)
-//   THE LIMIT BREAK    duelCutIn('desperate'): the largest: a swell into the negative flash, the frame's slam (a sub's drop, taiko, crash), a minor
+//   THE LIMIT BREAK    duelCutIn('desperate'): the largest: a swell under the dimming screen, the frame's slam (a sub's drop, taiko, crash), a minor
 //                      cluster held by voices and brass, a stutter of the data showing through, a ring left a bar
 //   A DUEL POWER       duelPower(domain): each power its god power's sound in small (audio/godpowers.js: the ear already knows the
 //                      domain's family) and a glass note in the duel's key as it touches the board: Ouranurgy's two pings trading
 //                      sides (Swap), Manifestation's totem rising (Raise), Divination's read (Scan), Psychokinesis's slab lifted and set
 //                      (Lift), Possession's herding whistle (Herd), Alteration's transmute (Transmute), Spellscription's ward in small (a
 //                      brush round, a bell on the key: the miracle's weather)
-// Heard as the view plays them (duelEvent, puzzleduel.js): the view's own foe.cutin { skill, limit } beat (its slam CUT_IN_LEAD after,
-// held CUT_IN_HOLD; limit: the desperate one, the limit break), the kernel's foe.skill after it (the skill's own sound), and a power's
+// Heard as the view plays them (duelEvent, puzzleduel.js), at the cut-in's start: foe.skill (its slam CUT_IN_LEAD after, held
+// CUT_IN_HOLD, the skill's own sound when its cast begins) and foe.desperate (the limit break: a swell, the slam 1.1 s in), and a power's
 // cast (`power` { domain }, PUZZLE-DUELS.md, Dovina's DUEL_POWERS; the name is a placeholder until her table lands).
 // Prior art: Final Fantasy's limit breaks and the Persona series' all-out cut-ins (the frame, the stab, the held beat), Puzzle & Dragons'
 // enemy skill stings, the orchestra hit as the genre's punctuation (Fairlight's ORCH5).
@@ -22,10 +22,10 @@
 // ---------------------------------------------------------------------------------------
 import { duelRoot } from './puzzleduel.js';
 
-/** Real s from foe.cutin to the cut-in's slam (Calissa's: the word at 0.08, the limit break's negative flash at about 0.2). */
-export const CUT_IN_LEAD = { skill: 0.08, desperate: 0.2 };
-/** Real s each cut-in holds after its slam (Calissa's beat, foecast's cut-in: 0.62 a skill's, 1.05 the limit break's, then 0.16 out). */
-export const CUT_IN_HOLD = { skill: 0.62, desperate: 1.05 };
+/** Real s from the event to the cut-in's slam (Calissa's label: 0.12 a skill's; 1.1 the limit break's, after its swell). */
+export const CUT_IN_LEAD = { skill: 0.12, desperate: 1.1 };
+/** Real s each cut-in holds after its slam (Calissa's vfx/duelview/cutin.js: a skill's 0.62; the limit break's to its end at 1.75), then 0.16 out. */
+export const CUT_IN_HOLD = { skill: 0.62, desperate: 0.65 };
 const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
 /** Each cut-in's chord, semitones over the foe's root (two octaves under the duel's key). */
 const STAB = { hurl: [0, 3, 6, 9], petrify: [0, 1, 2, 13], seal: [0, 6, 12], sap: [0, 3, 7], reclaim: [0, 7, 12], desperate: [0, 1, 3, 7, 13] };
