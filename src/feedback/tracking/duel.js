@@ -4,7 +4,7 @@
 // The words are Espada's (docs/LORE.md, "The puzzle duel's words"); the log says "duel", the genre's word.
 //
 //   duel.pull { foe }   duel.slip   duel.open { kind, feeling }   duel.break { kind, depth }   duel.flee { roll, reroll, need, ok }   duel.end { kind, won, how, turns, atOnce }   duel.undo { left }   (each with `by`)
-//   the PvE duel (23): duel.foe { skill, n } (by creature)   duel.stagger (by courier)
+//   the PvE duel (23): duel.foe { skill, n } (by creature)   duel.desperate (by creature)   duel.stagger (by courier)
 //   the one-gesture duel (PUZZLE-DUELS.md 22): duel.chain { step, weak } (each step from 2)   duel.skill { tool }   duel.charge { tool } (a skill full)   duel.land { n, kind } (by creature)   duel.allclear { n }
 //
 //   duelRules({ on, L, log })   (feedback/tracking/rules.js calls it)   any event with `practice: true` (Strawman's) is said, never counted
@@ -13,8 +13,8 @@
 import { SKILLS } from '../../progress/duel/skills.js';
 
 const skillLabel = (tool) => SKILLS[tool]?.label || tool;
-const FOE_LINE = { hurl: (e) => `The aberrant hurls ${e.n} pieces of junk at you.`, petrify: (e) => `The aberrant turns ${e.n} of your gems to junk.`,
-  seal: () => 'The aberrant seals a column of yours.', sap: () => 'The aberrant saps your skills.', reclaim: () => 'The aberrant takes back a column.' };
+const FOE_LINE = { hurl: (e) => `The aberrant hurls ${e.n} pieces of junk. They land after your turn.`, petrify: (e) => `The aberrant turns ${e.n} of your gems to junk.`, // (Espada's, 2026-10-28; no offset in the PvE duel, so no "less what your clears cancel")
+  seal: () => 'The aberrant seals a column of yours: you cannot drag in it on your next turn.', sap: () => 'The aberrant saps your skills: each loses half its charge.', reclaim: () => 'The aberrant pushes the Line back a column toward you.' };
 
 export function duelRules({ on: onAny, L: ledger, log }) {
   // A practice duel (Strawman's at the sparring circle: `practice: true` on every duel.* event, world/duel/duelsession.js) is said in the
@@ -37,7 +37,7 @@ export function duelRules({ on: onAny, L: ledger, log }) {
   on('duel.end', (e) => {
     if (e.how === 'fled') { L.inc('duel.fled'); if (!e.atOnce) log.say('battle', 'You flee the duel.'); return; } // (a natural 20 said it already: "You flee at once.")
     L.inc(e.won ? 'duel.won' : 'duel.lost');
-    if (e.practice) { log.say('battle', e.won ? 'You win the practice duel.' : 'You lose the practice duel.'); return; } // (no shatter, no drain: placeholders, Espada's)
+    if (e.practice) { log.say('battle', e.won ? 'You win the practice duel. Nothing counts.' : 'You lose the practice duel. Nothing counts.'); return; } // (no shatter, no drain; Espada's)
     if (e.won) log.say('battle', e.how === 'finisher' ? 'You drain the Figment.' : 'You win the duel. The Figment is mended.');
     else log.say('battle', e.how === 'yield' ? 'You yield the duel.' : 'You lose the duel. The Figment pushes your mind out.');
   });
@@ -52,8 +52,9 @@ export function duelRules({ on: onAny, L: ledger, log }) {
   on('duel.land', (e) => { L.inc('duel.landed', e.n); if (e.n >= 3) log.say('battle', `${e.n} pieces of junk land on your side.`, { key: 'duel.land', throttle: 1 }); });
   // the lesson finished (the session's duel.lesson on the kernel's lesson.done): kept even in practice, since lesson.js lessonDue reads it
   onAny('duel.lesson', (e) => { if (e.by === 'courier') ledger.inc('duel.lesson'); });
-  // the PvE duel (PUZZLE-DUELS.md 23): the aberrant's foe skills and your staggering it (the session's duel.foe, duel.stagger); placeholder lines, Espada's to word
+  // the PvE duel (PUZZLE-DUELS.md 23): the aberrant's foe skills and your staggering it (the session's duel.foe, duel.stagger, duel.desperate); Espada's lines, 2026-10-28
   on('duel.foe', (e) => { L.inc(`duel.foe.${e.skill}`); log.say('battle', FOE_LINE[e.skill]?.(e) || 'The aberrant strikes at your mind.', { key: `duel.foe.${e.skill}`, throttle: 1 }); });
-  on('duel.stagger', (e) => { if (e.by !== 'courier') return; L.inc('duel.stagger'); log.say('battle', 'Your will staggers the aberrant: its next moves come a turn later.', { key: 'duel.stagger', throttle: 1 }); });
+  on('duel.desperate', () => { log.say('battle', 'Cornered, the aberrant lashes out.'); }); // (the session's, on the kernel's foe.desperate; Espada's line)
+  on('duel.stagger', (e) => { if (e.by !== 'courier') return; L.inc('duel.stagger'); log.say('battle', 'You stagger the aberrant: its next moves come a turn later.', { key: 'duel.stagger', throttle: 1 }); });
   on('duel.allclear', (e) => { if (e.by !== 'courier') return; L.inc('duel.allclear'); log.say('battle', 'All clear: your half of the board is empty.'); });
 }
