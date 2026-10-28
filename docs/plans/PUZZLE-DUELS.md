@@ -783,7 +783,7 @@ One-sided: a thinking player wins nearly always in 5 to 8 turns and sees the Wis
 ### 23.5 Asked of the others
 - **Petra (the session):** the drag's timer from the first move (5 real s, a bar draining; release or time out commits); the foe's turn
   is `botPlay`, which in PvE calls `foeTurn` (no change needed); emit `duel.foe { skill, n, by: 'creature' }` on each `foe.skill` and
-  `duel.stagger { by: 'courier' }` on `foe.stagger`; until Calissa's beats land, `view.resync(state)` after a foe turn (Petrify swaps a
+  `duel.stagger { by: 'courier' }` on `foe.stagger`, `duel.desperate { by: 'creature' }` on `foe.desperate`; until Calissa's beats land, `view.resync(state)` after a foe turn (Petrify swaps a
   gem's piece for a junk piece of a new id).
 - **Calissa (the look):** the aberrant's countdowns over it (`foeIntent`), each foe skill as a cast from its body (Hurl: junk flung in
   an arc; Petrify: gems greying to stone; Seal: a column chained; Sap: the skill tiles drained; Reclaim: the Line shoved back with the
