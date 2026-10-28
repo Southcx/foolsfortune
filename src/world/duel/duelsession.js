@@ -13,6 +13,9 @@
 // drains nothing; a fixture (`c.rooted`, or any practice foe) has its body moved into the layout with it and put back.
 // After any duel its foe pulls again only once you have stepped past the pull's far edge (duelfoes.js `rearm`).
 //
+// The PvE duel (DUEL.style 'pve', PUZZLE-DUELS.md 23, 24): one drag a turn on a 5 real s clock; before it, one of the god hand's seven
+// powers (powers.js) armed by keys 1 to 7 or a power tile (`armPower`) and aimed by one gesture (powerInput); a tap on the aberrant's
+// countdown badge goes to the view (`foeCast.tap`), whose tooltip asks game.foeSeen. Its moments: duel.power, duel.foe, duel.desperate, duel.stagger.
 // The one-gesture duel (DUEL.style 'drag', the default since 2026-10-27, PUZZLE-DUELS.md 22; South: "anything and everything that would
 // improve this module"): the hand's DRAG is the only board verb (a press onto a neighbour is a drag of one step), there are no forms and
 // the Courier stands off the board; the worn pair are two skills (1 and 2, or a tool's own key below), charged by your clears and fired
@@ -48,6 +51,8 @@ import { newDuel, act, endTurn, legalActions, undo, PVE, oneGesture } from '../.
 import { luckOf } from '../../progress/luck.js';
 import { intentOf, hintOf, HINT, play as botPlay } from '../../progress/duel/bot.js';
 import { SKILLS, skillsOf, canAct } from '../../progress/duel/skills.js';
+import { DUEL_POWERS, POWER_IDS, POWER_ACTION, powersOf, powerReach } from '../../progress/duel/powers.js';
+import { DOMAINS } from '../../progress/domains.js';
 import { lessonDue } from '../../progress/duel/lesson.js';
 import { rulesetOf } from '../../progress/duel/rulesets.js';
 import { DUEL_VIEW, cellLocal } from '../../vfx/duelview/layout.js';
@@ -92,7 +97,8 @@ export class DuelSession {
     this.startPool = Math.round(Math.min(100, pool?.available ?? 30));
     this.state = newDuel({ ruleset, seed: Math.floor(duelRand() * 2 ** 31), forms: ['hand', 'courier'], pool: [this.startPool, 30], tools: [tools, []],
       luck: [g.ledger ? Math.min(2, Math.floor(luckOf(g.ledger).level / 10)) : 0, 0], // (Luck's sway on a flee, 0..2: a tenth of its level, as ruled)
-      rerolls: [g.rerolls?.left() ?? 0, 0], lesson: lessonDue(g.ledger) }); // (the first duel a lesson until one is won: lesson.js, PUZZLE-DUELS 18.3) // (Luck's re-rolls left this game day: a failed Flee is thrown again, progress/duel/flee.js)
+      rerolls: [g.rerolls?.left() ?? 0, 0], lesson: lessonDue(g.ledger),
+      levels: Object.fromEntries(Object.keys(DOMAINS).map((d) => [d, g.psyche?.level?.(d) ?? 1])) }); // (the PvE duel's powers cost less with their domain's level: powers.js powerCost) // (the first duel a lesson until one is won: lesson.js, PUZZLE-DUELS 18.3) // (Luck's re-rolls left this game day: a failed Flee is thrown again, progress/duel/flee.js)
     this.practice = !!c.practice; // (a practice foe, Strawman's: every duel.* event says so and counts nothing; no pool, no shatter, no drain)
     this.foe = c; this.feeling = feeling; this.active = true; this.busy = false; this.botT = -1; this.press = null; this.path = []; this.yieldT = 0; this.swipe = null; this.shown = null; this.picked = null; this.hinted = null; this.idleT = 0; this.spentT = 0;
     for (const t of g.belt?.tools || []) if (t.wants || t.drawT > 0) t.stow(); // (nothing in the hands: the board is the fight)
@@ -184,6 +190,8 @@ export class DuelSession {
     if (input.wasPressed('KeyE')) return this.take({ kind: 'flee' });
     if (input.isDown('Backspace')) { if ((this.yieldT += raw) >= DUEL_ROOM.yieldHold) return this.yield(); } else this.yieldT = 0;
     this.arm(S.form !== 'hand' && input.isDown('KeyG')); // (Paint armed while G or du.paint is held: its reach and greying, the view's glows)
+    if (input.wasPressed('Mouse0') && this.view?.foeCast?.tap?.(input.mx, input.my)) return; // (a tap on the aberrant's countdown badge: its tooltip, if seen; the view's)
+    if (s.style === 'pve' && this.powerInput(input, cell)) return; // (the god hand's seven: powers.js)
     if (oneGesture(s)) { const k = this.skillInput(input, cell); if (k) return; }
     if (S.form === 'hand') {
       if (input.wasPressed('Mouse0') && cell) { this.press = cell; this.path = [cell]; this.pressAt = [input.mx, input.my]; this.view?.select?.(this.path); }
@@ -262,6 +270,53 @@ export class DuelSession {
     if (this.armedSkill && input.wasPressed('Mouse0') && cell) { const t = this.armedSkill; this.armSkill(null); this.take({ kind: 'skill', tool: t, at: [cell.x, cell.y] }); return true; }
     if (this.armedSkill && input.wasPressed('Mouse2')) { this.armSkill(null); return true; }
     return !!this.armedSkill; // (armed: the board's other input waits for the target)
+  }
+  /** The PvE duel's powers (powers.js, PUZZLE-DUELS.md 24): keys 1 to 7 or a power tile (`armPower`) arm one; a power with no target
+   *  fires at once. Armed, one gesture targets it: a press on a cell and a release (a tap the same cell): Manifest, Transmute and Miracle
+   *  the cell pressed; Lift the row or column dragged along, by the cells dragged (a tap: east by one); Herd the row (H) or column (V)
+   *  the drag runs; Swap the 2 x 2 patch pressed and the one released on. Its reach is drawn under the finger; RMB lets it go. */
+  powerInput(input, cell) {
+    for (let i = 0; i < POWER_IDS.length; i++) if (input.wasPressed('Digit' + (i + 1))) { this.armPower(this.armedPower === POWER_IDS[i] ? null : POWER_IDS[i]); return true; }
+    const id = this.armedPower; if (!id) return false;
+    if (input.wasPressed('Mouse2')) { this.armPower(null); return true; }
+    if (input.wasPressed('Mouse0') && cell) this.powerFrom = cell;
+    const from = this.powerFrom, a = from ? this.powerAction(id, from, cell || from) : cell ? this.powerAction(id, cell, cell) : null;
+    this.powerShow(a);
+    if (from && !input.isDown('Mouse0')) { this.powerFrom = null; this.armPower(null); if (a) this.take(a); }
+    return true;
+  }
+  /** A power armed (its tile gold: the view's `armPower`), or null; the power tiles call it. One with no target fires at once; one not
+   *  ready (resting, too dear, one already cast this turn) refuses dry. */
+  armPower(id) {
+    id ||= null;
+    if (id && this.mine && !this.busy) {
+      const P = powersOf(this.state, 0).find((p) => p.id === id);
+      if (!P?.ready) { sfx.dryFire?.(); id = null; }
+      else if (!DUEL_POWERS[id].target) { this.armPower(null); this.take({ kind: 'power', power: id }); return; }
+    } else id = null;
+    if (id === this.armedPower) return;
+    this.armedPower = id; this.powerFrom = null; this.powerShow(null);
+    const V = this.view; if (typeof V?.armPower === 'function') V.armPower(id);
+  }
+  /** The kernel's action for a power pressed at cell A and let go at B. */
+  powerAction(id, A, B) {
+    const dx = B.x - A.x, dy = B.y - A.y, a = { kind: 'power', power: id, at: [A.x, A.y] };
+    if (id === 'swap') return { ...a, at: this.patchAt(A), to: this.patchAt(B) };
+    if (id === 'lift') return dx || dy ? { ...a, dir: Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 'E' : 'W') : dy > 0 ? 'S' : 'N', by: Math.max(Math.abs(dx), Math.abs(dy)) } : { ...a, dir: 'E', by: 1 };
+    if (id === 'herd') return { ...a, dir: Math.abs(dy) > Math.abs(dx) ? 'V' : 'H' };
+    return a;
+  }
+  /** A Swap patch's top-left for a cell: moved in so the patch stays on your half. */
+  patchAt(c) {
+    const b = this.state.board, n = DUEL_POWERS.swap.size; let last = 0; for (let x = 0; x < b.w; x++) if (b.mine(0, x)) last = x;
+    return [Math.max(0, Math.min(c.x, last - n + 1)), Math.max(0, Math.min(c.y, b.h - n))];
+  }
+  /** The power under the finger told to the view once a change: its action, the cells it would touch and whether the kernel takes it
+   *  (the view's `powerReach`; without one, the cells selected). */
+  powerShow(a) {
+    const key = a ? JSON.stringify(a) : null; if (key === this.powerShown) return; this.powerShown = key;
+    const cells = a ? powerReach(this.state, 0, a) : [], ok = !!a && POWER_ACTION.legal(this.state, 0, a), V = this.view;
+    if (typeof V?.powerReach === 'function') V.powerReach(a, cells, ok); else V?.select?.(cells.map(([x, y]) => ({ x, y })));
   }
   /** The skill armed (its tile gold, its reach drawn: the view's `armSkill`), or null. */
   armSkill(tool) { if (tool === this.armedSkill) return; this.armedSkill = tool || null; const V = this.view; if (typeof V?.armSkill === 'function') V.armSkill(this.armedSkill); }
@@ -356,12 +411,13 @@ export class DuelSession {
       if (e.side === 0 && e.type === 'land' && e.n) this.emit('duel.land', { n: e.n, kind: e.kind, by: 'creature' });
       if (e.side === 0 && e.type === 'lesson.done') this.emit('duel.lesson', { by: 'courier' }); // (counted even in practice: lessonDue reads it)
       if (e.side === 0 && e.type === 'allclear') this.emit('duel.allclear', { n: e.n, by: 'courier' });
+      if (e.type === 'power') { const sc = events.find((x) => x.type === 'scan' && x.side === e.side); this.emit('duel.power', { power: e.power, domain: e.domain, cost: e.cost, ...(sc ? { skill: sc.skill } : {}), by: e.side === 0 ? 'courier' : 'creature' }); } // (tracking/duel.js counts it; game.foeSeen marks a scanned skill seen)
       if (e.type === 'foe.skill') this.emit('duel.foe', { skill: e.skill, n: e.n ?? e.lost ?? 0, by: 'creature' }); // (the PvE duel's foe skills and your stagger: tracking/duel.js)
       if (e.type === 'foe.stagger') this.emit('duel.stagger', { by: 'courier' });
       if (e.type === 'foe.desperate') this.emit('duel.desperate', { by: 'creature' });
       if (e.type === 'flee') this.emit('duel.flee', { roll: e.roll, reroll: e.reroll ?? null, need: e.need, ok: e.ok, by: e.side === 0 ? 'courier' : 'creature' });
     }
-    const done = () => { this.busy = false; this.botRun = false; if (!this.active) return; if (this.state.winner !== null) this.finish(); else this.intent(); };
+    const done = () => { this.busy = false; this.botRun = false; if (this.armedPower && !this.mine) this.armPower(null); if (!this.active) return; if (this.state.winner !== null) this.finish(); else this.intent(); };
     const p = this.view?.play?.(events);
     if (p?.then) p.then(done, done); else done();
   }
@@ -430,7 +486,7 @@ export class DuelSession {
     if (g.input?.enabled) g.input.requestLock?.();
     const pool = g.lachryma, d = this.practice ? 0 : Math.round((s?.sides[0].pool ?? this.startPool) - this.startPool);
     if (pool && d > 0) pool.gain(d, 'duel'); else if (pool && d < 0) pool.spend(-d, 'duel');
-    this.dragLeft = null; this.dragClock(null); this.clockShown = undefined;
+    this.dragLeft = null; this.dragClock(null); this.armPower(null); this.clockShown = undefined;
     const V = this.view, home = this.home; this.home = null; // (the instance held while the tsuitate folds away, then the world again and the foe where it stood)
     if (g.duelInstance?.active) g.duelInstance.close(() => !V || (!V.closing && !V.root?.visible) || V.isOpen, () => this.putBack(home)); else this.putBack(home);
     this.unpin(c); this.release();
