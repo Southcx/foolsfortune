@@ -39,9 +39,10 @@ export function fall(b) {
 const same = (a, c) => a && hasTag(a, 'matches') && c && hasTag(c, 'matches') && a.colour === c.colour;
 
 /** The clears of one settle pass: runs of `rs.match` or more in a line, clusters of `rs.cluster` or more touching (each within one side:
- *  the line breaks them); a colour a side has tuned (`tune[side]`, the Crucibelle's song: couriertools.js) clusters at 3 there. Returns
+ *  the line breaks them); a colour a side has tuned (`tune[side]`, the Crucibelle's song: couriertools.js) clusters at 3 there (at
+ *  `needs[side]` under a Miracle: duel/powers.js). Returns
  *  the cells to clear, credited to the side they are on. */
-export function clears(b, rs, tune = null) {
+export function clears(b, rs, tune = null, needs = null) {
   const out = new Set();
   if (rs.match) for (const [dx, dy] of [[1, 0], [0, 1]]) for (let y = 0; y < b.h; y++) for (let x = 0; x < b.w; x++) {
     const p = b.at(x, y); if (!p || !hasTag(p, 'matches')) continue;
@@ -51,7 +52,7 @@ export function clears(b, rs, tune = null) {
     if (run.length >= rs.match) for (const [rx, ry] of run) out.add(key(rx, ry));
   }
   if (rs.cluster || tune?.[0] || tune?.[1]) {
-    const seen = new Set(), need = (side, colour) => (tune?.[side] === colour ? Math.min(3, rs.cluster || 3) : rs.cluster || Infinity);
+    const seen = new Set(), need = (side, colour) => (tune?.[side] === colour ? needs?.[side] || Math.min(3, rs.cluster || 3) : rs.cluster || Infinity);
     for (let y = 0; y < b.h; y++) for (let x = 0; x < b.w; x++) {
       const p = b.at(x, y); if (!p || !hasTag(p, 'matches') || seen.has(key(x, y))) continue;
       const group = [], stack = [[x, y]]; seen.add(key(x, y));
