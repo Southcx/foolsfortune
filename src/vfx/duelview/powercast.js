@@ -8,7 +8,7 @@
 //   SCAN       the aberrant's countdowns knocked back, the delay over its head, a tenmoku glint off the scanned badge
 //   LIFT       the row or column raised a little and slid along, a piece that wraps round hopping over the rest
 //   HERD       each gem drawn onto the line along the ground, Jun's purple trailing it
-//   TRANSMUTE  a spiral of flambe from the cell to every gem of its colour, each turning as it lands
+//   TRANSMUTE  a wave of flambe out from the first gem through every gem of its colour, each turning as it reaches it
 //   MIRACLE    the cobalt's rings and the colour's hum on your half (the tune's own: glows.js), held until `tune.end`
 //   DRINK      `drink`: the pool your clears filled, a bead up the link
 // Programs: the bursts' and the words' (bursts.js, juice.js): nothing new.
@@ -46,7 +46,7 @@ function slide(T, e, { arc = 0, hop = 0.6, hex }) {
 function powerMoment(T, e) {
   const V = T.view, B = V.board3, hex = domainHex(e.domain), at = e.at ? cellLocal(e.at[0], e.at[1], B, new THREE.Vector3()) : cellLocal((V.lineCol ?? B.line) / 2, B.h / 2, B, new THREE.Vector3());
   V.game.spiritualLink?.bead?.({ amount: e.cost || 0 });
-  V.bursts.burst(at, hex, 18, { speed: 1.3, life: 0.45, fall: 0, spread: 0 }); V.bursts.burst(at, 0xffffff, 5, { speed: 0.4, life: 0.3, fall: 0, size: 0.04 });
+  V.bursts.burst(at, hex, 18, { speed: 0.9, life: 0.4, fall: 0, spread: 0, size: 0.022 }); V.bursts.burst(at, 0xffffff, 5, { speed: 0.4, life: 0.3, fall: 0, size: 0.04 });
   V.juice.word((DUEL_POWERS[e.power]?.label || e.power || '').toUpperCase(), _b.copy(at).add(_a.set(0, 0.22, 0.06)), hex, { h: 0.11, dur: 0.9 });
   V.stage?.jolt?.(0.2);
   return { events: [e], dur: POWER_CAST.ring };
@@ -71,12 +71,10 @@ export function powerBeat(T, e) {
       end: () => { for (const q of items) { if (!q.done) { const old = P.at(q.c.at[0], q.c.at[1]); if (old) P.remove(old); q.v = P.byId(q.c.id) || P.add('gem', { id: q.c.id, colour: e.colour, side: e.side }, q.c.at[0], q.c.at[1]); } q.v.s = 1; } } };
   }
   if (e.type === 'transmute') {
-    const H = domainHex('alteration'), from = e.at ? cellLocal(e.at[0], e.at[1], B, new THREE.Vector3()) : null, to = gemColour(e.colour, _c).getHex();
-    const items = (e.cells || []).map((c, i) => ({ c, v: P.byId(c.id) || P.at(c.at[0], c.at[1]), d: 0.05 + i * 0.02, done: false })).filter((q) => q.v);
-    const origin = from || cellLocal(items[0]?.c.at[0] ?? 0, items[0]?.c.at[1] ?? 0, B, new THREE.Vector3());
-    for (const q of items) V.bursts.spiral(origin, cellLocal(q.c.at[0], q.c.at[1], B, new THREE.Vector3()), H, q.d, 0.3);
-    const flip = (q) => { q.done = true; q.v.colour = e.colour; q.v.flash = 0.9; V.bursts.burst(cellLocal(q.c.at[0], q.c.at[1], B, _a), to, 3, { speed: 0.4, life: 0.3, fall: 0, size: 0.022 }); };
-    return { events: [e], dur: POWER_CAST.spiral + items.length * 0.02 + DUEL_VIEW.ma, step: (u, age) => { for (const q of items) { if (!q.done && age >= q.d + 0.3) flip(q); if (q.done) q.v.flash = Math.max(0, q.v.flash - 0.05); } },
+    const H = domainHex('alteration'), to = gemColour(e.colour, _c).getHex(), c0 = e.cells?.[0]?.at || [0, 0];
+    const items = (e.cells || []).map((c) => ({ c, v: P.byId(c.id) || P.at(c.at[0], c.at[1]), d: 0.04 * Math.hypot(c.at[0] - c0[0], c.at[1] - c0[1]), done: false })).filter((q) => q.v); // (a wave out from the first, each gem turning as it reaches it)
+    const flip = (q) => { q.done = true; q.v.colour = e.colour; q.v.flash = 0.9; cellLocal(q.c.at[0], q.c.at[1], B, _a); V.bursts.burst(_a, H, 4, { speed: 0.5, life: 0.3, fall: 0, size: 0.02 }); V.bursts.burst(_a, to, 3, { speed: 0.3, life: 0.35, fall: 0, size: 0.022 }); };
+    return { events: [e], dur: POWER_CAST.spiral + Math.max(0, ...items.map((q) => q.d)) + DUEL_VIEW.ma, step: (u, age) => { for (const q of items) { if (!q.done && age >= q.d + 0.05) flip(q); if (q.done) q.v.flash = Math.max(0, q.v.flash - 0.05); } },
       end: () => { for (const q of items) { if (!q.done) flip(q); q.v.flash = 0; } } };
   }
   if (e.type === 'miracle') {
