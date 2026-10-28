@@ -4287,3 +4287,11 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   asked `style === 'drag'` by name: lesson.js `stepsOf`, skyfall.js `skyOf`, and in Calissa's files the touch context and the gauges.
 - **Fix:** `oneGesture(s)` (duel.js: any style but 'classic'); lesson.js and skyfall.js ask it; Calissa's files asked to.
 - **Rule:** NEW:ask-the-capability-not-the-name
+
+### 2026-10-28 · A secret win ended as a Line win (Dovina's live probe)
+- **Seen:** a Lantern Wisp duel won by snuffing its lantern ended with `duel.end { how: 'line' }`, so the log said the generic Line win and
+  the secret's own end went unsaid.
+- **Cause (as read):** the session names the end by the last end event in the log, matched against a list written by hand
+  (`/^duel\.(line|full|cap|finisher)$/`, duelsession.js `finish`); the kernel's new `duel.secret` was not on it, and the fallback is 'line'.
+- **Fix:** `secret` on the list, its id carried (`how: 'secret'`, the death hook gets `secret`). Read, not yet played through in a browser.
+- **Rule:** NEW:new-end-new-name
