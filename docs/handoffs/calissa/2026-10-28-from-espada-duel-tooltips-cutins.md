@@ -7,7 +7,7 @@ For the round in docs/handoffs/everyone/2026-10-28-from-petra-duel-round.md. Str
 A title and one line, the line saying what it does and what answers it. An unseen badge shows nothing (no "???": South asked for
 observation first, so there is nothing to read yet).
 
-- HURL: `Junk lands on your half after your turn. Clears before it lands cancel some of it.`
+- HURL: `Junk lands on your half after your turn.` (no offset in the PvE duel, PUZZLE-DUELS.md 23.2)
 - PETRIFY: `Gems on your half turn to junk.`
 - SEAL: `A column of yours locks for your next turn: nothing in it can be dragged.`
 - SAP: `Each skill you wear loses half its charge.`

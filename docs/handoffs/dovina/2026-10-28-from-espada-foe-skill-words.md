@@ -6,7 +6,7 @@ this note once they are in.
 
 ## progress/duel/foeskills.js (`line`)
 
-- hurl: `Junk lands on your half after your next turn; your clears cancel some of it`
+- hurl: `Junk lands on your half after your next turn` (as foeskills.js has it now)
 - petrify: `Turns gems on your half to junk` (as is, made a verb like the others)
 - seal: `Locks a column of yours for your next turn: nothing in it can be dragged`
 - sap: `Halves the charge of each skill you wear`
@@ -14,7 +14,7 @@ this note once they are in.
 
 ## feedback/tracking/duel.js (FOE_LINE, the stagger line, and one new line)
 
-- hurl: `` `The aberrant hurls ${e.n} pieces of junk. They land after your turn, less what your clears cancel.` ``
+- hurl: `` `The aberrant hurls ${e.n} pieces of junk. They land after your turn.` ``
 - petrify: `` `The aberrant turns ${e.n} of your gems to junk.` `` (as is)
 - seal: `'The aberrant seals a column of yours: you cannot drag in it on your next turn.'`
 - sap: `'The aberrant saps your skills: each loses half its charge.'`
