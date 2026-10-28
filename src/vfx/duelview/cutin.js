@@ -121,7 +121,7 @@ export class FoeCutIn {
   aim(k, limit) {
     const V = this.view, B = this.box; if (!B) return;
     const size = B.getSize(_a), h = Math.max(0.4, size.y), f = V.foe, hd = typeof f?.head === 'function' ? f.head() : null; // (its own head where it says, else high on its bounds)
-    const ve = Math.max(0.5, h * (limit ? 0.3 : 0.38)), focus = hd?.isVector3 ? _b.copy(hd).setY(hd.y - ve * 0.3) : B.getCenter(_b).setY(B.max.y - h * 0.22);
+    const ve = Math.max(0.5, h * (limit ? 0.3 : 0.38)), focus = hd?.isVector3 ? _b.copy(hd).setY(hd.y - ve * 0.6) : B.getCenter(_b).setY(B.max.y - h * 0.22);
     const yaw = (limit ? -0.18 : 0.32), dir = _a.copy(V.u).negate().setY(0).normalize().applyAxisAngle(THREE.Object3D.DEFAULT_UP, yaw);
     const d = ve / 2 / Math.tan(THREE.MathUtils.degToRad(CUT_IN.fov / 2)) * (1 - 0.12 * k);
     this.cam.position.copy(focus).addScaledVector(dir, d); this.cam.position.y -= ve * 0.12; this.cam.up.set(limit ? Math.sin(0.12) : 0, 1, 0); this.cam.lookAt(focus);

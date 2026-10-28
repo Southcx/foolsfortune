@@ -133,7 +133,7 @@ void main() {
       float sx = c.x - uLine, up = 1.0 - yy, n = max(uMeter.z, 1.0), seg = fract(up * n), notch = smoothstep(0.0, 0.03 * n, seg) * smoothstep(0.0, 0.03 * n, 1.0 - seg);
       float wR = step(0.06, sx) * (1.0 - smoothstep(0.26, 0.26 + fwx, sx)), wL = step(0.06, -sx) * (1.0 - smoothstep(0.26, 0.26 + fwx, -sx)); // (a slot each side of the seam's core)
       col = mix(col, vec3(0.012), (wR + wL) * 0.85); col += vec3(0.05) * (wR + wL) * (1.0 - notch); // (the empty slot dark, its notches faint)
-      col = mix(col, labSoft(ph + up) * 2.2 + 0.25, wR * notch * step(up, uMeter.x)); col = mix(col, uFoe * 2.0 + 0.05, wL * notch * step(up, uMeter.y));
+      col = mix(col, mix(srgb(vec3(0.62, 0.9, 1.0)), labSoft(ph + up), 0.35) * 2.4, wR * notch * step(up, uMeter.x)); col = mix(col, uFoe * 2.0 + 0.05, wL * notch * step(up, uMeter.y));
     }
     gl_FragColor = vec4(col, 1.0);
     return;
