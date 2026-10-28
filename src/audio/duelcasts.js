@@ -12,7 +12,7 @@
 //                      sides (Swap), Manifestation's totem rising (Raise), Divination's read (Scan), Psychokinesis's slab lifted and set
 //                      (Lift), Possession's herding whistle (Herd), Alteration's transmute (Transmute), Spellscription's ward in small (a
 //                      brush round, a bell on the key: the miracle's weather)
-//   ITS FEELING        manifest / transmute { colour }: that gem's note struck twice (duelPowerColour); miracle: the colour's bell (a Tune's)
+//   ITS FEELING        manifest / transmute / herd { colour }: that gem's note struck twice (duelPowerColour); miracle: the colour's bell (a Tune's)
 //   NOTED              duel.seen (a foe skill learned the first time): a page's flick, two soft notes up to the key (duelSeen)
 // Heard as the view plays them (duelEvent, puzzleduel.js), at the cut-in's start: foe.skill (its slam CUT_IN_LEAD after, held
 // CUT_IN_HOLD, the skill's own sound when its cast begins) and foe.desperate (the limit break: a swell, the slam 1.1 s in), and a power's

@@ -97,7 +97,7 @@ export class PuzzleDuelSounds {
       case 'tune': return this.duelTune(e.colour, e.side);
       case 'tune.end': return this.duelTuneEnd(e.side); // (a Tune's end, and a Miracle's)
       case 'miracle': return this.duelTune(e.colour, e.side); // (a duel power's Miracle: its colour's bell, as a Tune's; it ends on tune.end)
-      case 'manifest': case 'transmute': return this.duelPowerColour?.(e.colour, e.side); // (the feeling a power raised or turned to: audio/duelcasts.js)
+      case 'manifest': case 'transmute': case 'herd': return this.duelPowerColour?.(e.colour, e.side); // (the feeling a power raised or turned to: audio/duelcasts.js)
       case 'transmute.end': return this.duelTuneEnd(e.side);
       case 'read': return this.duelRead(e.side);
       case 'pinch': return this.duelPinch(e.colour);
