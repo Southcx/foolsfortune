@@ -253,7 +253,7 @@ export class DuelView {
   /** Where the god hand stands over a side's half (the board's frame): the finisher's cubes go up into it. */
   handPoint(side, out) { const B = this.board3, cs = DUEL_VIEW.cs, x = side === 1 ? (this.lineCol + B.w) / 2 : this.lineCol / 2; return out.set((x - B.w / 2) * cs, DUEL_VIEW.base + B.h * cs + 0.5, 0.35); }
   /** The PvE duel's drag timer (the session's: 1 full .. 0 out, null hidden), a bar under your half (foecast.js). */
-  dragTimer(k) { this.foeCast.timer(k); }
+  dragClock(k) { this.foeCast.timer(k); }
 
   /** What of mine draws during a duel but stood in the scene before it opened (South, 2026-10-27: the duel is its own instance,
    *  render/duelinstance.js): the data drain and its crackle break at the finisher, the foe's stun stars. For the session's keep list. */

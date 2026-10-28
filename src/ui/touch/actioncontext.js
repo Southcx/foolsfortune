@@ -102,7 +102,7 @@ export function duelCluster(g) {
   const D = g.duel, s = D?.state; if (!s) return [];
   const S = s.sides[0], broken = (s.sides[1]?.depth || 0) > 0, mine = !!D.mine;
   return [
-    E('du.end', 'endturn', 'END TURN', { dim: !mine, charge: mine && S.ap > 0 ? s.apLeft / S.ap : 0 }), // (its rim the action points left)
+    s.style === 'pve' ? null : E('du.end', 'endturn', 'END TURN', { dim: !mine, charge: mine && S.ap > 0 ? s.apLeft / S.ap : 0 }), // (its rim the action points left)
     broken ? E('du.finish', 'finisher', 'FINISHER', { dim: !mine }) : null,
     E('du.flee', 'flee', 'FLEE', { dim: !mine }),
     s.style === 'pve' ? null : E('du.undo', 'undo', 'UNDO', { dim: !mine || !s.undo?.length }), // (the PvE duel's drag is committed: no undo, PUZZLE-DUELS.md 23.1) // (the last action this turn taken back: dim with nothing to take back)

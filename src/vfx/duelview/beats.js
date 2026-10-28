@@ -98,7 +98,7 @@ export class DuelBeats {
     if (e.type === 'chain') return this.clears([], run((x) => x.type === 'chain'));
     if (e.type === 'pinch') return this.pinch(run((x) => x.type === 'pinch'));
     if (e.type === 'ember.cool') return this.cool(run((x) => x.type === 'ember.cool'));
-    if (ACTS.has(e.type)) { job.i++; V.spend(e.side, e.type === 'drag' ? Math.max(1, Math.ceil((e.path.length - 1) / 3)) : COST[e.type], e); return this.action(e); }
+    if (ACTS.has(e.type)) { job.i++; if (!(V.state?.style === 'pve' && e.side === 0)) V.spend(e.side, e.type === 'drag' ? Math.max(1, Math.ceil((e.path.length - 1) / 3)) : COST[e.type], e); return this.action(e); }
     if (e.type === 'run') { job.i++; V.spend(e.side, 1, e); return this.runPath(e, run((x) => x.type === 'orb.drink')); }
     if (TOOL_BEATS2.has(e.type)) { job.i++; // (the tools that bend the clearing: toolbeats2.js)
       if (e.type === 'shot') { this.pay(job, e.side, 1, e, 5); const pops = run((x) => x.type === 'blast' || ((x.type === 'clear' || x.type === 'break') && x.by === 'shot')); return shotBeat(this, e, pops, run((x) => x.type === 'chain' && x.step === 1 && x.side === e.side)); }
