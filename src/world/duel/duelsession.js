@@ -44,7 +44,7 @@
 //   turns }, duel.undo { left } (how 'fled': away, both whole; tracking.js says each)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { newDuel, act, endTurn, legalActions, undo, PVE } from '../../progress/duel/duel.js';
+import { newDuel, act, endTurn, legalActions, undo, PVE, oneGesture } from '../../progress/duel/duel.js';
 import { luckOf } from '../../progress/luck.js';
 import { intentOf, hintOf, HINT, play as botPlay } from '../../progress/duel/bot.js';
 import { SKILLS, skillsOf, canAct } from '../../progress/duel/skills.js';
@@ -184,7 +184,7 @@ export class DuelSession {
     if (input.wasPressed('KeyE')) return this.take({ kind: 'flee' });
     if (input.isDown('Backspace')) { if ((this.yieldT += raw) >= DUEL_ROOM.yieldHold) return this.yield(); } else this.yieldT = 0;
     this.arm(S.form !== 'hand' && input.isDown('KeyG')); // (Paint armed while G or du.paint is held: its reach and greying, the view's glows)
-    if (s.style === 'drag' || s.style === 'pve') { const k = this.skillInput(input, cell); if (k) return; }
+    if (oneGesture(s)) { const k = this.skillInput(input, cell); if (k) return; }
     if (S.form === 'hand') {
       if (input.wasPressed('Mouse0') && cell) { this.press = cell; this.path = [cell]; this.pressAt = [input.mx, input.my]; this.view?.select?.(this.path); }
       if (this.press && this.pressAt && Math.hypot(input.mx - this.pressAt[0], input.my - this.pressAt[1]) >= DUEL_ROOM.slop) this.pressAt = null; // (a tap never drags a gem by a hair: DUEL_ROOM.slop px first)
