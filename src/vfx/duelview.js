@@ -78,7 +78,7 @@ export class DuelView {
     this.game = game; this.isOpen = false; this.closing = false; this.state = null; this.foe = null; this.aspect = 'fury';
     const root = (this.root = new THREE.Group()); root.name = 'duelView'; root.visible = false; root.userData.zoneFree = true; // (it stands in the room it is opened in, and only while open)
     this.frame = new THREE.Group(); root.add(this.frame);
-    this.clash = new DomainClash(); root.add(this.clash.dome);
+    this.clash = new DomainClash(); root.add(this.clash.dome, this.clash.ground);
     this.board = new DuelBoard(this.frame, this.clash); this.pieces = new DuelPieces(this.frame); this.marks = new DuelMarks(this.frame);
     this.intentDraw = new DuelIntent(this.frame, this.marks); this.bursts = new DuelBursts(this.frame); this.beats = new DuelBeats(this);
     this.flee = new DuelFlee(this); this.folded = false;
@@ -113,6 +113,7 @@ export class DuelView {
     this.gravLine = B.line; this.setLine(B.line); this.fogCur = null; this.stepFog(0); // (the fog as it stands at once: nothing hidden shows for a frame)
     this.board.won(0); this.readCounts(); this.readPoints(); this.readFight();
     const half = (B.w * DUEL_VIEW.cs) / 2 + 2, oc = _w.copy(at).addScaledVector(this.u, -half), of = foe?.pos ? foe.pos.clone() : at.clone().addScaledVector(this.u, half);
+    this.clash.groundTo(Math.max(oc.distanceTo(at), of.distanceTo(at)) + 3); // (the ground past both bodies: domains.js)
     oc.y += 1; of.y += 1; this.clash.unfold(oc, of);
     this.game.spiritualLink?.attach(this, this.linkEnd);
     this.gauges.layout(this.board3); this.stage.open(); this.dive.open(); // (the gauges: skillgauges.js; the arena first, the Jar at your spot: stage.js, formdive.js)
@@ -250,6 +251,14 @@ export class DuelView {
   headOf(side, out) { const v = this.pieces.bodyAt(side); return v ? cellLocal(v.x, v.y - 0.55, this.board3, out).setZ(DUEL_VIEW.front + 0.05) : out.set(0, -99, 0); }
   /** Where the god hand stands over a side's half (the board's frame): the finisher's cubes go up into it. */
   handPoint(side, out) { const B = this.board3, cs = DUEL_VIEW.cs, x = side === 1 ? (this.lineCol + B.w) / 2 : this.lineCol / 2; return out.set((x - B.w / 2) * cs, DUEL_VIEW.base + B.h * cs + 0.5, 0.35); }
+  /** What of mine draws during a duel but stood in the scene before it opened (South, 2026-10-27: the duel is its own instance,
+   *  render/duelinstance.js): the data drain and its crackle break at the finisher, the foe's stun stars. For the session's keep list. */
+  instanceKeep() {
+    const g = this.game, out = [g.dataDrain?.group, g.dataDrain?.crackle?.bubble?.object, g.dataDrain?.crackle?.shards];
+    const ring = this.foe && g.stun?.dizzy?.rings?.get?.(this.foe); if (ring) out.push(ring.g);
+    return out.filter(Boolean);
+  }
+
   /** The finisher's drain on the foe in the world (the crackle break, the beats, its data bug mended: vfx/datadrain.js). */
   drainFoe() { const f = this.foe; if (f?.pos && this.game.dataDrain) { this.frame.localToWorld(this.handPoint(1, _w)); this.game.dataDrain.play(f, _w.clone()); } this.depth[1] = 0; }
 
