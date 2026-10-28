@@ -15,6 +15,7 @@ import { DUEL_POWERS } from '../../progress/duel/powers.js';
 import { FOE_SKILLS } from '../../progress/duel/foeskills.js';
 
 const skillLabel = (tool) => SKILLS[tool]?.label || tool;
+const SECRET_LINE = { snuff: { half: 'The lantern gutters.', done: 'You snuff the lantern. The Wisp goes out with it.' } };
 const FOE_LINE = { hurl: (e) => `The aberrant hurls ${e.n} pieces of junk. They land after your turn.`, petrify: (e) => `The aberrant turns ${e.n} of your gems to junk.`, // (Espada's, 2026-10-28; no offset in the PvE duel, so no "less what your clears cancel")
   seal: () => 'The aberrant seals a column of yours: you cannot drag in it on your next turn.', sap: () => 'The aberrant saps your skills: each loses half its charge.', reclaim: () => 'The aberrant pushes the Line back a column toward you.' };
 
@@ -40,6 +41,7 @@ export function duelRules({ on: onAny, L: ledger, log }) {
     if (e.how === 'fled') { L.inc('duel.fled'); if (!e.atOnce) log.say('battle', 'You flee the duel.'); return; } // (a natural 20 said it already: "You flee at once.")
     L.inc(e.won ? 'duel.won' : 'duel.lost');
     if (e.practice) { log.say('battle', e.won ? 'You win the practice duel. Nothing counts.' : 'You lose the practice duel. Nothing counts.'); return; } // (no shatter, no drain; Espada's)
+    if (e.won && e.how === 'secret') return; // (its own line came with duel.secret)
     if (e.won) log.say('battle', e.how === 'finisher' ? 'You drain the Figment.' : 'You win the duel. The Figment is mended.');
     else log.say('battle', e.how === 'yield' ? 'You yield the duel.' : 'You lose the duel. The Figment pushes your mind out.');
   });
@@ -61,6 +63,11 @@ export function duelRules({ on: onAny, L: ledger, log }) {
   // the duel's powers (PUZZLE-DUELS.md 24; duel/powers.js: the session's duel.power { power, domain, cost, skill? }) and a foe skill seen
   // (progress/foeseen.js: knowledge, so no count); Espada's lines, 2026-10-28
   on('duel.power', (e) => { if (e.by !== 'courier') return; L.inc(`duel.power.${e.power}`); log.say('battle', e.power === 'scan' && e.skill ? `You scan the aberrant: its ${FOE_SKILLS[e.skill]?.label || 'next skill'} comes 2 turns later.` : `You cast ${DUEL_POWERS[e.power]?.label || 'a power'}.`, { key: 'duel.power', throttle: 0.5 }); });
+  // an aberrant's secret win (secrets.js, ABERRANTS.md): its tell at half, its end; placeholder lines, Espada's to word
+  on('duel.secret', (e) => {
+    if (e.half) log.say('battle', SECRET_LINE[e.id]?.half || 'The aberrant falters.', { key: `duel.secret.${e.id}`, throttle: 1 });
+    if (e.done) { L.inc(`duel.secret.${e.id}`); log.say('battle', SECRET_LINE[e.id]?.done || 'You find the aberrant\'s undoing.'); }
+  });
   on('duel.seen', (e) => { log.say('battle', `You know ${FOE_SKILLS[e.skill]?.label || 'this skill'} now: ${FOE_SKILLS[e.skill]?.line || ''}.`); });
   on('duel.allclear', (e) => { if (e.by !== 'courier') return; L.inc('duel.allclear'); log.say('battle', 'All clear: your half of the board is empty.'); });
 }

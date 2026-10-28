@@ -10,8 +10,10 @@
 //   Seal       a column of yours locked: no drag may touch it on your next turn (Puzzle & Dragons' bound orbs)
 //   Sap        each skill you wear loses half its charge
 //   Reclaim    the Line pushed back a column toward you (the aberrant takes a column of its mind back)
-// A ruleset's `foe`: { moves: [{ skill, every, first?, n? }], desperate?: { at, moves: [{ skill, n? }] } }: each move fires when its
-// countdown (`first`, then `every`) runs out; `desperate` fires once, when the aberrant's half is down to `at` columns.
+//   Kindle     (the Lantern Wisp's own) Dread gems on your half burned into embers: the fuel its secret runs on kept from you (secrets.js)
+// A ruleset's `foe`: { moves: [{ skill, every, first?, n?, wake? }], desperate?: { at, moves: [{ skill, n? }] } }: each move fires when its
+// countdown (`first`, then `every`) runs out; `desperate` fires once, when the aberrant's half is down to `at` columns. A move with
+// `wake: 'half'` sleeps (no countdown, no badge) until its secret is half done (secrets.js `secret.half`): the aberrant noticing.
 //
 // Prior art: Puzzle & Dragons' enemy skills (the countdown over the enemy, jammers, binds, skill delay), Terra Battle's boss gimmicks,
 // Into the Breach's attacks drawn a turn ahead, Candy Crush's blockers.
@@ -40,7 +42,14 @@ export const FOE_SKILLS = {
       return [{ type: 'foe.skill', side: 1, skill: 'sap', lost }]; } },
   reclaim: { label: 'Reclaim', line: 'Pushes the Line back a column toward you',
     fire: (s, M, K) => [{ type: 'foe.skill', side: 1, skill: 'reclaim', n: 1 }, ...K.moveLine(s, -1)] },
+  kindle: { label: 'Kindle', line: 'Burns Dread gems on your half into embers', // (placeholder words, Espada's)
+    fire: (s, M) => { const b = s.board, cells = []; b.each((p, x, y) => { if (b.mine(0, x) && p.kind === 'gem' && p.colour === 'dread') cells.push([x, y]); }); const at = [];
+      for (let i = 0; i < M.n && cells.length; i++) { const [x, y] = cells.splice(s.r.int(cells.length), 1)[0], was = b.at(x, y), p = piece('ember', { count: s.rs.embers?.count ?? 3 }); b.set(x, y, p); at.push({ at: [x, y], from: was.id, id: p.id, colour: was.colour }); }
+      return [{ type: 'foe.skill', side: 1, skill: 'kindle', n: at.length, cells: at }]; } },
 };
+
+/** Is a move counting down: always, or (`wake: 'half'`) once its secret is half done. */
+export const awake = (s, m) => !m.wake || (m.wake === 'half' && !!s.secret?.half);
 
 /** The aberrant's countdowns for a new duel, from its ruleset's `foe` (none: it only stands there). */
 export function foeOf(rs) {
@@ -50,21 +59,21 @@ export function foeOf(rs) {
 
 /** What the aberrant will do and when, soonest first (the view's countdowns over it; the intent drawn a turn ahead). */
 export function foeIntent(s) {
-  return (s.foe?.moves || []).map((m) => ({ skill: m.skill, label: FOE_SKILLS[m.skill].label, line: FOE_SKILLS[m.skill].line, left: m.left, n: m.n ?? null })).sort((a, b) => a.left - b.left);
+  return (s.foe?.moves || []).filter((m) => awake(s, m)).map((m) => ({ skill: m.skill, label: FOE_SKILLS[m.skill].label, line: FOE_SKILLS[m.skill].line, left: m.left, n: m.n ?? null })).sort((a, b) => a.left - b.left);
 }
 
 /** The aberrant's turn: each countdown down one, the due skills fired, the desperate one once its half is small enough. */
 export function foeSkillsNow(s, K) {
   const F = s.foe, events = []; if (!F) return events;
-  for (const m of F.moves) { if (--m.left > 0 || s.winner !== null) continue; m.left = m.every; events.push(...FOE_SKILLS[m.skill].fire(s, m, K)); }
+  for (const m of F.moves) { if (!awake(s, m) || --m.left > 0 || s.winner !== null) continue; m.left = m.every; events.push(...FOE_SKILLS[m.skill].fire(s, m, K)); }
   const D = F.desperate;
   if (D && !D.used && s.winner === null && s.board.w - s.board.line <= D.at) { D.used = true; events.push({ type: 'foe.desperate', side: 1 }); for (const m of D.moves) events.push(...FOE_SKILLS[m.skill].fire(s, m, K)); }
-  for (const m of F.moves) if (m.left === 1 && s.winner === null) events.push({ type: 'foe.soon', side: 1, skill: m.skill }); // (fires on its next turn: the last tick, Wanda's and the view's)
+  for (const m of F.moves) if (awake(s, m) && m.left === 1 && s.winner === null) events.push({ type: 'foe.soon', side: 1, skill: m.skill }); // (fires on its next turn: the last tick, Wanda's and the view's)
   return events;
 }
 
 /** A big play staggers the aberrant (PUZZLE-DUELS.md 23.3): every countdown a turn longer. */
 export function stagger(s) {
-  for (const m of s.foe?.moves || []) m.left++;
+  for (const m of s.foe?.moves || []) if (awake(s, m)) m.left++;
   return [{ type: 'foe.stagger', side: 1 }];
 }

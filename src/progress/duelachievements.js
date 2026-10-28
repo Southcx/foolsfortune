@@ -19,4 +19,5 @@ export function duelAchievements({ C, F }) {
   F('du6', 'battle', 'Puzzle Duels', 3, 'collect', 'Every Trick in the Book', 'Fire every tool\'s skill in a puzzle duel.', (L) => SKILL_TOOLS.filter((t) => L.get(`duel.skill.${t}`) >= 1).length, SKILL_TOOLS.length);
   C('du7', 'battle', 'Puzzle Duels', 3, 'mechanic', 'Clean Slate', 'Clear your side of a puzzle duel\'s board.', 'duel.allclear', 1);
   C('du8', 'battle', 'Puzzle Duels', 4, 'endure', 'Headspace', 'Win 25 puzzle duels.', 'duel.won', 25);
+  C('du9', 'battle', 'Puzzle Duels', 3, 'mechanic', 'Lights Out', 'Win a duel against an aberrant Lantern Wisp without pushing the Line home.', 'duel.secret.snuff', 1); // (its secret: ABERRANTS.md 3; the words never give it away. A placeholder name, Espada's)
 }

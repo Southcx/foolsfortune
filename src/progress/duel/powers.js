@@ -30,13 +30,14 @@
 //   at, dir, by, moved }, herd { side, at, dir, colour, moved }, transmute { side, from, colour, turns, cells: [{ at, id }] }, miracle { side,
 //   colour, need, turns } (its clears are the settle's, under the tune: rules.js clears)
 // ---------------------------------------------------------------------------------------
-import { COLOURS, piece, hasTag } from './board.js';
+import { paletteOf, piece, hasTag } from './board.js';
 import { RAMP_CURVE } from '../godpowers.js';
+import { awake } from './foeskills.js';
 
 const mineIn = (b, side, x, y) => b.in(x, y) && b.mine(side, x);
 const gemAt = (b, side, at) => (at && mineIn(b, side, at[0], at[1]) && hasTag(b.at(at[0], at[1]), 'matches') ? b.at(at[0], at[1]) : null);
 const movable = (p) => !p || hasTag(p, 'swappable'); // (an empty cell moves with its patch; a body or an orb does not)
-const colours = (s) => COLOURS.slice(0, Math.min(COLOURS.length, s.rs.colours));
+const colours = (s) => paletteOf(s.rs);
 const DIR = { E: [1, 0], W: [-1, 0], S: [0, 1], N: [0, -1] };
 
 /** The cells of a side's row or column through a cell (in order: west to east, north to south). */
@@ -88,9 +89,9 @@ export const DUEL_POWERS = {
       for (const [x, y] of cells) { const was = b.at(x, y)?.kind || null, p = piece('gem', { colour }); b.set(x, y, p); ev.cells.push({ at: [x, y], id: p.id, was }); }
       return [ev]; } },
   scan: { domain: 'divination', label: 'Scan', line: 'Shows the aberrant\'s next skill and puts it off 2 turns', cost: 15, rest: 3, target: null, delay: 2,
-    legal: (s) => (s.foe?.moves || []).length > 0,
+    legal: (s) => (s.foe?.moves || []).some((m) => awake(s, m)),
     reach: () => [],
-    apply: (s, side) => { const m = [...s.foe.moves].sort((p, q) => p.left - q.left)[0]; m.left += DUEL_POWERS.scan.delay; return [{ type: 'scan', side, skill: m.skill, left: m.left, delay: DUEL_POWERS.scan.delay }]; } },
+    apply: (s, side) => { const m = s.foe.moves.filter((q) => awake(s, q)).sort((p, q) => p.left - q.left)[0]; m.left += DUEL_POWERS.scan.delay; return [{ type: 'scan', side, skill: m.skill, left: m.left, delay: DUEL_POWERS.scan.delay }]; } },
   lift: { domain: 'psychokinesis', label: 'Lift', line: 'Lifts a row or a column of your half and sets it down shifted', cost: 10, rest: 1, target: 'cell',
     legal: (s, side, a) => { if (!DIR[a.dir] || !mineIn(s.board, side, ...(a.at || [-1, -1]))) return false; const L = lineOf(s.board, side, a.at, a.dir), by = a.by ?? 1;
       return by >= 1 && by < L.length && L.every(([x, y]) => movable(s.board.at(x, y))) && L.some(([x, y]) => s.board.at(x, y)); },

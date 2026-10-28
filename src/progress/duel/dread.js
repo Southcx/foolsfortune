@@ -13,14 +13,15 @@
 //   fogShows(state, viewer, x, y) -> 'all' | 'shape' (a fogged cell shows that a piece is there, never its colour: PUZZLE-DUELS.md 20)
 //   rs.fog = { side, light }   rs.embers = { from, count }   clues(state, viewer, familiarity?) -> { rows, cols, colours } | null (clue fog)
 // ---------------------------------------------------------------------------------------
-import { COLOURS, KINDS } from './board.js';
+import { KINDS, paletteOf } from './board.js';
+import { lightOf } from './secrets.js';
 
 /** May a side be shown this cell? Its own half always; the fogged side's half only within `light` cells of that side's body, or all of it
  *  while the viewer has read it (the Veritome's READ, couriertools.js). */
 export function visibleTo(s, viewer, x, y) {
   const F = s.rs.fog, b = s.board; if (!F || b.sideOf(x) !== F.side || viewer === F.side || s.sides[viewer]?.read > 0) return true; // (read: the Veritome's READ)
   const at = s.sides[F.side].at; if (!at) return false;
-  return Math.abs(x - at[0]) + Math.abs(y - at[1]) <= (F.light ?? 3);
+  return Math.abs(x - at[0]) + Math.abs(y - at[1]) <= lightOf(s); // (the lantern's light now: the Wisp's secret dims it, secrets.js)
 }
 
 /** How a cell is shown to a side: 'all' within sight, else 'shape': the fog hides a gem's colour and kind, never that the cell holds a
@@ -38,7 +39,7 @@ export function tickEmbers(s, side) {
     if (p.kind !== 'ember' || !b.mine(side, x)) return;
     p.count = (p.count ?? s.rs.embers.count) - 1;
     if (p.count > 0) return;
-    Object.assign(p, { kind: 'gem', tags: KINDS.gem, colour: COLOURS[s.r.int(Math.min(COLOURS.length, s.rs.colours))] });
+    Object.assign(p, { kind: 'gem', tags: KINDS.gem, colour: s.r.pick(paletteOf(s.rs)) });
     events.push({ type: 'ember.cool', side, id: p.id, at: [x, y], colour: p.colour });
   });
   return events;
