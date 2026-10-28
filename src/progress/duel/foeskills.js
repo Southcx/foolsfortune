@@ -5,7 +5,7 @@
 // each on a countdown you can see (Puzzle & Dragons' enemy skills and their turn counters; Into the Breach's telegraphed attacks), each
 // aimed at your half or at the Line between you. A big play of yours staggers it: every countdown waits a turn longer.
 //
-//   Hurl       junk thrown at your half: it lands at the end of your next turn unless your clears cancel it (a Wisp's are embers)
+//   Hurl       junk thrown at your half: it lands at the end of your next turn (a Wisp's are embers); Hold and Grab answer it
 //   Petrify    gems on your half turned to junk where they lie (Puzzle & Dragons' jammer orbs)
 //   Seal       a column of yours locked: no drag may touch it on your next turn (Puzzle & Dragons' bound orbs)
 //   Sap        each skill you wear loses half its charge
@@ -17,7 +17,8 @@
 // Into the Breach's attacks drawn a turn ahead, Candy Crush's blockers.
 //
 //   FOE_SKILLS[id] = { label, line, fire(s, M, K) -> events }   foeOf(rs) -> s.foe   foeIntent(s) -> [{ skill, label, line, left, n }]
-//   K: the kernel's own helpers handed in by duel.js ({ moveLine, gemOf })   events: foe.skill { side: 1, skill, ... } and the skill's own
+//   K: the kernel's own helpers handed in by duel.js ({ moveLine, gemOf })   events: foe.skill { side: 1, skill, ... }, foe.soon { skill } (it fires
+//   on the aberrant's next turn), foe.desperate, foe.stagger
 // ---------------------------------------------------------------------------------------
 import { piece, hasTag } from './board.js';
 import { SKILLS } from './skills.js';
@@ -25,19 +26,19 @@ import { SKILLS } from './skills.js';
 const gemsOf = (s) => { const out = []; s.board.each((p, x, y) => { if (p && s.board.mine(0, x) && hasTag(p, 'matches') && p.kind === 'gem') out.push([x, y]); }); return out; };
 
 export const FOE_SKILLS = {
-  hurl: { label: 'Hurl', line: 'Junk lands on your half after your next turn, less what your clears cancel',
+  hurl: { label: 'Hurl', line: 'Junk lands on your half after your next turn',
     fire: (s, M) => { s.sides[0].pending += M.n; return [{ type: 'foe.skill', side: 1, skill: 'hurl', n: M.n }]; } },
   petrify: { label: 'Petrify', line: 'Gems on your half turn to junk',
     fire: (s, M) => { const b = s.board, cells = gemsOf(s), at = [];
       for (let i = 0; i < M.n && cells.length; i++) { const [x, y] = cells.splice(s.r.int(cells.length), 1)[0], was = b.at(x, y), p = piece('junk'); b.set(x, y, p); at.push({ at: [x, y], from: was.id, id: p.id, colour: was.colour }); }
       return [{ type: 'foe.skill', side: 1, skill: 'petrify', n: at.length, cells: at }]; } },
-  seal: { label: 'Seal', line: 'A column of yours cannot be dragged on your next turn',
+  seal: { label: 'Seal', line: 'Locks a column of yours for your next turn: nothing in it can be dragged',
     fire: (s) => { const b = s.board; let best = 0, bx = -1; for (let x = 0; x < b.line; x++) { let n = 0; for (let y = 0; y < b.h; y++) if (b.at(x, y)) n++; if (n > best) { best = n; bx = x; } }
       if (bx < 0) return []; s.sides[0].sealed = bx; return [{ type: 'foe.skill', side: 1, skill: 'seal', x: bx, turns: 1 }]; } },
-  sap: { label: 'Sap', line: 'Each skill you wear loses half its charge',
+  sap: { label: 'Sap', line: 'Halves the charge of each skill you wear',
     fire: (s) => { const S = s.sides[0], lost = {}; for (const t of Object.keys(S.charge || {})) { if (!SKILLS[t]) continue; const was = S.charge[t]; S.charge[t] = Math.floor(was / 2); lost[t] = was - S.charge[t]; }
       return [{ type: 'foe.skill', side: 1, skill: 'sap', lost }]; } },
-  reclaim: { label: 'Reclaim', line: 'The Line is pushed back a column toward you',
+  reclaim: { label: 'Reclaim', line: 'Pushes the Line back a column toward you',
     fire: (s, M, K) => [{ type: 'foe.skill', side: 1, skill: 'reclaim', n: 1 }, ...K.moveLine(s, -1)] },
 };
 
@@ -58,6 +59,7 @@ export function foeSkillsNow(s, K) {
   for (const m of F.moves) { if (--m.left > 0 || s.winner !== null) continue; m.left = m.every; events.push(...FOE_SKILLS[m.skill].fire(s, m, K)); }
   const D = F.desperate;
   if (D && !D.used && s.winner === null && s.board.w - s.board.line <= D.at) { D.used = true; events.push({ type: 'foe.desperate', side: 1 }); for (const m of D.moves) events.push(...FOE_SKILLS[m.skill].fire(s, m, K)); }
+  for (const m of F.moves) if (m.left === 1 && s.winner === null) events.push({ type: 'foe.soon', side: 1, skill: m.skill }); // (fires on its next turn: the last tick, Wanda's and the view's)
   return events;
 }
 
