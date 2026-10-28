@@ -47,7 +47,7 @@ const PENTA = [0, 4, 7, 9];
 const chainNote = (step, root = 72) => root + PENTA[(step - 1) % 4] + 12 * Math.floor((step - 1) / 4); // (C5 E5 G5 A5 C6 ... from the duel's root)
 // a gem's feeling as a step of the duel's key (major pentatonic over the cue's root), so clears of different feelings chord: the
 // Lantern Wisp's four (wonder, mirth, desire, fury) a 6/9 chord; the rest above it. The board's colours are feelings (duel/board.js).
-const FEELING_STEP = { wonder: 0, mirth: 4, desire: 7, fury: 9, gall: 14, grief: 16, dread: 19 };
+export const FEELING_STEP = { wonder: 0, mirth: 4, desire: 7, fury: 9, gall: 14, grief: 16, dread: 19 };
 /** The duel's root: the cue's own key when one plays (sfx.musicGrid, audio/cues.js hearEvents), else C5; kept within C5 .. B5. */
 export function duelRoot(s) { const r = s.musicGrid?.()?.root; return r == null ? 72 : 72 + ((((r - 72) % 12) + 12) % 12); }
 /** gesture: real s after a cut-in's slam the skill's own sound plays: when its cast begins, the cut-in over (Calissa's vfx/duelview/cutin.js CUT_IN: in 0.14, held 0.62, out 0.16, slam at 0.12). */
@@ -95,7 +95,10 @@ export class PuzzleDuelSounds {
       case 'vein': return this.duelVein(e.colour, e.side);
       case 'recolour': return this.duelRecolour(e.side);
       case 'tune': return this.duelTune(e.colour, e.side);
-      case 'tune.end': return this.duelTuneEnd(e.side);
+      case 'tune.end': return this.duelTuneEnd(e.side); // (a Tune's end, and a Miracle's)
+      case 'miracle': return this.duelTune(e.colour, e.side); // (a duel power's Miracle: its colour's bell, as a Tune's; it ends on tune.end)
+      case 'manifest': case 'transmute': return this.duelPowerColour?.(e.colour, e.side); // (the feeling a power raised or turned to: audio/duelcasts.js)
+      case 'transmute.end': return this.duelTuneEnd(e.side);
       case 'read': return this.duelRead(e.side);
       case 'pinch': return this.duelPinch(e.colour);
       case 'land': return this.duelLand(e.n, e.side);

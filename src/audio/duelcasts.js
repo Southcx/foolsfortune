@@ -12,15 +12,17 @@
 //                      sides (Swap), Manifestation's totem rising (Raise), Divination's read (Scan), Psychokinesis's slab lifted and set
 //                      (Lift), Possession's herding whistle (Herd), Alteration's transmute (Transmute), Spellscription's ward in small (a
 //                      brush round, a bell on the key: the miracle's weather)
+//   ITS FEELING        manifest / transmute { colour }: that gem's note struck twice (duelPowerColour); miracle: the colour's bell (a Tune's)
+//   NOTED              duel.seen (a foe skill learned the first time): a page's flick, two soft notes up to the key (duelSeen)
 // Heard as the view plays them (duelEvent, puzzleduel.js), at the cut-in's start: foe.skill (its slam CUT_IN_LEAD after, held
 // CUT_IN_HOLD, the skill's own sound when its cast begins) and foe.desperate (the limit break: a swell, the slam 1.1 s in), and a power's
-// cast (`power` { domain }, PUZZLE-DUELS.md, Dovina's DUEL_POWERS; the name is a placeholder until her table lands).
+// cast (`power` { power, domain }, Dovina's DUEL_POWERS, PUZZLE-DUELS.md 24).
 // Prior art: Final Fantasy's limit breaks and the Persona series' all-out cut-ins (the frame, the stab, the held beat), Puzzle & Dragons'
 // enemy skill stings, the orchestra hit as the genre's punctuation (Fairlight's ORCH5).
 //
 //   sfx.duelCutIn(skill)   sfx.duelPower(domain, e)
 // ---------------------------------------------------------------------------------------
-import { duelRoot } from './puzzleduel.js';
+import { duelRoot, FEELING_STEP } from './puzzleduel.js';
 
 /** Real s from the event to the cut-in's slam (Calissa's label: 0.12 a skill's; 1.1 the limit break's, after its swell). */
 export const CUT_IN_LEAD = { skill: 0.12, desperate: 1.1 };
@@ -51,6 +53,19 @@ export class DuelCastSounds {
     }
     this.noise(t + ring * 0.5, ring * 0.5, { type: 'highpass', f0: 3000, f1: 8000, gain: 0.06, attack: ring * 0.45, dest: d }); // (the reversed cymbal into the skill's own sound)
     return lead;
+  }
+  /** The feeling a Manifest raised or a Transmute turned to: its gem's note in the duel's key, struck twice, a step apart in time. */
+  duelPowerColour(colour, side = 0) {
+    if (!this.ok() || !this.allow('duelPowerColour', 3)) return;
+    const t = this.ctx.currentTime + 0.35, d = this.duelOut?.(0.24, 0.5, side === 1 ? 0.3 : -0.3) ?? this.out(0.24, 0.5, true), m = duelRoot(this) + 12 + (FEELING_STEP[colour] ?? 0);
+    [0, 0.12].forEach((dt, k) => [1, 2.76].forEach((q, j) => this.tone(t + dt, 0.5, { f0: hz(m + k * 12) * q, gain: j ? 0.008 : 0.045, dest: d })));
+  }
+  /** A foe skill learned for the first time (`duel.seen`): a quiet "noted", a page's flick and two soft notes rising to the key. */
+  duelSeen() {
+    if (!this.ok() || !this.allow('duelSeen', 1)) return;
+    const t = this.ctx.currentTime, d = this.out(0.18, 0.5, true), r = duelRoot(this);
+    this.noise(t, 0.08, { type: 'bandpass', f0: 2600, f1: 1800, q: 1.2, gain: 0.1, dest: d });
+    this.tone(t + 0.06, 0.3, { f0: hz(r + 7), type: 'triangle', gain: 0.05, dest: d }); this.tone(t + 0.18, 0.5, { f0: hz(r + 12), type: 'triangle', gain: 0.05, dest: d });
   }
   /** A duel power cast (one per domain): its god power's family in small, then a glass note in the duel's key on the board. */
   duelPower(domain = '', e = {}) {

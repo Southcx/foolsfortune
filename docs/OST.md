@@ -166,8 +166,9 @@ their Clayese scales; the System's skill and achievement jingles (the chime and 
   heard as a blade of air and an orchestra hit in its own chord below the key, its slam on her label 0.12 real s in (`CUT_IN_LEAD`), rung
   through her 0.62 s hold; the skill's own sound 0.8 s after the slam, as its cast begins (`CUT_IN.gesture`); foe.desperate the limit
   break: a swell under the dimming screen, the slam 1.1 s in, a held minor cluster to the cut-in's end, the data stuttering. Measured peaks: the stings -13 dB, the limit break -8 (9 dB more RMS). The seven duel powers
-  each their god power's sound in small and a glass note on the key's fifth (`power` { domain }, a placeholder name until DUEL_POWERS):
-  peaks -15 to -26 dB.
+  each their god power's sound in small and a glass note on the key's fifth (`power` { domain }, Dovina's DUEL_POWERS): peaks
+  -15 to -26 dB; a Manifest's or Transmute's feeling its gem's note struck twice, a Miracle its colour's bell (ended on tune.end); a
+  foe skill learned (`duel.seen`) a quiet noted, a page's flick and two notes up to the key.
 - **Levels:** each section has a `gain`. Rendered offline (`scripts/render_score.mjs`) and measured: a quiet opening or a jingle about
   -31 dB RMS, a theme's body -24 to -29, a fight -17 to -23; a climax about twice a verse.
 - **The low end:** under about 45% of the energy below 120 Hz (a looser limit is allowed for a hit). A sustained sub at full level
