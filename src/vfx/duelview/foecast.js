@@ -1,0 +1,185 @@
+// ---------------------------------------------------------------------------------------
+// THE ABERRANT'S CASTS (plain name; the PvE duel, PUZZLE-DUELS.md 23; South, 2026-10-28: "flashier and cinematic; a true battle of wills
+// complete with special moves from the Aberrant"): the foe's half of the battle drawn on and round the tsuitate.
+//   ITS COUNTDOWNS   a row of clay badges over its body (foeIntent: soonest first), each a skill's glyph and the turns left; the last
+//                    tick throbs, rimmed in ember. In the board view (its body off the screen) the row stands on the frame's top member
+//                    over its half. No words: the glyph and the number.
+//   ITS CASTS        foe.skill from its body: HURL junk flung in arcs onto your half's top (it lands at your next turn's end, the land
+//                    beat's own); PETRIFY a spiral to each gem, the gem greying and dropping to stone (its piece swapped for the junk's
+//                    id); SEAL a chain slammed down a column of yours, held while the column is sealed; SAP your skill troughs drained,
+//                    motes flying to it; RECLAIM a shove from its body to the Line (the line event after it the retreat)
+//   ITS MOMENTS      foe.desperate: a held beat, its half flashed, embers off it, DESPERATE over it; foe.stagger: a jolt, gold daze off
+//                    its head, STAGGER, its badges knocked back a turn
+//   THE CONQUEST     a column taken (a line event of yours): a sweep of the film down it, its frozen gems lit as they wake; one lost: the
+//                    sweep in its feeling, the other way
+//   THE DRAG'S TIMER a bar on the frame's foot under your half, draining as the session says (`timer(k)`), ember near its end
+// Programs: the board's glow (instanced, its motes'), the juice's additive sweep, the word's map, the gauges' emo bars: nothing new.
+// Prior art: Puzzle & Dragons' enemy turn counters over the monster and its skill's cut-in, Into the Breach's attacks drawn a turn ahead,
+// Terra Battle's boss gimmicks, a tug of war's rope (the Line), the duel's own skill casts (skillcast.js).
+//
+//   const F = new FoeCast(view)   F.beat(beats, e) -> phase   F.conquest(from, to)   F.timer(k | null)   F.update(dt)   F.clear()
+//   FOE_CAST (the knobs)
+// ---------------------------------------------------------------------------------------
+import * as THREE from 'three';
+import { FONT } from '../../ui/theme.js';
+import { foeIntent } from '../../progress/duel/foeskills.js';
+import { duelMaterials } from './pieces.js';
+import { DUEL_VIEW, cellLocal, feelColour, sm, clamp01, hash } from './layout.js';
+
+/** badge: a countdown's side (m, the board's frame); over: the row above the head; the casts' lengths (real s). */
+export const FOE_CAST = { badge: 0.24, gap: 0.035, over: 0.5, hurl: 0.75, petrify: 0.55, seal: 0.5, sap: 0.65, reclaim: 0.5, desperate: 1.3, stagger: 0.7, sweep: 0.6, shots: 24 };
+const GOLD = 0xffd36a, FILM = 0x9fd8ff, STONE = 0x9a948c, JUNK = 0x4a3326, EMBER = 0xff6a2a, INK = '#17111f';
+const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Color(), _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(), _w = new THREE.Vector3();
+
+/** A skill's glyph on a 128 px canvas, white on the badge's dark (a light shape, the icons' hand). */
+function glyph(x, skill) {
+  x.save(); x.translate(64, 60); x.fillStyle = x.strokeStyle = '#f4ecdc'; x.lineWidth = 9; x.lineCap = x.lineJoin = 'round';
+  if (skill === 'hurl') { x.beginPath(); x.arc(-6, 6, 30, Math.PI * 1.05, Math.PI * 1.75); x.stroke(); x.beginPath(); x.moveTo(26, -18); x.lineTo(10, -26); x.lineTo(12, -8); x.fill(); x.beginPath(); x.moveTo(-34, 14); x.lineTo(-14, 6); x.lineTo(-6, 22); x.lineTo(-22, 32); x.closePath(); x.fill(); }
+  else if (skill === 'petrify') { x.beginPath(); x.moveTo(0, -30); x.lineTo(26, -4); x.lineTo(0, 30); x.lineTo(-26, -4); x.closePath(); x.stroke(); x.lineWidth = 5; x.beginPath(); x.moveTo(-8, -18); x.lineTo(4, -2); x.lineTo(-6, 8); x.lineTo(6, 22); x.stroke(); }
+  else if (skill === 'seal') { x.lineWidth = 8; for (const dy of [-16, 14]) { x.beginPath(); x.ellipse(0, dy, 11, 18, 0, 0, Math.PI * 2); x.stroke(); } x.fillRect(-24, -4, 48, 6); }
+  else if (skill === 'sap') { x.beginPath(); x.moveTo(0, -30); x.bezierCurveTo(22, -2, 22, 26, 0, 26); x.bezierCurveTo(-22, 26, -22, -2, 0, -30); x.fill(); x.fillStyle = INK; x.fillRect(-10, 6, 20, 6); }
+  else { x.beginPath(); x.moveTo(26, -22); x.lineTo(-4, 0); x.lineTo(26, 22); x.stroke(); x.beginPath(); x.moveTo(4, -22); x.lineTo(-26, 0); x.lineTo(4, 22); x.stroke(); } // (reclaim: the Line pushed back toward you)
+  x.restore();
+}
+
+/** A countdown badge's canvas: the glyph on dark clay and the turns left in gold. */
+function badgeTexture(skill, left) {
+  const c = document.createElement('canvas'); c.width = c.height = 128; const x = c.getContext('2d');
+  x.fillStyle = INK; x.beginPath(); x.arc(64, 64, 60, 0, Math.PI * 2); x.fill();
+  glyph(x, skill);
+  x.fillStyle = '#2e1810'; x.beginPath(); x.arc(98, 98, 26, 0, Math.PI * 2); x.fill();
+  x.font = `bold 42px ${FONT.sys}`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.lineWidth = 6; x.strokeStyle = INK; x.strokeText(String(left), 98, 100); x.fillStyle = '#ffd76a'; x.fillText(String(left), 98, 100);
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; return t;
+}
+
+/** The seal's chain: links down a column, repeating (its texture tiled by the column's height). */
+function chainTexture() {
+  const c = document.createElement('canvas'); c.width = 64; c.height = 128; const x = c.getContext('2d');
+  x.lineWidth = 9; x.strokeStyle = '#2a2018'; for (const dy of [32, 96]) { x.beginPath(); x.ellipse(32, dy, 15, 26, 0, 0, Math.PI * 2); x.stroke(); }
+  x.lineWidth = 4; x.strokeStyle = '#c9a45a'; for (const dy of [32, 96]) { x.beginPath(); x.ellipse(32, dy, 15, 26, 0, -0.4, 1.2); x.stroke(); }
+  const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.wrapT = THREE.RepeatWrapping; return t;
+}
+
+export class FoeCast {
+  constructor(view) {
+    this.view = view; const cs = DUEL_VIEW.cs;
+    this.group = new THREE.Group(); this.group.name = 'duel-foecast'; view.frame.add(this.group);
+    const word = (map) => new THREE.MeshBasicMaterial({ name: 'duel-word', map, transparent: true, depthWrite: false, toneMapped: false }); // (the words' own program, juice.js)
+    const glow = (hex) => new THREE.MeshBasicMaterial({ name: 'duel-juice', color: hex, transparent: true, depthWrite: false, toneMapped: false, blending: THREE.AdditiveBlending }); // (the juice's sweep's program)
+    const plane = new THREE.PlaneGeometry(1, 1);
+    this.tex = new Map(); this.badges = Array.from({ length: 6 }, () => { const m = new THREE.Mesh(plane, word(null)); m.visible = false; m.renderOrder = 9; this.group.add(m); return m; });
+    this.chain = new THREE.Mesh(plane, word(chainTexture())); this.chain.visible = false; this.chain.renderOrder = 7; this.group.add(this.chain);
+    this.sweeps = Array.from({ length: 2 }, () => { const m = new THREE.Mesh(plane, glow(FILM)); m.visible = false; m.renderOrder = 7; this.group.add(m); return { m, age: 1, life: 1, x: 0, dir: 1 }; });
+    this.shots = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 0), duelMaterials().glow, FOE_CAST.shots); // (the board's glow, its motes' program)
+    this.shots.instanceColor = new THREE.InstancedBufferAttribute(new Float32Array(FOE_CAST.shots * 3), 3); this.shots.frustumCulled = false; this.shots.count = 0; this.group.add(this.shots); this.flying = [];
+    const bar = new THREE.BoxGeometry(1, 1, 1); bar.translate(0.5, 0, 0);
+    this.trough = new THREE.Mesh(bar, new THREE.MeshBasicMaterial({ name: 'duel-emo', color: 0x1c1018, toneMapped: false })); // (the gauges' emo bars' program, skillgauges.js)
+    this.fill = new THREE.Mesh(bar, new THREE.MeshBasicMaterial({ name: 'duel-emo', color: 0xffffff, toneMapped: false }));
+    for (const m of [this.trough, this.fill]) { m.visible = false; this.group.add(m); }
+    this.timerK = null; this.knock = 0; this.burn = 0; this.t = 0; this.cs = cs;
+  }
+
+  /** Where its head is, in the board's frame (the foe's body in the world, else its figurine, else the half's middle over the top). */
+  head(out) {
+    const V = this.view, f = V.foe;
+    if (f?.pos) { const h = f.head?.(); _w.copy(h?.isVector3 ? h : f.pos); if (!h) _w.y += 1.4; return V.frame.worldToLocal(out.copy(_w)); }
+    return V.juice.headAt(1, out);
+  }
+  /** Whether the foe's head is on the screen (else the countdowns stand on the frame). */
+  onScreen() { const V = this.view, f = V.foe, cam = V.game.camera; if (!f?.pos || !cam) return false; _w.copy(f.pos); _w.y += 1.4; _w.project(cam); return Math.abs(_w.x) < 0.88 && Math.abs(_w.y) < 0.88 && _w.z < 1; }
+  dims() { const B = this.view.board3, { cs, base, border, lip } = DUEL_VIEW; return { B, cs, W: B.w * cs, top: base + B.h * cs, base, b: border, lip }; }
+
+  /** The kernel's foe events as beats (beats.js hands them here). */
+  beat(T, e) {
+    const V = this.view, at = this.head(new THREE.Vector3()), cs = this.cs;
+    if (e.type === 'foe.stagger') { this.knock = 1; V.stage?.jolt?.(0.45); V.juice.word('STAGGER', _a.copy(at).add(_b.set(0, 0.2, 0.05)), GOLD, { h: 0.12, dur: 1 }); V.bursts.burst(at, GOLD, 14, { speed: 1.4, life: 0.6, fall: 0, spread: 0.3 }); V.bursts.burst(at, 0xffffff, 6, { speed: 0.5, life: 0.4, fall: 0, size: 0.05 }); return { events: [e], dur: FOE_CAST.stagger }; }
+    if (e.type === 'foe.desperate') {
+      const hex = feelColour(V.aspect, _c).getHex(); this.burn = 1; V.clash.flash(1); V.stage?.jolt?.(1); V.juice.hold = 0.25;
+      V.juice.word('DESPERATE', _a.copy(at).add(_b.set(0, 0.25, 0.05)), hex, { h: 0.15, dur: 1.4 }); if (V.game.glitch?.pulse) V.game.glitch.pulse({ split: 0.18, tear: 0.12, dur: 0.35 });
+      let k = 0; return { events: [e], dur: FOE_CAST.desperate, step: (u) => { while (k < Math.floor(u * 6)) { k++; V.bursts.burst(at, k % 2 ? EMBER : hex, 12, { speed: 2.2, life: 0.7, fall: -1, spread: 0.5 }); } } };
+    }
+    if (e.type !== 'foe.skill') return { events: [e], dur: 0 };
+    V.stage?.jolt?.(0.25); V.bursts.burst(at, feelColour(V.aspect, _c).getHex(), 10, { speed: 1.2, life: 0.4, fall: 0, spread: 0.3 }); // (the cast's flare at its body)
+    if (e.skill === 'hurl') { const D = this.dims(), n = Math.min(e.n || 1, 12);
+      for (let i = 0; i < n; i++) { const tx = -D.W / 2 + ((V.lineCol ?? D.B.line) * cs) * (0.1 + 0.8 * hash(i, e.n)); this.fling(at, _b.set(tx, D.top + D.b * 0.6, D.lip + 0.05), JUNK, { delay: i * 0.05, life: FOE_CAST.hurl, size: 0.035, arc: 0.8 }); }
+      return { events: [e], dur: FOE_CAST.hurl + n * 0.05 }; }
+    if (e.skill === 'petrify') { const cells = e.cells || [], done = new Set();
+      cells.forEach((c, i) => V.bursts.spiral(at, cellLocal(c.at[0], c.at[1], V.board3, new THREE.Vector3()), STONE, i * 0.06, 0.35));
+      return { events: [e], dur: FOE_CAST.petrify + cells.length * 0.06, step: (u, age) => { cells.forEach((c, i) => { const v = V.pieces.byId(c.from); if (age > i * 0.06 + 0.2 && v) v.grey = Math.min(1, (age - i * 0.06 - 0.2) / 0.25);
+        if (age > i * 0.06 + 0.45 && !done.has(i)) { done.add(i); this.petrify(c); } }); }, end: () => cells.forEach((c, i) => { if (!done.has(i)) this.petrify(c); }) }; }
+    if (e.skill === 'seal') { this.sealT = 0; this.sealX = e.x; this.fling(at, cellLocal(e.x, 0, V.board3, _b).add(_a.set(0, cs, 0.05)), 0x2a2018, { life: 0.3, size: 0.05, arc: 0.4 }); return { events: [e], dur: FOE_CAST.seal }; }
+    if (e.skill === 'sap') { const G = V.gauges, K = Object.keys(e.lost || {});
+      G?.slots?.forEach((S, i) => { if (!S.trough.visible || !K.length) return; S.flash = 1; for (let j = 0; j < 6; j++) this.fling(_b.set(S.x + S.w * (j + 0.5) / 6, S.trough.position.y, S.trough.position.z + 0.02), at, 0x9a6ad8, { delay: j * 0.04, life: 0.5, size: 0.018, arc: 0.3 }); });
+      return { events: [e], dur: FOE_CAST.sap }; }
+    if (e.skill === 'reclaim') { const D = this.dims(), lx = ((V.lineCol ?? D.B.line) - D.B.w / 2) * cs, hex = feelColour(V.aspect, _c).getHex();
+      for (let i = 0; i < 8; i++) this.fling(at, _b.set(lx, D.base + D.B.h * cs * (i + 0.5) / 8, D.lip + 0.04), hex, { delay: i * 0.03, life: 0.35, size: 0.022, arc: 0.15 });
+      V.clash.push(0); return { events: [e], dur: FOE_CAST.reclaim }; }
+    return { events: [e], dur: 0.2 };
+  }
+
+  /** A gem petrified: its piece put away and the junk the kernel made stood in its cell, dust off it. */
+  petrify(c) {
+    const V = this.view, P = V.pieces, v = P.byId(c.from); if (v) P.remove(v);
+    if (!P.byId(c.id)) { const j = P.add('junk', { id: c.id, side: 0 }, c.at[0], c.at[1]); j.s = 1.3; }
+    V.bursts.burst(cellLocal(c.at[0], c.at[1], V.board3, _a), STONE, 6, { speed: 0.6, life: 0.4, fall: 3, size: 0.02 });
+  }
+
+  /** A shot of the cast (a chunk, a mote) along a raised arc in the board's frame. */
+  fling(from, to, hex, { delay = 0, life = 0.6, size = 0.03, arc = 0.5 } = {}) {
+    if (this.flying.length >= FOE_CAST.shots) return;
+    const mid = new THREE.Vector3().lerpVectors(from, to, 0.5); mid.y += arc + from.distanceTo(to) * 0.2;
+    this.flying.push({ from: from.clone(), to: to.clone(), mid, hex, age: -delay, life, size, trailT: 0 });
+  }
+
+  /** A column taken (dir 1, yours) or lost (dir -1): a sweep down it in the film or the foe's feeling. `from`, `to`: the Line's columns. */
+  conquest(from, to) {
+    const V = this.view, dir = to > from ? 1 : -1, lo = Math.min(from, to), hi = Math.max(from, to), D = this.dims();
+    for (let x = lo; x < hi; x++) { const S = this.sweeps.find((q) => q.age >= q.life) || this.sweeps[0]; S.age = -(x - lo) * 0.08; S.life = FOE_CAST.sweep; S.x = x; S.dir = dir;
+      S.m.material.color.setHex(dir > 0 ? FILM : feelColour(V.aspect, _c).getHex());
+      for (let y = 0; y < D.B.h; y += 2) V.bursts.burst(cellLocal(x, y, V.board3, _a), dir > 0 ? FILM : EMBER, 2, { speed: 0.5, life: 0.5, fall: 0, spread: 0.1, size: 0.02 }); }
+    if (dir > 0) V.stage?.jolt?.(0.35);
+  }
+
+  /** The drag's timer (the session's): 1 full .. 0 out, null hidden. */
+  timer(k) { this.timerK = k == null ? null : clamp01(k); }
+
+  clear() { this.flying.length = 0; this.shots.count = 0; this.chain.visible = false; this.sealX = null; this.timerK = null; this.knock = this.burn = 0; for (const b of this.badges) b.visible = false; for (const S of this.sweeps) { S.age = S.life = 1; S.m.visible = false; } this.trough.visible = this.fill.visible = false; }
+
+  badgeTex(skill, left) { const k = skill + ':' + left; let t = this.tex.get(k); if (!t) { t = badgeTexture(skill, left); this.tex.set(k, t); } return t; }
+
+  update(dt) {
+    const V = this.view, s = V.state, cs = this.cs; this.t += dt; const t = this.t;
+    const pve = !!(V.isOpen && s?.style === 'pve' && s.foe), D = this.dims();
+    // its countdowns
+    const I = pve ? foeIntent(s) : []; this.knock = Math.max(0, this.knock - dt / 0.6); this.burn = Math.max(0, this.burn - dt / 1.6);
+    const on = this.onScreen(), at = on ? this.head(_a).add(_b.set(0, FOE_CAST.over, 0.05)) : _a.set(D.W / 2 - cs * 1.4, D.top + D.b + FOE_CAST.badge * 0.7, D.lip + 0.06);
+    const size = FOE_CAST.badge * (on ? 1 : 0.8), n = Math.min(I.length, this.badges.length), w0 = -((n - 1) * (size + FOE_CAST.gap)) / 2 - (on ? 0 : (n - 1) * (size + FOE_CAST.gap) / 2);
+    this.badges.forEach((m, i) => { const it = I[i]; m.visible = !!it; if (!it) return;
+      if (m.material.map !== this.badgeTex(it.skill, it.left)) { m.material.map = this.badgeTex(it.skill, it.left); m.material.needsUpdate = true; }
+      const last = it.left <= 1, th = last ? 1 + 0.16 * Math.max(0, Math.sin(t * 7)) : 1;
+      m.position.set(at.x + w0 + i * (size + FOE_CAST.gap), at.y + this.knock * 0.06 * Math.sin(t * 30) + (i === 0 ? 0.02 : 0), at.z);
+      m.scale.setScalar(size * th * (1 + 0.25 * this.knock));
+      m.material.color.setRGB(1, 1, 1); if (last) m.material.color.lerp(_c.setHex(EMBER), 0.25 + 0.25 * Math.sin(t * 7)); if (this.burn > 0) m.material.color.lerp(_c.setHex(EMBER), this.burn * 0.6); });
+    // the seal's chain, held while its column is sealed
+    const sx = pve ? s.sides?.[0]?.sealed : null; this.sealT = (this.sealT ?? 1) + dt;
+    this.chain.visible = sx != null; if (sx != null) { const H = D.B.h * cs, drop = sm(clamp01(this.sealT / 0.25)); cellLocal(sx, (D.B.h - 1) / 2, V.board3, this.chain.position); this.chain.position.y += (1 - drop) * H; this.chain.position.z = DUEL_VIEW.front + 0.04; this.chain.scale.set(cs * 0.8, H, 1); this.chain.material.map.repeat.set(1, D.B.h / 2); this.chain.material.opacity = 0.92; }
+    // the conquest sweeps
+    for (const S of this.sweeps) { S.age += dt; const u = S.age / S.life; S.m.visible = u >= 0 && u < 1; if (!S.m.visible) continue;
+      const H = D.B.h * cs, y = S.dir > 0 ? D.top - H * sm(u) : D.base + H * sm(u); cellLocal(S.x, 0, V.board3, S.m.position); S.m.position.y = y; S.m.position.z = DUEL_VIEW.front + 0.06;
+      S.m.scale.set(cs, cs * 3, 1); S.m.material.opacity = (1 - u) * 0.9; }
+    // the casts' shots
+    let k = 0;
+    for (let i = this.flying.length - 1; i >= 0; i--) { const q = this.flying[i]; q.age += dt; if (q.age < 0) continue; const u = q.age / q.life;
+      if (u >= 1) { V.bursts.burst(q.to, q.hex, 5, { speed: 0.6, life: 0.35, fall: 3, size: 0.02 }); this.flying.splice(i, 1); continue; }
+      const f = sm(u), v = 1 - f; _a.copy(q.from).multiplyScalar(v * v).addScaledVector(q.mid, 2 * v * f).addScaledVector(q.to, f * f);
+      if ((q.trailT -= dt) <= 0) { q.trailT = 0.03; V.bursts.burst(_a, q.hex, 1, { speed: 0.1, life: 0.25, fall: 0, spread: 0.02, size: q.size * 0.5 }); }
+      this.shots.setMatrixAt(k, _m.compose(_a, _q.setFromAxisAngle(_b.set(0.3, 1, 0.2).normalize(), t * 8 + i), _s.setScalar(q.size))); this.shots.setColorAt(k++, _c.setHex(q.hex).multiplyScalar(1.4)); }
+    this.shots.count = k; this.shots.instanceMatrix.needsUpdate = true; if (this.shots.instanceColor) this.shots.instanceColor.needsUpdate = true;
+    // the drag's timer
+    const tk = pve ? this.timerK : null; this.trough.visible = this.fill.visible = tk != null;
+    if (tk != null) { const x0 = -D.W / 2 + cs * 0.4, w = ((V.lineCol ?? D.B.line) - 0.8) * cs - cs * 0.4 + cs * 0.4, y = D.base - D.b * 0.5;
+      this.trough.position.set(x0, y, D.lip + 0.004); this.trough.scale.set(Math.max(cs, w), D.b * 0.34, 0.012);
+      this.fill.position.set(x0, y, D.lip + 0.011); this.fill.scale.set(Math.max(0.001, Math.max(cs, w) * tk), D.b * 0.24, 0.012);
+      this.fill.material.color.setHex(tk > 0.3 ? FILM : EMBER).multiplyScalar(tk > 0.3 ? 1 : 1 + 0.4 * Math.sin(t * 14)); }
+  }
+}

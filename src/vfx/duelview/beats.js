@@ -92,6 +92,7 @@ export class DuelBeats {
     if (e.type === 'blast' && e.rows) { job.i++; return blastBeat(this, e); }
     if (e.type === 'vein') { job.i++; return veinBeat(this, e); }
     if (e.type === 'charge') { job.i++; return { events: [e], dur: 0 }; }
+    if (e.type.startsWith('foe.')) { job.i++; return V.foeCast.beat(this, e); } // (the PvE duel's aberrant: its casts, its desperate flare, its stagger: foecast.js)
     if (e.type === 'fall') return this.fall(run((x) => x.type === 'fall'));
     if (e.type === 'clear' || e.type === 'break' || e.type === 'blast') { const it = run((x) => x.type === 'clear' || x.type === 'break' || x.type === 'blast'); return this.clears(it, run((x) => x.type === 'chain')); }
     if (e.type === 'chain') return this.clears([], run((x) => x.type === 'chain'));
@@ -260,7 +261,7 @@ export class DuelBeats {
   /** The Line steps a column (overshoot 1.4); the domains' seam pushes into the side that gave ground. */
   line(e) {
     const V = this.view, from = V.lineCol ?? V.state.board.line, to = e.line, receiver = 1 - e.side;
-    V.clash.push(receiver);
+    V.clash.push(receiver); if (V.state?.style === 'pve') V.foeCast.conquest(Math.round(from), Math.round(to)); // (the battle of wills: a column taken or lost, foecast.js)
     return { events: [e], dur: 0.45, step: (u) => V.setLine(lerp(from, to, ease(Math.min(1, u / 0.9), 1.4))), end: () => V.setLine(to) };
   }
 
