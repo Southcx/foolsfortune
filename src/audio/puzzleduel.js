@@ -76,6 +76,9 @@ export class PuzzleDuelSounds {
       case 'power': return this.duelPower?.(e.domain, e); // (a duel power cast: audio/duelcasts.js)
       case 'foe.soon': return this.duelFoeLastTick(); // (a foe skill on its last count, told in the foe's turn: it fires on its next)
       case 'foe.stagger': return this.duelFoeStagger();
+      case 'secret.step': return e.id === 'snuff' ? this.duelLantern?.(e.k, e.n) : null; // (an aberrant's secret, heard as its own thing: audio/duelsecrets.js)
+      case 'secret.half': return e.id === 'snuff' ? this.duelLanternHalf?.() : null;
+      case 'duel.secret': return e.id === 'snuff' ? this.duelSnuff?.() : this.duelEnd(e.winner);
       case 'ember.cool': return this.duelEmberCool();
       case 'hint': return this.duelHint();
       case 'fall': return this.duelFall();
@@ -169,6 +172,7 @@ export class PuzzleDuelSounds {
   }
   /** The aberrant's foe skills (PvE, PUZZLE-DUELS.md 23), from its side (right) and below the key: each its own gesture. */
   duelFoeSkill(skill = '', n = 1) {
+    if (skill === 'kindle') return this.duelKindle?.(n); // (the Lantern Wisp's own: audio/duelsecrets.js)
     if (!this.ok() || !this.allow(`duelFoe.${skill}`, 2)) return;
     const t = this.ctx.currentTime, d = this.duelOut({ hurl: 1, sap: 1, petrify: 0.65 }[skill] ?? 0.4, 0.45, 0.45), r = duelRoot(this) - 24; // (levelled by ear and meter: each within about 6 dB of the others)
     switch (skill) {

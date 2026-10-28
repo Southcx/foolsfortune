@@ -162,6 +162,15 @@ their Clayese scales; the System's skill and achievement jingles (the chime and 
   falling fifth; its stagger a gong wobbling out of tune. A countdown on its last tick (`foe.soon`,
   at the end of its turn) a tick-tock and a low bell a tritone off. A column won rises (the fifth and the octave), lost falls (minor,
   low). Measured offline, peaks: the skills -18 to -24 dB, the flare -14. The phone buzzes on Hurl's landing (`duel.land`) and Reclaim.
+- **The aberrant Lantern Wisp, an Elite duel** (`audio/duelsecrets.js`, `music/duel.js` `fen`; Dovina's ABERRANTS.md 3): it sounds like
+  itself. Over each fighting section a shakuhachi wanders off the beat every fourth bar (it climbs, then turns aside onto the seventh: the
+  light that leads you astray), and its lantern flickers on the celesta high over the chord, four a bar at full, fewer and skipping as its
+  light goes. Every Dread clear it loses to you is a gulp of air into the lantern and its glass ring falling a step (`secret.step`, about
+  -31 dB peak, just under a clear); half spent, the big gutter: nearly out, a sputter, caught again (`secret.half`, -26). Kindle: its own
+  stab in the cut-in's family (a Lydian flare, bright and wrong), then a match struck and the flame's rush, each Dread gem a pop and its
+  note burnt an octave down (-16). The snuff (`duel.secret`): the wick pinched, the ring drawn down into nothing, two real seconds of the dark,
+  then one cold harmonic and the fen's air (-18); the Line's death keeps its climbing arpeggio. None of it names the secret: it is only the
+  lantern's own sound.
 - **The duel's cut-ins and powers** (`audio/duelcasts.js`; Petra's round of 2026-10-28): a foe skill's JRPG cut-in (Calissa's; its phase hands the foe event on)
   heard as a blade of air and an orchestra hit in its own chord below the key, its slam on her label 0.12 real s in (`CUT_IN_LEAD`), rung
   through her 0.62 s hold; the skill's own sound 0.8 s after the slam, as its cast begins (`CUT_IN.gesture`); foe.desperate the limit
