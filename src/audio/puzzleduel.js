@@ -28,7 +28,7 @@
 //           'duel.fled' the escape: a rush away
 //   FOE     the PvE duel's aberrant (PUZZLE-DUELS.md 23), from the right and below the key: 'foe.skill' { skill, n } (hurl a heave and
 //           a throw crossing to you, petrify gems' notes falling into knocks, seal a chain and a bolt, sap a chord bent down, reclaim a tug
-//           and a falling fifth); 'foe.desperate' a swelling roar; 'foe.stagger' a gong wobbling; a countdown's last tick ('foe.soon',
+//           and a falling fifth); played at its cut-in's start: the sting first (audio/duelcasts.js), the skill's sound CUT_IN.gesture after the slam; 'foe.desperate' the limit break's sting; 'foe.stagger' a gong wobbling; a countdown's last tick ('foe.soon',
 //           at the foe turn's end, one a turn whatever the count) a tick-tock and a low bell; 'line' { side } a column won (rising) or lost (falling)
 //   SKILLS  the one-gesture duel's (PUZZLE-DUELS.md 22): 'skill' { tool } a swell diving into the board with the tool's voice on top;
 //           'charge' { ready } a skill full: a chime up to the octave (the foe's lower, quieter); 'blast' { rows } Shot's rows swept from
@@ -47,9 +47,11 @@ const PENTA = [0, 4, 7, 9];
 const chainNote = (step, root = 72) => root + PENTA[(step - 1) % 4] + 12 * Math.floor((step - 1) / 4); // (C5 E5 G5 A5 C6 ... from the duel's root)
 // a gem's feeling as a step of the duel's key (major pentatonic over the cue's root), so clears of different feelings chord: the
 // Lantern Wisp's four (wonder, mirth, desire, fury) a 6/9 chord; the rest above it. The board's colours are feelings (duel/board.js).
-const FEELING_STEP = { wonder: 0, mirth: 4, desire: 7, fury: 9, gall: 14, grief: 16, dread: 19 };
+export const FEELING_STEP = { wonder: 0, mirth: 4, desire: 7, fury: 9, gall: 14, grief: 16, dread: 19 };
 /** The duel's root: the cue's own key when one plays (sfx.musicGrid, audio/cues.js hearEvents), else C5; kept within C5 .. B5. */
-function duelRoot(s) { const r = s.musicGrid?.()?.root; return r == null ? 72 : 72 + ((((r - 72) % 12) + 12) % 12); }
+export function duelRoot(s) { const r = s.musicGrid?.()?.root; return r == null ? 72 : 72 + ((((r - 72) % 12) + 12) % 12); }
+/** gesture: real s after a cut-in's slam the skill's own sound plays: when its cast begins, the cut-in over (Calissa's vfx/duelview/cutin.js CUT_IN: in 0.14, held 0.62, out 0.16, slam at 0.12). */
+export const CUT_IN = { gesture: 0.8, burst: 4 }; // (burst: real s after foe.desperate its own casts come with no cut-in, so their sounds play at once)
 const sidePan = (side) => (side === 1 ? 0.45 : side === 0 ? -0.45 : 0);
 
 export class PuzzleDuelSounds {
@@ -68,9 +70,11 @@ export class PuzzleDuelSounds {
       case 'allclear': return this.duelAllClear(e.side);
       case 'refund': return this.duelRefund(e.side);
       case 'turn': return this.duelTurn(e.side);
-      case 'foe.skill': return this.duelFoeSkill(e.skill, e.n);
+      case 'foe.skill': { if (performance.now() / 1000 - (this._duelDesperateAt ?? -1e9) < CUT_IN.burst) return this.duelFoeSkill(e.skill, e.n); // (the limit break's burst: no cut-in, its cast at once)
+        const at = this.duelCutIn?.(e.skill) ?? 0; setTimeout(() => this.duelFoeSkill(e.skill, e.n), (at + CUT_IN.gesture) * 1000); return; } // (the view plays it at its cut-in's start: the sting, then the skill's own sound as its cast begins after the cut-in, audio/duelcasts.js)
+      case 'foe.desperate': this._duelDesperateAt = performance.now() / 1000; return this.duelCutIn?.('desperate'); // (the limit break's cut-in)
+      case 'power': return this.duelPower?.(e.domain, e); // (a duel power cast: audio/duelcasts.js)
       case 'foe.soon': return this.duelFoeLastTick(); // (a foe skill on its last count, told in the foe's turn: it fires on its next)
-      case 'foe.desperate': return this.duelFoeDesperate();
       case 'foe.stagger': return this.duelFoeStagger();
       case 'ember.cool': return this.duelEmberCool();
       case 'hint': return this.duelHint();
@@ -91,7 +95,10 @@ export class PuzzleDuelSounds {
       case 'vein': return this.duelVein(e.colour, e.side);
       case 'recolour': return this.duelRecolour(e.side);
       case 'tune': return this.duelTune(e.colour, e.side);
-      case 'tune.end': return this.duelTuneEnd(e.side);
+      case 'tune.end': return this.duelTuneEnd(e.side); // (a Tune's end, and a Miracle's)
+      case 'miracle': return this.duelTune(e.colour, e.side); // (a duel power's Miracle: its colour's bell, as a Tune's; it ends on tune.end)
+      case 'manifest': case 'transmute': case 'herd': return this.duelPowerColour?.(e.colour, e.side); // (the feeling a power raised or turned to: audio/duelcasts.js)
+      case 'transmute.end': return this.duelTuneEnd(e.side);
       case 'read': return this.duelRead(e.side);
       case 'pinch': return this.duelPinch(e.colour);
       case 'land': return this.duelLand(e.n, e.side);
@@ -189,14 +196,6 @@ export class PuzzleDuelSounds {
         break;
       default: this.tone(t, 0.4, { f0: hz(r + 6), f1: hz(r), type: 'square', gain: 0.05, dest: d });
     }
-  }
-  /** Its last flare (`foe.desperate`): a low cluster swelling, a roar of noise, a hit. */
-  duelFoeDesperate() {
-    if (!this.ok() || !this.allow('duelFoeDesperate', 1)) return;
-    const t = this.ctx.currentTime, d = this.duelOut(0.45, 0.7, 0.4), r = duelRoot(this) - 24;
-    [0, 1, 6].forEach((st) => this.riser(t, 0.8, { f0: hz(r + st) * 0.5, f1: hz(r + st), type: 'sawtooth', gain: 0.04, q: 2, dest: d }));
-    this.noise(t + 0.2, 0.7, { type: 'lowpass', f0: 400, f1: 2500, gain: 0.25, attack: 0.5, dest: d });
-    this.tone(t + 0.8, 0.5, { f0: 90, f1: 35, gain: 0.6, dest: d });
   }
   /** It reels from your big play (`foe.stagger`): a struck gong wobbling out of tune and back. */
   duelFoeStagger() {

@@ -106,6 +106,7 @@ const RULES = {
   'creature.stun': (s, e) => s.stunSting?.(e.depth ?? 1, { near: e.by === 'courier' }), // (a stun's depth, rising: audio/damage.js; STUN-DEPTH.md)
   'duel.pull': (s, e, g) => s.duelPullStart?.(() => g.duelFoes?.pull ?? 0), // (nearness opening a puzzle duel: audio/puzzleduel.js)
   'duel.slip': (s) => s.duelPullEnd?.(false),
+  'duel.seen': (s) => s.duelSeen?.(), // (a foe skill learned: audio/duelcasts.js)
   'duel.open': (s) => { s.duelPullEnd?.(true); s.duelOpen?.(); },
   'sea.echo': (s, e, g) => s.stoneAnswered?.(g.crucibelle?.grid?.().root ?? 63), // (the open sea's echo puzzle answered: audio/crystal.js)
   // the chatroom (co-op as our chatroom): a division's motif as its line arrives, a guest's arrival and leaving (audio/ui.js)
