@@ -92,7 +92,7 @@ export class DuelBeats {
     if (e.type === 'blast' && e.rows) { job.i++; return blastBeat(this, e); }
     if (e.type === 'vein') { job.i++; return veinBeat(this, e); }
     if (e.type === 'charge') { job.i++; return { events: [e], dur: 0 }; }
-    if (e.type.startsWith('foe.')) { const cut = V.cutIn.beat(e); if (cut) return cut; job.i++; const ph = V.foeCast.beat(this, e); if (V.cutIn.cut.has(e)) ph.events = []; return ph; } // (the PvE duel's aberrant: a skill's cut-in first, once (cutin.js), then its cast, its desperate flare, its stagger: foecast.js)
+    if (e.type.startsWith('foe.')) { const cut = V.cutIn.beat(e); if (cut) return cut; job.i++; return V.foeCast.beat(this, e); } // (the PvE duel's aberrant: a skill's cut-in first, once (cutin.js), then its cast, its desperate flare, its stagger: foecast.js)
     if (e.type === 'fall') return this.fall(run((x) => x.type === 'fall'));
     if (e.type === 'clear' || e.type === 'break' || e.type === 'blast') { const it = run((x) => x.type === 'clear' || x.type === 'break' || x.type === 'blast'); return this.clears(it, run((x) => x.type === 'chain')); }
     if (e.type === 'chain') return this.clears([], run((x) => x.type === 'chain'));
