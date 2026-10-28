@@ -323,16 +323,8 @@ export class DuelSession {
     if (typeof V.skip === 'function') return V.skip(this.state);
     V.beats?.clear?.(); if (typeof V.resync === 'function') V.resync(this.state);
   }
-  /** The PvE duel's drag clock, 1 full .. 0 out, null gone: the view's own `dragClock` where it has one, else a placeholder bar over the
-   *  view's top edge (Calissa's to draw: a plain strip, said so). */
-  dragClock(k) {
-    if (k === this.clockShown) return; this.clockShown = k;
-    if (typeof this.view?.dragClock === 'function') return this.view.dragClock(k);
-    if (typeof document === 'undefined') return;
-    let el = this.clockEl;
-    if (!el && k != null) { el = this.clockEl = document.createElement('div'); el.className = 'duel-drag-clock'; el.style.cssText = 'position:fixed;left:30%;top:calc(env(safe-area-inset-top) + 8px);width:40%;height:6px;background:rgba(20,14,10,.7);border:1px solid #ffd36a;border-radius:3px;pointer-events:none;z-index:40'; el.appendChild(document.createElement('i')).style.cssText = 'display:block;height:100%;background:#ffd36a;transform-origin:left'; document.body.appendChild(el); }
-    if (!el) return; el.style.display = k == null ? 'none' : 'block'; if (k != null) { el.firstChild.style.transform = `scaleX(${k})`; el.firstChild.style.background = k < 0.25 ? '#ff6a4a' : '#ffd36a'; }
-  }
+  /** The PvE duel's drag clock, 1 full .. 0 out, null gone: drawn by the view (`dragClock`, Calissa's). */
+  dragClock(k) { if (k === this.clockShown) return; this.clockShown = k; this.view?.dragClock?.(k); }
   show(a) {
     const key = a ? JSON.stringify(a) : null; if (key === this.shown) return;
     this.shown = key; const V = this.view; if (typeof V?.pendingAction === 'function') V.pendingAction(a); // (not `pending`: the view keeps its junk counts by that name)
@@ -369,9 +361,7 @@ export class DuelSession {
       if (e.type === 'foe.desperate') this.emit('duel.desperate', { by: 'creature' });
       if (e.type === 'flee') this.emit('duel.flee', { roll: e.roll, reroll: e.reroll ?? null, need: e.need, ok: e.ok, by: e.side === 0 ? 'courier' : 'creature' });
     }
-    const foeTurn = this.botRun && this.state.style === 'pve';
-    const done = () => { if (foeTurn && this.active) this.view?.resync?.(this.state); this.busy = false; this.botRun = false; // (the PvE foe's skills stood from the state until the view has beats for them)
-      if (!this.active) return; if (this.state.winner !== null) this.finish(); else this.intent(); };
+    const done = () => { this.busy = false; this.botRun = false; if (!this.active) return; if (this.state.winner !== null) this.finish(); else this.intent(); };
     const p = this.view?.play?.(events);
     if (p?.then) p.then(done, done); else done();
   }
@@ -440,7 +430,7 @@ export class DuelSession {
     if (g.input?.enabled) g.input.requestLock?.();
     const pool = g.lachryma, d = this.practice ? 0 : Math.round((s?.sides[0].pool ?? this.startPool) - this.startPool);
     if (pool && d > 0) pool.gain(d, 'duel'); else if (pool && d < 0) pool.spend(-d, 'duel');
-    this.dragLeft = null; this.dragClock(null); this.clockEl?.remove(); this.clockEl = null; this.clockShown = undefined;
+    this.dragLeft = null; this.dragClock(null); this.clockShown = undefined;
     const V = this.view, home = this.home; this.home = null; // (the instance held while the tsuitate folds away, then the world again and the foe where it stood)
     if (g.duelInstance?.active) g.duelInstance.close(() => !V || (!V.closing && !V.root?.visible) || V.isOpen, () => this.putBack(home)); else this.putBack(home);
     this.unpin(c); this.release();
