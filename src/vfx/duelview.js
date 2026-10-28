@@ -272,6 +272,7 @@ export class DuelView {
   death(arg) {
     const how = typeof arg === 'string' ? arg : arg?.how, kind = how === 'secret' || arg?.secret ? 'secret' : how === 'line' ? 'line' : null; // (the session's { how, secret, foe }; a finisher has its own: the data drain)
     const d = this.isOpen && this.elite.on && kind ? this.elite.death(kind) : null; if (!d) return Promise.resolve();
+    this.stage.pref = 0; // (the arena: the foe in frame for its end, even from the phone's board view, Petra 2026-10-28)
     return new Promise((res) => { if (this.deathJob) this.deathJob.res(); this.deathJob = { ...d, age: 0, res }; });
   }
   /** The PvE duel's drag timer (the session's: 1 full .. 0 out, null hidden), a bar under your half (foecast.js). */
