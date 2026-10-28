@@ -366,6 +366,7 @@ export class DuelSession {
       if (e.side === 0 && e.type === 'allclear') this.emit('duel.allclear', { n: e.n, by: 'courier' });
       if (e.type === 'foe.skill') this.emit('duel.foe', { skill: e.skill, n: e.n ?? e.lost ?? 0, by: 'creature' }); // (the PvE duel's foe skills and your stagger: tracking/duel.js)
       if (e.type === 'foe.stagger') this.emit('duel.stagger', { by: 'courier' });
+      if (e.type === 'foe.desperate') this.emit('duel.desperate', { by: 'creature' });
       if (e.type === 'flee') this.emit('duel.flee', { roll: e.roll, reroll: e.reroll ?? null, need: e.need, ok: e.ok, by: e.side === 0 ? 'courier' : 'creature' });
     }
     const foeTurn = this.botRun && this.state.style === 'pve';
