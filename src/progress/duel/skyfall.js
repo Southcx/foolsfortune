@@ -59,7 +59,7 @@ export function skyfall(s, holes, newGem, { wild = false } = {}) { // (wild: a s
     for (const [hx, hy] of holes[side]) {
       if (n <= 0) break; if (!b.in(hx, hy) || !b.mine(side, hx)) continue; // (the Line moved past it in this settle)
       const at = restOf(b, side, hx, hy); if (!at) continue;
-      const p = newGem(s); b.set(at[0], at[1], p); n--;
+      const p = newGem(s, side); b.set(at[0], at[1], p); n--; // (the side's: its transmute, powers.js)
       if (!wild && p.colour && clearsAt(b, side, at, s.rs) && s.r.chance(skyOf(s).calm ?? 0)) calmed(s, b, side, at, p);
       events.push({ type: 'drip', side, id: p.id, at, colour: p.colour, sky: true });
     }
@@ -77,7 +77,7 @@ function clearsAt(b, side, [x, y], rs) {
 
 /** A new gem recoloured to one that would not clear where it lies, tried in a shuffled order; left as it was if every colour would. */
 function calmed(s, b, side, at, p) {
-  const all = COLOURS.slice(0, Math.min(COLOURS.length, s.rs.colours)).filter((c) => c !== p.colour), was = p.colour;
+  const all = COLOURS.slice(0, Math.min(COLOURS.length, s.rs.colours)).filter((c) => c !== p.colour && c !== s.sides[side]?.transmute?.from), was = p.colour; // (never back to a colour a transmute took away)
   while (all.length) { p.colour = all.splice(s.r.int(all.length), 1)[0]; if (!clearsAt(b, side, at, s.rs)) return; }
   p.colour = was;
 }

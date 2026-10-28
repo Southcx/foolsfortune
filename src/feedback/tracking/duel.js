@@ -11,6 +11,8 @@
 // ---------------------------------------------------------------------------------------
 
 import { SKILLS } from '../../progress/duel/skills.js';
+import { DUEL_POWERS } from '../../progress/duel/powers.js';
+import { FOE_SKILLS } from '../../progress/duel/foeskills.js';
 
 const skillLabel = (tool) => SKILLS[tool]?.label || tool;
 const FOE_LINE = { hurl: (e) => `The aberrant hurls ${e.n} pieces of junk. They land after your turn.`, petrify: (e) => `The aberrant turns ${e.n} of your gems to junk.`, // (Espada's, 2026-10-28; no offset in the PvE duel, so no "less what your clears cancel")
@@ -56,5 +58,9 @@ export function duelRules({ on: onAny, L: ledger, log }) {
   on('duel.foe', (e) => { L.inc(`duel.foe.${e.skill}`); log.say('battle', FOE_LINE[e.skill]?.(e) || 'The aberrant strikes at your mind.', { key: `duel.foe.${e.skill}`, throttle: 1 }); });
   on('duel.desperate', () => { log.say('battle', 'Cornered, the aberrant lashes out.'); }); // (the session's, on the kernel's foe.desperate; Espada's line)
   on('duel.stagger', (e) => { if (e.by !== 'courier') return; L.inc('duel.stagger'); log.say('battle', 'You stagger the aberrant: its next moves come a turn later.', { key: 'duel.stagger', throttle: 1 }); });
+  // the duel's powers (PUZZLE-DUELS.md 24; duel/powers.js: the session's duel.power { power, domain, cost, skill? }) and a foe skill seen
+  // (progress/foeseen.js: knowledge, so no count); placeholder lines, Espada's to word
+  on('duel.power', (e) => { if (e.by !== 'courier') return; L.inc(`duel.power.${e.power}`); log.say('battle', e.power === 'scan' && e.skill ? `You scan the aberrant: ${FOE_SKILLS[e.skill]?.label || 'its next skill'} comes later.` : `You cast ${DUEL_POWERS[e.power]?.label || 'a power'}.`, { key: 'duel.power', throttle: 0.5 }); });
+  on('duel.seen', (e) => { log.say('battle', `You know ${FOE_SKILLS[e.skill]?.label || 'this skill'} now: ${FOE_SKILLS[e.skill]?.line || ''}.`); });
   on('duel.allclear', (e) => { if (e.by !== 'courier') return; L.inc('duel.allclear'); log.say('battle', 'All clear: your half of the board is empty.'); });
 }
