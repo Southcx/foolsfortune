@@ -226,7 +226,8 @@ void main() {
   float inC = 1.0 - smoothstep(covC - 2.0, covC, rC), inF = 1.0 - smoothstep(covF - 2.0, covF, rF);
   float rim = mix(exp(-abs(rC - covC) * 1.2) * step(0.001, uOpen.x) * (1.0 - step(0.999, uOpen.x)), exp(-abs(rF - covF) * 1.2) * step(0.001, uOpen.y) * (1.0 - step(0.999, uOpen.y)), k);
   col += mix(labSoft(ph) * 1.4, uFoe * 2.0, k) * rim;
-  float a = mix(inC, inF, k) * mix(0.62, 0.95, smoothstep(0.0, 0.35, dir.y)) * uFade;
+  float own = mix(step(0.5, uGarden.x), step(0.5, uStyle.x), k); // (a side drawn as its own world, the fens or your garden: opaque, so nothing of the instance's floor shows through it)
+  float a = mix(inC, inF, k) * mix(mix(0.62, 0.95, smoothstep(0.0, 0.35, dir.y)), 1.0, own) * uFade;
   if (fl > 0.5) { // the ground: a pool of each side's own light under its body, the disc fading out at its rim
     float pC = exp(-pow(length(vW.xz - uOriginC.xz) / 1.5, 2.0)), pF = exp(-pow(length(vW.xz - uOriginF.xz) / 1.5, 2.0));
     col += labSoft(ph) * pC * 0.9 * uOpen.x + uFoe * pF * 1.3 * uOpen.y * (1.0 - step(0.5, uStyle.x)); // (the fens light their own pool)
