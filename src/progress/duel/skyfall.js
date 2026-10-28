@@ -29,7 +29,7 @@
 export const SKYFALL = { to: 0.4, calm: 0.95, on: true }; // (`on`: the one-gesture duel's default)
 
 /** A duel's skyfall: its ruleset's (`skyfall: { to }`, or `false` for none), else the one-gesture duel's. */
-export const skyOf = (s) => (s.rs.skyfall === false ? null : s.rs.skyfall ?? ((s.style === 'drag' || s.style === 'pve') && SKYFALL.on ? SKYFALL : null));
+export const skyOf = (s) => (s.rs.skyfall === false ? null : s.rs.skyfall ?? (s.style !== 'classic' && SKYFALL.on ? SKYFALL : null));
 
 /** How many gems a side is under its waterline (Infinity with no skyfall: the drip unbounded, as before). */
 export function deficitOf(s, side) {
