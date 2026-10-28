@@ -44,7 +44,7 @@
 //   turns }, duel.undo { left } (how 'fled': away, both whole; tracking.js says each)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { newDuel, act, endTurn, legalActions, undo } from '../../progress/duel/duel.js';
+import { newDuel, act, endTurn, legalActions, undo, PVE } from '../../progress/duel/duel.js';
 import { luckOf } from '../../progress/luck.js';
 import { intentOf, hintOf, HINT, play as botPlay } from '../../progress/duel/bot.js';
 import { SKILLS, skillsOf, canAct } from '../../progress/duel/skills.js';
@@ -55,7 +55,7 @@ import { stream } from '../../core/rng.js';
 import { sfx } from '../../audio/sfx.js';
 const duelRand = stream('world/duel/duelsession'); // (the duel's seed: the session's own draw, the same twice)
 
-export const DUEL_ROOM = { beat: 0.55, beatTouch: 0.35, slop: 8, yieldHold: 1.5, standOff: 5, bodyTap: 70, spent: 0.6, gap: 0.25, back: 0.6 }; // (the bot's beat, real s; the yield's hold; the camera off the board's face, m; a tap this near the Courier's body on screen switches the form, px; a spent turn's wait before it ends itself, real s; in the instance, a body's clearance off the slab's edge and how far it stands behind its face, m)
+export const DUEL_ROOM = { beat: 0.55, beatTouch: 0.35, slop: 8, yieldHold: 1.5, standOff: 5, bodyTap: 70, spent: 0.6, gap: 0.25, back: 0.6, dragTime: 5 }; // (the bot's beat, real s; the yield's hold; the camera off the board's face, m; a tap this near the Courier's body on screen switches the form, px; a spent turn's wait before it ends itself, real s; the PvE duel's drag clock from its first step, real s (Puzzle & Dragons' 4 to 6); in the instance, a body's clearance off the slab's edge and how far it stands behind its face, m)
 const KEYS_KEPT = /^(Escape|Tab|F\d+|KeyB)$/; // (what a duel leaves to the rest of the game: the pause, the tuning panel, QAIS, the Codex)
 const TOOL_KEYS = { KeyX: 'shoot', KeyQ: 'grab', KeyK: 'drill', KeyG: 'paint', KeyU: 'delay', KeyI: 'hold', KeyT: 'tune', KeyV: 'read' };
 const WALK = { KeyW: 'N', KeyS: 'S', KeyA: 'W', KeyD: 'E' };
@@ -114,7 +114,7 @@ export class DuelSession {
     c.pos.copy(to); c.rb?.setNextKinematicTranslation?.(c.pos);
     if (typeof c.yaw === 'number') { c.yaw = Math.atan2(facing.x, facing.z); c.vel?.set?.(0, 0, 0); if (c.root) c.root.rotation.y = c.yaw; } // (turned to face you)
     const shards = g.scene.getObjectByName('aberrant-shards'), keep = [this.view?.root, this.view?.dive?.beads, g.god?.jar?.group, root, c.root, shards];
-    g.duelInstance?.open(() => keep);
+    g.duelInstance?.open(() => [...keep, ...(this.view?.instanceKeep?.() || [])]);
     this.at = at; this.facing = facing;
     this.view?.open?.({ state: this.state, foe: c, at, facing });
     // the camera on the board's face (your half on the left), at its middle's height, far enough to hold both ends
@@ -184,17 +184,22 @@ export class DuelSession {
     if (input.wasPressed('KeyE')) return this.take({ kind: 'flee' });
     if (input.isDown('Backspace')) { if ((this.yieldT += raw) >= DUEL_ROOM.yieldHold) return this.yield(); } else this.yieldT = 0;
     this.arm(S.form !== 'hand' && input.isDown('KeyG')); // (Paint armed while G or du.paint is held: its reach and greying, the view's glows)
-    if (s.style === 'drag') { const k = this.skillInput(input, cell); if (k) return; }
+    if (s.style === 'drag' || s.style === 'pve') { const k = this.skillInput(input, cell); if (k) return; }
     if (S.form === 'hand') {
       if (input.wasPressed('Mouse0') && cell) { this.press = cell; this.path = [cell]; this.pressAt = [input.mx, input.my]; this.view?.select?.(this.path); }
       if (this.press && this.pressAt && Math.hypot(input.mx - this.pressAt[0], input.my - this.pressAt[1]) >= DUEL_ROOM.slop) this.pressAt = null; // (a tap never drags a gem by a hair: DUEL_ROOM.slop px first)
       if (this.press && !this.pressAt && input.isDown('Mouse0') && cell) {
         const last = this.path[this.path.length - 1];
-        if (!sameCell(cell, last) && Math.abs(cell.x - last.x) + Math.abs(cell.y - last.y) === 1) { this.path.push(cell); this.view?.select?.(this.path); }
+        if (!sameCell(cell, last) && Math.abs(cell.x - last.x) + Math.abs(cell.y - last.y) === 1 && !(s.style === 'pve' && this.path.length > PVE.maxPath)) {
+          this.path.push(cell); this.view?.select?.(this.path);
+          if (s.style === 'pve' && this.dragLeft == null) this.dragLeft = DUEL_ROOM.dragTime; // (the PvE duel's clock starts on the first step, not the press)
+        }
       }
+      const timeUp = !!this.press && this.dragLeft != null && (this.dragLeft -= raw) <= 0; // (out of time: the drag is committed where the finger is)
+      this.dragClock(this.press && this.dragLeft != null ? Math.max(0, this.dragLeft) / DUEL_ROOM.dragTime : null);
       this.show(this.press ? actionOfPath(this.path) : (this.hinted !== true && !this.view?.hint && this.hinted?.action) || null); // (the idle hint, where the view has no `hint` of its own, rides the preview)
-      if (this.press && !input.isDown('Mouse0')) {
-        const P = this.path; this.press = null; this.path = []; this.view?.select?.([]); this.show(null);
+      if (this.press && (!input.isDown('Mouse0') || timeUp)) {
+        const P = this.path; this.press = null; this.dragLeft = null; this.dragClock(null); this.path = []; this.view?.select?.([]); this.show(null);
         const a = actionOfPath(P); if (a) { this.picked = null; return this.take(a); }
         if (this.touch && P.length === 1) return this.pickTap(P[0]); // (a tap, on touch: pick, then place)
       }
@@ -318,6 +323,16 @@ export class DuelSession {
     if (typeof V.skip === 'function') return V.skip(this.state);
     V.beats?.clear?.(); if (typeof V.resync === 'function') V.resync(this.state);
   }
+  /** The PvE duel's drag clock, 1 full .. 0 out, null gone: the view's own `dragClock` where it has one, else a placeholder bar over the
+   *  view's top edge (Calissa's to draw: a plain strip, said so). */
+  dragClock(k) {
+    if (k === this.clockShown) return; this.clockShown = k;
+    if (typeof this.view?.dragClock === 'function') return this.view.dragClock(k);
+    if (typeof document === 'undefined') return;
+    let el = this.clockEl;
+    if (!el && k != null) { el = this.clockEl = document.createElement('div'); el.className = 'duel-drag-clock'; el.style.cssText = 'position:fixed;left:30%;top:calc(env(safe-area-inset-top) + 8px);width:40%;height:6px;background:rgba(20,14,10,.7);border:1px solid #ffd36a;border-radius:3px;pointer-events:none;z-index:40'; el.appendChild(document.createElement('i')).style.cssText = 'display:block;height:100%;background:#ffd36a;transform-origin:left'; document.body.appendChild(el); }
+    if (!el) return; el.style.display = k == null ? 'none' : 'block'; if (k != null) { el.firstChild.style.transform = `scaleX(${k})`; el.firstChild.style.background = k < 0.25 ? '#ff6a4a' : '#ffd36a'; }
+  }
   show(a) {
     const key = a ? JSON.stringify(a) : null; if (key === this.shown) return;
     this.shown = key; const V = this.view; if (typeof V?.pendingAction === 'function') V.pendingAction(a); // (not `pending`: the view keeps its junk counts by that name)
@@ -349,9 +364,13 @@ export class DuelSession {
       if (e.side === 0 && e.type === 'land' && e.n) this.emit('duel.land', { n: e.n, kind: e.kind, by: 'creature' });
       if (e.side === 0 && e.type === 'lesson.done') this.emit('duel.lesson', { by: 'courier' }); // (counted even in practice: lessonDue reads it)
       if (e.side === 0 && e.type === 'allclear') this.emit('duel.allclear', { n: e.n, by: 'courier' });
+      if (e.type === 'foe.skill') this.emit('duel.foe', { skill: e.skill, n: e.n ?? e.lost ?? 0, by: 'creature' }); // (the PvE duel's foe skills and your stagger: tracking/duel.js)
+      if (e.type === 'foe.stagger') this.emit('duel.stagger', { by: 'courier' });
       if (e.type === 'flee') this.emit('duel.flee', { roll: e.roll, reroll: e.reroll ?? null, need: e.need, ok: e.ok, by: e.side === 0 ? 'courier' : 'creature' });
     }
-    const done = () => { this.busy = false; this.botRun = false; if (!this.active) return; if (this.state.winner !== null) this.finish(); else this.intent(); };
+    const foeTurn = this.botRun && this.state.style === 'pve';
+    const done = () => { if (foeTurn && this.active) this.view?.resync?.(this.state); this.busy = false; this.botRun = false; // (the PvE foe's skills stood from the state until the view has beats for them)
+      if (!this.active) return; if (this.state.winner !== null) this.finish(); else this.intent(); };
     const p = this.view?.play?.(events);
     if (p?.then) p.then(done, done); else done();
   }
@@ -420,6 +439,7 @@ export class DuelSession {
     if (g.input?.enabled) g.input.requestLock?.();
     const pool = g.lachryma, d = this.practice ? 0 : Math.round((s?.sides[0].pool ?? this.startPool) - this.startPool);
     if (pool && d > 0) pool.gain(d, 'duel'); else if (pool && d < 0) pool.spend(-d, 'duel');
+    this.dragLeft = null; this.dragClock(null); this.clockEl?.remove(); this.clockEl = null; this.clockShown = undefined;
     const V = this.view, home = this.home; this.home = null; // (the instance held while the tsuitate folds away, then the world again and the foe where it stood)
     if (g.duelInstance?.active) g.duelInstance.close(() => !V || (!V.closing && !V.root?.visible) || V.isOpen, () => this.putBack(home)); else this.putBack(home);
     this.unpin(c); this.release();

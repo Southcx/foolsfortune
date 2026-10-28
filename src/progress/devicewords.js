@@ -20,7 +20,7 @@ const keyWord = (c) => KEY_WORDS[c] || (c.startsWith('Key') ? c.slice(3) : c.sta
  *  part in capitals (`gh.alt` -> ALT). */
 export const TILE_WORDS = { lock: 'LOCK', roll: 'ROLL', form: 'FORM', surge: 'SURGE', 'throttle.up': 'THROTTLE UP', 'throttle.down': 'THROTTLE DOWN', fix: 'FIX', plate: 'PLATE', use: 'USE', jump: 'JUMP', crouch: 'CROUCH', dash: 'DASH', tool: 'DRAW', lend: 'LEND', parry: 'PARRY', blink: 'BLINK',
   hop: 'HOP', brake: 'BRAKE', flare: 'FLARE', boost: 'BOOST', nose: 'NOSE', tail: 'TAIL', fire: 'FIRE', aim: 'AIM', 'top.pause': 'the pause button',
-  'top.overhead': 'TOP VIEW', 'top.godhand': 'the hand button in the top bar', 'top.skiff': 'the skiff button in the top bar', 'top.survey': 'SURVEY', 'top.box': 'the Pneuka Box button', 'top.map': 'the map button', 'top.codex': 'the Codex button', 'top.chat': 'the chat button',
+  'top.overhead': 'TOP VIEW', 'top.godhand': 'the hand button in the top bar', 'top.skiff': 'the skiff button in the top bar', 'top.survey': 'SURVEY', 'top.box': 'the Pneuka Box button', 'top.map': 'the map button', 'top.codex': 'the Codex button', 'log': 'a tap on the log',
   'move.outerL': 'the stick pushed past its ring', 'move.outerR': 'the stick pushed past its ring', 'swipe.left': 'a swipe', 'swipe.right': 'a swipe',
   'du.end': 'END TURN', 'menu.yield': 'GIVE UP in the pause menu', 'menu.restart': 'RESTART in the pause menu', 'menu.back': 'BACK in the pause menu' };
 const tileWord = (t) => TILE_WORDS[t] || t.split('.').pop().toUpperCase();
