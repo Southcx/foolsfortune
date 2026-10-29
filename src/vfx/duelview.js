@@ -78,6 +78,7 @@ import { FrameDress } from './duelview/framedress.js';
 import { DuelSpoils } from './duelview/spoils.js';
 import { DuelStamps } from './duelview/stamps.js';
 import { DuelShow } from './duelview/duelshow.js';
+import { DuelSeeding, SEEDING } from './duelview/seeding.js';
 import { GardenGround } from './duelview/gardenground.js';
 import { SkillGauges } from './duelview/skillgauges.js';
 
@@ -93,7 +94,7 @@ export class DuelView {
     this.board = new DuelBoard(this.frame, this.clash); this.pieces = new DuelPieces(this.frame); this.marks = new DuelMarks(this.frame);
     this.intentDraw = new DuelIntent(this.frame, this.marks); this.bursts = new DuelBursts(this.frame); this.beats = new DuelBeats(this);
     this.flee = new DuelFlee(this); this.folded = false;
-    this.glows = new DuelGlows(this); this.worth = new DuelWorth(this); this.foresight = new DuelForesight(this); this.juice = new DuelJuice(this); this.stage = new DuelStage(this); this.dive = new FormDive(this); this.gauges = new SkillGauges(this); this.foeCast = new FoeCast(this); this.cutIn = new FoeCutIn(this); this.jarCut = new FoeCutIn(this, { subject: 'jar' }); this.stamps = new DuelStamps(this); this.show = new DuelShow(this); this.elites = [new WispElite(this), new JellyElite(this)]; this.elite = this.elites[0]; this.garden = new GardenGround(this); this.dress = new FrameDress(this); this.spoils = new DuelSpoils(this); this.tune = [null, null]; this.pendingKind = null;
+    this.glows = new DuelGlows(this); this.worth = new DuelWorth(this); this.foresight = new DuelForesight(this); this.juice = new DuelJuice(this); this.stage = new DuelStage(this); this.dive = new FormDive(this); this.gauges = new SkillGauges(this); this.foeCast = new FoeCast(this); this.cutIn = new FoeCutIn(this); this.jarCut = new FoeCutIn(this, { subject: 'jar' }); this.stamps = new DuelStamps(this); this.show = new DuelShow(this); this.seeding = new DuelSeeding(this); this.elites = [new WispElite(this), new JellyElite(this)]; this.elite = this.elites[0]; this.garden = new GardenGround(this); this.dress = new FrameDress(this); this.spoils = new DuelSpoils(this); this.tune = [null, null]; this.pendingKind = null;
     this.intentWhole = true; // (the session hands intent() bot.js intentOf's whole: { actions, junk, cells, hits })
     this.u = new THREE.Vector3(1, 0, 0); this.face = new THREE.Vector3(0, 0, 1); this.centre = new THREE.Vector3();
     this.sent = [0, 0]; this.pending = [0, 0]; this.depth = [0, 0]; this.apShown = [5, 5]; this.restCuts = 0; this.forms = ['hand', 'hand']; this.lineCol = 10;
@@ -127,7 +128,7 @@ export class DuelView {
     this.clash.groundTo(Math.max(oc.distanceTo(at), of.distanceTo(at)) + 3); // (the ground past both bodies: domains.js)
     oc.y += 1; of.y += 1; this.clash.unfold(oc, of);
     this.game.spiritualLink?.attach(this, this.linkEnd);
-    this.gauges.layout(this.board3); this.stage.open(); this.dive.open(); this.cutIn.warm(); this.jarCut.warm(); this.stamps.warm(); this.show.open(state, foe); this.elite = this.elites.find((E) => E.constructor.fits(state, foe)) || this.elites[0]; this.elite.open(state, foe); this.garden.open(at.clone().addScaledVector(this.u, -((B.w * DUEL_VIEW.cs) / 2 + 2)), this.u); this.dress.open(state, foe); this.spoils.open(state, foe); // (your half as your Spirit Garden: gardenground.js; the aberrant's own layers: its ground, its lantern, its deaths: duelview/aberrants/) // (the gauges: skillgauges.js; the arena first, the Jar at your spot: stage.js, formdive.js)
+    this.gauges.layout(this.board3); this.stage.open(); this.dive.open(); this.cutIn.warm(); this.jarCut.warm(); this.stamps.warm(); this.show.open(state, foe); this.elite = this.elites.find((E) => E.constructor.fits(state, foe)) || this.elites[0]; this.elite.open(state, foe); this.garden.open(at.clone().addScaledVector(this.u, -((B.w * DUEL_VIEW.cs) / 2 + 2)), this.u); this.dress.open(state, foe); this.spoils.open(state, foe); this.seeding.hold(); if (!this.show.on) this.seeding.go(SEEDING.open); // (the first board dealt in: seeding.js; a PvE duel's waits for the VS open's pull, duelshow.js) // (your half as your Spirit Garden: gardenground.js; the aberrant's own layers: its ground, its lantern, its deaths: duelview/aberrants/) // (the gauges: skillgauges.js; the arena first, the Jar at your spot: stage.js, formdive.js)
   }
 
   /** Fold the domains away and take the board down (at once, with `now`). */
@@ -135,7 +136,7 @@ export class DuelView {
     if (!this.isOpen && !this.closing) return;
     this.isOpen = false; this.beats.clear(); this.intentDraw.clear(); this.foresight.clear(); this.worth.clear(); this.glows.clear(); this.tune = [null, null]; this.marks.hover(null); this.marks.select([]); this.marks.stars(0, 0); this.marks.stars(1, 0);
     this.game.spiritualLink?.detach(this); this.clash.collapse(); this.closing = !now;
-    this.flee.clear(); this.marks.refuse(null); this.juice.clear(); this.stage.close(); this.dive.close(); this.gauges.clear(); this.foeCast.clear(); this.cutIn.clear(); this.jarCut.clear(); this.stamps.clear(); this.elite.close(); this.show.close(); this.garden.close(); this.dress.close(); if (this.deathJob) { this.deathJob.res(); this.deathJob = null; } this.armed = null; this.armedPower = null;
+    this.flee.clear(); this.marks.refuse(null); this.juice.clear(); this.stage.close(); this.dive.close(); this.gauges.clear(); this.foeCast.clear(); this.cutIn.clear(); this.jarCut.clear(); this.stamps.clear(); this.elite.close(); this.show.close(); this.seeding.clear(); this.garden.close(); this.dress.close(); if (this.deathJob) { this.deathJob.res(); this.deathJob = null; } this.armed = null; this.armedPower = null;
     this.clash.dome.scale.setScalar(DUEL_VIEW.radius); this.clash.U.uRadius.value = DUEL_VIEW.radius;
     if (now) { this.clash.open = [0, 0]; this.clash.update(0); this.root.visible = false; this.bursts.clear(); }
   }
@@ -316,7 +317,7 @@ export class DuelView {
   /** The duel stood again from a state the kernel restored (the session's undo, before its `undo` event plays): the board and pieces
    *  rebuilt, the clash left standing; each piece kept where it was drawn until the undo beat slides it home (juice.js rewind). */
   resync(state) {
-    if (!this.isOpen || !state) return; this.state = state;
+    if (!this.isOpen || !state) return; this.state = state; this.seeding.clear();
     this.intentDraw.clear(); this.foresight.clear(); this.worth.clear(); this.marks.select([]); this.juice.rewind(state);
   }
 
@@ -324,7 +325,7 @@ export class DuelView {
    *  once, with a short shake so the jump reads as the turn landing. */
   skip(state) {
     if (!this.isOpen || !state) return;
-    this.beats.clear(); this.juice.clear(); this.worth.clear(); this.state = state; this.settleUp(); this.stage.jolt(0.2);
+    this.beats.clear(); this.juice.clear(); this.worth.clear(); this.seeding.clear(); this.state = state; this.settleUp(); this.stage.jolt(0.2);
   }
 
   /** The play queue ran dry: the view is made to agree with the duel as it stands (anything the beats did not follow is put right). */
@@ -365,7 +366,7 @@ export class DuelView {
     dt = Math.min(dt || 0, 0.1);
     this.beats.update(dt); this.stepFog(dt); this.glows.update(dt); this.worth.update(dt); this.foresight.update(dt);
     const held = this.juice.scale(dt), shown = this.clash.update(held); // (a big play's held beat: the board's motion all but stops, the beats run on: juice.js)
-    this.board.update(held); this.pieces.update(held); this.marks.update(held); this.bursts.update(held); this.flee.update(dt); this.juice.update(dt);
+    this.board.update(held); this.seeding.update(dt); this.pieces.update(held); this.marks.update(held); this.bursts.update(held); this.flee.update(dt); this.juice.update(dt);
     if (this.isOpen && !this.beats.busy) this.flee.odds(this.state);
     const st = this.isOpen && !this.closing ? this.stage.update(dt) : this.lastStage || { scale: 1, lift: 0, tilt: 0 }; this.lastStage = st; this.dive.update(dt); if (this.isOpen) this.gauges.update(dt, this.state); this.foeCast.update(dt); this.elite.update(dt); this.garden.update(dt); this.dress.update(dt); if (this.isOpen) this.show.update(dt); // (the zoom and the director: stage.js; who stands where: formdive.js)
     const J = this.deathJob; if (J) { J.age += dt; J.step?.(J.age); if (J.age >= J.dur) { J.end?.(); this.deathJob = null; J.res(); } }

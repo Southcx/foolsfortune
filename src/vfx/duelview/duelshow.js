@@ -66,6 +66,7 @@ export class DuelShow {
     const V = this.view, S = SHOW.vs, t = this.t;
     if (this.vsStep === 0 && t >= S.foe) { this.vsStep = 1; const f = this.foe; V.stage?.cutAway('vsFoe', S.jar - S.foe + 0.15, { cut: true }); V.cutIn?.vs?.(NAMES[f?.kind] || (f?.name || '').toUpperCase(), null, 0.3); V.stage?.jolt?.(0.25); }
     if (this.vsStep === 1 && t >= S.jar) { this.vsStep = 2; V.jarCut?.vs?.('', filmColour(0.3, _c).getHex(), 0.66); V.stage?.cutAway('vsJar', S.pull - S.jar, { cut: true }); V.stage?.jolt?.(0.25); }
+    if (this.vsStep === 2) V.seeding?.go?.(Math.max(0, S.pull - 0.1 - t)); // (the board dealt in as the camera pulls out to it: seeding.js)
     if (this.vsStep === 2 && t >= S.stamp) { this.vsStep = 3; V.stamps?.stamp('VS', { size: 0.26, y: 0.5, x: 0.5, tilt: -0.12, life: 0.6, spin: 1.4 }); V.stage?.jolt?.(0.5); V.game.glitch?.pulse?.({ split: 0.06, tear: 0.03, dur: 0.15 }); }
   }
 
