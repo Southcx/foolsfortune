@@ -135,7 +135,7 @@ export class DuelShow {
     V.dive.spot(_d); J.group.position.copy(_d).addScaledVector(UP, Math.abs(Math.sin(f * Math.PI * 2)) * 0.45 * (1 - f * 0.3));
     J.group.rotation.y = W.yaw + sm(clamp01(f * 1.4)) * Math.PI * 2;
     const want = Math.floor(f * 3) + 1; while (W.thrown < Math.min(3, want)) { W.thrown++; const at = V.frame.worldToLocal(_e.copy(_d).addScaledVector(UP, 0.9));
-      for (let i = 0; i < SHOW.confetti / 3; i++) V.bursts?.burst?.(at, filmColour(i * 0.13 + W.thrown, _c).getHex(), 1, { speed: 1.8, life: 0.9, fall: 2.4, spread: 0.3, size: 0.03 }); }
+      for (let i = 0; i < SHOW.confetti / 3; i++) V.bursts?.burst?.(at, filmColour(i * 0.13 + W.thrown, _c).getHex(), 2, { speed: 2.6, life: 1.1, fall: 2.2, spread: 0.45, size: 0.075 }); }
     if (f >= 1) { J.group.rotation.y = W.yaw; this.won = null; }
   }
 
