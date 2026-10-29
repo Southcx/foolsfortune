@@ -163,9 +163,9 @@ their Clayese scales; the System's skill and achievement jingles (the chime and 
   at the end of its turn) a tick-tock and a low bell a tritone off. A column won rises (the fifth and the octave), lost falls (minor,
   low). Measured offline, peaks: the skills -18 to -24 dB, the flare -14. The phone buzzes on Hurl's landing (`duel.land`) and Reclaim.
 - **The turn's sting** (`duelTurnCutIn`, `audio/duelcasts.js`; South via Dovina, 2026-10-29; Calissa's frame): the turn's change cut in as a foe
-  skill is, smaller: a blade of air, a small slam on the cut-in's 0.12 s, and yours the Answer's step up (I, then up a whole step) on bright
+  skill is, smaller: a blade of air, a small slam on the band's word at 0.05 s, rung through its hold to 0.4 s (`TURN_CUT_IN`, Calissa's 481fde2d), and yours the Answer's step up (I, then up a whole step) on bright
   brass with a glint over it, the aberrant's the Five falling in its dark (minor to diminished). Peaks -18.5 and -17 dB, 3 to 5 under a
-  skill's sting. The old woodblock it replaces is gone. Hurl's land now follows its cast at once, so its clatter lands as the throw does.
+  skill's sting. The old woodblock it replaces is gone. Hurl's land now follows its 0.18 s cast at once: the heave on the cast, the throw's whoosh crossing over the land beat's 0.6 s flight, and every landing's clatter (`duelLand`) now heard at the impact, the view's flight after the land event (`LAND_FLY`: 0.6 a Hurl's, 0.45 the rest).
 - **The aberrant Lantern Wisp, an Elite duel** (`audio/duelsecrets.js`, `music/duel.js` `fen`; Dovina's ABERRANTS.md 3): it sounds like
   itself. Over each fighting section a shakuhachi wanders off the beat every fourth bar (it climbs, then turns aside onto the seventh: the
   light that leads you astray), and its lantern flickers on the celesta high over the chord, four a bar at full, fewer and skipping as its

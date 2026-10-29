@@ -51,6 +51,8 @@ export const FEELING_STEP = { wonder: 0, mirth: 4, desire: 7, fury: 9, gall: 14,
 /** The duel's root: the cue's own key when one plays (sfx.musicGrid, audio/cues.js hearEvents), else C5; kept within C5 .. B5. */
 export function duelRoot(s) { const r = s.musicGrid?.()?.root; return r == null ? 72 : 72 + ((((r - 72) % 12) + 12) % 12); }
 /** gesture: real s after a cut-in's slam the skill's own sound plays: when its cast begins, the cut-in over (Calissa's vfx/duelview/cutin.js CUT_IN: in 0.14, held 0.62, out 0.16, slam at 0.12). */
+/** Real s junk flies in the view's land beat before it touches (Calissa's, beats.js: a Hurl's low arc 0.6, the rest 0.45). */
+export const LAND_FLY = { hurl: 0.6, junk: 0.45 };
 export const CUT_IN = { gesture: 0.8, burst: 4 }; // (burst: real s after foe.desperate its own casts come with no cut-in, so their sounds play at once)
 const sidePan = (side) => (side === 1 ? 0.45 : side === 0 ? -0.45 : 0);
 
@@ -170,11 +172,11 @@ export class PuzzleDuelSounds {
     if (!this.ok() || !this.allow(`duelFoe.${skill}`, 2)) return;
     const t = this.ctx.currentTime, d = this.duelOut({ hurl: 1, sap: 1, petrify: 0.65 }[skill] ?? 0.4, 0.45, 0.45), r = duelRoot(this) - 24; // (levelled by ear and meter: each within about 6 dB of the others)
     switch (skill) {
-      case 'hurl': { // (a heave, then the throw crossing to your half, clay clattering in the air: its land follows at once, duelLand)
-        this.tone(t, 0.3, { f0: 70, f1: 110, type: 'sawtooth', gain: 0.06, dest: d });
-        const c = this.ctx, p = c.createStereoPanner(); p.pan.setValueAtTime(0.6, t + 0.25); p.pan.linearRampToValueAtTime(-0.6, t + 0.75); p.connect(d);
-        this.noise(t + 0.25, 0.5, { type: 'bandpass', f0: 500, f1: 2400, q: 0.8, gain: 0.3, attack: 0.1, dest: p });
-        for (let k = 0; k < Math.min(6, Math.max(1, n | 0)); k++) this.noise(t + 0.35 + k * 0.06, 0.03, { type: 'bandpass', f0: 1400 + (k % 3) * 300, q: 3, gain: 0.18, dest: p });
+      case 'hurl': { // (a heave over its 0.18 s cast, then the throw crossing to your half over the land beat's 0.6 s flight: its clatter is duelLand's, at the impact)
+        this._duelHurlAt = performance.now() / 1000;
+        this.tone(t, 0.2, { f0: 70, f1: 110, type: 'sawtooth', gain: 0.06, dest: d });
+        const c = this.ctx, p = c.createStereoPanner(); p.pan.setValueAtTime(0.6, t + 0.15); p.pan.linearRampToValueAtTime(-0.6, t + 0.78); p.connect(d);
+        this.noise(t + 0.15, 0.63, { type: 'bandpass', f0: 500, f1: 2400, q: 0.8, gain: 0.3, attack: 0.12, dest: p });
         setTimeout(() => p.disconnect(), 1800); break; }
       case 'petrify': // (stone creeping over glass: each gem's note falling into a dull knock)
         this.noise(t, 0.6, { type: 'bandpass', f0: 2200, f1: 300, q: 1.2, gain: 0.18, attack: 0.05, dest: d });
@@ -305,8 +307,10 @@ export class PuzzleDuelSounds {
   /** Garbage landing on a side: a heavy fall, more for more. */
   duelLand(n = 1, side = 0) {
     if (!this.ok() || !this.allow('duelLand', 4)) return;
-    const t = this.ctx.currentTime, d = this.duelOut(0.4, 0.2, sidePan(side)), k = Math.min(6, Math.max(1, Math.ceil(n / 2)));
-    for (let i = 0; i < k; i++) { this.tone(t + i * 0.05, 0.12, { f0: 120 - i * 6, f1: 60, gain: 0.3, dest: d }); this.noise(t + i * 0.05, 0.05, { type: 'lowpass', f0: 800, gain: 0.2, dest: d }); }
+    const hurl = side === 0 && performance.now() / 1000 - (this._duelHurlAt ?? -1e9) < 1.5; if (hurl) this._duelHurlAt = -1e9;
+    const fly = hurl ? LAND_FLY.hurl : LAND_FLY.junk, gap = hurl ? 0.05 : 0.035; // (heard where it lands: the view's flight before the first piece touches, vfx/duelview/beats.js land)
+    const t = this.ctx.currentTime + fly, d = this.duelOut(0.4, 0.2, sidePan(side)), k = Math.min(6, Math.max(1, Math.ceil(n / 2)));
+    for (let i = 0; i < k; i++) { this.tone(t + i * gap, 0.12, { f0: 120 - i * 6, f1: 60, gain: 0.3, dest: d }); this.noise(t + i * gap, 0.05, { type: 'lowpass', f0: 800, gain: 0.2, dest: d }); }
   }
   /** Incoming garbage cancelled: two tones meeting, beating, gone. */
   duelOffset(n = 1, side = 0) {
