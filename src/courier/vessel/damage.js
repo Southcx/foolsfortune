@@ -133,6 +133,7 @@ export class VesselDamage {
     if (this.game.cradles?.sealed) return this.game.cradles.struck({ point, from, dir, k, why, by }); // (a sealed Jar is struck only through its cradle: world/cradles.js)
     if (!this.boxes || this.game.death?.active) return -1;
     if (this.game.courierMind) k *= courierMindEffect(this.game.courierMind.mind).fragility; // (the Courier's mental state: Prismatic takes x2, Stoic x0.5, shield and clay alike: the owner's ruling)
+    k *= this.game.classArtsRun?.takenMult?.() ?? 1; // (Bulwark braced: a class's art, courier/classarts/body.js)
     // the shield first (Halo's): the Lachryma in the pool takes the blow; only what it cannot pay for reaches the clay
     const pool = this.game.lachryma;
     if (pool) {
@@ -141,6 +142,7 @@ export class VesselDamage {
       if (had > 0.5) { pool.drain(had, 'shield'); this.game.events?.emit('vessel.shieldbreak', { why, by }); }
       k *= 1 - had / cost;
     }
+    if (this.game.classArtsRun?.ward?.()) { this.game.events?.emit('vessel.ward', { k: +k.toFixed(2), why, by }); return -1; } // (Steadfast: the next blow past the shield cracks nothing)
     const P = this.P, mid = new THREE.Vector3(P.pos.x, P.pos.y + 1.0, P.pos.z);
     let region = 1;
     if (point) region = this.boxes.nearest(point).region;
