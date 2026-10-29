@@ -26,6 +26,7 @@ body.hud-touch #chatlog:not(.typing):not(.hud-sheet) .prog{display:none}
 body.hud-touch #chatlog:not(.typing):not(.hud-sheet) .body{display:block;flex:none;height:var(--hud-log-h,36px);overflow:hidden;padding:2px 6px 2px;font-size:16px;line-height:18px;pointer-events:none}
 body.hud-touch #chatlog:not(.typing):not(.hud-sheet) .ln{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 body.hud-touch #chatlog:not(.typing):not(.hud-sheet) .ts{display:none}
+body.hud-touch.hud-landscape #chatlog:not(.typing):not(.hud-sheet){border-width:4px 8px} body.hud-touch.hud-landscape #chatlog:not(.typing):not(.hud-sheet) .body{padding:0 6px} /* (one line on a phone on its side, the frame thinned: MOBILE.md 4.1, y 60..80) */
 body.hud-touch #chatlog.idle:not(.hud-sheet){opacity:.78}
 body.hud-touch #chatlog.hud-sheet{left:calc(var(--safe-l,0px) + 8px);top:var(--hud-log-y,60px);bottom:calc(var(--safe-b,0px) + 8px);height:auto;z-index:40;
   width:calc(100vw - var(--safe-l,0px) - var(--safe-r,0px) - 16px);opacity:1 !important;pointer-events:auto}

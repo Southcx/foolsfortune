@@ -29,7 +29,8 @@ import { TouchTile, TILE } from './tile.js';
 import { touchTiles } from './presses.js';
 import { placeOf, windowOpen } from './areas.js';
 import { shelf } from './topbar.js';
-import { stripOf, beltPairOf } from './actioncontext.js';
+import { stripOf, beltPairOf, nearOf } from './actioncontext.js';
+import { CURSOR } from '../../core/touchcursor.js';
 
 /** The numbers (CSS px): the strip's tile (44, the least: 48 until the owner asked for room, 2026-10-26), a note pad, the pair's; the gaps; the shelf's padding; the room kept off the look area's edge. */
 const MORE = 'strip.more';
@@ -42,18 +43,21 @@ function folding(entries, folded) {
   return [{ id: MORE, glyph: 'more', word: null, lit: !folded }, ...(folded ? [] : row), ...stay];
 }
 
-export const STRIP = { size: 44, pad: 52, pair: TILE.small, gap: 6, rowGap: 8, shelf: 6, edge: 8, margin: 6 };
+export const STRIP = { size: 44, pad: 52, near: 52, pair: TILE.small, gap: 6, rowGap: 8, shelf: 6, edge: 8, margin: 6 };
+/** The far shelf's most before the fold, and what folds first (MOBILE.md 4.1). */
+const FAR_MAX = 8, FOLD_ORDER = ['skiff', 'swap', 'lend', 'ps.breath', 'ps.fan'];
 
 export class TouchStrip {
   constructor(game) {
-    this.game = game; this.tiles = new Map(); this.ids = []; this.pair = []; this.entries = []; this.shown = false; this.key = ''; this.folded = true;
+    this.game = game; this.tiles = new Map(); this.ids = []; this.pair = []; this.nearIds = []; this.pairShown = 0; this.entries = []; this.shown = false; this.key = ''; this.folded = true;
     this.shelf = shelf();
   }
 
   tile(e) {
     let t = this.tiles.get(e.id);
     if (!t) {
-      const onPress = e.id === MORE ? (tid, down, inside) => { if (!down && inside) { this.folded = !this.folded; this.relayout(); } }
+      const onPress = e.cycle ? (tid, down, inside) => this.cyclePress(tid, down, inside)
+        : e.id === MORE ? (tid, down, inside) => { if (!down && inside) { this.folded = !this.folded; this.relayout(); } }
         : e.id === 'skiff' ? (tid, down, inside) => { if (!down && inside) this.game.touchUI?.topBar?.open('skiff'); } // (what the top bar's SKIFF presses: folded under MENU on a phone)
           : (tid, down) => touchTiles.report(this.game, tid, down);
       t = new TouchTile(e.id, { size: STRIP.size, glyph: e.glyph ?? null, word: e.word ?? null, corner: e.corner ?? null, tint: e.tint ?? null, fit: true, onPress }); this.tiles.set(e.id, t);
@@ -61,6 +65,30 @@ export class TouchStrip {
     t.face({ glyph: e.glyph ?? null, word: e.word ?? null, corner: e.corner ?? null, tint: e.tint ?? null });
     return t;
   }
+
+  /** A pick's tile (CHAMBER, FORM; MOBILE.md 4.1): a tap presses the next one's binding, a hold (CURSOR.long) opens the radial. */
+  cyclePress(tid, down, inside) {
+    const e = this.entries.find((x) => x.id === tid); if (!e) return;
+    if (down) { clearTimeout(this.holdT); this.holdT = setTimeout(() => { this.holdT = 0; this.openRadial(e); }, CURSOR.long); return; }
+    if (!this.holdT) return; // (held: the radial is open, the lift picks nothing)
+    clearTimeout(this.holdT); this.holdT = 0;
+    if (inside) this.tap(e.cycle[(e.at + 1) % e.cycle.length]);
+  }
+  /** A binding pressed and let go, as a key tapped. */
+  tap(id) { touchTiles.report(this.game, id, true); setTimeout(() => touchTiles.report(this.game, id, false), 90); }
+  /** The radial: the pick's choices on an arc under its tile, each a tile; a tap on one picks it, anywhere else closes it. */
+  openRadial(e) {
+    this.closeRadial(); const src = this.tiles.get(e.id); if (!src?.el) return;
+    const b = src.el.getBoundingClientRect(), cx = b.left + b.width / 2, cy = b.top + b.height / 2, n = e.radial.length, R = 64, s = STRIP.size;
+    this.radial = e.radial.map((r, i) => {
+      const a = Math.PI * (0.15 + 0.7 * (n > 1 ? i / (n - 1) : 0.5)), t = new TouchTile(`radial.${r.id}`, { size: s, glyph: r.glyph ?? null, word: r.word ?? null, fit: true,
+        onPress: (_, down, inside) => { if (!down && inside) { this.tap(r.id); this.closeRadial(); } } });
+      t.place(cx + Math.cos(a) * R - s / 2, cy + Math.sin(a) * R - s / 2 + 8, s); t.set({ hidden: false, lit: !!r.lit }); t.update(performance.now() / 1000); return t;
+    });
+    this.radialOff = (ev) => { if (!this.radial?.some((t) => t.el.contains(ev.target))) this.closeRadial(); };
+    setTimeout(() => document.addEventListener('pointerdown', this.radialOff, true), 0);
+  }
+  closeRadial() { if (this.radialOff) document.removeEventListener('pointerdown', this.radialOff, true); this.radialOff = null; for (const t of this.radial || []) t.el.remove(); this.radial = null; }
 
   /** Where it may stand over the cluster's bounds: the HUD layout's strip room (hudlayout.js stripArea: clear of the Sight, the top
    *  bar and the log), or the cluster's own column without it. */
@@ -74,13 +102,14 @@ export class TouchStrip {
   /** THE TOP ROW (a phone on its side, hudlayout.js `stripTop`; South, 2026-10-29: the centre 60% kept clear): the belt's pair, then the
    *  strip, in one row on one clay shelf from the folded top bar's end toward the Sight, as large as fit (44 px down to the least). */
   layoutTop(Z) {
-    const G = STRIP.gap, F = TILE.foot, ids = [...this.pair, ...this.ids], room = Z.w - 2 * STRIP.shelf;
+    this.layoutNear();
+    const G = STRIP.gap, F = TILE.foot, ids = this.farIds(), room = Z.w - 2 * STRIP.shelf;
     const span = (sz) => ids.reduce((a, id) => a + this.tiles.get(id).widthFor(sz), 0) + (ids.length - 1) * G + (this.pair.length && this.ids.length ? G : 0);
     let sz = STRIP.size; while (sz > TILE.min && span(sz) > room) sz -= 2;
     let x = Z.x + STRIP.shelf; const y = Z.y + STRIP.shelf;
     ids.forEach((id, i) => {
       const t = this.tiles.get(id), w = t.widthFor(sz);
-      if (i === this.pair.length && i) x += G; // (a breath between the pair and the tool's row)
+      if (i === this.pairShown && i) x += G; // (a breath between the pair and the tool's row)
       if (x + w > Z.x + Z.w - STRIP.shelf) { t.set({ hidden: true }); t.over = true; return; } // (past the Sight: folded away, never over it)
       t.over = false; t.place(x, y, sz, w); x += w + G;
     });
@@ -88,6 +117,24 @@ export class TouchStrip {
     Object.assign(this.shelf.style, { transform: `translate(${Math.round(Z.x)}px, ${Math.round(Z.y)}px)`, width: `${Math.round(Wd)}px`, height: `${Math.round(H)}px` });
     this.shelf.style.setProperty('--h', `${H}px`);
     this.shelf.classList.toggle('off', !this.shown);
+  }
+
+  /** The far shelf's tiles in order, folded past FAR_MAX behind a ⋯ (MOBILE.md 4.1: SKIFF first, then SWAP, LEND, BREATH, FAN; DRAW /
+   *  STOW and the pick never), the ⋯ at its end; opened, all of them and the ⋯ lit. */
+  farIds() {
+    const all = [...this.pair, ...this.ids.filter((id) => id !== MORE)], over = all.length - FAR_MAX;
+    if (over <= 0) { this.pairShown = this.pair.length; return all; }
+    const hide = new Set(this.folded ? FOLD_ORDER.filter((id) => all.includes(id)).slice(0, over + 1) : []);
+    const ids = all.filter((id) => !hide.has(id)); this.pairShown = this.pair.filter((id) => !hide.has(id)).length;
+    for (const id of hide) this.tiles.get(id)?.set({ hidden: true });
+    this.tile({ id: MORE, glyph: 'more', word: null }); this.tiles.get(MORE).set({ lit: !this.folded });
+    return [...ids, MORE];
+  }
+  /** The near shelf: up to three tiles in a row over the cluster on the right edge (hudlayout.js `areas.near`). */
+  layoutNear() {
+    const N = this.game.hudLayout?.areas?.near; if (!N || !N.w) return;
+    const sz = STRIP.near, G = STRIP.gap; let x = N.x + N.w;
+    for (const id of [...this.nearIds].reverse()) { const t = this.tiles.get(id), w = t.widthFor(sz); x -= w; t.place(x, N.y, sz, w); x -= G; }
   }
 
   /** Lay the pair at the cluster's top edge and the strip over it (rows upward), right-aligned to the cluster, inside the strip's room. */
@@ -137,20 +184,21 @@ export class TouchStrip {
   update(now, on, cb) {
     const g = this.game, menuOpen = !!g.hudLayout?.stripTop && g.touchUI?.topBar?.folded === false; // (the top bar's row opened over the top row: the strip stands down under it)
     const show = !!on && !windowOpen(g) && !g.touch?.screenTaken?.() && !menuOpen; // (the pads or the paper hold the screen: the strip stands down, Petra's ruling)
-    const entries = show ? folding(stripOf(g), this.folded) : [], pair = show ? beltPairOf(g) : [];
-    const all = [...pair, ...entries];
+    const top = !!g.hudLayout?.stripTop, entries = show ? (top ? stripOf(g) : folding(stripOf(g), this.folded)) : [], pair = show ? beltPairOf(g) : [];
+    const near = show && top ? nearOf(g) : [], all = [...pair, ...entries, ...near];
     for (const e of all) this.tile(e);
-    const ids = entries.map((e) => e.id), pids = pair.map((e) => e.id);
-    const key = `${ids.join()}|${pids.join()}|${cb ? [cb.x, cb.y].map(Math.round).join() : ''}|${g.hudLayout?.stripTop ? JSON.stringify(g.hudLayout.areas.strip) : ''}|${all.map((e) => this.tiles.get(e.id).widthFor(STRIP.size)).join()}`;
+    const ids = entries.map((e) => e.id), pids = pair.map((e) => e.id), nids = near.map((e) => e.id);
+    const key = `${ids.join()}|${pids.join()}|${nids.join()}|${this.folded}|${cb ? [cb.x, cb.y].map(Math.round).join() : ''}|${g.hudLayout?.stripTop ? JSON.stringify(g.hudLayout.areas.strip) : ''}|${all.map((e) => this.tiles.get(e.id).widthFor(STRIP.size)).join()}`;
     this.entries = entries;
     const wasShown = this.shown; this.shown = show && all.length > 0;
     if (key !== this.key || wasShown !== this.shown) {
-      this.key = key; this.ids = ids; this.pair = pids;
-      for (const [id, t] of this.tiles) if (!ids.includes(id) && !pids.includes(id)) t.set({ hidden: true });
+      this.key = key; this.ids = ids; this.pair = pids; this.nearIds = nids;
+      for (const [id, t] of this.tiles) if (!ids.includes(id) && !pids.includes(id) && !nids.includes(id) && id !== MORE) t.set({ hidden: true });
       if (this.shown) this.layout(cb); else this.shelf.classList.add('off');
     }
-    if (!this.shown) { for (const t of this.tiles.values()) t.set({ hidden: true }); return; }
-    for (const e of all) { const t = this.tiles.get(e.id); if (t.over) { t.set({ hidden: true }); continue; } t.set({ hidden: false, lit: t.state.pressed || !!e.lit, dim: !!e.dim, charge: e.charge ?? 0, pips: e.pips ?? 0 }); t.update(now); }
+    if (!this.shown) { for (const t of this.tiles.values()) t.set({ hidden: true }); this.closeRadial(); return; }
+    const far = top ? new Set(this.farIds()) : null; if (far?.has(MORE)) { const m = this.tiles.get(MORE); if (!m.over) { m.set({ hidden: false, lit: !this.folded || m.state.pressed }); m.update(now); } }
+    for (const e of all) { const t = this.tiles.get(e.id); if (t.over || (far && !far.has(e.id) && !nids.includes(e.id))) { t.set({ hidden: true }); continue; } t.set({ hidden: false, lit: t.state.pressed || !!e.lit, dim: !!e.dim, charge: e.charge ?? 0, pips: e.pips ?? 0 }); t.update(now); }
   }
 
   /** The layout changed: stand again at the next frame. */

@@ -455,6 +455,7 @@ export class LachrimeterTube {
       slot.y = -(GAP * lineP + FOOT * s) + (1 - e) * (HEIGHT * s + GAP * lineP); // (it stands at the corner's foot, and sinks into the corner as it steps back)
     }
     this.inst.scale.setScalar(s);
+    this.inst.rotation.y = P && P.x + P.w / 2 < slot.view.w / 2 ? YAW : -YAW; // (bottom-left on a phone: turned the other way, its plinth, valve and link's end facing in; South, 2026-10-29: a turn, never a mirror, so its plate reads)
 
     // the numbers: the tube is the pool's uncapped size, the column the pool, the pale stretch what a charge holds
     const C = capOf(pool), full = Math.max(1, C.held > 0 ? C.full : max), cap = Math.min(1, max / full);

@@ -61,7 +61,7 @@ import { DUEL_VIEW } from '../vfx/duelview/layout.js';
 export const HUD_LAYOUT = {
   gutter: 8,            // (CSS px inside the safe area, every side: the layout margin)
   gap: 8,               // (CSS px between two things placed)
-  topBar: { h: 44, corner: 4, folded: 168, row: 56 }, // (the strip of window icons: one 44 px target tall; flush in the top-left corner, `corner` px in (South, 2026-10-29); its width folded (MENU, LOG, PAUSE: topbar.js); the top row's height, a tile, its foot and the shelf)
+  topBar: { h: 44, corner: 4, folded: 168, row: 52 }, // (the strip of window icons: one 44 px target tall; flush in the top-left corner, `corner` px in (South, 2026-10-29); its width folded (MENU, LOG, PAUSE: topbar.js); the top row's height, a tile, its foot and the shelf)
   // the cluster: the main tile (80) in the corner, the three others (60) on an arc round its centre at 180, 135 and 90 degrees
   // (left, up-left, up), `ring` from it; its rect is the arc's bounds: main / 2 + ring + side / 2 = 180 px square
   cluster: { main: 80, side: 60, gap: 10, get ring() { return this.main / 2 + this.gap + this.side / 2; }, get size() { return this.main / 2 + this.ring + this.side / 2; } },
@@ -70,7 +70,7 @@ export const HUD_LAYOUT = {
   log: { lines: 2, line: 18, pad: 6, maxW: 420 },
   strip: { budget: 180, minW: 150, side: 0.25 }, // (the strip's room: up to 180 px over the cluster (its pair and two rows), at least 150 wide; the bottom row
                         //  reaching left to a quarter of the view)
-  custom: { scale: [0.75, 1.3], stick: { fx: 0.11, fy: 0.72 }, ring: 60 }, // (the kept layout: the cluster's scale range (60 x 0.75 = 45 px, over 44); the stick's
+  custom: { scale: [0.75, 1.3], stick: { fx: 0.15, fy: 0.72 }, ring: 60 }, // (the kept layout: the cluster's scale range (60 x 0.75 = 45 px, over 44); the stick's
                         //  home by default, low in the move area; the ring kept clear round it (the stick's full push, ui/touch/stick.js STICK.full)) // (the ticker: two lines of 18 px (16 px type), at most 420 px wide)
   // the duel's phone screen: the board's padding off the safe height's ends, the least flank, the tiles (the tools' at most and least, END
   // TURN, FINISHER and FORM, FLEE), the tube's height (a phone held sideways), the tiles' foot; the top bar's tile, gap, PAUSE's gap and pad (topbar.js)
@@ -94,7 +94,7 @@ export class HudLayout {
     this.game = game;
     this.touch = false; this.portrait = false; this.turnHeld = false; this.duel = false; this.duelR = null;
     this.view = { w: 0, h: 0 }; this.safe = { t: 0, r: 0, b: 0, l: 0 }; this.su = 1;
-    this.areas = { move: rect(0, 0, 0, 0), look: rect(0, 0, 0, 0), cluster: rect(0, 0, 0, 0), topBar: rect(0, 0, 0, 0), artBar: rect(0, 0, 0, 0), strip: rect(0, 0, 0, 0) };
+    this.areas = { move: rect(0, 0, 0, 0), look: rect(0, 0, 0, 0), cluster: rect(0, 0, 0, 0), topBar: rect(0, 0, 0, 0), artBar: rect(0, 0, 0, 0), strip: rect(0, 0, 0, 0), near: rect(0, 0, 0, 0) };
     this.log = rect(0, 0, 0, 0); this.bounds = rect(0, 0, 0, 0);
     this.specs = new Map(); this.rects = new Map(); this.fns = new Set(); this.sig = ''; this.kept = null;
     for (const [id, s] of Object.entries(HUD_LAYOUT.instruments)) this.register(id, s);
@@ -152,7 +152,7 @@ export class HudLayout {
     this.rects.clear();
     const A = this.areas;
     A.move = rect(0, 0, V.w / 2, V.h); A.look = rect(V.w / 2, 0, V.w - V.w / 2, V.h);
-    A.cluster = rect(0, 0, 0, 0); A.topBar = rect(0, 0, 0, 0); A.artBar = rect(0, 0, 0, 0); // (cleared while the Sight is placed: it keeps clear of none of them)
+    A.cluster = rect(0, 0, 0, 0); A.topBar = rect(0, 0, 0, 0); A.artBar = rect(0, 0, 0, 0); A.near = rect(0, 0, 0, 0); // (cleared while the Sight is placed: it keeps clear of none of them)
     const sight = this.box('sight');
     // (upright the strip beside the Sight is narrow: the top bar may take the Sight's height there, its tiles wrapped into rows, ui/touch/topbar.js)
     // (on its side: flush in the top-left corner, a few px in (South, 2026-10-29: "flush with the top left corner, with only a few pixels of padding"))
@@ -178,8 +178,11 @@ export class HudLayout {
       // it, ending above the centre box (its top at a fifth of the height)
       const rx = A.topBar.x + H.topBar.folded + gap;
       A.strip = rect(rx, A.topBar.y, sx - gap - rx, H.topBar.row);
-      const y = A.topBar.y + H.topBar.row; // (its frame runs past a fifth of the height: kept in the left fifth's column instead, two short lines)
-      this.log = rect(B.x, y, Math.min(L.maxW, V.w * 0.2 - B.x), L.lines * L.line + L.pad); this.log.lines = L.lines;
+      // the ticker one line under the top bar and the far shelf (MOBILE.md 4.1: y 60..80 at 896 x 414), as wide as the room to the Sight
+      const y = A.topBar.y + H.topBar.row;
+      this.log = rect(B.x, y, Math.min(L.maxW, sx - gap - B.x), L.line + L.pad); this.log.lines = 1;
+      // the near shelf: three tiles over the cluster on the right edge (CROUCH, DASH, JUMP with a tool out; the helm's BROADSIDE, mounts)
+      const nh = 52 + 6; A.near = rect(A.cluster.x + A.cluster.w - (3 * 52 + 2 * 6), A.cluster.y - gap - nh, 3 * 52 + 2 * 6, nh);
     } else {
       this.log = rect(B.x, A.topBar.y + A.topBar.h + gap, Math.min(L.maxW, right - B.x), L.lines * L.line + L.pad);
       // the strip's room, against what stands before it (the Sight, the top bar, the log); reserved, so the instruments placed after keep off it
@@ -334,11 +337,20 @@ export class HudLayout {
 
   box(id, depth = 0) {
     if (this.duelR?.inst[id]) return this.duelR.inst[id]; // (the duel's phone screen: the tube small at the left flank's foot)
+    if (id === 'lachrimeterTube' && this.touch && !this.portrait) return this.footTube(); // (South, 2026-10-29: the duel's place, walking too)
     if (this.rects.has(id)) return this.rects.get(id);
     const spec = this.specs.get(id); if (!spec || depth > 4) return null;
     this.rects.set(id, null); // (a cycle reads as nothing)
     const r = this.touch && spec.touch ? this.solve(spec.touch, spec, depth) : this.desk(spec);
     this.rects.set(id, r); return r;
+  }
+
+  /** The Lachrimeter's tube on a phone on its side: the bottom-left corner, the duel's size (duelLayout's `tube`), so it never moves
+   *  between walking and a duel (South, 2026-10-29: "mirrored and put into the lower left corner ... match the position of the lachrimeter
+   *  within the Puzzle Duel module"). */
+  footTube() {
+    const B = this.bounds, D = HUD_LAYOUT.duel, T = HUD_LAYOUT.instruments.lachrimeterTube, w = (D.tube * T.w) / T.h;
+    return { x: B.x, y: B.y + B.h - D.tube, w, h: D.tube, scale: D.tube / T.h };
   }
 
   /** The desk's own rule (the 480-line present's lines, from the view's corner): what the instruments do without asking. */
