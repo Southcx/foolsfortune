@@ -48,6 +48,7 @@ export class DuelSpoils {
   /** Your turn's regen: "+N" at the bulb. */
   regen(e) {
     const V = this.view, at = V.tubeAt?.(new THREE.Vector3()); if (!at || !e.n) return;
-    V.juice.word(`+${e.n}`, at.add(_a.set(0.05, 0.12, 0)), 0x9fd8ff, { h: 0.1, dur: 0.9, rise: 0.12 });
+    const inward = V.game.hudLayout?.duelR ? 1 : -1; // (toward the board from the tube's side: the phone's flank is on the left, the desk's tube on the right)
+    V.juice.word(`+${e.n}`, at.add(_a.set(inward * 0.22, 0.2, 0)), 0x9fd8ff, { h: 0.17, dur: 1.0, rise: 0.12 });
   }
 }
