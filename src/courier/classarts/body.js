@@ -92,13 +92,13 @@ export class ClassArtsBody extends Tech {
   // ---- the action on its key --------------------------------------------------
   press() {
     const g = this.game, R = this.worn('action');
-    if (!R) { g.log?.say('warn', 'No art is worn as your action yet. /art lists yours.', { key: 'art.none', throttle: 3 }); return; }
-    if (!this.ready(R.id)) { g.log?.say('warn', `${R.label} is not ready yet.`, { key: 'art.cool', throttle: 1.5 }); sfx.fizzle?.(); return; }
+    if (!R) { g.log?.say('warn', 'You wear no action art yet. /art lists the ones you have opened.', { key: 'art.none', throttle: 3 }); return; }
+    if (!this.ready(R.id)) { g.log?.say('warn', `${R.label} is cooling down.`, { key: 'art.cool', throttle: 1.5 }); sfx.fizzle?.(); return; }
     const act = ACTS[R.id];
-    if (!act) { g.log?.say('warn', `${R.label} is not built yet.`, { key: 'art.unbuilt', throttle: 3 }); return; }
+    if (!act) { g.log?.say('warn', `${R.label} is not in the game yet.`, { key: 'art.unbuilt', throttle: 3 }); return; }
     const why = act.can?.(this, R);
     if (why) { g.log?.say('warn', why, { key: `art.no.${R.id}`, throttle: 1.5 }); sfx.fizzle?.(); return; }
-    if (R.cost && !g.lachryma?.spend(R.cost, 'art')) { g.log?.say('warn', `Not enough Lachryma for ${R.label}.`, { key: 'art.pay', throttle: 1.5 }); return; }
+    if (R.cost && !g.lachryma?.spend(R.cost, 'art')) { g.log?.say('warn', `Your pool is too low for ${R.label}.`, { key: 'art.pay', throttle: 1.5 }); return; }
     this.cool[R.id] = this.now + (R.cooldown ?? 0);
     act.go(this, R);
     g.events?.emit('art.use', { art: R.id, kind: 'action', accented: !!R.accented, by: 'courier' });
@@ -144,7 +144,7 @@ const ACTS = {
     go: (run, R) => { run.wadeK = R.does.paintSpeed; run.mgr.get?.('waterwalk')?.on(R.does.dur); },
   },
   ripostRush: { // within its window of a parry: blinked behind what was parried, and struck
-    can: (run, R) => { const p = run.parried; return p && p.c?.alive && run.now - p.at <= R.does.after ? null : 'Riposte Rush answers a parry: parry a blow first.'; },
+    can: (run, R) => { const p = run.parried; return p && p.c?.alive && run.now - p.at <= R.does.after ? null : 'Riposte Rush needs a parry first: parry a blow, then use it within 1 s.'; },
     go: (run, R) => {
       const P = run.P, c = run.parried.c; run.parried = null;
       const to = _b.copy(c.pos).sub(P.pos).setY(0), d = to.length(); if (d < 1e-3) return;
