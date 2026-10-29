@@ -23,6 +23,7 @@ export function poolRules({ L, log, g }) {
     }
   });
   P.on('gain', (e) => {
+    if (e.source === 'refund') return; // (a move cut short given back what it had not used: not absorbed, never counted)
     L.inc('lach.gain', e.amount); L.inc(`lach.gain.${e.source}`, e.amount);
     if (e.source === 'regen') return;
     sum = (at > L.play - 2.5 ? sum : 0) + e.amount; at = L.play; // (folded into one line)

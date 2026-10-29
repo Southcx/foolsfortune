@@ -8,7 +8,8 @@
 // tools/psygun/weapon.js reads it as another tool out) and lets go of what its trigger held, so nothing pressed lying down fires once
 // up; `busy` is also the passive techs' "both hands taken" (courier/moves/techs.js), as for a ladder or a swim. Once up (the getting up
 // played out: player.postureT), the tool that was in the hands is drawn again through the belt, so the hands are as they were left; one
-// put away by hand while it was still going back (its key pressed then) stays away.
+// put away by hand while it was still going back (its key pressed then) stays away. A seam or a teleport while prone (the techs' reset)
+// keeps the memo, so the tool is drawn again once they stand where they land.
 //
 // Prior art: Metal Gear Solid's crawl (nothing drawn on the belly; the gun along the body), The Last of Us's and Uncharted's holster on a
 // climb (put away for it and taken out again after), and this game's own psygun, which goes away for a ladder or a swim and comes back
@@ -32,7 +33,7 @@ export class ProneHolster extends Tech {
     this.memo = null; // the id of the tool that was in the hands as they went down
   }
   get busy() { return this.down; }
-  reset() { this.down = false; this.memo = null; }
+  reset() { this.down = false; } // (the memo is kept: a seam or a teleport while prone stands them up, and the tool comes back to the hands)
 
   update() {
     const P = this.P, g = this.game, belt = g.belt, inp = P.input;

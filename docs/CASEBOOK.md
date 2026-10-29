@@ -982,3 +982,5 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 NEW:shader-strings-are-code-too. **A shader's source is code, its comments too.** The check's comment rule does not read GLSL inside a
     template string: a `//` put mid-line there silences the rest of the line with only a link error at run time. Read a shader edit back
     whole, and run it once (a probe's error list) before pushing.
+NEW:cut-short-gives-back. **What was paid for and not given is given back.** A move or spell paid up front and cut short (a stow, a seam, going prone) refunds the share it never delivered, silently.
+NEW:a-reset-keeps-what-is-owed. **A reset clears state, not promises.** What a tech owes the player afterwards (a tool to draw again) survives a seam's reset.
