@@ -362,6 +362,7 @@ export class DuelSession {
     this.picked = null;
     const S = this.state, lucky = a.kind === 'flee' && S?.rerolls && !this.practice && this.game.classArtsRun?.lucky?.(); // (Beginner's Luck: the throw thrown again if it fails, courier/classarts/body.js)
     if (lucky) S.rerolls[0]++;
+    this.luckyFlee = !!lucky; // (the art's throw is spent first: duel.flee says lucky, and the game day's re-roll is kept, progress/dice.js)
     const ev = act(S, a);
     if (!ev) { sfx.dryFire?.(); this.view?.refuse?.(a); return; }
     this.run(ev);
@@ -423,7 +424,7 @@ export class DuelSession {
       if (e.type === 'secret.half') this.emit('duel.secret', { id: e.id, half: true, by: 'courier' });
       if (e.type === 'duel.secret') this.emit('duel.secret', { id: e.id, done: true, by: 'courier' });
       if (e.type === 'foe.desperate') this.emit('duel.desperate', { by: 'creature' });
-      if (e.type === 'flee') this.emit('duel.flee', { roll: e.roll, reroll: e.reroll ?? null, need: e.need, ok: e.ok, by: e.side === 0 ? 'courier' : 'creature' });
+      if (e.type === 'flee') { const lucky = e.side === 0 && this.luckyFlee && e.reroll != null; this.luckyFlee = false; this.emit('duel.flee', { roll: e.roll, reroll: e.reroll ?? null, need: e.need, ok: e.ok, ...(lucky ? { lucky: true } : {}), by: e.side === 0 ? 'courier' : 'creature' }); }
     }
     const done = () => { this.busy = false; this.botRun = false; if (this.armedPower && !this.mine) this.armPower(null); if (!this.active) return; if (this.state.winner !== null) this.finish(); else this.intent(); };
     const p = this.view?.play?.(events);
