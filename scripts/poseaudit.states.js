@@ -96,6 +96,7 @@ window.__paStates = (() => {
   add('loco.fallLand', 'locomotion', 'a fall from 7 m and the hard landing', (c) => { lab(c); c.P.pos.y += 7; c.P.prevPos.copy(c.P.pos); c.run(110); });
   add('loco.airDash', 'locomotion', 'a jump, then the air dash (Shift in the air)', (c) => lab(c).hold('KeyW').warm(20).press('Space').run(12).press('ShiftLeft').run(60));
   add('loco.slide', 'locomotion', 'a sprint into the slide (C)', (c) => lab(c).hold('KeyW', 'ShiftLeft').warm(45).press('KeyC').run(70));
+  add('loco.slideHeld', 'locomotion', 'a sprint into the slide, C held to its end and up', (c) => lab(c).hold('KeyW', 'ShiftLeft').warm(45).hold('KeyC').run(80).free('KeyC').run(40));
   add('loco.wallrun', 'locomotion', 'the wallrun (the course\'s station 4, the east wall) and its wall jump', (c) => {
     c.stand([35.2, B + 3, 20.6], 0).hold('KeyW', 'ShiftLeft').warm(14).press('Space').run(50).press('Space').run(50);
   });
@@ -180,6 +181,9 @@ window.__paStates = (() => {
     if (!ok) throw new Error(`the engine would not begin ${r.id}`);
     c.run(2).until(() => !M.cur && !k.stinging, 240).run(20);
   });
+  // (the Sondelass's slide: a sprint with the cutlass drawn into the core slide (C), held, and out of it: tools/sondelass/sondelassslide.js)
+  add('cutlass.slide', 'sondelass', 'the cutlass drawn, a sprint into the slide (C)', (c) => cut(c).hold('KeyW', 'ShiftLeft').warm(45).press('KeyC').run(70));
+  add('cutlass.slideHeld', 'sondelass', 'the cutlass drawn, a sprint into the slide, C held to its end and up', (c) => cut(c).hold('KeyW', 'ShiftLeft').warm(45).hold('KeyC').run(80).free('KeyC').run(40));
   add('cutlass.counter', 'sondelass', 'the guard up, then LMB: the counter (the spin slash)', (c) => cut(c).hold('KeyV').run(20).press('Mouse0').run(60).free('KeyV').run(20));
 
   // ---------------------------------------------------------------- the emotes (the list read from courier/emotes.js by poseaudit.mjs)
