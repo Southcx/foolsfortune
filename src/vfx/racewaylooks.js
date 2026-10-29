@@ -1,13 +1,15 @@
 // ---------------------------------------------------------------------------------------
 // THE RACEWAY'S LOOKS (docs/plans/SKIFF-RACING.md; the owner, 2026-10-13): what the skiff-racing track in the Dunes shows, each in place
-// of one of Dovina's placeholders (world/raceway/raceway.js, race.js). World marks only: no words, no numbers.
+// of one of Dovina's placeholders (world/raceway/raceway.js, race.js). World marks only: no words, and no numbers but the gates' own in
+// neuralese (South via Espada, 2026-10-29: things wear the numerals; a gate's number is never acted on, so no Arabic beside it).
 //   - THE SUN PLATES: each the sun's glyph set into the sand: a low glazed disc, gold rim and white face, sixteen rays; chevrons in front
 //     and behind running the track's way; a slow shimmer; ridden over, a flash and a ring of light (`raceway.plate`). ALL the plates are
 //     two merged meshes: the glazed glyph (lit) and its glow (added light; the chevrons scrolled by its map's offset), two draw calls.
 //   - THE START ARCH'S COUNTDOWN: three sun glyphs hung under the arch's lintel, facing the grid, lit one a count (3, 2, 1: race.count)
 //     and all three flaring on GO (race.go); they glow again while the line is next (the eight gates passed).
 //   - THE GATES: a small sun glyph on the face of each gate pillar; the next gate's pair glows (race.next), the rest stay dim; a gate
-//     passed flashes as it goes (race.gate). The arch's lamps and the gates' marks are one instanced mesh, lit by its instance colour,
+//     passed flashes as it goes (race.gate). Under each glyph the gate's number (1 ..) in a neuralese numeral, gold, its bus up: every
+//     track's in one merged mesh over one atlas (vfx/wornnumerals.js numeralDecals). The arch's lamps and the gates' marks are one instanced mesh, lit by its instance colour,
 //     their glow the shared particle pools (`raceway.lamp`, `raceway.gate`). Every material is stock and matches a program the boot
 //     already builds (measured: no program added, Petra's cap).
 //   - THE CARVE'S SPARKS BY TIER: while a carve loads (skiff.carve.charge { tier }), sand and sparks off the board's outside edge, growing
@@ -68,6 +70,7 @@ import { SkiffComboMarks, COMBO_MARKS, sunAt } from './skiffcombomarks.js';
 import { GrindBalanceMark } from './grindbalancemark.js';
 import { SkiffBoardLooks } from './skiffboardlooks.js';
 import { RacewayBuoys } from './racewaybuoys.js';
+import { numeralDecals } from './wornnumerals.js';
 
 /** The numbers: the plate's glyph (its radius in m, how far over the sand, the glow's size, the chevrons' scroll in tiles a real second);
  *  the shimmer (its rate, rad a real second, and the glow's low and high); the arch's lamps (radius, spacing, drop under the lintel, glow);
@@ -77,6 +80,7 @@ export const RACEWAY_LOOK = {
   shimmer: { rate: 0.9, lo: 0.22, hi: 0.4 },
   lamp: { r: 0.95, spacing: 2.9, drop: 1.6, glow: 4.2 },
   gateMark: { r: 0.6, up: 4.6, glow: 3.4 },
+  gateNumeral: { below: 1.45, size: 1.0, ink: '#f2c35a' }, // (metres under the glyph's middle; its height (width 1.4 of it): the pillar's face is 1.5 m)
   startMark: { r: 0.75, up: 5, out: 2.45, near: 16 }, // (a start pillar's: on its face toward the line, 5 m up, 2.45 m out from its axis; lit within 16 m)
   colour: { rim: 0xf2b33a, face: 0xfff3d6, boss: 0xf6c04e, rayLong: 0xffd77a, rayShort: 0xfff0c8, glow: 0xffd27a, flare: 0xfff4dc, emissive: 0xffb84a },
   ghost: { tint: 0xf0d49a, alpha: 0.62, slip: 0.25, flicker: 0.15, sweep: 0.7 },
@@ -324,6 +328,9 @@ export class RacewayLooks {
     const K = (this.marks = new THREE.InstancedMesh(sunGlyph(false), M0.marks, Math.max(1, marks.length)));
     marks.forEach((k, i) => { k.q = new THREE.Quaternion().setFromUnitVectors(UP, k.n); K.setMatrixAt(i, _m.compose(k.pos, k.q, _s.set(k.r, k.r, k.r))); K.setColorAt(i, _c.set(L.colour.rim).multiplyScalar(0.3)); k.glowAt = k.pos.clone().addScaledVector(k.n, 0.25); });
     K.count = marks.length; K.name = 'raceway-marks'; K.userData.zone = 'raceway'; K.frustumCulled = false; parent.add(K);
+    this.gateNumerals?.userData.dispose(); this.gateNumerals?.removeFromParent();
+    const nums = marks.filter((k) => k.kind === 'gate').map((k) => ({ n: k.gate + 1, pos: k.pos.clone().setY(k.pos.y - L.gateNumeral.below), normal: k.n, size: L.gateNumeral.size }));
+    if (nums.length) { const N = (this.gateNumerals = numeralDecals(nums, { ink: L.gateNumeral.ink, name: 'raceway-gate-numerals' })); N.userData.zone = 'raceway'; N.frustumCulled = false; parent.add(N); }
     this.markList = marks; this.markH = marks.map(() => null); this.startK = marks.map(() => 0);
     this.gateK = {}; this.gateFlash = {};
     for (const Tk of tracks) { this.gateK[Tk.id ?? 'sun'] = Tk.gates.map(() => 0); this.gateFlash[Tk.id ?? 'sun'] = Tk.gates.map(() => 0); }
@@ -457,6 +464,7 @@ export class RacewayLooks {
     this.strings?.dispose(); this.strings = null; this.stopGrind(); this.stopBoost();
     for (const m of [this.plates?.glyph, this.plates?.glow, this.marks]) if (m) { m.parent?.remove(m); m.geometry.dispose(); m.dispose?.(); }
     for (const h of this.markH || []) h?.stop();
+    if (this.gateNumerals) { this.gateNumerals.removeFromParent(); this.gateNumerals.userData.dispose(); this.gateNumerals = null; }
     this.plates = this.marks = null; this.markH = [];
   }
 

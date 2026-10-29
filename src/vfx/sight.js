@@ -14,7 +14,8 @@
 //                   is clear and still. The Dissonance Level makes it roil (rings with a lit crest at 1 and 2, eddies round a centred
 //                   vortex from 3, the labradorite film only at the eddies' edges at 4 and 5, the core bruised at 5).
 //   the clock ring  the game hour: four sliding plates for night, dawn, daytime and dusk (phaseAt's hours) and a hand with a lit bead;
-//                   dimmed inside a Well (no sky).
+//                   dimmed inside a Well (no sky). Every third hour (0 .. 21) in its neuralese numeral on the band (South via Espada,
+//                   2026-10-29: things wear the numerals; the hour is read, never acted on, so no Arabic beside it).
 //   the yoke        the Dissonance Level (`game.rejection.level`, 0..5): an arc creeping down its outer edge from the anode, five
 //                   studs lit one a level, flashing over into the cathode at 5.
 //   the wind vane  at the open sea's helm only: the wind's arrow on the rim where it blows from, the points of sail as a band round it,
@@ -37,6 +38,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { bakedCanvasTexture } from '../render/bakedcanvas.js';
+import { numeralFit } from './wornnumerals.js';
 import { T } from '../core/config.js';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { DAY_MS, now as calNow } from '../core/calendar.js';
@@ -187,11 +189,14 @@ function dialTex(c, L) {
   x.strokeStyle = `rgba(${L.loR},.85)`; x.lineWidth = 4; for (const rr of [PI0 - 0.012, PO + 0.012]) { x.beginPath(); x.arc(ctr, ctr, rr * u, 0, 7); x.stroke(); }
   x.lineCap = 'round';
   for (let i = 0; i < 48; i++) {
-    const h = i / 2, maj = i % 2 === 0; if (i % 12 === 0) continue; const [a1, b1] = tp(...P(h, PO + 0.03)), [a2, b2] = tp(...P(h, maj ? RO - 0.04 : RO - 0.075));
+    const h = i / 2, maj = i % 2 === 0; if (i % 6 === 0) continue; const [a1, b1] = tp(...P(h, PO + 0.03)), [a2, b2] = tp(...P(h, maj ? RO - 0.04 : RO - 0.075));
     x.strokeStyle = maj ? 'rgba(236,224,200,.85)' : 'rgba(236,224,200,.45)'; x.lineWidth = maj ? 4 : 2.5; x.beginPath(); x.moveTo(a1, b1); x.lineTo(a2, b2); x.stroke();
   }
-  x.font = `44px ${COUNT}`; x.textAlign = 'center'; x.textBaseline = 'middle';
-  for (const h of [0, 6, 12, 18]) { const [px, py] = tp(...P(h, (PO + RO) / 2 + 0.005)); x.save(); x.translate(px, py); x.rotate(-rot(h)); x.fillStyle = `rgba(${L.loR},.8)`; x.fillText(String(h), 0, 3); x.fillStyle = '#ecdcc0'; x.fillText(String(h), 0, 0); x.restore(); }
+  // the hours in neuralese numerals, every third, their bus toward the rim (vfx/wornnumerals.js; the wadokei counted its hours in numbers)
+  for (let h = 0; h < 24; h += 3) {
+    const [px, py] = tp(...P(h, (PO + RO) / 2 + 0.005)), o = { w: 0.2 * u, h: 0.11 * u, lw: 7, max: 9 }; x.save(); x.translate(px, py); x.rotate(-rot(h));
+    numeralFit(x, h, { ...o, y: 3, ink: `rgba(${L.loR},.8)` }); numeralFit(x, h, { ...o, ink: '#ecdcc0' }); x.restore();
+  }
   x.strokeStyle = '#e8b84a'; x.lineWidth = 3; x.beginPath(); let [qx, qy] = tp(...P(15.3, RI)); x.moveTo(qx, qy);
   for (let k = 1; k <= 6; k++) { [qx, qy] = tp(...P(15.3 + k * 0.06 + (R() - 0.5) * 0.1, RI + (RO - RI) * k / 6)); x.lineTo(qx + (R() - 0.5) * 8, qy + (R() - 0.5) * 8); } x.stroke();
 }

@@ -5,7 +5,8 @@
 //   the BULB        the pool's base, Lachryma held in labradorite dark, the schiller (violet, teal, gold, magenta) flashing in it
 //   the COLUMN      the pool itself, lit Lachryma in a hand-blown bore; its meniscus (a bright line and a glow) is where the pool stands,
 //                   the first thing the eye finds; etched frost ticks on the glass, a long one each 25%, a short one each 5%
-//   the SCALE PLATE tenmoku-glazed clay (hare's fur, the glaze breaking rust at its edges) behind the column, gilt ticks cut through it
+//   the SCALE PLATE tenmoku-glazed clay (hare's fur, the glaze breaking rust at its edges) behind the column, gilt ticks cut through it,
+//                   0 .. 100 at its long ones in neuralese numerals (vfx/wornnumerals.js; South via Espada, 2026-10-29), the COUNT the Arabic
 //   the COUNT       a VFD tube in a brass plate on the plinth: the pool and its full size, cyan-green, its unlit segments ghosting
 //   the HELD STRETCH the bore a cap on the pool holds off (progress/poolcaps.js `capOf`), crazed glass with the clay's cracks in it above
 //                   a cracked clay seal at the cap line, its ticks dimmed; its tag (a small System window, one bend in its leader) says
@@ -51,6 +52,7 @@ import { theme, THEMES, FONT } from '../ui/theme.js';
 import { BlinkPearls, PEARL_KIND } from './lachrimeter/blinkpearls.js';
 import { CubePlate, PLATE_W, PLATE_H } from './lachrimeter/cubeplate.js';
 import { letGo } from './letgo.js';
+import { numeralFit } from './wornnumerals.js';
 
 // the instrument's own units (the mock's): the bulb at the origin, the scale from Y0 (empty) to Y1 (full), the plate behind
 const Y0 = 0.55, Y1 = 3.55, yOf = (p) => Y0 + (Y1 - Y0) * p;
@@ -104,12 +106,11 @@ function drawPlate(c, L = PLATE_STOCK) {
   const eg = x.createLinearGradient(0, 0, W, 0); eg.addColorStop(0, `rgba(${L.edge},.55)`); eg.addColorStop(0.06, 'rgba(0,0,0,0)'); eg.addColorStop(0.94, 'rgba(0,0,0,0)'); eg.addColorStop(1, `rgba(${L.edge},.55)`); x.fillStyle = eg; x.fillRect(0, 0, W, H);
   const vg = x.createLinearGradient(0, 0, 0, H); vg.addColorStop(0, `rgba(${L.edge},.45)`); vg.addColorStop(0.03, 'rgba(0,0,0,0)'); vg.addColorStop(0.97, 'rgba(0,0,0,0)'); vg.addColorStop(1, `rgba(${L.edge},.45)`); x.fillStyle = vg; x.fillRect(0, 0, W, H);
   const u = (X) => ((X - PL.x0) / (PL.x1 - PL.x0)) * W, v = (Y) => (1 - (Y - PL.y0) / (PL.y1 - PL.y0)) * H;
-  x.font = `26px ${COUNT_FONT}`; x.textAlign = 'right'; x.textBaseline = 'middle';
   for (let i = 0; i <= 20; i++) {
     const maj = i % 5 === 0, y = v(yOf(i / 20)), a = u(0.27), b = u(maj ? 0.5 : 0.4);
     x.fillStyle = L.cut; x.fillRect(a, y - (maj ? 2.5 : 1.5) + 1, b - a, maj ? 5 : 3); // (the cut)
     x.fillStyle = maj ? L.gilt : L.minor; x.fillRect(a, y - (maj ? 2 : 1), b - a, maj ? 4 : 2); // (the gilt in it)
-    if (maj) { x.fillStyle = L.cut; x.fillText(i * 5, u(0.71) + 1, y + 1); x.fillStyle = L.gilt; x.fillText(i * 5, u(0.71), y); }
+    if (maj) for (const [d, ink] of [[1.5, L.cut], [0, L.gilt]]) numeralFit(x, i * 5, { x: u(0.625) + d, y: y + d, w: 60, h: 40, ink, lw: 5, max: 3.1 }); // (one size for all five: 100's three digits set it)
   }
   x.fillStyle = L.minor; x.fillRect(u(0.27), v(yOf(1)), 2, v(yOf(0)) - v(yOf(1)));
 }
