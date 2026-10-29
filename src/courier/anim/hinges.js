@@ -62,11 +62,12 @@ export const TURN_SPEED = 360 * DEG;
  *  faster than a clip's frame steps. */
 export const TURN_SPEED_POSED = 720 * DEG;
 /** The clips repaired: every set of the suite (the core movement's Loco_, Air_ and Trav_; the tools' Sond_, Brush_, Vane_, Bell_, Lock_,
- *  Tome_, Gun_ and Fist_; the Solar Skiff's rider; the emotes, dances, flirts and taunts), and the old pack's swim and tread. The core
- *  movement's first (2026-10-10), the Sondelass's next; the rest in the owner's animation review (2026-10-11: "Clipping with the body
- *  or breaking joints is not [acceptable]"), the posed arms squared with them whatever is in the hands (character.js). */
+ *  Tome_, Gun_ and Fist_; the melee loadout's CMU blows, Cmu_, scripts/bake_cmu.mjs; the Solar Skiff's rider; the emotes, dances, flirts
+ *  and taunts), and the old pack's swim and tread. The core movement's first (2026-10-10), the Sondelass's next; the rest in the
+ *  owner's animation review (2026-10-11: "Clipping with the body or breaking joints is not [acceptable]"), the posed arms squared with
+ *  them whatever is in the hands (character.js). */
 const OLD = new Set(['swim', 'tread']);
-export const HINGED = (name) => /^(Loco|Air|Trav|Sond|Brush|Vane|Bell|Lock|Tome|Gun|Fist|Skiff|Emote|Dance|Flirt|Taunt)_/.test(name) || OLD.has(name);
+export const HINGED = (name) => /^(Loco|Air|Trav|Sond|Brush|Vane|Bell|Lock|Tome|Gun|Fist|Cmu|Skiff|Emote|Dance|Flirt|Taunt)_/.test(name) || OLD.has(name);
 
 // ---- quaternions [x, y, z, w] and vectors, plain (this runs over every frame of every clip it repairs, once) ----
 const mul = (a, b, o = [0, 0, 0, 0]) => {
