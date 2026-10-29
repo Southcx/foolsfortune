@@ -19,12 +19,13 @@
 import * as THREE from 'three';
 
 export const ART_LOOK = {
-  film: 0x9ad8ff, gold: 0xffd36a, ember: 0xff7a2a, ward: 0xcfe8ff,
+  film: 0x9ad8ff, gold: 0xffd36a, ember: 0xff7a2a, ward: 0x7fb8e8,
   ring: { out: 2.6, life: 0.5 },   // a thrown ring's reach (m) and life (real s)
   shell: { r: 0.62, h: 1.9 },      // Bulwark's shell round the body (m)
 };
 
-const ringMat = (hex, opacity) => new THREE.MeshBasicMaterial({ color: hex, transparent: true, opacity, depthWrite: false, side: THREE.DoubleSide, blending: THREE.AdditiveBlending });
+// (normal blending: an additive mark vanished on the Dunes' bright sand, the phone's shot)
+const ringMat = (hex, opacity) => new THREE.MeshBasicMaterial({ color: hex, transparent: true, opacity, depthWrite: false, side: THREE.DoubleSide });
 
 export class ClassArtLooks {
   constructor(game) {
@@ -34,9 +35,10 @@ export class ClassArtLooks {
     this.ringGeo = ringGeo;
     this.steady = new THREE.Mesh(ringGeo, ringMat(ART_LOOK.gold, 0.8)); this.steady.scale.setScalar(0.55);
     this.empty = new THREE.Mesh(ringGeo, ringMat(ART_LOOK.film, 0.55)); this.empty.scale.setScalar(0.8);
-    this.band = new THREE.Mesh(new THREE.TorusGeometry(0.34, 0.025, 6, 40).rotateX(Math.PI / 2), ringMat(ART_LOOK.ember, 0.9)); this.band.position.y = 0.95;
+    this.band = new THREE.Mesh(new THREE.TorusGeometry(0.36, 0.05, 6, 40).rotateX(Math.PI / 2), ringMat(ART_LOOK.ember, 0.9)); this.band.position.y = 0.95;
     const S = ART_LOOK.shell;
-    this.shell = new THREE.Mesh(new THREE.CylinderGeometry(S.r, S.r * 1.08, S.h, 24, 1, true), ringMat(ART_LOOK.ward, 0.16)); this.shell.position.y = S.h / 2;
+    this.shell = new THREE.Mesh(new THREE.CylinderGeometry(S.r, S.r * 1.08, S.h, 24, 1, true), ringMat(ART_LOOK.ward, 0.3)); this.shell.position.y = S.h / 2;
+    for (const y of [0.04, S.h - 0.04]) { const rim = new THREE.Mesh(new THREE.TorusGeometry(S.r * (y < 1 ? 1.08 : 1), 0.03, 6, 40).rotateX(Math.PI / 2), ringMat(ART_LOOK.gold, 0.9)); rim.position.y = y - S.h / 2; this.shell.add(rim); }
     this.marks = [this.steady, this.empty, this.band, this.shell];
     for (const m of this.marks) { m.visible = false; m.renderOrder = 3; root.add(m); }
     const tick = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicMaterial()); tick.frustumCulled = false; // (never culled: the frame's update rides its onBeforeRender)
@@ -62,7 +64,7 @@ export class ClassArtLooks {
       this.root.position.copy(P.renderPos);
       const pulse = 0.5 + 0.5 * Math.sin(this.t * 5);
       this.shell.visible = !!run && run.now < run.braceUntil;
-      if (this.shell.visible) { this.shell.material.opacity = 0.12 + 0.1 * pulse; this.shell.rotation.y += dt * 0.6; }
+      if (this.shell.visible) { this.shell.material.opacity = 0.22 + 0.12 * pulse; this.shell.rotation.y += dt * 0.6; }
       this.band.visible = !!run?.momentum; if (this.band.visible) { this.band.rotation.y += dt * 4; this.band.material.opacity = 0.6 + 0.35 * pulse; }
       this.steady.visible = !!run?.steady; if (this.steady.visible) this.steady.material.opacity = 0.5 + 0.35 * pulse;
       this.empty.visible = !!run && run.freeUntil >= 0 && run.now < run.freeUntil; if (this.empty.visible) this.empty.rotation.y += dt * 0.8;
