@@ -17,7 +17,8 @@ Tiling textures (`src/assets/textures/`, for the triplanar material): ambientCG,
 Ground079S (`sand_packed`), Rock061 (`rock`), Tiles144 (`clay_floor`), Plaster001 (`plaster`), PavingStones128 (`stone_flags`); graded to
 the game's palette and taken to 256 px by `scripts/bake_textures.py`.
 Motion capture: CMU Graphics Lab Motion Capture Database, free for research and games, no resale of the data itself
-(http://mocap.cs.cmu.edu); `src/assets/anims_cmu.bin` is that pack.
+(http://mocap.cs.cmu.edu); `src/assets/anims_cmu.bin` is that pack, from Bruce Hahne's BVH conversion (cgspeed). The melee loadout's
+kicks and off-hand blows are its trials 135_04, 135_07, 135_09, 135_11 (karate), 14_01 (boxing), 86_06, 74_03, 75_16, 88_06 and 90_05.
 
 Pronunciations: the CMU Pronouncing Dictionary, Copyright (C) 1993-2015 Carnegie Mellon University, BSD licence (its notice is kept in
 `src/audio/voice/speech/lexicon.data.js`; `node scripts/build_lexicon.mjs` rebuilds it).

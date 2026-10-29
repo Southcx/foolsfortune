@@ -127,6 +127,17 @@ export const STANCES = {
     base: 'sprint', exaggerate: [0.15, '^(upper_arm|forearm|hand)R$'],
     nudge: [['R', [0.062, -0.239, -0.103], [-0.7, 1.15, 0.35]]], aim: [['R', CUTLASS_LINE, [-0.03, -0.22, -0.97]]],
   },
+  // THE CUTLASS'S DRAWN SLIDE (Calissa's, 2026-10-29; tools/sondelass/drawnslide.js): the drawn run's idiom carried into the core slide.
+  // No blade slide in the suite, UAL or CMU (the suite's Trav_SlideKnee is the knee slide of a celebration, arms flung wide; its
+  // Brush_BrushSlide is a board rider's, side-on); so the slide's own loop (Trav_SlideLoop: the baseball slide, reclined, the lead leg out,
+  // the free hand already trailing on the floor beside the hip) with only the blade arm set: the hand out beside the right hip and low
+  // (the elbow carried out to the side and back, the forearm hanging under it), the cutlass laid along `aim` behind them, back, a little
+  // out and down, its point trailing over the floor a hand's width up (Strider's and Zero's slide with the blade behind; Ghost of
+  // Tsushima's dodge-slide with the katana held low and back). The fingers Sond_Idle's (the grip); the arm's own swing at 0.3.
+  cutlassSlide: {
+    base: 'slideLoop', overlay: [['Sond_Idle', '^(f_|thumb).*R$']], exaggerate: [0.3, '^(upper_arm|forearm|hand)R$'],
+    reach: [['R', [-0.34, 0.2, -0.12], [-0.8, 0.55, -0.1]]], aim: [['R', CUTLASS_LINE, [-0.22, -0.1, -0.97]]],
+  },
   // THE IAIDO'S CHARGE (the owner, 2026-10-11: "an Iaido-like striking pose for the charge-up"; crouched, hold RMB: cutlass.js). No iaido
   // in the suite, UAL or CMU; the suite's own Gun_QuickDraw at its first frame is the nearest (low, the hand at the hip before the draw),
   // its fingers the cutlass's (Sond_Idle's grip). The battojutsu's hold laid over it, as a sheathed blade lies beside the left hip and not

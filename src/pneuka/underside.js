@@ -17,7 +17,8 @@
 //
 //   const U = new Underside(game, reading, onChange)   U.mount(host)   U.slim (the view shows)   U.atView(x, y, button) -> bool   U.held   UNDERSIDE_CSS
 // ---------------------------------------------------------------------------------------
-import { SPREADS, SUITS, COLS, ROWS, MIRROR, MAJOR_SUIT, FOOTPRINTS, TALLY, FOOL_CELL, effectOf, cellIndex } from '../progress/spreads.js';
+import { SPREADS, SUITS, COLS, ROWS, MIRROR, MAJOR_SUIT, FOOTPRINTS, TALLY, FOOL_CELL, effectOf, cellIndex, dayCard } from '../progress/spreads.js';
+import { today } from '../core/calendar.js';
 import { ARCANA } from '../tools/veritome/arcana.js';
 import { OPEN_AT } from './reading.js';
 import { UNDERSIDE_LOOK } from '../ui/undersidelook.js';
@@ -28,6 +29,9 @@ const BY_ID = Object.fromEntries(ARCANA.map((A, n) => [A.id, { ...A, n }]));
  *  the wild card's purple stays until the film has a CSS of its own. */
 const SUIT_CSS = { ...UNDERSIDE_LOOK.suits, wild: '#b58cff' };
 const NAME = { wands: 'Wands', cups: 'Cups', swords: 'Swords', pentacles: 'Pentacles', wild: 'wild' };
+/** A planet's line (Espada's, SPREADS.md 3): "planet" is the wanderer, so it visits every suit; the Fool, wild as the significator, has none. */
+const WILD_TIP = 'A planet: it wanders through every sign, so it lights every suit, a little less brightly.';
+const wildTip = (card, suit) => (suit === 'wild' && card !== 'fool' ? WILD_TIP : '');
 const CELL = 46; // (px a cell of the cloth)
 const REACH = 40; // (px from a place's middle a held card is laid there: about a card's half width at the reading's distance)
 const el = (tag, cls, html) => { const e = document.createElement(tag); if (cls) e.className = cls; if (html !== undefined) e.innerHTML = html; return e; };
@@ -133,11 +137,12 @@ export class Underside {
     for (const p of S.positions) {
       if (p.fixed) continue; // (the Fool: its cell is marked, under the Present)
       const L = p.pair ? (pair && R.bound().has(pair) ? { card: pair } : null) : R.laid[p.id];
-      const d = el('div', `us-pos ${L ? 'laid' : 'empty'}${L?.reversed ? ' rev' : ''}${p.pair ? ' pair' : ''}`);
+      const d = el('div', `us-pos ${L ? 'laid' : 'empty'}${L?.reversed ? ' rev' : ''}${p.pair ? ' pair' : ''}${L && L.card === dayCard(today()) ? ' today' : ''}`); // (today: the day's card, its strength doubled; undersidelook.js's gold rim and star)
       d.style.left = `${p.at[0] * CELL + CELL / 2 + (p.turn ? 10 : 0)}px`; d.style.top = `${p.at[1] * CELL + CELL / 2 + (p.turn ? 10 : 0)}px`;
       if (p.turn || L?.reversed) d.style.transform = `rotate(${(p.turn || 0) + (L?.reversed ? 180 : 0)}deg)`;
       const suit = L ? (p.pair ? MAJOR_SUIT[L.card] : R.suitAt(p.id)) : null;
       d.innerHTML = L ? `<b>${ROMAN[BY_ID[L.card].n]}</b>${BY_ID[L.card].name.replace(/^The /, '')}<i style="background:${SUIT_CSS[suit]}"></i>` : '';
+      if (L) d.title = wildTip(L.card, suit);
       const lbl = el('span', 'us-lbl', p.pair ? `${p.label} · your pair` : p.label); // (beside the card, never turned with it)
       lbl.style.left = `${p.at[0] * CELL + CELL / 2 - 45 + (p.turn ? 26 : 0)}px`; lbl.style.top = `${p.at[1] * CELL + CELL / 2 + (p.turn ? -8 : 31)}px`;
       cloth.appendChild(lbl);
@@ -162,7 +167,8 @@ export class Underside {
     const hand = el('div', 'us-hand');
     for (const id of this.reading.hand()) {
       const A = BY_ID[id], suit = MAJOR_SUIT[id];
-      const d = el('div', `us-card${this.held === id ? ' held' : ''}`, `<b>${ROMAN[A.n]}</b>${A.name.replace(/^The /, '')}<span style="color:${SUIT_CSS[suit]};text-shadow:0 0 1px #000">${NAME[suit]}</span><span>${FOOTPRINTS[id].length} cells</span>`);
+      const d = el('div', `us-card${this.held === id ? ' held' : ''}${id === dayCard(today()) ? ' today' : ''}`, `<b>${ROMAN[A.n]}</b>${A.name.replace(/^The /, '')}<span style="color:${SUIT_CSS[suit]};text-shadow:0 0 1px #000">${NAME[suit]}</span><span>${FOOTPRINTS[id].length} cells</span>`);
+      d.title = wildTip(id, suit);
       d.onclick = () => { this.held = this.held === id ? null : id; this.onChange?.(); };
       d.draggable = true; d.ondragstart = (e) => { this.held = id; e.dataTransfer.setData('text/plain', `card:${id}`); }; // (onto the reading view: the window's drop, pneuka/ui.js)
       hand.appendChild(d);

@@ -4337,3 +4337,42 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   GLSL inside a template string, so the gate passed it.
 - **Fix:** the comment moved to the line's end; the probe's error list read clean.
 - **Rule:** NEW:shader-strings-are-code-too
+
+### 2026-10-29 · Going prone mid-fan lost the fan's 8 Lachryma (Calissa's queue, from the prone holster's round)
+- **Seen:** fanning the hammer (Q) and dropping prone before the last slap: the gun went away, the unfired shots never came, and the 8
+  Lachryma paid at the fan's start were gone.
+- **Cause (as read):** the fan pays its whole cost at `begin` (tools/moveset.js); the prone holster's stow cancels the move
+  (`GunMoves.cancel`), which dropped the shots still due without giving anything back.
+- **Fix:** `GunMoves.cancel` gives back the share of the cost its unfired shots were paid with (`lachryma.gain(..., 'refund')`); a
+  refund is neither said in the log nor counted as absorbed (tracking/pool.js).
+- **Rule:** NEW:cut-short-gives-back
+
+### 2026-10-29 · A seam or teleport while prone forgot the tool to draw again (Calissa's queue)
+- **Seen:** prone with the Sondelass put away by the prone holster, a seam (the Index, a Shrine's travel) stood the Courier up empty-handed.
+- **Cause (as read):** the seam resets every tech (`techs.reset`); the prone holster's `reset` cleared its memo with its state.
+- **Fix:** `reset` keeps the memo; once standing where they land, the tool is drawn again through the belt (if still worn and the hands free).
+- **Rule:** NEW:a-reset-keeps-what-is-owed
+
+### 2026-10-29 · A lock-on held into a puzzle duel stayed on (South, on the phone)
+- **Seen:** locked on to an aberrant Lantern Wisp as its duel opened, the lock's tag (its HP and agitation, ??? unread) hung over the
+  foe's half of the board for the whole duel.
+- **Cause (as read):** the duel's session held the world (`pocket`) but never the lock-on; `LockOn.update` went on keeping its target,
+  and the creature tag follows the lock's target (`vfx/creaturetags.js`).
+- **Fix:** the pocket lets the lock go (`release('duel')`), and `LockOn.update` neither keeps nor takes one while a duel is open or
+  pending (the touch lock included). Headless: held before the open, none in the duel.
+- **Rule:** NEW:an-instance-lets-go-of-the-world
+
+### 2026-10-29 · The DEBUG save's puzzle duels dimmed every feeling (South, on the phone)
+- **Seen:** in DEBUG, every gem on your half of a duel drawn dim (unlit, a coloured keyline): all seven feelings locked.
+- **Cause (as read):** the dim list came straight from the ledger (`notAwakened(g.ledger)`), with no ask of the lend panel; the brush,
+  the lure ring and the miracles ask `game.lend.has('feelings')` beside the ledger, the duel's new gate did not. The lend's own line
+  still read "Gall and Fury known".
+- **Fix:** the session passes no dim gems while Feelings is lent; the lend's line reads "Every feeling known". Headless: DEBUG duel, `dim` empty.
+- **Rule:** NEW:a-new-gate-asks-the-lend
+
+### 2026-10-29 · The Raceway's trap placeholders stood on the mirrored side (Calissa's builder, dressing the traps)
+- **Seen:** the rising pillars' placeholder raised lane 0 on the side where lane 2 hits; the Wisp turret's lamp stood across the track from where its ball flies.
+- **Cause (as read):** `frameAt` lays a point at lateral `lat` and the placed root's local x runs as `-lat` (the sinkhole already used
+  `-lat`), but the pillars and the turret laid their local x as `+lat`. The rules (`lane`, `cast` at lat -(W + 4)) were right; only the looks were mirrored.
+- **Fix:** the pillars at local x `W - 2W(l + 0.5)/3` and the turret's post and lamp at local x `W + 4` (`world/raceway/traps.js place`). The lamp's parry home now meets where the ball came from.
+- **Rule:** NEW:a-look-reads-its-rule-frame

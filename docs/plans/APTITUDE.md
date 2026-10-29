@@ -158,6 +158,20 @@ The design waits for the owner's talk; this section only marks where it would pl
 4. **The standard trials, one at a time.** First the rail's Go/No-Go (d′), then the crystal's pitch threshold (cents), the press's colour
    threshold (ΔE), and the rhythm mode's asynchrony (ms).
 5. **The Touchstone**, then the god hand's puzzles in it (section 5).
+
+**Built (2026-10-29):**
+- **Step 2, the bot check** (`scripts/assaybot.mjs`, one PASS/FAIL line a check): a bot with set settings plays each passive reading and
+  each standard trial, and the score gives its settings back (the passive medians within 15%; a staircase's threshold, the median of 200
+  runs, within 20%; d' within 0.3; the reaction box within 10 ms; tapping's spread within 12%, a 35 ms latency beside it not leaking in).
+  An agent's, another's and a practice's samples are dropped. One staircase run is noisy (its quartiles about 15% either side of the
+  set point), so the Assay shows a trial's median over runs, never one run alone.
+- **Step 4's trials as data** (`src/progress/assaytrials.js`, `TRIALS`; Petra's ask): Go / No-Go (d', 60 lights, a quarter outlined),
+  the pitch threshold (cents, two crystals, which is higher), the colour threshold (deltaE in Oklab x 100, the odd tile of three), tapping
+  (ms of spread, 40 taps at 100 beats a real minute, the first 4 dropped) and the reaction box (ms, 20 windups after 1 to 3 real s,
+  under 100 ms a guess). The thresholds are 3-down-1-up staircases (the 79.4% point, the geometric mean of the last 6 of 10
+  reversals). The room hands over what happened (`assay.trial.end { trial, record }`); `game.aptitude` scores it (`scoreTrial`), keeps
+  it apart from the passive readings (`trial.<id>`, ledger `aptitude.trial.<id>.n` and `.best`) and says it (`aptitude.trial`, announced
+  as one, 10.4). The room, its stimuli and its look are Petra's, Calissa's and Wanda's.
 6. **The puzzle fights** (section 6), with the owner's module.
 
 ## 10. Ruled (the owner, 2026-10-18)

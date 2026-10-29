@@ -57,6 +57,10 @@ import { trackEditorRules } from './trackeditor.js';
 import { stunRules } from './stun.js';
 import { sightRules } from './sight.js';
 import { goalsRules } from './goals.js';
+import { aptitudeRules } from './aptitude.js';
+import { classArtsRules } from './classarts.js';
+import { classArtsPlayRules } from './classartsplay.js';
+import { pairWornRules } from './pairworn.js';
 import { worldShellRules } from './worldshells.js';
 import { saveRules } from './save.js';
 import { roomHelpRules } from './roomhelp.js';
@@ -135,6 +139,10 @@ export function areaRules(ctx) {
   stunRules(ctx); // (the stun and its depth: dazed, stunned, out cold)
   sightRules(ctx); // (the Sight's waypoint, set and cleared)
   goalsRules(ctx); // (the game day's three goals: progress/goals.js)
+  aptitudeRules(ctx); // (the Assay's readings, said on /assay: progress/aptitude.js)
+  classArtsRules(ctx); // (a class's arts opened, worn and asked for: progress/classarts.js)
+  classArtsPlayRules(ctx); // (a class's arts used, firing and wearing off: courier/classarts/body.js)
+  pairWornRules(ctx); // (a pair worn: the counts its special opens by, tracking/pairworn.js)
   godRules(ctx);
   openSeaRules(ctx); // (the open sea: docs/plans/OPEN-SEA.md)
   seaSerpentRules(ctx); // (the sea serpent and the hull at the free helm: world/opensea/seafight.js)

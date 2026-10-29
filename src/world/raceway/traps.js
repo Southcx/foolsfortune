@@ -50,6 +50,7 @@ export class Traps {
   }
   clear() {
     this.T = null;
+    for (const Tp of this.list) Tp.look?.dispose?.(); // (a dressed look lets go of what it shares first: vfx/racewaytraps.js)
     if (this.group) { this.group.traverse((o) => { o.geometry?.dispose?.(); o.material?.dispose?.(); }); this.group.removeFromParent(); this.group = null; }
     this.list = []; this.balls = [];
   }
@@ -87,23 +88,25 @@ export class Traps {
   /** The trap nearest a park-local point (for the haunt mode's click), or -1. */
   nearest(lx, lz, within = 18) { let best = -1, bd = within; this.list.forEach((Tp, i) => { const p = Tp.look.root.position, d = Math.hypot(p.x - (RW.x + lx), p.z - (RW.z + lz)); if (d < bd) { bd = d; best = i; } }); return best; }
 
-  // ---------------------------------------------------------------- the placeholders (Calissa's to dress: a trap's body, its tell)
+  // ---------------------------------------------------------------- the placeholders (dressed by Calissa's vfx/racewaytraps.js; these stand if it is not there)
   place(Tp) {
+    const dressed = this.game.racewayTraps?.place?.(Tp, this); if (dressed) return dressed;
     const K = Tp.K, root = new THREE.Group(), { F, pos } = this.frameAt(Tp.s, 0); root.position.copy(pos); root.rotation.y = Math.atan2(F.fx, F.fz); this.group.add(root);
     const mat = (c, o = 1) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.8, transparent: o < 1, opacity: o, flatShading: true });
     const glow = new THREE.MeshBasicMaterial({ color: GLOW.idle, transparent: true, opacity: 0.55, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3 });
     const look = { root, glow, parts: [] }, W = F.w;
     const pad = (w, len, x = 0, z = 0) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(w, len).rotateX(-Math.PI / 2), glow); m.position.set(x, 0.1, z); root.add(m); return m; };
-    if (Tp.kind === 'pillars') { for (let l = 0; l < 3; l++) { const m = new THREE.Mesh(new THREE.BoxGeometry((2 * W) / 3 - 0.4, K.size.h, K.size.len), mat(0xd9906a)); m.position.set(-W + (2 * W * (l + 0.5)) / 3, -K.size.h, 0); root.add(m); look.parts.push(m); } pad(2 * W, K.size.len + 2); }
+    if (Tp.kind === 'pillars') { for (let l = 0; l < 3; l++) { const m = new THREE.Mesh(new THREE.BoxGeometry((2 * W) / 3 - 0.4, K.size.h, K.size.len), mat(0xd9906a)); m.position.set(W - (2 * W * (l + 0.5)) / 3, -K.size.h, 0); /* (local x is -lat, as frameAt lays it: lane 0 at lat -W) */ root.add(m); look.parts.push(m); } pad(2 * W, K.size.len + 2); }
     else if (Tp.kind === 'pendulum') { for (const x of [-(W + 2), W + 2]) { const p = new THREE.Mesh(new THREE.BoxGeometry(1.2, 13, 1.2), mat(0x8a4a3a)); p.position.set(x, 6.5, 0); root.add(p); } const top = new THREE.Mesh(new THREE.BoxGeometry(2 * W + 5, 1, 1.2), mat(0x8a4a3a)); top.position.y = 13; root.add(top);
       const arm = new THREE.Group(); arm.position.y = 13; root.add(arm); const rod = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 11), mat(0x3a2a24)); rod.position.y = -5.5; arm.add(rod); const bob = new THREE.Mesh(new THREE.SphereGeometry(K.size.bob, 10, 8), mat(0xd9906a)); bob.position.y = -11.5; arm.add(bob); look.arm = arm; pad(2 * W, 3); }
     else if (Tp.kind === 'gust') { const fan = new THREE.Mesh(new THREE.CylinderGeometry(2.4, 2.4, 1.2, 12).rotateZ(Math.PI / 2), mat(0x8a6a5a)); fan.position.set(-(W + 3), 2.4, 0); root.add(fan); look.fan = fan; pad(2 * W, K.size.len); }
     else if (Tp.kind === 'sinkhole' || Tp.kind === 'gusher') { const lat = Tp.lat; const m = new THREE.Mesh(new THREE.CircleGeometry(K.size.r, 24).rotateX(-Math.PI / 2), glow); m.position.set(-lat, 0.1, 0); root.add(m); look.disc = m; if (Tp.kind === 'gusher') { const v = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.9, 1.4, 8), mat(0x2a2420)); v.position.set(-(W + 2), 0.7, 0); root.add(v); } }
     else if (Tp.kind === 'portal') { const ring = (s) => { const { F: F2, pos: p2 } = this.frameAt(s, 0, 3); const m = new THREE.Mesh(new THREE.TorusGeometry(K.size.r, 0.35, 8, 24), glow); m.position.copy(p2); m.rotation.y = Math.atan2(F2.fx, F2.fz); this.group.add(m); return m; }; look.a = ring(Tp.s); look.b = ring(Tp.s2 ?? Tp.s); }
-    else if (Tp.kind === 'turret') { const post = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.8, 6, 8), mat(0x8a4a3a)); post.position.set(-(W + 4), 3, 0); root.add(post); const lamp = new THREE.Mesh(new THREE.SphereGeometry(1.1, 10, 8), glow); lamp.position.set(-(W + 4), 6.6, 0); root.add(lamp); look.lamp = lamp; }
+    else if (Tp.kind === 'turret') { const post = new THREE.Mesh(new THREE.CylinderGeometry(0.5, 0.8, 6, 8), mat(0x8a4a3a)); post.position.set(W + 4, 3, 0); root.add(post); const lamp = new THREE.Mesh(new THREE.SphereGeometry(1.1, 10, 8), glow); lamp.position.set(W + 4, 6.6, 0); /* (at lat -(W + 4), where cast() fires from) */ root.add(lamp); look.lamp = lamp; }
     return look;
   }
   show(Tp) {
+    if (Tp.look.show) { Tp.look.show(Tp, this.t); return; } // (a dressed look draws its own phase)
     const L = Tp.look, active = Tp.phase === 'active', red = Tp.kind === 'portal' && Tp.red;
     L.glow.color.setHex(Tp.stun > 0 ? GLOW.idle : red ? GLOW.red : Tp.kind === 'portal' && active ? GLOW.lit : active ? GLOW.active : Tp.phase === 'tell' ? GLOW.tell : GLOW.idle);
     L.glow.opacity = Tp.phase === 'tell' ? 0.45 + 0.4 * Math.abs(Math.sin(this.t * 14)) : 0.6;
@@ -217,7 +220,7 @@ export class Traps {
     let target = null, bd = K.size.range; for (const x of racers) { const d = x.pos.distanceTo(pos); if (d < bd) { bd = d; target = x; } }
     if (!target) return;
     const lead = target.S ? target.S.v.clone().multiplyScalar(bd / K.ball.speed) : new THREE.Vector3(), aim = target.pos.clone().add(lead).setY(target.pos.y + 1).sub(pos).normalize();
-    const m = new THREE.Mesh(new THREE.SphereGeometry(K.ball.r * 0.7, 10, 8), new THREE.MeshBasicMaterial({ color: 0xffb04a })); m.position.copy(pos); this.group.add(m);
+    const m = this.game.racewayTraps?.ball?.(Tp, pos) || new THREE.Mesh(new THREE.SphereGeometry(K.ball.r * 0.7, 10, 8), new THREE.MeshBasicMaterial({ color: 0xffb04a })); m.position.copy(pos); this.group.add(m); // (the Wisp's ember, dressed)
     this.balls.push({ Tp, m, v: aim.multiplyScalar(K.ball.speed), life: K.ball.life, target, home: false });
   }
   stepBalls(dt, you) {

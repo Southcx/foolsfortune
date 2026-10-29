@@ -100,6 +100,8 @@ export class Creatures {
     // progress/stones.js; and another Courier struck, friendly fire at a fifth, progress/combat/friendly.js)
     let dmgK = by === 'courier' && g.courierMind ? courierMindEffect(g.courierMind.mind).power : 1;
     if (c.friend) dmgK = friendlyDamage(dmgK); // (a fifth; and the cap below: no blow from an ally past a quarter of its health)
+    const art = by === 'courier' ? g.classArtsRun?.onStrike?.(c, m) : null; // (a class's art: Momentum's one blow, Edge on a weak point: courier/classarts/body.js)
+    if (art) { dmgK *= art.dmg; buildK *= art.build; }
     const annihilates = (type === 'impact' && st(c, TYPES.delirium.builds)) || (type === 'delirium' && st(c, TYPES.impact.builds));
     let dmg = power * dmgK * m.dmg * (st(c, 'soft') ? 2 : 1);
     if (c.friend) dmg = Math.min(dmg, (c.maxHp ?? Infinity) * FRIENDLY.cap); // (FRIENDLY.cap of its full health at most: Dovina's)
@@ -236,7 +238,7 @@ export class Creatures {
       if (c.windup) { const w = c.windup; w.t -= dt; w.mark?.eta(this.shownEta(Math.max(0, w.t - 0.3))); w.drawn?.eta(this.shownEta(Math.max(0, w.t - 0.3))); if (w.t <= 0 || !c.alive) { if (w.t <= 0 && c.alive && w.parry && w.mark) this.missed(c, w); this.unwind(c); } }
       if (!c.alive) continue;
       // quiet settles its mind back toward its nature, and its agitation rises while it hunts and falls when it does not
-      c.mind = settle(c.mind, dt, c.mindRest ?? 0); this.mindMoved(c, 'environment');
+      c.mind = settle(c.mind, dt, (c.mindRest ?? 0) + (this.game.weather?.moodRest?.(c.pos) ?? 0)); this.mindMoved(c, 'environment');
       c.emo = rise(c.emo, 0, dt, !!c.brain?.action?.hunt);
       for (const t in c.build) c.build[t] = Math.max(0, c.build[t] - BUILD.drainPerSec * dt);
       T?.set(c, { state: c.mind, emo: c.emo, enrage: enraged(c.emo) });

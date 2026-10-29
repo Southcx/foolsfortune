@@ -4,13 +4,14 @@
 // hull, the wreck, the vein lane, the scorch, the manual, the shoulder, the near miss, the gaps, the buoys, the parts). The log is the
 // only text feedback; a count every hit would drown it, so the hull speaks only when the pool runs low. Words: placeholders for Espada's.
 //
-//   hot lap, pots, escape, licence: race.start / race.finish { mode, ... }   race.restart   race.rewind   race.pot   race.escape.*
+//   hot lap, pots, escape, licence, the game day's race: race.start / race.finish { mode, ... }   race.restart   race.rewind   race.pot   race.escape.*
 //   licence.fail   cup.*   citytrial.*   wager.*   skiff.hull / .wreck / .refill / .scorch / .manual / .shoulder / .nearmiss / .gap
 //   / .buoy / .part / .glaze / .setting   race.taunt / .nemesis / .takedown { how }   (each with `by`)
 //
 //   raceModeRules({ on, L, log })   (feedback/tracking/rules.js calls it)
 // ---------------------------------------------------------------------------------------
 import { said } from './lineformat.js';
+import { conditionWords } from '../../world/raceway/conditions.js';
 
 const clock = (s) => { const m = Math.floor(s / 60), r = s - m * 60; return `${m}:${r < 10 ? '0' : ''}${r.toFixed(2)}`; };
 const TRACKS = { sun: 'the Sun Circuit', gorge: 'the Gorge Run', coaster: 'the Coaster', made: 'your track' }; // (working names: Espada's)
@@ -27,6 +28,7 @@ export function raceModeRules({ on, L, log, g }) {
     else if (e.mode === 'practice') say('skiff', `Practice on ${TRACKS[e.track]}. Hold Backspace to rewind; nothing is recorded.`, 'rm.start');
     else if (e.mode === 'pots') say('skiff', `A pot smash on ${TRACKS[e.track]}: every pot you ride through takes a second off.`, 'rm.start');
     else if (e.mode === 'escape') say('skiff', 'The crater. Ride for the climb out.', 'rm.start');
+    else if (e.mode === 'daily') say('skiff', `The game day's race on ${TRACKS[e.track]}: ${conditionWords(e.condition)}, whatever the sky says.`, 'rm.start');
     else if (e.mode === 'trim') say('skiff', `A test lap of ${TRACKS[e.track]}: your last test lap rides beside you, and each gate gives the split.`, 'rm.start');
     if (e.mode !== 'race') say('info', g?.input?.device === 'touch' ? 'RESTART in the pause menu starts again; RETIRE retires.' : said(g, '{restart} starts again; holding {toGate} retires.'), 'rm.keys', 60);
   });
@@ -34,6 +36,11 @@ export function raceModeRules({ on, L, log, g }) {
   on('race.rewind', (e) => { L.inc('race.rewind'); if (e.seconds > 0) say('info', `Rewound ${e.seconds} s.`, 'rm.rewind', 1); });
   on('race.finish', (e) => {
     if (e.mode === 'race' && e.of > 1) { L.inc(`race.track.${e.track}.finish.rivals`); if (e.place === 1) L.inc(`race.track.${e.track}.win`); if (e.place <= 3) L.inc(`race.track.${e.track}.podium`); }
+    if (e.mode === 'daily' && e.day != null) { // (the game day's race: one board a game day, raced as often as you like; its best kept by the day)
+      L.inc('race.daily'); if (e.medal) L.inc('race.daily.medal'); if (e.medal === 'gold') L.inc('race.daily.gold');
+      const sky = String(e.condition || '').split('.')[1]; if (sky && sky !== 'fair') L.inc(`race.daily.sky.${sky}`);
+      const b = L.lo(`race.daily.${e.day}`, e.seconds); if (b) say('record', `Your best in today's race: ${clock(e.seconds)}.`, 'rm.daily', 1);
+    }
     if (e.mode === 'trim') { L.inc('race.trim'); say('record', `Test lap: ${clock(e.seconds)} (${(e.recordClass || 'stock').toUpperCase()}).`, 'rm.fin'); }
     if (e.mode === 'hotlap') { L.inc('race.hotlap'); if (e.recordClass) L.lo(`race.hotlap.${e.track}.${e.recordClass}`, e.seconds); const b = L.lo(`race.hotlap.${e.track}`, e.seconds); say('record', `A hot lap of ${clock(e.seconds)}${b ? ', your best' : ''}.`, 'rm.fin'); }
     if (e.mode === 'pots') { L.inc('race.pots'); L.lo(`race.pots.${e.track}`, e.seconds); L.hi('race.pots.smashed.best', e.pots?.smashed || 0); say('record', `${e.pots?.smashed} of ${e.pots?.of} pots: ${clock(e.raw)} less ${e.pots?.smashed} s, ${clock(e.seconds)}.`, 'rm.fin'); }

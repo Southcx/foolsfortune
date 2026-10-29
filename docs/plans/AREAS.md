@@ -159,6 +159,7 @@ Each area has a page in the map (M): its checklist.
 - **Never a position.** The checklist counts; the Sight still points only at what you know.
 - **The ledger:** `area.<id>.<kind>` counters, written by the same events that already count each thing (a chest's `chest.open` with its
   area added by the tracking rule). The totals are data: each area's list, written next to its contents.
+- **Built (2026-10-29):** `progress/areachecklist.js` measures each area's checklist (the map's `rowsOf`) into the record `area.<id>.share` at the moments it can change; `progress/areaachievements.js` (da1 .. da10, da99) reads it.
 - **The achievements are predicates over those counters.** For each area: half its checklist (Easy) and all of it (Hard). For each
   layer: every area whole (Elite), which gives a title (the one toast). They pay no cubes; walking is not a faucet.
 

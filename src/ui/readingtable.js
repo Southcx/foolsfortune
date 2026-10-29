@@ -40,6 +40,7 @@ import { cardFace } from '../vfx/bazaarfaces.js';
 import { backCell } from '../vfx/cardbackset.js';
 import { drawSealFace } from '../vfx/sealface.js';
 import { toolIcon } from '../pneuka/icons.js';
+import { CURSOR } from '../core/touchcursor.js';
 
 export const REFUSE = { hold: 1.4, press: 0.16 };      // (real s the seal stays; real s it takes to come down)
 export const RT_CLASSES = { window: 'rt-clay', tray: 'rt-tray', slot: 'rt-slot', book: 'rt-book', pane: 'rt-pane' };
@@ -255,14 +256,17 @@ export class ReadingTable {
   /** The click a finger's lift makes is the finger's own (it lifted or dropped already). */
   touched() { return performance.now() - this.tapAt < 700; }
 
-  /** A finger down on a hand card: a tap lifts it (or lowers it again), a drag carries it to a place. */
+  /** A finger down on a hand card: a tap lifts it (or lowers it again), a drag carries it to a place, a hold (420 ms, the ring filling) wears it as the main. */
   fingerDown(e, id) {
     if (e.pointerType === 'mouse' || this.finger) return;
     e.preventDefault();
-    const F = (this.finger = { id, pid: e.pointerId, x: e.clientX, y: e.clientY, moved: false, ghost: null, over: null });
+    const F = (this.finger = { id, pid: e.pointerId, x: e.clientX, y: e.clientY, moved: false, ghost: null, over: null, long: false });
+    const ring = this.game.touchUI?.longPress; ring?.show(F.x, F.y, { ms: CURSOR.long });
+    F.timer = setTimeout(() => { if (F.moved || this.finger !== F) return; F.long = true; this.dropHeld(id, 'main'); }, CURSOR.long); // (held still: worn as the main, Dovina's ask)
     const move = (ev) => {
       if (ev.pointerId !== F.pid) return;
       if (!F.moved && Math.hypot(ev.clientX - F.x, ev.clientY - F.y) < 10) return;
+      clearTimeout(F.timer); ring?.cancel();
       ev.preventDefault();
       if (!F.moved) { F.moved = true; F.ghost = make('div', 'rt-ghost'); F.ghost.append(toolArt(this.game, id, 3)); document.body.append(F.ghost); }
       F.ghost.style.transform = `translate(${ev.clientX}px, ${ev.clientY}px)`;
@@ -272,8 +276,9 @@ export class ReadingTable {
     const end = (ev) => {
       if (ev.pointerId !== F.pid) return;
       document.removeEventListener('pointermove', move); document.removeEventListener('pointerup', end); document.removeEventListener('pointercancel', end);
+      clearTimeout(F.timer); ring?.cancel();
       this.finger = null; this.tapAt = performance.now(); F.ghost?.remove(); F.over?.classList.remove('rt-drop');
-      if (ev.type === 'pointercancel') return;
+      if (ev.type === 'pointercancel' || F.long) return;
       if (F.moved) { const at = this.placeAt(ev.clientX, ev.clientY); if (at) this.dropHeld(id, at.as); return; }
       this.held = this.held === id ? null : id; // (a tap: lifted, or lowered again)
       this.emit('hover', this.held ? { id } : null);

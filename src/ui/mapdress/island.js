@@ -25,7 +25,7 @@ import { INK, FACE, GOLD, FILM, glaze, tone, silhouette, hash, wrap } from './in
 
 /** The island level's numbers (CSS px): the least type, a tile's size against the box, the gaps. */
 export const ISLAND_LOOK = { type: 14, count: 18, tileMin: 112, tileMax: 172, tileK: 0.24, gap: 26, pad: 10, chamfer: 9, iters: 40,
-  words: { unknown: '???', of: 'of' } }; // (words: placeholders, Espada's)
+  words: { unknown: '???', of: 'of' } }; // (Espada's words, 2026-10-27)
 
 const D2R = Math.PI / 180;
 const idOf = (nb) => (typeof nb === 'string' ? nb : nb.id);

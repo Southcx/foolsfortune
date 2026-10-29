@@ -8,6 +8,8 @@
 //
 //   bootTools(game, made) -> { system, weapon, techs }
 // ---------------------------------------------------------------------------------------
+import { ClassArtsBody } from '../courier/classarts/body.js';
+import { WaterWalk } from '../courier/classarts/waterwalk.js';
 import { DeathTech } from '../courier/vessel/death.js';
 import { UltTech } from '../tools/lockheart/ultimate.js';
 import { Weapon } from '../tools/psygun/weapon.js';
@@ -41,6 +43,10 @@ import { SkiffSlipArc } from '../vfx/skiffsliparc.js';
 import { WorldLooks } from '../vfx/worldshells.js';
 import { RacewayCavern } from '../vfx/racewaycavern.js';
 import { RacewayPark } from '../vfx/racewaypark.js';
+import { RacewayMade } from '../vfx/racewaymade.js';
+import { RacewayTraps } from '../vfx/racewaytraps.js';
+import { TrackEditorMarks } from '../vfx/trackeditormarks.js';
+import { TrackEditorLook } from '../ui/trackeditorlook.js';
 import { RacewayProps } from '../vfx/racewayprops.js';
 import { RacewayFog } from '../vfx/racewayfog.js';
 import { RacewaySiphons } from '../vfx/racewaysiphons.js'; // (the siphon arches' look)
@@ -73,6 +79,7 @@ export function bootTools(game, made) {
   game.worldLooks = new WorldLooks(game); // (the World shells' draw and alterations: vfx/worldshells.js; the draw itself tools/psygun/worlddraw.js)
   game.racewayLooks = new RacewayLooks(game); // (the Raceway's sun plates, countdown lamps, gates' marks, carve sparks and ghost: dressed by the Raceway, vfx/racewaylooks.js)
   game.racewayCavern = new RacewayCavern(game); game.racewayFog = new RacewayFog(game); game.racewayPark = new RacewayPark(game); game.racewayProps = new RacewayProps(game); game.racewaySiphons = new RacewaySiphons(game); // (the cavern's stone, crystals, veins and dark, and Dread's fog on the course: vfx/racewaycavern.js, vfx/racewayfog.js)
+  game.racewayMade = new RacewayMade(game); game.racewayTraps = new RacewayTraps(game); game.trackEditorMarks = new TrackEditorMarks(game); game.trackEditorLook = new TrackEditorLook(); // (a made track's dress, its traps' bodies and tells, the editor's marks and its panel's dress: TRACK-EDITOR.md)
   applyCineOverrides(save); game.cine = new Cine(game); // (cinematic events as data: cine/sequences.js)
   game.auras = new Auras(game); // (a status, shown round whatever has it: vfx/auras.js)
   game.temper = new Temper(game); // (a creature's mental state and agitation, shown with its body: vfx/temper.js)
@@ -80,7 +87,7 @@ export function bootTools(game, made) {
   game.weapon = weapon;
   // movement techs (priority order: the first that wants the step gets it)
   const techs = new Techs(player, game);
-  for (const T0 of [DeathTech, UltTech, Skim, Swim, Ladder, Pole, Grate, Hang, Latch, ChestTech, Talk, RhythmHold, Kiln, Emote, Push, SlipDive, Roll, Slam, Blink, Hover, Rocket, Stomp, Balance, Carry, Kick, Recoil, Skiffing, Grapple, Launch, Sondelass, SoulBrush, Veritome, Dreamvane, Crucibelle, Lockheart]) techs.add(new T0(techs));
+  for (const T0 of [DeathTech, UltTech, Skim, WaterWalk, Swim, Ladder, Pole, Grate, Hang, Latch, ChestTech, Talk, RhythmHold, Kiln, Emote, Push, SlipDive, Roll, Slam, Blink, Hover, Rocket, Stomp, Balance, Carry, Kick, Recoil, Skiffing, Grapple, Launch, Sondelass, SoulBrush, Veritome, Dreamvane, Crucibelle, Lockheart]) techs.add(new T0(techs));
   env.lobbers.game = game;
   // the psychic tools: one in the hands at a time, and one set of rules for what that means (tools/belt.js)
   game.belt = new ToolBelt(game);
@@ -91,6 +98,7 @@ export function bootTools(game, made) {
   game.belt.add(heldTool(techs.get('dreamvane'), 'THE DREAMVANE', 'back'));
   game.belt.add(heldTool(techs.get('crucibelle'), 'THE CRUCIBELLE', 'hip'));
   game.belt.add(heldTool(techs.get('lockheart'), 'THE LOCKHEART', 'neck'));
+  game.classArtsRun = techs.add(new ClassArtsBody(techs)); // (a class's worn action on G and its reaction: courier/classarts/body.js, CLASS-ARTS.md)
   game.proneHolster = techs.add(new ProneHolster(techs)); // (lying down: every tool put away, none drawn, the one in the hands back out once up: tools/proneholster.js)
   player.techs = techs;
   game.techs = techs;

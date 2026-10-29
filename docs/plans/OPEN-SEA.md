@@ -180,10 +180,28 @@ the sea as a place, the islets as rooms, the serpent's mind and every look, soun
 - **Dead reckoning matters, mildly:** with no fixes ever taken, the current moves the ship 24 times a sea against 5 to 7, and the charting
   runs about a tenth longer.
 - **Once charted, the open sea stops paying** (0.1 to 0.2x gross, about even after fuel): it becomes a place, for bounties, plates to
-  improve and the hours' phenomena. **This is a call for the owner:** if the safari should keep paying, the lever is a respawning
-  hunt (an Egregore's material at a stall) or a posted bounty board at the docks.
+  improve and the hours' phenomena. Answered in 9.1: the respawning hunt.
 - **What the bot does not model:** the islets' fights on foot, the fishing, the chests' tiers, a front's bigger classes. Those pay
   through their own systems at their own rates.
+
+### 9.1 The hunt once charted (ruled: South, 2026-10-29, "go with your intuition on the open sea")
+
+The question above is answered by what is already built: **a respawning hunt**, not a bounty board.
+- Every lair restocks each game day (`seabeasts.js` `lairsOf`; a lair downed is up again the next, `seafight.js`).
+- The dock's board posts one of the game day's lairs with a bounty (the rumour, `migrations.js`).
+- The herds move every game day.
+
+The bot above never fought a beast at its own pay, which is why it measured 0.1 to 0.2x. Measured again with the beasts at `beastPay`
+(`node scripts/opensea.mjs`, its THE HUNT block, 200 game days):
+
+| skill | lairs a game day | won | MEASURE hunt.net (a real hour hunting) |
+| --- | --- | --- | --- |
+| 0.2 | 10.8 | 35% | 0.40x the aim |
+| 0.5 | 10.8 | 53% | 0.72x the aim |
+| 0.9 | 10.8 | 77% | 1.30x the aim |
+
+The charted sea pays like a hunting ground: skill skips grind (3.3x from new to sharp), and it sits beside the herds' tour (0.83x while
+touring). No bounty board is built; bounties stay parked.
 
 ## 10. Handoffs (build order for a vertical slice)
 

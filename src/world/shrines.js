@@ -18,6 +18,7 @@
 import * as THREE from 'three';
 import { sfx } from '../audio/sfx.js';
 import { ShrineModel, SHRINE_PILLAR_X } from '../vfx/shrine.js';
+import { cradleNumber } from '../vfx/cradlelook.js';
 import RAPIER from '@dimforge/rapier3d-compat';
 import { GROUPS } from '../core/physics.js';
 import { WEIR_SPAWN } from '../tools/sondelass/angling/weir.js';
@@ -82,7 +83,7 @@ export class Shrines {
     const g = this.game;
     for (const S of SHRINES) {
       const at = S.at(g); if (!at) continue;
-      const model = new ShrineModel({ ground: S.ground || 'sand' });
+      const model = new ShrineModel({ ground: S.ground || 'sand', number: cradleNumber('shrine', S.id) }); // (its cradle's own number: Calissa's)
       model.group.position.copy(at.pos); model.group.rotation.y = at.yaw;
       g.scene.add(model.group);
       // (the gate's two pillars are solid, at the model's own spacing (SHRINE_PILLAR_X): its opening is seen, not walked through)

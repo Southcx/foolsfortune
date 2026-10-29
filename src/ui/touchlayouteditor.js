@@ -12,7 +12,7 @@
 //                core/layoutkeep.js), RESET (this way of holding back to the HUD's own rule; kept on DONE), CANCEL (nothing kept).
 // The layout's shape is the HUD layout's (hudlayout.js "THE KEPT LAYOUT"): per orientation, centres as fractions of the safe area, so it
 // survives a different phone. Each orientation is laid out on its own; turning the phone mid-edit shows the other one's draft. The
-// words are placeholders, in plain English, for Espada (MOBILE.md 8.3). No stock control: the slider and the buttons are drawn here.
+// words are Espada's, 2026-10-27 (MOBILE.md 8.3). No stock control: the slider and the buttons are drawn here.
 //
 // Prior art: PUBG Mobile's and Genshin Impact's custom HUD layout editors (every button dragged over the live game, a size slider, a
 // reset to default and a save; Genshin's resting joystick shown where it waits), Call of Duty Mobile's (the keep-outs it will not let a
@@ -36,7 +36,7 @@ import { sfx } from '../audio/sfx.js';
 export const LAYOUT_EDITOR = {
   faces: [['jump', 'jump', null], ['crouch', 'crouch', 'CROUCH'], ['dash', 'dash', null], ['parry', 'parry', 'PARRY']],
   step: 0.05, ring: HUD_LAYOUT.custom.ring, target: 44, rate: 12,
-  words: { title: 'LAYOUT', size: 'SIZE', done: 'DONE', reset: 'RESET', cancel: 'CANCEL' }, // (placeholders: Espada's)
+  words: { title: 'LAYOUT', size: 'SIZE', done: 'DONE', reset: 'RESET', cancel: 'CANCEL' }, // (Espada's words, 2026-10-27)
 };
 const E = LAYOUT_EDITOR, Wd = E.words;
 

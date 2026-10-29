@@ -8,13 +8,13 @@
 //   TWINS of the cards, dice faces and tiles, drawn smaller and sunk into the felt for what may not be touched. Words are the DOM's.)
 //   - THE HOUSE DECK: the 78 cards of a Tarot, drawn in a 64 x 104 frame and fired at 2x (the title's falling cards' size and back: title/scene.js, its moons and
 //     stars in plum and cream, repainted here with the labradorite's schiller in the great moon). The 22 Major Arcana on a plum field,
-//     each its numeral (0 to XXI) and a picture of its reading drawn plain (the Fool at the cliff, the Tower struck, the Star over the
+//     each its numeral (0 to XXI), its second index at the foot (its number in neuralese on its bus, vfx/wornnumerals.js: South via Espada, 2026-10-29) and a picture of its reading drawn plain (the Fool at the cliff, the Tower struck, the Star over the
 //     pool); the 56 Minor on cream, pips of their suit (cups, swords, pentacles, wands) in the playing-card layouts, the courts a figure
 //     under its headgear, an index in two corners: big, the suit's symbol under it and its playing-card pip (hearts for cups, spades for
 //     swords, diamonds for pentacles, clubs for wands) beside the symbol; each suit in its own colour (cups blue, swords green, pentacles
 //     yellow, wands red), on the card's face only.
 //   - THE DICE: a cell a face (32 x 32), each die of the standard set its own glaze (d4 celadon, d6 shino, d8 lapis, d10 tenmoku, d12
-//     copper red, d20 plum with the schiller in its numerals), Raku's attack die in gold; 6 and 9 underlined; the d4's three corner
+//     copper red, d20 plum with the schiller in its numerals), Raku's attack die in gold; each face its neuralese numeral on its bus, the bus up (Espada's numerals, South 2026-10-29); the d4's three corner
 //     numbers a face, the one read is the one on top.
 //   - THE ZODIAC'S TILES: twelve, a numeral and its sign; open, locked (gold) and the back.
 //   - RAKU'S CHIPS: three values by colour (1 ivory, 5 cinnabar, 25 lapis) and the gold token, each a top and an edge's stripes.
@@ -40,6 +40,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { bakedCanvasTexture } from '../render/bakedcanvas.js';
+import { numeralFit } from './wornnumerals.js';
 import { schillerInk } from './oxidation.js';
 import { SUIT_COLOURS } from '../progress/casino/table.js';
 import { drawHouseBack, drawArcanaBack } from './cardbacks.js';
@@ -237,7 +238,7 @@ function major(g, i) {
   box(g, 0, 0, 64, 104, K.cream); box(g, 2, 2, 60, 100, K.goldDeep); box(g, 3, 3, 58, 98, K.plum);
   box(g, 6, 15, 52, 76, K.deep); // (the picture's window)
   text(g, ROMAN[i], 32, 9, i > 17 ? 10 : 12, K.gold);
-  box(g, 22, 95, 20, 2, K.gold); circ(g, 32, 96, 2, K.gold);
+  numeralFit(g, i, { x: 32, y: 96.5, w: 40, h: 8.5, ink: K.gold, lw: 1.1 }); // (the second index: its number in neuralese at the foot, where a bar and a dot stood)
   g.save(); g.beginPath(); g.rect(6, 15, 52, 76); g.clip(); PICTURES[i](g); g.restore();
 }
 const G = K.gold, C = K.cream, D = K.deep, P = K.plum;
@@ -323,10 +324,12 @@ function dieCell(g, c, sides, f, skin, A = AT.die) {
   if (sides === 0) { box(g, 0, 0, S, 3, skin.ink); box(g, 0, 29, S, 3, skin.ink); for (let k = 0; k < 4; k++) star(g, 4 + k * 8, 16, 2.5, 1, 4, skin.ink, 0); } // (the dealer's cup: a gold lip and stars)
   else if (sides === 6) { for (const [u, v] of D6_PIPS[f + 1]) circ(g, 6 + u * 20, 6 + v * 20, 3.6, ink); }
   else if (sides === 4) { // (the corners of the cell's triangle: bazaarpieces.js maps each face's vertices onto these)
-    const vs = D4_FACES[f]; D4_CORNERS.forEach(([u, v], k) => { const x = 16 + (u - 0.5) * 22, y = 16 + (v - 0.5) * 22; g.save(); g.translate(x, y); g.rotate(Math.atan2(y - 18, x - 16) + Math.PI / 2); text(g, String(vs[k] + 1), 0, 0, 11, ink); g.restore(); });
-  } else { const n = String(f + 1); const big = sides === 20 ? 0 : 2; text(g, n, 16, 16, (n.length > 1 ? 13 : 16) + big, ink); if ((n === '6' || n === '9') && sides > 6) box(g, 11, 25 + big / 2, 10, 2, ink); }
+    const vs = D4_FACES[f]; D4_CORNERS.forEach(([u, v], k) => { const x = 16 + (u - 0.5) * 22, y = 16 + (v - 0.5) * 22; g.save(); g.translate(x, y); g.rotate(Math.atan2(y - 18, x - 16) + Math.PI / 2); numeralAt(g, vs[k] + 1, 0, 0, 8, 9, ink); g.restore(); });
+  } else numeralAt(g, f + 1, 16, 16, sides === 20 ? 22 : 18, sides === 20 ? 20 : 19, ink); // (a neuralese numeral, its bus up: 6 and 9 never confused; Espada's numerals, South 2026-10-29)
   g.restore();
 }
+/** A neuralese numeral (Espada's, NEURALESE.md 2b: a digit's sum hung on its pin from the bus) centred on (cx, cy), fitted to w x h. */
+const numeralAt = (g, n, cx, cy, w, h, ink) => numeralFit(g, n, { x: cx, y: cy, w, h, ink, even: false });
 /** The spent die: grey clay crazed, a dark crack across, no numeral (every face of it the same cell). */
 function ashCell(g, c) {
   const S = 32, x0 = AT.die.x + (c % AT.die.cols) * AT.die.s, y0 = AT.die.y + Math.floor(c / AT.die.cols) * AT.die.s;

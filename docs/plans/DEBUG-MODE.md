@@ -20,6 +20,8 @@ look Calissa's; its words Espada's.
 
 ## 1. What is true today (measured, 2026-10-09)
 
+- **STORY stays tabled for quite some time** (South, 2026-10-29: "story is gonna stay tabled for quite some time while we continually
+  hammer out what our 'maxed out' systems look like"): the work is each system at its ceiling, in DEBUG.
 - **STORY is off the title** (`title/ui.js:76-77`); only DEBUG can be chosen. `game.mode` is not saved: it is set when the title is
   chosen and is undefined before that.
 - **One save per browser** (`core/save.js`: `foolsfortune.save.player`, `.world`, `.settings`). DEBUG play and any future STORY play

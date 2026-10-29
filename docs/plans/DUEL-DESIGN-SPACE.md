@@ -108,7 +108,7 @@ retrodden or forgotten." One row per space: the idea, where it came from, what b
 | Powers paid by the pool, as many a turn as it pays for, a regen a turn | Puzzle Quest's mana, Slay the Spire's energy | built | PD 26.9 | South: "use multiple powers provided you have the resources" |
 | A second aberrant: the slip jelly, its junk slime, its secret a Transmute of the pile | Puyo's garbage sent back, Tetris 99's counter | built | AB 5 | South's design, 2026-10-29 |
 | A learned skill: an aberrant's own, by its secret or 5 wins | FF's Blue Magic, Mega Man's Weapon Get | built (Kindle) | AB 8, PD 26.10 | the secret's reward: South "all for learning abilities from enemies" |
-| A secret's material drop | Monster Hunter's carves | parked | AB 8 | a second faucet into Soul Alchemy needs South's size |
+| A secret's material drop | Monster Hunter's carves | built | AB 9 | South, 2026-10-29: "Material drops for aberrant fights is a go"; the secret rolls the richer table (drops.js) |
 | A learned skill that acts on the aberrant's half (the jelly's Spew, yours) | Puyo's garbage | parked | AB 8 | its half is frozen in the PvE duel |
 
 ## Later (parked for a PvP mode, South: "we can come circle back to the original mechanics for like a pvp mode")

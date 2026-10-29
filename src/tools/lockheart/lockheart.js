@@ -242,7 +242,9 @@ export class Lockheart extends HeldTool {
     const power = Math.min(2, this.charge / this.fill);
     this.charge = 0; this.save();
     const R = rates(table), draws = [];
-    for (let s = 0; s < mods.spins; s++) draws.push(spin(table, simRand()));
+    const lucky = g.classArtsRun?.lucky?.(); // (Beginner's Luck: each spin thrown twice, the better outcome kept: courier/classarts/body.js)
+    const better = (a, b) => ((OUTCOMES[b]?.rank ?? 0) > (OUTCOMES[a]?.rank ?? 0) ? b : a);
+    for (let s = 0; s < mods.spins; s++) { const a = spin(table, simRand()); draws.push(lucky ? better(a, spin(table, simRand())) : a); }
     this.queue = draws.map((id, i) => ({ id, R, power, mods, heart: this.heart, keys: used, i }));
     sfx.coffin?.(true);
     g.events?.emit('lockheart.open', { heart: this.heart, keys: used, broke, results, power: +power.toFixed(2), spins: mods.spins });

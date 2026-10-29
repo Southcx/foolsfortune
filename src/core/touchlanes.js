@@ -4,8 +4,8 @@
 // them (the left half lanes 1 to 5, the right half 6 to 10), and a finger landing on one holds that lane's control (core/bindings.js
 // `rh.l1` .. `rh.l10`, ctx `rhythm`) until it lifts. The touch's own timestamp is handed over first (`stamp`), so the press is judged
 // on the moment the finger landed, not on the frame that read it. A finger is its lane's until it lifts: sliding never changes lanes,
-// and two fingers on one lane hold it once. What the pads look like is the highway's (Wanda's placeholder, Calissa's to dress), which
-// can stand its lanes over `rect(lane)`.
+// and two fingers on one lane hold it once. What the pads look like is the highway's look (Calissa's, vfx/rhythmhighway.js), which
+// stands its lanes over `rect(lane)`.
 //
 // Prior art: every phone rhythm game's lanes as screen columns judged on the touch's own time (Cytus, Deemo, Project Sekai); a
 // controller's pads (DDR's, Guitar Hero's frets: a held pad is one press); Wanda's pads() (a lane held through the input, its moment kept).

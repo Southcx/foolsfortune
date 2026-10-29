@@ -5,15 +5,27 @@
 // melee loadout's choosing (`loadout.set`, the loadout editor): a quiet line, nothing counted.
 // tracking.js calls it from listen(). The words are placeholders for Espada's.
 //
-//   moveRules({ on, L, log })
+//   moveRules({ on, L, log, g })   events: move.learn { tool, move, parent, by } (a melee move opened, once)
 // ---------------------------------------------------------------------------------------
-import { MOVES } from '../../progress/combat/moves.js';
+import { MOVES, unlocked } from '../../progress/combat/moves.js';
+import { SONDELASS_MOVES } from '../../tools/sondelass/sondelassloadout.js';
 import { IDLES } from '../../courier/anim/idlebreak.js';
 import { ordinal, SPECIAL_SLOTS } from '../../tools/sondelass/loadoutwords.js';
 
 const BAIL_SAYS = { wall: 'You hit it head-on and bail.', sideways: 'You land sideways and bail.', land: 'The drop is too sheer. You bail.' };
 
-export function moveRules({ on, L, log }) {
+/** The melee loadout's rows that are learned (a `parent` in MOVES.sondelass: MELEE-LOADOUT-EARNING.md 2), checked after the acts that open them. */
+const LEARNABLE = Object.entries(MOVES.sondelass).filter(([, m]) => m.parent).map(([id]) => id);
+const OPENERS = ['move.blow', 'kick.hit', 'move.launch', 'cut.stinger', 'cut.hit', 'move.parry'];
+
+export function moveRules({ on, L, log, g }) {
+  // a melee move opened (MELEE-LOADOUT-EARNING.md 2: "Each opening is said in the log once"): move.learn { tool, move, parent, by }, once a
+  // move a build (the ledger's `sond.learn.<id>` keeps that it was said; the move's own rule is its predicate, never this)
+  const learn = () => { for (const id of LEARNABLE) { if (L.get(`sond.learn.${id}`) || !unlocked('sondelass', id, L)) continue;
+    L.inc(`sond.learn.${id}`); const row = SONDELASS_MOVES[id], kind = row?.kind === 'special' ? 'special' : 'move';
+    g?.events?.emit('move.learn', { tool: 'sondelass', move: id, parent: MOVES.sondelass[id].parent, by: 'courier' });
+    log.say('gain', `You learn a new Sondelass ${kind}: ${row?.label || id}. Slot it at the sparring circle's lectern.`); } };
+  for (const ev of OPENERS) on(ev, (e) => { if ((e.by ?? 'courier') === 'courier') queueMicrotask(learn); }); // (after the counts below are kept)
   // move.launch { tool, by }: a launcher lifted something; move.air { tool, hits, by }: an air string ended with `hits` blows landed
   on('move.launch', (e) => { if (e.by === 'courier') L.inc('move.launch'); });
   on('move.air', (e) => { if (e.by !== 'courier') return; L.hi('move.air.best', e.hits || 0); if ((e.hits || 0) >= 6) log.say('battle', `An air string of ${e.hits}.`, { key: 'air', throttle: 2 }); });
@@ -35,7 +47,7 @@ export function moveRules({ on, L, log }) {
   on('vantage.reach', (e) => { if (e.by === 'courier' && e.vantage) L.first(`vantage.${e.vantage}`); }); // (a vantage reached: its first kept, what Wonder's awakening reads: world/vantages.js)
   // the melee loadout's earning (MELEE-LOADOUT-EARNING.md, Dovina's; the events tools/moveset.js's): a blow that landed, a string's finisher on a
   // creature, and the longest run of LMB string blows landed in a row (string slots 5 to 8 open by it)
-  // (`struck`, how many one blow struck, and `effect`, what it did to a body: guardBreak, trip, knock; Calissa's to add to the event)
+  // (`struck`, how many one blow struck, and `effect`, what it did to a body: guardBreak, trip, knock; sent by tools/stringrun.js)
   on('move.blow', (e) => { if (e.by !== 'courier' || e.tool !== 'sondelass' || !e.move) return; if (e.hit) L.inc(`sond.move.${e.move}.hit`); if (e.finish) L.inc(`sond.move.${e.move}.finish`); if (e.struck) L.hi('sond.struck.best', e.struck); if (e.hit && e.effect) L.inc(`sond.effect.${e.effect}`); });
   on('move.string.end', (e) => { if (e.by === 'courier' && e.tool === 'sondelass') L.hi('sond.string.best', e.run || 0); });
   on('skiff.glide', () => { L.inc('skiff.glide'); if (L.first('skiff.glide')) log.say('record', 'Logged: your first glide on the Solar Skiff.'); });

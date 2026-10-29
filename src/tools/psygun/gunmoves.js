@@ -146,5 +146,12 @@ export class GunMoves {
     gun.updateMatrixWorld(true);
   }
 
-  cancel() { this.moves.cancel(); this.flourishT = -1; this.fanDue = 0; this.layer = null; this.weight = 0; }
+  /** Cut short (a stow, going prone, a ladder): a fan stopped before its last slap gives back the share of its Lachryma its unfired shots
+   *  were paid with, so 8 is never lost for nothing. */
+  cancel() {
+    const c = this.moves.cur;
+    if (c?.id === 'fan') { const left = FAN.filter((t) => c.t < t).length + this.fanDue, cost = this.moves.rule(c.def)?.cost ?? c.def.cost ?? 0;
+      if (left > 0 && cost) this.game.lachryma?.gain(cost * Math.min(1, left / FAN.length), 'refund'); }
+    this.moves.cancel(); this.flourishT = -1; this.fanDue = 0; this.layer = null; this.weight = 0;
+  }
 }

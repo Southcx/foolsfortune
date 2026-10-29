@@ -70,7 +70,7 @@
 //               (feedback/tracking/moves.js): `move.launch { tool, by }` when a launcher lifts something, `move.air { tool, hits, by }`
 //               when an air string ends, `move.special { tool, special, by }` when a special is loosed, `move.cut { tool, move, paid,
 //               cost, by }` when a recovery is cut short for Lachryma. And THE BLOWS (for Dovina's earning, the rules Petra's):
-//               `move.blow { tool, move, slot, hit, finish, by }` once a blow, when it can strike no more (spent(): past the sweep's
+//               `move.blow { tool, move, slot, hit, finish, struck, effect, by }` (struck: things it struck; effect: guardBreak | trip | knock on a creature) once a blow, when it can strike no more (spent(): past the sweep's
 //               padded end) or it is cut short (slot: its place in the ground string, null off it; hit: it struck a creature, a
 //               clapperjar or a pot that counts; finish: the ground string's last slot, on a creature), and `move.string.end { tool, run,
 //               why, by }` when a STRING RUN stops (run: the LMB blows landed in a row, Dovina's `sond.string.best`; why: 'miss' a

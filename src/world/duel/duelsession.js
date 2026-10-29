@@ -99,7 +99,7 @@ export class DuelSession {
     this.startPool = Math.round(Math.min(100, pool?.available ?? 30));
     this.state = newDuel({ ruleset, seed: Math.floor(duelRand() * 2 ** 31), forms: ['hand', 'courier'], pool: [this.startPool, 30], tools: [tools, []],
       luck: [g.ledger ? Math.min(2, Math.floor(luckOf(g.ledger).level / 10)) : 0, 0], // (Luck's sway on a flee, 0..2: a tenth of its level, as ruled)
-      rerolls: [g.rerolls?.left() ?? 0, 0], lesson: lessonDue(g.ledger), dim: notAwakened(g.ledger), learned: learnedOf(g.ledger), // (a feeling not yet awakened gives half a gem's pool: PUZZLE-DUELS.md 26; an aberrant's skill learned: its secret found, or enough won, learned.js)
+      rerolls: [g.rerolls?.left() ?? 0, 0], lesson: lessonDue(g.ledger), dim: g.lend?.has?.('feelings') ? [] : notAwakened(g.ledger), learned: learnedOf(g.ledger), // (a feeling not yet awakened gives half a gem's pool: PUZZLE-DUELS.md 26; an aberrant's skill learned: its secret found, or enough won, learned.js)
       levels: Object.fromEntries(Object.keys(DOMAINS).map((d) => [d, g.psyche?.level?.(d) ?? 1])) }); // (the PvE duel's powers cost less with their domain's level: powers.js powerCost) // (the first duel a lesson until one is won: lesson.js, PUZZLE-DUELS 18.3) // (Luck's re-rolls left this game day: a failed Flee is thrown again, progress/duel/flee.js)
     this.practice = !!c.practice; // (a practice foe, Strawman's: every duel.* event says so and counts nothing; no pool, no shatter, no drain)
     this.foe = c; this.feeling = feeling; this.active = true; this.busy = false; this.botT = -1; this.press = null; this.path = []; this.yieldT = 0; this.swipe = null; this.shown = null; this.picked = null; this.hinted = null; this.idleT = 0; this.spentT = 0;
@@ -139,6 +139,7 @@ export class DuelSession {
    *  is gone (its own `vanish`); and a blow on the Courier from outside is refused at the vessel (courier/vessel/damage.js). */
   pocket(foe) {
     const g = this.game, C = g.creatures; this.held ||= new Set();
+    g.lock?.release?.('duel'); // (a lock held into the duel let go: its tag and reticle off the board; South, 2026-10-29)
     for (const c of C?.list || []) if (c !== foe && c.alive && !c.ally && !this.held.has(c)) { C.apply(c, 'halt', 600, 1, 'environment'); c.attack = null; c.windup = null; this.held.add(c); }
     for (const pr of g.projectiles || []) if (pr.vanish) pr.vanish(); else g.projectiles.delete(pr);
   }
@@ -359,7 +360,9 @@ export class DuelSession {
   /** One of your actions: refused (a dry tick) or played, then the forecast drawn again. */
   take(a) {
     this.picked = null;
-    const ev = act(this.state, a);
+    const S = this.state, lucky = a.kind === 'flee' && S?.rerolls && !this.practice && this.game.classArtsRun?.lucky?.(); // (Beginner's Luck: the throw thrown again if it fails, courier/classarts/body.js)
+    if (lucky) S.rerolls[0]++;
+    const ev = act(S, a);
     if (!ev) { sfx.dryFire?.(); this.view?.refuse?.(a); return; }
     this.run(ev);
   }

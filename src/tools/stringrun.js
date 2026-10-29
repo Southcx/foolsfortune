@@ -38,8 +38,16 @@ export const STRING_RUN = {
     const tally = c?.tally; if (!tally || tally.closed) return;
     tally.closed = true;
     const special = this.specialBlow(c), short = !c.own && !this.recovering(c);
-    this.game.events?.emit('move.blow', { tool: this.S.rules || this.id, move: c.id, slot: c.slot ?? null, hit: tally.landed, finish: !!(c.last && tally.creature), by: 'courier' });
+    this.game.events?.emit('move.blow', { tool: this.S.rules || this.id, move: c.id, slot: c.slot ?? null, hit: tally.landed, finish: !!(c.last && tally.creature), struck: tally.creature + tally.hit, effect: this.blowEffect(c), by: 'courier' });
     if (!tally.landed && !tally.idle && !special && !short) this.endStringRun('miss');
+  },
+  /** What blow `c` did to a body it struck (MELEE-LOADOUT-EARNING.md's feats): 'guardBreak' (it opens a guard), 'trip' (its row's
+   *  status), 'knock' (its catalogue effect); null when it struck no creature or does none of these. */
+  blowEffect(c) {
+    if (!c?.tally?.creature) return null;
+    if (c.def?.hit?.guardBreak) return 'guardBreak';
+    if (this.rule?.(c.def)?.status === 'trip') return 'trip';
+    return this.catalogueRow?.(c.id)?.effect === 'knock' ? 'knock' : null;
   },
   /** The string run stops (`why`: 'miss' | 'hurt' | 'pause' | 'stow'): `move.string.end` with the blows landed in a row, if any were. */
   endStringRun(why) {

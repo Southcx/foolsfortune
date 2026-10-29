@@ -17,8 +17,11 @@
 //   drawSealFace(ctx, seal, { size, ink, lit }) -> { spelled, cells }
 //     seal: { name, outline, carving } (world/cradles.js); null or a name '' draws the face with no name
 //     size: px of the square it fills from ctx's origin (256)   ink: any canvas colour ('#6fa596')   lit: true glows (the burn's beat)
+//   drawCombNumber(ctx, n, { x, y, size, ink }) -> { width, height }   a number in the Comb (Espada's numerals, NEURALESE.md 2b): a digit
+//     a cell with a doubled border (never a syllable), the bar its waist, the pairs and the dot below it, zero a ring at its centre;
+//     the cells zigzag as a word's do. x, y: the first cell's centre; size: a cell's width in px. For a count etched (an id, a number).
 // ---------------------------------------------------------------------------------------
-import { cellsOf } from '../npc/neuralesespelling.js';
+import { cellsOf, numeralOf } from '../npc/neuralesespelling.js';
 import { FONT } from '../ui/theme.js';
 
 // ---- the Comb (OVERLAY.md 15.5, ported to cellsOf's cells): a cell's radius is N steps of the triangular sub-lattice
@@ -180,6 +183,28 @@ export function drawSealFace(ctx, seal, { size = 256, ink = '#6fa596', lit = fal
   } else marks(ink);
   ctx.restore();
   return { spelled: !!cells, cells };
+}
+
+/** A number in the Comb: a digit a doubled cell (OVERLAY.md 15.5's honeycomb, the word's zigzag). */
+export function drawCombNumber(ctx, n, { x = 0, y = 0, size = 32, ink = '#6fa596' } = {}) {
+  const ds = numeralOf(n), s = size / (2 * N), items = layOut(ds);
+  if (ctx) {
+    ctx.save(); ctx.strokeStyle = ctx.fillStyle = ink; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+    const hex = (cx, cy, k) => { ctx.beginPath(); for (let i = 0; i <= 6; i++) { const v = hexV(i); i ? ctx.lineTo(cx + v[0] * k * s, cy + v[1] * k * s) : ctx.moveTo(cx + v[0] * k * s, cy + v[1] * k * s); } ctx.stroke(); };
+    const line = (cx, cy, a, b) => { ctx.beginPath(); ctx.moveTo(cx + a[0] * s, cy + a[1] * s); ctx.lineTo(cx + b[0] * s, cy + b[1] * s); ctx.stroke(); };
+    const dot = (cx, cy, u, v, r) => { ctx.beginPath(); ctx.arc(cx + u * s, cy + v * s, r * s, 0, 7); ctx.fill(); };
+    items.items.forEach((it, i) => {
+      const d = ds[i], cx = x + it.x * s, cy = y + it.y * s; ctx.lineWidth = s * 0.8; hex(cx, cy, 1); hex(cx, cy, 0.8); // (the doubled border)
+      ctx.lineWidth = s * 1.2;
+      if (d.zero) { ctx.beginPath(); ctx.arc(cx, cy, s * 2.6, 0, 7); ctx.stroke(); return; } // (VOYD: a ring at the centre)
+      let v = 1.9;
+      if (d.bar) line(cx, cy, [-4, 0], [4, 0]); else v = 0.6; // (PENTA: the waist)
+      for (let k = 0; k < d.pairs; k++, v += 2.1) { line(cx, cy, [-2, v], [2, v]); dot(cx, cy, -2, v, 0.8); dot(cx, cy, 2, v, 0.8); } // (DUO)
+      if (d.dot) dot(cx, cy, 0, v, 0.95); // (UNA)
+    });
+    ctx.restore();
+  }
+  return { width: (items.x1 - items.x0) * s, height: (items.y1 - items.y0) * s };
 }
 
 /** A colour lifted most of the way to white (the burn's core). */

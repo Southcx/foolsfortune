@@ -170,6 +170,7 @@ function blow(game, { tool, how, at, radius }) {
   game.stun?.add(c, how === 'shutter' ? 1.25 : how === 'stagger' ? 1 : 0.5, { by: 'courier', cause: 'parry' }); // (the shutter: a full flash's stun and more)
   if (how === 'shutter') { game.flash?.burst?.(); c.brain?.senses?.dazzle?.(1.4); }
   breath(game, c.center ? c.center(_p) : _p.copy(c.pos));
+  game.lastParried = c; // (what was parried, for an art that answers it: Riposte Rush, courier/classarts/body.js)
   game.events?.emit('move.parry', { tool, how, what: 'blow', kind: c.kind, lead, by: 'courier' });
   return 'blow';
 }

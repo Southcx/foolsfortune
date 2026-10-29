@@ -253,6 +253,7 @@ Monster Hunter's weapons are the model: the job is in the motion.
 | Lockheart | the gulp, the parry that drinks | it drinks the pool's overflow, as now |
 
 **The pairs (the owner's 7C2 = 21).**
+- **Built (2026-10-29):** each special's plan (`PAIR_SPECIALS`), its opening (`pairSpecialOpen`: 50 downs or 40 lends with the pair worn, `pair.<n>.down` / `.lend`, tracking/pairworn.js), the 21 achievements and the Fool's Journey (`progress/pairachievements.js`), `pair.open` said once. The specials themselves are Petra's to build, a wave of four at a time. **Each special's two verbs are named** (2026-10-29, `PAIR_SPECIALS[n].main`, `specialVerbs(n)`): the tool that must be the main and which of its verbs carries the special; the sub is the pair's other tool, lending its verb on R. Worn the other way round, the pair gives its lend and no special: one order, so it is learnable.
 - Each pair has one pair special, opened by an achievement done with that pair worn (arts only by achievement).
 - They come in waves of four, so the 21 are earned and built over rounds, not all at once.
 - The first four are TOOLS-TOGETHER.md 4 K5's, now as pairs:

@@ -24,6 +24,8 @@
 //  - Monster Hunter's weapon-form switch: one instrument, three shapes, the sections sliding in and out between them.
 //  - The drawn run (drawnRun): Ghost of Tsushima's and Sekiro's run with the blade out, Monster Hunter's sword-and-shield run with the
 //    weapon drawn: the run's own body, the blade carried low and back (a stance baked over the run, courier/anim/stances.js).
+//  - The drawn slide (drawnslide.js): Strider's and Zero's slide with the blade behind: the core slide's own body, the free hand trailing
+//    on the floor, the blade arm low beside the hip and the cutlass laid back behind them.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RestBake } from '../../render/restbake.js';
@@ -39,6 +41,7 @@ import { measureGrip, handFromTool, easeGrip } from '../grip.js';
 import { drawHands } from '../draw.js';
 import { fpToolMatrix } from '../viewmodel.js';
 import { buildLure } from './angling/luremodels.js';
+import { DrawnSlide } from './drawnslide.js';
 
 const HOLD = T.weapon.drawGrab;
 /** The hook's aim (hands()): the forearm `fore` degrees below the shaft's line, the hand `reach` m along it from the shoulder and `out` m to
@@ -182,8 +185,9 @@ export class Sondelass extends Tech {
   stowedVisible() { return this.enabled && !this.game.god?.active; }
 
   // ---------------------------------------------------------------- animation: the right arm's clip layer
-  animate(ch, base, dt) {
+  animate(ch, base, dt, s) {
     const C = ch.clips, P = ch.P;
+    this.ground = s?.ground || null; // (the floor under a point, for the drawn slide's free hand: hands())
     if (!this.track) {
       this.track = new Track(C, new Set(['stance:cutlass', 'stance:hookHeld', 'Sond_Idle', 'Sond_CastIdle', 'torchIdle', 'idle']));
       this.track.play('torchIdle', 0, 0.01);
@@ -197,6 +201,7 @@ export class Sondelass extends Tech {
     tr.update(dt);
     const layer = tr.sample(this.P1);
     if (this.form === 'cutlass') this.drawnRun(ch, layer, dt); // (running, the run's own upper body with the blade held low and back)
+    (this.drawnSlide ||= new DrawnSlide()).pose(ch, base, layer, this.form === 'cutlass' && !this.P.fp ? s?.slide || 0 : 0, dt); // (sliding: the slide's own body, the blade trailing: drawnslide.js)
     // a cutlass stroke, or the cast: a clip played over the ready stance
     const cl = this.cutlass.pose(C, this.P2);
     if (cl) C.blend(layer, cl.pose, cl.w);
@@ -220,7 +225,7 @@ export class Sondelass extends Tech {
    *  guard or the stinger is laid over it as over the idle. */
   drawnRun(ch, layer, dt) {
     const C = ch.clips, st = ch.st, g = ch.gait;
-    this.runW = THREE.MathUtils.damp(this.runW || 0, st.run || 0, 12, dt);
+    this.runW = THREE.MathUtils.damp(this.runW || 0, st.run || 0, (this.drawnSlide?.w ?? 0) > 0.01 ? 40 : 12, dt); // (out of the drawn slide, the run takes the blade from it at once, behind them both: drawnslide.js)
     if (this.runW < 0.001 || !C.clips['stance:cutlassRun'] || !g?.jog) return;
     const at = (n, clip) => ((st.phi + g[n].off) % 1) * C.clips[clip].dur; // (the loop the stance was baked over: its own frames, the same phase)
     const pose = C.sample('stance:cutlassRun', at('jog', 'stance:cutlassRun'), (this.P3 ||= C.pose()));
@@ -278,6 +283,7 @@ export class Sondelass extends Tech {
         const yaw = this.P.bodyYaw ?? this.P.yaw, pole = new THREE.Vector3(0.55 * Math.cos(yaw) + 0.22 * Math.sin(yaw), 0.77, -0.55 * Math.sin(yaw) + 0.22 * Math.cos(yaw)).add(this.P.renderPos); // (the elbow out to their left and a little ahead: the forearm across to the blade square to its line, the pose audit)
         this.offHand(ch, M, this.cutlass.leftAt, 0, 0, AXIS_X, this.leftW, pole, true); // (the thumb toward the hilt, as on a scabbard's mouth: iaido's koiguchi)
       }
+      if (this.leftW < 0.01 && this.form === 'cutlass' && !this.P.fp) this.drawnSlide?.hands(ch, this.ground); // (the drawn slide's free hand onto the floor)
       if (this.leftW > 0.01 && this.form === 'hook') this.offHand(ch, M, 0.55, 0, 0, AXIS_X, this.leftW, B.forearmL.getWorldPosition(new THREE.Vector3()).add(_v3.set(0.15, -0.3, 0.1)));
       if (this.leftW > 0.01 && this.form === 'rod') {
         const a = model.spin; // (the crank's knob, turning about the reel's axle: the fingers turn about the knob's own stem, the tool's Z)

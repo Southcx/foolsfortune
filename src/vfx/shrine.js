@@ -24,7 +24,8 @@
 // Metroid's Chozo statues (the one thing you carry wakes the machine); gates that wake from the ground up (Breath of the Wild's shrines,
 // Majora's Mask's owl statues, the Stargate's chevrons locking); a die's Manhattan routing, carved dead and lit along its length.
 //
-//   const S = new ShrineModel({ ground })   S.group (stands on its origin, its front toward +z)   S.set({ found, resting, open })
+//   const S = new ShrineModel({ ground, number })   S.group (stands on its origin, its front toward +z)   S.set({ found, resting, open })
+//     (number: its cradle's own, in the Comb: vfx/cradlelook.js cradleNumber)
 //   S.update(rawDt)   S.wake(on = true) (the threshold sealed / unsealed)   S.cradleSpots() -> { threshold } (world: the well's
 //   floor, the socket's face; correct whenever it is asked, the group placed or not)
 // ---------------------------------------------------------------------------------------
@@ -169,7 +170,7 @@ function circuit(gate, dead, w, colourOf) {
 }
 
 export class ShrineModel {
-  constructor({ ground = 'stone_flags' } = {}) {
+  constructor({ ground = 'stone_flags', number = null } = {}) {
     const L = look(), root = (this.group = new THREE.Group()); root.name = 'shrine'; this.ground = ground; // (the ground it stands on: the old skirt's; unused by the torii)
     const gate = (this.gate = new THREE.Group()); gate.scale.setScalar(GATE); root.add(gate);
     const clay = (this.clay = new THREE.MeshStandardMaterial({ name: 'shrine-clay', map: L.clay, roughness: 0.92 }));
@@ -197,7 +198,7 @@ export class ShrineModel {
     { const R = rng(10), pts = []; let y = 7.6; for (let x = 1.0; x < 3.6; x += 0.12) { y += (R() - 0.5) * 0.06; pts.push(P(x, y + kas(x) - 0.02, 0.385)); } mend(pts, 0.018); }
 
     // ---- the threshold's cradle (onward): the cradle's look (vfx/cradlelook.js), lying in the sill at the Jar's scale
-    this.cradle = new CradleLook({ scale: CS }); gate.add(this.cradle.group);
+    this.cradle = new CradleLook({ scale: CS, number }); gate.add(this.cradle.group);
     const { R } = CR;
 
     // ---- the threshold's circuit: out of the sill both ways, up the pillars past their chevrons, over the nuki, the kasagi last
