@@ -85,6 +85,6 @@ Status: **(a)** waits on South, **(b)** decided, not built, **(c)** not designed
 
 | who | what |
 | --- | --- |
-| Petra | the save section `aptitude` approved; the pair specials, a wave of four at a time; the Touchstone room |
+| Petra | the pair specials, a wave of four at a time; the Touchstone room |
 | Calissa | the Assay window from `game.aptitude.all()` (??? to five readings, the number to twenty, then the curve) |
 | Espada | the Assay's words (`/assay`'s lines are placeholders) |
