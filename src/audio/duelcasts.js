@@ -30,8 +30,8 @@ import { duelRoot, FEELING_STEP } from './puzzleduel.js';
 /** Real s from the event to the cut-in's slam (Calissa's label: 0.12 a skill's; 1.1 the limit break's, after its swell). */
 export const CUT_IN_LEAD = { skill: 0.12, desperate: 1.1 };
 /** Real s each cut-in holds after its slam (Calissa's vfx/duelview/cutin.js: a skill's 0.62; the limit break's to its end at 1.75), then 0.16 out. */
-/** The turn's band (Calissa's, 481fde2d): its word slams 0.05 real s in, it holds to 0.4 and is gone by 0.54. */
-export const TURN_CUT_IN = { slam: 0.05, hold: 0.35 };
+/** The turn's band (Calissa's, 14b3ab42): its word slams 0.12 real s in, it holds to 0.4 and is gone by 0.54. */
+export const TURN_CUT_IN = { slam: 0.12, hold: 0.28 };
 export const CUT_IN_HOLD = { skill: 0.62, desperate: 0.65 };
 const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
 /** Each cut-in's chord, semitones over the foe's root (two octaves under the duel's key). */
@@ -66,7 +66,7 @@ export class DuelCastSounds {
     if (!this.ok() || !this.allow('duelTurnCutIn', 2)) return;
     const foe = side === 1, lead = TURN_CUT_IN.slam, t = this.ctx.currentTime + lead, r = duelRoot(this) - (foe ? 24 : 12);
     const d = this.duelOut?.(foe ? 0.36 : 0.3, 0.5, foe ? 0.3 : -0.3) ?? this.out(0.3, 0.5, true);
-    this.noise(t - lead, 0.1, { type: 'bandpass', f0: foe ? 3000 : 900, f1: foe ? 700 : 4000, q: 0.9, gain: 0.18, attack: 0.04, dest: d }); // (the band coming in over 0.1 s: rising for yours, falling for its)
+    this.noise(t - lead, lead + 0.03, { type: 'bandpass', f0: foe ? 3000 : 900, f1: foe ? 700 : 4000, q: 0.9, gain: 0.18, attack: 0.04, dest: d }); // (the band coming in over 0.1 s: rising for yours, falling for its)
     this.tone(t, 0.25, { f0: foe ? 80 : 120, f1: foe ? 40 : 70, gain: foe ? 0.45 : 0.3, dest: d }); this.noise(t, 0.05, { type: 'lowpass', f0: 2200, gain: 0.25, dest: d }); // (the slam, small)
     const notes = foe ? [[0, 4, [0, 3, 7]], [0.16, 0, [0, 3, 6]]] : [[0, 0, [0, 4, 7]], [0.12, 2, [0, 5, 9]]]; // (yours: I then up a step, G to A; its: the Five's E falling to the root, minor then diminished)
     for (const [dt, up, chord] of notes) for (const st of chord) { const f = hz(r + 12 + up + st); this.tone(t + dt, TURN_CUT_IN.hold + 0.1 - dt, { f0: f, type: 'sawtooth', gain: foe ? 0.03 : 0.025, dest: d }); this.tone(t + dt, 0.25, { f0: f * 2, type: foe ? 'square' : 'triangle', gain: 0.01, dest: d }); }
