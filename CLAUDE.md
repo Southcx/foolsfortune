@@ -100,6 +100,8 @@ Build it as a modular piece with a small interface, not a one-off. Free assets o
   must agree is one section; nothing touches `localStorage` itself.
 - Every new room is a zone (`render/zones.js`); static geometry goes through `level.box`/`addGeo` or `mergeStatic`; lamps are plain
   `PointLight`s lent by the light budget (eight at a time), never around it.
+- **What effects there are is `docs/VFX-CATALOGUE.md`** (South, 2026-10-29: "make a note for yourself of exactly what vfx you have
+  available"): read it before making an effect, reuse before adding; it is generated (`node scripts/vfxcatalogue.mjs`), rerun after any change to the library.
 - Many copies of a prop: a prop batch or instance pool (`render/propbatch.js`). A model that mostly rests: a rest bake
   (`render/restbake.js`). Measure before and after.
 - The maker's pixel art at 1x, palette-swapped, scaled by whole numbers (`src/ui/pixel.js`).
