@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE RACE BOARD (docs/plans/SKIFF-RACING.md section 12; the owner, v198: "racetrack selection"): the stone at the park's hub, F there.
 // One page in tabs, every run the Raceway offers begun from it (its room's own thing, never a global key: CLAUDE.md's scope):
-//   RACES     each track: a race, a hot lap, practice, a pot smash, a haunted race and the haunt (its traps: TRACK-EDITOR.md 7); your
+//   RACES     the game day's race (one track and sky a game day: conditions.js dayCondition); each track: a race, a hot lap, practice, a pot smash, a haunted race and the haunt (its traps: TRACK-EDITOR.md 7); your
 //             bests; the rivals to race (the clapperjars, or the siblings once opened); and the wager on the next race (wager.js).
 //   CUPS      the cups (cups.js), and how you last did.
 //   LICENCES  the tests (licences.js), each with the medal you hold.
@@ -22,6 +22,8 @@
 //   const B = new RaceBoard(game, race)   B.open(tab?)   B.siblingsOpen
 // ---------------------------------------------------------------------------------------
 import { MODES } from './modes.js';
+import { dayCondition, dayTrack, conditionWords } from './conditions.js';
+import { today } from '../../core/calendar.js';
 import { CUPS } from './cups.js';
 import { LICENCES } from './licences.js';
 import { PARTS, SLOTS } from '../../progress/skiffparts.js';
@@ -57,6 +59,12 @@ export class RaceBoard {
 
   races(grp, row) {
     const g = this.game, L = g.ledger, R = this.race.R, W = g.wager;
+    // the game day's race (SKIFF-RACING.md 9): one track and one condition a game day, the same for everyone, its best kept by the day
+    const day = today(), dc = dayCondition(day), dT = R.tracks.find((T) => T.id === dayTrack(day, R.tracks.map((x) => x.id))), dBest = L?.best?.(`race.daily.${day}`);
+    if (dT) {
+      const dr = grp(`THE GAME DAY'S RACE · ${dT.name.toUpperCase()}`, 'A new one each game day: the same track and sky for everyone.');
+      row(dr, '☀', MODES.daily.label, `${dT.name}, ${conditionWords(`${dc.band}.${dc.aspect || 'fair'}`)}${dc.aspect ? ` (strength ${dc.strength})` : ''}.${dBest ? ` Your best today ${clock(dBest)}.` : ''}`, (menu) => this.go(menu, dT.id, { mode: 'daily', roster: this.roster }));
+    }
     for (const T of R.tracks) {
       const lap = this.race.bestLaps[`${T.id}.stock`]?.seconds, open = this.race.bestLaps[`${T.id}.open`]?.seconds, best = L?.best?.(`race.track.${T.id}.best`), hot = L?.best?.(`race.hotlap.${T.id}`), pots = L?.best?.(`race.pots.${T.id}`);
       const rows = grp(`${T.name.toUpperCase()} · ${(T.length / 1000).toFixed(1)} KM · BEST ${clock(lap)} / ${clock(open)}`, 'Your best lap here: STOCK / OPEN (standard parts and the sheet at 0 / anything you build).'); // (Espada's short form: one line held upright on a phone)

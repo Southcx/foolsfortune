@@ -34,10 +34,10 @@ Status: **(a)** waits on South, **(b)** decided, not built, **(c)** not designed
    - Opening: an achievement counted with the pair worn. The ledger needs `pair.<n>.<act>` (a down, a lend landed). Dovina writes
      those keys in tracking next round.
 3. **The Assay's next steps (b).**
-   - The readings are built. Still to do:
-     - the bot check (APTITUDE.md 8), Dovina's;
+   - The readings are built, and the bot check (`scripts/assaybot.mjs`: all PASS) and the Touchstone's trials as data
+     (`progress/assaytrials.js`). Still to do:
      - the window, Calissa's (the data is `game.aptitude.all()`);
-     - the Touchstone room, Petra's.
+     - the Touchstone room, Petra's (its trials are data now).
    - Three more readings wait only on a field in an event:
      - inhibition: the rail's plain or outlined shot, on `rail.hit`;
      - risk: the Lockheart's wheel, cashed or pushed;
@@ -46,11 +46,11 @@ Status: **(a)** waits on South, **(b)** decided, not built, **(c)** not designed
    - The respawning hunt, already built: the lairs restock each game day and the dock posts one with a bounty. Measured at 0.40x,
      0.72x and 1.30x the aim by skill (OPEN-SEA.md 9.1). No bounty board.
    - The areas already have their checklists on the map. Their half and whole achievements are Dovina's, next.
-5. **Pace, measured (c).**
-   - The fold: the ledger already writes the play time of every first (`stats.first`). Time to the first art, the first fish, the
-     first curio and the first gold is a read of it.
-   - A script reads a playtest's ledger (Dovina), and the field report carries it from a phone (Petra's).
-   - No new event is needed.
+5. **Pace, measured. Built** (2026-10-29).
+   - The ledger keeps the play time each achievement was earned at (`L.done`), and a thing's first time is an Easy "do it once" (the
+     `first()` stamp is used by only eight keys). So `progress/pace.js` names 15 milestones by their achievements, each with the
+     design's target in real minutes (FIRST-HOUR.md's steps first). `node scripts/pace.mjs <ledger.json>` reads a playtest's or a QAIS
+     session's ledger; the field report can carry `paceOf(L)` from a phone (Petra's).
 6. **The weather's readers. Ruled back** (South, 2026-10-29: "bring back the weather effects").
    - The rules are in `progress/weather.js` (`moodRest`, `biteMult`, `senseMult`; WEATHER.md). Each is a one-line read in its
      owner's module: creatures' settle, a fish's interest in a lure, a signature's range (asked of Petra).
@@ -79,3 +79,25 @@ Status: **(a)** waits on South, **(b)** decided, not built, **(c)** not designed
 | Petra | the class arts in play, a wave at a time, and the input action `art`; the weather's three reads; the pair specials, a wave of four at a time; the Touchstone room |
 | Calissa | the Assay window from `game.aptitude.all()` (??? to five readings, the number to twenty, then the curve) |
 | Espada | the Assay's words (`/assay`'s lines are placeholders) |
+
+## 5. The round robin (2026-10-29): every division's open threads
+
+**Built by Dovina this round**, from the threads that were hers:
+- the game day's race and the skiff sets' achievements (SKIFF-RACING.md 9, SKIFF-TUNING.md);
+- the class arts' words pasted (Espada's 76 labels and lines, the log's lines, `FEAT_WORDS`) and CLASS-ARTS.md regenerated;
+- each pair special's two verbs named (`PAIR_SPECIALS[n].main`, `specialVerbs`; Petra's ask);
+- the Touchstone's standard trials as data and the Assay's bot check (APTITUDE.md 9);
+- pace, read from the ledger (item 5 above);
+- Espada's older word notes checked: the duel words were already in; the spreads' wild-card tip pasted; the rest routed to their owners.
+
+**Open, by owner** (as each reported it):
+
+| who | open |
+| --- | --- |
+| Petra | class arts wave 1 in play and the input action `art`; the pair specials, four at a time; the Touchstone room; the field report carrying `paceOf`; areas stage 2 (build and teardown); `npm run perf` on the numeral decals; 43 casebook rules to number; a Seal Book shelf in the Codex (Espada's and Calissa's ask); the LOAD confirm and the OTHER SAVE row's words (Espada's, `docs/handoffs/petra/`); the shoal silhouette's events for Wanda |
+| Calissa | the CMU spinning kicks bending the knees backward (cause not found); the drawn slide's blade under the floor; the far shelf's words shrinking to glyphs; `CRADLE_NUMBERS` and the numerals on the dice and six other surfaces; the Assay's window; each class art's look; the Lachrimeter's tube mirrored bottom-left (Petra's ask); the ALT tile's word and the domain tile's long press (Espada's, `docs/handoffs/calissa/`); `hudring.js`'s stale header |
+| Wanda | the open sea's moments (building now), the safari Egregores' calls, a front's squall, the god hand's matter sounds, each class art's sound, the turn change's sound |
+| Espada | lore names once South calls each system finished; the touch help page; the spirits' farewell lines (waiting on Dovina: below); the antibody Figment's name (Calissa's ask) |
+
+**Dovina's next:** the spirits' farewell moment settled for Espada (what the statue is called, who speaks); numbers with no reason
+(item 7); the next condition-bound find (AREAS.md 5); the three aptitude readings waiting on an event field.

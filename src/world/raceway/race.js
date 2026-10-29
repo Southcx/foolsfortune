@@ -27,7 +27,8 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { ECON } from '../../progress/econ/table.js';
-import { conditionAt } from './conditions.js';
+import { conditionAt, dayCondition } from './conditions.js';
+import { today } from '../../core/calendar.js';
 import { Rivals } from './rivals.js';
 import { hauntOf } from '../../progress/trackdef.js';
 import { MODES, FLY } from './modes.js';
@@ -115,7 +116,8 @@ export class Race {
     const from = plan.from ?? (M.flying ? T.line - FLY.back : T.line - 20); R.respawn(((from % L) + L) % L, T);
     this.running = true; this.state = plan.flying ?? M.flying ? 'flying' : 'grid'; this.t = 0; this.count = RACE.countdown; this.said = null; this.goT = null; this.solarDone = false;
     this.lap = 1; this.next = plan.gate ?? 0; this.lapT = 0; this.splits = []; this.frames = []; this.laps = []; this.prevS = R.s; this.back = 0; this.bailT = null; this.ghostT = 0; this.pushed = false; this.flyAt = plan.flyAt ?? T.line;
-    const C = (this.condition = conditionAt(g));
+    this.forced = M.daily ? dayCondition(today()) : null; // (the game day's race: the game day's seeded condition, whatever the sky)
+    const C = (this.condition = conditionAt(g, this.forced));
     this.rivals.start(T, opts.solo || this.solo || !M.rivals, opts.roster || 'clapperjars'); this.solo = false;
     this.pi = this.cls === 'open' ? g.skiffParts?.pi?.(T) ?? 100 : 100; // (OPEN: the rivals answer your build by half its edge, SKIFF-TUNING.md 2.4)
     if (this.pi !== 100) for (const r of this.rivals.list) r.skill *= Math.sqrt(this.pi / 100);
@@ -216,7 +218,7 @@ export class Race {
   }
   finish() {
     const g = this.game, L = g.ledger, M = this.mode, raw = +(this.laps.length ? this.laps.reduce((a, b) => a + b, 0) : this.t).toFixed(2);
-    const out = { seconds: raw, medal: null, laps: this.laps.slice(), condition: this.condition?.key || 'day.fair', track: this.T.id, mode: this.modeId, place: 1, of: 1, cup: !!this.opts.cup, city: !!this.opts.city, by: 'courier' };
+    const out = { seconds: raw, medal: null, laps: this.laps.slice(), condition: this.condition?.key || 'day.fair', track: this.T.id, mode: this.modeId, place: 1, of: 1, cup: !!this.opts.cup, city: !!this.opts.city, ...(this.forced ? { day: today() } : {}), by: 'courier' };
     out.recordClass = this.cls; out.pi = this.pi ?? 100;
     if (this.rivals.on) { out.of = this.rivals.list.length + 1; out.place = 1 + this.rivals.list.filter((r) => r.done != null).length; out.order = this.rivals.order(this); }
     if (M.medals) out.medal = medalOfRace(raw, this.T.id, this.T.id === 'made' ? this.R.made.medals : undefined); // (every track's, from the ruler; a made track's from its own reference race)

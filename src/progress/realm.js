@@ -27,13 +27,16 @@ export const OVERCOMES = { wonder: 'desire', desire: 'dread', dread: 'mirth', mi
 /** A feature's multiplier from its neighbours (features in adjoining plots) and whether a spirit vein runs under its plot: each neighbour
  *  that generates it adds ECON.place.formation, each that overcomes it takes it away; a vein doubles the whole (ECON.place.vein). Never
  *  below half: a bad layout is weak, never dead. */
-export function formation(feeling, neighbours = [], onVein = false, { ground = null, water = null } = {}) {
+export function formation(feeling, neighbours = [], onVein = false, { ground = null, water = null, stones = 0 } = {}) {
   const F = ECON.place.formation;
   let m = 1;
   // (the ground a feature stands on and the water that reaches it count as one neighbour each: GROUND and WATERS below)
   for (const n of [...neighbours, GROUND_FEELING[ground], water].filter(Boolean)) { if (GENERATES[n] === feeling) m += F; else if (OVERCOMES[n] === feeling) m -= F; }
-  return Math.max(0.5, m) * (onVein ? ECON.place.vein : 1);
+  return Math.max(0.5, m) * (onVein ? ECON.place.vein : 1) * (1 + STONE_BOOST * Math.min(2, stones));
 }
+/** The Booster Stone's job (FEATURES.stone: "Boosts the features next to it"; GARDEN-COZY.md 1, wired 2026-10-29): each Booster Stone a
+ *  neighbour adds a quarter to a feature's formation, two at most; a stone never boosts a stone (plots.js counts only other features'). */
+export const STONE_BOOST = 0.25;
 
 /** The first planetoids (SPIRIT-GARDEN.md section 3): radius in metres, plots to place features in, and what is fixed there. The
  *  bought ones (ECON.place.planetoids) are 8 to 16 m with 4 to 8 plots, chosen by the player's sculpting. */

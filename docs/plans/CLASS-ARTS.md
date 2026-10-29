@@ -14,8 +14,8 @@ are `feedback/tracking/classarts.js`; `/art` lists and wears them.
 - **Opened by playing as the class** (arts only by achievement; DESIGN.md 22), whichever way comes first:
   - **the count way:** real time played while you read as it: **45 real minutes** for its action, **90** for its reaction
     (`class.<id>.secs` in the ledger);
-  - **the feat way:** its feat, done n times while you read as it (`class.<id>.<feat>`; the feats are the art's own theme: Charge opens
-    on downs, Wade on paint laid, Scout on photographs). A sharp player who reads the card opens it in a session; anyone opens it in time.
+  - **the feat way:** its feat, done n times while you read as it (`class.<id>.<feat>`; the feats are the art's own theme: Onrush opens
+    on downs, Water Walk on paint laid, Scout on photographs). A sharp player who reads the card opens it in a session; anyone opens it in time.
 - **Kept in every class.** Once open, an art is yours to wear whatever you read as. **One action and one reaction are worn** at a time
   (`game.classArts.worn`; the first opened fills an empty slot; `/art <id>` wears another; the Pneuka Box's loadout page is next).
 - **Accented in its own class:** while you read as the art's class, its sizes grow x1.25 (reach, duration, power), a multiplier's bonus
@@ -44,79 +44,79 @@ completes, and the other eight wait on their read (CLASSES.md 3) with their arts
 
 | class | action | reaction |
 | --- | --- | --- |
-| the Fool | **Beginner's Luck** (beginnersLuck): Your next roll of chance is thrown twice, the better kept. Cost 10. Cooldown 60 s. Feat: flee x3. | **Zero** (zero): When your pool runs dry, your next blows and shots cost nothing for a moment. Cooldown 45 s. Feat: down x25. |
+| the Fool | **Beginner's Luck** (beginnersLuck): Your next roll of chance within 30 s is thrown twice, and the better throw is kept. Cost 10. Cooldown 60 s. Feat: flees made good x3. | **Running on Empty** (zero): When your pool runs dry, your blows and shots cost nothing for 4 s. Cooldown 45 s. Feat: creatures downed x25. |
 
 ### Wands (will)
 
 | class | action | reaction |
 | --- | --- | --- |
-| the Page of Wands | **Spark** (spark): Flick an ember: it lights a slick or blot it lands on, burning it away, and staggers. Cost 6. Cooldown 8 s. Feat: mop x10. | **Eager** (eager): Your first blow of a fight lands harder. Feat: firstBlood x10. |
-| the Knight of Wands | **Charge** (charge): Dash forward, striking all in your path. Cost 8. Cooldown 6 s. Feat: down x40. | **Momentum** (momentum): Sprint for a few seconds and your next blow lands harder. Feat: combo x5. |
-| the Queen of Wands | **Kindle Heart** (kindleHeart): For a while your blows build statuses faster and your pool fills faster. Cost 15. Cooldown 30 s. Feat: stunDeep x10. | **Warmth** (warmth): A feeling you drink stays in you twice as long. Feat: awaken x1. |
-| the King of Wands | **Command** (command): A roar: every creature near you is staggered and its windup broken. Cost 20. Cooldown 40 s. Feat: parry x30. | **Rally** (rally): A creature downed gives you back some of your pool. Feat: down x60. |
+| the Page of Wands | **Spark** (spark): Flick an ember up to 14 m: it staggers what it hits and burns away any slick or blot it lands on. Cost 6. Cooldown 8 s. Feat: blots and slicks washed x10. | **First Strike** (eager): Your first blow of a fight deals x1.5 damage. Feat: big creatures downed x10. |
+| the Knight of Wands | **Onrush** (charge): Dash 8 m forward, striking everything in your path. Cost 8. Cooldown 6 s. Feat: creatures downed x40. | **Momentum** (momentum): Sprint for 3 s and your next blow deals x1.3 damage. Feat: trick combos banked at x4 x5. |
+| the Queen of Wands | **Stoke** (kindleHeart): For 6 s your blows build statuses x1.5 faster and your pool fills x1.5 faster. Cost 15. Cooldown 30 s. Feat: creatures stunned deep x10. | **Afterglow** (warmth): A feeling you drink stays in you twice as long. Feat: feelings awakened to x1. |
+| the King of Wands | **Roar** (command): Stagger every creature within 8 m and break off its windup. Cost 20. Cooldown 40 s. Feat: blows parried x30. | **Rally** (rally): Each creature you down gives you back 5 of your pool. Feat: creatures downed x60. |
 
 ### Cups (feeling)
 
 | class | action | reaction |
 | --- | --- | --- |
-| the Page of Cups | **Offering** (offering): Set down a cup of your pool: creatures near it drink and are calmed. Cooldown 30 s. Feat: release x5. | **Tender** (tender): A fish let go or a spirit's wish granted mends one crack. Feat: wish x3. |
-| the Knight of Cups | **Wade** (wade): For a while you walk on liquid Lachryma and run faster through paint. Cost 8. Cooldown 20 s. Feat: paint x10. | **Gallant** (gallant): A parry gives you back some of your pool. Feat: parry x20. |
-| the Queen of Cups | **Well Up** (wellUp): Under falling weather, fill a Lachrymato Bottle from the sky. Cooldown 60 s. Feat: fish x15. | **Empath** (empath): You read a creature's agitation at once, and drain more in its best band. Feat: drain x15. |
-| the King of Cups | **Still Waters** (stillWaters): Every creature near you settles to Balanced, its agitation to its best band. Cost 20. Cooldown 45 s. Feat: reprogram x3. | **Steady** (steady): While your pool is over half, your cracks mend twice as fast. Feat: bind x3. |
+| the Page of Cups | **Offering** (offering): Set down a cup of 10 of your pool: creatures within 6 m drink from it and are calmed for 4 s. Cooldown 30 s. Feat: fish let go x5. | **Kindness** (tender): Letting a fish go, or granting a spirit's wish, mends 1 crack. Feat: spirits' wishes granted x3. |
+| the Knight of Cups | **Water Walk** (wade): For 5 s you walk on liquid Lachryma, and run x1.2 faster through paint. Cost 8. Cooldown 20 s. Feat: patches of paint laid x10. | **Gallant** (gallant): A parry gives you back 4 of your pool. Feat: blows parried x20. |
+| the Queen of Cups | **Catch the Rain** (wellUp): Under falling weather, fill 30% of a Lachrymato Bottle from the sky. Cooldown 60 s. Feat: fish caught x15. | **Empath** (empath): You see a creature's agitation at once, and drain x1.25 more from it in its best band. Feat: drains x15. |
+| the King of Cups | **Still Waters** (stillWaters): Every creature within 6 m settles: its mind to Balanced, its agitation to its best band. Cost 20. Cooldown 45 s. Feat: clean reprogrammings x3. | **Steady** (steady): While your pool is over half full, your cracks mend twice as fast. Feat: spirits bound x3. |
 
 ### Swords (mind)
 
 | class | action | reaction |
 | --- | --- | --- |
-| the Page of Swords | **Scout** (scout): Every signature and creature near you is tagged through walls for a while. Cost 8. Cooldown 20 s. Feat: photo x5. | **Quick Study** (quickStudy): You come to know a kind of creature twice as fast. Feat: windup x20. |
-| the Knight of Swords | **Riposte Rush** (ripostRush): Just after a parry, blink behind the attacker and strike. Cost 6. Cooldown 4 s. Feat: parry x25. | **Edge** (edge): A blow to a creature's weak point builds its status faster. Feat: downWeak x15. |
-| the Queen of Swords | **Clear Sight** (clearSight): For a while every windup shows its Figment telegraph whole. Cost 10. Cooldown 30 s. Feat: windup x40. | **Cut Through** (cutThrough): A status that is resisted does not harden the mind that resisted it. Feat: stunDeep x10. |
-| the King of Swords | **Verdict** (verdict): Mark a creature: for a while your blows on it land harder and it cannot resist them. Cost 15. Cooldown 35 s. Feat: downWeak x30. | **Judge** (judge): A kind you have photographed takes more from you. Feat: photo x15. |
+| the Page of Swords | **Scout** (scout): For 6 s, every creature and source of Lachryma within 40 m is tagged through walls. Cost 8. Cooldown 20 s. Feat: great photographs x5. | **Quick Study** (quickStudy): You learn a kind of creature twice as fast. Feat: windups read x20. |
+| the Knight of Swords | **Riposte Rush** (ripostRush): Within 1 s of a parry, blink behind the attacker and strike it hard. Cost 6. Cooldown 4 s. Feat: blows parried x25. | **Edge** (edge): A blow to a weak point builds its status x1.5 faster. Feat: creatures downed by a blow they are weak to x15. |
+| the Queen of Swords | **Clear Sight** (clearSight): For 8 s, every windup shows its Figment telegraph in full. Cost 10. Cooldown 30 s. Feat: windups read x40. | **Cut Through** (cutThrough): A status that is resisted does not make the creature harder to affect. Feat: creatures stunned deep x10. |
+| the King of Swords | **Mark for Death** (verdict): Mark a creature for 8 s: your blows on it deal x1.3 damage and it cannot resist them. Cost 15. Cooldown 35 s. Feat: creatures downed by a blow they are weak to x30. | **Judge** (judge): A kind of creature you have photographed takes x1.1 damage from you. Feat: great photographs x15. |
 
 ### Pentacles (matter)
 
 | class | action | reaction |
 | --- | --- | --- |
-| the Page of Pentacles | **Prospect** (prospect): Ping the strongest Lachryma in front of you, as the dowse does. Cost 5. Cooldown 10 s. Feat: sweet x10. | **Thrift** (thrift): Your shells cost less to fire. Feat: shell x30. |
-| the Knight of Pentacles | **Bulwark** (bulwark): Brace where you stand: blows land far softer, but you cannot move. Cost 10. Cooldown 20 s. Feat: parry x15. | **Steadfast** (steadfast): Stand still a moment and the next blow you take cracks nothing. Feat: salvage x10. |
-| the Queen of Pentacles | **Harvest** (harvest): Ripen a Spirit Garden bed at once, or strike one more cube from a crystal. Cooldown a game day. Feat: tend x10. | **Hearth** (hearth): Resting at a Shrine mends a crack too. Feat: wish x5. |
-| the King of Pentacles | **Stronghold** (stronghold): Raise a wall of the ground in front of you, for cover. Cost 15. Cooldown 30 s. Feat: sculpt x5. | **Dividend** (dividend): Each game day's first of a thing pays a quarter more. Feat: build x2. |
+| the Page of Pentacles | **Prospect** (prospect): Ping the strongest Lachryma up to 30 m ahead of you, as the dowse does. Cost 5. Cooldown 10 s. Feat: crystals struck on the sweet spot x10. | **Thrift** (thrift): Your shells cost 10% less to fire. Feat: caster shells fired x30. |
+| the Knight of Pentacles | **Bulwark** (bulwark): Brace for 3 s: blows deal 60% less damage, but you cannot move. Cost 10. Cooldown 20 s. Feat: blows parried x15. | **Steadfast** (steadfast): Stand still for 2 s and the next blow you take cracks nothing. Feat: crates salvaged x10. |
+| the Queen of Pentacles | **Harvest** (harvest): Ripen one Spirit Garden bed at once, or strike 1 more cube from a crystal. Cooldown gameDay s. Feat: beds tended to bloom x10. | **Hearth** (hearth): Resting at a Shrine mends 1 crack too. Feat: spirits' wishes granted x5. |
+| the King of Pentacles | **Earth Wall** (stronghold): Raise a wall of ground 4 m wide and 2.5 m high in front of you for 6 s. Cost 15. Cooldown 30 s. Feat: creations raised x5. | **Dividend** (dividend): The first of each thing in a game day pays 25% more. Feat: made tracks validated x2. |
 
 ### The zodiac Majors
 
 | class | action | reaction |
 | --- | --- | --- |
-| the Emperor | **Ram** (ram): A wall of force ahead of you knocks everything back. Cost 12. Cooldown 15 s. Feat: down x50. | **Dominion** (dominion): Hold your ground through a windup and its blow cannot stagger you. Feat: parry x30. |
-| Strength | **Tame** (tame): A creature stunned deep enough fights beside you for a while. Cost 20. Cooldown 60 s. Feat: stunDeep x15. | **Courage** (courage): With your pool under a quarter, your blows land harder. Feat: down x40. |
-| Temperance | **Arrow of Time** (arrowOfTime): Throw a mark; press again soon after to blink to it. Cost 8. Cooldown 6 s. Feat: blink x40. | **Moderation** (moderation): What your pool cannot hold tops up a Lachrymato Bottle instead. Feat: song x5. |
-| the Chariot | **Ride** (ride): Take the reins of a staggered creature: it moves and fights as you steer it. Cost 20. Cooldown 60 s. Feat: gold x3. | **Reins** (reins): The Solar Skiff and your ship take less from a hit. Feat: crossing x3. |
-| Death | **Reap** (reap): A sweep that ends any creature near its end. Cost 12. Cooldown 20 s. Feat: down x60. | **Rebirth** (rebirth): Once a game day, a blow that would shatter you leaves you whole instead. Feat: downWeak x25. |
-| the Moon | **Mirage Step** (mirageStep): Leave a decoy of yourself and go unseen for a moment. Cost 12. Cooldown 25 s. Feat: windup x30. | **Tides** (tides): At night your pool fills faster. Feat: fish x10. |
-| Justice | **Weigh** (weigh): The next blow you take is returned in full to whoever dealt it. Cost 12. Cooldown 25 s. Feat: parry x40. | **Due** (due): A creature that hurt you takes more from your next blow. Feat: down x40. |
-| the Star | **Wish** (wish): Under the open night sky, turn the weather where you stand toward Wonder for a game hour. Cost 30. Cooldown a game day. Feat: vantage x3. | **Hope** (hope): Made whole after a shatter, you come back with half your pool. Feat: awaken x2. |
-| the Lovers | **Echo** (echo): Your last tool move repeats from where you stood a moment later. Cost 10. Cooldown 15 s. Feat: lend x40. | **Choice** (choice): Swap your main and sub, and your next lend is free. Feat: lend x20. |
-| the Devil | **Bind** (bind): Chain a creature where it stands; it cannot resist. Cost 15. Cooldown 30 s. Feat: stunDeep x20. | **Temptation** (temptation): While your pool overflows, your blows land harder. Feat: drain x20. |
-| the Hierophant | **Sanctum** (sanctum): A warded circle: nothing outside may enter, and blows inside cost no pool. Cost 20. Cooldown 60 s. Feat: glyph x10. | **Teaching** (teaching): The Movement Arts' count way counts more for you. Feat: blink x50. |
-| the Hermit | **Lantern** (lantern): A lamp that reveals hidden things and keeps Dread's fog off you. Cost 8. Cooldown 30 s. Feat: charted x2. | **Solitude** (solitude): With no sibling or spirit near you, everything costs less. Feat: secret x1. |
+| the Emperor | **Ram** (ram): A wave of force ahead of you knocks everything within 10 m back 6 m. Cost 12. Cooldown 15 s. Feat: creatures downed x50. | **Unshaken** (dominion): Hold your ground through a windup and its blow cannot stagger you. Feat: blows parried x30. |
+| Strength | **Tame** (tame): A creature stunned or out cold fights beside you for 15 s. Cost 20. Cooldown 60 s. Feat: creatures stunned deep x15. | **Courage** (courage): With your pool under a quarter, your blows deal x1.25 damage. Feat: creatures downed x40. |
+| Temperance | **Blink Mark** (arrowOfTime): Throw a mark up to 18 m; press again within 1.5 s to blink to it. Cost 8. Cooldown 6 s. Feat: blinks x40. | **Spillover** (moderation): What your pool cannot hold tops up a Lachrymato Bottle instead. Feat: songs played at fever x5. |
+| the Chariot | **Ride** (ride): Take the reins of a staggered creature for 8 s: it moves and fights as you steer. Cost 20. Cooldown 60 s. Feat: gold medals x3. | **Reins** (reins): The Solar Skiff and your ship take 30% less from a hit. Feat: crossings sailed x3. |
+| Death | **Reap** (reap): A sweep that downs any creature within 3 m that is under 15% of its health. Cost 12. Cooldown 20 s. Feat: creatures downed x60. | **Rebirth** (rebirth): Once a game day, a blow that would shatter you leaves you whole instead. Feat: creatures downed by a blow they are weak to x25. |
+| the Moon | **Vanish** (mirageStep): Leave a decoy of yourself and go unseen for 3 s. Cost 12. Cooldown 25 s. Feat: windups read x30. | **Tides** (tides): At night your pool fills x1.3 faster. Feat: fish caught x10. |
+| Justice | **Payback** (weigh): The next blow you take within 4 s is dealt back in full to whoever struck it. Cost 12. Cooldown 25 s. Feat: blows parried x40. | **Grudge** (due): A creature that hurt you takes x1.3 damage from your next blow. Feat: creatures downed x40. |
+| the Star | **Starlight** (wish): Under the open night sky, turn the weather where you stand toward Wonder for 1 game hour. Cost 30. Cooldown gameDay s. Feat: vantage points reached x3. | **Hope** (hope): Made whole after a shatter, you come back with half your pool. Feat: feelings awakened to x2. |
+| the Lovers | **Encore** (echo): Your last tool move plays again from where you stood, 1 s later. Cost 10. Cooldown 15 s. Feat: lends x40. | **Choice** (choice): When you swap your main and sub, your next lend is free. Feat: lends x20. |
+| the Devil | **Shackle** (bind): Chain a creature where it stands for 5 s; it cannot resist. Cost 15. Cooldown 30 s. Feat: creatures stunned deep x20. | **Excess** (temptation): While your pool overflows, your blows deal x1.2 damage. Feat: drains x20. |
+| the Hierophant | **Sanctum** (sanctum): A circle 5 m across for 8 s: nothing outside may enter, and nothing done inside costs pool. Cost 20. Cooldown 60 s. Feat: glyphs drawn with two sigils or more x10. | **Teaching** (teaching): Practising a Movement Art counts x1.5 toward opening it. Feat: blinks x50. |
+| the Hermit | **Lamp** (lantern): A lamp for 20 s that shows hidden things within 8 m and keeps Dread's fog off you. Cost 8. Cooldown 30 s. Feat: Wells charted x2. | **Solitude** (solitude): With no sibling or spirit within 12 m, everything costs 15% less. Feat: aberrants' secrets found x1. |
 
 ### The World
 
 | class | action | reaction |
 | --- | --- | --- |
-| the World | **Completion** (completion): For a while every art you know cools twice as fast and costs nothing. Cost 30. Cooldown 120 s. Feat: secret x2. | **Wholeness** (wholeness): Your spread's four tallies all count a little more. Feat: crossing x5. |
+| the World | **Completion** (completion): For 10 s every art you know costs nothing and cools down twice as fast. Cost 30. Cooldown 120 s. Feat: aberrants' secrets found x2. | **Wholeness** (wholeness): Your spread's four tallies each count 10% more. Feat: crossings sailed x5. |
 
 ### The other eight (their read not built)
 
 | class | action | reaction |
 | --- | --- | --- |
-| the Magician | **Sleight** (sleight): Swap your next shell or move for any other the tool knows, without the Box. Cost 5. Cooldown 10 s. Feat: shell x50. | **Will** (will): Celestial mode's sigils cost less. Feat: glyph x20. |
-| the High Priestess | **Veil** (veil): A creature forgets you: it loses you and what it knew of you. Cost 10. Cooldown 20 s. Feat: windup x30. | **Intuition** (intuition): An aberrant's secret shows you where it begins. Feat: secret x1. |
-| the Empress | **Bloom** (bloom): A thicket grows from the ground, blocking and slowing creatures. Cost 15. Cooldown 30 s. Feat: tend x15. | **Abundance** (abundance): Your Spirit Garden beds yield one more. Feat: wish x5. |
-| the Wheel of Fortune | **Spin** (spin): Luck's re-roll is yours again, now. Cooldown a game day. Feat: flee x3. | **Fortune** (fortune): Luck grows faster from the unlikely things you live through. Feat: gold x3. |
-| the Tower | **Collapse** (collapse): Bring the ground down on everything in an area, stunning it. Cost 18. Cooldown 30 s. Feat: stunDeep x20. | **Upheaval** (upheaval): A guard you break stays broken twice as long. Feat: parry x30. |
-| the Sun | **Daybreak** (daybreak): A flash of daylight blinds what is near and lights the dark for a game hour. Cost 12. Cooldown 30 s. Feat: photo x10. | **Radiance** (radiance): Your photographs score higher. Feat: photo x25. |
-| the Hanged Man | **Suspend** (suspend): Hang in the air a moment while time slows round you. Cost 10. Cooldown 20 s. Feat: swing x20. | **Surrender** (surrender): A blow taken while guarding gives back its pool. Feat: parry x30. |
-| Judgement | **Reckoning** (reckoning): Every creature you have hurt nearby takes a share of all it has taken from you, at once. Cost 25. Cooldown 60 s. Feat: down x80. | **Second Chance** (secondChance): Once a game day, a failed flee or a lost duel may be tried again. Feat: duelWin x10. |
+| the Magician | **Quick Swap** (sleight): Swap your next shell or move for any other the tool knows, without opening the Pneuka Box. Cost 5. Cooldown 10 s. Feat: caster shells fired x50. | **Will** (will): Celestial mode's sigils cost 30% less. Feat: glyphs drawn with two sigils or more x20. |
+| the High Priestess | **Veil** (veil): A creature within 12 m loses track of you and forgets what it knew of you. Cost 10. Cooldown 20 s. Feat: windups read x30. | **Intuition** (intuition): An aberrant's secret shows you where it begins. Feat: aberrants' secrets found x1. |
+| the Empress | **Overgrowth** (bloom): A thicket grows within 6 m for 10 s, blocking creatures and slowing them by half. Cost 15. Cooldown 30 s. Feat: beds tended to bloom x15. | **Abundance** (abundance): Your Spirit Garden beds each yield 1 more. Feat: spirits' wishes granted x5. |
+| the Wheel of Fortune | **Spin** (spin): Luck's re-roll is yours again, now. Cooldown gameDay s. Feat: flees made good x3. | **Fortune** (fortune): Luck grows x1.25 faster from the unlikely things you live through. Feat: gold medals x3. |
+| the Tower | **Collapse** (collapse): Bring the ground down within 4 m, stunning everything under it. Cost 18. Cooldown 30 s. Feat: creatures stunned deep x20. | **Upheaval** (upheaval): A guard you break stays broken twice as long. Feat: blows parried x30. |
+| the Sun | **Daybreak** (daybreak): A flash of daylight blinds what is within 10 m and lights the dark for 1 game hour. Cost 12. Cooldown 30 s. Feat: great photographs x10. | **Radiance** (radiance): Your photographs score 20% higher. Feat: great photographs x25. |
+| the Hanged Man | **Hang Time** (suspend): Hang in the air for 3 s while time round you slows by half. Cost 10. Cooldown 20 s. Feat: big grapple swings x20. | **Surrender** (surrender): A blow taken while you guard gives back the pool it cost. Feat: blows parried x30. |
+| Judgement | **Settle the Score** (reckoning): Every creature within 12 m that hurt you takes back 30% of all it dealt you, at once. Cost 25. Cooldown 60 s. Feat: creatures downed x80. | **Second Chance** (secondChance): Once a game day, a failed flee or a lost duel may be tried again. Feat: puzzle duels won x10. |
 
 ## 4. Waves (four classes a wave, CLASSES.md 6; each measured before the next)
 
@@ -134,4 +134,4 @@ completes, and the other eight wait on their read (CLASSES.md 3) with their arts
 | Petra | the input action `art`; each wave's actions and reactions in play, reading `game.classArts.numbers(slot)` (its numbers already accented); the Box's page for wearing |
 | Calissa | each art's look; the art tile (the near shelf's first on touch) |
 | Wanda | each art's sound |
-| Espada | the 76 labels and lines (placeholders now), and the log's line on learning one |
+| Espada | done (2026-10-29): the 76 labels and lines, the log's lines and the feat words (`FEAT_WORDS`); the lore names once South calls the arts finished |

@@ -115,7 +115,7 @@ export class Plots {
   onVein(p) { return (this.site.links || []).some((L) => { const e = L.ends[p.planet.id]; return e && p.planet.r * e.angleTo(p.dir) <= VEIN_RULE.reach; }); }
   neighbours(p) { return this.plots.filter((q) => q !== p && q.planet === p.planet && q.placed && q.dir.angleTo(p.dir) < p.planet.spacing * NEAR); }
   /** A feature's multiplier where it stands (progress/realm.js formation). */
-  mult(p) { return p.placed ? formation(p.placed.feeling, this.neighbours(p).map((q) => q.placed.feeling), this.onVein(p), { ground: this.clays[p.planet.id]?.groundOf(p.dir) ?? null, water: this.wet?.(p) ?? null }) : 1; }
+  mult(p) { if (!p.placed) return 1; const N = this.neighbours(p); return formation(p.placed.feeling, N.map((q) => q.placed.feeling), this.onVein(p), { ground: this.clays[p.planet.id]?.groundOf(p.dir) ?? null, water: this.wet?.(p) ?? null, stones: p.placed.feature === 'stone' ? 0 : N.filter((q) => q.placed.feature === 'stone').length }); } // (a Booster Stone beside it: realm.js STONE_BOOST)
 
   /** A feature lifted by the hand set in another free plot (free: item 7), its formation worked out where it lands. */
   move(from, to) {
