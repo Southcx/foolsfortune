@@ -300,6 +300,12 @@ const RULES = {
   'palm.roll': (s, e) => s.palmRoll?.(e.face, e.sides, e.held),
   'god.miracle': (s, e, g) => s.godMiracle?.(e.feeling, e.size, g.music?.grid?.()), // (its weather over its circle, its chord on the beat)
   'god.epic': (s, e, g) => s.godEpic?.(e.epic, g.music?.grid?.()),
+  // the matter's God Arts (audio/godmatter.js), each stroke's end: sand run up, poured, clay pressed, a channel cut, a creation raised
+  'god.scoop': (s, e) => s.godScoop?.(e.moved, e.made),
+  'god.pour': (s, e) => s.godPour?.(e.moved),
+  'god.shape': (s, e) => s.godShape?.(e.moved, e.made),
+  'god.carve': (s, e) => s.godCarve?.(e.moved),
+  'god.sculpt': (s, e) => s.godSculpt?.(e.shape, e.volume, e.made),
   'god.dissonance': (s, e) => s.godDissonance?.(e.level),
   'god.rejection.answer': (s, e) => s.godRejectionAnswer?.(e.level, e.n),
   'god.rejection.beaten': (s, e, g) => s.godRejectionBeaten?.(g.music?.grid?.()),
