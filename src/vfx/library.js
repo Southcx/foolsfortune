@@ -34,6 +34,7 @@ import { GENERIC_EFFECTS } from './library/generics.js'; // (impact, shock, poof
 import { AURA_EFFECTS } from './library/auras.js'; // (a status held on a creature: vfx/auras.js plays them)
 import { TEMPER_EFFECTS } from './library/temper.js'; // (a creature's mental state and agitation on its body: vfx/temper.js plays them)
 import { ULT_EFFECTS } from './library/ult.js'; // (the Lockheart's Opening: tools/lockheart/ultimate.js, cine/sequences.js)
+import { FEELING_EFFECTS } from './library/feelings.js'; // (the seven feelings' skins, each moment, and the Feelings shells' landings: vfx/library/feelings/)
 const L = (o) => o; // (a layer: only for readability)
 const GLAZES = [0x2f6db5, 0x4f9a7a, 0xe0b030, 0xc84a3a, 0xf3efe6, 0x6a4a9a, 0x2a8ab0]; // (the glazes' own colours: the Hailstorm's shards)
 
@@ -411,38 +412,6 @@ export const LIBRARY = {
     L({ type: 'sprites', rate: 2, dur: Infinity, shape: 'ringthin', offset: [0, 1.1, 0], size: 0.4, sizeEnd: 1.3, life: 0.35, color: 0xe8d080, alpha: 0.8, rot: 0 }),
     L({ type: 'sprites', rate: 12, dur: Infinity, shape: 'streak', spawn: 'sphere', r: 0.45, offset: [0, 1.1, 0], dir: 'up', speed: [1, 2], size: [0.1, 0.16], sizeEnd: 0.02, life: 0.3, stretch: 1.4, color: [0xe8d080, 'white'] }),
   ] },
-  // 81 to 87, the Feelings: each its feeling's colour (the context's tint) and its paint motif
-  'shell.wonder.land': { layers: [ // (an aurora overhead, frost glinting on the ground)
-    L({ type: 'sprites', count: 1, shape: 'ring', size: 0.5, sizeEnd: 5, life: 0.5, color: 'tint', rot: 0, powerCount: false }),
-    L({ type: 'sprites', rate: 16, dur: Infinity, shape: 'streak', spawn: 'disc', r: 6, offset: [0, 7, 0], dir: 'up', speed: [0.2, 0.5], size: [1.4, 2.2], sizeEnd: 1.6, stretch: 3, life: [1.6, 2.6], color: ['tint', 0x7af0c0, 0xb49be6], alpha: 0.5 }),
-    L({ type: 'sprites', rate: 26, dur: Infinity, shape: 'sparkle', spawn: 'disc', r: 4, offset: [0, 0.1, 0], size: [0.1, 0.2], sizeEnd: 0, life: [0.8, 1.2], color: ['white', 0xbfe8ff], twinkle: 6 }),
-  ] },
-  'shell.mirth.land': { layers: [ // (confetti in Mirth's dots)
-    L({ type: 'sprites', count: 1, shape: 'star4', size: 1.4, sizeEnd: 0.2, life: 0.2, color: 'tint', powerCount: false }),
-    L({ type: 'sprites', pool: 'alpha', count: 70, shape: 'disc', dir: 'cone', axis: 'up', cone: 55, speed: [4, 8], size: [0.07, 0.11], life: [1.6, 2.4], drag: 1.4, gravity: 5, color: ['tint', 0xfff0c0, 0xff8ab0, 0x8ad0ff, 0x9ae070], spin: [-6, 6], floor: 'ground', powerCount: false }),
-  ] },
-  'shell.desire.land': { layers: [ // (rings drawing in along the ground, a warm pull of light)
-    L({ type: 'mesh', mesh: 'chest_shock', dur: 0.9, scale: [[0, 3.5], [1, 0.3]], stretch: [1, 0.25, 1], k: [[0, 0], [0.3, 1.2], [1, 0]], tint: 'tint', labradorite: 0.2 }),
-    L({ type: 'mesh', mesh: 'chest_shock', dur: 0.9, at: 0.45, scale: [[0, 3.5], [1, 0.3]], stretch: [1, 0.25, 1], k: [[0, 0], [0.3, 1.2], [1, 0]], tint: 'tint', labradorite: 0.2 }),
-    L({ type: 'sprites', rate: 30, dur: Infinity, shape: 'soft', spawn: 'shell', r: 'r', dir: 'in', speed: [3, 5], size: [0.1, 0.16], sizeEnd: 0.04, life: [1, 1.4], color: ['tint', 0xffc080], alpha: 0.8 }),
-  ] },
-  'shell.fury.land': { layers: [ // (cracks of red thrown off the body, a hard ring pulsing out of it)
-    L({ type: 'sprites', count: 1, shape: 'star4', size: 1, sizeEnd: 0.1, life: 0.16, color: 'tint', powerCount: false }),
-    L({ type: 'sprites', rate: 10, dur: Infinity, shape: 'shard', spawn: 'sphere', r: 0.5, dir: 'out', speed: [1, 2], size: [0.1, 0.18], sizeEnd: 0.04, life: 0.4, color: ['tint', 0xff4020], spin: [-6, 6] }),
-    L({ type: 'sprites', rate: 1.5, dur: Infinity, shape: 'ring', size: 0.3, sizeEnd: 1.6, life: 0.3, color: 0xff3020, rot: 0 }),
-  ] },
-  'shell.gall.land': { layers: [ // (a curdled cloud)
-    L({ type: 'sprites', pool: 'alpha', rate: 10, dur: Infinity, shape: 'puff', spawn: 'sphere', r: 'r', dir: 'swirl', lift: 0.1, speed: [0.2, 0.5], size: [0.8, 1.1], sizeEnd: 1.6, life: [1.5, 2.2], color: ['tint', 0x6a7a3a, 0xa08ad0], alpha: 0.42, spin: [-0.5, 0.5] }),
-    L({ type: 'sprites', pool: 'alpha', rate: 6, dur: Infinity, shape: 'bubble', spawn: 'sphere', r: 'r', speed: [0.1, 0.3], size: [0.1, 0.2], sizeEnd: 0.05, life: [1, 1.5], color: 0xd0c8a0, alpha: 0.8 }),
-  ] },
-  'shell.grief.land': { layers: [ // (one cloud over its head, raining on it)
-    L({ type: 'sprites', pool: 'alpha', rate: 6, dur: Infinity, shape: 'puff', spawn: 'sphere', r: 0.4, offset: [0, 0.7, 0], speed: [0.05, 0.15], size: [0.5, 0.7], sizeEnd: 0.9, life: 1.2, color: [0x4a5a7a, 0x5a6a8a], alpha: 0.6, spin: [-0.3, 0.3] }),
-    L({ type: 'sprites', rate: 30, dur: Infinity, shape: 'streak', spawn: 'disc', r: 0.4, offset: [0, 0.5, 0], dir: 'up', speed: [-7, -5], size: 0.14, sizeEnd: 0.1, stretch: 2, life: 0.28, color: 'tint', alpha: 0.85 }),
-  ] },
-  'shell.dread.land': { layers: [ // (shadows spreading along the ground, Dread's marbling in them)
-    L({ type: 'sprites', pool: 'alpha', count: 30, shape: 'puff', spawn: 'disc', r: 1, dir: 'out', lift: 0, speed: [3, 6], size: [1, 1.4], sizeEnd: 2.6, life: [1.6, 2.4], drag: 1.5, color: [0x140c1e, 0x1f2a22], alpha: 0.6, spin: [-0.4, 0.4], powerCount: false }),
-    L({ type: 'sprites', pool: 'alpha', count: 10, shape: 'swirl', spawn: 'disc', r: 3, size: [1, 1.6], life: [1.8, 2.4], color: ['tint', 0x2a3a2a], alpha: 0.5, spin: [-0.6, 0.6], powerCount: false }),
-  ] },
   // (batches 2 to 4, each family's effects in its own module: vfx/shelllooks/<family>.js)
   ...SHELL_EFFECTS,
   ...RACEWAY_EFFECTS,
@@ -468,4 +437,5 @@ export const LIBRARY = {
   ...AURA_EFFECTS,
   ...TEMPER_EFFECTS,
   ...ULT_EFFECTS,
+  ...FEELING_EFFECTS,
 };
