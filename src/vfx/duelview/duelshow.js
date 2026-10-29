@@ -24,6 +24,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { filmColour } from '../oxidation.js';
+import { sfx } from '../../audio/sfx.js';
 import { sm, clamp01 } from './layout.js';
 
 /** foeScale, jarScale: the fighters' sizes in a PvE duel; vs: its open's beats (real s from the open) and its length; lunge and flinch
@@ -104,6 +105,7 @@ export class DuelShow {
   update(dt) {
     if (!this.on) return; const V = this.view, W = this.game.aberrantWipe;
     if (W?.active && W.covered && this.vsStep === 0) { V.stage.introT = V.stage.t + SHOW.vs.dur; return; } // (the encounter's wipe first: the VS opens as it shatters away)
+    if (!this.t) sfx.duelVs?.(); // (the VS's t 0, as the wipe shatters away: Wanda's cue, timed to SHOW.vs)
     this.t += dt; if (this.t < SHOW.vs.dur + 0.1) this.vs();
     for (const who of ['jar', 'foe']) { const A = this.acts[who]; if (!A) continue; A.t += dt; this.offset(A, _a); if (A.done) { this.acts[who] = null; _a.set(0, 0, 0); }
       const dir = who === 'jar' ? 1 : -1, o = _b.copy(V.u).setY(0).normalize().multiplyScalar(_a.x * dir).addScaledVector(UP, _a.y);
@@ -127,6 +129,7 @@ export class DuelShow {
   /** The death's tail (duelview.js death): the hero shot on the Jar, hopping and spinning, the film's confetti thrown up. Its length. */
   victory() {
     if (!this.on || !this.jarShown()) return 0;
+    sfx.duelHero?.(); // (the hero shot's fanfare: Wanda's, timed to SHOW.victory)
     this.won = { t: 0, yaw: this.jar.group.rotation.y, thrown: 0 }; this.view.stage?.cutAway('hero', SHOW.victory + 0.2, { cut: true });
     return SHOW.victory;
   }
