@@ -94,6 +94,8 @@ export class PneukaJarLook {
     if (key !== this.key) { this.key = key; this.apply(); }
     const M = this.materials, inner = M.innerLight();
     M.flash(jar.flash || 0);
+    const T = performance.now() / 1000; // (the lantern's flame, a flicker of two beats on the real clock)
+    M.m.flame.emissiveIntensity = M.m.flame.userData.rest.emI * (0.88 + 0.07 * Math.sin(T * 11.3) + 0.05 * Math.sin(T * 27.1 + 1));
     // the stones keep the Jar's wholeness in their light (godhand/jar.js sets it on its core), in the inner light's colour
     const C = jar.coreMat, S = M.m.stones, red = C.emissive.r > 0.9 && C.emissive.g < 0.5;
     S.emissive.copy(red ? C.emissive : inner); S.emissiveIntensity = C.emissiveIntensity * (M.gem ? 0.35 : 1);

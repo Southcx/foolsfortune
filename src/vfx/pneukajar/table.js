@@ -10,7 +10,7 @@
 //   shape    a vertex morph of the owner's mesh, never a replacement: as made, taller, squatter, a gourd waist, faceted, melon-lobed
 //   foot     the foot ring: as made, scalloped, a gold ring, three claw feet, a lotus pedestal
 //   pendant  what hangs off the choker on a cord the hair's colour: none, a bell, a moon, a fish, a d20 in the stones' mineral, a
-//            cash coin, a gourd, a tassel (a pendant, never "a charm": a charm is the bracelet's, in a socket)
+//            cash coin, a gourd, a tassel, a lantern (a pendant, never "a charm": a charm is the bracelet's, in a socket)
 //   burst    what puffs from its foot when it hops and lands: motes (as made), a puff of the body glaze's dye, petals, sparks, bubbles
 //            of its inner light, confetti in the seven feelings' colours
 //
@@ -63,6 +63,7 @@ export const JAR_LOOK = {
     coin: O('Coin', 'A cash coin with a square hole, gold.'),
     gourd: O('Gourd', 'A little gourd in the body\'s glaze.'),
     tassel: O('Tassel', 'A tassel the colour of your hair.'),
+    lantern: O('Lantern', 'A little iron lantern, its flame flickering amber behind the glass.'),
   } },
   burst: { label: 'Hop burst', options: {
     motes: O('Motes', 'A ring of soft motes where it lands, as made.'),
