@@ -67,7 +67,7 @@ const caster = fs.readdirSync(path.join(ROOT, 'src/vfx/caster')).filter((f) => f
 const headerLine = (p) => { const t = fs.readFileSync(p, 'utf8').split('\n').slice(1, 4).join(' ').replace(/\/\/\s?/g, '').replace(/\s+/g, ' ').trim(); return t.length > 170 ? `${t.slice(0, 167)}...` : t; };
 const forms = await tryImport('src/vfx/shapes/forms.js');
 const patterns = await tryImport('src/vfx/shapes/textures.js');
-const ramps = await tryImport('src/vfx/shapes/ramps.js');
+const ramps = null; // (read from its text below)
 const keysOf = (m, ...names) => { for (const n of names) if (m?.[n] && typeof m[n] === 'object') return Object.keys(m[n]); return null; };
 
 // ---- the families, by the name's first word
@@ -87,7 +87,10 @@ out.push(`| sprite shapes (\`vfx/sprites.js\`) | ${Object.keys(SHAPES).join(', '
 out.push(`| decal textures | ${[...decals, ...drawn.map((d) => `${d} (drawn)`)].join(', ')} |`);
 out.push(`| baked effect meshes (\`src/assets/vfx/*.glb\`, Mesh Create) | ${meshes.join(', ')} |`);
 out.push(`| caster shaders (\`vfx/caster/\`) | ${caster.join(', ')} |`);
-const F = keysOf(forms, 'FORMS'), P = keysOf(patterns, 'PATTERNS'), R = keysOf(ramps, 'RAMPS');
+// (the ramps' module reaches the fonts through the suits' colours, which node cannot load: its rows are read from its text)
+const rampText = fs.existsSync(path.join(ROOT, 'src/vfx/shapes/ramps.js')) ? fs.readFileSync(path.join(ROOT, 'src/vfx/shapes/ramps.js'), 'utf8') : '';
+const rampBlock = rampText.split('export const RAMP_STOPS = {')[1]?.split('\n};')[0] || '';
+const F = forms?.FORM_NAMES || keysOf(forms, 'FORMS'), P = keysOf(patterns, 'PATTERNS'), R = keysOf(ramps, 'RAMPS') || ([...rampBlock.matchAll(/^\s{2}([a-z]\w*):/gm)].map((m) => m[1]).filter((v, i, a) => a.indexOf(v) === i));
 if (F || P || R) {
   if (F) out.push(`| shape layer forms (\`vfx/shapes/forms.js\`) | ${F.join(', ')} |`);
   if (P) out.push(`| shape layer patterns (\`vfx/shapes/textures.js\`) | ${P.join(', ')} |`);

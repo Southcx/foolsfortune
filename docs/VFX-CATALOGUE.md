@@ -1,6 +1,6 @@
 # The VFX catalogue (generated: do not edit)
 
-Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-10-29). 353 effects in 30 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
+Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-10-29). 356 effects in 31 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
 
 **Play one:** `game.vfx.play(name, { pos, dir, normal, tint, power, scale, feeling, domain, suit, follow })`; a held one returns a handle (`h.pos`, `h.k`, `h.stop()`). A name falls back from the most particular (`hit.slash.crystal` -> `hit.slash` -> `hit`), so a new name always plays something.
 
@@ -12,7 +12,9 @@ Every effect the game can play, read from the code by `node scripts/vfxcatalogue
 | decal textures | circle_lotus, circle_swirl, shockring (drawn), scorch (drawn), pentacle (drawn) |
 | baked effect meshes (`src/assets/vfx/*.glb`, Mesh Create) | chest_circle, chest_helix, chest_shock, ult_crown, ult_dome, ult_helix, ult_pillar, ult_vortex |
 | caster shaders (`vfx/caster/`) | bubble, corrupted, frostbisque, heathaze, hologram, lensing, lightning, molten, portal, timegrade |
-| shape layer (`vfx/shapes/`) | not built yet |
+| shape layer forms (`vfx/shapes/forms.js`) | ring, band, dome, sphere, cone, disc, quad, beam, spiral, crescent, pillar, wave, spikes |
+| shape layer patterns (`vfx/shapes/textures.js`) | noise, cells, streaks, ripple, cracks, dots, marble, frost, curds, rays, stars, script |
+| shape layer ramps (`vfx/shapes/ramps.js`) | wonder, mirth, desire, fury, gall, grief, dread, ouranurgy, manifestation, divination, psychokinesis, possession, alteration, spellscription, wands, cups, swords, pentacles, wild, film, gold, ember, white, ink, tint; and 'feeling', 'domain', 'suit', 'tint' from the caller |
 
 Layer types: sprites, mesh, decal, shape, caster, flash, light, shake, hitstop, smear, glyph, sound, fx (vfx/vfx.js header).
 
@@ -69,7 +71,7 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `shell.forgetMe.courier` | held | sprites:puff |  |  |
 | `shell.forgetMe.land` | one-shot | sprites:puff | 70 Forget Me: a grey fog over the Courier (how it sees you now), a breath of it where it struck |  |
 | `shell.fury.land` | held | sprites:star4, sprites:shard, sprites:ring | cracks of red thrown off the body, a hard ring pulsing out of it |  |
-| `shell.gall.land` | held | sprites:puff, sprites:bubble | a curdled cloud |  |
+| `shell.gall.land` | held | sprites:puff, sprites:bubble | a curdled cloud | vfx/shapes/ramps.js |
 | `shell.ghost` | held | sprites:soft | (what keeps the shells' afterimages ticking while any shows: shelllooks/kit.js leaveGhost; it draws nothing of its own) | vfx/shelllooks/kit.js |
 | `shell.glassmaker.fly` | held | sprites:soft | 26 Glassmaker: a lump of sand streaming grains; where it lands the sand flashes white-hot and cools green, glinting |  |
 | `shell.glassmaker.land` | one-shot | sprites:core, sprites:facet, sprites:puff |  |  |
@@ -433,6 +435,14 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `dunes.devil.scuff` | held | sprites:puff, sprites:chip |  | vfx/dunes/dustdevils.js |
 | `dunes.fulgurite.glint` | one-shot | sprites:star4 |  | vfx/dunes/fulgurites.js |
 | `dunes.fulgurite.strike` | one-shot | sprites:core, light, sprites:chip, sprites:puff×2 |  | vfx/dunes/fulgurites.js |
+
+### kit (3)
+
+| effect | kind | layers | what | asked by |
+|---|---|---|---|---|
+| `kit.demo.aura` | held | shape:band×2, shape:ring, shape:spiral, sprites:sparkle, shape:disc | an aura held round a body: a column of rays, a thinner one turning against it, the chant round the feet, a spiral rising, motes |  |
+| `kit.demo.burst` | one-shot | shape:dome, shape:sphere, shape:ring, sprites:streak, sprites:sparkle, shape:disc | a burst out of the ground: a dome blooms, a ring races out, sparks fly, motes drift up after |  |
+| `kit.demo.wave` | one-shot | shape:wave, shape:crescent, sprites:puff, shape:quad, sprites:soft | a wave pushed out along the blow (ctx.dir): a wall of the motif, a crescent sweep under it, dust, smoke and motes left behind |  |
 
 ### overture (3)
 
