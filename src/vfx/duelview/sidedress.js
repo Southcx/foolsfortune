@@ -50,7 +50,7 @@ export class DuelSideDress {
   /** Yours: the armillary of clay rings with their chant, the kiln-coil pillars and their gold crackle, the orbiting sherds. */
   yours(at, out, back) {
     const M = duelMaterials(), clay = M.clay.clone(); clay.color.setHex(CLAY); this.clay = clay; const S = SIDE[0];
-    const hub = at.clone().addScaledVector(out, 0.3).addScaledVector(back, 3.2).addScaledVector(UP, 2.9); // (behind and over the Jar, clear of the wide shot's edge)
+    const hub = at.clone().addScaledVector(out, -0.4).addScaledVector(back, 3.4).addScaledVector(UP, 2.2); // (behind and over the Jar, toward the board: clear of the phone's top bar)
     SIDE_DRESS.rings.forEach((r, i) => {
       const g = new THREE.Group(); g.position.copy(hub); this.group.add(g);
       const ring = new THREE.Mesh(new THREE.TorusGeometry(r, 0.045, 8, 48), clay); g.add(ring);
