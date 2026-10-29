@@ -43,7 +43,7 @@
 //   The view is told: view.pendingAction(action | null), the action under the finger before it is chosen (a swap or drag as the press
 //   builds, a run on hover), and view.armPaint(on) while a Paint is held (G, du.paint). The board's size is the ruleset's own (`board`,
 //   rulesets.js: every device the same).
-//   Events (with `by`): duel.open { kind, feeling }, duel.break { kind, depth }, duel.flee { roll, reroll, need, ok }, duel.end { kind, won, how,
+//   Events (with `by`): duel.open { kind, feeling }, duel.break { kind, depth }, duel.flee { roll, reroll, need, ok }, duel.end { kind, won, how, shiny,
 //   turns }, duel.undo { left } (how 'fled': away, both whole; tracking.js says each)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -54,8 +54,9 @@ import { SKILLS, skillsOf, canAct } from '../../progress/duel/skills.js';
 import { DUEL_POWERS, POWER_IDS, POWER_ACTION, powersOf, powerReach } from '../../progress/duel/powers.js';
 import { DOMAINS } from '../../progress/domains.js';
 import { notAwakened } from '../../progress/feelings.js';
+import { learnedOf } from '../../progress/duel/learned.js';
 import { lessonDue } from '../../progress/duel/lesson.js';
-import { rulesetOf } from '../../progress/duel/rulesets.js';
+import { rulesetOf, KIND_RULESETS } from '../../progress/duel/rulesets.js';
 import { DUEL_VIEW, cellLocal } from '../../vfx/duelview/layout.js';
 import { stream } from '../../core/rng.js';
 import { sfx } from '../../audio/sfx.js';
@@ -86,7 +87,7 @@ export class DuelSession {
    *  board between you. */
   begin(c) {
     const g = this.game; if (this.active || this.pending || !c?.alive) return false;
-    const ruleset = rulesetOf(c, c.practice ? (c.practicePick || 'plain') : null), feeling = c.grade ?? ruleset.feeling ?? 'fury';
+    const ruleset = rulesetOf(c, c.practice ? (c.practicePick || 'plain') : null), feeling = (KIND_RULESETS[c.kind] && ruleset.feeling) || c.grade || ruleset.feeling || 'fury'; // (a kind with its own board is drawn in its board's feeling: a blotling's weather is its grade, its board Gall's)
     this.pending = true; this.pendingFoe = c; this.pocket(c);
     const go = () => { this.pending = false; this.pendingFoe = null; this.open(c, feeling, ruleset); };
     if (!g.seam?.cross(go, { kind: 'aberrant', foe: c })) go();
@@ -98,7 +99,7 @@ export class DuelSession {
     this.startPool = Math.round(Math.min(100, pool?.available ?? 30));
     this.state = newDuel({ ruleset, seed: Math.floor(duelRand() * 2 ** 31), forms: ['hand', 'courier'], pool: [this.startPool, 30], tools: [tools, []],
       luck: [g.ledger ? Math.min(2, Math.floor(luckOf(g.ledger).level / 10)) : 0, 0], // (Luck's sway on a flee, 0..2: a tenth of its level, as ruled)
-      rerolls: [g.rerolls?.left() ?? 0, 0], lesson: lessonDue(g.ledger), dim: notAwakened(g.ledger), // (a feeling not yet awakened gives half a gem's pool: PUZZLE-DUELS.md 26)
+      rerolls: [g.rerolls?.left() ?? 0, 0], lesson: lessonDue(g.ledger), dim: notAwakened(g.ledger), learned: learnedOf(g.ledger), // (a feeling not yet awakened gives half a gem's pool: PUZZLE-DUELS.md 26; an aberrant's skill learned: its secret found, or enough won, learned.js)
       levels: Object.fromEntries(Object.keys(DOMAINS).map((d) => [d, g.psyche?.level?.(d) ?? 1])) }); // (the PvE duel's powers cost less with their domain's level: powers.js powerCost) // (the first duel a lesson until one is won: lesson.js, PUZZLE-DUELS 18.3) // (Luck's re-rolls left this game day: a failed Flee is thrown again, progress/duel/flee.js)
     this.practice = !!c.practice; // (a practice foe, Strawman's: every duel.* event says so and counts nothing; no pool, no shatter, no drain)
     this.foe = c; this.feeling = feeling; this.active = true; this.busy = false; this.botT = -1; this.press = null; this.path = []; this.yieldT = 0; this.swipe = null; this.shown = null; this.picked = null; this.hinted = null; this.idleT = 0; this.spentT = 0;
@@ -274,8 +275,8 @@ export class DuelSession {
   }
   /** The PvE duel's powers (powers.js, PUZZLE-DUELS.md 24): keys 1 to 7 or a power tile (`armPower`) arm one; a power with no target
    *  fires at once. Armed, one gesture targets it: a press on a cell and a release (a tap the same cell): Manifest, Transmute and Miracle
-   *  the cell pressed; Lift the row or column dragged along, by the cells dragged (a tap: east by one); Herd the row (H) or column (V)
-   *  the drag runs; Swap the 2 x 2 patch pressed and the one released on. Its reach is drawn under the finger; RMB lets it go. */
+   *  the cell pressed; Lift the row or column dragged along, by the cells dragged (a tap: east by one); Herd and Kindle the row (H) or
+   *  column (V) the drag runs; Swap the 2 x 2 patch pressed and the one released on. Its reach is drawn under the finger; RMB lets it go. */
   powerInput(input, cell) {
     for (let i = 0; i < POWER_IDS.length; i++) if (input.wasPressed('Digit' + (i + 1))) { this.armPower(this.armedPower === POWER_IDS[i] ? null : POWER_IDS[i]); return true; }
     const id = this.armedPower; if (!id) return false;
@@ -304,7 +305,7 @@ export class DuelSession {
     const dx = B.x - A.x, dy = B.y - A.y, a = { kind: 'power', power: id, at: [A.x, A.y] };
     if (id === 'swap') return { ...a, at: this.patchAt(A), to: this.patchAt(B) };
     if (id === 'lift') return dx || dy ? { ...a, dir: Math.abs(dx) >= Math.abs(dy) ? (dx > 0 ? 'E' : 'W') : dy > 0 ? 'S' : 'N', by: Math.max(Math.abs(dx), Math.abs(dy)) } : { ...a, dir: 'E', by: 1 };
-    if (id === 'herd') return { ...a, dir: Math.abs(dy) > Math.abs(dx) ? 'V' : 'H' };
+    if (id === 'herd' || id === 'kindle') return { ...a, dir: Math.abs(dy) > Math.abs(dx) ? 'V' : 'H' };
     return a;
   }
   /** A Swap patch's top-left for a cell: moved in so the patch stays on your half. */
@@ -499,7 +500,7 @@ export class DuelSession {
     if (g.duelInstance?.active) g.duelInstance.close(() => !V || (!V.closing && !V.root?.visible) || V.isOpen, () => this.putBack(home)); else this.putBack(home);
     this.unpin(c); this.release();
     const atOnce = how === 'fled' && this.atOnce; this.atOnce = false;
-    this.emit('duel.end', { kind: c?.kind, won, how, turns: s ? Math.ceil(s.ply / 2) : 0, ...(atOnce ? { atOnce } : {}), by: won || how === 'fled' ? 'courier' : 'creature' });
+    this.emit('duel.end', { kind: c?.kind, won, how, shiny: !!c?.shiny, turns: s ? Math.ceil(s.ply / 2) : 0, ...(atOnce ? { atOnce } : {}), by: won || how === 'fled' ? 'courier' : 'creature' });
     if (g.duelFoes && c) g.duelFoes.rearm = c; // (no pull from it again until you have stepped past the pull's far edge)
     if (this.practice) { if (c) c.emo = 0; } // (practice: both whole, nothing taken, it stands as it was)
     else if (won && c?.alive) { c.dataBugMended = true; c.aberrant = false; g.creatures.strike(c, c.pos.clone().setY(c.pos.y + (c.height ?? 1)), _v.set(0, 1, 0), 999, 'drain', 'courier'); }
