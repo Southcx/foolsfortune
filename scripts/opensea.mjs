@@ -104,3 +104,28 @@ console.log(`  charted (squares, of): ${totals.charted.slice(0, 5).map((c) => c.
   console.log(`\nMIGRATIONS (${MIGRATION.herds} herds a game day, share ${MIGRATION.share} of a hunt): a day's tour takes ${(mins / days).toFixed(1)} real min, pays ${Math.round(pay / days)} cubes, burns ${Math.round(fuel / days)} in fuel`);
   console.log(`  MEASURE migrations.net: ${Math.round(perHour)} cubes a real hour while touring = ${(perHour / hourAim).toFixed(2)}x the aim; a game day's herds ${Math.round((pay - fuel) / days)} net (${((pay - fuel) / days / hourAim).toFixed(2)}x an hour's aim), the want: about 0.4x an hour's aim a game day, less than fishing`); }
 
+
+// the hunt (OPEN-SEA.md 9.1; South, 2026-10-29: "go with your intuition on the open sea"): after the sea is charted, the lairs restock
+// each game day (seabeasts.js lairsOf; a lair downed is up again the next) and the dock's board posts one of them with a bounty (the
+// rumour, migrations.js). A sailor works a game day's lairs nearest first, a square at a time: the sail, a fight of `fight` real s by
+// class, won at `win` by skill (a loss breaks off and pays nothing), paid by the hull kept (beastPay) and the rumour's bounty once.
+{ const S = ECON.openSea, hourAim = ECON.perMinute * 60, days = 200;
+  const { lairsOf, SEA_BEASTS, beastPay } = await import('../src/progress/opensea/seabeasts.js');
+  const { rumourOf, RUMOUR } = await import('../src/progress/opensea/migrations.js');
+  for (const sk of [0.2, 0.5, 0.9]) {
+    const r = seeded(4242); let pay = 0, mins = 0, fuel = 0, fights = 0, won = 0;
+    for (let d = 0; d < days; d++) {
+      const G = seaGrid(1 + (d % 5)), port = G.squares.find((q) => q.lane) || G.squares[0], rum = rumourOf(G, d, 1 + (d % 5));
+      let at = port, left = lairsOf(G, 1 + (d % 5), d).filter((l) => SEA_BEASTS[l.id] && !l.when).map((l) => ({ ...l, sq: G.squares.find((q) => q.id === l.square) })).filter((l) => l.sq);
+      while (left.length) {
+        left.sort((a, b) => Math.hypot(a.sq.col - at.col, a.sq.row - at.row) - Math.hypot(b.sq.col - at.col, b.sq.row - at.row));
+        const L = left.shift(), B = SEA_BEASTS[L.id], steps = Math.abs(L.sq.col - at.col) + Math.abs(L.sq.row - at.row);
+        mins += steps * S.squareS / 60 + (90 + 60 * B.cls) / 60; fuel += steps * S.burn * ECON.perMinute; fights++; at = L.sq;
+        if (r() < 0.35 + 0.6 * sk - 0.05 * B.cls) { won++; const of = 6, hull = Math.max(1, Math.round(of * (0.4 + 0.6 * sk * r() + 0.3 * r()))); pay += beastPay(L.id, Math.min(of, hull), of);
+          if (rum && rum.id === L.id && rum.square === L.square) pay += Math.round(RUMOUR.bounty * beastPay(L.id, of, of)); }
+      }
+      const back = Math.abs(port.col - at.col) + Math.abs(port.row - at.row); mins += back * S.squareS / 60; fuel += back * S.burn * ECON.perMinute;
+    }
+    const perHour = (pay - fuel) / (mins / 60);
+    console.log(`${sk === 0.2 ? '\nTHE HUNT (the lairs of a game day, restocked daily, and the board\'s bounty)\n' : ''}  skill ${sk}: ${(fights / days).toFixed(1)} lairs a game day, ${(100 * won / fights).toFixed(0)}% won, ${(mins / days).toFixed(1)} real min a game day; MEASURE hunt.net.${sk}: ${Math.round(perHour)} cubes a real hour hunting = ${(perHour / hourAim).toFixed(2)}x the aim`);
+  } }
