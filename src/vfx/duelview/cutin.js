@@ -62,7 +62,7 @@ void main() {
     float pw = W * uBand.w, ph = 2.0 * uBand.y; vec2 p0 = vec2(W * (0.985 - uBand.w) + (1.0 - uIn) * W * 0.3 - uDrift, uBand.x - uBand.y + (px.x - W * 0.5) * uBand.z);
     vec2 pu = (px - p0) / vec2(pw, ph);
     if (uBand.w > 0.001 && pu.x > 0.0 && pu.x < 1.0 && pu.y > 0.0 && pu.y < 1.0) {
-      vec4 P = texture2D(uPort, vec2(mix(pu.x, 1.0 - pu.x, uFlip), 1.0 - pu.y)); // (your own portrait never mirrored) vec3 pc = P.rgb / (1.0 + P.rgb) * 1.45;
+      vec4 P = texture2D(uPort, vec2(mix(pu.x, 1.0 - pu.x, uFlip), 1.0 - pu.y)); vec3 pc = P.rgb / (1.0 + P.rgb) * 1.45; // (your own portrait never mirrored)
       c = mix(c, pc, P.a * smoothstep(0.0, 0.3, pu.x));
     }
     vec2 wu = (px - wc) / vec2(ww, wh) + 0.5; wu.y += (px.x - wc.x) * uBand.z / wh; wu.x = mix(wu.x, 1.0 - wu.x, uFlip); // (the label reads the right way round on a mirrored band)

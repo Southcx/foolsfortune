@@ -4328,3 +4328,12 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the motes fly to the bulb's live place, its overlay position unprojected at the board's depth (`view.tubeAt`); measured landing
   on it exactly, (898, 541) on the desk and (47, 385) on the phone. The link's corner, flipped, only while the tube is hidden.
 - **Rule:** NEW:aim-at-the-thing-not-where-it-was
+
+### 2026-10-29 · The duel's cut-in band stopped compiling (Calissa's probe, before play)
+- **Seen:** at a PvE duel's open, `duel-cutin` failed to link: `'pc' : undeclared identifier`; no band drew at all (the foe's skills, the
+  turn, the VS), the board played on beneath.
+- **Cause (as measured):** an edit to the band's fragment shader (cutin.js FRAG) put a `// (comment)` after the portrait's sample on a
+  line that went on to declare `pc`, so GLSL read the declaration as comment. `npm run check`'s comment rule reads JavaScript, not the
+  GLSL inside a template string, so the gate passed it.
+- **Fix:** the comment moved to the line's end; the probe's error list read clean.
+- **Rule:** NEW:shader-strings-are-code-too
