@@ -33,7 +33,7 @@
 //
 //   const P = new DuelPieces(parent)   P.build(kernelBoard, foeAspect)   P.at(x, y)   P.byId(id)   P.add(kind, props, x, y) -> v
 //   P.move(v, x, y) (the model only)   P.remove(v)   P.hideBody(side, hidden)   P.bodyAt(side) -> v   P.update(dt)   P.list
-//   v.hint (0..1: the idle hint's soft pulse) v.hintDir ([dx, dy]: its nudge)   P.weak (a colour | null) P.line P.fore (a Set of 'x,y': glows.js) P.dormant (0..1: the Courier's figurine asleep in the hand's form, formdive.js)   gemColour(aspect, out) -> THREE.Color (a gem's own colour)
+//   P.dim (a Set of colours | null: the feelings side 0 has not awakened to, drawn paler on your half: Dovina's state.dim)   v.hint (0..1: the idle hint's soft pulse) v.hintDir ([dx, dy]: its nudge)   P.weak (a colour | null) P.line P.fore (a Set of 'x,y': glows.js) P.dormant (0..1: the Courier's figurine asleep in the hand's form, formdive.js)   gemColour(aspect, out) -> THREE.Color (a gem's own colour)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { crystalFretMaterial } from '../crystalfrets.js';
@@ -44,6 +44,8 @@ import { drawCrazing } from './crazing.js';
 import { aberrantFigurine } from '../aberrantlook.js';
 import { gemGeometry, keylineGeometry, plateGeometry, glintGeometry, emberGeometry, pipGeometry, junkGeometry, stoneGeometry, fogStoneGeometry, bombGeometry, orbGeometry, courierFigurine, foeIdol, ledgeGeometry } from './piecemodels.js';
 
+/** A dim gem (a feeling you have not awakened to, worth half: progress/duel/duel.js DIM): how far toward its grey, then toward white. */
+export const DIM_GEM = { grey: 0.55, pale: 0.18 };
 /** A gem's colour: its feeling's hue (progress/weather.js COLOR) on its own lightness step (Oklab L, chroma kept where sRGB allows). */
 export const GEM = { mirth: 0xf6c12a, wonder: 0x34c2ec, desire: 0xf57141, grief: 0x6e76ee, gall: 0x8454c1, fury: 0xc5071a, dread: 0x3b6646 };
 const PALE = { gall: 0xdfcdff, fury: 0xfdbfb8, dread: 0xb6e5c0 }; // (the dark three wear a pale keyline in their own hue: every gem 4.5:1 or more against the slab, counted at its rim)
@@ -114,7 +116,7 @@ export class DuelPieces {
     for (const x of [-0.08, 0.08]) { const e = new THREE.Mesh(eye, eyeMat); e.position.set(x, 0.04, 0.1); this.foe.add(e); }
     for (const b of [this.courier, this.foe]) { b.scale.setScalar(cs); b.visible = false; this.group.add(b); }
     this.list = []; this.cells = []; this.ids = new Map(); this.board = { w: 20, h: 20 }; this.t = 0; this.bodyHidden = [false, false];
-    this.born = new Map(); this.weak = null; this.line = 10; this.fore = null; this.foeHex = new THREE.Color(0xc80018);
+    this.born = new Map(); this.weak = null; this.dim = null; this.line = 10; this.fore = null; this.foeHex = new THREE.Color(0xc80018);
   }
 
   /** The view's board from the kernel's (at open, and to settle up after a play). */
@@ -198,6 +200,7 @@ export class DuelPieces {
         const sc = cs * v.s * grow * breathe * (1 + v.prev * (0.07 + 0.07 * pv));
         gemColour(key, _c).multiplyScalar(1 + 0.04 * Math.sin(t * 1.7 + v.seed * 6.283));
         _k.setHex(PALE[key] ?? INK); let kx = 0;
+        if (this.dim?.has(key) && v.cx < this.line) { const l = 0.3 * _c.r + 0.55 * _c.g + 0.15 * _c.b; _c.lerp(_g.setRGB(l, l, l), DIM_GEM.grey).lerp(_w, DIM_GEM.pale); } // (a feeling not yet awakened: worth half (Dovina's DIM), drawn paler, its shape and lightness step kept)
         if (weak) { const tw = 0.7 + 0.3 * Math.sin(t * 5 + v.seed * 9); _k.lerp(_f.setHex(GOLD), 0.95 * tw); kx = 0.05; }
         if (seen) { _k.copy(this.foeHex).multiplyScalar(0.8 + 0.3 * Math.sin(t * 3 + v.seed * 4)); kx = Math.max(kx, 0.08); }
         if (v.prev) { _k.lerp(_f.setHex(PREVIEW), v.prev * (0.7 + 0.3 * pv)).multiplyScalar(1 + 0.6 * pv * v.prev); kx = Math.max(kx, 0.1 * v.prev); }

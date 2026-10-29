@@ -20,7 +20,7 @@
 // elemental burst ring), the pixel kit's palette swap for a state (ui/pixel.js) and the slip arc's schiller (vfx/skiffsliparc.js).
 //
 //   new TouchTile(id, { size, word, glyph, corner, onPress(id, down, inside) })   .place(x, y, size, w?)   .set({ charge, ember, pips,
-//   lit, dim, hidden })   .label(word, corner) (a named tile, glyph null: its thing's label large, a small word in its corner: USE)
+//   lit, dim, hidden })   .pulse() (a flash, once)   .label(word, corner) (a named tile, glyph null: its thing's label large, a small word in its corner: USE)
 //   .face({ glyph, word, corner, tint }) (a face changed in place)   option fit (a glyph's tile as wide as its word)   option tint (one
 //   glaze colour: a note pad's)   .widthFor(size)   .update(now)   .release()   .el   TILE (the numbers)   tileWord(id) (the words under glyphs: MOBILE.md 8.3, Espada's)
 // ---------------------------------------------------------------------------------------
@@ -206,6 +206,9 @@ export class TouchTile {
     }
     return this;
   }
+
+  /** A flash over the whole tile, once (a power's rest cut by a good chain: the duel's phone screen). */
+  pulse() { this.el.animate?.([{ filter: 'brightness(1)' }, { filter: 'brightness(1.9) drop-shadow(0 0 6px #ffd36a)', offset: 0.3 }, { filter: 'brightness(1)' }], { duration: 420, easing: 'ease-out' }); }
 
   /** Something on the rim moves: the schiller walks under a charge, a lit or pressed rim, an ember. */
   get moving() { const S = this.state; return !S.hidden && (S.charge > 0 || S.ember > 0 || S.lit || S.pressed); }
