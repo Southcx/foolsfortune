@@ -27,6 +27,7 @@ import { HABITS } from './opensea/habits.js';
 import { FOE_SKILLS } from './duel/foeskills.js';
 import { SECRETS as ABERRANT_SECRETS } from './duel/secrets.js';
 import { DUEL_POWERS } from './duel/powers.js';
+import { LEARNED, isLearned } from './duel/learned.js';
 
 /** A plain label from an id until a table gives one (camelCase and dots to words). */
 const words = (id) => String(id).replace(/[._]/g, ' ').replace(/([a-z])([A-Z])/g, '$1 $2').toLowerCase();
@@ -52,8 +53,10 @@ export const LOG_SECTIONS = [
   { id: 'strains', label: 'Strains', slots: rows(STRAINS), has: counted('spore.learn') },
   { id: 'decor', label: 'Decor sets', slots: [...new Set(Object.values(DECOR).map((d) => d.set).filter(Boolean))].map((s) => ({ id: s, label: words(s) })), has: counted('decor.set') },
   // the aberrants (ABERRANTS.md; PUZZLE-DUELS.md 26.3): each foe skill met in a duel that counted, each aberrant's secret won; and each duel power cast
-  { id: 'aberrants', label: 'Aberrants', slots: [...rows(FOE_SKILLS).map((r) => ({ id: `skill.${r.id}`, label: r.label })), ...Object.entries(ABERRANT_SECRETS).map(([k, v]) => ({ id: `secret.${k}`, label: `${v.of}'s secret` }))] /* (named by whose, never what: the log must not give a secret away) */,
-    has: (L, id) => (id.startsWith('skill.') ? L.get(`duel.foe.${id.slice(6)}`) > 0 : L.get(`duel.secret.${id.slice(7)}`) > 0) },
+  { id: 'aberrants', label: 'Aberrants', slots: [...rows(FOE_SKILLS).map((r) => ({ id: `skill.${r.id}`, label: r.label })), ...Object.entries(ABERRANT_SECRETS).map(([k, v]) => ({ id: `secret.${k}`, label: `${v.of}'s secret` })), { id: 'shiny', label: 'A shiny aberrant' }] /* (named by whose, never what: the log must not give a secret away) */,
+    has: (L, id) => (id === 'shiny' ? L.get('duel.won.shiny') > 0 : id.startsWith('skill.') ? L.get(`duel.foe.${id.slice(6)}`) > 0 : L.get(`duel.secret.${id.slice(7)}`) > 0) },
+  // the skills learned from aberrants (duel/learned.js): each a slot, filled when learned (its secret found, or 5 beaten at the Line)
+  { id: 'learned', label: 'Learned skills', slots: Object.keys(LEARNED).map((id) => ({ id, label: DUEL_POWERS[id]?.label || id })), has: (L, id) => isLearned(id, L) },
   { id: 'duelpowers', label: 'Duel powers', slots: rows(DUEL_POWERS), has: counted('duel.power') },
 ].filter((s) => s.slots.length);
 

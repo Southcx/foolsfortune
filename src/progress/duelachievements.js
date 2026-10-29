@@ -9,6 +9,7 @@
 //   duelAchievements({ C, F })   (achievements.js calls it inside buildAchievements)
 // ---------------------------------------------------------------------------------------
 import { SKILL_TOOLS } from './duel/skills.js';
+import { LEARNED, isLearned } from './duel/learned.js';
 
 export function duelAchievements({ C, F }) {
   C('du1', 'battle', 'Puzzle Duels', 1, 'count', 'Mind over Matter', 'Win a puzzle duel.', 'duel.won', 1);
@@ -20,4 +21,10 @@ export function duelAchievements({ C, F }) {
   C('du7', 'battle', 'Puzzle Duels', 3, 'mechanic', 'Clean Slate', 'Clear your side of a puzzle duel\'s board.', 'duel.allclear', 1);
   C('du8', 'battle', 'Puzzle Duels', 4, 'endure', 'Headspace', 'Win 25 puzzle duels.', 'duel.won', 25);
   C('du9', 'battle', 'Puzzle Duels', 3, 'mechanic', 'Lights Out', 'Win a puzzle duel against an aberrant Lantern Wisp with the Line short of its wall.', 'duel.secret.snuff', 1); // (its secret: ABERRANTS.md 3; the words never give it away; Espada's, 2026-10-28)
+  // the second aberrant, the shiny ones and the learned skills (ABERRANTS.md 5, 8, 10; names and words placeholders, Espada's to word;
+  // like du9, a secret's achievement names what you did, never how)
+  C('du10', 'battle', 'Puzzle Duels', 3, 'mechanic', 'Come Apart', 'Win a puzzle duel against an aberrant slip jelly with the Line short of its wall.', 'duel.secret.dissolve', 1);
+  C('du11', 'battle', 'Puzzle Duels', 3, 'mechanic', 'Shiny', 'Win a puzzle duel against a shiny aberrant.', 'duel.won.shiny', 1);
+  F('du12', 'battle', 'Puzzle Duels', 2, 'collect', 'Quick Study', 'Learn a skill from an aberrant.', (L) => Object.keys(LEARNED).filter((id) => isLearned(id, L)).length, 1);
+  F('du13', 'battle', 'Puzzle Duels', 4, 'collect', 'Every Lesson', 'Learn every skill the aberrants teach.', (L) => Object.keys(LEARNED).filter((id) => isLearned(id, L)).length, Object.keys(LEARNED).length);
 }

@@ -10,7 +10,7 @@
 //   Herd       (Possession, Herd)                    gems of one colour within 2 of a row or column come onto it
 //   Transmute  (Alteration, Transmute)               every gem of one colour on your half turns to another, and none of it falls for 2 turns
 //   Miracle    (Spellscription, the miracles)        one colour's weather on your half: its gems clear at any 2 touching, this turn and your next
-//   and a learned skill (learned.js, a row with `learned`): an aberrant's own, open once learned (Kindle, the Lantern Wisp's)
+//   and a learned skill (learned.js, a row with `learned`): an aberrant's own, open once learned (Kindle, the Lantern Wisp's; Absorb, the slip jelly's)
 // Each is paid from the pool (the Courier's own, as the duel opened: the hand's powers cost Lachryma in the world too), which your clears
 // fill (`drink`: a point a gem you clear, Puzzle Quest's mana) and your turn's regen tops up (duel.js PVE.regen), and each rests a few of
 // your turns once used (`rest`: Puzzle & Dragons' cooldowns). As many a turn as the pool pays for, each once (South, 2026-10-29: "use
@@ -129,12 +129,22 @@ export const DUEL_POWERS = {
   // your hand, open only once learned (`learned`: newDuel's list). The Lantern Wisp's Kindle, yours: junk lit into embers that cool into
   // gems at your turn's end (the Wisp burns your gems down; you burn its junk up). For a half buried in junk; Manifest is three cells at
   // once, Kindle a whole line a turn later.
-  kindle: { domain: 'alteration', label: 'Kindle', line: 'Every junk in a row or column of your half lights into an ember that cools into a gem at your turn\'s end', cost: 15, rest: 3, target: 'cell', learned: true,
+  kindle: { domain: 'alteration', label: 'Kindle', line: 'Lights every junk in a row or column of your half into an ember, and each cools into a gem at your turn\'s end', cost: 15, rest: 3, target: 'cell', learned: true,
     legal: (s, side, a) => (a.dir === 'H' || a.dir === 'V') && mineIn(s.board, side, ...(a.at || [-1, -1])) && lineOf(s.board, side, a.at, a.dir).some(([x, y]) => s.board.at(x, y)?.kind === 'junk'),
     reach: (s, side, a) => lineOf(s.board, side, a.at, a.dir || 'H').filter(([x, y]) => s.board.at(x, y)?.kind === 'junk'),
     apply: (s, side, a) => { const b = s.board, cells = [];
       for (const [x, y] of lineOf(b, side, a.at, a.dir)) { const p = b.at(x, y); if (p?.kind !== 'junk') continue; Object.assign(p, { kind: 'ember', tags: KINDS.ember, count: 1, slime: undefined, extra: undefined }); cells.push({ at: [x, y], id: p.id }); }
       return [{ type: 'kindle', side, at: a.at, dir: a.dir, cells }]; } },
+  // The slip jelly's Absorb, yours (learned.js): a jelly takes in whatever is thrown at it, and so do you. Every junk (slime too) in the
+  // 3 x 3 round a cell drunk off your half, each 3 to the pool: junk turned into the powers' fuel. Against the jelly it eats the pile its
+  // secret wants, so it is a choice there; against the rest, a way out from under a Hurl that pays.
+  absorb: { domain: 'possession', label: 'Absorb', line: 'Drinks every junk in a 3 x 3 off your half; each gives 3 to your pool', cost: 5, rest: 3, target: 'cell', learned: true, each: 3,
+    legal: (s, side, a) => mineIn(s.board, side, ...(a.at || [-1, -1])) && ring(a.at, 1).some(([x, y]) => mineIn(s.board, side, x, y) && s.board.at(x, y)?.kind === 'junk'),
+    reach: (s, side, a) => ring(a.at, 1).filter(([x, y]) => mineIn(s.board, side, x, y) && s.board.at(x, y)?.kind === 'junk'),
+    apply: (s, side, a) => { const b = s.board, S = s.sides[side], cells = [];
+      for (const [x, y] of DUEL_POWERS.absorb.reach(s, side, a)) { cells.push({ at: [x, y], id: b.at(x, y).id }); b.set(x, y, null); }
+      const n = Math.min(100 - S.pool, cells.length * DUEL_POWERS.absorb.each); S.pool += n;
+      return [{ type: 'absorb', side, at: a.at, cells, n, pool: S.pool }]; } },
 };
 export const POWER_IDS = Object.keys(DUEL_POWERS);
 
