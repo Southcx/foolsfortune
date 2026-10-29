@@ -20,6 +20,9 @@
 // Where: inside the HUD layout's strip room (hudlayout.js stripArea), so no tile stands over the Sight, the top bar or the log; what one
 // row cannot hold goes beside the pair (the bottom row's band reaching further left) before rows climb to the room's top.
 //
+// On a phone on its side (hudlayout.js `stripTop`, South 2026-10-29) the pair and the strip stand instead in one row at the top edge,
+// beside the folded top bar (layoutTop), so nothing of theirs stands in the centre 60%.
+//
 //   new TouchStrip(game)   .update(now, on, clusterBounds)   .relayout()   .ids (the strip's)   .pair (the belt pair's ids)   STRIP
 // ---------------------------------------------------------------------------------------
 import { TouchTile, TILE } from './tile.js';
@@ -68,8 +71,28 @@ export class TouchStrip {
     return { left, right: A.x + A.w - STRIP.margin, top: 0, base: cb ? cb.y : A.y + A.h - STRIP.margin, sideLeft: left };
   }
 
+  /** THE TOP ROW (a phone on its side, hudlayout.js `stripTop`; South, 2026-10-29: the centre 60% kept clear): the belt's pair, then the
+   *  strip, in one row on one clay shelf from the folded top bar's end toward the Sight, as large as fit (44 px down to the least). */
+  layoutTop(Z) {
+    const G = STRIP.gap, F = TILE.foot, ids = [...this.pair, ...this.ids], room = Z.w - 2 * STRIP.shelf;
+    const span = (sz) => ids.reduce((a, id) => a + this.tiles.get(id).widthFor(sz), 0) + (ids.length - 1) * G + (this.pair.length && this.ids.length ? G : 0);
+    let sz = STRIP.size; while (sz > TILE.min && span(sz) > room) sz -= 2;
+    let x = Z.x + STRIP.shelf; const y = Z.y + STRIP.shelf;
+    ids.forEach((id, i) => {
+      const t = this.tiles.get(id), w = t.widthFor(sz);
+      if (i === this.pair.length && i) x += G; // (a breath between the pair and the tool's row)
+      if (x + w > Z.x + Z.w - STRIP.shelf) { t.set({ hidden: true }); t.over = true; return; } // (past the Sight: folded away, never over it)
+      t.over = false; t.place(x, y, sz, w); x += w + G;
+    });
+    const Wd = Math.min(Z.w, x - G + STRIP.shelf - Z.x), H = sz + F + 2 * STRIP.shelf;
+    Object.assign(this.shelf.style, { transform: `translate(${Math.round(Z.x)}px, ${Math.round(Z.y)}px)`, width: `${Math.round(Wd)}px`, height: `${Math.round(H)}px` });
+    this.shelf.style.setProperty('--h', `${H}px`);
+    this.shelf.classList.toggle('off', !this.shown);
+  }
+
   /** Lay the pair at the cluster's top edge and the strip over it (rows upward), right-aligned to the cluster, inside the strip's room. */
   layout(cb) {
+    const Lm = this.game.hudLayout; if (Lm?.stripTop && Lm.areas?.strip?.w > 0) return this.layoutTop(Lm.areas.strip);
     const Z = this.area(cb), G = STRIP.gap, F = TILE.foot, right = Z.right, left = Z.left, W1 = (id) => this.tiles.get(id).widthFor(TILE.min);
     let rowsBase = Z.base, bandRight = right + G, bandY = Z.base - STRIP.rowGap - TILE.min - F;
     // the belt's pair, right to left
@@ -112,12 +135,13 @@ export class TouchStrip {
 
   /** Each frame: read the moment, lay out what changed, put each tile's state on it. `cb` the cluster's bounds (or null). */
   update(now, on, cb) {
-    const g = this.game, show = !!on && !windowOpen(g) && !g.touch?.screenTaken?.(); // (the pads or the paper hold the screen: the strip stands down, Petra's ruling)
+    const g = this.game, menuOpen = !!g.hudLayout?.stripTop && g.touchUI?.topBar?.folded === false; // (the top bar's row opened over the top row: the strip stands down under it)
+    const show = !!on && !windowOpen(g) && !g.touch?.screenTaken?.() && !menuOpen; // (the pads or the paper hold the screen: the strip stands down, Petra's ruling)
     const entries = show ? folding(stripOf(g), this.folded) : [], pair = show ? beltPairOf(g) : [];
     const all = [...pair, ...entries];
     for (const e of all) this.tile(e);
     const ids = entries.map((e) => e.id), pids = pair.map((e) => e.id);
-    const key = `${ids.join()}|${pids.join()}|${cb ? [cb.x, cb.y].map(Math.round).join() : ''}|${all.map((e) => this.tiles.get(e.id).widthFor(STRIP.size)).join()}`;
+    const key = `${ids.join()}|${pids.join()}|${cb ? [cb.x, cb.y].map(Math.round).join() : ''}|${g.hudLayout?.stripTop ? JSON.stringify(g.hudLayout.areas.strip) : ''}|${all.map((e) => this.tiles.get(e.id).widthFor(STRIP.size)).join()}`;
     this.entries = entries;
     const wasShown = this.shown; this.shown = show && all.length > 0;
     if (key !== this.key || wasShown !== this.shown) {
@@ -126,7 +150,7 @@ export class TouchStrip {
       if (this.shown) this.layout(cb); else this.shelf.classList.add('off');
     }
     if (!this.shown) { for (const t of this.tiles.values()) t.set({ hidden: true }); return; }
-    for (const e of all) { const t = this.tiles.get(e.id); t.set({ hidden: false, lit: t.state.pressed || !!e.lit, dim: !!e.dim, charge: e.charge ?? 0, pips: e.pips ?? 0 }); t.update(now); }
+    for (const e of all) { const t = this.tiles.get(e.id); if (t.over) { t.set({ hidden: true }); continue; } t.set({ hidden: false, lit: t.state.pressed || !!e.lit, dim: !!e.dim, charge: e.charge ?? 0, pips: e.pips ?? 0 }); t.update(now); }
   }
 
   /** The layout changed: stand again at the next frame. */
