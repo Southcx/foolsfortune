@@ -15,10 +15,11 @@ import { DUEL_POWERS } from '../../progress/duel/powers.js';
 import { FOE_SKILLS } from '../../progress/duel/foeskills.js';
 
 const skillLabel = (tool) => SKILLS[tool]?.label || tool;
-const SECRET_LINE = { snuff: { half: 'The Wisp\'s lantern gutters.', done: 'You starve the lantern of Dread. It gutters out, and the Lantern Wisp with it.' } }; // (Espada's, 2026-10-28)
+const SECRET_LINE = { dissolve: { half: 'The slip jelly sags, its slime piled on your half.', done: 'You turn its own slime on it. The slip jelly falls apart.' }, snuff: { half: 'The Wisp\'s lantern gutters.', done: 'You starve the lantern of Dread. It gutters out, and the Lantern Wisp with it.' } }; // (Espada's, 2026-10-28)
 /** An aberrant's own line for its death on the Line (ABERRANTS.md 2, layer 7), by its kind; Espada's. */
 const LINE_DEATH = { wisp: 'Its lantern cracks and the flame scatters. You win the duel; the Lantern Wisp is mended.' };
-const FOE_LINE = { kindle: (e) => `The Lantern Wisp kindles ${e.n} of your Dread gems into embers.`, hurl: (e) => `The aberrant hurls ${e.n} ${e.n === 1 ? 'piece' : 'pieces'} of junk onto your half.`, petrify: (e) => `The aberrant turns ${e.n} of your gems to junk.`, // (Espada's, 2026-10-28; no offset in the PvE duel, so no "less what your clears cancel")
+const LEARN_FROM = { wisp: 'Lantern Wisp', slipjelly: 'slip jelly' };
+const FOE_LINE = { kindle: (e) => `The Lantern Wisp kindles ${e.n} of your Dread gems into embers.`, spew: (e) => `The slip jelly spews ${e.n} ${e.n === 1 ? 'piece' : 'pieces'} of slime onto your half.`, harden: (e) => `The slip jelly sets ${e.n} of its slime into plain junk.`, hurl: (e) => `The aberrant hurls ${e.n} ${e.n === 1 ? 'piece' : 'pieces'} of junk onto your half.`, petrify: (e) => `The aberrant turns ${e.n} of your gems to junk.`, // (Espada's, 2026-10-28; no offset in the PvE duel, so no "less what your clears cancel")
   seal: () => 'The aberrant seals a column of yours: you cannot drag in it on your next turn.', sap: () => 'The aberrant saps your skills: each loses half its charge.', reclaim: () => 'The aberrant pushes the Line back a column toward you.' };
 
 export function duelRules({ on: onAny, L: ledger, log }) {
@@ -41,7 +42,7 @@ export function duelRules({ on: onAny, L: ledger, log }) {
   });
   on('duel.end', (e) => {
     if (e.how === 'fled') { L.inc('duel.fled'); if (!e.atOnce) log.say('battle', 'You flee the duel.'); return; } // (a natural 20 said it already: "You flee at once.")
-    L.inc(e.won ? 'duel.won' : 'duel.lost');
+    L.inc(e.won ? 'duel.won' : 'duel.lost'); if (e.won && e.kind) L.inc(`duel.won.${e.kind}`); // (by kind: a learned skill's count way, duel/learned.js)
     if (e.practice) { log.say('battle', e.won ? 'You win the practice duel. Nothing counts.' : 'You lose the practice duel. Nothing counts.'); return; } // (no shatter, no drain; Espada's)
     if (e.won && e.how === 'secret') return; // (its own line came with duel.secret)
     if (e.won) log.say('battle', e.how === 'finisher' ? 'You drain the Figment.' : LINE_DEATH[e.kind] || 'You win the duel. The Figment is mended.');
@@ -71,5 +72,6 @@ export function duelRules({ on: onAny, L: ledger, log }) {
     if (e.done) { L.inc(`duel.secret.${e.id}`); log.say('battle', SECRET_LINE[e.id]?.done || 'You find the aberrant\'s undoing.'); }
   });
   on('duel.seen', (e) => { log.say('battle', `You know ${FOE_SKILLS[e.skill]?.label || 'this skill'} now: ${FOE_SKILLS[e.skill]?.line || ''}.`); });
+  on('duel.learn', (e) => { if (e.by !== 'courier') return; L.inc('duel.learn'); log.say('battle', `You learn ${DUEL_POWERS[e.power]?.label || 'a skill'} from the aberrant ${LEARN_FROM[e.from] || 'Figment'}. It is yours in a duel now.`); }); // (placeholder words, Espada's to word)
   on('duel.allclear', (e) => { if (e.by !== 'courier') return; L.inc('duel.allclear'); log.say('battle', 'All clear: your half of the board is empty.'); });
 }

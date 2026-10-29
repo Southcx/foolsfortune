@@ -41,7 +41,7 @@ export const oneGesture = (s) => !!s && s.style !== 'classic';
 const PVE_VERBS = new Set(['drag', 'power', 'flee']); // (the PvE duel's big plays are the hand's powers, powers.js; the worn pair's skills are tabled there: PUZZLE-DUELS.md 24.4)
 /** The PvE duel (PUZZLE-DUELS.md 23): the longest drag a turn takes (a finger's whole path under the session's timer), what a big play
  *  is (a chain this deep, or this much sent in one turn) that staggers the aberrant. */
-export const PVE = { maxPath: 48, stagger: { step: 4, sent: 10 }, columns: 2, drink: 1, drinkStep: 3, restCut: true }; // (drink: pool a gem you clear, what pays the powers: powers.js; drinkStep: a gem cleared at chain step k drinks k (to 3); restCut: a chain of k steps takes k - 1 turns off every resting power: a good drag feeds the powers, PUZZLE-DUELS.md 26.2)
+export const PVE = { maxPath: 48, stagger: { step: 4, sent: 10 }, columns: 2, drink: 1, drinkStep: 3, restCut: true, regen: 8 }; // (drink: pool a gem you clear, what pays the powers: powers.js; drinkStep: a gem cleared at chain step k drinks k (to 3); restCut: a chain of k steps takes k - 1 turns off every resting power: a good drag feeds the powers, PUZZLE-DUELS.md 26.2)
 /** A gem of a feeling you have not awakened to (`newDuel({ dim })`): it matches and clears as any, worth this much of a gem (South, 2026-10-29:
  *  "some sort of attenuated value, above junk, but not as effective as feelings you have unlocked"). */
 export const DIM = { k: 0.5, junk: false }; // (junk: whether it counts in the Line's push too; off: measured, a new save with no feeling awakened could not beat the Lantern Wisp at all, 1 of 16 for the strong stand-in: PUZZLE-DUELS.md 26.4) // (columns: the most the Line moves in one of your turns, overkill lost: Puzzle & Dragons' overkill; a free Paint did 17, four columns, alone)
@@ -74,7 +74,7 @@ export const junkOf = (n, step) => Math.max(0, n - 2) * 2 ** (Math.min(step, CHA
 
 /** A new duel under a ruleset (rulesets.js). Each side's forms: the Courier, the god hand, or both (the owner, 2026-10-19); `ap` a number
  *  or one a side (a side of two players has two players' points: section 12); `tools` the tools a side wears (all, if not given). */
-export function newDuel({ ruleset, seed = 1, style = null, forms = ['hand', 'courier'], board: boardOver = null, lesson = false, line, w, h, ap = DUEL.ap, pool = DUEL.pool, tools = null, finisher = [true, false], flee = [true, false], luck = [0, 0], rerolls = [0, 0], levels = null, dim = null } = {}) {
+export function newDuel({ ruleset, seed = 1, style = null, forms = ['hand', 'courier'], board: boardOver = null, lesson = false, line, w, h, ap = DUEL.ap, pool = DUEL.pool, tools = null, finisher = [true, false], flee = [true, false], luck = [0, 0], rerolls = [0, 0], levels = null, dim = null, learned = null } = {}) {
   const rs = { match: 3, cluster: 0, blast: 2, colours: 5, drip: 2, bombs: 0, queue: 3, pincer: false, ...ruleset };
   style ??= rs.style ?? DUEL.style; if (style === 'drag' || style === 'pve') forms = ['hand']; // (the one-gesture duel: no Courier form, no walk)
   if (style === 'pve') { const g = rs.gravity || (() => DIRS.S); rs.gravity = (x, y, b) => (b.sideOf(x) === 1 ? DIRS.NONE : g(x, y, b)); } // (the aberrant's half is its mind, frozen: nothing falls or clears there)
@@ -86,7 +86,7 @@ export function newDuel({ ruleset, seed = 1, style = null, forms = ['hand', 'cou
   const aps = Array.isArray(ap) ? ap : [ap, ap], pools = Array.isArray(pool) ? pool : [pool, pool];
   const s = { board, rs, r, style, perColumn: style === 'pve' ? rs.pve?.perColumn ?? bd.perColumn : bd.perColumn, landCap: bd.landCap, ply: 1, toMove: 0, winner: null, apLeft: 0, capHits: 0, log: [],
     sides: [0, 1].map((i) => ({ form: forms[0], forms: [...forms], at: null, queue: [], pending: 0, sent: 0, landed: 0, total: 0,
-      ap: aps[i], pool: pools[i], tools: style === 'pve' ? [] : tools && (tools[i] || tools), worn: tools && (tools[i] || tools), charge: {}, powers: style === 'pve' && i === 0, levels: i === 0 ? levels : null, emo: 0, depth: 0, stunLeft: 0, stagger: 0, coffin: 0, drunk: 0, breaks: 0, finisher: !!finisher[i], flee: !!flee[i], fleeFails: 0 })) };
+      ap: aps[i], pool: pools[i], tools: style === 'pve' ? [] : tools && (tools[i] || tools), worn: tools && (tools[i] || tools), charge: {}, powers: style === 'pve' && i === 0, learned: i === 0 && learned?.length ? [...learned] : null, levels: i === 0 ? levels : null, emo: 0, depth: 0, stunLeft: 0, stagger: 0, coffin: 0, drunk: 0, breaks: 0, finisher: !!finisher[i], flee: !!flee[i], fleeFails: 0 })) };
   s.lesson = lessonOf(lesson); // (the first duel as a lesson: lesson.js)
   if (style === 'pve') s.foe = foeOf(rs); // (its foe skills' countdowns: foeskills.js)
   s.secret = secretStart(s); // (its secret win, if it has one: secrets.js, ABERRANTS.md)
@@ -269,6 +269,7 @@ export function endTurn(s) {
   S.fired = []; // (each skill once a turn: skills.js)
   if (S.powers) events.push(...tickRests(s, side)); // (each power rests a turn less: powers.js)
   s.toMove = foe; s.undo = []; s.refunded = 0; const next = startTurn(s, foe); s.apLeft = next.ap; events.push(next.event);
+  if (pve && foe === 0 && s.sides[0].powers && PVE.regen && s.winner === null) { const F0 = s.sides[0], n = Math.min(PVE.regen, 100 - F0.pool); if (n > 0) { F0.pool += n; events.push({ type: 'drink', side: 0, n, pool: F0.pool, from: 'regen' }); } } // (your turn opens with the pool's own regen, said as a drink so the view's bead runs: the powers are never out of reach for long)
   if (s.lesson) events.push(...lessonTurn(s, foe));
   events.push(...secretStep(s, 0, events)); // (what landed, dripped and fell cleared too: its secret counts it)
   if (s.winner === null && !(pve && foe === 1)) events.push(...drip(s, foe));
@@ -290,9 +291,9 @@ export function foeTurn(s) {
 /** Junk landing on a side: junk at random empty cells of it, then the settle; the line moves one column toward it for every
  *  perColumn landed (the board's: DUEL's on a board of 20). A side that cannot take it all has lost (Noon). */
 function land(s, side, n) {
-  const b = s.board, at = [], kind = emberKind(s, 1 - side), events = [{ type: 'land', side, n, at, kind }], cells = b.empty(side);
+  const b = s.board, at = [], kind = emberKind(s, 1 - side), slimy = kind === 'junk' && s.rs.slime?.from === 1 - side, events = [{ type: 'land', side, n, at, kind, ...(slimy ? { slime: true } : {}) }], cells = b.empty(side); // (an aberrant slip jelly's junk is slime: junk that a Transmute turns to gems, ABERRANTS.md 5)
   let placed = 0;
-  for (; placed < n && cells.length; placed++) { const [x, y] = cells.splice(s.r.int(cells.length), 1)[0]; b.set(x, y, piece(kind, kind === 'ember' ? { count: s.rs.embers.count } : {})); at.push([x, y]); }
+  for (; placed < n && cells.length; placed++) { const [x, y] = cells.splice(s.r.int(cells.length), 1)[0]; b.set(x, y, piece(kind, kind === 'ember' ? { count: s.rs.embers.count } : slimy ? { slime: true, extra: ['slime'] } : {})); at.push([x, y]); }
   events.push(...settle(s).events);
   if (placed < n || !b.empty(side).length) { s.winner = 1 - side; events.push({ type: 'duel.full', side, winner: s.winner }); return events; }
   const S = s.sides[side]; S.landed += n;

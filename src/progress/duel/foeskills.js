@@ -11,6 +11,8 @@
 //   Sap        each skill you wear loses half its charge
 //   Reclaim    the Line pushed back a column toward you (the aberrant takes a column of its mind back)
 //   Kindle     (the Lantern Wisp's own) Dread gems on your half burned into embers: the fuel its secret runs on kept from you (secrets.js)
+//   Spew       (an aberrant slip jelly's own) a heap of its slime thrown onto your half at once: Hurl, bigger (ABERRANTS.md 5)
+//   Harden     (the slip jelly's own) slime on your half set into plain junk, which a Transmute cannot turn: its answer to a pile kept
 // A ruleset's `foe`: { moves: [{ skill, every, first?, n?, wake? }], desperate?: { at, moves: [{ skill, n? }] } }: each move fires when its
 // countdown (`first`, then `every`) runs out; `desperate` fires once, when the aberrant's half is down to `at` columns. A move with
 // `wake: 'half'` sleeps (no countdown, no badge) until its secret is half done (secrets.js `secret.half`): the aberrant noticing.
@@ -42,6 +44,12 @@ export const FOE_SKILLS = {
       return [{ type: 'foe.skill', side: 1, skill: 'sap', lost }]; } },
   reclaim: { label: 'Reclaim', line: 'Pushes the Line back a column toward you',
     fire: (s, M, K) => [{ type: 'foe.skill', side: 1, skill: 'reclaim', n: 1 }, ...K.moveLine(s, -1)] },
+  spew: { label: 'Spew', line: 'Throws a heap of slime onto your half', // (placeholder words, Espada's to word)
+    fire: (s, M, K) => [{ type: 'foe.skill', side: 1, skill: 'spew', n: M.n }, ...K.land(s, 0, M.n)] },
+  harden: { label: 'Harden', line: 'Sets up to 4 slime on your half into plain junk', // (placeholder words, Espada's to word)
+    fire: (s, M) => { const b = s.board, cells = [], at = []; b.each((p, x, y) => { if (b.mine(0, x) && p.slime) cells.push([x, y]); });
+      for (let i = 0; i < M.n && cells.length; i++) { const [x, y] = cells.splice(s.r.int(cells.length), 1)[0], p = b.at(x, y); Object.assign(p, { slime: undefined, extra: undefined }); at.push({ at: [x, y], id: p.id }); }
+      return [{ type: 'foe.skill', side: 1, skill: 'harden', n: at.length, cells: at }]; } },
   kindle: { label: 'Kindle', line: 'Burns up to 3 Dread gems on your half into embers', // (Espada's, 2026-10-28)
     fire: (s, M) => { const b = s.board, cells = []; b.each((p, x, y) => { if (b.mine(0, x) && p.kind === 'gem' && p.colour === 'dread') cells.push([x, y]); }); const at = [];
       for (let i = 0; i < M.n && cells.length; i++) { const [x, y] = cells.splice(s.r.int(cells.length), 1)[0], was = b.at(x, y), p = piece('ember', { count: s.rs.embers?.count ?? 3 }); b.set(x, y, p); at.push({ at: [x, y], from: was.id, id: p.id, colour: was.colour }); }
