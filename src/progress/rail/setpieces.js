@@ -54,6 +54,12 @@ export const SHOAL = {
    *  shoot the ball and it refills; shoot the caller and it breaks). The fish of a ball are one body, so they do not chain (score.js:
    *  a ball of ninety would be ninety links for free; measured, it scored ten times a pirate crossing). */
   reinforce: { perBar: 6 },
+  /** The silhouette (RAIL-OVERHAUL.md 6; Petra's world/emocean/shoal.js reads it): from bar `at` 24 (two bars after the heavy comes, so
+   *  the school has a reason to draw up), over `draw` 2 bars, a Leviathan `length` 40 m long (the above view's frame is about 60 m
+   *  across, so it fills two thirds and still reads whole), `up` 9 m above the crude and `ahead` 30 m before the bow (inside the
+   *  lock-on's reach, past the frenzy's lead); its eye `eye` 2.6 m across (a boss part's weak point, as the brig's ports), burning
+   *  `burn` 1.5 real s locked before it cracks (a lance's flight and a beat). */
+  silhouette: { at: 24, draw: 2, length: 40, up: 9, ahead: 30, eye: 2.6, burn: 1.5 },
   /** Five bites are one hit on what the ship bears: one fish is a nuisance, a strike group that lands is a wound. */
   bite: { perHit: 5 }, // (measured: at four, a novice came through the shoal one crossing in three, and it is the common setPiece)
   /** A fish is one shot; the caller (twice the size, its own glow: Calissa's) 40, and it is hurt only while the ball is scattered (the
