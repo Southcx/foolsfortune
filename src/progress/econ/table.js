@@ -253,6 +253,12 @@ export const ECON = {
                            //  of 3-hour blocks: Gall 8%, Fury 1%, Dread 14%: Gall is met in the Well, Fury mostly at sea. GALL-AND-FURY.md 4.)
     under: { swing: 1.8, periods: [23, 13], above: 0.88 }, // (the undercurrent: a second mood; an AGATE when it runs above `above` and differs)
     build: 0.5, supply: 0.25,
+    // the weather's readers (South, 2026-10-29: "bring back the weather effects"; WEATHER.md Open, the numbers kept from the deep clean):
+    // where a creature's mind rests moved by the weather's feeling (states at full strength, + toward Prismatic; the mind drifts there at
+    // its own settle, 0.05 a real second, mind.js), a fish of the weather's feeling biting 1 + bite x strength as keenly, and every
+    // signature heard `sense` times as far at night and in a Well's dark
+    mood: { by: { mirth: -0.5, wonder: -0.2, desire: 0, grief: 0.25, dread: 0.5, gall: 0.4, fury: 0.6 } },
+    bite: 1, sense: 1.5,
     danger: { mirth: -0.5, wonder: 0,    desire: 0,    grief: 0.25, dread: 0.5, gall: 0.35, fury: 0.6 }, // (Fury the most dangerous water)
     lead:   { mirth: 1,    wonder: 1.25, desire: 1,    grief: 0.75, dread: 0.6, gall: 0.6,  fury: 0.7 }, // (a miasma hides what comes)
     fill:   { mirth: 0.5,  wonder: 1,    desire: 1.5,  grief: 2,    dread: 2,   gall: 2,    fury: 2 },

@@ -31,9 +31,10 @@ export const APTITUDES = {
   // a crystal struck at its sweet fret: the beating left (round the formation from its spot); the ear finding the unison
   pitch: { label: 'Pitch by ear', unit: 'beats a second', better: 'low', event: 'crystal.strike',
     value: (e) => (e.pitchOff === 0 && e.beat != null ? e.beat : null), line: 'How close your ear brings a crystal to its note.' },
-  // a song of the rhythm mode played through: the share of its notes landed
-  timing: { label: 'Timing', unit: '% of the notes', better: 'high', event: 'rhythm.score',
-    value: (e) => (e.accuracy != null ? pct(e.accuracy) : null), line: 'How surely you keep to a beat.' },
+  // a song of the rhythm mode played through: the spread of your hits round their notes (synchronised tapping's asynchrony, judge.js:
+  // Wanda's `asyncSd`). The spread, not the mean: the mean carries the device's audio latency uncorrected, the spread does not
+  timing: { label: 'Timing', unit: 'ms of spread', better: 'low', event: 'rhythm.score',
+    value: (e) => (e.asyncSd != null ? Math.round(e.asyncSd) : null), line: 'How tightly you keep to a beat.' },
   // a firing at the press: how far from its tile's heart, in its tile's radius (0 the heart)
   colour: { label: 'Colour', unit: '% of a tile from its heart', better: 'low', event: 'alchemy.fire',
     value: (e) => (e.d != null ? pct(e.d) : null), line: 'How near your eye brings a soul colour to its heart.' },
