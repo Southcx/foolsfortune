@@ -51,7 +51,7 @@ export class MadeTrack {
     kitOf(R, T, kitSink(R, group, { bodies: this.bodies, onNear: (N) => { nearAdd(R, N); this.near.push(N); } }));
     marksOf(R, T, add);
     R.rings.push(...ringsOf(R, T, add, R.rings.length));
-    this.drawLine();
+    this.drawLine(); g.racewayMade?.dress(R, T); // (dressed at once, no frame of the placeholders: Calissa's vfx/racewaymade.js)
     R.traps?.use(T);
     group.updateMatrixWorld(true);
     return T;

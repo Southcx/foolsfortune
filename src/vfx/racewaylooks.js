@@ -264,33 +264,52 @@ export class RacewayLooks {
   }
   *laySteps(R) {
     this.undress();
-    const parent = this.parent || this.game.scene, L = RACEWAY_LOOK, T = R.T;
-    // the plates: where her slabs lie, tilted to the sand under them, the glyph's +Z along the track
-    this.plateAt = R.plates.map((p) => {
-      if (p.vein) return null; // (the cavern's crystal veins: Lachryma's, not the sun's; their look is the cavern's own)
-      const m = p.mesh, pos = m.position.clone(); pos.y = R.heightAt(pos.x, pos.z) + L.plate.lift;
-      const n = R.normalAt(pos.x, pos.z, new THREE.Vector3()), q = new THREE.Quaternion().setFromUnitVectors(UP, n).multiply(_q.setFromAxisAngle(UP, m.rotation.y));
-      m.visible = false; m.userData.dressed = true;
-      return { pos, q, n, fwd: new THREE.Vector3(0, 0, 1).applyQuaternion(q) };
-    });
-    const P = this.plateAt.filter(Boolean);
-    const M0 = materials(), glyphGeo = sunGlyph(true), glowGeo = plateGlowGeometry();
+    const parent = this.parent || this.game.scene;
+    // the plates: where her slabs lie, tilted to the sand under them, the glyph's +Z along the track (a made track's are its own dress's:
+    // vfx/racewaymade.js, rebuilt with every edit)
+    this.plateAt = R.plates.map((p) => (p.vein || p.track === 'made' ? null : this.platePose(R, p))); // (the cavern's crystal veins: Lachryma's, not the sun's; their look is the cavern's own)
+    const B = (this.plates = this.plateMeshes(this.plateAt.filter(Boolean)));
+    for (const m of [B.glyph, B.glow]) parent.add(m);
+    yield 'plates';
+    this.layMarks(R, this.marksTracks(R));
+    this.R = R;
+    yield 'marks';
+    yield* this.round2Steps(R);
+  }
+
+  /** A plate's pose: its slab hidden, the glyph's place tilted to the sand under it, its +Z along the track. */
+  platePose(R, p) {
+    const L = RACEWAY_LOOK, m = p.mesh, pos = m.position.clone(); pos.y = R.heightAt(pos.x, pos.z) + L.plate.lift;
+    const n = R.normalAt(pos.x, pos.z, new THREE.Vector3()), q = new THREE.Quaternion().setFromUnitVectors(UP, n).multiply(_q.setFromAxisAngle(UP, m.rotation.y));
+    m.visible = false; m.userData.dressed = true;
+    return { pos, q, n, fwd: new THREE.Vector3(0, 0, 1).applyQuaternion(q) };
+  }
+  /** Plates' glyphs and glows at their poses, as two merged meshes in the shared materials (shimmered by update): not yet in the world. */
+  plateMeshes(P) {
+    const L = RACEWAY_LOOK, M0 = materials(), glyphGeo = sunGlyph(true), glowGeo = plateGlowGeometry();
     const at = (p, flat, lift) => new THREE.Matrix4().compose(_v.set(0, lift, 0).applyQuaternion(p.q).add(p.pos), p.q, _s.set(L.plate.r, L.plate.r * flat, L.plate.r));
-    const B = (this.plates = {
+    const B = {
       glyph: new THREE.Mesh(P.length ? mergedAt(glyphGeo, P.map((p) => at(p, L.plate.flat, 0))) : new THREE.BufferGeometry(), M0.glaze),
       glow: new THREE.Mesh(P.length ? mergedAt(glowGeo, P.map((p) => at(p, 1, 0.13))) : new THREE.BufferGeometry(), M0.glow),
-    });
+    };
     glyphGeo.dispose(); glowGeo.dispose();
     B.glyph.name = 'raceway-plates'; B.glow.name = 'raceway-plates-glow'; B.glyph.receiveShadow = true; B.glow.renderOrder = 3;
-    for (const m of [B.glyph, B.glow]) { m.userData.zone = 'raceway'; m.frustumCulled = false; parent.add(m); }
-    yield 'plates';
+    for (const m of [B.glyph, B.glow]) { m.userData.zone = 'raceway'; m.frustumCulled = false; }
+    return B;
+  }
+  /** The start arches' lamps, the gates' marks and the start pillars' glyphs of these tracks, as one instanced mesh (laid again whole:
+   *  a made track's are added and taken away with it, vfx/racewaymade.js). */
+  layMarks(R, tracks) {
+    const parent = this.parent || this.game.scene, L = RACEWAY_LOOK, M0 = materials();
+    for (const h of this.markH || []) h?.stop();
+    if (this.marks) { this.marks.parent?.remove(this.marks); this.marks.geometry.dispose(); this.marks.dispose?.(); this.marks = null; }
     // the start arch's lamps and the gates' marks, as raceway.js builds the arch and the pillars (her numbers: the arch 3 m outside the
     // track's edge and 11 m over the higher foot, the lintel 1.4 m deep and 2 m thick over it; a gate's pillar 2.5 m outside, 8 m tall
     // from 1.5 m under its foot, 1.5 m square)
     // Round 4 (the park): every track's arch and gates dressed alike (kit.js lays them all by the same numbers), each mark keeping its
     // track; and a sun glyph on each track's start pillar (R.pillars), facing its line, breathing while the Courier is near and no race runs
     const marks = [];
-    for (const Tk of R.tracks || [T]) {
+    for (const Tk of tracks) {
       const tid = Tk.id ?? 'sun', side = (s, lat) => { const F = Tk.frame(s); return R.local(F.x - F.fz * lat, F.z + F.fx * lat); };
       const facing = (s) => { const F = Tk.frame(s); return new THREE.Vector3(-F.fx, 0, -F.fz).normalize(); }; // (toward the oncoming board)
       { const s = Tk.line, F = Tk.frame(s), a = side(s, -(F.w + 3)), b = side(s, F.w + 3), top = Math.max(a.y, b.y) + 11, n = facing(s);
@@ -307,11 +326,10 @@ export class RacewayLooks {
     K.count = marks.length; K.name = 'raceway-marks'; K.userData.zone = 'raceway'; K.frustumCulled = false; parent.add(K);
     this.markList = marks; this.markH = marks.map(() => null); this.startK = marks.map(() => 0);
     this.gateK = {}; this.gateFlash = {};
-    for (const Tk of R.tracks || [T]) { this.gateK[Tk.id ?? 'sun'] = Tk.gates.map(() => 0); this.gateFlash[Tk.id ?? 'sun'] = Tk.gates.map(() => 0); }
-    this.R = R;
-    yield 'marks';
-    yield* this.round2Steps(R);
+    for (const Tk of tracks) { this.gateK[Tk.id ?? 'sun'] = Tk.gates.map(() => 0); this.gateFlash[Tk.id ?? 'sun'] = Tk.gates.map(() => 0); }
   }
+  /** The tracks whose marks stand: the park's, and a made track if one is built on the lot. */
+  marksTracks(R) { return [...(R.tracks || [R.T]), ...(R.made?.T ? [R.made.T] : [])]; }
 
   // ---------------------------------------------------------------- round 2: the edge strings, the rails' glaze, the rings
   /** What the Raceway has of them: the edge strings strung on edgeLines, the rail mesh re-cut as glazed stone, the rings kept for passes. */
@@ -338,10 +356,10 @@ export class RacewayLooks {
    *  Written straight into one set of arrays from six painted templates (a phone's memory, Petra's measure 2026-10-26: a box, a matrix
    *  and a clone a segment held 102 MB of heap through the park's arrival on an iPhone XR); the hull's smooth normals only where a hull
    *  is drawn (NEW:memory-bound-by-view). */
-  glazeRails(R) {
-    const mesh = R.railMesh, C = railPieces(), K = RACEWAY_LOOK.rail;
+  glazeRails(R, mesh = R.railMesh, rails = R.rails.filter((r) => r.track !== 'made')) { // (a made track's rails are their own mesh: vfx/racewaymade.js glazes them)
+    const C = railPieces(), K = RACEWAY_LOOK.rail;
     let nv = 0; const posts = [];
-    for (const rail of R.rails) {
+    for (const rail of rails) {
       const { pts, cum } = rail, n = pts.length - 1;
       nv += n * C.lintel;
       for (let d = 0; d <= cum[n]; d += K.post) {
@@ -364,7 +382,7 @@ export class RacewayLooks {
         col[o] = c[0]; col[o + 1] = c[1]; col[o + 2] = c[2];
       }
     };
-    for (const rail of R.rails) {
+    for (const rail of rails) {
       const { pts } = rail, n = pts.length - 1;
       for (let i = 0; i < n; i++) {
         const p = pts[i], q = pts[i + 1], len = p.distanceTo(q) + 0.05;
@@ -444,7 +462,7 @@ export class RacewayLooks {
 
   /** Sun plate i ridden over: a flash on it, and a ring of light runs out over the sand. */
   plateHit(i, power = 1) {
-    const p = this.plateAt?.[i]; if (!p) return;
+    const p = this.plateAt?.[i] || this.madeAt?.get(i); if (!p) return; // (a made track's: its dress's poses, vfx/racewaymade.js)
     const S = RACEWAY_LOOK.sun, pw = Math.max(0, Math.min(1, power ?? 1));
     if (pw <= 0.05) { this.vfxOf()?.play('raceway.plate.dark', { pos: p.pos, normal: p.n }); return; } // (a dark plate: cold, dull, no push)
     this.vfxOf()?.play('raceway.plate', { pos: p.pos, normal: p.n, dir: p.fwd, power: 0.35 + 0.65 * pw, phase: this.t * 0.3, tint: _c.set(S.cold).lerp(_c2.set(S.warm), pw).getHex() });
@@ -456,6 +474,7 @@ export class RacewayLooks {
     const at = this.playerOf(); if (!at) return;
     let best = -1, bd = 36; // (within 6 m of a plate's middle: a plate is 7 m long)
     this.plateAt.forEach((p, i) => { if (!p) return; const d = (p.pos.x - at.x) ** 2 + (p.pos.z - at.z) ** 2; if (d < bd) { bd = d; best = i; } });
+    this.madeAt?.forEach((p, i) => { const d = (p.pos.x - at.x) ** 2 + (p.pos.z - at.z) ** 2; if (d < bd) { bd = d; best = i; } });
     if (best >= 0) this.plateHit(best, e?.power);
   }
 
