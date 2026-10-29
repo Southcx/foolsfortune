@@ -94,7 +94,12 @@ point here, not clutter.
   2. The camera cuts close and low; the Courier holds it up in both hands, the fish wriggling, facing the camera. Animal Crossing's lift.
   3. A short sting in the fish's aspect mode (Wanda); bigger for a new species, a record or a legend.
   4. One line in the log, in the catch's voice: species, size, "a new record" if it is one. Espada writes the lines.
-  5. Back to the rod: it goes back in the water, or into the Pneuka Box if you press the keep key (the owner, 2026-10-11).
+  5. Back to the rod: it goes back in the water, or into the Pneuka Box if you press the keep key (the owner, 2026-10-11). **The keep
+     key is F** (the input action `use`: USE on touch, X on a pad; Dovina, 2026-10-29), any time during the lift, the quick lift too;
+     any other key skips the lift and lets the fish go. Released, `angle.release { species, tier, secs, answered, by }` (Possession's
+     experience, domains.js); kept, `angle.keep { species, tier, by }` and `pneuka.add` (worth cubes at Old Grog). The lift shows the keep
+     prompt as the overlay's tag in the device's word (F, USE, X: `deviceWord`), never a world mark (Calissa's). Release by default moves fish sales from every catch to the kept
+     ones: angling's cubes now come from choosing to keep, its growth from letting go (ANGLING.md 5).
   - A first of a species also offers the Veritome's plate before it goes.
 - **The fish, made worth holding up** (Calissa): the catch puts a fish a metre from the camera, so each species needs a body that
   survives it: a silhouette that reads at a glance, its feeling in its colour and fins, a wet sheen, an eye, and a wriggle clip.

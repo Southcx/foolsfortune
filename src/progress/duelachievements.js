@@ -24,7 +24,7 @@ export function duelAchievements({ C, F }) {
   // the second aberrant, the shiny ones and the learned skills (ABERRANTS.md 5, 8, 10; names and words placeholders, Espada's to word;
   // like du9, a secret's achievement names what you did, never how)
   C('du10', 'battle', 'Puzzle Duels', 3, 'mechanic', 'Come Apart', 'Win a puzzle duel against an aberrant slip jelly with the Line short of its wall.', 'duel.secret.dissolve', 1);
-  C('du11', 'battle', 'Puzzle Duels', 3, 'mechanic', 'Shiny', 'Win a puzzle duel against a shiny aberrant.', 'duel.won.shiny', 1);
+  C('du11', 'battle', 'Puzzle Duels', 3, 'mechanic', 'One in Ten', 'Win a puzzle duel against a shiny aberrant.', 'duel.won.shiny', 1);
   F('du12', 'battle', 'Puzzle Duels', 2, 'collect', 'Quick Study', 'Learn a skill from an aberrant.', (L) => Object.keys(LEARNED).filter((id) => isLearned(id, L)).length, 1);
   F('du13', 'battle', 'Puzzle Duels', 4, 'collect', 'Every Lesson', 'Learn every skill the aberrants teach.', (L) => Object.keys(LEARNED).filter((id) => isLearned(id, L)).length, Object.keys(LEARNED).length);
 }

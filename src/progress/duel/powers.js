@@ -138,7 +138,8 @@ export const DUEL_POWERS = {
   // The slip jelly's Absorb, yours (learned.js): a jelly takes in whatever is thrown at it, and so do you. Every junk (slime too) in the
   // 3 x 3 round a cell drunk off your half, each 3 to the pool: junk turned into the powers' fuel. Against the jelly it eats the pile its
   // secret wants, so it is a choice there; against the rest, a way out from under a Hurl that pays.
-  absorb: { domain: 'possession', label: 'Absorb', line: 'Drinks every junk in a 3 x 3 off your half; each gives 3 to your pool', cost: 5, rest: 3, target: 'cell', learned: true, each: 3,
+  absorb: { domain: 'possession', label: 'Absorb', line: 'Drinks every junk and slime in a 3 x 3 off your half; each gives 3 to your pool', // (Espada's, 2026-10-29)
+    cost: 5, rest: 3, target: 'cell', learned: true, each: 3,
     legal: (s, side, a) => mineIn(s.board, side, ...(a.at || [-1, -1])) && ring(a.at, 1).some(([x, y]) => mineIn(s.board, side, x, y) && s.board.at(x, y)?.kind === 'junk'),
     reach: (s, side, a) => ring(a.at, 1).filter(([x, y]) => mineIn(s.board, side, x, y) && s.board.at(x, y)?.kind === 'junk'),
     apply: (s, side, a) => { const b = s.board, S = s.sides[side], cells = [];
