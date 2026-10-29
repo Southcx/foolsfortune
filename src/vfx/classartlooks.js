@@ -14,7 +14,7 @@
 // Prior art: Final Fantasy Tactics' ability flash (a ring and a glow at the caster for a reaction's trigger), Dark Souls' buff
 // glows (a weapon's band of light while the next blow is armed), Monster Hunter's Mantle and guard shells (a body wrapped while braced).
 //
-//   game.classArtLooks = new ClassArtLooks(game)   (boot/pneuka.js, beside the blob shadow; it draws itself each frame)
+//   game.classArtLooks = new ClassArtLooks(game)   (boot/pneuka.js, beside the blob shadow)   .update(dt) each frame (boot/frame.js)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
@@ -29,7 +29,7 @@ const ringMat = (hex, opacity) => new THREE.MeshBasicMaterial({ color: hex, tran
 
 export class ClassArtLooks {
   constructor(game) {
-    this.game = game; this.flashes = []; this.t = 0; this.last = performance.now();
+    this.game = game; this.flashes = []; this.t = 0;
     const root = (this.root = new THREE.Group()); root.name = 'classArtLooks';
     const ringGeo = new THREE.RingGeometry(0.86, 1, 48).rotateX(-Math.PI / 2);
     this.ringGeo = ringGeo;
@@ -41,9 +41,6 @@ export class ClassArtLooks {
     for (const y of [0.04, S.h - 0.04]) { const rim = new THREE.Mesh(new THREE.TorusGeometry(S.r * (y < 1 ? 1.08 : 1), 0.03, 6, 40).rotateX(Math.PI / 2), ringMat(ART_LOOK.gold, 0.9)); rim.position.y = y - S.h / 2; this.shell.add(rim); }
     this.marks = [this.steady, this.empty, this.band, this.shell];
     for (const m of this.marks) { m.visible = false; m.renderOrder = 3; root.add(m); }
-    const tri = new THREE.BufferGeometry(); tri.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(9), 3)); // (one degenerate triangle: an empty geometry is never drawn, so its onBeforeRender never ran)
-    const tick = new THREE.Mesh(tri, new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: false })); tick.frustumCulled = false; // (never culled: the frame's update rides its onBeforeRender)
-    tick.onBeforeRender = () => this.update(); root.add(tick);
     game.scene?.add(root);
     const E = game.events;
     E?.on?.('art.use', (e) => { if (e.by === 'courier') this.throwRing(ART_LOOK.film, ART_LOOK.ring.out); });
@@ -57,8 +54,8 @@ export class ClassArtLooks {
     this.flashes.push({ m, out, age: 0, y });
   }
 
-  update() {
-    const now = performance.now(), dt = Math.min(0.1, (now - this.last) / 1000); this.last = now; this.t += dt;
+  update(dt) {
+    dt = Math.min(0.1, dt || 0); this.t += dt;
     const g = this.game, P = g.player, run = g.classArtsRun;
     const shown = !!P && !g.god?.controlling && !g.realm?.active && !g.duel?.active;
     if (!shown) { for (const m of this.marks) m.visible = false; } else {
