@@ -45,10 +45,23 @@ export const RULESETS = {
     // its foe skills in the PvE duel (foeskills.js; PUZZLE-DUELS.md 23.4): embers hurled every 2nd turn, gems petrified every 3rd, a
     // column sealed every 4th, the Line reclaimed every 5th; at its last 2 columns, once, a flare of all it has
     pve: { perColumn: 5 }, // (the PvE duel's push: 5 sent a column, two columns a turn at most: PUZZLE-DUELS.md 23.5)
-    // its secret (secrets.js, ABERRANTS.md 3): snuff the lantern, 14 Dread gems cleared; Kindle wakes once it is half spent
+    // its secret (secrets.js, ABERRANTS.md 3): snuff the lantern, 48 Dread gems cleared; Kindle wakes once it is half spent
     secret: 'snuff',
     foe: { moves: [{ skill: 'hurl', every: 2, first: 1, n: 3 }, { skill: 'petrify', every: 3, first: 2, n: 3 }, { skill: 'seal', every: 4, first: 3 }, { skill: 'reclaim', every: 5, first: 4 }, { skill: 'kindle', every: 2, first: 1, n: 3, wake: 'half' }],
       desperate: { at: 2, moves: [{ skill: 'hurl', n: 5 }, { skill: 'petrify', n: 4 }] } } }, // (8 since the lookaheads stopped drawing the duel's own dice, 19.4: the stand-in wins 58 of 80, as it did)
+  // AN ABERRANT SLIP JELLY (ABERRANTS.md 5; South, 2026-10-29: "it should throw a LOT of junk, but its easy to clear. The weakness could
+  // be being highly susceptible to a well timed Transmute that converts the piled up junk for an OHKO"). The Wisp's board and gravity,
+  // Gall's colours (its slime is Gall), no colour it is weak to (`weak: false`: its weakness is the Transmute). Its junk lands as slime
+  // (`slime`: junk a Transmute turns to gems, duel.js land); it hurls every turn and spews a heap every 3rd; once its slime is piled past
+  // the secret's `wake` its Harden wakes (secrets.js `dissolve`). Measured (ABERRANTS.md 5.1, 32 duels a row, every power open, the
+  // regen 8): a strong stand-in wins 32 of 32 at the Line in 4.2 turns; a half-skilled one 20 of 32 in 6.5 (11 by the secret, by
+  // chance); a player who Transmutes the turn after a Spew wins it by the secret 16 of 16 in 3.4. A board 9 tall drowned the half-skilled
+  // (12 of 32); 11 tall gave the secret no edge over the Line (4.1 turns against 4.0).
+  slipjelly: { feeling: 'gall', board: { w: 12, h: 10, perColumn: 2, landCap: 8 }, match: 3, cluster: 4, gravity: (x, y, b) => (b.sideOf(x) === 0 ? DIRS.S : DIRS.N), colours: 5, drip: 4,
+    palette: ['wonder', 'mirth', 'desire', 'gall', 'grief'], weak: false, slime: { from: 1 }, bot: { pairs: 0.8, sample: 8 },
+    pve: { perColumn: 5 }, secret: 'dissolve',
+    foe: { moves: [{ skill: 'hurl', every: 1, first: 1, n: 3 }, { skill: 'spew', every: 3, first: 2, n: 7 }, { skill: 'reclaim', every: 5, first: 4 }, { skill: 'harden', every: 2, first: 1, n: 4, wake: 'half' }],
+      desperate: { at: 2, moves: [{ skill: 'spew', n: 9 }] } } },
   // STRAWMAN'S PRACTICE DUEL (South, 2026-10-27, via Petra: "test more basic implementations of the puzzle duel module"): the duel with
   // nothing but its core, for testing the duel itself at the sparring circle. The smallest board that still chains (8 x 8, a half of
   // 4 columns: three colours chained too easily, five too rarely), plain gravity on both halves, runs of 3 and any 4 touching (the
@@ -66,11 +79,11 @@ export const RULESETS = {
 };
 
 /** A creature kind's own ruleset, where it has one (`c.kind` -> a RULESETS key). */
-export const KIND_RULESETS = { wisp: 'lanternwisp', strawman: 'strawman' };
+export const KIND_RULESETS = { wisp: 'lanternwisp', strawman: 'strawman', slipjelly: 'slipjelly' };
 
 /** The practice duel's difficulty, for a pick at the lectern (Petra's to wire): the ruleset a choice loads, easiest first. 'wisp' is
  *  the Lantern Wisp's own board met in practice (its fog and embers), to rehearse the real fight. */
-export const PRACTICE = { idle: 'strawmanIdle', plain: 'strawman', wisp: 'lanternwisp' };
+export const PRACTICE = { idle: 'strawmanIdle', plain: 'strawman', wisp: 'lanternwisp', jelly: 'slipjelly' }; // (jelly: the aberrant slip jelly's board, rehearsed before any jelly in the world goes wrong)
 
 /** The ruleset a creature brings to a duel: its kind's own (an aberrant Lantern Wisp's), else its feeling's (`c.grade`, a blotling's
  *  weather), else fury's. */

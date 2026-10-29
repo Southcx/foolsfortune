@@ -5,7 +5,8 @@
 //                    tick throbs, rimmed in ember. In the board view (its body off the screen) they stand as a column in the flank beside
 //                    the frame's foe end. No words: the glyph and the number.
 //   ITS CASTS        foe.skill from its body: HURL its flare, the junk itself thrown from its end of the board in high arcs onto your
-//                    half at once (the land beat after it, beats.js); PETRIFY a spiral to each gem, the gem greying and dropping to stone (its piece swapped for the junk's
+//                    half at once (the land beat after it, beats.js); SPEW (the slip jelly's) its heap of slime thrown the same way; HARDEN
+//                    (the slip jelly's) its slime on your half greyed into plain junk; PETRIFY a spiral to each gem, the gem greying and dropping to stone (its piece swapped for the junk's
 //                    id); SEAL a chain slammed down a column of yours, held while the column is sealed; SAP your skill troughs drained,
 //                    motes flying to it; RECLAIM a shove from its body to the Line (the line event after it the retreat)
 //   ITS MOMENTS      foe.desperate (after its limit break's cut-in, cutin.js): its half flashed, embers off it; foe.stagger: a jolt, gold daze off
@@ -31,13 +32,15 @@ import { DUEL_VIEW, cellLocal, feelColour, sm, clamp01 } from './layout.js';
 /** badge: a countdown's side (m, the board's frame); over: the row above the head; the casts' lengths (real s). */
 /** The badges' tooltips (Espada's words, docs/handoffs: the label over, this line under). */
 export const FOE_TIP = {
-  hurl: 'Throws junk onto your half.', // (a placeholder since Hurl lands at once, Dovina 2026-10-29: Espada's to word)
+  hurl: 'Throws junk onto your half.', // (Espada's, 2026-10-29)
   petrify: 'Gems on your half turn to junk.',
   seal: 'A column of yours locks for your next turn: nothing in it can be dragged.',
   sap: 'Each skill you wear loses half its charge.',
   reclaim: 'The Line moves a column toward you.',
+  spew: 'Throws a heap of slime onto your half.', // (placeholder, Dovina's line: Espada's to word)
+  harden: 'Sets slime on your half into plain junk.', // (placeholder, Dovina's line: Espada's to word)
 };
-export const FOE_CAST = { tip: 3, tapR: 30, badge: 0.24, gap: 0.035, over: 0.5, petrify: 0.55, seal: 0.5, sap: 0.65, reclaim: 0.5, desperate: 1.3, stagger: 0.7, sweep: 0.6, shots: 24 };
+export const FOE_CAST = { tip: 3, tapR: 30, badge: 0.24, gap: 0.035, over: 0.5, harden: 0.5, petrify: 0.55, seal: 0.5, sap: 0.65, reclaim: 0.5, desperate: 1.3, stagger: 0.7, sweep: 0.6, shots: 24 };
 const GOLD = 0xffd36a, FILM = 0x9fd8ff, STONE = 0x9a948c, EMBER = 0xff6a2a, INK = '#17111f';
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Color(), _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(), _w = new THREE.Vector3();
 
@@ -48,6 +51,8 @@ function glyph(x, skill) {
   else if (skill === 'petrify') { x.beginPath(); x.moveTo(0, -30); x.lineTo(26, -4); x.lineTo(0, 30); x.lineTo(-26, -4); x.closePath(); x.stroke(); x.lineWidth = 5; x.beginPath(); x.moveTo(-8, -18); x.lineTo(4, -2); x.lineTo(-6, 8); x.lineTo(6, 22); x.stroke(); }
   else if (skill === 'seal') { x.lineWidth = 8; for (const dy of [-16, 14]) { x.beginPath(); x.ellipse(0, dy, 11, 18, 0, 0, Math.PI * 2); x.stroke(); } x.fillRect(-24, -4, 48, 6); }
   else if (skill === 'sap') { x.beginPath(); x.moveTo(0, -30); x.bezierCurveTo(22, -2, 22, 26, 0, 26); x.bezierCurveTo(-22, 26, -22, -2, 0, -30); x.fill(); x.fillStyle = INK; x.fillRect(-10, 6, 20, 6); }
+  else if (skill === 'spew') { for (const [cx, cy, r] of [[-20, 16, 13], [4, 4, 16], [24, -18, 11]]) { x.beginPath(); x.ellipse(cx, cy, r, r * 0.82, 0, 0, Math.PI * 2); x.fill(); } x.beginPath(); x.arc(-26, -6, 26, Math.PI * 1.15, Math.PI * 1.75); x.stroke(); } // (a heap of blobs thrown)
+  else if (skill === 'harden') { x.beginPath(); x.ellipse(0, 6, 28, 22, 0, 0, Math.PI * 2); x.fill(); x.fillStyle = INK; x.fillRect(-12, -4, 24, 22); x.strokeStyle = INK; x.lineWidth = 4; x.beginPath(); x.moveTo(-20, -16); x.lineTo(-6, -28); x.lineTo(8, -14); x.stroke(); } // (a blob with a block set in it)
   else if (skill === 'kindle') { x.beginPath(); x.moveTo(0, -32); x.bezierCurveTo(20, -8, 22, 10, 0, 28); x.bezierCurveTo(-22, 10, -20, -8, 0, -32); x.fill(); x.fillStyle = INK; x.beginPath(); x.moveTo(0, -4); x.bezierCurveTo(9, 6, 9, 16, 0, 20); x.bezierCurveTo(-9, 16, -9, 6, 0, -4); x.fill(); } // (a flame)
   else { x.beginPath(); x.moveTo(26, -22); x.lineTo(-4, 0); x.lineTo(26, 22); x.stroke(); x.beginPath(); x.moveTo(4, -22); x.lineTo(-26, 0); x.lineTo(4, 22); x.stroke(); } // (reclaim: the Line pushed back toward you)
   x.restore();
@@ -112,9 +117,14 @@ export class FoeCast {
       let k = 0; return { events: [e], dur: FOE_CAST.desperate, step: (u) => { while (k < Math.floor(u * 6)) { k++; V.bursts.burst(at, k % 2 ? EMBER : hex, 12, { speed: 2.2, life: 0.7, fall: -1, spread: 0.5 }); } } };
     }
     if (e.type !== 'foe.skill') return { events: [e], dur: 0 };
-    if (e.skill === 'kindle' && V.elite?.on) return V.elite.kindle(T, e); // (an aberrant's own skill: its own file, duelview/aberrants/)
+    if (e.skill === 'kindle' && V.elite?.on && V.elite.kindle) return V.elite.kindle(T, e); // (an aberrant's own skill: its own file, duelview/aberrants/)
     V.stage?.jolt?.(0.25); V.bursts.burst(at, feelColour(V.aspect, _c).getHex(), 10, { speed: 1.2, life: 0.4, fall: 0, spread: 0.3 }); // (the cast's flare at its body)
-    if (e.skill === 'hurl') { V.hurled = true; return { events: [e], dur: 0.18 }; } // (Hurl lands at once (Dovina, 2026-10-29): its `land` that follows throws the pieces themselves from the aberrant, beats.js land)
+    if (e.skill === 'hurl') { V.hurled = true; return { events: [e], dur: 0.18 }; }
+    if (e.skill === 'spew') { V.hurled = true; V.stage?.jolt?.(0.6); V.bursts.burst(at, feelColour('gall', _c).getHex(), 22, { speed: 1.8, life: 0.6, fall: 3, spread: 0.5, size: 0.035 }); return { events: [e], dur: 0.3 }; } // (the slip jelly's: a heap of its slime thrown at once, the land after it the throw, beats.js)
+    if (e.skill === 'harden') { const cells = e.cells || [], P = V.pieces; // (the slip jelly's: slime set into plain junk where it lies, greyed and chipped)
+      return { events: [e], dur: FOE_CAST.harden + cells.length * 0.06, step: (u, age) => { cells.forEach((c, i) => { const v = P.byId(c.id); if (!v || !v.slime || age < 0.15 + i * 0.06) return;
+        v.slime = false; v.flash = 0.8; cellLocal(c.at[0], c.at[1], V.board3, _b); V.bursts.burst(_b, STONE, 5, { speed: 0.5, life: 0.35, fall: 4, size: 0.02 }); }); },
+        end: () => cells.forEach((c) => { const v = P.byId(c.id); if (v) v.slime = false; }) }; } // (Hurl lands at once (Dovina, 2026-10-29): its `land` that follows throws the pieces themselves from the aberrant, beats.js land)
     if (e.skill === 'petrify') { const cells = e.cells || [], done = new Set();
       cells.forEach((c, i) => V.bursts.spiral(at, cellLocal(c.at[0], c.at[1], V.board3, new THREE.Vector3()), STONE, i * 0.06, 0.35));
       return { events: [e], dur: FOE_CAST.petrify + cells.length * 0.06, step: (u, age) => { cells.forEach((c, i) => { const v = V.pieces.byId(c.from); if (age > i * 0.06 + 0.2 && v) v.grey = Math.min(1, (age - i * 0.06 - 0.2) / 0.25);

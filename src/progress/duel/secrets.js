@@ -15,6 +15,7 @@
 // hunt, Hollow Knight's and Dark Souls' boss deaths (an ending of its own), Pokemon's catching versus fainting.
 //
 //   SECRETS[id] = { of (whose: the collection log names the slot by it, never the secret), label, line, start(s) -> state, step(s, side, events) -> events }   (a ruleset's `secret: id`)
+//   (k is what the view draws on the body; a secret is won by its own test, the Wisp's at k 1, the jelly's by one turn's clear)
 //   secretOf(s) -> { id, k (0..1), ... } | null   secretStep(s, side, events) -> events (duel.js after each settle of the Courier's)
 //   lightOf(s) -> the fog's light now (dread.js visibleTo reads it: the Wisp's lantern)
 //   events: secret.step { id, k, light? } (its progress moved), secret.half { id } (the aberrant notices: its gated moves wake),
@@ -27,7 +28,7 @@ export const SECRETS = {
   // tell), and at `fuel` the lantern goes out and the Wisp with it. The cost: Dread clears push the Line half as far. The answer: once
   // the lantern is half spent its Kindle wakes (foeskills.js), burning your Dread gems into embers before you can clear them.
   // The will-o'-the-wisp of the fens is a light that leads you astray; you beat one by putting it out, not by chasing it.
-  snuff: { of: 'The Lantern Wisp', label: 'Snuff the lantern', line: 'Every Dread gem you clear is fuel taken from its lantern; empty it and the Wisp goes out with it', colour: 'dread', fuel: 24,
+  snuff: { of: 'The Lantern Wisp', label: 'Snuff the lantern', line: 'Every Dread gem you clear is fuel taken from its lantern; empty it and the Wisp goes out with it', colour: 'dread', fuel: 48,
     start: (s) => ({ id: 'snuff', k: 0, fuel: 0, light: s.rs.fog?.light ?? 3, half: false }),
     step: (s, side, events) => {
       const S = s.secret, def = SECRETS.snuff; if (side !== 0) return [];
@@ -38,6 +39,27 @@ export const SECRETS = {
       const out = [{ type: 'secret.step', id: 'snuff', k: S.k, light: S.light, n }];
       if (!S.half && S.k >= 0.5) { S.half = true; out.push({ type: 'secret.half', id: 'snuff' }); }
       if (S.k >= 1 && s.winner === null) { s.winner = 0; out.push({ type: 'duel.secret', winner: 0, id: 'snuff' }); }
+      return out;
+    } },
+  // AN ABERRANT SLIP JELLY: DISSOLVE IT (South, 2026-10-29: "it should throw a LOT of junk, but its easy to clear. The weakness could be
+  // being highly susceptible to a well timed Transmute that converts the piled up junk for an OHKO"). Its junk is slime, itself thrown
+  // at you: junk that breaks beside a clear as any does, so it is easy to keep down. Let it pile instead, then Transmute the slime (all
+  // of it on your half turns to gems of one colour, powers.js) and clear `need` of those gems in one turn: the jelly has nothing left to
+  // hold together and falls apart. The tell: the jelly shrinks as its slime piles on your half (k, the pile against `need`). The cost:
+  // a half full of slime is a half near full (a side that cannot take what lands has lost) and pushing nothing. The answer: once the
+  // pile is past `wake` of `need` its Harden wakes (foeskills.js), setting slime into plain junk a Transmute cannot touch.
+  // Prior art: Puyo Puyo's garbage turned back on the sender, Tetris 99's held garbage cleared for a counter, Pokemon's Counter, Kirby
+  // swallowing what is thrown at it, Majora's Mask's Gyorg (its own spawn turned against it).
+  dissolve: { of: 'The Slip Jelly', label: 'Dissolve it', line: 'Let its slime pile on your half, Transmute it, and clear that many gems of it in one turn; the jelly falls apart', need: 9, wake: 0.6,
+    start: () => ({ id: 'dissolve', k: 0, pile: 0, melt: 0, ply: -1, half: false }),
+    step: (s, side, events) => {
+      const S = s.secret, def = SECRETS.dissolve, b = s.board, out = [];
+      let pile = 0; b.each((p, x) => { if (p.slime && b.mine(0, x)) pile++; });
+      if (S.ply !== s.ply) { S.ply = s.ply; S.melt = 0; } // (one turn's clear: a new ply, a new count)
+      if (side === 0) for (const e of events) if (e.type === 'clear' && e.side === 0 && e.born === 'slime') S.melt++;
+      const k = Math.min(1, pile / def.need); if (k !== S.k) { S.k = k; S.pile = pile; out.push({ type: 'secret.step', id: 'dissolve', k, pile }); }
+      if (!S.half && pile >= def.need * def.wake) { S.half = true; out.push({ type: 'secret.half', id: 'dissolve' }); }
+      if (S.melt >= def.need && s.winner === null) { s.winner = 0; out.push({ type: 'duel.secret', winner: 0, id: 'dissolve', n: S.melt }); }
       return out;
     } },
 };
