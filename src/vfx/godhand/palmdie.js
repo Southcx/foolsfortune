@@ -9,14 +9,15 @@
 //   A CONDENSE   palm.condense { n }: the stone breathes out a glint, brighter the more it made (the overflow pressed into cubes)
 //   A ROLL       palm.roll { face, held } (the island's answer rolled against): a quick tumble, then settled with `face` turned to the god
 //                hand's camera, its numeral upright (`dieFace`: the face's normal and its numeral's foot, from the template), held a beat,
-//                then eased back to turning; a glint when it held (1 or 2). The d4 is read at its top vertex, turned to the camera.
+//                then eased back to turning; a glint when it held (1 or 2). The d4 is read at its top vertex, turned to the camera. While it
+//                is held, the number rolled is said in Arabic beside it (a sprite: the face wears the neuralese numeral, South 2026-10-29).
 //   A GROWTH     palm.grow { from, to }: the stone swells and cracks white along its facets, and comes round as the next solid with a
 //                flare of its fire (a stone re-cut, not a gem swapped)
 // THE FINGERS  the other five of the standard set on the hand (the owner, 2026-10-23: d4 the little finger, d6 the ring finger, d8 the
 //              middle, d10 the index, d12 the thumb; the d20 is the palm's), small stones on the back of each finger's first joint,
 //              in the same mineral and the same numbered bodies; each die's edges inked in its suit's colour (d4 Wands, d6 Pentacles, d8 Swords, d10 Cups, the
 //              palm's d20 the Majors' gold, the thumb's d12 the zodiac's: the film's schiller, as any suit), so the hand teaches the suits without a word.
-// No words: a world mark (the log says "Your palm die grows into a d8.").
+// No words but the rolled number beside a held roll: a world mark (the log says "Your palm die grows into a d8.").
 //
 // Prior art: the owner's Entropy Tactics' Hungry Die (a die that grows on what it is fed); Plato's solids as the dice (Timaeus); the
 // Mega Man Legends refractor in a palm; the house's own stones (courier/vessel/glazes.js gems: fire is dispersion); Baldur's Gate 3's
@@ -25,6 +26,7 @@
 //   const P = new PalmDieLook(game)   P.update(dt)   (it finds the hand's `handR` bone itself, and sits where the palm is)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { FONT } from '../../ui/theme.js';
 import { GLAZES } from '../../courier/vessel/glazes.js';
 import { SUIT_LOOK } from '../readingview.js';
 import { dieTpl, dieFace, PIECE } from '../bazaarpieces.js';
@@ -75,6 +77,8 @@ export class PalmDieLook {
     this.edges = new THREE.LineSegments(undefined, this.crack); this.mesh.add(this.edges);
     this.mesh.raycast = () => {}; this.edges.raycast = () => {};
     this.fingerDice = []; this.hand = null;
+    this.said = new THREE.Sprite(new THREE.SpriteMaterial({ transparent: true, depthTest: false, depthWrite: false, toneMapped: false, opacity: 0 })); // (the rolled number said in Arabic beside the die: Espada's rule, South 2026-10-29)
+    this.said.center.set(-0.35, 0.5); this.said.renderOrder = 60; this.said.visible = false; this.said.raycast = () => {}; this.mesh.add(this.said);
     game.events?.on?.('palm.condense', (e) => { this.glint = Math.min(1, this.glint + 0.35 + 0.1 * (e?.n || 1)); });
     game.events?.on?.('palm.roll', (e) => { const R = Math.random; this.roll = { t: 0, face: e?.face ?? 1, held: e?.held ?? 0, axis: new THREE.Vector3(R() - 0.5, R() - 0.5, R() - 0.5).normalize(), q: new THREE.Quaternion() }; if (e?.held === 1 || e?.held === 2) this.glint = 1; }); // (the island's answer rolled against: a tumble, then still on its face; a glint when it held)
     game.events?.on?.('palm.grow', (e) => { this.next = e?.to || this.sides; this.cut = 0; });
@@ -91,6 +95,15 @@ export class PalmDieLook {
     if (id !== this.worn) { this.worn = id; dressStone(this.finU ||= dressFinish(this.mat, 'gem'), this.mat, id, { radius: S.size[20], ink: true }); } // (the gem and its mineral, the numerals kept: vfx/stoneminerals.js)
     this.mat.emissive.setHex(G?.color2 ?? 0xffffff);
     this.crack.color.setHex(this.cut < 1 ? (G?.color2 ?? 0xffffff) : DIE_INK[this.sides] ?? (G?.color2 ?? 0xffffff)); // (its ink at rest, the mineral's fire through a re-cut)
+  }
+
+  /** The rolled number in Arabic, in the System's type on a gold keyline, drawn into the readout's sprite. */
+  sayNumber(n) {
+    if (typeof document === 'undefined') return;
+    const c = (this.saidCanvas ||= document.createElement('canvas')); c.width = c.height = 128; const x = c.getContext('2d');
+    x.clearRect(0, 0, 128, 128); x.font = `bold 84px ${FONT.sys}`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.lineJoin = 'round';
+    x.lineWidth = 14; x.strokeStyle = '#17111f'; x.strokeText(String(n), 64, 70); x.fillStyle = '#ffd36a'; x.fillText(String(n), 64, 70);
+    const M = this.said.material; if (!M.map) { M.map = new THREE.CanvasTexture(c); M.map.colorSpace = THREE.SRGBColorSpace; M.needsUpdate = true; } else M.map.needsUpdate = true;
   }
 
   /** The five on the fingers: each parented to its finger's first bone, set at its back between the knuckle and the next joint. */
@@ -149,7 +162,10 @@ export class PalmDieLook {
         _qb.copy(RL.q).multiply(_qa.setFromAxisAngle(RL.axis, w));
         this.mesh.quaternion.slerp(_qb, 1 - back * back * (3 - 2 * back)); // (the turning's pose as the base: it eases back in at the end)
       }
-      if (RL.t > Rs.tumble + Rs.hold + Rs.ease) this.roll = null;
+      const shown = Math.min(1, Math.max(0, (RL.t - Rs.tumble) / 0.12)) * (1 - Math.min(1, Math.max(0, (RL.t - Rs.tumble - Rs.hold) / Rs.ease)));
+      if (shown > 0 && RL.said !== RL.face) { RL.said = RL.face; this.sayNumber(RL.face); }
+      this.said.visible = shown > 0; this.said.material.opacity = shown; this.said.scale.setScalar(S.size[20] * 1.8 / Math.max(0.01, this.mesh.scale.x));
+      if (RL.t > Rs.tumble + Rs.hold + Rs.ease) { this.roll = null; this.said.visible = false; }
     }
     this.mat.emissiveIntensity = 0.25 + 1.2 * this.glint + 2.5 * swell;
     this.crack.opacity = Math.min(1, (DIE_INK[this.sides] ? 0.6 : 0) + crack * 1.4 + 0.15 * this.glint);
