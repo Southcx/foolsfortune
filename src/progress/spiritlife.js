@@ -81,9 +81,17 @@ export const MAIL = { postcards: 3, postcardEvery: 3, giftBond: 60, giftEvery: 3
  *  releasing it (Spiritfarer's Everdoor). Let go after asking, it leaves a statue of itself in its feeling (a garden piece, `statue`
  *  + the feeling, progress/decor.js) and its postcards begin, as any release's. */
 export const FAREWELL = { bond: 100 };
-/** The spirit's own words at its farewell, by its feeling (Espada's to write; null until then): `ask` when it asks to go home, `go` as it
+/** The spirit's own words at its farewell, by its feeling (Espada's, 2026-10-29: each is the feeling come to rest; none names the spirit or says goodbye, the log's own line does both): `ask` when it asks to go home, `go` as it
  *  leaves. A spirit is not one of the folk, so it has no dialogue box: the log quotes it after its own line (tracking/garden.js). */
-export const FAREWELL_LINES = Object.fromEntries(['wonder', 'mirth', 'desire', 'fury', 'gall', 'grief', 'dread'].map((f) => [f, { ask: null, go: null }]));
+export const FAREWELL_LINES = {
+  wonder: { ask: "I've seen everything your garden can show me. Let me go and see the rest.", go: "Look up sometimes. I'll be in the part you haven't seen yet." },
+  mirth: { ask: "I've laughed myself full. Time I took it home and shared it round.", go: "Ha! Don't go quiet without me." },
+  desire: { ask: "There's somewhere I want to be more than here, and it's home.", go: "I'll want to come back. That's how you'll know it was good." },
+  fury: { ask: "I've burned down to embers here. Let me go home and cool.", go: "No hard feelings. Not one left." },
+  gall: { ask: "Fine. It was better than I expected. Now let me go before I admit it.", go: "Don't make a thing of it." },
+  grief: { ask: "You held it with me long enough. I can carry it home now.", go: "It's lighter. Thank you for that." },
+  dread: { ask: "I'm not afraid any more, and that's how I know it's time to go.", go: "Leave a light on. Not for me. Just leave it on." },
+};
 const fresh = () => ({ wishes: {}, digest: null, mail: [], away: [], giftDay: null, given: {}, farewell: [] });
 
 export class SpiritLife {
