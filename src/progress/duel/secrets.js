@@ -50,7 +50,8 @@ export const SECRETS = {
   // pile is past `wake` of `need` its Harden wakes (foeskills.js), setting slime into plain junk a Transmute cannot touch.
   // Prior art: Puyo Puyo's garbage turned back on the sender, Tetris 99's held garbage cleared for a counter, Pokemon's Counter, Kirby
   // swallowing what is thrown at it, Majora's Mask's Gyorg (its own spawn turned against it).
-  dissolve: { of: 'The Slip Jelly', label: 'Dissolve it', line: 'Let its slime pile on your half, Transmute it, and clear that many gems of it in one turn; the jelly falls apart', need: 9, wake: 0.6,
+  dissolve: { of: 'The slip jelly', label: 'Dissolve the slip jelly', line: 'Let its slime pile up on your half, Transmute the slime, and clear 9 of those gems in one turn; with nothing left to hold it together, the slip jelly falls apart', // (Espada's, 2026-10-29)
+    need: 9, wake: 0.6,
     start: () => ({ id: 'dissolve', k: 0, pile: 0, melt: 0, ply: -1, half: false }),
     step: (s, side, events) => {
       const S = s.secret, def = SECRETS.dissolve, b = s.board, out = [];

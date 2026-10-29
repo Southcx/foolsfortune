@@ -7,8 +7,8 @@ aberrants. The kernel is done (PUZZLE-DUELS.md 26.9 to 26.11, ABERRANTS.md 5 and
    `progress/duel/learned.js`. Until then Kindle stays shut even once learned.
 2. **Kindle armed as Herd is**: a cell and a row or a column (`{ kind: 'power', power: 'kindle', at, dir: 'H' | 'V' }`). Its reach is
    `powerReach` as for any power. Its event is `kindle { side, at, dir, cells: [{ at, id }] }` (junk turned to embers in place, same ids).
-3. **The lectern's row** (`world/testroom/strawmanstrings.js` `PRACTICE_PICKS`): `['jelly', 'Slip jelly', "An aberrant slip jelly's board."]`
-   (`PRACTICE.jelly` is in rulesets.js). Placeholder words, Espada's to word.
+3. **The lectern's row** (`world/testroom/strawmanstrings.js` `PRACTICE_PICKS`): `['jelly', 'Slip jelly', "An aberrant slip jelly's board: slime, and a lot of it."]`
+   (`PRACTICE.jelly` is in rulesets.js). Espada's words, 2026-10-29.
 4. **The view's feeling for an aberrant with its own board.** Every blotling is an aberrant slip jelly, so it now brings the jelly's
    board (`KIND_RULESETS.slipjelly`). The session's `feeling = c.grade ?? ruleset.feeling` paints it in its weather's feeling while its
    board is Gall's. Prefer `ruleset.feeling` when `KIND_RULESETS[c.kind]` names its board.

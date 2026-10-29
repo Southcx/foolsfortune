@@ -129,7 +129,7 @@ export const DUEL_POWERS = {
   // your hand, open only once learned (`learned`: newDuel's list). The Lantern Wisp's Kindle, yours: junk lit into embers that cool into
   // gems at your turn's end (the Wisp burns your gems down; you burn its junk up). For a half buried in junk; Manifest is three cells at
   // once, Kindle a whole line a turn later.
-  kindle: { domain: 'alteration', label: 'Kindle', line: 'Every junk in a row or column of your half lights into an ember that cools into a gem at your turn\'s end', cost: 15, rest: 3, target: 'cell', learned: true,
+  kindle: { domain: 'alteration', label: 'Kindle', line: 'Lights every junk in a row or column of your half into an ember, and each cools into a gem at your turn\'s end', cost: 15, rest: 3, target: 'cell', learned: true,
     legal: (s, side, a) => (a.dir === 'H' || a.dir === 'V') && mineIn(s.board, side, ...(a.at || [-1, -1])) && lineOf(s.board, side, a.at, a.dir).some(([x, y]) => s.board.at(x, y)?.kind === 'junk'),
     reach: (s, side, a) => lineOf(s.board, side, a.at, a.dir || 'H').filter(([x, y]) => s.board.at(x, y)?.kind === 'junk'),
     apply: (s, side, a) => { const b = s.board, cells = [];
