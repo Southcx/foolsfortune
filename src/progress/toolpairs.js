@@ -12,6 +12,7 @@
 // heavy pair, Elden Ring's main hand and off hand.
 //
 //   TOOL_IDS   SUB_GIFTS[id] -> { verb, does, passive }   PAIRS -> [{ n, card, label, tools: [a, b], why, special }]
+//   PAIR_SPECIALS[n] -> { label, line }   PAIR_OPEN   pairSpecialOpen(n, L) -> bool
 //   pairKey(a, b) -> 'a+b' (sorted)   pairOf(a, b) -> the pair's entry | null   pairsOf(id) -> the six pairs a tool is in
 //   START -> { main, sub } (a new save's pair: the Magician)   swapRefusal(game) -> null | the reason a change of main or sub is refused now
 //   (the belt's mayEquip asks it and says the reason at the point of use: tools/belt.js, Petra's)
@@ -58,6 +59,37 @@ export const PAIRS = [
   P(20, 'Judgement', 'crucibelle', 'lockheart', 'the trumpet opens the coffin'),
   P(21, 'The World', 'psygun', 'soulbrush', 'the first tool and the mending one: the circle closed'),
 ];
+
+/** What each pair's special is to be (TOOLS-TOGETHER.md 8; GAPS.md 2.2: the sub's lent verb fed through the main's own verb, one press
+ *  doing both; the first four are TOOLS-TOGETHER.md 4 K5's). Plain labels, Espada's to word; Petra builds them a wave of four at a time,
+ *  and `PAIRS[n].special` is set when one plays. Opened by `pairSpecialOpen` (below). */
+export const PAIR_SPECIALS = {
+  1: { label: 'Hooked Shot', line: 'A shot that drags what it hits to you.' },
+  2: { label: 'Revelation', line: 'The Flash and the dowse at once: every hidden signature near you shown and tagged.' },
+  3: { label: "Coffin's Mop", line: 'The coffin drinks spilled paint and crude as it passes, and the brush pours it back as paint.' },
+  4: { label: 'On the Beat', line: 'Six shots fired on the bell\'s beat, each one staggering.' },
+  5: { label: 'Rite', line: 'A toll that reads every creature it reaches, knowing it better.' },
+  6: { label: 'Rung Line', line: 'Hook a creature and the toll runs down the line, stunning it.' },
+  7: { label: 'Slingshot', line: 'Throw the fork far and hook to it, flung through the air.' },
+  8: { label: 'Gentle Edge', line: 'A cutlass string whose blows calm instead of hurt.' },
+  9: { label: 'Illumined Page', line: 'Photograph a sigil and it is written on what you photographed.' },
+  10: { label: 'Turn of Weather', line: 'Spin the wheel of odds to turn the weather where you stand for a game hour.' },
+  11: { label: 'Appraised Cut', line: 'A blow on a weak point you have photographed is always the right kind.' },
+  12: { label: 'Held Plate', line: 'A photograph holds a creature still in time for a moment.' },
+  13: { label: "Reaper's Draw", line: 'A blow that downs a creature drinks its Lachryma straight into the coffin.' },
+  14: { label: 'Healing Song', line: 'Paint laid on the beat mends your cracks.' },
+  15: { label: 'Chain Shot', line: 'A shot that chains two creatures together where they stand.' },
+  16: { label: 'Lightning Rod', line: 'Where the fork sticks, a bolt comes down.' },
+  17: { label: 'Painted Lure', line: 'The lure thrown leaves a stream of paint behind it.' },
+  18: { label: 'Singing Mirage', line: 'A decoy rises where the fork lands, singing so creatures go to it.' },
+  19: { label: 'The Mark', line: 'The Flash marks a creature, and every chamber homes on the mark.' },
+  20: { label: 'Last Call', line: 'The toll opens the coffin: all it drank bursts out as a wave.' },
+  21: { label: 'Full Circle', line: 'A shot that paints where it lands and mends what it passes.' },
+};
+/** A pair's special opens (arts only by achievement, a count way and a feat way): `downs` creatures downed with the pair worn, or `lends`
+ *  of the sub's verb with the pair worn (feedback/tracking/pairs.js keeps `pair.<n>.down` and `pair.<n>.lend`). */
+export const PAIR_OPEN = { downs: 50, lends: 40 };
+export const pairSpecialOpen = (n, L) => (L?.get?.(`pair.${n}.down`) || 0) >= PAIR_OPEN.downs || (L?.get?.(`pair.${n}.lend`) || 0) >= PAIR_OPEN.lends;
 
 /** A pair's key, the same whichever is main. */
 export const pairKey = (a, b) => [a, b].sort().join('+');
