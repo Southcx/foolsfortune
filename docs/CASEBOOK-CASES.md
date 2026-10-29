@@ -4383,3 +4383,11 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   attribute, so `update` never ran (`t` stayed 0, every mark hidden, the root at the origin). A first fix, one degenerate triangle, still never ran.
 - **Fix:** `update(dt)` called from the frame (`boot/frame.js`, beside the blob shadow), the onBeforeRender hook removed.
 - **Rule:** 349
+
+### 2026-10-29 · The lent Grapple fired once (South's report; tools/sondelass/hookshot.js)
+- **Seen:** with the psygun the main and the Sondelass the sub, R threw the hook once; every R after did nothing.
+- **Cause (as read):** the hook's cooldown (`cool`, set to 0.15 real s as the grapnel came home) ran down only in `update`, and the
+  Sondelass calls `update` only with the hook form in hand. Lent from the back, the hook is never in hand, so `cool` stayed at 0.15 and
+  `lend()` refused every press after the first.
+- **Fix:** `cool` runs down in `tickFlight`, which the Sondelass calls every frame, drawn or not; `update` no longer touches it.
+- **Rule:** 350

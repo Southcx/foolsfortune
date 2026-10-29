@@ -106,7 +106,6 @@ export class Hookshot {
 
   update(dt, inp) {
     const P = this.tool.P, g = this.game;
-    this.cool -= dt;
     P.lookDir(_d);
     // RMB: hold the arm out on the aim (with a line out, on the anchor)
     const aim = inp.isDown('Mouse2') || this.flying || !!this.att;
@@ -138,6 +137,7 @@ export class Hookshot {
   // ---------------------------------------------------------------- flight and drawing (every frame)
   tickFlight(dt) {
     const g = this.game, P = this.tool.P, cam = g.camera;
+    this.cool -= dt; // (here, not in update: update runs only with the hook in hand, and the lent Grapple's cooldown must run out from the back too: casebook 350)
     if (!this.flying) return;
     this.t += dt; this.latchT += dt;
     this.tool.model.group.updateMatrixWorld(true);
