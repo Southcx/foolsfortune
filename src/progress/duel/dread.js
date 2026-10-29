@@ -29,15 +29,15 @@ export function visibleTo(s, viewer, x, y) {
  *  their height). The view draws a 'shape' cell as a plain stone of the fog. */
 export const fogShows = (s, viewer, x, y) => (visibleTo(s, viewer, x, y) ? 'all' : 'shape');
 
-/** What a side's junk lands as: embers if the ruleset says this side sends them. */
+/** What a side's junk lands as: embers if the ruleset says this side sends them, else junk. */
 export const emberKind = (s, sender) => (s.rs.embers && s.rs.embers.from === sender ? 'ember' : 'junk');
 
 /** The end of a side's own turn: each ember on its half burns down a turn; one at zero cools into a gem of a random colour. */
 export function tickEmbers(s, side) {
-  const b = s.board, events = []; if (!s.rs.embers) return events;
+  const b = s.board, events = []; // (any board: a learned Kindle lights embers where the ruleset sends none, powers.js)
   b.each((p, x, y) => {
     if (p.kind !== 'ember' || !b.mine(side, x)) return;
-    p.count = (p.count ?? s.rs.embers.count) - 1;
+    p.count = (p.count ?? s.rs.embers?.count ?? 1) - 1;
     if (p.count > 0) return;
     Object.assign(p, { kind: 'gem', tags: KINDS.gem, colour: s.r.pick(paletteOf(s.rs)) });
     events.push({ type: 'ember.cool', side, id: p.id, at: [x, y], colour: p.colour });

@@ -820,9 +820,12 @@ as a free action (the drag still ends the turn).
 spends is put back as it never counted. Your clears fill it in the PvE duel: a point a gem (`PVE.drink`, Puzzle Quest's mana) on top of the
 trickle. A duel's pool is carried back to the world as it stands at the end (the session's, as before).
 
-**One a turn** (`POWERS_A_TURN`), and each **rests** its turns once cast (Puzzle & Dragons' cooldowns). With three a turn, a stand-in that
-searched the powers' targets won every Lantern Wisp duel in 3 turns, the fewest the Line allows, at any strength: how well you drag stopped
-mattering. With one, each cast is a moment of its own (the cut-in's and the sting's room).
+**As many a turn as the pool pays for** (South, 2026-10-29: "I think you should be able to use multiple powers provided you have the
+resources for it, and the player has a passive regen per turn amount, and dragging also becomes a method of restoring lachryma"). Each
+power **rests** its turns once cast (Puzzle & Dragons' cooldowns), so each is cast at most once a turn; the pool is the only other limit.
+Your turn opens with the pool's **regen** (`PVE.regen`, 8; said to the view as a `drink` with `from: 'regen'`, so the bead runs), on top of
+what your clears drink (`PVE.drink`). It was one a turn (`POWERS_A_TURN`, cut 2026-10-29) because three a turn and no regen made the
+searching stand-in win in 3 turns at any strength; with the pool as the limit, skill still shows (26.9).
 
 **All seven open from the first duel.** The world's level-1 powers are open from the start, and a duel you cannot win without them must not
 wait on a level. A domain's level widens its power: its cost falls to 0.6 of itself at 99 on the ramp's curve (`powerCost`; the room hands
@@ -944,7 +947,51 @@ A duel now runs 5 to 8 turns, at about 30 real s a turn with its casts and cut-i
 - **Where three rounds belong.** The marked hunts (Notorious Monsters, FFXII's Marks) and a PvP mode, where a best of three is the
   convention.
 
-### 26.8 Asked of the others
-- **Calissa and Wanda:** the turn's change as a cut-in of its own (whose turn, the board's half lit), beside the foe skills' cut-ins.
-- **Petra:** the session passes `dim: notAwakened(g.ledger)` and forwards `cleared` on `duel.power`.
-- **Espada:** Hurl's new line.
+### 26.9 Powers paid by the pool, a regen a turn (South, 2026-10-29)
+One power a turn is gone: as many as the pool pays for, each still resting its turns. Your turn opens with 8 to the pool (`PVE.regen`), and
+your clears still drink (26.2). Measured (`scratchpad duel/powers.mjs`, every power tried up to 7 a turn, 16 duels a row; P the share of
+turns a stand-in plays its best, the rest at random):
+
+| board | regen | P 1 (strong) | P 0.5 | P 0 (random) |
+| --- | --- | --- | --- | --- |
+| Lantern Wisp | 0 | 15 of 16, 4.4 turns | 7 of 16, 17.2 | |
+| Lantern Wisp | **8 (built)** | 16 of 16, 3.7 | 15 of 16, 10.6 | 0 of 16 |
+| Lantern Wisp | 15 | 16 of 16, 3.4 | 16 of 16, 8.8 | |
+| Strawman (7 colours) | 0 | 14 of 16, 7.2 | 7 of 16, 22.9 | |
+| Strawman | **8 (built)** | 16 of 16, 3.6 | 16 of 16, 6.7 | 2 of 16 |
+
+At one a turn the Wisp took a strong stand-in 5.3 turns and a half-skilled one won 8 of 16; now 3.7 and 15 of 16. One-sided in your favour,
+as South asked of the PvE duel, and still three times faster played well than played half well. With 0 regen a half-skilled player loses
+half its duels (the pool runs dry); 15 buys little over 8.
+
+**The Wisp's secret had to move.** With several powers a turn, a Transmute to Dread and a Miracle on it in the same turn took 24 fuel in
+2.7 turns, and 9 of 16 stand-ins playing only for the Line found it by chance. At 48 (built): played for, 13 of 16 in 3.6 turns (the Line
+4.2); found by chance 2 of 16. Fuel 36 was found by chance 5 of 16; 60 was slower than the Line (4.7).
+
+### 26.10 The secret's reward: a learned skill (South, 2026-10-29: "Learning special abilities? ... I'm all for learning abilities from enemies")
+An aberrant's secret is the faster way to win; what it pays is the aberrant's own skill, turned to your hand (`duel/learned.js`; Final
+Fantasy's Blue Magic, Mega Man's Weapon Get). A learned skill is a power with `learned` (powers.js): open only once learned, paid and
+rested as the seven are, its domain's experience earned the same way. Learned as every Art is (DESIGN.md 22): the feat, its secret
+found once (`duel.secret.<id>`); the count, 5 of that aberrant beaten at the Line (`duel.won.<kind>`, counted from this round). Practice
+teaches nothing (it counts nothing). Said once, on `duel.learn { power, from, by }` (progress/foeseen.js), in the log.
+- **Kindle (the Lantern Wisp's).** Every junk in a row or column of your half lights into an ember that cools into a gem at your turn's
+  end; 15, rests 3, Alteration. The Wisp burns your gems down; you burn its junk up. Manifest turns 3 cells at once; Kindle a line,
+  a turn later.
+- **Drops and looks, weighed.** A Soul Alchemy material from the secret would be a second faucet into a sink South has not tuned for
+  duels, and the drain already gives the creature's own drops: not yet. A cosmetic is the right size for a second reward (a lantern
+  pendant for the Pneuka Jar, opened by `duel.secret.snuff`: cosmetics.js's rule, "opened by the thing it pictures"); asked of Calissa.
+
+### 26.11 The second aberrant: the slip jelly (ABERRANTS.md 5)
+Built in the kernel and measured; every blotling (an aberrant slip jelly) brings it now. Its pieces: **slime**, its junk (`slime: true`,
+drawn as junk until Calissa's look). **Transmute** takes a slime cell: every slime on your half turns to gems of the colour you pick.
+**Spew** and **Harden**, its own foe skills. Its secret, **dissolve**.
+
+### 26.12 Asked of the others (handoffs in `docs/handoffs/<name>/`)
+- **Petra:** the session passes `learned: learnedOf(g.ledger)` beside `dim`; a lectern row for the jelly's board (`PRACTICE.jelly`);
+  Kindle armed as Herd is (a row or a column); the duel's view coloured by the ruleset's feeling for an aberrant with its own board (a
+  blotling's `grade` is its weather, its board the jelly's Gall).
+- **Calissa:** the trickle's motes aimed at the Lachrimeter, wherever it stands (South: they fly to its old place); each side of the
+  tsuitate shaped as its own (the Courier's half yours, the aberrant's its own: South); slime, Spew, Harden, the jelly's two deaths and
+  its Zone of Influence; Kindle's tile and cast; the turn's change (26.8's ask, standing); a lantern pendant if she likes it.
+- **Wanda:** Spew's and Harden's stings, the jelly's cue, the slime's sound when a Transmute turns it.
+- **Espada:** Spew's, Harden's and Kindle-yours' words, the jelly's secret lines, its two deaths, the learning line.

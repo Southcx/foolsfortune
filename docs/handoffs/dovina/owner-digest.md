@@ -3,22 +3,15 @@
 Dovina batches these after a major round (CLAUDE.md, "Questions for the owner"). Delete a question once it is answered and its answer
 is recorded where it binds.
 
-## The puzzle duel's powers (2026-10-28, PUZZLE-DUELS.md 24)
+South's answers of 2026-10-29 are recorded: the Wisp keeps 5 colours; powers as many as the pool pays for, with a regen (PUZZLE-DUELS.md
+26.9); the belt stays out of duels until the board's own Courier action returns; the Line stays as the brute-force win; the secret's
+reward is a learned skill (26.10); the slip jelly is the second aberrant (ABERRANTS.md 5).
 
-1. **The Lantern Wisp went from 4 colours to 5.** On 4, the powers won every duel in 3 turns whatever the skill (a Transmute leaves 3
-   colours, and 3 chain forever). On 5, with the powers a weak stand-in wins 15 of 16 in about 5 turns, without them 4 of 16. So the powers
-   are now what beat it, not a garnish. Keep, or would you rather the Wisp stay winnable bare-handed?
-2. **One power a turn.** Three a turn made dragging pointless (every duel the minimum length). Fine, or do you want a full-pool turn to
-   chain two casts as a payoff?
-3. **The two tool skills are off in the PvE duel** (code kept for a PvP mode): seven power tiles plus two skill tiles was nine big plays,
-   and they overlap (Paint and Transmute, Tune and Miracle, Read and Scan). The belt does nothing in a duel now. Parked idea: the worn
-   pair's domains make their powers cheaper. Want that, or leave the belt out of duels?
+## Puzzle duels (2026-10-29)
 
-## Aberrants as Elite fights (2026-10-28, ABERRANTS.md)
-
-1. **The Line stays as a way to win, beside the secret.** Secret-only means a player who never finds it can never win. So the
-   secret is the second door: about as long, its own ending. Or did you want the secret to be the only real kill and the Line a
-   lesser one (no reward, or the aberrant escapes)?
-2. **Reward for the secret?** You said no new reasons to fight aberrants yet, so it's the ending, an achievement and the knowledge.
-   Fine for now?
-3. **Which aberrant is next?** Each needs its creature aberrant in the world first: slip jelly, clapperjar, or something new?
+1. **A secret's material drop.** A Soul Alchemy material from the secret would be a second faucet into a sink not tuned for duels. Want
+   one (what size: a rare material once a game day?), or is the learned skill plus a cosmetic enough?
+2. **The slip jelly is harder than the Wisp for a middling player** (20 of 32 against 15 of 16), because its flood fills the half. Fine
+   for an Elite, or ease it (a taller board made the secret no faster than the Line)?
+3. **What should the jelly teach?** Its Spew turned around would throw junk at the aberrant's half, which the PvE duel keeps frozen.
+   Options: a learned skill that pushes the Line directly, or wait for a mode where its half plays.
