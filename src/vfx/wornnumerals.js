@@ -79,7 +79,7 @@ export function numeralDecals(items, { hand = 'running', ink = '#e8b84a', back =
   });
   const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.BufferAttribute(pos, 3)); geo.setAttribute('uv', new THREE.BufferAttribute(uv, 2)); geo.setIndex(idx);
   geo.computeBoundingSphere();
-  const mat = new THREE.MeshBasicMaterial({ name: `${name}-numerals`, map, transparent: true, alphaTest: 0.05, depthWrite: false, side: THREE.DoubleSide, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 });
+  const mat = new THREE.MeshBasicMaterial({ name: `${name}-numerals`, map, transparent: true, alphaTest: 0.05, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true, polygonOffset: true, polygonOffsetFactor: -4, polygonOffsetUnits: -4 }); // (one pass: a flat decal has no back to order, and a double-sided transparent material is two programs otherwise: the casebook's rule 93)
   const mesh = new THREE.Mesh(geo, mat); mesh.name = name; mesh.renderOrder = 2;
   mat.addEventListener('dispose', () => map.dispose()); // (the atlas goes with its material, however its holder lets go of it)
   mesh.userData.dispose = () => { geo.dispose(); mat.dispose(); };
