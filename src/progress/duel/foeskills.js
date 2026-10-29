@@ -28,7 +28,7 @@ import { SKILLS } from './skills.js';
 const gemsOf = (s) => { const out = []; s.board.each((p, x, y) => { if (p && s.board.mine(0, x) && hasTag(p, 'matches') && p.kind === 'gem') out.push([x, y]); }); return out; };
 
 export const FOE_SKILLS = {
-  hurl: { label: 'Hurl', line: 'Throws junk onto your half', // (a placeholder line, Espada's to word)
+  hurl: { label: 'Hurl', line: 'Throws junk onto your half', // (Espada's, 2026-10-29)
     fire: (s, M, K) => [{ type: 'foe.skill', side: 1, skill: 'hurl', n: M.n }, ...K.land(s, 0, M.n)] },
   petrify: { label: 'Petrify', line: 'Gems on your half turn to junk',
     fire: (s, M) => { const b = s.board, cells = gemsOf(s), at = [];

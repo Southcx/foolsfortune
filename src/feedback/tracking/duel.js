@@ -18,7 +18,7 @@ const skillLabel = (tool) => SKILLS[tool]?.label || tool;
 const SECRET_LINE = { snuff: { half: 'The Wisp\'s lantern gutters.', done: 'You starve the lantern of Dread. It gutters out, and the Lantern Wisp with it.' } }; // (Espada's, 2026-10-28)
 /** An aberrant's own line for its death on the Line (ABERRANTS.md 2, layer 7), by its kind; Espada's. */
 const LINE_DEATH = { wisp: 'Its lantern cracks and the flame scatters. You win the duel; the Lantern Wisp is mended.' };
-const FOE_LINE = { kindle: (e) => `The Lantern Wisp kindles ${e.n} of your Dread gems into embers.`, hurl: (e) => `The aberrant hurls ${e.n} pieces of junk onto your half.`, petrify: (e) => `The aberrant turns ${e.n} of your gems to junk.`, // (Espada's, 2026-10-28; no offset in the PvE duel, so no "less what your clears cancel")
+const FOE_LINE = { kindle: (e) => `The Lantern Wisp kindles ${e.n} of your Dread gems into embers.`, hurl: (e) => `The aberrant hurls ${e.n} ${e.n === 1 ? 'piece' : 'pieces'} of junk onto your half.`, petrify: (e) => `The aberrant turns ${e.n} of your gems to junk.`, // (Espada's, 2026-10-28; no offset in the PvE duel, so no "less what your clears cancel")
   seal: () => 'The aberrant seals a column of yours: you cannot drag in it on your next turn.', sap: () => 'The aberrant saps your skills: each loses half its charge.', reclaim: () => 'The aberrant pushes the Line back a column toward you.' };
 
 export function duelRules({ on: onAny, L: ledger, log }) {
