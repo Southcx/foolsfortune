@@ -109,7 +109,7 @@ function assay(g) {
   for (const [id, A] of Object.entries(APTITUDES)) {
     const R = all[id] || {}, row = document.createElement('div'); row.className = 'st-apt';
     const fmt = (v) => (v == null ? '' : Math.abs(v) >= 10 ? String(Math.round(v)) : (Math.round(v * 10) / 10).toString());
-    const good = (t) => (t == null || t === 0 ? '' : (t < 0) === (A.better === 'low') ? 'up' : 'dn');
+    const good = (t) => (t == null || t === 0 ? '' : t > 0 ? 'up' : 'dn'); // (readOf's trend is signed by the aptitude's better way already: positive is better)
     let val = '<span class="q">???</span>', line = '';
     if (R.shown) {
       val = `<b>${fmt(R.median)}</b><small>${A.unit}</small><br><small>best ${fmt(R.best)}${R.trend ? ` <span class="${good(R.trend)}">${good(R.trend) === 'up' ? '\u25B2' : '\u25BC'}</span>` : ''}</small>`;
