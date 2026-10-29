@@ -256,6 +256,7 @@ export class Weir {
     const k = Math.pow(simRand(), 1.7);
     const size = cm ?? sp.size[0] + (sp.size[1] - sp.size[0]) * k;
     const f = new Fish(pool, sp, size, new THREE.Vector3(0, 0, 0));
+    f.game = this.game; // (the weather where it swims sways its bite: fish.js interest)
     for (let i = 0; i < 10; i++) {
       f.pickWaypoint();
       if (f.wp.distanceTo(this.game.player.pos) > 6) break;

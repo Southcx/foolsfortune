@@ -28,7 +28,7 @@
 //   phaseAt(ms?) 'night'|'dawn'|'day'|'dusk'   lightAt(ms?) 0..1   clockAt(ms?) -> { day, weekday, hour, minute }   placeOf(pos) -> { place, exposure } | null   stageWx(island, ms?) -> { danger, lead }
 //   fillHours(place, fromMs, toMs) -> effective hours of refill   supplyMult(island, grade, ms?)
 //   game.weather = new Weather(game): .here(pos)  .at(place, ms?)  .sky(ms?, place?)  .forecast(place, hours?)  .read(by?) (the Dreamvane)  .update(dt)
-//     effects where a thing stands: .buildMult(type, pos)
+//     effects where a thing stands: .buildMult(type, pos)   .moodRest(pos) (where a mind rests, moved)   .biteMult(aspect, pos)   .senseMult(pos)
 // ---------------------------------------------------------------------------------------
 import { ECON } from './econ/table.js';
 import { DAY_MS, now as calNow } from '../core/calendar.js';
@@ -171,6 +171,14 @@ export class Weather {
   // ---------------------------------------------------------------- what the weather where a thing stands does
   /** A damage type's build-up, faster in the weather that feeds it (creatures.build, after the mind's take). */
   buildMult(type, pos) { const w = this.here(pos); return w.aspect && TYPE_OF[w.aspect] === type ? 1 + W.build * w.strength : 1; }
+
+  /** How far the weather where a creature stands moves where its mind rests (+ toward Prismatic, - toward Stoic): added to its rest in
+   *  its settle (creatures.js), so a mind drifts into the weather's mood at its own pace and back out of it. A roofed place keeps its mood. */
+  moodRest(pos) { const w = this.here(pos); return w.aspect ? (W.mood.by[w.aspect] || 0) * (w.strength || 0) : 0; }
+  /** How keenly a fish of feeling `aspect` bites here: 1 + strength in its own weather (its interest in a lure, fish.js), else 1. */
+  biteMult(aspect, pos) { const w = this.here(pos); return aspect && w.aspect === aspect ? 1 + W.bite * (w.strength || 0) : 1; }
+  /** How far a sense of Lachryma hears here: `sense` times as far at night or in a Well's dark (signatures.js range), else 1. */
+  senseMult(pos) { return phaseAt() === 'night' || this.game.well?.active ? W.sense : 1; }
 
   /** Twice a second: say when the weather where the Courier stands, or the day's phase, has turned (for tracking.js, the sound, the sky). */
   update(dt) {

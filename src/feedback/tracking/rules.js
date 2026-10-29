@@ -58,6 +58,7 @@ import { stunRules } from './stun.js';
 import { sightRules } from './sight.js';
 import { goalsRules } from './goals.js';
 import { aptitudeRules } from './aptitude.js';
+import { classArtsRules } from './classarts.js';
 import { worldShellRules } from './worldshells.js';
 import { saveRules } from './save.js';
 import { roomHelpRules } from './roomhelp.js';
@@ -137,6 +138,7 @@ export function areaRules(ctx) {
   sightRules(ctx); // (the Sight's waypoint, set and cleared)
   goalsRules(ctx); // (the game day's three goals: progress/goals.js)
   aptitudeRules(ctx); // (the Assay's readings, said on /assay: progress/aptitude.js)
+  classArtsRules(ctx); // (a class's arts opened, worn and asked for: progress/classarts.js)
   godRules(ctx);
   openSeaRules(ctx); // (the open sea: docs/plans/OPEN-SEA.md)
   seaSerpentRules(ctx); // (the sea serpent and the hull at the free helm: world/opensea/seafight.js)

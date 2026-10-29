@@ -23,13 +23,9 @@ Status: **(a)** waits on South, **(b)** decided, not built, **(c)** not designed
 
 ## 2. The folds (ranked by how much of the long loop rests on them)
 
-1. **What a class gives: 76 arts (b, its mapping a).**
-   - The fold: **the two arts of a class are two arts that already exist.** That pool is the 42 Movement and God Arts, the 15
-     knacks, the arts' variants and the 21 pair specials: more than 76.
-   - A class opens each of its two by a third way: the art's own achievement, done while you read as that class (CLASSES.md 6.3, ruled).
-   - It accents them while worn: a modifier on the art's numbers, its source the class on the board.
-   - The cost is one table (`CLASS_ARTS`, 38 rows of two ids) and one accent number per kind of art. No art is built twice.
-   - Prior art: Final Fantasy Tactics, where an ability is learned in a job and kept.
+1. **What a class gives: 76 arts. Ruled and its rules built** (South, 2026-10-29: "We need new arts for the classes").
+   - 76 new arts, an action and a reaction a class, opened by playing as it, kept in every class, accented in its own:
+     `progress/classarts.js`, CLASS-ARTS.md. Built in play a wave at a time (the Fool and the four Knights first), Petra's runtime.
 2. **The 21 pair specials (b).**
    - The fold: **a pair's special is its sub's lent verb fed through its main's own verb**, so one press does both. For example, the
      psygun and the Veritome: the Flash marks, and every chamber homes on the mark.
@@ -46,23 +42,18 @@ Status: **(a)** waits on South, **(b)** decided, not built, **(c)** not designed
      - inhibition: the rail's plain or outlined shot, on `rail.hit`;
      - risk: the Lockheart's wheel, cashed or pushed;
      - reading others: Nebula Bluff's tells called;
- 4. **Why come back once a place is done (a).**
-   - The sea pays 0.1 to 0.2x once charted.
-   - The fold: the game day already turns over the herds (migrations), the goals and the first today. Add **the lairs restocked each
-     game day**, the same for everyone as the migrations are. The sea beasts, their fights and their pay are all built.
-   - Dovina's pick over a bounty board, which South parked.
+4. **Why come back once a place is done. Ruled** (South, 2026-10-29: "go with your intuition on the open sea").
+   - The respawning hunt, already built: the lairs restock each game day and the dock posts one with a bounty. Measured at 0.40x,
+     0.72x and 1.30x the aim by skill (OPEN-SEA.md 9.1). No bounty board.
    - The areas already have their checklists on the map. Their half and whole achievements are Dovina's, next.
 5. **Pace, measured (c).**
    - The fold: the ledger already writes the play time of every first (`stats.first`). Time to the first art, the first fish, the
      first curio and the first gold is a read of it.
    - A script reads a playtest's ledger (Dovina), and the field report carries it from a phone (Petra's).
    - No new event is needed.
-6. **The weather's readers (c, cut for lack of one).**
-   - The fold, one reader each from modules that exist:
-     - the fish bite more in their own feeling's weather (`angling` reads `weather.here`);
-     - signatures reach further at night (`signatures.js` reads `phaseAt`);
-     - a creature's mental state drifts with the weather's feeling (`courierMind` has the rule, a creature's mind has the slot).
-   - Owners: Petra and Calissa, asked once South says go.
+6. **The weather's readers. Ruled back** (South, 2026-10-29: "bring back the weather effects").
+   - The rules are in `progress/weather.js` (`moodRest`, `biteMult`, `senseMult`; WEATHER.md). Each is a one-line read in its
+     owner's module: creatures' settle, a fish's interest in a lure, a signature's range (asked of Petra).
 7. **Numbers with no reason yet (c).**
    - These are: the prismatic 12% at epic pity, the near-miss rates, the chest ranges, the coffin fills, the standing thresholds.
    - The fold: `scripts/economy.mjs` already prices a source against the aim. Each number gets its line there and a reason in
@@ -77,7 +68,7 @@ Status: **(a)** waits on South, **(b)** decided, not built, **(c)** not designed
 
 ## 3. Waiting on South (batched; the digest has them)
 
-- The STORY save: when it opens, and its spine (DESIGN.md 8.4).
+- The STORY save: tabled for a long while (South, 2026-10-29), while each system is worked to its ceiling in DEBUG.
 - Querent's and Entropy Tactics' open questions (CASINO.md 3.8, ENTROPY-TACTICS.md 5).
 - Parked by South until the bestiary's overhaul: the Veritome variants, and minds reading grain.
 
@@ -85,6 +76,6 @@ Status: **(a)** waits on South, **(b)** decided, not built, **(c)** not designed
 
 | who | what |
 | --- | --- |
-| Petra | `fresh` on `track.validate`; the save section `aptitude` approved; the pair specials, a wave of four at a time; the Touchstone room |
+| Petra | the class arts in play, a wave at a time, and the input action `art`; the weather's three reads; the pair specials, a wave of four at a time; the Touchstone room |
 | Calissa | the Assay window from `game.aptitude.all()` (??? to five readings, the number to twenty, then the curve) |
 | Espada | the Assay's words (`/assay`'s lines are placeholders) |

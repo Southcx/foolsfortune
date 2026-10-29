@@ -60,6 +60,23 @@ export const MOVES = {
     risingCut: { power: 2.3, time: 0.9, cost: 6, status: 'airborne', parent: 'quickSlash', unlock: either(hits('quickSlash', 60), uses('move.launch', 10)) },
     guardCrush: { power: 2.8, time: 1.11, cost: 6, status: 'stagger', parent: 'stinger', unlock: either(uses('cut.stinger', 30), uses('sond.effect.guardBreak', 1)) },
     backstepSlash: { power: 2.5, time: 1.0, cost: 5, parent: 'c3', unlock: either(hits('c3', 30), uses('parry.sondelass', 10)) }, // (out of reach and back in: ten parries with the Sondelass know when to leave)
+    // THE CMU PASS (Calissa's, 2026-10-29: 7 normals and 6 specials of kicks and off-hand blows; MELEE-LOADOUT-EARNING.md 2): the same
+    // two ways as the rows above, and a third the plan gives every CMU row, the unarmed kick's blows (`kick.hit`: 60 a normal, 150 a
+    // special), since feet trained bare carry over to the blade. A special's parent is itself earned, so its count doubles (60).
+    // Calissa's measured `stats` (every normal -2.8..-0.6% of the string's 1.945 a second; every special from rest -4.3..+3.8%).
+    frontKick: { power: 1.45, time: 0.58, parent: 'c2', unlock: either(hits('c2', 60), finishes('c2', 5), uses('kick.hit', 60)) },
+    roundKick: { power: 1.35, time: 0.52, parent: 'c1', unlock: either(hits('c1', 60), finishes('c1', 5), uses('sond.effect.knock', 5), uses('kick.hit', 60)) },
+    sideKick: { power: 1.3, time: 0.5, parent: 'c4', unlock: either(hits('c4', 60), finishes('c4', 5), uses('sond.effect.knock', 5), uses('kick.hit', 60)) },
+    kneeStrike: { power: 1.35, time: 0.52, parent: 'c3', unlock: either(hits('c3', 60), finishes('c3', 5), uses('kick.hit', 60)) },
+    lowKick: { power: 1.6, time: 0.63, status: 'trip', parent: 'c3', unlock: either(hits('c3', 60), finishes('c3', 5), uses('sond.effect.trip', 3), uses('kick.hit', 60)) },
+    straightPunch: { power: 1.35, time: 0.52, parent: 'c3', unlock: either(hits('c3', 60), finishes('c3', 5), uses('kick.hit', 60)) },
+    hookPunch: { power: 1.1, time: 0.43, parent: 'c2', unlock: either(hits('c2', 60), finishes('c2', 5), uses('kick.hit', 60)) }, // (never `hook`: the Sondelass's hook is its form)
+    flyingKick: { power: 3.6, time: 1.45, cost: 7, parent: 'pushKick', unlock: either(hits('pushKick', 60), uses('sond.effect.knock', 10), uses('kick.hit', 150)) },
+    tornadoKick: { power: 3.6, time: 1.45, cost: 8, parent: 'roundKick', unlock: either(hits('roundKick', 60), best('sond.struck.best', 3), uses('kick.hit', 150)) }, // (all round: three struck by one blow)
+    spinHeelKick: { power: 3.8, time: 1.55, cost: 7, parent: 'sideKick', unlock: either(hits('sideKick', 60), finishes('sideKick', 5), uses('kick.hit', 150)) },
+    risingKick: { power: 2.7, time: 1.1, cost: 6, status: 'airborne', parent: 'frontKick', unlock: either(hits('frontKick', 60), uses('move.launch', 10), uses('kick.hit', 150)) },
+    flurry: { power: 1.0, hits: 3, time: 1.05, cost: 5, status: 'stagger', parent: 'bodyBlow', unlock: either(hits('bodyBlow', 60), finishes('bodyBlow', 5), uses('kick.hit', 150)) },
+    breakKick: { power: 2.7, time: 1.18, cost: 6, status: 'stagger', parent: 'guardBreak', unlock: either(hits('guardBreak', 60), uses('sond.effect.guardBreak', 3), uses('kick.hit', 150)) },
     special: { id: 'tidecutter', power: 7, time: 2.63, cost: 12, unlock: uses('cut.hit', 500) },             // (a line of slip: the Sondelass mastered; its clip's 2.63 real s, the strike at 1.80)
     // THE PAID CUT (working name; Calissa's price, the owner's to tune in play, 2026-10-10): in a blow's recovery, once its strike is
     // past, a press pays `cost` and the next move begins at once (tools/moveset.js). The reasoning: a fresh pool is 100 (core/config.js

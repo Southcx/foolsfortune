@@ -45,8 +45,7 @@ brush's wash) and **Alteration** (only the brush's inscriptions and the garden's
   - A race finished is Ouranurgy, in acts by its time; its quality by medal (gold 1, silver 0.7, bronze 0.45; with no medal, by place
     among the rivals). Practice, the test lap and a validate run pay nothing here.
   - A trick combo banked is Psychokinesis, by its multiplier.
-  - A made track validated is Manifestation. It should pay only a new geometry (`fresh`: **Petra's to add** to `track.validate`; until
-    then every validate pays its 4 acts).
+  - A made track validated is Manifestation. It pays only a new geometry (`fresh` on `track.validate`, Petra's, main 5bb173cd).
   - A haunt is Possession, in acts by its time; held is its masterful end.
 - **The open sea:**
   - Salvage hauled up is Psychokinesis, by tier.
@@ -95,5 +94,4 @@ base, so adding sources moved each scale a little. Divination's ordinary sources
 
 ## 4. Asks
 
-- **Petra:** `fresh` on `track.validate` (true when the geometry's hash has never been validated before).
 - **Espada:** none. These are rules; the log says nothing new (a level is said by `psyche`'s own rule).

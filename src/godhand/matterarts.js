@@ -19,7 +19,6 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { T } from '../core/config.js';
-import { sfx } from '../audio/sfx.js';
 import { GOD_POWERS, rampOf } from '../progress/godpowers.js';
 import { COLOR } from '../progress/weather.js';
 import { matterMaterial, lumpyBall, tickMatterLook } from '../vfx/godhand/matterlook.js';
@@ -119,7 +118,6 @@ export class MatterArts {
     if (L.id === 'carve' && L.b && L.a.distanceTo(L.b) > 0.8) {
       const r = F.carve(L.a.x, L.a.z, L.b.x, L.b.z, rampOf('carve', 'w', g) ?? VERBS.carve.w, rampOf('carve', 'depth', g) ?? VERBS.carve.depth);
       L.moved = r.moved;
-      sfx.thump();
     }
     if (L.id === 'sculpt') { this.sculpt(L); return; }
     if (L.moved <= 1e-3) return;
@@ -141,7 +139,6 @@ export class MatterArts {
     if (made > 0 && !g.lachryma.spend(made * this.madeCost('sculpt'), 'god')) { g.log.say('warn', 'Not enough Lachryma, or matter in hand, to raise that.', { key: 'sculpt.pay', throttle: 2 }); return; }
     if (fromHeld > 0) { const H = this.held, k = fromHeld / this.carried; H.water -= H.water * k; H.loose -= H.loose * k; H.firm -= H.firm * k; }
     const r = g.creations.raise(shape, a, b, opts);
-    sfx.thump();
     g.events?.emit('god.sculpt', { shape, volume: +r.volume.toFixed(2), moved: +fromHeld.toFixed(2), made: +made.toFixed(2), by: 'courier' });
   }
 

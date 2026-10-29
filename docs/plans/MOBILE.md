@@ -113,7 +113,7 @@ the middle: the duel's phone screen), the god hand, the Spirit Garden (the art b
 | --- | --- | --- | --- | --- |
 | **the middle** | x 20..80 %, y 20..80 % of the safe area | the world; the look area's drag | **no tile, no instrument, no words of ours.** World marks and the overlay's tags on a thing (the lock-on's, a creature's) only | x 179..717, y 83..331 |
 | **top left** | the corner, flush (the gutter, 8 px) | the windows: the top bar (MENU, LOG, PAUSE) | 3, at most 4 | x 8..156, y 8..52 |
-| **the far shelf** | the top band, right of the top bar, left of the Sight | what is chosen, not struck: a tool's selectors, the belt (DRAW / STOW, LEND, SWAP), SKIFF, the helm's slower verbs | one row of 44 px tiles; as many as fit (10 here), the fold past 8 | x 164..743, y 8..52 |
+| **the far shelf** | the top band, right of the top bar, left of the Sight | what is chosen, not struck: a tool's selectors, the belt (DRAW / STOW, LEND, SWAP), SKIFF, the helm's slower verbs | one row of 44 px tiles, as many as the room holds (Calissa measured 13 at 896 x 414 with the top bar folded) | x 164..743, y 8..52 |
 | **the ticker** | under the top bar and the far shelf | the log's newest line | **one line** (two only while the far shelf is empty); a tap opens the log | x 8..743, y 60..80 |
 | **top right** | the corner | the Sight and its place plate | the instrument; no tile | x 751..888, y 8..150 |
 | **the near shelf** | the right band, between the Sight and the cluster | the context's next verbs, where the thumb reaches without crossing the middle | 3 tiles of 52 px in a row | x 720..888, y 196..248 |
@@ -133,8 +133,8 @@ holds what is chosen between fights (a chamber, a form, a lure, the belt). Nothi
 1. **A selector becomes one tile.** A row of picks (the psygun's chambers, the Sondelass's forms) folds into one tile that shows the pick:
    a tap steps to the next, a long press (0.42 s, section 4's rule 4) opens the whole row as a **radial** round the finger, let go on one to pick
    it. The Crucibelle's five note pads stay five (they are its playing, not a pick).
-2. **The far shelf's tail folds into ⋯.** Past 8 tiles (or the room, whichever is less), the last ones fold into a **⋯ tile** at the
-   row's end, in this order of who goes first: SKIFF, SWAP, LEND, then the tool's rarer verbs (BREATH, FAN). DRAW / STOW and the
+2. **The far shelf's tail folds into ⋯.** Past the room, the last ones fold into a **⋯ tile** at the
+   row's end (then 44 px is the floor, never smaller; last, the pair's words shrink to glyphs: Calissa, 2026-10-29), in this order of who goes first: SKIFF, SWAP, LEND, then the tool's rarer verbs (BREATH, FAN). DRAW / STOW and the
    pick never fold. A tap on ⋯ drops the folded tiles as a second row under it; a tap elsewhere or a press of one closes it (the one time
    a row of ours may stand in the middle: it is a menu the player opened, and it shuts itself).
 3. **The near shelf takes three, by need.** Past three, the core movement's verbs win (JUMP, DASH, CROUCH), and the rest go to the far shelf.

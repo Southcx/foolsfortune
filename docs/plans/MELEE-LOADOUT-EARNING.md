@@ -91,6 +91,18 @@ Every move in `SONDELASS_MOVES` names a **parent** (the move it grows from) and 
 | Rising Cut (special) | Quick Slash | Quick Slash landed 60 | 10 launches |
 | Guard Crush (special) | the stinger | 30 stingers | one guard broken |
 | Backstep Slash (special) | c3 | c3 landed 30 | 10 parries with the Sondelass |
+| Front Kick, Knee, Straight | c2, c3, c3 | its parent landed 60, or 60 unarmed kicks | its parent finishes 5 |
+| Roundhouse, Side Kick | c1, c4 | its parent landed 60, or 60 unarmed kicks | its parent finishes 5, or 5 knocked away |
+| Low Kick | c3 | c3 landed 60, or 60 unarmed kicks | c3 finishes 5, or 3 trips |
+| Hook Punch (`hookPunch`) | c2 | c2 landed 60, or 60 unarmed kicks | c2 finishes 5 |
+| Flying Kick (special) | Push Kick | Push Kick landed 60, or 150 unarmed kicks | 10 knocked away |
+| Tornado Kick (special) | Roundhouse | Roundhouse landed 60, or 150 unarmed kicks | three struck by one blow |
+| Spinning Heel (special) | Side Kick | Side Kick landed 60, or 150 unarmed kicks | Side Kick finishes 5 |
+| Rising Kick (special) | Front Kick | Front Kick landed 60, or 150 unarmed kicks | 10 launches |
+| Flurry (special) | Body Blow | Body Blow landed 60, or 150 unarmed kicks | Body Blow finishes 5 |
+| Breaking Kick (special) | Guard Break | Guard Break landed 60, or 150 unarmed kicks | 3 guards broken |
+
+The CMU rows (Calissa's pass, 2026-10-29) take her parents as she picked them. A special's parent is itself earned, so its count is 60.
 
 - The guard-broken, trip, knock-away and struck-by-one feats read `move.blow`'s `effect` and `struck` (rules in
   `feedback/tracking/moves.js`); Calissa adds the two fields at the blow. Until then those rows open by their count way only.

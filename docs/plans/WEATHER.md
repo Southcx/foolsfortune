@@ -29,10 +29,14 @@ The owner's ask (2026-10-05): a day and night, and **emotional weather**, five c
 
 ## Open
 
-- Readers not yet wired (Petra's): `buildMult` in the creatures. Three more were designed and never read, so they were cut in the deep
-  clean (2026-10-19); rebuild them from these numbers when a reader comes: a creature's mental state drifting in the weather (0.05 states
-  a real second at full strength, by feeling: mirth -0.5, wonder -0.2, desire 0, grief 0.25, dread 0.5, gall 0.4, fury 0.6; + toward
-  Prismatic), the fish of the weather's feeling biting 1 + strength times as often, and signatures reading 1.5 times as far at night and
-  in a Well's dark.
+- **The weather's readers, back** (South, 2026-10-29: "bring back the weather effects"; numbers `ECON.weather.mood`, `bite`, `sense`; rules
+  in `progress/weather.js`, each to be read by its owner's module):
+  - `moodRest(pos)`: the weather moves where a creature's mind rests (states at full strength: mirth -0.5, wonder -0.2, desire 0, grief
+    +0.25, dread +0.5, gall +0.4, fury +0.6; + toward Prismatic). The mind drifts there at its own settle (0.05 states a real second),
+    so a creature caught in the hail grows wild and calms again under the fox's wedding. Read in `creatures.js`'s settle (Petra's).
+  - `biteMult(aspect, pos)`: a fish of the weather's feeling bites 1 + strength times as keenly (its interest in a lure, `fish.js`).
+  - `senseMult(pos)`: every signature heard 1.5 times as far at night and in a Well's dark (`signatures.js` range: the Dreamvane's
+    dowse, the Lockheart's drink, the Reveal song).
+  - `buildMult` in the creatures (a damage type's build-up in its weather), as before.
 - A rare weather (a dread fog over Margarite, hidden achievement sk4) counting toward Luck.
 - Later, not now: the player's acts sway an island's mood. Wanda: each weather's sound; Espada: whose mood it is, the names.
