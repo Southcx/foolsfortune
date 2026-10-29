@@ -109,7 +109,7 @@ const JAR = {
   'pendant.die': row(did('palm.sides', 20), 'Grow your palm die to a d20.'),
   'pendant.coin': row(did('casino.chips.cashed', 1000), 'Cash 1,000 chips back at Raku\'s cage.'),
   'pendant.gourd': row(did('shrine.storage', 10), 'Open your storage at a Shrine 10 times.'),
-  'pendant.lantern': row(did('duel.secret.snuff'), 'An aberrant Lantern Wisp keeps it.'), // (its secret found: ABERRANTS.md 8; the hint never says the secret, ABERRANTS.md 4; words Espada's to word)
+  'pendant.lantern': row(did('duel.secret.snuff'), 'An aberrant Lantern Wisp keeps it, and gives it up only one way.'), // (its secret found: ABERRANTS.md 8; the hint never says the secret, ABERRANTS.md 4; Espada's, 2026-10-29)
   'burst.petals': row(did('garden.bloom'), 'Tend a planetoid into bloom.'),
   'burst.sparks': row(did('firing', 2), 'Pass a tribulation (your second firing).'),
   'burst.bubbles': row(did('alchemy.true'), 'Fire a true firing at the Athanor.'),
