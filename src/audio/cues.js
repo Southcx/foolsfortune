@@ -13,6 +13,7 @@ import { installAudioHealth } from './health.js';
 import { gardenState } from './garden.js';
 import { today } from '../core/calendar.js';
 import { feelingOfKind } from './mycelium.js';
+import { seaEar } from './seasafari.js';
 
 const CYL = { autoAt: 0 }; // (when the cylinder last turned itself)
 const FLIP = { day: -1 }; // (the game day the Box was last turned over in: the day's card once a game day)
@@ -335,8 +336,15 @@ const RULES = {
   'goal.done': (s, e) => s.goalDone?.(e.slot ?? 0, !!e.all), // (a goal of the game day's three done; all three, the Answer whole: audio/ui.js)
   'goals.set': (s) => s.goalsSet?.(),
   // the open sea (audio/opensea.js): the helm's wash and wind from boarding to mooring, and the voyage's moments
-  'opensea.board': (s, e, g) => { s.openSeaBoard?.(); s.openSeaHelmStart?.(() => (g.opensea?.sailing ? { k: Math.abs(g.opensea.helm?.speed || 0) / 15 } : null)); },
+  'opensea.board': (s, e, g) => { s.openSeaBoard?.(); s.openSeaHelmStart?.(() => (g.opensea?.sailing ? { k: Math.abs(g.opensea.helm?.speed || 0) / 15, ...seaEar(g), cam: g.camera } : null)); },
   'opensea.moor': (s) => { s.openSeaHelmEnd?.(); s.openSeaMoor?.(); },
+  // the safari's catches (audio/seasafari.js): a herd recorded, a habit, a beast sunk, a bottle, salvage, a square done
+  'sea.herd': (s, e) => e.by === 'courier' && s.seaHerd?.(),
+  'sea.habit': (s, e) => e.by === 'courier' && s.seaHabit?.(!!e.first),
+  'seabeast.down': (s, e) => s.seaBeastDown?.(e.id),
+  'sea.bottle': (s) => s.seaBottle?.(),
+  'sea.salvage': (s, e) => s.seaSalvage?.(e.tier),
+  'sea.square.done': (s, e) => e.by === 'courier' && s.seaSquareDone?.(),
   'sea.chart': (s) => s.openSeaCharted?.(),
   'sea.find': (s, e) => s.openSeaFind?.(e.tier ?? 1),
   'sea.fix': (s, e) => s.openSeaFix?.(e.ok !== false),
