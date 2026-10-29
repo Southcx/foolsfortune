@@ -400,6 +400,12 @@ const RULES = {
   'rail.boss.fall': (s) => s.railBossFall?.(),
   'rail.end': (s, e) => { s.shoalLock?.(false); if (e.by === 'courier') s.railBossFall?.(); }, // (a set piece's boss beaten; throttled, so rail.boss.fall and this sound once; a held lock let go)
   // the shoal's silhouette (Petra's events, named 2026-10-29; audio/shoalsilhouette.js): its forming, the eye opening, locked, shattered
+  // the class arts (Petra's wave 1, courier/classarts/; audio/classarts.js): the worn action, the reaction's moment, an art ending
+  'art.use': (s, e) => e.by === 'courier' && s.artUse?.(e.art, !!e.accented),
+  'art.fire': (s, e) => e.by === 'courier' && s.artFire?.(e.art),
+  'art.end': (s, e) => e.by === 'courier' && s.artEnd?.(e.art),
+  'vessel.ward': (s) => s.artWard?.(),
+  'move.waterwalk': (s, e) => e.by === 'courier' && s.artWaterwalk?.(),
   'rail.shoal.form': (s, e) => s.shoalForm?.(e.k),
   'rail.shoal.eye': (s, e) => s.shoalEye?.(e.open),
   'rail.shoal.lock': (s, e) => s.shoalLock?.(!!e.on, e.k),
