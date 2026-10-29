@@ -75,7 +75,8 @@ export class PuzzleDuelSounds {
       case 'foe.skill': { if (performance.now() / 1000 - (this._duelDesperateAt ?? -1e9) < CUT_IN.burst) return this.duelFoeSkill(e.skill, e.n); // (the limit break's burst: no cut-in, its cast at once)
         const at = this.duelCutIn?.(e.skill) ?? 0; setTimeout(() => this.duelFoeSkill(e.skill, e.n), (at + CUT_IN.gesture) * 1000); return; } // (the view plays it at its cut-in's start: the sting, then the skill's own sound as its cast begins after the cut-in, audio/duelcasts.js)
       case 'foe.desperate': this._duelDesperateAt = performance.now() / 1000; return this.duelCutIn?.('desperate'); // (the limit break's cut-in)
-      case 'power': return this.duelPower?.(e.domain, e); // (a duel power cast: audio/duelcasts.js)
+      case 'power': return e.power === 'absorb' ? null : this.duelPower?.(e.domain, e); // (a duel power cast: audio/duelcasts.js; a learned skill sounds as its aberrant's own, on its own event)
+      case 'absorb': return this.duelAbsorb?.(e.cells?.length); // (the slip jelly's Absorb, learned: audio/duelsecrets.js)
       case 'foe.soon': return this.duelFoeLastTick(); // (a foe skill on its last count, told in the foe's turn: it fires on its next)
       case 'foe.stagger': return this.duelFoeStagger();
       case 'secret.step': return e.id === 'snuff' ? this.duelLantern?.(e.k, e.n) : null; // (an aberrant's secret, heard as its own thing: audio/duelsecrets.js)

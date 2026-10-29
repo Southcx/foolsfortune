@@ -108,7 +108,8 @@ const RULES = {
   'duel.slip': (s) => s.duelPullEnd?.(false),
   'duel.seen': (s) => s.duelSeen?.(), // (a foe skill learned: audio/duelcasts.js)
   'duel.learn': (s, e) => (e.by === 'courier' ? s.duelLearn?.() : null), // (a skill learned from an aberrant: audio/duelsecrets.js)
-  'duel.open': (s) => { s.duelPullEnd?.(true); s.duelOpen?.(); },
+  'duel.open': (s, e, g) => { s.duelPullEnd?.(true); s.duelOpen?.(); if (e.shiny || g.duel?.foe?.shiny) s.duelShiny?.(); }, // (a shiny aberrant's sparkle: audio/duelsecrets.js)
+  'duel.drop': (s, e) => (e.by === 'courier' ? s.duelDrop?.(e.items?.length, e.how === 'secret' || !!e.shiny) : null),
   'sea.echo': (s, e, g) => s.stoneAnswered?.(g.crucibelle?.grid?.().root ?? 63), // (the open sea's echo puzzle answered: audio/crystal.js)
   // the chatroom (co-op as our chatroom): a division's motif as its line arrives, a guest's arrival and leaving (audio/ui.js)
   'party.say': (s, e) => s.chatMotif?.(e.sibling || 'guest'),

@@ -169,6 +169,10 @@ their Clayese scales; the System's skill and achievement jingles (the chime and 
   pile to glass: the squelch opening and the colour's note rippled up the pile, relief (-18). Half its pile: the sag, a beating slide down and
   a groan; done: it falls apart as the rainstick, its chime falling, a settle (-15), no fanfare. `duel.learn` (a skill learned from an
   aberrant): the item-get, the Answer climbed on brass and a bell (-18).
+- **A shiny aberrant, the drop, Absorb** (`audio/duelsecrets.js`; Dovina's ABERRANTS.md 8 to 10): a shiny one (one in ten) sparkles as its duel opens,
+  a star's glint run up the key twice (Pokemon's sparkle; -17 dB). A won duel's materials (`duel.drop`) chime one a material, a held major
+  chord and a shimmer under them when the win was a secret's or a shiny's (-20 plain, -16 rich). Absorb, the slip jelly's skill learned, is
+  its own gulp: the junk drunk down and the pool's fill rising (-18), in place of Possession's whistle.
 - **The turn's sting** (`duelTurnCutIn`, `audio/duelcasts.js`; South via Dovina, 2026-10-29; Calissa's frame): the turn's change cut in as a foe
   skill is, smaller: a blade of air, a small slam on the band's word at 0.12 s, rung through its hold to 0.4 s (`TURN_CUT_IN`, Calissa's 14b3ab42), and yours the Answer's step up (I, then up a whole step) on bright
   brass with a glint over it, the aberrant's the Five falling in its dark (minor to diminished). Peaks -18.5 and -17 dB, 3 to 5 under a

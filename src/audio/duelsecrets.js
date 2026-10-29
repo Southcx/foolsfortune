@@ -20,11 +20,15 @@
 //   FALLING APART   duel.secret { id: 'dissolve' }: its body coming undone as the rainstick (jelly.js), its mind's little chime falling, a soft
 //                   settle; no fanfare, as the snuff
 // A SKILL LEARNED   duel.learn (audio/cues.js): the item-get: the Answer climbed fast on brass and a bell on top (duelLearn)
+// ABSORB            power { power: 'absorb' } (the slip jelly's learned skill): a gulp, the junk drunk down, a fill rising (duelAbsorb)
+// A SHINY ABERRANT  duel.open with the foe's `shiny` (audio/cues.js): Pokemon's sparkle in the house's voice, a star's glint run up the key (duelShiny)
+// THE DROP          duel.drop { how, shiny, items }: a chime a material, the richer for a secret's win or a shiny (duelDrop)
 // Prior art: Hollow Knight's lantern and Grimm's flame (a light as a voice), Dark Souls' bonfire kindling, the foley of a candle snuffer;
 // the will-o'-the-wisp as Ghibli scores it (a flute off the beat leading you astray: music/duel.js's fen colour).
 //
 //   sfx.duelLantern(k, n)   sfx.duelLanternHalf()   sfx.duelKindle(n)   sfx.duelSnuff()
 //   sfx.duelSpew(n)   sfx.duelSlimeLand(n, at)   sfx.duelHarden(n)   sfx.duelSlimeTurn(colour, n)   sfx.duelSag()   sfx.duelDissolve()   sfx.duelLearn()
+//   sfx.duelAbsorb(n)   sfx.duelShiny()   sfx.duelDrop(n, rich)
 // ---------------------------------------------------------------------------------------
 import { duelRoot, FEELING_STEP } from './puzzleduel.js';
 
@@ -138,5 +142,30 @@ export class DuelSecretSounds {
     [0, 2, 4, 7, 9].forEach((st, i) => { const f = hz(r + st); this.tone(t + i * 0.08, 0.2, { f0: f, type: 'sawtooth', gain: 0.03, dest: d }); this.tone(t + i * 0.08, 0.2, { f0: f * 2, type: 'triangle', gain: 0.02, dest: d }); });
     for (const st of [0, 4, 7, 12]) this.tone(t + 0.45, 0.9, { f0: hz(r + 12 + st), type: 'sawtooth', gain: 0.022, dest: d }); // (the chord held)
     [1, 2.76, 5.4].forEach((q, j) => this.tone(t + 0.45, 1.6, { f0: hz(r + 24) * q, gain: [0.05, 0.015, 0.006][j], dest: d })); // (the bell)
+  }
+  /** Absorb: the jelly's own way turned yours: a wet gulp, the junk drunk down, the pool's fill rising after it. */
+  duelAbsorb(n = 4) {
+    if (!this.ok() || !this.allow('duelAbsorb', 2)) return;
+    const t = this.ctx.currentTime + 0.1, d = this.duelOut(0.3, 0.3, -0.3), r = duelRoot(this);
+    this.noise(t, 0.3, { type: 'bandpass', f0: 1800, f1: 300, q: 2, gain: 0.35, dest: d }); this.tone(t, 0.25, { f0: 420, f1: 140, gain: 0.35, dest: d }); // (the gulp)
+    this.tone(t + 0.22, 0.2, { f0: 110, f1: 70, gain: 0.4, dest: d }); // (swallowed)
+    const k = Math.min(6, Math.max(2, Math.ceil(n / 2))); for (let i = 0; i < k; i++) this.tone(t + 0.35 + i * 0.06, 0.2, { f0: hz(r + [0, 4, 7, 12, 16, 19][i]), type: 'triangle', gain: 0.04, dest: d }); // (the fill rising)
+  }
+  /** A shiny aberrant as its duel opens: a star's glint run up the key, high and bright, twice (Pokemon's sparkle). */
+  duelShiny() {
+    if (!this.ok() || !this.allow('duelShiny', 0.3)) return;
+    const t = this.ctx.currentTime + 0.4, d = this.out(0.6, 0.7, true), r = duelRoot(this) + 24;
+    for (const [at, pan] of [[0, 0.35], [0.32, 0.5]]) {
+      const p = this.ctx.createStereoPanner(); p.pan.value = pan; p.connect(d); setTimeout(() => p.disconnect(), 2500);
+      [0, 4, 7, 12, 16].forEach((st, i) => [1, 2.76].forEach((q, j) => this.tone(t + at + i * 0.035, 0.5, { f0: hz(r + st) * q, gain: j ? 0.008 : 0.035, dest: p })));
+      this.noise(t + at, 0.25, { type: 'highpass', f0: 7000, gain: 0.015, attack: 0.05, dest: p }); // (the glint)
+    }
+  }
+  /** What a won duel leaves: a chime a material (up to five), a chord under them when the win was rich (a secret's, a shiny's). */
+  duelDrop(n = 1, rich = false) {
+    if (!this.ok() || !this.allow('duelDrop', 1)) return;
+    const t = this.ctx.currentTime + 0.3, d = this.out(rich ? 0.9 : 0.7, 0.6, true), r = duelRoot(this) + 12, k = Math.min(5, Math.max(1, n | 0));
+    for (let i = 0; i < k; i++) [1, 2.76, 5.4].forEach((q, j) => this.tone(t + i * 0.12, 0.8, { f0: hz(r + [0, 4, 7, 9, 12][i]) * q, gain: [0.045, 0.012, 0.005][j], dest: d }));
+    if (rich) { const at = t + k * 0.12; for (const st of [0, 4, 7, 12, 16]) this.tone(at, 1.4, { f0: hz(r + st), gain: 0.02, dest: d }); this.noise(at, 0.8, { type: 'highpass', f0: 6500, gain: 0.04, attack: 0.1, dest: d }); }
   }
 }
