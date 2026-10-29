@@ -61,6 +61,7 @@ const CSS = `
 #pneuka .us .us-card:nth-child(odd){transform:rotate(-3deg)}
 #pneuka .us .us-card:nth-child(even){transform:rotate(3deg)}
 #pneuka .us .us-card b{font:700 15px/1 Georgia,serif;color:${L.plum}}
+#pneuka .us .us-card.today,#pneuka .us .today{box-shadow:0 0 0 2px #ffd36a,0 0 12px #ffd36a99;position:relative} #pneuka .us .today::after{content:"\\2605";position:absolute;top:-9px;left:50%;transform:translateX(-50%);color:#ffd36a;font-size:13px;text-shadow:0 0 6px #ffd36a} /* (the day's card: a gold rim and star, once pneuka/underside.js marks it .today) */
 #pneuka .us .us-card span{text-shadow:0 0 1px #2a140c,0 0 1px #2a140c,0 0 2px #2a140c} /* (the suit's word keylined dark: Swords' pale steel vanished on the cream) */
 #pneuka .us .us-card:hover{transform:translateY(-6px) rotate(0);z-index:2}
 #pneuka .us .us-card.held{transform:translateY(-14px) rotate(0);z-index:3;box-shadow:inset 0 0 0 2px ${L.plum},0 0 0 2px ${L.gold},0 0 16px rgba(255,211,106,.55),0 10px 18px rgba(0,0,0,.6)}
