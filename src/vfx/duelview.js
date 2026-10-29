@@ -330,6 +330,15 @@ export class DuelView {
     this.flee.odds(s);
   }
 
+  /** The Lachrimeter's bulb on the screen as a point in the board's frame, at the board's depth (the trickle's motes fly into it, juice.js),
+   *  or null while the tube is not shown. */
+  tubeAt(out) {
+    const cam = this.game.camera, b = this.game.lachrimeterTube?.bulbAt?.(this._bulb ||= {}); if (!this.isOpen || !cam || !b) return null;
+    _v.set(0, DUEL_VIEW.base, DUEL_VIEW.lip); this.frame.localToWorld(_v).project(cam);
+    _v.set(b.x / innerWidth * 2 - 1, 1 + 2 * b.y / innerHeight, _v.z).unproject(cam); // (the overlay's px, y up from the top: linkAt's inverse)
+    return this.frame.worldToLocal(out.copy(_v));
+  }
+
   /** The far end of the spiritual link while open: the board's Courier in its form, or the god hand over its half (overlay px, y up). */
   linkAt(out) {
     const cam = this.game.camera; if (!this.isOpen || !cam) return null;
