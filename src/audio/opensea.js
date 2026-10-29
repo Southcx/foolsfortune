@@ -1,7 +1,8 @@
 // ---------------------------------------------------------------------------------------
 // THE OPEN SEA'S SOUNDS (docs/plans/OPEN-SEA.md; the cue is music/opensea.js): the free helm under way, and the voyage's moments.
 //   THE HELM  a wash under the hull and wind in the rig, both rising with the ship's speed (helm.speed, 0 to full sail's 15 m/s), a
-//             timber creak now and then; started on boarding, ended on mooring or when the sea stops answering (read every 50 ms)
+//             timber creak now and then; started on boarding, ended on mooring or when the sea stops answering (read every 50 ms); in a
+//             front's square the squall's rain and far thunder, and the nearest herd's call (audio/seasafari.js: read `squall`, `herd`)
 //   THE CHART a square charted (a quill's scratch and a harp's three notes up), a find (a bell, fuller by its tier), a fix (the compass
 //             needle settling: two notes falling into place; a failed sky a dull wobble), a drift (a slow bend down: the current took you)
 //   THE PORT  docking (the rope's thud, the ship's bell twice), a report paid (a coin a find, up a step each), the tow (a low horn and
@@ -13,10 +14,12 @@
 // Prior art: The Legend of Zelda: The Wind Waker (the sail's wind, the treasure chart's chime, the ship's bell at a port); Sunless
 // Sea (the hull's creak and the engine's thrum as the only company); Sea of Thieves (the rope, the bell, the planks underfoot).
 //
-//   sfx.openSeaHelmStart(read) / .openSeaHelmEnd()   read() -> { k: 0..1 speed } or null (ends)
+//   sfx.openSeaHelmStart(read) / .openSeaHelmEnd()   read() -> { k: 0..1 speed, squall: 0..1, herd: { id, pos } | null, cam } or null (ends)
 //   sfx.openSeaCharted() .openSeaFind(tier) .openSeaFix(ok) .openSeaDrift() .openSeaDock() .openSeaReport(i, tier) .openSeaTow()
 //   sfx.openSeaFuelLow() .openSeaMoor() .openSeaBoard() .openSeaSecret() .openSeaPairHalf() .openSeaPair() .openSeaLineup() .openSeaStele()
 // ---------------------------------------------------------------------------------------
+
+import { CALL_REACH } from './seasafari.js';
 
 const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
 const HELM_TICKS = 72000; // (the helm's loop reads at most an hour of real time, then lets go: casebook 253)
@@ -31,8 +34,11 @@ export class OpenSeaSounds {
     const wind = c.createBufferSource(); wind.buffer = this.noiseBuf; wind.loop = true; wind.playbackRate.value = 0.7;
     const bp = c.createBiquadFilter(); bp.type = 'bandpass'; bp.Q.value = 2.5; bp.frequency.value = 900; const windG = c.createGain(); windG.gain.value = 0;
     wind.connect(bp).connect(windG).connect(g);
-    wash.start(); wind.start();
-    const H = this._helm = { g, wash, wind, lp, bp, washG, windG, gone: 0, ticks: 0, creak: c.currentTime + 3 };
+    const rain = c.createBufferSource(); rain.buffer = this.noiseBuf; rain.loop = true; rain.playbackRate.value = 1.3;
+    const rf = c.createBiquadFilter(); rf.type = 'bandpass'; rf.Q.value = 0.5; rf.frequency.value = 2400; const rainG = c.createGain(); rainG.gain.value = 0;
+    rain.connect(rf).connect(rainG).connect(g);
+    wash.start(); wind.start(); rain.start();
+    const H = this._helm = { g, wash, wind, rain, lp, bp, washG, windG, rainG, gone: 0, ticks: 0, creak: c.currentTime + 3, call: c.currentTime + 4, thunder: c.currentTime + 8 };
     H.timer = setInterval(() => {
       const r = read(), t = c.currentTime;
       if (++H.ticks > HELM_TICKS) { this.openSeaHelmEnd(); return; }
@@ -43,12 +49,16 @@ export class OpenSeaSounds {
       washG.gain.setTargetAtTime(0.05 + 0.25 * k * (0.7 + 0.3 * swell), t, 0.2); lp.frequency.setTargetAtTime(260 + 1300 * k, t, 0.3);
       windG.gain.setTargetAtTime(0.03 + 0.1 * k, t, 0.4); bp.frequency.setTargetAtTime(700 + 900 * k + 200 * Math.sin(t * 0.37), t, 0.5);
       if (t > H.creak && this.ok()) { H.creak = t + 4 + Math.random() * 6; this.openSeaCreak(t, 0.12 + 0.1 * k); }
+      const q = r.squall || 0; // (the squall: rain on the deck, the wind in the rig up, thunder far off now and then)
+      H.rainG.gain.setTargetAtTime(0.14 * q, t, 1.2); if (q) windG.gain.setTargetAtTime(0.1 + 0.12 * k, t, 0.6);
+      if (q && t > H.thunder && this.ok()) { H.thunder = t + 9 + Math.random() * 14; this.noise(t, 2.2, { type: 'lowpass', f0: 700, f1: 90, gain: 0.25, attack: 0.25, dest: this.out(0.6, 0.6) }); }
+      if (r.herd && t > H.call) { H.call = t + 5 + Math.random() * 7; const at = r.herd.pos; this.voiceAt?.(() => at, { listener: () => r.cam, tag: 'egregore', gain: 0.9, near: CALL_REACH.near, far: CALL_REACH.far })?.egregoreCall(r.herd.id); }
     }, 50);
   }
   openSeaHelmEnd() {
     const H = this._helm; if (!H) return; this._helm = null; clearInterval(H.timer);
     const t = this.ctx.currentTime; H.g.gain.cancelScheduledValues(t); H.g.gain.setValueAtTime(H.g.gain.value, t); H.g.gain.setTargetAtTime(0.0001, t, 0.6);
-    setTimeout(() => { for (const s of [H.wash, H.wind]) try { s.stop(); } catch { /* gone */ } H.g.disconnect(); }, 4000);
+    setTimeout(() => { for (const s of [H.wash, H.wind, H.rain]) try { s.stop(); } catch { /* gone */ } H.g.disconnect(); }, 4000);
   }
   /** A timber's groan: the hull working in the swell. */
   openSeaCreak(t, v = 0.15) {

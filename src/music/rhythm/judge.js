@@ -2,13 +2,14 @@
 // THE JUDGE: how near a press came to its note, and what the run is worth. Pure (no audio, no DOM), so a script can check it.
 // A press takes the nearest unjudged note in its lane inside the widest window; a note the line has passed by more than that is
 // missed. Four grades, each worth a share of a note: PERFECT within 45 ms, GREAT 90, GOOD 135, MISS. The accuracy is the share of the
-// whole chart earned (0..1); the combo is the run of notes without a miss, and the best of it is kept.
+// whole chart earned (0..1); the combo is the run of notes without a miss, and the best of it is kept. The asynchrony is the presses'
+// offsets from their notes (sensorimotor synchronisation's measure, Repp 2005): its mean in ms, signed (minus early), and its spread.
 //
 // Prior art: StepMania's timing windows (its "J4": Marvelous 22.5, Perfect 45, Great 90, Good 135 ms) and its percentage score,
 // DDR's and Guitar Hero's combo; osu!'s rule that a press takes the earliest note it can reach in its column.
 //
 //   const J = new Judge(chart.notes)   J.press(lane, t) -> { note, grade, off } | null   J.sweep(t) -> [missed notes]
-//   J.accuracy  J.combo  J.best  J.counts { perfect, great, good, miss }  J.done
+//   J.accuracy  J.combo  J.best  J.counts { perfect, great, good, miss }  J.done  J.asyncMs  J.asyncSd (null before a hit)
 // ---------------------------------------------------------------------------------------
 export const WINDOWS = [['perfect', 0.045, 1], ['great', 0.09, 0.75], ['good', 0.135, 0.4]];
 const WIDEST = WINDOWS[WINDOWS.length - 1][1];
@@ -21,9 +22,12 @@ export class Judge {
     this.next = new Array(10).fill(0); // (per lane: the first note not yet judged)
     this.earned = 0; this.combo = 0; this.best = 0; this.judged = 0;
     this.counts = { perfect: 0, great: 0, good: 0, miss: 0 };
+    this.offN = 0; this.offMean = 0; this.offM2 = 0; // (the hits' offsets in s, Welford's running mean and squares)
   }
   get accuracy() { return this.notes.length ? this.earned / this.notes.length : 0; }
   get done() { return this.judged >= this.notes.length; }
+  get asyncMs() { return this.offN ? Math.round(this.offMean * 1000) : null; }
+  get asyncSd() { return this.offN > 1 ? Math.round(Math.sqrt(this.offM2 / (this.offN - 1)) * 1000) : null; }
 
   /** A press in a lane at time t (the chart's clock): the note it took and its grade, or null (a stray press: no note near). */
   press(lane, t) {
@@ -36,6 +40,7 @@ export class Judge {
       if (off < -WIDEST) return null; // (the nearest is still too far off)
       const [grade, , w] = WINDOWS.find(([, win]) => Math.abs(off) <= win);
       this.mark(n, grade, w);
+      const d = off - this.offMean; this.offMean += d / ++this.offN; this.offM2 += d * (off - this.offMean);
       return { note: n, grade, off };
     }
     return null;

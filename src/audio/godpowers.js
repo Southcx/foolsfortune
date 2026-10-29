@@ -37,7 +37,13 @@
 //   .godStamp(made, side, repeat) .godTotem(feeling, repeat, grid) .godSetFast(chunks, forever, repeat) .godTransmute(feeling, r, repeat)
 //   .godRead(n) .godStrata(len) .godCourse(steps) .handPoseShift(pose, why, grid) .palmRoll(face, sides, held)
 //   .godDissonance(level) .godRejectionAnswer(level, n) .godRejectionBeaten(grid) .handCatchGrab(cls, need) .handCatchFree(why)
-//   .braceletSet(charm) .braceletCharm(charm)
+//   .braceletSet(charm) .braceletCharm(charm) .godMiracle(feeling, size, grid) .godEpic(epic, grid)
+//   A MIRACLE      the feeling's weather called down over its circle, as it falls: a swell of its fall (WEATHER_FALL below: Wonder's
+//                  glittering dust, Mirth's warm patter, Desire's hot wind, Fury's thunder, Gall's acid hiss, Grief's rain, Dread's ash and
+//                  a low drone), its chord in the feeling's notes on the music's next sixteenth, bigger with the drawn sign's size
+//   AN EPIC        its domain's own: Stopped Hour a clock's tick frozen into a held tone, Volcano a rumble and a roar, Prophecy bells in
+//                  a rising spiral, Maelstrom a turning roar, Stampede drumming feet, Earthquake the ground grinding, Deluge a downpour
+//                  and its thunder; under each the feeling of its sign as a long, low chord
 // ---------------------------------------------------------------------------------------
 
 const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
@@ -55,6 +61,19 @@ const MUDRA = { gyan: 71, shuni: 74, surya: 76, buddhi: 79, prana: 81, bhumispar
 /** The seven charms' notes (progress/bracelet.js CHARMS), in the ring's own bright register. */
 const CHARM = { twin: 88, wide: 83, echo: 86, quiet: 79, thrift: 81, linger: 76, gentle: 84 };
 const DIE = { 4: 0, 6: 1, 8: 2, 10: 3, 12: 4, 20: 5 };
+/** A miracle's fall as sound: noise [filter, f0, f1, q, gain] swelling over the circle, and `bits` (a weather's pieces: a count of
+ *  small bandpassed ticks, their band), `low` a drone under it (Hz) where the weather is heavy. */
+const WEATHER_FALL = {
+  wonder: { wash: ['highpass', 7000, 9000, 0.7, 0.05], bits: [18, 6000, 9500], low: 0 },
+  mirth: { wash: ['bandpass', 3000, 3600, 0.8, 0.07], bits: [24, 2500, 5000], low: 0 },
+  desire: { wash: ['bandpass', 700, 1600, 0.6, 0.12], bits: [6, 1500, 3000], low: 0 },
+  fury: { wash: ['lowpass', 900, 300, 0.7, 0.16], bits: [10, 3500, 6500], low: 41 },
+  gall: { wash: ['highpass', 3200, 5200, 1.2, 0.07], bits: [14, 4000, 7000], low: 0 },
+  grief: { wash: ['bandpass', 2200, 1400, 0.5, 0.12], bits: [30, 2000, 4500], low: 0 },
+  dread: { wash: ['lowpass', 500, 220, 0.8, 0.12], bits: [5, 800, 1500], low: 55 },
+};
+/** The epics (progress/godpowers.js EPICS): each its domain's sound, over the chord of its sign's feeling. */
+const EPIC_SIGN = { stoppedHour: 'dread', volcano: 'fury', prophecy: 'wonder', maelstrom: 'desire', stampede: 'mirth', earthquake: 'gall', deluge: 'grief' };
 const DIS = { level: 0 }; // (the Dissonance Level last heard: a step up or down sounds differently)
 
 export class GodPowerSounds {
@@ -282,6 +301,39 @@ export class GodPowerSounds {
     const at = next16(t + 0.03, grid), f = hz(MUDRA[pose] + keyOf(grid)), g = why === 'ready' ? 0.08 : 0.16;
     this.tone(at, 1.6, { f0: f * 2.76, gain: g * 0.5, dest: d }); // (one partial of a bell, high)
     this.tone(at, 1.2, { f0: f, gain: g * 0.3, dest: d });
+  }
+  /** A miracle called down (god.miracle { feeling, size }): its weather swelling over the circle, its feeling's chord on the beat. */
+  godMiracle(feeling = 'wonder', size = 0.5, grid = null) {
+    const W = WEATHER_FALL[feeling]; if (!W || !this.ok() || !this.allow('godMiracle', 2)) return;
+    const t = this.ctx.currentTime, u = Math.min(1, Math.max(0.2, size || 0.5)), d = this.out(0.3 + 0.15 * u, 0.7, true), dur = 1.8 + 1.4 * u;
+    const [type, f0, f1, q, g] = W.wash;
+    this.noise(t, dur, { type, f0, f1, q, gain: g * (0.7 + 0.5 * u), attack: dur * 0.35, dest: d }); // (the fall swelling in and away)
+    const [n, lo, hi] = W.bits;
+    for (let i = 0; i < Math.round(n * (0.6 + 0.6 * u)); i++) this.noise(t + 0.2 + Math.random() * (dur - 0.3), 0.01, { type: 'bandpass', f0: lo + Math.random() * (hi - lo), q: 9, gain: 0.08, dest: d }); // (its pieces landing)
+    if (feeling === 'fury') this.noise(t + 0.3, 1.4, { type: 'lowpass', f0: 1800, f1: 120, q: 0.7, gain: 0.3, dest: d }); // (the thunder)
+    if (W.low) this.tone(t, dur, { f0: W.low, f1: W.low * 0.97, type: 'triangle', gain: 0.1, dest: d });
+    const at = next16(t + 0.05, grid), k = keyOf(grid), root = FEEL[feeling];
+    [0, 7, 12].forEach((iv, i) => this.godBell(at + i * 0.07, 2.2, hz(root + iv + k - 12), 0.07 + 0.04 * u, d)); // (its chord)
+  }
+  /** An epic miracle (god.epic { epic }): its domain's own sound over a long low chord in its sign's feeling. */
+  godEpic(epic, grid = null) {
+    const feel = EPIC_SIGN[epic]; if (!feel || !this.ok() || !this.allow('godEpic', 1)) return;
+    const t = this.ctx.currentTime, d = this.out(0.5, 1.2, true), k = keyOf(grid), r = FEEL[feel] + k - 24;
+    [0, 7, 12, 16].forEach((iv, i) => this.tone(t + 0.1 * i, 4.5, { f0: hz(r + iv), type: i ? 'sine' : 'triangle', gain: 0.07, dest: d })); // (the sign's chord)
+    switch (epic) {
+      case 'stoppedHour': for (let i = 0; i < 6; i++) this.noise(t + i * 0.5 * Math.pow(1.35, i), 0.02, { type: 'bandpass', f0: 2600, q: 8, gain: 0.25, dest: d });
+        this.tone(t + 2.6, 3, { f0: hz(r + 24), type: 'sine', gain: 0.12, dest: d }); break; // (ticks slowing to a held still note)
+      case 'volcano': this.noise(t, 4, { type: 'lowpass', f0: 160, f1: 900, q: 0.8, gain: 0.35, attack: 1.2, dest: d });
+        this.noise(t + 1.2, 1.5, { type: 'lowpass', f0: 2500, f1: 400, q: 0.6, gain: 0.3, dest: d }); break; // (the rumble, the roar)
+      case 'prophecy': for (let i = 0; i < 9; i++) this.godBell(t + i * 0.22, 2, hz(FEEL.wonder + k + [0, 2, 4, 7, 9][i % 5] + 12 * Math.floor(i / 5)), 0.08, d); break;
+      case 'maelstrom': this.noise(t, 4, { type: 'bandpass', f0: 300, f1: 1400, q: 1.5, gain: 0.25, attack: 1.5, dest: d });
+        this.godWobble(t + 0.5, 3.5, { f0: 180, f1: 360, rate: 1.5, depth: 60, type: 'sawtooth', gain: 0.03, dest: d }); break; // (a turning roar)
+      case 'stampede': for (let i = 0; i < 28; i++) this.noise(t + i * 0.12 + Math.random() * 0.05, 0.05, { type: 'lowpass', f0: 260 + Math.random() * 120, q: 1, gain: 0.3, dest: d }); break; // (drumming feet)
+      case 'earthquake': this.noise(t, 3.5, { type: 'lowpass', f0: 90, f1: 220, q: 1.2, gain: 0.45, attack: 0.4, dest: d });
+        for (let i = 0; i < 8; i++) this.noise(t + 0.4 + i * 0.35, 0.08, { type: 'bandpass', f0: 500 + Math.random() * 400, q: 3, gain: 0.15, dest: d }); break; // (grinding, cracks)
+      case 'deluge': this.noise(t, 4.5, { type: 'bandpass', f0: 1800, f1: 1200, q: 0.4, gain: 0.25, attack: 1, dest: d });
+        this.noise(t + 1.5, 1.6, { type: 'lowpass', f0: 1500, f1: 100, q: 0.7, gain: 0.3, dest: d }); break; // (a downpour and its thunder)
+    }
   }
   /** The palm die thrown against the island's answer and settled on `face` of `sides`; `held` 0 none, 1 held, 2 held on its top face. */
   palmRoll(face = 1, sides = 4, held = 0) {
