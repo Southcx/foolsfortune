@@ -61,6 +61,7 @@ import { aptitudeRules } from './aptitude.js';
 import { classArtsRules } from './classarts.js';
 import { classArtsPlayRules } from './classartsplay.js';
 import { pairWornRules } from './pairworn.js';
+import { pairSpecialsPlayRules } from './pairspecialsplay.js';
 import { worldShellRules } from './worldshells.js';
 import { saveRules } from './save.js';
 import { roomHelpRules } from './roomhelp.js';
@@ -143,6 +144,7 @@ export function areaRules(ctx) {
   classArtsRules(ctx); // (a class's arts opened, worn and asked for: progress/classarts.js)
   classArtsPlayRules(ctx); // (a class's arts used, firing and wearing off: courier/classarts/body.js)
   pairWornRules(ctx); // (a pair worn: the counts its special opens by, tracking/pairworn.js)
+  pairSpecialsPlayRules(ctx); // (a pair's special played: tracking/pairspecialsplay.js)
   godRules(ctx);
   openSeaRules(ctx); // (the open sea: docs/plans/OPEN-SEA.md)
   seaSerpentRules(ctx); // (the sea serpent and the hull at the free helm: world/opensea/seafight.js)

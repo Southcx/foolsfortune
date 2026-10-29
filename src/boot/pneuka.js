@@ -41,6 +41,7 @@ import { CarryThrowMark } from '../vfx/carrythrowmark.js';
 import { LobArcMark } from '../vfx/lobarcmark.js'; // (the psygun variants' looks: OVERLAY.md 19)
 import { FlareReveal } from '../vfx/flarereveal.js'; // (the psygun variants' looks: OVERLAY.md 19)
 import { PEOPLE } from '../npc/people.js';
+import { PairSpecials } from '../tools/pairspecials.js';
 import { LentModels } from '../tools/lend.js';
 import { PsygunModels } from '../vfx/psygunmodels.js';
 
@@ -93,6 +94,7 @@ export function bootPneuka(game, made) {
   game.events.on('courier.impulse', (e) => { if (HURT.has(e.why)) character.flinch(Math.min(1, (e.mag || 0) / 10), e.dir); });
   game.events.on('tool.lend', (e) => character.lend(e.tool, game.belt?.freeHand)); // (the sub's verb's body: anim/lendgesture.js)
   game.lentModels = new LentModels(game); // (and the tool at the hand where the verb needs it: tools/lend.js)
+  game.pairSpecials = new PairSpecials(game); // (a pair's special: the sub's lent verb fed through the main's, tools/pairspecials.js)
   const baubles = new Baubles(game);
   game.baubles = baubles;
   const shells = new Shells(game);

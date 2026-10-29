@@ -4382,4 +4382,4 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Cause (as measured):** the marks were updated from `onBeforeRender` on an empty mesh, and three never draws a mesh with no position
   attribute, so `update` never ran (`t` stayed 0, every mark hidden, the root at the origin). A first fix, one degenerate triangle, still never ran.
 - **Fix:** `update(dt)` called from the frame (`boot/frame.js`, beside the blob shadow), the onBeforeRender hook removed.
-- **Rule:** NEW:frame-update-not-render-hook
+- **Rule:** 349

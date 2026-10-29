@@ -131,6 +131,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the main / the sub / a pair's card** (plain names, the owner's rulings 2026-10-22 and 23; `PAIRS`, `pairOf`, `SUB_GIFTS`, `src/progress/toolpairs.js`;
   TOOLS-TOGETHER.md 8) — the tool worn in hand with all its verbs / the second tool worn, lending the main one verb on R and one passive / the
   Major Arcana card (I to XXI; the Fool is you) a main and sub make together, its special opened by an achievement. *Not:* a Veritome card, a house card.
+- **a pair's special in play** (plain name; `PairSpecials`, `game.pairSpecials`, `PAIR_PLAY`, `src/tools/pairspecials.js`; event `pair.special`, `pair.mark`) — a pair's special (Dovina's `PAIR_SPECIALS`) running: the sub's lent verb fed through the main's, only with the pair worn its named way round and opened; built a wave of four (19 The Mark, 6 Rung Line, 17 Painted Lure, 3 Coffin's Mop). *Not:* the special's rule or its opening (`progress/toolpairs.js`), a class art, a Movement Art.
 - **the prone holster** (`game.proneHolster`, `src/tools/proneholster.js`) — lying down puts the tool in the hands away through the belt and
   draws it again once up; no tool comes out on the belly. *Not:* a holster (where a tool is worn).
 - **fitting** (`FITTINGS`, `src/pneuka/box.js`) — what fits into a tool (a lure, an instrument, the Lockheart's keys), kept in the Pneuka Box. A

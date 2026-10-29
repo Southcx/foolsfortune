@@ -222,7 +222,7 @@ export function bootFrame(game, made) {
     game.cartography.update(dt);
     game.cinema.update(game.rawDt); // (the frame and the vignette ease in real seconds, so a slowed world keeps its bars)
     game.folk?.update(dt); game.dialogue?.update(game.rawDt); game.shops?.update(dt); game.weather?.update(dt); game.vessel?.update(game.rawDt); game.toolSkins?.update(game.rawDt); game.vesselDamage?.update(dt); game.death?.update(game.rawDt); game.ultimate?.update(game.rawDt); game.combat?.update(dt);
-    diag.begin('minds'); game.ai.update(dt); game.creatures.update(dt); if (!worldAsleep) { game.jellies.update(dt); game.wisps?.update(dt); } game.stun.update(dt); game.dissolve.update(dt); game.figmentScatter.update(dt); game.flash.update(game.rawDt); game.reprogram.update(game.rawDt); diag.end('minds');
+    diag.begin('minds'); game.ai.update(dt); game.creatures.update(dt); if (!worldAsleep) { game.jellies.update(dt); game.wisps?.update(dt); } game.stun.update(dt); game.dissolve.update(dt); game.figmentScatter.update(dt); game.flash.update(game.rawDt); game.pairSpecials?.update(game.rawDt); game.reprogram.update(game.rawDt); diag.end('minds');
     game.pulse.update(dt);
     game.portrait.update(game.rawDt, game.angler?.fightView?.());
     game.interact.update(game.rawDt);

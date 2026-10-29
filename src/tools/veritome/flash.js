@@ -79,7 +79,7 @@ export class Flash {
     sfx.shutter?.(); sfx.lensUp?.();
     g.ai?.stimuli.emit('light', from, { radius: range * 1.4, strength: 1, by: 'courier', source: g.player });
     // who is in it
-    let hits = 0, downs = 0;
+    let hits = 0, downs = 0; const seen = [];
     const targets = [...(g.creatures?.list || []), ...(g.clappers?.list || [])];
     for (const t of targets) {
       if (!t.alive || t.ally) continue;
@@ -90,7 +90,7 @@ export class Flash {
       if (ang > half) continue;
       const hit = g.physics.raycast(_e, _d.clone().normalize(), d - 0.4, g.player.collider, undefined, (k) => !k.isSensor() && !k.parent()?.isDynamic() && !g.physics.entityOf(k)?.type);
       if (hit) continue;
-      hits++;
+      hits++; seen.push(t);
       const amount = FLASH.stun * Math.sqrt(1 - d / range) * (1 - 0.5 * (ang / half)) * (lens ? 1.25 : 1);
       if (t.type === 'creature') {
         t.brain?.senses?.dazzle(FLASH.dazzle);
@@ -99,6 +99,7 @@ export class Flash {
       }
       if (hasTag(t, 'creature') || t.type === 'clapper') { if (g.stun?.add(t, amount, { by: 'courier', cause: 'flash' })) downs++; }
     }
+    this.seen = seen; // (what it reached, kept off the bus: the Mark asks, tools/pairspecials.js)
     g.events?.emit('flash.fire', { hits, downs, lens });
     return true;
   }

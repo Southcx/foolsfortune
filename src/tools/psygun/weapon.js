@@ -418,6 +418,7 @@ export class Weapon {
     const dir = given ? given.clone() : fwd.clone().multiplyScalar(Math.cos(a)).addScaledVector(rr, Math.sin(a) * Math.cos(phi)).addScaledVector(uu, Math.sin(a) * Math.sin(phi)).normalize();
 
     const ray = this.shotRay(camera, player, character, dir);
+    if (!given) { const home = game.pairSpecials?.homeShot(ray.origin, ray.dir); if (home) ray.dir.copy(home); } // (the Mark: a round turned onto what the lent Flash marked, tools/pairspecials.js)
     dir.copy(ray.dir);
     let hit = game.physics.raycast(ray.origin, ray.dir, range, player.collider);
     if (game.knacks?.on('wideBore') && !hasTag(hit?.entity, 'hurtable')) hit = this.wideBore(ray, range, hit) || hit; // (the knack: a creature's mark a third wider)
