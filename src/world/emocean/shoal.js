@@ -12,6 +12,11 @@
 //                the medal. While the Conductor lives the crude feeds the ball six glints a bar.
 //   THE SCATTER  down the Conductor and the shoal breaks for good (`scattered`); down a third of the ball inside a bar, or toll the
 //                bell over it, and it scatters for two bars and reforms (what a predator does to a real one).
+//   THE SILHOUETTE (from SILHOUETTE.at bars, while the Conductor lives: RAIL-OVERHAUL.md 6) the school draws itself up out of the crude
+//                into one great Leviathan ahead of the ship (vfx/shoalsilhouette.js: the shape, its swim, its eye), its profile turned to
+//                the camera; the frenzy stops, and the Conductor goes into its eye: open, unguarded, the one place it breaks. Locked, the
+//                eye burns; hurt, it cracks; downed, it shatters and the school scatters for good (the Conductor's down, as before).
+//                Events: rail.shoal.form { k } (0 begun, 1 whole), rail.shoal.eye { open }, rail.shoal.lock { on, k }, rail.shoal.shatter.
 // The heavy it was fleeing comes with the authored escort at the set piece's 22nd bar (the waves: world/emocean/waves.js).
 //
 // Prior art: Reynolds' boids (creatures/ai/flock.js), the sardine run's bait ball (the dolphins herd it to the surface; it tightens;
@@ -27,11 +32,16 @@ import { SHOAL } from '../../progress/rail/setpieces.js';
 import { ROLE_CLASS, LEG } from '../../progress/econ/emocean.js';
 import { BAR_S } from '../../progress/rail/crossing.js';
 import { ShoalLook } from '../../vfx/shoal.js';
+import { silhouetteTargets, silhouetteSwim, silhouetteEyeAt, facing, SilhouetteEye } from '../../vfx/shoalsilhouette.js';
 import { stream } from '../../core/rng.js';
 
 const simRand = stream('world/emocean/shoal'); // (where a glint rises: core/rng.js, the same twice)
 
 const MAX = 160, CRUISE_Y = 0.15; // (glints at most; how high over the swell the ball swims)
+/** The silhouette's numbers (placeholders, Dovina's to take into SHOAL): from which bar, how long it takes to draw up (bars), its length
+ *  and where it stands from the ship (local metres: up, ahead), the eye's radius, and how long a lock takes to burn to its full (real s). */
+export const SILHOUETTE = { at: 24, draw: 2, length: 40, up: 9, ahead: 30, eye: 2.6, burn: 1.5 };
+const _t = new THREE.Vector3(), _M = new THREE.Matrix4(), _Q = new THREE.Quaternion(), _C = new THREE.Vector3(), _cam = new THREE.Vector3(), _one = new THREE.Vector3(1, 1, 1);
 const _p = new THREE.Vector3(), _v = new THREE.Vector3(), _w = new THREE.Vector3(), _q = new THREE.Quaternion(), _z = new THREE.Vector3(0, 0, 1), _u = new THREE.Vector3();
 
 export class ShoalPiece {
@@ -48,6 +58,9 @@ export class ShoalPiece {
     this.look._s.setScalar(2); // (the glints drawn twice life: at 480 lines a 0.6 m fish from 30 m up is a pixel; Calissa's to tune)
     this.look.group.traverse((o) => { o.userData.zoneFree = true; });
     scene.add(this.look.group);
+    this.shape = silhouetteTargets(MAX, 'leviathan', { length: SILHOUETTE.length }); this.swim = new Float32Array(MAX * 3);
+    this.eyeHold = new THREE.Group(); this.eyeHold.userData.zoneFree = true; this.eyeHold.visible = false; scene.add(this.eyeHold);
+    this.eye = new SilhouetteEye({ radius: SILHOUETTE.eye }); this.eyeHold.add(this.eye.group); this.eyeHold.traverse((o) => { o.userData.zoneFree = true; });
   }
   show(on) { if (this.look) { this.look.group.visible = on; if (!on) { this.look.count = 0; this.look.boil(_p.set(0, 0, 0), 1, 0); this.look.conductor(_p, _q, false); } } }
 
@@ -62,11 +75,12 @@ export class ShoalPiece {
     this.leg = leg; this.cls = ROLE_CLASS.school((st.plan?.danger || 0) + LEG.deeper * (leg.k || 0));
     this.want = Math.min(MAX - 24, SHOAL.count(this.cls)); this.risen = 0;
     this.flock.clear(); this.fish.fill(null); this.mood.fill(0); this.roll.fill(0); this.dash.fill(0);
+    this.formK = -1; this.eyeSaid = false; this.locked = false; this.burn = 0; this.eyeHold.visible = false;
     this.radius = SHOAL.ball.radius; this.scattered = false; this.scatterT = 0; this.bites = 0; this.lastBar = -1; this.downsThisBar = 0; this.ballAtBar = 0;
     this.caller = st.waves.add({
       kind: 'rail.conductor', name: 'the Conductor', role: 'caller', cls: this.cls, aspect: null, radius: 1.3, hp: SHOAL.caller.hp,
       local: _p.set(0, CRUISE_Y + 0.4, 9), chain: false,
-      armour: () => (SHOAL.caller.guarded && this.scatterT <= 0 ? 0 : 1), // (the fish close round it: hurt only while the ball is scattered, RAIL-FLOW.md 5; a glance else)
+      armour: () => (this.formK >= 1 || !SHOAL.caller.guarded || this.scatterT > 0 ? 1 : 0), // (the fish close round it: hurt only while the ball is scattered, RAIL-FLOW.md 5; a glance else)
       tick: (dt, f) => this.tickCaller(dt, f),
       onDown: () => this.lose(),
     });
@@ -82,18 +96,21 @@ export class ShoalPiece {
     while (this.risen < due) { this.rise(); this.risen++; }
     if (bar !== this.lastBar) this.onBar(bar, rel);
     this.scatterT = Math.max(0, this.scatterT - dt / BAR_S);
+    this.formTick(dt, rel);
+    const forming = this.formK >= 0;
     // the flock's step: each glint makes for its place on the ring, or the ship (a strike), or away (a scatter)
     const ship = S.local, lead = SHOAL.frenzy.lead, F = this.flock, B = SHOAL.boids;
     F.step(dt, {
       seek: (i, out) => {
         const m = this.mood[i];
+        if (forming && !this.scattered) { const j = i % this.shape.n; return this.shapeAt(j, out); }
         if (this.scattered || this.scatterT > 0) { F.get(i, out); out.sub(ship).setY(0).normalize().multiplyScalar(40).add(ship); out.y = -2; return 3; }
         if (m === 2) { out.copy(ship).addScaledVector(S.vel, lead); return 6; }
         const a = this.ang[i] + st.t * 0.35, r = this.radius + (i % 5) * 0.35;
         out.set(ship.x + Math.cos(a) * r, this.surface(ship.x + Math.cos(a) * r, ship.z + Math.sin(a) * r) + CRUISE_Y, ship.z + Math.sin(a) * r);
         return 2.5;
       },
-      speed: (i) => (this.mood[i] === 2 || this.scatterT > 0 || this.scattered ? B.burst : B.speed),
+      speed: (i) => (forming || this.mood[i] === 2 || this.scatterT > 0 || this.scattered ? B.burst : B.speed),
     });
     // each glint: the telegraph's silver turn, the strike's bite, back to the ball; the ball kept on the surface
     for (let i = 0; i < MAX; i++) {
@@ -104,7 +121,8 @@ export class ShoalPiece {
       if (m === 2) {
         if (_p.distanceTo(ship) < 1.2) { this.bite(i); continue; }
         if (this.moodT[i] > 1.4 || _p.z < ship.z - 6) { this.mood[i] = 0; this.moodT[i] = 0; }
-      } else if (!this.scattered && this.scatterT <= 0) { const y = this.surface(_p.x, _p.z) + CRUISE_Y; if (_p.y < y - 0.2 || _p.y > y + 0.6 && m === 0) F.set(i, _p.x, THREE.MathUtils.lerp(_p.y, y, Math.min(1, dt * 4)), _p.z); }
+      } else if (!forming && !this.scattered && this.scatterT <= 0) { const y = this.surface(_p.x, _p.z) + CRUISE_Y; if (_p.y < y - 0.2 || _p.y > y + 0.6 && m === 0) F.set(i, _p.x, THREE.MathUtils.lerp(_p.y, y, Math.min(1, dt * 4)), _p.z); }
+      if (forming && !this.scattered) { this.shapeAt(i % this.shape.n, _t); _p.lerp(_t, Math.min(1, dt * 3 * this.formK)); F.set(i, _p.x, _p.y, _p.z); } // (Reynolds' arrival, pressed home: the shape must read, so each glint is eased onto its place once drawn up)
       if ((this.scattered || this.scatterT > 0) && _p.y < -1.5) { this.sink(i); continue; }
       this.roll[i] = THREE.MathUtils.damp(this.roll[i], m >= 1 ? 1 : 0, m === 1 ? 1 / (SHOAL.frenzy.telegraph * BAR_S) : 4, dt);
       this.dash[i] = THREE.MathUtils.damp(this.dash[i], m === 2 ? 1 : 0, 12, dt);
@@ -119,7 +137,7 @@ export class ShoalPiece {
     this.downsThisBar = 0; this.ballAtBar = this.flock.count;
     if (this.scattered) return;
     if (this.caller?.alive) for (let k = 0; k < SHOAL.reinforce.perBar && this.flock.count < MAX - 8; k++) this.rise();
-    if (rel >= 8 && this.scatterT <= 0) { // (the frenzy: a group turns its flanks, then strikes)
+    if (rel >= 8 && this.scatterT <= 0 && this.formK < 0) { // (the frenzy: a group turns its flanks, then strikes)
       let n = SHOAL.frenzy.group(this.cls);
       for (let i = 0; i < MAX && n > 0; i++) if (this.flock.alive[i] && this.mood[i] === 0 && ((i * 7 + bar * 13) % 3 === 0)) { this.mood[i] = 1; this.moodT[i] = 0; n--; }
     }
@@ -135,7 +153,7 @@ export class ShoalPiece {
     this.fish[i] = st.waves.add({
       kind: 'rail.glint', name: 'a glint', role: 'glint', cls: this.cls, aspect: null, radius: 0.55, hp: SHOAL.fish.hp, local: _p.set(x, 0, z),
       chain: false, count: false,
-      get solid() { return self.leg && st.bar - self.leg.from >= 8; }, // (under the crude's skin until the frenzy: SHOAL's "only the Conductor can be reached")
+      get solid() { return self.leg && (st.bar - self.leg.from >= 8 || self.formK >= 0); }, // (under the crude's skin until the frenzy: SHOAL's "only the Conductor can be reached")
       get lock() { return this.solid; },
       tick: (dt, f) => { if (!this.flock.alive[i] || this.fish[i] !== f) return false; this.flock.get(i, f.local); return true; },
       onDown: () => { this.flock.remove(i); this.fish[i] = null; this.downsThisBar++; },
@@ -152,6 +170,7 @@ export class ShoalPiece {
 
   /** The Conductor: it swims the inside of the ring, at the surface, its glow breathing (Calissa's). */
   tickCaller(dt, f) {
+    if (this.formK >= 0 && this.eyeAt) { this.stage.rail.toLocal(this.eyeAt, f.local); return !this.scattered; } // (in the silhouette's eye)
     const st = this.stage, S = st.ship.local, a = st.t * 0.6, r = Math.max(3, this.radius * 0.55);
     const x = S.x + Math.cos(a) * r, z = S.z + 4 + Math.sin(a) * r;
     f.local.set(x, this.surface(x, z) + CRUISE_Y + 0.3, z);
@@ -159,6 +178,7 @@ export class ShoalPiece {
   }
   /** The Conductor downed: the shoal breaks for good. */
   lose() {
+    if (this.formK >= 0 && !this.eye.broken) { this.eye.shatter(); this.lockOff(); this.game.events?.emit('rail.shoal.shatter', { by: 'courier' }); }
     this.scattered = true; this.caller = null;
     this.game.events?.emit('rail.end', { end: 'scattered', by: 'courier' });
     this.stage.endPay('scattered');
@@ -191,7 +211,41 @@ export class ShoalPiece {
     for (let i = 0; i < MAX; i++) if (this.flock.alive[i]) this.sink(i);
     if (this.caller?.alive) this.stage.waves.drop(this.caller);
     const end = this.scattered ? 'scattered' : null;
+    this.lockOff(); this.formK = -1; this.eyeHold.visible = false;
     this.caller = null; this.show(false);
     return end;
   }
+
+  // ---- the silhouette -----------------------------------------------------------
+  /** Its frame this frame: the centre ahead of the ship, turned to show its profile to the camera (world), and the shape's swim. */
+  formTick(dt, rel) {
+    const st = this.stage, g = this.game, raw = g.rawDt ?? dt, SI = SILHOUETTE;
+    if (this.formK < 0) {
+      if (rel < SI.at || this.scattered || !this.caller?.alive) return;
+      this.formK = 0; this.eye.set({ open: 0, locked: 0, crack: 0 }); g.events?.emit('rail.shoal.form', { k: 0, by: 'creature' });
+    }
+    const was = this.formK; this.formK = Math.min(1, this.formK + dt / (SI.draw * BAR_S));
+    if (was < 1 && this.formK >= 1) g.events?.emit('rail.shoal.form', { k: 1, by: 'creature' });
+    const S = st.ship.local; st.rail.toWorld(_p.set(S.x, SI.up, S.z + SI.ahead), _C);
+    g.camera?.getWorldPosition?.(_cam); facing(_C, _cam, _Q); _M.compose(_C, _Q, _one);
+    silhouetteSwim(this.shape, st.t, this.swim);
+    // the eye: in the shape's frame, opening once whole; burning while locked; cracking as the Conductor is hurt
+    this.eyeHold.visible = true; this.eyeHold.position.copy(_C); this.eyeHold.quaternion.copy(_Q);
+    silhouetteEyeAt(this.shape, st.t, this.eye.group.position);
+    this.eyeAt = (this.eyeAt || new THREE.Vector3()).copy(this.eye.group.position).applyMatrix4(_M);
+    const open = THREE.MathUtils.clamp((this.formK - 0.7) / 0.3, 0, 1), c = this.caller;
+    if (!this.eyeSaid && open >= 0.5) { this.eyeSaid = true; g.events?.emit('rail.shoal.eye', { open, by: 'creature' }); }
+    const lockedNow = !!c?.alive && !!st.ship.locks?.includes(c);
+    if (lockedNow !== this.locked) { this.locked = lockedNow; if (!lockedNow) this.burn = 0; g.events?.emit('rail.shoal.lock', { on: lockedNow, k: this.burn, by: 'courier' }); }
+    if (lockedNow) this.burn = Math.min(1, this.burn + raw / SI.burn);
+    this.eye.set({ open, locked: this.burn, crack: c?.alive ? 1 - c.hp / (c.maxHp || SHOAL.caller.hp) : 1 });
+    this.eye.update(raw);
+  }
+  /** Glint j's place on the shape, in the rail's frame; its pull. */
+  shapeAt(j, out) {
+    const sw = this.swim; _w.set(sw[j * 3], sw[j * 3 + 1], sw[j * 3 + 2]).applyMatrix4(_M);
+    this.stage.rail.toLocal(_w, out);
+    return 4 + 4 * this.formK;
+  }
+  lockOff() { if (this.locked) { this.locked = false; this.burn = 0; this.game.events?.emit('rail.shoal.lock', { on: false, k: 0, by: 'courier' }); } }
 }

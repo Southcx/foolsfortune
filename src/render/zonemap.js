@@ -43,6 +43,8 @@ export const ZONE_TESTS = [
   // the Raceway (world/raceway/track.js RW: x 6000, at the dunes' layer): the Solar Skiff's test circuit, under the dunes' sky
   { id: 'raceway', test: (p) => p.x > 4300 && p.x < 7700 && p.z > -1800 && p.z < 1800 && p.y < -150 && p.y > -600 }, // (the park, 2.6 km across at x 6000: Dovina, 2026-10-14)
   // Raku's bazaar (world/bazaar/bazaar.js BAZAAR: x 0, y 200, z -3000): the casino's hall under its dome, indoors (no sky, no weather)
+  // the Touchstone (world/touchstone/touchstone.js TOUCHSTONE: x 3000, y 200, z -3000): the Assay's dark room, indoors
+  { id: 'touchstone', test: (p) => Math.abs(p.x - 3000) < 150 && p.z > -3150 && p.z < -2850 && p.y > 150 && p.y < 450 }, // (Petra's place, 2026-10-29)
   { id: 'bazaar', test: (p) => Math.abs(p.x) < 200 && p.z > -3200 && p.z < -2800 && p.y > 150 && p.y < 450 }, // (Petra's place, 2026-10-15)
   // the open sea (world/opensea/seaprops.js SEA: x 9800 at the Emocean's height): the Emocean off the lanes, 3.6 by 2.8 km, under the dunes' sky (Dovina's room)
   { id: 'opensea', test: (p) => p.x > 7900 && p.x < 11700 && p.z > -1600 && p.z < 1600 && p.y > -480 && p.y < -300 },
