@@ -4312,3 +4312,10 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   hiding the disc, the floor went; hiding the instance's kept objects changed nothing.
 - **Fix:** the slab's branch is `uMode > 0.5 && uMode < 1.5` (domains.js); the ground draws the meadow and the fens' black water.
 - **Rule:** NEW:a-mode-is-matched-exactly
+
+### 2026-10-29 · Hurl went off and did nothing until the next turn (South, playing the Lantern Wisp)
+- **Seen:** the aberrant's Hurl cut-in and cast played, and no junk arrived; it landed only at the end of the Courier's next turn.
+- **Cause (as read):** by design, Hurl's junk waited a turn (`pending`) so Hold and Grab could answer it. In the PvE duel those skills are
+  tabled, so the wait answered nothing and read as a missed cast.
+- **Fix:** Hurl lands as it is cast (foeskills.js, `K.land`); its line says so.
+- **Rule:** NEW:a-wait-needs-an-answer

@@ -11,7 +11,7 @@
 //
 //   visibleTo(state, viewer, x, y) -> bool   emberKind(state, sender) -> 'ember' | 'junk'   tickEmbers(state, side) -> events
 //   fogShows(state, viewer, x, y) -> 'all' | 'shape' (a fogged cell shows that a piece is there, never its colour: PUZZLE-DUELS.md 20)
-//   rs.fog = { side, light }   rs.embers = { from, count }   clues(state, viewer, familiarity?) -> { rows, cols, colours } | null (clue fog)
+//   rs.fog = { side, light }   rs.embers = { from, count }   (clue fog was cut 2026-10-29: never drawn, and nothing of yours acts on the foe's half: PUZZLE-DUELS.md 26.5)
 // ---------------------------------------------------------------------------------------
 import { KINDS, paletteOf } from './board.js';
 import { lightOf } from './secrets.js';
@@ -43,24 +43,4 @@ export function tickEmbers(s, side) {
     events.push({ type: 'ember.cool', side, id: p.id, at: [x, y], colour: p.colour });
   });
   return events;
-}
-
-/** Clue fog (PUZZLE-DUELS.md 19.3; Hexcells' and Picross's margins): what a side may know of a fogged half without seeing it: for each
- *  row and each column of that half, how many hidden cells hold a piece, and the hidden gems' tally by colour. The fog stays; it becomes
- *  a thing to read. `familiarity` (0..4, familiarity.js) adds detail: from 2 the rows' and columns' counts split gems from junk. */
-export function clues(s, viewer, familiarity = 0) {
-  const F = s.rs.fog, b = s.board; if (!F || F.side === viewer || s.sides[viewer]?.read > 0) return null;
-  const rows = [], cols = {}, colours = {};
-  for (let y = 0; y < b.h; y++) {
-    const r = { gems: 0, other: 0 };
-    for (let x = 0; x < b.w; x++) {
-      if (b.sideOf(x) !== F.side || visibleTo(s, viewer, x, y)) continue;
-      const p = b.at(x, y); cols[x] ||= { gems: 0, other: 0 }; if (!p) continue;
-      const gem = p.kind === 'gem'; r[gem ? 'gems' : 'other']++; cols[x][gem ? 'gems' : 'other']++;
-      if (gem) colours[p.colour] = (colours[p.colour] || 0) + 1;
-    }
-    rows.push(r);
-  }
-  const fold = (c) => (familiarity >= 2 ? c : { pieces: c.gems + c.other });
-  return { rows: rows.map(fold), cols: Object.fromEntries(Object.entries(cols).map(([x, c]) => [x, fold(c)])), colours };
 }

@@ -878,3 +878,73 @@ skill? (Scan's), by: 'courier' }`. Counted: `duel.power.<id>` (tracking/duel.js;
 Planned and begun in `docs/plans/ABERRANTS.md`: the Elite format (each aberrant's own board, Zone of Influence, foe skills, cut-ins,
 sounds, a secret win and two deaths), and the Lantern Wisp as the first. Its secret (`secrets.js` `snuff`), its own skill (Kindle) and
 its palette are built and measured there.
+
+## 26. Folding the duel into the rest (South, 2026-10-29: points 1 to 3 of Dovina's synergy audit, the feelings attenuated, Hurl)
+
+### 26.1 A duel's power trains its domain
+`duel.power` is a source of domain experience (domains.js SOURCES), as `god.<power>` is in the world. Base 6 per cast. Quality is
+0.35 + 0.65 x (gems the cast cleared / 12): about 9 experience for a cast that cleared nothing, 40 for one that cleared 8. The kernel puts
+`cleared` on the `power` event (duel.js `act`), and the session forwards it. A practice duel trains nothing.
+
+### 26.2 A good drag feeds the powers
+- **The pool by depth.** Each gem you clear gives pool at its chain step, up to 3 (`PVE.drinkStep`): a cascade's deep steps pay three
+  times a plain clear.
+- **The rests cut.** A drag whose chain reaches step k takes k - 1 turns off every resting power (`PVE.restCut`, `cutRests`, event
+  `rest.cut`; Puzzle & Dragons' skill-delay reduction).
+
+**Measured.** In section 24.3 the K stand-ins all searched every one-step swap, so K was never a skill axis. I said there that "your drag
+barely matters". That was wrong: an artefact of the measure. The stand-in now plays its best with probability P and a random move
+otherwise (`scratchpad duel/powers.mjs`, 16 duels a row):
+
+| board | P | wins (feeding on / off) | turns (on / off) |
+| --- | --- | --- | --- |
+| Lantern Wisp | 0 (random) | 0 / 0 | 12.8 / 12.6 |
+| Lantern Wisp | 0.5 | 8 / 5 | 13.9 / 13.9 |
+| Lantern Wisp | 1 | 16 / 15 | 5.3 / 6.0 |
+| Strawman (7 colours) | 0 | 0 / 0 | 22.3 / 22.3 |
+| Strawman | 0.5 | 7 / 7 | 21.9 / 21.4 |
+| Strawman | 1 | 15 / 15 | 7.1 / 6.1 |
+
+Skill already separates sharply. Feeding the powers helps a middling player against the Wisp (8 wins of 16 against 5) and changes
+little elsewhere. It stays because it makes a chain worth more than its junk.
+
+### 26.3 The collection log
+Two new sections in collectionlog.js:
+- **Aberrants.** Each foe skill met in a duel that counted (`duel.foe.<skill>`). Each aberrant's secret won (`duel.secret.<id>`); its slot
+  is named by whose it is ("The Lantern Wisp's secret"), never by what it is.
+- **Duel powers.** Each of the seven cast once (`duel.power.<id>`).
+
+The bestiary entry belongs to the Veritome's Book (Petra's): asked in a handoff.
+
+### 26.4 A feeling not yet awakened: a dim gem
+South: "some sort of attenuated value, above junk, but not as effective as feelings you have unlocked". The session passes
+`newDuel({ dim })`, the feelings not yet awakened to (`notAwakened(L)`, progress/feelings.js). A dim gem matches and clears like any
+other, but gives `DIM.k` (0.5) of a gem's pool.
+
+It does not count toward the Line's push (`DIM.junk: false`). With every gem dim, a strong stand-in won 1 Lantern Wisp duel of 16 when
+dim counted in the push too. Counting only in the pool, it wins 15 of 16 in 7.4 turns (5.3 with every feeling awake); a middling one
+wins 3 of 16 (8 awake). Awakening the feelings is what makes the powers flow.
+
+### 26.5 Clue fog cut
+`clues()` (19.3) was never drawn, and nothing of yours acts on the aberrant's half, so knowing its board changes no choice. Removed.
+Dread's fog itself stays: it is the Lantern Wisp's secret's tell (its light closing in as the lantern dims, ABERRANTS.md 3).
+
+### 26.6 Hurl lands at once
+South saw Hurl go off and nothing happen until the next turn. It had been built that way (junk waiting a turn to be answered by Hold
+and Grab), but those skills are tabled in the PvE duel, so the wait answered nothing. Hurl now lands as it is cast (`K.land`), embers
+for a Wisp.
+
+### 26.7 Best of three (South's question, parked)
+A duel now runs 5 to 8 turns, at about 30 real s a turn with its casts and cut-ins, so 3 to 4 real minutes; three rounds would be 9 to
+12. That is too long for a fight the field starts by walking near a creature.
+- **Comeback.** Already built in. The Line moves at most 2 columns a turn, a stagger delays the foe, and the desperate flare comes when
+  the aberrant is losing.
+- **Phases instead.** An aberrant's second round can be a phase change on the same board (Puzzle & Dragons' boss floors, a Monster
+  Hunter monster's enraged state).
+- **Where three rounds belong.** The marked hunts (Notorious Monsters, FFXII's Marks) and a PvP mode, where a best of three is the
+  convention.
+
+### 26.8 Asked of the others
+- **Calissa and Wanda:** the turn's change as a cut-in of its own (whose turn, the board's half lit), beside the foe skills' cut-ins.
+- **Petra:** the session passes `dim: notAwakened(g.ledger)` and forwards `cleared` on `duel.power`.
+- **Espada:** Hurl's new line.

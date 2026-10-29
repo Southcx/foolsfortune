@@ -27,7 +27,7 @@ import { OPPOSITE } from '../weather.js';
 import { SKILL_ACTION, chargeFrom, skillActions } from './skills.js';
 import { skyOf, skyfall, deficitOf } from './skyfall.js';
 import { foeOf, foeSkillsNow, stagger } from './foeskills.js';
-import { POWER_ACTION, tickRests, underTransmute, powerActions } from './powers.js';
+import { POWER_ACTION, tickRests, underTransmute, powerActions, cutRests } from './powers.js';
 import { secretStart, secretStep } from './secrets.js';
 
 /** Every action a side may take: the board's (rules.js), the Courier's run and tools (couriertools.js), the god hand's finisher (duelbreak.js),
@@ -41,7 +41,10 @@ export const oneGesture = (s) => !!s && s.style !== 'classic';
 const PVE_VERBS = new Set(['drag', 'power', 'flee']); // (the PvE duel's big plays are the hand's powers, powers.js; the worn pair's skills are tabled there: PUZZLE-DUELS.md 24.4)
 /** The PvE duel (PUZZLE-DUELS.md 23): the longest drag a turn takes (a finger's whole path under the session's timer), what a big play
  *  is (a chain this deep, or this much sent in one turn) that staggers the aberrant. */
-export const PVE = { maxPath: 48, stagger: { step: 4, sent: 10 }, columns: 2, drink: 1 }; // (drink: pool a gem you clear, what pays the powers: powers.js) // (columns: the most the Line moves in one of your turns, overkill lost: Puzzle & Dragons' overkill; a free Paint did 17, four columns, alone)
+export const PVE = { maxPath: 48, stagger: { step: 4, sent: 10 }, columns: 2, drink: 1, drinkStep: 3, restCut: true }; // (drink: pool a gem you clear, what pays the powers: powers.js; drinkStep: a gem cleared at chain step k drinks k (to 3); restCut: a chain of k steps takes k - 1 turns off every resting power: a good drag feeds the powers, PUZZLE-DUELS.md 26.2)
+/** A gem of a feeling you have not awakened to (`newDuel({ dim })`): it matches and clears as any, worth this much of a gem (South, 2026-10-29:
+ *  "some sort of attenuated value, above junk, but not as effective as feelings you have unlocked"). */
+export const DIM = { k: 0.5, junk: false }; // (junk: whether it counts in the Line's push too; off: measured, a new save with no feeling awakened could not beat the Lantern Wisp at all, 1 of 16 for the strong stand-in: PUZZLE-DUELS.md 26.4) // (columns: the most the Line moves in one of your turns, overkill lost: Puzzle & Dragons' overkill; a free Paint did 17, four columns, alone)
 /** The kinds' first names, still taken while the room and the view move to the genre's words (the owner, 2026-10-19); to go once they have. */
 const LEGACY = { glean: 'run', punt: 'kick', coup: 'finisher', hook: 'grab', toll: 'delay', hoover: 'hold', flail: 'send' };
 export const costOf = (a) => { const A = ACTIONS[a.kind]; return typeof A.cost === 'function' ? A.cost(a) : A.cost; };
@@ -71,7 +74,7 @@ export const junkOf = (n, step) => Math.max(0, n - 2) * 2 ** (Math.min(step, CHA
 
 /** A new duel under a ruleset (rulesets.js). Each side's forms: the Courier, the god hand, or both (the owner, 2026-10-19); `ap` a number
  *  or one a side (a side of two players has two players' points: section 12); `tools` the tools a side wears (all, if not given). */
-export function newDuel({ ruleset, seed = 1, style = null, forms = ['hand', 'courier'], board: boardOver = null, lesson = false, line, w, h, ap = DUEL.ap, pool = DUEL.pool, tools = null, finisher = [true, false], flee = [true, false], luck = [0, 0], rerolls = [0, 0], levels = null } = {}) {
+export function newDuel({ ruleset, seed = 1, style = null, forms = ['hand', 'courier'], board: boardOver = null, lesson = false, line, w, h, ap = DUEL.ap, pool = DUEL.pool, tools = null, finisher = [true, false], flee = [true, false], luck = [0, 0], rerolls = [0, 0], levels = null, dim = null } = {}) {
   const rs = { match: 3, cluster: 0, blast: 2, colours: 5, drip: 2, bombs: 0, queue: 3, pincer: false, ...ruleset };
   style ??= rs.style ?? DUEL.style; if (style === 'drag' || style === 'pve') forms = ['hand']; // (the one-gesture duel: no Courier form, no walk)
   if (style === 'pve') { const g = rs.gravity || (() => DIRS.S); rs.gravity = (x, y, b) => (b.sideOf(x) === 1 ? DIRS.NONE : g(x, y, b)); } // (the aberrant's half is its mind, frozen: nothing falls or clears there)
@@ -87,6 +90,7 @@ export function newDuel({ ruleset, seed = 1, style = null, forms = ['hand', 'cou
   s.lesson = lessonOf(lesson); // (the first duel as a lesson: lesson.js)
   if (style === 'pve') s.foe = foeOf(rs); // (its foe skills' countdowns: foeskills.js)
   s.secret = secretStart(s); // (its secret win, if it has one: secrets.js, ABERRANTS.md)
+  s.dim = dim?.length ? new Set(dim) : null; // (the feelings side 0 has not awakened to: their gems worth DIM.k)
   s.luck = luck; // (each side's Luck, -2..2: luck.js's sway, passed in by the room)
   s.rerolls = [...rerolls]; // (each side's re-rolls left this game day: a failed Flee is thrown again, flee.js; the room hands in game.rerolls.left())
   for (const side of [0, 1]) {
@@ -141,7 +145,9 @@ export function settle(s) {
     events.push(...ev);
     if (sky) for (const e of ev) if (e.type === 'clear' && e.colour) holes[e.side].push(e.at);
     const weak = weaknessOf(s), hit = [0, 0], eff = [...cleared];
-    if (weak) for (const e of ev) if (e.type === 'clear' && e.side === 0 && (e.colour === weak.weak || e.colour === weak.resists)) { const k = e.colour === weak.weak ? weak.k[0] : weak.k[1]; eff[0] += k - 1; if (k > 1) hit[0]++; }
+    for (const e of ev) if (e.type === 'clear' && e.side === 0 && e.colour) { // (a weak colour's 1.5, a resisted one's 0.5, a dim feeling's half: each gem's worth)
+      let k = weak && e.colour === weak.weak ? weak.k[0] : weak && e.colour === weak.resists ? weak.k[1] : 1; if (k > 1) hit[0]++;
+      if (DIM.junk && s.dim?.has(e.colour)) k *= DIM.k; eff[0] += k - 1; }
     for (const side of [0, 1]) if (cleared[side]) { steps[side]++; junk[side] += junkOf(eff[side], steps[side]); events.push({ type: 'chain', side, step: steps[side], cleared: cleared[side], ...(hit[side] ? { weak: hit[side] } : {}) }); }
     const h = s.board.hash(); if (seen.has(h)) { s.capHits++; events.push({ type: 'settle.loop' }); break; } seen.add(h);
   }
@@ -204,11 +210,25 @@ export function act(s, a) {
   events.push(...secretStep(s, side, events)); // (an aberrant's secret win: secrets.js)
   if (a.kind === 'flee' || s.winner !== null) s.undo = []; // (a die thrown, or the duel decided: no taking it back)
   if (s.winner !== null) s.log.push(...events.filter((e) => e.type.startsWith('duel.'))); // (an end made by an action, not a turn's end (a secret won by a drag), kept in the log the session's finish reads: endTurn logs its own)
-  if (pve) { let gems = 0; for (const e of events) { if (e.type === 'chain' && e.side === 0) S0.turnStep = Math.max(S0.turnStep || 0, e.step); if (e.type === 'clear' && e.side === 0 && e.colour) gems++; }
-    if (gems && PVE.drink) { S0.pool = Math.min(100, S0.pool + gems * PVE.drink); events.push({ type: 'drink', side, n: gems * PVE.drink, pool: S0.pool }); } // (your clears fill the pool the powers spend)
+  if (pve) { for (const e of events) if (e.type === 'chain' && e.side === 0) S0.turnStep = Math.max(S0.turnStep || 0, e.step);
+    const sip = Math.round(drinkOf(s, events)); if (sip) { S0.pool = Math.min(100, S0.pool + sip); events.push({ type: 'drink', side, n: sip, pool: S0.pool }); } // (your clears fill the pool the powers spend, deeper steps more)
+    if (PVE.restCut && (S0.turnStep || 0) >= 2 && a.kind !== 'power') events.push(...cutRests(s, 0, S0.turnStep - 1)); // (a chain's steps take turns off the resting powers)
+    if (a.kind === 'power') { let n = 0; for (const e of events) if (e.type === 'clear' && e.side === 0 && e.colour) n++; events[0].cleared = n; } // (what the cast cleared: its domain's experience, domains.js)
     if (a.kind !== 'skill' && a.kind !== 'power') { S0.dragged = true; s.undo = []; } } // (the drag, or a flee's throw, is the turn: what is left is the skills', and they come first)
   if (s.lesson) events.push(...lessonAct(s, side, a, events));
   return events;
+}
+
+/** The pool your clears give back in the PvE duel: a point a gem, times the chain step it cleared at (to PVE.drinkStep), a dim
+ *  feeling's gem half (DIM.k). A clear's events come before its chain's, so each clear takes the step of the chain that follows it. */
+function drinkOf(s, events) {
+  if (!PVE.drink) return 0;
+  let pts = 0, waiting = 0;
+  for (const e of events) {
+    if (e.type === 'clear' && e.side === 0 && e.colour) waiting += s.dim?.has(e.colour) ? DIM.k : 1;
+    if (e.type === 'chain' && e.side === 0) { pts += waiting * Math.min(e.step, PVE.drinkStep); waiting = 0; }
+  }
+  return (pts + waiting) * PVE.drink;
 }
 
 /** What a big play earns the mover at once (PUZZLE-DUELS.md 19): an action point back for a clear of `refund.size` or a chain step of
@@ -262,7 +282,7 @@ export function endTurn(s) {
  *  (foeskills.js), then the turn is yours. An idle turn (the lesson's, a stun's) fires nothing but still counts down nothing. */
 export function foeTurn(s) {
   if (s.style !== 'pve' || s.toMove !== 1 || s.winner !== null) return [];
-  const events = s.apLeft > 0 ? foeSkillsNow(s, { moveLine, gemOf }) : [{ type: 'foe.idle', side: 1 }];
+  const events = s.apLeft > 0 ? foeSkillsNow(s, { moveLine, gemOf, land }) : [{ type: 'foe.idle', side: 1 }];
   if (s.winner === null) events.push(...endTurn(s)); else s.log.push(...events);
   return events;
 }
