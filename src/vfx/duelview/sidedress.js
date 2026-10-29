@@ -28,7 +28,7 @@ import { feelColour } from './layout.js';
 
 /** rings: the armillary's radii (m); falls: the sandfalls (out from the foe, back from the face, width, m); briars: canes; lanterns' flicker (real s). */
 export const SIDE_DRESS = { rings: [1.0, 0.72, 0.48], falls: [[1.4, 1.2, 0.7], [2.6, 0.4, 0.5], [3.6, 2.2, 0.9], [2.0, 3.3, 0.6]], fallH: 7, briars: 6, flicker: 9 };
-const CLAY = 0xb5653a, SAND = 0xd8b878, IRON = 0x161214, LAMP = 0xffa850, GOLD = 0xffcf6a;
+const CLAY = 0xb5653a, SAND = 0xb08850, IRON = 0x161214, LAMP = 0xffa850, GOLD = 0xffcf6a;
 const UP = new THREE.Vector3(0, 1, 0);
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _q = new THREE.Quaternion(), _c = new THREE.Color();
 const hsh = (i, k) => { const x = Math.sin(i * 127.1 + k * 311.7) * 43758.5453; return x - Math.floor(x); };
@@ -50,7 +50,7 @@ export class DuelSideDress {
   /** Yours: the armillary of clay rings with their chant, the kiln-coil pillars and their gold crackle, the orbiting sherds. */
   yours(at, out, back) {
     const M = duelMaterials(), clay = M.clay.clone(); clay.color.setHex(CLAY); this.clay = clay; const S = SIDE[0];
-    const hub = at.clone().addScaledVector(out, 1.3).addScaledVector(back, 1.6).addScaledVector(UP, 2.4);
+    const hub = at.clone().addScaledVector(out, 0.3).addScaledVector(back, 3.2).addScaledVector(UP, 2.9); // (behind and over the Jar, clear of the wide shot's edge)
     SIDE_DRESS.rings.forEach((r, i) => {
       const g = new THREE.Group(); g.position.copy(hub); this.group.add(g);
       const ring = new THREE.Mesh(new THREE.TorusGeometry(r, 0.045, 8, 48), clay); g.add(ring);
@@ -68,7 +68,7 @@ export class DuelSideDress {
 
   /** The slip jelly's: sandfalls pouring out of the dark, a dust plume and a mound where each lands. */
   sandfalls(at, out, back) {
-    const M = duelMaterials(), sand = M.clay.clone(); sand.color.setHex(SAND); this.sand = sand; const gall = feelColour('gall', _c).clone().lerp(new THREE.Color(SAND), 0.55).getHex();
+    const M = duelMaterials(), sand = M.clay.clone(); sand.color.setHex(SAND); this.sand = sand; const gall = feelColour('gall', _c).clone().lerp(new THREE.Color(SAND), 0.75).multiplyScalar(0.8).getHex(); // (sand, a little of Gall in it: warm, never white)
     for (const [o, b, w] of SIDE_DRESS.falls) {
       const H = SIDE_DRESS.fallH, base = at.clone().addScaledVector(out, o).addScaledVector(back, b), q = _q.setFromUnitVectors(new THREE.Vector3(0, 0, 1), back.clone().negate());
       for (const [k, sv, op, dz] of [[1, 1.6, 0.85, 0], [1.35, 0.9, 0.45, -0.12]]) { const m = this.fx(new THREE.PlaneGeometry(w * k, H), tex('sand'), gall, { add: false, opacity: op, repeat: [1, 2.5] }, 0, sv, base.clone().addScaledVector(UP, H / 2).addScaledVector(back, -dz)); m.quaternion.copy(q); }

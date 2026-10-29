@@ -29,7 +29,7 @@ import { FEELINGS } from '../../npc/neuraleseroots.js';
  *  burst: real s after a limit break in which its own casts come without a cut-in; word / limitWord: when the label slams (real s from
  *  the event: Wanda's stings land there, audio/duelcasts.js CUT_IN_LEAD; the limit break's after its 1.1 s swell). */
 export const CUT_IN = { in: 0.14, hold: 0.62, out: 0.16, limitHold: 1.45, word: 0.12, limitWord: 1.1, band: 0.16, limitBand: 0.24, y: 0.4, tilt: -0.09, portrait: 0.44, rt: 512, fov: 24, burst: 4,
-  turn: { in: 0.1, hold: 0.3, out: 0.14, word: 0.12, band: 0.085, lit: 0.35 }, vs: { in: 0.16, hold: 1.05, out: 0.18, word: 0.2, band: 0.13 }, pop: 0.06, red: 0.35 };
+  turn: { in: 0.1, hold: 0.3, out: 0.14, word: 0.12, band: 0.085, lit: 0.35 }, vs: { in: 0.16, hold: 1.05, out: 0.18, word: 0.2, band: 0.13 }, pop: 0.06, red: 0.5 };
 /** The turn's change (South, 2026-10-29: "cut-ins/highlights and vfx for when the turns switch over"; Fire Emblem's PLAYER PHASE and
  *  ENEMY PHASE): the band thinner and shorter, yours in the film. */
 export const TURN_WORDS = ['YOUR TURN', "FOE'S TURN"]; // (Espada's, 2026-10-29: the duel says foe, never enemy)
@@ -59,11 +59,11 @@ void main() {
     float row = floor((by * 0.5 + 0.5) * 44.0), rh = h21(vec2(row, 3.0)), s = fract(bx * (0.6 + rh * 1.4) + uT * (2.2 + rh * 3.5) + rh);
     float streak = smoothstep(0.0, 0.05, s) * (1.0 - smoothstep(0.05, 0.4, s)) * step(0.5, rh);
     c += uFeel * streak * 0.6 + streak * 0.06;
-    if (uMotif > 0.5 && uMotif < 1.5) { float cr = texture2D(uCrack, px / 240.0 + vec2(uT * 0.02, 0.0)).a; c = mix(c, vec3(1.0, 0.8, 0.42), cr * 0.3); } // (yours: the clay's craze, kintsugi's gold)
+    if (uMotif > 0.5 && uMotif < 1.5) { float cr = texture2D(uCrack, px / 240.0 + vec2(uT * 0.02, 0.0)).a; c = mix(c, vec3(1.0, 0.8, 0.42), cr * 0.17); } // (yours: the clay's craze, kintsugi's gold)
     else if (uMotif > 1.5 && uMotif < 2.5) { float col = floor(px.x / 22.0), on = step(0.5, h21(vec2(col, 5.0))); // (the slip jelly's: sand pouring down through the band)
       float g = texture2D(uSand, vec2(fract(px.x / 22.0), px.y / 260.0 - uT * (1.4 + h21(vec2(col, 9.0))))).a; c = mix(c, uFeel * 0.5 + vec3(0.4, 0.32, 0.15), g * on * 0.75); }
     else if (uMotif > 2.5) { for (int k = 0; k < 3; k++) { float fk = float(k), yy = sin(bx * (2.5 + fk) + fk * 2.1 + uT * 0.4) * 0.35 + (fk - 1.0) * 0.5; // (the Lantern Wisp's: black briars across it, lanterns hung off them)
-        c = mix(c, vec3(0.02, 0.015, 0.015), smoothstep(0.07, 0.025, abs(by - yy)));
+        c = mix(c, vec3(0.02, 0.015, 0.015), smoothstep(0.11, 0.05, abs(by - yy)));
         float lx = fract(bx * 0.8 + fk * 0.37) - 0.5, ld = length(vec2(lx * 2.4, (by - yy + 0.2) * 1.3)); c += vec3(1.0, 0.6, 0.22) * smoothstep(0.22, 0.0, ld) * (0.55 + 0.45 * sin(uT * 9.0 + fk * 3.0 + bx)); } }
     for (int k = 0; k < 2; k++) { float sg = k == 0 ? 1.0 : -1.0, cy = (by - 0.74 * sg) / 0.2; // (the chant: neuralese running along both edges, the two lines counter-scrolling)
       if (abs(cy) < 1.0) { float sh = hh * 0.4, cu = fract(px.x / (sh * uChantA) - uT * 0.14 * sg); float ca2 = texture2D(uChant, vec2(cu, 0.5 - cy * 0.5)).a; c = mix(c, uSideHi, ca2 * 0.7); } }
