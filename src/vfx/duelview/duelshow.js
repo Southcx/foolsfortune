@@ -150,7 +150,7 @@ export class DuelShow {
     const head = V.foeCast?.headWorld?.(_e) || _e.copy(foe).setY(foe.y + 1.2), fs = SHOW.foeScale;
     if (kind === 'vsFoe') { const dir = new THREE.Vector3().copy(face).addScaledVector(uu, -0.9).normalize(), d = 1.9 * fs - 0.3 * u;
       out.look.copy(head).addScaledVector(UP, -0.15); out.pos.copy(head).addScaledVector(dir, d).addScaledVector(UP, -0.35); out.fov = -8; return out; }
-    const jy = this.won?.yaw ?? this.jar?.group.rotation.y ?? 0, front = new THREE.Vector3(Math.sin(jy), 0, Math.cos(jy)).multiplyScalar(SHOW.front); // (the way the Jar faces as it stands at its spot)
+    const jy = this.won?.yaw ?? this.jar?.group.rotation.y ?? 0, front = new THREE.Vector3(Math.sin(jy), 0, Math.cos(jy)).multiplyScalar(this.front); // (the way the Jar faces as it stands at its spot)
     if (kind === 'vsJar') { const dir = new THREE.Vector3().copy(front).addScaledVector(face, 0.5).normalize(), d = 2.1 - 0.35 * u, top = jar.y + 0.75 * SHOW.jarScale;
       out.look.copy(jar).setY(top); out.pos.copy(jar).addScaledVector(dir, d).setY(jar.y + 0.35); out.fov = -8; return out; }
     if (kind === 'hit') { const mid = new THREE.Vector3().copy(jar).lerp(foe, 0.5), span = jar.distanceTo(foe);
