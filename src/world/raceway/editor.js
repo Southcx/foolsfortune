@@ -24,7 +24,7 @@
 // (a part palette, readable at a glance, the clear check), LittleBigPlanet Karting's thermometer, Fall Guys Creative's exposed timings.
 //
 //   game.trackEditor = new TrackEditor(game)   .open(slot?)   .close()   .active   .slots [def | null]   .def   .slot   .load(code)
-//   .update(dt)   save section 'madeTracks' (scope player)   events: editor.open, editor.save { budget, traps }, track.validate { seconds },
+//   .update(dt)   save section 'madeTracks' (scope player)   events: editor.open, editor.save { budget, traps }, track.validate { seconds, fresh },
 //   track.share, track.load { from }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -60,20 +60,21 @@ const ndcOf = (x, y) => ({ x: (x / innerWidth) * 2 - 1, y: -(y / innerHeight) * 
 
 export class TrackEditor {
   constructor(game) {
-    this.game = game; this.active = false; this.slots = [null, null, null]; this.slot = 0; this.def = null; this.tool = 'select'; this.sel = null; this.undo = [];
+    this.game = game; this.active = false; this.slots = [null, null, null]; this.slot = 0; this.validated = new Set(); this.def = null; this.tool = 'select'; this.sel = null; this.undo = []; // (validated: the geometries validated before, by hash: a validate's `fresh`)
     this.cam = { x: 0, z: 0, h: CAM.h }; this.ndc = null; this.recording = null; this.dirty = false;
     game.save?.section('madeTracks', {
       scope: 'player', version: 1,
-      dump: () => ({ slots: this.slots, slot: this.slot }),
-      load: (d) => { this.slots = [0, 1, 2].map((i) => cleanDef(d?.slots?.[i])); this.slot = Math.max(0, Math.min(2, d?.slot | 0)); },
-      reset: () => { this.slots = [null, null, null]; this.slot = 0; },
+      dump: () => ({ slots: this.slots, slot: this.slot, validated: [...this.validated] }),
+      load: (d) => { this.slots = [0, 1, 2].map((i) => cleanDef(d?.slots?.[i])); this.slot = Math.max(0, Math.min(2, d?.slot | 0)); this.validated = new Set(Array.isArray(d?.validated) ? d.validated.filter((h) => typeof h === 'string').slice(-64) : []); },
+      reset: () => { this.slots = [null, null, null]; this.slot = 0; this.validated = new Set(); },
     });
     // a validation run's end: its time is the author's, if the track is still the one ridden
     game.events?.on('race.finish', (e) => {
       if (e.track !== 'made' || !e.validate) return;
       const def = this.slots[this.slot]; if (!def || `made.${hashOf(def)}` !== e.made) return;
-      def.author = { seconds: e.seconds, hash: hashOf(def), ...(this.ghostOf(game.race?.validateLap) || {}) }; game.save?.dirty('madeTracks');
-      game.events?.emit('track.validate', { seconds: e.seconds, by: 'courier' });
+      const hash = hashOf(def), fresh = !this.validated.has(hash); this.validated.add(hash); // (a geometry validated for the first time: Manifestation pays only that, domains.js)
+      def.author = { seconds: e.seconds, hash, ...(this.ghostOf(game.race?.validateLap) || {}) }; game.save?.dirty('madeTracks');
+      game.events?.emit('track.validate', { seconds: e.seconds, fresh, by: 'courier' });
     });
     if (typeof document !== 'undefined' && !document.getElementById('tedit-css')) { const st = document.createElement('style'); st.id = 'tedit-css'; st.textContent = CSS; document.head.appendChild(st); }
   }
