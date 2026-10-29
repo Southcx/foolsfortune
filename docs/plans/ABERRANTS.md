@@ -149,27 +149,39 @@ to tend the garden for a fight (South: no new reasons yet). Parked for later: a 
 
 "The secret is a faster way to win, maybe we can evaluate drop tables of Soul Alchemy materials, cosmetic drop? Learning special
 abilities? ... I'm all for learning abilities from enemies." Each aberrant teaches one skill (`duel/learned.js`), cast as a power: the
-feat way is its secret found once, the count way 5 beaten at the Line. Kindle is the Wisp's (PUZZLE-DUELS.md 26.10). The jelly's is open:
-its Spew turned around would push junk onto a half the PvE duel keeps frozen, so it waits for a mode where that half plays.
-A material drop is not yet built: a second faucet into Soul Alchemy needs South's word on its size. A cosmetic opened by the secret is the
-right size (cosmetics.js's rule: the thing it pictures), asked of Calissa (a lantern pendant).
+feat way is its secret found once, the count way 5 beaten at the Line. Kindle is the Wisp's (PUZZLE-DUELS.md 26.10).
 
-## 9. Asked of the divisions (handoffs in `docs/handoffs/<name>/`)
+**The slip jelly teaches Absorb** (Dovina's call, South left it to her, 2026-10-29): every junk (slime too) in a 3 x 3 drunk off your
+half, 3 to the pool each; 5 to cast, rests 3, Possession. A jelly takes in whatever is thrown at it, and so do you. It answers a Hurl and
+pays for the next power. Against the jelly itself it eats the pile its secret wants, so there it is a choice. Its Spew turned around
+would throw junk at the aberrant's half, which the PvE duel keeps frozen; Absorb works on your half, where play is.
 
-- **Petra:**
-  - the session passes `learned: learnedOf(g.ledger)` (`duel/learned.js`) beside `dim`;
-  - arms Kindle as Herd is (a row or a column);
-  - adds the lectern's row for `PRACTICE.jelly`;
-  - colours the view by the ruleset's feeling when the aberrant brings its own board (a blotling's `grade` is its weather; its board is
-    the jelly's Gall);
-  - the Wisp's (section 3) and the jelly's (section 5) two deaths, timed.
-- **Calissa:**
-  - the trickle's motes to the Lachrimeter wherever it stands;
-  - each side of the tsuitate shaped as its own (South, 2026-10-29: "the sides tsuitate should take on the shape of the aesthetic of
-    the courier or aberrant respectively. More thematic resonance doubled by the backgrounds");
-  - slime's look (junk with `slime`), a Transmute of slime, Spew, Harden, the jelly's Zone of Influence and its two deaths;
-  - Kindle-yours' tile and cast; a lantern pendant for the Pneuka Jar, if she likes it;
-  - still standing: the Wisp's looks, your half as your garden, the turn's change.
-- **Wanda:** Spew's and Harden's stings, the jelly's cue, the slime turning under a Transmute.
-- **Espada:** the words for Spew, Harden, Kindle (yours), the jelly's secret and its two deaths, and the line said when a skill is
-  learned.
+A cosmetic opened by the secret: the Wisp's lantern pendant for the Pneuka Jar (`pendant.lantern`, cosmetics.js; Calissa draws it).
+
+## 9. What an aberrant leaves, and the shiny ones (South, 2026-10-29)
+
+"Material drops for aberrant fights is a go. Also tell calissa to apply the inverted palette modifier shader on aberrants at a 10%
+chance. They'll be like our shiny versions." (`progress/duel/drops.js`.)
+
+- **Drops.** A won duel leaves Soul Alchemy materials of the aberrant's own kinds on top of what draining it gives: the Wisp arcane relics
+  and eldritch artefacts (a lamp's glass, an idol's dark), the slip jelly provisions and finery (what it swallowed, its slime's pigment).
+  - The Line: 2 rolls on the plain table (tier 0 55%, 1 30%, 2 12%, 3 3%).
+  - The secret: 2 rolls on the richer table (20%, 42%, 26%, 10%, 2% for tier 4).
+  - A shiny: 1 more roll at tier 3 or better.
+  - Practice and a flight pay nothing.
+- **Sized** (a material is worth 1 + its tier minutes of play): the Line about 3.3 minutes' worth for a duel of about 4 real minutes, the
+  aim; the secret about 4.7 in a shorter duel, about 1.4 times the aim a minute (playing well pays 1.5x); a shiny's about 7.3.
+- **The shiny.** One aberrant in ten goes wrong shiny (`SHINY.chance`, `rollShiny`, rolled where it goes wrong: Petra's), drawn in its
+  colours inverted (Calissa's AberrantInversion, kept until now as a placeholder look). A look and a richer drop only, never a harder
+  fight. Counted (`duel.won.shiny`), a slot in the collection log, an achievement (du11).
+- Prior art: Old School RuneScape's drop and rare tables, Monster Hunter's capture and break rewards, Pokemon's shiny, Diablo's champions.
+
+## 10. Asked of the divisions (handoffs in `docs/handoffs/<name>/`)
+
+- **Petra:** roll `rollShiny` where an aberrant goes wrong (a Wisp's `goWrong`, a blotling at its blot) and set `c.shiny`; carry `shiny` on
+  `duel.end`; Absorb armed as a cell (as Manifest is); the lectern row's words (Espada's: "An aberrant slip jelly's board: slime, and a lot
+  of it."); the jelly's two deaths timed.
+- **Calissa:** a shiny aberrant drawn inverted in the world and on the duel's idol (`c.shiny`); the drops' moment (`duel.drop`); Absorb's
+  tile and cast; still standing: the jelly's looks, Kindle, each side of the tsuitate its own, the regen's readout on the tube.
+- **Wanda:** a shiny's sting (Pokemon's sparkle, in the house's voice) at the duel's open; the drop's chime; Absorb's gulp.
+- **Espada:** Absorb's words, du10 to du13, the drop line, the shiny's name.

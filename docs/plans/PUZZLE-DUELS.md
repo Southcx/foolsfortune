@@ -986,6 +986,17 @@ Built in the kernel and measured; every blotling (an aberrant slip jelly) brings
 drawn as junk until Calissa's look). **Transmute** takes a slime cell: every slime on your half turns to gems of the colour you pick.
 **Spew** and **Harden**, its own foe skills. Its secret, **dissolve**.
 
+### 26.13 The round's QoL (South, 2026-10-29: "Execute all QoL implementations and consider more as you go")
+- **Undo takes back a power too.** It already did: the turn's snapshot is taken before every action and dropped only by the drag, so a
+  power cast by mistake comes back with its pool and its rest (checked headless on Absorb).
+- **The regen shown.** The kernel says it as a `drink` with `from: 'regen'`; asked of Calissa: a "+8" on the Lachrimeter's tube at the
+  turn's open, beside the bead.
+- **Learned skills where you look.** The collection log's new section "Learned skills" (a slot a skill), the shiny's slot under
+  "Aberrants", and `learnProgress(power, L)` (learned.js: the count way's wins of 5, never the secret's) for a page that wants it.
+- **Achievements:** du10 (the slip jelly's secret), du11 (a shiny aberrant), du12 and du13 (a learned skill, every learned skill).
+- **Considered and left:** a bounty board (South parked bounties); drop tables shown in the bestiary after a first win (knowledge, asked of
+  Petra's Codex when it next opens the bestiary).
+
 ### 26.12 Asked of the others (handoffs in `docs/handoffs/<name>/`)
 - **Petra:** the session passes `learned: learnedOf(g.ledger)` beside `dim`; a lectern row for the jelly's board (`PRACTICE.jelly`);
   Kindle armed as Herd is (a row or a column); the duel's view coloured by the ruleset's feeling for an aberrant with its own board (a

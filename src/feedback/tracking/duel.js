@@ -42,7 +42,7 @@ export function duelRules({ on: onAny, L: ledger, log }) {
   });
   on('duel.end', (e) => {
     if (e.how === 'fled') { L.inc('duel.fled'); if (!e.atOnce) log.say('battle', 'You flee the duel.'); return; } // (a natural 20 said it already: "You flee at once.")
-    L.inc(e.won ? 'duel.won' : 'duel.lost'); if (e.won && e.kind) L.inc(`duel.won.${e.kind}`); // (by kind: a learned skill's count way, duel/learned.js)
+    L.inc(e.won ? 'duel.won' : 'duel.lost'); if (e.won && e.kind) L.inc(`duel.won.${e.kind}`); if (e.won && e.shiny) L.inc('duel.won.shiny'); // (by kind: a learned skill's count way, duel/learned.js)
     if (e.practice) { log.say('battle', e.won ? 'You win the practice duel. Nothing counts.' : 'You lose the practice duel. Nothing counts.'); return; } // (no shatter, no drain; Espada's)
     if (e.won && e.how === 'secret') return; // (its own line came with duel.secret)
     if (e.won) log.say('battle', e.how === 'finisher' ? 'You drain the Figment.' : LINE_DEATH[e.kind] || 'You win the duel. The Figment is mended.');
@@ -73,5 +73,7 @@ export function duelRules({ on: onAny, L: ledger, log }) {
   });
   on('duel.seen', (e) => { log.say('battle', `You know ${FOE_SKILLS[e.skill]?.label || 'this skill'} now: ${FOE_SKILLS[e.skill]?.line || ''}.`); });
   on('duel.learn', (e) => { if (e.by !== 'courier') return; L.inc('duel.learn'); log.say('battle', `You learn ${DUEL_POWERS[e.power]?.label || 'a skill'} from the aberrant ${LEARN_FROM[e.from] || 'Figment'}. It is yours to cast in a duel now.`); }); // (Espada's, 2026-10-29)
+  on('duel.drop', (e) => { if (e.by !== 'courier') return; L.inc('duel.drop', e.items.length); for (const it of e.items) L.hi('duel.drop.tier', it.tier); if (e.shiny) L.inc('duel.drop.shiny');
+    log.say('loot', `${e.shiny ? 'The shiny aberrant' : 'The aberrant'} leaves ${e.items.length === 1 ? 'a material' : `${e.items.length} materials`} for the spirit press. They go into your Pneuka Box.`, { tone: '#ffd98a' }); }); // (placeholder words, Espada's to word; drops.js)
   on('duel.allclear', (e) => { if (e.by !== 'courier') return; L.inc('duel.allclear'); log.say('battle', 'All clear: your half of the board is empty.'); });
 }
