@@ -52,7 +52,7 @@
 //   L.stickHome() -> { x, y }   L.resetLayout() (the settings' `layout` row: the kept layout already forgotten, lay out again)
 //   L.on('change', fn) -> off()  on a resize, an orientation change, a device change, the garden or the hand coming up
 //   document.body: .hud-touch .hud-portrait .hud-landscape, and the CSS vars --su --safe-t --safe-r --safe-b --safe-l
-//   (--hud-log-x, --hud-log-y, --hud-log-w: the log's ticker)
+//   (--hud-log-x, --hud-log-y, --hud-log-w, --hud-log-h: the log's ticker; on a phone on its side one line, clear of the centre box)
 // ---------------------------------------------------------------------------------------
 import { TouchLog } from './touchlog.js';
 import { TurnCard } from './turncard.js';
@@ -61,7 +61,7 @@ import { DUEL_VIEW } from '../vfx/duelview/layout.js';
 export const HUD_LAYOUT = {
   gutter: 8,            // (CSS px inside the safe area, every side: the layout margin)
   gap: 8,               // (CSS px between two things placed)
-  topBar: { h: 44 },    // (the strip of window icons: one 44 px target tall, left of the Sight)
+  topBar: { h: 44, corner: 4, folded: 168, row: 56 }, // (the strip of window icons: one 44 px target tall; flush in the top-left corner, `corner` px in (South, 2026-10-29); its width folded (MENU, LOG, PAUSE: topbar.js); the top row's height, a tile, its foot and the shelf)
   // the cluster: the main tile (80) in the corner, the three others (60) on an arc round its centre at 180, 135 and 90 degrees
   // (left, up-left, up), `ring` from it; its rect is the arc's bounds: main / 2 + ring + side / 2 = 180 px square
   cluster: { main: 80, side: 60, gap: 10, get ring() { return this.main / 2 + this.gap + this.side / 2; }, get size() { return this.main / 2 + this.ring + this.side / 2; } },
@@ -70,7 +70,7 @@ export const HUD_LAYOUT = {
   log: { lines: 2, line: 18, pad: 6, maxW: 420 },
   strip: { budget: 180, minW: 150, side: 0.25 }, // (the strip's room: up to 180 px over the cluster (its pair and two rows), at least 150 wide; the bottom row
                         //  reaching left to a quarter of the view)
-  custom: { scale: [0.75, 1.3], stick: { fx: 0.18, fy: 0.72 }, ring: 60 }, // (the kept layout: the cluster's scale range (60 x 0.75 = 45 px, over 44); the stick's
+  custom: { scale: [0.75, 1.3], stick: { fx: 0.11, fy: 0.72 }, ring: 60 }, // (the kept layout: the cluster's scale range (60 x 0.75 = 45 px, over 44); the stick's
                         //  home by default, low in the move area; the ring kept clear round it (the stick's full push, ui/touch/stick.js STICK.full)) // (the ticker: two lines of 18 px (16 px type), at most 420 px wide)
   // the duel's phone screen: the board's padding off the safe height's ends, the least flank, the tiles (the tools' at most and least, END
   // TURN, FINISHER and FORM, FLEE), the tube's height (a phone held sideways), the tiles' foot; the top bar's tile, gap, PAUSE's gap and pad (topbar.js)
@@ -80,9 +80,9 @@ export const HUD_LAYOUT = {
   // line, the desk's 1080 lines are 2.25)
   instruments: {
     sight: { anchor: 'tr', w: 172, h: 178, touch: { anchor: 'tr', scale: 0.2 } },
-    lachrimeterTube: { anchor: 'br', w: 112, h: 189, touch: { anchor: 'tr', below: 'sight', above: 'cluster', scale: 0.2, min: 0.8,
+    lachrimeterTube: { anchor: 'br', w: 112, h: 189, touch: { anchor: 'tr', below: 'sight', above: 'cluster', scale: 0.2, min: 0.5, // (0.5: on its side it stands small between the Sight and the cluster, out of the centre 60%, South 2026-10-29)
       else: { anchor: 'br', leftOf: 'cluster', scale: 0.2 } } }, // (up the right edge under the Sight; on its side the phone has no room there: left of the cluster)
-    psygunCylinder: { anchor: 'br', w: 190, h: 160, touch: { anchor: 'br', beside: 'lachrimeterTube', scale: 0.2 } },
+    psygunCylinder: { anchor: 'br', w: 190, h: 160, touch: { anchor: 'br', leftOf: 'cluster', scale: 0.115 } }, // (on a phone on its side: the bottom band left of the cluster, under the centre 60%, South 2026-10-29; it stood beside the tube)
   },
 };
 
@@ -155,7 +155,9 @@ export class HudLayout {
     A.cluster = rect(0, 0, 0, 0); A.topBar = rect(0, 0, 0, 0); A.artBar = rect(0, 0, 0, 0); // (cleared while the Sight is placed: it keeps clear of none of them)
     const sight = this.box('sight');
     // (upright the strip beside the Sight is narrow: the top bar may take the Sight's height there, its tiles wrapped into rows, ui/touch/topbar.js)
-    A.topBar = rect(B.x, B.y, (sight ? sight.x - gap : B.x + B.w) - B.x, this.portrait && sight ? Math.max(H.topBar.h, sight.h) : H.topBar.h);
+    // (on its side: flush in the top-left corner, a few px in (South, 2026-10-29: "flush with the top left corner, with only a few pixels of padding"))
+    const tc = this.portrait ? 0 : H.gutter - H.topBar.corner, tx = B.x - tc, ty = B.y - tc;
+    A.topBar = rect(tx, ty, (sight ? sight.x - gap : B.x + B.w) - tx, this.portrait && sight ? Math.max(H.topBar.h, sight.h) : H.topBar.h);
     const C = H.cluster.size, t = H.artBar.t;
     if (this.portrait) {
       A.artBar = rect(B.x, B.y + B.h - t, B.w, t);
@@ -169,11 +171,22 @@ export class HudLayout {
     A.strip = rect(0, 0, 0, 0);
     // the log's ticker: under the top bar, at the left, never wider than the room left of the Sight (upright) or the left half (on its side)
     const L = H.log, sb = this.box('sight'), sx = sb?.x ?? B.x + B.w, right = this.portrait ? sx - gap : Math.min(V.w / 2, sx - gap);
-    this.log = rect(B.x, A.topBar.y + A.topBar.h + gap, Math.min(L.maxW, right - B.x), L.lines * L.line + L.pad);
-    // the strip's room, against what stands before it (the Sight, the top bar, the log); reserved, so the instruments placed after keep off it
-    if (!this.art) {
-      const Z = this.stripArea(null, [sb, A.topBar, this.log].filter(Boolean)), top = Math.max(Z.top, Z.base - H.strip.budget);
-      A.strip = rect(Z.left, top, Z.right - Z.left, Z.base - top);
+    this.stripTop = this.touch && !this.portrait && !this.art;
+    if (this.stripTop) {
+      // THE TOP ROW (South, 2026-10-29: "keep the center 60% of the screen clear"; "skiff, swap, and draw/unsheathe ... moved to the top of
+      // the screen"): the strip and the belt's pair in one row beside the folded top bar, up to the Sight; the log's ticker one line under
+      // it, ending above the centre box (its top at a fifth of the height)
+      const rx = A.topBar.x + H.topBar.folded + gap;
+      A.strip = rect(rx, A.topBar.y, sx - gap - rx, H.topBar.row);
+      const y = A.topBar.y + H.topBar.row; // (its frame runs past a fifth of the height: kept in the left fifth's column instead, two short lines)
+      this.log = rect(B.x, y, Math.min(L.maxW, V.w * 0.2 - B.x), L.lines * L.line + L.pad); this.log.lines = L.lines;
+    } else {
+      this.log = rect(B.x, A.topBar.y + A.topBar.h + gap, Math.min(L.maxW, right - B.x), L.lines * L.line + L.pad);
+      // the strip's room, against what stands before it (the Sight, the top bar, the log); reserved, so the instruments placed after keep off it
+      if (!this.art) {
+        const Z = this.stripArea(null, [sb, A.topBar, this.log].filter(Boolean)), top = Math.max(Z.top, Z.base - H.strip.budget);
+        A.strip = rect(Z.left, top, Z.right - Z.left, Z.base - top);
+      }
     }
     this.duelR = this.duel ? this.duelLayout() : null;
     if (this.duelR) { A.topBar = this.duelR.topBar; A.cluster = rect(0, 0, 0, 0); A.strip = rect(0, 0, 0, 0); this.log = this.duelR.log; } // (the duel's own: the cluster and the strip stand down)
@@ -294,7 +307,7 @@ export class HudLayout {
     b.classList.toggle('hud-touch', this.touch); b.classList.toggle('hud-duel', !!this.duelR); b.classList.toggle('hud-portrait', this.portrait); b.classList.toggle('hud-landscape', !this.portrait);
     s.setProperty('--su', `${this.su.toFixed(2)}px`);
     s.setProperty('--safe-t', `${S.t}px`); s.setProperty('--safe-r', `${S.r}px`); s.setProperty('--safe-b', `${S.b}px`); s.setProperty('--safe-l', `${S.l}px`);
-    s.setProperty('--hud-log-x', `${Math.round(this.log.x)}px`); s.setProperty('--hud-log-y', `${Math.round(this.log.y)}px`); s.setProperty('--hud-log-w', `${Math.round(this.log.w)}px`);
+    s.setProperty('--hud-log-x', `${Math.round(this.log.x)}px`); s.setProperty('--hud-log-y', `${Math.round(this.log.y)}px`); s.setProperty('--hud-log-w', `${Math.round(this.log.w)}px`); s.setProperty('--hud-log-h', `${(this.log.lines || HUD_LAYOUT.log.lines) * HUD_LAYOUT.log.line}px`);
   }
 
   /** What nothing else may enter on touch. */

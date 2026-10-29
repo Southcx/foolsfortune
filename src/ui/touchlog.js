@@ -23,7 +23,7 @@ body.hud-touch #chatlog:not(.typing):not(.hud-sheet){left:var(--hud-log-x,12px);
   pointer-events:auto;cursor:pointer;-webkit-tap-highlight-color:transparent}
 body.hud-touch #chatlog:not(.typing):not(.hud-sheet) .tabs,body.hud-touch #chatlog:not(.typing):not(.hud-sheet) .foot,
 body.hud-touch #chatlog:not(.typing):not(.hud-sheet) .prog{display:none}
-body.hud-touch #chatlog:not(.typing):not(.hud-sheet) .body{display:block;flex:none;height:36px;overflow:hidden;padding:2px 6px 2px;font-size:16px;line-height:18px;pointer-events:none}
+body.hud-touch #chatlog:not(.typing):not(.hud-sheet) .body{display:block;flex:none;height:var(--hud-log-h,36px);overflow:hidden;padding:2px 6px 2px;font-size:16px;line-height:18px;pointer-events:none}
 body.hud-touch #chatlog:not(.typing):not(.hud-sheet) .ln{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 body.hud-touch #chatlog:not(.typing):not(.hud-sheet) .ts{display:none}
 body.hud-touch #chatlog.idle:not(.hud-sheet){opacity:.78}

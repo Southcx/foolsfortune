@@ -84,7 +84,8 @@ export class TouchTopBar {
     try { this.onOpen?.(what); } catch (e) { console.warn('topBar.onOpen', e); }
   }
 
-  /** Lay the shelf and its tiles in the top bar's area: one row centred, PAUSE apart at the end; wrapped into rows from the top where the
+  /** Lay the shelf and its tiles in the top bar's area (on a phone on its side flush in the top-left corner, the top row beside it:
+   *  hudlayout.js `stripTop`): one row centred, PAUSE apart at the end; wrapped into rows from the top where the
    *  area is too narrow for one (upright, beside the Sight). */
   relayout() {
     const A = placeOf(this.game).areas.topBar, s = TILE.small, G = TOP_BAR.gap, items = this.items, n = items.length;
@@ -92,7 +93,7 @@ export class TouchTopBar {
     const per = one <= A.w ? n : Math.max(1, Math.floor((A.w - 16 + G) / (s + G))), rows = Math.ceil(n / per), F = TILE.foot;
     const W = per === n ? one : per * s + (per - 1) * G + 16, H = rows * (s + F) + (rows - 1) * G + 8;
     const all = this.ids.length + 3, full = all * s + (all - 1) * G + (TOP_BAR.pauseGap - G) + 16; // (folded, the tab stands where the opened row's MENU does: the row unfolds from it)
-    const x0 = per === n ? A.x + (A.w - (this.folded && full <= A.w ? full : W)) / 2 : A.x, y0 = rows === 1 ? A.y + (Math.min(A.h, TOP_BAR.h) - H) / 2 : A.y;
+    const top = !!this.game.hudLayout?.stripTop, x0 = per === n && !top ? A.x + (A.w - (this.folded && full <= A.w ? full : W)) / 2 : A.x, y0 = rows === 1 ? A.y + (Math.min(A.h, TOP_BAR.h) - H) / 2 : A.y;
     Object.assign(this.shelf.style, { transform: `translate(${Math.round(x0)}px, ${Math.round(y0)}px)`, width: `${Math.round(W)}px`, height: `${Math.round(H)}px` });
     this.shelf.style.setProperty('--h', `${Math.min(H, s + F + 8)}px`);
     items.forEach((id, i) => {

@@ -84,8 +84,11 @@ export function footCluster(g, use) {
   const C = g?.player?.techs?.get?.('carry') || g?.techs?.get?.('carry');
   if (g?.techs?.active?.id === 'push') return [E('use', null, 'PUSH'), E('jump', 'jump'), E('crouch', 'crouch', 'CROUCH')]; // (F held is the push: the chevron's USE is gone while it runs, and a tile swapped out lets go; the touch audit, 2026-10-25)
   if (C?.engaged) return [E('fire', 'throw', 'THROW'), E('use', null, 'PUT DOWN'), E('jump', 'jump'), E('crouch', 'crouch', 'CROUCH')]; // (a pot in both hands: the fire button throws it, F sets it down, courier/moves/carry.js; the owner's iPhone, v274)
-  const fourth = use ? 'use' : learned(g, 'kick') ? E('parry', 'parry', 'PARRY') : learned(g, 'blink') ? E('blink', 'blink', 'BLINK') : null;
-  return [E('jump', 'jump'), E('crouch', 'crouch', 'CROUCH'), E('dash', 'dash'), fourth];
+  const fourth = use ? 'use' : learned(g, 'kick') ? E('parry', 'parry', 'PARRY') : null;
+  // (one blink tile: the DASH tile's face follows its press, BLINK on the ground standing once Blink is learned, Petra's ctx foot.ground;
+  //  South, 2026-10-29: "the blink tile should be folded into the current dash tile")
+  const blinks = g.actions?.resolve?.('touch', 'dash')?.id === 'blink.ground';
+  return [E('jump', 'jump'), E('crouch', 'crouch', 'CROUCH'), blinks ? E('dash', 'blink', 'BLINK') : E('dash', 'dash', null), fourth];
 }
 
 /** A tool out: FIRE and AIM in its verbs, its third, PARRY the fourth. */
@@ -186,7 +189,7 @@ export function stripOf(g) {
   if (atHelm(g)) return helmStrip(g);
   if (!onFoot(g)) return [];
   const ctx = inHandCtx(g);
-  if (!ctx) return learned(g, 'blink') && (learned(g, 'kick') || g.interact?.cur) ? [E('blink', 'blink', 'BLINK')] : []; // (nothing in hand: the cluster's fourth is USE or PARRY first, so BLINK stands here)
+  if (!ctx) return []; // (nothing in hand: BLINK is the DASH tile's face on the ground, footCluster)
   const out = [], tool = g.belt.inHand;
   if (ctx === 'psygun') {
     const S = g.shells, n = S?.gun?.chambers ?? S?.chambers?.length ?? 0;
