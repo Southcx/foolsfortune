@@ -986,3 +986,4 @@ NEW:cut-short-gives-back. **What was paid for and not given is given back.** A m
 NEW:a-reset-keeps-what-is-owed. **A reset clears state, not promises.** What a tech owes the player afterwards (a tool to draw again) survives a seam's reset.
 NEW:an-instance-lets-go-of-the-world. **What opens its own instance lets go of what the world held.** A lock-on, a tag, an aim held as a duel or a seam opens is released by the opener, and its owner refuses to take another while the instance is open.
 NEW:a-new-gate-asks-the-lend. **Every new gate on a locked thing asks the lend beside the ledger.** DEBUG lends everything by default; a gate that reads only the ledger locks the sandbox.
+NEW:a-look-reads-its-rule-frame. **A placeholder is laid by the same frame function its rule reads.** A thing's look and its hit test take position from one call (`frameAt`), never a hand-written local sign.

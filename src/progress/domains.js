@@ -33,6 +33,10 @@ export const DOMAINS = {
 export const MAX_LEVEL = 99;
 
 const q01 = (v) => Math.max(0, Math.min(1, Number(v) || 0));
+/** The domain a creature downed on foot trains, by the killing blow's damage type (combat/types.js). */
+export const DOWN_DOMAIN = { impact: 'psychokinesis', ego: 'divination', influence: 'possession', illusion: 'manifestation', delirium: 'alteration' };
+/** A race's quality by its medal (no medal: by place among the rivals). */
+const RACE_Q = { gold: 1, silver: 0.7, bronze: 0.45 };
 
 /** Where EXP comes from: the events that already exist, and the quality each one carries (a draft: the owner rules on the mapping). */
 export const SOURCES = [
@@ -62,9 +66,11 @@ export const SOURCES = [
   { event: 'brush.canvas',    domain: 'ouranurgy',      base: 6,  quality: (e) => (e.open ? null : q01((e.drawings || 0) / 3)) },
   { event: 'reprogram.run',   domain: 'possession',     base: 20, quality: (e) => (e.refused ? 0 : q01(e.q)) },
   { event: 'lockheart.drain', domain: 'possession',     base: 6,  quality: () => 0.5 },
-  // a fish released: two minds on one line (the owner, 2026-10-11; ANGLING.md 5), an act per 10 real seconds of fight, quality the
-  // pulls answered; a kept fish pays cubes instead, never both
-  { event: 'angle.release',   domain: 'possession',     acts: (e) => Math.max(1, Math.round((e.secs || 0) / 10)), quality: (e) => (e.by === 'courier' ? q01(e.answered ?? 0.5) : null) },
+  // a fish landed: two minds on one line (the owner, 2026-10-11; ANGLING.md 5), an act per 10 real seconds of fight, quality the pulls
+  // answered; every landing pays, kept or let go (South, 2026-10-29: "Wouldn't catching a fish award Possession experience no matter
+  // what?"); letting it go pays half again on top, and keeping it pays its cubes
+  { event: 'angle.catch',     domain: 'possession',     acts: (e) => Math.max(1, Math.round((e.dur || 0) / 10)), quality: (e) => (e.by === 'courier' ? q01(e.ans ?? 0.5) : null) },
+  { event: 'angle.release',   domain: 'possession',     acts: (e) => 0.5 * Math.max(1, Math.round((e.secs || 0) / 10)), quality: (e) => (e.by === 'courier' ? q01(e.answered ?? 0.5) : null) },
   { event: 'god.sunder',      domain: 'alteration',     base: 10, quality: (e) => q01((e.cuts || 1) / 4) },
   { event: 'god.swell',       domain: 'alteration',     base: 8,  quality: () => 0.5 },
   { event: 'god.wring',       domain: 'alteration',     base: 8,  quality: () => 0.5 },
@@ -100,6 +106,55 @@ export const SOURCES = [
   { event: 'god.miracle',     domain: 'spellscription', base: 12, quality: (e) => (e.by === 'courier' ? q01(e.score) * (0.6 + 0.4 * q01(e.size)) : null) },
   ...['ouranurgy', 'manifestation', 'divination', 'psychokinesis', 'possession', 'alteration', 'spellscription'].map((d) => (
     { event: 'god.epic',      domain: d,                acts: 10, quality: (e) => (e.by === 'courier' && e.domain === d ? 1 : null) })),
+  // EVERY MODE TRAINS A DOMAIN (South, 2026-10-29: "evaluate the progression systems for the seven domains, and which ones are still
+  // unwired"; docs/plans/DOMAIN-SOURCES.md). Until now a fight on foot, the Raceway, the open sea, the Spirit Garden's tending and the
+  // spirits paid no domain at all, and Psychokinesis, Manifestation and Alteration were the god hand's alone. Each source below hears
+  // an event that already exists; its quality is a field the event already carries.
+  //
+  // a creature downed on foot trains the domain of the force that downed it (the killing blow's damage type, combat/types.js
+  // CAUSE_TYPE): Impact (the psygun, the Sondelass, the kick) Psychokinesis, Ego (the Flash, reprogramming) Divination, Influence (the
+  // Crucibelle's song and toll) Possession, Illusion (the Soul Brush, the Dreamvane's fork) Manifestation, Delirium (the Lockheart)
+  // Alteration. Its acts by its size (a clapperjar 1, a slip jelly 2, the Great Slip Jelly 7); masterful when the blow was the
+  // right one (a trump, an annihilation), middling otherwise
+  ...Object.entries(DOWN_DOMAIN).map(([type, domain]) => (
+    { event: 'creature.struck', domain, acts: (e) => Math.min(8, 1 + Math.floor((e.maxHp || 1) / 8)), quality: (e) => (e.by === 'courier' && e.kill && e.type === type ? (e.because === 'annihilation' ? 1 : e.k > 1 ? 0.85 : 0.5) : null) })),
+  // the Raceway: a race run is displacement through space (Ouranurgy), its acts its time, its quality its medal (a validate run pays
+  // track.validate instead; practice and the test lap pay nothing); a trick combo banked is the board moved by will (Psychokinesis), by
+  // its multiplier (x5 masterful); a made track validated is a thought made solid (Manifestation), a new geometry's only (`fresh`, Petra's
+  // to add: until then every validate pays, its acts few); a haunt is traps possessed (Possession), held its masterful end
+  { event: 'race.finish',     domain: 'ouranurgy',      acts: (e) => Math.max(1, Math.round((e.seconds || 0) / 10)), quality: (e) => (e.by !== 'courier' || e.validate || e.mode === 'practice' || e.mode === 'trim' ? null : RACE_Q[e.medal] ?? (e.of > 1 ? 0.45 * (1 - (e.place - 1) / e.of) + 0.1 : 0.3)) },
+  { event: 'skiff.combo.bank', domain: 'psychokinesis', base: 6,  quality: (e) => (e.by === 'courier' && e.n >= 2 ? q01(((e.mult || 1) - 1) / 4) : null) },
+  { event: 'track.validate',  domain: 'manifestation',  acts: 4,  quality: (e) => (e.by === 'courier' && e.fresh !== false ? 0.6 : null) },
+  { event: 'haunt.end',       domain: 'possession',     acts: (e) => Math.max(1, Math.round((e.seconds || 0) / 10)), quality: (e) => (e.by !== 'courier' || e.why !== 'done' ? null : e.held ? 0.7 + 0.3 * q01((e.wrecks || 0) / 3) : 0.35) },
+  // the open sea (OPEN-SEA.md 12 to 15): a crate hauled up on the line is a thing moved by will (Psychokinesis, by its tier); a beast
+  // sunk the same (the ship's gun and broadside); a habit caught on a plate, a cache dowsed out, a line-up closed and a square completed
+  // are the hidden perceived (Divination); a stone's phrase sung back is time transcribed (Spellscription)
+  { event: 'sea.salvage',     domain: 'psychokinesis',  base: 8,  quality: (e) => (e.by === 'courier' ? q01(0.3 + 0.2 * (e.tier || 0)) : null) },
+  { event: 'seaserpent.down', domain: 'psychokinesis',  acts: 12, quality: (e) => (e.by === 'courier' ? 0.6 : null) },
+  { event: 'seabeast.down',   domain: 'psychokinesis',  acts: 16, quality: (e) => (e.by === 'courier' ? 0.7 : null) },
+  { event: 'sea.habit',       domain: 'divination',     base: 8,  quality: (e) => (e.by === 'courier' ? (e.first ? 0.9 : 0.3) : null) },
+  { event: 'sea.dig',         domain: 'divination',     base: 8,  quality: (e) => (e.by === 'courier' ? q01(0.4 + 0.2 * (e.tier || 0)) : null) },
+  { event: 'sea.lineup',      domain: 'divination',     acts: 4,  quality: (e) => (e.by === 'courier' ? 0.8 : null) },
+  { event: 'sea.square.done', domain: 'divination',     acts: 6,  quality: (e) => (e.by === 'courier' ? 1 : null) },
+  { event: 'sea.echo',        domain: 'spellscription', base: 8,  quality: (e) => (e.by === 'courier' ? 0.7 : null) },
+  // the Spirit Garden (GARDEN-COZY.md): a planetoid tended is reshaped (Alteration, by the harmony it reached), a bed inoculated the
+  // same (the mycelium transmutes); a spirit bound, a wish granted and a farewell given are will over another mind (Possession: a
+  // farewell the whole bond's end, masterful)
+  { event: 'garden.tend',     domain: 'alteration',     base: 4,  quality: (e) => (e.by === 'courier' ? q01(e.h ?? 0.5) : null) },
+  { event: 'spore.inoculate', domain: 'alteration',     base: 6,  quality: (e) => (e.by === 'courier' ? 0.5 : null) },
+  { event: 'spirit.bind',     domain: 'possession',     acts: 3,  quality: (e) => (e.by === 'courier' ? q01(0.4 + 0.15 * (e.cls || 0)) : null) },
+  { event: 'spirit.wish.done', domain: 'possession',    acts: 2,  quality: (e) => (e.by === 'courier' ? q01((e.bond ?? 50) / 100) : null) },
+  { event: 'spirit.farewell', domain: 'possession',     acts: 10, quality: (e) => (e.by === 'courier' ? 1 : null) },
+  // the world's Lachryma (PAINT.md): paint laid is thought made to stand in the world (Manifestation, by its area); a blot mopped up is
+  // the world restored (Alteration, by how far it had grown); the Dreamvane's dowse turning a find up is the hidden perceived
+  // (Divination), its fork caught back the thrown thing called home (Psychokinesis)
+  { event: 'brush.paint',     domain: 'manifestation',  base: 4,  quality: (e) => (e.by === 'courier' ? q01((e.area || 0) / 20) : null) },
+  { event: 'stain.wash',      domain: 'alteration',     base: 6,  quality: (e) => (e.by === 'courier' ? q01(0.3 + 0.25 * (e.stage || 0)) : null) },
+  { event: 'dreamvane.unearth', domain: 'divination',   base: 6,  quality: (e) => (e.by === 'courier' ? q01((e.n || 1) / 3) : null) },
+  { event: 'fork.catch',      domain: 'psychokinesis',  base: 4,  quality: (e) => (e.by === 'courier' ? 0.5 : null) },
+  // an aberrant's secret found (secrets.js; its end, never a step): the hidden read (Divination), masterful; the powers it took paid
+  // their own domains (duel.power below)
+  { event: 'duel.secret',     domain: 'divination',     acts: 6,  quality: (e) => (e.by === 'courier' && !e.practice && e.done ? 1 : null) },
   // a duel's power cast (duel/powers.js; PUZZLE-DUELS.md 26.1): the hand's power in a puzzle duel trains its domain as it does in the
   // world; its quality the gems the cast cleared (12 a masterful one), a cast that cleared none middling at best; a practice duel none
   ...['ouranurgy', 'manifestation', 'divination', 'psychokinesis', 'possession', 'alteration', 'spellscription'].map((d) => (

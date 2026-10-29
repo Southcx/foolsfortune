@@ -32,6 +32,7 @@ import { renderGrimoire } from '../feedback/codex/grimoire.js';
 import { SoulAlchemy } from '../progress/alchemy.js';
 import { Knacks } from '../progress/knacks.js';
 import { Goals } from '../progress/goals.js';
+import { Aptitude } from '../progress/aptitude.js';
 import { FirstToday } from '../progress/firsttoday.js';
 import { FoeSeen } from '../progress/foeseen.js';
 import { AberrantDrops } from '../progress/duel/drops.js';
@@ -72,6 +73,7 @@ export function bootProgress(game, made) {
   game.worldShellFinds = new WorldShellFinds(game); // (a World shell for every twelfth full-grown blot mopped up: progress/combat/worldshells.js)
   game.handPose = new HandPose(game); // (the god hand's mudras: which pose, and when; a look only, progress/mudras.js)
   game.knacks = new Knacks(game); // (the assists earned, switched on or off: progress/knacks.js; the Crib Sheet first)
+  game.aptitude = new Aptitude(game); // (the Assay's passive readings: progress/aptitude.js, APTITUDE.md)
   game.goals = new Goals(game); // (the game day's three goals, from the achievements: progress/goals.js)
   game.firstToday = new FirstToday(game); // (the first of each module a game day pays a little: progress/firsttoday.js)
   game.gardenBackdrop = () => gardenBackdropOf(game); // (your Spirit Garden as your half of a duel's backdrop: progress/gardenbackdrop.js, the view's to draw)

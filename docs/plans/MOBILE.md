@@ -71,7 +71,8 @@ boot, audio, save and platform state. Nothing has been measured on a phone yet; 
 
 1. **Two areas and a cluster.** The left half of the screen is the move area: a thumb landing anywhere makes a floating stick there
    (Genshin's). The right half is the look area: a drag turns the camera. In the right half's bottom corner sits the **cluster**: at most
-   four buttons, the context's verbs (section 5), the main one largest under the thumb (96 px), the others round it (72 px). Nothing is
+   four buttons, the context's verbs (section 5), the main one largest under the thumb (80 px as built), the others round it (60 px); where each
+   other thing stands is section 4.1. Nothing is
    smaller than 44 px (Apple's and Google's minimum hit target).
 2. **Context decides the buttons.** The cluster shows only what the moment can use (on the skiff: HOP, FLARE, BRAKE; in the air: HOP, NOSE,
    TAIL; at a rail: NOSE, TAIL). It is the same list the keyboard player already has, cut to the moment; the game tells the HUD what is
@@ -94,6 +95,127 @@ boot, audio, save and platform state. Nothing has been measured on a phone yet; 
    layout keyed to the screen's shorter side and its safe areas (Calissa's: section 6.3).
 10. **Landscape for action, either for the rest.** The action modes are landscape (a 222 x 480 portrait buffer is too narrow to steer by);
     the windows, the god hand, the garden, the duel and Raku's tables also work in portrait.
+
+## 4.1 The phone screen's zones (the rule; South, 2026-10-29)
+
+**Asked:** South, on v343's shots (`docs/handoffs/everyone/refs/2026-10-29-south-foot-phone.jpg`): "keep the center 60% of the screen
+clear when in the third person action mode", the belt's tiles "moved to the top of the screen, as they're currently causing much visual
+clutter", the window tiles "flush with the top left corner"; then Petra's triage (`docs/handoffs/everyone/2026-10-29-from-petra-touch-triage.md`)
+asked for the rule, its prior art with pictures, and every tile placed by it. **Holds in** the third person action modes: on foot, a tool
+in hand, the Solar Skiff, the open sea's helm, and the crossing. **Not in** the modes that are their own frame: a puzzle duel (the board is
+the middle: the duel's phone screen), the god hand, the Spirit Garden (the art bar), Raku's tables, the windows.
+
+### 4.1.1 The zones (CSS px of the safe area; the numbers at 896 x 414, the owner's phone held sideways)
+
+![ours by the rule](mobile-zones/ours-rule.svg)
+
+| zone | where | its job | how many | at 896 x 414 |
+| --- | --- | --- | --- | --- |
+| **the middle** | x 20..80 %, y 20..80 % of the safe area | the world; the look area's drag | **no tile, no instrument, no words of ours.** World marks and the overlay's tags on a thing (the lock-on's, a creature's) only | x 179..717, y 83..331 |
+| **top left** | the corner, flush (the gutter, 8 px) | the windows: the top bar (MENU, LOG, PAUSE) | 3, at most 4 | x 8..156, y 8..52 |
+| **the far shelf** | the top band, right of the top bar, left of the Sight | what is chosen, not struck: a tool's selectors, the belt (DRAW / STOW, LEND, SWAP), SKIFF, the helm's slower verbs | one row of 44 px tiles; as many as fit (10 here), the fold past 8 | x 164..743, y 8..52 |
+| **the ticker** | under the top bar and the far shelf | the log's newest line | **one line** (two only while the far shelf is empty); a tap opens the log | x 8..743, y 60..80 |
+| **top right** | the corner | the Sight and its place plate | the instrument; no tile | x 751..888, y 8..150 |
+| **the near shelf** | the right band, between the Sight and the cluster | the context's next verbs, where the thumb reaches without crossing the middle | 3 tiles of 52 px in a row | x 720..888, y 196..248 |
+| **bottom right** | the corner | **the cluster**: the main verb (80 px) and three round it (60 px) | 4 | x 738..888, y 256..406 |
+| **the bottom band** | under the middle, left of the cluster | what a tool shows in a glance: the psygun's cylinder, a tool's own UI (the Sondelass's guard, the Soul Brush's desk, the reliquary) | whatever fits **75 px tall** (the cylinder may stand beside the tube in the bottom left instead: Calissa's call) | x 179..730, y 339..406 |
+| **bottom left** | the corner, under the left band | **the Lachrimeter's tube, mirrored** (South, 2026-10-29: "the lachrimeter can be mirrored and put into the lower left corner ... It also would match the position of the lachrimeter within the Puzzle Duel module"), where the duel's phone screen stands it | the tube | x 8..97, y 256..406 |
+| **the left band** | x 0..20 %, under the top left; the move area | the stick, and its home ring, **right of the tube** | the stick only. If the tube and the stick crowd each other, **the stick's home moves right**, never the tube shrinking | the home's ring from x 105 |
+
+The rule in one line: **the corners and the edges hold everything; the middle holds the world.** A thing that wants to be seen in the
+middle is a world mark or a tag on the thing (CLAUDE.md, "World marks carry no words"), never a tile or a panel.
+
+**Reach.** The near shelf and the cluster are under the right thumb: they hold what is pressed in a fight. The far shelf is a stretch: it
+holds what is chosen between fights (a chamber, a form, a lure, the belt). Nothing pressed in a fight's tempo stands on the far shelf.
+
+### 4.1.2 When a zone is full (what gives way, in order)
+
+1. **A selector becomes one tile.** A row of picks (the psygun's chambers, the Sondelass's forms) folds into one tile that shows the pick:
+   a tap steps to the next, a long press (0.42 s, section 4's rule 4) opens the whole row as a **radial** round the finger, let go on one to pick
+   it. The Crucibelle's five note pads stay five (they are its playing, not a pick).
+2. **The far shelf's tail folds into ⋯.** Past 8 tiles (or the room, whichever is less), the last ones fold into a **⋯ tile** at the
+   row's end, in this order of who goes first: SKIFF, SWAP, LEND, then the tool's rarer verbs (BREATH, FAN). DRAW / STOW and the
+   pick never fold. A tap on ⋯ drops the folded tiles as a second row under it; a tap elsewhere or a press of one closes it (the one time
+   a row of ours may stand in the middle: it is a menu the player opened, and it shuts itself).
+3. **The near shelf takes three, by need.** Past three, the core movement's verbs win (JUMP, DASH, CROUCH), and the rest go to the far shelf.
+4. **The ticker gives way to the far shelf.** It is one line under the shelf; it never grows into the middle. The log itself is a tap away.
+5. **An instrument never yields to a tile.** The Sight, the tube and a tool's own UI keep their zones; a tile that has no room folds (2).
+   The stick yields to the tube: its home moves right (South, 2026-10-29).
+6. **The layout editor wins over all of it.** What the player moves by hand (M5, `game.touchLayoutEditor`) stays where they put it, the
+   clamp off the instruments still holding. The defaults obey the middle; the player may break it for themselves.
+
+### 4.1.3 Prior art (five games on a phone held sideways, drawn as schematics)
+
+The drawings below are ours, made from public footage and reports, not traced from screenshots (no third party's pictures are kept in
+the repository; Calissa judges the look against her own shots of each). The red box is our middle at the same scale.
+
+| game | its zones | verbs 3 to 5 | its menus | what we take |
+| --- | --- | --- | --- | --- |
+| ![](mobile-zones/ref-genshin.svg) **Genshin Impact** (HoYoverse, 2020) | the minimap and Paimon top left, shortcuts top right, the party up the right edge, ATTACK in the corner | SKILL and BURST fanned round ATTACK; JUMP and SPRINT above it on the edge | Paimon's menu (top left), a row of shortcuts (top right), a held gadget wheel | the fan round the main verb; the right edge as a second column; a held tile for a wheel. Not taken: its pickup list stands in the middle |
+| ![](mobile-zones/ref-wuwa.svg) **Wuthering Waves** (Kuro Games, 2024) | the same frame as Genshin's: minimap top left, party on the right edge | SKILL, ECHO, LIBERATION, DODGE and JUMP in an arc round ATTACK (six in the corner) | a top-right row that folds | six in the corner is the genre's ceiling; ours is four plus the near shelf's three |
+| ![](mobile-zones/ref-diablo.svg) **Diablo Immortal** (Blizzard, 2022) | portrait top left, minimap top right, quests down the left, ATTACK the largest in the corner | four skills fanned round ATTACK; the ultimate takes ATTACK's place when charged; the potion beside the fan | a top-right row folded behind an arrow | the fold behind one tile (our ⋯); a charged verb taking the main tile's place, not a new tile |
+| ![](mobile-zones/ref-codm.svg) **Call of Duty: Mobile** (Activision / TiMi, 2019) | minimap and kill feed top left, score top middle, settings top right, weapons bottom middle | ADS, RELOAD, CROUCH, JUMP round FIRE; grenades top right, streaks on the right edge; an optional left FIRE | the settings tile in a corner; every button moved and sized in Custom Layout | the layout editor as the escape hatch; the weapons (our chambers) as one strip, not tiles in the middle |
+| ![](mobile-zones/ref-fortnite.svg) **Fortnite** (Epic Games, mobile) | team top left, minimap and storm top right, the quickbar along the bottom | JUMP, CROUCH, BUILD, RELOAD round FIRE | ≡ beside the minimap; the HUD Layout Tool moves, sizes and hides anything | a hidden button can always be put back; the bottom band as the inventory's strip |
+
+**What all five agree on:** the movement thumb owns the bottom left and nothing else stands there; the main verb is the largest, in the
+bottom right corner, and the next three to five fan round it; the menus live in the top corners, small, and fold; the middle carries
+the world and, at most, a prompt. **Where we are stricter:** each of the five lets the fan's edge, a prompt or a fire button touch the
+middle; South's rule lets nothing of ours in, so our fan is four, and the three after it stand on the near shelf up the right edge.
+
+Sources (the drawings' evidence; the layouts from memory of public footage are marked so and are Calissa's to check against a shot):
+Activision's "Getting a Grip on the Call of Duty: Mobile Controls" (blog.activision.com, 2019-10), Epic's "How do I customize my HUD in
+Fortnite on Mobile?" (epicgames.com/help), Kotaku's and Game Informer's Diablo Immortal reports (2018, 2022), the Genshin Impact wiki's
+Paimon Menu page (genshin-impact.fandom.com). Genshin's and Wuthering Waves' corner fans are from memory of public footage.
+
+### 4.1.4 Every tile, placed
+
+What changes from v344 is in **bold**.
+
+| tile | when it shows | zone |
+| --- | --- | --- |
+| MENU, LOG, PAUSE (the top bar) | always in an action mode | top left, **flush** |
+| the log's ticker | a line was said in the last few real seconds | **the ticker: one line under the shelves** |
+| JUMP | on foot, nothing drawn | the cluster, the main |
+| CROUCH, DASH | on foot, nothing drawn | the cluster |
+| **DASH, its face BLINK** | grounded, standing, Blink learned (Petra's `foot.ground`, v344) | the cluster (DASH's slot). **No separate BLINK tile** anywhere on foot |
+| USE (naming its thing) | the chevron on a thing, nothing drawn | the cluster's fourth |
+| PARRY | nothing drawn, no USE, the kick learned | the cluster's fourth |
+| THROW, PUT DOWN | carrying a pot | the cluster |
+| FIRE, AIM (the tool's verbs) | a tool in hand | the cluster (FIRE the main) |
+| the tool's third (SHELL, LOCK, PING, JUMP off the hook, REPROGRAM, SURVEY) | a tool in hand (REPROGRAM by a stunned mind) | the cluster |
+| PARRY | a tool in hand | the cluster's fourth; **USE takes its slot** while the chevron is on a thing and no fight is live (`game.liveMoment()` is not `fight`) |
+| **JUMP, DASH (BLINK on the ground), CROUCH** | a tool in hand (the hook: no JUMP, its third is JUMP) | **the near shelf** (were the strip's, over the middle) |
+| **CHAMBER (the pick's number)** | the psygun in hand | **the far shelf, one tile**: a tap the next loaded, a long press the cylinder as a radial (were seven tiles) |
+| FAN, BREATH (scoped) | the psygun in hand | the far shelf (fold order: BREATH, then FAN) |
+| **FORM (the form's glyph)** | the Sondelass in hand | **the far shelf, one tile**: a tap the next form, a long press the three as a radial (were three tiles) |
+| LURE, CRANK | the rod in hand | the far shelf |
+| PAINT / MOP | the Soul Brush in hand | the far shelf |
+| FLASH | the Veritome in hand | the far shelf |
+| the five note pads | the Crucibelle in hand | the far shelf, never folded |
+| DRAW / STOW | on foot, a main worn | **the far shelf**, never folded |
+| LEND (the sub's verb) | a sub worn | **the far shelf** (folds third) |
+| SWAP | a sub worn | **the far shelf** (folds second) |
+| SKIFF | on foot at the Raceway or in the Dunes | **the far shelf** (folds first) |
+| ⋯ | the far shelf past its count | the far shelf's end |
+| HOP, FLARE, BRAKE, BOOST / HOP, NOSE, TAIL | riding the Solar Skiff | the cluster; nothing on the shelves (the belt stands down riding) |
+| FIRE, PARRY / USE (MOOR, DOCK), the throttle's two | at the open sea's helm | the cluster |
+| **BROADSIDE, the mounts (1, 2)** | at the helm, a serpent hunting or a side bearing | **the near shelf** (struck in a fight) |
+| FIX, PLATE, USE (while a serpent holds the cluster) | at the helm | the far shelf |
+| the rail readout | the crossing | top left, under the top bar (its own zone there; the ticker stands down on the rail) |
+| the Sight | always | top right |
+| the Lachrimeter's tube | always in an action mode | **bottom left, mirrored** (as the duel's phone screen stands it; was x 641..730, y 256..406, into the middle) |
+| the psygun's cylinder, a tool's own UI | as now | **the bottom band, at most 75 px tall** (the cylinder may stand beside the tube: Calissa's call) |
+| the stick and its home | always in an action mode | the left band, its home right of the tube |
+| the lock-on's tag, a creature's tag, the chevron, world marks | as now | the middle (the overlay's, allowed) |
+
+The fullest case, the psygun drawn in the Dunes with a sub worn: the far shelf CHAMBER, FAN, BREATH, STOW, LEND, SWAP, SKIFF (7, no fold);
+the near shelf CROUCH, DASH, JUMP; the cluster FIRE, AIM, SHELL, PARRY. As it stood on v344 (the red is ours in the middle):
+
+![v344 as measured](mobile-zones/ours-v344.svg)
+
+**Checks for Calissa's build** (one look each at 896 x 414, 2x, touch): nothing drawn; the psygun drawn; the Crucibelle drawn (the
+fullest far shelf: five pads and the belt); the Raceway riding; the helm with a serpent up. In each, nothing of ours inside x 179..717,
+y 83..331.
 
 ## 5. Every system, judged
 
@@ -434,12 +556,12 @@ The editor is pointer events already (8.2's finger as the hand).
 At most four, the main one largest (section 4):
 - **JUMP** (Space, held for the mantle chain and the wall run), the largest.
 - **CROUCH** (C): a tap cycles the posture, at a run the slide, held in paint the Paint Dive, in the air looking down the slam.
-- **DASH** (Shift's press): the air dash and the crouched roll.
+- **DASH** (Shift's press): the air dash and the crouched roll; on the ground, standing, with Blink learned, BLINK (E), its face
+  following its press (South, 2026-10-29; Petra's `foot.ground`, v344). There is no separate BLINK tile.
 - **The fourth, by context:**
   - USE (F, naming its thing) while the chevron is on one;
-  - else PARRY (V) once learned;
-  - else BLINK (E) once learned.
-- **The tool:** DRAW (X) at the cluster's top edge, small; LEND (R) beside it while a sub is worn.
+  - else PARRY (V) once learned.
+- **The tool:** DRAW (X), LEND (R) and SWAP on the far shelf at the top (section 4.1), never over the middle.
 - **The stick:** ladders, hanging, poles, grates, swimming and the balance beam read it as they read W A S D (Petra's StickMove holds the
   keys).
 
@@ -450,19 +572,20 @@ it is stowed, they are the foot's. The rows are in `core/bindings.js`. The words
 it is built. Prior art: Call of Duty Mobile (FIRE dragged to aim, the aim-assist), Genshin Impact (an attack tile and a skill tile by
 character), Brawl Stars (tap to fire assisted, drag to aim).
 
-| tool | FIRE (LMB) | AIM (RMB) | the third | the strip | the driver's part |
+| tool | FIRE (LMB) | AIM (RMB) | the third | the far shelf (section 4.1) | the driver's part |
 | --- | --- | --- | --- | --- | --- |
-| psygun | a shot; held and let go, the charge | the sights (the Carbine's breath: BREATH while scoped) | SHELL (MMB: tapped assisted, held the seeker paints) | the chambers (1 .. 7); FAN once learned | FIRE dragged while held aims; the lock-on on |
-| cutlass | ATTACK: the string | SPECIAL (RMB tap) | LOCK (MMB) | the forms: cutlass, rod, hook | SPECIAL swiped up is the forward special (W held), down the back one (S held); Blade Mode: crouched, SPECIAL held, then ATTACK, the cut's line by the look area's drag |
-| rod | CAST: held and let go; a tap twitches; fish on, REEL | SINK; fish on, GIVE LINE | PING (MMB: tapped a ping, held the ring) | the forms; LURE (next); CRANK (Shift + LMB) | the fish-on fight on the stick (A / D lean, S haul and brace, W bow), as W A S D; the lure ring's feeling a long press on LURE |
-| hook | FIRE at the hook's mark; held, REEL | AIM: held, paying out after 0.2 s; tapped, let go | (JUMP off, the cluster's) | the forms | the hook's mark snaps already |
+| psygun | a shot; held and let go, the charge | the sights (the Carbine's breath: BREATH while scoped) | SHELL (MMB: tapped assisted, held the seeker paints) | CHAMBER (one tile: a tap the next, a long press the cylinder as a radial); FAN once learned | FIRE dragged while held aims; the lock-on on |
+| cutlass | ATTACK: the string | SPECIAL (RMB tap) | LOCK (MMB) | FORM (one tile: a tap the next, a long press the three as a radial) | SPECIAL swiped up is the forward special (W held), down the back one (S held); Blade Mode: crouched, SPECIAL held, then ATTACK, the cut's line by the look area's drag |
+| rod | CAST: held and let go; a tap twitches; fish on, REEL | SINK; fish on, GIVE LINE | PING (MMB: tapped a ping, held the ring) | FORM; LURE (next); CRANK (Shift + LMB) | the fish-on fight on the stick (A / D lean, S haul and brace, W bow), as W A S D; the lure ring's feeling a long press on LURE |
+| hook | FIRE at the hook's mark; held, REEL | AIM: held, paying out after 0.2 s; tapped, let go | (JUMP off, the cluster's) | FORM | the hook's mark snaps already |
 | Soul Brush | ATTACK: the club; on the ground paint or mop | FLICK (RMB tap) | LOCK | PAINT / MOP, one tile two faces | AIM held is Celestial mode: one finger then draws (the virtual brush by the drag, LMB down) |
 | Veritome | the shutter | LENS held | REPROGRAM (MMB, shown by a stunned mind) | FLASH | with the lens up, a tap anywhere on the right half is the shutter; a pinch zooms |
 | Dreamvane | the pick: held, let go full | DOWSE held; a tap throws or calls the fork | SURVEY (MMB) | - | the dowse's attune on a pinch (the wheel) |
-| Crucibelle | TOLL, on the beat | the octave up, held under a note | - | the five note pads, in a row over the cluster | - |
+| Crucibelle | TOLL, on the beat | the octave up, held under a note | - | the five note pads, never folded | - |
 | Lockheart | HOOVER held; tapped, the flail | OPEN held | - | - | the wheel of odds turned by a finger round it (the wheel) |
 
-- **Every tool:** PARRY (V) is the cluster's fourth while a tool is out, since a blow comes at any tool; BLINK (E) moves to the strip's end.
+- **Every tool:** PARRY (V) is the cluster's fourth while a tool is out, since a blow comes at any tool (USE takes its slot at a thing
+  outside a fight); JUMP, DASH (BLINK on the ground) and CROUCH stand on the near shelf over the cluster (section 4.1).
 - **The lock-on is on by default on touch** (`courier/lockon.js`, its aim assist), as every phone action game does. It is a setting, never
   a knack: it is how a thumb aims, not a help with the skill.
 
