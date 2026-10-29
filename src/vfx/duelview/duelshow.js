@@ -30,7 +30,7 @@ import { sm, clamp01 } from './layout.js';
 /** foeScale, jarScale: the fighters' sizes in a PvE duel; vs: its open's beats (real s from the open) and its length; lunge and flinch
  *  (real s and m); cine: the cutaways' lengths (real s); victory: the hero shot's length; confetti: its bits. */
 export const SHOW = {
-  foeScale: 1.2, jarScale: 1.15, margin: 0.7,
+  foeScale: 1.2, jarScale: 1.15, margin: 0.7, front: 1,
   vs: { foe: 0.15, jar: 0.75, stamp: 1.05, pull: 1.55, dur: 2.5 },
   lunge: { out: 0.1, back: 0.34, amp: 0.42 }, flinch: { dur: 0.5, amp: 0.38 }, knock: { dur: 0.8, amp: 0.8 },
   cine: { hit: 0.95, big: 2 }, victory: 1.15, confetti: 46,
@@ -42,7 +42,8 @@ const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Color()
 export class DuelShow {
   constructor(view) { this.view = view; this.game = view.game; this.on = false; this.t = 0; this.acts = { jar: null, foe: null }; this.off = { jar: new THREE.Vector3(), foe: new THREE.Vector3() }; this.wrote = new THREE.Vector3(); }
 
-  get margin() { return SHOW.margin; } // (the arena's shot opened wider for the bigger fighters: stage.js arenaShot)
+  get margin() { return SHOW.margin; }
+  get front() { return SHOW.front; } // (+1 when the Jar's face looks along its group's +Z: the cut-in's portrait and the cutaways read it) // (the arena's shot opened wider for the bigger fighters: stage.js arenaShot)
 
   /** The duel opened: the fighters sized, the VS begun (a PvE duel's only). Before the elites take the foe's scale as theirs. */
   open(state, foe) {
@@ -149,13 +150,14 @@ export class DuelShow {
     const head = V.foeCast?.headWorld?.(_e) || _e.copy(foe).setY(foe.y + 1.2), fs = SHOW.foeScale;
     if (kind === 'vsFoe') { const dir = new THREE.Vector3().copy(face).addScaledVector(uu, -0.9).normalize(), d = 1.9 * fs - 0.3 * u;
       out.look.copy(head).addScaledVector(UP, -0.15); out.pos.copy(head).addScaledVector(dir, d).addScaledVector(UP, -0.35); out.fov = -8; return out; }
-    if (kind === 'vsJar') { const dir = new THREE.Vector3().copy(face).addScaledVector(uu, 0.9).normalize(), d = 2.1 - 0.35 * u, top = jar.y + 0.75 * SHOW.jarScale;
+    const jy = this.won?.yaw ?? this.jar?.group.rotation.y ?? 0, front = new THREE.Vector3(Math.sin(jy), 0, Math.cos(jy)).multiplyScalar(SHOW.front); // (the way the Jar faces as it stands at its spot)
+    if (kind === 'vsJar') { const dir = new THREE.Vector3().copy(front).addScaledVector(face, 0.5).normalize(), d = 2.1 - 0.35 * u, top = jar.y + 0.75 * SHOW.jarScale;
       out.look.copy(jar).setY(top); out.pos.copy(jar).addScaledVector(dir, d).setY(jar.y + 0.35); out.fov = -8; return out; }
     if (kind === 'hit') { const mid = new THREE.Vector3().copy(jar).lerp(foe, 0.5), span = jar.distanceTo(foe);
       out.look.copy(mid).setY(mid.y + 0.75).addScaledVector(uu, 0.25 * span * (u - 0.5)); out.pos.copy(mid).addScaledVector(face, span * 0.62 + 1.2).addScaledVector(uu, -span * 0.18).setY(mid.y + 0.3); out.fov = 4; out.roll = -0.05; return out; }
     if (kind === 'death') { const a = -0.55 + 0.7 * u, dir = new THREE.Vector3().copy(face).applyAxisAngle(UP, a), d = 3.1 * fs;
       out.look.copy(head).addScaledVector(UP, -0.4); out.pos.copy(foe).addScaledVector(dir, d).setY(foe.y + 0.45); out.fov = -4; return out; }
-    if (kind === 'hero') { const dir = new THREE.Vector3().copy(face).addScaledVector(uu, 0.5).normalize(), d = 2.3 + 0.4 * u;
+    if (kind === 'hero') { const dir = new THREE.Vector3().copy(front).addScaledVector(face, 0.6).normalize(), d = 2.3 + 0.4 * u;
       out.look.copy(jar).setY(jar.y + 0.85 * SHOW.jarScale); out.pos.copy(jar).addScaledVector(dir, d).setY(jar.y + 0.12); out.fov = -2; out.roll = 0.04; return out; }
     return null;
   }

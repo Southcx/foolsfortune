@@ -149,8 +149,8 @@ export class FoeCutIn {
 
   /** The strip on the Pneuka Jar: from in front of it (toward the aberrant) and the face's side, a little low, its mouth high in frame. */
   aimJar(k) {
-    const V = this.view, B = this.box, h = Math.max(0.4, B.getSize(_a).y), ve = h * 0.62, focus = B.getCenter(_b).setY(B.min.y + h * 0.62);
-    const dir = _a.copy(V.u).setY(0).normalize().multiplyScalar(0.7).add(V.face).setY(0).normalize();
+    const V = this.view, B = this.box, h = Math.max(0.4, B.getSize(_a).y), ve = h * 0.95, focus = B.getCenter(_b).setY(B.min.y + h * 0.55);
+    const yaw = this.view.dive?.jar?.group.rotation.y ?? 0, dir = _a.set(Math.sin(yaw), 0, Math.cos(yaw)).multiplyScalar(this.view.show?.front ?? 1).addScaledVector(V.face, 0.45).setY(0).normalize(); // (from where the Jar faces, a quarter toward the board's face)
     const d = ve / 2 / Math.tan(THREE.MathUtils.degToRad(CUT_IN.fov / 2)) * (1 - 0.14 * k);
     this.cam.position.copy(focus).addScaledVector(dir, d); this.cam.position.y -= ve * 0.15; this.cam.up.set(0, 1, 0); this.cam.lookAt(focus);
     this.key.position.copy(this.cam.position).add(_k.set(dir.z, 1.1, -dir.x).multiplyScalar(d)); this.key.target.position.copy(focus);
