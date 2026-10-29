@@ -5,7 +5,8 @@
 //   VS        at a PvE duel's open, between the two bands (duelshow.js): VS, gold, a sunburst behind it
 //   A CHAIN   a duel's chain from its third step (beats.js, in place of the step's numeral on the board: one count, never two): "3 CHAIN!",
 //             bigger and louder a step, its exclamation marks counting up, from the fifth in the film's colours running through the
-//             letters, the sunburst spinning faster, the slam's colour split wider
+//             letters, the sunburst spinning faster, the slam's colour split wider; the count's neuralese numeral hung under it in
+//             the running hand (Espada's numerals: a bar for five, joined pairs, a dot)
 // One plane on the overlay's scene (render/overlayscene.js: CSS px, after the grade), one program, warmed at the duel's open: a stamp
 // slams in from big (a held frame of white), settles with a shiver and grows a hair while it holds, then pops away. One at a time: the next
 // replaces it.
@@ -62,7 +63,7 @@ export class DuelStamps {
     return true;
   }
 
-  word(text) { let w = this.words.get(text); if (!w) { w = wordTexture(text); this.words.set(text, w); } return w; }
+  word(text, num = null) { const key = num == null ? text : `${text}#${num}`; let w = this.words.get(key); if (!w) { w = wordTexture(text, { num }); this.words.set(key, w); } return w; }
 
   /** At the duel's open: the program compiled, hidden. */
   warm() {
@@ -72,8 +73,8 @@ export class DuelStamps {
   }
 
   /** A word slammed on: `size` of the shorter side, at (x, y) of the screen, tilted `tilt` rad, held `life` real s. */
-  stamp(text, { hex = GOLD, film = false, size = STAMPS.size, x = STAMPS.x, y = STAMPS.y, tilt = -0.08, life = STAMPS.life, spin = 0.6 } = {}) {
-    if (!text || !this.ensure()) return; const W = this.word(text);
+  stamp(text, { hex = GOLD, film = false, size = STAMPS.size, x = STAMPS.x, y = STAMPS.y, tilt = -0.08, life = STAMPS.life, spin = 0.6, num = null } = {}) {
+    if (!text || !this.ensure()) return; const W = this.word(text, num);
     this.u.uWord.value = W.tex; this.u.uAsp.value = W.aspect; this.u.uCol.value.setHex(hex); this.u.uFilm.value = film ? 1 : 0; this.u.uSpin.value = spin;
     this.o = { size, x, y, tilt, life }; this.age = 0; this.mesh.userData.overlayHidden = false;
   }
@@ -82,7 +83,7 @@ export class DuelStamps {
   chain(step, side = 0) {
     const C = STAMPS.chain; if (step < C.from) return false;
     const n = step - C.from, film = step >= C.film, hex = side === 1 ? feelColour(this.view.aspect, new THREE.Color()).getHex() : GOLD;
-    this.stamp(`${step} CHAIN${'!'.repeat(Math.min(3, 1 + n))}`, { hex, film: film && side === 0, size: Math.min(C.max, STAMPS.size + C.grow * n), x: side === 1 ? 0.62 : 0.4, y: 0.3, tilt: (side === 1 ? 0.07 : -0.07) * (1 + 0.2 * n), spin: 0.6 + 0.5 * n, life: 0.55 + 0.05 * n });
+    this.stamp(`${step} CHAIN${'!'.repeat(Math.min(3, 1 + n))}`, { hex, film: film && side === 0, size: Math.min(C.max, STAMPS.size + C.grow * n) * 1.3, num: step, x: side === 1 ? 0.62 : 0.4, y: 0.3, tilt: (side === 1 ? 0.07 : -0.07) * (1 + 0.2 * n), spin: 0.6 + 0.5 * n, life: 0.55 + 0.05 * n });
     this.view.stage?.jolt?.(0.12 + 0.05 * n);
     return true;
   }

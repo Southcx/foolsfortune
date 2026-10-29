@@ -14,13 +14,20 @@
 // the bus); the printed circuit's trace, terminal and via (a word break is a broken trace with its two terminations; a voiced pad a
 // filled via); Hangul's featural letters (place and manner drawn); Toki Pona's head-first phrases (via Espada's NEURALESE.md).
 //
+// A number (Espada's numerals, NEURALESE.md 2b; numeralOf): each digit hung from the bus on its own short pin, its spoken sum read
+// down it: a bar (PENTA) nearest the bus, then a pair (DUO: two dots joined by a trace) for each two, then a lone dot (UNA); zero (VOYD)
+// an open ring wider than any pad and hung by no stem, so a digit is never read as a letter. A number alone has its own bus; as a
+// modifier ({ num, mod: true }) it hangs on its head's lower bus. Added 2026-10-29 (South asked for numbers); the letters are untouched.
+//
 //   runningHand(ctx, words, { x, y, scale, ink, lw, joined, end, glow, blur }) -> { width, height, x0, y0, x1, y1, lw, words }
-//     words: [{ cells, mod? }]   cells from cellsOf (npc/neuralesespelling.js); mod: a modifier of the head before it
+//     words: [{ cells, mod? } | { num, mod? }]   cells from cellsOf (npc/neuralesespelling.js); num: a whole number; mod: a modifier of the head before it
 //     x, y: where the bus begins (its left end, its height) in ctx's units; scale: units a hand unit (1.8 reads at 14 px)
 //     ink: a colour or gradient for every stroke, or { role: colour } over the hand's own colours (COL); lw: stroke width (scale * 0.8)
 //     joined: true (default) lays the bus, its terminals and leads; false the letters alone. end: the star closes the line.
 //     ctx null: measures only. The bounds are the strokes' centrelines (add lw / 2 for the ink's edge); words: each word's x0, x1, row.
 // ---------------------------------------------------------------------------------------
+import { numeralOf } from '../npc/neuralesespelling.js';
+
 const D2R = Math.PI / 180;
 // the ruled language -> the hand's letters (place, manner, voiced): m, n, l, r are voiced, so their pads are filled. A cell's letter
 // carries its whole consonant record (cellsOf spreads the spelling's table into it), so the hand's table is filled as letters are met.
@@ -114,6 +121,21 @@ function glyphWord(cells) {
   for (const cell of cells) { const b = block(toSyl(cell)); P.push(...tf(b.prims, x, 0, 1)); x += b.w + 1.1; }
   return { prims: P, w: x - 1.1 };
 }
+// a number's digits, each on its pin from the bus (x from 0, the bus at y 0)
+const DW = 5;
+function glyphNumber(n) {
+  const P = [], body = (pts) => P.push({ t: 'path', pts, role: 'body' }), dot = (x, y, r = 0.45) => P.push({ t: 'dot', x, y, r, role: 'voice' });
+  numeralOf(n).forEach((d, i) => {
+    const cx = i * (DW + 1.1) + DW / 2; let y = 2.6;
+    if (d.zero) { P.push({ t: 'path', pts: [[cx, 0], [cx, 1.6]], role: 'lead' }, { t: 'ring', x: cx, y: 3.8, r: 2.2, role: 'body' }); return; } // (VOYD: wider than a pad, touching its pin)
+    P.push({ t: 'path', pts: [[cx, 0], [cx, d.bar ? y : y + 0.9]], role: 'lead' });
+    if (d.bar) { body([[cx - DW / 2, y], [cx + DW / 2, y]]); y += 2.3; } else y += 0.9; // (PENTA: the bar across the pin's foot)
+    for (let k = 0; k < d.pairs; k++) { body([[cx - 1.7, y], [cx + 1.7, y]]); dot(cx - 1.7, y); dot(cx + 1.7, y); y += 2.3; } // (DUO: two dots joined)
+    if (d.dot) dot(cx, y, 0.6); // (UNA)
+  });
+  return { prims: P, w: numeralOf(n).length * (DW + 1.1) - 1.1 };
+}
+const glyphOf = (w) => (w.num != null ? glyphNumber(w.num) : glyphWord(w.cells));
 const tick = (x, y) => ({ t: 'path', pts: [[x, y - 0.9], [x, y + 0.9]], role: 'rail' });
 const ROW2 = 12; // a modifier hangs on a lower bus, half a row below (as in the Comb)
 
@@ -121,17 +143,17 @@ const ROW2 = 12; // a modifier hangs on a lower bus, half a row below (as in the
    bar each side), the line closed by the star hung from its own stub when `end` */
 function layout(words, end) {
   const phrases = [];
-  for (const w of words) { if (!w?.cells?.length) continue; if (w.mod && phrases.length) phrases[phrases.length - 1].push(w); else phrases.push([w]); }
+  for (const w of words) { if (!w?.cells?.length && w?.num == null) continue; if (w.mod && phrases.length) phrases[phrases.length - 1].push(w); else phrases.push([w]); }
   const P = [], out = []; let x = 1;
   phrases.forEach((ph, pi) => {
-    const H = glyphWord(ph[0].cells); P.push(...tf(H.prims, x, 0, 1)); const hEnd = x + H.w;
+    const H = glyphOf(ph[0]); P.push(...tf(H.prims, x, 0, 1)); const hEnd = x + H.w;
     P.push({ t: 'path', pts: [[x - 1, 0], [hEnd + (ph.length > 1 ? 0 : 0.2), 0]], role: 'rail' }, tick(x - 1, 0));
     out.push({ x0: x, x1: hEnd, row: 0, index: words.indexOf(ph[0]) });
     let stop = x + H.w;
     if (ph.length > 1) {
       const lx = hEnd; P.push({ t: 'path', pts: [[lx, 0], [lx, ROW2 - 2.4], [lx + 2.4, ROW2]], role: 'rail' });
       let mx = Math.max(lx + 3.4, x + 0.8), last = mx;
-      for (const m of ph.slice(1)) { const G = glyphWord(m.cells); P.push(...tf(G.prims, mx, ROW2, 1)); out.push({ x0: mx, x1: mx + G.w, row: 1, index: words.indexOf(m) }); last = mx + G.w; mx += G.w + 1.6; }
+      for (const m of ph.slice(1)) { const G = glyphOf(m); P.push(...tf(G.prims, mx, ROW2, 1)); out.push({ x0: mx, x1: mx + G.w, row: 1, index: words.indexOf(m) }); last = mx + G.w; mx += G.w + 1.6; }
       P.push({ t: 'path', pts: [[lx + 2.4, ROW2], [last + 0.2, ROW2]], role: 'rail' }, tick(last + 0.2, ROW2)); stop = Math.max(stop, mx - 1.6);
     } else P.push(tick(hEnd + 0.2, 0));
     if (end && pi === phrases.length - 1) {

@@ -19,6 +19,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { FONT } from '../../ui/theme.js';
+import { runningHand } from '../../ui/runninghand.js';
 import { FOE_SKILLS } from '../../progress/duel/foeskills.js';
 import { feelColour, sm, clamp01 } from './layout.js';
 import { SIDE, tex, chantTexture } from './fxkit.js';
@@ -94,11 +95,13 @@ void main() {
 const VERT = /* glsl */`varying vec2 vUv; void main() { vUv = uv; gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0); }`;
 
 /** A label in the System's type, white with an ink keyline, on a transparent canvas (its aspect beside it). */
-export function wordTexture(text) {
-  const H = 160, c = document.createElement('canvas'), x = c.getContext('2d'), font = `bold 120px ${FONT.sys}`;
-  x.font = font; const w = Math.ceil(x.measureText(text).width + 70); c.width = w; c.height = H;
+export function wordTexture(text, { num = null } = {}) {
+  const TH = 160, NH = num == null ? 0 : 84, H = TH + NH, c = document.createElement('canvas'), x = c.getContext('2d'), font = `bold 120px ${FONT.sys}`;
+  x.font = font; const N = num == null ? null : runningHand(null, [{ num }], { scale: 8.5 }); // (a count's numeral in neuralese hung under it: Espada's, NEURALESE.md 2b)
+  const w = Math.ceil(Math.max(x.measureText(text).width, N ? N.width + 40 : 0) + 70); c.width = w; c.height = H;
   const paint = () => { x.clearRect(0, 0, w, H); x.font = font; x.textAlign = 'center'; x.textBaseline = 'middle'; x.lineJoin = 'round';
-    x.lineWidth = 18; x.strokeStyle = INK; x.strokeText(text, w / 2, H / 2 + 6); x.fillStyle = '#ffffff'; x.fillText(text, w / 2, H / 2 + 6); };
+    x.lineWidth = 18; x.strokeStyle = INK; x.strokeText(text, w / 2, TH / 2 + 6); x.fillStyle = '#ffffff'; x.fillText(text, w / 2, TH / 2 + 6);
+    if (N) { const at = { x: (w - N.width) / 2, y: TH - 2, scale: 8.5 }; runningHand(x, [{ num }], { ...at, ink: INK, lw: 17 }); runningHand(x, [{ num }], { ...at, ink: '#ffffff', lw: 7 }); } };
   paint(); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.minFilter = THREE.LinearFilter; t.generateMipmaps = false;
   document.fonts?.load?.(font).then(() => { paint(); t.needsUpdate = true; }, () => {});
   return { tex: t, aspect: w / H };
