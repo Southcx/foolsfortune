@@ -65,6 +65,7 @@ export class TouchDriver {
     if (!this.input.enabled) return;
     for (const t of e.changedTouches) {
       const at = { id: t.identifier, x0: t.clientX, y0: t.clientY, x: t.clientX, y: t.clientY };
+      if (this.take?.(t, e.timeStamp)) continue; // (a standard trial holds the screen: its answer, timed by the touch: world/touchstone/trialrun.js)
       if (this.lanes.down(t, e.timeStamp)) continue; // (the rhythm mode's pads: the whole screen, judged on this touch's own moment)
       if (this.game.cursorFree?.()) { this.cursor.down(t); continue; }
       if (this.tools.paper && !this.look) { this.look = at; this.tools.lookDown(at); continue; } // (Celestial mode's paper: the whole screen is drawn on)
@@ -149,5 +150,5 @@ export class TouchDriver {
   }
   state() { return { move: this.move && { ...this.move }, look: !!this.look, cursor: this.cursor.state() }; }
   /** Whether the whole screen is a tool's now (the rhythm mode's pads, Celestial mode's paper): the touch controls' stick stands aside. */
-  screenTaken() { return this.lanes.active || !!this.tools.paper; }
+  screenTaken() { return this.lanes.active || !!this.tools.paper || !!this.take; }
 }

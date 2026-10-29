@@ -28,6 +28,7 @@ export function indexRooms() {
     { id: 'braid', code: 'KeyB', tag: 'B', name: 'THE BRAID', blurb: 'three lines over a pit: beams, bars, blinks · change at any junction', group: 'LAP CIRCUITS', spawn: 'circuit' },
     { id: 'millrace', code: 'KeyC', tag: 'C', name: 'THE MILL RACE', blurb: 'the mill in one loop: cogs, a fork, the ferris wheel, the steam', group: 'LAP CIRCUITS', spawn: 'circuit', circuit: 'mill' },
     { id: 'spindle', code: 'KeyP', tag: 'P', name: 'THE SPINDLE', blurb: 'up through a chain of skills, down a long chute', group: 'LAP CIRCUITS', spawn: 'circuit' },
+    { id: 'touchstone', code: 'KeyT', tag: 'T', name: 'THE TOUCHSTONE', blurb: 'the Assay\'s dark room: five standard trials, F at a plinth', group: 'THE HUB', spawn: 'touchstone' },
     { id: 'siege', code: 'KeyS', tag: 'S', name: 'THE SIEGE', blurb: 'the hand\'s arena: raids come here, and only here', group: 'THE HAND', spawn: 'siege' },
     { id: 'dunes', code: 'KeyD', tag: 'D', name: 'THE DUNES', blurb: 'an oasis in a sand sea: Solar Skiffing (Y) · the Weir\'s pools and the Sondelass\'s rod · the gate to Raku\'s bazaar', group: 'THE OPEN', spawn: 'dunes' },
     { id: 'shore', code: 'KeyE', tag: 'E', name: 'THE SHORE', blurb: 'due east of the oasis the sand runs down to the Emocean: the jetty, and the sea to the horizon', group: 'THE OPEN', spawn: 'shore' },
@@ -63,6 +64,7 @@ export function goRoom(c, id) {
   else if (r.spawn === 'weir') toWeir(c);
   else if (r.spawn === 'dunemaw') toDunemaw(c);
   else if (r.spawn === 'shore') toShore(c);
+  else if (r.spawn === 'touchstone') { c.game.touchstone?.arrive(); c.running = false; c.current = -1; c.lapT = null; sfx.geyser(); }
   else if (r.spawn === 'bazaar') { c.game.bazaar?.arrive(); c.running = false; c.current = -1; c.lapT = null; }
   else if (r.spawn === 'opensea') { c.game.opensea?.arrive(); c.running = false; c.current = -1; c.lapT = null; }
   else if (r.spawn === 'raceway') { c.game.raceway?.arrive(); c.running = false; c.current = -1; c.lapT = null; sfx.geyser(); }
