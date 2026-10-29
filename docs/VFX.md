@@ -15,8 +15,8 @@ const h = game.vfx.play('ult.pillar', { pos }); h.k = 0.3; h.stop();    // a hel
 Every look is data in `src/vfx/library.js`; a direction note is an edit there and nowhere else.
 - **Names fall back:** `hit.slash.crystal` → `hit.slash` → `hit`. Nothing ever plays nothing.
 - **Families inherit** (`extends`): change the base and the family follows.
-- **Layers are small primitives**, each with its own clock (`at`): `sprites`, `mesh`, `decal`, `light`, `flash`, `shake`, `hitstop`,
-  `smear`, `glyph`, `sound` (Wanda's, by name), `fx`. A new layer kind is a case in `vfx/vfx.js`, for every effect at once.
+- **Layers are small primitives**, each with its own clock (`at`): `sprites`, `mesh`, `decal`, `shape`, `caster`, `light`, `flash`, `shake`,
+  `hitstop`, `smear`, `glyph`, `sound` (Wanda's, by name), `fx`. A new layer kind is a case in `vfx/vfx.js`, for every effect at once.
 - **`power` scales** one effect from a tap to a full blow.
 
 Prior art: Niagara and VFX Graph (emitters played as one system), FFXIV's `.avfx` (named by use, layered), fighting games' hit tables.
@@ -33,6 +33,7 @@ adds a pop of the creature's own colour. Every blow plays `hit.<tool>.<material>
 | piece | where | contract |
 |---|---|---|
 | shaped GPU particles | `vfx/sprites.js` | 16 shapes in one atlas, stateless on the GPU |
+| shape layers | `vfx/shapes/` | an effect shape (ring, band, dome, sphere, cone, disc, quad, beam, spiral, crescent, pillar, wave, spikes) in ONE program: a pattern scrolled, masked, flowed, eroded over its life, coloured by a ramp row; fields in `vfx/shapes/layer.js` |
 | the player | `vfx/vfx.js` | `play(name, ctx)`, held handles, `hit({ kind, cause, point, dir, power, kill, type })` |
 | swings | `vfx.swing(name)`, `swing.*` | `trail` ribbons and `perM` sprites; a tool says where its striking part is (`.follow(fn)`) |
 | status auras | `vfx/auras.js`, `aura.*` | a status shown round a creature while it lasts, sized to it |
@@ -43,6 +44,26 @@ adds a pop of the creature's own colour. Every blow plays `hit.<tool>.<material>
 | decal textures | `src/assets/vfx/tex/*.png` | any picture a decal wears (the circles: `circle_lotus`, `circle_swirl`) |
 | sequences | `cine/sequence.js`, `cine/sequences.js` | cinematics as data, below |
 | the workbench | `workbench/`, chat `/workbench` | CINEMA, EFFECTS (edit live, Apply, Copy back), MODELS (turntable, counts), TEXTURES |
+| the gallery | `scripts/vfxgallery.mjs` | effects shot headless on a stage of their own (no game boot): a contact sheet, a row an effect, a column a time |
+
+## Shape layers: primary, secondary, tertiary
+
+A shape layer (`type: 'shape'`, `vfx/shapes/layer.js`) is the procedural effect mesh: an **effect shape** (`form`) with a tiling
+**pattern** scrolled over it (`main`: noise, cells, streaks, ripple, cracks, dots, marble, frost, curds, rays, stars, script, or `'motif'`,
+the caller's feeling's paint motif), a **mask** and a **flow** (UV wobble), **eroded** through its pattern as it dies (`erode`, a curve over
+its life: 0 whole, 1 gone), its colour and alpha read from a **ramp** row (`ramp`: a feeling, a domain, a suit, `wild`, `film`, `gold`,
+`ember`, `white`, `ink`, `tint`; or `'feeling'` / `'domain'` / `'suit'`, the caller's) that `rampShift` slides down so it cools and clears.
+`rim` lights a shell's edge (> 0) or softens a volume's (< 0); `add: 0` is alpha-over (smoke, ink, Dread), 1 additive. Every one is the
+same program (the program audit): its differences are uniforms. Sprites take the same family's colour with `color: 'feeling'`.
+
+Build an effect in three tiers (Riot's): **PRIMARY**, the hero (one shape, a clear silhouette, the brightest, first); **SECONDARY**, what
+supports it (rings, sweeps, sparks; quicker, never brighter); **TERTIARY**, what lingers (motes, dust, a ground glow, smoke; slow and
+faint). `vfx/library/kitdemo.js` (`kit.demo.burst`, `kit.demo.aura`, `kit.demo.wave`) shows the idiom, a comment a tier. A thin motif
+(Fury's cracks, Grief's streaks) rides on a body: `mainK: 0.5`.
+
+```sh
+node scripts/vfxgallery.mjs --match kit.demo --ctx '{"feeling":"fury","domain":"psychokinesis"}'   # --phone, --times, --out, --lines 0
+```
 
 ## Cinematics as data
 
