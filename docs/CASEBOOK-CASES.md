@@ -4391,3 +4391,13 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   `lend()` refused every press after the first.
 - **Fix:** `cool` runs down in `tickFlight`, which the Sondelass calls every frame, drawn or not; `update` no longer touches it.
 - **Rule:** 350
+
+### 2026-10-29 · The refreshed hits drew whole rings and hard rims (Calissa's builder, the old stock's refresh)
+- **Seen:** in the gallery at 1920 x 1080, the slash's crescent drew as a full soft ring for its first tenth of a second, a kill's gold
+  pop and the jelly's bubble showed the ring's and the sphere's own hard edge, the discs their rim.
+- **Cause (as measured):** each one-shot started white-hot by `rampShift` +0.25 to +0.35 over an erosion of 0. The program reads the ramp
+  at value + shift, so a texel its edges had faded to 0 read the ramp at 0.3 (alpha 0.34 on the tint row, 0.44 on gold), and an
+  erosion of 0 cuts nothing (its threshold sits below 0). The faded ends and rims were drawn at a third of full, out to the mesh's edge.
+- **Fix:** every such shape's erosion starts at 0.2 (its early keys at 0.22 or more), so value-0 texels are cut while the shift heats the
+  rest (vfx/library/hits.js, damage.js, generics.js, temper.js, ult.js). Seen again at 896 x 414 at 2x: the crescent, the rims soft.
+- **Rule:** NEW:shape-hot-start

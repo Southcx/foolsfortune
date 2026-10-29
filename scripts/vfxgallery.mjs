@@ -13,6 +13,7 @@
 //   --phone   896 x 414 CSS px at 2x (1792 x 828), the low tier (South's phone held on its side)
 //   --lines   the game's 480 lines on the short side, scaled up (default), or 0 for the device's own
 //   --out     where the sheet and the frames go (default: the system's temp dir, vfxgallery/); the sheet's path is printed
+//   --ctx '{"at":[0,0.9,0]}'   where it plays (an aura at a body's middle, with --body center); each line prints the draws it adds
 // Prior art: the workbench's EFFECTS stage (workbench/workbench.js), the map dress's shot (scripts/mapdress-shot.mjs), a film's dailies.
 // ---------------------------------------------------------------------------------------
 import fs from 'node:fs';
@@ -59,7 +60,7 @@ try {
     const r = await page.evaluate((a) => window.__gallery.shoot(a), { name, row, times, ctx, dir, mid });
     const f = path.join(out, `${slug(name)}@${times[mid]}s-${OW}x${OH}.png`);
     if (r.single) fs.writeFileSync(f, Buffer.from(r.single.split(',')[1], 'base64'));
-    console.log(`  ${name.padEnd(36)} ${String(r.layers).padStart(2)} layers${r.held ? ', held' : ''}  ${r.ms} ms  -> ${f}`);
+    console.log(`  ${name.padEnd(36)} ${String(r.layers).padStart(2)} layers${r.held ? ', held' : ''}  +${r.calls} draws  ${r.ms} ms  -> ${f}`);
   }
   const sheet = await page.evaluate(() => window.__gallery.sheet());
   const sf = path.join(out, `sheet-${slug(match)}-${OW}x${OH}.png`);
