@@ -14,7 +14,8 @@
 // (Ulrich's chunked LOD, 2002: a skirt under every chunk's edge). Since R46 (the owner: "expertly designed rooms ... prefab rooms that
 // can be chained together") each room is one of a dozen designs (prefabs.js: a processional, the narrows, a cloister, a gallery, a
 // shrine, a pylon gate, three halls...), turned to its doorways and paced along the path; the sand lies low round their pieces. The way in (a pale pool:
-// the way up, back out of the Well) and the way down (a dark one, turning) are pools of Lachryma on the sand.
+// the way up, back out of the Well) and the way down (a dark one, turning) are pools of Lachryma on the sand, each with its floor's
+// number in neuralese (the way down the next floor's).
 //
 // Dressed in the Great Dunemaw's kit (vfx/dunemawkit.js: bismuth walls, its sand `K.sand` when it has one) and its pool (vfx/dunemaw.js):
 // Calissa's.
@@ -32,6 +33,7 @@ import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometr
 import { addOutline } from '../../render/outline.js';
 import { dunemawKit } from '../../vfx/dunemawkit.js';
 import { DunemawMouth } from '../../vfx/dunemaw.js';
+import { numeralDecals } from '../../vfx/wornnumerals.js';
 import { layoutFloor, swirl, CELL, WALL_H, DOOR, DOOR_H, SIDES, OPP } from './welllayout.js';
 import { roomSand, BASE } from './wellsand.js';
 import { Sandfalls } from './wellshift.js';
@@ -256,6 +258,11 @@ export function buildFloor(game, layout, origin, floor = 1) {
   // the arrival: beside the way up, facing a doorway out of the room
   const outSide = [...layout.start.doors][0] || 's', toward = door(layout.start.c, layout.start.r, outSide).sub(up.pos).setY(0).normalize();
   const arrive = { pos: onSand(layout.start, 0, 0).addScaledVector(toward, 2.6).setY(up.pos.y + 0.05), yaw: Math.atan2(toward.x, toward.z) };
+  // each pool its floor's number in neuralese, read upright as you arrive (Calissa's: vfx/wornnumerals.js): the way up this floor's,
+  // the way down the next's (none down into the cavern); never acted on, so no Arabic beside them
+  const poolNumber = (n, ink) => numeralDecals([{ n, pos: new THREE.Vector3(0, 0.06, 0), normal: new THREE.Vector3(0, 1, 0), up: toward, size: 1.1 }], { ink, name: 'well-floor-numeral' });
+  { const m = poolNumber(floor, '#6a3a1e'); m.position.copy(up.pos); group.add(m); }
+  if (floor < 3) { const m = poolNumber(floor + 1, '#f2c35a'); m.renderOrder = 3; down.mouth.group.add(m); }
   // the sandfalls, in their doorways (wellshift.js)
   const fallLinks = layout.links.filter((l) => l.sandfall);
   const falls = new Sandfalls(game, floor, fallLinks.map((l) => {

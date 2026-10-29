@@ -17,7 +17,8 @@
 // texture are made once for every cradle, so a second cradle adds no program and no texture (its lit parts are its own materials of
 // one program, since each lights alone; a shared material is never changed by one of its users: casebook rule 242).
 //
-//   const c = new CradleLook({ scale })   c.group (its own frame: Y up, the origin at the cradle's foot, the well's floor at seat())
+//   const c = new CradleLook({ scale, number })   c.setNumber(n)   (its own number in the Comb on its top face, by the gold collar:
+//     CRADLE_NUMBERS, cradleNumber(kind, id, k); South via Espada, 2026-10-29)   c.group (its own frame: Y up, the origin at the cradle's foot, the well's floor at seat())
 //   c.wake(on = true)   c.rest(on = true)   c.update(rawDt)   c.seat() -> world point (the well's floor, where the Jar sits)
 //   c.lit (its own lit materials)   c.dispose() (its geometry and lit materials; never the shared ones)
 //   CRADLE_JAR (the scale at which the well is the Jar's: the default)   CRADLE_FORM (its own units)   cradleFoot(scale) (its foot's
@@ -28,6 +29,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { mergeStatic } from '../render/merge.js';
 import { bakedCanvasTexture } from '../render/bakedcanvas.js';
 import { THEMES, theme } from '../ui/theme.js';
+import { numeralDecals } from './wornnumerals.js';
 
 /** The cradle in its own units: radius, height, the well's radius and depth (round six's). */
 export const CRADLE_FORM = { R: 0.78, h: 0.5, rs: 0.37, dep: 0.13 };
@@ -35,6 +37,10 @@ export const CRADLE_FORM = { R: 0.78, h: 0.5, rs: 0.37, dep: 0.13 };
 export const CRADLE_JAR = 0.28 / 0.37;
 /** The foot's radius at a scale, metres (a corner of the octagon: what a plinth under it must hold). */
 export const cradleFoot = (scale = CRADLE_JAR) => CRADLE_FORM.R * 1.03 * scale;
+/** Every cradle's own number, the order the Emocean cut them in (LORE.md, "The numerals": only the Comb is on them). A placeholder
+ *  order for Espada to rule: the Shrines in world/shrines.js's order, then the ships' helms by class (the galleon's two in turn). */
+export const CRADLE_NUMBERS = { shrine: { bisque: 1, lamp: 2, float: 3, pearl: 4 }, helm: { sloop: 5, frigate: 6, destroyer: 7, tanker: 8, galleon: 9 } };
+export const cradleNumber = (kind, id, k = 0) => { const n = CRADLE_NUMBERS[kind]?.[id]; return n == null ? null : n + (kind === 'helm' && id === 'galleon' ? k : 0); };
 
 export function rng(seed) { let s = seed >>> 0 || 1; return () => { s ^= s << 13; s ^= s >>> 17; s ^= s << 5; return ((s >>> 0) % 100000) / 100000; }; }
 /** A clay glaze drawn on a canvas: its base, pools and breaks of colour, specks (the gate's clay and sill, and the cradle's). */
@@ -62,7 +68,7 @@ const shared = () => SHARED || (SHARED = {
 const V3 = THREE.Vector3, P = (x, y, z) => new V3(x, y, z);
 
 export class CradleLook {
-  constructor({ scale = CRADLE_JAR } = {}) {
+  constructor({ scale = CRADLE_JAR, number = null } = {}) {
     const M = shared(), g = (this.group = new THREE.Group()); g.name = 'cradle'; g.scale.setScalar(scale);
     const { R, h, rs, dep } = CRADLE_FORM, fl = h - dep, v2 = (a) => a.map(([x, y]) => new THREE.Vector2(x, y));
     // the body: the round well turned inside the octagon, its foot flared
@@ -94,8 +100,19 @@ export class CradleLook {
     this.tineAt = []; for (let k = 0; k < 4; k++) { const a = k * Math.PI / 2 + Math.PI / 4; this.tineAt.push({ p: P(Math.cos(a) * (rs + 0.07), h + 0.03 + 0.12, Math.sin(a) * (rs + 0.07)), a }); }
     mergeStatic(g); // (the body, the gold, the carved pads: one draw each; the lit parts are named, so kept)
 
+    this.setNumber(number);
     this.k = { rest: 0, lit: 0, tine: 0 }; this.awake = false; this.resting = false; this.t = 0; this.ink = null;
     this.tinePose(0); this.colours(); this.update(0);
+  }
+
+  /** Its own number (the order the Emocean cut the cradles in: CRADLE_NUMBERS) in the Comb, gold, on the top face just outside the
+   *  collar at its front, the bus outward; null takes it off. */
+  setNumber(n) {
+    if (this.numeral) { this.numeral.removeFromParent(); this.numeral.userData.dispose(); this.numeral = null; }
+    this.number = n ?? null; if (this.number == null) return;
+    const { rs, R, h } = CRADLE_FORM, r = (rs + 0.065 + (rs + R) / 2 - 0.01) / 2; // (between the collar's outside and the pad ring's inside)
+    this.numeral = numeralDecals([{ n: this.number, pos: P(0, h + 0.038, r), normal: P(0, 1, 0), up: P(0, 0, 1), size: 0.095 }], { hand: 'comb', ink: '#e8b84a', aspect: 1.35, cell: 64, name: 'cradle-number' });
+    this.group.add(this.numeral);
   }
 
   /** Sealed (the tines close, the seam, pads and halo light), or unsealed (`false`: they open and go dark). */
@@ -135,6 +152,7 @@ export class CradleLook {
     this.group.removeFromParent();
     this.group.traverse((o) => { if (o.geometry) o.geometry.dispose(); });
     for (const m of this.lit) m.dispose();
+    this.numeral?.userData.dispose();
     this.tines.dispose();
   }
 }

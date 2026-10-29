@@ -19,6 +19,7 @@
 //     6 NW  climb                 2.8 m (jump + mantle), 3.4 m (double + mantle)
 //     7 W   speed                 slide ramp to top speed, 7 m gap
 //     8 SW  low                   slide chute, 1.5 m tunnel, back to 1
+//   Each station's checkpoint ring has its number inlaid in neuralese (the floor sign beside it, in Arabic).
 //   Stations 3-7 are over a reset floor: touch it and you're back at the station's
 //   checkpoint. The Tab panel's actions go back to the last checkpoint or to the hub (they were R and H).
 //
@@ -37,6 +38,7 @@ import { PALETTE, T } from '../../core/config.js';
 import { FONT } from '../../ui/theme.js';
 import { ROOM_GLAZE_ID as RG } from '../../vfx/roomglazes.js'; // (the hub's salt-glazed walls, the Index's celadon: Calissa's room glazes)
 import { bakedCanvasTexture } from '../../render/bakedcanvas.js';
+import { numeralDecals } from '../../vfx/wornnumerals.js';
 import { TR } from '../testroom/layout.js';
 
 
@@ -283,6 +285,8 @@ export function buildBasement(L, W, D) {
     ring.position.set(x, B + y + 0.04, z);
     S.add(ring);
   }
+  // each station's number inlaid in its ring in neuralese, its bus the way the station faces (Calissa's: vfx/wornnumerals.js); the floor sign beside it says it in Arabic
+  S.add(numeralDecals(CHECKPOINTS.map((cp, i) => ({ n: i + 1, pos: new THREE.Vector3(cp.pos[0], B + cp.pos[1] + 0.03, cp.pos[2]), normal: new THREE.Vector3(0, 1, 0), up: new THREE.Vector3(Math.sin(cp.yaw), 0, Math.cos(cp.yaw)), size: 0.8 })), { ink: '#f2c35a', name: 'course-station-numerals' }));
 
   // lights (few: every light costs every lit pixel)
   for (const p of [[0, 9, 0], [0, 8, -28], [28, 10, 0], [0, 10, 28], [-28, 11, 0]]) {
