@@ -128,6 +128,7 @@ export class FoeCutIn {
       p.matrixAutoUpdate = false; p.matrix.copy(o.matrixWorld); p.frustumCulled = false; this.scene.add(p); this.proxies.push({ o, p });
       if (!o.isSkinnedMesh) { if (!o.geometry.boundingBox) o.geometry.computeBoundingBox(); box.union(_bb.copy(o.geometry.boundingBox).applyMatrix4(o.matrixWorld)); }
     });
+    if (box.isEmpty() && J) { const k = J.group.scale.y || 1; box.setFromCenterAndSize(_a.copy(J.group.position).setY(J.group.position.y + 0.6 * k), _b.set(0.9 * k, 1.25 * k, 0.9 * k)); } // (the Jar's body is skinned: its bounds from where it stands)
     if (box.isEmpty() && f?.pos) box.setFromCenterAndSize(_a.copy(f.pos).setY(f.pos.y + 1), _b.set(1, 2, 1));
     this.box = box.isEmpty() ? null : box; return this.proxies.length > 0;
   }
