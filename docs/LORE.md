@@ -891,6 +891,23 @@ is drawn as it is said: a bar for PENTA (Rome's V was the open hand), two dots j
 doubled stem), a lone dot for UNA (the via), an open ring for VOYD (a pad with nothing on it, the empty mouth). The digits hang from the
 bus on pins, so a number written in the running hand looks like a chip: a body on a rail with its legs counting. In the Comb a digit
 takes a doubled cell. The pun is the point: a digit is a finger (Latin *digitus*), and the bar is the whole hand.
+*Where the numerals are worn* (South, 2026-10-29: "The dice absolutely should showcase your numeral creations ... it IS very decorative
+and I'd love to see more of it"). **The rule:** neuralese numerals are worn on things; Arabic numerals are said beside them wherever a
+player acts on the number: in the UI, or projected on a quad over the thing. No player has to read neuralese to play, and every player
+who looks will learn it. Prior art: mahjong, whose character suit is numbered in Chinese numerals that players worldwide learn at the
+table without a lesson, and the clock faces that wear Roman numerals over a time everyone reads anyway.
+- **Every die in the game.** The stones' seven dice (on the vessel, in the god hand's palm and on its fingers), the flee's d20, and Raku's
+  house set: the clay folk had the script from the ancients, so the house's dice wear it as a casino's foreign charm, as mahjong tiles do.
+  A face carries its numeral on a short bus, and the bus marks which way up the face reads, so a 6 and a 9 never trade places. The
+  rolled number is said in Arabic by the roll's own readout (the flee's plate, a seat plate, a quad over the settled die).
+- **The Sight's hour ring:** the wadokei's hours in numerals, as the real wadokei counted its hours in numbers.
+- **The Lachrimeter's scale plate:** its graduations.
+- **The Major Arcana:** a second index beside the Roman one (0 to XXI), as many printed decks carry two scripts.
+- **A caster shell's casing:** its TYPE number etched on the brass.
+- **Posts and doors:** the course's stations, the Raceway's gates, the Great Dunemaw's floors, each numbered on its own post or lintel.
+- **In the Comb:** the Seal Book numbers its imprints in the order received, as a *goshuincho* writes the date beside each shrine's red
+  seal; and every cradle carries its own number on its gold collar, the order the Emocean cut them in. No island made the cradles alone,
+  so only the stamp script, which belongs to everyone, is on them.
 
 **The Pneuka Jar as hanko** *(the owner's idea, 2026-10-17; lore Espada's and Dovina's, open)*. The Pneuka Jar is slotted into things
 like a cartridge to make them work: larger vessels and machines, the Shrine gates, the ships for the crossings. Its base is a seal
