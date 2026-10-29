@@ -31,7 +31,7 @@ export const POWER_EVENTS = new Set(['power', 'swap', 'manifest', 'scan', 'lift'
 export const POWER_CAST = { ring: 0.32, slide: 0.42, per: 0.02, grow: 0.36, spiral: 0.4, miracle: 0.6, arc: 1.1, kindle: { fly: 0.32, per: 0.06 }, absorb: { pull: 0.38, per: 0.03 } };
 const EMBER = 0xff6a2a;
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Color();
-const domainHex = (d) => parseInt((DOMAIN_LOOK[d]?.colours?.accent || DOMAIN_LOOK[d]?.iconHex || '#ffd36a').slice(1), 16);
+export const domainHex = (d) => parseInt((DOMAIN_LOOK[d]?.colours?.accent || DOMAIN_LOOK[d]?.iconHex || '#ffd36a').slice(1), 16);
 const DOMAIN_OF = (id) => DUEL_POWERS[id]?.domain;
 
 /** The pieces a move carries, slid from their cells to their new ones (the model's move at once, the drawing over the beat). */
@@ -51,7 +51,7 @@ function powerMoment(T, e) {
   const V = T.view, B = V.board3, hex = domainHex(e.domain), at = e.at ? cellLocal(e.at[0], e.at[1], B, new THREE.Vector3()) : cellLocal((V.lineCol ?? B.line) / 2, B.h / 2, B, new THREE.Vector3());
   V.game.spiritualLink?.bead?.({ amount: e.cost || 0 });
   V.bursts.burst(at, hex, 18, { speed: 0.9, life: 0.4, fall: 0, spread: 0, size: 0.022 }); V.bursts.burst(at, 0xffffff, 5, { speed: 0.4, life: 0.3, fall: 0, size: 0.04 });
-  V.juice.word((DUEL_POWERS[e.power]?.label || e.power || '').toUpperCase(), _b.copy(at).add(_a.set(0, 0.22, 0.06)), hex, { h: 0.11, dur: 0.9 });
+  if (!V.jarCut?.cut.has(e)) V.juice.word((DUEL_POWERS[e.power]?.label || e.power || '').toUpperCase(), _b.copy(at).add(_a.set(0, 0.22, 0.06)), hex, { h: 0.11, dur: 0.9 }); // (a big one's label was slammed in its cut-in: one label, never two)
   V.stage?.jolt?.(0.2);
   return { events: [e], dur: POWER_CAST.ring };
 }
