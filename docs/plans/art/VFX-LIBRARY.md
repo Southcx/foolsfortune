@@ -17,8 +17,8 @@ and `main: 'motif'` read the caller's context, so one effect is skinned by whoev
 | **secondary** | how it moved and where it went | the next 0.3 s | mid | rings, a trail, streaks, chips, a second shape counter-scrolling |
 | **tertiary** | what it leaves in the air | the last second | low, soft | motes, dust, embers, mist, a faint decal, a light's tail |
 
-Timing: **anticipation** (gather, 0.05 to 0.25 s: things drawn in, a ring closing), **impact** (one frame of white core, the largest
-shape at its largest), **follow-through** (the shape erodes through its noise, never a plain fade; its ramp cools: `rampShift` down),
+Timing: **anticipation** (gather, 0.05 to 0.25 s: things drawn in, a ring closing), **impact** (about 0.1 s of white core, six frames at 60: one frame alone does not read at
+480 lines; Leroy's hit frame, VFX-PRIOR-ART.md 2.2; the largest shape at its largest), **follow-through** (the shape erodes through its noise, never a plain fade; its ramp cools: `rampShift` down),
 **dissipation** (tertiary motes drift and go). A held effect loops its follow-through and stops with an eased fade.
 Gradient transparency everywhere: no hard edge on a shape (edgeV / edgeU / ramp alpha), no flat-alpha disc. UV scrolling everywhere a
 shape lives longer than 0.2 s: the main pattern flows along the motion, the mask flows against it or slower.
@@ -115,6 +115,12 @@ Courier when not, and ask Petra for the field in a handoff note.
 | Daybreak (Sun) | ouranurgy | a sun disc, a ring of rays, a flash |
 | Hang Time (Hanged, held) | ouranurgy | a slow clock ring round the body |
 | Settle the Score (Judgement) | spellscription | beams from each creature that hurt you, a verdict burst |
+
+**The rank ladder** (Riot's importance by size, saturation and opacity; VFX-PRIOR-ART.md 4): a Page's art is a basic attack (small,
+quick), a Knight's a damage spell (a clear strike), a Queen's a held, defensive one (soft: lower saturation and opacity, calm enough to
+stand beside play), a King's and a zodiac Major's a game changer (big, earned screen weight), the World's the ultimate. A reaction is
+its class's action **quietened**, never a new effect (the Knight of Pentacles' Steadfast is Bulwark's shell in a whisper). The suit's
+colour also rides every swing trail while a class is read, as Chrono Cross puts a character's colour on the weapon trail (a later pass).
 
 Reactions (38) on `art.react`, each with its image where it has one (Gallant: a gold ring on the parry; Momentum: the ember band armed,
 then a burst on the blow; Steadfast: a gold ring at the feet armed, the ward's pale on the blow; Rebirth: a kintsugi burst; Hope: made
