@@ -173,6 +173,13 @@ their Clayese scales; the System's skill and achievement jingles (the chime and 
   a star's glint run up the key twice (Pokemon's sparkle; -17 dB). A won duel's materials (`duel.drop`) chime one a material, a held major
   chord and a shimmer under them when the win was a secret's or a shiny's (-20 plain, -16 rich). Absorb, the slip jelly's skill learned, is
   its own gulp: the junk drunk down and the pool's fill rising (-18), in place of Possession's whistle.
+- **The duel's show** (`audio/duelcasts.js`; Calissa's JRPG pass, b4b2303b): your cut-in, the Jar's band, on Miracle, Transmute, Kindle,
+  Absorb and the finisher: a blade of air rising from the left and a bright major ninth on the slam at 0.12 s (-13 dB); the power's own
+  sound held to its cast 0.92 s after (`JAR_CUT`); the finisher's limit band a swell into a held major seven sharp eleven at 1.1 s, the drain
+  at 1.75 (-8). A chain's "n CHAIN!" stamp from step 3 called on brass a step up and louder each, the film's shimmer from 5 (-19). The VS
+  open (`duelVs`, -8): the foe's band and its name in its dark, the Jar's answer, VS slammed with a taiko sub, a crash and a data tick at
+  1.05 s, a breath as it pulls out. The hero shot (`duelHero`, -12): da-da-da-DAA up to the Answer's sixth, a bell and the confetti's glints.
+  `duelVs` and `duelHero` are called by Calissa's show at their own moments (no event marks them).
 - **The turn's sting** (`duelTurnCutIn`, `audio/duelcasts.js`; South via Dovina, 2026-10-29; Calissa's frame): the turn's change cut in as a foe
   skill is, smaller: a blade of air, a small slam on the band's word at 0.12 s, rung through its hold to 0.4 s (`TURN_CUT_IN`, Calissa's 14b3ab42), and yours the Answer's step up (I, then up a whole step) on bright
   brass with a glint over it, the aberrant's the Five falling in its dark (minor to diminished). Peaks -18.5 and -17 dB, 3 to 5 under a

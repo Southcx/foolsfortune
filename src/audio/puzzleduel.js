@@ -53,6 +53,10 @@ export function duelRoot(s) { const r = s.musicGrid?.()?.root; return r == null 
 /** gesture: real s after a cut-in's slam the skill's own sound plays: when its cast begins, the cut-in over (Calissa's vfx/duelview/cutin.js CUT_IN: in 0.14, held 0.62, out 0.16, slam at 0.12). */
 /** Real s junk flies in the view's land beat before it touches (Calissa's, beats.js: a Hurl's low arc 0.6, the rest 0.45). */
 export const LAND_FLY = { hurl: 0.6, junk: 0.45 };
+/** Your own cut-in (Calissa's Jar band, cutin.js yours, b4b2303b): its label slams 0.12 real s in and the cast comes 0.92 s after the event; the
+ *  finisher's limit-break band slams at 1.1 s and casts at 1.75 s. BANDED: the powers that get the band (beats.js YOURS.powers). */
+export const JAR_CUT = { slam: 0.12, cast: 0.92, limitSlam: 1.1, limitCast: 1.75 };
+export const BANDED = new Set(['miracle', 'transmute', 'kindle', 'absorb']);
 export const CUT_IN = { gesture: 0.8, burst: 4 }; // (burst: real s after foe.desperate its own casts come with no cut-in, so their sounds play at once)
 const sidePan = (side) => (side === 1 ? 0.45 : side === 0 ? -0.45 : 0);
 
@@ -75,7 +79,8 @@ export class PuzzleDuelSounds {
       case 'foe.skill': { if (performance.now() / 1000 - (this._duelDesperateAt ?? -1e9) < CUT_IN.burst) return this.duelFoeSkill(e.skill, e.n); // (the limit break's burst: no cut-in, its cast at once)
         const at = this.duelCutIn?.(e.skill) ?? 0; setTimeout(() => this.duelFoeSkill(e.skill, e.n), (at + CUT_IN.gesture) * 1000); return; } // (the view plays it at its cut-in's start: the sting, then the skill's own sound as its cast begins after the cut-in, audio/duelcasts.js)
       case 'foe.desperate': this._duelDesperateAt = performance.now() / 1000; return this.duelCutIn?.('desperate'); // (the limit break's cut-in)
-      case 'power': return e.power === 'absorb' ? null : this.duelPower?.(e.domain, e); // (a duel power cast: audio/duelcasts.js; a learned skill sounds as its aberrant's own, on its own event)
+      case 'power': if (BANDED.has(e.power) && e.side !== 1) { this.duelJarCutIn?.(false); if (e.power !== 'absorb') setTimeout(() => this.duelPower?.(e.domain, e), JAR_CUT.cast * 1000); return; } // (your cut-in first, the power's own sound at its cast: audio/duelcasts.js JAR_CUT)
+        return e.power === 'absorb' ? null : this.duelPower?.(e.domain, e); // (a duel power cast: audio/duelcasts.js; a learned skill sounds as its aberrant's own, on its own event)
       case 'absorb': return this.duelAbsorb?.(e.cells?.length); // (the slip jelly's Absorb, learned: audio/duelsecrets.js)
       case 'foe.soon': return this.duelFoeLastTick(); // (a foe skill on its last count, told in the foe's turn: it fires on its next)
       case 'foe.stagger': return this.duelFoeStagger();
@@ -93,7 +98,7 @@ export class PuzzleDuelSounds {
       case 'orb.fade': return this.duelOrbFade();
       case 'flee': return this.duelFlee(e.roll, e.ok);
       case 'duel.fled': return this.duelFled();
-      case 'duel.finisher': return this.duelFinisher(e.depth);
+      case 'duel.finisher': if (e.side !== 1) { this.duelJarCutIn?.(true); setTimeout(() => this.duelFinisher(e.depth), JAR_CUT.limitCast * 1000); return; } return this.duelFinisher(e.depth); // (the finisher's limit-break band first)
       case 'run': case 'kick': case 'shot': case 'grab': case 'drill': case 'paint': case 'delay': case 'hold': case 'hold.send': return this.duelTool(e.type, e);
       case 'blast': return e.rows ? this.duelShotRows(e.side) : this.duelBlast();
       case 'skill': return this.duelSkill(e.tool, e.side);
@@ -124,6 +129,7 @@ export class PuzzleDuelSounds {
     if (weak && !foe) { this.tone(t, 0.22, { f0: hz(m + 12), type: 'sawtooth', gain: 0.025, dest: d }); this.noise(t, 0.05, { type: 'highpass', f0: 6000, gain: 0.12, dest: d }); } // (a weak colour's hit: a brighter edge)
     this.tone(t, 0.3, { f0: hz(m - 0.5), f1: hz(m), type, gain: g, dest: d }); // (a little scoop up into the note)
     if (n >= 3) this.tone(t + 0.02, 0.3, { f0: hz(m + 7), type, gain: g * 0.5, dest: d });
+    if (n >= 3 && !foe) this.duelChainCall?.(n); // (the n CHAIN! stamp: audio/duelcasts.js)
     if (n >= 5) { this.tone(t + 0.04, 0.45, { f0: hz(m + 12), gain: g * 0.4, dest: d }); for (let k = 0; k < 4; k++) this.tone(t + 0.05 + k * 0.03, 0.2, { f0: hz(m + 24 + PENTA[k]), gain: 0.012, dest: d }); }
   }
   /** The line pushed a column: a stone dragged and set down, panned to where it now stands (of w columns). */
