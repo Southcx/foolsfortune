@@ -20,7 +20,9 @@ import * as THREE from 'three';
 import { STAINS, stainStage } from '../../progress/brushload.js';
 import { ECON, crudeFieldOf } from '../../progress/econ/table.js';
 import { now, today, DAY_MS } from '../../core/calendar.js';
-import { seeded } from '../../core/rng.js';
+import { seeded, stream } from '../../core/rng.js';
+import { rollShiny } from '../../progress/duel/drops.js';
+const simRand = stream('world/ground/stains'); // (the simulation's chance: core/rng.js, the same twice)
 
 const RADIUS = [1.1, 1.6, 2.2, 2.8]; // (metres across a stain's middle, by stage 0..3)
 const CELL_M2 = 0.0625; // (one paint map cell: 0.25 m square)
@@ -127,7 +129,7 @@ export class Stains {
       s.spawned = true;
       const c = J.spawn(new THREE.Vector3(s.x, s.y + 0.1, s.z), { cls: 1 });
       const aspect = this.game.weather?.here?.(new THREE.Vector3(s.x, s.y, s.z))?.aspect || null; // (the weather's feeling where it rises: crude has none of its own)
-      if (c) { c.aberrant = true; c.name = 'Aberrant Slip Jelly'; c.grade = aspect; } // (Espada names it; a bounty's quarry)
+      if (c) { c.aberrant = true; c.name = 'Aberrant Slip Jelly'; c.grade = aspect; c.shiny = rollShiny(simRand); } // (Espada names it; a bounty's quarry; one in ten goes wrong shiny: drops.js SHINY)
       if (c) this.game.spawnLook?.play(c, c.stray || c.egregore ? 'tear' : 'rise'); // (it rises from its blot: vfx/spawnlook.js)
       this.game.events?.emit('stain.spawn', { field: s.field, aspect, kind: STAINS.spawn.kind, by: 'environment' });
       this.save();

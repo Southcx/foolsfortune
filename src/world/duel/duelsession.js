@@ -43,7 +43,7 @@
 //   The view is told: view.pendingAction(action | null), the action under the finger before it is chosen (a swap or drag as the press
 //   builds, a run on hover), and view.armPaint(on) while a Paint is held (G, du.paint). The board's size is the ruleset's own (`board`,
 //   rulesets.js: every device the same).
-//   Events (with `by`): duel.open { kind, feeling }, duel.break { kind, depth }, duel.flee { roll, reroll, need, ok }, duel.end { kind, won, how,
+//   Events (with `by`): duel.open { kind, feeling }, duel.break { kind, depth }, duel.flee { roll, reroll, need, ok }, duel.end { kind, won, how, shiny,
 //   turns }, duel.undo { left } (how 'fled': away, both whole; tracking.js says each)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -500,7 +500,7 @@ export class DuelSession {
     if (g.duelInstance?.active) g.duelInstance.close(() => !V || (!V.closing && !V.root?.visible) || V.isOpen, () => this.putBack(home)); else this.putBack(home);
     this.unpin(c); this.release();
     const atOnce = how === 'fled' && this.atOnce; this.atOnce = false;
-    this.emit('duel.end', { kind: c?.kind, won, how, turns: s ? Math.ceil(s.ply / 2) : 0, ...(atOnce ? { atOnce } : {}), by: won || how === 'fled' ? 'courier' : 'creature' });
+    this.emit('duel.end', { kind: c?.kind, won, how, shiny: !!c?.shiny, turns: s ? Math.ceil(s.ply / 2) : 0, ...(atOnce ? { atOnce } : {}), by: won || how === 'fled' ? 'courier' : 'creature' });
     if (g.duelFoes && c) g.duelFoes.rearm = c; // (no pull from it again until you have stepped past the pull's far edge)
     if (this.practice) { if (c) c.emo = 0; } // (practice: both whole, nothing taken, it stands as it was)
     else if (won && c?.alive) { c.dataBugMended = true; c.aberrant = false; g.creatures.strike(c, c.pos.clone().setY(c.pos.y + (c.height ?? 1)), _v.set(0, 1, 0), 999, 'drain', 'courier'); }
