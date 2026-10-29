@@ -162,6 +162,13 @@ their Clayese scales; the System's skill and achievement jingles (the chime and 
   falling fifth; its stagger a gong wobbling out of tune. A countdown on its last tick (`foe.soon`,
   at the end of its turn) a tick-tock and a low bell a tritone off. A column won rises (the fifth and the octave), lost falls (minor,
   low). Measured offline, peaks: the skills -18 to -24 dB, the flare -14. The phone buzzes on Hurl's landing (`duel.land`) and Reclaim.
+- **The aberrant slip jelly, the second Elite duel** (`audio/duelsecrets.js`, `music/duel.js` `gall`; Dovina's ABERRANTS.md 5): Gall's
+  colour over its cue, a wobbling growl on the off-beats that slows as its slime piles, a harmonica's sour blue bend every fourth bar, bubbles of
+  marimba high. Spew: bubbling up its body, a wet heave, the heap flung across (-16 dB), its slime landing in wet splats at the impact (-17);
+  Harden: a crust crackling and a dull knock a slime (-16); their stings a sour cluster and stacked fourths. A Transmute of the slime turns the
+  pile to glass: the squelch opening and the colour's note rippled up the pile, relief (-18). Half its pile: the sag, a beating slide down and
+  a groan; done: it falls apart as the rainstick, its chime falling, a settle (-15), no fanfare. `duel.learn` (a skill learned from an
+  aberrant): the item-get, the Answer climbed on brass and a bell (-18).
 - **The turn's sting** (`duelTurnCutIn`, `audio/duelcasts.js`; South via Dovina, 2026-10-29; Calissa's frame): the turn's change cut in as a foe
   skill is, smaller: a blade of air, a small slam on the band's word at 0.12 s, rung through its hold to 0.4 s (`TURN_CUT_IN`, Calissa's 14b3ab42), and yours the Answer's step up (I, then up a whole step) on bright
   brass with a glint over it, the aberrant's the Five falling in its dark (minor to diminished). Peaks -18.5 and -17 dB, 3 to 5 under a

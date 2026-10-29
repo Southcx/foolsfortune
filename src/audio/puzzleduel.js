@@ -79,8 +79,8 @@ export class PuzzleDuelSounds {
       case 'foe.soon': return this.duelFoeLastTick(); // (a foe skill on its last count, told in the foe's turn: it fires on its next)
       case 'foe.stagger': return this.duelFoeStagger();
       case 'secret.step': return e.id === 'snuff' ? this.duelLantern?.(e.k, e.n) : null; // (an aberrant's secret, heard as its own thing: audio/duelsecrets.js)
-      case 'secret.half': return e.id === 'snuff' ? this.duelLanternHalf?.() : null;
-      case 'duel.secret': return e.id === 'snuff' ? this.duelSnuff?.() : this.duelEnd(e.winner);
+      case 'secret.half': return e.id === 'snuff' ? this.duelLanternHalf?.() : e.id === 'dissolve' ? this.duelSag?.() : null;
+      case 'duel.secret': return e.id === 'snuff' ? this.duelSnuff?.() : e.id === 'dissolve' ? this.duelDissolve?.() : this.duelEnd(e.winner);
       case 'ember.cool': return this.duelEmberCool();
       case 'hint': return this.duelHint();
       case 'fall': return this.duelFall();
@@ -102,11 +102,12 @@ export class PuzzleDuelSounds {
       case 'tune': return this.duelTune(e.colour, e.side);
       case 'tune.end': return this.duelTuneEnd(e.side); // (a Tune's end, and a Miracle's)
       case 'miracle': return this.duelTune(e.colour, e.side); // (a duel power's Miracle: its colour's bell, as a Tune's; it ends on tune.end)
-      case 'manifest': case 'transmute': case 'herd': return this.duelPowerColour?.(e.colour, e.side); // (the feeling a power raised or turned to: audio/duelcasts.js)
+      case 'transmute': if (e.from === 'slime') return this.duelSlimeTurn?.(e.colour, e.cells?.length); return this.duelPowerColour?.(e.colour, e.side); // (the slip jelly's slime turned: audio/duelsecrets.js)
+      case 'manifest': case 'herd': return this.duelPowerColour?.(e.colour, e.side); // (the feeling a power raised or turned to: audio/duelcasts.js)
       case 'transmute.end': return this.duelTuneEnd(e.side);
       case 'read': return this.duelRead(e.side);
       case 'pinch': return this.duelPinch(e.colour);
-      case 'land': return this.duelLand(e.n, e.side);
+      case 'land': return e.slime ? this.duelSlimeLand?.(e.n, LAND_FLY.junk) : this.duelLand(e.n, e.side);
       case 'offset': return this.duelOffset(e.n, e.side);
       case 'send': return this.duelSend(e.n, e.side);
       case 'duel.line': case 'duel.full': case 'duel.cap': return this.duelEnd(e.winner);
@@ -169,6 +170,8 @@ export class PuzzleDuelSounds {
   /** The aberrant's foe skills (PvE, PUZZLE-DUELS.md 23), from its side (right) and below the key: each its own gesture. */
   duelFoeSkill(skill = '', n = 1) {
     if (skill === 'kindle') return this.duelKindle?.(n); // (the Lantern Wisp's own: audio/duelsecrets.js)
+    if (skill === 'spew') return this.duelSpew?.(n); // (the slip jelly's own)
+    if (skill === 'harden') return this.duelHarden?.(n);
     if (!this.ok() || !this.allow(`duelFoe.${skill}`, 2)) return;
     const t = this.ctx.currentTime, d = this.duelOut({ hurl: 1, sap: 1, petrify: 0.65 }[skill] ?? 0.4, 0.45, 0.45), r = duelRoot(this) - 24; // (levelled by ear and meter: each within about 6 dB of the others)
     switch (skill) {

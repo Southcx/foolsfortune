@@ -107,6 +107,7 @@ const RULES = {
   'duel.pull': (s, e, g) => s.duelPullStart?.(() => g.duelFoes?.pull ?? 0), // (nearness opening a puzzle duel: audio/puzzleduel.js)
   'duel.slip': (s) => s.duelPullEnd?.(false),
   'duel.seen': (s) => s.duelSeen?.(), // (a foe skill learned: audio/duelcasts.js)
+  'duel.learn': (s, e) => (e.by === 'courier' ? s.duelLearn?.() : null), // (a skill learned from an aberrant: audio/duelsecrets.js)
   'duel.open': (s) => { s.duelPullEnd?.(true); s.duelOpen?.(); },
   'sea.echo': (s, e, g) => s.stoneAnswered?.(g.crucibelle?.grid?.().root ?? 63), // (the open sea's echo puzzle answered: audio/crystal.js)
   // the chatroom (co-op as our chatroom): a division's motif as its line arrives, a guest's arrival and leaving (audio/ui.js)

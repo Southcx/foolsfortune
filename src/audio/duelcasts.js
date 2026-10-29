@@ -4,7 +4,7 @@
 //   A CUT-IN'S STING   duelCutIn(skill): the JRPG frame across the screen (Calissa's, played before the cast), heard as a blade of air sweeping it in and an
 //                      orchestra hit in the foe's dark below the cue's key, each skill its own chord (Hurl a diminished stab, Petrify a
 //                      cluster over glass, Seal a tritone on an anvil, Sap a stab bent down, Reclaim a bare fifth hammered, Kindle a
-//                      Lydian flare, bright and wrong), then a
+//                      Lydian flare, bright and wrong, Spew a sour cluster, Harden stacked fourths, a crust), then a
 //                      reversed cymbal's tail through its hold, into the skill's own sound (puzzleduel.js, on foe.skill after it)
 //   THE LIMIT BREAK    duelCutIn('desperate'): the largest: a swell under the dimming screen, the frame's slam (a sub's drop, taiko, crash), a minor
 //                      cluster held by voices and brass, a stutter of the data showing through, a ring left a bar
@@ -35,7 +35,7 @@ export const TURN_CUT_IN = { slam: 0.12, hold: 0.28 };
 export const CUT_IN_HOLD = { skill: 0.62, desperate: 0.65 };
 const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
 /** Each cut-in's chord, semitones over the foe's root (two octaves under the duel's key). */
-const STAB = { hurl: [0, 3, 6, 9], petrify: [0, 1, 2, 13], seal: [0, 6, 12], sap: [0, 3, 7], reclaim: [0, 7, 12], kindle: [0, 4, 6, 11], desperate: [0, 1, 3, 7, 13] };
+const STAB = { hurl: [0, 3, 6, 9], petrify: [0, 1, 2, 13], seal: [0, 6, 12], sap: [0, 3, 7], reclaim: [0, 7, 12], kindle: [0, 4, 6, 11], spew: [0, 1, 5, 8], harden: [0, 5, 10, 15], desperate: [0, 1, 3, 7, 13] };
 
 export class DuelCastSounds {
   /** The sting under a foe skill's cut-in (`desperate`: the limit break, the largest). */
