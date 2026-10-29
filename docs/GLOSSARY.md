@@ -866,6 +866,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   room. *Not:* the Crucibelle's field playing.
 - **note chart** (`noteChart`, `src/music/rhythm/chart.js`) — the notes the rhythm mode asks for, drawn from a score's lead; a lane is one of its
   ten keys. *Not:* "chart" alone (the map's).
+- **the highway's look / a note's bead / the gold rail / a lane pad** (plain names; `HighwayLook`, `HIGHWAY_LOOK`, `src/vfx/rhythmhighway.js`, drawing Wanda's `Highway`, `music/rhythm/highway.js`) — the rhythm mode's board in the Clay dress: on the desk a clay frame round a well of glaze, ten lanes in their notes' colours, a gold-studded clay spine between the hands; on touch each lane stood over its pad's column (`rect(lane)`, core/touchlanes.js) / a note as a glazed bead in its degree's colour, the upper hand's with a white pearl / the judgement line as a gold rod, a glazed socket a lane on it, warming with the combo (the film round the rim past 50) / on touch, a glazed tile at a column's foot, pressed in while held, flashed and wearing the grade as pips a beat. *Not:* a note pad (the Crucibelle's), a touch tile, a rail (the Raceway's lintel), the rail (the Emocean's).
 - **grade / rating** (`src/music/rhythm/judge.js`, `src/ui/rating.js`) — grade is how near a press came (perfect, great, good, miss); rating is
   the maker's word over the line, from Miss! to Wow. *Not:* the same thing.
 - **the arranger** (`src/music/arranger.js`) — plays a score a bar ahead of the audio clock, moving between sections on the bar line.
