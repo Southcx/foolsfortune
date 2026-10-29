@@ -27,7 +27,7 @@ import { feelColour, sm, clamp01 } from './layout.js';
  *  burst: real s after a limit break in which its own casts come without a cut-in; word / limitWord: when the label slams (real s from
  *  the event: Wanda's stings land there, audio/duelcasts.js CUT_IN_LEAD; the limit break's after its 1.1 s swell). */
 export const CUT_IN = { in: 0.14, hold: 0.62, out: 0.16, limitHold: 1.45, word: 0.12, limitWord: 1.1, band: 0.16, limitBand: 0.24, y: 0.4, tilt: -0.09, portrait: 0.44, rt: 512, fov: 24, burst: 4,
-  turn: { in: 0.1, hold: 0.3, out: 0.14, word: 0.12, band: 0.085, lit: 0.35, portrait: 0.3 }, vs: { in: 0.16, hold: 1.05, out: 0.18, word: 0.2, band: 0.13 }, pop: 0.06 };
+  turn: { in: 0.1, hold: 0.3, out: 0.14, word: 0.12, band: 0.085, lit: 0.35 }, vs: { in: 0.16, hold: 1.05, out: 0.18, word: 0.2, band: 0.13 }, pop: 0.06 };
 /** The turn's change (South, 2026-10-29: "cut-ins/highlights and vfx for when the turns switch over"; Fire Emblem's PLAYER PHASE and
  *  ENEMY PHASE): the band thinner and shorter, yours in the film. */
 export const TURN_WORDS = ['YOUR TURN', "FOE'S TURN"]; // (Espada's, 2026-10-29: the duel says foe, never enemy)
@@ -216,14 +216,14 @@ export class FoeCutIn {
 
   /** The turn's change: the band torn across for the side whose turn it now is (its half of the board lit), shorter and thinner than a
    *  skill's; the duel waits only for its way in and its hold (the seconds it returns), its way out runs over what follows. Yours on
-   *  the Jar's cut-in (beats.js), its portrait in the band; the foe's on the foe's. */
+   *  the Jar's cut-in (beats.js), mirrored; the foe's on the foe's, its portrait in the band. */
   turn(e) {
     if (!this.ensure() || (e.side !== 0 && e.side !== 1)) return 0;
     this.view.clash?.flash?.(e.side, CUT_IN.turn.lit);
     if (!this.proxies.length || !this.proxies[0].o.parent) this.gather();
     if (e.side === 1) this.feel(); else this.u.uFeel.value.copy(FILM);
     const has = this.proxies.length > 0;
-    return this.show(TURN_WORDS[e.side], { own: true, T: CUT_IN.turn, portrait: has ? CUT_IN.turn.portrait : 0, focus: false });
+    return this.show(TURN_WORDS[e.side], { own: true, T: CUT_IN.turn, portrait: has && e.side === 1 ? CUT_IN.portrait : 0, focus: false }); // (yours mirrored, no strip: the Jar reads only in a full band's height)
   }
 
   /** The open's band (VS: duelshow.js): its own clock, at `y` (of the screen's height), the label beside the portrait (or none). */
