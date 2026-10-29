@@ -45,7 +45,7 @@ function folding(entries, folded) {
 
 export const STRIP = { size: 44, pad: 52, near: 52, pair: TILE.small, gap: 6, rowGap: 8, shelf: 6, edge: 8, margin: 6 };
 /** The far shelf's most before the fold, and what folds first (MOBILE.md 4.1). */
-const FAR_MAX = 8, FOLD_ORDER = ['skiff', 'swap', 'lend', 'ps.breath', 'ps.fan'];
+const FOLD_ORDER = ['skiff', 'swap', 'lend', 'ps.breath', 'ps.fan'];
 
 export class TouchStrip {
   constructor(game) {
@@ -103,7 +103,11 @@ export class TouchStrip {
    *  strip, in one row on one clay shelf from the folded top bar's end toward the Sight, as large as fit (44 px down to the least). */
   layoutTop(Z) {
     this.layoutNear();
-    const G = STRIP.gap, F = TILE.foot, ids = this.farIds(), room = Z.w - 2 * STRIP.shelf;
+    const G = STRIP.gap, F = TILE.foot, room = Z.w - 2 * STRIP.shelf;
+    const spanOf = (list, sz) => list.reduce((a, id) => a + this.tiles.get(id).widthFor(sz), 0) + (list.length - 1) * G + (this.pair.length && this.ids.length ? G : 0);
+    // (as many as the room holds at 44 px, the rest folded behind the ⋯: MOBILE.md 4.1, Dovina's measurement)
+    let ids = this.farIds(Infinity); for (let max = ids.length - 1; max > 1 && spanOf(ids, TILE.min) > room; max--) ids = this.farIds(max);
+    this.farNow = ids;
     const span = (sz) => ids.reduce((a, id) => a + this.tiles.get(id).widthFor(sz), 0) + (ids.length - 1) * G + (this.pair.length && this.ids.length ? G : 0);
     let sz = STRIP.size; while (sz > TILE.min && span(sz) > room) sz -= 2;
     let x = Z.x + STRIP.shelf; const y = Z.y + STRIP.shelf;
@@ -119,10 +123,10 @@ export class TouchStrip {
     this.shelf.classList.toggle('off', !this.shown);
   }
 
-  /** The far shelf's tiles in order, folded past FAR_MAX behind a ⋯ (MOBILE.md 4.1: SKIFF first, then SWAP, LEND, BREATH, FAN; DRAW /
+  /** The far shelf's tiles in order, folded past `max` (what the room holds) behind a ⋯ (MOBILE.md 4.1: SKIFF first, then SWAP, LEND, BREATH, FAN; DRAW /
    *  STOW and the pick never), the ⋯ at its end; opened, all of them and the ⋯ lit. */
-  farIds() {
-    const all = [...this.pair, ...this.ids.filter((id) => id !== MORE)], over = all.length - FAR_MAX;
+  farIds(max = Infinity) {
+    const all = [...this.pair, ...this.ids.filter((id) => id !== MORE)], over = all.length - max;
     if (over <= 0) { this.pairShown = this.pair.length; return all; }
     const hide = new Set(this.folded ? FOLD_ORDER.filter((id) => all.includes(id)).slice(0, over + 1) : []);
     const ids = all.filter((id) => !hide.has(id)); this.pairShown = this.pair.filter((id) => !hide.has(id)).length;
@@ -197,7 +201,7 @@ export class TouchStrip {
       if (this.shown) this.layout(cb); else this.shelf.classList.add('off');
     }
     if (!this.shown) { for (const t of this.tiles.values()) t.set({ hidden: true }); this.closeRadial(); return; }
-    const far = top ? new Set(this.farIds()) : null; if (far?.has(MORE)) { const m = this.tiles.get(MORE); if (!m.over) { m.set({ hidden: false, lit: !this.folded || m.state.pressed }); m.update(now); } }
+    const far = top ? new Set(this.farNow || []) : null; if (far?.has(MORE)) { const m = this.tiles.get(MORE); if (!m.over) { m.set({ hidden: false, lit: !this.folded || m.state.pressed }); m.update(now); } }
     for (const e of all) { const t = this.tiles.get(e.id); if (t.over || (far && !far.has(e.id) && !nids.includes(e.id))) { t.set({ hidden: true }); continue; } t.set({ hidden: false, lit: t.state.pressed || !!e.lit, dim: !!e.dim, charge: e.charge ?? 0, pips: e.pips ?? 0 }); t.update(now); }
   }
 

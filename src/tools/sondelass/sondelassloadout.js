@@ -100,7 +100,7 @@ export const SONDELASS_MOVES = {
   straightPunch: { id: 'straightPunch', kind: 'normal', label: 'Straight', line: 'Steps in behind an off-hand punch', lore: null, clip: 'Cmu_StraightPunch', effect: 'stagger', parent: 'c3', earn: null, // (CMU 135_09, oi zuki: the left fist on a lunging step)
     stats: { power: 1.35, time: 0.52, range: 1.5 },
     play: { body: 'whole', travelCut: 'peak', root: 'xz', rate: 1.2, limb: 'L', tip: 0.1, reach: 0.35, ribbon: false, strike: [0.43, 0.6], chain: [0.62, 1.1], to: 1.1, hit: { power: 1.35, dmg: 0.9, push: 2, away: 1, cause: 'bashed' }, heat: 0.4, arc: 'raise' } },
-  hook: { id: 'hook', kind: 'normal', label: 'Hook', line: 'Hooks the off fist round, fast', lore: null, clip: 'Cmu_Hook', effect: 'stagger', parent: 'c2', earn: null, // (CMU 14_01's boxing: a left hook, the hips turned through it)
+  hookPunch: { id: 'hookPunch', kind: 'normal', label: 'Hook', line: 'Hooks the off fist round, fast', lore: null, clip: 'Cmu_Hook', effect: 'stagger', parent: 'c2', earn: null, // (CMU 14_01's boxing: a left hook, the hips turned through it)
     stats: { power: 1.1, time: 0.43, range: 1.2 },
     play: { rate: 1.1, limb: 'L', tip: 0.1, reach: 0.35, ribbon: false, strike: [0.3, 0.45], chain: [0.47, 0.85], to: 0.87, fade: 0.25, hit: { power: 1.1, dmg: 0.8, push: 2.5, away: 1, cause: 'bashed' }, lunge: 2.0, arc: 'l2r' } },
   // ---- the specials (RMB tapped, with W, with S) ----
