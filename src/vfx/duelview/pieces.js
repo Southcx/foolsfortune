@@ -21,7 +21,7 @@
 //   tuned       its hum: a swell and a whitening on the bell's beat (glows.js), the keyline struck white
 //   weak        (weaknessOf: the colour to chase) gold keyline and a twinkling glint on each of that colour on your half
 //   foresight   (the foe's planned clears, glows.js) a bold keyline in the foe's feeling, its colour shown through the fog
-// JUNK is a cracked dark tile on a pulsing ember rim (bright as it lands, settling to a throb until it is cleared); an EMBER (Dread's
+// SLIME (an aberrant slip jelly's junk) a glossy blob of Gall, wobbling, its keyline its own darker green. JUNK is a cracked dark tile on a pulsing ember rim (bright as it lands, settling to a throb until it is cleared); an EMBER (Dread's
 // junk) a coal of glazed clay, its count in glowing pips, crazing as it cools out (crazing.js) before it turns into its gem. DREAD'S
 // FOG shows shape, never colour (dread.js fogShows): a piece on hidden ground is a plain stone of the fog, so the stacks read by height.
 //
@@ -42,10 +42,12 @@ import { featTint } from '../oxidation.js';
 import { DUEL_VIEW, FEELING_ORDER, cellLocal, feelColour, hash } from './layout.js';
 import { drawCrazing } from './crazing.js';
 import { aberrantFigurine } from '../aberrantlook.js';
-import { gemGeometry, keylineGeometry, plateGeometry, glintGeometry, emberGeometry, pipGeometry, junkGeometry, stoneGeometry, fogStoneGeometry, bombGeometry, orbGeometry, courierFigurine, foeIdol, ledgeGeometry } from './piecemodels.js';
+import { gemGeometry, keylineGeometry, plateGeometry, glintGeometry, emberGeometry, pipGeometry, junkGeometry, slimeGeometry, stoneGeometry, fogStoneGeometry, bombGeometry, orbGeometry, courierFigurine, foeIdol, ledgeGeometry } from './piecemodels.js';
 
 /** A dim gem (a feeling you have not awakened to, worth half: progress/duel/duel.js DIM) drawn unlit: its body darkened to this share of
  *  its colour, its feeling carried by its keyline in full colour, thicker by `rim` (cells), so it reads when every gem is dim (a new save). */
+/** A slime's wobble (its squash's share, the real clock's). */
+export const SLIME = { wobble: 0.06 };
 export const DIM_GEM = { body: 0.1, rim: 0.09, glow: 1.3 }; // (body: linear, so 0.1 reads near 0.35 on the screen)
 /** A gem's colour: its feeling's hue (progress/weather.js COLOR) on its own lightness step (Oklab L, chroma kept where sRGB allows). */
 export const GEM = { mirth: 0xf6c12a, wonder: 0x34c2ec, desire: 0xf57141, grief: 0x6e76ee, gall: 0x8454c1, fury: 0xc5071a, dread: 0x3b6646 };
@@ -81,6 +83,7 @@ export function duelMaterials() {
     gem: crystalFretMaterial({ color: 0xffffff, emissive: 0x2a1a48, emissiveIntensity: 0.45, roughness: 0.22, metalness: 0.15, flatShading: true }, 0xffffff), // (the AP beads, board.js)
     face: gemMaterial(),
     clay: new THREE.MeshStandardMaterial({ name: 'duel-clay', color: 0xffffff, roughness: 0.86, metalness: 0, flatShading: true }),
+    slime: new THREE.MeshStandardMaterial({ name: 'duel-slime', color: 0xffffff, roughness: 0.18, metalness: 0, flatShading: true }), // (the clay's program, wet: a slip jelly's slime)
     clayVc: new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.82, metalness: 0, flatShading: true }), // (racewayprops' clay: the frame, the figurines, junk's cracks)
     glow: new THREE.MeshBasicMaterial({ name: 'duel-glow', toneMapped: false }),
   };
@@ -98,7 +101,7 @@ export class DuelPieces {
       this.group.add(mesh); this.fam[key] = mesh; return mesh;
     };
     for (const a of FEELING_ORDER) { fam(a, gemGeometry(a), M.face); fam('k:' + a, keylineGeometry(a), M.glow); }
-    fam('junk', junkGeometry(), M.clayVc); fam('k:junk', plateGeometry('junk'), M.glow); fam('stone', stoneGeometry(), M.clay, 64); fam('bomb', bombGeometry(), M.clay, 64);
+    fam('junk', junkGeometry(), M.clayVc); fam('k:junk', plateGeometry('junk'), M.glow); fam('slime', slimeGeometry(), M.slime); fam('k:slime', slimeGeometry(true), M.glow); fam('stone', stoneGeometry(), M.clay, 64); fam('bomb', bombGeometry(), M.clay, 64);
     fam('fog', fogStoneGeometry(), M.clay); fam('glint', glintGeometry(), M.glow, 96);
     fam('orb', orbGeometry(), M.glow, 64); fam('ember', emberGeometry(), M.clay); fam('k:ember', plateGeometry('ember'), M.glow); fam('pip', pipGeometry(), M.glow, 3 * N);
     fam('craze', new THREE.PlaneGeometry(1, 1), M.glow, N); // (a cooling coal's crazing: crazing.js)
@@ -126,7 +129,7 @@ export class DuelPieces {
     this.list.length = 0; this.ids.clear(); this.cells = new Array(board.w * board.h).fill(null);
     if (this.born.size > 4000) this.born.clear();
     feelColour(foeAspect, this.foeMat.color); feelColour(foeAspect, this.foeHex).lerp(_w, 0.35).multiplyScalar(1.4); // (the foresight's keyline: the foe's feeling, lifted to read on the fog)
-    board.each((p, x, y) => this.add(p.kind, { id: p.id, colour: p.colour, side: p.side, count: p.count }, x, y));
+    board.each((p, x, y) => this.add(p.kind, { id: p.id, colour: p.colour, side: p.side, count: p.count, slime: p.slime }, x, y));
   }
 
   idx(x, y) { return y * this.board.w + x; }
@@ -136,8 +139,8 @@ export class DuelPieces {
   bodyAt(side) { return this.list.find((v) => v.kind === 'body' && v.side === side) || null; }
 
   /** A new visual at a cell (and in the model there). */
-  add(kind, { id = null, colour = null, side = null, count = null } = {}, x = 0, y = 0) {
-    const v = { id, kind, colour, side, count, cool: 0, x, y, cx: x, cy: y, s: 1, sx: 1, sy: 1, lift: 0, flash: 0, hum: 0, grey: 0, pick: 0, prev: 0, flip: 0, spin: 0, dx: 0, dy: 0, hidden: false, seed: hash(id ?? x * 31 + y, 4.7), shown: null, was: null, morph: 1, born: this.t };
+  add(kind, { id = null, colour = null, side = null, count = null, slime = false } = {}, x = 0, y = 0) {
+    const v = { id, kind, colour, side, count, slime: !!slime, cool: 0, x, y, cx: x, cy: y, s: 1, sx: 1, sy: 1, lift: 0, flash: 0, hum: 0, grey: 0, pick: 0, prev: 0, flip: 0, spin: 0, dx: 0, dy: 0, hidden: false, seed: hash(id ?? x * 31 + y, 4.7), shown: null, was: null, morph: 1, born: this.t };
     if (id != null) { if (this.born.has(id)) v.born = this.born.get(id); else this.born.set(id, this.t); } // (a piece's age kept across a settle's rebuild: junk's rim glows from its landing, not from the last play)
     this.list.push(v); if (id != null) this.ids.set(id, v);
     if (this.in(x, y)) { this.cells[this.idx(x, y)] = v; v.cx = x; v.cy = y; }
@@ -219,19 +222,21 @@ export class DuelPieces {
           this.put(n, 'glint', _t, _q, _s.setScalar(cs * (0.35 + 0.9 * tw * tw)), _f.setHex(GOLD).multiplyScalar(1.4 + tw)); }
         continue;
       }
-      let key = v.kind;
+      let key = v.slime && v.kind === 'junk' ? 'slime' : v.kind;
       if (v.kind === 'orb') { _p.y += Math.sin(t * 2.4 + v.seed * 6.28) * 0.1 * cs; _p.z += 0.03; }
       if (!this.fam[key]) continue;
       _e.set(0, v.flip, v.spin + (v.kind === 'orb' ? Math.sin(t * 1.7 + v.seed * 9) * 0.15 : 0)); _q.setFromEuler(_e);
       const big = (v.kind === 'orb' ? 1.2 : 1) * grow; _s.set(cs * v.s * v.sx * big, cs * v.s * v.sy * big, cs * v.s * big);
       if (v.kind === 'orb') featTint(t * 0.3 + v.seed, _c, { bright: 1.9 }); // (the film's flash, walking)
       else if (v.kind === 'ember') { const k = Math.max(0, Math.min(3, v.count ?? 3)); _c.setHex(EMBER[k]).multiplyScalar(1 + 0.15 * Math.sin(t * 3 + v.seed * 9) * (k / 3)); }
+      else if (key === 'slime') { feelColour('gall', _c).multiplyScalar(0.85 + 0.15 * Math.sin(t * 2.1 + v.seed * 6)); const w = Math.sin(t * 3.2 + v.seed * 9) * SLIME.wobble; _s.x *= 1 + w; _s.y *= 1 - w; } // (a slip jelly's slime: Gall's, wet, never still)
       else _c.setHex(CLAY[v.kind] ?? CLAY.junk);
       if (v.cool) _c.lerp(_w, v.cool * 0.6);
       if (v.flash) _c.lerp(_w, Math.min(1, v.flash));
       if (hum) _c.lerp(_w, hum * 0.35);
       if (!this.put(n, key, _p, _q, _s, _c)) continue;
-      if (v.kind === 'junk' || v.kind === 'ember') { // (the ember's rim: bright as it lands, settling to a throb; an ember's by its count)
+      if (key === 'slime') { const age = t - v.born; feelColour('gall', _k).multiplyScalar(0.35 + 0.9 * Math.exp(-age / 0.8)); if (v.flash) _k.lerp(_w, Math.min(1, v.flash)); this.put(n, 'k:slime', _p, _q, _s, _k); }
+      else if (v.kind === 'junk' || v.kind === 'ember') { // (the ember's rim: bright as it lands, settling to a throb; an ember's by its count)
         const age = t - v.born, k = v.kind === 'ember' ? 0.25 + 0.55 * (Math.max(0, Math.min(3, v.count ?? 3)) / 3) : 0.3 + 0.7 * Math.exp(-age / 2.5);
         _k.setHex(INK).lerp(_f.setHex(RIM), Math.min(1, k * (0.6 + 0.4 * Math.sin(t * 4 + v.seed * 6.28)))).multiplyScalar(1 + 0.8 * Math.exp(-age / 0.6));
         if (v.flash) _k.lerp(_w, Math.min(1, v.flash));

@@ -252,7 +252,7 @@ export class DuelBeats {
   land(e) {
     const V = this.view, P = V.pieces, B = V.board3, cells = e.at || [], top = -2.5;
     const kind = e.kind === 'ember' ? 'ember' : 'junk', count = kind === 'ember' ? V.state?.rs?.embers?.count ?? 3 : null;
-    const it = cells.map(([x, y], k) => { const id = V.state?.board?.at(x, y)?.kind === kind ? V.state.board.at(x, y).id : null; const v = P.add(kind, { id, count }, x, y); v.hidden = true; return { v, x, y, d: k * 0.035 }; });
+    const it = cells.map(([x, y], k) => { const id = V.state?.board?.at(x, y)?.kind === kind ? V.state.board.at(x, y).id : null; const v = P.add(kind, { id, count, slime: !!e.slime }, x, y); v.hidden = true; return { v, x, y, d: k * 0.035 }; });
     V.pending[e.side] = Math.max(0, V.pending[e.side] - (e.n || cells.length)); V.showCounts();
     const hurl = !!V.hurled && e.side === 0; V.hurled = false; // (a Hurl's landing: thrown from the aberrant's end of the board in a high arc, foecast.js)
     const fromX = hurl ? B.w + 0.5 : (V.lineCol ?? B.line) - 0.5, y0 = hurl ? B.h * 0.4 : top, fly = hurl ? 0.6 : 0.45, arc = hurl ? 1.2 : 1.5, rise = hurl ? 0.45 : 1.2, gap = hurl ? 0.05 : 0.035; // (a Hurl's arc low and across the board, kept in the phone's frame)

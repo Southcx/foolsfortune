@@ -73,6 +73,7 @@ import { reachOf } from './duelview/skillcast.js';
 import { FoeCast } from './duelview/foecast.js';
 import { FoeCutIn } from './duelview/cutin.js';
 import { WispElite } from './duelview/aberrants/wisp.js';
+import { JellyElite } from './duelview/aberrants/jelly.js';
 import { GardenGround } from './duelview/gardenground.js';
 import { SkillGauges } from './duelview/skillgauges.js';
 
@@ -88,7 +89,7 @@ export class DuelView {
     this.board = new DuelBoard(this.frame, this.clash); this.pieces = new DuelPieces(this.frame); this.marks = new DuelMarks(this.frame);
     this.intentDraw = new DuelIntent(this.frame, this.marks); this.bursts = new DuelBursts(this.frame); this.beats = new DuelBeats(this);
     this.flee = new DuelFlee(this); this.folded = false;
-    this.glows = new DuelGlows(this); this.worth = new DuelWorth(this); this.foresight = new DuelForesight(this); this.juice = new DuelJuice(this); this.stage = new DuelStage(this); this.dive = new FormDive(this); this.gauges = new SkillGauges(this); this.foeCast = new FoeCast(this); this.cutIn = new FoeCutIn(this); this.elite = new WispElite(this); this.garden = new GardenGround(this); this.tune = [null, null]; this.pendingKind = null;
+    this.glows = new DuelGlows(this); this.worth = new DuelWorth(this); this.foresight = new DuelForesight(this); this.juice = new DuelJuice(this); this.stage = new DuelStage(this); this.dive = new FormDive(this); this.gauges = new SkillGauges(this); this.foeCast = new FoeCast(this); this.cutIn = new FoeCutIn(this); this.elites = [new WispElite(this), new JellyElite(this)]; this.elite = this.elites[0]; this.garden = new GardenGround(this); this.tune = [null, null]; this.pendingKind = null;
     this.intentWhole = true; // (the session hands intent() bot.js intentOf's whole: { actions, junk, cells, hits })
     this.u = new THREE.Vector3(1, 0, 0); this.face = new THREE.Vector3(0, 0, 1); this.centre = new THREE.Vector3();
     this.sent = [0, 0]; this.pending = [0, 0]; this.depth = [0, 0]; this.apShown = [5, 5]; this.restCuts = 0; this.forms = ['hand', 'hand']; this.lineCol = 10;
@@ -122,7 +123,7 @@ export class DuelView {
     this.clash.groundTo(Math.max(oc.distanceTo(at), of.distanceTo(at)) + 3); // (the ground past both bodies: domains.js)
     oc.y += 1; of.y += 1; this.clash.unfold(oc, of);
     this.game.spiritualLink?.attach(this, this.linkEnd);
-    this.gauges.layout(this.board3); this.stage.open(); this.dive.open(); this.cutIn.warm(); this.elite.open(state, foe); this.garden.open(at.clone().addScaledVector(this.u, -((B.w * DUEL_VIEW.cs) / 2 + 2)), this.u); // (your half as your Spirit Garden: gardenground.js; the aberrant's own layers: its ground, its lantern, its deaths: duelview/aberrants/) // (the gauges: skillgauges.js; the arena first, the Jar at your spot: stage.js, formdive.js)
+    this.gauges.layout(this.board3); this.stage.open(); this.dive.open(); this.cutIn.warm(); this.elite = this.elites.find((E) => E.constructor.fits(state, foe)) || this.elites[0]; this.elite.open(state, foe); this.garden.open(at.clone().addScaledVector(this.u, -((B.w * DUEL_VIEW.cs) / 2 + 2)), this.u); // (your half as your Spirit Garden: gardenground.js; the aberrant's own layers: its ground, its lantern, its deaths: duelview/aberrants/) // (the gauges: skillgauges.js; the arena first, the Jar at your spot: stage.js, formdive.js)
   }
 
   /** Fold the domains away and take the board down (at once, with `now`). */
