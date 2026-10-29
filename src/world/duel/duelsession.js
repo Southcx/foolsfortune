@@ -15,7 +15,7 @@
 //
 // The PvE duel (DUEL.style 'pve', PUZZLE-DUELS.md 23, 24): one drag a turn on a 5 real s clock; before it, one of the god hand's seven
 // powers (powers.js) armed by keys 1 to 7 or a power tile (`armPower`) and aimed by one gesture (powerInput); a tap on the aberrant's
-// countdown badge goes to the view (`foeCast.tap`), whose tooltip asks game.foeSeen. Its moments: duel.power, duel.foe, duel.desperate, duel.stagger, duel.secret { id, k, half?, done? } (an aberrant's secret win, ABERRANTS.md); its ends 'line' and 'secret' wait on the view's `death` before the board folds.
+// countdown badge goes to the view (`foeCast.tap`), whose tooltip asks game.foeSeen. Its moments: duel.power { power, domain, cost, cleared }, duel.foe, duel.desperate, duel.stagger, duel.secret { id, k, half?, done? } (an aberrant's secret win, ABERRANTS.md); its ends 'line' and 'secret' wait on the view's `death` before the board folds.
 // The one-gesture duel (DUEL.style 'drag', the default since 2026-10-27, PUZZLE-DUELS.md 22; South: "anything and everything that would
 // improve this module"): the hand's DRAG is the only board verb (a press onto a neighbour is a drag of one step), there are no forms and
 // the Courier stands off the board; the worn pair are two skills (1 and 2, or a tool's own key below), charged by your clears and fired
@@ -53,6 +53,7 @@ import { intentOf, hintOf, HINT, play as botPlay } from '../../progress/duel/bot
 import { SKILLS, skillsOf, canAct } from '../../progress/duel/skills.js';
 import { DUEL_POWERS, POWER_IDS, POWER_ACTION, powersOf, powerReach } from '../../progress/duel/powers.js';
 import { DOMAINS } from '../../progress/domains.js';
+import { notAwakened } from '../../progress/feelings.js';
 import { lessonDue } from '../../progress/duel/lesson.js';
 import { rulesetOf } from '../../progress/duel/rulesets.js';
 import { DUEL_VIEW, cellLocal } from '../../vfx/duelview/layout.js';
@@ -97,7 +98,7 @@ export class DuelSession {
     this.startPool = Math.round(Math.min(100, pool?.available ?? 30));
     this.state = newDuel({ ruleset, seed: Math.floor(duelRand() * 2 ** 31), forms: ['hand', 'courier'], pool: [this.startPool, 30], tools: [tools, []],
       luck: [g.ledger ? Math.min(2, Math.floor(luckOf(g.ledger).level / 10)) : 0, 0], // (Luck's sway on a flee, 0..2: a tenth of its level, as ruled)
-      rerolls: [g.rerolls?.left() ?? 0, 0], lesson: lessonDue(g.ledger),
+      rerolls: [g.rerolls?.left() ?? 0, 0], lesson: lessonDue(g.ledger), dim: notAwakened(g.ledger), // (a feeling not yet awakened gives half a gem's pool: PUZZLE-DUELS.md 26)
       levels: Object.fromEntries(Object.keys(DOMAINS).map((d) => [d, g.psyche?.level?.(d) ?? 1])) }); // (the PvE duel's powers cost less with their domain's level: powers.js powerCost) // (the first duel a lesson until one is won: lesson.js, PUZZLE-DUELS 18.3) // (Luck's re-rolls left this game day: a failed Flee is thrown again, progress/duel/flee.js)
     this.practice = !!c.practice; // (a practice foe, Strawman's: every duel.* event says so and counts nothing; no pool, no shatter, no drain)
     this.foe = c; this.feeling = feeling; this.active = true; this.busy = false; this.botT = -1; this.press = null; this.path = []; this.yieldT = 0; this.swipe = null; this.shown = null; this.picked = null; this.hinted = null; this.idleT = 0; this.spentT = 0;
@@ -411,7 +412,7 @@ export class DuelSession {
       if (e.side === 0 && e.type === 'land' && e.n) this.emit('duel.land', { n: e.n, kind: e.kind, by: 'creature' });
       if (e.side === 0 && e.type === 'lesson.done') this.emit('duel.lesson', { by: 'courier' }); // (counted even in practice: lessonDue reads it)
       if (e.side === 0 && e.type === 'allclear') this.emit('duel.allclear', { n: e.n, by: 'courier' });
-      if (e.type === 'power') { const sc = events.find((x) => x.type === 'scan' && x.side === e.side); this.emit('duel.power', { power: e.power, domain: e.domain, cost: e.cost, ...(sc ? { skill: sc.skill } : {}), by: e.side === 0 ? 'courier' : 'creature' }); } // (tracking/duel.js counts it; game.foeSeen marks a scanned skill seen)
+      if (e.type === 'power') { const sc = events.find((x) => x.type === 'scan' && x.side === e.side); this.emit('duel.power', { power: e.power, domain: e.domain, cost: e.cost, cleared: e.cleared ?? 0, ...(sc ? { skill: sc.skill } : {}), by: e.side === 0 ? 'courier' : 'creature' }); } // (tracking/duel.js counts it; game.foeSeen marks a scanned skill seen)
       if (e.type === 'foe.skill') this.emit('duel.foe', { skill: e.skill, n: e.n ?? e.lost ?? 0, by: 'creature' }); // (the PvE duel's foe skills and your stagger: tracking/duel.js)
       if (e.type === 'foe.stagger') this.emit('duel.stagger', { by: 'courier' });
       if (e.type === 'secret.step') this.emit('duel.secret', { id: e.id, k: e.k, by: 'courier' }); // (an aberrant's secret win, secrets.js: its steps, its half, its end; tracking/duel.js and game.foeSeen hear them)

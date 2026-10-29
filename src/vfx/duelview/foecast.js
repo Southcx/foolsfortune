@@ -4,8 +4,8 @@
 //   ITS COUNTDOWNS   a row of clay badges over its body (foeIntent: soonest first), each a skill's glyph and the turns left; the last
 //                    tick throbs, rimmed in ember. In the board view (its body off the screen) they stand as a column in the flank beside
 //                    the frame's foe end. No words: the glyph and the number.
-//   ITS CASTS        foe.skill from its body: HURL junk flung in arcs onto your half's top (it lands at your next turn's end, the land
-//                    beat's own); PETRIFY a spiral to each gem, the gem greying and dropping to stone (its piece swapped for the junk's
+//   ITS CASTS        foe.skill from its body: HURL its flare, the junk itself thrown from its end of the board in high arcs onto your
+//                    half at once (the land beat after it, beats.js); PETRIFY a spiral to each gem, the gem greying and dropping to stone (its piece swapped for the junk's
 //                    id); SEAL a chain slammed down a column of yours, held while the column is sealed; SAP your skill troughs drained,
 //                    motes flying to it; RECLAIM a shove from its body to the Line (the line event after it the retreat)
 //   ITS MOMENTS      foe.desperate (after its limit break's cut-in, cutin.js): its half flashed, embers off it; foe.stagger: a jolt, gold daze off
@@ -26,19 +26,19 @@ import { FONT } from '../../ui/theme.js';
 import { foeIntent, FOE_SKILLS } from '../../progress/duel/foeskills.js';
 import { showTableTip, hideTableTip } from '../../ui/tabletip.js';
 import { duelMaterials } from './pieces.js';
-import { DUEL_VIEW, cellLocal, feelColour, sm, clamp01, hash } from './layout.js';
+import { DUEL_VIEW, cellLocal, feelColour, sm, clamp01 } from './layout.js';
 
 /** badge: a countdown's side (m, the board's frame); over: the row above the head; the casts' lengths (real s). */
 /** The badges' tooltips (Espada's words, docs/handoffs: the label over, this line under). */
 export const FOE_TIP = {
-  hurl: 'Junk lands on your half after your turn.',
+  hurl: 'Throws junk onto your half.', // (a placeholder since Hurl lands at once, Dovina 2026-10-29: Espada's to word)
   petrify: 'Gems on your half turn to junk.',
   seal: 'A column of yours locks for your next turn: nothing in it can be dragged.',
   sap: 'Each skill you wear loses half its charge.',
   reclaim: 'The Line moves a column toward you.',
 };
-export const FOE_CAST = { tip: 3, tapR: 30, badge: 0.24, gap: 0.035, over: 0.5, hurl: 0.75, petrify: 0.55, seal: 0.5, sap: 0.65, reclaim: 0.5, desperate: 1.3, stagger: 0.7, sweep: 0.6, shots: 24 };
-const GOLD = 0xffd36a, FILM = 0x9fd8ff, STONE = 0x9a948c, JUNK = 0x4a3326, EMBER = 0xff6a2a, INK = '#17111f';
+export const FOE_CAST = { tip: 3, tapR: 30, badge: 0.24, gap: 0.035, over: 0.5, petrify: 0.55, seal: 0.5, sap: 0.65, reclaim: 0.5, desperate: 1.3, stagger: 0.7, sweep: 0.6, shots: 24 };
+const GOLD = 0xffd36a, FILM = 0x9fd8ff, STONE = 0x9a948c, EMBER = 0xff6a2a, INK = '#17111f';
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Color(), _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _s = new THREE.Vector3(), _w = new THREE.Vector3();
 
 /** A skill's glyph on a 128 px canvas, white on the badge's dark (a light shape, the icons' hand). */
@@ -114,9 +114,7 @@ export class FoeCast {
     if (e.type !== 'foe.skill') return { events: [e], dur: 0 };
     if (e.skill === 'kindle' && V.elite?.on) return V.elite.kindle(T, e); // (an aberrant's own skill: its own file, duelview/aberrants/)
     V.stage?.jolt?.(0.25); V.bursts.burst(at, feelColour(V.aspect, _c).getHex(), 10, { speed: 1.2, life: 0.4, fall: 0, spread: 0.3 }); // (the cast's flare at its body)
-    if (e.skill === 'hurl') { const D = this.dims(), n = Math.min(e.n || 1, 12);
-      for (let i = 0; i < n; i++) { const tx = -D.W / 2 + ((V.lineCol ?? D.B.line) * cs) * (0.1 + 0.8 * hash(i, e.n)); this.fling(at, _b.set(tx, D.top + D.b * 0.6, D.lip + 0.05), JUNK, { delay: i * 0.05, life: FOE_CAST.hurl, size: 0.035, arc: 0.8 }); }
-      return { events: [e], dur: FOE_CAST.hurl + n * 0.05 }; }
+    if (e.skill === 'hurl') { V.hurled = true; return { events: [e], dur: 0.18 }; } // (Hurl lands at once (Dovina, 2026-10-29): its `land` that follows throws the pieces themselves from the aberrant, beats.js land)
     if (e.skill === 'petrify') { const cells = e.cells || [], done = new Set();
       cells.forEach((c, i) => V.bursts.spiral(at, cellLocal(c.at[0], c.at[1], V.board3, new THREE.Vector3()), STONE, i * 0.06, 0.35));
       return { events: [e], dur: FOE_CAST.petrify + cells.length * 0.06, step: (u, age) => { cells.forEach((c, i) => { const v = V.pieces.byId(c.from); if (age > i * 0.06 + 0.2 && v) v.grey = Math.min(1, (age - i * 0.06 - 0.2) / 0.25);

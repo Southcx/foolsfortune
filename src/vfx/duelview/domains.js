@@ -295,7 +295,7 @@ export class DomainClash {
   /** The PvE duel's push meters on the seam (0..1 each of a column's worth, `n` notches); `on` false hides them. */
   setMeter(push, landed, n, on = true) { this.U.uMeter.value.set(push, landed, n, on ? 1 : 0); }
   /** A half's flash (a break): white, fading over a third of a real second. */
-  flash(side) { this.flashK[side] = 1; }
+  flash(side, k = 1) { this.flashK[side] = Math.max(this.flashK[side], k); }
   won(k) { this.U.uWon.value = k; }
 
   /** The duel opens: each half unfolds from its owner. */

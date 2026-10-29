@@ -14,7 +14,7 @@
 // (the weak point read from the body), Metroid Prime's scan, Monster Hunter's breakable parts and the capture as a second way to end a
 // hunt, Hollow Knight's and Dark Souls' boss deaths (an ending of its own), Pokemon's catching versus fainting.
 //
-//   SECRETS[id] = { label, line, start(s) -> state, step(s, side, events) -> events }   (a ruleset's `secret: id`)
+//   SECRETS[id] = { of (whose: the collection log names the slot by it, never the secret), label, line, start(s) -> state, step(s, side, events) -> events }   (a ruleset's `secret: id`)
 //   secretOf(s) -> { id, k (0..1), ... } | null   secretStep(s, side, events) -> events (duel.js after each settle of the Courier's)
 //   lightOf(s) -> the fog's light now (dread.js visibleTo reads it: the Wisp's lantern)
 //   events: secret.step { id, k, light? } (its progress moved), secret.half { id } (the aberrant notices: its gated moves wake),
@@ -27,7 +27,7 @@ export const SECRETS = {
   // tell), and at `fuel` the lantern goes out and the Wisp with it. The cost: Dread clears push the Line half as far. The answer: once
   // the lantern is half spent its Kindle wakes (foeskills.js), burning your Dread gems into embers before you can clear them.
   // The will-o'-the-wisp of the fens is a light that leads you astray; you beat one by putting it out, not by chasing it.
-  snuff: { label: 'Snuff the lantern', line: 'Every Dread gem you clear is fuel taken from its lantern; empty it and the Wisp goes out with it', colour: 'dread', fuel: 24,
+  snuff: { of: 'The Lantern Wisp', label: 'Snuff the lantern', line: 'Every Dread gem you clear is fuel taken from its lantern; empty it and the Wisp goes out with it', colour: 'dread', fuel: 24,
     start: (s) => ({ id: 'snuff', k: 0, fuel: 0, light: s.rs.fog?.light ?? 3, half: false }),
     step: (s, side, events) => {
       const S = s.secret, def = SECRETS.snuff; if (side !== 0) return [];

@@ -100,6 +100,10 @@ export const SOURCES = [
   { event: 'god.miracle',     domain: 'spellscription', base: 12, quality: (e) => (e.by === 'courier' ? q01(e.score) * (0.6 + 0.4 * q01(e.size)) : null) },
   ...['ouranurgy', 'manifestation', 'divination', 'psychokinesis', 'possession', 'alteration', 'spellscription'].map((d) => (
     { event: 'god.epic',      domain: d,                acts: 10, quality: (e) => (e.by === 'courier' && e.domain === d ? 1 : null) })),
+  // a duel's power cast (duel/powers.js; PUZZLE-DUELS.md 26.1): the hand's power in a puzzle duel trains its domain as it does in the
+  // world; its quality the gems the cast cleared (12 a masterful one), a cast that cleared none middling at best; a practice duel none
+  ...['ouranurgy', 'manifestation', 'divination', 'psychokinesis', 'possession', 'alteration', 'spellscription'].map((d) => (
+    { event: 'duel.power',    domain: d,                base: 6, quality: (e) => (e.by === 'courier' && !e.practice && e.domain === d ? 0.35 + 0.65 * q01((e.cleared ?? 2) / 12) : null) })),
 ];
 
 /** How long 99 takes in any domain at middling quality (0.5: the grind), and how often a domain's acts come. */
