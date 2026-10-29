@@ -118,8 +118,9 @@ the middle: the duel's phone screen), the god hand, the Spirit Garden (the art b
 | **top right** | the corner | the Sight and its place plate | the instrument; no tile | x 751..888, y 8..150 |
 | **the near shelf** | the right band, between the Sight and the cluster | the context's next verbs, where the thumb reaches without crossing the middle | 3 tiles of 52 px in a row | x 720..888, y 196..248 |
 | **bottom right** | the corner | **the cluster**: the main verb (80 px) and three round it (60 px) | 4 | x 738..888, y 256..406 |
-| **the bottom band** | under the middle, left of the cluster | the instruments a hand needs in a glance: the Lachrimeter's tube, the psygun's cylinder, a tool's own UI (the Sondelass's guard, the Soul Brush's desk, the reliquary) | whatever fits **75 px tall**: the tube lies on its side or shortens on a phone held sideways | x 179..730, y 339..406 |
-| **the left band and bottom left** | x 0..20 % (under the top left), and the move area's lower half | the stick, and its home ring | the stick only | x 8..171 |
+| **the bottom band** | under the middle, left of the cluster | what a tool shows in a glance: the psygun's cylinder, a tool's own UI (the Sondelass's guard, the Soul Brush's desk, the reliquary) | whatever fits **75 px tall** (the cylinder may stand beside the tube in the bottom left instead: Calissa's call) | x 179..730, y 339..406 |
+| **bottom left** | the corner, under the left band | **the Lachrimeter's tube, mirrored** (South, 2026-10-29: "the lachrimeter can be mirrored and put into the lower left corner ... It also would match the position of the lachrimeter within the Puzzle Duel module"), where the duel's phone screen stands it | the tube | x 8..97, y 256..406 |
+| **the left band** | x 0..20 %, under the top left; the move area | the stick, and its home ring, **right of the tube** | the stick only. If the tube and the stick crowd each other, **the stick's home moves right**, never the tube shrinking | the home's ring from x 105 |
 
 The rule in one line: **the corners and the edges hold everything; the middle holds the world.** A thing that wants to be seen in the
 middle is a world mark or a tag on the thing (CLAUDE.md, "World marks carry no words"), never a tile or a panel.
@@ -139,6 +140,7 @@ holds what is chosen between fights (a chamber, a form, a lure, the belt). Nothi
 3. **The near shelf takes three, by need.** Past three, the core movement's verbs win (JUMP, DASH, CROUCH), and the rest go to the far shelf.
 4. **The ticker gives way to the far shelf.** It is one line under the shelf; it never grows into the middle. The log itself is a tap away.
 5. **An instrument never yields to a tile.** The Sight, the tube and a tool's own UI keep their zones; a tile that has no room folds (2).
+   The stick yields to the tube: its home moves right (South, 2026-10-29).
 6. **The layout editor wins over all of it.** What the player moves by hand (M5, `game.touchLayoutEditor`) stays where they put it, the
    clamp off the instruments still holding. The defaults obey the middle; the player may break it for themselves.
 
@@ -201,8 +203,9 @@ What changes from v344 is in **bold**.
 | FIX, PLATE, USE (while a serpent holds the cluster) | at the helm | the far shelf |
 | the rail readout | the crossing | top left, under the top bar (its own zone there; the ticker stands down on the rail) |
 | the Sight | always | top right |
-| the Lachrimeter's tube, the psygun's cylinder, a tool's own UI | as now | **the bottom band, at most 75 px tall** (the tube today stands 150 px, into the middle: x 641..730, y 256..406) |
-| the stick and its home | always in an action mode | the left band, bottom left |
+| the Lachrimeter's tube | always in an action mode | **bottom left, mirrored** (as the duel's phone screen stands it; was x 641..730, y 256..406, into the middle) |
+| the psygun's cylinder, a tool's own UI | as now | **the bottom band, at most 75 px tall** (the cylinder may stand beside the tube: Calissa's call) |
+| the stick and its home | always in an action mode | the left band, its home right of the tube |
 | the lock-on's tag, a creature's tag, the chevron, world marks | as now | the middle (the overlay's, allowed) |
 
 The fullest case, the psygun drawn in the Dunes with a sub worn: the far shelf CHAMBER, FAN, BREATH, STOW, LEND, SWAP, SKIFF (7, no fold);
