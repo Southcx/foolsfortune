@@ -17,7 +17,8 @@
 //
 //   const U = new Underside(game, reading, onChange)   U.mount(host)   U.slim (the view shows)   U.atView(x, y, button) -> bool   U.held   UNDERSIDE_CSS
 // ---------------------------------------------------------------------------------------
-import { SPREADS, SUITS, COLS, ROWS, MIRROR, MAJOR_SUIT, FOOTPRINTS, TALLY, FOOL_CELL, effectOf, cellIndex } from '../progress/spreads.js';
+import { SPREADS, SUITS, COLS, ROWS, MIRROR, MAJOR_SUIT, FOOTPRINTS, TALLY, FOOL_CELL, effectOf, cellIndex, dayCard } from '../progress/spreads.js';
+import { today } from '../core/calendar.js';
 import { ARCANA } from '../tools/veritome/arcana.js';
 import { OPEN_AT } from './reading.js';
 import { UNDERSIDE_LOOK } from '../ui/undersidelook.js';
@@ -133,7 +134,7 @@ export class Underside {
     for (const p of S.positions) {
       if (p.fixed) continue; // (the Fool: its cell is marked, under the Present)
       const L = p.pair ? (pair && R.bound().has(pair) ? { card: pair } : null) : R.laid[p.id];
-      const d = el('div', `us-pos ${L ? 'laid' : 'empty'}${L?.reversed ? ' rev' : ''}${p.pair ? ' pair' : ''}`);
+      const d = el('div', `us-pos ${L ? 'laid' : 'empty'}${L?.reversed ? ' rev' : ''}${p.pair ? ' pair' : ''}${L && L.card === dayCard(today()) ? ' today' : ''}`); // (today: the day's card, its strength doubled; undersidelook.js's gold rim and star)
       d.style.left = `${p.at[0] * CELL + CELL / 2 + (p.turn ? 10 : 0)}px`; d.style.top = `${p.at[1] * CELL + CELL / 2 + (p.turn ? 10 : 0)}px`;
       if (p.turn || L?.reversed) d.style.transform = `rotate(${(p.turn || 0) + (L?.reversed ? 180 : 0)}deg)`;
       const suit = L ? (p.pair ? MAJOR_SUIT[L.card] : R.suitAt(p.id)) : null;
@@ -162,7 +163,7 @@ export class Underside {
     const hand = el('div', 'us-hand');
     for (const id of this.reading.hand()) {
       const A = BY_ID[id], suit = MAJOR_SUIT[id];
-      const d = el('div', `us-card${this.held === id ? ' held' : ''}`, `<b>${ROMAN[A.n]}</b>${A.name.replace(/^The /, '')}<span style="color:${SUIT_CSS[suit]};text-shadow:0 0 1px #000">${NAME[suit]}</span><span>${FOOTPRINTS[id].length} cells</span>`);
+      const d = el('div', `us-card${this.held === id ? ' held' : ''}${id === dayCard(today()) ? ' today' : ''}`, `<b>${ROMAN[A.n]}</b>${A.name.replace(/^The /, '')}<span style="color:${SUIT_CSS[suit]};text-shadow:0 0 1px #000">${NAME[suit]}</span><span>${FOOTPRINTS[id].length} cells</span>`);
       d.onclick = () => { this.held = this.held === id ? null : id; this.onChange?.(); };
       d.draggable = true; d.ondragstart = (e) => { this.held = id; e.dataTransfer.setData('text/plain', `card:${id}`); }; // (onto the reading view: the window's drop, pneuka/ui.js)
       hand.appendChild(d);
