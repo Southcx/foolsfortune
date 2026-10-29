@@ -81,6 +81,9 @@ export const MAIL = { postcards: 3, postcardEvery: 3, giftBond: 60, giftEvery: 3
  *  releasing it (Spiritfarer's Everdoor). Let go after asking, it leaves a statue of itself in its feeling (a garden piece, `statue`
  *  + the feeling, progress/decor.js) and its postcards begin, as any release's. */
 export const FAREWELL = { bond: 100 };
+/** The spirit's own words at its farewell, by its feeling (Espada's to write; null until then): `ask` when it asks to go home, `go` as it
+ *  leaves. A spirit is not one of the folk, so it has no dialogue box: the log quotes it after its own line (tracking/garden.js). */
+export const FAREWELL_LINES = Object.fromEntries(['wonder', 'mirth', 'desire', 'fury', 'gall', 'grief', 'dread'].map((f) => [f, { ask: null, go: null }]));
 const fresh = () => ({ wishes: {}, digest: null, mail: [], away: [], giftDay: null, given: {}, farewell: [] });
 
 export class SpiritLife {

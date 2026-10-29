@@ -86,7 +86,7 @@ export class Arranger {
     this.alive = false; clearInterval(this.timer); this.queue = [];
     const ctx = this.ctx, bus = this.bus, graph = this.graph || [bus];
     bus.gain.cancelScheduledValues(ctx.currentTime); bus.gain.setTargetAtTime(0.0001, ctx.currentTime, fade / 3);
-    setTimeout(() => { for (const n of graph) try { n.disconnect(); } catch { /* gone */ } }, fade * 1000 + 800); // (the whole cue's graph let go, its echo's loop cut, its reverb freed: casebook NEW:audio-graph-let-go)
+    setTimeout(() => { for (const n of graph) try { n.disconnect(); } catch { /* gone */ } }, fade * 1000 + 800); // (the whole cue's graph let go, its echo's loop cut, its reverb freed: casebook 307)
   }
   follow(score) {
     if (score && score === this.finished) return; // (a one-shot that has played does not start again by itself)

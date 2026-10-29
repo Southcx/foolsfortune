@@ -22,12 +22,17 @@ export class Blink extends Tech {
   }
 
   reset() { this.charges = this.cfg.charges; this.recharge = 0; }
+  /** A class's art runs the blink's body along a line (Onrush, Riposte Rush: courier/classarts/body.js): no charge, no key, its own
+   *  distance; `done(from, to)` at its end. Learned or not: it is the art's, not the Movement Art's. */
+  force(dir, dist, done) { this.forced = { dir: dir.clone().normalize(), dist, done }; }
+  usable() { return !!this.forced || super.usable(); }
 
   /** Its key pressed (techs.js `unlearned`: no latch spent). */
   wants() { return this.P.peekLatch('KeyE') && !this.P.mantle; }
 
   canStart() {
     const P = this.P;
+    if (this.forced) return !P.mantle;
     if (!P.peekLatch('KeyE') || P.mantle) return false;
     P.latch('KeyE');
     if (this.charges <= 0) { sfx.fizzle(); this.game.log.say('warn', 'Blink is still recharging.', { key: 'blink', throttle: 2 }); return false; }
@@ -35,11 +40,12 @@ export class Blink extends Tech {
   }
 
   start() {
-    const P = this.P, c = this.cfg;
-    this.charges--;
+    const P = this.P, c = this.cfg, F = this.forced;
+    if (!F) this.charges--;
     const wish = P.wishDir();
     let dir;
-    if (wish.lengthSq() > 0.01) dir = wish.normalize();
+    if (F) dir = F.dir.clone();
+    else if (wish.lengthSq() > 0.01) dir = wish.normalize();
     else {
       dir = P.lookDir();
       dir.y = THREE.MathUtils.clamp(dir.y, P.grounded ? 0 : -0.5, 0.5);
@@ -49,7 +55,7 @@ export class Blink extends Tech {
     this.dir = dir;
     this.hs0 = Math.hypot(P.vel.x, P.vel.z);
     this.vy0 = P.vel.y;
-    this.left = this.dist = c.distance * (this.game.psyche?.widen?.('ouranurgy.reach') ?? 1);
+    this.left = this.dist = F ? F.dist : c.distance * (this.game.psyche?.widen?.('ouranurgy.reach') ?? 1);
     this.from = P.pos.clone();
     this.wasGrounded = P.grounded;
     P.endCore();
@@ -57,7 +63,7 @@ export class Blink extends Tech {
     this.game.character.setHidden(true);
     P.fovPunch = Math.max(P.fovPunch, 9);
     sfx.blink();
-    this.game.events?.emit('move.blink', {});
+    if (!F) this.game.events?.emit('move.blink', {}); // (a forced run is the art's: it says art.use, not a blink)
   }
 
   update(dt) {
@@ -75,7 +81,8 @@ export class Blink extends Tech {
   }
 
   end() {
-    const P = this.P, c = this.cfg;
+    const P = this.P, c = this.cfg, F = this.forced;
+    this.forced = null;
     this.game.character.setHidden(false);
     if (!P.canStand()) P.setLow(true); // (a blink can end under a low ceiling: come out crouched, not stuck in it)
     const hd = new THREE.Vector3(this.dir.x, 0, this.dir.z);
@@ -86,6 +93,7 @@ export class Blink extends Tech {
     // in the air a blink is a brief stall: it catches your fall (and an upward blink carries)
     P.vel.y = P.grounded ? 0 : Math.max(this.vy0 * 0.25, this.dir.y * c.exitSpeed, c.airLift);
     sfx.blinkArrive();
+    if (F) F.done?.(this.from, P.pos.clone());
     const fx = this.game.fx;
     if (fx) {
       const col = new THREE.Color(), ph = fxRand();

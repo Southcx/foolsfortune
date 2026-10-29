@@ -9,6 +9,6 @@
    anything a player sees, read for what a person would see. A probe's numbers are not a look.
 
 Also fixed today, for anyone with a warm-up: the parks in `boot/warmup.js` now run in the reverse of the warm-ups' order
-(NEW:parks-reverse-order). A warm-up that shows a thing and saves "shown" must not be undone after an earlier one that hid it.
+(334). A warm-up that shows a thing and saves "shown" must not be undone after an earlier one that hid it.
 
 Delete when read.

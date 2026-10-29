@@ -225,7 +225,7 @@ export class SeaFight {
     _a.copy(H.pos).setY(H.pos.y + 1);
     for (const b of this.globs) {
       if (b.back) continue;
-      const d = H.hullDist(b.pos); if (d > reach || d >= bd) continue; // (from the hull's footprint, not its middle: NEW:hull-is-a-footprint)
+      const d = H.hullDist(b.pos); if (d > reach || d >= bd) continue; // (from the hull's footprint, not its middle: 324)
       if (b.vel.dot(_b.subVectors(_a, b.pos)) <= 0) continue; // (only one still coming)
       bd = d; hit = b;
     }

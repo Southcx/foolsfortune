@@ -3927,8 +3927,8 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   alone, strings two players a note, the hum two voices, the supersaw three, the piano four partials on one string, the sitar its saw
   without sympathetic strings, the phase guitar dry, the crackle half its pops), and the arranger's notes made 0.45 to 1.0 s ahead.
   The heaviest cues on a phone now 20 to 39% of real time (from 31 to 58% at the desk's rate before).
-- **Rule:** NEW:audio-amps-standing
-- **Rule:** NEW:audio-graph-let-go
+- **Rule:** 306
+- **Rule:** 307
 
 ### 2026-10-25 · The page reloaded at "Done" on the seal's keyboard (the owner's iPhone XR, v281; fixed in part by Petra)
 - **Seen:** title, DEBUG, the seal carving; a name typed and "Done" tapped on the iOS keyboard; the whole page loaded again.
@@ -3941,7 +3941,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   mode's shelf empty; a new build wipes both), so the first pick of DEBUG no longer boots the game twice; the render size waits 150 real
   ms after the last resize (render/present.js); the boot watch names the moment a killed tab was at after boot (`moment`: the title, the
   seal carving, typing, the keyboard put away, the dive), said on the next load.
-- **Rule:** NEW:one-boot-a-tab
+- **Rule:** 308
 
 ### 2026-10-26 · The graphics taken back on arriving at the Raceway (the owner's iPhone XR, v283; Petra)
 - **Seen:** DEBUG loads and plays at 30 fps; the Index's THE RACEWAY row, and 0.3 to 2 real s after arriving the box says the device
@@ -3955,7 +3955,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   when it changes level (the same triangles, positions and normals at every camera: compared triangle by triangle); the pools sized on
   81 cameras over the middle chunk; the levels indexed, not destructured. The park's ground 30.7 MB -> 1.9 MB of vertices; its garbage
   178 -> 26 MB. The Dunes' ground the same way. The builders' garbage and the rails' outline normals on a phone handed to Dovina and Calissa.
-- **Rule:** NEW:memory-bound-by-view
+- **Rule:** 309
 
 ### 2026-10-26 · The Raceway's looks' garbage on arriving at the park (the owner's iPhone XR, v283; Calissa, from Petra's measure)
 - **Seen:** the same arrival as the case above; Petra's heap sampler (collected included, as the XR) put about 380 MB of it in my
@@ -3970,7 +3970,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   worked once a point; the hull's smooth normals only where `mesh.userData.outline` exists (the rails, the cavern's roof). The three
   modules' share of the trip: about 380 MB to about 40 MB, most of that the new geometry itself; the rails carry position, normal and
   colour only on a phone.
-- **Rule:** NEW:memory-bound-by-view
+- **Rule:** 309
 
 ### 2026-10-26 · GRAPPLE's and DRAW's words cut off, the tiles crowding the view (the owner's iPhone XR, the Raceway; Calissa)
 - **Seen:** in the owner's screenshot the belt's pair's words stood cut off at the tiles' feet, DRAW's tile half hidden, BLINK over both;
@@ -3982,7 +3982,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   60 px (hudlayout.js the same, a kept layout's least scale 0.75: 45 px), the strip's tiles 44; the top bar folds to a MENU tab and
   PAUSE (opened by a tap, folded by a choice, a tap or six real seconds untouched); the strip folds a tool's own row of two or more
   to a MORE tab, the core moves and BLINK kept out.
-- **Rule:** NEW:word-inside-the-face
+- **Rule:** 310
 
 ### 2026-10-26 · WebKit refused the duel's gems: an instanced attribute sized to the count drawn, not the room (Petra's WebKit probe; Calissa)
 - **Seen:** real WebKit as the iPhone XR refused 12 draws at boot, `glDrawArraysInstanced: Vertex buffer is not big enough`, the duel
@@ -3991,7 +3991,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   before attaching them (count is how many are drawn now, not how many the mesh holds): two attributes of length 0 under 33 to 47
   instances.
 - **Fix:** sized from `mesh.instanceMatrix.count` (the room), which every user of the frets now gets.
-- **Rule:** NEW:instanced-by-capacity
+- **Rule:** 311
 
 ### 2026-10-26 · A phone turned after loading kept the frame's shape it loaded in (the owner's iPhone, the box room; Petra)
 - **Seen:** loaded upright and turned flat (or the reverse), the box room drew the Courier squashed: the picture filled the screen but
@@ -4001,7 +4001,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   Presentation's own handler, 150 real ms after the last resize (render/present.js).
 - **Fix:** the camera's aspect is set in `Presentation.apply()` beside the render size, which also listens for `orientationchange` and the
   visual viewport's resize; the title's handler is gone. Headless, the box loaded at 414 x 896 (0.462) and read 2.164 after the turn.
-- **Rule:** NEW:frame-shape-with-size
+- **Rule:** 312
 
 ### 2026-10-26 · The iPhone took the graphics back at the first draw of a shader that read a uniform array at a computed index (the owner; Petra)
 - **Seen:** the owner's iPhone XR (iOS 18.7, the Claude app, Safari and Chrome alike) lost the WebGL context 0.1 to 0.5 real s after the
@@ -4016,7 +4016,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   constant indices (a binary chain of ifs), and those reads call it; a desk's shaders go untouched. With it forced on, the whole game's
   210 programs compiled without an error (workshop, basement, Raceway, Dunes, bazaar), 25 of them rewritten, 30 arrays; the box's frame
   with the water drawn read the same to the channel with it on and off (0 of 1,121,760).
-- **Rule:** NEW:uniform-array-constant-index
+- **Rule:** 313
 
 ### 2026-10-26 · The liquid packs drawn black on iOS (the owner's iPhone XR, iOS 18.7; Petra's handoff; Calissa)
 - **Seen:** the box room's teal pad (the game's water) hitched half a real second, then drew its panels black.
@@ -4029,7 +4029,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   against the old packs (each channel's sum and a position hash). At the gate (Petra): the 1x1 stand-in, once drawn before the load,
   held its immutable storage (texStorage2D) and the 512 upload failed (GL 1281, grey for good); the texture is disposed before its image
   is set. Measured by Petra in Playwright's WebKit: the joined bytes match Chromium's.
-- **Rule:** NEW:data-never-in-alpha
+- **Rule:** 314
 
 ### 2026-10-26 · The title placard came down mid-race (the owner's iPhone XR, v296; Petra, Calissa, Wanda)
 - **Seen:** "the placard can descend at very unfortunate timing (like in the middle of a live race)".
@@ -4041,7 +4041,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   and build wait on it, one up leaves at once and comes again if unsettled (Calissa); the voice says only a titled achievement, held until
   its placard descends (Wanda). Measured headless: a title queued at a race's start stayed queued, unbuilt and unsaid, and came down 15
   frames after race.end, its line said once.
-- **Rule:** NEW:popup-waits-live-moment
+- **Rule:** 315
 
 ### 2026-10-26 · DEBUG's lent things announced as new (the owner: "a bunch of log entries spam the log ... like kiln glazes")
 - **Seen:** loading DEBUG, the log filled with lines such as "A new glaze is yours".
@@ -4052,7 +4052,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the vessel snapshots silently while no mode is chosen and while glazes are lent; DEBUG lends achievements (the lend panel's
   Achievements row; Dovina's gate in progress/achievements.js: done while lent, nothing announced, no rank.up), the Codex's shelf
   showing them "DONE / lent". Measured headless: no glaze said over 70 frames of a DEBUG load; 712 of 712 done, no achievement line.
-- **Rule:** NEW:lent-is-silent
+- **Rule:** 316
 
 ### 2026-10-26 · The lock-on held the target off the crosshair, and the touch lock took the aim (the owner's iPhone XR, v297; Petra)
 - **Seen:** "In lock-on, the reticle is offset right from the target, making most shots miss"; "Psygun aiming gets disrupted when
@@ -4065,7 +4065,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** with the psygun drawn in the third person the assist aims from the camera's own position, full pitch, a little faster (9 a
   real s); a finger turning the view keeps the auto lock off for 0.8 real s after it lifts, and a look-away drag of 90 px (fading at 4 a
   real s) lets a held lock go; the flick's cycle is the desk's only. The melee framing is as it was.
-- **Rule:** NEW:aim-from-the-camera
+- **Rule:** 317
 
 ### 2026-10-26 · The belt's pair and BLINK on the Solar Skiff (the owner's mobile round 1, via Petra)
 - **Seen:** riding the Solar Skiff at the Raceway on a phone, the cluster's top edge still carried LEND, DRAW and BLINK, none of which
@@ -4074,7 +4074,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   context; riding, the live contexts are { any, skiff } and every press of those tiles resolved to nothing.
 - **Fix:** both return nothing unless `game.actions.live()` has `foot`. Measured headless (XR landscape, the Raceway): on foot the pair
   is SKIFF, SWAP, LEND, DRAW and BLINK; riding, only the top bar's MENU and PAUSE and the log's tab stand.
-- **Rule:** NEW:tile-asks-the-ctx
+- **Rule:** 318
 
 ### 2026-10-26 · The reading table not taking a finger (the owner: "input being offset or not properly registering when pressing and dragging")
 - **Seen:** on an iPhone the Pneuka Box's hand of tool cards could not be dragged onto MAIN or SUB, and a tap swapped a card in as the
@@ -4084,7 +4084,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** a pointer that is not a mouse lifts a card on a tap (held, its preview shown) and drops it on the place tapped next, or
   carries it by a pointer-event drag (the place found with `elementFromPoint`, a ghost under the finger); both say `drop` as the mouse's
   drag did. The click a finger's lift makes is ignored.
-- **Rule:** NEW:touch-never-html5-drag
+- **Rule:** 319
 
 ### 2026-10-27 · The ship moored far off the quay on the open sea (the owner's iPhone, v299; Petra)
 - **Seen:** "the boat is positioned too far away from the dock in the Open Emocean section."
@@ -4092,7 +4092,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   dockAt); the quay is 12 m deep, so its seaward face stands 6 m out and the sloop's hull (beam 2.1 m) lay about 9 m off it.
 - **Fix:** `alongside()`: the quay's face, half the hull's beam and 0.4 m of water. Measured headless: the hull 0.4 m off the face.
   The moored ship is also F's offer now (`opensea.ship`: its chevron, and a double tap's target).
-- **Rule:** NEW:place-from-the-measure
+- **Rule:** 322
 
 ### 2026-10-27 · DEBUG reloading in a loop; the seal carving reloading the page (the owner's iPhone, v300; Petra)
 - **Seen:** "attempting to go into debug mode does the same multiple loop load, and entering a name at the seal carving causes the game
@@ -4107,7 +4107,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   loads swapped saves where v299's did not.
 - **Fix:** `choose()` takes one choice a load (none while the seal picker is open, none other than the one made) and marks the menu
   chosen; the menu hears no key and no tap once chosen.
-- **Rule:** NEW:one-choice-a-load
+- **Rule:** 323
 
 
 
@@ -4117,7 +4117,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Cause (as read):** every test was a distance from `helm.pos`, a point, written when the hull was 7 m long.
 - **Fix:** `helm.hullDist(p)`, the distance to the hull's footprint (its length along the heading, its beam across, 0 inside); the ram,
   the coil and the spit ask it, and the spit hits within 1.2 m of the footprint and under the deck's height plus 3 m.
-- **Rule:** NEW:hull-is-a-footprint
+- **Rule:** 324
 
 ### 2026-10-27 · The duel's board off centre and under the log on a phone (South's screenshot; Calissa)
 - **Seen:** on a phone in landscape the tsuitate stood a third left of the room the controls leave, its frame's top under the log.
@@ -4126,7 +4126,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   duel's that replace them a frame later. And the log as drawn reaches 26 px below the rect the layout keeps for it.
 - **Fix:** the view eases the duel's shot toward a fit taken every quarter real second while the duel is open on touch; the fit's top
   is the log as drawn. Measured after: the cells' centre at x 318, the frame's top 37 px under the log.
-- **Rule:** NEW:fit-to-the-room-as-it-stands
+- **Rule:** 320
 
 ### 2026-10-27 · A big ship hit only near its middle on the open sea (found at the gate, after the hulls went to life size; Petra)
 - **Seen:** reading the fight's hull tests after the 5x hulls: the spit hit within 3.6 m of the hull's middle, the ram when its ring held
@@ -4134,7 +4134,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Cause (as read):** every test was a distance from `helm.pos`, a point, written when the hull was 7 m long.
 - **Fix:** `helm.hullDist(p)`, the distance to the hull's footprint (its length along the heading, its beam across, 0 inside); the ram,
   the coil and the spit ask it, and the spit hits within 1.2 m of the footprint and under the deck's height plus 3 m.
-- **Rule:** NEW:hull-is-a-footprint
+- **Rule:** 324
 
 
 ### 2026-10-27 · A fore-and-aft sail's boom set to windward (found building the open sea's wind; Calissa)
@@ -4144,7 +4144,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   Never seen before the wind: `side` was always 1 and nothing else showed which way leeward was.
 - **Fix:** the boom's yaw, the main's clew and the fore-and-aft clew all take +x by `side`, the belly's side. Measured after, with the wind
   to -x: boom end -7.84, vanes -0.85 and -0.99, the pennant's tip -6.27: all to leeward.
-- **Rule:** NEW:spar-and-cloth-one-side
+- **Rule:** 321
 
 
 
@@ -4163,15 +4163,15 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   (core.js `letGo`); on a phone, a blow's sounds share one budget, one each 90 real ms (`hitOk`); and the audio's health watched
   (audio/health.js): the audio clock against the wall clock each 2 real s, and a fall behind or a stopped context written into the
   field report with what was sounding, the zone and the cue's section.
-- **Rule:** NEW:audio-one-shot-let-go
+- **Rule:** 325
 
 ### 2026-10-27 · The parry at sea reached only round the hull's middle (found at the gate with the crew; Petra)
 - **Seen:** reading the parry for Espada's hand: a spit was sent back only within 7 m of the hull's middle, so a glob falling on a 35 m
   sloop's bow or stern could not be parried at all, though it hit (the hull's test already went by the footprint).
-- **Cause (as read):** the parry's reach was a distance from `helm.pos`, the same point test NEW:hull-is-a-footprint retired for the hits.
+- **Cause (as read):** the parry's reach was a distance from `helm.pos`, the same point test 324 retired for the hits.
 - **Fix:** the parry measures from the footprint (`helm.hullDist`), its reach x1.5 with Espada aboard. Measured: a spit 9 m off the bow's
   tip sent back.
-- **Rule:** NEW:hull-is-a-footprint (the same rule: every test against the hull, the parry's too)
+- **Rule:** 324 (the same rule: every test against the hull, the parry's too)
 
 
 ### 2026-10-27 · A fore-and-aft sail's boom set to windward (found building the open sea's wind; Calissa)
@@ -4181,7 +4181,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   Never seen before the wind: `side` was always 1 and nothing else showed which way leeward was.
 - **Fix:** the boom's yaw, the main's clew and the fore-and-aft clew all take +x by `side`, the belly's side. Measured after, with the wind
   to -x: boom end -7.84, vanes -0.85 and -0.99, the pennant's tip -6.27: all to leeward.
-- **Rule:** NEW:spar-and-cloth-one-side
+- **Rule:** 321
 
 
 ### 2026-10-27 · A broadside's timing event named over the discovery event (caught by Calissa before the merge; Wanda)
@@ -4189,7 +4189,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   reported at a dock (progress/opensea/seatrip.js), counted in the ledger (tracking/opensea.js) and rung as the dock's coin (cues.js).
 - **Cause (as read):** a new event named without searching the bus for the name first.
 - **Fix:** the broadside's moment is `sea.boom { at, side }`; nothing else uses the name.
-- **Rule:** NEW:event-name-searched-first
+- **Rule:** 326
 
 ### 2026-10-27 · The territorial sea beasts lost a ship a few metres past their zone (found probing the umibozu; Petra)
 - **Seen:** headless, the umibozu hunting a cruising sloop rose once at its beam and then roamed; with the ship stopped 120 m from its
@@ -4199,13 +4199,13 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   (50 x 1.4 = 70 m), where the hunt fails at once.
 - **Fix:** a territorial beast's sight is its zone x its leash (seaserpent.js); the mind picks no move while the ship is outside the
   leash (mind.js `pickMove`). Measured after: the umibozu inside its water rose 4 times and gripped 3, each a pour on the hull.
-- **Rule:** NEW:territory-is-sight-and-leash
+- **Rule:** 327
 
 ## The duel's previews drew the duel's dice (2026-10-27, Dovina; found by Calissa's builder)
 - **Seen:** a hover preview, the foe's intent and the bot's search each advanced the puzzle duel's random stream, so looking at a move changed the next drip, and a replay of the same seed could not replay.
 - **Cause, as measured:** `cloneState` seeded each copy with `s.r()`; `legalActions` sampled drags from `s.r`. Ten bot turns of seed 9 ended on a different board with previews taken than without.
 - **Fix:** `quietStream(state, salt)` (progress/duel/duel.js): a lookahead's stream seeded from the state's own hash, drawing nothing from the duel; legalActions' drags from it too. The same seed now ends on the same board either way.
-- **Rule:** NEW:lookahead-own-stream
+- **Rule:** 328
 
 ### 2026-10-27 · The foe's forecast wrote into the real turn's undo (found wiring undo's look; Calissa)
 - **Seen:** reading the duel's view for undo: the forecast's copy (vfx/duelview/intent.js `quietCopy`) was `{ ...s }` with its own
@@ -4214,7 +4214,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   forecast drawn put the foe's plan's snapshots under the Courier's next Ctrl+Z (not measured in play: undo was bound the same round).
 - **Fix:** the forecast copies with the kernel's `cloneState` (its own quiet stream and `undo: []`); the view's other `{ ...s, r }`
   copies (glows.js `quiet`, worth.js) dropped for the kernel's `preview` and `cloneState`.
-- **Rule:** NEW:lookahead-own-copy
+- **Rule:** 329
 
 ### 2026-10-27 · Every gem's clear in a puzzle duel the same note (found reading for Dovina's sound bar; Wanda)
 - **Seen:** (by reading, not yet by ear) clears of different colours could never chord.
@@ -4222,7 +4222,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   feelings (`COLOURS`, progress/duel/board.js: wonder .. dread), so every lookup missed and fell back to one note; the pinch the same.
 - **Fix:** a feeling's step of the duel's key (`FEELING_STEP`, over the cue's root through `sfx.musicGrid`), a limit a feeling, and the
   chain, the orbs and the pinch keyed alike.
-- **Rule:** NEW:sound-keyed-by-the-kernels-names
+- **Rule:** 330
 
 ### 2026-10-27 · The duel's view threw on a duel skill's Grab (Dovina's live probe, before push)
 - **Seen:** `TypeError: Cannot read properties of undefined (reading '0')` in the duel view's tool beat, every tick after a Grab skill.
@@ -4230,7 +4230,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   is the classic Grab's, which moves a piece `from` -> `to`, and read `e.to[0]`. The same name, a different shape.
 - **Fix:** the skill's events take the shape of a beat that does what they do (`hold { id, at }` removes a piece: the Grab skill's),
   and the skills with no beat yet get names of their own (`blast`, `vein`), which the view plays as a pause until Calissa's beats.
-- **Rule:** NEW:new-event-new-name
+- **Rule:** 331
 
 ### 2026-10-27 · The well's perf baseline read 76 calls; the same commit reads 93 (found ruling task 360; Petra)
 - **Seen:** perf put the Great Dunemaw's hall at 93 calls against a baseline of 76 and a budget of 88, as growth since 07ebaa5.
@@ -4240,7 +4240,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   not by the tick count); what made the recorded 76 is not found.
 - **Fix:** perf ticks until the spawn look's runs are done before it measures the well; the well's call budget 88 -> 96 on the
   measurement, the baseline recorded again (91).
-- **Rule:** NEW:baseline-reproduced-before-blamed
+- **Rule:** 332
 
 ### 2026-10-27 · On a phone, a shop bought or sold on the first tap (Calissa's phone-windows note, 2026-10-24; routed by Petra)
 - **Seen:** a tap on a good or a box slot in a keeper's window bought or sold it at once, its price never read.
@@ -4248,7 +4248,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   click as a mouse's (src/progress/shop/ui.js), so the line meant to come before the choice came with it.
 - **Fix:** on touch (`input.device === 'touch'`) the first tap picks (`.sel`, the line said with "tap again to buy" or "to sell"), a tap
   on the picked one acts; a long press still haggles. Measured headless as a phone: 500 cubes after the first tap, 477 after the second.
-- **Rule:** NEW:touch-pick-then-confirm
+- **Rule:** 333
 
 ### 2026-10-27 · A Pneuka Jar stood at the Courier's feet from the load (South's phone, v329)
 - **Seen:** in the workshop on loading, the god hand's Pneuka Jar standing in the Courier's legs, with nothing summoned.
@@ -4257,7 +4257,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   as the state to put back. The parks ran duel first (hiding the Jar), Jar look second (showing it again where it had saved it).
   A property trap on `jar.group.visible` read it shown before the title; after the fix, hidden.
 - **Fix:** the parks run in the reverse of the warm-ups' order, every one.
-- **Rule:** NEW:parks-reverse-order
+- **Rule:** 334
 
 ### 2026-10-27 · A puzzle duel's bodies stood over its board, the room behind it (South's phone, v329)
 - **Seen:** at the board view the Pneuka Jar's body covered the left of the board and Strawman the right; at the arena the room, its
@@ -4268,7 +4268,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the duel's instance (render/duelinstance.js): the world's objects not drawn while it is open; the bodies laid beyond the
   slab's ends by their own measured size (on a phone, the flank's middle) and 0.6 m behind its face; a fixture moved with them and put
   back once the board has folded. Seen at 896 x 414 at 2x: the board clear, you left, the foe right, no room.
-- **Rule:** NEW:actors-clear-of-the-board
+- **Rule:** 335
 
 
 ### 2026-10-28 · A duel's copy drained the real skill charge (Dovina, measuring the PvE duel)
@@ -4278,7 +4278,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   an undo never gave a fired skill's charge back. Live since the one-gesture duel (2026-10-27).
 - **Fix:** `charge: { ...S.charge }` in both copies. Measured: a copy's skill and a hint leave the real charge at 9 and 10; fire and undo
   gives them back.
-- **Rule:** NEW:copy-every-mutable
+- **Rule:** 336
 
 ### 2026-10-28 · The PvE duel kept the classic duel's lesson and touch verbs (Petra's phone probe; Dovina's grep)
 - **Seen:** on the phone, a PvE duel showed UNDO, ROTATE, COURIER and END TURN and no skill tiles; read in the kernel, its first-duel
@@ -4286,7 +4286,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Cause (as read):** the default style moved from 'drag' to 'pve' (duel.js `DUEL.style`), and every check that meant "one gesture"
   asked `style === 'drag'` by name: lesson.js `stepsOf`, skyfall.js `skyOf`, and in Calissa's files the touch context and the gauges.
 - **Fix:** `oneGesture(s)` (duel.js: any style but 'classic'); lesson.js and skyfall.js ask it; Calissa's files asked to.
-- **Rule:** NEW:ask-the-capability-not-the-name
+- **Rule:** 337
 
 ### 2026-10-28 · A secret win ended as a Line win (Dovina's live probe)
 - **Seen:** a Lantern Wisp duel won by snuffing its lantern ended with `duel.end { how: 'line' }`, so the log said the generic Line win and
@@ -4294,7 +4294,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Cause (as read):** the session names the end by the last end event in the log, matched against a list written by hand
   (`/^duel\.(line|full|cap|finisher)$/`, duelsession.js `finish`); the kernel's new `duel.secret` was not on it, and the fallback is 'line'.
 - **Fix:** `secret` on the list, its id carried (`how: 'secret'`, the death hook gets `secret`). Read, not yet played through in a browser.
-- **Rule:** NEW:new-end-new-name
+- **Rule:** 338
 
 ### 2026-10-28 · A secret won by a drag still ended as a Line win (Dovina's live probe, after Petra's fix)
 - **Seen:** with `secret` on the session's list, a Lantern Wisp snuffed by a Miracle still ended `how: 'line'`; the bus carried
@@ -4302,7 +4302,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Cause (as measured):** the kernel logs a turn's events (`endTurn` pushes them to `s.log`) but never an action's; a secret is won
   inside `act`, so its `duel.secret` never reached the log the session's finish reads, and the fallback said 'line'.
 - **Fix:** `act` logs its `duel.*` events whenever the action decided the duel (duel.js). The live probe now ends `how: 'secret'`.
-- **Rule:** NEW:an-end-is-logged-where-it-happens
+- **Rule:** 339
 
 ### 2026-10-28 · The duel's ground drawn as a board under the bodies (Calissa's phone shot of the fens and the garden)
 - **Seen:** at 896 x 414 @2x the floor under the Pneuka Jar and the aberrant was a huge dark grid with the Line's stripe, orange round
@@ -4311,14 +4311,14 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   branch asked `uMode > 0.5`, so the ground (2) took it and drew the board's face, its fog texture's lantern glow the orange. Hidden by
   hiding the disc, the floor went; hiding the instance's kept objects changed nothing.
 - **Fix:** the slab's branch is `uMode > 0.5 && uMode < 1.5` (domains.js); the ground draws the meadow and the fens' black water.
-- **Rule:** NEW:a-mode-is-matched-exactly
+- **Rule:** 340
 
 ### 2026-10-29 · Hurl went off and did nothing until the next turn (South, playing the Lantern Wisp)
 - **Seen:** the aberrant's Hurl cut-in and cast played, and no junk arrived; it landed only at the end of the Courier's next turn.
 - **Cause (as read):** by design, Hurl's junk waited a turn (`pending`) so Hold and Grab could answer it. In the PvE duel those skills are
   tabled, so the wait answered nothing and read as a missed cast.
 - **Fix:** Hurl lands as it is cast (foeskills.js, `K.land`); its line says so.
-- **Rule:** NEW:a-wait-needs-an-answer
+- **Rule:** 341
 
 ### 2026-10-29 · A duel's gem-break motes flew to where the Lachrimeter isn't (South, in play; Dovina measured)
 - **Seen:** the motes off a chain's cleared gems flew to the board's lower corner, not to the Lachrimeter's tube; on the phone's duel
@@ -4327,7 +4327,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   (593, 386) on a 960 x 600 desk while the tube stood at x 820 to 960; and it ignored the phone's flip that `linkAt` makes.
 - **Fix:** the motes fly to the bulb's live place, its overlay position unprojected at the board's depth (`view.tubeAt`); measured landing
   on it exactly, (898, 541) on the desk and (47, 385) on the phone. The link's corner, flipped, only while the tube is hidden.
-- **Rule:** NEW:aim-at-the-thing-not-where-it-was
+- **Rule:** 342
 
 ### 2026-10-29 · The duel's cut-in band stopped compiling (Calissa's probe, before play)
 - **Seen:** at a PvE duel's open, `duel-cutin` failed to link: `'pc' : undeclared identifier`; no band drew at all (the foe's skills, the
@@ -4336,7 +4336,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   line that went on to declare `pc`, so GLSL read the declaration as comment. `npm run check`'s comment rule reads JavaScript, not the
   GLSL inside a template string, so the gate passed it.
 - **Fix:** the comment moved to the line's end; the probe's error list read clean.
-- **Rule:** NEW:shader-strings-are-code-too
+- **Rule:** 343
 
 ### 2026-10-29 · Going prone mid-fan lost the fan's 8 Lachryma (Calissa's queue, from the prone holster's round)
 - **Seen:** fanning the hammer (Q) and dropping prone before the last slap: the gun went away, the unfired shots never came, and the 8
@@ -4345,13 +4345,13 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   (`GunMoves.cancel`), which dropped the shots still due without giving anything back.
 - **Fix:** `GunMoves.cancel` gives back the share of the cost its unfired shots were paid with (`lachryma.gain(..., 'refund')`); a
   refund is neither said in the log nor counted as absorbed (tracking/pool.js).
-- **Rule:** NEW:cut-short-gives-back
+- **Rule:** 344
 
 ### 2026-10-29 · A seam or teleport while prone forgot the tool to draw again (Calissa's queue)
 - **Seen:** prone with the Sondelass put away by the prone holster, a seam (the Index, a Shrine's travel) stood the Courier up empty-handed.
 - **Cause (as read):** the seam resets every tech (`techs.reset`); the prone holster's `reset` cleared its memo with its state.
 - **Fix:** `reset` keeps the memo; once standing where they land, the tool is drawn again through the belt (if still worn and the hands free).
-- **Rule:** NEW:a-reset-keeps-what-is-owed
+- **Rule:** 345
 
 ### 2026-10-29 · A lock-on held into a puzzle duel stayed on (South, on the phone)
 - **Seen:** locked on to an aberrant Lantern Wisp as its duel opened, the lock's tag (its HP and agitation, ??? unread) hung over the
@@ -4360,7 +4360,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   and the creature tag follows the lock's target (`vfx/creaturetags.js`).
 - **Fix:** the pocket lets the lock go (`release('duel')`), and `LockOn.update` neither keeps nor takes one while a duel is open or
   pending (the touch lock included). Headless: held before the open, none in the duel.
-- **Rule:** NEW:an-instance-lets-go-of-the-world
+- **Rule:** 346
 
 ### 2026-10-29 · The DEBUG save's puzzle duels dimmed every feeling (South, on the phone)
 - **Seen:** in DEBUG, every gem on your half of a duel drawn dim (unlit, a coloured keyline): all seven feelings locked.
@@ -4368,11 +4368,11 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   the lure ring and the miracles ask `game.lend.has('feelings')` beside the ledger, the duel's new gate did not. The lend's own line
   still read "Gall and Fury known".
 - **Fix:** the session passes no dim gems while Feelings is lent; the lend's line reads "Every feeling known". Headless: DEBUG duel, `dim` empty.
-- **Rule:** NEW:a-new-gate-asks-the-lend
+- **Rule:** 347
 
 ### 2026-10-29 · The Raceway's trap placeholders stood on the mirrored side (Calissa's builder, dressing the traps)
 - **Seen:** the rising pillars' placeholder raised lane 0 on the side where lane 2 hits; the Wisp turret's lamp stood across the track from where its ball flies.
 - **Cause (as read):** `frameAt` lays a point at lateral `lat` and the placed root's local x runs as `-lat` (the sinkhole already used
   `-lat`), but the pillars and the turret laid their local x as `+lat`. The rules (`lane`, `cast` at lat -(W + 4)) were right; only the looks were mirrored.
 - **Fix:** the pillars at local x `W - 2W(l + 0.5)/3` and the turret's post and lamp at local x `W + 4` (`world/raceway/traps.js place`). The lamp's parry home now meets where the ball came from.
-- **Rule:** NEW:a-look-reads-its-rule-frame
+- **Rule:** 348

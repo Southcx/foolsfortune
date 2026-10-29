@@ -32,7 +32,7 @@ export function raceRules({ on, L, log, g }) {
   on('raceway.pit', (e) => { L.inc('raceway.pit'); log.say('warn', 'The antlion takes you. The sand slides to its jaws: keep your speed on the slope.', { key: 'rw.pit', throttle: 4 }); });
   on('race.start', (e) => {
     if (e.track === 'made') return; // (a made track's: tracking/trackeditor.js, never the park's counts)
-    if (e.mode && e.mode !== 'race') return; // (the other modes: racemodes.js)
+    if (e.mode && e.mode !== 'race' && e.mode !== 'daily') return; // (the other modes: racemodes.js; the game day's race is a race, and counts as one too)
     L.inc('race.raceway.start'); L.inc(`race.track.${e.track || 'sun'}.start`); log.say('skiff', `${TRACK_NAMES[e.track] || 'The race'}: to the line. Ready your sail.`, { key: 'race.start', throttle: 2 });
     const says = [LIGHT_SAYS[e.light], WEATHER_SAYS[e.aspect]].filter(Boolean); if (says.length) log.say('skiff', says.join(' '), { key: 'race.cond', throttle: 2 });
   });
@@ -45,7 +45,7 @@ export function raceRules({ on, L, log, g }) {
     log.say('skiff', `Lap ${e.lap}: ${clock(e.seconds)}${e.best ? ', your best lap' : ''}${e.place ? `; ${ORD(e.place)} of ${e.of}` : ''}.`, { key: `race.lap.${e.lap}`, throttle: 1 });
   });
   on('race.finish', (e) => {
-    if (e.mode && e.mode !== 'race') return; // (the other modes: racemodes.js)
+    if (e.mode && e.mode !== 'race' && e.mode !== 'daily') return; // (the other modes: racemodes.js; the game day's race is a race, and counts as one too)
     L.inc('race.raceway.finish'); L.lo('race.raceway.best', e.seconds);
     if (e.medal) { L.inc(`race.raceway.${e.medal}`); if (e.track) { L.inc(`race.track.${e.track}.${e.medal}`); if (e.recordClass) L.inc(`race.track.${e.track}.${e.medal}.${e.recordClass}`); } } // (each track's medals, and each class's: SKIFF-TUNING.md 2.4)
     if (e.track) { L.inc(`race.track.${e.track}.finish`); L.lo(`race.track.${e.track}.best`, e.seconds); if (e.recordClass) L.lo(`race.track.${e.track}.best.${e.recordClass}`, e.seconds); }

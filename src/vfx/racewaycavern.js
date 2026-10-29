@@ -190,7 +190,7 @@ export class RacewayCavern {
   cutStone(R) {
     const mesh = R.cavern.mesh; if (!mesh) return;
     const roof = [...this.roofParts(R), ...this.pillarParts(R)], skin = this.skinGeometry(R);
-    const outlined = mesh.userData.outline ? ensureSmoothNormals(mergeGeometries(roof)) : null; // (the hull's normals only where a hull is drawn: NEW:memory-bound-by-view)
+    const outlined = mesh.userData.outline ? ensureSmoothNormals(mergeGeometries(roof)) : null; // (the hull's normals only where a hull is drawn: 309)
     const geo = mergeGeometries(skin ? [...roof, skin] : roof); // (merging copies: no clone of the roof first)
     this.old = { mesh, geo: mesh.geometry, outline: mesh.userData.outline?.geometry };
     mesh.geometry = geo; if (outlined) mesh.userData.outline.geometry = outlined; // (the outline round the slabs and dripstone only: the skin lies on the sand)

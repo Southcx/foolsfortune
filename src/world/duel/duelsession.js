@@ -360,7 +360,9 @@ export class DuelSession {
   /** One of your actions: refused (a dry tick) or played, then the forecast drawn again. */
   take(a) {
     this.picked = null;
-    const ev = act(this.state, a);
+    const S = this.state, lucky = a.kind === 'flee' && S?.rerolls && !this.practice && this.game.classArtsRun?.lucky?.(); // (Beginner's Luck: the throw thrown again if it fails, courier/classarts/body.js)
+    if (lucky) S.rerolls[0]++;
+    const ev = act(S, a);
     if (!ev) { sfx.dryFire?.(); this.view?.refuse?.(a); return; }
     this.run(ev);
   }

@@ -34,6 +34,9 @@ import { Knacks } from '../progress/knacks.js';
 import { Goals } from '../progress/goals.js';
 import { Aptitude } from '../progress/aptitude.js';
 import { ClassArts } from '../progress/classarts.js';
+import { AreaChecklist } from '../progress/areachecklist.js';
+import { ArcanaWays } from '../progress/arcanaways.js';
+import { GardenSeason } from '../progress/gardenseason.js';
 import { FirstToday } from '../progress/firsttoday.js';
 import { FoeSeen } from '../progress/foeseen.js';
 import { AberrantDrops } from '../progress/duel/drops.js';
@@ -74,6 +77,9 @@ export function bootProgress(game, made) {
   game.worldShellFinds = new WorldShellFinds(game); // (a World shell for every twelfth full-grown blot mopped up: progress/combat/worldshells.js)
   game.handPose = new HandPose(game); // (the god hand's mudras: which pose, and when; a look only, progress/mudras.js)
   game.knacks = new Knacks(game); // (the assists earned, switched on or off: progress/knacks.js; the Crib Sheet first)
+  game.gardenSeason = new GardenSeason(game); // (the season's material, once a game day in the garden: progress/gardenseason.js)
+  game.arcanaWays = new ArcanaWays(game); // (a Major bound by its meaning done: progress/arcanaways.js, SPREADS.md 5.6)
+  game.areaChecklist = new AreaChecklist(game); // (each Dunes area's checklist measured into the ledger: progress/areachecklist.js)
   game.classArts = new ClassArts(game); // (a class's two arts, opened by playing as it: progress/classarts.js, CLASS-ARTS.md)
   game.aptitude = new Aptitude(game); // (the Assay's passive readings: progress/aptitude.js, APTITUDE.md)
   game.goals = new Goals(game); // (the game day's three goals, from the achievements: progress/goals.js)

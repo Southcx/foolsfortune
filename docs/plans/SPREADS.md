@@ -177,6 +177,10 @@ Drafts: the achievements' names and tiers come with the build.
 
 ### 5.6 The Majors' second ways (ruling 2; the acts are Espada's, the predicates mine)
 
+**Built (2026-10-29):** `progress/arcanaways.js` (`SECOND_WAYS`), each act counted as it happens and the card bound on meeting it
+(`collection.bind`, from 'second'). Swapped where no counter exists yet, the meaning kept: Strength (calm a creature with the bell,
+without a blow) and the Moon (raise the bell's mirage 5 times).
+
 Each Major is bound by its photograph or by this act: the card's meaning done. A predicate with no counter yet swaps the act and
 keeps the meaning.
 

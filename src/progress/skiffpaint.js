@@ -130,6 +130,9 @@ export const SET_RULES = {
   racing: { pieces: [['hull', 'teak'], ['dye', 'mirth'], ['pattern', 'checker'], ['trail', 'embers'], ['ribbon', 'comet'], ['length', 'swallowtail'], ['wrap', 'roundel']], opens: (L) => G(L, 'cup.clay.win') > 0 && G(L, 'cup.sibling.win') > 0 && G(L, 'race.raceway.win') >= 25, hint: 'Win both cups and 25 races.' },
   obsidian: { pieces: [['hull', 'obsidian'], ['dye', 'dread'], ['pattern', 'constellations'], ['cut', 'crabclaw'], ['trail', 'starlight'], ['ribbon', 'helix'], ['length', 'prayer'], ['pennant', 'dread'], ['wrap', 'pinstripes']], opens: did('haunt.held', 3), hint: 'Hold 3 haunted races.' },
 };
+/** A set had, read from the ledger alone (the achievements' predicate): every piece's opening met and the set's feat done. No piece of a
+ *  set opens by the game's state (the kiln pattern and the seal are in none), so the ledger is enough. */
+export function setDone(id, L) { const r = SET_RULES[id]; return !!r && r.pieces.every(([k, i]) => { const row = PAINT[k]?.find((x) => x.id === i); return !!row && (!row.opens || !!row.opens(L)); }) && !!r.opens(L); }
 export const PAINT_KINDS = Object.keys(PAINT);
 const STOCK = Object.fromEntries(PAINT_KINDS.map((k) => [k, PAINT[k][0].id]));
 const rowOf = (kind, id) => PAINT[kind]?.find((r) => r.id === id) || (kind === 'dye' && id?.startsWith('glaze.') && GLAZES[id.slice(6)] ? { id, label: `${GLAZES[id.slice(6)].name} dye`, line: 'A glaze of yours, made into a dye.', colour: GLAZES[id.slice(6)].color, price: 'firing', glaze: id.slice(6) } : null);
@@ -150,7 +153,7 @@ export class SkiffPaint {
   why(kind, id) { const r = rowOf(kind, id); return !r ? '' : this.open(kind, id) ? r.line : r.hint || ''; }
   /** A set's pieces owned: [owned, of]. */
   setHave(id) { const P = SET_RULES[id]?.pieces || []; return [P.filter(([k, i]) => this.open(k, i)).length, P.length]; }
-  /** The count way: every piece of the set open (it counts once in the ledger, `skiff.set.<id>`, when Petra's rule says so). */
+  /** The count way: every piece of the set open (the achievements read `setDone`, the ledger's side of it). */
   setComplete(id) { const [a, n] = this.setHave(id); return n > 0 && a === n; }
   /** The set as one choice: every piece owned and its feat done (or lent, the DEBUG save's Racing row). */
   setOpen(id) { const r = SET_RULES[id]; return !!r && (!!this.game.lend?.has?.('racing') || (this.setComplete(id) && !!r.opens(this.game.ledger, this.game))); }
