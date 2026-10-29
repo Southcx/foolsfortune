@@ -15,7 +15,7 @@
 // limit break (the screen held, the name in the frame), Guilty Gear's super flash, Puzzle & Dragons' enemy skill banner; the creature
 // tags' own render of a creature's meshes alone (creaturetags.js sampleMesh).
 //
-//   const C = new FoeCutIn(view)   C.warm()   C.beat(e) -> phase | null (once an event)   C.veil(k) (the screen darkened, no band)   C.clear()   CUT_IN (the knobs)
+//   const C = new FoeCutIn(view)   C.warm()   C.beat(e) -> phase | null (once an event)   C.turn(e) -> real s to wait (the turn's band)   C.veil(k) (the screen darkened, no band)   C.clear()   CUT_IN (the knobs)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { FONT } from '../../ui/theme.js';
@@ -26,7 +26,12 @@ import { feelColour, sm, clamp01 } from './layout.js';
  *  tilt: its slope; portrait: the strip's share of the width; rt: the portrait's target width (px); fov: the strip camera's (deg);
  *  burst: real s after a limit break in which its own casts come without a cut-in; word / limitWord: when the label slams (real s from
  *  the event: Wanda's stings land there, audio/duelcasts.js CUT_IN_LEAD; the limit break's after its 1.1 s swell). */
-export const CUT_IN = { in: 0.14, hold: 0.62, out: 0.16, limitHold: 1.45, word: 0.12, limitWord: 1.1, band: 0.16, limitBand: 0.24, y: 0.4, tilt: -0.09, portrait: 0.44, rt: 512, fov: 24, burst: 4 };
+export const CUT_IN = { in: 0.14, hold: 0.62, out: 0.16, limitHold: 1.45, word: 0.12, limitWord: 1.1, band: 0.16, limitBand: 0.24, y: 0.4, tilt: -0.09, portrait: 0.44, rt: 512, fov: 24, burst: 4,
+  turn: { in: 0.1, hold: 0.3, out: 0.14, word: 0.12, band: 0.085, lit: 0.35 } };
+/** The turn's change (South, 2026-10-29: "cut-ins/highlights and vfx for when the turns switch over"; Fire Emblem's PLAYER PHASE and
+ *  ENEMY PHASE): the band thinner and shorter, its words the genre's plain ones (placeholders, Espada's to word), yours in the film. */
+export const TURN_WORDS = ['YOUR TURN', 'ENEMY TURN'];
+const FILM = new THREE.Color(0x9ee6ff);
 const INK = '#17111f', GOLD = new THREE.Color(0xffd36a);
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Color(), _bb = new THREE.Box3();
 
@@ -50,7 +55,7 @@ void main() {
     c = mix(c, uFeel * 0.55, (1.0 - smoothstep(r - 0.1, r, length(cell))) * edge * 0.75);
     float pw = W * uBand.w, ph = 2.0 * uBand.y; vec2 p0 = vec2(W * (0.985 - uBand.w) + (1.0 - uIn) * W * 0.3 - uDrift, uBand.x - uBand.y + (px.x - W * 0.5) * uBand.z);
     vec2 pu = (px - p0) / vec2(pw, ph);
-    if (pu.x > 0.0 && pu.x < 1.0 && pu.y > 0.0 && pu.y < 1.0) {
+    if (uBand.w > 0.001 && pu.x > 0.0 && pu.x < 1.0 && pu.y > 0.0 && pu.y < 1.0) {
       vec4 P = texture2D(uPort, vec2(pu.x, 1.0 - pu.y)); vec3 pc = P.rgb / (1.0 + P.rgb) * 1.45;
       c = mix(c, pc, P.a * smoothstep(0.0, 0.3, pu.x));
     }
@@ -160,10 +165,22 @@ export class FoeCutIn {
     if (limit) this.limitAt = this.t;
     if (!this.proxies.length || !this.proxies[0].o.parent) this.gather();
     const W = this.word(text); this.u.uWord.value = W.tex; this.u.uWordAsp.value = W.aspect; this.u.uLimit.value = limit ? 1 : 0; this.feel();
-    const dur = CUT_IN.in + (limit ? CUT_IN.limitHold : CUT_IN.hold) + CUT_IN.out; this.limit = limit; this.dur = dur; this.age = 0; this.mesh.userData.overlayHidden = false;
+    const dur = CUT_IN.in + (limit ? CUT_IN.limitHold : CUT_IN.hold) + CUT_IN.out; this.limit = limit; this.mode = 'skill'; this.dur = dur; this.age = 0; this.mesh.userData.overlayHidden = false;
     if (limit) { this.view.game.glitch?.pulse?.({ split: 0.12, tear: 0.08, dur: 0.25 }); }
     this.cut.add(e); return { events: [e], dur, // (the event itself: the sting and the director key off it here; its cast phase after says nothing again, beats.js)
  step: (u, age) => { this.age = age; }, end: () => this.hide() };
+  }
+
+  /** The turn's change: the band torn across for the side whose turn it now is (its half of the board lit), shorter and thinner than a
+   *  skill's; the duel waits only for its way in and its hold (the seconds it returns), its way out runs over what follows. */
+  turn(e) {
+    if (!this.ensure() || (e.side !== 0 && e.side !== 1)) return 0;
+    const T = CUT_IN.turn, foe = e.side === 1, W = this.word(TURN_WORDS[e.side]);
+    this.view.clash?.flash?.(e.side, T.lit);
+    if (foe && (!this.proxies.length || !this.proxies[0].o.parent)) this.gather();
+    this.u.uWord.value = W.tex; this.u.uWordAsp.value = W.aspect; this.u.uLimit.value = 0; if (foe) this.feel(); else this.u.uFeel.value.copy(FILM);
+    this.mode = 'turn'; this.side = e.side; this.limit = false; this.dur = T.in + T.hold + T.out; this.age = 0; this.mesh.userData.overlayHidden = false;
+    return T.in + T.hold;
   }
 
   hide() { this.age = -1; if (this.mesh && this.veilK > 0.001) return; if (this.mesh) { this.mesh.userData.overlayHidden = true; this.mesh.visible = false; } }
@@ -177,14 +194,15 @@ export class FoeCutIn {
     this.t += dt;
     if (this.age < 0) { if (!(this.veilK > 0.001)) return; const u = this.u, w = slot.view.w, h = slot.view.h; // (the veil alone: no band, no word)
       this.mesh.scale.set(w, h, 1); u.uRes.value.set(w, h); u.uIn.value = 0; u.uOut.value = 0; u.uWordOn.value = 0; u.uFlash.value = 0; u.uDim.value = this.veilK; u.uBand.value.set(-h, 0, 0, 0); return; }
-    const w = slot.view.w, h = slot.view.h, u = this.u, a = this.age, L = this.limit, hold = L ? CUT_IN.limitHold : CUT_IN.hold;
+    if (this.mode === 'turn') { this.age += dt; if (this.age > this.dur) { this.hide(); return; } } // (the turn's band keeps its own clock: its way out runs over the beats after it)
+    const w = slot.view.w, h = slot.view.h, u = this.u, a = this.age, L = this.limit, T = this.mode === 'turn' ? CUT_IN.turn : null, tin = T ? T.in : CUT_IN.in, hold = T ? T.hold : L ? CUT_IN.limitHold : CUT_IN.hold;
     this.mesh.scale.set(w, h, 1); u.uRes.value.set(w, h); u.uT.value = this.t;
-    const kin = sm(clamp01(a / CUT_IN.in)), kout = sm(clamp01((a - CUT_IN.in - hold) / CUT_IN.out)), kh = clamp01((a - CUT_IN.in) / hold);
+    const kin = sm(clamp01(a / tin)), kout = sm(clamp01((a - tin - hold) / (T ? T.out : CUT_IN.out))), kh = clamp01((a - tin) / hold);
     u.uIn.value = kin; u.uOut.value = kout; u.uDim.value = L ? (0.3 + 0.25 * clamp01(a / CUT_IN.limitWord)) * kin : 0; u.uDrift.value = kh * w * 0.02;
-    const band = (L ? CUT_IN.limitBand : CUT_IN.band) * h * (w < h ? 0.7 : 1); u.uBand.value.set(h * CUT_IN.y, band, CUT_IN.tilt, CUT_IN.portrait);
-    const ws = a - (L ? CUT_IN.limitWord : CUT_IN.word) + 0.06, slam = clamp01(1 - ws / 0.06); u.uWordOn.value = ws > 0 ? 1 : 0; u.uSlam.value = 1 + (L ? 1.6 : 1.1) * slam * slam;
+    const band = (T ? T.band : L ? CUT_IN.limitBand : CUT_IN.band) * h * (w < h ? 0.7 : 1), port = T && this.side === 0 ? 0 : CUT_IN.portrait; u.uBand.value.set(h * CUT_IN.y, band, CUT_IN.tilt, port); // (your turn: no portrait)
+    const ws = a - (T ? T.word : L ? CUT_IN.limitWord : CUT_IN.word) + 0.06, slam = clamp01(1 - ws / 0.06); u.uWordOn.value = ws > 0 ? 1 : 0; u.uSlam.value = 1 + (L ? 1.6 : 1.1) * slam * slam;
     u.uFlash.value = L && ws > 0.1 && ws < 0.17 ? 1 : 0;
     if (L && ws > 0.1 && !this.shook) { this.shook = true; this.view.stage?.jolt?.(1); } if (a < 0.05) this.shook = false;
-    this.aim(kh, L); this.shoot((w * CUT_IN.portrait) / (2 * band));
+    if (port) { this.aim(kh, L); this.shoot((w * port) / (2 * band)); }
   }
 }

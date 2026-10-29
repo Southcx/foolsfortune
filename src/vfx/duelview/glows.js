@@ -43,7 +43,7 @@ export class DuelGlows {
   update(dt) {
     const V = this.view, s = V.state; if (!s || !V.isOpen) return;
     const P = V.pieces, L = V.lineCol ?? s.board.line, S = s.sides[0], body = P.bodyAt(0), idle = !V.busy, mine = s.toMove === 0 && s.winner === null;
-    this.watchForesight(); P.weak = weaknessOf(s)?.weak || null; P.line = L; P.fore = idle ? this.fore : null;
+    this.watchForesight(); P.weak = weaknessOf(s)?.weak || null; P.dim = s.dim || null; P.line = L; P.fore = idle ? this.fore : null;
     const hum = new Map(), grey = new Set();
     for (const side of [0, 1]) { const c = V.tune[side]; if (c) for (const v of P.list) if (v.kind === 'gem' && v.colour === c && (side === 0 ? v.cx < L : v.cx >= L)) hum.set(v, 1); }
     // Paint's reach

@@ -12,12 +12,14 @@
 //
 //   LEARNED[power] = { from (the creature's kind), secret (its secret's id), wins (the count way), hint }
 //   learnedOf(L) -> [power ids learned]   (newDuel's `learned`: world/duel/duelsession.js, Petra's)
-//   isLearned(power, L) -> bool
+//   isLearned(power, L) -> bool   learnProgress(power, L) -> { wins, of, secret } (the count way's progress, never the secret's: the Codex's page)
 // ---------------------------------------------------------------------------------------
 
 export const LEARNED = {
   // the Lantern Wisp's Kindle: its secret snuffed once, or 5 Wisps beaten at the Line
   kindle: { from: 'wisp', secret: 'snuff', wins: 5, hint: 'Learned from the aberrant Lantern Wisp.' },
+  // the slip jelly's Absorb: its secret dissolved once, or 5 slip jellies beaten at the Line (powers.js absorb: junk drunk for the pool)
+  absorb: { from: 'slipjelly', secret: 'dissolve', wins: 5, hint: 'Learned from an aberrant slip jelly.' },
 };
 
 const got = (L, k) => L?.get?.(k) || 0;
@@ -27,3 +29,6 @@ export const isLearned = (power, L) => { const R = LEARNED[power]; return !!R &&
 
 /** Every learned skill now (a duel's `learned`). */
 export const learnedOf = (L) => Object.keys(LEARNED).filter((id) => isLearned(id, L));
+
+/** How far the count way has come (the collection log's slot, a page's line): wins of `of`; `secret` only says whether it was found. */
+export const learnProgress = (power, L) => { const R = LEARNED[power]; return R ? { wins: Math.min(R.wins, got(L, `duel.won.${R.from}`)), of: R.wins, secret: got(L, `duel.secret.${R.secret}`) >= 1 } : null; };

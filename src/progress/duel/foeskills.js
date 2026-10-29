@@ -44,9 +44,9 @@ export const FOE_SKILLS = {
       return [{ type: 'foe.skill', side: 1, skill: 'sap', lost }]; } },
   reclaim: { label: 'Reclaim', line: 'Pushes the Line back a column toward you',
     fire: (s, M, K) => [{ type: 'foe.skill', side: 1, skill: 'reclaim', n: 1 }, ...K.moveLine(s, -1)] },
-  spew: { label: 'Spew', line: 'Throws a heap of slime onto your half', // (placeholder words, Espada's to word)
+  spew: { label: 'Spew', line: 'Throws a heap of slime onto your half', // (Espada's, 2026-10-29)
     fire: (s, M, K) => [{ type: 'foe.skill', side: 1, skill: 'spew', n: M.n }, ...K.land(s, 0, M.n)] },
-  harden: { label: 'Harden', line: 'Sets up to 4 slime on your half into plain junk', // (placeholder words, Espada's to word)
+  harden: { label: 'Harden', line: 'Sets up to 4 slime on your half into plain junk', // (Espada's, 2026-10-29)
     fire: (s, M) => { const b = s.board, cells = [], at = []; b.each((p, x, y) => { if (b.mine(0, x) && p.slime) cells.push([x, y]); });
       for (let i = 0; i < M.n && cells.length; i++) { const [x, y] = cells.splice(s.r.int(cells.length), 1)[0], p = b.at(x, y); Object.assign(p, { slime: undefined, extra: undefined }); at.push({ at: [x, y], id: p.id }); }
       return [{ type: 'foe.skill', side: 1, skill: 'harden', n: at.length, cells: at }]; } },

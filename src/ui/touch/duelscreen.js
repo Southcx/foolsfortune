@@ -64,10 +64,12 @@ export class TouchDuel {
       for (const [id, t] of this.tiles) if (!ids.includes(id)) { if (id === 'du.flee') longPress.cancel(); t.set({ hidden: true }); }
       if (show) this.layout(R, top, tools);
     }
+    const cuts = g.duelView?.restCuts ?? 0, cut = show && cuts > (this.cuts ?? cuts); this.cuts = cuts; // (a good chain took turns off the resting powers, Dovina's rest.cut: their tiles flash as its beat plays; none late)
     if (!show) return;
     for (const e of all) {
       const t = this.tiles.get(e.id);
       t.set({ hidden: false, lit: t.state.pressed || !!e.lit, dim: !!e.dim, charge: e.charge ?? 0 }); t.update(now);
+      if (cut && e.id.startsWith('du.power.')) t.pulse();
     }
   }
 
