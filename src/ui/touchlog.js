@@ -38,6 +38,7 @@ body.hud-touch #chatlog.hud-sheet .foot .keys{display:none}
 body.hud-touch #chatlog .ts{font-size:14px}
 body.hud-touch.log-tab.log-folded #chatlog:not(.typing):not(.hud-sheet){display:none}
 body.hud-touch.hud-duel #chatlog:not(.typing):not(.hud-sheet){display:none}
+body.hud-touch.hud-taken #chatlog:not(.typing):not(.hud-sheet){display:none}
 `;
 
 export class TouchLog {
