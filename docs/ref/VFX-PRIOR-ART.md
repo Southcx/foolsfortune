@@ -57,6 +57,8 @@ the line comes from a search excerpt of it. Nothing here is from memory: a detai
 - Spells are typed words of up to six katakana: a prefix, an elemental core, a suffix; each element has root patterns (tou makes lightning, aqu water); prefixes and suffixes change power, cost, status or range; a spell an enemy
   casts can be written down and learned. Eight elements, six in opposed pairs; earth and void "have no strengths or weaknesses". Built from the Japanese pleasure in word-play (kotodama). https://en.wikipedia.org/wiki/Treasure_of_the_Rudras
   **Take:** our neuralese roots can pick the motif and its modifiers add small marks round the core glyph, so a sign is readable by its root; void, the element with no opposite, is the natural look for the domain LORE.md calls "neutral".
+- Development: battle planner Masahiro Kataoka proposed that players trade discovered words with friends; monster designer Yuichirou Kojima animated the enemy sprites (still pictures in most Square RPGs) to answer the rise of 3D.
+  https://en.wikipedia.org/wiki/Treasure_of_the_Rudras  **Take:** a sign is shareable as plain text (as our made tracks are, by share code); an idle that moves makes a flat thing alive without polygons.
 
 ### 1.4 Parasite Eve (Square, 1998) and Parasite Eve II (Square, 1999)
 - PE1: pausable real-time ATB; choosing to attack pauses and "a dome/sphere symbolizing the range of the weapon appears" for targeting; Parasite Energy refills during battle but "the more players use it, the slower it refills".
@@ -69,10 +71,14 @@ the line comes from a search excerpt of it. Nothing here is from memory: a detai
 ### 1.5 Xenogears (Square, 1998)
 - Deathblows are learned by repeating specific proportions of strong, moderate and weak hits; AP costs 1, 2 or 3 by intensity; all magic is "Ether", but Fei's is called Chi and Citan's Arcane. https://en.wikipedia.org/wiki/Xenogears
   **Take:** weak, medium and strong are three sizes of one shape; one substrate with per-person names is the class arts under one base.
+- In gears a deathblow needs an "Attack Level", a number at the bottom left raised by strong, moderate and weak attacks, one deathblow per point; past level 3 an "infinite" level has deathblows of its own. In the early plan gears were "traditional summoned monsters".
+  https://en.wikipedia.org/wiki/Xenogears  **Take:** a level you can read and spend, with a last rung that looks different in kind (our King and World arts).
 
 ### 1.6 Valkyrie Profile (tri-Ace / Enix, 1999)
 - Each party member is a button; combos fill a Hit Gauge; at 100 % a member of the combo may use Purify Weird Soul; Charge Time replaces MP; Great Magic (all enemies) needs certain scepters, which can break; Lenneth's Purify Weird Soul
   changes with the weapon she holds. https://en.wikipedia.org/wiki/Valkyrie_Profile_(video_game)  **Take:** a gauge filled by the quality of a chain, spent on one large art whose shape depends on the tool in hand (our pair specials).
+- In the English release Lezard's teleportation circle was changed "from a pink pentagram to a purple circle" (the PSP port's English version keeps it). https://en.wikipedia.org/wiki/Valkyrie_Profile_(video_game)
+  **Take:** the figure inside a circle carries its register (an occult pentagram or a plain ring): Ouranurgy's portal ring and Spellscription's seal should differ by figure before they differ by colour.
 
 ### 1.7 Secret of Mana (Square, 1993) and Legend of Mana (Square, 1999; director Koichi Ishii, battle chief Hiroshi Takai)
 - Secret of Mana: Ishii organised magic as four elements "but what gave them all shape in our world was mana"; Tanaka on the ring menu: you "don't have to switch screens to access everything", visually easy to follow. https://shmuplations.com/secretofmana/
@@ -110,6 +116,8 @@ the line comes from a search excerpt of it. Nothing here is from memory: a detai
 ### 1.12 Kingdom Hearts: Chain of Memories (Jupiter / Square Enix, 2004)
 - Cards 0 to 9; three cards combine into a combo whose rank is their sum; certain sets make a "sleight" (a strong blow, a spell or a summon); the first card used becomes unusable until the fight ends. https://en.wikipedia.org/wiki/Kingdom_Hearts:_Chain_of_Memories
   **Take:** a combination as three small marks that resolve into one larger shape (Encore, the pair specials).
+- Map cards are coloured by what they change: red the number and type of enemies, green the power of the deck, blue the room's properties (treasure, save points). https://en.wikipedia.org/wiki/Kingdom_Hearts:_Chain_of_Memories
+  **Take:** colour by *what a thing changes* is a third coding beside element and suit; use it only where a mark must say what it will touch.
 
 ### 1.13 The World Ends with You (Jupiter / Square Enix, 2007)
 - Pins are worn; each district has trends, and clothes or pins of the popular brand improve effects, the least fashionable weaken them; pins evolve; background director Takayuki Ohdachi designed the psych pins "mixing pop art and tribal designs"; the
@@ -140,9 +148,9 @@ the line comes from a search excerpt of it. Nothing here is from memory: a detai
   **Take:** a lattice that lights node by node as a sight (Strata, survey).
 
 ### 1.17 Dragon Quest (Enix / Square Enix, 1986 on)
-- A family is a name with rungs: Frizz, Frizzle, Kafrizz, Kafrizzle (four rungs in later games); Sizz is the group version, with a 30 % bonus on a single target, while Frizz hits one for more. https://dragon-quest.org/wiki/Kafrizz
-  Second-hand (search excerpts of the wiki): the Zoom family teleports (Zoom to a place, Bazoom removes enemies from battle, Zip to allies). https://dragon-quest.org/wiki/Bazoom and https://dragon-quest.org/wiki/Zip
-  **Take:** a family = a shape x a scope x a rung; name and mark both say so.
+- A family is a name with rungs: Frizz, Frizzle, Kafrizz, Kafrizzle (four rungs in later games); Sizz is the group version, with a 30 % bonus on a single target, while Frizz hits one for more. https://dragon-quest.org/wiki/Kafrizz  **Take:** a family = a shape x a scope x a rung; name and mark both say so.
+- Second-hand (search excerpts of the wiki): the Zoom family teleports (Zoom to a place, Bazoom removes enemies from battle, Zip to allies). https://dragon-quest.org/wiki/Bazoom and https://dragon-quest.org/wiki/Zip
+  **Take:** one verb, three destinations: the far end's ramp, not a new effect, says which.
 
 ### 1.18 Square Enix's VFX artists, in their words
 - Takayasu Ishii (FFXIV VFX artist): designers give a text spec (attack or heal, single target or area) and artists have "free rein over the imagery" inside that purpose; Reaper has its own base colour (black and cyan), Sage white and blue, bright greens are
