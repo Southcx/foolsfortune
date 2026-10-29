@@ -43,6 +43,10 @@ export function wakeOf(id, L) {
 
 /** The poller: once a real second, each feeling not yet known is asked; the first that wakes is said (one a second, so two never
  *  overlap their moment). */
+/** The feelings not yet awakened to (the ledger's `feeling.known.<id>`): a puzzle duel's dim gems, worth DIM.k of a gem's pool there
+ *  (duel.js `newDuel({ dim })`; South, 2026-10-29). */
+export const notAwakened = (L) => ASPECTS.filter((a) => !(L?.get?.(`feeling.known.${a}`) > 0));
+
 export class Feelings {
   constructor(game) { this.game = game; this.t = 0; }
   update(dt) {

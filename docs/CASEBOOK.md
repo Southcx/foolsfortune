@@ -973,3 +973,6 @@ NEW:an-end-is-logged-where-it-happens. **An end is written to the log by whateve
 
 NEW:a-mode-is-matched-exactly. **A program shared by several meshes matches each one's mode exactly, never by a threshold.** The
 duel's ground disc (mode 2) fell into the slab's `> 0.5` branch and drew a board under the bodies.
+
+NEW:a-wait-needs-an-answer. **A delayed effect needs something the player can do in the delay.** With no answer in reach, a wait
+  reads as a bug: land it at once, or put the answer in reach.

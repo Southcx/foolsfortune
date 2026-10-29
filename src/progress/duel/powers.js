@@ -155,6 +155,13 @@ export const POWER_ACTION = { form: null, cost: 0,
     S.pool -= cost; S.powerRest = { ...S.powerRest, [a.power]: P.rest }; S.powerUsed = [...(S.powerUsed || []), a.power]; S.powersUsed = (S.powersUsed || 0) + 1; // (new objects: a lookahead's copy of the side shares the old ones)
     return [{ type: 'power', side, power: a.power, domain: P.domain, cost, pool: S.pool, at: a.at || null }, ...P.apply(s, side, a)]; } };
 
+/** A good drag's reward (PUZZLE-DUELS.md 26.2): every resting power `n` turns nearer, said once. */
+export function cutRests(s, side, n) {
+  const S = s.sides[side]; if (!S.powerRest || n <= 0) return [];
+  let any = false; const R = {}; for (const [k, v] of Object.entries(S.powerRest)) { R[k] = Math.max(0, v - n); if (R[k] !== v) any = true; }
+  S.powerRest = R; return any ? [{ type: 'rest.cut', side, n }] : [];
+}
+
 /** A side's turn ending: each power resting a turn less, the turn's used list cleared, a transmute's turns counted down. */
 export function tickRests(s, side) {
   const S = s.sides[side], out = [];

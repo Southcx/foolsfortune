@@ -5,7 +5,7 @@
 // each on a countdown you can see (Puzzle & Dragons' enemy skills and their turn counters; Into the Breach's telegraphed attacks), each
 // aimed at your half or at the Line between you. A big play of yours staggers it: every countdown waits a turn longer.
 //
-//   Hurl       junk thrown at your half: it lands at the end of your next turn (a Wisp's are embers); Hold and Grab answer it
+//   Hurl       junk thrown onto your half, landing at once (a Wisp's are embers: South, 2026-10-29, it read as broken when it waited a turn)
 //   Petrify    gems on your half turned to junk where they lie (Puzzle & Dragons' jammer orbs)
 //   Seal       a column of yours locked: no drag may touch it on your next turn (Puzzle & Dragons' bound orbs)
 //   Sap        each skill you wear loses half its charge
@@ -19,7 +19,7 @@
 // Into the Breach's attacks drawn a turn ahead, Candy Crush's blockers.
 //
 //   FOE_SKILLS[id] = { label, line, fire(s, M, K) -> events }   foeOf(rs) -> s.foe   foeIntent(s) -> [{ skill, label, line, left, n }]
-//   K: the kernel's own helpers handed in by duel.js ({ moveLine, gemOf })   events: foe.skill { side: 1, skill, ... }, foe.soon { skill } (it fires
+//   K: the kernel's own helpers handed in by duel.js ({ moveLine, gemOf, land })   events: foe.skill { side: 1, skill, ... }, foe.soon { skill } (it fires
 //   on the aberrant's next turn), foe.desperate, foe.stagger
 // ---------------------------------------------------------------------------------------
 import { piece, hasTag } from './board.js';
@@ -28,8 +28,8 @@ import { SKILLS } from './skills.js';
 const gemsOf = (s) => { const out = []; s.board.each((p, x, y) => { if (p && s.board.mine(0, x) && hasTag(p, 'matches') && p.kind === 'gem') out.push([x, y]); }); return out; };
 
 export const FOE_SKILLS = {
-  hurl: { label: 'Hurl', line: 'Junk lands on your half after your next turn',
-    fire: (s, M) => { s.sides[0].pending += M.n; return [{ type: 'foe.skill', side: 1, skill: 'hurl', n: M.n }]; } },
+  hurl: { label: 'Hurl', line: 'Throws junk onto your half', // (a placeholder line, Espada's to word)
+    fire: (s, M, K) => [{ type: 'foe.skill', side: 1, skill: 'hurl', n: M.n }, ...K.land(s, 0, M.n)] },
   petrify: { label: 'Petrify', line: 'Gems on your half turn to junk',
     fire: (s, M) => { const b = s.board, cells = gemsOf(s), at = [];
       for (let i = 0; i < M.n && cells.length; i++) { const [x, y] = cells.splice(s.r.int(cells.length), 1)[0], was = b.at(x, y), p = piece('junk'); b.set(x, y, p); at.push({ at: [x, y], from: was.id, id: p.id, colour: was.colour }); }

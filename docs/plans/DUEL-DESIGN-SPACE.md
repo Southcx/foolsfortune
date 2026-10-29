@@ -22,7 +22,7 @@ retrodden or forgotten." One row per space: the idea, where it came from, what b
 | Bombs | Puzzle Fighter's crash gems | built (Fury) | PD 6 | Fury's rule |
 | The pincer (junk between your gems turns to gems) | Othello | built (Grief) | PD 6 | Grief's rule |
 | Dread's fog and its lantern; embers that burn three turns | Minesweeper, Puyo's hard garbage | built | f33dd8b8, c47a7960 | Dread's rule |
-| Clue fog (numbers in the fog) | Hexcells, Picross | built | PD 19.3 | the fog read, not guessed |
+| Clue fog (numbers in the fog) | Hexcells, Picross | cut | PD 19.3, 26.5 | never drawn; nothing of yours acts on the foe's half, so reading it changes no choice |
 
 ## The turn and the verbs
 
@@ -84,6 +84,14 @@ retrodden or forgotten." One row per space: the idea, where it came from, what b
 | A secret's progress as a gauge from the start | | cut | ABERRANTS.md 4 | a secret said is not a secret; shown plainly only once found |
 | A palette per ruleset (its feeling and its weakness on its board) | | built | ABERRANTS.md 3.1 | the Wisp's 5 colours held no Dread at all |
 | Your half of the backdrop as your Spirit Garden (season, harmony, decor, spirits) | Jujutsu Kaisen's Domain Expansion, Kingdom Hearts' Station of Awakening | built (the data), the look asked | ABERRANTS.md 7 | South, 2026-10-28; the garden is the world inside your Jar |
+| A duel's power pays its domain's experience | the god hand's own sources | built | PD 26.1 | closes the hand's loop: the duel trains what it uses |
+| A good drag feeds the powers (pool by chain step, rests cut by a chain) | P&D's skill delay reduction | built | PD 26.2 | a chain worth more than its junk |
+| "Your drag barely matters" | | cut (a measuring error) | PD 26.2 | the K stand-ins all searched every swap; with a real skill axis, skill separates sharply |
+| Aberrants and duel powers in the collection log | OSRS's collection log | built | PD 26.3 | a secret's slot named by whose, never what |
+| Unawakened feelings' gems attenuated (dim) | | built (pool only) | PD 26.4 | South's ask; counting in the Line's push too, a new save could not win |
+| Locked feelings' gems hidden | | cut | PD 26.4 | South: attenuate, don't lock |
+| Hurl's junk waiting a turn | Puyo's garbage | cut | PD 26.6 | read as broken; nothing answers it in PvE |
+| Best of three | fighting games | parked | PD 26.7 | too long for a field fight; for Marks and PvP |
 | The garden changing a duel's rules (a spirit's help, harmony as a buff) | Pokemon's partner, Persona's social links | parked | ABERRANTS.md 7 | base change bad; the garden is in flux; no new reasons yet |
 | The secrets of the slip jelly, the clapperjar and Strawman | | parked | ABERRANTS.md 5 | each needs its creature aberrant in the world first |
 
