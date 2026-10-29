@@ -12,7 +12,7 @@
 //   alteration:      sunder a blade | swell a square grown outward | wring a twisted bar | shape ground raised and lowered
 //                    | carve a channel cut across a block | transmute a sand pile into a clay block
 //   spellscription:  ward a ring with a rune in it | stamp a stamp and the print under it
-//   learned:         kindle a block of junk and the flame rising off it (a duel's learned power, not a god art: the same hand)
+//   learned:         kindle a block of junk and the flame rising off it | absorb four blocks drawn into a mouth (a duel's learned power, not a god art: the same hand)
 //
 // Prior art: the domain icons' own set (ui/icons/domainart.js), the school icons of the Elder Scrolls' magic menus (one emblem a spell,
 // read before its word), and the skill glyphs of RuneScape's skill tab.
@@ -24,6 +24,22 @@ import { grid } from './hand.js';
 const has = (list, x, y) => list.some(([a, b]) => a === x && b === y);
 
 export const GOD_ART_ART = {
+  absorb: [ // (a learned power, the slip jelly's: four blocks of junk drawn into a mouth; PUZZLE-DUELS.md 26)
+    '##..........##',
+    '##..........##',
+    '..+........+..',
+    '...+......+...',
+    '....+....+....',
+    '.....----.....',
+    '.....----.....',
+    '.....----.....',
+    '.....----.....',
+    '....+....+....',
+    '...+......+...',
+    '..+........+..',
+    '##..........##',
+    '##..........##',
+  ],
   kindle: [ // (a learned power, the Lantern Wisp's: a block of junk lit, its flame rising; PUZZLE-DUELS.md 26.10)
     '......+.......',
     '.....++.......',

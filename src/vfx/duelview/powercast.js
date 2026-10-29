@@ -12,6 +12,7 @@
 //              `from: 'slime'`: every slime on your half swelling into a gem where it lies)
 //   MIRACLE    the cobalt's rings and the colour's hum on your half (the tune's own: glows.js), held until `tune.end`
 //   KINDLE     (a learned power, the Lantern Wisp's) a flame run down the row or column from where it was cast, each junk lit into an ember
+//   ABSORB     (a learned power, the slip jelly's) the junk of a 3 x 3 drawn into the cell it was cast on, then drunk up to the bulb
 //   DRINK      `drink`: the pool your clears filled, a bead up the link
 // Programs: the bursts' and the words' (bursts.js, juice.js): nothing new.
 // Prior art: Puzzle & Dragons' active skills (the board changed under a flash in the leader's colour), Puzzle Quest's spell casts, Bejeweled's
@@ -25,9 +26,9 @@ import { DUEL_POWERS } from '../../progress/duel/powers.js';
 import { DUEL_VIEW, cellLocal, sm, lerp, clamp01 } from './layout.js';
 import { gemColour } from './pieces.js';
 
-export const POWER_EVENTS = new Set(['power', 'swap', 'manifest', 'scan', 'lift', 'herd', 'transmute', 'transmute.end', 'miracle', 'drink', 'kindle']);
+export const POWER_EVENTS = new Set(['power', 'swap', 'manifest', 'scan', 'lift', 'herd', 'transmute', 'transmute.end', 'miracle', 'drink', 'kindle', 'absorb']);
 /** The beats' lengths (real s) and the cast's stagger between pieces. */
-export const POWER_CAST = { ring: 0.32, slide: 0.42, per: 0.02, grow: 0.36, spiral: 0.4, miracle: 0.6, arc: 1.1, kindle: { fly: 0.32, per: 0.06 } };
+export const POWER_CAST = { ring: 0.32, slide: 0.42, per: 0.02, grow: 0.36, spiral: 0.4, miracle: 0.6, arc: 1.1, kindle: { fly: 0.32, per: 0.06 }, absorb: { pull: 0.38, per: 0.03 } };
 const EMBER = 0xff6a2a;
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Color();
 const domainHex = (d) => parseInt((DOMAIN_LOOK[d]?.colours?.accent || DOMAIN_LOOK[d]?.iconHex || '#ffd36a').slice(1), 16);
@@ -89,6 +90,15 @@ export function powerBeat(T, e) {
     for (const q of items) V.foeCast.fling(from, cellLocal(q.c.at[0], q.c.at[1], B, new THREE.Vector3()), EMBER, { delay: q.d, life: K.fly, size: 0.026, arc: 0.25 });
     return { events: [e], dur: K.fly + Math.max(0, ...items.map((q) => q.d)) + DUEL_VIEW.ma, step: (u, age) => { for (const q of items) if (!q.done && age >= q.d + K.fly) light(q); },
       end: () => { for (const q of items) if (!q.done) light(q); } };
+  }
+  if (e.type === 'absorb') { // (a learned power, the slip jelly's: each junk in the 3 x 3 drawn into the cell it was cast on, then up to the bulb)
+    const A = POWER_CAST.absorb, mid = cellLocal(...(e.at || e.cells?.[0]?.at || [0, 0]), B, new THREE.Vector3()), tube = V.tubeAt?.(new THREE.Vector3());
+    const items = (e.cells || []).map((c, i) => ({ c, v: P.byId(c.id) || P.at(c.at[0], c.at[1]), d: i * A.per, x0: c.at[0], y0: c.at[1] }));
+    const ax = e.at?.[0] ?? items[0]?.x0 ?? 0, ay = e.at?.[1] ?? items[0]?.y0 ?? 0; let sent = false;
+    return { events: [e], dur: A.pull + items.length * A.per + DUEL_VIEW.ma, step: (u, age) => { for (const q of items) { if (!q.v) continue; const f = sm(clamp01((age - q.d) / A.pull));
+      q.v.x = lerp(q.x0, ax, f); q.v.y = lerp(q.y0, ay, f); q.v.s = Math.max(0.01, 1 - f); q.v.spin = f * 4; }
+      if (!sent && age >= A.pull) { sent = true; V.bursts.burst(mid, hex, 14, { speed: 0.9, life: 0.4, fall: 0, spread: 0, size: 0.022 }); if (tube) for (let i = 0; i < Math.min(8, items.length * 2); i++) V.foeCast.fling(mid, tube.clone(), 0x9fd8ff, { delay: i * 0.03, life: 0.5, size: 0.016, arc: 0.4 }); V.game.spiritualLink?.bead?.({ amount: e.pool || 3, colour: 0x9fd8ff, rev: true, dur: 0.45 }); } },
+      end: () => { for (const q of items) if (q.v) P.remove(q.v); } };
   }
   if (e.type === 'miracle') {
     const at = cellLocal(...(e.at || [(V.lineCol ?? B.line) / 2, B.h / 2]), B, new THREE.Vector3()), C = domainHex('spellscription'), G = gemColour(e.colour, _c).getHex(); let rang = 0;
