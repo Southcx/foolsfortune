@@ -20,6 +20,359 @@
    "t0": 2.85,
    "t1": 3.85,
    "inplace": "xz"
+  },
+  {
+   "name": "Cmu_FrontKick",
+   "file": "135_04",
+   "t0": 4.3,
+   "t1": 5.55,
+   "faceYaw": 9,
+   "inplace": "none",
+   "reroot": true,
+   "hold": [
+    4.66,
+    0.06
+   ],
+   "exaggerate": [
+    1.2,
+    "^(spine00[1-4]|head|upper_arm.|forearm.|thighL|shinL|footL)$"
+   ],
+   "mask": [
+    "toeL",
+    "toeR"
+   ],
+   "straight": [
+    "shinL",
+    "shinR",
+    "forearmL",
+    "forearmR"
+   ]
+  },
+  {
+   "name": "Cmu_RoundKick",
+   "file": "135_07",
+   "t0": 5.95,
+   "t1": 7.1,
+   "faceYaw": -2,
+   "inplace": "none",
+   "reroot": true,
+   "hold": [
+    6.2,
+    0.05
+   ],
+   "pivot": [
+    6.5,
+    7.05
+   ],
+   "exaggerate": [
+    1.2,
+    "^(spine00[1-4]|head|upper_arm.|forearm.|thighR|shinR|footR)$"
+   ],
+   "mask": [
+    "toeL",
+    "toeR"
+   ],
+   "straight": [
+    "shinL",
+    "shinR",
+    "forearmL",
+    "forearmR"
+   ]
+  },
+  {
+   "name": "Cmu_SideKick",
+   "file": "135_11",
+   "t0": 4.62,
+   "t1": 5.75,
+   "faceYaw": 8,
+   "inplace": "none",
+   "reroot": true,
+   "hold": [
+    4.86,
+    0.05
+   ],
+   "exaggerate": [
+    1.2,
+    "^(spine00[1-4]|head|upper_arm.|forearm.|thighR|shinR|footR)$"
+   ],
+   "mask": [
+    "toeL",
+    "toeR"
+   ],
+   "straight": [
+    "shinL",
+    "shinR",
+    "forearmL",
+    "forearmR"
+   ]
+  },
+  {
+   "name": "Cmu_KneeStrike",
+   "file": "86_06",
+   "t0": 28.75,
+   "t1": 29.8,
+   "faceYaw": 93,
+   "inplace": "xz",
+   "reroot": true,
+   "hold": [
+    29.05,
+    0.05
+   ],
+   "exaggerate": [
+    1.25,
+    "^(spine00[1-4]|head|upper_arm.|forearm.|thighR|shinR|footR)$"
+   ],
+   "mask": [
+    "toeL",
+    "toeR"
+   ],
+   "straight": [
+    "shinL",
+    "shinR",
+    "forearmL",
+    "forearmR"
+   ]
+  },
+  {
+   "name": "Cmu_LowKick",
+   "file": "74_03",
+   "t0": 1.25,
+   "t1": 2.55,
+   "faceYaw": 168,
+   "inplace": "xz",
+   "reroot": true,
+   "exaggerate": [
+    1.15,
+    "^(spine00[1-4]|head|upper_arm.|forearm.|thighR|shinR|footR)$"
+   ],
+   "mask": [
+    "toeL",
+    "toeR"
+   ],
+   "despike": [
+    "footR",
+    "handL",
+    "upper_armL",
+    "forearmL"
+   ],
+   "straight": [
+    "shinL",
+    "shinR",
+    "forearmL",
+    "forearmR"
+   ]
+  },
+  {
+   "name": "Cmu_StraightPunch",
+   "file": "135_09",
+   "t0": 3.9,
+   "t1": 5.05,
+   "faceYaw": 15,
+   "inplace": "none",
+   "reroot": true,
+   "hold": [
+    4.2,
+    0.05
+   ],
+   "exaggerate": [
+    1.2,
+    "^(spine00[1-4]|head|upper_arm.|forearm.|hand.)$"
+   ],
+   "fist": "L",
+   "mask": [
+    "toeL",
+    "toeR"
+   ],
+   "despike": [
+    "handL"
+   ],
+   "straight": [
+    "shinL",
+    "shinR",
+    "forearmL",
+    "forearmR"
+   ]
+  },
+  {
+   "name": "Cmu_Hook",
+   "file": "14_01",
+   "t0": 23.9,
+   "t1": 24.75,
+   "faceYaw": 10,
+   "inplace": "xz",
+   "reroot": true,
+   "exaggerate": [
+    1.25,
+    "^(spine00[1-4]|head|upper_arm.|forearm.|hand.)$"
+   ],
+   "fist": "L",
+   "mask": [
+    "toeL",
+    "toeR"
+   ],
+   "straight": [
+    "shinL",
+    "shinR",
+    "forearmL",
+    "forearmR"
+   ]
+  },
+  {
+   "name": "Cmu_FlyingKick",
+   "file": "75_16",
+   "t0": 1,
+   "t1": 2.82,
+   "faceYaw": 0,
+   "inplace": "none",
+   "reroot": true,
+   "pivot": [
+    2.1,
+    2.7
+   ],
+   "exaggerate": [
+    1.15,
+    "^(spine00[1-4]|head|upper_arm.|forearm.|thighR|shinR|footR)$"
+   ],
+   "mask": [
+    "toeL",
+    "toeR"
+   ],
+   "straight": [
+    "shinL",
+    "shinR",
+    "forearmL",
+    "forearmR"
+   ]
+  },
+  {
+   "name": "Cmu_TornadoKick",
+   "file": "88_06",
+   "t0": 0.05,
+   "t1": 1.8,
+   "faceYaw": -13,
+   "inplace": "none",
+   "reroot": true,
+   "pivot": [
+    0.9,
+    1.6
+   ],
+   "mask": [
+    "toeL",
+    "toeR"
+   ],
+   "despike": [
+    "spine002",
+    "spine003",
+    "spine004",
+    "head"
+   ],
+   "straight": [
+    "shinL",
+    "shinR",
+    "forearmL",
+    "forearmR"
+   ]
+  },
+  {
+   "name": "Cmu_SpinHeelKick",
+   "file": "90_05",
+   "t0": 1.35,
+   "t1": 3.2,
+   "faceYaw": 6,
+   "inplace": "none",
+   "reroot": true,
+   "pivot": [
+    2.6,
+    3.1
+   ],
+   "mask": [
+    "toeL",
+    "toeR"
+   ],
+   "straight": [
+    "shinL",
+    "shinR",
+    "forearmL",
+    "forearmR"
+   ]
+  },
+  {
+   "name": "Cmu_RisingKick",
+   "file": "135_04",
+   "t0": 6.2,
+   "t1": 7.4,
+   "faceYaw": -13,
+   "inplace": "none",
+   "reroot": true,
+   "hold": [
+    6.56,
+    0.06
+   ],
+   "exaggerate": [
+    1.2,
+    "^(spine00[1-4]|head|upper_arm.|forearm.|thighR|shinR|footR)$"
+   ],
+   "mask": [
+    "toeL",
+    "toeR"
+   ],
+   "straight": [
+    "shinL",
+    "shinR",
+    "forearmL",
+    "forearmR"
+   ]
+  },
+  {
+   "name": "Cmu_Flurry",
+   "file": "14_01",
+   "t0": 24.85,
+   "t1": 26.1,
+   "faceYaw": 10,
+   "inplace": "xz",
+   "reroot": true,
+   "exaggerate": [
+    1.2,
+    "^(spine00[1-4]|head|upper_arm.|forearm.|hand.)$"
+   ],
+   "fist": "L",
+   "mask": [
+    "toeL",
+    "toeR"
+   ],
+   "straight": [
+    "shinL",
+    "shinR",
+    "forearmL",
+    "forearmR"
+   ]
+  },
+  {
+   "name": "Cmu_BreakKick",
+   "file": "135_11",
+   "t0": 6.92,
+   "t1": 8.05,
+   "faceYaw": 6,
+   "inplace": "none",
+   "reroot": true,
+   "hold": [
+    7.16,
+    0.06
+   ],
+   "exaggerate": [
+    1.2,
+    "^(spine00[1-4]|head|upper_arm.|forearm.|thighR|shinR|footR)$"
+   ],
+   "mask": [
+    "toeL",
+    "toeR"
+   ],
+   "straight": [
+    "shinL",
+    "shinR",
+    "forearmL",
+    "forearmR"
+   ]
   }
  ]
 }

@@ -34,7 +34,7 @@ import { vfxTexture } from '../vfx.js';
 import { addOutline } from '../../render/outline.js';
 import { keepTrue } from '../stormwarp.js';
 import { causticsOn } from '../umbral.js';
-import { CradleLook, cradleFoot } from '../cradlelook.js';
+import { CradleLook, cradleFoot, cradleNumber } from '../cradlelook.js';
 import { GunPorts } from './gunports.js';
 import { ShipPartLooks } from './partlooks.js';
 
@@ -67,7 +67,7 @@ export class ShipLook {
       if (this.rig.vaneMesh) { this.body.add(this.rig.vaneMesh); track(this.rig.vaneMesh.geometry); }
     } else this.rig = null;
     // the helm: the cradle (the galleon's two) sat in its core, sealed into at the pier (HANKO.md 4)
-    this.helmCradles = (spec.helm || []).map(([x, y, z]) => { const c = new CradleLook(); c.group.position.set(x, y, z); this.body.add(c.group); return c; });
+    this.helmCradles = (spec.helm || []).map(([x, y, z], k) => { const c = new CradleLook({ number: cradleNumber('helm', spec.id, k) }); c.group.position.set(x, y, z); this.body.add(c.group); return c; });
     this.helmCradle = this.helmCradles[0];
     // the engines' glow: discs facing aft (the class's own colour; `mouth` for the API's old name), the keel's light under it all
     this.mouth = track(new THREE.MeshBasicMaterial({ color: spec.engineGlow ?? 0xcfe8ff, transparent: true, opacity: 0.85, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide, forceSinglePass: true }));

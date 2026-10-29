@@ -8,7 +8,7 @@
 //   TWINS of the cards, dice faces and tiles, drawn smaller and sunk into the felt for what may not be touched. Words are the DOM's.)
 //   - THE HOUSE DECK: the 78 cards of a Tarot, drawn in a 64 x 104 frame and fired at 2x (the title's falling cards' size and back: title/scene.js, its moons and
 //     stars in plum and cream, repainted here with the labradorite's schiller in the great moon). The 22 Major Arcana on a plum field,
-//     each its numeral (0 to XXI) and a picture of its reading drawn plain (the Fool at the cliff, the Tower struck, the Star over the
+//     each its numeral (0 to XXI), its second index at the foot (its number in neuralese on its bus, vfx/wornnumerals.js: South via Espada, 2026-10-29) and a picture of its reading drawn plain (the Fool at the cliff, the Tower struck, the Star over the
 //     pool); the 56 Minor on cream, pips of their suit (cups, swords, pentacles, wands) in the playing-card layouts, the courts a figure
 //     under its headgear, an index in two corners: big, the suit's symbol under it and its playing-card pip (hearts for cups, spades for
 //     swords, diamonds for pentacles, clubs for wands) beside the symbol; each suit in its own colour (cups blue, swords green, pentacles
@@ -40,7 +40,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { bakedCanvasTexture } from '../render/bakedcanvas.js';
-import { runningHand } from '../ui/runninghand.js';
+import { numeralFit } from './wornnumerals.js';
 import { schillerInk } from './oxidation.js';
 import { SUIT_COLOURS } from '../progress/casino/table.js';
 import { drawHouseBack, drawArcanaBack } from './cardbacks.js';
@@ -238,7 +238,7 @@ function major(g, i) {
   box(g, 0, 0, 64, 104, K.cream); box(g, 2, 2, 60, 100, K.goldDeep); box(g, 3, 3, 58, 98, K.plum);
   box(g, 6, 15, 52, 76, K.deep); // (the picture's window)
   text(g, ROMAN[i], 32, 9, i > 17 ? 10 : 12, K.gold);
-  box(g, 22, 95, 20, 2, K.gold); circ(g, 32, 96, 2, K.gold);
+  numeralFit(g, i, { x: 32, y: 96.5, w: 40, h: 8.5, ink: K.gold, lw: 1.1 }); // (the second index: its number in neuralese at the foot, where a bar and a dot stood)
   g.save(); g.beginPath(); g.rect(6, 15, 52, 76); g.clip(); PICTURES[i](g); g.restore();
 }
 const G = K.gold, C = K.cream, D = K.deep, P = K.plum;
@@ -329,10 +329,7 @@ function dieCell(g, c, sides, f, skin, A = AT.die) {
   g.restore();
 }
 /** A neuralese numeral (Espada's, NEURALESE.md 2b: a digit's sum hung on its pin from the bus) centred on (cx, cy), fitted to w x h. */
-function numeralAt(g, n, cx, cy, w, h, ink) {
-  const m = runningHand(null, [{ num: n }], { scale: 1 }), mw = Math.max(1, m.x1 - m.x0), mh = Math.max(1, m.y1 - m.y0), k = Math.min(w / mw, h / mh, 3.2);
-  runningHand(g, [{ num: n }], { x: cx - (m.x0 + mw / 2) * k, y: cy - (m.y0 + mh / 2) * k, scale: k, ink, lw: Math.max(1.1, k * 0.75) });
-}
+const numeralAt = (g, n, cx, cy, w, h, ink) => numeralFit(g, n, { x: cx, y: cy, w, h, ink, even: false });
 /** The spent die: grey clay crazed, a dark crack across, no numeral (every face of it the same cell). */
 function ashCell(g, c) {
   const S = 32, x0 = AT.die.x + (c % AT.die.cols) * AT.die.s, y0 = AT.die.y + Math.floor(c / AT.die.cols) * AT.die.s;
