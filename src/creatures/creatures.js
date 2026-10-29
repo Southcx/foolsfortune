@@ -100,6 +100,8 @@ export class Creatures {
     // progress/stones.js; and another Courier struck, friendly fire at a fifth, progress/combat/friendly.js)
     let dmgK = by === 'courier' && g.courierMind ? courierMindEffect(g.courierMind.mind).power : 1;
     if (c.friend) dmgK = friendlyDamage(dmgK); // (a fifth; and the cap below: no blow from an ally past a quarter of its health)
+    const art = by === 'courier' ? g.classArtsRun?.onStrike?.(c, m) : null; // (a class's art: Momentum's one blow, Edge on a weak point: courier/classarts/body.js)
+    if (art) { dmgK *= art.dmg; buildK *= art.build; }
     const annihilates = (type === 'impact' && st(c, TYPES.delirium.builds)) || (type === 'delirium' && st(c, TYPES.impact.builds));
     let dmg = power * dmgK * m.dmg * (st(c, 'soft') ? 2 : 1);
     if (c.friend) dmg = Math.min(dmg, (c.maxHp ?? Infinity) * FRIENDLY.cap); // (FRIENDLY.cap of its full health at most: Dovina's)

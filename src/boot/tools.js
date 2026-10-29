@@ -8,6 +8,8 @@
 //
 //   bootTools(game, made) -> { system, weapon, techs }
 // ---------------------------------------------------------------------------------------
+import { ClassArtsBody } from '../courier/classarts/body.js';
+import { WaterWalk } from '../courier/classarts/waterwalk.js';
 import { DeathTech } from '../courier/vessel/death.js';
 import { UltTech } from '../tools/lockheart/ultimate.js';
 import { Weapon } from '../tools/psygun/weapon.js';
@@ -85,7 +87,7 @@ export function bootTools(game, made) {
   game.weapon = weapon;
   // movement techs (priority order: the first that wants the step gets it)
   const techs = new Techs(player, game);
-  for (const T0 of [DeathTech, UltTech, Skim, Swim, Ladder, Pole, Grate, Hang, Latch, ChestTech, Talk, RhythmHold, Kiln, Emote, Push, SlipDive, Roll, Slam, Blink, Hover, Rocket, Stomp, Balance, Carry, Kick, Recoil, Skiffing, Grapple, Launch, Sondelass, SoulBrush, Veritome, Dreamvane, Crucibelle, Lockheart]) techs.add(new T0(techs));
+  for (const T0 of [DeathTech, UltTech, Skim, WaterWalk, Swim, Ladder, Pole, Grate, Hang, Latch, ChestTech, Talk, RhythmHold, Kiln, Emote, Push, SlipDive, Roll, Slam, Blink, Hover, Rocket, Stomp, Balance, Carry, Kick, Recoil, Skiffing, Grapple, Launch, Sondelass, SoulBrush, Veritome, Dreamvane, Crucibelle, Lockheart]) techs.add(new T0(techs));
   env.lobbers.game = game;
   // the psychic tools: one in the hands at a time, and one set of rules for what that means (tools/belt.js)
   game.belt = new ToolBelt(game);
@@ -96,6 +98,7 @@ export function bootTools(game, made) {
   game.belt.add(heldTool(techs.get('dreamvane'), 'THE DREAMVANE', 'back'));
   game.belt.add(heldTool(techs.get('crucibelle'), 'THE CRUCIBELLE', 'hip'));
   game.belt.add(heldTool(techs.get('lockheart'), 'THE LOCKHEART', 'neck'));
+  game.classArtsRun = techs.add(new ClassArtsBody(techs)); // (a class's worn action on G and its reaction: courier/classarts/body.js, CLASS-ARTS.md)
   game.proneHolster = techs.add(new ProneHolster(techs)); // (lying down: every tool put away, none drawn, the one in the hands back out once up: tools/proneholster.js)
   player.techs = techs;
   game.techs = techs;
