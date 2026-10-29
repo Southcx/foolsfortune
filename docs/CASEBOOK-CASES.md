@@ -4369,3 +4369,10 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   still read "Gall and Fury known".
 - **Fix:** the session passes no dim gems while Feelings is lent; the lend's line reads "Every feeling known". Headless: DEBUG duel, `dim` empty.
 - **Rule:** NEW:a-new-gate-asks-the-lend
+
+### 2026-10-29 · The Raceway's trap placeholders stood on the mirrored side (Calissa's builder, dressing the traps)
+- **Seen:** the rising pillars' placeholder raised lane 0 on the side where lane 2 hits; the Wisp turret's lamp stood across the track from where its ball flies.
+- **Cause (as read):** `frameAt` lays a point at lateral `lat` and the placed root's local x runs as `-lat` (the sinkhole already used
+  `-lat`), but the pillars and the turret laid their local x as `+lat`. The rules (`lane`, `cast` at lat -(W + 4)) were right; only the looks were mirrored.
+- **Fix:** the pillars at local x `W - 2W(l + 0.5)/3` and the turret's post and lamp at local x `W + 4` (`world/raceway/traps.js place`). The lamp's parry home now meets where the ball came from.
+- **Rule:** NEW:a-look-reads-its-rule-frame

@@ -7,7 +7,7 @@ The rules they keep are in DESIGN.md section 22 and the header of `domains.js`.
 ## 1. What was unwired (measured on v344 + this branch)
 
 Every source in `SOURCES` was checked against the code for an emitter. Every god power, tool, rail and duel source fires. **One source
-had no emitter:** `angle.release` (the lift's let-go, Calissa's to emit: asked 2026-10-29). Since 2026-10-29 the landing itself pays
+had no emitter on main:** `angle.release` (the lift's let-go; Calissa emits it on her branch, 2026-10-29). Since 2026-10-29 the landing itself pays
 Possession (`angle.catch`), so fishing trains Possession today whichever way the lift ends.
 
 The gaps were whole **modes**, not single sources:
@@ -96,5 +96,4 @@ base, so adding sources moved each scale a little. Divination's ordinary sources
 ## 4. Asks
 
 - **Petra:** `fresh` on `track.validate` (true when the geometry's hash has never been validated before).
-- **Calissa:** `angle.release` from the lift's let-go (asked earlier; its source now pays half again on top of the landing).
 - **Espada:** none. These are rules; the log says nothing new (a level is said by `psyche`'s own rule).
