@@ -30,7 +30,7 @@ import { sm, clamp01 } from './layout.js';
 /** foeScale, jarScale: the fighters' sizes in a PvE duel; vs: its open's beats (real s from the open) and its length; lunge and flinch
  *  (real s and m); cine: the cutaways' lengths (real s); victory: the hero shot's length; confetti: its bits. */
 export const SHOW = {
-  foeScale: 1.2, jarScale: 1.15, margin: 0.7, front: 1,
+  foeScale: 1.2, jarScale: 1.15, margin: 1.1, front: 1,
   vs: { foe: 0.15, jar: 0.75, stamp: 1.05, pull: 1.55, dur: 2.5 },
   lunge: { out: 0.1, back: 0.34, amp: 0.42 }, flinch: { dur: 0.5, amp: 0.38 }, knock: { dur: 0.8, amp: 0.8 },
   cine: { hit: 0.95, big: 2 }, victory: 1.15, confetti: 46,
