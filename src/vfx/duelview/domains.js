@@ -9,6 +9,12 @@
 //                   Fury's cracks of light under the hail, Gall's curds, Grief's long rain, Dread's marbling
 //   THE SEAM        where they meet, on the Line's plane: crackling light (ridged noise) that slides with the Line, and pushes (a ripple
 //                   into the half that gave ground, the seam widened and brightened) on every `line`
+//   YOUR GARDEN     your half as your Spirit Garden once it is more than bare (South, 2026-10-28: "the Courier/pneuka jar's Zone of
+//                   Influence should be a representation of their Spirit Garden"; `setGarden`, gardenground.js): its sky by the season and
+//                   the hour, its planetoids round the horizon, a meadow in flower or in briar, your spirits as lights; the film faint in it
+//   AN ABERRANT'S OWN GROUND  in place of its feeling's on its side, by `setStyle(id, dark)`: 1 the Lantern Wisp's fens at night (black
+//                   water under fog, reeds against the sky, the lantern the one warm light on it and in the water), the dark closing in
+//                   as its secret goes (duelview/aberrants/wisp.js)
 // It collapses on close. The board's slab (vfx/duelview/board.js) is drawn by the same program in its other mode, split on the same
 // plane, so the Line's seam on the slab and the clash's seam are one cut.
 //
@@ -25,7 +31,7 @@
 // foot in the same program (mode 2), each half's ground laid flat under its owner, a pool of its own light under each body, its rim faded.
 //   const D = new DomainClash()   D.dome (the sphere's mesh)   D.ground (the disc's)   D.groundTo(radius)   D.slabMaterial(gravityTexture, w, h) -> the slab's material
 //   (the slab's fog: a texture of the cells, r hidden, g the lantern's light: Dread's, vfx/duelview/board.js setFog)
-//   D.setFoe(aspect)   D.setPlane(pointWorld, normalWorld, centreWorld)   D.setLine(column)   D.setMeter(push, landed, n, on)   D.flash(side)   D.won(k)
+//   D.setFoe(aspect)   D.setPlane(pointWorld, normalWorld, centreWorld)   D.setLine(column)   D.setMeter(push, landed, n, on)   D.setStyle(id, dark)   D.setGarden(mood | null, spiritColours)   D.flash(side)   D.won(k)
 //   D.unfold(originCourier, originFoe)   D.push(receiverSide)   D.collapse(slower = 1)   D.update(dt) -> still showing?   D.open (0..1 each side)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -42,7 +48,7 @@ void main() {
 }`;
 
 const F = /* glsl */`
-uniform float uMode, uT, uRadius, uPush, uPushSide, uWon, uMotif, uLine, uFade; uniform vec4 uMeter;
+uniform float uMode, uT, uRadius, uPush, uPushSide, uWon, uMotif, uLine, uFade; uniform vec4 uMeter; uniform vec2 uStyle; uniform vec4 uGarden; uniform vec3 uGSky, uGZen, uGGnd, uGGrass, uGBloom, uGSp0, uGSp1, uGSp2, uGSp3;
 uniform vec3 uPlaneP, uPlaneN, uCentre, uOriginC, uOriginF, uFoe, uFoeDeep, uHaze;
 uniform vec2 uOpen, uFlash, uGrid;
 uniform sampler2D uGrav, uFog;
@@ -93,10 +99,60 @@ vec3 foeLook(vec2 q, float t, float m) {
   return vec3((1.0 - smoothstep(0.0, 0.07, c)) * 0.55, 0.55, 0.0);
 }
 vec3 srgb(vec3 c) { return pow(c, vec3(2.2)); }
+// an aberrant's own ground (uStyle.x): 1 the Lantern Wisp's fens at night: black water under fog, reeds against the sky, the lantern the
+// one warm light on it and in the water; the dark closes in on it as its fuel goes (uStyle.y, the secret's k: aberrants/wisp.js)
+vec3 fens(vec3 dir, vec2 q, float t, float fl, float dark) {
+  vec3 lamp = srgb(vec3(1.0, 0.62, 0.26)) * 0.45 * (1.0 - 0.9 * dark), fogC = srgb(vec3(0.16, 0.22, 0.19)) * (1.0 - 0.7 * dark); // (linear and held low: the one warm light, never a wash under the glow)
+  vec2 hz = normalize(dir.xz + 1e-4), ld = normalize((uOriginF - uCentre).xz + 1e-4); float yaw = 1.0 - dot(hz, ld); // (how far round from the lantern)
+  if (fl > 0.5) { // the ground: black water, rings spreading off the lantern's foot, its warm pool shrinking with the dark
+    float r = length(vW.xz - uOriginF.xz), ring = max(0.0, sin(r * 5.0 - t * 1.6)) * exp(-r * 0.35);
+    float pool = exp(-pow(r / mix(1.3, 0.4, dark), 2.0)), sheen = fbm(q * 2.2 + vec2(t * 0.05, 0.0));
+    return vec3(0.008, 0.016, 0.02) + lamp * (pool * 0.6 + ring * 0.12 * pool) + fogC * (0.25 + 0.3 * sheen) * (0.5 + dark);
+  }
+  float y = dir.y, above = step(0.0, y);
+  vec3 sky = mix(vec3(0.012, 0.03, 0.035), vec3(0.003, 0.006, 0.01), smoothstep(0.0, 0.7, y));
+  float bank = fbm(vec2(q.x * 0.35 + t * 0.015, y * 4.0)) * (1.0 - smoothstep(0.0, mix(0.35, 0.6, dark), abs(y)));
+  float rx = q.x * 7.0, rh = h21(vec2(floor(rx), 5.0)) * (0.05 + 0.09 * h21(vec2(floor(rx), 9.0)));
+  float reed = (1.0 - smoothstep(0.02, 0.07, abs(fract(rx) - 0.5) * (1.0 + 2.0 * y / max(rh, 0.01)))) * step(0.0, y) * step(y, rh) * step(0.55, h21(vec2(floor(rx), 2.0)));
+  vec3 water = vec3(0.004, 0.01, 0.014) + fogC * 0.3 * fbm(q * vec2(0.6, 3.0) + vec2(0.0, t * 0.06));
+  float glow = exp(-yaw * 60.0) * exp(-abs(y) * 8.0), refl = exp(-yaw * 160.0) * (1.0 - above) * (0.6 + 0.4 * sin(y * 90.0 + t * 3.0)) * exp(y * 10.0); // (a narrow column of light on the black water, under the lantern only)
+  vec3 col = mix(water, sky, above) + fogC * bank * (0.9 + 0.8 * dark) + lamp * (glow * 0.22 + refl * 0.18); // (the camera looks down the lantern's bearing: kept faint, or the bloom washes the side)
+  return mix(col, vec3(0.0), reed * 0.9);
+}
+// your half as your Spirit Garden (uGarden: on, bloom, briar, daylight; the garden's mood's colours, aberrants and gardenground.js): its sky
+// by the season and the hour, its planetoids floating round the horizon, a meadow (flowers by its bloom, thorns by its briar), your bound
+// spirits as lights drifting over it (up to four), fireflies after dark; the film still running faintly through it (it is your mind)
+vec3 spiritAt(vec2 q, float t, vec3 c, float i) { if (dot(c, c) < 1e-4) return vec3(0.0);
+  vec2 p = vec2(-9.0 + i * 3.4 + sin(t * 0.3 + i) * 0.8, 1.2 + 0.5 * sin(t * 0.5 + i * 2.0)); float d = length((q - p) * vec2(1.0, 1.4));
+  return c * (exp(-d * d * 6.0) * 1.6 + exp(-d * 2.2) * 0.25); }
+vec3 garden(vec3 dir, vec2 q, float t, float fl) {
+  float bloom = uGarden.y, briar = uGarden.z, day = uGarden.w;
+  if (fl > 0.5) { // the ground: the meadow under the Jar, flowers by the bloom, thorn canes by the briar
+    float g = fbm(q * 1.3), clump = smoothstep(0.35, 0.75, fbm(q * 0.6 + 3.1));
+    vec3 col = mix(uGGnd, uGGrass, 0.55 + 0.35 * g) * (0.35 + 0.65 * day);
+    vec2 fc = fract(q * 3.0) - 0.5; float fh = h21(floor(q * 3.0)), flower = step(1.0 - 0.35 * bloom, fh) * (1.0 - smoothstep(0.08, 0.16, length(fc)));
+    col = mix(col, uGBloom * (0.6 + 0.4 * day), flower * clump);
+    float cane = 1.0 - smoothstep(0.0, 0.06, abs(sin(q.x * 2.3 + fbm(q * 0.8) * 6.0) * cos(q.y * 1.7)));
+    return mix(col, vec3(0.13, 0.09, 0.05) * (0.5 + 0.5 * day), cane * briar * 0.85);
+  }
+  float y = dir.y;
+  vec3 sky = mix(uGGnd, uGSky, smoothstep(-0.15, 0.08, y)); sky = mix(sky, uGZen, smoothstep(0.1, 0.8, y));
+  float cell = floor((q.x + 1.5) / 3.0), cx = (cell * 3.0) - 1.5 + 1.5, ph = h21(vec2(cell, 4.0));
+  vec2 pc = vec2(cx + (ph - 0.5) * 0.8, 1.0 + ph * 1.6 + 0.12 * sin(t * 0.4 + ph * 9.0)); float r = 0.35 + 0.45 * h21(vec2(cell, 8.0));
+  vec2 dq = (q - pc) / r; float disk = 1.0 - smoothstep(0.92, 1.0, length(dq));
+  vec3 planet = mix(uGGnd * 0.7, uGGrass * (0.5 + 0.6 * day), smoothstep(-0.2, 0.5, dq.y)) + uGSky * 0.35 * smoothstep(0.6, 1.0, length(dq)) * step(0.0, dq.y);
+  float near = step(0.55, h21(vec2(cell, 13.0))); // (not every slot of the ring has one)
+  vec3 col = mix(sky, planet, disk * near);
+  col += (spiritAt(q, t, uGSp0, 0.0) + spiritAt(q, t, uGSp1, 1.0) + spiritAt(q, t, uGSp2, 2.0) + spiritAt(q, t, uGSp3, 3.0)) * smoothstep(-0.1, 0.1, y);
+  float fh = h21(floor(q * 4.0)), fly = step(0.985, fh) * (1.0 - smoothstep(0.03, 0.09, length(fract(q * 4.0) - 0.5))) * (0.5 + 0.5 * sin(t * 2.0 + fh * 50.0));
+  col += vec3(1.0, 0.9, 0.5) * fly * (1.0 - day) * (1.0 - briar) * 1.5;
+  col = mix(col, col * vec3(0.7, 0.72, 0.62), briar * 0.5);
+  return col;
+}
 void main() {
   float sd = dot(vW - uPlaneP, uPlaneN); // (the Line's plane: below nought the Courier's ground, above it the foe's)
   float t = uT;
-  if (uMode > 0.5) { // ---- the slab: the board's face (its ruleset's w x h cells, uGrid), split at the Line
+  if (uMode > 0.5 && uMode < 1.5) { // ---- the slab: the board's face (its ruleset's w x h cells, uGrid), split at the Line
     vec2 c = vec2(vUv.x * uGrid.x, (1.0 - vUv.y) * uGrid.y);
     float fwx = max(fwidth(c.x), 1e-4), k = smoothstep(-fwx, fwx, c.x - uLine), yy = c.y / uGrid.y;
     float ph = labPhase(vW * 0.6, vView);
@@ -150,10 +206,12 @@ void main() {
   vec3 cour = mix(srgb(vec3(0.18, 0.10, 0.32)) * (0.45 + 0.4 * dir.y), labSoft(ph + q.y * 0.05) * 0.9, band * 0.55 + 0.06);
   float mh = h21(floor(q * 3.0)), mote = step(0.982, mh) * (1.0 - smoothstep(0.05, 0.16, length(fract(q * 3.0) - 0.5))) * (0.6 + 0.4 * sin(t * 1.2 + mh * 40.0));
   cour += labSoft(mh) * mote * 1.4;
+  if (uGarden.x > 0.5) cour = garden(normalize(vW - uCentre), q, t, fl) + labSoft(ph + q.y * 0.05) * band * 0.12; // (your Spirit Garden, the film faint through it)
   // the foe's: its feeling fired dark, its heavy look's haze low down, its pattern over it
   vec3 L = foeLook(q, t, uMotif);
   vec3 foe = mix(uHaze, uFoeDeep, smoothstep(-0.1, 0.5, dir.y));
   foe = foe * (1.0 - L.y * 0.55) + uFoe * L.x * 1.5 + vec3(0.95, 0.97, 1.0) * L.z;
+  if (uStyle.x > 0.5) foe = fens(normalize(vW - uCentre), q, t, fl, uStyle.y); // (an aberrant's own ground in place of its feeling's)
   vec3 col = mix(cour, foe, k);
   // the seam: crackling light on the Line's plane, pushed on a line
   vec3 along = normalize(cross(uPlaneN, vec3(0.0, 1.0, 0.0)));
@@ -168,10 +226,11 @@ void main() {
   float inC = 1.0 - smoothstep(covC - 2.0, covC, rC), inF = 1.0 - smoothstep(covF - 2.0, covF, rF);
   float rim = mix(exp(-abs(rC - covC) * 1.2) * step(0.001, uOpen.x) * (1.0 - step(0.999, uOpen.x)), exp(-abs(rF - covF) * 1.2) * step(0.001, uOpen.y) * (1.0 - step(0.999, uOpen.y)), k);
   col += mix(labSoft(ph) * 1.4, uFoe * 2.0, k) * rim;
-  float a = mix(inC, inF, k) * mix(0.62, 0.95, smoothstep(0.0, 0.35, dir.y)) * uFade;
+  float own = mix(step(0.5, uGarden.x), step(0.5, uStyle.x), k); // (a side drawn as its own world, the fens or your garden: opaque, so nothing of the instance's floor shows through it)
+  float a = mix(inC, inF, k) * mix(mix(0.62, 0.95, smoothstep(0.0, 0.35, dir.y)), 1.0, own) * uFade;
   if (fl > 0.5) { // the ground: a pool of each side's own light under its body, the disc fading out at its rim
     float pC = exp(-pow(length(vW.xz - uOriginC.xz) / 1.5, 2.0)), pF = exp(-pow(length(vW.xz - uOriginF.xz) / 1.5, 2.0));
-    col += labSoft(ph) * pC * 0.9 * uOpen.x + uFoe * pF * 1.3 * uOpen.y;
+    col += labSoft(ph) * pC * 0.9 * uOpen.x + uFoe * pF * 1.3 * uOpen.y * (1.0 - step(0.5, uStyle.x)); // (the fens light their own pool)
     a = clamp(a * 0.85 + (pC * uOpen.x + pF * uOpen.y) * 0.35, 0.0, 1.0) * (1.0 - smoothstep(0.55, 1.0, length(vUv - 0.5) * 2.0)) * uFade;
   }
   if (a < 0.004) discard;
@@ -192,7 +251,7 @@ export class DomainClash {
     const clear = new THREE.DataTexture(new Uint8Array(4 * 4), 2, 2); clear.needsUpdate = true; // (no fog)
     this.U = {
       uT: { value: 0 }, uMindT: mindTime, uRadius: { value: DUEL_VIEW.radius }, uPush: { value: 0 }, uPushSide: { value: 1 }, uWon: { value: 0 },
-      uMotif: { value: 3 }, uLine: { value: 10 }, uFade: { value: 1 }, uMeter: { value: new THREE.Vector4() },
+      uMotif: { value: 3 }, uLine: { value: 10 }, uFade: { value: 1 }, uMeter: { value: new THREE.Vector4() }, uStyle: { value: new THREE.Vector2() }, uGarden: { value: new THREE.Vector4() }, uGSky: { value: new THREE.Color() }, uGZen: { value: new THREE.Color() }, uGGnd: { value: new THREE.Color() }, uGGrass: { value: new THREE.Color() }, uGBloom: { value: new THREE.Color() }, uGSp0: { value: new THREE.Color(0, 0, 0) }, uGSp1: { value: new THREE.Color(0, 0, 0) }, uGSp2: { value: new THREE.Color(0, 0, 0) }, uGSp3: { value: new THREE.Color(0, 0, 0) },
       uPlaneP: { value: new THREE.Vector3() }, uPlaneN: { value: new THREE.Vector3(1, 0, 0) }, uCentre: { value: new THREE.Vector3() },
       uOriginC: { value: new THREE.Vector3() }, uOriginF: { value: new THREE.Vector3() },
       uFoe: { value: new THREE.Color() }, uFoeDeep: { value: new THREE.Color() }, uHaze: { value: new THREE.Color() },
@@ -225,6 +284,14 @@ export class DomainClash {
   /** The Line's plane in the world (a point on it and its normal toward the foe), and the arena's centre (the board's foot). */
   setPlane(p, n, centre) { this.U.uPlaneP.value.copy(p); this.U.uPlaneN.value.copy(n); if (centre) this.U.uCentre.value.copy(centre); } // (the sphere stands at its parent's origin: the board's foot)
   setLine(col) { this.U.uLine.value = col; }
+  /** Your half as your Spirit Garden (gardenground.js: the garden's mood and its spirits' colours), or off (`m` null: the deep and the film). */
+  setGarden(m, spirits = []) {
+    const U = this.U; if (!m) { U.uGarden.value.set(0, 0, 0, 0); return; }
+    U.uGarden.value.set(1, m.bloom, m.briar, m.day); U.uGSky.value.copy(m.sky); U.uGZen.value.copy(m.zen); U.uGGnd.value.copy(m.gnd); U.uGGrass.value.copy(m.grass); U.uGBloom.value.copy(m.flowers[0] || m.blossom);
+    [U.uGSp0, U.uGSp1, U.uGSp2, U.uGSp3].forEach((u, i) => (spirits[i] ? u.value.copy(spirits[i]) : u.value.setRGB(0, 0, 0)));
+  }
+  /** An aberrant's own ground on its side (0 its feeling's; 1 the Lantern Wisp's fens) and how far its dark has closed in (0..1). */
+  setStyle(id, dark = 0) { this.U.uStyle.value.set(id, dark); }
   /** The PvE duel's push meters on the seam (0..1 each of a column's worth, `n` notches); `on` false hides them. */
   setMeter(push, landed, n, on = true) { this.U.uMeter.value.set(push, landed, n, on ? 1 : 0); }
   /** A half's flash (a break): white, fading over a third of a real second. */

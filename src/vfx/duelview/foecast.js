@@ -48,6 +48,7 @@ function glyph(x, skill) {
   else if (skill === 'petrify') { x.beginPath(); x.moveTo(0, -30); x.lineTo(26, -4); x.lineTo(0, 30); x.lineTo(-26, -4); x.closePath(); x.stroke(); x.lineWidth = 5; x.beginPath(); x.moveTo(-8, -18); x.lineTo(4, -2); x.lineTo(-6, 8); x.lineTo(6, 22); x.stroke(); }
   else if (skill === 'seal') { x.lineWidth = 8; for (const dy of [-16, 14]) { x.beginPath(); x.ellipse(0, dy, 11, 18, 0, 0, Math.PI * 2); x.stroke(); } x.fillRect(-24, -4, 48, 6); }
   else if (skill === 'sap') { x.beginPath(); x.moveTo(0, -30); x.bezierCurveTo(22, -2, 22, 26, 0, 26); x.bezierCurveTo(-22, 26, -22, -2, 0, -30); x.fill(); x.fillStyle = INK; x.fillRect(-10, 6, 20, 6); }
+  else if (skill === 'kindle') { x.beginPath(); x.moveTo(0, -32); x.bezierCurveTo(20, -8, 22, 10, 0, 28); x.bezierCurveTo(-22, 10, -20, -8, 0, -32); x.fill(); x.fillStyle = INK; x.beginPath(); x.moveTo(0, -4); x.bezierCurveTo(9, 6, 9, 16, 0, 20); x.bezierCurveTo(-9, 16, -9, 6, 0, -4); x.fill(); } // (a flame)
   else { x.beginPath(); x.moveTo(26, -22); x.lineTo(-4, 0); x.lineTo(26, 22); x.stroke(); x.beginPath(); x.moveTo(4, -22); x.lineTo(-26, 0); x.lineTo(4, 22); x.stroke(); } // (reclaim: the Line pushed back toward you)
   x.restore();
 }
@@ -111,6 +112,7 @@ export class FoeCast {
       let k = 0; return { events: [e], dur: FOE_CAST.desperate, step: (u) => { while (k < Math.floor(u * 6)) { k++; V.bursts.burst(at, k % 2 ? EMBER : hex, 12, { speed: 2.2, life: 0.7, fall: -1, spread: 0.5 }); } } };
     }
     if (e.type !== 'foe.skill') return { events: [e], dur: 0 };
+    if (e.skill === 'kindle' && V.elite?.on) return V.elite.kindle(T, e); // (an aberrant's own skill: its own file, duelview/aberrants/)
     V.stage?.jolt?.(0.25); V.bursts.burst(at, feelColour(V.aspect, _c).getHex(), 10, { speed: 1.2, life: 0.4, fall: 0, spread: 0.3 }); // (the cast's flare at its body)
     if (e.skill === 'hurl') { const D = this.dims(), n = Math.min(e.n || 1, 12);
       for (let i = 0; i < n; i++) { const tx = -D.W / 2 + ((V.lineCol ?? D.B.line) * cs) * (0.1 + 0.8 * hash(i, e.n)); this.fling(at, _b.set(tx, D.top + D.b * 0.6, D.lip + 0.05), JUNK, { delay: i * 0.05, life: FOE_CAST.hurl, size: 0.035, arc: 0.8 }); }

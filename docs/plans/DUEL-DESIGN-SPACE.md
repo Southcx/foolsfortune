@@ -77,6 +77,15 @@ retrodden or forgotten." One row per space: the idea, where it came from, what b
 | A foe skill's tooltip only once seen (knowledge) | Pokedex, Souls item text, Into the Breach | built | 8a0f7856, PD 24.5 | South: "observation first" |
 | Scan counts a skill as seen | Divination's own power | built | PD 24.5 | the domain of seeing sees |
 | Seen as a ledger counter | the ledger | cut | PD 24.5 | the practice duel counts nothing, and Strawman's Hurl is the first met |
+| Every aberrant an Elite: its own board, Zone of Influence, skills, cut-ins, sounds, secret, two deaths | Slay the Spire's elites, Monster Hunter | built (the Wisp's rules), the rest asked | ABERRANTS.md | South, 2026-10-28: "Puzzle duels are like Elite fights" |
+| A secret win, never said, told by the body and board | Shadow of the Colossus, Metroid Prime's scan, MH's capture | built (`secrets.js`) | ABERRANTS.md 3 | a second way to win, for the player who reads the aberrant |
+| The Wisp's secret: snuff the lantern (24 Dread cleared) | the will-o'-the-wisp myth | built | ABERRANTS.md 3.1 | at 8 it fell in 2 turns to Transmute and Miracle; at 24 as long as the Line, found by chance 1 in 10 |
+| A secret's answer that wakes at half (Kindle) | Slay the Spire's Lagavulin waking | built | ABERRANTS.md 3 | the aberrant notices; the secret is a contest, not a checklist |
+| A secret's progress as a gauge from the start | | cut | ABERRANTS.md 4 | a secret said is not a secret; shown plainly only once found |
+| A palette per ruleset (its feeling and its weakness on its board) | | built | ABERRANTS.md 3.1 | the Wisp's 5 colours held no Dread at all |
+| Your half of the backdrop as your Spirit Garden (season, harmony, decor, spirits) | Jujutsu Kaisen's Domain Expansion, Kingdom Hearts' Station of Awakening | built (the data), the look asked | ABERRANTS.md 7 | South, 2026-10-28; the garden is the world inside your Jar |
+| The garden changing a duel's rules (a spirit's help, harmony as a buff) | Pokemon's partner, Persona's social links | parked | ABERRANTS.md 7 | base change bad; the garden is in flux; no new reasons yet |
+| The secrets of the slip jelly, the clapperjar and Strawman | | parked | ABERRANTS.md 5 | each needs its creature aberrant in the world first |
 
 ## Teaching and practice
 

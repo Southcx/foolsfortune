@@ -24,6 +24,9 @@ export const KINDS = {
   ember: ['falls', 'pushable', 'swappable', 'timer'], // (Dread's junk, burning down: not 'junk', so nothing breaks it until it cools; dread.js) // (Lachryma shed by a break: it floats, and the Courier runs it up; duelbreak.js)
 };
 export const COLOURS = ['wonder', 'mirth', 'desire', 'fury', 'gall', 'grief', 'dread'];
+/** The colours a ruleset's gems come in: its `palette` (an aberrant's own, ABERRANTS.md: the Lantern Wisp's holds its Dread and its weak
+ *  Fury), else the first `colours` of COLOURS. Ask this, never COLOURS.slice. */
+export const paletteOf = (rs) => rs.palette || COLOURS.slice(0, Math.min(COLOURS.length, rs.colours ?? COLOURS.length));
 
 let NEXT = 1;
 /** A piece of a kind, with its colour, side (who it belongs to) and tags. */

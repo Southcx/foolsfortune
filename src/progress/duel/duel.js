@@ -15,7 +15,7 @@
 //   newDuel's `board` ({ w, h, perColumn, landCap }) over the ruleset's, and `lesson` (lesson.js) for the first duel
 //   undo(state) -> events | null (the last action this turn taken back)   marginOf(state) -> junk's multiplier now   weaknessOf(state) -> { weak, resists, k } | null   (PUZZLE-DUELS.md 19)
 // ---------------------------------------------------------------------------------------
-import { Board, COLOURS, DIRS, piece, hasTag } from './board.js';
+import { Board, COLOURS, DIRS, piece, hasTag, paletteOf } from './board.js';
 import { fall, clears, resolve, pinch, ACTIONS as BOARD_ACTIONS } from './rules.js';
 import { COURIER_ACTIONS, runPaths } from './couriertools.js';
 import { onLanding, startTurn, endOwnTurn, FINISHER_ACTION } from './duelbreak.js';
@@ -28,6 +28,7 @@ import { SKILL_ACTION, chargeFrom, skillActions } from './skills.js';
 import { skyOf, skyfall, deficitOf } from './skyfall.js';
 import { foeOf, foeSkillsNow, stagger } from './foeskills.js';
 import { POWER_ACTION, tickRests, underTransmute, powerActions } from './powers.js';
+import { secretStart, secretStep } from './secrets.js';
 
 /** Every action a side may take: the board's (rules.js), the Courier's run and tools (couriertools.js), the god hand's finisher (duelbreak.js),
  *  and the flee (flee.js). */
@@ -85,6 +86,7 @@ export function newDuel({ ruleset, seed = 1, style = null, forms = ['hand', 'cou
       ap: aps[i], pool: pools[i], tools: style === 'pve' ? [] : tools && (tools[i] || tools), worn: tools && (tools[i] || tools), charge: {}, powers: style === 'pve' && i === 0, levels: i === 0 ? levels : null, emo: 0, depth: 0, stunLeft: 0, stagger: 0, coffin: 0, drunk: 0, breaks: 0, finisher: !!finisher[i], flee: !!flee[i], fleeFails: 0 })) };
   s.lesson = lessonOf(lesson); // (the first duel as a lesson: lesson.js)
   if (style === 'pve') s.foe = foeOf(rs); // (its foe skills' countdowns: foeskills.js)
+  s.secret = secretStart(s); // (its secret win, if it has one: secrets.js, ABERRANTS.md)
   s.luck = luck; // (each side's Luck, -2..2: luck.js's sway, passed in by the room)
   s.rerolls = [...rerolls]; // (each side's re-rolls left this game day: a failed Flee is thrown again, flee.js; the room hands in game.rerolls.left())
   for (const side of [0, 1]) {
@@ -97,7 +99,7 @@ export function newDuel({ ruleset, seed = 1, style = null, forms = ['hand', 'cou
   return s;
 }
 
-const colourOf = (s) => COLOURS[s.r.int(Math.min(COLOURS.length, s.rs.colours))];
+const colourOf = (s) => s.r.pick(paletteOf(s.rs));
 const gemOf = (s, side = null) => underTransmute(s, side, s.rs.bombs && s.r.chance(s.rs.bombs) ? piece('bomb') : piece('gem', { colour: colourOf(s) })); // (a side's transmute keeps its colour out: powers.js)
 
 /** A side filled to DUEL.fill with gems, settled, and recoloured until nothing on it would clear at once. */
@@ -156,7 +158,7 @@ export function settle(s) {
  *  of the resisted `k[1]` (side 0 is the Courier's: the ruleset is the Figment's). A ruleset may name its own (`weak`, `resists`) or `weak: false`. */
 export function weaknessOf(s) {
   const rs = s.rs, D = DUEL.weakness; if (rs.weak === false || !D) return null;
-  const on = COLOURS.slice(0, Math.min(COLOURS.length, rs.colours)), weak = rs.weak ?? OPPOSITE[rs.feeling], resists = rs.resists ?? rs.feeling;
+  const on = paletteOf(rs), weak = rs.weak ?? OPPOSITE[rs.feeling], resists = rs.resists ?? rs.feeling;
   const w = on.includes(weak) ? weak : null, r = on.includes(resists) ? resists : null;
   return w ? { weak: w, resists: r, k: D.k } : null; // (no weak colour on its board, no resisting either: a weakness is the pair or nothing)
 }
@@ -170,7 +172,7 @@ export function marginOf(s) {
 /** The turn as it stood before the last action: a copy kept for undo (no draw from the stream: nothing hidden is learned by it). */
 function snapOf(s) {
   return { board: s.board.clone(), sides: s.sides.map((S) => ({ ...S, forms: [...S.forms], at: S.at && [...S.at], queue: S.queue.map((p) => ({ ...p })), charge: { ...S.charge } })), // (charge its own: a skill fired on a copy must not drain the real one)
-    apLeft: s.apLeft, winner: s.winner, lesson: s.lesson && { ...s.lesson }, refunded: s.refunded || 0, chainFrom: s.chainFrom, foe: foeCopy(s.foe) };
+    apLeft: s.apLeft, winner: s.winner, lesson: s.lesson && { ...s.lesson }, refunded: s.refunded || 0, chainFrom: s.chainFrom, foe: foeCopy(s.foe), secret: s.secret && { ...s.secret } };
 }
 
 /** Undo the side's last action this turn (Into the Breach's reset, a step at a time): free, until the turn ends or a die is thrown. */
@@ -199,7 +201,9 @@ export function act(s, a) {
   events.push(...settle(s).events);
   events.push(...chargeFrom(s, events, weaknessOf(s)));
   events.push(...bonusOf(s, side, events));
+  events.push(...secretStep(s, side, events)); // (an aberrant's secret win: secrets.js)
   if (a.kind === 'flee' || s.winner !== null) s.undo = []; // (a die thrown, or the duel decided: no taking it back)
+  if (s.winner !== null) s.log.push(...events.filter((e) => e.type.startsWith('duel.'))); // (an end made by an action, not a turn's end (a secret won by a drag), kept in the log the session's finish reads: endTurn logs its own)
   if (pve) { let gems = 0; for (const e of events) { if (e.type === 'chain' && e.side === 0) S0.turnStep = Math.max(S0.turnStep || 0, e.step); if (e.type === 'clear' && e.side === 0 && e.colour) gems++; }
     if (gems && PVE.drink) { S0.pool = Math.min(100, S0.pool + gems * PVE.drink); events.push({ type: 'drink', side, n: gems * PVE.drink, pool: S0.pool }); } // (your clears fill the pool the powers spend)
     if (a.kind !== 'skill' && a.kind !== 'power') { S0.dragged = true; s.undo = []; } } // (the drag, or a flee's throw, is the turn: what is left is the skills', and they come first)
@@ -246,6 +250,7 @@ export function endTurn(s) {
   if (S.powers) events.push(...tickRests(s, side)); // (each power rests a turn less: powers.js)
   s.toMove = foe; s.undo = []; s.refunded = 0; const next = startTurn(s, foe); s.apLeft = next.ap; events.push(next.event);
   if (s.lesson) events.push(...lessonTurn(s, foe));
+  events.push(...secretStep(s, 0, events)); // (what landed, dripped and fell cleared too: its secret counts it)
   if (s.winner === null && !(pve && foe === 1)) events.push(...drip(s, foe));
   events.push(...chargeFrom(s, events, weaknessOf(s))); // (what landed and dripped and cleared charges too: Puzzle & Dragons' skyfall counts)
   topQueue(s, foe);
@@ -327,7 +332,7 @@ export function legalActions(s, side = s.toMove, { drags = 24 } = {}) {
     for (const path of runPaths(s, side)) ok({ kind: 'run', path });
     for (const dir of dirs) for (const kind of ['push', 'kick', 'drill', 'shoot']) ok({ kind, dir });
     for (const kind of ['grab', 'delay', 'hold', 'send', 'read']) ok({ kind });
-    const cs = COLOURS.slice(0, s.rs.colours);
+    const cs = paletteOf(s.rs);
     for (const colour of cs) { ok({ kind: 'tune', colour }); for (const from of cs) if (from !== colour) ok({ kind: 'paint', from, colour }); }
   }
   if (S.form === 'hand') ok({ kind: 'finisher' });
@@ -364,7 +369,7 @@ export function quietStream(s, salt = '') {
 const foeCopy = (F) => F && { ...F, moves: F.moves.map((m) => ({ ...m })), desperate: F.desperate && { ...F.desperate } };
 
 export function cloneState(s) {
-  const c = { ...s, foe: foeCopy(s.foe), board: s.board.clone(), sides: s.sides.map((S) => ({ ...S, forms: [...S.forms], at: S.at && [...S.at], queue: S.queue.map((p) => ({ ...p })), charge: { ...S.charge } })), log: [], undo: [], lesson: s.lesson && { ...s.lesson } }; // (its own undo: a lookahead never writes into the real turn's)
+  const c = { ...s, foe: foeCopy(s.foe), secret: s.secret && { ...s.secret }, board: s.board.clone(), sides: s.sides.map((S) => ({ ...S, forms: [...S.forms], at: S.at && [...S.at], queue: S.queue.map((p) => ({ ...p })), charge: { ...S.charge } })), log: [], undo: [], lesson: s.lesson && { ...s.lesson } }; // (its own undo: a lookahead never writes into the real turn's)
   c.r = quietStream(s, 'clone'); // (its own stream, read from the duel as it stands: the real one is never drawn by a lookahead)
   return c;
 }

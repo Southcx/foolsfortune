@@ -13,3 +13,12 @@ is recorded where it binds.
 3. **The two tool skills are off in the PvE duel** (code kept for a PvP mode): seven power tiles plus two skill tiles was nine big plays,
    and they overlap (Paint and Transmute, Tune and Miracle, Read and Scan). The belt does nothing in a duel now. Parked idea: the worn
    pair's domains make their powers cheaper. Want that, or leave the belt out of duels?
+
+## Aberrants as Elite fights (2026-10-28, ABERRANTS.md)
+
+1. **The Line stays as a way to win, beside the secret.** Secret-only means a player who never finds it can never win. So the
+   secret is the second door: about as long, its own ending. Or did you want the secret to be the only real kill and the Line a
+   lesser one (no reward, or the aberrant escapes)?
+2. **Reward for the secret?** You said no new reasons to fight aberrants yet, so it's the ending, an achievement and the knowledge.
+   Fine for now?
+3. **Which aberrant is next?** Each needs its creature aberrant in the world first: slip jelly, clapperjar, or something new?

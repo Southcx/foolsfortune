@@ -12,19 +12,22 @@
 //
 //   game.foeSeen = new FoeSeen(game)   .seen(skill) -> bool   .how(skill) -> 'watched' | 'scanned' | null   .see(skill, how)
 //   save section `foeSeen` (scope player: reset with every build, as all progress is)   events: duel.seen { skill, how, by: 'courier' } (once a skill)
-//   listens: duel.foe { skill } (watched), duel.power { power: 'scan', skill } (scanned)
+//   .found(secretId) -> bool (an aberrant's secret win found: ABERRANTS.md; then its progress may be drawn plainly)
+//   listens: duel.foe { skill } (watched), duel.power { power: 'scan', skill } (scanned), duel.secret { id, done } (found)
 // ---------------------------------------------------------------------------------------
 import { FOE_SKILLS } from './duel/foeskills.js';
 
 export class FoeSeen {
   constructor(game) {
-    this.game = game; this.known = {};
-    game.save?.section('foeSeen', { scope: 'player', version: 1, dump: () => ({ ...this.known }),
-      load: (d) => { this.known = { ...(d || {}) }; }, reset: () => { this.known = {}; } });
+    this.game = game; this.known = {}; this.secrets = {};
+    game.save?.section('foeSeen', { scope: 'player', version: 2, dump: () => ({ ...this.known, secrets: { ...this.secrets } }),
+      load: (d) => { const { secrets, ...known } = d || {}; this.known = known; this.secrets = { ...(secrets || {}) }; }, reset: () => { this.known = {}; this.secrets = {}; } });
+    game.events?.on?.('duel.secret', (e) => { if (e?.done && e.id && !this.secrets[e.id]) { this.secrets[e.id] = true; this.game.save?.dirty?.('foeSeen'); } }); // (practice too: what you know)
     game.events?.on?.('duel.foe', (e) => this.see(e?.skill, 'watched')); // (practice duels too: seeing is knowledge, not a count)
     game.events?.on?.('duel.power', (e) => { if (e?.power === 'scan' && e.skill) this.see(e.skill, 'scanned'); });
   }
   seen(skill) { return !!this.known[skill]; }
+  found(id) { return !!this.secrets[id]; }
   how(skill) { return this.known[skill] || null; }
   /** A skill seen: watched (it happened to you) outranks scanned (read ahead). Said once, on the bus, for the view and the log. */
   see(skill, how = 'watched') {

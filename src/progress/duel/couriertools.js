@@ -20,7 +20,7 @@
 //   COURIER_ACTIONS[kind] = { form: 'courier', tool, cost, pool, legal(s, side, a), apply(s, side, a) }   runPaths(s, side) -> paths
 //   shotAt(s, side, dir) -> cell   groupOf(board, cell) -> cells   fromOf(s, side, a) -> colour
 // ---------------------------------------------------------------------------------------
-import { DIRS, KINDS, COLOURS, hasTag } from './board.js';
+import { DIRS, KINDS, hasTag, paletteOf } from './board.js';
 import { DUEL_BREAK } from './duelbreak.js';
 import { resolve } from './rules.js';
 
@@ -75,7 +75,7 @@ export function fromOf(s, side, a) {
 }
 /** The tools' numbers on the board (PUZZLE-DUELS.md 18.1, measured by the swing of one move). */
 export const TOOL_RULES = { paintReach: 4 }; // (cells from the Courier a Paint reaches, walking: the whole side was a median 19 junk for 2 points, 4 a median 7, near the hand's best swap's 8)
-const colours = (s) => COLOURS.slice(0, Math.min(COLOURS.length, s.rs.colours));
+const colours = (s) => paletteOf(s.rs);
 const popJunk = (n) => Math.max(0, n - 2); // (duel.js junkOf(n, 1): a pop of your own is the chain's first step)
 
 /** Every cell the Courier could run to (up to four steps over empty cells and orbs), with the shortest path there. */

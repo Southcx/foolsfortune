@@ -39,7 +39,7 @@ export function deficitOf(s, side) {
   return Math.max(0, Math.round(sky.to * cells) - used);
 }
 
-import { COLOURS, hasTag } from './board.js';
+import { paletteOf, hasTag } from './board.js';
 
 const open = (b, side, x, y) => b.in(x, y) && b.mine(side, x) && b.floor[b.idx(x, y)] !== 'wall';
 
@@ -77,7 +77,7 @@ function clearsAt(b, side, [x, y], rs) {
 
 /** A new gem recoloured to one that would not clear where it lies, tried in a shuffled order; left as it was if every colour would. */
 function calmed(s, b, side, at, p) {
-  const all = COLOURS.slice(0, Math.min(COLOURS.length, s.rs.colours)).filter((c) => c !== p.colour && c !== s.sides[side]?.transmute?.from), was = p.colour; // (never back to a colour a transmute took away)
+  const all = paletteOf(s.rs).filter((c) => c !== p.colour && c !== s.sides[side]?.transmute?.from), was = p.colour; // (never back to a colour a transmute took away)
   while (all.length) { p.colour = all.splice(s.r.int(all.length), 1)[0]; if (!clearsAt(b, side, at, s.rs)) return; }
   p.colour = was;
 }

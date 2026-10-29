@@ -872,3 +872,9 @@ Watched outranks scanned (`how`). Said once: `duel.seen { skill, how }` and a lo
 The kernel's: `power { side, power, domain, cost, pool, at }` then the power's own (`swap`, `manifest`, `scan`, `lift`, `herd`, `transmute`,
 `miracle`, with the moved pieces' ids from and to), `transmute.end`, `drink { side, n, pool }`. The bus's: `duel.power { power, domain, cost,
 skill? (Scan's), by: 'courier' }`. Counted: `duel.power.<id>` (tracking/duel.js; practice counts nothing).
+
+## 25. Every aberrant an Elite fight (South, 2026-10-28)
+
+Planned and begun in `docs/plans/ABERRANTS.md`: the Elite format (each aberrant's own board, Zone of Influence, foe skills, cut-ins,
+sounds, a secret win and two deaths), and the Lantern Wisp as the first. Its secret (`secrets.js` `snuff`), its own skill (Kindle) and
+its palette are built and measured there.

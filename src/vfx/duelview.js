@@ -37,6 +37,7 @@
 //   refuse(action)                     an illegal action: the cell's rim shaken in the dry ink, no words (marks.js)
 //   resync(state)                      the board and pieces stood again from a restored state (undo), the clash kept: juice.js rewind
 //   armSkill(tool | null)              the one-gesture duel's armed skill: its reach under the finger (skillcast.js), the cast on `skill`
+//   death({ how, secret, foe }) -> Promise (how 'line' | 'secret' | 'finisher')   an aberrant's own death played (duelview/aberrants/), resolved when done
 //   armPower(id | null)   powerReach(action, cells, ok)   the PvE duel's armed power and its reach as the session reads the gesture; casts: powercast.js
 //   skip(state)                        the foe's turn skipped: its queued beats dropped, the board stood as the state is
 //   hint(h | null)                     the idle hint (bot.js hintOf): its move's piece nudging its way, its clears pulsing; any play lets it go
@@ -71,6 +72,8 @@ import { FormDive } from './duelview/formdive.js';
 import { reachOf } from './duelview/skillcast.js';
 import { FoeCast } from './duelview/foecast.js';
 import { FoeCutIn } from './duelview/cutin.js';
+import { WispElite } from './duelview/aberrants/wisp.js';
+import { GardenGround } from './duelview/gardenground.js';
 import { SkillGauges } from './duelview/skillgauges.js';
 
 const TEAR = 0x7fdcff, COURIER_HEX = '#9fd8ff', UP = new THREE.Vector3(0, 1, 0);
@@ -85,7 +88,7 @@ export class DuelView {
     this.board = new DuelBoard(this.frame, this.clash); this.pieces = new DuelPieces(this.frame); this.marks = new DuelMarks(this.frame);
     this.intentDraw = new DuelIntent(this.frame, this.marks); this.bursts = new DuelBursts(this.frame); this.beats = new DuelBeats(this);
     this.flee = new DuelFlee(this); this.folded = false;
-    this.glows = new DuelGlows(this); this.worth = new DuelWorth(this); this.foresight = new DuelForesight(this); this.juice = new DuelJuice(this); this.stage = new DuelStage(this); this.dive = new FormDive(this); this.gauges = new SkillGauges(this); this.foeCast = new FoeCast(this); this.cutIn = new FoeCutIn(this); this.tune = [null, null]; this.pendingKind = null;
+    this.glows = new DuelGlows(this); this.worth = new DuelWorth(this); this.foresight = new DuelForesight(this); this.juice = new DuelJuice(this); this.stage = new DuelStage(this); this.dive = new FormDive(this); this.gauges = new SkillGauges(this); this.foeCast = new FoeCast(this); this.cutIn = new FoeCutIn(this); this.elite = new WispElite(this); this.garden = new GardenGround(this); this.tune = [null, null]; this.pendingKind = null;
     this.intentWhole = true; // (the session hands intent() bot.js intentOf's whole: { actions, junk, cells, hits })
     this.u = new THREE.Vector3(1, 0, 0); this.face = new THREE.Vector3(0, 0, 1); this.centre = new THREE.Vector3();
     this.sent = [0, 0]; this.pending = [0, 0]; this.depth = [0, 0]; this.apShown = [5, 5]; this.forms = ['hand', 'hand']; this.lineCol = 10;
@@ -119,7 +122,7 @@ export class DuelView {
     this.clash.groundTo(Math.max(oc.distanceTo(at), of.distanceTo(at)) + 3); // (the ground past both bodies: domains.js)
     oc.y += 1; of.y += 1; this.clash.unfold(oc, of);
     this.game.spiritualLink?.attach(this, this.linkEnd);
-    this.gauges.layout(this.board3); this.stage.open(); this.dive.open(); this.cutIn.warm(); // (the gauges: skillgauges.js; the arena first, the Jar at your spot: stage.js, formdive.js)
+    this.gauges.layout(this.board3); this.stage.open(); this.dive.open(); this.cutIn.warm(); this.elite.open(state, foe); this.garden.open(at.clone().addScaledVector(this.u, -((B.w * DUEL_VIEW.cs) / 2 + 2)), this.u); // (your half as your Spirit Garden: gardenground.js; the aberrant's own layers: its ground, its lantern, its deaths: duelview/aberrants/) // (the gauges: skillgauges.js; the arena first, the Jar at your spot: stage.js, formdive.js)
   }
 
   /** Fold the domains away and take the board down (at once, with `now`). */
@@ -127,7 +130,7 @@ export class DuelView {
     if (!this.isOpen && !this.closing) return;
     this.isOpen = false; this.beats.clear(); this.intentDraw.clear(); this.foresight.clear(); this.worth.clear(); this.glows.clear(); this.tune = [null, null]; this.marks.hover(null); this.marks.select([]); this.marks.stars(0, 0); this.marks.stars(1, 0);
     this.game.spiritualLink?.detach(this); this.clash.collapse(); this.closing = !now;
-    this.flee.clear(); this.marks.refuse(null); this.juice.clear(); this.stage.close(); this.dive.close(); this.gauges.clear(); this.foeCast.clear(); this.cutIn.clear(); this.armed = null; this.armedPower = null;
+    this.flee.clear(); this.marks.refuse(null); this.juice.clear(); this.stage.close(); this.dive.close(); this.gauges.clear(); this.foeCast.clear(); this.cutIn.clear(); this.elite.close(); this.garden.close(); if (this.deathJob) { this.deathJob.res(); this.deathJob = null; } this.armed = null; this.armedPower = null;
     this.clash.dome.scale.setScalar(DUEL_VIEW.radius); this.clash.U.uRadius.value = DUEL_VIEW.radius;
     if (now) { this.clash.open = [0, 0]; this.clash.update(0); this.root.visible = false; this.bursts.clear(); }
   }
@@ -264,6 +267,14 @@ export class DuelView {
   headOf(side, out) { const v = this.pieces.bodyAt(side); return v ? cellLocal(v.x, v.y - 0.55, this.board3, out).setZ(DUEL_VIEW.front + 0.05) : out.set(0, -99, 0); }
   /** Where the god hand stands over a side's half (the board's frame): the finisher's cubes go up into it. */
   handPoint(side, out) { const B = this.board3, cs = DUEL_VIEW.cs, x = side === 1 ? (this.lineCol + B.w) / 2 : this.lineCol / 2; return out.set((x - B.w / 2) * cs, DUEL_VIEW.base + B.h * cs + 0.5, 0.35); }
+  /** An aberrant's death as its own cinematic ('line' when the Line reached its wall, 'secret' when its secret was done): its look played
+   *  (duelview/aberrants/), resolved once it has; the session times it before the board folds. An aberrant with no death of its own: at once. */
+  death(arg) {
+    const how = typeof arg === 'string' ? arg : arg?.how, kind = how === 'secret' || arg?.secret ? 'secret' : how === 'line' ? 'line' : null; // (the session's { how, secret, foe }; a finisher has its own: the data drain)
+    const d = this.isOpen && this.elite.on && kind ? this.elite.death(kind) : null; if (!d) return Promise.resolve();
+    this.stage.pref = 0; // (the arena: the foe in frame for its end, even from the phone's board view, Petra 2026-10-28)
+    return new Promise((res) => { if (this.deathJob) this.deathJob.res(); this.deathJob = { ...d, age: 0, res }; });
+  }
   /** The PvE duel's drag timer (the session's: 1 full .. 0 out, null hidden), a bar under your half (foecast.js). */
   dragClock(k) { this.foeCast.timer(k); }
 
@@ -336,7 +347,8 @@ export class DuelView {
     const held = this.juice.scale(dt), shown = this.clash.update(held); // (a big play's held beat: the board's motion all but stops, the beats run on: juice.js)
     this.board.update(held); this.pieces.update(held); this.marks.update(held); this.bursts.update(held); this.flee.update(dt); this.juice.update(dt);
     if (this.isOpen && !this.beats.busy) this.flee.odds(this.state);
-    const st = this.isOpen && !this.closing ? this.stage.update(dt) : this.lastStage || { scale: 1, lift: 0, tilt: 0 }; this.lastStage = st; this.dive.update(dt); if (this.isOpen) this.gauges.update(dt, this.state); this.foeCast.update(dt); // (the zoom and the director: stage.js; who stands where: formdive.js)
+    const st = this.isOpen && !this.closing ? this.stage.update(dt) : this.lastStage || { scale: 1, lift: 0, tilt: 0 }; this.lastStage = st; this.dive.update(dt); if (this.isOpen) this.gauges.update(dt, this.state); this.foeCast.update(dt); this.elite.update(dt); this.garden.update(dt); // (the zoom and the director: stage.js; who stands where: formdive.js)
+    const J = this.deathJob; if (J) { J.age += dt; J.step?.(J.age); if (J.age >= J.dur) { J.end?.(); this.deathJob = null; J.res(); } }
     for (const side of [0, 1]) if (this.depth[side]) this.marks.stars(side, this.depth[side], this.headOf(side, _w));
     const f = this.foe; if (this.isOpen && this.depth[1] > 0 && f?.alive !== false && f?.pos) this.game.stun?.dizzy?.set(f, f.head?.() || _w.copy(f.pos).setY(f.pos.y + 2), { stunned: true }); // (the same gold stars on the Figment in the world)
     if (this.closing && !shown) { this.closing = false; this.root.visible = false; this.bursts.clear(); }

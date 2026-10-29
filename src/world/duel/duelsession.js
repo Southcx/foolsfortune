@@ -15,7 +15,7 @@
 //
 // The PvE duel (DUEL.style 'pve', PUZZLE-DUELS.md 23, 24): one drag a turn on a 5 real s clock; before it, one of the god hand's seven
 // powers (powers.js) armed by keys 1 to 7 or a power tile (`armPower`) and aimed by one gesture (powerInput); a tap on the aberrant's
-// countdown badge goes to the view (`foeCast.tap`), whose tooltip asks game.foeSeen. Its moments: duel.power, duel.foe, duel.desperate, duel.stagger.
+// countdown badge goes to the view (`foeCast.tap`), whose tooltip asks game.foeSeen. Its moments: duel.power, duel.foe, duel.desperate, duel.stagger, duel.secret { id, k, half?, done? } (an aberrant's secret win, ABERRANTS.md); its ends 'line' and 'secret' wait on the view's `death` before the board folds.
 // The one-gesture duel (DUEL.style 'drag', the default since 2026-10-27, PUZZLE-DUELS.md 22; South: "anything and everything that would
 // improve this module"): the hand's DRAG is the only board verb (a press onto a neighbour is a drag of one step), there are no forms and
 // the Courier stands off the board; the worn pair are two skills (1 and 2, or a tool's own key below), charged by your clears and fired
@@ -414,6 +414,9 @@ export class DuelSession {
       if (e.type === 'power') { const sc = events.find((x) => x.type === 'scan' && x.side === e.side); this.emit('duel.power', { power: e.power, domain: e.domain, cost: e.cost, ...(sc ? { skill: sc.skill } : {}), by: e.side === 0 ? 'courier' : 'creature' }); } // (tracking/duel.js counts it; game.foeSeen marks a scanned skill seen)
       if (e.type === 'foe.skill') this.emit('duel.foe', { skill: e.skill, n: e.n ?? e.lost ?? 0, by: 'creature' }); // (the PvE duel's foe skills and your stagger: tracking/duel.js)
       if (e.type === 'foe.stagger') this.emit('duel.stagger', { by: 'courier' });
+      if (e.type === 'secret.step') this.emit('duel.secret', { id: e.id, k: e.k, by: 'courier' }); // (an aberrant's secret win, secrets.js: its steps, its half, its end; tracking/duel.js and game.foeSeen hear them)
+      if (e.type === 'secret.half') this.emit('duel.secret', { id: e.id, half: true, by: 'courier' });
+      if (e.type === 'duel.secret') this.emit('duel.secret', { id: e.id, done: true, by: 'courier' });
       if (e.type === 'foe.desperate') this.emit('duel.desperate', { by: 'creature' });
       if (e.type === 'flee') this.emit('duel.flee', { roll: e.roll, reroll: e.reroll ?? null, need: e.need, ok: e.ok, by: e.side === 0 ? 'courier' : 'creature' });
     }
@@ -462,9 +465,12 @@ export class DuelSession {
   // ---------------------------------------------------------------- the end
   yield() { this.state.winner = 1; this.how = 'yield'; this.finish(); }
   finish() {
-    const s = this.state, won = s.winner === 0, log = s.log, last = [...log].reverse().find((e) => /^duel\.(line|full|cap|finisher)$/.test(e.type));
-    const how = this.how || (s.fled != null ? 'fled' : last ? last.type.slice(5) : 'line');
-    this.close({ won, how });
+    const s = this.state, won = s.winner === 0, log = s.log, last = [...log].reverse().find((e) => /^duel\.(line|full|cap|finisher|secret)$/.test(e.type));
+    const how = this.how || (s.fled != null ? 'fled' : last ? last.type.slice(5) : 'line'), secret = how === 'secret' ? last.id : null;
+    // each aberrant's two deaths (ABERRANTS.md: one on the Line, one on its secret) played before the board folds: the view's `death`
+    // where it has one (Calissa's timeline, Wanda's sound), awaited; a fled or yielded duel has none
+    const p = (how === 'line' || how === 'secret' || how === 'finisher') && won ? this.view?.death?.({ how, secret, foe: this.foe }) : null;
+    if (p?.then) { this.busy = true; const go = () => { if (this.active) this.close({ won, how }); }; p.then(go, go); } else this.close({ won, how });
   }
   /** The foe put back where the duel found it (its body too when it is a fixture), its yaw as it was. */
   putBack(H) {

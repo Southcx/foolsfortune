@@ -4287,3 +4287,28 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   asked `style === 'drag'` by name: lesson.js `stepsOf`, skyfall.js `skyOf`, and in Calissa's files the touch context and the gauges.
 - **Fix:** `oneGesture(s)` (duel.js: any style but 'classic'); lesson.js and skyfall.js ask it; Calissa's files asked to.
 - **Rule:** NEW:ask-the-capability-not-the-name
+
+### 2026-10-28 · A secret win ended as a Line win (Dovina's live probe)
+- **Seen:** a Lantern Wisp duel won by snuffing its lantern ended with `duel.end { how: 'line' }`, so the log said the generic Line win and
+  the secret's own end went unsaid.
+- **Cause (as read):** the session names the end by the last end event in the log, matched against a list written by hand
+  (`/^duel\.(line|full|cap|finisher)$/`, duelsession.js `finish`); the kernel's new `duel.secret` was not on it, and the fallback is 'line'.
+- **Fix:** `secret` on the list, its id carried (`how: 'secret'`, the death hook gets `secret`). Read, not yet played through in a browser.
+- **Rule:** NEW:new-end-new-name
+
+### 2026-10-28 · A secret won by a drag still ended as a Line win (Dovina's live probe, after Petra's fix)
+- **Seen:** with `secret` on the session's list, a Lantern Wisp snuffed by a Miracle still ended `how: 'line'`; the bus carried
+  `duel.secret { done }`, so tracking counted it, but the end was named wrong.
+- **Cause (as measured):** the kernel logs a turn's events (`endTurn` pushes them to `s.log`) but never an action's; a secret is won
+  inside `act`, so its `duel.secret` never reached the log the session's finish reads, and the fallback said 'line'.
+- **Fix:** `act` logs its `duel.*` events whenever the action decided the duel (duel.js). The live probe now ends `how: 'secret'`.
+- **Rule:** NEW:an-end-is-logged-where-it-happens
+
+### 2026-10-28 · The duel's ground drawn as a board under the bodies (Calissa's phone shot of the fens and the garden)
+- **Seen:** at 896 x 414 @2x the floor under the Pneuka Jar and the aberrant was a huge dark grid with the Line's stripe, orange round
+  the Wisp; it read as the world's floor showing through the duel's instance, and making the dome opaque did not change it.
+- **Cause (as measured):** the clash's one program keys three meshes by `uMode` (0 the dome, 1 the slab, 2 the ground disc); the slab's
+  branch asked `uMode > 0.5`, so the ground (2) took it and drew the board's face, its fog texture's lantern glow the orange. Hidden by
+  hiding the disc, the floor went; hiding the instance's kept objects changed nothing.
+- **Fix:** the slab's branch is `uMode > 0.5 && uMode < 1.5` (domains.js); the ground draws the meadow and the fens' black water.
+- **Rule:** NEW:a-mode-is-matched-exactly

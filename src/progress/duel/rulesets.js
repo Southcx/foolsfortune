@@ -40,11 +40,14 @@ export const RULESETS = {
   // drags a turn wins 15 of 16 in 4.8 turns with them and 4 of 16 in 17.9 without, one weighing 12 16 in 6.4 and 9 without: the powers
   // are what win it, and the duel lasts long enough for all four of its foe skills.
   lanternwisp: { feeling: 'dread', board: { w: 12, h: 9, perColumn: 2, landCap: 6 }, match: 3, cluster: 4, gravity: (x, y, b) => (b.sideOf(x) === 0 ? DIRS.S : DIRS.N), colours: 5, drip: 4,
+    palette: ['wonder', 'mirth', 'fury', 'grief', 'dread'], // (its own Dread, the lantern's fuel and the colour it resists, and Fury, its weakness: ABERRANTS.md 3)
     fog: { side: 1, light: 3 }, embers: { from: 1, count: 3 }, bot: { pairs: 0.8, sample: 8 },
     // its foe skills in the PvE duel (foeskills.js; PUZZLE-DUELS.md 23.4): embers hurled every 2nd turn, gems petrified every 3rd, a
     // column sealed every 4th, the Line reclaimed every 5th; at its last 2 columns, once, a flare of all it has
     pve: { perColumn: 5 }, // (the PvE duel's push: 5 sent a column, two columns a turn at most: PUZZLE-DUELS.md 23.5)
-    foe: { moves: [{ skill: 'hurl', every: 2, first: 1, n: 3 }, { skill: 'petrify', every: 3, first: 2, n: 3 }, { skill: 'seal', every: 4, first: 3 }, { skill: 'reclaim', every: 5, first: 4 }],
+    // its secret (secrets.js, ABERRANTS.md 3): snuff the lantern, 14 Dread gems cleared; Kindle wakes once it is half spent
+    secret: 'snuff',
+    foe: { moves: [{ skill: 'hurl', every: 2, first: 1, n: 3 }, { skill: 'petrify', every: 3, first: 2, n: 3 }, { skill: 'seal', every: 4, first: 3 }, { skill: 'reclaim', every: 5, first: 4 }, { skill: 'kindle', every: 2, first: 1, n: 3, wake: 'half' }],
       desperate: { at: 2, moves: [{ skill: 'hurl', n: 5 }, { skill: 'petrify', n: 4 }] } } }, // (8 since the lookaheads stopped drawing the duel's own dice, 19.4: the stand-in wins 58 of 80, as it did)
   // STRAWMAN'S PRACTICE DUEL (South, 2026-10-27, via Petra: "test more basic implementations of the puzzle duel module"): the duel with
   // nothing but its core, for testing the duel itself at the sparring circle. The smallest board that still chains (8 x 8, a half of

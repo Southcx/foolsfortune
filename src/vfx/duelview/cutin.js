@@ -15,7 +15,7 @@
 // limit break (the screen held, the name in the frame), Guilty Gear's super flash, Puzzle & Dragons' enemy skill banner; the creature
 // tags' own render of a creature's meshes alone (creaturetags.js sampleMesh).
 //
-//   const C = new FoeCutIn(view)   C.warm()   C.beat(e) -> phase | null (once an event)   C.clear()   CUT_IN (the knobs)
+//   const C = new FoeCutIn(view)   C.warm()   C.beat(e) -> phase | null (once an event)   C.veil(k) (the screen darkened, no band)   C.clear()   CUT_IN (the knobs)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { FONT } from '../../ui/theme.js';
@@ -166,12 +166,17 @@ export class FoeCutIn {
  step: (u, age) => { this.age = age; }, end: () => this.hide() };
   }
 
-  hide() { this.age = -1; if (this.mesh) { this.mesh.userData.overlayHidden = true; this.mesh.visible = false; } }
-  clear() { this.hide(); this.limitAt = -99; for (const { p } of this.proxies) this.scene?.remove(p); this.proxies.length = 0; }
+  hide() { this.age = -1; if (this.mesh && this.veilK > 0.001) return; if (this.mesh) { this.mesh.userData.overlayHidden = true; this.mesh.visible = false; } }
+  clear() { this.veilK = 0; this.hide(); this.limitAt = -99; for (const { p } of this.proxies) this.scene?.remove(p); this.proxies.length = 0; }
 
   /** The overlay's call each frame it is shown: the band laid out on the screen, its beats, the strip drawn. */
+  /** The veil: the screen darkened with no band (0 gone .. 1 black), for a death held in the dark (aberrants/wisp.js). */
+  veil(k) { if (!this.ensure()) return; this.veilK = Math.max(0, k || 0); if (this.age < 0) { const on = this.veilK > 0.001; this.mesh.userData.overlayHidden = !on; if (!on) this.mesh.visible = false; } }
+
   frame(dt, slot) {
-    this.t += dt; if (this.age < 0) return;
+    this.t += dt;
+    if (this.age < 0) { if (!(this.veilK > 0.001)) return; const u = this.u, w = slot.view.w, h = slot.view.h; // (the veil alone: no band, no word)
+      this.mesh.scale.set(w, h, 1); u.uRes.value.set(w, h); u.uIn.value = 0; u.uOut.value = 0; u.uWordOn.value = 0; u.uFlash.value = 0; u.uDim.value = this.veilK; u.uBand.value.set(-h, 0, 0, 0); return; }
     const w = slot.view.w, h = slot.view.h, u = this.u, a = this.age, L = this.limit, hold = L ? CUT_IN.limitHold : CUT_IN.hold;
     this.mesh.scale.set(w, h, 1); u.uRes.value.set(w, h); u.uT.value = this.t;
     const kin = sm(clamp01(a / CUT_IN.in)), kout = sm(clamp01((a - CUT_IN.in - hold) / CUT_IN.out)), kh = clamp01((a - CUT_IN.in) / hold);
