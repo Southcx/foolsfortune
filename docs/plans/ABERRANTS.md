@@ -44,7 +44,9 @@ aberrant is a sentence in it.
   into embers every 2 turns. Kindle wakes only once the lantern is half spent. Its desperate flare: Hurl 5 and Petrify 4 at its last
   2 columns.
 - **Secret: snuff the lantern** (`secrets.js` `snuff`). Its lantern burns on Dread. Every Dread gem you clear is fuel taken from it;
-  at 24 the lantern goes out and the Wisp goes out with it.
+  at 48 the lantern goes out and the Wisp goes out with it.
+  - **The fuel.** 48 since 2026-10-29 (24 before: with several powers a turn it fell in 2.7 turns and was found by chance 9 duels in
+    16; PUZZLE-DUELS.md 26.9).
   - **The tell.** Its light shrinks from 3 cells to 2, 1 and 0. The fog on its half closes in on its body (the board's own fog,
     `dread.js` `lightOf`), and the log says "The lantern gutters." once it is half spent.
   - **The cost.** Dread clears push the Line half as far (it resists its own feeling).
@@ -68,7 +70,10 @@ aberrant is a sentence in it.
 | **24 (built)** | for the Line (K 2 / 12) | 1 / 2 by chance | 5.6 / 6.4 |
 | **24 (built)** | for the secret (K 2 / 12) | 10 / 13 | 5.3 / 5.2 |
 
-At 24 the secret is a choice, not a shortcut. Playing for it is as long as playing for the Line, and it is found by chance about one
+(One power a turn, the table above.) With powers paid by the pool and a regen of 8 (PUZZLE-DUELS.md 26.9) the fuel went to **48**:
+played for, 13 of 16 in 3.6 turns, the Line 4.2; found by chance 2 of 16. So the secret is now the faster way, as South wants it.
+
+At 24 (one power a turn) the secret was a choice, not a shortcut. Playing for it is as long as playing for the Line, and it is found by chance about one
 duel in ten, often enough to be stumbled on and wondered about. Kindle fired about once a duel against a player going for it.
 
 Before this round the Wisp's 5 colours were the first 5 of COLOURS (no Dread on its board at all). A ruleset's `palette` now names
@@ -82,12 +87,44 @@ count on the lantern, the System's type. The Codex's bestiary entry may then nam
 the lectern's Wisp board is where it can be rehearsed. The achievement (`du9`, "Lights Out", a placeholder) names what you did
 without naming how.
 
-## 5. The next aberrants (parked until South picks)
+## 5. The second: the aberrant slip jelly (South, 2026-10-29)
 
-Each needs a creature in the world first. The slip jelly and the clapperjar are the candidates. Sketches only:
+South: "I'd agree the slip jellyfish should be next, and it should throw a LOT of junk, but its easy to clear. The weakness could be being
+highly susceptible to a well timed Transmute that converts the piled up junk for an OHKO." Every blotling is an aberrant slip jelly
+(world/ground/stains.js), so this is the board they bring (`KIND_RULESETS.slipjelly`), and the lectern can rehearse it (`PRACTICE.jelly`).
 
-- **Slip jelly (Gall?).** Its half is one mass that grows back into holes. Secret: split it, by clearing the column under its core in
-  one turn.
+- **Board.** 12 x 10 (the Wisp's 12, a row taller: at 9 a half-skilled player drowned). Gall's colours: Wonder, Mirth, Desire, Gall and
+  Grief. No colour it is weak to (`weak: false`): its weakness is the Transmute.
+- **Its junk is slime** (`slime: true` on a junk piece): itself, thrown at you. It breaks beside a clear as any junk does, so it is easy
+  to keep down. Manifest takes it as junk.
+- **Foe skills.** Hurl 3 every turn; **Spew** (its own) 7 every 3rd; Reclaim every 5th; **Harden** (its own) wakes once the pile is past
+  0.6 of the secret's need and sets 4 slime into plain junk every 2nd turn. Its desperate flare: Spew 9.
+- **Secret: dissolve it** (`secrets.js` `dissolve`). Let the slime pile, Transmute it (a slime cell picked: every slime on your half
+  turns to gems of the colour you pick), and clear 9 of those gems in one turn. With nothing left to hold it together, the jelly falls
+  apart.
+  - **The tell.** The jelly shrinks as its slime piles on your half (`k`: the pile against the need). "The slip jelly sags" once it is
+    past 0.6.
+  - **The cost.** A half full of slime is a half near full (a side that cannot take what lands has lost) and pushes nothing.
+  - **The answer.** Harden: wait too long and the pile sets into junk a Transmute cannot turn.
+  - **The timing.** Transmute the turn after a Spew.
+  - Prior art: Puyo Puyo's garbage sent back, Tetris 99's counter, Kirby swallowing what is thrown, Pokemon's Counter.
+- **Its two deaths** (Calissa's to look, Petra's to time). The Line's: the jelly bursts into its slime. The secret's: its slime runs off
+  your half back into it and it slumps flat.
+
+### 5.1 Measured (`scratchpad duel/powers.mjs` and `jelly.mjs`, 32 duels a row, powers paid by the pool, regen 8)
+
+| board | strong (P 1), at the Line | half-skilled (P 0.5) | the secret, Transmuted the turn after a Spew |
+| --- | --- | --- | --- |
+| 12 x 9, Hurl 3, Spew 7 | 31 of 32, 4.2 turns | 12 of 32 | 13 of 16, 3.4 turns |
+| 12 x 9, Hurl 2, Spew 6 | 32 of 32, 4.3 | 14 of 32 | 6 of 16, 5.6 |
+| **12 x 10, Hurl 3, Spew 7 (built)** | 32 of 32, 4.2 (secret by chance: 0) | 20 of 32, 6.5 (11 by the secret, by chance) | 16 of 16, 3.4 |
+| 12 x 11, Hurl 3, Spew 7 | 32 of 32, 4.0 | 27 of 32 | 13 of 16, 4.1 (no faster than the Line) |
+
+The secret's need: 9 (played for: 13 of 16 at 12 x 9; at 8, 15 of 16 but found by chance 3 of 16 by strong players; at 10, 9 of 16).
+The pile tops out near 10: slime breaks beside every clear, which is what "easy to clear" means here. A random player loses every duel:
+the flood is the jelly's threat.
+
+### 5.2 The next (parked until South picks)
 - **Clapperjar (Mirth).** It claps on the beat. Secret: clear on its rhythm, three turns in a row, keeping the Crucibelle's time.
 - **Strawman (practice).** A plain secret that teaches the idea, "clear every colour once", shown plainly from the start.
 
@@ -108,18 +145,31 @@ A new save's garden is bare (`bare`), so its half is the deep and the film as be
 **A look only.** Nothing in the garden changes a duel's rules ("base change bad"; the Spirit Garden is in flux), and it adds no reason
 to tend the garden for a fight (South: no new reasons yet). Parked for later: a bound spirit lending a hand in a duel.
 
-## 6. Asked of the divisions (handoffs in `docs/handoffs/<name>/`)
+## 8. A secret's reward: a learned skill (South, 2026-10-29)
+
+"The secret is a faster way to win, maybe we can evaluate drop tables of Soul Alchemy materials, cosmetic drop? Learning special
+abilities? ... I'm all for learning abilities from enemies." Each aberrant teaches one skill (`duel/learned.js`), cast as a power: the
+feat way is its secret found once, the count way 5 beaten at the Line. Kindle is the Wisp's (PUZZLE-DUELS.md 26.10). The jelly's is open:
+its Spew turned around would push junk onto a half the PvE duel keeps frozen, so it waits for a mode where that half plays.
+A material drop is not yet built: a second faucet into Soul Alchemy needs South's word on its size. A cosmetic opened by the secret is the
+right size (cosmetics.js's rule: the thing it pictures), asked of Calissa (a lantern pendant).
+
+## 9. Asked of the divisions (handoffs in `docs/handoffs/<name>/`)
 
 - **Petra:**
-  - the session counts `duel.secret` as an end (`how: 'secret'`);
-  - puts the kernel's `secret.step`, `secret.half` and `duel.secret` on the bus as `duel.secret { id, k, half?, done?, by: 'courier' }`;
-  - times both deaths as cinematics before the board folds.
+  - the session passes `learned: learnedOf(g.ledger)` (`duel/learned.js`) beside `dim`;
+  - arms Kindle as Herd is (a row or a column);
+  - adds the lectern's row for `PRACTICE.jelly`;
+  - colours the view by the ruleset's feeling when the aberrant brings its own board (a blotling's `grade` is its weather; its board is
+    the jelly's Gall);
+  - the Wisp's (section 3) and the jelly's (section 5) two deaths, timed.
 - **Calissa:**
-  - your half of the clash as your Spirit Garden (section 7, `game.gardenBackdrop()`);
-  - the Wisp's Zone of Influence (the fens), its lantern dimming with `lightOf`;
-  - Kindle's cast and cut-in;
-  - its two deaths;
-  - after `found`, the lantern's plain count.
-- **Wanda:** the lantern's guttering under the cue as it dims (k), Kindle's sting, the snuff's silence, and the Wisp's cue's own colour.
-- **Espada:** Kindle's label and line, the secret's two log lines (the half's tell, the end), `du9`'s name and words, and the two
-  deaths' log lines.
+  - the trickle's motes to the Lachrimeter wherever it stands;
+  - each side of the tsuitate shaped as its own (South, 2026-10-29: "the sides tsuitate should take on the shape of the aesthetic of
+    the courier or aberrant respectively. More thematic resonance doubled by the backgrounds");
+  - slime's look (junk with `slime`), a Transmute of slime, Spew, Harden, the jelly's Zone of Influence and its two deaths;
+  - Kindle-yours' tile and cast; a lantern pendant for the Pneuka Jar, if she likes it;
+  - still standing: the Wisp's looks, your half as your garden, the turn's change.
+- **Wanda:** Spew's and Harden's stings, the jelly's cue, the slime turning under a Transmute.
+- **Espada:** the words for Spew, Harden, Kindle (yours), the jelly's secret and its two deaths, and the line said when a skill is
+  learned.

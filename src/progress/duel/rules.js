@@ -93,7 +93,7 @@ export function resolve(b, cells, rs) {
   for (const k of gone) {
     const [x, y] = unkey(k), p = b.at(x, y); if (!p) continue;
     if (hasTag(p, 'matches')) cleared[b.sideOf(x)]++;
-    events.push({ type: hasTag(p, 'junk') ? 'break' : 'clear', id: p.id, side: b.sideOf(x), at: [x, y], colour: p.colour });
+    events.push({ type: hasTag(p, 'junk') ? 'break' : 'clear', id: p.id, side: b.sideOf(x), at: [x, y], colour: p.colour, ...(p.born ? { born: p.born } : {}) }); // (born: a gem that was something else, a Transmute's slime: secrets.js)
     b.set(x, y, null);
   }
   return { cleared, events };

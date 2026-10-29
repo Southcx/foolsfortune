@@ -10,10 +10,11 @@
 //   Herd       (Possession, Herd)                    gems of one colour within 2 of a row or column come onto it
 //   Transmute  (Alteration, Transmute)               every gem of one colour on your half turns to another, and none of it falls for 2 turns
 //   Miracle    (Spellscription, the miracles)        one colour's weather on your half: its gems clear at any 2 touching, this turn and your next
+//   and a learned skill (learned.js, a row with `learned`): an aberrant's own, open once learned (Kindle, the Lantern Wisp's)
 // Each is paid from the pool (the Courier's own, as the duel opened: the hand's powers cost Lachryma in the world too), which your clears
-// fill (`drink`: a point a gem you clear, Puzzle Quest's mana), each rests a few of your turns once used (`rest`: Puzzle & Dragons'
-// cooldowns), and one is cast a turn (POWERS_A_TURN: with three a turn a searching stand-in won every Lantern Wisp duel in 3 turns, the
-// fewest the Line allows, whatever its strength; with one, how well you drag shows again: PUZZLE-DUELS.md 24.3). All seven are open from the first duel (the
+// fill (`drink`: a point a gem you clear, Puzzle Quest's mana) and your turn's regen tops up (duel.js PVE.regen), and each rests a few of
+// your turns once used (`rest`: Puzzle & Dragons' cooldowns). As many a turn as the pool pays for, each once (South, 2026-10-29: "use
+// multiple powers provided you have the resources for it"; one a turn until then: PUZZLE-DUELS.md 26.9). All seven are open from the first duel (the
 // world's at-1 powers are open from the start too); a domain's level widens its power on the ramp's curve (`levels`, RAMP_CURVE): what it
 // costs falls to 0.6 of itself at 99 (the duel's numbers stay readable: one rule, every power). The worn pair's skills (skills.js) are not
 // in the PvE duel: the powers are its big plays (PUZZLE-DUELS.md 24.4).
@@ -30,11 +31,12 @@
 //   at, dir, by, moved }, herd { side, at, dir, colour, moved }, transmute { side, from, colour, turns, cells: [{ at, id }] }, miracle { side,
 //   colour, need, turns } (its clears are the settle's, under the tune: rules.js clears)
 // ---------------------------------------------------------------------------------------
-import { paletteOf, piece, hasTag } from './board.js';
+import { paletteOf, piece, hasTag, KINDS } from './board.js';
 import { RAMP_CURVE } from '../godpowers.js';
 import { awake } from './foeskills.js';
 
 const mineIn = (b, side, x, y) => b.in(x, y) && b.mine(side, x);
+const slimeAt = (b, side, at) => (at && mineIn(b, side, at[0], at[1]) && b.at(at[0], at[1])?.slime ? b.at(at[0], at[1]) : null);
 const gemAt = (b, side, at) => (at && mineIn(b, side, at[0], at[1]) && hasTag(b.at(at[0], at[1]), 'matches') ? b.at(at[0], at[1]) : null);
 const movable = (p) => !p || hasTag(p, 'swappable'); // (an empty cell moves with its patch; a body or an orb does not)
 const colours = (s) => paletteOf(s.rs);
@@ -70,7 +72,7 @@ function manifestColour(s, side, cells) {
 }
 /** Manifest's cells: junk and embers first, then holes, in the 3 x 3 round the cell, at most `max` (nearest the cell first). */
 const filled = (s, side, at) => { const b = s.board, junk = [], holes = [];
-  for (const [x, y] of ring(at, 1)) { if (!mineIn(b, side, x, y)) continue; const p = b.at(x, y); if (!p) holes.push([x, y]); else if (p.kind === 'junk' || p.kind === 'ember') junk.push([x, y]); }
+  for (const [x, y] of ring(at, 1)) { if (!mineIn(b, side, x, y)) continue; const p = b.at(x, y); if (!p) holes.push([x, y]); else if (p.kind === 'junk' || p.kind === 'ember') junk.push([x, y]); } // (slime is junk: Manifest takes it too)
   const near = (c) => Math.abs(c[0] - at[0]) + Math.abs(c[1] - at[1]); return [...junk.sort((p, q) => near(p) - near(q)), ...holes.sort((p, q) => near(p) - near(q))].slice(0, DUEL_POWERS.manifest.max); };
 
 export const DUEL_POWERS = {
@@ -106,9 +108,15 @@ export const DUEL_POWERS = {
       for (const m of moves) { const p = b.at(...m.from), q = b.at(...m.to); b.swap(m.from, m.to); moved.push({ id: p.id, from: m.from, to: m.to }); if (q) moved.push({ id: q.id, from: m.to, to: m.from }); }
       return [{ type: 'herd', side, at: a.at, dir: a.dir, colour, moved }]; } },
   transmute: { domain: 'alteration', label: 'Transmute', line: 'Every gem of one colour on your half turns to another, and none of the old colour falls for 2 turns', cost: 25, rest: 3, target: 'cell', turns: 2,
-    legal: (s, side, a) => { const p = gemAt(s.board, side, a.at); return !!p && (!a.colour || (a.colour !== p.colour && colours(s).includes(a.colour))); },
-    reach: (s, side, a) => { const p = gemAt(s.board, side, a.at), out = []; if (p) s.board.each((q, x, y) => { if (s.board.mine(side, x) && hasTag(q, 'matches') && q.colour === p.colour) out.push([x, y]); }); return out; },
-    apply: (s, side, a) => { const b = s.board, from = b.at(...a.at).colour, colour = a.colour || mostOf(s, side, from), cells = [];
+    // (on slime, an aberrant slip jelly's junk: every slime on your half turns to gems of the colour you pick, or the one most on your
+    // half; nothing lingers. The jelly's weakness: let it pile, then turn it all at once: ABERRANTS.md 5, secrets.js `dissolve`)
+    legal: (s, side, a) => { const p = gemAt(s.board, side, a.at) || slimeAt(s.board, side, a.at); return !!p && (!a.colour || ((p.slime || a.colour !== p.colour) && colours(s).includes(a.colour))); },
+    reach: (s, side, a) => { const p = gemAt(s.board, side, a.at) || slimeAt(s.board, side, a.at), out = []; if (p) s.board.each((q, x, y) => { if (s.board.mine(side, x) && (p.slime ? q.slime : hasTag(q, 'matches') && q.colour === p.colour)) out.push([x, y]); }); return out; },
+    apply: (s, side, a) => { const b = s.board, cells = [];
+      if (slimeAt(b, side, a.at)) { const colour = a.colour || mostOf(s, side, null);
+        b.each((p, x, y) => { if (b.mine(side, x) && p.slime) { Object.assign(p, { kind: 'gem', tags: KINDS.gem, colour, slime: undefined, extra: undefined, born: 'slime' }); cells.push({ at: [x, y], id: p.id }); } });
+        return [{ type: 'transmute', side, from: 'slime', colour, turns: 0, cells }]; }
+      const from = b.at(...a.at).colour, colour = a.colour || mostOf(s, side, from);
       b.each((p, x, y) => { if (b.mine(side, x) && hasTag(p, 'matches') && p.colour === from) { p.colour = colour; cells.push({ at: [x, y], id: p.id }); } });
       s.sides[side].transmute = { from, to: colour, left: DUEL_POWERS.transmute.turns }; // (a new object each time: a copy of the side shares the old one)
       return [{ type: 'transmute', side, from, colour, turns: DUEL_POWERS.transmute.turns, cells }]; } },
@@ -117,10 +125,18 @@ export const DUEL_POWERS = {
     reach: (s, side, a) => DUEL_POWERS.transmute.reach(s, side, a),
     apply: (s, side, a) => { const S = s.sides[side], colour = s.board.at(...a.at).colour, M = DUEL_POWERS.miracle; S.tune = colour; S.tuneLeft = M.turns; S.tuneNeed = M.need;
       return [{ type: 'miracle', side, at: a.at, colour, need: M.need, turns: M.turns }]; } },
+  // A LEARNED SKILL (learned.js; South, 2026-10-29: "I'm all for learning abilities from enemies"): an aberrant's own skill turned to
+  // your hand, open only once learned (`learned`: newDuel's list). The Lantern Wisp's Kindle, yours: junk lit into embers that cool into
+  // gems at your turn's end (the Wisp burns your gems down; you burn its junk up). For a half buried in junk; Manifest is three cells at
+  // once, Kindle a whole line a turn later.
+  kindle: { domain: 'alteration', label: 'Kindle', line: 'Every junk in a row or column of your half lights into an ember that cools into a gem at your turn\'s end', cost: 15, rest: 3, target: 'cell', learned: true,
+    legal: (s, side, a) => (a.dir === 'H' || a.dir === 'V') && mineIn(s.board, side, ...(a.at || [-1, -1])) && lineOf(s.board, side, a.at, a.dir).some(([x, y]) => s.board.at(x, y)?.kind === 'junk'),
+    reach: (s, side, a) => lineOf(s.board, side, a.at, a.dir || 'H').filter(([x, y]) => s.board.at(x, y)?.kind === 'junk'),
+    apply: (s, side, a) => { const b = s.board, cells = [];
+      for (const [x, y] of lineOf(b, side, a.at, a.dir)) { const p = b.at(x, y); if (p?.kind !== 'junk') continue; Object.assign(p, { kind: 'ember', tags: KINDS.ember, count: 1, slime: undefined, extra: undefined }); cells.push({ at: [x, y], id: p.id }); }
+      return [{ type: 'kindle', side, at: a.at, dir: a.dir, cells }]; } },
 };
 export const POWER_IDS = Object.keys(DUEL_POWERS);
-/** Powers a side may cast in one turn (each a moment of its own: the cast, Calissa's; Wanda's sting). */
-export const POWERS_A_TURN = 1;
 
 /** The colour a Transmute turns one into when none is asked: the one most on your half (the turn that makes the most to match). */
 function mostOf(s, side, from) {
@@ -143,13 +159,13 @@ export function powerReach(s, side, a) {
 /** The powers a side has now, each with its cost, its rest and whether it can fire (the view's tiles; the bot's choices). */
 export function powersOf(s, side) {
   const S = s.sides[side]; if (!S.powers) return [];
-  return POWER_IDS.map((id) => { const P = DUEL_POWERS[id], cost = powerCost(s, side, id), left = S.powerRest?.[id] || 0, used = (S.powerUsed || []).includes(id);
-    return { id, domain: P.domain, label: P.label, line: P.line, target: P.target, cost, rest: P.rest, left, used, ready: !left && !used && (S.powerUsed || []).length < POWERS_A_TURN && S.pool >= cost }; });
+  return POWER_IDS.filter((id) => !DUEL_POWERS[id].learned || S.learned?.includes(id)).map((id) => { const P = DUEL_POWERS[id], cost = powerCost(s, side, id), left = S.powerRest?.[id] || 0, used = (S.powerUsed || []).includes(id);
+    return { id, domain: P.domain, label: P.label, line: P.line, target: P.target, cost, rest: P.rest, left, used, ready: !left && !used && S.pool >= cost }; });
 }
 
 /** The free action that fires a power: worn by the side (the PvE duel's hand), rested, paid for, its target good. */
 export const POWER_ACTION = { form: null, cost: 0,
-  legal: (s, side, a) => { const S = s.sides[side], P = DUEL_POWERS[a.power]; if (!P || !S.powers || S.powerRest?.[a.power] || (S.powerUsed || []).length >= POWERS_A_TURN || S.pool < powerCost(s, side, a.power)) return false;
+  legal: (s, side, a) => { const S = s.sides[side], P = DUEL_POWERS[a.power]; if (!P || !S.powers || (P.learned && !S.learned?.includes(a.power)) || S.powerRest?.[a.power] || (S.powerUsed || []).includes(a.power) || S.pool < powerCost(s, side, a.power)) return false;
     return P.legal ? P.legal(s, side, a) : true; },
   apply: (s, side, a) => { const S = s.sides[side], P = DUEL_POWERS[a.power], cost = powerCost(s, side, a.power);
     S.pool -= cost; S.powerRest = { ...S.powerRest, [a.power]: P.rest }; S.powerUsed = [...(S.powerUsed || []), a.power]; S.powersUsed = (S.powersUsed || 0) + 1; // (new objects: a lookahead's copy of the side shares the old ones)
@@ -185,7 +201,7 @@ export function powerActions(s, side, n, rng) { // (rng: a quiet stream, never t
     if (!P.target) { const a = { kind: 'power', power: P.id }; if (POWER_ACTION.legal(s, side, a)) out.push(a); continue; }
     for (let i = 0, got = 0; i < n * 4 && got < n; i++) {
       const a = { kind: 'power', power: P.id, at: pick() };
-      if (P.id === 'swap') a.to = pick(); if (P.id === 'lift') { a.dir = 'ESWN'[Math.floor(rng() * 4)]; a.by = 1 + Math.floor(rng() * 2); } if (P.id === 'herd') a.dir = rng() < 0.5 ? 'H' : 'V';
+      if (P.id === 'swap') a.to = pick(); if (P.id === 'lift') { a.dir = 'ESWN'[Math.floor(rng() * 4)]; a.by = 1 + Math.floor(rng() * 2); } if (P.id === 'herd' || P.id === 'kindle') a.dir = rng() < 0.5 ? 'H' : 'V';
       if (POWER_ACTION.legal(s, side, a)) { out.push(a); got++; }
     }
   }

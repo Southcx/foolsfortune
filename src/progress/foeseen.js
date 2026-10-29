@@ -14,14 +14,19 @@
 //   save section `foeSeen` (scope player: reset with every build, as all progress is)   events: duel.seen { skill, how, by: 'courier' } (once a skill)
 //   .found(secretId) -> bool (an aberrant's secret win found: ABERRANTS.md; then its progress may be drawn plainly)
 //   listens: duel.foe { skill } (watched), duel.power { power: 'scan', skill } (scanned), duel.secret { id, done } (found)
+//   .learnt: the learned skills already said (duel/learned.js is the rule, a predicate over the ledger; this only says each once):
+//   events: duel.learn { power, from, by: 'courier' } after a duel's end that taught one
 // ---------------------------------------------------------------------------------------
 import { FOE_SKILLS } from './duel/foeskills.js';
+import { learnedOf, LEARNED } from './duel/learned.js';
 
 export class FoeSeen {
   constructor(game) {
-    this.game = game; this.known = {}; this.secrets = {};
-    game.save?.section('foeSeen', { scope: 'player', version: 2, dump: () => ({ ...this.known, secrets: { ...this.secrets } }),
-      load: (d) => { const { secrets, ...known } = d || {}; this.known = known; this.secrets = { ...(secrets || {}) }; }, reset: () => { this.known = {}; this.secrets = {}; } });
+    this.game = game; this.known = {}; this.secrets = {}; this.learnt = [];
+    game.save?.section('foeSeen', { scope: 'player', version: 3, dump: () => ({ ...this.known, secrets: { ...this.secrets }, learnt: [...this.learnt] }),
+      load: (d) => { const { secrets, learnt, ...known } = d || {}; this.known = known; this.secrets = { ...(secrets || {}) }; this.learnt = [...(learnt || [])]; }, reset: () => { this.known = {}; this.secrets = {}; this.learnt = []; } });
+    const taught = () => queueMicrotask(() => this.teach()); // (after the duel's end is counted: the ledger is the rule)
+    game.events?.on?.('duel.end', taught);
     game.events?.on?.('duel.secret', (e) => { if (e?.done && e.id && !this.secrets[e.id]) { this.secrets[e.id] = true; this.game.save?.dirty?.('foeSeen'); } }); // (practice too: what you know)
     game.events?.on?.('duel.foe', (e) => this.see(e?.skill, 'watched')); // (practice duels too: seeing is knowledge, not a count)
     game.events?.on?.('duel.power', (e) => { if (e?.power === 'scan' && e.skill) this.see(e.skill, 'scanned'); });
@@ -29,6 +34,11 @@ export class FoeSeen {
   seen(skill) { return !!this.known[skill]; }
   found(id) { return !!this.secrets[id]; }
   how(skill) { return this.known[skill] || null; }
+  /** Say each learned skill once, the first time the ledger says it is learned (duel/learned.js). */
+  teach() {
+    for (const power of learnedOf(this.game.ledger)) { if (this.learnt.includes(power)) continue;
+      this.learnt.push(power); this.game.save?.dirty?.('foeSeen'); this.game.events?.emit('duel.learn', { power, from: LEARNED[power].from, by: 'courier' }); }
+  }
   /** A skill seen: watched (it happened to you) outranks scanned (read ahead). Said once, on the bus, for the view and the log. */
   see(skill, how = 'watched') {
     if (!FOE_SKILLS[skill]) return;
