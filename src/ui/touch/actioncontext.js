@@ -241,7 +241,7 @@ function skillTiles(g, s) {
  *  armed, dim while resting, too dear, or one already cast this turn (Puzzle & Dragons' skill cooldowns on the team's portraits). */
 function powerTiles(g, s) {
   const D = g.duel; return powersOf(s, 0).map((P) => { const L = DOMAIN_LOOK[P.domain] || {};
-    return E(`du.power.${P.id}`, L.icon || null, P.label.toUpperCase(), { corner: String(P.cost), square: true, pal: L.pal, charge: P.left ? 1 - P.left / Math.max(1, P.rest) : 1,
+    return E(`du.power.${P.id}`, P.id === 'kindle' || P.id === 'absorb' ? `godart.${P.id}` : L.icon || null, P.label.toUpperCase(), { corner: String(P.cost), square: true, pal: L.pal, charge: P.left ? 1 - P.left / Math.max(1, P.rest) : 1,
       lit: D.armedPower === P.id, dim: !D.mine || !P.ready }); });
 }
 

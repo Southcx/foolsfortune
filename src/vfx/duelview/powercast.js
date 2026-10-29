@@ -8,8 +8,11 @@
 //   SCAN       the aberrant's countdowns knocked back, the delay over its head, a tenmoku glint off the scanned badge
 //   LIFT       the row or column raised a little and slid along, a piece that wraps round hopping over the rest
 //   HERD       each gem drawn onto the line along the ground, Jun's purple trailing it
-//   TRANSMUTE  a wave of flambe out from the first gem through every gem of its colour, each turning as it reaches it
+//   TRANSMUTE  a wave of flambe out from the first gem through every gem of its colour, each turning as it reaches it (on slime,
+//              `from: 'slime'`: every slime on your half swelling into a gem where it lies)
 //   MIRACLE    the cobalt's rings and the colour's hum on your half (the tune's own: glows.js), held until `tune.end`
+//   KINDLE     (a learned power, the Lantern Wisp's) a flame run down the row or column from where it was cast, each junk lit into an ember
+//   ABSORB     (a learned power, the slip jelly's) the junk of a 3 x 3 drawn into the cell it was cast on, then drunk up to the bulb
 //   DRINK      `drink`: the pool your clears filled, a bead up the link
 // Programs: the bursts' and the words' (bursts.js, juice.js): nothing new.
 // Prior art: Puzzle & Dragons' active skills (the board changed under a flash in the leader's colour), Puzzle Quest's spell casts, Bejeweled's
@@ -23,11 +26,12 @@ import { DUEL_POWERS } from '../../progress/duel/powers.js';
 import { DUEL_VIEW, cellLocal, sm, lerp, clamp01 } from './layout.js';
 import { gemColour } from './pieces.js';
 
-export const POWER_EVENTS = new Set(['power', 'swap', 'manifest', 'scan', 'lift', 'herd', 'transmute', 'transmute.end', 'miracle', 'drink']);
+export const POWER_EVENTS = new Set(['power', 'swap', 'manifest', 'scan', 'lift', 'herd', 'transmute', 'transmute.end', 'miracle', 'drink', 'kindle', 'absorb']);
 /** The beats' lengths (real s) and the cast's stagger between pieces. */
-export const POWER_CAST = { ring: 0.32, slide: 0.42, per: 0.02, grow: 0.36, spiral: 0.4, miracle: 0.6, arc: 1.1 };
+export const POWER_CAST = { ring: 0.32, slide: 0.42, per: 0.02, grow: 0.36, spiral: 0.4, miracle: 0.6, arc: 1.1, kindle: { fly: 0.32, per: 0.06 }, absorb: { pull: 0.38, per: 0.03 } };
+const EMBER = 0xff6a2a;
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Color();
-const domainHex = (d) => parseInt((DOMAIN_LOOK[d]?.colours?.accent || DOMAIN_LOOK[d]?.iconHex || '#ffd36a').slice(1), 16);
+export const domainHex = (d) => parseInt((DOMAIN_LOOK[d]?.colours?.accent || DOMAIN_LOOK[d]?.iconHex || '#ffd36a').slice(1), 16);
 const DOMAIN_OF = (id) => DUEL_POWERS[id]?.domain;
 
 /** The pieces a move carries, slid from their cells to their new ones (the model's move at once, the drawing over the beat). */
@@ -47,7 +51,7 @@ function powerMoment(T, e) {
   const V = T.view, B = V.board3, hex = domainHex(e.domain), at = e.at ? cellLocal(e.at[0], e.at[1], B, new THREE.Vector3()) : cellLocal((V.lineCol ?? B.line) / 2, B.h / 2, B, new THREE.Vector3());
   V.game.spiritualLink?.bead?.({ amount: e.cost || 0 });
   V.bursts.burst(at, hex, 18, { speed: 0.9, life: 0.4, fall: 0, spread: 0, size: 0.022 }); V.bursts.burst(at, 0xffffff, 5, { speed: 0.4, life: 0.3, fall: 0, size: 0.04 });
-  V.juice.word((DUEL_POWERS[e.power]?.label || e.power || '').toUpperCase(), _b.copy(at).add(_a.set(0, 0.22, 0.06)), hex, { h: 0.11, dur: 0.9 });
+  if (!V.jarCut?.cut.has(e)) V.juice.word((DUEL_POWERS[e.power]?.label || e.power || '').toUpperCase(), _b.copy(at).add(_a.set(0, 0.22, 0.06)), hex, { h: 0.11, dur: 0.9 }); // (a big one's label was slammed in its cut-in: one label, never two)
   V.stage?.jolt?.(0.2);
   return { events: [e], dur: POWER_CAST.ring };
 }
@@ -73,9 +77,28 @@ export function powerBeat(T, e) {
   if (e.type === 'transmute') {
     const H = domainHex('alteration'), to = gemColour(e.colour, _c).getHex(), c0 = e.cells?.[0]?.at || [0, 0];
     const items = (e.cells || []).map((c) => ({ c, v: P.byId(c.id) || P.at(c.at[0], c.at[1]), d: 0.04 * Math.hypot(c.at[0] - c0[0], c.at[1] - c0[1]), done: false })).filter((q) => q.v); // (a wave out from the first, each gem turning as it reaches it)
-    const flip = (q) => { q.done = true; q.v.colour = e.colour; q.v.flash = 0.9; cellLocal(q.c.at[0], q.c.at[1], B, _a); V.bursts.burst(_a, H, 4, { speed: 0.5, life: 0.3, fall: 0, size: 0.02 }); V.bursts.burst(_a, to, 3, { speed: 0.3, life: 0.35, fall: 0, size: 0.022 }); };
-    return { events: [e], dur: POWER_CAST.spiral + Math.max(0, ...items.map((q) => q.d)) + DUEL_VIEW.ma, step: (u, age) => { for (const q of items) { if (!q.done && age >= q.d + 0.05) flip(q); if (q.done) q.v.flash = Math.max(0, q.v.flash - 0.05); } },
-      end: () => { for (const q of items) { if (!q.done) flip(q); q.v.flash = 0; } } };
+    const flip = (q) => { q.done = true; if (q.v.kind !== 'gem') { P.remove(q.v); q.v = P.add('gem', { id: q.c.id, colour: e.colour, side: e.side }, q.c.at[0], q.c.at[1]); q.v.s = 0.6; } q.v.colour = e.colour; q.v.flash = 0.9; // (on slime, the slip jelly's: the junk itself turned a gem where it lies, same id)
+      cellLocal(q.c.at[0], q.c.at[1], B, _a); V.bursts.burst(_a, H, 4, { speed: 0.5, life: 0.3, fall: 0, size: 0.02 }); V.bursts.burst(_a, to, 3, { speed: 0.3, life: 0.35, fall: 0, size: 0.022 }); };
+    return { events: [e], dur: POWER_CAST.spiral + Math.max(0, ...items.map((q) => q.d)) + DUEL_VIEW.ma, step: (u, age) => { for (const q of items) { if (!q.done && age >= q.d + 0.05) flip(q); if (q.done) { q.v.flash = Math.max(0, q.v.flash - 0.05); q.v.s = Math.min(1, q.v.s + 0.06); } } },
+      end: () => { for (const q of items) { if (!q.done) flip(q); q.v.flash = 0; q.v.s = 1; } } };
+  }
+  if (e.type === 'kindle') { // (a learned power, the Lantern Wisp's own turned to your hand: a flame run down the line from where it was cast, each junk lit into an ember)
+    const from = cellLocal(...(e.at || [0, 0]), B, new THREE.Vector3()), a0 = e.at || [0, 0], K = POWER_CAST.kindle;
+    const items = (e.cells || []).map((c) => ({ c, d: K.per * Math.hypot(c.at[0] - a0[0], c.at[1] - a0[1]), done: false }));
+    const light = (q) => { q.done = true; const v = P.byId(q.c.id) || P.at(q.c.at[0], q.c.at[1]); if (v) P.remove(v); P.add('ember', { id: q.c.id, count: 1, side: e.side }, q.c.at[0], q.c.at[1]);
+      cellLocal(q.c.at[0], q.c.at[1], B, _a); V.bursts.burst(_a, EMBER, 8, { speed: 0.8, life: 0.45, fall: -1.5, size: 0.022 }); V.bursts.burst(_a, hex, 3, { speed: 0.4, life: 0.35, fall: 0, size: 0.02 }); };
+    for (const q of items) V.foeCast.fling(from, cellLocal(q.c.at[0], q.c.at[1], B, new THREE.Vector3()), EMBER, { delay: q.d, life: K.fly, size: 0.026, arc: 0.25 });
+    return { events: [e], dur: K.fly + Math.max(0, ...items.map((q) => q.d)) + DUEL_VIEW.ma, step: (u, age) => { for (const q of items) if (!q.done && age >= q.d + K.fly) light(q); },
+      end: () => { for (const q of items) if (!q.done) light(q); } };
+  }
+  if (e.type === 'absorb') { // (a learned power, the slip jelly's: each junk in the 3 x 3 drawn into the cell it was cast on, then up to the bulb)
+    const A = POWER_CAST.absorb, mid = cellLocal(...(e.at || e.cells?.[0]?.at || [0, 0]), B, new THREE.Vector3()), tube = V.tubeAt?.(new THREE.Vector3());
+    const items = (e.cells || []).map((c, i) => ({ c, v: P.byId(c.id) || P.at(c.at[0], c.at[1]), d: i * A.per, x0: c.at[0], y0: c.at[1] }));
+    const ax = e.at?.[0] ?? items[0]?.x0 ?? 0, ay = e.at?.[1] ?? items[0]?.y0 ?? 0; let sent = false;
+    return { events: [e], dur: A.pull + items.length * A.per + DUEL_VIEW.ma, step: (u, age) => { for (const q of items) { if (!q.v) continue; const f = sm(clamp01((age - q.d) / A.pull));
+      q.v.x = lerp(q.x0, ax, f); q.v.y = lerp(q.y0, ay, f); q.v.s = Math.max(0.01, 1 - f); q.v.spin = f * 4; }
+      if (!sent && age >= A.pull) { sent = true; V.bursts.burst(mid, hex, 14, { speed: 0.9, life: 0.4, fall: 0, spread: 0, size: 0.022 }); if (tube) for (let i = 0; i < Math.min(8, items.length * 2); i++) V.foeCast.fling(mid, tube.clone(), 0x9fd8ff, { delay: i * 0.03, life: 0.5, size: 0.016, arc: 0.4 }); V.game.spiritualLink?.bead?.({ amount: e.pool || 3, colour: 0x9fd8ff, rev: true, dur: 0.45 }); } },
+      end: () => { for (const q of items) if (q.v) P.remove(q.v); } };
   }
   if (e.type === 'miracle') {
     const at = cellLocal(...(e.at || [(V.lineCol ?? B.line) / 2, B.h / 2]), B, new THREE.Vector3()), C = domainHex('spellscription'), G = gemColour(e.colour, _c).getHex(); let rang = 0;

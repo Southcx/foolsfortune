@@ -119,6 +119,26 @@ vec3 fens(vec3 dir, vec2 q, float t, float fl, float dark) {
   vec3 col = mix(water, sky, above) + fogC * bank * (0.9 + 0.8 * dark) + lamp * (glow * 0.22 + refl * 0.18); // (the camera looks down the lantern's bearing: kept faint, or the bloom washes the side)
   return mix(col, vec3(0.0), reed * 0.9);
 }
+// 2 an aberrant slip jelly's bog (ABERRANTS.md 5): Gall's ooze under a bilious haze, bubbles swelling and bursting, slime strands hung
+// from the sky; the haze thickens as its pile grows on your half (uStyle.y, the secret's k: aberrants/jelly.js)
+vec3 bog(vec3 dir, vec2 q, float t, float fl, float pile) {
+  vec3 ooze = uFoe * 0.22, haze = mix(uFoe * 0.5, vec3(0.32, 0.36, 0.08), 0.4);
+  if (fl > 0.5) { // the ground: a viscous pool, slow rings from the jelly's foot, bubbles swelling and bursting, a wet sheen
+    float r = length(vW.xz - uOriginF.xz), ring = max(0.0, sin(r * 2.6 - t * 0.9)) * exp(-r * 0.25);
+    vec2 bc = floor(q * 2.2), bf = fract(q * 2.2) - 0.5; float bh = h21(bc), life = fract(t * (0.15 + 0.2 * bh) + bh), br = (0.12 + 0.22 * bh) * life;
+    float bubble = step(0.62, bh) * (1.0 - smoothstep(br - 0.04, br, length(bf))) * smoothstep(br - 0.1, br - 0.03, length(bf)) * (1.0 - step(0.92, life));
+    float sheen = pow(fbm(q * 1.4 + vec2(t * 0.03, -t * 0.02)), 3.0);
+    return ooze * (0.7 + 0.5 * fbm(q * 0.7 + t * 0.02)) + uFoe * (ring * 0.25 + bubble * 0.9) + vec3(0.9, 1.0, 0.6) * sheen * 0.25;
+  }
+  float y = dir.y, above = step(0.0, y);
+  vec3 sky = mix(haze * (0.6 + 0.4 * (1.0 - pile)), vec3(0.02, 0.025, 0.0), smoothstep(0.05, 0.75, y));
+  float sx = q.x * 3.5, sh = h21(vec2(floor(sx), 7.0)), len = 0.25 + 0.5 * sh; // (strands of slime hung from the sky, a drop at each tip)
+  float strand = step(0.6, sh) * (1.0 - smoothstep(0.03, 0.09, abs(fract(sx) - 0.5))) * step(1.0 - len, y);
+  float drop = step(0.6, sh) * (1.0 - smoothstep(0.05, 0.14, length(vec2((fract(sx) - 0.5) * 1.2, (y - (1.0 - len) + 0.03 * sin(t + sh * 9.0)) * 6.0))));
+  vec3 below = ooze * (0.5 + 0.6 * fbm(q * vec2(0.5, 2.0) + vec2(0.0, t * 0.05))) + uFoe * 0.18 * exp(-abs(y) * 8.0);
+  vec3 col = mix(below, sky, above) + haze * fbm(vec2(q.x * 0.3 + t * 0.01, y * 3.0)) * (1.0 - smoothstep(0.0, 0.5, abs(y))) * (0.6 + 0.8 * pile);
+  return col + (uFoe * 0.9 + 0.08) * max(strand * 0.7, drop);
+}
 // your half as your Spirit Garden (uGarden: on, bloom, briar, daylight; the garden's mood's colours, aberrants and gardenground.js): its sky
 // by the season and the hour, its planetoids floating round the horizon, a meadow (flowers by its bloom, thorns by its briar), your bound
 // spirits as lights drifting over it (up to four), fireflies after dark; the film still running faintly through it (it is your mind)
@@ -211,7 +231,7 @@ void main() {
   vec3 L = foeLook(q, t, uMotif);
   vec3 foe = mix(uHaze, uFoeDeep, smoothstep(-0.1, 0.5, dir.y));
   foe = foe * (1.0 - L.y * 0.55) + uFoe * L.x * 1.5 + vec3(0.95, 0.97, 1.0) * L.z;
-  if (uStyle.x > 0.5) foe = fens(normalize(vW - uCentre), q, t, fl, uStyle.y); // (an aberrant's own ground in place of its feeling's)
+  if (uStyle.x > 1.5) foe = bog(normalize(vW - uCentre), q, t, fl, uStyle.y); else if (uStyle.x > 0.5) foe = fens(normalize(vW - uCentre), q, t, fl, uStyle.y); // (an aberrant's own ground in place of its feeling's: 1 the Wisp's fens, 2 the jelly's bog)
   vec3 col = mix(cour, foe, k);
   // the seam: crackling light on the Line's plane, pushed on a line
   vec3 along = normalize(cross(uPlaneN, vec3(0.0, 1.0, 0.0)));
@@ -290,7 +310,7 @@ export class DomainClash {
     U.uGarden.value.set(1, m.bloom, m.briar, m.day); U.uGSky.value.copy(m.sky); U.uGZen.value.copy(m.zen); U.uGGnd.value.copy(m.gnd); U.uGGrass.value.copy(m.grass); U.uGBloom.value.copy(m.flowers[0] || m.blossom);
     [U.uGSp0, U.uGSp1, U.uGSp2, U.uGSp3].forEach((u, i) => (spirits[i] ? u.value.copy(spirits[i]) : u.value.setRGB(0, 0, 0)));
   }
-  /** An aberrant's own ground on its side (0 its feeling's; 1 the Lantern Wisp's fens) and how far its dark has closed in (0..1). */
+  /** An aberrant's own ground on its side (0 its feeling's; 1 the Lantern Wisp's fens; 2 the slip jelly's bog) and how far its dark has closed in (0..1). */
   setStyle(id, dark = 0) { this.U.uStyle.value.set(id, dark); }
   /** The PvE duel's push meters on the seam (0..1 each of a column's worth, `n` notches); `on` false hides them. */
   setMeter(push, landed, n, on = true) { this.U.uMeter.value.set(push, landed, n, on ? 1 : 0); }

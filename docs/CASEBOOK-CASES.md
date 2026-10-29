@@ -4319,3 +4319,21 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   tabled, so the wait answered nothing and read as a missed cast.
 - **Fix:** Hurl lands as it is cast (foeskills.js, `K.land`); its line says so.
 - **Rule:** NEW:a-wait-needs-an-answer
+
+### 2026-10-29 · A duel's gem-break motes flew to where the Lachrimeter isn't (South, in play; Dovina measured)
+- **Seen:** the motes off a chain's cleared gems flew to the board's lower corner, not to the Lachrimeter's tube; on the phone's duel
+  screen to the side away from it.
+- **Cause (as measured):** `trickle()` (vfx/duelview/juice.js) aimed every mote at one fixed point of the frame, its lower right corner,
+  (593, 386) on a 960 x 600 desk while the tube stood at x 820 to 960; and it ignored the phone's flip that `linkAt` makes.
+- **Fix:** the motes fly to the bulb's live place, its overlay position unprojected at the board's depth (`view.tubeAt`); measured landing
+  on it exactly, (898, 541) on the desk and (47, 385) on the phone. The link's corner, flipped, only while the tube is hidden.
+- **Rule:** NEW:aim-at-the-thing-not-where-it-was
+
+### 2026-10-29 · The duel's cut-in band stopped compiling (Calissa's probe, before play)
+- **Seen:** at a PvE duel's open, `duel-cutin` failed to link: `'pc' : undeclared identifier`; no band drew at all (the foe's skills, the
+  turn, the VS), the board played on beneath.
+- **Cause (as measured):** an edit to the band's fragment shader (cutin.js FRAG) put a `// (comment)` after the portrait's sample on a
+  line that went on to declare `pc`, so GLSL read the declaration as comment. `npm run check`'s comment rule reads JavaScript, not the
+  GLSL inside a template string, so the gate passed it.
+- **Fix:** the comment moved to the line's end; the probe's error list read clean.
+- **Rule:** NEW:shader-strings-are-code-too

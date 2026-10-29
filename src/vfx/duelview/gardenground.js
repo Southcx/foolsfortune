@@ -33,8 +33,8 @@ export class GardenGround {
 
   open(spot, along) {
     this.close(); const V = this.view, g = V.game, B = typeof g.gardenBackdrop === 'function' ? g.gardenBackdrop() : null;
-    if (!B || B.bare) { V.clash.setGarden(null); return; }
-    const mood = moodAt({ hour: HOUR[B.phase] ?? 13, season: B.season, briarK: B.harmony?.briarK ?? 0.33 });
+    this.mood = null; if (!B || B.bare) { V.clash.setGarden(null); return; }
+    const mood = (this.mood = moodAt({ hour: HOUR[B.phase] ?? 13, season: B.season, briarK: B.harmony?.briarK ?? 0.33 })); // (kept: the frame's dress reads it, framedress.js)
     const spirits = (B.spirits || []).map((s) => new THREE.Color(COLOR[s.feeling] ?? 0xfff2d0));
     V.clash.setGarden(mood, spirits);
     // the pieces and the souls, in the view's root (the duel's instance keeps it): behind the Jar, away from the board

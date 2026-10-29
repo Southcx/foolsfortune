@@ -17,7 +17,7 @@
 //
 //   gemGeometry(aspect) -> BufferGeometry   keylineGeometry(aspect, d) (flat, behind)   plateGeometry(kind) (junk's and the ember's rim)
 //   glintGeometry()   emberGeometry() pipGeometry()   junkGeometry() (vertex colours) stoneGeometry() fogStoneGeometry() bombGeometry()
-//   orbGeometry() cubeGeometry()   courierFigurine() -> BufferGeometry (vertex colours)   foeIdol()   ledgeGeometry() (vertex colours)
+//   slimeGeometry(rim)   orbGeometry() cubeGeometry()   courierFigurine() -> BufferGeometry (vertex colours)   foeIdol()   ledgeGeometry() (vertex colours)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -87,6 +87,16 @@ export function plateGeometry(kind) {
 }
 /** A glint: a small four-point star (the weak colour's spark). */
 export const glintGeometry = () => new THREE.ShapeGeometry(outline(polar(8, (a, i) => (i % 2 ? 0.05 : 0.2))));
+
+/** A slime (an aberrant slip jelly's junk, ABERRANTS.md 5): a glossy blob sagging to its foot, a lip of it run down one side; `rim`
+ *  the same blob a little larger for its keyline behind it. */
+export function slimeGeometry(rim = false) {
+  const g = new THREE.IcosahedronGeometry(0.4, 3), p = g.attributes.position, v = new THREE.Vector3();
+  for (let i = 0; i < p.count; i++) { v.fromBufferAttribute(p, i); const sag = v.y < 0 ? 1 + 0.18 * (-v.y / 0.4) : 1 - 0.1 * (v.y / 0.4); // (a drop settling: wide at its foot, its top drawn in)
+    v.x *= sag; v.z *= 0.62 * sag; v.y *= 0.9; if (v.y < -0.2 && v.x > 0.05) v.y -= 0.08 * Math.sin((v.x / 0.4) * Math.PI); p.setXYZ(i, v.x, v.y, v.z); } // (a lip run down)
+  if (rim) { g.scale(1.1, 1.1, 0.5); g.translate(0, 0, -0.08); }
+  g.computeVertexNormals(); return g;
+}
 
 /** An ember: a coal of glazed clay, a lump flattened toward the face. */
 export function emberGeometry() { const g = new THREE.IcosahedronGeometry(0.38, 1); g.scale(1, 0.88, 0.6); g.computeVertexNormals(); return g; }
