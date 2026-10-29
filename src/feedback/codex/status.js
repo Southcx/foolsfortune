@@ -20,6 +20,7 @@ import { DOMAIN_LOOK } from '../../ui/domainlook.js';
 import { iconEl } from '../../ui/icons/icons.js';
 import { wheelSRGB } from '../../vfx/wheelcolour.js';
 import { CHARMS, SOCKETS, SOCKET_AT } from '../../progress/bracelet.js';
+import { APTITUDES } from '../../progress/aptitude.js';
 
 const CSS = `
 #codex .st-wrap { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
@@ -43,6 +44,12 @@ const CSS = `
 #codex .st-socket { cursor: var(--jcur-pointer, pointer); min-width: 120px; } #codex .st-socket.shut { cursor: default; opacity: .45; }
 #codex .st-socket:hover:not(.shut) { border-color: var(--accent); }
 #codex .st-charm.no { opacity: .45; }
+#codex .st-assay { grid-column: 1 / -1; }
+#codex .st-apt { display: grid; grid-template-columns: minmax(110px, 1.1fr) minmax(90px, .9fr) 2fr; gap: 4px 12px; align-items: center; padding: 6px 0; border-top: 1px solid rgba(255,178,122,.12); font-size: 11px; letter-spacing: .06em; }
+#codex .st-apt .nm { color: #fbe3cf; } #codex .st-apt .nm small { display: block; opacity: .55; font-size: 10px; letter-spacing: .02em; }
+#codex .st-apt .v b { color: #fff1dc; font-weight: normal; font-size: 16px; } #codex .st-apt .v small { opacity: .6; margin-left: 4px; }
+#codex .st-apt .q { font: 600 15px var(--f-title); letter-spacing: .3em; opacity: .4; }
+#codex .st-apt svg { width: 100%; height: 28px; } #codex .st-apt .up { color: #9fe0b0; } #codex .st-apt .dn { color: #ff9a7a; }
 `;
 let styled = false;
 const hex = (n) => `#${n.toString(16).padStart(6, '0')}`;
@@ -92,6 +99,33 @@ function bracelet(codex) {
   return c;
 }
 
+/** THE ASSAY (APTITUDE.md 7; the owner named it 2026-10-19): each aptitude the System measures from play, ??? until it has five readings,
+ *  then its median in its unit, its best and which way it is going (the better way green), and from twenty a line of the recent readings
+ *  (the better way drawn up). Labels and units are Dovina's table (progress/aptitude.js), placeholders for Espada's words. */
+function assay(g) {
+  const c = document.createElement('div'); c.className = 'st-card st-assay';
+  c.innerHTML = '<h3>THE ASSAY</h3><div class="st-sum">what the System has measured of how you play</div>';
+  const all = g.aptitude?.all?.() || {};
+  for (const [id, A] of Object.entries(APTITUDES)) {
+    const R = all[id] || {}, row = document.createElement('div'); row.className = 'st-apt';
+    const fmt = (v) => (v == null ? '' : Math.abs(v) >= 10 ? String(Math.round(v)) : (Math.round(v * 10) / 10).toString());
+    const good = (t) => (t == null || t === 0 ? '' : (t < 0) === (A.better === 'low') ? 'up' : 'dn');
+    let val = '<span class="q">???</span>', line = '';
+    if (R.shown) {
+      val = `<b>${fmt(R.median)}</b><small>${A.unit}</small><br><small>best ${fmt(R.best)}${R.trend ? ` <span class="${good(R.trend)}">${good(R.trend) === 'up' ? '\u25B2' : '\u25BC'}</span>` : ''}</small>`;
+      const L = g.aptitude?.s?.[id]?.list || [];
+      if (R.curve && L.length > 1) {
+        const lo = Math.min(...L), hi = Math.max(...L), span = hi - lo || 1, flip = A.better === 'low';
+        const pts = L.map((v, i) => `${((i / (L.length - 1)) * 100).toFixed(1)},${(flip ? (v - lo) / span : 1 - (v - lo) / span) * 24 + 2}`).join(' ');
+        line = `<svg viewBox="0 0 100 28" preserveAspectRatio="none"><polyline points="${pts}" fill="none" stroke="#ffb27a" stroke-width="1.5" vector-effect="non-scaling-stroke"/></svg>`;
+      }
+    }
+    row.innerHTML = `<div class="nm">${A.label}<small>${A.line || ''}</small></div><div class="v">${val}</div><div>${line}</div>`;
+    c.append(row);
+  }
+  return c;
+}
+
 export function renderStatus(codex, host) {
   if (!styled) { const st = document.createElement('style'); st.textContent = CSS; document.head.appendChild(st); styled = true; }
   const g = codex.game, P = g.psyche, Al = g.alchemy, ranks = ECON.alchemy.ranks, keyed = g.input?.device === 'touch'; // (on touch the radars are keyed by colour: radar())
@@ -117,6 +151,6 @@ export function renderStatus(codex, host) {
   b.innerHTML = `<h3>SOUL ALCHEMY</h3><div class="st-sum"><b>${atts.reduce((n, t) => n + t.r, 0)}</b>ranks of ${ranks * 7}</div>`
     + radar(atts, [1 / 3, 2 / 3, 1], `rgba(${soul.join(',')},.35)`, `rgb(${soul.join(',')})`, keyed)
     + `<div class="st-chips">${atts.map((t) => `<span class="st-chip" title="${t.does}"><i style="background:${t.colour}"></i>${t.name}<b>${t.r}/${ranks}</b><small>seasoning ${Math.round(t.s * 100)}</small></span>`).join('')}</div>`;
-  wrap.append(a, b, bracelet(codex));
+  wrap.append(a, b, bracelet(codex), assay(g));
   host.appendChild(wrap);
 }
