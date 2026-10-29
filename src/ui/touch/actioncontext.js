@@ -28,7 +28,7 @@
 // Prior art: Genshin Impact's attack and skill tiles changing with the character, Call of Duty Mobile's fire button by weapon, Into the
 // Breach's strip of moves with END TURN the largest; the cluster's own reading of the skiff (cluster.js clusterContext).
 //
-//   footCluster(game) toolCluster(game, tool) duelCluster(game) duelTools(game) helmCluster(game) -> [entry]   stripOf(game) -> [entry]   beltPairOf(game) -> [entry]
+//   footCluster(game) toolCluster(game, tool) duelCluster(game) duelTools(game) helmCluster(game) -> [entry]   stripOf(game) -> [entry]   nearOf(game) -> [entry]   beltPairOf(game) -> [entry]
 //   inHandCtx(game) -> 'psygun' | 'cutlass' | 'rod' | 'hook' | 'brush' | 'veritome' | 'dreamvane' | 'crucibelle' | 'lockheart' | null
 //   entry { id, glyph, word, corner, lit, dim, tint, charge }   broadsideOf(game) -> { side, charge, bears }   mountsOf(game) -> [entry]   ACTION_TILES (the words and glyphs by tool)
 // ---------------------------------------------------------------------------------------
@@ -99,7 +99,9 @@ export function toolCluster(g, ctx) {
   if (ctx === 'hook' && tool?.hookshot?.reeling) fire.word = T.reeling;
   let third = T.third ? { ...T.third } : null;
   if (third?.id === 've.mind' && !g.reprogram?.target?.()) third = null; // (REPROGRAM: shown by a stunned mind)
-  return [fire, aim, third, E('parry', 'parry', 'PARRY')];
+  // (USE takes PARRY's slot while the chevron is on a thing outside a fight: MOBILE.md 4.1, Dovina 2026-10-29)
+  const u = g.interact?.cur && g.liveMoment?.() !== 'fight' ? useLabel(g) : null;
+  return [fire, aim, third, u ? E('use', null, u.word) : E('parry', 'parry', 'PARRY')];
 }
 
 /** A puzzle duel: END TURN, FINISHER on a broken foe, FLEE, FORM. */
@@ -162,7 +164,7 @@ export function mountsOf(g) {
 /** The helm's strip: BROADSIDE, the worn mounts (1, 2), FIX with the Dreamvane worn, PLATE with the Veritome, USE while a serpent holds the cluster. */
 function helmStrip(g) {
   const use = g.seaFight?.serpent ? helmUse(g) : null, B = broadsideOf(g);
-  return [use ? E('use', null, use) : null, B ? E('broadside', 'broadside', 'BROADSIDE', { charge: B.charge, dim: !B.bears }) : null, ...mountsOf(g),
+  return [use ? E('use', null, use) : null, // (BROADSIDE and the mounts on the near shelf: nearOf)
     worn(g, 'dreamvane') ? E('fix', 'fix', 'FIX') : null, worn(g, 'veritome') ? E('plate', 'photo', 'PLATE') : null].filter(Boolean);
 }
 
@@ -173,9 +175,7 @@ export function beltPairOf(g) {
   const B = g.belt, skiff = g.raceway?.active || g.dunes?.active ? E('skiff', 'skiff', 'SKIFF') : null;
   if (!B?.main) return skiff ? [skiff] : [];
   const out = !!B.inHand && B.inHand.id === B.main, gift = B.sub ? SUB_GIFTS[B.sub] : null;
-  const use = out && g.interact?.cur ? useLabel(g) : null; // (a tool drawn: the cluster is the tool's, so F's thing is offered up here)
-  return [
-    use ? E('use', null, use.word) : null,
+  return [ // (USE with a tool drawn is the cluster's, in PARRY's slot outside a fight: toolCluster)
     skiff,
     B.sub ? E('swap', 'swap', 'SWAP') : null,
     gift ? E('lend', 'lend', gift.verb.toUpperCase()) : null,
@@ -188,25 +188,47 @@ export function stripOf(g) {
   if (g.duel?.active) return []; // (the duel's moves stand in the duel's phone screen: duelscreen.js)
   if (atHelm(g)) return helmStrip(g);
   if (!onFoot(g)) return [];
-  const ctx = inHandCtx(g);
-  if (!ctx) return []; // (nothing in hand: BLINK is the DASH tile's face on the ground, footCluster)
-  const out = [], tool = g.belt.inHand;
+  const ctx = inHandCtx(g), art = artTile(g);
+  if (!ctx) return art ? [art] : []; // (nothing in hand: BLINK is the DASH tile's face on the ground, footCluster)
+  const out = art ? [art] : [], tool = g.belt.inHand;
   if (ctx === 'psygun') {
     const S = g.shells, n = S?.gun?.chambers ?? S?.chambers?.length ?? 0;
-    for (let i = 0; i < Math.min(7, n); i++) out.push(E(`ps.ch${i + 1}`, 'chamber', String(i + 1), { lit: S.selected === i }));
+    // (a pick is one tile, MOBILE.md 4.1: CHAMBER showing the chosen one's number; a tap the next chamber, a hold the cylinder as a radial)
+    const k = Math.max(0, S?.selected ?? 0), ids = Array.from({ length: Math.min(7, n) }, (_, i) => `ps.ch${i + 1}`);
+    if (ids.length) out.push(E('ps.chamber', 'chamber', String(k + 1), { cycle: ids, at: k, radial: ids.map((id, i) => E(id, 'chamber', String(i + 1), { lit: k === i })) }));
     out.push(E('ps.fan', 'fan', 'FAN'));
     if (g.weapon?.play?.scoped) out.push(E('ps.breath', 'breath', 'BREATH'));
   } else if (ctx === 'cutlass' || ctx === 'rod' || ctx === 'hook') {
-    for (const [id, glyph, form] of FORMS) out.push(E(id, glyph, null, { lit: form === ctx }));
+    const k = Math.max(0, FORMS.findIndex(([, , form]) => form === ctx)); // (the forms one FORM tile, its face the form in hand: a tap the next, a hold the three as a radial)
+    out.push(E('so.form', FORMS[k][1], 'FORM', { cycle: FORMS.map(([id]) => id), at: k, radial: FORMS.map(([id, glyph, form]) => E(id, glyph, null, { lit: form === ctx })) }));
     if (ctx === 'rod') out.push(E('ro.lure', 'lure', 'LURE'), E('ro.crank', 'crank', 'CRANK'));
   } else if (ctx === 'brush') {
     const mode = (tool?.load || tool?.tech?.load)?.mode || 'paint';
     out.push(mode === 'paint' ? E('br.mop', 'brmop', 'MOP') : E('br.paint', 'paint', 'PAINT')); // (one tile, its two faces: the one it goes to)
   } else if (ctx === 'veritome') out.push(E('ve.flash', 'flash', 'FLASH'));
   else if (ctx === 'crucibelle') for (let i = 0; i < 5; i++) out.push(E(`cr.n${i + 1}`, null, null, { corner: String(i + 1), tint: DEGREE_COLOR[i], pad: true }));
-  if (ctx !== 'hook') out.push(E('jump', 'jump'), E('crouch', 'crouch')); // (a tool drawn keeps the core movement's two: a ladder's kick-off, a hang's drop, a slide; the hook's third is JUMP)
-  if (learned(g, 'blink')) out.push(E('blink', 'blink', 'BLINK'));
-  return out;
+  return out; // (a tool drawn keeps the core movement's moves on the near shelf: nearOf)
+}
+
+/** The worn class art's action (input action `art`, G on the desk; courier/classarts/body.js): its label the face, its rim the cooldown
+ *  filling back (real seconds, `classArtsRun.cool`), dim while cooling or the pool short of its cost. On the far shelf, its first tile:
+ *  the near shelf's three already reach the centre's edge at 896 x 414 (a fourth would stand in the middle). */
+export function artTile(g) {
+  const R = g.classArts?.numbers?.('action'), run = g.classArtsRun; if (!R) return null;
+  const left = Math.max(0, (run?.cool?.[R.id] ?? 0) - (run?.now ?? 0)), full = R.cooldown || 1;
+  const short = R.cost > 0 && (g.lachryma?.value ?? Infinity) < R.cost;
+  return E('art', 'art', String(R.label || 'ART').toUpperCase(), { charge: left > 0 ? 1 - left / full : 0, dim: left > 0 || short });
+}
+
+/** THE NEAR SHELF (MOBILE.md 4.1): up to three tiles over the cluster on the right edge. With a tool drawn, CROUCH, DASH (BLINK on the
+ *  ground, as the foot cluster's) and JUMP (the hook's third is JUMP already); at the helm, BROADSIDE and the mounts. */
+export function nearOf(g) {
+  if (g.duel?.active) return [];
+  if (atHelm(g)) { const B = broadsideOf(g); return [B ? E('broadside', 'broadside', 'BROADSIDE', { charge: B.charge, dim: !B.bears }) : null, ...mountsOf(g)].filter(Boolean).slice(0, 3); }
+  if (!onFoot(g)) return [];
+  const ctx = inHandCtx(g); if (!ctx) return [];
+  const blinks = g.actions?.resolve?.('touch', 'dash')?.id === 'blink.ground';
+  return [E('crouch', 'crouch', 'CROUCH'), blinks ? E('dash', 'blink', 'BLINK') : E('dash', 'dash', null), ctx === 'hook' ? null : E('jump', 'jump')].filter(Boolean);
 }
 
 /** A puzzle duel's tool moves: the worn tools' (the kernel's `S.tools`: couriertools.js `wears`), ROTATE first under a picked piece in the

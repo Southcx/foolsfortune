@@ -39,7 +39,7 @@ export const CRADLE_JAR = 0.28 / 0.37;
 export const cradleFoot = (scale = CRADLE_JAR) => CRADLE_FORM.R * 1.03 * scale;
 /** Every cradle's own number, the order the Emocean cut them in (LORE.md, "The numerals": only the Comb is on them). A placeholder
  *  order for Espada to rule: the Shrines in world/shrines.js's order, then the ships' helms by class (the galleon's two in turn). */
-export const CRADLE_NUMBERS = { shrine: { bisque: 1, lamp: 2, float: 3, pearl: 4 }, helm: { sloop: 5, frigate: 6, destroyer: 7, tanker: 8, galleon: 9 } };
+export const CRADLE_NUMBERS = { shrine: { bisque: 31, lamp: 32, float: 33, pearl: 21 }, helm: { sloop: 91, frigate: 92, destroyer: 93, tanker: 94, galleon: 95 } };
 export const cradleNumber = (kind, id, k = 0) => { const n = CRADLE_NUMBERS[kind]?.[id]; return n == null ? null : n + (kind === 'helm' && id === 'galleon' ? k : 0); };
 
 export function rng(seed) { let s = seed >>> 0 || 1; return () => { s ^= s << 13; s ^= s >>> 17; s ^= s << 5; return ((s >>> 0) % 100000) / 100000; }; }

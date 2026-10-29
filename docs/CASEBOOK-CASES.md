@@ -4376,3 +4376,10 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   `-lat`), but the pillars and the turret laid their local x as `+lat`. The rules (`lane`, `cast` at lat -(W + 4)) were right; only the looks were mirrored.
 - **Fix:** the pillars at local x `W - 2W(l + 0.5)/3` and the turret's post and lamp at local x `W + 4` (`world/raceway/traps.js place`). The lamp's parry home now meets where the ball came from.
 - **Rule:** 348
+
+### 2026-10-29 · The class arts' marks never showed (Calissa, vfx/classartlooks.js)
+- **Seen:** on the phone's shot, Bulwark braced and Momentum armed, and nothing on the body; the thrown rings never left the feet.
+- **Cause (as measured):** the marks were updated from `onBeforeRender` on an empty mesh, and three never draws a mesh with no position
+  attribute, so `update` never ran (`t` stayed 0, every mark hidden, the root at the origin). A first fix, one degenerate triangle, still never ran.
+- **Fix:** `update(dt)` called from the frame (`boot/frame.js`, beside the blob shadow), the onBeforeRender hook removed.
+- **Rule:** NEW:frame-update-not-render-hook
