@@ -225,35 +225,35 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `hit` | one-shot | sprites:core, sprites:star4, sprites:streak | what every blow shows, whatever struck what: a hot core, a star, sparks thrown along the blow | audio/cues.js, audio/godpowers.js, audio/seaserpent.js +31 |
-| `hit.blunt` | one-shot | sprites:core, sprites:star4, sprites:streak, sprites:ring, sprites:puff | extends `hit`. a blunt blow: a ring knocked out flat, and dust | vfx/blowfeeleffects.js |
-| `hit.blunt.clay` | one-shot | sprites:core, sprites:star4, sprites:streak, sprites:ring, sprites:puff, sprites:chip | extends `hit.blunt`. what clay gives up: chips of it, falling, and a puff of its dust | vfx/vfx.js |
-| `hit.blunt.clay.kill` | one-shot | sprites:core, sprites:star4×2, sprites:streak, sprites:ring×2, sprites:puff, sprites:chip | extends `hit.blunt.clay`. a kill: what it was made of bursts, and a few stars of its colour go up (a finishing beat on top of its own death) |  |
-| `hit.blunt.crystal` | one-shot | sprites:core, sprites:star4, sprites:streak, sprites:ring, sprites:puff, sprites:shard, sprites:sparkle | extends `hit.blunt`. crystal rings and splinters: shards and glints in the stone's colours |  |
-| `hit.blunt.jelly` | one-shot | sprites:core, sprites:star4, sprites:streak, sprites:ring, sprites:puff, sprites:bubble, sprites:soft | extends `hit.blunt`. jelly: bubbles that float off, drops of its goo that fall |  |
-| `hit.blunt.jelly.kill` | one-shot | sprites:core, sprites:star4, sprites:streak, sprites:ring×2, sprites:puff, sprites:bubble×2, sprites:soft | extends `hit.blunt.jelly`.  |  |
-| `hit.blunt.metal` | one-shot | sprites:core, sprites:star4, sprites:streak×2, sprites:ring, sprites:puff, sprites:ringthin | extends `hit.blunt`.  |  |
-| `hit.blunt.stone` | one-shot | sprites:core, sprites:star4, sprites:streak, sprites:ring, sprites:puff×2, sprites:chip | extends `hit.blunt`.  |  |
-| `hit.blunt.straw` | one-shot | sprites:core, sprites:star4, sprites:streak×2, sprites:ring, sprites:puff | extends `hit.blunt`. straw: Strawman's sack (its kind's look, vfx.js materialOf): stalks of straw thrown and drifting down, a breath of burlap dust; never clay chips off a dummy of straw (its own puffs of straw at the seams are its body'... |  |
-| `hit.blunt.wood` | one-shot | sprites:core, sprites:star4, sprites:streak, sprites:ring, sprites:puff×2, sprites:shard | extends `hit.blunt`. wood: splinters and sawdust; stone: grey chips and a dust cloud; metal: a shower of hot sparks and a clang ring |  |
-| `hit.shot` | one-shot | sprites:core, sprites:star4, sprites:streak, sprites:ringthin | extends `hit`. a shot: smaller, a ring stood along the shot, sparks back off the surface | vfx/blowfeeleffects.js |
-| `hit.shot.clay` | one-shot | sprites:core, sprites:star4, sprites:streak, sprites:ringthin, sprites:chip, sprites:puff | extends `hit.shot`.  |  |
-| `hit.shot.clay.kill` | one-shot | sprites:core, sprites:star4×2, sprites:streak, sprites:ringthin, sprites:chip, sprites:puff | extends `hit.shot.clay`.  |  |
-| `hit.shot.crystal` | one-shot | sprites:core, sprites:star4, sprites:streak, sprites:ringthin, sprites:shard | extends `hit.shot`.  |  |
-| `hit.shot.jelly` | one-shot | sprites:core, sprites:star4, sprites:streak, sprites:ring, sprites:puff, sprites:bubble, sprites:soft | extends `hit.blunt.jelly`.  |  |
-| `hit.shot.metal` | one-shot | sprites:core, sprites:star4, sprites:streak×2, sprites:ringthin | extends `hit.shot`.  |  |
-| `hit.shot.stone` | one-shot | sprites:core, sprites:star4, sprites:streak, sprites:ringthin, sprites:chip, sprites:puff | extends `hit.shot`.  |  |
-| `hit.shot.straw` | one-shot | sprites:core, sprites:star4, sprites:streak×2, sprites:ringthin | extends `hit.shot`.  |  |
-| `hit.shot.wood` | one-shot | sprites:core, sprites:star4, sprites:streak, sprites:ringthin, sprites:shard | extends `hit.shot`.  |  |
-| `hit.slash` | one-shot | sprites:core, sprites:star4, sprites:streak, sprites:crescent, sprites:glint | extends `hit`. a cutting blow: a crescent along the cut, and sparks thrown wide either side of it | vfx/blowfeeleffects.js, vfx/vfx.js |
-| `hit.slash.clay` | one-shot | sprites:core, sprites:star4, sprites:streak, sprites:crescent, sprites:glint, sprites:chip | extends `hit.slash`.  |  |
-| `hit.slash.clay.kill` | one-shot | sprites:core, sprites:star4×2, sprites:streak, sprites:crescent, sprites:glint, sprites:chip | extends `hit.slash.clay`.  |  |
-| `hit.slash.crystal` | one-shot | sprites:core, sprites:star4, sprites:streak, sprites:crescent, sprites:glint, sprites:shard | extends `hit.slash`.  | vfx/vfx.js |
-| `hit.slash.jelly` | one-shot | sprites:core, sprites:star4, sprites:streak, sprites:ring, sprites:puff, sprites:bubble, sprites:soft | extends `hit.blunt.jelly`.  |  |
-| `hit.slash.metal` | one-shot | sprites:core, sprites:star4, sprites:streak×2, sprites:crescent, sprites:glint | extends `hit.slash`.  |  |
-| `hit.slash.stone` | one-shot | sprites:core, sprites:star4, sprites:streak×2, sprites:crescent, sprites:glint, sprites:chip | extends `hit.slash`.  |  |
-| `hit.slash.straw` | one-shot | sprites:core, sprites:star4, sprites:streak×2, sprites:crescent, sprites:glint, sprites:puff | extends `hit.slash`.  |  |
-| `hit.slash.wood` | one-shot | sprites:core, sprites:star4, sprites:streak, sprites:crescent, sprites:glint, sprites:shard | extends `hit.slash`.  |  |
+| `hit` | one-shot | sprites:core, shape:disc, sprites:streak, sprites:soft | what every blow shows, whatever struck what: the 0.1 s white core, a star of rays, sparks thrown along the blow, motes left hanging | audio/cues.js, audio/godpowers.js, audio/seaserpent.js +31 |
+| `hit.blunt` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft, sprites:puff | a blunt blow: a ring of rays knocked out flat, and dust lifting off | vfx/blowfeeleffects.js |
+| `hit.blunt.clay` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft, sprites:puff, sprites:chip | extends `hit.blunt`. what clay gives up: chips of it, falling, and a puff of its dust | vfx/vfx.js |
+| `hit.blunt.clay.kill` | one-shot | sprites:core, shape:ring×2, sprites:streak, sprites:soft, sprites:puff, sprites:chip, sprites:star4 | extends `hit.blunt.clay`. a kill: what it was made of bursts in a pop of its colour (a second shape), and a few stars of it go up (a finishing beat on top of its own death) |  |
+| `hit.blunt.crystal` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft, sprites:puff, sprites:shard, sprites:sparkle | extends `hit.blunt`. crystal rings and splinters: shards and glints in the stone's colours |  |
+| `hit.blunt.jelly` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft×2, sprites:puff, sprites:bubble | extends `hit.blunt`. jelly: bubbles that float off, drops of its goo that fall |  |
+| `hit.blunt.jelly.kill` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft×2, sprites:puff, sprites:bubble×2, shape:sphere | extends `hit.blunt.jelly`.  |  |
+| `hit.blunt.metal` | one-shot | sprites:core, shape:ring, sprites:streak×2, sprites:soft, sprites:puff, sprites:ringthin | extends `hit.blunt`.  |  |
+| `hit.blunt.stone` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft, sprites:puff×2, sprites:chip | extends `hit.blunt`.  |  |
+| `hit.blunt.straw` | one-shot | sprites:core, shape:ring, sprites:streak×2, sprites:soft, sprites:puff | extends `hit.blunt`. straw: Strawman's sack (its kind's look, vfx.js materialOf): stalks of straw thrown and drifting down, a breath of burlap dust; never clay chips off a dummy of straw (its own puffs of straw at the seams are its body'... |  |
+| `hit.blunt.wood` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft, sprites:puff×2, sprites:shard | extends `hit.blunt`. wood: splinters and sawdust; stone: grey chips and a dust cloud; metal: a shower of hot sparks and a clang ring |  |
+| `hit.shot` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft | a shot: smaller, a ring stood along the shot, sparks back off the surface | vfx/blowfeeleffects.js |
+| `hit.shot.clay` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft, sprites:chip, sprites:puff | extends `hit.shot`.  |  |
+| `hit.shot.clay.kill` | one-shot | sprites:core, shape:ring×2, sprites:streak, sprites:soft, sprites:chip, sprites:puff, sprites:star4 | extends `hit.shot.clay`.  |  |
+| `hit.shot.crystal` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft, sprites:shard | extends `hit.shot`.  |  |
+| `hit.shot.jelly` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft×2, sprites:puff, sprites:bubble | extends `hit.blunt.jelly`.  |  |
+| `hit.shot.metal` | one-shot | sprites:core, shape:ring, sprites:streak×2, sprites:soft | extends `hit.shot`.  |  |
+| `hit.shot.stone` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft, sprites:chip, sprites:puff | extends `hit.shot`.  |  |
+| `hit.shot.straw` | one-shot | sprites:core, shape:ring, sprites:streak×2, sprites:soft | extends `hit.shot`.  |  |
+| `hit.shot.wood` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft, sprites:shard | extends `hit.shot`.  |  |
+| `hit.slash` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:glint | a cutting blow: a crescent swept round the cut, and glints thrown wide either side of it, twinkling out | vfx/blowfeeleffects.js, vfx/vfx.js |
+| `hit.slash.clay` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:glint, sprites:chip | extends `hit.slash`.  |  |
+| `hit.slash.clay.kill` | one-shot | sprites:core, shape:ring×2, sprites:streak, sprites:glint, sprites:chip, sprites:star4 | extends `hit.slash.clay`.  |  |
+| `hit.slash.crystal` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:glint, sprites:shard | extends `hit.slash`.  | vfx/vfx.js |
+| `hit.slash.jelly` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft×2, sprites:puff, sprites:bubble | extends `hit.blunt.jelly`.  |  |
+| `hit.slash.metal` | one-shot | sprites:core, shape:ring, sprites:streak×2, sprites:glint | extends `hit.slash`.  |  |
+| `hit.slash.stone` | one-shot | sprites:core, shape:ring, sprites:streak×2, sprites:glint, sprites:chip | extends `hit.slash`.  |  |
+| `hit.slash.straw` | one-shot | sprites:core, shape:ring, sprites:streak×2, sprites:glint, sprites:puff | extends `hit.slash`.  |  |
+| `hit.slash.wood` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:glint, sprites:shard | extends `hit.slash`.  |  |
 
 ### skiff (29)
 
@@ -325,20 +325,20 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `aura.blind` | held | sprites:glint, sprites:swirl |  |  |
-| `aura.calm` | held | sprites:petal |  |  |
-| `aura.charm` | held | sprites:ripple, sprites:petal |  |  |
-| `aura.confusion` | held | sprites:bubble, sprites:drip |  |  |
-| `aura.doubt` | held | sprites:hex, sprites:ringthin | the four a damage type builds (progress/combat/types.js `builds`), each in its type's colour and motif (docs/ART.md: the damage types) |  |
-| `aura.empower` | held | sprites:sparkle, sprites:soft |  |  |
-| `aura.forget` | held | sprites:swirl |  |  |
-| `aura.halt` | held | sprites:diamond, sprites:ringthin |  |  |
-| `aura.haste` | held | sprites:streak |  |  |
-| `aura.melt` | held | sprites:soft, sprites:puff |  |  |
-| `aura.sleep` | held | sprites:bubble, sprites:soft | a status, shown round whatever has it, as long as it has it (`aura.<status>`, or `aura.<status>.<kind>` for one creature's own). Centred on the creature, offsets and sizes in its height (feet: [0, -0.5, 0], head: [0, 0.5, 0]); quiet: an ... |  |
-| `aura.slow` | held | sprites:ringthin, sprites:soft |  |  |
-| `aura.soaked` | held | sprites:drip, sprites:glint |  |  |
-| `aura.soft` | held | sprites:puff |  |  |
+| `aura.blind` | held | shape:band, sprites:glint |  |  |
+| `aura.calm` | held | shape:ring, sprites:petal | calmed: still water at its feet, petals drifting round |  |
+| `aura.charm` | held | shape:ring, sprites:petal |  |  |
+| `aura.confusion` | held | shape:ring, sprites:bubble, sprites:drip |  |  |
+| `aura.doubt` | held | shape:ring, sprites:hex | the four a damage type builds (progress/combat/types.js `builds`), each in its type's colour and motif (docs/ART.md: the damage types) |  |
+| `aura.empower` | held | shape:band, sprites:sparkle | empowered: a column of gold rays rising round it, sparkles going up |  |
+| `aura.forget` | held | shape:ring, sprites:swirl | forgetting: the Mind's words turning over its head, dissolving and forming again |  |
+| `aura.halt` | held | shape:band, sprites:diamond | halted: a band of frost standing round the body, all but still, frost diamonds glinting on it |  |
+| `aura.haste` | held | shape:band, sprites:streak | hasted: speed lines racing up the body, ember to gold |  |
+| `aura.melt` | held | shape:band, sprites:soft, sprites:puff | melting: the body's lower half running, drips falling off it, a breath of steam |  |
+| `aura.sleep` | held | shape:sphere, sprites:bubble | a status, shown round whatever has it, as long as it has it: asleep, a drowsy haze breathing at the head, bubbles rising off it |  |
+| `aura.slow` | held | shape:ring, sprites:soft | slowed: time dragging at its feet, motes sinking |  |
+| `aura.soaked` | held | shape:band, sprites:drip, sprites:glint |  |  |
+| `aura.soft` | held | shape:sphere, sprites:puff | softened (the next blow doubled): a cushion round it, its pink puffs drifting |  |
 
 ### caster (12)
 
@@ -392,22 +392,22 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `ult.ascend` | one-shot | sprites:core, mesh:chest_shock×2, sprites:streak, flash, light, shake | the coffin's ascent: rings stacked up the pillar's foot, a burst at the coffin's mouth | cine/sequences.js, tools/lockheart/ultimate.js |
-| `ult.crown` | held | mesh:ult_crown×2, sprites:ringthin, sprites:glint | round the coffin while it hangs open in the air: a crown of flame and a halo | cine/sequences.js, tools/lockheart/ultimate.js |
-| `ult.invoke` | held | decal:circle_lotus×2, decal:circle_swirl, mesh:ult_vortex, sprites:soft, sprites:sparkle, sprites:diamond | (tools/lockheart/ultimate.js plays these; the owner's gold standard for a cinematic event: too much, on purpose) the invocation, held while it lasts: the whirl on the ground, motes drawn in from all round, glints rising off the circle | cine/sequences.js, tools/lockheart/ultimate.js |
-| `ult.key` | one-shot | sprites:core, sprites:star4, sprites:ring, sprites:ringthin, sprites:streak, sprites:sparkle, sprites:petal, light, shake | a key plunged into the coffin: its colour (tint), loud | cine/sequences.js, tools/lockheart/ultimate.js, vfx/vfx.js |
-| `ult.land` | one-shot | decal:circle_lotus, decal:circle_swirl, flash, hitstop, shake, smear, light×2, sprites:core, sprites:star4×2, mesh:ult_dome, mesh:chest_shock×3, sprites:streak, sprites:petal, sprites:puff, sprites:sparkle | the wheel lands: everything at once | cine/sequences.js, tools/lockheart/ultimate.js |
-| `ult.pillar` | held | mesh:ult_pillar×2, mesh:ult_helix, sprites:streak, sprites:sparkle, sprites:petal | the pillar, held from the ascent to the end: a column of Lachryma to the sky, the great helix round it, streaks and sparkles flowing up it, and motes orbiting | cine/sequences.js, tools/lockheart/ultimate.js, vfx/vfx.js |
+| `ult.ascend` | one-shot | sprites:core, shape:pillar, shape:ring, mesh:chest_shock×2, sprites:streak, flash, light, shake | the coffin's ascent: the column launched up out of it, rings stacked up the pillar's foot, a burst at the coffin's mouth | cine/sequences.js, tools/lockheart/ultimate.js |
+| `ult.crown` | held | mesh:ult_crown×2, shape:spikes, shape:ring, sprites:ringthin, sprites:glint | round the coffin while it hangs open in the air: a crown of flame and a halo | cine/sequences.js, tools/lockheart/ultimate.js |
+| `ult.invoke` | held | decal:circle_lotus×2, decal:circle_swirl, mesh:ult_vortex, shape:ring, shape:band, sprites:soft, sprites:sparkle, sprites:diamond | (tools/lockheart/ultimate.js plays these; the owner's gold standard for a cinematic event: too much, on purpose) the invocation, held while it lasts: the whirl on the ground, the invocation written round it, motes drawn in from all round... | cine/sequences.js, tools/lockheart/ultimate.js |
+| `ult.key` | one-shot | sprites:core, shape:ring, shape:sphere, sprites:star4, sprites:ringthin, sprites:streak, sprites:sparkle, sprites:petal, light, shake | a key plunged into the coffin: its colour (tint), loud | cine/sequences.js, tools/lockheart/ultimate.js, vfx/vfx.js |
+| `ult.land` | one-shot | decal:circle_lotus, decal:circle_swirl, flash, hitstop, shake, smear, light×2, sprites:core, sprites:star4×2, shape:ring, shape:dome, mesh:ult_dome, mesh:chest_shock×3, sprites:streak, sprites:petal, sprites:puff, sprites:sparkle | the wheel lands: everything at once | cine/sequences.js, tools/lockheart/ultimate.js |
+| `ult.pillar` | held | mesh:ult_pillar×2, mesh:ult_helix, shape:pillar, shape:spiral, sprites:streak, sprites:sparkle, sprites:petal | the pillar, held from the ascent to the end: a column of Lachryma to the sky, its core of rays scrolling up, the great helix and a gold ribbon round it, streaks and sparkles flowing up it, and motes orbiting | cine/sequences.js, tools/lockheart/ultimate.js, vfx/vfx.js |
 
 ### damage (5)
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `damage.delirium` | one-shot | sprites:puff, sprites:drip, sprites:bubble | DELIRIUM chaotic, entropic: ink and a sick violet-green; smoke that curls up, drips that fall, bubbles that burst. Things coming apart. |  |
-| `damage.ego` | one-shot | sprites:hex×2, sprites:diamond | EGO lawful, mental: lapis; a hex lattice that opens and holds still, diamonds in an exact ring. A mind made rigid. |  |
-| `damage.illusion` | one-shot | sprites:swirl, sprites:glint, sprites:sparkle | ILLUSION chaotic, perceptual: the labradorite's flash; curls that turn, glints that will not hold still, a doubled sparkle. |  |
-| `damage.impact` | one-shot | sprites:star4, sprites:ringthin, sprites:facet | what a blow is made of, laid over its hit (which says the tool and the material): one colour and one motif per damage type along the Law-Chaos line, so the type reads with the HUD hidden and without colour vision (each has its own shape ... |  |
-| `damage.influence` | one-shot | sprites:ripple×2, sprites:petal | INFLUENCE neutral, social: rose and warm gold; ripples spread slow and even, petals drift out. What spreads from one to many. |  |
+| `damage.delirium` | one-shot | shape:disc, sprites:drip, sprites:puff, sprites:bubble | DELIRIUM chaotic, entropic: ink and a sick violet-green; smoke that curls up, drips that fall, bubbles that burst. Things coming apart. |  |
+| `damage.ego` | one-shot | shape:ring, sprites:hex, sprites:diamond | EGO lawful, mental: lapis; a hex lattice that opens and holds still, diamonds in an exact ring. A mind made rigid. |  |
+| `damage.illusion` | one-shot | shape:disc, sprites:glint, sprites:sparkle | ILLUSION chaotic, perceptual: the labradorite's flash; curls that turn, glints that will not hold still, a doubled sparkle. |  |
+| `damage.impact` | one-shot | shape:quad, sprites:ringthin, sprites:facet | IMPACT lawful, physical: bone and gold; a square flash on its corner crazed like fired clay struck, facets thrown straight out |  |
+| `damage.influence` | one-shot | shape:ring, sprites:ripple, sprites:petal | INFLUENCE neutral, social: rose and warm gold; ripples spread slow and even, petals drift out. What spreads from one to many. |  |
 
 ### swing (5)
 
@@ -423,10 +423,10 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `temper.agitated` | held | sprites:puff, sprites:soft |  | vfx/temper.js |
-| `temper.enraged` | held | sprites:streak, sprites:ring |  | vfx/temper.js |
-| `temper.prismatic` | held | sprites:glint, sprites:drip |  | vfx/temper.js |
-| `temper.stoic` | held | sprites:facet, sprites:puff | a creature's mental state and agitation shown with its body; quiet at the middle, only the ends and the heat have a look of their own | vfx/temper.js |
+| `temper.agitated` | held | shape:band, sprites:puff, sprites:soft |  | vfx/temper.js |
+| `temper.enraged` | held | shape:ring, sprites:streak |  | vfx/temper.js |
+| `temper.prismatic` | held | shape:band, sprites:glint, sprites:drip |  | vfx/temper.js |
+| `temper.stoic` | held | shape:band, sprites:facet, sprites:puff | a creature's mental state and agitation shown with its body; quiet at the middle, only the ends and the heat have a look of their own | vfx/temper.js |
 
 ### dunes (3)
 
@@ -478,7 +478,7 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `absorb` | one-shot | sprites:glint |  | audio/duelsecrets.js, audio/puzzleduel.js, courier/lachryma.js +9 |
+| `absorb` | one-shot | shape:ring, sprites:glint | a thing taken into the Courier: a ring closing in on where it went, its sparkle drawn in after it | audio/duelsecrets.js, audio/puzzleduel.js, courier/lachryma.js +9 |
 
 ### angle (1)
 
@@ -490,13 +490,13 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `crystal.strike` | one-shot | sprites:star4, sprites:facet, sprites:glint | a crystal formation struck with the pick: faceted shards of solid Lachryma knocked off, oxide-bright, and a hard glint | feedback/tracking/dreamvane.js, progress/aptitude.js, progress/classarts.js +4 |
+| `crystal.strike` | one-shot | shape:disc, sprites:facet, sprites:glint | a crystal formation struck with the pick: a hard glint, faceted shards of solid Lachryma knocked off, oxide-bright, glints after | feedback/tracking/dreamvane.js, progress/aptitude.js, progress/classarts.js +4 |
 
 ### cut (1)
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `cut` | one-shot | sprites:streak, sprites:core, sprites:glint | a cut through the air (the cutlass meeting something, the blade mode's planes, the god hand's slash): a seam of light along the stroke, a hot core at its middle, glints thrown off it ('from' -> 'to' in the context: spawn 'line') | cine/overture.board.js, cine/sequence.js, music/lockheart.js +12 |
+| `cut` | one-shot | shape:disc, sprites:streak, sprites:glint | a cut through the air (the cutlass meeting something, the blade mode's planes, the god hand's slash): a seam of light along the stroke, a hot star at its middle, glints thrown off it ('from' -> 'to' in the context: spawn 'line') | cine/overture.board.js, cine/sequence.js, music/lockheart.js +12 |
 
 ### dunemaw (1)
 
@@ -508,19 +508,19 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `embers` | one-shot | sprites:soft |  | progress/skiffpaint.js, vfx/flourishes.js, vfx/particles.js +2 |
+| `embers` | one-shot | shape:sphere, sprites:soft | what a lantern or a fire leaves in the air: a breath of heat, embers rising out of it, twinkling, falling back | progress/skiffpaint.js, vfx/flourishes.js, vfx/particles.js +2 |
 
 ### impact (1)
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `impact` | one-shot | sprites:streak, sprites:puff |  | audio/cues.js, audio/damage.js, audio/shellparts.js +44 |
+| `impact` | one-shot | shape:cone, sprites:streak, sprites:puff |  | audio/cues.js, audio/damage.js, audio/shellparts.js +45 |
 
 ### implode (1)
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `implode` | one-shot | sprites:streak, light |  | vfx/particles.js |
+| `implode` | one-shot | shape:sphere, sprites:streak, light | something collapsing inward and bursting: a sphere drawn in then thrown open, hot streaks out of it, a flash of light | vfx/particles.js |
 
 ### jar (1)
 
@@ -538,11 +538,11 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `poof` | one-shot | sprites:puff, sprites:ringthin, sprites:star4 | a thing gone in a puff: smoke that swells and lifts, a ring, a few stars (cartoon's disappearance) |  |
+| `poof` | one-shot | shape:sphere, sprites:ringthin, sprites:star4, sprites:puff | a thing gone in a puff: smoke that swells and lifts, a ring, a few stars (cartoon's disappearance) |  |
 
 ### shock (1)
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `shock` | one-shot | sprites:ring, sprites:ringthin×3, sprites:sparkle | a shockwave out of a feat of the Courier's power (the parry, a dive's landing, a charge's end, a bomb's pop, the Opening: fx.shockwave): Lachryma's ring, not a white one. A band of crude's ink, the oil film's three thin bands just inside... | vfx/particles.js, workbench/lachrymastage.js |
+| `shock` | one-shot | shape:ring, sprites:ring, sprites:ringthin, sprites:sparkle | a shockwave out of a feat of the Courier's power (the parry, a dive's landing, a charge's end, a bomb's pop, the Opening: fx.shockwave): Lachryma's ring, not a white one. The oil film's hues banded across a ring running out, a band of cr... | vfx/particles.js, workbench/lachrymastage.js |
 

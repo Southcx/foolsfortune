@@ -988,3 +988,5 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 347. **Every new gate on a locked thing asks the lend beside the ledger.** DEBUG lends everything by default; a gate that reads only the ledger locks the sandbox.
 348. **A placeholder is laid by the same frame function its rule reads.** A thing's look and its hit test take position from one call (`frameAt`), never a hand-written local sign.
 349. **A look's per-frame update is called from the frame, never hung on a render hook.** A hook on an object the renderer may skip (empty, culled, another pass) silently never runs.
+NEW:shape-hot-start. **A shape layer that starts hot starts eroded.** A positive `rampShift` reads even a value-0 texel up the
+  ramp, so a faded edge (edgeV, edgeU, a rim) comes back at the geometry's hard edge unless the erosion under it cuts it (≥ 0.2 at the start).

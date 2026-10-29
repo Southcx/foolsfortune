@@ -399,7 +399,7 @@ export class Vfx {
   placeMesh(h, s, t, k) {
     const L = s.L, m = s.mesh, P = h.ctx.power ?? 1;
     const sc = curve(L.scale, t) * (h.ctx.scale ?? 1) * (L.powerScale ? Math.sqrt(P) : 1);
-    m.group.position.copy(h.pos).add(_a.fromArray(L.offset || [0, 0, 0]));
+    m.group.position.copy(h.pos).add(_a.fromArray(L.offset || [0, 0, 0]).multiplyScalar(L.offsetScale ? h.ctx.scale ?? 1 : 1)); // (`offsetScale`: in the effect's scale, as a sprite's: an aura's feet are its creature's)
     if (Array.isArray(L.stretch)) m.group.scale.set(sc * curve(L.stretch[0], t), sc * curve(L.stretch[1], t), sc * curve(L.stretch[2], t)); else m.group.scale.setScalar(sc);
     if ((m.tintKey ?? L.tint ?? 'tint') === 'tint' && h.ctx.tint !== undefined) m.u.uTint.value.set(color('tint', h.ctx)); // (a held effect follows its caller's colour)
     if (L.type === 'decal') { // (flat on the ground by default, turning about its centre; or stood facing the camera)

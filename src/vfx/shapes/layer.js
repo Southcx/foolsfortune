@@ -29,7 +29,8 @@
 //   turn        'random' (a fresh yaw each play, so repeats never stamp) or radians (0)   seed [u, v] the patterns' offset (random each play)
 //   order       renderOrder (6)
 //   and vfx.js's: at, dur (Infinity held, with in, out and loop: a held layer's life runs 0..1 every `loop` real s), scale, stretch
-//   ([x, y, z], each a number or a curve), offset, rot, spin, k, kmul, powerScale
+//   ([x, y, z], each a number or a curve), offset (offsetScale: true puts it in ctx.scale, as a sprite's is: an aura's feet are its
+//   creature's), rot, spin, k, kmul, powerScale
 //
 // Prior art: Riot's layering of a spell (League of Legends' VFX style guide: a primary shape that reads in silhouette, secondary
 // support, tertiary ambience) and its "erode by a rising threshold"; FFXIV's .avfx (a model layer with its texture animation); Simon

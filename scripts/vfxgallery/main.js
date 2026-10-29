@@ -10,7 +10,9 @@
 // contact sheet of a film's dailies (frames of one take in a row, labelled).
 //
 //   window.__gallery = { ready, names(match), begin({ rows, cols, title }), shoot({ name, row, times, ctx, dir, mid }) -> { held, single,
-//     ms }, sheet() -> a PNG data URL, programs() -> the compiled programs' names }   query: w, h (CSS px), dpr, lines (0 native), tier (high | low | minimum), body (side | center | none)
+//     ms, layers, calls (the draw calls it adds to the empty stage at the middle time) }, sheet() -> a PNG data URL, programs() -> the
+//     compiled programs' names }   query: w, h (CSS px), dpr, lines (0 native), tier (high | low | minimum), body (side | center | none)
+//   ctx.at [x, y, z] places the effect (an aura at a body's middle: '{"at":[0,0.9,0],"scale":1.8}' with --body center); the ground's middle by default
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { T } from '/src/core/config.js';
@@ -58,7 +60,7 @@ for (const B of Object.values(vfx.budget)) B.v = B.cap = B.rate = 1e9; // (an ef
 // ---- the frames
 const OW = Math.round(W * DPR), OH = Math.round(H * DPR); // (the output: the device's full resolution)
 const full = Object.assign(document.createElement('canvas'), { width: OW, height: OH }), fx = full.getContext('2d');
-let sheet = null, sx = null, cell = null;
+let sheet = null, sx = null, cell = null, base = null;
 const PAD = 10, LABEL = 22, HEAD = 34;
 /** The frame drawn now, scaled up to (w, h) at (x, y) on a 2D context as the browser scales the game's (bilinear), the screen's flash over it. */
 function blit(g, x, y, w, h) {
@@ -90,12 +92,16 @@ window.__gallery = {
   shoot({ name, row, times, ctx = {}, dir = [1, 0, 0], mid = 0 }) {
     const t0 = Date.now();
     reset(); seed = seedOf(name); simT = 1000;
-    const h = vfx.play(name, { pos: new THREE.Vector3(0, 0, 0), dir: new THREE.Vector3(...dir), normal: new THREE.Vector3(0, 1, 0), floor: 0, ...ctx });
+    if (base === null) { renderer.info.autoReset = false; renderer.info.reset(); post.render(scene, camera); base = renderer.info.render.calls; renderer.info.autoReset = true; } // (the empty stage's draws)
+    const { at: where, ...rest } = ctx; // (`at` [x, y, z]: where it plays, e.g. an aura at a body's middle; the ground's middle by default)
+    const h = vfx.play(name, { pos: new THREE.Vector3(...(where || [0, 0, 0])), dir: new THREE.Vector3(...dir), normal: new THREE.Vector3(0, 1, 0), floor: 0, ...rest });
     const held = !!h.layers?.some((s) => s.L.dur === Infinity);
-    let t = 0, single = null;
+    let t = 0, single = null, calls = 0;
     times.forEach((at, i) => {
       while (t < at - 1e-6) { const st = Math.min(1 / 60, at - t); simT += st; t += st; shim.rawDt = st; vfx.update(st); }
+      if (i === mid) { renderer.info.autoReset = false; renderer.info.reset(); }
       post.render(scene, camera);
+      if (i === mid) { calls = renderer.info.render.calls - base; renderer.info.autoReset = true; } // (the draws it adds at the middle time)
       const x = PAD + i * (cell.cw + PAD), y = HEAD + row * (cell.ch + PAD);
       blit(sx, x, y, cell.cw, cell.ch);
       sx.fillStyle = 'rgba(10,6,5,.72)'; sx.fillRect(x, y, cell.cw, LABEL);
@@ -104,7 +110,7 @@ window.__gallery = {
       if (i === mid) { blit(fx, 0, 0, OW, OH); single = full.toDataURL('image/png'); }
     });
     h.stop?.(); // (a held one stopped at the last column's time)
-    return { held, single, ms: Date.now() - t0, layers: h.layers?.length ?? 0 };
+    return { held, single, ms: Date.now() - t0, layers: h.layers?.length ?? 0, calls };
   },
   sheet() { return sheet.toDataURL('image/png'); },
   programs() { return renderer.info.programs.map((p) => p.name); }, // (the programs the stage has compiled: the shape layers' are one, 'vfx-shape')
