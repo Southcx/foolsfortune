@@ -32,6 +32,7 @@ export class Signatures {
 
   /** Every signature within `range` of `pos`, with its distance (`d`). */
   around(pos, range) {
+    range *= this.game?.weather?.senseMult?.(pos) ?? 1; // (heard farther at night and in a Well's dark: progress/weather.js)
     const out = [], r2 = range * range;
     const take = (s) => { const dx = s.pos.x - pos.x, dy = s.pos.y - pos.y, dz = s.pos.z - pos.z, d2 = dx * dx + dy * dy * 0.5 + dz * dz; if (d2 < r2) { s.d = Math.sqrt(d2); out.push(s); } };
     for (const s of this.sources) if (s.alive()) take(s);

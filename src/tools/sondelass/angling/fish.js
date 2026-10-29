@@ -14,8 +14,11 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { buildFish } from './fishmesh.js';
-import { sizeClass, weightOf, BY_SPECIES } from './species.js';
+import { sizeClass, weightOf, BY_SPECIES, ASPECTS } from './species.js';
 import { stream } from '../../../core/rng.js';
+
+/** A species' own feeling: the aspect that draws it most (`aff`, ASPECTS' order), kept on the row once found. */
+const feelingOf = (sp) => (sp._feeling ??= ASPECTS[sp.aff.indexOf(Math.max(...sp.aff))]?.id);
 const simRand = stream('tools/sondelass/angling/fish'); // (the simulation's chance: core/rng.js, the same twice)
 
 // (bites come sooner than they used to: the time a fish spends circling the lure, scaled)
@@ -124,7 +127,8 @@ export class Fish {
     const gap = Math.max(0, sp.depth[0] - 0.7 - ld, ld - (sp.depth[1] + 0.7));
     const depthF = 1 - THREE.MathUtils.clamp(gap / 2.4, 0, 1);
     const speedF = lure.speed > 3.2 ? 0.15 : lure.speed > 1.6 ? 0.6 : 1;
-    return aff * depthF * speedF * (1 - dist / range * 0.6) * (lure.twitch > 0 ? 1.8 : 1);
+    const wx = this.game?.weather?.biteMult?.(feelingOf(sp), this.pos) ?? 1; // (keener in its own feeling's weather: progress/weather.js)
+    return aff * depthF * speedF * (1 - dist / range * 0.6) * (lure.twitch > 0 ? 1.8 : 1) * wx;
   }
 
   /** A sounding has passed through the water: interest (k: its strength here, after the falloff, times how much it wants the lure). */
