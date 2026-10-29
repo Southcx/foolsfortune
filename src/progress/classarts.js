@@ -18,7 +18,7 @@
 //
 //   CLASS_ARTS[id] = { cls, kind: 'action' | 'reaction', label, line, does: { ...numbers }, cost?, cooldown?, feat: [key, n] }
 //   FEATS[key] = { event, test(e) }   (what a class-scoped feat counts)   ACCENT = { k, cost }   OPEN = { action, reaction } (real minutes)
-//   artOpen(id, L) -> bool   artsOf(cls) -> [id, id]   openArts(L) -> [id]   accent(id, clsNow) -> { k, cost }
+//   artOpen(id, L, game?) -> bool (game: the DEBUG save's Class Arts lend)   artsOf(cls) -> [id, id]   openArts(L) -> [id]   accent(id, clsNow) -> { k, cost }
 //   game.classArts = new ClassArts(game)   .worn { action, reaction }   .wear(id)   events: art.learn { art, cls, by }, art.wear { art, slot, by }
 // ---------------------------------------------------------------------------------------
 import { MAJOR_TITLE } from './spreads.js';
@@ -188,12 +188,13 @@ export const artsOf = (cls) => (ARTS_BY_CLASS[cls] || []).slice().sort((a, b) =>
 
 const got = (L, k) => L?.get?.(k) || 0;
 /** Whether an art is open: its count way (real minutes played as its class) or its feat way (its feat n times as its class). */
-export function artOpen(id, L) {
+export function artOpen(id, L, g = null) {
   const R = CLASS_ARTS[id]; if (!R) return false;
+  if (g?.lend?.has?.('classArts')) return true; // (lent: the DEBUG save's Class Arts row, never counted)
   const [feat, n] = R.feat;
   return got(L, `class.${R.cls}.secs`) >= OPEN[R.kind] * 60 || got(L, `class.${R.cls}.${feat}`) >= n;
 }
-export const openArts = (L) => Object.keys(CLASS_ARTS).filter((id) => artOpen(id, L));
+export const openArts = (L, g = null) => Object.keys(CLASS_ARTS).filter((id) => artOpen(id, L, g));
 /** An art's accent: its numbers x k and its cost x cost while read as its own class, else 1 and 1. */
 export const accent = (id, clsNow) => (CLASS_ARTS[id]?.cls === clsNow ? { k: ACCENT.k, cost: ACCENT.cost } : { k: 1, cost: 1 });
 
@@ -216,7 +217,7 @@ export class ClassArts {
     game.chat?.add?.('art', { help: "your class's arts: /art (the two you wear, and your class's), /art <id> (wear an art you have opened)", run: ([id]) => {
       if (id) { if (!this.wear(id)) this.game.events?.emit('art.refuse', { art: id, why: CLASS_ARTS[id] ? 'closed' : 'unknown', by: 'courier' }); return; }
       const cls = this.game.laidSpread?.class?.id ?? 'arcana.fool';
-      this.game.events?.emit('art.ask', { cls, worn: { ...this.worn }, here: artsOf(cls).map((a) => ({ art: a, open: artOpen(a, this.game.ledger), progress: this.progress(a) })), by: 'courier' });
+      this.game.events?.emit('art.ask', { cls, worn: { ...this.worn }, here: artsOf(cls).map((a) => ({ art: a, open: artOpen(a, this.game.ledger, this.game), progress: this.progress(a) })), by: 'courier' });
     } });
   }
   /** How near an art is by each way: real minutes played as its class of OPEN, and its feat done of n. */
@@ -235,7 +236,7 @@ export class ClassArts {
   teach() {
     const L = this.game.ledger;
     for (const id of Object.keys(CLASS_ARTS)) {
-      if (this.told.includes(id) || !artOpen(id, L)) continue;
+      if (this.told.includes(id) || !artOpen(id, L)) continue; // (the ledger alone: a lent art is never announced as opened)
       this.told.push(id); const R = CLASS_ARTS[id];
       if (!this.worn[R.kind]) this.worn[R.kind] = id;
       this.game.save?.dirty?.('classArts');
@@ -244,7 +245,7 @@ export class ClassArts {
   }
   /** Wear an open art in its slot (the action or the reaction). */
   wear(id) {
-    const R = CLASS_ARTS[id]; if (!R || !artOpen(id, this.game.ledger)) return false;
+    const R = CLASS_ARTS[id]; if (!R || !artOpen(id, this.game.ledger, this.game)) return false;
     this.worn[R.kind] = id; this.game.save?.dirty?.('classArts'); this.game.events?.emit('art.wear', { art: id, slot: R.kind, by: 'courier' }); return true;
   }
   /** The worn action's numbers for the class read now (the accent applied), for the runtime that plays it. */
