@@ -35,6 +35,22 @@ export class VesselSounds {
     for (let i = 0; i < (down ? 7 : 3); i++) this.noise(t + 0.05 + i * (down ? 0.07 : 0.05) + Math.random() * 0.03, 0.015, { type: 'bandpass', f0: 3500 + Math.random() * 3500, q: 10, gain: down ? 0.35 : 0.22, dest: d }); // (crazing, or the shards when down)
     if (down) this.tone(t + 0.1, 0.5, { f0: 330, f1: 165, type: 'sine', gain: 0.12, dest: d }); // (settling)
   }
+  /** A sibling drawn back together (sibling.reform { whole, far }, Calissa's siblingshatter.js): its shards run backwards, a rising
+   *  scatter of clinks quickening into the body as they fly home over `whole` seconds, then one clear clink when it is whole. Too far
+   *  to fly (`far`), they sink where they lie instead: a few falling ticks and a low settle. */
+  siblingReform(whole = 1.2, far = false) {
+    if (!this.ok() || !this.allow('siblingReform', 2)) return;
+    const t = this.ctx.currentTime, d = this.out(0.22, 0.5), W = Math.min(2.5, Math.max(0.4, whole || 1.2));
+    if (far) {
+      for (let i = 0; i < 5; i++) this.noise(t + i * 0.09 + Math.random() * 0.03, 0.015, { type: 'bandpass', f0: 3200 - i * 400, q: 8, gain: 0.2 - i * 0.03, dest: d });
+      this.tone(t + 0.3, 0.6, { f0: 196, f1: 147, type: 'sine', gain: 0.1, dest: d }); return;
+    }
+    this.noise(t, W, { type: 'bandpass', f0: 1800, f1: 5200, q: 2, gain: 0.05, attack: W * 0.8, dest: d }); // (the shards' rush drawn in)
+    const n = 14;
+    for (let i = 0; i < n; i++) { const k = i / n, at = t + W * Math.pow(k, 0.6); // (quickening as they arrive)
+      this.noise(at, 0.012, { type: 'bandpass', f0: (2600 + k * 4200) * (0.9 + Math.random() * 0.2), q: 10, gain: 0.12 + k * 0.16, dest: d }); }
+    for (const [r, a] of [[1, 0.2], [2.76, 0.06], [5.4, 0.03]]) this.tone(t + W, 1.2 / r, { f0: 1319 * r, f1: 1319 * r, gain: a, dest: d }); // (whole: one clear E)
+  }
   /** A feeling drunk (feeling.drink { aspect }: the draught changed): a swallow, then the feeling's colour as three rising notes of its
    *  mode (music/mood.js MODES) over E, so the ear learns each feeling's shape before the eye names it. */
   feelingDrink(aspect) {
