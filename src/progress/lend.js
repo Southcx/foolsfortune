@@ -22,7 +22,7 @@ export const LENDS = {
   garden:    { label: 'Spirit Garden',        opens: 'The Spirit Garden at its highest Firing (never the attributes\' ranks)' },
   sea:       { label: 'Sea',           opens: 'Entropolis open; any ship sails without a rutter' },
   siblings:  { label: 'Siblings',      opens: 'All five siblings met' },
-  feelings:  { label: 'Feelings',      opens: 'Gall and Fury known' },
+  feelings:  { label: 'Feelings',      opens: 'Every feeling known' },
   glazes:    { label: 'Glazes',        opens: 'Every glaze and kiln pattern firable.' },
   codex:     { label: 'Codex',         opens: 'Every hidden entry shown' },
   shells:    { label: 'Caster Shells', opens: 'Every caster shell, endless and free. The toll still cracks.' }, // (the owner, v170: "a toggleable debug option for infinite shot charges"; words Espada's)

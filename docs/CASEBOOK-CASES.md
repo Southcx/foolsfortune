@@ -4352,3 +4352,20 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Cause (as read):** the seam resets every tech (`techs.reset`); the prone holster's `reset` cleared its memo with its state.
 - **Fix:** `reset` keeps the memo; once standing where they land, the tool is drawn again through the belt (if still worn and the hands free).
 - **Rule:** NEW:a-reset-keeps-what-is-owed
+
+### 2026-10-29 · A lock-on held into a puzzle duel stayed on (South, on the phone)
+- **Seen:** locked on to an aberrant Lantern Wisp as its duel opened, the lock's tag (its HP and agitation, ??? unread) hung over the
+  foe's half of the board for the whole duel.
+- **Cause (as read):** the duel's session held the world (`pocket`) but never the lock-on; `LockOn.update` went on keeping its target,
+  and the creature tag follows the lock's target (`vfx/creaturetags.js`).
+- **Fix:** the pocket lets the lock go (`release('duel')`), and `LockOn.update` neither keeps nor takes one while a duel is open or
+  pending (the touch lock included). Headless: held before the open, none in the duel.
+- **Rule:** NEW:an-instance-lets-go-of-the-world
+
+### 2026-10-29 · The DEBUG save's puzzle duels dimmed every feeling (South, on the phone)
+- **Seen:** in DEBUG, every gem on your half of a duel drawn dim (unlit, a coloured keyline): all seven feelings locked.
+- **Cause (as read):** the dim list came straight from the ledger (`notAwakened(g.ledger)`), with no ask of the lend panel; the brush,
+  the lure ring and the miracles ask `game.lend.has('feelings')` beside the ledger, the duel's new gate did not. The lend's own line
+  still read "Gall and Fury known".
+- **Fix:** the session passes no dim gems while Feelings is lent; the lend's line reads "Every feeling known". Headless: DEBUG duel, `dim` empty.
+- **Rule:** NEW:a-new-gate-asks-the-lend

@@ -186,6 +186,7 @@ export class LockOn {
     const g = this.game, P = g.player, inp = P.input;
     this.t += dt;
     this.flickCool -= dt;
+    if (g.duel?.active || g.duel?.pending) { if (this.target) this.release('duel'); this.reticle.hide(); this.reticle.update(dt, g.camera); P.lookScale.lock = 1; return; } // (a puzzle duel is its own instance: nothing held into it, nothing taken in it; South, 2026-10-29)
     const t = this.target;
     const touch = g.input?.device === 'touch', turned = touch ? Math.hypot(inp.dx || 0, inp.dy || 0) : 0; // (a finger turning the view: aiming by hand)
     if (!t) {
