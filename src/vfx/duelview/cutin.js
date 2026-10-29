@@ -29,8 +29,8 @@ import { feelColour, sm, clamp01 } from './layout.js';
 export const CUT_IN = { in: 0.14, hold: 0.62, out: 0.16, limitHold: 1.45, word: 0.12, limitWord: 1.1, band: 0.16, limitBand: 0.24, y: 0.4, tilt: -0.09, portrait: 0.44, rt: 512, fov: 24, burst: 4,
   turn: { in: 0.1, hold: 0.3, out: 0.14, word: 0.12, band: 0.085, lit: 0.35 } };
 /** The turn's change (South, 2026-10-29: "cut-ins/highlights and vfx for when the turns switch over"; Fire Emblem's PLAYER PHASE and
- *  ENEMY PHASE): the band thinner and shorter, its words the genre's plain ones (placeholders, Espada's to word), yours in the film. */
-export const TURN_WORDS = ['YOUR TURN', 'ENEMY TURN'];
+ *  ENEMY PHASE): the band thinner and shorter, yours in the film. */
+export const TURN_WORDS = ['YOUR TURN', "FOE'S TURN"]; // (Espada's, 2026-10-29: the duel says foe, never enemy)
 const FILM = new THREE.Color(0x9ee6ff);
 const INK = '#17111f', GOLD = new THREE.Color(0xffd36a);
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Color(), _bb = new THREE.Box3();

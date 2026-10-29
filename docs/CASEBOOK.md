@@ -976,3 +976,5 @@ duel's ground disc (mode 2) fell into the slab's `> 0.5` branch and drew a board
 
 NEW:a-wait-needs-an-answer. **A delayed effect needs something the player can do in the delay.** With no answer in reach, a wait
   reads as a bug: land it at once, or put the answer in reach.
+NEW:aim-at-the-thing-not-where-it-was. **A look that flies to a HUD piece asks where it stands now, every time.** The duel's motes
+aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tube, the phone's flank); ask the thing's own place.
