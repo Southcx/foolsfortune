@@ -137,6 +137,15 @@ const PENDANTS = {
   coin: () => [['gold', new THREE.TorusGeometry(0.026, 0.013, 4, 4).rotateZ(Math.PI / 4).scale(1, 1, 0.45)]],
   gourd: () => [['body', at(sphere(0.031), 0, -0.012, 0)], ['body', at(sphere(0.021), 0, 0.03, 0)], ['hair', at(new THREE.CylinderGeometry(0.004, 0.005, 0.02, 6), 0, 0.055, 0)]],
   tassel: () => [['hair', at(sphere(0.013), 0, 0.03, 0)], ...Array.from({ length: 10 }, (_, i) => { const a = (i / 10) * Math.PI * 2; return ['hair', at(new THREE.ConeGeometry(0.007, 0.1, 5).rotateX(Math.PI).rotateZ(Math.sin(a) * 0.12).rotateX(Math.cos(a) * 0.12), Math.sin(a) * 0.008, -0.025, Math.cos(a) * 0.008)]; })],
+  lantern: () => {
+    // (the Lantern Wisp's lantern, small: vfx/lanternwisplook.js; four posts and a ring and cap of iron, glass panes, a flame inside)
+    const h = 0.02, o = [['iron', at(new THREE.CylinderGeometry(0.026, 0.022, 0.008, 8), 0, -0.047, 0)], ['iron', at(new THREE.CylinderGeometry(0.003, 0.003, 0.014, 5), 0, -0.038, 0)],
+      ['iron', at(new THREE.ConeGeometry(0.03, 0.026, 8), 0, 0.048, 0)], ['iron', at(new THREE.TorusGeometry(0.011, 0.0028, 5, 12), 0, 0.074, 0)], ['iron', at(new THREE.CylinderGeometry(0.0045, 0.0045, 0.006, 6), 0, 0.037, 0)]];
+    for (const [sx, sz] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) o.push(['iron', at(new THREE.CylinderGeometry(0.0027, 0.0027, 0.078, 5), sx * h, -0.003, sz * h)]);
+    for (let k = 0; k < 4; k++) o.push(['glass', new THREE.BoxGeometry(2 * h, 0.07, 0.0025).translate(0, -0.003, h).rotateY((k * Math.PI) / 2)]);
+    o.push(['flame', at(sphere(0.0105, 8, 6).scale(1, 1.55, 1), 0, -0.012, 0)], ['flame', at(new THREE.ConeGeometry(0.0075, 0.02, 6), 0, 0.01, 0)]);
+    return o;
+  },
 };
 
 /** Merge each material's pieces into one geometry. */
