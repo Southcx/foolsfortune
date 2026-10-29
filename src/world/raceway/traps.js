@@ -50,6 +50,7 @@ export class Traps {
   }
   clear() {
     this.T = null;
+    for (const Tp of this.list) Tp.look?.dispose?.(); // (a dressed look lets go of what it shares first: vfx/racewaytraps.js)
     if (this.group) { this.group.traverse((o) => { o.geometry?.dispose?.(); o.material?.dispose?.(); }); this.group.removeFromParent(); this.group = null; }
     this.list = []; this.balls = [];
   }
@@ -87,8 +88,9 @@ export class Traps {
   /** The trap nearest a park-local point (for the haunt mode's click), or -1. */
   nearest(lx, lz, within = 18) { let best = -1, bd = within; this.list.forEach((Tp, i) => { const p = Tp.look.root.position, d = Math.hypot(p.x - (RW.x + lx), p.z - (RW.z + lz)); if (d < bd) { bd = d; best = i; } }); return best; }
 
-  // ---------------------------------------------------------------- the placeholders (Calissa's to dress: a trap's body, its tell)
+  // ---------------------------------------------------------------- the placeholders (dressed by Calissa's vfx/racewaytraps.js; these stand if it is not there)
   place(Tp) {
+    const dressed = this.game.racewayTraps?.place?.(Tp, this); if (dressed) return dressed;
     const K = Tp.K, root = new THREE.Group(), { F, pos } = this.frameAt(Tp.s, 0); root.position.copy(pos); root.rotation.y = Math.atan2(F.fx, F.fz); this.group.add(root);
     const mat = (c, o = 1) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.8, transparent: o < 1, opacity: o, flatShading: true });
     const glow = new THREE.MeshBasicMaterial({ color: GLOW.idle, transparent: true, opacity: 0.55, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3 });
@@ -104,6 +106,7 @@ export class Traps {
     return look;
   }
   show(Tp) {
+    if (Tp.look.show) { Tp.look.show(Tp, this.t); return; } // (a dressed look draws its own phase)
     const L = Tp.look, active = Tp.phase === 'active', red = Tp.kind === 'portal' && Tp.red;
     L.glow.color.setHex(Tp.stun > 0 ? GLOW.idle : red ? GLOW.red : Tp.kind === 'portal' && active ? GLOW.lit : active ? GLOW.active : Tp.phase === 'tell' ? GLOW.tell : GLOW.idle);
     L.glow.opacity = Tp.phase === 'tell' ? 0.45 + 0.4 * Math.abs(Math.sin(this.t * 14)) : 0.6;
@@ -217,7 +220,7 @@ export class Traps {
     let target = null, bd = K.size.range; for (const x of racers) { const d = x.pos.distanceTo(pos); if (d < bd) { bd = d; target = x; } }
     if (!target) return;
     const lead = target.S ? target.S.v.clone().multiplyScalar(bd / K.ball.speed) : new THREE.Vector3(), aim = target.pos.clone().add(lead).setY(target.pos.y + 1).sub(pos).normalize();
-    const m = new THREE.Mesh(new THREE.SphereGeometry(K.ball.r * 0.7, 10, 8), new THREE.MeshBasicMaterial({ color: 0xffb04a })); m.position.copy(pos); this.group.add(m);
+    const m = this.game.racewayTraps?.ball?.(Tp, pos) || new THREE.Mesh(new THREE.SphereGeometry(K.ball.r * 0.7, 10, 8), new THREE.MeshBasicMaterial({ color: 0xffb04a })); m.position.copy(pos); this.group.add(m); // (the Wisp's ember, dressed)
     this.balls.push({ Tp, m, v: aim.multiplyScalar(K.ball.speed), life: K.ball.life, target, home: false });
   }
   stepBalls(dt, you) {

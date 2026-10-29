@@ -17,6 +17,8 @@
 //     mandibles (sickles curving in, teeth along the inner edge) in an iron-dark tenmoku glaze, amber at the edge, ivory at the tip, gold
 //     at the root; her snap (stepPits turns the same two objects) closes them. On `raceway.pit`: a dust burst from the throat and the
 //     sand sliding down the cone after it (vfx/racewayparkeffects.js). Her collision and pull are as she left them.
+//   - THE KIT'S COLUMNS, WALLS AND ARCHES (any track's `features.columns`, `walls`, `arches`: kit.js): shells of glazed stone and gold
+//     laid just outside her merged placeholders, in the same stone batch (vfx/racewaykitdress.js; a made track's by vfx/racewaymade.js).
 // Every material is one already built: her vertex-coloured flat standard (the kit's, the decks', the rails'), and the water's (the
 // pond's and the Well's own instances: one program, the kind a uniform). No program added. Draw calls: the stone one mesh and its
 // outline in place of the decks' (0 net); the water two in place of her one (+1); the maws in place (0).
@@ -36,6 +38,7 @@ import { addOutline } from '../render/outline.js';
 import { DECK } from '../world/raceway/features.js';
 import { coasterPath } from '../world/raceway/coasterrail.js';
 import { RW } from '../world/raceway/track.js';
+import { kitDress } from './racewaykitdress.js';
 
 /** The numbers. The water: rings and segments every `cell` m. The deck: its parapet (width, height), the gold band's place on the
  *  fascia (m under the deck's top), the slabs' length; its colours. The coaster rail's section (half-width, half-height of the body, the
@@ -54,7 +57,7 @@ const _c = new THREE.Color(), _a = new THREE.Vector3(), _b = new THREE.Vector3()
 const hash = (n) => { const x = Math.sin(n * 127.1) * 43758.5453; return x - Math.floor(x); };
 
 /** A builder of non-indexed triangles with a colour a vertex. */
-class Tris {
+export class Tris {
   constructor() { this.pos = []; this.col = []; }
   tri(a, b, c, ca, cb = ca, cc = ca) { a.toArray(this.pos, this.pos.length); b.toArray(this.pos, this.pos.length); c.toArray(this.pos, this.pos.length); for (const k of [ca, cb, cc]) _c.set(k).toArray(this.col, this.col.length); }
   quad(a, b, c, d, ca, cb = ca, cc = ca, cd = ca) { this.tri(a, b, c, ca, cb, cc); this.tri(a, c, d, ca, cc, cd); } // (a b c d counter-clockwise seen from outside)
@@ -101,6 +104,7 @@ export class RacewayPark {
     const stone = new Tris();
     this.dressDecks(R, stone);
     this.dressCoaster(R, stone);
+    for (const T of R.tracks || []) kitDress(R, T, stone); // (any track's lone columns, walls and arches: vfx/racewaykitdress.js)
     if (stone.pos.length) {
       const mesh = new THREE.Mesh(stone.geometry(), new THREE.MeshStandardMaterial({ color: 0xffffff, vertexColors: true, roughness: 0.6, flatShading: true })); // (her decks' parameters: their program)
       mesh.castShadow = mesh.receiveShadow = true; mesh.name = 'raceway-park-stone'; this.add(mesh); addOutline(mesh);
