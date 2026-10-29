@@ -37,8 +37,8 @@ export const FOE_TIP = {
   seal: 'A column of yours locks for your next turn: nothing in it can be dragged.',
   sap: 'Each skill you wear loses half its charge.',
   reclaim: 'The Line moves a column toward you.',
-  spew: 'Throws a heap of slime onto your half.', // (placeholder, Dovina's line: Espada's to word)
-  harden: 'Sets slime on your half into plain junk.', // (placeholder, Dovina's line: Espada's to word)
+  spew: 'Throws a heap of slime onto your half.', // (Espada's, 2026-10-29)
+  harden: 'Sets up to 4 slime on your half into plain junk.', // (Espada's, 2026-10-29)
 };
 export const FOE_CAST = { tip: 3, tapR: 30, badge: 0.24, gap: 0.035, over: 0.5, harden: 0.5, petrify: 0.55, seal: 0.5, sap: 0.65, reclaim: 0.5, desperate: 1.3, stagger: 0.7, sweep: 0.6, shots: 24 };
 const GOLD = 0xffd36a, FILM = 0x9fd8ff, STONE = 0x9a948c, EMBER = 0xff6a2a, INK = '#17111f';
