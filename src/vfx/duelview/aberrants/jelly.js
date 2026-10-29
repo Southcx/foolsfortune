@@ -26,6 +26,8 @@ export const JELLY_ELITE = { shrink: 0.55, ease: 2.5, line: { rear: 0.35, burst:
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Color();
 
 export class JellyElite {
+  /** The cut-in's motif behind this aberrant's bands (cutin.js: 2 sand). */
+  static MOTIF = 2;
   constructor(view) { this.view = view; this.on = false; this.pile = 0; }
 
   /** Whether a duel is an aberrant slip jelly's (its ruleset's secret is the dissolve, or the foe is one). */

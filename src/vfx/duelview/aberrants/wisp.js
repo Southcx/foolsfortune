@@ -38,6 +38,8 @@ function countTexture(n) {
 }
 
 export class WispElite {
+  /** The cut-in's motif behind this aberrant's bands (cutin.js: 3 briars and lanterns). */
+  static MOTIF = 3;
   constructor(view) {
     this.view = view; this.on = false; this.dark = 0; this.counts = new Map(); this.shown = -1;
     this.count = new THREE.Mesh(new THREE.PlaneGeometry(0.32, 0.16), new THREE.MeshBasicMaterial({ name: 'duel-word', map: null, transparent: true, depthWrite: false, toneMapped: false })); // (the words' own program, juice.js)

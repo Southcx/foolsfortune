@@ -25,6 +25,7 @@
 import * as THREE from 'three';
 import { filmColour } from '../oxidation.js';
 import { sfx } from '../../audio/sfx.js';
+import { domainHex } from './powercast.js';
 import { sm, clamp01 } from './layout.js';
 
 /** foeScale, jarScale: the fighters' sizes in a PvE duel; vs: its open's beats (real s from the open) and its length; lunge and flinch
@@ -64,8 +65,8 @@ export class DuelShow {
   /** The VS's beats on its clock: the bands, the cuts, the stamp. */
   vs() {
     const V = this.view, S = SHOW.vs, t = this.t;
-    if (this.vsStep === 0 && t >= S.foe) { this.vsStep = 1; const f = this.foe; V.stage?.cutAway('vsFoe', S.jar - S.foe + 0.15, { cut: true }); V.cutIn?.vs?.(NAMES[f?.kind] || (f?.name || '').toUpperCase(), null, 0.3); V.stage?.jolt?.(0.25); }
-    if (this.vsStep === 1 && t >= S.jar) { this.vsStep = 2; V.jarCut?.vs?.('', filmColour(0.3, _c).getHex(), 0.66); V.stage?.cutAway('vsJar', S.pull - S.jar, { cut: true }); V.stage?.jolt?.(0.25); }
+    if (this.vsStep === 0 && t >= S.foe) { this.vsStep = 1; const f = this.foe; V.stage?.cutAway('vsFoe', S.jar - S.foe + 0.15, { cut: true }); V.auras?.charge(1, { dur: S.jar - S.foe + 0.3 }); V.cutIn?.vs?.(NAMES[f?.kind] || (f?.name || '').toUpperCase(), null, 0.3); V.stage?.jolt?.(0.25); }
+    if (this.vsStep === 1 && t >= S.jar) { this.vsStep = 2; V.jarCut?.vs?.('', filmColour(0.3, _c).getHex(), 0.66); V.stage?.cutAway('vsJar', S.pull - S.jar, { cut: true }); V.auras?.charge(0, { dur: S.pull - S.jar + 0.3 }); V.stage?.jolt?.(0.25); }
     if (this.vsStep === 2) V.seeding?.go?.(Math.max(0, S.pull - 0.1 - t)); // (the board dealt in as the camera pulls out to it: seeding.js)
     if (this.vsStep === 2 && t >= S.stamp) { this.vsStep = 3; V.stamps?.stamp('VS', { size: 0.26, y: 0.5, x: 0.5, tilt: -0.12, life: 0.6, spin: 1.4 }); V.stage?.jolt?.(0.5); V.game.glitch?.pulse?.({ split: 0.06, tear: 0.03, dur: 0.15 }); }
   }
@@ -77,12 +78,15 @@ export class DuelShow {
       case 'line': { const d = Math.sign((e.line ?? 0) - (V.lineCol ?? e.line ?? 0)) || (e.side === 0 ? 1 : -1), far = Math.abs((e.line ?? 0) - (V.lineCol ?? 0));
         if (d > 0) { this.act('jar', 'lunge'); this.act('foe', 'flinch'); this.spark(); } else { this.act('foe', 'lunge'); this.act('jar', 'flinch'); }
         if (far >= 2) { V.stage?.whip?.('push'); V.stage?.cutAway('hit', SHOW.cine.hit); } break; }
-      case 'foe.skill': case 'foe.desperate': this.act('foe', 'lunge'); break;
+      case 'foe.skill': this.act('foe', 'lunge'); V.auras?.charge(1, { dur: 1.7 }); break;
+      case 'foe.desperate': this.act('foe', 'lunge'); V.auras?.charge(1, { dur: 2.6, big: true }); break;
+      case 'turn': V.auras?.charge(e.side ? 1 : 0, { dur: 0.7, chant: false }); break;
       case 'land': if (e.side === 0 || (e.at && e.at[0] < (V.lineCol ?? 0))) this.act('jar', 'flinch', 0.5); break;
       case 'duelBreak': if (e.side === 1) { this.act('jar', 'lunge'); this.act('foe', 'knock'); this.spark(2); } else { this.act('foe', 'lunge'); this.act('jar', 'knock'); }
         V.stage?.cutAway('hit', SHOW.cine.big); break;
-      case 'power': case 'skill': if (e.side == null || e.side === 0) this.act('jar', 'hop'); break;
-      case 'duel.finisher': this.act('jar', 'hop'); V.stage?.cutAway('hit', SHOW.cine.big); break;
+      case 'power': if (e.side == null || e.side === 0) { this.act('jar', 'hop'); V.auras?.charge(0, { hex: domainHex(e.domain), dur: 1.8 }); } break;
+      case 'skill': if (e.side == null || e.side === 0) { this.act('jar', 'hop'); V.auras?.charge(0, { dur: 1.0, chant: false }); } break;
+      case 'duel.finisher': this.act('jar', 'hop'); V.auras?.charge(0, { hex: 0xffd36a, dur: 2.8, big: true }); V.stage?.cutAway('hit', SHOW.cine.big); break;
       default: break;
     }
   }

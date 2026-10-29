@@ -21,13 +21,15 @@ import * as THREE from 'three';
 import { FONT } from '../../ui/theme.js';
 import { FOE_SKILLS } from '../../progress/duel/foeskills.js';
 import { feelColour, sm, clamp01 } from './layout.js';
+import { SIDE, tex, chantTexture } from './fxkit.js';
+import { FEELINGS } from '../../npc/neuraleseroots.js';
 
 /** in / hold / out: the band's beats (real s; the limit break's hold its own); band: its half height (of the screen's); y: its centre;
  *  tilt: its slope; portrait: the strip's share of the width; rt: the portrait's target width (px); fov: the strip camera's (deg);
  *  burst: real s after a limit break in which its own casts come without a cut-in; word / limitWord: when the label slams (real s from
  *  the event: Wanda's stings land there, audio/duelcasts.js CUT_IN_LEAD; the limit break's after its 1.1 s swell). */
 export const CUT_IN = { in: 0.14, hold: 0.62, out: 0.16, limitHold: 1.45, word: 0.12, limitWord: 1.1, band: 0.16, limitBand: 0.24, y: 0.4, tilt: -0.09, portrait: 0.44, rt: 512, fov: 24, burst: 4,
-  turn: { in: 0.1, hold: 0.3, out: 0.14, word: 0.12, band: 0.085, lit: 0.35 }, vs: { in: 0.16, hold: 1.05, out: 0.18, word: 0.2, band: 0.13 }, pop: 0.06 };
+  turn: { in: 0.1, hold: 0.3, out: 0.14, word: 0.12, band: 0.085, lit: 0.35 }, vs: { in: 0.16, hold: 1.05, out: 0.18, word: 0.2, band: 0.13 }, pop: 0.06, red: 0.35 };
 /** The turn's change (South, 2026-10-29: "cut-ins/highlights and vfx for when the turns switch over"; Fire Emblem's PLAYER PHASE and
  *  ENEMY PHASE): the band thinner and shorter, yours in the film. */
 export const TURN_WORDS = ['YOUR TURN', "FOE'S TURN"]; // (Espada's, 2026-10-29: the duel says foe, never enemy)
@@ -36,7 +38,7 @@ const INK = '#17111f', GOLD = new THREE.Color(0xffd36a);
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _k = new THREE.Vector3(), _c = new THREE.Color(), _bb = new THREE.Box3();
 
 const FRAG = /* glsl */`
-uniform sampler2D uPort, uWord; uniform vec2 uRes; uniform vec3 uFeel, uGold; uniform float uT, uIn, uOut, uLimit, uWordAsp, uSlam, uWordOn, uFlash, uDim, uDrift, uFlip, uFocus, uPop;
+uniform sampler2D uPort, uWord, uChant, uCrack, uSand; uniform vec2 uRes; uniform vec3 uFeel, uGold, uDeep, uSideHi; uniform float uMotif, uChantA; uniform float uT, uIn, uOut, uLimit, uWordAsp, uSlam, uWordOn, uFlash, uDim, uDrift, uFlip, uFocus, uPop;
 uniform vec4 uBand; // (centre y px, half height px, slope, portrait share)
 varying vec2 vUv;
 float h21(vec2 p) { return fract(sin(dot(p, vec2(127.1, 311.7))) * 43758.5453); }
@@ -53,10 +55,18 @@ void main() {
   }
   if (abs(by) <= 1.0 && px.x >= wipe) {
     float bx = px.x / uRes.y;
-    vec3 c = mix(vec3(0.03, 0.02, 0.035), uFeel * 0.2, 0.4 + 0.3 * by);
+    vec3 c = mix(uDeep, uFeel * 0.2, 0.4 + 0.3 * by); // (its side's deep: lapis yours, cinnabar the aberrant's)
     float row = floor((by * 0.5 + 0.5) * 44.0), rh = h21(vec2(row, 3.0)), s = fract(bx * (0.6 + rh * 1.4) + uT * (2.2 + rh * 3.5) + rh);
     float streak = smoothstep(0.0, 0.05, s) * (1.0 - smoothstep(0.05, 0.4, s)) * step(0.5, rh);
     c += uFeel * streak * 0.6 + streak * 0.06;
+    if (uMotif > 0.5 && uMotif < 1.5) { float cr = texture2D(uCrack, px / 240.0 + vec2(uT * 0.02, 0.0)).a; c = mix(c, vec3(1.0, 0.8, 0.42), cr * 0.3); } // (yours: the clay's craze, kintsugi's gold)
+    else if (uMotif > 1.5 && uMotif < 2.5) { float col = floor(px.x / 22.0), on = step(0.5, h21(vec2(col, 5.0))); // (the slip jelly's: sand pouring down through the band)
+      float g = texture2D(uSand, vec2(fract(px.x / 22.0), px.y / 260.0 - uT * (1.4 + h21(vec2(col, 9.0))))).a; c = mix(c, uFeel * 0.5 + vec3(0.4, 0.32, 0.15), g * on * 0.75); }
+    else if (uMotif > 2.5) { for (int k = 0; k < 3; k++) { float fk = float(k), yy = sin(bx * (2.5 + fk) + fk * 2.1 + uT * 0.4) * 0.35 + (fk - 1.0) * 0.5; // (the Lantern Wisp's: black briars across it, lanterns hung off them)
+        c = mix(c, vec3(0.02, 0.015, 0.015), smoothstep(0.07, 0.025, abs(by - yy)));
+        float lx = fract(bx * 0.8 + fk * 0.37) - 0.5, ld = length(vec2(lx * 2.4, (by - yy + 0.2) * 1.3)); c += vec3(1.0, 0.6, 0.22) * smoothstep(0.22, 0.0, ld) * (0.55 + 0.45 * sin(uT * 9.0 + fk * 3.0 + bx)); } }
+    for (int k = 0; k < 2; k++) { float sg = k == 0 ? 1.0 : -1.0, cy = (by - 0.74 * sg) / 0.2; // (the chant: neuralese running along both edges, the two lines counter-scrolling)
+      if (abs(cy) < 1.0) { float sh = hh * 0.4, cu = fract(px.x / (sh * uChantA) - uT * 0.14 * sg); float ca2 = texture2D(uChant, vec2(cu, 0.5 - cy * 0.5)).a; c = mix(c, uSideHi, ca2 * 0.7); } }
     vec2 cell = fract(px / 6.0) - 0.5; float edge = smoothstep(0.4, 1.0, abs(by)), r = edge * 0.5;
     c = mix(c, uFeel * 0.55, (1.0 - smoothstep(r - 0.1, r, length(cell))) * edge * 0.75);
     float pw = W * uBand.w, ph = 2.0 * uBand.y; vec2 p0 = vec2(W * (0.985 - uBand.w) + (1.0 - uIn) * W * 0.3 - uDrift, uBand.x - uBand.y + (px.x - W * 0.5) * uBand.z);
@@ -104,7 +114,9 @@ export class FoeCutIn {
     const g = new THREE.PlaneGeometry(1, 1); g.translate(0.5, -0.5, 0);
     this.rt = new THREE.WebGLRenderTarget(CUT_IN.rt, CUT_IN.rt / 2, { type: THREE.HalfFloatType });
     this.u = { uPort: { value: this.rt.texture }, uWord: { value: null }, uRes: { value: new THREE.Vector2(1, 1) }, uFeel: { value: new THREE.Color() }, uGold: { value: GOLD.clone() },
-      uT: { value: 0 }, uIn: { value: 0 }, uOut: { value: 0 }, uLimit: { value: 0 }, uWordAsp: { value: 3 }, uSlam: { value: 1 }, uWordOn: { value: 0 }, uFlash: { value: 0 }, uDim: { value: 0 }, uDrift: { value: 0 }, uFlip: { value: this.flip }, uFocus: { value: 0 }, uPop: { value: 0 }, uBand: { value: new THREE.Vector4() } };
+      uT: { value: 0 }, uIn: { value: 0 }, uOut: { value: 0 }, uLimit: { value: 0 }, uWordAsp: { value: 3 }, uSlam: { value: 1 }, uWordOn: { value: 0 }, uFlash: { value: 0 }, uDim: { value: 0 }, uDrift: { value: 0 }, uFlip: { value: this.flip }, uFocus: { value: 0 }, uPop: { value: 0 }, uBand: { value: new THREE.Vector4() },
+      uChant: { value: null }, uCrack: { value: tex('crackle') }, uSand: { value: tex('sand') }, uDeep: { value: new THREE.Color() }, uSideHi: { value: new THREE.Color() }, uMotif: { value: 0 }, uChantA: { value: 6 } };
+    this.dressSide();
     const mat = new THREE.ShaderMaterial({ name: 'duel-cutin', uniforms: this.u, vertexShader: VERT, fragmentShader: FRAG, transparent: true, depthTest: false, depthWrite: false });
     this.mesh = new THREE.Mesh(g, mat); this.mesh.name = 'duel-cutin';
     this.mesh.renderOrder = this.flip ? 49 : 50; this.mesh.frustumCulled = false; this.mesh.userData.overlayHidden = true;
@@ -113,6 +125,13 @@ export class FoeCutIn {
     this.key = new THREE.DirectionalLight(0xfff2e0, 2.6); this.rim = new THREE.DirectionalLight(0xffffff, 3.2); this.amb = new THREE.AmbientLight(0xffffff, 0.35);
     this.scene.add(this.key, this.key.target, this.rim, this.rim.target, this.amb);
     return true;
+  }
+
+  /** Who is who: lapis and the film yours, cinnabar and ember the aberrant's; the chant in its words (the feelings' names yours, its own feeling's its). */
+  dressSide() {
+    const S = SIDE[this.flip ? 0 : 1], w = FEELINGS[this.view.aspect] || 'PAVA', ch = chantTexture(this.flip ? Object.values(FEELINGS) : [w, 'PAVA', w, 'MOR']);
+    this.u.uChant.value = ch; this.u.uChantA.value = ch?.image ? ch.image.width / ch.image.height : 6;
+    this.u.uDeep.value.setHex(S.deep); this.u.uSideHi.value.setHex(S.hi); this.u.uGold.value.setHex(S.rim);
   }
 
   word(text) { let w = this.words.get(text); if (!w) { w = wordTexture(text); this.words.set(text, w); } return w; }
@@ -177,7 +196,7 @@ export class FoeCutIn {
     this.mesh.visible = false;
   }
 
-  feel() { feelColour(this.view.aspect, this.u.uFeel.value); }
+  feel() { feelColour(this.view.aspect, this.u.uFeel.value).lerp(_c.setHex(SIDE[1].base), CUT_IN.red); } // (its feeling, pulled toward cinnabar: the aberrant red-coded, its feeling still in it)
 
   /** The cut-in's phase for a foe event, once an event: a skill's, or the limit break's; null for the rest. */
   beat(e) {
@@ -209,6 +228,7 @@ export class FoeCutIn {
   show(text, { limit = false, own = false, T = null, y = CUT_IN.y, portrait = CUT_IN.portrait, focus = true } = {}) {
     const W = text ? this.word(text) : null; this.u.uWord.value = W?.tex || null; this.u.uWordAsp.value = W?.aspect || 3; this.u.uLimit.value = limit ? 1 : 0;
     this.T = T || { in: CUT_IN.in, hold: limit ? CUT_IN.limitHold : CUT_IN.hold, out: CUT_IN.out, word: limit ? CUT_IN.limitWord : CUT_IN.word, band: limit ? CUT_IN.limitBand : CUT_IN.band };
+    this.dressSide(); const E = this.view.elite; this.u.uMotif.value = this.flip ? 1 : E?.on ? E.constructor.MOTIF || 0 : 0; // (the actor's own ground behind the band)
     this.limit = limit; this.mode = own ? 'own' : 'skill'; this.hasWord = !!W; this.y = y; this.port = portrait; this.focus = focus;
     this.dur = this.T.in + this.T.hold + this.T.out; this.age = 0; this.shook = false; this.mesh.userData.overlayHidden = false;
     return this.T.in + this.T.hold;
