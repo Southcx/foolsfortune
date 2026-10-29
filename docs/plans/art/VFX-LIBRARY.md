@@ -130,5 +130,8 @@ counts inside the budgets.
 
 ## 6. Checking (South: "with screenshots at full resolution")
 
+After any change to the library, regenerate the catalogue: `node scripts/vfxcatalogue.mjs` writes `docs/VFX-CATALOGUE.md` (South: "a
+note for yourself of exactly what vfx you have available").
+
 `node scripts/vfxgallery.mjs --match <prefix>` at `--size 1920x1080` and `--phone`; a contact sheet a family. Then in the game at the
 phone's 896 x 414 at 2x (CLAUDE.md, Scope): read each as a human would.

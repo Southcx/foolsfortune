@@ -12,7 +12,9 @@ game.vfx.play('hit.blunt.clay', { pos, dir, normal, tint, power });   // a one-s
 const h = game.vfx.play('ult.pillar', { pos }); h.k = 0.3; h.stop();    // a held one
 ```
 
-Every look is data in `src/vfx/library.js`; a direction note is an edit there and nowhere else.
+Every look is data in `src/vfx/library.js`; a direction note is an edit there and nowhere else. **What there is:** `docs/VFX-CATALOGUE.md`,
+every effect by family with its layers, what it is and who asks for it, and every building block (shapes, decals, meshes, caster
+shaders, the shape layer's forms, patterns and ramps): generated, so run `node scripts/vfxcatalogue.mjs` after any change to the library.
 - **Names fall back:** `hit.slash.crystal` → `hit.slash` → `hit`. Nothing ever plays nothing.
 - **Families inherit** (`extends`): change the base and the family follows.
 - **Layers are small primitives**, each with its own clock (`at`): `sprites`, `mesh`, `decal`, `light`, `flash`, `shake`, `hitstop`,
