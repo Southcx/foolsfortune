@@ -13,7 +13,8 @@
 //                    errors [[message, real s]] (the first few after boot), samples [{ s, fps, med, worst, geos, tex, programs, heap,
 //                    zone, areas, lines }], ended ('hidden' | 'left', s),
 //                    firsts [{ s, what, in, zone, dry, f }] (at a loss, newest first: each material first drawn since play began),
-//                    frames { cols, rows } (at a loss: the last FIELD.frames frames' draws, vertices, new geometries and textures) }
+//                    frames { cols, rows } (at a loss: the last FIELD.frames frames' draws, vertices, new geometries and textures),
+//                    mode ('story' | 'debug'), pace [[milestone, real min of play, target]] (STORY's milestones reached: progress/pace.js paceOf) }
 //   field.index    { ids }   the last FIELD.keep loads; an older report is deleted when a new one starts.
 // Written at the title, then on FIELD.every real seconds for the first five real minutes and on FIELD.later after, and when the page is
 // hidden (a phone may never come back to the tab); one write at a time. Nothing here when the store is absent (the dev server, a test,
@@ -25,6 +26,7 @@
 //   ?hide=word,word   draws whose material or object name holds a word are skipped (a suspect tried on the phone, a load each)
 //   const field = new FieldReport(game, { renderer, cloud })   field.frame(rawDt)   (each frame, boot/frame.js)
 // ---------------------------------------------------------------------------------------
+import { paceOf } from '../progress/pace.js';
 import { now } from '../core/calendar.js';
 
 /** every / later: real s between writes, before and after the first five real minutes; keep: loads kept; samples, moments, errors: rows kept
@@ -164,6 +166,7 @@ export class FieldReport {
     if (this.busy) { this.again = true; return; }
     if (force && this.frames.length) this.sample();
     this.doc.boot = (globalThis.window?.__bootWatch?.stages || []).map(([n, ms]) => [n, ms]); // (the stages up to now: 'shaders' and 'ready' come after the title is up)
+    const g = this.game; this.doc.mode = g.mode ?? null; this.doc.pace = g.mode === 'story' && g.ledger ? paceOf(g.ledger).filter((p) => p.at != null).map((p) => [p.id, p.at, p.target]) : null; // (each milestone reached, real minutes of play against its target: progress/pace.js; STORY only, DEBUG lends them)
     this.busy = true;
     try { await this.col().doc(`field.${this.id}`).set(JSON.parse(JSON.stringify(this.doc))); } catch { /* refused: the next one tries */ }
     this.busy = false;
