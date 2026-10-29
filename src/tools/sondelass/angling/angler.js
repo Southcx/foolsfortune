@@ -659,7 +659,7 @@ export class Angler {
     g.cinema.strain = 0;
     this.reticle.hide();
     this.hooked = null; this.fight = null;
-    this.lift.start(f, { first, record: rec === undefined ? false : f.cm > rec, legend: !!sp.legend }); // (out of the water and held up: catchlift.js)
+    this.lift.start(f, { first, record: rec === undefined ? false : f.cm > rec, legend: !!sp.legend, secs: dur, answered: (F.stats.answered || 0) / Math.max(1, F.stats.needT || 0) }); // (out of the water and held up: catchlift.js)
   }
 
   // ---------------------------------------------------------------- put away

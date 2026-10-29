@@ -10,6 +10,8 @@
 //   HELD     the lift's arms are the carry's own (UAL's chestOpen, the reaching arm mirrored to both: courier/moves/carry.js
 //            twoHanded), risen to the top of their reach; the fish rides the palms' midpoint, and each hand is set on its flank by a
 //            light reach (LIFT.grip of the way), never a pose of its own. The camera pushes in a little.
+//   KEEP     released by default (Dovina, 2026-10-29, on South's ruling of 2026-10-11): the keep key ({use}: F, USE, X) any time keeps it, said
+//            over it as the overlay's tag; let go, it slips back into the water (angle.release), kept, it comes apart below (angle.keep)
 //   BACK     at LIFT.full (or a key pressed after LIFT.skipAfter) it comes apart into what it was made of, the camera cuts back and the
 //            rod is in the hand again.
 // A second catch of the same species in a row is the quick lift instead (LIFT.quick: out of the water and hung on the line before
@@ -29,6 +31,9 @@ import { GROUPS } from '../../../core/physics.js';
 import { COLOR } from '../../../progress/weather.js';
 import { feelingOf } from './fishmesh.js';
 import { stream } from '../../../core/rng.js';
+import { FONT } from '../../../ui/theme.js';
+import { deviceWord } from '../../../progress/devicewords.js';
+import { ACTIONS } from '../../../core/bindings.js';
 const simRand = stream('tools/sondelass/angling/catchlift'); // (the simulation's chance: core/rng.js, the same twice)
 
 /** Real seconds and metres: the whole lift, the quick one, out of the water, when a key may skip it; the arms' rise (chestOpen's own
@@ -41,6 +46,8 @@ export const LIFT = {
 };
 const smooth = (a, b, t) => { const x = THREE.MathUtils.clamp((t - a) / (b - a), 0, 1); return x * x * (3 - 2 * x); };
 const UP = new THREE.Vector3(0, 1, 0);
+/** The keep key: the input action `use`'s key (F; USE on touch and X on a pad press it too: core/bindings.js). */
+const KEEP_KEY = ACTIONS.find((r) => r.id === 'use')?.keys?.[0] || 'KeyF';
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _f = new THREE.Vector3(), _r = new THREE.Vector3(), _q = new THREE.Quaternion();
 const _pL = new THREE.Vector3(), _pR = new THREE.Vector3(), _g = new THREE.Vector3(), _h = new THREE.Vector3();
 
@@ -76,7 +83,10 @@ export class CatchLift {
     const g = this.game, P = this.angler.P, f = C.f;
     C.t += raw;
     const end = C.quick ? LIFT.quick : LIFT.full, out = C.quick ? LIFT.quickOut : LIFT.out;
-    // (any key after the first half-second skips the rest; the keys are spent so they do not cast, jump or open anything as well)
+    // (the keep key, F / USE / X, any time keeps it; any other key after the first half-second skips the rest and lets it go: Dovina's
+    // ruling of 2026-10-29 on South's of 2026-10-11, released by default. The keys are spent so they do not cast, jump or open anything)
+    if (inp?.pressed?.has?.(KEEP_KEY)) { inp.spend(KEEP_KEY); C.keep = true; }
+    this.prompt(C);
     if (C.t > LIFT.skipAfter && inp?.pressed?.size) { inp.spend(...inp.pressed); C.t = end; }
     if (C.t < out || C.quick) {
       // out of the water, on the line: drawn up and swung to before them (the rod's own catch is playing)
@@ -189,10 +199,33 @@ export class CatchLift {
     }
   }
 
-  /** It comes apart into what it was made of, into the Pneuka Box, and the rod is the rod again. */
+  /** The keep prompt over the held fish: the overlay's tag in the device's word ({use} KEEP), lit gold once kept (placeholder words, Espada's). */
+  prompt(C) {
+    const g = this.game, f = C.f;
+    if (!this.tag) {
+      if (typeof document === 'undefined') return;
+      this.tagCanvas = document.createElement('canvas'); this.tagCanvas.width = 256; this.tagCanvas.height = 64;
+      this.tag = new THREE.Sprite(new THREE.SpriteMaterial({ map: new THREE.CanvasTexture(this.tagCanvas), transparent: true, depthTest: false, depthWrite: false, toneMapped: false }));
+      this.tag.material.map.colorSpace = THREE.SRGBColorSpace; this.tag.renderOrder = 60; this.tag.scale.set(0.9, 0.225, 1); this.tag.raycast = () => {};
+    }
+    const word = deviceWord('use', g.input?.device || 'keyboard') || 'F', key = `${word}|${!!C.keep}`;
+    if (key !== this.tagKey) {
+      this.tagKey = key; const x = this.tagCanvas.getContext('2d'); x.clearRect(0, 0, 256, 64);
+      x.font = `bold 30px ${FONT.sys}`; x.textAlign = 'center'; x.textBaseline = 'middle'; x.lineJoin = 'round'; x.lineWidth = 7; x.strokeStyle = '#17111f';
+      const text = C.keep ? 'KEPT' : `${word}  KEEP`; x.strokeText(text, 128, 34); x.fillStyle = C.keep ? '#ffd36a' : '#f3e4c6'; x.fillText(text, 128, 34);
+      this.tag.material.map.needsUpdate = true;
+    }
+    if (this.tag.parent !== g.scene) g.scene?.add(this.tag);
+    this.tag.visible = !!C.cut || C.quick; this.tag.position.copy(f.pos).addScaledVector(UP, 0.45 + f.length * 0.3);
+  }
+
+  /** Kept (the keep key): it comes apart into what it was made of, into the Pneuka Box. Let go (the default): back into the water with a
+   *  splash. Either way the rod is the rod again. */
   finish() {
     const C = this.c; if (!C) return;
     this.c = null;
+    if (this.tag) { this.tag.visible = false; this.tag.removeFromParent(); }
+    if (!C.keep) return this.letGo(C);
     const a = this.angler, g = this.game, f = C.f;
     if (C.cut) g.cinema.cut('catch.lift'); // (a cut back, as it cut in)
     const n = Math.round(2 + f.sp.lach * 0.18 * (0.6 + f.cm / f.sp.size[1]));
@@ -208,6 +241,21 @@ export class CatchLift {
     a.line.hide();
     if (a.tool.heldLure) a.tool.heldLure.group.visible = true;
     a.emit('angle.landed', { species: f.sp.id, baubles: n, by: 'courier' });
+    a.emit('angle.keep', { species: f.sp.id, tier: f.sp.tier, by: 'courier' });
     g.pneuka?.add(`fish.${f.sp.id}`, 'catch'); // (kept whole, to be sold to Old Grog: progress/shop/catalogue.js)
+  }
+
+  /** Released: it slips from the hands back into the water it came from, a splash of its feeling where it goes in. */
+  letGo(C) {
+    const a = this.angler, g = this.game, f = C.f;
+    if (C.cut) g.cinema.cut('catch.lift');
+    const surf = a.weir?.poolAt(C.from.x, C.from.z)?.surface ?? C.from.y, at = _a.set(C.from.x, surf, C.from.z), feel = feelingOf(f.sp);
+    g.vfx?.play('angle.lift.splash', { pos: at, tint: feel ? COLOR[feel] : f.sp.color, power: 0.5 + Math.min(0.6, f.length * 0.5) });
+    a.weir?.ripples?.ring(at.x, at.y, at.z, 1.5 + f.length * 2, 0xffffff, 0.9);
+    a.weir.remove(f);
+    a.caught = null; a.state = 'idle'; a.castPhase = 'none';
+    a.release(); a.line.hide();
+    if (a.tool.heldLure) a.tool.heldLure.group.visible = true;
+    a.emit('angle.release', { species: f.sp.id, tier: f.sp.tier, secs: C.info?.secs ?? 0, answered: C.info?.answered ?? 0.5, by: 'courier' });
   }
 }
