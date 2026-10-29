@@ -21,6 +21,8 @@
 //                      eleven and the voices), the power's own sound held to its cast (JAR_CUT)
 //   THE VS OPEN        sfx.duelVs() (duelshow.js, at the open's start): the foe's band and its name in its dark, the Jar's, then VS: a
 //                      taiko and sub hit with a crash and a data tick, the pull out a breath of air (VS)
+//   THE SEEDING        duelSeed(delay) (the VS's, or duel.open's in any other duel): a rising ripple of glass clicks, out from the middle to
+//                      both ears, climbing the key as the rows fill (SEED)
 //   THE HERO SHOT      sfx.duelHero() (duelshow.js victory): the fanfare, three quick and one long up the Answer, a bell and the confetti's glints
 //   A CHAIN'S STAMP    chain from step 3 (duelChainCall, puzzleduel.js): "n CHAIN!" called: a brass call a step higher and louder each,
 //                      the film's shimmer over it from 5
@@ -40,7 +42,10 @@ export const CUT_IN_LEAD = { skill: 0.12, desperate: 1.1 };
 /** Real s each cut-in holds after its slam (Calissa's vfx/duelview/cutin.js: a skill's 0.62; the limit break's to its end at 1.75), then 0.16 out. */
 /** The VS open (Calissa's duelshow.js SHOW.vs, from its start as the encounter's wipe clears): the aberrant's band in at 0.15 s, its name at
  *  0.35, the Jar's band at 0.75, VS slammed at 1.05, the pull out at 1.55; the hero shot after a death lasts 1.15 s. */
-export const VS = { foe: 0.15, name: 0.35, jar: 0.75, hit: 1.05, out: 1.55, hero: 1.15 };
+export const VS = { foe: 0.15, name: 0.35, jar: 0.75, hit: 1.05, seed: 1.45, out: 1.55, hero: 1.15 };
+/** The board's seeding (Calissa's seeding.js, f3edec83): its pieces dropped into their cells over 1.3 real s, out from the Line to both ends,
+ *  bottom rows first; in a PvE duel at the VS's 1.45 s, in any other 0.45 s after the view opens. */
+export const SEED = { dur: 1.3, other: 0.45 };
 /** The turn's band (Calissa's, 14b3ab42): its word slams 0.12 real s in, it holds to 0.4 and is gone by 0.54. */
 export const TURN_CUT_IN = { slam: 0.12, hold: 0.28 };
 export const CUT_IN_HOLD = { skill: 0.62, desperate: 0.65 };
@@ -110,7 +115,19 @@ export class DuelCastSounds {
     this.tone(h, 1.4, { f0: 75, f1: 30, gain: 0.85, dest: d }); this.noise(h, 0.1, { type: 'lowpass', f0: 2600, gain: 0.6, dest: d }); this.noise(h + 0.02, 1.6, { type: 'highpass', f0: 5000, f1: 2200, gain: 0.12, dest: d });
     for (const st of [0, 7, 12, 19]) this.tone(h, 1.1, { f0: hz(r - 12 + st), type: 'sawtooth', gain: 0.03, dest: d });
     for (let k = 0; k < 4; k++) this.noise(h + 0.12 + k * 0.04, 0.02, { type: 'bandpass', f0: 3000 + (k % 2) * 1800, q: 4, gain: 0.16, dest: d }); // (the glitch tick)
+    this.duelSeed(VS.seed); // (the board seeded as the camera pulls out)
     this.noise(t0 + VS.out, 0.7, { type: 'bandpass', f0: 2500, f1: 500, q: 0.7, gain: 0.12, attack: 0.2, dest: d }); // (the pull out)
+  }
+  /** The board's seeding, `delay` real s from now: a ripple of small glass clicks running out from the middle to both ears, climbing. */
+  duelSeed(delay = SEED.other) {
+    if (!this.ok() || !this.allow('duelSeed', 0.5)) return;
+    const t0 = this.ctx.currentTime + delay, r = duelRoot(this) + 12, d = this.duelOut?.(1.1, 0.35) ?? this.out(1.1, 0.35, true), N = 26; // (-22 dB: a bed under the VS's pull-out, never over it)
+    const pans = [-0.7, 0.7].map((x) => { const p = this.ctx.createStereoPanner(); p.pan.setValueAtTime(0, t0); p.pan.linearRampToValueAtTime(x, t0 + SEED.dur); p.connect(d); return p; });
+    for (let i = 0; i < N; i++) {
+      const u = i / (N - 1), at = t0 + SEED.dur * Math.pow(u, 0.85) + Math.random() * 0.02, f = hz(r + [0, 2, 4, 7, 9][i % 5] + 12 * Math.floor(u * 2)), p = pans[i % 2];
+      this.tone(at, 0.07, { f0: f * 1.5, f1: f, type: 'triangle', gain: 0.03 + 0.02 * u, dest: p }); this.noise(at, 0.012, { type: 'bandpass', f0: 4200, q: 6, gain: 0.08, dest: p }); // (a piece set: a click and its glass)
+    }
+    setTimeout(() => pans.forEach((p) => p.disconnect()), (delay + SEED.dur + 1) * 1000);
   }
   /** The hero shot (call as it begins): the victory fanfare, three quick and one long up the Answer, a bell, the confetti's glints. */
   duelHero() {

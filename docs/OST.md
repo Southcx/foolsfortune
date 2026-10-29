@@ -179,7 +179,7 @@ their Clayese scales; the System's skill and achievement jingles (the chime and 
   at 1.75 (-8). A chain's "n CHAIN!" stamp from step 3 called on brass a step up and louder each, the film's shimmer from 5 (-19). The VS
   open (`duelVs`, -8): the foe's band and its name in its dark, the Jar's answer, VS slammed with a taiko sub, a crash and a data tick at
   1.05 s, a breath as it pulls out. The hero shot (`duelHero`, -12): da-da-da-DAA up to the Answer's sixth, a bell and the confetti's glints.
-  `duelVs` and `duelHero` are called by Calissa's show at their own moments (no event marks them).
+  The board's seeding (`duelSeed`, -22): a ripple of 26 glass clicks running out from the middle to both ears and climbing the key over 1.3 s, at the VS's 1.45 s in a PvE duel and 0.45 s after `duel.open` in any other. `duelVs` and `duelHero` are called by Calissa's show at their own moments (no event marks them).
 - **The turn's sting** (`duelTurnCutIn`, `audio/duelcasts.js`; South via Dovina, 2026-10-29; Calissa's frame): the turn's change cut in as a foe
   skill is, smaller: a blade of air, a small slam on the band's word at 0.12 s, rung through its hold to 0.4 s (`TURN_CUT_IN`, Calissa's 14b3ab42), and yours the Answer's step up (I, then up a whole step) on bright
   brass with a glint over it, the aberrant's the Five falling in its dark (minor to diminished). Peaks -18.5 and -17 dB, 3 to 5 under a
