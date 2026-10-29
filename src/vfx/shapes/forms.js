@@ -7,6 +7,7 @@
 // travel: the beam, the wave, the crescent), its soft edges (`edgeV`, `edgeU`: shares of v and u faded at each end) and its rim.
 //
 //   ring      a flat annulus on the ground, radius 0.55..1 (v inner to outer)      band     an open cylinder wall, radius 1, height 1 (v up)
+//   hoop      a thin flat annulus on the ground, radius 0.955..1 (v inner to outer): a line drawn round, thin at any scale (a sonar's front)
 //   dome      a hemisphere, radius 1 (v pole to rim)                               sphere   radius 1 (v south pole to north)
 //   cone      open, base radius 1 on the ground, tip at 1 up (v base to tip)        disc     filled, radius 1 (polar UV: u angle, v radius)
 //   quad      a 1 x 1 plane (a billboard: v up the screen)                         beam     a cylinder along +Z, length 1 from the origin, radius 0.5 (v along)
@@ -47,6 +48,7 @@ const taper = (u, w = 0.12) => { const t = Math.min(1, Math.min(u, 1 - u) / w); 
 
 const BUILD = {
   ring: () => grid(64, 4, (u, v) => { const a = u * TAU, r = 0.55 + 0.45 * v; return [Math.sin(a) * r, 0, Math.cos(a) * r, 0, 1, 0]; }),
+  hoop: () => grid(96, 2, (u, v) => { const a = u * TAU, r = 0.955 + 0.045 * v; return [Math.sin(a) * r, 0, Math.cos(a) * r, 0, 1, 0]; }),
   band: () => grid(64, 6, (u, v) => { const a = u * TAU; return [Math.sin(a), v, Math.cos(a), Math.sin(a), 0, Math.cos(a)]; }),
   dome: () => grid(48, 16, (u, v) => { const a = u * TAU, th = v * Math.PI * 0.5, s = Math.sin(th), c = Math.cos(th); return [Math.sin(a) * s, c, Math.cos(a) * s, Math.sin(a) * s, c, Math.cos(a) * s]; }),
   sphere: () => grid(48, 24, (u, v) => { const a = u * TAU, th = (1 - v) * Math.PI, s = Math.sin(th), c = Math.cos(th); return [Math.sin(a) * s, c, Math.cos(a) * s, Math.sin(a) * s, c, Math.cos(a) * s]; }),
@@ -75,7 +77,7 @@ const BUILD = {
 };
 // (the defaults a shape brings: its facing, the axis it stands on, its soft edges, its rim: a layer's own fields win)
 const DEFAULTS = {
-  ring: { edgeV: [0.35, 0.35] }, band: { edgeV: [0.08, 0.6] }, dome: { edgeV: [0, 0.12], rim: 0.6 }, sphere: { rim: 0.7 },
+  ring: { edgeV: [0.35, 0.35] }, hoop: { edgeV: [0.5, 0.5] }, band: { edgeV: [0.08, 0.6] }, dome: { edgeV: [0, 0.12], rim: 0.6 }, sphere: { rim: 0.7 },
   cone: { edgeV: [0.06, 0.4] }, disc: { edgeV: [0, 0.35] }, quad: { face: 'camera', edgeV: [0.3, 0.3], edgeU: [0.3, 0.3] },
   beam: { face: 'dir', axis: 'z', edgeV: [0.04, 0.25], rim: -0.7 }, spiral: { edgeV: [0.3, 0.3] }, crescent: { face: 'dir', axis: 'z', edgeV: [0.25, 0.3] },
   pillar: { edgeV: [0.04, 0.45], rim: -0.5 }, wave: { face: 'heading', axis: 'z', edgeV: [0.04, 0.55] }, spikes: { edgeV: [0, 0.3] },

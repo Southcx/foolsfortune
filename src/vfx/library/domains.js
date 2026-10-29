@@ -55,8 +55,7 @@ const S = { body: hex('spellscription', 'body'), hi: 0x8aa4dc, white: hex('spell
 const OUT = [[0, 0], [0.45, 0.05], [1, 1]];                   // whole, then broken up through its pattern
 const IN_OUT = [[0, 0.88], [0.16, 0.04], [0.7, 0.08], [1, 1]]; // grown in through its pattern (erosion run backwards), held, gone
 const COOL = [[0, 0.22], [0.25, 0.06], [1, -0.36]];            // white-hot, its glaze, then dark and clear
-const THIN = [[0, 0.86], [0.6, 0.88], [1, 1]];                  // a ring kept to the top of its gradient (a sonar's thin front), then gone
-const LINE = [[0, 0.9], [0.7, 0.92], [1, 1]];                   // a climbing band kept to its top edge (a scan line), then gone
+const HOOP = [[0, 0.04], [0.6, 0.12], [1, 1]];                  // a thin hoop (its geometry the line), kept whole, then gone                   // a climbing band kept to its top edge (a scan line), then gone
 const HELD = { dur: Infinity, in: 3, out: 2.5 };
 /** The white-hot heart of an impact, in the domain's ramp (its hot end): about 0.1 real s, then cooled into the glaze and gone. */
 const core = (ramp, at, scale = [[0, 0.3], [1, 0.9]], o = {}) => L({ type: 'shape', form: 'sphere', ramp, main: 'cells', tile: [2, 2], at, dur: 0.14, scale,
@@ -263,23 +262,23 @@ export const DOMAIN_EFFECTS = {
   // seeing: thin sonar rings swept out flat, an iris narrowing then opening, a scan line climbing
   'domain.divination.cast': { layers: [
     // PRIMARY: the sonar: three thin rings swept out flat along the ground one after another, each front white-hot, each fainter
-    L({ type: 'shape', form: 'ring', ramp: 'divination', main: 'noise', mainK: 0.12, tile: [8, 1], scroll: [0.3, 0], at: 0.12, dur: 0.75, scale: [[0, 0.3], [1, 5]], offset: [0, 0.03, 0],
-      edgeV: [0.9, 0.05], erode: THIN, soft: 0.05, rampShift: [[0, 0.25], [1, -0.3]], glow: 2.3, core: 0.9, coreAt: 0.85, turn: 'random' }),
-    L({ type: 'shape', form: 'ring', ramp: 'divination', main: 'noise', mainK: 0.12, tile: [8, 1], scroll: [0.3, 0], at: 0.3, dur: 0.75, scale: [[0, 0.3], [1, 4.4]], offset: [0, 0.03, 0],
-      edgeV: [0.9, 0.05], erode: THIN, soft: 0.05, rampShift: [[0, 0.2], [1, -0.3]], glow: 2, core: 0.8, coreAt: 0.85, kmul: 0.75, turn: 'random' }),
-    L({ type: 'shape', form: 'ring', ramp: 'divination', main: 'noise', mainK: 0.12, tile: [8, 1], scroll: [0.3, 0], at: 0.48, dur: 0.75, scale: [[0, 0.3], [1, 3.8]], offset: [0, 0.03, 0],
-      edgeV: [0.9, 0.05], erode: THIN, soft: 0.05, rampShift: [[0, 0.15], [1, -0.3]], glow: 1.8, core: 0.7, coreAt: 0.85, kmul: 0.5, turn: 'random' }),
+    L({ type: 'shape', form: 'hoop', ramp: 'divination', main: 'noise', mainK: 0.25, tile: [8, 1], scroll: [0.3, 0], at: 0.12, dur: 0.75, scale: [[0, 0.3], [1, 5]], offset: [0, 0.03, 0],
+      edgeV: [0.5, 0.5], erode: HOOP, soft: 0.08, rampShift: [[0, 0.25], [1, -0.3]], glow: 2.3, core: 0.9, coreAt: 0.85, turn: 'random' }),
+    L({ type: 'shape', form: 'hoop', ramp: 'divination', main: 'noise', mainK: 0.25, tile: [8, 1], scroll: [0.3, 0], at: 0.3, dur: 0.75, scale: [[0, 0.3], [1, 4.4]], offset: [0, 0.03, 0],
+      edgeV: [0.5, 0.5], erode: HOOP, soft: 0.08, rampShift: [[0, 0.2], [1, -0.3]], glow: 2, core: 0.8, coreAt: 0.85, kmul: 0.75, turn: 'random' }),
+    L({ type: 'shape', form: 'hoop', ramp: 'divination', main: 'noise', mainK: 0.25, tile: [8, 1], scroll: [0.3, 0], at: 0.48, dur: 0.75, scale: [[0, 0.3], [1, 3.8]], offset: [0, 0.03, 0],
+      edgeV: [0.5, 0.5], erode: HOOP, soft: 0.08, rampShift: [[0, 0.15], [1, -0.3]], glow: 1.8, core: 0.7, coreAt: 0.85, kmul: 0.5, turn: 'random' }),
     // PRIMARY (its heart): the ping's white point
     core('divination', 0.12, [[0, 0.15], [1, 0.5]], { offset: [0, 0.08, 0], stretch: [1, 0.35, 1] }),
     // SECONDARY: the iris at eye height, in the camera's plane: a ring of fibres (its rays) narrowing a beat, then opening wide
     L({ type: 'shape', form: 'ring', face: 'camera', ramp: 'divination', main: 'rays', tile: [40, 1], scroll: [0, 0.3], mask: 'noise', maskK: 0.4, maskTile: [3, 1], dur: 0.95,
       scale: [[0, 0.6], [0.13, 0.22], [1, 1.5]], offset: [0, 1.55, 0], edgeV: [0.15, 0.45], erode: [[0, 0.2], [0.12, 0.03], [0.55, 0.07], [1, 1]], rampShift: COOL, glow: 2, core: 0.6, turn: 'random' }),
     // SECONDARY: its pupil, tenmoku black with its star spots (part alpha-over: the dark shows on a bright ground), opening with it
-    L({ type: 'shape', form: 'disc', face: 'camera', ramp: 'divination', add: 0.5, main: 'stars', mainK: 0.55, tile: [2, 2], scroll: [0.02, 0.05], dur: 0.95,
+    L({ type: 'shape', form: 'disc', face: 'camera', ramp: 'ink', add: 0, main: 'stars', mainK: 0.3, tile: [2, 2], scroll: [0.02, 0.05], dur: 0.95,
       scale: [[0, 0.33], [0.13, 0.12], [1, 0.85]], offset: [0, 1.55, 0], edgeV: [0, 0.35], erode: [[0, 0.1], [0.6, 0.12], [1, 1]], rampShift: [[0, -0.05], [1, -0.25]], glow: 1.6, core: 0.4, turn: 'random' }),
     // SECONDARY: the scan line climbing the body, a thin hoop
-    L({ type: 'shape', form: 'band', ramp: 'divination', main: 'noise', mainK: 0.06, tile: [6, 1], scroll: [0.6, 0], at: 0.14, dur: 0.75, scale: 0.75, stretch: [1, [[0, 0.05], [1, 2.3]], 1],
-      edgeV: [0.98, 0.02], erode: LINE, soft: 0.05, rampShift: [[0, 0.2], [1, -0.2]], glow: 2.1, core: 0.4, coreAt: 0.85, turn: 'random' }),
+    L({ type: 'shape', form: 'band', ramp: 'divination', main: 'noise', mainK: 0.06, tile: [6, 1], scroll: [0.6, 0], at: 0.14, dur: 0.75, scale: 0.75, stretch: [1, 0.07, 1], offset: [0, [[0, 0.05], [1, 2.3]], 0],
+      edgeV: [0.5, 0.5], erode: HOOP, soft: 0.08, rampShift: [[0, 0.2], [1, -0.2]], glow: 2.1, core: 0.4, coreAt: 0.85, turn: 'random' }),
     // SECONDARY: star spots blinking out from the centre and hanging
     L({ type: 'sprites', at: 0.12, count: [12, 16], shape: 'star4', spawn: 'disc', r: 0.25, offset: [0, 0.1, 0], dir: 'out', speed: [2.5, 4.5], drag: 3.5, life: [0.6, 1], size: [0.08, 0.14],
       sizeEnd: 0.02, color: D.spot, colorEnd: D.edge, twinkle: 6 }),
@@ -288,22 +287,22 @@ export const DOMAIN_EFFECTS = {
       alpha: 0.8, twinkle: 4 }),
     // TERTIARY: the lens on the ground: a faint pool of ripples running out under it
     L({ type: 'shape', form: 'disc', ramp: 'divination', main: 'ripple', tile: [1, 3], scroll: [0, 0.45], at: 0.12, dur: 1.2, scale: 2.6, offset: [0, 0.02, 0], erode: [[0, 0.2], [0.5, 0.25], [1, 1]],
-      rampShift: [[0, 0], [1, -0.25]], glow: 0.9, core: 0, k: [[0, 0], [0.15, 0.7], [1, 0.7]], turn: 'random' }),
+      rampShift: [[0, 0], [1, -0.25]], glow: 0.9, core: 0, k: [[0, 0], [0.15, 0.35], [1, 0.3]], turn: 'random' }),
   ] },
   // held: a sonar sweep every 2.4 real s, a scan line, a small iris, specks hanging
   'domain.divination.hold': { layers: [
     // PRIMARY: the sweep: a thin ring swept out flat every 2.4 real seconds, and a second half a sweep behind it
-    L({ type: 'shape', form: 'ring', ramp: 'divination', main: 'noise', mainK: 0.12, tile: [8, 1], scroll: [0.2, 0], ...HELD, loop: 2.4, scale: [[0, 0.4], [1, 4.2]], offset: [0, 0.03, 0],
-      edgeV: [0.9, 0.05], erode: THIN, soft: 0.05, rampShift: [[0, 0.12], [1, -0.3]], glow: 1.6, core: 0.6, coreAt: 0.85 }),
-    L({ type: 'shape', form: 'ring', ramp: 'divination', main: 'noise', mainK: 0.12, tile: [8, 1], scroll: [0.2, 0], ...HELD, at: 1.2, loop: 2.4, scale: [[0, 0.4], [1, 4.2]], offset: [0, 0.03, 0],
-      edgeV: [0.9, 0.05], erode: THIN, soft: 0.05, rampShift: [[0, 0.12], [1, -0.3]], glow: 1.6, core: 0.6, coreAt: 0.85 }),
+    L({ type: 'shape', form: 'hoop', ramp: 'divination', main: 'noise', mainK: 0.25, tile: [8, 1], scroll: [0.2, 0], ...HELD, loop: 2.4, scale: [[0, 0.4], [1, 4.2]], offset: [0, 0.03, 0],
+      edgeV: [0.5, 0.5], erode: HOOP, soft: 0.08, rampShift: [[0, 0.12], [1, -0.3]], glow: 1.6, core: 0.6, coreAt: 0.85 }),
+    L({ type: 'shape', form: 'hoop', ramp: 'divination', main: 'noise', mainK: 0.25, tile: [8, 1], scroll: [0.2, 0], ...HELD, at: 1.2, loop: 2.4, scale: [[0, 0.4], [1, 4.2]], offset: [0, 0.03, 0],
+      edgeV: [0.5, 0.5], erode: HOOP, soft: 0.08, rampShift: [[0, 0.12], [1, -0.3]], glow: 1.6, core: 0.6, coreAt: 0.85 }),
     // SECONDARY: the scan line climbing the body on its own beat
-    L({ type: 'shape', form: 'band', ramp: 'divination', main: 'noise', mainK: 0.06, tile: [6, 1], scroll: [0.4, 0], ...HELD, loop: 3, scale: 0.75, stretch: [1, [[0, 0.05], [1, 2.2]], 1],
-      edgeV: [0.98, 0.02], erode: LINE, soft: 0.05, glow: 1.5, core: 0.5, coreAt: 0.85 }),
+    L({ type: 'shape', form: 'band', ramp: 'divination', main: 'noise', mainK: 0.06, tile: [6, 1], scroll: [0.4, 0], ...HELD, loop: 3, scale: 0.75, stretch: [1, 0.07, 1], offset: [0, [[0, 0.05], [1, 2.2]], 0],
+      edgeV: [0.5, 0.5], erode: HOOP, soft: 0.08, glow: 1.5, core: 0.5, coreAt: 0.85 }),
     // SECONDARY: the iris held open at eye height, small and faint, its fibres turning slowly round its dark pupil
     L({ type: 'shape', form: 'ring', face: 'camera', ramp: 'divination', main: 'rays', tile: [40, 1], scroll: [0, 0.12], ...HELD, scale: 0.6, offset: [0, 1.55, 0], spin: 0.15,
       edgeV: [0.15, 0.45], erode: 0.1, glow: 1.3, core: 0.3, k: 0.5 }),
-    L({ type: 'shape', form: 'disc', face: 'camera', ramp: 'divination', add: 0.5, main: 'stars', mainK: 0.55, tile: [2, 2], scroll: [0.02, 0.04], ...HELD, scale: 0.33, offset: [0, 1.55, 0],
+    L({ type: 'shape', form: 'disc', face: 'camera', ramp: 'ink', add: 0, main: 'stars', mainK: 0.3, tile: [2, 2], scroll: [0.02, 0.04], ...HELD, scale: 0.33, offset: [0, 1.55, 0],
       edgeV: [0, 0.35], erode: 0.1, rampShift: -0.1, glow: 1.2, core: 0.3, k: 0.5 }),
     // TERTIARY: specks hanging in the air round it
     L({ type: 'sprites', rate: 5, dur: Infinity, shape: 'sparkle', spawn: 'column', r: 1.6, height: 2.2, speed: 0, life: [1, 1.5], size: [0.04, 0.07], sizeEnd: 0, color: D.silver, colorEnd: D.edge,
@@ -312,14 +311,14 @@ export const DOMAIN_EFFECTS = {
   // a thin ring pinged out flat round the point, an iris snapping open over it
   'domain.divination.hit': { layers: [
     // PRIMARY: a thin ring pinged out flat round the struck point, its front white-hot
-    L({ type: 'shape', form: 'ring', ramp: 'divination', main: 'noise', mainK: 0.12, tile: [6, 1], scroll: [0.4, 0], dur: 0.42, scale: [[0, 0.15], [1, 1.6]], edgeV: [0.9, 0.05],
-      erode: THIN, soft: 0.05, rampShift: COOL, glow: 2.4, core: 0.9, coreAt: 0.85, turn: 'random' }),
+    L({ type: 'shape', form: 'hoop', ramp: 'divination', main: 'noise', mainK: 0.25, tile: [6, 1], scroll: [0.4, 0], dur: 0.42, scale: [[0, 0.15], [1, 1.6]], edgeV: [0.5, 0.5],
+      erode: HOOP, soft: 0.08, rampShift: COOL, glow: 2.4, core: 0.9, coreAt: 0.85, turn: 'random' }),
     // PRIMARY (its heart)
     core('divination', 0, [[0, 0.15], [1, 0.45]], { dur: 0.12 }),
     // SECONDARY: an iris snapping open over the point, in the camera's plane, its pupil dark
     L({ type: 'shape', form: 'ring', face: 'camera', ramp: 'divination', main: 'rays', tile: [32, 1], scroll: [0, 0.5], dur: 0.4, scale: [[0, 0.15], [1, 0.75]], edgeV: [0.15, 0.45],
       erode: [[0, 0], [0.5, 0.06], [1, 1]], rampShift: COOL, glow: 2, core: 0.6, turn: 'random' }),
-    L({ type: 'shape', form: 'disc', face: 'camera', ramp: 'divination', add: 0.5, main: 'stars', mainK: 0.55, tile: [2, 2], scroll: [0.02, 0.06], dur: 0.4, scale: [[0, 0.08], [1, 0.42]],
+    L({ type: 'shape', form: 'disc', face: 'camera', ramp: 'ink', add: 0, main: 'stars', mainK: 0.3, tile: [2, 2], scroll: [0.02, 0.06], dur: 0.4, scale: [[0, 0.08], [1, 0.42]],
       edgeV: [0, 0.35], erode: [[0, 0.1], [0.5, 0.12], [1, 1]], rampShift: [[0, -0.05], [1, -0.25]], glow: 1.5, core: 0.4, turn: 'random' }),
     // SECONDARY: star spots blinking out from it
     L({ type: 'sprites', count: [6, 8], shape: 'star4', spawn: 'sphere', r: 0.1, dir: 'out', speed: [2, 3], drag: 4, life: [0.35, 0.5], size: [0.06, 0.1], sizeEnd: 0.01, color: D.spot, colorEnd: D.edge, twinkle: 6 }),
@@ -329,14 +328,14 @@ export const DOMAIN_EFFECTS = {
   // the level-up: four sonar rings to seven metres, the iris opened over the head, two scan lines
   'domain.divination.level': { layers: [
     // PRIMARY: the sonar: four thin rings swept out flat to seven metres, one after another
-    L({ type: 'shape', form: 'ring', ramp: 'divination', main: 'noise', mainK: 0.12, tile: [10, 1], scroll: [0.3, 0], at: 0.2, dur: 1, scale: [[0, 0.4], [1, 7]], offset: [0, 0.03, 0],
-      edgeV: [0.9, 0.05], erode: THIN, soft: 0.05, rampShift: [[0, 0.25], [1, -0.3]], glow: 2.4, core: 0.9, coreAt: 0.85, turn: 'random' }),
-    L({ type: 'shape', form: 'ring', ramp: 'divination', main: 'noise', mainK: 0.12, tile: [10, 1], scroll: [0.3, 0], at: 0.38, dur: 1, scale: [[0, 0.4], [1, 6.2]], offset: [0, 0.03, 0],
-      edgeV: [0.9, 0.05], erode: THIN, soft: 0.05, rampShift: [[0, 0.22], [1, -0.3]], glow: 2.2, core: 0.8, coreAt: 0.85, kmul: 0.8, turn: 'random' }),
-    L({ type: 'shape', form: 'ring', ramp: 'divination', main: 'noise', mainK: 0.12, tile: [10, 1], scroll: [0.3, 0], at: 0.56, dur: 1, scale: [[0, 0.4], [1, 5.4]], offset: [0, 0.03, 0],
-      edgeV: [0.9, 0.05], erode: THIN, soft: 0.05, rampShift: [[0, 0.18], [1, -0.3]], glow: 2, core: 0.7, coreAt: 0.85, kmul: 0.6, turn: 'random' }),
-    L({ type: 'shape', form: 'ring', ramp: 'divination', main: 'noise', mainK: 0.12, tile: [10, 1], scroll: [0.3, 0], at: 0.74, dur: 1, scale: [[0, 0.4], [1, 4.6]], offset: [0, 0.03, 0],
-      edgeV: [0.9, 0.05], erode: THIN, soft: 0.05, rampShift: [[0, 0.15], [1, -0.3]], glow: 1.8, core: 0.6, coreAt: 0.85, kmul: 0.45, turn: 'random' }),
+    L({ type: 'shape', form: 'hoop', ramp: 'divination', main: 'noise', mainK: 0.25, tile: [10, 1], scroll: [0.3, 0], at: 0.2, dur: 1, scale: [[0, 0.4], [1, 7]], offset: [0, 0.03, 0],
+      edgeV: [0.5, 0.5], erode: HOOP, soft: 0.08, rampShift: [[0, 0.25], [1, -0.3]], glow: 2.4, core: 0.9, coreAt: 0.85, turn: 'random' }),
+    L({ type: 'shape', form: 'hoop', ramp: 'divination', main: 'noise', mainK: 0.25, tile: [10, 1], scroll: [0.3, 0], at: 0.38, dur: 1, scale: [[0, 0.4], [1, 6.2]], offset: [0, 0.03, 0],
+      edgeV: [0.5, 0.5], erode: HOOP, soft: 0.08, rampShift: [[0, 0.22], [1, -0.3]], glow: 2.2, core: 0.8, coreAt: 0.85, kmul: 0.8, turn: 'random' }),
+    L({ type: 'shape', form: 'hoop', ramp: 'divination', main: 'noise', mainK: 0.25, tile: [10, 1], scroll: [0.3, 0], at: 0.56, dur: 1, scale: [[0, 0.4], [1, 5.4]], offset: [0, 0.03, 0],
+      edgeV: [0.5, 0.5], erode: HOOP, soft: 0.08, rampShift: [[0, 0.18], [1, -0.3]], glow: 2, core: 0.7, coreAt: 0.85, kmul: 0.6, turn: 'random' }),
+    L({ type: 'shape', form: 'hoop', ramp: 'divination', main: 'noise', mainK: 0.25, tile: [10, 1], scroll: [0.3, 0], at: 0.74, dur: 1, scale: [[0, 0.4], [1, 4.6]], offset: [0, 0.03, 0],
+      edgeV: [0.5, 0.5], erode: HOOP, soft: 0.08, rampShift: [[0, 0.15], [1, -0.3]], glow: 1.8, core: 0.6, coreAt: 0.85, kmul: 0.45, turn: 'random' }),
     // PRIMARY (its heart)
     core('divination', 0.2, [[0, 0.3], [1, 1]], { offset: [0, 0.1, 0], stretch: [1, 0.4, 1], dur: 0.16 }),
     // PRIMARY: the iris over the Courier's head: narrowed to a point (the anticipation), then opened wide, its fibres turning
@@ -344,13 +343,13 @@ export const DOMAIN_EFFECTS = {
       scale: [[0, 1], [0.1, 0.3], [0.35, 2.2], [1, 2.5]], offset: [0, 2.3, 0], spin: 0.25, edgeV: [0.15, 0.45], erode: [[0, 0.2], [0.1, 0.03], [0.65, 0.08], [1, 1]],
       rampShift: [[0, 0.2], [0.3, 0.06], [1, -0.36]], glow: 2.2, core: 0.6, turn: 'random' }),
     // PRIMARY: its pupil, tenmoku black with star spots, opening with it
-    L({ type: 'shape', form: 'disc', face: 'camera', ramp: 'divination', add: 0.5, main: 'stars', mainK: 0.55, tile: [3, 3], scroll: [0.02, 0.05], dur: 2,
+    L({ type: 'shape', form: 'disc', face: 'camera', ramp: 'ink', add: 0, main: 'stars', mainK: 0.3, tile: [3, 3], scroll: [0.02, 0.05], dur: 2,
       scale: [[0, 0.5], [0.1, 0.15], [0.35, 1.2], [1, 1.35]], offset: [0, 2.3, 0], edgeV: [0, 0.35], erode: [[0, 0.1], [0.65, 0.12], [1, 1]], rampShift: [[0, -0.05], [1, -0.25]], glow: 1.7, core: 0.4, turn: 'random' }),
     // SECONDARY: two scan lines climbing the body, one after the other
-    L({ type: 'shape', form: 'band', ramp: 'divination', main: 'noise', mainK: 0.06, tile: [6, 1], scroll: [0.6, 0], at: 0.2, dur: 0.9, scale: 0.85, stretch: [1, [[0, 0.05], [1, 2.6]], 1],
-      edgeV: [0.98, 0.02], erode: LINE, soft: 0.05, rampShift: [[0, 0.2], [1, -0.2]], glow: 2.1, core: 0.8, coreAt: 0.85, turn: 'random' }),
-    L({ type: 'shape', form: 'band', ramp: 'divination', main: 'noise', mainK: 0.06, tile: [6, 1], scroll: [-0.5, 0], at: 0.5, dur: 0.9, scale: 0.7, stretch: [1, [[0, 0.05], [1, 2.4]], 1],
-      edgeV: [0.98, 0.02], erode: LINE, soft: 0.05, rampShift: [[0, 0.15], [1, -0.2]], glow: 1.9, core: 0.7, coreAt: 0.85, kmul: 0.7, turn: 'random' }),
+    L({ type: 'shape', form: 'band', ramp: 'divination', main: 'noise', mainK: 0.06, tile: [6, 1], scroll: [0.6, 0], at: 0.2, dur: 0.9, scale: 0.85, stretch: [1, 0.07, 1], offset: [0, [[0, 0.05], [1, 2.6]], 0],
+      edgeV: [0.5, 0.5], erode: HOOP, soft: 0.08, rampShift: [[0, 0.2], [1, -0.2]], glow: 2.1, core: 0.8, coreAt: 0.85, turn: 'random' }),
+    L({ type: 'shape', form: 'band', ramp: 'divination', main: 'noise', mainK: 0.06, tile: [6, 1], scroll: [-0.5, 0], at: 0.5, dur: 0.9, scale: 0.7, stretch: [1, 0.07, 1], offset: [0, [[0, 0.05], [1, 2.4]], 0],
+      edgeV: [0.5, 0.5], erode: HOOP, soft: 0.08, rampShift: [[0, 0.15], [1, -0.2]], glow: 1.9, core: 0.7, coreAt: 0.85, kmul: 0.7, turn: 'random' }),
     // SECONDARY: the screen's weight: a silver flash, a cool violet lamp (no shake: seeing is quiet)
     L({ type: 'flash', at: 0.2, color: D.silver, k: 0.18, dur: 0.45 }),
     L({ type: 'light', at: 0.2, color: D.spot, k: 24, range: 9, dur: 1.4, hold: 0.25, up: 2 }),
@@ -562,9 +561,9 @@ export const DOMAIN_EFFECTS = {
       erode: [[0, 0.3], [0.3, 0.05], [0.85, 0.1], [1, 1]], rampShift: [[0, -0.1], [1, 0.1]], glow: 2, turn: 'random' }),
     // PRIMARY: the band swept up the body: a curtain whose leading edge is white-hot and whose trail runs down through the flambe (its value
     // laid along its height: salmon, copper red, purple, blue, clear at the ground), the whole of it cooling toward the blue as it goes
-    L({ type: 'shape', form: 'band', ramp: 'alteration', main: 'streaks', mainK: 0.35, tile: [6, 1], scroll: [0, 1.5], mask: 'noise', maskK: 0.6, maskTile: [3, 1], maskScroll: [0.1, 0.6],
-      flow: 'noise', flowK: 0.04, at: 0.12, dur: 0.9, scale: 0.85, stretch: [1, [[0, 0.05], [0.45, 2.5], [1, 2.7]], 1], edgeV: [0.8, 0.12], rim: -0.3, erode: [[0, 0], [0.45, 0.04], [1, 1]],
-      rampShift: [[0, 0.2], [0.4, 0.05], [1, -0.42]], glow: 2.3, core: 0.8, coreAt: 0.85, turn: 'random' }),
+    L({ type: 'shape', form: 'band', ramp: 'alteration', main: 'streaks', mainK: 0.85, tile: [6, 1], scroll: [0, 1.5], mask: 'noise', maskK: 0.85, maskTile: [3, 1], maskScroll: [0.1, 0.6],
+      flow: 'noise', flowK: 0.05, at: 0.12, dur: 0.9, scale: 0.85, stretch: [1, [[0, 0.05], [0.45, 2.5], [1, 2.7]], 1], edgeV: [0.8, 0.12], rim: 0.45, erode: [[0, 0.04], [0.45, 0.08], [1, 1]],
+      rampShift: [[0, 0.28], [0.4, 0.1], [1, -0.42]], glow: 2.8, core: 0.8, coreAt: 0.85, turn: 'random' }),
     // PRIMARY (its heart): where it began, white-hot at the feet
     core('alteration', 0.12, [[0, 0.3], [1, 0.9]], { offset: [0, 0.15, 0], stretch: [1, 0.5, 1] }),
     // SECONDARY: crescents turning round the body at two heights against each other, the ramp running through them as they go
@@ -584,8 +583,8 @@ export const DOMAIN_EFFECTS = {
   // held: the band swept up every 2.4 real s, two crescents turning against each other
   'domain.alteration.hold': { layers: [
     // PRIMARY: the band swept up the body every 2.4 real seconds, the flambe running down its trail
-    L({ type: 'shape', form: 'band', ramp: 'alteration', main: 'streaks', mainK: 0.35, tile: [6, 1], scroll: [0, 1], mask: 'noise', maskK: 0.6, maskTile: [3, 1], maskScroll: [0.1, 0.5],
-      flow: 'noise', flowK: 0.04, ...HELD, loop: 2.4, scale: 0.82, stretch: [1, [[0, 0.05], [1, 2.3]], 1], edgeV: [0.8, 0.12], rim: -0.3, erode: [[0, 0.05], [0.7, 0.08], [1, 1]],
+    L({ type: 'shape', form: 'band', ramp: 'alteration', main: 'streaks', mainK: 0.85, tile: [6, 1], scroll: [0, 1], mask: 'noise', maskK: 0.85, maskTile: [3, 1], maskScroll: [0.1, 0.5],
+      flow: 'noise', flowK: 0.04, ...HELD, loop: 2.4, scale: 0.82, stretch: [1, [[0, 0.05], [1, 2.3]], 1], edgeV: [0.8, 0.12], rim: 0.45, erode: [[0, 0.03], [0.7, 0.06], [1, 1]],
       rampShift: [[0, 0.12], [1, -0.32]], glow: 1.6, core: 0.6, coreAt: 0.85 }),
     // SECONDARY: a crescent turning round the middle, its colour running red to blue and back
     L({ type: 'shape', form: 'crescent', face: 'ground', ramp: 'alteration', main: 'noise', tile: [3, 1], scroll: [0.6, 0], ...HELD, loop: 4, scale: 1, offset: [0, 0.9, 0], spin: 1.6, erode: 0.12,
@@ -603,7 +602,7 @@ export const DOMAIN_EFFECTS = {
   // a short band wiped up across the point, a crescent flicked round it
   'domain.alteration.hit': { layers: [
     // PRIMARY: a short band wiped up across the struck point, hot at its leading edge, the flambe running down behind it
-    L({ type: 'shape', form: 'band', ramp: 'alteration', main: 'streaks', mainK: 0.35, tile: [5, 1], scroll: [0, 2], mask: 'noise', maskK: 0.6, maskTile: [2, 1], dur: 0.42, offset: [0, -0.1, 0],
+    L({ type: 'shape', form: 'band', ramp: 'alteration', main: 'streaks', mainK: 0.85, tile: [5, 1], scroll: [0, 2], mask: 'noise', maskK: 0.85, maskTile: [2, 1], dur: 0.42, offset: [0, -0.1, 0],
       scale: 0.4, stretch: [1, [[0, 0.05], [0.5, 1], [1, 1.1]], 1], edgeV: [0.8, 0.12], erode: [[0, 0], [0.4, 0.05], [1, 1]], rampShift: COOL, glow: 2.4, core: 0.8, coreAt: 0.85, turn: 'random' }),
     // PRIMARY (its heart)
     core('alteration', 0, [[0, 0.2], [1, 0.5]], { dur: 0.12 }),
@@ -622,12 +621,12 @@ export const DOMAIN_EFFECTS = {
     L({ type: 'shape', form: 'crescent', face: 'ground', ramp: 'alteration', main: 'noise', tile: [3, 1], scroll: [-1.4, 0], dur: 0.32, scale: [[0, 2.2], [1, 0.95]], offset: [0, 0.1, 0], spin: -8,
       erode: [[0, 0.3], [0.3, 0.05], [0.85, 0.1], [1, 1]], rampShift: [[0, -0.1], [1, 0.1]], glow: 2.1, turn: 'random' }),
     // PRIMARY: the band swept up past the Courier's head, its leading edge white-hot and the whole flambe running down its trail
-    L({ type: 'shape', form: 'band', ramp: 'alteration', main: 'streaks', mainK: 0.35, tile: [8, 1], scroll: [0, 1.5], mask: 'noise', maskK: 0.6, maskTile: [3, 1], maskScroll: [0.1, 0.6],
-      flow: 'noise', flowK: 0.04, at: 0.25, dur: 1.4, scale: 1.05, stretch: [1, [[0, 0.05], [0.4, 3.4], [1, 3.6]], 1], edgeV: [0.8, 0.12], rim: -0.3, erode: [[0, 0], [0.45, 0.04], [1, 1]],
-      rampShift: [[0, 0.22], [0.4, 0.05], [1, -0.42]], glow: 2.4, core: 0.8, coreAt: 0.85, turn: 'random' }),
+    L({ type: 'shape', form: 'band', ramp: 'alteration', main: 'streaks', mainK: 0.85, tile: [8, 1], scroll: [0, 1.5], mask: 'noise', maskK: 0.85, maskTile: [3, 1], maskScroll: [0.1, 0.6],
+      flow: 'noise', flowK: 0.04, at: 0.25, dur: 1.4, scale: 1.05, stretch: [1, [[0, 0.05], [0.4, 3.4], [1, 3.6]], 1], edgeV: [0.8, 0.12], rim: 0.45, erode: [[0, 0], [0.45, 0.04], [1, 1]],
+      rampShift: [[0, 0.28], [0.4, 0.1], [1, -0.42]], glow: 2.9, core: 0.8, coreAt: 0.85, turn: 'random' }),
     // PRIMARY: an inner band a beat behind, its streaks falling the other way
-    L({ type: 'shape', form: 'band', ramp: 'alteration', main: 'streaks', mainK: 0.35, tile: [6, 1], scroll: [0, -1.2], mask: 'noise', maskK: 0.6, maskTile: [3, 1], maskScroll: [-0.1, 0.5],
-      flow: 'noise', flowK: 0.04, at: 0.38, dur: 1.3, scale: 0.7, stretch: [1, [[0, 0.05], [0.4, 2.9], [1, 3]], 1], edgeV: [0.8, 0.12], rim: -0.3, erode: [[0, 0], [0.45, 0.04], [1, 1]],
+    L({ type: 'shape', form: 'band', ramp: 'alteration', main: 'streaks', mainK: 0.85, tile: [6, 1], scroll: [0, -1.2], mask: 'noise', maskK: 0.85, maskTile: [3, 1], maskScroll: [-0.1, 0.5],
+      flow: 'noise', flowK: 0.04, at: 0.38, dur: 1.3, scale: 0.7, stretch: [1, [[0, 0.05], [0.4, 2.9], [1, 3]], 1], edgeV: [0.8, 0.12], rim: 0.7, erode: [[0, 0], [0.45, 0.04], [1, 1]],
       rampShift: [[0, 0.05], [1, -0.45]], glow: 2, core: 0.6, coreAt: 0.85, kmul: 0.8, turn: 'random' }),
     // PRIMARY (its heart)
     core('alteration', 0.25, [[0, 0.5], [1, 1.4]], { offset: [0, 0.2, 0], stretch: [1, 0.5, 1], dur: 0.16 }),

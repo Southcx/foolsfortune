@@ -7,7 +7,7 @@
 //
 // A layer's fields (all optional; a pattern or ramp name may be the caller's: 'motif' is ctx.feeling's paint motif, 'feeling', 'domain'
 // and 'suit' are ctx's row, so one effect is skinned by whoever plays it):
-//   form        an effect shape: ring band dome sphere cone disc quad beam spiral crescent pillar wave spikes ('ring')
+//   form        an effect shape: ring hoop band dome sphere cone disc quad beam spiral crescent pillar wave spikes ('ring'; hoop the thin ring)
 //   ramp        a ramp row: a feeling, a domain, a suit, 'wild', film gold ember white ink tint, or 'feeling' / 'domain' / 'suit' ('tint')
 //   main        the pattern scrolled over it: noise cells streaks ripple cracks dots marble frost curds rays stars script, 'motif', or
 //               'none' (a solid shape: its edges, rim and ramp alone) ('noise')
@@ -29,7 +29,7 @@
 //   turn        'random' (a fresh yaw each play, so repeats never stamp) or radians (0)   seed [u, v] the patterns' offset (random each play)
 //   order       renderOrder (6)
 //   and vfx.js's: at, dur (Infinity held, with in, out and loop: a held layer's life runs 0..1 every `loop` real s), scale, stretch
-//   ([x, y, z], each a number or a curve), offset, rot, spin, k, kmul, powerScale
+//   ([x, y, z], each a number or a curve), offset (the same: a curve rides it over life), rot, spin, k, kmul, powerScale
 //
 // Prior art: Riot's layering of a spell (League of Legends' VFX style guide: a primary shape that reads in silhouette, secondary
 // support, tertiary ambience) and its "erode by a rising threshold"; FFXIV's .avfx (a model layer with its texture animation); Simon
