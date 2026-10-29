@@ -29,7 +29,7 @@ the line comes from a search excerpt of it. Nothing here is from memory: a detai
 - Six colours in three opposed pairs, each colour *two* things: Red fire/magma against Blue water/ice, Green wind/flora against Yellow earth/lightning, White light/cosmos
   against Black darkness/gravity; Elements sit on a per-character grid in eight rank tiers. https://www.cbr.com/stamina-element-battle-system-guide-chrono-cross/ and https://en.wikipedia.org/wiki/Chrono_Cross
   **Take:** one ramp may carry two sibling forms (a feeling's burst and its aura); opposites sit across the wheel.
-- A character's or enemy's innate colour is read two ways: the info pane, or "the colored trail left by an enemy's weapon during a standard attack". https://www.cbr.com/stamina-element-battle-system-guide-chrono-cross/
+- A character's or enemy's innate colour is read two ways: the info pane, or "the colored trail their weapon leaves when performing a standard attack". https://www.cbr.com/stamina-element-battle-system-guide-chrono-cross/
   **Take:** identity rides the swing trail, the cheapest and most seen layer; a class's suit colour goes on the trail of every art it owns, with no label.
 - The Field Effect: three slots top-left; each element used enters the right slot and pushes the left out; each matching slot +12.5 % power, each opposing slot -12.5 % (cap -33.5 %); three of one colour opens summons.
   https://www.gamerguides.com/chrono-cross-the-radical-dreamers-edition/guide/how-to-play/battle-system/how-the-field-effect-works
@@ -41,7 +41,7 @@ the line comes from a search excerpt of it. Nothing here is from memory: a detai
 - Drawing the weapon pauses the action; "a grid-like sphere appears around the character"; body parts are targeted; magic that hits many uses a small sphere placed inside that wire frame.
   https://www.oldgamehermit.com/2024/04/review-vagrant-story/ and https://en.wikipedia.org/wiki/Vagrant_Story  A fan guide adds that the dome's size varies with weapon range and the readout is Damage/Success on the
   bottom line, e.g. 23/98 % at the head, 2/41 % at an armoured body. https://chode.org/misc/vs/  **Take:** Divination's lens is a wire dome whose radius is the reach; pin the numbers at the part, not at the screen's foot.
-- Chain Abilities are button presses "in timely succession" ("resembles a rhythm game"); an optional Timing Display puts an exclamation mark over Ashley's head when the next press is due (press on it, not before).
+- Chain Abilities are button presses "in timely succession", "making combat resemble a rhythm game"; an optional Timing Display puts an exclamation mark over Ashley's head when the next press is due (press on it, not before).
   https://en.wikipedia.org/wiki/Vagrant_Story and https://chode.org/misc/vs/  **Take:** the cue is a mark on the body, optional (a knack), and it opens on the impact frame, not the wind-up.
 - Break Arts trade HP for damage and add no Risk; Risk rises with each attack (less accuracy and defence, more crits); magic cannot be chained. https://en.wikipedia.org/wiki/Vagrant_Story
   **Take:** Fury is a heat that builds and costs: a visible count (cracks on the arm or blade) that a Break-Art-like art pays down in one go.
@@ -77,11 +77,11 @@ the line comes from a search excerpt of it. Nothing here is from memory: a detai
 ### 1.6 Valkyrie Profile (tri-Ace / Enix, 1999)
 - Each party member is a button; combos fill a Hit Gauge; at 100 % a member of the combo may use Purify Weird Soul; Charge Time replaces MP; Great Magic (all enemies) needs certain scepters, which can break; Lenneth's Purify Weird Soul
   changes with the weapon she holds. https://en.wikipedia.org/wiki/Valkyrie_Profile_(video_game)  **Take:** a gauge filled by the quality of a chain, spent on one large art whose shape depends on the tool in hand (our pair specials).
-- In the English release Lezard's teleportation circle was changed "from a pink pentagram to a purple circle" (the PSP port's English version keeps it). https://en.wikipedia.org/wiki/Valkyrie_Profile_(video_game)
+- In the English release Lezard's teleportation circle was changed "from a pink pentagram to a purple circle" ("left unchanged" in the PSP port). https://en.wikipedia.org/wiki/Valkyrie_Profile_(video_game)
   **Take:** the figure inside a circle carries its register (an occult pentagram or a plain ring): Ouranurgy's portal ring and Spellscription's seal should differ by figure before they differ by colour.
 
 ### 1.7 Secret of Mana (Square, 1993) and Legend of Mana (Square, 1999; director Koichi Ishii, battle chief Hiroshi Takai)
-- Secret of Mana: Ishii organised magic as four elements "but what gave them all shape in our world was mana"; Tanaka on the ring menu: you "don't have to switch screens to access everything", visually easy to follow. https://shmuplations.com/secretofmana/
+- Secret of Mana: Ishii organised magic as four elements, and what "gave them all shape in our world" was mana; Tanaka on the ring menu: you "don't have to switch screens to access everything", visually easy to follow. https://shmuplations.com/secretofmana/
   **Take:** one substrate under every element (our Lachryma) and a menu drawn round the body (our cylinder and desk).
 - Legend of Mana: Takai had "the battle system and the effects for special moves"; Matsumoto wanted a "more colorful and cheerful touch" and monster animation "on par with Capcom's fighting games"; hand-drawn sprites were chosen because
   polygons would not make the characters feel alive. https://shmuplations.com/legendofmana/  **Take:** Mirth is colour plus squash and stretch on the small parts (chips, dots), not more particles.
@@ -120,10 +120,10 @@ the line comes from a search excerpt of it. Nothing here is from memory: a detai
   **Take:** colour by *what a thing changes* is a third coding beside element and suit; use it only where a mark must say what it will touch.
 
 ### 1.13 The World Ends with You (Jupiter / Square Enix, 2007)
-- Pins are worn; each district has trends, and clothes or pins of the popular brand improve effects, the least fashionable weaken them; pins evolve; background director Takayuki Ohdachi designed the psych pins "mixing pop art and tribal designs"; the
+- Pins are worn; each district has trends, and clothes or pins of the popular brand improve effects, the least fashionable weaken them; pins evolve; background director Takayuki Ohdachi designed the psych pins, using "a mix of pop art and tribal designs"; the
   partners pass a light puck between them (a holder cannot be attacked). https://en.wikipedia.org/wiki/The_World_Ends_with_You
   **Take:** the puck is the Possession token handed between host and rider; a brand is a family told by one motif.
-- Second-hand (fan wiki, via search excerpt): each brand shows part of its logo in every pin, "often as something resembling a watermark". https://twewy.fandom.com/wiki/Jupiter_of_the_Monkey and https://twewy.fandom.com/wiki/Mus_Rattus
+- Second-hand (fan wiki, via search excerpt): brands tend to have "at least part of their logo visible in every pin design, often as something resembling a watermark". https://twewy.fandom.com/wiki/Jupiter_of_the_Monkey and https://twewy.fandom.com/wiki/Mus_Rattus
   **Take:** a suit's mark as a watermark on every art's shape.
 
 ### 1.14 NieR (Cavia / Square Enix, 2010) and Final Fantasy Type-0 (Square Enix, 2011)
@@ -156,11 +156,13 @@ the line comes from a search excerpt of it. Nothing here is from memory: a detai
 - Takayasu Ishii (FFXIV VFX artist): designers give a text spec (attack or heal, single target or area) and artists have "free rein over the imagery" inside that purpose; Reaper has its own base colour (black and cyan), Sage white and blue, bright greens are
   "common for healer jobs"; Reaper stresses the *trail* over the hit; weapon effects are always on screen so they "have stricter limitations". https://na.finalfantasyxiv.com/blog/003308.html
   **Take:** a class art = a one-line spec + the suit's base colour + one signature element; hold always-on marks to a stricter budget than one-shots.
-- Shintaro Takai (VFX director, FFVII Remake; made summons for the 1997 FFVII), CGWorld 2018 (Japanese, machine-translated): an effect needs a reason; Cure is not sparkles but "invisible energy floats around the character, is gathered and made visible,
+- Shintaro Takai (VFX director, FFVII Remake; made summons for the 1997 FFVII), CGWorld 2018 (Japanese; the English quoted is the fetch tool's translation, checked against the Japanese for the Cure line): an effect needs a reason; Cure is not sparkles but "invisible energy floats around the character, is gathered and made visible,
   then absorbed into the body and emits light"; FFVII's Knights of the Round ran long ("reflection points"). https://cgworld.jp/interview/201804-sqex-ffvii.html  **Take:** anticipation is a pull-in; keep summons short.
-- CGWorld 2020 (Takai, Mizuki Tsunoda, Mitsuharu Yoshida): effects built from real phenomena and tuned like physical light; Houdini flipbooks 8 x 8 (64 frames) with emissive, opacity, normal and occlusion channels, emissive driving glow; luminance split from
-  colour as its own parameter; summons given emissive surface glow to read apart from monsters; Cloud's limit break raises a kanji in step with each of its three slashes. https://cgworld.jp/feature/202012-ffvll-03.html
+- CGWorld 2020 (Takai, Mizuki Tsunoda, Mitsuharu Yoshida; Japanese, read in part): effects built from real phenomena and tuned like physical light; Houdini flipbooks as 8 x 8 (64 frame) sheets, their channels emissive, opacity, normal and occlusion, the emissive driving glow;
+  luminance split from colour as its own parameter; summons given a glowing body surface and a wrap of particles to read apart from monsters; Cloud's limit break raises the kanji for ill (凶) in step with each of its three slashes. https://cgworld.jp/feature/202012-ffvll-03.html
   **Take:** a glyph on the beat for a three-hit art; make value its own knob apart from hue (our ramp's skin).
+- Same feature, the Materia's haze: made procedurally, a 4-octave 3D Perlin noise baked by an in-house tool into a 64 x 64 x 64 volume texture, then 3 more octaves added at runtime on top of it and animated; the wait mode (colour drains while you choose a command) is a post effect
+  whose parameters are animated apart from the colour LUT. https://cgworld.jp/feature/202012-ffvll-03.html  **Take:** one small baked volume of noise seeds every cloud and liquid look (the tube, the miasma); animate a few octaves on top rather than scroll a big texture.
 - Hasegawa, Nozoe, Ono, Koyama, Ishida, "Visual Effects of Final Fantasy XV" (SIGGRAPH 2016): "a Fantasy based on Reality ... fantasy as an extension of natural and/or physical phenomena"; procedural effects for lightning, flares and ripples because they need
   no textures, are independent of resolution, and "templates help users improve the quality"; effects respond to a changing environment (a lens flare follows the sun); a node-based editor whose groups can be used as one node.
   https://history.siggraph.org/wp-content/uploads/2022/09/2016-Talks-Hasegawa_Visual-Effects-of-Final-Fantasy-XV-Concept-Environment-and-Implementation.pdf  **Take:** our shape layer is this (procedural, no texture); a domain's grammar is a template; let effects read the weather and the hour.
@@ -168,7 +170,7 @@ the line comes from a search excerpt of it. Nothing here is from memory: a detai
 ## 2. The layering grammar
 
 ### 2.1 Roles
-- Riot, League of Legends VFX Style Guide (2017, principal artist Jin Yang), slides 6 to 11: **primary** carries the gameplay signal (high value range, strong value or saturation contrast, clear silhouette, high opacity, strong shape, intense movement);
+- Riot, League of Legends VFX Style Guide (2017, principal artist Jin Yang), slides 6 to 11 (numbers as the summary gives them): **primary** carries the gameplay signal (high value range, strong value or saturation contrast, clear silhouette, high opacity, strong shape, intense movement);
   **secondary** supports it (lower value range, small, blurry silhouette, low opacity, simple shape, subtle movement) and may use more hues; importance is set by size, shape, timing, value, saturation and opacity. Ladder: idle particle, defensive spell,
   basic attack, damage spell, game changer, ultimate. https://www.slideshare.net/slideshow/vfx_style_guide-aaaaaaaaaaaaaaaaaaaa-pdf/272115497 (original: https://realtimevfx.com/t/official-league-of-legends-vfx-style-guide/3392)
 - Same source: avoid 100 % and 0 % in value or saturation; two complementary hues mean one must be secondary; paint textures by hand, concise, soft and sharp mixed, no photographic noise (slides 13, 19 to 30).
@@ -180,9 +182,9 @@ the line comes from a search excerpt of it. Nothing here is from memory: a detai
   https://skillsupschool.com/tutorials/vzryvnoj-tutorial-poshagovo-risuem-vfx
 - Kevin Leroy, a Riot VFX artist, on his own League-style fan work in Unity (80.lv, 27 Sept 2017): a projectile is a cast, the projectile and a hit; the hot point is "the most important" and should match the hitbox; the trail says where it came from; a shadow
   behind the glow gives it range; textures stay black and white and are tinted in the engine. https://80.lv/articles/constructing-vfx-worthy-of-league-of-legends
-- Battlefront II (Simon Trumpler's reading of the files): an explosion is many particles, not one flipbook; smoke and fire are two particle layers on the same frames, the second flipbook's alpha being the emissive fire; one LUT colours both; all VFX textures share one
+- Battlefront II (Simon Trümpler's reading of the files): an explosion is many particles, not one flipbook; smoke and fire are two particle layers on the same frames, the second flipbook's alpha being the emissive fire; one LUT colours both; all VFX textures share one
   12288 x 8192 atlas. https://simonschreibt.de/gat/battlefront-ii-layered-explosion/
-- Divinity: Original Sin 2 burning (Trumpler, from the modding tools): the character mesh duplicated as an overlay material, stretched upward by a vertex mask, world-space mapped so the stretch does not smear the fire. https://simonschreibt.de/gat/divine-fire/
+- Divinity: Original Sin 2 burning (Trümpler, from the modding tools): the character mesh duplicated as an overlay material, stretched upward by a vertex mask, world-space mapped so the stretch does not smear the fire. https://simonschreibt.de/gat/divine-fire/
 
 ### 2.2 Timing (every number a source gave; none gives spell anticipation in seconds)
 | what | number | source |
@@ -201,7 +203,7 @@ the line comes from a search excerpt of it. Nothing here is from memory: a detai
 ### 2.3 Shader techniques, with one line of why
 | technique | why | seen in |
 |---|---|---|
-| gradient ramp over value and life (a LUT) | one grey texture takes any palette (feeling, domain, suit) and a hot thing cools as it ages | Battlefront II above; https://realtimevfx.com/t/particle-gradient-mapping/1952 (lifetime on V; erosion in grey, colour last; keyframed colour "marginally cheaper"; LUTs of 256 x 1 fit the cache but cost on mobile) |
+| gradient ramp over value and life (a LUT) | one grey texture takes any palette (feeling, domain, suit) and a hot thing cools as it ages | Battlefront II above; https://realtimevfx.com/t/particle-gradient-mapping/1952 (lifetime on V; erosion in grey, colour last; a poster who says they worked on League: "we've moved away from using gradient maps for lifetime", keyframed colour being "marginally cheaper"; other posters: a 256 x 1 LUT fits the cache but is a worry on older mobile) |
 | the ramp walked through time | the oldest gradient scroll; a fixed picture comes alive | Terranigma's "palette cycling" (1.16) |
 | ramp wrapped round an alpha edge | the burning rim of a dissolving thing is the ramp's hot end, no second effect | Sacred 2's map: a height map makes an alpha mask and "one small gradient texture" is wrapped round its border: https://simonschreibt.de/gat/sacred-2-burning-map/ |
 | alpha erosion by threshold over life | the shape dies by its own noise, never a plain fade | `smoothstep(-s, s, noise - progress)` with progress remapped to [-s, 1]: https://heytibo.com/blog/dissolve-shader-vfx-s-bread-and-butter and https://torchinsky.me/stylized-vfx-unity-01/ |
@@ -233,7 +235,7 @@ A domain is a grammar (form and motion); a feeling is a skin (palette, motif, mo
 - **Fury** (cracks; fast, outward, hard core). Vagrant Story's Risk (1.2): heat that builds and costs. FFIX's Trance (1.11): rage changes the verb. FFIX's Mist (1.11): a weather that stimulates fighting. Chrono Cross Red, fire/magma (1.1).
 - **Gall** (curds; viscous, dripping, corroding). FFCC's Miasma (1.9): a hazard held off by something carried. Parasite Eve's orange mass of people grown into a wall round Eve (plot): body horror as a skin on matter. Xenogears' Gaetia Key turns people into mutants called
   Wels to collect flesh (plot): flesh as the curd's source. https://en.wikipedia.org/wiki/Parasite_Eve_(video_game) and https://en.wikipedia.org/wiki/Xenogears
-- **Grief** (streaks; slow, falling, sinking, long dissipation). Final Fantasy X's unsent (the dead not sent on "come to envy the living" and turn to fiends): what is left lingers longest, so its tertiary is the longest in the library. https://en.wikipedia.org/wiki/Final_Fantasy_X
+- **Grief** (streaks; slow, falling, sinking, long dissipation). Final Fantasy X's unsent (the dead who are not sent on "come to envy the living" and become fiends): what is left lingers longest, so its tertiary is the longest in the library. https://en.wikipedia.org/wiki/Final_Fantasy_X
   Chrono Cross Blue, water/ice (1.1). Leroy's order (2.2): the last element to leave is the quietest.
 - **Dread** (marbling; creeping, contracting, dark). Vagrant Story's dim dungeons with one bright source (1.2). Parasite Eve II's fixed view and tank controls (1.4). Chrono Cross Black, darkness/gravity (1.1): it closes in rather than out.
 
