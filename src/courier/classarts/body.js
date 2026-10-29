@@ -60,7 +60,7 @@ export class ClassArtsBody extends Tech {
   onStrike(c, m) {
     let dmg = 1, build = 1;
     if (this.momentum) { const R = this.reaction('momentum'); if (R) { dmg *= R.does.mult; this.momentum = false; this.sprintT = 0; this.fire('momentum'); } }
-    if (m?.dmg > 1) { const R = this.reaction('edge'); if (R) build *= R.does.weakBuild; }
+    if (m?.dmg > 1) { const R = this.reaction('edge'); if (R) { build *= R.does.weakBuild; this.fire('edge'); } }
     return dmg === 1 && build === 1 ? null : { dmg, build };
   }
   /** What a blow on the vessel is worth while Bulwark braces. */
