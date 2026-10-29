@@ -23,7 +23,7 @@ import { GOLD, COUNT_FACE } from '../brineframe.js';
 import { FONT } from '../theme.js';
 
 export const CHECKLIST_LOOK = { slotsMax: 12, target: 44, type: 14,
-  words: { found: 'FOUND HERE', of: 'of', unknown: '???', rooms: 'rooms' } }; // (words: placeholders, Espada's)
+  words: { found: 'FOUND HERE', of: 'of', unknown: '???', rooms: 'rooms' } }; // (Espada's words, 2026-10-27)
 
 const C = CHECKLIST_LOOK;
 const CSS = `

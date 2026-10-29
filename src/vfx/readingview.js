@@ -36,6 +36,8 @@
 import * as THREE from 'three';
 import { bazaarAtlas, cardIndex } from './bazaarfaces.js';
 import { backCell } from './cardbackset.js';
+import { dayCard } from '../progress/spreads.js';
+import { today } from '../core/calendar.js';
 
 export const READING_VIEW = {
   card: { w: 0.42, h: 0.68 },   // (m: a card hung in the orbit, the house deck's 64 x 104 frame)
@@ -132,6 +134,18 @@ export class ReadingView {
     node.userData = { face, edge, edgeMat };
     return node;
   }
+  /** The day's card (dayCard: the one Major a game day, its strength doubled where laid, SPREADS.md 11.2) marked as a world mark: its
+   *  edge gold, a gold star over its top edge. No words. */
+  markDay(node, card) {
+    const U = node.userData, on = card === dayCard(today());
+    U.day = on;
+    if (on && !U.star) {
+      this.starMat ||= new THREE.MeshBasicMaterial({ map: starTexture(), color: 0xffd36a, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false });
+      U.star = new THREE.Mesh(this.starGeo ||= new THREE.PlaneGeometry(0.16, 0.16), this.starMat); U.star.position.set(0, ch / 2 + 0.07, 0.003); node.add(U.star);
+    }
+    if (U.star) U.star.visible = on;
+    if (on) U.edgeMat.color.setHex(0xffd36a);
+  }
   /** A card gone: only its own edge material is its own. */
   drop(node) { this.group.remove(node); node.userData.edgeMat?.dispose(); }
 
@@ -217,7 +231,7 @@ export class ReadingView {
         node.userData.at = at; node.userData.turn = (at.turn || 0) + (L.reversed ? Math.PI : 0); node.userData.suit = L.suit || null;
         node.visible = true; seen.add(key);
         node.userData.edgeMat.color.setHex(L.suit && L.suit !== 'wild' ? SUIT_LOOK[L.suit] : 0xffffff);
-        node.userData.edgeMat.opacity = L.suit ? 0.9 : 0.25;
+        node.userData.edgeMat.opacity = L.suit ? 0.9 : 0.25; this.markDay(node, L.card);
         node.userData.face.userData.pick = { kind: 'place', id }; this.pickables.push(node.userData.face);
       }
       let fr = this.frames.get(`${state.spread}:${id}`);
@@ -239,7 +253,7 @@ export class ReadingView {
       node.scale.setScalar(Hn.scale);
       node.position.set(Math.sin(a) * Hn.r, Hn.y - (1 - Math.cos(a)) * Hn.r + (card === held ? Hn.lift : 0), Hn.z - i * 0.004);
       node.rotation.set(Hn.tilt, 0, -a);
-      node.userData.edgeMat.opacity = card === held ? 0.9 : 0.2; node.userData.edgeMat.color.setHex(0xffe6a8);
+      node.userData.edgeMat.opacity = card === held ? 0.9 : 0.2; node.userData.edgeMat.color.setHex(0xffe6a8); this.markDay(node, card); if (node.userData.day) node.userData.edgeMat.opacity = Math.max(0.6, node.userData.edgeMat.opacity);
       node.userData.face.userData.pick = { kind: 'hand', id: card };
       this.pickables.push(node.userData.face);
       this.group.add(node); this.handCards.push(node);
@@ -304,7 +318,8 @@ export class ReadingView {
       // from the fall (high above and behind) into its place, then hung there breathing
       node.position.copy(turned(at[0] * (0.4 + 0.6 * e), at[1] + (1 - e) * 4.5 + Math.sin(ph) * 0.02, at[2] - (1 - e) * 3, turn, _p));
       node.rotation.set(Math.sin(ph * 0.7) * 0.05, yaw + Math.sin(ph) * V.sway, (U.turn || 0) + (1 - e) * 2.4, 'YXZ'); // (its face to the camera wherever the arrows have it)
-      U.edgeMat.opacity = (U.suit ? 0.55 + 0.35 * Math.sin(this.t * 2.2 + i) : 0.2) * e;
+      U.edgeMat.opacity = (U.suit || U.day ? 0.55 + 0.35 * Math.sin(this.t * 2.2 + i) : 0.2) * e;
+      if (U.star) U.star.rotation.z = this.t * 0.8; // (the day's star turning slowly)
     }
     for (const c of this.fall) { // (the title's fall, far behind)
       const U = c.userData; U.y -= dt * 0.35; if (U.y < -6) U.y = 8; U.a += dt * 0.03;
@@ -334,4 +349,14 @@ export class ReadingView {
     }
     return out;
   }
+}
+
+/** A five-pointed star, white on clear, made once (the day's card's mark). */
+let STAR = null;
+function starTexture() {
+  if (STAR || typeof document === 'undefined') return STAR;
+  const c = document.createElement('canvas'); c.width = c.height = 64; const x = c.getContext('2d');
+  x.translate(32, 32); x.beginPath(); for (let k = 0; k < 10; k++) { const r = k % 2 ? 11 : 28, a = (k / 10) * Math.PI * 2 - Math.PI / 2; x[k ? 'lineTo' : 'moveTo'](Math.cos(a) * r, Math.sin(a) * r); } x.closePath();
+  x.shadowColor = '#fff'; x.shadowBlur = 8; x.fillStyle = '#fff'; x.fill();
+  STAR = new THREE.CanvasTexture(c); STAR.colorSpace = THREE.SRGBColorSpace; return STAR;
 }

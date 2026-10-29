@@ -46,7 +46,8 @@ import { DUEL_VIEW, cellLocal, sm, ease, lerp, hash } from './layout.js';
 import { toolBeat, TOOL_EVENTS } from './toolbeats.js';
 import { TOOL_BEATS2, shotBeat, paintBeat, tuneBeat, tuneEndBeat, readBeat } from './toolbeats2.js';
 import { FLEE } from '../../progress/duel/flee.js';
-import { POWER_EVENTS, powerBeat } from './powercast.js';
+import { POWER_EVENTS, powerBeat, domainHex } from './powercast.js';
+import { DUEL_POWERS } from '../../progress/duel/powers.js';
 import { JUICE_EVENTS } from './juice.js';
 import { gemColour } from './pieces.js';
 import { DIVE } from './formdive.js';
@@ -60,6 +61,8 @@ const DV = { N: [0, -1], S: [0, 1], E: [1, 0], W: [-1, 0] };
 export const SKY = { col: 0.035, fall: 0.11 };
 /** clear: a cascade step's clear after the first (real s); grow: the step count's swell a step; maxSize: its largest (cells). */
 export const CASCADE = { clear: 0.2, grow: 0.42, maxSize: 4.2 };
+/** Your moves big enough for the Jar's cut-in (cutin.js `yours`): these powers, and the finisher under its label (the phone's tile's word). */
+export const YOURS = { powers: new Set(['miracle', 'transmute', 'kindle', 'absorb']), finisher: 'FINISHER' };
 const CLAY = 0x93552f, GOLD = 0xffd76a, TEAR = 0x7fdcff, DUST = 0xcfc3b0;
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Color();
 
@@ -94,7 +97,8 @@ export class DuelBeats {
     if (e.type === 'blast' && e.rows) { job.i++; return blastBeat(this, e); }
     if (e.type === 'vein') { job.i++; return veinBeat(this, e); }
     if (e.type === 'charge') { job.i++; return { events: [e], dur: 0 }; }
-    if (POWER_EVENTS.has(e.type) && (e.type !== 'swap' || e.moved)) { job.i++; return powerBeat(this, e); } // (the PvE duel's powers: powercast.js; a power's swap carries `moved`, the classic swap does not)
+    if (e.type === 'power' && YOURS.powers.has(e.power) && V.jarCut) { const cut = V.jarCut.yours(e, DUEL_POWERS[e.power]?.label || e.power, domainHex(e.domain)); if (cut) return cut; } // (your big moves torn across the screen first, the Jar's portrait in the band: cutin.js)
+    if (POWER_EVENTS.has(e.type) && (e.type !== 'swap' || e.moved)) { job.i++; const ph = powerBeat(this, e); if (V.jarCut?.cut.has(e)) ph.events = []; return ph; } // (the PvE duel's powers: powercast.js; a power's swap carries `moved`, the classic swap does not)
     if (e.type.startsWith('foe.')) { const cut = V.cutIn.beat(e); if (cut) return cut; job.i++; const ph = V.foeCast.beat(this, e); if (V.cutIn.cut.has(e)) ph.events = []; return ph; } // (the PvE duel's aberrant: a skill's cut-in first, once (cutin.js), then its cast, its desperate flare, its stagger: foecast.js)
     if (e.type === 'fall') return this.fall(run((x) => x.type === 'fall'));
     if (e.type === 'clear' || e.type === 'break' || e.type === 'blast') { const it = run((x) => x.type === 'clear' || x.type === 'break' || x.type === 'blast'); return this.clears(it, run((x) => x.type === 'chain')); }
@@ -121,7 +125,8 @@ export class DuelBeats {
     if (e.type === 'orb') return this.shower(run((x) => x.type === 'orb'));
     if (e.type === 'orb.fade') return this.fade(run((x) => x.type === 'orb.fade'));
     if (e.type === 'orb.drink') { job.i++; return this.drinkAt(e); }
-    if (e.type === 'duel.finisher') { job.i++; V.spend(e.side, COST['duel.finisher'], e, e.spent ?? [60, 40, 20][(e.depth || 1) - 1]); return this.finisher(e); }
+    if (e.type === 'duel.finisher' && V.jarCut && e.side !== 1) { const cut = V.jarCut.yours(e, YOURS.finisher, 0xffd36a, { limit: true }); if (cut) return cut; }
+    if (e.type === 'duel.finisher') { job.i++; V.spend(e.side, COST['duel.finisher'], e, e.spent ?? [60, 40, 20][(e.depth || 1) - 1]); const ph = this.finisher(e); if (V.jarCut?.cut.has(e)) ph.events = []; return ph; }
     if (e.type === 'turn') { job.i++; return this.turn(e); }
     if (e.type === 'rest.cut') { job.i++; if (e.side === 0) V.restCuts++; return { events: [e], dur: 0 }; } // (a good chain took turns off the resting powers: the phone's power tiles flash their rims, ui/touch/duelscreen.js)
     if (e.type === 'flee') { job.i++; V.spend(e.side, e.ap ?? (e.ok ? 0 : FLEE.cost), e); // (only a failed roll costs: the owner, via Dovina's e3e13b4)
@@ -176,7 +181,7 @@ export class DuelBeats {
           else { X.burst(_a, g.v.kind === 'gem' ? gemColour(g.v.colour, _c).getHex() : 0xe8dcc8, 7, { speed: 1.2, life: 0.42 }); X.burst(_a, 0xffffff, 2, { speed: 0.3, life: 0.14, fall: 0, size: 0.03 }); }
           P.remove(g.v); }
       }
-      for (const m of marks) if (!m.shown && age >= cd + 0.1) { m.shown = true; V.marks.numeral(String(m.ch.step), m.at, m.ch.step >= 4 ? '#ffd76a' : V.sideHex(m.ch.side), { size: Math.min(CASCADE.maxSize, 1.6 + CASCADE.grow * (m.ch.step - 1)), dur: 0.9 + 0.08 * m.ch.step }); V.juice?.chainHit(m.ch, m.at, it); V.sent[m.ch.side] += junkOf(m.ch.cleared, m.ch.step); V.showCounts(); }
+      for (const m of marks) if (!m.shown && age >= cd + 0.1) { m.shown = true; if (!(V.state?.style === 'pve' && V.stamps?.chain(m.ch.step, m.ch.side))) V.marks.numeral(String(m.ch.step), m.at, m.ch.step >= 4 ? '#ffd76a' : V.sideHex(m.ch.side), { size: Math.min(CASCADE.maxSize, 1.6 + CASCADE.grow * (m.ch.step - 1)), dur: 0.9 + 0.08 * m.ch.step }); V.juice?.chainHit(m.ch, m.at, it); V.sent[m.ch.side] += junkOf(m.ch.cleared, m.ch.step); V.showCounts(); }
     }, end: () => { for (const g of gone) if (!g.popped) P.remove(g.v); } };
   }
 
@@ -337,7 +342,7 @@ export class DuelBeats {
 
   /** A side's turn begins: its points, the lost ones cracking one by one. */
   turn(e) {
-    const V = this.view, lost = e.lost || 0, max = e.ap + lost, cut = V.cutIn?.turn?.(e) || 0; // (the turn's change torn across the screen first: cutin.js)
+    const V = this.view, lost = e.lost || 0, max = e.ap + lost, cut = (e.side === 0 && V.state?.style === 'pve' ? V.jarCut : V.cutIn)?.turn?.(e) || 0; // (the turn's change torn across the screen first, yours with the Jar in it: cutin.js)
     if (V.state?.style === 'pve') { V.readPush(true); return { events: [e], dur: Math.max(0.05, cut) }; } // (no action points: the foot's beads are the push meters, duelview.js readPush)
     V.board.setAP(e.side, max, max, 0); V.apShown[e.side] = e.ap;
     let n = 0;

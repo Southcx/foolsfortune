@@ -59,7 +59,7 @@ export function practiceCards(types, { legs = {}, onSail = null, strength = 1 } 
     lit[type] = Math.max(1, Math.min(MAX, strength | 0));
     const row = {
       id: `practice.${type}`, name: NAMES[type] || type, icon: 'mount.psygun',
-      does: 'Sail this leg alone, back to this pier. Nothing counted.',
+      does: 'Sail this leg alone and come back to this pier. Nothing is counted.',
       detail: `${L.bars || '?'} bars. Each strength makes every foe a class stronger.`,
       key: 'Enter', state: 'ready',
       media: () => {

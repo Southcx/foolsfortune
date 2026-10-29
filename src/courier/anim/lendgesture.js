@@ -45,7 +45,8 @@ export const LEND_GESTURES = {
   // Gulp: the left hand (the free one: the main is in the right) brought in to the mouth, the cross's guard (UAL's Punch_Cross, the left
   // fist at the chin: its palm 0.07..0.10 m over the head bone and 0.17..0.19 m before it, at the lips, the face's front there being
   // 0.17..0.22 m out), there by 0.07 real s and held through the parry's 0.25 real s window; 0.34 real s
-  lockheart: { clip: 'punchCross', from: 0.17, to: 0.58, rate: 1.2, out: 0.1, mask: 'armL' },
+  // (free: with the main in the left hand, the right hand comes to the mouth, mirrored)
+  lockheart: { clip: 'punchCross', from: 0.17, to: 0.58, rate: 1.2, out: 0.1, mask: 'armL', free: true },
 };
 
 const IN = 0.05;
@@ -63,7 +64,7 @@ export class LendGesture {
   play(tool, freeHand = 'L') {
     let g = LEND_GESTURES[tool];
     if (!g || !this.C.clips[g.clip]) return false;
-    if (g.free && freeHand === 'L') g = { ...g, mask: 'armL', mirror: !g.mirror }; // (the right arm's motion on the left, the free hand)
+    if (g.free && freeHand !== (g.mask === 'armL' ? 'L' : 'R')) g = { ...g, mask: freeHand === 'L' ? 'armL' : 'arm', mirror: !g.mirror }; // (the authored arm's motion on the other, the free hand)
     // (a lend over one still playing: its pose as it stands fades out under the new one, over IN)
     if (this.g) { this.prev.copy(this.pose_); this.prevW = this.weight(); this.prevMask = this.maskOf(this.g); }
     this.g = g; this.t = 0; this.len = (g.to - g.from) / g.rate; this.active = tool;

@@ -215,10 +215,10 @@ export class DataBugs {
         T.wrote.copy(m.color);
       }
     }
-    // an aberrant alive wears its own look, or its colours inverted where the owner compares (copies synced after the tints above);
+    // an aberrant alive wears its own look, or its colours inverted when it went wrong shiny or where the owner compares (copies synced after the tints above);
     // dead, it gives them back before its scatter
-    const look = ABERRANT_LOOK.mode === 'invert' ? this.inversion : this.own, other = look === this.own ? this.inversion : this.own;
     for (const c of this.bugs.keys()) {
+      const look = c.shiny || ABERRANT_LOOK.mode === 'invert' ? this.inversion : this.own, other = look === this.own ? this.inversion : this.own; // (a shiny one, one in ten, wears the inversion: South, 2026-10-29, Dovina's rollShiny)
       const want = !!c.aberrant && c.alive !== false;
       if (other.has(c)) other.release(c);
       if (want && !look.has(c)) look.hold(c); else if (!want && look.has(c)) look.release(c);

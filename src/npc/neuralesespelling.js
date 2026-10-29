@@ -13,7 +13,12 @@
 //   Vowels: a (inherent, unwritten in the running hand) | i (above) | u (below) | e (before) | o (after). Throws on a word the
 //   orthography cannot spell, so a bad root is caught where it is written.
 //   bendName('Wanda') -> 'VANDA'   (a name from outside bent until it spells, as loanwords are: NEURALESE.md 2, rule 12; 2a, names)
+//   numeralOf(128) -> [{ digit: 1, bar: false, pairs: 0, dot: true, said: 'UNA' }, { digit: 2, ... pairs: 1 }, { digit: 8, bar: true,
+//     pairs: 1, dot: true, said: 'PENTA-DUO-UNA' }]   (a number written: base ten, each digit its spoken sum drawn; NEURALESE.md 2b, rule 23)
+//   saidOf(n) -> how it is read aloud: its sum to fifty (numberOf), past fifty digit by digit, each digit its sum, a pause between
 // ---------------------------------------------------------------------------------------
+
+import { numberOf } from './neuraleseroots.js';
 
 const CONSONANTS = {
   p: { place: 'lips', manner: 'stop', voiced: false },
@@ -132,3 +137,22 @@ export function bendName(name) {
   }
   return w.toUpperCase();
 }
+
+// a number written (NEURALESE.md 2b, rule 23; South, 2026-10-29): positional in base ten, the biggest digit first, each digit drawn as
+// its spoken sum so the marks are read as they are counted: a bar for PENTA, a pair of dots joined for DUO, a lone dot for UNA, an open
+// ring for VOYD (zero). Nine is PENTA-DUO-DUO: a bar, two pairs. Both hands draw from this (the running hand on pins from the bus, the
+// Comb in doubled cells); the drawing is Calissa's. Prior art: the Maya's bar and dot, the Kaktovik numerals, Roman V as the open hand.
+export function numeralOf(n) {
+  n = Math.floor(Math.abs(Number(n) || 0));
+  return String(n).split('').map((ch) => {
+    const d = +ch, ones = d % 5;
+    return { digit: d, bar: d >= 5, pairs: ones >> 1, dot: (ones & 1) === 1, zero: d === 0, said: numberOf(d) };
+  });
+}
+
+// how a number is read aloud: to fifty its sum, as the folk count (numberOf); past fifty, as the System reads what it wrote, digit by
+// digit with a pause between, the way a long number is read off a ledger: 128 is "UNA, DUO, PENTA-DUO-UNA"
+export const saidOf = (n) => {
+  n = Math.floor(Math.abs(Number(n) || 0));
+  return n <= 50 ? numberOf(n) : numeralOf(n).map((d) => d.said).join(', ');
+};

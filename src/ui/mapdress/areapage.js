@@ -29,7 +29,7 @@ import { sealsOnPage } from './seaseals.js';
 
 /** The page's numbers: the sketch's long side at most (px), a cell's disc against its size, the least type (CSS px), words. */
 export const SKETCH = { max: 1024, disc: 0.74, bleed: 0.98, type: 14, chevron: 13,
-  words: { unknown: '???', down: 'DOWN', sensed: 'SENSED', charted: 'CHARTED', understood: 'UNDERSTOOD' } }; // (words: placeholders, Espada's)
+  words: { unknown: '???', down: 'DOWN', sensed: 'SENSED', charted: 'CHARTED', understood: 'UNDERSTOOD' } }; // (Espada's words, 2026-10-27)
 
 let cache = null; // { canvas, key, ppm, x0, z0 }
 

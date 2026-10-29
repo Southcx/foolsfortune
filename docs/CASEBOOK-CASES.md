@@ -4328,3 +4328,27 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the motes fly to the bulb's live place, its overlay position unprojected at the board's depth (`view.tubeAt`); measured landing
   on it exactly, (898, 541) on the desk and (47, 385) on the phone. The link's corner, flipped, only while the tube is hidden.
 - **Rule:** NEW:aim-at-the-thing-not-where-it-was
+
+### 2026-10-29 · The duel's cut-in band stopped compiling (Calissa's probe, before play)
+- **Seen:** at a PvE duel's open, `duel-cutin` failed to link: `'pc' : undeclared identifier`; no band drew at all (the foe's skills, the
+  turn, the VS), the board played on beneath.
+- **Cause (as measured):** an edit to the band's fragment shader (cutin.js FRAG) put a `// (comment)` after the portrait's sample on a
+  line that went on to declare `pc`, so GLSL read the declaration as comment. `npm run check`'s comment rule reads JavaScript, not the
+  GLSL inside a template string, so the gate passed it.
+- **Fix:** the comment moved to the line's end; the probe's error list read clean.
+- **Rule:** NEW:shader-strings-are-code-too
+
+### 2026-10-29 · Going prone mid-fan lost the fan's 8 Lachryma (Calissa's queue, from the prone holster's round)
+- **Seen:** fanning the hammer (Q) and dropping prone before the last slap: the gun went away, the unfired shots never came, and the 8
+  Lachryma paid at the fan's start were gone.
+- **Cause (as read):** the fan pays its whole cost at `begin` (tools/moveset.js); the prone holster's stow cancels the move
+  (`GunMoves.cancel`), which dropped the shots still due without giving anything back.
+- **Fix:** `GunMoves.cancel` gives back the share of the cost its unfired shots were paid with (`lachryma.gain(..., 'refund')`); a
+  refund is neither said in the log nor counted as absorbed (tracking/pool.js).
+- **Rule:** NEW:cut-short-gives-back
+
+### 2026-10-29 · A seam or teleport while prone forgot the tool to draw again (Calissa's queue)
+- **Seen:** prone with the Sondelass put away by the prone holster, a seam (the Index, a Shrine's travel) stood the Courier up empty-handed.
+- **Cause (as read):** the seam resets every tech (`techs.reset`); the prone holster's `reset` cleared its memo with its state.
+- **Fix:** `reset` keeps the memo; once standing where they land, the tool is drawn again through the belt (if still worn and the hands free).
+- **Rule:** NEW:a-reset-keeps-what-is-owed

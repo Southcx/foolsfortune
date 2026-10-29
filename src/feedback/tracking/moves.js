@@ -35,7 +35,7 @@ export function moveRules({ on, L, log }) {
   on('vantage.reach', (e) => { if (e.by === 'courier' && e.vantage) L.first(`vantage.${e.vantage}`); }); // (a vantage reached: its first kept, what Wonder's awakening reads: world/vantages.js)
   // the melee loadout's earning (MELEE-LOADOUT-EARNING.md, Dovina's; the events tools/moveset.js's): a blow that landed, a string's finisher on a
   // creature, and the longest run of LMB string blows landed in a row (string slots 5 to 8 open by it)
-  // (`struck`, how many one blow struck, and `effect`, what it did to a body: guardBreak, trip, knock; Calissa's to add to the event)
+  // (`struck`, how many one blow struck, and `effect`, what it did to a body: guardBreak, trip, knock; sent by tools/stringrun.js)
   on('move.blow', (e) => { if (e.by !== 'courier' || e.tool !== 'sondelass' || !e.move) return; if (e.hit) L.inc(`sond.move.${e.move}.hit`); if (e.finish) L.inc(`sond.move.${e.move}.finish`); if (e.struck) L.hi('sond.struck.best', e.struck); if (e.hit && e.effect) L.inc(`sond.effect.${e.effect}`); });
   on('move.string.end', (e) => { if (e.by === 'courier' && e.tool === 'sondelass') L.hi('sond.string.best', e.run || 0); });
   on('skiff.glide', () => { L.inc('skiff.glide'); if (L.first('skiff.glide')) log.say('record', 'Logged: your first glide on the Solar Skiff.'); });
