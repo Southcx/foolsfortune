@@ -162,6 +162,28 @@ their Clayese scales; the System's skill and achievement jingles (the chime and 
   falling fifth; its stagger a gong wobbling out of tune. A countdown on its last tick (`foe.soon`,
   at the end of its turn) a tick-tock and a low bell a tritone off. A column won rises (the fifth and the octave), lost falls (minor,
   low). Measured offline, peaks: the skills -18 to -24 dB, the flare -14. The phone buzzes on Hurl's landing (`duel.land`) and Reclaim.
+- **The aberrant slip jelly, the second Elite duel** (`audio/duelsecrets.js`, `music/duel.js` `gall`; Dovina's ABERRANTS.md 5): Gall's
+  colour over its cue, a wobbling growl on the off-beats that slows as its slime piles, a harmonica's sour blue bend every fourth bar, bubbles of
+  marimba high. Spew: bubbling up its body, a wet heave, the heap flung across (-16 dB), its slime landing in wet splats at the impact (-17);
+  Harden: a crust crackling and a dull knock a slime (-16); their stings a sour cluster and stacked fourths. A Transmute of the slime turns the
+  pile to glass: the squelch opening and the colour's note rippled up the pile, relief (-18). Half its pile: the sag, a beating slide down and
+  a groan; done: it falls apart as the rainstick, its chime falling, a settle (-15), no fanfare. `duel.learn` (a skill learned from an
+  aberrant): the item-get, the Answer climbed on brass and a bell (-18).
+- **A shiny aberrant, the drop, Absorb** (`audio/duelsecrets.js`; Dovina's ABERRANTS.md 8 to 10): a shiny one (one in ten) sparkles as its duel opens,
+  a star's glint run up the key twice (Pokemon's sparkle; -17 dB). A won duel's materials (`duel.drop`) chime one a material, a held major
+  chord and a shimmer under them when the win was a secret's or a shiny's (-20 plain, -16 rich). Absorb, the slip jelly's skill learned, is
+  its own gulp: the junk drunk down and the pool's fill rising (-18), in place of Possession's whistle.
+- **The duel's show** (`audio/duelcasts.js`; Calissa's JRPG pass, b4b2303b): your cut-in, the Jar's band, on Miracle, Transmute, Kindle,
+  Absorb and the finisher: a blade of air rising from the left and a bright major ninth on the slam at 0.12 s (-13 dB); the power's own
+  sound held to its cast 0.92 s after (`JAR_CUT`); the finisher's limit band a swell into a held major seven sharp eleven at 1.1 s, the drain
+  at 1.75 (-8). A chain's "n CHAIN!" stamp from step 3 called on brass a step up and louder each, the film's shimmer from 5 (-19). The VS
+  open (`duelVs`, -8): the foe's band and its name in its dark, the Jar's answer, VS slammed with a taiko sub, a crash and a data tick at
+  1.05 s, a breath as it pulls out. The hero shot (`duelHero`, -12): da-da-da-DAA up to the Answer's sixth, a bell and the confetti's glints.
+  The board's seeding (`duelSeed`, -22): a ripple of 26 glass clicks running out from the middle to both ears and climbing the key over 1.3 s, at the VS's 1.45 s in a PvE duel and 0.45 s after `duel.open` in any other. `duelVs` and `duelHero` are called by Calissa's show at their own moments (no event marks them).
+- **The turn's sting** (`duelTurnCutIn`, `audio/duelcasts.js`; South via Dovina, 2026-10-29; Calissa's frame): the turn's change cut in as a foe
+  skill is, smaller: a blade of air, a small slam on the band's word at 0.12 s, rung through its hold to 0.4 s (`TURN_CUT_IN`, Calissa's 14b3ab42), and yours the Answer's step up (I, then up a whole step) on bright
+  brass with a glint over it, the aberrant's the Five falling in its dark (minor to diminished). Peaks -18.5 and -17 dB, 3 to 5 under a
+  skill's sting. The old woodblock it replaces is gone. Hurl's land now follows its 0.18 s cast at once: the heave on the cast, the throw's whoosh crossing over the land beat's 0.6 s flight, and every landing's clatter (`duelLand`) now heard at the impact, the view's flight after the land event (`LAND_FLY`: 0.6 a Hurl's, 0.45 the rest).
 - **The aberrant Lantern Wisp, an Elite duel** (`audio/duelsecrets.js`, `music/duel.js` `fen`; Dovina's ABERRANTS.md 3): it sounds like
   itself. Over each fighting section a shakuhachi wanders off the beat every fourth bar (it climbs, then turns aside onto the seventh: the
   light that leads you astray), and its lantern flickers on the celesta high over the chord, four a bar at full, fewer and skipping as its
