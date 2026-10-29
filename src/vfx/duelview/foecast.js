@@ -31,7 +31,7 @@ import { DUEL_VIEW, cellLocal, feelColour, sm, clamp01 } from './layout.js';
 /** badge: a countdown's side (m, the board's frame); over: the row above the head; the casts' lengths (real s). */
 /** The badges' tooltips (Espada's words, docs/handoffs: the label over, this line under). */
 export const FOE_TIP = {
-  hurl: 'Throws junk onto your half.', // (a placeholder since Hurl lands at once, Dovina 2026-10-29: Espada's to word)
+  hurl: 'Throws junk onto your half.', // (Espada's, 2026-10-29)
   petrify: 'Gems on your half turn to junk.',
   seal: 'A column of yours locks for your next turn: nothing in it can be dragged.',
   sap: 'Each skill you wear loses half its charge.',
