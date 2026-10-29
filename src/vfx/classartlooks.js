@@ -41,7 +41,8 @@ export class ClassArtLooks {
     for (const y of [0.04, S.h - 0.04]) { const rim = new THREE.Mesh(new THREE.TorusGeometry(S.r * (y < 1 ? 1.08 : 1), 0.03, 6, 40).rotateX(Math.PI / 2), ringMat(ART_LOOK.gold, 0.9)); rim.position.y = y - S.h / 2; this.shell.add(rim); }
     this.marks = [this.steady, this.empty, this.band, this.shell];
     for (const m of this.marks) { m.visible = false; m.renderOrder = 3; root.add(m); }
-    const tick = new THREE.Mesh(new THREE.BufferGeometry(), new THREE.MeshBasicMaterial()); tick.frustumCulled = false; // (never culled: the frame's update rides its onBeforeRender)
+    const tri = new THREE.BufferGeometry(); tri.setAttribute('position', new THREE.Float32BufferAttribute(new Float32Array(9), 3)); // (one degenerate triangle: an empty geometry is never drawn, so its onBeforeRender never ran)
+    const tick = new THREE.Mesh(tri, new THREE.MeshBasicMaterial({ colorWrite: false, depthWrite: false })); tick.frustumCulled = false; // (never culled: the frame's update rides its onBeforeRender)
     tick.onBeforeRender = () => this.update(); root.add(tick);
     game.scene?.add(root);
     const E = game.events;
