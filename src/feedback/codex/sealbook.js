@@ -42,7 +42,7 @@ function stamp(canvas, P, mine) {
   const c = canvas.getContext('2d'), S = canvas.width; c.clearRect(0, 0, S, S);
   c.save(); c.globalAlpha = 0.92; c.strokeStyle = VERMILION; c.lineWidth = 3;
   c.beginPath(); c.arc(S * 0.5, S * 0.3, S * 0.22, 0, Math.PI * 2); c.stroke();
-  if (P.number != null) drawCombNumber(c, P.number, { x: S * 0.5, y: S * 0.3, size: S * 0.26, ink: VERMILION });
+  if (P.number != null) { const z = S * 0.2, m = drawCombNumber(null, P.number, { size: z }); drawCombNumber(c, P.number, { x: S * 0.5 + z / 2 - m.width / 2, y: S * 0.3 + Math.sqrt(3) * z / 4 - m.height / 2, size: z, ink: VERMILION }); } // (centred in the ring: its first cell is drawn at x, y)
   c.restore();
   if (mine) { c.save(); c.translate(S * 0.32, S * 0.56); drawSealFace(c, mine, { size: S * 0.36, ink: VERMILION }); c.restore(); }
 }
