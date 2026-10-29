@@ -285,8 +285,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   *Not:* a creature's foe, a sibling.
 - **a grind trick / the race board** (`skiff.grind.trick`; `race.openBoard`) — how the board lands on a rail sets its grind (along it a
   50-50, the plain grind; across it a boardslide, a trick), and LMB or RMB clicked twice on it a nose grind or a tail slide / the stone at the park's hub where a track is picked. *Not:* a grab, the Index.
-- **a race's condition** (`conditionAt`, `world/raceway/conditions.js`) — the hour's light and the weather a race is run under (the sun
-  plates' power, the sand's grip); each keeps its own best. *Not:* a status, the weather itself.
+- **a race's condition / the game day's race** (`conditionAt`, `world/raceway/conditions.js` / mode `daily`, `dayCondition`) — the hour's light and the weather a race is run under (the sun
+  plates' power, the sand's grip); each keeps its own best / a race on the game day's one track and condition, seeded so everyone has the same, whatever the sky. *Not:* a status, the weather itself.
 - **the board's rules** (`BoardRules`, `courier/skiff/boardrules.js`) — what the Solar Skiff answers to at the Raceway: the pool as its hull
   (empty, a hard knock **wrecks** it), **the scorch** (a flare held too long luffs the sail), **the manual** (W and S), **snaking**, **the
   shoulder** (Q / E twice), **aftertouch** (a bail steered), **a near miss**. *Not:* the sailing (skiff.js).
