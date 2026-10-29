@@ -27,6 +27,7 @@ import { ANGLING_EFFECTS } from './anglingeffects.js'; // (the catch leaving the
 import { BLOW_FEEL_EFFECTS } from './blowfeeleffects.js'; // (a melee blow's weight, and Strawman's straw: vfx/blowfeel.js plays them)
 import { FLOURISH_EFFECTS } from './flourisheffects.js'; // (the Courier's flourishes: a step's, a dash's, the shatter's, the aura's, the arrival's: vfx/flourishes.js)
 import { KIT_DEMO_EFFECTS } from './library/kitdemo.js'; // (the shape layer's demonstrations, primary, secondary and tertiary: vfx/shapes/, scripts/vfxgallery.mjs)
+import { CLASS_ART_EFFECTS } from './library/classarts/index.js'; // (the 76 class arts' looks, a domain's grammar in its suit's colour: vfx/classartlooks.js plays them)
 const L = (o) => o; // (a layer: only for readability)
 const GLAZES = [0x2f6db5, 0x4f9a7a, 0xe0b030, 0xc84a3a, 0xf3efe6, 0x6a4a9a, 0x2a8ab0]; // (the glazes' own colours: the Hailstorm's shards)
 
@@ -788,4 +789,5 @@ export const LIBRARY = {
   ...BLOW_FEEL_EFFECTS,
   ...FLOURISH_EFFECTS,
   ...KIT_DEMO_EFFECTS,
+  ...CLASS_ART_EFFECTS,
 };
