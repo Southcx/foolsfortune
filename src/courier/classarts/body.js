@@ -144,7 +144,7 @@ const ACTS = {
     go: (run, R) => { run.wadeK = R.does.paintSpeed; run.mgr.get?.('waterwalk')?.on(R.does.dur); },
   },
   ripostRush: { // within its window of a parry: blinked behind what was parried, and struck
-    can: (run, R) => { const p = run.parried; return p && p.c?.alive && run.now - p.at <= R.does.after ? null : 'Riposte Rush needs a parry first: parry a blow, then use it within 1 s.'; },
+    can: (run, R) => { const p = run.parried; return p && p.c?.alive && run.now - p.at <= R.does.after ? null : `Riposte Rush needs a parry first: parry a blow, then use it within ${R.does.after} s.`; },
     go: (run, R) => {
       const P = run.P, c = run.parried.c; run.parried = null;
       const to = _b.copy(c.pos).sub(P.pos).setY(0), d = to.length(); if (d < 1e-3) return;
