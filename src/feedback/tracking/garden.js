@@ -182,6 +182,9 @@ export function gardenRules({ on, L, log }) {
   };
   on('spirit.letter', (e) => { if (e.by !== 'courier') return; L.inc('spirit.letter'); L.inc(`spirit.letter.${e.about}`); });
   on('spirit.letters', (e) => { if (!e.letters?.length) { log.say('system', 'The mailbox is empty.', { key: 'letters', throttle: 1 }); return; } e.letters.forEach((m, i) => log.say('info', (LETTER[m.about] || (() => 'A letter.'))(m), { key: `letter.${i}`, throttle: 0.2 })); });
+  // the season's material (progress/gardenseason.js, GARDEN-COZY.md E3) and a layout's code (/layout, D8): placeholder words, Espada's
+  on('garden.season.gift', (e) => { if (e.by !== 'courier') return; L.inc('garden.season.gift'); log.say('loot', `The garden kept you some ${e.label}${e.tier ? ', a fine one' : ''}. It is in your Pneuka Box.`, { key: 'season.gift', throttle: 2 }); });
+  on('decor.layout', (e) => log.say('system', e.pieces ? `Your garden's layout (${e.pieces} pieces): ${e.code}` : 'Your garden has nothing placed to share yet.', { key: 'layout', throttle: 1 }));
   on('spirit.gift', (e) => { if (e.by !== 'courier') return; L.inc('spirit.gift'); log.say('loot', `${Who(e)} left a gift on the doorstep: ${an(DECOR[e.id]?.name || 'garden piece')}.`, { key: 'gift', throttle: 2 }); });
   // the farewell (progress/spiritlife.js FAREWELL; GARDEN-COZY.md C6): placeholders for Espada's words
   on('spirit.farewell.ask', (e) => { if (e.by === 'courier') log.say('info', `${Who(e)} asks to go home. When you are ready, let it go from its page; until then it stays.`, { key: `farewell.${who(e)}`, throttle: 30 }); });

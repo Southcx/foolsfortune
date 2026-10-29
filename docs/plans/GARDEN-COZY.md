@@ -27,7 +27,7 @@ The lanes' full reports: Petra's placement (`docs/handoffs/dovina/2026-10-22-fro
   - **The spirits are stats, not neighbours.** They have no routines, no wishes, no remarks.
   - **Half the tending is silent** (Wanda: watering, planting, harvesting, placing, painting, entering and leaving have no sound), and
     the garden has no ambience of its own.
-  - **Two features do nothing:** Incense and the Booster Stone are placed but unwired.
+  - **Two features did nothing:** the Booster Stone is wired (2026-10-29: `realm.js` STONE_BOOST, a quarter a neighbouring stone in the formation); Incense's rule is `harmony.settleK`, its read in `courier/mind.js` asked of Petra.
   - **Economy:** the dividend is the only cube faucet. The sinks are planetoids (7,200 cubes for the four), features, and the glazes
     outside.
   - **Still open from SPIRIT-GARDEN.md section 7:** 21 (guests), 27 (the gardener in `scripts/economy.mjs`), 28 (sound), 29 (look).
@@ -308,7 +308,7 @@ make a garden.
     (`spiritlife.js` draws by the spirit's feeling): their `gift`, `wish` and `visitor` ways wait for a draw that names them.
   - **Open:** the whole catalogue is now 2,656 cubes, 5.5 real hours at the aim (D4's target was about 3; the three sets are 99 minutes of
     it). The owner's to prune: a set struck is eight rows.
-- [ ] **D8. Sharing a layout as a text code** to a sibling or a guest, later, with co-op (Petra's note: about 25 bytes a piece).
+- [x] **D8. Sharing a layout as a text code** (built 2026-10-29: `layoutCode`, `readLayout`, `/layout` in `progress/decor.js`; placing a read layout waits on co-op) to a sibling or a guest, later, with co-op (Petra's note: about 25 bytes a piece).
 
 ### E. Seasons (the garden's own clock)
 
@@ -322,7 +322,7 @@ make a garden.
   - **Visitors:** some wild kinds come only in their season.
   - **Seasonal pieces:** a pumpkin lantern, a snow lantern.
   - **What it never does:** kill a plant or a bed (Stardew's season death is struck). An out-of-season bed rests, and resumes.
-- [ ] **E3. Seasonal materials:**
+- [x] **E3. Seasonal materials** (built 2026-10-29: `progress/gardenseason.js`, the first visit of a game day finds the season's):
   - a briar cutting (any season);
   - spring blossom, summer reed, autumn leaf, winter frost;
   - each a material of a feeling's kind, for the press, the spore beds and a set's recipe.
