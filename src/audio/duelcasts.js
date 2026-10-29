@@ -14,6 +14,8 @@
 //                      (Lift), Possession's herding whistle (Herd), Alteration's transmute (Transmute), Spellscription's ward in small (a
 //                      brush round, a bell on the key: the miracle's weather)
 //   ITS FEELING        manifest / transmute / herd { colour }: that gem's note struck twice (duelPowerColour); miracle: the colour's bell (a Tune's)
+//   THE TURN'S STING   turn { side } (duelTurnCutIn): the turn's change cut in as a skill's is, smaller: yours the Answer's step up on
+//                      bright brass, the aberrant's the Five falling, minor to diminished, in its dark
 //   NOTED              duel.seen (a foe skill learned the first time): a page's flick, two soft notes up to the key (duelSeen)
 // Heard as the view plays them (duelEvent, puzzleduel.js), at the cut-in's start: foe.skill (its slam CUT_IN_LEAD after, held
 // CUT_IN_HOLD, the skill's own sound when its cast begins) and foe.desperate (the limit break: a swell, the slam 1.1 s in), and a power's
@@ -54,6 +56,19 @@ export class DuelCastSounds {
     }
     this.noise(t + ring * 0.5, ring * 0.5, { type: 'highpass', f0: 3000, f1: 8000, gain: 0.06, attack: ring * 0.45, dest: d }); // (the reversed cymbal into the skill's own sound)
     return lead;
+  }
+  /** The turn's change as a cut-in's sting (South, via Dovina 2026-10-29; Calissa's frame): yours the Answer's first notes leaping up a
+   *  bright brass stab on the key, the aberrant's the Five's two falling in its dark below; a blade of air into each, lighter than a
+   *  foe skill's (a turn comes every few real seconds, a skill every few turns). */
+  duelTurnCutIn(side = 0) {
+    if (!this.ok() || !this.allow('duelTurnCutIn', 2)) return;
+    const foe = side === 1, lead = CUT_IN_LEAD.skill, t = this.ctx.currentTime + lead, r = duelRoot(this) - (foe ? 24 : 12);
+    const d = this.duelOut?.(foe ? 0.36 : 0.3, 0.5, foe ? 0.3 : -0.3) ?? this.out(0.3, 0.5, true);
+    this.noise(t - lead, lead + 0.03, { type: 'bandpass', f0: foe ? 3000 : 900, f1: foe ? 700 : 4000, q: 0.9, gain: 0.18, attack: 0.06, dest: d }); // (the frame across: rising for yours, falling for its)
+    this.tone(t, 0.25, { f0: foe ? 80 : 120, f1: foe ? 40 : 70, gain: foe ? 0.45 : 0.3, dest: d }); this.noise(t, 0.05, { type: 'lowpass', f0: 2200, gain: 0.25, dest: d }); // (the slam, small)
+    const notes = foe ? [[0, 4, [0, 3, 7]], [0.16, 0, [0, 3, 6]]] : [[0, 0, [0, 4, 7]], [0.12, 2, [0, 5, 9]]]; // (yours: I then up a step, G to A; its: the Five's E falling to the root, minor then diminished)
+    for (const [dt, up, chord] of notes) for (const st of chord) { const f = hz(r + 12 + up + st); this.tone(t + dt, 0.45, { f0: f, type: 'sawtooth', gain: foe ? 0.03 : 0.025, dest: d }); this.tone(t + dt, 0.25, { f0: f * 2, type: foe ? 'square' : 'triangle', gain: 0.01, dest: d }); }
+    if (!foe) this.tone(t + 0.12, 0.6, { f0: hz(r + 36 + 4), gain: 0.03, dest: d }); // (a glint on top: your hope)
   }
   /** The feeling a Manifest raised or a Transmute turned to: its gem's note in the duel's key, struck twice, a step apart in time. */
   duelPowerColour(colour, side = 0) {

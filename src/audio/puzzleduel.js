@@ -69,7 +69,7 @@ export class PuzzleDuelSounds {
       case 'clear': return this.duelClear(e.colour, e.side);
       case 'allclear': return this.duelAllClear(e.side);
       case 'refund': return this.duelRefund(e.side);
-      case 'turn': return this.duelTurn(e.side);
+      case 'turn': return this.duelTurnCutIn?.(e.side); // (the turn's change cut in, as a foe skill is: audio/duelcasts.js)
       case 'foe.skill': { if (performance.now() / 1000 - (this._duelDesperateAt ?? -1e9) < CUT_IN.burst) return this.duelFoeSkill(e.skill, e.n); // (the limit break's burst: no cut-in, its cast at once)
         const at = this.duelCutIn?.(e.skill) ?? 0; setTimeout(() => this.duelFoeSkill(e.skill, e.n), (at + CUT_IN.gesture) * 1000); return; } // (the view plays it at its cut-in's start: the sting, then the skill's own sound as its cast begins after the cut-in, audio/duelcasts.js)
       case 'foe.desperate': this._duelDesperateAt = performance.now() / 1000; return this.duelCutIn?.('desperate'); // (the limit break's cut-in)
@@ -157,12 +157,6 @@ export class PuzzleDuelSounds {
     const t = this.ctx.currentTime, d = this.duelOut(0.26, 0.2, sidePan(side) * 0.5), r = duelRoot(this) + 12;
     this.tone(t, 0.08, { f0: hz(r + 7), type: 'square', gain: 0.04, dest: d }); this.tone(t + 0.07, 0.25, { f0: hz(r + 12), type: 'square', gain: 0.045, dest: d });
   }
-  /** The turn passed: a soft woodblock, high for yours, low for the foe's. */
-  duelTurn(side = 0) {
-    if (!this.ok() || !this.allow('duelTurn', 3)) return;
-    const t = this.ctx.currentTime, d = this.duelOut(0.2, 0.15, sidePan(side) * 0.6);
-    this.tone(t, 0.05, { f0: side === 1 ? 420 : 760, f1: side === 1 ? 380 : 700, type: 'triangle', gain: 0.25, dest: d }); this.noise(t, 0.015, { type: 'bandpass', f0: side === 1 ? 900 : 1800, q: 4, gain: 0.1, dest: d });
-  }
   /** A foe skill's countdown on its last tick: a clock's tick-tock and a low bell a tritone off the key, so the ear knows before the eye. */
   duelFoeLastTick() {
     if (!this.ok() || !this.allow('duelFoeLastTick', 1)) return;
@@ -176,7 +170,7 @@ export class PuzzleDuelSounds {
     if (!this.ok() || !this.allow(`duelFoe.${skill}`, 2)) return;
     const t = this.ctx.currentTime, d = this.duelOut({ hurl: 1, sap: 1, petrify: 0.65 }[skill] ?? 0.4, 0.45, 0.45), r = duelRoot(this) - 24; // (levelled by ear and meter: each within about 6 dB of the others)
     switch (skill) {
-      case 'hurl': { // (a heave, then the throw crossing to your half, clay clattering in the air: what lands lands later)
+      case 'hurl': { // (a heave, then the throw crossing to your half, clay clattering in the air: its land follows at once, duelLand)
         this.tone(t, 0.3, { f0: 70, f1: 110, type: 'sawtooth', gain: 0.06, dest: d });
         const c = this.ctx, p = c.createStereoPanner(); p.pan.setValueAtTime(0.6, t + 0.25); p.pan.linearRampToValueAtTime(-0.6, t + 0.75); p.connect(d);
         this.noise(t + 0.25, 0.5, { type: 'bandpass', f0: 500, f1: 2400, q: 0.8, gain: 0.3, attack: 0.1, dest: p });
