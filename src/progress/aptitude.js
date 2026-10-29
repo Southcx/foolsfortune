@@ -16,8 +16,11 @@
 //   APTITUDES[id] = { label, unit, better: 'low' | 'high', event, value(e) -> number | null, line }
 //   readOf(samples) -> { n, first, best, median, spread, trend, shown, curve }   (pure: the window's numbers)
 //   game.aptitude = new Aptitude(game)   .read(id) -> readOf   .all() -> { id: readOf }   /assay (the readings in the log, for now)
+//   the Touchstone's standard trials (assaytrials.js): `assay.trial.end { trial, record }` in, `aptitude.trial { trial, value, unit }` out
 //   save section `aptitude` (scope player: reset with every build, APTITUDE.md 10.1)
 // ---------------------------------------------------------------------------------------
+
+import { TRIALS, scoreTrial } from './assaytrials.js';
 
 /** How many samples an aptitude keeps (the recent window), and when it shows its number and its curve. */
 export const APT = { keep: 60, shown: 5, curve: 20, trend: 5 };
@@ -64,6 +67,7 @@ export class Aptitude {
     this.game = game; this.s = {};
     game.save?.section('aptitude', { scope: 'player', version: 1, dump: () => this.s, load: (d) => { this.s = d && typeof d === 'object' ? d : {}; }, reset: () => { this.s = {}; } });
     for (const [id, A] of Object.entries(APTITUDES)) game.events?.on?.(A.event, (e) => this.sample(id, e));
+    game.events?.on?.('assay.trial.end', (e) => this.trial(e)); // (the Touchstone's room hands over what happened: assaytrials.js)
     game.chat?.add?.('assay', { help: 'what the System has measured of how you play: /assay', run: () => this.game.events?.emit('aptitude.ask', { readings: this.all(), by: 'courier' }) });
   }
   /** One reading from an event, if it counts. */
@@ -78,6 +82,19 @@ export class Aptitude {
     g.save?.dirty?.('aptitude');
     if (S.n === APT.shown) g.events?.emit('aptitude.read', { aptitude: id, by: 'courier' }); // (five readings: the number shows in the Assay)
   }
+  /** A standard trial run in the Touchstone (assaytrials.js): scored, kept apart from the passive readings (`trial.<id>`), and said. */
+  trial(e) {
+    const g = this.game, T = TRIALS[e?.trial];
+    if (!T || e.by !== 'courier' || g.agent?.task) return;
+    const r = scoreTrial(e.trial, e.record || {}); if (!r?.ok) { g.events?.emit('aptitude.trial', { trial: e.trial, ok: false, by: 'courier' }); return; }
+    const k = `trial.${e.trial}`, v = r.value, S = (this.s[k] ||= { n: 0, first: v, best: v, list: [], early: [] });
+    S.n++; S.list.push(v); if (S.list.length > APT.keep) S.list.shift(); if (S.early.length < APT.trend) S.early.push(v);
+    S.best = T.better === 'low' ? Math.min(S.best, v) : Math.max(S.best, v);
+    const L = g.ledger; L?.inc?.(`aptitude.trial.${e.trial}.n`); T.better === 'low' ? L?.lo?.(`aptitude.trial.${e.trial}.best`, v) : L?.hi?.(`aptitude.trial.${e.trial}.best`, v);
+    g.save?.dirty?.('aptitude');
+    g.events?.emit('aptitude.trial', { trial: e.trial, ok: true, value: v, unit: r.unit, best: S.best === v, by: 'courier' });
+  }
   read(id) { return readOf(this.s[id], APTITUDES[id]?.better); }
-  all() { return Object.fromEntries(Object.keys(APTITUDES).map((id) => [id, this.read(id)])); }
+  /** The passive readings, and each standard trial run (`trial.<id>`, its numbers a trial's: shown from its first run, announced as one). */
+  all() { return { ...Object.fromEntries(Object.keys(APTITUDES).map((id) => [id, this.read(id)])), ...Object.fromEntries(Object.keys(TRIALS).filter((t) => this.s[`trial.${t}`]).map((t) => [`trial.${t}`, readOf(this.s[`trial.${t}`], TRIALS[t].better)])) }; }
 }

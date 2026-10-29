@@ -13,6 +13,7 @@ import { FEATURES, VISITORS } from '../../progress/realm.js';
 import { CAPS, STRAIN_NAMES } from '../../progress/mycelium.js';
 import { DECOR, SETS } from '../../progress/decor.js';
 import { seasonOf } from '../../progress/seasons.js';
+import { FAREWELL_LINES } from '../../progress/spiritlife.js';
 
 export function gardenRules({ on, L, log }) {
   // the mycelium (progress/sporebeds.js, progress/myggdrasil.js, progress/keepsakes.js: MYCELIUM.md); names Espada's (LORE.md "The
@@ -187,6 +188,6 @@ export function gardenRules({ on, L, log }) {
   on('decor.layout', (e) => log.say('system', e.pieces ? `Your garden's layout (${e.pieces} pieces): ${e.code}` : 'Your garden has nothing placed to share yet.', { key: 'layout', throttle: 1 }));
   on('spirit.gift', (e) => { if (e.by !== 'courier') return; L.inc('spirit.gift'); log.say('loot', `${Who(e)} left a gift on the doorstep: ${an(DECOR[e.id]?.name || 'garden piece')}.`, { key: 'gift', throttle: 2 }); });
   // the farewell (progress/spiritlife.js FAREWELL; GARDEN-COZY.md C6): placeholders for Espada's words
-  on('spirit.farewell.ask', (e) => { if (e.by === 'courier') log.say('info', `${Who(e)} asks to go home. When you are ready, let it go from its page; until then it stays.`, { key: `farewell.${who(e)}`, throttle: 30 }); });
-  on('spirit.farewell', (e) => { if (e.by !== 'courier') return; L.inc('spirit.farewell'); L.inc(`spirit.farewell.${e.feeling}`); log.say('gain', `${Who(e)} goes home. It leaves you a statue of itself.`, { key: 'farewell', throttle: 2 }); });
+  on('spirit.farewell.ask', (e) => { if (e.by === 'courier') log.say('info', `${Who(e)} asks to go home${FAREWELL_LINES[e.feeling]?.ask ? `: "${FAREWELL_LINES[e.feeling].ask}"` : ''}. When you are ready, let it go from its page; until then it stays.`, { key: `farewell.${who(e)}`, throttle: 30 }); });
+  on('spirit.farewell', (e) => { if (e.by !== 'courier') return; L.inc('spirit.farewell'); L.inc(`spirit.farewell.${e.feeling}`); log.say('gain', `${Who(e)} goes home${FAREWELL_LINES[e.feeling]?.go ? `: "${FAREWELL_LINES[e.feeling].go}"` : ''}. It leaves you a statue of itself.`, { key: 'farewell', throttle: 2 }); });
 }
