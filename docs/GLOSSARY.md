@@ -703,6 +703,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   bestiary fact reads: known / held by a plate in the Veritome's memory, not yet appraised / not known (its running hand churning); a tag's **habit** is its line naming what the creature is doing now. *Not:* a status.
 - **neuralese / a root** (`docs/NEURALESE.md`; `ROOTS`, `src/npc/neuraleseroots.js`; `cellsOf`, `npc/neuralesespelling.js`) — the language minds are
   told in, Toki Pona's way (LOGA-NUSA, mind-speech) / one of its 127 words, meaning built by joining them head first. *Not:* a Function (a macro's step).
+- **a numeral** (plain name; `numeralOf`, `saidOf`, `src/npc/neuralesespelling.js`; NEURALESE.md 2b) — a number written in neuralese: positional in base ten, each digit its spoken sum drawn (a bar PENTA, two dots joined DUO, a dot UNA, an open ring VOYD), each on its own pin from the bus (in the Comb, a doubled cell). *Not:* a number root (spoken, additive), the Latin digits in code.
 - **the neuralese script / the Comb** (working names; OVERLAY.md 15.5, a plan; LORE.md) — neuralese written in our own featural glyphs in a
   Thai-and-Tamil hand (Goetic seals, chip traces), decipherable / its stamp script on hex cells: a barcode etched on things, a hanko,
   the Pneuka Jar's seal face. Drawn: the running hand (`runningHand`, `src/ui/runninghand.js`, from `cellsOf`), the seal face (`drawSealFace`, `src/vfx/sealface.js`). *Not:* the katakana placeholder, the Latin capitals in code, real Thai or Tamil letters.

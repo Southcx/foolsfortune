@@ -26,5 +26,5 @@ The placeholders:
   `` `You scan the aberrant: its ${label} comes 2 turns later.` ``. It is the same line as before, with the delay said as a number.
 - tracking/duel.js `duel.seen`: `You know ${label} now: ${line}.` stands as written.
 
-Hurl: the line in foeskills.js (`Junk lands on your half after your next turn`) is right. I took the offset clause out of my
+Hurl: superseded, see 2026-10-29-from-espada-hurl-and-log-words.md. I took the offset clause out of my
 foe-skill note and out of Calissa's tooltip note. Delete this note once pasted.
