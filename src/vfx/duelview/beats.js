@@ -21,7 +21,7 @@
 //              (shot and its pop, recolour and its paints, tune and tune.end, read) in toolbeats2.js; lesson.*: the asked verb (glows.js)
 //   finisher       the crackle break and the data drain's beats on the board (vfx/datadrain.js DRAIN_BEATS), and the drain itself on the
 //              foe in the world: its half's pieces stripped into cubes spiralling up into the god hand, the Line home (1.9)
-//   turn       a side's points: the beads it lost crack, one by one
+//   turn       the turn's band torn across (cutin.js), then a side's points: the beads it lost crack, one by one
 //   ember      Dread's junk lands as embers (`land` with kind 'ember'); `ember.cool`: the coal crazes (0.3), cracks open and turns, its gem
 //              inside (0.5)
 //   skills     the one-gesture duel's (skillcast.js): `skill` the cast (the Jar's pour into the cell), `blast { rows }` the Shot's beam,
@@ -123,6 +123,7 @@ export class DuelBeats {
     if (e.type === 'orb.drink') { job.i++; return this.drinkAt(e); }
     if (e.type === 'duel.finisher') { job.i++; V.spend(e.side, COST['duel.finisher'], e, e.spent ?? [60, 40, 20][(e.depth || 1) - 1]); return this.finisher(e); }
     if (e.type === 'turn') { job.i++; return this.turn(e); }
+    if (e.type === 'rest.cut') { job.i++; if (e.side === 0) V.restCuts++; return { events: [e], dur: 0 }; } // (a good chain took turns off the resting powers: the phone's power tiles flash their rims, ui/touch/duelscreen.js)
     if (e.type === 'flee') { job.i++; V.spend(e.side, e.ap ?? (e.ok ? 0 : FLEE.cost), e); // (only a failed roll costs: the owner, via Dovina's e3e13b4)
     return V.flee.roll(e); }
     if (e.type === 'duel.fled') { job.i++; return V.flee.fled(e); }
@@ -253,10 +254,12 @@ export class DuelBeats {
     const kind = e.kind === 'ember' ? 'ember' : 'junk', count = kind === 'ember' ? V.state?.rs?.embers?.count ?? 3 : null;
     const it = cells.map(([x, y], k) => { const id = V.state?.board?.at(x, y)?.kind === kind ? V.state.board.at(x, y).id : null; const v = P.add(kind, { id, count }, x, y); v.hidden = true; return { v, x, y, d: k * 0.035 }; });
     V.pending[e.side] = Math.max(0, V.pending[e.side] - (e.n || cells.length)); V.showCounts();
-    const fromX = V.lineCol ?? B.line;
-    return { events: [e], dur: 0.48 + it.length * 0.035 + DUEL_VIEW.ma, step: (u, age) => { for (const q of it) {
-      const f = Math.max(0, Math.min(1, (age - q.d) / 0.45)); q.v.hidden = age < q.d; const s = sm(f);
-      q.v.x = lerp(fromX - 0.5, q.x, s); q.v.y = lerp(top, q.y, s) - Math.sin(Math.PI * s) * 1.5; q.v.spin = (1 - s) * 6 * (hash(q.x, q.y) - 0.5); q.v.lift = Math.sin(Math.PI * s) * 1.2;
+    const hurl = !!V.hurled && e.side === 0; V.hurled = false; // (a Hurl's landing: thrown from the aberrant's end of the board in a high arc, foecast.js)
+    const fromX = hurl ? B.w + 0.5 : (V.lineCol ?? B.line) - 0.5, y0 = hurl ? B.h * 0.4 : top, fly = hurl ? 0.6 : 0.45, arc = hurl ? 1.2 : 1.5, rise = hurl ? 0.45 : 1.2, gap = hurl ? 0.05 : 0.035; // (a Hurl's arc low and across the board, kept in the phone's frame)
+    for (const q of it) q.d = q.d / 0.035 * gap;
+    return { events: [e], dur: fly + 0.03 + it.length * gap + DUEL_VIEW.ma, step: (u, age) => { for (const q of it) {
+      const f = Math.max(0, Math.min(1, (age - q.d) / fly)); q.v.hidden = age < q.d; const s = hurl ? f : sm(f);
+      q.v.x = lerp(fromX, q.x, s); q.v.y = lerp(y0, q.y, s) - Math.sin(Math.PI * s) * arc; q.v.spin = (1 - s) * 6 * (hash(q.x, q.y) - 0.5); q.v.lift = Math.sin(Math.PI * s) * rise;
       if (f >= 1 && !q.knocked) { q.knocked = true; cellLocal(q.x, q.y, B, _a); V.bursts.burst(_a, kind === 'ember' ? 0xff7a2a : CLAY, 3, { speed: 0.4, life: 0.3, fall: kind === 'ember' ? -1 : 5, size: 0.02 }); } } },
       end: () => { for (const q of it) { q.v.hidden = false; q.v.x = q.x; q.v.y = q.y; q.v.spin = 0; q.v.lift = 0; } if (V.state?.style === 'pve') V.readPush(true); } };
   }
@@ -334,11 +337,11 @@ export class DuelBeats {
 
   /** A side's turn begins: its points, the lost ones cracking one by one. */
   turn(e) {
-    const V = this.view, lost = e.lost || 0, max = e.ap + lost;
-    if (V.state?.style === 'pve') { V.readPush(true); return { events: [e], dur: 0.05 }; } // (no action points: the foot's beads are the push meters, duelview.js readPush)
+    const V = this.view, lost = e.lost || 0, max = e.ap + lost, cut = V.cutIn?.turn?.(e) || 0; // (the turn's change torn across the screen first: cutin.js)
+    if (V.state?.style === 'pve') { V.readPush(true); return { events: [e], dur: Math.max(0.05, cut) }; } // (no action points: the foot's beads are the push meters, duelview.js readPush)
     V.board.setAP(e.side, max, max, 0); V.apShown[e.side] = e.ap;
     let n = 0;
-    return { events: [e], dur: lost ? 0.25 + lost * 0.14 : 0.05, step: (u, age) => { while (n < lost && age >= 0.1 + n * 0.14) { n++; V.board.crack(e.side, _a); V.bursts.burst(_a, 0x3a2a22, 4, { speed: 0.5, life: 0.35, fall: 4, size: 0.015 }); } },
+    return { events: [e], dur: Math.max(cut, lost ? 0.25 + lost * 0.14 : 0.05), step: (u, age) => { while (n < lost && age >= 0.1 + n * 0.14) { n++; V.board.crack(e.side, _a); V.bursts.burst(_a, 0x3a2a22, 4, { speed: 0.5, life: 0.35, fall: 4, size: 0.015 }); } },
       end: () => { while (n < lost) { n++; V.board.crack(e.side); } V.board.setAP(e.side, e.ap, max, lost); } };
   }
 }
