@@ -96,8 +96,8 @@ point here, not clutter.
   4. One line in the log, in the catch's voice: species, size, "a new record" if it is one. Espada writes the lines.
   5. Back to the rod: it goes back in the water, or into the Pneuka Box if you press the keep key (the owner, 2026-10-11). **The keep
      key is F** (the input action `use`: USE on touch, X on a pad; Dovina, 2026-10-29), any time during the lift, the quick lift too;
-     any other key skips the lift and lets the fish go. Released, `angle.release { species, tier, secs, answered, by }` (Possession's
-     experience, domains.js); kept, `angle.keep { species, tier, by }` and `pneuka.add` (worth cubes at Old Grog). The lift shows the keep
+     any other key skips the lift and lets the fish go. Every landing (`angle.catch`) pays Possession's experience, kept or not; released,
+     `angle.release { species, tier, secs, answered, by }` pays half again on top (domains.js); kept, `angle.keep { species, tier, by }` and `pneuka.add` (worth cubes at Old Grog). The lift shows the keep
      prompt as the overlay's tag in the device's word (F, USE, X: `deviceWord`), never a world mark (Calissa's). Release by default moves fish sales from every catch to the kept
      ones: angling's cubes now come from choosing to keep, its growth from letting go (ANGLING.md 5).
   - A first of a species also offers the Veritome's plate before it goes.
@@ -130,10 +130,11 @@ point here, not clutter.
   strong spell of one weather) and the sumps (the Great Dunemaw's bowl pools: still water, blind things). Three species each: 16 in
   all. Styles spread so each water holds every answer.
 - **Release is Possession** (the owner, 2026-10-11: "the Sondelass has always been about linking minds"). A fight is two minds on
-  one line, so a released fish pays Possession experience and nothing else: `angle.release { species, tier, secs, answered, by }`
-  (Calissa's to emit), a source in `progress/domains.js` (mine) paid in `acts` as the big acts are, one act per 10 real seconds of
-  fight (`PACE`, 6 acts a real minute), its quality the share of pulls answered. A kept fish pays its worth in cubes and no
-  experience: the choice is cubes or growth.
+  one line, so **every fish landed pays Possession experience** (`angle.catch`, its `dur` and `ans`; South, 2026-10-29: "Wouldn't
+  catching a fish award Possession experience no matter what?"), a source in `progress/domains.js` paid in `acts` as the big acts are,
+  one act per 10 real seconds of fight (`PACE`, 6 acts a real minute), its quality the share of pulls answered. Letting it go
+  (`angle.release { species, tier, secs, answered, by }`) pays **half again** on top; keeping it pays its worth in cubes. The choice is
+  cubes or more growth, never cubes or none (it was none for a kept fish until 2026-10-29: the fight was the skill either way).
 - **Size kept:** `fish.size.<id>` (a ledger `hi`); the Codex's bestiary shows your biggest. Size ladders per species as achievements.
 - **Bite Sense** (a knack; Espada names it): the !!! window 30% wider; opens at 200 bites set or 25 set in the window's first third.
 
@@ -150,5 +151,5 @@ point here, not clutter.
 ## 7. Open, for the owner
 
 1. ~~Retire the reticle?~~ No (the owner, 2026-10-11): it stays and carries the intent.
-2. ~~Release or keep?~~ Released by default, kept on a key (the owner, 2026-10-11). A release pays no cubes, only Possession
-   experience (section 5).
+2. ~~Release or keep?~~ Released by default, kept on a key (the owner, 2026-10-11). Every landing pays Possession; a release pays
+   half again and no cubes, a keep its cubes (section 5; South, 2026-10-29).
