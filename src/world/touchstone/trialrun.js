@@ -12,7 +12,7 @@
 //   react     a windup ring flashes after a wait you cannot guess: press (Space, a tap); a press before it is a guess
 //   F (on touch, a finger held a real second) leaves a trial; nothing is recorded.
 //
-// The sounds are placeholders (a sine pair, a click on the audio clock), Wanda's to make; the stone's look is a placeholder, Calissa's.
+// The sounds are Wanda's (audio/touchstone.js: the pitch pair and the beat, on the audio clock); the stone's look is a placeholder, Calissa's.
 //
 // Prior art: the psychophysics lab's two-alternative forced choice and its odd-one-out (three-alternative), the Go/No-Go task, Repp's
 // synchronised tapping, the simple reaction box (Human Benchmark's: a wait, a change, a press), PsychoPy's practice of timing a response
@@ -33,15 +33,8 @@ const COL = { plain: 0xffd76a, outline: 0xfff4e6, dark: 0x111014, ember: 0xff5a3
 const simRand = stream('world/touchstone/trialrun'); // (the trials' chance: core/rng.js)
 const rnd = (a, b) => a + simRand() * (b - a);
 
-/** A tone on the audio clock (placeholder: Wanda's to make): a sine of `hz` for `len` real s, starting `at` s from now. */
-function tone(hz, len, at = 0, v = 0.35) {
-  if (!sfx.ok?.()) return;
-  const c = sfx.ctx, t = c.currentTime + at, g = c.createGain(), o = c.createOscillator();
-  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + 0.02); g.gain.setValueAtTime(v, t + len - 0.05); g.gain.exponentialRampToValueAtTime(0.0001, t + len);
-  o.type = 'sine'; o.frequency.value = hz; o.connect(g); g.connect(sfx.out(0.9, 0.1, true)); o.start(t); o.stop(t + len + 0.02);
-}
-/** The beat's click (placeholder), scheduled on the audio clock. */
-const click = (at) => tone(1320, 0.05, at, 0.4);
+/** A tone on the audio clock: Wanda's (audio/touchstone.js), one fixed timbre, the exact frequency, so only the pitch differs. */
+const tone = (hz, len, at = 0) => sfx.trialTone?.(hz, len, at);
 
 export class TrialRun {
   constructor(game, id, stage) {
@@ -149,8 +142,8 @@ export class TrialRun {
   startBeat() {
     const T = this.T, P = 60 / T.bpm, lead = 0.6, total = T.taps + T.settle + 8;
     if (!sfx.ok?.()) sfx.unlock?.();
-    for (let k = 0; k < total; k++) click(lead + k * P);
-    this.beat0 = performance.now() + lead * 1000; this.beatEnd = this.beat0 + total * P * 1000;
+    this.beat0 = sfx.trialBeat?.(total, P, lead) ?? performance.now() + lead * 1000; // (when the first click is heard, the output's latency in: audio/touchstone.js)
+    this.beatEnd = this.beat0 + total * P * 1000;
     this.disc.visible = true; this.phase = 'beat';
   }
 
