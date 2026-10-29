@@ -216,13 +216,18 @@ export class Codex {
     rst.onclick = () => { if (!armed) { armed = true; rst.textContent = `${this.game.input?.device === 'touch' ? 'TAP' : 'CLICK'} AGAIN TO ERASE`; setTimeout(() => { armed = false; rst.textContent = 'RESET PROGRESS'; }, 3000); } else { G.wipeProgress(); this.setMsg('progress erased'); reload(); } };
     for (const n of [exp, ta, imp, rst, msg]) foot.appendChild(n);
     // (the other save, core/cloudsave.js: another device's played longer and not taken, or the one played here before a cloud save was
-    // taken; kept a game day. LOAD puts it in place whole and reloads; KEEP THIS ONE declines a cloud save offered after the boot)
+    // taken; kept a game day. LOAD, pressed twice, puts it in place whole and reloads; KEEP THIS ONE declines a cloud save offered after the boot)
     const C = this.game.cloud, O = C?.other;
     if (O) {
       const hrs = (s) => (s < 5400 ? `${Math.max(1, Math.round(s / 60))} real minutes` : `${Math.round(s / 3600)} real hours`);
-      const row = el('span', 'msg', `OTHER SAVE: ${O.label}, ${hrs((now() - O.at) / 1000)} ago, played ${hrs(O.played || 0)}`);
+      const row = el('span', 'msg', `Your other save, from ${O.label}, ${hrs((now() - O.at) / 1000)} ago. Kept until the next game day.`); // (Espada's words)
       const load = el('button', '', 'LOAD');
-      load.onclick = () => { if (C.loadOther()) { this.setMsg('loading the other save'); reload(); } };
+      // (two presses, as RESET: a real hour of play is never put away silently; the one now played is kept here in its place)
+      let loadArmed = false;
+      load.onclick = () => {
+        if (!loadArmed) { loadArmed = true; load.textContent = 'LOAD IT'; this.setMsg('Load it? The save you are playing now is kept here in its place.'); setTimeout(() => { loadArmed = false; load.textContent = 'LOAD'; }, 4000); return; }
+        if (C.loadOther()) { this.setMsg('loading the other save'); reload(); }
+      };
       foot.append(row, load);
       if (O.offer) { const keep = el('button', '', 'KEEP THIS ONE'); keep.onclick = () => { C.keepMine(); this.setMsg('this save kept; the other stays here a game day'); keep.remove(); }; foot.appendChild(keep); }
     }

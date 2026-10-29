@@ -12,6 +12,7 @@
 import { LICENCES } from '../world/raceway/licences.js';
 import { GAPS } from '../world/raceway/gaps.js';
 import { TRAP_KINDS } from './traps.js';
+import { SET_RULES, setDone } from './skiffpaint.js';
 
 export function racewayAchievements({ C, H, F }) {
   // the Raceway (docs/plans/SKIFF-RACING.md: a medal is a test passed once; the carve, the solar start and the plates are its verbs)
@@ -70,6 +71,14 @@ export function racewayAchievements({ C, H, F }) {
   F('rw47', 'skiff', 'The Raceway', 3, 'mechanic', 'Race Regular', 'Finish 15 races, or take gold in the Carve licence. Opens the Race Fin.', any(['race.raceway.finish', 15], ['licence.carve.gold', 1]), 1);
   F('rw48', 'skiff', 'The Raceway', 4, 'mechanic', 'Bone Stock', 'Take gold on any track on the stock board: standard parts, the sheet at 0.', (L) => ['sun', 'gorge', 'coaster'].some((t) => L.get(`race.track.${t}.gold.stock`) > 0) ? 1 : 0, 1);
   F('rw49', 'skiff', 'The Raceway', 4, 'collect', 'Three Golds', 'Take gold on the Sun Circuit, the Gorge Run and the Coaster.', (L) => ['sun', 'gorge', 'coaster'].filter((t) => L.get(`race.track.${t}.gold`) > 0).length, 3);
+  // the game day's race (SKIFF-RACING.md 9): one track and sky a game day; a count way and a feat way each, as the design laws ask
+  C('rw50', 'skiff', 'The Raceway', 1, 'mechanic', "Today's Race", "Finish the game day's race.", 'race.daily', 1);
+  F('rw51', 'skiff', 'The Raceway', 3, 'count', 'Rain or Shine', "Take a medal in the game day's race 7 times, or gold in it 3 times.", any(['race.daily.medal', 7], ['race.daily.gold', 3]), 1);
+  F('rw52', 'skiff', 'The Raceway', 4, 'collect', 'Every Sky', "Finish the game day's race under each of the seven feelings' weathers.", (L) => ['mirth', 'wonder', 'desire', 'fury', 'gall', 'grief', 'dread'].filter((a) => L.get(`race.daily.sky.${a}`) > 0).length, 7);
+  // the skiff sets (SKIFF-TUNING.md: a set is every piece owned and its feat done; read from the ledger, progress/skiffpaint.js setDone)
+  const SETS = Object.keys(SET_RULES);
+  F('rw53', 'skiff', 'The Raceway', 3, 'collect', 'Full Livery', 'Own a whole skiff set: every piece of it, and its feat.', (L) => (SETS.some((id) => setDone(id, L)) ? 1 : 0), 1);
+  F('rw54', 'skiff', 'The Raceway', 5, 'collect', 'Six Liveries', 'Own all six skiff sets.', (L) => SETS.filter((id) => setDone(id, L)).length, SETS.length);
   // the build lot (docs/plans/TRACK-EDITOR.md 9): made tracks, their traps and the haunt; counted apart from the park's (race.made.*), and
   // none opens a part or pays: a made track is its maker's to tune, so what it gives is a mark of having made, shared and haunted it
   const B = 'The Build Lot', KINDS = TRAP_KINDS;

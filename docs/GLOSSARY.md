@@ -285,8 +285,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   *Not:* a creature's foe, a sibling.
 - **a grind trick / the race board** (`skiff.grind.trick`; `race.openBoard`) — how the board lands on a rail sets its grind (along it a
   50-50, the plain grind; across it a boardslide, a trick), and LMB or RMB clicked twice on it a nose grind or a tail slide / the stone at the park's hub where a track is picked. *Not:* a grab, the Index.
-- **a race's condition** (`conditionAt`, `world/raceway/conditions.js`) — the hour's light and the weather a race is run under (the sun
-  plates' power, the sand's grip); each keeps its own best. *Not:* a status, the weather itself.
+- **a race's condition / the game day's race** (`conditionAt`, `world/raceway/conditions.js` / mode `daily`, `dayCondition`) — the hour's light and the weather a race is run under (the sun
+  plates' power, the sand's grip); each keeps its own best / a race on the game day's one track and condition, seeded so everyone has the same, whatever the sky. *Not:* a status, the weather itself.
 - **the board's rules** (`BoardRules`, `courier/skiff/boardrules.js`) — what the Solar Skiff answers to at the Raceway: the pool as its hull
   (empty, a hard knock **wrecks** it), **the scorch** (a flare held too long luffs the sail), **the manual** (W and S), **snaking**, **the
   shoulder** (Q / E twice), **aftertouch** (a bail steered), **a near miss**. *Not:* the sailing (skiff.js).
@@ -727,8 +727,8 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **an instrument skin** (plain name; `INSTRUMENT_SKINS`, `InstrumentSkins`, `game.instrumentSkins`, `src/vfx/instrumentskins.js`, its garnish `vfx/instrumentskins/garnish.js`; save section `instrumentSkin`; `/instruments`) — the overlay's instruments' housing worn as one set, a preference like the window colour: the Sight's discs, metal, hand and glass, the Lachrimeter's tube's brass, scale plate and glass, the spiritual link's halo and the System windows' studs (brass and glass the stock; bone and amber, jade and gold, obsidian and silver, blue and white, raku, coral reef, clockwork, overgrown, mimic), some with a garnish (gears, roots, coral, teeth and eyes); never the readout. *Not:* the window colour, an island's dress, a glaze.
 - **an island's dress** (Espada's, ruled 2026-10-16; OVERLAY.md 15.4) — the overlay's material on an island: Clay (Anagami), Nacre
   (Margarite), Glass (Entropolis), Brine (the Emocean); changed at the seam on arrival. *Not:* the window colour (the player's).
-- **an aptitude / the Assay** ("the Assay" ruled by the owner, 2026-10-19; `APTITUDES`, `game.aptitude`, `src/progress/aptitude.js`, `/assay`; save section `aptitude`; `docs/plans/APTITUDE.md`) — one ability the System measures from how you play (an
-  absolute in its unit and you against yourself) / its window of them all, ??? until play gives evidence. *Not:* an attribute (Soul Alchemy's), a domain.
+- **an aptitude / the Assay / a standard trial** ("the Assay" ruled by the owner, 2026-10-19; `TRIALS`, `src/progress/assaytrials.js`; `APTITUDES`, `game.aptitude`, `src/progress/aptitude.js`, `/assay`; save section `aptitude`; `docs/plans/APTITUDE.md`) — one ability the System measures from how you play (an
+  absolute in its unit and you against yourself) / its window of them all, ??? until play gives evidence / a test run and announced in the Touchstone, scored apart from the passive readings (Go / No-Go, the pitch and colour thresholds, tapping, the reaction box). *Not:* an attribute (Soul Alchemy's), a domain, a trial (a minigame's).
 - **the goals window** (`GoalsWindow`, `game.goalsWindow`, `src/ui/goalswindow.js`) — the game day's three goals (Dovina's `game.goals`) as a System window at the view's left edge in the Clay dress: a row a goal, its slot (Close, Elsewhere, Stretch, First step), name, words, tier, a bar to `frac`, `cur` of `goal`, a gold check when done; on `/goals` and a beat at `goals.set` and `goal.done`. *Not:* the goals (Dovina's rule, `progress/goals.js`), the goal bar (Raku's tables').
 - **world mark** — a mark that sits on a thing and carries no words: a glyph pop, the interact chevron, the lock-on reticle, the letterbox, the
   fish portrait.

@@ -11,6 +11,7 @@
 //   validate  a made track ridden once from a standing start, alone: its author time (Trackmania's validation; progress/trackdef.js).
 //   haunted   a race with the siblings possessing the track's traps (TRACK-EDITOR.md 7, Crawl's ghosts as bots: progress/trapbot.js): a made
 //             track's own traps, or a park track's `traps` feature, set up only for this mode.
+//   daily     the game day's race: a race under the game day's seeded condition (conditions.js dayCondition), whatever the sky; its board the day's.
 //   trim      the test lap (Espada's name; the code keeps trim): one lap alone, from a flying start, against the ghost of your LAST test lap (not your best): the splits at each gate say
 //             what the tune changed (Forza Horizon's test drive; SKIFF-TUNING.md 2.5). Nothing is recorded.
 // A cup (world/raceway/cups.js) is three races in a row; the City Trial (world/raceway/citytrial.js) ends in one of these, drawn.
@@ -32,6 +33,7 @@ export const MODES = {
   licence:  { label: 'Licence',   line: 'A test on a stretch of track, under a rule.', laps: 1, ruleset: 'licence', record: true },
   validate: { label: 'Validate', line: 'Your track ridden to the line once, alone: your time is its author time.', laps: 1, record: false, validate: true },
   haunted:  { label: 'Haunted race', line: 'Three laps against the rivals, the siblings possessing the traps against you.', laps: 3, rivals: true, medals: true, record: true, haunted: true },
+  daily:    { label: "The game day's race", line: 'Three laps against the rivals under the game day\'s condition, whatever the sky. A new one each game day.', laps: 3, rivals: true, medals: true, flyover: true, record: true, daily: true },
   trim:     { label: 'Test lap',  line: 'One lap alone against your last test lap: the splits show what the tune changed.', laps: 1, flying: true, record: false, trim: true },
 };
 /** The flying start: metres before the line the board is set down, at what speed (m/s) it is pushed off. */

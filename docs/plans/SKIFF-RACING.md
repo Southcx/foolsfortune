@@ -164,7 +164,11 @@ x0.85, the sun x0.55; Mirth (a sunshower) wet sand under the sun; Fury (the hail
 across it (10 m/s^2 for a whole gust's excess, crosswind); Gall (the miasma) drag x1.25, grip x1.2; Desire the course wind x1.35; Wonder
 the rings x1.4; Dread fog (the look Calissa's). The lesson under it is land sailing's: wet beach sand is the fast, hard surface; dry sand
 drags. A race says its condition at the start and keeps its time on that condition's board (`race.raceway.best.<light>.<aspect>`, light
-day, twilight or night): 24 boards. **Not built:** one seeded condition per game day (the weather already changes by the game hour block).
+day, twilight or night): 24 boards. **The game day's race** (built 2026-10-29; mode `daily`, `conditions.js dayCondition`): one track and one
+condition a game day, seeded by the day so everyone has the same (Trackmania's track of the day, Spelunky's daily): a light band and a
+weather at a strength from 0.5 to 1.0 (or fair), raced whatever the sky says. It is a race in every count (medals, wins, the condition's
+board) and keeps its own best by the day (`race.daily.<day>`); its achievements are rw50 to rw52 (finish it; a medal 7 times or gold 3
+times; finish it under all seven weathers).
 
 **The trick combo** (`courier/skiff/combo.js`). Points: a spin landed square 100 a turn; a grab 80 a real second (to 3) and 50 for a tweak
 held 0.6 s, the double x1.5; a grind 6 a metre (from 12 m); a late pop 50, a perfect one 100; a carve let go 40, 90, 160 by tier; a sun

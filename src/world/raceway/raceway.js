@@ -305,7 +305,7 @@ export class Raceway {
     this.gaps.update(dt); this.buoys.update(dt); this.siphons.update(dt); this.traps.update(dt);
     const P = g.player, lx = P.pos.x - RW.x, lz = P.pos.z - RW.z;
     // the hour and the weather (conditions.js), read a few times a real second
-    if ((this.condT -= dt) <= 0) { this.condT = 0.5; this.condition = conditionAt(g); this.sun = this.condition.sun; }
+    if ((this.condT -= dt) <= 0) { this.condT = 0.5; this.condition = conditionAt(g, g.race?.running ? g.race.forced : null); this.sun = this.condition.sun; }
     const C = this.condition;
     // which track: the race's while racing; else the nearest line, kept until another's is nearer by KEEP metres
     const race = g.race?.running ? g.race.T : null;

@@ -263,5 +263,5 @@ The looks (Calissa's) read `game.skiffPaint.worn` and `colourOf(kind)`.
   bigger than the pieces: Kintsugi 10 cracks mended, Driftwood 3 herds, Celadon 5 licences, Matsuri 3 City Trials, Racing both cups and
   25 wins, Obsidian 3 haunted races. It is worn whole (`setOpen`) only with both, so a slot is never refused. A card back is not a paint
   kind (`game.cardBacks`) and stays out of sets.
-- **Not built (not mine):** the SET button on the PAINT tab, the ledger counter `skiff.set.<id>` and an achievement a set and one for all
-  six (tracking and achievements are Petra's and mine to add once the counter is written).
+- **Built (2026-10-29):** an achievement a set had and one for all six (rw53, rw54), read straight from the ledger by `setDone(id, L)`:
+  no counter is needed, as every piece and every feat is a ledger predicate already. **Not built (not mine):** the SET button on the PAINT tab.

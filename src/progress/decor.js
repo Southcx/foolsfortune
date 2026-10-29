@@ -22,6 +22,7 @@
 //   regionPoints(pieces) -> n   rating(pieces, { cellsOf }) -> { points, lotuses, regions, sets }   (pieces: [{ id, region, pos }])
 //   game.decor = new Decor(game)   .owns(id)   .stored(id)   .give(id, from)   .buy(id) -> { ok, why? }   .take(id) -> bool   .put(id)
 //   .place(id, at, { yaw, tint }) -> i   .move(i, at?, yaw?)   .remove(i)   .s.placed: [[id, planetoid, face, iu, iv, yaw, tint]]
+//   layoutCode(placed) -> 'FFG1-...'   readLayout(code) -> placed | null   /layout (decor.layout { code, pieces })
 //   events: decor.get { id, from, n }   decor.buy { id, cubes }   decor.refuse { id, why }   decor.place / decor.move / decor.remove { id, planetoid }
 // ---------------------------------------------------------------------------------------
 import { ECON } from './econ/table.js';
@@ -183,6 +184,23 @@ export function rating(pieces = [], { cellsOf = () => 64 } = {}) {
 
 const fresh = () => ({ owned: {}, stored: {}, placed: [] }); // (placed: [id, planetoid, face, iu, iv, yaw, tint] a piece: half-cells on the decor grid, world/garden/decorgrid.js; with storage in one section, so the two always agree)
 
+/** A garden's layout as text (GARDEN-COZY.md D8: shared with a sibling or a guest; Petra's note, about 25 bytes a piece): the placed
+ *  pieces, each [the piece's index in DECOR, planetoid, face, iu, iv, yaw, tint], as JSON in base64url after `FFG1-`. Reading one back
+ *  drops any piece the reader does not know; placing it is the co-op's (later): a reader places only what it owns. */
+const DECOR_IDS = () => Object.keys(DECOR);
+export function layoutCode(placed = []) {
+  const ids = DECOR_IDS(), rows = placed.map(([id, ...rest]) => [ids.indexOf(id), ...rest]).filter((r) => r[0] >= 0);
+  const json = JSON.stringify(rows), b64 = typeof btoa === 'function' ? btoa(unescape(encodeURIComponent(json))) : Buffer.from(json, 'utf8').toString('base64');
+  return `FFG1-${b64.replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '')}`;
+}
+export function readLayout(code = '') {
+  const m = /^FFG1-([A-Za-z0-9_-]+)$/.exec(String(code).trim()); if (!m) return null;
+  try {
+    const b64 = m[1].replace(/-/g, '+').replace(/_/g, '/'), json = typeof atob === 'function' ? decodeURIComponent(escape(atob(b64))) : Buffer.from(b64, 'base64').toString('utf8');
+    const ids = DECOR_IDS(); return JSON.parse(json).filter((r) => Array.isArray(r) && ids[r[0]]).map(([i, ...rest]) => [ids[i], ...rest]);
+  } catch { return null; }
+}
+
 export class Decor {
   constructor(game) {
     this.game = game; this.s = fresh();
@@ -190,6 +208,7 @@ export class Decor {
       dump: () => this.s,
       load: (d) => { if (d && typeof d.owned === 'object') this.s = { ...fresh(), ...d }; },
       reset: () => { this.s = fresh(); } });
+    game.chat?.add?.('layout', { help: "your garden's layout as a code to share: /layout", run: () => this.game.events?.emit('decor.layout', { code: layoutCode(this.s.placed), pieces: this.s.placed.length, by: 'courier' }) });
   }
   owns(id) { return !!this.s.owned[id]; }
   stored(id) { return this.s.stored[id] || 0; }
