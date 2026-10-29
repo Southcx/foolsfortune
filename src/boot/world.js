@@ -39,6 +39,7 @@ import { Sky } from '../vfx/sky.js';
 import { WeatherLook } from '../vfx/weather.js';
 import { AwakeningLook } from '../vfx/awakeninglook.js';
 import { GodhandLooks } from '../vfx/godhand/godhandlooks.js';
+import { DomainLooks } from '../vfx/domainlooks.js';
 import { PalmDieLook } from '../vfx/godhand/palmdie.js';
 import { MawWipe } from '../vfx/mawwipe.js';
 import { AreaWipe } from '../vfx/areawipe.js';
@@ -80,6 +81,7 @@ export async function bootWorld(game, made) {
   game.aberrantWipe = new AberrantWipe(game); // (the battle transition into a puzzle duel with an aberrant: catch, bug, crackle on close(onCovered, { foe }), the shatter on open(); a screen volume of the glow, vfx/aberrantwipe.js)
   game.weatherLook = new WeatherLook(game); // (the weather's and the hour's look: reads game.weather; with none, the painting as it is)
   game.godhandLooks = new GodhandLooks(game); // (the god powers' marks, the miracles' falls, the drawn sign: vfx/godhand/godhandlooks.js)
+  game.domainLooks = new DomainLooks(game); // (the domains' effects at their moments: a level-up at the Courier, a god power's act beside its mark; vfx/domainlooks.js)
   game.palmDieLook = new PalmDieLook(game); // (the palm die in the god hand's palm, in your stones' mineral: vfx/godhand/palmdie.js)
   game.awakeningLook = new AwakeningLook(game); // (a feeling's heavy weather flooding round the Courier on feeling.wake, its clip on feeling.embody: vfx/awakeninglook.js)
   game.nightSky = new NightSky(game, { seaBearing: SHORE.angle }); // (the night alive: the stars' wheel, meteors and showers, the aurora over the sea at the Shore, the moon's phases, the constellations, each feeling's night; vfx/nightsky.js)
