@@ -908,6 +908,14 @@ table without a lesson, and the clock faces that wear Roman numerals over a time
 - **In the Comb:** the Seal Book numbers its imprints in the order received, as a *goshuincho* writes the date beside each shrine's red
   seal; and every cradle carries its own number on its gold collar, the order the Emocean cut them in. No island made the cradles alone,
   so only the stamp script, which belongs to everyone, is on them.
+- **The cradles' numbers** (ruled by Espada, 2026-10-29; `CRADLE_NUMBERS`, `vfx/cradlelook.js`). The first digit is where the cradle was cut and
+  the second is its order there, so a reader who notices that three cradles share a first mark has learned what a place is in numerals.
+  A younger island takes a higher first digit. Anagami is the Prince of Clay's island and Margarite his father's, so Margarite is older.
+  - **2:** Margarite. The Pearl Shrine is **21**.
+  - **3:** Anagami. The Bisque Shrine is **31** (the first a Courier meets), the Lamp Shrine **32**, the Float Shrine **33**.
+  - **9:** the lanes. No island cut the helms; the Emocean did, last of all, once there were islands to sail between. The sloop is
+    **91**, the frigate **92**, the destroyer **93**, the tanker **94**, and the galleon's two are **95** and **96**.
+  - **1 and 4 to 8:** not cut in the game yet. Whatever was first (1) is left blank on purpose; Entropolis's digit is open.
 
 **The Pneuka Jar as hanko** *(the owner's idea, 2026-10-17; lore Espada's and Dovina's, open)*. The Pneuka Jar is slotted into things
 like a cartridge to make them work: larger vessels and machines, the Shrine gates, the ships for the crossings. Its base is a seal
