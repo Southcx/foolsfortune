@@ -16,7 +16,7 @@
 // (courier/vessel/vessel.js dress: own look kept, painting as light and shade, the eye's and the dip's own light).
 //
 //   const M = new JarMaterials(paintingMap, kinU?, soul?)   M.m.body / trim / mask / partBody / partTrim / partMask / gold / cork /
-//     stones / hair / seal   M.dress(look, glazeOf) (look: the vessel's; glazeOf: id -> glaze, the learned ones too)   M.flash(f)
+//     stones / hair / seal / iron / glass / flame   M.dress(look, glazeOf) (look: the vessel's; glazeOf: id -> glaze, the learned ones too)   M.flash(f)
 //   M.inner (THREE.Color: the inner light, the skin's glow under the soul colour)   M.bodyColor (the body's colour, for a hop's dye)
 //   M.forPart(name) -> the material a part asks for by name (vfx/pneukajar/parts.js)   M.dispose()
 // ---------------------------------------------------------------------------------------
@@ -30,7 +30,7 @@ import { PALETTE } from '../../core/config.js';
 
 /** The owner's painting's own colours, for a part beside a region still in its starting glaze (measured off the painting). */
 const PAINTED = { body: 0x6e1c1a, trim: 0xe6cfa6, mask: 0x7a2420 };
-const GOLD = 0xd8a840, CORK = 0xa88458, SPAN = 1.2; // (the Jar's height: a kiln pattern at the Courier's scale on it)
+const FLAME = 0xff9a2a, GOLD = 0xd8a840, CORK = 0xa88458, SPAN = 1.2; // (the Jar's height: a kiln pattern at the Courier's scale on it)
 const STONE_R = 0.035; // (a gem's radius on the Jar, model units: its mineral's scale)
 let WHITE = null;
 const white = () => {
@@ -45,11 +45,12 @@ export class JarMaterials {
     const mk = (map, name) => { const m = vessoulPainted(map, { roughness: 0.6 }); m.name = `PneukaJar_${name}`; dressFinish(m, 'glaze'); addKintsugi(m, kinU); return m; };
     this.m = {};
     for (const r of ['body', 'trim', 'mask']) this.m[r] = mk(painting, r);
-    for (const n of ['partBody', 'partTrim', 'partMask', 'gold', 'cork', 'stones', 'hair', 'seal']) this.m[n] = mk(white(), n);
+    for (const n of ['partBody', 'partTrim', 'partMask', 'gold', 'cork', 'stones', 'hair', 'seal', 'iron', 'glass', 'flame']) this.m[n] = mk(white(), n);
+    this.m.glass.transparent = true; this.m.glass.opacity = 0.28; this.m.glass.depthWrite = false;
     this.flashK = 0;
   }
   /** The material a part asks for by name (parts.js). */
-  forPart(name) { return { body: this.m.partBody, trim: this.m.partTrim, mask: this.m.partMask, gold: this.m.gold, cork: this.m.cork, stones: this.m.stones, hair: this.m.hair }[name] || this.m.partBody; }
+  forPart(name) { return { body: this.m.partBody, trim: this.m.partTrim, mask: this.m.partMask, gold: this.m.gold, cork: this.m.cork, stones: this.m.stones, hair: this.m.hair, iron: this.m.iron, glass: this.m.glass, flame: this.m.flame }[name] || this.m.partBody; }
 
   /** Fire the vessel's look on every material (`glazeOf`: the vessel's own resolver, so a learned glaze is found too). */
   dress(look = DEFAULT_LOOK, glazeOf = (id) => GLAZES[id]) {
@@ -63,6 +64,10 @@ export class JarMaterials {
     this.glaze(this.m.gold, { color: GOLD, rough: 0.22, metal: 0.85 }, {});
     this.glaze(this.m.cork, { color: CORK, rough: 0.9, metal: 0 }, {});
     this.glaze(this.m.seal, null, { painted: true });
+    // the lantern pendant: dark iron, pale glass, a flame that is all light (its flicker: look.js)
+    this.glaze(this.m.iron, { color: 0x2a2623, rough: 0.55, metal: 0.7 }, {});
+    this.glaze(this.m.glass, { color: 0xffd9a0, rough: 0.1, metal: 0 }, {}); rest(this.m.glass, 0xffb060, 0.25);
+    this.glaze(this.m.flame, { color: 0xffb040, rough: 0.8, metal: 0 }, {}); rest(this.m.flame, FLAME, 2);
     // the hair: a hair finish (its root, its tips, its sheen) or a glaze on a cord
     const h = G('hair', ['hair', 'glaze']), H = this.m.hair, U = H.userData.finish;
     if (h.kind === 'hair') {
@@ -94,7 +99,7 @@ export class JarMaterials {
   flash(f = 0) {
     const hot = Math.max(0, f), warm = Math.max(0, -f);
     for (const m of Object.values(this.m)) {
-      if (m === this.m.stones) continue; const R = m.userData.rest;
+      if (m === this.m.stones || m === this.m.flame) continue; const R = m.userData.rest;
       m.emissive.setHex(R.em); m.emissive.r *= 1; m.emissive.g *= 1 - 0.25 * hot; m.emissive.b *= 1 - 0.45 * hot;
       m.emissiveIntensity = R.emI * (1 + 2.2 * hot + 0.8 * warm);
     }

@@ -25,6 +25,9 @@
 import * as THREE from 'three';
 import { phaseAt } from '../../progress/weather.js';
 import { WEIR_SPAWN } from '../../tools/sondelass/angling/weir.js';
+import { rollShiny } from '../../progress/duel/drops.js';
+import { stream } from '../../core/rng.js';
+const simRand = stream('world/duel/duelfoes'); // (the simulation's chance: core/rng.js, the same twice)
 
 /** drinkY: how far above a blot (m) a Wisp drinks it; scan: real s between looks; test: the test Wisp's home and its chest, m from the
  *  dunes' spawn (south of the pond, short of the Dunes' own Wisps at 60 to 86 m). */
@@ -88,5 +91,5 @@ export class DuelFoes {
   }
 
   /** Its flame goes wrong: aberrant (a data bug again if it was mended), its grade the weather's feeling where it drank. */
-  goWrong(c, aspect) { c.aberrant = true; c.dataBugMended = false; c.grade = aspect; c.name = 'Aberrant Lantern Wisp'; } // (Espada names it)
+  goWrong(c, aspect) { c.aberrant = true; c.dataBugMended = false; c.grade = aspect; c.name = 'Aberrant Lantern Wisp'; c.shiny = rollShiny(simRand); } // (Espada names it; one in ten goes wrong shiny: drops.js SHINY)
 }

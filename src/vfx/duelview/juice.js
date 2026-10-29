@@ -12,7 +12,7 @@
 //             colour on your side: a dull grey deflect falling off it and RESIST, small and dim. While a weakness holds: the weak pip
 //             and the resist pip on the frame's top member at the foe's end (a gem of the colour; the resisted one dull, barred in
 //             clay), and a glint now and then on one of the weak colour's gems on your half, so the colour is learned by looking
-//   TRICKLE   `trickle { side, pool, n }`: motes of Lachryma drifting off the step's cleared cells to the link's end on the frame (the
+//   TRICKLE   `trickle { side, pool, n }`: motes of Lachryma drifting off the step's cleared cells into the Lachrimeter's bulb (the
 //             Courier's: a drink runs up the spiritual link into the Lachrimeter), or into the foe's idol
 //   UNDO      `undo { side, left }`: the board rebuilt from the kernel's restored turn, every piece sliding back from where it was
 //             drawn to where it stood (a rewind's ease), what the action made going in a puff, a ripple of the film over the slab;
@@ -177,7 +177,7 @@ export class DuelJuice {
   /** Pool from a chain: motes off the step's cleared cells to the link's end (the Courier's), or into the foe's idol. */
   trickle(e) {
     const V = this.view, side = e.side ?? 0, D = this.dims(), B = V.board3, cells = this.last[side].length ? this.last[side] : [[side ? B.w - 3 : 2, B.h / 2]];
-    const to = side === 0 ? new THREE.Vector3(D.W / 2 + D.b * 0.5, D.base - D.b * 0.5, D.lip + 0.02) : (V.pieces.bodyAt(1) ? V.headOf(1, new THREE.Vector3()) : this.lastAt(1, new THREE.Vector3()));
+    const to = side === 0 ? (V.tubeAt?.(new THREE.Vector3()) || new THREE.Vector3((V.game.hudLayout?.duelR ? -1 : 1) * (D.W / 2 + D.b * 0.5), D.base - D.b * 0.5, D.lip + 0.02)) : (V.pieces.bodyAt(1) ? V.headOf(1, new THREE.Vector3()) : this.lastAt(1, new THREE.Vector3())); // (yours into the Lachrimeter's bulb where it stands now, else the link's end on its own side: a fixed corner sent them away from the tube, South's 2026-10-29)
     const n = Math.min(12, Math.max(3, (e.n || 2) * 2)); let first = true;
     for (let i = 0; i < n; i++) { const [cx, cy] = cells[i % cells.length]; cellLocal(cx + (hash(i, cx) - 0.5) * 0.6, cy + (hash(cy, i) - 0.5) * 0.6, B, _a);
       this.mote(_a, to, TEAR, { delay: i * 0.05, life: 0.75 + 0.2 * hash(i, 9), size: 0.012 + 0.006 * hash(i, 4), curl: 0.6, film: true, onLand: () => {
