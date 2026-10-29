@@ -398,7 +398,12 @@ const RULES = {
   'rail.ring': (s, e, g) => { const now = performance.now(); RING.n = now - RING.at < 6000 ? RING.n + 1 : 0; RING.at = now; s.railRing?.(e.all ? 4 : Math.min(4, RING.n), !!e.all, g.music?.grid?.()); if (e.all) RING.n = -1; },
   'rail.leg.end': (s, e, g) => e.medal && s.railMedal?.(g.music?.grid?.()),
   'rail.boss.fall': (s) => s.railBossFall?.(),
-  'rail.end': (s, e) => e.by === 'courier' && s.railBossFall?.(), // (a set piece's boss beaten; throttled, so rail.boss.fall and this sound once)
+  'rail.end': (s, e) => { s.shoalLock?.(false); if (e.by === 'courier') s.railBossFall?.(); }, // (a set piece's boss beaten; throttled, so rail.boss.fall and this sound once; a held lock let go)
+  // the shoal's silhouette (Petra's events, named 2026-10-29; audio/shoalsilhouette.js): its forming, the eye opening, locked, shattered
+  'rail.shoal.form': (s, e) => s.shoalForm?.(e.k),
+  'rail.shoal.eye': (s, e) => s.shoalEye?.(e.open),
+  'rail.shoal.lock': (s, e) => s.shoalLock?.(!!e.on, e.k),
+  'rail.shoal.shatter': (s) => s.shoalShatter?.(),
   'spirit.bind': (s, e, g) => s.catchSting?.(e.from, g.music?.grid?.()), // (a Figment caught, by the coffin or the hand: audio/catch.js)
   // the garden's spirits and the hand's clay (audio/spirits.js): their voices say the moment; their feeling bends the leap
   'spirit.feed': (s, e) => { s.spiritVoice?.('eat', e); setTimeout(() => s.spiritVoice?.('happy', e), 420); },
