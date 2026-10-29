@@ -130,7 +130,7 @@ their Clayese scales; the System's skill and achievement jingles (the chime and 
 ## 5. Production rules
 
 - Everything is synthesized as it plays (`band.js`, `world.js`, `rock.js`, `modern.js`); nothing is recorded.
-- **The audio thread's budget** (casebook NEW:audio-amps-standing): a cue rendered offline should take well under a third of real time on the
+- **The audio thread's budget** (casebook 306): a cue rendered offline should take well under a third of real time on the
   container's CPU; a heavy processor (an amp, a clipper, a reverb) stands for the band's life and notes play into it. **A phone's mixer**
   (`sfx.phone`, `PHONE` in `audio/core.js`; `?phoneaudio=1` on a desk): 32 kHz, reverbs at most 1.2 s, 10 sounds begun in 250 ms, the
   heaviest instruments thinned (`this.phone` in the band), the arranger's notes made further ahead.

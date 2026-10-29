@@ -36,7 +36,7 @@ export const craterAt = (Cr, d) => (d < Cr.rf ? Cr.floor : d < Cr.r ? Cr.floor +
 
 const sstep = (a, b, x) => { const t = Math.min(1, Math.max(0, (x - a) / (b - a))); return t * t * (3 - 2 * t); };
 // (the samplers below make nothing: no Math.hypot, which boxes its arguments, and no for-of, whose iterators the field made by the
-// hundred million on a phone: Petra's measure, 2026-10-26; CASEBOOK NEW:memory-bound-by-view)
+// hundred million on a phone: Petra's measure, 2026-10-26; CASEBOOK 309)
 const len2 = (x, z) => Math.sqrt(x * x + z * z);
 
 export function park() {

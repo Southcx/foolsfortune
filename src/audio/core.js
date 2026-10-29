@@ -17,7 +17,7 @@ function isPhone() {
 
 export const PHONE = { rate: 32000, verb: 1.2, burst: 10, window: 250, hit: 90 }; // (hit: real ms between two of a blow's sounds, hitOk)
 
-/** A one-shot's nodes let go once its source has ended (CASEBOOK NEW:audio-one-shot-let-go): the source, its filter and its envelope
+/** A one-shot's nodes let go once its source has ended (CASEBOOK 325): the source, its filter and its envelope
  *  disconnected, so the graph holds only what still sounds. Nothing else was ever connected to them. */
 const letGo = (src, ...rest) => { src.onended = () => { src.disconnect(); for (const n of rest) n.disconnect(); }; };
 

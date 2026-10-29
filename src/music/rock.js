@@ -42,7 +42,7 @@ export class RockBand {
   }
 
   /** A side's standing amp and cabinet (palm-muted or open), made once a band and played into by every chug, as one amp is by one guitar
-   *  (an amp a chord was 63% of the overture's whole render: an amp is a 2x oversampled clipper and seven filters; casebook NEW:audio-amps-standing). */
+   *  (an amp a chord was 63% of the overture's whole render: an amp is a 2x oversampled clipper and seven filters; casebook 306). */
   rigAmp(pan, mute) {
     return this.standing(`rig:${pan}:${mute ? 1 : 0}`, () => this.amp(this.out(this.bus.dry, mute ? 0.05 : 0.042, { verb: mute ? 0.05 : 0.18, pan }), { drive: mute ? 5 : 3.5, low: 100 }));
   }

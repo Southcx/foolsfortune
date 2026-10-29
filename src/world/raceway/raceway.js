@@ -207,7 +207,7 @@ export class Raceway {
     idle(slice);
   }
   /** The field finished behind a cover (the area wipe's hold: Petra's seam), `ms` real milliseconds a call, so an arrival before the
-   *  idle prefetch is done never works the rest at once (the iPhone XR's lost graphics, v283: CASEBOOK NEW:memory-bound-by-view).
+   *  idle prefetch is done never works the rest at once (the iPhone XR's lost graphics, v283: CASEBOOK 309).
    *  True once the field is whole; `.fieldProgress` (0..1) fills the wipe's thread. arrive() needs nothing of it: it works what is
    *  left at once, as before. */
   prepare(ms = 12) {

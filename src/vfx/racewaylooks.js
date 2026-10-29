@@ -362,7 +362,7 @@ export class RacewayLooks {
   /** The rails' lintels and columns as glazed stone: a new geometry for her mesh (and its outline), the same material made glossier.
    *  Written straight into one set of arrays from six painted templates (a phone's memory, Petra's measure 2026-10-26: a box, a matrix
    *  and a clone a segment held 102 MB of heap through the park's arrival on an iPhone XR); the hull's smooth normals only where a hull
-   *  is drawn (NEW:memory-bound-by-view). */
+   *  is drawn (309). */
   glazeRails(R, mesh = R.railMesh, rails = R.rails.filter((r) => r.track !== 'made')) { // (a made track's rails are their own mesh: vfx/racewaymade.js glazes them)
     const C = railPieces(), K = RACEWAY_LOOK.rail;
     let nv = 0; const posts = [];

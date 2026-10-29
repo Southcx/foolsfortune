@@ -895,95 +895,95 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
 302. **The warm-up dresses a look with the function play dresses it with.** A prewarm that copies
     the rule (the main part only, a material dressed later on first show) misses what play adds; call the same dressing function, and
     show a look that is first dressed on its first frame (the palm die) dressed, 50 m down, for the compile.
-NEW:audio-amps-standing. **A heavy processor (an amp, a clipper, a reverb) stands for the band's life, not a note's.** Notes play into it;
+306. **A heavy processor (an amp, a clipper, a reverb) stands for the band's life, not a note's.** Notes play into it;
     measure a cue's render against real time (an offline render) before adding a per-note chain.
-NEW:audio-graph-let-go. **A cue's graph is let go whole when it has faded.** Disconnect every node it built (an echo's feedback loop keeps
+307. **A cue's graph is let go whole when it has faded.** Disconnect every node it built (an echo's feedback loop keeps
     the rest alive), and make shared buffers (a reverb's impulse) once.
-NEW:one-boot-a-tab. **A choice on the title never boots the game a second time in the same tab when nothing needs swapping.** A phone
+308. **A choice on the title never boots the game a second time in the same tab when nothing needs swapping.** A phone
     holds one boot's memory at a time; reload only when there is stored progress to put away, and say where a killed tab was.
-NEW:memory-bound-by-view. **What a place holds in memory is bound by what the view can hold, never by the size of the world.** A field, a
+309. **What a place holds in memory is bound by what the view can hold, never by the size of the world.** A field, a
   terrain or a pool is kept for what is drawn now (slots written as the view moves), and a phone's crash is read as the biggest single thing first.
-NEW:word-inside-the-face. **A tile's glyph is sized to the room its word leaves, never to the tile alone.** The word's baseline stays
+310. **A tile's glyph is sized to the room its word leaves, never to the tile alone.** The word's baseline stays
   inside the face at the least size (44 px), and a row that crowds a phone's thumbs folds to one tab before any tile shrinks under 44.
-NEW:instanced-by-capacity. **An instanced attribute is sized to the instances the mesh holds (`instanceMatrix.count`), never to `mesh.count`.**
+311. **An instanced attribute is sized to the instances the mesh holds (`instanceMatrix.count`), never to `mesh.count`.**
   Count is how many draw now and may be 0 at setup; WebKit refuses a draw past an attribute's length where Chromium is silent.
-NEW:frame-shape-with-size. **The camera's aspect is set where the render size is set, and only there, after the size has settled.** A
+312. **The camera's aspect is set where the render size is set, and only there, after the size has settled.** A
   boot path that skips a stage (the box room) or an event that comes before the new size (a phone turned) leaves the frame stretched.
-NEW:uniform-array-constant-index. **A uniform array is never read at a computed index on Apple's GPU path: on a phone the reads go through
+313. **A uniform array is never read at a computed index on Apple's GPU path: on a phone the reads go through
   constant indices (render/constantindex.js does it for every shader).** A new shader needs nothing; a crash at a shader's first draw on
   the iPhone is bisected in the box room, one pool a pad, before it is guessed at.
-NEW:data-never-in-alpha. **A texture's data never rides in an image's alpha channel on its way in.** Save it opaque (the fourth channel
+314. **A texture's data never rides in an image's alpha channel on its way in.** Save it opaque (the fourth channel
   beside the other three) and join it in the page; a decoder may premultiply, convert or drop an alpha, and WebKit does.
-NEW:popup-waits-live-moment. **Nothing comes over the view while the player is steering against a clock or a foe: it asks
+315. **Nothing comes over the view while the player is steering against a clock or a foe: it asks
   `game.liveMoment()` and waits.** A new timed mode adds its row there (core/livemoment.js); a pop-up's sound waits with its pop-up.
-NEW:lent-is-silent. **What DEBUG lends is never announced as earned.** A snapshot of what is owned is taken only once the mode is known,
+316. **What DEBUG lends is never announced as earned.** A snapshot of what is owned is taken only once the mode is known,
   and again silently while a lend holds; a lend never writes the ledger.
-NEW:aim-from-the-camera. **An assist that turns the view onto a target aims from the camera, not the body, whenever the shot's ray
+317. **An assist that turns the view onto a target aims from the camera, not the body, whenever the shot's ray
   is the screen's middle.** An over-the-shoulder camera is a shoulder's width off the body; a touch assist never takes the aim from a
   finger that is turning the view.
-NEW:tile-asks-the-ctx. **A touch tile stands only where its press means something: it asks `game.actions.live()`, never the belt or the
+318. **A touch tile stands only where its press means something: it asks `game.actions.live()`, never the belt or the
   tool alone.** A row that cannot be done in the live context is not drawn.
-NEW:touch-never-html5-drag. **Nothing a finger moves rides on HTML5 drag and drop.** iOS Safari never starts it for a touch; a drag is
+319. **Nothing a finger moves rides on HTML5 drag and drop.** iOS Safari never starts it for a touch; a drag is
   pointer events (down, move, up) with the target found under the finger, and a tap-to-lift beside it.
-NEW:fit-to-the-room-as-it-stands. **A camera fitted to the room the controls leave is fitted again as they change**, never once at
+320. **A camera fitted to the room the controls leave is fitted again as they change**, never once at
   an open that comes before them; and a control is measured as drawn, not by the rect reserved for it.
-NEW:spar-and-cloth-one-side. **A rig's spar, cloth and streamer read one sign for leeward**, measured in the ship's frame, never
+321. **A rig's spar, cloth and streamer read one sign for leeward**, measured in the ship's frame, never
   each turned on its own convention.
-NEW:place-from-the-measure. **A thing set beside another is placed from their measures (a quay's face, a hull's half beam), never a
+322. **A thing set beside another is placed from their measures (a quay's face, a hull's half beam), never a
   bare offset.** A bare number is right for one size and wrong for the next.
-NEW:one-choice-a-load. **A choice that reloads the page is taken once a load, and its menu stops listening once it is made.** A window
+323. **A choice that reloads the page is taken once a load, and its menu stops listening once it is made.** A window
   opened over a menu (a name typed, a confirm) must not reach the menu's keys behind it.
-NEW:hull-is-a-footprint. **A body that can be long is hit by its footprint, never by the distance to its middle.** A point test written
+324. **A body that can be long is hit by its footprint, never by the distance to its middle.** A point test written
   for a 7 m hull misses most of a 35 m one.
-NEW:audio-one-shot-let-go. **A one-shot's nodes are let go when its source ends, and a phone hears a blow once.** Disconnect the source
+325. **A one-shot's nodes are let go when its source ends, and a phone hears a blow once.** Disconnect the source
   and its private chain on `ended`; on a phone, a hit, its damage and its stun's tick share one budget, so a gun's hail never stacks
   three sounds a hit. A band's instrument takes one note an event unless it says it takes a chord.
-NEW:event-name-searched-first. **A new event's name is searched for on the bus before it is emitted.** An emit under a name already taken
+326. **A new event's name is searched for on the bus before it is emitted.** An emit under a name already taken
   counts and sounds as the other thing; grep `'<name>'` across `src/` first.
-NEW:territory-is-sight-and-leash. **A territorial creature sees all it would defend, and moves only on a ship inside it.** Its sight is its
+327. **A territorial creature sees all it would defend, and moves only on a ship inside it.** Its sight is its
   zone x its leash, never the zone alone; a move that would carry it out of its leash (a rise, a breach) is not begun.
-NEW:lookahead-own-stream. **A lookahead owns its own stream.** A preview, an intent or a bot's search is seeded from the state it copies
+328. **A lookahead owns its own stream.** A preview, an intent or a bot's search is seeded from the state it copies
   (`quietStream`), never by drawing the real stream: looking must not change the odds, and a replay must replay.
-NEW:lookahead-own-copy. **A lookahead copies a duel with the kernel's `cloneState`, never a spread.** A `{ ...s }` shares every array the
+329. **A lookahead copies a duel with the kernel's `cloneState`, never a spread.** A `{ ...s }` shares every array the
   kernel writes (the undo stack, the log): a forecast or a preview must not reach into the real turn.
-NEW:sound-keyed-by-the-kernels-names. **A sound keyed by an engine's value reads the engine's own table for its names.** A table of
+330. **A sound keyed by an engine's value reads the engine's own table for its names.** A table of
   its own in the bank drifts when the engine renames; import or mirror the engine's list, and let an unknown name be heard as wrong.
-NEW:new-event-new-name. **A kernel event with a new shape takes a new name.** A consumer keyed by an event's type reads its fields; an
+331. **A kernel event with a new shape takes a new name.** A consumer keyed by an event's type reads its fields; an
   event that reuses a name must carry every field that name's consumers read, or it is a new name the consumers skip until they learn it.
 
-NEW:baseline-reproduced-before-blamed. **A perf delta is blamed on code only after the baseline's commit is measured again the same way.** If the old commit now reads the new number, the baseline was a state, not a cost: name the state, make the measure wait for it, and record again.
+332. **A perf delta is blamed on code only after the baseline's commit is measured again the same way.** If the old commit now reads the new number, the baseline was a state, not a cost: name the state, make the measure wait for it, and record again.
 
-NEW:touch-pick-then-confirm. **On touch, a choice that spends is picked, then confirmed.** A tap fires the hover and the click together,
+333. **On touch, a choice that spends is picked, then confirmed.** A tap fires the hover and the click together,
   so a window that says a price on hover and acts on click must, on touch, pick on the first tap and act on a tap on the picked one.
 
-NEW:parks-reverse-order. **Warm-ups park in the reverse of their order.** Each saves what it touches and puts it back; a later one that
+334. **Warm-ups park in the reverse of their order.** Each saves what it touches and puts it back; a later one that
 saved what an earlier one had shown must be undone first, or the earlier one's look is put back for good.
 
-NEW:actors-clear-of-the-board. **A scene's actors are laid out from its board's measured size, never a fixed distance.** A body is
+335. **A scene's actors are laid out from its board's measured size, never a fixed distance.** A body is
 placed beyond the thing the player must read, by the thing's width and the body's own, and a screenshot at the device's size proves it.
-NEW:copy-every-mutable. **A state's copy copies every object a move writes into.** A shallow copy shares nested objects; a field a
+336. **A state's copy copies every object a move writes into.** A shallow copy shares nested objects; a field a
   move mutates in place (a charge table, a counter map) must be copied with the state, or every lookahead writes into the real one.
-NEW:ask-the-capability-not-the-name. **A check asks what a mode can do, never which mode it is.** `style === 'drag'` stranded every
+337. **A check asks what a mode can do, never which mode it is.** `style === 'drag'` stranded every
   caller the day a third style came; one exported question (`oneGesture(s)`) moves with the modes. When a default flips, grep its name.
 
-NEW:new-end-new-name. **A new way a thing can end is added wherever its ends are named.** The session's list of end events fell back to
+338. **A new way a thing can end is added wherever its ends are named.** The session's list of end events fell back to
 'line' for one it did not know; grep the old ends' names when a kernel adds one.
-NEW:an-end-is-logged-where-it-happens. **An end is written to the log by whatever made it.** The session reads ends from the duel's
+339. **An end is written to the log by whatever made it.** The session reads ends from the duel's
   log; the kernel logged a turn's events but not an action's, so a secret won by a drag was invisible to it and named the fallback.
 
-NEW:a-mode-is-matched-exactly. **A program shared by several meshes matches each one's mode exactly, never by a threshold.** The
+340. **A program shared by several meshes matches each one's mode exactly, never by a threshold.** The
 duel's ground disc (mode 2) fell into the slab's `> 0.5` branch and drew a board under the bodies.
 
-NEW:a-wait-needs-an-answer. **A delayed effect needs something the player can do in the delay.** With no answer in reach, a wait
+341. **A delayed effect needs something the player can do in the delay.** With no answer in reach, a wait
   reads as a bug: land it at once, or put the answer in reach.
-NEW:aim-at-the-thing-not-where-it-was. **A look that flies to a HUD piece asks where it stands now, every time.** The duel's motes
+342. **A look that flies to a HUD piece asks where it stands now, every time.** The duel's motes
 aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tube, the phone's flank); ask the thing's own place.
 
-NEW:shader-strings-are-code-too. **A shader's source is code, its comments too.** The check's comment rule does not read GLSL inside a
+343. **A shader's source is code, its comments too.** The check's comment rule does not read GLSL inside a
     template string: a `//` put mid-line there silences the rest of the line with only a link error at run time. Read a shader edit back
     whole, and run it once (a probe's error list) before pushing.
-NEW:cut-short-gives-back. **What was paid for and not given is given back.** A move or spell paid up front and cut short (a stow, a seam, going prone) refunds the share it never delivered, silently.
-NEW:a-reset-keeps-what-is-owed. **A reset clears state, not promises.** What a tech owes the player afterwards (a tool to draw again) survives a seam's reset.
-NEW:an-instance-lets-go-of-the-world. **What opens its own instance lets go of what the world held.** A lock-on, a tag, an aim held as a duel or a seam opens is released by the opener, and its owner refuses to take another while the instance is open.
-NEW:a-new-gate-asks-the-lend. **Every new gate on a locked thing asks the lend beside the ledger.** DEBUG lends everything by default; a gate that reads only the ledger locks the sandbox.
-NEW:a-look-reads-its-rule-frame. **A placeholder is laid by the same frame function its rule reads.** A thing's look and its hit test take position from one call (`frameAt`), never a hand-written local sign.
+344. **What was paid for and not given is given back.** A move or spell paid up front and cut short (a stow, a seam, going prone) refunds the share it never delivered, silently.
+345. **A reset clears state, not promises.** What a tech owes the player afterwards (a tool to draw again) survives a seam's reset.
+346. **What opens its own instance lets go of what the world held.** A lock-on, a tag, an aim held as a duel or a seam opens is released by the opener, and its owner refuses to take another while the instance is open.
+347. **Every new gate on a locked thing asks the lend beside the ledger.** DEBUG lends everything by default; a gate that reads only the ledger locks the sandbox.
+348. **A placeholder is laid by the same frame function its rule reads.** A thing's look and its hit test take position from one call (`frameAt`), never a hand-written local sign.
