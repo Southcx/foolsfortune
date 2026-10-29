@@ -17,7 +17,7 @@ Status: **(a)** waits on South, **(b)** decided, not built, **(c)** not designed
 | --- | --- | --- |
 | Fishing paid no Possession for a kept fish | every landing pays; a release half again | `domains.js`, ANGLING.md 5 |
 | Whole modes paid no domain (a fight on foot, the Raceway, the sea, the garden, paint) | 30 sources on existing events | DOMAIN-SOURCES.md |
-| The Assay had no code (APTITUDE.md 9, step 1) | six passive readings from events already on the bus: parry timing (ms), pitch by ear (the beating), timing (%), colour (% of a tile), aim (%), reading a pull (%); `/assay` says them | `progress/aptitude.js` |
+| The Assay had no code (APTITUDE.md 9, step 1) | six passive readings from events already on the bus: parry timing (ms), pitch by ear (the beating), timing (ms of spread round the notes, Wanda's `asyncSd`), colour (% of a tile), aim (%), reading a pull (%); `/assay` says them | `progress/aptitude.js` |
 | A secret's material drop "parked" against "drops are on" | recorded as built (drops.js rolls the richer table) | DUEL-DESIGN-SPACE.md |
 | Two trap placeholders mirrored | fixed, with a casebook rule | `world/raceway/traps.js` |
 
@@ -42,12 +42,11 @@ Status: **(a)** waits on South, **(b)** decided, not built, **(c)** not designed
      - the bot check (APTITUDE.md 8), Dovina's;
      - the window, Calissa's (the data is `game.aptitude.all()`);
      - the Touchstone room, Petra's.
-   - Four more readings wait only on a field in an event:
+   - Three more readings wait only on a field in an event:
      - inhibition: the rail's plain or outlined shot, on `rail.hit`;
      - risk: the Lockheart's wheel, cashed or pushed;
      - reading others: Nebula Bluff's tells called;
-     - asynchrony: the rhythm mode's mean offset in ms, Wanda's.
-4. **Why come back once a place is done (a).**
+ 4. **Why come back once a place is done (a).**
    - The sea pays 0.1 to 0.2x once charted.
    - The fold: the game day already turns over the herds (migrations), the goals and the first today. Add **the lairs restocked each
      game day**, the same for everyone as the migrations are. The sea beasts, their fights and their pay are all built.
@@ -88,5 +87,4 @@ Status: **(a)** waits on South, **(b)** decided, not built, **(c)** not designed
 | --- | --- |
 | Petra | `fresh` on `track.validate`; the save section `aptitude` approved; the pair specials, a wave of four at a time; the Touchstone room |
 | Calissa | the Assay window from `game.aptitude.all()` (??? to five readings, the number to twenty, then the curve) |
-| Wanda | the rhythm mode's mean asynchrony (ms) and its spread on `rhythm.score`, for the timing reading |
 | Espada | the Assay's words (`/assay`'s lines are placeholders) |
