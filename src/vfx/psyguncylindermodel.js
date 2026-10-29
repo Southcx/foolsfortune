@@ -7,7 +7,8 @@
 // cap with its glyph keylined dark; round each bore a ring of pips, its depth; the frame that does not turn (the top strap with its
 // slit, the brass pawl, the hammer, the link's brass eye; the bottom strap the crane hangs in); the spent case and its glint. Beside it,
 // two small canvases drawn in lines of the 480-line present: the PLATE (the chosen shell's glyph, its label reeling, its count rolling
-// in fixed cells, x2 on a doubled heart) and the VESSEL INSET (the regions the Caster's toll would crack, glinting).
+// in fixed cells, x2 on a doubled heart, its TYPE number etched on a brass tag in neuralese: vfx/wornnumerals.js, South via
+// Espada 2026-10-29) and the VESSEL INSET (the regions the Caster's toll would crack, glinting).
 // Every look is a kind of the overlay's one shader (vfx/lachrimetertube.js `overlayKind`) or its one lit set-up (`overlayStd`), so the
 // cylinder adds no shader program of its own.
 //
@@ -25,6 +26,8 @@ import * as THREE from 'three';
 import { overlayKind, overlayShader, overlayStd } from './lachrimetertube.js';
 import { SHELL_COLOR } from '../pneuka/thingmodels.js';
 import { SHELL_TYPES } from '../tools/psygun/shells.js';
+import { shellById } from '../progress/combat/castershells.js';
+import { numeralFit } from './wornnumerals.js';
 import { FONT } from '../ui/theme.js';
 import { letGo } from './letgo.js';
 
@@ -273,6 +276,12 @@ export function drawPlate(c, P, time) {
   x.fillStyle = cur.id === 'plain' ? '#2a2236' : `#${new THREE.Color(colourOf(cur.id)).multiplyScalar(0.55).getHexString()}`; x.beginPath(); x.arc(gx, gy, 13 * s, 0, TAU); x.fill();
   x.strokeStyle = '#120c18'; x.lineWidth = 1.4 * s; x.stroke(); glyph2d(x, cur.id, gx, gy, 22 * s);
   reel(x, 36 * s, 11 * s, Math.round(14 * s), L.from.name, L.to.name, L.u, '#e9dcc8');
+  const no = cur.id === 'plain' ? null : shellById(cur.id)?.no;
+  if (no != null) { // (its TYPE number etched dark on a brass tag in the plate's corner, in neuralese: never acted on, so no Arabic)
+    const bx = 88 * s, by = 22 * s, bw = 18 * s, bh = 14 * s, bg = x.createLinearGradient(0, by, 0, by + bh); bg.addColorStop(0, '#e8c27a'); bg.addColorStop(0.5, '#b8873e'); bg.addColorStop(1, '#7a5420');
+    x.fillStyle = bg; x.fillRect(bx, by, bw, bh); x.strokeStyle = '#3a2410'; x.lineWidth = 0.6 * s; x.strokeRect(bx + 0.3 * s, by + 0.3 * s, bw - 0.6 * s, bh - 0.6 * s);
+    numeralFit(x, no, { x: bx + bw / 2, y: by + bh / 2, w: 15 * s, h: 10 * s, ink: '#3a2410', lw: 1.2 * s });
+  }
   if (P.count) {
     const cc = P.count, dead = cc.to === 0 && cc.u >= 1, ex = roll(x, 35 * s, 28 * s, Math.round(20 * s), cc.from, cc.to, cc.u, dead ? '#7a6a8a' : '#8ff5d2', 2, !dead);
     if (P.dbl) { x.font = `${Math.round(12 * s)}px ${COUNT_FONT}`; x.textBaseline = 'middle'; x.textAlign = 'left'; const tw = x.measureText('×2').width; x.fillStyle = '#c9a04a'; x.fillRect(ex + 3 * s, 22 * s, tw + 6 * s, 12 * s); x.fillStyle = '#2a1a0a'; x.fillText('×2', ex + 6 * s, 28.5 * s); }
