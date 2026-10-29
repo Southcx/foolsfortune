@@ -886,6 +886,12 @@ part sits changes, so a player who learned the Comb can read the hand.
 - **The line** is a bus: words hang from one baseline as a chip's parts hang from a rail; **a modifier** hangs half a row below, as
   in the Comb; **a word break** is a gap in the bus; **a sentence ends** on the Comb's star, the stamp's script closing the hand's.
 
+**The numerals** *(South, 2026-10-29; the rule is NEURALESE.md 2b)*. Speech counts as Rome did and writing places as India did. A digit
+is drawn as it is said: a bar for PENTA (Rome's V was the open hand), two dots joined for DUO (traces run in pairs, as the nasal's
+doubled stem), a lone dot for UNA (the via), an open ring for VOYD (a pad with nothing on it, the empty mouth). The digits hang from the
+bus on pins, so a number written in the running hand looks like a chip: a body on a rail with its legs counting. In the Comb a digit
+takes a doubled cell. The pun is the point: a digit is a finger (Latin *digitus*), and the bar is the whole hand.
+
 **The Pneuka Jar as hanko** *(the owner's idea, 2026-10-17; lore Espada's and Dovina's, open)*. The Pneuka Jar is slotted into things
 like a cartridge to make them work: larger vessels and machines, the Shrine gates, the ships for the crossings. Its base is a seal
 face, carrying your name in the Comb. A hanko (判子) is a Japanese name seal pressed in red where a signature would go; a cartridge is

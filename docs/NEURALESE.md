@@ -111,6 +111,40 @@ and one letter are new; everything else is a rule the grammar already implied, n
     the syllable rules refuse is opened with **a**, the inherent vowel, which the running hand does not write, so the bent name still
     looks as close as the hand allows. Wanda is VANDA; Calissa KALISA; Christopher KRISTOFER; Strength SATRENATH.
 
+## 2b. Numerals (South, 2026-10-29: "a representation of numbers as well")
+
+The spoken numbers already count the Roman way: by adding, from a one (UNA, Roman I), a two, a hand (PENTA, Roman V, the open hand) and
+two hands (DEKA, Roman X). So speech keeps its Roman soul and writing takes the Arabic power: **written numbers are positional, in base
+ten, and each digit is drawn as its spoken sum**, so the marks are read in the order they are counted.
+
+23. **The digits.** A digit is at most one bar and up to two pairs, plus a dot:
+    - **a bar** is PENTA, five;
+    - **a pair**, two dots joined by a short trace, is DUO, two;
+    - **a lone dot** is UNA, one;
+    - **an open ring**, a pad with nothing on it, is VOYD, zero.
+
+    | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 |
+    | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+    | ring | dot | pair | pair, dot | pair, pair | bar | bar, dot | bar, pair | bar, pair, dot | bar, pair, pair |
+    | VOYD | UNA | DUO | DUO-UNA | DUO-DUO | PENTA | PENTA-UNA | PENTA-DUO | PENTA-DUO-UNA | PENTA-DUO-DUO |
+
+    The bar sits nearest the line and the dots below it, as speech says the biggest first. Read a digit's marks top to bottom and you
+    have said its number.
+24. **A number** is its digits left to right, the biggest place first, as in Arabic numerals: one, two, eight is 128. Ten is a dot and a
+    ring. Each digit hangs from the line on its own pin, as a chip's legs hang from its body, so no two digits run together.
+    - In the running hand, a number is a modifier (rule 11), so it hangs on the modifier's lower bus under its head: EMO with 7 under it
+      is the seven feelings. Alone (a count, a mark on a thing) it hangs from a bus of its own.
+    - In the Comb, a digit fills one cell with a **doubled border**, so a digit is never read as a syllable: its bar the cell's waist, its
+      pairs and dot below it on the lattice's points in the hand's order, zero a ring at the centre.
+25. **Saying a written number.** To fifty, it is said as its sum, as the folk count: 17 is DEKA-PENTA-DUO. Past fifty the folk still
+    say MULTA, but the System, which keeps every count, reads what it wrote digit by digit with a pause between, as a ledger is read
+    aloud: 128 is "UNA, DUO, PENTA-DUO-UNA". (`numeralOf` and `saidOf`, `npc/neuralesespelling.js`.)
+
+Prior art: the Maya's bar and dot (a bar five, a dot one, a shell for zero, by place), the Kaktovik numerals (drawn by Iñupiaq
+schoolchildren in 1994 so that a digit's strokes show its value), Roman numerals' tally (I a finger, V the hand), and the zero and place
+value that came west from India through the Arabic world. Considered and set aside: the Cistercian monks' numerals, one glyph up to
+9999 on a stave; handsome on a seal, but they would teach a second counting nobody speaks.
+
 ### The phrasebook (`PHRASES`)
 
 | neuralese | English | how it is built |
@@ -142,7 +176,7 @@ The full list, with senses and sources, is `neuraleseroots.js`.
   - The old Functions also belong here: SIVA, LUNO, GRAV, PEXA, FETA, TALO, SHAI, ROMI, MELU.
 - **Qualities:** KALO, MALA, MEGA, MIKRA, NEA, PALA, FORTA, TAKA, OMO, ALI, SI.
   - Also the old STIL, EZA, HUSA, LON and DEO.
-- **Numbers:** UNA, DUO, PENTA, DEKA, MULTA, OMNI.
+- **Numbers:** UNA, DUO, PENTA, DEKA, MULTA, OMNI. Written, they are the numerals of 2b.
 - **New, 2026-10-23:** KO (this, here, now), DUNA (can, able), DEKA (ten).
 - **Particles:** NI, TE, O, KE, SU, TA, VE, SED.
 
