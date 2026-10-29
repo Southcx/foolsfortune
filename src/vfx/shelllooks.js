@@ -73,13 +73,14 @@ export const SHELL_LOOKS = {
   forgetMe: { land: 'target', courier: true, hold: DUR },
   agents: { body: 'clapper', fly: true },
   overdrive: { fire: 'courier', hold: DUR },
-  wonder: { land: 'point', hold: DUR },
-  mirth: { land: 'point' },
-  desire: { land: 'point', hold: DUR, r: (row) => Math.min(8, row.n.r * 0.5) },
-  fury: { land: 'target', hold: DUR },
-  gall: { land: 'point', hold: DUR, r: (row) => row.n.r * 0.6 },
-  grief: { land: 'target', hold: DUR, over: true },
-  dread: { land: 'point' },
+  // 81 to 87, the Feelings: each round flies in its feeling's trail and lands in its feeling's burst grammar (vfx/library/feelings/)
+  wonder: { fly: 'feeling.wonder.trail', land: 'point', hold: DUR },
+  mirth: { fly: 'feeling.mirth.trail', land: 'point' },
+  desire: { fly: 'feeling.desire.trail', land: 'point', hold: DUR, r: (row) => Math.min(8, row.n.r * 0.5) },
+  fury: { fly: 'feeling.fury.trail', land: 'target', hold: DUR },
+  gall: { fly: 'feeling.gall.trail', land: 'point', hold: DUR, r: (row) => row.n.r * 0.6 },
+  grief: { fly: 'feeling.grief.trail', land: 'target', hold: DUR, over: true },
+  dread: { fly: 'feeling.dread.trail', land: 'point' },
   ...SHELL_LOOK_ROWS,
 };
 

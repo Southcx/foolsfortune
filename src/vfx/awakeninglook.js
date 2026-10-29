@@ -9,13 +9,18 @@
 //               feet to 8 m over them), following them, so it falls in a room as on the sand: its own overhead map is cast from just
 //               over their head, so a room's floor is what it lands on, not its roof. In an open place the sky takes it too
 //               (`weatherLook.surge`: the aurora, the bows, the bolts, the grade, the camera's own column).
+//               Beside it, the library's RISE (`feeling.<f>.rise`, vfx/library/feelings/): the flood's secondary and tertiary, the
+//               feeling's own surge round the Courier for about three real seconds, following them (never a second flood: the weather
+//               is the flood's, the rise is the feeling's shapes on their body), quieter by the same share while a fight is on.
 //   THE BODY    on `feeling.embody { feeling, by }` (said by feedback/awakening.js once the Courier is free: out of any fight, any
 //               tech, on their feet) the Courier's own clip for that feeling (courier/anim/feelingclips.js), played by the emote tech
-//               as an emote is: moving fades it out, so nothing interrupts the core movement.
+//               as an emote is: moving fades it out, so nothing interrupts the core movement; while it plays they wear the feeling's
+//               aura (`feeling.<f>.aura`) a breath, eased out.
 //
-// It never hides a fight's danger: nothing within 3.5 m of the Courier, the middle of the screen kept clear (the pieces' `uClear`),
-// and a third as much while a fight is on or a creature has noticed them (game.combat, a creature's memory: what the HUD ring asks,
-// vfx/hudring.js). No words (the log line is Espada's), no sound (the feeling's phrase is Wanda's), no glitch (Petra's pulses it).
+// It never hides a fight's danger: nothing of the flood within 3.5 m of the Courier, the middle of the screen kept clear (the pieces'
+// `uClear`), and the flood and the rise a third as much while a fight is on or a creature has noticed them (game.combat, a creature's
+// memory: what the HUD ring asks, vfx/hudring.js). No words (the log line is Espada's), no sound (the feeling's phrase is Wanda's),
+// no glitch (Petra's pulses it).
 //
 // Prior art: Breath of the Wild's memories (the world falls away round Link and the moment plays where he stands), Okami's brush
 // techniques (each learned in a staged scene, the world flooded with that god's colour and weather), Journey's set pieces (wordless:
@@ -23,7 +28,8 @@
 // summons, whose arrival changes the sky over the field for a few seconds and gives it back.
 //
 //   game.awakeningLook = new AwakeningLook(game)   .update(rawDt, camera) (each frame)   .flood(feeling, { how, k }) (the look alone:
-//   the /awaken command and the sheets; nothing learned, nothing counted)   .on (a flood running)   FLOOD (its timing and sizes)
+//   the /awaken command and the sheets; nothing learned, nothing counted; the rise with it)   .embody(feeling) (the clip, and the aura)
+//   .on (a flood running)   FLOOD (its timing and sizes)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { Overhead } from './overhead.js';
@@ -41,6 +47,7 @@ export const FLOOD = {
   clear: [0.34, 0.5], // (the clear middle of the screen, its radius in screen heights: calm, and while a fight is on)
   danger: 0.65, // (how much lighter while a fight is on or something has noticed them)
   count: 0.85, // (the count way's flood, a little quieter than the feat's: the plan's "quieter, but still an awakening")
+  answer: 2.6, // (real seconds the feeling's aura is worn on the body's answer, then eased out)
 };
 const smooth = THREE.MathUtils.smoothstep;
 
@@ -61,11 +68,39 @@ export class AwakeningLook {
     this.cur = { feeling, k, t: 0, open: this.game.weather?.here?.(P)?.exposure === 'open' }; // (open: lit by the hour as the weather is; in a room, its own lamps)
     this.over.fill(P); // (the floor under the whole column at once: the first frame falls where it should)
     this.dz = this.danger();
+    this.riseLook(feeling, P, k);
     return true;
   }
 
-  /** The body's answer: the feeling's clip, by the emote tech (feedback/awakening.js has waited till the Courier is free). */
-  embody(feeling) { return this.game.techs?.get?.('emote')?.request?.(feelingClipId(feeling)) ?? false; }
+  /** The library's rise round the Courier (`feeling.<f>.rise`): the flood's secondary and tertiary, following them, quieter by the
+   *  flood's own share while a fight is on; a new flood lets the last one's go. */
+  riseLook(feeling, P, k) {
+    const g = this.game;
+    this.rise?.stop?.();
+    this.rise = g.vfx?.play?.(`feeling.${feeling}.rise`, { pos: P, floor: P.y, power: k, follow: (h) => {
+      const p = g.player?.pos; if (p) { h.pos.copy(p); h.ctx.floor = p.y; }
+      h.k = 1 - FLOOD.danger * this.dz;
+      return true;
+    } }) ?? null;
+  }
+
+  /** The body's answer: the feeling's clip, by the emote tech (feedback/awakening.js has waited till the Courier is free), and its aura
+   *  worn while it plays. */
+  embody(feeling) {
+    const ok = this.game.techs?.get?.('emote')?.request?.(feelingClipId(feeling)) ?? false;
+    if (ok === true) this.answerLook(feeling); // (a refusal is a reason's string: nothing worn then)
+    return ok;
+  }
+
+  /** The feeling's aura worn round the Courier on the body's answer (`feeling.<f>.aura`), FLOOD.answer real s, then eased out. */
+  answerLook(feeling) {
+    const g = this.game, P = g.player?.pos;
+    if (!P) return;
+    g.vfx?.play?.(`feeling.${feeling}.aura`, { pos: P, floor: P.y, follow: (h) => {
+      const p = g.player?.pos; if (p) { h.pos.copy(p); h.ctx.floor = p.y; }
+      return h.t < FLOOD.answer;
+    } });
+  }
 
   /** The burst's pieces, made the first time a feeling wakes (the weather's own programs: nothing new is compiled). */
   make() {

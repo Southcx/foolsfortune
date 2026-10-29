@@ -36,6 +36,7 @@ import { ReleaseCrack } from '../vfx/releasecrack.js';
 import { HookMark } from '../vfx/hookmark.js';
 import { BlobShadow } from '../vfx/blobshadow.js';
 import { ClassArtLooks } from '../vfx/classartlooks.js';
+import { FeelingLooks } from '../vfx/feelinglooks.js';
 import { LockheartReach } from '../vfx/lockheartreach.js';
 import { CarryThrowMark } from '../vfx/carrythrowmark.js';
 import { LobArcMark } from '../vfx/lobarcmark.js'; // (the psygun variants' looks: OVERLAY.md 19)
@@ -89,6 +90,7 @@ export function bootPneuka(game, made) {
   game.hookMark = new HookMark(game); // (the hook's mark: vfx/hookmark.js)
   game.blobShadow = new BlobShadow(game); // (the Courier's blob shadow straight down, beside the sun's: vfx/blobshadow.js)
   game.classArtLooks = new ClassArtLooks(game); // (the class arts drawn on the body and the ground: vfx/classartlooks.js)
+  game.feelingLooks = new FeelingLooks(game); // (a feeling's Lachryma drunk, drawn into the Courier: vfx/feelinglooks.js)
   game.lockheartReach = new LockheartReach(game); game.carryThrowMark = new CarryThrowMark(game); game.lobArcMark = new LobArcMark(game); game.flareReveal = new FlareReveal(game); // (the hoover's reach on the ground; where a carried thing would land; the Bombardier's lob previewed, a flare's finds marked: vfx/lockheartreach.js, vfx/carrythrowmark.js, vfx/lobarcmark.js, vfx/flarereveal.js)
   // (a blow taken: they flinch, character.js; the hurting impulses are the filigree's list)
   game.events.on('courier.impulse', (e) => { if (HURT.has(e.why)) character.flinch(Math.min(1, (e.mag || 0) / 10), e.dir); });
