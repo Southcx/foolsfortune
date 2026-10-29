@@ -45,6 +45,7 @@ export const ACTIONS = [
   { id: 'parry',    keys: ['KeyV'],       pad: 'RB',    touch: 'parry',      ctx: 'foot', how: 'tap' },   // (the kick with nothing in hand, once learned)
   { id: 'blink',    keys: ['KeyE'],       pad: 'LB',    touch: 'blink',      ctx: 'foot', how: 'tap' },   // (once learned)
   { id: 'blink.ground', keys: ['KeyE'], touch: 'dash', ctx: 'foot.ground', how: 'tap' },   // (on touch the DASH tile is BLINK on the ground, standing, once learned: the stick runs, so a grounded dash has no press of its own; South, 2026-10-29)
+  { id: 'art',      keys: ['KeyG'],                     touch: 'art',        ctx: 'foot', how: 'tap' },   // (the worn class art's action: courier/classarts/body.js; its tile Calissa's to draw)
   { id: 'dash',     keys: ['ShiftLeft'],  pad: 'LS',    touch: 'dash',       ctx: 'foot', how: 'tap' },   // (a press: the air dash, the crouched roll; on touch a DASH tile, always on foot: the dash is the core movement's, MOBILE.md 6.1.1)
   { id: 'view',     keys: ['KeyZ'],       pad: 'Up',                         ctx: 'foot', how: 'tap' },   // (first / third person; touch: the pause menu)
   { id: 'shoulder', keys: ['KeyO'],       pad: 'Left',                       ctx: 'foot', how: 'tap' },   // (touch: the pause menu)
