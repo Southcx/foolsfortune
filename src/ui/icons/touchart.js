@@ -21,6 +21,7 @@
 //                    overhead an eye looking down on a planetoid (TOP VIEW, the garden only)
 //                    skiff    the board under its sail (summon or recall)          godhand  the hand over the ground (raise or let go)
 //                    survey   an eye over the ground's layers (the hand's survey)
+//   a class art      art      a four-point star over a ring thrown out on the ground
 //   the god hand     alt      a loop and an arrow up: the art's other way          sign  a finger tip at the end of a drawn spiral
 // Where a glyph acts on matter the matter is '#', the part that does the thing '+', the ground and what waits '-'.
 //
@@ -493,6 +494,13 @@ export const TOUCH_ART = {
     '..............',
     '..............',
   ],
+  art: grid(14, 14, (x, y) => { // (the worn class art: a four-point star over a ring on the ground, the art thrown out from the feet)
+    const dx = Math.abs(x + 0.5 - 7), dy = Math.abs(y + 0.5 - 5.5);
+    if (dx * dy <= 1.1 && dx <= 4.6 && dy <= 4.6) return '+';
+    const rx = (x + 0.5 - 7) / 6.2, ry = (y + 0.5 - 12) / 1.4, r = Math.hypot(rx, ry);
+    if (r <= 1 && r >= 0.62) return '-';
+    return null;
+  }),
   sign: [
     '..............',
     '....++++......',

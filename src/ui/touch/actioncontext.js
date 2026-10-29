@@ -188,9 +188,9 @@ export function stripOf(g) {
   if (g.duel?.active) return []; // (the duel's moves stand in the duel's phone screen: duelscreen.js)
   if (atHelm(g)) return helmStrip(g);
   if (!onFoot(g)) return [];
-  const ctx = inHandCtx(g);
-  if (!ctx) return []; // (nothing in hand: BLINK is the DASH tile's face on the ground, footCluster)
-  const out = [], tool = g.belt.inHand;
+  const ctx = inHandCtx(g), art = artTile(g);
+  if (!ctx) return art ? [art] : []; // (nothing in hand: BLINK is the DASH tile's face on the ground, footCluster)
+  const out = art ? [art] : [], tool = g.belt.inHand;
   if (ctx === 'psygun') {
     const S = g.shells, n = S?.gun?.chambers ?? S?.chambers?.length ?? 0;
     // (a pick is one tile, MOBILE.md 4.1: CHAMBER showing the chosen one's number; a tap the next chamber, a hold the cylinder as a radial)
@@ -208,6 +208,16 @@ export function stripOf(g) {
   } else if (ctx === 'veritome') out.push(E('ve.flash', 'flash', 'FLASH'));
   else if (ctx === 'crucibelle') for (let i = 0; i < 5; i++) out.push(E(`cr.n${i + 1}`, null, null, { corner: String(i + 1), tint: DEGREE_COLOR[i], pad: true }));
   return out; // (a tool drawn keeps the core movement's moves on the near shelf: nearOf)
+}
+
+/** The worn class art's action (input action `art`, G on the desk; courier/classarts/body.js): its label the face, its rim the cooldown
+ *  filling back (real seconds, `classArtsRun.cool`), dim while cooling or the pool short of its cost. On the far shelf, its first tile:
+ *  the near shelf's three already reach the centre's edge at 896 x 414 (a fourth would stand in the middle). */
+export function artTile(g) {
+  const R = g.classArts?.numbers?.('action'), run = g.classArtsRun; if (!R) return null;
+  const left = Math.max(0, (run?.cool?.[R.id] ?? 0) - (run?.now ?? 0)), full = R.cooldown || 1;
+  const short = R.cost > 0 && (g.lachryma?.value ?? Infinity) < R.cost;
+  return E('art', 'art', String(R.label || 'ART').toUpperCase(), { charge: left > 0 ? 1 - left / full : 0, dim: left > 0 || short });
 }
 
 /** THE NEAR SHELF (MOBILE.md 4.1): up to three tiles over the cluster on the right edge. With a tool drawn, CROUCH, DASH (BLINK on the
