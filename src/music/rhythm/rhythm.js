@@ -35,7 +35,7 @@ const LEAD_IN = 0.15; // (the arranger starts its first bar this far ahead of th
 
 export class Rhythm {
   constructor(game) {
-    this.game = game; this.active = false; this.highway = new Highway(); this.offset = 0; this.turn = -1;
+    this.game = game; this.active = false; this.highway = new Highway(game); this.offset = 0; this.turn = -1;
     this.kept = keepSetting(game.save, 'rhythm', KEY, { dump: () => ({ offset: this.offset }), load: (d) => { this.offset = +d.offset || 0; }, fresh: () => { this.offset = 0; } }); // (the save's settings scope: audio/keep.js)
     this.onKey = (e) => this.key(e);
   }

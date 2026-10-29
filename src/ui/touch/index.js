@@ -41,7 +41,8 @@ export function installTouchControls(game) {
     const now = ms / 1000, on = touchOn(game);
     if (on !== UI.on) { UI.on = on; if (on) { build(); relayout(); } else longPress.cancel(); }
     if (UI.cluster) {
-      UI.topBar.update(now, on); UI.artBar.update(now, on); UI.godStrip.update(now, on);
+      const taken = !!game.touch?.screenTaken?.(); document.body.classList.toggle('hud-taken', on && taken); // (the pads or the paper hold the screen: the top bar and the log's ticker stand down)
+      UI.topBar.update(now, on && !taken); UI.artBar.update(now, on); UI.godStrip.update(now, on);
       const avoid = UI.artBar.shown ? UI.artBar.bar : UI.godStrip.shown ? UI.godStrip.bar : null;
       if (avoid !== UI.cluster.avoid) { UI.cluster.avoid = avoid; UI.cluster.relayout(); }
       UI.cluster.update(now, on); UI.strip.update(now, on, UI.cluster.bounds()); UI.duel.update(now, on); UI.stick.update(now, on);
