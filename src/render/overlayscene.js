@@ -98,5 +98,6 @@ export class OverlayScene {
     const was = renderer.getRenderTarget(), clip = renderer.clippingPlanes; renderer.setRenderTarget(null); renderer.clippingPlanes = NO_CLIP;
     const auto = renderer.autoClear; renderer.autoClear = false; renderer.render(EMPTY, this.camera); renderer.autoClear = auto; // (three's compile keeps the last render's clipping state: an empty draw with none first, so the compile matches the draw; Calissa's finding, casebook compile-as-drawn)
     renderer.compile(this.scene, this.camera); renderer.setRenderTarget(was); renderer.clippingPlanes = clip;
+    renderer.autoClear = false; renderer.render(EMPTY, this.camera); renderer.autoClear = auto; // (and the world's clipping put back the same way, or every world program compiled after this one is built for no planes: 383 programs, measured)
   }
 }
