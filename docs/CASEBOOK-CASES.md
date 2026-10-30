@@ -4687,3 +4687,14 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** `compile()` runs once (`warmed`), cleared only when the materials are disposed. After (the same probe): the desk 219 on
   entering, 219 with six seeds planted, 219 with them grown to large, their own moons, a pour and a swell; the phone 203, 203, 203.
 - **Rule:** 374
+
+### 2026-10-30 · The slip jelly's cut-in strip was a white wall (vfx/duelview/cutin.js; the folds builder's HURL shots, desk and phone)
+- **Seen:** in the foe's cut-in the strip on the band's right showed a pale, featureless mass over half the band; nothing a person would
+  call a slip jelly.
+- **Cause, as read:** the strip cuts to a creature's head (its `head()`, else the top 38% of its bounds) under a key of 2.6 and a rim of
+  3.2. The slip jelly has no face, and its body is pale under the aberrant's look, so the crop was the top of a featureless dome lit
+  past white. The Wisp (a lantern) and Strawman (a sack head) have a head to cut to, which is why theirs read.
+- **Fix:** an elite may give `static PORTRAIT` beside its `MOTIF`; the slip jelly's asks for its whole body (`whole`, its bounds'
+  centre, 0.85 of its height in frame) under half the lights (`light: 0.5`, `CUT_IN.light` scaled). After (the same probe, desk and
+  phone): the strip shows its gathered body and drips, shaded; programs 205 and 188 in the duel as before.
+- **Rule:** NEW:portrait-needs-a-face

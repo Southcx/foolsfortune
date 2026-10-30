@@ -30,6 +30,9 @@ const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Color()
 export class JellyElite {
   /** The cut-in's motif behind this aberrant's bands (cutin.js: 2 sand). */
   static MOTIF = 2;
+  /** Its strip in a cut-in (cutin.js aim): the whole body, a faceless blob read by its outline and drips, under gentler lights (a pale body
+   *  went white under the strip's full key: the folds builder's shot, 2026-10-30). */
+  static PORTRAIT = { whole: true, light: 0.5 };
   constructor(view) { this.view = view; this.on = false; this.pile = 0; }
 
   /** Whether a duel is an aberrant slip jelly's (its ruleset's secret is the dissolve, or the foe is one). */

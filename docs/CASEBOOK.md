@@ -1052,3 +1052,5 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 374. **A warm-up compiles once, at its owner's first build, under the cover.** A look rebuilt in play (more instances, a
   new geometry) keeps its materials and so their programs; compiling it again from inside the frame is done under another render state
   and leaves programs no draw uses. Guard the compile with a flag cleared only when the materials are disposed.
+NEW:portrait-needs-a-face. **A close-up crops to a face only where there is one.** A portrait that cuts to a head reads a faceless
+  body as a featureless mass: give that body its whole silhouette in frame, and light it for its own albedo, not the house's.
