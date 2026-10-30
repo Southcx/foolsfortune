@@ -183,7 +183,7 @@ export function buildStage(id, game) {
     obj.userData.dispose = () => { for (const [L, i0] of lights || []) L.intensity = i0; canopyTick({ night: 0 }); T.forEach((x) => x.dispose()); };
   }
   else if (id === 'garden:myggdrasil') {
-    // Myggdrasil, the World Mushroom, on its 26 m planetoid (vfx/garden/myggdrasil.js), its state a step every 8 real seconds (caps 1, 3,
+    // Myggdrasil on its 26 m planetoid (vfx/garden/myggdrasil.js), its state a step every 8 real seconds (caps 1, 3,
     // 5, 10; branches none, three, seven, all twenty-two; no tincture, then a rose and a teal one; fruit as the crown fills), game noon
     // then night every other loop. A test pins a step: userData.pin = { caps, branches, tincture, crown }, userData.night = 0 | 1
     obj = new THREE.Group();

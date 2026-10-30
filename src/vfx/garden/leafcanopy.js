@@ -2,7 +2,8 @@
 // THE LEAF CANOPY: a tree's crown drawn from a few spheres whose every vertex is a leaf (the owner, 2026-10-08, through Dovina: "trees
 // from billboarded leaf quads ... each quad keeps its sphere's normal for the lighting. A vertex shader turns the quads to the camera and
 // sways them"; docs/plans/MYCELIUM.md section 4). One program for every canopy in the garden (the cocoon tree's, the Mulberry Grove's,
-// Myggdrasil's gills), one draw for as many canopies as are built together.
+// a gill crown's), one draw for as many canopies as are built together. (Myggdrasil's caps were canopies until 2026-10-30;
+// they are solid caps of its own program now: vfx/garden/myggdrasil/caps.js. The gill and cap cells and the gate stay for any canopy.)
 //
 //   THE SPHERES  a canopy is a few spheres { c, r }; each is an icosphere of low detail (more detail for a bigger sphere, so the leaves
 //                keep one spacing), jittered so the lattice never shows, and a smaller shell inside it (darker: the crown's depth). A
@@ -16,8 +17,8 @@
 //                into an ellipsoid and halved (a cap's dome over its gills), and a canopy may open by its slot's GATE: each leaf shows
 //                once the gate passes its phase (its distance out from the axis), so a cap opens from its middle out (canopyOpen), and
 //                an entry's leaves can be hidden in the index, from the shadow pass too (canopyShow)
-//   THE ATLAS    painted on a canvas once (4 x 2 cells of 128 px): gingko fans, willow blades, round leaves, mulberry leaves, and for
-//                Myggdrasil a comb of gills and a cap's shingled scales (both turned out from the axis by the vertex shader: a cap's
+//   THE ATLAS    painted on a canvas once (4 x 2 cells of 128 px): gingko fans, willow blades, round leaves, mulberry leaves, and a
+//                fungus's comb of gills and a cap's shingled scales (both turned out from the axis by the vertex shader: a cap's
 //                gills radiate from its stipe, its scales point to its rim). Red is the gold (veins and rims), green the leaf's own light (dark at its
 //                base), blue which leaf of the clump, alpha the coverage. Its mips are made here, cell by cell (no cell bleeds into
 //                its neighbour), each level's alpha scaled so as much of a cell passes the cut as at full size (the canopy never thins
@@ -30,12 +31,12 @@
 //                peacock and green with where on the crown the leaf is and where it is seen from (so a crown turns its colours as you
 //                go round it), in broad bands, brighter at the crown's turn; edged and
 //                veined in gold, the gold's own glow a little more by night (low and steady); lit through when the sun is behind the
-//                crown. A canopy may take a TINT (Myggdrasil's tincture): its flash leans to that colour, keeping its value. The tints
+//                crown. A canopy may take a TINT (a tree's own colour): its flash leans to that colour, keeping its value. The tints
 //                are a 64-texel table (one uniform for every canopy): slot 0 is the plain stone the many share
 //   THE GREENS   (GARDEN-COZY.md H4, H5, H6) a canopy is LEAFY or the stone's, a flag in its slot's gate row (green): the garden's own trees
 //                (vfx/garden/gardentree.js plants every one leafy) take the mood's two greens, a light and a deeper (`uLeafA`, `uLeafB`;
 //                vfx/garden/gardengrounds.js groundTick writes them each frame from game.gardenMood.now), a leaf's tone by how the sun
-//                falls on it and its own phase, the sunlit tops warmer; Lachryma's trees (Myggdrasil's caps and gills, the cocoon tree)
+//                falls on it and its own phase, the sunlit tops warmer; Lachryma's trees (the cocoon tree, a gill crown)
 //                never ask, and keep labradorite and gold. By season: spring a blossom speckled through the leaves, summer deep green,
 //                autumn the mood's ambers and rusts with leaves let go (each by its own phase, shrinking away, so a crown thins and
 //                the dark shell and the limbs show), winter bare to sparse with snow on the crown's tops (where a leaf faces away from
@@ -57,7 +58,7 @@
 //   canopyTick({ t, wind, night })   (only outside the garden: in it the grounds' clock drives the time and the night)
 //   LEAF_KINDS   canopyMaterial()   canopySlot() / canopyTint(slot, color, amount) / canopyOpen(slot, k) / canopyLeafy(slot, on) / canopyFree(slot)
 //   (canopyGeometry's entries and LeafCanopy take `leafy`; false, the default, is the stone's)
-//   canopyShow(geometry, geometry.userData.ranges[i], on)   (one entry's leaves hidden or shown: Myggdrasil's caps)
+//   canopyShow(geometry, geometry.userData.ranges[i], on)   (one entry's leaves hidden or shown: a cap opened by its gate)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { LAB_GLSL, mindTime, mindTick } from '../labradorite.js';
@@ -264,7 +265,7 @@ function coverageCheck(renderer) {
 }
 
 // ---- the tints: a table of 64 slots, slot 0 the plain stone; its first row a slot's tint, its second its open gate (red: 0 shut ..
-// 1 open, every leaf shown; a canopy grown from its middle out, Myggdrasil's caps, opens as the gate rises: vfx/garden/myggdrasil.js)
+// 1 open, every leaf shown; a canopy grown from its middle out opens as the gate rises)
 function tintTable() {
   if (tintTex) return tintTex;
   const d = new Uint8Array(TINTS * 2 * 4); for (let i = 0; i < TINTS; i++) d[(TINTS + i) * 4] = 255;
