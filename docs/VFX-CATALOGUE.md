@@ -1,6 +1,6 @@
 # The VFX catalogue (generated: do not edit)
 
-Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-10-30). 620 effects in 39 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
+Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-10-30). 622 effects in 39 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
 
 **Play one:** `game.vfx.play(name, { pos, dir, normal, tint, power, scale, feeling, domain, suit, follow })`; a held one returns a handle (`h.pos`, `h.k`, `h.stop()`). A name falls back from the most particular (`hit.slash.crystal` -> `hit.slash` -> `hit`), so a new name always plays something.
 
@@ -661,6 +661,18 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `blow.launcher` | one-shot | sprites:streak×2, sprites:ringthin, sprites:ring, sprites:glint | extends `blow.light`. LAUNCHER the arc thrown up with what it lifts, a ring, glints rising after |  |
 | `blow.light` | one-shot | sprites:streak, sprites:ringthin | laid over the hit (hit.slash.<material>, damage.<type>, which creatures.strike already plays) when a melee blow lands, by its weight class: light, heavy, launcher, finisher (blowWeight), then `.<material>` where a weight has more to give... |  |
 
+### garden (7)
+
+| effect | kind | layers | what | asked by |
+|---|---|---|---|---|
+| `garden.howto.ring` | held | shape:hoop×2, shape:ring, shape:pillar | held: a how-to step's spot ringed on its ground (`dir` the ground's up, `scale` the ring's radius): a gold hoop turning, the running hand round inside it, the film's thinner hoop breathing outside it, and a faint pillar so it reads from ... | vfx/garden/howtoring.js |
+| `garden.howto.sky` | held | shape:hoop×2, shape:ring | held: the open sky of the ring marked where a seed is let go: the same hoops hung in the air, no pillar | vfx/garden/howtoring.js |
+| `garden.lotus.land` | one-shot | sprites:sparkle, sprites:petal, sprites:ringthin | the lotus across catching the Jar: a puff of pollen and a few petals | vfx/garden/launchlotus.js |
+| `garden.lotus.launch` | one-shot | sprites:petal, sprites:sparkle, sprites:soft, sprites:ring, sprites:core, light | a launch lotus flinging the Pneuka Jar: petals thrown up and out, pollen in gold and the film shot along the up, motes of where it throws to, a ring | vfx/garden/launchlotus.js |
+| `garden.seed.grow` | one-shot | sprites:chip, sprites:puff, sprites:sparkle | a seed's planetoid grown a size: chips and dust of its own matter thrown off its old surface, a few glints of the film | vfx/garden/seedlooks.js |
+| `garden.seed.pour` | held | sprites:puff, sprites:chip | held: the dust where the god hand's pour lands on a seed, in the matter's colour, and grains skipping off it | vfx/garden/seedpour.js |
+| `garden.smoke` | held | sprites:puff | held: a chimney's smoke rising along `dir`, slow, spreading, lavender grey (the Athanor's cap, the kiln's stack) | vfx/garden/facilitylooks.js |
+
 ### jellymount (7)
 
 | effect | kind | layers | what | asked by |
@@ -703,16 +715,6 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `dunes.fulgurite.glint` | one-shot | sprites:star4 |  | vfx/dunes/fulgurites.js, vfx/dunes/hotfulgurite.js |
 | `dunes.fulgurite.hot` | held | sprites:core, sprites:puff |  | vfx/dunes/hotfulgurite.js |
 | `dunes.fulgurite.strike` | one-shot | sprites:core, light, sprites:chip, sprites:puff×2 |  | vfx/dunes/fulgurites.js |
-
-### garden (5)
-
-| effect | kind | layers | what | asked by |
-|---|---|---|---|---|
-| `garden.lotus.land` | one-shot | sprites:sparkle, sprites:petal, sprites:ringthin | the lotus across catching the Jar: a puff of pollen and a few petals | vfx/garden/launchlotus.js |
-| `garden.lotus.launch` | one-shot | sprites:petal, sprites:sparkle, sprites:soft, sprites:ring, sprites:core, light | a launch lotus flinging the Pneuka Jar: petals thrown up and out, pollen in gold and the film shot along the up, motes of where it throws to, a ring | vfx/garden/launchlotus.js |
-| `garden.seed.grow` | one-shot | sprites:chip, sprites:puff, sprites:sparkle | a seed's planetoid grown a size: chips and dust of its own matter thrown off its old surface, a few glints of the film | vfx/garden/seedlooks.js |
-| `garden.seed.pour` | held | sprites:puff, sprites:chip | held: the dust where the god hand's pour lands on a seed, in the matter's colour, and grains skipping off it | vfx/garden/seedpour.js |
-| `garden.smoke` | held | sprites:puff | held: a chimney's smoke rising along `dir`, slow, spreading, lavender grey (the Athanor's cap, the kiln's stack) | vfx/garden/facilitylooks.js |
 
 ### swing (5)
 

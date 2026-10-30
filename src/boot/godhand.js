@@ -21,6 +21,7 @@ import { LaunchLotuses } from '../vfx/garden/launchlotus.js';
 import { FacilityLooks } from '../vfx/garden/facilitylooks.js';
 import { SeedLooks } from '../vfx/garden/seedlooks.js';
 import { SlabLook } from '../vfx/garden/slablook.js';
+import { HowtoRing } from '../vfx/garden/howtoring.js';
 import { RareSpirits } from '../vfx/garden/rarespirits.js';
 import { BenchWindowLook } from '../ui/benchlook.js';
 import { ScanMoment } from '../ui/scanmoment.js';
@@ -59,7 +60,8 @@ export function bootGodHand(game, made) {
   game.launchLotuses = new LaunchLotuses(game); // (the launch lotuses drawn as giant lotuses and their pollen arcs, dressed on garden.enter: vfx/garden/launchlotus.js)
   game.facilityLooks = new FacilityLooks(game); // (the garden's fixed places dressed to read by their silhouettes: vfx/garden/facilitylooks.js)
   game.seedLooks = new SeedLooks(game); // (a seed's planetoid dressed by its kind, feeling and feeding, its growth swelled, the god hand's pour onto it: vfx/garden/seedlooks.js)
-  game.slabLook = new SlabLook(game); game.rareSpirits = new RareSpirits(game); game.benchLook = new BenchWindowLook(game); // (carving a slab at the bench, drawn over its stand-ins; a flawless dig's spirit inverted; the bench's window dressed: vfx/garden/slablook.js, rarespirits.js, ui/benchlook.js)
+  game.slabLook = new SlabLook(game); game.rareSpirits = new RareSpirits(game); game.benchLook = new BenchWindowLook(game); // (carving a slab drawn at the bench; a flawless dig's spirit inverted; the bench's window dressed: vfx/garden/slablook.js, rarespirits.js, ui/benchlook.js)
+  game.howtoRing = new HowtoRing(game); // (the garden's how-to: each step's spot ringed, a world mark: vfx/garden/howtoring.js)
   game.scanMoment = new ScanMoment(game); game.codeCard = new CodeCard(game); // (scanning a code's moment; our own codes as a QR code in the Comb's dress: ui/scanmoment.js, ui/combcode.js)
   const cursorFree = () => !!(god.active || game.realm?.active || game.duel?.active || game.trackEditor?.active || game.haunt?.on); // (the hand's cursor is the pointer: no lock taken, no pause on its loss)
   game.cursorFree = cursorFree; // (a finger is the cursor there: core/touchdriver.js)
