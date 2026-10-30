@@ -7,11 +7,11 @@
 // ---------------------------------------------------------------------------------------
 import { TRIALS } from '../../progress/assaytrials.js';
 
-const HOW = { gonogo: 'Space or a tap on a plain light; nothing on an outlined one.', pitch: 'A or 1: the first; D or 2: the second (a tap: its half).', colour: 'A W D or 1 2 3 (a tap: its third).', rhythm: 'Space or a tap, on the beat.', react: 'Space or a tap, as soon as it flashes.' };
+const HOW = { gonogo: 'Press Space or tap on a plain light; do nothing on an outlined one.', pitch: 'Press A or 1 for the first, D or 2 for the second (on touch, tap that half).', colour: 'Press A, W or D, or 1, 2 or 3 (on touch, tap that third).', rhythm: 'Press Space or tap on each beat.', react: 'Press Space or tap the moment it flashes.' };
 
 export function touchstoneRules({ on, L, log }) {
-  on('touchstone.enter', () => { L.inc('touchstone.visit'); log.say('info', 'The Touchstone. Nothing here but you and the stone. F at a plinth begins its trial.', { key: 'touchstone', throttle: 20 }); });
+  on('touchstone.enter', () => { L.inc('touchstone.visit'); log.say('info', 'The Touchstone: a quiet room for the Assay\'s five standard trials. Press F at a plinth to begin one.', { key: 'touchstone', throttle: 20 }); });
   on('assay.trial.start', (e) => { const T = TRIALS[e.trial]; if (!T) return; L.inc(`assay.trial.${e.trial}.start`);
-    log.say('system', `A standard trial: ${T.label}. ${T.line} ${HOW[e.trial] || ''} F, or a finger held, stops it.`, { key: 'assay.start', throttle: 0.5 }); });
-  on('assay.trial.stop', (e) => { const T = TRIALS[e.trial]; if (T) log.say('info', `${T.label} stopped. Nothing was recorded.`, { key: 'assay.stop', throttle: 0.5 }); });
+    log.say('system', `Standard trial: ${T.label}. ${T.line} ${HOW[e.trial] || ''} Press F to stop (on touch, hold a finger down).`, { key: 'assay.start', throttle: 0.5 }); });
+  on('assay.trial.stop', (e) => { const T = TRIALS[e.trial]; if (T) log.say('info', `${T.label} stopped early. Nothing was recorded.`, { key: 'assay.stop', throttle: 0.5 }); });
 }

@@ -18,10 +18,11 @@
 //   counted)   DRINK (its sources, its beat and the chest's height)
 // ---------------------------------------------------------------------------------------
 import { ASPECTS } from '../progress/weather.js';
+import { DRINKS } from '../courier/mind.js';
 
 /** The drink's numbers: which of the pool's gains are a drink drawn here, the beat a run of them shares, how high the chest is. */
 export const DRINK = {
-  sources: new Set(['bauble', 'absorb', 'gulp', 'parry']), // (courier/mind.js's drinks but the Bottle's feed: its own looks draw it)
+  sources: new Set([...DRINKS].filter((s) => s !== 'bottle')), // (courier/mind.js's drinks but the Bottle's feed: its own looks draw it)
   beat: 0.45, // (real s: drinks inside one beat are one look, its strength their sum)
   per: 12, // (the pool's units that make a drink of full strength)
   power: [0.6, 1.4], // (a drink's strength, least and most)

@@ -38,9 +38,8 @@ import { stream } from '../../core/rng.js';
 const simRand = stream('world/emocean/shoal'); // (where a glint rises: core/rng.js, the same twice)
 
 const MAX = 160, CRUISE_Y = 0.15; // (glints at most; how high over the swell the ball swims)
-/** The silhouette's numbers (placeholders, Dovina's to take into SHOAL): from which bar, how long it takes to draw up (bars), its length
- *  and where it stands from the ship (local metres: up, ahead), the eye's radius, and how long a lock takes to burn to its full (real s). */
-export const SILHOUETTE = { at: 24, draw: 2, length: 40, up: 9, ahead: 30, eye: 2.6, burn: 1.5 };
+/** The silhouette's numbers, with their reasons: Dovina's (progress/rail/setpieces.js SHOAL.silhouette). */
+export const SILHOUETTE = SHOAL.silhouette;
 const _t = new THREE.Vector3(), _M = new THREE.Matrix4(), _Q = new THREE.Quaternion(), _C = new THREE.Vector3(), _cam = new THREE.Vector3(), _one = new THREE.Vector3(1, 1, 1);
 const _p = new THREE.Vector3(), _v = new THREE.Vector3(), _w = new THREE.Vector3(), _q = new THREE.Quaternion(), _z = new THREE.Vector3(0, 0, 1), _u = new THREE.Vector3();
 

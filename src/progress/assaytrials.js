@@ -35,7 +35,7 @@ export const TRIALS = {
     bpm: 100, taps: 40, settle: 4, line: 'Tap along with the bell.' },
   // a windup flashes after a wait you cannot guess (1 to 3 real s): parry it. Simple reaction time, its median; under 100 ms is a guess
   react: { label: 'Reaction', into: 'react', unit: 'ms', better: 'low', kind: 'react',
-    trials: 20, wait: [1, 3], guess: 100, line: 'A windup flashes: parry as soon as you see it.' },
+    trials: 20, wait: [1, 3], guess: 100, line: 'A windup flashes: answer it as soon as you see it.' },
 };
 
 /** A 3-down-1-up staircase on a ratio scale: three right in a row make it harder (level / step), one wrong easier (level x step); it

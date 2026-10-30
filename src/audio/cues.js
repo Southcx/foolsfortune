@@ -400,6 +400,14 @@ const RULES = {
   'rail.boss.fall': (s) => s.railBossFall?.(),
   'rail.end': (s, e) => { s.shoalLock?.(false); if (e.by === 'courier') s.railBossFall?.(); }, // (a set piece's boss beaten; throttled, so rail.boss.fall and this sound once; a held lock let go)
   // the shoal's silhouette (Petra's events, named 2026-10-29; audio/shoalsilhouette.js): its forming, the eye opening, locked, shattered
+  // the Touchstone (Petra's world/touchstone/; audio/touchstone.js): the room, a trial begun, ended, stopped short
+  'touchstone.enter': (s, e) => e.by === 'courier' && s.touchstoneEnter?.(),
+  'assay.trial.start': (s) => s.trialStart?.(),
+  'assay.trial.end': (s) => s.trialEnd?.(),
+  'assay.trial.stop': (s) => s.trialStop?.(),
+  // the pair specials (Petra's tools/pairspecials.js; audio/pairspecials.js)
+  'pair.special': (s, e) => e.by === 'courier' && s.pairSpecial?.(+e.pair),
+  'pair.mark': (s, e) => e.by === 'courier' && s.pairMark?.(e.kind),
   // the class arts (Petra's wave 1, courier/classarts/; audio/classarts.js): the worn action, the reaction's moment, an art ending
   'art.use': (s, e) => e.by === 'courier' && s.artUse?.(e.art, !!e.accented),
   'art.fire': (s, e) => e.by === 'courier' && s.artFire?.(e.art),

@@ -12,6 +12,7 @@
 // heavy pair, Elden Ring's main hand and off hand.
 //
 //   TOOL_IDS   SUB_GIFTS[id] -> { verb, does, passive }   PAIRS -> [{ n, card, label, tools: [a, b], why, special }]
+//   SPECIALS_BUILT   SPECIAL_PLAY (the built specials' numbers, with reasons)
 //   PAIR_SPECIALS[n] -> { label, line, main: [tool, its verb] } (the sub is the pair's other tool, lending SUB_GIFTS' verb)   specialVerbs(n)   PAIR_OPEN   pairSpecialOpen(n, L) -> bool
 //   pairKey(a, b) -> 'a+b' (sorted)   pairOf(a, b) -> the pair's entry | null   pairsOf(id) -> the six pairs a tool is in
 //   START -> { main, sub } (a new save's pair: the Magician)   swapRefusal(game) -> null | the reason a change of main or sub is refused now
@@ -116,6 +117,28 @@ export function swapRefusal(game) {
   if (game?.bazaar?.session) return 'You cannot change tools at a table.';
   return null;
 }
+
+/** The specials built in play (Petra's tools/pairspecials.js, wave 1, 2026-10-29): their pairs' `special` set, so the Box's loadout shows
+ *  the special's line in place of "to come". */
+export const SPECIALS_BUILT = [19, 6, 17, 3];
+for (const n of SPECIALS_BUILT) { const p = PAIRS.find((x) => x.n === n); if (p) p.special = PAIR_SPECIALS[n]; }
+
+/** The specials' numbers in play (tools/pairspecials.js reads them), each against a number the game already has:
+ *  - The Mark (19): `rounds` 6, THE PSYGUN's cylinder, one reload's worth homing; `life` 8 real s, about the cylinder fired at the quick
+ *    taps' pace with a beat to aim; `cone` 0.35 rad (20 degrees), the lock-on's own forgiveness, so a shot that would miss by a body
+ *    still lands and one fired the wrong way does not; `range` 40 m, the psygun's useful reach (the Flash marks within its own 10 m).
+ *  - Rung Line (6): `stun` 1.1 real s, half again the Flash's 0.75 (two verbs and a bitten hook for it); `power` 0.6, a light blow,
+ *    so the line sets up the cutlass and never replaces it.
+ *  - Painted Lure (17): a stamp of `r` 0.7 m every 0.06 real s at `cost` 0.2 is 3.3 Lachryma a second, about half the brush's spray
+ *    (6 a second for a 1.2 m stroke): a line, cheaper because the fork's flight is short; `drop` 8 m, the fork's arc's height to paint below.
+ *  - Coffin's Mop (3): 3 sips every 0.15 real s within `r` 1 m and `reach` 5 m, the hoover's cone; a sip `want` 0.5 of a cell; into the
+ *    brush's bottle at `toBottle` 1.5x (the pair's gift: the Lockheart drinks for the brush), else the coffin. */
+export const SPECIAL_PLAY = {
+  mark: { n: 19, rounds: 6, life: 8, cone: 0.35, range: 40 },
+  rung: { n: 6, stun: 1.1, power: 0.6 },
+  lure: { n: 17, every: 0.06, r: 0.7, cost: 0.2, drop: 8 },
+  mop: { n: 3, every: 0.15, r: 1, want: 0.5, toBottle: 1.5, reach: 5 },
+};
 
 /** A special's two verbs, said plainly: { main: [tool, verb], sub: [tool, its lent verb] }. */
 export function specialVerbs(n) {

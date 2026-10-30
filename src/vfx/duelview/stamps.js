@@ -68,7 +68,7 @@ export class DuelStamps {
   /** At the duel's open: the program compiled, hidden. */
   warm() {
     if (!this.ensure()) return; const S = this.game.overlayScene, r = S.r; this.u.uWord.value = this.word('VS').tex; this.mesh.visible = true;
-    try { const was = r.getRenderTarget(); r.setRenderTarget(null); r.compile(this.mesh, S.camera); r.setRenderTarget(was); } catch { /* (headless: drawn on first use) */ }
+    try { const was = r.getRenderTarget(); r.setRenderTarget(null); r.compile(this.mesh, S.camera, S.scene); r.setRenderTarget(was); } catch { /* (headless: drawn on first use) */ }
     this.mesh.visible = false;
   }
 

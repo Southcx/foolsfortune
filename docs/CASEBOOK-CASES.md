@@ -4400,7 +4400,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   erosion of 0 cuts nothing (its threshold sits below 0). The faded ends and rims were drawn at a third of full, out to the mesh's edge.
 - **Fix:** every such shape's erosion starts at 0.2 (its early keys at 0.22 or more), so value-0 texels are cut while the shift heats the
   rest (vfx/library/hits.js, damage.js, generics.js, temper.js, ult.js). Seen again at 896 x 414 at 2x: the crescent, the rims soft.
-- **Rule:** NEW:shape-hot-start
+- **Rule:** 351
 
 ### 2026-10-30 · The class arts' looks faded into the noon sand (Calissa, the VFX refresh, in game at 896 x 414 at 2x)
 - **Seen:** Bulwark used at the Weir at noon: its shell and floor ring a faint pale band, their gold barely there; the same effect over
