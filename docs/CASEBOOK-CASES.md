@@ -4637,3 +4637,13 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   Kingdom Hearts' stop-frost, so the foe stood in frost for the whole duel.
 - **Fix:** the auras skip `halt` on a creature that is `dueling` (set by the same `pin`). Not yet seen in a shot after the fix.
 - **Rule:** NEW:mechanism-is-not-a-status
+
+### 2026-10-30 · Ride's reins and bridle never showed (vfx/classartlasting/reins.js; the builder's two Ride shots)
+- **Seen (headless, desk and phone):** the runtime said the ride was on (`rides: 1`, `driven: true`), and neither shot showed the reins
+  or the bridle on the slip jelly at the Weir.
+- **Cause, as read (not measured apart):** the look's root group and its reins were added to the scene at the origin, unmarked, and
+  placed later; the zones judge an unmarked root by where it stands when they install it (the workshop's zone at the origin), so in the
+  Dunes its `visible` stayed false: case 366's trap again.
+- **Fix:** every root the lasting looks add to the scene goes through the kit's `zoneFree()` (reins, lantern, smoke, sanctum, thicket,
+  encore). Not yet seen in a shot after the fix.
+- **Rule:** 366
