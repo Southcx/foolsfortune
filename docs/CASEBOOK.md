@@ -1043,3 +1043,6 @@ NEW:scratch-holds-one-answer. **A module's scratch vector holds one answer at a 
 NEW:mechanism-is-not-a-status. **A status applied as a mechanism is not drawn as one.** Where a system uses a status to hold a
   creature (a puzzle duel's pin, a cutscene's freeze), the status's look is skipped for that use, or the creature wears the status's
   aura for the whole of it: name the use (`c.dueling`) and let the look ask.
+NEW:line-holds-its-pixels. **A line in the world is never narrower than a few of the 480 lines.** A rein, a thread or a tether drawn
+  as a ribbon in metres vanishes at range (the present is 480 lines): give it a floor in pixels from the camera's distance and field of
+  view, and let a pattern ride on a solid body rather than cut through its whole width.

@@ -15,9 +15,10 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { THEMES, theme } from '../../ui/theme.js';
 import { shapeMat, whiten, lightLine, envelope, zoneFree } from './kit.js';
 
-/** The tack's numbers: the reins' width (m) and sag (m at their slackest), the light's strength, and the dust's pace (m/s to raise it,
+/** The tack's numbers: the reins' width (m; never under minPx of the 480 lines, or a rein 5 m off is a pixel and its streaks wipe it out)
+ *  and sag (m at their slackest), the light's strength, and the dust's pace (m/s to raise it,
  *  real s between puffs). */
-export const REINS = { width: 0.045, sag: 0.32, light: 0.9, dustAt: 0.9, dustEvery: 0.16, segs: 16 };
+export const REINS = { width: 0.045, minPx: 3, sag: 0.32, light: 0.9, dustAt: 0.9, dustEvery: 0.16, segs: 16 };
 const _h = new THREE.Vector3(), _c = new THREE.Vector3(), _m = new THREE.Vector3(), _p = new THREE.Vector3();
 
 /** The bridle, in the creature's own frame (its foot at 0, its face on +Z), sized to it: collar, headstall and the two cheek rings. */
@@ -53,8 +54,8 @@ export class RideReins {
     const bridle = new THREE.Mesh(bridleGeometry(rad, this.neck), this.tack.mat), eyes = new THREE.Mesh(eyesGeometry(rad, hgt * 0.72), this.eyeMat.mat);
     for (const m of [bridle, eyes]) { m.frustumCulled = false; m.renderOrder = 7; m.userData.moodExempt = true; this.group.add(m); }
     this.parts = [bridle, eyes];
-    this.lines = [-1, 1].map(() => lightLine(REINS.segs, { main: 'streaks', tile: [1, 6], scroll: [0, 1.6], mask: 'noise', maskK: 0.35, maskTile: [1, 3], maskScroll: [0, 0.7], ramp: 'suit',
-      core: 0.4, glow: 2.2, back: 0.3 }, ctx));
+    this.lines = [-1, 1].map(() => lightLine(REINS.segs, { main: 'streaks', mainK: 0.35, tile: [1, 6], scroll: [0, 1.6], mask: 'noise', maskK: 0.15, maskTile: [1, 3], maskScroll: [0, 0.7], ramp: 'suit',
+      core: 0.7, glow: 2.6, back: 0.3 }, ctx));
     for (const L of this.lines) game.scene.add(zoneFree(L.mesh));
     this.pts = [-1, 1].map(() => Array.from({ length: REINS.segs + 1 }, () => new THREE.Vector3()));
     game.scene.add(zoneFree(this.group));
@@ -75,7 +76,8 @@ export class RideReins {
       const d = _h.distanceTo(_c), sag = REINS.sag * Math.max(0.15, 1 - d / 7);
       _m.lerpVectors(_h, _c, 0.5); _m.y -= sag * 2;
       for (let j = 0; j <= REINS.segs; j++) { const u = j / REINS.segs, a = (1 - u) * (1 - u), b = 2 * u * (1 - u), e = u * u; pts[j].set(a * _h.x + b * _m.x + e * _c.x, a * _h.y + b * _m.y + e * _c.y, a * _h.z + b * _m.z + e * _c.z); }
-      L.set(pts, REINS.width, cam.position); L.u.uK.value = this.k;
+      const px = (2 * cam.position.distanceTo(_m) * Math.tan(((cam.fov ?? 60) * Math.PI) / 360)) / 480; // (a line of the 480 at the rein's middle, in metres)
+      L.set(pts, Math.max(REINS.width, px * REINS.minPx), cam.position); L.u.uK.value = this.k;
     });
     // dust from its feet as it is driven along
     const moved = _p.copy(c.pos).sub(this.last).setY(0).length() / Math.max(1e-3, dt); this.last.copy(c.pos);

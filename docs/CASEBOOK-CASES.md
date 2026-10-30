@@ -4638,12 +4638,14 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the auras skip `halt` on a creature that is `dueling` (set by the same `pin`). Not yet seen in a shot after the fix.
 - **Rule:** NEW:mechanism-is-not-a-status
 
-### 2026-10-30 · Ride's reins and bridle never showed (vfx/classartlasting/reins.js; the builder's two Ride shots)
-- **Seen (headless, desk and phone):** the runtime said the ride was on (`rides: 1`, `driven: true`), and neither shot showed the reins
-  or the bridle on the slip jelly at the Weir.
-- **Cause, as read (not measured apart):** the look's root group and its reins were added to the scene at the origin, unmarked, and
-  placed later; the zones judge an unmarked root by where it stands when they install it (the workshop's zone at the origin), so in the
-  Dunes its `visible` stayed false: case 366's trap again.
-- **Fix:** every root the lasting looks add to the scene goes through the kit's `zoneFree()` (reins, lantern, smoke, sanctum, thicket,
-  encore). Not yet seen in a shot after the fix.
-- **Rule:** 366
+### 2026-10-30 · Ride's reins never showed (vfx/classartlasting/reins.js; the builder's two Ride shots)
+- **Seen (headless, desk and phone):** the runtime said the ride was on (`rides: 1`, `driven: true`), and neither shot showed the reins;
+  the bridle did show, as the blue rings round the slip jelly, but read as swirls.
+- **Cause, as measured (a probe reading the look's own state, desk):** everything was on (`k` 1, every ancestor visible, both reins in
+  the scene, 34 vertices each, from the left hand at (1996.67, -407.07, -25.61) to the jelly 3.9 m off). The reins were 4.5 cm wide:
+  about 3 of the 480 lines at that range, and their streaks pattern cut through the whole width (`mainK` 1, a noise mask at 0.35), so
+  what was left of each was a dotted hairline that vanished.
+- **Fix:** a rein is never narrower than 3 of the 480 lines at its middle (`REINS.minPx`, from the camera's distance and field of view),
+  and its streaks ride on a solid body (`mainK` 0.35, the mask at 0.15). The roots were also marked zone-free on the way (case 366),
+  which did not change this.
+- **Rule:** NEW:line-holds-its-pixels
