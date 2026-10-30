@@ -315,7 +315,7 @@ export function bootFrame(game, made) {
     game.circuits.update(dt);
     game.cubes.update(dt);
     if (!worldAsleep) { game.chests.update(dt); game.weir.update(dt); }
-    game.well.update(dt); game.ostraca?.update(); game.debugChests?.update(game.rawDt ?? dt); game.knacks?.update(game.rawDt ?? dt); game.goals?.update(game.rawDt ?? dt); game.laidSpread?.update(game.rawDt ?? dt); game.readingScene?.update(game.rawDt ?? dt); game.harmony?.update(game.rawDt ?? dt); game.spiritLife?.update(game.rawDt ?? dt); game.feelings?.update(game.rawDt ?? dt); game.vantages?.update(game.rawDt ?? dt); game.vantageFrames?.update(game.rawDt ?? dt); game.awakening?.update(game.rawDt ?? dt); game.solar?.update(dt); game.geysers?.update(dt); game.raceway?.update(dt); game.race?.update(dt); game.trackEditor?.update(game.rawDt ?? dt); game.haunt?.update(dt); game.shrines?.update(); game.pier?.update(); game.mooring?.update(game.rawDt ?? dt); game.encounterFilm?.update(game.rawDt ?? dt); game.margarite?.update(dt); game.bazaar?.update(dt); game.touchstone?.update(dt); game.duelFoes.update(); game.busk?.update(); game.catchLook?.update(game.rawDt ?? dt, camera);
+    game.well.update(dt); game.ostraca?.update(); game.debugChests?.update(game.rawDt ?? dt); game.knacks?.update(game.rawDt ?? dt); game.goals?.update(game.rawDt ?? dt); game.laidSpread?.update(game.rawDt ?? dt); game.readingScene?.update(game.rawDt ?? dt); game.harmony?.update(game.rawDt ?? dt); game.spiritLife?.update(game.rawDt ?? dt); game.feelings?.update(game.rawDt ?? dt); game.vantages?.update(game.rawDt ?? dt); game.vantageFrames?.update(game.rawDt ?? dt); game.awakening?.update(game.rawDt ?? dt); game.solar?.update(dt); game.mimicry?.update(dt); game.sandbox?.update(dt); game.impacts?.update(dt); game.geysers?.update(dt); game.raceway?.update(dt); game.race?.update(dt); game.trackEditor?.update(game.rawDt ?? dt); game.haunt?.update(dt); game.shrines?.update(); game.pier?.update(); game.mooring?.update(game.rawDt ?? dt); game.encounterFilm?.update(game.rawDt ?? dt); game.margarite?.update(dt); game.bazaar?.update(dt); game.touchstone?.update(dt); game.duelFoes.update(); game.busk?.update(); game.catchLook?.update(game.rawDt ?? dt, camera);
     // underground: no sun through the ground (it would light the basement outside its shadow
     // frustum), thinner fog so the long rooms read end to end, no shadow-map updates
     game.daylight.update(dt); // (the open ground's light graded by the hour and the weather, before the dunes blend it in)
@@ -333,7 +333,7 @@ export function bootFrame(game, made) {
     else if (dm < 0.01) scene.fog.color.setHex(PALETTE.deep);
     game.graphics.shadowsWanted = under < 1; renderer.shadowMap.autoUpdate = under < 1 && (T.visual.shadowEvery | 0) <= 1; // (every frame, or on the graphics tier's own turns: render/graphics.js beforeDraw)
     game.bazaar?.light(); // (the bazaar's own air under its dome: world/bazaar/bazaar.js)
-    game.touchstone?.light(); // (the Touchstone's dark: world/touchstone/touchstone.js)
+    game.sandbox?.light(); game.touchstone?.light(); // (the Touchstone's dark: world/touchstone/touchstone.js)
     game.bazaarHall?.update(game.rawDt ?? dt); // (the dome's turn, the wheel's and the carousel's spin, the neon's film walk: vfx/bazaarhall.js)
     game.touchstoneLook?.update(game.rawDt ?? dt); // (the plinth you stand at lit, the stone's sign of the trial running, a run's streak rubbed in: vfx/touchstonelook.js)
     game.realm?.light(); // (the garden's sky over the world's, while you are in it)

@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE OPEN SEA'S ACHIEVEMENTS (docs/plans/OPEN-SEA.md sections 8, 13 and 14): predicates over the ledger (feedback/tracking/opensea.js and
 // seaserpent.js keep it), the EMOCEAN category's "The Open Sea" sub: charting, the migrations, the sea serpent, and the rework's salvage,
-// gusts and ship's parts. Split from achievements.js (its module budget), in its old place in the list.
+// gusts and ship's parts, and the islets' puzzles and caches (sea23 to sea30). Split from achievements.js (its module budget), in its old place in the list.
 //
 // Prior art: Sea of Thieves' commendations (a count of shipwrecks salvaged), the house's own achievements.js (its helpers passed in).
 //
@@ -10,6 +10,7 @@
 import { SALVAGE_PARTS } from './opensea/salvage.js';
 import { FORGE_PARTS } from './opensea/forge.js';
 import { EGREGORES } from './opensea/safari.js';
+import { PUZZLE_COUNT } from './opensea/isletpuzzles.js';
 
 const PARTS = SALVAGE_PARTS;
 
@@ -42,4 +43,14 @@ export function seaAchievements({ C, F }) {
   C('sea20', 'emocean', 'The Open Sea', 4, 'mechanic', 'Edge of the Map', 'Complete a square of the open sea\'s wildest class (3).', 'sea.square.done.c3', 1);
   C('sea17', 'emocean', 'The Open Sea', 2, 'count', 'Bigger Fish', 'Sink a beast of the sea other than a serpent.', 'seabeast.down', 1);
   C('sea14', 'emocean', 'The Open Sea', 2, 'count', 'Message in a Bottle', 'Read the note in a drift bottle.', 'sea.bottle', 1);
+  // the islets' puzzles and the buried caches (isletpuzzles.js, puzzlepieces.js; OPEN-SEA.md 12; their counts tracking/opensea.js): the first of each kind,
+  // then every one of it a sea deals (a sea always deals 3 pairs, 3 line-ups and 2 echoes on its 20 islets; its caches run 7 to 13, so the Medium is 7)
+  C('sea23', 'emocean', 'The Open Sea', 1, 'mechanic', 'Matched Pair', 'Find both carved stones of a pair, on two islets.', 'sea.pair', 1);
+  C('sea24', 'emocean', 'The Open Sea', 2, 'collect', 'Every Twin', 'Find every pair of carved stones in the open sea.', 'sea.pair', PUZZLE_COUNT.pairs);
+  C('sea25', 'emocean', 'The Open Sea', 1, 'mechanic', 'Lined Up', 'Stand on a grooved stone and close the arcs into a ring.', 'sea.lineup', 1);
+  C('sea26', 'emocean', 'The Open Sea', 2, 'collect', 'Every Ring', 'Close every ring of arcs in the open sea.', 'sea.lineup', PUZZLE_COUNT.lineups);
+  C('sea27', 'emocean', 'The Open Sea', 1, 'mechanic', 'Played Back', 'Play a singing stone\'s phrase back on the Crucibelle at the stone that listens.', 'sea.echo', 1);
+  C('sea28', 'emocean', 'The Open Sea', 2, 'collect', 'Every Stone Sings', 'Answer every singing stone in the open sea.', 'sea.echo', PUZZLE_COUNT.echoes);
+  C('sea29', 'emocean', 'The Open Sea', 1, 'mechanic', 'X Marks the Sand', 'Dig up a buried cache.', 'sea.dig', 1);
+  C('sea30', 'emocean', 'The Open Sea', 2, 'endure', 'Treasure Hunter', 'Dig up 7 buried caches.', 'sea.dig', 7);
 }

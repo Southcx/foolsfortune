@@ -1024,7 +1024,7 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
   at hand; a line that repeats the line above it is left out.
 365. **A tech that is not a Movement Art is listed as one the System does not log.** A mount, a class art's body, anything
   a tech for the engine's sake and said by its own line, goes in `UNLOGGED_TECHS` as it is added, or the log names it by its code id.
-NEW:zone-visible-gate. **A tick that waits on `visible` reads the zones' too.** Once the zones have installed an object, its `visible` is
+366. **A tick that waits on `visible` reads the zones' too.** Once the zones have installed an object, its `visible` is
   its owner's and its zone's together (render/zones.js); a body that is placed by a tick gated on `visible` and was last left in
   another zone (or parked for the warm-up) is never moved out of it, and never shows. A body that always stands with the Courier is
   `zoneFree`; a gate on its own state reads its own flag, never `visible`.

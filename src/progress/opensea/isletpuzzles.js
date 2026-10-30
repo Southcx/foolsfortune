@@ -26,7 +26,7 @@
 //     size, dists }], echoes: [{ id, hear, play, phrase }], caches: [{ id, islet, tier, sealed? }] }
 //   riddles: [{ id, islet, kit, bottle: [col, row], offset }]   riddleText(riddle) -> the bottle's note   RIDDLE
 //   steleWords(isletId, seed, words) -> [3 words]   phraseHeard(phrase, played) -> 0..n (how many of the phrase's notes the last
-//   played ones match, from the start)   cachePay(tier) -> cubes   PAIR  LINEUP  ECHO  CACHE
+//   played ones match, from the start)   cachePay(tier) -> cubes   PAIR  LINEUP  ECHO  CACHE  SIGHT (how near a piece's first-sight line is said)
 // ---------------------------------------------------------------------------------------
 import { seeded } from '../../core/rng.js';
 import { ECON } from '../econ/table.js';
@@ -42,7 +42,11 @@ export const LINEUP = { dists: [60, 100, 150, 220], stand: 1.4, aim: 0.07, size:
 export const ECHO = { notes: 4, hear: 7, listen: 8, gap: 0.55 };
 /** The drift bottle's riddle (OPEN-SEA.md 14.7; Sea of Thieves' riddle maps): a bottle adrift `away` squares off its islet, its note the
  *  way there in the sea's own words; read, it unseals a cache on that islet (never under `floor`) that only the dowse then finds. */
-export const RIDDLE = { away: [2, 3], floor: 'rare', reach: 20, kits: { rock: 'a bare rock', atoll: 'an atoll', stack: 'a sea stack', ruin: 'a ruin', lighthouse: 'a dead lighthouse', sandbar: 'a sandbar that shows at low water' } };
+export const RIDDLE = { away: [2, 3], floor: 'rare', reach: 20, kits: { rock: 'a bare rock', atoll: 'an atoll', stack: 'a sea stack', ruin: 'a ruin', lighthouse: 'a dead lighthouse', sandbar: 'a sandbar' } }; // (no "at low water": a sandbar's `tide` is read nowhere, islets.js; the words promise only what is built)
+/** How near (m) a puzzle's piece must be come to for its first-sight line (the log says once what it is and what solves it,
+ *  `sea.puzzle.seen`, tracking/opensea.js): a pair's carved thing and a line-up's stone, the singing stone and the listening one, on foot;
+ *  a drift bottle from the helm (the ship's reach counted in). A cache is seen on stepping onto its islet, so it has no radius. */
+export const SIGHT = { pair: 14, lineup: 12, echo: 12, listen: 12, bottle: 40 };
 /** The caches: which kits bury one (a rock only sometimes), and the echo's floor tier. */
 export const CACHE = { kits: { atoll: 1, sandbar: 1, rock: 0.35 }, echoFloor: 'rare', dig: 1.6 };
 

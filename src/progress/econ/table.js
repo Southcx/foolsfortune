@@ -204,10 +204,10 @@ export const ECON = {
    *  (minutes of play: the first an hour's earnings, the fourth a committed week's surplus), each also gated by a Firing so money alone
    *  never buys them; features by their size (minutes of play, plus one material of their phase); a spirit at work adds its matching
    *  stat's share of `work` to its slot or bed (999 in the stat: the whole +25%). */
-  /** MYGGDRASIL'S PLANETOID (docs/plans/MYCELIUM.md; the owner, 2026-10-08: "own planetoid", "its model BIG"): given, not bought, at the
-   *  second Firing (Sinter: a milestone opens it, Stardew's bundles), the largest planetoid (radius in metres) and the tree a landmark
-   *  seen from every other (height in metres). */
-  myggdrasil: { firing: 2, radius: 26, treeHeight: 48 },
+  /** MYGGDRASIL'S PLANETOID (docs/plans/MYCELIUM.md; the owner, 2026-10-08: "own planetoid", "its model BIG"): given, not bought, on the
+   *  first entry (South, 2026-10-30: "the Spirit Garden doesn't have Myggdrasil active by default": firing 0, it was the second Firing),
+   *  the largest planetoid (radius in metres) and the tree a landmark seen from every other (height in metres). */
+  myggdrasil: { firing: 0, radius: 26, treeHeight: 48 },
   place: { planetoids: [60, 120, 240, 480], planetoidFiring: [3, 4, 5, 6], features: { small: 5, medium: 12, large: 30 }, work: 0.25, formation: 0.1, vein: 2 },
   /** DECOR (docs/plans/GARDEN-COZY.md D4): a piece's price in minutes of play by its size, a sink that never fills and pays nothing back,
    *  so it is kind (the first set about three real hours of play). A piece bought is a copy kept in the shed's storage; picked up, it

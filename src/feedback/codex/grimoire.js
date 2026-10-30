@@ -52,7 +52,7 @@ export function renderGrimoire(codex, cx) {
 
   // Myggdrasil
   const tr = sec('MYGGDRASIL');
-  if (!g.gardenMycelium?.planet && !L?.get('myggdrasil.feed')) line(tr, '<s>its planetoid is given at the second Firing</s>', null, true);
+  if (!g.gardenMycelium?.planet && !L?.get('myggdrasil.feed')) line(tr, '<s>its planetoid is given on your first visit to the Spirit Garden</s>', null, true);
   if (T) {
     const sap = T.tincture;
     line(tr, `girth <b>${T.girth}</b> <s>· fed ${L?.get('myggdrasil.feed') || 0} times · picked ${L?.get('myggdrasil.pick') || 0}</s>`);

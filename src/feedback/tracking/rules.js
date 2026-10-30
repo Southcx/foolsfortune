@@ -62,6 +62,9 @@ import { classArtsRules } from './classarts.js';
 import { classArtsPlayRules } from './classartsplay.js';
 import { pairWornRules } from './pairworn.js';
 import { jellyMountRules } from './jellymount.js';
+import { mimicryRules } from './mimicry.js';
+import { sandboxRules } from './sandbox.js';
+import { gardenGrowthRules } from './gardengrowth.js';
 import { pairSpecialsPlayRules } from './pairspecialsplay.js';
 import { touchstoneRules } from './touchstone.js';
 import { worldShellRules } from './worldshells.js';
@@ -147,6 +150,8 @@ export function areaRules(ctx) {
   classArtsPlayRules(ctx); // (a class's arts used, firing and wearing off: courier/classarts/body.js)
   pairWornRules(ctx); // (a pair worn: the counts its special opens by, tracking/pairworn.js)
   jellyMountRules(ctx); // (the slip jelly mount's ledger, tracking/jellymount.js)
+  mimicryRules(ctx); // (the god hand's mimicry puzzles, tracking/mimicry.js)
+  sandboxRules(ctx); // (the thrown hit anywhere, the Sandbox's lecterns and pitch: tracking/sandbox.js)
   pairSpecialsPlayRules(ctx); // (a pair's special played: tracking/pairspecialsplay.js)
   touchstoneRules(ctx); // (the Assay's room and its trials announced: tracking/touchstone.js)
   godRules(ctx);
@@ -192,4 +197,5 @@ export function areaRules(ctx) {
   vesselRules(ctx);
   shrineRules(ctx);
   commandEchoRules(ctx);
+  gardenGrowthRules(ctx); // (the garden's seeds, the slabs carved, the codes scanned: last, after every rule that counts an act a seed reads: tracking/gardengrowth.js)
 }

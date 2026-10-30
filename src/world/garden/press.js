@@ -2,7 +2,7 @@
 // THE SPIRIT PRESS AT THE ATHANOR, THE STATION (docs/plans/SOUL-ALCHEMY.md section 4, Calissa's UX; the rules are progress/alchemy.js,
 // Dovina's; the press's model is Calissa's vfx/spiritpress.js; the bath's look a stand-in, world/garden/pressbath.js, until hers).
 // On the Athanor's crown: a BATH 5 m across sunk level into it (the colour wheel: hue the bearing clockwise from north, saturation the
-// distance out), its KERB, the WARE RING outside it, and the press 4.35 m north facing it, pouring in. F within reach of the kerb opens
+// distance out), its KERB, the WARE RING outside it, and the press 4.35 m north facing it, pouring in. F within 4.2 m of the Athanor's centre (the kerb's outer edge: realm.js FEATURE_REACH) opens
 // the PRESS VIEW (the garden camera's fourth view: world/garden/gardencam.js); F, Esc or W A S D leaves it. Inside it the hand is the
 // whole control (Black & White's): HOVER a lump on the ware ring and its ghost path draws from where the bead would be; PINCH it (left
 // button), carry it and RELEASE it over the crown's spiral mouth to load it (five at most, in order: the order is the craft); FLICK a
@@ -19,7 +19,7 @@
 // answered by a small reaction, no fail screen), and Calissa's section 4 for the rest.
 //
 //   const P = new GardenPress(realm, feature)   P.formation()   P.extra()   P.enter()   P.leave(why)   P.viewing   P.handle(dt, hand)
-//   P.update(raw)   P.hopper [{ slot, m }]   P.frame { O, U, N, E, R }   P.lumps() -> [{ slot, m, pos, h, s }]   P.inReach(pos)
+//   P.update(raw)   P.hopper [{ slot, m }]   P.frame { O, U, N, E, R }   P.lumps() -> [{ slot, m, pos, h, s }]
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { SpiritPress } from '../../vfx/spiritpress.js';
@@ -31,7 +31,7 @@ import { PressLook } from '../../vfx/alchemy/presslook.js';
 import { FOOTING } from '../../vfx/alchemy/basin.js';
 
 const IDS = Object.keys(ATTRIBUTES);
-const BATH = { r: 2.5, kerb: 0.45, ware: 0.5, press: 4.35, reach: 3.6, hopper: 5 }; // (metres; the hopper's queue)
+const BATH = { r: 2.5, kerb: 0.45, ware: 0.5, press: 4.35, hopper: 5 }; // (metres; the hopper's queue)
 const GLIDE = { steps: [3, 5], secs: [0.2, 0.33], beat: 0.15 }; // (a material's walk: 3 to 5 glides of 0.2 to 0.33 s, a beat between materials)
 const LEVER = { px: 110, fire: 0.85 }; // (the ball dragged this many pixels down is fully pulled; pulled past this share, it fires)
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _m = new THREE.Matrix4();
@@ -217,7 +217,5 @@ export class GardenPress {
     this.look.update(raw, { soul: bead, walking: !!W }); // (the model, the lights, the firing's look, the sky, the HUD, the hand)
   }
 
-  /** The Jar within reach of the kerb (F opens the press view there). */
-  inReach(pos) { return pos.distanceTo(this.frame.O) < BATH.reach + 0.6; }
   dispose() { this.look.dispose(); this.model.group.removeFromParent(); this.model.dispose?.(); this.bath.dispose(); }
 }

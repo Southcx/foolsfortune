@@ -4,7 +4,8 @@
 //
 //   opensea.enter  opensea.board  opensea.moor { islet?, quay? }  sea.chart { square }  sea.find { id, kind, tier }  sea.fix { ok, how }
 //   sea.report { id, tier, fee }  sea.dock { island, paid, fuelCost, short? }  sea.tow { to, fee }  sea.secret { kind }  sea.fuel.low { fuel }
-//   sea.pair.half { id, shape }  sea.pair { id, shape, tier }  sea.lineup { id, charted }  sea.echo.hear { id, notes }  sea.echo { id }
+//   sea.puzzle.seen { kind, id, islet } (a piece's first sight)  sea.pair.half { id, shape }  sea.pair { id, shape, tier }  sea.lineup { id, charted }
+//   sea.echo.hear { id, notes, phrase, first }  sea.echo.miss { id, degree }  sea.echo { id }
 //   sea.dig { id, tier, cubes, how }  sea.stele { islet, words, line }   sea.herds { day, n, herds }  sea.herd { id, square, cubes }  sea.herd.paid { cubes, n }   (the migrations)   seaserpent.paid { cubes, hull, of }   (the islets' puzzles and caches: world/opensea/puzzlepieces.js)
 //   sea.luff { from } (head to wind under way)  sea.gust { k }  sea.rip { square }  sea.salvage { wreck, tier, cubes, part, left }  ship.part { slot, part, how }  sea.bottle { id, islet, text }  sea.rumour { id, squares, way }  sea.rumour.paid { id, cubes }  sea.habit { id, habit, label, first, cubes }  sea.square.done { square, cls, cubes, n, of }   (each with `by`)
 //
@@ -49,10 +50,25 @@ export function openSeaRules({ on, L, log, g }) {
   on('sea.square.done', (e) => { if (e.by !== 'courier') return; L.inc('sea.square.done'); L.inc(`sea.square.done.c${e.cls}`); log.say('find', `Square ${e.square} is charted whole: you have found everything in it. ${e.cubes} cubes. ${e.n} of ${e.of} squares done.`, { key: 'sea.square', throttle: 1 }); });
   on('sea.tow', (e) => { L.inc('sea.tow'); log.say('warn', `Your tank is dry: a tug tows you to the lane for ${e.fee} cubes.`, { key: 'sea.tow', throttle: 2 }); });
   on('sea.secret', (e) => { L.inc(`sea.secret.${e.kind}`); log.say('explore', secretLine(e.kind, e.islet), { key: 'sea.secret', throttle: 1 }); });
-  on('sea.pair.half', (e) => log.say('explore', `A carved ${e.shape} stands here. It looks like one of a pair.`, { key: `sea.pair.${e.id}`, throttle: 2 }));
+  // the islets' puzzles say what they are (the owner tried them and "didn't know what I was looking at", 2026-10-30): once a piece, when you first
+  // come near it, what it is and which tool solves it. The words are PLACEHOLDERS, plain, for Espada to word; {dvDowse} is the dowse's own
+  // control on the device last touched, {use} the use key.
+  const SIGHT_LINES = {
+    pair: 'A carved stone. Its twin stands on another islet: find both.',
+    lineup: 'A grooved stone. Stand on it and look along the groove, a little above the horizon.',
+    echo: 'A stone that sings. Play its notes back on the Crucibelle at the stone that listens.',
+    listen: 'A stone with a socket for each note. Play the phrase the singing stone sings, on the Crucibelle, beside this one.',
+    cache: 'The sand here hums. Draw the Dreamvane and hold {dvDowse} to dowse.',
+    bottle: 'A bottle adrift. Come alongside and press {use} to read its note.',
+  };
+  on('sea.puzzle.seen', (e) => { if (e.by !== 'courier' || !SIGHT_LINES[e.kind]) return; L.inc('sea.puzzle.seen'); L.inc(`sea.puzzle.seen.${e.kind}`);
+    log.say('explore', said(g, SIGHT_LINES[e.kind]), { key: `sea.puzzle.seen.${e.kind}.${e.id}`, throttle: 2 }); });
+  on('sea.pair.half', (e) => log.say('explore', `A carved ${e.shape} stands here. It looks like one of a pair: seen both, they are a find to report at a dock.`, { key: `sea.pair.${e.id}`, throttle: 2 }));
   on('sea.pair', (e) => { L.inc('sea.pair'); log.say('explore', `This ${e.shape} is the twin of one you saw on another islet: a find (${e.tier}). Report it at a dock.`, { key: 'sea.pair', throttle: 1 }); });
   on('sea.lineup', (e) => { L.inc('sea.lineup'); log.say('explore', `The arcs close into one ring. You know where you are${e.charted ? `, and ${e.charted} squares round you are charted` : ''}.`, { key: 'sea.lineup', throttle: 1 }); });
-  on('sea.echo.hear', (e) => log.say('explore', `The stone sings ${e.notes} notes. Somewhere near, another stone may be listening.`, { key: `sea.echo.${e.id}`, throttle: 2 }));
+  // the phrase as the Crucibelle's note numbers (1 to 5, the keys it is played on), said each time you come near, at most once a real minute
+  on('sea.echo.hear', (e) => log.say('explore', `The stone sings: ${(e.phrase || []).join(' ')}.${e.first ? ' Play it back on the Crucibelle at the stone that listens.' : ''}`, { key: `sea.echo.${e.id}`, throttle: 60 }));
+  on('sea.echo.miss', (e) => { if (e.by !== 'courier') return; L.inc('sea.echo.miss'); log.say('info', 'The stone does not answer. Its phrase starts again.', { key: `sea.echo.miss.${e.id}`, throttle: 4 }); });
   on('sea.echo', () => { L.inc('sea.echo'); log.say('explore', 'The listening stone hears its phrase. Something rises out of the sand.', { key: 'sea.echo', throttle: 1 }); });
   on('sea.dig', (e) => { if (e.by !== 'courier') return; L.inc('sea.dig'); L.inc(`sea.dig.${e.tier}`); log.say('find', `You dig up a buried cache (${e.tier}): ${e.cubes} cubes.`, { key: 'sea.dig', throttle: 1 }); });
   on('sea.stele', (e) => { L.inc('sea.stele.read'); log.say('info', `The stele reads: ${e.line}`, { key: `sea.stele.${e.islet}`, throttle: 3 }); });

@@ -106,7 +106,7 @@ export class MusicPlayer {
     const warm = ctx.createBiquadFilter(); warm.type = 'lowpass'; warm.frequency.value = 9000; warm.Q.value = 0.4;
     this.bus.connect(this.duckG).connect(warm).connect(this.sfx.main ?? this.sfx.master);
     // a long, dark hall
-    this.verb = ctx.createConvolver(); this.verb.buffer = this.sfx.impulse(3.6, 2.4);
+    this.verb = this.sfx.musicVerb?.(3.6, 2.4) ?? Object.assign(ctx.createConvolver(), { buffer: this.sfx.impulse(3.6, 2.4) }); // (shared, as the arranger's: audio/core.js musicVerb)
     this.verbIn = ctx.createGain(); this.verbIn.gain.value = 0.55;
     const vlp = ctx.createBiquadFilter(); vlp.type = 'lowpass'; vlp.frequency.value = 4500;
     this.verbIn.connect(vlp).connect(this.verb).connect(this.bus);
@@ -122,7 +122,7 @@ export class MusicPlayer {
     this.rhodesPan = ctx.createStereoPanner(); this.rhodesPan.connect(this.bus); this.rhodesPan.connect(this.verbIn);
     const lfo = ctx.createOscillator(), lg = ctx.createGain(); lfo.frequency.value = 0.35; lg.gain.value = 0.45; lfo.connect(lg).connect(this.rhodesPan.pan); lfo.start();
     this.nodes = [lfo];
-    this.graph = [this.bus, this.duckG, warm, this.verb, this.verbIn, vlp, this.echoIn, dl, dr, fb, elp, pl, pr, this.rhodesPan, lfo, lg]; // (let go whole after its fade: stop())
+    this.graph = [this.bus, this.duckG, warm, this.verbIn, vlp, this.echoIn, dl, dr, fb, elp, pl, pr, this.rhodesPan, lfo, lg]; // (let go whole after its fade: stop())
   }
 
   play(score) {
@@ -140,9 +140,9 @@ export class MusicPlayer {
   stop(fade = 2) {
     if (!this.alive) return;
     this.alive = false; clearInterval(this.timer);
-    const ctx = this.ctx, bus = this.bus, nodes = this.nodes, graph = this.graph || [bus];
+    const ctx = this.ctx, bus = this.bus, nodes = this.nodes, graph = this.graph || [bus], verb = this.verb;
     bus.gain.cancelScheduledValues(ctx.currentTime); bus.gain.setTargetAtTime(0.0001, ctx.currentTime, fade / 3);
-    setTimeout(() => { try { for (const n of nodes) n.stop(); } catch { /* gone */ } for (const n of graph) try { n.disconnect(); } catch { /* gone */ } }, fade * 1000 + 600);
+    setTimeout(() => { try { for (const n of nodes) n.stop(); } catch { /* gone */ } for (const n of graph) try { n.disconnect(); } catch { /* gone */ } try { verb?.disconnect(bus); } catch { /* gone */ } }, fade * 1000 + 600);
   }
   setVolume(v) { this.volume = v; if (this.alive) this.bus.gain.setTargetAtTime(v, this.ctx.currentTime, 0.3); }
   /** Lower the music for a while (the System is speaking). */
