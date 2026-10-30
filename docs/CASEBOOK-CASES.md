@@ -4649,3 +4649,14 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   and its streaks ride on a solid body (`mainK` 0.25, no mask); after it, the reins read as threads of light from the hands to the jelly (one shot, desk). The roots were also marked zone-free on the way (case 366),
   which did not change this.
 - **Rule:** NEW:line-holds-its-pixels
+
+### 2026-10-30 · Planting a seed added two programs to the garden (vfx/garden/launchlotus.js; Calissa's seeds builder, headless)
+- **Seen:** the Spirit Garden at 219 programs on entering (the probe's route: the workshop, then the garden), 221 once six seeds were
+  planted; nothing of the seeds' own looks among the two (the seeds grown to large, a pour and a swell added none after).
+- **Cause, measured by full cache key:** the two were `garden-launch-lotus` and `garden-pollen-arcs` again, each one token of its key
+  different from the program the garden draws them with (1 against 0), and no material in the scene used them. A seed adds lotuses, and
+  `LaunchLotuses.update` rebuilt and called `compile()` from inside the frame, under a render state unlike the draw's; the materials
+  outlive every rebuild, so the first compile (on `garden.enter`, under the seam's cover) had already made the right programs.
+- **Fix:** `compile()` runs once (`warmed`), cleared only when the materials are disposed. After (the same probe): the desk 219 on
+  entering, 219 with six seeds planted, 219 with them grown to large, their own moons, a pour and a swell; the phone 203, 203, 203.
+- **Rule:** NEW:warm-once

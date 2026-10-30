@@ -197,8 +197,12 @@ export class LaunchLotuses {
   /** Compiled under the seam's cover, as the realm's warm-up compiles the garden (world/garden/realm.js build). */
   compile() {
     const g = this.game, R = g.renderer; if (!R || !this.group) return;
+    // once: the petals' and the arcs' materials outlive every rebuild, so their programs do; a compile again from a rebuild in the
+    // frame (a seed planted or grown adds lotuses) was made under another render state and left two programs nothing draws
+    // (garden-launch-lotus and garden-pollen-arcs, measured 219 -> 221 by Calissa, 2026-10-30)
+    if (this.warmed) return;
     const was = R.getRenderTarget();
-    try { R.setRenderTarget(g.post?.target ?? null); R.compile(this.group, g.camera, g.scene); } catch (e) { console.warn('launch lotuses warm-up', e); }
+    try { R.setRenderTarget(g.post?.target ?? null); R.compile(this.group, g.camera, g.scene); this.warmed = true; } catch (e) { console.warn('launch lotuses warm-up', e); }
     R.setRenderTarget(was ?? null);
   }
 
@@ -253,7 +257,7 @@ export class LaunchLotuses {
   dispose(all = true) {
     if (this.group) { this.group.removeFromParent(); for (const m of [this.petals, this.pods, this.stems]) m?.dispose?.(); this.group = null; }
     this.arcs.dispose(all); for (const lot of this.lotuses) { delete lot.arc; }
-    if (all && this.geo) { for (const g of Object.values(this.geo)) g.dispose(); this.mat.dispose(); this.geo = null; }
+    if (all && this.geo) { for (const g of Object.values(this.geo)) g.dispose(); this.mat.dispose(); this.geo = null; this.warmed = false; }
   }
 }
 const _m = new THREE.Matrix4(), _r = new THREE.Matrix4(), _col = new THREE.Color(), _c = new THREE.Color(), _n = new THREE.Vector3();
