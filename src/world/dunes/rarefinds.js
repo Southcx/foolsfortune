@@ -5,8 +5,8 @@
 // THE CRYSTAL RIDGES' FULGURITE: in Fury's weather at strength
 // `when.k` or more, a bolt that comes down in the ridges leaves a fulgurite glowing for `hot` real s where it struck; struck with the
 // Dreamvane's pick while it glows, it is dug out whole, the curio `give.curio` (its tier `give.tier`): Fury teaches what lightning does to
-// sand. The glass on the sand is Calissa's look (vfx/dunes/fulgurites.js lays one at every strike); its glow while it can be dug is a
-// placeholder world mark here (a glyph's star), hers to dress on `area.rare` and `rare.hot`.
+// sand. The glass on the sand is Calissa's look (vfx/dunes/fulgurites.js lays one at every strike), and its glow while it can be dug hers
+// too (vfx/dunes/hotfulgurite.js reads `.hot`; dug, on `area.rare`).
 //
 // Prior art: Final Fantasy XII's rare game (a monster met only under its condition), real fulgurites dug out of desert sand after a storm,
 // Minecraft's lightning-struck sand; the house's struckable things (tools/melee.js `registered('struckable')`: a crystal is one).
@@ -52,7 +52,6 @@ export class RareFinds {
     const ent = tag({ type: 'fulgurite', kind: 'fulgurite', pos: at.clone().setY(at.y + 0.3), r: 0.8, struck: (p, dir, power, by, tool) => this.dig(ent, by, tool) }, 'struckable');
     register(ent);
     this.hot = { ent, at: at.clone(), left: R.hot };
-    g.glyphs?.pop?.('star', at.clone().setY(at.y + 0.6), { color: 0xcfe8c4, size: 0.8, life: R.hot, ring: true }); // (placeholder: its glow is Calissa's, on rare.hot)
     g.events?.emit('rare.hot', { area: 'ridges', find: 'fulgurite', at: [+at.x.toFixed(1), +at.y.toFixed(1), +at.z.toFixed(1)], by: 'environment' });
   }
 
