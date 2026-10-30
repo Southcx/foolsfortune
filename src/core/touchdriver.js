@@ -15,7 +15,7 @@
 //                   pushes it (core/gyrosteer.js); a lifted touch is the tap iOS asks motion access in.
 //   THE LANES       while the rhythm mode plays, the screen is its ten pads, five a hand, each finger its lane's until it lifts, judged on
 //                   the touch's own moment (core/touchlanes.js). `screenTaken()` says the whole screen is a tool's (the lanes, Celestial
-//                   mode's paper), so the touch controls' stick stands aside.
+//                   mode's paper), so the touch controls' stick stands aside; `hudTaken()` whether the top bar and the log's ticker go too.
 //   THE SWIPES      a quick flick sideways on the look area presses the row the live context gives it (on the Solar Skiff the shoulder,
 //                   Q or E tapped twice): core/touchswipes.js.
 //   THE DOUBLE TAP  two quick still taps on a thing, either half: F on what it offers there, or the lock on what stands there
@@ -151,4 +151,7 @@ export class TouchDriver {
   state() { return { move: this.move && { ...this.move }, look: !!this.look, cursor: this.cursor.state() }; }
   /** Whether the whole screen is a tool's now (the rhythm mode's pads, Celestial mode's paper): the touch controls' stick stands aside. */
   screenTaken() { return this.lanes.active || !!this.tools.paper || !!this.take; }
+  /** Whether the top bar and the log's ticker stand down too: the pads and the paper fill the screen; a taker marked `keepsHud` (a
+   *  standard trial, whose instructions are the log's) leaves them up. */
+  hudTaken() { return this.lanes.active || !!this.tools.paper || (!!this.take && !this.take.keepsHud); }
 }

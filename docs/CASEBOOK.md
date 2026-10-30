@@ -1001,3 +1001,5 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
   breaks: grep the key before calling the table done.
 356. **Every list on a page is reached by the arrows.** The window moves between its lists, a list inside itself;
   a page is driven from the keyboard once before it ships.
+357. **A stimulus that is measured is drawn past the frame's grade, and read back off the screen.** The world's
+  frame is tone-mapped and graded whole; a material's own flags do not reach past it.

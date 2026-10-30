@@ -4462,3 +4462,15 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   open sea's line said in the device's words, and a mount card ashore with every slot full compares against the one a pick would bump.
   Driven headless: nine downs walked crossings, ships and parts; Enter on a ship wore it.
 - **Rule:** 356
+
+### 2026-10-30 · The colour trial's tiles were not the colours it asked for (world/touchstone/, measured headless at 960 x 600 and 896 x 414)
+- **Seen (measured):** a trial asking 9c7954 and 5a8028 showed b89265 and 6a992b: up to 28 levels a channel off, the odd tile's Oklab
+  distance with it. The psygun's reticle and the gun hand stood over the middle tile; on the phone the shot read black.
+- **Cause:** the tiles' `toneMapped: false` never reached them: the world is drawn into a target and the composite tone-maps, glows and
+  grades the whole frame (render/glow.js), so a flat unlit tile is still graded. First person draws the psygun out on its own
+  (weapon.js, unless put away by hand). The black phone frame was the first-draw budget (render/firstdraws.js, 4 new pipelines a frame):
+  the probe shot before the world was let in, after a handful of frames; 80 frames on, the phone read mean luminance 139.
+- **Fix:** each tile drawn again in the overlay's scene over its place on the stone (after the tone curve, the glow and the grade); the
+  trial seen in the first person with the main tool stowed and drawn again after; the log's ticker kept on touch (`hudTaken`,
+  core/touchdriver.js). Read back: 9c7954 5a8028 9c7954, 0 off, at desk and phone.
+- **Rule:** 357
