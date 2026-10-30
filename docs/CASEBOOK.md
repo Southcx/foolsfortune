@@ -995,3 +995,4 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
   and loses its hue; a look is checked on the noon sand as well as in the dark.
 353. **A mesh compiled alone is compiled as it will be drawn: its scene's lights and that pass's clipping.** three keys a
   program by both, and compile() keeps the clipping of the last render(): draw an empty scene with the pass's planes first.
+354. **A mark that promises an answer reads the window of the press it promises for.** One table for the windows; never a shortest-of stand-in.

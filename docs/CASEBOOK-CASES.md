@@ -4428,3 +4428,12 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   same empty render: handed to Petra.
 - **Rule:** 353
 
+
+### 2026-10-30 · The parry mark read the shortest press window (courier/parry.js)
+- **Seen (as read):** the parry mark went hot only for what a 0.25 real s press would answer, while the kick's press asks for 0.26 s and
+  the cutlass's guard for 0.28 s: with those in hand a press could answer a blow the mark showed cold.
+- **Cause:** three numbers for one window in three files (parries.js WINDOW, kick.js PARRY_TO, cutlass.js PARRY_WIN), and the mark's
+  rule (`pressAnswers`, `shotAnswers`) read a fourth, `PRESS_WINDOW`, set to the shortest.
+- **Fix:** one table, `PRESS` in courier/parry.js, each value the number it always was (no feel changed); the three read it, and the
+  mark's rule asks `pressWindowOf(game)`, the window of what is in hand.
+- **Rule:** 354

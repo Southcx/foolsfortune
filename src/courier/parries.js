@@ -13,10 +13,10 @@
 //   game.parries = new Parries(game)   .update(raw)   .lend(id) (the sub's Gulp on R: the tool's window from where it hangs)   PARRIES   WINDOW
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { answer, guard } from './parry.js';
+import { answer, guard, PRESS } from './parry.js';
 import { sfx } from '../audio/sfx.js';
 
-export const WINDOW = 0.25; // (real seconds from the press: the kick's and the cutlass's)
+export const WINDOW = PRESS.tool; // (real seconds from the press: every tool's V; the kick's and the cutlass's are theirs, courier/parry.js PRESS)
 const brushOf = (g) => g.techs?.get('soulbrush');
 
 /** Each tool's parry: how it answers, how far it reaches, and how far ahead of the chest its reach is centred (metres). */
