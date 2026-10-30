@@ -22,6 +22,16 @@
 //                        clock, its film, its meniscus), the field's leading feeling and its ice told to it through `aDepth`'s code
 //                        (`liquidDepth`); in the hand's ball: ink, glossy, the thin film's colours at the turn (liquid.js's `liqFilm`).
 //   THE BALL             a lumpy icosahedron (`lumpyBall`) in the look of what it holds, turning.
+//   A SPIRIT SLAB        (roles 'slab' and 'bench', vfx/garden/slablook.js, benchmodel.js; docs/plans/SEEDS-SLABS-SCANS.md 2) the colour
+//   AND ITS BENCH        is the vertices' and the attribute says what it is (`aMl.w`: 0 stone, 1 Lachrymite, 2 plain, 3 a lamp; `aMl.y`
+//                        its roughness; `aMl.z` a crack): STONE takes the atlas's tooth, its grit darker, a broad mottle and the fine
+//                        laminae of a bedded rock; LACHRYMITE is a dark crystal body with the labradorite's schiller coming up at a grazing
+//                        look (vfx/labradorite.js), the creature's feeling faint in it, dimmed where it broke; a CRACK is the cell net's
+//                        line, darker, widening with `aMl.z`. The silhouette (`mlGhost`, the fossil's footprint in `mlGhostMap` over
+//                        `mlGhostBox`) is a thin line of the film on what faces up over it, to aim by. `mlGlow` lifts the fossil's light
+//                        at the carving's end. THE TOLL (role 'toll', the fossil drawn again with no depth test) keeps only the fossil's
+//                        rim, in the film, thinned away by a dither as `mlToll` falls: an outline through the stone, opaque, so the
+//                        alpha test cuts it and no program is added (a transparent copy would be one).
 //
 // Prior art: the room glaze atlas and its triplanar taps (vfx/surfaces.js: Geiss, GPU Gems 3 ch. 1) and the ash glaze's row
 // (vfx/roomglazes.js); frostbisque.js's crazing net (Worley's F2 - F1) and its pixel fade; From Dust's matter drawn as layered skins;
@@ -31,7 +41,7 @@
 // that the surface belongs where the field crosses, not on the grid), From Dust's and Populous's matter thinning into the land, and
 // Horizon Zero Dawn's terrain blending (a noise-broken height threshold where two grounds meet, never a straight seam).
 //
-//   matterMaterial(role, island?)   role: 'ground' | 'creation' | 'set' | 'lachryma': a shared MeshStandardMaterial (userData.shared)
+//   matterMaterial(role, island?)   role: 'ground' | 'creation' | 'set' | 'lachryma' | 'slab' | 'bench': a shared MeshStandardMaterial (userData.shared)
 //   matterAttrs(geo, count)          gives a geometry the look's attributes (`aMl`: loose share, thickness, craze; and a white `color`)
 //   lumpyBall()                      the held ball's geometry, its attributes given
 //   lachrymaSkin(game)               the shared Lachryma liquid material (game.water's), or null
@@ -45,6 +55,7 @@ import { ROOM_GLAZES } from '../roomglazes.js';
 import { makeWaterMaterial, WATER_TINTS } from '../water.js';
 import { COLOR, DISPLAY_ORDER } from '../../progress/weather.js';
 import { groundOf } from '../../godhand/matter.js';
+import { LAB_GLSL, mindTime } from '../labradorite.js';
 
 /** Each island's dress for its two layers and its fired ware (the bodies are GROUND's colours; the rest the look's). A new island adds its
  *  row; one missing falls back to Anagami's. Roughness: [firm, loose, fired body, glaze]. */
@@ -57,7 +68,10 @@ export const MATTER_LOOK = {
   },
 };
 const lookOf = (island) => MATTER_LOOK[island] || MATTER_LOOK.anagami;
-const ROLE = { ground: 0, creation: 1, set: 1, lachryma: 2 };
+const ROLE = { ground: 0, creation: 1, set: 1, lachryma: 2, slab: 3, bench: 3, toll: 3 };
+/** A blank footprint for every role but the slab's (its silhouette's map, set by vfx/garden/slablook.js). */
+let NO_GHOST = null;
+const noGhost = () => { if (!NO_GHOST) { NO_GHOST = new THREE.DataTexture(new Uint8Array([0, 0, 0, 255]), 1, 1); NO_GHOST.needsUpdate = true; } return NO_GHOST; };
 
 /** The look's clock (rule 121: passed down by the caller's frame). */
 const ML_TIME = { value: 0 };
@@ -72,7 +86,11 @@ uniform sampler2D mlAtlas;
 uniform float mlKind, mlSet, mlTime;
 uniform vec3 mlFirm, mlFirmDamp, mlFirmSpeck, mlLoose, mlLooseLight, mlLooseGrit, mlFlash, mlAsh, mlGlazeThick, mlGlazeThin, mlTint;
 uniform vec4 mlRoughs;
-float mlRough = 1.0; float mlWide = 0.5;
+uniform float mlGlow, mlGhost, mlToll;
+uniform sampler2D mlGhostMap;
+uniform vec4 mlGhostBox;
+float mlRough = 1.0; float mlWide = 0.5; float mlCrack = 0.0; float mlGh = 0.0;
+${LAB_GLSL}
 float mlHash(vec3 p) { p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
 float mlCells(vec3 p) { // (F2 - F1 of a cell net: 0 on an edge; frostbisque.js's)
   vec3 i = floor(p), f = fract(p); float f1 = 9.0, f2 = 9.0;
@@ -128,19 +146,55 @@ const FRAG = /* glsl */`
         col = mix(col, col * 1.12, sh * 0.5); col = mix(col, col * 0.55, crack * 0.8); // (drying clay's hairlines: a darker clay, never black; Calissa's look of 2026-10-23, a tortoise shell before)
         mlRough = mix(mlRough, 1.0, k);
       }
-    } else { // LACHRYMA, held: ink, a feeling's colour deep in it
+    } else if (mlKind < 2.5) { // LACHRYMA, held: ink, a feeling's colour deep in it
       col = mix(vec3(0.012, 0.01, 0.02), mlTint, 0.16);
       mlRough = 0.12;
+    } else { // A SPIRIT SLAB AND ITS BENCH: the vertices' colour; vMl.w its class, vMl.y its roughness, vMl.z a crack
+      vec3 base = diffuseColor.rgb;
+      if (mlGhost > 0.001) { // the silhouette: the fossil's footprint as a thin line of the film on the stone that faces up over it
+        vec2 gu = (vMlP.xz - mlGhostBox.xy) * mlGhostBox.zw;
+        float gv = texture2D(mlGhostMap, clamp(gu, 0.0, 1.0)).r, gw = max(fwidth(gv) * 1.5, 0.02);
+        float inside = step(0.0, gu.x) * step(0.0, gu.y) * step(gu.x, 1.0) * step(gu.y, 1.0) * step(vMl.w, 0.5);
+        mlGh = ((1.0 - smoothstep(gw, gw * 2.5, abs(gv - 0.45))) + smoothstep(0.55, 0.9, gv) * 0.2) * face * inside;
+      }
+      if (vMl.w < 0.5) { // stone: the tooth, the grit darker, a broad mottle, the laminae of a bedded rock
+        col = base * (0.84 + 0.32 * A.b);
+        col = mix(col, col * 0.56, A.a * 0.6);
+        col *= 0.9 + 0.2 * smoothstep(0.25, 0.85, mlWide);
+        col *= 0.95 + 0.07 * sin(vMlP.y * 90.0 + (mlWide - 0.5) * 6.0);
+      } else if (vMl.w < 1.5) col = base * (0.9 + 0.2 * A.b); // (Lachrymite: its body; its schiller is its light, below)
+      else col = base * (0.93 + 0.14 * A.b); // (plain: wood, leather, iron, paper; a lamp's face)
+      mlRough = vMl.y;
+      if (mlToll > 0.001) { // the toll: only the fossil's rim kept, drawn through the stone, thinning away by a dither (opaque: the alpha test)
+        float rim = 1.0 - abs(dot(normalize(vNormal), normalize(vViewPosition)));
+        float ign = fract(52.9829189 * fract(dot(gl_FragCoord.xy, vec2(0.06711056, 0.00583715))));
+        diffuseColor.a = step(0.42, rim) * step(ign, mlToll);
+      }
+      float k = vMl.z;
+      if (k > 0.001) { // a crack: the cell net's line, darker, wider as it goes
+        float sc = 25.0, aa = max(mlFw * sc * 1.5, 1e-5), e = mlCells(vMlP * sc), lw = max(mix(0.02, 0.09, k), aa * 1.2);
+        mlCrack = 1.0 - smoothstep(lw - aa, lw + aa, e);
+        col = mix(col, col * 0.18, mlCrack * 0.9);
+      }
     }
     diffuseColor.rgb = col;
   }
 `;
 const ROUGH = '\n  roughnessFactor = mlRough;';
 const GLOW = /* glsl */`
-  if (mlKind > 1.5) { // the thin film's colours at the turn of the ink (liquid.js's liqFilm), drifting
+  if (mlKind > 1.5 && mlKind < 2.5) { // the thin film's colours at the turn of the ink (liquid.js's liqFilm), drifting
     float fr = pow(1.0 - abs(dot(normal, normalize(vViewPosition))), 3.0);
     vec3 film = 0.5 + 0.5 * cos(6.2832 * (mlWide * 1.4 + fr * 0.8 + mlTime * 0.03 + vec3(0.0, 0.33, 0.67)));
     totalEmissiveRadiance += film * (0.03 + 0.45 * fr) + mlTint * 0.05;
+  } else if (mlKind > 2.5) {
+    vec3 vd = normalize(vViewPosition);
+    if (vMl.w > 0.5 && vMl.w < 1.5) { // Lachrymite: the labradorite's flash at a grazing look, the feeling faint in it, dim where it broke
+      float graze = pow(1.0 - abs(dot(normal, vd)), 1.4), ph = labPhase(vMlP * 3.0, vd) + 0.3 * dot(normal, vec3(0.3, 0.8, 0.5));
+      float band = smoothstep(0.2, 0.85, 0.5 + 0.5 * sin(ph * 12.566)), whole = (1.0 - vMl.z) * (1.0 - mlCrack);
+      totalEmissiveRadiance += (labradorite(ph) * (0.22 + 0.78 * graze) * (0.35 + 0.65 * band) * 0.85 + mlTint * 0.12) * (0.2 + 0.8 * whole);
+      totalEmissiveRadiance += labSoft(ph) * (mlGlow * 1.6 * (0.4 + 0.6 * whole) + step(0.001, mlToll) * 2.4) + diffuseColor.rgb * 0.45 * whole; // (and a light of its own, so a bone bared in a shaded pit still reads)
+    } else if (vMl.w > 2.5) totalEmissiveRadiance += diffuseColor.rgb * 1.4;
+    if (mlGh > 0.0) totalEmissiveRadiance += labSoft(labPhase(vMlP * 2.0, vd)) * mlGh * mlGhost * 0.9;
   }
 `;
 
@@ -157,6 +211,7 @@ export function matterMaterial(role, island = 'anagami') {
     mlLoose: { value: c(G.loose.colour) }, mlLooseLight: { value: c(L.looseLight) }, mlLooseGrit: { value: c(L.looseGrit) },
     mlFlash: { value: c(L.flash) }, mlAsh: { value: c(L.ash) }, mlGlazeThick: { value: c(gz.thick) }, mlGlazeThin: { value: c(gz.thin) },
     mlTint: { value: c(0x9fd8e0) }, mlRoughs: { value: new THREE.Vector4(...L.rough) },
+    mlGlow: { value: 0 }, mlGhost: { value: 0 }, mlToll: { value: 0 }, mlGhostMap: { value: noGhost() }, mlGhostBox: { value: new THREE.Vector4(0, 0, 1, 1) }, uMindT: mindTime,
   };
   m.onBeforeCompile = (sh) => {
     Object.assign(sh.uniforms, uniforms);

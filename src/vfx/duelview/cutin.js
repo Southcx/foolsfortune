@@ -30,9 +30,10 @@ import { FEELINGS } from '../../npc/neuraleseroots.js';
  *  burst: real s after a limit break in which its own casts come without a cut-in; word / limitWord: when the label slams (real s from
  *  the event: Wanda's stings land there, audio/duelcasts.js CUT_IN_LEAD; the limit break's after its 1.1 s swell); lead / limitLead: the
  *  held beat after the band has gone before its cast lands (South, 2026-10-30: "the timing of the cut-ins staggered a little bit"); turn.settle:
- *  the beat the board is left to settle before the turn's band tears in over it (beats.js). */
+ *  the beat the board is left to settle before the turn's band tears in over it (beats.js); light: the strip's key, rim and ambient (an
+ *  elite's PORTRAIT.light scales them). */
 export const CUT_IN = { in: 0.14, hold: 0.62, out: 0.16, limitHold: 1.45, word: 0.12, limitWord: 1.1, band: 0.16, limitBand: 0.24, y: 0.4, tilt: -0.09, portrait: 0.44, rt: 512, fov: 24, burst: 4,
-  lead: 0.2, limitLead: 0.25,
+  lead: 0.2, limitLead: 0.25, light: { key: 2.6, rim: 3.2, amb: 0.35 },
   turn: { in: 0.1, hold: 0.3, out: 0.14, word: 0.12, band: 0.085, lit: 0.35, settle: 0.3 }, vs: { in: 0.16, hold: 1.05, out: 0.18, word: 0.2, band: 0.13 }, pop: 0.06, red: 0.5 };
 /** The turn's change (South, 2026-10-29: "cut-ins/highlights and vfx for when the turns switch over"; Fire Emblem's PLAYER PHASE and
  *  ENEMY PHASE): the band thinner and shorter, yours in the film. */
@@ -139,7 +140,7 @@ export class FoeCutIn {
     this.mesh.renderOrder = this.flip ? 49 : 50; this.mesh.frustumCulled = false; this.mesh.userData.overlayHidden = true;
     this.slot = S.add(this.mesh, { anchor: 'tl', z: this.flip ? 399 : 400, update: (dt, slot) => this.frame(dt, slot) });
     this.scene = new THREE.Scene(); this.cam = new THREE.PerspectiveCamera(CUT_IN.fov, 2, 0.05, 60);
-    this.key = new THREE.DirectionalLight(0xfff2e0, 2.6); this.rim = new THREE.DirectionalLight(0xffffff, 3.2); this.amb = new THREE.AmbientLight(0xffffff, 0.35);
+    const Lt = CUT_IN.light; this.key = new THREE.DirectionalLight(0xfff2e0, Lt.key); this.rim = new THREE.DirectionalLight(0xffffff, Lt.rim); this.amb = new THREE.AmbientLight(0xffffff, Lt.amb);
     this.scene.add(this.key, this.key.target, this.rim, this.rim.target, this.amb);
     return true;
   }
@@ -174,7 +175,10 @@ export class FoeCutIn {
     const V = this.view, B = this.box; if (!B) return;
     if (this.subject === 'jar') return this.aimJar(k);
     const size = B.getSize(_a), h = Math.max(0.4, size.y), f = V.foe, hd = typeof f?.head === 'function' ? f.head() : null; // (its own head where it says, else high on its bounds)
-    const ve = Math.max(0.5, h * (limit ? 0.3 : 0.38)), focus = hd?.isVector3 ? _b.copy(hd).setY(hd.y - ve * 0.6) : B.getCenter(_b).setY(B.max.y - h * 0.22);
+    const E = V.elite, P = E?.on ? E.constructor.PORTRAIT : null, lit = P?.light ?? 1; // (an aberrant with no face to cut to asks for its whole body: aberrants/jelly.js)
+    const Lt = CUT_IN.light; this.key.intensity = Lt.key * lit; this.rim.intensity = Lt.rim * lit; this.amb.intensity = Lt.amb * lit;
+    const ve = P?.whole ? Math.max(0.5, h * (limit ? 0.75 : 0.85)) : Math.max(0.5, h * (limit ? 0.3 : 0.38));
+    const focus = P?.whole ? B.getCenter(_b) : hd?.isVector3 ? _b.copy(hd).setY(hd.y - ve * 0.6) : B.getCenter(_b).setY(B.max.y - h * 0.22);
     const yaw = (limit ? -0.18 : 0.32), dir = _a.copy(V.u).negate().setY(0).normalize().applyAxisAngle(THREE.Object3D.DEFAULT_UP, yaw);
     const d = ve / 2 / Math.tan(THREE.MathUtils.degToRad(CUT_IN.fov / 2)) * (1 - 0.12 * k);
     this.cam.position.copy(focus).addScaledVector(dir, d); this.cam.position.y -= ve * 0.12; this.cam.up.set(limit ? Math.sin(0.12) : 0, 1, 0); this.cam.lookAt(focus);
