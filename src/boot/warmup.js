@@ -29,6 +29,7 @@ import { SealImprints } from '../vfx/sealimprint.js';
 import { SealPicker } from '../ui/sealpicker.js';
 import { RailReadout } from '../ui/railreadout.js';
 import { GoalsWindow } from '../ui/goalswindow.js';
+import { AssayWindow } from '../ui/assaywindow.js';
 import { HudLayout } from '../ui/hudlayout.js';
 import { RailResults } from '../ui/railresults.js'; // (round 6's overlay pieces: OVERLAY.md 10.5c)
 import { prewarmFish } from '../tools/sondelass/angling/fishmesh.js';
@@ -140,6 +141,7 @@ export async function bootWarmup(game, made) {
   } });
   game.railReadout = new RailReadout(game); game.railResults = new RailResults(game); // (the crossing's score aboard and the trip's results window, built on first use: ui/railreadout.js, ui/railresults.js; RAIL-STANDARDS.md 6)
   game.goalsWindow = new GoalsWindow(game); // (the game day's three goals as a System window, on /goals and a beat at goals.set and goal.done: ui/goalswindow.js)
+  game.assayWindow = new AssayWindow(game); // (the Assay as the isekai status sheet, summoned on /assay (aptitude.ask) before the Courier: ui/assaywindow.js)
   installTouchControls(game); // (touch play's controls, their look: built only once touch is on, ui/touch/index.js)
   game.touchShell = new TouchShell(game); // (what those controls do: a tile pressed through the bindings, the top bar's windows by their keys: feedback/touchshell.js)
   game.overlayScene.compile(); // (the overlay's meshes, against the canvas they are drawn into)
