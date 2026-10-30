@@ -36,8 +36,8 @@ export const MOUNT_RING = {
   skiff: { scale: 0.27, deck: 0.22, sway: 0.35, rate: 1.6 }, jelly: { scale: 0.44, bounce: 1.1 },
   dim: { color: 0.4, size: 0.82 }, ease: { in: 12, out: 16, lit: 10 },
 };
-const MAIN = { m: 0.035, lo: 1.8, hi: 2.8, wire: true };
-const LIT = { m: 0.05, lo: 2.6, hi: 3.6, wire: true };
+const MAIN = { m: 0.055, lo: 2.4, hi: 3.6, wire: true }; // (wide and bright enough to hold on noon's pale sand)
+const LIT = { m: 0.08, lo: 3.2, hi: 4.4, wire: true };
 const THIN = { m: 0.022, lo: 1.3, hi: 1.8, wire: false };
 const LIFT = 0.05, CELL = 0.3, STEP = 0.24;
 const DOWN = new THREE.Vector3(0, -1, 0), _o = new THREE.Vector3(), _r = new THREE.Vector3(), _c = new THREE.Color(), _q = new THREE.Quaternion();
