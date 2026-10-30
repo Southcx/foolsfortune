@@ -18,15 +18,16 @@
 // ---------------------------------------------------------------------------------------
 import {
   RANK, own, weight, core, groundRing, rimRing, lamp, crystal, shardsIn, dust, grains, iris, blinkOut, specks, waveWall, chips, lineMotes, sweepUp, crescents, flakes,
-  shimmer, sprites,
+  shimmer, sprites, inked,
 } from './kit.js';
 
 const P = 'pentacles', { page: PAGE, knight: KNIGHT, queen: QUEEN, king: KING, whisper: HUSH } = RANK;
-// (Bulwark's shell: a band of hard light round the body, its cells crawling, lit at its rim)
+// (Bulwark's shell: a band of hard light round the body, its cells crawling, lit at its rim; it covers most of what is behind it where it
+// is lit, so it reads on the noon sand)
 const shell = (R, o) => own(P, R, { form: 'band', main: 'cells', tile: [8, 3], scroll: [0.04, 0.12], mask: 'noise', maskK: 0.6, maskTile: [3, 2], maskScroll: [-0.05, 0.2],
-  scale: 0.66, stretch: [1, 2.9, 1], edgeV: [0.04, 0.12], rim: 0.8, rimPow: 2, core: 0.3, ...o });
-// (its gold rims: a thin ring at its foot and one at its crown)
-const rims = (R, o) => [0.04, 1.9].map((y) => own('gold', R, { form: 'ring', main: 'rays', tile: [20, 1], scroll: [0.15, 0], scale: y < 1 ? 0.74 : 0.7, offset: [0, y, 0], edgeV: [0.7, 0.15], ...o }));
+  scale: 0.66, stretch: [1, 2.9, 1], edgeV: [0.04, 0.12], rim: 0.8, rimPow: 2, core: 0.3, back: 0.85, ...o });
+// (its gold rims: a thin ring at its foot and one at its crown, inked under)
+const rims = (R, o) => [0.04, 1.9].flatMap((y) => inked(own('gold', R, { form: 'ring', main: 'rays', tile: [20, 1], scroll: [0.15, 0], scale: y < 1 ? 0.74 : 0.7, offset: [0, y, 0], edgeV: [0.7, 0.15], ...o }), 0.5));
 // (Earth Wall's light: a wave wall 2 m ahead, a third of a circle wide there (4 m), 2.5 m high, its cracks crawling)
 const wall = (R, o) => own(P, R, { form: 'wave', main: 'cracks', mainK: 0.6, tile: [5, 2], scroll: [0, 0.2], mask: 'noise', maskTile: [3, 1], maskScroll: [0.05, 0.3], scale: 2,
   stretch: [1.15, 1.25, 1], edgeV: [0.04, 0.3], rim: 0.4, core: 0.5, ...o });

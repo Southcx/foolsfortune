@@ -75,6 +75,16 @@ export function piece(S, R, o = {}, def = {}, build = () => ({})) {
 /** A shape of an art's own, written out whole (the cup, the card, the wheel), with its rank over it as any piece's. */
 export const own = (S, R, o) => piece(S, R, o);
 
+const mulCurve = (c, m) => (Array.isArray(c) ? c.map(([t, v]) => [t, v * m]) : (c ?? 1) * m);
+/** A light piece with a soft ink copy drawn under it first (alpha-over, order 5, its pattern mostly smoothed, a little wider): on the noon
+ *  sand added light clips to white and the ink is what keeps its shape and colour (NEW:additive-covers); on a dark ground the ink is lost
+ *  in the dark and changes nothing. It erodes ahead of the light, so no dark is left lying where the light has gone. */
+export function inked(L, k = 0.4, wide = 1.04) {
+  const ink = { ...L, ramp: 'ink', add: 0, glow: 1, core: 0, mainK: 0.6, ...(L.mask ? { maskK: 0.6 } : {}), scale: mulCurve(L.scale, wide), kmul: (L.kmul ?? 1) * k, order: 5,
+    erode: shiftBy(L.erode, 0.15), rampShift: shiftBy(L.rampShift, -0.1) }; // (eaten away ahead of its light, never left lying after it)
+  return [ink, L];
+}
+
 /** A sprite layer: its count or rate by the rank's, its alpha by its opacity; y its height. */
 export function sprites(R, def, o = {}) {
   const { y, ...over } = o;
@@ -101,10 +111,11 @@ export function weight(R, { flash = 0, shake = 0, stop = 0, light = 0, range = 1
 /** PRIMARY (its heart): the white-hot core of the impact, gone in about 0.1 real s (six frames: one alone does not read at 480 lines). */
 export const core = (R, o = {}) => piece('white', R, o, { s: 1, y: 1.1, dur: 0.12 }, (p) => ({
   form: 'sphere', main: 'cells', tile: [2, 2], scale: [[0, 0.14 * p.s], [1, 0.5 * p.s]], offset: [0, p.y, 0], rim: -0.6, glow: 2.6, erode: [[0, 0], [1, 1]], rampShift: 0, turn: 'random' }));
-/** A ring on the ground thrown out from the middle, its outer edge brightest and a gradient behind (a landing's, a calm's, a ping's). */
-export const groundRing = (S, R, o = {}) => piece(S, R, o, { r: 2, y: 0.04, dur: 0.55 }, (p, held) => ({
+/** A ring on the ground thrown out from the middle, its outer edge brightest and a gradient behind (a landing's, a calm's, a ping's);
+ *  inked under (a pair of layers). */
+export const groundRing = (S, R, o = {}) => inked(piece(S, R, o, { r: 2, y: 0.04, dur: 0.55 }, (p, held) => ({
   form: 'ring', main: 'streaks', tile: [10, 1], scroll: [0, 1.4], mask: 'noise', maskTile: [3, 1], maskScroll: [0.08, 0],
-  scale: held ? p.r : [[0, 0.22 * p.r], [1, p.r]], offset: [0, p.y, 0], edgeV: [0.6, 0.12], erode: held ? 0.1 : erodes(0.35), turn: 'random' }));
+  scale: held ? p.r : [[0, 0.22 * p.r], [1, p.r]], offset: [0, p.y, 0], edgeV: [0.6, 0.12], erode: held ? 0.1 : erodes(0.35), turn: 'random' })));
 /** TERTIARY: a pale ring left lying at the reach, faint, eroding away through its noise. */
 export const rimRing = (S, R, o = {}) => piece(S, R, o, { r: 3, y: 0.03, dur: 1.4, g: 0.45 }, (p) => ({
   form: 'ring', main: 'noise', tile: [6, 1], scroll: [0.03, 0.1], scale: p.r, offset: [0, p.y, 0], edgeV: [0.7, 0.2], at: 0.2,
@@ -198,10 +209,10 @@ export const waveWall = (S, R, o = {}) => piece(S, R, o, { r: 6, h: 1.6, w: 1, d
   form: 'wave', main: 'noise', tile: [3, 1], scroll: [0, 1.1], mask: 'streaks', maskK: 0.6, maskTile: [5, 1], maskScroll: [0, 1.6], flow: 'noise', flowK: 0.06,
   scale: held ? p.r : [[0, 0.12 * p.r], [1, p.r]], stretch: [p.w, held ? p.h / p.r : [[0, (0.8 * p.h) / (0.12 * p.r)], [1, (0.6 * p.h) / p.r]], 1], core: 0.7,
   erode: held ? 0.12 : [[0, 0], [0.35, 0.05], [1, 1]] }));
-/** PRIMARY: the shockwave ring thrown out along the ground: its front bright, its back dragging (a long soft inner edge). */
-export const shock = (S, R, o = {}) => piece(S, R, o, { r: 6, y: 0.05, dur: 0.6 }, (p) => ({
+/** PRIMARY: the shockwave ring thrown out along the ground: its front bright, its back dragging (a long soft inner edge); inked under. */
+export const shock = (S, R, o = {}) => inked(piece(S, R, o, { r: 6, y: 0.05, dur: 0.6 }, (p) => ({
   form: 'ring', main: 'streaks', tile: [14, 1], scroll: [0, 2], mask: 'noise', maskTile: [4, 1], maskScroll: [0.1, 0.3], scale: [[0, 0.15 * p.r], [0.5, 0.8 * p.r], [1, p.r]],
-  offset: [0, p.y, 0], edgeV: [0.8, 0.06], core: 0.7, coreAt: 0.82, erode: erodes(0.4), turn: 'random' }));
+  offset: [0, p.y, 0], edgeV: [0.8, 0.06], core: 0.7, coreAt: 0.82, erode: erodes(0.4), turn: 'random' })), 0.28);
 /** PRIMARY: the shock's front stood up as a low wall racing out with it, warped by a flow (the distortion band). */
 export const shockFront = (S, R, o = {}) => piece(S, R, o, { r: 6, h: 1.2, dur: 0.55 }, (p) => ({
   form: 'band', main: 'noise', tile: [10, 1], scroll: [0.1, 1], flow: 'noise', flowK: 0.06, flowScroll: [0, 0.8], scale: [[0, 0.15 * p.r], [0.5, 0.8 * p.r], [1, p.r]],

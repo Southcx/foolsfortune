@@ -4409,5 +4409,8 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   gold clips to white in red and green and keeps little in blue, so its hue is gone; nothing in it dims what is behind.
 - **Fix:** an additive shape layer also covers `back` of what is behind it, by its own alpha (vfx/shapes/program.js `uBack`, default
   `SHAPE_BACK.k` 0.5, a layer's `back` over it). Measured: the crop round Bulwark in game changed by a mean 3.7 of 255 at 0.3, the colour
-  holding at the ring's strokes; over the gallery's mid-brown ground at 0.5 the mean change is 0.05 to 0.6 (no shadow read).
+  holding at the ring's strokes; over the gallery's mid-brown ground at 0.5 the mean change is 0.05 to 0.6 (no shadow read). Covering
+  alone only turns gold pale gold on near-white sand, so the class arts' ground rings, shocks and Bulwark's rims also carry an ink copy
+  drawn under them (vfx/library/classarts/kit.js `inked`: alpha-over, order 5, eroding ahead of its light so no dark is left lying), and
+  Bulwark's shell covers 0.85: the dark is what keeps a light's shape on a white ground (the Divination iris read at noon for that reason).
 - **Rule:** NEW:additive-covers
