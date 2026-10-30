@@ -15,6 +15,7 @@
 import * as THREE from 'three';
 import { SlipGeyser } from '../../vfx/slipgeyser.js';
 import { DUNE } from './dunes.js';
+import { spotIn, DUNES_AREA_ORDER, countsOf } from './areacut.js';
 import { seeded } from '../../core/rng.js';
 
 const LAUNCH = { up: 18, r: 4, over: 4 }; // (m/s up; the ring's radius; how far over the sand a body still counts as in it)
@@ -24,12 +25,17 @@ export class Geysers {
   constructor(game) {
     this.game = game; this.list = [];
     const D = game.dunes; if (!D) return;
-    const r = seeded(0x9e3779b1), at = [];
-    while (at.length < PLACES.n) {
-      const a = r() * Math.PI * 2, d = PLACES.r[0] + r() * (PLACES.r[1] - PLACES.r[0]), x = Math.cos(a) * d, z = Math.sin(a) * d;
-      if (PLACES.clear.some((c) => Math.hypot(x - c.x, z - c.z) < c.r) || at.some((p) => Math.hypot(x - p.x, z - p.z) < 40)) continue;
-      at.push({ x, z });
-      if (at.length <= PLACES.pairs * 2 && at.length % 2 === 1) { const b = a + Math.PI / 2; at.push({ x: x + Math.cos(b) * PLACES.gap, z: z + Math.sin(b) * PLACES.gap }); } // (a pair, to be chained)
+    // laid by area (AREA_CONTENTS.geysers, world/dunes/areacut.js), the ridges first so their chains take the pairs; each clear of the
+    // Gnomon's foot and 40 m from any other
+    const r = seeded(0x9e3779b1), at = [], counts = countsOf('geysers'), order = ['ridges', ...DUNES_AREA_ORDER.filter((id) => id !== 'ridges')];
+    let pairs = PLACES.pairs;
+    const free = (x, z) => !PLACES.clear.some((c) => Math.hypot(x - c.x, z - c.z) < c.r) && !at.some((p) => Math.hypot(x - p.x, z - p.z) < 40);
+    for (const id of order) {
+      for (let n = counts[id] || 0, tries = 0; n > 0 && tries < 200; tries++) {
+        const s = spotIn(id, r, { inner: PLACES.r[0], outer: PLACES.r[1] }); if (!free(s.lx, s.lz)) continue;
+        at.push({ x: s.lx, z: s.lz }); n--;
+        if (n > 0 && pairs > 0) { const b = Math.atan2(s.lz, s.lx) + Math.PI / 2; at.push({ x: s.lx + Math.cos(b) * PLACES.gap, z: s.lz + Math.sin(b) * PLACES.gap }); n--; pairs--; } // (a pair, to be chained)
+      }
     }
     at.forEach((p, i) => {
       const x = DUNE.x + p.x, z = DUNE.z + p.z, pos = new THREE.Vector3(x, D.heightAt(x, z), z);

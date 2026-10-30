@@ -30,6 +30,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { tag, register } from '../../core/tags.js';
 import { MATERIALS } from '../props/pottery.js';
 import { phoneByPage } from '../../render/graphics.js';
+import { layOut, countsOf, RUIN_PIECES } from './areacut.js';
 
 export const DUNE = { x: 2000, y: -420, z: 0, half: 520, step: 2.5, outer: 900, layerBelow: -150 };
 const WIND_AT = 0.55; // (radians) the way the wind blows toward, on average
@@ -313,9 +314,8 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
     // (twice the sea: twice as far out, four times the ground, so about twice as many of each; none on the oasis, none past the barrier)
     const R0 = OASIS.flat + 40, R1 = BARRIER - 25;
     // obelisks with a glowing band, standing or leaning, sunk into the sand
-    for (let i = 0; i < 30; i++) {
-      const a = rnd() * Math.PI * 2, r = R0 + rnd() * (R1 - R0);
-      const p = place(Math.cos(a) * r, Math.sin(a) * r);
+    for (const s of layOut(RUIN_PIECES.obelisks, rnd, { inner: R0, outer: R1, gap: 8 })) { // (by area: most in the ruins, a few landmarks elsewhere, world/dunes/areacut.js)
+      const p = place(s.lx, s.lz);
       const h = 7 + rnd() * 12, w = 1.3 + rnd() * 1.0;
       const q = new THREE.Quaternion().setFromEuler(new THREE.Euler((rnd() - 0.5) * 0.28, rnd() * 6.28, (rnd() - 0.5) * 0.28));
       // (one geometry: the shaft, its glowing band and its cap, painted in vertex colours, so a cut goes through all of it)
@@ -326,9 +326,9 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
       sliceable(geo, [w / 2, h / 2, w / 2], c, q, 0xd9906a);
     }
     // arches: two pillars and a lintel
-    for (let i = 0; i < 13; i++) {
-      const a = rnd() * Math.PI * 2, r = R0 + 10 + rnd() * (R1 - R0 - 10);
-      const p = place(Math.cos(a) * r, Math.sin(a) * r), yaw = rnd() * 6.28;
+    this.arches = []; // (each arch's middle and its lintel's top: the ruins' vantage stands on the tallest, world/vantages.js)
+    for (const s of layOut(RUIN_PIECES.arches, rnd, { inner: R0 + 10, outer: R1, gap: 14 })) {
+      const p = place(s.lx, s.lz), yaw = rnd() * 6.28;
       const gap = 5 + rnd() * 3, h = 7 + rnd() * 3, w = 1.6;
       const q = new THREE.Quaternion().setFromAxisAngle(UPV, yaw);
       const side = new THREE.Vector3(1, 0, 0).applyQuaternion(q);
@@ -339,12 +339,13 @@ float n21(vec2 p) { vec2 i = floor(p), f = fract(p); f = f * f * (3.0 - 2.0 * f)
       }
       const my = Math.max(this.heightAt(p.x + side.x * gap / 2, p.z + side.z * gap / 2), this.heightAt(p.x - side.x * gap / 2, p.z - side.z * gap / 2));
       solid(new THREE.Mesh(new THREE.BoxGeometry(gap + w * 1.6, 1.3, w * 1.2), dark), [(gap + w * 1.6) / 2, 0.65, w * 0.6], new THREE.Vector3(p.x, my + h - 0.6, p.z), q);
+      this.arches.push({ x: p.x, z: p.z, top: my + h + 0.05, yaw, area: s.area });
     }
     // broken columns half sunk in the sand
     this.columns = []; // (each broken column's foot on the sand: the ruins' ostraca lean there, world/ostraca.js)
-    for (let i = 0; i < 48; i++) {
-      const a = rnd() * Math.PI * 2, r = R0 - 20 + rnd() * (R1 - R0 + 20);
-      const p = place(Math.cos(a) * r, Math.sin(a) * r); this.columns.push(p.clone());
+    const cols = layOut(countsOf('columns'), rnd, { inner: R0 - 20, outer: R1, gap: 5 }).sort((a, b) => (b.area === 'ruins') - (a.area === 'ruins')); // (the ruins' first: the ostraca lean on the first two, world/ostraca.js)
+    for (const s of cols) {
+      const p = place(s.lx, s.lz); this.columns.push(p.clone());
       const h = 2.5 + rnd() * 4.5, w = 0.9 + rnd() * 0.7;
       const q = new THREE.Quaternion().setFromEuler(new THREE.Euler((rnd() - 0.5) * 0.9, rnd() * 6.28, (rnd() - 0.5) * 0.9));
       const c = p.clone().addScaledVector(UPV.clone().applyQuaternion(q), h / 2 - 1.0);

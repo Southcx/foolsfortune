@@ -23,6 +23,7 @@ import { RAPIER, GROUPS } from '../../core/physics.js';
 import { tag, register } from '../../core/tags.js';
 import { sfx } from '../../audio/sfx.js';
 import { DUNE, BARRIER, OASIS } from './dunes.js';
+import { layOut, countsOf } from './areacut.js';
 import { ECON } from '../../progress/econ/table.js';
 import { tuneFor, readStrike, refNote, FRETS, SPAN } from './crystaltuning.js';
 import { degreeColor } from '../../music/tone.js';
@@ -79,12 +80,10 @@ export class Crystals {
     if (!D) return;
     const rnd = (() => { let s = 4242421; return () => ((s = (s * 16807) % 2147483647) / 2147483647); })();
     const R0 = OASIS.flat + 18, R1 = BARRIER - 40;
-    const spots = [];
-    // a few within sight of the oasis (to be found the first afternoon), the rest out in the sea; one in four veiled
-    for (let i = 0; i < 18; i++) {
-      const a = rnd() * Math.PI * 2, r = i < 4 ? R0 + rnd() * 40 : R0 + 40 + rnd() * (R1 - R0 - 40);
-      spots.push({ x: DUNE.x + Math.cos(a) * r, z: DUNE.z + Math.sin(a) * r, veiled: i >= 4 && rnd() < 0.3, size: 0.6 + rnd() * 0.8 });
-    }
+    // laid by area (docs/plans/AREAS.md 5: the ridges hold the most, their name), uniform over each area's ground; the Weir's within sight
+    // of the oasis (to be found the first afternoon), never veiled; out in the field one in three veiled (world/dunes/areacut.js)
+    const spots = layOut(countsOf('crystals'), rnd, { inner: R0, outer: R1, gap: 16 })
+      .map((s) => ({ x: DUNE.x + s.lx, z: DUNE.z + s.lz, area: s.area, veiled: s.area !== 'weir' && rnd() < 0.3, size: 0.6 + rnd() * 0.8 }));
     for (const sp of spots) {
       const y = D.heightAt(sp.x, sp.z);
       const pos = new THREE.Vector3(sp.x, y, sp.z), n = 4 + Math.floor(rnd() * 4), r = 0.7 + sp.size * 0.9, h = 1.2 + sp.size * 1.8;

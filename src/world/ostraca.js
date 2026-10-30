@@ -22,6 +22,7 @@ import { FUNCTIONS } from '../tools/veritome/mind/functions.js';
 import * as NEURALESE from '../npc/neuralese.js';
 import { tag, register, unregister } from '../core/tags.js';
 import { DUNE, OASIS, BARRIER } from './dunes/dunes.js';
+import { layOut, countsOf } from './dunes/areacut.js';
 import { RAPIER, GROUPS } from '../core/physics.js';
 import { ROOM } from './level.js';
 import { bearingXZ } from './well/bowl.js';
@@ -71,9 +72,9 @@ export class Ostraca {
     if (!this.built.dunes && D?.heightAt && D.columns?.length) {
       this.built.dunes = true;
       const rnd = (() => { let s = 7171717; return () => ((s = (s * 16807) % 2147483647) / 2147483647); })();
-      const R0 = OASIS.flat + 24, R1 = BARRIER - 60;
-      for (const word of this.at.dunes) {
-        const a = rnd() * Math.PI * 2, r = R0 + rnd() * (R1 - R0), x = DUNE.x + Math.cos(a) * r, z = DUNE.z + Math.sin(a) * r;
+      const R0 = OASIS.flat + 24, R1 = BARRIER - 60, spots = layOut(countsOf('ostraca'), rnd, { inner: R0, outer: R1, gap: 30 }); // (by area: world/dunes/areacut.js)
+      for (const [i, word] of this.at.dunes.entries()) {
+        const s = spots[i % spots.length], x = DUNE.x + s.lx, z = DUNE.z + s.lz;
         const ground = new THREE.Vector3(x, D.heightAt(x, z), z);
         if (this.found(word)) continue;
         if (this.s.revealed.includes(word)) { this.drop(word, ground, 'dunes', false); continue; }

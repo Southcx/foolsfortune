@@ -10,6 +10,9 @@
 //   placeEnterRules({ on, L, log, g })
 // ---------------------------------------------------------------------------------------
 import { said } from './lineformat.js';
+import { DUNES_AREAS } from '../../progress/areas.js';
+/** A rare find said (placeholder words, Espada's): progress/areas.js RARE_FINDS's `find`. */
+const RARE_WORDS = { fulgurite: 'a fulgurite, dug out whole', aberrantWisp: 'an aberrant Lantern Wisp at night' };
 
 const ART = { walk: 'Walk: tap the ground, and your Pneuka Jar hops there.', grab: 'Grab: lift your Pneuka Jar, a spirit or a feature. Tap a spirit to pet it, or flick it with the second button.', paint: 'Paint: lay a ground on the clay; the second button clears it. {gaTurn} turns the ground.', water: 'Water: pour with the first button, drink with the second; {gaSpring} sets a spring, {gaDrain} a drain. {gaTurn} turns the feeling.', flatten: 'Flatten: level the clay to where the stroke began.', roughen: 'Roughen: break up the clay.', pull: 'Pull: raise the clay.', press: 'Press: lower the clay.', carve: 'Carve: cut a channel for water.', smooth: 'Smooth: make the clay level.', place: 'Place: put a feature in a plot.' };
 
@@ -50,6 +53,11 @@ export function placeRules({ on, log, g }) {
 export function placeEnterRules({ on, L, log, g }) {
   // the room they walk into, said as they enter it (the wire compass asks: vfx/wirecompass.js); the same room again only after a while
   const entered = new Map();
+  // an area of the Dunes reached (world/dunes/areacut.js DunesAreas), said once a visit: not again within 90 real s of the last time
+  const reached = new Map();
+  on('area.enter', (e) => { const A = DUNES_AREAS[e.area]; if (!A || e.by !== 'courier') return; const now = e.t ?? 0; if (now - (reached.get(e.area) ?? -1e9) < 90) return; reached.set(e.area, now); log.say('explore', `You reach ${A.name}.`, { key: 'area', win: 1 }); });
+  // an area's rare find (progress/areas.js RARE_FINDS), counted once on its checklist (the ledger's `area.<area>.rare`)
+  on('area.rare', (e) => { if (e.by !== 'courier' || !DUNES_AREAS[e.area]) return; if (L.first(`area.${e.area}.rare`)) { L.inc(`area.${e.area}.rare`); log.say('record', `A rare find in ${DUNES_AREAS[e.area].name}: ${RARE_WORDS[e.find] || e.find}.`); } });
   on('place.enter', (e) => { if (g.realm?.active) return; const now = e.t ?? 0; if (now - (entered.get(e.room) ?? -1e9) < 90) return; entered.set(e.room, now); log.say('explore', `You enter ${e.room}.`, { key: 'place', win: 1 }); }); // (no room of the workshop is entered from the garden: GARDEN-SWEEP #8)
   on('title.enter', (e) => { L.inc('title.enter'); L.inc(`title.enter.${e.mode}`); }); // (the lines, welcome first: tracking/place.js)
 }

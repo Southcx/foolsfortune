@@ -14,6 +14,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { DUNE, OASIS, POND } from './dunes/dunes.js';
+import { crestOf, archOf } from './dunes/areacut.js';
 
 /** `hold` real seconds stood in it looking out; `cone` the half-angle (degrees) of the look that counts; `rise` how far above or below
  *  the spot the feet may be; `every` how often it is asked (real s); `level` for a vantage with no one view: the look within this of the
@@ -34,6 +35,10 @@ export const VANTAGES = [
   { id: 'bowl.ledge', name: "the bowl's ledge", at: (g) => g.bowl?.lipStand?.pos, r: 3, look: (g) => g.bowl?.world?.(0, 0, 0) },
   // the Gnomon's crown, 140 m over the sand (world/dunes/dunes.js: its collider's top), any way out
   { id: 'gnomon.crown', name: "the Gnomon's crown", at: (g) => { const s = g.dunes?.gnomon; return s ? [s.x, s.y + 140, s.z] : null; }, r: 9, look: () => null },
+  // the crystal ridges' crest: the highest sand in the ridges (world/dunes/areacut.js crestOf), the ridges and the barrier below, any way out
+  { id: 'ridges.crest', name: "the ridges' crest", at: (g) => crestOf(g, 'ridges'), r: 5, look: () => null },
+  // the ruins' arch: the lintel of the tallest arch in the ruins (world/dunes/dunes.js arches), the ruins laid out below
+  { id: 'ruins.arch', name: "the ruins' arch", at: (g) => archOf(g, 'ruins'), r: 2.6, look: () => null },
 ];
 
 const v3 = (p, out) => (!p ? null : p.isVector3 ? out.copy(p) : out.set(p[0], p[1], p[2]));

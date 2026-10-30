@@ -320,6 +320,7 @@ export function bootFrame(game, made) {
     game.daylight.update(dt); // (the open ground's light graded by the hour and the weather, before the dunes blend it in)
     game.dunes.update(dt);
     game.crystals?.update(dt);
+    game.dunesAreas?.update(game.rawDt ?? dt); game.rareFinds?.update(game.rawDt ?? dt); // (the area you are in, and its rare find: world/dunes/areacut.js, rarefinds.js)
     const dm = game.dunes.mix; // (in the dunes the sun is a real one)
     const under = Math.max(ROOFED.has(game.zones?.current) ? 1 : 0, THREE.MathUtils.clamp((-camera.position.y - 1) / 3, 0, 1)) * (1 - dm); // (under the ground, or under a roof the sun's shadow never reaches: render/zonemap.js ROOFED)
     sun.intensity = THREE.MathUtils.lerp(T.visual.sun * (1 - under), game.dunes.sunIntensity ?? 0, dm);

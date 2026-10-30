@@ -33,6 +33,8 @@ import { Spirits } from '../creatures/spirits.js';
 import { Bound } from '../creatures/bound.js';
 import { CatchLook } from '../vfx/catch.js';
 import { Crystals } from '../world/dunes/crystals.js';
+import { DunesAreas } from '../world/dunes/areacut.js';
+import { RareFinds } from '../world/dunes/rarefinds.js';
 import { DunesDress } from '../vfx/dunes/index.js';
 import { RacewayDress } from '../vfx/raceway/index.js';
 
@@ -60,6 +62,8 @@ export async function bootCreatures(game, made) {
   game.bound = new Bound(game); // (the Figments caught, waiting in the Jar for the garden: creatures/bound.js)
   game.catchLook = new CatchLook({ fx: game.fx }); scene.add(game.catchLook.group); // (Calissa's: one look for the hand's catch and the coffin's, vfx/catch.js)
   game.crystals = new Crystals(game); // (Lachryma set hard in the sand: the Dreamvane's: world/dunes/crystals.js)
+  game.dunesAreas = new DunesAreas(game); // (the Dunes as five areas: the one you are in, said as you reach it: world/dunes/areacut.js)
+  game.rareFinds = new RareFinds(game); // (an area's condition-bound find: the ridges' fulgurite, the ruins' Wisp: world/dunes/rarefinds.js)
   game.dunesDress = new DunesDress(game); game.racewayDress = new RacewayDress(game); // (the living dressing, looks only: the Dunes' dust devils, mirage, geodes and fulgurites; the Raceway's spectators, banners, lanterns and fireworks: vfx/dunes/, vfx/raceway/)
   game.folk = new Folk(game, clapG);
   placePeople(game, game.folk);
