@@ -149,7 +149,7 @@ export const CLASS_ARTS = {
   weigh: A('arcana.justice', 'action', 'Payback', 'The next blow you take within 4 s is dealt back in full to whoever struck it.', { within: 4 }, ['parry', 40], { cost: 12, cooldown: 25 }),
   due: A('arcana.justice', 'reaction', 'Grudge', 'A creature that hurt you takes x1.3 damage from your next blow.', { mult: 1.3 }, ['down', 40]),
   wish: A('arcana.star', 'action', 'Starlight', 'Under the open night sky, turn the weather where you stand toward Wonder for 1 game hour.', { toward: 'wonder', hours: 1, night: true }, ['vantage', 3], { cost: 30, cooldown: 'gameDay' }),
-  hope: A('arcana.star', 'reaction', 'Hope', 'Made whole after a shatter, you come back with half your pool.', { pool: 0.5 }, ['awaken', 2]),
+  hope: A('arcana.star', 'reaction', 'Hope', 'Made whole after a shatter, the next 3 blows you take within 30 s crack nothing.', { ward: 3, secs: 30 }, ['awaken', 2]), // (Petra, 2026-10-30: being made whole already fills the pool, so half a pool gave nothing; Steadfast's ward, three times, the Star's renewal)
   echo: A('arcana.lovers', 'action', 'Encore', 'Your last tool move plays again from where you stood, 1 s later.', { delay: 1 }, ['lend', 40], { cost: 10, cooldown: 15 }),
   choice: A('arcana.lovers', 'reaction', 'Choice', 'When you swap your main and sub, your next lend is free.', { freeLend: 1 }, ['lend', 20]),
   bind: A('arcana.devil', 'action', 'Shackle', 'Chain a creature where it stands for 5 s; it cannot resist.', { dur: 5, status: 'halt', noResist: true }, ['stunDeep', 20], { cost: 15, cooldown: 30 }),

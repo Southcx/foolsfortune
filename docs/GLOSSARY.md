@@ -524,6 +524,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   *Not:* the weather, the day's phases.
 - **the mycelium** (`src/progress/mycelium.js`) — the garden's fungi as transmutators: five strains (lichen, koji, inkcap, oyster, witches'
   butter) each work one verb; the tree is Myggdrasil. *Not:* a material's `path`. → detail
+- **a seed / a moonlet / a slab / a fossil / a scan** (plain names, Espada's to rule; `SEEDS`, `SIZES`, `src/progress/seeds.js`; `newSlab`, `carve`, `VERBS`, `src/progress/slabs.js`; `readCode`, `holdOf`, `src/progress/scans.js`; docs/plans/SEEDS-SLABS-SCANS.md) — what a Spirit Garden planetoid grows from, earned once by an act and fed (cubes, materials, the hand's pour) from moonlet to large, its kind its shape / the smallest size, and each feeling's own on the inner ring, given at its awakening / a captured plate condensed into a block of the island's stone, carved free at a bench with the tools as verbs to summon its spirit, scored bared against cracked / the creature in it, of Lachrymite / any barcode or QR code read and hashed into a slab or a material, the same for everyone, three a game day. *Not:* a planetoid bought (retired with the ring's seeds), a stone (the stones), the Dunes' fossil (`fossil.lachrymite`, woken by the song), a shard.
 - **the tincture / the caps** (`TREE`, `CAPS`) — Myggdrasil's sap (the colour of all it ate) / its ten fruiting bodies. **moonflower**: a bed
   that opens only at night.
 

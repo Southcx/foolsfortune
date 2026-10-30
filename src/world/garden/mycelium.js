@@ -2,7 +2,7 @@
 // THE MYCELIUM IN THE INNER REALM: the world's side of the garden's fungi (docs/plans/MYCELIUM.md sections 3 to 5; the rules are
 // progress/mycelium.js, the kept state progress/sporebeds.js, progress/myggdrasil.js and progress/keepsakes.js; Petra's split, 2026-10-08:
 // "take the whole world side"). Four things:
-//   MYGGDRASIL'S PLANETOID  given at the second Firing (Sinter: ECON.myggdrasil.firing), the largest in the garden (26 m), hung below and
+//   MYGGDRASIL'S PLANETOID  given on the first entry (ECON.myggdrasil.firing 0; it was the second Firing), the largest in the garden (26 m), hung below and
 //                           behind the ring so its crown rises toward the Dantian; linked by lotuses to its two nearest like a bought
 //                           one (orbit.js's way), with plots of its own. The tree on its crown is BIG (the owner: 48 m): Calissa's
 //                           World Mushroom (vfx/garden/myggdrasil.js, grown by the planetoid's look and reading game.myggdrasil
@@ -76,7 +76,7 @@ export class GardenMycelium {
   say(s) { this.game.log?.say('warn', s, { key: 'garden.mycelium', throttle: 1 }); } // (a refusal at the point of use)
 
   // ------------------------------------------------------------------ Myggdrasil's planetoid
-  /** Given at Sinter (the second Firing), once: the planetoid, its plots and lotuses, the tree on its crown, the place at its roots. */
+  /** Given at the Firing ECON.myggdrasil.firing names (0: the first entry), once: the planetoid, its plots and lotuses, the tree on its crown, the place at its roots. */
   give() {
     const g = this.game, site = this.R.site, E = ECON.myggdrasil;
     if (this.planet || site.by.myggdrasil) return this.planet;
