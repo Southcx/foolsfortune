@@ -66,7 +66,7 @@ export const SHOAL = {
    *  fish close round it otherwise): break the ball, then two bars to bring it down (a good player's 48 shots). Was 4, one lance: the
    *  owner's "10 seconds" boss (RAIL-FLOW.md 5). Down the caller, or a third of the shoal within a
    *  bar, or toll the bell in it, and the shoal scatters for two bars before it reforms (what a predator does to a real one). */
-  fish: { hp: 1 }, caller: { hp: 40, size: 2, guarded: true }, // (the caller falls to one lance: the lock-on is the answer the shoal teaches)
+  fish: { hp: 1 }, caller: { hp: 40, size: 2, guarded: true }, // (40: ten lances at T.ship.lock.lance 4, more than one full volley of eight; the lock-on is still the answer the shoal teaches)
   scatter: { share: 0.3, within: 1, bars: 2 },
 };
 
