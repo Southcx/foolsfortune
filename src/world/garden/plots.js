@@ -17,6 +17,7 @@
 //   const T = new Plots(game, place, clays)   T.plots [{ id, planet, i, dir, pos, placed }]   T.near(point, r) -> plot   T.place(plot, feature, feeling)
 //   T.show(on)   T.mult(plot) -> n   T.dump() -> [{ planet, i, feature, feeling }]   T.load(list)   T.counts() -> { features, feelings }
 //   T.move(from, to)   T.settle(plot)   T.veins(planet?)   T.wet (a hook: (plot) -> a feeling or null, the realm's waterworks)
+//   T.addPlanet(P, n) (P's plots up to n: more are laid round those it has)   T.relay(P) (its plots stood on its ground as it is now)   T.removePlanet(P)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { COLOR } from '../../progress/weather.js';
@@ -45,9 +46,11 @@ export class Plots {
     this.veins();
   }
 
-  /** A planetoid's plots, spread over it (a bought one's too: world/garden/orbit.js). */
+  /** A planetoid's plots, spread over it, up to `n` (a later one's too, and one grown from a seed: more are laid round those it has,
+   *  which keep their places and numbers: world/garden/orbit.js). */
   addPlanet(P, n, first = false) {
-    const place = this.site, clays = this.clays;
+    const place = this.site, clays = this.clays, have = this.plots.filter((p) => p.planet === P);
+    if (have.length >= n) return;
     {
       const fixed = place.features.filter((f) => f.planet === P).map((f) => f.pos.clone().sub(P.c).normalize());
       const r = seeded(P.id.split('').reduce((h, c) => Math.imul(h ^ c.charCodeAt(0), 16777619) >>> 0, 2166136261));
@@ -66,7 +69,7 @@ export class Plots {
       }
       let spacing = Math.sqrt((4 * Math.PI) / Math.max(1, n * 2.2)), chosen = [];
       for (; spacing >= least; spacing *= 0.5) {
-        chosen = [];
+        chosen = have.map((p) => p.dir); // (those it has stand where they are; the new are laid clear of them)
         for (const dir of cands) {
           if (chosen.length >= n) break;
           if (avoid.some((a) => a.angleTo(dir) < Math.max(least, spacing * 0.9)) || chosen.some((q) => q.angleTo(dir) < spacing)) continue;
@@ -76,6 +79,7 @@ export class Plots {
       }
       P.spacing = Math.max(spacing, least);
       for (const [made, dir] of chosen.entries()) {
+        if (made < have.length) continue;
         const pos = P.c.clone().addScaledVector(dir, ground(dir));
         const mark = new THREE.Mesh(this.markGeo, this.markMat); mark.position.copy(pos).addScaledVector(dir, 0.06); mark.quaternion.setFromUnitVectors(UP, dir); mark.visible = false; this.group.add(mark);
         this.plots.push({ id: `${P.id}.${made}`, planet: P, i: made, dir, pos, mark, placed: null });
@@ -84,6 +88,20 @@ export class Plots {
     }
   }
 
+  /** P's plots gone with it (a later planetoid taken out: world/garden/realm.js removePlanet): their marks and what stood in them. */
+  removePlanet(P) {
+    for (const p of this.plots) if (p.planet === P) { this.group.remove(p.mark); if (p.group) this.group.remove(p.group); p.look?.dispose?.(); }
+    this.plots = this.plots.filter((p) => p.planet !== P); this.links();
+  }
+  /** P's plots, their marks and what stands in them, set on its ground as it is now (after a regrow: world/garden/realm.js). */
+  relay(P) {
+    for (const p of this.plots) {
+      if (p.planet !== P) continue;
+      p.pos.copy(P.c).addScaledVector(p.dir, P.radiusAt ? P.radiusAt(p.dir) : P.r); p.mark.position.copy(p.pos).addScaledVector(p.dir, 0.06);
+      if (p.group) p.group.position.copy(p.pos);
+    }
+    this.links();
+  }
   /** Where each spirit vein touching `planet` (or every vein) ends, worked out from the ground as it is now; the veins redrawn to them. */
   veins(planet = null) {
     const S = this.site; S.links ||= S.veins.map((V, i) => ({ V, a: S.by[S.LINKS[i][0]], b: S.by[S.LINKS[i][1]], ends: {} }));

@@ -34,6 +34,7 @@ import * as calendar from '../../core/calendar.js';
 import { GARDEN_AT, dirOf } from './place.js';
 import { phaseAt } from '../../progress/weather.js';
 import { strainBed, strainsParked } from '../../vfx/garden/strains.js';
+import { myggdrasilParked } from '../../vfx/garden/myggdrasil.js';
 import * as Lekythos from '../../vfx/garden/lekythos.js'; // (a namespace: lekythosShared is read when it lands, Calissa's cdd5ccd)
 const { lekythos, lekythosParked } = Lekythos;
 
@@ -169,7 +170,7 @@ export class GardenMycelium {
   /** The looks parked for the warm-up (main.js compiles them with the garden's; hidden on the first entry, never disposed: Calissa's). */
   parked() {
     if (!this.R.site) return []; // (the garden is built on its first entry, and compiles these then: world/garden/realm.js build())
-    const g = this.R.site.group, D = this.R.site.by.dantian, L = [strainsParked(), lekythosParked()];
+    const g = this.R.site.group, D = this.R.site.by.dantian, L = [strainsParked(), lekythosParked(), myggdrasilParked()]; // (the tree's body too: it is grown at the first entry's give, after the warm-up, Calissa's)
     for (const o of L) { o.position.copy(D.c); g.add(o); }
     this.parkedLooks = L; return L;
   }

@@ -5,12 +5,15 @@
 // neighbour and flies the Jar there. Its systems stand where the spec puts them: the gate and the Pneuka Box's shed on the Dantian, the
 // beds on the Herb Terraces, the press on the Athanor, the dividend's slots on the Pavilions of Echoes, the cocoon tree in the Mulberry
 // Grove, the needle of the Chimney (Espada's names). The shapes are stand-ins for Calissa's look (Dual Hearts: soft light, clouds,
-// spirit veins).
+// spirit veins). The lotuses and the gate are records here (where each stands, where a flight lands); their looks are Calissa's
+// (vfx/garden/launchlotus.js, vfx/garden/facilitylooks.js). Round the Dantian's waist seven berths are kept for the feelings' moonlets
+// (MOONLET_RING: the inner ring, world/garden/orbit.js), each a jump's height over the ground, no plot under it and its clay held.
 //
-// Prior art: Super Mario Galaxy's planetoids and launch stars (a hub made of small worlds), Dual Hearts' dream islands, the xianxia
-// cave abode (the dantian at the heart, the pill furnace, the herb fields, the meditation peak).
+// Prior art: Super Mario Galaxy's planetoids and launch stars (a hub made of small worlds, a tiny world a jump away), Dual Hearts'
+// dream islands, the xianxia cave abode (the dantian at the heart, the pill furnace, the herb fields, the meditation peak).
 //
-//   PLANETOID_SITES [{ id, name, r, at, color }]   LINKS [[from, to]]   GARDEN_AT   const P = new GardenSite(game)   P.group   P.planets [{ id, c, r }]
+//   PLANETOID_SITES [{ id, name, r, at, color }]   LINKS [[from, to]]   GARDEN_AT   MOONLET_RING   moonletBerth(i) -> unit dir
+//   const P = new GardenSite(game)   P.group   P.planets [{ id, c, r }]   P.addPlanet({ id, r, c, name, look })   P.regrow(P, r)   P.relay(P)
 //   P.lotuses [{ i, planet, to, pos, land, toPlanet }]   P.features [{ kind, i, planet, pos, mesh? }]   P.show(on)   P.sync(counts)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -38,6 +41,14 @@ export const PLANETOID_SITES = [
 /** The lotuses' flights, both ways: the Dantian to each, and round the ring. */
 export const LINKS = [['dantian', 'terraces'], ['dantian', 'athanor'], ['dantian', 'pavilions'], ['dantian', 'mulberryGrove'], ['mulberryGrove', 'chimney'], ['terraces', 'athanor'], ['pavilions', 'mulberryGrove'], ['terraces', 'chimney']];
 export const MAX_BEDS = 8, MAX_SLOTS = 8;
+/** The inner ring: the seven feelings' moonlets (progress/seeds.js SEEDS['moonlet.<f>']) hung round the Dantian's waist, `gap` metres over
+ *  its ground along the line of their hearts: the jump's top (1.8 m: planetbody.js HOP.jump) takes the Pneuka Jar past halfway, where
+ *  the moonlet's pull wins, and a hop's (under 0.5 m) never does. Their bearings sit in the gaps between the Dantian's four lotus
+ *  flights (25 degrees or more from each), a little above and below the equator by turn (`lat`); `keep` metres of the Dantian's clay
+ *  under each held still (no stroke raises a hill into one), and no plot is laid there. */
+export const MOONLET_RING = { gap: 3, keep: 6, lat: [4, -4], bearings: [-75, -10, 24, 90, 154, 188, 222], order: ['wonder', 'mirth', 'desire', 'fury', 'gall', 'grief', 'dread'] };
+/** The unit direction from the Dantian's heart to berth i. */
+export const moonletBerth = (i) => dirOf(MOONLET_RING.lat[i % 2], MOONLET_RING.bearings[i % MOONLET_RING.bearings.length]);
 
 const UP = new THREE.Vector3(0, 1, 0), _s = new THREE.Vector3();
 /** A direction on a sphere from latitude and longitude (degrees; latitude 90 is the top). */
@@ -50,12 +61,11 @@ export class GardenSite {
     this.planets = PLANETOID_SITES.map((p) => ({ ...p, c: new THREE.Vector3(...p.at).add(GARDEN_AT) }));
     this.by = Object.fromEntries(this.planets.map((p) => [p.id, p]));
     this.mats = {
-      lotus: new THREE.MeshStandardMaterial({ color: 0xffc6dc, emissive: 0xff8fb8, emissiveIntensity: 0.6, roughness: 0.5, name: 'garden-lotus' }),
+      lotus: new THREE.MeshStandardMaterial({ color: 0xffc6dc, emissive: 0xff8fb8, emissiveIntensity: 0.6, roughness: 0.5, name: 'garden-lotus' }), // (the seed in the god hand's grip: world/garden/hand.js)
       wood: new THREE.MeshStandardMaterial({ color: 0x8a5a3c, roughness: 0.8, name: 'garden-wood' }),
       lake: new THREE.MeshStandardMaterial({ color: 0x9fe0ff, emissive: 0x4fb6ff, emissiveIntensity: 0.5, roughness: 0.2, name: 'garden-lake' }),
       soil: new THREE.MeshStandardMaterial({ color: 0x5a3e2a, roughness: 1, name: 'garden-soil' }),
       roof: new THREE.MeshStandardMaterial({ color: 0xb5513c, roughness: 0.7, name: 'garden-roof' }),
-      torii: new THREE.MeshStandardMaterial({ color: 0xa9a59c, roughness: 0.95, name: 'garden-torii' }), // (an ishi-torii's granite grey, so the orange Pneuka Jar stands apart from it: Calissa, 2026-10-07)
     };
     this.build();
     game.scene.add(g);
@@ -70,7 +80,7 @@ export class GardenSite {
   }
 
   build() {
-    const g = this.group, parts = new Map(), add = (mat, geo, m) => { geo.applyMatrix4(m); if (!parts.has(mat)) parts.set(mat, []); parts.get(mat).push(geo); };
+    const g = this.group;
     // the planetoids: Calissa's (vfx/garden/planetoid.js: the skin, the roots, each kind dressed), on the one ground: her unsculpted shape
     // is the base, the clay's height goes on top (world/garden/clay.js), and her `surface` asks that ground (O(1), not a search)
     this.planets.forEach((P, k) => this.makePlanet(P, k));
@@ -78,20 +88,16 @@ export class GardenSite {
     this.LINKS = LINKS.slice(); // (the pairs the veins join, in the veins' order: world/garden/plots.js moves their ends; a bought planetoid adds its own)
     this.veins = LINKS.map(([a, b]) => this.vein(this.by[a], this.by[b]));
     this.lotuses = [];
-    for (const [a, b] of LINKS) for (const [f, t] of [[a, b], [b, a]]) {
-      const { m, rec } = this.lotusAt(this.by[f], this.by[t]); this.lotuses.push(rec);
-      add(this.mats.lotus, new THREE.CylinderGeometry(1.1, 1.3, 0.12, 12), m);
-      for (let k = 0; k < 6; k++) { const pg = new THREE.ConeGeometry(0.35, 0.9, 5); pg.rotateZ(0.6); pg.translate(0.75, 0.35, 0); pg.rotateY((k / 6) * Math.PI * 2); add(this.mats.lotus, pg, m); }
-    }
-    this.buildFeatures(add, parts);
+    for (const [a, b] of LINKS) for (const [f, t] of [[a, b], [b, a]]) this.lotuses.push(this.lotusAt(this.by[f], this.by[t]).rec); // (drawn as Calissa's flowers: vfx/garden/launchlotus.js)
+    this.buildFeatures();
   }
 
   /** One planetoid: Calissa's look on the one ground (her unsculpted shape the base, the clay's height on top: world/garden/clay.js). */
   makePlanet(P, k) {
     {
-      const look = new Planetoid({ kind: P.id, radius: P.r, seed: k + 1, surface(dir) { _s.copy(dir).normalize(); return P.radiusAt ? P.radiusAt(_s) : P.r * this.shape(_s.x, _s.y, _s.z); } });
+      const look = new Planetoid({ kind: P.look || P.id, radius: P.r, seed: k + 1, surface(dir) { _s.copy(dir).normalize(); return P.radiusAt ? P.radiusAt(_s) : P.r * this.shape(_s.x, _s.y, _s.z); } }); // (`look`: the kind of look a planetoid grown from a seed wears, its id another)
       look.group.position.copy(P.c); this.group.add(look.group);
-      P.look = look; P.mesh = look.mesh;
+      P.look = look; P.mesh = look.mesh; P.tint?.(look); // (a grown planetoid's colours, its feeling's or what it was fed: world/garden/orbit.js)
       P.base = (d) => P.r * look.shape(d.x, d.y, d.z);
       P.radiusAt = (d) => P.base(d); // (the realm adds the clay's height: world/garden/realm.js)
       // its highest reach, the shape's (the Chimney's needle runs to 28 m on an 8 m world) plus the clay's band: what is solid, whose
@@ -107,31 +113,38 @@ export class GardenSite {
     const dir = B.c.clone().sub(A.c).normalize().lerp(UP, 0.25).normalize(), land = A.c.clone().sub(B.c).normalize().lerp(UP, 0.25).normalize();
     return { m: this.stand(A, dir, 0.02), rec: { i: this.lotuses?.length || 0, planet: A, to: B, pos: A.c.clone().addScaledVector(dir, A.radiusAt(dir)), land: B.c.clone().addScaledVector(land, B.radiusAt(land)), toPlanet: B } };
   }
-  /** A bought planetoid (world/garden/orbit.js): made as the first six were, at its slot. */
-  addPlanet({ id, r, c, name }) {
-    const P = { id, r, at: c.clone().sub(GARDEN_AT).toArray(), c: c.clone(), name, color: 0xb0b8c8, bought: true };
+  /** A planetoid after the first six (Myggdrasil's, given; one grown from a seed: world/garden/orbit.js), made as they were. `look`: the
+   *  kind of look it wears (vfx/garden/planetoid.js), its id when none is said. */
+  addPlanet({ id, r, c, name, look = null, tint = null }) {
+    const P = { id, r, at: c.clone().sub(GARDEN_AT).toArray(), c: c.clone(), name, color: 0xb0b8c8, added: true, look, tint };
     this.planets.push(P); this.by[id] = P; this.makePlanet(P, this.planets.length - 1);
     return P;
   }
-  /** Lotuses both ways and a vein between a bought planetoid and a neighbour (its own meshes: the first six are merged). */
+  /** A planetoid drawn again at a new radius in place (a seed fed past a size: world/garden/orbit.js): its look made anew; what stands
+   *  on it is the realm's to move out to the new ground (world/garden/realm.js regrow). */
+  regrow(P, r) {
+    const old = P.look; old.group.parent?.remove(old.group); old.dispose();
+    P.r = r; this.makePlanet(P, this.planets.indexOf(P));
+    return P;
+  }
+  /** The lotus records that start on or land on P worked out again from the ground as it is now (after a regrow). */
+  relay(P) {
+    for (const [k, L] of this.lotuses.entries()) if (L.planet === P || L.toPlanet === P) { const { rec } = this.lotusAt(L.planet, L.toPlanet); rec.i = L.i; this.lotuses[k] = rec; }
+  }
+  /** Lotuses both ways and a vein between a later planetoid and a neighbour (the flowers are Calissa's: vfx/garden/launchlotus.js). */
   link(A, B) {
     this.LINKS.push([A.id, B.id]); const V = this.vein(A, B); this.veins.push(V);
-    for (const [f, t] of [[A, B], [B, A]]) {
-      const { m, rec } = this.lotusAt(f, t); rec.i = this.lotuses.length; this.lotuses.push(rec);
-      const geos = [new THREE.CylinderGeometry(1.1, 1.3, 0.12, 12)]; for (let k = 0; k < 6; k++) { const pg = new THREE.ConeGeometry(0.35, 0.9, 5); pg.rotateZ(0.6); pg.translate(0.75, 0.35, 0); pg.rotateY((k / 6) * Math.PI * 2); geos.push(pg); }
-      const mesh = new THREE.Mesh(mergeGeometries(geos, false), this.mats.lotus); geos.forEach((x) => x.dispose()); mesh.applyMatrix4(m); mesh.name = 'garden-lotus'; this.group.add(mesh);
-    }
+    for (const [f, t] of [[A, B], [B, A]]) { const { rec } = this.lotusAt(f, t); rec.i = this.lotuses.length; this.lotuses.push(rec); }
     return V;
   }
 
   /** The features: where each system is worked. */
-  buildFeatures(add, parts) {
+  buildFeatures() {
     const g = this.group, D = this.by.dantian, F = [];
-    // the Dantian: the gate out (a torii), the shed (the Pneuka Box), the lake of your own Lachryma on its crown
-    { const m = this.stand(D, dirOf(62, 0), 0);
-      for (const sx of [-1.3, 1.3]) add(this.mats.torii, new THREE.CylinderGeometry(0.16, 0.18, 3, 8).translate(sx, 1.5, 0), m.clone());
-      add(this.mats.torii, new THREE.BoxGeometry(3.6, 0.3, 0.4).translate(0, 3.05, 0), m.clone()); add(this.mats.torii, new THREE.BoxGeometry(3, 0.18, 0.3).translate(0, 2.55, 0), m.clone());
-      F.push({ kind: 'gate', planet: D, pos: new THREE.Vector3().setFromMatrixPosition(m) }); }
+    // the Dantian: the gate out (Calissa's moon gate: vfx/garden/facilitylooks.js), the shed (the Pneuka Box), the lake of your own Lachryma on its crown
+    { const m = this.stand(D, dirOf(62, 0), 0); F.push({ kind: 'gate', planet: D, pos: new THREE.Vector3().setFromMatrixPosition(m) }); }
+    // the inner ring's berths: no plot laid under a moonlet, its clay held (MOONLET_RING; kept clear, never offered)
+    MOONLET_RING.order.forEach((f, i) => { const d = moonletBerth(i); F.push({ kind: 'moonletBerth', i, planet: D, pos: D.c.clone().addScaledVector(d, D.radiusAt(d)), mesh: { visible: false } }); });
     { const d = new THREE.Vector3(0.5, 0.75, 0.42).normalize(); F.push({ kind: 'shed', planet: D, pos: D.c.clone().addScaledVector(d, D.radiusAt(d)) }); } // (Calissa's shed, her lake on the crown)
     // the Herb Terraces: the beds, a ring round its shoulder (shown as many as the garden has)
     const T = this.by.terraces;
@@ -159,8 +172,6 @@ export class GardenSite {
     // the Chimney: a needle of rock, and the mat at its foot (the tribulation is Round 4's)
     { const R = this.by.chimney, d = dirOf(40, 180); F.push({ kind: 'tribulationMat', planet: R, pos: R.c.clone().addScaledVector(d, R.radiusAt(d)) }); } // (the mat at the needle's foot: Calissa's needle above it)
     this.features = F;
-    // one mesh a material for everything that never moves (render/merge.js's rule: a model of many static primitives is merged)
-    for (const [mat, geos] of parts) { const mesh = new THREE.Mesh(mergeGeometries(geos, false), mat); mesh.castShadow = mesh.receiveShadow = true; g.add(mesh); geos.forEach((x) => x.dispose()); }
   }
 
   /** As many beds and slots shown as the garden has (progress/garden.js). */

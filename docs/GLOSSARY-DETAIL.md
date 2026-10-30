@@ -782,10 +782,15 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
 - **the press's marks** (`Marks`, `src/vfx/alchemy/marks.js`): the self-lit things on and round the bath (tiles, seals, droplets, paths,
   the beads, the lumps) as one instanced program, layered by instance order. *Not:* a world mark (a mark on a thing, carrying no words:
   these carry none either, but are the press's own).
-- **the ring** (`ORBIT`, `src/world/garden/orbit.js`): the ten slots round the Dantian where a **bought planetoid** is set (the
-  Moonflower Moon, the Koi Pond, the Drill Yard, the Bone Bed, in turn); bought at the shed, its **seed** is carried by the god hand
-  into the open sky and let go there; each wears its own look (`src/vfx/garden/boughtplanetoids.js`). *Not:* the hue ring (the spirit
-  press's), the upper ring (the bowl's gallery).
+- **the ring** (`ORBIT`, `progress/realm.js`; `Orbit`, `src/world/garden/orbit.js`): the ten slots round the Dantian where a
+  **planetoid's seed** grows (progress/seeds.js, SEEDS-SLABS-SCANS.md 1: grown, never bought since 2026-10-30): taken from the shed, the
+  seed is carried by the god hand into the open sky and let go there, a moonlet in the nearest free slot; fed at the shed (cubes, a
+  material) or by the hand's pour (the island's matter the god hand carries, GRAB held on it), it grows in place a size at a time
+  (`realm.regrow`: its look made again, its clay's hills scaled, more plots, its lotuses and veins moved out). **The inner ring**
+  (`MOONLET_RING`, `world/garden/place.js`): seven berths round the Dantian's waist, 3 m over its ground, for the feelings' moonlets, set
+  as each is earned, a jump from the Dantian (no lotus), never fed. Until Calissa's seed looks come, a seed's planetoid wears the
+  nearest of the bought planetoids' old looks (`src/vfx/garden/boughtplanetoids.js`). *Not:* the hue ring (the spirit press's), the
+  upper ring (the bowl's gallery).
 - **seasoning** (an attribute's: `docs/plans/SOUL-ALCHEMY.md`): 0 .. 100 filled by doing that attribute's thing anywhere (a parry seasons
   Perception, a crack mended Resilience); it widens the attribute's **swatch** (its target on the colour wheel) and firing spends it.
   A **true firing** is one inside **a tile's heart** (a quarter of the attribute's bare rank radius, which seasoning never widens): said, counted, kept as a yohen star. **One firing a press**: pressing cocks the lever, a firing lets it down. A material **pulls** the soul colour toward its own colour (Newton's centre of gravity), so a complement greys by itself. *Not:* a stage of a glaze, or a Firing.

@@ -17,7 +17,12 @@
 //   game.realm = new Realm(game, { god })   .enter(shrine)   .leave()   .active   .fixed(dt)   .update(dt)   .light()   .offer()   .parked()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { GardenSite, MAX_BEDS, MAX_SLOTS } from './place.js';
+import { GardenSite, MAX_BEDS, MAX_SLOTS, MOONLET_RING } from './place.js';
+import { cellsOf, cellAt, dirAt } from './decorgrid.js';
+import { SEEDS, SIZES, sizeOf } from '../../progress/seeds.js';
+import { ECON } from '../../progress/econ/table.js';
+import { worthOf } from '../../progress/shop/catalogue.js';
+import { itemOf } from '../../pneuka/items.js';
 import { PlanetBody } from './planetbody.js';
 import { Clay } from './clay.js';
 import { Plots, FEELING_COLOR } from './plots.js';
@@ -64,6 +69,9 @@ const JAR_LOST = 6; // (seconds a thrown Jar may stay off the ground before it i
 const GAME_HOUR = (DAY_MS ?? 3600000) / 24 / 1000; // (real seconds a game hour: a spirit rests a game hour at a time)
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _q = new THREE.Quaternion(), _m = new THREE.Matrix4();
 const _empty = new THREE.Scene(); // (an empty frame before the warm-up's compile: it reads the clipping state the last render left, as at boot)
+const cap = (s = '') => s[0].toUpperCase() + s.slice(1);
+/** A ring planetoid's size and how far to the next, in minutes of play fed (progress/seeds.js sizeOf). */
+const sizeLine = (r) => { const S = sizeOf(r.minutes); return S.next ? `${S.size.id} · ${Math.floor(r.minutes - S.size.at)} of ${S.next.at - S.size.at} minutes to ${S.next.id}` : `${S.size.id}: grown`; };
 
 export class Realm {
   constructor(game, { god }) {
@@ -72,6 +80,7 @@ export class Realm {
     // (built on the first entry, not at boot: its planetoids, clay, water, plants and press are ~10 MB the heap carries for nobody until
     // then; the owner, 2026-10-19. Until built, the save's section is held as it came and handed back as it was: build() loads it)
     this.built = false; this.raw = null;
+    this.orbit = new Orbit(this); // (the ring's seeds: world/garden/orbit.js; made now so a seed earned before the first entry is said)
     game.save?.section('realm', { scope: 'player', version: 3,
       dump: () => (this.built ? this.dumpAll() : this.raw || this.name ? { ...(this.raw || {}), name: this.name } : null),
       load: (d) => { this.raw = d || null; this.name = d?.name || null; if (this.built) this.loadAll(d); },
@@ -88,7 +97,7 @@ export class Realm {
     // the planetoids' clay (world/garden/clay.js): each holds still round what stands on it; the bodies stand on what it is shaped to
     this.clays = Object.fromEntries(this.site.planets.map((P) => [P.id, new Clay(P)]));
     for (const P of this.site.planets) P.radiusAt = (d) => this.clays[P.id].radiusAt(d); // (Calissa's shape plus the clay: one ground)
-    for (const f of this.site.features) this.clays[f.planet.id].keep(f.pos.clone().sub(f.planet.c), f.kind === 'athanor' ? 5.6 : f.kind === 'gate' || f.kind === 'shed' ? 4 : 3); // (the Athanor's bath, its ware ring and the press 4.35 m north: no stroke heaves them)
+    for (const f of this.site.features) this.clays[f.planet.id].keep(f.pos.clone().sub(f.planet.c), f.kind === 'athanor' ? 5.6 : f.kind === 'gate' || f.kind === 'shed' ? 4 : f.kind === 'moonletBerth' ? MOONLET_RING.keep : 3); // (the Athanor's bath, its ware ring and the press 4.35 m north: no stroke heaves them; nor a hill into a moonlet)
     for (const l of this.site.lotuses) this.clays[l.planet.id].keep(l.pos.clone().sub(l.planet.c), 2);
     this.plots = new Plots(game, this.site, this.clays);
     this.raising = new Raising(game, this);
@@ -96,7 +105,6 @@ export class Realm {
     this.waterworks = new Waterworks(this); // (the water on the planetoids, its springs and drains: world/garden/waterworks.js)
     this.plants = new Plants(this); // (green that spreads over wet, fertile ground: world/garden/plants.js)
     this.races = new Races(this); // (tracks carved in one closed stroke, and the spirits' races on them: world/garden/races.js)
-    this.orbit = new Orbit(this); // (the planetoids bought and set in the ring: world/garden/orbit.js)
     this.cascades = new Cascades(this); // (water spilling from one planetoid to the next: world/garden/cascades.js)
     this.press = new GardenPress(this, this.site.features.find((f) => f.kind === 'athanor')); // (Soul Alchemy's press on the Athanor: world/garden/press.js)
     this.plots.onSeed = (P, dir) => this.plants.seed(P, dir, 2.5);
@@ -125,13 +133,13 @@ export class Realm {
   }
   dumpAll() { return ({ name: this.name, placed: this.plots.dump(), clay: { ...this.waiting.clay, ...Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dump()]).filter(([, a]) => a)) }, ground: { ...this.waiting.ground, ...Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dumpGround()]).filter(([, a]) => a)) }, awaken: this.awaken.dump(), water: this.waterworks.dump(), plants: this.plants.dump(), tracks: this.races.dump(), orbit: this.orbit.dump() }); }
   loadAll(d) {
-    this.name = d?.name || null; this.awaken.load(d?.awaken); this.orbit.load(d?.orbit); // (the bought planetoids first: their clay loads next)
+    this.name = d?.name || null; this.awaken.load(d?.awaken); this.orbit.load(d?.orbit); // (the seeds' planetoids first: their clay loads next)
     for (const [id, c] of Object.entries(this.clays)) { c.load(d?.clay?.[id]); c.loadGround(d?.ground?.[id]); if (d?.clay?.[id] || d?.ground?.[id]) this.reshape(this.site.by[id], true); }
     // a planetoid that comes later (Myggdrasil's, given on entering): its clay kept until it is adopted (adopt), never dropped
     this.waiting = { clay: Object.fromEntries(Object.entries(d?.clay || {}).filter(([id]) => !this.clays[id])), ground: Object.fromEntries(Object.entries(d?.ground || {}).filter(([id]) => !this.clays[id])) };
     this.plots.load(d?.placed); this.plots.veins(); this.flowAll(); this.waterworks.load(d?.water); this.plants.load(d?.plants); this.races.load(d?.tracks);
   }
-  resetAll() { this.name = null; this.waiting = { clay: {}, ground: {} }; this.plots.waiting = []; for (const [id, c] of Object.entries(this.clays)) { if (c.dump() || c.painted) { c.restore({ h: new Float32Array(c.h.length), g: new Uint8Array(c.ground.length), painted: 0 }); this.reshape(this.site.by[id], true); } } this.waterworks.load(null); this.plants.load(null); this.races.load(null); this.plots.veins(); }
+  resetAll() { this.orbit.load(null); this.name = null; this.waiting = { clay: {}, ground: {} }; this.plots.waiting = []; for (const [id, c] of Object.entries(this.clays)) { if (c.dump() || c.painted) { c.restore({ h: new Float32Array(c.h.length), g: new Uint8Array(c.ground.length), painted: 0 }); this.reshape(this.site.by[id], true); } } this.waterworks.load(null); this.plants.load(null); this.races.load(null); this.plots.veins(); }
 
   /** The garden's looks, parked for the warm-up (main.js compiles them with the rest). */
   parked() {
@@ -182,6 +190,7 @@ export class Realm {
       const V = this.god?.jar; if (V?.group) { V.group.visible = true; V.group.scale.setScalar(1); this.jarLook ||= new JarHop(V.group, { fx: g.fx }); this.jarLook.base.setScalar(1); } // (Calissa's hop: crouch, stretch, land, trail; at full size whatever the god hand left: GARDEN-SWEEP #2)
       const H = this.god?.hand; if (H?.root) { H.root.visible = true; H.root.scale.setScalar(1); }
       this.hopOut();
+      this.orbit.sync(); // (the inner ring's moonlets earned since the last visit set on their berths)
       this.sync();
       this.awaken.visitors(); // (the wild ones the garden draws come by once a game day: progress/realm.js VISITORS)
       g.events?.emit('garden.enter', { shrine: this.back.shrine, by: 'courier' });
@@ -210,7 +219,7 @@ export class Realm {
       if (g.garden) g.garden.inside = false;
       for (const s of this.spirits) this.site.group.remove(s.mesh);
       this.raising.sparring = null; this.races.stop(); // (a spar or a race is left with the garden)
-      if (this.hand.seed) { this.orbit.release(this.hand.seed.id, this.hand.seed.mesh.position); this.site.group.remove(this.hand.seed.mesh); this.hand.seed = null; } // (a seed paid for is never lost: it takes the nearest free slot)
+      this.orbit.pourEnd(); if (this.hand.seed) { this.orbit.release(this.hand.seed.id, this.hand.seed.mesh.position); this.site.group.remove(this.hand.seed.mesh); this.hand.seed = null; } // (a seed in the hand is never lost: it takes the nearest free slot; a pour under way is fed)
       this.spirits = []; this.hand.held = null;
       const V = this.god?.jar; if (V?.group) { const yaw = V.group.rotation.y; V.group.rotation.set(0, yaw, 0); if (!this.god.active) V.group.visible = false; } // (stood upright again: the planetoid's lean stayed on it, and the world's god hand and cradles set only its yaw, the owner's 45 degree lean, 2026-10-19)
       const H = this.god?.hand; if (H?.root && !this.god.active) H.root.visible = false;
@@ -307,6 +316,7 @@ export class Realm {
     this.plants.tick(raw * 24000 / DAY_MS); this.plants.update(); // (a step of the green each game hour while you are here)
     this.moonflowers(raw);
     g.gardenMycelium?.update(raw); // (a spore bed's ring lit when it comes ready: Dovina's)
+    this.orbit.update(raw); // (the moonlets earned while inside set, a large planetoid's own moon turned)
     this.hearMycelium(raw);
     // the lotuses: stood on, it flies (not again until it has stepped off the one it landed on)
     if (J.grounded && !J.held) {
@@ -354,16 +364,51 @@ export class Realm {
     const want = phaseAt() === 'night' ? 1 : 0; this.moonOpen = (this.moonOpen ?? want) + (want - (this.moonOpen ?? want)) * (1 - Math.exp(-raw * 0.4));
     for (const p of this.plots.plots) { const D = p.group?.userData.moon; if (D) D.u.uOpen.value = this.moonOpen; }
   }
-  /** A bought planetoid taken in (world/garden/orbit.js): its clay, its plots, its veins and lotuses to its two nearest, its water. */
-  adopt(P, plots) {
+  /** A later planetoid taken in (Myggdrasil's, a seed's: world/garden/orbit.js): its clay, its plots, its veins and lotuses to its
+   *  `links` nearest of the first six (none for a moonlet of the inner ring: it is a jump away), its water. */
+  adopt(P, plots, { links = 2 } = {}) {
     this.clays[P.id] = new Clay(P); P.radiusAt = (d) => this.clays[P.id].radiusAt(d);
-    const near = this.site.planets.filter((Q) => Q !== P && !Q.bought).sort((a, b) => a.c.distanceTo(P.c) - b.c.distanceTo(P.c)).slice(0, 2);
+    const near = this.site.planets.filter((Q) => Q !== P && !Q.added).sort((a, b) => a.c.distanceTo(P.c) - b.c.distanceTo(P.c)).slice(0, links);
     for (const Q of near) { const V = this.site.link(P, Q); this.site.links?.push({ V, a: P, b: Q, ends: {} }); }
     for (const l of this.site.lotuses) if (l.planet === P) this.clays[P.id].keep(l.pos.clone().sub(P.c), 2);
     this.plots.addPlanet(P, plots); this.plots.placeWaiting?.(P); this.plots.veins(P);
     const W = this.waiting; if (W.clay[P.id] || W.ground[P.id]) { this.clays[P.id].load(W.clay[P.id]); this.clays[P.id].loadGround(W.ground[P.id]); delete W.clay[P.id]; delete W.ground[P.id]; this.reshape(P, true); }
     P.waterAt = (dir) => this.waterworks.waters[P.id]?.depthAt(dir) ?? 0;
     P.look.group.visible = true;
+  }
+  /** A planetoid grown in place to radius `r` (a seed fed past a size: world/garden/orbit.js): its look made again, its clay's hills
+   *  scaled with it, its plots up to `plots` (those it has where they stood, on the new ground), its lotuses, veins, water, green, tracks,
+   *  thorns and garden pieces moved out to its new ground. A body standing on it is lifted out by its own step (planetbody.js). */
+  regrow(P, r, plots) {
+    const k = r / P.r, N0 = cellsOf(P.r), clay = this.clays[P.id];
+    this.site.regrow(P, r); P.radiusAt = (d) => this.clays[P.id].radiusAt(d); P.waterAt = (dir) => this.waterworks.waters[P.id]?.depthAt(dir) ?? 0;
+    clay?.regrow(k);
+    const kept = clay?.kept.length ?? 0; this.plots.relay(P); this.plots.addPlanet(P, plots); // (more plots, laid round those it has)
+    const base = this.decorLayer?.baseKept?.[P.id]; if (base && clay) base.push(...clay.kept.slice(kept)); // (the new plots' ground held, with the pieces': decorlayer.js keepAll)
+    this.site.relay(P); this.plots.veins(P); if (this.game.launchLotuses) this.game.launchLotuses.count = -1; // (its lotuses stood again; Calissa's flowers drawn again on their next step)
+    const W = this.waterworks, Wl = W.looks?.[P.id]; if (Wl) { Wl.mesh?.parent?.remove(Wl.mesh); Wl.dispose?.(); delete W.looks[P.id]; } // (its water's look made again on the new ground)
+    const D = this.game.decor?.s?.placed, N1 = cellsOf(r); // (a garden piece keeps its bearing on a grid of more cells)
+    if (D && N1 !== N0) { for (const p of D) if (p[1] === P.id) { const c = cellAt(dirAt(p[2], p[3], p[4], N0), N1); p[2] = c.face; p[3] = c.iu; p[4] = c.iv; } this.game.save?.dirty('decor'); }
+    this.decorLayer?.changed?.(P.id); this.thornPatches?.redraw?.(); this.races?.redraw?.(P); this.plants?.dirty?.add(P.id);
+    this.reshape(P, true); this.game.present?.shade?.();
+  }
+  /** A later planetoid taken out (a seed's, when a save without it is loaded): what adopt made, and what stood on it, let go. */
+  removePlanet(P) {
+    const S = this.site, i = S.planets.indexOf(P); if (i < 0) return;
+    S.planets.splice(i, 1); delete S.by[P.id];
+    P.look.group.parent?.remove(P.look.group); P.look.dispose();
+    S.lotuses = S.lotuses.filter((l) => l.planet !== P && l.toPlanet !== P); S.lotuses.forEach((l, k) => { l.i = k; });
+    for (let k = (S.links?.length ?? 0) - 1; k >= 0; k--) {
+      const L = S.links[k]; if (L.a !== P && L.b !== P) continue;
+      const vi = S.veins.indexOf(L.V); L.V.mesh?.parent?.remove(L.V.mesh); L.V.dispose?.();
+      if (vi >= 0) { S.veins.splice(vi, 1); S.LINKS.splice(vi, 1); } S.links.splice(k, 1);
+    }
+    this.plots.removePlanet(P);
+    const W = this.waterworks, Wl = W.looks?.[P.id]; if (Wl) { Wl.mesh?.parent?.remove(Wl.mesh); Wl.dispose?.(); delete W.looks[P.id]; }
+    delete W.waters[P.id]; W.springs = W.springs.filter((x) => x.planet !== P); W.drains = W.drains.filter((x) => x.planet !== P); W.mark?.();
+    delete this.plants.grids[P.id]; this.races.clear?.(P); delete this.clays[P.id];
+    this.decorLayer?.redraw?.(); this.thornPatches?.redraw?.();
+    if (this.jarBody?.planet === P) this.jarBody.planet = this.jarBody.nearest(this.jarBody.pos);
   }
   /** The mycelium heard where the Pneuka Jar stands (Wanda's sounds, audio/mycelium.js; the state Dovina's): a bed at work within 12 m
    *  (a phrase now and then: it limits itself), Myggdrasil's drone while on its planetoid, a keepsake pot's line within 4 m. */
@@ -387,16 +432,33 @@ export class Realm {
     if (M.planet && J.planet === M.planet) sfx.myggDrone?.(g.myggdrasil?.tincture ?? null, Math.max(0, J.pos.distanceTo(M.planet.c) - M.planet.r)); // (every frame: it fades by itself half a real second after the last)
   }
 
-  /** The shed: the Pneuka Box (P opens it anywhere), and the next planetoid to buy (world/garden/orbit.js). */
+  /** The shed: the Pneuka Box (P opens it anywhere), the ring's seeds waiting to be carried up, and each of the ring's planetoids to feed
+   *  (world/garden/orbit.js). Words plain, Espada's to come. */
   shed() {
     const g = this.game, menu = g.indexMenu || g.course?.menu; if (!menu?.showPage) { g.pneukaUI?.toggle(); return; }
+    const O = this.orbit, say = (r) => { if (r) g.log?.say('warn', r, { key: 'garden.seed', throttle: 1 }); };
     menu.showPage('garden.shed', (im, el) => {
       const rows = el('div', 'rooms'), row = (t, sub, run, dim = false) => { const d = el('div', 'room', `<span class="n">◇</span><span><b>${t}</b><s>${sub}</s></span>`); if (dim) d.style.opacity = 0.4; if (run) d.onclick = run; rows.appendChild(d); };
       row('The Pneuka Box', 'P opens it anywhere', () => { menu.close(); g.pneukaUI?.toggle(); });
-      const N = this.orbit.next();
-      if (N) { const why = () => { const r = this.orbit.buy(); if (r) g.log?.say('warn', r, { key: 'garden.buy', throttle: 1 }); else menu.close(); }; row(`A new planetoid: ${N.name}`, `${N.cubes} cubes · opens with the ${['First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth'][N.firing - 1]} Firing · its seed goes in your hand: let it go in the open sky`, why, (g.cubes?.balance ?? 0) < N.cubes); }
+      for (const id of O.waiting()) row(`A planetoid's seed: ${SEEDS[id].kind}`, `${SEEDS[id].line} Take it in the god hand, and let it go in the open sky.`, () => { const r = O.take(id); say(r); if (!r) menu.close(); });
+      for (const r of O.planted.values()) if (!SEEDS[r.seed].inner) row(cap(O.nameOf(r.seed)), sizeLine(r), r.size < SIZES.length - 1 ? () => this.feedPage(r.seed) : null, r.size >= SIZES.length - 1);
       im.appendChild(el('div', 'grp', 'THE SHED')); im.appendChild(rows);
     }, { title: 'THE SHED', sub: 'click to choose · F closes' });
+  }
+  /** A planetoid of the ring fed at the shed: cubes by the minute or to its next size, or a material from the Pneuka Box. */
+  feedPage(id) {
+    const g = this.game, menu = g.indexMenu || g.course?.menu, O = this.orbit, r = O.of(id); if (!menu?.showPage || !r) return;
+    const per = ECON.perMinute, again = () => (O.of(id)?.size < SIZES.length - 1 ? this.feedPage(id) : this.shed());
+    const feed = (item) => { const out = O.feed(id, item); if (out.why) g.log?.say('warn', out.why, { key: 'seed.feed', throttle: 1 }); again(); };
+    menu.showPage('garden.seed', (im, el) => {
+      const rows = el('div', 'rooms'), row = (t, sub, run, dim = false) => { const d = el('div', 'room', `<span class="n">◇</span><span><b>${t}</b><s>${sub}</s></span>`); if (dim) d.style.opacity = 0.4; if (run && !dim) d.onclick = run; rows.appendChild(d); };
+      const S = sizeOf(r.minutes), toNext = Math.ceil(S.toNext * per), bal = g.cubes?.balance ?? 0;
+      row(`Feed 10 minutes: ${10 * per} cubes`, `a minute of play is ${per} cubes`, () => feed({ cubes: 10 * per }), bal < 10 * per);
+      if (S.next) row(`Feed it to ${S.next.id}: ${toNext} cubes`, `${S.next.r} m across its heart, ${S.next.plots} plots`, () => feed({ cubes: toNext }), bal < toNext);
+      const box = g.pneuka; (box?.slots || []).forEach((sl, k) => { if (!sl?.id?.startsWith('mat.') || !sl.data?.kind) return; const m = worthOf(sl.id, sl.data) / per; row(`Feed it ${itemOf(sl.id)?.name || sl.id.slice(4)}`, `${+m.toFixed(1)} minutes · leans it to its feeling`, () => feed({ slot: k })); });
+      const M = g.god?.arts?.matter?.carried || 0; row('Pour on the island\'s matter', M > 0.05 ? `your god hand carries ${M.toFixed(1)} m³: hold the left button on this planetoid with GRAB (${+O.matterLeft().toFixed(1)} minutes left this game day)` : 'scoop some with the god hand in the world first, then hold the left button on this planetoid with GRAB', null, true);
+      im.appendChild(el('div', 'grp', cap(O.nameOf(id)).toUpperCase())); im.appendChild(el('div', 'grp', sizeLine(r))); im.appendChild(rows);
+    }, { title: 'THE SHED', sub: 'click to feed · F closes' });
   }
   /** A planetoid put back to its rest shape (the hand's Ctrl+Backspace, asked twice: free, item 30): its clay, its paint and its water. */
   resetPlanetoid(P) {

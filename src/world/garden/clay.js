@@ -17,6 +17,7 @@
 //
 //   const C = new Clay(planet, { band })   C.heightAt(dir)   C.radiusAt(dir)   C.brush(dir, how, strength, radius, { to })   C.keep(dir, r)
 //   C.flow(fromDir, steps) -> [dirs]   C.toLook(planetoidLook)   C.dump() -> [int]   C.load([int])   C.snapshot()   C.restore(a)   C.add(k, dh)
+//   C.regrow(k) (its planetoid grown k times wider: the band, the shape under each cell and the heights scaled with it)
 //   (how: 'pull' | 'press' | 'smooth' | 'flatten' | 'carve' | 'roughen')   NX, NY, CELL_DIRS, dirOf(i, j), uvOf(dir), groundAt(k) (the grid, shared)
 //   C.paint(dir, ground | null, radius)   C.groundOf(dir) -> 'moss' ... | null   C.dumpGround() / C.loadGround(runs)   GROUNDS (their order: a cell's number less one)
 // ---------------------------------------------------------------------------------------
@@ -82,6 +83,13 @@ export class Clay {
   add(k, dh) { const v = THREE.MathUtils.clamp(this.h[k] + dh * this.hold[k], -this.band, this.band), moved = v - this.h[k]; this.h[k] = v; return moved; }
   snapshot() { return { h: this.h.slice(), g: this.ground.slice(), painted: this.painted }; }
   restore(a) { if (a?.h?.length !== this.h.length) return; this.h.set(a.h); this.ground.set(a.g); this.painted = a.painted; this.version++; }
+  /** The planetoid under it was made `k` times wider (a seed fed past a size: world/garden/orbit.js): its band a third of the new radius,
+   *  the unsculpted shape asked again, every height scaled by k (a hill stays the same share of its world), the kept places held again. */
+  regrow(k) {
+    const P = this.P, c = new THREE.Vector3(); this.band = P.r / 3;
+    for (let i = 0; i < NX * NY; i++) { this.base[i] = P.base ? P.base(c.fromArray(CELL_DIRS, i * 3)) : P.r; this.h[i] = THREE.MathUtils.clamp(this.h[i] * k, -this.band, this.band); this.hold[i] = this.held(c); }
+    this.version++;
+  }
   held(d) { let k = 1; for (const q of this.kept) { const s = this.P.r * Math.acos(THREE.MathUtils.clamp(d.dot(q.d), -1, 1)); k = Math.min(k, THREE.MathUtils.smoothstep(s, q.r, q.r + 2)); } return k; }
 
   /** A brush stroke at a direction: `pull` raises, `press` lowers, `smooth` eases toward the neighbourhood's mean, `flatten` toward
