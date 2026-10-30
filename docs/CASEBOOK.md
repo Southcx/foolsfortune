@@ -1043,3 +1043,6 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 371. **A status applied as a mechanism is not drawn as one.** Where a system uses a status to hold a
   creature (a puzzle duel's pin, a cutscene's freeze), the status's look is skipped for that use, or the creature wears the status's
   aura for the whole of it: name the use (`c.dueling`) and let the look ask.
+372. **A probe that steps the game by hand lets the frame's budgets come to rest before it reads one.**
+  Whatever the game spreads over frames (the phone's first draws, an upload budget, a fade) is drawn out by stepping until nothing is
+  held back, as the device's own loop would; one hand-made draw shows a frame no player sees.

@@ -4647,3 +4647,16 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** every root the lasting looks add to the scene goes through the kit's `zoneFree()` (reins, lantern, smoke, sanctum, thicket,
   encore). Not yet seen in a shot after the fix.
 - **Rule:** 366
+
+### 2026-10-30 · The sweeps' phone pages drew black (scripts/sweeps/harness.mjs; Petra's phone probes since v287)
+- **Seen:** `open(room, { touch: true })` gave a black canvas under the HUD: 0 to 104 draw calls where the desk's page drew 435, every
+  pixel read back (0, 0, 0), at v351 and v352 alike; with `?graphics=low` 432 calls and still black. The phone's looks could not be
+  checked headless.
+- **Cause, as measured:** a phone's first-draw budget (render/firstdraws.js, on with `machine.mobile`) lets 4 new pipelines into a
+  frame; the rest are skipped and come in on later frames. A phone's own loop draws 60 a real second; the harness draws once a shot, so
+  the workshop's first view never got past its first four pipelines, and the present's blit to the canvas, new too, was skipped. Drawn
+  again until nothing was held back: 23 draws, 92 pipelines admitted, then 461 calls and the same pixels as an 844 x 390 desk page;
+  `?firstdraws=0` the same at once. `?constindex=0` changed nothing.
+- **Fix:** the harness's `draw()` draws again while the budget held anything back (at most 120 times), as a phone's frames would within
+  half a real second. After: the workshop's phone page drew 483 calls, mean luminance 68.
+- **Rule:** 372
