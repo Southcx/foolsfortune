@@ -29,7 +29,7 @@ export const DUNES_DRESS_EFFECTS = {
   ] },
   'dunes.fulgurite.hot': { layers: [
     { type: 'sprites', rate: 9, dur: Infinity, shape: 'core', spawn: 'disc', r: 0.35, dir: 'up', speed: [0.6, 1.5], size: [0.06, 0.12], sizeEnd: 0.02, life: [0.9, 1.6], drag: 0.4, gravity: -0.6, color: [0xffd9a0, 0xff8a3a], colorEnd: 0xc8381c, alpha: 1, alphaEnd: 0 },
-    { type: 'sprites', pool: 'alpha', rate: 2.2, dur: Infinity, shape: 'puff', spawn: 'disc', r: 0.3, dir: 'up', speed: [0.9, 1.5], size: [0.5, 0.8], sizeEnd: 2.4, life: [2.6, 3.6], drag: 0.3, gravity: -0.5, color: [0x6e625c, 0x8a7a70], alpha: 0.28, alphaEnd: 0, spin: [-0.4, 0.4] },
+    { type: 'sprites', pool: 'alpha', rate: 3, dur: Infinity, shape: 'puff', spawn: 'disc', r: 0.3, dir: 'up', speed: [1.0, 1.7], size: [0.5, 0.8], sizeEnd: 2.8, life: [2.8, 3.8], drag: 0.3, gravity: -0.5, color: [0x4a403c, 0x5e524c], alpha: 0.42, alphaEnd: 0, spin: [-0.4, 0.4] }, // (dark enough to stand against noon's sand and sky)
   ] },
   'dunes.fulgurite.dig': { layers: [
     { type: 'sprites', count: [22, 30], shape: 'chip', spawn: 'disc', r: 0.5, dir: 'cone', axis: 'up', cone: 40, speed: [3, 6.5], size: [0.06, 0.12], sizeEnd: 0.03, life: [0.6, 1], gravity: 9, drag: 0.5, color: SAND, alpha: 1, alphaEnd: 0.4, spin: [-8, 8] },

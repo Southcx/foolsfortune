@@ -221,7 +221,7 @@ export function buildCurio(id, { sky = null } = {}) {
       break;
     }
     case 'fulgurite': { // sand that lightning found: a branching tube, its crust sand-rough, its broken top showing the glass inside, the strike's light running down it now and then
-      const crust = std(0xc9b48c, { roughness: 1, flatShading: true }), inside = glass(0xd8f0c8, { opacity: 0.85, emissiveIntensity: 0.6 });
+      const crust = std(0xa8916c, { roughness: 1, flatShading: true }), inside = glass(0xd8f0c8, { opacity: 0.85, emissiveIntensity: 0.6 });
       const up = new THREE.Vector3(0, 1, 0), q = new THREE.Quaternion(), path = [];
       const run = (pts, r0, r1, keep) => { for (let i = 0; i < pts.length - 1; i++) { const a = new THREE.Vector3(...pts[i]), b = new THREE.Vector3(...pts[i + 1]), k0 = i / (pts.length - 1), k1 = (i + 1) / (pts.length - 1);
         const m = add(cyl(r0 + (r1 - r0) * k1, r0 + (r1 - r0) * k0, a.distanceTo(b) * 1.06, 7), crust, (a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2); m.quaternion.copy(q.setFromUnitVectors(up, b.clone().sub(a).normalize())); if (keep) path.push(a, b); } };

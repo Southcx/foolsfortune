@@ -3,7 +3,7 @@
 // in Fury's weather a bolt that lands in the crystal ridges leaves a fulgurite that can be dug with the Dreamvane's pick for `hot` real s).
 // The glass the bolt leaves is the fulgurites' own (fulgurites.js lays one at every strike); while it can be dug, this dresses that one
 // piece as still hot from the strike, so it is found and read without a word:
-//   - THE GLOW: a shell over the exposed glass, white-hot at the strike and cooling through orange to a deep red over its `hot` real s,
+//   - THE GLOW: a shell over the exposed glass, yellow-hot at the strike and cooling through orange to a deep red over its `hot` real s,
 //     breathing slower as it cools (a cooling ember's own clock: the time left is read off the colour), never under a floor that still
 //     says "now".
 //   - THE HALO AND THE HEAT: a soft halo at its knob, embers lifting and a thin smoke rising off it (the library's 'dunes.fulgurite.hot',
@@ -26,7 +26,7 @@ import { RARE_FINDS } from '../../progress/areas.js';
 /** The shell's scale over the glass; the glow's colours fresh, mid and cooling; its breath fresh and late (Hz) and its floor; the halo's
  *  size (m); the scorch's radius (m); how long the glass under a strike is looked for before one is laid here (real s); the fade on
  *  cooling and the flight into the Courier (real s). */
-export const HOT_FULG = { scale: 1.08, colours: [0xfff1c8, 0xffa040, 0xc8381c], breath: [1.5, 0.55], floor: 0.45, halo: 1.7, scorch: 1.5, seek: 0.5, fade: 1, fly: 0.8 };
+export const HOT_FULG = { scale: 1.08, colours: [0xffcf6a, 0xff7a28, 0xc8301a], breath: [1.5, 0.55], floor: 0.45, halo: 1.7, scorch: 1.5, seek: 0.5, fade: 1, fly: 0.8 };
 
 let DISC = null, SCORCH = null;
 /** The halo's soft disc and the scorch's glassy dark, drawn once on canvases (no image files). */
@@ -53,7 +53,7 @@ export class HotFulgurite {
     this.game = game; this.F = fulgurites; this.cur = null; this.slot = -1; this.seekT = 0; this.fading = false; this.fadeT = 0; this.flyT = -1; this.clock = 0; this.heat = null;
     const T = textures();
     this.group = new THREE.Group(); this.group.name = 'dunes-fulgurite-hot'; this.group.visible = false; parent.add(this.group);
-    this.shellMat = new THREE.MeshBasicMaterial({ color: COLS[0], transparent: true, opacity: 0.8, blending: THREE.AdditiveBlending, depthWrite: false, fog: false });
+    this.shellMat = new THREE.MeshBasicMaterial({ color: COLS[0], transparent: true, opacity: 0.8, depthWrite: false, fog: false }); // (laid over, not added: it reads hot on noon's pale sand as in a storm's dark)
     this.shell = new THREE.Mesh(fulgurites.mesh.geometry, this.shellMat); this.shell.matrixAutoUpdate = false; this.shell.renderOrder = 3; this.group.add(this.shell);
     this.glass = new THREE.Mesh(fulgurites.mesh.geometry, fulgurites.mat); this.glass.matrixAutoUpdate = false; this.glass.visible = false; this.group.add(this.glass); // (the piece itself, once dug: the flight's body)
     this.halo = new THREE.Sprite(new THREE.SpriteMaterial({ map: T.disc, color: COLS[0], blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, fog: false }));
