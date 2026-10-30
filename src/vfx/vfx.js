@@ -47,6 +47,7 @@
 // of fighting games (a move names its hit effect; the effect is tuned apart from the move).
 //
 //   game.vfx = new Vfx(game)   .play(name, ctx) -> handle   .update(rawDt)   .has(name)   .names()   materialOf(ent, kind) -> a hit's material
+//   .lastThrown { ent, t }   (the creature the last thrown thing's blow landed on, and when: read by vfx/panic.js on `impact.hit`)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { Sprites } from './sprites.js';
@@ -281,6 +282,8 @@ export class Vfx {
    *  guess from its kind. `type` (a damage type: impact, ego, influence, illusion, delirium) lays its damage look over the hit. */
   hit({ ent, kind = '', cause = 'shot', point, dir, power = 1, kill = false, tint, type }) {
     if (!point) return null;
+    // (a thrown thing's blow remembered a moment, so the panic over the creature it struck finds it: vfx/panic.js, world/impacts.js)
+    if (cause === 'thrown') this.lastThrown = { ent, t: performance.now() };
     const tool = SLASH.test(cause) ? 'slash' : SHOT.test(cause) ? 'shot' : 'blunt';
     const mat = materialOf(ent, kind);
     const name = `hit.${tool}.${mat}${kill ? '.kill' : ''}`;

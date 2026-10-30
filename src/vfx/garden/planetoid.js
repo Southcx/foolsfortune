@@ -16,7 +16,9 @@
 //                chimney   the Chimney, 8 m and tall: a needle of rock drawn up to a little platform (27.8 m at its crown, measured: `reach`)
 //                myggdrasil Myggdrasil's, 26 m, the largest: soft moss over a dark loam, the tree on its crown (vfx/garden/myggdrasil.js,
 //                          48 m tall, grown on its first update; it reads `game.myggdrasil` when the planetoid is given the game)
-//                and the four bought in the ring (the Moonflower Moon, the Koi Pond, the Drill Yard, the Bone Bed): vfx/garden/boughtplanetoids.js
+//                and those grown from seeds in the ring (clay, crystal, coral, bowl, ring, bone) and the feelings' moonlets round the
+//                Dantian: a seed's look, its kind's shape, skin and props (vfx/garden/seedplanetoids.js), dressed by its feeling and
+//                what it was fed (`dressSeed`, kept in step by vfx/garden/seedlooks.js; the fed tints and motifs: seedskins.js)
 //   THE CLAY     drawn on its own mesh at the clay's fineness (vfx/garden/planetoidmesh.js: one shared icosphere of detail 24, 6,252
 //                vertices), brought up to the god hand's clay (world/garden/clay.js) by `fromClay`, only where a stroke changed it; and
 //                its painted grounds (moss, ash, loam, slate, silt) drawn over the skin (vfx/garden/gardengrounds.js)
@@ -28,6 +30,8 @@
 //   const P = new Planetoid({ kind, radius, seed, surface, detail, game })   P.group (its heart at its origin)   P.surface(dir) -> m   P.up(pos, out)
 //   P.reach (m: its farthest ground from the heart, kept with every sculpt; the Chimney's is 27.8 against its 8 m radius)
 //   P.place(obj, dir, lift)   P.sculpt(dir, amount, size)   P.fromClay(clay)   P.tint(lakeHex)   P.update(rawDt)   P.growMushroom()
+//   P.dressSeed({ kind, feeling, tint })   (a seed's: its kind made again if it differs, its moonlet's feeling, its fed tint `tintOf`'s)
+//   P.swell(fromK)   (a growth: drawn from fromK of its size out to the whole, a spring's overshoot, back to 1 in 1.4 real s)
 //   (P.h, P.dir, P.R, P.geo and P.rebuild() stay for a reader that sets the heights itself: h a vertex in units of R)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -35,7 +39,8 @@ import { mergeStatic } from '../../render/merge.js';
 import { DETAIL, unitSphere, sphereGeometry, vertexNormals, refreshFromClay, bounds, sendWhole } from './planetoidmesh.js';
 import { groundMaterial, groundTick } from './gardengrounds.js';
 import { gardenMoodNow } from './gardenmood.js';
-import { BOUGHT_LOOKS } from './boughtplanetoids.js';
+import { SEED_LOOKS, SEED_KIND_OF } from './seedplanetoids.js';
+import { fedTint } from './seedskins.js';
 import { plantGrove } from './gardentree.js';
 import { WorldMushroom } from './myggdrasil.js';
 
@@ -50,15 +55,21 @@ export const PLANETOIDS = {
 };
 
 const BAND = 0.18; // (sculpting keeps the surface within this share of the radius, in or out)
+/** A growth's swell: the spring's damping (a real second) and its frequency (radians a real second), and how long it is drawn. */
+const SWELL = { damp: 5, freq: 8, secs: 1.4 };
 let clockOwner = null; // (the one planetoid whose update runs the grounds' shared clock, once a frame)
 
 export class Planetoid {
   constructor({ kind = 'mulberryGrove', radius = null, seed = 1, surface = null, detail = DETAIL, game = null } = {}) {
     this.game = game; // (only Myggdrasil's reads it: its state, game.myggdrasil)
     if (surface) this.surface = surface; // (a reader of the ground the game keeps, O(1): the search below is the fallback)
-    this.bought = BOUGHT_LOOKS[kind] || null; // (one of the four bought in the ring: its own skin, shape and props)
-    const K = PLANETOIDS[kind] ?? (this.bought ? { radius: radius ?? 12, ...this.bought.palette } : PLANETOIDS.mulberryGrove); this.kind = kind; this.R = radius ?? K.radius; this.K = K;
+    kind = SEED_KIND_OF[kind] || kind;
+    // a seed's look (vfx/garden/seedplanetoids.js): its own palette, shape, skin and props; its feeling and fed tint set by dressSeed
+    this.seedLook = SEED_LOOKS[kind] || null; this.dressing = { feeling: null, tint: null };
+    const K = PLANETOIDS[kind] ?? (this.seedLook ? { radius: radius ?? 9, ...this.seedLook.palette } : PLANETOIDS.mulberryGrove); this.kind = kind; this.R = radius ?? K.radius; this.K = K;
     this.cTop = new THREE.Color(K.top); this.cLow = new THREE.Color(K.low); this.cRock = new THREE.Color(K.rock);
+    // (a seed's own colours, which nothing else writes: the ring's stand-in paint sets cTop, cLow and cRock, the seed's look reads these)
+    this.sTop = this.cTop.clone(); this.sLow = this.cLow.clone(); this.sRock = this.cRock.clone();
     this.group = new THREE.Group(); this.group.name = `planetoid-${kind}`;
     this.rnd = lcg(seed * 977 + this.R);
     const S = this.sphere = unitSphere(detail), n = S.n, D = S.dir;
@@ -78,11 +89,11 @@ export class Planetoid {
   shape(x, y, z) {
     const n3 = (a, b, c) => Math.sin(a * 2.3 + b * 1.7) * Math.sin(b * 2.9 - c * 1.3) * Math.sin(c * 2.1 + a * 2.7); // (soft rolling hills)
     let r = 1 + 0.035 * n3(x * 2, y * 2, z * 2) + 0.015 * n3(x * 5 + 1, y * 5, z * 5 - 2);
+    if (this.seedLook) return this.seedLook.shape(x, y, z, r, this);
     if (this.kind === 'terraces' && y > 0.15) r += Math.floor(y * 6) / 6 * 0.06 - y * 0.06; // (stepped terraces round its crown)
     if (this.kind === 'athanor') { const c = Math.floor(Math.atan2(z, x) * 4) + Math.floor(y * 6) * 7; r += (((c * 37) % 11) / 11 - 0.5) * 0.04; } // (basalt columns)
     if (this.kind === 'pavilions' && y > 0.6) r = Math.min(r, 1.005); // (its crown paved smooth)
     if (this.kind === 'chimney' && y > 0) r *= 1 + 2.6 * y ** 12; // (drawn up into a needle: only the very crown is pulled)
-    if (this.bought) r = this.bought.shape(x, y, z, r);
     if (y < -0.35) r *= 1 + 0.08 * (-y - 0.35); // (its underside a touch deeper: the island's keel)
     return r;
   }
@@ -99,7 +110,19 @@ export class Planetoid {
   colourOf(i, C) {
     const x = this.dir[i * 3], y = this.dir[i * 3 + 1], z = this.dir[i * 3 + 2];
     const grass = THREE.MathUtils.smoothstep(y, -0.45, -0.1), up = THREE.MathUtils.smoothstep(y, 0.1, 0.8), dug = THREE.MathUtils.clamp(-this.h[i] / BAND * 2, 0, 1);
-    _c4.copy(this.cLow).lerp(this.cTop, up).lerp(this.cRock, 1 - grass).lerp(this.cRock, dug * 0.6); // (green over the top, rock under it, and where it is dug)
+    const S = this.seedLook;
+    if (S) {
+      // a seed's: its kind's skin over its own palette, then what it was fed (kept a vertex: they ask only its direction and its
+      // dressing, so a rebuild after the first, or a stroke's refresh, reads them back), then where it is dug
+      const K = this.skinCache ||= new Float32Array(this.h.length * 3).fill(-1);
+      if (K[i * 3] < 0) {
+        _c4.copy(this.sLow).lerp(this.sTop, up).lerp(this.sRock, 1 - grass);
+        S.skin(this, i, x, y, z, _c4, up);
+        if (this.dressing.tint) fedTint(_c4, this.dressing.tint, x, y, z, up);
+        _c4.r = Math.max(0, _c4.r); _c4.g = Math.max(0, _c4.g); _c4.b = Math.max(0, _c4.b); _c4.toArray(K, i * 3);
+      } else _c4.fromArray(K, i * 3);
+      _c4.lerp(this.sRock, dug * 0.6);
+    } else _c4.copy(this.cLow).lerp(this.cTop, up).lerp(this.cRock, 1 - grass).lerp(this.cRock, dug * 0.6); // (green over the top, rock under it, and where it is dug)
     const v = 0.94 + 0.06 * Math.sin(x * 31 + z * 17 + y * 23), a = C.array; a[i * 3] = _c4.r * v; a[i * 3 + 1] = _c4.g * v; a[i * 3 + 2] = _c4.b * v;
   }
   /** Brought up to the god hand's clay (world/garden/clay.js), only where it changed since the last time: its heights, its normals round
@@ -130,7 +153,7 @@ export class Planetoid {
     const at = (obj, x, y, z, lift = 0) => { this.place(obj, _v.set(x, y, z), lift); this.props.add(obj); return obj; };
     // the roots of stone under every island (Dual Hearts: they float)
     const rock = std(this.K.rock, { flatShading: true });
-    for (let i = 0; i < 5; i++) { const a = rnd() * 6.28, d = _v.set(Math.cos(a) * 0.35, -1, Math.sin(a) * 0.35).normalize(); const h = R * (0.15 + 0.2 * rnd()); const m = new THREE.Mesh(new THREE.ConeGeometry(R * 0.08, h, 6).translate(0, h / 2, 0), rock); this.place(m, d, -R * 0.03); this.props.add(m); } // (base on the surface, tip hanging away)
+    for (let i = 0; i < (this.seedLook?.roots === false ? 0 : 5); i++) { const a = rnd() * 6.28, d = _v.set(Math.cos(a) * 0.35, -1, Math.sin(a) * 0.35).normalize(); const h = R * (0.15 + 0.2 * rnd()); const m = new THREE.Mesh(new THREE.ConeGeometry(R * 0.08, h, 6).translate(0, h / 2, 0), rock); this.place(m, d, -R * 0.03); this.props.add(m); } // (base on the surface, tip hanging away)
     const stone = std(0xd8d0c8, { flatShading: true });
     if (this.kind === 'dantian') {
       this.lakeMat = std(0xf2c84a, { roughness: 0.1, metalness: 0.2, emissive: 0x553f10 }); this.lakeMat.userData.noMerge = true;
@@ -151,8 +174,8 @@ export class Planetoid {
         this.place(spot, _v.set(Math.cos(a) * s, y, Math.sin(a) * s), -0.1); spot.updateMatrix();
         trees.push({ matrix: spot.matrix.clone(), height: h, crown, leaf: LEAVES[i % LEAVES.length], seed: i + 1 }); }
       this.groveToPlant = trees; // (grown on its first update, when the garden is entered: the boot's heap never holds its 11,000 leaves)
-    } else if (this.bought) {
-      this.bought.dress(this, at, std);
+    } else if (this.seedLook) {
+      this.seedLook.dress(this, std);
     } else if (this.kind === 'myggdrasil') {
       this.mushroomToGrow = true; // (Myggdrasil, grown on its first update: the boot's heap never holds its body)
     } else if (this.kind === 'chimney') {
@@ -163,11 +186,42 @@ export class Planetoid {
 
   update(raw = 1 / 60) {
     this.t += raw;
+    if (this.swelling) this.swellStep(raw);
     if (this.groveToPlant) { const G = plantGrove(this.groveToPlant); this.props.add(G.bark, G.canopy); this.grove = G; this.groveToPlant = null; } // (the Mulberry Grove's trees: two meshes)
     this.growMushroom()?.update(raw, this.game?.myggdrasil);
     if (!clockOwner || clockOwner.disposed) clockOwner = this;
     if (clockOwner === this) groundTick(raw, gardenMoodNow()); // (the grounds read the garden's mood: season, snow, briar: gardenmood.js)
     if (this.vent) this.vent.material.color.setRGB(1, 0.42 + 0.1 * Math.sin(this.t * 3.1), 0.2).multiplyScalar(0.85 + 0.15 * Math.sin(this.t * 7.3));
+  }
+
+  /** A seed's planetoid dressed as the ring has it (vfx/garden/seedlooks.js keeps it in step): `kind` its seed's (a large one's own moon
+   *  is made a moonlet and takes its parent's kind here), `feeling` a moonlet's, `tint` what it was fed (`tintOf`: { feeling, share }).
+   *  Nothing is drawn again when nothing changed; true when its kind was made again (its new roots are born flat: shade them). */
+  dressSeed({ kind = this.kind, feeling = null, tint = null } = {}) {
+    kind = SEED_KIND_OF[kind] || kind;
+    const remade = !!(SEED_LOOKS[kind] && kind !== this.kind), D = this.dressing;
+    if (!remade && D.feeling === feeling && D.tint?.feeling === tint?.feeling && D.tint?.share === tint?.share) return false;
+    if (remade) this.reKind(kind);
+    this.dressing = { feeling, tint }; this.skinCache = null;
+    this.rebuild();
+    return remade;
+  }
+  /** Made again as another seed's kind (its palette, shape and props; a body not walked on: a large planetoid's own moon). */
+  reKind(kind) {
+    const S = this.seedLook = SEED_LOOKS[kind]; this.kind = kind; this.group.name = `planetoid-${kind}`;
+    this.K = { ...this.K, ...S.palette }; for (const [k, c] of [['top', 'Top'], ['low', 'Low'], ['rock', 'Rock']]) { this[`c${c}`].setHex(S.palette[k]); this[`s${c}`].setHex(S.palette[k]); }
+    const D = this.dir; for (let i = 0; i < this.h.length; i++) this.base[i] = this.shape(D[i * 3], D[i * 3 + 1], D[i * 3 + 2]);
+    this.skinCache = null;
+    for (const o of [...this.props.children]) { this.props.remove(o); o.geometry?.dispose?.(); if (!o.material?.userData?.shared) o.material?.dispose?.(); }
+    this.dress(); mergeStatic(this.props);
+  }
+  /** A growth: drawn at fromK of its size, sprung out to the whole (a damped spring: past 1 by about a seventh of the gap at 0.4 real s,
+   *  settled by 1.4), its scale put back to 1 at the end (casebook rule 30). */
+  swell(fromK) { this.swelling = { k: Math.min(1, Math.max(0.2, fromK)), t: 0 }; this.group.scale.setScalar(this.swelling.k); }
+  swellStep(raw) {
+    const S = this.swelling; S.t += raw;
+    if (S.t >= SWELL.secs) { this.swelling = null; this.group.scale.setScalar(1); return; }
+    this.group.scale.setScalar(1 - (1 - S.k) * Math.exp(-SWELL.damp * S.t) * Math.cos(SWELL.freq * S.t));
   }
 
   /** Myggdrasil's planetoid: the tree grown now if it waits (else on the first update), and returned (null on any other). */

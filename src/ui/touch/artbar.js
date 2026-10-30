@@ -26,6 +26,10 @@ import { placeOf, windowOpen } from './areas.js';
 import { shelf } from './topbar.js';
 import { SizeSlider } from './sizeslider.js';
 
+/** A station's view holds the hand (the press at the Athanor, the carving bench: world/garden/press.js, bench.js): the arts stand aside,
+ *  or a tap on one changes the hand's art under the dig (Petra, 2026-10-30). */
+export const stationView = (R) => !!(R?.press?.viewing || R?.bench?.viewing);
+
 /** The order, what each art brings beside the bar, the tiles' sizes (CSS px: the bar's at most, the side strip's), the gaps. */
 export const ART_BAR = {
   ids: ['walk', ...ARTS, 'undo'],
@@ -106,7 +110,7 @@ export class TouchArtBar {
   }
 
   update(now, on) {
-    const g = this.game, R = g.realm, show = !!on && !!R?.active && !windowOpen(g);
+    const g = this.game, R = g.realm, show = !!on && !!R?.active && !windowOpen(g) && !stationView(R);
     // the hand's own art and size, mirrored when they change (a key pressed; the driver's set)
     const H = R?.hand;
     if (H && H.art !== this.handArt) { if (this.handArt != null) this.set(H.art); this.handArt = H.art; }

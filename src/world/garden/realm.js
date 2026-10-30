@@ -272,7 +272,7 @@ export class Realm {
   /** Is the Jar's (or a spirit's) wish this step: WASD along the ground, as the camera faces. */
   wish(out) {
     const I = this.game.input, f = (I.isDown('KeyW') ? 1 : 0) - (I.isDown('KeyS') ? 1 : 0), r = (I.isDown('KeyD') ? 1 : 0) - (I.isDown('KeyA') ? 1 : 0);
-    if (this.camera.view === 'overhead' || this.press?.viewing) return out.set(0, 0, 0); // (overhead, WASD pans the view; at the press, WASD leaves it: the Jar stands)
+    if (this.camera.view === 'overhead' || this.press?.viewing || this.bench?.viewing) return out.set(0, 0, 0); // (overhead, WASD pans the view; at the press, WASD leaves it; at the bench, the dig has the view: the Jar stands)
     const T = this.goTarget, J = this.jarBody; // (tap to go, the touch driver's: world/garden/tapgo.js, MOBILE.md 8.2)
     if (T && (f || r || J.held || J.planet !== T.planet || (T.t += 1 / 60) > TAP_GO.giveUp)) this.goTarget = null;
     else if (T) { goWish(J, T, out); if (out.lengthSq() === 0) this.goTarget = null; return out; }
@@ -388,7 +388,7 @@ export class Realm {
     clay?.regrow(k);
     const kept = clay?.kept.length ?? 0; this.plots.relay(P); this.plots.addPlanet(P, plots); // (more plots, laid round those it has)
     const base = this.decorLayer?.baseKept?.[P.id]; if (base && clay) base.push(...clay.kept.slice(kept)); // (the new plots' ground held, with the pieces': decorlayer.js keepAll)
-    this.site.relay(P); this.plots.veins(P); if (this.game.launchLotuses) this.game.launchLotuses.count = -1; // (its lotuses stood again; Calissa's flowers drawn again on their next step)
+    this.site.relay(P); this.plots.veins(P); // (its lotuses stood again: Calissa's flowers hear the seed.grow that follows and stand on the new ground)
     const W = this.waterworks, Wl = W.looks?.[P.id]; if (Wl) { Wl.mesh?.parent?.remove(Wl.mesh); Wl.dispose?.(); delete W.looks[P.id]; } // (its water's look made again on the new ground)
     const D = this.game.decor?.s?.placed, N1 = cellsOf(r); // (a garden piece keeps its bearing on a grid of more cells)
     if (D && N1 !== N0) { for (const p of D) if (p[1] === P.id) { const c = cellAt(dirAt(p[2], p[3], p[4], N0), N1); p[2] = c.face; p[3] = c.iu; p[4] = c.iv; } this.game.save?.dirty('decor'); }

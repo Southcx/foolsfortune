@@ -1043,3 +1043,12 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 371. **A status applied as a mechanism is not drawn as one.** Where a system uses a status to hold a
   creature (a puzzle duel's pin, a cutscene's freeze), the status's look is skipped for that use, or the creature wears the status's
   aura for the whole of it: name the use (`c.dueling`) and let the look ask.
+372. **A probe that steps the game by hand lets the frame's budgets come to rest before it reads one.**
+  Whatever the game spreads over frames (the phone's first draws, an upload budget, a fade) is drawn out by stepping until nothing is
+  held back, as the device's own loop would; one hand-made draw shows a frame no player sees.
+373. **A line in the world is never narrower than a few of the 480 lines.** A rein, a thread or a tether drawn
+  as a ribbon in metres vanishes at range (the present is 480 lines): give it a floor in pixels from the camera's distance and field of
+  view, and let a pattern ride on a solid body rather than cut through its whole width.
+374. **A warm-up compiles once, at its owner's first build, under the cover.** A look rebuilt in play (more instances, a
+  new geometry) keeps its materials and so their programs; compiling it again from inside the frame is done under another render state
+  and leaves programs no draw uses. Guard the compile with a flag cleared only when the materials are disposed.

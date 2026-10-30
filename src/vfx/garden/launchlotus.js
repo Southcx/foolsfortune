@@ -16,7 +16,7 @@
 // Three InstancedMeshes (petals, pods, stems and leaves) on ONE program (a standard material taught a glow by `aGlow` in each lotus's
 // instance colour, the leaves' green by `aKind`, and the schiller), and the arcs' one Points: four draws for every lotus in the garden,
 // a bought planetoid's added when its lotuses are. The petals open on the CPU (a matrix a petal, only for a lotus near the camera or
-// moving); the world's stand-in cones are hidden, never removed.
+// moving). Drawn again when a seed grows under its lotuses (`seed.grow`).
 //
 // Prior art: Super Mario Galaxy's launch star (the pull as you near, the wind-up and the fling, the sparkle path), the sacred lotus
 // (Nelumbo: the seed pod's head, the leaf raised out of the water on its own stalk, the bud rising on a curled stem), Okami's blooms
@@ -150,13 +150,13 @@ export class LaunchLotuses {
     this.arcs = new PollenArcs();
     game.events?.on('garden.enter', () => { this.flying = null; const R = game.realm; if (R?.site && this.count !== R.site.lotuses.length) { try { this.build(R); this.compile(); } catch (e) { console.warn('launch lotuses', e); } } });
     game.events?.on('garden.launch', (e) => this.launched(e));
+    game.events?.on('seed.grow', () => { this.count = -1; }); // (a seed grown under its lotuses: they stand again on the new ground at the next step, world/garden/orbit.js feed)
   }
 
-  /** Every lotus of the site drawn (again, when a bought planetoid has added its own), the world's cones hidden. */
+  /** Every lotus of the site drawn (again, when a planetoid has added its own or grown under them). */
   build(R) {
     const S = R.site, L = LOTUS_LOOK, recs = S.lotuses;
     this.dispose(false); this.count = recs.length; this.lotuses = [];
-    for (const o of S.group.children) if (o.isMesh && o.material === S.mats.lotus && o.name !== 'garden-seed') o.visible = false; // (the stand-ins: world/garden/place.js's cones; the hand's seed shares their material)
     if (!this.geo) { this.geo = { petal: petalGeometry(), pod: podGeometry(), stem: stemGeometry() }; this.mat = lotusMaterial(this.U); }
     const group = (this.group = new THREE.Group()); group.name = 'garden-launch-lotuses';
     const per = L.rings.reduce((a, r) => a + r.n, 0), n = recs.length;
@@ -197,8 +197,12 @@ export class LaunchLotuses {
   /** Compiled under the seam's cover, as the realm's warm-up compiles the garden (world/garden/realm.js build). */
   compile() {
     const g = this.game, R = g.renderer; if (!R || !this.group) return;
+    // once: the petals' and the arcs' materials outlive every rebuild, so their programs do; a compile again from a rebuild in the
+    // frame (a seed planted or grown adds lotuses) was made under another render state and left two programs nothing draws
+    // (garden-launch-lotus and garden-pollen-arcs, measured 219 -> 221 by Calissa, 2026-10-30)
+    if (this.warmed) return;
     const was = R.getRenderTarget();
-    try { R.setRenderTarget(g.post?.target ?? null); R.compile(this.group, g.camera, g.scene); } catch (e) { console.warn('launch lotuses warm-up', e); }
+    try { R.setRenderTarget(g.post?.target ?? null); R.compile(this.group, g.camera, g.scene); this.warmed = true; } catch (e) { console.warn('launch lotuses warm-up', e); }
     R.setRenderTarget(was ?? null);
   }
 
@@ -253,7 +257,7 @@ export class LaunchLotuses {
   dispose(all = true) {
     if (this.group) { this.group.removeFromParent(); for (const m of [this.petals, this.pods, this.stems]) m?.dispose?.(); this.group = null; }
     this.arcs.dispose(all); for (const lot of this.lotuses) { delete lot.arc; }
-    if (all && this.geo) { for (const g of Object.values(this.geo)) g.dispose(); this.mat.dispose(); this.geo = null; }
+    if (all && this.geo) { for (const g of Object.values(this.geo)) g.dispose(); this.mat.dispose(); this.geo = null; this.warmed = false; }
   }
 }
 const _m = new THREE.Matrix4(), _r = new THREE.Matrix4(), _col = new THREE.Color(), _c = new THREE.Color(), _n = new THREE.Vector3();

@@ -7,6 +7,7 @@
 //   art.<id>.armed   a reaction the runtime holds ready (Momentum, Steadfast, Running on Empty) and Beginner's Luck waiting
 //   art.<id>.mark    an action's second place, played at the event's `at` or `target` (Prospect's source, Veil's eye)
 //   art.react        the reactions' shared base (reactions.js)
+//   and what an art leaves running, the lasting looks' own (lasting.js: played by vfx/classartlasting.js over its meshes)
 // ART_DOMAIN says which domain's grammar each art is drawn in (a reaction takes its class's action's), for the caller's ctx.domain.
 //
 // Prior art: the Dragon Quest and Parasite Eve II spell families (a hundred spells as a dozen shapes in rungs: VFX-PRIOR-ART.md 4).
@@ -20,10 +21,11 @@ import { SWORDS_ART_EFFECTS } from './swords.js';
 import { PENTACLES_ART_EFFECTS } from './pentacles.js';
 import { MAJOR_ART_EFFECTS } from './majors.js';
 import { ARCANA_ART_EFFECTS } from './arcana.js';
+import { LASTING_ART_EFFECTS } from './lasting.js';
 import { CLASS_ARTS, artsOf } from '../../../progress/classarts.js';
 
 export const CLASS_ART_EFFECTS = {
-  ...REACTION_BASE, ...WANDS_ART_EFFECTS, ...CUPS_ART_EFFECTS, ...SWORDS_ART_EFFECTS, ...PENTACLES_ART_EFFECTS, ...MAJOR_ART_EFFECTS, ...ARCANA_ART_EFFECTS,
+  ...REACTION_BASE, ...WANDS_ART_EFFECTS, ...CUPS_ART_EFFECTS, ...SWORDS_ART_EFFECTS, ...PENTACLES_ART_EFFECTS, ...MAJOR_ART_EFFECTS, ...ARCANA_ART_EFFECTS, ...LASTING_ART_EFFECTS,
 };
 
 /** Each art's domain (the plan's table, section 4; Beginner's Luck, which it leaves out, Divination's: seeing chance). A class's reaction

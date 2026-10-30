@@ -7,12 +7,12 @@
 // (SIZES[0]), linked by lotuses and a spirit vein to its two nearest of the first six. FED (cubes or a material at the shed; the
 // island's matter the god hand carries, poured on it with GRAB held over it, so much a game day: MATTER_FEED), it GROWS a size at a
 // time in place: its look made again at the new radius, its clay's hills scaled with it, more plots laid round those it has, its
-// lotuses and veins moved out to its new ground (realm.regrow). Its colour leans to the feeling it was fed most (tintOf). Past medium
+// lotuses and veins moved out to its new ground (realm.regrow). Its colour leans to the feeling it was fed most (tintOf, in its look). Past medium
 // it keeps a moonlet of its own in close orbit, so its size reads at a glance. The seven feelings' moonlets stand on the inner ring
 // round the Dantian's waist (place.js MOONLET_RING), set there as they are earned, a jump from its ground, never fed.
-// Every seed's planetoid is a sphere for now (SHAPES[kind].body: the faceted, reef, bowl and torus bodies to come), dressed in the look
-// nearest its kind until Calissa's seeds come (STAND_IN). Kept in the realm's save: each seed's slot, size and what it was fed, and the
-// game day's matter.
+// Every seed's planetoid is a sphere for now (SHAPES[kind].body: the faceted, reef, bowl and torus bodies to come), drawn by its kind
+// (`look: kind`): its colours, its feeling and the tint of what it was fed are Calissa's looks (vfx/garden/seedlooks.js, read from
+// `planted`). Kept in the realm's save: each seed's slot, size and what it was fed, and the game day's matter.
 // Events: seed.plant { seed, slot, inner }, seed.grow { seed, size }, seed.feed { seed, minutes, from }, each with `by`.
 //
 // Prior art: Super Mario Galaxy (the Comet Observatory's domes opened by Grand Stars; a Hungry Luma fed Star Bits becomes a planet; the
@@ -26,8 +26,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { ORBIT, orbitSlot } from '../../progress/realm.js';
-import { SEEDS, SIZES, sizeOf, feedOf, tintOf, MATTER_FEED } from '../../progress/seeds.js';
-import { COLOR } from '../../progress/weather.js';
+import { SEEDS, SIZES, sizeOf, feedOf, MATTER_FEED } from '../../progress/seeds.js';
 import { worthOf } from '../../progress/shop/catalogue.js';
 import { today } from '../../core/calendar.js';
 import { VERBS } from '../../godhand/matterarts.js';
@@ -36,12 +35,10 @@ import { MOONLET_RING, moonletBerth, GARDEN_AT } from './place.js';
 
 /** The look a seed's kind wears until Calissa's own: the bought planetoids' three that fit (vfx/garden/boughtplanetoids.js), else the
  *  plain ground in a palette of its kind's (top, low, rock). */
-const STAND_IN = { bone: 'fossils', crystal: 'moon', coral: 'koi' };
-const PALETTE = { clay: [0xc98a5e, 0xa86e4c, 0x7a5444], bowl: [0xd8c49a, 0xb8a47c, 0x8a7a66], ring: [0xb8b0d8, 0x9890bc, 0x6e6890] };
 /** The moon a large planetoid keeps: its radius and its orbit (metres past the surface, real seconds a turn). */
 const OWN_MOON = { r: 2, gap: 6, secs: 40 };
 const cap = (s = '') => s[0].toUpperCase() + s.slice(1);
-const _v = new THREE.Vector3(), _c = new THREE.Color();
+const _v = new THREE.Vector3();
 
 export class Orbit {
   constructor(realm) {
@@ -113,7 +110,7 @@ export class Orbit {
     const S = SEEDS[id], site = this.R.site; if (!S || this.planted.has(id)) return null;
     const r = { seed: id, slot, size: Math.min(SIZES.length - 1, was.size | 0), minutes: +was.minutes || 0, fed: { ...(was.fed || {}) }, planet: null };
     const Z = SIZES[r.size];
-    const P = site.addPlanet({ id: `seed.${id}`, r: Z.r, c: S.inner ? site.by.dantian.c : this.slotPos(slot), name: this.nameOf(id), look: STAND_IN[S.kind] || S.kind, tint: (look) => this.paint(look, r) });
+    const P = site.addPlanet({ id: `seed.${id}`, r: Z.r, c: S.inner ? site.by.dantian.c : this.slotPos(slot), name: this.nameOf(id), look: S.kind });
     P.seed = id; r.planet = P;
     if (S.inner) { // (on its berth: the gap measured from the Dantian's ground to its own, along the line of their hearts)
       const D = site.by.dantian, d = moonletBerth(slot), c = D.c.clone().addScaledVector(d, D.radiusAt(d) + MOONLET_RING.gap + P.base(_v.copy(d).negate()));
@@ -124,15 +121,6 @@ export class Orbit {
     this.planted.set(id, r);
     if (Z.moon) this.ownMoon(r);
     return P;
-  }
-  /** A planetoid's colours: a moonlet of the inner ring its feeling's; one of the ring its kind's palette, leaning to what it was fed most. */
-  paint(look, r) {
-    const S = SEEDS[r.seed], pal = PALETTE[S.kind];
-    if (S.inner) { const f = COLOR[S.feeling]; look.cTop.setHex(f).lerp(_c.setHex(0xffffff), 0.25); look.cLow.setHex(f).multiplyScalar(0.8); look.cRock.setHex(f).multiplyScalar(0.45); }
-    else if (pal) { look.cTop.setHex(pal[0]); look.cLow.setHex(pal[1]); look.cRock.setHex(pal[2]); }
-    const t = !S.inner && tintOf(r.fed);
-    if (t) { _c.setHex(COLOR[t.feeling] ?? 0xffffff); look.cTop.lerp(_c, 0.55 * t.share); look.cLow.lerp(_c, 0.45 * t.share); }
-    look.rebuild();
   }
 
   // ------------------------------------------------------------------ feeding
@@ -162,7 +150,7 @@ export class Orbit {
       this.R.regrow(P, SIZES[z].r, SIZES[z].plots);
       for (let s = was + 1; s <= z; s++) g.events?.emit('seed.grow', { seed: id, size: SIZES[s].id, by: 'courier' }); // (a size passed, each said)
       if (SIZES[z].moon) this.ownMoon(r);
-    } else { this.paint(P.look, r); this.R.reshape(P, true); } // (its tint as fed, the clay drawn on it again)
+    } // (the tint of what it was fed is its look's: Calissa's seedlooks.js reads `planted` on seed.feed)
     g.save?.dirty('realm');
     return { minutes: F.minutes, grew: z > was };
   }
@@ -183,10 +171,10 @@ export class Orbit {
   }
   pourEnd() { const p = this.pouring; this.pouring = null; if (p?.m3 > 1e-3) this.feed(p.id, { matter: p.m3 }); }
 
-  /** A large planetoid's own moonlet (a stand-in look until Calissa's: a small planetoid of its colours, not walked on). */
+  /** A large planetoid's own moonlet: a small planetoid of its parent's kind, dressed by Calissa's seed looks, not walked on. */
   ownMoon(r) {
     if (r.moon) return;
-    const P = r.planet, M = new Planetoid({ kind: 'moonlet', radius: OWN_MOON.r, seed: 7, detail: 6 }); this.paint(M, r);
+    const P = r.planet, M = new Planetoid({ kind: SEEDS[r.seed].kind, radius: OWN_MOON.r, seed: 7, detail: 6 });
     M.group.name = 'seed-own-moon'; this.R.site.group.add(M.group); r.moon = M;
     this.game.present?.shade?.();
     this.place(r, 0); return M;
@@ -205,7 +193,7 @@ export class Orbit {
   load(d) {
     const want = new Map((d?.v === 2 ? d.planted || [] : []).filter((w) => SEEDS[w.seed]).map((w) => [w.seed, w]));
     for (const [id, r] of [...this.planted]) { const w = want.get(id); if (!w || (w.slot | 0) !== r.slot || Math.min(SIZES.length - 1, w.size | 0) !== r.size) this.unplant(id); }
-    for (const [id, w] of want) { const r = this.planted.get(id); if (!r) this.plant(id, w.slot | 0, w); else { r.minutes = +w.minutes || 0; r.fed = { ...(w.fed || {}) }; this.paint(r.planet.look, r); } }
+    for (const [id, w] of want) { const r = this.planted.get(id); if (!r) this.plant(id, w.slot | 0, w); else { r.minutes = +w.minutes || 0; r.fed = { ...(w.fed || {}) }; } }
     this.day = Array.isArray(d?.day) ? { d: d.day[0] | 0, m: +d.day[1] || 0 } : { d: -1, m: 0 };
   }
   /** A seed's planetoid taken out of the sky (a save without it loaded), and its own moon. */

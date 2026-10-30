@@ -12,7 +12,9 @@
 //   earth (Pentacles)  Shackle (the Devil: chain links of script, held 5 s), Sanctum (the Hierophant: a circle 5 m drawn, a faint dome,
 //                      held 8 s), Lamp (the Hermit: a lamp made, its light out to 8 m, held 20 s)
 // and each reaction its action quietened on `art.react` (reactions.js). An art that acts on a creature (Tame, Ride, Shackle, Payback's
-// return) is played at it, its tethers laid back toward the Courier (its dir points from the Courier to it).
+// return) is played at it, its tethers laid back toward the Courier (its dir points from the Courier to it). What Ride, Vanish, Starlight,
+// Encore, Sanctum and Lamp leave running (the reins, the smoke Courier, the patch of sky, the echo, the ward, the lantern) is the lasting
+// looks' (vfx/classartlasting.js, its effects lasting.js): the holds here carry only what those do not draw.
 //
 // Prior art: the kit's (Riot's tiers and ladder, FFT's reaction flash, Chrono Cross's colours); the Rider-Waite-Smith deck's images (Death's
 // scythe, Strength's lion led by a garland, the Chariot's reins, Justice's scales, the Star's night, the Hermit's lantern); Shadow of the
@@ -124,12 +126,8 @@ export const MAJOR_ART_EFFECTS = {
     haze(C, M, { r: 1.6 }), motesIn(M, { r: 1.8 }),
     lamp(M, { k: 22 }), ...weight(M, { shake: 0.15, stop: 0.05 }),
   ] },
-  // Ride held: the reins held, their light running to the creature; the collar; a haze at its feet
+  // Ride held: a haze breathing at its feet (its reins, bridle and calmed eyes are the lasting look's: classartlasting/reins.js)
   'art.ride.hold': { layers: [
-    // PRIMARY: the reins, held
-    ...[-0.18, 0.18].map((d) => tether(C, M, { hold: true, len: 3.2, r: 0.07, y: 1.2, rot: Math.PI + d, kmul: 0.8 })),
-    // SECONDARY: the collar at its neck
-    collar(C, M, { hold: true, r: 0.55, y: 1.25, kmul: 0.7 }),
     // TERTIARY: a haze breathing at its feet
     haze(C, M, { hold: true, r: 1.2, kmul: 0.5 }),
   ] },
@@ -325,10 +323,9 @@ export const MAJOR_ART_EFFECTS = {
     seal(P, M, { r: 0.8, at: 0.3 }), inkMotes(M, { r: 2 }),
     lamp(M, { k: 20 }), ...weight(M, { flash: 0.06, stop: 0.04 }),
   ] },
-  // Sanctum held: the circle turning slow on the ground, the faint dome over it, motes drifting
+  // Sanctum held: the faint dome over the circle, motes drifting up inside it (the circle itself, the ward, is the lasting look's:
+  // classartlasting/sanctum.js)
   'art.sanctum.hold': { layers: [
-    // PRIMARY: the circle on the ground
-    writtenRing(P, M, { hold: true, r: 2.5, spin: 0.12, kmul: 0.7 }),
     // SECONDARY: the faint dome, lit at its rim
     own(P, M, { hold: true, form: 'dome', main: 'script', mainK: 0.4, tile: [8, 2], scroll: [0.02, 0.06], scale: 2.5, rim: 0.9, rimPow: 3, core: 0, kmul: 0.22, erode: 0.12 }),
     // TERTIARY: motes drifting up inside it
@@ -354,15 +351,11 @@ export const MAJOR_ART_EFFECTS = {
     grains(M, { r: 0.3, offset: [0, 2, 0] }),
     lamp(M, { k: 22, dur: 1.2, up: 2.1 }), ...weight(M, { flash: 0.06 }),
   ] },
-  // Lamp held: the lamp over the shoulder breathing slowly, its reach a faint ring at 8 m, grains drifting off it
+  // Lamp held: its reach a faint ring on the ground at 8 m (the lantern, its moths and its throw are the lasting look's:
+  // classartlasting/lantern.js, art.lantern.glow, art.lantern.throw)
   'art.lantern.hold': { layers: [
-    // PRIMARY: the lamp, breathing slowly
-    own(P, M, { hold: true, loop: 3, form: 'sphere', main: 'cells', tile: [3, 2], scroll: [0, 0.25], flow: 'noise', flowK: 0.04, scale: [[0, 0.2], [0.5, 0.23], [1, 0.2]], offset: [0, 2.1, 0],
-      rim: -0.5, core: 0.8, coreAt: 0.6, erode: 0.06 }),
     // SECONDARY: its reach: a faint ring on the ground at 8 m
     groundRing(P, M, { hold: true, r: 8, main: 'noise', tile: [8, 1], scroll: [0.02, 0.1], kmul: 0.22 }),
-    // TERTIARY: grains drifting off the lamp
-    grains(M, { rate: 4, dur: Infinity, r: 0.2, offset: [0, 2.05, 0], gravity: 0.3, alpha: 0.7 }),
   ] },
   // Solitude (the Hermit's reaction): Lamp quietened: a small lamp's glint over the shoulder
   'art.solitude.fire': { extends: 'art.react', layers: [

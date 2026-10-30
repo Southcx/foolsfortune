@@ -276,6 +276,8 @@ ${clayDress('.cb.clay')}
 .cb-acts button{font:inherit;font-size:calc(8*var(--d));letter-spacing:.1em;color:#f3e2cc;background:rgba(0,0,0,.3);border:1px solid rgba(255,230,200,.35);border-radius:3px;padding:calc(2*var(--d)) calc(5*var(--d));cursor:pointer}
 .cb-acts button:hover{border-color:${GOLD}}
 .cb-acts kbd{font:inherit;opacity:.6;margin-left:calc(2*var(--d))}
+.hud-touch .cb-acts button{min-height:40px;padding:0 16px;font-size:13px}
+.hud-touch .cb-acts kbd{display:none}
 .cb .slotrow{flex-wrap:nowrap}.cb .slotrow .sl{min-width:0;flex:1 1 0}.cb .slotrow .sl>span{letter-spacing:.02em;font-size:calc(7*var(--d));max-width:100%;overflow:hidden}`;
   document.head.appendChild(st);
 }

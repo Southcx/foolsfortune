@@ -4637,3 +4637,50 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   Kingdom Hearts' stop-frost, so the foe stood in frost for the whole duel.
 - **Fix:** the auras skip `halt` on a creature that is `dueling` (set by the same `pin`). Not yet seen in a shot after the fix.
 - **Rule:** 371
+
+### 2026-10-30 · The sweeps' phone pages drew black (scripts/sweeps/harness.mjs; Petra's phone probes since v287)
+- **Seen:** `open(room, { touch: true })` gave a black canvas under the HUD: 0 to 104 draw calls where the desk's page drew 435, every
+  pixel read back (0, 0, 0), at v351 and v352 alike; with `?graphics=low` 432 calls and still black. The phone's looks could not be
+  checked headless.
+- **Cause, as measured:** a phone's first-draw budget (render/firstdraws.js, on with `machine.mobile`) lets 4 new pipelines into a
+  frame; the rest are skipped and come in on later frames. A phone's own loop draws 60 a real second; the harness draws once a shot, so
+  the workshop's first view never got past its first four pipelines, and the present's blit to the canvas, new too, was skipped. Drawn
+  again until nothing was held back: 23 draws, 92 pipelines admitted, then 461 calls and the same pixels as an 844 x 390 desk page;
+  `?firstdraws=0` the same at once. `?constindex=0` changed nothing.
+- **Fix:** the harness's `draw()` draws again while the budget held anything back (at most 120 times), as a phone's frames would within
+  half a real second. After: the workshop's phone page drew 483 calls, mean luminance 68.
+- **Rule:** 372
+
+### 2026-10-30 · The Pneuka Jar could walk off the carving bench mid-dig (world/garden/realm.js `wish`; Petra's phone shots of v352)
+- **Seen:** in the phone's shots of the bench, the stick's ring and its WASD stood live under the dig's fixed view; nothing in the dig
+  needs them.
+- **Cause, as read (not measured before the fix):** `realm.wish` stands the Jar still for the overhead view and the press's station view;
+  the bench, built on that station view (gardencam.js `enterPress`), was left out of the guard, so WASD (the stick on a phone) still
+  walked the Jar while the camera stayed on the slab.
+- **Fix:** the bench is in the guard. After, on an 896 x 414 touch page: the stick held 84 frames moved the Jar 7.082 m before the dig
+  and 0.000 m during it. The same shots gave the bench's SET IT NOW and PUT IT OFF 40 px of height and no desk keys on touch, and the
+  scan page one title, no "Esc closes" and no keyboard raised unasked.
+- **Rule:** 45
+
+### 2026-10-30 · Ride's reins never showed (vfx/classartlasting/reins.js; the builder's two Ride shots)
+- **Seen (headless, desk and phone):** the runtime said the ride was on (`rides: 1`, `driven: true`), and neither shot showed the reins;
+  the bridle did show, as the blue rings round the slip jelly, but read as swirls.
+- **Cause, as measured (a probe reading the look's own state, desk):** everything was on (`k` 1, every ancestor visible, both reins in
+  the scene, 34 vertices each, from the left hand at (1996.67, -407.07, -25.61) to the jelly 3.9 m off). The reins were 4.5 cm wide:
+  about 3 of the 480 lines at that range, and their streaks pattern cut through the whole width (`mainK` 1, a noise mask at 0.35), so
+  what was left of each was a dotted hairline that vanished.
+- **Fix:** a rein is never narrower than 4 of the 480 lines at its middle (`REINS.minPx`, from the camera's distance and field of view),
+  and its streaks ride on a solid body (`mainK` 0.25, no mask); after it, the reins read as threads of light from the hands to the jelly (one shot, desk). The roots were also marked zone-free on the way (case 366),
+  which did not change this.
+- **Rule:** 373
+
+### 2026-10-30 · Planting a seed added two programs to the garden (vfx/garden/launchlotus.js; Calissa's seeds builder, headless)
+- **Seen:** the Spirit Garden at 219 programs on entering (the probe's route: the workshop, then the garden), 221 once six seeds were
+  planted; nothing of the seeds' own looks among the two (the seeds grown to large, a pour and a swell added none after).
+- **Cause, measured by full cache key:** the two were `garden-launch-lotus` and `garden-pollen-arcs` again, each one token of its key
+  different from the program the garden draws them with (1 against 0), and no material in the scene used them. A seed adds lotuses, and
+  `LaunchLotuses.update` rebuilt and called `compile()` from inside the frame, under a render state unlike the draw's; the materials
+  outlive every rebuild, so the first compile (on `garden.enter`, under the seam's cover) had already made the right programs.
+- **Fix:** `compile()` runs once (`warmed`), cleared only when the materials are disposed. After (the same probe): the desk 219 on
+  entering, 219 with six seeds planted, 219 with them grown to large, their own moons, a pour and a swell; the phone 203, 203, 203.
+- **Rule:** 374
