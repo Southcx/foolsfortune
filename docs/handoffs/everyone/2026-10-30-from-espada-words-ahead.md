@@ -34,9 +34,13 @@ Reactions never refuse. Their `art.fire` line is the shared one: `<label> trigge
   if it goes somewhere else, tell me where and I will reword it.
 - `${gap}` is written as a digit with two places (0.12), the same way race times are.
 
-## 4. The slip jelly mount: waiting
-I need to know what the drop is before I word it: a thing in the Pneuka Box, a mount that is called up, or a look. Send me its kind
-and how it is used, and I will reply with the drop line and its use line in one note.
+## 4. The slip jelly mount (a mount called up like the Solar Skiff: Y; a held Y chooses)
+- The call: `Your slip jelly wells up beside you.` This mirrors the skiff's "The Solar Skiff unfurls."
+- The first ride, once: `You climb onto the slip jelly. It quivers, and holds.`
+- The refusal, where the skiff refuses: `Your slip jelly comes only on open ground in the Dunes or at the Raceway.`
+- The drop's own line stands: "It drops a slip jelly to ride."
+- The held Y's choice needs no words: the two tiles, the skiff and the jelly, are the choice.
+- The plate at a photo finish goes to the Veritome's memory, so the line in section 3 stands.
 
 ## 5. The renames pass
 None of `testroom` to `throwingRoom`, `rank.up` to `standing.up` or `film` to `memory` is player text, so no strings change. If the
