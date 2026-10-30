@@ -17,7 +17,6 @@
 //   SCAN   ROSTER   photoKindOf(kind)   readCode(text) -> { own?, digits, hash }    holdOf(hash, roster) -> { what: 'slab' | 'material', kind, feeling, cls, grain | tier }
 //   scanResult(text, { seen: Set<hash>, today: n, met: Set<kind>, roster }) -> { ok, why?, hold?, sealed?, cubes?, hash }
 // ---------------------------------------------------------------------------------------
-import { VISITORS } from './realm.js';
 import { KIND_IDS } from './econ/materials.js';
 import { ECON } from './econ/table.js';
 
@@ -25,9 +24,10 @@ import { ECON } from './econ/table.js';
  *  `material`: the share of codes that hold a material (Skannerz' items). `cls`: the odds of a slab's class 0..4 (common to rare, each
  *  about half the one before, so a class-4 code is a find worth sharing). */
 export const SCAN = { perDay: 3, again: 1, material: 0.25, cls: [0.5, 0.25, 0.13, 0.08, 0.04] };
-/** The creatures a code may hold, once each (the same list a plate may awaken: world/garden/awaken.js; VISITORS already holds the four
- *  visitors, so they are not added twice: doubled, they drew twice the odds of the spirit). */
-export const ROSTER = [...new Set(Object.keys(VISITORS).concat(['slipjelly', 'clapperjar', 'glint', 'lobber', 'spirit']))];
+/** The creatures a code may hold, and a plate may become a slab of (world/garden/awaken.js plates): only kinds a photo can carry,
+ *  so a sealed slab can always be opened by meeting its kind. Glint and lobber are garden visitors that settle on their own, never in the
+ *  world to photograph (Petra, v607c676), so a code holding one would stay sealed for good. The Lantern Wisp waits on a garden body. */
+export const ROSTER = ['slipjelly', 'clapperjar', 'spirit'];
 /** The Veritome's Book keys a photo by the creature's own code kind (tools/veritome/bestiary.js creatureOf: 'clapper'), the garden by the
  *  glossary's word ('clapperjar'): one kind, two spellings. `photoKindOf` turns the garden's into the Book's, so a clapperjar met is met. */
 export const PHOTO_KIND = { clapperjar: 'clapper' };

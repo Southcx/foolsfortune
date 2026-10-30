@@ -36,7 +36,7 @@ export const FIRST = {
   path: ['sr1', 'gw1', 'gw2', 'gw3', 'fk1', 'sk12', 'br1', 'tc1', 'pl6', 'jl1', 'sf1', 'an1', 'cx3'],
   where: { // (each {id} said for the device last touched: progress/devicewords.js deviceText, at the log's line; Espada's words, 2026-10-27)
     sr1: 'The Shrine is beside where you wake.', gw1: 'At the Shrine beside where you wake, {use} and choose YOUR SPIRIT GARDEN.',
-    gw2: 'Your first seed waits in the shed by the garden\'s gate: take it, carry it up into the open sky and let go.', gw3: 'Your first spirit slab waits at the plate shrine on the Athanor: a lotus flies you there. {use} at the shrine, then carve.',
+    gw2: 'Your first planetoid\'s seed waits in the shed by the garden\'s gate: take it, carry it up into the open sky and let go.', gw3: 'Your first spirit slab waits at the plate shrine on the Athanor: a launch lotus flies you there. {use} at the shrine, then carve.',
     fk1: 'Saggar is on the workshop floor.', sk12: 'The nearest is the atrium rail, upstairs in the workshop.',
     br1: 'The pots are all round the workshop: {use} lifts one, {primary} throws it.', tc1: 'A chest stands in the basement\'s hub, down the hole in the workshop floor.',
     pl6: 'The Index in the basement\'s hub sends you there.', jl1: 'Three sit on the sand just past the Weir, in the Dunes.', sf1: 'In the Dunes, {skiff} calls the Solar Skiff.',
