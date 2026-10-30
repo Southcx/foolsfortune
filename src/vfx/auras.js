@@ -31,6 +31,7 @@ export class Auras {
       if (!c.alive || !c.status?.size) continue;
       for (const [name, s] of c.status) {
         if (s.t <= 0) continue;
+        if (name === 'halt' && c.dueling) continue; // (a puzzle duel's pin, never a status to see: its foe held, duelsession.js pin, not frozen in stop-frost the whole fight)
         const fx = `aura.${name}.${c.kind}`;
         const R = V.resolve(fx);
         if (!R || !R.name.startsWith(`aura.${name}`)) continue; // (only a look made for this status: never the bare family's)

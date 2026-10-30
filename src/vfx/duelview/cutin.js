@@ -28,9 +28,12 @@ import { FEELINGS } from '../../npc/neuraleseroots.js';
 /** in / hold / out: the band's beats (real s; the limit break's hold its own); band: its half height (of the screen's); y: its centre;
  *  tilt: its slope; portrait: the strip's share of the width; rt: the portrait's target width (px); fov: the strip camera's (deg);
  *  burst: real s after a limit break in which its own casts come without a cut-in; word / limitWord: when the label slams (real s from
- *  the event: Wanda's stings land there, audio/duelcasts.js CUT_IN_LEAD; the limit break's after its 1.1 s swell). */
+ *  the event: Wanda's stings land there, audio/duelcasts.js CUT_IN_LEAD; the limit break's after its 1.1 s swell); lead / limitLead: the
+ *  held beat after the band has gone before its cast lands (South, 2026-10-30: "the timing of the cut-ins staggered a little bit"); turn.settle:
+ *  the beat the board is left to settle before the turn's band tears in over it (beats.js). */
 export const CUT_IN = { in: 0.14, hold: 0.62, out: 0.16, limitHold: 1.45, word: 0.12, limitWord: 1.1, band: 0.16, limitBand: 0.24, y: 0.4, tilt: -0.09, portrait: 0.44, rt: 512, fov: 24, burst: 4,
-  turn: { in: 0.1, hold: 0.3, out: 0.14, word: 0.12, band: 0.085, lit: 0.35 }, vs: { in: 0.16, hold: 1.05, out: 0.18, word: 0.2, band: 0.13 }, pop: 0.06, red: 0.5 };
+  lead: 0.2, limitLead: 0.25,
+  turn: { in: 0.1, hold: 0.3, out: 0.14, word: 0.12, band: 0.085, lit: 0.35, settle: 0.3 }, vs: { in: 0.16, hold: 1.05, out: 0.18, word: 0.2, band: 0.13 }, pop: 0.06, red: 0.5 };
 /** The turn's change (South, 2026-10-29: "cut-ins/highlights and vfx for when the turns switch over"; Fire Emblem's PLAYER PHASE and
  *  ENEMY PHASE): the band thinner and shorter, yours in the film. */
 export const TURN_WORDS = ['YOUR TURN', "FOE'S TURN"]; // (Espada's, 2026-10-29: the duel says foe, never enemy)
@@ -63,6 +66,17 @@ void main() {
     if (uMotif > 0.5 && uMotif < 1.5) { float cr = texture2D(uCrack, px / 240.0 + vec2(uT * 0.02, 0.0)).a; c = mix(c, vec3(1.0, 0.8, 0.42), cr * 0.17); } // (yours: the clay's craze, kintsugi's gold)
     else if (uMotif > 1.5 && uMotif < 2.5) { float col = floor(px.x / 22.0), on = step(0.5, h21(vec2(col, 5.0))); // (the slip jelly's: sand pouring down through the band)
       float g = texture2D(uSand, vec2(fract(px.x / 22.0), px.y / 260.0 - uT * (1.4 + h21(vec2(col, 9.0))))).a; c = mix(c, uFeel * 0.5 + vec3(0.4, 0.32, 0.15), g * on * 0.75); }
+    else if (uMotif > 3.5) { // (Strawman's: a burlap band, two seams of cross-stitch along it, straw blown through it, a target behind its head)
+      vec2 wv = px / 7.0; float th = max(smoothstep(0.18, 0.5, abs(fract(wv.x) - 0.5)), smoothstep(0.18, 0.5, abs(fract(wv.y) - 0.5)));
+      c = mix(c, vec3(0.5, 0.36, 0.2) * (0.72 + 0.32 * th + 0.12 * h21(floor(wv * vec2(1.0, 0.25)))) + uFeel * 0.03, 0.8);
+      float tph = 2.0 * uBand.y; vec2 tc = vec2(W * (0.985 - uBand.w) + (1.0 - uIn) * W * 0.3 - uDrift + W * uBand.w * 0.5, uBand.x - uBand.y + (px.x - W * 0.5) * uBand.z + tph * 0.3);
+      float tr = length(px - tc) / (tph * 0.42); // (behind the portrait's head: the kiln's red on cream in five rings, as its belly's)
+      if (uBand.w > 0.001 && tr < 1.0) c = mix(c, mix(mod(floor(tr * 5.0), 2.0) < 0.5 ? vec3(0.5, 0.06, 0.035) : vec3(0.88, 0.78, 0.58), vec3(0.08, 0.04, 0.02), step(0.94, tr)), 0.88);
+      for (int k = 0; k < 2; k++) { float sg = k == 0 ? 1.0 : -1.0; vec2 o = vec2((fract(px.x / 18.0) - 0.5) * 18.0, (by - 0.46 * sg) * hh); // (the seams' cross-stitches, 18 px apart)
+        float x = min(abs(o.x - o.y), abs(o.x + o.y)); c = mix(c, vec3(0.86, 0.76, 0.56), (1.0 - smoothstep(1.4, 2.8, x)) * step(abs(o.y), 6.5) * step(abs(o.x), 6.5)); }
+      for (int k = 0; k < 2; k++) { float fk = float(k), sp = px.x + uT * (900.0 + 500.0 * fk); vec2 cell = vec2(floor(sp / 110.0), floor(px.y / 26.0)), f = vec2(fract(sp / 110.0) * 110.0 - 55.0, fract(px.y / 26.0) * 26.0 - 13.0); // (straw blown through, right to left)
+        float h = h21(cell + fk * 9.0); vec2 d = normalize(vec2(1.0, (h21(cell + 4.0) - 0.5) * 0.7)) * (14.0 + 12.0 * h), o2 = f - vec2((h - 0.5) * 40.0, (h21(cell + 2.0) - 0.5) * 8.0);
+        float sd = length(o2 - d * clamp(dot(o2, d) / dot(d, d), -1.0, 1.0)); c = mix(c, vec3(0.92, 0.7, 0.28) * (1.1 - 0.3 * fk), step(0.5, h) * (1.0 - smoothstep(1.3, 2.6, sd)) * (0.9 - 0.3 * fk)); } }
     else if (uMotif > 2.5) { for (int k = 0; k < 3; k++) { float fk = float(k), yy = sin(bx * (2.5 + fk) + fk * 2.1 + uT * 0.4) * 0.35 + (fk - 1.0) * 0.5; // (the Lantern Wisp's: black briars across it, lanterns hung off them)
         c = mix(c, vec3(0.02, 0.015, 0.015), smoothstep(0.11, 0.05, abs(by - yy)));
         float lx = fract(bx * 0.8 + fk * 0.37) - 0.5, ld = length(vec2(lx * 2.4, (by - yy + 0.2) * 1.3)); c += vec3(1.0, 0.6, 0.22) * smoothstep(0.22, 0.0, ld) * (0.55 + 0.45 * sin(uT * 9.0 + fk * 3.0 + bx)); } }
@@ -219,11 +233,12 @@ export class FoeCutIn {
     return this.phase(e, text.toUpperCase(), { limit, keepFeel: true });
   }
 
-  /** A band held as the phase carrying `e` (the duel waits for it): the label slammed, the portrait pushing in. */
+  /** A band held as the phase carrying `e` (the duel waits for it): the label slammed, the portrait pushing in; then, the band gone, a held
+   *  beat (CUT_IN.lead) before the cast. */
   phase(e, text, { limit = false, keepFeel = false } = {}) {
     if (!this.proxies.length || !this.proxies[0].o.parent) this.gather();
     this.show(text, { limit, own: false }); if (!keepFeel && this.subject === 'foe') this.feel();
-    this.cut.add(e); return { events: [e], dur: this.dur, // (the event itself: the sting and the director key off it here; its cast phase after says nothing again, beats.js)
+    this.cut.add(e); return { events: [e], dur: this.dur + (limit ? CUT_IN.limitLead : CUT_IN.lead), // (the event itself: the sting and the director key off it here; its cast phase after says nothing again, beats.js)
       step: (u, age) => { this.age = age; }, end: () => this.hide() };
   }
 
@@ -249,11 +264,13 @@ export class FoeCutIn {
     return this.show(TURN_WORDS[e.side], { own: true, T: CUT_IN.turn, portrait: has && e.side === 1 ? CUT_IN.portrait : 0, focus: false }); // (yours mirrored, no strip: the Jar reads only in a full band's height)
   }
 
-  /** The open's band (VS: duelshow.js): its own clock, at `y` (of the screen's height), the label beside the portrait (or none). */
-  vs(text, hex, y) {
+  /** The open's band (VS: duelshow.js): its own clock, at `y` (of the screen's height), the label beside the portrait (or none), gone
+   *  `until` real s after it begins (its hold stretched to it: the two bands of the VS leave together however apart they came). */
+  vs(text, hex, y, until = null) {
     if (!this.ensure()) return 0; if (!this.proxies.length || !this.proxies[0].o.parent) this.gather();
     if (hex == null) this.feel(); else this.u.uFeel.value.setHex(hex);
-    return this.show(text, { own: true, T: CUT_IN.vs, y, portrait: this.proxies.length ? CUT_IN.portrait : 0, focus: false });
+    const V = CUT_IN.vs, T = until == null ? V : { ...V, hold: Math.max(0.2, until - V.in - V.out) };
+    return this.show(text, { own: true, T, y, portrait: this.proxies.length ? CUT_IN.portrait : 0, focus: false });
   }
 
   hide() { this.age = -1; if (this.mesh && this.veilK > 0.001) return; if (this.mesh) { this.mesh.userData.overlayHidden = true; this.mesh.visible = false; } }
@@ -269,6 +286,7 @@ export class FoeCutIn {
       this.mesh.scale.set(w, h, 1); u.uRes.value.set(w, h); u.uIn.value = 0; u.uOut.value = 0; u.uWordOn.value = 0; u.uFlash.value = 0; u.uFocus.value = 0; u.uPop.value = 0; u.uDim.value = this.veilK; u.uBand.value.set(-h, 0, 0, 0); return; }
     if (this.mode === 'own') { this.age += dt; if (this.age > this.dur) { this.hide(); return; } } // (the turn's and the open's bands keep their own clock: their way out runs over the beats after)
     const w = slot.view.w, h = slot.view.h, u = this.u, a = this.age, L = this.limit, T = this.T, tin = T.in, hold = T.hold;
+    if (a >= this.dur) { u.uBand.value.set(-h, 0, 0, 0); u.uWordOn.value = 0; u.uFocus.value = 0; u.uPop.value = 0; u.uFlash.value = 0; u.uDim.value = 0; return; } // (a skill's band gone, its phase holding the beat before the cast: CUT_IN.lead)
     this.mesh.scale.set(w, h, 1); u.uRes.value.set(w, h); u.uT.value = this.t;
     const kin = sm(clamp01(a / tin)), kout = sm(clamp01((a - tin - hold) / T.out)), kh = clamp01((a - tin) / hold);
     u.uIn.value = kin; u.uOut.value = kout; u.uDim.value = L ? (0.3 + 0.25 * clamp01(a / CUT_IN.limitWord)) * kin : 0; u.uDrift.value = kh * w * 0.02;

@@ -14,7 +14,8 @@
 // Prior art: the will-o'-the-wisp of the fens (a light that leads you astray: you beat one by putting it out), Amnesia's lantern oil
 // guttering, Hollow Knight's and Dark Souls' boss deaths (an ending of its own), Monster Hunter's capture beside the kill.
 //
-//   const E = new WispElite(view)   E.open(state, foe)   E.update(dt)   E.kindle(beats, e) -> phase   E.death(how) -> { dur, step, end }   E.close()
+//   const E = new WispElite(view)   E.open(state, foe)   E.update(dt)   E.kindle(beats, e) -> phase   E.death(how) -> { dur, drainAt, step, end }   E.close()
+//   (drainAt: real s into it when its body is gone and an aberrant's data drain may begin, its tail still playing: aberrantdrain.js)
 //   WISP_ELITE (the knobs)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -23,9 +24,10 @@ import { secretOf, SECRETS } from '../../../progress/duel/secrets.js';
 import { cellLocal, sm, clamp01, lerp } from '../layout.js';
 
 /** dimMin: the lantern's light at the last of its fuel; ease: how fast the drawn state follows the kernel's (/s); kindle: the cast's
- *  flight and its stagger (real s); the deaths' beats (real s from their start). */
+ *  flight and its stagger (real s); the deaths' beats (real s from their start; drain: when its body is gone and an aberrant's data
+ *  drain may begin). */
 export const WISP_ELITE = { dimMin: 0.12, ease: 2, kindle: { fly: 0.45, per: 0.08, burn: 0.3 },
-  line: { crack: 0.25, scatter: 0.5, dur: 1.6 }, secret: { gutter: 1.0, draw: 0.7, snuff: 1.3, dark: 0.6, hold: 0.8, back: 0.4 } };
+  line: { crack: 0.25, scatter: 0.5, dur: 1.6, drain: 1.3 }, secret: { gutter: 1.0, draw: 0.7, snuff: 1.3, dark: 0.6, hold: 0.8, back: 0.4, drain: 2.2 } };
 const AMBER = 0xffb060, GLASS = 0xf4e6c8, EMBER = 0xff6a2a, DREAD = 0x4fa86a, INK = '#17111f';
 const _a = new THREE.Vector3(), _b = new THREE.Vector3();
 
@@ -89,7 +91,7 @@ export class WispElite {
   death(how) {
     const V = this.view, g = V.game, f = this.foe, at = this.lanternAt(new THREE.Vector3()), L = f?.look; this.dying = true; this.count.visible = false;
     if (how === 'line') { const D = WISP_ELITE.line; let cracked = false, scattered = false;
-      return { dur: D.dur, step: (age) => {
+      return { dur: D.dur, drainAt: D.drain, step: (age) => {
         if (!cracked && age >= D.crack) { cracked = true; V.bursts.burst(at, GLASS, 16, { speed: 1.6, life: 0.6, fall: 4, size: 0.025 }); V.bursts.burst(at, AMBER, 10, { speed: 1.0, life: 0.5, fall: 0, size: 0.03 }); V.stage?.jolt?.(0.8); g.glitch?.pulse?.({ split: 0.1, tear: 0.06, dur: 0.2 }); if (L) { L.dim = 1.6; L.gutter = 1; } }
         if (!scattered && age >= D.scatter) { scattered = true; if (f && g.figmentScatter) g.figmentScatter.play(f, { hide: true }); else if (f?.model) f.model.visible = false; } },
         end: () => { this.dying = false; } };
@@ -97,7 +99,7 @@ export class WispElite {
     const D = WISP_ELITE.secret, dim0 = L?.dim ?? 1, flames = []; let snuffed = false;
     f?.model?.traverse?.((o) => { if (o.isMesh && /Flame/i.test(o.material?.name || '')) flames.push({ o, s: o.scale.clone() }); });
     const tEnd = D.snuff + D.dark + D.hold + D.back;
-    return { dur: tEnd, step: (age) => {
+    return { dur: tEnd, drainAt: D.drain, step: (age) => {
       const gu = clamp01(age / D.gutter); if (L) { L.dim = lerp(dim0, 0.02, gu); L.gutter = 1; }
       const dr = clamp01((age - (D.snuff - D.draw)) / D.draw); for (const q of flames) q.o.scale.copy(q.s).multiplyScalar(Math.max(0.001, 1 - sm(dr)));
       if (!snuffed && age >= D.snuff) { snuffed = true; g.vfx?.play?.('wisp.snuff', { pos: f?.lantern ? f.lantern.getWorldPosition(new THREE.Vector3()) : at.clone() }); if (f?.model) f.model.visible = false; }

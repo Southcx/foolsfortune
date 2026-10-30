@@ -14,15 +14,17 @@
 // Prior art: Dragon Quest's slime (the squash that tells you everything), Puyo Puyo's garbage turned back on the sender, Kirby swallowing
 // what is thrown at it, Majora's Mask's Gyorg; the Wisp's elite (wisp.js) for the shape of the file.
 //
-//   const E = new JellyElite(view)   JellyElite.fits(state, foe)   E.open(state, foe)   E.update(dt)   E.death(how) -> { dur, step, end }   E.close()
+//   const E = new JellyElite(view)   JellyElite.fits(state, foe)   E.open(state, foe)   E.update(dt)   E.death(how) -> { dur, drainAt, step, end }   E.close()
+//   (drainAt: real s into it when its body is gone and an aberrant's data drain may begin, its tail still playing: aberrantdrain.js)
 //   JELLY_ELITE (the knobs)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { secretOf } from '../../../progress/duel/secrets.js';
 import { cellLocal, feelColour, sm, clamp01, lerp } from '../layout.js';
 
-/** shrink: the body's scale at a full pile (of its own); ease: how fast the drawn pile follows the kernel's (/s); the deaths' beats (real s). */
-export const JELLY_ELITE = { shrink: 0.55, ease: 2.5, line: { rear: 0.35, burst: 0.6, scatter: 0.75, dur: 1.7 }, secret: { run: 0.9, slump: 0.8, hold: 0.7, dur: 2.8 } };
+/** shrink: the body's scale at a full pile (of its own); ease: how fast the drawn pile follows the kernel's (/s); the deaths' beats (real s;
+ *  drain: when its body is gone and an aberrant's data drain may begin). */
+export const JELLY_ELITE = { shrink: 0.55, ease: 2.5, line: { rear: 0.35, burst: 0.6, scatter: 0.75, dur: 1.7, drain: 1.4 }, secret: { run: 0.9, slump: 0.8, hold: 0.7, dur: 2.8, drain: 2.1 } };
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Color();
 
 export class JellyElite {
@@ -58,14 +60,14 @@ export class JellyElite {
   death(how) {
     const V = this.view, g = V.game, f = this.foe, gall = feelColour('gall', _c).getHex(), at = V.foeCast.head(new THREE.Vector3()); this.dying = true;
     if (how === 'line') { const D = JELLY_ELITE.line; let burst = false, scattered = false;
-      return { dur: D.dur, step: (age) => {
+      return { dur: D.dur, drainAt: D.drain, step: (age) => {
         const rear = sm(clamp01(age / D.rear)); this.scaleAt(this.pile, lerp(1, 1.35, rear) + (age < D.burst ? 0.08 * Math.sin(age * 40) : 0)); // (it rears and quivers)
         if (!burst && age >= D.burst) { burst = true; V.bursts.burst(at, gall, 34, { speed: 2.2, life: 0.8, fall: 5, spread: 0.6, size: 0.04 }); V.bursts.burst(at, 0xe8f0a0, 10, { speed: 1.2, life: 0.5, fall: 3, size: 0.03 }); V.stage?.jolt?.(0.8); g.glitch?.pulse?.({ split: 0.08, tear: 0.05, dur: 0.2 }); }
         if (!scattered && age >= D.scatter) { scattered = true; if (f && g.figmentScatter) g.figmentScatter.play(f, { hide: true }); else if (f?.root) f.root.visible = false; } },
         end: () => { this.dying = false; } };
     }
     const D = JELLY_ELITE.secret, B = V.board3, line = V.lineCol ?? B.line; let ran = false, gone = false;
-    return { dur: D.dur, step: (age) => {
+    return { dur: D.dur, drainAt: D.drain, step: (age) => {
       if (!ran) { ran = true; for (let i = 0; i < 14; i++) { const x = Math.floor((i * 7.3) % Math.max(1, line)), y = Math.floor((i * 3.7) % B.h); // (its slime running home off your half)
         V.foeCast.fling(cellLocal(x, y, B, new THREE.Vector3()), at, gall, { delay: i * 0.05, life: D.run * 0.7, size: 0.03, arc: 0.4 }); } }
       const sl = sm(clamp01((age - D.run) / D.slump)); this.scaleAt(Math.max(0, this.pile - sl), lerp(1, 0.12, sl)); // (it slumps flat under its own weight)

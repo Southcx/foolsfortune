@@ -17,6 +17,7 @@
 // broken out of the card).
 //
 //   const D = new FormDive(view)   D.open()   D.close()   D.cast(at) (a skill: skillcast.js)   D.start(to) ('courier' | 'hand': beats.js at the form event)   D.update(dt)
+//   D.posed (another look holds the Jar's pose and clip: an aberrant's data drain, aberrantdrain.js; its idle is not put back meanwhile)
 //   DIVE (the knobs)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -49,7 +50,7 @@ export class FormDive {
   }
   /** The duel over: the body back, the Jar put away, the stream gone. */
   close() {
-    if (!this.on) return; this.on = false; this.job = null; this.beads.visible = false;
+    if (!this.on) return; this.on = false; this.job = null; this.beads.visible = false; this.posed = false;
     const J = this.jar; if (J) J.group.visible = false;
     this.game.character?.setHidden?.(false);
     if (this.view.pieces) this.view.pieces.dormant = 0;
@@ -116,7 +117,7 @@ export class FormDive {
     if (J.landed) { const b = V.pieces.bodyAt(0); if (b && b.s > 1) b.s = Math.max(1, b.s - dt * 2.2); }
     if (u >= 1.35) { this.job = null; this.beads.visible = false; }
   }
-  keepJar() { const J = this.jar; if (J && !J.group.visible) this.standJar(false); else if (J && this.clips && !this.clips.busy && this.clips.move !== 'idle') this.clips.play('idle'); }
+  keepJar() { if (this.posed) return; const J = this.jar; if (J && !J.group.visible) this.standJar(false); else if (J && this.clips && !this.clips.busy && this.clips.move !== 'idle') this.clips.play('idle'); }
 
   /** The stream: its head at the eased u, its beads trailing up the curve, tapering and walking the film's colours. */
   draw(u, t) {

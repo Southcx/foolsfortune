@@ -33,9 +33,12 @@ import { sm, clamp01, cellLocal } from './layout.js';
  *  scale; wheel: z a wheel delta; settle: real s after the wheel stops before it settles; ease: the zoom's rate (1/s); follow: the
  *  shot's (1/s); kick: { break, allclear, end }: [z, real s] whipped to; shake: m and rad at trauma 1, its drain (1/s); domeFar, domeNear:
  *  the domains' clash's radius (m) in the arena and at the nearest in the board view, domeMargin past the camera; castZ: the zoom a skill's
- *  cast is drawn back to; fixture: m more span in the arena when the foe stands fixed (Strawman's practice duel). */
+ *  cast is drawn back to; fixture: m more span in the arena when the foe stands fixed (Strawman's practice duel); cell: a cell's dots of the
+ *  480 lines in the desk's board view, wanted and least (vfx/duelview.js frameShot: 14 and 12 until South's "about 50% bigger", 2026-10-30);
+ *  arenaLook: the arena's look over the board's foot (m). */
 export const STAGE = {
-  arenaScale: 0.6, lift: 0.28, tilt: 0.14, arenaYaw: 0.3, foeTurn: 0.62, intro: 1.5, pinch: 1.5, wheel: 0.0028, settle: 0.35, ease: 5, follow: 9,
+  cell: [21, 16], arenaLook: 1.05,
+  arenaScale: 0.68, lift: 0.28, tilt: 0.14, arenaYaw: 0.3, foeTurn: 0.62, intro: 1.5, pinch: 1.5, wheel: 0.0028, settle: 0.35, ease: 5, follow: 9,
   kick: { break: [0.12, 1.5], allclear: [0, 2.1], end: [0, 99], finisher: [0.2, 2.4], push: [0.15, 1.0] },
   shake: { pos: 0.07, roll: 0.035, drain: 1.5 },
   domeFar: 18, domeNear: 5.5, domeMargin: 1.6, castZ: 0.5, fixture: 1.3,
@@ -121,7 +124,7 @@ export class DuelStage {
     const V = this.view, g = V.game, cam = g.camera, tan = Math.tan(((cam?.fov ?? 70) * Math.PI) / 360), asp = cam?.aspect || 16 / 9;
     const a = g.player?.pos ? _a.copy(g.player.pos) : _a.copy(V.centre).addScaledVector(V.u, -1.5), b = V.foe?.pos ? _b.copy(V.foe.pos) : _b.copy(V.centre).addScaledVector(V.u, 1.5);
     const fixed = !!(V.game.duel?.practice || V.foe?.rooted || V.foe?.practice); // (a foe that stands where it is, Strawman: the two set nearer, so the shot opens wider)
-    const span = a.distanceTo(b) / 2 + 0.75 + (fixed ? STAGE.fixture : 0) + (V.show?.on ? V.show.margin : 0), look = _m.copy(a).lerp(b, 0.5).setY(V.centre.y + 0.9);
+    const span = a.distanceTo(b) / 2 + 0.75 + (fixed ? STAGE.fixture : 0) + (V.show?.on ? V.show.margin : 0), look = _m.copy(a).lerp(b, 0.5).setY(V.centre.y + STAGE.arenaLook);
     const d = Math.max(span / (tan * asp), 1.2 / tan), dir = _d.copy(V.face).applyAxisAngle(UP, -STAGE.arenaYaw);
     out.look.copy(look); out.pos.copy(look).addScaledVector(dir, d).addScaledVector(UP, 0.35 + d * 0.06);
     return out;

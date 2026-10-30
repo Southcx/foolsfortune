@@ -9,6 +9,8 @@
 //   TERTIARY    the chant: two bands of neuralese in the running hand circling the body at chest and knee, counter-scrolling (the
 //               Courier's are the feelings' names; an aberrant's its own feeling's word over and over)
 //   THE END     the columns snapped tall and thin, a flash, gone
+//   ITS OWN     an aberrant's elite may hand its own ground ring and a whirl round the column (`aura()`: Strawman's heptagram sewn in
+//               running stitch and its straw whirled, duelview/aberrants/strawman.js)
 // The limit break's and the finisher's are bigger and longer, the turn's a short flare without the chant.
 // Programs: the house's basic with a map (fxkit's scrollMat): nothing new.
 // Prior art: Pokemon Stadium's power-up and stat-raise effects (scrolled textures on cylinders, N64), Dragon Ball Budokai's aura,
@@ -24,18 +26,19 @@ import { clamp01, sm } from './layout.js';
 /** in, out: real s; r: the column's radius (m), its height a body's (h); rise: the rays' speed (repeats/s); chant: the bands' speed. */
 export const AURA = { in: 0.18, out: 0.32, r: 0.55, big: 1.5, rise: 1.8, chant: 0.12, ring: 0.9, embers: 0.06 };
 const UP = new THREE.Vector3(0, 1, 0);
-const _a = new THREE.Vector3();
+const _a = new THREE.Vector3(), _h = new THREE.Vector3(); // (_h the head's own: `stand` writes its spot into _a)
 
 export class DuelAuras {
   constructor(view) { this.view = view; this.game = view.game; this.list = []; this.group = new THREE.Group(); this.group.name = 'duel-auras'; }
 
   /** One aura's meshes (made per cast: a handful of meshes, the textures shared). */
   build(side, hex, big, chant) {
-    const S = SIDE[side ? 1 : 0], g = new THREE.Group(), parts = [];
+    const S = SIDE[side ? 1 : 0], g = new THREE.Group(), parts = [], own = side && this.view.elite?.on ? this.view.elite.aura?.() : null; // (an aberrant's own ring and whirl: duelview/aberrants/)
     const add = (geo, mat, su, sv, spin = 0) => { const m = new THREE.Mesh(geo, mat); m.frustumCulled = false; m.renderOrder = 3; g.add(m); parts.push({ m, su, sv, spin }); return m; };
     add(new THREE.CylinderGeometry(0.8, 1, 1, 24, 1, true), scrollMat(tex('streaks'), hex, { repeat: [3, 1] }), 0, -AURA.rise); // (primary: the rays rising)
     add(new THREE.CylinderGeometry(0.55, 0.7, 1, 18, 1, true), scrollMat(tex('streaks'), S.hi, { repeat: [2, 1], opacity: 0.6 }), 0.25, -AURA.rise * 1.4); // (secondary: inside, turning the other way)
-    const ring = add(new THREE.PlaneGeometry(1, 1), scrollMat(tex('ring'), hex, { opacity: 0.9 }), 0, 0, AURA.ring); ring.rotation.x = -Math.PI / 2; ring.userData.flat = true;
+    const ring = add(new THREE.PlaneGeometry(1, 1), scrollMat(own?.ring || tex('ring'), hex, { opacity: 0.9 }), 0, 0, AURA.ring); ring.rotation.x = -Math.PI / 2; ring.userData.flat = true;
+    if (own?.whirl) add(new THREE.CylinderGeometry(1.2, 1.0, 1, 24, 1, true), scrollMat(own.whirl, own.whirlHex ?? hex, { add: false, repeat: [4, 1] }), own.whirlSpin ?? 0.9, 0.12); // (whirled round the column: Strawman's straw)
     if (chant) { const words = side ? Array(4).fill(FEELINGS[this.view.aspect] || 'PAVA') : Object.values(FEELINGS);
       for (const [k, dir] of [[0.62, 1], [0.22, -1]]) { const c = add(new THREE.CylinderGeometry(1.25, 1.25, 0.16, 32, 1, true), scrollMat(chantTexture(words), S.hi, { repeat: [3, 1] }), AURA.chant * dir, 0); c.userData.at = k; } }
     this.group.add(g); return { g, parts, side, big };
@@ -45,7 +48,7 @@ export class DuelAuras {
   stand(side, out) {
     const V = this.view;
     if (!side) { V.dive?.spot?.(out); return 1.25 * (V.show?.jar?.group.scale.y || 1); }
-    const f = V.foe; if (!f?.pos) return 0; out.copy(f.pos); const h = V.foeCast?.headWorld?.(_a); return h ? Math.max(1, h.y - f.pos.y + 0.4) : 1.8;
+    const f = V.foe; if (!f?.pos) return 0; out.copy(f.pos); const h = V.foeCast?.headWorld?.(_h); return h ? Math.max(1, h.y - f.pos.y + 0.4) : 1.8;
   }
 
   /** A fighter's aura, `dur` real s, its colour `hex` (by default its side's); `big` the limit break's, `chant` the neuralese bands. */

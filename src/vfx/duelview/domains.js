@@ -15,6 +15,9 @@
 //   AN ABERRANT'S OWN GROUND  in place of its feeling's on its side, by `setStyle(id, dark)`: 1 the Lantern Wisp's fens at night (black
 //                   water under fog, reeds against the sky, the lantern the one warm light on it and in the water), the dark closing in
 //                   as its secret goes (duelview/aberrants/wisp.js)
+//                   2 an aberrant slip jelly's bog of Gall (aberrants/jelly.js); 3 Strawman's practice yard at harvest (a stubble field
+//                   under a big pale sky, its fellow dummies, targets and bales on the horizon, bunting, straw on the wind, the chalk
+//                   ring round its feet; aberrants/strawman.js)
 // It collapses on close. The board's slab (vfx/duelview/board.js) is drawn by the same program in its other mode, split on the same
 // plane, so the Line's seam on the slab and the clash's seam are one cut.
 //
@@ -31,7 +34,7 @@
 // foot in the same program (mode 2), each half's ground laid flat under its owner, a pool of its own light under each body, its rim faded.
 //   const D = new DomainClash()   D.dome (the sphere's mesh)   D.ground (the disc's)   D.groundTo(radius)   D.slabMaterial(gravityTexture, w, h) -> the slab's material
 //   (the slab's fog: a texture of the cells, r hidden, g the lantern's light: Dread's, vfx/duelview/board.js setFog)
-//   D.setFoe(aspect)   D.setPlane(pointWorld, normalWorld, centreWorld)   D.setLine(column)   D.setMeter(push, landed, n, on)   D.setStyle(id, dark)   D.setGarden(mood | null, spiritColours)   D.flash(side)   D.won(k)
+//   D.setFoe(aspect)   D.setPlane(pointWorld, normalWorld, centreWorld)   D.setLine(column)   D.setMeter(push, landed, n, on)   D.setBuild(panes, etch, line, on)   D.setStyle(id, dark)   D.setGarden(mood | null, spiritColours)   D.flash(side)   D.won(k)
 //   D.unfold(originCourier, originFoe)   D.push(receiverSide)   D.collapse(slower = 1)   D.update(dt) -> still showing?   D.open (0..1 each side)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -48,7 +51,7 @@ void main() {
 }`;
 
 const F = /* glsl */`
-uniform float uMode, uT, uRadius, uPush, uPushSide, uWon, uMotif, uLine, uFade; uniform vec4 uMeter; uniform vec2 uStyle; uniform vec4 uGarden; uniform vec3 uGSky, uGZen, uGGnd, uGGrass, uGBloom, uGSp0, uGSp1, uGSp2, uGSp3;
+uniform float uMode, uT, uRadius, uPush, uPushSide, uWon, uMotif, uLine, uFade; uniform vec4 uMeter, uBuild; uniform vec2 uStyle; uniform vec4 uGarden; uniform vec3 uGSky, uGZen, uGGnd, uGGrass, uGBloom, uGSp0, uGSp1, uGSp2, uGSp3;
 uniform vec3 uPlaneP, uPlaneN, uCentre, uOriginC, uOriginF, uFoe, uFoeDeep, uHaze;
 uniform vec2 uOpen, uFlash, uGrid;
 uniform sampler2D uGrav, uFog;
@@ -139,6 +142,61 @@ vec3 bog(vec3 dir, vec2 q, float t, float fl, float pile) {
   vec3 col = mix(below, sky, above) + haze * fbm(vec2(q.x * 0.3 + t * 0.01, y * 3.0)) * (1.0 - smoothstep(0.0, 0.5, abs(y))) * (0.6 + 0.8 * pile);
   return col + (uFoe * 0.9 + 0.08) * max(strand * 0.7, drop);
 }
+// 3 Strawman's practice yard at harvest (aberrants/strawman.js): a stubble field under a big pale sky, a hedge on the horizon with a line
+// of Pip's other dummies on their posts, archery targets on easels and stacked bales along it, bunting strung across the sky, straw
+// blowing over it all; on the ground the stubble's rows, loose straw and the sparring circle's chalk ring round its feet. uStyle.y a gust
+// (its stitches popping: the straw blown thicker and faster). Shapes in angles (azimuth, height) so they hold their size at any radius
+float segD(vec2 p, vec2 a, vec2 b) { vec2 pa = p - a, ba = b - a; return length(pa - ba * clamp(dot(pa, ba) / dot(ba, ba), 0.0, 1.0)); }
+float boxD(vec2 p, vec2 c, vec2 h) { vec2 d = abs(p - c) - h; return length(max(d, 0.0)) + min(max(d.x, d.y), 0.0); }
+float inD(float d, float aa) { return 1.0 - smoothstep(-aa, aa, d); }
+vec3 yard(vec3 dir, vec2 q, float t, float fl, float gust) {
+  vec3 straw = srgb(vec3(0.86, 0.72, 0.42)), earth = srgb(vec3(0.44, 0.34, 0.21)), chalk = srgb(vec3(0.95, 0.93, 0.86)) * 0.8;
+  vec3 red = srgb(vec3(0.72, 0.25, 0.18)), cream = srgb(vec3(0.95, 0.90, 0.78)), burlap = srgb(vec3(0.6, 0.48, 0.32)), wood = srgb(vec3(0.3, 0.22, 0.14));
+  if (fl > 0.5) { // the ground: the stubble in rows, loose straw lying across it, the sparring circle's chalk ring round its feet
+    vec2 w = vW.xz - uCentre.xz, f = vW.xz - uOriginF.xz; float fw = fwidth(w.x) + fwidth(w.y);
+    float row = abs(fract(w.x * 1.8 + 0.3 * sin(w.y * 0.4)) - 0.5) * 2.0; row = mix(row, 0.5, smoothstep(0.15, 0.4, fw * 1.8)); // (rows fade where they would crawl)
+    vec3 col = mix(earth, straw * 0.85, 0.3 + 0.5 * (1.0 - row) * (0.6 + 0.4 * fbm(w * 1.3)));
+    col = mix(col, straw, smoothstep(0.45, 0.95, fbm(w * 7.0)) * (1.0 - row) * 0.5 * (1.0 - smoothstep(0.02, 0.06, fw)));
+    vec2 sc = floor(w * 2.2), sf = fract(w * 2.2) - 0.5; float sh = h21(sc), sa = h21(sc + 5.3) * 6.2832; vec2 sd = vec2(cos(sa), sin(sa)) * 0.32;
+    col = mix(col, straw * 1.2, step(0.55, sh) * inD(segD(sf, -sd, sd) - 0.03, max(0.02, fw * 2.2)) * (1.0 - smoothstep(0.05, 0.12, fw)) * 0.85); // (a loose stalk in some cells)
+    float ring = inD(abs(length(f) - 1.75) - 0.045, max(0.015, fw)) * smoothstep(0.25, 0.45, vn(f * 4.0 + 3.0)); // (chalk, rubbed thin in places)
+    return mix(col * 0.8, chalk, ring * 0.9);
+  }
+  float ax = atan(dir.z, dir.x), y = dir.y, aa = max(0.0015, fwidth(y) * 1.2);
+  vec3 hz = srgb(vec3(0.94, 0.88, 0.72)) * 0.6, zen = srgb(vec3(0.62, 0.76, 0.9)) * 0.56;
+  vec3 col = mix(hz, zen, smoothstep(0.0, 0.6, y));
+  vec2 ld = normalize((uOriginF - uCentre).xz + 1e-4), sv = vec2(ld.x * 0.82 - ld.y * 0.57, ld.x * 0.57 + ld.y * 0.82); // (a low sun a little round from its bearing)
+  col += srgb(vec3(1.0, 0.86, 0.6)) * 0.2 * pow(max(0.0, dot(normalize(dir.xz + 1e-4), sv)), 24.0) * exp(-abs(y - 0.1) * 6.0);
+  float cl = smoothstep(0.52, 0.8, fbm(vec2(ax * 2.4 + t * 0.006, y * 7.5 - 1.3))) * smoothstep(0.08, 0.22, y) * (1.0 - smoothstep(0.5, 0.85, y));
+  col = mix(col, srgb(vec3(1.0, 0.97, 0.9)) * 0.62, cl * 0.75);
+  float fd = 1.0 / max(-y, 0.003), fdw = fwidth(fd * 0.25); // (out of the branch below: a derivative wants every pixel's)
+  if (y < 0.0) { float rw = abs(fract(fd * 0.25) - 0.5) * 2.0; rw = mix(rw, 0.5, smoothstep(0.15, 0.45, fdw)); // (the field going away, its rows fading before they crawl)
+    vec3 field = mix(straw * 0.5, straw * 0.75, rw * 0.6 + 0.4 * fbm(vec2(ax * 8.0, fd * 0.05)));
+    col = mix(field, hz * 0.95, exp(y * 40.0) * 0.6); }
+  float hh = 0.008 + 0.012 * fbm(vec2(ax * 9.0, 2.0)); col = mix(col, srgb(vec3(0.33, 0.36, 0.2)) * 0.45, inD(y - hh, aa) * (1.0 - inD(y + 0.004, aa))); // (the hedge)
+  // along the hedge, a cell a thing: one of Pip's dummies on its post, a target on its easel, a stack of bales, or nothing
+  float P = 0.2, cx = floor(ax / P), hs = h21(vec2(cx, 31.0)), s = 0.75 + 0.5 * h21(vec2(cx, 17.0)), a2 = aa / s;
+  vec2 lp = vec2((fract(ax / P) - 0.5) * P + (h21(vec2(cx, 3.0)) - 0.5) * 0.06, y + 0.003) / s;
+  if (hs < 0.42) { float d = min(min(boxD(lp, vec2(0.0, 0.045), vec2(0.0035, 0.045)), boxD(lp, vec2(0.0, 0.064), vec2(0.03, 0.004))), min(length((lp - vec2(0.0, 0.044)) / vec2(0.015, 0.022)) * 0.015 - 0.015, length(lp - vec2(0.002, 0.078)) - 0.0095));
+    if (h21(vec2(cx, 8.0)) > 0.5) d = min(d, boxD(lp, vec2(0.001, 0.093), vec2(0.0065, 0.0085)));
+    col = mix(col, burlap * 0.42, inD(d, a2)); }
+  else if (hs < 0.66) { vec2 c = vec2(0.0, 0.042); float rr = length(lp - c) / 0.02, legs = min(segD(lp, vec2(-0.016, 0.0), vec2(0.0, 0.052)), segD(lp, vec2(0.016, 0.0), vec2(0.0, 0.052))) - 0.0018;
+    col = mix(col, wood * 0.6, inD(legs, a2)); col = mix(col, mix(mod(floor(rr * 5.0), 2.0) < 0.5 ? red : cream, wood * 0.4, step(0.9, rr)) * 0.6, inD(rr - 1.0, a2 / 0.02)); }
+  else if (hs < 0.85) { float d = min(min(boxD(lp, vec2(-0.016, 0.009), vec2(0.0145, 0.0085)), boxD(lp, vec2(0.016, 0.009), vec2(0.0145, 0.0085))), boxD(lp, vec2(0.0, 0.027), vec2(0.0145, 0.0085)));
+    col = mix(col, straw * (0.5 + 0.12 * step(0.02, lp.y)), inD(d, a2)); col = mix(col, earth * 0.5, inD(abs(d + 0.0012) - 0.0007, a2) * inD(d, a2)); }
+  // the bunting: strung between far poles, its flags swinging, in the kiln's red, cream, ochre, sage and lapis
+  float PB = 0.62, bu = fract(ax / PB + 0.37), yl = 0.27 - 0.075 * (1.0 - pow(2.0 * bu - 1.0, 2.0));
+  float fi = floor(ax / 0.034), fx = fract(ax / 0.034) - 0.5, fy = (yl - y) / 0.032, sw = sin(t * 3.0 + fi * 1.7) * 0.14 * fy;
+  float flag = step(0.0, fy) * step(fy, 1.0) * inD(abs(fx + sw) - 0.42 * (1.0 - fy), aa / 0.034);
+  float fk = mod(fi, 5.0); vec3 fc = fk < 0.5 ? red : fk < 1.5 ? cream : fk < 2.5 ? srgb(vec3(0.85, 0.64, 0.26)) : fk < 3.5 ? srgb(vec3(0.49, 0.6, 0.42)) : srgb(vec3(0.24, 0.35, 0.66));
+  col = mix(col, fc * 0.62, flag * 0.95); col = mix(col, wood * 0.5, inD(abs(y - yl) - 0.0011, aa) + inD(min(bu, 1.0 - bu) * PB - 0.0022, aa) * step(y, yl + 0.004) * step(-0.004, y));
+  // straw on the wind, two layers, thicker and faster in a gust
+  for (int k = 0; k < 2; k++) { float kf = float(k); vec2 sp = vec2(ax - t * (0.18 + 0.1 * kf) * (1.0 + 2.5 * gust), y + kf * 0.013), cell = vec2(0.11, 0.026), sc = floor(sp / cell);
+    vec2 o = (fract(sp / cell) - 0.5) * cell - vec2((h21(sc + kf * 13.0) - 0.5) * 0.05, (h21(sc + 7.0) - 0.5) * 0.012); float tilt = (h21(sc + 3.0) - 0.5) * 0.9;
+    float on = step(0.72 - 0.32 * gust, h21(sc + kf * 13.0)) * step(-0.15, y) * step(y, 0.42);
+    col = mix(col, straw * (1.15 - 0.25 * kf), on * inD(segD(o, vec2(-0.018, -0.018 * tilt), vec2(0.018, 0.018 * tilt)) - 0.0011, aa) * (0.9 - 0.3 * kf)); }
+  return col;
+}
 // your half as your Spirit Garden (uGarden: on, bloom, briar, daylight; the garden's mood's colours, aberrants and gardenground.js): its sky
 // by the season and the hour, its planetoids floating round the horizon, a meadow (flowers by its bloom, thorns by its briar), your bound
 // spirits as lights drifting over it (up to four), fireflies after dark; the film still running faintly through it (it is your mind)
@@ -183,16 +241,17 @@ void main() {
     vec3 foe = mix(srgb(vec3(0.085, 0.08, 0.085)), uFoe, 0.06) * (1.0 - 0.15 * yy);
     vec3 col = mix(cour, foe, k);
     col = mix(col, vec3(1.0), (1.0 - k) * uFlash.x + k * uFlash.y);
+    float bOn = step(0.5, uBuild.w), etchK = mix(1.0, smoothstep(0.0, 1.0, uBuild.y), bOn), seamK = 1.0, fuse = 0.0; // (the tsuitate's assembly: below)
     vec2 f = fract(c) - 0.5; float fw = max(fwidth(c.y), fwx);
     float grid = 1.0 - smoothstep(0.0, fw * 1.2, 0.5 - max(abs(f.x), abs(f.y)));
-    col *= 1.0 + 0.06 * mod(floor(c.x) + floor(c.y), 2.0); // (a quiet checker: the cells read without lines of their own)
-    col = mix(col, srgb(vec3(0.91, 0.86, 0.78)), grid * 0.03);
+    col *= 1.0 + 0.06 * etchK * mod(floor(c.x) + floor(c.y), 2.0); // (a quiet checker: the cells read without lines of their own)
+    col = mix(col, srgb(vec3(0.91, 0.86, 0.78)), grid * 0.03 * etchK);
     vec2 cc = floor(c), g = texture2D(uGrav, (cc + 0.5) / uGrid).xy * (255.0 / 127.0) - 1.0; // (the cell's gravity: shown only at the half's back wall)
     if (dot(g, g) > 0.25) { g = normalize(g); vec2 nx = cc + floor(g + 0.5); float wall = 1.0;
       if (nx.x >= 0.0 && nx.y >= 0.0 && nx.x < uGrid.x && nx.y < uGrid.y) { vec2 gn = texture2D(uGrav, (nx + 0.5) / uGrid).xy * (255.0 / 127.0) - 1.0; wall = 1.0 - step(-0.5, dot(gn, g)); } // (the edge, or a neighbour falling the other way: the Line between halves that fall toward each other)
       float b = dot(f, g), a = dot(f, vec2(-g.y, g.x));
       float ch = (1.0 - smoothstep(0.02, 0.02 + fw, abs(b - 0.3 + abs(a) * 0.7))) * step(abs(a), 0.2); // (a faint arrow against the wall the half falls to, never in every cell)
-      col = mix(col, srgb(vec3(0.91, 0.86, 0.78)), ch * 0.16 * wall); }
+      col = mix(col, srgb(vec3(0.91, 0.86, 0.78)), ch * 0.16 * wall * etchK); }
     // Dread's fog (dread.js visibleTo): the hidden ground under ink marbling (suminagashi, the pall's colours), the lantern's pool warm
     vec4 fg = texture2D(uFog, vec2(vUv.x, 1.0 - vUv.y)); float fog = fg.r, lamp = fg.g;
     if (fog + lamp > 0.001) {
@@ -201,13 +260,32 @@ void main() {
       col = mix(col, fc, fog);
       col += srgb(vec3(1.0, 0.62, 0.26)) * (lamp * 0.32 * (1.0 - fog) + fog * (1.0 - fog) * 0.5);
     }
+    // THE TSUITATE'S ASSEMBLY (assembly.js; uBuild x the panes, y the grid's etch, z the Line's fuse, w on): each half crystallising from its
+    // outer post to the Line, a front ragged with dendrites over the liquid's dark (hot ice: a seeded supercooled liquid freezing outward),
+    // the fresh crystal flashing in the film and calming behind it; the cells scribed in line by line, rows then columns, each line cooling
+    // behind its point to the quiet checker; the seam lit last, a fuse running up from the foot
+    if (bOn > 0.5) {
+      float hs = step(uLine, c.x), span = mix(max(uLine, 1.0), max(uGrid.x - uLine, 1.0), hs), u = mix(c.x, uGrid.x - c.x, hs) / span; // (0 at its outer post .. 1 at the Line)
+      float jag = 0.09 * fbm(vec2(c.y * 1.3, hs * 7.0 + 1.0)) + 0.05 * vn(vec2(c.y * 6.0, hs * 3.0)), behind = (uBuild.x - 0.06 * hs) * 1.45 - 0.12 - jag - u;
+      if (behind < 0.0) { float near = exp(behind * 22.0) * step(0.001, uBuild.x), a0 = (0.14 + 0.55 * near) * smoothstep(0.0, 0.06, uBuild.x);
+        if (a0 < 0.004) discard;
+        gl_FragColor = vec4(mix(srgb(vec3(0.03, 0.05, 0.08)) + labSoft(ph + fbm(c * 0.25 + vec2(t * 0.2, 0.0))) * 0.04, labSoft(ph + c.y * 0.1) * 1.4, near * 0.6), a0); return; }
+      float facet = 1.0 - smoothstep(0.03, 0.09, abs(fract(vn(c * 1.1 + hs * 9.0) * 5.0) - 0.5));
+      col += mix(vec3(1.0), labSoft(ph + c.y * 0.07 + u), 0.55) * (exp(-behind * 40.0) * 1.6 + exp(-behind * 7.0) * (0.2 + 0.6 * facet));
+      float lnH = 1.0 - smoothstep(0.0, fw * 1.3, abs(c.y - floor(c.y + 0.5))), lnV = 1.0 - smoothstep(0.0, fwx * 1.3, abs(c.x - floor(c.x + 0.5)));
+      float aH = uBuild.y - (0.5 * floor(c.y + 0.5) / uGrid.y + 0.3 * c.x / uGrid.x), aV = uBuild.y - (0.42 + 0.33 * floor(c.x + 0.5) / uGrid.x + 0.25 * c.y / uGrid.y); // (where the scribe's point is on each line)
+      col += labSoft(ph + c.x * 0.03) * 1.3 * (lnH * step(0.0, aH) * exp(-aH * 9.0) + lnV * step(0.0, aV) * exp(-aV * 9.0)) + vec3(1.0) * 1.5 * (lnH * exp(-abs(aH) * 60.0) + lnV * exp(-abs(aV) * 60.0)) * step(0.0005, uBuild.y);
+      float fz = uBuild.z * 1.1 - 0.05, up0 = 1.0 - yy; seamK = smoothstep(-0.02, 0.02, fz - up0); fuse = exp(-abs(fz - up0) * 25.0) * step(0.0005, uBuild.z) * (1.0 - step(0.999, uBuild.z));
+    }
     float d = abs(c.x - uLine), core = 1.0 - smoothstep(0.04, 0.04 + fwx * 1.5, d);
     float ridge = 1.0 - abs(fbm(vec2(c.y * 0.9 - t * 1.4, t * 0.3)) * 2.0 - 1.0);
-    col += labSoft(ph + c.y * 0.05) * (core * 1.6 + exp(-d * 5.0) * (0.25 + 0.5 * pow(ridge, 4.0)) * (1.0 + uPush));
+    col += labSoft(ph + c.y * 0.05) * (core * 1.6 + exp(-d * 5.0) * (0.25 + 0.5 * pow(ridge, 4.0)) * (1.0 + uPush)) * seamK;
+    col += srgb(vec3(1.0, 0.92, 0.72)) * fuse * exp(-d * 3.0) * 2.4; // (the fuse's head running up the seam)
     col = mix(col, srgb(vec3(0.95, 0.76, 0.35)) * 1.4, core * uWon);
-    if (uMeter.w > 0.5) { // (the PvE duel's push meters on the seam, filled from the foot: yours on its foe side in the film, the junk landed on you on yours in its feeling; a notch a junk)
+    float mOn = uMeter.w * mix(1.0, smoothstep(0.9, 1.0, uBuild.z), bOn); // (the meters come on with the Line)
+    if (mOn > 0.01) { // (the PvE duel's push meters on the seam, filled from the foot: yours on its foe side in the film, the junk landed on you on yours in its feeling; a notch a junk)
       float sx = c.x - uLine, up = 1.0 - yy, n = max(uMeter.z, 1.0), seg = fract(up * n), notch = smoothstep(0.0, 0.03 * n, seg) * smoothstep(0.0, 0.03 * n, 1.0 - seg);
-      float wR = step(0.06, sx) * (1.0 - smoothstep(0.26, 0.26 + fwx, sx)), wL = step(0.06, -sx) * (1.0 - smoothstep(0.26, 0.26 + fwx, -sx)); // (a slot each side of the seam's core)
+      float wR = step(0.06, sx) * (1.0 - smoothstep(0.26, 0.26 + fwx, sx)) * mOn, wL = step(0.06, -sx) * (1.0 - smoothstep(0.26, 0.26 + fwx, -sx)) * mOn; // (a slot each side of the seam's core)
       col = mix(col, vec3(0.012), (wR + wL) * 0.85); col += vec3(0.05) * (wR + wL) * (1.0 - notch); // (the empty slot dark, its notches faint)
       col = mix(col, mix(srgb(vec3(0.62, 0.9, 1.0)), labSoft(ph + up), 0.35) * 2.4, wR * notch * step(up, uMeter.x)); col = mix(col, mix(uFoe, vec3(0.78, 0.2, 0.16), 0.45) * 2.0 + 0.05, wL * notch * step(up, uMeter.y)); // (the aberrant's meter red-coded, its feeling in it)
     }
@@ -231,7 +309,7 @@ void main() {
   vec3 L = foeLook(q, t, uMotif);
   vec3 foe = mix(uHaze, uFoeDeep, smoothstep(-0.1, 0.5, dir.y));
   foe = foe * (1.0 - L.y * 0.55) + uFoe * L.x * 1.5 + vec3(0.95, 0.97, 1.0) * L.z;
-  if (uStyle.x > 1.5) foe = bog(normalize(vW - uCentre), q, t, fl, uStyle.y); else if (uStyle.x > 0.5) foe = fens(normalize(vW - uCentre), q, t, fl, uStyle.y); // (an aberrant's own ground in place of its feeling's: 1 the Wisp's fens, 2 the jelly's bog)
+  if (uStyle.x > 2.5) foe = yard(normalize(vW - uCentre), q, t, fl, uStyle.y); else if (uStyle.x > 1.5) foe = bog(normalize(vW - uCentre), q, t, fl, uStyle.y); else if (uStyle.x > 0.5) foe = fens(normalize(vW - uCentre), q, t, fl, uStyle.y); // (an aberrant's own ground in place of its feeling's: 1 the Wisp's fens, 2 the jelly's bog, 3 Strawman's yard)
   vec3 col = mix(cour, foe, k);
   // the seam: crackling light on the Line's plane, pushed on a line
   vec3 along = normalize(cross(uPlaneN, vec3(0.0, 1.0, 0.0)));
@@ -271,7 +349,7 @@ export class DomainClash {
     const clear = new THREE.DataTexture(new Uint8Array(4 * 4), 2, 2); clear.needsUpdate = true; // (no fog)
     this.U = {
       uT: { value: 0 }, uMindT: mindTime, uRadius: { value: DUEL_VIEW.radius }, uPush: { value: 0 }, uPushSide: { value: 1 }, uWon: { value: 0 },
-      uMotif: { value: 3 }, uLine: { value: 10 }, uFade: { value: 1 }, uMeter: { value: new THREE.Vector4() }, uStyle: { value: new THREE.Vector2() }, uGarden: { value: new THREE.Vector4() }, uGSky: { value: new THREE.Color() }, uGZen: { value: new THREE.Color() }, uGGnd: { value: new THREE.Color() }, uGGrass: { value: new THREE.Color() }, uGBloom: { value: new THREE.Color() }, uGSp0: { value: new THREE.Color(0, 0, 0) }, uGSp1: { value: new THREE.Color(0, 0, 0) }, uGSp2: { value: new THREE.Color(0, 0, 0) }, uGSp3: { value: new THREE.Color(0, 0, 0) },
+      uMotif: { value: 3 }, uLine: { value: 10 }, uFade: { value: 1 }, uMeter: { value: new THREE.Vector4() }, uBuild: { value: new THREE.Vector4() }, uStyle: { value: new THREE.Vector2() }, uGarden: { value: new THREE.Vector4() }, uGSky: { value: new THREE.Color() }, uGZen: { value: new THREE.Color() }, uGGnd: { value: new THREE.Color() }, uGGrass: { value: new THREE.Color() }, uGBloom: { value: new THREE.Color() }, uGSp0: { value: new THREE.Color(0, 0, 0) }, uGSp1: { value: new THREE.Color(0, 0, 0) }, uGSp2: { value: new THREE.Color(0, 0, 0) }, uGSp3: { value: new THREE.Color(0, 0, 0) },
       uPlaneP: { value: new THREE.Vector3() }, uPlaneN: { value: new THREE.Vector3(1, 0, 0) }, uCentre: { value: new THREE.Vector3() },
       uOriginC: { value: new THREE.Vector3() }, uOriginF: { value: new THREE.Vector3() },
       uFoe: { value: new THREE.Color() }, uFoeDeep: { value: new THREE.Color() }, uHaze: { value: new THREE.Color() },
@@ -310,10 +388,13 @@ export class DomainClash {
     U.uGarden.value.set(1, m.bloom, m.briar, m.day); U.uGSky.value.copy(m.sky); U.uGZen.value.copy(m.zen); U.uGGnd.value.copy(m.gnd); U.uGGrass.value.copy(m.grass); U.uGBloom.value.copy(m.flowers[0] || m.blossom);
     [U.uGSp0, U.uGSp1, U.uGSp2, U.uGSp3].forEach((u, i) => (spirits[i] ? u.value.copy(spirits[i]) : u.value.setRGB(0, 0, 0)));
   }
-  /** An aberrant's own ground on its side (0 its feeling's; 1 the Lantern Wisp's fens; 2 the slip jelly's bog) and how far its dark has closed in (0..1). */
+  /** An aberrant's own ground on its side (0 its feeling's; 1 the Lantern Wisp's fens; 2 the slip jelly's bog; 3 Strawman's practice yard)
+   *  and how far its dark has closed in (0..1; the yard's: a gust). */
   setStyle(id, dark = 0) { this.U.uStyle.value.set(id, dark); }
   /** The PvE duel's push meters on the seam (0..1 each of a column's worth, `n` notches); `on` false hides them. */
   setMeter(push, landed, n, on = true) { this.U.uMeter.value.set(push, landed, n, on ? 1 : 0); }
+  /** The tsuitate's assembly on the slab (assembly.js): the panes' crystal, the grid's etch and the Line's fuse, each 0..1; `on` false: built. */
+  setBuild(panes, etch, line, on = true) { this.U.uBuild.value.set(panes, etch, line, on ? 1 : 0); }
   /** A half's flash (a break): white, fading over a third of a real second. */
   flash(side, k = 1) { this.flashK[side] = Math.max(this.flashK[side], k); }
   won(k) { this.U.uWon.value = k; }

@@ -24,6 +24,8 @@
 //   const B = new DuelBoard(parent, clash)   B.build(kernelBoard, foeAspect)   B.setGravity(kernelBoard)   B.setLine(column)
 //   B.setAP(side, left, max, lost)   B.crack(side) -> the local point of the bead that cracked   B.setEmo(side, emo)   B.whiteEmo(side)
 //   B.setFog(fog, lamp) (Float32Arrays a cell, 0..1)   B.won(k)   B.update(dt)   B.slab (its mesh: the god hand's ray hits it)   B.apAt(side, k, out)
+//   B.parts { railTop, railFoot, postL, postR, back, feet, boss, kin } (the frame's members, each about its pivot, `userData.rest`: the
+//   tsuitate's assembly flies them in, assembly.js)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -60,16 +62,20 @@ export class DuelBoard {
   make(w, h) {
     const { cs, base, border: b, depth, lip } = DUEL_VIEW, W = w * cs, H = h * cs, M = duelMaterials();
     if (this.meshes) for (const m of this.meshes) { this.group.remove(m); m.geometry?.dispose(); }
-    const top = base + H, parts = [];
-    // the frame's members, proud of the face; the back plate behind the slab; the feet
-    parts.push(box(W + 2 * b, b, depth + lip, 0, top + b / 2, (lip - depth) / 2, TERRACOTTA[0]), box(W + 2 * b, b, depth + lip, 0, base - b / 2, (lip - depth) / 2, TERRACOTTA[2]));
-    parts.push(box(b, H, depth + lip, -W / 2 - b / 2, base + H / 2, (lip - depth) / 2, TERRACOTTA[1]), box(b, H, depth + lip, W / 2 + b / 2, base + H / 2, (lip - depth) / 2, TERRACOTTA[1]));
-    parts.push(box(W, H, 0.04, 0, base + H / 2, -depth + 0.02, BACK));
-    parts.push(box(W + 2 * b + 0.01, b * 0.32, depth + lip + 0.01, 0, top + b * 0.86, (lip - depth) / 2, ASH)); // (the ash run along its top)
-    for (let i = 0; i < 9; i++) { const x = -W / 2 + ((i + 0.5) / 9) * W + Math.sin(i * 7.1) * 0.08, l = b * (0.5 + 0.4 * Math.abs(Math.sin(i * 3.3))); parts.push(box(0.035, l, 0.012, x, top + b - l / 2, lip + 0.003, ASH)); }
-    for (const fx of [-W * 0.36, W * 0.36]) parts.push(box(0.5, base - b, 0.34, fx, (base - b) / 2, -0.05, FOOT), box(0.62, 0.06, 0.44, fx, 0.03, -0.05, TERRACOTTA[2]));
-    const frame = new THREE.Mesh(mergeGeometries(parts), M.clayVc); frame.castShadow = true; frame.receiveShadow = true; frame.name = 'duel-frame';
-    parts.forEach((g) => g.dispose());
+    const top = base + H, z = (lip - depth) / 2, d = depth + lip;
+    // the frame's members, proud of the face, each its own mesh about its own pivot so the assembly can fly it in (assembly.js): the top
+    // rail with the ash run along it, the foot rail, the two posts (from their feet), the back plate behind the slab (from its foot), the
+    // two feet (from their tops)
+    const member = (name, geos, px, py) => { const g = mergeGeometries(geos); geos.forEach((x) => x.dispose()); g.translate(-px, -py, 0);
+      const m = new THREE.Mesh(g, M.clayVc); m.position.set(px, py, 0); m.userData.rest = m.position.clone(); m.castShadow = true; m.receiveShadow = true; m.name = name; return m; };
+    const ash = [box(W + 2 * b + 0.01, b * 0.32, d + 0.01, 0, top + b * 0.86, z, ASH)];
+    for (let i = 0; i < 9; i++) { const x = -W / 2 + ((i + 0.5) / 9) * W + Math.sin(i * 7.1) * 0.08, l = b * (0.5 + 0.4 * Math.abs(Math.sin(i * 3.3))); ash.push(box(0.035, l, 0.012, x, top + b - l / 2, lip + 0.003, ASH)); }
+    const railTop = member('duel-rail', [box(W + 2 * b, b, d, 0, top + b / 2, z, TERRACOTTA[0]), ...ash], 0, top + b / 2);
+    const railFoot = member('duel-rail', [box(W + 2 * b, b, d, 0, base - b / 2, z, TERRACOTTA[2])], 0, base - b / 2);
+    const postL = member('duel-post', [box(b, H, d, -W / 2 - b / 2, base + H / 2, z, TERRACOTTA[1])], -W / 2 - b / 2, base);
+    const postR = member('duel-post', [box(b, H, d, W / 2 + b / 2, base + H / 2, z, TERRACOTTA[1])], W / 2 + b / 2, base);
+    const back = member('duel-back', [box(W, H, 0.04, 0, base + H / 2, -depth + 0.02, BACK)], 0, base);
+    const feet = [-W * 0.36, W * 0.36].map((fx) => member('duel-foot', [box(0.5, base - b, 0.34, fx, (base - b) / 2, -0.05, FOOT), box(0.62, 0.06, 0.44, fx, 0.03, -0.05, TERRACOTTA[2])], fx, base - b));
     // the bosses at the corners, and the Line's beads (brass)
     this.brass = new THREE.MeshStandardMaterial({ name: 'duel-brass', color: 0xb8904a, metalness: 0.75, roughness: 0.35, emissive: 0x2a1a08, emissiveIntensity: 0.4 });
     const bossGeo = new THREE.SphereGeometry(b * 0.36, 12, 8), bosses = [];
@@ -94,7 +100,8 @@ export class DuelBoard {
     // the EmO columns, up the frame's outer members
     const bar = new THREE.PlaneGeometry(0.045, 1); bar.translate(0, 0.5, 0);
     this.emoBars = [0, 1].map((side) => { const m = new THREE.Mesh(bar, new THREE.MeshBasicMaterial({ name: 'duel-emo', toneMapped: false })); m.position.set((side ? 1 : -1) * (W / 2 + b / 2), base, lip + 0.003); m.scale.y = 0.001; return m; }); // (fogged like the world's opaque basic program it shares: at the board's few metres fog shows nothing; the program audit)
-    this.meshes = [frame, boss, this.head, this.foot, kin, this.slab, this.beads, ...this.emoBars, ...this.lips];
+    this.meshes = [railTop, railFoot, postL, postR, back, ...feet, boss, this.head, this.foot, kin, this.slab, this.beads, ...this.emoBars, ...this.lips];
+    this.parts = { railTop, railFoot, postL, postR, back, feet, boss, kin }; // (what the assembly moves: assembly.js)
     this.group.add(...this.meshes);
     this.built = `${w}x${h}`; this.W = W; this.H = H;
   }
