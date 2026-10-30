@@ -8,6 +8,7 @@
 //   npm run dev &   (or any server of this tree)
 //   node scripts/poseaudit.mjs --url http://localhost:5173/ --set <sondelass|tools|locomotion|emotes|selftest|all> --out <dir>
 //        [--only id,prefix*,...] [--every 2] [--seed 1] [--no-draw] [--list] [--fresh 60 (a new page every so many states)]
+//        [--trace kneeFlexL,kneeFlexR (joint measures written frame by frame into each state's json, `trace`)]
 //   --set selftest   the measures against faults made on purpose (a cutlass turned into the chest, an arm swung through it, known joint
 //                    turns): run it first after changing the measures; each prints PASS or FAIL
 //   --only           states by id, or by prefix with a trailing * (`cutlass.*`, `emote.d*`); --every 2 measures every 2nd frame (half the
@@ -32,6 +33,7 @@ const HERE = path.dirname(new URL(import.meta.url).pathname);
 const URL0 = String(args.url || process.env.URL || 'http://127.0.0.1:5173/');
 const SET = String(args.set || 'all'), EVERY = +(args.every || 1), SEED = +(args.seed || 1), DRAW = !args['no-draw'];
 const OUT = path.resolve(String(args.out || path.join(process.cwd(), 'poseaudit-out')));
+const TRACE = typeof args.trace === 'string' ? args.trace.split(',').map((s) => s.trim()).filter(Boolean) : null;
 const ONLY = typeof args.only === 'string' ? args.only.split(',').map((s) => s.trim()).filter(Boolean) : null;
 fs.mkdirSync(OUT, { recursive: true });
 
@@ -82,7 +84,7 @@ const summary = [], tiles = [], t0 = Date.now();
 //  or so states, its memory never all given back)
 const FRESH = +(args.fresh || 60);
 let since = 0;
-const runOne = (id) => page.evaluate(({ id, every, draw }) => __paRun.run(window.__paStates.find((x) => x.id === id), { every, draw }), { id, every: EVERY, draw: DRAW });
+const runOne = (id) => page.evaluate(({ id, every, draw, trace }) => __paRun.run(window.__paStates.find((x) => x.id === id), { every, draw, trace }), { id, every: EVERY, draw: DRAW, trace: TRACE });
 for (const s of pick) {
   let out = null;
   if (since >= FRESH) { page = await reopen(page); since = 0; }

@@ -138,6 +138,13 @@ export const STANCES = {
     base: 'slideLoop', overlay: [['Sond_Idle', '^(f_|thumb).*R$']], exaggerate: [0.3, '^(upper_arm|forearm|hand)R$'],
     reach: [['R', [-0.34, 0.2, -0.12], [-0.8, 0.55, -0.1]]], aim: [['R', CUTLASS_LINE, [-0.22, -0.1, -0.97]]],
   },
+  // (and the same over the slide's drop-in, Trav_SlideStart, played by the drawn slide while the slide's track plays it: the loop's
+  //  first frame laid over the drop-in's chest, still upright and pitching back, carried the blade arm round with it and drove the point
+  //  61 cm into the floor, the pose audit's probe; here the hand and the blade are set in the body's frame on each of its own frames)
+  cutlassSlideStart: {
+    base: 'slideStart', overlay: [['Sond_Idle', '^(f_|thumb).*R$']], exaggerate: [0.3, '^(upper_arm|forearm|hand)R$'],
+    reach: [['R', [-0.34, 0.2, -0.12], [-0.8, 0.55, -0.1]]], aim: [['R', CUTLASS_LINE, [-0.22, -0.1, -0.97]]],
+  },
   // THE IAIDO'S CHARGE (the owner, 2026-10-11: "an Iaido-like striking pose for the charge-up"; crouched, hold RMB: cutlass.js). No iaido
   // in the suite, UAL or CMU; the suite's own Gun_QuickDraw at its first frame is the nearest (low, the hand at the hip before the draw),
   // its fingers the cutlass's (Sond_Idle's grip). The battojutsu's hold laid over it, as a sheathed blade lies beside the left hip and not

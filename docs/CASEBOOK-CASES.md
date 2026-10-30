@@ -4437,3 +4437,50 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** one table, `PRESS` in courier/parry.js, each value the number it always was (no feel changed); the three read it, and the
   mark's rule asks `pressWindowOf(game)`, the window of what is in hand.
 - **Rule:** 354
+
+### 2026-10-30 · The CMU spinning kicks bent the knees backward (GAPS.md 5; courier/character/feet.js)
+- **Seen:** the melee loadout's CMU kicks bent a knee the wrong way for a few frames (GAPS.md 5, open, its cause not found). The pose
+  audit's knee (flexion about the knee's hinge in the thigh's own frame), every frame of each row played by the engine
+  (`cutlass.row.<id>`): Spinning Heel to -56 (f171), Front Kick -34, Tornado Kick -28, Rising Kick -12; their clips never under +10
+  (Cmu_SpinHeelKick 14..93 raw, 10..93 after the decode's hinge repair, read in node from anims_cmu.bin).
+- **Cause (as measured):** the foot IK, not the clips, the hinge repair, rom.js or a quaternion flip. With it off (a probe) no kick's knee
+  under +11. footIK re-solves a leg every frame its target moves off its foot (a sole raised, the reach drop, the stride's warp, a foot
+  lock), the knee toward the state's pole: the knee pushed 0.1 m along the capsule's forward. A whole-body blow turns the body off the
+  capsule (Spinning Heel faces it backward), and where a leg was near straight (its knee 5 cm off the hip-to-foot line) that push crossed
+  the line: the knee's side turned 104 to 157 degrees in a frame (Spinning Heel 8 frames past 90, Tornado, Rising and Front 2 each). The
+  posed hinge repair (a thigh turned at most 90, 12 a frame) could not follow, so for 2 to 4 frames the knee read bent back and the thigh
+  turned up to 119. And the gait's own parts read the gait cycle under the blow: the Flying Kick carried them at 2 m/s with the stride's
+  warp at 0.65 and its tucked foot held by a foot lock the cycle called planted, the knee folded past 180 (read as 178 bent back on a
+  fresh page); the warp and the locks drove the reach drop to 11 cm, sinking the kicks.
+- **Fix:** feet.js footIK, by the share of the pose a tech owns (`techs.override`: a whole-body blow's launch, an emote, a roll): the knee's
+  pole is its own way (`kneeWay`: the thigh's line crossed with the knee's hinge, the shin's rest X carried by the thigh), the stride's
+  warp and the foot locks stand down; the body's own share keeps the state's pole and the gait's parts as they were (override 0: the
+  same numbers). After, the same plans: every kick's knee 9 to 173, none bent back (frame by frame in the pose audit's `--trace`); off
+  the hinge at most 10 (was 78); the foot IK's turn of a knee's side at most 36 (was 157); the reach drop at most 2.2 cm (was 11.3). The
+  unarmed kick's roundhouse and leg sweep (new states `kick.string`, `kick.sweep`): off-hinge 42.9 and 22.3 to clean. The whole audit
+  (319 states, 2 new): 166 clean, 26 marginal, 127 dirty to 171, 29, 121; knees past their limits in 18 states to 7 (the core's wallrun,
+  the self-test's own, and the cutlass's c1 and c3, unchanged: not the foot IK, open); on fresh pages the states that read worse in the
+  long run read the same or better, but for one-frame wrist and elbow blips (emote.sorry's elbow 21.4 against 20, Roundhouse's wrist 24
+  against 20) and emote.cheeky's elbow, 35 against 23 (its off-hinge 55 to 40).
+- **Rule:** NEW:ik-pole-own-pose
+
+### 2026-10-30 · The drawn slide's blade went under the floor (GAPS.md 5; tools/sondelass/drawnslide.js)
+- **Seen:** the drawn slide's blade passed below the floor (GAPS.md 5). Measured in game on the flat floor (`cutlass.slideHeld`, the
+  blade's lowest of 11 points along it against the floor under each): -60.9 cm at the drop-in's 0.33 s (slideStart), 38 of 105 drawn
+  slide frames under the floor; in the loop -7.6 at its start, +1.5 to +9 after.
+- **Cause (as measured):** three. (1) The drawn slide laid its stance's loop frame 0 (baked over Trav_SlideLoop, the body reclined) over
+  the drop-in (Trav_SlideStart), whose chest is still upright and pitching back: the blade arm, local to that chest, swung with it, the
+  point to -61 cm. (2) With the drop-in's own stance in, the point still went to -34 (the slide's weight 0.69): the layer is laid over
+  a base that already carries the slide by its weight, and laid in by that weight again the upper body reached the slide at its square
+  (at 0.6, 36%), upright over the falling hips, the blade arm half the run's on a chest that was neither's. Laid in whole from the first
+  frame it never went under (lowest 6.8) but the arm switched in a frame and the point jumped 45 cm. (3) The foot IK's reach drop read the
+  slide's straight lead leg as a reach and took its 0.12 m fallback (a leg out level is not reached by lowering the hips): the slide,
+  the core's too (`loco.slideHeld`), sank 11 cm at its loop's start (the root at -11, the hips at -10.8 cm), the blade with it.
+- **Fix:** stances.js `cutlassSlideStart` (the drawn slide's stance over the drop-in: the hand and the blade set in the body's frame on
+  each of its frames); drawnslide.js plays the stance of the clip the slide track plays, on its clock, crossfaded as it crossfades
+  (`sampleTrack`), and is whole by half the slide's weight (`DRAWN_SLIDE.IN`, eased); feet.js takes the reach drop off by a slide's
+  weight as by a crawl's. After: the blade's lowest over the floor through the drawn slide 6.8 cm (`cutlass.slideHeld`; the short slide
+  17.1), never under; the loop 6.7 to 9.0; the point 30, 48, 60 cm over the first three frames (was 18, -7, -17); the core slide no
+  longer sinks at its loop's start (the root at 0, the hips 0.9 to 1.4 cm, where its loop already sat). The pose audit: both slides
+  dirty to marginal (the blade into the thigh 7.5 cm to 0.4; the forearm's turn 92, as before); `loco.slide` and `loco.slideHeld` clean.
+- **Rule:** NEW:stance-own-frame; NEW:reach-standing-leg

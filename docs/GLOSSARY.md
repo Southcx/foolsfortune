@@ -232,9 +232,10 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   crouch, prone; a 0.8 m capsule). *Not:* a tech, nor the wall latch's crawl along a wall.
 - **the drawn run** (`stance:cutlassRun`, `stance:cutlassSprint`, `courier/anim/stances.js`; `drawnRun`, `tools/sondelass/sondelass.js`) — the run
   and the sprint with the cutlass in hand: the run's own body, the blade held low and back. *Not:* the dash slash, a tech.
-- **the drawn slide** (plain name; `stance:cutlassSlide`, `DrawnSlide`, `DRAWN_SLIDE`, `tools/sondelass/drawnslide.js`) — the core slide with the cutlass in hand,
-  a pose only: the slide's own body, its free hand on the floor (lightly corrected onto it), the blade arm low by the hip and the blade
-  trailing behind. *Not:* the brush slide (the Soul Brush's), the drawn run, a tech.
+- **the drawn slide** (plain name; `stance:cutlassSlide`, over its drop-in `stance:cutlassSlideStart`, `DrawnSlide`, `DRAWN_SLIDE`,
+  `tools/sondelass/drawnslide.js`) — the core slide with the cutlass in hand, a pose only: the slide's own body, its free hand on the
+  floor (lightly corrected onto it), the blade arm low by the hip and the blade trailing behind. *Not:* the brush slide (the Soul
+  Brush's), the drawn run, a tech.
 - **the Paint Dive** (`courier/moves/slip.js` for now; `docs/plans/PAINT.md`) — C held in wet paint or crude: the Courier melts into it
   and swims, Splatoon's squid form. *Not:* the brush's dive, a dive into the water. *Retired:* "slip dive".
 - **the paint map** (`game.paintmap`, `src/world/ground/paintmap.js`; `docs/plans/PAINT.md`) — the one store of Lachryma on surfaces: a

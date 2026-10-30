@@ -123,6 +123,17 @@ window.__paStates = (() => {
   add('hurt.big', 'locomotion', 'a big blow from the front (the recoil)', (c) => { lab(c); const y = c.P.bodyYaw; c.ch.flinch(0.9, [-Math.sin(y), 0, -Math.cos(y)]); c.run(60); });
   add('hurt.behind', 'locomotion', 'a big blow from behind (the lurch)', (c) => { lab(c); const y = c.P.bodyYaw; c.ch.flinch(0.9, [Math.sin(y), 0, Math.cos(y)]); c.run(60); });
   add('hurt.running', 'locomotion', 'a big blow taken running', (c) => { lab(c).hold('KeyW').warm(40); const y = c.P.bodyYaw; c.ch.flinch(0.9, [-Math.sin(y), 0, -Math.cos(y)]); c.run(50); });
+  // the unarmed kick (V, nothing in the hands: courier/moves/kick.js), its whole-body blows over the foot IK as the melee loadout's CMU
+  // kicks are (cutlass.row.*): the string to the roundhouse (it ends 126 degrees round) and the pause string's leg sweep (a turn, low)
+  const kickMoves = (c) => c.g.techs.get('kick')?.moves;
+  add('kick.string', 'locomotion', 'the unarmed kick: V tapped four times (jab, cross, haymaker, the roundhouse)', (c) => {
+    lab(c); for (let i = 0; i < 4; i++) c.press('KeyV').run(16);
+    c.run(2).until(() => !kickMoves(c)?.cur, 240).run(20);
+  });
+  add('kick.sweep', 'locomotion', 'the unarmed kick: V, V, a pause, V (the leg sweep)', (c) => {
+    lab(c).press('KeyV').run(16).press('KeyV').run(2).until(() => !kickMoves(c)?.cur, 120).run(24).press('KeyV');
+    c.run(2).until(() => !kickMoves(c)?.cur, 240).run(20);
+  });
   add('death.shatter', 'locomotion', 'the shatter: the blow, down to the knees, until the burst', (c) => { lab(c); c.g.death.begin({ why: 'blow', by: 'environment' }); c.until(() => c.ch.hidden || !c.g.death.active, 240); }, { last: true });
   add('skiff.ride', 'locomotion', 'the Solar Skiff: summoned (Y), sailed (W), a hop (Space), let down', (c) => {
     c.travel('dunes');
