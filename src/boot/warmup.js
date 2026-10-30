@@ -28,6 +28,7 @@ import { installLiveMoment } from '../core/livemoment.js';
 import { SealImprints } from '../vfx/sealimprint.js';
 import { SealPicker } from '../ui/sealpicker.js';
 import { RailReadout } from '../ui/railreadout.js';
+import { JarPlate } from '../ui/jarplate.js';
 import { GoalsWindow } from '../ui/goalswindow.js';
 import { AssayWindow } from '../ui/assaywindow.js';
 import { HudLayout } from '../ui/hudlayout.js';
@@ -140,6 +141,7 @@ export async function bootWarmup(game, made) {
     game.log.say('info', `${id ? `No skin "${id}". ` : ''}Instrument skins: ${INSTRUMENT_SKIN_ORDER.map((k) => `${k}${k === game.instrumentSkins.id ? ' (on)' : ''}`).join(', ')}.`, { key: 'instruments', throttle: 0.5 });
   } });
   game.railReadout = new RailReadout(game); game.railResults = new RailResults(game); // (the crossing's score aboard and the trip's results window, built on first use: ui/railreadout.js, ui/railresults.js; RAIL-STANDARDS.md 6)
+  game.jarPlate = new JarPlate(game); // (the Pneuka Jar's numbers while the god hand is taken, from game.god.readout(): ui/jarplate.js)
   game.goalsWindow = new GoalsWindow(game); // (the game day's three goals as a System window, on /goals and a beat at goals.set and goal.done: ui/goalswindow.js)
   game.assayWindow = new AssayWindow(game); // (the Assay as the isekai status sheet, summoned on /assay (aptitude.ask) before the Courier: ui/assaywindow.js)
   installTouchControls(game); // (touch play's controls, their look: built only once touch is on, ui/touch/index.js)

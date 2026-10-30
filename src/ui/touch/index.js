@@ -41,7 +41,7 @@ export function installTouchControls(game) {
     const now = ms / 1000, on = touchOn(game);
     if (on !== UI.on) { UI.on = on; if (on) { build(); relayout(); } else longPress.cancel(); }
     if (UI.cluster) {
-      const taken = !!game.touch?.screenTaken?.(); document.body.classList.toggle('hud-taken', on && taken); // (the pads or the paper hold the screen: the top bar and the log's ticker stand down)
+      const taken = !!(game.touch?.hudTaken ?? game.touch?.screenTaken)?.call(game.touch); document.body.classList.toggle('hud-taken', on && taken); // (the pads or the paper hold the screen: the top bar and the log's ticker stand down; a taker that keeps the HUD, a Touchstone trial whose words are the log's, does not: hudTaken)
       UI.topBar.update(now, on && !taken); UI.artBar.update(now, on); UI.godStrip.update(now, on);
       const avoid = UI.artBar.shown ? UI.artBar.bar : UI.godStrip.shown ? UI.godStrip.bar : null;
       if (avoid !== UI.cluster.avoid) { UI.cluster.avoid = avoid; UI.cluster.relayout(); }
