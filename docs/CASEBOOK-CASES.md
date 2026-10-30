@@ -4437,3 +4437,13 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** one table, `PRESS` in courier/parry.js, each value the number it always was (no feel changed); the three read it, and the
   mark's rule asks `pressWindowOf(game)`, the window of what is in hand.
 - **Rule:** 354
+
+### 2026-10-30 · The draught and the weather built no status faster (creatures/creatures.js)
+- **Seen (as read):** the glossary's draught ("a blow of that damage type builds its status faster", `DRAUGHT.build` 0.5) and the
+  weather's `buildMult` (`ECON.weather.build` 0.5) were on record, and South asked for the weather's effects back (2026-10-29); no blow
+  read either: `DRAUGHT.build` had no reader and `weather.buildMult` no caller.
+- **Cause:** both numbers were written into their tables, and the blow's build-up (`creatures.build`) was never given them; the weather's
+  other readers (where a mind rests, a fish's bite, the senses at night) were wired, this one was missed.
+- **Fix:** `build()` multiplies the amount by the draught's share of the blow's type (`draughtBuild`, the Courier's blows only) and by the
+  weather where the struck thing stands (`weather.buildMult`, anyone's blow), ahead of Impact's poise branch, so a stun builds faster too.
+- **Rule:** 355

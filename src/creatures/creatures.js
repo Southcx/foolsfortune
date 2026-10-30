@@ -48,9 +48,14 @@ import { MIND, stateOf, pushed, settle } from '../progress/combat/mind.js';
 import { rise, enraged } from '../progress/combat/emo.js';
 import { sfx } from '../audio/sfx.js';
 import { blowWindow } from '../courier/parry.js';
-import { courierMindEffect } from '../progress/stones.js';
+import { courierMindEffect, DRAUGHT } from '../progress/stones.js';
+import { TYPE_OF } from '../progress/weather.js';
 import { friendlyDamage, tolerance, FRIENDLY } from '../progress/combat/friendly.js';
 import { figmentMarkOf } from '../progress/combat/figmenttelegraphs.js';
+
+/** The draught's worth on a blow (progress/stones.js DRAUGHT): of the drunk feeling's damage type, its status builds up to half again as
+ *  fast at a full draught (its share 0..1, fading over a real minute); any other type, as it is. */
+const draughtBuild = (d, type) => { let k = 1; for (const a in d || {}) if (TYPE_OF[a] === type) k = Math.max(k, 1 + DRAUGHT.build * Math.min(1, d[a] || 0)); return k; };
 
 export const STATUSES = ['halt', 'slow', 'sleep', 'forget', 'flee', 'soft', 'calm', 'melt', 'stun', 'doubt', 'charm', 'blind', 'confusion'];
 
@@ -124,6 +129,7 @@ export class Creatures {
   build(c, type, amount, by = 'courier', cause = 'shot') {
     if (!c?.alive || !TYPES[type] || amount <= 0) return;
     const take = stateOf(c.mind).take;
+    amount *= (by === 'courier' ? draughtBuild(this.game.draught, type) : 1) * (this.game.weather?.buildMult?.(type, c.pos) ?? 1); // (the draught's, above; and its feeling's weather where it stands, anyone's blow: progress/weather.js)
     if (type === 'impact') { this.game.stun?.add(c, TYPES.impact.poise * amount * take, { by, cause }); return; }
     if (by === 'courier') amount *= this.game.laidSpread?.swordsK ?? 1; // (Swords' tally: the status your blows build, progress/laidspread.js)
     const T = TYPES[type], tn = c.friend ? c.tolerance?.[T.builds] : null; // (a friend's next status of this kind needs more build-up: tolerance)
