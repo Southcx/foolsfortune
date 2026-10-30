@@ -13,6 +13,7 @@
 //     ms, layers, calls (the draw calls it adds to the empty stage at the middle time) }, sheet() -> a PNG data URL, programs() -> the
 //     compiled programs' names }   query: w, h (CSS px), dpr, lines (0 native), tier (high | low | minimum), body (side | center | none)
 //   ctx.at [x, y, z] places the effect (an aura at a body's middle: '{"at":[0,0.9,0],"scale":1.8}' with --body center); the ground's middle by default
+//   ctx.from, ctx.to [x, y, z] a line's ends (a tracer's, a chain's, a bolt's: '{"from":[-2.2,1.1,0],"to":[2.5,1.1,0]}')
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { T } from '/src/core/config.js';
@@ -94,6 +95,7 @@ window.__gallery = {
     reset(); seed = seedOf(name); simT = 1000;
     if (base === null) { renderer.info.autoReset = false; renderer.info.reset(); post.render(scene, camera); base = renderer.info.render.calls; renderer.info.autoReset = true; } // (the empty stage's draws)
     const { at: where, ...rest } = ctx; // (`at` [x, y, z]: where it plays, e.g. an aura at a body's middle; the ground's middle by default)
+    for (const k of ['from', 'to']) if (Array.isArray(rest[k])) rest[k] = new THREE.Vector3(...rest[k]); // (a line's ends [x, y, z]: a tracer's, a chain's, a bolt's)
     const h = vfx.play(name, { pos: new THREE.Vector3(...(where || [0, 0, 0])), dir: new THREE.Vector3(...dir), normal: new THREE.Vector3(0, 1, 0), floor: 0, ...rest });
     const held = !!h.layers?.some((s) => s.L.dur === Infinity);
     let t = 0, single = null, calls = 0;
