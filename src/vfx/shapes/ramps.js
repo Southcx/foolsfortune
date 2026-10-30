@@ -12,7 +12,7 @@
 // its feeling. Stops are written as a painter picks them (sRGB hex); the program takes them to linear light (vfx/shapes/program.js).
 //
 // Gall's row keeps its feeling's violet (COLOR.gall: the feelings own their hues, CLAUDE.md and the glossary) at its heart, with the
-// olive and bile of its character at its two ends, as the shells' Gall cloud already pairs olive with lilac (library.js 'shell.gall.land').
+// olive and bile of its character at its two ends, as the shells' Gall cloud already pairs olive with lilac (vfx/library/feelings/gall.js 'shell.gall.land').
 //
 // Prior art: the gradient-map ("colour over value") of Riot's and Blizzard's effects (League of Legends' VFX style guide; Diablo III's
 // and Overwatch's ramps: one greyscale texture, coloured and faded by a lookup), Simon Trümpler's breakdowns of the same; Unreal's
