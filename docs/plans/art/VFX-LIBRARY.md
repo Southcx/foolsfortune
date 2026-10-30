@@ -7,7 +7,9 @@ emotions ... the class arts ... really flex." Prior art: `docs/ref/VFX-PRIOR-ART
 The kit everything is built on: a **shape layer** (`type: 'shape'`, `src/vfx/shapes/`): one program, procedural forms with UVs made for
 scrolling, two tiling patterns (main and mask) scrolled apart, a flow pattern warping them, a gradient ramp over value and life, alpha
 erosion over life, edge gradients, a fresnel rim, a hot core, additive or alpha-over in one blend. `ramp: 'feeling' | 'domain' | 'suit'`
-and `main: 'motif'` read the caller's context, so one effect is skinned by whoever plays it.
+and `main: 'motif'` read the caller's context, so one effect is skinned by whoever plays it. An additive layer also covers a share of
+what is behind it (`back`, 0.5 by default): on the Dunes' noon sand pure light clips to white and loses its hue; the share dims the
+ground under it a little so the colour reads, and on a dark ground it changes nothing.
 
 ## 1. The layering law (every effect, no exceptions)
 

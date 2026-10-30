@@ -238,11 +238,12 @@ export const MAJOR_ART_EFFECTS = {
 
   // Starlight (the Star, Swords; Ouranurgy): a column of the night sky poured down where you stand, star motes falling
   'art.wish.use': { layers: [
-    // PRIMARY: the column of night: dark (alpha-over ink), and the stars poured down inside it
-    own('ink', M, { form: 'band', add: 0, main: 'noise', tile: [3, 2], scroll: [0, -0.4], scale: 2.2, stretch: [1, 5.5, 1], edgeV: [0.05, 0.5], rim: -0.5, core: 0, dur: 2.6, kmul: 0.55,
+    // PRIMARY: the column of night: dark (alpha-over ink), and the stars poured down inside it; both soft to nothing at their sides (a
+    // wide rim: a hard-sided column of ink reads as a box)
+    own('ink', M, { form: 'band', add: 0, main: 'noise', tile: [3, 2], scroll: [0, -0.4], scale: 2.2, stretch: [1, 5.5, 1], edgeV: [0.05, 0.5], rim: -1, rimPow: 1.3, core: 0, dur: 2.6, kmul: 0.55,
       erode: [[0, 0.5], [0.15, 0.1], [0.7, 0.15], [1, 1]], rampShift: 0 }),
     own(S, M, { form: 'band', main: 'stars', tile: [6, 4], scroll: [0, -0.6], mask: 'noise', maskTile: [2, 2], maskScroll: [0.03, -0.2], scale: 2.1, stretch: [1, 5.7, 1], edgeV: [0.05, 0.5],
-      rim: -0.3, dur: 2.6, kmul: 0.6, erode: [[0, 0.4], [0.12, 0.05], [0.7, 0.1], [1, 1]] }),
+      rim: -0.85, rimPow: 1.5, dur: 2.6, kmul: 0.6, erode: [[0, 0.4], [0.12, 0.05], [0.7, 0.1], [1, 1]] }),
     // PRIMARY (its heart): a streak of the sky dropped on the spot, white as it lands
     skyDrop(M, {}), core(M, { s: 1.4, y: 0.6, at: 0.2 }), groundRing(S, M, { r: 3, dur: 0.7, at: 0.2 }),
     // SECONDARY: the armillary turning in the column

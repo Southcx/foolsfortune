@@ -4401,3 +4401,13 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** every such shape's erosion starts at 0.2 (its early keys at 0.22 or more), so value-0 texels are cut while the shift heats the
   rest (vfx/library/hits.js, damage.js, generics.js, temper.js, ult.js). Seen again at 896 x 414 at 2x: the crescent, the rims soft.
 - **Rule:** NEW:shape-hot-start
+
+### 2026-10-30 · The class arts' looks faded into the noon sand (Calissa, the VFX refresh, in game at 896 x 414 at 2x)
+- **Seen:** Bulwark used at the Weir at noon: its shell and floor ring a faint pale band, their gold barely there; the same effect over
+  the gallery's mid-brown ground reads gold.
+- **Cause (as read):** every additive shape layer wrote alpha 0 (`uAdd` 1), so it only added light. On sand graded near white the added
+  gold clips to white in red and green and keeps little in blue, so its hue is gone; nothing in it dims what is behind.
+- **Fix:** an additive shape layer also covers `back` of what is behind it, by its own alpha (vfx/shapes/program.js `uBack`, default
+  `SHAPE_BACK.k` 0.5, a layer's `back` over it). Measured: the crop round Bulwark in game changed by a mean 3.7 of 255 at 0.3, the colour
+  holding at the ring's strokes; over the gallery's mid-brown ground at 0.5 the mean change is 0.05 to 0.6 (no shadow read).
+- **Rule:** NEW:additive-covers

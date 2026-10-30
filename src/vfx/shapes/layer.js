@@ -21,6 +21,7 @@
 //   rim, rimPow a fresnel: > 0 a shell lit at its edge, < 0 a volume soft there (the shape's own: a dome 0.6, a beam -0.7) (2.5)
 //   edgeV, edgeU [a, b]  shares of v and u faded at each end (the shape's own)   core, coreAt  the hot heart (0.6, 0.8)
 //   glow        the HDR lift the bloom catches (1.5)   add  1 additive (default) .. 0 alpha-over (smoke, ink, Dread)
+//   back        how much of what is behind an additive layer it covers (SHAPE_BACK.k, 0.5; 0 pure light): its colour kept on a bright ground
 //   tint        a colour multiplied in (vfx.js's colours): the caller's ('tint') on the tint ramp, white on every other (a feeling's
 //               ramp is never stained by a tool's tint unless asked: tint: 'tint')
 //   face        'ground' (stood as built, turned about the world's up), 'heading' (that, turned to the blow's heading on the ground),
@@ -44,7 +45,7 @@ import { mindTick } from '../labradorite.js';
 import { shapeForm } from './forms.js';
 import { patternPick } from './textures.js';
 import { rampRow, rampV, RAMPS } from './ramps.js';
-import { shapeUniforms, makeShapeMaterial } from './program.js';
+import { shapeUniforms, makeShapeMaterial, SHAPE_BACK } from './program.js';
 
 /** A curve over life, as vfx.js reads one: [[t, v], ...] eased between its keys, or a number. */
 function curve(c, t) {
@@ -74,7 +75,7 @@ export function shapeLayer(game, L = {}, ctx = {}) {
   set2(u.uSeed, L.seed, [Math.random(), Math.random()]); set2(u.uEdgeV, L.edgeV, F.edgeV); set2(u.uEdgeU, L.edgeU, F.edgeU);
   u.uRampRow.value = rampV(rampRow(L.ramp ?? 'tint', ctx));
   u.uRim.value = L.rim ?? F.rim; u.uRimPow.value = L.rimPow ?? 2.5; u.uSoft.value = L.soft ?? 0.12;
-  u.uCore.value = L.core ?? 0.6; u.uCoreAt.value = L.coreAt ?? 0.8; u.uGlow.value = L.glow ?? 1.5; u.uAdd.value = L.add ?? 1;
+  u.uCore.value = L.core ?? 0.6; u.uCoreAt.value = L.coreAt ?? 0.8; u.uGlow.value = L.glow ?? 1.5; u.uAdd.value = L.add ?? 1; u.uBack.value = L.back ?? SHAPE_BACK.k;
   u.uTint.value.set(ctx.tint ?? 0xffffff);
   const erode = L.erode ?? (held ? 0 : ERODE), shift = L.rampShift ?? (held ? 0 : SHIFT);
   const mat = makeShapeMaterial(u);

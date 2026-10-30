@@ -18,6 +18,8 @@
 //   CORE     values over uCoreAt pushed toward white by uCore: a hot heart
 //   OUT      tinted (uTint), lifted for the bloom (uGlow, HDR), faded by uK (past 1 it brightens: a tier ladder's glow); premultiplied, so ONE blend state serves both kinds: uAdd 1
 //            is pure additive light, uAdd 0 alpha-over (smoke, ink, Dread's dark shapes), between them a mix
+//   BACK     an additive layer also covers uBack of what is behind it, by its alpha: on the noon sand an added gold clips to white and loses
+//            its hue, so the ground under it is dimmed a little and the colour reads; on a dark ground covering the dark changes nothing
 //
 // The patterns' clock is the game's real clock, shared (vfx/labradorite.js mindTime, which the shape layers tick), plus a per-play
 // offset (uSeed) so two of one effect never stamp the same; a scroll's offset is kept to its fraction (the patterns repeat every tile),
@@ -50,7 +52,7 @@ export const SHAPE_F = /* glsl */`
 uniform sampler2D uMainMap, uMaskMap, uFlowMap, uRamp;
 uniform vec4 uMainCh, uMaskCh, uFlowCh;
 uniform vec2 uTileMain, uScrollMain, uTileMask, uScrollMask, uTileFlow, uScrollFlow, uSeed, uEdgeV, uEdgeU;
-uniform float uTime, uMainK, uMaskK, uFlowK, uErode, uSoft, uRampRow, uRampShift, uRim, uRimPow, uCore, uCoreAt, uK, uGlow, uAdd;
+uniform float uTime, uMainK, uMaskK, uFlowK, uErode, uSoft, uRampRow, uRampShift, uRim, uRimPow, uCore, uCoreAt, uK, uGlow, uAdd, uBack;
 uniform vec3 uTint;
 varying vec2 vUv; varying vec4 vCol; varying vec3 vN; varying vec3 vV;
 
@@ -83,8 +85,11 @@ void main() {
   col = mix(col, vec3(1.0), clamp(uCore * smoothstep(uCoreAt, 1.0, value), 0.0, 1.0));
   float a = clamp(r.a * cut * min(uK, 1.0), 0.0, 1.0);
   if (a < 0.002) discard;
-  gl_FragColor = vec4(col * uGlow * max(uK, 1.0) * a, a * (1.0 - uAdd));
+  gl_FragColor = vec4(col * uGlow * max(uK, 1.0) * a, a * (1.0 - uAdd + uAdd * uBack));
 }`;
+
+/** How much of what is behind an additive layer it covers, by default (a layer's `back` overrides it; 0 pure additive). */
+export const SHAPE_BACK = { k: 0.5 };
 
 /** The program's uniforms, each with its default (a ring of noise in the tint ramp, additive), and the caller's over them. */
 export function shapeUniforms(over = {}) {
@@ -96,7 +101,7 @@ export function shapeUniforms(over = {}) {
     uSeed: v2(0, 0), uEdgeV: v2(0, 0), uEdgeU: v2(0, 0),
     uTime: mindTime, uMainK: { value: 1 }, uMaskK: { value: 0 }, uFlowK: { value: 0 }, uErode: { value: 0 }, uSoft: { value: 0.12 },
     uRampRow: { value: rampV(RAMPS.tint) }, uRampShift: { value: 0 }, uRim: { value: 0 }, uRimPow: { value: 2.5 },
-    uCore: { value: 0.6 }, uCoreAt: { value: 0.8 }, uK: { value: 0 }, uGlow: { value: 1.5 }, uAdd: { value: 1 }, uTint: { value: new THREE.Color(1, 1, 1) },
+    uCore: { value: 0.6 }, uCoreAt: { value: 0.8 }, uK: { value: 0 }, uGlow: { value: 1.5 }, uAdd: { value: 1 }, uBack: { value: SHAPE_BACK.k }, uTint: { value: new THREE.Color(1, 1, 1) },
     ...over,
   };
 }

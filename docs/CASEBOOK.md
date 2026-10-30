@@ -991,3 +991,5 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 350. **A timer a lent verb reads runs where the tool ticks unheld.** A cooldown counted only in the in-hand update freezes for the sub; count it in the part of the tool's tick that runs drawn or stowed.
 NEW:shape-hot-start. **A shape layer that starts hot starts eroded.** A positive `rampShift` reads even a value-0 texel up the
   ramp, so a faded edge (edgeV, edgeU, a rim) comes back at the geometry's hard edge unless the erosion under it cuts it (≥ 0.2 at the start).
+NEW:additive-covers. **An additive effect also covers a share of what is behind it.** Pure light on a bright ground clips to white
+  and loses its hue; a look is checked on the noon sand as well as in the dark.
