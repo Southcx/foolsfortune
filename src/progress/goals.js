@@ -15,7 +15,7 @@
 // ones never. A new save, which has begun nothing, is given FIRST STEPS: Easy ones with the smallest asks. Laid once a game day (calendar.js: one real hour), kept in the save; a goal done stays on the list, checked.
 // A goal still open at the turn carries over once, in its slot (Hades' prophecies stay until met); only the done and the twice-carried are drawn again.
 // THE FIRST PATH (docs/plans/FIRST-HOUR.md 4): a new STORY save's three goals are instead the first three undone steps of FIRST.path, a
-// walk outward from where you wake (the Shrine at your feet, the folk, the atrium rail's view, the pots, the hub's chest through the hole,
+// walk outward from where you wake (the Shrine at your feet, the Spirit Garden through its arch (enter, plant the clay's seed, carve the starter slab), the folk, the atrium rail's view, the pots, the hub's chest through the hole,
 // the Index to the Dunes, a slip jelly, the board, the lure, the course), and a step done is replaced by the next at once (Nook Miles+'s
 // refill; Breath of the Wild's Great Plateau, where the next shrine is always in view). It ends when the path is walked, or once enough
 // achievements off the path are done that you plainly found your own way (FIRST.enough: 40; at 15 counting all, QA-C's hour ended it at
@@ -33,9 +33,11 @@ export const SLOTS = ['near', 'elsewhere', 'stretch'];
 /** The first path's steps, in the order the map meets them (FIRST-HOUR.md 4), where each is (placeholder words, Espada's), and how many
  *  achievements off the path end it early. */
 export const FIRST = {
-  path: ['sr1', 'fk1', 'sk12', 'br1', 'tc1', 'pl6', 'jl1', 'sf1', 'an1', 'cx3'],
+  path: ['sr1', 'gw1', 'gw2', 'gw3', 'fk1', 'sk12', 'br1', 'tc1', 'pl6', 'jl1', 'sf1', 'an1', 'cx3'],
   where: { // (each {id} said for the device last touched: progress/devicewords.js deviceText, at the log's line; Espada's words, 2026-10-27)
-    sr1: 'The Shrine is beside where you wake.', fk1: 'Saggar is on the workshop floor.', sk12: 'The nearest is the atrium rail, upstairs in the workshop.',
+    sr1: 'The Shrine is beside where you wake.', gw1: 'At the Shrine beside where you wake, {use} and choose YOUR SPIRIT GARDEN.',
+    gw2: 'Your first seed waits in the shed by the garden\'s gate: take it, carry it up into the open sky and let go.', gw3: 'Your first spirit slab waits at the plate shrine on the Athanor: a lotus flies you there. {use} at the shrine, then carve.',
+    fk1: 'Saggar is on the workshop floor.', sk12: 'The nearest is the atrium rail, upstairs in the workshop.',
     br1: 'The pots are all round the workshop: {use} lifts one, {primary} throws it.', tc1: 'A chest stands in the basement\'s hub, down the hole in the workshop floor.',
     pl6: 'The Index in the basement\'s hub sends you there.', jl1: 'Three sit on the sand just past the Weir, in the Dunes.', sf1: 'In the Dunes, {skiff} calls the Solar Skiff.',
     an1: 'At the Weir\'s pier, {box} opens your Pneuka Box: make the Sondelass your main there, then {draw} draws it; choose its rod form.', cx3: 'The course rings the basement\'s hub: eight stations, one lap.',

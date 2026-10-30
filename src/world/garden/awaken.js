@@ -24,6 +24,7 @@ import { VISITORS, wantsMet, SETTLE, FEATURES } from '../../progress/realm.js';
 import { today, now as calNow } from '../../core/calendar.js';
 import { Fossil } from '../../vfx/garden/fossil.js';
 import { dirOf } from './place.js';
+import { ROSTER, photoKindOf } from '../../progress/scans.js';
 
 export const FOSSIL = 'fossil.lachrymite';
 const SONG = 15; // (real seconds: the Awakening Song, Wanda's, plays once while the fossil wakes)
@@ -36,8 +37,8 @@ export class Awaken {
 
   /** The photographs that could become a spirit slab: creatures in the Compendium (tools/veritome/book.js photos), not yet used. */
   plates() {
-    const P = this.game.veritome?.book?.photos || {}, kinds = new Set(Object.keys(VISITORS).concat(['slipjelly', 'clapperjar', 'glint', 'lobber', 'spirit']));
-    return Object.entries(P).filter(([k, p]) => kinds.has(k) && p?.stars > 0 && !this.used[k]).map(([k, p]) => ({ kind: k, stars: p.stars }));
+    const P = this.game.veritome?.book?.photos || {}, kinds = new Set(ROSTER), garden = (k) => ROSTER.find((r) => photoKindOf(r) === k) || k; // (the Book's key is the creature's code kind, 'clapper'; the garden's the glossary's, 'clapperjar': progress/scans.js photoKindOf)
+    return Object.entries(P).map(([k, p]) => [garden(k), p]).filter(([k, p]) => kinds.has(k) && p?.stars > 0 && !this.used[k]).map(([k, p]) => ({ kind: k, stars: p.stars }));
   }
   /** In the Grove: a fossil from the box wakes while the Awakening Song plays (it leaves the box when it breaks open). */
   fossil() {

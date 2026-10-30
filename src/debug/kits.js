@@ -14,8 +14,12 @@ const mats = (count, tier) => KINDS.map((k) => [`mat.${k}`, count, { tier }]);
 export const DEBUG_KITS = {
   press: { at: 'athanor', for: 'Soul Alchemy: the press station (SOUL-ALCHEMY.md 4)', by: 'dovina', tests: [],
     items: [...mats(2, 1), ...mats(1, 3)], cubes: 2000 },
-  garden: { at: 'shed', for: 'the Spirit Garden: features, beds, a bought planetoid', by: 'dovina', tests: [],
+  garden: { at: 'shed', for: "the Spirit Garden: beds, decor, the ring's seeds (the lend panel's Spirit Garden row gives every seed)", by: 'dovina', tests: [],
     items: mats(3, 1), cubes: 3000 },
+  bench: { at: 'bench', for: 'the carving bench: three spirit slabs to carve (F at the bench), and the plate shrine\'s SCAN row', by: 'petra', tests: [],
+    items: [['slab', 1, { kind: 'slipjelly', stars: 1, seed: 11, from: 'plate' }], ['slab', 1, { kind: 'clapperjar', stars: 2, seed: 23, from: 'plate' }], ['slab', 1, { kind: 'glint', stars: 3, seed: 37, from: 'plate' }]] }, // (one slab a kind, each held by its kind: debugchest.js give)
+  mimicry: { at: 'mimic.flats', for: "a mimicry puzzle: F at the flats' puzzle stone; its powers are lent while it is open (the Mimicry Puzzles lend opens every rung)", by: 'petra', tests: [],
+    items: [] }, // (nothing to carry: the puzzle lends its own powers; the chest is its teleport)
   ostraca: { at: 'sealed', for: 'the ostraca: digging one up, ringing the sealed room open', by: 'dovina', tests: ['T164', 'T165'],
     items: [['tool.dreamvane', 1]] },
   crucibelle: { at: 'busk.weir', for: "the Crucibelle's pendulum by sight, and busking", by: 'dovina', tests: [],

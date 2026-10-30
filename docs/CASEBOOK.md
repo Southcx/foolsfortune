@@ -1060,3 +1060,6 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 377. **What a window shows while it pauses the game is ticked in the window's branch.** A frame that returns
   early under a modal never reaches the updates below it: a camera, a clock or a look that lives inside the window (the scanner's page,
   the Box's reading) is called from the modal branch, and a probe counts its calls with the window open.
+378. **A thing kept under one module's key is looked up by that key, or through a map named beside it.** When the
+  code's kind and the glossary's word differ (`clapper`, `clapperjar`), the module that joins two tables owns the map (`photoKindOf`),
+  and a check reads one through the other.
