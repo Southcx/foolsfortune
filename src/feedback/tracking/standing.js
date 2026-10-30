@@ -18,7 +18,7 @@ export function standingRules({ on, L, log, g }) {
     log.say('ach', `Achievement complete (${e.tierName}, ${e.points} ${e.points === 1 ? 'pt' : 'pts'}): ${e.ach}.`);
     if (e.title) log.say('ach', `You have earned the title "${e.title}".`);
   });
-  on('rank.up', (e) => log.say('ach', `You are now known as ${/^[AEIOU]/i.test(e.rank) ? 'an' : 'a'} ${e.rank}.`));
+  on('rank.up', (e) => log.say('ach', `You are now known as ${/^Fool/.test(e.rank) ? '' : /^[AEIOU]/i.test(e.rank) ? 'an ' : 'a '}${e.rank}.`));
 
   // ---- the System: what has been learned
   on('system.unlock', (e) => {
