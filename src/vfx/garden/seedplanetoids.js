@@ -28,15 +28,13 @@
 // in drips above a bare foot ring), the throwing rings of a wheel-thrown pot, and the fossil beds of Dinosaur Provincial Park and the
 // Jurassic Coast's ammonites, here in Lachrymite as vfx/garden/fossil.js's are.
 //
-//   import { SEED_LOOKS, SEED_KIND_OF, matterOf } from './seedplanetoids.js'   SEED_LOOKS[kind] -> { palette, matter, roots?, shape, skin, dress }
+//   import { SEED_LOOKS, matterOf } from './seedplanetoids.js'   SEED_LOOKS[kind] -> { palette, matter, roots?, shape, skin, dress }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { fbm3, cells3, hash3, motifOf, lightDark } from './seedskins.js';
 import { COLOR } from '../../progress/weather.js';
 
-/** Petra's stand-in names (world/garden/orbit.js STAND_IN) read as the seeds' kinds, until her STAND_IN is deleted (her handoff). */
-export const SEED_KIND_OF = { fossils: 'bone', moon: 'crystal', koi: 'coral' };
 
 const TAU = Math.PI * 2, _y = new THREE.Vector3(0, 1, 0), _v = new THREE.Vector3(), _w = new THREE.Vector3(), _c = new THREE.Color(), _e = new THREE.Color();
 const sstep = (a, b, v) => { const t = Math.min(1, Math.max(0, (v - a) / (b - a))); return t * t * (3 - 2 * t); };
@@ -146,7 +144,7 @@ export const SEED_LOOKS = {
     shape(x, y, z, r) { return keel(y, r + 0.008 * Math.sin(Math.asin(clamp1(y)) * 34) * (1 - y * y)); },
     skin(L, i, x, y, z, c) {
       const rings = Math.sin(Math.asin(clamp1(y)) * 34), slip = sstep(0.55, 0.72, fbm3(x * 3 + 1, y * 3, z * 3));
-      c.copy(L.sLow).lerp(L.sTop, sstep(-0.7, 0.6, y)).lerp(L.sRock, sstep(-0.35, -0.85, y));
+      c.copy(L.cLow).lerp(L.cTop, sstep(-0.7, 0.6, y)).lerp(L.cRock, sstep(-0.35, -0.85, y));
       c.multiplyScalar(0.84 + 0.16 * rings).lerp(_c.setHex(0xe8b48a), slip * 0.4);
     },
     dress(L, std) {
@@ -176,8 +174,8 @@ export const SEED_LOOKS = {
     },
     skin(L, i, x, y, z, c) {
       const F = facetOf(x, y, z), th = cleftAngle(x, y, z);
-      c.copy(L.sLow).lerp(L.sTop, hash3(F.id, 1, 2) * 0.8 + 0.2 * sstep(-0.3, 0.8, y)).lerp(_c.setHex(0xa8c4f0), 0.35 * hash3(F.id, 4, 9)).multiplyScalar(0.78 + 0.34 * hash3(F.id, 7, 3));
-      c.lerp(L.sRock, sstep(-0.2, -0.9, y) * 0.7);
+      c.copy(L.cLow).lerp(L.cTop, hash3(F.id, 1, 2) * 0.8 + 0.2 * sstep(-0.3, 0.8, y)).lerp(_c.setHex(0xa8c4f0), 0.35 * hash3(F.id, 4, 9)).multiplyScalar(0.78 + 0.34 * hash3(F.id, 7, 3));
+      c.lerp(L.cRock, sstep(-0.2, -0.9, y) * 0.7);
       // a face's edge catching the light
       c.lerp(_c.setHex(0xf6f2ff), 0.6 * (1 - sstep(0.006, 0.03, F.d1 - F.d2)));
       if (L.R >= GEODE.open && th < GEODE.half + 0.04) {
@@ -244,10 +242,10 @@ export const SEED_LOOKS = {
       const drip = 0.06 * Math.sin(lon * 7) + 0.04 * Math.sin(lon * 13 + 1) - 0.14 * sstep(0.7, 0.95, Math.abs(Math.sin(lon * 5.5 + 0.6))), edge = B.glazeTo + drip;
       // shino outside: cream, thicker toward its bead, iron in it; under the bead the bare foot, a shadow at the bead
       _e.setHex(0xece2cc).lerp(_c.setHex(0xd8c8aa), sstep(edge - 0.25, edge, th)).lerp(_c.setHex(0xb8683a), sstep(0.62, 0.75, fbm3(x * 6, y * 6, z * 6)) * 0.5);
-      _c.copy(L.sRock).multiplyScalar((0.95 + 0.08 * fbm3(x * 8, y * 8, z * 8)) * (1 - 0.25 * (1 - sstep(0.02, 0.09, th - edge))));
+      _c.copy(L.cRock).multiplyScalar((0.95 + 0.08 * fbm3(x * 8, y * 8, z * 8)) * (1 - 0.25 * (1 - sstep(0.02, 0.09, th - edge))));
       _e.lerp(_c, sstep(edge - 0.03, edge + 0.05, th));
       // the well, the garden lived in, blended in over two rows of vertices; then the lip's iron over it all
-      c.copy(L.sLow).lerp(L.sTop, sstep(B.lip, 0.1, th)).lerp(_e, sstep(B.lip - 0.12, B.lip - 0.02, th));
+      c.copy(L.cLow).lerp(L.cTop, sstep(B.lip, 0.1, th)).lerp(_e, sstep(B.lip - 0.12, B.lip - 0.02, th));
       c.lerp(_c.setHex(0x7a3c22), 1 - sstep(0.04, 0.11, Math.abs(th - B.lip)));
     },
     dress() {},
@@ -259,7 +257,7 @@ export const SEED_LOOKS = {
     skin(L, i, x, y, z, c) {
       const p = Math.acos(Math.min(1, Math.abs(y))), q = Math.exp(-((p / RING.wide) ** 2)), lon = Math.atan2(x, z);
       // porcelain going to celadon blue into the dimple, then the hole's indigo dark
-      c.copy(L.sLow).lerp(L.sTop, 0.6 + 0.4 * Math.abs(y)).lerp(_c.setHex(0x9ab4d8), sstep(0.15, 0.4, q) * 0.4).lerp(_c.setHex(0x221c50), sstep(0.35, 0.75, q)).lerp(_c.setHex(0x0e0a24), sstep(0.75, 0.95, q));
+      c.copy(L.cLow).lerp(L.cTop, 0.6 + 0.4 * Math.abs(y)).lerp(_c.setHex(0x9ab4d8), sstep(0.15, 0.4, q) * 0.4).lerp(_c.setHex(0x221c50), sstep(0.35, 0.75, q)).lerp(_c.setHex(0x0e0a24), sstep(0.75, 0.95, q));
       // the hole's gold rim
       c.lerp(_c.setHex(0xe0b04a), 1 - sstep(0.025, 0.07, Math.abs(p - RING.gold)));
       // the film's schiller in its belt

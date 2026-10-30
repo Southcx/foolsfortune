@@ -1052,9 +1052,14 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 374. **A warm-up compiles once, at its owner's first build, under the cover.** A look rebuilt in play (more instances, a
   new geometry) keeps its materials and so their programs; compiling it again from inside the frame is done under another render state
   and leaves programs no draw uses. Guard the compile with a flag cleared only when the materials are disposed.
-NEW:throttle-says-the-last. **A throttled log line says where a burst ended, never where it began.** When one act emits a run of events
+375. **A throttled log line says where a burst ended, never where it began.** When one act emits a run of events
   in the same tick (a feed past several sizes, a chain's steps), a rule that says each under a throttled key says the first and drops the
   rest: gather the tick's events and say the last (or the sum) once, after the tick.
+376. **A close-up crops to a face only where there is one.** A portrait that cuts to a head reads a faceless
+  body as a featureless mass: give that body its whole silhouette in frame, and light it for its own albedo, not the house's.
+377. **What a window shows while it pauses the game is ticked in the window's branch.** A frame that returns
+  early under a modal never reaches the updates below it: a camera, a clock or a look that lives inside the window (the scanner's page,
+  the Box's reading) is called from the modal branch, and a probe counts its calls with the window open.
 NEW:one-kind-one-key. **A thing kept under one module's key is looked up by that key, or through a map named beside it.** When the
   code's kind and the glossary's word differ (`clapper`, `clapperjar`), the module that joins two tables owns the map (`photoKindOf`),
   and a check reads one through the other.

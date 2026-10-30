@@ -5,7 +5,7 @@
 // gives is counted (items `from: 'debug'`, cubes earned as 'debug': tracking.js and the cubes skip both). It says itself once in the
 // log (`debug.chest`, a tracking rule); its place is `debug.<kit>` (/goto debug.press); the Index lists every one under DEBUG. A kit's chest comes out at the publish
 // after its tests pass (Petra deletes the row).
-// Two stand in the Spirit Garden (the press's and the shed's): there they are the realm's features (F through realm.use), and their
+// Three stand in the Spirit Garden (the press's, the shed's and the carving bench's): there they are the realm's features (F through realm.use), and their
 // places set the Pneuka Jar down beside them once you are inside.
 //
 // Prior art: the debug crates of studio test builds (Bethesda's QASmoke chest, Nintendo's debug rooms) and the Source engine's
@@ -25,7 +25,7 @@ import { zoneOf } from '../render/zonemap.js';
 /** Calissa's crate, casting no shadow (a debug crate is not the world's: and no depth program compiled in play for it). */
 const crate = () => { const C = debugChestModel(); C.group.traverse((o) => { o.castShadow = false; }); return C; };
 
-const REACH = 2.0, GARDEN = new Set(['athanor', 'shed']);
+const REACH = 2.0, GARDEN = new Set(['athanor', 'shed', 'bench']);
 const _v = new THREE.Vector3(), _up = new THREE.Vector3(0, 1, 0);
 
 export class DebugChests {
@@ -38,7 +38,8 @@ export class DebugChests {
       return best;
     });
     for (const kit of Object.keys(DEBUG_KITS)) { // (a garden chest's place goes by go(): travel() would set the Courier down in the garden's zone outside it)
-      game.places?.add(`debug.${kit}`, { name: `the debug chest: ${kit}`, at: () => this.get(kit)?.pos.clone() ?? null, near: 1.4, note: `F: ${DEBUG_KITS[kit].for}`, via: GARDEN.has(DEBUG_KITS[kit].at) ? () => this.go(kit) : null });
+      game.places?.add(`debug.${kit}`, { name: `the debug chest: ${kit}`, at: () => this.get(kit)?.pos.clone() ?? (GARDEN.has(DEBUG_KITS[kit].at) ? null : this.spot(DEBUG_KITS[kit].at)?.pos ?? null), // (its spot before the chest has stood: the first frame's)
+       near: 1.4, note: `F: ${DEBUG_KITS[kit].for}`, via: GARDEN.has(DEBUG_KITS[kit].at) ? () => this.go(kit) : null });
     }
     // the Index: a DEBUG heading under the rooms (world/rooms.js goRoom sends 'debug' here)
     const rooms = game.course?.rooms;
@@ -74,6 +75,7 @@ export class DebugChests {
       case 'well.mouth': { const M = g.well?.mouthPos; if (!M) return null; const x = M.x + 3.4, z = M.z + 1.4; return { pos: new THREE.Vector3(x, sand(x, z, M.y), z), face: M.clone() }; }
       case 'jetty': { const B = g.dunes?.beach; const L = B?.landing?.(); if (!L) return null; const x = L.pos.x, z = L.pos.z - 2.6; return { pos: new THREE.Vector3(x, sand(x, z, L.pos.y), z), face: L.pos.clone().setX(L.pos.x + 4) }; } // (on the sand by the jetty's foot, facing the sea)
       case 'opensea.jetty': { const B = g.dunes?.beach; const L = B?.landing?.(); if (!L) return null; const x = L.pos.x + 2.4, z = L.pos.z - 2.6; return { pos: new THREE.Vector3(x, sand(x, z, L.pos.y), z), face: L.pos.clone().setX(L.pos.x + 4) }; } // (beside the jetty's own chest, a step along the sand: the open sea's islet puzzles' kit, Dovina's)
+      case 'mimic.flats': case 'mimic.shore': case 'mimic.ridges': case 'mimic.ruins': { const st = g.mimicry?.stones?.find((x) => `mimic.${x.site.id}` === at); if (!st) return null; const x = st.pos.x + 2.2, z = st.pos.z + 1.2; return { pos: new THREE.Vector3(x, sand(x, z, st.pos.y), z), face: st.pos.clone() }; } // (a step off the puzzle stone, off its patch's side)
       case 'oasis.duel': return g.duelFoes?.chestSpot() ?? null; // (beside the test aberrant Lantern Wisp, by the Weir: world/duel/duelfoes.js)
       case 'throwingRoom.index': return g.throwingRoom ? { pos: new THREE.Vector3(TR.console.x, 0, TR.console.z - 1.7), face: TR.console.clone() } : null;
       case 'throwingRoom.paintrange': { const S = g.throwingRoom?.paintRange?.stand; return S ? { pos: S.pos.clone().add(new THREE.Vector3(-1.2, 0, 1.6)), face: S.pos.clone() } : null; } // (behind the stand mark, a step aside)
@@ -104,6 +106,8 @@ export class DebugChests {
       site.features.push({ kind: 'debugChest', kit, planet, pos, mesh: look.group });
     };
     if (DEBUG_KITS.press) put('press', F.planet, F.O.clone().addScaledVector(F.E, -(F.R + 2.2)), F.O);
+    const B = this.game.realm?.bench?.spot;
+    if (DEBUG_KITS.bench && B) put('bench', site.by.athanor, B.pos.clone().addScaledVector(B.E, 1.6), B.pos); // (a step east of the carving bench)
     if (DEBUG_KITS.garden && shed) { const up = shed.pos.clone().sub(shed.planet.c).normalize(), t = _v.set(1, 0, 0).projectOnPlane(up).normalize(); put('garden', shed.planet, shed.pos.clone().addScaledVector(t, 3), shed.pos); }
   }
 
@@ -117,6 +121,7 @@ export class DebugChests {
       const it = itemOf(id); if (!it) continue;
       let have;
       if (data?.tier != null) have = box.slots.filter((s) => s?.id === id && s.data?.tier === data.tier).length;
+      else if (data?.kind != null) have = box.slots.filter((s) => s?.id === id && s.data?.kind === data.kind).length; // (a spirit slab by its kind)
       else have = box.held(id);
       for (let n = have; n < count; n++) {
         const d = data?.tier != null ? makeMaterial(id.slice(4), 101 + n, data.tier) : data ? { ...data } : null; // (a material by tier; anything else its data as the kit gives it: a rutter's)

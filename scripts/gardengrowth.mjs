@@ -89,7 +89,7 @@ const SHOWS = ['jar', 'hand', 'shed', 'ring', 'lotus', 'shrine', 'bench'];
 check(GARDEN_HOWTO.steps.length <= 8 && GARDEN_HOWTO.steps.every((s) => s.say && SHOWS.includes(s.show)), `the garden's how-to: ${GARDEN_HOWTO.steps.length} steps, each a line and a spot (${GARDEN_HOWTO.steps.map((s) => s.show).join(', ')})`);
 check(ROSTER.includes(GIFT.kind) && secondsOf(GIFT.stars) >= 120, `the starter slab is a creature of the roster (${GIFT.kind}, ${GIFT.stars} star, ${secondsOf(GIFT.stars)} real s)`);
 // (the achievements are built against a game, so their rows are read from the source: id and tier)
-const src = ['achievements', 'raceachievements', 'areaachievements'].map((n) => readFileSync(new URL(`../src/progress/${n}.js`, import.meta.url), 'utf8')).join('\n');
+const src = ['achievements', 'raceachievements', 'areaachievements', 'gardengrowthachievements'].map((n) => readFileSync(new URL(`../src/progress/${n}.js`, import.meta.url), 'utf8')).join('\n');
 const byId = new Map([...src.matchAll(/[CFH]\('([a-z]+\d+)',\s*'[a-z]+',\s*(?:'[^']*'|"[^"]*"),\s*(\d)/g)].map((m) => [m[1], { tier: +m[2] }]));
 check(['gw1', 'gw2', 'gw3'].every((id) => FIRST.path.includes(id) && FIRST.where[id] && byId.get(id)?.tier === 1), 'the first path walks the garden: enter, plant, carve (Easy, each with its where)');
 check(FIRST.path.every((id) => byId.has(id)), `every step of the first path is an achievement (${FIRST.path.length} steps)`);

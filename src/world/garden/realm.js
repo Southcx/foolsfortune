@@ -319,6 +319,7 @@ export class Realm {
     this.plants.tick(raw * 24000 / DAY_MS); this.plants.update(); // (a step of the green each game hour while you are here)
     this.moonflowers(raw);
     g.gardenMycelium?.update(raw); // (a spore bed's ring lit when it comes ready: Dovina's)
+    this.bench?.update(raw); // (a set slab's held view counted out: world/garden/bench.js)
     this.orbit.update(raw); // (the moonlets earned while inside set, a large planetoid's own moon turned)
     this.hearMycelium(raw);
     // the lotuses: stood on, it flies (not again until it has stepped off the one it landed on)

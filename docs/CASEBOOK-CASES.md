@@ -4430,6 +4430,9 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   warm-up compiled after it built some 150 programs with no plane that the world, drawn with the god hand's plane, never uses. Both
   compiles now render an empty scene with the world's planes after their own (render/overlayscene.js c2692ac, vfx/duelview/fxkit.js
   39fa35e): census-5 read 225 (budget 228), 200 programs with the plane and 12 without (the overlay's and the trail map's own).
+- **Then (measured in a PvE duel, 2026-10-30, ec0c6570):** both cut-ins hold the one `duel-cutin` program and the stamps one `duel-stamp`,
+  each material one key (0 planes, the overlay's 1 directional and 1 hemisphere); the census over its whole route reads one of each and one
+  numerals program (42f64a7c's `forceSinglePass`). The three are paid; the budget's "still owed" was handed to Petra.
 - **Rule:** 353
 
 
@@ -4691,7 +4694,26 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   under one throttled key (0.5 s), so the first was said and the two after it were swallowed. The ledger's counts were right.
 - **Fix:** the rule keeps the last size of the tick and says it once, from a microtask after the tick's events. Measured with a stub bus:
   three `seed.grow` in one tick say "A planetoid grows: large." once, and count three.
-- **Rule:** NEW:throttle-says-the-last
+- **Rule:** 375
+
+### 2026-10-30 · The slip jelly's cut-in strip was a white wall (vfx/duelview/cutin.js; the folds builder's HURL shots, desk and phone)
+- **Seen:** in the foe's cut-in the strip on the band's right showed a pale, featureless mass over half the band; nothing a person would
+  call a slip jelly.
+- **Cause, as read:** the strip cuts to a creature's head (its `head()`, else the top 38% of its bounds) under a key of 2.6 and a rim of
+  3.2. The slip jelly has no face, and its body is pale under the aberrant's look, so the crop was the top of a featureless dome lit
+  past white. The Wisp (a lantern) and Strawman (a sack head) have a head to cut to, which is why theirs read.
+- **Fix:** an elite may give `static PORTRAIT` beside its `MOTIF`; the slip jelly's asks for its whole body (`whole`, its bounds'
+  centre, 0.85 of its height in frame) under half the lights (`light: 0.5`, `CUT_IN.light` scaled). After (the same probe, desk and
+  phone): the strip shows its gathered body and drips, shaded; programs 205 and 188 in the duel as before.
+- **Rule:** 376
+
+### 2026-10-30 · The scanner's camera never looked while its page was open (boot/frame.js; found by Calissa, reading the frame)
+- **Seen:** Calissa's scan moment drew blank headless; reading the frame, the scanner's camera could never read a code.
+- **Cause, as read and then measured:** the frame returns early while a modal is open (`if (modalOpen()) { ...; return; }`), and the
+  scanner's page is the index menu's, a modal; `game.scanner.update` sat below that return, so while its page was up it was called 0
+  times a frame and the camera's `detect` never ran.
+- **Fix:** the modal branch ticks the scanner too. After, headless: 10 calls in 10 frames with the scan page open.
+- **Rule:** 377
 
 ### 2026-10-30 · A clapperjar's photo never became a slab, and a scanned one never opened (progress/scans.js; found writing the garden's how-to)
 - **Seen:** read from the code. The Veritome's Book keys a clapperjar's photo `clapper` (bestiary.js `creatureOf`). The plate shrine's

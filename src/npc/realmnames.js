@@ -23,11 +23,8 @@ export const PLANETOIDS = {
   pavilions: { name: 'the Pavilions of Echoes', gloss: 'where echoes of the encounters you mastered keep working' },
   mulberryGrove: { name: 'the Mulberry Grove', gloss: 'the spirits\' home; the cocoon tree is a mulberry, as silk\'s is' },
   chimney:   { name: 'the Chimney', gloss: "a kiln's chimney, where the Heavenly Kiln draws; the needle of rock it stands on" },
-  // the later planetoids, bought
-  moon:      { name: 'the Moonflower Moon', gloss: 'where the moonflower opens at night' },
-  koi:       { name: 'the Koi Pond', gloss: 'a small world that is mostly water' },
-  drills:    { name: 'the Drill Yard', gloss: 'where a spirit trains one stat, and tires' },
-  fossils:   { name: 'the Bone Bed', gloss: 'a layer of old bones in rock; where the Lachrymite fossils are laid' },
+  // (the four bought planetoids are retired with the seeds, 2026-10-30: a planetoid grown from a seed is named plainly by its kind,
+  //  world/garden/orbit.js nameOf, until South calls the seeds finished)
 };
 
 // the kind words a realm may be named from, said as a place would be (npc/neuralese.js keeps every word's English)
