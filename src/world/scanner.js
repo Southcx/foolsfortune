@@ -82,11 +82,10 @@ export class Scanner {
       const row = (t, sub, run) => { const d = el('div', 'room', `<span class="n">▦</span><span><b>${t}</b><s>${sub}</s></span>`); if (run) d.onclick = run; rows.appendChild(d); return d; };
       row('Read the code typed', `${this.left()} of ${SCAN.perDay} new codes left this game day · a code read again gives a little, once`, go);
       if (canSee) row(this.stream ? 'Stop the camera' : 'Read with the camera', this.stream ? 'hold a barcode or QR code in the view' : 'the camera\'s frames never leave this device', () => { if (this.stream) this.stop(); else this.start(); this.open(); });
-      im.appendChild(el('div', 'grp', 'THE SCANNER'));
       if (this.video) im.appendChild(this.video);
       im.appendChild(field); im.appendChild(rows);
-      setTimeout(() => field.focus?.(), 0);
-    }, { title: 'THE SCANNER', sub: 'a real barcode or QR code: the same code gives everyone the same thing · Esc closes' });
+      if (g.input?.device !== 'touch') setTimeout(() => field.focus?.(), 0); // (on a phone the keyboard rises only when the field is tapped: it would cover the page, and the camera's row)
+    }, { title: 'THE SCANNER', sub: 'a real barcode or QR code: the same code gives everyone the same thing' });
   }
   /** The camera on, looking for a code a few times a real second. */
   async start() {

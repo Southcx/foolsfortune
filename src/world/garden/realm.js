@@ -272,7 +272,7 @@ export class Realm {
   /** Is the Jar's (or a spirit's) wish this step: WASD along the ground, as the camera faces. */
   wish(out) {
     const I = this.game.input, f = (I.isDown('KeyW') ? 1 : 0) - (I.isDown('KeyS') ? 1 : 0), r = (I.isDown('KeyD') ? 1 : 0) - (I.isDown('KeyA') ? 1 : 0);
-    if (this.camera.view === 'overhead' || this.press?.viewing) return out.set(0, 0, 0); // (overhead, WASD pans the view; at the press, WASD leaves it: the Jar stands)
+    if (this.camera.view === 'overhead' || this.press?.viewing || this.bench?.viewing) return out.set(0, 0, 0); // (overhead, WASD pans the view; at the press, WASD leaves it; at the bench, the dig has the view: the Jar stands)
     const T = this.goTarget, J = this.jarBody; // (tap to go, the touch driver's: world/garden/tapgo.js, MOBILE.md 8.2)
     if (T && (f || r || J.held || J.planet !== T.planet || (T.t += 1 / 60) > TAP_GO.giveUp)) this.goTarget = null;
     else if (T) { goWish(J, T, out); if (out.lengthSq() === 0) this.goTarget = null; return out; }

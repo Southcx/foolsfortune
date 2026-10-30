@@ -4660,3 +4660,14 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the harness's `draw()` draws again while the budget held anything back (at most 120 times), as a phone's frames would within
   half a real second. After: the workshop's phone page drew 483 calls, mean luminance 68.
 - **Rule:** 372
+
+### 2026-10-30 · The Pneuka Jar could walk off the carving bench mid-dig (world/garden/realm.js `wish`; Petra's phone shots of v352)
+- **Seen:** in the phone's shots of the bench, the stick's ring and its WASD stood live under the dig's fixed view; nothing in the dig
+  needs them.
+- **Cause, as read (not measured before the fix):** `realm.wish` stands the Jar still for the overhead view and the press's station view;
+  the bench, built on that station view (gardencam.js `enterPress`), was left out of the guard, so WASD (the stick on a phone) still
+  walked the Jar while the camera stayed on the slab.
+- **Fix:** the bench is in the guard. After, on an 896 x 414 touch page: the stick held 84 frames moved the Jar 7.082 m before the dig
+  and 0.000 m during it. The same shots gave the bench's SET IT NOW and PUT IT OFF 40 px of height and no desk keys on touch, and the
+  scan page one title, no "Esc closes" and no keyboard raised unasked.
+- **Rule:** 45
