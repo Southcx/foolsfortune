@@ -29,6 +29,7 @@ export const LENDS = {
   racing:    { label: 'Racing',        opens: 'Every skiff part, cup, licence and the siblings\' race open.' }, // (the Raceway's opens: SKIFF-RACING.md 12)
   spreads:   { label: 'Spreads',       opens: 'Every spread open to lay.' }, // (SPREADS.md: words placeholders for Espada)
   classArts: { label: 'Class Arts',    opens: 'Every class art open to wear.' }, // (CLASS-ARTS.md; South's rule: everything open in DEBUG; words placeholders for Espada)
+  mimicry:   { label: 'Mimicry Puzzles', opens: 'Every mimicry puzzle open at its stone.' }, // (MIMICRY.md: the ladder's rungs lent, never counted)
   figmentTelegraphs: { label: 'Figment Telegraphs', opens: 'Every Figment telegraph step shown.' }, // (Divination's ladder lent: FIGMENT-TELEGRAPHS.md; always qualified, never the rail's)
   achievements: { label: 'Achievements', opens: 'Every achievement done and every title yours; none announced, none counted.' }, // (the owner, 2026-10-26: "achievements set to all unlocked in debug mode, much like abilities are lent"; the gate is progress/achievements.js's; words placeholders for Espada)
 };

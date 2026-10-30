@@ -6,7 +6,8 @@
 //
 //  - DOWSE (hold RMB): the dreamcatcher turns on its pin toward the loudest Lachryma about, and its web lights and its bead ticks faster
 //    the more nearly they face it and the nearer it is (Skyward Sword's dowsing: turn until it sings). The wheel ATTUNES it: to
-//    anything, or only to crystal, to chests, to the living, to what lies loose. What it finds clearly is charted (the map).
+//    anything, or only to crystal, to chests, to the living, to what lies loose. What it finds clearly is charted (the map). Its reach is 70 m,
+//    widened by Perception (Soul Alchemy: up to x1.2, `alchemy.widen('perception.dowse')`).
 //  - THE PICK (LMB): a two-handed overhead blow into the ground (the suite's Vane_PickStrike), the opener of the staff's string; held,
 //    it stays up and comes down the harder (tools/dreamvane/pick.js: the moveset, every blow, the spin, the launcher, the vault, the
 //    Dreamquake, the pick held to its full charge and let go). Crystal gives to it a blow at a time; pots and clapperjars and minds are struck as by any heavy thing. A blow
@@ -163,7 +164,7 @@ export class Dreamvane extends HeldTool {
     this.skyRead = up || (this.skyRead && on && P.pitch > 0.55); // (lowered past a margin, it may read again)
     if (on && S) {
       const A = ATTUNE[this.att];
-      target = S.strongest(P.pos, RANGE, { kinds: A.kinds, filter: (s) => s.ref !== this.fork.ent });
+      target = S.strongest(P.pos, RANGE * (g.alchemy?.widen?.('perception.dowse') ?? 1), { kinds: A.kinds, filter: (s) => s.ref !== this.fork.ent });
       if (target) {
         const look = this.aimFlat(_a), to = _b.set(target.pos.x - P.pos.x, 0, target.pos.z - P.pos.z);
         const d = to.length(), off = d > 0.01 ? look.angleTo(to.normalize()) : 0;

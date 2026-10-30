@@ -102,7 +102,7 @@ Times are real seconds. Sizes are pixels at 480 lines in the press view, fully z
   - **The press:** 4.35 m north of the basin's centre, facing it.
 - **The spout:** a root grown out of the drum's front lip, reaching over the ware ring and the kerb. The soul's thread runs from the eye's drop down through the hourglass and along the root into the bath, where it lands in the gap at north. The hourglass and the lantern stay on the drum, off the colour wheel.
 - **The plate shrine** moves to a small hokora on the crown's east shoulder, with its own F. Today F at the Athanor opens THE PLATE SHRINE page.
-- The interact chevron shows over the basin while the Pneuka Jar is within reach of the kerb. **F** opens the press view, and the Jar stays where it stood, just below the frame.
+- The interact chevron shows over the basin while the Pneuka Jar is within 4.2 m of the Athanor's centre (the kerb's outer edge). **F** opens the press view, and the Jar stays where it stood, just below the frame.
 
 ### 4.3 The press view
 - **Opening (0.8 s):**
@@ -375,7 +375,7 @@ A swatch is drawn as three things: **the tile** (its rank), **the spread** (its 
 - `alchemy.press { count, hue, sat, near }` (built).
 - `alchemy.fire { attribute, rank, true, d, fuel }` (Dovina's).
 - `alchemy.refuse { why: 'outside' | 'poor' | 'full' | 'spent' }`.
-- `alchemy.season { attribute, quarter }`: the seal pop.
+- `alchemy.season { attr, at }` (built): seasoning crossed 25, 50 or 75 (`at`); `alchemy.seasoned { attribute }` (built): it reached 100. The seal pop reads the first.
 - The lever's creak follows the ball (the press reports `pull` each frame; it is not an event).
 - **Wanda's, to build:** the drone rising as the camera climbs; seven tuned ticks as the lights land; a note a step (a fifth for each 30°); the tritone resolving into the drone on greying; the beating stilling at the heart; at a firing, the creak, a held beat of silence, the kiln's ping, and on a true firing the Answer. Each refusal gets a dull wooden knock, with the lantern guttering added for too few cubes.
 
@@ -384,6 +384,8 @@ A swatch is drawn as three things: **the tile** (its rank), **the spread** (its 
 - **"The colour greys."** once, after a press in which a complement greyed it.
 - **A firing names the attribute, the new rank and the cubes it took,** and a true firing is marked as one. "Half the fuel" is right only dead centre (ruled: 3.3).
 - **Each refusal with its why:** outside every swatch; too few cubes (with the price); the last rank; spent.
+- **A firing says what the rank does,** in plain numbers, on a second line: "Willpower 2: your shield pool +18%." (`rankLine`; placeholder words for Espada's).
+- **"{Attribute} seasons: 50 of 100."** once as seasoning crosses 25, 50 and 75.
 - **"Your {Attribute} is seasoned."** once, when a seasoning fills.
 - **Nothing** on opening, hovering, loading or a step.
 
@@ -557,15 +559,24 @@ glyph, so in a week of play the eye learns to see "a little too warm, a little t
 
 ## 6. The seven attributes: what they widen, how they season (each widening now read by something)
 
-| attribute | widens (at rank 10) | read by (Petra wires) | seasoned by doing | what doing it trains |
+**The rank curve is front-loaded** (Dovina, 2026-10-30; the owner found ranks 1 and 2 invisible on the old linear curve, rank/10 of the
+maximum, a rank worth +1.5% to +5%). A rank's share of an attribute's maximum is `1 - (1 - rank/10)^2` (`rankShare`, `alchemy.js`): rank 1
+is 0.19, rank 2 0.36, rank 3 0.51, rank 5 0.75, rank 10 all of it. The maxima are unchanged, so the top of the ladder is where it was. A
+whole-number bonus (the ship's hits) rounds up, so any rank gives at least +1. A firing says what its rank does (`rankLine`, 4.20).
+Example, Willpower (pool x1.5 at 10): rank 1 +9%, rank 2 +18%, rank 5 +38%, rank 10 +50%. Resilience (mend x1.5, +2 hits): rank 1 +9% and
++1 hit, rank 2 +18% and +1, rank 5 +38% and +2, rank 10 +50% and +2.
+
+| attribute | widens (at rank 10) | read by | seasoned by doing (`SEASONING`, `alchemy.js`: points each time; one source gives at most 10 a game hour) | what doing it trains |
 |---|---|---|---|---|
-| Willpower | the shield's pool x1.5 | `courier/lachryma.js` max | a blow taken on the shield; brimming and settling | composure under pressure |
-| Focus | statuses you build hold x1.3 | `creatures.apply` hold | a status built on a creature; a rhythm combo of 25 | sustained attention |
-| Charisma | what the folk pay and ask x1.15 | shops (built) | a talk, a sale, a busking tip | reading people |
-| Perception | a creature's windup shows x1.5 sooner | `creatures.windup` lead | a parry in its window; a plate appraised 3 stars or more | anticipation |
-| Dexterity | draw and stow x1.3 faster | `tools/belt.js` | a tool swapped mid-fight; a Throwing Room drill finished | hand speed |
-| Visualization | the Soul Brush's and the hand's canvas x1.4 | Celestial mode, the garden's brush size | a sigil drawn clean; a terraforming stroke | holding a shape in mind |
-| Resilience | the clay mends x1.5 faster; +2 hits a ship bears | `courier/vessel/`, the rail | a crack mended at the kiln; a crossing survived | recovering, persisting |
+| Willpower | the shield's pool x1.5 | `boot/progress.js` (the pool's max modifier) | a blow taken on the shield, not the environment's (1, `vessel.shield`); a mental state settling back after overflow (2, `mind.settle`) | composure under pressure |
+| Focus | statuses you build hold x1.3 | `creatures.apply` hold | a status you build on a creature (1, `creature.status`); a rhythm score with a combo of 25 or more (3, `rhythm.score`); a fish landed (2, `angle.catch`) | sustained attention |
+| Charisma | what the folk pay and ask x1.15 | `shops.charm` | a talk (1, `npc.talk`); a sale (1, `shop.sell`); a haggle struck (2, `shop.haggle` at its deal) | reading people |
+| Perception | a creature's windup shows x1.5 sooner; the Dreamvane's dowse reaches x1.2 farther (70 m to 84 m) | `creatures.shownEta`; `tools/dreamvane/dreamvane.js` `dowseTick` | a parry that answered something (2, `move.parry`); a plate appraised at 3 stars or more (2, `photo.appraise`) | anticipation |
+| Dexterity | draw and stow x1.3 faster | `tools/belt.js` | a Throwing Room drill finished with no knob tuned (3, `drill.end`); a zandatsu (2, `creature.zandatsu`) | hand speed |
+| Visualization | the hand's making x2 faster; the Soul Brush's ink goes x1.4 further | `godhand/matterarts.js`, Celestial mode | a sigil popped (2, `sigil.pop`); a stroke of the hand's sculpting in the garden (1, `garden.sculpt`) | holding a shape in mind |
+| Resilience | the clay mends x1.5 faster; +2 hits a ship bears | `courier/vessel/`, the rail | a crack mended (2, `vessel.mend`); a crossing survived (4, `emocean.stage` passed) | recovering, persisting |
+
+Seasoning is said at 25, 50, 75 (`alchemy.season`) and 100 (`alchemy.seasoned`), once each, and a firing spends it.
 
 ## 7. Synergies (what it ties together)
 

@@ -103,13 +103,12 @@ the sea as a place, the islets as rooms, the serpent's mind and every look, soun
 
 ## 6. Islets (`islets.js`)
 
-- **An islet** is tens of metres across, built from a **kit** (a rock, an atoll, a sea stack, a ruin, a dead lighthouse, or a sandbar
-  that shows only at low water), with **one secret**, Wind Waker's way:
+- **An islet** is tens of metres across, built from a **kit** (a rock, an atoll, a sea stack, a ruin, a dead lighthouse, or a sandbar), with **one secret**, Wind Waker's way:
   - a chest;
   - an ostracon;
   - a vantage point;
   - a Figment nest (a small fight on foot);
-  - a fuel cache (3 measures, once a game day);
+  - a fuel store (3 measures, once a game day; "cache" is the buried caches' word, section 12);
   - a stele;
   - a fishing spot;
   - a crystal.
@@ -252,7 +251,7 @@ Dovina's room, as the Raceway is (`src/world/opensea/`; reached from the Index, 
 - **F does what is near:**
   - at sea, by an islet: moor and step off onto it;
   - at sea, by a quay: dock (the reports paid in cubes, the tank filled as far as your cubes go), and step ashore;
-  - on an islet, by its secret: take it (a chest pays 3 minutes of play; a fuel cache 3 measures; the rest say so in the log until their systems are wired);
+  - on an islet, by its secret: take it (a chest pays 3 minutes of play; a fuel store 3 measures; the rest say so in the log until their systems are wired);
   - on land, by the ship: board;
   - at a quay's post: go home to the workshop.
 - **No readout of its own** (`seahud.js` was removed in v301 on the owner's word, "old UI info clutter"): the fuel, the square and your doubt are read where they already show (the Sight, the Lachrimeter, the log); a find to report is said in the log and waits at the dock.
@@ -316,8 +315,15 @@ hour sooner for whoever stops at every islet with the Dreamvane drawn.
 
 **Built** (`world/opensea/puzzlepieces.js`, `PuzzlePieces`): every piece as a placeholder (Calissa's to dress). The state (seen, solved,
 heard, dug) is kept in the room's save section `openSea`.
-- Log rules: `sea.pair.half`, `sea.pair`, `sea.lineup`, `sea.echo.hear`, `sea.echo`, `sea.dig`, `sea.stele`.
-- Ledger counters: `sea.pair`, `sea.lineup`, `sea.echo`, `sea.dig`, `sea.dig.<tier>`, `sea.stele.read`.
+- Log rules: `sea.puzzle.seen`, `sea.pair.half`, `sea.pair`, `sea.lineup`, `sea.echo.hear`, `sea.echo.miss`, `sea.echo`, `sea.dig`, `sea.stele`.
+- Ledger counters: `sea.pair`, `sea.lineup`, `sea.echo`, `sea.echo.miss`, `sea.dig`, `sea.dig.<tier>`, `sea.stele.read`, `sea.puzzle.seen`, `sea.puzzle.seen.<kind>`.
+- **Readability (2026-10-30; South: "couldn't get them to work or didn't know what I was looking at").** Each piece says what it is and
+  which tool solves it, once, on first sight (`sea.puzzle.seen { kind, id, islet }`; `SIGHT` radii; a cache on stepping onto its islet,
+  a bottle from the helm; placeholder words for Espada). The singing stone says its phrase as note numbers (1 to 5) each time you come
+  near, at most once a real minute; a wrong note at the listening stone says "The stone does not answer. Its phrase starts again."
+  (`sea.echo.miss`) and starts the phrase over; the pair's first half says it pays at a dock once both are seen.
+  Achievements sea23 to sea30 (a first and an every, per pair, line-up, echo and cache). A debug chest kit `opensea` holds the Dreamvane
+  and the Crucibelle.
 - The sweep (`scripts/sweeps/opensea.mjs`, 19 of 19): a pair seen, the line-up's arcs on one ring from the eye, an echo played, a cache
   dug (its signature there first and gone after).
 

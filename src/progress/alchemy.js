@@ -4,13 +4,18 @@
 // they go into the hopper (progress/econ/materials.js); FIRING the press while the colour sits inside an ATTRIBUTE's target raises that
 // attribute a rank and spends refined Lachryma (cubes: the long sink). The target narrows with every rank, so the skill is the
 // navigation. An attribute widens the VESSEL (what the Courier is), as a domain widens the tools (what the Courier does): never a skill.
+// A rank's share of an attribute's maximum is FRONT-LOADED (`rankShare`: 1 - (1 - rank/10)^2; Dovina, 2026-10-30, after the owner found rank 1
+// and 2 invisible): rank 1 gives 0.19 of the way to the maximum, rank 2 0.36, rank 5 0.75, rank 10 all of it. The maxima (`atMax`) are unchanged.
+// A whole-number bonus (Resilience's ship hits) rounds UP, so any rank at all gives +1. `rankLine(id, rank)` says a rank's effect in plain numbers.
 //
 // Prior art: Newton's centre of gravity (a mixture between its parts), Potion Craft (ingredients as paths across a map, the order of them the craft, a potion a place you steer to), the owner's
 // design document v0.1 (the attributes, raised at the shrine; Luck kept apart), Atelier's synthesis, and a painter's colour wheel.
 //
 //   ATTRIBUTES[id] = { id, name, hue, does, widen: { key: { mult | plus, atMax } } }   targetOf(id) -> { h, s }   radiusAt(rank)   fuelAt(rank)
 //   game.alchemy = new SoulAlchemy(game)   .colour   .rank(id)   .press(slots) -> { colour, trail }   .near() -> id | null
-//   .fire() -> { ok, why?, attribute?, rank? }   .widen(key) -> a multiplier, or a bonus to a count (1 / +0 at rank 0)
+//   .fire() -> { ok, why?, attribute?, rank? }   .widen(key) -> a multiplier, or a bonus to a count (1 / +0 at rank 0)   rankShare(rank)   rankLine(id, rank)
+//   events (each by 'courier'): alchemy.press, alchemy.fire { attribute, rank, ... }, alchemy.season { attr, at } (seasoning crossed 25, 50 or 75),
+//   alchemy.seasoned { attribute } (it reached 100)
 //   SEASONING (event -> attribute, points, when)   swatchRadius(rank, seasoning)   heartRadius(rank)   aimedFuel(rank, d, r, formation)
 //   isTrue(d, rank)   FEELING_HUE   .walk(mats) (the one walk: press and preview)   (SOUL-ALCHEMY.md section 3, the rulings of 2026-10-08)
 // ---------------------------------------------------------------------------------------
@@ -27,7 +32,7 @@ export const ATTRIBUTES = {
   willpower:     { name: 'Willpower',     does: "the shield's pool",                              widen: { 'willpower.shield': { mult: true, atMax: 1.5 } } },
   focus:         { name: 'Focus',         does: 'how long the statuses you build hold',             widen: { 'focus.hold': { mult: true, atMax: 1.3 } } },
   charisma:      { name: 'Charisma',      does: 'what the folk pay and ask (prices, the haggle)',   widen: { 'charisma.trade': { mult: true, atMax: 1.15 } } },
-  perception:    { name: 'Perception',    does: "how far ahead a creature's intent shows",          widen: { 'perception.notice': { mult: true, atMax: 1.5 } } },
+  perception:    { name: 'Perception',    does: "how far ahead a creature's intent shows, and how far the Dreamvane dowses",         widen: { 'perception.notice': { mult: true, atMax: 1.5 }, 'perception.dowse': { mult: true, atMax: 1.2 } } }, // (the Dreamvane's dowse reach: tools/dreamvane/dreamvane.js)
   dexterity:     { name: 'Dexterity',     does: 'drawing and stowing a tool',                       widen: { 'dexterity.draw': { mult: true, atMax: 1.3 } } },
   visualization: { name: 'Visualization', does: 'how fast what you imagine takes form, and the ink it costs', widen: { 'visualization.make': { mult: true, atMax: 2 }, 'visualization.canvas': { mult: true, atMax: 1.4 } } }, // (the tempo of making: Manifest's rise, Shape's rate; the owner, SPINE.md 1.2)
   resilience:    { name: 'Resilience',    does: 'the clay mending, and the hits a ship bears',      widen: { 'resilience.mend': { mult: true, atMax: 1.5 }, 'resilience.bears': { plus: true, atMax: 2 } } },
@@ -38,13 +43,31 @@ const KNOB = Object.fromEntries(Object.values(ATTRIBUTES).flatMap((a) => Object.
 export const targetOf = (id) => ({ h: ATTRIBUTES[id].hue, s: A.sat });
 export const radiusAt = (rank = 0) => A.radius[0] + (A.radius[1] - A.radius[0]) * Math.min(1, rank / Math.max(1, A.ranks - 1));
 export const fuelAt = (rank = 0) => M(A.fuel[0] + rank * A.fuel[1]);
-/** A knob's value at an attribute's rank: a multiplier (1 .. atMax) or a bonus to a count (0 .. atMax, whole). */
+/** A rank's share of an attribute's maximum, front-loaded so the first ranks are felt: 1 - (1 - rank/ranks)^2 (0 at rank 0, 0.19 at 1,
+ *  0.36 at 2, 0.75 at 5, 1 at the top). */
+export const rankShare = (rank = 0) => { const u = 1 - Math.min(1, Math.max(0, rank) / A.ranks); return 1 - u * u; };
+/** A knob's value at an attribute's rank: a multiplier (1 .. atMax) or a bonus to a count (0 .. atMax, whole, rounded up so any rank gives at least 1). */
 export function widenAtRank(key, rank = 0) {
   const w = KNOB[key];
   if (!w) return 1;
-  const f = Math.min(1, Math.max(0, rank) / A.ranks);
-  return w.plus ? Math.round(w.atMax * f) : 1 + (w.atMax - 1) * f;
+  const f = rankShare(rank);
+  return w.plus ? Math.max(0, Math.ceil(w.atMax * f - 1e-9)) : 1 + (w.atMax - 1) * f;
 }
+/** The percent a multiplier knob adds at a rank, whole (Willpower 2: 18). */
+const pct = (key, rank) => Math.round((widenAtRank(key, rank) - 1) * 100);
+/** What each attribute's rank does, in plain numbers: one line an attribute, read from the knobs above so the line and the effect are the one
+ *  number. PLACEHOLDER WORDS, Espada's to write (the owner: plain until finalized). */
+export const RANK_LINES = {
+  willpower:     (r) => `your shield pool +${pct('willpower.shield', r)}%`,
+  focus:         (r) => `the statuses you build hold +${pct('focus.hold', r)}% longer`,
+  charisma:      (r) => `the folk pay and ask ${pct('charisma.trade', r)}% better for you`,
+  perception:    (r) => `a creature's intent shows +${pct('perception.notice', r)}% sooner, and your Dreamvane dowses +${pct('perception.dowse', r)}% farther`,
+  dexterity:     (r) => `you draw and stow a tool +${pct('dexterity.draw', r)}% faster`,
+  visualization: (r) => `what you imagine takes form +${pct('visualization.make', r)}% faster, and ink goes +${pct('visualization.canvas', r)}% further`,
+  resilience:    (r) => `the clay mends +${pct('resilience.mend', r)}% faster, and a ship bears +${widenAtRank('resilience.bears', r)} hit${widenAtRank('resilience.bears', r) === 1 ? '' : 's'}`,
+};
+/** A rank said: "Willpower 2: your shield pool +18%." ('' for an id it does not know). */
+export const rankLine = (id, rank = 0) => (ATTRIBUTES[id] && RANK_LINES[id] ? `${ATTRIBUTES[id].name} ${rank}: ${RANK_LINES[id](rank)}.` : '');
 
 // ---- the press's new rules (SOUL-ALCHEMY.md section 3; Petra wires them into SoulAlchemy and the press, these are their numbers)
 
@@ -93,6 +116,7 @@ export const FEELING_HUE = Object.fromEntries(Object.entries(COLOR).map(([k, hex
 
 const fresh = () => ({ colour: { h: 0, s: 0 }, ranks: {}, season: {}, fed: {}, cocked: false, stars: {} }); // (season: each attribute's 0..seasonMax; fed: a source's points this game hour; cocked: pressed since the last firing; stars: each attribute's true firings, ten at most)
 const GAME_HOUR = DAY_MS / 24;
+const SEASON_STEPS = [25, 50, 75]; // (the seasoning a `alchemy.season` event is said at; 100 is `alchemy.seasoned`)
 export class SoulAlchemy {
   constructor(game) {
     this.game = game;
@@ -121,6 +145,8 @@ export class SoulAlchemy {
     const add = Math.min(pts, A.seasonPerHour - f.pts, A.seasonMax - this.seasoning(id)); if (add <= 0) return 0;
     f.pts += add; this.s.season[id] = this.seasoning(id) + add;
     this.game.save?.dirty('alchemy');
+    const was = this.s.season[id] - add; // (a quarter crossed is said once: 25, 50, 75; the top is `seasoned`)
+    for (const at of SEASON_STEPS) if (was < at && this.s.season[id] >= at) this.game.events?.emit('alchemy.season', { attr: id, at, by: 'courier' });
     if (this.s.season[id] >= A.seasonMax) this.game.events?.emit('alchemy.seasoned', { attribute: id, by: 'courier' });
     return add;
   }

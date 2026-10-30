@@ -17,6 +17,7 @@ import { Mooring } from '../vfx/mooring.js';
 import { EncounterFilm } from '../vfx/encounters/film.js';
 import { KILN_AT } from '../courier/moves/kiln.js';
 import { SolarTrial } from '../world/dunes/solar.js';
+import { Mimicry } from '../world/mimicry/mimicry.js';
 import { Geysers } from '../world/dunes/geysers.js';
 import { Raceway } from '../world/raceway/raceway.js';
 import { OpenSea } from '../world/opensea/opensea.js';
@@ -63,6 +64,7 @@ export function bootRooms(game, made) {
     game.interact.add('well', () => (game.dialogue?.open || !idle() ? null : game.well.nearest(player)));
     game.interact.add('garden', () => game.realm?.offer() ?? null); // (a place in the garden the Jar stands at: world/garden/realm.js)
     game.solar = new SolarTrial(game); // (the Solar Skiffing trial, begun at the Gnomon's foot: world/dunes/solar.js)
+    game.mimicry = new Mimicry(game); // (the god hand's mimicry puzzles, begun at a puzzle stone in each Dunes area: world/mimicry/mimicry.js)
     game.geysers = new Geysers(game); // (slip geysers: launch pads on a cycle, world/dunes/geysers.js)
     game.makeSeaSerpent = (o) => new SeaSerpentBody(game, o); // (the sea serpent's body for its mind to drive: vfx/opensea/seaserpentbody.js, drive/update/hit/down)
     installSeaBeasts(game); // (the other sea beasts' bodies: game.makeSeaBeast(id, o) for the chain chassis, game.makeUmibozu(o), /beastlook: vfx/opensea/beasts/)

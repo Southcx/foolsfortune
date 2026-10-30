@@ -133,6 +133,7 @@ export const SET_FOREVER = 99;
 
 /** A ramped number for a power now, by its domain's level (a lend opens a power, and leaves its numbers where the level has them). */
 export function rampOf(id, key, game) {
+  const fixed = game?.mimicry?.tool?.(id, key); if (fixed != null) return fixed; // (a mimicry puzzle's toolkit while it is open: progress/mimicry.js MIMIC_TOOL)
   const row = RAMP[id]?.[key]; if (!row) return undefined;
   const p = GOD_POWERS[id], domain = p?.domain, at = p?.at ?? 1;
   const level = domain ? game?.psyche?.level?.(domain) ?? 1 : 1;
@@ -145,11 +146,12 @@ export function dissonanceScale(domain, game) {
   return (RAMP.dissonance.scale[0] + (RAMP.dissonance.scale[1] - RAMP.dissonance.scale[0]) * Math.pow(t, RAMP_CURVE)) * (game?.bracelet?.dissonance?.(domain) ?? 1); // (QUIET)
 }
 
-/** Open for this Courier now: learned on the GOD ARTS shelf (progress/skills.js POWER_ARTS and EPIC_ARTS: its domain's level OR a feat,
+/** Open for this Courier now: lent by an open mimicry puzzle, or learned on the GOD ARTS shelf (progress/skills.js POWER_ARTS and EPIC_ARTS: its domain's level OR a feat,
  *  SPINE.md 2), basic, or lent. Without the System (a bare probe), the domain's level alone. */
 export function powerOpen(id, game) {
   const p = GOD_POWERS[id] || EPICS[id];
   if (!p) return false;
+  if (game?.mimicry?.lends?.(id)) return true; // (lent by an open mimicry puzzle, inside its patch, while it is open: world/mimicry/mimicry.js)
   if (game?.system?.has) return game.system.has(id);
   return (game?.psyche?.level?.(p.domain) ?? 1) >= (p.at ?? 80);
 }

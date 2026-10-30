@@ -256,13 +256,17 @@ const POWER_FEATS = {
   ward: led('sigil.cleared.best', 3, 'three sigils cleared in one Celestial mode'),
   stamp: led('cogitomap.get', 1, 'a Cogitomap brought home'),
 };
+/** A power's mimic way (South, 2026-10-30; docs/plans/MIMICRY.md): its mimicry puzzle copied cleanly (two stars), learned by watching
+ *  the System do it and doing it back. The powers a puzzle on the ladder teaches (progress/mimicry.js MIMIC_OPS). */
+const MIMIC_WAY = new Set(['transmute', 'slab', 'fold', 'stamp']);
 const OLD_FIVE = new Set(GOD_ARTS.map((a) => a.id));
 const countWay = (domain, at) => led(`exp.${domain}`, expAt(at), `${DOMAINS[domain].name} ${at}`);
 const powerArt = (id, P, feat, extra = {}) => ({
   realm: 'god', id, name: P.label, glyph: DOMAIN_GLAZE[P.domain]?.glyph || '✦', input: 'the hand: its domain (1 to 7), then the wheel',
   blurb: `${P.does[0].toUpperCase()}${P.does.slice(1)}. ${DOMAINS[P.domain].name}'s.`, power: true, domain: P.domain, variants: [],
   ...(P.at <= 1 ? { basic: true, goals: [], hint: 'Yours from the start.' }
-    : { any: true, goals: [countWay(P.domain, P.at), feat], hint: `Reach ${DOMAINS[P.domain].name} ${P.at}, or: ${feat.label}.` }),
+    : { any: true, goals: [countWay(P.domain, P.at), feat, ...(MIMIC_WAY.has(id) ? [led(`god.mimic.${id}`, 1, 'its mimicry puzzle copied cleanly')] : [])],
+      hint: `Reach ${DOMAINS[P.domain].name} ${P.at}, or: ${feat.label}${MIMIC_WAY.has(id) ? ', or copy its mimicry puzzle cleanly' : ''}.` }),
   ...extra,
 });
 export const POWER_ARTS = Object.entries(GOD_POWERS).filter(([id, P]) => !OLD_FIVE.has(id) && P.built && P.domain)
