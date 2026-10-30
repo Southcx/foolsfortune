@@ -1031,3 +1031,6 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 367. **A room built on entry makes its materials as the level makes them.** The same dressing and the same
   patches in the same order (`dress`, then the paint map's `patch`), or its first entry compiles a program the warm-up never saw, a hitch
   where it is first drawn: a new room's probe counts the programs before and after its first entry (0).
+NEW:cache-has-a-release. **A cache of built things has a release, and its owner's end calls it.** A module that builds sets once and
+  keeps them in a map (to compile them under a cover) also gives a `release()` that stops, removes and disposes them and clears the map;
+  the thing that ends their use (a crossing, a room) calls it, or they stay in the scene, hidden, for the session.

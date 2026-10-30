@@ -719,7 +719,7 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
 - **the leaf canopy** (`LeafCanopy`, `canopyGeometry`, `src/vfx/garden/leafcanopy.js`; the owner, 2026-10-08): a tree's crown drawn from a
   few spheres whose every vertex is a **leaf** (a quad turned to the eye, swaying, lit by its sphere's normal, a clump from the **leaf
   atlas**: gingko, willow, round, mulberry, gill, cap), in labradorite edged and veined in gold. One program for every canopy; a canopy
-  may take a **tint** (Myggdrasil's tincture: its flash leaned to a colour). *Not:* the plants (the green on the clay), a bed.
+  may take a **tint** (its flash leaned to a colour). *Not:* the plants (the green on the clay), a bed, Myggdrasil's caps (solid, its own program).
 - **material** (`src/progress/econ/materials.js`): what Soul Alchemy presses, of a broad **kind** (eldritch, arcane, finery, mechanism,
   edge, art, provision), with a hue, a saturation and a **path** (the winding route it walks the Courier's colour). **The spirit press**
   (hopper, igniter, crucible): where materials are pressed. *Not:* "mats" in player text.
@@ -738,17 +738,25 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   (`world/garden/mycelium.js`): the seventh planetoid, given at Sinter (not bought, not on the ring), the tree on its crown, F at its roots.
   **The Grimoire of Echoes** (`feedback/codex/grimoire.js`): the Codex's page of the mycelium, what you have met only (the strains held,
   the grafts made, the tree, the branches, the pots). *Not:* a material's `path` (a branch is the tree's), a creature's mind.
-- **Myggdrasil's look** (`WorldMushroom`, `src/vfx/garden/myggdrasil.js`, Calissa's; grown by its planetoid's look, `Planetoid.growMushroom`,
-  and reading `game.myggdrasil` itself): the World Mushroom 48 m from its ground to its crown's top. **The stipe** (its trunk of pale
-  clay, fibred, a gold **veil ring** under the crown) on **the roots** (buttresses running out over the ground, half sunk); between two of
-  them **Myggdrasil's mouth** (`mouthWorld`: a cup of its clay lipped in gold, its floor a pool in the tincture's colour; where it is fed,
-  and where the world's F stands; *not* the Jar's mouth, nor a Well's); above it **its face** (two round eyes with a glint, a smile, a
-  blush: drawn, never carved). **The arms** carry the side caps (`CAP_SITES`: the Tree of Life's places, spiralling round the stipe); each
-  cap is a leaf canopy, a dome of **scales** over a disc of **gills**, shut a **bud**, opening from its middle out by its slot's **gate**
-  (`canopyOpen`; *not* the Dantian's gate), one at a time from the root up. **The branches' lights** (`BRANCH_PATHS`: the Golden Dawn's
-  paths between the caps) run gold when a card is hung, a ghost before. **The mycelium's threads** run from the roots' ends over the
-  ground to each spore bed on its planetoid (`threadsTo`; *not* Ariadne's thread, nor the press's thread). **Fruit** hangs on threads
-  under the caps, glowing in the tincture's colour; **shelf brackets** on the stipe in the crown, polypores of its clay.
+- **Myggdrasil's look** (`WorldMushroom`, `src/vfx/garden/myggdrasil.js`, its parts in `src/vfx/garden/myggdrasil/`, Calissa's; grown by its
+  planetoid's look, `Planetoid.growMushroom`, and reading `game.myggdrasil` itself; South, 2026-10-30: "much much more alien fungus mixed
+  with large coral structures. Twisting gnarled roots, very Studio Ghibli"): 48 m from its ground to its Crown's top, roots grown into a
+  reef in the air. **Its strands** (`STRAND_BASE`, `roots.js`): ten roots run in over the planetoid half sunk, climb into **the bole** (wide,
+  closed) and wind on up **the trunk**, twisting both ways and fused where they cross, a lattice you see through (a strangler fig's; *not*
+  the Braid, a lap circuit); six peel off as coral **limbs** to the side caps, four go on as **Myggdrasil's column** to the Crown. **Prop
+  roots** came down from the trunk and took hold; long roots grip on down the planetoid's sides. **The roots' mouth** (`mouthAt`,
+  `mouthWorld`, `MOUTH`): the arch at the bole's foot where two strands part, where it is fed and the world's F stands; behind it
+  **Myggdrasil's hollow**, a dark shell inside the bole, its floor of loam, a pool in the middle lit in the tincture's colour, small caps
+  glowing round it (*not* the Jar's mouth, nor a Well's, nor the hollow mark of a lent art). **The crown's corals** (`coral.js`): staghorn
+  forks, **tables** in two tiers, **sea fans**, **brain corals**, **tube sponges** (that breathe spores), roots hung from the tables to the
+  ground; **its fungi** (`fungi.js`): shelf brackets, lion's mane, morels. **The caps** (`caps.js`, `CAP_SITES`: the Tree of Life's
+  places): solid caps over glowing **gills**, each laid twice, open and shut (a **button**), and **opened** by a morph of its own vertices,
+  one at a time from the root up. **The branches' lights** (`BRANCH_PATHS`: the Golden Dawn's paths between the caps) run gold when a card
+  is hung, a ghost before. **The mycelium's threads** run from the roots' tips over the ground to each spore bed on its planetoid
+  (`threadsTo`; *not* Ariadne's thread, nor the press's thread). **Fruit** hangs on stems under the open caps, glowing in the tincture's
+  colour. **Its spores** (`spores.js`): falling from the gills, rising out of the sponges, wandering out of the mouth; only near. Drawn in
+  one program (`myggdrasilMaterial`, `material.js`: painted vertex colours, wrapped light, a rim of sky, light through, the glow by night,
+  the polyps' speckle, the tincture's lean), near and far (`MYGG.lodFar`).
 - **the plants** (the garden's: `src/world/garden/plants.js`; drawn by `src/vfx/garden/gardenplants.js`): green that spreads cell by
   cell over wet moss, loam and silt, and wilts elsewhere; seeded by a herb terrace and by moss painted. Drawn as a kind for each ground:
   **moss** cushions with fern sprigs, **herbs** on loam (a bloom at stage 3), **reeds** on silt. *Not:* a material planted in a bed

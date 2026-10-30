@@ -1,12 +1,12 @@
 // ---------------------------------------------------------------------------------------
 // A GARDEN TREE: a trunk of the garden's plum-dark bark, a few branches, and a leaf canopy at their ends (vfx/garden/leafcanopy.js, the
 // owner's billboarded leaves; in the garden's warm greens by the mood and its season, GARDEN-COZY.md H4, H5, H6: Lachryma's own trees
-// (Myggdrasil, the cocoon tree) keep labradorite and gold, so `leafy` is this module's choice, made for every tree it plants). Grown, not built: the trunk leans and bends a little, flares at its foot, and its
+// (the cocoon tree) keep labradorite and gold, so `leafy` is this module's choice, made for every tree it plants). Grown, not built: the trunk leans and bends a little, flares at its foot, and its
 // branches run into the crown's spheres, so the canopy hides where they end.
 //
 //   THE SHAPES   by its leaf: 'round' and 'mulberry' a round crown (a big sphere and two to four round it), 'willow' a crown spread wide
-//                and hanging low, 'gingko' a crown stacked upward (spheres smaller as they climb), 'gill' and 'cap' Myggdrasil's (its
-//                own module will lay them out; here they take the round crown)
+//                and hanging low, 'gingko' a crown stacked upward (spheres smaller as they climb), 'gill' and 'cap' a fungus's
+//                (here they take the round crown)
 //   ONE TREE     new GardenTree(opts): its own two meshes (the bark, the canopy)
 //   A GROVE      plantGrove([{ matrix, ...opts }]): every tree's bark one mesh and every canopy one mesh, two draws for the lot
 //   THE LEAVES   `leafy` (the default here): the canopy's light and deeper green, blossom, fall, snow and briar come from the mood

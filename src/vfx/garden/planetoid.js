@@ -7,13 +7,14 @@
 //                way, `sculpt(dir, amount, size)` pushes or pulls it (kept within a band of the radius, never through its heart)
 //   THE SKIN     coloured by height and by kind: soft grass over the top, a rocky underside with a few roots of stone hanging from it
 //                (it floats over the cloud sea), the colours lifted toward pastel, as Dual Hearts paints
-//   THE KINDS    dantian   the heart, 20 m: a lake of your own Lachryma at its crown in a ring of stones, the Pneuka Box's shed
+//   THE KINDS    dantian   the heart, 20 m: a lake of your own Lachryma at its crown in a ring of stones (its kura, the Pneuka Box's
+//                          shed, and its moon gate are the facilities' looks: vfx/garden/facilitylooks.js)
 //                terraces  the Herb Terraces, 12 m: stepped round its crown, rows of spirit herbs on them
 //                athanor   the Athanor, 10 m: basalt in columns, a vent at its crown glowing with the athanor's fire
 //                pavilions the Pavilions of Echoes, 14 m: pale paving over its crown, where they will stand
 //                mulberryGrove the Mulberry Grove, 16 m: moss and eighteen spirit trees (garden trees: vfx/garden/gardentree.js), the cocoon tree
 //                chimney   the Chimney, 8 m and tall: a needle of rock drawn up to a little platform (27.8 m at its crown, measured: `reach`)
-//                myggdrasil Myggdrasil's, 26 m, the largest: soft moss over a dark loam, the World Mushroom on its crown (vfx/garden/myggdrasil.js,
+//                myggdrasil Myggdrasil's, 26 m, the largest: soft moss over a dark loam, the tree on its crown (vfx/garden/myggdrasil.js,
 //                          48 m tall, grown on its first update; it reads `game.myggdrasil` when the planetoid is given the game)
 //                and the four bought in the ring (the Moonflower Moon, the Koi Pond, the Drill Yard, the Bone Bed): vfx/garden/boughtplanetoids.js
 //   THE CLAY     drawn on its own mesh at the clay's fineness (vfx/garden/planetoidmesh.js: one shared icosphere of detail 24, 6,252
@@ -135,9 +136,6 @@ export class Planetoid {
       this.lakeMat = std(0xf2c84a, { roughness: 0.1, metalness: 0.2, emissive: 0x553f10 }); this.lakeMat.userData.noMerge = true;
       const lake = new THREE.Mesh(new THREE.SphereGeometry(R * 1.004, 32, 8, 0, Math.PI * 2, 0, 0.32), this.lakeMat); lake.name = 'dantian-lake'; this.props.add(lake); this.lakeCos = Math.cos(0.32); // (what lies under the lake's cap is not drawn over it: the plants ask)
       for (let i = 0; i < 14; i++) { const a = (i / 14) * 6.28; at(new THREE.Mesh(new THREE.DodecahedronGeometry(0.5 + rnd() * 0.3, 0), stone), Math.cos(a) * 0.33, 0.94, Math.sin(a) * 0.33, 0.1); }
-      const shed = new THREE.Group(); shed.add(new THREE.Mesh(new THREE.BoxGeometry(3, 2.4, 2.4).translate(0, 1.2, 0), std(0xc98a5a)));
-      const roof = new THREE.Mesh(new THREE.ConeGeometry(2.6, 1.4, 4).translate(0, 3.1, 0), std(0x7a4a6a)); roof.rotation.y = Math.PI / 4; shed.add(roof);
-      shed.name = 'dantian-shed'; at(shed, 0.5, 0.75, 0.42);
     } else if (this.kind === 'terraces') {
       const herb = std(0x5fae5a), bloom = std(0xf2a8c8);
       for (let i = 0; i < 60; i++) { const a = rnd() * 6.28, y = 0.25 + rnd() * 0.65, s = Math.sqrt(1 - y * y); at(new THREE.Mesh(new THREE.SphereGeometry(0.28 + rnd() * 0.1, 6, 4), i % 6 ? herb : bloom), Math.cos(a) * s, y, Math.sin(a) * s, 0.1); }
@@ -156,7 +154,7 @@ export class Planetoid {
     } else if (this.bought) {
       this.bought.dress(this, at, std);
     } else if (this.kind === 'myggdrasil') {
-      this.mushroomToGrow = true; // (the World Mushroom, grown on its first update: the boot's heap never holds its leaves)
+      this.mushroomToGrow = true; // (Myggdrasil, grown on its first update: the boot's heap never holds its body)
     } else if (this.kind === 'chimney') {
       const top = this.surface(_v.set(0, 1, 0));
       const plat = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.2, 0.4, 8).translate(0, top + 0.1, 0), stone); this.props.add(plat);
@@ -172,7 +170,7 @@ export class Planetoid {
     if (this.vent) this.vent.material.color.setRGB(1, 0.42 + 0.1 * Math.sin(this.t * 3.1), 0.2).multiplyScalar(0.85 + 0.15 * Math.sin(this.t * 7.3));
   }
 
-  /** Myggdrasil's planetoid: the World Mushroom grown now if it waits (else on the first update), and returned (null on any other). */
+  /** Myggdrasil's planetoid: the tree grown now if it waits (else on the first update), and returned (null on any other). */
   growMushroom() {
     if (this.mushroomToGrow) { this.mushroomToGrow = false; this.mushroom = new WorldMushroom({ radius: this.R, surface: (d) => this.surface(d) }); this.group.add(this.mushroom.group); }
     return this.mushroom || null;

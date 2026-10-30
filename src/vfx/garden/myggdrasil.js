@@ -1,232 +1,91 @@
 // ---------------------------------------------------------------------------------------
-// MYGGDRASIL, THE WORLD MUSHROOM, AS DRAWN (the owner, 2026-10-08, through Dovina: "I love Myggdrasil, that's so cute. Make sure its
-// model is BIG"; docs/plans/MYCELIUM.md section 4; the name Espada's). A mushroom the size of a world tree, 48 m from the ground to the
-// top of its crown (ECON.myggdrasil.treeHeight), on the garden's largest planetoid, a landmark from every other. Grown, not built: the
-// three layers every world tree has, as a fungus has them.
+// MYGGDRASIL, AS DRAWN (South, 2026-10-30: "much much more alien fungus mixed with large coral structures. Twisting gnarled roots, very
+// Studio Ghibli environment art"; before it, the owner, 2026-10-08: "make sure its model is BIG"; docs/plans/MYCELIUM.md section 4; the
+// name Espada's). A world tree 48 m from its ground to the top of its Crown (ECON.myggdrasil.treeHeight), on the garden's largest
+// planetoid, a landmark from every other: a knot of roots that grew into a reef in the air, and fruits as a fungus does.
 //
-//   THE ROOTS    hyphae buttresses flaring from the stipe's foot and running out over the planetoid's crown, half sunk in it; between
-//                two of them MYGGDRASIL'S MOUTH, a cup of its clay lipped in gold, its floor a pool in the tincture's colour (`mouthWorld`:
-//                the world's F stands there); over it on the stipe ITS FACE, two round dark eyes with a glint, a smile and a blush (cute,
-//                never carved: a kodama's, a toy's)
-//   THE TRUNK    a pale fibrous stipe of grey clay (its fibres are ridges in the clay, no texture), flared into a volva at its foot and
-//                ringed in gold under the crown (the veil's remnant); THE MYCELIUM'S THREADS run on from the roots' ends over the ground
-//                as faint veins, their light running in toward the tree (`threadsTo(points)` sends them to the spore beds; until then
-//                they fan out over the planetoid)
-//   THE CROWN    ten CAPS on the Tree of Life's places, root up as Espada names them for the sephiroth (the Kingdom to the Crown,
-//                CAP_SITES): the middle pillar's ring the stipe (the Kingdom, the Foundation, Beauty) and top it (the Crown, the great
-//                cap); the side pillars' stand on arms of the stipe, spiralling round it, so the tree reads from every side (never a
-//                flat chart). A cap is the leaf canopy (vfx/garden/leafcanopy.js): a dome of shingled scales over a disc of gills, both
-//                turned out from the axis. Shut, it is a BUTTON (a round bud; a collar where the stipe runs through). It opens from the
-//                middle out over MYGG.openSeconds real seconds, one after another from the root up (`caps`), and the tincture's colour
-//                (wheelColour) leans every cap's flash. TWENTY-TWO BRANCHES (the Golden Dawn's paths 11 to 32, BRANCH_PATHS, Dovina's
-//                BRANCHES by their trump) join the caps as threads of light: a hung one gold and running, the rest a ghost. FRUIT hangs
-//                under the open caps on threads, glowing in the tincture's colour (a breath, never a flicker; as many as the crown
-//                holds); SHELF BRACKETS on the stipe in the crown, polypores grown from its clay
-//   ITS COST     the garden's one canopy program; the stipe, the gold, the mouth, the face and the fruit plain standard materials; the branches
-//                and threads the spirit veins' program (vfx/garden/veins.js): no new program. Two canopies, built once: near, and a far
-//                one of fewer, larger leaves beyond MYGG.lodFar metres. A cap opening moves its slot's gate and hides the other state's
-//                leaves in the index (canopyShow): never a rebuild. The fruit, the branches and the threads are rebuilt only when what they show changes (measured: 159 programs in the garden before it is given and after, from every view)
+//   THE ROOTS    ten strands gripping the planetoid, half sunk and humping over it, braided up into the trunk: a wide bole round a dark
+//                hollow, then a lattice you see through, then a column of four that carries the Crown (./myggdrasil/roots.js). THE
+//                ROOTS' MOUTH is the arch where two strands part at the bole's foot; in the hollow behind it a pool glows in the
+//                tincture's colour (`mouthAt`: the world's F stands at its threshold)
+//   THE CROWN    six strands peel off as coral limbs to the side caps; staghorn forks, tables in two tiers, sea fans, brain corals and
+//                tube sponges round them (./myggdrasil/coral.js); shelf fungi, lion's mane and morels on it all (./myggdrasil/fungi.js)
+//   THE CAPS     the ten fruiting bodies on the Tree of Life's places (CAP_SITES: Espada's sephiroth, root up), great caps with glowing
+//                gills under them (./myggdrasil/caps.js). Shut, a button; one opens at a time from the root up over MYGG.openSeconds
+//                real seconds, its vertices morphed in the one geometry (no rebuild). The tincture leans their tops, their gills more
+//   THE BRANCHES twenty-two threads of light between the caps (BRANCH_PATHS, the Golden Dawn's paths 11 to 32, Dovina's BRANCHES by
+//                their trump): a hung one gold and running, the rest a ghost. THE MYCELIUM'S THREADS run on over the ground from the
+//                roots' tips (`threadsTo(points)` to the spore beds; until then they fan out). FRUIT hangs under the open caps,
+//                glowing in the tincture's colour (as many as the crown holds)
+//   ITS AIR      spores always: falling from the open gills, breathing out of the sponges, wandering out of the mouth
+//                (./myggdrasil/spores.js); by night the gills, the polyps, the sponges' throats and the mouth luminous
+//   ITS COST     the body is ONE geometry and ONE program (./myggdrasil/material.js), near and far (MYGG.lodFar: the far one fewer
+//                sides and rings, its smallest things left out, built from the same chances so the swap never moves a part); the
+//                fruit the same program; the threads and branches the ribbons' program (vfx/ribbonlight.js); the spores the game's
+//                sprite particles (vfx/sprites.js). Five draws and two shadows; a cap moving writes only its own vertices
 //
-// Prior art: the world trees (Yggdrasil; the Siberian shamans' birch with the fly agaric at its foot; Legend of Mana's Trent), the
-// Kabbalists' Tree of Life and the Golden Dawn's tarot on its paths, Princess Mononoke's kodama and Mario's Toads (a face that is two
-// dots and a smile), Nausicaa's fungal forest (trees that are fungi, many caps on
-// branching stems), real fungi (Amanita's volva and ring, a parasol's shingled scales, an agaric's radiating gills, the shelf
-// polypores for the shelf brackets, foxfire's steady glow), and the leaf canopy itself (vfx/garden/leafcanopy.js).
+// Prior art: Nausicaa's Sea of Corruption (the Fukai: a forest of fungus and coral, spore-fall, the Ohmu's colours), Laputa's great tree
+// (roots knotted round a world), Princess Mononoke's forest, the strangler fig's lattice trunk, the reef (staghorn and table Acropora,
+// Gorgonia, Diploria, Aplysina), the world trees (Yggdrasil; Legend of Mana's Trent), the Kabbalists' Tree of Life and the Golden Dawn's
+// tarot on its paths, and real glowing fungi (Mycena's gills, Panellus's foxfire).
 //
 //   const M = new WorldMushroom({ radius: 26, surface: (dir) => metres })   M.group (at the planetoid's heart, the tree up its +Y)
 //   M.update(rawDt, state)   (state: game.myggdrasil, read defensively: caps 0..10, branches { id: true } | Set | [ids], tincture { h, s }
-//   | null, crown [fruit]; missing, caps 3 and nothing hung)   M.threadsTo(points)   M.mouthWorld(out)
-//   M.snap()   M.dispose()   CAP_SITES   BRANCH_PATHS   MYGG
+//   | null, crown [fruit]; missing, caps 3 and nothing hung)   M.threadsTo(points)   M.mouthWorld(out)   M.mouthAt (local)
+//   M.snap()   M.dispose()   M.tris   CAP_SITES   BRANCH_PATHS   MYGG   trunkR   myggdrasilParked()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
-import { canopyGeometry, canopyMesh, canopySlot, canopyFree, canopyTint, canopyOpen, canopyShow } from './leafcanopy.js';
-import { barkMaterial } from './gardentree.js';
 import { veinMaterial } from './veins.js';
 import { GROUND_UNIFORMS } from './gardengrounds.js';
 import { wheelColour } from '../wheelcolour.js';
+import { MYGG, CAP_SITES, BRANCH_PATHS, trunkR, treeFrame, lcg, angDiff, D2R } from './myggdrasil/layout.js';
+import { myggdrasilMaterial } from './myggdrasil/material.js';
+import { buildBody } from './myggdrasil/body.js';
+import { setCap, fruitAt } from './myggdrasil/caps.js';
+import { TreeKit, tube, sheet, ink, lin } from './myggdrasil/kit.js';
+import { MyggSpores } from './myggdrasil/spores.js';
+import { PAL } from './myggdrasil/palette.js';
 
-/** Its numbers: height (m, the ground to the crown's top), the far canopy's distance (m), a cap's opening (real seconds), the caps open
- *  when the state says nothing, the most fruit drawn. */
-export const MYGG = { height: 48, lodFar: 95, openSeconds: 2.6, defaultCaps: 3, fruitMax: 30, nearDensity: 0.65, farDensity: 0.3, tintMax: 0.46 };
-
-/** The ten caps, root up (Dovina's CAPS order: the Kingdom .. the Crown): height of the cap's heart over the ground (m), how far out
- *  (0: on the stipe), its bearing (degrees), its radius (m), where its arm leaves the stipe (m; `stalk`: it rises from the ground among
- *  the roots). The Kingdom and the Foundation are small caps at the foot (the Kingdom is the earth); Beauty rings the stipe; the side
- *  pillars spiral on arms, Wisdom 0, Mercy 60, Victory 120 (the right), Understanding 180, Severity 240, Splendour 300 (the left), the
- *  highest farthest out, past the Crown's brim; the Crown is the great cap. */
-export const CAP_SITES = [
-  { id: 'kingdom', y: 3.6, out: 7.6, az: 210, r: 3.4, stalk: true },
-  { id: 'foundation', y: 11.5, out: 8, az: 20, r: 4.2, arm: 7.8 },
-  { id: 'splendour', y: 20.5, out: 12.5, az: 300, r: 5.2, arm: 13 },
-  { id: 'victory', y: 20.5, out: 12.5, az: 120, r: 5.2, arm: 13 },
-  { id: 'beauty', y: 26.5, out: 0, az: 0, r: 8, ring: true },
-  { id: 'severity', y: 31, out: 15, az: 240, r: 5.6, arm: 21.4 },
-  { id: 'mercy', y: 31, out: 15, az: 60, r: 5.6, arm: 21.4 },
-  { id: 'understanding', y: 35.5, out: 19, az: 180, r: 5.4, arm: 30.6 },
-  { id: 'wisdom', y: 35.5, out: 19, az: 0, r: 5.4, arm: 30.6 },
-  { id: 'crown', y: 39.5, out: 0, az: 0, r: 17.5, top: true },
-];
-/** The twenty-two branches: each trump's path between two caps (indices into CAP_SITES, the lower first), the Golden Dawn's
- *  attribution of paths 11 to 32 (the Fool Kether to Chokmah .. the World Yesod to Malkuth). */
-export const BRANCH_PATHS = {
-  fool: [8, 9], magician: [7, 9], priestess: [4, 9], empress: [7, 8], emperor: [4, 8], hierophant: [6, 8], lovers: [4, 7], chariot: [5, 7],
-  strength: [5, 6], hermit: [4, 6], wheel: [3, 6], justice: [4, 5], hanged: [2, 5], death: [3, 4], temperance: [1, 4], devil: [2, 4],
-  tower: [2, 3], star: [1, 3], moon: [0, 3], sun: [1, 2], judgement: [0, 2], world: [0, 1],
-};
+export { MYGG, CAP_SITES, BRANCH_PATHS, trunkR };
 const BRANCH_IDS = Object.keys(BRANCH_PATHS);
-const SPIRAL = { priestess: 200 }; // (a branch between two caps on the stipe winds round it from this bearing)
-const STIPE = [[-2.4, 6.7], [0, 6.2], [1.2, 5.0], [2.6, 4.25], [5, 3.85], [9, 3.6], [15, 3.42], [22, 3.25], [30, 3.0], [34, 2.85], [38.4, 2.7], [41, 2.6]];
-const BRACKET_AT = [[13.4, 165, 1.2], [15.6, 285, 1.1], [18.4, 75, 1.3], [22.6, 200, 1.2], [24.2, 340, 1.3], [31.6, 150, 1.4], [33.4, 300, 1.2], [35.2, 95, 1.1]];
-const ROOT_AZ = [110, 150, 190, 230, 270, 310, 350, 30, 70], MOUTH = { az: 90, s: 9.4 }, FACE = { az: 90, y: 10.4 }; // (both between the roots at 70 and 110, under no arm: the Foundation's leaves the stipe at 20, Victory's at 120)
-const D2R = Math.PI / 180, GOLD = 0xd8ae58;
-
-/** The stipe's radius at a height over the ground (m). */
-export function stipeR(y) {
-  if (y <= STIPE[0][0]) return STIPE[0][1];
-  for (let i = 1; i < STIPE.length; i++) if (y <= STIPE[i][0]) { const [y0, r0] = STIPE[i - 1], [y1, r1] = STIPE[i]; return r0 + (r1 - r0) * (y - y0) / (y1 - y0); }
-  return STIPE[STIPE.length - 1][1];
-}
+const SPIRAL = { priestess: 200 }; // (a branch between two caps on the column winds round it from this bearing)
+const AMBER = lin(0xe8c878);
 
 export class WorldMushroom {
   constructor({ radius = 26, surface = null, seed = 1 } = {}) {
-    this.R = radius; this.surface = surface || (() => radius); this.rnd = lcg(seed * 53 + 11);
+    this.R = radius; this.F = treeFrame(radius, surface); this.y0 = this.F.y0;
     const g = this.group = new THREE.Group(); g.name = 'myggdrasil';
-    this.y0 = this.surface(_up.set(0, 1, 0)); // (the ground under the stipe: the tree's heights are over it)
-    this.mats = {
-      stipe: new THREE.MeshStandardMaterial({ name: 'myggdrasil-stipe', color: 0xd9d1c6, roughness: 0.86, metalness: 0 }), // (grey clay, pale: a plain standard material)
-      gold: new THREE.MeshStandardMaterial({ name: 'myggdrasil-gold', color: GOLD, roughness: 0.34, metalness: 0.85 }),
-      glow: new THREE.MeshStandardMaterial({ name: 'myggdrasil-fruit', color: 0x6a5a3a, roughness: 0.6, emissive: 0xe8c878, emissiveIntensity: 1 }),
-      fruitThread: new THREE.LineBasicMaterial({ color: 0xe8e2d8 }),
-    };
-    this.cap = CAP_SITES.map((C, i) => ({ ...C, i, k: 0, shown: -1, matrix: capMatrix(C, this.y0, this.rnd), open: canopySlot(), shut: canopySlot() }));
-    this.buildBody(); this.buildCanopies(); this.buildMouth(); this.buildFace();
+    this.mat = myggdrasilMaterial(); this.u = this.mat.userData.u;
+    // the body, near and far (one LOD: the far body past MYGG.lodFar)
+    this.bodies = [buildBody(this.F, 0, seed), buildBody(this.F, 1, seed)];
+    this.lod = new THREE.LOD(); this.lod.name = 'myggdrasil-crown'; this.lod.position.set(0, this.y0 + 24, 0);
+    this.eye = new THREE.Vector3(1e6, 0, 0);
+    const seen = (r, s, cam) => { this.eye.setFromMatrixPosition(cam.matrixWorld); };
+    this.bodies.forEach((B, i) => {
+      const mesh = new THREE.Mesh(B.geometry, this.mat); mesh.position.set(0, -(this.y0 + 24), 0); mesh.name = i ? 'myggdrasil-body-far' : 'myggdrasil-body-near';
+      mesh.castShadow = mesh.receiveShadow = true; mesh.onBeforeRender = seen; B.mesh = mesh;
+      const holder = new THREE.Group(); holder.add(mesh); this.lod.addLevel(holder, i ? MYGG.lodFar : 0, 0.08);
+    });
+    g.add(this.lod);
+    this.cap = CAP_SITES.map((C, i) => ({ ...C, i, k: 1, shown: 1, near: this.bodies[0].caps[i], far: this.bodies[1].caps[i] }));
+    this.mouthAt = this.bodies[0].mouthAt.clone(); this.tips = this.bodies[0].tips;
+    // the mycelium's threads and the branches' lights (the ribbons' program)
     this.vein = { u: { uT: { value: 0 }, uK: { value: 0.55 }, uC: { value: new THREE.Color(0xf0dca0) } } };
     this.veins = new THREE.Mesh(new THREE.BufferGeometry(), veinMaterial(this.vein.u)); this.veins.name = 'myggdrasil-threads'; g.add(this.veins);
     this.threadsTo(null);
-    this.lit = { u: { uT: { value: 0 }, uK: { value: 1 }, uC: { value: new THREE.Color(0xffcf6a) } } }; this.ghost = { u: { uT: { value: 0 }, uK: { value: 0.16 }, uC: { value: new THREE.Color(0x8a86b8) } } };
+    this.lit = { u: { uT: { value: 0 }, uK: { value: 1 }, uC: { value: new THREE.Color(0xffcf6a) } } }; this.ghost = { u: { uT: { value: 0 }, uK: { value: 0.16 }, uC: { value: new THREE.Color(0x9a8cc8) } } };
     for (const B of [this.lit, this.ghost]) { B.mesh = new THREE.Mesh(new THREE.BufferGeometry(), veinMaterial(B.u)); B.mesh.name = 'myggdrasil-branches'; g.add(B.mesh); }
-    this.fruit = new THREE.Mesh(new THREE.BufferGeometry(), this.mats.glow); this.fruit.name = 'myggdrasil-fruit'; g.add(this.fruit);
-    this.fruitLines = new THREE.LineSegments(new THREE.BufferGeometry(), this.mats.fruitThread); this.fruitLines.name = 'myggdrasil-fruit-threads'; g.add(this.fruitLines);
+    // the fruit (the body's program) and the spores (the game's sprite particles)
+    this.fruit = new THREE.Mesh(new THREE.BufferGeometry(), this.mat); this.fruit.name = 'myggdrasil-fruit'; this.fruit.visible = false; g.add(this.fruit);
+    this.spores = new MyggSpores(g, this.bodies[0].emit);
     this.colour = new THREE.Color(0xe8c878); this.colourWant = this.colour.clone(); this.tintAmt = 0; this.tintWant = 0;
     this.keys = { fruit: null, lit: null }; this.pulse = 0; this.t = 0; this.ready = false;
   }
+  /** Triangles in the near body and the far (for a probe). */
+  get tris() { return this.bodies.map((B) => B.tris); }
 
-  /** A point over the ground in the tree's frame: bearing (degrees), distance out from the axis (m), height over the ground (m). */
-  at(az, rho, y, out = new THREE.Vector3()) { return out.set(Math.sin(az * D2R) * rho, this.y0 + y, Math.cos(az * D2R) * rho); }
-  /** A point on the ground: bearing (degrees), distance along the ground from the stipe (m), lifted along the ground's up. */
-  ground(az, s, lift = 0, out = new THREE.Vector3()) {
-    const a = az * D2R, phi = s / this.R; _d.set(Math.sin(phi) * Math.sin(a), Math.cos(phi), Math.sin(phi) * Math.cos(a));
-    return out.copy(_d).multiplyScalar(this.surface(_d) + lift);
-  }
-
-  // ---- the body: the stipe, its ring, the roots, the arms, the shelf brackets (one mesh of grey clay; the ring and the lip gold)
-  buildBody() {
-    const geos = [], rnd = this.rnd;
-    // the stipe: a lathe of the profile, its fibres ridges round it and a slow twist up it
-    const prof = []; for (let y = STIPE[0][0]; y < 41; y += 0.7) prof.push(new THREE.Vector2(stipeR(y), y));
-    prof.push(new THREE.Vector2(2.6, 41), new THREE.Vector2(2.3, 41.7), new THREE.Vector2(1.4, 42.15), new THREE.Vector2(0.001, 42.3)); // (its top, inside the Crown's dome)
-    const st = new THREE.LatheGeometry(prof, 64), P = st.attributes.position;
-    for (let i = 0; i < P.count; i++) {
-      const x = P.getX(i), y = P.getY(i), z = P.getZ(i), r = Math.hypot(x, z), a = Math.atan2(x, z) + y * 0.006;
-      const f = (1 + 0.026 * Math.sin(a * 18 + y * 0.12 + 2 * Math.sin(y * 0.05)) + 0.011 * Math.sin(a * 41 - y * 0.3)) * (1 + 0.03 * Math.sin(y * 0.31 + 1));
-      P.setXYZ(i, Math.sin(a) * r * f, y + this.y0, Math.cos(a) * r * f);
-    }
-    geos.push(smooth(st));
-    // the roots: buttresses from the stipe's foot out over the ground, half sunk; a fork off each
-    for (const az0 of ROOT_AZ) {
-      const az = az0 + (rnd() - 0.5) * 8, pts = [this.at(az, 2.4, 3.6), this.at(az, 5.2, 2.0)];
-      for (const s of [7.5, 10, 12.5, 15.5]) pts.push(this.ground(az + (rnd() - 0.5) * 9, s, 0.55 * (16.5 - s) / 9)); // (half sunk: a buttress, then a root under the moss)
-      geos.push(tube(pts, 2.0, 0.24, 9, 22, 0.75));
-      const f = pts[3], toMouth = angDiff(az, MOUTH.az), side = Math.abs(toMouth) < 40 ? -Math.sign(toMouth || 1) : rnd() < 0.5 ? -1 : 1, fp = [f.clone(), this.ground(az + side * 14, 12.5, 0.15), this.ground(az + side * 22, 15, 0)];
-      geos.push(tube(fp, 0.55, 0.12, 6, 10, 1));
-    }
-    // the arms: from the stipe out and up to each side cap's heart
-    for (const C of this.cap) if (C.out) {
-      const r0 = stipeR(C.arm || 0), pts = C.stalk ? [this.ground(C.az, C.out - 0.4, -1.2), this.ground(C.az, C.out - 0.1, 0.9), this.at(C.az, C.out, C.y * 0.6), this.at(C.az, C.out, C.y - 0.4)]
-        : [this.at(C.az, r0 * 0.6, C.arm), this.at(C.az, r0 + 2.4, C.arm + 0.9), this.at(C.az, C.out * 0.68, C.arm + (C.y - C.arm) * 0.45), this.at(C.az, C.out, C.y - 0.5)];
-      geos.push(C.stalk ? tube(pts, 1.0, 0.55, 9, 12, 1) : tube(pts, 1.4, 0.8, 9, 24, 1));
-      const knob = new THREE.SphereGeometry(1.05, 10, 8); knob.scale(1, 0.7, 1); knob.translate(...this.at(C.az, C.out, C.y - 0.35).toArray()); geos.push(knob);
-    }
-    // the shelf brackets on the stipe in the crown (polypores of its clay)
-    for (const [y, az, rp] of BRACKET_AT) {
-      const r = stipeR(y), out = _o.set(Math.sin(az * D2R), 0, Math.cos(az * D2R)), b = new THREE.CylinderGeometry(rp, rp * 0.82, 0.3, 12, 1, false, 0, Math.PI);
-      b.rotateY(-Math.PI / 2); // (its round edge out along +Z, its cut face against the stipe)
-      const m = new THREE.Matrix4().makeBasis(_t.crossVectors(_up.set(0, 1, 0), out).normalize(), _up, out).setPosition(this.at(az, r - 0.15, y));
-      b.applyMatrix4(m); geos.push(b);
-    }
-    const body = new THREE.Mesh(mergeGeometries(geos.map(plain), false), this.mats.stipe); geos.forEach((x) => x.dispose());
-    body.name = 'myggdrasil-stipe'; body.castShadow = body.receiveShadow = true; this.group.add(body); this.body = body;
-    // the gold: the veil's ring under the crown
-    const ring = new THREE.TorusGeometry(stipeR(35.6) + 0.12, 0.34, 8, 56); ring.rotateX(Math.PI / 2); ring.translate(0, this.y0 + 35.6, 0);
-    this.goldGeos = [ring];
-  }
-
-  // ---- the feeding mouth: a cup of the stipe's clay on the ground between two roots (a little volva), lipped in gold, its floor a
-  // pool lit in the tincture's colour; the planetoid's ground is never cut, so the mouth stands on it and is seen from above
-  buildMouth() {
-    const G = this.ground(MOUTH.az, MOUTH.s, 0), N = G.clone().normalize(), q = new THREE.Quaternion().setFromUnitVectors(_up.set(0, 1, 0), N);
-    const place = (geo, lift) => { geo.applyQuaternion(q); geo.translate(G.x + N.x * lift, G.y + N.y * lift, G.z + N.z * lift); return geo; };
-    const lip = new THREE.TorusGeometry(1.72, 0.26, 8, 28); lip.rotateX(-Math.PI / 2); this.goldGeos.push(place(lip, 0.95));
-    const gold = new THREE.Mesh(mergeGeometries(this.goldGeos.map(plain), false), this.mats.gold); this.goldGeos.forEach((x) => x.dispose()); this.goldGeos = null;
-    gold.name = 'myggdrasil-gold'; gold.castShadow = gold.receiveShadow = true; this.group.add(gold); this.gold = gold;
-    const v2 = (pts) => pts.map(([x, y]) => new THREE.Vector2(x, y));
-    const wall = place(new THREE.LatheGeometry(v2([[2.5, -0.5], [2.45, 0.1], [2.2, 0.6], [1.9, 0.95]]), 24), 0); // (outside: the clay swelling up from the ground to the lip)
-    const cup = new THREE.Mesh(smooth(wall), this.mats.stipe); cup.name = 'myggdrasil-mouth-cup'; cup.castShadow = cup.receiveShadow = true; this.group.add(cup);
-    const inner = place(new THREE.LatheGeometry(v2([[1.62, 0.95], [1.5, 0.6], [1.15, 0.36], [0.001, 0.3]]), 24), 0); // (inside: down to its floor, the faces turned in)
-    this.throat = new THREE.Mesh(smooth(inner), barkMaterial()); this.throat.name = 'myggdrasil-mouth'; this.throat.receiveShadow = true; this.group.add(this.throat);
-    const floor = place(new THREE.CircleGeometry(1.25, 20).rotateX(-Math.PI / 2), 0.4);
-    this.mouthGlow = new THREE.Mesh(floor, this.mats.glow); this.mouthGlow.name = 'myggdrasil-mouth-glow'; this.group.add(this.mouthGlow);
-    this.mouthAt = G.clone().addScaledVector(N, 0.4);
-  }
-
-  // ---- its face: two round dark eyes with a glint in each, a small smile and a blush, on the stipe over the mouth (a kodama's, a
-  // toy's: drawn, never carved; plain standard materials, so no program of its own)
-  buildFace() {
-    const geos = { eye: [], shine: [], smile: [], blush: [] }, o = new THREE.Vector3(), t = new THREE.Vector3(), m = new THREE.Matrix4();
-    const seat = (az, y, out) => { o.set(Math.sin(az * D2R), 0, Math.cos(az * D2R)); t.set(o.z, 0, -o.x); return m.makeBasis(t, _up.set(0, 1, 0), o).setPosition(this.at(az, stipeR(y) + out, y)); };
-    for (const side of [-1, 1]) {
-      const e = new THREE.SphereGeometry(1, 16, 12); e.scale(0.46, 0.66, 0.34); e.applyMatrix4(seat(FACE.az + side * 12.5, FACE.y, 0.1)); geos.eye.push(e);
-      const g = new THREE.SphereGeometry(0.13, 8, 6); g.translate(-0.12, 0.24, 0.3); g.applyMatrix4(seat(FACE.az + side * 12.5, FACE.y, 0.1)); geos.shine.push(g);
-      const b = new THREE.CircleGeometry(0.42, 16); b.scale(1, 0.55, 1); b.applyMatrix4(seat(FACE.az + side * 22, FACE.y - 0.9, 0.26)); geos.blush.push(b);
-    }
-    const arc = 0.62 * Math.PI, smile = new THREE.TorusGeometry(0.42, 0.075, 6, 16, arc); smile.rotateZ(-Math.PI / 2 - arc / 2); smile.applyMatrix4(seat(FACE.az, FACE.y - 0.95, 0.24)); geos.smile.push(smile);
-    const mat = {
-      eye: new THREE.MeshStandardMaterial({ name: 'myggdrasil-eyes', color: 0x2a2433, roughness: 0.22, metalness: 0 }),
-      shine: new THREE.MeshStandardMaterial({ name: 'myggdrasil-eye-glint', color: 0xffffff, emissive: 0xfff6e8, emissiveIntensity: 0.9, roughness: 0.4 }),
-      blush: new THREE.MeshStandardMaterial({ name: 'myggdrasil-blush', color: 0xeaa0a4, roughness: 0.9, metalness: 0 }),
-    };
-    mat.smile = mat.eye;
-    for (const k of Object.keys(geos)) { const g = new THREE.Mesh(mergeGeometries(geos[k].map(plain), false), mat[k]); geos[k].forEach((x) => x.dispose()); g.name = `myggdrasil-face-${k}`; this.group.add(g); }
-  }
-
-  // ---- the crown's canopies: every cap twice (open, shut) in one geometry, near and far
-  buildCanopies() {
-    const entries = (far) => {
-      const E = [], sz = (v, lo, hi) => Math.min(3.9, THREE.MathUtils.clamp(v, lo, hi) * (far ? 1.8 : 1));
-      for (const C of this.cap) {
-        const ring = !!C.ring, rs = ring ? stipeR(C.y) : C.top ? stipeR(38) : 0, dome = C.top ? 0.48 : ring ? 0.36 : 0.5;
-        E.push({ matrix: C.matrix, seed: C.i * 7 + (far ? 101 : 1), unify: 0, spheres: [
-          { c: [0, 0, 0], r: C.r, squash: [1, dome, 1], half: 1, leaf: 'cap', grow: true, slot: C.open, hole: ring ? rs - 0.4 : 0, size: sz(C.r * 0.12, 0.75, 2.2) },
-          { c: [0, -0.15, 0], r: C.r * 0.97, squash: [1, 0.14, 1], half: -1, leaf: 'gill', grow: true, radial: -1, shell: 0, slot: C.open, hole: rs ? rs - 0.1 : C.r * 0.06, size: sz(C.r * 0.12, 0.7, 2.1) },
-        ] });
-        const bud = C.top ? { c: [0, 2.6, 0], r: 5.2 } : ring ? { c: [0, 0.3, 0], r: rs + 1.3, squash: [1, 0.55, 1], hole: rs - 0.25 } : { c: [0, 0.75, 0], r: Math.max(1.2, C.r * 0.33) };
-        E.push({ matrix: C.matrix, seed: C.i * 7 + (far ? 105 : 5), unify: 0, spheres: [{ ...bud, leaf: 'cap', grow: true, slot: C.shut, size: sz(bud.r * 0.42, 0.75, 1.6) }] });
-      }
-      return E;
-    };
-    this.lod = new THREE.LOD(); this.lod.name = 'myggdrasil-crown'; this.lod.position.set(0, this.y0 + 24, 0);
-    this.canopies = [];
-    for (const [far, dist] of [[false, 0], [true, MYGG.lodFar]]) {
-      const geo = canopyGeometry(entries(far).map((e) => ({ ...e, density: far ? MYGG.farDensity : MYGG.nearDensity }))), mesh = canopyMesh(geo);
-      mesh.position.set(0, -(this.y0 + 24), 0); mesh.name = far ? 'myggdrasil-crown-far' : 'myggdrasil-crown-near';
-      const holder = new THREE.Group(); holder.add(mesh); this.lod.addLevel(holder, dist, 0.08); this.canopies.push(geo);
-    }
-    this.group.add(this.lod);
-  }
-
-  /** Sends the mycelium's threads to these points (world positions: the spore beds on this planetoid), each from its nearest root; with
-   *  none, they fan out over the planetoid. */
+  /** Sends the mycelium's threads to these points (world positions: the spore beds on this planetoid), each from its nearest root's tip;
+   *  with none, they fan out over the planetoid. */
   threadsTo(points) {
     const key = points?.length ? points.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)},${p.z.toFixed(1)}`).join('|') : '';
     if (key === this.threadKey) return; this.threadKey = key; // (the same beds: nothing to lay again)
@@ -235,60 +94,57 @@ export class WorldMushroom {
     if (here.length) {
       for (const l of here) {
         const az = Math.atan2(l.x, l.z) / D2R, s = Math.acos(THREE.MathUtils.clamp(l.y / l.length(), -1, 1)) * this.R;
-        const az0 = ROOT_AZ.reduce((b, a) => (Math.abs(angDiff(a, az)) < Math.abs(angDiff(b, az)) ? a : b));
-        strips.push(this.veinPath(az0, az, 15, Math.max(16, s), rnd));
+        const T = this.tips.reduce((b, a) => (Math.abs(angDiff(a.az, az)) < Math.abs(angDiff(b.az, az)) ? a : b)), s0 = Math.min(T.s, Math.max(10, s - 3));
+        strips.push(this.veinPath(T.az, az, s0, Math.max(s0 + 1, s), rnd));
       }
-    } else for (const az0 of ROOT_AZ) {
-      const az1 = az0 + (rnd() - 0.5) * 30, s1 = 26 + rnd() * 10; strips.push(this.veinPath(az0, az1, 15, s1, rnd));
-      const f = 0.45 + rnd() * 0.2; strips.push(this.veinPath(az0 + (az1 - az0) * f, az1 + (rnd() < 0.5 ? -1 : 1) * (14 + rnd() * 12), 15 + (s1 - 15) * f, s1 - 3 - rnd() * 5, rnd));
+    } else for (const T of this.tips) {
+      const az1 = T.az + (rnd() - 0.5) * 30, s1 = T.s + 9 + rnd() * 8; strips.push(this.veinPath(T.az, az1, T.s, s1, rnd));
+      const f = 0.45 + rnd() * 0.2; strips.push(this.veinPath(T.az + (az1 - T.az) * f, az1 + (rnd() < 0.5 ? -1 : 1) * (14 + rnd() * 12), T.s + (s1 - T.s) * f, s1 - 2 - rnd() * 4, rnd));
     }
     this.veins.geometry.dispose(); this.veins.geometry = ribbonGeometry(strips, 0.34, false);
   }
   /** A vein over the ground from (az0, s0) out to (az1, s1), wandering a little; its points far end first (the light runs in). */
   veinPath(az0, az1, s0, s1, rnd) {
     const n = Math.max(8, Math.round((s1 - s0) / 0.9)), pts = [], w1 = rnd() * 6, w2 = rnd() * 6;
-    for (let i = n; i >= 0; i--) { const t = i / n, az = az0 + angDiff(az0, az1) * t + 4 * Math.sin(t * 7 + w1) + 2 * Math.sin(t * 17 + w2); pts.push({ p: this.ground(az, s0 + (s1 - s0) * t, 0.07), n: _d.clone() }); }
+    for (let i = n; i >= 0; i--) { const t = i / n, az = az0 + angDiff(az0, az1) * t + 4 * Math.sin(t * 7 + w1) + 2 * Math.sin(t * 17 + w2), s = s0 + (s1 - s0) * t; pts.push({ p: this.F.ground(az, s, 0.07), n: this.F.up(az, s) }); }
     return pts;
   }
 
-  /** The branches' threads of light for the hung set (lit) and the rest (ghost). */
+  /** The branches' threads of light for the hung set (lit) and the rest (ghost), each between its two caps, round the column. */
   buildBranches(lit) {
-    const L = [], G = [];
+    const L = [], G = [], ring = (y) => trunkR(y) + (y < 22 ? 1.8 : 1.4);
     BRANCH_IDS.forEach((id, i) => {
       const [a, b] = BRANCH_PATHS[id], A = this.cap[a], B = this.cap[b];
       let azA, azB;
       if (A.out && B.out) { azA = A.az; azB = B.az; } else if (A.out) { azA = azB = A.az; } else if (B.out) { azA = azB = B.az; } else { azA = SPIRAL[id] ?? 0; azB = azA + 100; }
-      const node = (C, az) => (C.out ? { az: C.az, rho: C.out, y: C.y - 0.75 } : C.top ? { az, rho: stipeR(36) + 1.3, y: C.y - 3 } : { az, rho: stipeR(C.y) + 1.1, y: C.y - 1.1 });
-      const nA = node(A, azA), nB = node(B, azB), d = angDiff(nA.az, nB.az) || 0, span = Math.abs(d) * D2R, flat = Math.abs(nB.y - nA.y) < 3;
-      const pts = [];
+      const node = (C, az) => (C.out ? { az: C.az, rho: C.out, y: C.y - (C.stalk ? 0.6 : 1.0) } : C.top ? { az, rho: ring(38.5), y: C.y - 3.6 } : { az, rho: ring(C.y) + 0.5, y: C.y - 1.6 });
+      const nA = node(A, azA), nB = node(B, azB), d = angDiff(nA.az, nB.az) || 0, span = Math.abs(d) * D2R, flat = Math.abs(nB.y - nA.y) < 3, pts = [];
       for (let k = 0; k <= 40; k++) {
         const t = k / 40, y = nA.y + (nB.y - nA.y) * t - (flat ? 0.7 : 0.2) * Math.sin(Math.PI * t), az = nA.az + d * t;
-        const dip = THREE.MathUtils.smoothstep(Math.abs(d), 70, 170) * Math.sin(Math.PI * t) ** 0.8; // (a branch across the tree runs in to the stipe and round it, never a hoop round the whole crown)
-        const rho = Math.max(stipeR(y) + 0.9, THREE.MathUtils.lerp(nA.rho + (nB.rho - nA.rho) * t + (0.4 + 0.45 * span) * Math.sin(Math.PI * t), stipeR(y) + 1.3, dip));
-        pts.push({ p: this.at(az, rho, y) });
+        const dip = THREE.MathUtils.smoothstep(Math.abs(d), 70, 170) * Math.sin(Math.PI * t) ** 0.8; // (a branch across the tree runs in to the column and round it, never a hoop round the whole crown)
+        const rho = Math.max(ring(y), THREE.MathUtils.lerp(nA.rho + (nB.rho - nA.rho) * t + (0.4 + 0.45 * span) * Math.sin(Math.PI * t), ring(y) + 0.4, dip));
+        pts.push({ p: this.F.at(az, rho, y) });
       }
       (lit.has(i) ? L : G).push(pts);
     });
     for (const [B, S] of [[this.lit, L], [this.ghost, G]]) { B.mesh.geometry.dispose(); B.mesh.geometry = ribbonGeometry(S, 0.5, true); B.mesh.visible = S.length > 0; }
   }
 
-  /** The fruit for `n` (at most MYGG.fruitMax), hung under the caps open or opening (`want` of them) in turn from the root up. */
-  buildFruit(n, want) {
-    const hosts = this.cap.filter((C) => C.i < Math.max(1, want)), geos = [], lines = [], rnd = lcg(71);
-    for (let j = 0; j < n && hosts.length; j++) {
-      const C = hosts[j % hosts.length], k = Math.floor(j / hosts.length), a = (k * 137.5 + C.i * 41) * D2R, out = C.r * (C.out ? 0.42 + 0.12 * (k % 2) : 0.62);
-      const top = _p.set(Math.sin(a) * out, -C.r * 0.13 * Math.sqrt(Math.max(0, 1 - (out / C.r) ** 2)) - 0.15, Math.cos(a) * out).applyMatrix4(C.matrix).clone();
+  /** The fruit for `n` (at most MYGG.fruitMax), hung under the caps open or opening (`hosts` of them, from the root up) on stems. */
+  buildFruit(n, hosts) {
+    const K = new TreeKit(), H = this.cap.filter((C) => C.i < Math.max(1, hosts)), rnd = lcg(71);
+    for (let j = 0; j < n && H.length; j++) {
+      const C = H[j % H.length], k = Math.floor(j / H.length), a = (k * 137.5 + C.i * 41) * D2R, top = fruitAt(C.near, a, C.out ? 0.45 + 0.14 * (k % 2) : 0.55 + 0.1 * (k % 3), new THREE.Vector3());
       const len = 1.0 + rnd() * 1.4, size = (C.top ? 1.25 : 0.95) * (0.85 + rnd() * 0.3), end = top.clone().setY(top.y - len);
-      const f = fruitGeometry(size); f.translate(end.x, end.y, end.z); geos.push(f);
-      lines.push(top.x, top.y, top.z, end.x, end.y, end.z);
+      tube(K, [top, top.clone().lerp(end, 0.5).add(new THREE.Vector3(0.08, 0, 0.05)), end], { r: 0.05, radial: 4, segs: 3, paint: () => ink(PAL.boneShade, 0.6, null, 0, 0, 0, 0, 0.9) });
+      const prof = [[0.07, 0], [0.08, -0.05], [0.22, -0.38], [0.4, -0.5], [0.5, -0.66], [0.42, -0.78], [0.18, -0.86], [0.01, -0.9]];
+      sheet(K, prof.length, 10, (i, jj, o) => { const ph = (jj / 10) * Math.PI * 2; return o.set(end.x + Math.sin(ph) * prof[i][0] * size, end.y + prof[i][1] * size, end.z + Math.cos(ph) * prof[i][0] * size); }, { wrap: true, paint: (u) => ink(AMBER, 0.45, AMBER, 0.55 + 0.25 * u, 1, 0, 0.6, 0.45) });
     }
-    this.fruit.geometry.dispose(); this.fruitLines.geometry.dispose();
-    this.fruit.geometry = geos.length ? mergeGeometries(geos, false) : new THREE.BufferGeometry(); geos.forEach((x) => x.dispose());
-    const lg = new THREE.BufferGeometry(); lg.setAttribute('position', new THREE.Float32BufferAttribute(lines, 3)); this.fruitLines.geometry = lg;
-    this.fruit.visible = this.fruitLines.visible = geos.length > 0; this.fruitShown = geos.length;
+    this.fruit.geometry.dispose(); this.fruit.geometry = K.n ? K.geometry() : new THREE.BufferGeometry();
+    this.fruit.visible = K.n > 0; this.fruitShown = n;
   }
 
-  /** Each frame: the caps toward the state (one at a time, from the root up), the branches, the fruit, the tincture, the glow. */
+  /** Each frame: the caps toward the state (one at a time, from the root up), the branches, the fruit, the tincture, the glow, the spores. */
   update(raw = 1 / 60, state = null) {
     const S = readState(state); this.t += raw; this.state = S;
     if (!this.ready) { for (const C of this.cap) C.k = C.i < S.caps ? 1 : 0; this.ready = true; this.settle = true; } // (as it is when first seen: nothing opens at the garden's door)
@@ -296,42 +152,48 @@ export class WorldMushroom {
       let m = this.cap.find((C) => C.i < S.caps && C.k < 1); if (!m) for (let i = 9; i >= 0; i--) if (i >= S.caps && this.cap[i].k > 0) { m = this.cap[i]; break; }
       if (m) m.k = THREE.MathUtils.clamp(m.k + (m.i < S.caps ? 1 : -1) * raw / MYGG.openSeconds, 0, 1);
     }
-    for (const C of this.cap) if (C.k !== C.shown) {
-      C.shown = C.k; const e = C.k * C.k * (3 - 2 * C.k), bud = 1 - THREE.MathUtils.smoothstep(C.k, 0, 0.55);
-      canopyOpen(C.open, e); canopyOpen(C.shut, bud);
-      for (const geo of this.canopies) { canopyShow(geo, geo.userData.ranges[C.i * 2], C.k > 0); canopyShow(geo, geo.userData.ranges[C.i * 2 + 1], bud > 0); }
-    }
+    for (const C of this.cap) if (C.k !== C.shown) { C.shown = C.k; setCap(this.bodies[0].geometry, C.near, C.k); setCap(this.bodies[1].geometry, C.far, C.k); }
     const litKey = [...S.lit].sort((a, b) => a - b).join(',');
     if (litKey !== this.keys.lit) { if (this.keys.lit !== null && S.lit.size > this.litCount) this.pulse = 1; this.buildBranches(S.lit); this.keys.lit = litKey; this.litCount = S.lit.size; } // (a card hung: the lit threads flare once)
-    const hosts = this.cap.reduce((n, C) => n + (C.k > 0 ? 1 : 0), 0), fruitKey = `${Math.min(S.fruit, MYGG.fruitMax)}|${hosts}`; // (fruit hangs under a cap only once it has begun to open: never under a bud)
-    if (fruitKey !== this.keys.fruit) { this.keys.fruit = fruitKey; this.buildFruit(Math.min(S.fruit, MYGG.fruitMax), hosts); }
-    // the tincture: the caps' flash leaned to its colour, the fruit and the mouth glowing in it, eased over about two real seconds
-    if (S.tincture) { wheelColour(S.tincture.h, Math.max(0.6, S.tincture.s), this.colourWant); this.tintWant = MYGG.tintMax * (0.3 + 0.7 * THREE.MathUtils.smoothstep(S.tincture.s, 0.05, 0.6)); } // (leaned, never drowned: the labradorite and the gold still show through)
+    const hosts = this.cap.reduce((n, C) => n + (C.k > 0 ? 1 : 0), 0), fruitKey = `${Math.min(S.fruit, MYGG.fruitMax)}|${hosts}|${this.cap.map((C) => (C.k >= 1 ? 1 : 0)).join('')}`; // (fruit hangs under a cap only once it has begun to open; laid again as each finishes, under its open gills)
+    if (fruitKey !== this.keys.fruit && (!this.cap.some((C) => C.k > 0 && C.k < 1) || this.keys.fruit === null)) { this.keys.fruit = fruitKey; this.buildFruit(Math.min(S.fruit, MYGG.fruitMax), hosts); }
+    // the tincture: the caps, the gills, the fruit and the mouth leaned to its colour, eased over about two real seconds
+    if (S.tincture) { wheelColour(S.tincture.h, Math.max(0.6, S.tincture.s), this.colourWant); this.tintWant = 0.3 + 0.7 * THREE.MathUtils.smoothstep(S.tincture.s, 0.05, 0.6); }
     else { this.colourWant.setHex(0xe8c878); this.tintWant = 0; }
     const ease = this.settle ? 1 : 1 - Math.exp(-raw * 1.6); this.settle = false; this.colour.lerp(this.colourWant, ease); this.tintAmt += (this.tintWant - this.tintAmt) * ease;
-    if (Math.abs(this.tintAmt - this.tintWant) < 0.004 && Math.abs(this.colour.r - this.colourWant.r) + Math.abs(this.colour.g - this.colourWant.g) + Math.abs(this.colour.b - this.colourWant.b) < 0.004) { this.colour.copy(this.colourWant); this.tintAmt = this.tintWant; } // (settled: the table is written no more)
-    if (this.tintAmt !== this.tintShown || !this.colour.equals(this.colourShown || _black)) {
-      this.tintShown = this.tintAmt; this.colourShown = (this.colourShown || new THREE.Color()).copy(this.colour);
-      for (const C of this.cap) { canopyTint(C.open, this.colour, this.tintAmt); canopyTint(C.shut, this.colour, this.tintAmt); }
-    }
-    const night = GROUND_UNIFORMS.uGNight.value ?? 0, breath = 0.9 + 0.1 * Math.sin(this.t * 0.7); // (foxfire: a slow breath, never a flicker)
-    this.mats.glow.emissive.copy(this.colour).multiplyScalar((0.35 + 0.75 * night) * breath); this.mats.glow.color.copy(this.colour).multiplyScalar(0.45);
+    this.u.uMygTint.value.copy(this.colour); this.u.uMygTintK.value = this.tintAmt;
+    const night = GROUND_UNIFORMS.uGNight.value ?? 0;
     this.vein.u.uC.value.setHex(0xf0dca0).lerp(this.colour, 0.5); this.vein.u.uK.value = 0.4 + 0.4 * night;
     this.pulse = Math.max(0, this.pulse - raw / 2.5); this.lit.u.uK.value = (0.75 + 0.35 * night) * (1 + 1.2 * this.pulse);
     this.ghost.u.uK.value = 0.1 + 0.1 * night;
     for (const u of [this.vein.u, this.lit.u, this.ghost.u]) u.uT.value = (u.uT.value + raw) % 3600;
+    // the spores, only near (the eye as last drawn, in the tree's frame)
+    const near = this.eye.distanceTo(this.group.localToWorld(_p.set(0, this.y0 + 20, 0))) < MYGG.sporesNear;
+    this.spores.update(raw, { near, open: (i) => this.cap[i]?.k ?? 0, tint: this.tintAmt > 0.05 ? this.colour : null });
   }
 
   /** The next update takes the state at once (the caps, the tincture): for a test, or a planetoid made again. */
   snap() { this.ready = false; }
-  /** Where the hand feeds it: the mouth's middle, in the world. */
+  /** Where the hand feeds it: the mouth's threshold, in the world. */
   mouthWorld(out = new THREE.Vector3()) { return this.group.localToWorld(out.copy(this.mouthAt)); }
 
   dispose() {
-    this.group.parent?.remove(this.group);
-    this.group.traverse((o) => { o.geometry?.dispose?.(); if (o.material && !o.material.userData?.shared) o.material.dispose?.(); });
-    for (const C of this.cap) { canopyFree(C.open); canopyFree(C.shut); C.open = C.shut = 0; }
+    if (this.gone) return; this.gone = true;
+    this.group.parent?.remove(this.group); this.spores.dispose();
+    for (const B of this.bodies) B.geometry.dispose();
+    for (const o of [this.veins, this.lit.mesh, this.ghost.mesh, this.fruit]) { o.geometry.dispose(); if (o.material !== this.mat) o.material.dispose(); }
+    this.mat.dispose();
   }
+}
+
+/** A small mesh in the body's program, for a warm-up to compile it before the tree is first given (never disposed). */
+let PARKED = null;
+export function myggdrasilParked() {
+  if (PARKED) return PARKED;
+  const K = new TreeKit(); sheet(K, 2, 3, (i, j, o) => o.set(j * 0.1, i * 0.1, 0), { paint: () => ink(PAL.bone, 1, PAL.gTeal, 0.1, 0, 0.5, 0.2, 0.8) });
+  const m = myggdrasilMaterial(); m.userData.shared = true;
+  PARKED = new THREE.Mesh(K.geometry(), m); PARKED.name = 'myggdrasil-parked'; PARKED.castShadow = PARKED.receiveShadow = true;
+  return PARKED;
 }
 
 // ---- the state, read defensively (Dovina's game.myggdrasil; any part of it may be missing)
@@ -350,44 +212,15 @@ function branchIndex(id) {
   return BRANCH_IDS.indexOf(String(id).replace(/^arcana\./, '').toLowerCase());
 }
 
-/** Where a cap stands in the tree's frame, tilted a little: a side cap outward off its arm, a ring a degree or two. */
-function capMatrix(C, y0, rnd) {
-  const r = _o.set(Math.sin(C.az * D2R), 0, Math.cos(C.az * D2R)), axis = C.out ? new THREE.Vector3(r.z, 0, -r.x) : new THREE.Vector3(rnd() - 0.5, 0, rnd() - 0.5).normalize();
-  const q = new THREE.Quaternion().setFromAxisAngle(axis, (C.out ? 9 : 1.5 + rnd() * 1.5) * D2R);
-  return new THREE.Matrix4().compose(new THREE.Vector3(r.x * C.out, y0 + C.y, r.z * C.out), q, _one);
-}
-
-/** A tube along points (Catmull-Rom), radius r0 at its start to r1 at its end (`taper` the curve of it). */
-function tube(pts, r0, r1, radial = 8, segs = 24, taper = 1) {
-  const C = new THREE.CatmullRomCurve3(pts, false, 'centripetal'), F = C.computeFrenetFrames(segs, false), pos = [], idx = [];
-  for (let i = 0; i <= segs; i++) {
-    const t = i / segs, p = C.getPointAt(t), r = THREE.MathUtils.lerp(r0, r1, t ** taper);
-    for (let j = 0; j <= radial; j++) { const a = (j / radial) * Math.PI * 2, rr = r * (1 + 0.05 * Math.sin(j * 2.3 + i * 0.7)); _n.copy(F.normals[i]).multiplyScalar(Math.cos(a)).addScaledVector(F.binormals[i], Math.sin(a)); pos.push(p.x + _n.x * rr, p.y + _n.y * rr, p.z + _n.z * rr); }
-  }
-  for (let i = 0; i < segs; i++) for (let j = 0; j < radial; j++) { const a = i * (radial + 1) + j, b = a + radial + 1; idx.push(a, b, a + 1, a + 1, b, b + 1); }
-  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx);
-  return smooth(g);
-}
-/** Its seam welded and its normals smooth (no uv: the clay is plain). */
-function smooth(g) { if (g.attributes.uv) g.deleteAttribute('uv'); if (g.attributes.normal) g.deleteAttribute('normal'); const m = mergeVertices(g, 1e-3); g.dispose(); m.computeVertexNormals(); return m; }
-/** Position and normal only, indexed (so every part merges into one). */
-function plain(g) { for (const k of Object.keys(g.attributes)) if (k !== 'position' && k !== 'normal') g.deleteAttribute(k); if (!g.attributes.normal) g.computeVertexNormals(); return g.index ? g : mergeVertices(g); }
-
-/** A fruit: a little bell of a fruiting body hung by its stem (its top at the origin), `size` metres tall. */
-function fruitGeometry(size) {
-  const prof = [[0.001, -0.9], [0.18, -0.86], [0.42, -0.78], [0.5, -0.66], [0.4, -0.5], [0.22, -0.38], [0.08, -0.3], [0.07, -0.05], [0.001, 0]].map(([x, y]) => new THREE.Vector2(x * size, y * size));
-  const g = new THREE.LatheGeometry(prof, 10); g.deleteAttribute('uv'); g.computeVertexNormals(); return g;
-}
-
-/** Ribbons of the veins' light along paths ([{ p }] each; the light runs from the first point to the last): flat on the ground (one strip
- *  lying along the ground's up) or, `crossed`, two strips crossed so a thread hung in the air stays broad from most ways. */
+/** Ribbons of the veins' light along paths ([{ p, n? }] each; the light runs from the first point to the last): flat on the ground (one
+ *  strip lying along the ground's up) or, `crossed`, two strips crossed so a thread hung in the air stays broad from most ways. */
 function ribbonGeometry(paths, width, crossed) {
   const pos = [], uv = [], idx = [];
   for (const P of paths) for (const tw of crossed ? [0, Math.PI / 2] : [0]) {
     const o = pos.length / 3, n = P.length - 1;
     for (let i = 0; i <= n; i++) {
       const p = P[i].p, tan = _t.copy(P[Math.min(n, i + 1)].p).sub(P[Math.max(0, i - 1)].p).normalize();
-      const up = P[i].n || (Math.hypot(p.x, p.z) > 0.01 ? _up.set(p.x, 0, p.z).normalize() : _up.set(1, 0, 0)); // (on the ground its own up; in the air out from the stipe)
+      const up = P[i].n || (Math.hypot(p.x, p.z) > 0.01 ? _up.set(p.x, 0, p.z).normalize() : _up.set(1, 0, 0)); // (on the ground its own up; in the air out from the column)
       const side = crossed ? _s.crossVectors(tan, up).normalize().applyAxisAngle(tan, tw) : _s.crossVectors(tan, up).normalize();
       const w = width * 0.5 * (crossed ? 1 : 0.6 + 0.4 * Math.sin(Math.PI * Math.min(1, i / n * 1.2)));
       pos.push(p.x - side.x * w, p.y - side.y * w, p.z - side.z * w, p.x + side.x * w, p.y + side.y * w, p.z + side.z * w); uv.push(i / n, 0, i / n, 1);
@@ -398,6 +231,4 @@ function ribbonGeometry(paths, width, crossed) {
   return g;
 }
 
-const angDiff = (a, b) => ((((b - a) % 360) + 540) % 360) - 180;
-function lcg(seed) { let a = Math.floor(Math.abs(seed) * 1000) % 2147483647 || 7; return () => ((a = (a * 16807) % 2147483647) / 2147483647); }
-const _up = new THREE.Vector3(0, 1, 0), _d = new THREE.Vector3(), _p = new THREE.Vector3(), _t = new THREE.Vector3(), _s = new THREE.Vector3(), _n = new THREE.Vector3(), _o = new THREE.Vector3(), _one = new THREE.Vector3(1, 1, 1), _black = new THREE.Color(0, 0, 0);
+const _up = new THREE.Vector3(0, 1, 0), _p = new THREE.Vector3(), _t = new THREE.Vector3(), _s = new THREE.Vector3();

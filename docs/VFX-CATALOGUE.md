@@ -1,6 +1,6 @@
 # The VFX catalogue (generated: do not edit)
 
-Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-10-30). 589 effects in 36 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
+Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-10-30). 592 effects in 37 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
 
 **Play one:** `game.vfx.play(name, { pos, dir, normal, tint, power, scale, feeling, domain, suit, follow })`; a held one returns a handle (`h.pos`, `h.k`, `h.stop()`). A name falls back from the most particular (`hit.slash.crystal` -> `hit.slash` -> `hit`), so a new name always plays something.
 
@@ -607,7 +607,7 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 |---|---|---|---|---|
 | `sea.bottle.cork` | one-shot | sprites:drip, sprites:star4 |  | vfx/opensea/bottlelooks.js |
 | `sea.bottle.glint` | one-shot | sprites:star4, sprites:soft |  | vfx/opensea/bottlelooks.js |
-| `sea.dig` | one-shot | sprites:chip, sprites:puff |  | audio/cues.js, feedback/tracking/opensea.js, progress/cosmetics.js +3 |
+| `sea.dig` | one-shot | sprites:chip, sprites:puff |  | audio/cues.js, feedback/tracking/opensea.js, progress/cosmetics.js +4 |
 | `sea.dig.find` | one-shot | sprites:star4, sprites:glint, light |  | vfx/opensea/puzzlelooks.js |
 | `sea.salvage.drip` | one-shot | sprites:drip |  | vfx/opensea/salvagelooks.js |
 | `sea.salvage.land` | one-shot | sprites:chip, sprites:drip |  | vfx/opensea/salvagelooks.js |
@@ -694,6 +694,14 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `temper.prismatic` | held | shape:band, sprites:glint, sprites:drip |  | vfx/temper.js |
 | `temper.stoic` | held | shape:band, sprites:facet, sprites:puff | a creature's mental state and agitation shown with its body; quiet at the middle, only the ends and the heat have a look of their own | vfx/temper.js |
 
+### garden (3)
+
+| effect | kind | layers | what | asked by |
+|---|---|---|---|---|
+| `garden.lotus.land` | one-shot | sprites:sparkle, sprites:petal, sprites:ringthin | the lotus across catching the Jar: a puff of pollen and a few petals | vfx/garden/launchlotus.js |
+| `garden.lotus.launch` | one-shot | sprites:petal, sprites:sparkle, sprites:soft, sprites:ring, sprites:core, light | a launch lotus flinging the Pneuka Jar: petals thrown up and out, pollen in gold and the film shot along the up, motes of where it throws to, a ring | vfx/garden/launchlotus.js |
+| `garden.smoke` | held | sprites:puff | held: a chimney's smoke rising along `dir`, slow, spreading, lavender grey (the Athanor's cap, the kiln's stack) | vfx/garden/facilitylooks.js |
+
 ### kit (3)
 
 | effect | kind | layers | what | asked by |
@@ -772,7 +780,7 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `impact` | one-shot | shape:cone, sprites:streak, sprites:puff |  | audio/cues.js, audio/damage.js, audio/shellparts.js +47 |
+| `impact` | one-shot | shape:cone, sprites:streak, sprites:puff |  | audio/cues.js, audio/damage.js, audio/shellparts.js +48 |
 
 ### implode (1)
 
