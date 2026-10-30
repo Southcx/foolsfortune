@@ -500,6 +500,7 @@ export class Emocean {
     const go = () => {
       this.stage.active = false; this.ending = false;
       this.waves.end(); this.shots.clear(); this.hazards.end(); this.looks.end(); g.railReadout?.show?.(false); this.show(false); for (const p of Object.values(this.pieces)) p.show(false);
+      g.encounterFilm?.release?.(); // (the encounters' tableaux let go with the crossing: the next cast-off builds its own under its cover, casebook 368)
       swingLook(g, 1);
       g.cinema?.cut('rail'); document.body.classList.remove('aboard');
       const at = passed ? g.pier?.landing(to) : g.shrines?.reformAt?.();

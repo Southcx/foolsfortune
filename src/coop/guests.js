@@ -8,6 +8,9 @@
 // server, the headless runs) there is no room and no one comes.
 // The room also carries the chat line: what you say aloud goes to everyone here (the room's `chat` topic, open to Contributors), and
 // so does a sibling's answer to you (coop/answer.js), so a guest hears your siblings as you do; what arrives is shown, never obeyed.
+// A guest's siblings come with them (COOP.md C6: the party is the host's help): each one out in their world is said in the presence
+// (`k`: who, where it stands and faces, how it moves) and drawn in yours as their sibling is drawn in theirs, in its division's look
+// (party.js lookOf) with its tool in hand (coop/siblingtool.js); only seen, never solid, never struck, smoothed as the guest is.
 // Safeguards: your lines go at most one every `SAY_GAP` seconds; a guest who sends more than `FLOOD` lines in ten seconds is not shown
 // for the rest of them; a guest whose Courier has not been heard of for `STALE` seconds is hidden (a tab put away, a dropped line) and
 // let go after `GONE`.
@@ -27,11 +30,13 @@ import * as THREE from 'three';
 import { T } from '../core/config.js';
 import { GROUPS } from '../core/physics.js';
 import { DEFAULT_LOOK } from '../courier/vessel/glazes.js';
-import { SIBLINGS } from './party.js';
+import { SIBLINGS, lookOf } from './party.js';
+import { SiblingTool } from './siblingtool.js';
 
 const SEND = 0.1; // (seconds between our own presence updates: the platform coalesces to about thirty a second; ten is enough to smooth)
 const FOLLOW = 12; // (1/s: how fast a guest's drawn position closes on where it was last said to be, after moving on by its speed)
 const FLAGS = { slide: 1, crouch: 2, dash: 4, mantle: 8, wall: 16 };
+const PARTY = 2; // (a guest's siblings drawn at most: the party's own cap, coop/party.js)
 const SAY_GAP = 0.8, FLOOD = 6, STALE = 5, GONE = 60; // (real seconds between your lines; a guest's lines in ten seconds; seconds unheard before hidden, before let go)
 const nowS = () => performance.now() / 1000;
 const _gd = new THREE.Vector3(0, -1, 0), _to = new THREE.Vector3();
@@ -39,7 +44,12 @@ const r2 = (x) => Math.round(x * 100) / 100;
 const clean = (s, n) => String(s ?? '').replace(/[\u0000-\u001f\u007f-\u009f\u200b-\u200f\u202a-\u202e\u2060-\u206f]/g, ' ').trim().slice(0, n);
 
 class Guest {
-  constructor(peer, rig) { this.peer = peer; this.rig = rig; this.heardAt = nowS(); this.pos = new THREE.Vector3(); this.to = new THREE.Vector3(); this.vel = new THREE.Vector3(); this.yaw = 0; this.c = null; this.lastYaw = 0; }
+  constructor(peer, rig) { this.peer = peer; this.rig = rig; this.heardAt = nowS(); this.pos = new THREE.Vector3(); this.to = new THREE.Vector3(); this.vel = new THREE.Vector3(); this.yaw = 0; this.c = null; this.lastYaw = 0; this.sibs = new Map(); this.sibMaking = new Set(); }
+}
+
+/** One of a guest's siblings as drawn here: a body moved as the guest's is, from what its guest says of it. */
+class GuestSibling {
+  constructor(game, id, rig) { this.game = game; this.id = id; this.rig = rig; this.pos = new THREE.Vector3(); this.to = new THREE.Vector3(); this.vel = new THREE.Vector3(); this.yaw = 0; this.lastYaw = 0; this.c = null; this.tool = new SiblingTool(this); }
 }
 
 export class Guests {
@@ -113,8 +123,51 @@ export class Guests {
   drop(G) {
     if (G.inGarden) this.game.guestJars?.drop(G.peer);
     this.list.splice(this.list.indexOf(G), 1);
+    for (const id of [...G.sibs.keys()]) this.dropSib(G, id);
     G.rig.dispose();
     this.game.events.emit('guest.leave', { guest: 'Someone' });
+  }
+
+  /** A guest's siblings, from what they said (`k`): made as they come (their look and tool), moved, shown with their guest, let go as
+   *  they go. */
+  sibsOf(G, c, seen, dt) {
+    const want = Array.isArray(c.k) ? c.k.filter((k) => k && SIBLINGS.some((s) => s.id === k.i) && Array.isArray(k.p)).slice(0, PARTY) : [];
+    for (const id of [...G.sibs.keys()]) if (!want.some((k) => k.i === id)) this.dropSib(G, id);
+    for (const k of want) {
+      const S = G.sibs.get(k.i);
+      if (!S) {
+        if (G.sibMaking.has(k.i)) continue;
+        G.sibMaking.add(k.i);
+        this.makeRig().then((rig) => {
+          G.sibMaking.delete(k.i);
+          if (!this.list.includes(G) || G.sibs.has(k.i)) { rig.dispose(); return; } // (the guest gone, or one made meanwhile)
+          rig.gun.visible = false; rig.gunOff = true; rig.root.name = `GuestSibling-${G.peer}-${k.i}`;
+          this.game.vessel?.dress(rig, lookOf(k.i), { own: true }); // (its division's look, as in its guest's world)
+          const N = new GuestSibling(this.game, k.i, rig); this.takeSib(N, k); N.pos.copy(N.to); G.sibs.set(k.i, N);
+        });
+        continue;
+      }
+      if (k !== S.c) this.takeSib(S, k);
+      S.rig.root.visible = seen; if (!seen) { if (S.tool.group) S.tool.group.visible = false; continue; } // (hidden with its guest, kept: a rig is made once)
+      this.move(S, dt); this.pose(S, S.c, dt); S.tool.update(dt);
+    }
+  }
+  takeSib(S, k) { S.c = k; S.to.fromArray(k.p); if (Array.isArray(k.v)) S.vel.fromArray(k.v); S.yaw = +k.y || 0; }
+  dropSib(G, id) { const S = G.sibs.get(id); if (!S) return; G.sibs.delete(id); S.tool.dispose(); S.rig.dispose(); }
+
+  /** A body moved on by its speed, then closed on where it was last said to be (a guest's Courier, a guest's sibling). */
+  move(B, dt) { B.to.addScaledVector(B.vel, dt); B.pos.lerp(_to.copy(B.to), 1 - Math.exp(-FOLLOW * dt)); }
+  /** A body's rig posed from what was said of it: its place, its heading's turn, its ground and its moves' flags. */
+  pose(B, c, dt) {
+    const turn = Math.atan2(Math.sin(B.yaw - B.lastYaw), Math.cos(B.yaw - B.lastYaw)); B.lastYaw = B.yaw;
+    const ground = (this.ground ||= (x, z, yTop) => { const hit = this.game.physics.raycast({ x, y: yTop, z }, _gd, 1.4, null, GROUPS.controllerQuery, (k) => !k.isSensor() && !k.parent()?.isDynamic()); return hit && hit.normal.y > 0.6 ? hit.point.y : null; });
+    const s = c?.s | 0;
+    B.rig.animate(dt, {
+      pos: B.pos, yaw: B.yaw, velocity: B.vel, vy: B.vel.y, turnRate: dt > 0 ? turn / dt : 0, airJump: false, ground,
+      grounded: !!c?.g, groundN: null, groundVel: null, wall: s & FLAGS.wall ? 1 : 0, slide: s & FLAGS.slide ? 1 : 0, mantle: s & FLAGS.mantle ? 1 : 0, mantleT: 1,
+      dash: s & FLAGS.dash ? 1 : 0, crouch: s & FLAGS.crouch ? 1 : 0, aimPitch: 0, aimYawOffset: 0, combat: 0, upper: 0, gunHand: 0, reload: -1,
+      walkSpeed: T.movement.walkSpeed, sprintSpeed: T.movement.sprintSpeed, recoil: 0, adsT: 0, landed: 0, techs: null,
+    });
   }
 
   /** Our own Courier, said to the room. */
@@ -123,7 +176,8 @@ export class Guests {
     const s = (P.sliding ? FLAGS.slide : 0) | (P.crouching ? FLAGS.crouch : 0) | (P.dashBlend > 0.5 ? FLAGS.dash : 0) | (P.mantle ? FLAGS.mantle : 0) | (Math.abs(P.wallBlend) > 0.5 ? FLAGS.wall : 0);
     const R = this.game.realm, J = R?.active ? R.jarBody : null; // (in the Spirit Garden: the Pneuka Jar where it hops)
     const r = J ? { p: J.pos.clone().addScaledVector(J.up, -J.radius).toArray().map(r2), u: J.up.toArray().map(r2), f: J.forward.toArray().map(r2), v: J.vel.toArray().map(r2), h: J.hops, g: J.grounded ? 1 : 0 } : null;
-    return { c: { z: place, p: P.pos.toArray().map(r2), v: P.vel.toArray().map(r2), y: r2(P.bodyYaw), g: P.grounded ? 1 : 0, s, look: this.game.vessel?.look || null, ...(r ? { r } : {}) } };
+    const k = (this.game.party?.list || []).filter((S) => !this.game.siblingShatter?.holds?.(S)).slice(0, PARTY).map((S) => { const B = S.body; return { i: S.id, p: B.pos.toArray().map(r2), v: B.vel.toArray().map(r2), y: r2(B.bodyYaw), g: B.grounded ? 1 : 0, s: (B.sliding ? FLAGS.slide : 0) | (B.crouching ? FLAGS.crouch : 0) | (B.dashBlend > 0.5 ? FLAGS.dash : 0) }; }); // (your siblings, as a guest sees them: in pieces, not said)
+    return { c: { z: place, p: P.pos.toArray().map(r2), v: P.vel.toArray().map(r2), y: r2(P.bodyYaw), g: P.grounded ? 1 : 0, s, look: this.game.vessel?.look || null, ...(r ? { r } : {}), ...(k.length ? { k } : {}) } };
   }
 
   update(dt) {
@@ -133,20 +187,10 @@ export class Guests {
       const quiet = nowS() - G.heardAt;
       if (quiet > GONE) { this.drop(G); continue; } // (not heard of in a minute: gone)
       const c = G.c || {}, R = G.rig;
-      if (this.jar(G, c, quiet)) { R.root.visible = false; continue; } // (both in the garden: their Pneuka Jar on your planetoids)
+      if (this.jar(G, c, quiet)) { R.root.visible = false; this.sibsOf(G, c, false, dt); continue; } // (both in the garden: their Pneuka Jar on your planetoids, no party)
       const seen = quiet < STALE && (c.z == null || here == null || c.z === here);
-      R.root.visible = seen; if (!seen) continue;
-      // move on by its speed, then close on where it was said to be
-      G.to.addScaledVector(G.vel, dt);
-      G.pos.lerp(_to.copy(G.to), 1 - Math.exp(-FOLLOW * dt));
-      const turn = Math.atan2(Math.sin(G.yaw - G.lastYaw), Math.cos(G.yaw - G.lastYaw)); G.lastYaw = G.yaw;
-      const ground = (x, z, yTop) => { const hit = this.game.physics.raycast({ x, y: yTop, z }, _gd, 1.4, null, GROUPS.controllerQuery, (k) => !k.isSensor() && !k.parent()?.isDynamic()); return hit && hit.normal.y > 0.6 ? hit.point.y : null; };
-      R.animate(dt, {
-        pos: G.pos, yaw: G.yaw, velocity: G.vel, vy: G.vel.y, turnRate: dt > 0 ? turn / dt : 0, airJump: false, ground,
-        grounded: !!c.g, groundN: null, groundVel: null, wall: c.s & FLAGS.wall ? 1 : 0, slide: c.s & FLAGS.slide ? 1 : 0, mantle: c.s & FLAGS.mantle ? 1 : 0, mantleT: 1,
-        dash: c.s & FLAGS.dash ? 1 : 0, crouch: c.s & FLAGS.crouch ? 1 : 0, aimPitch: 0, aimYawOffset: 0, combat: 0, upper: 0, gunHand: 0, reload: -1,
-        walkSpeed: T.movement.walkSpeed, sprintSpeed: T.movement.sprintSpeed, recoil: 0, adsT: 0, landed: 0, techs: null,
-      });
+      R.root.visible = seen; this.sibsOf(G, c, seen, dt); if (!seen) continue;
+      this.move(G, dt); this.pose(G, c, dt); // (moved on by its speed, then closed on where it was said to be)
     }
   }
 }

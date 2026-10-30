@@ -22,7 +22,7 @@
 //
 //   game.classArtsRun = techs.add(new ClassArtsBody(techs))   (a passive tech: its speedMult holds the body for Bulwark)
 //   .onStrike(c, m) -> { dmg, build } | null   (creatures.strike asks, the Courier's blows only)
-//   .takenMult() (the vessel's damage asks)   .ward() -> bool (Steadfast: the next blow cracks nothing)
+//   .takenMult() (the vessel's damage asks)   .ward() -> bool (Steadfast: the next blow cracks nothing; Hope: the next ones after a reform)
 //   .lucky() -> bool (Beginner's Luck spent on a roll of chance: the Lockheart's spins, a puzzle duel's flee)
 //   .clearSight() -> bool (Figment telegraphs in full: creatures.js)   .cutThrough() -> bool (a resisted status hardens nothing: creatures.js)
 //   .draughtFadeK() (Afterglow: courier/mind.js)   .drainK(c) (Empath: the Lockheart's drain)   .takeHarvestCubes() (Harvest: a crystal's break)
@@ -218,10 +218,12 @@ export class ClassArtsBody extends Tech {
   }
   /** Daybreak: the dark lit while its game hour lasts. */
   daylit() { return this.now < this.dayUntil; }
-  /** Steadfast held: the blow cracks nothing, and it is spent. */
+  /** Steadfast held: the blow cracks nothing, and it is spent. Hope armed (a reform, while its time lasts): the blow cracks nothing,
+   *  one of its blows spent, said at the first. */
   ward() {
-    if (!this.steady || !this.reaction('steadfast')) return false;
-    this.steady = false; this.stillT = 0; this.fire('steadfast'); return true;
+    if (this.steady && this.reaction('steadfast')) { this.steady = false; this.stillT = 0; this.fire('steadfast'); return true; }
+    if (this.hopeLeft > 0 && this.now < this.hopeUntil && this.reaction('hope')) { if (this.hopeLeft-- === this.reaction('hope').does.ward) this.fire('hope'); return true; }
+    return false;
   }
   /** Beginner's Luck armed: this roll of chance is thrown twice, and it is spent. */
   lucky() { if (this.now > this.luckUntil) return false; this.luckUntil = -1; this.fire('beginnersLuck'); return true; }
@@ -385,11 +387,8 @@ function wireReactions(run) {
   });
   // Wholeness worn or taken off: the laid spread recounted and told at once (its tallies read talliesK)
   on('art.wear', () => { if (g.laidSpread) g.laidSpread.act = true; });
-  // Hope: made whole after a shatter, the pool at least half (said only when it gave some: the reform fills it today, courier/vessel/death.js)
-  on('courier.reform', () => {
-    const R = run.reaction('hope'), L = g.lachryma; if (!R || !L) return;
-    const want = L.max * R.does.pool - L.value; if (want > 0.5 && L.gain(want, 'art') > 0) run.fire('hope');
-  });
+  // Hope (Dovina's ruling, 2026-10-30): made whole after a shatter, the next `ward` blows within `secs` crack nothing (ward() spends them)
+  on('courier.reform', () => { const R = run.reaction('hope'); if (!R) return; run.hopeLeft = R.does.ward; run.hopeUntil = run.now + R.does.secs; });
   // Intuition: an aberrant's secret, not yet found, shown where it begins (its line's first clause, Espada's words) as the duel opens
   on('duel.open', () => {
     if (!run.reaction('intuition')) return;

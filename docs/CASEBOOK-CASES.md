@@ -4606,4 +4606,4 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** `release()`: the film stopped, each holder removed from the scene, each tableau's own `dispose` (its geometry, materials
   and kit) called, the map cleared. Petra's stage calls `g.encounterFilm?.release?.()` at the crossing's end; `prepare` rebuilds them
   at the next cast-off.
-- **Rule:** NEW:cache-has-a-release
+- **Rule:** 368
