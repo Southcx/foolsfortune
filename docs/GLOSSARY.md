@@ -1031,7 +1031,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 | retired | say instead | where it still is |
 | --- | --- | --- |
 | Shrine Garden | the Spirit Garden | (gone; kept: the owner's own word) |
-| film, a roll of film (`mat.film`, `loadFilm`, `film.load`) | the Veritome's memory (`VeritomeMemory`) | `audio/cues.js`, `pneuka/thingmodels.js` |
+| film, a roll of film (`mat.film`, `loadFilm`, `film.load`) | the Veritome's memory (`VeritomeMemory`) | (gone, 2026-10-30) |
 | Lab mode | the all-arts switch (`lendAll`, `setLendAll`; label "ALL ARTS" for now) | `docs/DESIGN.md` |
 | vessel (for the god hand's jar) | the jar | (`sfx.jarHit`, R42) |
 | polarity (the ship's feeling on the rail) | the Astral and Umbral forms | (gone, v266: `rail.form` carries the aspect) |
