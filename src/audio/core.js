@@ -112,9 +112,10 @@ export class Sfx {
     return b;
   }
 
-  /** A reverb's impulse, made once a length and kept (every cue's convolver shares it); a phone's no longer than PHONE.verb s. */
+  /** A reverb's impulse, made once a length and kept (every cue's convolver shares it); a phone's (or the lean mixer's) no longer than
+   *  PHONE.verb s. */
   impulse(sec, decay) {
-    if (this.phone) sec = Math.min(sec, PHONE.verb);
+    if (this.phone || this.lean) sec = Math.min(sec, PHONE.verb);
     const key = `${sec}:${decay}`, kept = (this.impulses ||= new Map()).get(key);
     if (kept && kept.sampleRate === this.ctx.sampleRate) return kept;
     const len = Math.round(this.ctx.sampleRate * sec);
@@ -125,6 +126,28 @@ export class Sfx {
     }
     this.impulses.set(key, b);
     return b;
+  }
+
+  /** The music's one reverb of a length (music/arranger.js, music/player.js): every cue sends into the same convolver, so a change of cue
+   *  (two arrangers at once) never builds a second one (the gate measured a cue's own 3.2 s reverb at 40% of the music's cost, and a
+   *  change of cue doubling the whole: Petra, 2026-10-30). A cue connects its output to its own bus and lets go of it when it stops. */
+  musicVerb(sec, decay) {
+    const key = `${sec}:${decay}`, M = (this.musicVerbs ||= new Map());
+    let v = M.get(key);
+    if (!v) { v = this.ctx.createConvolver(); v.buffer = this.impulse(sec, decay); v.lengths = [sec, decay]; M.set(key, v); }
+    return v;
+  }
+
+  /** The lean mixer: the phone's limits (PHONE: short rooms, a burst cap, a blow's sounds spaced) taken on a desk whose audio thread
+   *  cannot keep up (audio/health.js steps it, once a load). The rooms already alive are refilled with the short impulse; a desk that
+   *  keeps up never takes it, and keeps its sound as it is (the owner, 2026-10-26: the desk's look is never cut for the phone). */
+  setLean(on = true) {
+    if (this.phone || !!this.lean === on) return;
+    this.lean = on;
+    const short = (conv, sec, decay) => { try { conv.buffer = this.impulse(sec, decay); } catch { /* a browser that holds its first buffer */ } };
+    if (this.verb) { short(this.verb, 1.4, 3.2); short(this.verbMain, 1.4, 3.2); }
+    for (const v of this.musicVerbs?.values() || []) short(v, ...v.lengths);
+    if (this._space) short(this._space.conv, this._space.sec, this._space.decay); // (the zone's room: audio/acoustics.js)
   }
 
   // rate limiter so 200 shards landing at once don't melt the mixer
@@ -139,7 +162,7 @@ export class Sfx {
 
   /** A sound's way out: the effects bus (the world's: ducked and fogged), or with `ui` straight to main (the interface: never fogged). */
   out(gain, verb = 0.5, ui = false) {
-    if (this.phone) (this.starts ||= []).push(performance.now()); // (a sound begun: the phone's budget, ok())
+    if (this.phone || this.lean) (this.starts ||= []).push(performance.now()); // (a sound begun: the phone's budget, ok())
     this.begun = (this.begun || 0) + 1; // (counted for the audio's health: audio/health.js)
     const g = this.ctx.createGain();
     g.gain.value = gain;
@@ -184,7 +207,7 @@ export class Sfx {
    *  burst past it is dropped, the first ones kept: the phone's audio thread never falls behind). */
   ok() {
     if (!this.ctx || this.ctx.state !== 'running') return false;
-    if (!this.phone || !this.starts) return true;
+    if (!(this.phone || this.lean) || !this.starts) return true;
     const now = performance.now(), S = this.starts; while (S.length && now - S[0] > PHONE.window) S.shift();
     return S.length < PHONE.burst;
   }
@@ -194,7 +217,7 @@ export class Sfx {
    *  sounds a hit, and the phone's audio thread keeps up (the owner, 2026-10-26: "audio processing breaks down after ... the ship's gun
    *  starts firing"). */
   hitOk() {
-    if (!this.phone) return true;
+    if (!this.phone && !this.lean) return true;
     const now = performance.now(); if (now - (this._hitAt ?? -1e9) < PHONE.hit) return false;
     this._hitAt = now; return true;
   }
