@@ -1034,15 +1034,18 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 368. **A cache of built things has a release, and its owner's end calls it.** A module that builds sets once and
   keeps them in a map (to compile them under a cover) also gives a `release()` that stops, removes and disposes them and clears the map;
   the thing that ends their use (a crossing, a room) calls it, or they stay in the scene, hidden, for the session.
-NEW:fixture-points-follow. **A creature's points are read from where it stands now.** `head()`, `center()` and their like are worked
+369. **A creature's points are read from where it stands now.** `head()`, `center()` and their like are worked
   out from its `pos` (or its drawn body), never from the spot it was built at: a duel, a cradle or a scripted fight may move even a
   fixture, and whatever aims at it (a cut-in's portrait, a tag, a mark) then looks at empty air.
-NEW:scratch-holds-one-answer. **A module's scratch vector holds one answer at a time.** A function that writes its result into an
+370. **A module's scratch vector holds one answer at a time.** A function that writes its result into an
   `out` the caller lent (often the module's own `_a`) never hands that same vector to another call that writes it: the second answer
   overwrites the first and nothing throws. Each answer still wanted gets its own scratch.
-NEW:mechanism-is-not-a-status. **A status applied as a mechanism is not drawn as one.** Where a system uses a status to hold a
+371. **A status applied as a mechanism is not drawn as one.** Where a system uses a status to hold a
   creature (a puzzle duel's pin, a cutscene's freeze), the status's look is skipped for that use, or the creature wears the status's
   aura for the whole of it: name the use (`c.dueling`) and let the look ask.
+372. **A probe that steps the game by hand lets the frame's budgets come to rest before it reads one.**
+  Whatever the game spreads over frames (the phone's first draws, an upload budget, a fade) is drawn out by stepping until nothing is
+  held back, as the device's own loop would; one hand-made draw shows a frame no player sees.
 NEW:line-holds-its-pixels. **A line in the world is never narrower than a few of the 480 lines.** A rein, a thread or a tether drawn
   as a ribbon in metres vanishes at range (the present is 480 lines): give it a floor in pixels from the camera's distance and field of
   view, and let a pattern ride on a solid body rather than cut through its whole width.

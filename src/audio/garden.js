@@ -24,7 +24,7 @@
 // act on the beat, in the key), Plomp and Levelt (1965) on sensory dissonance, as the SFU Sonic Studio handbook sets it out.
 //
 //   gardenState(game) -> snapshot | null     sfx.gardenStart(read) / .gardenEnd()     read() -> gardenState(game)
-//   sfx.gardenWater() .gardenPlant() .gardenHarvest(n) .gardenPlace() .gardenPaint() .gardenBuy() .gardenUpgrade() .gardenCollect()
+//   sfx.gardenWater() .gardenPlant() .gardenHarvest(n) .gardenPlace() .gardenPaint() .gardenUpgrade() .gardenCollect()
 //   sfx.gardenEnter() .gardenLeave() .gardenRaceStart() .gardenRace() .gardenBump() .gardenPress() .gardenFire(trueFiring)
 // ---------------------------------------------------------------------------------------
 import { phaseAt } from '../progress/weather.js';
@@ -176,12 +176,6 @@ export class GardenSounds {
     [0, 2, 4].forEach((k) => this.gardenPluck(t + this.gardenStep(st), this.gardenNote(st, k, 2), 0.1, d)); // (its chord)
   }
   gardenPaint(st) { if (!this.ok() || !this.allow('gardenPaint', 3)) return; const t = this.gardenAt(st), d = this.out(0.18, 0.4); this.noise(t, 0.3, { type: 'bandpass', f0: 1800, f1: 900, q: 1, gain: 0.25, attack: 0.05, dest: d }); this.gardenPluck(t + this.gardenStep(st) * 2, this.gardenNote(st, 3, 2), 0.1, d); }
-  gardenBuy(st) {
-    if (!this.ok() || !this.allow('gardenBuy', 1)) return;
-    const t = this.gardenAt(st), s = this.gardenStep(st), d = this.out(0.3, 0.6, true);
-    for (let i = 0; i < 8; i++) this.gardenPluck(t + i * s, this.gardenNote(st, i, 2), 0.12, d); // (a new world rising: up the scale)
-    this.noise(t + s * 6, 1.4, { type: 'highpass', f0: 7000, gain: 0.07, attack: 0.2, dest: d });
-  }
   gardenUpgrade(st) { if (!this.ok() || !this.allow('gardenUpgrade', 1)) return; const t = this.gardenAt(st), d = this.out(0.26, 0.5, true); [0, 2, 4, 5].forEach((k, i) => this.gardenPluck(t + i * this.gardenStep(st), this.gardenNote(st, k, 2), 0.13, d)); }
   /** Coming into the Inner Realm (a harp's sweep up, the Jar's air opening) and going out (the sweep down). */
   gardenEnter() { if (!this.ok() || !this.allow('gardenEnter', 1)) return; const t = this.ctx.currentTime, d = this.out(0.24, 0.6, true); [64, 68, 71, 76, 80, 83].forEach((m, i) => this.tone(t + i * 0.06, 1.2, { f0: hz(m), type: 'triangle', gain: 0.1, dest: d })); this.noise(t, 1, { type: 'bandpass', f0: 600, f1: 2400, q: 0.8, gain: 0.08, attack: 0.3, dest: d }); }

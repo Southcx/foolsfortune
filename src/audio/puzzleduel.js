@@ -50,14 +50,14 @@ const chainNote = (step, root = 72) => root + PENTA[(step - 1) % 4] + 12 * Math.
 export const FEELING_STEP = { wonder: 0, mirth: 4, desire: 7, fury: 9, gall: 14, grief: 16, dread: 19 };
 /** The duel's root: the cue's own key when one plays (sfx.musicGrid, audio/cues.js hearEvents), else C5; kept within C5 .. B5. */
 export function duelRoot(s) { const r = s.musicGrid?.()?.root; return r == null ? 72 : 72 + ((((r - 72) % 12) + 12) % 12); }
-/** gesture: real s after a cut-in's slam the skill's own sound plays: when its cast begins, the cut-in over (Calissa's vfx/duelview/cutin.js CUT_IN: in 0.14, held 0.62, out 0.16, slam at 0.12). */
+/** gesture: real s after a cut-in's slam the skill's own sound plays: when its cast begins, the cut-in over and its held beat after (Calissa's vfx/duelview/cutin.js CUT_IN: in 0.14, held 0.62, out 0.16, slam at 0.12). */
 /** Real s junk flies in the view's land beat before it touches (Calissa's, beats.js: a Hurl's low arc 0.6, the rest 0.45). */
 export const LAND_FLY = { hurl: 0.6, junk: 0.45 };
-/** Your own cut-in (Calissa's Jar band, cutin.js yours, b4b2303b): its label slams 0.12 real s in and the cast comes 0.92 s after the event; the
- *  finisher's limit-break band slams at 1.1 s and casts at 1.75 s. BANDED: the powers that get the band (beats.js YOURS.powers). */
-export const JAR_CUT = { slam: 0.12, cast: 0.92, limitSlam: 1.1, limitCast: 1.75 };
+/** Your own cut-in (Calissa's Jar band, cutin.js yours, b4b2303b): its label slams 0.12 real s in and the cast comes 1.12 s after the event (its band gone, a held beat: CUT_IN.lead); the
+ *  finisher's limit-break band slams at 1.1 s and casts at 2.0 s. BANDED: the powers that get the band (beats.js YOURS.powers). */
+export const JAR_CUT = { slam: 0.12, cast: 1.12, limitSlam: 1.1, limitCast: 2.0 };
 export const BANDED = new Set(['miracle', 'transmute', 'kindle', 'absorb']);
-export const CUT_IN = { gesture: 0.8, burst: 4 }; // (burst: real s after foe.desperate its own casts come with no cut-in, so their sounds play at once)
+export const CUT_IN = { gesture: 1.0, burst: 4 }; // (burst: real s after foe.desperate its own casts come with no cut-in, so their sounds play at once)
 const sidePan = (side) => (side === 1 ? 0.45 : side === 0 ? -0.45 : 0);
 
 export class PuzzleDuelSounds {

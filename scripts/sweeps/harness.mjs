@@ -32,7 +32,7 @@ window.__sw = (() => {
   const S = {
     v,
     tick(n = 1, dt = 1 / 60) { for (let i = 0; i < n; i++) G.tick(dt); },
-    draw() { G.draw(); },
+    draw() { G.draw(); for (let i = 0; i < 120 && g.firstDraws?.on && g.firstDraws.skippedNow > 0; i++) G.draw(); }, // (a phone lets its first draws in a few a frame, render/firstdraws.js: drawn again until none is held back, as its frames would within half a real second; drawn once, a phone's first view is black)
     dom() {
       const seam = document.getElementById('seam'), im = document.getElementById('indexmenu'), ov = document.getElementById('overlay');
       const topAt = (x, y) => { const e = document.elementFromPoint(x, y); return e ? (e.id || e.className || e.tagName) : null; };

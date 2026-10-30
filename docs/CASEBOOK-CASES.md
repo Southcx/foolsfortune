@@ -4618,7 +4618,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix (Petra's file, handed to her: docs/handoffs/petra/2026-10-30-from-calissa-strawman-points.md):** both read `S.pos`, where it stands now (the same spot outside a duel). Measured with that patch in the builder's worktree: 0.95 m from the drawn head's top, two different
   points that never meet (the head point 0.9 of its 2.45 m over its spot; the drawn one its bounds' centre and top plus 0.1 m, its
   hat, sleeves and aberrant shards in them: foecast.js `headWorld`); the 1.17 m it was moved is gone, and the cut-in's strip frames it.
-- **Rule:** NEW:fixture-points-follow
+- **Rule:** 369
 
 ### 2026-10-30 · A foe's aura stood over its head, not round its feet (vfx/duelview/auras.js; Calissa's elite, headless)
 - **Seen (1920 x 1080, a practice duel, `auras.charge(1)`):** Strawman's stitched ground ring and its columns hung at the top of the
@@ -4627,7 +4627,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   `stand` the module's `_a` as `out`, so the head's point (its bounds' top + 0.1 m) overwrote the spot, and every foe's aura was laid
   out from its head.
 - **Fix:** the head is read into its own scratch (`_h`). After: the rerun's aura shot (desk-duel-4-aura) shows the ring on the ground.
-- **Rule:** NEW:scratch-holds-one-answer
+- **Rule:** 370
 
 ### 2026-10-30 · Every duel's foe wore the halt's stop-frost the whole fight (vfx/auras.js; three builders' duel shots)
 - **Seen:** large white snowflakes swarming the slip jelly and Strawman in every shot of the duel's opening, ending and Strawman's
@@ -4636,8 +4636,41 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   (world/duel/duelsession.js `pin`), and the auras draw every live status's `aura.<status>` round its creature; the halt's look is
   Kingdom Hearts' stop-frost, so the foe stood in frost for the whole duel.
 - **Fix:** the auras skip `halt` on a creature that is `dueling` (set by the same `pin`). Not yet seen in a shot after the fix.
-- **Rule:** NEW:mechanism-is-not-a-status
+- **Rule:** 371
 
+### 2026-10-30 · Ride's reins and bridle never showed (vfx/classartlasting/reins.js; the builder's two Ride shots)
+- **Seen (headless, desk and phone):** the runtime said the ride was on (`rides: 1`, `driven: true`), and neither shot showed the reins
+  or the bridle on the slip jelly at the Weir.
+- **Cause, as read (not measured apart):** the look's root group and its reins were added to the scene at the origin, unmarked, and
+  placed later; the zones judge an unmarked root by where it stands when they install it (the workshop's zone at the origin), so in the
+  Dunes its `visible` stayed false: case 366's trap again.
+- **Fix:** every root the lasting looks add to the scene goes through the kit's `zoneFree()` (reins, lantern, smoke, sanctum, thicket,
+  encore). Not yet seen in a shot after the fix.
+- **Rule:** 366
+
+### 2026-10-30 · The sweeps' phone pages drew black (scripts/sweeps/harness.mjs; Petra's phone probes since v287)
+- **Seen:** `open(room, { touch: true })` gave a black canvas under the HUD: 0 to 104 draw calls where the desk's page drew 435, every
+  pixel read back (0, 0, 0), at v351 and v352 alike; with `?graphics=low` 432 calls and still black. The phone's looks could not be
+  checked headless.
+- **Cause, as measured:** a phone's first-draw budget (render/firstdraws.js, on with `machine.mobile`) lets 4 new pipelines into a
+  frame; the rest are skipped and come in on later frames. A phone's own loop draws 60 a real second; the harness draws once a shot, so
+  the workshop's first view never got past its first four pipelines, and the present's blit to the canvas, new too, was skipped. Drawn
+  again until nothing was held back: 23 draws, 92 pipelines admitted, then 461 calls and the same pixels as an 844 x 390 desk page;
+  `?firstdraws=0` the same at once. `?constindex=0` changed nothing.
+- **Fix:** the harness's `draw()` draws again while the budget held anything back (at most 120 times), as a phone's frames would within
+  half a real second. After: the workshop's phone page drew 483 calls, mean luminance 68.
+- **Rule:** 372
+
+### 2026-10-30 · The Pneuka Jar could walk off the carving bench mid-dig (world/garden/realm.js `wish`; Petra's phone shots of v352)
+- **Seen:** in the phone's shots of the bench, the stick's ring and its WASD stood live under the dig's fixed view; nothing in the dig
+  needs them.
+- **Cause, as read (not measured before the fix):** `realm.wish` stands the Jar still for the overhead view and the press's station view;
+  the bench, built on that station view (gardencam.js `enterPress`), was left out of the guard, so WASD (the stick on a phone) still
+  walked the Jar while the camera stayed on the slab.
+- **Fix:** the bench is in the guard. After, on an 896 x 414 touch page: the stick held 84 frames moved the Jar 7.082 m before the dig
+  and 0.000 m during it. The same shots gave the bench's SET IT NOW and PUT IT OFF 40 px of height and no desk keys on touch, and the
+  scan page one title, no "Esc closes" and no keyboard raised unasked.
+- **Rule:** 45
 ### 2026-10-30 · Ride's reins never showed (vfx/classartlasting/reins.js; the builder's two Ride shots)
 - **Seen (headless, desk and phone):** the runtime said the ride was on (`rides: 1`, `driven: true`), and neither shot showed the reins;
   the bridle did show, as the blue rings round the slip jelly, but read as swirls.
