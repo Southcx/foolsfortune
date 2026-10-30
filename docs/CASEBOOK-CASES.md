@@ -4430,6 +4430,9 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   warm-up compiled after it built some 150 programs with no plane that the world, drawn with the god hand's plane, never uses. Both
   compiles now render an empty scene with the world's planes after their own (render/overlayscene.js c2692ac, vfx/duelview/fxkit.js
   39fa35e): census-5 read 225 (budget 228), 200 programs with the plane and 12 without (the overlay's and the trail map's own).
+- **Then (measured in a PvE duel, 2026-10-30, ec0c6570):** both cut-ins hold the one `duel-cutin` program and the stamps one `duel-stamp`,
+  each material one key (0 planes, the overlay's 1 directional and 1 hemisphere); the census over its whole route reads one of each and one
+  numerals program (42f64a7c's `forceSinglePass`). The three are paid; the budget's "still owed" was handed to Petra.
 - **Rule:** 353
 
 
