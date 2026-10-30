@@ -76,7 +76,7 @@ layer. New per-area counts use `area.<id>.*` (section 6).
 | the weather, the herds, the Great Dunemaw's floors | island-wide or a game day's, already | nothing new |
 | creatures | none: each is placed fresh by its spawner | placed by the game hour (the night's at night) |
 
-Events: `area.enter { id, from, away, by }` and `area.leave { id, to, by }`. `away` is real seconds since that area was last left, and
+Events: `area.enter { area, from, away, by }` and `area.leave { area, to, by }` (`area`, as `area.rare` and `area.done` carry it). `away` is real seconds since that area was last left, and
 `by` is `courier`, or `environment` for a fall or a current. The log says the area once a visit ("You reach the ruins.") and the
 room lines stay as they are. A rule in `feedback/tracking/place.js`.
 
@@ -135,13 +135,12 @@ can go round. The sizes are 50 to 145 degrees of a ring 360 m deep: 200 to 550 m
   - **The seed's scatter disagrees with the cut.** The crystal ridges hold one crystal, and the ruins hold ten.
   - **The script undercounts the ruins.** It counts their 48 columns but not their obelisks and arches, whose positions are not kept, so
     the ruins' empty share reads high.
-- **The Solar Skiffing trial's loop does not fit (measured).** Its centre stands 200 m from the Gnomon toward the oasis, so its 24 rings
-  fall 12 in the Gnomon flats, 8 in the crystal ridges and 4 in the Weir: it passes within a few metres of the oasis. **Proposed (the
-  trial is Dovina's, after the owner's yes):**
-  - move its centre to r 300 at bearing -160, about 170 m from the Gnomon's foot;
-  - shrink it to r 130, with a wobble of 20.
-  - Its rings then run 150 to 450 m out and between bearings -130 and +170, all inside the flats. It is shorter by a quarter, which the
-    medals' times answer for.
+- **The Solar Skiffing trial's loop, moved (2026-10-30).** Its centre stood 200 m from the Gnomon toward the oasis, its 24 rings 12 in
+  the Gnomon flats, 8 in the crystal ridges and 4 in the Weir. Now (`world/dunes/solar.js` LOOP):
+  - its centre is r 300 at bearing -160 from the oasis, about 170 m from the Gnomon's foot;
+  - its radius 130, with a wobble of 20.
+  - Measured (`scripts/areas.mjs`): all 24 rings in the Gnomon flats. The lap is shorter by about a quarter, so the medals are x0.77
+    (`SOLAR.medals` 46 / 55 / 65 real s, were 60 / 72 / 85), to be confirmed by a ridden lap.
 - **Bigger later:** more Dunes are more areas past the barrier, never a bigger ground. The proposal in DUNES.md to make the one ground
   1,600 m across is withdrawn.
 - **The condition-bound find (FFXII's rare game), one an area:** a creature or a thing met only under its condition, counted on the
@@ -190,4 +189,4 @@ Each area has a page in the map (M): its checklist.
 | Calissa | the transition's look; each edge as a thing in the world; each area's dressing loaded and left with it | |
 | Espada | the areas' names when the owner calls them settled; the log's line on reaching one | |
 | Wanda | the ambience and the cue handed over at an edge, as the music clock allows | |
-| Dovina (next) | the per-area contents lists and checklist totals as data (`src/progress/areas.js` holds the cut; `scripts/areas.mjs` measures it); the achievements; the catch-up for blots and crystals with their owners; the trial's loop moved | |
+| Dovina | done: the per-area contents and checklist totals (`src/progress/areas.js`; `scripts/areas.mjs` measures it), the achievements, the trial's loop moved (2026-10-30). Waiting on stage 2: the catch-up for blots and crystals (stage 1 only evicts the GPU's copies, so everything still ticks; the table above is the call's spec) | |

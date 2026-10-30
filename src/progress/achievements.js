@@ -406,7 +406,8 @@ export function buildAchievements(game) {
   F('cr2', 'treasure', 'Curios', 2, 'collect', 'A Cabinet', 'Own 8 curios.', ownedCurios, 8);
   F('cr3', 'treasure', 'Curios', 4, 'collect', 'A Wunderkammer', 'Own 14 curios.', ownedCurios, 14);
   F('cr4', 'treasure', 'Curios', 6, 'collect', 'The Whole Cabinet', 'Find every curio.', ownedCurios, CURIOS.length, { title: 'Curator' });
-  CHEST_TIERS.forEach((t, i) => F(`cu_t${i}`, 'treasure', 'Curios', Math.min(6, i + 1), 'collect', `${t.name[0].toUpperCase()}${t.name.slice(1)} Curios`, `Find all four ${t.name} curios.`, (L) => CURIOS.filter((c) => c.tier === i && L.get(`curio.${c.id}`) > 0).length, 4, { hidden: i === 4 }));
+  CHEST_TIERS.forEach((t, i) => F(`cu_t${i}`, 'treasure', 'Curios', Math.min(6, i + 1), 'collect', `${t.name[0].toUpperCase()}${t.name.slice(1)} Curios`, `Find all four ${t.name} curios.`, (L) => CURIOS.filter((c) => c.tier === i && c.chest !== false && L.get(`curio.${c.id}`) > 0).length, 4, // (a chest's four: a drop or a rare find, chest false, counts toward The Whole Cabinet only)
+ { hidden: i === 4 }));
   C('cr5', 'treasure', 'Curios', 2, 'count', 'Doubles', 'Be given a curio the Book cannot hold (it condenses into cubes).', 'curio.dupe', 1);
 
   // ---------------------------------------------------------------- ANGLING (the Weir; species.js, fight.js)

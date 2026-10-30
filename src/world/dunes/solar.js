@@ -23,7 +23,7 @@ import { today } from '../../core/calendar.js';
 import { seeded } from '../../core/rng.js';
 import { DUNE } from './dunes.js';
 
-const LOOP = { r: 170, wobble: 30, lift: 3, ring: 3.2, foot: 26 }; // (the loop's radius and seeded wobble in metres, a ring's height over the sand and radius; F within 26 m of the Gnomon's middle)
+const LOOP = { at: { r: 300, bearing: -160 }, r: 130, wobble: 20, lift: 3, ring: 3.2, foot: 26 }; // (its centre from the oasis in the Dunes' frame (areas.js: bearing atan2(z, x)), so all 24 rings lie in the Gnomon flats, 150 to 450 m out (AREAS.md: it crossed the ridges and the Weir); the loop's radius and seeded wobble in metres, a ring's height over the sand and radius; F within 26 m of the Gnomon's middle)
 const PAY = { gold: 3, silver: 6, bronze: 10 }; // (minutes of play each medal pays, once ever: the spec's 3, 6 and 10)
 
 export class SolarTrial {
@@ -33,11 +33,11 @@ export class SolarTrial {
   }
   get dunes() { return this.game.dunes; }
 
-  /** The course for a game day: 24 points on a loop beside the Gnomon, toward the oasis, each a ring facing along the loop. */
+  /** The course for a game day: 24 points on a loop in the Gnomon flats, begun beside the Gnomon, each a ring facing along the loop. */
   course(day = today()) {
     const D = this.dunes, G = D?.gnomon; if (!G) return [];
-    const r = seeded((day * 2654435761) >>> 0), toward = new THREE.Vector3(DUNE.x, 0, DUNE.z).sub(new THREE.Vector3(G.x, 0, G.z)).normalize(); // (toward the oasis)
-    const c = new THREE.Vector3(G.x, 0, G.z).addScaledVector(toward, LOOP.r + 30), a0 = Math.atan2(G.x - c.x, G.z - c.z), pts = [];
+    const r = seeded((day * 2654435761) >>> 0), b = LOOP.at.bearing * Math.PI / 180;
+    const c = new THREE.Vector3(DUNE.x + Math.cos(b) * LOOP.at.r, 0, DUNE.z + Math.sin(b) * LOOP.at.r), a0 = Math.atan2(G.x - c.x, G.z - c.z), pts = [];
     for (let i = 0; i < SOLAR.rings; i++) {
       const a = a0 + ((i + 0.5) / SOLAR.rings) * Math.PI * 2, rr = LOOP.r + (r() - 0.5) * 2 * LOOP.wobble;
       const x = c.x + Math.sin(a) * rr, z = c.z + Math.cos(a) * rr;

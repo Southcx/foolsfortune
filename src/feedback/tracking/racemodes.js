@@ -33,7 +33,7 @@ export function raceModeRules({ on, L, log, g }) {
     if (e.mode !== 'race') say('info', g?.input?.device === 'touch' ? 'RESTART in the pause menu starts again; RETIRE retires.' : said(g, '{restart} starts again; holding {toGate} retires.'), 'rm.keys', 60);
   });
   on('race.restart', () => L.inc('race.restart'));
-  on('race.photo', (e) => { if (e.by !== 'courier') return; L.inc('race.photo'); if (e.won) L.inc('race.photo.won'); L.lo('race.photo.gap', e.gap); say('record', e.won ? `A photo finish: you take it by ${e.gap} s.` : `A photo finish: lost by ${e.gap} s.`, 'rm.photo', 1); });
+  on('race.photo', (e) => { if (e.by !== 'courier') return; L.inc('race.photo'); if (e.won) L.inc('race.photo.won'); L.lo('race.photo.gap', e.gap); const gap = (+e.gap).toFixed(2); say('record', e.won ? `Photo finish: you take it by ${gap} s.` : `Photo finish: ${e.who || 'a rival'} takes it by ${gap} s.`, 'rm.photo', 1); /* (Espada's words) */ });
   on('race.rewind', (e) => { L.inc('race.rewind'); if (e.seconds > 0) say('info', `Rewound ${e.seconds} s.`, 'rm.rewind', 1); });
   on('race.finish', (e) => {
     if (e.mode === 'race' && e.of > 1) { L.inc(`race.track.${e.track}.finish.rivals`); if (e.place === 1) L.inc(`race.track.${e.track}.win`); if (e.place <= 3) L.inc(`race.track.${e.track}.podium`); }
