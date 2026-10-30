@@ -50,13 +50,13 @@ export const APTITUDES = {
   pull: { label: 'Reading a pull', unit: '% of pulls answered', better: 'high', event: 'angle.catch',
     value: (e) => (e.ans != null ? pct(e.ans) : null), line: 'How well you read a fish by its line.' },
   // the rail's outlined shots (Go / No-Go's no-go: the roll's parry is the only answer, holding back from the plain answer): sent home
-  // against taken, a leg's share. `kind` on `rail.hit` is Petra's field (stage.js `wound`); a leg with fewer than 3 met is no sample
+  // against taken, a leg's share. a leg with fewer than 3 met is no sample
   inhibition: { label: 'Holding back', unit: '% of outlined shots answered', better: 'high', line: 'How well you hold back for the one answer that works.',
     tally: { marks: { 'move.parry': (e) => (e.tool === 'sloop' && e.by === 'courier' ? [1, 0] : null), 'rail.hit': (e) => (e.kind === 'outlined' ? [0, 1] : null) }, flush: 'rail.leg.end', min: 3 } },
   // the Lockheart opened: how far past its measure the coffin was held (0 at the measure, 100 at twice: the most it holds). A fuller
   // coffin lands harder and recoils harder (outcomes.js: the nuke's recoil by power), so holding on is a pump of BART's balloon. Not
-  // better or worse: `style` says the trend's two ways instead of better and worse, and no best is said. The Lockheart is only the Courier's (its `by` assumed)
-  risk: { label: 'Pushing your luck', unit: '% past the measure', better: 'high', style: ['bolder', 'more careful'], event: 'lockheart.open', by: 'courier',
+  // better or worse: `style` says the trend's two ways instead of better and worse, and no best is said.
+  risk: { label: 'Pushing your luck', unit: '% past the measure', better: 'high', style: ['bolder', 'more careful'], event: 'lockheart.open',
     value: (e) => (e.power != null ? pct(e.power - 1) : null), line: 'How long you hold on before you cash in.' },
   // Nebula Bluff's callouts: the share that caught a bluff (Reading the Mind in the Eyes, by way of a claimant's tells). A sample each 6
   // callouts, across games (one game is often one call); practice tables count nothing
@@ -92,7 +92,7 @@ export class Aptitude {
   /** One reading from an event, if it counts. */
   sample(id, e) {
     const A = APTITUDES[id], g = this.game;
-    if (!A || (e?.by ?? A.by) !== 'courier' || e.practice || g.agent?.task) return;
+    if (!A || e?.by !== 'courier' || e.practice || g.agent?.task) return;
     this.keep(id, A.value(e));
   }
   /** A tally's yes and no from one event (an agent's and a practice's dropped); a sample at `every` decisions. */

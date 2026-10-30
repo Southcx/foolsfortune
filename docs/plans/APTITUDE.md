@@ -69,7 +69,7 @@ aptitude, as your play gives it evidence. The numbers are measured from what you
 | aptitude (CHC) | the lab task | absolute unit | already in the game | status |
 |---|---|---|---|---|
 | reaction time (Gt) | simple and choice reaction time | ms | the parry window; the first stun noticed (STUN-DEPTH.md) | events exist |
-| inhibition | Go/No-Go, the stop-signal task | d′, % false alarms | the rail: plain shots are shot, outlined shots only parried | built: `inhibition`, % of outlined shots sent home a leg (needs `kind` on `rail.hit`, Petra's) |
+| inhibition | Go/No-Go, the stop-signal task | d′, % false alarms | the rail: plain shots are shot, outlined shots only parried | built: `inhibition`, % of outlined shots sent home a leg |
 | tracking (Gv) | multiple object tracking (Pylyshyn) | items tracked | the lock-on's eight targets | events exist |
 | visual search (Gs) | visual search (Treisman) | ms per item | the Veritome: finding a subject; the scan's ??? | partly |
 | navigation (Gv, Glr) | Sea Hero Quest, wayfinding | path over the shortest, % | a Well's floors (new each game day), the Sight, the map | events exist |
