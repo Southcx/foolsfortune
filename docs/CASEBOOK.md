@@ -1005,3 +1005,12 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
   frame is tone-mapped and graded whole; a material's own flags do not reach past it.
 358. **A state's entering and leaving are said as a pair or not at all, and no oftener than a person reads them.** A line a
   routine loop can raise (an overflow at sea) is throttled by what the player does, not by the code's own tick.
+359. **An IK's pole is laid in the frame of the pose it corrects.** A leg re-solved toward a pole set off the capsule's
+  forward flips a near-straight knee wherever a tech turns the body away from the capsule (a spinning kick): where a tech owns the pose,
+  the pole is the knee's own way and the gait's own parts (the stride's warp, the foot locks) stand down by its share. Measure a knee's
+  side of the hip-to-foot line before and after each solve, not only its flexion after the passes that follow.
+360. **A baked layer is laid on the frames it was baked over, and once.** A stance baked over one clip plays only over
+  that clip, on the clock and fade the body's own track plays it by (a stance a clip of the track); a layer over a base that already
+  carries a blend by a weight comes in whole by that share, never by the same weight again (its upper body then lags at the square).
+361. **The foot IK's reach drop is a standing leg's.** A leg lying out along the floor (the crawl's, the slide's)
+  cannot be reached by lowering the hips; read as a reach it takes the 0.12 m fallback and sinks the body, and what it holds, into the floor.
