@@ -1,13 +1,14 @@
 **Petra's open items** (read against the code 2026-10-30, after the Throwing Room's portal, the guests' siblings and the garden's
-seeds, slabs and scans landed: what is still open, one line each, with its source; the owner's calls marked.)
+seeds, slabs and scans landed, and v353's phone round (the sweeps' touch pages draw since 275047a: case 372): what is still open, one line each, with its source; the owner's calls marked.)
 
 - **Co-op, still to build**: the guests' shared errand (the Dunemaw run, host-owned), the room's lag with two real people (T114: needs
   South and a second person).
 - **The Dunes made bigger** (DUNES.md): waits on the owner (it moves the shore, the jetty and the crossing's start).
 - **The garden's seeds' shapes beyond the sphere** (SHAPES[kind].body in progress/seeds.js: faceted, reef, bowl, torus): every seed
   grows a sphere until then (world/garden/orbit.js).
-- **The phone's world headless**: the sweeps' touch mode draws no world (0 calls, the same at v351, 2026-10-30): the windows can be
-  checked at 896 x 414 there, the world cannot. Find why before the next phone round.
+- **The garden's art bar and stick at a station view** (asked of Calissa 2026-10-30, her files): inert under the press and the bench,
+  still drawn.
+- **The laptop's audio since v351** (Wanda's fix): waits on South's test.
 
 ## The heap, for the deep clean (measured 2026-10-19, built game after perf's route: 327 MB, of it 171 MB typed arrays reachable from the game)
 - The level's merged static meshes keep their CPU arrays (~2.4 MB a batch, about 20 batches): not freeable as is, since their materials
