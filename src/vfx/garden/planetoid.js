@@ -13,7 +13,7 @@
 //                pavilions the Pavilions of Echoes, 14 m: pale paving over its crown, where they will stand
 //                mulberryGrove the Mulberry Grove, 16 m: moss and eighteen spirit trees (garden trees: vfx/garden/gardentree.js), the cocoon tree
 //                chimney   the Chimney, 8 m and tall: a needle of rock drawn up to a little platform (27.8 m at its crown, measured: `reach`)
-//                myggdrasil Myggdrasil's, 26 m, the largest: soft moss over a dark loam, the World Mushroom on its crown (vfx/garden/myggdrasil.js,
+//                myggdrasil Myggdrasil's, 26 m, the largest: soft moss over a dark loam, the tree on its crown (vfx/garden/myggdrasil.js,
 //                          48 m tall, grown on its first update; it reads `game.myggdrasil` when the planetoid is given the game)
 //                and the four bought in the ring (the Moonflower Moon, the Koi Pond, the Drill Yard, the Bone Bed): vfx/garden/boughtplanetoids.js
 //   THE CLAY     drawn on its own mesh at the clay's fineness (vfx/garden/planetoidmesh.js: one shared icosphere of detail 24, 6,252
@@ -156,7 +156,7 @@ export class Planetoid {
     } else if (this.bought) {
       this.bought.dress(this, at, std);
     } else if (this.kind === 'myggdrasil') {
-      this.mushroomToGrow = true; // (the World Mushroom, grown on its first update: the boot's heap never holds its leaves)
+      this.mushroomToGrow = true; // (Myggdrasil, grown on its first update: the boot's heap never holds its body)
     } else if (this.kind === 'chimney') {
       const top = this.surface(_v.set(0, 1, 0));
       const plat = new THREE.Mesh(new THREE.CylinderGeometry(1.6, 1.2, 0.4, 8).translate(0, top + 0.1, 0), stone); this.props.add(plat);
@@ -172,7 +172,7 @@ export class Planetoid {
     if (this.vent) this.vent.material.color.setRGB(1, 0.42 + 0.1 * Math.sin(this.t * 3.1), 0.2).multiplyScalar(0.85 + 0.15 * Math.sin(this.t * 7.3));
   }
 
-  /** Myggdrasil's planetoid: the World Mushroom grown now if it waits (else on the first update), and returned (null on any other). */
+  /** Myggdrasil's planetoid: the tree grown now if it waits (else on the first update), and returned (null on any other). */
   growMushroom() {
     if (this.mushroomToGrow) { this.mushroomToGrow = false; this.mushroom = new WorldMushroom({ radius: this.R, surface: (d) => this.surface(d) }); this.group.add(this.mushroom.group); }
     return this.mushroom || null;

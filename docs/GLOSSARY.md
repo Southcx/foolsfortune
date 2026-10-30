@@ -524,6 +524,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   butter) each work one verb; the tree is Myggdrasil. *Not:* a material's `path`. → detail
 - **the tincture / the caps** (`TREE`, `CAPS`) — Myggdrasil's sap (the colour of all it ate) / its ten fruiting bodies. **moonflower**: a bed
   that opens only at night.
+- **Myggdrasil's look / the roots' mouth / Myggdrasil's hollow** (plain names; `WorldMushroom`, `src/vfx/garden/myggdrasil.js`, its parts `src/vfx/garden/myggdrasil/`, one program `myggdrasilMaterial`) — the tree drawn as roots grown into a reef in the air (South, 2026-10-30): strands gripping its planetoid, woven into a trunk you see through, a coral crown (staghorn, tables, sea fans, brain corals, tube sponges) grown with fungi, the ten caps glowing under their gills, spores always drifting / the arch at the bole's foot where it is fed (`mouthAt`) / the dark inside the bole behind it, a pool there lit in the tincture's colour. → detail. *Not:* the mycelium (the rules), the Jar's mouth, a Well's mouth, the hollow mark (a lent art's), the Braid (a lap circuit).
 
 ## 7. The Emocean and the rail
 
