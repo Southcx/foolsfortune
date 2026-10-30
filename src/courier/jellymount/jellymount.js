@@ -80,7 +80,7 @@ export class JellyMount extends Tech {
     this.last = pick;
     if (pick === 'skiff') { P.latches.KeyY = 0.15; this.passY = true; return false; }
     if (P.mantle || P.freeze || !this.allowed()) { this.refuse(); return false; }
-    if (this.readyIn > 0) { g.log?.say('info', `Your slip jelly is still re-forming: ${Math.ceil(this.readyIn)} real seconds.`, { key: 'jelly.reform', throttle: 3 }); return false; } // (placeholder words: Espada's)
+    if (this.readyIn > 0) { g.log?.say('info', `Your slip jelly is still pulling itself together: ${Math.ceil(this.readyIn)} real seconds.`, { key: 'jelly.reform', throttle: 3 }); return false; } // (placeholder words: Espada's)
     return true;
   }
   refuse() { this.game.log?.say('info', 'Your slip jelly comes only on open ground in the Dunes or at the Raceway.', { key: 'jelly.refuse', throttle: 3 }); } // (Espada's)
