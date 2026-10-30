@@ -167,8 +167,12 @@ The Great Slip Jelly's two (its drops: `gj1`, `gj5`) are the fight worn home, an
     green.
   - **A cascade is a ribbon** (`gardencascade.js`): its feeling's colour scrolled down the fall, frayed white at the edges, spray at the
     foot.
-  - **The bought four** (`boughtplanetoids.js`) each keep one idea: the Moon's craters, the Koi Pond's teal crown, the Drill Yard's ring
-    of posts, the Bone Bed's ribs.
+  - **A seed grows into one idea** (`seedplanetoids.js`, `seedskins.js`, `seedlooks.js`; the bought four retired with the shed's sale,
+    2026-10-30): clay wheel-thrown, crystal faceted and split into a geode at large, coral a reef whose arms lengthen with each size,
+    bowl a tea bowl lived in its well, ring a porcelain donut, bone sandstone with Lachrymite fossils; a feeling's moonlet in its colour
+    and paint motif. Its kind reads first at every size and as a large one's own moon; what it was fed is a tint in patches, second. All
+    of it in the ground's vertex colours and plain props: no program of its own. A growth swells past its size and back, throwing its
+    own matter; the hand's pour is a rope of the matter's look with a ring of accretion where it lands.
   - **The trees are grown, not built** (`leafcanopy.js`, `gardentree.js`; the owner's billboarded leaves): a crown is a few spheres of
     leaf clumps lit as one soft round mass, never leaf green but labradorite (dark stone walking ultramarine, blue, peacock and green
     as you go round it) edged and veined in gold, on plum-dark bark; the gold glows a little more by night, low and steady. A crown

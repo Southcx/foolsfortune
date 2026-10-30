@@ -99,7 +99,7 @@ export class GardenSite {
     {
       const look = new Planetoid({ kind: P.look || P.id, radius: P.r, seed: k + 1, surface(dir) { _s.copy(dir).normalize(); return P.radiusAt ? P.radiusAt(_s) : P.r * this.shape(_s.x, _s.y, _s.z); } }); // (`look`: the kind of look a planetoid grown from a seed wears, its id another)
       look.group.position.copy(P.c); this.group.add(look.group);
-      P.look = look; P.mesh = look.mesh; P.tint?.(look); // (a grown planetoid's colours, its feeling's or what it was fed: world/garden/orbit.js)
+      P.look = look; P.mesh = look.mesh;
       P.base = (d) => P.r * look.shape(d.x, d.y, d.z);
       P.radiusAt = (d) => P.base(d); // (the realm adds the clay's height: world/garden/realm.js)
       // its highest reach, the shape's (the Chimney's needle runs to 28 m on an 8 m world) plus the clay's band: what is solid, whose
@@ -117,8 +117,8 @@ export class GardenSite {
   }
   /** A planetoid after the first six (Myggdrasil's, given; one grown from a seed: world/garden/orbit.js), made as they were. `look`: the
    *  kind of look it wears (vfx/garden/planetoid.js), its id when none is said. */
-  addPlanet({ id, r, c, name, look = null, tint = null }) {
-    const P = { id, r, at: c.clone().sub(GARDEN_AT).toArray(), c: c.clone(), name, color: 0xb0b8c8, added: true, look, tint };
+  addPlanet({ id, r, c, name, look = null }) {
+    const P = { id, r, at: c.clone().sub(GARDEN_AT).toArray(), c: c.clone(), name, color: 0xb0b8c8, added: true, look };
     this.planets.push(P); this.by[id] = P; this.makePlanet(P, this.planets.length - 1);
     return P;
   }

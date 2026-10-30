@@ -6,9 +6,14 @@
 //   garden.lotus.land     the lotus across catching it: a puff of pollen and a few petals
 //   garden.smoke          held: a column of soft smoke rising along `dir` from a chimney's mouth (the Athanor's cap, the kiln's stack:
 //                         vfx/garden/facilitylooks.js), slow, spreading, lavender grey
+//   garden.seed.grow      a seed's planetoid grown a size (vfx/garden/seedlooks.js, at twelve points of its old surface): chips and dust of
+//                         its own matter ('tint': its kind's colour) thrown off along `normal`, a few glints of the film
+//   garden.seed.pour      held: the dust thrown up where the god hand's pour lands on a seed (vfx/garden/seedpour.js), in the matter's
+//                         colour ('tint'), and grains skipping off it
 //
-// Prior art: Super Mario Galaxy's launch star burst (sparkles shot along the flight), the sacred lotus's shedding petals, and the
-// stack smoke of a wood-fired kiln seen across a valley (a slow, leaning column that thins as it rises).
+// Prior art: Super Mario Galaxy's launch star burst (sparkles shot along the flight) and its Hungry Luma bursting into a planet, the
+// sacred lotus's shedding petals, the stack smoke of a wood-fired kiln seen across a valley (a slow, leaning column that thins as it
+// rises), and sand poured onto a heap (a skirt of dust at its foot, grains bouncing off).
 // ---------------------------------------------------------------------------------------
 const L = (o) => o;
 const PETALS = [0xffd2e0, 0xfff2f6, 0xf6a8c0, 0xf27fa3];
@@ -29,6 +34,17 @@ export const GARDEN_EFFECTS = {
     L({ type: 'sprites', count: 18, shape: 'sparkle', spawn: 'sphere', r: 0.5, dir: 'cone', axis: 'normal', cone: 70, speed: [1.2, 3], drag: 2.4, gravity: 0, size: [0.05, 0.1], sizeEnd: 0, life: [0.6, 1.1], color: ['gold', 'film', 'tint'], twinkle: 10 }),
     L({ type: 'sprites', pool: 'alpha', count: 7, shape: 'petal', spawn: 'sphere', r: 0.7, dir: 'cone', axis: 'normal', cone: 80, speed: [0.8, 2], drag: 1.4, gravity: 0, size: [0.14, 0.22], life: [1.0, 1.6], color: PETALS, alpha: 1.2, spin: [-5, 5] }),
     L({ type: 'sprites', count: 1, shape: 'ringthin', size: 0.6, sizeEnd: 3.2, life: 0.4, color: 'tint', alpha: 0.8 }),
+  ] },
+  // a seed's planetoid grown a size: chips and dust of its own matter thrown off its old surface, a few glints of the film
+  'garden.seed.grow': { layers: [
+    L({ type: 'sprites', pool: 'alpha', count: 11, shape: 'chip', spawn: 'sphere', r: 0.7, dir: 'cone', axis: 'normal', cone: 55, speed: [2.5, 6.5], drag: 1.6, gravity: 0, size: [0.12, 0.24], life: [0.8, 1.4], color: 'tint', alpha: 1, alphaEnd: 0.6, spin: [-8, 8] }),
+    L({ type: 'sprites', pool: 'alpha', count: 5, shape: 'puff', spawn: 'sphere', r: 0.9, dir: 'cone', axis: 'normal', cone: 70, speed: [0.6, 1.6], drag: 1.2, gravity: 0, size: [0.5, 0.8], sizeEnd: [1.4, 2.0], life: [1.0, 1.6], color: 'tint', alpha: 0.4 }),
+    L({ type: 'sprites', count: 5, shape: 'sparkle', spawn: 'sphere', r: 0.6, dir: 'cone', axis: 'normal', cone: 40, speed: [3, 7], drag: 2, gravity: 0, size: [0.06, 0.12], sizeEnd: 0, life: [0.6, 1.1], color: ['film', 'film1', 'gold'], twinkle: 12 }),
+  ] },
+  // held: the dust where the god hand's pour lands on a seed, in the matter's colour, and grains skipping off it
+  'garden.seed.pour': { layers: [
+    L({ type: 'sprites', pool: 'alpha', rate: 12, dur: Infinity, shape: 'puff', spawn: 'sphere', r: 0.45, dir: 'cone', axis: 'normal', cone: 75, speed: [0.3, 0.9], drag: 1.4, gravity: 0, size: [0.18, 0.3], sizeEnd: [0.6, 0.9], life: [0.7, 1.2], color: 'tint', alpha: 0.32, powerCount: false }),
+    L({ type: 'sprites', pool: 'alpha', rate: 9, dur: Infinity, shape: 'chip', spawn: 'sphere', r: 0.35, dir: 'cone', axis: 'normal', cone: 65, speed: [1, 2.4], drag: 2, gravity: 0, size: [0.05, 0.09], life: [0.4, 0.7], color: 'tint', powerCount: false }),
   ] },
   // held: a chimney's smoke rising along `dir`, slow, spreading, lavender grey (the Athanor's cap, the kiln's stack)
   'garden.smoke': { layers: [
