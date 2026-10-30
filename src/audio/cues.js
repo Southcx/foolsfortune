@@ -462,5 +462,6 @@ export function hearEvents(game, sfx) {
   for (const [name, fn] of Object.entries(RULES)) game.events.on(name, (e) => fn(sfx, e, game));
   installHaptics(game);
   sfx.musicGrid = () => game.music?.grid?.(); // (the cue's key and beat for a bank that has no game: the puzzle duel's notes, audio/puzzleduel.js)
+  sfx.acousticNow = () => game.zones?.acoustic; // (the first zone.acoustic fires at boot, before the context: read again when it starts)
   installAudioHealth(game, sfx); // (the mixer watched for falling behind, into the field report: audio/health.js)
 }
