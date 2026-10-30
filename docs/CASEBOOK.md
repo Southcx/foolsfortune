@@ -1003,3 +1003,5 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
   a page is driven from the keyboard once before it ships.
 357. **A stimulus that is measured is drawn past the frame's grade, and read back off the screen.** The world's
   frame is tone-mapped and graded whole; a material's own flags do not reach past it.
+358. **A state's entering and leaving are said as a pair or not at all, and no oftener than a person reads them.** A line a
+  routine loop can raise (an overflow at sea) is throttled by what the player does, not by the code's own tick.

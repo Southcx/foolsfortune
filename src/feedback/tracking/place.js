@@ -29,8 +29,11 @@ export function placeRules({ on, log, g }) {
   on('garden.art', (e) => log.say('system', said(g, `Your hand: ${e.mode === 'decor' ? 'Decorate: set a garden piece. Click the ground for the catalogue.' : ART[e.art] || e.art}${e.ground ? ` Ground: ${e.ground}.` : ''}${e.feeling ? ` Water: ${e.feeling === 'draught' ? 'your last drink' : e.feeling}.` : ''}`), { key: 'garden.art', throttle: 0.3 })); // (words a placeholder, Espada's)
   on('garden.reset.ask', () => log.say('warn', 'Again to put this planetoid back as it was: its clay, its ground and its water.', { key: 'garden.reset', throttle: 1 }));
   on('garden.reset', () => log.say('info', said(g, 'The planetoid is back as it was. {gaUndo} undoes it.'), { key: 'garden.reset', throttle: 1 }));
-  on('mind.brim', () => log.say('warn', 'Your pool overflows.', { key: 'mind.brim', throttle: 2 })); // (Espada's words, the glossary)
-  on('mind.settle', () => log.say('info', 'You settle.', { key: 'mind.settle', throttle: 2 }));
+  // (an overflow and its settling said at most once in 20 real s, and the settling only after an overflow that was said: at sea the
+  //  ship's absorbs start a spell every few seconds, and the pair filled the log, measured in a crossing 2026-10-30)
+  let brimSaid = false;
+  on('mind.brim', () => { if (log.say('warn', 'Your pool overflows.', { key: 'mind.brim', throttle: 20 }) !== null) brimSaid = true; }); // (Espada's words, the glossary)
+  on('mind.settle', () => { if (brimSaid) { brimSaid = false; log.say('info', 'You settle.', { key: 'mind.settle', throttle: 20 }); } });
   on('mind.state', (e) => log.say('info', `Your mental state: ${e.state}.`, { key: 'mind.state', throttle: 3 }));
   on('spirit.name', (e) => log.say('info', `${e.was[0].toUpperCase()}${e.was.slice(1)} is named ${e.spirit}.`, { key: 'spirit.name', throttle: 0.5 })); // (words a placeholder, Espada's)
   on('spirit.spar.start', (e) => log.say('info', `Your ${e.a} and your ${e.b} square up.`, { key: 'spar', throttle: 1 })); // (words placeholders, Espada's)

@@ -4474,3 +4474,10 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   trial seen in the first person with the main tool stowed and drawn again after; the log's ticker kept on touch (`hudTaken`,
   core/touchdriver.js). Read back: 9c7954 5a8028 9c7954, 0 off, at desk and phone.
 - **Rule:** 357
+
+### 2026-10-30 · "Your pool overflows." and "You settle." filled the log at sea (feedback/tracking/place.js, seen in a crossing's shots)
+- **Seen:** at bar 89 of a shoal crossing the log's last five lines were the two of them in turn, four within two game minutes.
+- **Cause:** the ship's absorbs start an overflow spell every few seconds; each spell lapsed 6 real s after its last overflow (courier/mind.js
+  SAY, casebook 94) and was said over, and the next absorb said the next. The log's throttle on both was 2 real s.
+- **Fix:** both lines throttled to 20 real s, and "You settle." said only after an overflow line that was said, so the pair is never half.
+- **Rule:** 358
