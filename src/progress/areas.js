@@ -71,7 +71,7 @@ export const AREA_TOTALS = Object.fromEntries(Object.entries(AREA_CONTENTS).map(
 
 /** THE CONDITION-BOUND FINDS (AREAS.md 5; FFXII's rare game), one an area, each met only under its condition and counted once on the
  *  checklist (`area.rare { area, find, by }`; ledger `area.<area>.rare`), and once seen a bounty Letty Marque can post. The owner's yes is
- *  "one a round": the ruins' is built; the ridges' is this round's (Petra's to place, its rule here); the other three wait their rounds.
+ *  "one a round": the ruins' is built; the ridges' built (Petra's `world/dunes/rarefinds.js`, its rule here); the other three wait their rounds.
  *  - the ruins: the aberrant Lantern Wisp that drinks a blot at night (built: `wisp.drink`).
  *  - the ridges (this round): in Fury's weather at strength `k` 0.5 or more, a bolt that lands in the ridges leaves a fulgurite glowing for
  *    `hot` 30 real s; struck with the Dreamvane's pick while it glows, it is dug out whole (a curio, Calissa's fulgurite look). Fury teaches
@@ -81,7 +81,7 @@ export const AREA_TOTALS = Object.fromEntries(Object.entries(AREA_CONTENTS).map(
  *  - the Weir (later): at dawn, the pond's surface holding the night's last star. */
 export const RARE_FINDS = {
   ruins: { find: 'aberrantWisp', when: { phase: 'night' }, built: true },
-  ridges: { find: 'fulgurite', when: { aspect: 'fury', k: 0.5 }, hot: 30, tool: 'dreamvane.pick', give: { curio: 'fulgurite', tier: 3 }, built: false },
+  ridges: { find: 'fulgurite', when: { aspect: 'fury', k: 0.5 }, hot: 30, tool: 'dreamvane.pick', give: { curio: 'fulgurite', tier: 3 }, built: true },
   flats: { find: 'griefBasin', when: { aspect: 'grief', k: 0.6 }, built: false },
   shore: { find: 'tideWalker', when: { phase: 'dusk' }, built: false },
   weir: { find: 'lastStar', when: { phase: 'dawn' }, built: false },
