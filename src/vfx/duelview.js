@@ -37,7 +37,8 @@
 //   refuse(action)                     an illegal action: the cell's rim shaken in the dry ink, no words (marks.js)
 //   resync(state)                      the board and pieces stood again from a restored state (undo), the clash kept: juice.js rewind
 //   armSkill(tool | null)              the one-gesture duel's armed skill: its reach under the finger (skillcast.js), the cast on `skill`
-//   death({ how, secret, foe }) -> Promise (how 'line' | 'secret' | 'finisher')   an aberrant's own death played (duelview/aberrants/), resolved when done
+//   death({ how, secret, foe }) -> Promise (how 'line' | 'secret' | 'finisher')   an aberrant's own death played (duelview/aberrants/), then in a
+//                                      PvE duel its data drained into the Pneuka Jar and the hero shot (duelview/aberrantdrain.js), resolved when done
 //   armPower(id | null)   powerReach(action, cells, ok)   the PvE duel's armed power and its reach as the session reads the gesture; casts: powercast.js
 //   skip(state)                        the foe's turn skipped: its queued beats dropped, the board stood as the state is
 //   hint(h | null)                     the idle hint (bot.js hintOf): its move's piece nudging its way, its clears pulsing; any play lets it go
@@ -83,6 +84,7 @@ import { DuelAuras } from './duelview/auras.js';
 import { DuelSideDress } from './duelview/sidedress.js';
 import { GardenGround } from './duelview/gardenground.js';
 import { SkillGauges } from './duelview/skillgauges.js';
+import { AberrantDrain } from './duelview/aberrantdrain.js';
 
 const TEAR = 0x7fdcff, COURIER_HEX = '#9fd8ff', UP = new THREE.Vector3(0, 1, 0);
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _c = new THREE.Color(), _r = new THREE.Ray(), _inv = new THREE.Matrix4();
@@ -97,6 +99,7 @@ export class DuelView {
     this.intentDraw = new DuelIntent(this.frame, this.marks); this.bursts = new DuelBursts(this.frame); this.beats = new DuelBeats(this);
     this.flee = new DuelFlee(this); this.folded = false;
     this.glows = new DuelGlows(this); this.worth = new DuelWorth(this); this.foresight = new DuelForesight(this); this.juice = new DuelJuice(this); this.stage = new DuelStage(this); this.dive = new FormDive(this); this.gauges = new SkillGauges(this); this.foeCast = new FoeCast(this); this.cutIn = new FoeCutIn(this); this.jarCut = new FoeCutIn(this, { subject: 'jar' }); this.stamps = new DuelStamps(this); this.show = new DuelShow(this); this.seeding = new DuelSeeding(this); this.auras = new DuelAuras(this); this.sideDress = new DuelSideDress(this); this.elites = [new WispElite(this), new JellyElite(this)]; this.elite = this.elites[0]; this.garden = new GardenGround(this); this.dress = new FrameDress(this); this.spoils = new DuelSpoils(this); this.tune = [null, null]; this.pendingKind = null;
+    this.aberrantDrain = new AberrantDrain(this); // (a won PvE duel's end drained into the Pneuka Jar: duelview/aberrantdrain.js)
     this.intentWhole = true; // (the session hands intent() bot.js intentOf's whole: { actions, junk, cells, hits })
     this.u = new THREE.Vector3(1, 0, 0); this.face = new THREE.Vector3(0, 0, 1); this.centre = new THREE.Vector3();
     this.sent = [0, 0]; this.pending = [0, 0]; this.depth = [0, 0]; this.apShown = [5, 5]; this.restCuts = 0; this.forms = ['hand', 'hand']; this.lineCol = 10;
@@ -138,7 +141,7 @@ export class DuelView {
     if (!this.isOpen && !this.closing) return;
     this.isOpen = false; this.beats.clear(); this.intentDraw.clear(); this.foresight.clear(); this.worth.clear(); this.glows.clear(); this.tune = [null, null]; this.marks.hover(null); this.marks.select([]); this.marks.stars(0, 0); this.marks.stars(1, 0);
     this.game.spiritualLink?.detach(this); this.clash.collapse(); this.closing = !now;
-    this.flee.clear(); this.marks.refuse(null); this.juice.clear(); this.stage.close(); this.dive.close(); this.gauges.clear(); this.foeCast.clear(); this.cutIn.clear(); this.jarCut.clear(); this.stamps.clear(); this.elite.close(); this.show.close(); this.seeding.clear(); this.auras.clear(); this.sideDress.close(); this.garden.close(); this.dress.close(); if (this.deathJob) { this.deathJob.res(); this.deathJob = null; } this.armed = null; this.armedPower = null;
+    this.flee.clear(); this.marks.refuse(null); this.juice.clear(); this.stage.close(); this.dive.close(); this.gauges.clear(); this.foeCast.clear(); this.cutIn.clear(); this.jarCut.clear(); this.stamps.clear(); this.aberrantDrain.clear(); this.elite.close(); this.show.close(); this.seeding.clear(); this.auras.clear(); this.sideDress.close(); this.garden.close(); this.dress.close(); if (this.deathJob) { this.deathJob.res(); this.deathJob = null; } this.armed = null; this.armedPower = null;
     this.clash.dome.scale.setScalar(DUEL_VIEW.radius); this.clash.U.uRadius.value = DUEL_VIEW.radius;
     if (now) { this.clash.open = [0, 0]; this.clash.update(0); this.root.visible = false; this.bursts.clear(); }
   }
@@ -276,13 +279,14 @@ export class DuelView {
   /** Where the god hand stands over a side's half (the board's frame): the finisher's cubes go up into it. */
   handPoint(side, out) { const B = this.board3, cs = DUEL_VIEW.cs, x = side === 1 ? (this.lineCol + B.w) / 2 : this.lineCol / 2; return out.set((x - B.w / 2) * cs, DUEL_VIEW.base + B.h * cs + 0.5, 0.35); }
   /** An aberrant's death as its own cinematic ('line' when the Line reached its wall, 'secret' when its secret was done): its look played
-   *  (duelview/aberrants/), resolved once it has; the session times it before the board folds. An aberrant with no death of its own: at once. */
+   *  (duelview/aberrants/), resolved once it has; the session times it before the board folds. An aberrant with no death of its own: at once, unless it is drained. */
   death(arg) {
     const how = typeof arg === 'string' ? arg : arg?.how, kind = how === 'secret' || arg?.secret ? 'secret' : how === 'line' ? 'line' : null; // (the session's { how, secret, foe }; a finisher has its own: the data drain)
-    const d = this.isOpen && this.elite.on && kind ? this.elite.death(kind) : null; if (!d) return Promise.resolve();
+    const d = this.isOpen && this.elite.on && kind ? this.elite.death(kind) : null, drained = !!kind && this.aberrantDrain.can();
+    if (!d && !drained) return Promise.resolve(); // (drained: a PvE duel's end, an aberrant with no death of its own too, never a practice duel's)
     this.stage.pref = 0; // (the arena: the foe in frame for its end, even from the phone's board view, Petra 2026-10-28)
-    const job = { ...d, age: 0 };
-    if (this.show.on) { // (circled low round it as it goes, then the hero shot on the Jar: duelshow.js)
+    const job = drained ? this.aberrantDrain.ending(d) : { ...d, age: 0 }; // (its own death, its data drained into the Pneuka Jar, the hero shot: aberrantdrain.js, South 2026-10-30)
+    if (!drained && this.show.on) { // (circled low round it as it goes, then the hero shot on the Jar: duelshow.js)
       this.stage.cutAway('death', d.dur); const base = d.dur; let ended = false;
       job.step = (age) => { if (age < base) { d.step?.(age); return; } if (!ended) { ended = true; d.end?.(); job.dur = base + this.show.victory(); } };
       job.end = () => { if (!ended) { ended = true; d.end?.(); } };
@@ -293,9 +297,9 @@ export class DuelView {
   dragClock(k) { this.foeCast.timer(k); }
 
   /** What of mine draws during a duel but stood in the scene before it opened (South, 2026-10-27: the duel is its own instance,
-   *  render/duelinstance.js): the data drain and its crackle break at the finisher, the foe's stun stars. For the session's keep list. */
+   *  render/duelinstance.js): the data drain and its crackle break at the finisher, an aberrant's data drain at a win, the foe's stun stars. For the session's keep list. */
   instanceKeep() {
-    const g = this.game, out = [g.dataDrain?.group, g.dataDrain?.crackle?.bubble?.object, g.dataDrain?.crackle?.shards];
+    const g = this.game, out = [g.dataDrain?.group, g.dataDrain?.crackle?.bubble?.object, g.dataDrain?.crackle?.shards, ...this.aberrantDrain.keep()];
     const ring = this.foe && g.stun?.dizzy?.rings?.get?.(this.foe); if (ring) out.push(ring.g);
     return out.filter(Boolean);
   }

@@ -9,7 +9,9 @@
 // Prior art: .hack//Infection's Protect Break (CyberConnect2, 2002), guan and ge ware's crackle (the Song kilns' jinsi tiexian), and
 // a soap bubble's pop (the film gone in a frame, the drops thrown out).
 //
-//   const b = new CrackleBreak(game)   b.play(creature | { pos, radius, height }, dur = 0.3)   b.update(rawDt)   .active   b.prewarm() -> park
+//   const b = new CrackleBreak(game)   b.play(creature | { pos, radius, height }, dur = 0.3, look?)   b.update(rawDt)   .active   b.prewarm() -> park
+//   look: { pattern, tint, rim, film, colours } another face for one break (an aberrant's data drain: the Comb's hex cells in its opposite
+//   colour, vfx/duelview/aberrantdrain.js); left out, guan's crackle as above
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { Bubble } from './caster/bubble.js';
@@ -35,9 +37,13 @@ export class CrackleBreak {
 
   get active() { return !!this.run; }
 
-  play(target, dur = 0.3) {
+  play(target, dur = 0.3, look = null) {
     if (!target?.pos) return;
     this.make();
+    const L = look || {}, cols = L.colours || GLAZE;
+    this.bubble.set({ pattern: L.pattern ?? 'crackle', tint: L.tint ?? 0xbfd2c6, rim: L.rim ?? 0xf4ecd8, film: L.film ?? 0.25 });
+    for (let i = 0; i < SHARDS; i++) this.shards.setColorAt(i, cols[i % cols.length]);
+    this.shards.instanceColor.needsUpdate = true;
     const r = Math.max((target.radius || 0.5) * 1.5, (target.height || 1) * 0.62), c = target.pos.clone().setY(target.pos.y + (target.height || 1) * 0.5);
     const P = this.game.player?.pos, toward = P ? new THREE.Vector3(P.x - c.x, 0, P.z - c.z).normalize() : new THREE.Vector3(0, 0, 1);
     const flying = Array.from({ length: SHARDS }, (_, i) => { // (each from its place on the shell, out and up)

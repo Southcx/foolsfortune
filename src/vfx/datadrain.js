@@ -22,6 +22,7 @@
 //
 //   game.dataDrain = new DataDrain(game)   .play(creature | { pos, radius, height, root? }, from?: Vector3)   .update(rawDt)
 //   .active   .run   .prewarm() -> park()   .bugs (vfx/databug.js)   .crackle (vfx/crackbreak.js)   .lensAt(out)
+//   surfacePoints(target, n) -> [Vector3] (a body's surface as it stands: the drain's cubes are laid on it)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { T } from '../core/config.js';
@@ -71,8 +72,9 @@ const _m = new THREE.Matrix4(), _q = new THREE.Quaternion(), _s = new THREE.Vect
 const clamp01 = (x) => Math.min(1, Math.max(0, x)), ease = (x) => { x = clamp01(x); return x * x * (3 - 2 * x); };
 const hash = (n) => { const s = Math.sin(n * 127.1 + 311.7) * 43758.5453; return s - Math.floor(s); };
 
-/** Points on a creature's surface: its meshes' vertices where they are now (a skinned or deformed mesh: its rest shape, placed). */
-function surfacePoints(target, n) {
+/** Points on a creature's surface: its meshes' vertices where they are now (a skinned or deformed mesh: its rest shape, placed), shown or
+ *  not (an aberrant's data drain husks a body its own death has hidden: vfx/duelview/aberrantdrain.js). */
+export function surfacePoints(target, n) {
   const pts = [], src = [];
   target.root?.updateMatrixWorld(true); // (where its meshes are now, not where they were last drawn)
   target.root?.traverse((o) => { if (o.isMesh && o.geometry?.attributes?.position && o.visible !== false) src.push(o); });
