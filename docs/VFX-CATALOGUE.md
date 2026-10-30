@@ -1,6 +1,6 @@
 # The VFX catalogue (generated: do not edit)
 
-Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-10-30). 580 effects in 35 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
+Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-10-30). 582 effects in 35 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
 
 **Play one:** `game.vfx.play(name, { pos, dir, normal, tint, power, scale, feeling, domain, suit, follow })`; a held one returns a handle (`h.pos`, `h.k`, `h.stop()`). A name falls back from the most particular (`hit.slash.crystal` -> `hit.slash` -> `hit`), so a new name always plays something.
 
@@ -653,6 +653,16 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `damage.impact` | one-shot | shape:quad, sprites:ringthin, sprites:facet | IMPACT lawful, physical: bone and gold; a square flash on its corner crazed like fired clay struck, facets thrown straight out |  |
 | `damage.influence` | one-shot | shape:ring, sprites:ripple, sprites:petal | INFLUENCE neutral, social: rose and warm gold; ripples spread slow and even, petals drift out. What spreads from one to many. |  |
 
+### dunes (5)
+
+| effect | kind | layers | what | asked by |
+|---|---|---|---|---|
+| `dunes.devil.scuff` | held | sprites:puff, sprites:chip |  | vfx/dunes/dustdevils.js |
+| `dunes.fulgurite.dig` | one-shot | sprites:chip, sprites:puff, sprites:star4, sprites:core |  | vfx/dunes/hotfulgurite.js |
+| `dunes.fulgurite.glint` | one-shot | sprites:star4 |  | vfx/dunes/fulgurites.js, vfx/dunes/hotfulgurite.js |
+| `dunes.fulgurite.hot` | held | sprites:core, sprites:puff |  | vfx/dunes/hotfulgurite.js |
+| `dunes.fulgurite.strike` | one-shot | sprites:core, light, sprites:chip, sprites:puff×2 |  | vfx/dunes/fulgurites.js |
+
 ### swing (5)
 
 | effect | kind | layers | what | asked by |
@@ -671,14 +681,6 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `temper.enraged` | held | shape:ring, sprites:streak |  | vfx/temper.js |
 | `temper.prismatic` | held | shape:band, sprites:glint, sprites:drip |  | vfx/temper.js |
 | `temper.stoic` | held | shape:band, sprites:facet, sprites:puff | a creature's mental state and agitation shown with its body; quiet at the middle, only the ends and the heat have a look of their own | vfx/temper.js |
-
-### dunes (3)
-
-| effect | kind | layers | what | asked by |
-|---|---|---|---|---|
-| `dunes.devil.scuff` | held | sprites:puff, sprites:chip |  | vfx/dunes/dustdevils.js |
-| `dunes.fulgurite.glint` | one-shot | sprites:star4 |  | vfx/dunes/fulgurites.js |
-| `dunes.fulgurite.strike` | one-shot | sprites:core, light, sprites:chip, sprites:puff×2 |  | vfx/dunes/fulgurites.js |
 
 ### kit (3)
 
@@ -722,7 +724,7 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `absorb` | one-shot | shape:ring, sprites:glint | a thing taken into the Courier: a ring closing in on where it went, its sparkle drawn in after it | audio/duelsecrets.js, audio/puzzleduel.js, courier/lachryma.js +9 |
+| `absorb` | one-shot | shape:ring, sprites:glint | a thing taken into the Courier: a ring closing in on where it went, its sparkle drawn in after it | audio/duelsecrets.js, audio/puzzleduel.js, courier/jellymount/jellymount.js +10 |
 
 ### angle (1)
 
@@ -758,7 +760,7 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `impact` | one-shot | shape:cone, sprites:streak, sprites:puff |  | audio/cues.js, audio/damage.js, audio/shellparts.js +46 |
+| `impact` | one-shot | shape:cone, sprites:streak, sprites:puff |  | audio/cues.js, audio/damage.js, audio/shellparts.js +47 |
 
 ### implode (1)
 

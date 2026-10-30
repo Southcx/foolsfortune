@@ -5,6 +5,7 @@
 //   - the Dunes' mirage (mirage.js): the far flats' strip of inverted sky at noon
 //   - the geodes (geodes.js): Lachrymite geodes split open round the crystals, glowing in the feeling in the air at night
 //   - the fulgurites (fulgurites.js): glass of fused sand where Fury's lightning fell, glinting
+//   - the ridges' fulgurite while it can be dug (hotfulgurite.js): that one glass glowing hot, its heat rising, dug out into the Courier
 // Each part reads the same few numbers, worked out here twice a real second (no per-frame allocation): the hour's light (lightAt) and
 // game hour, the weather's drawn amounts (game.weatherLook.eff: what the sky shows here, eased), and whether the camera is on the
 // Dunes' open sand. Everything stands in one group in the Dunes' zone (render/zones.js), hidden with it.
@@ -15,7 +16,7 @@
 //
 // Prior art: each part's header; the house's way of hanging a family of looks off one reader (vfx/weatherfx/index.js).
 //
-// AREAS (stage 2, render/areas.js): `build(game)` makes the group and its four parts, `teardown(game)` takes them down whole (every
+// AREAS (stage 2, render/areas.js): `build(game)` makes the group and its five parts, `teardown(game)` takes them down whole (every
 // geometry let go, the group out of the scene); a part's materials are made again with it and compile to the programs already linked
 // at boot, so coming back compiles nothing. Safe to call twice; built from the constructor until the Dunes' area builds it (Petra's).
 //
@@ -27,6 +28,7 @@ import { DustDevils } from './dustdevils.js';
 import { DunesMirage } from './mirage.js';
 import { Geodes } from './geodes.js';
 import { Fulgurites } from './fulgurites.js';
+import { HotFulgurite } from './hotfulgurite.js';
 import { lightAt, clockAt, COLOR } from '../../progress/weather.js';
 
 const ASPECTS = ['mirth', 'wonder', 'desire', 'grief', 'dread', 'gall', 'fury'];
@@ -42,6 +44,7 @@ export class DunesDress {
     this.game = game; this.t = 0; this.readT = 0; this.group = null;
     this.s = { light: 1, hour: 12, want: 0, desire: 0, fury: 0, mirage: 0, night: 0, colour: new THREE.Color(WHEN.violet), sky: new THREE.Color(0xcfe6ea) };
     this.build(game);
+    game.events?.on?.('area.rare', (e) => { if (e?.find === 'fulgurite') this.hot?.dug(); }); // (once: the dress is built and taken down with its area)
   }
 
   get built() { return !!this.group; }
@@ -54,13 +57,15 @@ export class DunesDress {
     this.mirage = new DunesMirage(game, this.group);
     this.geodes = new Geodes(game, this.group);
     this.fulgurites = new Fulgurites(game, this.group);
+    this.hot = new HotFulgurite(game, this.group, this.fulgurites);
   }
   /** All of it taken down: every geometry let go (an instanced mesh's instances too), the group out of the scene. */
   teardown(game = this.game) {
     if (!this.group) return;
+    this.hot.dispose();
     this.group.traverse((o) => { o.geometry?.dispose(); if (o.isInstancedMesh) o.dispose(); });
     game.scene.remove(this.group);
-    this.group = this.devils = this.mirage = this.geodes = this.fulgurites = null;
+    this.group = this.devils = this.mirage = this.geodes = this.fulgurites = this.hot = null;
   }
 
   prewarm() { if (!this.group) return () => {}; const u = [this.devils.prewarm(), this.mirage.prewarm(), this.geodes.prewarm(), this.fulgurites.prewarm()]; return () => u.forEach((f) => f()); }
@@ -91,5 +96,6 @@ export class DunesDress {
     this.mirage.update(dt, { k: sand ? s.mirage : 0, sky: s.sky, haze: g.scene.fog?.color });
     this.geodes.update(dt, { night: s.night, colour: s.colour });
     this.fulgurites.update(dt, { day: 1 - s.night, fury: s.fury, here: sand });
+    this.hot.update(dt);
   }
 }
