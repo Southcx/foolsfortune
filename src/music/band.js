@@ -26,6 +26,7 @@ import { WorldBand } from './world.js';
 import { RockBand } from './rock.js';
 import { ModernBand } from './modern.js';
 
+const WAYS = 96; // (a band's shared ways out: a score's pans and sends come from a short list)
 export const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
 
 export class Band {
@@ -40,12 +41,29 @@ export class Band {
   // ---- helpers
   out(dest, gain, { verb = 0, echo = 0, pan = 0 } = {}) {
     const c = this.ctx, g = c.createGain(); g.gain.value = gain;
+    if (pan || verb || echo) { const way = this.way(dest, verb, echo, pan); if (way) { g.connect(way); return g; } }
     let o = g;
     if (pan) { const p = c.createStereoPanner(); p.pan.value = pan; g.connect(p); o = p; }
     o.connect(dest);
     if (verb) { const s = c.createGain(); s.gain.value = verb; o.connect(s).connect(this.bus.verb); }
     if (echo) { const s = c.createGain(); s.gain.value = echo; o.connect(s).connect(this.bus.echo); }
     return g;
+  }
+  /** A note's way out after its own gain, shared by every note sent the same way (its pan and its sends: linear, so one chain heard by
+   *  many notes sounds as a chain a note): a note makes one node for it, not four (the gate, 2026-10-30: the band's per-note nodes were
+   *  the rest of the music's cost). Kept for up to WAYS ways; past that a note builds its own. */
+  way(dest, verb, echo, pan) {
+    const side = dest === this.bus.dry ? 'd' : dest === this.bus.pump ? 'p' : null; if (!side) return null;
+    pan = Math.round(pan * 50) / 50; // (to a 50th: the cache stays a short list, the ear hears no difference)
+    const W = (this.ways ||= new Map()), key = `${side}|${verb}|${echo}|${pan}`, kept = W.get(key);
+    if (kept) return kept;
+    if (W.size >= WAYS) return null;
+    const c = this.ctx, i = c.createGain(); let o = i;
+    if (pan) { const p = c.createStereoPanner(); p.pan.value = pan; i.connect(p); o = p; }
+    o.connect(dest);
+    if (verb) { const s = c.createGain(); s.gain.value = verb; o.connect(s).connect(this.bus.verb); }
+    if (echo) { const s = c.createGain(); s.gain.value = echo; o.connect(s).connect(this.bus.echo); }
+    W.set(key, i); return i;
   }
   env(g, t, a, peak, hold, rel) {
     const p = g.gain; p.setValueAtTime(0.0001, t); p.exponentialRampToValueAtTime(peak, t + a);

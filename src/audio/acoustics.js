@@ -35,6 +35,6 @@ export class AcousticSounds {
     g.gain.setTargetAtTime(1, t, FADE / 3);
     const old = this._space;
     if (old) { old.g.gain.setTargetAtTime(0, t, FADE / 3); setTimeout(() => { try { this.verbSend.disconnect(old.conv); old.g.disconnect(); } catch { /* gone */ } }, (FADE + A.sec) * 1000 + 500); }
-    this._space = { kind, conv, g };
+    this._space = { kind, conv, g, sec: A.sec, decay: A.decay };
   }
 }

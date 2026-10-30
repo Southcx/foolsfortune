@@ -45,7 +45,8 @@ export class Arranger {
     this.bus.connect(this.sweep).connect(this.depth).connect(this.lift).connect(glue).connect(this.duckG).connect(this.sfx.main ?? this.sfx.master); // (the music's own way out: it never ducks with the effects)
     const dry = ctx.createGain(); dry.connect(this.bus);
     const pump = ctx.createGain(); pump.connect(this.bus);
-    const verb = ctx.createConvolver(); verb.buffer = this.sfx.impulse(3.2, 2.6);
+    const verb = this.sfx.musicVerb?.(3.2, 2.6) ?? Object.assign(ctx.createConvolver(), { buffer: this.sfx.impulse(3.2, 2.6) }); // (the music's one reverb, shared across a change of cue: audio/core.js)
+    this.verbOut = verb;
     const vin = ctx.createGain(); vin.gain.value = 0.5; const vlp = ctx.createBiquadFilter(); vlp.type = 'lowpass'; vlp.frequency.value = 5000;
     vin.connect(vlp).connect(verb).connect(this.bus);
     // the leads' echo: a dotted eighth, ping-ponged
@@ -59,9 +60,9 @@ export class Arranger {
     // a second band heard through the crude: an event marked `deep` plays here (a foe under the surface: music/legs.js, Charybdis)
     const deepLp = ctx.createBiquadFilter(); deepLp.type = 'lowpass'; deepLp.frequency.value = 520; deepLp.Q.value = 0.7; deepLp.connect(this.bus);
     const ddry = ctx.createGain(), dpump = ctx.createGain(); ddry.connect(deepLp); dpump.connect(deepLp);
-    this.graph = [this.bus, this.duckG, this.sweep, this.depth, this.lift, glue, dry, pump, verb, vin, vlp, ein, dl, dr, fb, elp, pl, pr, deepLp, ddry, dpump]; // (let go whole when the cue has faded: stop())
+    this.graph = [this.bus, this.duckG, this.sweep, this.depth, this.lift, glue, dry, pump, vin, vlp, ein, dl, dr, fb, elp, pl, pr, deepLp, ddry, dpump]; // (let go whole when the cue has faded: stop())
     this.deepBand = new Band(ctx, { dry: ddry, pump: dpump, verb: vin, echo: ein, kicked: () => {} }, this.sfx.noiseBuf);
-    this.band.phone = this.deepBand.phone = !!this.sfx.phone; // (a phone's mixer: the heaviest instruments play fewer voices, music/rock.js)
+    this.band.phone = this.deepBand.phone = !!(this.sfx.phone || this.sfx.lean); // (a phone's mixer: the heaviest instruments play fewer voices, music/rock.js)
   }
   /** The sidechain: the synths and the bass dip under each kick of a section that pumps. */
   kicked(t) {
@@ -84,9 +85,9 @@ export class Arranger {
   stop(fade = 2) {
     if (!this.alive) return;
     this.alive = false; clearInterval(this.timer); this.queue = [];
-    const ctx = this.ctx, bus = this.bus, graph = this.graph || [bus];
+    const ctx = this.ctx, bus = this.bus, graph = this.graph || [bus], verb = this.verbOut;
     bus.gain.cancelScheduledValues(ctx.currentTime); bus.gain.setTargetAtTime(0.0001, ctx.currentTime, fade / 3);
-    setTimeout(() => { for (const n of graph) try { n.disconnect(); } catch { /* gone */ } }, fade * 1000 + 800); // (the whole cue's graph let go, its echo's loop cut, its reverb freed: casebook 307)
+    setTimeout(() => { for (const n of graph) try { n.disconnect(); } catch { /* gone */ } try { verb?.disconnect(bus); } catch { /* gone */ } }, fade * 1000 + 800); // (the whole cue's graph let go, its echo's loop cut, the shared reverb let go of its bus: casebook 307)
   }
   follow(score) {
     if (score && score === this.finished) return; // (a one-shot that has played does not start again by itself)
