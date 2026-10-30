@@ -214,8 +214,8 @@ Each step lands when the one before runs clean in the garden sweep.
 
 ## 9. The owner's rulings (2026-10-08)
 
-- **Myggdrasil has its own planetoid**, the largest in the garden (radius 26 m against the others' 8 to 20), given, not bought, at the
-  second Firing (Sinter), and **its model is BIG** (the owner): 48 m tall, a landmark seen from every planetoid (`ECON.myggdrasil`).
+- **Myggdrasil has its own planetoid**, the largest in the garden (radius 26 m against the others' 8 to 20), given, not bought, on the
+  first visit (South, 2026-10-30; it was the second Firing), and **its model is BIG** (the owner): 48 m tall, a landmark seen from every planetoid (`ECON.myggdrasil`).
 - **The keepsake pots stay:** a spirit let go is fired into one (`src/progress/keepsakes.js`).
 - **The strains grounded in real fungi** ("I love the strain functions being grounded in reality"); Myggdrasil's name approved ("so
   cute").

@@ -54,7 +54,7 @@ export const SECRET_LINES = {
   ostracon: ['You find an ostracon in a crack in the rock. It has a word on it.', 'You find an ostracon under a stone, its word still clear.'],
   vantage: ['From up here you can see for squares in every direction.', 'From the top, the whole sea opens out round you.'],
   nest: ['Figments nest here, and they do not want company.', 'A nest of Figments. They have noticed you.'],
-  fuel: ['You find a fuel cache, sealed against the spray: 3 measures.', 'You find a fuel cache someone left for the next sailor: 3 measures.'],
+  fuel: ['You find a fuel store, sealed against the spray: 3 measures.', 'You find a fuel store someone left for the next sailor: 3 measures.'],
   stele: ['You find a stele with three words cut in a line.', 'You find a stele standing alone, three words on its face.'],
   fishing: ['Fish crowd the shallows here: a fishing spot.', 'The water here is thick with fish: a fishing spot.'],
   crystal: ['A Lachryma crystal grows out of the rock here.', 'You find a Lachryma crystal, humming faintly.'],

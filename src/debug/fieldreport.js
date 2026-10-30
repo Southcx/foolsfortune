@@ -11,7 +11,7 @@
 //                    play began: what the frame was doing, by what it said; the owner's iPhone XR, v296: "some slowdown when achievements
 //                    unlock in rapid succession"),
 //                    errors [[message, real s]] (the first few after boot), samples [{ s, fps, med, worst, geos, tex, programs, heap,
-//                    zone, areas, lines }], ended ('hidden' | 'left', s),
+//                    zone, areas, lines, audio { k, rate, base, out, mix, state } }], ended ('hidden' | 'left', s),
 //                    firsts [{ s, what, in, zone, dry, f }] (at a loss, newest first: each material first drawn since play began),
 //                    frames { cols, rows } (at a loss: the last FIELD.frames frames' draws, vertices, new geometries and textures),
 //                    mode ('story' | 'debug'), pace [[milestone, real min of play, target]] (STORY's milestones reached: progress/pace.js paceOf) }
@@ -28,6 +28,16 @@
 // ---------------------------------------------------------------------------------------
 import { paceOf } from '../progress/pace.js';
 import { now } from '../core/calendar.js';
+
+/** The audio as a sample reads it: k, the audio clock's share of real time in its last window (audio/health.js: under 0.95 it falls
+ *  behind); the render rate (Hz); the context's own buffer and the output's latency past it (real ms: a Bluetooth headset adds 100 to
+ *  300, heard as lag however fast the mixing); the mixer (phone, lean or desk). South's laptop, 2026-10-30: "a lot of audio lag
+ *  occurring independent of framerate". Null before the context exists. */
+function audioOf(g) {
+  const sfx = g.music?.sfx, c = sfx?.ctx; if (!c) return null;
+  const ms = (s) => (Number.isFinite(s) ? Math.round(s * 1000) : null);
+  return { k: g.audioHealth?.k ?? null, rate: c.sampleRate, base: ms(c.baseLatency), out: ms(c.outputLatency), mix: sfx.phone ? 'phone' : sfx.lean ? 'lean' : 'desk', state: c.state };
+}
 
 /** every / later: real s between writes, before and after the first five real minutes; keep: loads kept; samples, moments, errors: rows kept
  *  a report (the newest samples, the first moments and errors); slow, slows: a slow frame's real ms, and how many are kept (the newest);
@@ -139,6 +149,7 @@ export class FieldReport {
       zone: g.zones?.current ?? null, areas: g.areas?.stats?.().filter((a) => a.resident).map((a) => a.id).join(',') || '',
       lines: g.present?.dynLines ?? null, tier: g.graphics?.tier ?? null,
       ci: g.constantIndex?.on ? g.constantIndex.arrays.size : null, // (uniform arrays read at constant indices so far: render/constantindex.js)
+      audio: audioOf(g), // (the audio clock's last window and the output's latency: a laptop's lag told apart, slow mixing or a slow speaker)
     });
     if (this.doc.samples.length > FIELD.samples) this.doc.samples.splice(1, 1); // (the first kept: the load's own beginning)
     this.frames = [];

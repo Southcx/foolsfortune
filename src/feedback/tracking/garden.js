@@ -1,11 +1,11 @@
 // ---------------------------------------------------------------------------------------
 // TRACKING, THE SPIRIT GARDEN AND SOUL ALCHEMY: the rules that hear the garden (progress/garden.js) and the spirit press
-// (progress/alchemy.js), the spirits and the Firings (progress/spirits.js: docs/plans/SPIRIT-GARDEN.md), keep their counts for the achievements, and say the few things worth a sentence. The words are placeholders
+// (progress/alchemy.js: a firing says its rank's effect, seasoning is said at 25, 50, 75 and 100), the spirits and the Firings (progress/spirits.js: docs/plans/SPIRIT-GARDEN.md), keep their counts for the achievements, and say the few things worth a sentence. The words are placeholders
 // for Espada's. tracking.js calls it from listen().
 //
 //   gardenRules({ on, L, log })
 // ---------------------------------------------------------------------------------------
-import { ATTRIBUTES } from '../../progress/alchemy.js';
+import { ATTRIBUTES, rankLine } from '../../progress/alchemy.js';
 import { KINDS } from '../../progress/econ/materials.js';
 import { ENCOUNTERS } from '../../progress/garden.js';
 import { firingOf, ranksOf, FIRING_NAMES } from '../../progress/spirits.js';
@@ -57,7 +57,10 @@ export function gardenRules({ on, L, log }) {
     L.inc('alchemy.fire'); L.hi(`alchemy.rank.${e.attribute}`, e.rank);
     if (e.true) L.inc('alchemy.true'); // (a true firing: within a quarter of the swatch's radius, SOUL-ALCHEMY.md 3.3; the words are placeholders for Espada's)
     log.say('gain', `${e.true ? 'A true firing.' : 'The press fires.'} ${ATTRIBUTES[e.attribute]?.name || e.attribute}: rank ${e.rank}, for ${e.fuel} cubes.`);
+    const says = rankLine(e.attribute, e.rank); // (what the rank does, in plain numbers: "Willpower 2: your shield pool +18%."; alchemy.js RANK_LINES, placeholder words for Espada's)
+    if (says) log.say('gain', says, { key: `alchemy.rank.${e.attribute}`, throttle: 0.5 });
   });
+  on('alchemy.season', (e) => { if (e.by === 'courier') log.say('info', `${ATTRIBUTES[e.attr]?.name || e.attr} seasons: ${e.at} of 100.`, { key: `alchemy.season.${e.attr}`, throttle: 1 }); }); // (a quarter crossed, said once; 100 is `seasoned` below; placeholder words for Espada's)
   on('alchemy.seasoned', (e) => { if (e.by === 'courier') log.say('info', `Your ${ATTRIBUTES[e.attribute]?.name || e.attribute} is seasoned: its swatch is as wide as practice makes it.`); });
   on('garden.slot', (e) => { if (e.by === 'courier' && e.encounter) { L.inc('garden.slot'); { const n = ENCOUNTERS[e.encounter]?.name || e.encounter; log.say('info', `${n.charAt(0).toUpperCase()}${n.slice(1)} now works a garden slot.`); } } });
   on('garden.collect', (e) => { if (e.by === 'courier') L.inc('garden.dividend', e.cubes); });

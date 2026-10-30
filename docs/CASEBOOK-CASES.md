@@ -4585,4 +4585,4 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   and called at the Raceway (another render zone).
 - **Fix:** the body's root is `userData.zoneFree` (it always stands under its rider, hidden when not ridden); the slip puddles keep
   their own `live` flag instead of reading `visible`. After: `shown: true` through the call and the ride, on the phone and the desk.
-- **Rule:** NEW:zone-visible-gate
+- **Rule:** 366

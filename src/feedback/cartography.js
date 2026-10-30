@@ -37,6 +37,7 @@ const LAYERS = [
   { id: 'opensea', name: 'THE OPEN SEA', zone: 'opensea', cell: 16, sight: 120 }, // (the Emocean off the lanes: world/opensea/)
   { id: 'margarite', name: "MARGARITE'S DOCK", zone: 'margarite', cell: 2, sight: 7 }, // (the King's island's quay: world/emocean/margarite.js)
   { id: 'bazaar', name: "RAKU'S BAZAAR", zone: 'bazaar', cell: 2, sight: 7 }, // (Raku's casino under its dome: world/bazaar/bazaar.js)
+  { id: 'sandbox', name: 'THE SANDBOX', zone: 'sandbox', cell: 2, sight: 7 }, // (the hand's physics room: world/sandbox/sandbox.js)
   { id: 'touchstone', name: 'THE TOUCHSTONE', zone: 'touchstone', cell: 2, sight: 7 }, // (the Assay's dark room: world/touchstone/touchstone.js)
 ];
 const BY_ZONE = Object.fromEntries(LAYERS.filter((l) => l.zone).map((l) => [l.zone, l]));

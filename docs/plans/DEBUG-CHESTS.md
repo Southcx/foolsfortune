@@ -42,7 +42,7 @@ the game" mark.
 ```js
 DEBUG_KITS.press = {
   at: 'athanor',             // a place id: the chest stands beside it (offset so it never blocks the thing)
-  for: 'Soul Alchemy: the press station (SOUL-ALCHEMY.md 4)', by: 'dovina', tests: ['T155', 'T156'],
+  for: 'Soul Alchemy: the press station (SOUL-ALCHEMY.md 4)', by: 'dovina', tests: [],
   items: [['mat.edge', 3, { tier: 1 }], ['mat.art', 3, { tier: 1 }], ...], // id, count, its data (a material: makeMaterial's tier)
   cubes: 2000,
 };

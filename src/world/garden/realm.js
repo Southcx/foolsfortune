@@ -58,6 +58,7 @@ const simRand = stream('world/garden/realm'); // (the spirits' wandering: core/r
 
 const LOTUS = { r: 1.3, seconds: 2 };
 const FEATURE_R = 3.2; // (F works a place within this of the Jar)
+const FEATURE_REACH = { athanor: 4.2 }; // (a place with a reach of its own: the Athanor's bath is 2.5 m + a 0.45 m kerb across, so F works from the kerb's outer edge)
 const NIGHT_LIGHT = { hemiSky: new THREE.Color(0x4c3a7a), hemiGnd: new THREE.Color(0x1e1430), sunC: new THREE.Color(0x9aa6ff), hemi: 0.3, amb: 0.55, sun: 0.15 }; // (the garden's light at the middle of the night, as shares of the day's: render/daylight.js NIGHT's colours, kept lighter, the garden's glows to be read by)
 const JAR_LOST = 6; // (seconds a thrown Jar may stay off the ground before it is set down by the gate: GARDEN-SWEEP #5)
 const GAME_HOUR = (DAY_MS ?? 3600000) / 24 / 1000; // (real seconds a game hour: a spirit rests a game hour at a time)
@@ -435,8 +436,8 @@ export class Realm {
   /** The place the Jar stands at, for the chevron (courier/interact.js: game.interact.add('garden', ...)). */
   offer() {
     if (!this.active || this.jarBody?.held || this.jarBody?.flight || this.press?.viewing) return null;
-    let best = null, bd = FEATURE_R;
-    for (const f of this.site.features) { if (f.mesh && !f.mesh.visible) continue; const d = f.pos.distanceTo(this.jarBody.pos); if (d < bd) { bd = d; best = f; } }
+    let best = null, bd = Math.max(FEATURE_R, ...Object.values(FEATURE_REACH));
+    for (const f of this.site.features) { if (f.mesh && !f.mesh.visible) continue; const d = f.pos.distanceTo(this.jarBody.pos); if (d < (FEATURE_REACH[f.kind] ?? FEATURE_R) && d < bd) { bd = d; best = f; } }
     for (const s of this.spirits) { const d = s.body.pos.distanceTo(this.jarBody.pos); if (d < Math.min(bd, 2.5)) { bd = d; best = { kind: 'spirit', s, pos: s.body.pos }; } }
     this.near = best;
     if (!best) return null;

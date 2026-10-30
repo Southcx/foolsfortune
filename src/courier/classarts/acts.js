@@ -213,7 +213,7 @@ export const ACTS = {
   tame: { // a creature stunned deep enough fights beside you a while: you its kin, the kinds near it its rivals (the brain wears the
     // relations off on its own clock, as a reprogrammed one's: creatures/ai/brain.js; body.js gives back its standing as a foe)
     ok: (run, R) => (c) => (run.game.stun?.depth?.(c) || 0) >= R.does.depth && !!c.brain,
-    can(run, R) { return aimed(run, 8, this.ok(run, R)) ? null : 'Tame needs a creature stunned or out cold within 8 m.'; }, // (placeholder: Espada's)
+    can(run, R) { return aimed(run, 8, this.ok(run, R)) ? null : 'Tame needs a creature stunned or out cold within 8 m.'; }, // (Espada's words)
     go(run, R) {
       const c = aimed(run, 8, this.ok(run, R)); if (!c) return;
       const until = (c.brain.now || 0) + R.does.dur, kinds = new Set(foes(run, 30).filter((o) => o !== c).map((o) => o.kind)).add(c.kind);
@@ -241,7 +241,7 @@ export const ACTS = {
   // ---- wave 4: the water, air and earth signs -----------------------------------------------------------------------------------
   ride: { // Ride: a staggered creature's body steered by your movement keys a while, you held where you stand (lasting.js ride)
     ok: (run) => (c) => (run.game.stun?.depth?.(c) || 0) >= 1 && !c.driven,
-    can(run) { return aimed(run, 8, this.ok(run)) ? null : 'Ride needs a staggered creature within 8 m.'; }, // (placeholder: Espada's)
+    can(run) { return aimed(run, 8, this.ok(run)) ? null : 'Ride needs a staggered creature within 8 m.'; }, // (Espada's words)
     go(run, R) { const c = aimed(run, 8, this.ok(run)); if (!c) return; run.last(ride(run, c, R.does.dur)); run.place = { target: c }; },
   },
   reap: { // a sweep round you: every creature within reach under its share of health downed
@@ -259,7 +259,7 @@ export const ACTS = {
   weigh: { go: (run, R) => { run.paybackUntil = run.now + R.does.within; } }, // Payback: the next blow taken is dealt back (body.js struck)
   wish: { // Starlight: under the open night sky, the weather where you stand turned toward Wonder (weather.here asks body.js skyAt)
     can: (run, R) => {
-      if (R.does.night && phaseAt() !== 'night') return 'Starlight needs the night sky.'; // (placeholder: Espada's)
+      if (R.does.night && phaseAt() !== 'night') return 'Starlight needs the night sky.'; // (Espada's words)
       const w = run.game.weather?.here?.(run.P.pos); return w?.exposure && w.exposure !== 'open' ? 'Starlight needs the open sky over you.' : null;
     },
     go: (run, R) => {
@@ -268,7 +268,7 @@ export const ACTS = {
     },
   },
   echo: { // Encore: the last tool move struck again from where it was made (the moveset's record, lasting.js echo)
-    can: (run) => (run.lastMove ? null : 'Encore needs a tool move to play again.'), // (placeholder: Espada's)
+    can: (run) => (run.lastMove ? null : 'Encore needs a move to repeat: use a tool first.'), // (Espada's words)
     go: (run, R) => { const m = run.lastMove; run.place = { at: m.at.clone() }; run.last(echo(run, m, R.does.delay)); },
   },
   bind: { // Shackle: the creature aimed at held where it stands, and it cannot resist
@@ -285,7 +285,7 @@ export const ACTS = {
       const held = Object.keys(S.counts || {}).filter((id) => (S.counts[id] || 0) > 0 && !S.chambers.includes(id));
       return held.length ? held[0] : null;
     },
-    can(run) { return this.next(run) ? null : 'Quick Swap has no other shell you hold to swap in.'; }, // (placeholder: Espada's)
+    can(run) { return this.next(run) ? null : 'Quick Swap needs a second shell to swap in.'; }, // (Espada's words)
     go(run) { const S = run.game.shells, id = this.next(run); if (id) S.chamber(S.selected, id); },
   },
   veil: { // Veil: the creature aimed at loses track of you and forgets what it knew of you (the status `forget`)
@@ -298,7 +298,7 @@ export const ACTS = {
   },
   bloom: { go: (run, R) => { const at = run.P.pos.clone(); run.place = { at }; run.last(thicket(run, at, R.does.reach, R.does.dur)); } }, // Overgrowth
   spin: { // Spin: Luck's re-roll given back at once (progress/dice.js Rerolls)
-    can: (run) => { const L = run.game.rerolls; if (!L) return 'Spin has no re-roll to give back.'; L.roll?.(); return L.used > 0 ? null : 'Your re-roll is already yours: Spin has nothing to give back.'; }, // (placeholder: Espada's)
+    can: (run) => { const L = run.game.rerolls; if (!L) return 'Spin has no re-roll to give back.'; L.roll?.(); return L.used > 0 ? null : 'Your re-roll is still unspent: Spin has nothing to give back.'; }, // (Espada's words)
     go: (run, R) => { const L = run.game.rerolls; L.used = Math.max(0, L.used - R.does.reroll); run.game.save?.dirty?.('rerolls'); },
   },
   collapse: { // Collapse: the ground brought down round you, everything under it struck and dazed
@@ -327,10 +327,11 @@ export const ACTS = {
   },
   reckoning: { // Settle the Score: every creature near that hurt you dealt back its share of all it dealt you (body.js struck counts it)
     owed: (run, R) => foes(run, R.does.reach).filter((c) => (run.dealt.get(c) || 0) > 0),
-    can(run, R) { return this.owed(run, R).length ? null : 'Settle the Score finds no one near who hurt you.'; }, // (placeholder: Espada's)
+    can(run, R) { return this.owed(run, R).length ? null : 'Settle the Score needs a creature nearby that has hurt you.'; }, // (Espada's words)
     go(run, R) {
-      const g = run.game, P = run.P;
-      for (const c of this.owed(run, R)) {
+      const g = run.game, P = run.P, owed = this.owed(run, R);
+      run.place = { targets: owed }; // (each one dealt back: Calissa's beams drawn in from them)
+      for (const c of owed) {
         const d = _a.copy(c.pos).sub(P.pos).setY(0); if (d.lengthSq() < 1e-4) d.set(0, 0, 1);
         g.creatures.strike(c, c.pos.clone().setY(c.pos.y + 0.8), d.normalize().clone(), Math.max(0.5, run.dealt.get(c) * R.does.share * SETTLE_BACK), 'art', 'courier');
         run.dealt.delete(c);

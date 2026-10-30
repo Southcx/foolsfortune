@@ -1,10 +1,12 @@
 // ---------------------------------------------------------------------------------------
 // THE SLIP JELLY MOUNT IN PLAY (gj3's drop; the rules and numbers Dovina's, progress/jellymount.js JELLY_MOUNT; the lines Espada's,
 // docs/handoffs/everyone/2026-10-30-from-espada-words-ahead.md 4): a slip jelly called up out of the ground to carry the Courier, who sits
-// cross-legged on its crown. Riding is a tech (it owns the step); getting off gives the core movement back exactly. The body is a
-// placeholder, the wild slip jelly's own mesh and melt (creatures/jelly/slipjelly.js, deform.js): its look is Calissa's to come.
+// cross-legged on its crown. Riding is a tech (it owns the step); getting off gives the core movement back exactly. The body is the wild
+// slip jelly's own mesh and melt (creatures/jelly/slipjelly.js, deform.js), placed here on the ground in the ride; its look (your seal on
+// it, its call, slump, air and moments, the mounts' ring) is Calissa's, vfx/jellymount/, laid over after this tick.
 //   THE CALL    Y, on open ground in the Dunes or at the Raceway (where the Solar Skiff is called): tapped, the mount last chosen comes;
-//               held past `call.hold`, the two are shown (mountchoice.js) and the mouse, A or D picks one, let go calls it. The jelly rises
+//               held past `call.hold`, the two are offered (mountchoice.js; drawn as the mounts' ring, vfx/jellymount/ring.js) and the
+//               mouse, A or D picks one, let go calls it. The jelly rises
 //               under the Courier over `call.arrive` real s (at once when it was left waiting at a door).
 //   THE RIDE    the movement keys from the camera, as on foot: it turns toward the way asked at `turn` and runs to `cruise` x the ground's
 //               share (groundSpeed: sand, stone, paint, crude, liquid), never past `max`. Space hops (`hop.up`); a hop within `window` of
@@ -38,7 +40,7 @@ import { MountChoice } from './mountchoice.js';
  *  how much of its life a blow on the rider takes (a crack's share k: a wild jelly's lunge is k 0.7 on the clay and 2.5 on a creature, so
  *  3.5 a k); the draught its paint lends while tinted (a middling weather's: strength 0.5); the slump and the burst (real s). */
 const SEAT = 1.35, HP_PER_K = 3.5, TINT_DRAUGHT = 0.5, SLUMP = 0.5, H = 1.5;
-const UP = new THREE.Vector3(0, 1, 0), DOWN = new THREE.Vector3(0, -1, 0);
+const DOWN = new THREE.Vector3(0, -1, 0);
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _o = new THREE.Vector3(), _acc = new THREE.Vector2();
 const damp = (a, b, k, dt) => a + (b - a) * (1 - Math.exp(-k * dt));
 
@@ -92,7 +94,7 @@ export class JellyMount extends Tech {
     this.heading = P.bodyYaw ?? P.yaw; this.v.set(P.vel.x, 0, P.vel.z).multiplyScalar(0.3);
     this.air = false; this.landT = 9; this.chain = 0; this.rideT = 0; this.endWhy = null; this.drunk = 0;
     this.groundY = this.groundAt(P.pos) ?? P.pos.y; this.seatY = this.groundY;
-    this.ensureBody(); this.body.root.visible = true; this.body.deform.target.squash = 1;
+    this.ensureBody(); this.shown = true; this.body.root.visible = true; this.body.deform.target.squash = 1;
     void g.clipPack?.social; // (the sitting loop is the suite's social pack: asked now, in by the time it holds; the skiff's stance until then)
     g.events?.emit('mount.call', { mount: 'slipjelly', by: 'courier' });
   }
@@ -211,7 +213,7 @@ export class JellyMount extends Tech {
     this.choice?.close(); this.choice = null; this.yRide = null;
     P.setShape('stand'); P.vel.y = Math.min(P.vel.y, 0);
     if (this.groundY != null && P.pos.y > this.groundY + 0.05 && !this.air) P.pos.y = this.groundY + 0.02;
-    if (this.body) this.body.root.visible = false;
+    this.shown = false; if (this.body) this.body.root.visible = false;
     g.events?.emit('mount.end', { why, secs: +this.rideT.toFixed(1), mount: 'slipjelly', by: 'courier' });
     this.phase = null;
   }
@@ -229,7 +231,6 @@ export class JellyMount extends Tech {
   burst() {
     const g = this.game, P = this.P;
     this.hp = J.hp.max; this.reformAt = this.now + J.hp.reform;
-    g.fx?.impact?.(P.pos.clone().setY(this.groundY ?? P.pos.y), UP, { sparks: 0, dust: 26 }); // (placeholder: its burst is Calissa's, on mount.burst)
     g.events?.emit('mount.burst', { mount: 'slipjelly', by: 'courier' });
     this.slump('burst'); this.phaseT = SLUMP; // (gone at once: set down where it was)
   }
@@ -249,12 +250,11 @@ export class JellyMount extends Tech {
   /** Every frame: the clock, the body drawn under the rider (its melt, its squash, its colour), the choice's strip. */
   tick(dt) {
     this.now += dt;
-    const B = this.body; if (!B?.mesh || !B.root.visible) return;
+    const B = this.body; if (!B?.mesh || !this.shown) return; // (its own word, never `visible`: the zones and the warm-up set that, casebook 366)
     const P = this.P, p = P.renderPos ?? P.pos, gy = this.groundY ?? p.y - SEAT;
     B.root.position.set(p.x, Math.min(gy, p.y - SEAT * 0.9), p.z);
     B.root.rotation.y = this.heading;
-    const rise = this.phase === 'call' ? Math.min(1, this.phaseT / J.call.arrive) : 1;
-    B.root.scale.set(1, Math.max(0.05, (p.y - B.root.position.y) / SEAT) * rise || 0.05, 1);
+    B.root.scale.set(1, Math.max(0.05, (p.y - B.root.position.y) / SEAT) || 0.05, 1); // (on the ground in the ride; its call, slump and air are shaped after this by its look, vfx/jellymount/look.js)
     B.deform.feet = Math.min(1, this.v.length() / J.speeds.cruise);
     B.deform.update(dt, this.accel || null);
     const want = this.tint ? _c.setHex(COLOR[this.tint.aspect] ?? 0xffffff).lerp(B.base, 0.35) : B.base; B.mat.color.lerp(want, Math.min(1, dt * 4));
