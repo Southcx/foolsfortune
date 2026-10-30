@@ -4723,5 +4723,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Cause:** one kind under two spellings: the code's kind (`clapper`) and the glossary's word (`clapperjar`), joined with no map.
 - **Fix:** `photoKindOf` (scans.js) turns the garden's word into the Book's, and a scan's seal asks for either. The roster is made
   unique. The plate shrine's list is Petra's (handed over). Measured (`node scripts/gardengrowth.mjs`): a clapperjar photographed
-  opens a clapperjar's slab; the roster holds each creature once.
+  opens a clapperjar's slab; the roster holds each creature once. Then Petra measured that no creature in the world is a glint or a lobber
+  (they settle in the garden on their own), so their slabs could never be opened either: the roster is now the three a photo can carry
+  (slip jelly, clapperjar, spirit).
 - **Rule:** 378

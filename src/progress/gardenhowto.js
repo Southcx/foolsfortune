@@ -25,7 +25,7 @@ export const GARDEN_HOWTO = {
     { say: 'This is the world inside your Pneuka Jar, and here you are the Jar itself. WASD hops it, Space jumps. Each little world is a planetoid.',
       touch: 'This is the world inside your Pneuka Jar, and here you are the Jar itself. With WALK lit, tap the ground and it hops there.', show: 'jar' },
     { say: 'You are the god hand too: it follows the cursor. Keys 1 to 0 pick what it does: 1 GRAB picks things up and throws them, 2 to 7 shape the clay, 8 pours water, 9 places, 0 paints.',
-      touch: 'You are the god hand too: it follows your finger. The tiles at the bottom pick what it does: GRAB picks things up and throws them; the others shape, water, place and paint.', show: 'hand' },
+      touch: 'You are the god hand too: it follows your finger. The art tiles at the edge of the screen pick what it does: GRAB picks things up and throws them; the others shape, water, place and paint.', show: 'hand' },
     { say: 'The shed is your storeroom. {use} at it: your first planetoid\'s seed is waiting there. Take it, and the hand holds it.', show: 'shed' },
     { say: 'Carry the seed up into the open sky, away from every planetoid, and let go. It becomes a new little world in the ring. Feed it at the shed and it grows.', show: 'ring' },
     { say: 'Hop onto a launch lotus and it throws you to the next planetoid. This one flies you to the Athanor.', show: 'lotus' },
