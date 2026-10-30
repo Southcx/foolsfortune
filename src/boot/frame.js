@@ -86,6 +86,7 @@ export function bootFrame(game, made) {
       diag.end('draw');
       if (O?.active) O.afterRender(renderer.domElement);
       game.veritome?.afterRender(renderer.domElement); // (a photograph is the frame just drawn)
+      game.finishPlate?.afterRender(renderer.domElement); // (and a photo finish's plate, the frame at the line)
       if (BOOT.length && BOOT[BOOT.length - 1][0] === 'ready') mark('first frame');
       game.portrait.render();
       diag.frameEnd();

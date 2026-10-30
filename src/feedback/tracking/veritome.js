@@ -23,6 +23,7 @@ export function veritomeRules({ on, L, log, g }) {
     if (e.left === 0) log.say('info', "The Veritome's memory is full: 24 photos.", { key: 'memorylast', throttle: 5 });
   });
   on('photo.discard', (e) => L.inc('photo.discard', e.n));
+  on('veritome.plate', (e) => { if (e.by !== 'courier') return; L.inc(`photo.plate.${e.kind}`); log.say('info', "The finish line's plate is kept in your Veritome.", { key: 'finishplate', throttle: 2 }); }); // (Espada's words: a photo finish's plate, tools/veritome/finishplate.js)
   on('photo.appraise', (e) => {
     L.inc('photo.appraised'); L.inc(`photo.kind.${e.kind}`); L.inc(`photo.stars.${e.stars}`); L.hi('photo.stars.best', e.stars); L.hi('photo.kinds.best', e.kinds); if (e.stars >= 4) L.inc(`photo.four.${e.kind}`); // (Rule of Thirds' feat: four kinds at four stars)
     if (e.entry && subj(e.kind)) log.say('record', `New in the Compendium: ${subj(e.kind)} (${'★'.repeat(e.stars || 1)}).`);

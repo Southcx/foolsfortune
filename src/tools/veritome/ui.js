@@ -87,7 +87,7 @@ function memory(codex, cx, g, B) {
   left.appendChild(el('div', 'sec', `MEMORY · ${F.plates.length} / ${MEMORY_PLATES} · click a photo to choose it`));
   const roll = el('div', 'roll');
   for (const p of F.plates) {
-    const d = el('div', `ph${pick.has(p.id) ? ' sel' : ''}`, `<i${p.thumb ? ` style="background-image:url(${p.thumb})"` : ''}></i>PHOTO ${p.id}<em>unappraised</em>`);
+    const d = el('div', `ph${pick.has(p.id) ? ' sel' : ''}`, `<i${p.thumb ? ` style="background-image:url(${p.thumb})"` : ''}></i>PHOTO ${p.id}<em>${p.race ? 'photo finish' : 'unappraised'}</em>`);
     d.onclick = () => { if (pick.has(p.id)) pick.delete(p.id); else pick.add(p.id); codex.render(); };
     roll.appendChild(d);
   }
@@ -102,7 +102,7 @@ function memory(codex, cx, g, B) {
     rep.appendChild(el('p', '', `${R.results.length} photos · ${R.entries} new entr${R.entries === 1 ? 'y' : 'ies'} · ${R.facts} fact${R.facts === 1 ? '' : 's'} · ${R.cards} card${R.cards === 1 ? '' : 's'}`));
     for (const r of R.results.slice(0, 24)) {
       const what = [r.entry && 'new entry', ...r.facts.map((f) => `${CREATURES[f.creature].name}: a fact`), ...r.cards.map((c) => CARD[c].name)].filter(Boolean).join(' · ');
-      rep.appendChild(el('div', 'ph', `<i${r.plate.thumb ? ` style="background-image:url(${r.plate.thumb})"` : ''}></i>${(SUBJECTS[r.kind]?.name || r.kind || 'nothing').toUpperCase()} <span>${stars(r.stars)}</span><em>${what || '—'}</em>`));
+      rep.appendChild(el('div', 'ph', `<i${r.plate.thumb ? ` style="background-image:url(${r.plate.thumb})"` : ''}></i>${(r.plate.race ? 'photo finish' : SUBJECTS[r.kind]?.name || r.kind || 'nothing').toUpperCase()} <span>${stars(r.stars)}</span><em>${what || '—'}</em>`));
     }
   }
   wrap.appendChild(rep);
