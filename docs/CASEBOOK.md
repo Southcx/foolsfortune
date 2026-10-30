@@ -1019,3 +1019,6 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 363. **What a room lends a shared service, it lends as it is built and takes back as it is torn down.** Its lamps
   adopted by the light budget before the first draw (else every program then compiled is keyed by a count that is gone a second later),
   its hulls let go of the reach pass's set, its colliders removed: a registry's walk or prune is a net, never the way in or out.
+364. **A plate that grows with its words is fitted to the edge it hangs by.** Centred under an instrument at a
+  corner, it is moved in by what it would pass the instrument's own edge, and looked at with the longest name the game has, not the room
+  at hand; a line that repeats the line above it is left out.

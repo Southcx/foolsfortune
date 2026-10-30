@@ -237,6 +237,7 @@ export function bootFrame(game, made) {
     game.bottleLooks?.update(dt); game.salvageLooks?.update(dt); game.shipPartWear?.update(); // (the drift bottles bobbing and read, the wrecks and the haul, the parts worn)
     game.seaFight?.update(dt); // (the ship's gun, the serpent's mind and body, the hull)
     game.seaHull?.update(game.rawDt);
+    game.jarPlate?.update(game.rawDt ?? dt); // (the Pneuka Jar's plate while the god hand is taken: ui/jarplate.js)
     game.realm?.update(dt); // (the garden: the Jar, the hand and its own camera)
     game.guestJars?.update(game.rawDt);
     env.water.update(dt);

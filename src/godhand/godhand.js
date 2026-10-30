@@ -43,11 +43,6 @@ const wrapPi = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 
 const CSS = `
 #god { position: fixed; inset: 0; pointer-events: none; display: none; font: 12px/1.4 var(--f-ui); color: #fbe3cf; z-index: 4; }
-#god .jar { position: absolute; left: 50%; top: 58px; transform: translateX(-50%); width: min(420px, 60vw); text-align: center; letter-spacing: .08em; }
-body.hud-touch #god .jar { left: var(--hud-log-x, 12px); top: calc(var(--hud-log-y, 60px) + var(--hud-log-h, 20px) + 6px); transform: none; width: min(240px, 34vw); text-align: left; font-size: 10px; } /* (on touch, under the log's ticker, clear of the top bar's row: Calissa's phone shot, 2026-10-30; her instrument takes its place: readout()) */
-#god .jar .bar { height: 10px; margin-top: 4px; border: 1px solid rgba(255,178,122,.5); background: rgba(28,13,8,.55); border-radius: 2px; overflow: hidden; }
-#god .jar .fill { height: 100%; width: 100%; background: linear-gradient(90deg, #ffb27a, #ffe0c0); transition: width .25s; }
-#god .jar .sub { opacity: .75; font-size: 11px; margin-top: 3px; }
 #god .hint { position: absolute; left: 50%; bottom: 128px; transform: translateX(-50%); opacity: .75; font-size: 11px; letter-spacing: .05em; background: rgba(28,13,8,.4); padding: 4px 10px; border-radius: 3px; white-space: nowrap; }
 `;
 
@@ -133,10 +128,9 @@ export class GodMode {
     document.head.appendChild(st);
     const el = document.createElement('div');
     el.id = 'god';
-    el.innerHTML = `<div class="jar"><div class="name">PNEUKA JAR <b class="hp">100</b></div><div class="bar"><div class="fill"></div></div><div class="sub"></div></div>
-      <div class="hint" style="display:none"></div>`; // (the keys are said once by the log on taking the hand: room.help 'hand' -> tracking.js)
+    el.innerHTML = `<div class="hint" style="display:none"></div>`; // (the keys are said once by the log on taking the hand: room.help 'hand' -> tracking.js; the Pneuka Jar's numbers are its plate's, ui/jarplate.js, from readout())
     document.body.appendChild(el);
-    this.el = { root: el, fill: el.querySelector('.fill'), hp: el.querySelector('.hp'), sub: el.querySelector('.sub') };
+    this.el = { root: el };
   }
 
   // ------------------------------------------------------------------ entering / leaving
@@ -258,7 +252,6 @@ export class GodMode {
     if (this.t > 0.6) { this.updateHand(dt); this.miracles.update(dt); }
     this.jar.update(dt);
     this.raids.update(dt);
-    this.updateHud(dt);
   }
 
   handleKeys(dt) {
@@ -650,14 +643,5 @@ export class GodMode {
   readout() {
     const V = this.jar;
     return { hp: V.hp, max: V.max, alive: !!V.alive, scars: V.scars || 0, helpers: this.game.clappers.list.filter((c) => c.alive && c.ally).length, raid: this.raids.status() };
-  }
-  updateHud() {
-    const V = this.jar;
-    const pct = Math.round((V.hp / V.max) * 100);
-    this.el.fill.style.width = `${pct}%`;
-    this.el.fill.style.background = pct > 40 ? '' : 'linear-gradient(90deg, #ff5a3a, #ffb27a)';
-    this.el.hp.textContent = V.alive ? `${pct}%` : 'REFORGING';
-    const allies = this.game.clappers.list.filter((c) => c.alive && c.ally).length;
-    this.el.sub.textContent = `${this.raids.status()}${allies} helpers${V.scars ? ` · ${V.scars} gold seams` : ''}`;
   }
 }
