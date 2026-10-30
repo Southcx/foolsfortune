@@ -1,9 +1,10 @@
 // ---------------------------------------------------------------------------------------
 // THE GOD HAND'S STRIP: the hand's domains on glass (docs/plans/MOBILE.md 8.4; the art bar's place, ui/hudlayout.js `areas.artBar`):
 // seven glazed tiles, one a domain in DOMAIN_LOOK's sign (ui/domainlook.js), in the domains' order; the lit one the selected art's
-// domain, gold. A tap is the domain's key (gh.d1 .. gh.d7: again to go through its arts, as the keys do); ALT (gh.alt, held) stands only
-// for an art with another way (Hasten stops time, Transmute your feeling, Telekinesis raises); SIGN (gh.sign, held) lets one finger draw
-// a miracle's sign. Over the strip, the selected art's name and its blurb in the System's type. The long press's ring is the cursor's
+// domain, gold. A tap is the domain's key (gh.d1 .. gh.d7: again to go through its arts, as the keys do); held, the long press's ring
+// fills on it and the line over the strip names its domain in full while the finger stays. The other way's tile (gh.alt, held) stands
+// only for an art with another way and wears that way's own word, never a key's (Hasten's STOP, Transmute's SELF, Telekinesis's RAISE;
+// OTHER for one with none: Espada, 2026-10-24); SIGN (gh.sign, held) lets one finger draw a miracle's sign. Over the strip, the selected art's name and its blurb in the System's type. The long press's ring is the cursor's
 // (the touch driver's RMB at 420 ms): it opens the art wheel where the finger is. Every press goes through touchTiles: the driver's.
 //
 // Prior art: Black & White's gesture hand and Populous: The Beginning's spell strip (a row of powers, one lit), the art bar beside it
@@ -17,10 +18,13 @@ import { touchTiles } from './presses.js';
 import { placeOf, windowOpen } from './areas.js';
 import { DOMAIN_LOOK } from '../domainlook.js';
 import { DOMAIN_ORDER } from '../../progress/godpowers.js';
+import { DOMAINS } from '../../progress/domains.js';
+import { longPress } from './longpress.js';
 import { FONT } from '../theme.js';
 
-/** The arts with another way (ALT shown), the gaps and margins (CSS px), the label's type. */
-export const GOD_STRIP = { alt: new Set(['hasten', 'transmute', 'telekinesis']), gap: 6, pad: 6, most: 60, side: 64, label: 15 };
+/** The arts with another way and that way's word (the other way's tile shown), the word for one with none, the gaps and margins (CSS px),
+ *  the label's type. */
+export const GOD_STRIP = { alt: { hasten: 'STOP', transmute: 'SELF', telekinesis: 'RAISE' }, other: 'OTHER', gap: 6, pad: 6, most: 60, side: 64, label: 15 };
 
 const CSS = `
 .gstrip-line{position:fixed;left:0;top:0;z-index:5;pointer-events:none;font-family:${FONT.sys};font-size:${GOD_STRIP.label}px;line-height:1.25;color:#efe6d2;
@@ -38,10 +42,18 @@ export class GodStrip {
     this.line = document.createElement('div'); this.line.className = 'gstrip-line off'; document.body.appendChild(this.line);
     DOMAIN_ORDER.forEach((d, i) => {
       const id = `gh.d${i + 1}`;
-      this.tiles.set(id, new TouchTile(id, { size: TILE.min, glyph: DOMAIN_LOOK[d].icon, word: null, onPress: (tid, down) => touchTiles.report(game, id, down) }));
+      this.tiles.set(id, new TouchTile(id, { size: TILE.min, glyph: DOMAIN_LOOK[d].icon, word: null, onPress: (tid, down) => { touchTiles.report(game, id, down); this.hold(id, d, down); } }));
       this.tiles.get(id).iconPal = DOMAIN_LOOK[d].pal; // (unlit, the domain's own palette; lit, gold)
     });
     for (const [id, glyph] of [['gh.alt', 'alt'], ['gh.sign', 'sign']]) this.tiles.set(id, new TouchTile(id, { size: GOD_STRIP.side, glyph, onPress: (tid, down) => touchTiles.report(game, id, down) }));
+  }
+
+  /** A domain tile held: the long press's ring on it, and once full the line names the domain in full until the finger lifts. */
+  hold(id, d, down) {
+    if (down) {
+      const r = this.tiles.get(id).el.getBoundingClientRect();
+      longPress.show(r.left + r.width / 2, r.top + r.height / 2, { done: () => { this.named = d; this.line.innerHTML = `<b>${(DOMAINS[d]?.name || d).toUpperCase()}</b>`; this.placeLine(); } });
+    } else { longPress.cancel(); if (this.named) { this.named = null; this.artId = null; } } // (the art's line again on the next update)
   }
 
   /** The seven along the art bar's edge (rows upright, a column sideways); ALT and SIGN on its inner side; the art's line over it. */
@@ -89,10 +101,11 @@ export class GodStrip {
     const art = H.arts?.art;
     if (art && art.id !== this.artId) {
       this.artId = art.id; this.domain = art.domain;
-      this.line.innerHTML = `<b>${art.name}</b>${(art.blurb || '').replace(/Shift:/g, 'ALT:')}`; // (the key's word on glass: the tile's)
-      this.placeLine();
+      const other = art.id in GOD_STRIP.alt ? GOD_STRIP.alt[art.id] || GOD_STRIP.other : null;
+      if (other) this.tiles.get('gh.alt').face({ word: other });
+      if (!this.named) { this.line.innerHTML = `<b>${art.name}</b>${(art.blurb || '').replace(/Shift:/g, `${other || GOD_STRIP.other}:`)}`; this.placeLine(); } // (the other way's own word on glass, the tile's)
     }
-    this.tiles.get('gh.alt').set({ hidden: !GOD_STRIP.alt.has(art?.id) });
+    this.tiles.get('gh.alt').set({ hidden: !(art?.id in GOD_STRIP.alt) });
     this.tiles.get('gh.sign').set({ hidden: false });
     DOMAIN_ORDER.forEach((d, i) => { const t = this.tiles.get(`gh.d${i + 1}`); t.set({ lit: d === this.domain || t.state.pressed }); });
     for (const t of this.tiles.values()) t.update(now);

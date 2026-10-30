@@ -124,14 +124,6 @@ export function bootFrame(game, made) {
   let lastWall = null;
   let lastLedge = null;
 
-  // the Blink's charges for the battle ring (vfx/hudring.js): how many, of how many, and how far the next has come back (the tube's
-  // pearls read the same: vfx/lachrimetertube.js blinkOf)
-  const blinkState = () => {
-    const b = techs.get('blink');
-    if (!b?.enabled) return null;
-    return { n: b.charges, max: b.cfg.charges, fill: b.charges < b.cfg.charges ? THREE.MathUtils.clamp(b.recharge / b.cfg.recharge, 0, 1) : 0 };
-  };
-
   // One simulation + animation frame. Split out so tests can drive exact frame rates.
   function tick(dt) {
     clock.frame++;
@@ -362,7 +354,7 @@ export function bootFrame(game, made) {
     game.cine.update(game.rawDt || dt);
     (game.chestFx ||= new ChestFx(game)).update(dt); // (the chest's opening: Mesh Create's effect meshes, vfx/chestfx.js)
     game.releaseCrack.update(game.rawDt ?? dt); // (after the vessel's cracks are set: it holds a release's back for its pressure beat)
-    game.hudRing.update(dt, { blink: blinkState() }); // (the 3D HUD, the Mind's layer in the world: docs/plans/OVERLAY.md)
+    game.hudRing.update(dt); // (the 3D HUD, the Mind's layer in the world: docs/plans/OVERLAY.md)
     (game.wireCompass ||= new WireCompass(game)).visible = !!game.belt?.isWorn('dreamvane') || !!game.crucibelle?.held; // (the compass is the Dreamvane's: worn, it shows; and the Crucibelle's in the hands, for its pendulum)
     game.wireCompass.update(dt);
     (game.vaneHud ||= new VaneHud(game, game.wireCompass)).update(dt); // (the Dreamvane's own marks on the compass: vfx/vanehud.js)
