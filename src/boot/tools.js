@@ -23,6 +23,7 @@ import { Roll } from '../courier/moves/roll.js';
 import { Swim } from '../courier/moves/swim.js';
 import { Ladder } from '../courier/moves/ladder.js';
 import { Skiffing } from '../courier/skiff/skiff.js';
+import { JellyMount } from '../courier/jellymount/jellymount.js';
 import { Sondelass } from '../tools/sondelass/sondelass.js';
 import { SoulBrush } from '../tools/soulbrush/soulbrush.js';
 import { Veritome } from '../tools/veritome/veritome.js';
@@ -87,7 +88,8 @@ export function bootTools(game, made) {
   game.weapon = weapon;
   // movement techs (priority order: the first that wants the step gets it)
   const techs = new Techs(player, game);
-  for (const T0 of [DeathTech, UltTech, Skim, WaterWalk, Swim, Ladder, Pole, Grate, Hang, Latch, ChestTech, Talk, RhythmHold, Kiln, Emote, Push, SlipDive, Roll, Slam, Blink, Hover, Rocket, Stomp, Balance, Carry, Kick, Recoil, Skiffing, Grapple, Launch, Sondelass, SoulBrush, Veritome, Dreamvane, Crucibelle, Lockheart]) techs.add(new T0(techs));
+  for (const T0 of [DeathTech, UltTech, Skim, WaterWalk, Swim, Ladder, Pole, Grate, Hang, Latch, ChestTech, Talk, RhythmHold, Kiln, Emote, Push, SlipDive, Roll, Slam, Blink, Hover, Rocket, Stomp, Balance, Carry, Kick, Recoil, JellyMount, Skiffing, Grapple, Launch, Sondelass, SoulBrush, Veritome, Dreamvane, Crucibelle, Lockheart]) techs.add(new T0(techs));
+  game.jellyMount = techs.get('jellymount'); // (the slip jelly mount: before the Solar Skiff, so Y is read here first: courier/jellymount/jellymount.js)
   env.lobbers.game = game;
   // the psychic tools: one in the hands at a time, and one set of rules for what that means (tools/belt.js)
   game.belt = new ToolBelt(game);
