@@ -112,7 +112,7 @@ export class Garden {
     const b = this.s.beds[i];
     if (!b || !this.ripe(i)) return 0;
     let n = 0;
-    const B = G.yield * (1 + this.workBonus('bed')), count = Math.floor(B) + (simRand() < B % 1 ? 1 : 0); // (spirits at work: the fraction drawn)
+    const B = G.yield * (1 + this.workBonus('bed')), count = Math.floor(B) + (simRand() < B % 1 ? 1 : 0) + (this.game.classArtsRun?.bedYield?.() ?? 0); // (spirits at work: the fraction drawn; Abundance, a class's art: more)
     for (let k = 0; k < count; k++) {
       const seed = Math.floor(simRand() * 1e9);
       this.game.pneuka?.add(`mat.${b.kind}`, 'garden', 0, makeMaterial(b.kind, seed, b.tier)); n++; // (a full box drops it at their feet)

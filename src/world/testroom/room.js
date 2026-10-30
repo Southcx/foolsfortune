@@ -165,7 +165,7 @@ export class TestRoom {
       },
       /** A guard break (tools/moveset.js `hit.guardBreak`: the cutlass's Guard Break and Guard Crush): the sleeves thrown open for a beat,
        *  and every blow lands through it meanwhile (the blow that broke it too: it asks before it strikes). */
-      breakGuard() { if (mode !== 'guard') return; open = GUARD_OPEN; model.open?.(GUARD_OPEN); },
+      breakGuard() { if (mode !== 'guard') return; open = GUARD_OPEN * (game.classArtsRun?.guardBreakK?.() ?? 1); model.open?.(open); }, // (Upheaval, a class's art: broken longer)
       onStatus(name) { const h = hits[hits.length - 1]; if (h && clock - h.at < 0.2) h.status = name; else hits.push({ at: clock, dmg: 0, type: 'status', status: name }); lastHit = clock; },
       setMode(m) { if (m === mode) return; mode = m; model.setMode?.(m); g.events?.emit('strawman.mode', { mode: m, by: 'courier' }); }, // (still or guard: the sparring circle's lectern; the swing is an attack string's now)
       onParried() { S.strings.parried(); }, // (the blow broken off: it rocks back, its sleeve eases home)

@@ -12,8 +12,10 @@
 // Hearth). Wave 3: the four Kings (Roar, Rally; Still Waters, Steady; Mark for Death, Judge; Earth Wall, Dividend), the World
 // (Completion, Wholeness) and the fire signs (Ram, Unshaken; Tame, Courage; Blink Mark, Spillover). Wave 4: the water, air and earth
 // signs (Ride, Reins; Reap, Rebirth; Vanish, Tides; Payback, Grudge; Starlight, Hope; Encore, Choice; Shackle, Excess; Sanctum, Teaching;
-// Lamp, Solitude). The actions are acts.js's, what outlasts a press lasting.js's (kept in `lasting`, ticked here); the reactions that
-// answer an event are wired here (wireReactions). An art not built yet is refused at the key in the log.
+// Lamp, Solitude). Wave 5: the other eight (Quick Swap, Will; Veil, Intuition; Overgrowth, Abundance; Spin, Fortune; Collapse, Upheaval;
+// Daybreak, Radiance; Hang Time, Surrender; Settle the Score, Second Chance). The actions are acts.js's, what outlasts a press
+// lasting.js's (kept in `lasting`, ticked here); the reactions that answer an event are wired here (wireReactions). Every art of the
+// seventy-six is built (38 actions, 38 reactions); one the table does not know is refused at the key in the log.
 //
 // Prior art: Final Fantasy Tactics' action and reaction abilities (one verb on a key, one passive that answers a moment), Hades' boons
 // (each a small modifier on one thing the body already does), Dark Souls' "next attack" buffs (Momentum's one blow).
@@ -28,7 +30,9 @@
 //   progress/laidspread.js)   .unshaken() (Unshaken: courier/player.js impulse)   .struck({ from, k, by }) (a blow on the vessel: Payback,
 //   Grudge)   .rebirth() -> bool (Rebirth: the shatter not begun)   .reinsK() (Reins: the Solar Skiff's hull, the ship's hits)   .freeLend()
 //   / .lent() (Choice: tools/belt.js)   .skyAt(pos) (Starlight: progress/weather.js here)   .lampLit() (Lamp: render/daylight.js)
-//   .recordMove(m) (Encore: tools/moveset.js begin)
+//   .recordMove(m) (Encore: tools/moveset.js begin)   .sigilK() (Will: Celestial mode)   .bedYield() (Abundance: progress/garden.js)
+//   .guardBreakK() (Upheaval: a guard's break)   .photoK() (Radiance: tools/veritome/photo.js)   .surrender(paid) (Surrender: the vessel's
+//   shield)   .secondChance(kind) -> bool (Second Chance: world/duel/duelsession.js)   .daylit() (Daybreak: render/daylight.js)
 //   events: art.use { art, kind, accented, at?, target?, by }, art.fire { art, cubes?, pool?, by }, art.end { art, by }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -40,6 +44,8 @@ import { yieldOf } from '../../progress/combat/emo.js';
 import { CREATURES } from '../../tools/veritome/bestiary.js';
 import { phaseAt } from '../../progress/weather.js';
 import { ABILITIES } from '../../progress/skills.js';
+import { UNLIKELY } from '../../progress/luck.js';
+import { SECRETS, secretOf } from '../../progress/duel/secrets.js';
 import { ACTS } from './acts.js';
 
 /** Every Movement Art's counted goal (progress/skills.js ABILITIES, its variants too): the ledger keys Teaching adds practice to. */
@@ -76,6 +82,7 @@ export class ClassArtsBody extends Tech {
     this.completeUntil = -1; this.completeCool = 1; this.heldT = 0; this.brave = false; this.judged = new WeakSet(); this.spillT = -Infinity;
     this.lasting = []; this.held = 0; this.paybackUntil = -1; this.grudge = null; this.sky = null; this.lampUntil = -1; this.lastMove = null; // (wave 4's)
     this.rebornDay = null; this.choice = false; this.aloneT = 0; this.teachT = 0; this.taught = null;
+    this.dealt = new WeakMap(); this.dayUntil = -1; this.hangUntil = -1; this.chanceDay = null; this.lucky0 = null; // (wave 5's)
     const g = this.game;
     wireReactions(this);
     g.events?.on?.('move.parry', (e) => {
@@ -170,6 +177,7 @@ export class ClassArtsBody extends Tech {
     let who = null, best = WHO;
     for (const c of this.game.creatures?.near?.(from, WHO) || []) { if (!c.alive || c.ally) continue; const d = c.pos.distanceTo(from); if (d < best) { best = d; who = c; } }
     if (!who) return;
+    this.dealt.set(who, (this.dealt.get(who) || 0) + k); // (all it dealt you: Settle the Score's to take back)
     if (this.reaction('due')) this.grudge = who;
     if (this.now >= this.paybackUntil) return;
     this.paybackUntil = -1;
@@ -190,6 +198,26 @@ export class ClassArtsBody extends Tech {
   lampLit() { return this.now < this.lampUntil; }
   /** Encore's record: the last tool move begun, where and which way (tools/moveset.js begin). */
   recordMove(m) { this.lastMove = m; }
+  /** Will: what Celestial mode's sigils hold of the pool. */
+  sigilK() { return this.reaction('will')?.does.sigilCost ?? 1; }
+  /** Abundance: more a Spirit Garden bed yields. */
+  bedYield() { return this.reaction('abundance')?.does.beds ?? 0; }
+  /** Upheaval: how much longer a guard you break stays broken. */
+  guardBreakK() { return this.reaction('upheaval')?.does.guardBreak ?? 1; }
+  /** Radiance: what a photograph scores more. */
+  photoK() { return this.reaction('radiance')?.does.photo ?? 1; }
+  /** Surrender: a blow taken while the guard is up gives back what the shield paid for it. */
+  surrender(paid) {
+    const R = this.reaction('surrender'), L = this.game.lachryma; if (!R || !this.P?.guarding || !(paid > 0) || !L) return;
+    if (L.gain(paid * R.does.refund, 'art') > 0) this.fire('surrender');
+  }
+  /** Second Chance: once a game day, a failed flee thrown again or a lost duel spared its shatter (`kind`: 'flee' | 'duel'). */
+  secondChance(kind) {
+    const R = this.reaction('secondChance'), d = today(); if (!R || this.chanceDay === d) return false;
+    this.chanceDay = d; this.fire('secondChance', { kind }); return true;
+  }
+  /** Daybreak: the dark lit while its game hour lasts. */
+  daylit() { return this.now < this.dayUntil; }
   /** Steadfast held: the blow cracks nothing, and it is spent. */
   ward() {
     if (!this.steady || !this.reaction('steadfast')) return false;
@@ -262,7 +290,7 @@ export class ClassArtsBody extends Tech {
     // Courage: armed while the pool is under its line
     const co = this.reaction('courage'), brave = !!co && (g.lachryma?.fraction ?? 1) < co.does.under;
     if (brave !== this.brave) { this.brave = brave; if (brave) this.fire('courage'); else g.events?.emit('art.end', { art: 'courage', by: 'courier' }); }
-    this.tickWave3(dt); this.tickWave4(dt);
+    this.tickWave3(dt); this.tickWave4(dt); this.tickWave5(dt);
     // the action's key, on foot only (the duel, the god hand, the skiff and the helm keep their own keys: core/actions.js)
     if (g.input?.wasPressed?.('KeyG') && g.actions?.live?.().has('foot')) this.press();
   }
@@ -288,6 +316,21 @@ export class ClassArtsBody extends Tech {
         const was = this.taught; this.taught = {};
         for (const key of TAUGHT) { const v = L.get(key); this.taught[key] = v; if (was && v > was[key]) L.inc(`teach.${key}`, (v - was[key]) * (R.does.count - 1)); }
       }
+    }
+  }
+  /** Wave 5's: Hang Time's held fall and slowed world, Daybreak's lit hour, Fortune's surprise counted again. */
+  tickWave5(dt) {
+    const g = this.game, P = this.P, end = (art) => g.events?.emit('art.end', { art, by: 'courier' });
+    if (this.hangUntil >= 0) {
+      if (this.now < this.hangUntil) { if (P && !P.grounded) P.vel.y = Math.max(P.vel.y, 0); } // (held: the fall taken off each step, before the step's gravity)
+      else { this.hangUntil = -1; g.time?.free?.('art.hang'); end('suspend'); }
+    }
+    if (this.dayUntil >= 0 && this.now >= this.dayUntil) { this.dayUntil = -1; end('daybreak'); }
+    const F = this.reaction('fortune'), L = g.ledger; // (Fortune: each unlikely thing lived through while worn counts its surprise again, its share, `luck.fortune` in bits)
+    if (!F || !L) this.lucky0 = null;
+    else {
+      const was = this.lucky0; this.lucky0 = {};
+      for (const [key, p] of Object.entries(UNLIKELY)) { const v = L.get(key) || 0; this.lucky0[key] = v; if (was && v > was[key]) L.inc('luck.fortune', (v - was[key]) * -Math.log2(p) * (F.does.luck - 1)); }
     }
   }
   /** Wave 3's times: Mark for Death's end, Completion's (its cooldowns run faster meanwhile), the tamed given back, the walls let down. */
@@ -346,6 +389,12 @@ function wireReactions(run) {
   on('courier.reform', () => {
     const R = run.reaction('hope'), L = g.lachryma; if (!R || !L) return;
     const want = L.max * R.does.pool - L.value; if (want > 0.5 && L.gain(want, 'art') > 0) run.fire('hope');
+  });
+  // Intuition: an aberrant's secret, not yet found, shown where it begins (its line's first clause, Espada's words) as the duel opens
+  on('duel.open', () => {
+    if (!run.reaction('intuition')) return;
+    const s = g.duel?.state, id = s ? secretOf(s)?.id : null, row = id ? SECRETS[id] : null;
+    if (row && !g.foeSeen?.found?.(id)) run.fire('intuition', { hint: row.line.split(/[;,]/)[0] });
   });
   // Choice: the main and the sub changed places (tools/belt.js swap: an equip with nothing taken off), and the next lend is free
   on('tool.equip', (e) => { if (e.as === 'main' && !e.off && g.belt?.sub && run.reaction('choice')) run.choice = true; });

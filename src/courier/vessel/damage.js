@@ -140,8 +140,8 @@ export class VesselDamage {
     const pool = this.game.lachryma;
     if (pool) {
       const cost = k * SHIELD, had = pool.value; // (Last Straw (the knack thickWalls) is an assist now, a mark, never a number: SPINE.md 1.3)
-      if (had >= cost) { pool.drain(cost, 'shield'); this.game.events?.emit('vessel.shield', { k: +k.toFixed(2), left: +pool.fraction.toFixed(2), why, by }); return -1; }
-      if (had > 0.5) { pool.drain(had, 'shield'); this.game.events?.emit('vessel.shieldbreak', { why, by }); }
+      if (had >= cost) { pool.drain(cost, 'shield'); this.game.classArtsRun?.surrender?.(cost); this.game.events?.emit('vessel.shield', { k: +k.toFixed(2), left: +pool.fraction.toFixed(2), why, by }); return -1; } // (Surrender, a class's art: guarding, the shield's cost given back)
+      if (had > 0.5) { pool.drain(had, 'shield'); this.game.classArtsRun?.surrender?.(had); this.game.events?.emit('vessel.shieldbreak', { why, by }); }
       k *= 1 - had / cost;
     }
     if (this.game.classArtsRun?.ward?.()) { this.game.events?.emit('vessel.ward', { k: +k.toFixed(2), why, by }); return -1; } // (Steadfast: the next blow past the shield cracks nothing)

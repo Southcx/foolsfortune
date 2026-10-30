@@ -9,13 +9,15 @@
 //             reach shown, and Dread's fog lifted off them (render/daylight.js asks `lampLit`)
 //   echo      Encore: the last tool move's arc struck again from where it was made (the moveset's record: body.js recordMove)
 //   veil      Vanish: the Courier unseen (the brain's watch list reads `veiledT`, the Crucibelle's song's own), a smoke Courier left behind
+//   thicket   Overgrowth: a thicket round where it was grown, its edge held against what is outside it as the sanctum's, and everything in
+//             it slowed (the status `slow`, kept on while it stands)
 // Each is a modifier with a source you can see (DESIGN.md 22): the thing ridden, the circle, the lamp, the echo, the smoke; its look is
 // Calissa's, on `art.use` (`at`, `target`) and `art.end`.
 //
 // Prior art: the house's own (the Great Slip Jelly's `driven` body, the god hand's ward, the light budget's lent lamps, the mirage's
 // decoys), Shadow of the Colossus's and Ape Escape's ridden creatures, Diablo's sanctuary circles, Dark Souls' Sunlight Spear-lit lamp.
 //
-//   ride(run, c, dur)   sanctum(run, at, r, dur)   lamp(run, reach, dur)   echo(run, rec, delay)   veil(run, dur)
+//   ride(run, c, dur)   sanctum(run, at, r, dur)   lamp(run, reach, dur)   echo(run, rec, delay)   veil(run, dur)   thicket(run, at, r, dur)
 //   -> { art, tick(dt) -> true while it lasts, end() }   (body.js keeps them in `run.lasting`)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -52,27 +54,49 @@ export function ride(run, c, dur) {
   };
 }
 
+/** A circle's edge held against the creatures that were outside it when it was made (`inside`: those within, let be). */
+function holdRim(g, at, r, inside) {
+  for (const c of g.creatures?.near?.(at, r + 2) || []) {
+    if (!c.alive || c.ally || inside.has(c)) continue;
+    const d = _a.set(c.pos.x - at.x, 0, c.pos.z - at.z), n = d.length(), rim = r + (c.radius ?? 0.5);
+    if (n >= rim) continue;
+    if (n < 1e-3) d.set(1, 0, 0); else d.multiplyScalar(1 / n);
+    c.pos.x = at.x + d.x * rim; c.pos.z = at.z + d.z * rim; // (set back on the rim: a creature's own lunge sets its velocity after any push, so the rim holds its place, as the god hand's grip does)
+    const into = c.vel ? -(c.vel.x * d.x + c.vel.z * d.z) : 0;
+    c.knock?.(_b.copy(d).multiplyScalar(LASTING.sanctum.push + Math.max(0, into))); // (and turned back, its way in undone)
+  }
+}
+
 export function sanctum(run, at, r, dur) {
-  const g = run.game, S = LASTING.sanctum, until = run.now + dur, inside = new Set((g.creatures?.near?.(at, r) || []).filter((c) => c.alive));
+  const g = run.game, until = run.now + dur, inside = new Set((g.creatures?.near?.(at, r) || []).filter((c) => c.alive));
   let free = false;
   const setFree = (on) => { if (on === free) return; free = on; if (on) g.lachryma?.addModifier?.('art.sanctum', { costMult: { '*': 0 } }); else g.lachryma?.removeModifier?.('art.sanctum'); };
   return {
     art: 'sanctum', at: at.clone(), r,
     tick: () => {
       if (run.now >= until) return false;
-      for (const c of g.creatures?.near?.(at, r + 2) || []) {
-        if (!c.alive || c.ally || inside.has(c)) continue;
-        const d = _a.set(c.pos.x - at.x, 0, c.pos.z - at.z), n = d.length(), rim = r + (c.radius ?? 0.5);
-        if (n >= rim) continue;
-        if (n < 1e-3) d.set(1, 0, 0); else d.multiplyScalar(1 / n);
-        c.pos.x = at.x + d.x * rim; c.pos.z = at.z + d.z * rim; // (set back on the rim: a creature's own lunge sets its velocity after any push, so the rim holds its place, as the god hand's grip does)
-        const into = c.vel ? -(c.vel.x * d.x + c.vel.z * d.z) : 0;
-        c.knock?.(_b.copy(d).multiplyScalar(S.push + Math.max(0, into))); // (and turned back, its way in undone)
-      }
+      holdRim(g, at, r, inside);
       setFree(Math.hypot(run.P.pos.x - at.x, run.P.pos.z - at.z) <= r);
       return true;
     },
     end: () => setFree(false),
+  };
+}
+
+export function thicket(run, at, r, dur) {
+  const g = run.game, until = run.now + dur, inside = new Set((g.creatures?.near?.(at, r) || []).filter((c) => c.alive));
+  let keepT = 0;
+  return {
+    art: 'bloom', at: at.clone(), r,
+    tick: (dt) => {
+      if (run.now >= until) return false;
+      holdRim(g, at, r, inside);
+      if ((keepT -= dt) > 0) return true;
+      keepT = 0.4;
+      for (const c of g.creatures?.near?.(at, r) || []) if (c.alive && !c.ally) g.creatures.apply(c, 'slow', 0.6, 0.5, 'courier'); // (slowed while it stands in the thicket, kept on)
+      return true;
+    },
+    end: () => {},
   };
 }
 

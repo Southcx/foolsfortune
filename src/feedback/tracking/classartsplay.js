@@ -19,7 +19,7 @@ export function classArtsPlayRules({ on, L, log }) {
   on('art.fire', (e) => {
     if (e.by !== 'courier') return;
     L.inc(`art.fire.${e.art}`);
-    const what = e.cubes ? `: ${e.cubes} more cubes` : e.pool ? `: ${e.pool} back to your pool` : ''; // (Dividend's cubes, Rally's pool)
+    const what = e.cubes ? `: ${e.cubes} more cubes` : e.pool ? `: ${e.pool} back to your pool` : e.hint ? `: ${e.hint}` : ''; // (Dividend's cubes, Rally's pool, Intuition's hint)
     log.say('system', `${label(e.art)} triggers${what}.`, { key: `art.fire.${e.art}`, throttle: 1 });
   });
   on('art.end', (e) => { if (e.by === 'courier') log.say('system', `${label(e.art)} wears off.`, { key: `art.end.${e.art}`, throttle: 1 }); });

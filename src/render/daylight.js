@@ -25,6 +25,7 @@ const DAY = { bg: 0xb8d4e8, fog: 0xc6d6e0, fogK: 0.8, hemiSky: 0xdfeaf4, hemiGnd
 const NIGHT = { bg: 0x280a17, fog: 0x2e1626, fogK: 0.9, hemiSky: 0x4c3a7a, hemiGnd: 0x1e1430, hemiI: 0.45, ambI: 0.16, sunC: 0x9aa6ff, sunI: 0.35 };
 const COLOURS = ['bg', 'fog', 'hemiSky', 'hemiGnd', 'sunC'], NUMBERS = ['fogD', 'hemiI', 'ambI', 'sunI'];
 const RATE = 1.5; // (how fast the light eases to its target, per second: the hour moves slowly, a weather comes in over seconds)
+const DAYBREAK = 0.7; // (Petra's: the share of the night's weight Daybreak, a class's art, takes off while its game hour lasts)
 const _c = new THREE.Color();
 
 export class Daylight {
@@ -54,7 +55,7 @@ export class Daylight {
   /** The light the hour and the weather ask for. */
   target(sky) {
     const B = this.base, T = this.goal, D = this.day, N = this.night;
-    const h = hourGrade(sky.phase ?? 0), d = h.day, n = h.night;
+    const h = hourGrade(sky.phase ?? 0), d = h.day, n = h.night * (this.game.classArtsRun?.daylit?.() ? 1 - DAYBREAK : 1); // (Daybreak, a class's art: the dark lit a game hour)
     this.k.day = d; this.k.night = n;
     for (const k of COLOURS) T[k].copy(B[k]).lerp(D[k], d).lerp(N[k], n);
     T.fogD = B.fogD * THREE.MathUtils.lerp(1, DAY.fogK, d) * THREE.MathUtils.lerp(1, NIGHT.fogK, n);
