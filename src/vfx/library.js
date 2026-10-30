@@ -40,6 +40,7 @@ import { CLASS_ART_EFFECTS } from './library/classarts/index.js'; // (the 76 cla
 import { PAIR_SPECIAL_EFFECTS } from './library/pairspecials/index.js'; // (the 21 pair specials' looks, the main's and the sub's grammars braided: vfx/pairspeciallooks.js plays them)
 import { GARDEN_EFFECTS } from './library/garden.js'; // (the Spirit Garden's: a launch lotus's fling and catch, a chimney's smoke: vfx/garden/launchlotus.js, facilitylooks.js)
 import { PANIC_EFFECTS } from './library/panic.js'; // (a creature struck by a thrown thing: its sweat flung, its stars spun off: vfx/panic.js plays them)
+import { SLAB_EFFECTS } from './library/slabs.js'; // (carving a slab: each verb's moment, the fossil lifting and the spirit waking: vfx/garden/slablook.js plays them)
 const L = (o) => o; // (a layer: only for readability)
 const GLAZES = [0x2f6db5, 0x4f9a7a, 0xe0b030, 0xc84a3a, 0xf3efe6, 0x6a4a9a, 0x2a8ab0]; // (the glazes' own colours: the Hailstorm's shards)
 
@@ -448,4 +449,5 @@ export const LIBRARY = {
   ...PAIR_SPECIAL_EFFECTS,
   ...GARDEN_EFFECTS,
   ...PANIC_EFFECTS,
+  ...SLAB_EFFECTS,
 };

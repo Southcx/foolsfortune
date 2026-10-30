@@ -19,6 +19,11 @@ import { GardenMood } from '../vfx/garden/gardenmood.js';
 import { GuestJars } from '../vfx/garden/guestjars.js';
 import { LaunchLotuses } from '../vfx/garden/launchlotus.js';
 import { FacilityLooks } from '../vfx/garden/facilitylooks.js';
+import { SlabLook } from '../vfx/garden/slablook.js';
+import { RareSpirits } from '../vfx/garden/rarespirits.js';
+import { BenchWindowLook } from '../ui/benchlook.js';
+import { ScanMoment } from '../ui/scanmoment.js';
+import { CodeCard } from '../ui/combcode.js';
 import { CelestialTargets } from '../vfx/celestialtargets.js';
 import { ReadingTable } from '../ui/readingtable.js';
 import { dangerPips } from '../ui/dangerpips.js';
@@ -52,6 +57,8 @@ export function bootGodHand(game, made) {
   game.gardenMood = new GardenMood(game); // (the Inner Realm's one mood: the hour, the season and the briar every garden look reads: vfx/garden/gardenmood.js)
   game.launchLotuses = new LaunchLotuses(game); // (the launch lotuses drawn as giant lotuses and their pollen arcs, dressed on garden.enter: vfx/garden/launchlotus.js)
   game.facilityLooks = new FacilityLooks(game); // (the garden's fixed places dressed to read by their silhouettes: vfx/garden/facilitylooks.js)
+  game.slabLook = new SlabLook(game); game.rareSpirits = new RareSpirits(game); game.benchLook = new BenchWindowLook(game); // (carving a slab at the bench, drawn over its stand-ins; a flawless dig's spirit inverted; the bench's window dressed: vfx/garden/slablook.js, rarespirits.js, ui/benchlook.js)
+  game.scanMoment = new ScanMoment(game); game.codeCard = new CodeCard(game); // (scanning a code's moment; our own codes as a QR code in the Comb's dress: ui/scanmoment.js, ui/combcode.js)
   const cursorFree = () => !!(god.active || game.realm?.active || game.duel?.active || game.trackEditor?.active || game.haunt?.on); // (the hand's cursor is the pointer: no lock taken, no pause on its loss)
   game.cursorFree = cursorFree; // (a finger is the cursor there: core/touchdriver.js)
   input.wantLock = () => !cursorFree() && !modalOpen() && !game.kilnUI?.open && !game.dialogue?.open && !game.pneukaUI?.open && !game.shopUI?.open && !game.qais?.open; // (a refused lock is retried only if the game still wants one: core/input.js)

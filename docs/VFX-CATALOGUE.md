@@ -1,6 +1,6 @@
 # The VFX catalogue (generated: do not edit)
 
-Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-10-30). 594 effects in 38 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
+Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-10-30). 607 effects in 39 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
 
 **Play one:** `game.vfx.play(name, { pos, dir, normal, tint, power, scale, feeling, domain, suit, follow })`; a held one returns a handle (`h.pos`, `h.k`, `h.stop()`). A name falls back from the most particular (`hit.slash.crystal` -> `hit.slash` -> `hit`), so a new name always plays something.
 
@@ -583,6 +583,24 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `aura.slow` | held | shape:ring, sprites:soft | slowed: time dragging at its feet, motes sinking |  |
 | `aura.soaked` | held | shape:band, sprites:drip, sprites:glint |  |  |
 | `aura.soft` | held | shape:sphere, sprites:puff | softened (the next blow doubled): a cushion round it, its pink puffs drifting |  |
+
+### slab (13)
+
+| effect | kind | layers | what | asked by |
+|---|---|---|---|---|
+| `slab.blast` | one-shot | sprites:core, shape:hoop, sprites:chip, sprites:puff, sprites:streak | the psygun: a wide burst of the crust, a ring blown flat across the face, chips and dust everywhere |  |
+| `slab.brush` | one-shot | sprites:puff, sprites:chip, sprites:glint | the Soul Brush: dust swept off the face in a slow fan, a few grains, nothing sharp |  |
+| `slab.crack` | one-shot | sprites:star4, sprites:ringthin, sprites:shard, sprites:sparkle | added when the blow reached the fossil: a crack star in the film over it, dark shards of Lachrymite | vfx/garden/slablook.js |
+| `slab.crumble` | one-shot | sprites:chip, sprites:puff | the stone left falling away from it in its strata's colours, dust hanging | vfx/garden/slablook.js |
+| `slab.hoover` | one-shot | sprites:chip, sprites:puff, sprites:swirl | the Lockheart: the rubble round the cell drawn in and gone, a swirl, a breath of dust following it |  |
+| `slab.lift` | one-shot | sprites:sparkle, sprites:puff | the carving's end: the fossil lifting off its bed, the film's motes rising off it | vfx/garden/slablook.js |
+| `slab.pick` | one-shot | sprites:core, sprites:chip, sprites:shard, sprites:puff, sprites:glint | the Dreamvane's pick: a chunk knocked out, chips thrown hard off the face, a puff, the pick's gold glint |  |
+| `slab.rare` | one-shot | sprites:star4, sprites:glint | a rare spirit's glint in the garden, now and then: two white and gold stars | vfx/garden/rarespirits.js |
+| `slab.silhouette` | one-shot | shape:disc, sprites:glint, sprites:core | the Veritome: the plate pressed to the slab's face, a flash of the film the size of the slab, its corners glinting | vfx/garden/slablook.js |
+| `slab.slice` | one-shot | sprites:streak, sprites:chip, sprites:puff, sprites:glint | the Sondelass: a layer shaved off flat, a bright line drawn along the cut (from, to), flakes peeling off it |  |
+| `slab.toll` | one-shot | shape:hoop×3, sprites:ringthin×3 | the Crucibelle: three rings of the bell's gold run out through the stone, flat in the slab's plane, a beat apart | vfx/garden/slablook.js |
+| `slab.wake` | one-shot | sprites:core, shape:sphere, shape:hoop, sprites:sparkle, sprites:soft, light | the spirit waking out of the fossil: a burst of its feeling, the film's sparks, a ring, a light | vfx/garden/slablook.js |
+| `slab.wake.rare` | one-shot | sprites:core, shape:sphere, shape:hoop, sprites:sparkle, sprites:soft, light, sprites:star4, sprites:glint | extends `slab.wake`. a flawless dig's: the same, and a ring of white and gold stars round it (the shiny's) | vfx/garden/slablook.js |
 
 ### caster (12)
 
