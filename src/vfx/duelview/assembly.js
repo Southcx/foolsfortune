@@ -15,7 +15,7 @@
 //               point to the quiet checker
 //   THE LINE    its seam lit last, a fuse running up from the foot; its brass beads popped in, both halves flashed, and the kintsugi seam,
 //               the odds plate, the countdowns, the counts and the skill troughs come on with it
-// About 1.9 real s. A PvE duel's runs under the VS open (duelshow.js `go`), its last beat landing as the camera pulls out to the arena;
+// About 1.9 real s. A PvE duel's begins as the VS open's bands leave (duelshow.js `go`, SHOW.vs.build), so the camera pulls out onto it;
 // any other begins as the view opens (ASSEMBLY.open), the arena held for it (the stage's intro). Held unbuilt while the encounter's wipe
 // covers the screen, and never past ASSEMBLY.wait; every open plays it once, and a resync, a skipped turn or the close ends it at once
 // (seeding.js clear). When it is done the seeding deals the board in.

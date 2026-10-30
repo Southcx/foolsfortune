@@ -37,7 +37,7 @@ import { sm, clamp01, cellLocal } from './layout.js';
  *  480 lines in the desk's board view, wanted and least (vfx/duelview.js frameShot: 14 and 12 until South's "about 50% bigger", 2026-10-30);
  *  arenaLook: the arena's look over the board's foot (m). */
 export const STAGE = {
-  cell: [20, 16], arenaLook: 1.05,
+  cell: [21, 16], arenaLook: 1.05,
   arenaScale: 0.68, lift: 0.28, tilt: 0.14, arenaYaw: 0.3, foeTurn: 0.62, intro: 1.5, pinch: 1.5, wheel: 0.0028, settle: 0.35, ease: 5, follow: 9,
   kick: { break: [0.12, 1.5], allclear: [0, 2.1], end: [0, 99], finisher: [0.2, 2.4], push: [0.15, 1.0] },
   shake: { pos: 0.07, roll: 0.035, drain: 1.5 },

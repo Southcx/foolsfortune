@@ -30,11 +30,11 @@ import { domainHex } from './powercast.js';
 import { sm, clamp01 } from './layout.js';
 
 /** foeScale, jarScale: the fighters' sizes in a PvE duel; vs: its open's beats (real s from the open: each band, the stamp, the pull out
- *  with both bands gone, the tsuitate's assembly begun so its Line lights as the camera lands) and its length; lunge and flinch
+ *  with both bands gone, the tsuitate's assembly begun just before it so the whole build is seen in the arena) and its length; lunge and flinch
  *  (real s and m); cine: the cutaways' lengths (real s); victory: the hero shot's length; confetti: its bits. */
 export const SHOW = {
   foeScale: 1.2, jarScale: 1.15, margin: 1.1, front: 1,
-  vs: { foe: 0.15, jar: 0.95, stamp: 1.5, pull: 1.95, build: 0.45, dur: 3.1 }, // (South, 2026-10-30: staggered, never piled up; until then 0.15, 0.75, 1.05, 1.55, 2.5)
+  vs: { foe: 0.15, jar: 0.95, stamp: 1.5, pull: 1.95, build: 1.75, dur: 4.0 }, // (South, 2026-10-30: staggered, never piled up, and the tsuitate built in view as the camera pulls out; until then 0.15, 0.75, 1.05, 1.55, 2.5)
   lunge: { out: 0.1, back: 0.34, amp: 0.42 }, flinch: { dur: 0.5, amp: 0.38 }, knock: { dur: 0.8, amp: 0.8 },
   cine: { hit: 0.95, big: 2 }, victory: 1.15, confetti: 46,
 };

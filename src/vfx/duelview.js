@@ -358,7 +358,7 @@ export class DuelView {
 
   /** The far end of the spiritual link while open: the board's Courier in its form, or the god hand over its half (overlay px, y up). */
   linkAt(out) {
-    const cam = this.game.camera; if (!this.isOpen || !cam) return null;
+    const cam = this.game.camera; if (!this.isOpen || !cam || this.assembly?.busy) return null; // (held back until the tsuitate is built: the thread meets its Line's light, never an unbuilt corner)
     const B = this.state.board, { cs, base, border, lip } = DUEL_VIEW; // (the frame's lower corner on the bulb's side: the thread lands on the clay, never across a cell; the owner, 2026-10-27)
     const sx = this.game.hudLayout?.duelR ? -1 : 1; // (the duel's phone screen: the tube stands in the left flank, so the thread lands on the left foot)
     _v.set(sx * ((B.w * cs) / 2 + border * 0.5), base - border * 0.5, lip);

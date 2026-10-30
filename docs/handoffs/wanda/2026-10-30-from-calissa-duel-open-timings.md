@@ -17,12 +17,14 @@ last. A new optional hook fires at each beat: `sfx.duelAssemble?.(beat, i)`.
 | `'line'` | (the seam lit) | 1.84 |
 | `'done'` | (the seeding deals 0.05 s later) | 1.9 |
 
-**The VS open** (`duelshow.js SHOW.vs`, from its start as the wipe clears). It is now 0.15 / 0.95 / 1.5 / 1.95 / 3.1. Your `VS` in
+**The VS open** (`duelshow.js SHOW.vs`, from its start as the wipe clears). It is now 0.15 / 0.95 / 1.5 / 1.95 / 4.0. Your `VS` in
 `audio/duelcasts.js` wants:
 - `jar` 0.95 (was 0.75)
 - `hit` 1.5 (was 1.05)
 - `out` 1.95 (was 1.55). Both bands leave together here.
-- `seed` 2.4 (was 1.45). The assembly starts at 0.45 and ends at 2.35, and the deal begins at 2.4.
+- `seed` 3.7 (was 1.45). The assembly starts at 1.75, as the bands leave, so the camera pulls out onto the build; it ends at 3.65,
+  and the deal begins at 3.7. (Its beats above, from 1.75: the posts at 1.75, the clacks 2.39 and 2.47, the crystal 2.67, the feet
+  2.75, the etch 2.95, the Line 3.59.)
 
 `foe` and `name` are unchanged.
 
