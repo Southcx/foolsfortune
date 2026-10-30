@@ -10,10 +10,10 @@ seeds, slabs and scans landed, and v353's phone round (the sweeps' touch pages d
   still drawn.
 - **The laptop's audio since v351** (Wanda's fix): waits on South's test.
 
-## The heap, for the deep clean (measured 2026-10-19, built game after perf's route: 327 MB, of it 171 MB typed arrays reachable from the game)
-- The level's merged static meshes keep their CPU arrays (~2.4 MB a batch, about 20 batches): not freeable as is, since their materials
-  are flatShading and `visual.smooth` rewrites their normals from positions in play (render/present.js creaseNormals). A cut: bake both
-  normal sets once, or drop the toggle's live rewrite, then free the arrays on upload (bounds computed first).
-- The paint map's walls: ~15 MB in five per-cell arrays (k and hData Float32). Live state (k fades by dt); the owner allowed its heap.
-- The chests (7.3 MB), the Shrines (4.6 MB), the Dunes' chunks and batches (~9 MB), the Spirit Garden's brush and planetoids (~7 MB,
-  held before the garden is entered: a case for 234).
+## The heap (closed 2026-10-30; measured, not cut)
+- Built game after perf's route: 265 MB of the 320 budget (327 MB when this was listed, 2026-10-19). The scene's geometries keep 47.5 MB
+  on the CPU (2,487 geometries in the workshop's boot), 15.7 MB of it the faceted static batches the smooth toggle rewrites.
+- Freeing a static mesh's arrays on upload is not taken: render/areas.js re-uploads an evicted area from those arrays, and on a phone
+  already packs them into a Blob off the page's heap while the area is away (dehydration). The garden is built on its first entry.
+- Candidates if the heap grows again, to measure first: the chests (7.3 MB) and the Shrines (4.6 MB) as prop batches; the paint map's
+  walls (~15 MB, live state, allowed by the owner).
