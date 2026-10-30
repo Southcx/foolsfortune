@@ -4645,7 +4645,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   the scene, 34 vertices each, from the left hand at (1996.67, -407.07, -25.61) to the jelly 3.9 m off). The reins were 4.5 cm wide:
   about 3 of the 480 lines at that range, and their streaks pattern cut through the whole width (`mainK` 1, a noise mask at 0.35), so
   what was left of each was a dotted hairline that vanished.
-- **Fix:** a rein is never narrower than 3 of the 480 lines at its middle (`REINS.minPx`, from the camera's distance and field of view),
-  and its streaks ride on a solid body (`mainK` 0.35, the mask at 0.15). The roots were also marked zone-free on the way (case 366),
+- **Fix:** a rein is never narrower than 4 of the 480 lines at its middle (`REINS.minPx`, from the camera's distance and field of view),
+  and its streaks ride on a solid body (`mainK` 0.25, no mask); after it, the reins read as threads of light from the hands to the jelly (one shot, desk). The roots were also marked zone-free on the way (case 366),
   which did not change this.
 - **Rule:** NEW:line-holds-its-pixels
