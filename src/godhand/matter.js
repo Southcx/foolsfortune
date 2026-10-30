@@ -17,6 +17,7 @@
 //   M.pour(x, z, r, vol, { kind: 'water' | 'firm' | 'loose', feeling })   M.take(x, z, r, vol) -> { firm, loose, water, feeling }
 //   M.raise(x, z, r, dh) -> { moved, made }   M.smooth(x, z, r, toY, k) -> { moved, made }   M.carve(ax, az, bx, bz, w, depth) -> { moved }
 //   M.freeze(x, z, r, sec)   M.hold(x, z, r, sec)   M.pull(x, z, r, sec)   M.corrode(x, z, r, amount)   M.fuse(x, z, r)   M.heat(x, z, r, sec)
+//   M.kept[k] = sec (the mending passes a cell by for that long: a mimicry puzzle's patch, world/mimicry/mimicry.js)
 //   M.delta() -> m³ off the authored shape   M.version (bumps when the ground changes)   M.wversion (when the water does)
 // ---------------------------------------------------------------------------------------
 import { DISPLAY_ORDER } from '../progress/weather.js';
@@ -54,7 +55,7 @@ export class MatterField {
     this.firm = new Float32Array(N); this.loose = new Float32Array(N); this.w = new Float32Array(N);
     this.mix = new Float32Array(N * NF); this.mixNext = new Float32Array(N * NF); this.wNext = new Float32Array(N);
     this.fl = new Float32Array(N); this.fr = new Float32Array(N); this.ft = new Float32Array(N); this.fb = new Float32Array(N);
-    this.ice = new Float32Array(N); this.still = new Float32Array(N); this.bias = new Float32Array(N); this.hot = new Float32Array(N);
+    this.ice = new Float32Array(N); this.still = new Float32Array(N); this.bias = new Float32Array(N); this.hot = new Float32Array(N); this.kept = new Float32Array(N);
     this.pulls = []; this.j0 = n; this.j1 = -1; this.bb = null; this.mendV = 0; this.slumpT = 0; this.mendT = 0; this.version = 0; this.wversion = 0; this.water = 0; this.time = 1; this.timeCells = null;
   }
 
@@ -350,6 +351,7 @@ export class MatterField {
     let changed = false, wet = false, iced = false, left = false;
     const b = this.bb;
     if (b) for (let j = b[2]; j <= b[3]; j++) for (let k = j * n + b[0], ke = j * n + b[1]; k <= ke; k++) {
+      if (this.kept[k] > 0) { this.kept[k] = Math.max(0, this.kept[k] - dt); left = true; continue; } // (kept: a mimicry puzzle's patch while it is open, its ground not mended away under the copy)
       if (this.firm[k] > 1e-4 || this.loose[k] > 1e-4) { this.firm[k] *= f; this.loose[k] *= f; changed = true; if (this.firm[k] < 1e-3) this.firm[k] = 0; if (this.loose[k] < 1e-3) this.loose[k] = 0; if (this.firm[k] || this.loose[k]) left = true; }
       if (this.ice[k] > 0) { left = true; if ((this.ice[k] -= dt) <= 0) { this.ice[k] = 0; iced = true; } }
       if (this.still[k] > 0) this.still[k] = Math.max(0, this.still[k] - dt);

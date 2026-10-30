@@ -155,6 +155,13 @@ export const SOURCES = [
   // an aberrant's secret found (secrets.js; its end, never a step): the hidden read (Divination), masterful; the powers it took paid
   // their own domains (duel.power below)
   { event: 'duel.secret',     domain: 'divination',     acts: 6,  quality: (e) => (e.by === 'courier' && !e.practice && e.done ? 1 : null) },
+  // a mimicry puzzle solved (progress/mimicry.js; docs/plans/MIMICRY.md): a big act a domain its powers trained, its quality the stars;
+  // MATCH and UNDO also train Divination (the steps were read, never shown), and every solve Spellscription a little (the ground copied
+  // down from what was shown: transcribing a thing). The repeat of a puzzle already solved is half the act.
+  ...['ouranurgy', 'manifestation', 'psychokinesis', 'alteration'].map((d) => (
+    { event: 'mimic.solve',   domain: d,                acts: (e) => (e.first ? 4 : 2) * (e.tier || 1), quality: (e) => (e.by === 'courier' && (e.domains || []).includes(d) ? q01(e.stars / 3) : null) })),
+  { event: 'mimic.solve',     domain: 'divination',     acts: (e) => (e.first ? 4 : 2) * (e.tier || 1), quality: (e) => (e.by === 'courier' && e.mode !== 'mimic' ? q01(e.stars / 3) : null) },
+  { event: 'mimic.solve',     domain: 'spellscription', acts: (e) => (e.first ? 2 : 1) * (e.tier || 1), quality: (e) => (e.by === 'courier' ? q01(e.stars / 3) : null) },
   // a duel's power cast (duel/powers.js; PUZZLE-DUELS.md 26.1): the hand's power in a puzzle duel trains its domain as it does in the
   // world; its quality the gems the cast cleared (12 a masterful one), a cast that cleared none middling at best; a practice duel none
   ...['ouranurgy', 'manifestation', 'divination', 'psychokinesis', 'possession', 'alteration', 'spellscription'].map((d) => (

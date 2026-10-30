@@ -39,6 +39,7 @@ import { spreadAchievements } from './spreadachievements.js';
 import { duelAchievements } from './duelachievements.js';
 import { pairAchievements } from './pairachievements.js';
 import { areaAchievements } from './areaachievements.js';
+import { mimicryAchievements } from './mimicryachievements.js';
 const FOUNDING_SHELLS = CASTER_SHELLS.filter((r) => r.family === 'founding').map((r) => r.id);
 
 export const TIERS = [null, { name: 'Easy', pts: 1 }, { name: 'Medium', pts: 2 }, { name: 'Hard', pts: 3 }, { name: 'Elite', pts: 4 }, { name: 'Master', pts: 5 }, { name: 'Grandmaster', pts: 6 }];
@@ -47,7 +48,7 @@ export const CATS = [
   { id: 'break', name: 'BREAKING', subs: ['Pots', 'Clapperjars', 'Shells', 'The Workshop'] },
   { id: 'move', name: 'MOVEMENT', subs: ['Distance', 'Air', 'Ground', 'The Arts'] },
   { id: 'skiff', name: 'SOLAR SKIFFING', subs: ['The Board', 'Tricks', 'The Sundial', 'The Raceway', 'The Build Lot'] },
-  { id: 'hand', name: 'THE HAND', subs: ['Reach', 'Arts', 'Matter', 'Miracles', 'Bracelet', 'Raids', 'Rejection', 'Lachryma'] },
+  { id: 'hand', name: 'THE HAND', subs: ['Reach', 'Arts', 'Matter', 'Miracles', 'Bracelet', 'Raids', 'Rejection', 'Lachryma', 'Mimicry'] },
   { id: 'sond', name: 'THE SONDELASS', subs: ['Cutlass', 'Grapple'] },
   { id: 'brush', name: 'THE SOUL BRUSH', subs: ['The Club', 'The Slide', 'The Canvas', 'Sigils'] },
   { id: 'veritome', name: 'THE VERITOME', subs: ['The Lens', 'The Darkroom', 'The Bestiary', 'The Book'] },
@@ -650,7 +651,7 @@ export function buildAchievements(game) {
   C('os3', 'explore', 'Digging', 4, 'collect', 'Broken English', 'Find every ostracon.', 'ostracon.found', 16);
   C('os4', 'explore', 'Digging', 3, 'mechanic', 'Set in Stone', 'Read a stele.', 'stele.read', 1);
   F('os5', 'explore', 'Digging', 5, 'collect', 'Epigrapher', 'Read both stelae and find every ostracon: every word glossed.', (L) => Math.min(16, L.get('ostracon.found')) + 3 * Math.min(2, L.get('stele.read')), 22, { title: 'Epigrapher' });
-  seaAchievements({ C, F }); logAchievements({ F }); duelAchievements({ C, F }); pairAchievements({ F }); areaAchievements({ F }); // (the open sea's: progress/seaachievements.js; the collection log's: logachievements.js)
+  seaAchievements({ C, F }); logAchievements({ F }); duelAchievements({ C, F }); pairAchievements({ F }); areaAchievements({ F }); mimicryAchievements({ C, F }); // (the open sea's: progress/seaachievements.js; the collection log's: logachievements.js)
   // terraforming and the spirits' games (SPIRIT-GARDEN.md section 7, item 26): what the garden's new verbs are worth (names placeholders for Espada's)
   F('tf1', 'garden', 'The Garden', 2, 'collect', 'Five Grounds', 'Paint all five grounds: moss, ash, loam, slate and silt.', (L) => ['moss', 'ash', 'loam', 'slate', 'silt'].filter((k) => L.get(`garden.paint.${k}`) >= 1).length, 5);
   C('tf2', 'garden', 'The Garden', 1, 'count', 'Wellspring', 'Set a spring in your Inner Realm.', 'garden.water.spring', 1);
