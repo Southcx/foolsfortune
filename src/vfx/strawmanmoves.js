@@ -11,7 +11,8 @@
 //   tell   the sack's amber pulse (0..1, at the move's own `pulse`)  dark   the sack dimmed (0..1): a held breath
 //
 // A move is a windup (the tell's poses keyed over time, eased), its blows (each strikes at `at`, with the part that carries the parry
-// mark and the area a Figment attack telegraph draws: the drawn area is the hit area), and the recovery to rest (the punish). The springs
+// mark and the area a Figment attack telegraph draws: the drawn area is the hit area), and the recovery to rest (the punish); a gesture
+// is a move with no blows (its practice end, `practiceEnd`). The springs
 // the doll already has carry the follow-through (`kicks`: an impulse to the rock, the sack or the hat at a time). Every number here is at
 // 1x; the parry's window (its last 0.25 s before a strike) is the parry's rule (courier/parry.js), not a move's.
 // No blow strikes sooner than 0.75 s after its move (or its last blow) begins: the mark runs hot half a second before a strike (the window
@@ -154,6 +155,27 @@ export const STRAWMAN_MOVES = {
       [1.975, 'io', REST],
     ],
     kicks: [{ at: 1.425, sack: [0.5, -0.9] }],
+  },
+  /** A gesture, no blow: its practice end (a practice duel lost, duelview/aberrants/strawmanend.js times the sack, the needle and the
+   *  straw to these keys): it strains and puffs up, the pop jolts it, it slumps on its bar (sleeves hanging, head down, the sack dimmed);
+   *  filled again it stands up a little proud, bows, and claps its sleeves twice before it, cuff to cuff. */
+  practiceEnd: {
+    label: 'practice end', end: 3.3, pulse: 26, blows: [],
+    keys: [
+      [0.28, 'io', { lean: -0.1, look: 0.18, hat: -0.15, ls: 0.12, rs: 0.12, lu: 0.15, ru: 0.15 }],
+      [0.34, 'out', { lean: 0.1, look: 0, hat: 0.2, ls: 0, rs: 0 }],
+      [0.85, 'out', { lean: 0.3, tilt: 0.1, lf: 0.25, rf: 0.2, lu: -0.95, ru: -0.85, hat: 0.55, look: -0.45, dark: 0.35 }],
+      [1.15, 'lin', { lean: 0.33, look: -0.5 }],
+      [1.9, 'io', { lean: -0.04, tilt: 0, lf: 0, rf: 0, lu: 0, ru: 0, hat: -0.05, look: 0.12, dark: 0 }],
+      [2.0, 'io', REST],
+      [2.3, 'io', { lean: 0.48, hat: 0.3, look: -0.25, lu: -0.35, ru: -0.35, lf: 0.35, rf: 0.35 }], // (the bow)
+      [2.55, 'io', { lean: 0, hat: 0, look: 0.1, lf: 1.2, rf: 1.2, lu: 0.25, ru: 0.25 }],
+      [2.7, 'in', { lf: 1.82, rf: 1.82, lo: 0.05, ro: 0.05 }], // (a clap: cuff to cuff before its chest)
+      [2.82, 'out', { lf: 1.25, rf: 1.25, lo: 0, ro: 0 }],
+      [2.94, 'in', { lf: 1.82, rf: 1.82, lo: 0.05, ro: 0.05 }],
+      [3.3, 'io', REST],
+    ],
+    kicks: [{ at: 0.32, rock: [0.9, 0.3], sack: [1.4, 0.6], hat: 2.5 }, { at: 2.3, hat: 1.5 }, { at: 2.7, sack: [0.3, 0] }, { at: 2.94, sack: [0.3, 0] }],
   },
 };
 

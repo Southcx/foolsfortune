@@ -49,3 +49,8 @@ drain's own clock (the held beat after the burst adds about 0.15 real s):
 - `sfx.duelGulp?.()` at 2.0 s: the swallow; the hero shot (your `duelHero`) follows at 2.5 s.
 It starts at the death's `drainAt` (the Lantern Wisp: the Line 1.3, the secret 2.2; the slip jelly: the Line 1.4, the secret 2.1), so
 the whole ending is about 5 to 6 real s, and a press after its first real second skips to the hero shot.
+
+**Strawman's practice duel** (`vfx/duelview/aberrants/strawman.js`, `strawmanend.js`). Its own yard, burlap post, cut-in and aura, and
+a practice end of about 3.3 real s whichever way it loses: its stitches pop and straw bursts out, it slumps, a needle runs both seams
+and each stitch comes back as its straw flies home, it stands whole, bows and claps twice. Optional hooks: `sfx.strawmanStrain`,
+`strawmanPop`, `strawmanNeedle`, `strawmanStitch({ i, of })`, `strawmanBow`, `strawmanClap({ n })`. Nothing is drained in practice.

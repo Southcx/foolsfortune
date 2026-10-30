@@ -8,6 +8,8 @@
 //   THE WISP'S   the fens (aberrants/wisp.js): iron bands strapped round its post, reeds and cattails standing up its outer side, a little
 //                lantern hung from an iron hook, lit amber
 //   THE JELLY'S  the bog (aberrants/jelly.js): its slime run down its post in long drops, beading on the frame's corners, a pool at its foot
+//   STRAWMAN'S   its sparring yard's (aberrants/strawmanyard.js `strawmanPost`): its post bound in burlap round the EmO column and the
+//                kintsugi seam, patched and cross-stitched, straw out of the cut edges, a stuffed target bolted on, a card tag swinging
 //   ANY OTHER    the frame as made
 // One merged mesh a material a side, made at the duel's open in the frame's own programs (the clay's, the slime's, the glow's): nothing new.
 // Prior art: the decorated arcade cabinet of Puzzle Fighter (each well's side its fighter's), Persona's All-Out Attack frames, the
@@ -22,6 +24,8 @@ import { duelMaterials } from './pieces.js';
 import { featTint } from '../oxidation.js';
 import { WispElite } from './aberrants/wisp.js';
 import { JellyElite } from './aberrants/jelly.js';
+import { StrawmanElite } from './aberrants/strawman.js';
+import { strawmanPost } from './aberrants/strawmanyard.js';
 
 /** leaves: on your vine; flowers among them; reeds by the Wisp's post; drops down the jelly's; flicker: the lantern's (real s). */
 export const FRAME_DRESS = { leaves: 34, flowers: 7, crystals: 9, reeds: 9, drops: 11, flicker: 7 };
@@ -41,7 +45,7 @@ export class FrameDress {
   open(state, foe) {
     this.close(); const V = this.view, B = V.board; if (!B?.W) return;
     const { base, border: b, lip, depth } = DUEL_VIEW, W = B.W, H = B.H, L = { x: -W / 2 - b / 2, base, H, b, lip, depth, W };
-    this.yours(L); if (WispElite.fits(state, foe)) this.fens(L); else if (JellyElite.fits(state, foe)) this.bog(L);
+    this.yours(L); if (StrawmanElite.fits(state, foe)) strawmanPost(this, L); else if (WispElite.fits(state, foe)) this.fens(L); else if (JellyElite.fits(state, foe)) this.bog(L); // (Strawman's first: a practice duel on another's board is still its own)
   }
 
   add(geo, mat) { if (!geo) return; const m = new THREE.Mesh(geo, mat); m.castShadow = true; m.renderOrder = 1; this.group.add(m); return m; }
