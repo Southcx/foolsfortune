@@ -107,6 +107,7 @@ export async function bootWarmup(game, made) {
   const seaFightAt = (game.seaFightLook?.parked() || []).map((o) => { o.visible = true; return o; }); // (the fight's shots: the rail's program, warmed with it)
   const parkIslets = game.seaLooks?.prewarm?.() ?? (() => {}); // (the islets' and the shallows' programs, 50 m down: vfx/opensea/isletlooks.js)
   const parkSquall = game.squallLine?.prewarm?.() ?? (() => {}); // (the squall line's program, and the rain's: vfx/opensea/squallline.js)
+  const parkGhost = game.mimicryLooks?.prewarm?.() ?? (() => {}); // (the mimicry ghost's one program, 50 m down, kept: vfx/mimicry/ghost.js)
   const parkDress = [game.dunesDress.prewarm(), game.racewayDress.prewarm(), game.jellyMountLook?.prewarm?.() ?? (() => {})]; // (the dust devils' and the Dunes' mirage's two programs, and the dressing's materials: vfx/dunes/, vfx/raceway/; the slip jelly mount's sealed body, a puddle and the mounts' ring: vfx/jellymount/)
   const parkEgregores = prewarmEgregores(scene); // (the safari Egregores' one program, every species: vfx/opensea/egregorekit.js)
   const parkBeasts = prewarmSeaBeasts(game); // (the sea beasts' fight program, 'egregore-beast', one akhlut 50 m down: vfx/opensea/beasts/warm.js)
@@ -158,7 +159,7 @@ export async function bootWarmup(game, made) {
   // (the parks in the reverse of the warm-ups' order, as brackets close: each warm-up saves what it touches and its park puts that back,
   // so a later one that saved what an earlier one had shown must be undone first. Out of order, the Jar look's park put back the Jar the
   // duel's warm-up had stood at your feet, and it stood in the workshop from the load: CASEBOOK-CASES 2026-10-27, South's phone)
-  parkFigmentTelegraphs(); parkShellLooks(); parkPalmDie(); parkBracelet(); parkJarLook(); parkMatterLook(); parkSandfall(); parkBeasts(); parkEgregores(); [...parkDress].reverse().forEach((f) => f()); parkSquall(); parkIslets(); [...parkCaster].reverse().forEach((f) => f()); parkCasterS1toS5(); parkWeather?.(); parkCracks(); parkDuel(); parkDrain(); parkSpawnLook(); seaFightAt.forEach((o) => (o.visible = false));
+  parkFigmentTelegraphs(); parkShellLooks(); parkPalmDie(); parkBracelet(); parkJarLook(); parkMatterLook(); parkSandfall(); parkBeasts(); parkEgregores(); [...parkDress].reverse().forEach((f) => f()); parkSquall(); parkGhost(); parkIslets(); [...parkCaster].reverse().forEach((f) => f()); parkCasterS1toS5(); parkWeather?.(); parkCracks(); parkDuel(); parkDrain(); parkSpawnLook(); seaFightAt.forEach((o) => (o.visible = false));
   for (const o of brushLooks) o.visible = false;
   seaLooks.forEach((o, i) => { o.visible = false; o.position.copy(seaAt[i]); });
   for (const o of gardenLooks) o.visible = false;

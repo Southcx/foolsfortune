@@ -1,6 +1,6 @@
 # The VFX catalogue (generated: do not edit)
 
-Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-10-30). 592 effects in 37 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
+Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-10-30). 594 effects in 38 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
 
 **Play one:** `game.vfx.play(name, { pos, dir, normal, tint, power, scale, feeling, domain, suit, follow })`; a held one returns a handle (`h.pos`, `h.k`, `h.stop()`). A name falls back from the most particular (`hit.slash.crystal` -> `hit.slash` -> `hit`), so a new name always plays something.
 
@@ -607,7 +607,7 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 |---|---|---|---|---|
 | `sea.bottle.cork` | one-shot | sprites:drip, sprites:star4 |  | vfx/opensea/bottlelooks.js |
 | `sea.bottle.glint` | one-shot | sprites:star4, sprites:soft |  | vfx/opensea/bottlelooks.js |
-| `sea.dig` | one-shot | sprites:chip, sprites:puff |  | audio/cues.js, feedback/tracking/opensea.js, progress/cosmetics.js +3 |
+| `sea.dig` | one-shot | sprites:chip, sprites:puff |  | audio/cues.js, feedback/tracking/opensea.js, progress/cosmetics.js +4 |
 | `sea.dig.find` | one-shot | sprites:star4, sprites:glint, light |  | vfx/opensea/puzzlelooks.js |
 | `sea.salvage.drip` | one-shot | sprites:drip |  | vfx/opensea/salvagelooks.js |
 | `sea.salvage.land` | one-shot | sprites:chip, sprites:drip |  | vfx/opensea/salvagelooks.js |
@@ -725,6 +725,13 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `wisp.cast` | one-shot | sprites:core, sprites:soft | its cast leaving the lantern: a puff of the flame and a spark; its ember in flight (held, following the ember): a short hot tail, a halo, sparks shed and falling; put out (when the Death clip ends): the wick's smoke, its last embers and ... | audio/cues.js, creatures/wisp/lanternwisp.js, feedback/tracking/wisps.js +2 |
 | `wisp.cast.flight` | held | sprites:core, sprites:soft×2 |  | vfx/lanternwisplook.js, vfx/racewaytraps/bodies2.js |
 | `wisp.snuff` | one-shot | sprites:core, sprites:puff, sprites:soft, sprites:sparkle |  | vfx/duelview/aberrants/wisp.js, vfx/lanternwisplook.js, vfx/racewaytraps/bodies2.js |
+
+### panic (2)
+
+| effect | kind | layers | what | asked by |
+|---|---|---|---|---|
+| `panic` | one-shot | sprites:drip, sprites:ringthin |  | progress/sandbox.js, vfx/library/panic.js, vfx/panic.js |
+| `panic.heavy` | one-shot | sprites:drip, sprites:star4, sprites:ring | a flooring hit: more sweat thrown harder, a wider ring, and the squeans spun off round the head | vfx/panic.js |
 
 ### plaster (2)
 
