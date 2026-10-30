@@ -14,7 +14,7 @@
 //
 //   game.worldDraw = new WorldDraw(game)   .aimOf(row, ctx) -> point   .sources(at) -> [{ kind, amount, feeling, ref }]
 //   .measure(row, ctx | at) -> drawOf's result + { at }   .take(row, ctx) -> { k, feeling, at, dry } (emits shell.draw / nothing if dry)
-//   .weatherK(pos) -> 0..1   .fair(at, r, dur)   .spring(at, dur)   .springs   .update(dt)   .clear()
+//   .weatherK(pos) -> 0..1   .fair(at, r, dur)   .thinAt(at, r, take, dur)   .spring(at, dur)   .springs   .update(dt)   .clear()
 //   GAME_HOUR (real s)   PREFER (a row's preferred source)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -164,6 +164,8 @@ export class WorldDraw {
   }
   /** Calm's fair: the weather gone within r for dur real s (a thin patch that takes it all). */
   fair(at, r = DRAW.r, dur = GAME_HOUR) { this.thin.push({ x: at.x, z: at.z, r, take: 1, fair: true, dur, left: dur }); }
+  /** A share of the weather taken within r for dur real s (a Turn of Weather's: the wheel's rank / 4, tools/pairspecials/coffin.js). */
+  thinAt(at, r, take, dur = GAME_HOUR) { if (take > 0) this.thin.push({ x: at.x, z: at.z, r, take: Math.min(1, take), fair: take >= 1, dur, left: dur }); }
   /** A Rift's spring: liquid Lachryma where the hole was, a source at the cap for the next World shell, for dur real s. */
   spring(at, dur = GAME_HOUR, r = 1.6) { const s = { pos: at.clone(), r, left: dur, dur }; this.springs.push(s); this.game.events?.emit('shell.spring', { at: [at.x, at.y, at.z], by: 'courier' }); return s; }
 

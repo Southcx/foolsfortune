@@ -48,9 +48,14 @@ import { MIND, stateOf, pushed, settle } from '../progress/combat/mind.js';
 import { rise, enraged } from '../progress/combat/emo.js';
 import { sfx } from '../audio/sfx.js';
 import { blowWindow } from '../courier/parry.js';
-import { courierMindEffect } from '../progress/stones.js';
+import { courierMindEffect, DRAUGHT } from '../progress/stones.js';
+import { TYPE_OF } from '../progress/weather.js';
 import { friendlyDamage, tolerance, FRIENDLY } from '../progress/combat/friendly.js';
 import { figmentMarkOf } from '../progress/combat/figmenttelegraphs.js';
+
+/** The draught's worth on a blow (progress/stones.js DRAUGHT): of the drunk feeling's damage type, its status builds up to half again as
+ *  fast at a full draught (its share 0..1, fading over a real minute); any other type, as it is. */
+const draughtBuild = (d, type) => { let k = 1; for (const a in d || {}) if (TYPE_OF[a] === type) k = Math.max(k, 1 + DRAUGHT.build * Math.min(1, d[a] || 0)); return k; };
 
 export const STATUSES = ['halt', 'slow', 'sleep', 'forget', 'flee', 'soft', 'calm', 'melt', 'stun', 'doubt', 'charm', 'blind', 'confusion'];
 
@@ -95,18 +100,22 @@ export class Creatures {
       return false;
     }
     if (by === 'courier') c.touched = true; // (the Courier struck it: a sibling finishing it credits them, coop/fight.js)
-    const g = this.game, m = multiplier(type, c.affinity ?? null, [...c.status.keys()].filter((n) => st(c, n)));
+    const g = this.game, ps = by === 'courier' ? g.pairSpecials?.onStrike?.(c, cause, type, power, point, dir) : null; // (a pair's special on the blow: tools/pairspecials.js)
+    if (ps?.type) type = ps.type;
+    const m = multiplier(type, c.affinity ?? null, [...c.status.keys()].filter((n) => st(c, n)));
     // (the damage alone, never the build-up: the Courier's mental state, Prismatic x1.5 to Stoic x0.67, the owner's ruling in
     // progress/stones.js; and another Courier struck, friendly fire at a fifth, progress/combat/friendly.js)
     let dmgK = by === 'courier' && g.courierMind ? courierMindEffect(g.courierMind.mind).power : 1;
     if (c.friend) dmgK = friendlyDamage(dmgK); // (a fifth; and the cap below: no blow from an ally past a quarter of its health)
     const art = by === 'courier' ? g.classArtsRun?.onStrike?.(c, m) : null; // (a class's art: Momentum's one blow, Edge on a weak point: courier/classarts/body.js)
     if (art) { dmgK *= art.dmg; buildK *= art.build; }
+    if (ps) { dmgK *= ps.dmg ?? 1; buildK *= ps.build ?? 1; }
     const annihilates = (type === 'impact' && st(c, TYPES.delirium.builds)) || (type === 'delirium' && st(c, TYPES.impact.builds));
     let dmg = power * dmgK * m.dmg * (st(c, 'soft') ? 2 : 1);
     if (c.friend) dmg = Math.min(dmg, (c.maxHp ?? Infinity) * FRIENDLY.cap); // (FRIENDLY.cap of its full health at most: Dovina's)
     const took = c.hurt(point, dir, dmg, cause, by, from, type); // (`from`: the thing that struck, when it is not the Courier)
     if (took === 'blocked') return true; // (a blow it turned aside shows its own block and builds nothing: no stun, no mind, no status: the owner's T51)
+    ps?.after?.(c); // (what a special does once the blow has landed: a drag, a calm, a drink, a share)
     g.vfx?.hit({ ent: c, kind: c.kind, cause, point, dir, power, kill: !c.alive, type }); // (what the blow looks like: vfx/library.js 'hit.*', 'damage.*')
     sfx.damage?.(type, Math.min(1, power)); // (and what its type sounds like over the hit: audio/damage.js, Wanda's)
     if (annihilates) g.events?.emit('combat.annihilate', { kind: c.kind, type, by });
@@ -124,6 +133,7 @@ export class Creatures {
   build(c, type, amount, by = 'courier', cause = 'shot') {
     if (!c?.alive || !TYPES[type] || amount <= 0) return;
     const take = stateOf(c.mind).take;
+    amount *= (by === 'courier' ? draughtBuild(this.game.draught, type) : 1) * (this.game.weather?.buildMult?.(type, c.pos) ?? 1); // (the draught's, above; and its feeling's weather where it stands, anyone's blow: progress/weather.js)
     if (type === 'impact') { this.game.stun?.add(c, TYPES.impact.poise * amount * take, { by, cause }); return; }
     if (by === 'courier') amount *= this.game.laidSpread?.swordsK ?? 1; // (Swords' tally: the status your blows build, progress/laidspread.js)
     const T = TYPES[type], tn = c.friend ? c.tolerance?.[T.builds] : null; // (a friend's next status of this kind needs more build-up: tolerance)

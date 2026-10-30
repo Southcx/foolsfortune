@@ -19,9 +19,19 @@
 //   log.say('say', 'Calissa : words', { who: 'calissa' })                  a sibling's line, its head in its division's colour (ui/siblingline.js)
 //   log.lines (the last `max` lines)   log.said (every line ever said: a line's `seq` is its place, so a mark survives the cap)
 //   PageUp / PageDown scroll, End jumps to the newest, [ and ] change tab.
+//
+// THE SYSTEM'S TERMINAL (OVERLAY.md 14; the owner's "full send", 2026-10-16; the type and colours Calissa's, 2026-10-30): each line wears the
+// game hour it was said at (the game clock, HH:MM) and the prompt's glyph, and the newest is typed in at TYPE.cps behind a block caret
+// blinking in steps; a line said while another types lands that one whole, and so does opening the chat line, so the log is never
+// behind. A command the player sends is echoed before its reply. A hero line (an achievement's, or `hero`) says `log.hero` for the
+// glitch to answer. The rules, the events and the words are untouched: only how a line arrives.
+//   log.say(cls, text, { hero })   event log.hero { cls }
 // ---------------------------------------------------------------------------------------
 import { speakerLine } from '../ui/siblingline.js';
 import { now as calendarNow } from '../core/calendar.js';
+import { clockAt } from '../progress/weather.js';
+/** The terminal's typing (Calissa's): characters a real second, the caret's step on and off (real s). */
+export const TYPE = { cps: 60, blink: 0.53 };
 export const CLASSES = {
   system: { color: '#ead9c6', tab: 'SYSTEM' },
   info: { color: '#fff1e0', tab: 'SYSTEM' },
@@ -63,6 +73,10 @@ const CSS = `
 #chatlog .body { flex: 1; overflow-y: auto; overflow-anchor: none; overflow-x: hidden; padding: 3px 6px 4px; font-size: 16px; line-height: 18px; scrollbar-width: thin; scrollbar-color: #9a5a44 transparent; }
 #chatlog .ln { text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000, 0 0 3px rgba(0,0,0,.6); word-wrap: break-word; }
 #chatlog .ts { color: #a98572; margin-right: 8px; }
+#chatlog .pr { color: rgba(var(--jsel), 1); }
+#chatlog .caret { color: #fff1e0; }
+#chatlog .caret.off { visibility: hidden; }
+#chatlog .ln.echo { color: #ffffff; }
 #chatlog .ln.ach { color: #ffd45e; }
 #chatlog .min { margin-left: auto; padding: 0 8px 2px; color: #e8c3a8; border: 1px solid #9a5a44; border-bottom: none; border-radius: 3px 3px 0 0; cursor: var(--jcur-pointer, pointer); pointer-events: auto; font-size: 12px; line-height: 14px; text-shadow: 1px 1px 0 #000; background: rgba(28,13,8,.4); }
 #chatlog .min.new { color: #ffd67e; border-color: #ffd67e; }
@@ -83,7 +97,7 @@ const CSS = `
 `;
 
 const pad = (n) => String(n).padStart(2, '0');
-const clock = () => { const d = new Date(calendarNow()); return `${pad(d.getHours())}:${pad(d.getMinutes())}`; }; // (the calendar's clock: a replay holds it)
+const clock = () => { const c = clockAt(calendarNow()); return `${pad(c.hour)}:${pad(c.minute)}`; }; // (the game hour it was said at: the calendar's clock, which a replay holds)
 
 export class GameLog {
   constructor(game) {
@@ -146,6 +160,7 @@ export class GameLog {
 
   /** Open the chat line (with `prefix` already typed). */
   open(prefix = '') {
+    this.land(); // (the line being typed lands whole: the player is reading)
     if (this.mini) this.setMini(false);
     this.typing = true; this.hi = -1;
     this.root.classList.add('typing');
@@ -166,6 +181,7 @@ export class GameLog {
   send(text) {
     const t = String(text || '').trim();
     if (!t) return;
+    if (t[0] === '/') this.say('system', t, { echo: true }); // (the command echoed before its reply, as a terminal does)
     if (this.history[this.history.length - 1] !== t) this.history.push(t);
     if (this.history.length > 50) this.history.shift();
     this.onSend?.(t);
@@ -182,7 +198,7 @@ export class GameLog {
   /** The game's clock, in ms (the input it gates is the simulation's: the same twice: core/rng.js), the page's when there is no game. */
   clock() { const t = this.game?.events?.time; return t != null ? t * 1000 : performance.now(); }
   get busy() { return this.typing || this.clock() - (this.closedAt || 0) < 500; }
-  clear() { this.lines.length = 0; this.last = null; this.body.replaceChildren(); }
+  clear() { this.typing0 = null; this.lines.length = 0; this.last = null; this.body.replaceChildren(); }
 
   key(e) {
     if (!this.game.input?.enabled || e.repeat && e.code !== 'PageUp' && e.code !== 'PageDown') return;
@@ -213,6 +229,7 @@ export class GameLog {
   shows(cls, tab = this.tab) { return tab === 0 || (CLASSES[cls]?.tab || 'SYSTEM') === TABS[tab]; }
 
   setTab(i) {
+    this.land(); // (the lines are drawn again whole)
     this.tab = i;
     this.unread.delete(i);
     this.tabEls.forEach((t, k) => { t.classList.toggle('on', k === i); t.classList.toggle('new', this.unread.has(k)); });
@@ -222,22 +239,25 @@ export class GameLog {
     this.wake();
   }
 
-  build(l) {
+  build(l, typed = false) {
     const d = document.createElement('div');
-    d.className = `ln ${l.cls}`;
-    d.style.color = l.tone || CLASSES[l.cls]?.color || '#fff';
-    d.innerHTML = `<span class="ts">${l.ts}</span>`;
+    d.className = `ln ${l.cls}${l.echo ? ' echo' : ''}`;
+    if (!l.echo) d.style.color = l.tone || CLASSES[l.cls]?.color || '#fff';
+    d.innerHTML = `<span class="ts">${l.ts}</span><span class="pr">&gt; </span>`;
     if (l.who) speakerLine(d, l); // (a sibling's line: its head in its division's colour, ui/siblingline.js)
-    else d.append(document.createTextNode(l.text));
+    else { l.node = document.createTextNode(typed ? '' : l.text); d.append(l.node); }
     l.el = d;
+    if (typed && l.node) { const c = document.createElement('span'); c.className = 'caret'; c.textContent = '\u2588'; d.append(c); this.typing0 = { l, caret: c, shown: 0, t: 0 }; }
     return d;
   }
+  /** The line being typed, landed whole now (a newer line came, or the chat line opened). */
+  land() { const T = this.typing0; if (!T) return; this.typing0 = null; T.l.node.data = T.l.text; T.caret.remove(); }
 
   /**
    * One line. `key` + `fmt` fold repeats: a second line with the same key inside `win` seconds updates the first,
    * with fmt(count) as its text.
    */
-  say(cls, text, { key = null, win = 1.6, fmt = null, tone = null, throttle = 0, who = null } = {}) {
+  say(cls, text, { key = null, win = 1.6, fmt = null, tone = null, throttle = 0, who = null, echo = false, hero = false } = {}) {
     const now = performance.now() / 1000;
     if (throttle && key) { // (a refusal repeated by a held key says itself once)
       if (now - (this.quiet.get(key) ?? -99) < throttle) return null;
@@ -247,12 +267,12 @@ export class GameLog {
     if (key && p && p.key === key && (fmt || p.text === text) && now - p.t < win) { // (a different line under the same key is its own line: two casts close together were one, the second's name lost)
       p.n++; p.t = now;
       p.text = fmt ? fmt(p.n) : p.text;
-      if (p.el) p.el.lastChild.textContent = p.text;
+      if (p.el) { if (this.typing0?.l === p) this.land(); (p.node || p.el.lastChild).textContent = p.text; }
       if (this.pinned !== false) this.toEnd = true; // (a merged line can grow onto a second row: follow it)
       this.afterSay(p);
       return p;
     }
-    const l = { cls, text, ts: clock(), n: 1, key, t: now, tone, who, seq: this.said = (this.said || 0) + 1 }; // (seq: a line's place among all ever said; `lines` keeps only the last `max`, so mark a place by seq, never by index)
+    const l = { cls, text, ts: clock(), n: 1, key, t: now, tone, who, echo, seq: this.said = (this.said || 0) + 1 }; // (seq: a line's place among all ever said; `lines` keeps only the last `max`, so mark a place by seq, never by index)
     this.lines.push(l);
     if (this.lines.length > this.max) this.lines.shift();
     this.last = l;
@@ -260,11 +280,13 @@ export class GameLog {
       // (no reading of the window's scroll here: each read lays out the whole page again, and a burst of lines (cubes pouring in)
       //  made a burst of layouts: the owner's spikes in the dunes (R41). Whether it follows the end is kept by its scroll event, and the
       //  scroll to the end is done once a frame, in tick)
-      this.body.appendChild(this.build(l));
+      this.land(); // (the line before lands whole: the log is never behind)
+      this.body.appendChild(this.build(l, !echo && !who && !this.mini));
       while (this.body.children.length > 140) this.body.firstChild.remove();
       if (this.pinned !== false) this.toEnd = true;
     }
     this.afterSay(l);
+    if (hero || cls === 'ach') this.game?.events?.emit('log.hero', { cls }); // (the hero line's hook: the glitch answers it, vfx/glitch.js)
     return l;
   }
 
@@ -277,6 +299,13 @@ export class GameLog {
 
   /** Per frame: the window settles back to half strength when nothing has been said for a while. */
   tick(dt) {
+    const T = this.typing0;
+    if (T) { // (the newest line typed in behind its caret, which blinks in steps)
+      T.t += dt; T.shown = Math.min(T.l.text.length, T.shown + TYPE.cps * dt);
+      T.l.node.data = T.l.text.slice(0, Math.floor(T.shown));
+      T.caret.classList.toggle('off', Math.floor(T.t / TYPE.blink) % 2 === 1);
+      if (T.shown >= T.l.text.length) this.land();
+    }
     this.idleT += dt;
     if (this.idleT > 9) this.root.classList.add('idle');
     if (this.toEnd) { this.toEnd = false; this.body.scrollTop = this.body.scrollHeight; }

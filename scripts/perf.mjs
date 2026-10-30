@@ -15,15 +15,20 @@
 // affected by changes?"). The run keeps its last numbers in node_modules/.cache/perf.json with the commit and the dirty files' hashes they
 // were taken at; the files changed since are mapped to the places they can move (SCOPE below: an area's own files its place, anything
 // shared all of them), and a place nothing touched is carried from that run, marked "carried". The route is walked whole every time
-// (its ticks are cheap and the heaps need it); what costs is SwiftShader's draws, 20 timed a place (was 60, with 40 warm: 10 now), and
-// the built game's heap is read with 3 draws a place, only when dist/ is newer than the last reading. Prior art: every build system's
-// incremental cache (make's mtimes, Bazel's content hashes), Chromium's perf bots bisecting only what a CL touched.
+// (its ticks are cheap and the heaps need it); what costs is SwiftShader's draws, 10 timed a place and 10 warm (20 timed until 2026-10-30,
+// South's yes to the cut; 60 before that), and the built game's heap, read with 3 draws a place only when a build is recorded (--record,
+// at publish) or asked for (--built): between publishes it is carried from the last reading. Two places drawn at once in two pages was
+// weighed and not taken: SwiftShader's GPU process alone ran at 322% of the host's 400% (the census, 2026-10-30), so a second page buys
+// at most a quarter and smears both pages' times. Prior art: every build system's incremental cache (make's mtimes, Bazel's content
+// hashes), Chromium's perf bots bisecting only what a CL touched.
 //
 //   npm run perf              measure what changed since the last run, compare, exit 1 if a budget or a tolerance is broken
 //   npm run perf -- --full    measure every place, whatever changed
 //   npm run perf -- --only dunes,well   measure these places
 //   npm run perf -- --plan    say what would be measured and why, and stop
-//   npm run perf -- --record  measure everything and write today's numbers as the baseline (Petra, when a build is published)
+//   npm run perf -- --draws crossing   list one frame's draws there by object and material (what a count's rise is made of)
+//   npm run perf -- --built   read the built game's heap as well (dist/, after npm run build)
+//   npm run perf -- --record  measure everything, the built game's heap too, and write today's numbers as the baseline (Petra, when a build is published)
 // ---------------------------------------------------------------------------------------
 import fs from 'fs';
 import path from 'path';
@@ -33,7 +38,7 @@ import { execSync } from 'child_process';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const BASE = path.join(ROOT, 'scripts', 'perf-baseline.json');
-const record = process.argv.includes('--record');
+const record = process.argv.includes('--record'), builtWanted = record || process.argv.includes('--built');
 const PLACES = ['workshop', 'dunes', 'well', 'garden', 'crossing', 'spectacle'];
 const CACHE = path.join(ROOT, 'node_modules', '.cache', 'perf.json');
 const t00 = Date.now(), stage = {}; // (real seconds a stage took, said at the end: where a run's time goes)
@@ -63,9 +68,10 @@ const head = git('rev-parse HEAD').trim(), dirty = dirtyNow();
 let cache = null;
 try { cache = JSON.parse(fs.readFileSync(CACHE, 'utf8')); } catch { /* the first run */ }
 const onlyArg = process.argv.find((a, i) => process.argv[i - 1] === '--only');
+const drawsArg = (process.argv.find((a, i) => process.argv[i - 1] === '--draws') || '').split(',').filter(Boolean);
 let want, why;
 if (record || process.argv.includes('--full') || !cache?.commit || !git(`cat-file -t ${cache.commit}`).trim()) { want = new Set(PLACES); why = record ? 'recording' : cache ? 'full' : 'no last run kept'; }
-else if (onlyArg) { want = new Set(onlyArg.split(',').filter((p) => PLACES.includes(p))); why = 'asked'; }
+else if (onlyArg || drawsArg.length) { want = new Set((onlyArg ? onlyArg.split(',') : drawsArg).filter((p) => PLACES.includes(p))); why = 'asked'; }
 else {
   const changed = new Set(git(`diff --name-only ${cache.commit} HEAD`).split('\n').filter(Boolean));
   const hashOf = (f) => (fs.existsSync(path.join(ROOT, f)) ? git(`hash-object -- '${f}'`).trim() : null);
@@ -103,6 +109,9 @@ const url = server.resolvedUrls.local[0];
 // (the calendar held at a calm game noon on Anagami: the hour and the weather are part of the picture, so every run measures the same one;
 // CLOCK=now measures whatever the wall clock gives, CLOCK=<ms> another moment)
 const CLOCK = process.env.CLOCK === 'now' ? null : process.env.CLOCK || 1791160275000;
+// (the session's chance pinned as well: unseeded, the crossing's foes in frame at the measured bar differed by run, and its calls with
+// them, 50 recorded against 65 and 66 read of the same code, one frame's draws identical by name; SEED=<n> measures another)
+const SEED = process.env.SEED || 1;
 const exe = process.env.CHROMIUM || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const browser = await chromium.launch({ executablePath: fs.existsSync(exe) ? exe : undefined, args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info', '--js-flags=--expose-gc'] }); // (gc before the heap is read: without it the reading is whatever garbage is lying about, ±10 MB a run)
 let out = null, errs = [], built = null, stale = false;
@@ -114,14 +123,14 @@ try {
     page.on('pageerror', (e) => errs.push(e.message));
     await page.addInitScript(() => { Object.defineProperty(window, '__game', { configurable: true, set(v) { v.manual = true; this.__g = v; }, get() { return this.__g; } }); });
     const t0 = Date.now();
-    await page.goto(`${at}?graphics=${GRAPHICS}${CLOCK ? `&clock=${CLOCK}` : ''}`, { waitUntil: 'commit' });
+    await page.goto(`${at}?graphics=${GRAPHICS}&seed=${SEED}${CLOCK ? `&clock=${CLOCK}` : ''}`, { waitUntil: 'commit' });
     for (let i = 0; i < 180; i++) { await new Promise((r) => setTimeout(r, 1000)); if (await page.evaluate('!!window.__ready').catch(() => false)) break; }
     const bootS = (Date.now() - t0) / 1000;
     await page.evaluate(() => { document.getElementById('overlay').style.display = 'none'; __game.input.enabled = true; });
     return { page, bootS };
   };
   // (the route, run in the page: `full` false stops at the heap after the three places, which is all the built game is asked for)
-  const measure = ({ full, want }) => {
+  const measure = ({ full, want, draws = [] }) => {
     const G = __game, R = G.renderer;
     let calls = 0, tris = 0;
     const rr = R.render.bind(R); R.render = (s, c) => { rr(s, c); calls += R.info.render.calls; tris += R.info.render.triangles; };
@@ -145,7 +154,7 @@ try {
     // chance, not the frame; CASEBOOK rule 236, measured by Calissa 2026-10-18)
     const gl = R.getContext(), px = new Uint8Array(4), sync = () => gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
     // (a place not wanted is walked through and not drawn; the built game's is drawn 3 times, for its heap; a measured one draws 10 warm
-    // frames of 40 and 20 timed of 60 ticks, every third: SwiftShader's draw is the run's cost, 1 to 2 real s a frame)
+    // frames of 40 and 10 timed of 60 ticks, every sixth: SwiftShader's draw is the run's cost, 1 to 2 real s a frame)
     const place = (key) => {
       G.game.areas?.settle(); // (every area not here let go now: a route walked without draws passes in real milliseconds, so a GRACE of real seconds never ran out and a place was measured with the last one's dressing still built)
       if (!full) { for (let i = 0; i < 40; i++) { G.tick(1 / 60); if (i % 13 === 0) G.draw(); } return null; }
@@ -156,11 +165,18 @@ try {
       let fc = 0, ft = 0;
       for (let i = 0; i < 60; i++) {
         let t = performance.now(); G.tick(1 / 60); tk.push(performance.now() - t);
-        if (i % 3) continue;
+        if (i % 6) continue;
         calls = 0; tris = 0; t = performance.now(); G.draw(); sync(); dr.push(performance.now() - t); fc = calls; ft = tris;
       }
       const st = tk.slice().sort((x, y) => x - y); // (the frame's worst as well as its middle: a hitch is a frame, Unreal's stat unitgraph, the benchmarks' 1% low)
-      return { tick: +med(tk).toFixed(2), tickP95: +st[Math.floor(st.length * 0.95)].toFixed(2), tickMax: +st[st.length - 1].toFixed(2), draw: +med(dr).toFixed(1), calls: fc, tris: ft, programs: R.info.programs?.length || 0, geos: R.info.memory.geometries, tex: R.info.memory.textures, loose: loose() };
+      let byName = null;
+      if (draws.includes(key)) { // (one more frame, its draws named: the object (or its parent) and the material)
+        const rbd = R.renderBufferDirect, n = new Map(); byName = {};
+        R.renderBufferDirect = function (cam, scn, geo, mat, obj, grp) { const k = `${obj.name || obj.parent?.name || obj.type}|${mat.name || mat.type}`; n.set(k, (n.get(k) || 0) + 1); return rbd.call(this, cam, scn, geo, mat, obj, grp); };
+        G.draw(); R.renderBufferDirect = rbd;
+        for (const [k, v] of [...n].sort((a, b) => b[1] - a[1])) byName[k] = v;
+      }
+      return { byName, tick: +med(tk).toFixed(2), tickP95: +st[Math.floor(st.length * 0.95)].toFixed(2), tickMax: +st[st.length - 1].toFixed(2), draw: +med(dr).toFixed(1), calls: fc, tris: ft, programs: R.info.programs?.length || 0, geos: R.info.memory.geometries, tex: R.info.memory.textures, loose: loose() };
     };
     const workshop = place('workshop');
     G.course.toDunes(); for (let i = 0; i < 60; i++) G.tick(1 / 60);
@@ -205,28 +221,32 @@ try {
   let t = Date.now();
   const dev = await boot(url);
   stage.boot = (Date.now() - t) / 1000; t = Date.now();
-  out = await dev.page.evaluate(measure, { full: true, want: [...want] });
+  out = await dev.page.evaluate(measure, { full: true, want: [...want], draws: drawsArg });
+  for (const p of drawsArg) if (out[p]?.byName) { const f = path.join(ROOT, 'node_modules', '.cache', `perf-draws-${p}.json`); fs.writeFileSync(f, JSON.stringify(out[p].byName, null, 1)); console.log(`perf: ${p}'s draws by name written to ${f}`); }
+  for (const p of PLACES) if (out[p]) delete out[p].byName;
   stage.route = (Date.now() - t) / 1000;
   out.bootS = +dev.bootS.toFixed(1);
   await dev.page.close();
   // the built game's heap: dist/ (npm run build, which the gate runs first) served by vite preview, over the same three places, gc'd.
   // What a player's page holds; the dev heap above also holds every module's source text and source map
   const DIST = path.join(ROOT, 'dist', 'index.html');
-  if (!fs.existsSync(DIST)) fails0.push('the built game: no dist/ (npm run build first)');
+  const carryBuilt = () => { if (cache?.out?.heapBuiltMB != null) { out.heapBuiltMB = cache.out.heapBuiltMB; out.carriedBuilt = true; } out.distAt = cache?.distAt; };
+  if (!builtWanted) carryBuilt(); // (read at publish, or when asked: else the last reading, carried)
+  else if (!fs.existsSync(DIST)) fails0.push('the built game: no dist/ (npm run build first)');
   else {
     const newest = (d) => fs.readdirSync(d, { withFileTypes: true }).reduce((m, e) => Math.max(m, e.isDirectory() ? newest(path.join(d, e.name)) : fs.statSync(path.join(d, e.name)).mtimeMs), 0);
-    if (newest(path.join(ROOT, 'src')) > fs.statSync(DIST).mtimeMs) stale = true;
     const distAt = fs.statSync(DIST).mtimeMs;
-    if (!record && cache?.distAt === distAt && cache.out?.heapBuiltMB != null) out.heapBuiltMB = cache.out.heapBuiltMB, out.carriedBuilt = true; // (the same dist/ as last run's reading)
+    if (!record && cache?.distAt === distAt && cache.out?.heapBuiltMB != null) carryBuilt(); // (the same dist/ as the last reading)
     else {
+    if (newest(path.join(ROOT, 'src')) > distAt) stale = true;
     t = Date.now();
     built = await preview({ root: ROOT, logLevel: 'error', preview: { host: '127.0.0.1', port: 4180, strictPort: false } });
     const B = await boot(built.resolvedUrls.local[0]);
     out.heapBuiltMB = (await B.page.evaluate(measure, { full: false, want: [] })).heapMB;
     await B.page.close();
     stage.built = (Date.now() - t) / 1000;
-    }
     out.distAt = distAt;
+    }
   }
 } finally {
   await browser.close();

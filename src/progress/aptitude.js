@@ -13,7 +13,9 @@
 // Prior art: Valerie Shute's stealth assessment (the evidence scored inside play, no test anywhere), the Human Benchmark site (absolute
 // units and your own history), psychophysics' thresholds (a pitch's beating, a colour's distance), StepMania's timing windows.
 //
-//   APTITUDES[id] = { label, unit, better: 'low' | 'high', event, value(e) -> number | null, line }
+//   APTITUDES[id] = { label, unit, better: 'low' | 'high', event, value(e) -> number | null, line }   (one event, one sample)
+//   APTITUDES[id] = { label, unit, better, tally: { marks: { event: (e) -> [yes, no] | null }, flush?, every?, min }, line }   (a share:
+//     yes and no counted over several events, a sample each `every` decisions or at `flush` once `min` are in; a flush with `practice` drops it)
 //   readOf(samples) -> { n, first, best, median, spread, trend, shown, curve }   (pure: the window's numbers)
 //   game.aptitude = new Aptitude(game)   .read(id) -> readOf   .all() -> { id: readOf }   /assay (the readings in the log, for now)
 //   the Touchstone's standard trials (assaytrials.js): `assay.trial.end { trial, record }` in, `aptitude.trial { trial, value, unit }` out
@@ -47,6 +49,19 @@ export const APTITUDES = {
   // a fish landed: the share of its pulls answered (fight.js), reading another mind through a line
   pull: { label: 'Reading a pull', unit: '% of pulls answered', better: 'high', event: 'angle.catch',
     value: (e) => (e.ans != null ? pct(e.ans) : null), line: 'How well you read a fish by its line.' },
+  // the rail's outlined shots (Go / No-Go's no-go: the roll's parry is the only answer, holding back from the plain answer): sent home
+  // against taken, a leg's share. `kind` on `rail.hit` is Petra's field (stage.js `wound`); a leg with fewer than 3 met is no sample
+  inhibition: { label: 'Holding back', unit: '% of outlined shots answered', better: 'high', line: 'How well you hold back for the one answer that works.',
+    tally: { marks: { 'move.parry': (e) => (e.tool === 'sloop' && e.by === 'courier' ? [1, 0] : null), 'rail.hit': (e) => (e.kind === 'outlined' ? [0, 1] : null) }, flush: 'rail.leg.end', min: 3 } },
+  // the Lockheart opened: how far past its measure the coffin was held (0 at the measure, 100 at twice: the most it holds). A fuller
+  // coffin lands harder and recoils harder (outcomes.js: the nuke's recoil by power), so holding on is a pump of BART's balloon. Not
+  // better or worse: `style` says the trend's two ways instead of better and worse, and no best is said. The Lockheart is only the Courier's (its `by` assumed)
+  risk: { label: 'Pushing your luck', unit: '% past the measure', better: 'high', style: ['bolder', 'more careful'], event: 'lockheart.open', by: 'courier',
+    value: (e) => (e.power != null ? pct(e.power - 1) : null), line: 'How long you hold on before you cash in.' },
+  // Nebula Bluff's callouts: the share that caught a bluff (Reading the Mind in the Eyes, by way of a claimant's tells). A sample each 6
+  // callouts, across games (one game is often one call); practice tables count nothing
+  others: { label: 'Reading others', unit: '% of callouts that caught a bluff', better: 'high', line: 'How well you read a bluff.',
+    tally: { marks: { 'casino.result': (e) => (e.game === 'nebula' && e.calls ? [e.right || 0, e.calls - (e.right || 0)] : null) }, every: 6, min: 6 } },
 };
 
 const median = (a) => { if (!a.length) return null; const s = [...a].sort((x, y) => x - y), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
@@ -66,15 +81,37 @@ export class Aptitude {
   constructor(game) {
     this.game = game; this.s = {};
     game.save?.section('aptitude', { scope: 'player', version: 1, dump: () => this.s, load: (d) => { this.s = d && typeof d === 'object' ? d : {}; }, reset: () => { this.s = {}; } });
-    for (const [id, A] of Object.entries(APTITUDES)) game.events?.on?.(A.event, (e) => this.sample(id, e));
+    for (const [id, A] of Object.entries(APTITUDES)) {
+      if (A.event) game.events?.on?.(A.event, (e) => this.sample(id, e));
+      for (const [ev, mark] of Object.entries(A.tally?.marks || {})) game.events?.on?.(ev, (e) => this.mark(id, mark(e), e));
+      if (A.tally?.flush) game.events?.on?.(A.tally.flush, (e) => this.flush(id, e));
+    }
     game.events?.on?.('assay.trial.end', (e) => this.trial(e)); // (the Touchstone's room hands over what happened: assaytrials.js)
     game.chat?.add?.('assay', { help: 'what the System has measured of how you play: /assay', run: () => this.game.events?.emit('aptitude.ask', { readings: this.all(), by: 'courier' }) });
   }
   /** One reading from an event, if it counts. */
   sample(id, e) {
     const A = APTITUDES[id], g = this.game;
-    if (!A || e?.by !== 'courier' || e.practice || g.agent?.task) return;
-    const v = A.value(e); if (v == null || !Number.isFinite(v)) return;
+    if (!A || (e?.by ?? A.by) !== 'courier' || e.practice || g.agent?.task) return;
+    this.keep(id, A.value(e));
+  }
+  /** A tally's yes and no from one event (an agent's and a practice's dropped); a sample at `every` decisions. */
+  mark(id, yn, e) {
+    if (!yn || e?.practice || this.game.agent?.task) return;
+    const A = APTITUDES[id], T = (this.tallies ||= {})[id] ||= { yes: 0, no: 0 };
+    T.yes += yn[0]; T.no += yn[1];
+    if (A.tally.every && T.yes + T.no >= A.tally.every) this.flush(id, {});
+  }
+  /** A tally's share kept as one sample (if `min` decisions are in), and begun again; a practice's thrown away. */
+  flush(id, e) {
+    const A = APTITUDES[id], T = this.tallies?.[id]; if (!T) return;
+    const n = T.yes + T.no; this.tallies[id] = { yes: 0, no: 0 };
+    if (e?.practice || n < A.tally.min) return;
+    this.keep(id, pct(T.yes / n));
+  }
+  keep(id, v) {
+    const A = APTITUDES[id], g = this.game;
+    if (v == null || !Number.isFinite(v)) return;
     const S = (this.s[id] ||= { n: 0, first: v, best: v, list: [], early: [] });
     S.n++; S.list.push(v); if (S.list.length > APT.keep) S.list.shift(); if (S.early.length < APT.trend) S.early.push(v);
     S.best = A.better === 'low' ? Math.min(S.best, v) : Math.max(S.best, v);

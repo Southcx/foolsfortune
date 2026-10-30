@@ -60,6 +60,7 @@ export class Sfx {
     // the held loops (the skiff's run, its grind, wet sand, a shell's field): one bus, silenced while a menu is over the game
     this.loopBus = this.ctx.createGain(); this.loopBus.connect(this.master);
     this.recover();
+    const a = this.acousticNow?.(); if (a) this.setAcoustic?.(a.acoustic, a.wet); // (the zone's space said before the context existed: audio/cues.js)
   }
 
   /** The context kept alive on a phone (docs/plans/MOBILE.md 6.5): a hidden tab suspends it (its timers are throttled and nothing it

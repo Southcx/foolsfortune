@@ -135,7 +135,7 @@ export class Emocean {
     W.onSpawn = (n) => { if (this.run) this.run.spawned += n; };
     W.onDown = (f, { returned, volley }) => this.down(f, returned, volley);
     W.tellOf = (f) => this.tellOf(f); // (a body's tell: its windup's share gone, vfx/railfoes.js)
-    S.onHit = () => this.wound(1, { by: 'creature', what: 'shot' });
+    S.onHit = (s, kind) => this.wound(1, { by: 'creature', what: 'shot', kind });
     S.onSurge = () => { if (this.run) { if (this.run.chain.links || this.run.chain.of) this.game.railReadout?.chainBreak?.(); this.run.chain = { ...chain(), best: this.run.chain.best }; } }; // (the surge's price: the chain, its best level kept)
     S.onAbsorb = () => { const r = this.run; if (!r || this.ending) return; r.absorbed++; r.score += SCORE.absorb; this.game.lachryma?.gain(T.ship.absorb, 'absorb'); };
     S.onGraze = () => { const r = this.run; if (!r || this.ending) return; const b = Math.floor(this.bar); if (r.grazeBar !== b) { r.grazeBar = b; r.grazeN = 0; } if (r.grazeN >= T.ship.graze.cap) return; r.grazeN++; r.grazed = (r.grazed || 0) + 1; this.game.lachryma?.gain(T.ship.graze.pay, 'graze'); }; // (capped a bar)
@@ -443,10 +443,10 @@ export class Emocean {
     this.wound(n, { by, what });
     return true;
   }
-  wound(n, { by = 'creature', what = 'shot' } = {}) {
+  wound(n, { by = 'creature', what = 'shot', kind = null } = {}) {
     const r = this.run; if (!r || this.ending || this.offering) return;
     r.hits = Math.min(r.bears, r.hits + n); this.feel('hit');
-    this.game.events?.emit('rail.hit', { hits: r.hits, bears: r.bears, what, by });
+    this.game.events?.emit('rail.hit', { hits: r.hits, bears: r.bears, what, ...(kind ? { kind } : {}), by }); // (kind: a shot's, 'plain' | 'outlined')
     if (r.chain.links || r.chain.of) this.game.railReadout?.chainBreak?.();
     chainHit(r.chain); // (a hit breaks the chain to nothing: something seen to fall, not only hull, RAIL-MODULES.md 5)
     if (r.hits >= r.bears) this.broken();

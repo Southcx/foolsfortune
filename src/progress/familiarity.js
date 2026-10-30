@@ -45,7 +45,7 @@ const get = (L, k) => (L?.get?.(k) || 0);
 /** How well the Courier knows this kind: the better of the photographs' understanding and the fights' downs. `next` says what the
  *  next level asks by fighting (a down count), or null at the top. */
 export function familiarityOf(L, kind) {
-  const photo = Math.min(4, get(L, `bestiary.u.${kind}`)), downs = get(L, `creature.${kind}.down`);
+  const photo = Math.min(4, get(L, `bestiary.u.${kind}`)), downs = get(L, `creature.${kind}.down`) + get(L, `creature.${kind}.read`); // (a Rite's read counts as a down: tools/pairspecials/bell.js, Petra's, 2026-10-30)
   let fights = 0; for (let i = FAMILIARITY.downs.length - 1; i >= 0; i--) if (downs >= FAMILIARITY.downs[i]) { fights = i; break; }
   const level = Math.max(photo, fights);
   return { level, name: FAMILIARITY.names[level], photo, fights, downs, next: level < 4 ? FAMILIARITY.downs[level + 1] : null };

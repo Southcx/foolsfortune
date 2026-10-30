@@ -118,9 +118,9 @@ export function swapRefusal(game) {
   return null;
 }
 
-/** The specials built in play (Petra's tools/pairspecials.js, wave 1, 2026-10-29): their pairs' `special` set, so the Box's loadout shows
- *  the special's line in place of "to come". */
-export const SPECIALS_BUILT = [19, 6, 17, 3];
+/** The specials built in play (Petra's tools/pairspecials.js, wave 1, 2026-10-29; the other seventeen 2026-10-30, tools/pairspecials/):
+ *  their pairs' `special` set, so the Box's loadout shows the special's line in place of "to come". */
+export const SPECIALS_BUILT = [19, 6, 17, 3, 1, 2, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 21];
 for (const n of SPECIALS_BUILT) { const p = PAIRS.find((x) => x.n === n); if (p) p.special = PAIR_SPECIALS[n]; }
 
 /** The specials' numbers in play (tools/pairspecials.js reads them), each against a number the game already has:
@@ -138,6 +138,57 @@ export const SPECIAL_PLAY = {
   rung: { n: 6, stun: 1.1, power: 0.6 },
   lure: { n: 17, every: 0.06, r: 0.7, cost: 0.2, drop: 8 },
   mop: { n: 3, every: 0.15, r: 1, want: 0.5, toBottle: 1.5, reach: 5 },
+  // ---- the seventeen still to build (2026-10-30, South: "close all open threads"), each against a number the game already has:
+  /** Hooked Shot (1): the next round within `window` 3 real s of the lend drags what it hits to `stop` 2 m (the cutlass's reach) at
+   *  `pull` 8 m/s (the hook's own reel); a creature over `maxHp` 8 (bigger than a slip jelly) is too heavy and pulls you instead, as the hook does. */
+  hookedShot: { n: 1, window: 3, pull: 8, stop: 2, maxHp: 8 },
+  /** Revelation (2): the dowse's ring at `reach` 20 m (twice the Flash's 10: the dowse reads far, the Flash names), every hidden signature in
+   *  it shown and tagged through walls for `life` 6 real s (the Flash's dazzle 1.4 s four times over: it is a read, not a stun). */
+  revelation: { n: 2, reach: 20, life: 6 },
+  /** On the Beat (4): `shots` 6 (a cylinder), each fired within `window` 0.1 real s of the bell's beat staggers for `stagger` 0.3 s (one toll's),
+   *  for `bars` 4 bars at the bell's 96 a real minute (10 real s). Off the beat a round is a plain round. */
+  onTheBeat: { n: 4, shots: 6, window: 0.1, stagger: 0.3, bars: 4 },
+  /** Rite (5): the toll at its own `reach` 4.2 m; each creature it reaches counts `reads` 1 photograph toward its familiarity (the bell
+   *  reads as the lens does, at the lens's worst: one plate's worth, never an appraisal). */
+  rite: { n: 5, reach: 4.2, reads: 1 },
+  /** Rung Line (6) is wave 1's (above). Slingshot (7): the fork thrown to `range` 30 m, the hook to it flings you at `fling` 18 m/s (the
+   *  grapple's swing at its peak) and you keep `carry` 0.6 of it on arrival, so it chains into a jump. */
+  slingshot: { n: 7, range: 30, fling: 18, carry: 0.6 },
+  /** Gentle Edge (8): for `life` 6 real s the cutlass's blows build calm at `calm` 0.5 of their power and hurt at `hurt` 0.25: a string of
+   *  four calms a slip jelly (the bell's song calms in about as long); the flick's paint is what carries it. */
+  gentleEdge: { n: 8, life: 6, calm: 0.5, hurt: 0.25 },
+  /** Illumined Page (9): a plate taken within `window` 2 real s of the flick writes the brush's last sigil on what it holds, at `power` 0.5
+   *  of its own (a sigil drawn by hand is the full one), within the lens's `reach` 18 m. */
+  illuminedPage: { n: 9, window: 2, power: 0.5, reach: 18 },
+  /** Turn of Weather (10): the wheel of odds turns the weather where the lure lies, `radius` 30 m (a weather's place is an island; this is a
+   *  patch), for `hours` 1 game hour, at the strength of the wheel's outcome rank / 4 (a jackpot a full spell, a dud nothing). */
+  turnOfWeather: { n: 10, radius: 30, hours: 1 },
+  /** Appraised Cut (11): a blow on a weak point of a kind you know at familiarity `known` 2 (WATCHED) or more counts as its trumping type
+   *  (`mult` 1.5, the type chart's own trump); the Flash says which. */
+  appraisedCut: { n: 11, known: 2, mult: 1.5 },
+  /** Held Plate (12): a plate halts what it holds for `halt` 1.5 real s (twice the Flash's stun: you gave the shot), `cool` 8 real s apart. */
+  heldPlate: { n: 12, halt: 1.5, cool: 8 },
+  /** Reaper's Draw (13): a creature downed by the cutlass gives its Lachryma straight to the coffin at `share` 1.0 of a drain's (the
+   *  hoover's 3.6 a second, done at once), up to the coffin's measure. */
+  reapersDraw: { n: 13, share: 1 },
+  /** Healing Song (14): paint laid within `window` 0.12 real s of the beat mends `mend` 1 crack for each `area` 10 square metres laid so
+   *  (the spray's 6 Lachryma a second paints about that in 8 s on the beat: a slow mend, earned in time). */
+  healingSong: { n: 14, window: 0.12, area: 10, mend: 1 },
+  /** Chain Shot (15): a round that hits chains its creature to the nearest other within `reach` 6 m; both are halted `halt` 2 real s and
+   *  held `length` 6 m apart after (the gulp's own hold, shared). */
+  chainShot: { n: 15, reach: 6, halt: 2, length: 6 },
+  /** Lightning Rod (16): where the fork sticks, a bolt `delay` 0.6 real s later (a beat to step out), `radius` 3 m, `power` 3 (a slip jelly,
+   *  8, takes three), stunning `stun` 0.5 s; one bolt a throw. */
+  lightningRod: { n: 16, delay: 0.6, radius: 3, power: 3, stun: 0.5 },
+  /** Painted Lure (17) is wave 1's. Singing Mirage (18): the bell's mirage rises where the fork lands, singing so creatures within `lure`
+   *  12 m go to it (three times the toll's reach), for `life` 6 real s. */
+  singingMirage: { n: 18, lure: 12, life: 6 },
+  /** The Mark (19) is wave 1's. Last Call (20): the toll at the Opening bursts the coffin's fill as a wave, `radius` 6 m, its power the fill
+   *  times `per` 0.1 (a full coffin at twice its measure, 200, hits as 20: a slip jelly twice over). The coffin is empty after. */
+  lastCall: { n: 20, radius: 6, per: 0.1 },
+  /** Full Circle (21): a round paints a line `width` 0.5 m along its flight to `length` 12 m at `cost` 0.2 a metre (the lure's rate), and a
+   *  cracked region within `mendReach` 1 m of it mends `mend` 0.1 of a crack for each metre it crosses. */
+  fullCircle: { n: 21, width: 0.5, length: 12, cost: 0.2, mendReach: 1, mend: 0.1 },
 };
 
 /** A special's two verbs, said plainly: { main: [tool, verb], sub: [tool, its lent verb] }. */

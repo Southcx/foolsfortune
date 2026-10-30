@@ -994,8 +994,17 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 352. **An additive effect also covers a share of what is behind it.** Pure light on a bright ground clips to white
   and loses its hue; a look is checked on the noon sand as well as in the dark.
 353. **A mesh compiled alone is compiled as it will be drawn: its scene's lights and that pass's clipping.** three keys a
-  program by both, and compile() keeps the clipping of the last render(): draw an empty scene with the pass's planes first.
+  program by both, and compile() keeps the clipping of the last render(): draw an empty scene with the pass's planes first, and one
+  with the world's after, or the next compile inherits the pass's.
 354. **A mark that promises an answer reads the window of the press it promises for.** One table for the windows; never a shortest-of stand-in.
+355. **A number in a rules table has its reader in the same change.** A rule nothing reads is a promise the game
+  breaks: grep the key before calling the table done.
+356. **Every list on a page is reached by the arrows.** The window moves between its lists, a list inside itself;
+  a page is driven from the keyboard once before it ships.
+357. **A stimulus that is measured is drawn past the frame's grade, and read back off the screen.** The world's
+  frame is tone-mapped and graded whole; a material's own flags do not reach past it.
+358. **A state's entering and leaving are said as a pair or not at all, and no oftener than a person reads them.** A line a
+  routine loop can raise (an overflow at sea) is throttled by what the player does, not by the code's own tick.
 NEW:ik-pole-own-pose. **An IK's pole is laid in the frame of the pose it corrects.** A leg re-solved toward a pole set off the capsule's
   forward flips a near-straight knee wherever a tech turns the body away from the capsule (a spinning kick): where a tech owns the pose,
   the pole is the knee's own way and the gait's own parts (the stride's warp, the foot locks) stand down by its share. Measure a knee's

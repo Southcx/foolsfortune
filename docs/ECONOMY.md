@@ -189,6 +189,29 @@ each with a hue, a saturation and a path at the spirit press (DESIGN.md section 
 - **A square completed** (`opensea/squares.js`): 1 to 3 minutes of play once a square by its class, about 800 cubes over the whole
   sea: bounded, paid for going back at the hour a phenomenon wants.
 
+## The numbers and their reasons (GAPS.md 7; `node scripts/economy.mjs`, its last block)
+
+Five numbers stood without a reason. Each is measured by the simulator's last block, and here is what it is for.
+
+- **The epic pity's prismatic, 12%** (`TITHE.epicPrismatic`, `world/treasure/treasure.js`): it fires only after 40 pulls with no epic,
+  which a natural epic (3.8% as met) usually prevents. It is the unluckiest player's consolation (Genshin's and FEH's pity, softened):
+  measured, it moves the median pulls to a first prismatic not at all (100) and spares about 7 players in 100 the hard pity (61% to 54%).
+  Kept: it is a floor under bad luck, not a lever on good.
+- **The near miss, 42% of reveals below epic** (`rouletteSeq`, `world/treasure/ceremony.js`): the roulette climbs past the tier it will
+  give and falls back. A look only; the odds are drawn first and never move. It shows on about 40% of all pulls. The research on slot
+  machines (Reid 1986; Kassinove and Schare 2001, near misses at 15, 30 and 45%) found the near miss lengthens play, most at about 30%.
+  The Tithe takes cubes, so this is a persuasion lever, and the number is South's to rule: kept as spectacle, or lowered (asked in the
+  digest).
+- **The chest ranges** (`ECON.chest`): means 6.5 / 20 / 55 / 160 / 550 cubes, a common chest about a minute of play at the aim and a
+  prismatic about an hour. Each tier is about 3x the last (the rarity steps of the weights, 60 / 26 / 10.5 / 3 / 0.5, are 2.3x to 6x).
+  Each range is about +/-30% of its mean, so a chest varies but a tier never overlaps the next.
+- **The coffin fills** (`HEARTS[].fill`, `tools/lockheart/table.js`): 30 to 50 Lachryma, 8 to 14 real seconds of the hoover on a mind
+  laid low (3.6 a real second): about one fight's spoils an opening. The Gambler's is the cheapest (30) because its wheel is almost all
+  dud; the Shepherd's the dearest (50) because every outcome on its wheel is good; the plain one (40) between.
+- **The standings** (`RANKS`, `progress/achievements.js`): 0, 10, 30, 70, 130, 220, 340 points, against 1349 written. The steps shrink
+  (x3.0 down to x1.5) as OSRS's levels and every RPG's early ranks do: the first standings come in a session, the later ones in weeks.
+  The top, Fool's Fortune, is a quarter of the points: reachable without completing everything.
+
 ## Measuring it
 
 - **F3**'s `econ` line (and F4's report): cubes an hour in and out, the aim, the top three faucets and top two drains. It reads only

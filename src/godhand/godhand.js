@@ -44,6 +44,7 @@ const wrapPi = (a) => Math.atan2(Math.sin(a), Math.cos(a));
 const CSS = `
 #god { position: fixed; inset: 0; pointer-events: none; display: none; font: 12px/1.4 var(--f-ui); color: #fbe3cf; z-index: 4; }
 #god .jar { position: absolute; left: 50%; top: 58px; transform: translateX(-50%); width: min(420px, 60vw); text-align: center; letter-spacing: .08em; }
+body.hud-touch #god .jar { left: var(--hud-log-x, 12px); top: calc(var(--hud-log-y, 60px) + var(--hud-log-h, 20px) + 6px); transform: none; width: min(240px, 34vw); text-align: left; font-size: 10px; } /* (on touch, under the log's ticker, clear of the top bar's row: Calissa's phone shot, 2026-10-30; her instrument takes its place: readout()) */
 #god .jar .bar { height: 10px; margin-top: 4px; border: 1px solid rgba(255,178,122,.5); background: rgba(28,13,8,.55); border-radius: 2px; overflow: hidden; }
 #god .jar .fill { height: 100%; width: 100%; background: linear-gradient(90deg, #ffb27a, #ffe0c0); transition: width .25s; }
 #god .jar .sub { opacity: .75; font-size: 11px; margin-top: 3px; }
@@ -644,6 +645,12 @@ export class GodMode {
   mendJar(amount) { this.jar.mend(amount); }
 
   // ------------------------------------------------------------------ hud
+  /** The Pneuka Jar's numbers, for an instrument drawn from them (Calissa's offer, 2026-10-30): its health, its full, whole or re-forming,
+   *  its gold seams, the helpers at its side, the raids' line. */
+  readout() {
+    const V = this.jar;
+    return { hp: V.hp, max: V.max, alive: !!V.alive, scars: V.scars || 0, helpers: this.game.clappers.list.filter((c) => c.alive && c.ally).length, raid: this.raids.status() };
+  }
   updateHud() {
     const V = this.jar;
     const pct = Math.round((V.hp / V.max) * 100);

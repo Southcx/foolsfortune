@@ -400,6 +400,9 @@ const RULES = {
   'rail.boss.fall': (s) => s.railBossFall?.(),
   'rail.end': (s, e) => { s.shoalLock?.(false); if (e.by === 'courier') s.railBossFall?.(); }, // (a set piece's boss beaten; throttled, so rail.boss.fall and this sound once; a held lock let go)
   // the shoal's silhouette (Petra's events, named 2026-10-29; audio/shoalsilhouette.js): its forming, the eye opening, locked, shattered
+  // the ground and the space (Petra's hooks): a step on its surface, a zone's acoustic (audio/moves.js, audio/acoustics.js)
+  'move.step': (s, e) => (e.by ?? 'courier') === 'courier' && s.footstep?.(0, e.surface, e.speed),
+  'zone.acoustic': (s, e) => s.setAcoustic?.(e.acoustic, e.wet),
   // the Touchstone (Petra's world/touchstone/; audio/touchstone.js): the room, a trial begun, ended, stopped short
   'touchstone.enter': (s, e) => e.by === 'courier' && s.touchstoneEnter?.(),
   'assay.trial.start': (s) => s.trialStart?.(),
@@ -459,5 +462,6 @@ export function hearEvents(game, sfx) {
   for (const [name, fn] of Object.entries(RULES)) game.events.on(name, (e) => fn(sfx, e, game));
   installHaptics(game);
   sfx.musicGrid = () => game.music?.grid?.(); // (the cue's key and beat for a bank that has no game: the puzzle duel's notes, audio/puzzleduel.js)
+  sfx.acousticNow = () => game.zones?.acoustic; // (the first zone.acoustic fires at boot, before the context: read again when it starts)
   installAudioHealth(game, sfx); // (the mixer watched for falling behind, into the field report: audio/health.js)
 }

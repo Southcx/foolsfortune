@@ -13,6 +13,7 @@
 //   areaAt(lx, lz) -> id | null      (a point in the Dunes' frame; null past the barrier)
 //   bearingOf(lx, lz) -> degrees in (-180, 180]      inBearing(b, [from, to]) -> bool (the sector's arc, through 180 when from > to)
 //   CHECKLIST_ROWS[kind] = { label, key, of?, needs? }   AREA_PAGE[area] = { rows: [kind], line }   (an area's page on the map: MAP.md 4)
+//   AREA_CONTENTS[area] (what each holds)   AREA_TOTALS[area][kind] (its checklist's M)   RARE_FINDS[area] (its condition-bound find)
 // ---------------------------------------------------------------------------------------
 
 /** hub: the Weir's radius; barrier: where every field area ends (world/dunes/dunes.js, the barrier's ring). */
@@ -44,17 +45,55 @@ export const CHECKLIST_ROWS = {
   geyser: { label: 'Geysers ridden', key: 'geyser.ride.<id>', needs: 'an id and the rider on geyser.launch (world/dunes/geysers.js)' },
   fish: { label: 'Fish caught', key: 'fish.kg.<species>', of: 23 },
   medal: { label: 'Trial medals', key: 'trial.solar.<medal>', of: 3 },
-  rare: { label: 'Night find', key: 'area.<area>.rare', needs: 'the condition-bound find\'s event (AREAS.md 5)' },
+  rare: { label: 'Rare find', key: 'area.<area>.rare', needs: 'the condition-bound find\'s event, `area.rare { area, find }` (RARE_FINDS below)' },
 };
 export const CHECKLIST_KINDS = Object.keys(CHECKLIST_ROWS);
 
+/** WHAT EACH AREA HOLDS (AREAS.md 5 and 8, Dovina's; Petra lays them on `area.enter`, builds them and takes them down on `area.leave`). The
+ *  seed's scatter is re-laid inside the cut at A2's density, the counts kept (crystals 18, geysers 10, ostraca 6). Each area gets one chest
+ *  (one reason to open the map's page there) and one vantage point (Wonder awakens from any of them; the two new ones, `ridges.crest` and
+ *  `ruins.arch`, are Petra's to place at the area's highest point). Columns are dressing (the ruins keep most: 30 of their 48), never counted.
+ *  The ridges hold the most crystals and geysers (their name); the ruins the ostraca (the folk's old words are where their walls were). */
+export const AREA_CONTENTS = {
+  weir: { crystals: 2, geysers: 0, ostraca: 0, chests: 1, vantages: ['weir.pier'], shrines: ['float'], columns: 2 }, // (its chest: `dunes.1`, standing)
+  shore: { crystals: 3, geysers: 2, ostraca: 0, chests: 1, vantages: ['shore.horizon'], shrines: [], columns: 4 },
+  ridges: { crystals: 8, geysers: 5, ostraca: 0, chests: 1, vantages: ['ridges.crest'], shrines: [], columns: 6 },
+  flats: { crystals: 2, geysers: 2, ostraca: 1, chests: 1, vantages: ['gnomon.crown'], shrines: ['lamp'], columns: 6 },
+  ruins: { crystals: 3, geysers: 1, ostraca: 5, chests: 1, vantages: ['ruins.arch'], shrines: [], columns: 30, stele: 1 },
+};
+
+/** Each area's checklist totals (the M of N of M on its page; `rooms` is the map engine's, counted from its charts, so left out): the sum
+ *  of its rows is what "whole" means for da1 .. da10 (progress/areaachievements.js reads the share the map measures). */
+export const AREA_TOTALS = Object.fromEntries(Object.entries(AREA_CONTENTS).map(([id, c]) => [id, {
+  vantage: c.vantages.length, chest: c.chests, shrine: c.shrines.length, ostracon: c.ostraca, crystal: c.crystals, geyser: c.geysers,
+  ...(id === 'weir' ? { fish: CHECKLIST_ROWS.fish.of } : {}), ...(id === 'flats' ? { medal: CHECKLIST_ROWS.medal.of } : {}), rare: 1,
+}]));
+
+/** THE CONDITION-BOUND FINDS (AREAS.md 5; FFXII's rare game), one an area, each met only under its condition and counted once on the
+ *  checklist (`area.rare { area, find, by }`; ledger `area.<area>.rare`), and once seen a bounty Letty Marque can post. The owner's yes is
+ *  "one a round": the ruins' is built; the ridges' is this round's (Petra's to place, its rule here); the other three wait their rounds.
+ *  - the ruins: the aberrant Lantern Wisp that drinks a blot at night (built: `wisp.drink`).
+ *  - the ridges (this round): in Fury's weather at strength `k` 0.5 or more, a bolt that lands in the ridges leaves a fulgurite glowing for
+ *    `hot` 30 real s; struck with the Dreamvane's pick while it glows, it is dug out whole (a curio, Calissa's fulgurite look). Fury teaches
+ *    what lightning does to sand: the glass is the lesson.
+ *  - the flats (next): Grief's rain filling the basin below the Gnomon to a pool for a game hour, its fish rising there alone.
+ *  - the shore (later): at low light, the tide's line glowing where something walks it.
+ *  - the Weir (later): at dawn, the pond's surface holding the night's last star. */
+export const RARE_FINDS = {
+  ruins: { find: 'aberrantWisp', when: { phase: 'night' }, built: true },
+  ridges: { find: 'fulgurite', when: { aspect: 'fury', k: 0.5 }, hot: 30, tool: 'dreamvane.pick', give: { curio: 'fulgurite', tier: 3 }, built: false },
+  flats: { find: 'griefBasin', when: { aspect: 'grief', k: 0.6 }, built: false },
+  shore: { find: 'tideWalker', when: { phase: 'dusk' }, built: false },
+  weir: { find: 'lastStar', when: { phase: 'dawn' }, built: false },
+};
+
 /** Each Dunes area's checklist rows, in the order its page shows them, and its line to come back for (placeholder words, Espada's to rule). */
 export const AREA_PAGE = {
-  weir: { rows: ['rooms', 'fish', 'vantage', 'chest', 'shrine', 'crystal'], line: 'Different fish rise in different weather and at different hours.' },
-  shore: { rows: ['rooms', 'vantage', 'crystal', 'geyser'], line: 'The sea\'s weather reaches the shore first, and the crossings leave from its jetty.' },
-  ridges: { rows: ['rooms', 'crystal', 'geyser'], line: 'Struck crystals grow back, and Fury\'s lightning leaves glass in the sand.' },
-  flats: { rows: ['rooms', 'medal', 'vantage', 'shrine', 'crystal', 'geyser', 'ostracon'], line: 'The Great Dunemaw lays out new floors every game day.' },
-  ruins: { rows: ['rooms', 'ostracon', 'crystal', 'geyser', 'rare'], line: 'Wisps drift through the ruins at night, and one of them may go wrong.' },
+  weir: { rows: ['rooms', 'fish', 'vantage', 'chest', 'shrine', 'crystal', 'rare'], line: 'Different fish rise in different weather and at different hours.' },
+  shore: { rows: ['rooms', 'vantage', 'chest', 'crystal', 'geyser', 'rare'], line: 'The sea\'s weather reaches the shore first, and the crossings leave from its jetty.' },
+  ridges: { rows: ['rooms', 'vantage', 'chest', 'crystal', 'geyser', 'rare'], line: 'Struck crystals grow back, and Fury\'s lightning leaves glass in the sand.' },
+  flats: { rows: ['rooms', 'medal', 'vantage', 'chest', 'shrine', 'crystal', 'geyser', 'ostracon', 'rare'], line: 'The Great Dunemaw lays out new floors every game day.' },
+  ruins: { rows: ['rooms', 'vantage', 'chest', 'ostracon', 'crystal', 'geyser', 'rare'], line: 'Wisps drift through the ruins at night, and one of them may go wrong.' },
 };
 
 export const bearingOf = (lx, lz) => { const b = Math.atan2(lz, lx) * 180 / Math.PI; return b <= -180 ? 180 : b; };
