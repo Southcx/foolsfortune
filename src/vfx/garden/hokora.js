@@ -4,21 +4,27 @@
 // hall of plum-dark wood with lattice doors and a narrow veranda, under a gabled roof with deep eaves (the front eave longer, in the
 // nagare style) gone green with moss, a ridge beam with crossed finials (chigi) and two short logs across it (katsuogi); a straw rope
 // (shimenawa) slung between the front posts with two zigzag paper streamers (shide) hanging from it; a cup of offering on the step;
-// and, leant against the doors, a photograph plate glowing faintly: what the plate shrine wakes a spirit from.
+// and, leant against the doors, a photograph plate glowing faintly: what the plate shrine wakes a spirit from. Before it a small torii
+// of vermilion lacquer (a myōjin torii: its black kasagi upturned at the ends, the nuki through its posts, a tablet on the gakuzuka) with
+// its own shimenawa and shide, and either side a bamboo wand hung with paper streamers (bonten), so the shrine reads by its red gate and
+// its white paper from another planetoid (South, 2026-10-30: "readily identifiable silhouettes"); the whole drawn at HOKORA_SCALE.
 // One merged mesh in vertex colours on the planetoids' own material (no new program), an outline, and the plate's small glow.
 //
 // Prior art: the roadside hokora of Japan (the miniature shrine on a stone plinth by a path or a field, a hall of the gods in small),
 // the nagare-zukuri roof (its long front eave), the shimenawa and its shide, the garden's own palette (vfx/garden/planetoid.js, the
 // spirit press), and Okami's shrines (the same shape at the size of a person's knee to their chest).
 //
-//   const H = new Hokora()   group.add(H.group)   (about 1.7 m tall, its front +Z; world/garden/place.js stands it in the 'hokora' group)
+//   const H = new Hokora()   group.add(H.group)   (about 2.6 m tall at HOKORA_SCALE, its torii 2.5 m in front, its front +Z; world/garden/place.js
+//   stands it in the 'hokora' group)   HOKORA_SCALE
 //   H.dispose()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { addOutline } from '../../render/outline.js';
 
-const C = { stone: 0x6d686e, stoneDk: 0x4e4a52, wood: 0x4a3436, woodDk: 0x2c2023, lattice: 0x1d1517, moss: 0x2f4a40, mossHi: 0x5f7e64, ridge: 0x3a2a2c, rope: 0xc4b07c, paper: 0xe6e2d6, cup: 0xd8d2c4 };
+/** How much larger than the knee-high roadside shrine it is drawn, so it reads across the garden. */
+export const HOKORA_SCALE = 1.5;
+const C = { torii: 0xc8402c, toriiD: 0x9a2e20, kasagi: 0x1f1a1c, bamboo: 0xb7ad62, gold: 0xe0b04a, stone: 0x6d686e, stoneDk: 0x4e4a52, wood: 0x4a3436, woodDk: 0x2c2023, lattice: 0x1d1517, moss: 0x2f4a40, mossHi: 0x5f7e64, ridge: 0x3a2a2c, rope: 0xc4b07c, paper: 0xe6e2d6, cup: 0xd8d2c4 };
 
 /** A primitive coloured and placed (for the merge). */
 function piece(geo, hex, { at = [0, 0, 0], rot = [0, 0, 0], top = null } = {}) {
@@ -70,12 +76,31 @@ export class Hokora {
     for (const x of [-0.12, 0.12]) for (let k = 0; k < 3; k++) box(0.05, 0.05, 0.004, C.paper, { at: [x + (k % 2 ? 0.02 : 0), 0.99 - k * 0.05, 0.255] });
     // the offering: a little cup on the upper step
     cyl(0.035, 0.025, 0.04, C.cup, { at: [0.24, 0.56, 0.3] }, 10);
+    // the torii before it: vermilion posts on black caps, the nuki through them, the shimaki and its black kasagi upturned, a tablet
+    const tz = 0.98, tx = 0.56;
+    for (const sx of [-1, 1]) { cyl(0.05, 0.062, 1.5, C.torii, { at: [sx * tx, 0.75, tz], rot: [0, 0, sx * 0.03] }, 10); cyl(0.078, 0.084, 0.14, C.kasagi, { at: [sx * tx, 0.07, tz] }, 10); }
+    box(1.42, 0.075, 0.075, C.torii, { at: [0, 1.2, tz] });
+    box(1.5, 0.075, 0.12, C.toriiD, { at: [0, 1.5, tz] });
+    box(1.62, 0.075, 0.17, C.kasagi, { at: [0, 1.58, tz] });
+    for (const sx of [-1, 1]) box(0.26, 0.075, 0.17, C.kasagi, { at: [sx * 0.9, 1.6, tz], rot: [0, 0, sx * 0.3] });
+    box(0.07, 0.26, 0.06, C.torii, { at: [0, 1.35, tz] });
+    box(0.17, 0.22, 0.03, C.kasagi, { at: [0, 1.35, tz + 0.04] }); box(0.12, 0.16, 0.035, C.gold, { at: [0, 1.35, tz + 0.045] });
+    const trope = new THREE.CatmullRomCurve3([new THREE.Vector3(-tx, 1.1, tz), new THREE.Vector3(0, 1.02, tz + 0.01), new THREE.Vector3(tx, 1.1, tz)]);
+    P.push(piece(new THREE.TubeGeometry(trope, 12, 0.022, 6), C.rope));
+    for (const x of [-0.3, -0.1, 0.1, 0.3]) for (let k = 0; k < 4; k++) box(0.06, 0.06, 0.004, C.paper, { at: [x + (k % 2 ? 0.025 : 0), 0.98 - k * 0.06, tz + 0.015] });
+    // a bamboo wand either side hung with paper streamers (bonten), a gold cap on each
+    for (const sx of [-1, 1]) {
+      const wx = sx * 0.78, wz = 0.32;
+      cyl(0.018, 0.024, 2.1, C.bamboo, { at: [wx, 1.05, wz] }, 6); cyl(0.04, 0.03, 0.06, C.gold, { at: [wx, 2.12, wz] }, 8);
+      for (let j = 0; j < 6; j++) { const a = (j / 6) * Math.PI * 2; for (let k = 0; k < 5; k++) box(0.05, 0.08, 0.004, C.paper, { at: [wx + Math.sin(a) * (0.05 + (k % 2) * 0.02), 2.02 - k * 0.085, wz + Math.cos(a) * (0.05 + (k % 2) * 0.02)], rot: [0, a, 0] }); }
+    }
     const geo = mergeGeometries(P, false); P.forEach((x) => x.dispose());
     this.mat = new THREE.MeshStandardMaterial({ name: 'hokora', vertexColors: true, roughness: 0.85 }); // (the planetoids' own: the same program)
     const m = (this.mesh = new THREE.Mesh(geo, this.mat)); m.castShadow = true; m.receiveShadow = true; g.add(m); addOutline(m);
     // the plate leant against the doors: glass with a faint pale light in it (the plate shrine wakes a spirit from a plate)
     this.plateMat = new THREE.MeshStandardMaterial({ name: 'hokora-plate', color: 0x15171c, emissive: new THREE.Color(0.45, 0.52, 0.62), emissiveIntensity: 0.22, roughness: 0.15, metalness: 0.1 });
     const pl = (this.plate = new THREE.Mesh(new THREE.BoxGeometry(0.12, 0.16, 0.01), this.plateMat)); pl.position.set(-0.1, 0.655, 0.235); pl.rotation.x = -0.25; g.add(pl); // (dark glass, a faint image in it)
+    g.scale.setScalar(HOKORA_SCALE);
   }
   dispose() { this.group.removeFromParent(); this.mesh.geometry.dispose(); this.mat.dispose(); this.plate.geometry.dispose(); this.plateMat.dispose(); }
 }
