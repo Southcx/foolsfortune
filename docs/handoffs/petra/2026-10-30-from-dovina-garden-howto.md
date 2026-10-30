@@ -26,7 +26,7 @@ The rules are on `claude/dovina-design`: `src/progress/gardenhowto.js`, `src/pro
    `plates()` filters for `clapperjar`, so the workshop's own creature never reaches the plate shrine.
    - Map it through `photoKindOf` (progress/scans.js), the other way round: the Book's `clapper` becomes the garden's `clapperjar`.
    - Also check what the Book keys glint, lobber and spirit photos as. `creatureOf` names only clapper, slipjelly and fish.
-   - The scanner's seal already asks for either spelling (scans.js), and the casebook case is written (NEW:one-kind-one-key).
+   - The scanner's seal already asks for either spelling (scans.js), and the casebook case is written (378).
 4. **The first path.** It is now `sr1, gw1, gw2, gw3, fk1, ...`: enter, plant, carve, right after the Shrine's rest. Each step's
    `FIRST.where` names its spot.
    - gw2 counts `seed.plant.ring` (a moonlet's plant does not count: `inner: true`).
