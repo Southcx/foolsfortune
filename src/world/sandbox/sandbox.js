@@ -69,7 +69,8 @@ export class Sandbox {
     penPosts(kit); this.pitch.build(kit);
     for (const { color, outline, plain, list } of geos.values()) {
       const merged = mergeGeometries(list.map((q) => { q.deleteAttribute('uv'); return q; }), false); for (const q of list) q.dispose();
-      const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.92, metalness: 0, flatShading: true }), m = new THREE.Mesh(merged, plain ? mat : dress(mat, color)); // (dressed with what its colour is made of: vfx/surfaces.js)
+      const mat = new THREE.MeshStandardMaterial({ color, roughness: 0.92, metalness: 0, flatShading: true });
+      const m = new THREE.Mesh(merged, plain ? mat : (g.paintmap?.patch(dress(mat, color)) ?? dress(mat, color))); // (dressed with what its colour is made of, vfx/surfaces.js, and the paint map's as the level's floors are: paint and crude lie on it, and its program is the level's own, none compiled on entry: the gate, 2026-10-30)
       m.receiveShadow = true; m.castShadow = color !== C.floor; if (outline) addOutline(m); room.add(m);
     }
     // signs on the floor before each lectern and over the three places (placeholder lettering: the basement's labels), plain names

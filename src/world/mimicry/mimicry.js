@@ -14,6 +14,7 @@
 //   par, made, powers, domains, first, day }   mimic.leave { puzzle, match }   (each with by: 'courier'; tracking/mimicry.js books them)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { MIMIC, MIMIC_SITES, MIMIC_LADDER, MIMIC_PUZZLES, MIMIC_TOOL, mimicOpen, framesOn, dayPuzzle, lay, snap, restore, matchOf, gradeOf, siteAt, siteOf, eachCell } from '../../progress/mimicry.js';
 import { DUNES_AREAS } from '../../progress/areas.js';
 import { today } from '../../core/calendar.js';
@@ -26,8 +27,9 @@ const TICK = 0.5, IDLE = 2; // (real seconds between scorings; a clean copy left
 
 export class Mimicry {
   constructor(game) {
-    this.game = game; this.S = null; this.stones = [];
-    for (const site of MIMIC_SITES) this.stones.push(this.stone(site));
+    this.game = game; this.S = null;
+    this.stones = MIMIC_SITES.map((site) => this.stone(site));
+    this.dress();
     game.interact?.add('mimicry', () => this.offer());
     for (const ev of Object.keys(STROKES)) game.events?.on?.(ev, (e) => this.stroke(ev, e));
   }
@@ -37,17 +39,25 @@ export class Mimicry {
   /** The puzzle's fixed toolkit number for a power (null: the ramp's own). */
   tool(power, key) { return this.S && this.S.P.powers.includes(power) ? (MIMIC_TOOL[power]?.[key] ?? null) : null; }
 
-  /** A stone, as placed by its site: a placeholder clay standing stone with a gold band. */
+  /** A stone, as placed by its site: where it stands, and its patch beside it. */
   stone(site) {
     const g = this.game, p = siteAt(site, DUNE), y = g.dunes?.heightAt?.(p.x, p.z) ?? DUNE.y;
-    const group = new THREE.Group(); group.position.set(p.x, y, p.z); group.userData.zone = 'dunes';
-    const body = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.5, 1.8, 7), new THREE.MeshStandardMaterial({ color: 0x9a6a4a, roughness: 0.85 }));
-    body.position.y = 0.9; group.add(body);
-    const band = new THREE.Mesh(new THREE.TorusGeometry(0.44, 0.05, 6, 20), new THREE.MeshStandardMaterial({ color: 0xffd36a, emissive: 0x6a4a10, roughness: 0.4 }));
-    band.rotation.x = Math.PI / 2; band.position.y = 1.35; group.add(band);
-    g.scene?.add(group);
     const out = p.out, c = { x: p.x + out.x * (MIMIC.half + 3), z: p.z + out.z * (MIMIC.half + 3) }; // (the patch beside it, away from the oasis)
-    return { site, group, pos: group.position, patch: { x: c.x, z: c.z, y: g.dunes?.heightAt?.(c.x, c.z) ?? y } };
+    return { site, pos: new THREE.Vector3(p.x, y, p.z), patch: { x: c.x, z: c.z, y: g.dunes?.heightAt?.(c.x, c.z) ?? y } };
+  }
+  /** The stones drawn (a placeholder: a clay standing stone with a gold band each), every stone's body one mesh and every band another,
+   *  so all of them cost two draws wherever they stand in view (the gate, 2026-10-30: eight meshes and eight materials before). */
+  dress() {
+    const bodies = [], bands = [];
+    for (const { pos } of this.stones) {
+      bodies.push(new THREE.CylinderGeometry(0.35, 0.5, 1.8, 7).translate(pos.x, pos.y + 0.9, pos.z));
+      bands.push(new THREE.TorusGeometry(0.44, 0.05, 6, 20).rotateX(Math.PI / 2).translate(pos.x, pos.y + 1.35, pos.z));
+    }
+    const group = (this.group = new THREE.Group()); group.name = 'mimicry-stones'; group.userData.zone = 'dunes';
+    group.add(new THREE.Mesh(mergeGeometries(bodies), new THREE.MeshStandardMaterial({ color: 0x9a6a4a, roughness: 0.85 })));
+    group.add(new THREE.Mesh(mergeGeometries(bands), new THREE.MeshStandardMaterial({ color: 0xffd36a, emissive: 0x6a4a10, roughness: 0.4 })));
+    for (const q of [...bodies, ...bands]) q.dispose();
+    this.game.scene?.add(group);
   }
 
   offer() {

@@ -9,7 +9,8 @@
 // passes through it"): it is a friend in `game.creatures` (friendly fire: a fifth of the damage, no blow past a quarter of its health,
 // statuses under tolerance, progress/combat/friendly.js); struck, it flinches; emptied, it shatters and is made whole at its leader's
 // side (Calissa's look, vfx/siblingshatter.js: it is held in pieces until then). It wears its division's look (Calissa's,
-// vfx/siblinglooks.js). Its rig has its own fade and dissolve and is never hidden by the first-person view.
+// vfx/siblinglooks.js) and carries its division's tool in its right hand (coop/siblingtool.js). Its rig has its own fade and dissolve and
+// is never hidden by the first-person view.
 //
 // Prior art: the Kingdom Hearts party, and the companion built from the player's own controller (Halo's co-op Arbiter, Sonic's Tails
 // driven by a second pad): one body, two drivers.
@@ -25,6 +26,7 @@ import { SiblingFight } from './fight.js';
 import { SiblingPoint } from './point.js';
 import { sfx } from '../audio/sfx.js';
 import { tag } from '../core/tags.js';
+import { SiblingTool } from './siblingtool.js';
 
 const _gd = new THREE.Vector3(0, -1, 0), _fl = new THREE.Vector3();
 export const SIB = { hp: 8, mendAfter: 4, mend: 0.5, flinch: 3 }; // (a slip jelly's health; sim seconds after a blow before it mends, health a second; m/s a blow pushes)
@@ -64,6 +66,7 @@ export class Sibling {
     this.rig = rig; rig.gun.visible = false; rig.gunOff = true; rig.root.name = `Sibling-${id}`;
     rig.onFootstep = () => B.sfx.footstep?.(); // (the rig's heel strikes, as the Courier's are: main.js)
     game.vessel?.dress(rig, look, { own: true }); // (its division's look, coop/party.js lookOf, on the Courier's own finish shaders)
+    this.tool = new SiblingTool(this); // (its craft in its right hand: coop/siblingtool.js)
     this.follow = new Follow(B, this.keys, { slot, of }); this.fight = new SiblingFight(this); this.point = new SiblingPoint(this, seen); // (seen: what the party has pointed at)
     this.lastHeading = null; this.leader = null;
     B.respawn = () => { if (this.leader) this.follow.warp(this.leader); }; // (fallen out of the world: back to its leader, never to the workshop's spawn)
@@ -120,6 +123,7 @@ export class Sibling {
       aimPitch: 0, aimYawOffset: 0, combat: 0, upper: 0, gunHand: 0, reload: -1,
       walkSpeed: T.movement.walkSpeed, sprintSpeed: T.movement.sprintSpeed, recoil: 0, adsT: 0, landed: B.landed, techs: this.fight, // (the fight's blows: a layer, as a tech's)
     });
+    this.tool.update(dt); // (on the hand just posed)
     B.landedOut = B.landed; B.landed = 0;
     this.keys.frame();
   }
@@ -128,6 +132,6 @@ export class Sibling {
     const P = this.game.physics;
     this.ent.alive = false; this.game.creatures?.removeFriend(this.ent);
     P.removeBody(this.body.body); P.world.removeCharacterController(this.body.ctrl);
-    this.rig.dispose();
+    this.tool.dispose(); this.rig.dispose();
   }
 }

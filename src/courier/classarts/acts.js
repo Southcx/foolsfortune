@@ -329,8 +329,9 @@ export const ACTS = {
     owed: (run, R) => foes(run, R.does.reach).filter((c) => (run.dealt.get(c) || 0) > 0),
     can(run, R) { return this.owed(run, R).length ? null : 'Settle the Score needs a creature nearby that has hurt you.'; }, // (Espada's words)
     go(run, R) {
-      const g = run.game, P = run.P;
-      for (const c of this.owed(run, R)) {
+      const g = run.game, P = run.P, owed = this.owed(run, R);
+      run.place = { targets: owed }; // (each one dealt back: Calissa's beams drawn in from them)
+      for (const c of owed) {
         const d = _a.copy(c.pos).sub(P.pos).setY(0); if (d.lengthSq() < 1e-4) d.set(0, 0, 1);
         g.creatures.strike(c, c.pos.clone().setY(c.pos.y + 0.8), d.normalize().clone(), Math.max(0.5, run.dealt.get(c) * R.does.share * SETTLE_BACK), 'art', 'courier');
         run.dealt.delete(c);
