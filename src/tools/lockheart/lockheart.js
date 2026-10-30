@@ -14,8 +14,6 @@
 //    From the press the wheel is put up STILL, its sectors the table with the keys as they stand: let go short and it folds away,
 //    spending nothing; held through, it opens. THE WHEEL TURNS THE KEYRING (OVERLAY.md 19.6): their changes stack in ring order, so the
 //    order is a choice, and the ring rotates (four orders of four, a turn free): `lockheart.keyring` { keys }.
-//    Each open says HOW it was taken (`lockheart.open { how }`, the Assay's risk reading: APTITUDE.md 3, BART's pump): `cashed`, opened on
-//    its first fill, or `pushed`, the coffin left to take in more after it read full (toward twice full, twice as hard).
 //  - WHICH COFFIN is on the chain is which wheel: the plain one gives back what was put in, the gambler's almost never anything but
 //    a slip nuke one time in a hundred (and turned upside down by an inverted key, ninety-nine), the shepherd's what is for the flock.
 //    A SUMMONING coffin (its mode: table.js MODES) is the CATCH (docs/plans/SPIRIT-GARDEN.md, 5a): opened on a Figment laid low
@@ -95,7 +93,7 @@ export class Lockheart extends HeldTool {
     this.mount();
     const g = mgr.game;
     g.lockheart = this;
-    this.cap = CAP; this.charge = 0; this.pushed = false;
+    this.cap = CAP; this.charge = 0;
     g.save?.section('lockheart', { scope: 'player', version: 1, dump: () => Math.round(this.charge), load: (d) => { this.charge = Math.min(CAP, Math.max(0, +d || 0)); }, reset: () => { this.charge = 0; } }); // (core/save.js)
     this.hoovering = false; this.hooverW = 0; this.drainT = 0; this.queue = []; this.lidK = 0; this.saveT = 0;
     this.wheel = new Wheel(g.scene);
@@ -156,7 +154,6 @@ export class Lockheart extends HeldTool {
     this.charge = Math.min(CAP, this.charge + n);
     const took = this.charge - before;
     if (took > 0) {
-      if (this.heart && before >= this.fill) this.pushed = true; // (it took more after it read full: the open will say `pushed`)
       if (before < this.fill && this.charge >= this.fill && this.heart) this.game.events?.emit('lockheart.full', { heart: this.heart });
       if (from !== 'overflow' || took > 2) this.game.events?.emit('lockheart.feed', { amount: Math.round(took), from });
     }
@@ -242,15 +239,15 @@ export class Lockheart extends HeldTool {
     const used = [...keys], broke = [], results = used.map(() => 'kept'); // (`results`: each key's turn by its ring index, kept | spent (brass) | broke)
     for (let i = keys.length - 1; i >= 0; i--) if (keyBreaks(keys[i], box.turn('keys', i), simRand())) { box.useUp('keys', i); results[i] = used[i] === 'key.brass' ? 'spent' : 'broke'; if (used[i] !== 'key.brass') broke.unshift(used[i]); }
     const { table, mods } = oddsOf(this.heart, used);
-    const power = Math.min(2, this.charge / this.fill), how = this.pushed ? 'pushed' : 'cashed';
-    this.charge = 0; this.pushed = false; this.save();
+    const power = Math.min(2, this.charge / this.fill);
+    this.charge = 0; this.save();
     const R = rates(table), draws = [];
     const lucky = g.classArtsRun?.lucky?.(); // (Beginner's Luck: each spin thrown twice, the better outcome kept: courier/classarts/body.js)
     const better = (a, b) => ((OUTCOMES[b]?.rank ?? 0) > (OUTCOMES[a]?.rank ?? 0) ? b : a);
     for (let s = 0; s < mods.spins; s++) { const a = spin(table, simRand()); draws.push(lucky ? better(a, spin(table, simRand())) : a); }
     this.queue = draws.map((id, i) => ({ id, R, power, mods, heart: this.heart, keys: used, i }));
     sfx.coffin?.(true);
-    g.events?.emit('lockheart.open', { heart: this.heart, keys: used, broke, results, power: +power.toFixed(2), spins: mods.spins, how });
+    g.events?.emit('lockheart.open', { heart: this.heart, keys: used, broke, results, power: +power.toFixed(2), spins: mods.spins, by: 'courier' });
     if (g.ultimate) g.ultimate.begin(this); else { this.gesture('Lock_Open'); this.next(); } // (R40: the Courier's ultimate, a show the game stops for: tools/lockheart/ultimate.js)
   }
   /** A clip of the coffin's own over the stance (the lid opened): cut off by the next. */
@@ -277,11 +274,10 @@ export class Lockheart extends HeldTool {
     for (let i = keys.length - 1; i >= 0; i--) if (keyBreaks(keys[i], box.turn('keys', i), simRand())) { box.useUp('keys', i); results[i] = used[i] === 'key.brass' ? 'spent' : 'broke'; }
     const p = catchOdds({ cls: c.cls || 0, clean: this.clean(c), emoFactor: catchFactor(c.emo), keys: used });
     const caught = p > 0 && deckDraw(g.ledger, `catch.${c.kind}`, Math.max(1, Math.round(1 / p)), simRand());
-    const how = this.pushed ? 'pushed' : 'cashed';
-    this.charge = 0; this.pushed = false; this.save();
+    this.charge = 0; this.save();
     g.stun?.hold(c, 4); // (kept down while the wheel turns)
     sfx.coffin?.(true);
-    g.events?.emit('lockheart.open', { heart: this.heart, keys: used, broke: used.filter((_, i) => results[i] === 'broke'), results, power: 1, spins: 1, how });
+    g.events?.emit('lockheart.open', { heart: this.heart, keys: used, broke: used.filter((_, i) => results[i] === 'broke'), results, power: 1, spins: 1, by: 'courier' });
     const R = [{ id: 'free', p: 1 - p, color: 0x5a4a62 }, { id: 'caught', p, color: 0xb49be6 }];
     const { pos, face } = this.catchSpot(c);
     this.queue = [{ id: 'catch' }];

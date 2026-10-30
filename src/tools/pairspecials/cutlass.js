@@ -1,54 +1,59 @@
 // ---------------------------------------------------------------------------------------
-// THE PAIR SPECIALS FED THROUGH THE SONDELASS'S CUTLASS STRING (tools/pairspecials.js is the gate; TOOLS-TOGETHER.md 8). Each changes a
-// cutlass blow (cause `sliced`, the Sondelass in hand in its cutlass form) as it lands:
-//   8  Gentle Edge     Soul Brush sub: the lent Flick wets the blade; for a string's worth of blows each calms instead of hurting
-//   11 Appraised Cut   Veritome sub: a blow on a kind you have photographed lands as the type that beats its own (TRUMPS)
-//   13 Reaper's Draw   Lockheart sub: a blow that downs a creature drinks its Lachryma into the coffin
-// The numbers are placeholders with their reasons (Petra's), until Dovina's rows (progress/toolpairs.js SPECIAL_PLAY) take their place.
+// THE PAIR SPECIALS FED THROUGH THE SONDELASS'S CUTLASS STRING (tools/pairspecials.js is the gate; TOOLS-TOGETHER.md 8; the rules and
+// numbers Dovina's, progress/toolpairs.js SPECIAL_PLAY). Each changes a cutlass blow (cause `sliced`, the Sondelass in hand in its cutlass
+// form) as it lands:
+//   8  Gentle Edge     Soul Brush sub: for `life` after the lent Flick, the blows hurt at `hurt` and build calm at `calm` of their power
+//   11 Appraised Cut   Veritome sub: a blow on a kind you know at familiarity `known` or more lands as the type that beats its own (TRUMPS:
+//                      the chart's own x`mult`)
+//   13 Reaper's Draw   Lockheart sub: a creature downed by the cutlass gives its Lachryma straight to the coffin, `share` of a drain's done
+//                      at once, up to the coffin's measure
 //
-// Prior art: Undertale's spare (a fight won without a wound), Pokémon's type chart read from the Pokédex (Appraised Cut: the
-// photograph is the appraisal), Bloodborne's blood echoes drawn from the kill, Dark Souls' Drain weapons.
+// Prior art: Undertale's spare (a fight won without a wound), Pokémon's type chart read from the Pokédex (Appraised Cut), Bloodborne's
+// blood echoes drawn from the kill, Dark Souls' Drain weapons (Reaper's Draw).
 //
-//   cutlassSpecials(PS) -> part { lend(tool), strike(c, cause, type) -> mods | null, update(raw) }   CUTLASS_PLAY
+//   cutlassSpecials(PS) -> part { lend(tool), strike(c, cause, type, power) -> mods | null, update(raw) }
 // ---------------------------------------------------------------------------------------
 import { TRUMPS } from '../../progress/combat/types.js';
 import { familiarityOf } from '../../progress/familiarity.js';
+import { HOOVER } from '../lockheart/lockheart.js';
 
-/** The placeholders, each against a number the game already has. */
-export const CUTLASS_PLAY = {
-  // Gentle Edge: 6 blows (a cutlass string and its pause string's end); 6 real s; calm 3 real s a blow, held as the Flash's stun x4
-  gentle: { n: 8, blows: 6, life: 6, calm: 3 },
-  // Reaper's Draw: a down drinks half its full health into the coffin (a slip jelly's 40 fills a plain coffin's measure of 40 by half),
-  // 20 at most (a crystal shard's near-half of the measure)
-  reap: { n: 13, perHp: 0.5, most: 20 },
-  appraise: { n: 11 },
-};
+/** Petra's, where the rows are silent: calm put on at `CALM_AT` of its build (a string of four light blows of power 1 at 0.5: "a string of
+ *  four calms a slip jelly"), held as long as Gentle Edge's life; a drain lasts as long as a mind stays laid low (its `stunFor`, 4.5 real s
+ *  when unsaid: stun.js's depth 1). */
+const CALM_AT = 2, DOWN_S = 4.5;
 /** The type that beats a type (TRUMPS read backwards). */
 const BEATS = Object.fromEntries(Object.entries(TRUMPS).map(([a, b]) => [b, a]));
 
 export function cutlassSpecials(PS) {
   const g = PS.game, P = () => PS.play;
   let gentle = null;
+  const calm = new WeakMap(); // (a creature's calm build-up from Gentle Edge's blows)
   const cutlass = () => g.belt?.inHand?.id === 'sondelass' && g.techs?.get?.('sondelass')?.form === 'cutlass';
   return {
-    lend(tool) { if (tool === 'soulbrush' && PS.live(P().gentle.n) && cutlass()) { gentle = { left: P().gentle.blows, until: PS.now + P().gentle.life }; PS.said(P().gentle.n); } },
-    strike(c, cause, type) {
+    lend(tool) { if (tool === 'soulbrush' && PS.live(P().gentleEdge.n) && cutlass()) { gentle = { until: PS.now + P().gentleEdge.life }; PS.said(P().gentleEdge.n); } },
+    strike(c, cause, type, power = 1) {
       if (cause !== 'sliced' || !cutlass() || c.ally) return null;
       let mods = null;
-      if (gentle && gentle.left > 0 && PS.now < gentle.until && PS.live(P().gentle.n)) { // (a calming blow: no wound, its calm put on; still worn its way round)
-        gentle.left--; const G = P().gentle;
-        mods = { dmg: 0, build: 0, after: (t) => { if (t.alive) g.creatures?.apply(t, 'calm', G.calm, 1, 'courier'); } };
+      if (gentle && PS.now < gentle.until && PS.live(P().gentleEdge.n)) { // (a calming blow: a quarter of its wound, its calm built)
+        const G = P().gentleEdge, b = (calm.get(c) || 0) + power * G.calm;
+        mods = { dmg: G.hurt, after: (t) => { if (!t.alive) return; if (b >= CALM_AT) { calm.set(t, 0); g.creatures?.apply(t, 'calm', G.life, 1, 'courier'); } else calm.set(t, b); } };
       }
-      if (PS.live(P().appraise.n) && c.affinity && BEATS[c.affinity] && BEATS[c.affinity] !== type && familiarityOf(g.ledger, c.kind).photo >= 1) {
-        mods = { ...mods, type: BEATS[c.affinity] }; // (photographed: the blow is the kind that beats it)
-        if (!this.appraised) { this.appraised = true; PS.said(P().appraise.n); }
+      const A = P().appraisedCut;
+      if (PS.live(A.n) && c.affinity && BEATS[c.affinity] && BEATS[c.affinity] !== type && familiarityOf(g.ledger, c.kind).level >= A.known) {
+        mods = { ...mods, type: BEATS[c.affinity] }; // (known well enough: the blow is the kind that beats it, the chart's own trump)
+        if (!this.appraised) { this.appraised = true; PS.said(A.n); }
       }
-      if (PS.live(P().reap.n)) {
-        const was = mods?.after, R = P().reap;
-        mods = { ...mods, after: (t) => { was?.(t); if (t.alive) return; const n = Math.min(R.most, (t.maxHp || 0) * R.perHp), LH = g.techs?.get?.('lockheart'); if (n > 0 && LH?.feed?.(n, 'reap') > 0) PS.said(R.n); } };
+      if (PS.live(P().reapersDraw.n)) {
+        const was = mods?.after, R = P().reapersDraw;
+        mods = { ...mods, after: (t) => {
+          was?.(t); if (t.alive) return;
+          const LH = g.techs?.get?.('lockheart'); if (!LH) return;
+          const n = Math.min(R.share * HOOVER.drain * (t.stunFor || DOWN_S), Math.max(0, LH.fill - LH.charge)); // (a drain's worth at once, up to the measure)
+          if (n > 0 && LH.feed?.(n, 'reap') > 0) PS.said(R.n);
+        } };
       }
       return mods;
     },
-    update() { if (gentle && (gentle.left <= 0 || PS.now > gentle.until)) gentle = null; },
+    update() { if (gentle && PS.now > gentle.until) gentle = null; },
   };
 }

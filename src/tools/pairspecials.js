@@ -11,8 +11,8 @@
 //   17 Painted Lure   Dreamvane main, Soul Brush sub: the fork in flight lays a stream of paint under it, from the brush's load
 //   3  Coffin's Mop   Lockheart main, Soul Brush sub: the hoover drinks paint off the ground into the brush's bottle (the Flick pours it back)
 // The other seventeen in parts by the main verb they feed through (tools/pairspecials/): shot.js (1, 4, 15, 21), fork.js (2, 7, 16, 18),
-// cutlass.js (8, 11, 13), coffin.js (10, 20), plate.js (9, 12), bell.js (5, 14). Their numbers are Petra's placeholders, each with its
-// reason, until Dovina's rows in SPECIAL_PLAY take their place (hers are spread last).
+// cutlass.js (8, 11, 13), coffin.js (10, 20), plate.js (9, 12), bell.js (5, 14). Every rule and number is Dovina's row in SPECIAL_PLAY;
+// where a row is silent a part keeps a small number of its own, with its reason.
 //
 // Prior art: Zelda: Tears of the Kingdom's fuse (two things make a third), NieR: Automata's pod programs fed through the blade, Splatoon's
 // ink trails off a thrown sub weapon (the Painted Lure), Luigi's Mansion 3's Poltergust drinking paint (the Coffin's Mop).
@@ -27,15 +27,15 @@ import * as THREE from 'three';
 import { pairOf, pairSpecialOpen, PAIR_SPECIALS, SPECIAL_PLAY } from '../progress/toolpairs.js';
 import { spendLoad, loadAspect } from './soulbrush/load.js';
 import { HOOVER } from './lockheart/lockheart.js';
-import { shotSpecials, SHOT_PLAY } from './pairspecials/shot.js';
-import { forkSpecials, FORK_PLAY } from './pairspecials/fork.js';
-import { cutlassSpecials, CUTLASS_PLAY } from './pairspecials/cutlass.js';
-import { coffinSpecials, COFFIN_PLAY } from './pairspecials/coffin.js';
-import { plateSpecials, PLATE_PLAY } from './pairspecials/plate.js';
-import { bellSpecials, BELL_PLAY } from './pairspecials/bell.js';
+import { shotSpecials } from './pairspecials/shot.js';
+import { forkSpecials } from './pairspecials/fork.js';
+import { cutlassSpecials } from './pairspecials/cutlass.js';
+import { coffinSpecials } from './pairspecials/coffin.js';
+import { plateSpecials } from './pairspecials/plate.js';
+import { bellSpecials } from './pairspecials/bell.js';
 
-/** Every special's numbers: the parts' placeholders, then Dovina's rows over them (progress/toolpairs.js SPECIAL_PLAY: wave 1's now). */
-export const PAIR_PLAY = { ...SHOT_PLAY, ...FORK_PLAY, ...CUTLASS_PLAY, ...COFFIN_PLAY, ...PLATE_PLAY, ...BELL_PLAY, ...SPECIAL_PLAY };
+/** Every special's numbers, with their reasons: Dovina's (progress/toolpairs.js SPECIAL_PLAY). */
+export const PAIR_PLAY = SPECIAL_PLAY;
 const PARTS = [shotSpecials, forkSpecials, cutlassSpecials, coffinSpecials, plateSpecials, bellSpecials];
 
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _d = new THREE.Vector3(), DOWN = new THREE.Vector3(0, -1, 0);
@@ -53,6 +53,9 @@ export class PairSpecials {
     ev?.on?.('shot.fire', each((p, e) => p.shot?.(e)));
     ev?.on?.('crucibelle.toll', each((p, e) => e.by === 'courier' && p.toll?.(e)));
     ev?.on?.('lockheart.open', each((p, e) => p.open?.(e)));
+    ev?.on?.('lockheart.outcome', each((p, e) => p.outcome?.(e)));
+    ev?.on?.('fork.stick', each((p, e) => e.by === 'courier' && p.forkStick?.(e)));
+    ev?.on?.('brush.inscribe', each((p, e) => p.inscribed?.(e)));
     ev?.on?.('zip.end', each((p, e) => p.zip?.(e)));
   }
 
