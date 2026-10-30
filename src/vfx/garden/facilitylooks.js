@@ -5,7 +5,7 @@
 // cover, and compiles what it drew there:
 //
 //   THE SHED      the Pneuka Box's shed as a kura (facilitymodels.js), its round door turned to where the Jar comes in by the gate
-//   THE GATE      a great round moon gate where the torii stood (the torii hidden), its opening turned to the Jar's start so the first
+//   THE GATE      a great round moon gate where the torii stood, its opening turned to the Jar's start so the first
 //                 view looks through it; a faint veil of light in the ring, breathing
 //   THE ATHANOR   its tower furnace on the west shoulder (the press keeps the crown, the hokora the east), its door to the crown,
 //                 smoke from its cap; stepped round the planetoid if a plot or a lotus stands where it would
@@ -81,7 +81,6 @@ export class FacilityLooks {
       const m = standOn(D, f.pos.clone().sub(D.c), { toward: start, foot: 2.4, lift: -0.04 }), up = _a.setFromMatrixColumn(m, 1), side = _b.setFromMatrixColumn(m, 0);
       const upslope = UP.clone().projectOnPlane(up).normalize(), along = Math.sign(side.dot(upslope)) || 1; m.setPosition(_t1.setFromMatrixPosition(m).addScaledVector(side, -along * L.gate.down));
       this.spots.gate = put('moonGate', m); this.veil(m);
-      for (const o of S.group.children) if (o.isMesh && o.material === S.mats.torii) o.visible = false; // (the torii it replaces: world/garden/place.js merged it alone in its material)
     } }
     // the Athanor's tower: the west shoulder, stepped round until no plot or lotus stands within its footing
     { const P = S.by.athanor; if (P) {
