@@ -1,5 +1,20 @@
 // A sound bank of the one mixer (audio/sfx.js): the Courier's body: steps, landings, dashes and the movement techs (blink, slam, roll, swim, climb, carry...).
 // Every method runs on the Sfx itself (`this.ctx`, `this.out`, `this.noise`, `this.tone`, `this.allow`: audio/core.js).
+/** A step's sound by the ground under it (Petra's surfaces): its body (noise), a ring, a splash's band, a grit. */
+const STEP = {
+  clay: { len: 0.07, type: 'lowpass', f0: 700, f1: 200, gain: 0.8 },
+  stone: { len: 0.05, type: 'bandpass', f0: 1400, f1: 600, q: 1.2, gain: 1.0, ring: [220, 0.05, 0.12] },
+  sand: { len: 0.12, type: 'bandpass', f0: 2200, f1: 900, q: 0.8, gain: 0.55, grit: 5000 },
+  wood: { len: 0.06, type: 'bandpass', f0: 500, f1: 280, q: 1.5, gain: 1.3, ring: [160, 0.08, 0.2] },
+  metal: { len: 0.04, type: 'highpass', f0: 2500, f1: 1500, gain: 0.33, ring: [880, 0.18, 0.04] },
+  grate: { len: 0.05, type: 'bandpass', f0: 1800, f1: 900, q: 2, gain: 1.0, ring: [520, 0.12, 0.14] },
+  water: { len: 0.1, type: 'lowpass', f0: 1200, f1: 400, gain: 1.0, wet: 1400, wg: 1.0 },
+  paint: { len: 0.08, type: 'lowpass', f0: 900, f1: 300, gain: 1.1, wet: 700, wg: 1.3 },
+  crude: { len: 0.12, type: 'lowpass', f0: 600, f1: 200, gain: 1.0, wet: 420, wg: 0.9 },
+  grass: { len: 0.1, type: 'bandpass', f0: 3000, f1: 1500, q: 0.6, gain: 0.45, grit: 6500 },
+  lachrymite: { len: 0.04, type: 'highpass', f0: 3000, f1: 2000, gain: 0.4, ring: [1320, 0.25, 0.05] },
+};
+
 export class MoveSounds {
   /** The skiff's hiss and hum: wind over sand and the emitter. Returns { set(speedFrac, boost, air, glide?), stop(), glide(on) }.
    *  The glide (skiff.glide: the oars spread as wings, Space held in the air) is wind under wings: low air buffeting in uneven gusts
@@ -101,10 +116,15 @@ export class MoveSounds {
     this.noise(t + 0.16, 0.1, { f0: 700, f1: 200, gain: 0.6, dest: d });
   }
 
-  footstep(dist = 0) {
+  /** A step on what the foot stands on (move.step { surface, speed }; clay when none is said): `speed` 0 a walk .. 1 a sprint, heavier. */
+  footstep(dist = 0, surface = 'clay', speed = 0.4) {
     if (!this.ok() || !this.allow('step', 12)) return;
-    const t = this.ctx.currentTime, d = this.out(0.08, 0.1);
-    this.noise(t, 0.07, { f0: 700, f1: 200, gain: 0.8, dest: d });
+    const t = this.ctx.currentTime, k = 0.7 + 0.6 * Math.max(0, Math.min(1, speed)), d = this.out(0.08 * k, 0.1);
+    const S = STEP[surface] || STEP.clay;
+    this.noise(t, S.len, { type: S.type, f0: S.f0, f1: S.f1, q: S.q ?? 0.7, gain: S.gain, dest: d });
+    if (S.ring) this.tone(t, S.ring[1], { f0: S.ring[0] * (0.95 + Math.random() * 0.1), type: 'triangle', gain: S.ring[2], dest: d }); // (stone's knock, metal's ring, a grate's rattle)
+    if (S.wet) this.noise(t + 0.03, 0.09, { type: 'bandpass', f0: S.wet, f1: S.wet * 0.6, q: 3, gain: S.wg ?? 0.5, dest: d }); // (water, paint, crude: the splash or the suck)
+    if (S.grit) for (let i = 0; i < 3; i++) this.noise(t + 0.01 + i * 0.015, 0.01, { type: 'highpass', f0: S.grit, gain: 0.3, dest: d }); // (sand's and grass's fine grit)
   }
 
   blink() {
