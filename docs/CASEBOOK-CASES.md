@@ -4724,4 +4724,4 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** `photoKindOf` (scans.js) turns the garden's word into the Book's, and a scan's seal asks for either. The roster is made
   unique. The plate shrine's list is Petra's (handed over). Measured (`node scripts/gardengrowth.mjs`): a clapperjar photographed
   opens a clapperjar's slab; the roster holds each creature once.
-- **Rule:** NEW:one-kind-one-key
+- **Rule:** 378
