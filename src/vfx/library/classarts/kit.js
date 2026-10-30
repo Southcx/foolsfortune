@@ -77,7 +77,7 @@ export const own = (S, R, o) => piece(S, R, o);
 
 const mulCurve = (c, m) => (Array.isArray(c) ? c.map(([t, v]) => [t, v * m]) : (c ?? 1) * m);
 /** A light piece with a soft ink copy drawn under it first (alpha-over, order 5, its pattern mostly smoothed, a little wider): on the noon
- *  sand added light clips to white and the ink is what keeps its shape and colour (NEW:additive-covers); on a dark ground the ink is lost
+ *  sand added light clips to white and the ink is what keeps its shape and colour (352); on a dark ground the ink is lost
  *  in the dark and changes nothing. It erodes ahead of the light, so no dark is left lying where the light has gone. */
 export function inked(L, k = 0.4, wide = 1.04) {
   const ink = { ...L, ramp: 'ink', add: 0, glow: 1, core: 0, mainK: 0.6, ...(L.mask ? { maskK: 0.6 } : {}), scale: mulCurve(L.scale, wide), kmul: (L.kmul ?? 1) * k, order: 5,

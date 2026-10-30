@@ -991,7 +991,7 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 350. **A timer a lent verb reads runs where the tool ticks unheld.** A cooldown counted only in the in-hand update freezes for the sub; count it in the part of the tool's tick that runs drawn or stowed.
 351. **A shape layer that starts hot starts eroded.** A positive `rampShift` reads even a value-0 texel up the
   ramp, so a faded edge (edgeV, edgeU, a rim) comes back at the geometry's hard edge unless the erosion under it cuts it (≥ 0.2 at the start).
-NEW:additive-covers. **An additive effect also covers a share of what is behind it.** Pure light on a bright ground clips to white
+352. **An additive effect also covers a share of what is behind it.** Pure light on a bright ground clips to white
   and loses its hue; a look is checked on the noon sand as well as in the dark.
-NEW:compile-as-drawn. **A mesh compiled alone is compiled as it will be drawn: its scene's lights and that pass's clipping.** three keys a
+353. **A mesh compiled alone is compiled as it will be drawn: its scene's lights and that pass's clipping.** three keys a
   program by both, and compile() keeps the clipping of the last render(): draw an empty scene with the pass's planes first.

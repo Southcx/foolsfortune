@@ -28,7 +28,7 @@ import * as THREE from 'three';
 
 const ANCHOR = { tl: [0, 0], tr: [1, 0], bl: [0, 1], br: [1, 1], c: [0.5, 0.5] };
 
-const NO_CLIP = [];
+const NO_CLIP = [], EMPTY = new THREE.Scene();
 export class OverlayScene {
   constructor(game, renderer) {
     this.game = game; this.r = renderer;
@@ -96,6 +96,7 @@ export class OverlayScene {
   compile(renderer = this.r) {
     if (!this.slots.size) return;
     const was = renderer.getRenderTarget(), clip = renderer.clippingPlanes; renderer.setRenderTarget(null); renderer.clippingPlanes = NO_CLIP;
+    const auto = renderer.autoClear; renderer.autoClear = false; renderer.render(EMPTY, this.camera); renderer.autoClear = auto; // (three's compile keeps the last render's clipping state: an empty draw with none first, so the compile matches the draw; Calissa's finding, casebook compile-as-drawn)
     renderer.compile(this.scene, this.camera); renderer.setRenderTarget(was); renderer.clippingPlanes = clip;
   }
 }
