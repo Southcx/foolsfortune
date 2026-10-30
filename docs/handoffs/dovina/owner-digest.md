@@ -11,4 +11,7 @@ South's answers of 2026-10-29 are recorded:
 - The weather's readers, back: WEATHER.md.
 - STORY tabled for a long while: DEBUG-MODE.md.
 
-No open questions.
+Open:
+- **The Tithe's near miss** (ECONOMY.md, "The numbers and their reasons"): about 40% of sealed-chest reveals climb past the tier they
+  give and fall back. It is a look, never the odds, but the slot research says it keeps people pulling, most at about 30%. Keep it as
+  spectacle at 42%, or lower it (15%: still a tease, the least pull)?

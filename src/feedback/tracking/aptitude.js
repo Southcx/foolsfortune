@@ -21,8 +21,9 @@ export function aptitudeRules({ on, log }) {
       if (id.startsWith('trial.')) { const T = TRIALS[id.slice(6)]; if (T && r.n) log.say('system', `${T.label} (a standard trial): ${num(r.median)} ${T.unit} (best ${num(r.best)}, ${r.n} runs)`, { key: `assay.${id}`, throttle: 1 }); continue; }
       const A = APTITUDES[id]; if (!A || !r.n) continue;
       if (!r.shown) { log.say('system', `${A.label}: ??? (${r.n} of ${APT.shown} readings)`, { key: `assay.${id}`, throttle: 1 }); continue; }
-      const trend = r.trend == null ? '' : r.trend > 0 ? ', better than at first' : r.trend < 0 ? ', worse than at first' : '';
-      log.say('system', `${A.label}: ${num(r.median)} ${A.unit} (best ${num(r.best)}, ${r.n} readings${trend})`, { key: `assay.${id}`, throttle: 1 });
+      const [up, down] = A.style || ['better', 'worse']; // (a style's reading, risk's, has no better: its two ways)
+      const trend = r.trend == null ? '' : r.trend > 0 ? `, ${up} than at first` : r.trend < 0 ? `, ${down} than at first` : '';
+      log.say('system', `${A.label}: ${num(r.median)} ${A.unit} (${A.style ? '' : `best ${num(r.best)}, `}${r.n} readings${trend})`, { key: `assay.${id}`, throttle: 1 });
     }
   });
 }

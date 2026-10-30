@@ -27,9 +27,11 @@ const EVENTS = {
   colour: (v) => ({ d: v / 100 }),
   aim: (v) => ({ run: { shots: 100, hits: Math.round(v) } }),
   pull: (v) => ({ ans: v / 100 }),
+  risk: (v) => ({ power: 1 + v / 100 }),
 };
-const SET = { parry: [120, 30], pitch: [1.5, 0.4], timing: [28, 5], colour: [18, 5], aim: [62, 8], pull: [74, 9] }; // (each: its median, its spread)
+const SET = { parry: [120, 30], pitch: [1.5, 0.4], timing: [28, 5], colour: [18, 5], aim: [62, 8], pull: [74, 9], risk: [40, 8] }; // (each: its median, its spread)
 for (const [id, A] of Object.entries(APTITUDES)) {
+  if (A.tally) continue; // (the tallies: below, through the module itself)
   const make = EVENTS[id]; if (!make) { console.log(`FAIL  ${id}: no bot event written for it`); fails++; continue; }
   const [m, sd] = SET[id], S = { n: 0, list: [], early: [] };
   for (let i = 0; i < 40; i++) { const v = A.value(make(Math.max(0, m + sd * gauss()))); if (v == null) continue; if (!S.n) { S.first = v; S.best = v; } S.n++; S.list.push(v); if (S.early.length < 5) S.early.push(v); }
@@ -46,6 +48,22 @@ for (const [id, A] of Object.entries(APTITUDES)) {
   const kept = apt.read('parry').n === 1;
   if (!(dropped && kept)) fails++;
   console.log(`${dropped && kept ? 'PASS' : 'FAIL'}  an agent's, another's and a practice's samples are dropped; the Courier's is kept`);
+}
+
+// ---- the tallies: a bot that answers a set share of its decisions, through the module's own marks and flushes
+{
+  const on = {}, game = { events: { on: (ev, f) => { (on[ev] ||= []).push(f); }, emit: () => {} }, ledger: null, save: null, agent: null };
+  const apt = new Aptitude(game), fire = (ev, e) => (on[ev] || []).forEach((f) => f(e));
+  // holding back: 30 legs, each 8 outlined shots met, 70% sent home by the roll; one practice leg, all taken, must not count
+  for (let leg = 0; leg < 30; leg++) { for (let i = 0; i < 8; i++) rand() < 0.7 ? fire('move.parry', { tool: 'sloop', what: 'shot', by: 'courier' }) : fire('rail.hit', { kind: 'outlined', by: 'creature' }); fire('rail.hit', { kind: 'plain', by: 'creature' }); fire('rail.leg.end', { by: 'courier' }); }
+  for (let i = 0; i < 8; i++) fire('rail.hit', { kind: 'outlined', by: 'creature' }); fire('rail.leg.end', { practice: true, by: 'courier' });
+  const I = apt.read('inhibition'); check('tally inhibition median (30 legs, 70% answered)', I.median, 70, 0.12);
+  if (I.n !== 30) fails++; console.log(`${I.n === 30 ? 'PASS' : 'FAIL'}  tally inhibition: a practice leg is dropped (30 samples, read ${I.n})`);
+  // reading others: 40 games of 1 to 3 callouts each, 60% right; a practice game must not count
+  for (let gm = 0; gm < 40; gm++) { const calls = 1 + Math.floor(rand() * 3); let right = 0; for (let i = 0; i < calls; i++) if (rand() < 0.6) right++; fire('casino.result', { game: 'nebula', calls, right, by: 'courier' }); }
+  const before = apt.read('others').n; fire('casino.result', { game: 'nebula', calls: 9, right: 0, practice: true, by: 'courier' });
+  const O = apt.read('others'); check('tally others median (40 games, 60% right)', O.median, 60, 0.2);
+  if (O.n !== before) fails++; console.log(`${O.n === before ? 'PASS' : 'FAIL'}  tally others: a practice table is dropped`);
 }
 
 // ---- the staircases: a bot whose 79.4% point is set (its curve a logistic in log units, its guessing rate the trial's chance)

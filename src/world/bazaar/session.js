@@ -116,7 +116,7 @@ export class TableSession {
       else back = Math.max(0, T.stake + R.net[0]);
       C?.give(back);
     }
-    g.events?.emit('casino.result', { game: T.id, won, net: back - this.paid, practice: this.practice, scores: R.scores, read: R.read, by: 'courier' });
+    g.events?.emit('casino.result', { game: T.id, won, net: back - this.paid, practice: this.practice, scores: R.scores, read: R.read, calls: R.calls?.[0], right: R.right?.[0], by: 'courier' }); // (`calls`, `right`: Nebula Bluff's callouts of yours and those that caught a bluff)
     this.render();
   }
   /** Again at the same table, as the last game was (for chips, or practice). */

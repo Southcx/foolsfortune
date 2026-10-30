@@ -61,6 +61,7 @@ import { aptitudeRules } from './aptitude.js';
 import { classArtsRules } from './classarts.js';
 import { classArtsPlayRules } from './classartsplay.js';
 import { pairWornRules } from './pairworn.js';
+import { jellyMountRules } from './jellymount.js';
 import { pairSpecialsPlayRules } from './pairspecialsplay.js';
 import { touchstoneRules } from './touchstone.js';
 import { worldShellRules } from './worldshells.js';
@@ -145,6 +146,7 @@ export function areaRules(ctx) {
   classArtsRules(ctx); // (a class's arts opened, worn and asked for: progress/classarts.js)
   classArtsPlayRules(ctx); // (a class's arts used, firing and wearing off: courier/classarts/body.js)
   pairWornRules(ctx); // (a pair worn: the counts its special opens by, tracking/pairworn.js)
+  jellyMountRules(ctx); // (the slip jelly mount's ledger, tracking/jellymount.js)
   pairSpecialsPlayRules(ctx); // (a pair's special played: tracking/pairspecialsplay.js)
   touchstoneRules(ctx); // (the Assay's room and its trials announced: tracking/touchstone.js)
   godRules(ctx);

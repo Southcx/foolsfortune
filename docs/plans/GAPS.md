@@ -99,5 +99,6 @@ Status: **(a)** waits on South, **(b)** decided, not built, **(c)** not designed
 | Wanda | the open sea's moments (building now), the safari Egregores' calls, a front's squall, the god hand's matter sounds, each class art's sound, the turn change's sound |
 | Espada | lore names once South calls each system finished; the touch help page; the spirits' farewell lines (waiting on Dovina: below); the antibody Figment's name (Calissa's ask) |
 
-**Dovina's next:** the spirits' farewell moment settled for Espada (what the statue is called, who speaks); numbers with no reason
-(item 7); the next condition-bound find (AREAS.md 5); the three aptitude readings waiting on an event field.
+**Dovina's, closed 2026-10-30:** the farewell lines (Espada's, in `FAREWELL_LINES`); numbers with no reason (item 7: each now has its
+line in `scripts/economy.mjs` and its reason in ECONOMY.md); the ridges' fulgurite as the second condition-bound find (`RARE_FINDS`); the
+three aptitude readings (holding back, pushing your luck, reading others: `progress/aptitude.js`, its tallies; `scripts/assaybot.mjs` PASS).
