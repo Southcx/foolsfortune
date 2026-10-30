@@ -86,7 +86,7 @@ planetoid slots), **never a level**: no numbers on the Courier (DESIGN.md).
 
 ## 4. The economy
 
-Planetoids are the long sink (`ECON.place.planetoids`), their slots gated by the Firings so money alone never buys them. Features cost
+Planetoids are the long sink, grown from a planetoid's seed earned by an act and fed to the size you choose (`progress/seeds.js`, SEEDS-SLABS-SCANS.md 1). Features cost
 cubes and the materials of their phase: the Wells' materials finally have a home. Spirits cost attention, not upkeep. Spirits at work
 add up to +25% to a slot (measured before final). **Open:** a gardener profile in `scripts/economy.mjs`.
 

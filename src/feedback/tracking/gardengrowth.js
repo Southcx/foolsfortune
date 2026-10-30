@@ -4,7 +4,7 @@
 // ledger (seedsEarned): after each act that can earn one, any seed newly earned is written `seed.earn.<id>` (once) and said; the ring's
 // runtime gives the seeds so written that it has not yet placed. The bone seed reads `slab.flawless` from here. Placeholder words, Espada's.
 //
-//   gardenGrowthRules({ on, L, log, g })   (tracking/rules.js calls it; a seed is said only once the ring takes seeds: `realm.orbit.seeds`)
+//   gardenGrowthRules({ on, L, log, g })   (tracking/rules.js calls it; a seed is said once the ring takes seeds: `realm.orbit.seeds`, true from v352)
 //   events read: garden.enter, well.foe, sea.square.done, spirit.wish.done, mimic.solve, feeling.wake (an act that may earn a seed), seed.plant { seed, slot }, seed.grow { seed, size }, slab.make { kind, stars, from },
 //   slab.carve { kind, score, bared, cracked, flawless }, scan.read { what, kind, cls, sealed, again, own }
 // ---------------------------------------------------------------------------------------
@@ -17,11 +17,12 @@ export function gardenGrowthRules({ on, L, log, g }) {
     for (const id of seedsEarned(L)) {
       if (L.get(`seed.earn.${id}`)) continue;
       L.inc('seed.earn'); L.inc(`seed.earn.${id}`);
-      if (g?.realm?.orbit?.seeds) say('gain', SEEDS[id].inner ? `A moonlet of ${SEEDS[id].feeling[0].toUpperCase() + SEEDS[id].feeling.slice(1)} rises round your garden's heart.` : 'A planetoid\'s seed is yours. Carry it up to the ring with the god hand.', `seed.${id}`, 0);
+      if (g?.realm?.orbit?.seeds) say('gain', SEEDS[id].inner ? `A moonlet of ${SEEDS[id].feeling[0].toUpperCase() + SEEDS[id].feeling.slice(1)} rises round your garden's heart.` : 'A planetoid\'s seed is yours. It waits in the garden\'s shed: carry it up to the ring with the god hand.', `seed.${id}`, 0);
     }
   };
   for (const ev of ['garden.enter', 'well.foe', 'sea.square.done', 'spirit.wish.done', 'mimic.solve', 'feeling.wake']) on(ev, (e) => { if ((e?.by ?? 'courier') === 'courier') grant(); });
   on('seed.plant', (e) => { if (e.by === 'courier') L.inc('seed.plant'); });
+  on('seed.feed', (e) => { if (e.by === 'courier') { L.inc('seed.feed'); L.inc('seed.fed.minutes', Math.round(e.minutes || 0)); } }); // (Petra's: { seed, minutes, from, feeling }; seed.grow says what shows)
   on('seed.grow', (e) => {
     if (e.by !== 'courier') return;
     L.inc('seed.grow'); L.inc(`seed.grow.${e.size}`);

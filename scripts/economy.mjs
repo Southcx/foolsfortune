@@ -24,6 +24,7 @@ import { buskPay, bountyPay } from '../src/progress/econ/livelihoods.js';
 import { NODES, CLASSES, hop, stagePlan, stageQuality, reckonLead, RECKON } from '../src/progress/econ/emocean.js';
 import { rutterWorth } from '../src/progress/econ/passage.js';
 import { DECOR, priceOf } from '../src/progress/decor.js';
+import { SIZES, MATTER_FEED } from '../src/progress/seeds.js';
 import { wellPay, cogitomapWorth, demand, fuel, haulProfit, spillChance, crudeRun, wellYield, drawWell, islandRun, wellSeed, purserPrice } from '../src/progress/econ/islands.js';
 import { KIND_IDS, makeMaterial, press, distance } from '../src/progress/econ/materials.js';
 
@@ -284,9 +285,10 @@ console.log(`  the reckoning (Divination): a wave's lane marked ${reckonLead(0)}
     console.log(`  a Cogitomap of an Anagami Well (${pad(label + ')', 30)} worth ${pad(w, 4)} the purser pays: Margarite ${[0, 3, 6].map((d) => purserPrice(w, 'margarite', d)).join('/')}, Anagami ${[0, 3, 6].map((d) => purserPrice(w, 'anagami', d)).join('/')}, Entropolis ${[0, 3, 6].map((d) => purserPrice(w, 'entra', d)).join('/')} (days 0/3/6)`);
   console.log(`  after the sloop's fuel (${hop('anagami', 'margarite').fuel}): a good fresh map nets about 20 more at Margarite than at home, a middling one is better sold at home (skill decides whether the Well feeds the boat)`); }
 
-// the garden as a place (ECON.place; docs/plans/SPIRIT-GARDEN.md): how long each profile takes to buy the planetoids, spending all it earns
-{ const P = ECON.place, total = P.planetoids.reduce((a, b) => a + b, 0) * ECON.perMinute;
-  console.log(`\nthe Spirit Garden's planetoids: ${P.planetoids.map((m) => m * ECON.perMinute).join(' + ')} = ${total} cubes; at the aim (${ECON.perMinute * 60} an hour) ${(total / (ECON.perMinute * 60)).toFixed(1)} hours of play spent on nothing else; at half the aim (a player who also buys looks and keys) ${(2 * total / (ECON.perMinute * 60)).toFixed(1)} hours: the long sink, as meant (weeks at an hour or two a day)`);
+// the garden as a place (progress/seeds.js SIZES; docs/plans/SEEDS-SLABS-SCANS.md 1): how long the six ring seeds take to feed to large,
+// spending all one earns (the planetoids are grown from seeds earned by acts, never bought; each stops at the size its player likes)
+{ const P = ECON.place, total = SIZES[SIZES.length - 1].at * 6 * ECON.perMinute;
+  console.log(`\nthe Spirit Garden's planetoids: six seeds fed to large, ${SIZES.map((z) => `${z.id} at ${z.at}`).join(', ')} minutes each = ${total} cubes; at the aim (${ECON.perMinute * 60} an hour) ${(total / (ECON.perMinute * 60)).toFixed(1)} hours of play spent on nothing else; at half the aim ${(2 * total / (ECON.perMinute * 60)).toFixed(1)} hours: the long sink, as meant (the hand's pour of matter takes up to ${MATTER_FEED.dayCap} minutes a game day of it)`);
   console.log(`  features: ${Object.entries(P.features).map(([k, m]) => `${k} ${m * ECON.perMinute}`).join(', ')} cubes; a spirit at work adds up to ${P.work * 100}% to its slot; formation +/-${P.formation * 100}%, a vein x${P.vein}`); }
 
 // the gardener (SPIRIT-GARDEN.md item 27, GARDEN-COZY.md G3): an hour spent in the garden, what it gives and what it asks. The garden is
@@ -294,10 +296,10 @@ console.log(`  the reckoning (Divination): a wave's lane marked ${reckonLead(0)}
 // transactional pressure), so its sinks are paid by the rest of play.
 { const G = ECON.garden, D = ECON.dividend, hr = ECON.perMinute * 60, perHarvest = 60 / (G.growHours * 2.5); // (a game hour is 2.5 real minutes)
   const mats = (beds) => Math.floor(perHarvest) * beds * G.yield, div = (slots) => Math.round(D.share * G.farmRate * slots);
-  const cat = Object.keys(DECOR).reduce((n, id) => n + priceOf(id), 0), plan = ECON.place.planetoids.reduce((a, b) => a + b, 0) * ECON.perMinute;
+  const cat = Object.keys(DECOR).reduce((n, id) => n + priceOf(id), 0), plan = SIZES[SIZES.length - 1].at * ECON.perMinute * 6; // (the ring's six seeds fed to large: progress/seeds.js)
   console.log(`\nthe gardener: an hour in the Spirit Garden pays no cubes for tending; its beds give ${mats(G.beds)} materials an hour at ${G.beds} beds (${mats(G.beds + 4)} at ${G.beds + 4}), ${perHarvest.toFixed(1)} harvests a bed an hour`);
   console.log(`  the dividend while away: ${div(1)} / ${div(D.slots)} cubes a real hour with 1 / ${D.slots} slots working, ${D.capDays} game days to its cap (${div(D.slots) * D.capDays} cubes)`);
-  console.log(`  the sinks it asks: the decor catalogue once ${cat} cubes (${(cat / hr).toFixed(1)} hours at the aim), the planetoids ${plan} (${(plan / hr).toFixed(1)} hours), the upgrades ${[...G.upgrade.slot, ...G.upgrade.bed].reduce((a, b) => a + b, 0) * ECON.perMinute}`);
+  console.log(`  the sinks it asks: the decor catalogue once ${cat} cubes (${(cat / hr).toFixed(1)} hours at the aim), the six ring seeds fed to large ${plan} (${(plan / hr).toFixed(1)} hours; each stops where the player likes), the upgrades ${[...G.upgrade.slot, ...G.upgrade.bed].reduce((a, b) => a + b, 0) * ECON.perMinute}`);
   console.log(`  a cozy week (an hour or two a real day, a seventh of it in the garden): the dividend at ${D.slots} slots pays the catalogue in ${(cat / div(D.slots)).toFixed(0)} real hours away, the planetoids in ${(plan / div(D.slots)).toFixed(0)}; play pays the rest`); }
 
 

@@ -39,7 +39,7 @@ export function formation(feeling, neighbours = [], onVein = false, { ground = n
 export const STONE_BOOST = 0.25;
 
 /** The first planetoids (SPIRIT-GARDEN.md section 3): radius in metres, plots to place features in, and what is fixed there. The
- *  bought ones (ECON.place.planetoids) are 8 to 16 m with 4 to 8 plots, chosen by the player's sculpting. */
+ *  ones grown from a planetoid's seed (progress/seeds.js SIZES) are 5 to 20 m with 1 to 8 plots, as fed. */
 export const PLANETOID_PLOTS = {
   dantian:   { radius: 20, plots: 6, fixed: ['arrival lotus', 'the Lachryma lake', 'the Pneuka Box shed'] },
   terraces:  { radius: 12, plots: 6, fixed: [] },

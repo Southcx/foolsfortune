@@ -80,8 +80,7 @@ ones were.
 ### 1.3 What it replaces
 
 The four bought planetoids are replaced: the shed's page, `ECON.place.planetoids` and `ECON.place.planetoidFiring`, and `BOUGHT` in
-`world/garden/orbit.js`. They go when Petra's ring takes seeds. Until then the shed still sells, and the seeds are counted silently (no
-log line until `realm.orbit.seeds` exists).
+`world/garden/orbit.js`. Gone (Petra's v352: the ring takes seeds; the ECON rows dropped).
 
 ## 2. Slabs: carving a plate free to summon its spirit
 

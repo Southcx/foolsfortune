@@ -208,7 +208,7 @@ export const ECON = {
    *  first entry (South, 2026-10-30: "the Spirit Garden doesn't have Myggdrasil active by default": firing 0, it was the second Firing),
    *  the largest planetoid (radius in metres) and the tree a landmark seen from every other (height in metres). */
   myggdrasil: { firing: 0, radius: 26, treeHeight: 48 },
-  place: { planetoids: [60, 120, 240, 480], planetoidFiring: [3, 4, 5, 6], features: { small: 5, medium: 12, large: 30 }, work: 0.25, formation: 0.1, vein: 2 },
+  place: { features: { small: 5, medium: 12, large: 30 }, work: 0.25, formation: 0.1, vein: 2 },
   /** DECOR (docs/plans/GARDEN-COZY.md D4): a piece's price in minutes of play by its size, a sink that never fills and pays nothing back,
    *  so it is kind (the first set about three real hours of play). A piece bought is a copy kept in the shed's storage; picked up, it
    *  goes back there whole (Animal Crossing's storage: no tax on rearranging, the cozy rule against transactional pressure). A tint is
