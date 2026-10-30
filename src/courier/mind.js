@@ -20,7 +20,7 @@ import { COURIER_MIND, DRAUGHT, stoneOf, draughtOf } from '../progress/stones.js
 import { stateOf, pushed, settle } from '../progress/combat/mind.js';
 import { COLOR } from '../progress/weather.js';
 
-const DRINKS = new Set(['bauble', 'bottle', 'absorb', 'gulp', 'parry']); // (what is drunk from the world; a refill from a jackpot or a wave is not a drink)
+export const DRINKS = new Set(['bauble', 'bottle', 'absorb', 'gulp', 'parry']); // (what is drunk from the world; a refill from a jackpot or a wave is not a drink)
 const BRIM = 2, QUIET = 5, SAY = 6; // (real seconds brimming after an overflow; real seconds of quiet before it settles; real seconds brimming must lapse before "You settle." is said: casebook rule 94)
 
 export class CourierMind {

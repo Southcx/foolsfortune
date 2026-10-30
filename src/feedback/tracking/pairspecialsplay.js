@@ -5,10 +5,10 @@
 //   pairSpecialsPlayRules({ on, L, log })   (tracking/rules.js calls it)
 // ---------------------------------------------------------------------------------------
 const DID = {
-  19: 'the Flash marks it, and your rounds find it.',
-  6: 'the toll runs down your line.',
-  17: 'your fork trails paint.',
-  3: 'the coffin drinks the paint for your brush.',
+  19: 'your Flash marks the creature, and your next rounds home in on it.',
+  6: 'the toll runs down your hooked line and stuns what it holds.',
+  17: 'your fork lays a trail of paint as it flies.',
+  3: "the hoover drinks paint off the ground into your brush's bottle.",
 };
 
 export function pairSpecialsPlayRules({ on, L, log }) {

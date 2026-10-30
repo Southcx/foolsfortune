@@ -18,20 +18,12 @@
 //   (the psygun's round asks: tools/psygun/weapon.js shoot)   event pair.special { pair, special, by }   pair.mark { kind, by }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { pairOf, pairSpecialOpen, PAIR_SPECIALS } from '../progress/toolpairs.js';
+import { pairOf, pairSpecialOpen, PAIR_SPECIALS, SPECIAL_PLAY } from '../progress/toolpairs.js';
 import { spendLoad, loadAspect } from './soulbrush/load.js';
 import { HOOVER } from './lockheart/lockheart.js';
 
-/** Wave 1's numbers (placeholders, Dovina's to tune): the mark's rounds and life (real s) and the cone it homes within (rad); the rung's
- *  stun and blow; the lure's paint (a stamp every `every` real s of flight, Lachryma a stamp from the load); the mop's sips. */
-export const PAIR_PLAY = {
-  mark: { n: 19, rounds: 6, life: 8, cone: 0.35, range: 40 },
-  rung: { n: 6, stun: 1.1, power: 0.6 },
-  lure: { n: 17, every: 0.06, r: 0.7, cost: 0.2, drop: 8 },
-  mop: { n: 3, every: 0.15, r: 1, want: 0.5, toBottle: 1.5, reach: 5 },
-};
-/** The specials built so far, by pair (Dovina's PAIRS[n].special stays hers to set). */
-export const BUILT = [19, 6, 17, 3];
+/** Wave 1's numbers, with their reasons: Dovina's (progress/toolpairs.js SPECIAL_PLAY). */
+export const PAIR_PLAY = SPECIAL_PLAY;
 
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _d = new THREE.Vector3(), DOWN = new THREE.Vector3(0, -1, 0);
 

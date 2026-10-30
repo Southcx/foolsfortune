@@ -49,7 +49,7 @@ import { sfx } from '../../audio/sfx.js';
 import { BLADE_LEN } from './model.js';
 import { Trail } from '../../vfx/trail.js';
 import { BladeMode } from './blade.js';
-import { deflect, guard } from '../../courier/parry.js';
+import { deflect, guard, PRESS } from '../../courier/parry.js';
 import { Moveset, rootOf, shedSpeed } from '../moveset.js';
 import { Afterimages } from '../../vfx/afterimage.js';
 import { SONDELASS_MOVES, SONDELASS_LOADOUT } from './sondelassloadout.js';
@@ -105,7 +105,7 @@ const STING = SONDELASS_MOVES.stinger.sting; // (the stinger's numbers are its c
 // THE IAIDO: `charge` real s held to blade mode (the owner's "charge-up", about half a second); the pose eased in over `in` and out over
 // `out` real s; the off hand at the guard, `left` m along the tool from the blade hand
 const IAIDO = { charge: 0.5, in: 0.08, out: 0.1, left: 0.16 }; // (left: at 0.2, on the guard itself, the hand sat 3 cm into the crouched thigh)
-const PARRY_WIN = 0.28, RMB_BUFFER = 0.35; // (an RMB press inside a strike waits this long, real s, for the free way)
+const PARRY_WIN = PRESS.cutlass, RMB_BUFFER = 0.35; // (an RMB press inside a strike waits this long, real s, for the free way)
 const DMG = 62;
 const _up = new THREE.Vector3(0, 1, 0), _a = new THREE.Vector3(), _b = new THREE.Vector3(), _p = new THREE.Vector3(), _d = new THREE.Vector3(), _c = new THREE.Vector3(), _e = new THREE.Vector3();
 

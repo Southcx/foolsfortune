@@ -4391,3 +4391,49 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   `lend()` refused every press after the first.
 - **Fix:** `cool` runs down in `tickFlight`, which the Sondelass calls every frame, drawn or not; `update` no longer touches it.
 - **Rule:** 350
+
+### 2026-10-29 · The refreshed hits drew whole rings and hard rims (Calissa's builder, the old stock's refresh)
+- **Seen:** in the gallery at 1920 x 1080, the slash's crescent drew as a full soft ring for its first tenth of a second, a kill's gold
+  pop and the jelly's bubble showed the ring's and the sphere's own hard edge, the discs their rim.
+- **Cause (as measured):** each one-shot started white-hot by `rampShift` +0.25 to +0.35 over an erosion of 0. The program reads the ramp
+  at value + shift, so a texel its edges had faded to 0 read the ramp at 0.3 (alpha 0.34 on the tint row, 0.44 on gold), and an
+  erosion of 0 cuts nothing (its threshold sits below 0). The faded ends and rims were drawn at a third of full, out to the mesh's edge.
+- **Fix:** every such shape's erosion starts at 0.2 (its early keys at 0.22 or more), so value-0 texels are cut while the shift heats the
+  rest (vfx/library/hits.js, damage.js, generics.js, temper.js, ult.js). Seen again at 896 x 414 at 2x: the crescent, the rims soft.
+- **Rule:** 351
+
+### 2026-10-30 · The class arts' looks faded into the noon sand (Calissa, the VFX refresh, in game at 896 x 414 at 2x)
+- **Seen:** Bulwark used at the Weir at noon: its shell and floor ring a faint pale band, their gold barely there; the same effect over
+  the gallery's mid-brown ground reads gold.
+- **Cause (as read):** every additive shape layer wrote alpha 0 (`uAdd` 1), so it only added light. On sand graded near white the added
+  gold clips to white in red and green and keeps little in blue, so its hue is gone; nothing in it dims what is behind.
+- **Fix:** an additive shape layer also covers `back` of what is behind it, by its own alpha (vfx/shapes/program.js `uBack`, default
+  `SHAPE_BACK.k` 0.5, a layer's `back` over it). Measured: the crop round Bulwark in game changed by a mean 3.7 of 255 at 0.3, the colour
+  holding at the ring's strokes; over the gallery's mid-brown ground at 0.5 the mean change is 0.05 to 0.6 (no shadow read). Covering
+  alone only turns gold pale gold on near-white sand, so the class arts' ground rings, shocks and Bulwark's rims also carry an ink copy
+  drawn under them (vfx/library/classarts/kit.js `inked`: alpha-over, order 5, eroding ahead of its light so no dark is left lying), and
+  Bulwark's shell covers 0.85: the dark is what keeps a light's shape on a white ground (the Divination iris read at noon for that reason).
+- **Rule:** 352
+
+### 2026-10-30 · The duel's cut-in and stamp compiled twins (Petra's census, measured; Calissa's files, vfx/duelview/)
+- **Seen:** the program census held two programs each for the cut-in and the stamps, and two for the Lachrimeter tube's ShaderMaterial.
+- **Cause (as measured):** the cut-in's and the stamps' twins differ only in numDirLights and numHemiLights (Petra): each was compiled
+  alone (`r.compile(mesh, camera)`), with no lights, then drawn under the overlay scene's sun and hemi. The tube's pair differs only in
+  numClippingPlanes (1 against 0, key field 47): the world always carries the god hand's plane (godhand.js), the overlay scene draws with
+  none, and three's compile() never calls clipping.init, so a compile inherits the last world render's one plane whatever
+  `renderer.clippingPlanes` says at the time.
+- **Fix:** the cut-in and the stamps compile through `compileOverlay(S, obj)` (vfx/duelview/fxkit.js): the overlay scene's lights
+  (`compile(obj, camera, S.scene)`) and an empty render with no plane first. The census after the lights fix read 227 (budget 228); the
+  clipping half is not yet measured in a duel (the census opens none). The overlay scene's own compile (render/overlayscene.js) needs the
+  same empty render: handed to Petra.
+- **Rule:** 353
+
+
+### 2026-10-30 · The parry mark read the shortest press window (courier/parry.js)
+- **Seen (as read):** the parry mark went hot only for what a 0.25 real s press would answer, while the kick's press asks for 0.26 s and
+  the cutlass's guard for 0.28 s: with those in hand a press could answer a blow the mark showed cold.
+- **Cause:** three numbers for one window in three files (parries.js WINDOW, kick.js PARRY_TO, cutlass.js PARRY_WIN), and the mark's
+  rule (`pressAnswers`, `shotAnswers`) read a fourth, `PRESS_WINDOW`, set to the shortest.
+- **Fix:** one table, `PRESS` in courier/parry.js, each value the number it always was (no feel changed); the three read it, and the
+  mark's rule asks `pressWindowOf(game)`, the window of what is in hand.
+- **Rule:** 354

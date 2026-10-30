@@ -32,6 +32,7 @@ import { GoalsWindow } from '../ui/goalswindow.js';
 import { HudLayout } from '../ui/hudlayout.js';
 import { RailResults } from '../ui/railresults.js'; // (round 6's overlay pieces: OVERLAY.md 10.5c)
 import { prewarmFish } from '../tools/sondelass/angling/fishmesh.js';
+import { shapeWarmMesh } from '../vfx/shapes/layer.js';
 import { WireCompass } from '../vfx/wirecompass.js';
 import { VaneHud } from '../vfx/vanehud.js';
 import { CrucibelleHud } from '../vfx/crucibellehud.js';
@@ -95,7 +96,7 @@ export async function bootWarmup(game, made) {
   // (a Lachrymato Bottle and the jets' ring, made now and parked hidden, never disposed: their programs live while one exists; the casebook's
   // rules 17 and 18. The stain that stood beside them is gone: the paint map draws the blots, the ribbons' program the slicks, docs/CASEBOOK-CASES.md 2026-10-10)
   const finLook = prewarmFish(); // (a Weir fish's body, its one program: every species is drawn with it, vfx/fishlook.js; the fish are made only near the Weir)
-  const brushLooks = [new LachrymatoBottle({ size: 'small' }).group, game.loadGauge.ring.mesh, finLook]; // (the jet ring: the ribbons' one program, the brush's marks' and every slick's, vfx/brushmarks.js, vfx/slicks.js)
+  const brushLooks = [new LachrymatoBottle({ size: 'small' }).group, game.loadGauge.ring.mesh, finLook, shapeWarmMesh()]; // (the jet ring: the ribbons' one program, the brush's marks' and every slick's, vfx/brushmarks.js, vfx/slicks.js; the shape layers' one program, its patterns and ramps made here, on every machine: vfx/shapes/)
   for (const o of brushLooks) { o.position.set(0, -50, 0); o.userData.zoneFree = true; o.visible = true; scene.add(o); }
   game.parryMark.mark(brushLooks[0]); // (and the parry mark on the parked bottle, never cleared: its program lives while one mark does)
   const rare = !game.graphics?.machine?.mobile; // (a phone compiles the caster shells' looks on first sight, not at boot: seldom seen, each a program held and seconds of a phone's boot; Calissa's program audit, 2026-10-25)

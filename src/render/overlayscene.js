@@ -28,6 +28,7 @@ import * as THREE from 'three';
 
 const ANCHOR = { tl: [0, 0], tr: [1, 0], bl: [0, 1], br: [1, 1], c: [0.5, 0.5] };
 
+const NO_CLIP = [], EMPTY = new THREE.Scene();
 export class OverlayScene {
   constructor(game, renderer) {
     this.game = game; this.r = renderer;
@@ -86,14 +87,17 @@ export class OverlayScene {
     const now = performance.now(), dt = Math.min(0.1, (now - this.last) / 1000); this.last = now;
     if (!this.place(dt)) return;
     const auto = renderer.autoClear; renderer.autoClear = false;
+    const clip = renderer.clippingPlanes; renderer.clippingPlanes = NO_CLIP; // (never the god hand's cutaway: a program compiled with the world's plane in and again without it is two, the census's twins)
     renderer.clearDepth(); renderer.render(this.scene, this.camera);
-    renderer.autoClear = auto;
+    renderer.clippingPlanes = clip; renderer.autoClear = auto;
   }
 
   /** The warm-up: its programs compiled against the canvas, as it is drawn (main.js, beside the glow's own). */
   compile(renderer = this.r) {
     if (!this.slots.size) return;
-    const was = renderer.getRenderTarget(); renderer.setRenderTarget(null);
-    renderer.compile(this.scene, this.camera); renderer.setRenderTarget(was);
+    const was = renderer.getRenderTarget(), clip = renderer.clippingPlanes; renderer.setRenderTarget(null); renderer.clippingPlanes = NO_CLIP;
+    const auto = renderer.autoClear; renderer.autoClear = false; renderer.render(EMPTY, this.camera); renderer.autoClear = auto; // (three's compile keeps the last render's clipping state: an empty draw with none first, so the compile matches the draw; Calissa's finding, casebook compile-as-drawn)
+    renderer.compile(this.scene, this.camera); renderer.setRenderTarget(was); renderer.clippingPlanes = clip;
+    renderer.autoClear = false; renderer.render(EMPTY, this.camera); renderer.autoClear = auto; // (and the world's clipping put back the same way, or every world program compiled after this one is built for no planes: 383 programs, measured)
   }
 }

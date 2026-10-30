@@ -22,7 +22,7 @@ import { FONT } from '../../ui/theme.js';
 import { runningHand } from '../../ui/runninghand.js';
 import { FOE_SKILLS } from '../../progress/duel/foeskills.js';
 import { feelColour, sm, clamp01 } from './layout.js';
-import { SIDE, tex, chantTexture } from './fxkit.js';
+import { SIDE, tex, chantTexture, compileOverlay } from './fxkit.js';
 import { FEELINGS } from '../../npc/neuraleseroots.js';
 
 /** in / hold / out: the band's beats (real s; the limit break's hold its own); band: its half height (of the screen's); y: its centre;
@@ -195,7 +195,7 @@ export class FoeCutIn {
   warm() {
     if (this.view.state?.style !== 'pve' || !this.ensure()) return;
     this.gather(); this.feel(); this.aim(0, false); this.shoot(2.5);
-    const S = this.game.overlayScene, r = S.r; this.mesh.visible = true; try { const was = r.getRenderTarget(); r.setRenderTarget(null); r.compile(this.mesh, S.camera); r.setRenderTarget(was); } catch { /* (a headless page without a context: drawn on first use) */ }
+    const S = this.game.overlayScene; this.mesh.visible = true; compileOverlay(S, this.mesh);
     this.mesh.visible = false;
   }
 

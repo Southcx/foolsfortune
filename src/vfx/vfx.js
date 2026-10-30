@@ -24,11 +24,17 @@
 //   caster    a caster shader by its module's name (`shader: 'lensing'`: vfx/caster/<name>.js). S1 to S5 (heat haze, the bubble,
 //             lightning, frost and bisque, the portal) give `vfxLayer` and place themselves (`frame`); S6 to S10 give `layer(game, L,
 //             ctx)`, placed, scaled and faded as a mesh is; `ctx.target` a body for the ones worn on a mesh
+//   shape     an effect shape (`form`: ring, band, dome, sphere, cone, disc, quad, beam, spiral, crescent, pillar, wave, spikes) in the one
+//             shape program: a pattern scrolled over it, masked and flowed, eroded through it over its life, its colour and alpha from a
+//             ramp row that cools as it dies (vfx/shapes/layer.js lists its fields); placed, scaled and faded as a mesh is, `face` and
+//             `turn` its own; a held one's life runs every `loop` real s
 // A layer's numbers can be a number, a range [min, max] picked per particle, or a key into the context (`'tint'`); colours can be
 // hex, 'tint' (the caller's), 'labradorite' (a colour of the labradorite's flash), 'film' or 'film0'..'film3' (Lachryma's oil film, a
-// feat's hue shift: vfx/oxidation.js featTint, turned by the context's `phase`) or 'gold' / 'lach' / 'white'. `power` (the context's)
-// scales counts and sizes, so one effect serves a tap and a full-strength blow. `throughWalls` (the context's) draws its particles,
-// decals and glyphs over the world instead of behind its walls (a mark revealed: vfx/glyphs.js; off, an effect is hidden by walls).
+// feat's hue shift: vfx/oxidation.js featTint, turned by the context's `phase`), 'gold' / 'lach' / 'white', or 'feeling' / 'domain' /
+// 'suit' (the caller's `feeling`, `domain` or `suit`: its shape ramp's colour, vfx/shapes/ramps.js, so a sprite rides with its shape).
+// `power` (the context's) scales counts and sizes, so one effect serves a tap and a full-strength blow. `throughWalls` (the context's)
+// draws its particles, decals, shapes and glyphs over the world instead of behind its walls (a mark revealed: vfx/glyphs.js; off, an
+// effect is hidden by walls).
 // `ladder` (the context's; for a `shell.*` effect found by vfx/shelllooks/tiers.js from the caster shell's tier) multiplies its
 // counts, particle sizes and lives, lamps, decal glow, a burnt mark's stay and its screen weight: a shell's tier ladder.
 //
@@ -51,6 +57,8 @@ import { sfx } from '../audio/sfx.js';
 import { mindTime, mindTick } from './labradorite.js';
 import { featTint } from './oxidation.js';
 import { ladderOf } from './shelllooks/tiers.js';
+import { shapeLayer, shapeTintKey } from './shapes/layer.js';
+import { rampHex } from './shapes/ramps.js';
 
 // the caster shaders (vfx/caster/: each module's `layer(game, L, ctx)` -> { group, u, set(k), update(raw), dispose() }), by file name
 const CASTER = Object.fromEntries(Object.entries(import.meta.glob('./caster/*.js', { eager: true })).map(([f, m]) => [f.split('/').pop().replace(/\.js$/, ''), m]));
@@ -124,7 +132,8 @@ const NAMED = { gold: 0xffd76a, lach: 0xb49be6, white: 0xffffff, ember: 0xff9a5c
 const LAB = [0x6638d1, 0x384cf2, 0x2480fa, 0x1ab2db, 0x38c78c, 0xebc252, 0xe07542];
 const rnd = (v, ctx) => (Array.isArray(v) ? v[0] + Math.random() * (v[1] - v[0]) : typeof v === 'string' ? ctx[v] ?? 0 : v ?? 0);
 const _v = new THREE.Vector3(), _d = new THREE.Vector3(), _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Color();
-const UP = new THREE.Vector3(0, 1, 0);
+const UP = new THREE.Vector3(0, 1, 0), FWD = new THREE.Vector3(0, 0, 1), _q = new THREE.Quaternion();
+const BILL = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(1, 0, 0), Math.PI / 2); // (a flat shape's up turned to face the camera)
 // (how a cause is struck, and what a kind is made of: the hit's name is built from them)
 const SLASH = /cut|slice|slash|cleave|rend|sunder|blade|zandatsu|stinger/;
 const SHOT = /shot|charged|ricochet|homing|bolt|spark|slicer/;
@@ -143,6 +152,7 @@ function color(v, ctx) {
   if (v === 'tint') return ctx.tint === undefined ? 0xffffff : color(ctx.tint, ctx);
   if (v === 'tip') return ctx.tip === undefined ? color('tint', ctx) : color(ctx.tip, ctx); // (a swing's hot end)
   if (v === 'labradorite') return LAB[Math.floor(Math.random() * LAB.length)];
+  if (v === 'feeling' || v === 'domain' || v === 'suit') return rampHex(v, ctx) ?? color('tint', ctx); // (the caller's: its shape ramp's colour)
   if (typeof v === 'string' && v.startsWith('film')) return featTint((v.length > 4 ? +v.slice(4) / 4 : Math.random()) + (ctx.phase ?? 0), _c).getHex(); // (Lachryma's film: 'film' a colour of it, 'film0'..'film3' its four, turned by `phase`)
   if (typeof v === 'string') return NAMED[v] ?? 0xffffff;
   return v;
@@ -323,16 +333,16 @@ export class Vfx {
       }
       return false;
     }
-    if ((L.type === 'mesh' || L.type === 'decal' || L.type === 'caster') && s.mesh) {
+    if ((L.type === 'mesh' || L.type === 'decal' || L.type === 'caster' || L.type === 'shape') && s.mesh) {
       const m = s.mesh;
       if (held) {
         s.fade = h.stopped ? Math.max(0, (s.fade ?? 0) - raw * (L.out ?? 2)) : THREE.MathUtils.damp(s.fade ?? 0, 1, L.in ?? 6, raw); // (in: eased; out: a steady fade, gone in 1/out s)
         const t = (lt % (L.loop || 1e9)) / (L.loop || 1e9);
-        if (m.frame) m.frame(h, t, s.fade * h.k * (L.kmul ?? 1), raw); else { this.placeMesh(h, s, t, s.fade * h.k); m.update(raw); }
+        if (m.frame) m.frame(h, t, s.fade * h.k * (L.kmul ?? 1), raw); else { this.placeMesh(h, s, t, s.fade * h.k); m.life?.(t); m.update(raw); }
         return !(h.stopped && s.fade < 0.01);
       }
       const t = Math.min(1, lt / Math.max(1e-3, dur));
-      if (m.frame) m.frame(h, t, curve(L.k ?? [[0, 1], [0.7, 1], [1, 0]], t) * h.k * (L.kmul ?? 1), raw); else { this.placeMesh(h, s, t, h.k); m.update(raw); }
+      if (m.frame) m.frame(h, t, curve(L.k ?? [[0, 1], [0.7, 1], [1, 0]], t) * h.k * (L.kmul ?? 1), raw); else { this.placeMesh(h, s, t, h.k); m.life?.(t); m.update(raw); }
       return t < 1;
     }
     return false;
@@ -356,6 +366,7 @@ export class Vfx {
     switch (L.type) {
       case 'sprites': if (!L.rate) this.emit(h, L, Math.round(rnd(L.count, ctx) * (L.powerCount === false ? 1 : P) * (ctx.ladder?.count ?? 1))); break; // (the tier ladder's count holds over `powerCount: false`: that is the blow's power, not the shell's rank)
       case 'mesh': if (this.meshReady) s.mesh = meshFx.make(L.mesh, { scene: g.scene, tint: color(L.tint ?? 'tint', ctx), labradorite: L.labradorite ?? 0, opacity: L.opacity ?? 1, renderOrder: L.order ?? 7 }); break;
+      case 'shape': s.mesh = shapeLayer(g, L, { ...ctx, tint: color(shapeTintKey(L, ctx), ctx) }); break; // (vfx/shapes/layer.js)
       case 'caster': { const M = CASTER[L.shader]; s.mesh = (M?.layer ? M.layer(g, L, { ...ctx, pos: h.pos, tint: color(L.tint ?? 'tint', ctx) }) : M?.vfxLayer?.(g, h, L, color)) || null; break; }
       case 'decal': {
         const map = vfxTexture(L.tex); if (!map) break;
@@ -388,18 +399,29 @@ export class Vfx {
   placeMesh(h, s, t, k) {
     const L = s.L, m = s.mesh, P = h.ctx.power ?? 1;
     const sc = curve(L.scale, t) * (h.ctx.scale ?? 1) * (L.powerScale ? Math.sqrt(P) : 1);
-    m.group.position.copy(h.pos).add(_a.fromArray(L.offset || [0, 0, 0]));
-    if (Array.isArray(L.stretch)) m.group.scale.set(sc * L.stretch[0], sc * curve(L.stretch[1], t), sc * L.stretch[2]); else m.group.scale.setScalar(sc);
-    if ((L.tint ?? 'tint') === 'tint' && h.ctx.tint !== undefined) m.u.uTint.value.set(color('tint', h.ctx)); // (a held effect follows its caller's colour)
+    const o = L.offset; m.group.position.copy(h.pos).add(o ? _a.set(curve(o[0], t), curve(o[1], t), curve(o[2], t)).multiplyScalar(L.offsetScale ? h.ctx.scale ?? 1 : 1) : _a.set(0, 0, 0)); // (each axis a number or a curve over life: a scan line climbing; `offsetScale`: in the effect's scale, as a sprite's: an aura's feet are its creature's)
+    if (Array.isArray(L.stretch)) m.group.scale.set(sc * curve(L.stretch[0], t), sc * curve(L.stretch[1], t), sc * curve(L.stretch[2], t)); else m.group.scale.setScalar(sc);
+    if ((m.tintKey ?? L.tint ?? 'tint') === 'tint' && h.ctx.tint !== undefined) m.u.uTint.value.set(color('tint', h.ctx)); // (a held effect follows its caller's colour)
     if (L.type === 'decal') { // (flat on the ground by default, turning about its centre; or stood facing the camera)
       if (L.face === 'camera') { m.group.quaternion.copy(this.game.camera.quaternion); m.group.rotateZ((L.rot ?? 0) + (L.spin ?? 0) * h.t); }
       else m.group.rotation.set(-Math.PI / 2, 0, (L.rot ?? 0) + (L.spin ?? 0) * h.t);
       m.group.scale.set(sc, sc, sc);
-    } else {
+    } else if (L.type === 'shape') this.faceShape(h, m, L);
+    else {
       m.group.rotation.y = (L.rot ?? 0) + (L.spin ?? 0) * h.t;
       if (L.face === 'dir') m.group.quaternion.setFromUnitVectors(UP, h.dir); // (a ring stood up along the blow)
     }
-    m.set(curve(L.k ?? [[0, 1], [1, 0]], t) * k * (L.kmul ?? 1) * (L.type === 'caster' ? 1 : h.ctx.ladder?.glow ?? 1)); // (a decal's or a mesh's glow, up the tier ladder; a caster shader's k is its own)
+    m.set(curve(L.k ?? m.k0 ?? [[0, 1], [1, 0]], t) * k * (L.kmul ?? 1) * (L.type === 'caster' ? 1 : h.ctx.ladder?.glow ?? 1)); // (a decal's or a mesh's glow, up the tier ladder; a caster shader's k is its own)
+  }
+
+  /** A shape layer's facing: 'ground' stood as built, turned about the world's up; 'heading' turned to the blow's heading on the ground;
+   *  'dir' its axis (up, or forward for a beam, a wave, a crescent) stood along the blow and turned about it; 'camera' a billboard turned
+   *  in the screen's plane. The turn is its `rot`, its play's `turn` and its `spin` over the effect's time. */
+  faceShape(h, m, L) {
+    const q = m.group.quaternion, A = m.axis === 'z' ? FWD : UP, yaw = (L.rot ?? 0) + m.turn + (L.spin ?? 0) * h.t;
+    if (m.face === 'dir') q.setFromUnitVectors(A, h.dir).multiply(_q.setFromAxisAngle(A, yaw));
+    else if (m.face === 'camera') { q.copy(this.game.camera.quaternion); if (A === UP) q.multiply(BILL); q.multiply(_q.setFromAxisAngle(A, yaw)); }
+    else q.setFromAxisAngle(UP, yaw + (m.face === 'heading' && (h.dir.x || h.dir.z) ? Math.atan2(h.dir.x, h.dir.z) : 0));
   }
 
   emit(h, L, n) {

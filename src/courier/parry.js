@@ -26,7 +26,7 @@
 //   answer(game, { tool, how, at, radius, paint }) -> 'shot' | 'blow' | null   (the window's one call)
 //   deflect(game, { at, radius, speedMin, outMin, assist, iframes, tool, paint }) -> the projectile sent back, or null
 //   guard(game, { at, radius, tool })                                           -> the projectile turned aside, or null
-//   inBlowWindow(game, windup)   toBlowWindow(game, windup)   pressAnswers(game, windup)   shotAnswers(game, projectile)   (the window,
+//   PRESS   pressWindowOf(game)   inBlowWindow(game, windup)   toBlowWindow(game, windup)   pressAnswers(game, windup)   shotAnswers(game, projectile)   (the window,
 //   asked by the press and by the parry mark alike: vfx/parrymark.js shows hot exactly what a V pressed now answers)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -45,15 +45,26 @@ function gone(game, pr) { if (pr.vanish) pr.vanish(); else game.projectiles?.del
 export const BLOW_WINDOW = 0.25;
 /** The window now: Held Breath (a knack, progress/knacks.js) holds it to 0.40 real seconds; switched off, exactly BLOW_WINDOW. */
 export const blowWindow = (game) => (game?.knacks?.on('heldBreath') ? 0.4 : BLOW_WINDOW);
-/** A press keeps asking this long after V (real seconds): parries.js's WINDOW, the shortest (the kick's 0.26, the cutlass's 0.28). */
-export const PRESS_WINDOW = 0.25;
+/** How long a press keeps asking after V, by what answers it (real seconds): every tool's V (courier/parries.js), the kick's opening
+ *  (courier/moves/kick.js) and the cutlass's guard (tools/sondelass/cutlass.js). One table, each the number it always was, so the feel is
+ *  unchanged; the parry mark reads the window of what is in hand (pressWindowOf), not the shortest. */
+export const PRESS = { tool: 0.25, kick: 0.26, cutlass: 0.28 };
+/** The shortest of them (the parry mark's fade). */
+export const PRESS_WINDOW = Math.min(PRESS.tool, PRESS.kick, PRESS.cutlass);
+/** The press window of what is in hand now: nothing drawn, the kick's; the Sondelass's cutlass, its guard's; any other tool, its V's. */
+export function pressWindowOf(game) {
+  const t = game?.belt?.inHand;
+  if (!t) return PRESS.kick;
+  if (t.id === 'sondelass') return game.techs?.get?.('sondelass')?.form === 'cutlass' ? PRESS.cutlass : PRESS.tool;
+  return PRESS.tool;
+}
 /** Seconds until a windup's blow window opens (0 once it is open). */
 export const toBlowWindow = (game, w) => Math.max(0, w.t - 0.3 - blowWindow(game));
 /** Is a windup's blow in its window: the one test blow() makes. */
 export const inBlowWindow = (game, w) => w.t - 0.3 <= blowWindow(game);
 /** Would V pressed now answer this windup: its window opens before the press's own quarter second runs out (Held Breath widens it
  *  with the window). What the parry mark shows hot (vfx/parrymark.js), so the look and the rule are one. */
-export const pressAnswers = (game, w) => !!w?.parry && w.t > 0 && toBlowWindow(game, w) <= PRESS_WINDOW;
+export const pressAnswers = (game, w) => !!w?.parry && w.t > 0 && toBlowWindow(game, w) <= pressWindowOf(game);
 const _sp = new THREE.Vector3(), _sv = new THREE.Vector3();
 /** Would V pressed now answer this shot: live, coming toward the Courier and fast enough (answer()'s 2 m/s), and within `reach` of
  *  their chest (answer()'s 2 m) or of it by what the shot flies in the press's quarter second. What the parry mark shows hot. */
@@ -61,7 +72,7 @@ export function shotAnswers(game, pr, reach = 2) {
   const P = game.player; if (!P || !live(pr)) return false;
   const t = posOf(pr, _sp), v = velOf(pr, _sv), sp = v.length();
   if (sp < 2 || v.x * (P.pos.x - t.x) + v.z * (P.pos.z - t.z) <= 0) return false;
-  return Math.hypot(t.x - P.pos.x, t.y - P.pos.y - 1.1, t.z - P.pos.z) <= reach + sp * PRESS_WINDOW;
+  return Math.hypot(t.x - P.pos.x, t.y - P.pos.y - 1.1, t.z - P.pos.z) <= reach + sp * pressWindowOf(game);
 }
 
 /** The projectiles near `at`, fast enough, and coming toward the Courier (nearest first). */

@@ -25,7 +25,7 @@
 //  - The yaw re-root of a turning clip (the "turn in place" of every locomotion system, Unreal's root-motion extraction): a move that
 //    ends turned (the roundhouse ends 126 degrees round) hands its turn to the facing when it ends, so the body never unwinds.
 // ---------------------------------------------------------------------------------------
-import { deflect } from '../parry.js';
+import { deflect, PRESS } from '../parry.js';
 import * as THREE from 'three';
 import { Tech } from './techs.js';
 import { sfx } from '../../audio/sfx.js';
@@ -34,7 +34,7 @@ import { magnet, targets } from '../../tools/melee.js';
 import { T } from '../../core/config.js';
 
 const UP = new THREE.Vector3(0, 1, 0), _a = new THREE.Vector3(), _b = new THREE.Vector3(), _c = new THREE.Vector3(), _d = new THREE.Vector3(), _q = new THREE.Quaternion(), _q2 = new THREE.Quaternion();
-const PARRY_TO = 0.26; // (the opening of every move, in real seconds: the kick's parry window, as it always was)
+const PARRY_TO = PRESS.kick; // (the opening of every move, in real seconds: the kick's parry window, as it always was: courier/parry.js PRESS)
 const STEP = { range: 2.6, stand: 0.45, max: 1.3 }; // (the step in: from as far as 2.6 m, to 0.45 m from its surface, at most 1.3 m)
 
 // The moves (clip seconds throughout; when a blow can land is measured from the clip by melee.js). `limb`/`tip` name the striking limb

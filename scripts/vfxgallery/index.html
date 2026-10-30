@@ -1,0 +1,23 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>VFX Gallery Stage</title>
+<link rel="icon" href="data:,">
+<!--
+  THE VFX GALLERY'S STAGE (Calissa's; scripts/vfxgallery.mjs shoots it). Not the game: a renderer, a scene (a warm-grey ground with a
+  metre grid, a 1.8 m capsule for scale, a soft sky, a sun and the hemisphere's light), a camera 6.5 m back at chest height, the game's
+  glow and grade (render/glow.js) and a Vfx (vfx/vfx.js) on a shim of the game, the library as shipped. Its clock and its chance are
+  the script's (stepped, seeded), so a frame is the same every run. Opened by hand through the dev server it shows the stage only:
+  /scripts/vfxgallery/index.html?w=1280&h=720, then window.__gallery in the console.
+-->
+<style>
+html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
+canvas { display: block; width: 100vw; height: 100vh; }
+</style>
+</head>
+<body>
+<script type="module" src="./main.js"></script>
+</body>
+</html>
