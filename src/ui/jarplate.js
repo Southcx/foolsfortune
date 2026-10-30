@@ -10,7 +10,8 @@
 //   THE COUNTS  its share in the counts face beside it (RE-FORMING while it is not whole), the helpers at its side as small pots and their
 //               count, and in the siege the raid's line (raids.status())
 //   WHERE       top-left on the desk (out of the way of the goals window: it steps aside while that stands), under the log's ticker on touch
-//               (the HUD layout's --hud-log-*: the place Petra gave the old bar)
+//               (the HUD layout's --hud-log-*: the place Petra gave the old bar), half again larger there and with no tab (it would lie
+//               over the ticker's second line: the phone shot, 2026-10-30)
 //
 // Prior art: the Brine frame and the goals window's Clay dress (ui/brineframe.js, ui/goalswindow.js), the sea hull's pips (ui/seahull.js),
 // Zelda's heart container (the vessel of your life as the gauge itself), kintsugi (a mend shown in gold, never hidden).
@@ -21,11 +22,12 @@ import { brineFrame, dot, GOLD, SALT, INK, LACHRYMA_TINT, COUNT_FACE } from './b
 import { clayDress } from './goalswindow.js';
 import { FONT } from './theme.js';
 
-export const JAR_PLATE = { w: 20, h: 25, low: 0.4, ember: '#ff7a4a', flash: 0.35, seams: 6, pots: 6, fps: 12 }; // (the jar in dots; the share where it warms to ember; the flash in real s; the most seams and pots drawn; the meniscus's redraws a real second)
+export const JAR_PLATE = { w: 20, h: 25, low: 0.4, ember: '#ff7a4a', flash: 0.35, seams: 6, pots: 6, fps: 12, touch: 1.5 }; // (the jar in dots; the share where it warms to ember; the flash in real s; the most seams and pots drawn; the meniscus's redraws a real second; the plate's scale on touch, where a dot is under a CSS px)
 
 const CSS = `
 .jp{position:fixed;left:calc(10*var(--d));top:calc(18*var(--d));z-index:3;pointer-events:none;opacity:0;transition:opacity .3s}
-body.hud-touch .jp{left:var(--hud-log-x,12px);top:calc(var(--hud-log-y,60px) + var(--hud-log-h,20px) + calc(9*var(--d)))}
+body.hud-touch .jp{left:var(--hud-log-x,12px);top:calc(var(--hud-log-y,60px) + var(--hud-log-h,20px) + calc(5*var(--d)))}
+body.hud-touch .jp .bf-tab{display:none}
 .jp.on{opacity:1}
 .jp .jp-row{display:flex;align-items:center;gap:calc(5*var(--d))}
 .jp canvas{display:block;width:calc(${JAR_PLATE.w}*var(--d));height:calc(${JAR_PLATE.h}*var(--d))}
@@ -82,8 +84,8 @@ export class JarPlate {
     this.cv = make('canvas'); this.hp = make('div', 'jp-hp'); this.sub = make('div', 'jp-sub'); this.raid = make('div', 'jp-raid');
     col.append(this.hp, this.sub, this.raid); row.append(this.cv, col); f.body.append(row);
     document.body.appendChild(root);
-    const size = () => { const d = dot(), pr = Math.min(2, devicePixelRatio || 1); root.style.setProperty('--d', `${d}px`); this.cv.width = Math.round(JAR_PLATE.w * d * pr); this.cv.height = Math.round(JAR_PLATE.h * d * pr); this.drawT = 0; f.layout(); };
-    size(); addEventListener('resize', size);
+    const size = () => { this.touch = document.body.classList.contains('hud-touch'); const d = dot() * (this.touch ? JAR_PLATE.touch : 1), pr = Math.min(2, devicePixelRatio || 1); root.style.setProperty('--d', `${d}px`); this.cv.width = Math.round(JAR_PLATE.w * d * pr); this.cv.height = Math.round(JAR_PLATE.h * d * pr); this.drawT = 0; f.layout(); };
+    this.size = size; size(); addEventListener('resize', size);
   }
 
   /** Each frame: shown while the god hand is taken (out of a cinematic and the goals window's way), its numbers written when they change, the jar redrawn at a few frames a real second. */
@@ -93,6 +95,7 @@ export class JarPlate {
     if (want && !this.root) this.build();
     if (want !== this.on && this.root) { this.on = want; this.root.classList.toggle('on', want); if (want) this.frame.layout(); }
     if (!this.on) return;
+    if (B && B.contains('hud-touch') !== this.touch) this.size();
     const R = H.readout(), L = this.last, k = R.max > 0 ? Math.max(0, Math.min(1, R.hp / R.max)) : 0;
     if (R.hp < L.hp && L.alive) this.flash = JAR_PLATE.flash;
     this.t += raw; this.flash = Math.max(0, this.flash - raw); this.k += (k - this.k) * (1 - Math.exp(-8 * raw));
@@ -103,7 +106,7 @@ export class JarPlate {
     if (R.helpers !== L.helpers || R.scars !== L.scars) {
       this.sub.textContent = '';
       for (let i = 0; i < Math.min(R.helpers, JAR_PLATE.pots); i++) this.sub.append(make('span', 'jp-pot'));
-      this.sub.append(make('span', '', `${R.helpers}`));
+      if (R.helpers) this.sub.append(make('span', '', `${R.helpers}`)); // (no helpers, no count: a lone 0 reads as noise)
       if (R.scars) this.sub.append(make('span', 'jp-seam', `◆${R.scars}`));
     }
     const raid = (R.raid || '').replace(/[\s·]+$/, '');
