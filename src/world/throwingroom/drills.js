@@ -1,8 +1,8 @@
 // ---------------------------------------------------------------------------------------
-// THE DRILLS: the Throwing Room's four measures of aim and recoil (Dovina's: progress/combat/testroom.js DRILLS, score, group), begun from
+// THE DRILLS: the Throwing Room's four measures of aim and recoil (Dovina's: progress/combat/throwingroom.js DRILLS, score, group), begun from
 // the Index's page in the room (a trial is begun in its own room) and ended by their own clock, or by leaving the room. A drill
 // counts the psygun's shots (`shot.fire`, which carries what the shot hit) against its own targets, and at the end says one event,
-// `drill.end { id, run: { hits, shots, times, group }, tuned, by }`; the rule (feedback/tracking/testroom.js) scores it, says it and
+// `drill.end { id, run: { hits, shots, times, group }, tuned, by }`; the rule (feedback/tracking/throwingroom.js) scores it, says it and
 // records it, unless the game is tuned (debug/tuned.js).
 //
 //   Flick    20 targets, one at a time, anywhere in a 120 degree arc 4 to 14 m from the mark; 1.5 s each; the mean time to hit
@@ -21,11 +21,11 @@ import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../../core/physics.js';
 import { PALETTE } from '../../core/config.js';
 import { stream } from '../../core/rng.js';
-import { DRILLS, WALL, KEYS, medalOf, group } from '../../progress/combat/testroom.js';
+import { DRILLS, WALL, KEYS, medalOf, group } from '../../progress/combat/throwingroom.js';
 import { tuned } from '../../debug/tuned.js';
 import { TR } from './layout.js';
 
-const R = stream('world/testroom');
+const R = stream('world/throwingroom');
 const DEG = Math.PI / 180, GAP = 0.35, TARGET_R = 0.32;
 const DENT_R = 0.035, DENT_SEG = 8;                        // (a dent's radius, metres, and its triangles)
 

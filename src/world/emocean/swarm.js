@@ -84,7 +84,7 @@ export class Swarm {
     if (!f.alive) return false;
     this.flock.get(f.k, f.local);
     const S = this.W.ship?.local;
-    if (S && f.local.distanceTo(S) < CONTACT) { this.W.game.emocean?.blow?.(1, { by: 'creature', what: 'swarm', rollable: true }); return false; }
+    if (S && f.local.distanceTo(S) < CONTACT) { this.W.game.rail?.blow?.(1, { by: 'creature', what: 'swarm', rollable: true }); return false; }
     return !this.gone(f.local, this.t);
   }
   /** One draw call: every live member's voxel where it is, turned the way it flies; the gone at nought. */

@@ -99,7 +99,7 @@ export class LockheartReliquary {
   // ---------------------------------------------------------------- each frame it may be drawn
   update(dt, slot) {
     const g = this.game, B = document.body.classList, L = this.tool();
-    const allowed = !!L && !g.title?.active && !g.emocean?.stage?.active && !B.contains('cine') && !B.contains('bztable-seated');
+    const allowed = !!L && !g.title?.active && !g.rail?.stage?.active && !B.contains('cine') && !B.contains('bztable-seated');
     this.a = C01(this.a + (allowed ? dt / 0.22 : -dt / 0.16));
     if (!allowed && this.a <= 0) return this.hide();
     this.t += dt;

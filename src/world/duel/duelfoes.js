@@ -40,7 +40,7 @@ export class DuelFoes {
   /** The pull: nearness to an aberrant fills it, distance drains it, and at 1 its duel opens. */
   updatePull(raw) {
     const g = this.game, P = g.player, D = DUEL_FOES.pull;
-    const barred = !P || !g.duelView || !g.duel || g.duel.active || g.duel.pending || g.god?.controlling || g.realm?.active || g.skiff?.active || g.emocean?.stage?.active || g.death?.active;
+    const barred = !P || !g.duelView || !g.duel || g.duel.active || g.duel.pending || g.god?.controlling || g.realm?.active || g.skiff?.active || g.rail?.stage?.active || g.death?.active;
     if (barred) { this.pull = 0; this.pullFoe = null; return; }
     if (this.rearm && !(this.rearm.alive && this.rearm.pos.distanceTo(P.pos) <= D.far)) this.rearm = null; // (a duel's foe pulls again only once you have been past the far edge)
     const open = (c) => c?.alive && c.aberrant && !c.dataBugMended && !c.ally && !c.spirit && c !== this.rearm;

@@ -18,7 +18,7 @@ import { gardenRules } from './garden.js';
 import { weatherRules } from './weather.js';
 import { dunemawRules } from './dunemaw.js';
 import { placeRules, placeEnterRules } from './place.js';
-import { testroomRules } from './testroom.js';
+import { throwingRoomRules } from './throwingroom.js';
 import { qaisRules } from './qais.js';
 import { brushRules, brushToolRules } from './brush.js';
 import { partyRules } from './party.js';
@@ -97,7 +97,7 @@ import { shrineRules } from './shrines.js';
 
 /** The ledger as the crossing's rules see it: inc, hi, lo and first do nothing while the showcase or a practice crossing sails. */
 function atSea(ctx) {
-  const L = ctx.L, still = () => !!(ctx.g?.emocean?.showcase || ctx.g?.emocean?.practice), sea = Object.create(L);
+  const L = ctx.L, still = () => !!(ctx.g?.rail?.showcase || ctx.g?.rail?.practice), sea = Object.create(L);
   for (const k of ['inc', 'hi', 'lo', 'first']) sea[k] = (...a) => (still() ? false : L[k](...a));
   return { ...ctx, L: sea };
 }
@@ -176,7 +176,7 @@ export function areaRules(ctx) {
   weatherRules(ctx);
   dunemawRules(ctx);
   placeRules(ctx);
-  testroomRules(ctx);
+  throwingRoomRules(ctx);
   brushRules(ctx); // (the Soul Brush's load: paint, mop, the Lachrymato Bottles, the stains)
   worldShellRules(ctx); // (the World shells: found from blots, drawn on the place, a dry click)
   saveRules(ctx); // (where your save is kept: the browser, the cloud; the graphics context lost and given back)

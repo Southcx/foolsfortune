@@ -83,5 +83,5 @@ export const INDEX = {
   // not recorded" while there is one; strawman: its last bout, and its mode; calibration: the live movement values, as today.
 };
 
-/** The ledger's keys (the rules: feedback/tracking/testroom.js): a run counted, a best kept, a medal won. Strawman and the pots: none. */
+/** The ledger's keys (the rules: feedback/tracking/throwingroom.js): a run counted, a best kept, a medal won. Strawman and the pots: none. */
 export const KEYS = { runs: (id) => `drill.${id}`, best: (id) => `drill.${id}.best`, medal: (id, m) => `drill.${id}.${m}` };

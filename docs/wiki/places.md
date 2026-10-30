@@ -141,7 +141,7 @@ Marque, who posts bounties. It is where the Emocean leaves you after your first 
 
 - `docs/GLOSSARY.md` (places, rooms, layers, zones), `docs/CIRCUITS.md` (the lap circuits), `docs/plans/SHRINES.md`.
 - `src/world/level.js`, `trial.js` (the workshop and its time trial); `src/world/basement/` (hub, course, lab, circuits, siege);
-  `src/world/testroom/` and `src/progress/combat/testroom.js` (the Throwing Room).
+  `src/world/throwingroom/` and `src/progress/combat/throwingroom.js` (the Throwing Room).
 - `src/world/dunes/` (`dunes.js` for the sizes, `crystals.js`, `solar.js`, `beach.js`, `barrier.js`); `src/courier/skiff/skiff.js`.
 - `src/world/shrines.js`, `src/world/places.js`; `src/feedback/cartography.js` (the map's layers), `src/feedback/indexmenu.js`.
 - `src/world/well/` (the Great Dunemaw), `src/world/emocean/` (the pier, Margarite's dock), `src/world/garden/` (the Inner Realm).

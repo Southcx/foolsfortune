@@ -114,7 +114,7 @@ export class LegRunner {
     if (carried) from.hold = run ? lead + PatternPlayer.length(run) + 0.3 : 0; // (it leaves once its pattern is spent)
     if (run) {
       const g = this.waves.game;
-      g?.emocean?.stage?.shots?.telegraphs?.mark(from.mesh || from.pos, lead, { radius: 1.1, alive: () => from.alive }); // (the windup: the rail's telegraph mark)
+      g?.rail?.stage?.shots?.telegraphs?.mark(from.mesh || from.pos, lead, { radius: 1.1, alive: () => from.alive }); // (the windup: the rail's telegraph mark)
       const C = g?.music?.clock?.(); // (Wanda's muzzle cue: when the first volley will be heard, on the music's own bars)
       if (C) { const at = C.bar + (bar + lead / BAR_S - (this.player.bar ?? bar)), b = Math.floor(at); g.events?.emit('rail.tell', { bar: b, beat: +((at - b) * C.beats).toFixed(3), outlined: p.name === 'mixed', by: 'creature' }); }
     }

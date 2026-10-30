@@ -154,7 +154,7 @@ export class Course {
   toSiege() { toSiege(this); }
   toMill() { toMill(this); }
 
-  inBasement() { const g = this.game; return g.player.pos.y < -2 && !g.well?.active && !g.dunes?.active && !g.realm?.active && !g.emocean?.stage.active; } // (the Wells, the Dunes and the garden lie lower still: the hub's help was said in the Dunemaw)
+  inBasement() { const g = this.game; return g.player.pos.y < -2 && !g.well?.active && !g.dunes?.active && !g.realm?.active && !g.rail?.stage.active; } // (the Wells, the Dunes and the garden lie lower still: the hub's help was said in the Dunemaw)
 
   /** Put the Courier at `v` facing `yaw`, everything they were doing let go. The pool is refilled (save-scumming is allowed between
    *  rooms) unless `keepPool` (a Well's floors: going deeper is not a rest). */

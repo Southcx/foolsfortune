@@ -6,7 +6,7 @@
 // Prior art: the arcade combo counter (Street Fighter's hit counter, Devil May Cry's style meter's run): counted on contact, broken by a
 // whiff, a hit taken or a pause.
 import { hasTag } from '../core/tags.js';
-import { isTraining } from '../progress/combat/testroom.js';
+import { isTraining } from '../progress/combat/throwingroom.js';
 
 export const STRING_RUN = {
   /** A blow the tool plays itself (the cutlass's stinger): marked as it strikes (markBlow), closed when it is over (closeBlow); a

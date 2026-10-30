@@ -1,19 +1,19 @@
 // ---------------------------------------------------------------------------------------
-// TRACKING, THE TESTING ROOM: the rule that hears a drill's end (progress/combat/testroom.js: the drills, their scores and medals) and
+// TRACKING, THE TESTING ROOM: the rule that hears a drill's end (progress/combat/throwingroom.js: the drills, their scores and medals) and
 // says the run in one line. A run on the stock game is counted, its best kept and its medal won; a run on a tuned game (debug/tuned.js)
 // is said, marked tuned, and never recorded. The room's pots and Strawman never reach the ledger. Words: placeholders for Espada's.
 // tracking.js calls it from listen().
 //
-// The status bench (world/testroom/statusbench.js): the first strike of each roly-poly in a visit says its status in a line; never counted.
+// The status bench (world/throwingroom/statusbench.js): the first strike of each roly-poly in a visit says its status in a line; never counted.
 //
-//   testroomRules({ on, L, log })
+//   throwingRoomRules({ on, L, log })
 // ---------------------------------------------------------------------------------------
-import { DRILLS, score, medalOf, KEYS } from '../../progress/combat/testroom.js';
-import { STATUS_BENCH_WORDS } from '../../world/testroom/statusbench.js';
+import { DRILLS, score, medalOf, KEYS } from '../../progress/combat/throwingroom.js';
+import { STATUS_BENCH_WORDS } from '../../world/throwingroom/statusbench.js';
 
-export function testroomRules({ on, L, log }) {
+export function throwingRoomRules({ on, L, log }) {
   // drill.end { id, run: { hits, shots, times, group }, tuned: [keys], by }
-  // paintrange.read { three, six, nine, by }: the paint range's rings covered after a hold (world/testroom/paintrange.js): measured, never counted
+  // paintrange.read { three, six, nine, by }: the paint range's rings covered after a hold (world/throwingroom/paintrange.js): measured, never counted
   on('paintrange.read', (e) => log.say('info', `Paint range: 3 m ${Math.round(e.three * 100)}%, 6 m ${Math.round(e.six * 100)}%, 9 m ${Math.round(e.nine * 100)}%.`, { key: 'paintrange', throttle: 0.5 }));
   // statusbench.status { status, dur, by }: a roly-poly struck, the first time in a visit; statusbench.light { light, by }: the lectern's pick
   on('statusbench.status', (e) => log.say('battle', `${e.status[0].toUpperCase() + e.status.slice(1)} (${e.dur} s): ${STATUS_BENCH_WORDS[e.status] || ''}`, { key: `statusbench.${e.status}`, throttle: 0.5 }));

@@ -202,7 +202,7 @@ before.
 | 66 | 0.08 | 0.08 | 128 x 128 | RGBA8 | yes | data | `src/vfx/surfaces.js:132` | (boot, not in a scene) |
 | 67 | 0.08 | 0.08 | 128 x 128 | RGBA8 | yes | data | `src/vfx/surfaces.js:202` | (boot, not in a scene) |
 | 68 | 0.08 | 0.08 | 128 x 128 | RGBA8 | yes | canvas | `src/vfx/bracelet.js:89` | workshop, basement, garden |
-| 69 | 0.08 | 0.08 | 128 x 128 | SRGB8_A8 | yes | canvas | `src/vfx/testroomkit.js:139` | testroom |
+| 69 | 0.08 | 0.08 | 128 x 128 | SRGB8_A8 | yes | canvas | `src/vfx/throwingroomkit.js:139` | testroom |
 | 70 | 0.08 | 0.08 | 128 x 128 | SRGB8_A8 | yes | canvas | `src/vfx/strawman.js:82` | testroom |
 | 71 | 0.08 | 0.08 | 128 x 128 | RGBA8 | yes | data | `src/vfx/clouds.js:40` | every zone |
 | 72 | 0.08 | 0.08 | 128 x 128 | SRGB8_A8 | yes | canvas | `src/vfx/paintpath.js:41` | workshop |
@@ -211,7 +211,7 @@ before.
 | 75 | 0.06 | 0.06 | 48 x 256 | SRGB8_A8 | yes | canvas | `src/vfx/bracelet.js:78` | workshop, basement, testroom .. |
 | 76 | 0.05 | 0.05 | 260 x 52 | SRGB8_A8 | no | canvas | `src/vfx/sight.js:474` | overlay |
 | 77 | 0.04 | 0.04 | 168 x 66 | SRGB8_A8 | no | canvas | `src/vfx/duelview/flee.js:45` | basement |
-| 78 | 0.04 | 0.04 | 256 x 32 | SRGB8_A8 | yes | canvas | `src/vfx/testroomkit.js:114` | testroom |
+| 78 | 0.04 | 0.04 | 256 x 32 | SRGB8_A8 | yes | canvas | `src/vfx/throwingroomkit.js:114` | testroom |
 | 79 | 0.04 | 0.04 | 256 x 32 | SRGB8_A8 | yes | canvas | `src/vfx/shrine.js:55` | workshop, dunes, margarite |
 | 80 | 0.04 | 0.04 | 64 x 128 | SRGB8_A8 | yes | canvas | `src/vfx/racewaycavern.js:108` | raceway |
 | 81 | 0.04 | 0.04 | 128 x 64 | SRGB8_A8 | yes | canvas | `src/vfx/spiritpress.js:128` | garden |
@@ -231,7 +231,7 @@ before.
 | 95 | 0.02 | 0.02 | 32 x 32 | RGBA32F | no | data | `src/vfx/overhead.js:41` | workshop |
 | 96 | 0.02 | 0.02 | 64 x 64 | SRGB8_A8 | no | canvas | `src/vfx/lachrimetertube.js:69` | overlay |
 | 97 | 0.01 | 0.01 | 64 x 40 | SRGB8_A8 | yes | canvas | `src/vfx/brig.js:104` | workshop |
-| 98 | 0.01 | 0.01 | 64 x 32 | SRGB8_A8 | yes | canvas | `src/vfx/testroomkit.js:125` | testroom |
+| 98 | 0.01 | 0.01 | 64 x 32 | SRGB8_A8 | yes | canvas | `src/vfx/throwingroomkit.js:125` | testroom |
 | 99 | 0.01 | 0.01 | 128 x 5 | RGBA32F | no | data | `src/vfx/nightsky.js:81` | every zone |
 | 100 | 0.01 | 0.01 | 24 x 24 | RGBA32F | no | data | `src/vfx/overhead.js:41` | workshop |
 | 101 | 0.01 | 0.01 | 32 x 64 | SRGB8_A8 | no | canvas | `src/vfx/buskermat.js:30` | dunes |

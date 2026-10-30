@@ -11,7 +11,7 @@
 // Objects that follow the camera or are drawn in world space from the origin (particles, trails, ropes: `frustumCulled = false`), and
 // anything marked `userData.zoneFree`, are never hidden by zone.
 //
-//   zoneOf(pos) -> 'testroom' | 'workshop' | 'basement' | 'circuits' | 'beach' | 'dunes' | 'well' | 'emocean' | 'margarite' | null        (pure, for builders: render/zonemap.js)
+//   zoneOf(pos) -> 'throwingRoom' | 'workshop' | 'basement' | 'circuits' | 'beach' | 'dunes' | 'well' | 'emocean' | 'margarite' | null        (pure, for builders: render/zonemap.js)
 //   wholeOf(pos) -> the zone, or the one it is part of ('beach' is `partOf` 'dunes': one sand, one sky, walked between). Anything
 //   asking "is this the same ground?" asks the whole; anything asking "what is drawn?" asks the zone.
 //   game.zones.update(dt)        game.zones.current (what is drawn)   game.zones.whole (the ground: ask this for music, weather, a room's rules)   game.zones.visibleAt(pos)
@@ -33,7 +33,7 @@ const seesHole = (c, cam, range) => {
   return _fr.setFromProjectionMatrix(_pm).intersectsBox(HOLE_BOX);
 };
 
-// the Throwing Room's doorway in the workshop's east wall (world/testroom/layout.js TR.door: z 1 to 4, 3.2 m high), the wall's depth and a margin
+// the Throwing Room's doorway in the workshop's east wall (world/throwingroom/layout.js TR.door: z 1 to 4, 3.2 m high), the wall's depth and a margin
 const DOOR_BOX = new THREE.Box3(new THREE.Vector3(9.8, 0, 0.8), new THREE.Vector3(10.8, 3.4, 4.2));
 /** Can the camera see through the Throwing Room's doorway (in range, and the doorway on screen)? */
 const seesDoor = (c, cam, range) => {
@@ -44,10 +44,10 @@ const seesDoor = (c, cam, range) => {
 
 // what each zone can see from where the camera stands (the tests themselves are pure: render/zonemap.js)
 // (each answer one of these lists, made once: the test runs every frame)
-const SEEN = { none: [], basement: ['basement'], testroom: ['testroom'], both: ['basement', 'testroom'], workshop: ['workshop'], dunes: ['dunes'], beach: ['beach'] };
+const SEEN = { none: [], basement: ['basement'], throwingRoom: ['throwingRoom'], both: ['basement', 'throwingRoom'], workshop: ['workshop'], dunes: ['dunes'], beach: ['beach'] };
 const SEES = {
-  workshop: (c, cam) => { const h = seesHole(c, cam, 30), d = seesDoor(c, cam, 40); return h ? (d ? SEEN.both : SEEN.basement) : d ? SEEN.testroom : SEEN.none; },
-  testroom: (c, cam) => (seesDoor(c, cam, 40) ? SEEN.workshop : SEEN.none),
+  workshop: (c, cam) => { const h = seesHole(c, cam, 30), d = seesDoor(c, cam, 40); return h ? (d ? SEEN.both : SEEN.basement) : d ? SEEN.throwingRoom : SEEN.none; },
+  throwingRoom: (c, cam) => (seesDoor(c, cam, 40) ? SEEN.workshop : SEEN.none),
   basement: (c, cam) => (seesHole(c, cam, 12) ? SEEN.workshop : SEEN.none), // (a hole in the ceiling: only from near under it)
   beach: () => SEEN.dunes,
   dunes: (c) => (nearShore(c) ? SEEN.beach : SEEN.none),

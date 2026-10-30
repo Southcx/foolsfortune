@@ -21,21 +21,21 @@ const r0 = await g.page.evaluate(async () => {
   return { cast: P.castOff(V.s.at, 'margarite'), n: lane.length, ids: lane };
 });
 await g.step(240);
-await g.page.evaluate(() => { const T = __game.game.emocean.trip; T.state = { ...T.state, fuel: 0 }; });
+await g.page.evaluate(() => { const T = __game.game.rail.trip; T.state = { ...T.state, fuel: 0 }; });
 let relay = null, prev = null;
 for (let i = 0; i < 1400 && !relay; i++) {
   await g.step(6);
-  const s = await g.page.evaluate(() => { const G = __game.game, E = G.emocean, T = E.trip, M = G.indexMenu;
+  const s = await g.page.evaluate(() => { const G = __game.game, E = G.rail, T = E.trip, M = G.indexMenu;
     if (E.offering && M?.open) document.querySelector('#indexmenu .room')?.click(); E.run.hits = 0;
     return { k: T.k, adrift: !!E.stage.adrift, t: E.t, Q: E.rail.Q.toArray(), ids: T.wps.map((w) => w.id), seconds: E.stage.seconds, ev: window.__ev.length }; });
   if (prev && s.adrift && !prev.adrift) relay = { before: prev, after: s };
   prev = s;
 }
-const r1 = relay && await g.page.evaluate(() => { const G = __game.game, E = G.emocean, T = E.trip, C = T.chart;
+const r1 = relay && await g.page.evaluate(() => { const G = __game.game, E = G.rail, T = E.trip, C = T.chart;
   const legal = T.wps.every((w, i) => i === 0 ? C.first.includes(w.id) : C.edges.some(([a, b]) => a === T.wps[i - 1].id && b === w.id));
   return { legal, legs: E.stage.legs.length, wps: T.wps.length, bars: E.plan.bars, layoutBars: T.layout.bars, seconds: E.stage.seconds, BAR: E.plan.seconds / E.plan.bars, passageAdrift: !!G.voyage.sailing?.passage?.adrift, lines: window.__lines.filter((l) => /adrift/.test(l)), ev: window.__ev[0] }; });
-for (let i = 0; i < 1600; i++) { await g.step(30); const a = await g.page.evaluate(() => { const E = __game.game.emocean, M = __game.game.indexMenu; if (E.offering && M?.open) document.querySelector('#indexmenu .room')?.click(); E.run.hits = 0; return E.stage.active; }); if (!a) break; }
-const r2 = await g.page.evaluate(() => ({ active: __game.game.emocean.stage.active, at: __game.game.voyage.s.at }));
+for (let i = 0; i < 1600; i++) { await g.step(30); const a = await g.page.evaluate(() => { const E = __game.game.rail, M = __game.game.indexMenu; if (E.offering && M?.open) document.querySelector('#indexmenu .room')?.click(); E.run.hits = 0; return E.stage.active; }); if (!a) break; }
+const r2 = await g.page.evaluate(() => ({ active: __game.game.rail.stage.active, at: __game.game.voyage.s.at }));
 const dQ = relay ? Math.hypot(...relay.after.Q.map((v, i) => v - relay.before.Q[i])) : null, dt = relay ? relay.after.t - relay.before.t : null;
 check(`cast off on ${r0.n} waypoints`, r0.cast && r0.n >= 3, r0);
 check('the bunker dry: adrift as the first leg closes', !!relay && r1?.ev?.at === r0.ids[0], relay && { at: r1?.ev?.at, first: r0.ids[0] });

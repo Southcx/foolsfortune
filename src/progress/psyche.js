@@ -13,7 +13,7 @@
 //
 //   installPsyche(game) -> game.psyche = { exp(domain), level(domain), total(), widen(key), affinity(domain) }
 // ---------------------------------------------------------------------------------------
-import { isTraining } from './combat/testroom.js';
+import { isTraining } from './combat/throwingroom.js';
 import { DOMAINS, SOURCES, expFor, levelOf } from './domains.js';
 import { RAMP, widenOf } from './godpowers.js';
 import { CLASS } from './spreads.js';
@@ -33,7 +33,7 @@ export function installPsyche(game) {
     affinity: (d) => (game.laidSpread?.class?.domain === d ? CLASS.affinity : 1),
   };
   game.events.on('*', (e) => {
-    if (!EVENTS.has(e.name) || (e.by && e.by !== 'courier') || isTraining(e)) return; // (a training body pays no exp: combat/testroom.js)
+    if (!EVENTS.has(e.name) || (e.by && e.by !== 'courier') || isTraining(e)) return; // (a training body pays no exp: combat/throwingroom.js)
     for (const [d, n] of expFor(e)) {
       if (!(n > 0)) continue;
       const was = levelOf(exp(d)), k = game.psyche.affinity(d);

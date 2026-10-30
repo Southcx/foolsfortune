@@ -76,7 +76,7 @@
 //               why, by }` when a STRING RUN stops (run: the LMB blows landed in a row, Dovina's `sond.string.best`; why: 'miss' a
 //               blow whose strike ran its course and struck nothing, 'hurt' a blow taken, 'pause' past the string's window (RESET; it
 //               runs on while the tool is not the one read: idle()), 'stow'). Neither a hit nor a miss: a training body (Strawman, a
-//               roly-poly, the Throwing Room's pots: progress/combat/testroom.js isTraining), a sibling, a struckable thing (a crystal),
+//               roly-poly, the Throwing Room's pots: progress/combat/throwingroom.js isTraining), a sibling, a struckable thing (a crystal),
 //               a row worth nothing (a shove). A special's blow (specialBlow(): slot null, R, RMB's, the iaido's draw cut, the stinger
 //               by ownBlow()) sends its move.blow but is apart from the run: it neither adds to it nor ends it (MELEE-LOADOUT-EARNING.md
 //               section 1, "the longest unbroken run of LMB string blows").

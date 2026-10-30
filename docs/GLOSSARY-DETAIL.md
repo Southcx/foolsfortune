@@ -313,7 +313,7 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   is what F would do). *Not:* the chevron, the lock-on reticle, the Grapple's mount preview.
 - **a guard break** (`hit.guardBreak` on a move's hit, `tools/moveset.js`; God Hand's guard break, Soulcalibur's Guard Crush): the thing
   struck is asked `breakGuard(point, dir, by)` before the blow lands, so that blow goes through. Strawman on guard throws its sleeves wide
-  and keeps them open 1.0 s of the sim clock (its windups' clock: real seconds less any hit-stop) (`GUARD_OPEN`, `world/testroom/room.js`; its look `S.open(t)`, `vfx/strawman.js`); nothing else guards
+  and keeps them open 1.0 s of the sim clock (its windups' clock: real seconds less any hit-stop) (`GUARD_OPEN`, `world/throwingroom/room.js`; its look `S.open(t)`, `vfx/strawman.js`); nothing else guards
   yet. *Not:* the guard (V, the held block), nor the parry, nor a stun.
 - **the loadout editor** (`tools/sondelass/loadouteditor.js`; `docs/plans/MELEE-LOADOUT.md` phase 3): God Hand's technique list beside its
   Combo Tree. On the left the string's slots (`slotRow`: the open ones, filled or **empty**, then the ones not yet open shown **closed**
@@ -490,7 +490,7 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   builds: **doubt** (Ego), **charm** (Influence), **blind** (Illusion), **confusion** (Delirium); Impact's is the stun). **build-up**
   (`creature.build[type]`): a type's meter toward its status. **annihilation**: Impact on a confused creature, or Delirium on a stunned one.
 - **stimulus** (`game.ai.stimuli`): a sound, light or smell a creature can notice.
-- **Strawman** (`STRAWMAN`, `src/vfx/strawman.js`; `docs/plans/STRAWMAN.md`; the owner's character and name): the Workshop's test dummy, a stitched sack doll on a post with a weighted ball foot, stitched by Pip; a creature that never falls and that the ledger never counts (`training`); infinitely durable, it cannot shatter and always stands back up. A **bout** is its blows until 4 real seconds pass without one, said in the log in one line. Named with no article ("Strawman rocks back up"). **Its moves** (`STRAWMAN_MOVES`, `vfx/strawmanmoves.js`; the owner, 2026-10-10): the swing, the jab, the one-two, the overhead chop, the spin sweep (low: a jump clears it), the hat-butt and the delayed swing, each a windup the parry answers and a harmless strike; **its attack strings** (`STRAWMAN_STRINGS`; run by `world/testroom/strawmanstrings.js`): moves and pauses in a set order on a loop (Footwork, One-two chop, The mix-up, Keep out), picked at the sparring circle's lectern and run only while the Courier is inside the circle; always "Strawman's attack string" or "a string" on the lectern, never a tool's string (the moveset's). docs/plans/COMBAT-LAB.md section 6.
+- **Strawman** (`STRAWMAN`, `src/vfx/strawman.js`; `docs/plans/STRAWMAN.md`; the owner's character and name): the Workshop's test dummy, a stitched sack doll on a post with a weighted ball foot, stitched by Pip; a creature that never falls and that the ledger never counts (`training`); infinitely durable, it cannot shatter and always stands back up. A **bout** is its blows until 4 real seconds pass without one, said in the log in one line. Named with no article ("Strawman rocks back up"). **Its moves** (`STRAWMAN_MOVES`, `vfx/strawmanmoves.js`; the owner, 2026-10-10): the swing, the jab, the one-two, the overhead chop, the spin sweep (low: a jump clears it), the hat-butt and the delayed swing, each a windup the parry answers and a harmless strike; **its attack strings** (`STRAWMAN_STRINGS`; run by `world/throwingroom/strawmanstrings.js`): moves and pauses in a set order on a loop (Footwork, One-two chop, The mix-up, Keep out), picked at the sparring circle's lectern and run only while the Courier is inside the circle; always "Strawman's attack string" or "a string" on the lectern, never a tool's string (the moveset's). docs/plans/COMBAT-LAB.md section 6.
 
 ## 5. Places and the Wells
 
@@ -623,17 +623,17 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   their own), nor the surfaces (`render/triplanar.js`).
 - **the three layers**: a **Well** (a dungeon), **the island** (action outside the Wells), **the Emocean** (travel between islands)
   (`docs/DESIGN.md`, section 11).
-- **the Throwing Room** (a side room off the Workshop; `src/progress/combat/testroom.js`; Espada's name: a potter throws on the wheel, the Courier throws shots): where
+- **the Throwing Room** (a side room off the Workshop; `src/progress/combat/throwingroom.js`; Espada's name: a potter throws on the wheel, the Courier throws shots): where
   aim and recoil are measured, never earned: the Index, the **targets** (never "plates": a plate is a Veritome photograph), Strawman, the
   **spray wall** (clay that keeps every dent, so a recoil pattern is read from the wall) and the only pots that come back (they pay
   nothing). A **drill** is a run begun at the Index (Flick, Track, Spray, Recover); on a tuned game it is said and never recorded.
-  Built in `src/world/testroom/`, through a door in the Workshop's east wall; the drills are measured from the **firing mark** (the ring on
-  the floor, 10 m from the spray wall). The Index stands on a **lectern** (`vfx/testroomkit.js`): an open book whose pages project the
+  Built in `src/world/throwingroom/`, through a door in the Workshop's east wall; the drills are measured from the **firing mark** (the ring on
+  the floor, 10 m from the spray wall). The Index stands on a **lectern** (`vfx/throwingroomkit.js`): an open book whose pages project the
   Index's dial, lying parallel to them a few centimetres over the paper, its print inked on the page and its light climbing between.
-  **The paint range** (`world/testroom/paintrange.js`; its look `dressPaintRange`, `vfx/testroomkit.js`): the stand, a quarry tile with a
+  **The paint range** (`world/throwingroom/paintrange.js`; its look `dressPaintRange`, `vfx/throwingroomkit.js`): the stand, a quarry tile with a
   slip chevron down the range, and rings at 3, 6 and 9 m brushed in the drill plates' cream slip with an oxblood rim, each with a
   **tally** of one, two or three small tiles on its near side (counted, never a number).
-  **The combat wing** (`world/testroom/combatwing.js`, `TR.wing`; its look `vfx/combatwingkit.js`; docs/plans/COMBAT-LAB.md): the
+  **The combat wing** (`world/throwingroom/combatwing.js`, `TR.wing`; its look `vfx/combatwingkit.js`; docs/plans/COMBAT-LAB.md): the
   Throwing Room's hall for fighting, through **the arcade** where its south wall stood, 9 m high, in the room's zone; it measures and
   never pays, as the room does. Its stations, each with **a station's lectern** (the Index's lectern's shape, its book shut while its page
   is unbuilt; *not* the Index's lectern) and a debug chest: **the sparring circle** (Strawman in a ring of tamped clay bounded by straw
@@ -642,7 +642,7 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   wall (`SparringMirror`, `mirrorPane`, `vfx/sparringmirror.js`: a real mirror while the Courier is inside the bales, the room drawn
   again from the eye mirrored in the glass, bodies and never marks; the stand-in's dull glass outside them; *not* a mirage); **the Figment telegraph floor** (a screed of grey slip where **the caster** throws each Figment attack telegraph's shape; never
   "the telegraph floor" bare); **the parry range** (**the parry range's pitcher**, a big clay jug on a plinth, and stand marks at 4, 8 and
-  12 m with tallies; *not* the paint range, nor a pot of the `pitcher` kind); **the status bench** (`StatusBench`, `world/testroom/statusbench.js`:
+  12 m with tallies; *not* the paint range, nor a pot of the `pitcher` kind); **the status bench** (`StatusBench`, `world/throwingroom/statusbench.js`:
   eleven **roly-polies** (kind `rolypoly`; never "dummies"), Strawman's kin, each a training creature with one status (`benchStatus`)
   that rocks on its ball when struck and takes that status at its real time; **the lit roly-poly**, the one the bench's lectern lights as
   the target, or each in turn; each with **a status plaque** under it bearing its status's glyph); **the juggle pen** (a fenced square of sand under the hall's
@@ -846,7 +846,7 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   schools, pincer, darters, breather, the set piece, arrive), each held in a **view**, the camera's grammar: **chase** (Star Fox),
   **above** (Ikaruga), **side** (Einhander), **free** (Sin & Punishment), **astern** (looking back). A **swing** is the change of view:
   one bar, on a bar line, and nothing enters during it.
-- **the crossing's look** (`CrossingLook`, `game.emocean.looks`, `src/vfx/crossinglook.js`; Calissa's): the storm looks laid on the crossing
+- **the crossing's look** (`CrossingLook`, `game.rail.looks`, `src/vfx/crossinglook.js`; Calissa's): the storm looks laid on the crossing
   as it plays, read from the stage each frame: the storm warp's strength by the leg's phase, the waypoint's weather and a turn of the rail;
   the lift; the ambient geometry hung on the spline (**turn rings**, threaded through a turn of the rail on its heartline; **flank
   monoliths**, rising beside a fight leg); the wake left in the air along a turn's figure; **the surge's shell** (three great circles of
@@ -943,7 +943,7 @@ This file holds the full definitions behind `docs/GLOSSARY.md`, which is the bin
   is fast; until the forms, a plain shot of the ship's home feeling is drawn astral and any other umbral.
 - **polarity** (Q on the rail; to be the Astral and Umbral forms: RAIL-OVERHAUL.md): the ship's feeling, your draught or its opposite; a shot of the ship's feeling is **absorbed** (drunk:
   Lachryma to the pool) instead of hurting (Ikaruga).
-- **the rail** (`world/emocean/stage.js`, `game.emocean`): the crossing as it is sailed, a straight line in a zone of its own (`emocean`)
+- **the rail** (`world/emocean/stage.js`, `game.rail`): the crossing as it is sailed, a straight line in a zone of its own (`emocean`)
   at the dunes' layer. Everything that fights is kept in **the rail's frame** (x across, y up, z along) about the **rail point**, which
   the **stage clock** moves (the cue as heard, else its own). The **ship** (`courier/ship/ship.js`) is the sloop at the rail, in a
   **box** about the rail point; the view's **plane** says which two of its three numbers WASD moves (screen, sea, wall). *Not:* a

@@ -8,7 +8,7 @@
 // slot, then a move: it is kept (loadoutchosen.js) and said in the log (`loadout.set`). Generic over the catalogue's rows: whatever
 // SONDELASS_MOVES holds is listed; a row's own words and numbers win (loadoutwords.js stands in for the rows that carry none).
 //
-// Opened in two places, one editor: the sparring circle's lectern (world/testroom/strawmanstrings.js: its page's LOADOUT row opens this
+// Opened in two places, one editor: the sparring circle's lectern (world/throwingroom/strawmanstrings.js: its page's LOADOUT row opens this
 // page in the Index's window, feedback/indexmenu.js showPage; Esc or F closes it, as the lectern's page) and the Codex's SONDELASS
 // shelf (feedback/codex/codex.js; Esc, B or F closes it). In the DEBUG save with the lend panel's `moves` lent, every move and all 8
 // slots are open, the lent ones wearing the hollow mark (ui/lendpanel.js).

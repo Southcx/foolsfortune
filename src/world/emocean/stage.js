@@ -34,7 +34,7 @@
 // Prior art: Rez (the stage and its cue one thing), Star Fox 64 (the two-minute stage on rails, the tally), Panzer Dragoon (the rail
 // as a line the camera rides and looks round from), the arcade's CONTINUE? screen, Squirrel Eiserloh's "Juicing Your Cameras With Math".
 //
-//   game.emocean = new Emocean(game)   .build() (at boot)   .begin() (after voyage.board)   .update(dt)   .finish(passed)
+//   game.rail = new Emocean(game)   .build() (at boot)   .begin() (after voyage.board)   .update(dt)   .finish(passed)
 //   .sailShowcase(island, mounts) (the pier's SHOWCASE row)   .showcase (the showcase crossing's sailing while it sails, else null)
 //   .sailPractice(island, type, strength, ship, mounts) (the pier's PRACTICE rows)   .practice (its sailing while it sails, else null)
 //   .stage { active, seconds, setPieces, foe: { id, under } | null }   .bar   .run   .ship   .waves   .shots   .mounts   .piece   .rail { Q, speed, toWorld, dirWorld, toLocal, dirLocal }

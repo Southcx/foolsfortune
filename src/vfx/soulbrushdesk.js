@@ -94,7 +94,7 @@ export class SoulBrushDesk {
   // ---------------------------------------------------------------- each frame it may be drawn
   update(dt, slot) {
     const g = this.game, Bc = document.body.classList, B = this.tool();
-    const allowed = !!B && !g.title?.active && !g.emocean?.stage?.active && !Bc.contains('cine') && !Bc.contains('bztable-seated');
+    const allowed = !!B && !g.title?.active && !g.rail?.stage?.active && !Bc.contains('cine') && !Bc.contains('bztable-seated');
     this.a = C01(this.a + (allowed ? dt / 0.22 : -dt / 0.16));
     if (!allowed && this.a <= 0) return this.hide();
     this.t += dt;

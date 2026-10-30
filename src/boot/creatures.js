@@ -10,8 +10,8 @@
 //   await bootCreatures(game, made) -> nothing
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { TestRoom } from '../world/testroom/room.js';
-import { TestRoomDress } from '../vfx/testroomkit.js';
+import { ThrowingRoom } from '../world/throwingroom/room.js';
+import { ThrowingRoomDress } from '../vfx/throwingroomkit.js';
 import { Folk } from '../npc/folk.js';
 import { Creatures } from '../creatures/creatures.js';
 import { Stun } from '../creatures/stun.js';
@@ -44,8 +44,8 @@ export async function bootCreatures(game, made) {
   // the clay folk and their talk (npc/): placed now that the rooms they stand in are built
   // the creatures that fight back (creatures.js): for now the slip jellies on the flats past the Weir (creatures/jelly/slipjelly.js)
   game.creatures = new Creatures(game);
-  game.testroom = new TestRoom(game, level.testRoom); // (the Throwing Room off the Workshop: its pots, Strawman, the drills; world/testroom/)
-  (game.testroomDress = new TestRoomDress(game)).update(0); // (its stand-ins dressed: the drill targets as fired plates, the Index's lectern; vfx/testroomkit.js)
+  game.throwingRoom = new ThrowingRoom(game, level.throwingRoom); // (the Throwing Room off the Workshop: its pots, Strawman, the drills; world/throwingroom/)
+  (game.throwingRoomDress = new ThrowingRoomDress(game)).update(0); // (its stand-ins dressed: the drill targets as fired plates, the Index's lectern; vfx/throwingroomkit.js)
   game.stun = new Stun(game); // (a mind knocked out of itself, for anything that can be: stun.js)
   game.dissolve = new Dissolve(game); // (a zandatsu's pieces, come undone into Lachryma: vfx/dissolve.js)
   game.spawnLook = new SpawnLook(game); // (how a creature comes in: the island's own rise from the ground, an Egregore or a stray tears in from midair: vfx/spawnlook.js)

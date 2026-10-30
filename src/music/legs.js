@@ -34,7 +34,7 @@
 //   import { tripCue, tripLayout, railHeat, HEAT, LEGS, setEncounter } from './legs.js'
 //   tripCue(legs) -> the crossing's score (cached): legs = [{ id: 'shoal'|'wreckers'|'nobody'|'eyewall'|'graveyard'|'maelstrom'|'calm'|'bounty'|'encounter',
 //     bars?: 24..64 (or each leg's own phases, RAIL-OVERHAUL.md section 6), aspect?: the maelstrom's feeling, phases?: { open, build, peak,
-//     release }, encounter?: an encounter's id (src/progress/rail/encounters.js) }]   (music/choose.js, game.emocean.stage.legs)
+//     release }, encounter?: an encounter's id (src/progress/rail/encounters.js) }]   (music/choose.js, game.rail.stage.legs)
 //   setEncounter(waiting): an encounter's (or a calm's campfire) choice pending holds its cue on the bar line   setTrip({ lowFuel, adrift, figures })
 //   a crossing's score is of `family: 'crossing'`: relaid with new legs ahead (adrift), it carries on from the bar playing (Arranger.swap)
 //   legs[k].feeling (an aspect, or none: fair) and legs[k].storm   setFoeUnder(under): a boss diving takes its line under
@@ -52,12 +52,12 @@ const R = { heat: 0 };
 export const HEAT = { lock: 0.12, volley: 0.4, down: 0.3, part: 1, core: 2 };
 /** The trip's pressures (PASSAGE.md 14.2): fuel running low, or adrift on the current; read from the next bar. */
 export function setTrip({ lowFuel = false, adrift = false, figures = null } = {}) { R.lowFuel = !!lowFuel; R.adrift = !!adrift; R.figures = figures; }
-/** An encounter's choice pending (music/choose.js, from game.emocean.stage.encounter): its hold loops on the bar line until it is made. */
+/** An encounter's choice pending (music/choose.js, from game.rail.stage.encounter): its hold loops on the bar line until it is made. */
 export function setEncounter(waiting) { R.waiting = !!waiting; }
 /** A crossing's boss (RAIL-FLOW.md 5: it leaves only when beaten): 'up' while it fights (its peak holds, looping on the bar), 'enraged'
  *  past 3 real minutes (the peak quickens), 'down' when it falls (the peak lets go into the release on the next bar line), null after. */
 export function setBoss(state = null) { if (R.boss === 'down' && !state) return; if (R.boss === 'falling' && (!state || state === 'down')) return; R.boss = state; } // (a fall is kept until the arranger lets go on it)
-/** The boss under the surface (Charybdis's dives: game.emocean.stage.foe.under): its line alone low-passed from the next bar. */
+/** The boss under the surface (Charybdis's dives: game.rail.stage.foe.under): its line alone low-passed from the next bar. */
 export function setFoeUnder(under) { R.foeUnder = !!under; }
 export function railHeat(n = 0) { R.heat = Math.max(0, Math.min(3, R.heat + n)); }
 
@@ -184,7 +184,7 @@ function legBar(L, phase, i, len) {
 }
 
 // ---- the turn of the rail: from one leg's key into the next's, four bars
-// the figure the rail flies through the turn (world/emocean/railpath.js, game.emocean.figures): a crest rises into its top, a corkscrew
+// the figure the rail flies through the turn (world/emocean/railpath.js, game.rail.figures): a crest rises into its top, a corkscrew
 // and a loop drop the bottom out at the inverted bar (the third), a weave swells a cymbal on each bank
 function figureBar(fig, out, i) {
   if (fig === 'crest') return i === 1 ? [...out.filter((e) => e.i !== 'riser'), E('riser', 0, 4, null, 0.35)] : i === 2 ? [E('crash', 0, 1, null, 0.45), E('shimmer', 0, 4, [76, 80, 83], 0.08), ...out.filter((e) => e.i !== 'kick')] : i === 3 ? [...out, E('whoosh', 0, 3, null, 0.3)] : out;

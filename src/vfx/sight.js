@@ -513,7 +513,7 @@ export class SightLook {
 
   update(dt, slot) {
     const g = this.game, B = document.body.classList;
-    const hide = !!(g.title?.active || g.god?.controlling || g.emocean?.stage?.active || B.contains('cine') || g.duel?.active); // (not in a puzzle duel: the board's room, South, 2026-10-27)
+    const hide = !!(g.title?.active || g.god?.controlling || g.rail?.stage?.active || B.contains('cine') || g.duel?.active); // (not in a puzzle duel: the board's room, South, 2026-10-27)
     this.frame.userData.overlayHidden = this.hidden = hide; if (hide) return;
     // where it stands: the top-right corner on the desk; on touch the HUD layout's box, inside the safe area at a phone's scale
     const L = g.hudLayout, touch = !!L?.touch, P = touch ? L.place('sight') : null, dot = P ? P.scale : slot.view.h / 480;

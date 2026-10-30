@@ -55,7 +55,7 @@ export class Tracking {
   listen() {
     const g = this.game, ev = g.events, L = this.L, log = this.log;
     // (the Throwing Room measures and never counts: its pots and lock targets (`training`), Strawman and the status bench's roly-polies
-    // never reach a rule here; its own rules, strawman.*, statusbench.* and drill.*, carry no mark: world/testroom/, feedback/tracking/testroom.js)
+    // never reach a rule here; its own rules, strawman.*, statusbench.* and drill.*, carry no mark: world/throwingroom/, feedback/tracking/throwingroom.js)
     const on = (n, f) => ev.on(n, (e) => { if (e?.training || e?.kind === 'strawman' || e?.kind === 'rolypoly' || e?.what === 'strawman') return; f(e); });
     areaRules({ on, L, log, g, where: () => this.where(), track: this });
   }
@@ -102,7 +102,7 @@ export class Tracking {
     if (s !== this.state) { if (this.state && s !== 'idle') L.inc(`enter.${s}`); this.state = s; }
 
     // distance and speed (a jump of more than a few metres in a frame is a teleport, not travel)
-    const at = g.god?.controlling || g.realm?.active || g.emocean?.stage?.active ? null : P.pos; // (in the garden P.pos is the Jar's, and the Jar is not the Courier: Dovina's ruling, GARDEN-SWEEP #7; aboard, the ship's rail is not walked: SWEEPS.md)
+    const at = g.god?.controlling || g.realm?.active || g.rail?.stage?.active ? null : P.pos; // (in the garden P.pos is the Jar's, and the Jar is not the Courier: Dovina's ruling, GARDEN-SWEEP #7; aboard, the ship's rail is not walked: SWEEPS.md)
     if (at) {
       if (this.prev) {
         const dx = at.x - this.prev.x, dz = at.z - this.prev.z, dy = at.y - this.prev.y, d = Math.hypot(dx, dz);

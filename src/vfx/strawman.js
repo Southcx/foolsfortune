@@ -33,7 +33,7 @@ import { STRAWMAN_MOVES, SLEEVES, MOVE_EASE, CHANNELS, REST, poseAt } from './st
 export { SLEEVES };
 
 /** The roly-poly's spring (the weight low in the ball: a stiff spring, a little damping, a lean it never passes), one step: `a` the
- *  lean about x and z (a Vector2, radians), `av` its rate. Strawman's rock, and the status bench's roly-polies (world/testroom/statusbench.js). */
+ *  lean about x and z (a Vector2, radians), `av` its rate. Strawman's rock, and the status bench's roly-polies (world/throwingroom/statusbench.js). */
 export const ROCK = { k: 38, damp: 3.2, max: 0.75 };
 export function rockStep(a, av, dt, k = ROCK.k, damp = ROCK.damp) {
   av.addScaledVector(a, -k * dt).multiplyScalar(Math.exp(-dt * damp)); a.addScaledVector(av, dt);
@@ -165,7 +165,7 @@ export class StrawmanModel {
   }
 
   /** The mode F cycles (Dovina's, docs/plans/STRAWMAN.md): 'still', 'guard' (the sleeves fold into an X across its front: it blocks from
-   *  the front), 'swing' (the room's clock plays the swing every 3 sim seconds: world/testroom/strawmanstrings.js). */
+   *  the front), 'swing' (the room's clock plays the swing every 3 sim seconds: world/throwingroom/strawmanstrings.js). */
   setMode(m) { this.mode = m; }
   /** A guard break: the guard thrown open for `t` seconds (it folds back in after, as from a string), the doll rocked back. */
   open(t) { this.opened = t; this.av.x -= 2.2; }

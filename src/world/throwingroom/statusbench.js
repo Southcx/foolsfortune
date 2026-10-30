@@ -9,7 +9,7 @@
 // through game.stun), so the status's own aura (`aura.<status>`, vfx/auras.js) shows round it and its glyph pops over it; and its body
 // shows what the status means to it (BODY: halted it freezes, asleep it leans back and breathes, melted it slumps). The first time
 // each is struck in a visit the log says the status in one line (`statusbench.status { status, by }`, its rule in
-// feedback/tracking/testroom.js; the words placeholders for Espada's). Only its own status holds: what a blow's type builds on it is
+// feedback/tracking/throwingroom.js; the words placeholders for Espada's). Only its own status holds: what a blow's type builds on it is
 // shrugged off, so each shows one thing beside the other ten.
 //
 // THE LECTERN (F, a page set aside): which roly-poly is lit as the target (it warms from within), each in turn (the light moves on a
@@ -94,7 +94,7 @@ export class StatusBench {
   /** One roly-poly: its body (one mesh and its outline, parked at rest), its collider, the creature, the lock target. */
   make(status, x, y, z, geo, mat) {
     const g = this.game, base = new THREE.Vector3(x, y, z), H = ROLY_POLY.height;
-    const mesh = new THREE.Mesh(geo, mat); mesh.name = `rolyPoly.${status}`; mesh.userData.zone = 'testroom';
+    const mesh = new THREE.Mesh(geo, mat); mesh.name = `rolyPoly.${status}`; mesh.userData.zone = 'throwingRoom';
     mesh.position.set(x, y + ROLY_POLY.pivot, z); mesh.rotation.order = 'XZY'; mesh.castShadow = true;
     addOutline(mesh); g.scene.add(mesh);
     const self = this, R = {
@@ -180,7 +180,7 @@ export class StatusBench {
       if (R.parked) { this.batch.unpark(R.parked); R.parked = null; }
       m.rotation.set(R.a.x, 0, R.a.y); m.scale.set(1 + (1 - R.squash) * 0.6, R.squash, 1 + (1 - R.squash) * 0.6);
       R.rest = 0;
-    } else if (!R.parked && ++R.rest > REST_FRAMES) R.parked = this.batch.park(m, 'testroom');
+    } else if (!R.parked && ++R.rest > REST_FRAMES) R.parked = this.batch.park(m, 'throwingRoom');
   }
 
   /** The lectern's page: each in turn, the eleven, none. */

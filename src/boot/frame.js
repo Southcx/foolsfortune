@@ -146,10 +146,10 @@ export function bootFrame(game, made) {
     if (input.wasPressed('KeyP') && input.enabled && !game.duel.active && (game.pneukaUI.open || (!windowOpen() && !god.controlling))) game.pneukaUI.toggle();
     // (the survey is the Dreamvane's now, MMB with it drawn: tools/dreamvane/dreamvane.js; N stays the god hand's, which has no tools)
     if (input.wasPressed('KeyN') && input.enabled && !play.guiOpen && !modalOpen() && god.controlling) game.cartography.survey(true);
-    if (input.wasPressed('Backquote') && input.enabled && !play.guiOpen && !modalOpen() && !game.emocean?.stage.active && !game.duel.active) { if (game.realm?.active) game.realm.camera.toggleOverhead(); else god.toggle(); } // (in the garden the god hand's view is straight down on the Jar: world/garden/gardencam.js)
+    if (input.wasPressed('Backquote') && input.enabled && !play.guiOpen && !modalOpen() && !game.rail?.stage.active && !game.duel.active) { if (game.realm?.active) game.realm.camera.toggleOverhead(); else god.toggle(); } // (in the garden the god hand's view is straight down on the Jar: world/garden/gardencam.js)
     game.bazaarTable?.tick(game.rawDt ?? dt); // (a seat at Raku's tables: its cloth, cards and dice, its clock is the bazaar's own tickModal: vfx/bazaartable.js)
     if (modalOpen()) { game.seam.update(game.rawDt); game.cartography.tickModal(); game.bazaar?.tickModal(game.rawDt); game.mooring?.update(game.rawDt); game.pier?.helmTick(); game.laidSpread?.update(game.rawDt); game.readingScene?.update(game.rawDt); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (the Codex and the index pause the game; a seam under way still comes back up: GARDEN-SWEEP #1; the Box's window still recounts its spread and draws its reading)
-    if (play.started && overlayUp()) { game.seam.update(game.rawDt); if (!game.emocean?.stage.active) game.music.follow(LACHRYMA); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (and so does the pause menu)
+    if (play.started && overlayUp()) { game.seam.update(game.rawDt); if (!game.rail?.stage.active) game.music.follow(LACHRYMA); input.dx = 0; input.dy = 0; input.endFrame(); return; } // (and so does the pause menu)
     game.duel.update(game.rawDt ?? dt, input); // (a puzzle duel takes the keys it reads, before anything below sees them: world/duel/duelsession.js)
     game.mood.begin(); // (what the last frame's dimming changed, put back before anything sets its own values)
     game.courierSquash.lift(); // (and the Courier's true shape, before anything reads the body: courier/anim/squash.js)
@@ -159,9 +159,9 @@ export function bootFrame(game, made) {
     if (play.guiOpen) { input.dx = 0; input.dy = 0; }
 
     trial.update(dt);
-    game.testroom?.update(dt, game.rawDt ?? dt);
+    game.throwingRoom?.update(dt, game.rawDt ?? dt);
     const godOn = god.controlling; // (the hand: the Courier is a jar, and none of their machinery runs)
-    const aboard = !!game.emocean?.stage.active || !!game.realm?.active || game.duel.active || !!game.opensea?.sailing || !!game.trackEditor?.active || !!game.haunt?.on; // (the track editor and the haunt: the Courier held at the lot) // (a crossing: the Courier is aboard the ship, held there; in the garden they are the Jar: theirs does not run either)
+    const aboard = !!game.rail?.stage.active || !!game.realm?.active || game.duel.active || !!game.opensea?.sailing || !!game.trackEditor?.active || !!game.haunt?.on; // (the track editor and the haunt: the Courier held at the lot) // (a crossing: the Courier is aboard the ship, held there; in the garden they are the Jar: theirs does not run either)
     const worldAsleep = !!game.realm?.active; // (in the Spirit Garden the island's own bodies hold still: its jellies, wisps, pots, clapperjars, fish and chests, 1.8 of the garden's 4.2 ms a tick, the deep clean's profile; the minds and statuses run on, the garden's spirits are among them)
     game.matter?.update(dt); // (the island's matter runs and mends whether or not the hand is out)
     game.creations?.update(dt);
@@ -230,7 +230,7 @@ export function bootFrame(game, made) {
     if (!game.overture?.active) game.music.follow(chooseMusic(game, { overlay: overlayUp() })); // (the overture's trailer keeps the title's music)
 
     if (!godOn && !aboard) { game.lock.update(game.rawDt); techs.tick(dt); game.parries.update(dt); } // (the lock's camera runs in real seconds: a hit-stop does not stall it)
-    game.emocean?.update(dt); // (the crossing: before the camera, which rides its shot)
+    game.rail?.update(dt); // (the crossing: before the camera, which rides its shot)
     game.opensea?.update(dt); // (the free helm: before the camera, which rides its shot)
     game.seaLooks?.update(dt); // (dresses the islets once, the first frame game.opensea.props exists)
     game.puzzleLooks?.update(dt); // (dresses the islets' puzzles once they exist, and plays a dig)
@@ -246,7 +246,7 @@ export function bootFrame(game, made) {
     env.lobbers.update(dt);
     if (!godOn && !game.realm?.active) {
       player.updateCamera(dt, acc / FIXED, weapon.adsEase, player.collider);
-      game.emocean?.reaim?.(); // (the crossing's reticle through this frame's camera, now placed: world/emocean/stage.js)
+      game.rail?.reaim?.(); // (the crossing's reticle through this frame's camera, now placed: world/emocean/stage.js)
       character.setFirstPerson(player.fpWeight > 0.5);
       // fade the courier out when the 3rd-person camera is pressed up against them (never in a cinema shot: a framed close-up is meant)
       const near = camera.position.distanceTo(character.bones.spine003.getWorldPosition(new THREE.Vector3()));
@@ -325,7 +325,7 @@ export function bootFrame(game, made) {
     const under = Math.max(ROOFED.has(game.zones?.current) ? 1 : 0, THREE.MathUtils.clamp((-camera.position.y - 1) / 3, 0, 1)) * (1 - dm); // (under the ground, or under a roof the sun's shadow never reaches: render/zonemap.js ROOFED)
     sun.intensity = THREE.MathUtils.lerp(T.visual.sun * (1 - under), game.dunes.sunIntensity ?? 0, dm);
     scene.fog.density = THREE.MathUtils.lerp(T.visual.fog * (1 - 0.6 * under), scene.fog.density, dm);
-    player.killY = game.well.active ? game.well.killY : game.dunes.active || game.raceway?.active || game.margarite?.here || game.emocean?.stage.active || game.opensea?.active ? DUNE.y - 90 : -100; // (a far dock is at the dunes' layer)
+    player.killY = game.well.active ? game.well.killY : game.dunes.active || game.raceway?.active || game.margarite?.here || game.rail?.stage.active || game.opensea?.active ? DUNE.y - 90 : -100; // (a far dock is at the dunes' layer)
     // under the water: close teal murk
     const wv = env.water.at(camera.position.x, camera.position.y, camera.position.z);
     if (wv && camera.position.y < wv.surface) { scene.fog.color.setHex(0x24515a); scene.fog.density = 0.16; }
@@ -336,7 +336,7 @@ export function bootFrame(game, made) {
     game.bazaarHall?.update(game.rawDt ?? dt); // (the dome's turn, the wheel's and the carousel's spin, the neon's film walk: vfx/bazaarhall.js)
     game.touchstoneLook?.update(game.rawDt ?? dt); // (the plinth you stand at lit, the stone's sign of the trial running, a run's streak rubbed in: vfx/touchstonelook.js)
     game.realm?.light(); // (the garden's sky over the world's, while you are in it)
-    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.awakeningLook.update(game.rawDt ?? dt, camera); game.godhandLooks.update(game.rawDt ?? dt, camera); game.palmDieLook.update(game.rawDt ?? dt); game.weatherLook.update(dt, camera); game.nightSky.update(game.rawDt ?? dt, camera); game.waterFx.update(game.rawDt ?? dt, camera); game.parryMark.update(game.rawDt ?? dt, camera); game.blobShadow.update(); game.classArtLooks?.update(game.rawDt ?? dt); game.pairSpecialLooks?.update(game.rawDt ?? dt);game.domainLooks?.update(game.rawDt ?? dt); game.flourishes.update(game.rawDt ?? dt); game.figmentTelegraphs.update(dt, camera); game.siblingShatter.update(dt); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.areaWipe.update(game.rawDt ?? dt); game.aberrantWipe.update(game.rawDt ?? dt, camera); game.gateRing.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.squallLine?.update(game.rawDt ?? dt, camera); game.stormWarp.update(game.rawDt ?? dt, camera); game.umbral.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.duelView.update(game.rawDt ?? dt); game.spawnLook.update(game.rawDt ?? dt, camera); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); game.daturas?.update(game.rawDt ?? dt); game.wellDress.update(game.rawDt ?? dt); game.testroomDress.update(game.rawDt ?? dt); diag.end('fx');
+    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.awakeningLook.update(game.rawDt ?? dt, camera); game.godhandLooks.update(game.rawDt ?? dt, camera); game.palmDieLook.update(game.rawDt ?? dt); game.weatherLook.update(dt, camera); game.nightSky.update(game.rawDt ?? dt, camera); game.waterFx.update(game.rawDt ?? dt, camera); game.parryMark.update(game.rawDt ?? dt, camera); game.blobShadow.update(); game.classArtLooks?.update(game.rawDt ?? dt); game.pairSpecialLooks?.update(game.rawDt ?? dt);game.domainLooks?.update(game.rawDt ?? dt); game.flourishes.update(game.rawDt ?? dt); game.figmentTelegraphs.update(dt, camera); game.siblingShatter.update(dt); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.areaWipe.update(game.rawDt ?? dt); game.aberrantWipe.update(game.rawDt ?? dt, camera); game.gateRing.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.squallLine?.update(game.rawDt ?? dt, camera); game.stormWarp.update(game.rawDt ?? dt, camera); game.umbral.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.duelView.update(game.rawDt ?? dt); game.spawnLook.update(game.rawDt ?? dt, camera); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); game.daturas?.update(game.rawDt ?? dt); game.wellDress.update(game.rawDt ?? dt); game.throwingRoomDress.update(game.rawDt ?? dt); diag.end('fx');
     game.glyphs.update(dt); // (after everything that pops one this frame: a mark made before its first update was drawn at the origin)
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;
 

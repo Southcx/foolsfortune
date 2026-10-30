@@ -66,7 +66,7 @@ export async function bootServices(made) {
     onBroken(ent, cause, by = 'courier') {
       if (ent.def?.proxy) return; // (the clay of a clapperjar cut into chunks: it has already been counted as the clapper)
       events.emit('prop.break', { kind: ent.kind, target: !!ent.def.target, cause, by, ...(ent.def.training ? { training: true } : {}) });
-      if (ent.def.training) return; // (the Throwing Room's: it measures, it never counts: world/testroom/)
+      if (ent.def.training) return; // (the Throwing Room's: it measures, it never counts: world/throwingroom/)
       if (ent.def.trial) { game.trial?.onTarget(ent); return; }
       if (ent.def.target) return;
       stats.broken++;
@@ -104,8 +104,8 @@ export async function bootServices(made) {
   game.zones = new Zones(game); // (only the place you are in, and what can be seen from it, is drawn: render/zones.js)
   // (and only the area you are in, or beside, is held on the GPU: render/areas.js; the garden, a Well's floors and the crossing build on entry already)
   game.areas = new Areas(game)
-    .register('workshop', { zones: ['workshop'], near: ['basement', 'testroom'] }).register('testroom', { zones: ['testroom'], near: ['workshop'] })
-    .register('basement', { zones: ['basement'], near: ['workshop', 'testroom'] }).register('circuits', { zones: ['circuits'] })
+    .register('workshop', { zones: ['workshop'], near: ['basement', 'throwingRoom'] }).register('throwingRoom', { zones: ['throwingRoom'], near: ['workshop'] })
+    .register('basement', { zones: ['basement'], near: ['workshop', 'throwingRoom'] }).register('circuits', { zones: ['circuits'] })
     .register('dunes', { zones: ['dunes', 'beach'], boot: true, evict: true, build: (g) => g.dunesDress?.build(g), teardown: (g) => g.dunesDress?.teardown(g) }) // (the ground stays, evicted; its dressing comes and goes)
     .register('raceway', { zones: ['raceway'], boot: true, evict: true, build: (g) => { g.raceway?.build(); g.racewayDress?.build(g); }, teardown: (g) => { g.racewayDress?.teardown(g); g.raceway?.teardown(); } }) // (the park and its dressing together; the ground is releaseGround's)
     .register('bazaar', { zones: ['bazaar'], boot: true, evict: true, build: (g) => { g.bazaar?.build(); g.bazaarHall?.build(g); }, teardown: (g) => { g.bazaar?.teardown(); g.bazaarHall?.teardown(g); } }) // (Dovina's hall and Calissa's dress together; the Treasury's static evicted with the zone)

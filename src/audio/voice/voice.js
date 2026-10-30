@@ -149,7 +149,7 @@ export class SystemVoice {
       titles.delete(id);
       this.say(line, { key: `title.${id}` });
     });
-    on('rank.up', (e) => this.say(`Notice. Your standing has risen. You are now known as ${/^Fool/.test(e.rank) ? '' : /^[AEIOU]/i.test(e.rank) ? 'an ' : 'a '}${e.rank}.`, { key: 'rank' })); // (Espada's words: the standing, its article; the top one wears none)
+    on('standing.up', (e) => this.say(`Notice. Your standing has risen. You are now known as ${/^Fool/.test(e.standing) ? '' : /^[AEIOU]/i.test(e.standing) ? 'an ' : 'a '}${e.standing}.`, { key: 'rank' })); // (Espada's words: the standing, its article; the top one wears none)
     on('system.unlock', (e) => {
       if (g.system?.lendAll) return;
       const a = BY_ID[e.ability];

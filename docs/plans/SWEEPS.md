@@ -27,7 +27,7 @@ black" (a few screenshots were read by eye). Screenshots and `results.json` land
 F closes a page or ends a talk on keydown, but the same press stays in `input.pressed` and the player's latch, so the next tick the
 place under the Courier opens it again. Seen: F never ends a talk with the folk (Saggar, Pip, Raku, Letty Marque: `npc/dialogue.js:282`
 then `courier/moves/talk.js:21`); F never closes a Shrine's page, and each F rests again (12 presses, 12 `shrine.rest`); the Throwing
-Room's and the hub's Index, the pier's page (`world/shrines.js:92`, `testroom/room.js:164`, `basement.js:680`, `emocean/pier.js:47`).
+Room's and the hub's Index, the pier's page (`world/shrines.js:92`, `throwingroom/room.js:164`, `basement.js:680`, `emocean/pier.js:47`).
 The same leftover press: picking the Braid (B) on the Index opens the Codex, the Spindle (P) the Pneuka Box; holding W while the Index
 is open picks a room (it ignores `e.repeat`: the Courier was sent 1,897 m to the Dunemaw). **Fix once:** whatever closes or picks on a
 key spends it (`input.pressed.delete(code)` and `player.latch(code)`), in `IndexMenu.close()`, the pick, and `Dialogue.end()`; the
@@ -113,7 +113,7 @@ Leaving a raid counts its raiders as downed by the Courier (`clappers.js:480` `d
 - **`room`** holds a course station's number (`basement.js` CHECKPOINTS, `course.split`, `course.station`): `station`. Petra.
 - **`lab`** (a place id; the glossary refuses "the lab") → `movementLab`; **"the index console"** (`places.js:73`, `tracking.js:292`) →
   the Index; **`testroom`** → the Throwing Room's code name (`throwingRoom`). Petra.
-- **`game.emocean`** is the rail's conductor, not the sea → `game.rail`; **`foe`** has a third meaning on the rail (`waves.foes`,
+- **`game.rail`** is the rail's conductor, not the sea → `game.rail`; **`foe`** has a third meaning on the rail (`waves.foes`,
   `shots.foe()`) → `hostile`. Petra.
 - **`SOLAR`** lives in `progress/combat/dunemaw.js` → `world/dunes/solar.js` (done). The Weir, the treasury and
   the Tithe are built in `tools/sondelass/angling/weir.js` (a place filed under a tool's form) → a module of the Dunes' own (Petra; not moved yet).

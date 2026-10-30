@@ -158,7 +158,7 @@ export class Realm {
   /** In at a Shrine: the Courier stays there; you are the Jar on the Dantian, by the gate. */
   enter(shrine) {
     const g = this.game, P = g.player;
-    const no = this.active ? 'inside' : this.god?.active ? 'god' : g.death?.active ? 'death' : g.emocean?.stage.active ? 'stage' : g.seam?.busy ? 'busy' : null;
+    const no = this.active ? 'inside' : this.god?.active ? 'god' : g.death?.active ? 'death' : g.rail?.stage.active ? 'stage' : g.seam?.busy ? 'busy' : null;
     if (no) { if (no !== 'inside') g.events?.emit('garden.refuse', { why: no, by: 'courier' }); return false; } // (a refusal is said: GARDEN-SWEEP #14)
     this.back = { shrine: shrine?.id || null, pos: P.pos.clone(), yaw: P.yaw };
     const go = () => {

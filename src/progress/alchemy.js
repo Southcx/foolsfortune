@@ -19,7 +19,7 @@
 //   SEASONING (event -> attribute, points, when)   swatchRadius(rank, seasoning)   heartRadius(rank)   aimedFuel(rank, d, r, formation)
 //   isTrue(d, rank)   FEELING_HUE   .walk(mats) (the one walk: press and preview)   (SOUL-ALCHEMY.md section 3, the rulings of 2026-10-08)
 // ---------------------------------------------------------------------------------------
-import { isTraining } from './combat/testroom.js';
+import { isTraining } from './combat/throwingroom.js';
 import { ECON } from './econ/table.js';
 import { press, pullStep, distance } from './econ/materials.js';
 import { COLOR } from './weather.js';
@@ -123,7 +123,7 @@ export class SoulAlchemy {
     this.s = fresh();
     game.save?.section('alchemy', { scope: 'player', version: 2, migrate: (d) => ({ ...fresh(), ...(d || {}) }), dump: () => this.s, load: (d) => { this.s = { ...fresh(), ...(d || {}) }; }, reset: () => { this.s = fresh(); } });
     // seasoning: doing each attribute's thing anywhere (SEASONING), a source at most seasonPerHour a game hour, so it is played, never idled
-    for (const S of SEASONING) game.events?.on?.(S.event, (e) => { try { if (!isTraining(e) && S.when(e || {})) this.season(S.attribute, S.points, S.event); } catch { /* a filter that cannot read its event: not this one */ } }); // (a training body never seasons: combat/testroom.js)
+    for (const S of SEASONING) game.events?.on?.(S.event, (e) => { try { if (!isTraining(e) && S.when(e || {})) this.season(S.attribute, S.points, S.event); } catch { /* a filter that cannot read its event: not this one */ } }); // (a training body never seasons: combat/throwingroom.js)
   }
   get colour() { return { ...this.s.colour }; }
   rank(id) { return this.s.ranks[id] || 0; }

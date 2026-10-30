@@ -112,7 +112,7 @@ export const START = { main: 'psygun', sub: 'sondelass' };
 export function swapRefusal(game) {
   if (game?.combat?.engaged) return 'You cannot change tools in a fight.';
   if (game?.duel?.active) return 'You cannot change tools in a duel.';
-  if (game?.emocean?.stage?.active || game?.voyage?.sailing) return 'You cannot change tools at sea.';
+  if (game?.rail?.stage?.active || game?.voyage?.sailing) return 'You cannot change tools at sea.';
   if (game?.race?.running) return 'You cannot change tools mid-race.';
   if (game?.bazaar?.session) return 'You cannot change tools at a table.';
   return null;

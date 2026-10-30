@@ -75,7 +75,7 @@ export const FOE_MECHANICS = {
     tick(W, f, dt, ctx) {
       const M = ROSTER['mine-layer']?.mine || {}, ship = ctx.ship;
       if (!(f.t >= (M.fuse ?? 2) * BAR_S || (ship && f.local.distanceTo(ship.local) < (M.near ?? 8)))) return;
-      const P = W.game.emocean?.trip?.player, view = W.view || 'chase';
+      const P = W.game.rail?.trip?.player, view = W.view || 'chase';
       if (M.burst && P) P.play(M.burst.name, M.burst.params || {}, { at: f.local, mode: modeOf(view), kind: 'feel', up: view === 'side' ? [1, 0, 0] : [0, 1, 0] });
       W.game.events?.emit('rail.mine', { at: f.local.clone(), up: view === 'side' ? [1, 0, 0] : [0, 1, 0], by: 'creature' }); // (its flash and shock ring: vfx/railfoemarks.js)
       f.burst = true; return false; // (burst: gone unpaid, its body breaking up where it was: waves.js)
@@ -99,7 +99,7 @@ export const FOE_MECHANICS = {
     /** Let go of the ship (its drag gone); flung off when shaken, else only let go (downed, or the crossing over). */
     release(W, f, fling = false) {
       if (!f.held) return;
-      f.held = null; f.shaken = false; const ship = W.game.emocean?.ship; if (ship) ship.drag = 1;
+      f.held = null; f.shaken = false; const ship = W.game.rail?.ship; if (ship) ship.drag = 1;
       f.body?.latch(null);
       if (fling && f.alive) { f.thrownT = 0; f.fling = new THREE.Vector3(Math.sign(f.local.x) * 18 || 18, 6, 10); f.body?.pose('thrown'); W.game.events?.emit('rail.unlatch', { by: 'courier' }); }
     },

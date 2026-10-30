@@ -99,7 +99,7 @@ if (part('places')) {
   }
   // what F acts on in the workshop must be a place an agent can be sent to (world/places.js: "every room and landmark by name")
   const missing = await S.ev(() => { const g = __game.game, P = g.places.all(), near = (x, z, r = 3) => P.some((p) => Math.hypot(p.pos[0] - x, p.pos[2] - z) < r);
-    const want = { 'the Bisque Shrine': g.shrines.get('bisque')?.pos || g.player.spawn.clone().setX(g.player.spawn.x + 2.2), 'the gong': { x: -2.6, z: -12.6 }, Strawman: g.testroom?.strawman?.pos, 'the spray wall': { x: 25, z: 2.5 } };
+    const want = { 'the Bisque Shrine': g.shrines.get('bisque')?.pos || g.player.spawn.clone().setX(g.player.spawn.x + 2.2), 'the gong': { x: -2.6, z: -12.6 }, Strawman: g.throwingRoom?.strawman?.pos, 'the spray wall': { x: 25, z: 2.5 } };
     return Object.entries(want).filter(([, p]) => p && !near(p.x, p.z)).map(([k]) => k); });
   S.check('places: every workshop landmark F acts on is a place', !missing.length, missing.length ? `no place within 3 m of: ${missing.join(', ')} (world/places.js installPlaces)` : 'all');
 }
@@ -410,7 +410,7 @@ if (part('throwing')) {
   await closeAll();
   await ws('stand([12.4, 0.05, 0.6], 3.14159)'); await S.settle(); await settleCourier();
   const ch = await ws('chevron()');
-  S.check('throwing: the chevron is on the Index\'s lectern', ch.cur === 'testroom.index' && ch.off < 0.6, ch);
+  S.check('throwing: the chevron is on the Index\'s lectern', ch.cur === 'throwingRoom.index' && ch.off < 0.6, ch);
   await F(6);
   let w = await ws('win()');
   S.check('throwing: F opens the Throwing Room\'s page', w.index && w.page === 'the Throwing Room', w);
@@ -427,7 +427,7 @@ if (part('throwing')) {
     await ws('stand([12.4, 0.05, 0.6], 3.14159)'); await S.ticks(20); await F(6);
     const ok = await S.ev((n) => { const r = [...document.querySelectorAll('#indexmenu .room')].find((e) => e.textContent.includes(n)); r?.click(); return !!r; }, name);
     await S.ticks(4);
-    const a = await S.ev(() => ({ active: __game.game.testroom.drills.active?.id || null, shown: __game.game.testroom.drills.targets.filter((t) => t.mesh.visible).length }));
+    const a = await S.ev(() => ({ active: __game.game.throwingRoom.drills.active?.id || null, shown: __game.game.throwingRoom.drills.targets.filter((t) => t.mesh.visible).length }));
     S.check(`throwing: ${name} begins from its page`, ok && !!a.active, a);
     if (name === 'Spray') {
       await ws('stand([15, 0.05, 2.5], 1.5708)'); await S.ticks(20);
@@ -436,34 +436,34 @@ if (part('throwing')) {
       const f0 = await S.ev(() => __game.game.events.counts['shot.fire'] || 0);
       for (let k = 0; k < 20; k++) { await S.page.mouse.down(); await S.ticks(2); await S.page.mouse.up(); await S.ticks(24); } // (twenty taps: a held LMB is the psygun's charge)
       await S.ticks(10);
-      const sp = await S.ev(() => { const D = __game.game.testroom.drills, e = __game.game.events.last('drill.end'); return { fired: (__game.game.events.counts['shot.fire'] || 0), dents: D.dentN, ends: __game.game.events.counts['drill.end'] || 0, run: e ? { shots: e.run.shots, group: e.run.group } : null }; });
+      const sp = await S.ev(() => { const D = __game.game.throwingRoom.drills, e = __game.game.events.last('drill.end'); return { fired: (__game.game.events.counts['shot.fire'] || 0), dents: D.dentN, ends: __game.game.events.counts['drill.end'] || 0, run: e ? { shots: e.run.shots, group: e.run.group } : null }; });
       sp.fired -= f0;
       S.check('throwing: Spray, twenty taps end the drill with twenty shots, and the wall keeps a dent a hit', sp.fired === 20 && sp.dents > 0 && sp.ends === e0 + 1 && sp.run?.shots === 20, sp);
       await S.shot('throwing-spray-wall');
     } else await S.ticks(60);
     await shotCommon(`throwing-${name.toLowerCase()}`);
     await S.go('kiln'); await S.ticks(10);
-    const b = await S.ev(() => ({ active: __game.game.testroom.drills.active?.id || null, shown: __game.game.testroom.drills.targets.filter((t) => t.mesh.visible).length }));
+    const b = await S.ev(() => ({ active: __game.game.throwingRoom.drills.active?.id || null, shown: __game.game.throwingRoom.drills.targets.filter((t) => t.mesh.visible).length }));
     S.check(`throwing: ${name} ends when the Courier leaves the room`, !b.active && b.shown === 0, b);
   }
   // Strawman: its stance is the sparring circle's lectern's (the owner, 2026-10-11: F at Strawman does nothing; the page's Guard row sets it)
-  const sp = await S.ev(() => { const p = __game.game.testroom.strawman.pos; return [p.x, p.z]; }); // (1.3 m in front of it, wherever it stands: the combat wing's sparring circle now, world/testroom/layout.js TR.strawman)
+  const sp = await S.ev(() => { const p = __game.game.throwingRoom.strawman.pos; return [p.x, p.z]; }); // (1.3 m in front of it, wherever it stands: the combat wing's sparring circle now, world/throwingroom/layout.js TR.strawman)
   await ws(`stand([${sp[0]}, 0.05, ${sp[1] + 1.3}], 3.14159)`); await S.ticks(30);
   const s0 = await S.ev(() => __game.game.events.counts['strawman.mode'] || 0);
   for (let k = 0; k < 3; k++) await F(8);
   S.check('throwing: F at Strawman changes nothing', (await S.ev(() => __game.game.events.counts['strawman.mode'] || 0)) === s0 && !(await ws('win()')).index, { presses: 3 });
   const lk = await S.ev(() => { const g = __game.game, ok = g.lock.acquire(), t = g.lock.target?.ref?.kind || null; g.lock.release(); return { ok, t }; });
   S.check('throwing: Strawman can be locked on to', lk.t === 'strawman', lk);
-  const lp = [12.4, -8.2]; // (the sparring circle's lectern: world/testroom/layout.js TR.wing.circle.lectern)
+  const lp = [12.4, -8.2]; // (the sparring circle's lectern: world/throwingroom/layout.js TR.wing.circle.lectern)
   await ws(`stand([${lp[0] + 0.9}, 0.05, ${lp[1] - 0.9}], -0.785)`); await S.ticks(30);
   const sch = await ws('chevron()');
   S.check('throwing: the chevron is on the sparring lectern', sch.cur === 'sparring.lectern', sch);
   await F(8);
   const picked = await S.ev(() => { const r = [...document.querySelectorAll('#indexmenu .room')].find((e) => /Guard/.test(e.textContent)); r?.click(); return !!r; });
   await S.ticks(4);
-  S.check('throwing: the sparring lectern\'s Guard row sets Strawman\'s stance', picked && (await S.ev(() => __game.game.testroom.strawman.mode)) === 'guard', { picked });
+  S.check('throwing: the sparring lectern\'s Guard row sets Strawman\'s stance', picked && (await S.ev(() => __game.game.throwingRoom.strawman.mode)) === 'guard', { picked });
   await shotCommon('throwing-strawman');
-  await closeAll(); await S.ev(() => __game.game.testroom.strawman.setMode('still'));
+  await closeAll(); await S.ev(() => __game.game.throwingRoom.strawman.setMode('still'));
   // careless: the page opened twenty times, P and B over it
   const c0 = await ws('counts()');
   await ws('stand([12.4, 0.05, 0.6], 3.14159)'); await S.ticks(20);

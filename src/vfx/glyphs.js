@@ -187,7 +187,7 @@ export class Glyphs {
   }
 
   update(dt) {
-    const cam = this.game.camera.position, rail = !!this.game.emocean?.stage.active; // (the crossing: no wall stands on it, and its foes are bigger than any bias, so its marks keep to being seen over the sea)
+    const cam = this.game.camera.position, rail = !!this.game.rail?.stage.active; // (the crossing: no wall stands on it, and its foes are bigger than any bias, so its marks keep to being seen over the sea)
     for (let i = this.list.length - 1; i >= 0; i--) {
       const q = this.list[i];
       q.t += dt;

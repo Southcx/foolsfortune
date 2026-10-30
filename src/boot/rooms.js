@@ -92,7 +92,7 @@ export function bootRooms(game, made) {
       return d < 2.4 && Math.abs(player.pos.y - KILN_AT.y) < 1.5 ? { pos: KILN_AT.clone().setY(KILN_AT.y + 1.7), d } : null;
     });
     game.shrines = new Shrines(game); // (rest, travel, made whole, the Spirit Garden's door: world/shrines.js; it adds its own interact source)
-    game.emocean = new Emocean(game); game.pier = new Pier(game); // (the crossing: F at a jetty's end, the rail shooter; world/emocean/)
+    game.rail = new Emocean(game); game.pier = new Pier(game); // (the crossing: F at a jetty's end, the rail shooter; world/emocean/)
     game.mooring = new Mooring(game); game.encounterFilm = new EncounterFilm(game); // (the chosen hull alongside the pier: vfx/mooring.js; the encounters at sea filmed: vfx/encounters/film.js)
     if (game.dunes?.beach) game.pier.add('anagami', () => { const j = game.dunes.beach.jetty; return j && { end: j.end, top: j.top, yaw: -Math.PI / 2 }; });
     game.pier.add('margarite', () => game.margarite.pier);

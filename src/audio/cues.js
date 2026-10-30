@@ -101,7 +101,7 @@ const RULES = {
   // (Querent's count: Calissa's score ceremony, ui/scoreceremony.js, drives it beat by beat; until one has begun, the hand plays it whole, a beat
   // late so a ceremony starting on the same move is heard first)
   'table.ceremony.begin': () => { CEREMONY.heard = true; },
-  'table.ceremony.beat': (s, e, g) => (e.kind === 'tick' ? s.casinoTick?.(e.k ?? 0, e.rail || g.emocean?.stage?.active ? s.onSixteenth?.(g.music?.grid?.()) : 0) : e.kind === 'mult' ? s.casinoMult?.(e.n ?? 2) : e.kind === 'reel' ? s.casinoReel?.(e.dur)
+  'table.ceremony.beat': (s, e, g) => (e.kind === 'tick' ? s.casinoTick?.(e.k ?? 0, e.rail || g.rail?.stage?.active ? s.onSixteenth?.(g.music?.grid?.()) : 0) : e.kind === 'mult' ? s.casinoMult?.(e.n ?? 2) : e.kind === 'reel' ? s.casinoReel?.(e.dur)
     : e.kind === 'flourish' ? s.casinoFlourish?.(e.tier ?? 1) : null),
   'casino.play': (s, e) => (e.what === 'hand' && e.steps?.length ? void setTimeout(() => CEREMONY.heard || s.casinoCount?.(e.steps, e.tier ?? 1), 150) : e.what === 'nova' ? s.casinoNova?.()
     : e.what === 'callout' ? s.casinoCall?.(!!e.bluff) : s.casinoPlay?.(e.what)),

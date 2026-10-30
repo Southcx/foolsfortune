@@ -27,7 +27,7 @@ export const TOP_BAR = {
   ids: ['codex', 'box', 'map', 'settings', 'overhead', 'skiff', 'godhand', 'survey'], // (no `chat`: the ticker's tap opens the chat line, the log's tile folds it: South, 2026-10-27, two balloons on the bar)
   // where a tile stands (the rest always): TOP VIEW in the garden; the board on foot or riding; the hand outside the garden; its survey in the hand
   when: {
-    overhead: (g) => !!g.realm?.active, skiff: (g) => !g.realm?.active && !g.god?.active && !g.emocean?.stage?.active, godhand: (g) => !g.realm?.active,
+    overhead: (g) => !!g.realm?.active, skiff: (g) => !g.realm?.active && !g.god?.active && !g.rail?.stage?.active, godhand: (g) => !g.realm?.active,
     survey: (g) => !!g.god?.active,
   },
   open: {

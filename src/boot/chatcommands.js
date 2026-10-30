@@ -84,7 +84,7 @@ export function bootMoreChatCommands(game, made) {
     const r = f ? f() : { ok: false, why: 'feed, pick, hang or dawn' }; if (!r.ok && r.why) game.log.say('warn', r.why, { key: 'tree', throttle: 1 }); } });
   game.chat.add('realmname', { help: 'name your Inner Realm yourself: /realmname <name>', run: (args) => game.realm?.setName(args.join(' ')) });
   game.chat.add('cavern', { debug: true, help: "into the Great Dunemaw and straight down to the great cavern, where the Great Slip Jelly broods (a tester's way: the floors are walked)", run: () => {
-    const W = game.well; if (game.emocean?.stage.active || game.death?.active) return;
+    const W = game.well; if (game.rail?.stage.active || game.death?.active) return;
     const go = () => { if (!W.active && !W.enter()) return; W.toCavern(); game.events.emit('cavern.force', { by: 'courier' }); };
     if (game.seam) game.seam.cross(go, { kind: 'maw' }); else go();
   } });

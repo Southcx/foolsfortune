@@ -25,7 +25,7 @@
 //     ITS MOMENTS    the mirror (its gaze turned back: a glass ring), sinking into the slip, a brood fed to it, the sherds splitting,
 //                    the sherds mending (a warning, rising), Sodden and dry, swallowed (the enrage's close)
 //     A WIPE         the Dunemaw taking you back to the Lip Stone: a falling pall of sand and a low minor drone
-//   STRAWMAN'S ATTACK STRINGS (world/testroom/strawmanstrings.js; Strawman, the stitched straw dummy at the sparring circle)
+//   STRAWMAN'S ATTACK STRINGS (world/throwingroom/strawmanstrings.js; Strawman, the stitched straw dummy at the sparring circle)
 //     A STRING       picked at the lectern: the doll shaken awake (straw rustling, its ball knocking twice); none, it settles
 //     A WINDUP       its tell before a blow, one a move, readable: burlap creaking as a sleeve rises and straw rustling, then the
 //                    sleeve's swish on the strike's own time (the jab short and tight, the swing broad, the chop's two sleeves slow

@@ -535,7 +535,7 @@ A new rule is written `NEW:<slug>` (here, in its case's **Rule:** line, and wher
     from what it struck: a target may not move at all (Strawman, a heavy thing, a wall). Following a target is a second layer, laid on
     only once the target is seen to move as asked, and let go when it does not; test every such move against a thing that cannot move.
 193. **A listener on the bus asks the same filter the ledger's rules ask.** Anything that pays for an event outside tracking.js (the domains'
-   exp, Soul Alchemy's seasoning) skips a training body (`isTraining`, `combat/testroom.js`): one list of what never pays, for every payer.
+   exp, Soul Alchemy's seasoning) skips a training body (`isTraining`, `combat/throwingroom.js`): one list of what never pays, for every payer.
 194. **A pose longer than its capsule is cleared where it is drawn.** A look that lies past the capsule it stands on (the belly crawl: 2.2 m
     over a circle 0.27 m in radius) pokes through what the capsule stops at, and a thing's extent is measured, not guessed: the posed
     mesh's reach by angle about the capsule's axis, then the poke at a plain wall in each way the body meets one (into it, along it,
@@ -1028,3 +1028,6 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
   its owner's and its zone's together (render/zones.js); a body that is placed by a tick gated on `visible` and was last left in
   another zone (or parked for the warm-up) is never moved out of it, and never shows. A body that always stands with the Courier is
   `zoneFree`; a gate on its own state reads its own flag, never `visible`.
+367. **A room built on entry makes its materials as the level makes them.** The same dressing and the same
+  patches in the same order (`dress`, then the paint map's `patch`), or its first entry compiles a program the warm-up never saw, a hitch
+  where it is first drawn: a new room's probe counts the programs before and after its first entry (0).

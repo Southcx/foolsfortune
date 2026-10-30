@@ -119,7 +119,7 @@ export class Charybdis {
   /** Felled before the peak ends: its class's down pay (the waves'), and CHARYBDIS.pay.felled crystal shards. */
   felled() {
     if (this.done) return; this.done = true;
-    const shards = this.game.emocean?.showcase ? 0 : CHARYBDIS.pay?.felled ?? 0; // (the showcase crossing pays nothing: world/emocean/stage.js)
+    const shards = this.game.rail?.showcase ? 0 : CHARYBDIS.pay?.felled ?? 0; // (the showcase crossing pays nothing: world/emocean/stage.js)
     for (let i = 0; i < shards; i++) this.game.pneuka?.add('mat.shard', 'loot');
     this.game.events?.emit('charybdis.felled', { feel: this.w?.feel || null, shards, by: 'courier' });
   }

@@ -6,7 +6,7 @@
 // Prior art: the console's room table (a stage's areas as bounds in a list, looked up by the player's position: Ocarina of Time's
 // scene/room split, Kingdom Hearts' worlds), kept as data apart from the code that loads or draws them.
 //
-//   zoneOf(pos) -> 'testroom' | 'workshop' | 'basement' | 'circuits' | 'beach' | 'dunes' | 'well' | 'emocean' | 'garden' | 'margarite' | 'raceway' | 'bazaar' | null      wholeOf(pos) -> the zone, or its whole
+//   zoneOf(pos) -> 'throwingRoom' | 'workshop' | 'basement' | 'circuits' | 'beach' | 'dunes' | 'well' | 'emocean' | 'garden' | 'margarite' | 'raceway' | 'bazaar' | null      wholeOf(pos) -> the zone, or its whole
 //   ZONE_TESTS [{ id, test(pos), partOf? }]   ZONE_SOUND[id] -> { floor, acoustic, wet? }   inDunes(pos)   nearShore(pos)
 // ---------------------------------------------------------------------------------------
 
@@ -20,13 +20,13 @@ const inShore = (p) => shoreSector(p, SHORE_ZONE.r, SHORE_ZONE.half);
 export const nearShore = (c) => inDunes(c) && shoreSector(c, 220, 0.7);
 
 export const ZONE_TESTS = [
-  // the Throwing Room (world/testroom/layout.js TR: x 10.5 to 30.5, z -5.5 to 10.5, 6 m high), through a door in the Workshop's east wall:
+  // the Throwing Room (world/throwingroom/layout.js TR: x 10.5 to 30.5, z -5.5 to 10.5, 6 m high), through a door in the Workshop's east wall:
   // drawn only from where its doorway can be seen; part of the Workshop's ground (one roof, one set of lamps). Its bounds take in its
   // own walls (their boxes centred 25 cm outside the floor's edge, x 30.75 and z -5.75 / 10.75): at the floor's edge they fell to the
   // Workshop and vanished from inside whenever the door was out of view (the owner's R2, v131; casebook)
-  // The combat wing (world/testroom/combatwing.js, TR.wing: z -36 to -5.5, 9 m high) is the room's too, through the arcade: its walls and roof
+  // The combat wing (world/throwingroom/combatwing.js, TR.wing: z -36 to -5.5, 9 m high) is the room's too, through the arcade: its walls and roof
   // to 36.5 south and 9.5 up (docs/plans/COMBAT-LAB.md)
-  { id: 'testroom', partOf: 'workshop', test: (p) => p.y > -1.2 && p.x > 10.5 && p.x < 31.2 && ((p.y < 7 && p.z > -6.2 && p.z < 11.2) || (p.y < 10.5 && p.z > -36.7 && p.z <= -5.5)) },
+  { id: 'throwingRoom', partOf: 'workshop', test: (p) => p.y > -1.2 && p.x > 10.5 && p.x < 31.2 && ((p.y < 7 && p.z > -6.2 && p.z < 11.2) || (p.y < 10.5 && p.z > -36.7 && p.z <= -5.5)) },
   { id: 'workshop', test: (p) => p.y > -1.2 && p.y < 60 && Math.abs(p.x) < 40 && Math.abs(p.z) < 40 },
   { id: 'basement', test: (p) => p.y <= -1.2 && p.y > -150 && p.x > -250 && p.x < 450 && p.z > -300 && p.z < 200 },
   { id: 'circuits', test: (p) => p.x > 2800 && p.x < 3300 && p.z > -300 && p.z <= 380 && p.y > -120 && p.y < 120 },
@@ -63,7 +63,7 @@ export const ROOFED = new Set(['touchstone', 'bazaar', 'sandbox']); // (the baza
  *  says otherwise (courier/stepsurface.js), and its `acoustic`, the kind of space it is heard as (audio/acoustics.js ACOUSTICS: room,
  *  hall, cave, open, sea), with its reverb send `wet` only where the zone differs from its kind's own (`zone.acoustic`, render/zones.js). */
 export const ZONE_SOUND = {
-  testroom: { floor: 'wood', acoustic: 'room' }, //     (the Throwing Room's planks: world/testroom/room.js)
+  throwingRoom: { floor: 'wood', acoustic: 'room' }, //     (the Throwing Room's planks: world/throwingroom/room.js)
   workshop: { floor: 'clay', acoustic: 'room' },
   basement: { floor: 'stone', acoustic: 'hall' }, //    (the hub's salt-glazed brick, the course round it)
   circuits: { floor: 'wood', acoustic: 'hall' }, //     (the gymnasium's halls: world/basement/circuitrooms.js)

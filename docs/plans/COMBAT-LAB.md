@@ -1,8 +1,8 @@
 # The combat wing: the Throwing Room's test suite for fighting (the owner, 2026-10-10)
 
 Calissa's (the owner put Calissa alone on this: Strawman and the room's combat look; the owner's ruling covers the room's geometry, which
-is normally Petra's). The place is built: `src/world/testroom/combatwing.js` (the arcade, the hall, each station's floor, lectern and
-stand-ins), its measures `TR.wing` in `src/world/testroom/layout.js`, its looks `src/vfx/combatwingkit.js`. The mechanics are not built:
+is normally Petra's). The place is built: `src/world/throwingroom/combatwing.js` (the arcade, the hall, each station's floor, lectern and
+stand-ins), its measures `TR.wing` in `src/world/throwingroom/layout.js`, its looks `src/vfx/combatwingkit.js`. The mechanics are not built:
 each station below says what exists, what it needs, and whose it is. This file's working title was "the combat lab"; the place is
 **the combat wing** (the basement is never "the lab", and the movement lab is the basement's).
 
@@ -155,7 +155,7 @@ does to a creature (each creature decides what it means: `creatures.status`), by
 - **The lectern** (built): F opens its page, set aside: **each in turn** (the default: the lit one warms from within; a beat, 1.2 s,
   after it takes its status, the light moves to the next), one roly-poly lit, or none.
 - **Debug chest** `statusbench`: the seven tools and a Lachrymato Bottle.
-- **Built (2026-10-11, Calissa; the owner: "your roly-polies ... have no visible interaction"):** `world/testroom/statusbench.js`
+- **Built (2026-10-11, Calissa; the owner: "your roly-polies ... have no visible interaction"):** `world/throwingroom/statusbench.js`
   (`StatusBench`). Each roly-poly is a creature as Strawman is (`game.creatures`, `hurtable`, `training`, kind `rolypoly`) and a lock
   target (`game.lock.add`), with a capsule the psygun's ray finds. Struck by any tool it rocks on its ball (Strawman's spring, shared:
   `vfx/strawman.js rockStep`; double when soaked, and the soak is spent) and takes **its** status for that status's real time
@@ -168,7 +168,7 @@ does to a creature (each creature decides what it means: `creatures.status`), by
   runs slow (asleep it leans back and breathes), calmed it settles at once, melted it slumps, stunned it circles, charmed it leans to
   you, blind it sways, confused it wobbles. Only its own status holds (a type's build shrugged off), so each shows one thing beside the
   other ten. The log says the status in one line the first time each is struck in a visit (within 10 m of the bench):
-  `statusbench.status { status, dur, by }`, its rule in `feedback/tracking/testroom.js` (words `STATUS_BENCH_WORDS`, Espada's to
+  `statusbench.status { status, dur, by }`, its rule in `feedback/tracking/throwingroom.js` (words `STATUS_BENCH_WORDS`, Espada's to
   replace). At rest the eleven are parked in a prop batch (one draw and its outline's); one that rocks, or the lit one, is drawn on
   its own (two each). Never counted: the ledger's rules skip kind `rolypoly` (tracking.js), `lock.on` carries `training`.
 - **Still needs:** calm's and melt's glyphs (Calissa: their plaques are plain, and they pop none); the Codex's status page (Petra's
@@ -180,7 +180,7 @@ does to a creature (each creature decides what it means: `creatures.status`), by
 The owner's rulings (2026-10-10): animate all the moves (the swing kept); the four strings on the circle's lectern; the spin sweep, knee
 high, answered by a jump as well as the parry. Built by Calissa: the moves as data, `vfx/strawmanmoves.js` (`STRAWMAN_MOVES`,
 `STRAWMAN_STRINGS`: the keys, the blows, the numbers); the body that plays them, `vfx/strawman.js` (`play`, `breakOff`, the parts); the
-clock that runs them, `world/testroom/strawmanstrings.js` (`StrawmanStrings`, wired into `room.js` by four small edits).
+clock that runs them, `world/throwingroom/strawmanstrings.js` (`StrawmanStrings`, wired into `room.js` by four small edits).
 
 Strawman has no skeleton: a move is keyed on the **rock** (the doll on its ball foot: lean and tilt), the **turn** about the ball (a new
 group between the ball and the rock), each **sleeve** on its shoulder (swung forward, tipped up or down, the shoulder pushed out, the

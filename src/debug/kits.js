@@ -29,9 +29,9 @@ export const DEBUG_KITS = {
             ['rutter', 1, { from: 'anagami', to: 'margarite', route: 'anagami>margarite', day: 0, passage: [], legs: [], rank: 'C', read: 0, minutes: 5, worth: 40 }]], cubes: 3000 }, // (cubes for the fuel of a long passage, casks for the Wreckers to take, a rutter for Letty to buy)
   duel: { at: 'oasis.duel', for: "a puzzle duel: the test aberrant Lantern Wisp by the Weir, opened by the first blow (PUZZLE-DUELS.md 14)", by: 'petra', tests: [],
     items: [['tool.soulbrush', 1], ['bottle.large', 1], ['bottle.medium', 2]] }, // (the brush to strike it; the bottles so the pool can pay a finisher)
-  paintrange: { at: 'testroom.paintrange', for: 'painting at range: the reticle, the spread, the splats (LACHRYMA-LOOP.md 3)', by: 'petra', tests: ['T178'],
+  paintrange: { at: 'throwingRoom.paintrange', for: 'painting at range: the reticle, the spread, the splats (LACHRYMA-LOOP.md 3)', by: 'petra', tests: ['T178'],
     items: [['tool.soulbrush', 1], ['bottle.small', 1]] }, // (the brush, and a bottle to paint from and to mop into)
-  throwing: { at: 'testroom.index', for: 'the drills (Steady Hand and Wide Bore open by drill hits)', by: 'dovina', tests: [],
+  throwing: { at: 'throwingRoom.index', for: 'the drills (Steady Hand and Wide Bore open by drill hits)', by: 'dovina', tests: [],
     items: [['tool.psygun', 1], ['psygun.bombardier', 1], ['psygun.carbine', 1], ['psygun.pentagun', 1], ['psygun.pepperbox', 1], ['psygun.first', 1]] }, // (each psygun's variant: Wear one from the box; the owner, 2026-10-18)
   // the combat wing's stations (docs/plans/COMBAT-LAB.md section 7): every tool, since each answers and strikes its own way; the QAIS
   // tests that will name them are not written yet (each station's mechanic first), so these are the first drafts, Calissa's

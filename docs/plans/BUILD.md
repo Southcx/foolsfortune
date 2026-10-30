@@ -10,7 +10,7 @@ reports it in the gate). A handoff not built within two rounds goes to the owner
 | the Great Slip Jelly: the bowl, the crown, the nursery, the finds, the two endings | DUNEMAW-SYSTEMS.md, DUNEMAW-ARENA.md | `world/well/` (`bowl.js`, `nursery.js`, `finds.js`, `dunemaw.js`), `creatures/jelly/greatjelly.js`; numbers `progress/combat/dunemaw.js` |
 | the Great Slip Jelly as a raid fight: the timeline, the phases, the Lip Stone, the enrage, the drops | DUNEMAW-EXTREME.md | `world/well/raid.js`, `creatures/ai/timeline.js`, `creatures/jelly/jellycasts.js`; script `progress/combat/greatjelly.js` |
 | the Solar Skiffing trial | DUNEMAW-SYSTEMS.md section 4 | `world/dunes/solar.js` |
-| Strawman's bout and modes | DUNEMAW-SYSTEMS.md section 5 | `world/testroom/room.js` |
+| Strawman's bout and modes | DUNEMAW-SYSTEMS.md section 5 | `world/throwingroom/room.js` |
 | the catch: the Lockheart's summoning coffin, the god hand's catch in battle | SPIRIT-GARDEN.md 5a | `tools/lockheart/lockheart.js`, `godhand/catch.js`, `creatures/bound.js` |
 | busking reachable: the busker's mats on the piers | SYSTEMS.md D5 | `world/busk.js` |
 | the Spirit Garden as a place (the Inner Realm): planetoids, the Jar's hop, the hand's verbs, spirits raised, awakening, visitors, merging, the Firings | SPIRIT-GARDEN.md | `world/garden/`; numbers `progress/spirits.js`, `progress/realm.js` |

@@ -121,7 +121,7 @@ export class WindWater {
     const here = S?.built && cam && wind && zoneOf(cam) === 'opensea';
     if (!here) { if (this.made) this.mesh.visible = false; return; }
     if (!this.made) this.make();
-    this.t += dt; const u = this.u, sea = g.emocean?.sea;
+    this.t += dt; const u = this.u, sea = g.rail?.sea;
     if (sea?.u) { // (the sea's swells, as drawn: the same sum)
       u.uST.value = sea.u.uT.value; u.uAmp.value = sea.u.uAmp.value; u.uCalm.value = sea.u.uCalm.value;
       for (let i = 0; i < 4; i++) { u.uW.value[i].copy(sea.u.uW.value[i]); u.uC.value[i] = sea.u.uC.value[i]; }

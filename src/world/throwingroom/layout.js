@@ -4,7 +4,7 @@
 //   TR.wing (the combat wing south of the room, through the arcade: docs/plans/COMBAT-LAB.md; its stations and their lecterns)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { WALL } from '../../progress/combat/testroom.js';
+import { WALL } from '../../progress/combat/throwingroom.js';
 
 /** The room's measures, in the Workshop's frame (metres; the Workshop's east wall is x 10 to 10.5). */
 export const TR = {

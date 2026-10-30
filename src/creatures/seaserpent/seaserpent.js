@@ -77,7 +77,7 @@ export class SeaSerpents {
     this.eyeMat = new THREE.MeshBasicMaterial({ color: 0xffc860 });
   }
   /** The sea's height under (x, z), as the helm rides it. */
-  surf(x, z) { const g = this.game, sea = g.emocean?.sea; return sea ? sea.heightAt(x, z, g.emocean.seaT ?? 0) : (g.opensea?.helm?.pos.y ?? 0); }
+  surf(x, z) { const g = this.game, sea = g.rail?.sea; return sea ? sea.heightAt(x, z, g.rail.seaT ?? 0) : (g.opensea?.helm?.pos.y ?? 0); }
 
   // ---------------------------------------------------------------- a body
   spawn(home, { yaw = simRand() * 6.28, lair = null, beast = 'seaSerpent' } = {}) {
@@ -206,7 +206,7 @@ export class SeaSerpents {
     // its wake from the head while it swims near the top (none at rest, none deep): the water says where it is going
     const W = c.wakeBody, near = H.y > this.surf(H.p.x, H.p.z) - B.wakeAt;
     W.position.set(H.p.x, this.surf(H.p.x, H.p.z), H.p.z); W.rotation.set(0, c.yaw, 0);
-    if (dt > 0) c.wake.update(dt, { group: W, speed: near && c.dying == null ? c.speed : 0, length: B.headR * 2.6, beam: B.headR * 1.6 }, this.game.emocean?.sea);
+    if (dt > 0) c.wake.update(dt, { group: W, speed: near && c.dying == null ? c.speed : 0, length: B.headR * 2.6, beam: B.headR * 1.6 }, this.game.rail?.sea);
   }
 
   /** Calissa's body driven: the head's place and heading, how far up (`rise`), the move under way and how far through it; then its
@@ -224,7 +224,7 @@ export class SeaSerpents {
     S[0].y = S[0].p.y = B0.headPos.y; S[0].r = B0.headRadius;
     const W = c.wakeBody, H = B0.headPos, top = this.surf(H.x, H.z), near = H.y > top - B.wakeAt;
     W.position.set(H.x, top, H.z); W.rotation.set(0, c.yaw, 0);
-    if (dt > 0) c.wake.update(dt, { group: W, speed: near && c.dying == null ? c.speed : 0, length: B.headR * 2.6, beam: B.headR * 1.6 }, this.game.emocean?.sea); // (a wake as broad as the head)
+    if (dt > 0) c.wake.update(dt, { group: W, speed: near && c.dying == null ? c.speed : 0, length: B.headR * 2.6, beam: B.headR * 1.6 }, this.game.rail?.sea); // (a wake as broad as the head)
   }
 
   // ---------------------------------------------------------------- what it is struck by

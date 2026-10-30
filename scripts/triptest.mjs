@@ -24,7 +24,7 @@ const r0 = await g.page.evaluate(async () => {
 });
 await g.step(240);
 const r1 = await g.page.evaluate(() => {
-  const G = __game.game, E = G.emocean;
+  const G = __game.game, E = G.rail;
   return { active: E.stage.active, trip: E.trip.active, legs: (E.stage.legs || []).map((l) => l.id), bars: E.plan.bars, quiet: E.waves.quiet, seconds: E.stage.seconds };
 });
 // sail it, answering a haven's page when it comes; note the views seen and the shots fired
@@ -32,7 +32,7 @@ const seen = { views: new Set(), fired: 0, offered: [], maxLive: 0 };
 for (let i = 0; i < 1200; i++) { // (legs twice as long since v134: about 330 real seconds a trip)
   await g.step(30);
   const s = await g.page.evaluate(() => {
-    const G = __game.game, E = G.emocean, F = E.trip.field, M = G.indexMenu;
+    const G = __game.game, E = G.rail, F = E.trip.field, M = G.indexMenu;
     if (!E.stage.active) return { done: true };
     const out = { view: E.trip.active ? E.trip.viewAt(E.bar) : null, fired: F?.counts.fired || 0, live: F?.live || 0, offering: E.offering && M?.open ? M.page?.name : null, bar: +E.bar.toFixed(1) };
     if (out.offering === 'campfire' || out.offering === 'encounter') { const first = document.querySelector('#indexmenu .room'); first?.click(); out.answered = true; }
@@ -43,17 +43,17 @@ for (let i = 0; i < 1200; i++) { // (legs twice as long since v134: about 330 re
   if (s.view) seen.views.add(s.view); seen.fired = Math.max(seen.fired, s.fired); seen.maxLive = Math.max(seen.maxLive, s.live);
   if (s.offering) seen.offered.push(s.offering);
   if (i === 40) {
-    seen.forms = await g.page.evaluate(() => { const G = __game.game, sh = G.emocean.ship, out = { before: sh.form };
+    seen.forms = await g.page.evaluate(() => { const G = __game.game, sh = G.rail.ship, out = { before: sh.form };
       sh.form = 'umbral'; out.umbral = sh.form; const s0 = sh.surge; for (let k = 0; k < 30; k++) sh.absorb({ kind: 'umbral' }); out.surge = [s0, sh.surge];
-      sh.letGo(G.emocean.waves, G.emocean.shots); out.after = sh.surge; out.mercy = sh.mercy > 0; sh.form = 'astral'; return out; });
+      sh.letGo(G.rail.waves, G.rail.shots); out.after = sh.surge; out.mercy = sh.mercy > 0; sh.form = 'astral'; return out; });
     // the storm and the deep (Calissa's crossing look, vfx/crossinglook.js): the storm applied while sailing; the Umbral form's look below, and back above
-    seen.sea = await g.page.evaluate(() => { const G = __game.game; G.emocean.ship.form = 'umbral'; return { k: G.stormWarp?.k ?? null }; });
+    seen.sea = await g.page.evaluate(() => { const G = __game.game; G.rail.ship.form = 'umbral'; return { k: G.stormWarp?.k ?? null }; });
     await g.step(40);
-    seen.sea.below = await g.page.evaluate(() => { const G = __game.game, b = G.umbral?.below ?? null; G.emocean.ship.form = 'astral'; return b; });
+    seen.sea.below = await g.page.evaluate(() => { const G = __game.game, b = G.umbral?.below ?? null; G.rail.ship.form = 'astral'; return b; });
     await g.step(40);
     seen.sea.above = await g.page.evaluate(() => __game.game.umbral?.below ?? null);
     // an encounter's asks done in the world (triprun.js act): casks, a rutter bought then sold, a word from a bottle, a bounty posted
-    seen.asks = await g.page.evaluate(() => { const G = __game.game, T = G.emocean.trip, B = G.pneuka, lines = [], out = {};
+    seen.asks = await g.page.evaluate(() => { const G = __game.game, T = G.rail.trip, B = G.pneuka, lines = [], out = {};
       const say = G.log.say.bind(G.log); G.log.say = (k, s, o) => { lines.push(s); return say(k, s, o); };
       const casks = G.voyage.casks(); T.act({ ask: 'casks', n: 2, grade: 'mirth' }); out.casks = G.voyage.casks() - casks;
       const c0 = G.cubes.balance; T.act({ ask: 'buyRutter', route: T.chart.route, day: T.chart.day, cubes: 50 }); out.bought = c0 - G.cubes.balance; out.rutters = B.held('rutter');
@@ -65,7 +65,7 @@ for (let i = 0; i < 1200; i++) { // (legs twice as long since v134: about 330 re
   }
 }
 await g.step(120);
-const r2 = await g.page.evaluate(() => { const G = __game.game, R = G.pneuka.slots.find((s) => s?.id === 'rutter'); return { active: G.emocean.stage.active, at: G.voyage.s.at, rutter: !!R, rutterData: R ? { strengths: R.data.strengths, feels: R.data.feels, stormsAt: R.data.stormsAt } : null, below: G.umbral?.below ?? null, storm: G.stormWarp?.k ?? null }; });
+const r2 = await g.page.evaluate(() => { const G = __game.game, R = G.pneuka.slots.find((s) => s?.id === 'rutter'); return { active: G.rail.stage.active, at: G.voyage.s.at, rutter: !!R, rutterData: R ? { strengths: R.data.strengths, feels: R.data.feels, stormsAt: R.data.stormsAt } : null, below: G.umbral?.below ?? null, storm: G.stormWarp?.k ?? null }; });
 check('cast off on a drafted passage', r0.cast, r0.types);
 check('the trip runs: its legs laid for the cue', r1.active && r1.trip && r1.legs.length === r0.types.length, r1);
 check('the old waves are quiet on the new legs', r1.quiet === true, r1.quiet);

@@ -325,7 +325,7 @@ Guard Crush opens a guard from range, Backstep Slash gets out (1.14 m back, most
 
 **A guard break** (`hit.guardBreak`, `tools/moveset.js`): the thing struck is asked `breakGuard(point, dir, by)` before the blow lands,
 so that blow goes through. Strawman (on guard, the sparring circle's lectern) throws its sleeves wide and keeps them open 1.0 s of the sim clock (its windups' clock: real seconds less any hit-stop)
-(`GUARD_OPEN`, `world/testroom/room.js`; the look `S.open(t)`, `vfx/strawman.js`): measured, Slash blocked, Guard Break 1.1 through,
+(`GUARD_OPEN`, `world/throwingroom/room.js`; the look `S.open(t)`, `vfx/strawman.js`): measured, Slash blocked, Guard Break 1.1 through,
 Hop Slash 1.4 through; Guard Crush 2.8 through. Nothing else guards yet; on a slip jelly it is its stagger.
 
 **Engine support** (`tools/moveset.js`, built once): a catalogue row's own `stats` where no `rule` names a row (the same shape as

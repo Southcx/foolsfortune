@@ -24,7 +24,7 @@ await g.step(240);
 const seen = { arena: 0, dist: [], under: new Set(), held: 0, foes: 0, after: null, released: false };
 for (let i = 0; i < 4000; i++) {
   await g.step(6);
-  const s = await g.page.evaluate(() => { const G = __game.game, E = G.emocean, M = G.indexMenu;
+  const s = await g.page.evaluate(() => { const G = __game.game, E = G.rail, M = G.indexMenu;
     if (!E.stage.active) return { done: true };
     if (E.offering && M?.open) document.querySelector('#indexmenu .room')?.click(); E.run.hits = 0;
     const C = E.charybdis, f = C?.foe, A = (E.arenas || [])[0], s = E.rail.speed * E.t, inArena = A && s >= A.at + A.len * 0.15 && s < A.at + A.len * 0.85;
@@ -41,13 +41,13 @@ for (let i = 0; i < 4000; i++) {
   if (s.under != null) seen.under.add(s.under);
   if (s.afterArena && !seen.after) seen.after = { up: s.up, active: s.active };
 }
-const r2 = await g.page.evaluate(() => ({ active: __game.game.emocean.stage.active, at: __game.game.voyage.s.at, lines: window.__lines.filter((l) => /Charybdis/.test(l)), foe: __game.game.emocean.stage.foe }));
+const r2 = await g.page.evaluate(() => ({ active: __game.game.rail.stage.active, at: __game.game.voyage.s.at, lines: window.__lines.filter((l) => /Charybdis/.test(l)), foe: __game.game.rail.stage.foe }));
 // a second maelstrom, flown by a scripted expert (Dovina's ask): the cursor on Charybdis, the gun held, the ship's form following it
 // between the worlds (as a diver would); the bar of the peak it falls at, or driven off with what hp it kept
 await g.step(200);
 const r3 = await g.page.evaluate(async () => {
   const G = __game.game, P = G.pier, V = G.voyage, C = P.chart; window.__fell = null;
-  G.events.on('charybdis.felled', () => { const E = G.emocean, L = E.trip.layout.legs[E.charybdis.k]; window.__fell = +(E.bar - L.peak).toFixed(1); });
+  G.events.on('charybdis.felled', () => { const E = G.rail, L = E.trip.layout.legs[E.charybdis.k]; window.__fell = +(E.bar - L.peak).toFixed(1); });
   G.events.on('charybdis.driven', (e) => { window.__fell = { driven: e.hp }; });
   const { lanes } = await import('/src/progress/econ/passage.js');
   C.open(V.s.at, V.s.at === 'margarite' ? 'anagami' : 'margarite'); const lane = lanes(C.chart).sort((a, b) => b.length - a.length)[0];
@@ -57,7 +57,7 @@ const r3 = await g.page.evaluate(async () => {
 await g.step(240);
 for (let i = 0; i < 4000; i++) {
   await g.step(4);
-  const done = await g.page.evaluate(() => { const G = __game.game, E = G.emocean, M = G.indexMenu, Cy = E.charybdis;
+  const done = await g.page.evaluate(() => { const G = __game.game, E = G.rail, M = G.indexMenu, Cy = E.charybdis;
     if (!E.stage.active) return true;
     if (E.offering && M?.open) document.querySelector('#indexmenu .room')?.click(); E.run.hits = 0;
     const f = Cy?.active && Cy.foe?.alive ? Cy.foe : null;

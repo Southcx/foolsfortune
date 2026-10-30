@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// THE TESTING ROOM'S LOOK: what the room's bodies wear (Petra's room, src/world/testroom/; her stand-ins dressed here, as the Well's are
+// THE TESTING ROOM'S LOOK: what the room's bodies wear (Petra's room, src/world/throwingroom/; her stand-ins dressed here, as the Well's are
 // in welldress.js, so the room's code stays hers). The room is the Workshop's own wing, so its things are the potters' too:
 //
 //   THE DRILL PLATE  a target is a thrown and fired plate: a terracotta body with a foot ring, its face glazed cream with two oxblood
@@ -19,7 +19,7 @@
 //                    light rising off the page into it (a glass cone of the Mind and rings of light climbing it, widening from the
 //                    print to the dial), all in the Mind's lines (the System's reading laid over a physical thing: docs/plans/OVERLAY.md)
 //
-//   THE PAINT RANGE'S MARKS  the floor marks of the paint range (world/testroom/paintrange.js: a stand and rings at 3, 6 and 9 m) in
+//   THE PAINT RANGE'S MARKS  the floor marks of the paint range (world/throwingroom/paintrange.js: a stand and rings at 3, 6 and 9 m) in
 //                    the plates' own hand: the stand a fired quarry tile set in the planks, terracotta with a darker kiln edge and a
 //                    cream slip chevron trailed on it pointing down the range; each ring a band of the plates' cream slip brushed on the
 //                    floor as on a banding wheel (its edges wander, the brush's streaks run round it, a fat dab where the stroke began
@@ -27,7 +27,7 @@
 //                    with a dab of slip (one, two, three: how far, counted, never a number: docs/ART.md precept 6). Opaque, lit like
 //                    the floor: the drill plate's glaze's program (a standard material with a map), none of its own.
 //
-//   drillPlate(radius) -> { group, bull }   indexLectern() -> { group, update(t) }   new TestRoomDress(game)   .update(raw)   (dresses game.testroom;
+//   drillPlate(radius) -> { group, bull }   indexLectern() -> { group, update(t) }   new ThrowingRoomDress(game)   .update(raw)   (dresses game.throwingRoom;
 //   .mirror, the combat wing's sparring mirror: vfx/sparringmirror.js)
 //   dressPaintRange(range)   (the paint range's stand-in marks given their look: geometry and material swapped, the meshes kept)
 //   quarryTile() tallyStroke()   (the stand's tile and a tally's stroke, painted once: the combat wing's marks wear them too, vfx/combatwingkit.js)
@@ -234,20 +234,20 @@ export function indexLectern() {
   } };
 }
 
-export class TestRoomDress {
+export class ThrowingRoomDress {
   constructor(game) { this.game = game; this.done = false; this.t = 0; this.lectern = null; }
   /** Once the room stands: each drill target's stand-in discs give way to a plate (its `bull` swapped, so its lit() still lights it). */
   update(raw = 1 / 60) {
     this.t += raw; this.lectern?.update(this.t);
     (this.mirror ||= new SparringMirror(this.game)).update(raw); // (the combat wing's glass, a mirror while the Courier is inside the bales: vfx/sparringmirror.js)
     if (this.done) return;
-    const D = this.game.testroom?.drills; if (!D?.targets) return;
+    const D = this.game.throwingRoom?.drills; if (!D?.targets) return;
     for (const t of D.targets) {
       for (const o of [...t.mesh.children]) { t.mesh.remove(o); o.geometry?.dispose(); o.material?.dispose(); }
       const P = drillPlate(); P.group.rotation.y = Math.PI; t.mesh.add(P.group); t.bull = P.bull; // (the stand-in's group faces the mark down its -x)
     }
-    dressPaintRange(this.game.testroom.paintRange); // (the paint range's floor marks in the plates' hand)
-    const C = this.game.testroom.console; // (the lectern's stand-in group: its parts give way to the dressed lectern, the group and its place kept)
+    dressPaintRange(this.game.throwingRoom.paintRange); // (the paint range's floor marks in the plates' hand)
+    const C = this.game.throwingRoom.console; // (the lectern's stand-in group: its parts give way to the dressed lectern, the group and its place kept)
     if (C) {
       for (const o of [...C.children]) { C.remove(o); o.geometry?.dispose(); o.material?.dispose(); }
       this.lectern = indexLectern(); C.add(this.lectern.group);

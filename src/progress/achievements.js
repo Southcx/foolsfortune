@@ -539,7 +539,7 @@ export function buildAchievements(game) {
   C('dn6', 'explore', 'The Finds', 1, 'count', 'The Town Remembers', 'Take ten finds from the Great Dunemaw\'s pots.', 'find.pot', 10);
   C('dn7', 'explore', 'The Finds', 2, 'count', 'Glint', 'Take five artifacts from the walls of the Great Dunemaw.', 'find.artifact', 5);
   C('dn8', 'explore', 'The Finds', 3, 'mechanic', 'Touch Nothing but the Lamp', 'Take a warped artifact.', 'find.warped', 1, { hidden: true });
-  // the testing room's drills (progress/combat/testroom.js): measures, so only records and medals; a tuned run is never counted
+  // the testing room's drills (progress/combat/throwingroom.js): measures, so only records and medals; a tuned run is never counted
   F('tx1', 'battle', 'The Throwing Room', 1, 'mechanic', 'Calibrated', 'Finish each drill in the Throwing Room once.', (L) => ['flick', 'track', 'spray', 'recover'].filter((d) => L.get(`drill.${d}`) > 0).length, 4);
   F('tx2', 'battle', 'The Throwing Room', 3, 'mechanic', 'Quick Draw', 'Take gold at the Flick drill.', (L) => L.get('drill.flick.gold'), 1);
   F('tx3', 'battle', 'The Throwing Room', 3, 'mechanic', 'Steady Hand', 'Take gold at the Spray drill.', (L) => L.get('drill.spray.gold'), 1);
@@ -785,7 +785,7 @@ export class Achievements {
     }
     if (!this.silent && !quiet) {
       const r = this.rankIndex();
-      if (r > this.rank) { this.rank = r; this.game.events?.emit('rank.up', { rank: RANKS[r][1], by: 'courier' }); }
+      if (r > this.rank) { this.rank = r; this.game.events?.emit('standing.up', { standing: RANKS[r][1], by: 'courier' }); }
     } else this.rank = this.rankIndex();
   }
 

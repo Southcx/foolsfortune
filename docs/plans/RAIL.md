@@ -118,7 +118,7 @@ the sound and the look; `creatures.windup` for every telegraph (`PARRY.md`); `em
 **The log says** (`tracking/rail.js`): the set piece's first beat, its end, and the tally before "You make port".
 
 **The sound** (Wanda): `stageCue(seconds, setPieces)` takes one set piece or up to three (100, 146 or 192 bars; the k-th set piece on
-bar 62 + 46k); `stageAt(game.music)` is the fraction of whichever length plays; `music/choose.js` reads `game.emocean.stage.setPieces`;
+bar 62 + 46k); `stageAt(game.music)` is the fraction of whichever length plays; `music/choose.js` reads `game.rail.stage.setPieces`;
 `sfx.railLock(n, grid)`, `sfx.railDown(cls, grid)`. Contract: Wanda's handoff to Petra of 2026-10-07 (since deleted; the calls above are it).
 
 **The cast** (Espada, `docs/LORE.md`, "The crossing's cast"): the shoal's fish are **glints**, its caller **the Conductor**; the pirates

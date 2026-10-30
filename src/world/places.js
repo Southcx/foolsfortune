@@ -13,7 +13,7 @@
 import * as THREE from 'three';
 import { zoneOf, wholeOf } from '../render/zones.js';
 import { KILN_AT } from '../courier/moves/kiln.js';
-import { TR } from './testroom/layout.js';
+import { TR } from './throwingroom/layout.js';
 
 const r2 = (v) => +v.toFixed(2);
 
@@ -25,7 +25,7 @@ export class Places {
 
   add(id, { name = id, at, yaw = null, note = '', near = 1.6, stand = null, deck = false, via = null }) { this.map.set(id, { id, name, at, yaw, note, near, stand, deck, via }); return this; } // (stand: the exact spot to be set down, facing `at`; deck: set down at its own height, not on the sand under it)
   /** Not while a crossing is sailed: the Courier is the ship's (SWEEPS group 3: /goto mid-crossing left a full-size Courier on the sloop). */
-  refuses() { return !!this.game.emocean?.stage.active || !!this.game.opensea?.sailing; }
+  refuses() { return !!this.game.rail?.stage.active || !!this.game.opensea?.sailing; }
   get(id) { return this.map.get(id) || null; }
   pos(id) { const p = this.get(id); try { return p ? p.at() : null; } catch { return null; } }
 
@@ -83,8 +83,8 @@ export function installPlaces(game) {
   P.add('kiln', { name: 'the kiln', at: () => KILN_AT.clone().setZ(KILN_AT.z + 1), stand: () => KILN_AT, note: 'F: the kiln window (glazes, mending)' }); // (in the kiln's light, facing its mouth: 2.5 m from Saggar, so F is the kiln's)
   P.add('strawman', { name: 'Strawman', at: () => TR.strawman.clone(), note: 'F: its mode; the bout is said in the log' });
   P.add('spraywall', { name: 'the spray wall', at: () => new THREE.Vector3(TR.wall.x, 0, TR.wall.z), yaw: -Math.PI / 2, near: 2.5, note: 'clay that keeps every dent' });
-  P.add('throwing', { name: 'the Throwing Room', at: () => TR.mark.clone(), yaw: Math.PI / 2, note: 'on the firing mark; F at the Index\'s lectern: the drills' }); // (world/testroom/)
-  { const W = TR.wing, at = ([x, z]) => () => V(x, 0, z), B = W.statusBench, J = W.jugglePen; // (the combat wing's stations, through the room's south arcade, each set down facing what it is for: world/testroom/combatwing.js, docs/plans/COMBAT-LAB.md)
+  P.add('throwing', { name: 'the Throwing Room', at: () => TR.mark.clone(), yaw: Math.PI / 2, note: 'on the firing mark; F at the Index\'s lectern: the drills' }); // (world/throwingroom/)
+  { const W = TR.wing, at = ([x, z]) => () => V(x, 0, z), B = W.statusBench, J = W.jugglePen; // (the combat wing's stations, through the room's south arcade, each set down facing what it is for: world/throwingroom/combatwing.js, docs/plans/COMBAT-LAB.md)
     P.add('sparring.circle', { name: 'the sparring circle', at: at([W.circle.x, W.circle.z]), yaw: 0, near: 2, note: 'in front of Strawman in its ring; the frame meter beyond it, the mirror on the west wall' });
     P.add('figment.telegraph.floor', { name: 'the Figment telegraph floor', at: at(W.telegraphFloor.caster), yaw: 0, near: W.telegraphFloor.mark[1] - W.telegraphFloor.caster[1], note: 'on its mark, facing the caster (a stand-in)' });
     P.add('parry.range', { name: 'the parry range', at: at(W.parryRange.pitcher), yaw: 0, near: 8, note: 'on the 8 m mark, facing the pitcher (a stand-in)' });

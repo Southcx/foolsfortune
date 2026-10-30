@@ -425,7 +425,7 @@ export class CreatureTags {
   update(dt, slot) {
     const g = this.game, S = g.overlayScene, B = document.body.classList;
     this.t += dt;
-    const hide = !!(g.title?.active || g.god?.controlling || g.emocean?.stage?.active || B.contains('cine') || !g.camera || this.hudOff());
+    const hide = !!(g.title?.active || g.god?.controlling || g.rail?.stage?.active || B.contains('cine') || !g.camera || this.hudOff());
     if (hide) { this.root.userData.overlayHidden = true; return; }
     const view = slot.view, pr = S.r.getPixelRatio(); this.dot = view.h / 480; this.Wd = view.w / this.dot;
     const k = Math.max(1, Math.round(pr * this.dot)); if (k !== this.k) { this.k = k; for (const T of this.tags.values()) T.dirty = true; }

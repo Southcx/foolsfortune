@@ -3,7 +3,7 @@
 //   rack    lays out STOCK in the yard with the level's own prop makers (crates, bricks, the breakable pots), so the kick, the carry and the god
 //           hand know them already. What it laid last time is taken away first, and only that: nothing else in the world is touched.
 //   pen     calls three slip jellies into the pen's ring of low clay posts, made training bodies (`training`: the ledger and the domains never
-//           hear them, a burst pays no cubes, as the Throwing Room's: progress/combat/testroom.js isTraining) and lock targets (the lock-on
+//           hear them, a burst pays no cubes, as the Throwing Room's: progress/combat/throwingroom.js isTraining) and lock targets (the lock-on
 //           lists no training body of its own). The last three are taken away first. They stay burst until the pen is called again.
 //   ground  puts the god hand's matter back: the island's matter field if it lies in the hall (godhand/islandmatter.js drop) and the creations
 //           standing in the hall (godhand/creations.js erode), so the floor is as it was built.

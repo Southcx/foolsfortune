@@ -8,14 +8,14 @@ import { openGame } from './playtest/game.mjs';
 let fails = 0; const check = (name, ok, info = '') => { if (!ok) fails++; console.log(`${ok ? 'PASS' : 'FAIL'} ${name} ${typeof info === 'string' ? info : JSON.stringify(info)}`); };
 const g = await openGame({ seed: 2 });
 await g.step(60);
-const b = await g.page.evaluate(() => { const G = __game.game; G.cubes.earn(2000, 'test'); const r = G.voyage.board(G.voyage.s.at, 'margarite'); G.emocean.begin?.(); return { ok: r?.ok, why: r?.why, at: G.voyage.s.at }; });
+const b = await g.page.evaluate(() => { const G = __game.game; G.cubes.earn(2000, 'test'); const r = G.voyage.board(G.voyage.s.at, 'margarite'); G.rail.begin?.(); return { ok: r?.ok, why: r?.why, at: G.voyage.s.at }; });
 check('a crossing boards', b.ok, b);
 await g.step(240);
 const out = [];
 for (let i = 0; i < 70; i++) {
   await g.step(i === 0 ? 2 : 30);
   out.push(await g.page.evaluate(() => {
-    const G = __game.game, E = G.emocean, sh = E.ship, cam = G.camera, THREE = cam.position.constructor;
+    const G = __game.game, E = G.rail, sh = E.ship, cam = G.camera, THREE = cam.position.constructor;
     if (!E.stage.active) return null;
     sh.cursor.x = 0.6; sh.cursor.y = -0.4;
     const sw = E.swingAt(E.bar);

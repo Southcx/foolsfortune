@@ -4586,3 +4586,14 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the body's root is `userData.zoneFree` (it always stands under its rider, hidden when not ridden); the slip puddles keep
   their own `live` flag instead of reading `visible`. After: `shown: true` through the call and the ride, on the phone and the desk.
 - **Rule:** 366
+
+### 2026-10-30 · The Sandbox compiled a program on its first entry (world/sandbox/sandbox.js; the gate's probe)
+- **Seen (headless):** the programs went 196 -> 197 on entering the Sandbox for the first time; the new program's key differed from the
+  level's dressed floors' only in its prefix, `surf|` against `pm|surf|`.
+- **Cause, as measured:** the hall's merged boxes were dressed by `dress()` (vfx/surfaces.js) as the level's floors are, but not patched by
+  the paint map, which every material the level makes is (world/level.js `mat`): the same look under another program key, compiled the
+  first frame it was drawn, after the warm-up.
+- **Fix:** the hall's dressed materials go through `game.paintmap.patch` after `dress`, as the level's do. After: 0 programs on entry
+  (196 -> 196), and paint and crude can lie on the hall's floor.
+- **Rule:** 367
+

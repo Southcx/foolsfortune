@@ -13,7 +13,7 @@
 //
 //   game.lock.toggle()     game.lock.cycle(+1 | -1)     game.lock.target -> { type, ref } | null     game.lock.point(out)
 //   game.lock.add(ref)  .remove(ref)   a thing to lock to that no list here finds: a `training` body (Strawman, the status bench's
-//   roly-polies: world/testroom/), added by the room that owns it; its lock is never counted (`lock.on { training }`)
+//   roly-polies: world/throwingroom/), added by the room that owns it; its lock is never counted (`lock.on { training }`)
 // ON TOUCH (docs/plans/MOBILE.md 8.9: how a thumb aims, every phone action game's aim assist; a setting, `camera.lockAuto`, never a knack):
 // with a tool drawn, the lock takes the nearest foe in front by itself (never a pot), every LOCK_AUTO.every real s while it holds none;
 // let go by hand, it waits LOCK_AUTO.hold real s before it takes one again. A finger turning the view is aiming by hand: the lock takes

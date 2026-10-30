@@ -20,7 +20,7 @@
 // A crossing is 100 bars, 150 real seconds, and is sailed tick by tick (the stage keeps its own clock when no cue plays: stage.js
 // clock); the forced set pieces come from the chat line's /crossing, as a tester would. Not here: the pause (the harness's manual mode
 // skips it: main.js overlayUp) and a reload mid-crossing (each page is a fresh browser context, so the save does not carry). Measures are read inside the page through
-// window.__game (game.emocean, game.voyage, game.pier, game.margarite).
+// window.__game (game.rail, game.voyage, game.pier, game.margarite).
 //
 // Prior art: scripts/sweeps/garden.mjs and dunes.mjs (the harness, the page measured from inside), scripts/rail.mjs (the crossing's
 // rules as a simulator: here they are checked in the running game), scripts/stress.mjs (manual mode, the clock pinned: the casebook's
@@ -39,7 +39,7 @@ const REPS = quick ? 4 : 12, DT = quick ? 1 / 30 : 1 / 60;
 // ---- the page's side: what this sweep measures beyond the harness's
 const EM_JS = `
 window.__em = (() => {
-  const G = __game, g = G.game, THREE = G.THREE, v = __sw.v, E = g.emocean;
+  const G = __game, g = G.game, THREE = G.THREE, v = __sw.v, E = g.rail;
   const seen = [], spawns = [];
   { const B = g.events, emit = B.emit; B.emit = function (n, d = {}) { seen.push({ name: n, keys: Object.keys(d || {}), by: d && 'by' in d ? d.by : undefined, bar: E.stage.active ? +E.bar.toFixed(3) : null, d: /^(rail|emocean)\\./.test(n) ? JSON.parse(JSON.stringify(d || {})) : null }); return emit.call(this, n, d); }; }
   const M = g.indexMenu, cnt = { show: 0, close: 0 };
@@ -149,11 +149,11 @@ if (part('pier')) {
   S.check('pier: F opens the pier\'s page, once', w.index && w.page === 'pier' && c.show - m.show === 1 && !w.pause, { win: w, opened: c.show - m.show });
   S.check('pier: the cursor is free while its page is open', !w.locked, { locked: w.locked });
   const txt = await em('menuText()'), f1 = await S.shot('pier-page-empty-purse');
-  S.check('pier: the page lists the node map and the mounts', /FROM ANAGAMI/.test(txt) && /Margarite/.test(txt) && /MOUNTS|WEAR A TOOL/.test(txt), txt.replace(/\n+/g, ' | ').slice(0, 300));
+  S.check('pier: the page lists the node map and the mounts', /FROM ANAGAMI/.test(txt) && /margarite/i.test(txt) && /MOUNTS|WEAR A TOOL/.test(txt), txt.replace(/\n+/g, ' | ').slice(0, 300));
   S.check('pier: an empty purse says what the crossing burns', /burns \d+ cubes of fuel/.test(txt), { file: path.basename(f1) });
   S.check('pier: no code ids or empty values on the page', !(await S.ev((t) => __em.rawIds(t), txt)).length, await S.ev((t) => __em.rawIds(t), txt));
   m = await em('mark()');
-  await S.page.click('#indexmenu .room >> text=Margarite').catch(() => {}); await S.ticks(4);
+  await S.page.click('#indexmenu .cc[data-id="isle.margarite"]').catch(() => {}); await S.ticks(4);
   let s = await st();
   S.check('pier: a refused crossing does not board', !s.sailing && !s.active && !s.boarding, { sailing: s.sailing, active: s.active });
   // F closes the page (its own "F closes"): and it stays closed
@@ -202,7 +202,7 @@ if (part('pier')) {
     await fPage(true);
   } else S.note('pier: mounts', 'no tool worn that can be mounted');
   const txt2 = await em('menuText()');
-  S.check('pier: with fuel, Margarite shows its fuel', /fuel: \d+ cubes/.test(txt2), txt2.replace(/\n+/g, ' | ').slice(0, 200));
+  S.check('pier: with fuel, Margarite shows its fuel', /fuel:? \d+ cubes/i.test(txt2), txt2.replace(/\n+/g, ' | ').slice(0, 200));
   await S.shot('pier-page');
   await S.closeAll(); await S.ticks(30);
   await S.common('pier: closed');
@@ -225,7 +225,7 @@ const board = async (island, to, setPieces, { direct = false } = {}) => {
     await S.ticks(2); await S.settle(); await S.ticks(4);
     return { ok };
   }
-  await S.page.click(`#indexmenu .room >> text=THE SEA CHART: ${to}`); await S.ticks(2);
+  await S.page.click(`#indexmenu .cc[data-id="isle.${to.toLowerCase()}"]`); await S.ticks(2); // (an island's choice card opens its sea chart: world/emocean/pier.js)
   const lane = await S.ev(async ({ want }) => {
     const C = __game.game.pier.chart, { lanes } = await import('/src/progress/econ/passage.js'), { sailable } = await import('/src/progress/rail/trip.js');
     const ship = __game.game.pier.ship, all = lanes(C.chart).filter((l) => sailable(C.chart, l, ship));
@@ -289,12 +289,12 @@ if (part('crossing')) {
     const exp = [want[0] + sl[0] * f, want[1] + 3 + (sl[1] - 3) * f, want[2] + sl[2] * f], off = Math.hypot(cl[0] - exp[0], cl[1] - exp[1], cl[2] - exp[2]);
     S.check(`crossing: ${a.id} (bar ${a.from}) holds the ${a.view} view`, off < 3, { bar: s.bar, cam: cl, rig: exp.map((x) => +x.toFixed(2)), off: +off.toFixed(2) });
     await S.common(`crossing: ${a.id} in the ${a.view} view`, { courier: false });
-    if (a.id === 'setpiece') S.note('crossing: the shoal round the ship', await S.ev(() => { const E = __game.game.emocean, fish = E.waves.foes.filter((f) => f.alive && f.role === 'glint'); if (!fish.length) return 'no glints'; const c = fish.reduce((o, f) => o.add(f.local), new __game.THREE.Vector3()).multiplyScalar(1 / fish.length); return { glints: fish.length, bar: +E.bar.toFixed(1), centreFromShip: __sw.v(c.sub(E.ship.local)) }; }));
+    if (a.id === 'setpiece') S.note('crossing: the shoal round the ship', await S.ev(() => { const E = __game.game.rail, fish = E.waves.foes.filter((f) => f.alive && f.role === 'glint'); if (!fish.length) return 'no glints'; const c = fish.reduce((o, f) => o.add(f.local), new __game.THREE.Vector3()).multiplyScalar(1 / fish.length); return { glints: fish.length, bar: +E.bar.toFixed(1), centreFromShip: __sw.v(c.sub(E.ship.local)) }; }));
     if (a.id === 'setpiece') { // (Calissa's checks, casebook 2026-10-08 rules 72 and 76: the shoal drawn at the sea, not 50 m under it; a strike's dash eased, never a flag)
-      const y = await S.ev(() => { const E = __game.game.emocean; return { shoal: +E.pieces.shoal.look.group.position.y.toFixed(3), wake: (E.wake?.lines || []).map((l) => +l.m.position.y.toFixed(3)) }; });
+      const y = await S.ev(() => { const E = __game.game.rail; return { shoal: +E.pieces.shoal.look.group.position.y.toFixed(3), wake: (E.wake?.lines || []).map((l) => +l.m.position.y.toFixed(3)) }; });
       S.check('crossing: the shoal and the ship\'s wake are drawn at the sea, not parked under it', y.shoal === 0 && y.wake.every((v) => v === 0), y);
       await sailTo(70);
-      const dz = await S.ev(() => { const E = __game.game.emocean, P = E.pieces.shoal, D = P.look?.dash || P.dash, prev = new Float32Array(D.length); prev.set(D); let peak = 0, jump = 0, frames = 0;
+      const dz = await S.ev(() => { const E = __game.game.rail, P = E.pieces.shoal, D = P.look?.dash || P.dash, prev = new Float32Array(D.length); prev.set(D); let peak = 0, jump = 0, frames = 0;
         for (let f = 0; f < 240 && E.stage.active && !E.offering; f++) { __em.sail(1, 1 / 30); frames++; for (let k = 0; k < D.length; k++) { if (!P.flock.alive[k]) { prev[k] = D[k]; continue; } peak = Math.max(peak, D[k]); jump = Math.max(jump, Math.abs(D[k] - prev[k])); prev[k] = D[k]; } }
         return { frames, peak: +peak.toFixed(2), jump: +jump.toFixed(2) }; });
       S.check('crossing: a strike\'s dash runs up and dies away (above 0.5, never more than 0.35 a frame)', dz.peak > 0.5 && dz.jump <= 0.35, dz);
@@ -319,16 +319,16 @@ if (part('crossing')) {
     // an absorbed shot: one of the ship's own feeling, drunk
     await S.ticks(70);
     const ab0 = (await st()).run.absorbed, h0 = (await st()).run.hits;
-    await S.ev(() => __em.shoot({ aspect: __game.game.emocean.ship.aspect })); await S.ticks(30);
+    await S.ev(() => __em.shoot({ aspect: __game.game.rail.ship.aspect })); await S.ticks(30);
     let x = await st();
     S.check('verbs: a shot of the ship\'s feeling is absorbed, not a hit', x.run.absorbed === ab0 + 1 && x.run.hits === h0, { absorbed: x.run.absorbed - ab0, hits: x.run.hits - h0 });
     // a hit: one of another feeling; then the mercy (a second shot inside it does not count). The tester's hull let go for it: it holds
     // the wound itself now, so a hit would never land
-    await S.ev(() => { __em.hull = false; if (Object.hasOwn(__game.game.emocean, 'wound')) delete __game.game.emocean.wound; });
+    await S.ev(() => { __em.hull = false; if (Object.hasOwn(__game.game.rail, 'wound')) delete __game.game.rail.wound; });
     const mh = await em('mark()');
-    await S.ev(() => { const g = __game.game; __em.shoot({ aspect: g.emocean.ship.aspect === 'dread' ? 'wonder' : 'dread' }); }); await S.ticks(20);
+    await S.ev(() => { const g = __game.game; __em.shoot({ aspect: g.rail.ship.aspect === 'dread' ? 'wonder' : 'dread' }); }); await S.ticks(20);
     x = await st();
-    await S.ev(() => { const g = __game.game; __em.shoot({ aspect: g.emocean.ship.aspect === 'dread' ? 'wonder' : 'dread' }); }); await S.ticks(20);
+    await S.ev(() => { const g = __game.game; __em.shoot({ aspect: g.rail.ship.aspect === 'dread' ? 'wonder' : 'dread' }); }); await S.ticks(20);
     const y = await st(), he = (await events(mh)).filter((e) => e.name === 'rail.hit');
     S.check('verbs: a shot of another feeling is a hit, the mercy holds the next', x.run.hits === h0 + 1 && y.run.hits === h0 + 1 && he.length === 1 && he[0].by === 'creature', { hits: [x.run.hits - h0, y.run.hits - h0], mercy: x.ship.mercy, events: he.map((e) => e.by) });
     await S.ev(() => { __em.hull = true; }); // (held again for the rest of the acts)
@@ -359,13 +359,13 @@ if (part('crossing')) {
     const gz = await st(), f = await S.shot('careless-aboard-goto');
     const clean = (gz.active && gz.hidden && gz.aboard && gz.zone === 'emocean') || (!gz.active && !gz.aboard && !gz.hidden && gz.zone !== 'emocean');
     S.check('careless aboard: /goto mid-crossing is refused or ends it cleanly', clean, { active: gz.active, courierHidden: gz.hidden, aboard: gz.aboard, zone: gz.zone, player: gz.player, log: await S.ev((mm) => __em.logSince(mm), mg), file: path.basename(f) });
-    await S.ev(() => { const g = __game.game; if (g.emocean.stage.active) g.character.setHidden(true); }); // (put back as the stage holds it, so the rest of the crossing is judged on its own)
+    await S.ev(() => { const g = __game.game; if (g.rail.stage.active) g.character.setHidden(true); }); // (put back as the stage holds it, so the rest of the crossing is judged on its own)
   }
   // the set piece: its first beat said, the end said, the tally before "You make port"
   const mt = await em('mark()');
   await S.ev(() => { __em.hull = true; });
   s = await sailOut();
-  if (s.offering) { S.note('crossing: the ship broke on its own', s.run); await S.ev(() => __game.game.emocean.decline()); await S.settle(); }
+  if (s.offering) { S.note('crossing: the ship broke on its own', s.run); await S.ev(() => __game.game.rail.decline()); await S.settle(); }
   await S.settle(); await S.ticks(10);
   await S.ev(() => { __em.hull = false; });
   s = await st();
@@ -386,7 +386,7 @@ if (part('crossing')) {
   S.check('port: the camera follows the Courier again', Math.hypot(s2.cam[0] - s2.player[0], s2.cam[2] - s2.player[2]) < 12, { cam: s2.cam, player: s2.player });
   await S.common('port: Margarite\'s dock');
   const dist1 = await S.ev(() => __game.game.ledger.get('dist.total') || 0);
-  S.check('ledger: sailing the rail is not distance travelled', dist1 - dist0 < 50, { metres: +(dist1 - dist0).toFixed(0), railSpeed: await S.ev(() => __game.game.emocean.rail.speed), footsore: await S.ev(() => !!__game.game.achievements?.done?.('dt1')) });
+  S.check('ledger: sailing the rail is not distance travelled', dist1 - dist0 < 50, { metres: +(dist1 - dist0).toFixed(0), railSpeed: await S.ev(() => __game.game.rail.rail.speed), footsore: await S.ev(() => !!__game.game.achievements?.done?.('dt1')) });
   const cnt1 = await em('counts()');
   S.note('crossing: the scene before and after one crossing', { before: cnt0, after: cnt1 });
   crossed = true;
@@ -450,7 +450,7 @@ if (part('dock')) {
   ch = await em('chevron()');
   await fPage(true); w = await em('win()');
   const txt = await em('menuText()');
-  S.check('dock: F at the dock\'s pier opens its page, from Margarite', ch.cur === 'cradle' && ch.ref === 'cradle.pier.margarite.sloop' && w.page === 'pier' && /FROM MARGARITE/.test(txt) && /Anagami/.test(txt), { chevron: ch.cur, ref: ch.ref, page: w.page, text: txt.replace(/\n+/g, ' | ').slice(0, 160) });
+  S.check('dock: F at the dock\'s pier opens its page, from Margarite', ch.cur === 'cradle' && ch.ref === 'cradle.pier.margarite.sloop' && w.page === 'pier' && /FROM MARGARITE/.test(txt) && /anagami/i.test(txt), { chevron: ch.cur, ref: ch.ref, page: w.page, text: txt.replace(/\n+/g, ' | ').slice(0, 160) });
   await S.shot('dock-pier-page');
   await S.closeAll(); await S.ticks(30);
   await S.common('dock: after');
@@ -476,9 +476,9 @@ if (part('back')) {
     await S.common('back: the pirates', { courier: false });
     // the ship borne all it can: the continue
     const mc = await em('mark()');
-    await S.ev(() => { const E = __game.game.emocean; __em.hull = false; if (Object.hasOwn(E, 'wound')) delete E.wound; E.ship.mercy = 0; E.wound(E.run.bears - E.run.hits, { by: 'creature', what: 'test' }); }); await S.ticks(4);
+    await S.ev(() => { const E = __game.game.rail; __em.hull = false; if (Object.hasOwn(E, 'wound')) delete E.wound; E.ship.mercy = 0; E.wound(E.run.bears - E.run.hits, { by: 'creature', what: 'test' }); }); await S.ticks(4);
     s = await st(); let w = await em('win()');
-    const cost1 = await S.ev(() => { const E = __game.game.emocean; return __game.game.voyage.continueCost(Math.min(1, E.t / E.stage.seconds)); });
+    const cost1 = await S.ev(() => { const E = __game.game.rail; return __game.game.voyage.continueCost(Math.min(1, E.t / E.stage.seconds)); });
     const t1 = await em('menuText()'), fC = await S.shot('back-continue');
     S.check('continue: offered when the ship can bear no more', s.offering && w.page === 'continue' && new RegExp(`${cost1} cubes`).test(t1), { offering: s.offering, page: w.page, cost: cost1, text: t1.replace(/\n+/g, ' | ').slice(0, 200), file: path.basename(fC) });
     S.check('continue: the cursor is free on the coin\'s page', !w.locked, { locked: w.locked });
@@ -491,9 +491,9 @@ if (part('back')) {
     S.check('continue: taken, paid, mended, the page shut', cubesA - s.cubes === cost1 && s.run.hits === 0 && !s.offering && !w.index && s.active && ce.length === 1 && ce[0].by === 'courier', { paid: cubesA - s.cubes, cost: cost1, hits: s.run.hits, offering: s.offering, page: w.page, events: ce.map((e) => e.d) });
     // a second: dearer, and declined by Esc (the page closed unanswered: the ship breaks up)
     await sail(150);
-    await S.ev(() => { const E = __game.game.emocean; __em.hull = false; if (Object.hasOwn(E, 'wound')) delete E.wound; E.ship.mercy = 0; E.wound(E.run.bears - E.run.hits, { by: 'creature', what: 'test' }); }); await S.ticks(4);
-    const cost2 = await S.ev(() => { const E = __game.game.emocean; return __game.game.voyage.continueCost(Math.min(1, E.t / E.stage.seconds)); });
-    const base2 = await S.ev(() => { const E = __game.game.emocean, V = __game.game.voyage, c = V.s.sailing.continues; V.s.sailing.continues = 0; const b0 = V.continueCost(Math.min(1, E.t / E.stage.seconds)); V.s.sailing.continues = c; return b0; });
+    await S.ev(() => { const E = __game.game.rail; __em.hull = false; if (Object.hasOwn(E, 'wound')) delete E.wound; E.ship.mercy = 0; E.wound(E.run.bears - E.run.hits, { by: 'creature', what: 'test' }); }); await S.ticks(4);
+    const cost2 = await S.ev(() => { const E = __game.game.rail; return __game.game.voyage.continueCost(Math.min(1, E.t / E.stage.seconds)); });
+    const base2 = await S.ev(() => { const E = __game.game.rail, V = __game.game.voyage, c = V.s.sailing.continues; V.s.sailing.continues = 0; const b0 = V.continueCost(Math.min(1, E.t / E.stage.seconds)); V.s.sailing.continues = c; return b0; });
     S.check('continue: the second costs double', (await st()).offering && Math.abs(cost2 - 2 * base2) <= 1, { second: cost2, firstAtThisShare: base2 });
     const md = await em('mark()'), last = await S.ev(() => __game.game.shrines.last);
     await S.press('Escape', 4); await S.ticks(2); await S.settle(); await S.ticks(60);
@@ -543,12 +543,12 @@ if (part('repeat')) {
   S.phase = 'repeat';
   await toJetty(); await S.ev(() => { __game.game.voyage.s.at = 'anagami'; });
   // a crossing begun and ended once first (what is made on first need is made), then counted
-  const once = async (from, label) => { const b = await board(from, label, 'shoal'); if (!b.ok) return false; await sail(120); await S.ev(() => __game.game.emocean.finish(true)); await S.ticks(2); await S.settle(); await S.ticks(20); return true; };
+  const once = async (from, label) => { const b = await board(from, label, 'shoal'); if (!b.ok) return false; await sail(120); await S.ev(() => __game.game.rail.finish(true)); await S.ticks(2); await S.settle(); await S.ticks(20); return true; };
   { // the first drafted at the sea chart and checked: the trip runs its legs (Petra's triprun.js on Dovina's runtime)
     const b = await board('anagami', 'Margarite', 'shoal');
-    const t = await S.ev(() => { const E = __game.game.emocean; return { active: E.stage.active, trip: E.trip.active, legs: (E.stage.legs || []).map((l) => l.id) }; });
+    const t = await S.ev(() => { const E = __game.game.rail; return { active: E.stage.active, trip: E.trip.active, legs: (E.stage.legs || []).map((l) => l.id) }; });
     S.check('passage: drafted at the sea chart by clicks, cast off, the trip sails its legs', b.ok && t.active && t.trip && t.legs.length === b.types?.length, { ...b, ...t });
-    if (b.ok) { await sail(120); await S.ev(() => __game.game.emocean.finish(true)); await S.ticks(2); await S.settle(); await S.ticks(20); }
+    if (b.ok) { await sail(120); await S.ev(() => __game.game.rail.finish(true)); await S.ticks(2); await S.settle(); await S.ticks(20); }
   }
   const rw = await S.ev(async () => { const { worthOf, SHOPS } = await import('/src/progress/shop/catalogue.js'), { today } = await import('/src/core/calendar.js');
     return { today: worthOf('rutter', { worth: 100, day: today() }), dayOn: worthOf('rutter', { worth: 100, day: today() - 1 }), buys: SHOPS.purser.buys.includes('rutter') }; });
@@ -570,7 +570,7 @@ if (part('repeat')) {
   S.check(`repeat: nothing left behind after ${REPS} crossings`, c1.objects - c0.objects <= 2 && c1.geometries - c0.geometries <= 4 && c1.textures - c0.textures <= 2, { before: c0, after: c1 });
   // boarded and left at once: the clock run out before the seam is done (a crossing finished while still casting off)
   const b = await board('anagami', 'Margarite', 'shoal');
-  if (b.ok) { await S.ev(() => __game.game.emocean.finish(true)); await S.ev(() => __game.game.emocean.finish(true)); await S.ticks(2); await S.settle(); await S.ticks(20); }
+  if (b.ok) { await S.ev(() => __game.game.rail.finish(true)); await S.ev(() => __game.game.rail.finish(true)); await S.ticks(2); await S.settle(); await S.ticks(20); }
   const s = await st();
   S.check('repeat: finished twice in a row, ended once', !s.active && !s.aboard && !s.hidden, { active: s.active, aboard: s.aboard, hidden: s.hidden, at: s.at });
   await S.common('repeat: after');

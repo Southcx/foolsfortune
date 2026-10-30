@@ -52,7 +52,7 @@ export class Pier {
     this.game = game; this.ship = 'sloop'; this.chart = new SeaChart(game, this); this.piers = new Map(); this.chosen = null; this.helm = null; this.helmLook = null;
     game.interact?.add('pier', () => {
       const P = game.player;
-      if (game.emocean?.stage.active || game.dialogue?.open || this.menu?.open || game.god?.controlling) return null;
+      if (game.rail?.stage.active || game.dialogue?.open || this.menu?.open || game.god?.controlling) return null;
       for (const [island, at] of this.piers) {
         if (this.helm?.island === island) continue; // (a hull moored there: its helm's cradle is the way to the page)
         const j = at(); if (!j) continue;
@@ -83,7 +83,7 @@ export class Pier {
   /** The moored helm as a cradle: added where a hull lies alongside, moved with its bob, taken away when it is not (unless sealed). */
   helmTick() {
     const g = this.game, C = g.cradles, M = g.mooring; if (!C) return;
-    const look = M?.cur?.group.visible && !g.emocean?.stage.active ? M.cur : null, at = look ? this.nearest() : null;
+    const look = M?.cur?.group.visible && !g.rail?.stage.active ? M.cur : null, at = look ? this.nearest() : null;
     const spot = at ? look.helmCradleSpots?.()?.[0] : null, key = spot ? `${at.island}.${this.ship}` : null, c = this.helm, sealed = !!c && C.sealed === c;
     if (c && c.key !== key && !sealed) { C.remove(c); this.helm = null; }
     if (look !== this.helmLook) { if (sealed) { this.helmLook?.helmWake?.(false); look?.helmWake?.(true); } this.helmLook = look; } // (the hull changed on the page while sealed: the new one's helm wakes)
@@ -141,13 +141,13 @@ export class Pier {
       if (g.opensea && !V.sailing) ways.push(new ChoiceCard({ id: 'opensea', icon: 'touch.water', name: 'THE OPEN SEA', does: `off the lanes, at the helm: ${helmWords} · chart the squares · what lives out there` },
         { onPick: () => { this.menu?.close(); const go = () => { this.castOff_(); g.opensea.arrive(at); }; g.seam?.cross(go, { kind: 'sea' }) || go(); } })); // (to this island's quay on the open sea, or Anagami's: opensea.js arrive)
       // the showcase crossing (DEBUG only: progress/rail/showcase.js): what is new on the rail in one run, back to this pier, nothing counted
-      const SC = g.mode === 'debug' && g.emocean?.sailShowcase && !V.sailing ? showcasePassage().waypoints : [];
+      const SC = g.mode === 'debug' && g.rail?.sailShowcase && !V.sailing ? showcasePassage().waypoints : [];
       const show = SC.length ? cardList([new ChoiceCard({ id: 'showcase', icon: 'touch.overhead', name: 'THE SHOWCASE CROSSING', does: `${SC.length} legs, a hull each (${SC.map((w) => w.hull).join(', ')}) · back to this pier · your pool kept full · nothing counted` },
-        { onPick: () => { this.menu?.close(); this.castOff_(); g.emocean.sailShowcase(at, this.mounts().chosen); } })], { cols: 1 }) : null;
+        { onPick: () => { this.menu?.close(); this.castOff_(); g.rail.sailShowcase(at, this.mounts().chosen); } })], { cols: 1 }) : null;
       // practice (RAIL-STANDARDS.md 5; Star Fox 64's Training): a leg's type sailed once, again alone at a strength you pick, back to this
       // pier in the hull and mounts chosen below, nothing counted (the cards: ui/practicecards.js, Calissa's; their words placeholders)
-      const PR = g.emocean?.sailPractice && !V.sailing ? practiceOf(g.ledger) : [];
-      const prb = practiceCards(PR, { legs: LEGS, onSail: (type, n) => { this.menu?.close(); this.castOff_(); g.emocean.sailPractice(at, type, n, this.ship, this.mounts().chosen); } });
+      const PR = g.rail?.sailPractice && !V.sailing ? practiceOf(g.ledger) : [];
+      const prb = practiceCards(PR, { legs: LEGS, onSail: (type, n) => { this.menu?.close(); this.castOff_(); g.rail.sailPractice(at, type, n, this.ship, this.mounts().chosen); } });
       // the ship: a trade (the owner, PASSAGE.md 11): the agile ones sail any lane, the heavy ones only a charted passage
       const sb = cardList(Object.entries(SHIPS).map(([id, H]) => new ChoiceCard({ id: `ship.${id}`, icon: 'kw.hull', name: id.toUpperCase(), state: id === this.ship ? 'equipped' : 'ready',
         does: `Hull ${H.bears} · ${H.mounts} mount${H.mounts > 1 ? 's' : ''}${H.sails === 'charted' ? ' · mapped routes only' : ''}${H.dive ? '' : ' · cannot dive'}` }, { onPick: () => { this.ship = id; this.open(at); } })));
@@ -197,7 +197,7 @@ export class Pier {
     const r = V.board(from, to, this.ship, this.mounts().chosen, passage);
     if (!r.ok) { g.log?.say('warn', r.why, { key: 'pier', throttle: 1 }); return false; }
     this.menu?.close(); this.castOff_();
-    g.emocean?.begin();
+    g.rail?.begin();
     return true;
   }
 }

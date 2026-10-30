@@ -88,7 +88,7 @@ export class TouchTools {
   get held() { return this.game.belt?.inHand?.id || null; }
 
   /** The crossing's ship, while a crossing runs. */
-  get ship() { const E = this.game.emocean; return E?.stage?.active ? E.ship || null : null; }
+  get ship() { const E = this.game.rail; return E?.stage?.active ? E.ship || null : null; }
 
   /** The look area's finger came down (the driver's `look`): on the paper, the brush goes there and draws; on the crossing, the sweep.
    *  True when it is the brush's or the sweep's. */
@@ -111,7 +111,7 @@ export class TouchTools {
     if (this.lens && !at.pinched && performance.now() - (at.t0 ?? 0) <= TOOL_TOUCH.tap.ms && Math.hypot(at.x - at.x0, at.y - at.y0) <= TOOL_TOUCH.tap.slop) this.owe(['Mouse0'], 1); // (a pinch's finger is no tap)
   }
   /** The sweep let go: RMB up (the volley flies, ship.js), the reticle stays where the finger left it. */
-  letSweep() { if (this.sweeping) { this.input.hold('Mouse2', false); this.sweeping = false; } const ship = this.game.emocean?.ship; if (ship) ship.touchAt = null; }
+  letSweep() { if (this.sweeping) { this.input.hold('Mouse2', false); this.sweeping = false; } const ship = this.game.rail?.ship; if (ship) ship.touchAt = null; }
   brushAt(at) { const C = this.tool?.celestial; if (C) C.touchAt = { x: at.x, y: at.y }; }
   letBrush() { if (this.drawing) { this.input.hold('Mouse0', false); this.drawing = false; } const C = this.tool?.celestial; if (C) C.touchAt = null; }
 

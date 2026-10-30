@@ -88,7 +88,7 @@ await S.common('hub at the Index');
 
 const chevAtIndex = await S.ev(() => ({ cur: __game.game.interact?.cur?.id || null, shown: !!__game.game.interact?.chevron?.group?.visible }));
 S.check('hub Index: the interact chevron is offered at the console', chevAtIndex.cur != null && chevAtIndex.shown,
-  `interact.cur=${chevAtIndex.cur}, chevron shown=${chevAtIndex.shown} (world/basement/course.js update(): F is read from its own nearConsole test, never offered to courier/interact.js, so no chevron marks the console; the Throwing Room's Index offers 'testroom.index')`);
+  `interact.cur=${chevAtIndex.cur}, chevron shown=${chevAtIndex.shown} (world/basement/course.js update(): F is read from its own nearConsole test, never offered to courier/interact.js, so no chevron marks the console; the Throwing Room's Index offers 'throwingRoom.index')`);
 
 await S.press('KeyF', 3);
 let d = await S.sw('dom()');
@@ -189,14 +189,14 @@ await S.go('throwing'); await S.ticks(4);
 let tr = null;
 for (const [dx, dz] of [[1, 0], [1, 0.6], [0.6, 1], [0, 1], [1.2, -0.6]]) {
   await S.ev(([dx, dz]) => __bs.tp(12.4 + dx, 0.02, -0.9 + dz, Math.atan2(dx, dz)), [dx, dz]); await S.ticks(8);
-  tr = await S.ev(() => __game.game.interact?.cur?.id || null); if (tr === 'testroom.index') break;
+  tr = await S.ev(() => __game.game.interact?.cur?.id || null); if (tr === 'throwingRoom.index') break;
 }
 await S.press('KeyF', 3);
 d = await S.sw('dom()'); const fTr = await S.shot('page-throwing-room');
 S.check('page the Throwing Room: opens on F at its lectern', d.index && d.page === 'the Throwing Room', `interact ${tr}; index=${d.index} page='${d.page}'`);
 S.check('page the Throwing Room: no calibration under it', d.calibration === 0, `${d.calibration} CALIBRATION blocks under the page '${d.page}' (feedback/indexmenu.js render(): the calibration is drawn after every page, not only the list); ${shotName(fTr)}`);
 await S.press('KeyF', 4);
-S.check('page the Throwing Room: F closes it and it stays closed', !(await S.sw('dom()')).index, 'open after F and 4 ticks (world/testroom/room.js update() peeks the same F latch while interact.cur is testroom.index and calls showPage again)');
+S.check('page the Throwing Room: F closes it and it stays closed', !(await S.sw('dom()')).index, 'open after F and 4 ticks (world/throwingroom/room.js update() peeks the same F latch while interact.cur is throwingRoom.index and calls showPage again)');
 await S.closeAll();
 const shrine = await S.ev(() => { const s = __game.game.shrines?.list?.[0]; return s ? { id: s.id, name: s.name, pos: __bs.v(s.threshold?.pos || s.pos), yaw: s.yaw } : null; });
 if (shrine) {

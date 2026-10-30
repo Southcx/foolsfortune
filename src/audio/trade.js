@@ -19,7 +19,7 @@
 //     a move slotted  loadout.set: a blade's notch, the move fitted; a slot emptied, the move lifted out
 //   THE VERITOME (tools/veritome/ui.js)
 //     plates thrown   photo.discard: paper crumpled (more plates, a longer crumple) and tossed
-//   THE THROWING ROOM (world/testroom/): a range officer's shot timer, measured and never earned, so nothing here rings like a reward
+//   THE THROWING ROOM (world/throwingroom/): a range officer's shot timer, measured and never earned, so nothing here rings like a reward
 //     a drill begun   drill.start: beep, beep, beeep (the shot timer's start)
 //     a drill done    drill.end: the end buzzer, then the hits read out as up to five short beeps (none when nothing was fired)
 //     a drill left    drill.left: two flat beeps falling (the drill called off)

@@ -12,7 +12,7 @@ let fails = 0; const check = (name, ok, info = '') => { if (!ok) fails++; consol
 await g.step(60);
 for (const figure of ['verticalLoop', 'corkscrew', 'crest', 'weave']) {
   const r0 = await g.page.evaluate(async (figure) => {
-    const G = __game.game, P = G.pier, V = G.voyage, C = P.chart, E = G.emocean;
+    const G = __game.game, P = G.pier, V = G.voyage, C = P.chart, E = G.rail;
     const { lanes } = await import('/src/progress/econ/passage.js');
     G.cubes.earn(4000, 'test'); P.menu = P.menu || G.indexMenu; E.figure = figure;
     const to = V.s.at === 'margarite' ? 'anagami' : 'margarite';
@@ -24,7 +24,7 @@ for (const figure of ['verticalLoop', 'corkscrew', 'crest', 'weave']) {
   for (let i = 0; i < 1600; i++) {
     await g.step(12);
     const s = await g.page.evaluate(() => {
-      const G = __game.game, E = G.emocean, R = E.rail, T = E.trip, M = G.indexMenu;
+      const G = __game.game, E = G.rail, R = E.rail, T = E.trip, M = G.indexMenu;
       if (!E.stage.active) return { done: true };
       if (E.offering && M?.open) document.querySelector('#indexmenu .room')?.click();
       E.run.hits = 0;
@@ -40,7 +40,7 @@ for (const figure of ['verticalLoop', 'corkscrew', 'crest', 'weave']) {
     if (s.inLeg && !s.turning) seen.legTilt = Math.max(seen.legTilt, 1 - s.up);
     if (s.zone && s.zone !== 'emocean') seen.zoneOut++;
   }
-  const r2 = await g.page.evaluate(() => ({ active: __game.game.emocean.stage.active, at: __game.game.voyage.s.at }));
+  const r2 = await g.page.evaluate(() => ({ active: __game.game.rail.stage.active, at: __game.game.voyage.s.at }));
   const shape = { verticalLoop: seen.minUp < -0.9 && seen.maxY > -420 + 20, corkscrew: seen.minUp < -0.9, crest: seen.maxY > -420 + 12 && seen.minUp > 0.8, weave: seen.maxX > 10 && seen.minUp > 0.7 }[figure];
   check(`${figure}: cast off, ${r0.n} waypoints, every turn a ${figure}`, r0.cast && seen.figures?.length > 0 && seen.figures.every((f) => f === figure), seen.figures);
   check(`${figure}: the frame turns as the figure says`, seen.turns > 0 && shape, { minUp: +seen.minUp.toFixed(2), rise: +(seen.maxY + 420).toFixed(1), across: +seen.maxX.toFixed(1), frames: seen.turns });

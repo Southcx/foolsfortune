@@ -28,7 +28,7 @@
 //   stageCue(seconds, setPieces) -> the cue played in that many seconds with that set piece (progress/rail/crossing.js: 'shoal' |
 //   'pirates' | 'leviathan'), or a long crossing's list of up to three (crossingCue: 146 or 192 bars); its bars at the tempo that fills
 //   the seconds (a sloop's 120 s for 100 bars is 200 bpm)
-//   when the cue is not playing (music/choose.js plays it while game.emocean.stage.active; the rail and the waves follow this)
+//   when the cue is not playing (music/choose.js plays it while game.rail.stage.active; the rail and the waves follow this)
 // ---------------------------------------------------------------------------------------
 import { MOTIF, quote } from './motifs.js';
 import { musicClock } from './clock.js';

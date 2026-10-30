@@ -51,7 +51,7 @@ const SCOPE = [
   [['src/world/garden/', 'src/vfx/garden/', 'src/progress/garden', 'src/progress/harmony', 'src/progress/decor', 'src/progress/spiritlife', 'src/progress/mycelium', 'src/progress/seasons'], ['garden']],
   [['src/world/emocean/', 'src/progress/rail/', 'src/vfx/railfoes', 'src/vfx/railhazards', 'src/vfx/voxels/', 'src/vfx/shipkit/', 'src/vfx/crossinglook', 'src/vfx/railshots', 'src/vfx/refitsweep', 'src/vfx/railfoemarks', 'src/vfx/telegraph', 'src/vfx/bossparts', 'src/vfx/partcraze', 'src/courier/ship/', 'src/music/legs', 'src/ui/railreadout', 'src/ui/railresults'], ['crossing', 'spectacle']],
   [['src/world/dunes/', 'src/vfx/dunes/', 'src/creatures/wisp/'], ['dunes']],
-  [['src/world/basement/', 'src/world/props/', 'src/world/level.js', 'src/world/testroom/', 'src/world/treasury'], ['workshop']],
+  [['src/world/basement/', 'src/world/props/', 'src/world/level.js', 'src/world/throwingroom/', 'src/world/treasury'], ['workshop']],
   [['src/world/raceway/', 'src/vfx/raceway', 'src/world/bazaar/', 'src/vfx/bazaar', 'src/world/opensea/', 'src/vfx/opensea/', 'src/creatures/seaserpent/', 'src/world/duel/', 'src/vfx/duelview', 'src/progress/casino/', 'src/progress/duel/', 'src/world/emocean/margarite', 'src/workbench/'], []],
 ];
 const scopeOf = (f) => {
@@ -198,7 +198,7 @@ try {
     const heapGardenMB = Math.round((performance.memory?.usedJSHeapSize || 0) / 1e6);
     // a crossing: the showcase crossing's chase leg on the galleon, six bars in (the heaviest hull and the roster's chase foes, Calissa's
     // ship refit and rail foe bodies; DEBUG, which manual mode is). Last, so the heaps above stay the places the baseline measured
-    const E = Gm.emocean;
+    const E = Gm.rail;
     if (Rm?.active) { Rm.leave(); for (let i = 0; i < 120; i++) G.tick(1 / 60); }
     if (E?.sailShowcase?.('anagami', [])) {
       for (let i = 0; i < 240 && !E.stage.active; i++) G.tick(1 / 60);

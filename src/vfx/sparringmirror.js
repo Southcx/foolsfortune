@@ -8,7 +8,7 @@
 //              plane itself (three's Reflector clips with an oblique near plane to the same end), and the target's texels lie on the glass
 //              as its own uv: no projective lookup and no shader of the mirror's own. Its 120 lines (a quarter of the 480) are all spent
 //              on the glass, so the Courier's reflection gets about two thirds of the screen's density from the striker's place.
-//   WHAT       The testroom zone (render/zones.js) and the Courier in it, never the Workshop's zone; bodies, not marks: every sprite (the
+//   WHAT       The throwingRoom zone (render/zones.js) and the Courier in it, never the Workshop's zone; bodies, not marks: every sprite (the
 //              glyph pops, the parry mark's glints), the interact chevron, the lock-on reticle, the Figment attack telegraphs, the wire
 //              compass with the vane's and the pendulum's marks, the paint reticle and the jet ring are drawn once, in the world, and never
 //              again in the glass. The glass itself is hidden for it. No HUD is in the scene to leave out (it is HTML over the canvas).
@@ -27,11 +27,11 @@
 // reflections (the world drawn again from under the plane, clipped to it), Super Mario 64's mirror room (the room drawn twice, the room
 // alone), and the dance studio's mirror wall.
 //
-//   mirrorPane(w, h) -> Mesh   (the glass, from world/testroom/combatwing.js: a thin box `w` long (local z), `h` high, its face to +x)
-//   new SparringMirror(game)   .update(raw)   (from vfx/testroomkit.js's TestRoomDress)   .inside   .drawn (renders so far)   SPARRING_MIRROR
+//   mirrorPane(w, h) -> Mesh   (the glass, from world/throwingroom/combatwing.js: a thin box `w` long (local z), `h` high, its face to +x)
+//   new SparringMirror(game)   .update(raw)   (from vfx/throwingroomkit.js's ThrowingRoomDress)   .inside   .drawn (renders so far)   SPARRING_MIRROR
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { TR } from '../world/testroom/layout.js';
+import { TR } from '../world/throwingroom/layout.js';
 import { mirrorGlass } from './combatwingkit.js';
 
 export const SPARRING_MIRROR = {
@@ -109,7 +109,7 @@ export class SparringMirror {
     for (const o of g.scene.children) {
       if (!o.visible) continue;
       if (o.isSprite || MARK_NAMES.has(o.name)) { off(o); continue; }
-      if (others && o.userData.zoneInstalled) { const z = Z.place(o, false); if (z && z !== 'testroom') off(o); }
+      if (others && o.userData.zoneInstalled) { const z = Z.place(o, false); if (z && z !== 'throwingRoom') off(o); }
     }
     const sm = r.shadowMap, au = sm.autoUpdate, nu = sm.needsUpdate, S = g.scene, mw = S.matrixWorldAutoUpdate, prev = r.getRenderTarget(), ac = r.autoClear;
     this.busy = true;

@@ -19,8 +19,8 @@
 // Prior art: Apex Legends' firing range grown into a training wing (one place, many stations), a fighting game's training stage (the
 // dummy, the frame meter, the tempo), FFXIV's striking dummies and its trial arenas (an open floor for every marker), the batting cage.
 //
-//   buildCombatWing(level)   (from buildTestRoom: the arcade in the room's south wall, then the hall and its stations; TR.wing the measures)
-//   statusBenchSpots() -> [{ status, x, y, z }]   (where each roly-poly sits: the status bench, world/testroom/statusbench.js)
+//   buildCombatWing(level)   (from buildThrowingRoom: the arcade in the room's south wall, then the hall and its stations; TR.wing the measures)
+//   statusBenchSpots() -> [{ status, x, y, z }]   (where each roly-poly sits: the status bench, world/throwingroom/statusbench.js)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../../core/physics.js';
@@ -108,7 +108,7 @@ function buildStations(level) {
   put(level, telegraphCaster(), F.caster[0], F.caster[1], 0); solid(level, [F.caster[0], 0.95, F.caster[1]], [0.75, 0.95, 0.75]);
   tiles.push({ x: F.mark[0], z: F.mark[1], yaw: toward(F.mark[0], F.mark[1], F.caster[0], F.caster[1]), y: 0.03 });
   // THE STATUS BENCH: a long bench on the west wall, a glyph plaque on its front under each roly-poly's place (the roly-polies are alive:
-  // world/testroom/statusbench.js stands them on it)
+  // world/throwingroom/statusbench.js stands them on it)
   const B = W.statusBench, blen = B.z1 - B.z0, bmid = (B.z0 + B.z1) / 2, bd = 0.8;
   level.box([B.x, B.h - 0.04, bmid], [bd, 0.08, blen], C.wood, { shadow: false });
   for (let k = 0; k <= 6; k++) for (const s of [-1, 1]) level.box([B.x + s * (bd / 2 - 0.12), (B.h - 0.08) / 2, B.z0 + 0.15 + (k * (blen - 0.3)) / 6], [0.1, B.h - 0.08, 0.1], C.dark, { shadow: false });
@@ -147,11 +147,11 @@ export function statusBenchSpots() {
   return STATUS_BENCH_ORDER.slice(0, B.n).map((status, i) => ({ status, x: B.x, y: B.h, z: B.z1 - 0.6 - (i * (blen - 1.2)) / (B.n - 1) }));
 }
 
-/** The arcade, the hall and its stations (from buildTestRoom, in place of the room's south wall). */
+/** The arcade, the hall and its stations (from buildThrowingRoom, in place of the room's south wall). */
 export function buildCombatWing(level) {
   buildArcade(level);
   buildHall(level);
-  const group = new THREE.Group(); group.name = 'combat-wing'; group.userData.zone = 'testroom';
+  const group = new THREE.Group(); group.name = 'combat-wing'; group.userData.zone = 'throwingRoom';
   for (const m of buildStations(level)) group.add(m);
   level.scene.add(group);
   return group;

@@ -15,7 +15,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { IMPACT, impactOf, panicOf } from '../progress/sandbox.js';
-import { isTraining } from '../progress/combat/testroom.js';
+import { isTraining } from '../progress/combat/throwingroom.js';
 
 const _c = new THREE.Vector3(), _d = new THREE.Vector3();
 const NEAR = 8; // (m: within this of the Courier, a flying thing is theirs: a kick, a carry's throw)

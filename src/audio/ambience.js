@@ -15,7 +15,7 @@
 // nothing falls: the rain and the wind are heard muffled through it, the sky's own sounds not at all; down a Well (deep) the Well's music
 // is the place's mood and the sound beds rest. An agate sky (a second mood under the first: progress/weather.js) plays both sound beds by
 // their shares. Under the title, the pause menu, the Codex, the Index, the map and the workbench everything rests (and the fog lifts).
-// On the rail, the ship's Umbral form (game.emocean.form === 'umbral') puts the world and the music under the crude (sfx.setUnder,
+// On the rail, the ship's Umbral form (game.rail.form === 'umbral') puts the world and the music under the crude (sfx.setUnder,
 // game.music.setUnder) and the crossing of the surface splashes (sfx.railSurface).
 // The held and dropped tones (the glass, the glow, the sunshower, the far bell) are keyed to what is playing (game.music.grid().root). And the mood and the night are handed to the music (music/player.js setMood, setNight).
 //
@@ -77,7 +77,7 @@ export class Ambience {
     if (!sfx.ok?.()) return;
     if (!this.bus) this.build();
     const g = this.game, W = this.want, c = sfx.ctx, t = c.currentTime;
-    const under = !!(g.emocean?.stage?.active && g.emocean.form === 'umbral'); // (the rail's Umbral form: everything heard through the crude)
+    const under = !!(g.rail?.stage?.active && g.rail.form === 'umbral'); // (the rail's Umbral form: everything heard through the crude)
     sfx.setCavern?.(g.raceway?.active && g.raceway.line === 'cavern'); // (the Raceway's cavern: everything rings off stone, audio/raceway.js)
     if (under !== !!this.under) { sfx.railSurface?.(under); this.under = under; sfx.setUnder?.(under); g.music?.setUnder?.(under); }
     const quiet = this.menusUp(); sfx.quietLoops?.(quiet); // (the held loops too: the skiff's run held its level under the pause menu, the owner's v198)

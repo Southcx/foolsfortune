@@ -45,7 +45,7 @@ export class MusicPlayer {
     this.mood = { aspect, strength, second, secondStrength, cancelled }; this.arr.layer = moodLayer(aspect, strength, second, secondStrength);
   }
   /** The night: the drums and the bass back, the leads a little softer (every cue the arranger plays). */
-  /** The ship under the crude (the rail's Umbral form, audio/ambience.js reads game.emocean.form): the music heard through it. */
+  /** The ship under the crude (the rail's Umbral form, audio/ambience.js reads game.rail.form): the music heard through it. */
   setUnder(on) { this.arr.setUnder(on); }
   setNight(on) { this.night = !!on; this.arr.thin = on ? { hit: 0.55, bass: 0.7, rest: 0.88 } : null; }
   /** The scale to play along in, five semitones from the grid's root: the scale of the bar sounding now (a score or section may name its

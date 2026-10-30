@@ -2,7 +2,7 @@
 // THE THROWING ROOM: a side room off the Workshop's east wall where aim and recoil are measured and Strawman stands (the owner, 2026-10-06:
 // "pots should respawn only if in a designated testing area... move the target plates away from the Kiln to a side room, lump Strawman in
 // there too... make it a whole thing with the calibration room/Index as a means of testing aim and recoil"). What it measures and counts
-// is Dovina's (progress/combat/testroom.js: DRILLS, POTS, WALL, INDEX; Strawman's STRAWMAN and bout() in progress/combat/dunemaw.js); its
+// is Dovina's (progress/combat/throwingroom.js: DRILLS, POTS, WALL, INDEX; Strawman's STRAWMAN and bout() in progress/combat/dunemaw.js); its
 // look is Calissa's (the targets, the wall, Strawman's model: vfx/strawman.js); this is the place and its bodies.
 //
 // The room is 20 by 16 m through a door in the Workshop's east wall: the firing mark a few steps in, the spray wall of soft clay 10 m down
@@ -10,13 +10,13 @@
 // combat wing's sparring circle (combatwing.js), the twelve pots that come back on a shelf by the door, and the Index's console beside it
 // (F: the room's page, feedback/indexmenu.js). It measures and
 // never pays: its pots and Strawman are `training` (the ledger never hears them: tracking.js), and a drill run on a tuned game is said but
-// not recorded (feedback/tracking/testroom.js).
+// not recorded (feedback/tracking/throwingroom.js).
 //
 // Prior art: Apex Legends' firing range and Valorant's range (one room for every test, set from a console in it), Counter-Strike's spray
 // practice (a wall that keeps where every shot went), Aim Lab's drills (drills.js), a fighting game's training mode (Strawman).
 //
-//   buildTestRoom(level) -> the static room (called from level.build; its colliders merged with the Workshop's)   TR (the measures)
-//   game.testroom = new TestRoom(game)   .update(dt, raw)   .inRoom(p)   .drills (drills.js)   .strawman (the creature)   .wall   .console (the Index's lectern, a group)
+//   buildThrowingRoom(level) -> the static room (called from level.build; its colliders merged with the Workshop's)   TR (the measures)
+//   game.throwingRoom = new ThrowingRoom(game)   .update(dt, raw)   .inRoom(p)   .drills (drills.js)   .strawman (the creature)   .wall   .console (the Index's lectern, a group)
 //   .statusBench (statusbench.js: the eleven roly-polies, each a status, and the bench's lectern)
 //   .paintRange (paintrange.js: the floor rings at 3, 6 and 9 m)
 //   the combat wing (combatwing.js, TR.wing): through the arcade in the south wall, Strawman's sparring circle and the other stations
@@ -28,7 +28,7 @@
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../../core/physics.js';
 import { PALETTE } from '../../core/config.js';
-import { POTS, WALL } from '../../progress/combat/testroom.js';
+import { POTS, WALL } from '../../progress/combat/throwingroom.js';
 import { STRAWMAN, bout } from '../../progress/combat/dunemaw.js';
 import { StrawmanModel } from '../../vfx/strawman.js';
 import { PaintRange } from './paintrange.js';
@@ -44,7 +44,7 @@ const GUARD_OPEN = 1.0; // (sim s Strawman's guard stays open after a guard brea
 
 
 /** The static room: floor, walls, roof, beams, the lane and the mark, the clay wall, the shelf. Returns the wall's collider. */
-export function buildTestRoom(level) {
+export function buildThrowingRoom(level) {
   const C = PALETTE, { x0, x1, z0, z1, h } = TR, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, w = x1 - x0, d = z1 - z0;
   const shell = { outline: false, shadow: false };
   level.box([cx, -0.25, cz], [w, 0.5, d], C.floor, { outline: false }); // (a floor has no outline: the hull's top lay in the floor's own plane and fought it for the pixels, the owner's R45 report; the Workshop's slabs, basement.js groundFloor, are the same)
@@ -92,7 +92,7 @@ const POT_SPOTS = (() => {
   return out.slice(0, POTS.count);
 })();
 
-export class TestRoom {
+export class ThrowingRoom {
   constructor(game, built) {
     this.game = game;
     const g = game;
@@ -107,7 +107,7 @@ export class TestRoom {
     this.paintRange = new PaintRange(g); // (the floor rings at 3, 6 and 9 m: painting at range, paintrange.js)
     this.statusBench = new StatusBench(g); // (the combat wing's status bench: eleven roly-polies, each a status: statusbench.js)
     // F: the console opens the Index on its page (Strawman's stance is the sparring circle's lectern's: strawmanstrings.js)
-    g.interact?.add('testroom.index', (P) => {
+    g.interact?.add('throwingRoom.index', (P) => {
       const dd = Math.hypot(P.pos.x - TR.console.x, P.pos.z - TR.console.z);
       return dd < 1.8 && Math.abs(P.pos.y - TR.console.y) < 1.2 ? { pos: TR.console.clone().setY(1.75), d: dd } : null;
     });
@@ -126,7 +126,7 @@ export class TestRoom {
     const face = new THREE.Mesh(new THREE.PlaneGeometry(0.55, 0.36), new THREE.MeshBasicMaterial({ color: PALETTE.glow }));
     face.position.set(0, 1.13, 0.02); face.rotation.x = -Math.PI / 2 - 0.35; grp.add(face); // (lying on the slanted top)
     grp.position.copy(TR.console); grp.rotation.y = Math.PI / 2; // (facing into the room: +x)
-    g.scene.add(grp); this.console = grp; // (Calissa dresses it: vfx/testroomkit.js)
+    g.scene.add(grp); this.console = grp; // (Calissa dresses it: vfx/throwingroomkit.js)
     const col = g.physics.world.createCollider(RAPIER.ColliderDesc.cuboid(0.3, 0.55, 0.3).setTranslation(TR.console.x, 0.55, TR.console.z).setCollisionGroups(GROUPS.static));
     this.consoleCol = col;
   }
@@ -191,7 +191,7 @@ export class TestRoom {
     const g = this.game, P = g.player;
     this.strawman.tick(dt, raw);
     this.statusBench.update(dt);
-    if (g.interact?.cur?.id === 'testroom.index' && P.peekLatch?.('KeyF')) { P.latch('KeyF'); g.course?.menu?.showPage?.('the Throwing Room', (im, el) => this.drills.page(im, el)); }
+    if (g.interact?.cur?.id === 'throwingRoom.index' && P.peekLatch?.('KeyF')) { P.latch('KeyF'); g.course?.menu?.showPage?.('the Throwing Room', (im, el) => this.drills.page(im, el)); }
     this.drills.update(dt, raw);
   }
 }

@@ -30,7 +30,7 @@ function windingUp(g) {
 export const LIVE = [
   ['race', (g) => g.race?.running || g.cityTrial?.on], // (a race of any ruleset, and the City Trial's roam: world/raceway/)
   ['trial', (g) => g.trial?.running || g.solar?.running], // (the workshop's course trial, the Solar Skiffing trial)
-  ['crossing', (g) => g.emocean?.stage?.active], // (a stage of the Emocean sailed)
+  ['crossing', (g) => g.rail?.stage?.active], // (a stage of the Emocean sailed)
   ['duel', (g) => g.duel?.active], // (a puzzle duel)
   ['rhythm', (g) => g.rhythm?.active], // (the rhythm mode, and busking)
   ['sea fight', (g) => g.seaFight?.serpent], // (a sea serpent alive on the open sea)

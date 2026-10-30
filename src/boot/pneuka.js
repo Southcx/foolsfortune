@@ -78,7 +78,7 @@ export function bootPneuka(game, made) {
   const modalOpen = () => !!(game.codex?.open || game.indexMenu?.open || game.cartography?.open || game.pneukaUI?.open || game.shopUI?.open || game.qais?.open || game.settingsWindow?.isOpen || game.hudLayout?.turnHeld); // (and the settings window; and the turn card: an action mode held upright on a phone, ui/turncard.js)
   // Any window or cover at all: a window that pauses, the kiln's, the dialogue box, a seam or the maw wipe under way, a crossing, a
   // reprogramming, the Opening. A window opens only when none is (or to close itself): one window at a time (SWEEPS group 2).
-  const windowOpen = () => modalOpen() || !!(game.kilnUI?.open || game.dialogue?.open || game.seam?.busy || game.mawWipe?.active || game.aberrantWipe?.active || game.areaWipe?.active || game.emocean?.stage.active || game.reprogram?.open || game.lockheartCine?.active);
+  const windowOpen = () => modalOpen() || !!(game.kilnUI?.open || game.dialogue?.open || game.seam?.busy || game.mawWipe?.active || game.aberrantWipe?.active || game.areaWipe?.active || game.rail?.stage.active || game.reprogram?.open || game.lockheartCine?.active);
   // an Esc pressed while a window is open is that window's (it closes it): marked before any window's own handler runs (capture), so the
   // pointer's unlock it may bring is not read as you leaving (onLockChange: casebook 125)
   input.escSpends = () => modalOpen() || !!game.kilnUI?.open || !!game.dialogue?.open; // (marked by core/input.js's listener, the first registered)

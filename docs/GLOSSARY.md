@@ -461,7 +461,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   Well, the barrier, the ruins. → detail
 - **the shore** (`game.dunes.beach`, `src/world/dunes/beach.js`) — due east of the oasis, where the Dunes run down to the Emocean: the waterline
   and the jetty. *Not:* the Weir's pier, or "the bridge" (say the span). → detail
-- **the Throwing Room** (`src/progress/combat/testroom.js`) — a side room off the Workshop where aim and recoil are measured, never earned:
+- **the Throwing Room** (`src/progress/combat/throwingroom.js`) — a side room off the Workshop where aim and recoil are measured, never earned:
   targets, Strawman, the spray wall, the drills. *Not:* a trial, a playtest, the stress test. → detail
 - **the Gnomon** (`world/dunes/solar.js`) — the pale spire in the Dunes, the sundial's shadow-stick for the whole Dunes; it keeps game hours, and
   the Solar Skiffing trial is begun at its foot.
@@ -537,7 +537,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   "level". → detail
 - **the crossing** (`progress/rail/crossing.js`) — a stage as it plays, 100 bars of the cue, in acts held in a view (chase, above, side, free,
   astern); a swing is the change of view. → detail
-- **the rail** (`world/emocean/stage.js`, `game.emocean`) — the crossing as it is sailed: a straight line in a zone of its own, everything that
+- **the rail** (`world/emocean/stage.js`, `game.rail`) — the crossing as it is sailed: a straight line in a zone of its own, everything that
   fights kept in the rail's frame. *Not:* a rail you grind. → detail
 - **plain shot / outlined shot** (`courier/ship/shots.js`) — a foe's shot at sea: a plain one is absorbed or hurts; an outlined one wears the
   parry mark and only the parry answers it.

@@ -27,8 +27,8 @@ import { sfx } from '../audio/sfx.js';
 import { addOutline } from '../render/outline.js';
 import { PROFILES, prepProfile } from './props/pottery.js';
 import { stream } from '../core/rng.js';
-import { TR } from './testroom/layout.js';
-import { buildTestRoom } from './testroom/room.js';
+import { TR } from './throwingroom/layout.js';
+import { buildThrowingRoom } from './throwingroom/room.js';
 const simRand = stream('world/level'); // (the simulation's chance: core/rng.js, the same twice)
 
 /** Flat panes of one look (windows, skylights) as one mesh: their geometry already placed, merged and disposed. */
@@ -155,7 +155,7 @@ export class Level {
     groundFloor(this, W, D, C.floor); // (with the basement hole cut out)
     this.box([0, H + 0.25, 0], [W * 2 + 1, 0.5, D * 2 + 1], C.deep, wall);
     this.box([-(W + 0.25), H / 2, 0], [0.5, H, D * 2 + 1], C.wall, wall);
-    // (the east wall has the Throwing Room's door in it: world/testroom/)
+    // (the east wall has the Throwing Room's door in it: world/throwingroom/)
     { const dz0 = TR.door.z0, dz1 = TR.door.z1, s0 = -(D + 0.5), s1 = D + 0.5;
       this.box([W + 0.25, H / 2, (s0 + dz0) / 2], [0.5, H, dz0 - s0], C.wall, wall);
       this.box([W + 0.25, H / 2, (dz1 + s1) / 2], [0.5, H, s1 - dz1], C.wall, wall);
@@ -210,7 +210,7 @@ export class Level {
     this.buildMezzanine();
     this.buildPlatform();
     this.buildKiln();
-    this.testRoom = buildTestRoom(this); // (before the range: its posts stand in it)
+    this.throwingRoom = buildThrowingRoom(this); // (before the range: its posts stand in it)
     this.buildRange();
     this.buildUpperFloor();
     this.buildFeatures();
@@ -475,7 +475,7 @@ export class Level {
   buildRange() {
     const C = PALETTE;
     this.targetDefs = [];
-    // (the targets stand in the Throwing Room now, not by the kiln: the owner, 2026-10-06; world/testroom/)
+    // (the targets stand in the Throwing Room now, not by the kiln: the owner, 2026-10-06; world/throwingroom/)
     for (const [x, z, h] of TR.posts) {
       this.box([x, h / 2, z], [0.08, h, 0.08], C.dark);
       this.box([x, 0.04, z], [0.5, 0.08, 0.5], C.dark);

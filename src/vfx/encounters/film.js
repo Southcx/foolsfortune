@@ -22,7 +22,7 @@ const _v = new THREE.Vector3(), _d = new THREE.Vector3();
 export class EncounterFilm {
   constructor(game) { this.game = game; this.tableaux = new Map(); this.live = null; }
 
-  get stage() { return this.game.emocean; }
+  get stage() { return this.game.rail; }
 
   /** A tableau for an encounter (and the hull it is met in: the Glass's double is your own), built once and kept. */
   tableau(id, { hull = 'sloop', feel = null } = {}) {

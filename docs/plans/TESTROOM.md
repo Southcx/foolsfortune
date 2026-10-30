@@ -1,7 +1,7 @@
 # The Throwing Room: aim, recoil and Strawman, in one side room (the owner, 2026-10-06)
 
-Kept by Dovina. **Built:** the room `src/world/testroom/`, the data `src/progress/combat/testroom.js` (DRILLS and their medals, POTS,
-WALL, INDEX), Strawman's `STRAWMAN` and `bout` in `src/progress/combat/dunemaw.js`, the rules `src/feedback/tracking/testroom.js` and
+Kept by Dovina. **Built:** the room `src/world/throwingroom/`, the data `src/progress/combat/throwingroom.js` (DRILLS and their medals, POTS,
+WALL, INDEX), Strawman's `STRAWMAN` and `bout` in `src/progress/combat/dunemaw.js`, the rules `src/feedback/tracking/throwingroom.js` and
 `dunemaw.js`, achievements tx1 to tx4 (BATTLE, The Throwing Room). The name is a placeholder for Espada's.
 
 > "pots should respawn only if in a designated testing area, not the whole workshop. Let's also move the target plates away from the

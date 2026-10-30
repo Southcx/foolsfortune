@@ -36,8 +36,8 @@ export class Actions {
     else if (g.realm?.active) L.add('garden'); // (the garden's own hand: world/garden/hand.js)
     else if (g.duel?.active) L.add('duel'); // (the duel's board has the keys: world/duel/duelsession.js)
     else if (g.god?.active) L.add('godhand');
-    else if (g.emocean?.stage?.active) L.add('rail'); // (the crossing: the ship on the stick, the sweep on the look area, core/touchtools.js)
-    else if (!g.emocean?.active) {
+    else if (g.rail?.stage?.active) L.add('rail'); // (the crossing: the ship on the stick, the sweep on the look area, core/touchtools.js)
+    else if (!g.rail?.active) {
       if (g.opensea?.sailing) L.add('helm'); // (the open sea's free helm: the stick the rudder, W / S the throttle's taps; not on foot, so no foot tile shows there)
       else {
         L.add('foot'); const t = g.belt?.inHand; if (t) L.add(toolCtx(t));

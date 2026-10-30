@@ -51,7 +51,7 @@ try {
     const W = G.game.well; W.enter(); W.goTo(3); run(60); snap('well');
     const Gm = G.game, Rm = Gm.realm;
     if (Rm) { Rm.enter(Gm.shrines?.get?.(Gm.shrines.last) || null); run(220); Gm.indexMenu?.close?.(); run(30); snap('garden'); Rm.leave(); run(120); }
-    const E = Gm.emocean;
+    const E = Gm.rail;
     if (E?.sailShowcase?.('anagami', [])) {
       for (let i = 0; i < 240 && !E.stage.active; i++) G.tick(1 / 60);
       E.wound = () => {};

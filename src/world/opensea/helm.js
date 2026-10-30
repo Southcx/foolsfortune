@@ -78,8 +78,8 @@ export class Helm {
 
   /** The ship on the drawn sea: its height and its pitch and roll from the water under bow, stern and beam. */
   pose(dt) {
-    const g = this.game, sea = g.emocean?.sea, L = this.look.length ?? 7, B = this.look.beam ?? 2.4;
-    this.t += dt; this.seaT = g.emocean?.seaT ?? this.t;
+    const g = this.game, sea = g.rail?.sea, L = this.look.length ?? 7, B = this.look.beam ?? 2.4;
+    this.t += dt; this.seaT = g.rail?.seaT ?? this.t;
     const h = (x, z) => (sea ? sea.heightAt(x, z, this.seaT) : this.pos.y);
     const fx = Math.sin(this.yaw), fz = Math.cos(this.yaw);
     const y = h(this.pos.x, this.pos.z), bow = h(this.pos.x + fx * L * 0.5, this.pos.z + fz * L * 0.5), stern = h(this.pos.x - fx * L * 0.5, this.pos.z - fz * L * 0.5);

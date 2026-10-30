@@ -30,8 +30,8 @@ const r = await g.page.evaluate(async () => {
 await g.step(300);
 const r2 = await g.page.evaluate(async ({ from, to }) => {
   const G = __game.game, V = G.voyage, P = G.pier, out = {};
-  out.active = G.emocean.stage.active;
-  G.emocean.t = 360; G.emocean.finish(true); // (six real minutes sailed: PASSAGE.md 6's table)
+  out.active = G.rail.stage.active;
+  G.rail.t = 360; G.rail.finish(true); // (six real minutes sailed: PASSAGE.md 6's table)
   return out; }, { from: r.from, to: r.to });
 await g.step(200);
 const r3 = await g.page.evaluate(({ from, to }) => {

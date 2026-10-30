@@ -11,7 +11,7 @@ const S = await open('opensea');
 const st = () => S.ev(() => { const g = __game.game, O = g.opensea, P = g.player, H = O?.helm, v = O?.voyage;
   return { zone: g.zones?.current, sailing: !!O?.sailing, moored: O?.moored || null, hidden: !!g.character?.hidden, p: [P.pos.x, P.pos.y, P.pos.z].map((n) => +n.toFixed(1)),
     ship: H ? [H.pos.x, H.pos.y, H.pos.z].map((n) => +n.toFixed(1)) : null, speed: H ? +H.speed.toFixed(2) : null, fuel: v ? +v.fuel.toFixed(2) : null, at: v?.at, charted: v?.charted.size,
-    nan: !Number.isFinite(P.pos.x + P.pos.y + P.pos.z), seaShown: !!g.emocean?.sea?.mesh.visible, cam: [__game.camera.position.x, __game.camera.position.y].map((n) => +n.toFixed(1)) }; });
+    nan: !Number.isFinite(P.pos.x + P.pos.y + P.pos.z), seaShown: !!g.rail?.sea?.mesh.visible, cam: [__game.camera.position.x, __game.camera.position.y].map((n) => +n.toFixed(1)) }; });
 
 await S.go('opensea'); await S.ticks(30);
 let s = await st();

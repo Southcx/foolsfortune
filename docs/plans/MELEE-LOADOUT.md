@@ -57,7 +57,7 @@ front kick, the off hand's foot; c4), **Low Sweep** (swordHeavy's low cut; c3), 
 (the uppercut with the blade, a launch; Quick Slash), **Guard Crush** (a planted thrust through a guard; the stinger), **Backstep Slash**
 (c3's hop taken 1.14 m back, for S + RMB; c3). No clip authored. The engine gained what they needed (`tools/moveset.js`): a row's own
 `stats` where moves.js names none, a move's own `reach`, `ribbon: false`, a typed `step` (forward or back), and `hit.guardBreak` (the
-thing struck asked `breakGuard()` first: Strawman's guard thrown open 1.0 s of the sim clock, `world/testroom/room.js` and `vfx/strawman.js`).
+thing struck asked `breakGuard()` first: Strawman's guard thrown open 1.0 s of the sim clock, `world/throwingroom/room.js` and `vfx/strawman.js`).
 Dovina's row rule holds, measured against a slip jelly: every new normal in every slot within -2.9% and +2.2% of today's string (1.956
 power a real second, hit-stops in), the four slowest together -7.7%, every special -8.5% to +6.0%; the stinger, today's, is +780% (its
 lunge strikes 2.2 x its row: a finding for Dovina, unchanged). The default loadout is today's to the frame (phase 2's `string.mjs`, all

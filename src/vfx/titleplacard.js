@@ -673,7 +673,7 @@ export class TitlePlacard {
     const pm = new THREE.PMREMGenerator(this.r); this.env = pm.fromEquirectangular(t).texture; pm.dispose(); t.dispose(); return this.env;
   }
   /** The island's dress where the Courier stands (see the header); Clay when the game cannot tell. */
-  dressHere() { const g = this.game; if (g.emocean?.stage?.active) return 'brine'; return DRESS_OF_ZONE[g.zones?.whole] || 'clay'; }
+  dressHere() { const g = this.game; if (g.rail?.stage?.active) return 'brine'; return DRESS_OF_ZONE[g.zones?.whole] || 'clay'; }
 
   /** What the field carries: the title, its achievement's line (two at most), the ledger row, the running hand's words. */
   infoOf(e) {

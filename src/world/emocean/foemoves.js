@@ -92,7 +92,7 @@ const MOVES = {
       }
       f.glowing = false; f.glow = 0; t0 ??= t;
       out.copy(A).addScaledVector(dir, (t - t0) * speed);
-      if (!hit && W.ship && out.distanceTo(W.ship.local) < RAM_R + f.radius * 0.5) { hit = true; W.game.emocean?.blow?.(1, { by: 'creature', what: 'ram', rollable: true }); }
+      if (!hit && W.ship && out.distanceTo(W.ship.local) < RAM_R + f.radius * 0.5) { hit = true; W.game.rail?.blow?.(1, { by: 'creature', what: 'ram', rollable: true }); }
       return out.distanceTo(A) < 120; };
   },
   overtake(m, { P, side, view, W, f }) {

@@ -19,7 +19,7 @@ import { debugChestModel } from '../vfx/debugchest.js';
 import { makeMaterial } from '../progress/econ/materials.js';
 import { itemOf } from '../pneuka/items.js';
 import { MATS } from '../world/busk.js';
-import { TR } from '../world/testroom/layout.js';
+import { TR } from '../world/throwingroom/layout.js';
 import { zoneOf } from '../render/zonemap.js';
 
 /** Calissa's crate, casting no shadow (a debug crate is not the world's: and no depth program compiled in play for it). */
@@ -75,9 +75,9 @@ export class DebugChests {
       case 'jetty': { const B = g.dunes?.beach; const L = B?.landing?.(); if (!L) return null; const x = L.pos.x, z = L.pos.z - 2.6; return { pos: new THREE.Vector3(x, sand(x, z, L.pos.y), z), face: L.pos.clone().setX(L.pos.x + 4) }; } // (on the sand by the jetty's foot, facing the sea)
       case 'opensea.jetty': { const B = g.dunes?.beach; const L = B?.landing?.(); if (!L) return null; const x = L.pos.x + 2.4, z = L.pos.z - 2.6; return { pos: new THREE.Vector3(x, sand(x, z, L.pos.y), z), face: L.pos.clone().setX(L.pos.x + 4) }; } // (beside the jetty's own chest, a step along the sand: the open sea's islet puzzles' kit, Dovina's)
       case 'oasis.duel': return g.duelFoes?.chestSpot() ?? null; // (beside the test aberrant Lantern Wisp, by the Weir: world/duel/duelfoes.js)
-      case 'testroom.index': return g.testroom ? { pos: new THREE.Vector3(TR.console.x, 0, TR.console.z - 1.7), face: TR.console.clone() } : null;
-      case 'testroom.paintrange': { const S = g.testroom?.paintRange?.stand; return S ? { pos: S.pos.clone().add(new THREE.Vector3(-1.2, 0, 1.6)), face: S.pos.clone() } : null; } // (behind the stand mark, a step aside)
-      default: { const c = TR.wing?.chests?.[at]; return c && g.testroom ? { pos: new THREE.Vector3(c[0], 0, c[1]), face: new THREE.Vector3(c[2], 0, c[3]) } : null; } // (the combat wing's stations: world/testroom/layout.js TR.wing.chests)
+      case 'throwingRoom.index': return g.throwingRoom ? { pos: new THREE.Vector3(TR.console.x, 0, TR.console.z - 1.7), face: TR.console.clone() } : null;
+      case 'throwingRoom.paintrange': { const S = g.throwingRoom?.paintRange?.stand; return S ? { pos: S.pos.clone().add(new THREE.Vector3(-1.2, 0, 1.6)), face: S.pos.clone() } : null; } // (behind the stand mark, a step aside)
+      default: { const c = TR.wing?.chests?.[at]; return c && g.throwingRoom ? { pos: new THREE.Vector3(c[0], 0, c[1]), face: new THREE.Vector3(c[2], 0, c[3]) } : null; } // (the combat wing's stations: world/throwingroom/layout.js TR.wing.chests)
     }
   }
 

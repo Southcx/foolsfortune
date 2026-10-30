@@ -18,7 +18,7 @@ export class PaintRange {
     this.game = game;
     this.stand = { pos: STAND.clone(), yaw: Math.PI / 2 }; // (facing +x)
     const mat = new THREE.MeshBasicMaterial({ color: 0xf4efe6, transparent: true, opacity: 0.85, depthWrite: false });
-    this.group = new THREE.Group(); this.group.name = 'paint-range'; this.group.userData.zone = 'testroom';
+    this.group = new THREE.Group(); this.group.name = 'paint-range'; this.group.userData.zone = 'throwingRoom';
     const flat = (geo, x, z) => { const m = new THREE.Mesh(geo, mat); m.rotation.x = -Math.PI / 2; m.position.set(x, Y, z); m.renderOrder = 2; this.group.add(m); return m; };
     flat(new THREE.PlaneGeometry(0.7, 0.7), STAND.x, STAND.z); // (the stand mark: where the drill is measured from)
     this.rings = RANGES.map((m) => ({ m, pos: new THREE.Vector3(STAND.x + m, 0, STAND.z), r: R_OUT, mesh: flat(new THREE.RingGeometry(R_IN, R_OUT, 40), STAND.x + m, STAND.z) }));

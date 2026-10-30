@@ -49,7 +49,7 @@ export class Mooring {
 
   update(raw) {
     const g = this.game, P = g.pier, me = g.player?.pos; this.t += raw;
-    if (!P || !me || g.emocean?.stage.active) { this.away(); return; }
+    if (!P || !me || g.rail?.stage.active) { this.away(); return; }
     let best = null, bd = NEAR;
     for (const [island, at] of P.piers) { const j = at(); if (!j) continue; const d = Math.hypot(j.end.x - me.x, j.end.z - me.z); if (d < bd) { bd = d; best = { island, j }; } }
     if (!best) { this.away(); return; }
@@ -61,7 +61,7 @@ export class Mooring {
     const { j, island } = best, yaw = j.yaw ?? 0, out = _f.set(-Math.sin(yaw), 0, -Math.cos(yaw)), side = _r.set(out.z, 0, -out.x);
     const sea = j.top - (DECK[island] ?? 1.3), half = (s.beam ?? 2.4) / 2;
     this.at.copy(j.end).addScaledVector(out, (s.length ?? 7) / 2 - STERN).addScaledVector(side, 1.6 + half + SIDE); this.at.y = sea; // (its stern STERN m inland of the pier's end, the rest out to sea: a hull of any length lies along the pier, never up the beach)
-    const crude = g.emocean?.sea?.mesh?.visible ? g.emocean.sea : null, t = this.t;
+    const crude = g.rail?.sea?.mesh?.visible ? g.rail.sea : null, t = this.t;
     const bob = crude ? crude.heightAt(this.at.x, this.at.z) - crude.y : 0.12 * Math.sin(t * 0.8); // (heightAt is the world's, the crude's own y in it)
     s.group.position.set(this.at.x, sea + bob * 0.7, this.at.z);
     s.group.rotation.set(0.025 * Math.sin(t * 0.6), Math.atan2(out.x, out.z), 0.035 * Math.sin(t * 0.45 + 1), 'YXZ');

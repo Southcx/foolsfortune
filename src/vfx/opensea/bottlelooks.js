@@ -73,7 +73,7 @@ export class BottleLooks {
     const P = this.game.opensea?.pieces;
     if (P && this.dressed !== P) { this.dress(P); this.dressed = P; }
     if (!P) this.dressed = null;
-    const cam = this.game.camera, sea = this.game.emocean?.sea, seaT = this.game.emocean?.seaT ?? this.t;
+    const cam = this.game.camera, sea = this.game.rail?.sea, seaT = this.game.rail?.seaT ?? this.t;
     if (P && this.game.opensea?.active) for (const B of P.bottles || []) if (B.mesh.visible) this.bob(B, sea, seaT, cam);
     for (let i = this.reads.length - 1; i >= 0; i--) if (!this.reading(this.reads[i], dt, cam)) this.reads.splice(i, 1);
   }

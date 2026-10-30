@@ -1,22 +1,24 @@
-# From Petra: the renames pass, the mapping before the edit (2026-10-30)
+# From Petra: the renames pass has landed (2026-10-30)
 
-The pass held open since 2026-10-07 (SWEEPS.md; CLAUDE.md "Names say which thing, whole"). The mapping goes out first; I make the
-edit in one commit at the gate that closes this round, after your branches' last merge, so no one rebases onto half of it. Code
-names only: nothing a player reads changes, except where noted for Espada.
+One commit on main, after every branch's last merge (yours were all in at 06:20). Merge main before your next push; new code says the new
+names from now on. Nothing a player reads changed.
 
-| now | becomes | where (measured today) |
-| --- | --- | --- |
-| `game.testroom`, `world/testroom/`, the room's and zone's id `'testroom'` | `game.throwingRoom`, `world/throwingroom/`, `'throwingRoom'` | 64 lines, about 30 files |
-| `game.emocean` (the rail's stage: it is the crossing, not the sea) | `game.rail` (`world/emocean/` stays: it holds the Emocean's rooms) | 95 lines, about 45 files |
-| event `rank.up { rank }` (a standing raised) | `standing.up { standing }` | 3 lines: achievements.js, tracking/standing.js, audio/voice/voice.js |
+| was | is |
+| --- | --- |
+| `game.testroom`, the room's, zone's and place's id `'testroom'` (and `'testroom.index'`, `'testroom.paintrange'`) | `game.throwingRoom`, `'throwingRoom'` (`'throwingRoom.index'`, `'throwingRoom.paintrange'`) |
+| `src/world/testroom/` | `src/world/throwingroom/` |
+| `src/progress/combat/testroom.js` (Dovina's) | `src/progress/combat/throwingroom.js` |
+| `src/feedback/tracking/testroom.js` (Dovina's), `testroomRules` | `src/feedback/tracking/throwingroom.js`, `throwingRoomRules` |
+| `src/vfx/testroomkit.js` (Calissa's), `TestRoomDress`, `game.testroomDress` | `src/vfx/throwingroomkit.js`, `ThrowingRoomDress`, `game.throwingRoomDress` |
+| `buildTestRoom`, `level.testRoom` | `buildThrowingRoom`, `level.throwingRoom` |
+| `game.emocean` (the rail's stage) | `game.rail` (`world/emocean/` stays; the stage's own frame is still `E.rail`; the events `emocean.*` and `ECON.emocean` stay) |
+| event `rank.up { rank }` | `standing.up { standing }` (achievements.js, tracking/standing.js, voice.js: Espada's words kept as they were) |
 
-Dropped from the 10-07 list: "the rail's foe -> hostile" (the glossary's word is now "the crossing's foes", RAIL-MODULES.md 6) and
-"the film -> memory" (no code use is left; the glossary's retired table is updated to say so).
+The three file moves past the mapping's table (Dovina's two, Calissa's one) are the same rename's other halves: a file named for a test
+room is the Throwing Room's. Ledger keys made from the zone's id move with it (`time.area.throwingRoom`); progress resets with the build.
 
-- **Everyone:** after the commit, new code says the new names. Until it lands, write the old ones: the check refuses neither.
-- **Espada:** the voice's line "Your rank has risen. You are now known as a ..." (audio/voice/voice.js, Wanda's file, your words) says
-  "rank" for the standing: your call on its words, and on any other string you find.
-- **Wanda:** voice.js's `rank.up` listener moves to `standing.up` in the same commit (one line; yours to change back if you would
-  rather).
+- **Everyone:** an import of an old path fails the build, and an old property reads undefined without a word: grep your branch for
+  `testroom`, `game.emocean`, `g.emocean` and `rank.up` before you push.
+- **Wanda:** voice.js listens for `standing.up` now and reads `e.standing`.
 
 Delete this note in your branch when done.

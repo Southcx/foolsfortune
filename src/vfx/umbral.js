@@ -107,7 +107,7 @@ export class Umbral {
     this.ringU = { uT: { value: 0 } };
   }
   get scene() { return this.scene0 || this.game.scene; }
-  get sea() { return this.sea0 || this.game.emocean?.sea || null; }
+  get sea() { return this.sea0 || this.game.rail?.sea || null; }
   get vfx() { return this.vfx0 || this.game.vfx || null; }
 
   /** The look's side of the surface: a number steers it (the runtime's form), null hands it back to the eye. */
@@ -150,7 +150,7 @@ export class Umbral {
    *  and the veil's share written. */
   update(raw = 1 / 60, camera = this.game.camera) {
     this.t += raw;
-    const sea = this.sea, inSea = sea?.mesh?.visible !== false && (this.anywhere || this.game.emocean?.stage?.active || this.game.emocean?.seaAshore);
+    const sea = this.sea, inSea = sea?.mesh?.visible !== false && (this.anywhere || this.game.rail?.stage?.active || this.game.rail?.seaAshore);
     let d = Infinity;
     if (sea && camera && inSea) d = camera.position.y - surf(sea, camera.position.x, camera.position.z);
     const eye = d < 0 ? 1 : 0;

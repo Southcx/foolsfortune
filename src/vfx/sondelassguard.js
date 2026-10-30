@@ -126,7 +126,7 @@ export class SondelassGuard {
   update(dt, slot) {
     const g = this.game, root = this.root, B = document.body.classList, tool = this.tool();
     const standing = (this.standing = !!tool);
-    const allowed = standing && !g.title?.active && !g.emocean?.stage?.active && !B.contains('cine') && !B.contains('bztable-seated');
+    const allowed = standing && !g.title?.active && !g.rail?.stage?.active && !B.contains('cine') && !B.contains('bztable-seated');
     this.a = C01(this.a + (allowed ? dt / 0.22 : -dt / 0.16));
     if (!allowed && this.a <= 0) return this.hide();
     this.t += dt; this.X.t = this.t;

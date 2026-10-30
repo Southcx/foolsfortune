@@ -76,7 +76,7 @@ for (const f of files) {
   for (const [name, kind] of Object.entries(wrap)) for (const m of s.matchAll(new RegExp(`(?<![\\w.])${name}\\(`, 'g'))) note(kind, firstArg(s, m.index + m[0].length - 1), f, m.index);
 }
 // writes that name a table instead of a literal, resolved by importing the table (the drills' KEYS, the stelae's ids)
-const { DRILLS, KEYS } = await import('../src/progress/combat/testroom.js');
+const { DRILLS, KEYS } = await import('../src/progress/combat/throwingroom.js');
 const { STELAE } = await import('../src/progress/ostraca.js');
 const RESOLVE = [
   [/KEYS\.runs/, () => Object.keys(DRILLS).map(KEYS.runs)], [/KEYS\.best/, () => Object.keys(DRILLS).map(KEYS.best)],

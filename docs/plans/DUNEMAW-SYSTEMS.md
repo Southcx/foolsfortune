@@ -2,7 +2,7 @@
 
 Dovina's answers to Calissa's seeds (`DUNEMAW.md`, `DUNES.md`, `STRAWMAN.md`). **Built:** the numbers are data in
 `src/progress/combat/dunemaw.js`, which says why; the bodies are `src/world/well/` (`nursery.js`, `finds.js`, `bowl.js`,
-`dunemaw.js`), `src/world/dunes/solar.js` and `src/world/testroom/room.js`. Units: blows of power 1 (a slip jelly bursts at 8), sim
+`dunemaw.js`), `src/world/dunes/solar.js` and `src/world/throwingroom/room.js`. Units: blows of power 1 (a slip jelly bursts at 8), sim
 seconds, real seconds, minutes of play. Balance is placeholder (the owner, R58): what matters is that each part feeds the others.
 
 **The fun check:** the fight must not be a sponge. The crown answers to reading, not volume: the urn is a pot, and only what breaks pots

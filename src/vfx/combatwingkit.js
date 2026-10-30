@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE COMBAT WING'S LOOK: what the Throwing Room's combat wing wears (docs/plans/COMBAT-LAB.md; the place and its measures are
-// world/testroom/combatwing.js and layout.js TR.wing). The wing is the Workshop's practice yard under a roof, so it is the potters' too:
-// tamped clay, straw, cream slip, oxblood, the Workshop's dark wood, and the paint range's quarry tiles (vfx/testroomkit.js) for every
+// world/throwingroom/combatwing.js and layout.js TR.wing). The wing is the Workshop's practice yard under a roof, so it is the potters' too:
+// tamped clay, straw, cream slip, oxblood, the Workshop's dark wood, and the paint range's quarry tiles (vfx/throwingroomkit.js) for every
 // mark the feet stand on. One look: a potter's yard where a scarecrow is sparred with.
 //
 //   THE SPARRING CIRCLE  a disc of tamped clay ringed by straw bales sunk to their middles, the four at the quarters set out a hand
@@ -12,7 +12,7 @@
 //                    Fighter 6's). (Behind Strawman first, its body hid the strip from the striker's place.)
 //   THE MIRROR       a long glass on the west wall in a dark wood frame, a dance studio's: silvered grey with the cartoon mirror's
 //                    glints, its dull glass while the Courier is outside the bales; inside them it reflects (vfx/sparringmirror.js)
-//   THE LECTERNS     each station's reading desk, the Index's lectern's shape (vfx/testroomkit.js) with its book shut: a stand-in until
+//   THE LECTERNS     each station's reading desk, the Index's lectern's shape (vfx/throwingroomkit.js) with its book shut: a stand-in until
 //                    its page is built (no projection, no glow: nothing promised that does not answer)
 //   THE STATUS PLAQUES fired tiles hung on the status bench's front under each roly-poly, as labels on a shelf, each with its
 //                    status's glyph (the Figment attack telegraphs' own pictures, ui/icons/figmenttelegraphart.js STATUS_ART, in the icons'
@@ -20,13 +20,13 @@
 //   THE STAND-INS    the parry range's pitcher (a big clay jug on a plinth, its spout toward the marks), the Figment telegraph floor's
 //                    caster (a tall urn on a turntable): static bodies where the mechanic is not built
 //   THE ROLY-POLIES  the status bench's eleven (Strawman's kin, a Daruma's shape in burlap on a black ball foot), alive: each rocks on
-//                    its ball when struck and wears its status (world/testroom/statusbench.js); the lit one warms from within
+//                    its ball when struck and wears its status (world/throwingroom/statusbench.js); the lit one warms from within
 //
 // Prior art: the sumo dohyo (clay and straw, the ring as the rule), the dance studio's mirror wall and the fencing salle's strip, the
 // fighting games' training stage (Tekken's and Street Fighter's grid floors, a frame meter under the fight), the batting cage's pitching
-// machine (the pitcher), the okiagari-koboshi and the Daruma (the roly-polies), the paint range's tiles and tallies (testroomkit.js).
+// machine (the pitcher), the okiagari-koboshi and the Daruma (the roly-polies), the paint range's tiles and tallies (throwingroomkit.js).
 //
-//   WING_COLOR   the wing's colours (the level merges by colour: world/testroom/combatwing.js builds with these)
+//   WING_COLOR   the wing's colours (the level merges by colour: world/throwingroom/combatwing.js builds with these)
 //   lecternParts() parryPitcher() telegraphCaster() -> [{ geo, color, outline }]   (local frames; the place sets them down)
 //   rolyPolyGeometry() -> BufferGeometry (vertex colours, origin the ball's centre)   rolyPolyMaterials() -> { rest, lit }   ROLY_POLY
 //   markTiles(list [{ x, z, yaw, y }]) -> Mesh   (the quarry tiles, one draw; chevron toward local +x turned by yaw)
@@ -36,7 +36,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { PALETTE } from '../core/config.js';
-import { quarryTile } from './testroomkit.js';
+import { quarryTile } from './throwingroomkit.js';
 import { uiIcon } from '../ui/icons/icons.js';
 
 /** The wing's colours (each colour a batch of the level's, a draw call or two: so the cords, the books and the meter's tiles are the
@@ -122,7 +122,7 @@ export function telegraphCaster() {
 }
 
 let TILE_M = null, STATUS_M = null;
-/** The quarry tiles the feet stand on (the paint range's stand, testroomkit.js quarryTile: terracotta, a slip chevron along local +x),
+/** The quarry tiles the feet stand on (the paint range's stand, throwingroomkit.js quarryTile: terracotta, a slip chevron along local +x),
  *  merged into one mesh. `yaw` turns the chevron (0: toward +x). */
 export function markTiles(list, size = 0.7) {
   TILE_M ||= new THREE.MeshStandardMaterial({ name: 'wing-tile', map: quarryTile(), roughness: 0.8 });

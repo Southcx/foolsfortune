@@ -63,7 +63,7 @@ export function clusterContext(game) {
   }
   if (g.duel?.active) return []; // (the duel's phone screen holds its tiles: duelscreen.js)
   if (g.opensea?.sailing) return helmCluster(g).filter(Boolean); // (the open sea's helm: its own verbs, the stick the rudder alone)
-  if (T?.active || g.god?.controlling || g.duel?.pending || g.emocean?.stage?.active) return [];
+  if (T?.active || g.god?.controlling || g.duel?.pending || g.rail?.stage?.active) return [];
   const ctx = inHandCtx(g), tool = ctx && toolCluster(g, ctx);
   return (tool || footCluster(g, use)).filter(Boolean); // (on foot: DASH always, the Shift press, Dovina's ruling 2026-10-24: the air dash is the core movement's)
 }

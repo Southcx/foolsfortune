@@ -102,7 +102,7 @@ export class IndexMenu {
     e.preventDefault(); e.stopPropagation(); next.classList.add('kbd'); to.focus(); to.scrollIntoView?.({ block: 'nearest' });
   }
 
-  /** The same window on a page of its own (the Throwing Room's console: world/testroom/drills.js page(im, el)), the calibration under it. */
+  /** The same window on a page of its own (the Throwing Room's console: world/throwingroom/drills.js page(im, el)), the calibration under it. */
   showPage(name, render, { title = null, sub = null, aside = null } = {}) { this.page = { name, render, title, sub, aside }; this.show(); } // (title/sub: a page that is not the index's own, a Shrine's)
 
   close() {

@@ -53,13 +53,13 @@ export function dunemawRules({ on, L, log, g }) {
   });
   // Strawman: one line a bout, never a count
   on('strawman.bout', (e) => {
-    if (g?.player && zoneOf(g.player.pos) !== 'testroom') return; // (its gap ran out after you left: said nowhere else, QA-A)
+    if (g?.player && zoneOf(g.player.pos) !== 'throwingRoom') return; // (its gap ran out after you left: said nowhere else, QA-A)
     const types = Object.entries(e.byType || {}).filter(([t]) => t !== 'blocked').sort((a, b) => b[1] - a[1]).map(([t, d]) => `${TYPE[t] || t} ${Math.round(d)}`).join(', ');
     const st = Object.entries(e.statuses || {}).map(([s, n]) => `${DONE[s] || s} ${n === 1 ? 'once' : `${n} times`}`).join(', ');
     log.say('info', `Strawman took ${e.blows} ${e.blows === 1 ? 'blow' : 'blows'} in ${e.seconds} s: ${Math.round(e.damage)} damage, ${e.perSecond} a second${types ? ` (${types})` : ''}${e.blocked ? `; ${e.blocked} blocked` : ''}${st ? `; ${st}` : ''}.`);
   });
   on('strawman.mode', (e) => log.say('info', `Strawman: ${e.mode}.`, { key: 'strawman', throttle: 1 }));
-  // its moves and attack strings (world/testroom/strawmanstrings.js; the words placeholders for Espada's)
+  // its moves and attack strings (world/throwingroom/strawmanstrings.js; the words placeholders for Espada's)
   const move = (e) => STRAWMAN_MOVES[e.move]?.label || 'swing';
   on('strawman.parried', (e) => log.say('battle', `You parry Strawman's ${move(e)}.`, { key: 'strawman.parry', throttle: 0.3 }));
   on('strawman.strike', (e) => {
