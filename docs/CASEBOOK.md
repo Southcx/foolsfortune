@@ -1028,3 +1028,6 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
   its owner's and its zone's together (render/zones.js); a body that is placed by a tick gated on `visible` and was last left in
   another zone (or parked for the warm-up) is never moved out of it, and never shows. A body that always stands with the Courier is
   `zoneFree`; a gate on its own state reads its own flag, never `visible`.
+NEW:cache-has-a-release. **A cache of built things has a release, and its owner's end calls it.** A module that builds sets once and
+  keeps them in a map (to compile them under a cover) also gives a `release()` that stops, removes and disposes them and clears the map;
+  the thing that ends their use (a crossing, a room) calls it, or they stay in the scene, hidden, for the session.

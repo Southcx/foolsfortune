@@ -4586,3 +4586,14 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the body's root is `userData.zoneFree` (it always stands under its rider, hidden when not ridden); the slip puddles keep
   their own `live` flag instead of reading `visible`. After: `shown: true` through the call and the ride, on the phone and the desk.
 - **Rule:** 366
+
+### 2026-10-30 · The encounter film kept every tableau it built for the session (vfx/encounters/film.js; Petra's crossing sweep)
+- **Seen (Petra's sweep, "nothing left behind after 12 crossings"):** +124 objects after 12 crossings, about one ship a run; in 4
+  crossings the extra was the Glass's sloop and its cradle (40 objects).
+- **Cause:** `EncounterFilm.tableau()` builds a tableau once, adds its holder to the scene and keeps it in its map so `prepare` can
+  compile it under the cast-off's cover; nothing ever took one out. `stop()` only hid the holder, and the Glass's tableau is keyed by
+  hull, so a new hull made a new one.
+- **Fix:** `release()`: the film stopped, each holder removed from the scene, each tableau's own `dispose` (its geometry, materials
+  and kit) called, the map cleared. Petra's stage calls `g.encounterFilm?.release?.()` at the crossing's end; `prepare` rebuilds them
+  at the next cast-off.
+- **Rule:** NEW:cache-has-a-release

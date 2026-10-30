@@ -11,7 +11,7 @@
 // sequences (cine/sequence.js: a camera authored against anchors, played wherever they stand).
 //
 //   game.encounterFilm = new EncounterFilm(game)   .prepare(ids, { hull })   .play(id, { feel, hull, onDone }) -> bool   .update(raw)
-//   .stop()   .live -> { id, t } | null
+//   .stop()   .release()   .live -> { id, t } | null
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { buildTableau } from './tableaux.js';
@@ -82,5 +82,13 @@ export class EncounterFilm {
     const L = this.live; if (!L) return;
     L.h?.stop?.(); L.s.holder.visible = false; this.live = null;
     if (!L.done) L.onDone?.();
+  }
+
+  /** Every tableau let go at the crossing's end (world/emocean/stage.js): stopped, taken out of the scene, its geometry and materials
+   *  disposed and the map cleared; `prepare` builds them again under the next cast-off's cover. */
+  release() {
+    this.stop();
+    for (const s of this.tableaux.values()) { s.holder.parent?.remove(s.holder); s.dispose?.(); }
+    this.tableaux.clear();
   }
 }
