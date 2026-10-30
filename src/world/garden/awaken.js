@@ -1,7 +1,8 @@
 // ---------------------------------------------------------------------------------------
 // NEW SPIRITS FROM OLD THINGS, AND TWO MADE ONE: the garden's other ways to a spirit (docs/plans/SPIRIT-GARDEN.md section 5, "where they
-// come from"; Round 4). At the Athanor's shrine a Veritome PHOTOGRAPH of a creature awakens a spirit of its kind, its strength read from
-// the plate's stars (Monster Rancher's disc stone); in the Mulberry Grove a LACHRYMITE FOSSIL dug in the Dunes wakes to the Awakening
+// come from"; Round 4). At the Athanor's shrine a Veritome PHOTOGRAPH of a creature is condensed into a spirit slab and carved free on the
+// bench below (world/garden/bench.js, since 2026-10-30: the dig decides what the spirit comes out with; `plates` and `used` are read
+// there, one slab a kind photographed); in the Mulberry Grove a LACHRYMITE FOSSIL dug in the Dunes wakes to the Awakening
 // Song (Spectrobes; Wanda's song plays while `game.garden.awakening`); wild Figments VISIT when the garden meets their wants and SETTLE
 // after enough visits (Viva Piñata; the wants are Dovina's, progress/realm.js VISITORS); and in the cocoon tree two spirits MERGE into
 // one (Jade Cocoon; progress/spirits.js merge). Each new spirit is bound (creatures/bound.js add) and hops out into the Grove.
@@ -14,7 +15,7 @@
 // Prior art: Monster Rancher's shrine (a monster from a disc), Spectrobes Origins' fossils woken by sound, Viva Piñata's visitors who
 // settle when the garden suits them, Jade Cocoon's merging (the child takes from both parents).
 //
-//   const A = new Awaken(game, realm)   A.plates() -> [{ kind, stars }]   A.plate(kind)   A.fossil()   A.merge(a, b)   A.visitors()
+//   const A = new Awaken(game, realm)   A.plates() -> [{ kind, stars }]   A.used   A.fossil()   A.merge(a, b)   A.visitors()   A.bind(entry, from)
 //   A.hatch (what is waking or merging, or null)   A.inTree(e)   A.cancel()   A.update(dt)   A.dump() / A.load(d)
 //   (realm.js calls them from the Athanor's and the cocoon tree's pages)
 // ---------------------------------------------------------------------------------------
@@ -33,17 +34,10 @@ const FEELINGS = Object.keys(STATS);
 export class Awaken {
   constructor(game, realm) { this.game = game; this.realm = realm; this.used = {}; this.visits = {}; this.woken = 0; this.hatch = null; }
 
-  /** The photographs that could wake a spirit: creatures in the Compendium (tools/veritome/book.js photos), not yet awakened. */
+  /** The photographs that could become a spirit slab: creatures in the Compendium (tools/veritome/book.js photos), not yet used. */
   plates() {
     const P = this.game.veritome?.book?.photos || {}, kinds = new Set(Object.keys(VISITORS).concat(['slipjelly', 'clapperjar', 'glint', 'lobber', 'spirit']));
     return Object.entries(P).filter(([k, p]) => kinds.has(k) && p?.stars > 0 && !this.used[k]).map(([k, p]) => ({ kind: k, stars: p.stars }));
-  }
-  /** At the Athanor: the plate of `kind` awakens a spirit of its kind (its class from the plate's stars). */
-  plate(kind) {
-    const p = this.plates().find((x) => x.kind === kind); if (!p) return false;
-    this.used[kind] = true; this.dirty();
-    this.bind({ kind, cls: Math.min(4, Math.max(0, p.stars - 1)) }, 'plate');
-    return true;
   }
   /** In the Grove: a fossil from the box wakes while the Awakening Song plays (it leaves the box when it breaks open). */
   fossil() {

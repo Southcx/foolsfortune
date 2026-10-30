@@ -734,27 +734,46 @@ await guard('press: the grey surround', async () => {
   check('press: left, the sky, the fog and the HUD come back', r2.grey === 0 && back < 0.01 && !r2.hud, { grey: r2.grey, fogBack: +back.toFixed(4), hud: r2.hud });
 });
 
-// ---- item 19: a bought planetoid sits on the ring round the Dantian
+// ---- the ring's seeds (docs/plans/SEEDS-SLABS-SCANS.md 1; world/garden/orbit.js): a seed earned, let go in the sky, a moonlet on
+// the ring; fed past a size, grown in place; a feeling's moonlet on the inner ring, a jump from the Dantian
 await guard('orbit', async () => {
-  const refusal = await ev(() => __game.game.realm.orbit.buy());
-  note('orbit: buy() with no cubes and no Firing', refusal);
-  check('orbit: buy() refuses (a reason, nothing taken)', typeof refusal === 'string' && refusal.length > 0, refusal);
+  const refusal = await ev(() => __game.game.realm.orbit.take('bone')); // (the bone seed: earned by a flawless slab, never by this sweep)
+  note('orbit: take() of a seed not earned', refusal);
+  check('orbit: take() refuses a seed not earned (a reason, nothing in the hand)', typeof refusal === 'string' && refusal.length > 0, refusal);
   const r = await ev(() => {
-    const g = __game.game, R = g.realm, T = __game.THREE, O = R.orbit, D = R.site.by.dantian, free = O.slots().filter((s) => s.free), s = free[Math.min(2, free.length - 1)];
-    const e0 = g.events.counts['garden.planetoid'] || 0, ok = O.release('moon', s.pos.clone().add(new T.Vector3(3, 3, 3))), P = R.site.by.moon, e = g.events.last('garden.planetoid');
+    const g = __game.game, R = g.realm, T = __game.THREE, O = R.orbit, D = R.site.by.dantian;
+    if (!g.ledger.get('seed.earn.clay')) g.ledger.inc('seed.earn.clay');
+    const free = O.slots().filter((s) => s.free), s = free[Math.min(2, free.length - 1)];
+    const e0 = g.events.counts['seed.plant'] || 0, ok = O.release('clay', s.pos.clone().add(new T.Vector3(3, 3, 3))), P = R.site.by['seed.clay'], e = g.events.last('seed.plant');
     if (!P) return { ok, err: 'no planetoid made' };
     const rel = P.c.clone().sub(D.c), dist = rel.length(), elev = Math.asin(rel.y / dist) * 180 / Math.PI, az = ((Math.atan2(rel.x, rel.z) * 180 / Math.PI) + 360) % 360;
-    const near = R.site.planets.filter((q) => q !== P && !q.bought).sort((a, b) => a.c.distanceTo(P.c) - b.c.distanceTo(P.c)).slice(0, 2).map((q) => q.id).sort();
+    const near = R.site.planets.filter((q) => q !== P && !q.added).sort((a, b) => a.c.distanceTo(P.c) - b.c.distanceTo(P.c)).slice(0, 2).map((q) => q.id).sort();
     const links = R.site.links.filter((l) => l.a === P).map((l) => l.b.id).sort();
-    const clay = R.clays.moon, d = new T.Vector3(0, 1, 0), h0 = clay.heightAt(d), moved = clay.brush(d, 'pull', 0.3, 3);
-    return { ok, slot: e?.slot, chosen: s.n, dist: +dist.toFixed(2), elev: +elev.toFixed(1), az: +az.toFixed(1), plots: R.plots.plots.filter((p) => p.planet === P).length, near, links, lotuses: R.site.lotuses.filter((l) => l.planet === P).length, hasEnds: R.site.links.filter((l) => l.a === P).every((l) => !!l.ends[P.id]), sculpts: moved, slotTaken: !O.slots()[s.n].free, ev: (g.events.counts['garden.planetoid'] || 0) - e0 };
+    const clay = R.clays['seed.clay'], d = new T.Vector3(0, 1, 0), moved = clay.brush(d, 'pull', 0.3, 3);
+    return { ok, slot: e?.slot, chosen: s.n, r: P.r, dist: +dist.toFixed(2), elev: +elev.toFixed(1), az: +az.toFixed(1), plots: R.plots.plots.filter((p) => p.planet === P).length, near, links, lotuses: R.site.lotuses.filter((l) => l.planet === P).length, hasEnds: R.site.links.filter((l) => l.a === P).every((l) => !!l.ends[P.id]), sculpts: moved, slotTaken: !O.slots()[s.n].free, ev: (g.events.counts['seed.plant'] || 0) - e0, waiting: O.waiting() };
   });
-  check('orbit: a seed let go in the sky takes the free slot nearest, said once', r.ok === true && r.slot === r.chosen && r.ev === 1 && r.slotTaken, r);
+  check('orbit: a seed let go in the sky takes the free slot nearest, said once', r.ok === true && r.slot === r.chosen && r.ev === 1 && r.slotTaken && !r.waiting.includes('clay'), r);
   const slotAngle = await ev((n) => 360 / 10 * n, r.slot ?? 0), slotTilt = r.slot % 2 ? -12 : 12;
-  check('orbit: it sits 95 m from the Dantian\'s heart', Math.abs(r.dist - 95) < 0.5, { dist: r.dist });
+  check('orbit: it sits 95 m from the Dantian\'s heart, a moonlet (5 m, 1 plot)', Math.abs(r.dist - 95) < 0.5 && r.r === 5 && r.plots === 1, { dist: r.dist, r: r.r, plots: r.plots });
   check('orbit: 12 degrees above or below the equator by turn, at its slot\'s angle', Math.abs(r.elev - slotTilt) < 0.5 && Math.abs(((r.az - slotAngle + 540) % 360) - 180) < 0.5, { elev: r.elev, wantElev: slotTilt, az: r.az, wantAz: slotAngle });
   check('orbit: it is clay with a vein and lotuses to its two nearest', r.sculpts === true && JSON.stringify(r.links) === JSON.stringify(r.near) && r.lotuses >= 2 && r.hasEnds, { sculpts: r.sculpts, links: r.links, near: r.near, lotuses: r.lotuses, ends: r.hasEnds });
-  check('orbit: the Moonflower Moon has the 4 plots BOUGHT says', r.plots === 4, `${r.plots} plots (orbit.js BOUGHT moon plots: 4; plots.addPlanet places fewer when its golden spiral cannot fit them)`);
+  const fed = await ev(() => {
+    const g = __game.game, R = g.realm, O = R.orbit, P = R.site.by['seed.clay'], per = 8;
+    g.cubes.earn(60 * per, 'debug');
+    const g0 = g.events.counts['seed.grow'] || 0, out = O.feed('clay', { cubes: 60 * per });
+    const L = R.site.lotuses.filter((l) => l.planet === P), off = Math.max(...L.map((l) => Math.abs(l.pos.distanceTo(P.c) - P.radiusAt(l.pos.clone().sub(P.c).normalize()))));
+    return { out, r: P.r, plots: R.plots.plots.filter((p) => p.planet === P).length, grow: (g.events.counts['seed.grow'] || 0) - g0, size: g.events.last('seed.grow')?.size, lotusOff: +off.toFixed(3) };
+  });
+  check('orbit: fed 60 minutes it grows to small in place (9 m, 4 plots), its lotuses on its new ground', fed.out?.grew === true && fed.r === 9 && fed.plots === 4 && fed.grow === 1 && fed.size === 'small' && fed.lotusOff < 0.05, fed);
+  const inner = await ev(() => {
+    const g = __game.game, R = g.realm, O = R.orbit, D = R.site.by.dantian;
+    if (!g.ledger.get('seed.earn.moonlet.wonder')) g.ledger.inc('seed.earn.moonlet.wonder');
+    O.sync(); const P = R.site.by['seed.moonlet.wonder']; if (!P) return { err: 'no moonlet' };
+    const d = P.c.clone().sub(D.c), dist = d.length(); d.divideScalar(dist);
+    const gap = dist - D.radiusAt(d) - P.radiusAt(d.clone().negate());
+    return { r: P.r, gap: +gap.toFixed(2), lotuses: R.site.lotuses.filter((l) => l.planet === P || l.toPlanet === P).length, fed: O.feed('moonlet.wonder', { cubes: 8 }).why || null };
+  });
+  check('orbit: a feeling\'s moonlet hangs on the inner ring, a jump over the Dantian (3 m), no lotus, never fed', inner.r === 5 && Math.abs(inner.gap - 3) < 0.2 && inner.lotuses === 0 && !!inner.fed, inner);
   const want = { dantian: 6, terraces: 6, athanor: 3, pavilions: 5, mulberryGrove: 8, chimney: 2 }, have = await ev(() => { const o = {}; for (const p of __game.game.realm.plots.plots) o[p.planet.id] = (o[p.planet.id] || 0) + 1; return o; });
   const short = Object.entries(want).filter(([k, n]) => have[k] !== n).map(([k, n]) => `${k} ${have[k]}/${n}`);
   check('plots: each of the first six planetoids has the plots PLANETOID_PLOTS says', !short.length, short.length ? short.join(', ') : 'all');
@@ -767,7 +786,7 @@ await guard('orbit', async () => {
 await guard('mycelium', async () => {
   const M = (expr) => ev(`(() => { const g = __game.game, R = g.realm, M = g.gardenMycelium, S = g.sporeBeds, T = g.myggdrasil, V = __game.THREE.Vector3; ${expr} })()`);
   const before = await M(`return { has: !!M, given: M ? !!M.give() : null, fired: R.site.by.myggdrasil ? 1 : 0 }`);
-  check('mycelium: no Myggdrasil before the second Firing', before.has && !before.given && !before.fired, before);
+  check('mycelium: Myggdrasil given on the first visit (ECON.myggdrasil.firing 0)', before.has && before.given && before.fired, before);
   const g1 = await M(`
     g.ledger.hi('alchemy.rank.willpower', 60); const P = M.give(); if (!P) return { ok: false };
     const free0 = R.orbit.slots().filter((x) => x.free).length;
@@ -777,7 +796,7 @@ await guard('mycelium', async () => {
     return { ok: true, r: P.r, gaps: Math.min(...gaps), ring: Math.min(...ring), free0, height: +H.toFixed(1), lotuses: R.site.lotuses.filter((l) => l.planet === P).length, plots: R.plots.plots.filter((p) => p.planet === P).length, again: M.give() === P, ev: g.events.counts['garden.myggdrasil'] || 0 }`);
   check('mycelium: Myggdrasil given at Sinter, once, said once', g1.ok && g1.again && g1.ev === 1, g1);
   check('mycelium: its planetoid the largest (26 m), clear of every planetoid by 10 m and more', g1.r === 26 && g1.gaps > 10, { r: g1.r, leastGap: g1.gaps });
-  check('mycelium: clear of the ring\'s slots (a bought planetoid of 16 m still fits)', g1.ring > 16 + 10, { leastToASlot: g1.ring });
+  check('mycelium: clear of the ring\'s slots (a large seed\'s planetoid, 20 m and its hills, still fits by 10 m)', g1.ring > 20 * 1.4 + 10, { leastToASlot: g1.ring });
   check('mycelium: the tree is BIG (48 m and more), lotuses and plots of its own', g1.height >= 48 && g1.lotuses >= 2 && g1.plots === 6, { height: g1.height, lotuses: g1.lotuses, plots: g1.plots });
   // a spore bed placed as the hand places it (paid), in grief: the first bed brings the oyster and the inkcap, so it takes the oyster
   const b1 = await M(`

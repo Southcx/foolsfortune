@@ -6,7 +6,9 @@
 // with the left button, drink up with the right, a spring with Shift and the left, a drain with Ctrl and the left, Shift and the right
 // takes the nearest away: world/garden/waterworks.js); 9 PLACE (a feature in a plot: world/garden/plots.js); 0 PAINT (a ground's
 // material with the left button, none with the right: world/garden/clay.js). R turns the choice: PAINT's ground, WATER's feeling. GRAB
-// also lifts a placed feature and sets it in the free plot it is let go over (its formation worked out again there, free). Shift and the
+// also lifts a placed feature and sets it in the free plot it is let go over (its formation worked out again there, free), and held on a
+// seed's planetoid of the ring it pours out the island's matter the god hand carries from the world, feeding it (world/garden/orbit.js
+// pour; the shed's other feeds: realm.js feedPage). A seed taken at the shed rides in the hand until let go in the open sky. Shift and the
 // wheel size the stroke (1 to 12 m); Ctrl+Z undoes the last of ten; Ctrl+Backspace twice within three real seconds puts the planetoid
 // under the hand back to its rest shape (its clay, its paint and its water: free). The model is the god hand's own (godhand/godhand.js; its clips: godhand/godhandclips.js); the strokes are the
 // clay's (world/garden/clay.js). Which art is up is said once in the log (garden.art); the hand's clip says the rest (a snap for the
@@ -74,7 +76,7 @@ export class GardenHand {
   }
   /** The stroke's size from the touch size slider (metres; the keyboard's Shift and the wheel, within the same range). */
   setSize(m) { this.size = THREE.MathUtils.clamp(+m || this.size, STROKE.size[0], STROKE.size[1] * (this.game.alchemy?.widen?.('visualization.canvas') ?? 1)); }
-  /** A bought planetoid's seed in the hand (world/garden/orbit.js), until it is let go in the open sky. */
+  /** A seed in the hand (world/garden/orbit.js: from the shed), until it is let go in the open sky. */
   carrySeed(id) {
     const mesh = new THREE.Mesh(new THREE.IcosahedronGeometry(0.8, 1), this.R.site.mats.lotus); mesh.name = 'garden-seed';
     this.R.site.group.add(mesh); this.seed = { id, mesh }; this.setArt('grab');
@@ -120,6 +122,7 @@ export class GardenHand {
     const g = this.game, I = g.input, R = this.R;
     this.clock += g.rawDt ?? dt;
     if (R.press?.viewing) { this.brush.hide(); R.press.handle(dt, this); return this.pose(dt); } // (the press view: the station has the hand, world/garden/press.js)
+    if (R.bench?.viewing) { this.brush.hide(); R.bench.handle(dt, this); return; } // (the carving bench: the cursor is the tool, the hand's model aside: world/garden/bench.js)
     const typing = g.log?.typing, ctrl = I.isDown('ControlLeft') || I.isDown('ControlRight'), shift = I.isDown('ShiftLeft') || I.isDown('ShiftRight');
     for (let k = 0; k < ARTS.length; k++) if (I.wasPressed(KEY(k)) && !typing) this.setArt(ARTS[k]);
     if (I.wasPressed('KeyR') && !typing) this.turn();
@@ -151,6 +154,9 @@ export class GardenHand {
   // ---- grab, throw, pet
   grab(dt, o, d) {
     const I = this.game.input;
+    if (!this.held && I.isDown('Mouse0') && this.hit?.planet?.seed && (this.pourT > 0 || !this.pick(o, d)) && this.R.orbit.pour(this.hit.planet, dt)) { // (the island's matter the god hand carries, poured on a seed's planetoid: world/garden/orbit.js)
+      this.pourT = 0.2; this.brush.at(this.hit.planet.look, this.hit.point.clone().sub(this.hit.planet.c), 2, 'raise'); this.brush.work(true); return; }
+    if (this.pourT > 0 && ((this.pourT -= dt) <= 0 || !I.isDown('Mouse0'))) { this.pourT = 0; this.R.orbit.pourEnd(); }
     if (I.wasPressed('Mouse0') && !this.held && !this.pick(o, d) && this.R.thornPatches?.prune(this.hit)) return; // (a thorn clump under the hand: pruned, world/garden/thornpatches.js)
     if (I.wasPressed('Mouse0') && !this.held) {
       const b = this.pick(o, d);
