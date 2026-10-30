@@ -69,7 +69,7 @@ aptitude, as your play gives it evidence. The numbers are measured from what you
 | aptitude (CHC) | the lab task | absolute unit | already in the game | status |
 |---|---|---|---|---|
 | reaction time (Gt) | simple and choice reaction time | ms | the parry window; the first stun noticed (STUN-DEPTH.md) | events exist |
-| inhibition | Go/No-Go, the stop-signal task | d′, % false alarms | the rail: plain shots are shot, outlined shots only parried | events exist |
+| inhibition | Go/No-Go, the stop-signal task | d′, % false alarms | the rail: plain shots are shot, outlined shots only parried | built: `inhibition`, % of outlined shots sent home a leg (needs `kind` on `rail.hit`, Petra's) |
 | tracking (Gv) | multiple object tracking (Pylyshyn) | items tracked | the lock-on's eight targets | events exist |
 | visual search (Gs) | visual search (Treisman) | ms per item | the Veritome: finding a subject; the scan's ??? | partly |
 | navigation (Gv, Glr) | Sea Hero Quest, wayfinding | path over the shortest, % | a Well's floors (new each game day), the Sight, the map | events exist |
@@ -77,8 +77,8 @@ aptitude, as your play gives it evidence. The numbers are measured from what you
 | timing (Ga, Gt) | synchronised tapping | ms asynchrony, its spread | the rhythm mode, busking, the Crucibelle's beat | events exist |
 | colour (Gv) | colour discrimination | ΔE in Oklab | the press at the Athanor: firing inside a tile | events exist |
 | planning (Gf) | Tower of London | moves over the fewest | the macro lattice (fitting Functions into a path) | events exist |
-| risk | BART (pump until it may pop), the Iowa Gambling Task | expected value kept, % | the Lockheart's wheel, Raku's tables, the wager | events exist |
-| reading others | Reading the Mind in the Eyes | % | Nebula Bluff's tells | events exist |
+| risk | BART (pump until it may pop), the Iowa Gambling Task | expected value kept, % | the Lockheart's wheel, Raku's tables, the wager | built: `risk`, % past the measure the coffin is held before opening (BART's pump); a style, no better |
+| reading others | Reading the Mind in the Eyes | % | Nebula Bluff's tells | built: `others`, % of your callouts that caught a bluff, a sample each 6 |
 | model-based planning | Daw's two-step task (2011) | the model-based weight | Luck (the surprise lived through, in bits) | partly |
 | explore or exploit | the horizon bandit task (Wilson et al., 2014) | % exploring when it pays | where to dig, which crystal, which table | a gap |
 | language learning (Glr) | artificial grammar learning | words learned per hour | neuralese, the ostraca, the stele | events exist |

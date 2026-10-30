@@ -300,3 +300,28 @@ console.log(`  the reckoning (Divination): a wave's lane marked ${reckonLead(0)}
   console.log(`  the sinks it asks: the decor catalogue once ${cat} cubes (${(cat / hr).toFixed(1)} hours at the aim), the planetoids ${plan} (${(plan / hr).toFixed(1)} hours), the upgrades ${[...G.upgrade.slot, ...G.upgrade.bed].reduce((a, b) => a + b, 0) * ECON.perMinute}`);
   console.log(`  a cozy week (an hour or two a real day, a seventh of it in the garden): the dividend at ${D.slots} slots pays the catalogue in ${(cat / div(D.slots)).toFixed(0)} real hours away, the planetoids in ${(plan / div(D.slots)).toFixed(0)}; play pays the rest`); }
 
+
+// THE NUMBERS AND THEIR REASONS (docs/plans/GAPS.md 7; ECONOMY.md "The numbers and their reasons"): five numbers that stood without one,
+// each measured here against what it is for.
+{
+  const minutes = (c) => (c / ECON.perMinute).toFixed(1);
+  console.log('\nthe numbers and their reasons');
+  // 1. the epic pity's prismatic chance (TITHE.epicPrismatic): the pulls to a first prismatic with it and without it
+  const firstPrismatic = (k, n = 40000) => { const out = []; for (let i = 0; i < n; i++) { const since = { rare: 0, epic: 0, prismatic: 0 }; let pulls = 0;
+    for (;;) { pulls++; let t = rollTier(since); if (t === 4 && since.epic + 1 >= 40 && since.prismatic + 1 < 100 && Math.random() >= k / 0.12) t = 3; // (k: the chance tried; 0.12 is the table's)
+      if (t === 4) break; since.rare = t >= 2 ? 0 : since.rare + 1; since.epic = t >= 3 ? 0 : since.epic + 1; since.prismatic++; } out.push(pulls); }
+    out.sort((a, b) => a - b); return { med: out[out.length >> 1], hard: out.filter((p) => p >= 100).length / n }; };
+  const p0 = firstPrismatic(0), p12 = firstPrismatic(0.12);
+  console.log(`  the epic pity's prismatic (12%): pulls to a first prismatic, median ${p0.med} -> ${p12.med}; the hard pity (100) reached ${(p0.hard * 100).toFixed(0)}% -> ${(p12.hard * 100).toFixed(0)}% of the time`);
+  // 2. the near miss (ceremony.js rouletteSeq: 0.42 of the reveals below epic climb past their tier and fall back)
+  const cons = consolidated(), below = cons[0] + cons[1] + cons[2];
+  console.log(`  the near miss (42% of reveals below epic): ${(0.42 * below * 100).toFixed(0)}% of all pulls tease a tier they do not give; a look only, never the odds`);
+  // 3. the chest ranges (ECON.chest): each tier's mean in minutes of play at the aim, and its step over the tier below
+  const means = ECON.chest.map(([a, b]) => (a + b) / 2);
+  console.log(`  the chest ranges: means ${means.join(' / ')} cubes = ${means.map(minutes).join(' / ')} minutes of play; each tier x${means.slice(1).map((m, i) => (m / means[i]).toFixed(1)).join(' x')}; spread +/-${ECON.chest.map(([a, b]) => Math.round(((b - a) / 2 / ((a + b) / 2)) * 100)).join(' / ')}%`);
+  // 4. the coffin fills (HEARTS[].fill): seconds of the hoover's drain on a mind laid low (lockheart.js HOOVER.drain 3.6 a real s)
+  console.log(`  the coffin fills: ${Object.entries(HEARTS).map(([id, h]) => `${id.slice(6)} ${h.fill} (${(h.fill / 3.6).toFixed(0)} s of the hoover)`).join(', ')}`);
+  // 5. the standings (achievements.js RANKS): each as a share of the written points and its step over the last
+  const pts = byTier.reduce((a, n, i) => a + n * (i + 1), 0), RANKS = [...src.match(/RANKS = \[([\s\S]*?)\];/)[1].matchAll(/\[(\d+), '((?:[^'\\]|\\.)*)'\]/g)].map((m) => [+m[1], m[2].replace(/\\'/g, "'")]); // (read as text: achievements.js reaches three.js)
+  console.log(`  the standings: ${RANKS.map(([p, n]) => `${n} ${p} (${((p / pts) * 100).toFixed(1)}%)`).join(', ')}; steps x${RANKS.slice(2).map(([p], i) => (p / RANKS[i + 1][0]).toFixed(1)).join(' x')} of ${pts} points written`);
+}

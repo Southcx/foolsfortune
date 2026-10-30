@@ -85,7 +85,7 @@ export const NEBULA = {
   id: 'nebula', seats: [2, 6],
   setup({ seats, r, opts = {} }) {
     const chips = opts.chips ?? R.chips;
-    const S = { n: seats, dice: [...Array(seats)].map(() => R.set.slice()), chips: Array(seats).fill(chips), bust: Array(seats).fill(false), pot: 0, round: 0, starter: (opts.first ?? 0) % seats, pending: [], log: [], done: false, bluffs: Array(seats).fill(0), caught: Array(seats).fill(0), styles: opts.styles || null };
+    const S = { n: seats, dice: [...Array(seats)].map(() => R.set.slice()), chips: Array(seats).fill(chips), bust: Array(seats).fill(false), pot: 0, round: 0, starter: (opts.first ?? 0) % seats, pending: [], log: [], done: false, bluffs: Array(seats).fill(0), caught: Array(seats).fill(0), calls: Array(seats).fill(0), right: Array(seats).fill(0), styles: opts.styles || null };
     startRound(S, r);
     return S;
   },
@@ -106,6 +106,7 @@ export const NEBULA = {
       pay(S, p, priceOf(S.claim));
       const k = S.claimant, bluff = S.worth[k] < S.claim;
       S.log.push({ seat: p, callout: k, claim: S.claim, worth: S.worth[k], bluff, shown: S.dice[k].map((s, i) => ({ sides: s, face: S.faces[k][i] })) }); // (the hand as it was shown: the next round rolls anew)
+      S.calls[p]++; if (bluff) S.right[p]++; // (a seat's callouts and how many caught a bluff: the Assay's reading of others, aptitude.js)
       if (bluff) { S.caught[k]++; loseDice(S, k, 2, r); win(S, p, 'callout'); } else { loseDice(S, p, 2, r); win(S, k, 'callout'); }
       return startRound(S, r);
     }
@@ -120,7 +121,7 @@ export const NEBULA = {
     win(S, best.seat, 'reveal');
     startRound(S, r);
   },
-  result: (S) => (S.done ? { winner: S.winner, chips: S.chips.slice(), scores: S.chips.slice(), rounds: S.round, bluffs: S.bluffs.slice(), caught: S.caught.slice() } : null),
+  result: (S) => (S.done ? { winner: S.winner, chips: S.chips.slice(), scores: S.chips.slice(), rounds: S.round, bluffs: S.bluffs.slice(), caught: S.caught.slice(), calls: S.calls.slice(), right: S.right.slice() } : null),
   view: (S, seat) => ({ seat, n: S.n, mine: S.dice[seat], faces: S.faces?.[seat], worth: S.worth?.[seat], counts: S.dice.map((d) => d.length), chips: S.chips, pot: S.pot, claim: S.claim, claimant: S.claimant, raises: S.raises, limit: S.limit, inRound: S.inRound, paid: S.paidRound, tell: S.claimant !== seat ? S.tell : null, round: S.round, last: S.log[S.log.length - 1] }),
 };
 
