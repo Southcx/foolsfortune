@@ -382,7 +382,8 @@ export class Lockheart extends HeldTool {
       for (const c of g.creatures.near(P.pos, HOOVER.drain)) {
         if (c.ally || !g.stun?.vulnerable(c)) continue;
         const d = c.pos.clone().sub(P.pos).setY(0); if (d.lengthSq() > 0.2 && d.normalize().angleTo(f) > HOOVER.cone) continue;
-        g.baubles?.spawn(c.center(new THREE.Vector3()), 1, { spread: 0.3, up: 1.5, ox: 0.8 });
+        const k = g.classArtsRun?.drainK?.(c) ?? 1; c.drainAcc = (c.drainAcc || 0) + k; const n = Math.floor(c.drainAcc); c.drainAcc -= n; // (Empath: more from a mind in its best band, the share carried)
+        if (n > 0) g.baubles?.spawn(c.center(new THREE.Vector3()), n, { spread: 0.3, up: 1.5, ox: 0.8 });
         const own = c.feeling ?? c.aspect, pl = own ? null : placeOf(c.pos); // (what it was full of: its own feeling, else the weather's where it lies)
         g.events?.emit('lockheart.drain', { kind: c.kind, feeling: own ?? (pl ? weatherAt(pl.place).aspect : null) ?? null, by: 'courier' });
       }

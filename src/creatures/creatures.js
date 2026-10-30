@@ -147,7 +147,7 @@ export class Creatures {
     if (!UNSCALED.has(name)) {
       dur *= stateOf(c.mind).take; // (a Stoic mind holds a status a third as long; a Prismatic one twice)
       if (dur < 0.5) { // (shrugged off: and it hardens)
-        c.mind = pushed(c.mind, MIND.perResist); this.mindMoved(c, by);
+        if (!(by === 'courier' && this.game.classArtsRun?.cutThrough?.())) { c.mind = pushed(c.mind, MIND.perResist); this.mindMoved(c, by); } // (Cut Through: resisted, it hardens nothing)
         this.game.events?.emit('creature.resist', { kind: c.kind, status: name, by });
         return false;
       }
@@ -173,7 +173,7 @@ export class Creatures {
   windup(c, { at = c.pos, radius = 1.5, eta = 1, kind = 'blow', parry = true, part = null, area = null, type = null, status = null, answer = null, read = true, draw = null } = {}) {
     this.unwind(c);
     const g = this.game, w = { at, radius, eta, kind, parry, t: eta + 0.3, area, type, status, answer, draw, mark: parry && part ? g.parryMark?.mark(part, { eta: this.shownEta(eta) }) : null };
-    w.figmentTelegraph = area ? figmentMarkOf(w, g.psyche?.level?.('divination') ?? 1, !!g.lend?.has('figmentTelegraphs')) : null;
+    w.figmentTelegraph = area ? figmentMarkOf(w, g.psyche?.level?.('divination') ?? 1, !!g.lend?.has('figmentTelegraphs') || !!g.classArtsRun?.clearSight?.()) : null;
     w.held = read && !!g.player && this.holds(c, w);
     c.windup = w;
     this.drawFigmentTelegraph(c, w);
@@ -191,7 +191,7 @@ export class Creatures {
   /** A cast's Figment attack telegraph laid onto the windup its body began (a ram, a bash), or a windup of its own (world/well/raid.js). */
   figmentTelegraph(c, kind, spec) {
     const w = c.windup; if (!w || w.t <= 0) { this.windup(c, { ...spec, kind, parry: false }); return; }
-    Object.assign(w, spec, { kind }); w.figmentTelegraph = figmentMarkOf(w, this.game.psyche?.level?.('divination') ?? 1, !!this.game.lend?.has('figmentTelegraphs'));
+    Object.assign(w, spec, { kind }); w.figmentTelegraph = figmentMarkOf(w, this.game.psyche?.level?.('divination') ?? 1, !!this.game.lend?.has('figmentTelegraphs') || !!this.game.classArtsRun?.clearSight?.());
     w.held = !!this.game.player && this.holds(c, w); this.drawFigmentTelegraph(c, w);
   }
   unwind(c, why = 'end') { const w = c.windup; if (!w) return; w.mark?.clear(); w.drawn?.hide(); c.windup = null; if (w.held && c.alive) this.read(c, w, why); }

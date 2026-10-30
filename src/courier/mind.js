@@ -61,7 +61,8 @@ export class CourierMind {
     else if (this.said && (this.sayT = (this.sayT || 0) + dt) >= SAY) { this.said = false; g.events?.emit('mind.settle', { by: 'courier' }); } // (the spell said over only when it has lapsed a while)
     if (this.quiet > QUIET && this.mind !== 0) { this.mind = settle(this.mind, dt * (g.harmony?.settleK?.(g.realm?.active ? g.realm.jarBody?.pos : null) ?? 1), 0); if (this.mind === 0) this.dirty(); } // (a placed Incense near the Pneuka Jar in the garden settles it faster: a modifier with its source in the world, progress/harmony.js settleK)
     let lead = null, top = 0; // (the draught fading, and its strongest feeling, in one pass: no list a frame)
-    for (const k in g.draught) { const v = (g.draught[k] -= DRAUGHT.fadePerSec * dt); if (v <= 0) delete g.draught[k]; else if (v > top) { top = v; lead = k; } }
+    const fade = DRAUGHT.fadePerSec * (g.classArtsRun?.draughtFadeK?.() ?? 1); // (Afterglow: half as fast, courier/classarts/body.js)
+    for (const k in g.draught) { const v = (g.draught[k] -= fade * dt); if (v <= 0) delete g.draught[k]; else if (v > top) { top = v; lead = k; } }
     g.draughtHex = lead ? COLOR[lead] ?? null : null; // (the draught's colour, from the one feeling table: the garden's sky reads it) // (the draught's colour, from the one feeling table: the garden's sky reads it)
     const s = this.state;
     if (s !== this.lastState) { this.lastState = s; g.events?.emit('mind.state', { state: s, by: 'courier' }); this.dirty(); }

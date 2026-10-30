@@ -6,8 +6,11 @@
 // the pool's modifiers (a cost taken off), a multiplier handed to the one blow it changes, the body held by a tech while it runs; none
 // changes a base rule, and with no art worn this module does nothing.
 //
-// Built in waves, four classes a wave (CLASSES.md 6). Wave 1: the Fool (Beginner's Luck, Running on Empty) and the four Knights (Onrush,
-// Momentum; Water Walk, Gallant; Riposte Rush, Edge; Bulwark, Steadfast). An art not built yet is refused at the key in the log.
+// Built in waves, four classes a wave (CLASS-ARTS.md 4). Wave 1: the Fool (Beginner's Luck, Running on Empty) and the four Knights (Onrush,
+// Momentum; Water Walk, Gallant; Riposte Rush, Edge; Bulwark, Steadfast). Wave 2: the four Pages (Spark, First Strike; Offering, Kindness;
+// Scout, Quick Study; Prospect, Thrift) and the four Queens (Stoke, Afterglow; Catch the Rain, Empath; Clear Sight, Cut Through; Harvest,
+// Hearth). The actions are acts.js's; the reactions that answer an event are wired here (wireReactions). An art not built yet is refused
+// at the key in the log.
 //
 // Prior art: Final Fantasy Tactics' action and reaction abilities (one verb on a key, one passive that answers a moment), Hades' boons
 // (each a small modifier on one thing the body already does), Dark Souls' "next attack" buffs (Momentum's one blow).
@@ -16,11 +19,20 @@
 //   .onStrike(c, m) -> { dmg, build } | null   (creatures.strike asks, the Courier's blows only)
 //   .takenMult() (the vessel's damage asks)   .ward() -> bool (Steadfast: the next blow cracks nothing)
 //   .lucky() -> bool (Beginner's Luck spent on a roll of chance: the Lockheart's spins, a puzzle duel's flee)
+//   .clearSight() -> bool (Figment telegraphs in full: creatures.js)   .cutThrough() -> bool (a resisted status hardens nothing: creatures.js)
+//   .draughtFadeK() (Afterglow: courier/mind.js)   .drainK(c) (Empath: the Lockheart's drain)   .takeHarvestCubes() (Harvest: a crystal's break)
 //   events: art.use { art, kind, accented, at?, target?, by }, art.fire { art, by }, art.end { art, by }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { Tech } from '../moves/techs.js';
 import { sfx } from '../../audio/sfx.js';
+import { today } from '../../core/calendar.js';
+import { yieldOf } from '../../progress/combat/emo.js';
+import { CREATURES } from '../../tools/veritome/bestiary.js';
+import { ACTS } from './acts.js';
+
+/** Petra's, where the rows are silent: a fight is a blow landed either way within FIGHT real s (core/livemoment.js's own 6). */
+const FIGHT = 6;
 
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _d = new THREE.Vector3();
 
@@ -39,7 +51,9 @@ export class ClassArtsBody extends Tech {
     this.luckUntil = -1; this.freeUntil = -1; this.braceUntil = -1; this.braceTaken = 1;
     this.sprintT = 0; this.momentum = false; this.stillT = 0; this.steady = false;
     this.parried = null; // ({ c, at }: the last blow parried, for Riposte Rush)
+    this.lastBlow = -Infinity; this.stokeUntil = -1; this.clearUntil = -1; this.harvestCubes = 0; this.coolDay = {};
     const g = this.game;
+    wireReactions(this);
     g.events?.on?.('move.parry', (e) => {
       if (e.by !== 'courier') return;
       if (e.what === 'blow' && g.lastParried) this.parried = { c: g.lastParried, at: this.now };
@@ -52,19 +66,30 @@ export class ClassArtsBody extends Tech {
   /** The worn row of a slot, if it is the art `id` (its numbers accented for the class read now). */
   worn(slot, id) { const n = this.game.classArts?.numbers?.(slot); return n && (!id || n.id === id) ? n : null; }
   reaction(id) { return this.worn('reaction', id); }
-  ready(id) { return !(this.cool[id] > this.now); }
+  ready(id) { return !(this.cool[id] > this.now) && this.coolDay[id] !== today(); } // (a game day's cooldown: once a game day)
   fire(id) { this.game.events?.emit('art.fire', { art: id, by: 'courier' }); }
 
   // ---- the hooks the game asks ------------------------------------------------
   /** A blow of the Courier's landing on `c` (`m`: the damage type's multiplier): Momentum's one blow, Edge on a weak point. */
   onStrike(c, m) {
     let dmg = 1, build = 1;
+    if (this.now - this.lastBlow > FIGHT) { const R = this.reaction('eager'); if (R) { dmg *= R.does.first; this.fire('eager'); } } // (First Strike: a fight's first blow)
+    this.lastBlow = this.now;
+    if (this.now < this.stokeUntil) build *= this.stokeBuild || 1; // (Stoke)
     if (this.momentum) { const R = this.reaction('momentum'); if (R) { dmg *= R.does.mult; this.momentum = false; this.sprintT = 0; this.fire('momentum'); } }
     if (m?.dmg > 1) { const R = this.reaction('edge'); if (R) { build *= R.does.weakBuild; this.fire('edge'); } }
     return dmg === 1 && build === 1 ? null : { dmg, build };
   }
   /** What a blow on the vessel is worth while Bulwark braces. */
-  takenMult() { return this.now < this.braceUntil ? this.braceTaken : 1; }
+  takenMult() { this.lastBlow = this.now; return this.now < this.braceUntil ? this.braceTaken : 1; } // (a blow taken is a fight too: First Strike's clock)
+  clearSight() { return this.now < this.clearUntil; }
+  cutThrough() { return !!this.reaction('cutThrough'); }
+  /** Afterglow: a feeling drunk fades at half the rate. */
+  draughtFadeK() { const R = this.reaction('warmth'); return R ? 1 / R.does.draught : 1; }
+  /** Empath: a drain in the creature's best band draws more. */
+  drainK(c) { const R = this.reaction('empath'); return R && yieldOf(c?.emo || 0) >= 1 ? R.does.drain : 1; }
+  /** Harvest's cubes waiting for the next crystal struck (taken once). */
+  takeHarvestCubes() { const n = this.harvestCubes; this.harvestCubes = 0; return n; }
   /** Steadfast held: the blow cracks nothing, and it is spent. */
   ward() {
     if (!this.steady || !this.reaction('steadfast')) return false;
@@ -99,7 +124,7 @@ export class ClassArtsBody extends Tech {
     const why = act.can?.(this, R);
     if (why) { g.log?.say('warn', why, { key: `art.no.${R.id}`, throttle: 1.5 }); sfx.fizzle?.(); return; }
     if (R.cost && !g.lachryma?.spend(R.cost, 'art')) { g.log?.say('warn', `Your pool is too low for ${R.label}.`, { key: 'art.pay', throttle: 1.5 }); return; }
-    this.cool[R.id] = this.now + (R.cooldown ?? 0);
+    if (R.cooldown === 'gameDay') this.coolDay[R.id] = today(); else this.cool[R.id] = this.now + (R.cooldown ?? 0);
     this.place = null; act.go(this, R); // (an art that acts away from the body says where: `at` a point, `target` a creature; Calissa's looks read them)
     g.events?.emit('art.use', { art: R.id, kind: 'action', accented: !!R.accented, ...(this.place || {}), by: 'courier' });
   }
@@ -120,6 +145,11 @@ export class ClassArtsBody extends Tech {
     if (!this.hooked && g.lachryma?.on) { this.hooked = true; g.lachryma.on('empty', () => this.dry()); } // (the pool is made after the techs: boot/pneuka.js)
     if (this.freeUntil >= 0 && this.now >= this.freeUntil) { this.freeUntil = -1; g.lachryma?.removeModifier?.('art.zero'); g.events?.emit('art.end', { art: 'zero', by: 'courier' }); }
     if (this.braceUntil >= 0 && this.now >= this.braceUntil) { this.braceUntil = -1; g.events?.emit('art.end', { art: 'bulwark', by: 'courier' }); }
+    if (this.stokeUntil >= 0 && this.now >= this.stokeUntil) { this.stokeUntil = -1; g.lachryma?.removeModifier?.('art.stoke'); g.events?.emit('art.end', { art: 'kindleHeart', by: 'courier' }); }
+    if (this.clearUntil >= 0 && this.now >= this.clearUntil) { this.clearUntil = -1; g.events?.emit('art.end', { art: 'clearSight', by: 'courier' }); }
+    // Thrift: worn, the shells' cost is the pool's modifier (a source you can see: the art on the Box's page)
+    const thrift = this.reaction('thrift');
+    if (!!thrift !== !!this.thrifty) { this.thrifty = !!thrift; if (thrift) g.lachryma?.addModifier?.('art.thrift', { costMult: { shell: thrift.does.shellCost } }); else g.lachryma?.removeModifier?.('art.thrift'); }
     // Momentum: a sprint held long enough arms the next blow
     const mo = this.reaction('momentum');
     if (mo && P?.sprinting) { this.sprintT += dt; if (this.sprintT >= mo.does.after && !this.momentum) this.momentum = true; } else if (!this.momentum) this.sprintT = 0;
@@ -131,28 +161,18 @@ export class ClassArtsBody extends Tech {
   }
 }
 
-/** The actions built, by art id: `can(run, R)` a refusal's words or nothing, `go(run, R)` the art. */
-const ACTS = {
-  beginnersLuck: { go: (run, R) => { run.luckUntil = run.now + R.does.within; } },
-  charge: { // Onrush: the blink's body run forward, everything on the line struck
-    go: (run, R) => {
-      const P = run.P, dir = P.forward(new THREE.Vector3());
-      run.rush(dir, R.does.dist, (from, to) => run.sweep(from, to, R.does.width, R.does.power, R.id));
-    },
-  },
-  wade: { // Water Walk: the surface bears them, paint runs faster
-    go: (run, R) => { run.wadeK = R.does.paintSpeed; run.mgr.get?.('waterwalk')?.on(R.does.dur); },
-  },
-  ripostRush: { // within its window of a parry: blinked behind what was parried, and struck
-    can: (run, R) => { const p = run.parried; return p && p.c?.alive && run.now - p.at <= R.does.after ? null : `Riposte Rush needs a parry first: parry a blow, then use it within ${R.does.after} s.`; },
-    go: (run, R) => {
-      const P = run.P, c = run.parried.c; run.parried = null; run.place = { target: c };
-      const to = _b.copy(c.pos).sub(P.pos).setY(0), d = to.length(); if (d < 1e-3) return;
-      const dir = to.normalize().clone(), dist = d + (c.radius ?? 0.6) + 0.9;
-      run.rush(dir, dist, () => { if (c.alive) run.game.creatures?.strike(c, c.pos.clone().setY(c.pos.y + 0.8), dir.clone().negate(), R.does.power, 'art', 'courier'); });
-    },
-  },
-  bulwark: { // braced: blows worth less, the body held still
-    go: (run, R) => { run.braceUntil = run.now + R.does.dur; run.braceTaken = R.does.taken; },
-  },
-};
+/** The reactions that answer a moment of the game (the rest are asked by the systems they bend: see the hooks above). */
+function wireReactions(run) {
+  const g = run.game, on = (ev, fn) => g.events?.on?.(ev, (e) => { if ((e?.by ?? 'courier') === 'courier') fn(e); });
+  const mend = (id, R) => { if (g.vesselDamage?.mendBy?.(R.does.mends, id)) run.fire(id); };
+  // Kindness: a fish let go, a spirit's wish granted
+  for (const ev of ['angle.release', 'spirit.wish.done']) on(ev, () => { const R = run.reaction('tender'); if (R) mend('tender', R); });
+  // Hearth: a rest at a Shrine
+  on('shrine.rest', () => { const R = run.reaction('hearth'); if (R) mend('hearth', R); });
+  // Quick Study: each creature downed counts once more toward knowing its kind (progress/familiarity.js reads `creature.<kind>.read`)
+  on('creature.struck', (e) => {
+    const R = run.reaction('quickStudy'); if (!R || !e.kill || !CREATURES[e.kind]) return;
+    for (let i = 1; i < R.does.familiarity; i++) g.ledger?.inc?.(`creature.${e.kind}.read`);
+    run.fire('quickStudy');
+  });
+}
