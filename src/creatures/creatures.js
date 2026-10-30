@@ -118,10 +118,10 @@ export class Creatures {
     ps?.after?.(c); // (what a special does once the blow has landed: a drag, a calm, a drink, a share)
     g.vfx?.hit({ ent: c, kind: c.kind, cause, point, dir, power, kill: !c.alive, type }); // (what the blow looks like: vfx/library.js 'hit.*', 'damage.*')
     sfx.damage?.(type, Math.min(1, power)); // (and what its type sounds like over the hit: audio/damage.js, Wanda's)
-    if (annihilates) g.events?.emit('combat.annihilate', { kind: c.kind, type, by });
+    if (annihilates) g.events?.emit('combat.annihilate', { kind: c.kind, type, by, ...(c.training ? { training: true } : {}) });
     // (what the blow did, for familiarity's readouts: progress/familiarity.js, OVERLAY.md 13; `because` the multiplier's reason in words)
     const because = annihilates ? 'annihilation' : m.dmg > 1 ? `weak to ${TYPES[type]?.name || type}` : undefined;
-    g.events?.emit('creature.struck', { kind: c.kind, dmg, hp: c.hp, maxHp: c.maxHp, kill: !c.alive, type, k: m.dmg, ...(because ? { because } : {}), by });
+    g.events?.emit('creature.struck', { kind: c.kind, dmg, hp: c.hp, maxHp: c.maxHp, kill: !c.alive, type, k: m.dmg, ...(because ? { because } : {}), ...(c.training ? { training: true } : {}), by });
     // the blow moves its mind and stirs it up, and builds its type's status
     c.mind = pushed(c.mind, MIND.perBlow * power); this.mindMoved(c, by);
     c.emo = rise(c.emo, power);

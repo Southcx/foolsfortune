@@ -110,6 +110,7 @@ export async function bootServices(made) {
     .register('raceway', { zones: ['raceway'], boot: true, evict: true, build: (g) => { g.raceway?.build(); g.racewayDress?.build(g); }, teardown: (g) => { g.racewayDress?.teardown(g); g.raceway?.teardown(); } }) // (the park and its dressing together; the ground is releaseGround's)
     .register('bazaar', { zones: ['bazaar'], boot: true, evict: true, build: (g) => { g.bazaar?.build(); g.bazaarHall?.build(g); }, teardown: (g) => { g.bazaar?.teardown(); g.bazaarHall?.teardown(g); } }) // (Dovina's hall and Calissa's dress together; the Treasury's static evicted with the zone)
     .register('touchstone', { zones: ['touchstone'], build: (g) => g.touchstone?.build(), teardown: (g) => g.touchstone?.teardown() }) // (the Assay's room: built on entry, down whole after)
+    .register('sandbox', { zones: ['sandbox'], build: (g) => g.sandbox?.build(), teardown: (g) => g.sandbox?.teardown() }) // (the hand's physics room: built on entry, down whole after, the stock and the ball with it)
     .register('margarite', { zones: ['margarite'] })
     .register('opensea', { zones: ['opensea'], build: (g) => g.opensea?.build(), teardown: (g) => g.opensea?.teardown() }); // (comes down whole: the islets' dressing with it, opensea.js)
   game.time = new TimeScale(game); // (who slows the world, and by how much: see core/time.js)

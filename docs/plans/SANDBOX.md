@@ -40,8 +40,9 @@ world into enemies is worth more than hitting them yourself.
 A hall off the Index in THE HAND group, beside the Siege. The Siege is for raids; the Sandbox is for trying things.
 
 - **The rack** (F) lays the yard: eight light crates, three heavy ones, a tower of eighteen bricks to knock down, six pots.
-- **The pen** (F) calls three slip jellies into a ring of posts. They are training bodies, as the Throwing Room's are: they pay no experience
-  and no Lachryma, but a thrown hit on one is still yours and the ledger keeps it (the Physics achievements can be earned here). They are what the thrown hit and the god powers are tried on.
+- **The pen** (F) calls three slip jellies into a ring of posts. They are training bodies, as the Throwing Room's are: nothing done to them
+  counts (no experience, no cubes, no ledger: tracking.js drops every event marked `training`). The thrown hit's achievements are
+  earned on the world's creatures; the pitch's are earned here. They are what the thrown hit and the god powers are tried on.
 - **The ground lectern** (F) puts the hand's matter back as it was.
 - **Your own powers only.** The Sandbox lends nothing: DEBUG's lend panel lends the rest. It is a place to practise, never a shortcut past
   learning a power ("arts only by achievement").

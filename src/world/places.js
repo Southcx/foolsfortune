@@ -101,6 +101,7 @@ export function installPlaces(game) {
     P.add('jetty', { name: 'the jetty\'s end', at: () => b.jetty.end.clone(), yaw: -Math.PI / 2, deck: true, note: 'over the crude; the sloop moors here' });
   }
   if (game.touchstone) P.add('touchstone', { name: 'the Touchstone', at: () => new game.player.pos.constructor(3000, 200, -2994), via: () => { game.touchstone.arrive(); return true; }, note: 'the Assay\'s room: the standard trials' });
+  if (game.sandbox) P.add('sandbox', { name: 'the Sandbox', at: () => new game.player.pos.constructor(3080, 200, -2984), via: () => { game.sandbox.arrive(); return true; }, note: 'the hand\'s physics room: a yard of loose things, a pen of jellies, a pitch and a ball' });
   if (game.bazaar) P.add('bazaar', { name: "Raku's bazaar", at: () => game.bazaar.spot('arrive').pos, via: () => { game.bazaar.arrive(); return true; }, note: 'the casino: Querent, Zodiac, Event Horizon; chips at the cage' });
   if (game.opensea) P.add('opensea', { name: 'the open sea', at: () => game.opensea.props?.quays.anagami.pos.clone() ?? null, via: () => { game.opensea.arrive(); return true; }, note: "Anagami's quay on the open sea; F at the ship: board" });
   if (game.raceway) P.add('raceway', { name: 'the Raceway', at: () => game.raceway.startPillar.clone(), via: () => { game.raceway.arrive(); return true; }, note: 'the Solar Skiff\'s test circuit; F at the start\'s pillar: a race' });

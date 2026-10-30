@@ -173,7 +173,7 @@ export class SlipJellies {
     c.brain.signal();
     sfx.jellySquelch(g.listenerDistance(c.pos), Math.min(1.5, 0.7 + power * 0.3));
     g.fx?.impact?.(_c.copy(p), _a.copy(dir).negate(), { sparks: 0, dust: 3 });
-    g.events?.emit('jelly.hit', { cause, by, hp: Math.max(0, +c.hp.toFixed(1)) });
+    g.events?.emit('jelly.hit', { cause, by, hp: Math.max(0, +c.hp.toFixed(1)), ...(c.training ? { training: true } : {}) });
     if (c.hp <= 0) this.burst(c, dir, by, cause, culprit);
   }
 
@@ -187,7 +187,7 @@ export class SlipJellies {
     c.brain.end('burst');
     g.ai?.stimuli.emit('death', c.pos, { radius: 26, strength: 1.2, by, source: c, about: culprit, aboutPos: culprit?.pos, ttl: 2 });
     c.burstBy = { dir: dir.clone(), by, cause }; c.downBy = by;
-    g.events?.emit(c.spirit ? 'spirit.fade' : 'jelly.burst', { by, cause });
+    g.events?.emit(c.spirit ? 'spirit.fade' : 'jelly.burst', { by, cause, ...(c.training ? { training: true } : {}) }); // (a training body's, the Sandbox's pen: counted by no one, tracking.js)
     c.status.clear();
   }
   pop(c) {
@@ -210,7 +210,7 @@ export class SlipJellies {
     g.shells?.addSplat?.(c.pos.clone().setY(c.pos.y + 0.02), UP, 2.6, 'crude');
     g.paintmap?.coat(c.pos.clone(), UP, 1.6, 20);
     // (its Lachryma: what it was, and whatever it had swallowed of theirs, back on the sand whoever burst it)
-    if (by === 'courier' || c.stash) g.cubes?.burst?.(at, (by === 'courier' ? Math.round(ECON.jelly.burst * yieldOf(c.emo)) : 0) + (c.stash || 0), { count: 4 + Math.min(8, c.stash || 0), up: 4, from: 'jelly' });
+    if (!c.training && (by === 'courier' || c.stash)) g.cubes?.burst?.(at, (by === 'courier' ? Math.round(ECON.jelly.burst * yieldOf(c.emo)) : 0) + (c.stash || 0), { count: 4 + Math.min(8, c.stash || 0), up: 4, from: 'jelly' });
     c.stash = 0;
     g.glyphs?.pop('star', at.clone().setY(at.y + 0.4), { color: 0xd9c8ff, size: 0.5, life: 0.9, burst: true });
   }
