@@ -4576,3 +4576,23 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the body's root is `userData.zoneFree` (it always stands under its rider, hidden when not ridden); the slip puddles keep
   their own `live` flag instead of reading `visible`. After: `shown: true` through the call and the ride, on the phone and the desk.
 - **Rule:** NEW:zone-visible-gate
+
+### 2026-10-30 · Strawman's head stayed at its home spot in a practice duel (world/testroom/room.js; Calissa's elite, headless)
+- **Seen:** the cut-in's portrait (vfx/duelview/cutin.js `aim`) frames `foe.head()`; in a practice duel the portrait's camera looked
+  at where Strawman had stood, not where the duel had moved it. Measured headless at 1920 x 1080 (the Courier 3.55 m from it, the duel
+  begun as the lectern begins it): Strawman moved 1.17 m into the layout; the old head point lay 1.51 m from its drawn head's top.
+- **Cause:** `head()` and `center()` were built over `at` (TR.strawman), a constant, while the duel's session moves a fixture's body and
+  its `pos` (world/duel/duelsession.js: `root.position.add(to - c.pos)`, `c.pos.copy(to)`) and puts both back at the end.
+- **Fix:** both read `S.pos`, where it stands now (the same spot outside a duel). After: 0.95 m from the drawn head's top, two different
+  points that never meet (the head point 0.9 of its 2.45 m over its spot; the drawn one its bounds' centre and top plus 0.1 m, its
+  hat, sleeves and aberrant shards in them: foecast.js `headWorld`); the 1.17 m it was moved is gone, and the cut-in's strip frames it.
+- **Rule:** NEW:fixture-points-follow
+
+### 2026-10-30 · A foe's aura stood over its head, not round its feet (vfx/duelview/auras.js; Calissa's elite, headless)
+- **Seen (1920 x 1080, a practice duel, `auras.charge(1)`):** Strawman's stitched ground ring and its columns hung at the top of the
+  frame over its hat, the rays rising from there into the sky; nothing round its feet.
+- **Cause:** `stand(side, out)` copies the foe's spot into `out`, then asks `foeCast.headWorld(_a)` for its height; the update hands
+  `stand` the module's `_a` as `out`, so the head's point (its bounds' top + 0.1 m) overwrote the spot, and every foe's aura was laid
+  out from its head.
+- **Fix:** the head is read into its own scratch (`_h`). After: the rerun's aura shot (desk-duel-4-aura) shows the ring on the ground.
+- **Rule:** NEW:scratch-holds-one-answer

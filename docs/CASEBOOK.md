@@ -1026,3 +1026,9 @@ NEW:zone-visible-gate. **A tick that waits on `visible` reads the zones' too.** 
   its owner's and its zone's together (render/zones.js); a body that is placed by a tick gated on `visible` and was last left in
   another zone (or parked for the warm-up) is never moved out of it, and never shows. A body that always stands with the Courier is
   `zoneFree`; a gate on its own state reads its own flag, never `visible`.
+NEW:fixture-points-follow. **A creature's points are read from where it stands now.** `head()`, `center()` and their like are worked
+  out from its `pos` (or its drawn body), never from the spot it was built at: a duel, a cradle or a scripted fight may move even a
+  fixture, and whatever aims at it (a cut-in's portrait, a tag, a mark) then looks at empty air.
+NEW:scratch-holds-one-answer. **A module's scratch vector holds one answer at a time.** A function that writes its result into an
+  `out` the caller lent (often the module's own `_a`) never hands that same vector to another call that writes it: the second answer
+  overwrites the first and nothing throws. Each answer still wanted gets its own scratch.

@@ -74,6 +74,7 @@ import { FoeCast } from './duelview/foecast.js';
 import { FoeCutIn } from './duelview/cutin.js';
 import { WispElite } from './duelview/aberrants/wisp.js';
 import { JellyElite } from './duelview/aberrants/jelly.js';
+import { StrawmanElite } from './duelview/aberrants/strawman.js';
 import { FrameDress } from './duelview/framedress.js';
 import { DuelSpoils } from './duelview/spoils.js';
 import { DuelStamps } from './duelview/stamps.js';
@@ -96,7 +97,7 @@ export class DuelView {
     this.board = new DuelBoard(this.frame, this.clash); this.pieces = new DuelPieces(this.frame); this.marks = new DuelMarks(this.frame);
     this.intentDraw = new DuelIntent(this.frame, this.marks); this.bursts = new DuelBursts(this.frame); this.beats = new DuelBeats(this);
     this.flee = new DuelFlee(this); this.folded = false;
-    this.glows = new DuelGlows(this); this.worth = new DuelWorth(this); this.foresight = new DuelForesight(this); this.juice = new DuelJuice(this); this.stage = new DuelStage(this); this.dive = new FormDive(this); this.gauges = new SkillGauges(this); this.foeCast = new FoeCast(this); this.cutIn = new FoeCutIn(this); this.jarCut = new FoeCutIn(this, { subject: 'jar' }); this.stamps = new DuelStamps(this); this.show = new DuelShow(this); this.seeding = new DuelSeeding(this); this.auras = new DuelAuras(this); this.sideDress = new DuelSideDress(this); this.elites = [new WispElite(this), new JellyElite(this)]; this.elite = this.elites[0]; this.garden = new GardenGround(this); this.dress = new FrameDress(this); this.spoils = new DuelSpoils(this); this.tune = [null, null]; this.pendingKind = null;
+    this.glows = new DuelGlows(this); this.worth = new DuelWorth(this); this.foresight = new DuelForesight(this); this.juice = new DuelJuice(this); this.stage = new DuelStage(this); this.dive = new FormDive(this); this.gauges = new SkillGauges(this); this.foeCast = new FoeCast(this); this.cutIn = new FoeCutIn(this); this.jarCut = new FoeCutIn(this, { subject: 'jar' }); this.stamps = new DuelStamps(this); this.show = new DuelShow(this); this.seeding = new DuelSeeding(this); this.auras = new DuelAuras(this); this.sideDress = new DuelSideDress(this); this.elites = [new StrawmanElite(this), new WispElite(this), new JellyElite(this)]; this.elite = this.elites[0]; this.garden = new GardenGround(this); this.dress = new FrameDress(this); this.spoils = new DuelSpoils(this); this.tune = [null, null]; this.pendingKind = null;
     this.intentWhole = true; // (the session hands intent() bot.js intentOf's whole: { actions, junk, cells, hits })
     this.u = new THREE.Vector3(1, 0, 0); this.face = new THREE.Vector3(0, 0, 1); this.centre = new THREE.Vector3();
     this.sent = [0, 0]; this.pending = [0, 0]; this.depth = [0, 0]; this.apShown = [5, 5]; this.restCuts = 0; this.forms = ['hand', 'hand']; this.lineCol = 10;

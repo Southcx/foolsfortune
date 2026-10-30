@@ -11,7 +11,9 @@
 //                the far one slow), a dust plume rising where it lands and a mound of sand under it
 //   THE WISP'S   wiry briars: thin black canes climbing out of the ground at its end, thorned, bending, a lantern hung from each tip and
 //                fork, every flame flickering on its own, guttering as the Wisp's own lantern dims (aberrants/wisp.js `dark`)
-//   ANY OTHER    nothing (a practice duel's Strawman stands alone)
+//   STRAWMAN'S   its sparring yard at harvest (aberrants/strawmanyard.js `strawmanYard`): bales, a target on its easel, its fellow
+//                dummies on their posts, bunting over its head, Pip's sewing kit at giant scale, straw blowing across
+//   ANY OTHER    nothing
 // Programs: the clay's, the kit's basic with a map (fxkit.js) and the glow's (pieces.js `duel-glow`): nothing new.
 // Prior art: Pokemon Stadium's arenas, each a type's stage set; Final Fantasy's battle backs; Guilty Gear's stages dressed as their
 // fighter; the armillary sphere; Kingdom Hearts' Land of Dragons' paper lanterns; the Dunes' own sandfalls (vfx/racewaysandfall.js).
@@ -22,6 +24,8 @@ import * as THREE from 'three';
 import { duelMaterials } from './pieces.js';
 import { WispElite } from './aberrants/wisp.js';
 import { JellyElite } from './aberrants/jelly.js';
+import { StrawmanElite } from './aberrants/strawman.js';
+import { strawmanYard } from './aberrants/strawmanyard.js';
 import { SIDE, tex, chantTexture, scrollMat, scroll, worldIn } from './fxkit.js';
 import { FEELINGS } from '../../npc/neuraleseroots.js';
 import { feelColour } from './layout.js';
@@ -34,14 +38,14 @@ const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _q = new THREE.Quatern
 const hsh = (i, k) => { const x = Math.sin(i * 127.1 + k * 311.7) * 43758.5453; return x - Math.floor(x); };
 
 export class DuelSideDress {
-  constructor(view) { this.view = view; this.group = new THREE.Group(); this.group.name = 'duel-sidedress'; this.spin = []; this.scrolls = []; this.lamps = []; this.t = 0; }
+  constructor(view) { this.view = view; this.group = new THREE.Group(); this.group.name = 'duel-sidedress'; this.spin = []; this.scrolls = []; this.lamps = []; this.ticks = []; this.t = 0; }
 
   open(state, foe) {
     this.close(); const V = this.view; if (!V.isOpen) return; worldIn(this.group, V.root);
     const u = _a.copy(V.u).setY(0).normalize().clone(), back = V.face.clone().negate();
     const you = (V.game.player?.pos || V.centre.clone().addScaledVector(u, -2)).clone(), them = (foe?.pos || V.centre.clone().addScaledVector(u, 2)).clone();
     this.yours(you, u.clone().negate(), back);
-    if (WispElite.fits(state, foe)) this.briars(them, u, back); else if (JellyElite.fits(state, foe)) this.sandfalls(them, u, back);
+    if (StrawmanElite.fits(state, foe)) strawmanYard(this, them, u, back); else if (WispElite.fits(state, foe)) this.briars(them, u, back); else if (JellyElite.fits(state, foe)) this.sandfalls(them, u, back);
   }
 
   mesh(geo, mat, at) { const m = new THREE.Mesh(geo, mat); if (at) m.position.copy(at); m.frustumCulled = false; this.group.add(m); return m; }
@@ -100,12 +104,13 @@ export class DuelSideDress {
     for (const s of this.spin) { if (s.orbit) { s.a += s.w * dt; s.o.position.copy(s.orbit).add(_a.set(Math.cos(s.a) * s.r, s.y + Math.sin(s.a * 2) * 0.1, Math.sin(s.a) * s.r)); s.o.rotation.x += dt; s.o.rotation.y += dt * 0.7; }
       else s.o.rotateOnAxis(s.ax, s.w * dt); }
     for (const s of this.scrolls) { scroll(s.m.material, dt, s.su, s.sv); if (s.m.userData.breathe) s.m.material.opacity = 0.35 + 0.35 * (0.5 + 0.5 * Math.sin(t * 1.3)); if (s.m.userData.face && cam) s.m.quaternion.copy(cam.quaternion); }
+    for (const f of this.ticks) f(dt, t); // (a set's own motion: Strawman's bunting)
     for (const L of this.lamps) { const k = (0.7 + 0.3 * Math.sin(t * SIDE_DRESS.flicker + L.seed) * Math.sin(t * 3.7 + L.seed * 2)) * (1 - 0.8 * dark); // (each flame its own flicker, guttering with the Wisp's own)
       L.lamp.material.color.setHex(LAMP).multiplyScalar(1.5 * k); L.halo.material.opacity = 0.55 * k; }
   }
 
   close() {
-    for (const m of [...this.group.children]) { this.group.remove(m); m.traverse?.((o) => { o.geometry?.dispose(); if (o.material && o.material !== this.clay && o.material !== this.sand && o.material !== this.iron) { o.material.map?.dispose(); o.material.dispose(); } }); }
-    for (const m of [this.clay, this.sand, this.iron]) m?.dispose(); this.clay = this.sand = this.iron = null; this.spin = []; this.scrolls = []; this.lamps = [];
+    for (const m of [...this.group.children]) { this.group.remove(m); m.traverse?.((o) => { o.geometry?.dispose(); if (o.material && !o.material.userData?.keep && o.material !== duelMaterials().clayVc && o.material !== this.clay && o.material !== this.sand && o.material !== this.iron) { o.material.map?.dispose(); o.material.dispose(); } }); } // (the shared clay and a kept material stay)
+    for (const m of [this.clay, this.sand, this.iron]) m?.dispose(); this.clay = this.sand = this.iron = null; this.spin = []; this.scrolls = []; this.lamps = []; this.ticks = [];
   }
 }

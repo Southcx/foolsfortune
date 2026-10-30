@@ -63,6 +63,17 @@ void main() {
     if (uMotif > 0.5 && uMotif < 1.5) { float cr = texture2D(uCrack, px / 240.0 + vec2(uT * 0.02, 0.0)).a; c = mix(c, vec3(1.0, 0.8, 0.42), cr * 0.17); } // (yours: the clay's craze, kintsugi's gold)
     else if (uMotif > 1.5 && uMotif < 2.5) { float col = floor(px.x / 22.0), on = step(0.5, h21(vec2(col, 5.0))); // (the slip jelly's: sand pouring down through the band)
       float g = texture2D(uSand, vec2(fract(px.x / 22.0), px.y / 260.0 - uT * (1.4 + h21(vec2(col, 9.0))))).a; c = mix(c, uFeel * 0.5 + vec3(0.4, 0.32, 0.15), g * on * 0.75); }
+    else if (uMotif > 3.5) { // (Strawman's: a burlap band, two seams of cross-stitch along it, straw blown through it, a target behind its head)
+      vec2 wv = px / 7.0; float th = max(smoothstep(0.18, 0.5, abs(fract(wv.x) - 0.5)), smoothstep(0.18, 0.5, abs(fract(wv.y) - 0.5)));
+      c = mix(c, vec3(0.5, 0.36, 0.2) * (0.72 + 0.32 * th + 0.12 * h21(floor(wv * vec2(1.0, 0.25)))) + uFeel * 0.03, 0.8);
+      float tph = 2.0 * uBand.y; vec2 tc = vec2(W * (0.985 - uBand.w) + (1.0 - uIn) * W * 0.3 - uDrift + W * uBand.w * 0.5, uBand.x - uBand.y + (px.x - W * 0.5) * uBand.z + tph * 0.3);
+      float tr = length(px - tc) / (tph * 0.42); // (behind the portrait's head: the kiln's red on cream in five rings, as its belly's)
+      if (uBand.w > 0.001 && tr < 1.0) c = mix(c, mix(mod(floor(tr * 5.0), 2.0) < 0.5 ? vec3(0.5, 0.06, 0.035) : vec3(0.88, 0.78, 0.58), vec3(0.08, 0.04, 0.02), step(0.94, tr)), 0.88);
+      for (int k = 0; k < 2; k++) { float sg = k == 0 ? 1.0 : -1.0; vec2 o = vec2((fract(px.x / 18.0) - 0.5) * 18.0, (by - 0.46 * sg) * hh); // (the seams' cross-stitches, 18 px apart)
+        float x = min(abs(o.x - o.y), abs(o.x + o.y)); c = mix(c, vec3(0.86, 0.76, 0.56), (1.0 - smoothstep(1.4, 2.8, x)) * step(abs(o.y), 6.5) * step(abs(o.x), 6.5)); }
+      for (int k = 0; k < 2; k++) { float fk = float(k), sp = px.x + uT * (900.0 + 500.0 * fk); vec2 cell = vec2(floor(sp / 110.0), floor(px.y / 26.0)), f = vec2(fract(sp / 110.0) * 110.0 - 55.0, fract(px.y / 26.0) * 26.0 - 13.0); // (straw blown through, right to left)
+        float h = h21(cell + fk * 9.0); vec2 d = normalize(vec2(1.0, (h21(cell + 4.0) - 0.5) * 0.7)) * (14.0 + 12.0 * h), o2 = f - vec2((h - 0.5) * 40.0, (h21(cell + 2.0) - 0.5) * 8.0);
+        float sd = length(o2 - d * clamp(dot(o2, d) / dot(d, d), -1.0, 1.0)); c = mix(c, vec3(0.92, 0.7, 0.28) * (1.1 - 0.3 * fk), step(0.5, h) * (1.0 - smoothstep(1.3, 2.6, sd)) * (0.9 - 0.3 * fk)); } }
     else if (uMotif > 2.5) { for (int k = 0; k < 3; k++) { float fk = float(k), yy = sin(bx * (2.5 + fk) + fk * 2.1 + uT * 0.4) * 0.35 + (fk - 1.0) * 0.5; // (the Lantern Wisp's: black briars across it, lanterns hung off them)
         c = mix(c, vec3(0.02, 0.015, 0.015), smoothstep(0.11, 0.05, abs(by - yy)));
         float lx = fract(bx * 0.8 + fk * 0.37) - 0.5, ld = length(vec2(lx * 2.4, (by - yy + 0.2) * 1.3)); c += vec3(1.0, 0.6, 0.22) * smoothstep(0.22, 0.0, ld) * (0.55 + 0.45 * sin(uT * 9.0 + fk * 3.0 + bx)); } }
