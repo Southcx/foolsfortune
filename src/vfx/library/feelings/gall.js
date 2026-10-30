@@ -130,7 +130,7 @@ export const GALL_EFFECTS = {
       edgeV: [0.04, 0.6], erode: [[0, 0.1], [0.45, 0.2], [1, 1]], rampShift: [[0, 0], [1, -0.25]], k: [[0, 0], [0.12, 0.7], [1, 0.7]] }),
     // PRIMARY: a blob swelling and sagging round their feet
     L({ type: 'shape', form: 'dome', ramp: 'gall', main: 'curds', mainK: 0.65, tile: [5, 2], scroll: [0.02, 0.12], flow: 'noise', flowK: 0.12, at: 0.35, dur: 1.6, scale: [[0, 0.6], [0.3, 2], [1, 2.3]],
-      stretch: [SAG_XZ, SAG_Y, SAG_XZ], erode: [[0, 0], [0.4, 0.06], [1, 1]], rampShift: [[0, 0.05], [0.3, 0.05], [1, -0.32]], rim: 0.3, glow: 1.6, turn: 'random' }),
+      stretch: [SAG_XZ, SAG_Y, SAG_XZ], erode: [[0, 0], [0.4, 0.06], [1, 1]], rampShift: [[0, -0.1], [0.3, -0.08], [1, -0.36]], rim: 0.3, glow: 1.15, core: 0.2, turn: 'random' }),
     // SECONDARY: drips raining off the column, and splatting round them
     drips({ at: 0.5, count: [30, 36], spawn: 'column', r: [0.6, 1.3], height: 3, offset: [0, 0.5, 0], dir: 'up', speed: [-0.3, 0.2], delay: [0, 1.2], life: [0.7, 1] }),
     splats({ at: 0.8, count: [16, 20], spawn: 'disc', r: 1.6, delay: [0, 1.4] }),

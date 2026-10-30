@@ -116,8 +116,8 @@ export const DESIRE_EFFECTS = {
     L({ type: 'shape', form: 'band', ramp: 'desire', main: 'ripple', tile: [3, 2], scroll: [0, -0.3], mask: 'noise', maskTile: [2, 1], maskScroll: [0, 0.3], flow: 'noise', flowK: 0.04,
       at: 0.28, dur: 2.5, scale: [[0, 1.4], [0.04, 0.6], [0.08, 1.25], [0.12, 0.85], [0.17, 1.5], [1, 1.6]], stretch: [1, [[0, 1], [0.08, 3], [1, 4.4]], 1],
       edgeV: [0.03, 0.65], rim: -0.6, erode: [[0, 0], [0.45, 0.06], [1, 1]], rampShift: [[0, 0.05], [0.2, 0.05], [1, -0.35]], glow: 2, core: 0.5 }),
-    // PRIMARY: a dome breathing the two beats round their feet
-    L({ type: 'shape', form: 'dome', ramp: 'desire', main: 'ripple', mainK: 0.6, tile: [5, 2], scroll: [0, -0.4], at: 0.28, dur: 1.6, scale: times(BEAT, 2.2),
+    // PRIMARY: a dome breathing the two beats round their feet (kept inside the third-person camera's 3 m: past it the dome veils the view)
+    L({ type: 'shape', form: 'dome', ramp: 'desire', main: 'ripple', mainK: 0.6, tile: [5, 2], scroll: [0, -0.4], at: 0.28, dur: 1.6, scale: times(BEAT, 1.35),
       erode: [[0, 0], [0.4, 0.06], [1, 1]], rampShift: [[0, 0.05], [0.3, 0.05], [1, -0.32]], rim: 0.4, glow: 1.8, turn: 'random' }),
     // SECONDARY: a ring out across the ground on each beat, and the heart beating twice again, quieter, a second later
     beatRing(0.32, 6, 0.8), beatRing(0.52, 7, 0.9, 0.85), beatRing(1.3, 4, 0.8, 0.55), beatRing(1.48, 4.6, 0.9, 0.45),

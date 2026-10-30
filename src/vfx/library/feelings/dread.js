@@ -115,14 +115,15 @@ export const DREAD_EFFECTS = {
     // PRIMARY (the one bright source): the hot core at their heart, shrinking as the light goes, and its lamp, dying
     hotCore({ ramp: 'dread', at: 0.5, size: [0.7, 0.2], offset: [0, 1.1, 0] }),
     L({ type: 'light', at: 0.5, color: LIGHT, k: 18, range: 6, dur: 1.6, up: 1.1 }),
-    // PRIMARY: a dome of ink closing down over them from far off, marbled, eaten away last
-    ink({ form: 'dome', tile: [4, 2], scroll: [0.02, -0.15], mask: 'noise', maskTile: [2, 1], maskScroll: [0, -0.1], at: 0.45, dur: 2.5, scale: [[0, 7], [0.35, 3], [1, 2.4]],
+    // PRIMARY: a dome of ink closing down over them, marbled, eaten away last (the far-off closing is the tendrils' and the ring's: a dome
+    // wider than the camera's 3 m passes through the near plane as a hard edge)
+    ink({ form: 'dome', tile: [4, 2], scroll: [0.02, -0.15], mask: 'noise', maskTile: [2, 1], maskScroll: [0, -0.1], at: 0.45, dur: 2.5, scale: [[0, 2.7], [0.35, 2.1], [1, 1.9]],
       stretch: [1, [[0, 0.6], [0.35, 1.05], [1, 1]], 1], erode: [[0, 0.4], [0.12, 0.06], [0.75, 0.15], [1, 1]], rampShift: [[0, 0], [0.4, 0], [1, -0.2]], k: [[0, 0], [0.12, 0.9], [1, 0.9]], turn: 'random' }),
     // PRIMARY (its inner shell): Dread's own marbling contracting on them
     ink({ form: 'dome', ramp: 'dread', tile: [4, 2], scroll: [-0.02, -0.12], at: 0.5, dur: 2, scale: [[0, 2.6], [1, 0.9]], erode: [[0, 0.3], [0.2, 0.06], [0.8, 0.15], [1, 1]],
       rampShift: [[0, 0], [1, -0.2]], k: [[0, 0], [0.15, 0.8], [1, 0.8]], turn: 'random' }),
     // SECONDARY: ink spiralling in round them
-    ink({ form: 'spiral', rim: -0.7, tile: [6, 1], scroll: [-0.4, 0], at: 0.5, dur: 1.6, scale: [[0, 3], [1, 0.8]], stretch: [1, 3, 1], spin: -1.8, erode: [[0, 0.4], [0.2, 0.08], [0.7, 0.15], [1, 1]],
+    ink({ form: 'spiral', rim: -0.95, rimPow: 1.6, tile: [6, 1], scroll: [-0.4, 0], at: 0.5, dur: 1.6, scale: [[0, 1.8], [1, 0.7]], stretch: [1, 2.3, 1], spin: -1.8, erode: [[0, 0.4], [0.2, 0.08], [0.7, 0.15], [1, 1]],
       k: [[0, 0], [0.15, 0.8], [1, 0.8]] }),
     // SECONDARY: smoke rising slowly round them
     smoke({ at: 0.6, count: [16, 20], spawn: 'ring', r: 2, dir: 'up', speed: [0.3, 0.6], size: [0.7, 1], sizeEnd: 1.8, life: [1.6, 2.2] }),
