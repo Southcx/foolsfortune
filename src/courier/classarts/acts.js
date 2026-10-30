@@ -5,21 +5,35 @@
 // `target` a creature), for its look (vfx/classartlooks.js, Calissa's). Built in waves, four classes a wave (CLASS-ARTS.md 4):
 //   wave 1  the Fool (Beginner's Luck) and the Knights (Onrush, Water Walk, Riposte Rush, Bulwark)
 //   wave 2  the Pages (Spark, Offering, Scout, Prospect) and the Queens (Stoke, Catch the Rain, Clear Sight, Harvest)
+//   wave 3  the Kings (Roar, Still Waters, Mark for Death, Earth Wall), the World (Completion), the fire signs (Ram, Tame, Blink Mark)
 // A refusal's words are Espada's where she wrote them (docs/handoffs/everyone/2026-10-30-from-espada-words-ahead.md 2), else placeholders.
 //
 // Prior art: Final Fantasy Tactics' action abilities (one verb on a key), Hades' boons, the house's own verbs reused where an art is one
 // (the flare's reveal for Scout, the dowse's ping for Prospect, the mop's wash for Spark's ember, the Lachrymato Bottle's fill).
 //
-//   ACTS[id] -> { can?, go }   (body.js asks)
+//   ACTS[id] -> { can?, go, again? }   (body.js asks; `again(run, R)` -> true: a second press that is the art's own, before its cooldown)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { BOTTLES } from '../../progress/brushload.js';
 import { ECON } from '../../progress/econ/table.js';
 import * as calendar from '../../core/calendar.js';
+import { REL } from '../../creatures/ai/index.js';
+import { EMO, enraged } from '../../progress/combat/emo.js';
 
 const _a = new THREE.Vector3(), _b = new THREE.Vector3();
 const GAME_HOUR = (calendar.DAY_MS ?? 3600000) / 24;
 const nothing = (R) => `${R.label} finds nothing in reach.`; // (Espada's, for an area art with no one in it)
+/** Petra's, where the rows are silent: a stagger is the toll's (a fifth to a third of a light stun: tools/crucibelle/crucibelle.js 0.22, On
+ *  the Beat's 0.3) with its shove; an art aimed at one creature takes the lock-on's target, else the nearest in front within AIM m. */
+const STAGGER = 0.3, SHOVE = 2.5, AIM = 20;
+const foes = (run, r) => (run.game.creatures?.near?.(run.P.pos, r) || []).filter((c) => c.alive && !c.ally);
+/** The creature an art aims at: the lock-on's, else the nearest within `r` in front (a cone of 0.6 rad). */
+function aimed(run, r = AIM, ok = () => true) {
+  const g = run.game, L = g.lock?.target; if (L?.alive && !L.ally && ok(L) && L.pos.distanceTo(run.P.pos) <= r) return L;
+  const P = run.P, f = P.forward(new THREE.Vector3()); let best = null, bd = Infinity;
+  for (const c of foes(run, r)) { if (!ok(c)) continue; const d = _a.copy(c.pos).sub(P.pos).setY(0), n = d.length(); if (n > 0.5 && d.normalize().angleTo(f) > 0.6) continue; if (n < bd) { bd = n; best = c; } }
+  return best;
+}
 
 export const ACTS = {
   // ---- wave 1 ---------------------------------------------------------------------------------------------------------------------
@@ -54,7 +68,7 @@ export const ACTS = {
       const at = hit ? hit.point.clone() : from.clone().addScaledVector(dir, R.does.reach), c = hit ? g.physics.entityOf?.(hit.collider) : null;
       if (c?.type === 'creature' && c.alive && !c.ally) {
         g.creatures.strike(c, at.clone(), dir.clone(), R.does.power, 'art', 'courier', null, 'impact');
-        g.stun?.add(c, R.does.power, { by: 'courier', cause: 'spark' }); // (staggered: its poise knocked as a light blow's)
+        g.stun?.add(c, STAGGER, { by: 'courier', cause: 'spark' }); // (staggered, as by a toll)
         run.place = { target: c };
       } else run.place = { at };
       if (R.does.burns) { // (the ember lands: crude burnt off where it fell, as Clean washes it: a blot emptied is washed by you)
@@ -125,6 +139,91 @@ export const ACTS = {
         if (i >= 0) { G.s.beds[i].at = calendar.now() - ECON.garden.growHours * GAME_HOUR; G.dirty?.(); return; }
       }
       run.harvestCubes = (run.harvestCubes || 0) + R.does.crystalCube;
+    },
+  },
+
+  // ---- wave 3: the Kings ------------------------------------------------------------------------------------------------------------
+  command: { // Roar: every creature within reach staggered, and its windup broken off
+    can: (run, R) => (foes(run, R.does.reach).length ? null : nothing(R)),
+    go: (run, R) => {
+      const g = run.game, P = run.P;
+      for (const c of foes(run, R.does.reach)) {
+        g.stun?.add(c, STAGGER, { by: 'courier', cause: 'roar' });
+        const d = _a.copy(c.pos).sub(P.pos).setY(0); if (d.lengthSq() > 1e-4) c.knock?.(d.normalize().multiplyScalar(SHOVE).setY(1).clone());
+        if (R.does.breaks) c.cancel?.('roar');
+      }
+    },
+  },
+  stillWaters: { // every creature within reach settled: its mind to Balanced, its agitation to the middle of its best band
+    can: (run, R) => (foes(run, R.does.reach).length ? null : nothing(R)),
+    go: (run, R) => {
+      const g = run.game, mid = (EMO.optimal[0] + EMO.optimal[1]) / 2;
+      for (const c of foes(run, R.does.reach)) {
+        if (c.mind != null) { c.mind = R.does.mind; g.creatures?.mindMoved?.(c, 'courier'); }
+        if (R.does.emo === 'band' && c.emo != null) c.emo = mid;
+        g.temper?.set?.(c, { state: c.mind, emo: c.emo, enrage: enraged(c.emo) }); // (its body settles too: vfx/temper.js)
+      }
+    },
+  },
+  verdict: { // Mark for Death: the creature aimed at marked; your blows on it worth more, and it cannot resist them (body.js onStrike, noResist)
+    can: (run, R) => (aimed(run) ? null : nothing(R)),
+    go: (run, R) => {
+      const c = aimed(run); run.mark = { c, until: run.now + R.does.dur, mult: R.does.mult }; run.place = { target: c };
+      if (R.does.noResist) run.open(c, R.does.dur);
+    },
+  },
+  stronghold: { // Earth Wall: a wall of ground stood up in front of you for a while (body.js wall)
+    spot(run) {
+      const g = run.game, P = run.P, f = P.forward(new THREE.Vector3()), at = P.pos.clone().addScaledVector(f, 2.2).setY(P.pos.y + 1.5);
+      const down = g.physics?.raycast(at, _b.set(0, -1, 0), 4, P.collider, undefined, (k) => !k.isSensor());
+      return down && down.normal.y > 0.6 ? { at: down.point.clone(), yaw: Math.atan2(f.x, f.z) } : null;
+    },
+    can(run) { return this.spot(run) ? null : 'Earth Wall needs open ground in front of you.'; }, // (Espada's)
+    go(run, R) { const s = this.spot(run); if (!s) return; run.place = { at: s.at }; run.wall(s.at, s.yaw, R.does.width, R.does.height, R.does.dur); },
+  },
+
+  // ---- wave 3: the World ------------------------------------------------------------------------------------------------------------
+  completion: { // for a while every art costs nothing (the pool's modifier) and cools down faster (body.js press)
+    go: (run, R) => { run.completeUntil = run.now + R.does.dur; run.completeCool = R.does.cool; run.game.lachryma?.addModifier?.('art.completion', { costMult: { art: 0 } }); },
+  },
+
+  // ---- wave 3: the fire signs -----------------------------------------------------------------------------------------------------
+  ram: { // a wave of force ahead: everything in its cone struck and knocked back
+    can: (run, R) => (run.inCone(R.does.reach, R.does.cone).length ? null : nothing(R)),
+    go: (run, R) => {
+      const g = run.game, P = run.P;
+      for (const c of run.inCone(R.does.reach, R.does.cone)) {
+        const d = _a.copy(c.pos).sub(P.pos).setY(0).normalize().clone();
+        g.creatures.strike(c, c.pos.clone().setY(c.pos.y + 0.8), d.clone(), R.does.power, 'art', 'courier', null, 'impact');
+        run.carry(c, d, R.does.knock); // (carried its `knock` metres, whatever its own drag: a stunned jelly sheds a lone knock in 1.6 m)
+      }
+    },
+  },
+  tame: { // a creature stunned deep enough fights beside you a while: you its kin, the kinds near it its rivals (the brain wears the
+    // relations off on its own clock, as a reprogrammed one's: creatures/ai/brain.js; body.js gives back its standing as a foe)
+    ok: (run, R) => (c) => (run.game.stun?.depth?.(c) || 0) >= R.does.depth && !!c.brain,
+    can(run, R) { return aimed(run, 8, this.ok(run, R)) ? null : 'Tame needs a creature stunned or out cold within 8 m.'; }, // (placeholder: Espada's)
+    go(run, R) {
+      const c = aimed(run, 8, this.ok(run, R)); if (!c) return;
+      const until = (c.brain.now || 0) + R.does.dur, kinds = new Set(foes(run, 30).filter((o) => o !== c).map((o) => o.kind)).add(c.kind);
+      c.rel ||= new Map(); c.relUntil ||= new Map();
+      c.rel.set('courier', REL.KIN); c.relUntil.set('courier', until);
+      for (const k of kinds) { c.rel.set(k, REL.RIVAL); c.relUntil.set(k, until); }
+      const f = c.mem?.fact?.(run.P); if (f) { f.grudge = 0; f.threat = 0; } // (kin: no grudge left, as the Lockheart's kin outcome)
+      c.ally = true; c.brain.signal?.(); run.tamed.push({ c, until: run.now + R.does.dur }); run.place = { target: c };
+    },
+  },
+  arrowOfTime: { // Blink Mark: a mark thrown where you look; the key again within its window blinks you to it
+    again(run, R) {
+      const m = run.blinkMark; if (!m || run.now > m.until) return false;
+      run.blinkMark = null; const P = run.P, to = _a.copy(m.at).sub(P.pos), d = to.length(); if (d < 0.5) return true;
+      run.rush(to.normalize().clone(), d, null); run.fire('arrowOfTime'); return true;
+    },
+    go: (run, R) => {
+      const g = run.game, P = run.P, from = _a.copy(P.pos).setY(P.pos.y + 1.5), dir = P.lookDir(new THREE.Vector3());
+      const hit = g.physics?.raycast(from, dir, R.does.reach, P.collider, undefined, (k) => !k.isSensor());
+      const at = hit ? hit.point.clone().addScaledVector(hit.normal, 0.6) : from.clone().addScaledVector(dir, R.does.reach);
+      run.blinkMark = { at, until: run.now + R.does.window }; run.place = { at };
     },
   },
 };

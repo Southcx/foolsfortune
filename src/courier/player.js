@@ -33,6 +33,8 @@ import { tryMantle, stepMantle } from './player/mantle.js';
 import { look, updateBody, updateCamera } from './player/view.js';
 
 const _v = new THREE.Vector3();
+/** A creature's blow among the outside pushes (player.impulse's `why`): what Unshaken holds against (a class's art, courier/classarts/body.js). */
+const STAGGERS = new Set(['jelly', 'foe', 'lobber', 'strawman']);
 /** A move axis: a stick's push where the input gives one (core/input.js `axis`; on keys exactly -1, 0 or 1, as ever), else the two keys (a
  *  sibling's VirtualKeys: coop/sibling.js). The core movement reads the same numbers from the keyboard as before (MOBILE.md 10). */
 const moveAxis = (inp, id, neg, pos) => (inp.axis ? inp.axis(id) : (inp.isDown(pos) ? 1 : 0) - (inp.isDown(neg) ? 1 : 0));
@@ -243,6 +245,11 @@ export class Player {
    * has to reach into `vel` itself. Upward pushes lift us off the ground.
    */
   impulse(v, why = 'push') {
+    if (STAGGERS.has(why) && this.game?.classArtsRun?.unshaken?.()) { // (Unshaken, a class's art: ground held through the windup, the blow pushes nothing; it still lands)
+      const mag = v.length(); this.game.classArtsRun.fire?.('dominion');
+      this.ev('courier.impulse', { why, mag, dir: mag > 1e-4 ? [v.x / mag, v.y / mag, v.z / mag] : null, held: true });
+      return;
+    }
     this.vel.add(v);
     if (v.y > 0.5) { this.grounded = false; this.coyote = 0; }
     const mag = v.length();

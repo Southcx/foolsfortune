@@ -132,7 +132,7 @@ export class Creatures {
   /** A type's build-up on a creature: Impact's feeds its poise (stun.js); the others fill a meter that, full, puts on their status. */
   build(c, type, amount, by = 'courier', cause = 'shot') {
     if (!c?.alive || !TYPES[type] || amount <= 0) return;
-    const take = stateOf(c.mind).take;
+    const take = by === 'courier' && this.game.classArtsRun?.noResist?.(c) ? Math.max(1, stateOf(c.mind).take) : stateOf(c.mind).take; // (Mark for Death: it cannot resist your blows)
     amount *= (by === 'courier' ? draughtBuild(this.game.draught, type) : 1) * (this.game.weather?.buildMult?.(type, c.pos) ?? 1); // (the draught's, above; and its feeling's weather where it stands, anyone's blow: progress/weather.js)
     if (type === 'impact') { this.game.stun?.add(c, TYPES.impact.poise * amount * take, { by, cause }); return; }
     if (by === 'courier') amount *= this.game.laidSpread?.swordsK ?? 1; // (Swords' tally: the status your blows build, progress/laidspread.js)
@@ -144,7 +144,8 @@ export class Creatures {
   /** Put a status on a creature for dur seconds at strength k (the longer of old and new is kept). */
   apply(c, name, dur, k = 1, by = 'courier') {
     if (!c?.alive) return false;
-    if (!UNSCALED.has(name)) {
+    if (!UNSCALED.has(name) && by === 'courier' && this.game.classArtsRun?.noResist?.(c)) dur *= Math.max(1, stateOf(c.mind).take); // (Mark for Death: it cannot resist, so no Stoic shrug)
+    else if (!UNSCALED.has(name)) {
       dur *= stateOf(c.mind).take; // (a Stoic mind holds a status a third as long; a Prismatic one twice)
       if (dur < 0.5) { // (shrugged off: and it hardens)
         if (!(by === 'courier' && this.game.classArtsRun?.cutThrough?.())) { c.mind = pushed(c.mind, MIND.perResist); this.mindMoved(c, by); } // (Cut Through: resisted, it hardens nothing)
