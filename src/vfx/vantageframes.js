@@ -1,5 +1,5 @@
 // ---------------------------------------------------------------------------------------
-// THE VANTAGE FRAMES: each of Wonder's five vantages (world/vantages.js, Petra's spots; docs/plans/FEELINGS-AWAKENING.md section 2)
+// THE VANTAGE FRAMES: each of Wonder's seven vantages (world/vantages.js, Petra's spots; docs/plans/FEELINGS-AWAKENING.md section 2)
 // built as a lookout in the island's own language, and its view framed. Every one has the same two parts, made of what it stands on:
 //   - THE STAND: a round stone let into the ground on the very spot, a thin ring of Wonder's colour inlaid in it (a world mark, no
 //     words): lit until the vantage is reached, then settled to a faint glint (a collection kept). The body wants to stand on it.
@@ -9,13 +9,17 @@
 //     edge into the view below, its halo breathing in Wonder's colour and a star's glint flashing on it every few real seconds, so the
 //     eye goes up to it (a world mark, no words); it dims with the ring once the vantage is reached. The atrium's: the first path's
 //     third step (FIRST-HOUR.md), and its stand sits on the slab 7 m over where the Courier wakes, behind the slab's edge from below.
-// The five:
+// The seven:
 //   workshop.atrium  a shino gate on the atrium rail, an ash-glazed lintel (the kiln mouth's own), the hall, the mobile and the kiln below.
 //   weir.pier        a gate standing in the pond off the pier's end, celadon posts and a tenmoku kasagi: the pillar and pergola in it.
 //   shore.horizon    a Dunes trilithon at the jetty's end (the ruins' clay and dark lintel): the land's last gate, the Emocean in it.
 //   bowl.ledge       a gate of the Great Dunemaw's own stone on the ledge's lip (its kit), the sleeping Great Slip Jelly framed below.
 //   gnomon.crown     a sundial's face at the crown (a tin-glazed dial, tenmoku hour lines), a kerb, three trilithons: the oasis, east
 //                    over the sea, west over the dunes.
+//   ridges.crest     an old trilithon half sunk in the crest's sand, leaning, its window outward over the ridges to the barrier, two of
+//                    its blocks fallen beside it; the stand behind it.
+//   ruins.arch       the tallest ruin arch is its own frame: the stand let into its lintel's top, and a sightline hung from the lintel's
+//                    underside in the arch's opening (the stand is 8 to 11 m up, out of sight from the sand below).
 // Static: each frame's parts merged by look (render/merge.js), its own zone by where it stands (the bowl's in the bowl's group, built
 // and taken down with it); colliders on simple boxes; the materials are the level's own (room glazes, vfx/roomglazes.js) and shared.
 // No lamps: the frames take the light that is there.
@@ -50,6 +54,8 @@ export const VANTAGE_FRAMES = { every: 0.5, ringLit: 1.0, ringKept: 0.32, ruinCl
  *  (0, 0, -11.5) it sits in the view's top sixth, where the stand itself is 7 m up behind the slab and out of the view. */
 export const SIGHTLINES = {
   'workshop.atrium': { top: [-1.6, 1.0, 1.1], drop: 1.9, size: 0.16, halo: 1.1, glint: 0.9, breath: 3.2, every: 2.6, kept: 0.25 },
+  // the ruins' arch: from the lintel's underside (its 1.3 m slab under the stand), 1.6 m down into the opening, sized to read across the sand
+  'ruins.arch': { top: [0, -1.3, 0], drop: 1.6, size: 0.34, halo: 2.4, glint: 2.0, breath: 3.6, every: 3.0, kept: 0.25 },
 };
 const G = (k) => ROOM_GLAZES[k].body; // (a room glaze's colour id: Level.mat dresses it)
 const _p = new THREE.Vector3(), _q = new THREE.Quaternion();
@@ -116,9 +122,10 @@ class Kit {
     this.box(0, h, h + 0.32, z, span + over, post * 1.2, capColor, { collide: collideCap }); // (the kasagi)
     for (const s of [-1, 1]) this.box(s * (span + over) / 2, h + 0.18, h + 0.5, z, 0.5, post * 1.25, capColor, { rotZ: s * -0.32, collide: false }); // (its ends lifted)
   }
-  /** A trilithon: two square posts and a slab across them, the Dunes' ruin gate, `z` out along the bearing `rotY` (its own group). */
-  trilithon(z, { gap, h, post = 0.9, postColor, capColor, rotY = 0, y0 = 0 }) {
-    const g = new THREE.Group(); g.rotation.y = rotY; this.group.add(g);
+  /** A trilithon: two square posts and a slab across them, the Dunes' ruin gate, `z` out along the bearing `rotY` (its own group), leant
+   *  `lean` rad in its own plane. */
+  trilithon(z, { gap, h, post = 0.9, postColor, capColor, rotY = 0, y0 = 0, lean = 0 }) {
+    const g = new THREE.Group(); g.rotation.set(0, rotY, lean); this.group.add(g); // (turned and leant before its parts: their colliders are laid as drawn)
     const was = this.group; this.group = g;
     for (const s of [-1, 1]) this.box(s * (gap / 2 + post / 2), y0, h, z, post, post, postColor);
     this.box(0, h, h + 0.8, z, gap + post * 2.6, post * 1.15, capColor);
@@ -133,7 +140,7 @@ class Kit {
   }
 }
 
-/** The five frames, keyed by vantage id: (kit, game, V) -> the stand's ring. Each in its own space (+z the view). */
+/** The seven frames, keyed by vantage id: (kit, game, V) -> the stand's ring. Each in its own space (+z the view). */
 const BUILD = {
   // The atrium rail: the posts stand on the slab's edge and rise through the balustrade (newels of a gate), the lintel high over it;
   // from behind the Courier, the hall, the mobile's lanterns and the kiln are seen through it, down the atrium.
@@ -183,6 +190,22 @@ const BUILD = {
     }
     return k.stand(1.4, line);
   },
+  // The ridges' crest: the highest sand in the ridges. An old trilithon half sunk in it and leaning a little, its window turned outward
+  // (away from the oasis) so the ridges fall away through it to the barrier; two of its blocks fallen in the sand beside it; the stand
+  // behind it on the crest. Bearings in the world's space, as the Gnomon's: a crest has no look, so its frame is not turned.
+  'ridges.crest': (k) => {
+    const p = k.group.position, out = Math.atan2(p.x - DUNE.x, p.z - DUNE.z), clay = VANTAGE_FRAMES.ruinClay, dark = VANTAGE_FRAMES.ruinDark;
+    k.trilithon(3.2, { gap: 3.6, h: 3.6, y0: -1.4, post: 0.85, postColor: clay, capColor: dark, rotY: out, lean: 0.06 }); // (leaning: the crest's sand gave under one post)
+    const side = (a, r) => [Math.sin(out + a) * r, Math.cos(out + a) * r];
+    const [x1, z1] = side(0.9, 4.2), [x2, z2] = side(-1.2, 3.4);
+    k.box(x1, -0.4, 0.45, z1, 2.4, 1.0, dark, { rotY: out + 0.5, rotZ: 0.12 }); // (the fallen cap's half)
+    k.box(x2, -0.5, 0.35, z2, 0.85, 1.9, clay, { rotY: out - 0.3, rotZ: -0.2 }); // (a post's drum, toppled)
+    k.drum(0, -0.6, 0.0, 0, 1.15, 1.05, clay, { segs: 18, collide: false }); // (the stand's bed, so it sits flush on a slope)
+    return k.stand(1.05, clay);
+  },
+  // The ruins' arch: the tallest arch is the frame already; its lintel's top takes the stand (the lintel is 1.9 m deep: dunes.js w x 1.2),
+  // and its sightline hangs under the lintel in the opening (SIGHTLINES).
+  'ruins.arch': (k) => k.stand(0.78, VANTAGE_FRAMES.ruinClay),
 };
 
 export class VantageFrames {

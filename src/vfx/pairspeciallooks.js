@@ -9,8 +9,8 @@
 //   pair.end { pair }       its holds and marks let go
 // Where: on the event's `target` (a creature: its feet, its dir from the Courier to it) or at its `at` (a point), else at the Courier facing
 // their heading; `from` and `to` (the Courier's chest to the place, or the event's own) are the line its streaks run; `other` a second
-// creature (Chain Shot's), `feeling` the paint's or the weather's, `power` its strength, `dur` how long it holds. The context: { suit (the
-// main's), tint (the sub's colour), feeling, power }.
+// creature (Chain Shot's), `others` more held with the target (Held Plate's), `feeling` the paint's or the weather's, `power` its
+// strength, `dur` how long it holds. The context: { suit (the main's), tint (the sub's colour), feeling, power }.
 // Wave 1, read from the runtime's own state (its events carry no place yet):
 //   XIX The Mark      .use on the creature the lent Flash marked (pairSpecials.mark), .mark held on it while the mark holds (its strength
 //                     the rounds left), .hit on `shot.fire` when a round was turned onto it (the rounds fell), its line from the muzzle
@@ -154,6 +154,10 @@ export class PairSpecialLooks {
         tick: other ? (h) => { if (pl.tgt) h.ctx.from.set(pl.tgt.pos.x, pl.tgt.pos.y + (pl.tgt.height ?? 1.6) * 0.6, pl.tgt.pos.z); h.ctx.to.set(other.pos.x, other.pos.y + (other.height ?? 1.6) * 0.6, other.pos.z); } : null,
       });
     }
+    if (plan.holdOn === 'target' && Array.isArray(e.others) && this.has(`pair.${n}.hold`)) e.others.forEach((c, i) => { // (Held Plate's: each other creature held too)
+      if (!c?.pos) return; const pl = this.place({ target: c }, 'target');
+      this.hold(`${n}:hold:${i + 1}`, n, `pair.${n}.hold`, this.ctx(n, pl, e), { anchor: pl.anchor, aim: pl.aim, until: this.t + (e.dur ?? plan.hold ?? 3) });
+    });
     if (plan.land) this.soon(plan.landAt ?? 0, () => { if (this.shown()) this.play(`pair.${n}.hit`, this.ctx(n, this.place(e, plan.land), e)); });
   }
   hit(e) { const n = e?.pair; if (this.shown() && specialVerbs(n)) this.play(`pair.${n}.hit`, this.ctx(n, this.place(e), e)); }

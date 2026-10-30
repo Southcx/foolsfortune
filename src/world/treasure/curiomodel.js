@@ -1,5 +1,6 @@
 // ---------------------------------------------------------------------------------------
-// CURIO MODELS: the twenty small things a chest can hold, each built from primitives at a unit size (about a metre across, so that the
+// CURIO MODELS: the twenty small things a chest can hold and the two found elsewhere (the ridges' fulgurite, dug; the Crown of the
+// Dunemaw, the Great Slip Jelly's drop), each built from primitives at a unit size (about a metre across, so that the
 // cel outline stays thin) and scaled down to a hand's width when it is shown. Each is a little object with a story: a shell that
 // whistles, a compass that points where the water wants to go, a jar with a storm in it. The higher the tier the more of the thing
 // there is: more parts, some glow, something turning.
@@ -217,6 +218,37 @@ export function buildCurio(id, { sky = null } = {}) {
       for (const s of [-1, 1]) { const f = add(cone(0.09, 0.32, 5), std(0xffd86a, { transparent: true, opacity: 0.85 }), 0.2, -0.1, s * 0.22, inner, false); f.rotation.set(s * 1.2, 0, 1.3); }
       for (const s of [-1, 1]) add(sph(0.045, 6, 4), std(0x08040c), 0.5, 0.1, s * 0.16, inner, false);
       anims.push((t) => { tail.rotation.y = Math.sin(t * 5) * 0.4; inner.rotation.y = Math.sin(t * 1.5) * 0.15; });
+      break;
+    }
+    case 'fulgurite': { // sand that lightning found: a branching tube, its crust sand-rough, its broken top showing the glass inside, the strike's light running down it now and then
+      const crust = std(0xc9b48c, { roughness: 1, flatShading: true }), inside = glass(0xd8f0c8, { opacity: 0.85, emissiveIntensity: 0.6 });
+      const up = new THREE.Vector3(0, 1, 0), q = new THREE.Quaternion(), path = [];
+      const run = (pts, r0, r1, keep) => { for (let i = 0; i < pts.length - 1; i++) { const a = new THREE.Vector3(...pts[i]), b = new THREE.Vector3(...pts[i + 1]), k0 = i / (pts.length - 1), k1 = (i + 1) / (pts.length - 1);
+        const m = add(cyl(r0 + (r1 - r0) * k1, r0 + (r1 - r0) * k0, a.distanceTo(b) * 1.06, 7), crust, (a.x + b.x) / 2, (a.y + b.y) / 2, (a.z + b.z) / 2); m.quaternion.copy(q.setFromUnitVectors(up, b.clone().sub(a).normalize())); if (keep) path.push(a, b); } };
+      run([[0, 0.5, 0], [0.06, 0.22, 0.02], [-0.04, -0.05, 0.05], [0.05, -0.32, -0.02], [0.0, -0.55, 0.02]], 0.12, 0.035, true); // (the main tube, top down)
+      run([[0.06, 0.22, 0.02], [0.22, 0.08, 0.1], [0.32, -0.12, 0.16]], 0.065, 0.02);
+      run([[-0.04, -0.05, 0.05], [-0.2, -0.16, -0.06], [-0.3, -0.36, -0.1]], 0.055, 0.018);
+      add(tor(0.095, 0.03, 6, 14), inside, 0, 0.53, 0, inner, false).rotation.x = Math.PI / 2; // (its broken top: the glass lining seen)
+      add(cyl(0.07, 0.07, 0.02, 10), glow(0x223028), 0, 0.535, 0, inner, false); // (the hollow)
+      for (let i = 0; i < 9; i++) { const a = i * 2.4, y = 0.4 - i * 0.1; add(new THREE.DodecahedronGeometry(0.022 + (i % 3) * 0.008, 0), crust, Math.cos(a) * 0.1, y, Math.sin(a) * 0.1, inner, false); } // (sand grains fused to the crust)
+      const spark = add(sph(0.05, 8, 6), glow(0xfff1c8, { transparent: true, opacity: 0.9, blending: THREE.AdditiveBlending, depthWrite: false }), 0, 0.5, 0, inner, false);
+      anims.push((t) => { inner.rotation.y = t * 0.35; const p = (t % 3.2) / 0.9; spark.visible = p < 1; if (p < 1) { const n = path.length / 2, f = p * n, i = Math.min(n - 1, f | 0), u = f - i; spark.position.lerpVectors(path[i * 2], path[i * 2 + 1], u); spark.scale.setScalar(1.3 - p * 0.8); } }); // (the strike, remembered: once every 3.2 s down the tube)
+      break;
+    }
+    case 'crown': { // the Great Slip Jelly's urn crown, whole again: ru ware's sky-blue celadon, its breaks mended in gold, the Lachryma it held still glowing in its mouth
+      const ru = std(0x9cc7c8, { roughness: 0.3 }), seam = gold();
+      const body = add(lathe([[0.0, -0.5], [0.22, -0.5], [0.26, -0.46], [0.24, -0.4], [0.4, -0.22], [0.46, 0.0], [0.42, 0.18], [0.26, 0.34], [0.17, 0.42], [0.18, 0.5], [0.24, 0.55], [0.2, 0.58], [0.15, 0.52]], 32), ru);
+      body.material.side = THREE.DoubleSide;
+      for (let i = 0; i < 5; i++) { // (the breaks, mended: gold seams up from where the urn split round its shoulder)
+        const a0 = i / 5 * Math.PI * 2 + 0.3; let y = -0.18, a = a0;
+        for (let j = 0; j < 4; j++) { const y1 = y + 0.08 + (j % 2) * 0.03, a1 = a + (j % 2 ? 0.12 : -0.1), r = 0.452 - Math.max(0, y) * 0.35, r1 = 0.452 - Math.max(0, y1) * 0.35;
+          const p0 = new THREE.Vector3(Math.cos(a) * r, y, Math.sin(a) * r), p1 = new THREE.Vector3(Math.cos(a1) * r1, y1, Math.sin(a1) * r1);
+          const m = add(cyl(0.012, 0.012, p0.distanceTo(p1) * 1.1, 5), seam, (p0.x + p1.x) / 2, (p0.y + p1.y) / 2, (p0.z + p1.z) / 2, inner, false); m.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), p1.clone().sub(p0).normalize()); y = y1; a = a1; }
+      }
+      const ring = add(tor(0.455, 0.014, 5, 48), seam, 0, -0.18, 0, inner, false); ring.rotation.x = Math.PI / 2; // (the line it broke along, gold all round)
+      const light = add(cyl(0.15, 0.15, 0.02, 20), glow(0xb08cff, { transparent: true, opacity: 0.85 }), 0, 0.5, 0, inner, false);
+      const halo = add(sph(0.2, 12, 8), glow(0x7ad8ff, { transparent: true, opacity: 0.25, blending: THREE.AdditiveBlending, depthWrite: false }), 0, 0.58, 0, inner, false);
+      anims.push((t) => { inner.rotation.y = t * 0.5; light.material.color.setHSL((0.72 + 0.12 * Math.sin(t * 0.7)) % 1, 0.75, 0.68); halo.scale.setScalar(1 + 0.18 * Math.sin(t * 1.6)); }); // (the labradorite's light, as its core's)
       break;
     }
     default: add(new RoundedBoxGeometry(0.6, 0.6, 0.6, 2, 0.06), std(0xdddddd)); break;
