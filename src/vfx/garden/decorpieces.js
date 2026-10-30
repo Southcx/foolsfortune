@@ -41,10 +41,14 @@ export const decorTriangles = () => Object.fromEntries(DECOR_PIECE_IDS.map((id) 
 
 /** The decor material taught the pieces' attributes: vertex colour (mixed with the instance colour by `tintk`) and lamp glow by the hour.
  *  The same material, patched before its first compile; every geometry on it must carry color, tintk and glowk (mergeParts does); `motion` is optional (missing, it reads 0: still). */
+/** The camera's near fade on every garden piece and facility (metres: wholly gone at the first, whole at the second). */
+export const DECOR_NEAR = [2.5, 6];
+
 export function decorMaterial(mat, game) {
   const lamps = { value: 0 }, ghost = { value: -1 }, time = { value: 0 };
   mat.vertexColors = true; mat.userData.lamps = lamps;
   mat.onBeforeCompile = (sh) => {
+    sh.fragmentShader = `#define DECOR_NEAR vec2( ${DECOR_NEAR[0].toFixed(2)}, ${DECOR_NEAR[1].toFixed(2)} )\n` + sh.fragmentShader;
     sh.uniforms.uLamps = lamps; sh.uniforms.uGhost = ghost; sh.uniforms.uTime = time;
     sh.vertexShader = sh.vertexShader
       .replace('#include <common>', `#include <common>
@@ -75,6 +79,9 @@ vec3 decorMove( vec3 v, vec4 m, float ph ) { // (a part's motion about the origi
   if ( motion.x > 3.5 ) { float ft = uTime * 1.0 + decorPh; vGlow *= 0.72 + 0.18 * sin( ft * 7.3 ) + 0.1 * sin( ft * 13.1 + 1.7 ); } // (FLICKER: a fire's waver)`);
     sh.fragmentShader = sh.fragmentShader
       .replace('#include <common>', '#include <common>\nvarying float vGlow; uniform float uLamps;')
+      .replace('#include <clipping_planes_fragment>', `#include <clipping_planes_fragment>
+  // (the camera's near: a piece the view is inside or nearly so is dithered away, 2.5 to 6 m, so the Jar's camera never looks through a roof)
+  if ( smoothstep( DECOR_NEAR.x, DECOR_NEAR.y, length( vViewPosition ) ) < fract( 52.9829189 * fract( dot( gl_FragCoord.xy, vec2( 0.06711056, 0.00583715 ) ) ) ) ) discard;`)
       .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\n  totalEmissiveRadiance += vec3( 1.0, 0.72, 0.34 ) * vGlow * uLamps;');
   };
   mat.onBeforeRender = (r, sc, cam, geo, obj) => { time.value = (performance.now() / 1000) % 3600; lamps.value = game?.gardenMood?.now?.lamps ?? 0; ghost.value = obj === game?.decorLayer?.batch ? (game.decorLayer.ghostId ?? -1) : -1; }; // (the lamps by the hour; a BatchedMesh keeps its own onBeforeRender, so the material's)
