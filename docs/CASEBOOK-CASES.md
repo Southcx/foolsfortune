@@ -4426,6 +4426,10 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   (`compile(obj, camera, S.scene)`) and an empty render with no plane first. The census after the lights fix read 227 (budget 228); the
   clipping half is not yet measured in a duel (the census opens none). The overlay scene's own compile (render/overlayscene.js) needs the
   same empty render: handed to Petra.
+- **Then (measured, Petra's census-3 and 4: 383 and 379 programs):** the empty render with no plane left the renderer there, so the world's
+  warm-up compiled after it built some 150 programs with no plane that the world, drawn with the god hand's plane, never uses. Both
+  compiles now render an empty scene with the world's planes after their own (render/overlayscene.js c2692ac, vfx/duelview/fxkit.js
+  39fa35e): census-5 read 225 (budget 228), 200 programs with the plane and 12 without (the overlay's and the trail map's own).
 - **Rule:** 353
 
 
@@ -4447,3 +4451,14 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** `build()` multiplies the amount by the draught's share of the blow's type (`draughtBuild`, the Courier's blows only) and by the
   weather where the struck thing stands (`weather.buildMult`, anyone's blow), ahead of Impact's poise branch, so a stun builds faster too.
 - **Rule:** 355
+
+### 2026-10-30 · A page's second list of cards was out of the keyboard's reach (feedback/indexmenu.js, world/emocean/pier.js)
+- **Seen (as read, then driven headless):** the pier's crossings and ships were rows taken only by a click, and on any index page with
+  several lists of choice cards (the pier's parts and mounts) the arrows reached the first list and no other.
+- **Cause:** a list's own arrows move inside it and stop at its edges (ui/choicecard.js `cardList`), the first arrow enters only the first
+  list on the screen, and Tab is the game's: nothing moved focus from one list to the next.
+- **Fix:** the index window passes an arrow at a list's top or bottom edge to the list before or after it (`betweenLists`, a capture
+  listener ahead of the list's own keys); the pier's crossings and ships are choice cards (one a row for the crossings, the ships two), the
+  open sea's line said in the device's words, and a mount card ashore with every slot full compares against the one a pick would bump.
+  Driven headless: nine downs walked crossings, ships and parts; Enter on a ship wore it.
+- **Rule:** 356

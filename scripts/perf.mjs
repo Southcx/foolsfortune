@@ -15,15 +15,19 @@
 // affected by changes?"). The run keeps its last numbers in node_modules/.cache/perf.json with the commit and the dirty files' hashes they
 // were taken at; the files changed since are mapped to the places they can move (SCOPE below: an area's own files its place, anything
 // shared all of them), and a place nothing touched is carried from that run, marked "carried". The route is walked whole every time
-// (its ticks are cheap and the heaps need it); what costs is SwiftShader's draws, 20 timed a place (was 60, with 40 warm: 10 now), and
-// the built game's heap is read with 3 draws a place, only when dist/ is newer than the last reading. Prior art: every build system's
-// incremental cache (make's mtimes, Bazel's content hashes), Chromium's perf bots bisecting only what a CL touched.
+// (its ticks are cheap and the heaps need it); what costs is SwiftShader's draws, 10 timed a place and 10 warm (20 timed until 2026-10-30,
+// South's yes to the cut; 60 before that), and the built game's heap, read with 3 draws a place only when a build is recorded (--record,
+// at publish) or asked for (--built): between publishes it is carried from the last reading. Two places drawn at once in two pages was
+// weighed and not taken: SwiftShader's GPU process alone ran at 322% of the host's 400% (the census, 2026-10-30), so a second page buys
+// at most a quarter and smears both pages' times. Prior art: every build system's incremental cache (make's mtimes, Bazel's content
+// hashes), Chromium's perf bots bisecting only what a CL touched.
 //
 //   npm run perf              measure what changed since the last run, compare, exit 1 if a budget or a tolerance is broken
 //   npm run perf -- --full    measure every place, whatever changed
 //   npm run perf -- --only dunes,well   measure these places
 //   npm run perf -- --plan    say what would be measured and why, and stop
-//   npm run perf -- --record  measure everything and write today's numbers as the baseline (Petra, when a build is published)
+//   npm run perf -- --built   read the built game's heap as well (dist/, after npm run build)
+//   npm run perf -- --record  measure everything, the built game's heap too, and write today's numbers as the baseline (Petra, when a build is published)
 // ---------------------------------------------------------------------------------------
 import fs from 'fs';
 import path from 'path';
@@ -33,7 +37,7 @@ import { execSync } from 'child_process';
 
 const ROOT = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
 const BASE = path.join(ROOT, 'scripts', 'perf-baseline.json');
-const record = process.argv.includes('--record');
+const record = process.argv.includes('--record'), builtWanted = record || process.argv.includes('--built');
 const PLACES = ['workshop', 'dunes', 'well', 'garden', 'crossing', 'spectacle'];
 const CACHE = path.join(ROOT, 'node_modules', '.cache', 'perf.json');
 const t00 = Date.now(), stage = {}; // (real seconds a stage took, said at the end: where a run's time goes)
@@ -145,7 +149,7 @@ try {
     // chance, not the frame; CASEBOOK rule 236, measured by Calissa 2026-10-18)
     const gl = R.getContext(), px = new Uint8Array(4), sync = () => gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, px);
     // (a place not wanted is walked through and not drawn; the built game's is drawn 3 times, for its heap; a measured one draws 10 warm
-    // frames of 40 and 20 timed of 60 ticks, every third: SwiftShader's draw is the run's cost, 1 to 2 real s a frame)
+    // frames of 40 and 10 timed of 60 ticks, every sixth: SwiftShader's draw is the run's cost, 1 to 2 real s a frame)
     const place = (key) => {
       G.game.areas?.settle(); // (every area not here let go now: a route walked without draws passes in real milliseconds, so a GRACE of real seconds never ran out and a place was measured with the last one's dressing still built)
       if (!full) { for (let i = 0; i < 40; i++) { G.tick(1 / 60); if (i % 13 === 0) G.draw(); } return null; }
@@ -156,7 +160,7 @@ try {
       let fc = 0, ft = 0;
       for (let i = 0; i < 60; i++) {
         let t = performance.now(); G.tick(1 / 60); tk.push(performance.now() - t);
-        if (i % 3) continue;
+        if (i % 6) continue;
         calls = 0; tris = 0; t = performance.now(); G.draw(); sync(); dr.push(performance.now() - t); fc = calls; ft = tris;
       }
       const st = tk.slice().sort((x, y) => x - y); // (the frame's worst as well as its middle: a hitch is a frame, Unreal's stat unitgraph, the benchmarks' 1% low)
@@ -212,21 +216,23 @@ try {
   // the built game's heap: dist/ (npm run build, which the gate runs first) served by vite preview, over the same three places, gc'd.
   // What a player's page holds; the dev heap above also holds every module's source text and source map
   const DIST = path.join(ROOT, 'dist', 'index.html');
-  if (!fs.existsSync(DIST)) fails0.push('the built game: no dist/ (npm run build first)');
+  const carryBuilt = () => { if (cache?.out?.heapBuiltMB != null) { out.heapBuiltMB = cache.out.heapBuiltMB; out.carriedBuilt = true; } out.distAt = cache?.distAt; };
+  if (!builtWanted) carryBuilt(); // (read at publish, or when asked: else the last reading, carried)
+  else if (!fs.existsSync(DIST)) fails0.push('the built game: no dist/ (npm run build first)');
   else {
     const newest = (d) => fs.readdirSync(d, { withFileTypes: true }).reduce((m, e) => Math.max(m, e.isDirectory() ? newest(path.join(d, e.name)) : fs.statSync(path.join(d, e.name)).mtimeMs), 0);
-    if (newest(path.join(ROOT, 'src')) > fs.statSync(DIST).mtimeMs) stale = true;
     const distAt = fs.statSync(DIST).mtimeMs;
-    if (!record && cache?.distAt === distAt && cache.out?.heapBuiltMB != null) out.heapBuiltMB = cache.out.heapBuiltMB, out.carriedBuilt = true; // (the same dist/ as last run's reading)
+    if (!record && cache?.distAt === distAt && cache.out?.heapBuiltMB != null) carryBuilt(); // (the same dist/ as the last reading)
     else {
+    if (newest(path.join(ROOT, 'src')) > distAt) stale = true;
     t = Date.now();
     built = await preview({ root: ROOT, logLevel: 'error', preview: { host: '127.0.0.1', port: 4180, strictPort: false } });
     const B = await boot(built.resolvedUrls.local[0]);
     out.heapBuiltMB = (await B.page.evaluate(measure, { full: false, want: [] })).heapMB;
     await B.page.close();
     stage.built = (Date.now() - t) / 1000;
-    }
     out.distAt = distAt;
+    }
   }
 } finally {
   await browser.close();
