@@ -28,9 +28,12 @@ import { FEELINGS } from '../../npc/neuraleseroots.js';
 /** in / hold / out: the band's beats (real s; the limit break's hold its own); band: its half height (of the screen's); y: its centre;
  *  tilt: its slope; portrait: the strip's share of the width; rt: the portrait's target width (px); fov: the strip camera's (deg);
  *  burst: real s after a limit break in which its own casts come without a cut-in; word / limitWord: when the label slams (real s from
- *  the event: Wanda's stings land there, audio/duelcasts.js CUT_IN_LEAD; the limit break's after its 1.1 s swell). */
+ *  the event: Wanda's stings land there, audio/duelcasts.js CUT_IN_LEAD; the limit break's after its 1.1 s swell); lead / limitLead: the
+ *  held beat after the band has gone before its cast lands (South, 2026-10-30: "the timing of the cut-ins staggered a little bit"); turn.settle:
+ *  the beat the board is left to settle before the turn's band tears in over it (beats.js). */
 export const CUT_IN = { in: 0.14, hold: 0.62, out: 0.16, limitHold: 1.45, word: 0.12, limitWord: 1.1, band: 0.16, limitBand: 0.24, y: 0.4, tilt: -0.09, portrait: 0.44, rt: 512, fov: 24, burst: 4,
-  turn: { in: 0.1, hold: 0.3, out: 0.14, word: 0.12, band: 0.085, lit: 0.35 }, vs: { in: 0.16, hold: 1.05, out: 0.18, word: 0.2, band: 0.13 }, pop: 0.06, red: 0.5 };
+  lead: 0.2, limitLead: 0.25,
+  turn: { in: 0.1, hold: 0.3, out: 0.14, word: 0.12, band: 0.085, lit: 0.35, settle: 0.3 }, vs: { in: 0.16, hold: 1.05, out: 0.18, word: 0.2, band: 0.13 }, pop: 0.06, red: 0.5 };
 /** The turn's change (South, 2026-10-29: "cut-ins/highlights and vfx for when the turns switch over"; Fire Emblem's PLAYER PHASE and
  *  ENEMY PHASE): the band thinner and shorter, yours in the film. */
 export const TURN_WORDS = ['YOUR TURN', "FOE'S TURN"]; // (Espada's, 2026-10-29: the duel says foe, never enemy)
@@ -219,11 +222,12 @@ export class FoeCutIn {
     return this.phase(e, text.toUpperCase(), { limit, keepFeel: true });
   }
 
-  /** A band held as the phase carrying `e` (the duel waits for it): the label slammed, the portrait pushing in. */
+  /** A band held as the phase carrying `e` (the duel waits for it): the label slammed, the portrait pushing in; then, the band gone, a held
+   *  beat (CUT_IN.lead) before the cast. */
   phase(e, text, { limit = false, keepFeel = false } = {}) {
     if (!this.proxies.length || !this.proxies[0].o.parent) this.gather();
     this.show(text, { limit, own: false }); if (!keepFeel && this.subject === 'foe') this.feel();
-    this.cut.add(e); return { events: [e], dur: this.dur, // (the event itself: the sting and the director key off it here; its cast phase after says nothing again, beats.js)
+    this.cut.add(e); return { events: [e], dur: this.dur + (limit ? CUT_IN.limitLead : CUT_IN.lead), // (the event itself: the sting and the director key off it here; its cast phase after says nothing again, beats.js)
       step: (u, age) => { this.age = age; }, end: () => this.hide() };
   }
 
@@ -249,11 +253,13 @@ export class FoeCutIn {
     return this.show(TURN_WORDS[e.side], { own: true, T: CUT_IN.turn, portrait: has && e.side === 1 ? CUT_IN.portrait : 0, focus: false }); // (yours mirrored, no strip: the Jar reads only in a full band's height)
   }
 
-  /** The open's band (VS: duelshow.js): its own clock, at `y` (of the screen's height), the label beside the portrait (or none). */
-  vs(text, hex, y) {
+  /** The open's band (VS: duelshow.js): its own clock, at `y` (of the screen's height), the label beside the portrait (or none), gone
+   *  `until` real s after it begins (its hold stretched to it: the two bands of the VS leave together however apart they came). */
+  vs(text, hex, y, until = null) {
     if (!this.ensure()) return 0; if (!this.proxies.length || !this.proxies[0].o.parent) this.gather();
     if (hex == null) this.feel(); else this.u.uFeel.value.setHex(hex);
-    return this.show(text, { own: true, T: CUT_IN.vs, y, portrait: this.proxies.length ? CUT_IN.portrait : 0, focus: false });
+    const V = CUT_IN.vs, T = until == null ? V : { ...V, hold: Math.max(0.2, until - V.in - V.out) };
+    return this.show(text, { own: true, T, y, portrait: this.proxies.length ? CUT_IN.portrait : 0, focus: false });
   }
 
   hide() { this.age = -1; if (this.mesh && this.veilK > 0.001) return; if (this.mesh) { this.mesh.userData.overlayHidden = true; this.mesh.visible = false; } }
@@ -269,6 +275,7 @@ export class FoeCutIn {
       this.mesh.scale.set(w, h, 1); u.uRes.value.set(w, h); u.uIn.value = 0; u.uOut.value = 0; u.uWordOn.value = 0; u.uFlash.value = 0; u.uFocus.value = 0; u.uPop.value = 0; u.uDim.value = this.veilK; u.uBand.value.set(-h, 0, 0, 0); return; }
     if (this.mode === 'own') { this.age += dt; if (this.age > this.dur) { this.hide(); return; } } // (the turn's and the open's bands keep their own clock: their way out runs over the beats after)
     const w = slot.view.w, h = slot.view.h, u = this.u, a = this.age, L = this.limit, T = this.T, tin = T.in, hold = T.hold;
+    if (a >= this.dur) { u.uBand.value.set(-h, 0, 0, 0); u.uWordOn.value = 0; u.uFocus.value = 0; u.uPop.value = 0; u.uFlash.value = 0; u.uDim.value = 0; return; } // (a skill's band gone, its phase holding the beat before the cast: CUT_IN.lead)
     this.mesh.scale.set(w, h, 1); u.uRes.value.set(w, h); u.uT.value = this.t;
     const kin = sm(clamp01(a / tin)), kout = sm(clamp01((a - tin - hold) / T.out)), kh = clamp01((a - tin) / hold);
     u.uIn.value = kin; u.uOut.value = kout; u.uDim.value = L ? (0.3 + 0.25 * clamp01(a / CUT_IN.limitWord)) * kin : 0; u.uDrift.value = kh * w * 0.02;

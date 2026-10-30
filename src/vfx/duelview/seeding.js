@@ -1,22 +1,21 @@
 // ---------------------------------------------------------------------------------------
 // THE BOARD'S SEEDING (plain name; South, 2026-10-29: "make it such that the initial seeding of the gems on the tsuitate is an animation"):
-// a puzzle duel's first board not stood at once but dealt in: every piece held out of sight while the domains unfold (and, in a PvE
-// duel, while the VS open has the camera on the fighters), then dropped into its cell from above in a wave running out from the Line to
+// a puzzle duel's first board not stood at once but dealt in: every piece held out of sight while the tsuitate builds itself in front of
+// you (assembly.js, under the VS open in a PvE duel), then, once it is built, dropped into its cell from above in a wave running out from the Line to
 // both ends of the board, the bottom rows first so each column fills as if it were poured, spinning a turn on the way down, landing with
 // a squash, a white flash and a little bounce. The bodies stand from the start; the pieces are the deal.
 // Programs: none of its own (it moves the pieces' own drawn state: pieces.js `dy`, `s`, `sx`, `sy`, `flip`, `flash`, `hidden`).
 // Prior art: Puzzle & Dragons' orbs raining in at a floor's start, Bejeweled's opening cascade, Tetris Attack's stack rising in, a
 // croupier's deal (the cards out from the dealer's hand, the nearest first).
 //
-//   const S = new DuelSeeding(view)   S.hold()   S.go(delay)   S.update(dt) (before the pieces')   S.busy   SEEDING (the knobs)
+//   const S = new DuelSeeding(view)   S.hold()   S.go(delay) (the assembly's, when it is done)   S.update(dt) (before the pieces')   S.busy   S.clear()   SEEDING (the knobs)
 // ---------------------------------------------------------------------------------------
 import { clamp01, sm } from './layout.js';
 
 /** wave: real s from the Line to the board's ends; rows: real s from the bottom row to the top; jitter: a piece's own scatter; fall: one
  *  piece's drop (real s); drop: how far above its cell it starts (cells, plus its row's height); turns: its spin on the way down; bounce:
- *  its last hop (cells); flash: its landing's white; open: real s after a classic duel's open before the deal (the clash unfolding);
- *  wait: the longest it is held for (real s). */
-export const SEEDING = { wave: 0.55, rows: 0.3, jitter: 0.06, fall: 0.42, drop: 3, turns: 1, bounce: 0.18, flash: 0.7, open: 0.45, wait: 5 };
+ *  its last hop (cells); flash: its landing's white; wait: the longest it is held for once the frame is built (real s). */
+export const SEEDING = { wave: 0.55, rows: 0.3, jitter: 0.06, fall: 0.42, drop: 3, turns: 1, bounce: 0.18, flash: 0.7, wait: 5 };
 const easeOutBack = (x) => 1 + 2.4 * (x - 1) ** 3 + 1.4 * (x - 1) ** 2;
 
 export class DuelSeeding {
@@ -37,7 +36,9 @@ export class DuelSeeding {
 
   /** Each frame, before the pieces draw: each piece's fall, spin, squash and flash. */
   update(dt) {
-    if (!this.list) return; this.t += dt; const S = SEEDING, P = this.view.pieces;
+    if (!this.list) return;
+    if (this.view.assembly?.busy) { for (const q of this.list) q.v.hidden = true; return; } // (the frame still building: assembly.js deals it in when done)
+    this.t += dt; const S = SEEDING, P = this.view.pieces;
     if (this.start === Infinity && this.t > S.wait) this.start = this.t; // (never held past this, whatever kept the deal waiting)
     if (this.t < this.start) { for (const q of this.list) q.v.hidden = true; return; }
     let left = 0; const age0 = this.t - this.start;
@@ -55,6 +56,6 @@ export class DuelSeeding {
     if (!left) { for (const q of this.list) { const v = q.v; v.hidden = false; v.dy = 0; v.flip = 0; v.s = 1; v.sx = v.sy = 1; } this.list = null; }
   }
 
-  /** Done at once (a resync, the close). */
-  clear() { if (this.list) for (const q of this.list) { const v = q.v; v.hidden = false; v.dy = 0; v.flip = 0; v.s = 1; v.sx = v.sy = 1; } this.list = null; }
+  /** Done at once (a resync, a skipped turn, the close), the frame's assembly with it. */
+  clear() { this.view.assembly?.clear?.(); if (this.list) for (const q of this.list) { const v = q.v; v.hidden = false; v.dy = 0; v.flip = 0; v.s = 1; v.sx = v.sy = 1; } this.list = null; }
 }
