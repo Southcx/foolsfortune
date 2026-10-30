@@ -5,25 +5,38 @@
 // way round, or not yet opened, both tools do exactly what they do alone: each special is a modifier on a verb the tools already have,
 // never a change to it (DESIGN.md 22).
 //
-// Built a wave of four at a time. Wave 1 (TOOLS-TOGETHER.md 4 K5's four):
+// Wave 1 here (TOOLS-TOGETHER.md 4 K5's four):
 //   19 The Mark       psygun main, Veritome sub: the lent Flash marks what it reaches; the psygun's rounds home on the mark
 //   6  Rung Line      Sondelass main, Crucibelle sub: the lent toll, with the hook bitten in a creature, runs down the line and stuns it
 //   17 Painted Lure   Dreamvane main, Soul Brush sub: the fork in flight lays a stream of paint under it, from the brush's load
 //   3  Coffin's Mop   Lockheart main, Soul Brush sub: the hoover drinks paint off the ground into the brush's bottle (the Flick pours it back)
+// The other seventeen in parts by the main verb they feed through (tools/pairspecials/): shot.js (1, 4, 15, 21), fork.js (2, 7, 16, 18),
+// cutlass.js (8, 11, 13), coffin.js (10, 20), plate.js (9, 12), bell.js (5, 14). Their numbers are Petra's placeholders, each with its
+// reason, until Dovina's rows in SPECIAL_PLAY take their place (hers are spread last).
 //
 // Prior art: Zelda: Tears of the Kingdom's fuse (two things make a third), NieR: Automata's pod programs fed through the blade, Splatoon's
 // ink trails off a thrown sub weapon (the Painted Lure), Luigi's Mansion 3's Poltergust drinking paint (the Coffin's Mop).
 //
 //   game.pairSpecials = new PairSpecials(game)   .update(rawDt) (boot/frame.js)   .live(n) -> bool   .homeShot(from, dir) -> dir | null
-//   (the psygun's round asks: tools/psygun/weapon.js shoot)   event pair.special { pair, special, by }   pair.mark { kind, by }
+//   (the psygun's round asks: tools/psygun/weapon.js shoot)   .onStrike(c, cause, type, power, point, dir) -> { type?, dmg?, build?, after?(c) } | null
+//   (a blow of yours asks: creatures/creatures.js strike)   .lendAim(tool) -> point | null (the lent Grapple asks: tools/sondelass/hookshot.js)
+//   .photo(report) -> true when a sigil was written (the shutter asks: tools/veritome/veritome.js)
+//   events pair.special { pair, special, by }   pair.mark { kind, by }   pair.read { kind, by }   pair.mend { kind, by }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { pairOf, pairSpecialOpen, PAIR_SPECIALS, SPECIAL_PLAY } from '../progress/toolpairs.js';
 import { spendLoad, loadAspect } from './soulbrush/load.js';
 import { HOOVER } from './lockheart/lockheart.js';
+import { shotSpecials, SHOT_PLAY } from './pairspecials/shot.js';
+import { forkSpecials, FORK_PLAY } from './pairspecials/fork.js';
+import { cutlassSpecials, CUTLASS_PLAY } from './pairspecials/cutlass.js';
+import { coffinSpecials, COFFIN_PLAY } from './pairspecials/coffin.js';
+import { plateSpecials, PLATE_PLAY } from './pairspecials/plate.js';
+import { bellSpecials, BELL_PLAY } from './pairspecials/bell.js';
 
-/** Wave 1's numbers, with their reasons: Dovina's (progress/toolpairs.js SPECIAL_PLAY). */
-export const PAIR_PLAY = SPECIAL_PLAY;
+/** Every special's numbers: the parts' placeholders, then Dovina's rows over them (progress/toolpairs.js SPECIAL_PLAY: wave 1's now). */
+export const PAIR_PLAY = { ...SHOT_PLAY, ...FORK_PLAY, ...CUTLASS_PLAY, ...COFFIN_PLAY, ...PLATE_PLAY, ...BELL_PLAY, ...SPECIAL_PLAY };
+const PARTS = [shotSpecials, forkSpecials, cutlassSpecials, coffinSpecials, plateSpecials, bellSpecials];
 
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _d = new THREE.Vector3(), DOWN = new THREE.Vector3(0, -1, 0);
 
@@ -31,11 +44,32 @@ export class PairSpecials {
   constructor(game) {
     this.game = game;
     this.mark = null; // ({ c, rounds, until }: what the lent Flash marked)
-    this.now = 0; this.lureT = 0; this.mopT = 0;
-    const ev = game.events;
+    this.now = 0; this.lureT = 0; this.mopT = 0; this.play = PAIR_PLAY;
+    this.chained = null; this.sharing = false; // (Chain Shot's two, and a shared blow under way: pairspecials/shot.js)
+    this.parts = PARTS.map((make) => make(this));
+    const ev = game.events, each = (fn) => (e) => { for (const p of this.parts) fn(p, e); };
     ev?.on?.('flash.fire', (e) => this.onFlash(e));
-    ev?.on?.('tool.lend', (e) => { if (e.by === 'courier' && e.tool === 'crucibelle') this.rung(); });
+    ev?.on?.('tool.lend', (e) => { if (e.by !== 'courier') return; if (e.tool === 'crucibelle') this.rung(); for (const p of this.parts) p.lend?.(e.tool); });
+    ev?.on?.('shot.fire', each((p, e) => p.shot?.(e)));
+    ev?.on?.('crucibelle.toll', each((p, e) => e.by === 'courier' && p.toll?.(e)));
+    ev?.on?.('lockheart.open', each((p, e) => p.open?.(e)));
+    ev?.on?.('zip.end', each((p, e) => p.zip?.(e)));
   }
+
+  /** A blow of the Courier's on a creature, before it lands: what the specials make of it (their mods merged; `after` runs them all). */
+  onStrike(c, cause, type, power, point, dir) {
+    let out = null;
+    for (const p of this.parts) {
+      const m = p.strike?.(c, cause, type, power, point, dir); if (!m) continue;
+      const a = out?.after, b = m.after;
+      out = { ...out, ...m, dmg: (out?.dmg ?? 1) * (m.dmg ?? 1), build: (out?.build ?? 1) * (m.build ?? 1), after: a && b ? (t) => { a(t); b(t); } : a || b };
+    }
+    return out;
+  }
+  /** Where the lent Grapple goes instead of the aim (a Slingshot's fork), asked before it fires. */
+  lendAim(tool) { for (const p of this.parts) { const at = p.lendAim?.(tool); if (at) return at; } return null; }
+  /** The shutter's plate with its live subjects: true when a sigil was written on them (the plate then undoes none). */
+  photo(report) { let wrote = false; for (const p of this.parts) wrote = !!p.photo?.(report) || wrote; return wrote; }
 
   /** Pair `n`'s special plays now: its pair worn its way round, and opened (or lent in DEBUG). */
   live(n) {
@@ -43,7 +77,7 @@ export class PairSpecials {
     if (!b || !S || b.main !== S.main[0] || pairOf(b.main, b.sub)?.n !== n) return false;
     return !!g.lend?.has?.('moves') || pairSpecialOpen(n, g.ledger);
   }
-  said(n) { this.game.events?.emit('pair.special', { pair: n, special: PAIR_SPECIALS[n].label, by: 'courier' }); }
+  said(n, extra = null) { this.game.events?.emit('pair.special', { pair: n, special: PAIR_SPECIALS[n].label, ...(extra || {}), by: 'courier' }); }
 
   // ---- 19 The Mark ------------------------------------------------------------
   onFlash(e) {
@@ -84,6 +118,7 @@ export class PairSpecials {
   // ---- 17 Painted Lure and 3 Coffin's Mop: every frame -----------------------
   update(raw) {
     this.now += raw;
+    for (const p of this.parts) p.update?.(raw);
     const g = this.game, L = PAIR_PLAY.lure, M = PAIR_PLAY.mop;
     const F = g.techs?.get?.('dreamvane')?.fork;
     if (F?.state === 'fly' && this.live(L.n) && (this.lureT -= raw) <= 0) {

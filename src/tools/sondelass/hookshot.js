@@ -78,7 +78,7 @@ export class Hookshot {
   lend() {
     if (this.flying || this.att) { if (this.lent) { if (this.att) this.release('tap'); else this.phase = 'back'; } return false; }
     if (this.cool > 0) return false;
-    this.lent = true; this.fire();
+    this.lent = true; this.fire(this.game.pairSpecials?.lendAim?.('sondelass')); // (a pair's special may aim it: a Slingshot at the stuck fork, tools/pairspecials/fork.js)
     if (!this.flying) this.lent = false;
     return this.flying;
   }
@@ -88,11 +88,11 @@ export class Hookshot {
 
   // ---------------------------------------------------------------- aim and fire
   /** What a throw along the aim would hit: { point, normal, kind, ent, body } or null (the affordance for the chevron, and fire's own ray). */
-  probe() {
+  probe(at = null) {
     const g = this.game, P = this.tool.P;
     g.camera.getWorldPosition(_o);
-    P.lookDir(_d);
-    const hit = g.physics.raycast(_o, _d, this.range, P.collider, HOOKABLE, (c) => !c.isSensor());
+    if (at) _d.copy(at).sub(_o).normalize(); else P.lookDir(_d); // (`at`: a point to throw at in place of the aim)
+    const hit = g.physics.raycast(_o, _d, at ? Math.min(this.range, _o.distanceTo(at) + 0.6) : this.range, P.collider, HOOKABLE, (c) => !c.isSensor());
     if (!hit) return null;
     const ent = hit.entity, body = hit.collider.parent();
     const dyn = !!body?.isDynamic?.();
@@ -118,12 +118,12 @@ export class Hookshot {
     if (inp.wasPressed('Mouse0') && !this.flying && !this.att && this.cool <= 0) this.fire();
   }
 
-  fire() {
+  fire(at = null) {
     const g = this.game;
     if (!g.lachryma.spend(COST, 'hook')) return;
     this.tool.model.group.updateMatrixWorld(true);
     this.from(this.pos);
-    const r = this.probe();
+    const r = this.probe(at);
     this.result = r;
     if (r) this.target.copy(r.point);
     else { g.camera.getWorldPosition(_o); this.tool.P.lookDir(_d); this.target.copy(_o).addScaledVector(_d, this.range); }

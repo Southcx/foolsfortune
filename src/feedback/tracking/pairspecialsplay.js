@@ -34,4 +34,6 @@ export function pairSpecialsPlayRules({ on, L, log }) {
     L.inc(`pair.${e.pair}.special`);
     log.say('system', `${e.special}: ${DID[e.pair] || 'your pair works as one.'}`, { key: `pair.special.${e.pair}`, throttle: 2 });
   });
+  // a Rite's toll read a creature: counted toward knowing its kind as a down is (progress/familiarity.js)
+  on('pair.read', (e) => { if (e.by === 'courier' && e.kind) L.inc(`creature.${e.kind}.read`); });
 }

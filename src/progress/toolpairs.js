@@ -118,9 +118,9 @@ export function swapRefusal(game) {
   return null;
 }
 
-/** The specials built in play (Petra's tools/pairspecials.js, wave 1, 2026-10-29): their pairs' `special` set, so the Box's loadout shows
- *  the special's line in place of "to come". */
-export const SPECIALS_BUILT = [19, 6, 17, 3];
+/** The specials built in play (Petra's tools/pairspecials.js, wave 1, 2026-10-29; the other seventeen 2026-10-30, tools/pairspecials/):
+ *  their pairs' `special` set, so the Box's loadout shows the special's line in place of "to come". */
+export const SPECIALS_BUILT = [19, 6, 17, 3, 1, 2, 4, 5, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 18, 20, 21];
 for (const n of SPECIALS_BUILT) { const p = PAIRS.find((x) => x.n === n); if (p) p.special = PAIR_SPECIALS[n]; }
 
 /** The specials' numbers in play (tools/pairspecials.js reads them), each against a number the game already has:

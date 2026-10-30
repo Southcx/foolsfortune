@@ -100,18 +100,22 @@ export class Creatures {
       return false;
     }
     if (by === 'courier') c.touched = true; // (the Courier struck it: a sibling finishing it credits them, coop/fight.js)
-    const g = this.game, m = multiplier(type, c.affinity ?? null, [...c.status.keys()].filter((n) => st(c, n)));
+    const g = this.game, ps = by === 'courier' ? g.pairSpecials?.onStrike?.(c, cause, type, power, point, dir) : null; // (a pair's special on the blow: tools/pairspecials.js)
+    if (ps?.type) type = ps.type;
+    const m = multiplier(type, c.affinity ?? null, [...c.status.keys()].filter((n) => st(c, n)));
     // (the damage alone, never the build-up: the Courier's mental state, Prismatic x1.5 to Stoic x0.67, the owner's ruling in
     // progress/stones.js; and another Courier struck, friendly fire at a fifth, progress/combat/friendly.js)
     let dmgK = by === 'courier' && g.courierMind ? courierMindEffect(g.courierMind.mind).power : 1;
     if (c.friend) dmgK = friendlyDamage(dmgK); // (a fifth; and the cap below: no blow from an ally past a quarter of its health)
     const art = by === 'courier' ? g.classArtsRun?.onStrike?.(c, m) : null; // (a class's art: Momentum's one blow, Edge on a weak point: courier/classarts/body.js)
     if (art) { dmgK *= art.dmg; buildK *= art.build; }
+    if (ps) { dmgK *= ps.dmg ?? 1; buildK *= ps.build ?? 1; }
     const annihilates = (type === 'impact' && st(c, TYPES.delirium.builds)) || (type === 'delirium' && st(c, TYPES.impact.builds));
     let dmg = power * dmgK * m.dmg * (st(c, 'soft') ? 2 : 1);
     if (c.friend) dmg = Math.min(dmg, (c.maxHp ?? Infinity) * FRIENDLY.cap); // (FRIENDLY.cap of its full health at most: Dovina's)
     const took = c.hurt(point, dir, dmg, cause, by, from, type); // (`from`: the thing that struck, when it is not the Courier)
     if (took === 'blocked') return true; // (a blow it turned aside shows its own block and builds nothing: no stun, no mind, no status: the owner's T51)
+    ps?.after?.(c); // (what a special does once the blow has landed: a drag, a calm, a drink, a share)
     g.vfx?.hit({ ent: c, kind: c.kind, cause, point, dir, power, kill: !c.alive, type }); // (what the blow looks like: vfx/library.js 'hit.*', 'damage.*')
     sfx.damage?.(type, Math.min(1, power)); // (and what its type sounds like over the hit: audio/damage.js, Wanda's)
     if (annihilates) g.events?.emit('combat.annihilate', { kind: c.kind, type, by });

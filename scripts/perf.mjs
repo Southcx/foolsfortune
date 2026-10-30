@@ -26,6 +26,7 @@
 //   npm run perf -- --full    measure every place, whatever changed
 //   npm run perf -- --only dunes,well   measure these places
 //   npm run perf -- --plan    say what would be measured and why, and stop
+//   npm run perf -- --draws crossing   list one frame's draws there by object and material (what a count's rise is made of)
 //   npm run perf -- --built   read the built game's heap as well (dist/, after npm run build)
 //   npm run perf -- --record  measure everything, the built game's heap too, and write today's numbers as the baseline (Petra, when a build is published)
 // ---------------------------------------------------------------------------------------
@@ -67,9 +68,10 @@ const head = git('rev-parse HEAD').trim(), dirty = dirtyNow();
 let cache = null;
 try { cache = JSON.parse(fs.readFileSync(CACHE, 'utf8')); } catch { /* the first run */ }
 const onlyArg = process.argv.find((a, i) => process.argv[i - 1] === '--only');
+const drawsArg = (process.argv.find((a, i) => process.argv[i - 1] === '--draws') || '').split(',').filter(Boolean);
 let want, why;
 if (record || process.argv.includes('--full') || !cache?.commit || !git(`cat-file -t ${cache.commit}`).trim()) { want = new Set(PLACES); why = record ? 'recording' : cache ? 'full' : 'no last run kept'; }
-else if (onlyArg) { want = new Set(onlyArg.split(',').filter((p) => PLACES.includes(p))); why = 'asked'; }
+else if (onlyArg || drawsArg.length) { want = new Set((onlyArg ? onlyArg.split(',') : drawsArg).filter((p) => PLACES.includes(p))); why = 'asked'; }
 else {
   const changed = new Set(git(`diff --name-only ${cache.commit} HEAD`).split('\n').filter(Boolean));
   const hashOf = (f) => (fs.existsSync(path.join(ROOT, f)) ? git(`hash-object -- '${f}'`).trim() : null);
@@ -107,6 +109,9 @@ const url = server.resolvedUrls.local[0];
 // (the calendar held at a calm game noon on Anagami: the hour and the weather are part of the picture, so every run measures the same one;
 // CLOCK=now measures whatever the wall clock gives, CLOCK=<ms> another moment)
 const CLOCK = process.env.CLOCK === 'now' ? null : process.env.CLOCK || 1791160275000;
+// (the session's chance pinned as well: unseeded, the crossing's foes in frame at the measured bar differed by run, and its calls with
+// them, 50 recorded against 65 and 66 read of the same code, one frame's draws identical by name; SEED=<n> measures another)
+const SEED = process.env.SEED || 1;
 const exe = process.env.CHROMIUM || '/opt/pw-browsers/chromium-1194/chrome-linux/chrome';
 const browser = await chromium.launch({ executablePath: fs.existsSync(exe) ? exe : undefined, args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader', '--ignore-gpu-blocklist', '--enable-precise-memory-info', '--js-flags=--expose-gc'] }); // (gc before the heap is read: without it the reading is whatever garbage is lying about, ±10 MB a run)
 let out = null, errs = [], built = null, stale = false;
@@ -118,14 +123,14 @@ try {
     page.on('pageerror', (e) => errs.push(e.message));
     await page.addInitScript(() => { Object.defineProperty(window, '__game', { configurable: true, set(v) { v.manual = true; this.__g = v; }, get() { return this.__g; } }); });
     const t0 = Date.now();
-    await page.goto(`${at}?graphics=${GRAPHICS}${CLOCK ? `&clock=${CLOCK}` : ''}`, { waitUntil: 'commit' });
+    await page.goto(`${at}?graphics=${GRAPHICS}&seed=${SEED}${CLOCK ? `&clock=${CLOCK}` : ''}`, { waitUntil: 'commit' });
     for (let i = 0; i < 180; i++) { await new Promise((r) => setTimeout(r, 1000)); if (await page.evaluate('!!window.__ready').catch(() => false)) break; }
     const bootS = (Date.now() - t0) / 1000;
     await page.evaluate(() => { document.getElementById('overlay').style.display = 'none'; __game.input.enabled = true; });
     return { page, bootS };
   };
   // (the route, run in the page: `full` false stops at the heap after the three places, which is all the built game is asked for)
-  const measure = ({ full, want }) => {
+  const measure = ({ full, want, draws = [] }) => {
     const G = __game, R = G.renderer;
     let calls = 0, tris = 0;
     const rr = R.render.bind(R); R.render = (s, c) => { rr(s, c); calls += R.info.render.calls; tris += R.info.render.triangles; };
@@ -164,7 +169,14 @@ try {
         calls = 0; tris = 0; t = performance.now(); G.draw(); sync(); dr.push(performance.now() - t); fc = calls; ft = tris;
       }
       const st = tk.slice().sort((x, y) => x - y); // (the frame's worst as well as its middle: a hitch is a frame, Unreal's stat unitgraph, the benchmarks' 1% low)
-      return { tick: +med(tk).toFixed(2), tickP95: +st[Math.floor(st.length * 0.95)].toFixed(2), tickMax: +st[st.length - 1].toFixed(2), draw: +med(dr).toFixed(1), calls: fc, tris: ft, programs: R.info.programs?.length || 0, geos: R.info.memory.geometries, tex: R.info.memory.textures, loose: loose() };
+      let byName = null;
+      if (draws.includes(key)) { // (one more frame, its draws named: the object (or its parent) and the material)
+        const rbd = R.renderBufferDirect, n = new Map(); byName = {};
+        R.renderBufferDirect = function (cam, scn, geo, mat, obj, grp) { const k = `${obj.name || obj.parent?.name || obj.type}|${mat.name || mat.type}`; n.set(k, (n.get(k) || 0) + 1); return rbd.call(this, cam, scn, geo, mat, obj, grp); };
+        G.draw(); R.renderBufferDirect = rbd;
+        for (const [k, v] of [...n].sort((a, b) => b[1] - a[1])) byName[k] = v;
+      }
+      return { byName, tick: +med(tk).toFixed(2), tickP95: +st[Math.floor(st.length * 0.95)].toFixed(2), tickMax: +st[st.length - 1].toFixed(2), draw: +med(dr).toFixed(1), calls: fc, tris: ft, programs: R.info.programs?.length || 0, geos: R.info.memory.geometries, tex: R.info.memory.textures, loose: loose() };
     };
     const workshop = place('workshop');
     G.course.toDunes(); for (let i = 0; i < 60; i++) G.tick(1 / 60);
@@ -209,7 +221,9 @@ try {
   let t = Date.now();
   const dev = await boot(url);
   stage.boot = (Date.now() - t) / 1000; t = Date.now();
-  out = await dev.page.evaluate(measure, { full: true, want: [...want] });
+  out = await dev.page.evaluate(measure, { full: true, want: [...want], draws: drawsArg });
+  for (const p of drawsArg) if (out[p]?.byName) { const f = path.join(ROOT, 'node_modules', '.cache', `perf-draws-${p}.json`); fs.writeFileSync(f, JSON.stringify(out[p].byName, null, 1)); console.log(`perf: ${p}'s draws by name written to ${f}`); }
+  for (const p of PLACES) if (out[p]) delete out[p].byName;
   stage.route = (Date.now() - t) / 1000;
   out.bootS = +dev.bootS.toFixed(1);
   await dev.page.close();

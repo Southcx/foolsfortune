@@ -207,6 +207,14 @@ export class VesselDamage {
       if (!quiet) { sfx.vesselMend?.(REGIONS[i]); this.game.events?.emit('vessel.mend', { region: REGIONS[i], by: 'courier' }); }
     }
   }
+  /** A little mended at once (a Healing Song's beat: tools/pairspecials/bell.js): the worst region's crack by `k`; true if any was mended. */
+  mendBy(k, why = 'mend') {
+    let i = -1; for (let j = 0; j < this.crack.length; j++) if (this.crack[j] > 0 && (i < 0 || this.crack[j] > this.crack[i])) i = j;
+    if (i < 0 || !(k > 0)) return false;
+    this.crack[i] = Math.max(0, this.crack[i] - k); this.glow[i] = Math.max(this.glow[i], 0.6);
+    if (this.crack[i] === 0) { sfx.vesselMend?.(REGIONS[i]); this.game.events?.emit('vessel.mend', { region: REGIONS[i], why, by: 'courier' }); }
+    return true;
+  }
   /** How cracked the vessel is, 0 (whole) .. 1 (at the edge of shattering). */
   get worn() { return Math.min(1, this.crack.reduce((a, c) => a + c, 0) / BREAK_AT); }
 
