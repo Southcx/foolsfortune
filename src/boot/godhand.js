@@ -16,6 +16,8 @@ import { Interact } from '../courier/interact.js';
 import { LockOn } from '../courier/lockon.js';
 import { GardenMood } from '../vfx/garden/gardenmood.js';
 import { GuestJars } from '../vfx/garden/guestjars.js';
+import { LaunchLotuses } from '../vfx/garden/launchlotus.js';
+import { FacilityLooks } from '../vfx/garden/facilitylooks.js';
 import { CelestialTargets } from '../vfx/celestialtargets.js';
 import { ReadingTable } from '../ui/readingtable.js';
 import { dangerPips } from '../ui/dangerpips.js';
@@ -46,6 +48,8 @@ export function bootGodHand(game, made) {
   game.celestialTargets = new CelestialTargets(game); // (Celestial mode's targets drawn over the paper: the brush hands its list each frame, vfx/celestialtargets.js)
   game.guestJars = new GuestJars(game); // (a guest visiting your garden as their own Pneuka Jar in their glazes; Petra's runtime calls show: vfx/garden/guestjars.js)
   game.gardenMood = new GardenMood(game); // (the Inner Realm's one mood: the hour, the season and the briar every garden look reads: vfx/garden/gardenmood.js)
+  game.launchLotuses = new LaunchLotuses(game); // (the launch lotuses drawn as giant lotuses and their pollen arcs, dressed on garden.enter: vfx/garden/launchlotus.js)
+  game.facilityLooks = new FacilityLooks(game); // (the garden's fixed places dressed to read by their silhouettes: vfx/garden/facilitylooks.js)
   const cursorFree = () => !!(god.active || game.realm?.active || game.duel?.active || game.trackEditor?.active || game.haunt?.on); // (the hand's cursor is the pointer: no lock taken, no pause on its loss)
   game.cursorFree = cursorFree; // (a finger is the cursor there: core/touchdriver.js)
   input.wantLock = () => !cursorFree() && !modalOpen() && !game.kilnUI?.open && !game.dialogue?.open && !game.pneukaUI?.open && !game.shopUI?.open && !game.qais?.open; // (a refused lock is retried only if the game still wants one: core/input.js)
