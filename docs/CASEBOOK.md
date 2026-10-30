@@ -1057,3 +1057,6 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
   rest: gather the tick's events and say the last (or the sum) once, after the tick.
 376. **A close-up crops to a face only where there is one.** A portrait that cuts to a head reads a faceless
   body as a featureless mass: give that body its whole silhouette in frame, and light it for its own albedo, not the house's.
+377. **What a window shows while it pauses the game is ticked in the window's branch.** A frame that returns
+  early under a modal never reaches the updates below it: a camera, a clock or a look that lives inside the window (the scanner's page,
+  the Box's reading) is called from the modal branch, and a probe counts its calls with the window open.

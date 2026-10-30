@@ -4706,3 +4706,11 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   centre, 0.85 of its height in frame) under half the lights (`light: 0.5`, `CUT_IN.light` scaled). After (the same probe, desk and
   phone): the strip shows its gathered body and drips, shaded; programs 205 and 188 in the duel as before.
 - **Rule:** 376
+
+### 2026-10-30 · The scanner's camera never looked while its page was open (boot/frame.js; found by Calissa, reading the frame)
+- **Seen:** Calissa's scan moment drew blank headless; reading the frame, the scanner's camera could never read a code.
+- **Cause, as read and then measured:** the frame returns early while a modal is open (`if (modalOpen()) { ...; return; }`), and the
+  scanner's page is the index menu's, a modal; `game.scanner.update` sat below that return, so while its page was up it was called 0
+  times a frame and the camera's `detect` never ran.
+- **Fix:** the modal branch ticks the scanner too. After, headless: 10 calls in 10 frames with the scan page open.
+- **Rule:** 377
