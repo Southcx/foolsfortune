@@ -651,13 +651,15 @@ export class SightLook {
   drawPlacePlate() {
     const Qd = this.placeQuad, k = this.k; if (!this.placeAt || !this.room) { Qd.mesh.visible = false; return; }
     if (this.compact) { this.drawPlaceLine(); return; }
-    const x = this.quadCanvas(Qd, 260, 52), L = look(), R = rng(9), a = this.wx.aspect, o = Math.max(1, Math.round(k)), sky = this.sky !== false;
-    const name = this.room.toUpperCase(), sub1 = this.layer ? `${this.layer} · ` : '', sub2 = a ? a[0].toUpperCase() + a.slice(1) : 'fair';
+    let x = this.quadCanvas(Qd, 260, 52); const L = look(), R = rng(9), a = this.wx.aspect, o = Math.max(1, Math.round(k)), sky = this.sky !== false;
+    const name = this.room.toUpperCase(), sub1 = this.layer && this.layer.toUpperCase() !== name ? `${this.layer} · ` : '', sub2 = a ? a[0].toUpperCase() + a.slice(1) : 'fair'; // (a room that is its own layer, the Touchstone, is named once)
     const fN = Math.round(14 * k), fS = Math.round(14 * k); x.font = `600 ${fN}px ${FONT.title}`; const wN = x.measureText(name).width; x.font = `${fS}px ${FONT.sys}`; const wS = x.measureText(sub1 + sub2).width;
     const pad = Math.round(9 * k), w = Math.round(Math.max(wN, wS) + 2 * pad), h = Math.round(fN + fS + 12 * k), c = Math.max(3, Math.round(5 * k));
+    if (w + 6 > Qd.c.width) { Qd.c = null; x = this.quadCanvas(Qd, Math.ceil((w + 8) / k), 52); } // (a long name outgrows the canvas: drawn whole on a wider one)
     const cx = Math.round(w / 2) + 2, top = Math.round(7 * k) + 2, X = cx - Math.round(w / 2), Y = top; // (the anchor: the top centre, under the cathode)
     x.setTransform(1, 0, 0, 1, 0, 0); x.clearRect(0, 0, Qd.c.width, Qd.c.height);
-    x.fillStyle = 'rgba(154,116,64,.9)'; x.fillRect(X + Math.round(w * 0.3), Y - Math.round(7 * k), o, Math.round(7 * k)); x.fillRect(X + Math.round(w * 0.7), Y - Math.round(7 * k), o, Math.round(7 * k));
+    const ax = this.fitLeft(X + w + 1, cx), hx = cx + Math.round((this.placeAt[0] - ax) * this.pr), hs = Math.round(Math.min(w * 0.2, 44 * k)); // (the hangers stay under the Sight however far the plate moved in)
+    x.fillStyle = 'rgba(154,116,64,.9)'; x.fillRect(hx - hs, Y - Math.round(7 * k), o, Math.round(7 * k)); x.fillRect(hx + hs, Y - Math.round(7 * k), o, Math.round(7 * k));
     const chamfer = (X0, Y0, w0, h0, c0) => { x.beginPath(); x.moveTo(X0 + c0, Y0); x.lineTo(X0 + w0, Y0); x.lineTo(X0 + w0, Y0 + h0 - c0); x.lineTo(X0 + w0 - c0, Y0 + h0); x.lineTo(X0, Y0 + h0); x.lineTo(X0, Y0 + c0); x.closePath(); };
     chamfer(X, Y, w, h, c); const g = x.createLinearGradient(0, Y, 0, Y + h); g.addColorStop(0, `rgb(${L.top})`); g.addColorStop(1, `rgb(${L.bot})`); x.fillStyle = sky ? g : `rgb(${L.bot})`; x.fill();
     x.save(); x.clip(); for (let i = 0; i < w * h / 30; i++) { x.fillStyle = R() < 0.6 ? 'rgba(0,0,0,.22)' : `rgba(${L.hiR},.1)`; x.fillRect(X + R() * w | 0, Y + R() * h | 0, o, o); } x.restore();
@@ -670,8 +672,12 @@ export class SightLook {
     x.font = `${fS}px ${FONT.sys}`; const sy = ty + Math.round(fS * 1.15), sx0 = Math.round(cx - wS / 2), w1 = x.measureText(sub1).width;
     x.fillStyle = L.lo; x.fillText(sub1, sx0, sy + o); x.fillStyle = L.mid; x.fillText(sub1, sx0, sy);
     x.fillStyle = L.lo; x.fillText(sub2, sx0 + w1, sy + o); x.fillStyle = a === 'dread' ? '#7fae8a' : a ? `#${(COLOR[a] ?? 0xcfe8f0).toString(16).padStart(6, '0')}` : '#cfe8f0'; x.fillText(sub2, Math.round(sx0 + w1), sy);
-    this.showQuad(Qd, [X - 1, Y - Math.round(7 * k) - 1, X + w + 1, Y + h + 1], this.placeAt[0], this.placeAt[1], cx, top);
+    this.showQuad(Qd, [X - 1, Y - Math.round(7 * k) - 1, X + w + 1, Y + h + 1], ax, this.placeAt[1], cx, top);
   }
+
+  /** The place plate's anchor x, moved left as far as its right edge (`x1` canvas px, anchored at `ox`) would pass the Sight's own
+   *  right edge (the frame's x = 0: the view's edge on the desk, the HUD layout's place on touch), less a margin of 4 dots. */
+  fitLeft(x1, ox) { return Math.min(this.placeAt[0], -4 * this.dot - (x1 - ox) / this.pr); }
 
   /** The place plate's icon line (on touch): one line, the weather's pip (its colour, a diamond; fair a clear one) and the room. */
   drawPlaceLine() {
@@ -689,6 +695,6 @@ export class SightLook {
     if (a) { x.fillStyle = tone; x.fill(); } else { x.strokeStyle = tone; x.lineWidth = Math.max(1, o * 1.5); x.stroke(); }
     x.font = `600 ${fN}px ${FONT.title}`; x.textBaseline = 'middle'; x.textAlign = 'left'; const tx = Math.round(X + pad + pip + gap), ty = Math.round(py + o);
     x.fillStyle = L.lo; x.fillText(name, tx, ty + o); x.fillStyle = sky ? L.hi : L.mid; x.fillText(name, tx, ty);
-    this.showQuad(Qd, [X - 1, Y - 1, X + w + 1, Y + h + 1], this.placeAt[0], this.placeAt[1], cx, Y);
+    this.showQuad(Qd, [X - 1, Y - 1, X + w + 1, Y + h + 1], this.fitLeft(X + w + 1, cx), this.placeAt[1], cx, Y);
   }
 }

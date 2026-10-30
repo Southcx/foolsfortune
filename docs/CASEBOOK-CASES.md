@@ -4528,3 +4528,17 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   SAY, casebook 94) and was said over, and the next absorb said the next. The log's throttle on both was 2 real s.
 - **Fix:** both lines throttled to 20 real s, and "You settle." said only after an overflow line that was said, so the pair is never half.
 - **Rule:** 358
+
+### 2026-10-30 · The Sight's place plate ran off the right edge, and named the Touchstone twice (vfx/sight.js, Petra's shots at 960 x 600 and 896 x 414)
+- **Seen:** "THE TOUCHSTONE · fa", the plate cut by the view's right edge; on the desk its two lines read "THE TOUCHSTONE" over
+  "THE TOUCHSTONE · fair".
+- **Cause:** the plate is centred under the Sight (85.4 dots in from the edge) and grows with its words; a subline wider than about
+  170 dots passes the edge, and nothing fitted it. The Touchstone is its own layer (`place.enter { room, layer }` the same), and the
+  subline put the layer before the weather whatever it was.
+- **Fix:** both plates (the desk's two lines, touch's one) moved left by as much as they would pass the Sight's own right edge (the
+  frame's x = 0: the view's edge on the desk, the HUD layout's place on touch), less 4 dots (`fitLeft`), the desk plate's two hanger
+  rods drawn where the Sight's centre falls on it so neither hangs from the air; a layer that is its room is
+  left out of the subline; a name wider than the desk plate's canvas draws on a wider one. Read back on the phone at 896 x 414 (2x,
+  touch): THE TOUCHSTONE and "THE GREAT DUNEMAW ANTECHAMBER" (325 CSS px) both end 3.45 CSS px (4 dots) inside the edge; on the
+  desk at 960 x 600, 5 CSS px inside (the long one 498 CSS px wide), the Touchstone's lines THE TOUCHSTONE over "fair".
+- **Rule:** NEW:plate-fits-its-edge

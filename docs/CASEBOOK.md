@@ -1014,3 +1014,6 @@ NEW:stance-own-frame. **A baked layer is laid on the frames it was baked over, a
   carries a blend by a weight comes in whole by that share, never by the same weight again (its upper body then lags at the square).
 NEW:reach-standing-leg. **The foot IK's reach drop is a standing leg's.** A leg lying out along the floor (the crawl's, the slide's)
   cannot be reached by lowering the hips; read as a reach it takes the 0.12 m fallback and sinks the body, and what it holds, into the floor.
+NEW:plate-fits-its-edge. **A plate that grows with its words is fitted to the edge it hangs by.** Centred under an instrument at a
+  corner, it is moved in by what it would pass the instrument's own edge, and looked at with the longest name the game has, not the room
+  at hand; a line that repeats the line above it is left out.
