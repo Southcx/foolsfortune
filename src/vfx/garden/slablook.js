@@ -19,9 +19,6 @@
 //                    fossil (its body, the garden's spirit, rising and going off to the Grove); a flawless dig's wears the shiny inversion
 //                    and a ring of stars (`slab.wake.rare`)
 //
-// Petra's stand-ins (the cubes, the see-through cubes, the flat outline, the wire cube, the grey table) are hidden here, never touched:
-// docs/handoffs/petra/2026-10-30-from-calissa-bench-look.md asks for them to go.
-//
 // Prior art: Spectrobes: Origins' excavation (the tool at the cursor, the fossil showing a little at a time, the creature rising out of
 // it), Fossil Fighters' cleaning (the X-ray's outline through the rock, the bone's crack flash, the revival), Pokemon Diamond's
 // Underground, a stonemason's banker mark; the bracket reticles of every action game's lock-on, turned to a chisel's.
@@ -61,7 +58,6 @@ export class SlabLook {
   dress() {
     const B = this.game.realm?.bench; if (!B || this.B === B) return;
     this.B = B;
-    for (const m of [B.stone, B.mat, B.ghostMat, B.ringMat, B.cursor?.material]) if (m) m.visible = false; // (Petra's stand-ins, hidden: never drawn, never compiled)
     const K = SLAB_MESH.grain, g = (this.g = new THREE.Group()); g.name = 'slab-look'; g.scale.setScalar(1 / K); B.group.add(g);
     this.mats = { slab: matterMaterial('slab'), toll: matterMaterial('toll'), bench: matterMaterial('bench') };
     this.mats.toll.depthTest = false; this.mats.toll.depthWrite = false;

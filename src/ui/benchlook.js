@@ -9,7 +9,8 @@
 //                  nothing; a gold seal on the row while nothing is cracked (UNCRACKED), FLAWLESS once the bared share reaches it too.
 //                  The window's own BARED and CRACKED are hidden.
 //   THE TOLLS      the Crucibelle's three tolls as three small bells, rung dark as they are spent
-//   THE VERBS      the slot row's icons swapped for what each verb does to the stone (ui/icons/slabverbart.js), never the mount's
+//   THE VERBS      the slot row's icons, what each verb does to the stone (ui/icons/slabverbart.js; the bench asks for `slabverb.<verb>`);
+//                  a slot's sides pared so its longest word (OUTLINE) fits on a phone
 //   THE BUTTONS    SET IT NOW and PUT IT OFF as clay tiles, their keys in caps
 //
 // Prior art: Fossil Fighters' cleaning (its two meters side by side, the score from them), the collection log's and the goals window's
@@ -18,8 +19,6 @@
 //   game.benchLook = new BenchWindowLook(game)   .update()   (once a frame: the meters from the bench's slab, the icons when the row is drawn)
 // ---------------------------------------------------------------------------------------
 import { scoreOf, SLAB } from '../progress/slabs.js';
-import { BENCH_VERBS } from '../world/garden/bench.js';
-import { iconEl } from './icons/icons.js';
 import { FILM, GOLD, SALT, COUNT_FACE } from './brineframe.js';
 
 const S = 'body .cb.clay'; // (an element and a class more than the window's own rules: the dress wins whichever style comes later)
@@ -54,10 +53,11 @@ ${S} .cb-acts button{color:#3a1c10;background:linear-gradient(180deg,#e9d6bc,#c9
 ${S} .cb-acts button:hover{box-shadow:inset 0 var(--d) 0 rgba(255,255,255,.4),inset 0 calc(-1*var(--d)) 0 rgba(0,0,0,.22),0 0 0 var(--d) ${GOLD}}
 ${S} .cb-acts kbd{display:inline-block;margin-left:calc(3*var(--d));padding:0 calc(2*var(--d));border-radius:calc(1*var(--d));background:#3a1c10;color:${SALT};opacity:1;font-size:calc(8*var(--d))}
 ${S} .slotrow .sl canvas{image-rendering:pixelated}
+${S} .slotrow .sl{padding-left:calc(1.5*var(--d));padding-right:calc(1.5*var(--d))}
 `;
 
 export class BenchWindowLook {
-  constructor(game) { this.game = game; this.styled = false; this.seen = -1; this.row = null; }
+  constructor(game) { this.game = game; this.styled = false; this.seen = -1; }
   style() {
     if (this.styled || typeof document === 'undefined') return; this.styled = true;
     const st = document.createElement('style'); st.setAttribute('data-benchlook', ''); st.textContent = CSS; document.head.appendChild(st);
@@ -79,12 +79,6 @@ export class BenchWindowLook {
       M.querySelector('.cbl-b').textContent = `${Math.round(100 * sc.bared)}%`; M.querySelector('.cbl-c').textContent = `${Math.round(100 * sc.cracked)}%`;
       const fl = M.querySelector('.cbl-flaw'); fl.classList.toggle('on', Sl.cracks === 0); fl.textContent = sc.flawless ? 'FLAWLESS' : 'UNCRACKED'; // (plain words, Espada's to rule)
       bells.innerHTML = Array.from({ length: SLAB.tolls }, (_, i) => `<i class="${i < SLAB.tolls - Sl.tolls ? 'spent' : ''}"></i>`).join('');
-    }
-    // the verbs' icons: what each does to the stone, swapped in each time the window draws its row again
-    const row = root.querySelector('.cb-row .slotrow');
-    if (row && row !== this.row) {
-      this.row = row;
-      row.querySelectorAll('.sl').forEach((sl, i) => { const v = BENCH_VERBS[i], old = sl.querySelector('canvas'); if (v && old) old.replaceWith(iconEl(`slabverb.${v}`, { px: 2 })); });
     }
   }
 }
