@@ -665,8 +665,8 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `garden.howto.ring` | held | shape:hoop×2, shape:ring, shape:pillar | held: a how-to step's spot ringed on its ground (`dir` the ground's up, `scale` the ring's radius): a gold hoop turning, the running hand round inside it, the film's thinner hoop breathing outside it, and a faint pillar so it reads from ... | vfx/garden/howtoring.js |
-| `garden.howto.sky` | held | shape:hoop×2, shape:ring | held: the open sky of the ring marked where a seed is let go: the same hoops hung in the air, no pillar | vfx/garden/howtoring.js |
+| `garden.howto.ring` | held | shape:ring×2, shape:hoop, shape:pillar | held: a how-to step's spot ringed on its ground (`dir` the ground's up, `scale` the ring's radius): a gold band turning at the rim and the running hand round inside it (deep gold that covers the ground, `back`: on the garden's pale groun... | vfx/garden/howtoring.js |
+| `garden.howto.sky` | held | shape:ring×2, shape:hoop | held: the open sky of the ring marked where a seed is let go: the same hoops hung in the air, no pillar | vfx/garden/howtoring.js |
 | `garden.lotus.land` | one-shot | sprites:sparkle, sprites:petal, sprites:ringthin | the lotus across catching the Jar: a puff of pollen and a few petals | vfx/garden/launchlotus.js |
 | `garden.lotus.launch` | one-shot | sprites:petal, sprites:sparkle, sprites:soft, sprites:ring, sprites:core, light | a launch lotus flinging the Pneuka Jar: petals thrown up and out, pollen in gold and the film shot along the up, motes of where it throws to, a ring | vfx/garden/launchlotus.js |
 | `garden.seed.grow` | one-shot | sprites:chip, sprites:puff, sprites:sparkle | a seed's planetoid grown a size: chips and dust of its own matter thrown off its old surface, a few glints of the film | vfx/garden/seedlooks.js |

@@ -10,8 +10,8 @@
 //                         its own matter ('tint': its kind's colour) thrown off along `normal`, a few glints of the film
 //   garden.seed.pour      held: the dust thrown up where the god hand's pour lands on a seed (vfx/garden/seedpour.js), in the matter's
 //                         colour ('tint'), and grains skipping off it
-//   garden.howto.ring     held: a how-to step's spot ringed on the ground along `dir` (vfx/garden/howtoring.js): a gold hoop turning
-//                         slowly, the running hand round inside it, the film's thinner hoop breathing outside it, a faint pillar standing up
+//   garden.howto.ring     held: a how-to step's spot ringed on the ground along `dir` (vfx/garden/howtoring.js): a gold band at the rim
+//                         turning slowly (a band, never a hairline: casebook 373), the running hand round inside it, the film's thinner hoop breathing outside it, a faint pillar standing up
 //   garden.howto.sky      held: the same hoops hung in the open sky of the ring, no pillar
 //
 // Prior art: Super Mario Galaxy's launch star burst (sparkles shot along the flight) and its Hungry Luma bursting into a planet, the
@@ -53,11 +53,11 @@ export const GARDEN_EFFECTS = {
   'garden.smoke': { layers: [
     L({ type: 'sprites', pool: 'alpha', rate: 4, dur: Infinity, shape: 'puff', spawn: 'sphere', r: 0.25, dir: 'cone', axis: 'dir', cone: 8, speed: [0.9, 1.4], drag: 0.08, gravity: 0, size: [0.7, 1.0], sizeEnd: [2.6, 3.6], life: [5.5, 7.5], color: SMOKE, alpha: 0.34, spin: [-0.35, 0.35], powerCount: false }),
   ] },
-  // held: a how-to step's spot ringed on its ground (`dir` the ground's up, `scale` the ring's radius): a gold hoop turning, the running
-  // hand round inside it, the film's thinner hoop breathing outside it, and a faint pillar so it reads from across the sky
+  // held: a how-to step's spot ringed on its ground (`dir` the ground's up, `scale` the ring's radius): a gold band turning at the rim and
+  // the running hand round inside it (deep gold that covers the ground, `back`: on the garden's pale ground an added gold clips to white), the film's thinner hoop breathing outside it, and a faint pillar so it reads from across the sky
   'garden.howto.ring': { layers: [
-    L({ type: 'shape', form: 'hoop', face: 'dir', ramp: 'gold', main: 'streaks', tile: [6, 1], scroll: [0.05, 0], dur: Infinity, scale: 1, spin: 0.25, glow: 2.2, core: 0.5, in: 2.5, out: 3 }),
-    L({ type: 'shape', form: 'ring', face: 'dir', ramp: 'gold', main: 'script', tile: [8, 0.25], scroll: [-0.03, 0], dur: Infinity, scale: 0.88, edgeV: [0.25, 0.25], glow: 1.5, core: 0.2, in: 2.5, out: 3 }),
+    L({ type: 'shape', form: 'ring', face: 'dir', ramp: 'gold', main: 'streaks', tile: [6, 1], scroll: [0.05, 0], dur: Infinity, scale: 1, spin: 0.25, edgeV: [0.62, 0.1], glow: 1.1, core: 0, back: 0.95, in: 2.5, out: 3 }),
+    L({ type: 'shape', form: 'ring', face: 'dir', ramp: 'gold', main: 'script', tile: [8, 0.25], scroll: [-0.03, 0], dur: Infinity, scale: 0.78, edgeV: [0.25, 0.25], glow: 1.1, core: 0, back: 0.9, in: 2.5, out: 3 }),
     L({ type: 'shape', form: 'hoop', face: 'dir', ramp: 'film', main: 'noise', tile: [4, 1], scroll: [0.1, 0], dur: Infinity, loop: 2.4, scale: [[0, 1.08], [0.5, 1.2], [1, 1.08]], spin: -0.4,
       erode: [[0, 0.35], [0.5, 0.1], [1, 0.35]], glow: 1.6, in: 2.5, out: 3 }),
     L({ type: 'shape', form: 'pillar', face: 'dir', ramp: 'gold', main: 'streaks', tile: [3, 1], scroll: [0, 0.4], dur: Infinity, scale: 1, stretch: [1, 3.5, 1], edgeV: [0, 0.85], rim: -0.6,
@@ -65,8 +65,8 @@ export const GARDEN_EFFECTS = {
   ] },
   // held: the open sky of the ring marked where a seed is let go: the same hoops hung in the air, no pillar
   'garden.howto.sky': { layers: [
-    L({ type: 'shape', form: 'hoop', face: 'dir', ramp: 'gold', main: 'streaks', tile: [8, 1], scroll: [0.05, 0], dur: Infinity, scale: 1, spin: 0.2, glow: 2.2, core: 0.5, in: 2.5, out: 3 }),
-    L({ type: 'shape', form: 'ring', face: 'dir', ramp: 'gold', main: 'script', tile: [12, 0.25], scroll: [-0.03, 0], dur: Infinity, scale: 0.9, edgeV: [0.25, 0.25], glow: 1.5, core: 0.2, in: 2.5, out: 3 }),
+    L({ type: 'shape', form: 'ring', face: 'dir', ramp: 'gold', main: 'streaks', tile: [8, 1], scroll: [0.05, 0], dur: Infinity, scale: 1, spin: 0.2, edgeV: [0.7, 0.08], glow: 1.1, core: 0, back: 0.95, in: 2.5, out: 3 }),
+    L({ type: 'shape', form: 'ring', face: 'dir', ramp: 'gold', main: 'script', tile: [12, 0.25], scroll: [-0.03, 0], dur: Infinity, scale: 0.8, edgeV: [0.25, 0.25], glow: 1.1, core: 0, back: 0.9, in: 2.5, out: 3 }),
     L({ type: 'shape', form: 'hoop', face: 'dir', ramp: 'film', main: 'noise', tile: [6, 1], scroll: [0.1, 0], dur: Infinity, loop: 2.4, scale: [[0, 1.06], [0.5, 1.16], [1, 1.06]], spin: -0.3,
       erode: [[0, 0.35], [0.5, 0.1], [1, 0.35]], glow: 1.6, in: 2.5, out: 3 }),
   ] },
