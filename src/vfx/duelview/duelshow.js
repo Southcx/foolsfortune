@@ -5,8 +5,9 @@
 // director's, over the board's own beats, a PvE duel's only.
 //   THE CAST       the aberrant drawn bigger for its fight (SHOW.foeScale) and the Pneuka Jar bigger at your spot (SHOW.jarScale): two
 //                  fighters squared up across the tsuitate; both put back at the close
-//   THE VS OPEN    the camera cut close and low on the aberrant as its band tears in from the right with its name, cut to the Jar as
-//                  yours tears in from the left, VS slammed between them (stamps.js), then pulled out to the arena and the board
+//   THE VS OPEN    the camera cut close and low on the aberrant as its band tears in from the right with its name; a beat; cut to the
+//                  Jar as yours tears in from the left; a beat; VS slammed between them (stamps.js); both bands gone together as the camera
+//                  pulls out to the arena, where the tsuitate building itself under them lights its Line (assembly.js) and the board is dealt
 //   THE ACTING     each fighter answers the beats with its body: a push of the Line your way the Jar lunging at it and the aberrant
 //                  flinching back (white sparks off its head), a push its way the other round; its skill's cast a lunge of its own; junk
 //                  landing on your half the Jar rocked; a duel's break its side knocked back hard; your big moves the Jar hopping as it
@@ -28,11 +29,12 @@ import { sfx } from '../../audio/sfx.js';
 import { domainHex } from './powercast.js';
 import { sm, clamp01 } from './layout.js';
 
-/** foeScale, jarScale: the fighters' sizes in a PvE duel; vs: its open's beats (real s from the open) and its length; lunge and flinch
+/** foeScale, jarScale: the fighters' sizes in a PvE duel; vs: its open's beats (real s from the open: each band, the stamp, the pull out
+ *  with both bands gone, the tsuitate's assembly begun so its Line lights as the camera lands) and its length; lunge and flinch
  *  (real s and m); cine: the cutaways' lengths (real s); victory: the hero shot's length; confetti: its bits. */
 export const SHOW = {
   foeScale: 1.2, jarScale: 1.15, margin: 1.1, front: 1,
-  vs: { foe: 0.15, jar: 0.75, stamp: 1.05, pull: 1.55, dur: 2.5 },
+  vs: { foe: 0.15, jar: 0.95, stamp: 1.5, pull: 1.95, build: 0.45, dur: 3.1 }, // (South, 2026-10-30: staggered, never piled up; until then 0.15, 0.75, 1.05, 1.55, 2.5)
   lunge: { out: 0.1, back: 0.34, amp: 0.42 }, flinch: { dur: 0.5, amp: 0.38 }, knock: { dur: 0.8, amp: 0.8 },
   cine: { hit: 0.95, big: 2 }, victory: 1.15, confetti: 46,
 };
@@ -65,9 +67,9 @@ export class DuelShow {
   /** The VS's beats on its clock: the bands, the cuts, the stamp. */
   vs() {
     const V = this.view, S = SHOW.vs, t = this.t;
-    if (this.vsStep === 0 && t >= S.foe) { this.vsStep = 1; const f = this.foe; V.stage?.cutAway('vsFoe', S.jar - S.foe + 0.15, { cut: true }); V.auras?.charge(1, { dur: S.jar - S.foe + 0.3 }); V.cutIn?.vs?.(NAMES[f?.kind] || (f?.name || '').toUpperCase(), null, 0.3); V.stage?.jolt?.(0.25); }
-    if (this.vsStep === 1 && t >= S.jar) { this.vsStep = 2; V.jarCut?.vs?.('', filmColour(0.3, _c).getHex(), 0.66); V.stage?.cutAway('vsJar', S.pull - S.jar, { cut: true }); V.auras?.charge(0, { dur: S.pull - S.jar + 0.3 }); V.stage?.jolt?.(0.25); }
-    if (this.vsStep === 2) V.seeding?.go?.(Math.max(0, S.pull - 0.1 - t)); // (the board dealt in as the camera pulls out to it: seeding.js)
+    V.assembly?.go?.(Math.max(0, S.build - t)); // (the tsuitate built under the open, its last beat as the camera pulls out; the deal after it: assembly.js)
+    if (this.vsStep === 0 && t >= S.foe) { this.vsStep = 1; const f = this.foe; V.stage?.cutAway('vsFoe', S.jar - S.foe + 0.15, { cut: true }); V.auras?.charge(1, { dur: S.jar - S.foe + 0.3 }); V.cutIn?.vs?.(NAMES[f?.kind] || (f?.name || '').toUpperCase(), null, 0.3, S.pull - S.foe); V.stage?.jolt?.(0.25); }
+    if (this.vsStep === 1 && t >= S.jar) { this.vsStep = 2; V.jarCut?.vs?.('', filmColour(0.3, _c).getHex(), 0.66, S.pull - S.jar); V.stage?.cutAway('vsJar', S.pull - S.jar, { cut: true }); V.auras?.charge(0, { dur: S.pull - S.jar + 0.3 }); V.stage?.jolt?.(0.25); }
     if (this.vsStep === 2 && t >= S.stamp) { this.vsStep = 3; V.stamps?.stamp('VS', { size: 0.26, y: 0.5, x: 0.5, tilt: -0.12, life: 0.6, spin: 1.4 }); V.stage?.jolt?.(0.5); V.game.glitch?.pulse?.({ split: 0.06, tear: 0.03, dur: 0.15 }); }
   }
 

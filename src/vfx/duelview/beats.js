@@ -21,7 +21,7 @@
 //              (shot and its pop, recolour and its paints, tune and tune.end, read) in toolbeats2.js; lesson.*: the asked verb (glows.js)
 //   finisher       the crackle break and the data drain's beats on the board (vfx/datadrain.js DRAIN_BEATS), and the drain itself on the
 //              foe in the world: its half's pieces stripped into cubes spiralling up into the god hand, the Line home (1.9)
-//   turn       the turn's band torn across (cutin.js), then a side's points: the beads it lost crack, one by one
+//   turn       after a play a beat for the board to settle (CUT_IN.turn.settle), the turn's band torn across (cutin.js), then a side's points: the beads it lost crack, one by one
 //   ember      Dread's junk lands as embers (`land` with kind 'ember'); `ember.cool`: the coal crazes (0.3), cracks open and turns, its gem
 //              inside (0.5)
 //   skills     the one-gesture duel's (skillcast.js): `skill` the cast (the Jar's pour into the cell), `blast { rows }` the Shot's beam,
@@ -52,6 +52,7 @@ import { JUICE_EVENTS } from './juice.js';
 import { gemColour } from './pieces.js';
 import { DIVE } from './formdive.js';
 import { castBeat, blastBeat, veinBeat } from './skillcast.js';
+import { CUT_IN } from './cutin.js';
 
 const ACTS = new Set(['swap', 'drag', 'rotate', 'drop', 'push', 'kick', 'form']);
 const COST = { swap: 1, rotate: 1, drop: 1, push: 1, kick: 2, form: 1, run: 1, shot: 1, grab: 1, drill: 1, paint: 2, delay: 2, hold: 1, 'hold.send': 1, 'duel.finisher': 2 };
@@ -127,7 +128,7 @@ export class DuelBeats {
     if (e.type === 'orb.drink') { job.i++; return this.drinkAt(e); }
     if (e.type === 'duel.finisher' && V.jarCut && e.side !== 1) { const cut = V.jarCut.yours(e, YOURS.finisher, 0xffd36a, { limit: true }); if (cut) return cut; }
     if (e.type === 'duel.finisher') { job.i++; V.spend(e.side, COST['duel.finisher'], e, e.spent ?? [60, 40, 20][(e.depth || 1) - 1]); const ph = this.finisher(e); if (V.jarCut?.cut.has(e)) ph.events = []; return ph; }
-    if (e.type === 'turn') { job.i++; return this.turn(e); }
+    if (e.type === 'turn') { if (job.i > 0 && job.settled !== e) { job.settled = e; return { events: [], dur: CUT_IN.turn.settle }; } job.i++; return this.turn(e); } // (after a play, the board left to settle a beat before the turn's band tears in: cutin.js)
     if (e.type === 'rest.cut') { job.i++; if (e.side === 0) V.restCuts++; return { events: [e], dur: 0 }; } // (a good chain took turns off the resting powers: the phone's power tiles flash their rims, ui/touch/duelscreen.js)
     if (e.type === 'flee') { job.i++; V.spend(e.side, e.ap ?? (e.ok ? 0 : FLEE.cost), e); // (only a failed roll costs: the owner, via Dovina's e3e13b4)
     return V.flee.roll(e); }
