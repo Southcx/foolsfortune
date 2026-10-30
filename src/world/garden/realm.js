@@ -388,7 +388,7 @@ export class Realm {
     clay?.regrow(k);
     const kept = clay?.kept.length ?? 0; this.plots.relay(P); this.plots.addPlanet(P, plots); // (more plots, laid round those it has)
     const base = this.decorLayer?.baseKept?.[P.id]; if (base && clay) base.push(...clay.kept.slice(kept)); // (the new plots' ground held, with the pieces': decorlayer.js keepAll)
-    this.site.relay(P); this.plots.veins(P); if (this.game.launchLotuses) this.game.launchLotuses.count = -1; // (its lotuses stood again; Calissa's flowers drawn again on their next step)
+    this.site.relay(P); this.plots.veins(P); // (its lotuses stood again: Calissa's flowers hear the seed.grow that follows and stand on the new ground)
     const W = this.waterworks, Wl = W.looks?.[P.id]; if (Wl) { Wl.mesh?.parent?.remove(Wl.mesh); Wl.dispose?.(); delete W.looks[P.id]; } // (its water's look made again on the new ground)
     const D = this.game.decor?.s?.placed, N1 = cellsOf(r); // (a garden piece keeps its bearing on a grid of more cells)
     if (D && N1 !== N0) { for (const p of D) if (p[1] === P.id) { const c = cellAt(dirAt(p[2], p[3], p[4], N0), N1); p[2] = c.face; p[3] = c.iu; p[4] = c.iv; } this.game.save?.dirty('decor'); }

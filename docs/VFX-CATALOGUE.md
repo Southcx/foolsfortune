@@ -1,6 +1,6 @@
 # The VFX catalogue (generated: do not edit)
 
-Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-10-30). 592 effects in 37 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
+Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-10-30). 605 effects in 38 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
 
 **Play one:** `game.vfx.play(name, { pos, dir, normal, tint, power, scale, feeling, domain, suit, follow })`; a held one returns a handle (`h.pos`, `h.k`, `h.stop()`). A name falls back from the most particular (`hit.slash.crystal` -> `hit.slash` -> `hit`), so a new name always plays something.
 
@@ -182,7 +182,7 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `shell.zodiac.fire` | held | sprites:puff, sprites:sparkle, sprites:star4 | 91 Zodiac: night over the whole fight, stars pricking out across it, the twelve signs wheeling overhead |  |
 | `shell.zodiac.strike` | one-shot | sprites:star4, sprites:core, decal:shockring×2, decal:scorch, sprites:sparkle×2, light |  |  |
 
-### art (103)
+### art (114)
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
@@ -193,7 +193,7 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `art.beginnersLuck.use` | one-shot | shape:ring×2, sprites:die, sprites:star4, shape:band, sprites:sparkle | Beginner's Luck (the Fool; Divination): an iris opened at the hand, two dice flicked up off it, tumbling: the next roll is thrown twice |  |
 | `art.bind.hold` | held | shape:band×3, shape:ring, sprites:soft | Shackle held: the three links tight round it, turning, faint; a written ring at its feet |  |
 | `art.bind.use` | one-shot | shape:band×3, shape:crescent, shape:sphere, shape:disc, sprites:soft, shape:ring, light, shake, hitstop | Shackle (the Devil, Pentacles; Spellscription, held 5 s): chain links of script round the creature (played at it) |  |
-| `art.bloom.hold` | held | shape:spikes×2, sprites:leaf, sprites:soft | Overgrowth held: the thicket's light standing faint, leaves drifting down through it |  |
+| `art.bloom.hold` | held | sprites:petal, sprites:leaf, sprites:soft | Overgrowth held: petals and leaves drifting off the briars at its edge, grains hanging in it (the briars are the lasting look's: classartlasting/thicket.js) | vfx/classartlasting/thicket.js |
 | `art.bloom.use` | one-shot | shape:spikes×2, shape:sphere, sprites:leaf, shape:ring×2, sprites:puff, sprites:soft, light, shake, hitstop | Overgrowth (the Empress; Manifestation, held 10 s): a thicket rising 6 m round, leaves thrown up and falling |  |
 | `art.bulwark.hold` | held | shape:band, shape:ring×4, shape:dome, sprites:glint, shape:disc | Bulwark held (braced): the shell of hard light, its cells crawling, the gold rims, a cap over the crown, glints running up it |  |
 | `art.bulwark.use` | one-shot | shape:band, shape:ring×4, shape:sphere, shape:spikes, sprites:shard, sprites:puff, sprites:soft | Bulwark (the Knight of Pentacles; Manifestation, held 3 s): a braced shell of hard light with gold rims, spikes driven in at the feet |  |
@@ -212,6 +212,7 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `art.dominion.fire` | one-shot | shape:ring×3, shape:band, sprites:streak, sprites:sparkle, shape:wave | extends `art.react`. Unshaken (the Emperor's reaction): Ram quietened: a short wave wall pushed out a step ahead, a pale rim at the feet |  |
 | `art.due.fire` | one-shot | shape:ring×3, shape:band, sprites:streak, sprites:sparkle, shape:disc | extends `art.react`. Grudge (Justice's reaction): Payback quietened: a small written ring at the chest, a seal |  |
 | `art.eager.fire` | one-shot | shape:ring×2, shape:band, sprites:streak, sprites:sparkle, shape:dome, sprites:soft | extends `art.react`. First Strike (the Page of Wands' reaction): Spark quietened: an ember's bloom at the hand on the fight's first blow |  |
+| `art.echo.arc` | one-shot | shape:crescent×2, shape:sphere, shape:disc, sprites:streak, smear | ---- Encore (the Lovers, Swords; Spellscription): the strike again, in its tool's suit --------------------------------------------- | vfx/classartlasting/encore.js |
 | `art.echo.use` | one-shot | shape:band, shape:crescent×2, shape:ring, shape:disc, sprites:soft, smear, light | Encore (the Lovers, Swords; Spellscription): a written ghost of you replaying the last move where you stood |  |
 | `art.edge.fire` | one-shot | shape:ring×2, shape:band, sprites:streak, sprites:sparkle, shape:wave, sprites:star4 | extends `art.react`. Edge (the Knight of Swords' reaction): Riposte Rush quietened: a gold glint on the weak point |  |
 | `art.empath.fire` | one-shot | shape:ring×2, shape:band×2, sprites:streak, sprites:sparkle, sprites:drip | extends `art.react`. Empath (the Queen of Cups' reaction): Catch the Rain quietened: a thin stream of the sky falling to the chest |  |
@@ -224,9 +225,13 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `art.judge.fire` | one-shot | shape:ring×3, shape:band, sprites:streak, sprites:sparkle, shape:disc | extends `art.react`. Judge (the King of Swords' reaction): Mark for Death quietened: a small ring written over the head |  |
 | `art.kindleHeart.hold` | held | shape:sphere, shape:band, sprites:soft | Stoke held: the heart beating at the chest, a shimmer round the body, sparks rising |  |
 | `art.kindleHeart.use` | one-shot | shape:band, shape:sphere, shape:crescent×2, sprites:soft | Stoke (the Queen of Wands; Alteration, held 6 s): a heartbeat of embers at the chest, rising sparks; soft enough to stand beside play |  |
-| `art.lantern.hold` | held | shape:sphere, shape:ring×2, sprites:soft | Lamp held: the lamp over the shoulder breathing slowly, its reach a faint ring at 8 m, grains drifting off it |  |
+| `art.lantern.glow` | held | shape:sphere, sprites:moth, sprites:soft | ---- Lamp (the Hermit, Pentacles; Manifestation): the lantern's light, and what it draws ------------------------------------------- | vfx/classartlasting/lantern.js |
+| `art.lantern.hold` | held | shape:ring×2 | Lamp held: its reach a faint ring on the ground at 8 m (the lantern, its moths and its throw are the lasting look's: classartlasting/lantern.js, art.lantern.glow, art.lantern.throw) |  |
+| `art.lantern.throw` | held | shape:disc |  | vfx/classartlasting/lantern.js |
 | `art.lantern.use` | one-shot | shape:sphere×2, sprites:shard, shape:ring×2, sprites:soft, light, flash | Lamp (the Hermit, Pentacles; Manifestation, held 20 s): a lamp made over the shoulder, its soft light out to 8 m |  |
 | `art.mirageStep.hold` | held | shape:band, sprites:puff, sprites:sparkle | Vanish held (unseen): a faint shimmer where the body is, a wisp of mist now and then |  |
+| `art.mirageStep.smoke` | held | sprites:puff, sprites:streak | ---- Vanish (the Moon, Cups; Alteration): the smoke Courier ------------------------------------------------------------------------- | vfx/classartlasting/smoke.js |
+| `art.mirageStep.unravel` | one-shot | sprites:puff, sprites:streak |  | vfx/classartlasting/smoke.js |
 | `art.mirageStep.use` | one-shot | shape:band×2, sprites:puff, shape:crescent×2, sprites:hex, light | Vanish (the Moon, Cups; Alteration, held 3 s): the body eroding into mist, a decoy left (the decoy is the runtime's) |  |
 | `art.moderation.fire` | one-shot | shape:ring×3, shape:band, sprites:streak, sprites:sparkle, shape:disc, sprites:drip | extends `art.react`. Spillover (Temperance's reaction): Blink Mark quietened: a small eye at the Lachrymato Bottle on the back as it tops up |  |
 | `art.momentum.armed` | held | shape:band, sprites:soft, shape:disc | Momentum (the Knight of Wands' reaction), armed: an ember band turning at the hips while the next blow waits (Onrush in a whisper) |  |
@@ -244,10 +249,12 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `art.rebirth.fire` | one-shot | shape:ring×2, shape:band, sprites:streak, sprites:sparkle, shape:sphere, sprites:shard, shape:wave | extends `art.react`. Rebirth (Death's reaction): a kintsugi burst: the shatter turned aside, gold cracks flung open round the body and drawn shut |  |
 | `art.reckoning.use` | one-shot | shape:beam×6, shape:ring×3, shape:sphere, shape:crescent, shape:disc, sprites:soft, light, flash, shake, hitstop | Settle the Score (Judgement, Wands; Spellscription): beams drawn in from all round to the body, then the verdict's burst out to 12 m |  |
 | `art.reins.fire` | one-shot | shape:ring×2, shape:band×2, sprites:streak, sprites:sparkle, sprites:soft | extends `art.react`. Reins (the Chariot's reaction): Ride quietened: a collar ring flashed at the hips, motes drawn in |  |
-| `art.ride.hold` | held | shape:beam×2, shape:band, shape:disc | Ride held: the reins held, their light running to the creature; the collar; a haze at its feet |  |
+| `art.ride.dust` | one-shot | sprites:puff | ---- Ride (the Chariot, Cups; Possession): the ridden creature's dust -------------------------------------------------------------- | vfx/classartlasting/reins.js |
+| `art.ride.hold` | held | shape:disc | Ride held: a haze breathing at its feet (its reins, bridle and calmed eyes are the lasting look's: classartlasting/reins.js) |  |
 | `art.ride.use` | one-shot | shape:beam×2, shape:band, shape:sphere×2, shape:spiral, sprites:streak, shape:disc, sprites:soft, light, shake, hitstop | Ride (the Chariot, Cups; Possession, held 8 s): reins of light to the creature (played at it) |  |
 | `art.ripostRush.use` | one-shot | shape:wave×2, shape:sphere, shape:ring×3, sprites:chip, sprites:sparkle | Riposte Rush (the Knight of Swords; Psychokinesis): a crescent cut behind the one parried (played at it, facing away from the Courier) |  |
-| `art.sanctum.hold` | held | shape:ring, shape:dome, sprites:sparkle | Sanctum held: the circle turning slow on the ground, the faint dome over it, motes drifting |  |
+| `art.sanctum.hold` | held | shape:dome, sprites:sparkle | Sanctum held: the faint dome over the circle, motes drifting up inside it (the circle itself, the ward, is the lasting look's: classartlasting/sanctum.js) | vfx/classartlasting/sanctum.js |
+| `art.sanctum.turn` | one-shot | shape:band, shape:sphere, shape:disc, sprites:streak, sprites:soft | ---- Sanctum (the Hierophant, Pentacles; Spellscription): a creature turned back at the rim --------------------------------------- | vfx/classartlasting/sanctum.js |
 | `art.sanctum.use` | one-shot | shape:ring×2, shape:dome, shape:band, shape:disc, sprites:soft, light, flash, hitstop | Sanctum (the Hierophant, Pentacles; Spellscription, held 8 s): a circle 5 m across drawn on the ground, a faint dome over it |  |
 | `art.scout.hold` | held | shape:band, shape:ring, sprites:sparkle | Scout held: a slow sonar pulse every 1.6 s from the feet, faint, while the tags hold |  |
 | `art.scout.use` | one-shot | shape:band×2, shape:ring×3, sprites:star4, sprites:sparkle | Scout (the Page of Swords; Divination): a sonar ring racing out to 40 m, steel-pale, every source in it tagged for 6 s |  |
@@ -260,11 +267,13 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `art.steadfast.fire` | one-shot | shape:ring×6, shape:band×2, sprites:streak, sprites:sparkle | extends `art.react`. Steadfast fired (the blow turned aside: vessel.ward): Bulwark's shell flashed in a whisper, in the ward's pale | vfx/classartlooks.js |
 | `art.steady.fire` | one-shot | shape:ring×2, shape:band, sprites:streak, sprites:sparkle, shape:disc, sprites:soft | extends `art.react`. Steady (the King of Cups' reaction): Still Waters quietened: a small disc of still water at the feet |  |
 | `art.stillWaters.use` | one-shot | shape:disc×2, shape:ring×3, shape:sphere, shape:beam×5, shape:spiral, sprites:soft, light, flash, hitstop | Still Waters (the King of Cups; Possession): a disc of still water spreading 6 m, tethers reaching into what it settles, ripples laid flat |  |
-| `art.stronghold.hold` | held | shape:wave×2, sprites:puff | Earth Wall held: the wall's light standing ahead, faint, dust drifting at its foot |  |
+| `art.stronghold.crumble` | one-shot | sprites:chip, sprites:puff | ---- Earth Wall (the King of Pentacles; Manifestation): the slab's ground falling off it ------------------------------------------ | vfx/classartlasting/earthwall.js |
+| `art.stronghold.dust` | one-shot | sprites:puff, sprites:chip |  | vfx/classartlasting/earthwall.js |
+| `art.stronghold.hold` | held | shape:wave, sprites:puff | Earth Wall held: a seam of gold along the slab's foot, dust drifting off it (the slab is the lasting look's: classartlasting/earthwall.js) |  |
 | `art.stronghold.use` | one-shot | shape:wave, shape:spikes, shape:disc, sprites:chip, sprites:puff, sprites:soft, light, flash, shake, hitstop | Earth Wall (the King of Pentacles; Manifestation, held 6 s): the wall's light rising ahead (4 m wide, 2.5 m high), spikes and dust, cracks |  |
 | `art.surrender.fire` | one-shot | shape:ring×3, shape:band, sprites:streak, sprites:sparkle×2 | extends `art.react`. Surrender (the Hanged Man's reaction): Hang Time quietened: the clock's tick, a small ring at the waist |  |
-| `art.suspend.hold` | held | shape:ring×2, sprites:sparkle | Hang Time held: the clock ring turning slow round the waist, a ring stood up turning against it, motes falling slow |  |
-| `art.suspend.use` | one-shot | shape:ring×3, shape:band, shape:sphere, sprites:sparkle, sprites:puff, light, hitstop | Hang Time (the Hanged Man, Cups; Ouranurgy, held 3 s): a slow clock ring round the body as time round it slows |  |
+| `art.suspend.hold` | held | shape:ring×2, sprites:sparkle, shape:disc | Hang Time held: the clock ring turning slow round the waist, a ring stood up turning against it, motes falling slow, a halo under the feet |  |
+| `art.suspend.use` | one-shot | shape:ring×3, shape:band, shape:sphere, sprites:sparkle×2, sprites:puff, light, hitstop | Hang Time (the Hanged Man, Cups; Ouranurgy, held 3 s): a slow clock ring round the body as time round it slows |  |
 | `art.tame.hold` | held | shape:band, shape:sphere, sprites:soft | Tame held: the collar on the tamed creature, turning; a faint shell; motes drawn in |  |
 | `art.tame.use` | one-shot | shape:beam×3, shape:spiral, shape:sphere×2, shape:band, sprites:streak, shape:disc, sprites:soft, light, shake, hitstop | Tame (Strength, Wands; Possession, held 15 s): tethers into the creature, a collar ring (played at it) |  |
 | `art.teaching.fire` | one-shot | shape:ring×3, shape:band, sprites:streak, sprites:sparkle, sprites:soft | extends `art.react`. Teaching (the Hierophant's reaction): Sanctum quietened: a small circle written at the feet |  |
@@ -286,6 +295,8 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `art.wellUp.use` | one-shot | shape:band, sprites:drip, shape:ring, sprites:puff, sprites:sparkle | Catch the Rain (the Queen of Cups; Ouranurgy): the sky poured down a thin column into the Lachrymato Bottle on the back; soft |  |
 | `art.wholeness.fire` | one-shot | shape:ring×2, shape:band×8, sprites:streak, sprites:sparkle×2 | extends `art.react`. Wholeness (the World's reaction): Completion quietened: the seven rings flashed small at the feet |  |
 | `art.will.fire` | one-shot | shape:ring×2, shape:band, sprites:streak, sprites:sparkle, shape:quad, sprites:diamond | extends `art.react`. Will (the Magician's reaction): Quick Swap quietened: a small card glint at the hand |  |
+| `art.wish.motes` | held | sprites:sparkle |  | vfx/classartlasting.js |
+| `art.wish.sky` | held | shape:disc, shape:band×2 | ---- Starlight (the Star, Swords; Ouranurgy): the patch of sky turned to Wonder ------------------------------------------------------ | vfx/classartlasting.js |
 | `art.wish.use` | one-shot | shape:band×2, sprites:streak, shape:sphere, shape:ring×4, sprites:sparkle, sprites:puff, light, flash | Starlight (the Star, Swords; Ouranurgy): a column of the night sky poured down where you stand, star motes falling |  |
 | `art.zero.armed` | held | shape:ring×2, sprites:sparkle | Running on Empty (the Fool's reaction), armed while costs are off: Beginner's Luck's lens in a whisper, a slow ring of the film at the feet |  |
 | `art.zero.fire` | one-shot | shape:ring×3, shape:band×2, sprites:streak, sprites:sparkle×2 | extends `art.react`. Running on Empty fired (the pool ran dry): the slow ring of the film thrown out from the feet |  |
@@ -725,6 +736,13 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `wisp.cast` | one-shot | sprites:core, sprites:soft | its cast leaving the lantern: a puff of the flame and a spark; its ember in flight (held, following the ember): a short hot tail, a halo, sparks shed and falling; put out (when the Death clip ends): the wick's smoke, its last embers and ... | audio/cues.js, creatures/wisp/lanternwisp.js, feedback/tracking/wisps.js +2 |
 | `wisp.cast.flight` | held | sprites:core, sprites:soft×2 |  | vfx/lanternwisplook.js, vfx/racewaytraps/bodies2.js |
 | `wisp.snuff` | one-shot | sprites:core, sprites:puff, sprites:soft, sprites:sparkle |  | vfx/duelview/aberrants/wisp.js, vfx/lanternwisplook.js, vfx/racewaytraps/bodies2.js |
+
+### panic (2)
+
+| effect | kind | layers | what | asked by |
+|---|---|---|---|---|
+| `panic` | one-shot | sprites:drip, sprites:ringthin |  | progress/sandbox.js, vfx/library/panic.js, vfx/panic.js |
+| `panic.heavy` | one-shot | sprites:drip, sprites:star4, sprites:ring | a flooring hit: more sweat thrown harder, a wider ring, and the squeans spun off round the head | vfx/panic.js |
 
 ### plaster (2)
 

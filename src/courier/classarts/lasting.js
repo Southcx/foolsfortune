@@ -109,7 +109,8 @@ export function lamp(run, reach, dur) {
     art: 'lantern',
     tick: (dt) => {
       if (run.now >= until) return false;
-      const P = run.P; light.position.set(P.pos.x, P.pos.y + 2.4, P.pos.z);
+      const P = run.P, hung = g.classArtLooks?.lasting?.lantern?.at; // (the light hangs from Calissa's paper lantern where it is drawn: vfx/classartlasting/lantern.js)
+      if (hung) light.position.copy(hung); else light.position.set(P.pos.x, P.pos.y + 2.4, P.pos.z);
       if ((shownT -= dt) > 0) return true;
       shownT = 0.25;
       g.crystals?.reveal?.(P.pos, reach, 'courier', 'lamp'); // (a veiled crystal within its reach shown, as a song shows one)

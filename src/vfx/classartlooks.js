@@ -12,7 +12,9 @@
 // their heading; `from` and `to` (the Courier's chest to the place, or along their heading at the art's reach) are the line its motes run.
 // The context: { suit (the art's class's: a court's from its id, a Major's progress/spreads.js MAJOR_SUIT), domain, tint, power and scale
 // (an accented art a little bigger, its reach x ACCENT.k) }. Steadfast's turned blow (`vessel.ward`) is its `art.steadfast.fire`, one look.
-// Looks only, no words (world marks: CLAUDE.md, Feedback); hidden in the god hand, the Spirit Garden and a puzzle duel.
+// Looks only, no words (world marks: CLAUDE.md, Feedback); hidden in the god hand, the Spirit Garden and a puzzle duel. What an art leaves
+// running in the world (Earth Wall's slab, Lamp's lantern, Vanish's smoke Courier, the sanctum's ward, the thicket, the ridden creature's
+// reins, Starlight's patch of sky, Encore's echo) is its part, ClassArtLasting (vfx/classartlasting.js), made and ticked from here.
 //
 // Prior art: Final Fantasy Tactics' action and reaction abilities (Square, 1997: a reaction announces itself), FFXIV's status loops (a held
 // buff's look runs while the status lasts and eases out at its end), Unreal's Niagara component lifetimes (a system attached to its owner,
@@ -25,6 +27,7 @@ import { CLASS_ARTS, ACCENT } from '../progress/classarts.js';
 import { MAJOR_SUIT } from '../progress/spreads.js';
 import { SUIT_LOOK } from './readingview.js';
 import { ART_DOMAIN } from './library/classarts/index.js';
+import { ClassArtLasting } from './classartlasting.js';
 
 /** An art's suit: a court's from its class id (page.wands), a Major's from MAJOR_SUIT (a wild one the film's 'wild'). */
 export const artSuit = (id) => { const [a, b] = (CLASS_ARTS[id]?.cls ?? 'arcana.fool').split('.'); return a === 'arcana' ? MAJOR_SUIT[b] ?? 'wild' : b; };
@@ -37,10 +40,18 @@ const ARMED = {
   beginnersLuck: (run) => run.luckUntil >= 0 && run.now <= run.luckUntil,
 };
 /** The held actions whose time the runtime keeps itself (the rest are held for their numbers' `dur`). */
+const lasts = (art) => (run) => (run.lasting || []).some((x) => x.art === art);
 const HELD_STATE = {
   bulwark: (run) => run.now < run.braceUntil,
   wade: (run) => (run.mgr?.get?.('waterwalk')?.left ?? 0) > 0,
+  stronghold: (run) => (run.walls || []).some((w) => w.body),
+  suspend: (run) => run.now < run.hangUntil,
+  lantern: (run) => !!run.lampLit?.(),
+  ride: lasts('ride'), mirageStep: lasts('mirageStep'), sanctum: lasts('sanctum'), bloom: lasts('bloom'),
 };
+/** The held actions whose hold rides the Courier though the act was placed (Vanish: the act where they stood, the hold on the unseen body). */
+const HOLD_ON_COURIER = new Set(['mirageStep']);
+const toV3 = (a) => (Array.isArray(a) ? new THREE.Vector3(a[0], a[1], a[2]) : a);
 const FADE = 0.35;   // a held effect's eased fade (real s)
 const CHEST = 1.1;   // the height a line runs at (m)
 const SIZED = ['reach', 'dist', 'width'];
@@ -54,6 +65,7 @@ export class ClassArtLooks {
     E?.on?.('art.use', (e) => { if (mine(e)) this.use(e); });
     E?.on?.('art.fire', (e) => { if (mine(e)) this.fire(e); });
     E?.on?.('art.end', (e) => { this.let(this.holds.get(e?.art)); this.let(this.armed.get(e?.art)); });
+    this.lasting = new ClassArtLasting(game, this); // (what an art leaves running, dressed in the world: vfx/classartlasting.js)
   }
 
   shown() { const g = this.game; return !!g.player && !g.god?.controlling && !g.realm?.active && !g.duel?.active; }
@@ -118,10 +130,14 @@ export class ClassArtLooks {
     const R = this.numbers(id), marked = this.has(`art.${id}.mark`) && !!(e.target?.pos || e.at), pl = this.place(e, R, marked), ctx = this.ctx(id, R, pl, !!(e.accented ?? R?.accented));
     this.play(`art.${id}.use`, ctx);
     if (marked) { const at = this.place(e, R); this.play(`art.${id}.mark`, { ...ctx, pos: at.pos, floor: at.pos.y }); }
-    if (this.has(`art.${id}.hold`)) this.hold(this.holds, id, `art.${id}.hold`, ctx, pl, this.t + (R?.does?.dur ?? R?.does?.within ?? 3));
+    if (this.has(`art.${id}.hold`)) {
+      const hp = HOLD_ON_COURIER.has(id) ? this.place(e, R, true) : pl, hctx = hp === pl ? ctx : { ...ctx, pos: hp.pos, floor: hp.pos.y };
+      this.hold(this.holds, id, `art.${id}.hold`, hctx, hp, this.t + (R?.does?.dur ?? R?.does?.within ?? 3));
+    }
   }
   fire(e) {
     const id = e.art; if (!CLASS_ARTS[id] || !this.shown()) return;
+    if (Array.isArray(e.at)) e = { ...e, at: toV3(e.at) }; // (a point said as numbers: Encore's echo, lasting.js)
     const R = this.numbers(id), pl = this.place(e, R), ctx = this.ctx(id, R, pl, !!(e.accented ?? R?.accented));
     this.play(`art.${id}.fire`, ctx, { id, anchor: pl.anchor, aim: !!pl.tgt, fading: -1 }); // (riding its body for its life)
   }
@@ -129,6 +145,7 @@ export class ClassArtLooks {
   update(dt) {
     dt = Math.min(0.1, dt || 0); this.t += dt;
     const run = this.game.classArtsRun, shown = this.shown();
+    this.lasting.update(dt, shown);
     for (const rec of this.holds.values()) { const st = HELD_STATE[rec.id]; if (!shown || !(st && run ? st(run) : this.t < rec.until)) this.let(rec); }
     for (const [id, test] of Object.entries(ARMED)) {
       const on = shown && !!run && test(run), rec = this.armed.get(id);
