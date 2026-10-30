@@ -110,7 +110,7 @@ const RULES = {
   'duel.slip': (s) => s.duelPullEnd?.(false),
   'duel.seen': (s) => s.duelSeen?.(), // (a foe skill learned: audio/duelcasts.js)
   'duel.learn': (s, e) => (e.by === 'courier' ? s.duelLearn?.() : null), // (a skill learned from an aberrant: audio/duelsecrets.js)
-  'duel.open': (s, e, g) => { s.duelPullEnd?.(true); s.duelOpen?.(); if (e.shiny || g.duel?.foe?.shiny) s.duelShiny?.(); if (g.duel?.state?.style !== 'pve') s.duelSeed?.(); }, // (a shiny aberrant's sparkle: audio/duelsecrets.js; the board seeded: the PvE duel's comes with its VS, audio/duelcasts.js)
+  'duel.open': (s, e, g) => { s.duelPullEnd?.(true); s.duelOpen?.(); if (e.shiny || g.duel?.foe?.shiny) s.duelShiny?.(); }, // (a shiny aberrant's sparkle: audio/duelsecrets.js; the board's seeding is dealt from the tsuitate's build, audio/duelending.js)
   'duel.drop': (s, e) => (e.by === 'courier' ? s.duelDrop?.(e.items?.length, e.how === 'secret' || !!e.shiny) : null),
   'sea.echo': (s, e, g) => s.stoneAnswered?.(g.crucibelle?.grid?.().root ?? 63), // (the open sea's echo puzzle answered: audio/crystal.js)
   // the chatroom (co-op as our chatroom): a division's motif as its line arrives, a guest's arrival and leaving (audio/ui.js)
@@ -275,7 +275,27 @@ const RULES = {
   'spore.learn': (s, e, g) => s.sporeLearn?.(gardenState(g), e.strain),
   'myggdrasil.pick': (s, e, g) => s.myggPick?.(gardenState(g), e.n ?? 1),
   'garden.cascade': (s) => s.gardenCascade?.(),
-  'garden.planetoid': (s, e, g) => s.gardenPlanetoidSet?.(gardenState(g)),
+  'seed.plant': (s, e, g) => { s.seedPlant?.(e.inner); s.gardenPlanetoidSet?.(gardenState(g)); }, // (a seed set in a slot: audio/seedsslabs.js, and the ring's own set, audio/gardenlife.js)
+  'seed.grow': (s, e) => s.seedGrow?.(e.size),
+  'seed.feed': (s, e) => s.seedFeed?.(e.from),
+  'slab.make': (s, e) => s.slabMake?.(e.from),
+  'slab.use': (s, e) => s.slabUse?.(e.verb, e.stratum, e.cracked, e.broke),
+  'slab.carve': (s, e) => s.slabCarve?.(e.flawless, e.cracked),
+  'scan.read': (s, e) => s.scanRead?.(e.sealed, e.again),
+  'mimic.open': (s) => s.mimicOpen?.(),
+  'mimic.step': (s, e) => s.mimicStep?.(e.i),
+  'mimic.turn': (s) => s.mimicTurn?.(),
+  'mimic.solve': (s, e) => s.mimicSolve?.(e.stars),
+  'mimic.leave': (s) => s.mimicLeave?.(),
+  'impact.hit': (s, e) => s.impactHit?.(e.energy, e.heavy),
+  'impact.strike': (s, e) => s.impactStrike?.(e.n),
+  'sandbox.enter': (s) => s.sandboxEnter?.(),
+  'sandbox.kick': (s) => s.sandboxKick?.(),
+  'sandbox.goal': (s, e) => s.sandboxGoal?.(e.dist),
+  'sandbox.juggle': (s, e) => s.sandboxJuggle?.(e.n),
+  'sandbox.rack': (s) => s.sandboxRack?.(),
+  'sandbox.pen': (s) => s.sandboxPen?.(),
+  'sandbox.ground': (s) => s.sandboxGround?.(),
   'garden.digest': (s, e, g) => s.gardenDigest?.(gardenState(g)),
   // the god hand's powers, its mudras, the palm die thrown, the Dissonance Level, the catch and the bracelet (audio/godpowers.js)
   'god.gust': (s, e) => s.godGust?.(e.len, e.hit, e.moved, e.repeat),
@@ -441,7 +461,6 @@ const RULES = {
   'garden.collect': (s, e, g) => s.gardenCollect?.(gardenState(g)),
   'garden.place': (s, e, g) => s.gardenPlace?.(gardenState(g)),
   'garden.paint': (s, e, g) => s.gardenPaint?.(gardenState(g)),
-  'garden.planetoid.buy': (s, e, g) => s.gardenBuy?.(gardenState(g)),
   'garden.upgrade': (s, e, g) => s.gardenUpgrade?.(gardenState(g)),
   'spirit.race.start': (s) => s.gardenRaceStart?.(),
   'spirit.race': (s, e, g) => s.gardenRace?.(gardenState(g)),
