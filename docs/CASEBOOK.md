@@ -1022,3 +1022,7 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 364. **A plate that grows with its words is fitted to the edge it hangs by.** Centred under an instrument at a
   corner, it is moved in by what it would pass the instrument's own edge, and looked at with the longest name the game has, not the room
   at hand; a line that repeats the line above it is left out.
+NEW:zone-visible-gate. **A tick that waits on `visible` reads the zones' too.** Once the zones have installed an object, its `visible` is
+  its owner's and its zone's together (render/zones.js); a body that is placed by a tick gated on `visible` and was last left in
+  another zone (or parked for the warm-up) is never moved out of it, and never shows. A body that always stands with the Courier is
+  `zoneFree`; a gate on its own state reads its own flag, never `visible`.
