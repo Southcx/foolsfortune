@@ -24,6 +24,7 @@
 //   const g = game.glyphs.pop('bang3', pos, { hold: 1.2 })    a mark that stays for a window (and shakes harder as it closes) until g.close()
 //   pop(..., { throughWalls: true })   g.throughWalls = true   game.glyphs.throughWalls = true   seen through walls (a pop's, or all)
 //   pop('status.<id>', ...)            a status's glyph (STATUS_ART: stun, halt, slow, sleep, doubt, charm, blind, confusion, soaked)
+//   pop('panic' | 'panicHeavy', ...)   the comics' startle (emanata and plewds) over a creature struck by a thrown thing (vfx/panic.js)
 //   pop(..., { bias: 2 })              a mark set inside something big: how far in front of it a thing must stand to hide it (m)
 //   nearer                             the bias as a sprite's own onBeforeRender (userData.bias): a sprite that must stand in front of the Courier borrows it
 //   On the rail (the crossing) every mark is seen over the sea, as before: no wall stands there and Charybdis's ward sits in its own body.
@@ -122,6 +123,36 @@ function celestialMarkCanvas() {
   for (const [extra, col] of [[22, '#150806'], [10, '#ffffff'], [0, '#bfb2a8']]) { enso(extra, col); ticks(extra, col); dot(extra, col); }
   return c;
 }
+// PANIC (vfx/panic.js: a creature struck by a thrown thing, world/impacts.js): the comics' startle drawn over its head, in Mort Walker's
+// words (The Lexicon of Comicana, 1980) the EMANATA, short lines fanned out from the head, and the PLEWDS, the sweat drops flying off
+// it; the heavy one (a flooring hit) with more lines, longer, and more drops. Inked as every glyph is (the dark outline, the light
+// rim), its own colours (cream lines, the drops a pale sky blue), so it is popped untinted; read in greyscale by its shape alone.
+// Prior art: Dawn of Mana's panic over a struck foe; the startle lines of every newspaper strip; the manga sweat drop.
+function panicCanvas(heavy) {
+  const W = 384, H = 256, c = document.createElement('canvas'); c.width = W; c.height = H;
+  const g = c.getContext('2d'); g.lineCap = 'round'; g.lineJoin = 'round';
+  const ox = W / 2, oy = H - 4, n = heavy ? 7 : 5, spread = heavy ? 1.1 : 1.0, r0 = heavy ? 92 : 108, r1 = heavy ? 198 : 188;
+  const rays = (w, col) => {
+    g.strokeStyle = col; g.lineWidth = w;
+    for (let i = 0; i < n; i++) {
+      const a = -spread + (2 * spread * i) / (n - 1), len = i % 2 ? 0.86 : 1, ca = Math.sin(a), sa = -Math.cos(a);
+      g.beginPath(); g.moveTo(ox + ca * r0, oy + sa * r0); g.lineTo(ox + ca * (r0 + (r1 - r0) * len), oy + sa * (r0 + (r1 - r0) * len)); g.stroke();
+    }
+  };
+  rays(34, '#150806'); rays(18, '#ffffff'); rays(8, '#f6e6c8');
+  // the plewds: teardrops flung off the head, each point trailing back toward it, its round end flying out
+  const drops = heavy ? [[-1.25, 152, 1], [1.25, 152, 1], [-1.42, 118, 0.75], [1.42, 118, 0.75]] : [[-1.25, 150, 1], [1.25, 146, 0.85]];
+  for (const [a, r, s] of drops) {
+    const x = ox + Math.sin(a) * r, y = oy - Math.cos(a) * r, R = 22 * s;
+    g.save(); g.translate(x, y); g.rotate(a + Math.PI);
+    const drop = () => { g.beginPath(); g.moveTo(0, -1.7 * R); g.quadraticCurveTo(R * 1.1, -0.1 * R, R * 0.95, 0.45 * R); g.arc(0, 0.45 * R, 0.95 * R, 0, Math.PI); g.quadraticCurveTo(-R * 1.1, -0.1 * R, 0, -1.7 * R); g.closePath(); };
+    drop(); g.strokeStyle = '#150806'; g.lineWidth = 16; g.stroke(); g.strokeStyle = '#ffffff'; g.lineWidth = 7; g.stroke();
+    drop(); g.fillStyle = '#9fd4ff'; g.fill();
+    g.beginPath(); g.ellipse(-R * 0.32, 0.55 * R, R * 0.17, R * 0.3, 0.4, 0, Math.PI * 2); g.fillStyle = '#ffffff'; g.fill();
+    g.restore();
+  }
+  return c;
+}
 /** A status's glyph (`status.<id>`: the Figment attack telegraphs' own pictures, STATUS_ART, in the icons' hand) for a pop: its tones as
  *  greys at a whole-number scale, the keyline black, so the pop's `color` (the status's: GLYPH_TINT) lights it and the keyline stays dark. */
 function statusCanvas(id) {
@@ -139,6 +170,8 @@ const KINDS = {
   vein: { draw: veinCanvas, w: 256, h: 256, aspect: 1 },
   ward: { draw: wardCanvas, w: 256, h: 256, aspect: 1 },
   celestialMark: { draw: celestialMarkCanvas, w: 256, h: 256, aspect: 1 },
+  panic: { draw: () => panicCanvas(false), w: 384, h: 256, aspect: 1.5 },
+  panicHeavy: { draw: () => panicCanvas(true), w: 384, h: 256, aspect: 1.5 },
   bang1: { text: '!', w: 256, h: 256, font: '900 200px "Arial Black", Impact, "Helvetica Neue", sans-serif', aspect: 1 },
   bang2: { text: '!!', w: 384, h: 256, font: '900 200px "Arial Black", Impact, "Helvetica Neue", sans-serif', aspect: 1.5 },
   bang3: { text: '!!!', w: 512, h: 256, font: '900 200px "Arial Black", Impact, "Helvetica Neue", sans-serif', aspect: 2 },

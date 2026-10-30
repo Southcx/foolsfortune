@@ -20,6 +20,9 @@ import { SolarTrial } from '../world/dunes/solar.js';
 import { Mimicry } from '../world/mimicry/mimicry.js';
 import { Sandbox } from '../world/sandbox/sandbox.js';
 import { ThrownHits } from '../world/impacts.js';
+import { MimicryLooks } from '../vfx/mimicry/look.js';
+import { SandboxLook } from '../vfx/sandbox/look.js';
+import { PanicMarks } from '../vfx/panic.js';
 import { Geysers } from '../world/dunes/geysers.js';
 import { Raceway } from '../world/raceway/raceway.js';
 import { OpenSea } from '../world/opensea/opensea.js';
@@ -69,6 +72,7 @@ export function bootRooms(game, made) {
     game.mimicry = new Mimicry(game); // (the god hand's mimicry puzzles, begun at a puzzle stone in each Dunes area: world/mimicry/mimicry.js)
     game.sandbox = new Sandbox(game); // (the hand's physics room: a yard, a pen, a pitch and a ball, off the Index: world/sandbox/sandbox.js)
     game.impacts = new ThrownHits(game); // (anything loose thrown or kicked fast enough strikes a creature: world/impacts.js)
+    game.mimicryLooks = new MimicryLooks(game); game.sandboxLook = new SandboxLook(game); game.panicMarks = new PanicMarks(game); // (the puzzle stones, the ghost and a step's mark; the Sandbox dressed; panic over a creature a thrown thing struck: vfx/mimicry/, vfx/sandbox/, vfx/panic.js)
     game.geysers = new Geysers(game); // (slip geysers: launch pads on a cycle, world/dunes/geysers.js)
     game.makeSeaSerpent = (o) => new SeaSerpentBody(game, o); // (the sea serpent's body for its mind to drive: vfx/opensea/seaserpentbody.js, drive/update/hit/down)
     installSeaBeasts(game); // (the other sea beasts' bodies: game.makeSeaBeast(id, o) for the chain chassis, game.makeUmibozu(o), /beastlook: vfx/opensea/beasts/)
