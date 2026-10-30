@@ -16,7 +16,7 @@
 //   .onStrike(c, m) -> { dmg, build } | null   (creatures.strike asks, the Courier's blows only)
 //   .takenMult() (the vessel's damage asks)   .ward() -> bool (Steadfast: the next blow cracks nothing)
 //   .lucky() -> bool (Beginner's Luck spent on a roll of chance: the Lockheart's spins, a puzzle duel's flee)
-//   events: art.use { art, kind, accented, by }, art.fire { art, by }, art.end { art, by }
+//   events: art.use { art, kind, accented, at?, target?, by }, art.fire { art, by }, art.end { art, by }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { Tech } from '../moves/techs.js';
@@ -100,8 +100,8 @@ export class ClassArtsBody extends Tech {
     if (why) { g.log?.say('warn', why, { key: `art.no.${R.id}`, throttle: 1.5 }); sfx.fizzle?.(); return; }
     if (R.cost && !g.lachryma?.spend(R.cost, 'art')) { g.log?.say('warn', `Your pool is too low for ${R.label}.`, { key: 'art.pay', throttle: 1.5 }); return; }
     this.cool[R.id] = this.now + (R.cooldown ?? 0);
-    act.go(this, R);
-    g.events?.emit('art.use', { art: R.id, kind: 'action', accented: !!R.accented, by: 'courier' });
+    this.place = null; act.go(this, R); // (an art that acts away from the body says where: `at` a point, `target` a creature; Calissa's looks read them)
+    g.events?.emit('art.use', { art: R.id, kind: 'action', accented: !!R.accented, ...(this.place || {}), by: 'courier' });
   }
   /** The blink's body forced along a line (Onrush, Riposte Rush): `done(from, to)` at its end. */
   rush(dir, dist, done) { const b = this.mgr.get?.('blink'); if (!b?.force) return false; b.force(dir, dist, done); return true; }
@@ -146,7 +146,7 @@ const ACTS = {
   ripostRush: { // within its window of a parry: blinked behind what was parried, and struck
     can: (run, R) => { const p = run.parried; return p && p.c?.alive && run.now - p.at <= R.does.after ? null : `Riposte Rush needs a parry first: parry a blow, then use it within ${R.does.after} s.`; },
     go: (run, R) => {
-      const P = run.P, c = run.parried.c; run.parried = null;
+      const P = run.P, c = run.parried.c; run.parried = null; run.place = { target: c };
       const to = _b.copy(c.pos).sub(P.pos).setY(0), d = to.length(); if (d < 1e-3) return;
       const dir = to.normalize().clone(), dist = d + (c.radius ?? 0.6) + 0.9;
       run.rush(dir, dist, () => { if (c.alive) run.game.creatures?.strike(c, c.pos.clone().setY(c.pos.y + 0.8), dir.clone().negate(), R.does.power, 'art', 'courier'); });
