@@ -993,3 +993,5 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
   ramp, so a faded edge (edgeV, edgeU, a rim) comes back at the geometry's hard edge unless the erosion under it cuts it (≥ 0.2 at the start).
 NEW:additive-covers. **An additive effect also covers a share of what is behind it.** Pure light on a bright ground clips to white
   and loses its hue; a look is checked on the noon sand as well as in the dark.
+NEW:compile-as-drawn. **A mesh compiled alone is compiled as it will be drawn: its scene's lights and that pass's clipping.** three keys a
+  program by both, and compile() keeps the clipping of the last render(): draw an empty scene with the pass's planes first.

@@ -18,6 +18,7 @@
 import * as THREE from 'three';
 import { wordTexture } from './cutin.js';
 import { feelColour } from './layout.js';
+import { compileOverlay } from './fxkit.js';
 
 /** slam: real s in from big; life: held; pop: out; size: the word's height (of the screen's shorter side); chain: a step's growth past
  *  the third and the cap; x, y: where (of the screen); rays: the sunburst's count. */
@@ -67,8 +68,8 @@ export class DuelStamps {
 
   /** At the duel's open: the program compiled, hidden. */
   warm() {
-    if (!this.ensure()) return; const S = this.game.overlayScene, r = S.r; this.u.uWord.value = this.word('VS').tex; this.mesh.visible = true;
-    try { const was = r.getRenderTarget(); r.setRenderTarget(null); r.compile(this.mesh, S.camera, S.scene); r.setRenderTarget(was); } catch { /* (headless: drawn on first use) */ }
+    if (!this.ensure()) return; const S = this.game.overlayScene; this.u.uWord.value = this.word('VS').tex; this.mesh.visible = true;
+    compileOverlay(S, this.mesh);
     this.mesh.visible = false;
   }
 

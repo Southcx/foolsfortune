@@ -16,6 +16,7 @@
 //
 //   SIDE (the colours)   sideHex(side, which)   tex(kind)   chantTexture(words)   scrollMat(texture, hex, { add, opacity })   scroll(mat, dt, su, sv)
 //   worldIn(group, root) (a group laid out in world space but kept under the view's root: the duel's instance draws what is the duel's)
+//   compileOverlay(S, obj) (one overlay mesh compiled as the overlay scene draws it: its lights, no clipping plane)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { runningHand } from '../../ui/runninghand.js';
@@ -81,4 +82,14 @@ export function scroll(mat, dt, su = 0, sv = 0) { const m = mat.map; if (!m) ret
 export function worldIn(group, root) {
   if (!root) return; if (group.parent !== root) root.add(group);
   root.updateMatrixWorld(true); group.matrixAutoUpdate = false; group.matrix.copy(root.matrixWorld).invert(); group.matrixWorldNeedsUpdate = true;
+}
+
+const BARE = new THREE.Scene();
+/** One overlay mesh compiled as the overlay scene draws it: its lights (`S.scene`), the canvas bound and NO clipping plane. three's
+ *  compile() keeps the clipping state of the last render() (the world's, which always carries the god hand's plane, godhand.js), so an
+ *  empty render with no plane is drawn first: else the compile builds a one-plane program and the first draw a second (the census's twin). */
+export function compileOverlay(S, obj) {
+  const r = S.r, was = r.getRenderTarget(), clip = r.clippingPlanes, auto = r.autoClear;
+  try { r.setRenderTarget(null); r.clippingPlanes = []; r.autoClear = false; r.render(BARE, S.camera); r.compile(obj, S.camera, S.scene); } catch { /* (a headless page without a context: drawn on first use) */ }
+  r.clippingPlanes = clip; r.autoClear = auto; r.setRenderTarget(was);
 }

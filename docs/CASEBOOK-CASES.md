@@ -4414,3 +4414,17 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   drawn under them (vfx/library/classarts/kit.js `inked`: alpha-over, order 5, eroding ahead of its light so no dark is left lying), and
   Bulwark's shell covers 0.85: the dark is what keeps a light's shape on a white ground (the Divination iris read at noon for that reason).
 - **Rule:** NEW:additive-covers
+
+### 2026-10-30 · The duel's cut-in and stamp compiled twins (Petra's census, measured; Calissa's files, vfx/duelview/)
+- **Seen:** the program census held two programs each for the cut-in and the stamps, and two for the Lachrimeter tube's ShaderMaterial.
+- **Cause (as measured):** the cut-in's and the stamps' twins differ only in numDirLights and numHemiLights (Petra): each was compiled
+  alone (`r.compile(mesh, camera)`), with no lights, then drawn under the overlay scene's sun and hemi. The tube's pair differs only in
+  numClippingPlanes (1 against 0, key field 47): the world always carries the god hand's plane (godhand.js), the overlay scene draws with
+  none, and three's compile() never calls clipping.init, so a compile inherits the last world render's one plane whatever
+  `renderer.clippingPlanes` says at the time.
+- **Fix:** the cut-in and the stamps compile through `compileOverlay(S, obj)` (vfx/duelview/fxkit.js): the overlay scene's lights
+  (`compile(obj, camera, S.scene)`) and an empty render with no plane first. The census after the lights fix read 227 (budget 228); the
+  clipping half is not yet measured in a duel (the census opens none). The overlay scene's own compile (render/overlayscene.js) needs the
+  same empty render: handed to Petra.
+- **Rule:** NEW:compile-as-drawn
+
