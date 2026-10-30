@@ -178,7 +178,8 @@ export class Bazaar {
   /** `/howto`: the how-to of the table you sit at (the chat line exists only after boot: asked here, the first frame it does). */
   commands() {
     const g = this.game; if (this.cmds || !g.chat?.add) return; this.cmds = true;
-    g.chat.add('howto', { help: "how to play the game at the table you're sitting at (Raku's Bazaar)", run: () => {
+    g.chat.add('howto', { help: "how to: the game at the table you're sitting at (Raku's Bazaar), or the Spirit Garden while you are in it", run: () => {
+      if (g.realm?.active && g.realm.howto) { g.realm.howto.open(); return; } // (the garden's seven steps: world/garden/howto.js)
       if (this.session?.open) this.session.showHowto(); else g.log?.say('info', "Sit at one of Raku's tables first: F at a table.", { key: 'howto', throttle: 1 });
     } });
   }
