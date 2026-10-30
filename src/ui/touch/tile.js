@@ -35,7 +35,7 @@ export const TILE = { main: 80, size: 60, small: 44, min: 44, word: 14, big: 18,
 
 /** The words under the glyphs that need one (Espada's words, MOBILE.md 8.3; which glyphs need one is Calissa's call, Espada's to
  *  overrule: the glyph says HOP, FLARE, BOOST, JUMP, WALK, UNDO and the arts alone). */
-const WORDS = { alt: 'ALT', sign: 'SIGN', brake: 'BRAKE', nose: 'NOSE', tail: 'TAIL', spring: 'SPRING', drain: 'DRAIN', turn: 'TURN' }; // (TOP VIEW is said by its glyph alone: a 44 px top-bar tile has no room for 14 px words)
+const WORDS = { sign: 'SIGN', brake: 'BRAKE', nose: 'NOSE', tail: 'TAIL', spring: 'SPRING', drain: 'DRAIN', turn: 'TURN' }; // (TOP VIEW is said by its glyph alone: a 44 px top-bar tile has no room for 14 px words; the other way's tile takes its art's own word, never a key's: godstrip.js)
 export const tileWord = (id) => WORDS[id] || null;
 
 const CSS = `

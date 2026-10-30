@@ -252,7 +252,8 @@ export class Veritome extends Tech {
     this.charge = 0; this.target = null;
     // the truth of a thing: what the brush wrote on what is in frame is undone
     let unwritten = 0;
-    for (const s of report.subjects) if (s.kind === 'pot' && inscribed(s.ref).length) unwritten += unwrite(g, s.ref);
+    const illumined = !!g.pairSpecials?.photo?.(report); // (a pair's special at the shutter: a sigil in the plate written on, a creature held: tools/pairspecials/plate.js)
+    if (!illumined) for (const s of report.subjects) if (s.kind === 'pot' && inscribed(s.ref).length) unwritten += unwrite(g, s.ref);
     // what a photograph sees is charted, and where it was taken goes on the map
     const C = g.cartography;
     if (C) for (const s of report.subjects.slice(0, 12)) { const sp = this.posOf(s); if (sp) C.chartAt?.(sp); }

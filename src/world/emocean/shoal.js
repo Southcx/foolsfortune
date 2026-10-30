@@ -40,8 +40,20 @@ const simRand = stream('world/emocean/shoal'); // (where a glint rises: core/rng
 const MAX = 160, CRUISE_Y = 0.15; // (glints at most; how high over the swell the ball swims)
 /** The silhouette's numbers, with their reasons: Dovina's (progress/rail/setpieces.js SHOAL.silhouette). */
 export const SILHOUETTE = SHOAL.silhouette;
-const _t = new THREE.Vector3(), _M = new THREE.Matrix4(), _Q = new THREE.Quaternion(), _C = new THREE.Vector3(), _cam = new THREE.Vector3(), _one = new THREE.Vector3(1, 1, 1);
+const _t = new THREE.Vector3(), _M = new THREE.Matrix4(), _Q = new THREE.Quaternion(), _C = new THREE.Vector3(), _cam = new THREE.Vector3();
 const _p = new THREE.Vector3(), _v = new THREE.Vector3(), _w = new THREE.Vector3(), _q = new THREE.Quaternion(), _z = new THREE.Vector3(0, 0, 1), _u = new THREE.Vector3();
+const _p2 = new THREE.Vector3(), _right = new THREE.Vector3(), _scale = new THREE.Vector3();
+/** Where the silhouette stands in each view, in the frame the camera follows (Calissa's measurements, 2026-10-30, at 480 lines: placed by
+ *  the ship's z it stood off the top of the above view, 0 of its 160 glints in frame; so placed, 160 of 160 above and 157 of 160 abeam).
+ *  x and z are taken from the ship's offset at the view's own follow (courier/ship/views.js VIEW_RIGS); `length` its size; `flat` its
+ *  profile turned square to an overhead camera. Chase and free keep the ship's frame (160 of 160, measured in a crossing at bar 89). */
+const PLACE = { above: { x: 0, y: 2.5, z: 9, length: 34, flat: true, follow: 0.12 }, side: { x: -8, y: 8, z: 10, length: 32, follow: 0.1 },
+  astern: { x: 0, y: 7, z: -24, length: 40, follow: 0.35 } }; // (astern the camera looks back from ahead of the ship: the shape behind it, at its look point, Petra's, measured in a crossing)
+function placeIn(view, S, SI, out) {
+  const V = PLACE[view];
+  if (!V) return { at: out.set(S.x, SI.up, S.z + SI.ahead), length: SI.length, flat: false };
+  return { at: out.set(V.x + S.x * V.follow, V.y, V.z + S.z * V.follow), length: V.length, flat: !!V.flat };
+}
 
 export class ShoalPiece {
   constructor(stage) {
@@ -225,8 +237,13 @@ export class ShoalPiece {
     }
     const was = this.formK; this.formK = Math.min(1, this.formK + dt / (SI.draw * BAR_S));
     if (was < 1 && this.formK >= 1) g.events?.emit('rail.shoal.form', { k: 1, by: 'creature' });
-    const S = st.ship.local; st.rail.toWorld(_p.set(S.x, SI.up, S.z + SI.ahead), _C);
-    g.camera?.getWorldPosition?.(_cam); facing(_C, _cam, _Q); _M.compose(_C, _Q, _one);
+    const S = st.ship.local, sw = st.swingAt?.(st.bar), e = sw ? sw.k * sw.k * (3 - 2 * sw.k) : 0; // (across a swing, eased as the camera's blend is)
+    let P0 = placeIn(sw ? sw.from : st.viewNow?.(st.bar), S, SI, _p);
+    if (sw) { const P1 = placeIn(sw.to, S, SI, _p2); _p.lerp(P1.at, e); P0 = { at: _p, length: P0.length + (P1.length - P0.length) * e, flat: e < 0.5 ? P0.flat : P1.flat }; }
+    st.rail.toWorld(P0.at, _C);
+    g.camera?.getWorldPosition?.(_cam);
+    if (P0.flat && g.camera) { _right.setFromMatrixColumn(g.camera.matrixWorld, 0); facing(_C, _cam, _Q, { right: _right, flat: true }); } else facing(_C, _cam, _Q);
+    _M.compose(_C, _Q, _scale.setScalar(P0.length / SI.length)); this.eyeHold.scale.setScalar(P0.length / SI.length);
     silhouetteSwim(this.shape, st.t, this.swim);
     // the eye: in the shape's frame, opening once whole; burning while locked; cracking as the Conductor is hurt
     this.eyeHold.visible = true; this.eyeHold.position.copy(_C); this.eyeHold.quaternion.copy(_Q);
@@ -238,7 +255,7 @@ export class ShoalPiece {
     if (lockedNow !== this.locked) { this.locked = lockedNow; if (!lockedNow) this.burn = 0; g.events?.emit('rail.shoal.lock', { on: lockedNow, k: this.burn, by: 'courier' }); }
     if (lockedNow) this.burn = Math.min(1, this.burn + raw / SI.burn);
     this.eye.set({ open, locked: this.burn, crack: c?.alive ? 1 - c.hp / (c.maxHp || SHOAL.caller.hp) : 1 });
-    this.eye.update(raw);
+    this.eye.update(raw, st.t); // (the body's light waves with the glints, on the stage's clock)
   }
   /** Glint j's place on the shape, in the rail's frame; its pull. */
   shapeAt(j, out) {

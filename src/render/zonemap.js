@@ -7,7 +7,7 @@
 // scene/room split, Kingdom Hearts' worlds), kept as data apart from the code that loads or draws them.
 //
 //   zoneOf(pos) -> 'testroom' | 'workshop' | 'basement' | 'circuits' | 'beach' | 'dunes' | 'well' | 'emocean' | 'garden' | 'margarite' | 'raceway' | 'bazaar' | null      wholeOf(pos) -> the zone, or its whole
-//   ZONE_TESTS [{ id, test(pos), partOf? }]   inDunes(pos)   nearShore(pos)
+//   ZONE_TESTS [{ id, test(pos), partOf? }]   ZONE_SOUND[id] -> { floor, acoustic, wet? }   inDunes(pos)   nearShore(pos)
 // ---------------------------------------------------------------------------------------
 
 // the dunes' box, and the shore's sector in it (world/dunes/beach.js SHORE: due east of the oasis, from 380 m out, the sector and its
@@ -52,6 +52,26 @@ export const ZONE_TESTS = [
   { id: 'margarite', test: (p) => p.x > -4620 && p.x < -4380 && p.z > -120 && p.z < 120 && p.y > -470 && p.y < -330 },
 ];
 const BY_ID = Object.fromEntries(ZONE_TESTS.map((z) => [z.id, z]));
+
+/** What each zone is underfoot and as a space (Wanda's hooks, 2026-10-30): its `floor`, a step's surface where nothing on the ground
+ *  says otherwise (courier/stepsurface.js), and its `acoustic`, the kind of space it is heard as (audio/acoustics.js ACOUSTICS: room,
+ *  hall, cave, open, sea), with its reverb send `wet` only where the zone differs from its kind's own (`zone.acoustic`, render/zones.js). */
+export const ZONE_SOUND = {
+  testroom: { floor: 'wood', acoustic: 'room' }, //     (the Throwing Room's planks: world/testroom/room.js)
+  workshop: { floor: 'clay', acoustic: 'room' },
+  basement: { floor: 'stone', acoustic: 'hall' }, //    (the hub's salt-glazed brick, the course round it)
+  circuits: { floor: 'wood', acoustic: 'hall' }, //     (the gymnasium's halls: world/basement/circuitrooms.js)
+  beach: { floor: 'sand', acoustic: 'open' },
+  dunes: { floor: 'sand', acoustic: 'open' },
+  well: { floor: 'sand', acoustic: 'cave' }, //         (the Great Dunemaw's floors: Wanda's)
+  emocean: { floor: 'wood', acoustic: 'sea' }, //       (a deck)
+  garden: { floor: 'grass', acoustic: 'open' },
+  raceway: { floor: 'sand', acoustic: 'open' },
+  touchstone: { floor: 'stone', acoustic: 'room', wet: 0.12 }, // (a test booth is dry: the trials' sounds heard as they are made)
+  bazaar: { floor: 'stone', acoustic: 'hall' }, //      (the mosaic under the dome)
+  opensea: { floor: 'sand', acoustic: 'sea' }, //       (an islet's top: the helm takes no steps)
+  margarite: { floor: 'stone', acoustic: 'sea' }, //    (the quay)
+};
 
 /** Which zone a point is in, or null (between places: in transit, or somewhere no zone claims). */
 export function zoneOf(p) {

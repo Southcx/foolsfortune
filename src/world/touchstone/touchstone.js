@@ -31,6 +31,7 @@ export const TOUCHSTONE = {
 };
 /** Its air: near black, the stone the only thing lit. */
 export const AIR = { fog: 0x0b0a0d, density: 0.012 };
+const EYE = 1.6; // (m: the first person's eye over the floor, near enough to aim the view at the stone's middle)
 const C = { floor: 0x1a181c, wall: 0x121014, stone: 0x060507, plinth: 0x2b2830, gold: 0xd9a441, door: 0x6b5a3a };
 
 export class Touchstone {
@@ -115,14 +116,18 @@ export class Touchstone {
     const g = this.game, B = TOUCHSTONE, P = g.player, S = B.stone, p = B.plinths.find((q) => q.id === id); if (!p || this.run) return;
     g.course?.teleport(new THREE.Vector3(B.x + p.x * 0.35, B.y + 0.05, B.z + B.plinthZ + 1.4), Math.PI, { keepPool: true });
     this.froze = P.freeze; P.freeze = true; P.vel?.set?.(0, 0, 0);
+    this.view0 = P.view; P.view = 'fp'; P.pitch = Math.atan2(S.y - EYE, B.plinthZ + 1.4 - S.z); // (the stone seen in the first person, square on: nothing of the Courier between)
+    const held = g.belt?.inHand, main = g.belt?.get?.(g.belt.main); this.held = held || null; // (empty hands: no tool's reticle over the stimulus, the prone holster's way: tools/proneholster.js)
+    held?.stow(); if (main && main !== held) main.stow(); // (the main put away too, or the first person draws the psygun on its own: tools/psygun/weapon.js)
     const stage = { group: this.room, at: new THREE.Vector3(B.x, B.y + S.y, B.z + S.z + S.t / 2 + 0.01), right: new THREE.Vector3(1, 0, 0), up: new THREE.Vector3(0, 1, 0), normal: new THREE.Vector3(0, 0, 1) };
     this.run = new TrialRun(g, id, stage);
-    if (g.touch) g.touch.take = this.run.taker; // (the screen is the trial's: core/touchdriver.js)
+    if (g.touch) { this.run.taker.keepsHud = true; g.touch.take = this.run.taker; } // (the screen is the trial's, the log's ticker kept: its instructions are there, core/touchdriver.js hudTaken)
   }
   stopRun() {
     const g = this.game; if (!this.run) return;
     if (!this.run.done) this.run.stop();
-    this.run = null; g.player.freeze = !!this.froze;
+    this.run = null; g.player.freeze = !!this.froze; if (this.view0) { g.player.view = this.view0; this.view0 = null; }
+    if (this.held) { if (g.belt?.isWorn?.(this.held.id)) g.belt.draw(this.held); this.held = null; }
     if (g.touch?.take) g.touch.take = null;
   }
 

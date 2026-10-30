@@ -144,7 +144,7 @@ export class ShotField {
       x.turned = true; x.dir.set(x.dir.x * -0.4 + (x.p.x - ship.local.x) * 0.3, 0.6, -0.3).normalize(); this.counts.turned++; ship.turned?.(x); return;
     }
     const spent = ship.mercy > 0; // (the mercy after a hit: the shot is spent on the ship, not taken: counted apart)
-    if (ship.hit?.(x) !== false) { this.counts[spent ? 'spent' : 'hit']++; this.kill(x); }
+    if (ship.hit?.(x, x.outlined ? 'outlined' : 'plain') !== false) { this.counts[spent ? 'spent' : 'hit']++; this.kill(x); }
   }
 
   /** Proportional navigation: turn at N times the line of sight's rate (pure pursuit while it is off by more than 60 degrees), never
@@ -201,7 +201,7 @@ export class ShotField {
       if (b.kind === (ship.form || 'astral')) { this.counts.absorbed++; ship.absorb?.(b); b.struck = true; return; }
       if (ship.turning) return; // (the roll carries you through)
       const spent = ship.mercy > 0;
-      if (ship.hit?.(b) !== false) { this.counts[spent ? 'spent' : 'hit']++; b.struck = true; } // (a beam hurts once: the ship's mercy does the rest)
+      if (ship.hit?.(b, 'plain') !== false) { this.counts[spent ? 'spent' : 'hit']++; b.struck = true; } // (a beam hurts once: the ship's mercy does the rest)
     }
   }
 

@@ -3,7 +3,7 @@
 // It RECEIVES what is played into it and TRANSFORMS it: an amplifier for a musician, and the musician is them. A battle bard: everyone
 // they play for burns brighter.
 //
-//  - FIVE NOTES (1 to 5): the minor pentatonic of whatever music is playing, in its key, so nothing played is wrong (the grid comes from
+//  - FIVE NOTES (1 to 5): the scale of the bar sounding now (game.music.scale(): the minor pentatonic unless the music names its own), in its key, so nothing played is wrong (the grid comes from
 //    music/player.js; with no music the bell keeps its own time at 96). Hold RMB and they sound an octave up. The voice is the
 //    instrument fitted to the bell (the Pneuka Box): the bell itself, a clay ocarina, a kalimba, a lute (band.js plays them).
 //  - ON THE BEAT: a note within a small window of the music's eighth notes builds FEVER; off the beat, or long silence, lets it fall.
@@ -100,6 +100,9 @@ export class Crucibelle extends HeldTool {
     const G = sfx.ok?.() ? this.game.music?.grid?.() : null;
     return G || { t0: this.ownT0, spb: 60 / OWN_BPM, root: 63 };
   }
+  /** The five notes to play in now: the bar's own scale (music/player.js scale(): a score's or a section's, else the weather's mode with
+   *  nothing playing), so a phrase rung over a cue in another mode stays in it; the minor pentatonic when there is no music to ask. */
+  scaleNow() { const s = sfx.ok?.() ? this.game.music?.scale?.() : null; return Array.isArray(s) && s.length === 5 ? s : SCALE; }
   /** How far from the nearest eighth note `t` is (seconds). */
   /** Is now on the song's beat (within WINDOW)? The toll's parry widens on it (courier/parries.js). */
   get onTheBeat() { return this.offBeat(this.now(), this.grid()) < WINDOW; }
@@ -140,7 +143,7 @@ export class Crucibelle extends HeldTool {
   note(d, high = false) {
     const g = this.game, G = this.grid(), t = this.now();
     const off = this.offBeat(t, G), on = off < WINDOW;
-    this.voice(G.root + SCALE[d - 1] + (high ? 12 : 0), on ? 0.7 : 0.55);
+    const sc = this.scaleNow(); this.voice(G.root + sc[d - 1] + (high ? 12 : 0), on ? 0.7 : 0.55);
     this.beatHit(on, t, G);
     this.notes++;
     this.model.lightVent(d - 1, 1);
@@ -154,7 +157,7 @@ export class Crucibelle extends HeldTool {
     this.history.push(d); if (this.history.length > 8) this.history.shift();
     const song = match(this.history);
     if (song) { this.history = []; this.sing(song); }
-    g.events?.emit('crucibelle.note', { degree: d, note: G.root + SCALE[d - 1] + (high ? 12 : 0), octave: high ? 1 : 0, onBeat: on, by: 'courier' }); // (note: the MIDI pitch; CRUCIBELLE-UI.md 5)
+    g.events?.emit('crucibelle.note', { degree: d, note: G.root + sc[d - 1] + (high ? 12 : 0), octave: high ? 1 : 0, onBeat: on, by: 'courier' }); // (note: the MIDI pitch; CRUCIBELLE-UI.md 5)
   }
   /** The fever's peak, once a fever: the ring at its widest, Dovina's feverPeak row (its power to all within its radius, once earned). */
   peak() {

@@ -247,7 +247,7 @@ export class Lockheart extends HeldTool {
     for (let s = 0; s < mods.spins; s++) { const a = spin(table, simRand()); draws.push(lucky ? better(a, spin(table, simRand())) : a); }
     this.queue = draws.map((id, i) => ({ id, R, power, mods, heart: this.heart, keys: used, i }));
     sfx.coffin?.(true);
-    g.events?.emit('lockheart.open', { heart: this.heart, keys: used, broke, results, power: +power.toFixed(2), spins: mods.spins });
+    g.events?.emit('lockheart.open', { heart: this.heart, keys: used, broke, results, power: +power.toFixed(2), spins: mods.spins, by: 'courier' });
     if (g.ultimate) g.ultimate.begin(this); else { this.gesture('Lock_Open'); this.next(); } // (R40: the Courier's ultimate, a show the game stops for: tools/lockheart/ultimate.js)
   }
   /** A clip of the coffin's own over the stance (the lid opened): cut off by the next. */
@@ -277,7 +277,7 @@ export class Lockheart extends HeldTool {
     this.charge = 0; this.save();
     g.stun?.hold(c, 4); // (kept down while the wheel turns)
     sfx.coffin?.(true);
-    g.events?.emit('lockheart.open', { heart: this.heart, keys: used, broke: used.filter((_, i) => results[i] === 'broke'), results, power: 1, spins: 1 });
+    g.events?.emit('lockheart.open', { heart: this.heart, keys: used, broke: used.filter((_, i) => results[i] === 'broke'), results, power: 1, spins: 1, by: 'courier' });
     const R = [{ id: 'free', p: 1 - p, color: 0x5a4a62 }, { id: 'caught', p, color: 0xb49be6 }];
     const { pos, face } = this.catchSpot(c);
     this.queue = [{ id: 'catch' }];

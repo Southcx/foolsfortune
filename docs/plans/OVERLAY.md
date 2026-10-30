@@ -77,7 +77,7 @@ numbers; beads count to four") now holds for the ring itself only: the ring is a
 |---|---|---|---|
 | **ring** | a gauge round its object | a flat annulus at its foot, a band between two frame lines | band Lachryma (yours) or labradorite (the Mind's reading); frame labradorite |
 | **arc** | a direction or a share | a segment outside the ring's frame | labradorite, hue by heat |
-| **bead** | one charge, or one act ready | a disc in the ring's frame | Lachryma disc = a charge; labradorite hoop = ready |
+| **bead** | one charge, or one act ready | a glass pearl on the Lachrimeter's rail (the Blink's: `vfx/lachrimeter/blinkpearls.js`; the ring's frame drew them as discs until 2026-10-30) | Lachryma filled = a charge; empty glass = spent |
 | **bracket** | attention: this one | two or four corner ticks | labradorite (ink on the lens) |
 | **seam** | damage | a jagged pale line in a dark wedge | the clay's cream, on matter only |
 

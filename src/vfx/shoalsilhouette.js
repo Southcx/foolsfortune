@@ -12,23 +12,34 @@
 //                (a Fibonacci shell and some inside it). 'ring': a torus round Y.
 //   THE SWIM     `silhouetteSwim(S, t, out)`: the targets with a slow wave down the body (the head steady, the tail beating), so the
 //                giant swims while it is made of fish; `silhouetteEyeAt(S, t, out)` where the eye is on it then
-//   FACING       `facing(centre, camPos, out)`: the turn that shows the profile to the camera (its +X side), the head level
+//   FACING       `facing(centre, camPos, out, { right, flat })`: the turn that shows the profile to the camera (its +X side) fully,
+//                up and down too, so a camera above it sees a face and never an edge; its head toward the screen's left (`right`, the
+//                camera's right in the world), else level; `flat` lays it face-up on the sea (the above view, looking straight down)
 //   THE EYE      `new SilhouetteEye({ radius })`: a labradorite lens (vfx/railgeometry.js's lens, the Mind's one program), its slit
 //                pupil watching you, lids that open, cracks that glow as it is hurt, and a burn when it is locked (gold-white from
 //                the pupil out, throbbing slowly: a ramp, never a flash); a wire ring round it in labradorite that turns gold when
-//                locked; and `shatter()`: the lens bursts into shards and is gone (the school scattering is the boids')
+//                locked; THE BODY'S LIGHT, a film of the Mind's colours over the whole profile (the shape program, vfx/shapes/: a band
+//                along the outline, faint inside, dark in the eye's socket, a slow scroll of cells toward the tail), lit as the eye
+//                opens, so the giant reads as one body at 480 lines however few glints draw it; and `shatter()`: the lens bursts
+//                into shards and the body's light erodes away (the school scattering is the boids')
 //
-// Prior art: Child of Eden's Archives (a school of lights that becomes a whale, and the one spot that breaks it), the sardine run's
-// "shark" formed by a school, Reynolds' arrival steering (a member slowing onto its target), the Halton sequence for even, stable
+// Prior art: Child of Eden's Archives (a school of lights that becomes a whale, and the one spot that breaks it; its body a line of
+// light round the fish), the sardine run's "shark" formed by a school (and drone footage of bait balls: a shape on the surface, read
+// from straight above), Reynolds' arrival steering (a member slowing onto its target), the Halton sequence for even, stable
 // coverage (J. H. Halton, 1960), the Fibonacci sphere (González, 2010), and Sauron's and the Cyclops's single eye.
 //
 //   const S = silhouetteTargets(600, 'leviathan', { length: 48 })   S.points (Float32Array n*3)   S.kind (0 fill, 1 outline, 2 eye rim)
-//   S.eye (Vector3 | null)   S.eyeRadius   silhouetteSwim(S, t, out)   silhouetteEyeAt(S, t, out)   facing(centre, camPos, outQuat)
-//   const E = new SilhouetteEye({ radius })   E.group   E.set({ open 0..1, locked 0..1, crack 0..1 })   E.shatter()   E.update(dt)   E.dispose()
-//   (E.broken: true once shattered; E.group's position is the eye's, set by the owner from silhouetteEyeAt through its frame)
+//   S.eye (Vector3 | null)   S.eyeRadius   silhouetteSwim(S, t, out)   silhouetteEyeAt(S, t, out)   facing(centre, camPos, outQuat, { right, flat })
+//   const E = new SilhouetteEye({ radius, length })   E.group   E.set({ open 0..1, locked 0..1, crack 0..1 })   E.shatter()   E.update(dt, t)   E.dispose()
+//   (E.broken: true once shattered; E.group's position is the eye's, set by the owner from silhouetteEyeAt through its frame; t the
+//   clock the swim is given, so the body's light waves with the glints: absent, the eye's own)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { mindGeoMaterial, mindGeoMesh } from './railgeometry.js';
+import { makeShapeMaterial, shapeUniforms } from './shapes/program.js';
+import { patternPick } from './shapes/textures.js';
+import { RAMPS, rampV } from './shapes/ramps.js';
+import { SHOAL } from '../progress/rail/setpieces.js';
 
 /** A Leviathan's profile, a body length of 1 (z -0.5 the tail .. 0.5 the snout, y up): snout, brow, dorsal, tail, belly, pectoral,
  *  jaw, and the maw open back into the head. A closed polygon. */
@@ -106,33 +117,60 @@ export function silhouetteTargets(n, shape = 'leviathan', { length = 48, radius 
   return { shape, n, points, kind, eye: new THREE.Vector3(0, EYE.y * L, EYE.z * L), eyeRadius: EYE.r * L, length: L, fill: nFill };
 }
 
-/** The body's wave on the targets at time t (real seconds): the head steady, the tail beating, a slow heave. Into `out` (made if absent). */
+/** The wave's lift at u along the body (z / length), a share of the length: the head steady, the tail beating, a slow heave. */
+const lift = (u, t, env, amp = 0.035, speed = 1.1) => amp * env * Math.sin(Math.PI * 2 * u * 1.1 - t * speed * 2) + 0.01 * Math.sin(t * 0.5);
+const envOf = (u) => 0.2 + 0.8 * THREE.MathUtils.smoothstep(0.3 - u, 0, 0.8);
+
+/** The body's wave on the targets at time t (real seconds). Into `out` (made if absent). */
 export function silhouetteSwim(S, t, out = new Float32Array(S.n * 3), { amp = 0.035, speed = 1.1 } = {}) {
   const P = S.points, L = S.length;
   for (let i = 0; i < S.n; i++) {
     const x = P[i * 3], y = P[i * 3 + 1], z = P[i * 3 + 2], u = z / L;
-    const env = S.shape === 'leviathan' ? 0.2 + 0.8 * THREE.MathUtils.smoothstep(0.3 - u, 0, 0.8) : 0.3;
-    out[i * 3] = x; out[i * 3 + 1] = y + L * (amp * env * Math.sin(Math.PI * 2 * u * 1.1 - t * speed * 2) + 0.01 * Math.sin(t * 0.5)); out[i * 3 + 2] = z;
+    out[i * 3] = x; out[i * 3 + 1] = y + L * lift(u, t, S.shape === 'leviathan' ? envOf(u) : 0.3, amp, speed); out[i * 3 + 2] = z;
   }
   return out;
 }
 /** Where the eye is at time t, by the same wave (shape frame). */
 export function silhouetteEyeAt(S, t, out = new THREE.Vector3(), { amp = 0.035, speed = 1.1 } = {}) {
   if (!S.eye) return null;
-  const L = S.length, u = S.eye.z / L, env = 0.2 + 0.8 * THREE.MathUtils.smoothstep(0.3 - u, 0, 0.8);
-  return out.set(S.eye.x, S.eye.y + L * (amp * env * Math.sin(Math.PI * 2 * u * 1.1 - t * speed * 2) + 0.01 * Math.sin(t * 0.5)), S.eye.z);
+  const L = S.length, u = S.eye.z / L;
+  return out.set(S.eye.x, S.eye.y + L * lift(u, t, envOf(u), amp, speed), S.eye.z);
 }
-const _x = new THREE.Vector3(), _y = new THREE.Vector3(0, 1, 0), _z = new THREE.Vector3(), _mb = new THREE.Matrix4(), _qs = new THREE.Quaternion(), _ss = new THREE.Vector3();
-/** The turn that shows the shape's profile (+X) to the camera from `centre`, its head level. */
-export function facing(centre, camPos, out = new THREE.Quaternion()) {
-  _x.subVectors(camPos, centre).setY(0); if (_x.lengthSq() < 1e-6) _x.set(1, 0, 0); _x.normalize();
-  _z.crossVectors(_x, _y).normalize();
-  return out.setFromRotationMatrix(_mb.makeBasis(_x, _y, _z));
+const _x = new THREE.Vector3(), _y = new THREE.Vector3(0, 1, 0), _z = new THREE.Vector3(), _u = new THREE.Vector3(), _mb = new THREE.Matrix4(), _qs = new THREE.Quaternion(), _ss = new THREE.Vector3();
+const _lastHead = new THREE.Vector3(1, 0, 0);
+/** The turn that shows the shape's profile (+X) to the camera from `centre`, turned to it fully (a profile stood upright and seen
+ *  from above is an edge: the above view's cloud, 2026-10-30); its head toward the screen's left (`right`: the camera's right in the
+ *  world) or else level; `flat`, laid face-up on the sea. With no head to be had (straight above, no `right`), the last one. */
+export function facing(centre, camPos, out = new THREE.Quaternion(), { right = null, flat = false } = {}) {
+  if (flat) _x.set(0, 1, 0); else { _x.subVectors(camPos, centre); if (_x.lengthSq() < 1e-6) _x.set(1, 0, 0); _x.normalize(); }
+  if (right) _z.copy(right).negate(); else _z.crossVectors(_x, _y);
+  _z.addScaledVector(_x, -_z.dot(_x)); if (_z.lengthSq() < 1e-4) _z.copy(_lastHead); _z.normalize(); _lastHead.copy(_z);
+  _u.crossVectors(_z, _x);
+  return out.setFromRotationMatrix(_mb.makeBasis(_x, _u, _z));
+}
+
+/** The body's light as a mesh in the shape's frame (x = 0, z along, y up), a length of L: its vertex alpha a band along the outline
+ *  (about 0.7 m wide at 40 m), a faint fill inside, nothing in the eye's socket, fading just outside the edge. */
+const BODY = { band: 0.015, fill: 0.34, out: 0.7, nz: 96, ny: 52, z: [-0.57, 0.53], y: [-0.28, 0.3] };
+function bodyGeometry(L) {
+  const { nz, ny } = BODY, n = (nz + 1) * (ny + 1), pos = new Float32Array(n * 3), uv = new Float32Array(n * 2), col = new Float32Array(n * 4), nrm = new Float32Array(n * 3), idx = [];
+  for (let j = 0, k = 0; j <= ny; j++) for (let i = 0; i <= nz; i++, k++) {
+    const z = BODY.z[0] + ((BODY.z[1] - BODY.z[0]) * i) / nz, y = BODY.y[0] + ((BODY.y[1] - BODY.y[0]) * j) / ny, d = edgeDist(LEVIATHAN, z, y);
+    const band = Math.exp(-((d / BODY.band) ** 2)), a = inside(LEVIATHAN, z, y) ? Math.max(band, BODY.fill * THREE.MathUtils.smoothstep(d, 0, 0.03)) : band * BODY.out;
+    const socket = THREE.MathUtils.smoothstep(Math.hypot(z - EYE.z, y - EYE.y), EYE.r * 1.3, EYE.r * 2.4);
+    pos.set([0, y * L, z * L], k * 3); uv.set([i / nz, j / ny], k * 2); col.set([1, 1, 1, a * socket], k * 4); nrm.set([1, 0, 0], k * 3);
+  }
+  for (let j = 0; j < ny; j++) for (let i = 0; i < nz; i++) { const a = j * (nz + 1) + i, b = a + 1, c = a + nz + 1, d = c + 1; idx.push(a, c, b, b, c, d); }
+  const g = new THREE.BufferGeometry();
+  g.setAttribute('position', new THREE.BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.BufferAttribute(uv, 2));
+  g.setAttribute('color', new THREE.BufferAttribute(col, 4)); g.setAttribute('normal', new THREE.BufferAttribute(nrm, 3)); g.setIndex(idx);
+  g.userData.rest = pos.slice(); g.computeBoundingSphere(); g.boundingSphere.radius += L * 0.05; // (the wave's reach)
+  return g;
 }
 
 // ---------------------------------------------------------------- the eye
 export class SilhouetteEye {
-  constructor({ radius = 1.6 } = {}) {
+  constructor({ radius = 1.6, length = SHOAL.silhouette.length } = {}) {
     this.group = new THREE.Group(); this.group.name = 'silhouette-eye'; this.group.userData.zoneFree = true;
     this.mat = mindGeoMaterial('lens', { bright: 1, warped: false }); // (the eye is shot at: the storm never bends it, vfx/railgeometry.js)
     this.lens = mindGeoMesh(new THREE.SphereGeometry(1, 28, 18), this.mat, 1); this.lens.count = 1; this.lens.setMatrixAt(0, new THREE.Matrix4());
@@ -149,13 +187,21 @@ export class SilhouetteEye {
     this.shardMat = mindGeoMaterial('wire', { grid: [1, 1], bright: 1.4, line: 2, warped: false });
     this.shards = mindGeoMesh(new THREE.TetrahedronGeometry(radius * 0.35), this.shardMat, 14); this.group.add(this.shards);
     this.sv = Array.from({ length: 14 }, () => new THREE.Vector3().randomDirection().multiplyScalar(6 + Math.random() * 8));
+    // the body's light: one shape-program mesh (its program the shape layers', compiled once), kept at the shape's origin
+    const flow = patternPick('noise');
+    this.bodyMat = makeShapeMaterial(shapeUniforms({ uMainMap: { value: flow.tex }, uMainCh: { value: flow.ch.clone() }, uMainK: { value: 0.3 },
+      uTileMain: { value: new THREE.Vector2(6, 3) }, uScrollMain: { value: new THREE.Vector2(-0.06, 0.01) }, // (a shimmer streaming toward the tail: the school's flow)
+      uRampRow: { value: rampV(RAMPS.film) }, uRampShift: { value: -0.14 }, uCore: { value: 0 }, uGlow: { value: 1.2 }, uBack: { value: 0.3 } })); // (the film's cool middle: its warm top is a heat map's)
+    this.body = new THREE.Mesh(bodyGeometry(length), this.bodyMat); this.body.name = 'silhouette-body'; this.body.userData.zoneFree = true; this.body.renderOrder = 4;
+    this.group.add(this.body); this.length = length;
     this.radius = radius; this.reset();
   }
 
   /** Whole again, shut, unlocked (a new silhouette's eye). */
   reset() {
     this.k = { open: 0, locked: 0, crack: 0 }; this.to = { open: 1, locked: 0, crack: 0 }; this.t = 0; this.broken = false; this.bt = -1;
-    this.lens.visible = this.ring.visible = true; this.lens.scale.setScalar(this.radius); this.shards.count = 0;
+    this.lens.visible = this.ring.visible = this.body.visible = true; this.lens.scale.setScalar(this.radius); this.shards.count = 0;
+    this.bodyMat.uniforms.uErode.value = 0; this.bodyMat.uniforms.uK.value = 0;
   }
 
   /** open (the lids, 0 shut), locked (a lock-on on it: it burns), crack (0..1: how hurt it is). Eased, never stepped. */
@@ -163,7 +209,7 @@ export class SilhouetteEye {
   /** Broken: the lens bursts into shards and is gone. */
   shatter() { if (!this.broken) { this.broken = true; this.bt = 0; this.to.crack = 1; this.to.locked = 1; } }
 
-  update(dt = 1 / 60) {
+  update(dt = 1 / 60, t = null) {
     this.t += dt;
     for (const k of ['open', 'locked', 'crack']) this.k[k] += (this.to[k] - this.k[k]) * (1 - Math.exp(-(k === 'open' ? 2.5 : 5) * dt));
     const U = this.mat.uniforms; U.uOpen.value = this.k.open; U.uBurn.value = this.k.locked; U.uCrack.value = this.k.crack;
@@ -176,7 +222,24 @@ export class SilhouetteEye {
       for (let i = 0; i < 14; i++) this.shards.setMatrixAt(i, _mb.compose(_x.copy(this.sv[i]).multiplyScalar(b * (1 - b * 0.3)), _qs.setFromAxisAngle(_z.copy(this.sv[i]).normalize(), b * 6 + i), _ss.set(s, s, s)));
       this.shards.instanceMatrix.needsUpdate = true; this.shards.userData.lit.fill(1); this.shards.geometry.attributes.aLit.needsUpdate = true;
     }
+    this.swimBody(t ?? this.t);
   }
 
-  dispose() { this.group.parent?.remove(this.group); this.group.traverse((o) => o.geometry?.dispose()); for (const m of [this.mat, this.ringMat, this.shardMat]) m.dispose(); }
+  /** The body's light this frame: at the shape's origin (the group sits at the eye), waved as the glints are, lit with the eye's
+   *  opening and a little more while it burns; eroded through its cells over 0.6 real s once broken. */
+  swimBody(t) {
+    const B = this.body, U = this.bodyMat.uniforms;
+    B.position.copy(this.group.position).negate();
+    U.uK.value = 0.55 * this.k.open * (1 + 0.35 * this.k.locked);
+    if (this.bt >= 0) { U.uErode.value = Math.min(1, this.bt / 0.6); B.visible = this.bt < 0.6; }
+    if (!B.visible || U.uK.value < 0.01) return;
+    const P = B.geometry.attributes.position, R = B.geometry.userData.rest, L = this.length, cols = BODY.nz + 1;
+    for (let i = 0; i < cols; i++) {
+      const u = R[i * 3 + 2] / L, dy = L * lift(u, t, envOf(u));
+      for (let j = 0, k = i; j <= BODY.ny; j++, k += cols) P.array[k * 3 + 1] = R[k * 3 + 1] + dy;
+    }
+    P.needsUpdate = true;
+  }
+
+  dispose() { this.group.parent?.remove(this.group); this.group.traverse((o) => o.geometry?.dispose()); for (const m of [this.mat, this.ringMat, this.shardMat, this.bodyMat]) m.dispose(); }
 }

@@ -7,7 +7,7 @@
 //
 //   gonogo    a light on the stone: press on a plain one (Space, a tap), withhold on an outlined one
 //   pitch     two tones in turn, the left shard then the right: which is higher (A or 1 the first, D or 2 the second; a tap's half)
-//   colour    three tiles, one off: which (A W D, or 1 2 3; a tap's third)
+//   colour    three tiles, one off: which (A W D, or 1 2 3; a tap's third); drawn exact, past the frame's tone curve and grade
 //   rhythm    tap along with the beat (Space, a tap)
 //   react     a windup ring flashes after a wait you cannot guess: press (Space, a tap); a press before it is a guess
 //   F (on touch, a finger held a real second) leaves a trial; nothing is recorded.
@@ -31,6 +31,7 @@ const KEYS = { press: ['Space', 'Enter'], first: ['KeyA', 'Digit1', 'ArrowLeft']
 const BLOCK = new Set([...KEYS.press, ...KEYS.first, ...KEYS.mid, ...KEYS.second, ...KEYS.quit]);
 const COL = { plain: 0xffd76a, outline: 0xfff4e6, dark: 0x111014, ember: 0xff5a3a, shard: 0x9fd8ff };
 const simRand = stream('world/touchstone/trialrun'); // (the trials' chance: core/rng.js)
+const QUAD = new THREE.PlaneGeometry(1, 1), _p = new THREE.Vector3(), _e = new THREE.Vector3(); // (the colour trial's exact tiles: one quad, scaled in CSS px)
 const rnd = (a, b) => a + simRand() * (b - a);
 
 /** A tone on the audio clock: Wanda's (audio/touchstone.js), one fixed timbre, the exact frequency, so only the pitch differs. */
@@ -66,6 +67,24 @@ export class TrialRun {
     this.shards = [-0.9, 0.9].map((x) => put(new THREE.OctahedronGeometry(0.22, 0), COL.shard, x, 0));
     grp.position.copy(s.at); grp.quaternion.setFromRotationMatrix(new THREE.Matrix4().makeBasis(s.right, s.up, s.normal));
     s.group.add(grp);
+    // the colour trial's tiles drawn exact: the world's frame is tone-mapped, glowed and graded (render/glow.js), so a tile's Oklab
+    // difference on the screen is not the one the staircase asked for. Each is drawn again in the overlay's scene, after all of that
+    // (render/overlayscene.js), over its place on the stone and a hair larger, in the colour it was given
+    const O = this.game.overlayScene;
+    if (this.id === 'colour' && O) this.exact = this.tiles.map((m) => {
+      const q = new THREE.Mesh(QUAD, new THREE.MeshBasicMaterial({ color: 0x808080, toneMapped: false, fog: false, depthTest: false }));
+      const slot = O.add(q, { anchor: 'tl', hud: false, update: () => this.placeExact(m, q, slot) });
+      return q;
+    });
+  }
+  /** An exact tile over its world tile: its centre and a corner projected through the camera to CSS px, its colour the world tile's. */
+  placeExact(m, q, slot) {
+    const cam = this.game.camera, w = slot.view.w, h = slot.view.h;
+    m.getWorldPosition(_p).project(cam); m.localToWorld(_e.set(0.43, 0.43, 0)).project(cam);
+    slot.x = ((_p.x + 1) / 2) * w; slot.y = ((1 - _p.y) / 2) * h;
+    q.scale.set(Math.abs(_e.x - _p.x) * w * 1.02, Math.abs(_e.y - _p.y) * h * 1.02, 1);
+    q.material.color.copy(m.material.color);
+    q.userData.overlayHidden = !m.visible || _p.z > 1; // (shown with its tile; never from behind the camera)
   }
   hideAll() { for (const m of [this.disc, this.ring, this.wind, ...this.tiles, ...this.shards]) m.visible = false; }
 
@@ -184,5 +203,6 @@ export class TrialRun {
     removeEventListener('keydown', this.keys, true); removeEventListener('touchend', this.lift, true);
     this.stage.group.remove(this.grp);
     this.grp.traverse((o) => { o.geometry?.dispose?.(); o.material?.dispose?.(); });
+    for (const q of this.exact || []) { this.game.overlayScene?.remove(q); q.material.dispose(); }
   }
 }

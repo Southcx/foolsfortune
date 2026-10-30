@@ -124,14 +124,6 @@ export function bootFrame(game, made) {
   let lastWall = null;
   let lastLedge = null;
 
-  // the Blink's charges for the battle ring (vfx/hudring.js): how many, of how many, and how far the next has come back (the tube's
-  // pearls read the same: vfx/lachrimetertube.js blinkOf)
-  const blinkState = () => {
-    const b = techs.get('blink');
-    if (!b?.enabled) return null;
-    return { n: b.charges, max: b.cfg.charges, fill: b.charges < b.cfg.charges ? THREE.MathUtils.clamp(b.recharge / b.cfg.recharge, 0, 1) : 0 };
-  };
-
   // One simulation + animation frame. Split out so tests can drive exact frame rates.
   function tick(dt) {
     clock.frame++;
@@ -338,8 +330,9 @@ export function bootFrame(game, made) {
     game.bazaar?.light(); // (the bazaar's own air under its dome: world/bazaar/bazaar.js)
     game.touchstone?.light(); // (the Touchstone's dark: world/touchstone/touchstone.js)
     game.bazaarHall?.update(game.rawDt ?? dt); // (the dome's turn, the wheel's and the carousel's spin, the neon's film walk: vfx/bazaarhall.js)
+    game.touchstoneLook?.update(game.rawDt ?? dt); // (the plinth you stand at lit, the stone's sign of the trial running, a run's streak rubbed in: vfx/touchstonelook.js)
     game.realm?.light(); // (the garden's sky over the world's, while you are in it)
-    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.awakeningLook.update(game.rawDt ?? dt, camera); game.godhandLooks.update(game.rawDt ?? dt, camera); game.palmDieLook.update(game.rawDt ?? dt); game.weatherLook.update(dt, camera); game.nightSky.update(game.rawDt ?? dt, camera); game.waterFx.update(game.rawDt ?? dt, camera); game.parryMark.update(game.rawDt ?? dt, camera); game.blobShadow.update(); game.classArtLooks?.update(game.rawDt ?? dt); game.domainLooks?.update(game.rawDt ?? dt); game.flourishes.update(game.rawDt ?? dt); game.figmentTelegraphs.update(dt, camera); game.siblingShatter.update(dt); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.areaWipe.update(game.rawDt ?? dt); game.aberrantWipe.update(game.rawDt ?? dt, camera); game.gateRing.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.squallLine?.update(game.rawDt ?? dt, camera); game.stormWarp.update(game.rawDt ?? dt, camera); game.umbral.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.duelView.update(game.rawDt ?? dt); game.spawnLook.update(game.rawDt ?? dt, camera); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); game.daturas?.update(game.rawDt ?? dt); game.wellDress.update(game.rawDt ?? dt); game.testroomDress.update(game.rawDt ?? dt); diag.end('fx');
+    diag.begin('fx'); fx.update(dt, camera); game.filigree?.update(dt); game.awakeningLook.update(game.rawDt ?? dt, camera); game.godhandLooks.update(game.rawDt ?? dt, camera); game.palmDieLook.update(game.rawDt ?? dt); game.weatherLook.update(dt, camera); game.nightSky.update(game.rawDt ?? dt, camera); game.waterFx.update(game.rawDt ?? dt, camera); game.parryMark.update(game.rawDt ?? dt, camera); game.blobShadow.update(); game.classArtLooks?.update(game.rawDt ?? dt); game.pairSpecialLooks?.update(game.rawDt ?? dt);game.domainLooks?.update(game.rawDt ?? dt); game.flourishes.update(game.rawDt ?? dt); game.figmentTelegraphs.update(dt, camera); game.siblingShatter.update(dt); game.shore.update(game.dunes.t ?? 0, camera); game.mawWipe.update(game.rawDt ?? dt); game.areaWipe.update(game.rawDt ?? dt); game.aberrantWipe.update(game.rawDt ?? dt, camera); game.gateRing.update(game.rawDt ?? dt); game.glitch.update(game.rawDt ?? dt, camera); game.squallLine?.update(game.rawDt ?? dt, camera); game.stormWarp.update(game.rawDt ?? dt, camera); game.umbral.update(game.rawDt ?? dt, camera); game.dataDrain.update(game.rawDt ?? dt); game.duelView.update(game.rawDt ?? dt); game.spawnLook.update(game.rawDt ?? dt, camera); game.dunemawMood.update(game.rawDt ?? dt); game.flythrough.update(game.rawDt ?? dt); game.daturas?.update(game.rawDt ?? dt); game.wellDress.update(game.rawDt ?? dt); game.testroomDress.update(game.rawDt ?? dt); diag.end('fx');
     game.glyphs.update(dt); // (after everything that pops one this frame: a mark made before its first update was drawn at the origin)
     level.kilnLight.intensity = 26 + Math.sin(now * 0.004) * 3 + Math.sin(now * 0.011) * 2;
 
@@ -362,7 +355,7 @@ export function bootFrame(game, made) {
     game.cine.update(game.rawDt || dt);
     (game.chestFx ||= new ChestFx(game)).update(dt); // (the chest's opening: Mesh Create's effect meshes, vfx/chestfx.js)
     game.releaseCrack.update(game.rawDt ?? dt); // (after the vessel's cracks are set: it holds a release's back for its pressure beat)
-    game.hudRing.update(dt, { blink: blinkState() }); // (the 3D HUD, the Mind's layer in the world: docs/plans/OVERLAY.md)
+    game.hudRing.update(dt); // (the 3D HUD, the Mind's layer in the world: docs/plans/OVERLAY.md)
     (game.wireCompass ||= new WireCompass(game)).visible = !!game.belt?.isWorn('dreamvane') || !!game.crucibelle?.held; // (the compass is the Dreamvane's: worn, it shows; and the Crucibelle's in the hands, for its pendulum)
     game.wireCompass.update(dt);
     (game.vaneHud ||= new VaneHud(game, game.wireCompass)).update(dt); // (the Dreamvane's own marks on the compass: vfx/vanehud.js)

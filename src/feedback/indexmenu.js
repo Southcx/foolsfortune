@@ -10,7 +10,7 @@ import { sfx } from '../audio/sfx.js';
 
 /** A page's line in the words of the device last touched: on touch a click is a tap, and the keys' parts go (CLOSE stands in the
  *  corner). Plain placeholders until Espada's words (MOBILE.md 8.3). */
-const TOUCH_SUB = [[/, or its key \(or arrows \+ Enter\)/g, ''], [/\s*·\s*F closes/g, ''], [/\s*·\s*(?:B to close|Esc, F or B closes|the arrow keys turn the pages)/g, ''], [/\bclick\b/g, 'tap'], [/\bClick\b/g, 'Tap']]; // (the Codex's, the SONDELASS shelf's, the help's)
+const TOUCH_SUB = [[/, or its key \(or arrows \+ Enter\)/g, ''], [/ \(or arrows \+ Enter\)/g, ''], [/\s*·\s*F closes/g, ''], [/\s*·\s*(?:B to close|Esc, F or B closes|the arrow keys turn the pages)/g, ''], [/\bclick\b/g, 'tap'], [/\bClick\b/g, 'Tap']]; // (the Codex's, the SONDELASS shelf's, the help's)
 export const subFor = (sub, device) => (device === 'touch' ? TOUCH_SUB.reduce((t, [re, to]) => t.replace(re, to), String(sub)) : sub);
 
 
@@ -65,6 +65,7 @@ export class IndexMenu {
     this.root.id = 'indexmenu';
     this.root.addEventListener('mousedown', (e) => e.stopPropagation());
     this.root.addEventListener('click', (e) => { if (e.target === this.root) this.close(); });
+    this.root.addEventListener('keydown', (e) => this.betweenLists(e), true); // (before the list's own keys: ui/choicecard.js cardList)
     document.body.appendChild(this.root);
     addEventListener('keydown', (e) => {
       if (!this.open) return;
@@ -85,6 +86,20 @@ export class IndexMenu {
     document.exitPointerLock?.();
     this.render();
     sfx.lockOn?.(2);
+  }
+
+  /** A page of several lists of cards (the pier's crossings, ships, parts and mounts): up from a list's top row or down from its bottom
+   *  one goes to the list before or after it, so every list is reached from the keyboard (a list's own keys move inside it, and stop at
+   *  its edges: ui/choicecard.js cardList; Tab is the game's). */
+  betweenLists(e) {
+    if (e.code !== 'ArrowDown' && e.code !== 'ArrowUp') return;
+    const card = document.activeElement, box = card?.parentElement; if (!card?.classList?.contains('cc') || !box?.classList.contains('ccards') || !this.root.contains(box)) return;
+    const all = [...box.querySelectorAll(':scope > .cc')], i = all.indexOf(card), per = Math.max(1, all.filter((c) => c.offsetTop === all[0].offsetTop).length), down = e.code === 'ArrowDown';
+    if (down ? i + per < all.length : i - per >= 0) return; // (inside the list: its own keys)
+    const lists = [...this.root.querySelectorAll('.ccards')].filter((b) => b.getClientRects().length && b.querySelector(':scope > .cc'));
+    const next = lists[lists.indexOf(box) + (down ? 1 : -1)]; if (!next) return;
+    const cards = next.querySelectorAll(':scope > .cc'), to = down ? cards[0] : cards[cards.length - 1];
+    e.preventDefault(); e.stopPropagation(); next.classList.add('kbd'); to.focus(); to.scrollIntoView?.({ block: 'nearest' });
   }
 
   /** The same window on a page of its own (the Throwing Room's console: world/testroom/drills.js page(im, el)), the calibration under it. */

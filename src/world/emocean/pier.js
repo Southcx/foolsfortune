@@ -38,6 +38,7 @@ import { showcasePassage } from '../../progress/rail/showcase.js';
 import { practiceOf, LEGS } from '../../progress/rail/legs.js';
 import { practiceCards } from '../../ui/practicecards.js';
 import { sfx } from '../../audio/sfx.js';
+import { deviceText } from '../../progress/devicewords.js';
 
 const REACH = 2.6; // (metres from a jetty's end: the pier's F, and the helm's cradle reached from there)
 const _end = new THREE.Vector3();
@@ -125,34 +126,31 @@ export class Pier {
     if (V.at !== at && !V.sailing) { if (V.arrive) V.arrive(at); else { V.s.at = at; V.dirty(); } } // (they stand at this pier: they may have come by a Shrine)
     const was = this.menu?.open && this.menu.page?.name === 'pier' ? this.menu.root?.querySelector('.im') : null, y = was?.scrollTop || 0; // (a pick draws the page again: it stays where it was scrolled)
     this.menu?.showPage('pier', (im, el) => {
-      const box = el('div', 'rooms');
+      // the ways to sea, a choice card each (keys and mouse alike: ui/choicecard.js; the window moves between the lists, feedback/indexmenu.js)
+      const ways = [];
       for (const id of Object.keys(NODES)) {
         if (id === at) continue;
         const N = NODES[id], b = V.canBoard(at, id, this.ship), s = canSail(this.ship, { route: `${at}>${id}`, day: today(), rutter: this.rutter(at, id) }), c = b.ok && !s.ok ? { ok: false, why: UNCHARTED(this.ship) } : b, open = V.isOpen(id), ok = c.ok;
-        // one row an island: a way open goes by its sea chart (draft the passage, read the sea, then cast off: world/emocean/seachart.js);
+        // one card an island: a way open goes by its sea chart (draft the passage, read the sea, then cast off: world/emocean/seachart.js);
         // the direct hop is retired (the owner's passage, PASSAGE.md 2): pier.sail(from, to) stays the handle for the scripted crossings
-        const d = ok ? el('div', 'room', `<span class="n">⌖</span><span><b>THE SEA CHART: ${N.name}</b><s>fuel: ${c.hop.fuel} cubes · plan your route, and scout it, before you sail</s></span>`)
-          : el('div', 'room', `<span class="n">·</span><span><b>${open ? N.name : 'Not yet found'}</b><s>${c.why}</s></span>`);
-        if (ok) d.onclick = () => this.chart.open(at, id); else d.style.opacity = '0.55';
-        box.appendChild(d);
+        ways.push(new ChoiceCard({ id: `isle.${id}`, icon: 'touch.map', name: open ? N.name : 'Not yet found', does: ok ? `Its sea chart: plan your route and scout it, then sail · Fuel ${c.hop.fuel} cubes` : '', state: ok ? 'ready' : 'locked', opens: ok ? undefined : c.why },
+          { onPick: () => { if (ok) this.chart.open(at, id); } }));
       }
       // the open sea (OPEN-SEA.md 8): off the lanes, at the free helm; from a pier to its own island's quay there (world/opensea/opensea.js arrive)
-      const sea = g.opensea && !V.sailing ? el('div', 'room', `<span class="n">≈</span><span><b>THE OPEN SEA</b><s>off the lanes, at the helm: W and S the sail, A and D the rudder · chart the squares · what lives out there</s></span>`) : null;
-      if (sea) sea.onclick = () => { this.menu?.close(); const go = () => { this.castOff_(); g.opensea.arrive(at); }; g.seam?.cross(go, { kind: 'sea' }) || go(); }; // (to this island's quay on the open sea, or Anagami's: opensea.js arrive)
+      const dev = g.input?.device || 'keyboard', helmWords = deviceText(`{heUp} and {heDown} the sail, ${dev === 'keyboard' ? 'A and D' : 'the stick'} the rudder`, dev, 'helm'); // (the device's words: progress/devicewords.js)
+      if (g.opensea && !V.sailing) ways.push(new ChoiceCard({ id: 'opensea', icon: 'touch.water', name: 'THE OPEN SEA', does: `off the lanes, at the helm: ${helmWords} · chart the squares · what lives out there` },
+        { onPick: () => { this.menu?.close(); const go = () => { this.castOff_(); g.opensea.arrive(at); }; g.seam?.cross(go, { kind: 'sea' }) || go(); } })); // (to this island's quay on the open sea, or Anagami's: opensea.js arrive)
       // the showcase crossing (DEBUG only: progress/rail/showcase.js): what is new on the rail in one run, back to this pier, nothing counted
-      const SC = g.mode === 'debug' && g.emocean?.sailShowcase && !V.sailing ? showcasePassage().waypoints : [], show = SC.length ? el('div', 'room', `<span class="n">▣</span><span><b>THE SHOWCASE CROSSING</b><s>${SC.length} legs, a hull each (${SC.map((w) => w.hull).join(', ')}) · back to this pier · your pool kept full · nothing counted</s></span>`) : null;
-      if (show) show.onclick = () => { this.menu?.close(); this.castOff_(); g.emocean.sailShowcase(at, this.mounts().chosen); };
+      const SC = g.mode === 'debug' && g.emocean?.sailShowcase && !V.sailing ? showcasePassage().waypoints : [];
+      const show = SC.length ? cardList([new ChoiceCard({ id: 'showcase', icon: 'touch.overhead', name: 'THE SHOWCASE CROSSING', does: `${SC.length} legs, a hull each (${SC.map((w) => w.hull).join(', ')}) · back to this pier · your pool kept full · nothing counted` },
+        { onPick: () => { this.menu?.close(); this.castOff_(); g.emocean.sailShowcase(at, this.mounts().chosen); } })], { cols: 1 }) : null;
       // practice (RAIL-STANDARDS.md 5; Star Fox 64's Training): a leg's type sailed once, again alone at a strength you pick, back to this
       // pier in the hull and mounts chosen below, nothing counted (the cards: ui/practicecards.js, Calissa's; their words placeholders)
       const PR = g.emocean?.sailPractice && !V.sailing ? practiceOf(g.ledger) : [];
       const prb = practiceCards(PR, { legs: LEGS, onSail: (type, n) => { this.menu?.close(); this.castOff_(); g.emocean.sailPractice(at, type, n, this.ship, this.mounts().chosen); } });
       // the ship: a trade (the owner, PASSAGE.md 11): the agile ones sail any lane, the heavy ones only a charted passage
-      const sb = el('div', 'rooms');
-      for (const [id, H] of Object.entries(SHIPS)) {
-        const on = id === this.ship, d = el('div', 'room', `<span class="n">${on ? '⚓' : '·'}</span><span><b>${id.toUpperCase()}</b><s>hull ${H.bears} · ${H.mounts} mount${H.mounts > 1 ? 's' : ''}${H.sails === 'charted' ? ' · mapped routes only' : ''}${H.dive ? '' : ' · cannot dive'}</s></span>`);
-        d.onclick = () => { this.ship = id; this.open(at); };
-        sb.appendChild(d);
-      }
+      const sb = cardList(Object.entries(SHIPS).map(([id, H]) => new ChoiceCard({ id: `ship.${id}`, icon: 'kw.hull', name: id.toUpperCase(), state: id === this.ship ? 'equipped' : 'ready',
+        does: `Hull ${H.bears} · ${H.mounts} mount${H.mounts > 1 ? 's' : ''}${H.sails === 'charted' ? ' · mapped routes only' : ''}${H.dive ? '' : ' · cannot dive'}` }, { onPick: () => { this.ship = id; this.open(at); } })));
       // the ship's parts (Dovina's: progress/opensea/salvage.js, OPEN-SEA.md 14.4): a sail, a keel and a hull fitting, each a trade, worn at a
       // dock; a choice card a part, the one worn EQUIPPED, one not yet found LOCKED (found in salvage); click one owned to wear it
       const SP = g.shipParts, pb = SP ? el('div') : null;
@@ -164,14 +162,16 @@ export class Pier {
       const { can, chosen } = this.mounts(), mb = el('div'), n = slotsOf(this.ship);
       const take = (t) => { this.chosen = chosen.includes(t) ? chosen.filter((x) => x !== t) : [...chosen, t].slice(-n); this.open(at); };
       const back = () => g.mooring?.preview(this.chosen?.at(-1) ?? null); // (the one last taken aboard, until another is hovered or focused)
-      const cards = mountRows(can, chosen, { ship: this.ship, feel: g.mooring?.feel }).map((r) => new ChoiceCard(r, { onPick: () => take(r.id) }));
+      // (with every slot full a pick bumps the first aboard (take: slice(-n)): a card ashore is compared against that one, Monster Hunter's)
+      const rows = mountRows(can, chosen, { ship: this.ship, feel: g.mooring?.feel }), bumped = chosen.length >= n ? rows.find((r) => r.id === chosen[0]) : null;
+      const cards = rows.map((r) => new ChoiceCard(r, { onPick: () => take(r.id), base: bumped && !chosen.includes(r.id) ? bumped : null }));
       for (const c of cards) { const show = () => g.mooring?.preview(c.row.id); c.el.addEventListener('mouseenter', show); c.el.addEventListener('focus', show); c.el.addEventListener('mouseleave', back); c.el.addEventListener('blur', back); } // (a mount's preview on the moored hull: vfx/mountpreview.js)
       mb.append(slotRow({ slots: n, filled: chosen.map((t, i) => mountRow(t, { slot: i + 1 })), always: mountRow('psygun'), onPick: (i) => take(chosen[i]) }), cardList(cards));
       mb.firstChild.style.marginBottom = '6px';
       g.mooring?.preview(chosen.at(-1) ?? null);
-      const out = [el('div', 'grp', `SET SAIL FROM ${(NODES[at]?.name || at).toUpperCase()}: A CROSSING`), box, ...(sea ? [el('div', 'grp', 'OR SAIL FREE'), sea] : []), ...(show ? [el('div', 'grp', 'SHOWCASE (DEBUG)'), show] : []), ...(prb ? [el('div', 'grp', 'PRACTICE'), prb] : []), el('div', 'grp', 'THE SHIP'), sb, ...(pb ? [el('div', 'grp', "THE SHIP'S PARTS: WORN FROM THIS DOCK"), pb] : []), el('div', 'grp', can.length ? `MOUNTS: ${n === 1 ? 'KEY 1' : `KEYS 1 TO ${n}`} AT SEA` : 'WEAR A TOOL TO MOUNT IT'), mb];
+      const out = [el('div', 'grp', `SET SAIL FROM ${(NODES[at]?.name || at).toUpperCase()}: A CROSSING, OR FREE`), cardList(ways, { cols: 1 }), ...(show ? [el('div', 'grp', 'SHOWCASE (DEBUG)'), show] : []), ...(prb ? [el('div', 'grp', 'PRACTICE'), prb] : []), el('div', 'grp', 'THE SHIP'), sb, ...(pb ? [el('div', 'grp', "THE SHIP'S PARTS: WORN FROM THIS DOCK"), pb] : []), el('div', 'grp', can.length ? `MOUNTS: ${n === 1 ? 'KEY 1' : `KEYS 1 TO ${n}`} AT SEA` : 'WEAR A TOOL TO MOUNT IT'), mb];
       for (const e of out) im.appendChild(e);
-    }, { title: 'THE PIER', sub: 'click to choose · F closes', aside: { left: 'right', right: 'left' }[g.mooring?.side()] }); // (the page set to the side away from the moored hull, not over it: a mount's preview is seen as it is chosen)
+    }, { title: 'THE PIER', sub: 'click to choose (or arrows + Enter) · F closes', aside: { left: 'right', right: 'left' }[g.mooring?.side()] }); // (the page set to the side away from the moored hull, not over it: a mount's preview is seen as it is chosen)
     if (y) { const im = this.menu?.root?.querySelector('.im'); if (im) im.scrollTop = y; }
   }
 
