@@ -22,12 +22,16 @@
 //
 //   new PuzzlePieces(room)   .update(dt)   .interact(P) -> bool (F)   .unearth(point, r) -> n   .deal   (the looks: game.puzzleLooks dresses
 //   .pairs[].at[].mesh, .lineups[].stone / .arcs, .echoes[].hearAt.mesh / .playAt.mesh / .sockets, and draws the dig and the opened box)
-//   events (each with `by`): sea.pair.half { id, shape }, sea.pair { id, shape, tier }, sea.lineup { id, charted }, sea.echo.hear { id },
-//   sea.echo { id }, sea.dig { id, tier, cubes, how }, sea.bottle { id, islet, text }   .pickBottle(pos, reach) -> bool (F at the helm)
+//   events (each with `by`): sea.puzzle.seen { kind, id, islet } (a piece's first sight, once a piece, kept in `puzzle.seen` as
+//   `sight:<kind>:<id>`: kind pair | lineup | echo | listen | cache | bottle; the log says what it is and what solves it), sea.pair.half { id,
+//   shape }, sea.pair { id, shape, tier }, sea.lineup { id, charted }, sea.echo.hear { id, notes, phrase, first } (each time the singing stone
+//   sings, the phrase as the Crucibelle's note numbers 1 to 5), sea.echo.miss { id, degree } (a note at the listening stone that is not the
+//   phrase's next: its progress starts again), sea.echo { id }, sea.dig { id, tier, cubes, how }, sea.bottle { id, islet, text }
+//   .pickBottle(pos, reach) -> bool (F at the helm)
 //   .bottles[].mesh (a drift bottle, the looks' to dress)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { dealPuzzles, phraseHeard, cachePay, riddleText, PAIR, LINEUP, ECHO, CACHE, RIDDLE } from '../../progress/opensea/isletpuzzles.js';
+import { dealPuzzles, phraseHeard, cachePay, riddleText, PAIR, LINEUP, ECHO, CACHE, RIDDLE, SIGHT } from '../../progress/opensea/isletpuzzles.js';
 import { squareCentre, SEA } from './seaprops.js';
 import { neighbours } from '../../progress/opensea/seagrid.js';
 import { takeFix } from '../../progress/opensea/seatrip.js';
@@ -46,7 +50,7 @@ const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _m = new THREE.Matrix4
 
 export class PuzzlePieces {
   constructor(room) {
-    this.room = room; this.game = room.game; this.played = []; this.singing = null;
+    this.room = room; this.game = room.game; this.played = []; this.playedFor = null; this.singing = null;
     const islets = room.props.islets, byId = this.islet = new Map(islets.map((i) => [i.feature.id, i]));
     this.deal = dealPuzzles(islets.map((i) => ({ id: i.feature.id, kit: i.islet.kit, tier: i.islet.tier })), room.seed);
     const add = (m) => { m.userData.zone = 'opensea'; this.game.scene.add(m); return m; };
@@ -101,7 +105,8 @@ export class PuzzlePieces {
 
   // ---------------------------------------------------------------- each frame, on foot
   update(dt) {
-    const R = this.room, P = this.game.player, S = R.puzzle; if (R.sailing) return;
+    const R = this.room, P = this.game.player, S = R.puzzle; if (R.sailing) return void this.sightBottles(R.helm?.pos);
+    this.sights(P.pos);
     for (const p of this.pairs) for (const h of p.at) {
       const key = `${p.id}@${h.islet}`; if (S.seen.has(key) || h.pos.distanceTo(_a.copy(P.pos).setY(h.pos.y)) > PAIR.seen) continue;
       S.seen.add(key); R.dirty();
@@ -116,6 +121,26 @@ export class PuzzlePieces {
       E.sungT = SING_AGAIN; this.sing(E);
     }
     if (this.singing) this.singTick(dt);
+  }
+
+  // ---------------------------------------------------------------- first sight
+  /** A piece's first sight, once a piece (kept in the room's `seen`): the log says what it is and what solves it (tracking/opensea.js). */
+  sight(kind, id, islet) {
+    const S = this.room.puzzle, key = `sight:${kind}:${id}`; if (S.seen.has(key)) return;
+    S.seen.add(key); this.room.dirty(); this.emit('sea.puzzle.seen', { kind, id, islet });
+  }
+  /** On foot: a pair's carving, a line-up's stone and the echo's two stones come within their sight; an islet with a cache to dowse is stepped onto. */
+  sights(at) {
+    const near = (pos, r) => Math.hypot(pos.x - at.x, pos.z - at.z) < r;
+    for (const p of this.pairs) for (const h of p.at) if (near(h.pos, SIGHT.pair)) this.sight('pair', p.id, h.islet);
+    for (const L of this.lineups) if (near(L.at, SIGHT.lineup)) this.sight('lineup', L.id, L.islet);
+    for (const E of this.echoes) { if (near(E.hearAt.pos, SIGHT.echo)) this.sight('echo', E.id, E.hear); if (near(E.playAt.pos, SIGHT.listen)) this.sight('listen', E.id, E.play); }
+    for (const C of this.caches) { const isl = this.islet.get(C.islet); if (isl && this.diggable(C) && near(isl.pos, isl.r)) this.sight('cache', C.id, C.islet); } // (a sealed cache has nothing to dowse until its phrase is played or its bottle read)
+  }
+  /** At the helm: a drift bottle still adrift comes within sight of the ship. */
+  sightBottles(at) {
+    if (!at) return;
+    for (const B of this.bottles) if (!this.room.puzzle.solved.has(B.id) && Math.hypot(B.at.x - at.x, B.at.z - at.z) < SIGHT.bottle) this.sight('bottle', B.id, B.islet);
   }
 
   lookAlong(L) {
@@ -133,7 +158,8 @@ export class PuzzlePieces {
   // ---------------------------------------------------------------- the echo
   sing(E) {
     const S = this.room.puzzle;
-    if (!S.heard.has(E.id)) { S.heard.add(E.id); this.room.dirty(); this.emit('sea.echo.hear', { id: E.id, notes: E.phrase.length }); }
+    const first = !S.heard.has(E.id); if (first) { S.heard.add(E.id); this.room.dirty(); }
+    this.emit('sea.echo.hear', { id: E.id, notes: E.phrase.length, phrase: [...E.phrase], first }); // (each time it sings: the log says the phrase at most once a real minute)
     this.singing = { E, k: 0, t: 0.3 };
   }
   singTick(dt) {
@@ -146,6 +172,9 @@ export class PuzzlePieces {
   note(e) {
     const R = this.room, P = this.game.player; if (!R.active || R.sailing || !e?.degree) return;
     const E = this.echoes.find((x) => !R.puzzle.solved.has(x.id) && x.playAt.pos.distanceTo(_a.copy(P.pos).setY(x.playAt.pos.y)) < ECHO.listen); if (!E) return;
+    if (this.playedFor !== E.id) { this.played = []; this.playedFor = E.id; } // (the notes played are this stone's own)
+    const next = E.phrase[this.played.length ? phraseHeard(E.phrase, this.played) : 0], miss = e.degree !== next; // (a note that is not the phrase's next)
+    if (miss) { this.played = []; this.emit('sea.echo.miss', { id: E.id, degree: e.degree }); } // (its phrase starts again; a note that is the phrase's first begins it)
     this.played.push(e.degree); if (this.played.length > 8) this.played.shift();
     const n = phraseHeard(E.phrase, this.played); this.light(E, n);
     if (n < E.phrase.length) return;
