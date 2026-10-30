@@ -1043,3 +1043,6 @@ NEW:scratch-holds-one-answer. **A module's scratch vector holds one answer at a 
 NEW:mechanism-is-not-a-status. **A status applied as a mechanism is not drawn as one.** Where a system uses a status to hold a
   creature (a puzzle duel's pin, a cutscene's freeze), the status's look is skipped for that use, or the creature wears the status's
   aura for the whole of it: name the use (`c.dueling`) and let the look ask.
+NEW:warm-once. **A warm-up compiles once, at its owner's first build, under the cover.** A look rebuilt in play (more instances, a
+  new geometry) keeps its materials and so their programs; compiling it again from inside the frame is done under another render state
+  and leaves programs no draw uses. Guard the compile with a flag cleared only when the materials are disposed.
