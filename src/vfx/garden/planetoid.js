@@ -39,7 +39,7 @@ import { mergeStatic } from '../../render/merge.js';
 import { DETAIL, unitSphere, sphereGeometry, vertexNormals, refreshFromClay, bounds, sendWhole } from './planetoidmesh.js';
 import { groundMaterial, groundTick } from './gardengrounds.js';
 import { gardenMoodNow } from './gardenmood.js';
-import { SEED_LOOKS, SEED_KIND_OF } from './seedplanetoids.js';
+import { SEED_LOOKS } from './seedplanetoids.js';
 import { fedTint } from './seedskins.js';
 import { plantGrove } from './gardentree.js';
 import { WorldMushroom } from './myggdrasil.js';
@@ -63,13 +63,10 @@ export class Planetoid {
   constructor({ kind = 'mulberryGrove', radius = null, seed = 1, surface = null, detail = DETAIL, game = null } = {}) {
     this.game = game; // (only Myggdrasil's reads it: its state, game.myggdrasil)
     if (surface) this.surface = surface; // (a reader of the ground the game keeps, O(1): the search below is the fallback)
-    kind = SEED_KIND_OF[kind] || kind;
     // a seed's look (vfx/garden/seedplanetoids.js): its own palette, shape, skin and props; its feeling and fed tint set by dressSeed
     this.seedLook = SEED_LOOKS[kind] || null; this.dressing = { feeling: null, tint: null };
     const K = PLANETOIDS[kind] ?? (this.seedLook ? { radius: radius ?? 9, ...this.seedLook.palette } : PLANETOIDS.mulberryGrove); this.kind = kind; this.R = radius ?? K.radius; this.K = K;
     this.cTop = new THREE.Color(K.top); this.cLow = new THREE.Color(K.low); this.cRock = new THREE.Color(K.rock);
-    // (a seed's own colours, which nothing else writes: the ring's stand-in paint sets cTop, cLow and cRock, the seed's look reads these)
-    this.sTop = this.cTop.clone(); this.sLow = this.cLow.clone(); this.sRock = this.cRock.clone();
     this.group = new THREE.Group(); this.group.name = `planetoid-${kind}`;
     this.rnd = lcg(seed * 977 + this.R);
     const S = this.sphere = unitSphere(detail), n = S.n, D = S.dir;
@@ -116,12 +113,12 @@ export class Planetoid {
       // dressing, so a rebuild after the first, or a stroke's refresh, reads them back), then where it is dug
       const K = this.skinCache ||= new Float32Array(this.h.length * 3).fill(-1);
       if (K[i * 3] < 0) {
-        _c4.copy(this.sLow).lerp(this.sTop, up).lerp(this.sRock, 1 - grass);
+        _c4.copy(this.cLow).lerp(this.cTop, up).lerp(this.cRock, 1 - grass);
         S.skin(this, i, x, y, z, _c4, up);
         if (this.dressing.tint) fedTint(_c4, this.dressing.tint, x, y, z, up);
         _c4.r = Math.max(0, _c4.r); _c4.g = Math.max(0, _c4.g); _c4.b = Math.max(0, _c4.b); _c4.toArray(K, i * 3);
       } else _c4.fromArray(K, i * 3);
-      _c4.lerp(this.sRock, dug * 0.6);
+      _c4.lerp(this.cRock, dug * 0.6);
     } else _c4.copy(this.cLow).lerp(this.cTop, up).lerp(this.cRock, 1 - grass).lerp(this.cRock, dug * 0.6); // (green over the top, rock under it, and where it is dug)
     const v = 0.94 + 0.06 * Math.sin(x * 31 + z * 17 + y * 23), a = C.array; a[i * 3] = _c4.r * v; a[i * 3 + 1] = _c4.g * v; a[i * 3 + 2] = _c4.b * v;
   }
@@ -198,7 +195,6 @@ export class Planetoid {
    *  is made a moonlet and takes its parent's kind here), `feeling` a moonlet's, `tint` what it was fed (`tintOf`: { feeling, share }).
    *  Nothing is drawn again when nothing changed; true when its kind was made again (its new roots are born flat: shade them). */
   dressSeed({ kind = this.kind, feeling = null, tint = null } = {}) {
-    kind = SEED_KIND_OF[kind] || kind;
     const remade = !!(SEED_LOOKS[kind] && kind !== this.kind), D = this.dressing;
     if (!remade && D.feeling === feeling && D.tint?.feeling === tint?.feeling && D.tint?.share === tint?.share) return false;
     if (remade) this.reKind(kind);
@@ -209,7 +205,7 @@ export class Planetoid {
   /** Made again as another seed's kind (its palette, shape and props; a body not walked on: a large planetoid's own moon). */
   reKind(kind) {
     const S = this.seedLook = SEED_LOOKS[kind]; this.kind = kind; this.group.name = `planetoid-${kind}`;
-    this.K = { ...this.K, ...S.palette }; for (const [k, c] of [['top', 'Top'], ['low', 'Low'], ['rock', 'Rock']]) { this[`c${c}`].setHex(S.palette[k]); this[`s${c}`].setHex(S.palette[k]); }
+    this.K = { ...this.K, ...S.palette }; for (const [k, c] of [['top', 'Top'], ['low', 'Low'], ['rock', 'Rock']]) { this[`c${c}`].setHex(S.palette[k]); }
     const D = this.dir; for (let i = 0; i < this.h.length; i++) this.base[i] = this.shape(D[i * 3], D[i * 3 + 1], D[i * 3 + 2]);
     this.skinCache = null;
     for (const o of [...this.props.children]) { this.props.remove(o); o.geometry?.dispose?.(); if (!o.material?.userData?.shared) o.material?.dispose?.(); }

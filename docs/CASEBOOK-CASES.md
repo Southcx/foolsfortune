@@ -4638,16 +4638,6 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the auras skip `halt` on a creature that is `dueling` (set by the same `pin`). Not yet seen in a shot after the fix.
 - **Rule:** 371
 
-### 2026-10-30 · Ride's reins and bridle never showed (vfx/classartlasting/reins.js; the builder's two Ride shots)
-- **Seen (headless, desk and phone):** the runtime said the ride was on (`rides: 1`, `driven: true`), and neither shot showed the reins
-  or the bridle on the slip jelly at the Weir.
-- **Cause, as read (not measured apart):** the look's root group and its reins were added to the scene at the origin, unmarked, and
-  placed later; the zones judge an unmarked root by where it stands when they install it (the workshop's zone at the origin), so in the
-  Dunes its `visible` stayed false: case 366's trap again.
-- **Fix:** every root the lasting looks add to the scene goes through the kit's `zoneFree()` (reins, lantern, smoke, sanctum, thicket,
-  encore). Not yet seen in a shot after the fix.
-- **Rule:** 366
-
 ### 2026-10-30 · The sweeps' phone pages drew black (scripts/sweeps/harness.mjs; Petra's phone probes since v287)
 - **Seen:** `open(room, { touch: true })` gave a black canvas under the HUD: 0 to 104 draw calls where the desk's page drew 435, every
   pixel read back (0, 0, 0), at v351 and v352 alike; with `?graphics=low` 432 calls and still black. The phone's looks could not be
@@ -4671,6 +4661,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   and 0.000 m during it. The same shots gave the bench's SET IT NOW and PUT IT OFF 40 px of height and no desk keys on touch, and the
   scan page one title, no "Esc closes" and no keyboard raised unasked.
 - **Rule:** 45
+
 ### 2026-10-30 · Ride's reins never showed (vfx/classartlasting/reins.js; the builder's two Ride shots)
 - **Seen (headless, desk and phone):** the runtime said the ride was on (`rides: 1`, `driven: true`), and neither shot showed the reins;
   the bridle did show, as the blue rings round the slip jelly, but read as swirls.
@@ -4681,7 +4672,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** a rein is never narrower than 4 of the 480 lines at its middle (`REINS.minPx`, from the camera's distance and field of view),
   and its streaks ride on a solid body (`mainK` 0.25, no mask); after it, the reins read as threads of light from the hands to the jelly (one shot, desk). The roots were also marked zone-free on the way (case 366),
   which did not change this.
-- **Rule:** NEW:line-holds-its-pixels
+- **Rule:** 373
 
 ### 2026-10-30 · Planting a seed added two programs to the garden (vfx/garden/launchlotus.js; Calissa's seeds builder, headless)
 - **Seen:** the Spirit Garden at 219 programs on entering (the probe's route: the workshop, then the garden), 221 once six seeds were
@@ -4692,4 +4683,4 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   outlive every rebuild, so the first compile (on `garden.enter`, under the seam's cover) had already made the right programs.
 - **Fix:** `compile()` runs once (`warmed`), cleared only when the materials are disposed. After (the same probe): the desk 219 on
   entering, 219 with six seeds planted, 219 with them grown to large, their own moons, a pour and a swell; the phone 203, 203, 203.
-- **Rule:** NEW:warm-once
+- **Rule:** 374

@@ -6,8 +6,6 @@ seeds, slabs and scans landed, and v353's phone round (the sweeps' touch pages d
 - **The Dunes made bigger** (DUNES.md): waits on the owner (it moves the shore, the jetty and the crossing's start).
 - **The garden's seeds' shapes beyond the sphere** (SHAPES[kind].body in progress/seeds.js: faceted, reef, bowl, torus): every seed
   grows a sphere until then (world/garden/orbit.js).
-- **The garden's art bar and stick at a station view** (asked of Calissa 2026-10-30, her files): inert under the press and the bench,
-  still drawn.
 - **The laptop's audio since v351** (Wanda's fix): waits on South's test.
 
 ## The heap (closed 2026-10-30; measured, not cut)
