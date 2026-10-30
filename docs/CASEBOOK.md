@@ -996,3 +996,12 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 353. **A mesh compiled alone is compiled as it will be drawn: its scene's lights and that pass's clipping.** three keys a
   program by both, and compile() keeps the clipping of the last render(): draw an empty scene with the pass's planes first.
 354. **A mark that promises an answer reads the window of the press it promises for.** One table for the windows; never a shortest-of stand-in.
+NEW:ik-pole-own-pose. **An IK's pole is laid in the frame of the pose it corrects.** A leg re-solved toward a pole set off the capsule's
+  forward flips a near-straight knee wherever a tech turns the body away from the capsule (a spinning kick): where a tech owns the pose,
+  the pole is the knee's own way and the gait's own parts (the stride's warp, the foot locks) stand down by its share. Measure a knee's
+  side of the hip-to-foot line before and after each solve, not only its flexion after the passes that follow.
+NEW:stance-own-frame. **A baked layer is laid on the frames it was baked over, and once.** A stance baked over one clip plays only over
+  that clip, on the clock and fade the body's own track plays it by (a stance a clip of the track); a layer over a base that already
+  carries a blend by a weight comes in whole by that share, never by the same weight again (its upper body then lags at the square).
+NEW:reach-standing-leg. **The foot IK's reach drop is a standing leg's.** A leg lying out along the floor (the crawl's, the slide's)
+  cannot be reached by lowering the hips; read as a reach it takes the 0.12 m fallback and sinks the body, and what it holds, into the floor.
