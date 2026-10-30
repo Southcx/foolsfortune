@@ -58,7 +58,7 @@ export const MIMIC_PUZZLES = {
   // Alteration (Shape, Carve, Transmute): the first rung of all, open from the start
   mound: { label: 'One Mound', line: 'Raise the ground where it rose.', mode: 'mimic', tier: 1, setup: [BED], steps: [{ op: 'raise', at: [0, 0], r: 1.6, dh: 1 }] },
   hollow: { label: 'A Hollow', line: 'Lower the ground where it fell.', mode: 'mimic', tier: 1, setup: [BED], steps: [{ op: 'raise', at: [0, 0], r: 1.6, dh: -0.8 }] },
-  twins: { label: 'Two Mounds', line: 'Two raised, a pace apart.', mode: 'mimic', tier: 1, setup: [BED], steps: [{ op: 'raise', at: [-3, 0], r: 1.6, dh: 0.9 }, { op: 'raise', at: [3, 0], r: 1.6, dh: 0.9 }] },
+  twins: { label: 'Two Mounds', line: 'Two mounds, side by side.', mode: 'mimic', tier: 1, setup: [BED], steps: [{ op: 'raise', at: [-3, 0], r: 1.6, dh: 0.9 }, { op: 'raise', at: [3, 0], r: 1.6, dh: 0.9 }] },
   ditch: { label: 'The Ditch', line: 'A channel cut end to end.', mode: 'mimic', tier: 1, setup: [BED], steps: [{ op: 'carve', a: [-5, 0], b: [5, 0], ...CARVE }] },
   level: { label: 'Level It', line: 'A mound smoothed flat again.', mode: 'mimic', tier: 2, setup: [BED, { op: 'raise', at: [0, 0], r: 1.6, dh: 1 }], steps: [{ op: 'smooth', a: [-2.5, 0], b: [2.5, 0], r: 2.2, y: 1.6 }] },
   claybed: { label: 'Sand to Clay', line: 'One patch of sand turned to clay.', mode: 'mimic', tier: 2, setup: [{ op: 'bed', firm: 0.4, loose: 0.6 }], steps: [{ op: 'transmute', at: [0, 0], r: 2.5 }] },

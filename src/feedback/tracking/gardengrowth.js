@@ -17,7 +17,7 @@ export function gardenGrowthRules({ on, L, log, g }) {
     for (const id of seedsEarned(L)) {
       if (L.get(`seed.earn.${id}`)) continue;
       L.inc('seed.earn'); L.inc(`seed.earn.${id}`);
-      if (g?.realm?.orbit?.seeds) say('gain', SEEDS[id].inner ? `A moonlet of ${SEEDS[id].feeling[0].toUpperCase() + SEEDS[id].feeling.slice(1)} rises round your garden's heart.` : 'You are given a seed for your garden. Carry it up into the ring with the hand.', `seed.${id}`, 0);
+      if (g?.realm?.orbit?.seeds) say('gain', SEEDS[id].inner ? `A moonlet of ${SEEDS[id].feeling[0].toUpperCase() + SEEDS[id].feeling.slice(1)} rises round your garden's heart.` : 'A planetoid\'s seed is yours. Carry it up to the ring with the god hand.', `seed.${id}`, 0);
     }
   };
   for (const ev of ['garden.enter', 'well.foe', 'sea.square.done', 'spirit.wish.done', 'mimic.solve', 'feeling.wake']) on(ev, (e) => { if ((e?.by ?? 'courier') === 'courier') grant(); });
@@ -32,7 +32,7 @@ export function gardenGrowthRules({ on, L, log, g }) {
     if (e.by !== 'courier') return;
     L.inc('slab.carve'); L.hi('slab.best', Math.round(100 * (e.score || 0)));
     if (e.flawless) { L.inc('slab.flawless'); grant(); }
-    say(e.flawless ? 'record' : 'gain', e.flawless ? 'A flawless dig. The spirit steps out of the stone whole, and shining.'
+    say(e.flawless ? 'record' : 'gain', e.flawless ? 'A flawless carving. The spirit steps out of the stone whole, and shining.'
       : `The spirit steps out of the stone: ${Math.round(100 * (e.bared || 0))}% bared, ${Math.round(100 * (e.cracked || 0))}% cracked.`, 'slab.carve', 0.5);
   });
   on('scan.read', (e) => {
