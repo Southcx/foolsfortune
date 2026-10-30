@@ -1052,3 +1052,6 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 374. **A warm-up compiles once, at its owner's first build, under the cover.** A look rebuilt in play (more instances, a
   new geometry) keeps its materials and so their programs; compiling it again from inside the frame is done under another render state
   and leaves programs no draw uses. Guard the compile with a flag cleared only when the materials are disposed.
+NEW:throttle-says-the-last. **A throttled log line says where a burst ended, never where it began.** When one act emits a run of events
+  in the same tick (a feed past several sizes, a chain's steps), a rule that says each under a throttled key says the first and drops the
+  rest: gather the tick's events and say the last (or the sum) once, after the tick.

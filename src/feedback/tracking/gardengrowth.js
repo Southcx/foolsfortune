@@ -23,10 +23,13 @@ export function gardenGrowthRules({ on, L, log, g }) {
   for (const ev of ['garden.enter', 'well.foe', 'sea.square.done', 'spirit.wish.done', 'mimic.solve', 'feeling.wake']) on(ev, (e) => { if ((e?.by ?? 'courier') === 'courier') grant(); });
   on('seed.plant', (e) => { if (e.by === 'courier') L.inc('seed.plant'); });
   on('seed.feed', (e) => { if (e.by === 'courier') { L.inc('seed.feed'); L.inc('seed.fed.minutes', Math.round(e.minutes || 0)); } }); // (Petra's: { seed, minutes, from, feeling }; seed.grow says what shows)
+  let grown = null; // (the size a feed reached this tick, said once)
   on('seed.grow', (e) => {
     if (e.by !== 'courier') return;
     L.inc('seed.grow'); L.inc(`seed.grow.${e.size}`);
-    say('gain', `A planetoid grows: ${e.size}.`, 'seed.grow', 0.5);
+    // (a feed past several sizes emits one seed.grow a size in the same tick: say only the last, once the tick is done; Petra, v355)
+    const first = grown == null; grown = e.size;
+    if (first) queueMicrotask(() => { say('gain', `A planetoid grows: ${grown}.`, 'seed.grow', 0.5); grown = null; });
   });
   on('slab.make', (e) => { if (e.by !== 'courier') return; L.inc('slab.make'); L.inc(`slab.make.${e.from || 'plate'}`); });
   on('slab.carve', (e) => {

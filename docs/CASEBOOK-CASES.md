@@ -4684,3 +4684,11 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** `compile()` runs once (`warmed`), cleared only when the materials are disposed. After (the same probe): the desk 219 on
   entering, 219 with six seeds planted, 219 with them grown to large, their own moons, a pour and a swell; the phone 203, 203, 203.
 - **Rule:** 374
+
+### 2026-10-30 · A feed past several sizes logged the first size grown (feedback/tracking/gardengrowth.js; Petra's v355 headless run)
+- **Seen:** 4,000 cubes fed to a moonlet made it large, and the log said "A planetoid grows: small."
+- **Cause:** a feed that passes several sizes emits one `seed.grow` a size in the same tick (small, medium, large). The rule said each
+  under one throttled key (0.5 s), so the first was said and the two after it were swallowed. The ledger's counts were right.
+- **Fix:** the rule keeps the last size of the tick and says it once, from a microtask after the tick's events. Measured with a stub bus:
+  three `seed.grow` in one tick say "A planetoid grows: large." once, and count three.
+- **Rule:** NEW:throttle-says-the-last
