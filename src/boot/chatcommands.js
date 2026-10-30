@@ -24,6 +24,7 @@ import { OVERTURE_TITLE } from '../cine/overture.board.js';
 import { TRACKS as SOUNDTRACKS } from '../music/soundtest.js';
 
 export function bootChatCommands(game) {
+  game.scanner?.commands(); // (/scan: a real code read into a material or a spirit slab, world/scanner.js)
   // (for directing the effects: play any effect by name where the Courier stands, or the Lockheart's whole opening without keys)
   // (the clock is the Veritome's: docs/plans/OVERLAY.md; carried, it tells the time; the words are the log's rule, tracking/weather.js)
   game.chat.add('time', { help: 'the game day and game hour (the Veritome tells it)', run: () => {

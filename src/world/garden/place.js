@@ -41,6 +41,8 @@ export const PLANETOID_SITES = [
 /** The lotuses' flights, both ways: the Dantian to each, and round the ring. */
 export const LINKS = [['dantian', 'terraces'], ['dantian', 'athanor'], ['dantian', 'pavilions'], ['dantian', 'mulberryGrove'], ['mulberryGrove', 'chimney'], ['terraces', 'athanor'], ['pavilions', 'mulberryGrove'], ['terraces', 'chimney']];
 export const MAX_BEDS = 8, MAX_SLOTS = 8;
+/** Where the carving bench stands on the Athanor (latitude, longitude: below the plate shrine's hokora; world/garden/bench.js). */
+export const BENCH_AT = [28, 90];
 /** The inner ring: the seven feelings' moonlets (progress/seeds.js SEEDS['moonlet.<f>']) hung round the Dantian's waist, `gap` metres over
  *  its ground along the line of their hearts: the jump's top (1.8 m: planetbody.js HOP.jump) takes the Pneuka Jar past halfway, where
  *  the moonlet's pull wins, and a hop's (under 0.5 m) never does. Their bearings sit in the gaps between the Dantian's four lotus
@@ -158,7 +160,8 @@ export class GardenSite {
       // the plate shrine's hokora on the crown's east shoulder, its own F (SOUL-ALCHEMY.md 4.2; Calissa's model, vfx/garden/hokora.js)
       const h = this.stand(R, dirOf(42, 90), 0, -Math.PI / 2), hk = new THREE.Group(); hk.applyMatrix4(h); hk.name = 'hokora';
       hk.add(new Hokora().group);
-      g.add(hk); F.push({ kind: 'hokora', planet: R, pos: new THREE.Vector3().setFromMatrixPosition(h) }); }
+      g.add(hk); F.push({ kind: 'hokora', planet: R, pos: new THREE.Vector3().setFromMatrixPosition(h) });
+      { const d = dirOf(...BENCH_AT); F.push({ kind: 'bench', planet: R, pos: R.c.clone().addScaledVector(d, R.radiusAt(d)), mesh: { visible: false } }); } } // (the carving bench below it: no plot there, its clay held; F is the shrine's)
     // the Pavilions of Echoes: a pavilion for each slot
     const V = this.by.pavilions, pavGeo = mergeGeometries([new THREE.BoxGeometry(1.6, 1.6, 1.6).translate(0, 0.8, 0), new THREE.ConeGeometry(1.6, 1, 4).rotateY(Math.PI / 4).translate(0, 2.1, 0)], false);
     for (let i = 0; i < MAX_SLOTS; i++) {

@@ -7,7 +7,7 @@
 // the fish they land and the caster shells; a new kind of item is a new entry here and nothing else (the Pneuka Box, its window, the
 // ground, the bank all read this). The seven tools are not items (main and sub: tools/belt.js); TOOL_INFO says what each is.
 //
-//   ITEMS[id] = { id, kind: 'curio' | 'lure' | 'psygun' | 'instrument' | 'heart' | 'key' | 'material' | 'fish' | 'map' | 'bottle' | 'whistle', name, glyph, color, tier, examine, card, lure, stack (false, or how many a slot holds) }      itemOf(id)
+//   ITEMS[id] = { id, kind: 'curio' | 'lure' | 'psygun' | 'instrument' | 'heart' | 'key' | 'material' | 'fish' | 'map' | 'bottle' | 'whistle' | 'slab', name, glyph, color, tier, examine, card, lure, stack (false, or how many a slot holds) }      itemOf(id)
 //   TOOL_INFO, toolInfo(id) -> { tool, name, place, examine }
 // ---------------------------------------------------------------------------------------
 import { CURIOS, TIERS } from '../world/treasure/treasure.js';
@@ -107,5 +107,10 @@ ITEMS.cogitomap = { id: 'cogitomap', kind: 'map', key: 'cogitomap', name: 'COGIT
 
 ITEMS.rutter = { id: 'rutter', kind: 'rutter', key: 'rutter', name: 'ROUTE MAP', glyph: '⚓', color: 0x6bd3ff, tier: 2, // (PASSAGE.md 6; the model and page Calissa's)
   examine: 'A route map: one route on one game day, each waypoint you sailed set down true. The sea is laid again each game day, but a route map keeps its own.' /* (Espada's words: the French routier, a pilot's book of routes) */, card: null, lure: false, stack: false };
+
+// a spirit slab (docs/plans/SEEDS-SLABS-SCANS.md 2): a plate set into the island's stone, or a code's (progress/scans.js); carved free at the
+// plate shrine's bench (world/garden/bench.js); its creature, stars and seed in its data
+ITEMS.slab = { id: 'slab', kind: 'slab', key: 'slab', name: 'SPIRIT SLAB', glyph: '▤', color: 0x9c8a74, tier: 2,
+  examine: 'A block of the island\'s stone, banded clay over sand over sandstone. Something of Lachrymite sleeps inside it, and wants carving out.', card: null, lure: false, stack: false };
 
 export const itemOf = (id) => ITEMS[id] || null;

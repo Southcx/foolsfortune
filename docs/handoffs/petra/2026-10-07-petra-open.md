@@ -1,14 +1,13 @@
-**Petra's open items** (read against the code 2026-10-30: the Crucibelle's scale, the weather's readers, Wanda's two asks, the renames,
-the slip jelly mount, the belt's draws, the pier's keyboard, the parry's one window, the photo finish, the siblings' tools and the log as
-the System's terminal are done and gone from here. What is still open, one line each, with its source; the owner's calls marked.)
+**Petra's open items** (read against the code 2026-10-30, after the Throwing Room's portal, the guests' siblings and the garden's
+seeds, slabs and scans landed: what is still open, one line each, with its source; the owner's calls marked.)
 
-- **The Throwing Room over 450 calls** where the Workshop's door is in view (455 to 497 measured by Calissa, 2026-10-10): measure it
-  again since the wing's later rounds; if still over, an occlusion test through the doorway or a portal backdrop.
-- **Co-op, still to build**: siblings a guest can see (presence carries the party; a guest draws them dressed in `lookOf`), the guests'
-  shared errand (the Dunemaw run, host-owned), the room's lag with two real people (T114: needs South and a second person).
+- **Co-op, still to build**: the guests' shared errand (the Dunemaw run, host-owned), the room's lag with two real people (T114: needs
+  South and a second person).
 - **The Dunes made bigger** (DUNES.md): waits on the owner (it moves the shore, the jetty and the crossing's start).
-- **The garden's seeds, slabs and scans, the world side** (Dovina's handoff, 2026-10-30): the ring takes seeds, the carving bench, the
-  scanner.
+- **The garden's seeds' shapes beyond the sphere** (SHAPES[kind].body in progress/seeds.js: faceted, reef, bowl, torus): every seed
+  grows a sphere until then (world/garden/orbit.js).
+- **The phone's world headless**: the sweeps' touch mode draws no world (0 calls, the same at v351, 2026-10-30): the windows can be
+  checked at 896 x 414 there, the world cannot. Find why before the next phone round.
 
 ## The heap, for the deep clean (measured 2026-10-19, built game after perf's route: 327 MB, of it 171 MB typed arrays reachable from the game)
 - The level's merged static meshes keep their CPU arrays (~2.4 MB a batch, about 20 batches): not freeable as is, since their materials

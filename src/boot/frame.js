@@ -241,6 +241,7 @@ export function bootFrame(game, made) {
     game.realm?.update(dt); // (the garden: the Jar, the hand and its own camera)
     game.guestJars?.update(game.rawDt);
     game.launchLotuses?.update(game.rawDt); game.facilityLooks?.update(game.rawDt); // (the garden's lotuses opening and flinging, the gate's veil: vfx/garden/)
+    game.scanner?.update(game.rawDt); // (the scanner's camera looking for a code while its page is open: world/scanner.js)
     env.water.update(dt);
     game.paintTrack.update(dt); game.paintmap.update(dt, camera.position.x, camera.position.z); game.stains?.update(dt); game.stains?.tick(game.rawDt); game.loadGauge?.update(game.rawDt);
     env.rigging.update(dt);

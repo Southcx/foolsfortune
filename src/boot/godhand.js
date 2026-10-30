@@ -8,6 +8,7 @@
 //
 //   bootGodHand(game, made) -> { god, cursorFree }
 // ---------------------------------------------------------------------------------------
+import { Scanner } from '../world/scanner.js';
 import { GodMode } from '../godhand/godhand.js';
 import { Rejection } from '../godhand/rejection.js';
 import { Creations } from '../godhand/creations.js';
@@ -39,6 +40,7 @@ export function bootGodHand(game, made) {
   game.creations = new Creations(game); // (the hand's voxel creations: godhand/creations.js; GODHAND.md 7)
   game.rejection = new Rejection(game); // (the island's immune response to the hand: godhand/rejection.js; GODHAND.md 10)
   game.realm = new Realm(game, { god }); // (the Spirit Garden entered at a Shrine: the Jar on its planetoids, the hand over it: world/garden/realm.js)
+  game.scanner = new Scanner(game); // (a real barcode or QR code read into a material or a spirit slab: /scan, the plate shrine; world/scanner.js)
   game.readingTable = new ReadingTable(game); // (the Pneuka Box's loadout as a two-card reading: Dovina's window mounts .el and calls draw(state), ui/readingtable.js)
   game.dangerPips = dangerPips; // (a Well's danger mark, its FOE's class as pips: the Index's row puts dangerPips(cls) after its key tag, ui/dangerpips.js)
   game.readingView = new ReadingView(game); // (the Box flipped: the laid Majors orbiting the Courier, the cloth under their feet, the hand; its scene, game.readingScene, sets .group and calls update(dt): vfx/readingview.js)

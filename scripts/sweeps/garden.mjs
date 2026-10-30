@@ -737,8 +737,8 @@ await guard('press: the grey surround', async () => {
 // ---- the ring's seeds (docs/plans/SEEDS-SLABS-SCANS.md 1; world/garden/orbit.js): a seed earned, let go in the sky, a moonlet on
 // the ring; fed past a size, grown in place; a feeling's moonlet on the inner ring, a jump from the Dantian
 await guard('orbit', async () => {
-  const refusal = await ev(() => __game.game.realm.orbit.take('clay'));
-  note('orbit: take() before the clay seed is earned', refusal);
+  const refusal = await ev(() => __game.game.realm.orbit.take('bone')); // (the bone seed: earned by a flawless slab, never by this sweep)
+  note('orbit: take() of a seed not earned', refusal);
   check('orbit: take() refuses a seed not earned (a reason, nothing in the hand)', typeof refusal === 'string' && refusal.length > 0, refusal);
   const r = await ev(() => {
     const g = __game.game, R = g.realm, T = __game.THREE, O = R.orbit, D = R.site.by.dantian;
@@ -786,7 +786,7 @@ await guard('orbit', async () => {
 await guard('mycelium', async () => {
   const M = (expr) => ev(`(() => { const g = __game.game, R = g.realm, M = g.gardenMycelium, S = g.sporeBeds, T = g.myggdrasil, V = __game.THREE.Vector3; ${expr} })()`);
   const before = await M(`return { has: !!M, given: M ? !!M.give() : null, fired: R.site.by.myggdrasil ? 1 : 0 }`);
-  check('mycelium: no Myggdrasil before the second Firing', before.has && !before.given && !before.fired, before);
+  check('mycelium: Myggdrasil given on the first visit (ECON.myggdrasil.firing 0)', before.has && before.given && before.fired, before);
   const g1 = await M(`
     g.ledger.hi('alchemy.rank.willpower', 60); const P = M.give(); if (!P) return { ok: false };
     const free0 = R.orbit.slots().filter((x) => x.free).length;
@@ -796,7 +796,7 @@ await guard('mycelium', async () => {
     return { ok: true, r: P.r, gaps: Math.min(...gaps), ring: Math.min(...ring), free0, height: +H.toFixed(1), lotuses: R.site.lotuses.filter((l) => l.planet === P).length, plots: R.plots.plots.filter((p) => p.planet === P).length, again: M.give() === P, ev: g.events.counts['garden.myggdrasil'] || 0 }`);
   check('mycelium: Myggdrasil given at Sinter, once, said once', g1.ok && g1.again && g1.ev === 1, g1);
   check('mycelium: its planetoid the largest (26 m), clear of every planetoid by 10 m and more', g1.r === 26 && g1.gaps > 10, { r: g1.r, leastGap: g1.gaps });
-  check('mycelium: clear of the ring\'s slots (a bought planetoid of 16 m still fits)', g1.ring > 16 + 10, { leastToASlot: g1.ring });
+  check('mycelium: clear of the ring\'s slots (a large seed\'s planetoid, 20 m and its hills, still fits by 10 m)', g1.ring > 20 * 1.4 + 10, { leastToASlot: g1.ring });
   check('mycelium: the tree is BIG (48 m and more), lotuses and plots of its own', g1.height >= 48 && g1.lotuses >= 2 && g1.plots === 6, { height: g1.height, lotuses: g1.lotuses, plots: g1.plots });
   // a spore bed placed as the hand places it (paid), in grief: the first bed brings the oyster and the inkcap, so it takes the oyster
   const b1 = await M(`

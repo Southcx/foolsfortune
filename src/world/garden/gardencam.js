@@ -27,7 +27,8 @@
 // (Populous, From Dust's terraforming camera), and every third-person game's first-person toggle.
 //
 //   const C = new GardenCamera(realm)   C.reset(up, fwd)   C.update(dt)   C.view ('behind' | 'first' | 'overhead')   C.toggleOverhead()
-//   C.toggleFirst()   C.fwd   C.up (the heading and up the Jar's WASD read)   C.hidesJar   C.enterPress(frame)   C.leavePress()
+//   C.toggleFirst()   C.fwd   C.up (the heading and up the Jar's WASD read)   C.hidesJar   C.enterPress(frame, view?, name?)   C.leavePress()
+//   (a station's view: the press's numbers by default; the carving bench's its own, world/garden/bench.js, named 'bench')
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
@@ -63,7 +64,7 @@ export class GardenCamera {
   /** The arm eased: in at once to what is clear, out again slowly. */
   spring(want, dt) { this.arm = want < this.arm ? want : Math.min(want, this.arm + CLEAR.out * dt / Math.max(1, this.dist)); return this.arm; }
 
-  get view() { return this.pv ? 'press' : this.over ? 'overhead' : this.game.player?.fp ? 'first' : 'behind'; }
+  get view() { return this.pv ? this.pv.name : this.over ? 'overhead' : this.game.player?.fp ? 'first' : 'behind'; }
   get hidesJar() { return this.view === 'first'; }
 
   reset(up, fwd) { this.up.copy(up); this.fwd.copy(fwd).projectOnPlane(up).normalize(); this.dist = CAM.dist; this.over = null; this.anchor = null; if (this.pv) { this.game.camera.fov = this.pv.from.fov; this.game.camera.updateProjectionMatrix(); this.pv = null; } } // (the press view's narrowed lens never outlives the garden)
@@ -84,13 +85,13 @@ export class GardenCamera {
   }
 
   /** The press view, from wherever the camera is (the pose it comes back to). */
-  enterPress(frame) { const cam = this.game.camera; this.pv = { frame, k: 0, dir: 1, zoom: 1, from: { pos: cam.position.clone(), q: cam.quaternion.clone(), fov: cam.fov } }; this.game.events?.emit('garden.view', { view: 'press', by: 'courier' }); }
+  enterPress(frame, view = PRESS_VIEW, name = 'press') { const cam = this.game.camera; this.pv = { frame, view, name, k: 0, dir: 1, zoom: 1, from: { pos: cam.position.clone(), q: cam.quaternion.clone(), fov: cam.fov } }; this.game.events?.emit('garden.view', { view: name, by: 'courier' }); }
   leavePress() { if (this.pv) this.pv.dir = -1; }
   pressView(dt, wheel) {
-    const V = this.pv, F = V.frame, cam = this.game.camera, PV = PRESS_VIEW;
+    const V = this.pv, F = V.frame, cam = this.game.camera, PV = V.view || PRESS_VIEW;
     V.k = THREE.MathUtils.clamp(V.k + dt * (V.dir > 0 ? 1 / PV.in : -1 / PV.out), 0, 1);
     if (wheel && V.dir > 0) V.zoom = THREE.MathUtils.clamp(V.zoom * (1 - Math.sign(wheel) * 0.15), 1, PV.zoom);
-    const focus = _v.copy(F.O).addScaledVector(F.N, PV.north), lean = this.R.press?.lean;
+    const focus = _v.copy(F.O).addScaledVector(F.N, PV.north), lean = V.name === 'press' ? this.R.press?.lean : null;
     if (lean) focus.addScaledVector(_w.copy(lean).sub(focus).projectOnPlane(F.U), 1 - 1 / V.zoom); // (zoomed in, the view leans toward the hand)
     const pitch = THREE.MathUtils.degToRad(PV.pitch), pos = _a.copy(focus).addScaledVector(F.N, -PV.dist * Math.cos(pitch)).addScaledVector(F.U, PV.dist * Math.sin(pitch));
     const look = this.pvLook ||= { m: new THREE.Matrix4(), quaternion: new THREE.Quaternion() }; look.quaternion.setFromRotationMatrix(look.m.lookAt(pos, focus, F.U)); // (a camera's convention: it looks down its -Z; Object3D.lookAt turns a plain object's +Z to the target, and the view looked away)

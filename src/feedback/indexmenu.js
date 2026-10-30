@@ -69,6 +69,7 @@ export class IndexMenu {
     document.body.appendChild(this.root);
     addEventListener('keydown', (e) => {
       if (!this.open) return;
+      const tag = e.target?.tagName; if ((tag === 'INPUT' || tag === 'TEXTAREA') && e.code !== 'Escape') return; // (typing in a page's field: a code's digits, world/scanner.js; F is a letter there)
       if (e.repeat) { e.preventDefault(); return; } // (a held key is one press: W held picked a room, SWEEPS group 1)
       game.input?.spend?.(e.code); // (a key the window takes is the window's: F that closes a page does not open it again, B that picks the Braid does not open the Codex)
       if (this.page) { if (e.code === 'KeyF' || e.code === 'Escape') { this.close(); e.preventDefault(); e.stopImmediatePropagation(); } return; } // (a page: its own clicks; its Esc is spent here, so the pause menu does not open under it: GARDEN-SWEEP #9)

@@ -20,6 +20,7 @@ import * as THREE from 'three';
 import { GardenSite, MAX_BEDS, MAX_SLOTS, MOONLET_RING } from './place.js';
 import { cellsOf, cellAt, dirAt } from './decorgrid.js';
 import { SEEDS, SIZES, sizeOf } from '../../progress/seeds.js';
+import { secondsOf } from '../../progress/slabs.js';
 import { ECON } from '../../progress/econ/table.js';
 import { worthOf } from '../../progress/shop/catalogue.js';
 import { itemOf } from '../../pneuka/items.js';
@@ -38,6 +39,7 @@ import { Waterworks } from './waterworks.js';
 import { Plants } from './plants.js';
 import { Races } from './races.js';
 import { Orbit } from './orbit.js';
+import { CarvingBench } from './bench.js';
 import { Cascades } from './cascades.js';
 import { GardenPress } from './press.js';
 import { Daturas } from '../../vfx/datura.js';
@@ -107,6 +109,7 @@ export class Realm {
     this.races = new Races(this); // (tracks carved in one closed stroke, and the spirits' races on them: world/garden/races.js)
     this.cascades = new Cascades(this); // (water spilling from one planetoid to the next: world/garden/cascades.js)
     this.press = new GardenPress(this, this.site.features.find((f) => f.kind === 'athanor')); // (Soul Alchemy's press on the Athanor: world/garden/press.js)
+    this.bench = new CarvingBench(this); // (a plate's slab carved free below the plate shrine: world/garden/bench.js)
     this.plots.onSeed = (P, dir) => this.plants.seed(P, dir, 2.5);
     this.plots.wet = (p) => this.waterworks.feelingAt(p.planet, p.dir); // (water standing at a plot is a neighbour in its formation: item 11)
     this.hand = new GardenHand(this);
@@ -212,7 +215,7 @@ export class Realm {
     if (!this.active) return;
     this.leaveDue = false;
     const go = () => {
-      this.press?.leave('garden'); // (the press view ends with the garden: what waits in the mouth goes back)
+      this.press?.leave('garden'); this.bench?.end(false, 'garden'); // (the press view ends with the garden: what waits in the mouth goes back; a dig is put off)
       this.active = false; this.site.show(false); this.awaken.cancel(); // (a waking or a merging is put off, not spent)
       this.rainLook.clear(); // (no drop left hanging for the next visit: CASEBOOK rule 15)
       if (this.tribulation?.active) this.tribulation.cancel(); // (a tribulation is not carried out of the garden: its music and its storm end here, GARDEN-SWEEP #14)
@@ -497,7 +500,7 @@ export class Realm {
   // ------------------------------------------------------------------ the places
   /** The place the Jar stands at, for the chevron (courier/interact.js: game.interact.add('garden', ...)). */
   offer() {
-    if (!this.active || this.jarBody?.held || this.jarBody?.flight || this.press?.viewing) return null;
+    if (!this.active || this.jarBody?.held || this.jarBody?.flight || this.press?.viewing || this.bench?.viewing) return null;
     let best = null, bd = Math.max(FEATURE_R, ...Object.values(FEATURE_REACH));
     for (const f of this.site.features) { if (f.mesh && !f.mesh.visible) continue; const d = f.pos.distanceTo(this.jarBody.pos); if (d < (FEATURE_REACH[f.kind] ?? FEATURE_R) && d < bd) { bd = d; best = f; } }
     for (const s of this.spirits) { const d = s.body.pos.distanceTo(this.jarBody.pos); if (d < Math.min(bd, 2.5)) { bd = d; best = { kind: 'spirit', s, pos: s.body.pos }; } }
@@ -538,15 +541,19 @@ export class Realm {
     }
     this.sync();
   }
-  /** The plate shrine (its hokora on the Athanor's shoulder): a photograph of a creature awakens a spirit of its kind (world/garden/awaken.js). */
+  /** The plate shrine (its hokora on the Athanor's shoulder): a photograph of a creature condensed into a spirit slab, and a slab
+   *  from the Pneuka Box carved free on the bench below to summon its spirit (world/garden/bench.js). Words plain, Espada's to come. */
   athanor() {
-    const g = this.game, menu = g.indexMenu || g.course?.menu; if (!menu?.showPage) return;
+    const g = this.game, menu = g.indexMenu || g.course?.menu, B = this.bench; if (!menu?.showPage) return;
     const open = () => menu.showPage('athanor', (im, el) => {
-      const rows = el('div', 'rooms'), plates = this.awaken.plates();
-      for (const p of plates) { const d = el('div', 'room', `<span class="n">◫</span><span><b>Hatch: ${p.kind}</b><s>a photo of ${p.stars} ${p.stars === 1 ? 'star' : 'stars'}</s></span>`); d.onclick = () => { this.awaken.plate(p.kind); open(); }; rows.appendChild(d); }
-      if (!plates.length) rows.appendChild(el('div', 'room', '<span class="n">◫</span><span><b>No photo to hatch from</b><s>photograph a creature with the Veritome, and its photo can hatch one here</s></span>'));
+      const rows = el('div', 'rooms'), row = (t, sub, run, dim = false) => { const d = el('div', 'room', `<span class="n">◫</span><span><b>${t}</b><s>${sub}</s></span>`); if (dim) d.style.opacity = 0.45; if (run && !dim) d.onclick = run; rows.appendChild(d); };
+      const plates = this.awaken.plates(), slabs = B.slabs(), star = (n) => `${n} ${n === 1 ? 'star' : 'stars'}`;
+      for (const p of plates) row(`Condense: ${p.kind}`, `a photo of ${star(p.stars)}, set into a spirit slab in your Pneuka Box`, () => { B.condense(p.kind); open(); });
+      for (const x of slabs) row(`Carve: ${x.kind}`, x.sealed ? `sealed: photograph a ${x.kind} in the world to open it` : `${star(x.stars)} · it sets in ${secondsOf(x.stars)} real seconds · carved clean, its spirit comes out stronger`, () => { const why = B.begin(x.slot); if (why) g.log?.say('warn', why, { key: 'slab.begin', throttle: 1 }); else menu.close(); }, x.sealed);
+      if (!plates.length && !slabs.length) row('No photo to condense', 'photograph a creature with the Veritome, and its photo can be set into a slab here', null, true);
+      if (g.scanner) row('Read a code', `a real barcode or QR code: a material or a slab, the same for everyone · ${g.scanner.left()} new left this game day`, () => g.scanner.open());
       im.appendChild(el('div', 'grp', 'THE PLATE SHRINE')); im.appendChild(rows);
-    }, { title: 'THE PLATE SHRINE', sub: 'click a plate · F closes' });
+    }, { title: 'THE PLATE SHRINE', sub: 'click · F closes' });
     open();
   }
   /** The cocoon tree: a fossil woken by the Awakening Song, or two spirits merged into one. */
