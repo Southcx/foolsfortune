@@ -354,6 +354,7 @@ export function bootFrame(game, made) {
     game.racewayLooks.update(game.rawDt || dt);
     game.dunesDress.update(game.rawDt || dt); game.racewayDress.update(game.rawDt || dt); // (vfx/dunes/, vfx/raceway/)
     game.skiffSlipArc.update(game.rawDt || dt);
+    game.jellyMountLook?.update(game.rawDt || dt); // (the slip jelly mount's body, puddles and the mounts' ring, after the techs' tick: vfx/jellymount/look.js)
     game.worldLooks.update(dt);
     game.racewayCavern.update(game.rawDt || dt); game.racewayFog.update(game.rawDt || dt); game.racewayProps.update(game.rawDt || dt); game.racewayPark.update(); game.racewaySiphons.update(game.rawDt || dt); game.racewayMade.update(); game.trackEditorMarks.update(game.rawDt || dt); // (the vein lanes, the pots, the antlion chaser, the patches: vfx/racewayprops.js)
     game.cine.update(game.rawDt || dt);
