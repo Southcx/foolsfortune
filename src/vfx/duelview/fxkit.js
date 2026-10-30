@@ -87,9 +87,13 @@ export function worldIn(group, root) {
 const BARE = new THREE.Scene();
 /** One overlay mesh compiled as the overlay scene draws it: its lights (`S.scene`), the canvas bound and NO clipping plane. three's
  *  compile() keeps the clipping state of the last render() (the world's, which always carries the god hand's plane, godhand.js), so an
- *  empty render with no plane is drawn first: else the compile builds a one-plane program and the first draw a second (the census's twin). */
+ *  empty render with no plane is drawn first: else the compile builds a one-plane program and the first draw a second (the census's twin);
+ *  and one with the world's planes after, so the clipping state is the world's again (casebook 353). */
 export function compileOverlay(S, obj) {
   const r = S.r, was = r.getRenderTarget(), clip = r.clippingPlanes, auto = r.autoClear;
-  try { r.setRenderTarget(null); r.clippingPlanes = []; r.autoClear = false; r.render(BARE, S.camera); r.compile(obj, S.camera, S.scene); } catch { /* (a headless page without a context: drawn on first use) */ }
+  try {
+    r.setRenderTarget(null); r.clippingPlanes = []; r.autoClear = false; r.render(BARE, S.camera); r.compile(obj, S.camera, S.scene);
+    r.clippingPlanes = clip; r.render(BARE, S.camera); // (and the world's clipping put back the same way: a world compile after this one would else build no-plane programs, Petra's 383)
+  } catch { /* (a headless page without a context: drawn on first use) */ }
   r.clippingPlanes = clip; r.autoClear = auto; r.setRenderTarget(was);
 }
