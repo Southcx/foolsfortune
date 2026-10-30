@@ -8,11 +8,12 @@
 //                                                    domain's grammar in one beat; held 10 s), Wholeness
 //   the Magician (wild)    Quick Swap (Alteration: a card flipped at the hand)
 //   the Priestess (wild)   Veil (Possession: a veil of mist over you; `.mark` an eye closing on the creature)
-//   the Empress (wild)     Overgrowth (Manifestation: a thicket rising 6 m, leaves; held 10 s)
+//   the Empress (wild)     Overgrowth (Manifestation: the thicket's light rising at 6 m, petals; held 10 s: its briars the lasting look's)
 //   the Wheel (wild)       Spin (Divination: a wheel of fortune turning over the head, its pip landing)
 //   the Tower (wild)       Collapse (Psychokinesis: the ground falling in 4 m, stones from above)
 //   the Sun (wild)         Daybreak (Ouranurgy: a sun disc, a ring of rays, a flash)
-//   the Hanged Man (Cups)  Hang Time (Ouranurgy: a slow clock ring round the body; held 3 s)
+//   the Hanged Man (Cups)  Hang Time (Ouranurgy: a slow clock ring round the body, the air's motes hanging still, a halo under the
+//                          feet; held while the hang holds)
 //   Judgement (Wands)      Settle the Score (Spellscription: beams drawn in from all round, a verdict burst out to 12 m)
 // and each reaction its action quietened on `art.react` (reactions.js).
 //
@@ -180,8 +181,8 @@ export const ARCANA_ART_EFFECTS = {
 
   // Overgrowth (the Empress; Manifestation, held 10 s): a thicket rising 6 m round, leaves thrown up and falling
   'art.bloom.use': { layers: [
-    // PRIMARY: the thicket: two rings of spikes grown in round the body, the inner taller (its 6 m reach the ring on the ground)
-    crystal(F, M, { r: 3.4, h: 1.3, dur: 1.2 }), crystal(F, M, { r: 2, h: 1.7, dur: 1.2, at: 0.08, rot: 0.26 }),
+    // PRIMARY: the thicket's light: two rings of spikes grown in at its reach, where the briars rise (classartlasting/thicket.js)
+    crystal(F, M, { r: 6, h: 1.1, dur: 1.2 }), crystal(F, M, { r: 5.3, h: 1.4, dur: 1.2, at: 0.08, rot: 0.26 }),
     // PRIMARY (its heart): white as it bursts out of the ground, 0.1 s
     core(M, { s: 1.4, y: 0.6 }),
     // SECONDARY: leaves thrown up and falling, turning colour; a ring on the ground racing out to 6 m
@@ -190,14 +191,16 @@ export const ARCANA_ART_EFFECTS = {
     dust(M, { r: 2.4, spawn: 'ring', count: [10, 14] }), grains(M, { r: 3 }),
     lamp(M, { k: 22 }), ...weight(M, { shake: 0.22, stop: 0.04 }),
   ] },
-  // Overgrowth held: the thicket's light standing faint, leaves drifting down through it
+  // Overgrowth held: petals and leaves drifting off the briars at its edge, grains hanging in it (the briars are the lasting look's:
+  // classartlasting/thicket.js)
   'art.bloom.hold': { layers: [
-    // PRIMARY: the two rings of the thicket, faint
-    crystal(F, M, { hold: true, r: 3.4, h: 1.3, kmul: 0.18 }), crystal(F, M, { hold: true, r: 2, h: 1.7, rot: 0.26, kmul: 0.18 }),
-    // SECONDARY: leaves drifting down
-    flakes(M, { rate: 6, dur: Infinity, shape: 'leaf', spawn: 'disc', r: 3.4, offset: [0, 2, 0], speed: [0.1, 0.4], gravity: 0.6, life: [1.6, 2.2] }),
+    // SECONDARY: wild-rose petals blown off the ring, drifting down and in
+    flakes(M, { rate: 7, dur: Infinity, shape: 'petal', spawn: 'ring', r: 6, offset: [0, 1.4, 0], dir: 'in', speed: [0.2, 0.5], gravity: 0.35, drag: 1.2, life: [2.2, 3], size: [0.06, 0.1],
+      color: 0xf3c4cf, colorEnd: 'film' }),
+    // SECONDARY: a leaf now and then
+    flakes(M, { rate: 3, dur: Infinity, shape: 'leaf', spawn: 'ring', r: 5.8, offset: [0, 1.2, 0], speed: [0.1, 0.4], gravity: 0.6, life: [1.6, 2.2] }),
     // TERTIARY: grains hanging in it
-    grains(M, { rate: 4, dur: Infinity, r: 3, gravity: 0.2, alpha: 0.6 }),
+    grains(M, { rate: 4, dur: Infinity, r: 5, gravity: 0.2, alpha: 0.6 }),
   ] },
   // Abundance (the Empress' reaction): Overgrowth quietened: small spikes grown in at the feet, a few leaves
   'art.abundance.fire': { extends: 'art.react', layers: [
@@ -284,18 +287,22 @@ export const ARCANA_ART_EFFECTS = {
     skyColumn(C, M, { r: 0.3, h: 6, dur: 0.6 }), core(M, { s: 1, y: 1 }),
     // SECONDARY: the armillary turning against the clock
     armillary(C, M, { r: 1.25, y: 0.95, dur: 1 }),
-    // TERTIARY: star motes falling slow, a breath of mist
+    // TERTIARY: star motes falling slow, a breath of mist; the air's motes round them caught and hanging still for the hang's 3 s
     starFall(M, { r: 1 }), mist(M, { count: [3, 5] }),
+    sprites(M, { count: [26, 32], shape: 'sparkle', spawn: 'sphere', r: 2.6, offset: [0, 1, 0], dir: 'up', speed: 0, size: [0.04, 0.08], sizeEnd: 0.03, life: [3.1, 3.6], color: 'white',
+      colorEnd: 'suit', alpha: 0.85, alphaEnd: 0.3, twinkle: 1.2, at: 0.1 }),
     lamp(M, { k: 18 }), ...weight(M, { stop: 0.08 }),
   ] },
-  // Hang Time held: the clock ring turning slow round the waist, a ring stood up turning against it, motes falling slow
+  // Hang Time held: the clock ring turning slow round the waist, a ring stood up turning against it, motes falling slow, a halo under the feet
   'art.suspend.hold': { layers: [
     // PRIMARY: the clock ring
     clock(M, { hold: true, kmul: 0.75, erode: 0.08 }),
     // SECONDARY: a ring stood up facing the view, turning against it
     own(C, M, { hold: true, form: 'ring', face: 'camera', main: 'rays', tile: [12, 1], scroll: [-0.1, 0], scale: 1, offset: [0, 0.95, 0], edgeV: [0.8, 0.08], spin: -0.3, kmul: 0.5, erode: 0.1 }),
-    // TERTIARY: star motes falling slow
+    // TERTIARY: star motes falling slow; a soft halo under the feet, what they hang on
     starFall(M, { rate: 5, dur: Infinity, r: 1, speed: [-0.4, -0.15] }),
+    own(C, M, { hold: true, loop: 3, form: 'disc', main: 'ripple', tile: [3, 1], scroll: [0.02, -0.12], mask: 'noise', maskK: 0.4, maskTile: [2, 1], scale: [[0, 0.62], [0.5, 0.7], [1, 0.62]],
+      offset: [0, -0.02, 0], edgeV: [0, 0.6], core: 0.3, kmul: 0.55, g: 1.2, erode: 0.08 }),
   ] },
   // Surrender (the Hanged Man's reaction): Hang Time quietened: the clock's tick, a small ring at the waist
   'art.surrender.fire': { extends: 'art.react', layers: [

@@ -5,7 +5,8 @@
 //   Prospect (Page, Divination)                  a ping thrown 30 m ahead, low and narrow; `.mark` a marker at the strongest source
 //   Bulwark (Knight, Manifestation, held 3 s)    a braced shell of hard light with gold rims, spikes driven in at the feet
 //   Harvest (Queen, Alteration)                  a ripening burst, leaves turning, gold motes rising, soft
-//   Earth Wall (King, Manifestation, held 6 s)   the wall's light rising ahead, 4 m wide and 2.5 m high, spikes and dust, cracks
+//   Earth Wall (King, Manifestation, held 6 s)   its light flashed over the slab as it rises ahead (the slab itself, its strata and dust:
+//                                                vfx/classartlasting/earthwall.js), spikes and chips, cracks; held, a gold seam at its foot
 // and each reaction its action quietened on `art.react` (reactions.js): Thrift, Steadfast (armed: a gold ring at the feet; fired: Bulwark's
 // shell in a whisper, the ward's pale), Hearth, Dividend.
 //
@@ -126,8 +127,8 @@ export const PENTACLES_ART_EFFECTS = {
 
   // Earth Wall (the King of Pentacles; Manifestation, held 6 s): the wall's light rising ahead (4 m wide, 2.5 m high), spikes and dust, cracks
   'art.stronghold.use': { layers: [
-    // PRIMARY: the wall's light rising ahead out of the ground, grown in (its erosion run backwards), its cracks hot
-    wall(KING, { dur: 1, stretch: [1.15, [[0, 0.1], [0.35, 1.25], [1, 1.25]], 1], erode: [[0, 0.6], [0.3, 0.03], [0.75, 0.1], [1, 1]] }),
+    // PRIMARY: its light flashed over the slab as the ground stands up out of itself, grown in (its erosion run backwards), its cracks hot
+    wall(KING, { dur: 1, kmul: 0.7, stretch: [1.15, [[0, 0.1], [0.35, 1.25], [1, 1.25]], 1], erode: [[0, 0.6], [0.3, 0.03], [0.75, 0.1], [1, 1]] }),
     // PRIMARY: spikes erupting round the body as the ground answers
     crystal(P, KING, { r: 2.4, h: 1.1, dur: 0.9 }),
     // SECONDARY: cracks run out on the ground; chips thrown up toward the wall
@@ -139,10 +140,8 @@ export const PENTACLES_ART_EFFECTS = {
     // the screen's weight: a lamp, a shake as the ground heaves, the world held a beat
     lamp(KING, { k: 26, range: 10 }), ...weight(KING, { shake: 0.32, stop: 0.04, flash: 0.08 }),
   ] },
-  // Earth Wall held: the wall's light standing ahead, faint, dust drifting at its foot
+  // Earth Wall held: a seam of gold along the slab's foot, dust drifting off it (the slab is the lasting look's: classartlasting/earthwall.js)
   'art.stronghold.hold': { layers: [
-    // PRIMARY: the wall's light, its cracks crawling slow
-    wall(KING, { hold: true, kmul: 0.35, erode: 0.12 }),
     // SECONDARY: a seam of gold along its foot on the ground
     own(P, KING, { hold: true, form: 'wave', main: 'streaks', tile: [6, 1], scroll: [0.1, 0.6], scale: 2, stretch: [1.15, 0.08, 1], offset: [0, 0.02, 0], edgeV: [0.1, 0.4], kmul: 0.6 }),
     // TERTIARY: dust drifting off its foot
