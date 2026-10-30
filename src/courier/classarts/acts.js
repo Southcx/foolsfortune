@@ -6,6 +6,9 @@
 //   wave 1  the Fool (Beginner's Luck) and the Knights (Onrush, Water Walk, Riposte Rush, Bulwark)
 //   wave 2  the Pages (Spark, Offering, Scout, Prospect) and the Queens (Stoke, Catch the Rain, Clear Sight, Harvest)
 //   wave 3  the Kings (Roar, Still Waters, Mark for Death, Earth Wall), the World (Completion), the fire signs (Ram, Tame, Blink Mark)
+//   wave 4  the water, air and earth signs (Ride, Reap, Vanish, Payback, Starlight, Encore, Shackle, Sanctum, Lamp); what outlasts its
+//           press is lasting.js's
+//   wave 5  the other eight (Quick Swap, Veil, Overgrowth, Spin, Collapse, Daybreak, Hang Time, Settle the Score)
 // A refusal's words are Espada's where she wrote them (docs/handoffs/everyone/2026-10-30-from-espada-words-ahead.md 2), else placeholders.
 //
 // Prior art: Final Fantasy Tactics' action abilities (one verb on a key), Hades' boons, the house's own verbs reused where an art is one
@@ -19,6 +22,8 @@ import { ECON } from '../../progress/econ/table.js';
 import * as calendar from '../../core/calendar.js';
 import { REL } from '../../creatures/ai/index.js';
 import { EMO, enraged } from '../../progress/combat/emo.js';
+import { phaseAt } from '../../progress/weather.js';
+import { ride, sanctum, lamp, echo, veil, thicket } from './lasting.js';
 
 const _a = new THREE.Vector3(), _b = new THREE.Vector3();
 const GAME_HOUR = (calendar.DAY_MS ?? 3600000) / 24;
@@ -26,6 +31,12 @@ const nothing = (R) => `${R.label} finds nothing in reach.`; // (Espada's, for a
 /** Petra's, where the rows are silent: a stagger is the toll's (a fifth to a third of a light stun: tools/crucibelle/crucibelle.js 0.22, On
  *  the Beat's 0.3) with its shove; an art aimed at one creature takes the lock-on's target, else the nearest in front within AIM m. */
 const STAGGER = 0.3, SHOVE = 2.5, AIM = 20;
+/** Petra's, where the rows are silent: Starlight's patch of sky round where it was asked (m) and how strong its Wonder falls there; Reap's
+ *  blow, its target's health over (so a blow worth less to a kind still downs it). */
+const SKY = { r: 40, k: 0.7 }, REAP_OVER = 4;
+/** Petra's, where the rows are silent: how long Veil's forgetting, Daybreak's blinding and Collapse's daze hold (real s, a status's time),
+ *  Hang Time's lift off the ground (m/s), what Settle the Score deals back of each blow's k (as Payback does: body.js BACK). */
+const FORGET = 6, BLIND = 4, LIFT = 6, SETTLE_BACK = 4;
 const foes = (run, r) => (run.game.creatures?.near?.(run.P.pos, r) || []).filter((c) => c.alive && !c.ally);
 /** The creature an art aims at: the lock-on's, else the nearest within `r` in front (a cone of 0.6 rad). */
 function aimed(run, r = AIM, ok = () => true) {
@@ -224,6 +235,106 @@ export const ACTS = {
       const hit = g.physics?.raycast(from, dir, R.does.reach, P.collider, undefined, (k) => !k.isSensor());
       const at = hit ? hit.point.clone().addScaledVector(hit.normal, 0.6) : from.clone().addScaledVector(dir, R.does.reach);
       run.blinkMark = { at, until: run.now + R.does.window }; run.place = { at };
+    },
+  },
+
+  // ---- wave 4: the water, air and earth signs -----------------------------------------------------------------------------------
+  ride: { // Ride: a staggered creature's body steered by your movement keys a while, you held where you stand (lasting.js ride)
+    ok: (run) => (c) => (run.game.stun?.depth?.(c) || 0) >= 1 && !c.driven,
+    can(run) { return aimed(run, 8, this.ok(run)) ? null : 'Ride needs a staggered creature within 8 m.'; }, // (placeholder: Espada's)
+    go(run, R) { const c = aimed(run, 8, this.ok(run)); if (!c) return; run.last(ride(run, c, R.does.dur)); run.place = { target: c }; },
+  },
+  reap: { // a sweep round you: every creature within reach under its share of health downed
+    pick: (run, R) => foes(run, R.does.reach).filter((c) => c.maxHp > 0 && c.hp / c.maxHp < R.does.under),
+    can(run, R) { return this.pick(run, R).length ? null : nothing(R); },
+    go(run, R) {
+      const g = run.game, P = run.P;
+      for (const c of this.pick(run, R)) {
+        const d = _a.copy(c.pos).sub(P.pos).setY(0); if (d.lengthSq() < 1e-4) d.set(0, 0, 1);
+        g.creatures.strike(c, c.pos.clone().setY(c.pos.y + 0.8), d.normalize().clone(), Math.max(1, c.hp) * REAP_OVER, 'art', 'courier');
+      }
+    },
+  },
+  mirageStep: { go: (run, R) => { run.place = { at: run.P.pos.clone() }; run.last(veil(run, R.does.dur)); } }, // Vanish (lasting.js veil)
+  weigh: { go: (run, R) => { run.paybackUntil = run.now + R.does.within; } }, // Payback: the next blow taken is dealt back (body.js struck)
+  wish: { // Starlight: under the open night sky, the weather where you stand turned toward Wonder (weather.here asks body.js skyAt)
+    can: (run, R) => {
+      if (R.does.night && phaseAt() !== 'night') return 'Starlight needs the night sky.'; // (placeholder: Espada's)
+      const w = run.game.weather?.here?.(run.P.pos); return w?.exposure && w.exposure !== 'open' ? 'Starlight needs the open sky over you.' : null;
+    },
+    go: (run, R) => {
+      const P = run.P; run.place = { at: P.pos.clone() };
+      run.sky = { x: P.pos.x, z: P.pos.z, r: SKY.r, aspect: R.does.toward, strength: SKY.k, until: run.now + (R.does.hours * GAME_HOUR) / 1000 };
+    },
+  },
+  echo: { // Encore: the last tool move struck again from where it was made (the moveset's record, lasting.js echo)
+    can: (run) => (run.lastMove ? null : 'Encore needs a tool move to play again.'), // (placeholder: Espada's)
+    go: (run, R) => { const m = run.lastMove; run.place = { at: m.at.clone() }; run.last(echo(run, m, R.does.delay)); },
+  },
+  bind: { // Shackle: the creature aimed at held where it stands, and it cannot resist
+    can: (run, R) => (aimed(run) ? null : nothing(R)),
+    go: (run, R) => { const c = aimed(run); run.place = { target: c }; if (R.does.noResist) run.open(c, R.does.dur); run.game.creatures.apply(c, R.does.status, R.does.dur, 1, 'courier'); },
+  },
+  sanctum: { go: (run, R) => { const at = run.P.pos.clone(); run.place = { at }; run.last(sanctum(run, at, R.does.reach / 2, R.does.dur)); } }, // (its reach is across)
+  lantern: { go: (run, R) => { run.last(lamp(run, R.does.reach, R.does.dur)); } }, // Lamp (lasting.js lamp)
+
+  // ---- wave 5: the other eight --------------------------------------------------------------------------------------------------
+  sleight: { // Quick Swap: the chamber the cylinder is on given the next shell you hold that is not chambered, without the Pneuka Box
+    next(run) {
+      const S = run.game.shells; if (!S?.chambers?.length) return null;
+      const held = Object.keys(S.counts || {}).filter((id) => (S.counts[id] || 0) > 0 && !S.chambers.includes(id));
+      return held.length ? held[0] : null;
+    },
+    can(run) { return this.next(run) ? null : 'Quick Swap has no other shell you hold to swap in.'; }, // (placeholder: Espada's)
+    go(run) { const S = run.game.shells, id = this.next(run); if (id) S.chamber(S.selected, id); },
+  },
+  veil: { // Veil: the creature aimed at loses track of you and forgets what it knew of you (the status `forget`)
+    can: (run, R) => (aimed(run, R.does.reach) ? null : nothing(R)),
+    go: (run, R) => {
+      const c = aimed(run, R.does.reach); run.place = { target: c };
+      const f = c.mem?.fact?.(run.P); if (f) { f.grudge = 0; f.threat = 0; f.aware = 0; }
+      run.game.creatures.apply(c, 'forget', FORGET, 1, 'courier');
+    },
+  },
+  bloom: { go: (run, R) => { const at = run.P.pos.clone(); run.place = { at }; run.last(thicket(run, at, R.does.reach, R.does.dur)); } }, // Overgrowth
+  spin: { // Spin: Luck's re-roll given back at once (progress/dice.js Rerolls)
+    can: (run) => { const L = run.game.rerolls; if (!L) return 'Spin has no re-roll to give back.'; L.roll?.(); return L.used > 0 ? null : 'Your re-roll is already yours: Spin has nothing to give back.'; }, // (placeholder: Espada's)
+    go: (run, R) => { const L = run.game.rerolls; L.used = Math.max(0, L.used - R.does.reroll); run.game.save?.dirty?.('rerolls'); },
+  },
+  collapse: { // Collapse: the ground brought down round you, everything under it struck and dazed
+    can: (run, R) => (foes(run, R.does.reach).length ? null : nothing(R)),
+    go: (run, R) => {
+      const g = run.game, P = run.P; run.place = { at: P.pos.clone() };
+      for (const c of foes(run, R.does.reach)) {
+        const d = _a.copy(c.pos).sub(P.pos).setY(0); if (d.lengthSq() < 1e-4) d.set(0, 0, 1);
+        g.creatures.strike(c, c.pos.clone().setY(c.pos.y + 0.4), d.normalize().clone(), R.does.power, 'art', 'courier', null, 'impact');
+        if (c.alive) g.stun?.knock?.(c, 1, 'courier', 'collapse');
+      }
+    },
+  },
+  daybreak: { // Daybreak: a flash of daylight that blinds what is near, and the dark lit a while (render/daylight.js asks body.js daylit)
+    go: (run, R) => {
+      const g = run.game; run.place = { at: run.P.pos.clone() };
+      for (const c of foes(run, R.does.reach)) g.creatures.apply(c, R.does.status, BLIND, 1, 'courier');
+      run.dayUntil = run.now + (R.does.light * GAME_HOUR) / 1000;
+    },
+  },
+  suspend: { // Hang Time: held in the air a while, the world round you slowed (game.time; body.js holds the fall)
+    go: (run, R) => {
+      const P = run.P; if (P.grounded) P.impulse(_a.set(0, LIFT, 0), 'art');
+      run.hangUntil = run.now + R.does.dur; run.game.time?.slow?.('art.hang', R.does.slow);
+    },
+  },
+  reckoning: { // Settle the Score: every creature near that hurt you dealt back its share of all it dealt you (body.js struck counts it)
+    owed: (run, R) => foes(run, R.does.reach).filter((c) => (run.dealt.get(c) || 0) > 0),
+    can(run, R) { return this.owed(run, R).length ? null : 'Settle the Score finds no one near who hurt you.'; }, // (placeholder: Espada's)
+    go(run, R) {
+      const g = run.game, P = run.P;
+      for (const c of this.owed(run, R)) {
+        const d = _a.copy(c.pos).sub(P.pos).setY(0); if (d.lengthSq() < 1e-4) d.set(0, 0, 1);
+        g.creatures.strike(c, c.pos.clone().setY(c.pos.y + 0.8), d.normalize().clone(), Math.max(0.5, run.dealt.get(c) * R.does.share * SETTLE_BACK), 'art', 'courier');
+        run.dealt.delete(c);
+      }
     },
   },
 };

@@ -264,7 +264,8 @@ export class SeaFight {
   }
   dropGlob(b) { if (!b) return; b.mark?.clear(); b.mark = null; b.m.visible = false; }
   hullHit(move) {
-    const g = this.game, R = this.room;
+    const g = this.game, R = this.room, k = g.classArtsRun?.reinsK?.() ?? 1; // (Reins, a class's art: a share of each hit spared, a whole one let off as it adds up)
+    if (k < 1 && (this.spare = (this.spare || 0) + (1 - k)) >= 1) { this.spare -= 1; g.classArtsRun?.fire?.('reins'); return; }
     this.hull = Math.max(0, this.hull - 1); this.dirty();
     g.player.shake = Math.max(g.player.shake || 0, 0.5);
     g.events?.emit('sea.hull', { hull: this.hull, of: this.bears, move, by: 'creature' });

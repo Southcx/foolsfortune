@@ -73,7 +73,7 @@ export function scorePhoto(game, camera, { maxDist = 45 } = {}) {
   const counts = {};
   for (const s of out) counts[s.kind] = (counts[s.kind] || 0) + 1;
   for (const s of out) {
-    s.score = Math.round(100 * s.size + 50 * s.centre + 50 * s.facing + s.pose + Math.min(60, 20 * (counts[s.kind] - 1)));
+    s.score = Math.round((100 * s.size + 50 * s.centre + 50 * s.facing + s.pose + Math.min(60, 20 * (counts[s.kind] - 1))) * (game.classArtsRun?.photoK?.() ?? 1)); // (Radiance, a class's art)
     s.stars = starsOf(s.score);
   }
   out.sort((a, b) => b.score - a.score);

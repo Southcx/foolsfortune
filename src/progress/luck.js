@@ -30,5 +30,6 @@ export const UNLIKELY = {
 export function luckOf(L) {
   let bits = 0;
   for (const [key, p] of Object.entries(UNLIKELY)) bits += (L.get(key) || 0) * -Math.log2(p);
+  bits += L.get('luck.fortune') || 0; // (Fortune, a class's art: surprise lived through while it is worn, counted again: courier/classarts/body.js)
   return { bits, level: Math.min(99, Math.floor(Math.sqrt(bits))) };
 }

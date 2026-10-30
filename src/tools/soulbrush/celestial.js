@@ -111,8 +111,8 @@ export class Celestial {
     if (!plan) { cv.run(); sfx.inkRun?.(); g.events?.emit('brush.miss', { strokes: strokes.length }); return; }
     if (plan.empty) { cv.fade(); g.events?.emit('brush.miss', { strokes: strokes.length, shape: rec?.name }); return; }
     // its cost held from the moment it reads (the pale stretch on the Lachrimeter, OVERLAY.md 19.3), paid as the brush lifts and it takes
-    const held = g.lachryma.reserve(plan.cost);
-    if (held < plan.cost) { g.lachryma.refund(held); cv.run(); this.dry(); return; }
+    const cost = plan.cost * (g.classArtsRun?.sigilK?.() ?? 1), held = g.lachryma.reserve(cost); // (Will, a class's art: a sigil holds less)
+    if (held < cost) { g.lachryma.refund(held); cv.run(); this.dry(); return; }
     plan.held = held;
     cv.take(TINT[plan.id] || '#f2c35a');
     sfx.glyphTake?.(plan.id);

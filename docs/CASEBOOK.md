@@ -1022,3 +1022,5 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 364. **A plate that grows with its words is fitted to the edge it hangs by.** Centred under an instrument at a
   corner, it is moved in by what it would pass the instrument's own edge, and looked at with the longest name the game has, not the room
   at hand; a line that repeats the line above it is left out.
+365. **A tech that is not a Movement Art is listed as one the System does not log.** A mount, a class art's body, anything
+  a tech for the engine's sake and said by its own line, goes in `UNLOGGED_TECHS` as it is added, or the log names it by its code id.

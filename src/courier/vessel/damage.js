@@ -133,14 +133,15 @@ export class VesselDamage {
     if (this.game.cradles?.sealed) return this.game.cradles.struck({ point, from, dir, k, why, by }); // (a sealed Jar is struck only through its cradle: world/cradles.js)
     if (!this.boxes || this.game.death?.active) return -1;
     if (this.game.jellyMount?.absorb?.(k)) return -1; // (ridden, the slip jelly takes the blow first, as Yoshi does: courier/jellymount/jellymount.js)
+    this.game.classArtsRun?.struck?.({ from, k, by }); // (who struck: Grudge's, and Payback's blow dealt back: a class's art, courier/classarts/body.js)
     if (this.game.courierMind) k *= courierMindEffect(this.game.courierMind.mind).fragility; // (the Courier's mental state: Prismatic takes x2, Stoic x0.5, shield and clay alike: the owner's ruling)
     k *= this.game.classArtsRun?.takenMult?.() ?? 1; // (Bulwark braced: a class's art, courier/classarts/body.js)
     // the shield first (Halo's): the Lachryma in the pool takes the blow; only what it cannot pay for reaches the clay
     const pool = this.game.lachryma;
     if (pool) {
       const cost = k * SHIELD, had = pool.value; // (Last Straw (the knack thickWalls) is an assist now, a mark, never a number: SPINE.md 1.3)
-      if (had >= cost) { pool.drain(cost, 'shield'); this.game.events?.emit('vessel.shield', { k: +k.toFixed(2), left: +pool.fraction.toFixed(2), why, by }); return -1; }
-      if (had > 0.5) { pool.drain(had, 'shield'); this.game.events?.emit('vessel.shieldbreak', { why, by }); }
+      if (had >= cost) { pool.drain(cost, 'shield'); this.game.classArtsRun?.surrender?.(cost); this.game.events?.emit('vessel.shield', { k: +k.toFixed(2), left: +pool.fraction.toFixed(2), why, by }); return -1; } // (Surrender, a class's art: guarding, the shield's cost given back)
+      if (had > 0.5) { pool.drain(had, 'shield'); this.game.classArtsRun?.surrender?.(had); this.game.events?.emit('vessel.shieldbreak', { why, by }); }
       k *= 1 - had / cost;
     }
     if (this.game.classArtsRun?.ward?.()) { this.game.events?.emit('vessel.ward', { k: +k.toFixed(2), why, by }); return -1; } // (Steadfast: the next blow past the shield cracks nothing)
@@ -156,6 +157,7 @@ export class VesselDamage {
     const was = this.crack[region];
     // a blow on clay already cracked through, or one that takes the cracks past what a vessel holds: it shatters (courier/vessel/death.js)
     const sum = this.crack.reduce((a, c) => a + c, 0) + k * 0.65;
+    if ((was >= 0.95 || sum >= BREAK_AT) && this.game.classArtsRun?.rebirth?.()) { this.mendAll(); return -1; } // (Rebirth, once a game day: whole instead, a class's art)
     if (was >= 0.95 || sum >= BREAK_AT) { this.game.death?.begin({ why, by, region: REGIONS[region] }); return region; }
     this.crack[region] = Math.min(1, was + k * 0.65);
     this.quiet[region] = 0; this.peak[region] = Math.max(this.peak[region], this.crack[region]);
