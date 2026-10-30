@@ -64,6 +64,7 @@ import { pairWornRules } from './pairworn.js';
 import { jellyMountRules } from './jellymount.js';
 import { mimicryRules } from './mimicry.js';
 import { sandboxRules } from './sandbox.js';
+import { gardenGrowthRules } from './gardengrowth.js';
 import { pairSpecialsPlayRules } from './pairspecialsplay.js';
 import { touchstoneRules } from './touchstone.js';
 import { worldShellRules } from './worldshells.js';
@@ -196,4 +197,5 @@ export function areaRules(ctx) {
   vesselRules(ctx);
   shrineRules(ctx);
   commandEchoRules(ctx);
+  gardenGrowthRules(ctx); // (the garden's seeds, the slabs carved, the codes scanned: last, after every rule that counts an act a seed reads: tracking/gardengrowth.js)
 }

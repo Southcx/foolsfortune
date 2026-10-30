@@ -7,3 +7,6 @@ Events with no sound yet:
 - `sandbox.kick`, `sandbox.goal { dist }` (the net's swish), `sandbox.juggle { n }`, `sandbox.rack`, `sandbox.pen`, `sandbox.ground`.
 
 Delete once heard.
+
+Also (the garden's growth, `docs/plans/SEEDS-SLABS-SCANS.md`): a slab carved with seven verbs on three strata (`slab.carve`), a crack in
+the fossil, a flawless dig's ring, a scanned code's chirp (`scan.read`), a planetoid growing a size (`seed.grow`).
