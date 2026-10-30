@@ -34,6 +34,7 @@ import { TouchDriver } from '../core/touchdriver.js';
 import { PadDriver } from '../core/paddriver.js';
 import { Replay } from '../core/replay.js';
 import { base64Buffer } from '../core/base64.js';
+import { surfaceUnder, stepSpeed } from '../courier/stepsurface.js';
 
 export async function bootCourier(game, made) {
   const { mark, renderer, scene, camera, physics } = made;
@@ -55,7 +56,7 @@ export async function bootCourier(game, made) {
   game.clipPack = clipPack; // (its `social` resolves when the emotes, dances, flirts and taunts are in)
   const character = new Character(scene, charG, gunG, clipPack);
   mark('character');
-  character.onFootstep = () => sfx.footstep();
+  character.onFootstep = () => { const P = game.player; if (P) game.events?.emit('move.step', { surface: surfaceUnder(game, P.pos, P.collider), speed: stepSpeed(game), by: 'courier' }); }; // (heard on the bus: audio/cues.js, Wanda's)
   game.character = character;
   game.courierSquash = new CourierSquash(game, character, { carried: () => [character.gun, ...(game.belt?.tools || []).map((t) => t.model), game.player?.techs?.get('carry')?.item?.mesh] }); // (a hard landing's settle on the drawn body only: courier/anim/squash.js; the pot in the hands too, placed from them: CASEBOOK rule 212)
   // the idle chosen at the kiln (the owner's R21: courier/vessel/kilnui.js STANCE; Calissa's IDLES): kept with the player's progress

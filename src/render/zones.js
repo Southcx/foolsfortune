@@ -15,10 +15,11 @@
 //   wholeOf(pos) -> the zone, or the one it is part of ('beach' is `partOf` 'dunes': one sand, one sky, walked between). Anything
 //   asking "is this the same ground?" asks the whole; anything asking "what is drawn?" asks the zone.
 //   game.zones.update(dt)        game.zones.current (what is drawn)   game.zones.whole (the ground: ask this for music, weather, a room's rules)   game.zones.visibleAt(pos)
+//   game.zones.acoustic -> { zone, acoustic, wet? } (the space heard, render/zonemap.js ZONE_SOUND)   event zone.acoustic, on every change of zone
 //   obj.userData.maxDist = 30      (also hidden beyond that distance from the camera: labels, small signage)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { ZONE_TESTS, zoneOf, wholeOf, nearShore } from './zonemap.js';
+import { ZONE_TESTS, ZONE_SOUND, zoneOf, wholeOf, nearShore } from './zonemap.js';
 
 // the basement's hole in the workshop floor (basement.js HOLE), with a margin: from near it, each floor can see the other
 const HOLE = { x0: 4.5, x1: 9, z0: -15.5, z1: -12.4 };
@@ -71,7 +72,7 @@ function setZoneOff(o, off) {
 export class Zones {
   constructor(game) {
     this.game = game;
-    this.current = null; this.whole = null;
+    this.current = null; this.whole = null; this.acoustic = null; // ({ zone, acoustic, wet? }: the space the camera is in, as last said)
     this.visible = new Set(ZONES.map((z) => z.id)); // (everything, until the camera is somewhere)
     this.t = 0;
     this.enabled = true;
@@ -121,6 +122,10 @@ export class Zones {
     const cur = zoneOf(cam);
     const changed = cur !== this.current;
     this.current = cur; this.whole = cur === null ? null : BY_ID[cur]?.partOf ?? cur;
+    if (changed && cur !== null) { // (the space heard: every change, the same kind again included, so the reverb is set afresh: Wanda's)
+      const S = ZONE_SOUND[cur]; this.acoustic = { zone: cur, acoustic: S?.acoustic ?? 'room', ...(S?.wet != null ? { wet: S.wet } : {}) };
+      g.events?.emit('zone.acoustic', this.acoustic);
+    }
     const vis = (this.nextVisible ||= new Set()); vis.clear(); // (two sets turned over, never a new one a frame)
     if (cur === null || !this.enabled) for (const z of ZONES) vis.add(z.id);
     else { vis.add(cur); const sees = BY_ID[cur].sees?.(cam, g.camera); if (sees) for (const s of sees) vis.add(s); }

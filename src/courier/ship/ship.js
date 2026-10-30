@@ -285,11 +285,11 @@ export class Ship {
   }
 
   // ---------------------------------------------------------------- what the shots ask
-  hit(s) {
+  hit(s, kind = 'plain') {
     if (this.mercy > 0) return true; // (the second after a hit: shots pass harmlessly, and are spent)
     this.mercy = T.ship.mercy;
     sfx.impact?.(2);
-    this.onHit?.(s);
+    this.onHit?.(s, kind); // (kind: 'plain' | 'outlined', what struck: the Assay's inhibition reads it on rail.hit)
     return true;
   }
   absorb(s) { this.surge = Math.min(SURGE.full, this.surge + SURGE.per); this.onAbsorb?.(s); sfx.absorb?.(0); }

@@ -15,6 +15,7 @@ import * as THREE from 'three';
 import { GROUPS } from '../../core/physics.js';
 import { T } from '../../core/config.js';
 import { RADIUS } from './capsule.js';
+import { surfaceUnder, stepSpeed } from '../stepsurface.js';
 
 const UP = new THREE.Vector3(0, 1, 0);
 const _v = new THREE.Vector3();
@@ -71,7 +72,7 @@ export function tryMantle(P, minH, vy = 0, stepOnly = false) {
   P.jumpBuf = 0;
   P.coyote = 0;
   P.mantle.jumpHeld = P.input.isDown('Space'); // (a held jump is not a new one: only a fresh press chains out of it)
-  if (step) P.sfx.footstep?.(0); else P.sfx.mantle();
+  if (step) P.ev('move.step', { surface: surfaceUnder(P.game, P.pos, P.collider), speed: stepSpeed(P.game), by: 'courier' }); else P.sfx.mantle(); // (a step up is a step: heard on the bus, audio/cues.js)
   P.ev('move.mantle', { height: h, step });
   return true;
 }
