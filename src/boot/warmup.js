@@ -107,7 +107,7 @@ export async function bootWarmup(game, made) {
   const seaFightAt = (game.seaFightLook?.parked() || []).map((o) => { o.visible = true; return o; }); // (the fight's shots: the rail's program, warmed with it)
   const parkIslets = game.seaLooks?.prewarm?.() ?? (() => {}); // (the islets' and the shallows' programs, 50 m down: vfx/opensea/isletlooks.js)
   const parkSquall = game.squallLine?.prewarm?.() ?? (() => {}); // (the squall line's program, and the rain's: vfx/opensea/squallline.js)
-  const parkDress = [game.dunesDress.prewarm(), game.racewayDress.prewarm()]; // (the dust devils' and the Dunes' mirage's two programs, and the dressing's materials: vfx/dunes/, vfx/raceway/)
+  const parkDress = [game.dunesDress.prewarm(), game.racewayDress.prewarm(), game.jellyMountLook?.prewarm?.() ?? (() => {})]; // (the dust devils' and the Dunes' mirage's two programs, and the dressing's materials: vfx/dunes/, vfx/raceway/; the slip jelly mount's sealed body, a puddle and the mounts' ring: vfx/jellymount/)
   const parkEgregores = prewarmEgregores(scene); // (the safari Egregores' one program, every species: vfx/opensea/egregorekit.js)
   const parkBeasts = prewarmSeaBeasts(game); // (the sea beasts' fight program, 'egregore-beast', one akhlut 50 m down: vfx/opensea/beasts/warm.js)
   const parkSandfall = prewarmSandfall(scene); // (the Raceway's sandfall, one copy 50 m down: its one program, vfx/racewaysandfall.js)

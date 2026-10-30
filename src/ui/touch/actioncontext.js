@@ -170,11 +170,14 @@ function helmStrip(g) {
     worn(g, 'dreamvane') ? E('fix', 'fix', 'FIX') : null, worn(g, 'veritome') ? E('plate', 'photo', 'PLATE') : null].filter(Boolean);
 }
 
+/** The mount a tap of Y calls (Petra's JellyMount: the last one chosen, once the slip jelly is open), its glyph and word. */
+export const mountFace = (g) => { const J = g.jellyMount; let jelly = false; try { jelly = J?.last === 'jelly' && !!J.open?.(); } catch { /* not there */ } return jelly ? { glyph: 'jelly', word: 'JELLY' } : { glyph: 'skiff', word: 'SKIFF' }; };
+
 /** DRAW (STOW while the main is out), LEND (the sub's verb) and SWAP (main and sub traded, Belt.swap) at the cluster's top edge, on foot;
- *  SKIFF (the top bar's, folded under MENU on a phone) where the board may be summoned: the Raceway or the Dunes. */
+ *  SKIFF or JELLY (the top bar's, folded under MENU on a phone: the mount a tap calls) where a mount may come: the Raceway or the Dunes. */
 export function beltPairOf(g) {
   if (g.duel?.active || !onFoot(g)) return [];
-  const B = g.belt, skiff = g.raceway?.active || g.dunes?.active ? E('skiff', 'skiff', 'SKIFF') : null;
+  const B = g.belt, M = mountFace(g), skiff = g.raceway?.active || g.dunes?.active ? E('skiff', M.glyph, M.word) : null;
   if (!B?.main) return skiff ? [skiff] : [];
   const out = !!B.inHand && B.inHand.id === B.main, gift = B.sub ? SUB_GIFTS[B.sub] : null;
   return [ // (USE with a tool drawn is the cluster's, in PARRY's slot outside a fight: toolCluster)

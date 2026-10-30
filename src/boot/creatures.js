@@ -37,6 +37,7 @@ import { DunesAreas } from '../world/dunes/areacut.js';
 import { RareFinds } from '../world/dunes/rarefinds.js';
 import { DunesDress } from '../vfx/dunes/index.js';
 import { RacewayDress } from '../vfx/raceway/index.js';
+import { JellyMountLook } from '../vfx/jellymount/look.js';
 
 export async function bootCreatures(game, made) {
   const { scene, level, loader, bytes, clapG } = made;
@@ -65,6 +66,7 @@ export async function bootCreatures(game, made) {
   game.dunesAreas = new DunesAreas(game); // (the Dunes as five areas: the one you are in, said as you reach it: world/dunes/areacut.js)
   game.rareFinds = new RareFinds(game); // (an area's condition-bound find: the ridges' fulgurite, the ruins' Wisp: world/dunes/rarefinds.js)
   game.dunesDress = new DunesDress(game); game.racewayDress = new RacewayDress(game); // (the living dressing, looks only: the Dunes' dust devils, mirage, geodes and fulgurites; the Raceway's spectators, banners, lanterns and fireworks: vfx/dunes/, vfx/raceway/)
+  game.jellyMountLook = new JellyMountLook(game); // (the slip jelly mount's body, its moments and the mounts' ring, over Petra's runtime: vfx/jellymount/)
   game.folk = new Folk(game, clapG);
   placePeople(game, game.folk);
   game.dialogue = new Dialogue(game);

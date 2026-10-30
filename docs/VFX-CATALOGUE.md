@@ -1,6 +1,6 @@
 # The VFX catalogue (generated: do not edit)
 
-Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-10-30). 582 effects in 35 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
+Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-10-30). 589 effects in 36 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
 
 **Play one:** `game.vfx.play(name, { pos, dir, normal, tint, power, scale, feeling, domain, suit, follow })`; a held one returns a handle (`h.pos`, `h.k`, `h.stop()`). A name falls back from the most particular (`hit.slash.crystal` -> `hit.slash` -> `hit`), so a new name always plays something.
 
@@ -631,6 +631,18 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `blow.heavy` | one-shot | sprites:streak×2, sprites:ringthin, sprites:ring, sprites:core | extends `blow.light`. HEAVY the arc doubled and longer, a thick ring of the type's colour opening behind it, a hot core |  |
 | `blow.launcher` | one-shot | sprites:streak×2, sprites:ringthin, sprites:ring, sprites:glint | extends `blow.light`. LAUNCHER the arc thrown up with what it lifts, a ring, glints rising after |  |
 | `blow.light` | one-shot | sprites:streak, sprites:ringthin | laid over the hit (hit.slash.<material>, damage.<type>, which creatures.strike already plays) when a melee blow lands, by its weight class: light, heavy, launcher, finisher (blowWeight), then `.<material>` where a weight has more to give... |  |
+
+### jellymount (7)
+
+| effect | kind | layers | what | asked by |
+|---|---|---|---|---|
+| `jellymount.burst` | one-shot | sprites:soft×4, sprites:puff, sprites:sparkle, shake | its life at none: gobs of its body and a fine spray flung out in its colour, a low ring of drops, sand dust, a small shake | vfx/jellymount/look.js |
+| `jellymount.call` | one-shot | sprites:chip, sprites:puff, sprites:soft, sprites:sparkle | the slip jelly mount welling up out of the ground: sand pushed up and out in a ring, wet drops thrown up off it, a glint of its Lachryma | vfx/jellymount/look.js |
+| `jellymount.drink` | one-shot | sprites:soft, sprites:glint | crude drunk off a blot: its ink drawn in across the ground to the foot, the oil film glinting on it | vfx/jellymount/look.js |
+| `jellymount.hop` | one-shot | sprites:soft, sprites:puff | its hop's take-off: drops flicked out low round its foot, a skirt of sand dust (power: the bounce chain) | vfx/jellymount/look.js |
+| `jellymount.hurt` | one-shot | sprites:soft, sprites:puff | a blow taken for the rider: drops of its body knocked off and falling | vfx/jellymount/look.js |
+| `jellymount.land` | one-shot | sprites:soft, sprites:puff | its landing: the drops flatter, more dust (power: the fall) | vfx/jellymount/look.js |
+| `jellymount.slump` | one-shot | sprites:soft, sprites:puff | it melts back into the ground: a few drops sliding off, a wet sigh of dust | vfx/jellymount/look.js |
 
 ### ult (6)
 

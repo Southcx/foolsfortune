@@ -20,6 +20,7 @@
 //                    menu     three bars (the top bar folded to one tab)          more   three dots (the cluster's strip folded)
 //                    overhead an eye looking down on a planetoid (TOP VIEW, the garden only)
 //                    skiff    the board under its sail (summon or recall)          godhand  the hand over the ground (raise or let go)
+//                    jelly    a slip jelly on its four toes, wet down its flank (the mount Y calls when it was chosen last)
 //                    survey   an eye over the ground's layers (the hand's survey)
 //   a class art      art      a four-point star over a ring thrown out on the ground
 //   the god hand     alt      a loop and an arrow up: the art's other way          sign  a finger tip at the end of a drawn spiral
@@ -453,6 +454,22 @@ export const TOUCH_ART = {
     '...--------...',
     '..............',
     '..............',
+  ],
+  jelly: [
+    '..............',
+    '.....####.....',
+    '....######....',
+    '...####+###...',
+    '...####+###...',
+    '..######+###..',
+    '..######+###..',
+    '..#######+##..',
+    '..#######+##..',
+    '..##########..',
+    '.############.',
+    '.############.',
+    '.##.##..##.##.',
+    '.------------.',
   ],
   godhand: [
     '.....#..#.....',

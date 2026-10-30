@@ -19,6 +19,7 @@
 // ---------------------------------------------------------------------------------------
 import { TouchTile, TILE } from './tile.js';
 import { placeOf } from './areas.js';
+import { mountFace } from './actioncontext.js';
 
 /** The windows in order (the glyph is `touch.<id>`), whether each stands only in the garden, and what says it is open; the gap before
  *  PAUSE (CSS px). */
@@ -114,6 +115,7 @@ export class TouchTopBar {
     for (const id of this.items) {
       const t = this.tiles.get(id); let lit = false; try { lit = id === 'menu' ? !this.folded : id === 'log' ? (g.hudLayout?.duelR ? !!g.hudLayout.touchLog?.sheet : !g.hudLayout?.touchLog?.folded) : !!TOP_BAR.open[id]?.(g); } catch { /* not there */ }
       if (t.state.pressed) this.touched = now;
+      if (id === 'skiff') t.face({ glyph: mountFace(g).glyph }); // (the mount a tap calls: the Solar Skiff, or the slip jelly when it was chosen last)
       t.set({ lit: lit || t.state.pressed }); t.update(now);
     }
   }

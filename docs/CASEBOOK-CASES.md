@@ -4574,3 +4574,15 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** `waterwalk` added to `UNLOGGED_TECHS` beside `jellymount` (added when the mount came in). Read back in the same pool: the
   log says "You use Water Walk." and nothing with the id.
 - **Rule:** 365
+
+### 2026-10-30 · The slip jelly mount's body never showed after the warm-up (vfx/jellymount/look.js; Calissa's look, headless)
+- **Seen (headless, phone and desk):** the call and the ride in the Dunes with no body under the Courier; the look's `read()` said
+  `shown: false` through the call and the ride while the puddle and the effects played.
+- **Cause, as measured:** the warm-up made Petra's body early (her `ensureBody`) and put it back hidden at the origin; the zones'
+  pass installed its root there, a holder at the origin judged by its children, so in the workshop's zone. In the Dunes its `visible`
+  read false (the zones' getter: the owner's and the zone's), and Petra's tick, which returns while `!root.visible`, never moved it
+  into the Dunes, so the zones never placed it there: neither let go. The same holds without the warm-up for a body left in the Dunes
+  and called at the Raceway (another render zone).
+- **Fix:** the body's root is `userData.zoneFree` (it always stands under its rider, hidden when not ridden); the slip puddles keep
+  their own `live` flag instead of reading `visible`. After: `shown: true` through the call and the ride, on the phone and the desk.
+- **Rule:** NEW:zone-visible-gate

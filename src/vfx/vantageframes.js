@@ -54,8 +54,9 @@ export const VANTAGE_FRAMES = { every: 0.5, ringLit: 1.0, ringKept: 0.32, ruinCl
  *  (0, 0, -11.5) it sits in the view's top sixth, where the stand itself is 7 m up behind the slab and out of the view. */
 export const SIGHTLINES = {
   'workshop.atrium': { top: [-1.6, 1.0, 1.1], drop: 1.9, size: 0.16, halo: 1.1, glint: 0.9, breath: 3.2, every: 2.6, kept: 0.25 },
-  // the ruins' arch: from the lintel's underside (its 1.3 m slab under the stand), 1.6 m down into the opening, sized to read across the sand
-  'ruins.arch': { top: [0, -1.3, 0], drop: 1.6, size: 0.34, halo: 2.4, glint: 2.0, breath: 3.6, every: 3.0, kept: 0.25 },
+  // the ruins' arch: from the lintel's underside (its 1.3 m slab under the stand), 1.6 m down into the opening, sized to read across the sand;
+  // `day`: under the open sky its halo is laid over, not added (an added glow is lost against noon's sky)
+  'ruins.arch': { top: [0, -1.3, 0], drop: 1.6, size: 1.05, halo: 4.2, glint: 3.4, breath: 3.6, every: 3.0, kept: 0.25, day: true },
 };
 const G = (k) => ROOM_GLAZES[k].body; // (a room glaze's colour id: Level.mat dresses it)
 const _p = new THREE.Vector3(), _q = new THREE.Quaternion();
@@ -80,11 +81,11 @@ function buildSightline(group, S) {
   cord.position.set(x, y - S.drop / 2, z); g.add(cord);
   const drop = new THREE.Mesh(new THREE.OctahedronGeometry(S.size / 2, 0), new THREE.MeshBasicMaterial({ color: wonder }));
   drop.scale.set(0.7, 1.4, 0.7); drop.position.set(x, y - S.drop - S.size * 0.6, z); g.add(drop);
-  const T = sightTextures(), spr = (map, size) => { const m = new THREE.Sprite(new THREE.SpriteMaterial({ map, color: wonder, blending: THREE.AdditiveBlending, transparent: true, depthWrite: false, fog: false })); m.scale.setScalar(size); m.position.copy(drop.position); m.renderOrder = 5; g.add(m); return m; };
+  const T = sightTextures(), spr = (map, size) => { const m = new THREE.Sprite(new THREE.SpriteMaterial({ map, color: wonder, blending: S.day ? THREE.NormalBlending : THREE.AdditiveBlending, transparent: true, depthWrite: false, fog: false })); m.scale.setScalar(size); m.position.copy(drop.position); m.renderOrder = 5; g.add(m); return m; };
   const halo = spr(T.disc, S.halo), glint = spr(T.star, S.glint);
   for (const o of [cord, drop, halo, glint]) { o.name = 'vantage-sightline-part'; o.castShadow = false; }
   group.add(g);
-  g.userData = { S, drop, halo, glint, k: 1 };
+  g.userData = { S, drop, halo, glint, k: 1, haloK: S.day ? 0.5 : 1 };
   return g;
 }
 
@@ -240,9 +241,9 @@ export class VantageFrames {
    *  light (1 until the vantage is reached, then S.kept: a faint glint, the collection kept). */
   breathe(sl) {
     if (!sl.parent?.visible && sl.parent) return;
-    const { S, drop, halo, glint, k } = sl.userData, t = this.clock;
+    const { S, drop, halo, glint, k, haloK } = sl.userData, t = this.clock;
     const b = 0.5 + 0.5 * Math.sin(t * Math.PI * 2 / S.breath);
-    halo.material.opacity = k * (0.55 + 0.45 * b); halo.scale.setScalar(S.halo * (0.85 + 0.25 * b));
+    halo.material.opacity = k * (0.55 + 0.45 * b) * haloK; halo.scale.setScalar(S.halo * (0.85 + 0.25 * b));
     const ph = (t % S.every) / S.every, flash = ph < 0.18 ? Math.sin(ph / 0.18 * Math.PI) : 0;
     glint.material.opacity = k * flash; glint.scale.setScalar(S.glint * (0.4 + 0.8 * flash)); glint.material.rotation = t * 0.6;
     drop.rotation.y = t * 0.5; drop.material.color.setHex(COLOR.wonder).multiplyScalar(0.55 + 0.45 * k * (0.6 + 0.4 * b));
