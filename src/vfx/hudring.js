@@ -7,8 +7,7 @@
 //                 near side (their body never hides it), clockwise on the screen, as far as they have it; what is held for a charge runs
 //                 on after it, paler
 //   THE FRAME     the band is held between two fine labradorite lines (the Mind's: vfx/labradorite.js)
-//   THE BEADS     the Blink's charges, as beads of Lachryma set in the frame before the band begins (an empty socket when spent)
-//   THICK WALLS while the knack is on and the pool is under a full blow's cost, a notch where that blow ends and the pool below
+//   THICK WALLS   while the knack is on and the pool is under a full blow's cost, a notch where that blow ends and the pool below
 //                 it breathing: one more full blow reaches the clay
 //   BLOWS         a blow taken shows on the ring the way it came from, across the whole band: a flash of labradorite when the
 //                 shield (the Lachryma) paid for it, a pale, jagged crack when it got through to the clay; it fades over a few seconds
@@ -19,12 +18,13 @@
 // It is a fight's HUD: out of sight outside combat (game.combat), back as a fight begins; in one, it brightens while something is
 // happening (the pool moving, a threat near) and sinks to a fainter ring when all is full and still.
 // As a fight begins it COMES ONLINE (over the battle theme's change-over): the frame draws itself round behind a bright head, the
-// Lachryma pours into the band, the beads set one after another, and one pulse rings out. Everything in it moves by easing; nothing blinks.
+// Lachryma pours into the band, and one pulse rings out. Everything in it moves by easing; nothing blinks. (The Blink's charges were beads
+// in its frame until the Lachrimeter's pearls took them, vfx/lachrimeter/blinkpearls.js: one look for them, removed here 2026-10-30.)
 //
 // Prior art: Zone of the Enders' ring radar (round the mech, threat by direction and colour), Dead Space's spine gauge (the gauge on the
 // body), Metal Gear Solid's alert, and Parasite Eve's and Vagrant Story's floor-borne wireframes.
 //
-//   const ring = new HudRing(game)      ring.update(dt, { blink })      ring.visible = false (first person, cinematics)
+//   const ring = new HudRing(game)      ring.update(dt)      ring.blow(a, k)      ring.visible = false (first person, cinematics)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { LAB_GLSL, mindTime, mindTick } from './labradorite.js';
@@ -48,7 +48,6 @@ void main() {
 const F = /* glsl */`
 varying vec2 vP; varying vec3 vW;
 uniform float uFill, uRes, uAlpha, uStart, uSign, uOnline; // (uOnline: 0..1 as it comes online for a fight, 1 when it is)
-uniform vec3 uBeads;                  // count, max, the next one's fill
 uniform vec2 uWalls;                  // Thick Walls: a full blow's share of the band, and how strongly it is marked
 uniform vec4 uThreat[${MAX_THREATS}];  // angle, half-width, heat (0 far .. 1 close), alpha
 uniform vec4 uBlow[${MAX_BLOWS}];      // angle, half-width, kind (0 the shield took it, 1 the clay cracked), strength
@@ -91,24 +90,6 @@ void main() {
   // (and online: one pulse rings outward from the frame)
   float pk = clamp((uOnline - 0.88) / 0.12, 0.0, 1.0);
   if (uOnline < 1.0 && pk > 0.0) col = mix(col, vec4(labSoft(ph + 0.6), 1.0), line(r, 0.86 + 0.5 * pk) * (1.0 - pk) * 0.9);
-  // the beads (the Blink's charges), just before the band begins, set in the frame
-  for (int i = 0; i < 3; i++) {
-    if (float(i) >= uBeads.y) break;
-    float ba = uStart - uSign * (0.17 + 0.2 * float(i));     // (counter-clockwise from the band's start: before it)
-    vec2 c = vec2(cos(ba), -sin(ba)) * 0.78;
-    float dd = length(vP - c);
-    float rr = 0.075;
-    float disc = 1.0 - smoothstep(rr - fwidth(dd), rr + fwidth(dd), dd);
-    float have = float(i) < uBeads.x ? 1.0 : (float(i) < uBeads.x + 1.0 ? uBeads.z : 0.0);
-    disc *= uOnline >= 1.0 ? 1.0 : smoothstep(0.82 + 0.05 * float(i), 0.86 + 0.05 * float(i), uOnline); // (the beads set one after another)
-    vec3 bead = labInk(ph + 0.4 + dd * 3.0, 0.5 + 0.5 * (1.0 - dd / rr));
-    vec3 socket = labLin(vec3(0.16, 0.13, 0.2));
-    // (a socket fills from the bottom as the charge comes back)
-    float filled = step((c.y - vP.y) / (2.0 * rr) + 0.5, have) ;
-    vec3 bc = mix(socket, bead, max(filled, step(1.0, have)));
-    float ringEdge = 1.0 - smoothstep(0.0, fwidth(dd) * 1.5, abs(dd - rr));
-    col = mix(col, vec4(mix(bc, labSoft(ph), ringEdge * 0.7), 1.0), max(disc, ringEdge));
-  }
   // the threat arcs, outside the frame
   for (int i = 0; i < ${MAX_THREATS}; i++) {
     vec4 t = uThreat[i];
@@ -147,7 +128,7 @@ export class HudRing {
     const threats = Array.from({ length: MAX_THREATS }, () => new THREE.Vector4());
     this.u = {
       uFill: { value: 1 }, uRes: { value: 0 }, uAlpha: { value: 0 }, uStart: { value: 0 }, uSign: { value: 1 }, uOnline: { value: 1 },
-      uBeads: { value: new THREE.Vector3(0, 0, 0) }, uWalls: { value: new THREE.Vector2() }, uThreat: { value: threats }, uMindT: mindTime,
+      uWalls: { value: new THREE.Vector2() }, uThreat: { value: threats }, uMindT: mindTime,
       uBlow: { value: Array.from({ length: MAX_BLOWS }, () => new THREE.Vector4()) },
     };
     this.mesh = new THREE.Mesh(new THREE.RingGeometry(0.55, 1.0, 96, 1), new THREE.ShaderMaterial({
@@ -182,7 +163,7 @@ export class HudRing {
     Object.assign(s, { a, kind, k: Math.max(0.6, k) });
   }
 
-  update(dt, { blink = null } = {}) {
+  update(dt) {
     const g = this.game, P = g.player, pool = g.lachryma, cam = g.camera;
     mindTick();
     this.blows.forEach((b, i) => {
@@ -239,7 +220,6 @@ export class HudRing {
     this.u.uFill.value = this.fill; this.u.uRes.value = this.res;
     this.walls += ((g.knacks?.on?.('thickWalls') && pool && pool.value < SHIELD ? 1 : 0) - this.walls) * (1 - Math.exp(-dt * 5));
     this.u.uWalls.value.set(pool ? SHIELD / pool.max : 0, this.walls);
-    this.u.uBeads.value.set(blink ? blink.n : 0, blink ? blink.max : 0, blink ? blink.fill : 0);
     this.u.uAlpha.value = this.alpha; this.u.uOnline.value = this.online;
   }
 }

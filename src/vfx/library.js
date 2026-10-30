@@ -36,6 +36,7 @@ import { TEMPER_EFFECTS } from './library/temper.js'; // (a creature's mental st
 import { ULT_EFFECTS } from './library/ult.js'; // (the Lockheart's Opening: tools/lockheart/ultimate.js, cine/sequences.js)
 import { FEELING_EFFECTS } from './library/feelings.js'; // (the seven feelings' skins, each moment, and the Feelings shells' landings: vfx/library/feelings/)
 import { CLASS_ART_EFFECTS } from './library/classarts/index.js'; // (the 76 class arts' looks, a domain's grammar in its suit's colour: vfx/classartlooks.js plays them)
+import { PAIR_SPECIAL_EFFECTS } from './library/pairspecials/index.js'; // (the 21 pair specials' looks, the main's and the sub's grammars braided: vfx/pairspeciallooks.js plays them)
 const L = (o) => o; // (a layer: only for readability)
 const GLAZES = [0x2f6db5, 0x4f9a7a, 0xe0b030, 0xc84a3a, 0xf3efe6, 0x6a4a9a, 0x2a8ab0]; // (the glazes' own colours: the Hailstorm's shards)
 
@@ -440,4 +441,5 @@ export const LIBRARY = {
   ...ULT_EFFECTS,
   ...FEELING_EFFECTS,
   ...CLASS_ART_EFFECTS,
+  ...PAIR_SPECIAL_EFFECTS,
 };

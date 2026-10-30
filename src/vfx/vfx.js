@@ -31,7 +31,8 @@
 // A layer's numbers can be a number, a range [min, max] picked per particle, or a key into the context (`'tint'`); colours can be
 // hex, 'tint' (the caller's), 'labradorite' (a colour of the labradorite's flash), 'film' or 'film0'..'film3' (Lachryma's oil film, a
 // feat's hue shift: vfx/oxidation.js featTint, turned by the context's `phase`), 'gold' / 'lach' / 'white', or 'feeling' / 'domain' /
-// 'suit' (the caller's `feeling`, `domain` or `suit`: its shape ramp's colour, vfx/shapes/ramps.js, so a sprite rides with its shape).
+// 'suit' (the caller's `feeling`, `domain` or `suit`: its shape ramp's colour, vfx/shapes/ramps.js, so a sprite rides with its shape),
+// or 'ramp:<row>' (a ramp named outright, 'ramp:cups': an effect carrying two suits' colours whoever plays it, the pair specials').
 // `power` (the context's) scales counts and sizes, so one effect serves a tap and a full-strength blow. `throughWalls` (the context's)
 // draws its particles, decals, shapes and glyphs over the world instead of behind its walls (a mark revealed: vfx/glyphs.js; off, an
 // effect is hidden by walls).
@@ -153,6 +154,7 @@ function color(v, ctx) {
   if (v === 'tip') return ctx.tip === undefined ? color('tint', ctx) : color(ctx.tip, ctx); // (a swing's hot end)
   if (v === 'labradorite') return LAB[Math.floor(Math.random() * LAB.length)];
   if (v === 'feeling' || v === 'domain' || v === 'suit') return rampHex(v, ctx) ?? color('tint', ctx); // (the caller's: its shape ramp's colour)
+  if (typeof v === 'string' && v.startsWith('ramp:')) return rampHex(v.slice(5), ctx) ?? color('tint', ctx); // (a ramp named outright: its colour, as a shape on it reads)
   if (typeof v === 'string' && v.startsWith('film')) return featTint((v.length > 4 ? +v.slice(4) / 4 : Math.random()) + (ctx.phase ?? 0), _c).getHex(); // (Lachryma's film: 'film' a colour of it, 'film0'..'film3' its four, turned by `phase`)
   if (typeof v === 'string') return NAMED[v] ?? 0xffffff;
   return v;

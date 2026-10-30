@@ -1,6 +1,6 @@
 # The VFX catalogue (generated: do not edit)
 
-Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-10-30). 529 effects in 34 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
+Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-10-30). 580 effects in 35 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
 
 **Play one:** `game.vfx.play(name, { pos, dir, normal, tint, power, scale, feeling, domain, suit, follow })`; a held one returns a handle (`h.pos`, `h.k`, `h.stop()`). A name falls back from the most particular (`hit.slash.crystal` -> `hit.slash` -> `hit`), so a new name always plays something.
 
@@ -289,6 +289,62 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `art.wish.use` | one-shot | shape:band×2, sprites:streak, shape:sphere, shape:ring×4, sprites:sparkle, sprites:puff, light, flash | Starlight (the Star, Swords; Ouranurgy): a column of the night sky poured down where you stand, star motes falling |  |
 | `art.zero.armed` | held | shape:ring×2, sprites:sparkle | Running on Empty (the Fool's reaction), armed while costs are off: Beginner's Luck's lens in a whisper, a slow ring of the film at the feet |  |
 | `art.zero.fire` | one-shot | shape:ring×3, shape:band×2, sprites:streak, sprites:sparkle×2 | extends `art.react`. Running on Empty fired (the pool ran dry): the slow ring of the film thrown out from the feet |  |
+
+### pair (51)
+
+| effect | kind | layers | what | asked by |
+|---|---|---|---|---|
+| `pair.1.hit` | one-shot | sprites:star4, sprites:ringthin, shape:crescent×2, shape:sphere, shape:beam×2, sprites:chip, sprites:sparkle, shape:ring, light, shake, hitstop | (on the creature it struck) the round's star, the claws biting, the line laid back to you |  |
+| `pair.1.hold` | held | shape:band, shape:beam, sprites:streak, sprites:puff | (held on the creature while it is hauled in) the line's collar on it and its wake |  |
+| `pair.1.use` | one-shot | shape:cone, shape:sphere, sprites:streak×3, sprites:puff, light | ---- I Hooked Shot: a shot that drags what it hits to you ------------------------------------------------------------------- (at the Courier, its line to what it hit) the shot leaves carrying the hook's line |  |
+| `pair.10.hit` | one-shot | shape:band, shape:ring×4, shape:sphere, sprites:sparkle, sprites:puff, light, flash, shake | (where you stand; the caller's feeling the weather turned to) the weather falling in its feeling |  |
+| `pair.10.use` | one-shot | shape:ring×2, shape:sphere, sprites:star4, sprites:ringthin, sprites:sparkle, light | ---- X Turn of Weather: spin the wheel of odds to turn the weather where you stand for a game hour ------------------------------ (at the Courier) the wheel of odds spun overhead, the vane turning against it |  |
+| `pair.11.hit` | one-shot | shape:ring, shape:wave, shape:sphere, shape:disc, sprites:shard, sprites:sparkle, light, flash, shake, hitstop | (on the creature, at its weak point) the gold brackets snapped shut, the cut across it |  |
+| `pair.11.use` | one-shot | shape:wave×2, shape:sphere, shape:ring, sprites:sparkle | ---- XI Appraised Cut: a blow on a weak point you have photographed is always the right kind ------------------------------------ (at the Courier) the blade reading what it was shown: a white glint running its edge |  |
+| `pair.12.hold` | held | shape:sphere, shape:ring, shape:band×3, sprites:sparkle | (held on the creature while it is held) still in time |  |
+| `pair.12.use` | one-shot | shape:disc, shape:ring, shape:sphere, sprites:ringthin, sprites:sparkle, light, flash, hitstop | ---- XII Held Plate: a photograph holds a creature still in time for a moment ---------------------------------------------------- (at the Courier, its line to the creature) the photograph, the coffin's chain thrown along it |  |
+| `pair.13.hit` | one-shot | shape:wave, shape:sphere, shape:spiral, sprites:shard, sprites:ringthin, shape:disc, light, shake, hitstop | (on the downed creature) the blade's last stroke and its Lachryma torn out of it |  |
+| `pair.13.use` | one-shot | shape:sphere×3, sprites:soft×2, light | ---- XIII Reaper's Draw: a blow that downs a creature drinks its Lachryma straight into the coffin -------------------------------- (at the coffin's mouth, its line from the downed one) its Lachryma drunk in |  |
+| `pair.14.hit` | one-shot | shape:band, shape:sphere×2, sprites:soft×2, shape:ring, light | (on the Courier) the cracks mended |  |
+| `pair.14.use` | one-shot | shape:disc×2, shape:ring×3, shape:sphere, sprites:drip, sprites:ringthin, sprites:soft, light | ---- XIV Healing Song: paint laid on the beat mends your cracks ------------------------------------------------------------------- (where the paint is laid on the beat) the bell's hoop across the paint |  |
+| `pair.15.hit` | one-shot | sprites:star4, sprites:ringthin×2, shape:band, shape:sphere×2, shape:ring, light, shake, hitstop | (on the first creature struck) the chain's collar snapped on |  |
+| `pair.15.hold` | held | sprites:ringthin, shape:band, sprites:glint | (held on the first creature, its line to the second, laid each frame) the chain between them |  |
+| `pair.15.use` | one-shot | shape:cone, shape:sphere, sprites:streak, sprites:ringthin×2, sprites:puff, light | ---- XV Chain Shot: a shot that chains two creatures together where they stand -------------------------------------------------- (at the Courier, its line to what it hit) the shot uncoiling the coffin's chain |  |
+| `pair.16.hit` | one-shot | caster:lightning, shape:band, shape:sphere, shape:ring×2, sprites:chip, sprites:puff×2, light, flash, shake, hitstop | (at the fork, its line from the sky down to it) the bolt |  |
+| `pair.16.mark` | one-shot | shape:hoop, sprites:soft, shape:ring, sprites:glint | (at the fork where it sticks) the bolt gathering, 0.6 real s |  |
+| `pair.16.use` | one-shot | shape:wave, shape:cone, shape:sphere, sprites:sparkle, sprites:puff, light | ---- XVI Lightning Rod: where the fork sticks, a bolt comes down ------------------------------------------------------------------ (at the Courier) the fork thrown with the gun's spark on it |  |
+| `pair.17.hold` | held | sprites:drip, shape:ring, sprites:sparkle, sprites:puff | (riding the fork while it flies and paints; the looks keep its floor under it) the stream of paint falling from it | vfx/pairspeciallooks.js |
+| `pair.17.mark` | one-shot | shape:disc×2, sprites:drip, shape:ring | (on the ground where a stamp of paint lands) its splash | vfx/pairspeciallooks.js |
+| `pair.17.use` | one-shot | shape:ring, shape:sphere, sprites:drip, shape:crescent, sprites:soft, light | ---- XVII Painted Lure: the lure thrown leaves a stream of paint behind it -------------------------------------------------------- (at the fork in flight, its first stamp) the paint let go | vfx/pairspeciallooks.js |
+| `pair.18.hit` | one-shot | shape:band, shape:ring, shape:sphere, shape:hoop×2, sprites:sparkle, sprites:puff, light | (where the fork lands) the mirage rising |  |
+| `pair.18.hold` | held | shape:band×2, shape:ring, shape:hoop×2, sprites:sparkle | (held where the decoy stands, its life) the singing decoy |  |
+| `pair.18.use` | one-shot | shape:wave, shape:ring, shape:sphere, sprites:sparkle, sprites:ringthin, light | ---- XVIII Singing Mirage: a decoy rises where the fork lands, singing so creatures go to it -------------------------------------- (at the Courier) the fork thrown ringing with the bell's song |  |
+| `pair.19.hit` | one-shot | sprites:star4, sprites:ringthin, shape:ring, shape:sphere, sprites:streak×2, sprites:sparkle, light, hitstop | (on the marked creature, its line from the muzzle to where the round struck) a homing round landing on the mark | vfx/pairspeciallooks.js |
+| `pair.19.mark` | held | shape:ring×4, sprites:glint | (held on the marked creature while the mark holds; the looks set its strength by the rounds left) the mark | vfx/pairspeciallooks.js |
+| `pair.19.use` | one-shot | shape:disc, shape:ring×3, shape:sphere, sprites:streak, sprites:sparkle, light, flash, hitstop | ---- XIX The Mark: the Flash marks a creature, and every chamber homes on the mark --------------------------------------------- (on what the lent Flash marked) the Flash's rays, the gun's reticle closing on it | vfx/pairspeciallooks.js |
+| `pair.2.mark` | held | shape:pillar, shape:ring×3, sprites:sparkle | (held on a hidden signature while it is shown; the looks draw it through walls) a column of the vane's gold, tagged |  |
+| `pair.2.use` | one-shot | shape:disc, shape:band×2, shape:ring×3, shape:sphere, sprites:sparkle, sprites:star4, light, flash | ---- II Revelation: the Flash and the dowse at once: every hidden signature near you shown and tagged --------------------------- (at the Courier) the Flash and the dowse's sweep together |  |
+| `pair.20.hit` | one-shot | shape:sphere×2, shape:ring, sprites:shard, sprites:chip, hitstop | (on each creature the wave strikes) its blow |  |
+| `pair.20.use` | one-shot | shape:ring×3, shape:band, shape:sphere, shape:dome, shape:hoop×2, sprites:shard, sprites:puff, sprites:ringthin, light, flash, shake, hitstop | ---- XX Last Call: the toll opens the coffin: all it drank bursts out as a wave ---------------------------------------------------- (at the Courier; ctx.power its fill) the coffin opened by the toll, the wave |  |
+| `pair.21.hit` | one-shot | shape:disc×2, shape:ring×2, sprites:star4, sprites:ringthin, shape:sphere, sprites:drip, sprites:glint, sprites:soft, light, shake, hitstop | (where it lands) the paint's splash and the enso written round it: the circle closed |  |
+| `pair.21.use` | one-shot | shape:cone, shape:sphere, sprites:streak, sprites:soft, sprites:glint, sprites:puff, light | ---- XXI Full Circle: a shot that paints where it lands and mends what it passes ---------------------------------------------- (at the Courier, its line to where it lands) the shot trailing paint and gold |  |
+| `pair.3.hold` | held | sprites:streak, shape:spiral, sprites:drip | (held at the receiver while the hoover drinks paint; its line from the ground being drunk, laid each frame) the paint drawn up | vfx/pairspeciallooks.js |
+| `pair.3.mark` | held | shape:disc, shape:hoop×2, sprites:drip | (held on the ground where the hoover drinks) the paint swirled in to its middle | vfx/pairspeciallooks.js |
+| `pair.3.use` | one-shot | shape:sphere×3, shape:spiral, sprites:soft, light | ---- III Coffin's Mop: the coffin drinks spilled paint and crude as it passes, and the brush pours it back as paint --------------- (at the receiver, the first sip of a hold) the gulp | vfx/pairspeciallooks.js |
+| `pair.4.hit` | one-shot | sprites:star4, sprites:ringthin×2, shape:ring×3, shape:sphere, sprites:streak, hitstop | (on the creature a beat's shot staggers) the round's star in the toll's gold ring |  |
+| `pair.4.hold` | held | shape:ring×2, sprites:soft | (held at the Courier while the six go) the beat kept on the ground |  |
+| `pair.4.use` | one-shot | shape:ring, shape:cone, shape:sphere, shape:hoop×2, sprites:diamond, sprites:ringthin, light, shake | ---- IV On the Beat: six shots fired on the bell's beat, each one staggering ------------------------------------------------------- (at the Courier) the bell's ring at the gun hand, the six chambers on it |  |
+| `pair.5.mark` | one-shot | shape:band, shape:ring×2, shape:crescent, sprites:sparkle | (on each creature the toll read) it is known better |  |
+| `pair.5.use` | one-shot | shape:ring×2, shape:hoop×2, shape:sphere, shape:disc, shape:band, sprites:ringthin, sprites:sparkle, light, flash, shake | ---- V Rite: a toll that reads every creature it reaches, knowing it better ------------------------------------------------------- (at the Courier) the toll that reads |  |
+| `pair.6.hit` | one-shot | shape:ring×3, shape:crescent×2, shape:sphere, sprites:sparkle×2, sprites:ringthin, light, shake, hitstop | (on the creature at the line's end) the toll's blow, stunning it | vfx/pairspeciallooks.js |
+| `pair.6.use` | one-shot | shape:ring×2, shape:sphere, sprites:sparkle, sprites:streak | ---- VI Rung Line: hook a creature and the toll runs down the line, stunning it ----------------------------------------------- (on the line, moved from the hand to the bite; its dir along the line) the toll's ring running down it | vfx/pairspeciallooks.js |
+| `pair.7.hit` | one-shot | shape:crescent×2, shape:ring×3, shape:sphere, sprites:chip, sprites:puff, light, shake | (at the fork where the hook bites it) the claws on the fork, the fork ringing |  |
+| `pair.7.hold` | held | shape:band, sprites:streak, sprites:soft | (riding the Courier while flung; its dir the way they fly) the air torn past |  |
+| `pair.7.use` | one-shot | shape:wave, shape:sphere, sprites:streak, shape:crescent×2, sprites:sparkle, sprites:puff, light | ---- VII Slingshot: throw the fork far and hook to it, flung through the air ---------------------------------------------------- (at the Courier, its line to the fork) the fork thrown, the hook's line paid out after it |  |
+| `pair.8.hit` | one-shot | shape:disc×2, shape:sphere×2, shape:crescent, sprites:petal, shape:hoop, light | (on the creature a blow calms) still water and petals: no star, no sparks |  |
+| `pair.8.use` | one-shot | shape:wave×2, shape:crescent, shape:sphere, sprites:petal, sprites:soft, light | ---- VIII Gentle Edge: a cutlass string whose blows calm instead of hurt -------------------------------------------------------- (at the Courier, once a string) the blade's arc lined with the brush's ink |  |
+| `pair.9.hit` | one-shot | shape:ring, shape:crescent, shape:disc, shape:sphere, shape:band, sprites:soft, light, hitstop | (on what was photographed) the sigil written on it |  |
+| `pair.9.use` | one-shot | shape:disc, shape:ring, shape:sphere, shape:crescent, sprites:sparkle, light, flash | ---- IX Illumined Page: photograph a sigil and it is written on what you photographed ------------------------------------------- (at the Courier) the photograph of the sigil |  |
 
 ### feeling (42)
 
@@ -666,7 +722,7 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `absorb` | one-shot | shape:ring, sprites:glint | a thing taken into the Courier: a ring closing in on where it went, its sparkle drawn in after it | audio/duelsecrets.js, audio/puzzleduel.js, courier/lachryma.js +10 |
+| `absorb` | one-shot | shape:ring, sprites:glint | a thing taken into the Courier: a ring closing in on where it went, its sparkle drawn in after it | audio/duelsecrets.js, audio/puzzleduel.js, courier/lachryma.js +9 |
 
 ### angle (1)
 

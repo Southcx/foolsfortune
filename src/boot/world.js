@@ -26,6 +26,7 @@ import { SHORE } from '../world/dunes/beach.js';
 import { Margarite } from '../world/emocean/margarite.js';
 import { Bazaar, BAZAAR } from '../world/bazaar/bazaar.js';
 import { BazaarHall } from '../vfx/bazaarhall.js';
+import { TouchstoneLook } from '../vfx/touchstonelook.js';
 import { Touchstone } from '../world/touchstone/touchstone.js';
 import { BazaarTable } from '../vfx/bazaartable.js';
 import { Chips } from '../progress/casino/chips.js';
@@ -73,6 +74,7 @@ export async function bootWorld(game, made) {
   game.chips = new Chips(game); game.bazaar = new Bazaar(game); game.bazaarTable = new BazaarTable(game); // (Raku's bazaar, the casino: its hall with the level's static geometry, its chips; world/bazaar/, docs/plans/CASINO.md)
   const treasuryAt = { x: BAZAAR.treasury.x, y: BAZAAR.y, z: BAZAAR.treasury.z, yaw: BAZAAR.treasury.yaw }; buildTreasury(level, treasuryAt); // (the Treasury in its slot on the bazaar's north side: world/treasury.js)
   game.touchstone = new Touchstone(game); // (the Assay's room: the standard trials, world/touchstone/)
+  game.touchstoneLook = new TouchstoneLook(game); // (the Touchstone dressed as a dark assay hall, built and taken down with her area: vfx/touchstonelook.js)
   game.bazaarHall = new BazaarHall(game); // (the bazaar's Gold Saucer dress: dome, mosaic, stalls, neon, lanterns, carnival props; vfx/bazaarhall.js)
   { // (the moonflowers on the pond's far shore: sacred datura is a desert native; vfx/datura.js)
     const at = (a, k = 1.12) => ({ x: DUNE.x + POND.x + Math.cos(a) * POND.rx * k, z: DUNE.z + POND.z + Math.sin(a) * POND.rz * k });

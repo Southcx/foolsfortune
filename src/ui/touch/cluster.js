@@ -107,7 +107,8 @@ export class TouchCluster {
     const entries = (ids || []).filter(Boolean).slice(0, 4).map(entryOf), want = entries.map((e) => e.id);
     this.entries = entries;
     let wider = false;
-    for (const e of entries) if (e.glyph !== undefined || e.word !== undefined) { const t = this.tile(e.id), w = t.widthFor(t.size); t.face({ glyph: e.glyph ?? null, word: e.word ?? null }); if (t.widthFor(t.size) !== w) wider = true; }
+    // (a corner only where the entry names one: USE's is set by its label)
+    for (const e of entries) if (e.glyph !== undefined || e.word !== undefined) { const t = this.tile(e.id), w = t.widthFor(t.size); t.face({ glyph: e.glyph ?? null, word: e.word ?? null, ...(e.corner !== undefined ? { corner: e.corner } : {}) }); if (t.widthFor(t.size) !== w) wider = true; }
     if (want.join() === this.ids.join()) { if (wider) this.layout(); return; }
     this.ids = want;
     for (const [id, t] of this.tiles) if (!want.includes(id)) t.set({ hidden: true });

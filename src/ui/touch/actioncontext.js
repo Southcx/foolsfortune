@@ -23,7 +23,8 @@
 //                 (what you would become: HAND or COURIER); the worn tools' moves (duelTools) (dim in the hand's form: they are the Courier's), ROTATE first while a piece
 //                 is under the last touch in the hand's form; TUNE lit while its song holds, READ only where Dread's fog hides the foe; the
 //                 first duel's step asked (lesson.js) lit on its tile (FORM, ROTATE, the tools' moves).
-// The tool's name small in FIRE's corner (8.3) is left out: at 72 px it lands on the glyph; the glyph is the tool's own.
+// The main tool's name small in FIRE's corner (8.3; Espada 2026-10-24: a glance tells which tool is out), the glyph a step smaller
+// beside it (tile.js) and the name shrunk to fit its tile.
 //
 // Prior art: Genshin Impact's attack and skill tiles changing with the character, Call of Duty Mobile's fire button by weapon, Into the
 // Breach's strip of moves with END TURN the largest; the cluster's own reading of the skiff (cluster.js clusterContext).
@@ -44,6 +45,7 @@ import { skillsOf } from '../../progress/duel/skills.js';
 import { legalActions, oneGesture } from '../../progress/duel/duel.js';
 import { powersOf } from '../../progress/duel/powers.js';
 import { DOMAIN_LOOK } from '../domainlook.js';
+import { TOOL_LABEL } from '../../vfx/toolskins.js';
 
 /** By tool in hand: FIRE's and AIM's faces, the third (or null), and what the faces become in their other moment. */
 export const ACTION_TILES = {
@@ -94,7 +96,7 @@ export function footCluster(g, use) {
 /** A tool out: FIRE and AIM in its verbs, its third, PARRY the fourth. */
 export function toolCluster(g, ctx) {
   const T = ACTION_TILES[ctx]; if (!T) return null;
-  const tool = g.belt?.inHand, fire = E('fire', T.fire[0], T.fire[1]), aim = E('aim', T.aim[0], T.aim[1]);
+  const tool = g.belt?.inHand, fire = E('fire', T.fire[0], T.fire[1], { corner: TOOL_LABEL[g.belt?.main]?.toUpperCase() ?? null }), aim = E('aim', T.aim[0], T.aim[1]);
   if (ctx === 'rod' && tool?.angler?.state === 'fight') { fire.word = T.fishOn.fire; aim.word = T.fishOn.aim; }
   if (ctx === 'hook' && tool?.hookshot?.reeling) fire.word = T.reeling;
   let third = T.third ? { ...T.third } : null;
