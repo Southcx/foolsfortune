@@ -4618,7 +4618,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix (Petra's file, handed to her: docs/handoffs/petra/2026-10-30-from-calissa-strawman-points.md):** both read `S.pos`, where it stands now (the same spot outside a duel). Measured with that patch in the builder's worktree: 0.95 m from the drawn head's top, two different
   points that never meet (the head point 0.9 of its 2.45 m over its spot; the drawn one its bounds' centre and top plus 0.1 m, its
   hat, sleeves and aberrant shards in them: foecast.js `headWorld`); the 1.17 m it was moved is gone, and the cut-in's strip frames it.
-- **Rule:** NEW:fixture-points-follow
+- **Rule:** 369
 
 ### 2026-10-30 · A foe's aura stood over its head, not round its feet (vfx/duelview/auras.js; Calissa's elite, headless)
 - **Seen (1920 x 1080, a practice duel, `auras.charge(1)`):** Strawman's stitched ground ring and its columns hung at the top of the
@@ -4627,7 +4627,7 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   `stand` the module's `_a` as `out`, so the head's point (its bounds' top + 0.1 m) overwrote the spot, and every foe's aura was laid
   out from its head.
 - **Fix:** the head is read into its own scratch (`_h`). After: the rerun's aura shot (desk-duel-4-aura) shows the ring on the ground.
-- **Rule:** NEW:scratch-holds-one-answer
+- **Rule:** 370
 
 ### 2026-10-30 · Every duel's foe wore the halt's stop-frost the whole fight (vfx/auras.js; three builders' duel shots)
 - **Seen:** large white snowflakes swarming the slip jelly and Strawman in every shot of the duel's opening, ending and Strawman's
@@ -4636,4 +4636,4 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   (world/duel/duelsession.js `pin`), and the auras draw every live status's `aura.<status>` round its creature; the halt's look is
   Kingdom Hearts' stop-frost, so the foe stood in frost for the whole duel.
 - **Fix:** the auras skip `halt` on a creature that is `dueling` (set by the same `pin`). Not yet seen in a shot after the fix.
-- **Rule:** NEW:mechanism-is-not-a-status
+- **Rule:** 371

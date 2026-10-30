@@ -144,8 +144,8 @@ export class ThrowingRoom {
       tags: new Set(['hurtable', 'programmable']),
       model, hits,
       get mode() { return mode; },
-      center: (out = new THREE.Vector3()) => out.copy(at).setY(at.y + height * 0.55),
-      head: () => at.clone().setY(at.y + height * 0.9),
+      center: (out = new THREE.Vector3()) => out.copy(S.pos).setY(S.pos.y + height * 0.55), // (over where it stands: a practice duel moves it, casebook 369)
+      head: () => S.pos.clone().setY(S.pos.y + height * 0.9),
       knock() {}, vanish() {},
       hurt(point, dir, power, cause, by, from, type) {
         // guard: a blow from in front is blocked (it still counts, at nothing); the sack shows every blow (no numbers: its body)
