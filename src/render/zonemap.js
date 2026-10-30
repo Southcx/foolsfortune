@@ -53,6 +53,10 @@ export const ZONE_TESTS = [
 ];
 const BY_ID = Object.fromEntries(ZONE_TESTS.map((z) => [z.id, z]));
 
+/** A roofed room far from the workshop, where the sun's shadow camera never reaches: no sun there (lit, it shines on every upward face
+ *  through the roof, Calissa's shots of the Touchstone), as under the ground (boot/frame.js `under`). */
+export const ROOFED = new Set(['touchstone']);
+
 /** What each zone is underfoot and as a space (Wanda's hooks, 2026-10-30): its `floor`, a step's surface where nothing on the ground
  *  says otherwise (courier/stepsurface.js), and its `acoustic`, the kind of space it is heard as (audio/acoustics.js ACOUSTICS: room,
  *  hall, cave, open, sea), with its reverb send `wet` only where the zone differs from its kind's own (`zone.acoustic`, render/zones.js). */

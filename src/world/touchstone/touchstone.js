@@ -16,7 +16,7 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RAPIER, GROUPS } from '../../core/physics.js';
-import { addOutline } from '../../render/outline.js';
+import { addOutline, releaseOutlines } from '../../render/outline.js';
 import { zoneOf } from '../../render/zonemap.js';
 import { label } from '../basement/basement.js';
 import { TRIALS } from '../../progress/assaytrials.js';
@@ -65,10 +65,11 @@ export class Touchstone {
     // a gold streak along the stone's foot (the goldsmith's mark) and the trials' names on the floor before each plinth
     const streak = new THREE.Mesh(new THREE.PlaneGeometry(S.w * 0.8, 0.05), new THREE.MeshBasicMaterial({ color: C.gold, toneMapped: false }));
     streak.position.set(X(0), y + S.y - S.h / 2 + 0.12, Z(S.z + S.t / 2 + 0.01)); room.add(streak);
-    for (const P of B.plinths) label(room, TRIALS[P.id].label.toUpperCase(), [X(P.x), y + 0.01, Z(B.plinthZ + 1.1)], { rotY: Math.PI, width: 2.4 });
-    label(room, 'THE TOUCHSTONE', [X(0), y + S.y + S.h / 2 + 0.6, Z(S.z + S.t / 2 + 0.02)], { rotY: Math.PI, width: 3.2, vertical: true });
-    // two lamps of the light budget: one on the stone, one over the plinths (render/lightbudget.js adopts them from the scene)
+    for (const P of B.plinths) label(room, TRIALS[P.id].label.toUpperCase(), [X(P.x), y + 0.01, Z(B.plinthZ + 1.1)], { width: 2.4 }); // (read from the south, where you come from and stand: its top toward the stone)
+    label(room, 'THE TOUCHSTONE', [X(0), y + S.y + S.h / 2 + 0.6, Z(S.z + S.t / 2 + 0.02)], { width: 3.2, vertical: true }); // (facing the room)
+    // two lamps of the light budget: one on the stone, one over the plinths, adopted as built (render/lightbudget.js adoptIn)
     for (const [lx, ly, lz, i] of [[0, 5.5, -3.5, 14], [0, 6, 3, 8]]) { const l = new THREE.PointLight(0xfff1dc, i, 16, 1.6); l.position.set(X(lx), y + ly, Z(lz)); room.add(l); this.lamps.push(l); }
+    g.lights?.adoptIn?.(room);
     g.scene.add(room);
     this.built = true;
   }
@@ -78,7 +79,7 @@ export class Touchstone {
     const g = this.game, phys = g.physics;
     this.stopRun();
     if (this.room) {
-      g.scene.remove(this.room);
+      g.scene.remove(this.room); releaseOutlines(this.room);
       this.room.traverse((o) => { if (o.geometry && !o.userData.isOutline) o.geometry.dispose(); if (o.material && !o.userData.isOutline) for (const m of [].concat(o.material)) m.dispose(); }); // (the labels' textures are the basement's shared ones: kept)
     }
     for (const c of this.colliders || []) phys?.world?.removeCollider(c, false);

@@ -30,7 +30,7 @@ import { triplanar, surfaceTexture } from '../../render/triplanar.js';
 import { RAPIER, GROUPS } from '../../core/physics.js';
 import { PALETTE } from '../../core/config.js';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
-import { addOutline } from '../../render/outline.js';
+import { addOutline, releaseOutlines } from '../../render/outline.js';
 import { dunemawKit } from '../../vfx/dunemawkit.js';
 import { DunemawMouth } from '../../vfx/dunemaw.js';
 import { numeralDecals } from '../../vfx/wornnumerals.js';
@@ -277,6 +277,7 @@ export function buildFloor(game, layout, origin, floor = 1) {
     const hit = game.physics.raycast?.({ x, y: from, z }, { x: 0, y: -1, z: 0 }, WH * 3);
     return hit ? hit.point.y : null;
   };
+  game.lights?.adoptIn?.(group); // (its lamps proxies before the first draw: render/lightbudget.js adoptIn)
   game.scene.add(group);
   let t = 0;
   const cells = layout.cells.map((k) => { const p = onSand(k); return { x: p.x, z: p.z, y: Y + k.level, c: k.c, r: k.r, role: k.role, hall: k.hall ?? null, slope: !!k.slope, doors: [...k.doors],
@@ -296,7 +297,7 @@ export function buildFloor(game, layout, origin, floor = 1) {
       falls.update(dt, game.player?.pos);
     },
     dispose() {
-      game.scene.remove(group); archGeo.frame.dispose(); archGeo.ring.dispose();
+      game.scene.remove(group); releaseOutlines(group); archGeo.frame.dispose(); archGeo.ring.dispose();
       falls.dispose();
       group.traverse((o) => { if (o.geometry) o.geometry.dispose(); if (o.material) (Array.isArray(o.material) ? o.material : [o.material]).forEach((mm) => { if (!mm.userData?.shared) mm.dispose(); }); }); // (the kit's materials are every floor's)
       W.removeRigidBody(body); // (and every collider on it)

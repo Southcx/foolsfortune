@@ -50,6 +50,11 @@ export class LightBudget {
     this.proxies.push(light);
   }
 
+  /** A room's lamps made proxies the moment it is built, before its first draw (left to the walk, they light for up to a real second as
+   *  real lamps, and every program compiled meanwhile is keyed by the count with them: 14 compiled entering the Touchstone, 12 never
+   *  used again, Calissa measured). */
+  adoptIn(root) { root?.traverse?.((o) => { if (o.isPointLight || o.isSpotLight) this.adopt(o); }); }
+
   /** Find lamps added since the last look (rooms, fx, a chest ceremony...), and forget the ones taken out of the scene. */
   scan() {
     const scene = this.game.scene;

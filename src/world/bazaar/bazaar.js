@@ -19,7 +19,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { RAPIER, GROUPS } from '../../core/physics.js';
 import { dress } from '../../vfx/surfaces.js';
-import { addOutline } from '../../render/outline.js';
+import { addOutline, releaseOutlines } from '../../render/outline.js';
 import { zoneOf } from '../../render/zonemap.js';
 import { TableSession, TABLES } from './session.js';
 import { OX, OY, OZ, NORTH_BEACH } from '../../tools/sondelass/angling/weir.js';
@@ -100,6 +100,7 @@ export class Bazaar {
       ring.rotation.x = Math.PI / 2; ring.position.set(X(0), y + B.wall - 2.5 - k * 0.7, Z(0)); hall.add(ring); this.neon.push(ring);
     }
     for (let k = 0; k < 6; k++) { const a = (k / 6) * Math.PI * 2 + 0.3, l = new THREE.PointLight(C.neon[k % 4], 22, 34, 1.4); l.position.set(X(Math.cos(a) * 30), y + 9, Z(Math.sin(a) * 30)); hall.add(l); this.lamps.push(l); }
+    g.lights?.adoptIn?.(hall); // (its lamps proxies before the first draw: render/lightbudget.js adoptIn)
     g.scene.add(hall);
     this.built = true;
   }
@@ -112,7 +113,7 @@ export class Bazaar {
     const g = this.game, phys = g.physics;
     this.close();
     if (this.hall) {
-      g.scene.remove(this.hall);
+      g.scene.remove(this.hall); releaseOutlines(this.hall);
       this.hall.traverse((o) => { if (o.geometry && !o.userData.isOutline) o.geometry.dispose(); if (o.material && !o.userData.isOutline) for (const m of [].concat(o.material)) m.dispose(); });
     }
     for (const c of this.colliders || []) phys?.world?.removeCollider(c, false);

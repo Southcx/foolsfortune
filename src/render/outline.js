@@ -86,6 +86,9 @@ export function addOutline(mesh, material = OUTLINE_MAT) {
   return o;
 }
 
+/** A room taken down lets its props' hulls go from OUTLINES (they keep their meshes as parents, so the reach pass never forgets them). */
+export function releaseOutlines(root) { root?.traverse?.((o) => { if (o.userData.isOutline) OUTLINES.delete(o); }); }
+
 export const OUTLINE_MAT_FPHIDE = withFade(makeOutlineMaterial(true), 'ol-fphide');
 export const OUTLINE_MAT_CHAR = withFade(makeOutlineMaterial(), 'ol-char');
 /** A second rig's own outline materials, on its own fade and dissolve (the same programs as the Courier's). */

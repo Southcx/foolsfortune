@@ -12,6 +12,7 @@ import * as THREE from 'three';
 import { T, PALETTE } from '../core/config.js';
 import { RAPIER, GROUPS } from '../core/physics.js';
 import { DUNE } from '../world/dunes/dunes.js';
+import { ROOFED } from '../render/zonemap.js';
 import { LACHRYMA } from '../music/lachryma.js';
 import { chooseMusic, chooseTitleMusic } from '../music/choose.js';
 import { ChestFx } from '../vfx/chestfx.js';
@@ -318,7 +319,7 @@ export function bootFrame(game, made) {
     game.dunes.update(dt);
     game.crystals?.update(dt);
     const dm = game.dunes.mix; // (in the dunes the sun is a real one)
-    const under = THREE.MathUtils.clamp((-camera.position.y - 1) / 3, 0, 1) * (1 - dm);
+    const under = Math.max(ROOFED.has(game.zones?.current) ? 1 : 0, THREE.MathUtils.clamp((-camera.position.y - 1) / 3, 0, 1)) * (1 - dm); // (under the ground, or under a roof the sun's shadow never reaches: render/zonemap.js ROOFED)
     sun.intensity = THREE.MathUtils.lerp(T.visual.sun * (1 - under), game.dunes.sunIntensity ?? 0, dm);
     scene.fog.density = THREE.MathUtils.lerp(T.visual.fog * (1 - 0.6 * under), scene.fog.density, dm);
     player.killY = game.well.active ? game.well.killY : game.dunes.active || game.raceway?.active || game.margarite?.here || game.emocean?.stage.active || game.opensea?.active ? DUNE.y - 90 : -100; // (a far dock is at the dunes' layer)

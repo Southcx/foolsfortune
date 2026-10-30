@@ -1016,3 +1016,6 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
   cannot be reached by lowering the hips; read as a reach it takes the 0.12 m fallback and sinks the body, and what it holds, into the floor.
 362. **What a frame reads each tick is made safe where it comes in.** A value a caller hands a per-frame reader
   (a line's text, a count) is checked and coerced at the door, never trusted in the tick: one bad caller then costs one line, not the frame.
+363. **What a room lends a shared service, it lends as it is built and takes back as it is torn down.** Its lamps
+  adopted by the light budget before the first draw (else every program then compiled is keyed by a count that is gone a second later),
+  its hulls let go of the reach pass's set, its colliders removed: a registry's walk or prune is a net, never the way in or out.

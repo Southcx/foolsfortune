@@ -4537,3 +4537,16 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** `say` says nothing for a null or empty text and makes any other a string at the door (a merged line's `fmt` too). After:
   the probe's 16 runs and the Illumined Page run all pass in one page, the frame never throws.
 - **Rule:** 362
+
+### 2026-10-30 · The Touchstone compiled 14 programs on entry and kept its hulls after (world/touchstone/touchstone.js; Calissa's shots)
+- **Seen (Calissa, headless):** entering the Touchstone, 14 programs compiled and 12 had no user after; leaving, the room's 6 outline
+  hulls stayed in `OUTLINES`; every upward face lit through the roof; the floor labels read upside down from where you stand.
+- **Cause, as measured:** (1) the room's two lamps were left for the light budget's walk to adopt (up to a real second), and every program
+  compiled in that second was keyed by the point-light count with them (8 + 2), unused once they were adopted. (2) A hull keeps its mesh
+  as its parent, so the reach pass's prune (`!o.parent`) never found a torn-down room's: the bazaar's and every Well floor's the same.
+  (3) The workshop's sun (3.2) shines everywhere outside its shadow camera, which never leaves the workshop; under the ground `under`
+  takes it away, a far roofed room had nothing. (4) `rotY: Math.PI` turned the floor labels' tops toward you and the wall's title into the wall.
+- **Fix:** `lights.adoptIn(root)` as a room is built (the Touchstone, the bazaar, a Well floor), `releaseOutlines(root)` as it is taken
+  down (render/outline.js), `ROOFED` zones without the sun (render/zonemap.js; boot/frame.js `under`), the labels at rotY 0. After, desk
+  and phone: programs 192 -> 192 on entry (0 unused), the sun 0 inside, hulls 72 -> 78 -> 72 after leaving, the labels read from the south.
+- **Rule:** 363
