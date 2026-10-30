@@ -136,6 +136,8 @@ export class LaidSpread {
     this.cells = light(this.spread, this.laid, this.ctx());
     const r = tally(this.cells, box.slots.map((s) => (s ? itemOf(s.id) : null)), { season: seasonOf().id }); // (the season's suit x1.25: 11.1)
     this.sums = r.sums; this.counted = r.counted; this.class = r.class; // (the class your suits read as: the Fool, a court, a zodiac Major or the World, CLASSES.md)
+    const k = this.game.classArtsRun?.talliesK?.() ?? 1; // (Wholeness, a class's art: each tally counts for more; the class is read from the tallies as laid)
+    if (k !== 1) { this.sums = { ...r.sums }; for (const suit of SUITS) this.sums[suit] *= k; }
     this.apply();
   }
   /** Before an act: a spread loaded and not yet recounted is settled first, so the act alone is told. */

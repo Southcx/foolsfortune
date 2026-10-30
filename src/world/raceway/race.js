@@ -60,7 +60,7 @@ function photoOf(race, mine) {
   const Lt = race.T.length * (race.lapsTotal || 3); let best = null;
   for (const r of race.rivals.list) {
     const gap = r.done != null ? mine - r.done : (Lt - r.d) / Math.max(1, r.v || 0), won = r.done == null;
-    if (gap >= 0 && gap <= PHOTO.gap && (!best || gap < best.gap)) best = { gap: +gap.toFixed(3), won, rival: r.i };
+    if (gap >= 0 && gap <= PHOTO.gap && (!best || gap < best.gap)) best = { gap: +gap.toFixed(3), won, rival: r.i, who: r.name };
   }
   if (best) best.stars = PHOTO.stars.find(([g]) => best.gap <= g)?.[1] || 1;
   return best;

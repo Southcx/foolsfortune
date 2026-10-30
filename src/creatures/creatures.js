@@ -132,7 +132,7 @@ export class Creatures {
   /** A type's build-up on a creature: Impact's feeds its poise (stun.js); the others fill a meter that, full, puts on their status. */
   build(c, type, amount, by = 'courier', cause = 'shot') {
     if (!c?.alive || !TYPES[type] || amount <= 0) return;
-    const take = stateOf(c.mind).take;
+    const take = by === 'courier' && this.game.classArtsRun?.noResist?.(c) ? Math.max(1, stateOf(c.mind).take) : stateOf(c.mind).take; // (Mark for Death: it cannot resist your blows)
     amount *= (by === 'courier' ? draughtBuild(this.game.draught, type) : 1) * (this.game.weather?.buildMult?.(type, c.pos) ?? 1); // (the draught's, above; and its feeling's weather where it stands, anyone's blow: progress/weather.js)
     if (type === 'impact') { this.game.stun?.add(c, TYPES.impact.poise * amount * take, { by, cause }); return; }
     if (by === 'courier') amount *= this.game.laidSpread?.swordsK ?? 1; // (Swords' tally: the status your blows build, progress/laidspread.js)
@@ -144,10 +144,11 @@ export class Creatures {
   /** Put a status on a creature for dur seconds at strength k (the longer of old and new is kept). */
   apply(c, name, dur, k = 1, by = 'courier') {
     if (!c?.alive) return false;
-    if (!UNSCALED.has(name)) {
+    if (!UNSCALED.has(name) && by === 'courier' && this.game.classArtsRun?.noResist?.(c)) dur *= Math.max(1, stateOf(c.mind).take); // (Mark for Death: it cannot resist, so no Stoic shrug)
+    else if (!UNSCALED.has(name)) {
       dur *= stateOf(c.mind).take; // (a Stoic mind holds a status a third as long; a Prismatic one twice)
       if (dur < 0.5) { // (shrugged off: and it hardens)
-        c.mind = pushed(c.mind, MIND.perResist); this.mindMoved(c, by);
+        if (!(by === 'courier' && this.game.classArtsRun?.cutThrough?.())) { c.mind = pushed(c.mind, MIND.perResist); this.mindMoved(c, by); } // (Cut Through: resisted, it hardens nothing)
         this.game.events?.emit('creature.resist', { kind: c.kind, status: name, by });
         return false;
       }
@@ -173,7 +174,7 @@ export class Creatures {
   windup(c, { at = c.pos, radius = 1.5, eta = 1, kind = 'blow', parry = true, part = null, area = null, type = null, status = null, answer = null, read = true, draw = null } = {}) {
     this.unwind(c);
     const g = this.game, w = { at, radius, eta, kind, parry, t: eta + 0.3, area, type, status, answer, draw, mark: parry && part ? g.parryMark?.mark(part, { eta: this.shownEta(eta) }) : null };
-    w.figmentTelegraph = area ? figmentMarkOf(w, g.psyche?.level?.('divination') ?? 1, !!g.lend?.has('figmentTelegraphs')) : null;
+    w.figmentTelegraph = area ? figmentMarkOf(w, g.psyche?.level?.('divination') ?? 1, !!g.lend?.has('figmentTelegraphs') || !!g.classArtsRun?.clearSight?.()) : null;
     w.held = read && !!g.player && this.holds(c, w);
     c.windup = w;
     this.drawFigmentTelegraph(c, w);
@@ -191,7 +192,7 @@ export class Creatures {
   /** A cast's Figment attack telegraph laid onto the windup its body began (a ram, a bash), or a windup of its own (world/well/raid.js). */
   figmentTelegraph(c, kind, spec) {
     const w = c.windup; if (!w || w.t <= 0) { this.windup(c, { ...spec, kind, parry: false }); return; }
-    Object.assign(w, spec, { kind }); w.figmentTelegraph = figmentMarkOf(w, this.game.psyche?.level?.('divination') ?? 1, !!this.game.lend?.has('figmentTelegraphs'));
+    Object.assign(w, spec, { kind }); w.figmentTelegraph = figmentMarkOf(w, this.game.psyche?.level?.('divination') ?? 1, !!this.game.lend?.has('figmentTelegraphs') || !!this.game.classArtsRun?.clearSight?.());
     w.held = !!this.game.player && this.holds(c, w); this.drawFigmentTelegraph(c, w);
   }
   unwind(c, why = 'end') { const w = c.windup; if (!w) return; w.mark?.clear(); w.drawn?.hide(); c.windup = null; if (w.held && c.alive) this.read(c, w, why); }

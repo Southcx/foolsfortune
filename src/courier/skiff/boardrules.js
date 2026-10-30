@@ -79,7 +79,7 @@ export class BoardRules {
     if (kind !== 'bail' && L.value <= HULL.empty && size >= HULL.wreck && this.S.phase === 'ride') {
       g.events?.emit('skiff.wreck', { kind, by: 'courier' }); this.S.bail('wrecked'); return true;
     }
-    const damage = kind === 'bail' ? HULL.bail : size * HULL[kind];
+    const damage = (kind === 'bail' ? HULL.bail : size * HULL[kind]) * (g.classArtsRun?.reinsK?.() ?? 1); // (Reins, a class's art: a hit takes less)
     const took = L.drain(damage, 'hull');
     g.events?.emit('skiff.hull', { kind, damage: +took.toFixed(1), left: +L.value.toFixed(1), by: 'courier' });
     return false;

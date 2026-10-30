@@ -147,7 +147,8 @@ export class Weather {
   /** Where a position stands: its place, its exposure, and that place's weather (nothing falls on a roofed place, but its mood is there). */
   here(pos) { // (a World shell's draw thins the weather round its aim for a game hour: worldDraw.weatherK, Calissa's, CASTER-SHELLS.md 7.1)
     const p = placeOf(pos), w = p ? { ...p, ...weatherAt(p.place) } : { place: null, exposure: 'open', ...weatherAt(null) };
-    const k = pos ? this.game.worldDraw?.weatherK?.(pos) ?? 1 : 1;
+    const k = pos ? this.game.worldDraw?.weatherK?.(pos) ?? 1 : 1, art = pos ? this.game.classArtsRun?.skyAt?.(pos) : null; // (Starlight, a class's art: the sky turned where it was asked, courier/classarts/body.js)
+    if (art) return { ...w, ...art };
     return k === 1 ? w : { ...w, strength: (w.strength || 0) * k };
   }
   /** The sky as data (Petra's render/daylight.js and Calissa's sky read the same numbers): the day's phase and the weather over a place. */

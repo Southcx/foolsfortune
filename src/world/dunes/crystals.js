@@ -202,7 +202,8 @@ export class Crystals {
       // it opens: at its sweet spot many times over, else as its nature pays (cubes; a shard if it rang; sometimes a key)
       if (R.sweet) { if (sfx.crystalSweet) sfx.crystalSweet(R.midi); else { placeholderTone(R.midi, 0, 2.5, 0.2); placeholderTone(R.midi + 7, 0, 2.5, 0.12); placeholderTone(R.midi + 12, 0, 2.5, 0.1); } }
       const shed = e.shed || 0, worth = Math.max(0, Math.round((ECON.crystal.base + e.size * ECON.crystal.perSize) * k * (R.sweet ? ECON.crystal.sweet[T.kind] : ECON.crystal.kind[T.kind])) - shed);
-      if (worth > 0) g.cubes?.burst?.(e.pos.clone().setY(e.pos.y + 0.4), worth, { count: 4 + Math.round(e.size * 4), up: 4.5, from: 'crystal' });
+      const more = by === 'courier' ? g.classArtsRun?.takeHarvestCubes?.() || 0 : 0; // (Harvest's cube, struck from this one: courier/classarts/acts.js)
+      if (worth + more > 0) g.cubes?.burst?.(e.pos.clone().setY(e.pos.y + 0.4), worth + more, { count: 4 + Math.round(e.size * 4), up: 4.5, from: 'crystal' });
       let shard = false, key = null;
       if (ringing && g.pneuka) { g.pneuka.add('mat.shard', 'crystal'); shard = true; }
       if (g.pneuka && simRand() < (ringing ? 0.22 : 0.06)) { key = rollKey(); g.pneuka.add(key, 'crystal'); }

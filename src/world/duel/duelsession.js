@@ -360,7 +360,7 @@ export class DuelSession {
   /** One of your actions: refused (a dry tick) or played, then the forecast drawn again. */
   take(a) {
     this.picked = null;
-    const S = this.state, lucky = a.kind === 'flee' && S?.rerolls && !this.practice && this.game.classArtsRun?.lucky?.(); // (Beginner's Luck: the throw thrown again if it fails, courier/classarts/body.js)
+    const S = this.state, A = this.game.classArtsRun, lucky = a.kind === 'flee' && S?.rerolls && !this.practice && (A?.lucky?.() || A?.secondChance?.('flee')); // (Beginner's Luck, Second Chance: the throw thrown again if it fails, courier/classarts/body.js)
     if (lucky) S.rerolls[0]++;
     this.luckyFlee = !!lucky; // (the art's throw is spent first: duel.flee says lucky, and the game day's re-roll is kept, progress/dice.js)
     const ev = act(S, a);
@@ -509,6 +509,7 @@ export class DuelSession {
     if (this.practice) { if (c) c.emo = 0; } // (practice: both whole, nothing taken, it stands as it was)
     else if (won && c?.alive) { c.dataBugMended = true; c.aberrant = false; g.creatures.strike(c, c.pos.clone().setY(c.pos.y + (c.height ?? 1)), _v.set(0, 1, 0), 999, 'drain', 'courier'); }
     else if (how === 'fled') { if (c) c.emo = 0; } // (away: both whole, no reward; it keeps its aberrance, calm, and drifts off)
+    else if (!won && how !== 'yield' && g.classArtsRun?.secondChance?.('duel')) { if (c) c.emo = 0; if (g.duelFoes) g.duelFoes.rearm = null; } // (Second Chance, a class's art: spared the shatter, its pull open again at once to try again)
     else if (!won) { if (c) c.emo = 0; g.death?.begin?.({ why: 'duel', by: 'creature' }); }
     this.state = null; this.foe = null; this.practice = false;
   }

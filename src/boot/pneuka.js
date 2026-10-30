@@ -95,7 +95,7 @@ export function bootPneuka(game, made) {
   game.feelingLooks = new FeelingLooks(game); // (a feeling's Lachryma drunk, drawn into the Courier: vfx/feelinglooks.js)
   game.lockheartReach = new LockheartReach(game); game.carryThrowMark = new CarryThrowMark(game); game.lobArcMark = new LobArcMark(game); game.flareReveal = new FlareReveal(game); // (the hoover's reach on the ground; where a carried thing would land; the Bombardier's lob previewed, a flare's finds marked: vfx/lockheartreach.js, vfx/carrythrowmark.js, vfx/lobarcmark.js, vfx/flarereveal.js)
   // (a blow taken: they flinch, character.js; the hurting impulses are the filigree's list)
-  game.events.on('courier.impulse', (e) => { if (HURT.has(e.why)) character.flinch(Math.min(1, (e.mag || 0) / 10), e.dir); });
+  game.events.on('courier.impulse', (e) => { if (HURT.has(e.why) && !e.held) character.flinch(Math.min(1, (e.mag || 0) / 10), e.dir); }); // (held: Unshaken, no stagger)
   game.events.on('tool.lend', (e) => character.lend(e.tool, game.belt?.freeHand)); // (the sub's verb's body: anim/lendgesture.js)
   game.lentModels = new LentModels(game); // (and the tool at the hand where the verb needs it: tools/lend.js)
   game.pairSpecials = new PairSpecials(game); // (a pair's special: the sub's lent verb fed through the main's, tools/pairspecials.js)

@@ -120,7 +120,7 @@ export function findWorth(kind, floor = 1, warped = false, deeper = 1.25) {
 export const SOLAR = {
   rings: 24, limit: 90, // (rings on the course; the gnomon's shadow sweeps the dial once in 90 real seconds: the clock)
   missed: 2, // (seconds added for a lit ring missed; a dark ring costs nothing and pays nothing)
-  medals: { gold: 60, silver: 72, bronze: 85 }, // (finishing times, with the penalties, in real seconds: Petra measures the line first)
+  medals: { gold: 46, silver: 55, bronze: 65 }, // (finishing times, with the penalties, in real seconds: the old 60 / 72 / 85 x 0.77, the loop's radius 130 for 170 since it moved into the Gnomon flats (AREAS.md); a ridden lap to confirm)
   pay: { bronze: 3, silver: 6, gold: 10, allLit: 4 }, // (minutes of play, once a medal ever; and once for every lit ring taken at dawn or dusk)
   dim: ['grief', 'dread'], // (the long rain and the pall dim every ring: the trial is a fair-weather sport)
 };

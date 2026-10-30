@@ -4565,6 +4565,16 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   desk at 960 x 600, 5 CSS px inside (the long one 498 CSS px wide), the Touchstone's lines THE TOUCHSTONE over "fair".
 - **Rule:** 364
 
+### 2026-10-30 · "Logged: your first use of waterwalk": a class art's tech named by its code id (progress/skills.js; Petra's verification shot)
+- **Seen:** Water Walk used once in the basement's course pool: the log said "You use Water Walk." and then "Logged: your first use of
+  waterwalk." The slip jelly mount had shown "jellymount" the same way the day before.
+- **Cause:** the System logs the first use of every tech that is not passive and not in `UNLOGGED_TECHS` (`loggedTechs`), by its id,
+  as a Movement Art's first use. Water Walk's tech (`courier/classarts/waterwalk.js`) and the jelly mount's are techs that are not Movement
+  Arts: each has a line of its own (tracking/classartsplay.js, tracking/jellymount.js), and neither was in the list.
+- **Fix:** `waterwalk` added to `UNLOGGED_TECHS` beside `jellymount` (added when the mount came in). Read back in the same pool: the
+  log says "You use Water Walk." and nothing with the id.
+- **Rule:** 365
+
 ### 2026-10-30 · The slip jelly mount's body never showed after the warm-up (vfx/jellymount/look.js; Calissa's look, headless)
 - **Seen (headless, phone and desk):** the call and the ride in the Dunes with no body under the Courier; the look's `read()` said
   `shown: false` through the call and the ride while the puddle and the effects played.

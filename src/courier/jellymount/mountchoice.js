@@ -13,7 +13,7 @@ import { JELLY_MOUNT } from '../../progress/jellymount.js';
 
 const ROWS = [
   { id: 'skiff', name: 'Solar Skiff', does: 'Sail the sand on the sun: fast, and the faster for the wind.', icon: 'touch.skiff', key: 'Y' },
-  { id: 'jelly', name: 'Slip jelly', does: `Ride any open ground: fast in paint and crude, which it drinks. A life of ${JELLY_MOUNT.hp.max}.`, key: 'Y' },
+  { id: 'jelly', name: 'Slip jelly', does: `Ride any open ground: fast in paint and crude, which it drinks. Health ${JELLY_MOUNT.hp.max}.`, key: 'Y' },
 ];
 const STEP = 40; // (pixels of the mouse's sideways move to change the pick, the quick pick's)
 const CSS = `#mountchoice{position:fixed;left:50%;bottom:18%;transform:translateX(-50%);display:flex;gap:12px;z-index:30;pointer-events:none}

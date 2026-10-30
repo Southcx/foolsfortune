@@ -98,9 +98,10 @@ export function readTag(game, c) {
   }
   const H = readHealth(F.level, c.hp, c.maxHp);
   lines.push(H ? plain('health', H.text, H.bar) : hidden('health', 7));
-  if (R.emo) {
+  const emo = game.classArtsRun?.reaction?.('empath') ? 'value' : R.emo; // (Empath: a creature's agitation seen at once, courier/classarts/body.js)
+  if (emo) {
     const e = c.emo || 0, band = e < EMO.optimal[0] ? 'low' : e > EMO.optimal[1] ? 'hot' : 'optimal';
-    lines.push(plain('emo', R.emo === 'value' ? `${band} ${e.toFixed(2)}` : band, R.emo === 'value' ? e : band));
+    lines.push(plain('emo', emo === 'value' ? `${band} ${e.toFixed(2)}` : band, emo === 'value' ? e : band));
   } else lines.push(hidden('emo', 7));
   if (R.statuses) {
     const on = [...(c.status?.keys() || [])].filter((n) => st(c, n)), build = Object.entries(c.build || {}).filter(([, k]) => k > 0.05);

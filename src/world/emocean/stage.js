@@ -445,6 +445,8 @@ export class Emocean {
   }
   wound(n, { by = 'creature', what = 'shot', kind = null } = {}) {
     const r = this.run; if (!r || this.ending || this.offering) return;
+    const k = this.game.classArtsRun?.reinsK?.() ?? 1; // (Reins, a class's art: a share of each hit spared, a whole one let off as it adds up)
+    if (k < 1) { r.spare = (r.spare || 0) + n * (1 - k); while (r.spare >= 1 && n > 0) { r.spare -= 1; n -= 1; } if (n <= 0) { this.game.classArtsRun?.fire?.('reins'); return; } }
     r.hits = Math.min(r.bears, r.hits + n); this.feel('hit');
     this.game.events?.emit('rail.hit', { hits: r.hits, bears: r.bears, what, ...(kind ? { kind } : {}), by }); // (kind: a shot's, 'plain' | 'outlined')
     if (r.chain.links || r.chain.of) this.game.railReadout?.chainBreak?.();
