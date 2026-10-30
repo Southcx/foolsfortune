@@ -56,7 +56,7 @@ export const SIGHTLINES = {
   'workshop.atrium': { top: [-1.6, 1.0, 1.1], drop: 1.9, size: 0.16, halo: 1.1, glint: 0.9, breath: 3.2, every: 2.6, kept: 0.25 },
   // the ruins' arch: from the lintel's underside (its 1.3 m slab under the stand), 1.6 m down into the opening, sized to read across the sand;
   // `day`: under the open sky its halo is laid over, not added (an added glow is lost against noon's sky)
-  'ruins.arch': { top: [0, -1.3, 0], drop: 1.6, size: 0.7, halo: 3.2, glint: 2.6, breath: 3.6, every: 3.0, kept: 0.25, day: true },
+  'ruins.arch': { top: [0, -1.3, 0], drop: 1.6, size: 1.05, halo: 4.2, glint: 3.4, breath: 3.6, every: 3.0, kept: 0.25, day: true },
 };
 const G = (k) => ROOM_GLAZES[k].body; // (a room glaze's colour id: Level.mat dresses it)
 const _p = new THREE.Vector3(), _q = new THREE.Quaternion();
