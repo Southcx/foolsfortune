@@ -155,6 +155,10 @@ export const SOURCES = [
   // an aberrant's secret found (secrets.js; its end, never a step): the hidden read (Divination), masterful; the powers it took paid
   // their own domains (duel.power below)
   { event: 'duel.secret',     domain: 'divination',     acts: 6,  quality: (e) => (e.by === 'courier' && !e.practice && e.done ? 1 : null) },
+  // a thrown hit (progress/sandbox.js IMPACT; world/impacts.js; Dawn of Mana's world as a weapon): moving things by will at a creature,
+  // Psychokinesis's; its quality the energy it carried (a heavy crate's 600 J masterful), a strike (three with one throw) a big act
+  { event: 'impact.hit',      domain: 'psychokinesis',  base: 6,  quality: (e) => (e.by === 'courier' ? q01((e.energy || 0) / 600) : null) },
+  { event: 'impact.strike',   domain: 'psychokinesis',  acts: 4,  quality: (e) => (e.by === 'courier' ? q01((e.n || 2) / 4) : null) },
   // a mimicry puzzle solved (progress/mimicry.js; docs/plans/MIMICRY.md): a big act a domain its powers trained, its quality the stars;
   // MATCH and UNDO also train Divination (the steps were read, never shown), and every solve Spellscription a little (the ground copied
   // down from what was shown: transcribing a thing). The repeat of a puzzle already solved is half the act.
