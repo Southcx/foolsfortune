@@ -19,7 +19,7 @@ export const LENDS = {
   moves:     { label: 'Tool Moves',    opens: "Every tool's full moveset." },
   functions: { label: 'Functions',     opens: 'Every reprogramming Function known, every neuralese word glossed' },
   shrines:   { label: 'Shrines',       opens: 'Every Shrine found for fast travel' },
-  garden:    { label: 'Spirit Garden',        opens: 'The Spirit Garden at its highest Firing (never the attributes\' ranks)' },
+  garden:    { label: 'Spirit Garden',        opens: 'The Spirit Garden at its highest Firing, every seed earned (never the attributes\' ranks)' },
   sea:       { label: 'Sea',           opens: 'Entropolis open; any ship sails without a rutter' },
   siblings:  { label: 'Siblings',      opens: 'All five siblings met' },
   feelings:  { label: 'Feelings',      opens: 'Every feeling known' },

@@ -52,7 +52,7 @@ export class Orbit {
 
   // ------------------------------------------------------------------ the seeds
   /** The seeds the ledger has given (once each, written by tracking). */
-  earned() { return Object.keys(SEEDS).filter((id) => (this.L?.get?.(`seed.earn.${id}`) || 0) > 0); }
+  earned() { const lent = !!this.R.game?.lend?.has?.('garden'); return Object.keys(SEEDS).filter((id) => lent || (this.L?.get?.(`seed.earn.${id}`) || 0) > 0); } // (in DEBUG the Spirit Garden lend gives every seed, never counted)
   /** The ring's seeds earned and not yet in the sky (in the shed). */
   waiting() { return this.earned().filter((id) => !SEEDS[id].inner && !this.planted.has(id) && this.R.hand?.seed?.id !== id); }
   of(id) { return this.planted.get(id) || null; }
