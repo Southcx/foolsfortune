@@ -63,7 +63,8 @@ export class Daylight {
     T.hemiI *= 1 + 1.5 * MOON.lift * moon * n; T.sunI *= THREE.MathUtils.lerp(1, 0.7 + 0.6 * moon, n); // (the night's "sun" is the moon: 0.7 new .. 1.3 full; Calissa's numbers)
     // the weather over the place: its fog's colour and thickness, and the light dimmed as its sky is (a pall darkens, a sunshower warms)
     const a = sky.aspect, s = sky.strength || 0, F = a ? fogOf(a, s) : null, expo = a ? lightOf(a, s) : 1; // (the heavy look's exposure eased in: a heavy Dread dims the sand with its sky, vfx/weather.js lightOf)
-    if (F) { T.fog.lerp(_c.copy(F.colour), 0.8 * s); T.bg.lerp(_c, 0.5 * s); T.fogD *= F.density; }
+    const lit = a === 'dread' && this.game.classArtsRun?.lampLit?.(); // (Lamp, a class's art: Dread's fog kept off the Courier while it burns)
+    if (F && !lit) { T.fog.lerp(_c.copy(F.colour), 0.8 * s); T.bg.lerp(_c, 0.5 * s); T.fogD *= F.density; }
     T.sunI *= expo; T.hemiI *= expo; T.ambI *= Math.sqrt(expo);
   }
 }

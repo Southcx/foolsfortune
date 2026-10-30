@@ -20,7 +20,7 @@ export const led = (key, n, label) => ({ key, n, label });
 export const achOf = (id) => `art_${id.replace('.', '_')}`;
 /** How far a goal has come, from the ledger: [0..1]. */
 /** A goal's key read as a counter or a record (`L.hi`: a best kept apart from the counters), whichever it is. */
-export const ledOf = (L, key) => Math.max(L?.get?.(key) || 0, L?.best?.(key) || 0);
+export const ledOf = (L, key) => Math.max((L?.get?.(key) || 0) + (L?.get?.(`teach.${key}`) || 0), L?.best?.(key) || 0); // (`teach.<key>`: practice counted again by Teaching, a class's art)
 export const goalFracOf = (L, g) => (g.n > 0 ? Math.min(1, ledOf(L, g.key) / g.n) : 1);
 /** How far a set of goals has come: their mean, or for an `any` art the furthest one. */
 export const goalsFracOf = (L, goals, any = false) => (!goals.length ? 1 : any ? Math.max(...goals.map((g) => goalFracOf(L, g))) : goals.reduce((n, g) => n + goalFracOf(L, g), 0) / goals.length);

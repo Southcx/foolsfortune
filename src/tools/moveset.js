@@ -504,6 +504,7 @@ export class Moveset {
     const m = !g.lock?.active && magnet(g, P, f, { range: def.body === 'whole' ? 6 : 4.2, cone: 1.0 });
     if (m) f.set(m.pos.x - P.pos.x, 0, m.pos.z - P.pos.z).normalize();
     c.yaw = P.bodyYaw = Math.atan2(f.x, f.z) - (def.aim || 0); // (`aim`: a blade whose arc passes off to one side turns the body that far off what it goes to)
+    if (def.hit) g.classArtsRun?.recordMove?.({ tool: this.id, move: id, at: P.pos.clone(), yaw: c.yaw, reach: (def.reach ?? this.S.reach ?? 0.6) + (def.tip ?? this.S.tip ?? 0.9), power: this.worth(def.hit, c), cause: def.hit.cause || this.S.cause || 'sliced' }); // (Encore's record: a class's art)
     if (def.body === 'whole') this.carry(c, m);
     else if (def.lunge) {
       let lunge = def.lunge * (P.grounded ? 1 : 0.5);

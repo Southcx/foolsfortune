@@ -108,7 +108,11 @@ export class ToolBelt {
     if (inp.wasPressed(SWAP_KEY)) this.swap();
     if (inp.wasPressed(LEND_KEY) && !busy) {
       const t = this.get(this.sub);
-      if (t?.lend?.()) this.game.events?.emit('tool.lend', { tool: t.id, main: this.main, by: 'courier' }); // (each verb says what it did by its own event: shot.fire, hook.fire, flash.fire ...)
+      const A = this.game.classArtsRun, free = !!A?.freeLend?.(); // (Choice, a class's art: the lend after a swap paid for, courier/classarts/body.js)
+      if (free) this.game.lachryma?.addModifier?.('art.choice', { costMult: { '*': 0 } });
+      const lent = !!t?.lend?.();
+      if (free) { this.game.lachryma?.removeModifier?.('art.choice'); if (lent) A.lent(); }
+      if (lent) this.game.events?.emit('tool.lend', { tool: t.id, main: this.main, by: 'courier' }); // (each verb says what it did by its own event: shot.fire, hook.fire, flash.fire ...)
     }
   }
 
