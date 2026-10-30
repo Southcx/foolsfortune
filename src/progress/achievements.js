@@ -61,7 +61,7 @@ export const CATS = [
   { id: 'emocean', name: 'THE EMOCEAN', subs: ['Sailing', 'Sea Stages', 'Crude', 'The Open Sea'] },
   { id: 'collect', name: 'COLLECTION', subs: ['Logged', 'The Collection Log'] },
   { id: 'psyche', name: 'THE DOMAINS', subs: ['Levels'] },
-  { id: 'garden', name: 'THE SPIRIT GARDEN', subs: ['The Press', 'The Garden', 'The Mycelium', 'The Spirits', 'The Firings', "The Garden's Life"] },
+  { id: 'garden', name: 'THE SPIRIT GARDEN', subs: ['The Press', 'The Garden', 'The Mycelium', 'The Spirits', 'The Firings', "The Garden's Life", 'Seeds and Slabs'] },
   { id: 'sky', name: 'THE SKY', subs: ['Weather', 'The Day'] },
   { id: 'general', name: 'GENERAL', subs: ['Time', 'Persistence', 'The Spread', 'The Stones', 'Pairs', 'Achievements'] },
 ];
@@ -691,6 +691,16 @@ export function buildAchievements(game) {
   C('gy19', 'garden', "The Garden's Life", 3, 'mechanic', 'Farewell, Desire', 'Let a spirit of Desire go home when it asks.', 'spirit.farewell.desire', 1, { hidden: true });
   C('gy20', 'garden', "The Garden's Life", 3, 'mechanic', 'Farewell, Grief', 'Let a spirit of Grief go home when it asks.', 'spirit.farewell.grief', 1, { hidden: true });
   C('gy21', 'garden', "The Garden's Life", 3, 'mechanic', 'Farewell, Dread', 'Let a spirit of Dread go home when it asks.', 'spirit.farewell.dread', 1, { hidden: true });
+  // seeds, slabs and scans (progress/seeds.js, slabs.js, scans.js; docs/plans/SEEDS-SLABS-SCANS.md): gw1 .. gw3 are the first path's
+  // garden steps (progress/goals.js FIRST: enter, plant, carve the clay's starter slab: progress/gardenhowto.js GIFT)
+  C('gw1', 'garden', 'Seeds and Slabs', 1, 'count', 'Through the Arch', 'Enter your Spirit Garden.', 'garden.enter', 1);
+  C('gw2', 'garden', 'Seeds and Slabs', 1, 'count', 'Seedling', "Let a planetoid's seed go in the ring.", 'seed.plant.ring', 1);
+  C('gw3', 'garden', 'Seeds and Slabs', 1, 'count', 'Unearthed', 'Carve a spirit slab free at the bench.', 'slab.carve', 1);
+  C('gw4', 'garden', 'Seeds and Slabs', 2, 'count', 'Set in Stone', 'Set a photo of a creature into a spirit slab at the plate shrine.', 'slab.make.plate', 1);
+  C('gw5', 'garden', 'Seeds and Slabs', 2, 'count', 'Read the Code', 'Read a real barcode or QR code at the plate shrine.', 'scan.read', 1);
+  C('gw6', 'garden', 'Seeds and Slabs', 3, 'mechanic', 'Not a Scratch', 'Carve a spirit slab flawless.', 'slab.flawless', 1);
+  C('gw7', 'garden', 'Seeds and Slabs', 3, 'count', 'Full Grown', 'Feed a planetoid of the ring until it is large.', 'seed.grow.large', 1);
+  F('gw8', 'garden', 'Seeds and Slabs', 4, 'collect', 'A Sky of Your Own', 'Let all six seeds of the ring go.', (L) => ['clay', 'crystal', 'coral', 'bowl', 'ring', 'bone'].filter((k) => L.get(`seed.plant.${k}`) >= 1).length, 6);
   F('sg4', 'garden', 'The Garden', 5, 'collect', 'Room to Grow', 'Widen the garden as far as it goes.', (L) => L.get('garden.upgrade.slot') + L.get('garden.upgrade.bed'), 7);
 
   // ---------------------------------------------------------------- THE SKY (progress/weather.js: emotional weather and the day)

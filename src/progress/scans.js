@@ -14,7 +14,7 @@
 // 2000: real UPCs as monsters and items, by tribe), Barcode Battler (Epoch, 1991), Pokemon's QR scanner in Sun and Moon (a few a day),
 // Yo-kai Watch's QR medals.
 //
-//   SCAN   readCode(text) -> { own?, digits, hash }    holdOf(hash, roster) -> { what: 'slab' | 'material', kind, feeling, cls, grain | tier }
+//   SCAN   ROSTER   photoKindOf(kind)   readCode(text) -> { own?, digits, hash }    holdOf(hash, roster) -> { what: 'slab' | 'material', kind, feeling, cls, grain | tier }
 //   scanResult(text, { seen: Set<hash>, today: n, met: Set<kind>, roster }) -> { ok, why?, hold?, sealed?, cubes?, hash }
 // ---------------------------------------------------------------------------------------
 import { VISITORS } from './realm.js';
@@ -25,8 +25,13 @@ import { ECON } from './econ/table.js';
  *  `material`: the share of codes that hold a material (Skannerz' items). `cls`: the odds of a slab's class 0..4 (common to rare, each
  *  about half the one before, so a class-4 code is a find worth sharing). */
 export const SCAN = { perDay: 3, again: 1, material: 0.25, cls: [0.5, 0.25, 0.13, 0.08, 0.04] };
-/** The creatures a code may hold (the same list a plate may awaken: world/garden/awaken.js). */
-export const ROSTER = Object.keys(VISITORS).concat(['slipjelly', 'clapperjar', 'glint', 'lobber', 'spirit']);
+/** The creatures a code may hold, once each (the same list a plate may awaken: world/garden/awaken.js; VISITORS already holds the four
+ *  visitors, so they are not added twice: doubled, they drew twice the odds of the spirit). */
+export const ROSTER = [...new Set(Object.keys(VISITORS).concat(['slipjelly', 'clapperjar', 'glint', 'lobber', 'spirit']))];
+/** The Veritome's Book keys a photo by the creature's own code kind (tools/veritome/bestiary.js creatureOf: 'clapper'), the garden by the
+ *  glossary's word ('clapperjar'): one kind, two spellings. `photoKindOf` turns the garden's into the Book's, so a clapperjar met is met. */
+export const PHOTO_KIND = { clapperjar: 'clapper' };
+export const photoKindOf = (kind) => PHOTO_KIND[kind] || kind;
 const FEELINGS = ['wonder', 'mirth', 'desire', 'fury', 'gall', 'grief', 'dread'];
 
 /** The game's own codes, read as what they are. */
@@ -60,5 +65,5 @@ export function scanResult(text, { seen = new Map(), today = 0, met = new Set(),
   if (times > 1) return { ok: false, why: 'known', hash: c.hash };
   if (today >= SCAN.perDay) return { ok: false, why: 'day', hash: c.hash };
   const hold = holdOf(c.hash, roster);
-  return { ok: true, hash: c.hash, hold, sealed: hold.what === 'slab' && !met.has(hold.kind) };
+  return { ok: true, hash: c.hash, hold, sealed: hold.what === 'slab' && !met.has(hold.kind) && !met.has(photoKindOf(hold.kind)) };
 }

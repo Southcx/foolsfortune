@@ -4692,3 +4692,14 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the rule keeps the last size of the tick and says it once, from a microtask after the tick's events. Measured with a stub bus:
   three `seed.grow` in one tick say "A planetoid grows: large." once, and count three.
 - **Rule:** NEW:throttle-says-the-last
+
+### 2026-10-30 · A clapperjar's photo never became a slab, and a scanned one never opened (progress/scans.js; found writing the garden's how-to)
+- **Seen:** read from the code. The Veritome's Book keys a clapperjar's photo `clapper` (bestiary.js `creatureOf`). The plate shrine's
+  list (world/garden/awaken.js `plates`) and the scans' roster ask for `clapperjar`. So the workshop's own creature, the first a new save
+  meets, could not be set into a slab, and a code holding a clapperjar's slab stayed sealed for good. The roster also listed the four
+  visitors twice (`VISITORS` holds them, and they were concatenated again), so each drew twice the odds of the spirit.
+- **Cause:** one kind under two spellings: the code's kind (`clapper`) and the glossary's word (`clapperjar`), joined with no map.
+- **Fix:** `photoKindOf` (scans.js) turns the garden's word into the Book's, and a scan's seal asks for either. The roster is made
+  unique. The plate shrine's list is Petra's (handed over). Measured (`node scripts/gardengrowth.mjs`): a clapperjar photographed
+  opens a clapperjar's slab; the roster holds each creature once.
+- **Rule:** NEW:one-kind-one-key

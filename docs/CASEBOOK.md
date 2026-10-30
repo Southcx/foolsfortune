@@ -1055,3 +1055,6 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 NEW:throttle-says-the-last. **A throttled log line says where a burst ended, never where it began.** When one act emits a run of events
   in the same tick (a feed past several sizes, a chain's steps), a rule that says each under a throttled key says the first and drops the
   rest: gather the tick's events and say the last (or the sum) once, after the tick.
+NEW:one-kind-one-key. **A thing kept under one module's key is looked up by that key, or through a map named beside it.** When the
+  code's kind and the glossary's word differ (`clapper`, `clapperjar`), the module that joins two tables owns the map (`photoKindOf`),
+  and a check reads one through the other.

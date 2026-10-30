@@ -11,7 +11,10 @@
 // ---------------------------------------------------------------------------------------
 import { SIZES, sizeOf, feedOf, tintOf, SEEDS, seedsEarned } from '../src/progress/seeds.js';
 import { SLAB, VERBS, newSlab, carve, scoreOf, spiritOf, exposed, secondsOf } from '../src/progress/slabs.js';
-import { SCAN, ROSTER, readCode, holdOf, scanResult } from '../src/progress/scans.js';
+import { SCAN, ROSTER, readCode, holdOf, scanResult, photoKindOf } from '../src/progress/scans.js';
+import { GARDEN_HOWTO, GIFT } from '../src/progress/gardenhowto.js';
+import { FIRST } from '../src/progress/goals.js';
+import { readFileSync } from 'node:fs';
 import { ECON } from '../src/progress/econ/table.js';
 
 let bad = 0;
@@ -76,7 +79,20 @@ const seen = new Map(), code = '5012345678900', first = scanResult(code, { seen 
 seen.set(first.hash, 1); const again = scanResult(code, { seen }); seen.set(first.hash, 2); const third = scanResult(code, { seen });
 check(first.ok && again.again && again.cubes === Math.round(SCAN.again * ECON.perMinute) && !third.ok, 'a repeat gives its cubes once, then nothing');
 check(!scanResult('9780140449136', { today: SCAN.perDay }).ok, `the game day's cap (${SCAN.perDay})`);
+check(new Set(ROSTER).size === ROSTER.length, 'the roster holds each creature once');
+const jar = (() => { for (let n = 0; n < 4000; n++) { const t = String(700000000000 + n * 104729), h = holdOf(readCode(t).hash); if (h.what === 'slab' && h.kind === 'clapperjar') return t; } return null; })();
+check(jar && scanResult(jar, { met: new Set([photoKindOf('clapperjar')]) }).sealed === false, "a clapperjar photographed (the Book's 'clapper') opens a clapperjar's slab");
 const s1 = scanResult(code, {}); check(s1.hold.what !== 'slab' || s1.sealed === true, 'a slab of a kind not met comes sealed');
+
+// ---- the garden's how-to and the first path's garden steps
+const SHOWS = ['jar', 'hand', 'shed', 'ring', 'lotus', 'shrine', 'bench'];
+check(GARDEN_HOWTO.steps.length <= 8 && GARDEN_HOWTO.steps.every((s) => s.say && SHOWS.includes(s.show)), `the garden's how-to: ${GARDEN_HOWTO.steps.length} steps, each a line and a spot (${GARDEN_HOWTO.steps.map((s) => s.show).join(', ')})`);
+check(ROSTER.includes(GIFT.kind) && secondsOf(GIFT.stars) >= 120, `the starter slab is a creature of the roster (${GIFT.kind}, ${GIFT.stars} star, ${secondsOf(GIFT.stars)} real s)`);
+// (the achievements are built against a game, so their rows are read from the source: id and tier)
+const src = ['achievements', 'raceachievements', 'areaachievements'].map((n) => readFileSync(new URL(`../src/progress/${n}.js`, import.meta.url), 'utf8')).join('\n');
+const byId = new Map([...src.matchAll(/[CFH]\('([a-z]+\d+)',\s*'[a-z]+',\s*(?:'[^']*'|"[^"]*"),\s*(\d)/g)].map((m) => [m[1], { tier: +m[2] }]));
+check(['gw1', 'gw2', 'gw3'].every((id) => FIRST.path.includes(id) && FIRST.where[id] && byId.get(id)?.tier === 1), 'the first path walks the garden: enter, plant, carve (Easy, each with its where)');
+check(FIRST.path.every((id) => byId.has(id)), `every step of the first path is an achievement (${FIRST.path.length} steps)`);
 
 console.log(bad ? `gardengrowth: ${bad} FAILED` : 'gardengrowth: all PASS');
 process.exit(bad ? 1 : 0);
