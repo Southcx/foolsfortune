@@ -40,3 +40,12 @@ beat and drop the guess.
   - `JAR_CUT.limitCast` 1.75 becomes 2.0.
 - The turn's band now waits 0.3 s after a play's last beat (`CUT_IN.turn.settle`). Its event still arrives with the band, so
   `TURN_CUT_IN` is right as it is.
+
+**The aberrant's data drain** (`vfx/duelview/aberrantdrain.js`, `ABERRANT_DRAIN`). A won PvE duel (never practice, never the finisher)
+now ends with the aberrant drained into the Pneuka Jar, between its own death and the hero shot. Three new optional hooks, on the
+drain's own clock (the held beat after the burst adds about 0.15 real s):
+- `sfx.duelDrainBreak?.()` at its start: the hex shell forms round what is left and bursts at 0.4 s.
+- `sfx.duelDrainBeam?.()` at 0.62 s: the beam from the Jar's mouth over the tsuitate to the foe, held until the gulp.
+- `sfx.duelGulp?.()` at 2.0 s: the swallow; the hero shot (your `duelHero`) follows at 2.5 s.
+It starts at the death's `drainAt` (the Lantern Wisp: the Line 1.3, the secret 2.2; the slip jelly: the Line 1.4, the secret 2.1), so
+the whole ending is about 5 to 6 real s, and a press after its first real second skips to the hero shot.

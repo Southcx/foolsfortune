@@ -150,8 +150,10 @@ export class DuelShow {
     if (f >= 1) { J.group.rotation.y = W.yaw; this.won = null; }
   }
 
-  /** A cut's shot (stage.js): `kind` at `u` (0..1 through it) into out.pos and out.look (the world). */
+  /** A cut's shot (stage.js): `kind` at `u` (0..1 through it) into out.pos and out.look (the world); an aberrant's data drain's own two
+   *  ('aberrantDrain', 'jarGulp') are its (duelview/aberrantdrain.js). */
   cineShot(kind, u, out) {
+    if (kind === 'aberrantDrain' || kind === 'jarGulp') return this.view.aberrantDrain?.shot?.(kind, u, out) || null; // (an aberrant's data drain's two shots: aberrantdrain.js)
     const V = this.view, g = this.game, face = V.face, uu = _a.copy(V.u).setY(0).normalize();
     const jar = g.player?.pos ? _b.copy(g.player.pos) : _b.copy(V.centre).addScaledVector(uu, -2), foe = V.foe?.pos ? _d.copy(V.foe.pos) : _d.copy(V.centre).addScaledVector(uu, 2);
     const head = V.foeCast?.headWorld?.(_e) || _e.copy(foe).setY(foe.y + 1.2), fs = SHOW.foeScale;
