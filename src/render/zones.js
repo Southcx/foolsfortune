@@ -17,6 +17,10 @@
 //   game.zones.update(dt)        game.zones.current (what is drawn)   game.zones.whole (the ground: ask this for music, weather, a room's rules)   game.zones.visibleAt(pos)
 //   game.zones.acoustic -> { zone, acoustic, wet? } (the space heard, render/zonemap.js ZONE_SOUND)   event zone.acoustic, on every change of zone
 //   obj.userData.maxDist = 30      (also hidden beyond that distance from the camera: labels, small signage)
+// SEEN THROUGH A DOORWAY (a portal: Quake's and Doom 3's, Unreal's precomputed visibility at its simplest): from inside the Throwing
+// Room the workshop is seen only through its doorway, so of the workshop only what lies in the frustum from the camera through the
+// opening is drawn, tested every frame (`PORTALS`; game.zones.portals = false draws all of it, as before). The Throwing Room's frame was
+// 464 to 578 calls with the door in view (the budget 450; 2026-10-30), the whole workshop drawn behind a doorway 3 m wide.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { ZONE_TESTS, ZONE_SOUND, zoneOf, wholeOf, nearShore } from './zonemap.js';
@@ -53,6 +57,23 @@ const SEES = {
   dunes: (c) => (nearShore(c) ? SEEN.beach : SEEN.none),
 };
 export const ZONES = ZONE_TESTS.map((z) => ({ ...z, sees: SEES[z.id] }));
+
+/** A zone seen from another only through an opening: the opening's face toward the camera's room (x), its span (z, y), widened by `pad`
+ *  on every side so a thing just beside the frame, and the shadow it throws into view, is kept; within `near` of the face (or past it)
+ *  the frustum is not trusted and the whole zone is drawn. */
+const PORTALS = { throwingRoom: { to: 'workshop', x: 10.5, z0: 1, z1: 4, y0: 0, y1: 3.2, pad: 1.2, near: 0.35 } };
+const _pq = [new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3(), new THREE.Vector3()], _pl = [0, 1, 2, 3, 4].map(() => new THREE.Plane());
+const _pin = new THREE.Vector3(), _px = new THREE.Vector3(-1, 0, 0);
+/** The portal's five planes from the camera at `c` (one through each edge of the opening, and the opening's own face), or null. */
+function portalFrom(D, c) {
+  if (c.x - D.x < D.near) return null;
+  const x = D.x, a = D.z0 - D.pad, b = D.z1 + D.pad, lo = D.y0 - D.pad, hi = D.y1 + D.pad;
+  _pq[0].set(x, lo, a); _pq[1].set(x, lo, b); _pq[2].set(x, hi, b); _pq[3].set(x, hi, a);
+  _pin.set(x - 1, (lo + hi) / 2, (a + b) / 2); // (a point just through the opening: inside every plane)
+  for (let i = 0; i < 4; i++) { const P = _pl[i].setFromCoplanarPoints(c, _pq[i], _pq[(i + 1) % 4]); if (P.distanceToPoint(_pin) < 0) P.negate(); }
+  _pl[4].set(_px, x); // (through the opening's face: x at most its x)
+  return D;
+}
 const BY_ID = Object.fromEntries(ZONES.map((z) => [z.id, z]));
 export { zoneOf, wholeOf };
 
@@ -76,6 +97,7 @@ export class Zones {
     this.visible = new Set(ZONES.map((z) => z.id)); // (everything, until the camera is somewhere)
     this.t = 0;
     this.enabled = true;
+    this.portals = true; this.beyond = []; // (what of the zone behind a doorway the last pass found: tested each frame against the portal)
   }
 
   /** Is a point in a zone being drawn (or in no zone at all)? */
@@ -102,10 +124,41 @@ export class Zones {
       const c = o.userData.zoneHeld; if (c && !fresh && --c.left > 0) return c.z; // (fresh: the picture changed, worked out now)
       _b.setFromObject(o);
       const z = _b.isEmpty() ? null : (_b.getBoundingSphere(_s), _s.radius > 600 ? null : zoneOf(_s.center));
-      const held = (o.userData.zoneHeld ||= { z: null, left: 0 }); held.z = z; held.left = HOLDER;
+      const held = (o.userData.zoneHeld ||= { z: null, left: 0, s: null }); held.z = z; held.left = HOLDER; held.s = _b.isEmpty() ? null : (held.s || new THREE.Sphere()).copy(_s);
       return z;
     }
     return zoneOf(o.getWorldPosition(_c));
+  }
+
+  /** Is a top-level object within the portal's frustum (its world sphere against the five planes)? */
+  inPortal(o) {
+    const s = this.sphereOf(o); if (!s) return true;
+    for (const P of _pl) if (P.distanceToPoint(s.center) < -s.radius) return false;
+    return true;
+  }
+  /** A top-level object's world sphere: a mesh's from its geometry (an instanced one's from its instances), a holder's as the pass last
+   *  worked it out, any other's from its box once, kept about where it stands (a rig or a prop that moves keeps its size); none for a
+   *  thing three draws unculled. */
+  sphereOf(o) {
+    if (o.frustumCulled === false) return null; // (drawn wherever its shader puts it, a prop batch's or a world-space effect's: its bounds say nothing, so it is always drawn)
+    if (o.isMesh) {
+      o.updateWorldMatrix(false, false);
+      if (o.isInstancedMesh) { if (!o.boundingSphere) o.computeBoundingSphere(); return _s.copy(o.boundingSphere).applyMatrix4(o.matrixWorld); }
+      if (!o.geometry.boundingSphere) o.geometry.computeBoundingSphere();
+      return _s.copy(o.geometry.boundingSphere).applyMatrix4(o.matrixWorld);
+    }
+    const H = o.userData.zoneHeld; if (H) return H.s ? _s.copy(H.s) : null;
+    let k = o.userData.portalAt; o.getWorldPosition(_c);
+    if (!k) { _b.setFromObject(o); if (_b.isEmpty()) return null; _b.getBoundingSphere(_s); k = o.userData.portalAt = { dx: _s.center.x - _c.x, dy: _s.center.y - _c.y, dz: _s.center.z - _c.z, r: _s.radius }; }
+    _s.center.set(_c.x + k.dx, _c.y + k.dy, _c.z + k.dz); _s.radius = k.r;
+    return _s;
+  }
+  /** Between the passes: what of the zone behind the doorway the last pass found, shown or hidden by the portal this frame (all of it
+   *  shown, once, when there is no portal now). */
+  throughPortal(D, cam) {
+    const B = this.beyond; if (!B.length) return;
+    for (const o of B) { const far = o.userData.maxDist ? o.getWorldPosition(_c).distanceTo(cam) > o.userData.maxDist : false; setZoneOff(o, far || (D ? !this.inPortal(o) : false)); }
+    if (!D) B.length = 0;
   }
 
   /** Hiding by zone, combined with the owner's own `visible` (see the header). */
@@ -134,15 +187,19 @@ export class Zones {
     this.nextVisible = this.visible; this.visible = vis;
     // a pass over the scene: at once when the picture changes, a few times a second otherwise (things move between zones)
     this.t -= dt;
-    if (!changed && same && this.t > 0) return;
+    const P = this.portals && PORTALS[cur], D = P && vis.has(P.to) ? portalFrom(P, cam) : null; // (the doorway's frustum this frame, or none)
+    if (!changed && same && this.t > 0) { this.throughPortal(D, cam); return; }
     this.t = 0.25;
+    const beyond = this.beyond; beyond.length = 0;
     for (const o of g.scene.children) {
       if (o.userData.zoneFree || o.isLight || o.isPoints || o.isSprite || o.frustumCulled === false && !o.userData.zone) { if (o.zoneOff) setZoneOff(o, false); continue; }
       Zones.install(o);
       const z = this.place(o, changed || !same);
       // (things only worth drawing up close, such as the floor labels: `userData.maxDist`)
       const far = o.userData.maxDist ? o.getWorldPosition(_c).distanceTo(cam) > o.userData.maxDist : false;
-      setZoneOff(o, far || (z !== null && !vis.has(z)));
+      const off = far || (z !== null && !vis.has(z));
+      if (!off && D && z === D.to) { beyond.push(o); setZoneOff(o, !this.inPortal(o)); continue; } // (behind the doorway: only what can be seen through it)
+      setZoneOff(o, off);
     }
   }
 
