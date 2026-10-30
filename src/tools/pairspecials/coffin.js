@@ -10,7 +10,8 @@
 // Prior art: Final Fantasy's Weather Change and Ōkami's Sunrise (the sky turned by a hand), Pandora's box; the shockwave release of every
 // charge mechanic (Kirby's Inhale spat back out).
 //
-//   coffinSpecials(PS) -> part { lend(tool), open(e), outcome(e) }
+//   coffinSpecials(PS) -> part { lend(tool), open(e), outcome(e) }; each act said with its place (pair.special, pair.hit:
+//   tools/pairspecials.js) for its look (vfx/pairspeciallooks.js)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { GAME_HOUR } from '../psygun/worlddraw.js';
@@ -30,21 +31,22 @@ export function coffinSpecials(PS) {
       const W = P().turnOfWeather, take = Math.max(0, Math.min(4, e.rank ?? 0)) / 4; if (!(take > 0)) return;
       const F = g.techs?.get?.('dreamvane')?.fork, at = (F && F.state !== 'heel' ? F.pos : g.player.pos).clone();
       g.worldDraw?.thinAt?.(at, W.radius, take, GAME_HOUR * W.hours); g.worldLooks?.fair?.(at, W.radius); // (weather.here asks worldDraw.weatherK)
-      PS.said(W.n, { take });
+      PS.said(W.n, { take, at, feeling: g.weather?.here?.(at)?.aspect || undefined, power: take }); // (the weather as turned: none once fair)
     },
     lend(tool) {
       const L = LH(), C = P().lastCall;
       if (tool !== 'crucibelle' || !PS.live(C.n) || !L?.full) return;
-      const power = L.charge * C.per, at = g.player.pos;
+      const power = L.charge * C.per, at = g.player.pos, share = L.charge / Math.max(1e-6, L.fill);
       L.charge = 0; L.save?.(); // (the coffin emptied, as an opening empties it)
-      let n = 0;
+      const hit = [];
       for (const c of g.creatures?.near?.(at, C.radius) || []) {
         if (!c.alive || c.ally) continue;
         const d = _a.set(c.pos.x - at.x, 0, c.pos.z - at.z); if (d.lengthSq() < 1e-4) d.set(0, 0, 1);
-        g.creatures.strike(c, c.pos.clone(), d.normalize().clone(), power, 'lockheart', 'courier'); n++;
+        g.creatures.strike(c, c.pos.clone(), d.normalize().clone(), power, 'lockheart', 'courier'); hit.push(c);
       }
       g.ai?.stimuli?.emit('noise', at, { radius: 30, strength: 1, by: 'courier' });
-      PS.said(C.n, { n, power: +power.toFixed(1) });
+      PS.said(C.n, { n: hit.length, blow: +power.toFixed(1), power: share }); // (power: the fill's share, its look's strength)
+      for (const c of hit) PS.hit(C.n, { target: c });
     },
   };
 }

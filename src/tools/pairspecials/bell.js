@@ -9,7 +9,8 @@
 // Prior art: Final Fantasy's Scan and Libra (a spell that reads a foe), the bard's healing song (Zelda's Song of Healing), Hi-Fi Rush's
 // beat (a stroke on the beat counts).
 //
-//   bellSpecials(PS) -> part { toll(e), update(raw) }
+//   bellSpecials(PS) -> part { toll(e), update(raw) }; each act said with its place (pair.special, pair.hit, pair.mark:
+//   tools/pairspecials.js) for its look (vfx/pairspeciallooks.js)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { TOLL } from '../crucibelle/crucibelle.js';
@@ -29,7 +30,7 @@ export function bellSpecials(PS) {
         if (!c.alive || c.ally) continue;
         const d = _a.set(c.pos.x - Pl.pos.x, 0, c.pos.z - Pl.pos.z); if (d.length() > 0.3 && d.normalize().angleTo(f) > TOLL.cone) continue;
         for (let i = 0; i < R.reads; i++) g.events?.emit('pair.read', { kind: c.kind, by: 'courier' });
-        n++;
+        PS.marked(R.n, c.kind, { target: c }); n++;
       }
       if (n) PS.said(R.n, { n });
     },
@@ -41,7 +42,10 @@ export function bellSpecials(PS) {
       if (!(grew > 0) || !B || B.offBeat(B.now(), B.grid()) >= S.window) return;
       laid += grew;
       const k = (laid * S.mend) / S.area; // (a crack's share for the area laid on the beat so far)
-      if (k >= 0.01 && g.vesselDamage?.mendBy?.(k, 'song')) { laid = 0; PS.said(S.n); }
+      if (k >= 0.01 && g.vesselDamage?.mendBy?.(k, 'song')) { // (the hoop across the paint laid, the gold up the Courier's cracks)
+        laid = 0; const at = L?.lastAt?.clone();
+        PS.said(S.n, { at, feeling: L?.paintAspect || undefined }); PS.hit(S.n);
+      }
     },
   };
 }

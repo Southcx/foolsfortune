@@ -11,20 +11,21 @@
 // Prior art: Skyward Sword's dowsing, Ōkami's Thunder Edge over a lightning rod, Just Cause's grapple slingshot, the Pied Piper and
 // Ōkami's Veil of Mist (a lure that sings), the Bombardier's flare here (vfx/flarereveal.js: the reveal reused).
 //
-//   forkSpecials(PS) -> part { lend(tool), lendAim(tool) -> point | null, forkStick(), zip(e), update(raw) }
+//   forkSpecials(PS) -> part { lend(tool), lendAim(tool) -> point | null, forkStick(), attach(e), zip(e), update(raw) }; each act said
+//   with its place (pair.special, pair.hit, pair.mark, pair.end: tools/pairspecials.js) for its look (vfx/pairspeciallooks.js)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
 /** Petra's, where the row is silent: the mirage's own loudness (`loud`, 1.6 + 0.4 x power, tools/crucibelle/mirage.js) reaches about
- *  6 m at power 1, so `lure` 12 m is power 2. */
-const MIRAGE_M = 6;
+ *  6 m at power 1, so `lure` 12 m is power 2; the flight after a Slingshot lasts about `FLUNG` real s (a jump's air at its 3 m/s up). */
+const MIRAGE_M = 6, FLUNG = 0.9;
 const _a = new THREE.Vector3();
 
 export function forkSpecials(PS) {
   const g = PS.game, P = () => PS.play;
   const fork = () => g.techs?.get?.('dreamvane')?.fork;
   const stuck = () => { const F = fork(); return F?.state === 'stuck' ? F : null; };
-  let sling = null, bolt = null;
+  let sling = null, bolt = null, flung = -1; // (flung: when the Slingshot's flight is over, its look let go)
   return {
     /** Where the lent Grapple goes, before it fires (tools/sondelass/hookshot.js lend): the stuck fork within reach, for a Slingshot. */
     lendAim(tool) {
@@ -34,13 +35,21 @@ export function forkSpecials(PS) {
     },
     lend(tool) {
       if (tool === 'veritome' && PS.live(P().revelation.n)) this.reveal();
-      if (tool === 'sondelass' && sling) PS.said(P().slingshot.n);
+      if (tool === 'sondelass' && sling) PS.said(P().slingshot.n, { to: sling.at.clone(), dur: 3 + FLUNG }); // (its look held until the flight is over)
     },
     /** The fork stuck (fork.stick): a bolt on its way, or the mirage raised there. */
     forkStick() {
       const F = stuck(); if (!F) return;
-      if (PS.live(P().lightningRod.n)) bolt = { at: F.pos.clone(), left: P().lightningRod.delay };
-      if (PS.live(P().singingMirage.n)) { const M = P().singingMirage; g.mirage?.raise?.(F.pos.clone(), M.life, M.lure / MIRAGE_M); PS.said(M.n); g.events?.emit('pair.mark', { kind: 'mirage', by: 'courier' }); }
+      const chest = g.player.pos.clone().setY(g.player.pos.y + 1.2);
+      if (PS.live(P().lightningRod.n)) { // (called down: it comes, whatever is worn by then)
+        const B = P().lightningRod; bolt = { at: F.pos.clone(), left: B.delay };
+        PS.said(B.n, { at: F.pos.clone(), from: chest, to: F.pos.clone() }); PS.marked(B.n, 'bolt', { at: F.pos.clone(), dur: B.delay });
+      }
+      if (PS.live(P().singingMirage.n)) {
+        const M = P().singingMirage, decoy = g.mirage?.raise?.(F.pos.clone(), M.life, M.lure / MIRAGE_M);
+        PS.said(M.n, { target: decoy || undefined, at: F.pos.clone(), from: chest, to: F.pos.clone(), dur: M.life }); PS.hit(M.n, { at: F.pos.clone() });
+        g.events?.emit('pair.mark', { kind: 'mirage', by: 'courier' }); // (the sound's cue)
+      }
     },
     /** Every signature in the dowse's ring shown: creatures as a flare's finds, hidden things found as the dowse finds them. */
     reveal() {
@@ -52,7 +61,7 @@ export function forkSpecials(PS) {
         dv?.found?.add(s.ref); n++;
         g.events?.emit('dowse.find', { kind: s.kind, veiled: !!s.ref?.veiled, dist: Math.round(s.d ?? 0), revealed: true });
         g.cartography?.chartAt?.(s.pos);
-        g.glyphs?.pop('star', _a.copy(s.pos).setY(s.pos.y + 1).clone(), { color: 0xfff4e6, size: 0.7, life: R.life, ring: true, throughWalls: true }); // (placeholder: a found thing's tag is Calissa's, on pair.special)
+        PS.marked(R.n, s.kind, { at: s.pos.clone(), dur: R.life }); // (shown and tagged through walls: its look's mark)
       }
       PS.said(R.n, { n });
     },
@@ -63,22 +72,24 @@ export function forkSpecials(PS) {
         g.creatures.strike(c, c.pos.clone(), _a.set(0, -1, 0).clone(), B.power, 'bolt', 'courier', null, 'impact');
         g.stun?.add(c, B.stun, { by: 'courier', cause: 'bolt' });
       }
-      g.fx?.impact?.(p.clone(), new THREE.Vector3(0, 1, 0), { sparks: 24, dust: 10 }); // (placeholder: the bolt's look is Calissa's, on pair.special)
+      PS.hit(B.n, { at: p.clone(), from: p.clone().add(_a.set(2, 28, -1)), to: p.clone() }); // (from the sky down onto the fork)
       g.ai?.stimuli?.emit('noise', p, { radius: 30, strength: 1, by: 'courier' });
-      PS.said(B.n);
     },
+    /** The lent Grapple bit (grapple.attach): the claws on the fork. */
+    attach() { if (sling && PS.now <= sling.until) PS.hit(P().slingshot.n, { at: sling.at.clone() }); },
     /** The Grapple drew them to the fork: they arrive flung, keeping `carry` of `fling` along the pull. */
     zip(e) {
-      if (!sling || PS.now > sling.until || e.how !== 'arrive' || !PS.live(P().slingshot.n)) { sling = null; return; }
+      if (!sling || PS.now > sling.until || e.how !== 'arrive' || !PS.live(P().slingshot.n)) { if (sling) PS.ended(P().slingshot.n); sling = null; return; }
       const S = P().slingshot, P0 = g.player, d = _a.copy(sling.at).sub(sling.from); d.y = 0; // (along the pull: from where they stood to the fork)
       if (d.lengthSq() < 1e-4) d.set(Math.sin(P0.yaw), 0, Math.cos(P0.yaw)); // (straight up to it: flung the way they face)
       d.normalize().multiplyScalar(S.fling * S.carry); d.y = 3;
-      P0.impulse(d, 'slingshot'); sling = null;
+      P0.impulse(d, 'slingshot'); sling = null; flung = PS.now + FLUNG;
       g.events?.emit('pair.mark', { kind: 'sling', by: 'courier' });
     },
     update(raw) {
-      if (sling && PS.now > sling.until) sling = null;
-      if (bolt && (bolt.left -= raw) <= 0) { const at = bolt.at; bolt = null; if (PS.live(P().lightningRod.n)) this.strikeBolt(at); }
+      if (sling && PS.now > sling.until) { sling = null; PS.ended(P().slingshot.n); } // (never arrived: its look let go)
+      if (flung >= 0 && PS.now > flung) { flung = -1; PS.ended(P().slingshot.n); }
+      if (bolt && (bolt.left -= raw) <= 0) { const at = bolt.at; bolt = null; this.strikeBolt(at); }
     },
   };
 }

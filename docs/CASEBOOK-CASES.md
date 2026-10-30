@@ -4527,3 +4527,13 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   longer sinks at its loop's start (the root at 0, the hips 0.9 to 1.4 cm, where its loop already sat). The pose audit: both slides
   dirty to marginal (the blade into the thigh 7.5 cm to 0.4; the forearm's turn 92, as before); `loco.slide` and `loco.slideHeld` clean.
 - **Rule:** 360; 361
+
+### 2026-10-30 · A line with no text stopped every frame (feedback/gamelog.js)
+- **Seen:** the pair specials' probe stopped at Held Plate, Rite and Healing Song with "Cannot read properties of undefined (reading
+  'length') at GameLog.tick": every frame after, the tick threw before the window's idle, scroll and footer ran.
+- **Cause:** the terminal's typing (e3f6297) reads the newest line's `text.length` each frame; a rule said a line whose text was
+  undefined (tracking/lockheart.js's `O[e.outcome] || e.outcome` on an outcome with no `outcome`, the probe's own stand-in event). Before
+  the typing a text node of "undefined" was drawn and nothing threw; the per-frame reader made one bad caller fatal.
+- **Fix:** `say` says nothing for a null or empty text and makes any other a string at the door (a merged line's `fmt` too). After:
+  the probe's 16 runs and the Illumined Page run all pass in one page, the frame never throws.
+- **Rule:** 362

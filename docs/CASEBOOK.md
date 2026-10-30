@@ -1014,3 +1014,5 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
   carries a blend by a weight comes in whole by that share, never by the same weight again (its upper body then lags at the square).
 361. **The foot IK's reach drop is a standing leg's.** A leg lying out along the floor (the crawl's, the slide's)
   cannot be reached by lowering the hips; read as a reach it takes the 0.12 m fallback and sinks the body, and what it holds, into the floor.
+362. **What a frame reads each tick is made safe where it comes in.** A value a caller hands a per-frame reader
+  (a line's text, a count) is checked and coerced at the door, never trusted in the tick: one bad caller then costs one line, not the frame.

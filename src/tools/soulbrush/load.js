@@ -48,7 +48,7 @@ export class BrushLoad {
   constructor(tool) {
     this.tool = tool; this.mode = 'paint'; this.sat = -1; this.working = false;
     this.pick = null; this.stride = 1; // (the radial's pick: radial.js; the paint underfoot's pace: strideOf)
-    this.drops = []; this.acc = 0; this.statusT = 0; this.paintArea = 0; this.paintAspect = null; this.mopped = 0; this.grade = null;
+    this.drops = []; this.acc = 0; this.statusT = 0; this.paintArea = 0; this.paintAspect = null; this.mopped = 0; this.grade = null; this.lastAt = new THREE.Vector3();
     tool.game.events?.on('vessel.shieldbreak', () => this.shieldBreak());
     this.look = null; this.lookId = null; this.crackT = 0; this.mopAt = null; // (the bottle worn, seen: Calissa's vfx/bottle.js)
     this.aimer = new PaintSpray(tool.game); // (where the paint goes and where it will land: paintspray.js, LACHRYMA-LOOP.md 3)
@@ -229,7 +229,7 @@ export class BrushLoad {
     const g = this.game, sp = this.aimer.splat(d, normal); // (its size by the throw, stretched along a shallow hit; every drop shows: k 0.9)
     if (normal.y < 0.5) { // (a wall: its chart, world/ground/paintwalls.js; Clean washes it. False where no chart lies: the drop runs on down)
       if (d.clean) { if ((g.paintmap?.wipeWall(at, normal, sp.r * 1.5, 99) || 0) > 0) g.brushLoad?.shine?.(at, sp.r * 2); return !!g.paintmap?.walls.touched; }
-      this.paintArea += g.paintmap?.stampWall(at, normal, sp.r, d.aspect, 0.9) || 0; this.paintAspect = d.aspect;
+      this.paintArea += g.paintmap?.stampWall(at, normal, sp.r, d.aspect, 0.9) || 0; this.paintAspect = d.aspect; this.lastAt.copy(at);
       return !!g.paintmap?.walls.touched;
     }
     if (d.clean) { // (Clean: the splat washes paint and crude off where it lands, and lays nothing: FLUDD's water on goop)
@@ -240,7 +240,7 @@ export class BrushLoad {
     }
     let area = g.paintmap?.stamp(at.x, at.y, at.z, sp.r, d.aspect, 0.9) || 0;
     if (sp.stretch > 1.05) { const h = Math.hypot(d.v.x, d.v.z) || 1, o = sp.r * (sp.stretch - 1); area += g.paintmap?.stamp(at.x + (d.v.x / h) * o, at.y, at.z + (d.v.z / h) * o, sp.r * 0.85, d.aspect, 0.9) || 0; }
-    this.paintArea += area; this.paintAspect = d.aspect;
+    this.paintArea += area; this.paintAspect = d.aspect; this.lastAt.copy(at); // (where the stream last laid paint: Healing Song's look asks)
     for (const c of g.creatures?.near?.(at, 0.9) || []) if (!c.ally) g.creatures.build(c, TYPE_OF[d.aspect], 3, 'courier', 'paint');
     if (simRand() < 0.3) g.fx?.alpha.emit({ pos: at.clone(), vel: new THREE.Vector3(0, 1.2, 0), life: 0.3, size: 0.12, sizeEnd: 0.02, color: ASPECT_COLOR[d.aspect], alpha: 0.6, drag: 3, gravity: 6 });
   }

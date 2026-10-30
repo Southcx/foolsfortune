@@ -21,7 +21,9 @@
 //   (the psygun's round asks: tools/psygun/weapon.js shoot)   .onStrike(c, cause, type, power, point, dir) -> { type?, dmg?, build?, after?(c) } | null
 //   (a blow of yours asks: creatures/creatures.js strike)   .lendAim(tool) -> point | null (the lent Grapple asks: tools/sondelass/hookshot.js)
 //   .photo(report) -> true when a sigil was written (the shutter asks: tools/veritome/veritome.js)
-//   events pair.special { pair, special, by }   pair.mark { kind, by }   pair.read { kind, by }   pair.mend { kind, by }
+//   events pair.special { pair, special, by, target? | at?, from?, to?, other?, dur?, feeling?, power? } (the act)   pair.hit { pair, by,
+//   target? | at? } (one a landing)   pair.mark { pair?, kind, by, target? | at?, dur? } (a thing marked; without `pair` a sound's cue)
+//   pair.end { pair } (a hold over early)   pair.read { kind, by }: where the looks play each (vfx/pairspeciallooks.js, Calissa's)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { pairOf, pairSpecialOpen, PAIR_SPECIALS, SPECIAL_PLAY } from '../progress/toolpairs.js';
@@ -57,6 +59,7 @@ export class PairSpecials {
     ev?.on?.('fork.stick', each((p, e) => e.by === 'courier' && p.forkStick?.(e)));
     ev?.on?.('brush.inscribe', each((p, e) => p.inscribed?.(e)));
     ev?.on?.('zip.end', each((p, e) => p.zip?.(e)));
+    ev?.on?.('grapple.attach', each((p, e) => p.attach?.(e)));
   }
 
   /** A blow of the Courier's on a creature, before it lands: what the specials make of it (their mods merged; `after` runs them all). */
@@ -81,6 +84,12 @@ export class PairSpecials {
     return !!g.lend?.has?.('moves') || pairSpecialOpen(n, g.ledger);
   }
   said(n, extra = null) { this.game.events?.emit('pair.special', { pair: n, special: PAIR_SPECIALS[n].label, ...(extra || {}), by: 'courier' }); }
+  /** A special's landing (`target` a creature, or `at` a point): where its look's hit plays. */
+  hit(n, extra = null) { this.game.events?.emit('pair.hit', { pair: n, ...(extra || {}), by: 'courier' }); }
+  /** A thing a special marked (its look's mark held on it for `dur`). */
+  marked(n, kind, extra = null) { this.game.events?.emit('pair.mark', { pair: n, kind, ...(extra || {}), by: 'courier' }); }
+  /** A special's hold over before its time (its looks let go). */
+  ended(n) { this.game.events?.emit('pair.end', { pair: n }); }
 
   // ---- 19 The Mark ------------------------------------------------------------
   onFlash(e) {
@@ -89,9 +98,7 @@ export class PairSpecials {
     for (const c of g.flash?.seen || []) { if (!c.alive || c.type !== 'creature') continue; const d = c.pos.distanceToSquared(P.pos); if (d < bd) { bd = d; best = c; } }
     if (!best) return;
     this.mark = { c: best, rounds: M.rounds, until: this.now + M.life };
-    const p = best.center(_a).clone(); p.y += 0.6;
-    g.glyphs?.pop('star', p, { color: 0xfff4e6, size: 0.9, life: 0.8, ring: true }); // (placeholder: the mark's look is Calissa's, on pair.mark)
-    g.events?.emit('pair.mark', { kind: best.kind, by: 'courier' });
+    g.events?.emit('pair.mark', { kind: best.kind, by: 'courier' }); // (the sound's cue: its look reads this.mark, vfx/pairspeciallooks.js)
     this.said(M.n);
   }
   /** A psygun round leaving `from` along `dir`: turned onto the mark if it lies within the cone and in sight; one round spent. */
@@ -114,8 +121,7 @@ export class PairSpecials {
     const at = c.center(_a).clone(), from = g.player.pos.clone().setY(g.player.pos.y + 1.2);
     g.stun?.add(c, R.stun, { by: 'courier', cause: 'rung' });
     g.creatures?.strike(c, at.clone(), _d.copy(at).sub(from).normalize().clone(), R.power, 'rung', 'courier');
-    for (let i = 1; i <= 4; i++) g.glyphs?.pop('note', _b.copy(from).lerp(at, i / 4).clone(), { color: 0xffd76a, size: 0.4, life: 0.5 }); // (placeholder: the ring down the line is Calissa's, on pair.special)
-    this.said(R.n);
+    this.said(R.n); // (the ring run down the line: its look reads the hook, vfx/pairspeciallooks.js)
   }
 
   // ---- 17 Painted Lure and 3 Coffin's Mop: every frame -----------------------

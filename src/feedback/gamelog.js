@@ -258,6 +258,8 @@ export class GameLog {
    * with fmt(count) as its text.
    */
   say(cls, text, { key = null, win = 1.6, fmt = null, tone = null, throttle = 0, who = null, echo = false, hero = false } = {}) {
+    if (text == null || text === '') return null; // (nothing to say: never a blank line, and the typing reads a string each frame)
+    text = String(text);
     const now = performance.now() / 1000;
     if (throttle && key) { // (a refusal repeated by a held key says itself once)
       if (now - (this.quiet.get(key) ?? -99) < throttle) return null;
@@ -266,7 +268,7 @@ export class GameLog {
     const p = this.last;
     if (key && p && p.key === key && (fmt || p.text === text) && now - p.t < win) { // (a different line under the same key is its own line: two casts close together were one, the second's name lost)
       p.n++; p.t = now;
-      p.text = fmt ? fmt(p.n) : p.text;
+      p.text = fmt ? String(fmt(p.n)) : p.text;
       if (p.el) { if (this.typing0?.l === p) this.land(); (p.node || p.el.lastChild).textContent = p.text; }
       if (this.pinned !== false) this.toEnd = true; // (a merged line can grow onto a second row: follow it)
       this.afterSay(p);

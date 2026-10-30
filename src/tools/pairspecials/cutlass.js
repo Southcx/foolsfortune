@@ -11,7 +11,8 @@
 // Prior art: Undertale's spare (a fight won without a wound), Pokémon's type chart read from the Pokédex (Appraised Cut), Bloodborne's
 // blood echoes drawn from the kill, Dark Souls' Drain weapons (Reaper's Draw).
 //
-//   cutlassSpecials(PS) -> part { lend(tool), strike(c, cause, type, power) -> mods | null, update(raw) }
+//   cutlassSpecials(PS) -> part { lend(tool), strike(c, cause, type, power) -> mods | null, update(raw) }; each act said with its place
+//   (pair.special, pair.hit: tools/pairspecials.js) for its look (vfx/pairspeciallooks.js)
 // ---------------------------------------------------------------------------------------
 import { TRUMPS } from '../../progress/combat/types.js';
 import { familiarityOf } from '../../progress/familiarity.js';
@@ -30,18 +31,21 @@ export function cutlassSpecials(PS) {
   const calm = new WeakMap(); // (a creature's calm build-up from Gentle Edge's blows)
   const cutlass = () => g.belt?.inHand?.id === 'sondelass' && g.techs?.get?.('sondelass')?.form === 'cutlass';
   return {
-    lend(tool) { if (tool === 'soulbrush' && PS.live(P().gentleEdge.n) && cutlass()) { gentle = { until: PS.now + P().gentleEdge.life }; PS.said(P().gentleEdge.n); } },
+    lend(tool) { if (tool === 'soulbrush' && PS.live(P().gentleEdge.n) && cutlass()) { gentle = { until: PS.now + P().gentleEdge.life }; PS.said(P().gentleEdge.n, { dur: P().gentleEdge.life }); } },
     strike(c, cause, type, power = 1) {
       if (cause !== 'sliced' || !cutlass() || c.ally) return null;
       let mods = null;
       if (gentle && PS.now < gentle.until && PS.live(P().gentleEdge.n)) { // (a calming blow: a quarter of its wound, its calm built)
         const G = P().gentleEdge, b = (calm.get(c) || 0) + power * G.calm;
-        mods = { dmg: G.hurt, after: (t) => { if (!t.alive) return; if (b >= CALM_AT) { calm.set(t, 0); g.creatures?.apply(t, 'calm', G.life, 1, 'courier'); } else calm.set(t, b); } };
+        mods = { dmg: G.hurt, after: (t) => {
+          PS.hit(G.n, { target: t }); if (!t.alive) return;
+          if (b >= CALM_AT) { calm.set(t, 0); g.creatures?.apply(t, 'calm', G.life, 1, 'courier'); } else calm.set(t, b);
+        } };
       }
       const A = P().appraisedCut;
       if (PS.live(A.n) && c.affinity && BEATS[c.affinity] && BEATS[c.affinity] !== type && familiarityOf(g.ledger, c.kind).level >= A.known) {
         mods = { ...mods, type: BEATS[c.affinity] }; // (known well enough: the blow is the kind that beats it, the chart's own trump)
-        if (!this.appraised) { this.appraised = true; PS.said(A.n); }
+        PS.said(A.n, { target: c }); PS.hit(A.n, { target: c });
       }
       if (PS.live(P().reapersDraw.n)) {
         const was = mods?.after, R = P().reapersDraw;
@@ -49,7 +53,7 @@ export function cutlassSpecials(PS) {
           was?.(t); if (t.alive) return;
           const LH = g.techs?.get?.('lockheart'); if (!LH) return;
           const n = Math.min(R.share * HOOVER.drain * (t.stunFor || DOWN_S), Math.max(0, LH.fill - LH.charge)); // (a drain's worth at once, up to the measure)
-          if (n > 0 && LH.feed?.(n, 'reap') > 0) PS.said(R.n);
+          if (n > 0 && LH.feed?.(n, 'reap') > 0) PS.said(R.n, { target: t }); // (drunk into the coffin from where it fell)
         } };
       }
       return mods;
