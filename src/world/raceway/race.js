@@ -51,6 +51,20 @@ export const RACE = {
 };
 // (the Gorge Run's and the Coaster's medals: the Sun Circuit's, scaled by each track's reference race against its own, the ruler's
 // `node scripts/skifftune.mjs`, SKIFF-TUNING.md T3: the Sun's gold is 0.718 of its reference race, and so is every track's)
+/** THE PHOTO FINISH (SKIFF-RACING.md 9, round six's): a rival within `gap` 0.3 real s of you at the line (about a board's length at the
+ *  sun circuit's speed) takes a plate at the line: kept in the Veritome's memory as a plate of the race (Petra's runtime takes it, with
+ *  no lens up), its stars by how close (`stars`: a hair 3, a nose 2, a length 1). It pays no cubes (the medal already does); it counts,
+ *  and its closest is a record (`race.photo.gap`). A rival still running is read by its speed to the line; one already in, by its time. */
+export const PHOTO = { gap: 0.3, stars: [[0.05, 3], [0.15, 2], [0.3, 1]] };
+function photoOf(race, mine) {
+  const Lt = race.T.length * (race.lapsTotal || 3); let best = null;
+  for (const r of race.rivals.list) {
+    const gap = r.done != null ? mine - r.done : (Lt - r.d) / Math.max(1, r.v || 0), won = r.done == null;
+    if (gap >= 0 && gap <= PHOTO.gap && (!best || gap < best.gap)) best = { gap: +gap.toFixed(3), won, rival: r.i };
+  }
+  if (best) best.stars = PHOTO.stars.find(([g]) => best.gap <= g)?.[1] || 1;
+  return best;
+}
 export const medalOfRace = (seconds, track = 'sun', table = RACE.medals[track]) => { const M = table; return !M ? null : seconds <= M.gold ? 'gold' : seconds <= M.silver ? 'silver' : seconds <= M.bronze ? 'bronze' : null; };
 
 export class Race {
@@ -221,6 +235,7 @@ export class Race {
     const out = { seconds: raw, medal: null, laps: this.laps.slice(), condition: this.condition?.key || 'day.fair', track: this.T.id, mode: this.modeId, place: 1, of: 1, cup: !!this.opts.cup, city: !!this.opts.city, ...(this.forced ? { day: today() } : {}), by: 'courier' };
     out.recordClass = this.cls; out.pi = this.pi ?? 100;
     if (this.rivals.on) { out.of = this.rivals.list.length + 1; out.place = 1 + this.rivals.list.filter((r) => r.done != null).length; out.order = this.rivals.order(this); }
+    const photo = this.rivals.on ? photoOf(this, raw) : null; if (photo) out.photo = photo; // (a rival within PHOTO.gap of you at the line: the photo finish)
     if (M.medals) out.medal = medalOfRace(raw, this.T.id, this.T.id === 'made' ? this.R.made.medals : undefined); // (every track's, from the ruler; a made track's from its own reference race)
     if (this.T.id === 'made') { out.made = this.T.key; out.validate = !!M.validate; }
     this.ruleset?.result?.(this, out); // (a ruleset's own reckoning: the pots' seconds off, a licence's medal)
@@ -228,6 +243,7 @@ export class Race {
     if (this.rivals.on) this.rivals.settle(out.place);
     this.stopRun();
     g.events?.emit('race.finish', out);
+    if (photo) g.events?.emit('race.photo', { ...photo, track: this.T.id, mode: this.modeId, by: 'courier' }); // (Petra's: the plate taken at the line, kept in the Veritome's memory)
     if (first) g.cubes?.earn(Math.round(RACE.pay[out.medal] * ECON.perMinute), 'trial');
   }
   /** The run's own things put away (the rivals, the ruleset's props, the rewind): the race no longer running. */

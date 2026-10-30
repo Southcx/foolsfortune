@@ -75,6 +75,9 @@ export function racewayAchievements({ C, H, F }) {
   C('rw50', 'skiff', 'The Raceway', 1, 'mechanic', "Today's Race", "Finish the game day's race.", 'race.daily', 1);
   F('rw51', 'skiff', 'The Raceway', 3, 'count', 'Rain or Shine', "Take a medal in the game day's race 7 times, or gold in it 3 times.", any(['race.daily.medal', 7], ['race.daily.gold', 3]), 1);
   F('rw52', 'skiff', 'The Raceway', 4, 'collect', 'Every Sky', "Finish the game day's race under each of the seven feelings' weathers.", (L) => ['mirth', 'wonder', 'desire', 'fury', 'gall', 'grief', 'dread'].filter((a) => L.get(`race.daily.sky.${a}`) > 0).length, 7);
+  // the photo finish (race.js PHOTO): a rival within 0.3 real s at the line
+  C('rw55', 'skiff', 'The Raceway', 2, 'mechanic', 'By a Whisker', 'Win a photo finish: a rival within 0.3 real seconds of you at the line.', 'race.photo.won', 1);
+  F('rw56', 'skiff', 'The Raceway', 4, 'mechanic', 'A Hair\'s Breadth', 'Win or lose a photo finish by 0.05 real seconds or less.', (L) => ((L.best('race.photo.gap') ?? 1) <= 0.05 ? 1 : 0), 1);
   // the skiff sets (SKIFF-TUNING.md: a set is every piece owned and its feat done; read from the ledger, progress/skiffpaint.js setDone)
   const SETS = Object.keys(SET_RULES);
   F('rw53', 'skiff', 'The Raceway', 3, 'collect', 'Full Livery', 'Own a whole skiff set: every piece of it, and its feat.', (L) => (SETS.some((id) => setDone(id, L)) ? 1 : 0), 1);
