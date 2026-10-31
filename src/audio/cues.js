@@ -24,6 +24,13 @@ const CEREMONY = { heard: false }; // (a score ceremony seen this session: the t
 /** How far a Raceway trap's look is from the camera (m), for its tell's level; undefined if either is missing. */
 const trapDistance = (g, i) => { const at = g.raceway?.traps?.list?.[i]?.look?.root?.position; return at && g.camera ? at.distanceTo(g.camera.position) : undefined; };
 
+/** A done quest's points by its id, for the splash that lands later (quest.splash carries none). */
+const QUEST_POINTS = new Map();
+function questSting(s, g, kind, points) {
+  if (kind === 'done') { g.music?.duck?.(4.6, 0.2); s.questDone?.(points); }
+  else { g.music?.duck?.(1.8, 0.4); s.questStart?.(); }
+}
+
 const RULES = {
   'dreamvane.survey': (s) => s.surveySwing?.(), // (the heel going up; the blow's own sound is cartography's survey)
   'psygun.change': (s) => s.gunSwap?.(), // (shells.js)
@@ -288,8 +295,11 @@ const RULES = {
   'well.dummy.trophy': (s, e) => { if (e.by === 'courier') s.wellTrophy?.(); }, // (a home run)
   'well.pit.death': (s) => s.wellPit?.(), // (the quick retry: tiny)
   'well.flood.fill': (s) => s.wellFlood?.(), // (the basin full)
-  'quest.start': (s, e, g) => { g.music?.duck?.(1.8, 0.4); s.questStart?.(); }, // (a quest begun: audio/quests.js; its steps are the log's, unheard)
-  'quest.done': (s, e, g) => { g.music?.duck?.(4.6, 0.2); s.questDone?.(e.points); },
+  // a quest's jingle lands with the quest splash's word (Calissa's ui/questsplash.js: EVENT! / QUEST COMPLETE!, sent as it slams in, which
+  // may be seconds after the quest's own event while a live moment or the title placard holds it); with no splash, on the event itself
+  'quest.start': (s, e, g) => { if (!g.questSplash) questSting(s, g, 'start'); }, // (a quest begun: audio/quests.js; its steps are the log's, unheard)
+  'quest.done': (s, e, g) => { QUEST_POINTS.set(e.id ?? e.quest, e.points); if (!g.questSplash) questSting(s, g, 'done', e.points); },
+  'quest.splash': (s, e, g) => questSting(s, g, e.kind, QUEST_POINTS.get(e.id ?? e.quest)),
   'recap.show': (s, e) => { if (e.auto) s.questRecap?.(); },
   'mimic.open': (s) => s.mimicOpen?.(),
   'mimic.step': (s, e) => s.mimicStep?.(e.i),
