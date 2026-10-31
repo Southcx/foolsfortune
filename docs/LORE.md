@@ -349,6 +349,11 @@ a round knight, a toothed golem), household vessels on legs at the foot. Which o
 - **Strawman**: Pip stitched it, the one thing in a workshop of clay that cannot shatter, made by the apprentice afraid of breaking
   things. A scarecrow, a training dummy, and the argument set up to be knocked down: it always stands back up, and the real argument is
   still out there. The heart charm is Pip's. The log uses its name with no article: "Strawman rocks back up."
+- **Strawman's Well** (canon, 2026-10-31; Dovina's STRAWMANS-WELL.md 1): the inside of Strawman's head is a toy theatre made of Pip's
+  sewing kit at giant scale, rehearsing being struck. The dummies on its stages are Pip's earlier tries, the ones that didn't stand
+  back up; that is why there are many of them and why only Strawman never falls. Its quest, The Understudy, has it play a different
+  part. *Open:* whose distortion makes a Well inside a straw dummy, neither folk nor Figment (left blank; South rules what Strawman
+  is). *Parked for its lore name:* a straw man learning to be a steel man.
 
 **Seger, the Witness Cone** (commissions; stoneware; not yet in the world). Hermann Seger invented the pyrometric cone; a witness cone
 slumps when the firing reaches its heat: it certifies the work, it does not do it. Tall, three-sided, pale, a number pressed in its side;
