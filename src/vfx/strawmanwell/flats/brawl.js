@@ -75,7 +75,7 @@ const CROWD = { id: 'crowd', w: 30, h: 3.4, flip: true, profile: () => 1.9, pain
     if (f.arm < 0.45) {
       const ax = f.x + (f.arm < 0.22 ? -0.42 : 0.42), top = f.h + 0.9, a = poly(new Path2D(), [[ax - 0.09, f.h - 0.4], [ax - 0.09, top], [ax + 0.09, top], [ax + 0.09, f.h - 0.4]]);
       if (f.arm < 0.2) poly(a, [[ax + 0.05, top], [ax + 0.05, top + 0.55], [ax + 0.6, top + 0.3]]);
-      cutOut(g, a, (g) => { g.fillStyle = css(shade(f.c, -0.1)); g.fillRect(ax - 0.3, f.h - 0.5, 0.6, 1.6); g.fillStyle = css(f.flag); g.fill(poly(new Path2D(), [[ax + 0.05, top], [ax + 0.05, top + 0.55], [ax + 0.6, top + 0.3]])); }, { px: P.px, kw: 1.8, lift: 3 });
+      cutOut(g, a, (g) => { g.fillStyle = css(shade(f.c, -0.4)); g.fillRect(ax - 0.3, f.h - 0.5, 0.6, 1.6); g.fillStyle = css(shade(f.flag, -0.3)); g.fill(poly(new Path2D(), [[ax + 0.05, top], [ax + 0.05, top + 0.55], [ax + 0.6, top + 0.3]])); }, { px: P.px, kw: 1.8, lift: 3 });
     }
   }
   const body = new Path2D(); poly(body, [[-1, -1], [-1, 0.7], [31, 0.7], [31, -1]]);
@@ -83,11 +83,11 @@ const CROWD = { id: 'crowd', w: 30, h: 3.4, flip: true, profile: () => 1.9, pain
   cutOut(g, body, (g) => {
     vwash(g, -1, 0, 32, 3.8, [[0, 0x2a1418], [1, 0x6a3a3a]]);
     for (const f of folk) {
-      g.fillStyle = css(shade(f.c, -0.22)); g.fill(poly(new Path2D(), [[f.x - 0.48, 0], [f.x - 0.46, f.h - 0.55], [f.x, f.h - 0.3], [f.x + 0.46, f.h - 0.55], [f.x + 0.48, 0]]));
-      g.fillStyle = css(0xc8a46a); g.beginPath(); g.ellipse(f.x, f.h + 0.1, f.r, f.r * 1.08, 0, 0, Math.PI * 2); g.fill();
-      hatch(g, f.x - f.r, f.h - f.r, f.x + f.r, f.h + f.r * 1.2, { gap: 0.07, angle: 0.8, lw: P.px * 2, col: 0x8a6a3a, a: 0.25 });
+      g.fillStyle = css(shade(f.c, -0.45)); g.fill(poly(new Path2D(), [[f.x - 0.48, 0], [f.x - 0.46, f.h - 0.55], [f.x, f.h - 0.3], [f.x + 0.46, f.h - 0.55], [f.x + 0.48, 0]]));
+      g.fillStyle = css(shade(0xc8a46a, -0.42)); g.beginPath(); g.ellipse(f.x, f.h + 0.1, f.r, f.r * 1.08, 0, 0, Math.PI * 2); g.fill();
+      hatch(g, f.x - f.r, f.h - f.r, f.x + f.r, f.h + f.r * 1.2, { gap: 0.07, angle: 0.8, lw: P.px * 2, col: 0x4a3620, a: 0.25 });
       g.fillStyle = css(0x2a1a12); for (const dx of [-0.13, 0.13]) { g.beginPath(); g.arc(f.x + dx, f.h + 0.16, 0.075, 0, Math.PI * 2); g.fill(); }
-      g.strokeStyle = css(0xe9c467, 0.9); g.lineWidth = P.px * 2.4; g.beginPath(); g.moveTo(f.x - f.r * 0.8, f.h - f.r * 0.55); g.lineTo(f.x + f.r * 0.8, f.h - f.r * 0.55); g.stroke();
+      g.strokeStyle = css(0xe9c467, 0.45); g.lineWidth = P.px * 2.4; g.beginPath(); g.moveTo(f.x - f.r * 0.8, f.h - f.r * 0.55); g.lineTo(f.x + f.r * 0.8, f.h - f.r * 0.55); g.stroke();
     }
     g.fillStyle = css(0x7a1424); g.fillRect(-1, 0, 32, 0.55); g.fillStyle = css(0xe2b04a); g.fillRect(-1, 0.5, 32, 0.12);
   }, { px: P.px });
@@ -112,8 +112,8 @@ export const BRAWL = {
         scatter(R, ext.x0, ext.x1, 9, 1.5, (x, i) => out.push({ s: ['b1', 'b2', 'b3'][i % 3], x, y: 2.2 + R() * 0.6, back: true, flip: i % 2 === 1 }));
         return out;
       } },
-    // (the front row well down from the footlights' lift and the stands hazed back: a crowd near silhouette, so the dummies fought in
-    // front of it and their percents stand out; measured against the combined look, where the first shade down still read as busy)
+    // (the front row painted in shadow below the footlights' throw and lit well down, the stands hazed back: a crowd near silhouette,
+    // so the dummies fought in front of it and their percents stand out; the combined look's first two shades down still read as busy)
     { id: 'near', ...LAYER.near, light: [[0.56, 0.5, 0.5], [0.44, 0.4, 0.43]], strips: [CROWD] },
   ],
 };
