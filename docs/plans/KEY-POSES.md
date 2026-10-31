@@ -77,10 +77,47 @@ A stage after the pose tree that holds the pose for N frames, then jumps to the 
 - A run from two poses a leg, pass and reach, with critically damped interpolation from the current pose (Overgrowth's way), as a
   second option beside the mocap run, compared in play.
 
-## 6. Runtime (Petra's): open
+## 6. Runtime (Petra's, answered 2026-10-31)
 
-Waiting on Petra's answers: where the hold stage and the hitstop freeze sit in `courier/anim/animator.js`'s pipeline; feet over a stepped
-body; what stays at full rate.
+**Where it sits.** At the sample step only. A key move is still a layer writing into `base` at its weight (`courier/character.js`'s
+step 1). Only how its clock maps to a frame changes. Everything after `applyPose` is a correction on whatever pose arrives, stepped or not.
+
+- **The key track** (proposed `KeyTrack`, `src/courier/anim/keyposes.js`, a sibling of `Track`) reads the move's keys.
+  - Inside a hold, it samples the clip at the key's integer frame exactly, with no lerp. The audit's still is exactly what plays.
+  - Inside a snap, it nlerps the two keys over `snap` frames with an ease-out. A snap of 0 is a cut.
+- **Frames are 60 Hz frames of game time**, never display frames. A 120 Hz phone and a 60 Hz desk show the same timing. The existing
+  hitstop (`moveset.impact` slowing game dt) holds a key track for free: there is no second freeze mechanism.
+- **A state-held pose** is the same track with its clock stopped by a predicate named in the table (`holdWhile`: the shield up, a
+  landing's lag, a smash charged). The key it stops on is named too, so a hold is data, never a flag set by a hook.
+- **Between moves**, a key track enters from whatever played by its first key's `snap`, in place of `Track`'s 0.15 s crossfade. A layer
+  weight that steps without the table saying so is a pop, and a bug.
+- **Who uses it.** Moves first: `tools/moveset.js`'s `pose()` and a tech's `animate` swap `C.sample` for the key track where the row
+  carries `keys`. A move without `keys` plays as now. The core movement's gait, run, slide and their blends stay continuous (section 5
+  waits on its own comparison).
+
+**The feet.** The capsule stays smooth: physics, collisions and the camera never step; only the body's pose relative to it does.
+- A key carries its contacts (`plant: 'L' | 'R' | 'LR'`). While a key move owns the legs, footIK takes those in place of the gait
+  cycle's, and the foot lock holds a planted sole in the world. A stepped hip over a locked foot bends the knee; it never slides the sole.
+- Root travel stays in the capsule (the move's impulse), never in the clip's pelvis.
+- A free foot (in the air, a kick) is the pose's, stepped.
+- The lock's 0.35 m let-go still guards a move that outruns its plant. A case of it is a table fix (a missing key or contact).
+
+**At full rate always:** the camera; the aim (the aim layer's pitch and the spine's twist: a control's readout); a hand riding a world
+target (the grapple's line, a haft); the corrections (footIK, standoff, wrists, hinges, rom.js last); effects (trails and smears read off
+the stepped blade). The procedural lean, look and dip run at full rate too; a move may weigh them to 0 (one number in its row) if they
+read as drift over a held pose. A key pose rom.js clamps is a pose to redo, and the audit flags it.
+
+**The row.** The keys go in the move's own row, so the runtime and the contact sheet read one source:
+
+```
+keys: [[frame, hold, snap, plant], ...]   // frame: the clip's frame (Calissa's pick); hold, snap: 60 Hz frames; plant: 'L' | 'R' | 'LR' | null
+```
+
+For the fighter's moves (platformfighter.js `MOVES`), the holds are not chosen by eye. They come from the frame data: the lead-in holds
+until the hitbox's first frame, the strike holds through the active frames, and the follow-through holds to the move's total. The
+timing is then the rule's own, and only the frame (the pose) is a choice.
+
+**Cost.** A held frame skips the lerp. Nothing new runs per frame but the key lookup.
 
 ## 7. The pose library and the contact sheet (Calissa's): open
 
