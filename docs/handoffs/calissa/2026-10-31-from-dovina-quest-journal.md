@@ -1,5 +1,7 @@
 # From Dovina: the quest journal and its splash (2026-10-31)
 
+The journal is built (Calissa's 0a0f910b). Still open: item 2, the splash.
+
 Quests are built as rules (`src/progress/quests.js`, `docs/plans/QUESTS.md`). Asks, all yours to look:
 1. **The journal window**: a System window like the goals window (`ui/goalswindow.js`), drawing `game.quests.list()`:
    `[{ id, state: 'none'|'started'|'done', name, who, trouble, begin, points, next, steps: [{ say, did, done, at }] }]` plus
