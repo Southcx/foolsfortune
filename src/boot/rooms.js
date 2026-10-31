@@ -19,6 +19,7 @@ import { KILN_AT } from '../courier/moves/kiln.js';
 import { SolarTrial } from '../world/dunes/solar.js';
 import { Mimicry } from '../world/mimicry/mimicry.js';
 import { Sandbox } from '../world/sandbox/sandbox.js';
+import { StrawmansWell } from '../world/strawmanwell/strawmanwell.js';
 import { ThrownHits } from '../world/impacts.js';
 import { MimicryLooks } from '../vfx/mimicry/look.js';
 import { SandboxLook } from '../vfx/sandbox/look.js';
@@ -71,6 +72,7 @@ export function bootRooms(game, made) {
     game.solar = new SolarTrial(game); // (the Solar Skiffing trial, begun at the Gnomon's foot: world/dunes/solar.js)
     game.mimicry = new Mimicry(game); // (the god hand's mimicry puzzles, begun at a puzzle stone in each Dunes area: world/mimicry/mimicry.js)
     game.sandbox = new Sandbox(game); // (the hand's physics room: a yard, a pen, a pitch and a ball, off the Index: world/sandbox/sandbox.js)
+    game.strawmanWell = new StrawmansWell(game); // (the 2D platformer's test bench, the inside of Strawman's head, off the Index: world/strawmanwell/)
     game.impacts = new ThrownHits(game); // (anything loose thrown or kicked fast enough strikes a creature: world/impacts.js)
     game.mimicryLooks = new MimicryLooks(game); game.sandboxLook = new SandboxLook(game); game.panicMarks = new PanicMarks(game); // (the puzzle stones, the ghost and a step's mark; the Sandbox dressed; panic over a creature a thrown thing struck: vfx/mimicry/, vfx/sandbox/, vfx/panic.js)
     game.geysers = new Geysers(game); // (slip geysers: launch pads on a cycle, world/dunes/geysers.js)

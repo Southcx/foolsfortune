@@ -85,7 +85,7 @@ export class PalmDie {
     });
     this.hooked = false;
   }
-  get sides() { return palmSides(this.condensed); }
+  get sides() { return this.game?.lend?.has?.('summit') ? 20 : palmSides(this.condensed); } // (the Summit lend: the palm die a d20)
   get today() { this.roll(); return { cubes: this.todayCubes, cap: palmCap(this.sides) }; }
   roll() { const d = today(); if (d !== this.day) { this.day = d; this.todayCubes = 0; } }
 

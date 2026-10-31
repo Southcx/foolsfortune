@@ -26,8 +26,9 @@ import { ECON } from './econ/table.js';
 export const SCAN = { perDay: 3, again: 1, material: 0.25, cls: [0.5, 0.25, 0.13, 0.08, 0.04] };
 /** The creatures a code may hold, and a plate may become a slab of (world/garden/awaken.js plates): only kinds a photo can carry,
  *  so a sealed slab can always be opened by meeting its kind. Glint and lobber are garden visitors that settle on their own, never in the
- *  world to photograph (Petra, v607c676), so a code holding one would stay sealed for good. The Lantern Wisp waits on a garden body. */
-export const ROSTER = ['slipjelly', 'clapperjar', 'spirit'];
+ *  world to photograph (Petra, v607c676), so a code holding one would stay sealed for good. The Lantern Wisp is in: the Dunes' second
+ *  creature, photographed as `wisp`, bound as any spirit is (every kind the same stand-in body for now; Petra, 00440bc). */
+export const ROSTER = ['slipjelly', 'clapperjar', 'wisp', 'spirit'];
 /** The Veritome's Book keys a photo by the creature's own code kind (tools/veritome/bestiary.js creatureOf: 'clapper'), the garden by the
  *  glossary's word ('clapperjar'): one kind, two spellings. `photoKindOf` turns the garden's into the Book's, so a clapperjar met is met. */
 export const PHOTO_KIND = { clapperjar: 'clapper' };

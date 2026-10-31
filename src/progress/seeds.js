@@ -68,14 +68,13 @@ export function sizeOf(minutes = 0) {
 /** The hand's pour of the island's matter onto a seed: minutes of growth a cubic metre (a full scoop, 20 m3, is 5 minutes), capped a
  *  game day so the free matter never outruns the sink (six scoops a game day; cubes and materials are never capped). */
 export const MATTER_FEED = { perM3: 0.25, dayCap: 30 };
-const FEELING_OF_KIND = Object.fromEntries(Object.entries(FEED.stat).map(([kind, stat]) => [kind, Object.keys(STATS).find((f) => STATS[f] === stat)]));
-FEELING_OF_KIND.finery = 'gall'; FEELING_OF_KIND.art = 'fury'; // (Gall's and Fury's kinds: GALL-AND-FURY.md 10)
+const FEELING_OF_KIND = { ...FEED.stat, finery: 'gall', art: 'fury' }; // (FEED.stat maps a kind to its feeling; Gall's and Fury's kinds: GALL-AND-FURY.md 10. Calissa measured the old lookup tinting none, 2026-10-30)
 /** One feeding: `{ cubes }`, `{ material: { kind, tier }, worth }` or `{ matter: m3 }` -> the minutes of growth it gives and the feeling it
- *  tints toward (a material its kind's feeling; matter and cubes none). */
+ *  tints toward (a material its kind's feeling; the matter its poured water's, `{ matter, feeling }`; cubes none). */
 export function feedOf(item = {}) {
   if (item.cubes) return { minutes: item.cubes / ECON.perMinute, feeling: null };
   if (item.material) return { minutes: (item.worth || 0) / ECON.perMinute, feeling: FEELING_OF_KIND[item.material.kind] || null };
-  if (item.matter) return { minutes: item.matter * MATTER_FEED.perM3, feeling: null };
+  if (item.matter) return { minutes: item.matter * MATTER_FEED.perM3, feeling: item.feeling || null }; // (the hand's pour carries its water's feeling, `god.arts.matter.held.feeling`, when the caller passes it)
   return { minutes: 0, feeling: null };
 }
 /** What a planetoid was fed, as its tint: the feeling fed most, if it is a third or more of all that was fed (else none: clay's own). */

@@ -27,6 +27,7 @@ export class Stats {
     this.play = 0;      // lifetime seconds of play
     this.sessionT = 0;  // this session's
     this.sessions = 0;
+    this.began = 0; this.lastBegan = null; // the play time this session began, and the one before it began (progress/recap.js: "last time")
     this.dirty = 0;
     this.version = 0;   // bumps on any change (the achievement check reads it)
     this.store = save;
@@ -89,14 +90,15 @@ export class Stats {
     const K = ['life', 'sess', 'rec', 'firsts', 'done'], was = K.map((k) => JSON.parse(JSON.stringify(this[k] || {})));
     try { return fn(); } finally { K.forEach((k, i) => { const o = this[k]; for (const key of Object.keys(o)) delete o[key]; Object.assign(o, was[i]); }); this.version++; } // (in place: a reader may hold the object)
   }
-  dump() { return { life: this.life, rec: this.rec, firsts: this.firsts, done: this.done, play: this.play, sessions: this.sessions }; }
+  dump() { return { life: this.life, rec: this.rec, firsts: this.firsts, done: this.done, play: this.play, sessions: this.sessions, began: this.began }; }
   load(raw) {
     if (!raw || typeof raw !== 'object') return;
     this.life = raw.life || {}; this.rec = raw.rec || {}; this.firsts = raw.firsts || {}; this.done = raw.done || {};
     this.play = raw.play || 0; this.sessions = (raw.sessions || 0) + 1; this.touch(); // (this session counted, and kept)
+    this.lastBegan = Number.isFinite(raw.began) ? raw.began : null; this.began = this.play;
     this.version++;
   }
-  clear() { this.life = {}; this.rec = {}; this.firsts = {}; this.done = {}; this.sess = {}; this.play = 0; this.sessions = 0; this.version++; }
+  clear() { this.life = {}; this.rec = {}; this.firsts = {}; this.done = {}; this.sess = {}; this.play = 0; this.sessions = 0; this.began = 0; this.lastBegan = null; this.version++; }
 
   reset() { this.clear(); this.sessions = 1; this.save(); }
 }

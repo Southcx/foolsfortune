@@ -33,6 +33,8 @@ import { renderGrimoire } from '../feedback/codex/grimoire.js';
 import { SoulAlchemy } from '../progress/alchemy.js';
 import { Knacks } from '../progress/knacks.js';
 import { Goals } from '../progress/goals.js';
+import { Quests } from '../progress/quests.js';
+import { Recap } from '../progress/recap.js';
 import { Aptitude } from '../progress/aptitude.js';
 import { ClassArts } from '../progress/classarts.js';
 import { AreaChecklist } from '../progress/areachecklist.js';
@@ -84,6 +86,7 @@ export function bootProgress(game, made) {
   game.classArts = new ClassArts(game); // (a class's two arts, opened by playing as it: progress/classarts.js, CLASS-ARTS.md)
   game.aptitude = new Aptitude(game); // (the Assay's passive readings: progress/aptitude.js, APTITUDE.md)
   game.goals = new Goals(game); // (the game day's three goals, from the achievements: progress/goals.js)
+  game.quests = new Quests(game); game.recap = new Recap(game); // (someone's trouble fixed in steps, and what you were doing: progress/quests.js, progress/recap.js)
   game.firstToday = new FirstToday(game); // (the first of each module a game day pays a little: progress/firsttoday.js)
   game.gardenBackdrop = () => gardenBackdropOf(game); // (your Spirit Garden as your half of a duel's backdrop: progress/gardenbackdrop.js, the view's to draw)
   game.foeSeen = new FoeSeen(game); // (the aberrants' foe skills you have seen, knowledge: the duel's badge tooltips, progress/foeseen.js)

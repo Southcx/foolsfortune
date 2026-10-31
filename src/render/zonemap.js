@@ -45,6 +45,8 @@ export const ZONE_TESTS = [
   // Raku's bazaar (world/bazaar/bazaar.js BAZAAR: x 0, y 200, z -3000): the casino's hall under its dome, indoors (no sky, no weather)
   // the Sandbox (world/sandbox/sandbox.js, progress/sandbox.js SANDBOX: x 3080, y 200, z -3000): the hand's physics room, indoors; BEFORE the Touchstone's test, whose 300 m box holds it
   { id: 'sandbox', test: (p) => Math.abs(p.x - 3080) < 60 && p.z > -3060 && p.z < -2940 && p.y > 150 && p.y < 450 },
+  // Strawman's Well (world/strawmanwell/layout.js AT, ZONE: x 3400, y 200, z -3000 and its lanes south to -3280): the 2D platformer's test bench, indoors
+  { id: 'strawmanwell', test: (p) => p.x > 3350 && p.x < 3700 && p.z > -3310 && p.z < -2960 && p.y > 150 && p.y < 450 },
   // the Touchstone (world/touchstone/touchstone.js TOUCHSTONE: x 3000, y 200, z -3000): the Assay's dark room, indoors
   { id: 'touchstone', test: (p) => Math.abs(p.x - 3000) < 150 && p.z > -3150 && p.z < -2850 && p.y > 150 && p.y < 450 }, // (Petra's place, 2026-10-29)
   { id: 'bazaar', test: (p) => Math.abs(p.x) < 200 && p.z > -3200 && p.z < -2800 && p.y > 150 && p.y < 450 }, // (Petra's place, 2026-10-15)
@@ -57,7 +59,7 @@ const BY_ID = Object.fromEntries(ZONE_TESTS.map((z) => [z.id, z]));
 
 /** A roofed room far from the workshop, where the sun's shadow camera never reaches: no sun there (lit, it shines on every upward face
  *  through the roof, Calissa's shots of the Touchstone), as under the ground (boot/frame.js `under`). */
-export const ROOFED = new Set(['touchstone', 'bazaar', 'sandbox']); // (the bazaar's dome too: Calissa, 2026-10-30, "the sun through a dome is a leak, not a look")
+export const ROOFED = new Set(['touchstone', 'bazaar', 'sandbox', 'strawmanwell']); // (the bazaar's dome too: Calissa, 2026-10-30, "the sun through a dome is a leak, not a look")
 
 /** What each zone is underfoot and as a space (Wanda's hooks, 2026-10-30): its `floor`, a step's surface where nothing on the ground
  *  says otherwise (courier/stepsurface.js), and its `acoustic`, the kind of space it is heard as (audio/acoustics.js ACOUSTICS: room,
@@ -75,6 +77,7 @@ export const ZONE_SOUND = {
   raceway: { floor: 'sand', acoustic: 'open' },
   touchstone: { floor: 'stone', acoustic: 'room', wet: 0.12 }, // (a test booth is dry: the trials' sounds heard as they are made)
   sandbox: { floor: 'clay', acoustic: 'hall' }, //      (a big clay-walled hall: the hand's physics room)
+  strawmanwell: { floor: 'wood', acoustic: 'hall' }, // (a toy theatre's boards: Strawman's Well)
   bazaar: { floor: 'stone', acoustic: 'hall' }, //      (the mosaic under the dome)
   opensea: { floor: 'sand', acoustic: 'sea' }, //       (an islet's top: the helm takes no steps)
   margarite: { floor: 'stone', acoustic: 'sea' }, //    (the quay)

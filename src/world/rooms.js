@@ -30,6 +30,7 @@ export function indexRooms() {
     { id: 'spindle', code: 'KeyP', tag: 'P', name: 'THE SPINDLE', blurb: 'up through a chain of skills, down a long chute', group: 'LAP CIRCUITS', spawn: 'circuit' },
     { id: 'touchstone', code: 'KeyT', tag: 'T', name: 'THE TOUCHSTONE', blurb: 'the Assay\'s quiet room: five standard trials, one at each plinth', group: 'THE HUB', spawn: 'touchstone' },
     { id: 'sandbox', code: 'KeyN', tag: 'N', name: 'THE SANDBOX', blurb: 'the hand\'s physics room: a yard of loose things, a pen to try powers on, a pitch and a ball', group: 'THE HAND', spawn: 'sandbox' },
+    { id: 'strawmanwell', code: 'KeyH', tag: 'H', name: "STRAWMAN'S WELL", blurb: 'the 2D platformer\'s test bench, side-on: the wings and six stages of verbs (run, climb, stomp, brawl, machine, flood)', group: 'THE HAND', spawn: 'strawmanwell' },
     { id: 'siege', code: 'KeyS', tag: 'S', name: 'THE SIEGE', blurb: 'the hand\'s arena: raids come here, and only here', group: 'THE HAND', spawn: 'siege' },
     { id: 'dunes', code: 'KeyD', tag: 'D', name: 'THE DUNES', blurb: 'an oasis in a sand sea: Solar Skiffing (Y) · the Weir\'s pools and the Sondelass\'s rod · the gate to Raku\'s bazaar', group: 'THE OPEN', spawn: 'dunes' },
     { id: 'shore', code: 'KeyE', tag: 'E', name: 'THE SHORE', blurb: 'due east of the oasis the sand runs down to the Emocean: the jetty, and the sea to the horizon', group: 'THE OPEN', spawn: 'shore' },
@@ -67,6 +68,7 @@ export function goRoom(c, id) {
   else if (r.spawn === 'shore') toShore(c);
   else if (r.spawn === 'touchstone') { c.game.touchstone?.arrive(); c.running = false; c.current = -1; c.lapT = null; sfx.geyser(); }
   else if (r.spawn === 'sandbox') { c.game.sandbox?.arrive(); c.running = false; c.current = -1; c.lapT = null; sfx.geyser(); }
+  else if (r.spawn === 'strawmanwell') { c.game.strawmanWell?.arrive(); c.running = false; c.current = -1; c.lapT = null; sfx.geyser(); }
   else if (r.spawn === 'bazaar') { c.game.bazaar?.arrive(); c.running = false; c.current = -1; c.lapT = null; }
   else if (r.spawn === 'opensea') { c.game.opensea?.arrive(); c.running = false; c.current = -1; c.lapT = null; }
   else if (r.spawn === 'raceway') { c.game.raceway?.arrive(); c.running = false; c.current = -1; c.lapT = null; sfx.geyser(); }

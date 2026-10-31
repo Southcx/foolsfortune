@@ -8,7 +8,9 @@
 // property of the world (here: of the DEBUG save), Bethesda's QASmoke (everything on demand in a test cell).
 //
 //   LENDS[id] = { label, opens }   const N = new Lend(game)   N.has(id) -> bool (DEBUG only)   N.set(id, on)   N.all(on)   N.state
-//   Each gate asks: `|| game.lend?.has('<id>')` (the gates, by file and line: DEBUG-MODE.md section 4).
+//   Each gate asks: `|| game.lend?.has('<id>')` (the gates, by file and line: DEBUG-MODE.md section 4). The Summit is the one lend of numbers:
+//   the level reads answer their caps while it is lent (progress/psyche.js level and widen, alchemy.js rank, dice.js the palm die's sides),
+//   the ledger untouched, so switching it off puts every number back where play left it.
 // ---------------------------------------------------------------------------------------
 
 /** The categories, in the panel's order. `opens` is what lending it opens (the panel's one line). Words: Espada's (2026-10-09). */
@@ -31,9 +33,10 @@ export const LENDS = {
   classArts: { label: 'Class Arts',    opens: 'Every class art open to wear.' }, // (CLASS-ARTS.md; South's rule: everything open in DEBUG; words placeholders for Espada)
   mimicry:   { label: 'Mimicry Puzzles', opens: 'Every mimicry puzzle open at its stone.' }, // (MIMICRY.md: the ladder's rungs lent, never counted)
   figmentTelegraphs: { label: 'Figment Telegraphs', opens: 'Every Figment telegraph step shown.' }, // (Divination's ladder lent: FIGMENT-TELEGRAPHS.md; always qualified, never the rail's)
+  summit:    { label: 'The Summit',    opens: 'Every domain at 99, every attribute at rank 10, the palm die a d20: the top, to play now.', off: true }, // (South, 2026-10-31: "build the 'top' as an extension of the 'lent' system"; ENDGAME.md 4. A lend of numbers, not of gates: the level reads answer the cap. Off on a new DEBUG save, so the curve is still felt.)
   achievements: { label: 'Achievements', opens: 'Every achievement done and every title yours; none announced, none counted.' }, // (the owner, 2026-10-26: "achievements set to all unlocked in debug mode, much like abilities are lent"; the gate is progress/achievements.js's; words placeholders for Espada)
 };
-const fresh = () => Object.fromEntries(Object.keys(LENDS).map((k) => [k, true])); // (a new DEBUG save lends everything: today's sandbox)
+const fresh = () => Object.fromEntries(Object.keys(LENDS).map((k) => [k, !LENDS[k].off])); // (a new DEBUG save lends everything but what is marked `off`: today's sandbox)
 
 export class Lend {
   constructor(game) {
