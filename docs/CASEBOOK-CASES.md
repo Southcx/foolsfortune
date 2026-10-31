@@ -4727,3 +4727,15 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   (they settle in the garden on their own), so their slabs could never be opened either: the roster is now the three a photo can carry
   (slip jelly, clapperjar, spirit).
 - **Rule:** 378
+
+### 2026-10-31 · The goals window stood below the view (ui/brineframe.js; found by Calissa, probing the quest journal)
+- **Seen:** headless, at 1280 x 720, the goals window was `on` at full opacity with `top: 60px`, yet its box began at 780 px: under
+  the view's foot. Shown beside the quest journal, only the journal was seen.
+- **Cause, as measured:** a window built on a Brine frame sets its own `position: fixed` (`.gw`) and the frame sets
+  `.bf{position:relative}`, at the same specificity. Each sheet is injected the first time its kind is built, so whichever lands
+  last wins. When the goals window was the first Brine window of a session (a game day's goals laid at boot), the frame's sheet
+  landed after it, the window became `relative` and fell into the page's flow below the canvas.
+- **Fix:** the frame's position is a default a host may override: `:where(.bf){position:relative}` (zero specificity), so any host's
+  own position wins whatever the order. After (the same probe, desk and phone): the goals window's box at its `top`, beside the
+  journal.
+- **Rule:** NEW:base-yields

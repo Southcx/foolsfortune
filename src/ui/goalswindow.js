@@ -63,7 +63,9 @@ ${clayDress('.gw.clay')}
 .gw-none{font-size:calc(9*var(--d));opacity:.7;padding:calc(3*var(--d)) 0}
 `;
 /** The left edge's System windows (this one, the quest journal: ui/questjournal.js) stand one under another in the order they came on,
- *  so neither covers the other; `fit(top)` lets a window size itself to what is left under its top (CSS px). */
+ *  so neither covers the other, and one that would not fit above the floor (the desk log's top, else the view's foot) stands beside the
+ *  one before it instead; `fit(top, floor)` lets a window size itself to what is left (CSS px). On touch the column starts under the
+ *  log's ticker (ui/touchlog.js, its place the HUD layout's --hud-log-y and --hud-log-h), its tab clear of it. */
 const COLUMN = [];
 export function leftColumn(root, on, fit = null) {
   const i = COLUMN.findIndex((c) => c.root === root);
@@ -71,8 +73,17 @@ export function leftColumn(root, on, fit = null) {
   if (on) COLUMN.push({ root, fit });
   if (typeof requestAnimationFrame !== 'function') return;
   requestAnimationFrame(() => {
-    const d = dot(); let top = 40 * d;
-    for (const c of COLUMN) { c.root.style.top = `${top}px`; c.fit?.(top); top += c.root.offsetHeight + 20 * d; }
+    const d = dot(), B = document.body, touch = B.classList.contains('hud-touch'), cs = touch ? getComputedStyle(B) : null;
+    const top0 = touch ? (parseFloat(cs.getPropertyValue('--hud-log-y')) || 60) + (parseFloat(cs.getPropertyValue('--hud-log-h')) || 36) + 20 * d : 40 * d;
+    const lr = touch ? null : document.getElementById('chatlog')?.getBoundingClientRect();
+    const floor = (lr && lr.height > 0 && lr.left < innerWidth / 3 && lr.top > top0 + 120 * d ? lr.top : innerHeight) - 8 * d;
+    let top = top0, left = 10 * d, prev = null;
+    for (const c of COLUMN) {
+      if (prev && top + c.root.offsetHeight > floor) { left = prev.offsetLeft + prev.offsetWidth + 12 * d; top = top0; }
+      c.root.style.top = `${top}px`; c.root.style.left = `${left}px`;
+      c.fit?.(top, floor);
+      top += c.root.offsetHeight + 20 * d; prev = c.root;
+    }
   });
 }
 

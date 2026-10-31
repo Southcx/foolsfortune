@@ -29,7 +29,8 @@ export const COUNT_FACE = `'Jersey 15', ${FONT.sys}`; // (the counts face, OVERL
 export const dot = () => (typeof innerHeight === 'number' ? Math.max(1, innerHeight / 480) : 1.5);
 
 const CSS = `
-.bf{position:relative;--d:1.5px;--c:calc(6*var(--d));--fold:calc(5*var(--d));color:${SALT};font-family:${FONT.sys};
+:where(.bf){position:relative}
+.bf{--d:1.5px;--c:calc(6*var(--d));--fold:calc(5*var(--d));color:${SALT};font-family:${FONT.sys};
   font-size:calc(14*var(--d));line-height:1.15;-webkit-font-smoothing:none}
 .bf-body{position:relative;padding:calc(7*var(--d)) calc(8*var(--d)) calc(6*var(--d));
   clip-path:polygon(var(--c) 0,calc(100% - var(--fold)) 0,100% var(--fold),100% calc(100% - var(--c)),calc(100% - var(--c)) 100%,0 100%,0 var(--c));

@@ -11,10 +11,12 @@
 //              begins; in progress, the steps done struck through and the next one, never the one after it (QUESTS.md 2: no spoilers);
 //              complete, folded to its name unless it is the one lit.
 //   THE BEAT   the lit quest's mark stamped in (the goals window's check, gw-stamp), its new next step swept in from the left; on
-//              quest.done each step's strike drawn across in turn, the disc stamped, and the quest points' count rolled on with a +N
+//              quest.done each step's strike drawn across in turn (an inline element's background, so a wrapped step is struck on each of its lines in turn), the disc stamped, and the quest points' count rolled on with a +N
 //              beside it. The window is the beat; Tomba!'s bigger EVENT! splash waits on South's ruling (one toast: a title).
-//   THE COLUMN the left edge's windows stand one under another in the order they came on (`leftColumn`, goalswindow.js), so the journal
-//              and the goals window never cover each other; too tall for what is left of the view, the list fades out at its foot.
+//              The done beat and the recap leave the trouble out, so the struck steps and the next ones fit.
+//   THE COLUMN the left edge's windows stand one under another in the order they came on (`leftColumn`, goalswindow.js), or beside the
+//              one before where there is no room under it (above the desk log, under the touch log's ticker), so the journal and the
+//              goals window never cover each other or the log; still too tall, the list fades out at its foot.
 //
 // Prior art: RuneScape's quest journal (red, yellow, green; the diary's done steps struck through and only the next one written; quest
 // points), Tomba!'s event list (open and cleared events in one menu, each moment marked as it starts and clears), Xenoblade's "The Story
@@ -81,10 +83,10 @@ ${clayDress('.qj.clay')}
 .qj-step i{align-self:start;margin-top:calc(2*var(--d));width:calc(4*var(--d));height:calc(4*var(--d))}
 .qj-step.did{opacity:.55}
 .qj-step.did i{border:var(--d) solid rgba(255,226,196,.7);border-radius:50%;box-sizing:border-box}
-.qj-step.did span{position:relative}
-.qj-step.did span::after{content:'';position:absolute;left:0;right:0;top:55%;height:var(--d);background:rgba(255,236,214,.85);transform-origin:0 50%}
-.qj-row.lit .qj-step.did span::after{animation:qj-strike ${L.strike}s ease-out both;animation-delay:var(--qj-at,0s)}
-@keyframes qj-strike{0%{transform:scaleX(0)}100%{transform:none}}
+.qj-step em{font-style:normal}
+.qj-step.did em{background:linear-gradient(rgba(255,236,214,.85),rgba(255,236,214,.85)) 0 58%/100% var(--d) no-repeat}
+.qj-row.lit .qj-step.did em{animation:qj-strike ${L.strike}s ease-out both;animation-delay:var(--qj-at,0s)}
+@keyframes qj-strike{0%{background-size:0% var(--d)}100%{background-size:100% var(--d)}}
 .qj-step.next i{background:var(--qc);clip-path:polygon(0 0,100% 50%,0 100%)}
 .qj-step.next span{color:#fff1dc}
 .qj-row.lit .qj-step.next{animation:qj-in .45s .15s cubic-bezier(.2,.8,.3,1) both}
@@ -133,18 +135,19 @@ export class QuestJournal {
     this.list = make('div', 'qj-list');
     f.body.append(pts, this.list);
     document.body.appendChild(root);
-    addEventListener('resize', () => { root.style.setProperty('--d', `${dot()}px`); f.layout(); if (this.on) leftColumn(root, true, (r) => this.fit(r)); });
+    addEventListener('resize', () => { root.style.setProperty('--d', `${dot()}px`); f.layout(); if (this.on) leftColumn(root, true, (top, floor) => this.fit(top, floor)); });
   }
 
-  /** One quest's row (`lit`: the quest of this beat; `kind`: its beat, 'start' or 'done'). */
-  row(q, lit, kind) {
+  /** One quest's row (`lit`: the quest of this beat; `kind`: its beat, 'start' or 'done'; `brief`: no trouble line, for the done beat's
+   *  struck steps and the recap). */
+  row(q, lit, kind, brief = false) {
     const row = make('div', `qj-row ${q.state}${lit ? ' lit' : ''}`);
     const head = make('div', 'qj-head'); head.insertAdjacentHTML('afterbegin', questMark(q.state));
     head.append(make('span', 'qj-name', q.name || q.id), make('span', 'qj-qp', q.points != null ? `${q.points} QP` : ''));
     const sub = make('div', 'qj-sub'); sub.append(make('span', '', q.who ? `FOR ${String(q.who).toUpperCase()}` : ''), make('b', '', L.word[q.state] || ''));
     row.append(head, sub);
     if (q.state === 'done' && !lit) return row;
-    if (q.trouble) row.append(make('div', 'qj-trouble', q.trouble));
+    if (q.trouble && !brief) row.append(make('div', 'qj-trouble', q.trouble));
     if (q.state === 'none') {
       const b = make('div', 'qj-begin'); b.append(make('b', '', 'START'), make('span', '', q.begin || '')); row.append(b);
       return row;
@@ -153,7 +156,7 @@ export class QuestJournal {
     let k = 0;
     for (let i = 0; i < upto; i++) {
       const s = all[i], did = !!s.done, el = make('div', `qj-step ${did ? 'did' : 'next'}`);
-      el.append(make('i'), make('span', '', s.say || ''));
+      const say = make('span'); say.append(make('em', '', s.say || '')); el.append(make('i'), say);
       if (did && lit && kind === 'done') el.style.setProperty('--qj-at', `${0.25 + k++ * L.strike}s`);
       steps.append(el);
     }
@@ -166,14 +169,14 @@ export class QuestJournal {
   draw({ lit = null, kind = null, quests = null, points = null, recap = null } = {}) {
     this.build(); if (!this.root) return;
     const Q = this.game?.quests, list = quests || Q?.list?.() || [], pts = points ?? Q?.points ?? 0;
-    this.list.innerHTML = '';
+    this.list.innerHTML = ''; this.list.style.removeProperty('--qj-max'); this.list.classList.remove('clip');
     if (recap?.last?.length) {
       const sec = make('div', 'qj-sec'); sec.append(make('span', '', recap.minutes != null ? `LAST TIME · ${recap.minutes} MIN` : 'LAST TIME')); this.list.append(sec);
       for (const l of recap.last) this.list.append(make('div', 'qj-last', l));
       if (list.length) { const s2 = make('div', 'qj-sec'); s2.append(make('span', '', 'QUESTS')); this.list.append(s2); }
     }
     if (!list.length) this.list.append(make('div', 'qj-none', 'No quests yet.'));
-    for (const q of list) this.list.append(this.row(q, q.id === lit, kind));
+    for (const q of list) this.list.append(this.row(q, q.id === lit, kind, !!recap || (q.id === lit && kind === 'done')));
     this.root.classList.toggle('beat', !!lit);
     const gain = kind === 'done' && this.shownPts != null && pts > this.shownPts ? pts - this.shownPts : 0;
     this.ptsN.textContent = String(gain ? this.shownPts : pts); this.shownPts = pts;
@@ -186,10 +189,10 @@ export class QuestJournal {
     requestAnimationFrame(() => this.frame?.layout());
   }
 
-  /** Fit the list to what the column leaves under this window's top (`top`, CSS px), fading out at its foot when it is cut. */
-  fit(top) {
+  /** Fit the list to what the column leaves between this window's top and its floor (CSS px), fading out at its foot when it is cut. */
+  fit(top, floor = innerHeight) {
     if (!this.root) return;
-    const d = dot(), max = Math.max(60 * d, innerHeight - top - 24 * d - (this.root.offsetHeight - this.list.offsetHeight));
+    const d = dot(), max = Math.max(60 * d, floor - top - 8 * d - (this.root.offsetHeight - this.list.offsetHeight));
     this.list.style.setProperty('--qj-max', `${max}px`);
     this.list.classList.toggle('clip', this.list.scrollHeight > max + 1);
     this.frame?.layout();
@@ -201,7 +204,7 @@ export class QuestJournal {
     this.draw(opts); if (!this.root) return;
     this.on = true;
     requestAnimationFrame(() => this.root?.classList.add('on'));
-    leftColumn(this.root, true, (top) => this.fit(top));
+    leftColumn(this.root, true, (top, floor) => this.fit(top, floor));
     clearTimeout(this.timer); this.timer = setTimeout(() => this.hide(), seconds * 1000);
     if (opts.recap) this.game?.goalsWindow?.show?.(seconds);
   }
