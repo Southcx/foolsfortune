@@ -29,11 +29,12 @@ import { TARGET_BODIES } from '../../vfx/strawmanwell/targets/bodies.js';
 export const TARGETS = {
   hopper: { name: 'target hopper', height: 1.25, radius: 0.4, weight: 0.9, wind: 0.45, reach: 1.15, shove: 5.5, hop: [4.4, 2.3], leap: [7.4, 3.7] },
   quintain: { name: 'quintain', height: 1.75, radius: 0.42, weight: 1.7, wind: 0.42, reach: 1.9, shove: 6.5, swing: 0.32 },
-  duck: { name: 'gallery duck', height: 0.8, radius: 0.36, weight: 0.75, wind: 0.6, reach: 1.15, shove: 4.5, cruise: 3.4, fly: 2.1, dive: 0.55, speed: 9.5 },
+  duck: { name: 'gallery duck', height: 1.05, radius: 0.46, weight: 0.75, wind: 0.6, reach: 1.15, shove: 4.5, cruise: 3.4, fly: 2.1, dive: 0.55, speed: 9.5 },
 };
-/** Where they stand: [stage, kind, m along its lane], each over floor at the lane's y 0 (a flyer over a gap keeps its height over it). */
+/** Where they stand: [stage, kind, m along its lane, its floor's height there (m, 0 if left out)]; a flyer keeps its height over that
+ *  floor (over a gap, the ledges' height either side). */
 export const PLACES = [
-  ['wings', 'quintain', WINGS.strawman + 2.3], ['run', 'hopper', 40], ['run', 'duck', 58], ['run', 'hopper', 96], ['climb', 'duck', 30],
+  ['wings', 'quintain', WINGS.strawman + 2.3], ['run', 'hopper', 75], ['run', 'duck', 59, 5], ['run', 'hopper', 96], ['climb', 'duck', 30],
   ['stomp', 'hopper', 30], ['brawl', 'duck', 25], ['machine', 'quintain', 16],
 ];
 
@@ -46,12 +47,12 @@ export class TrainingTargets extends StrawDummies {
   /** Every target in its place (the room just built). */
   populate() {
     const W = this.well, K = W.kit; if (!W.built || !K || this.list.length) return;
-    for (const [stage, kind, x] of PLACES) {
+    for (const [stage, kind, x, fy = 0] of PLACES) {
       const L = LANES[stage], into = stage === 'brawl' ? W.stages.brawl?.arena?.into : K.groups.get(stage); if (!L || !into) continue;
       const arena = stage === 'brawl' ? W.stages.brawl.arena : { x0: AT.x - 1, x1: AT.x + L.len + 1, top: AT.y, z: L.z, stage, into };
-      // (the room's colliders are not in the physics' queries until its next step: each spot stands on its stage's floor, y 0, and a
-      // target settles from there; a duck holds its height over it)
-      const at = new THREE.Vector3(AT.x + x, AT.y + 0.05, L.z);
+      // (the room's colliders are not in the physics' queries until its next step: each spot stands on its floor's height as written,
+      // and a target settles from there; a duck holds its height over it)
+      const at = new THREE.Vector3(AT.x + x, AT.y + fy + 0.05, L.z);
       if (kind === 'duck') at.y += TARGETS.duck.cruise;
       this.spawn(at, arena, kind);
     }

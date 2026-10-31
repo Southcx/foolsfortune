@@ -1,8 +1,9 @@
 // ---------------------------------------------------------------------------------------
 // STRAWMAN'S WELL'S TRAINING TARGETS, THE QUINTAIN'S BODY: the jousting knight's old practice target, made by Pip: a walnut post on a
 // plank cart rolling on two thread spools, a burlap sack for a head (Strawman's buttons, a stitched mouth, straw out of its crown), and
-// across its shoulders the pivoting arm, a target shield (Strawman's red and cream rings) on one end and a sandbag on a rope on the
-// other. Strike it and the arm swings round: it winds back a beat (its tell), then the sandbag comes about, flung out by the turn.
+// across its shoulders the pivoting arm (broken once and splinted in twine: one of Pip's first tries, LORE.md), a target shield (Strawman's
+// red and cream rings) on one end and a sandbag on a rope on the other. Strike it and the arm swings round: it winds back a beat (its
+// tell), then the sandbag comes about, flung out by the turn.
 //
 // Prior art: the quintain (medieval tilting practice: strike the shield, and the sandbag on the far arm swings round at the rider who is
 // too slow), the scarecrow on its post, Strawman's sack head (vfx/strawman.js), cotton-reel tanks (the spool on wheels, a child's toy).
@@ -15,8 +16,8 @@ import { TargetBody, TARGET_LOOK as L, Sheet, box, rgb, uvOf, V, bullseye, butto
 /** Its sizes (m) and its swing: the cart, the spools, the post's top, the head, the arm (its pivot's height and half-length), the shield,
  *  the rope and bag; the wind back (rad) and its time (s), the swing's turn (rad) and time (s), the bag's fling (rad at full speed). */
 export const QUINTAIN_LOOK = {
-  cart: [0.84, 0.08, 0.5], axle: 0.14, spool: { r: 0.1, flange: 0.14, w: 0.42 }, post: 1.46, head: 0.17, pivot: 1.3, arm: 0.74,
-  shield: 0.27, rope: 0.36, bag: [0.15, 0.21],
+  cart: [0.92, 0.1, 0.56], axle: 0.16, spool: { r: 0.12, flange: 0.16, w: 0.46 }, post: 1.46, beam: 0.075, head: 0.21, pivot: 1.3, arm: 0.8,
+  shield: 0.35, rope: 0.32, bag: [0.2, 0.27],
   windBack: 0.55, wind: 0.42, turn: Math.PI * 2, swing: 0.6, fling: 1.15,
 };
 const Q = QUINTAIN_LOOK;
@@ -31,7 +32,7 @@ export class QuintainBody extends TargetBody {
     const S0 = new Sheet();
     box(S0, -cw / 2, cw / 2, Q.axle, Q.axle + ch, -cd / 2, cd / 2, wood, 'ftlrb');
     for (let x = -cw / 2; x < cw / 2 - 1e-3; x += cw) S0.quad(V(x, Q.axle, cd / 2 + 0.002), V(x + cw, Q.axle, cd / 2 + 0.002), V(x + cw, Q.axle + ch, cd / 2 + 0.002), V(x, Q.axle + ch, cd / 2 + 0.002), rgb(0xffffff, 0.8), uvOf('walnut', 0, 0, 1, 0.3));
-    box(S0, -0.05, 0.05, Q.axle + ch, Q.post, -0.05, 0.05, (f) => rgb(L.post, f === 'f' ? 1.2 : 0.8), 'ftlrb');
+    const pb = Q.beam; box(S0, -pb, pb, Q.axle + ch, Q.post, -pb, pb, (f) => rgb(L.post, f === 'f' ? 1.2 : 0.8), 'ftlrb');
     for (const s of [-1, 1]) box(S0, s * 0.05 - (s > 0 ? 0 : 0.12), s * 0.05 + (s > 0 ? 0.12 : 0), Q.axle + ch, Q.axle + ch + 0.05, -0.03, 0.03, wood, 'ftlr'); // (two braces)
     // the head: a sack, its buttons and stitched mouth, its tied neck, straw from its crown
     const hy = Q.post + Q.head * 0.85, sack = new THREE.SphereGeometry(Q.head, 16, 12).scale(1, 0.92, 0.85).translate(0, hy, 0);
@@ -57,7 +58,10 @@ export class QuintainBody extends TargetBody {
     // the arm: its beam and brass cap, the shield on one end, the rope and bag on the other
     this.arm = new THREE.Group(); this.arm.position.y = Q.pivot; this.flip.add(this.arm);
     const S1 = new Sheet(), A = Q.arm;
-    box(S1, -A, A, -0.035, 0.035, -0.035, 0.035, (f) => rgb(0x6b4226, f === 't' ? 1.15 : 0.8), 'ftulrb');
+    box(S1, -A, A, -0.045, 0.045, -0.045, 0.045, (f) => rgb(0x6b4226, f === 't' ? 1.15 : 0.8), 'ftulrb');
+    // the arm's old break, splinted: two slats over it, bound in twine (LORE.md: patched where it failed)
+    for (const z of [-0.05, 0.05]) box(S1, -0.36, -0.08, -0.03, 0.03, z - 0.008, z + 0.008, (f) => rgb(0xc89a5c, f === 'f' || f === 'b' ? 1 : 0.75), 'ftbulr');
+    for (const x of [-0.32, -0.22, -0.12]) box(S1, x - 0.018, x + 0.018, -0.055, 0.055, -0.062, 0.062, rgb(L.seam, 1.15), 'ftbulr');
     const cap = new THREE.CylinderGeometry(0.06, 0.06, 0.1, 12); S1.add(cap, rgb(L.brass, 1.1)); cap.dispose();
     const sx = A - 0.12, sy = -0.05 - Q.shield;
     box(S1, sx - 0.02, sx + 0.02, sy, -0.035, -0.02, 0.02, rgb(L.post), 'ftlr');

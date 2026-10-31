@@ -7,12 +7,13 @@
 //                side (+ right), `update(dt)`, `hit(point, dir, power)` (a wobble on a spring), `play(id)` / `breakOff()` (its move),
 //                `dispose()`; the world sets `air` and `vy` on it. A flat body faces the stalls and turns as a paper cut-out does: its
 //                width runs through zero to the other side, never a yaw that would show its edge to a side camera
-//   bullseye     concentric rings in a plane, Strawman's red and cream; `buttonEye` a sewn button; `strawTuft` a fan of straw ends
+//   bullseye     concentric rings in a plane, Strawman's red and cream; `buttonEye` a sewn button; `strawTuft` a fan of straw ends;
+//                `darn` Pip's cross-stitches over an old break (each target was one of Pip's first tries, patched where it failed: LORE.md)
 //
 // Prior art: Strawman's sack and its painted target (vfx/strawman.js), archery's straw boss and the shooting gallery's tin targets, the
 // toy theatre's cut-outs flipped by hand (the theatre's kit, vfx/strawmanwell/theatre/kit.js).
 //
-//   TARGET_LOOK   targetMaterial() / releaseMaterial()   bullseye(S, cx, cy, z, r, n, opts)   buttonEye(S, x, y, z, r)   strawTuft(S, x, y, z, a, len, n, seed)
+//   TARGET_LOOK   targetMaterial() / releaseMaterial()   bullseye(S, cx, cy, z, r, n, opts)   buttonEye(S, x, y, z, r)   strawTuft(S, x, y, z, a, len, n, seed)   darn(S, a, b, z, gap)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { Sheet, box, rgb, uvOf, V, hash, atlasTexture, WHITE } from '../theatre/kit.js';
@@ -78,6 +79,22 @@ export function strawTuft(S, x, y, z, a, len, n = 5, seed = 1) {
     const col = rgb(i % 2 ? L.straw : L.strawDark, 1);
     S.quad(V(x - nx * 1.6, y - ny * 1.6, z), V(ex - nx * 0.4, ey - ny * 0.4, z), V(ex + nx * 0.4, ey + ny * 0.4, z), V(x + nx * 1.6, y + ny * 1.6, z), col);
     S.quad(V(x + nx * 1.6, y + ny * 1.6, z - 0.002), V(ex + nx * 0.4, ey + ny * 0.4, z - 0.002), V(ex - nx * 0.4, ey - ny * 0.4, z - 0.002), V(x - nx * 1.6, y - ny * 1.6, z - 0.002), col);
+  }
+}
+
+/** Pip's darning across an old break (Espada, LORE.md: each target patched where it failed): a dark split from a to b in the plane z,
+ *  and cream cross-stitches over it every `gap` m. */
+export function darn(S, a, b, z, gap = 0.05) {
+  const d = new THREE.Vector2(b[0] - a[0], b[1] - a[1]), len = d.length(); d.normalize();
+  const n = new THREE.Vector2(-d.y, d.x), w = 0.012, crack = rgb(L.lacquer, 1.4), th = rgb(L.cream, 1.15);
+  S.quad(V(a[0] - n.x * w, a[1] - n.y * w, z), V(b[0] - n.x * w, b[1] - n.y * w, z), V(b[0] + n.x * w, b[1] + n.y * w, z), V(a[0] + n.x * w, a[1] + n.y * w, z), crack);
+  for (let t = gap / 2; t < len; t += gap) {
+    const cx = a[0] + d.x * t, cy = a[1] + d.y * t, h = 0.035, s = 0.008;
+    for (const k of [1, -1]) {
+      const u = new THREE.Vector2(n.x + d.x * 0.6 * k, n.y + d.y * 0.6 * k).normalize();
+      const p0 = [cx - u.x * h, cy - u.y * h], p1 = [cx + u.x * h, cy + u.y * h], q = new THREE.Vector2(-u.y, u.x).multiplyScalar(s);
+      S.quad(V(p0[0] - q.x, p0[1] - q.y, z + 0.003), V(p1[0] - q.x, p1[1] - q.y, z + 0.003), V(p1[0] + q.x, p1[1] + q.y, z + 0.003), V(p0[0] + q.x, p0[1] + q.y, z + 0.003), th);
+    }
   }
 }
 

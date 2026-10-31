@@ -1,7 +1,8 @@
 // ---------------------------------------------------------------------------------------
 // STRAWMAN'S WELL'S TRAINING TARGETS, THE TARGET HOPPER'S BODY: an archery butt of coiled straw (the boss a target face is pinned to),
 // painted with Strawman's red and cream rings, two buttons sewn on for eyes and a spent arrow still stuck in it, straw bristling from its
-// rim, sat on a bedspring screwed to a walnut block: Pip's idea of a target that comes to you. The spring sags as it crouches to pounce
+// rim, sat on a bedspring screwed to a walnut block: Pip's idea of a target that comes to you, one of Pip's first tries (LORE.md), its
+// face split once and darned across. The spring sags as it crouches to pounce
 // (its tell), stretches as it leaps, and the boss squashes when it lands.
 //
 // Prior art: the archery boss (coiled straw rope, a paper face pinned on), the jack-in-the-box's spring, Super Mario's Pokey and the
@@ -10,7 +11,7 @@
 //   new TargetHopperBody()   (the contract: targets/kit.js TargetBody)   HOPPER_LOOK
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { TargetBody, TARGET_LOOK as L, Sheet, box, rgb, V, bullseye, buttonEye, strawTuft } from './kit.js';
+import { TargetBody, TARGET_LOOK as L, Sheet, box, rgb, V, bullseye, buttonEye, strawTuft, darn } from './kit.js';
 
 /** Its sizes (m): the block, the spring (rest height, coil radius, turns, wire), the boss (radius, depth, its middle over the spring's
  *  top), the face; the spring's crouch and stretch, the landing's squash. */
@@ -58,6 +59,7 @@ export class TargetHopperBody extends TargetBody {
       const a0 = (s / 32) * Math.PI * 2, a1 = ((s + 1) / 32) * Math.PI * 2, c = (rr, a) => V(Math.cos(a) * rr, Math.sin(a) * rr, zf - 0.001);
       S2.quad(c(H.face, a0), c(H.face + 0.025, a0), c(H.face + 0.025, a1), c(H.face, a1), rgb(L.cream, 0.8));
     }
+    darn(S2, [-0.33, -0.05], [-0.06, -0.29], zf + 0.002); // (the split it took once, darned: LORE.md)
     buttonEye(S2, -0.12, 0.21, zf, 0.052); buttonEye(S2, 0.12, 0.21, zf, 0.052);
     // the arrow it caught, fletched in Strawman's red and cream
     const nock = V(0.38, 0.02, 0.42), tip = V(0.13, -0.11, zf - 0.02);

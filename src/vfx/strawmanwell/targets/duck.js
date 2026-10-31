@@ -1,8 +1,9 @@
 // ---------------------------------------------------------------------------------------
 // STRAWMAN'S WELL'S TRAINING TARGETS, THE GALLERY DUCK'S BODY: a shooting gallery's tin duck, cut from a sheet and painted yellow, a
 // button sewn on for its eye and Strawman's red and cream rings on its flank, the tab it once rode the gallery's track on still under its
-// belly; Pip set it free with a cotton bobbin and two card blades for a rotor. It flies, its wing flapping on its pin; it tips its beak
-// down a beat (its tell) and dives, nose first, then climbs back.
+// belly, its neck torn off once and soldered and stitched back (one of Pip's first tries, LORE.md); Pip set it free with a cotton
+// bobbin and two card blades for a rotor. It flies, its wing flapping on its pin; it tips its beak down a beat (its tell) and dives,
+// nose first, then climbs back.
 //
 // Prior art: the fairground shooting gallery's tin ducks on their track, the toy theatre's cut-out on a wire, the bamboo-copter (a
 // spindle and two blades), Duck Hunt's flight and Super Mario's Paratroopa (a flyer that patrols and swoops).
@@ -10,23 +11,24 @@
 //   new GalleryDuckBody()   (the contract: targets/kit.js TargetBody)   DUCK_LOOK
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { TargetBody, TARGET_LOOK as L, Sheet, box, rgb, V, bullseye, buttonEye } from './kit.js';
+import { TargetBody, TARGET_LOOK as L, Sheet, box, rgb, V, bullseye, buttonEye, darn } from './kit.js';
 import { card } from '../theatre/kit.js';
 
 /** Its profile (m, facing +x, from its belly's foot), the rotor (the bobbin's middle, the blades' half-span, turns/s), the wing (its pin
- *  and flap), the dive's tip (rad) and the windup's and dive's times (s, the runtime's: world/strawmanwell/targets.js). */
+ *  and flap), the dive's tip (rad) and the windup's and dive's times (s, the runtime's: world/strawmanwell/targets.js), its drawn scale. */
 export const DUCK_LOOK = {
   profile: [[-0.44, 0.44], [-0.38, 0.3], [-0.1, 0.22], [0.2, 0.24], [0.36, 0.42], [0.38, 0.6], [0.46, 0.64], [0.64, 0.67], [0.47, 0.71],
     [0.45, 0.79], [0.37, 0.86], [0.25, 0.84], [0.18, 0.73], [0.13, 0.6], [0.05, 0.56], [-0.2, 0.55]],
   beakX: 0.45, eye: [0.33, 0.77], ring: [-0.02, 0.4, 0.13],
   rotor: { at: [-0.04, 0.6], spin: 7, span: 0.34 }, wing: { pin: [-0.02, 0.5], flap: 0.5, rate: 9 },
-  tip: -0.55, wind: 0.6, dive: 0.55,
+  tip: -0.55, wind: 0.6, dive: 0.55, scale: 1.35,
 };
 const D = DUCK_LOOK;
 
 export class GalleryDuckBody extends TargetBody {
   constructor() {
     super();
+    this.rock.scale.setScalar(D.scale); // (drawn a third over its make: at the Well's distance a smaller duck loses its rings)
     this.pitch = new THREE.Group(); this.pitch.position.y = 0.45; this.flip.add(this.pitch); // (it tips about its middle)
     const S0 = new Sheet(), oy = -0.45;
     const pts = D.profile.map(([x, y]) => [x, y + oy]);
@@ -36,6 +38,9 @@ export class GalleryDuckBody extends TargetBody {
     });
     // the painted breast line, the eye button, the flank's rings, the track's tab and its pin
     for (let i = 0; i < 6; i++) { const x = 0.24 + i * 0.022; box(S0, x - 0.006, x + 0.006, 0.28 + oy + i * 0.03, 0.31 + oy + i * 0.03, 0.026, 0.03, rgb(L.tinShade, 0.9), 'f'); }
+    // the seam where its neck tore off the track once: a bead of solder along it, and Pip's stitches over that (LORE.md)
+    for (let i = 0; i < 7; i++) { const x = 0.1 + i * 0.035, y = 0.62 + oy - i * 0.012; box(S0, x - 0.016, x + 0.016, y - 0.01, y + 0.01, 0.026, 0.034, rgb(L.steel, 1.25 - 0.1 * (i % 2)), 'ft'); }
+    darn(S0, [0.09, 0.63 + oy], [0.33, 0.55 + oy], 0.034, 0.06);
     buttonEye(S0, D.eye[0], D.eye[1] + oy, 0.026, 0.036);
     bullseye(S0, D.ring[0], D.ring[1] + oy, 0.028, D.ring[2], 5);
     box(S0, -0.03, 0.09, 0.08 + oy, 0.24 + oy, -0.012, 0.012, rgb(L.tinShade, 0.95), 'ftlr');
