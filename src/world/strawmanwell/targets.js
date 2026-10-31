@@ -31,7 +31,7 @@ export const TARGETS = {
   quintain: { name: 'quintain', height: 1.75, radius: 0.42, weight: 1.7, wind: 0.42, reach: 1.9, shove: 6.5, swing: 0.32 },
   duck: { name: 'gallery duck', height: 0.8, radius: 0.36, weight: 0.75, wind: 0.6, reach: 1.15, shove: 4.5, cruise: 3.4, fly: 2.1, dive: 0.55, speed: 9.5 },
 };
-/** Where they stand: [stage, kind, m along its lane]; a flyer over a gap keeps its height over the lane's floor. */
+/** Where they stand: [stage, kind, m along its lane], each over floor at the lane's y 0 (a flyer over a gap keeps its height over it). */
 export const PLACES = [
   ['wings', 'quintain', WINGS.strawman + 2.3], ['run', 'hopper', 40], ['run', 'duck', 58], ['run', 'hopper', 96], ['climb', 'duck', 30],
   ['stomp', 'hopper', 30], ['brawl', 'duck', 25], ['machine', 'quintain', 16],
@@ -49,8 +49,10 @@ export class TrainingTargets extends StrawDummies {
     for (const [stage, kind, x] of PLACES) {
       const L = LANES[stage], into = stage === 'brawl' ? W.stages.brawl?.arena?.into : K.groups.get(stage); if (!L || !into) continue;
       const arena = stage === 'brawl' ? W.stages.brawl.arena : { x0: AT.x - 1, x1: AT.x + L.len + 1, top: AT.y, z: L.z, stage, into };
-      const gy = this.groundAt(AT.x + x, AT.y + 14, L.z), at = new THREE.Vector3(AT.x + x, gy ?? AT.y, L.z);
-      if (kind === 'duck') at.y += TARGETS.duck.cruise; else if (gy == null) continue;
+      // (the room's colliders are not in the physics' queries until its next step: each spot stands on its stage's floor, y 0, and a
+      // target settles from there; a duck holds its height over it)
+      const at = new THREE.Vector3(AT.x + x, AT.y + 0.05, L.z);
+      if (kind === 'duck') at.y += TARGETS.duck.cruise;
       this.spawn(at, arena, kind);
     }
   }

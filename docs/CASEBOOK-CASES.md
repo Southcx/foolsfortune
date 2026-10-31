@@ -4739,3 +4739,13 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   own position wins whatever the order. After (the same probe, desk and phone): the goals window's box at its `top`, beside the
   journal.
 - **Rule:** NEW:base-yields
+
+### 2026-11-02 · Only the gallery ducks came into the Well (world/strawmanwell/targets.js; found by Calissa, probing the training targets)
+- **Seen:** headless, the Well built, `game.wellTargets.list` held 3 targets of the 8 placed: the three ducks; no hopper or quintain.
+- **Cause, as measured:** each spot's floor was found by a raycast down at the moment of `populate()`, called straight after the
+  Well's `build()`. The room's colliders had just been made and were not yet in the physics' scene queries (they join at the next
+  step), so every ray found nothing; a grounded kind with no floor under it was skipped, and only the flyer (which holds a height
+  anyway) was placed.
+- **Fix:** the spots stand on their lanes' floor at y 0 (each chosen there) and a target settles from there by the dummies' own
+  ground test, which runs after steps; the raycast stays for play (a hop's landing, the duck's dive), when the queries are live.
+- **Rule:** NEW:query-after-step

@@ -1065,3 +1065,5 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
   and a check reads one through the other.
 NEW:base-yields. **A shared base style that its hosts override is written at zero specificity** (`:where(.bf)`). Sheets injected on
   first use land in whatever order play builds them, so a base rule at the hosts' specificity wins or loses by the session's history.
+NEW:query-after-step. **A physics query asks the world as of its last step.** Colliders made in this frame (a room just built) are not
+  in the scene queries until the next step, so a raycast placing things at build time finds nothing: place from the build's own numbers.
