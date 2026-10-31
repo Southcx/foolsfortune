@@ -13,7 +13,7 @@
 // World and LittleBigPlanet stage them (a household thing at giant scale is a platform), Kirby's Epic Yarn's wound thread.
 //
 //   spool(K, w, h, d, { thread, wood, gilded, bare, mark, seed })   thimble(K, r0, r1, h, { col, soup, place, y })   pin(K, w, h, { head })
-//   needle(K, w, h, d, { fly, thread })   button(K, r, h, { col, place, y })   bead(K, x, y, z, r, col)   star(K, x, y, z, r, col)
+//   needle(K, w, h, d, { fly, thread })   button(K, r, h, { col, place, y })   bead(K, x, y, z, r, col)   star(K, x, y, z, r, col, turn)
 //   SEW (the numbers)   FLY (the flies' height)   (K: a PropKit, props/kit.js, its palette K.pal: WELL_LOOK.palette)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -25,12 +25,12 @@ export const SEW = {
   thimble: { rim: 1.07, dimpleRows: 4 },
   pin: { shaft: 0.85, head: 0.7, headMax: 0.62, taper: 2.2 },
   needle: { shaft: 0.9, taper: 3, eye: 0.08, thread: 0.07 },
-  mark: { outer: 0.22, inner: 0.075 },
+  mark: { outer: 0.24, inner: 0.22, twinkle: 0.5 },
 };
 const segsOf = (r) => Math.max(12, Math.min(22, Math.round(r * 10)));
 
 /** A cotton reel in a box w x h x d (centred), upright: the flanges at the box's top and bottom, the barrel wound between. `gilded`: its
- *  flanges brass (the metal soup) and a chalk star on its thread at the front; `bare`: a spent reel, its barrel wood. */
+ *  flanges brass (the metal soup) and a gold twinkle on its thread at the front; `bare`: a spent reel, its barrel wood. */
 export function spool(K, w, h, d, { thread = K.pal.rose, wood = K.pal.maple, gilded = false, bare = false, mark = false, seed = 0 } = {}) {
   const PAL = K.pal, S = SEW.spool, rx = w / 2, kz = Math.min(1, d / w), y0 = -h / 2, y1 = h / 2;
   const ft = Math.min(h * 0.3, Math.max(S.flangeMin, Math.min(S.flangeMax, h * S.flange)));
@@ -46,12 +46,16 @@ export function spool(K, w, h, d, { thread = K.pal.rose, wood = K.pal.maple, gil
   }
   P.push([rb, yb1, W, fs], [rx, yb1, R, fs], [rx, y1 - bev, R, fs], [rx - bev, y1, W, fs], [rh, y1, ink], [rh, y1 - rec, ink], [0, y1 - rec, ink]);
   turned(K, P, segsOf(rx), { kz, phase: hash(seed) * 0.6 });
-  if (mark && !bare) star(K, 0, 0, rb * (1 + S.bulge) * kz + 0.012, Math.min(SEW.mark.outer, (yb1 - yb0) * 0.42), PAL.chalk);
+  if (mark && !bare) {
+    // (a twinkle, never a plus: a thin four-point star over a smaller one turned an eighth, so no red-and-white cross reads)
+    const z = rb * (1 + S.bulge) * kz + 0.012, r = Math.min(SEW.mark.outer, (yb1 - yb0) * 0.42);
+    star(K, 0, 0, z + 0.015, r, PAL.gold); star(K, 0, 0, z, r * SEW.mark.twinkle, PAL.gold, Math.PI / 4);
+  }
 }
 
-/** A four-pointed star, flat, facing the stalls at (x, y, z): the ? spool's mark (no word: a sparkle). */
-export function star(K, x, y, z, r, col = K.pal.chalk) {
-  const pts = []; for (let i = 0; i < 8; i++) { const a = (i / 8) * Math.PI * 2 + Math.PI / 2, rr = i % 2 ? r * (SEW.mark.inner / SEW.mark.outer) : r; pts.push([x + Math.cos(a) * rr, y + Math.sin(a) * rr]); }
+/** A four-pointed star, flat, facing the stalls at (x, y, z), turned `turn`: the ? spool's mark (no word: a sparkle). */
+export function star(K, x, y, z, r, col = K.pal.gold, turn = 0) {
+  const pts = []; for (let i = 0; i < 8; i++) { const a = (i / 8) * Math.PI * 2 + Math.PI / 2 + turn, rr = i % 2 ? r * SEW.mark.inner : r; pts.push([x + Math.cos(a) * rr, y + Math.sin(a) * rr]); }
   K.gloss.add(extruded(pts, 0.03, z), col);
 }
 

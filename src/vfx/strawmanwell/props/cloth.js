@@ -27,7 +27,7 @@ export const CLOTH = {
   hang: { r: 0.045, inset: 0.3, back: 0.3 },
   felt: { sheet: 0.13, layer: 0.34, stitch: 0.3, inset: 0.06 },
   sequin: { r: 0.15, dx: 0.22, dz: 0.2, tilt: 0.3, bead: 0.1 },
-  honey: { thick: 0.022, drips: 4, col: 0xc8901e, lit: 0xf2c25a, deep: 0xa86e12 },
+  honey: { thick: 0.022, drips: 7, col: 0xc8901e, lit: 0xf2c25a, deep: 0xb77d16 },
   vine: { strand: 0.042, twist: 0.42, wrap: 0.05, knot: 0.085, leaf: 0.34, leafEvery: 0.95 },
 };
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
@@ -129,10 +129,12 @@ export function honey(K, w, h, d, seed = 0) {
   }
   const pool = new THREE.ExtrudeGeometry(new THREE.Shape(pts), { depth: C.thick, bevelEnabled: true, bevelThickness: 0.012, bevelSize: 0.04, bevelSegments: 2, curveSegments: 4 });
   K.gloss.add(pool.rotateX(-Math.PI / 2).translate(0, y + 0.012, 0), C.col);
+  // (over the lip: a sheet of it down the boards' edge, and from it drips of every length, each a teardrop: never a row of even legs)
+  K.gloss.box(-w * 0.4, w * 0.4, y - 0.08, y + 0.03, d / 2 - 0.005, d / 2 + 0.025, C.col);
   for (let i = 0; i < C.drips; i++) {
-    const x = -w / 2 + w * (0.15 + 0.7 * ((i + hash(seed + i) * 0.6) / C.drips)), L = 0.16 + 0.34 * hash(seed * 3 + i);
-    K.gloss.box(x - 0.055, x + 0.055, y - L, y + 0.03, d / 2 - 0.005, d / 2 + 0.03, C.deep);
-    K.gloss.add(new THREE.SphereGeometry(0.075, 8, 6).scale(1, 1.15, 0.55).translate(x, y - L, d / 2 + 0.015), C.deep);
+    const x = -w * 0.37 + w * 0.74 * ((i + 0.2 + hash(seed + i) * 0.6) / C.drips), L = 0.04 + 0.26 * hash(seed * 3 + i) ** 1.5, r = 0.035 + 0.035 * hash(seed + i * 5);
+    K.gloss.add(new THREE.CylinderGeometry(r * 1.6, r * 0.6, L, 7).scale(1, 1, 0.5).translate(x, y - 0.06 - L / 2, d / 2 + 0.012), C.col);
+    K.gloss.add(new THREE.SphereGeometry(r, 8, 6).scale(1, 1.25, 0.5).translate(x, y - 0.06 - L, d / 2 + 0.012), C.deep);
   }
   for (let i = 0; i < 3; i++) K.gloss.add(new THREE.SphereGeometry(0.05 + 0.025 * hash(seed + i * 7), 8, 4, 0, Math.PI * 2, 0, Math.PI / 2).scale(1, 0.5, 1).translate(-w * 0.3 + w * 0.3 * i, y + 0.03, (hash(seed + i) - 0.5) * d * 0.5), C.lit);
 }

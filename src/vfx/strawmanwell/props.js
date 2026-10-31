@@ -36,10 +36,10 @@ import { tape, ribbon, hangers, felt, feltSlab, sequins, honey, vine, floss } fr
 import { coilSpring, ruler, chalk, key, lockDoor, cannon, pincushion, BeltLook, MACHINE_LOOK } from './props/machine.js';
 
 /** The props' choices: the placeholder colours this part owns, the threads the reels are wound with (a reel takes one by its place),
- *  the ribbons' colours, the chalk cakes', the materials' finish. */
+ *  the ribbons' colours, the chalk cakes', the materials' finish. (No sky-blue thread: under the footlights' amber it reads grey.) */
 export const PROPS_LOOK = {
   mine: ['spool', 'pin', 'thread', 'thin', 'ice', 'goo', 'spring', 'slope', 'used', 'felt', 'gold'],
-  threads: ['rose', 'teal', 'mustard', 'sage', 'velvet', 'sky'],
+  threads: ['rose', 'teal', 'mustard', 'sage', 'velvet'],
   ribbons: ['teal', 'teal', 'velvet'],
   chalks: ['sky', 'rose', 'chalk'],
   finish: { matte: { roughness: 0.84, metalness: 0 }, metal: { roughness: 0.36, metalness: 0.42 }, gloss: { roughness: 0.2, metalness: 0.12 } },
@@ -59,7 +59,7 @@ class WellProps {
     this.ctx = ctx; this.pal = ctx.palette; this.laneId = null;
     this.mats = {};
     for (const k of SOUPS) this.mats[k] = new THREE.MeshStandardMaterial({ name: `wellprops-${k}`, color: 0xffffff, vertexColors: true, flatShading: true, ...PROPS_LOOK.finish[k] });
-    this.made = []; this.hidden = []; this.unseen = []; this.outlined = []; this.riders = []; this.spent = []; this.belts = []; this.ballGeo = null;
+    this.made = []; this.hidden = []; this.unseen = []; this.outlined = []; this.riders = []; this.spent = []; this.belts = []; this.ballGeo = null; this.reels = {};
   }
 
   // ---------------------------------------------------------------- dressing
@@ -90,7 +90,7 @@ class WellProps {
     const C = this.ctx, pal = this.pal, { w, h, d } = B, seed = Math.round(B.c.x * 7 + B.c.y * 3);
     const fly = C.at.y + FLY - B.c.y;
     switch (keyName) {
-      case 'spool': return spool(K, w, h, d, { thread: this.threadOf(L, B, seed), wood: hash(seed) < 0.3 ? pal.walnut : pal.maple, seed });
+      case 'spool': return spool(K, w, h, d, { thread: this.threadOf(L, B), wood: hash(seed) < 0.3 ? pal.walnut : pal.maple, seed });
       case 'pin': {
         if (L.id === 'flood' || (h > 4 && w < 0.6)) return needle(K, w, h, d, { fly });
         if (h > w * 2.5) return pin(K, w, h, { head: [pal.rose, pal.teal, pal.mustard][Math.abs(seed) % 3] });
@@ -112,10 +112,11 @@ class WellProps {
     }
   }
 
-  /** The reel's thread: the vine's colour where the Climb's vine hangs off it, else one by its place. */
-  threadOf(L, B, seed) {
+  /** The reel's thread: the vine's colour where the Climb's vine hangs off it, else the lane's next (two reels side by side never alike). */
+  threadOf(L, B) {
     if (L.id === 'climb' && this.vineX != null && Math.abs(B.c.x - B.w / 2 - this.vineX) < 0.4) return this.pal.sage;
-    return this.pal[PROPS_LOOK.threads[Math.abs(seed) % PROPS_LOOK.threads.length]];
+    const T = PROPS_LOOK.threads, k = (this.reels[L.id] = (this.reels[L.id] ?? (L.k ?? 0) * 2) + 1);
+    return this.pal[T[k % T.length]];
   }
 
   /** A lane's thread: a tall line is a vine (the short ones its footholds), anything else a twisted floss along its length. */
