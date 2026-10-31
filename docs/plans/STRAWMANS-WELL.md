@@ -235,6 +235,14 @@ the endless Well of ENDGAME.md 2. Subspace Emissary's Great Maze revisited every
 - The Machine's crates, springs, thin platforms, conveyors and switches
 - The Flood's grid with the god hand's Pour and Carve
 
+**Wave 1 as built (2026-10-31):** all of the above, at placeholder looks (`src/world/strawmanwell/`). Not built yet from wave 1's
+verbs: the rope's swing launch (the rope is climb-only), pogo, grabbing and throwing a dummy, the pulley, on/off blocks, a crate that
+floats (liquids are not solid to props), raising at a lectern (only the hand's Sculpt), and Strawman's ghost guide. The cannon is a
+placeholder, not the Wisp turret; the key is a plain key, not a Possibilikey. The dummies are training bodies: the Well's own events
+count them, familiarity and the creature counts do not. The in-plane wall kick (Mega Man X's) is a room-side modifier
+(`mechanics.js`), since the core's wall jump comes only off a wall run. Liquids: under a full stream the basin mounds 3 m and is flat
+about 5 real s after the pour stops (the grid's visit rate, the phone's budget, is the limit; measured).
+
 **Wave 2:**
 - The Arsenal's terrain bombs
 - The Swing

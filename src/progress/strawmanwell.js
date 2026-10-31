@@ -84,11 +84,14 @@ export const percentOf = (power = 1) => Math.round(Math.max(0, power) * PERCENT.
 export const GRID = { w: 160, h: 90, size: 0.25, rate: 30, share: 0.25 };
 export const CELL = { empty: 0, stone: 1, sand: 2, clay: 3, lachryma: 4, crude: 5, ice: 6 };
 /** How each cell moves (falling sand's rules): `falls` drops straight and slides down a diagonal, `flows` also spreads sideways
- *  (`spread` cells a step), `burns` to empty when lit; `solid` stands where it is. `heavy` sinks through a lighter liquid. */
+ *  (`spread` cells a step), `burns` to empty when lit; `solid` stands where it is. `heavy` sinks through a lighter liquid. Lachryma's
+ *  spread 6. Under a full stream the mound is 13 rows (3.25 m) after 4 real s and flat within 5 more: the rate a cell is visited (7.5 a real
+ *  second, the phone's budget) is the limit, not spread (6 to 32 measured the same); the spray that stood 42 rows was a cell spreading
+ *  in mid-air, stopped in grid.js. */
 export const MATTER = {
   stone: { solid: true }, clay: { solid: true }, ice: { solid: true, melts: 'lachryma' },
   sand: { falls: true, heavy: 3 },
-  lachryma: { falls: true, flows: true, spread: 4, heavy: 1, freezes: 'ice' },
+  lachryma: { falls: true, flows: true, spread: 6, heavy: 1, freezes: 'ice' },
   crude: { falls: true, flows: true, spread: 2, heavy: 0.8, burns: true },
 };
 

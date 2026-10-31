@@ -17,7 +17,7 @@ export function strawmanWellRules({ on, L, log }) {
     say('gain', `${stageOf(e.stage)?.family || 'The stage'} cleared. Rank ${e.rank}.`, 'well.clear', 0.5);
   });
   on('well.dummy.ko', (e) => { if (e.by === 'courier') L.inc('well.dummy.ko'); });
-  on('well.dummy.trophy', (e) => { if (e.by !== 'courier') return; L.inc('well.dummy.trophy'); say('gain', 'A dummy, caught on a plate as a trophy.', 'well.trophy'); });
+  on('well.dummy.trophy', (e) => { if (e.by !== 'courier') return; L.inc('well.dummy.trophy'); say('gain', 'Trophy! That dummy hit 100% and went flying.', 'well.trophy'); });
   on('well.pit.death', (e) => { if (e.by === 'courier') L.inc('well.pit.death'); });
   on('well.flood.fill', (e) => { if (e.by === 'courier') L.hi('well.flood.best', e.cells || 0); });
   on('well.verb', (e) => {
