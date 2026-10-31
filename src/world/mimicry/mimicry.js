@@ -4,7 +4,7 @@
 // (each step held a beat, its mark on the ground), then puts it back: "Your turn." In MATCH and UNDO the target is only shown. The target
 // stands over the patch as a ghost while you work; the patch is scored as you go, and a clean copy left alone a moment, or the hand put
 // away, ends it. The puzzle's powers are lent and its toolkit fixed while it is open (`lends`, `tool`: progress/godpowers.js asks).
-// The looks here are placeholders (a clay stone, a gold wire ghost, a readout tag): Calissa's to dress (`game.mimicryLooks` if built).
+// Its looks are Calissa's (`game.mimicryLooks`: the stones, the ghost; vfx/mimicry/); the readout tag is still a placeholder.
 //
 // Prior art: Islands of Insight's enclave stones (F at a stone, its puzzle laid out round it), Puzzle Pirates' duty stations, the house's
 // Solar Skiffing trial (world/dunes/solar.js: begun at a thing in the world, its course laid on the Dunes' own ground).
@@ -14,7 +14,6 @@
 //   par, made, powers, domains, first, day }   mimic.leave { puzzle, match }   (each with by: 'courier'; tracking/mimicry.js books them)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { MIMIC, MIMIC_SITES, MIMIC_LADDER, MIMIC_PUZZLES, MIMIC_TOOL, mimicOpen, framesOn, dayPuzzle, lay, snap, restore, matchOf, gradeOf, siteAt, siteOf, eachCell } from '../../progress/mimicry.js';
 import { DUNES_AREAS } from '../../progress/areas.js';
 import { today } from '../../core/calendar.js';
@@ -29,7 +28,6 @@ export class Mimicry {
   constructor(game) {
     this.game = game; this.S = null;
     this.stones = MIMIC_SITES.map((site) => this.stone(site));
-    this.dress();
     game.interact?.add('mimicry', () => this.offer());
     for (const ev of Object.keys(STROKES)) game.events?.on?.(ev, (e) => this.stroke(ev, e));
   }
@@ -47,19 +45,6 @@ export class Mimicry {
   }
   /** The stones drawn (a placeholder: a clay standing stone with a gold band each), every stone's body one mesh and every band another,
    *  so all of them cost two draws wherever they stand in view (the gate, 2026-10-30: eight meshes and eight materials before). */
-  dress() {
-    const bodies = [], bands = [];
-    for (const { pos } of this.stones) {
-      bodies.push(new THREE.CylinderGeometry(0.35, 0.5, 1.8, 7).translate(pos.x, pos.y + 0.9, pos.z));
-      bands.push(new THREE.TorusGeometry(0.44, 0.05, 6, 20).rotateX(Math.PI / 2).translate(pos.x, pos.y + 1.35, pos.z));
-    }
-    const group = (this.group = new THREE.Group()); group.name = 'mimicry-stones'; group.userData.zone = 'dunes';
-    group.add(new THREE.Mesh(mergeGeometries(bodies), new THREE.MeshStandardMaterial({ color: 0x9a6a4a, roughness: 0.85 })));
-    group.add(new THREE.Mesh(mergeGeometries(bands), new THREE.MeshStandardMaterial({ color: 0xffd36a, emissive: 0x6a4a10, roughness: 0.4 })));
-    for (const q of [...bodies, ...bands]) q.dispose();
-    this.game.scene?.add(group);
-  }
-
   offer() {
     const g = this.game, P = g.player; if (this.S || g.god?.controlling || !g.dunes?.active) return null;
     let best = null;
@@ -90,22 +75,8 @@ export class Mimicry {
     g.god.cam?.focus?.set(at.x, at.y, at.z); // (the view on the patch, not on the Courier beside the stone)
     const first = ARTS.findIndex((a) => a.id === P.powers[0]); if (first >= 0) g.god.arts?.select?.(first); // (the puzzle's first power in hand)
     this.S = { P, st, at, F, fr, t: 0, tick: 0, idle: 0, strokes: 0, made: 0, match: 0, demo: P.mode === 'mimic' ? { i: 0, t: MIMIC.replay } : null };
-    this.ghost(fr.target, F, at);
     g.events?.emit('mimic.open', { puzzle: P.id, label: P.label, line: P.line, mode: P.mode, site: st.site.id, powers: P.powers, by: 'courier' });
   }
-
-  /** The target over the patch as a gold wire net at its ground's height (a placeholder for Calissa's ghost). */
-  ghost(T, F, at) {
-    this.clearGhost();
-    const m = T.m, pts = [], c = MIMIC.cell, x0 = at.x - MIMIC.half, z0 = at.z - MIMIC.half;
-    const h = (i, j) => { const o = Math.min(m - 1, j) * m + Math.min(m - 1, i), k = F.cellAt(x0 + (i + 0.5) * c, z0 + (j + 0.5) * c); return (k >= 0 ? F.base[k] : at.y) + T.firm[o] + T.loose[o] + T.w[o] + 0.05; };
-    for (let j = 0; j < m; j += 2) for (let i = 0; i < m - 2; i += 2) pts.push(x0 + (i + 0.5) * c, h(i, j), z0 + (j + 0.5) * c, x0 + (i + 2.5) * c, h(i + 2, j), z0 + (j + 0.5) * c);
-    for (let i = 0; i < m; i += 2) for (let j = 0; j < m - 2; j += 2) pts.push(x0 + (i + 0.5) * c, h(i, j), z0 + (j + 0.5) * c, x0 + (i + 0.5) * c, h(i, j + 2), z0 + (j + 2.5) * c);
-    const geo = new THREE.BufferGeometry(); geo.setAttribute('position', new THREE.Float32BufferAttribute(pts, 3));
-    this.wire = new THREE.LineSegments(geo, new THREE.LineBasicMaterial({ color: 0xffd36a, transparent: true, opacity: 0.55, depthWrite: false }));
-    this.wire.userData.zone = 'dunes'; this.game.scene?.add(this.wire);
-  }
-  clearGhost() { if (this.wire) { this.game.scene?.remove(this.wire); this.wire.geometry.dispose(); this.wire.material.dispose(); this.wire = null; } }
 
   stroke(ev, e) {
     const S = this.S; if (!S || S.demo || e?.by !== 'courier' || e?.repeat) return;
@@ -133,7 +104,7 @@ export class Mimicry {
 
   finish(left) {
     const g = this.game, S = this.S; if (!S) return;
-    this.S = null; this.clearGhost();
+    this.S = null;
     const G = gradeOf({ match: S.match, strokes: S.strokes, par: S.P.par, made: S.made, allow: S.fr.made });
     if (!G.solved) { g.events?.emit('mimic.leave', { puzzle: S.P.id, match: G.match, by: 'courier' }); return; }
     const L = g.ledger, first = !((L?.get?.(`god.mimic.solved.${S.P.id}`) || 0) > 0), day = S.P.id === 'day' ? today() : null;
