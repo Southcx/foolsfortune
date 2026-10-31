@@ -36,12 +36,13 @@ export const TARGETS = {
 };
 /** Where they stand: [stage, kind, m along its lane, its floor's height there (m, 0 if left out)]; a flyer keeps its height over that
  *  floor. Dovina's ruling (2026-10-31): never a duck over a pit (a dive that shoves you into one you could not see coming is cheap), so
- *  the Run's flies over the far ledge; waves 2 to 4 hers by lane (a lane not built yet is passed over: each spot checked once it is). */
+ *  the Run's flies over the far ledge; waves 2 to 4 hers by lane, checked against the stages as laid (the Arsenal's second duck clear of
+ *  its cracked wall, the Swing's quintain on its first floor; none in the Maze, whose rooms are laid anew each game day). A lane not on
+ *  this branch yet is passed over. */
 export const PLACES = [
   ['wings', 'quintain', WINGS.strawman + 2.3], ['run', 'hopper', 75], ['run', 'duck', 70, 5], ['run', 'hopper', 96], ['climb', 'duck', 30],
   ['stomp', 'hopper', 30], ['brawl', 'duck', 25], ['machine', 'quintain', 16],
-  ['arsenal', 'duck', 30], ['arsenal', 'duck', 62], ['swing', 'quintain', 12], ['pit', 'hopper', 40], ['pit', 'hopper', 95],
-  ['maze', 'hopper', 60], ['maze', 'hopper', 150],
+  ['arsenal', 'duck', 30, 3], ['arsenal', 'duck', 67], ['swing', 'quintain', 7], ['pit', 'hopper', 40], ['pit', 'hopper', 95],
 ];
 
 /** How often a flying duck says `fly` again (real s): its rotor's whirr lasts 4 s a call (Wanda's). */
