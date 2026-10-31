@@ -5,7 +5,7 @@
 //                     leg (gold braid down its edge), then burlap cut with pinking shears, then linen with a running stitch in mustard
 //                     thread; each a cut-out with its card edge and its keyline, its inner edge never past the end's face, so the
 //                     perspective fans them open from the stalls
-//   THE WALL RUN      the Run's flat behind the plane a painted sky flat: linen washed blue, cut-out clouds, a walnut frame, keylined
+//   THE WALL RUN      the Run's flat behind the plane is the painted flats' (flats.js: stacked bales); its placeholder hidden here
 //   THE FLY BEAM      the wings' beam over the backstage a walnut batten (the fly lines hang from it: theatre/backstage.js)
 //   THE BLAST LINES   the Brawl's two out-lines, Pip's tape measure pinned down the back flat
 //
@@ -14,10 +14,10 @@
 //
 //   dressWingFlats(lane, palette)   WING_LOOK
 // ---------------------------------------------------------------------------------------
-import { box, card, rgb, uvOf, V, hash } from './kit.js';
+import { box, rgb, uvOf, V } from './kit.js';
 
 /** The numbers (m): each end flat's depth off the plane, its width out from the end's face, its stock and its tile; the pinking's
- *  teeth; the wall run's frame and clouds; the blast tape's width and its tile. */
+ *  teeth; the blast tape's width and its tile. */
 export const WING_LOOK = {
   thick: 0.06, keyline: 0.06, foot: -6,
   ends: [
@@ -26,7 +26,6 @@ export const WING_LOOK = {
     { dz: -1.1, out: 9, stock: 'linen', tile: 1.6, col: 0xffffff, k: [0.9, 0.45], stitch: 0.22 },
   ],
   teeth: 0.32, groove: { w: 0.55, h: 0.11 },
-  wallRun: { frame: 0.14, clouds: 1.7 },
   tape: { w: 0.34, tile: 2, tack: 3 },
 };
 const W = WING_LOOK;
@@ -88,24 +87,6 @@ function stageEnd(lane, P, b, s) {
     for (const F of W.ends) S.quad(V(gx0 + 0.04, top + g.h + 0.002, lane.Z(F.dz) + 0.05), V(gx1 - 0.04, top + g.h + 0.002, lane.Z(F.dz) + 0.05), V(gx1 - 0.04, top + g.h + 0.002, lane.Z(F.dz) - 0.05), V(gx0 + 0.04, top + g.h + 0.002, lane.Z(F.dz) - 0.05), rgb(P.ink, 0.8));
   }
 }
-/** The wall run's flat: linen washed sky blue on a walnut frame, cut-out clouds along its top, a keyline round it, its card edges. */
-function wallRun(lane, P, b) {
-  const S = lane.solid, z = b.z1 + 0.003, fr = W.wallRun.frame;
-  box(S, b.x0, b.x1, b.y0, b.y1, b.z0, b.z1, rgb(P.linen, 0.8), 'tlr');
-  S.quad(V(b.x0 - 0.06, b.y0 - 0.06, b.z1 - 0.01), V(b.x1 + 0.06, b.y0 - 0.06, b.z1 - 0.01), V(b.x1 + 0.06, b.y1 + 0.06, b.z1 - 0.01), V(b.x0 - 0.06, b.y1 + 0.06, b.z1 - 0.01), rgb(P.ink));
-  tiled(S, b.x0, b.x1, b.y0, b.y1, z, 'linen', 1.6, P.sky, [0.82, 1.05]);
-  for (const [x0, x1, y0, y1] of [[b.x0, b.x1, b.y0, b.y0 + fr], [b.x0, b.x1, b.y1 - fr, b.y1], [b.x0, b.x0 + fr, b.y0, b.y1], [b.x1 - fr, b.x1, b.y0, b.y1]]) box(S, x0, x1, y0, y1, z, z + 0.02, (f) => rgb(P.walnut, f === 't' ? 1.1 : 0.85), 'ft');
-  const n = Math.max(1, Math.round((b.x1 - b.x0) / W.wallRun.clouds));
-  for (let i = 0; i < n; i++) {
-    const cx = b.x0 + ((i + 0.5) * (b.x1 - b.x0)) / n + (hash(i * 3.3) - 0.5) * 0.5, r = 0.45 + 0.3 * hash(i * 7.1), cy = b.y1 - fr - r - 0.12 - 0.5 * hash(i * 1.9);
-    const puffs = [[0, 0, r], [-r * 0.85, -r * 0.25, r * 0.7], [r * 0.85, -r * 0.2, r * 0.75]];
-    for (const [dx, dy, pr] of puffs) {
-      const pts = []; for (let k = 0; k < 12; k++) { const a = (k / 12) * Math.PI * 2; pts.push([cx + dx + Math.cos(a) * pr, cy + dy + Math.sin(a) * pr]); }
-      card(S, pts, z + 0.035 + 0.004 * (dx > 0 ? 1 : dx < 0 ? 2 : 3), { thick: 0.01, face: (x, y) => rgb(P.chalk, 0.86 + 0.18 * (y - (cy + dy - pr)) / (2 * pr)), edge: rgb(P.linen, 0.8), ink: rgb(P.ink), keyline: 0.04 });
-    }
-  }
-}
-
 /** The wings' fly beam: a walnut batten, its underside dark. */
 function flyBeam(lane, P, b) {
   const S = lane.solid;
@@ -124,13 +105,13 @@ function blastTape(lane, P, b) {
   for (let y = b.y0 + T.tack / 2; y < b.y1; y += T.tack) box(S, cx - 0.05, cx + 0.05, y - 0.05, y + 0.05, z, z + 0.025, rgb(P.brass, 1.1), 'ft');
 }
 
-/** The lane's wing and mark placeholders dressed: each stage end, the wall run's flat, the fly beam, the blast lines. */
+/** The lane's wing and mark placeholders dressed: each stage end, the fly beam, the blast lines (the wall run's flat is flats.js'). */
 export function dressWingFlats(lane, P) {
   const mid = lane.X(lane.len / 2);
   for (const b of lane.wing) {
     const w = b.x1 - b.x0, h = b.y1 - b.y0, d = b.z1 - b.z0;
-    if (d < 0.5) wallRun(lane, P, b);
-    else if (h < 2 && w > 4) flyBeam(lane, P, b);
+    if (d < 0.5) continue;
+    if (h < 2 && w > 4) flyBeam(lane, P, b);
     else stageEnd(lane, P, b, (b.x0 + b.x1) / 2 < mid ? 1 : -1);
   }
   for (const b of lane.marks) blastTape(lane, P, b);

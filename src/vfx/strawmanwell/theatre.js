@@ -3,11 +3,12 @@
 // vfx/strawmanwell/look.js), dressing the placeholder colours it owns (Dovina's, world/strawmanwell/stagekit.js COLOR: `boards`, `wing`,
 // `door`, `mark`) and adding what a theatre has that a placeholder lacks. Each piece is a module of theatre/:
 //   the boards      the planks and Pip's chalk, the apron and its footlights (theatre/boards.js)
-//   the wing flats  a stage's ends as staggered flats in a groove, the Run's wall-run flat painted as sky, the fly beam, the Brawl's
+//   the wing flats  a stage's ends as staggered flats in a groove, the fly beam, the Brawl's
 //                   blast lines in tape (theatre/wingflats.js)
 //   overhead        the borders (velvet, the tape measure, ribbon), the fly lines and sandbags, all above the lane's clear line: the top
 //                   of its camera band plus THEATRE_LOOK.clear, so nothing hung ever covers play (theatre/overhead.js)
-//   the doors       stage doors, the tall shutters that slide up (riding her meshes), the goal pennants (theatre/doors.js)
+//   the doors       stage doors, the tall shutters that slide up (riding her meshes), the goal pennants and posts, a placard behind
+//                   each of her labels (theatre/doors.js)
 //   backstage       the wings: Strawman's spot, the ghost light, the fly rail (theatre/backstage.js)
 // and the kit's lamps warmed to the footlights' amber (tinted only: never a lamp added, CLAUDE.md, the light budget).
 // DRAWS: two a lane (the solid stock, the light), and one more for each shutter and pennant (they ride what Dovina's mechanics move).
@@ -38,6 +39,15 @@ const isMerged = (m) => m.isMesh && !m.userData.isOutline && m.geometry && !m.ge
 const colorOf = (m) => (m.material && !Array.isArray(m.material) && m.material.color ? m.material.color.getHex() : null);
 /** Is a thing still in the scene (a room torn down first has let its hulls go: they are never given back to it)? */
 const live = (o) => { while (o.parent) o = o.parent; return !!o.isScene; };
+/** Her labels in a lane (basement.js `label`, vertical: a plane facing +z, drawn over all at renderOrder 2): each one's middle and size. */
+function labelsOf(gr) {
+  const out = [];
+  gr.traverse((m) => {
+    if (!m.isMesh || m.renderOrder !== 2 || m.geometry?.type !== 'PlaneGeometry' || !m.material?.isMeshBasicMaterial || !m.material.map) return;
+    const { width: w, height: h } = m.geometry.parameters; out.push({ c: m.getWorldPosition(new THREE.Vector3()), w, h });
+  });
+  return out;
+}
 /** An oriented box (boxes.js) as the world box round it. */
 function aabbOf(bx) {
   const e = (k) => (Math.abs(bx.ax[k]) * bx.w + Math.abs(bx.ay[k]) * bx.h + Math.abs(bx.az[k]) * bx.d) / 2;
@@ -63,7 +73,8 @@ function laneOf(ctx, id) {
     id, L, k: L.k, len: L.len, z: L.z, X: (x) => A.x + x, Y: (y) => A.y + y, Z: (dz) => L.z + dz,
     boards: byColour.get(C.boards) || [], wing: byColour.get(C.wing) || [], marks: byColour.get(C.mark) || [],
     all: [...[...byColour.values()].flat(), ...own],
-    doors: ctx.boxes.ownBoxes(id, C.door), flags: ctx.boxes.ownBoxes(id, C.mark),
+    doors: ctx.boxes.ownBoxes(id, C.door), flags: ctx.boxes.ownBoxes(id, C.mark), posts: ctx.boxes.ownBoxes(id, C.pin).filter(({ box: b }) => b.h > 2 && b.w < 0.3),
+    labels: labelsOf(gr),
     merged: merged.filter((m) => [C.boards, C.wing, C.mark].includes(colorOf(m))),
     clear: A.y + (id === 'wings' ? THEATRE_LOOK.wingsClear : L.band[1] + THEATRE_LOOK.clear),
     gap: id === 'wings' ? THEATRE_LOOK.wingsGap : null, spikes,
@@ -98,7 +109,7 @@ export function dressTheatre(ctx) {
     put(lane.glow, light, id, `theatre.${id}.light`);
     for (const m of lane.merged) lane.hide(m);
     hidden.push(...lane.hidden);
-    for (const { mesh } of lane.doors.concat(lane.flags)) if (mesh.material && mesh.material.visible === false) unseen.push(mesh);
+    for (const { mesh } of lane.doors.concat(lane.flags, lane.posts)) if (mesh.material && mesh.material.visible === false) unseen.push(mesh);
   }
   for (const l of ctx.well.kit?.lamps || []) { lamps.push([l, l.color.getHex()]); l.color.setHex(THEATRE_LOOK.lamp); }
   let t = 0;
@@ -111,7 +122,7 @@ export function dressTheatre(ctx) {
     dispose() {
       for (const m of made) { m.removeFromParent(); m.geometry?.dispose(); }
       for (const mesh of unseen) {
-        for (const c of [...mesh.children]) if (c.name === 'theatre.shutter' || c.name === 'theatre.pennant') { c.removeFromParent(); c.traverse((o) => o.geometry?.dispose()); }
+        for (const c of [...mesh.children]) if (['theatre.shutter', 'theatre.pennant', 'theatre.post'].includes(c.name)) { c.removeFromParent(); c.traverse((o) => o.geometry?.dispose()); }
         if (live(mesh)) seen(mesh);
       }
       for (const m of hidden) m.visible = true;

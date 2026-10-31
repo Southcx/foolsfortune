@@ -3,7 +3,7 @@
 // progress/strawmanwell.js) drawn as a cut-out in Pip's toy theatre (vfx/strawmanwell/look.js): one plane the grid's size standing in the
 // stage's plane, each cell drawn by its kind in one small shader, every edge where matter meets the air a thin dark keyline (a paper
 // theatre's cut-out, its card's edge), so the grid reads as a flat cut and stood among the others:
-//   stone     the stage's own ground, a painted flat: flat warm grey card (Dovina flattened it: nothing in it may crawl at 480 lines), the
+//   stone     the stage's own ground, a painted flat: flat warm sandstone card (the apron's walnut its neighbour) (Dovina flattened it: nothing in it may crawl at 480 lines), the
 //             faint courses of painted masonry, darker as it goes down, a tailor's-chalk line along its top
 //   sand      warm sand, each cell a grain (a soft dome, a shade of its own), so a falling heap is seen to fall; a lit crust on top
 //   clay      terracotta in the Clay dress (the kiln's own clay, the chips' colours), mottled, faint wedging lines, a wet slip's sheen on top
@@ -118,10 +118,10 @@ void main() {
     col = INK; alpha = 0.0;
   } else if (k < 1.5) {
     // STONE: a painted flat, flat; the faint courses of painted masonry, darker downward, the chalk line on its top
-    col = srgb(vec3(0.56, 0.52, 0.47)) * mix(1.0, 0.8, smoothstep(0.0, 10.0, depth));
+    col = srgb(vec3(0.52, 0.4, 0.3)) * mix(1.0, 0.74, smoothstep(0.0, 10.0, depth));
     float row = floor(xy.y), bond = fract(xy.x / 1.75 + 0.5 * mod(row, 2.0));
-    float course = max(lineAA(fract(xy.y + 0.5) - 0.5, 0.012, mpx), lineAA(bond - 0.5, 0.012 / 1.75, mpx / 1.75)) * 0.5;
-    col = mix(col, col * 0.78, course);
+    float course = max(lineAA(fract(xy.y + 0.5) - 0.5, 0.018, mpx), lineAA(bond - 0.5, 0.018 / 1.75, mpx / 1.75)) * 0.75;
+    col = mix(col, col * 0.62, course);
     col = mix(col, CHALK, top * 0.85); alpha = 1.0;
   } else if (k < 2.5) {
     // SAND: each cell a grain, a shade of its own, a lit crust on top

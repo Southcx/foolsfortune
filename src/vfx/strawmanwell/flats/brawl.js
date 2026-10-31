@@ -83,7 +83,7 @@ const CROWD = { id: 'crowd', w: 30, h: 3.4, flip: true, profile: () => 1.9, pain
   cutOut(g, body, (g) => {
     vwash(g, -1, 0, 32, 3.8, [[0, 0x2a1418], [1, 0x6a3a3a]]);
     for (const f of folk) {
-      g.fillStyle = css(f.c); g.fill(poly(new Path2D(), [[f.x - 0.48, 0], [f.x - 0.46, f.h - 0.55], [f.x, f.h - 0.3], [f.x + 0.46, f.h - 0.55], [f.x + 0.48, 0]]));
+      g.fillStyle = css(shade(f.c, -0.22)); g.fill(poly(new Path2D(), [[f.x - 0.48, 0], [f.x - 0.46, f.h - 0.55], [f.x, f.h - 0.3], [f.x + 0.46, f.h - 0.55], [f.x + 0.48, 0]]));
       g.fillStyle = css(0xc8a46a); g.beginPath(); g.ellipse(f.x, f.h + 0.1, f.r, f.r * 1.08, 0, 0, Math.PI * 2); g.fill();
       hatch(g, f.x - f.r, f.h - f.r, f.x + f.r, f.h + f.r * 1.2, { gap: 0.07, angle: 0.8, lw: P.px * 2, col: 0x8a6a3a, a: 0.25 });
       g.fillStyle = css(0x2a1a12); for (const dx of [-0.13, 0.13]) { g.beginPath(); g.arc(f.x + dx, f.h + 0.16, 0.075, 0, Math.PI * 2); g.fill(); }
@@ -106,13 +106,14 @@ export const BRAWL = {
         return out;
       } },
     { id: 'far', ...LAYER.far, hazeA: 0.26, strips: [ARCADE] },
-    { id: 'mid', ...LAYER.mid, strips: [STANDS], sprites: { b1: banner(3, 10, 0x7a1424), b2: banner(3, 9, 0x2f7f7a), b3: banner(3, 9.5, 0x5a6ab0) },
+    { id: 'mid', ...LAYER.mid, hazeA: 0.34, strips: [STANDS], sprites: { b1: banner(3, 10, 0x7a1424), b2: banner(3, 9, 0x2f7f7a), b3: banner(3, 9.5, 0x5a6ab0) },
       place: ({ ext, R }) => {
         const out = [];
         scatter(R, ext.x0, ext.x1, 9, 1.5, (x, i) => out.push({ s: ['b1', 'b2', 'b3'][i % 3], x, y: 2.2 + R() * 0.6, back: true, flip: i % 2 === 1 }));
         return out;
       } },
-    // (the front row a shade down from the footlights' lift: a crowd in silhouette, so the dummies fought in front of it stand out)
-    { id: 'near', ...LAYER.near, light: [[0.8, 0.72, 0.68], [0.68, 0.62, 0.62]], strips: [CROWD] },
+    // (the front row well down from the footlights' lift and the stands hazed back: a crowd near silhouette, so the dummies fought in
+    // front of it and their percents stand out; measured against the combined look, where the first shade down still read as busy)
+    { id: 'near', ...LAYER.near, light: [[0.56, 0.5, 0.5], [0.44, 0.4, 0.43]], strips: [CROWD] },
   ],
 };
