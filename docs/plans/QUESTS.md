@@ -58,7 +58,7 @@ cryptic). A quest's name may be a little playful ("The Understudy"); its trouble
 | piece | what | who |
 |---|---|---|
 | the journal window | a System window (the goals window's sibling): quests by state in RuneScape's three colours with a shape beside each (CLARITY.md 7: never colour alone), the trouble, the done steps struck through, the next step, the quest points | Calissa (`ui/`) |
-| the splash | Tomba!'s EVENT! on `quest.start` and `quest.done`: the journal window shown for a beat, as the goals window is at `goal.done`. South to rule whether it may be bigger (a second pop-up beside a title's: CLAUDE.md, "One toast: a title") | Calissa; South rules |
+| the splash | Tomba!'s EVENT! on `quest.start` and `quest.done`: a splash of its own over the play, the quest's name and EVENT! (or QUEST COMPLETE!), then the journal for a beat. Ruled (South, 2026-10-31): the one pop-up besides a title's (CLAUDE.md) | Calissa |
 | the jingle | a short sting on `quest.start`, a longer fanfare on `quest.done` | Wanda (`audio/`) |
 | the words | the names, the troubles, every step's two lines | Espada |
 | more quests | the folk's troubles, island by island: who has baggage, and what fixing it looks like | Espada writes, Dovina makes each a predicate |
