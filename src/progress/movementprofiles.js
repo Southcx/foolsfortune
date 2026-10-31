@@ -18,12 +18,13 @@
 //   events: profile.wear { id, label, by }
 // ---------------------------------------------------------------------------------------
 import { T } from '../core/config.js';
+import { SV, secs } from './platformfighter.js';
 
 /** The fighter kit's numbers for the original (FIGHTER.md 3): the Courier as Melee's Mario. Units: weight as Melee's (100 = Mario), speeds
  *  m/s, times real s. `terminal`: the fall's cap; `fastFall`: the speed a fast fall snaps to; `jumpsquat`: the crouch before a jump leaves the
  *  ground (Mario's 4 frames); `shortHop`: a short hop's height as a share of a full hop's; `airJumps`: jumps in the air. */
-export const FIGHTER_BASE = { weight: 100, terminal: 4.73, fastFall: 6.4, jumpsquat: 4 / 60, shortHop: 0.33, airJumps: 1, airSpeed: 1 };
-// (terminal and fastFall: Mario's 1.7 and 2.3 units a frame times 2.78, the Courier's jump velocity over Mario's (6.4 m/s / 2.3); shortHop:
+export const FIGHTER_BASE = { weight: 100, terminal: 1.7 * SV, fastFall: 2.3 * SV, jumpsquat: secs(4), shortHop: 0.33, airJumps: 1, airSpeed: 1 };
+// (terminal and fastFall: Mario's 1.7 and 2.3 units a frame in the fighter's own scale (SV: the Courier's jump velocity over Mario's, 6.4 m/s / 2.3), so 4.73 and 6.4 m/s; shortHop:
 //  Mario's short hop over his full hop, 9.63 / 29.0 units; airSpeed: a share of the Courier's own air speed, 1 as Mario's)
 
 /** The builds. The original changes nothing; the rest are Melee's characters over Mario (the labels plain, the prior art in `from`). */
