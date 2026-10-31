@@ -108,10 +108,12 @@ void main() {
   vec2 xy = vW.xy; vec3 V = normalize(cameraPosition - vW);
   vec3 col = vec3(0.0); float alpha = 0.0;
   if (fire > 0.5) {
-    // BURNING: an ember, hotter with visits left, flickering at a steady rate, its heart brightest
-    float h = hash(vec2(ci)), fl = 0.8 + 0.2 * sin(TAU * ${hz(2.2)} * uTime + h * TAU) * sin(TAU * ${hz(3.4)} * uTime + h * 11.0);
-    vec3 hot = mix(srgb(vec3(0.62, 0.1, 0.04)), srgb(vec3(1.0, 0.6, 0.16)), clamp(fire / 6.0, 0.0, 1.0));
-    col = hot * (1.25 * fl) + srgb(vec3(1.0, 0.86, 0.5)) * (1.0 - smoothstep(0.0, 0.55, length(f - 0.5))) * 0.5 * fl; alpha = 1.0;
+    // BURNING: a bed of embers, hotter with visits left, its coals the marbling (one glow across the burning cells, never a tile a
+    // cell), each cell flickering a little at a steady rate
+    float h = hash(vec2(ci)), fl = 0.86 + 0.14 * sin(TAU * ${hz(2.2)} * uTime + h * TAU) * sin(TAU * ${hz(3.4)} * uTime + h * 11.0);
+    float coal = marble(xy, 0.9, uTime * 0.35, gx, gy);
+    vec3 hot = mix(srgb(vec3(0.62, 0.1, 0.04)), srgb(vec3(1.0, 0.55, 0.14)), clamp(fire / 6.0, 0.0, 1.0));
+    col = (hot * (0.75 + 0.7 * coal) + srgb(vec3(1.0, 0.86, 0.5)) * smoothstep(0.55, 0.85, coal) * 0.55) * fl; alpha = 1.0;
   } else if (k < 0.5) {
     col = INK; alpha = 0.0;
   } else if (k < 1.5) {
@@ -187,13 +189,15 @@ export class GridLook {
     this.texture.needsUpdate = true; this.seen.set(grid.ver);
   }
 
-  /** A column written: each cell's kind, its fire, and how many cells of its sort stand over it unbroken (0 at its surface). */
+  /** A column written: each cell's kind, its fire, and how many cells stand over it unbroken (0 at its surface): of its own kind for
+   *  matter (stone under a clay wall is lit from its own top, never darkened through the clay), of either liquid for a liquid (Lachryma
+   *  under floating crude is that much deeper). */
   _column(x) {
     const g = this.grid, w = g.w, d = this.data;
-    let run = 0, above = -1;
+    let run = 0, above = -1, sortAbove = -1;
     for (let y = g.h - 1; y >= 0; y--) {
       const i = y * w + x, k = g.cells[i], sort = SORT[k] ?? 0, o = i * 4;
-      run = sort && sort === above ? run + 1 : 0; above = sort;
+      run = sort && (k === above || (sort === 2 && sortAbove === 2)) ? run + 1 : 0; above = k; sortAbove = sort;
       d[o] = k; d[o + 1] = g.fire[i]; d[o + 2] = Math.min(255, run); d[o + 3] = 255;
     }
   }
