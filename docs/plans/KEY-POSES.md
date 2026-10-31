@@ -6,7 +6,7 @@ South, 2026-10-31:
 - "Loop Petra in too then, I think we can come up with a better animation pipeline that is better suited to an LLM's ability to parse
   still frames. Strong key poses and holds are the answer!"
 
-A draft. Sections 6 and 7 wait on Petra's and Calissa's answers (docs/handoffs/everyone/2026-10-31-from-dovina-key-poses.md). The
+The plan, with Petra's and Calissa's answers in sections 6 and 7. The
 research behind it, every number with its source: the key-pose research (Smash's hitstop, Guilty Gear Xrd, Spider-Verse, Overgrowth,
 fighting-game posing, engine patterns) and the Melee mechanics research, both kept with this plan's round.
 
@@ -43,7 +43,7 @@ jabA: [
 - `ease`: frames of snap into it from wherever the body is (2 to 4 for attacks, Sakurai's 4 into a flinch).
 - Gameplay reads the sequence's numbers (startup, active, endlag), never the drawn pose: a hitbox comes from the move's data.
 - A pose comes from an existing clip at a chosen frame wherever one fits (CLAUDE.md: an existing clip for every movement), so the
-  library is mostly a list of names pointing into the suite. Section 7 settles the format.
+  library is mostly a list of names pointing into the suite. Section 7 has the format.
 
 ## 3. Hitstop: the first piece (the best documented, the cheapest)
 
@@ -107,26 +107,59 @@ target (the grapple's line, a haft); the corrections (footIK, standoff, wrists, 
 the stepped blade). The procedural lean, look and dip run at full rate too; a move may weigh them to 0 (one number in its row) if they
 read as drift over a held pose. A key pose rom.js clamps is a pose to redo, and the audit flags it.
 
-**The row.** The keys go in the move's own row, so the runtime and the contact sheet read one source:
-
-```
-keys: [[frame, hold, snap, plant], ...]   // frame: the clip's frame (Calissa's pick); hold, snap: 60 Hz frames; plant: 'L' | 'R' | 'LR' | null
-```
-
-For the fighter's moves (platformfighter.js `MOVES`), the holds are not chosen by eye. They come from the frame data: the lead-in holds
-until the hitbox's first frame, the strike holds through the active frames, and the follow-through holds to the move's total. The
-timing is then the rule's own, and only the frame (the pose) is a choice.
+**The row.** One shape, read by the runtime and the contact sheet alike (section 7 has it). For the fighter's moves
+(platformfighter.js `MOVES`), the holds are not chosen by eye. They come from the frame data:
+- the lead-in holds until the hitbox's first frame;
+- the strike holds through the active frames;
+- the follow-through holds to the move's total.
+The timing is then the rule's own, and only the pose is a choice.
 
 **Cost.** A held frame skips the lerp. Nothing new runs per frame but the key lookup.
 
-## 7. The pose library and the contact sheet (Calissa's): open
+## 7. The pose library and the contact sheet (Calissa's, answered 2026-11-02)
 
-Waiting on Calissa's answers: the key pose's format (a clip's frame by name and number, as `MUDRA_FRAMES` are, or solved rotations as
-data); whether the Anim Lab and the pose audit render a move's key poses as one contact sheet, front and side, hold counts under each;
-which moves she would re-pose first.
+**The house's prior art is Strawman.** Its moves are already key poses: poses on named channels with times (`vfx/strawmanmoves.js`,
+`poseAt`), and they read crisper than the Courier's blends. The Courier's library grows from that and from `MUDRA_FRAMES` (a clip's
+frame by name, with solved finger offsets as data).
 
-**The contact sheet is the review**: one image a move, its key poses left to right in order, front row and side row, each captioned
-with its name, hold and ease. A division judges a move from the sheet, and South can too, without playing it.
+**The key, ruled (Dovina, 2026-10-31).** Petra asked for arrays in the move's row and Calissa for named objects in a table per tool.
+The ruling is named objects, in a table per tool. Names read in a diff and caption a sheet, and the cost is nil.
+
+```
+// src/courier/anim/keys/<tool>.js: KEYS[move] = [ key, key, ... ]   (cutlass.js: KEYS.n1, KEYS.n2 ...; fighter.js: KEYS.fsmash ...)
+{ pose: 'strike',            // the key's name: the sheet's caption, the moveset's call ('strike' is the contact frame)
+  clip: 'Sword_Attack_01',   // the source clip (CLAUDE.md: an existing clip for every movement); a re-export keeps the pose
+  frame: 11,                 // its frame, by number
+  fix: { RightArm: [x, y, z] },   // optional: solved local rotations (radians) laid over that frame, kept as data
+  hold: 3,                   // 60 Hz frames of game time the key stands
+  snap: 2,                   // 60 Hz frames of ease-out into it from whatever stood before (0: a cut)
+  plant: 'LR',               // optional: the soles footIK holds in the world ('L' | 'R' | 'LR'); none: the feet are the pose's
+  holdWhile: 'shield',       // optional: a named predicate that stops the clock on this key (the shield up, a charge, a landing's lag)
+  active: true }             // optional: the hitbox is out on this key's frames (the fighter's sheets mark it; gameplay reads MOVES)
+```
+
+- **One source.** The key track (`keysOf(tool, move)`, Petra's `courier/anim/keyposes.js`) and the contact sheet read the same table.
+  A move with no entry plays as now.
+- **The fighter's keys** name only the pose (`pose`, `clip`, `frame`, `fix`, `plant`). Their `hold`, `snap` and `active` are filled
+  from `MOVES` by `keysOf`, under the rule in section 6, so the sheet shows the frame data's own timing.
+- **Whose.** The keys' poses are Calissa's (`courier/anim/keys/`). The fighter's timing is Dovina's (`MOVES`). The track that plays
+  them is Petra's.
+
+**The contact sheet.** The Anim Lab already shows any frame front, side and top (`lab.snapshot()`), and `scripts/posesheet.mjs`
+already makes contact sheets of clips. Its key-pose mode lays out one image per move:
+- one column a key, front over side;
+- its `pose`, `hold` and `snap` printed under it;
+- a hitstop's column and the active keys marked;
+- the move's frames totalled at the end.
+
+**What is re-posed first**, in Calissa's order:
+1. the cutlass's LMB string (its three normals): the move seen most, and where the blends read softest at contact;
+2. the kick (V, unarmed): its first 0.26 s is the parry, so it wants one clear guard pose, held;
+3. the jump: jumpsquat, rise, peak, landing lag (Melee's feel lives in the jumpsquat and the land);
+4. the dash and the run start: the turnaround as two strong poses, not a blend (the dash dance).
+
+The Arena's fighter kit is the bench from the first day. Items 3 and 4 are moves, not the gait: they touch the core movement's look, so
+they go behind section 4's setting until South has played them.
 
 ## 8. Who does what
 
