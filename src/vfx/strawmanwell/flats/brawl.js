@@ -68,9 +68,9 @@ function banner(w, h, cloth) {
 }
 
 /** The front row: straw dummies cut from card, burlap sack heads with button eyes, coats of every colour, arms up, pennants waved. */
-const CROWD = { id: 'crowd', w: 30, h: 3.8, flip: true, profile: () => 2.3, paint(g, P) {
+const CROWD = { id: 'crowd', w: 30, h: 3.4, flip: true, profile: () => 1.9, paint(g, P) {
   const R = P.R, folk = [];
-  for (let x = 0.2; x < 30; x += 0.95 + R() * 0.3) folk.push({ x, h: 1.75 + R() * 0.45, r: 0.36 + R() * 0.08, c: CLOTH[(R() * CLOTH.length) | 0], arm: R(), flag: CLOTH[(R() * CLOTH.length) | 0] });
+  for (let x = 0.2; x < 30; x += 0.95 + R() * 0.3) folk.push({ x, h: 1.35 + R() * 0.35, r: 0.36 + R() * 0.08, c: CLOTH[(R() * CLOTH.length) | 0], arm: R(), flag: CLOTH[(R() * CLOTH.length) | 0] });
   for (const f of folk) {
     if (f.arm < 0.45) {
       const ax = f.x + (f.arm < 0.22 ? -0.42 : 0.42), top = f.h + 0.9, a = poly(new Path2D(), [[ax - 0.09, f.h - 0.4], [ax - 0.09, top], [ax + 0.09, top], [ax + 0.09, f.h - 0.4]]);
@@ -78,7 +78,7 @@ const CROWD = { id: 'crowd', w: 30, h: 3.8, flip: true, profile: () => 2.3, pain
       cutOut(g, a, (g) => { g.fillStyle = css(shade(f.c, -0.1)); g.fillRect(ax - 0.3, f.h - 0.5, 0.6, 1.6); g.fillStyle = css(f.flag); g.fill(poly(new Path2D(), [[ax + 0.05, top], [ax + 0.05, top + 0.55], [ax + 0.6, top + 0.3]])); }, { px: P.px, kw: 1.8, lift: 3 });
     }
   }
-  const body = new Path2D(); poly(body, [[-1, -1], [-1, 1.2], [31, 1.2], [31, -1]]);
+  const body = new Path2D(); poly(body, [[-1, -1], [-1, 0.7], [31, 0.7], [31, -1]]);
   for (const f of folk) { const s = new Path2D(); s.moveTo(f.x + 0.48, 0); s.lineTo(f.x + 0.46, f.h - 0.55); s.quadraticCurveTo(f.x, f.h - 0.2, f.x - 0.46, f.h - 0.55); s.lineTo(f.x - 0.48, 0); s.closePath(); body.addPath(s); disc(body, f.x, f.h + 0.1, f.r, f.r * 1.08); }
   cutOut(g, body, (g) => {
     vwash(g, -1, 0, 32, 3.8, [[0, 0x2a1418], [1, 0x6a3a3a]]);
@@ -112,6 +112,7 @@ export const BRAWL = {
         scatter(R, ext.x0, ext.x1, 9, 1.5, (x, i) => out.push({ s: ['b1', 'b2', 'b3'][i % 3], x, y: 2.2 + R() * 0.6, back: true, flip: i % 2 === 1 }));
         return out;
       } },
-    { id: 'near', ...LAYER.near, strips: [CROWD] },
+    // (the front row a shade down from the footlights' lift: a crowd in silhouette, so the dummies fought in front of it stand out)
+    { id: 'near', ...LAYER.near, light: [[0.8, 0.72, 0.68], [0.68, 0.62, 0.62]], strips: [CROWD] },
   ],
 };

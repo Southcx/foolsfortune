@@ -123,7 +123,7 @@ export const RUN = {
   air: 0xe4d6bc,
   layers: [
     { id: 'sky', ...LAYER.sky,
-      body: { px: 240, paint: skyBody({ stops: [[0, 0xf7d9a0], [0.22, 0xf3e3c0], [0.5, 0xc4dadc], [1, 0x86b4cc]], glow: { x: 0.68, y: 0.5, r: 30, c: 0xffe2a0, a: 0.55 },
+      body: { px: 240, paint: skyBody({ stops: [[0, 0xf4d6a0], [0.12, 0xeedcbc], [0.3, 0xb6d2dc], [0.55, 0x86b2cc], [1, 0x5a94bc]], glow: { x: 0.68, y: 0.5, r: 30, c: 0xffe2a0, a: 0.55 },
         banks: [{ y: [0.42, 0.62], cols: [0xfff4e0, 0xf6e2c4], n: 3 }, { y: [0.7, 0.95], cols: [0xeef4f4, 0xd4e4ec], n: 2, a: [0.06, 0.16] }] }) },
       sprites: { sun: sun(3.1), c1: cloud(12, 4), c2: cloud(8, 3), c3: cloud(15, 4.6) },
       place: ({ lane, ext, R }) => {

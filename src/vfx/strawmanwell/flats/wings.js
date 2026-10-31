@@ -2,7 +2,7 @@
 // STRAWMAN'S WELL'S PAINTED FLATS, THE WINGS: backstage behind the hub (a theme for flats/build.js). Farthest, the sewing basket's own
 // wicker wall, dim, a few work lamps hung on their ropes pooling warm light on it; then racks of flats stacked on edge, seen from
 // behind; then single flats turned round (raw canvas on a timber frame, toggle bars and a diagonal brace, stencilled marks: a
-// registration cross, an arrow, a star, Pip's needle and thread) and fly ropes come down with their sandbags; nearest, a pin rail
+// registration cross, an arrow, a star, a button) and fly ropes come down with their sandbags; nearest, a pin rail
 // with rope tied off and coiled, a costume trunk, a stepladder. Dim and warm: backstage is lit by what spills from the stage.
 //
 // Prior art: the back of any theatre's scene dock (flats racked on edge, stencilled with their show and their place), the pin rail of
@@ -62,7 +62,7 @@ function flatBack(w, h, mark) {
     }, { px: P.px });
   } };
 }
-/** A stencilled mark (no words): 0 a registration cross, 1 an arrow, 2 a star, 3 Pip's needle and its thread. */
+/** A stencilled mark (no words): 0 a registration cross, 1 an arrow, 2 a star, 3 a button. */
 function stencil(g, x, y, r, kind, px) {
   g.save(); g.fillStyle = css(0x7a1424, 0.75); g.strokeStyle = css(0x7a1424, 0.75); g.lineWidth = Math.max(px * 3, r * 0.16); g.lineCap = 'butt';
   if (kind === 0) {
@@ -73,9 +73,8 @@ function stencil(g, x, y, r, kind, px) {
   } else if (kind === 1) g.fill(poly(new Path2D(), [[x - r, y - r * 0.2], [x + r * 0.2, y - r * 0.2], [x + r * 0.2, y - r * 0.55], [x + r, y], [x + r * 0.2, y + r * 0.55], [x + r * 0.2, y + r * 0.2], [x - r, y + r * 0.2]]));
   else if (kind === 2) { const pts = []; for (let i = 0; i < 10; i++) { const a = Math.PI / 2 + (i / 10) * Math.PI * 2, rr = i % 2 ? r * 0.42 : r; pts.push([x + Math.cos(a) * rr, y + Math.sin(a) * rr]); } g.fill(poly(new Path2D(), pts)); }
   else {
-    g.fill(poly(new Path2D(), [[x - r * 0.08, y - r], [x + r * 0.08, y - r], [x + r * 0.12, y + r * 0.6], [x, y + r], [x - r * 0.12, y + r * 0.6]]));
-    g.fillStyle = css(CANVAS[1]); g.beginPath(); g.ellipse(x, y + r * 0.7, Math.max(px * 2, r * 0.04), r * 0.16, 0, 0, Math.PI * 2); g.fill();
-    g.beginPath(); g.moveTo(x, y + r * 0.7); g.bezierCurveTo(x + r, y + r, x + r * 0.9, y - r * 0.4, x + r * 0.3, y - r * 0.3); g.stroke();
+    g.beginPath(); g.arc(x, y, r * 0.8, 0, Math.PI * 2); g.fill();
+    g.fillStyle = css(CANVAS[1]); for (const [dx, dy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) { g.beginPath(); g.arc(x + dx * r * 0.24, y + dy * r * 0.24, Math.max(px * 2.5, r * 0.11), 0, Math.PI * 2); g.fill(); }
   }
   g.restore();
 }
