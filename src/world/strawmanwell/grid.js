@@ -2,7 +2,7 @@
 // STRAWMAN'S WELL'S GRID: the Flood stage's falling-sand grid, the simulation alone (docs/plans/STRAWMANS-WELL.md 3.8 and 5; its numbers
 // GRID, CELL and MATTER in progress/strawmanwell.js). Pure: no three.js, so a Node script steps it as the game does (scripts/strawmangrid.mjs).
 // Each cell is one of CELL: stone (the stage's own), clay, ice (they stand), sand (falls and heaps), Lachryma and crude (fall and flow,
-// Lachryma finding its level, crude floating on it and burning when lit). The look is world/strawmanwell/gridlook.js, the colliders
+// Lachryma finding its level, crude floating on it and burning when lit). The look is vfx/strawmanwell/gridlook.js (Calissa's), the colliders
 // world/strawmanwell/gridbody.js.
 //
 // Rows: row 0 is the BOTTOM of the stage and y grows upward (as the world's y), so `cellToWorld` is a scale and an offset and the look's

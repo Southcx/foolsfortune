@@ -75,7 +75,7 @@ export class StrawDummies {
   drawTag(c) {
     const T = c.tag, n = Math.round(c.percent); if (T.shown === n) return; T.shown = n;
     const x = T.cv.getContext('2d'), k = Math.min(1, n / 150);
-    x.clearRect(0, 0, 128, 48); x.font = `bold 34px ${FONT.sys}`; // (the System's type) x.textAlign = 'center'; x.textBaseline = 'middle';
+    x.clearRect(0, 0, 128, 48); x.font = `bold 34px ${FONT.sys}`; x.textAlign = 'center'; x.textBaseline = 'middle'; // (the System's type)
     x.lineWidth = 6; x.strokeStyle = 'rgba(20,10,6,0.85)'; x.strokeText(`${n}%`, 64, 25);
     x.fillStyle = `rgb(255,${Math.round(240 - 170 * k)},${Math.round(220 - 190 * k)})`; x.fillText(`${n}%`, 64, 25);
     T.tex.needsUpdate = true;
