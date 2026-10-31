@@ -3,7 +3,7 @@
 // what is wrong with them, where it begins, and its steps, each a predicate over the ledger (CLAUDE.md: never a flag set by a hook).
 // Its state is read, never stored: NOT STARTED, STARTED (a step done), DONE (every step done). What is written is only when: the play
 // time a step and the quest were first seen done (`L.first('quest.<id>.<n>')`, `L.first('quest.<id>')`), which the recap reads.
-// Names and words are placeholders, Espada's to word in the System's voice (QUESTS.md 4).
+// The Understudy's words are Espada's (2026-10-31), in the System's voice (CLARITY.md 14).
 //
 // Prior art:
 //  - RuneScape's quest journal: every quest listed red (not started, with where to begin), yellow (started), green (done); a started
@@ -16,7 +16,7 @@
 //
 //   QUESTS   questState(q, L, game) -> { id, state, step, steps: [{ say, done }], at }   questsOf(L, game)   questPoints(L, game)
 //   const Q = new Quests(game)   Q.update(dt)   Q.list()   /quests
-//   events: quest.start { id, quest }   quest.step { id, quest, n, say, next }   quest.done { id, quest, points }   quests.ask { quests }
+//   events: quest.start { id, quest }   quest.step { id, quest, n, say, did, next }   quest.done { id, quest, points }   quests.ask { quests }
 // ---------------------------------------------------------------------------------------
 import { STAGES } from './strawmanwell.js';
 
@@ -26,14 +26,14 @@ const cleared = (L) => WAVE1.filter((s) => L.get(`well.stage.clear.${s.id}`) >= 
 export const QUESTS = [
   {
     id: 'understudy', name: 'The Understudy', who: 'Strawman', points: 1,
-    trouble: 'Strawman has been everyone\'s practice dummy for so long that the shows inside its head never get past rehearsal.',
-    begin: 'Strawman stands in the Throwing Room off the Workshop. The way into its head is on the Index: STRAWMAN\'S WELL.',
+    trouble: 'Strawman has been everyone\'s practice dummy for so long that it only knows one part: getting knocked down. The show in its head never gets past rehearsal.',
+    begin: 'Strawman\'s in the Throwing Room, off the Workshop. For now, the way into its head is on the Index: STRAWMAN\'S WELL.',
     steps: [
-      { say: 'Get inside Strawman\'s head.', did: 'You got inside Strawman\'s head.', done: (L) => STAGES.some((s) => L.get(`well.stage.enter.${s.id}`) >= 1) },
-      { say: 'Clear one stage. Any of them.', did: 'You cleared your first stage in there.', done: (L) => L.get('well.stage.clear') >= 1 },
-      { say: 'Knock a dummy past the blast line in The Brawl.', did: 'You knocked a dummy clean off the stage.', done: (L) => L.get('well.dummy.ko') >= 1 },
-      { say: `Clear all ${WAVE1.length} stages that are open.`, did: 'You cleared every stage that is open.', done: (L) => cleared(L) >= WAVE1.length },
-      { say: 'Take a bow: rank A or better on three stages.', did: 'You took your bow. Strawman\'s shows are running again.', done: (L) => WAVE1.filter((s) => (L.best(`well.stage.stars.${s.id}`) || 0) >= 2).length >= 3 },
+      { say: 'Get inside Strawman\'s head.', did: 'You\'re in. It\'s a whole theatre in there!', done: (L) => STAGES.some((s) => L.get(`well.stage.enter.${s.id}`) >= 1) },
+      { say: 'Clear any stage. Pick whichever looks fun.', did: 'First stage cleared. Each one tests a different set of moves.', done: (L) => L.get('well.stage.clear') >= 1 },
+      { say: 'In The Brawl, knock a dummy past the blast line. The more damage it\'s taken, the further it flies.', did: 'KO. That dummy\'s off the stage for good.', done: (L) => L.get('well.dummy.ko') >= 1 },
+      { say: `Clear all ${WAVE1.length} open stages.`, did: 'Every open stage, cleared. Strawman\'s starting to learn some new lines.', done: (L) => cleared(L) >= WAVE1.length },
+      { say: 'Get an A or better on any 3 stages, then take a bow.', did: 'Curtain call! For once, Strawman got to play the lead.', done: (L) => WAVE1.filter((s) => (L.best(`well.stage.stars.${s.id}`) || 0) >= 2).length >= 3 },
     ],
   },
 ];
@@ -73,7 +73,7 @@ export class Quests {
       for (let n = 0; n < s.step; n++) {
         if (!L.first(`quest.${q.id}.${n}`) || this.silent) continue;
         if (n === 0) this.game.events?.emit('quest.start', { id: q.id, quest: q.name, by: 'courier' });
-        this.game.events?.emit('quest.step', { id: q.id, quest: q.name, n, say: q.steps[n].say, next: q.steps[n + 1]?.say ?? null, by: 'courier' });
+        this.game.events?.emit('quest.step', { id: q.id, quest: q.name, n, say: q.steps[n].say, did: q.steps[n].did, next: q.steps[n + 1]?.say ?? null, by: 'courier' });
       }
       if (s.state === 'done' && L.first(`quest.${q.id}`) && !this.silent) this.game.events?.emit('quest.done', { id: q.id, quest: q.name, points: q.points, by: 'courier' });
     }

@@ -6,7 +6,7 @@
 //                earned, newest first, a handful at most;
 //   IN PROGRESS  every started quest and its next step (never the step after: no spoilers);
 //   TODAY        the game day's goals still open.
-// Words are placeholders, Espada's to word in the System's voice.
+// The quest lines are Espada's (2026-10-31); the achievement line is still a placeholder.
 //
 // Prior art: Xenoblade Chronicles' "The Story So Far" and Trails' recap on load (what happened last, in a few lines, before you play);
 // Kingdom Hearts' journal; Dragon Quest's priest who tells you where you were headed; RuneScape's quest journal (the next step only).
@@ -30,7 +30,7 @@ export function recapOf(L, { game = null, achievements = null, goals = [], most 
     happened.push({ t, line: `You earned ${a.name} (${a.desc.replace(/\.$/, '')}).` });
   }
   happened.sort((a, b) => b.t - a.t);
-  const open = states.filter(([, s]) => s.state === 'started').map(([q, s]) => `${q.name}, for ${q.who}. Next: ${s.steps[s.step].say}`);
+  const open = states.filter(([, s]) => s.state === 'started').map(([q, s]) => `${q.name} (for ${q.who}). Next: ${s.steps[s.step].say}`);
   const today = (goals || []).filter((g) => !g.done).map((g) => `${g.name}: ${String(g.desc).replace(/\.$/, '')}.`);
   return { last: happened.slice(0, most).map((h) => h.line), open, today, minutes: from == null ? null : Math.round((to - from) / 60) };
 }

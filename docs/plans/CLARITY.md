@@ -257,19 +257,25 @@ one line a button, a "Hint!" box); Nintendo Power and the Prima and Brady guides
 veterans in chat: "trust me, get this first", "don't sweat it, everyone dies there"); the isekai System window (Solo Leveling's
 [Quest Accepted], Shield Hero's status screen: blunt, game-y, a little smug, never mysterious about its own rules).
 
+**What it covers:** the System only: the log's system lines, help, how-tos, item and art lines, quests and the recap. Not the folk
+(`npc/talks.js` keeps each voice: Saggar loud, Grog slow, Raku haggling), not the world (ostraca, steles), not the Codex's lore
+pages. The cut list below would flatten Grog if read as house-wide.
+
 **The rules.**
 1. **Say what to do, then why it's good.** "Press V just as a blow lands to parry it. Nail the timing and their attack breaks off." The reason is fun or
    mastery, never lore.
 2. **Talk like a person.** Contractions (you'll, it's, don't). Short sentences, and not all the same length. An exclamation mark is
-   allowed once a screen, where something is actually exciting.
+   allowed once in an event's lines, never on two log lines in a row, and only where something is actually exciting.
 3. **Plain words first, the world's words second.** A lore noun appears only when the thing is on screen or has a card (section 7),
-   and the first time it does, the System says what it is in a few plain words: "Lachryma (feeling turned into stuff: everything
-   magic runs on it)". Esoteric is for the world and the Codex; the System is the friend who explains it.
+   and the first time it does, the System glosses it in a short sentence of its own: "This is Lachryma. It's feeling turned into
+   stuff, and everything magic runs on it." One gloss a noun, kept in `docs/plans/FIRST-GLOSSES.md` (Espada's), so no division
+   invents its own. Esoteric is for the world and the Codex; the System is the friend who explains it.
 4. **Opinions are fine.** "This one's worth it." "Most people skip this. Don't." The System knows the game cold and isn't shy.
 5. **Never spoil past the next step.** Say that something exists and roughly where, never how to solve it: "There's more to this
    room than the exit." A strategy guide's "Secret!" box, not its walkthrough.
 6. **Numbers when they matter, as numbers.** "Costs 20 Lachryma." "3 left." Never "a modest cost".
-7. **One joke a screen at most, never at the player.** Dying in the Pit 100 times is "It happens.", not a lecture.
+7. **One joke in an event's lines at most, never at the player.** Dying in the Pit 100 times is "It happens.", not a lecture. A pun
+   in a name (a quest's, a stage's) doesn't count: nobody reads a name as a sentence.
 8. **The game says "you"; the System never says "I" or "we"** (open: South may rule otherwise, section 14.2).
 
 **What to cut (the tells of the house's own prose, which reads well in a plan and badly on a screen):**
@@ -291,5 +297,7 @@ veterans in chat: "trust me, get this first", "don't sweat it, everyone dies the
 
 ### 14.2 Open
 - May the System say "I"? A veteran's voice wants it ("I'd grab this first"); the house style has said "you" only. South to rule.
+  Espada votes no: the veteran comes through in the imperative and the opinion ("Grab this first." "Most people skip this. Don't."),
+  and an "I" makes the System a character, which then needs a name, a face and a want.
 - Espada words every line (CLAUDE.md); this section is the brief, the before-and-after the test. `scripts/clarity.mjs` keeps measuring
   the reading level; a line that passes it and still reads like a riddle fails this section.
