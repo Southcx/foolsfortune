@@ -8,6 +8,9 @@
 // blast lines and KO (`well.dummy.ko`), trophies, the same verbs heard, the same windup the parry answers; this runtime extends it,
 // adding each kind's body (vfx/strawmanwell/targets/), mind (targetminds.js), size, weight (a heavier one is thrown less far) and blow.
 // Only the stage you are in moves. The Well's area builds and takes them down with the room (boot/services.js: `populate`, `clear`).
+// Each says its moments for the ear as `well.target { kind, beat, id, by }` (Wanda's audio/welltargets.js): the hopper's hop, crouch,
+// leap and land; the quintain's wind, swing and home; the duck's fly (each leg, again every FLY_EVERY real s to keep its rotor up), tip,
+// dive and stop; any kind's struck.
 //
 // Prior art: Super Smash Bros.' Subspace Emissary's filler foes (Primids, Bytans: small, many, there to be launched), the quintain, the
 // shooting gallery, the archery boss; the straw dummies, extended.
@@ -38,11 +41,15 @@ export const PLACES = [
   ['stomp', 'hopper', 30], ['brawl', 'duck', 25], ['machine', 'quintain', 16],
 ];
 
+/** How often a flying duck says `fly` again (real s): its rotor's whirr lasts 4 s a call (Wanda's). */
+const FLY_EVERY = 3;
 const DOWN = new THREE.Vector3(0, -1, 0), _o = new THREE.Vector3(), _v = new THREE.Vector3();
 let NEXT = 1;
 
 export class TrainingTargets extends StrawDummies {
   constructor(well) { super(well); this.minds = targetMinds(this); }
+  /** A moment said for the ear (no rule narrates it: it is a sound's cue). */
+  beat(c, beat) { this.game.events?.emit('well.target', { kind: c.target, beat, id: c.id, by: 'environment' }); }
 
   /** Every target in its place (the room just built). */
   populate() {
@@ -97,6 +104,7 @@ export class TrainingTargets extends StrawDummies {
     super.hurt(c, point, dir, power, cause, by);
     this.riding = false;
     if (!c.alive || c.out > 0) return;
+    this.beat(c, 'struck');
     const k = 1 / c.K.weight; c.vel.x *= k; if (c.vel.y > 0) c.vel.y *= Math.sqrt(k); c.tumble *= k;
     this.game.vfx?.play?.('hit.blunt.straw', { pos: point || c.center(_v), dir: dir || _v.set(Math.sign(c.vel.x) || 1, 0.3, 0), power: Math.min(2, power), scale: 0.7 });
     if (c.target === 'quintain' && by === 'courier' && !c.attack) this.swipe(c);
@@ -110,9 +118,10 @@ export class TrainingTargets extends StrawDummies {
     c.want.set(0, 0, 0);
     g.creatures.windup?.(c, { at: c.pos, radius: K.reach, eta, kind: 'blow', parry: true, part: c.model.parts?.right ?? null, type: 'impact', read: true });
     c.model.play?.('swing');
+    this.beat(c, c.target === 'hopper' ? 'crouch' : c.target === 'duck' ? 'tip' : 'wind');
   }
   /** A hop (the hopper's step): up and along, `k` of its full hop. */
-  hop(c, dir, k = 1) { if (!c.grounded) return; c.vel.y = c.K.hop[0] * Math.sqrt(k); c.vel.x = dir * c.K.hop[1] * k; c.grounded = false; }
+  hop(c, dir, k = 1) { if (!c.grounded) return; c.vel.y = c.K.hop[0] * Math.sqrt(k); c.vel.x = dir * c.K.hop[1] * k; c.grounded = false; this.beat(c, 'hop'); }
   /** Is there floor where a hop or leap that way would land? */
   safe(c, dir, how) {
     const v = c.K[how] || c.K.hop, t = (2 * v[0]) / DUMMY.gravity, x = c.pos.x + dir * v[1] * t;
@@ -124,12 +133,12 @@ export class TrainingTargets extends StrawDummies {
     const g = this.game, K = c.K, A = c.attack, P = g.player;
     if (c.target === 'hopper' && A?.phase === 'wind') {
       const dx = (c.foeX ?? c.pos.x + c.face) - c.pos.x, along = THREE.MathUtils.clamp(Math.abs(dx) / ((2 * K.leap[0]) / DUMMY.gravity), 0.6, K.leap[1]);
-      c.vel.y = K.leap[0]; c.vel.x = c.face * along; c.grounded = false; c.attack = { t: 2.5, phase: 'air', up: false };
+      c.vel.y = K.leap[0]; c.vel.x = c.face * along; c.grounded = false; c.attack = { t: 2.5, phase: 'air', up: false }; this.beat(c, 'leap');
       return;
     }
     if (c.target === 'duck' && A?.phase === 'wind') {
       _v.set(P.pos.x - c.pos.x, P.pos.y + 0.6 - c.pos.y, 0); if (_v.lengthSq() < 1e-4) _v.set(c.face, -1, 0);
-      c.dive = _v.normalize().multiplyScalar(K.speed).clone(); c.attack = { t: K.dive, phase: 'dive' };
+      c.dive = _v.normalize().multiplyScalar(K.speed).clone(); c.attack = { t: K.dive, phase: 'dive' }; this.beat(c, 'dive');
       return;
     }
     c.attack = null; c.dive = null; g.creatures.unwind?.(c, 'end');
@@ -139,6 +148,9 @@ export class TrainingTargets extends StrawDummies {
       P.impulse(new THREE.Vector3((Math.sign(dx) || c.face) * K.shove, 2.4, 0), 'strawman'); P.shake = Math.max(P.shake || 0, 0.3); this.well.hit();
     }
   }
+
+  /** Out (a KO or a trophy): a duck's rotor stops with it. */
+  out(c, ko, why) { if (c.target === 'duck' && c.out <= 0) this.beat(c, 'stop'); super.out(c, ko, why); }
 
   /** The floor under (x, from y down) on a lane, or null: the static world only. */
   groundAt(x, y, z) {
@@ -164,6 +176,15 @@ export class TrainingTargets extends StrawDummies {
       if (c.out > 0) continue;
       const A = c.attack;
       if (c.target === 'hopper' && A?.phase === 'air') { if (!c.grounded) A.up = true; else if (A.up) this.release(c); }
+      // the ear's moments the step itself makes: a hopper's landing, the quintain's swing coming round and its roll home, the duck's legs
+      if (c.target === 'hopper' && c.grounded && c.model.air) this.beat(c, 'land');
+      if (c.target === 'quintain') {
+        if (A?.phase === 'swing' && !A.round && A.t <= c.K.swing) { A.round = true; this.beat(c, 'swing'); }
+        const rolling = !A && c.want.x !== 0; if (rolling && !c.rolling) this.beat(c, 'home'); c.rolling = rolling;
+      }
+      if (c.target === 'duck' && !A && c.tumble <= 0) {
+        if (c.way !== c.leg || (c.flyT = (c.flyT ?? 0) - dt) <= 0) { c.leg = c.way; c.flyT = FLY_EVERY; this.beat(c, 'fly'); }
+      } else if (c.target === 'duck') c.flyT = 0;
       c.model.air = !c.grounded; c.model.vy = c.vel.y;
     }
     this.list = all;
