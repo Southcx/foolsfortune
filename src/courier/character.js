@@ -489,6 +489,7 @@ export class Character {
     }
     // movement techs blend their own poses in (swim, roll, climb...)
     st.footDown = 0; // (a tech's kneel lets the feet down on to the floor: footIK)
+    st.keyPlant = null; // (a key move's planted soles, said again each frame by the move that owns the legs: anim/keyposes.js plantFeet)
     s.techs?.animate(this, base, dt, s);
     this.lendGesture.pose(dt, base); // (the sub's verb lent on R, over the stance, the air and any tech: anim/lendgesture.js)
     this.applyPose(base);
