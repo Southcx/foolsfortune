@@ -126,7 +126,7 @@ export class SoulAlchemy {
     for (const S of SEASONING) game.events?.on?.(S.event, (e) => { try { if (!isTraining(e) && S.when(e || {})) this.season(S.attribute, S.points, S.event); } catch { /* a filter that cannot read its event: not this one */ } }); // (a training body never seasons: combat/throwingroom.js)
   }
   get colour() { return { ...this.s.colour }; }
-  rank(id) { return this.s.ranks[id] || 0; }
+  rank(id) { return this.game.lend?.has?.('summit') ? 10 : (this.s.ranks[id] || 0); } // (the Summit lend reads every rank at its top: progress/lend.js)
   seasoning(id) { return this.s.season[id] || 0; }
   /** A tile's yohen stars: its true firings, kept, ten at most (SOUL-ALCHEMY.md 3.3, 4.13). */
   stars(id) { return this.s.stars?.[id] || 0; }
@@ -197,7 +197,7 @@ export class SoulAlchemy {
     if (!this.s.cocked) return { ok: false, code: 'spent', why: 'The bath is empty. Press a material first.' };
     const N = this.nearest();
     if (!N) return { ok: false, code: 'outside', why: 'The press does not fire: the colour is outside every swatch.' };
-    const { id, d, r: rad } = N, r = this.rank(id);
+    const { id, d, r: rad } = N, r = this.s.ranks[id] || 0; // (the rank as kept, never the Summit lend's read: a firing writes the ledger's own)
     if (r >= A.ranks) return { ok: false, code: 'full', why: `Your ${ATTRIBUTES[id].name} is as wide as it goes.` };
     const fuel = aimedFuel(r, d, rad, this.formation());
     if (!this.game.cubes?.spend(fuel, 'alchemy')) return { ok: false, code: 'poor', why: `The press does not fire: it needs ${fuel} cubes.` };
