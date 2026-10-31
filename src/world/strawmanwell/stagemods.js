@@ -6,7 +6,7 @@
 //   id                          the lane's id (layout.js LANES), the stage's (progress/strawmanwell.js STAGES)
 //   build(well, S)              lays the stage in its lane (S: the stage kit's lane builder, stagekit.js) and returns the stage:
 //                               { goal: [x, y] | null, door: [x, y], checks: [[x, y], ...], ready?: () => bool (the goal counts only when
-//                               true), noRetry?: bool (a fall is the stage's own business), ...its own }
+//                               true), noRetry?: bool (a fall is the stage's own business), noWallKick?: bool (Space is the stage's own verb), ...its own }
 //   enter(well) / leave(well)   the lane entered (after well.stage.enter) / left for another
 //   pre(well, dt) / post(well, dt)   beside each fixed step while the frame is on (before / after the Player's own), every module, every
 //                               step: check `well.stage?.id` for your own

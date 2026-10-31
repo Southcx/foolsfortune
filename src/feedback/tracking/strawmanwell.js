@@ -21,7 +21,9 @@ export function strawmanWellRules({ on, L, log }) {
   on('well.dummy.trophy', (e) => { if (e.by !== 'courier') return; L.inc('well.dummy.trophy'); say('gain', 'Trophy! That dummy hit 100% and went flying.', 'well.trophy'); });
   on('well.pit.death', (e) => { if (e.by === 'courier') L.inc('well.pit.death'); });
   on('well.flood.fill', (e) => { if (e.by === 'courier') L.hi('well.flood.best', e.cells || 0); });
-  on('profile.wear', (e) => { const P = profileOf(e.id); say('system', `Profile: ${P.label}. ${P.line}`, 'profile', 0.3); });
+  on('well.fighter.ko', (e) => { if (e.by !== 'courier') return; L.inc('well.fighter.ko'); say('gain', `KO! At ${Math.round(e.percent || 0)}%.`, 'well.fighter.ko', 0.3); });
+  on('well.fighter.stock', (e) => { if (e.by === 'courier') L.inc('well.fighter.stock.lost'); });
+  on('profile.wear', (e) => { L.inc(`profile.wear.${e.id}`); const P = profileOf(e.id); say('system', `Profile: ${P.label}. ${P.line}`, 'profile', 0.3); });
   on('profile.ask', (e) => say('system', `Profile worn: ${profileOf(e.id).label}. The others: ${e.ids.filter((i) => i !== e.id).join(', ')}. Type /profile <name>, or press F at the rack in the wings.`, 'profile.ask', 0.5));
   on('well.verb', (e) => {
     if (e.by !== 'courier' || !VERB[e.verb] || L.get(`well.verb.${e.verb}`)) return;

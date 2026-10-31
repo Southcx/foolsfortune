@@ -28,17 +28,17 @@ const ROWS = [
   ['machine', 5, 66, [2.2, 7], 2],
   ['flood', 6, 52, [1.5, 9], 2],
   // waves 2 to 4 (each built in its own module, world/strawmanwell/stages/<id>.js, registered in stagemods.js): lengths first cuts
-  ['arsenal', 7, 90, [2.2, 9], 2],
+  ['arsenal', 7, 90, [-3.5, 9], 2], // (its last beat is dug down to a passage 5 m under the boards)
   ['swing', 8, 90, [2.2, 12], 2],
   ['flip', 9, 90, [2.2, 12], 2],
   ['pit', 10, 130, [2.2, 9], 2],
-  ['jar', 11, 80, [1.6, 8], 2],
-  ['troupe', 12, 70, [2.2, 10], 4],
+  ['jar', 11, 80, [-0.5, 8], 2],
+  ['troupe', 12, 70, [-5.6, 6], 4], // (wave 3: its cellar and the floaters' drop go 7 m under the boards)
   ['script', 13, 70, [2.2, 9], 2],
   ['depth', 14, 80, [2.2, 8], 2],
   ['chase', 15, 160, [2.2, 9], 2],
   ['wall', 16, 80, [2.2, 9], 2],
-  ['maze', 17, 220, [2.2, 12], 2],
+  ['maze', 17, 46, [2.2, 23], 2], // (wave 3: the day's 4 x 4 rooms, 41 m by 28 m, stood up along the lane)
   ['arena', 18, 90, [3, 11], 45],
 ];
 export const LANES = Object.fromEntries(ROWS.map(([id, k, len, band, start]) => [id, { id, k, z: AT.z - k * LANE, len, band, start }]));

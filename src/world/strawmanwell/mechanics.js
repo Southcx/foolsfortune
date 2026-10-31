@@ -34,11 +34,16 @@ export class WellMechanics {
     this.thins = []; this.springs = []; this.strips = []; this.spools = []; this.dummies = [];
     this.ice = 0; this.prevSpace = false; this.vy0 = 0; this.head0 = 0; this.dropT = 0; this.springCd = 0;
   }
-  thin(collider, x0, x1, top) { if (collider) this.thins.push({ collider, x0, x1, top, on: true }); }
-  spring(x0, x1, top, mesh = null) { this.springs.push({ x0, x1, top, mesh }); }
-  strip(kind, x0, x1, top) { this.strips.push({ kind, x0, x1, top }); }
+  /** The lane a piece belongs to: its collider's depth, else the lane the kit is laying (every lane starts at the same x, so a piece
+   *  that tested only x and y acted on the Courier in every stage: wave 3's probe, 2026-10-31). */
+  zNow(collider) { const t = collider?.translation?.(); return t ? t.z : (this.well.kit?.z ?? null); }
+  /** Is the Courier in this piece's lane? (a lane's own depth hops are 3.6 m; lanes stand 40 m apart) */
+  here(o) { return o.z == null || Math.abs(this.P.pos.z - o.z) < 2; }
+  thin(collider, x0, x1, top) { if (collider) this.thins.push({ collider, x0, x1, top, on: true, z: this.zNow(collider) }); }
+  spring(x0, x1, top, mesh = null) { this.springs.push({ x0, x1, top, mesh, z: this.zNow() }); }
+  strip(kind, x0, x1, top) { this.strips.push({ kind, x0, x1, top, z: this.zNow() }); }
   /** { x0, x1, bottom, top, z, mesh, collider, hidden } */
-  spool(s) { s.used = false; if (s.hidden) { s.collider?.setEnabled(false); if (s.mesh) s.mesh.visible = false; } this.spools.push(s); return s; }
+  spool(s) { s.used = false; if (s.z == null) s.z = this.zNow(s.collider); if (s.hidden) { s.collider?.setEnabled(false); if (s.mesh) s.mesh.visible = false; } this.spools.push(s); return s; }
   /** { at: Vector3 (feet), x0, x1, into: Group } */
   dummy({ at, x0, x1, into }) {
     const model = new StrawmanModel(); model.group.scale.setScalar(0.42); model.group.position.copy(at); into.add(model.group);
@@ -58,7 +63,7 @@ export class WellMechanics {
     const feet = P.pos.y, tech = F.tech;
     // a thin platform: stood on with S held, Space drops through it
     let onThin = null;
-    for (const T of this.thins) if (this.on(T, P.pos.x, 0.3) && Math.abs(feet - T.top) < 0.08) onThin = T;
+    for (const T of this.thins) if (this.here(T) && this.on(T, P.pos.x, 0.3) && Math.abs(feet - T.top) < 0.08) onThin = T;
     if (fresh && onThin && P.grounded && R.isDown('KeyS') && !tech) { this.dropT = MECH.drop; this.dropping = onThin; F.suppressJump(); P.grounded = false; P.vel.y = -1; this.well.verb('dropThrough'); }
     for (const T of this.thins) {
       const want = !(this.dropT > 0 && this.dropping === T) && feet >= T.top - 0.06 && !(P.vel.y > 0.5 && feet < T.top + 0.02);
@@ -66,13 +71,14 @@ export class WellMechanics {
     }
     // ice and goo underfoot
     let strip = null;
-    if (P.grounded) for (const S of this.strips) if (this.on(S, P.pos.x) && Math.abs(feet - S.top) < 0.15) strip = S;
+    if (P.grounded) for (const S of this.strips) if (this.here(S) && this.on(S, P.pos.x) && Math.abs(feet - S.top) < 0.15) strip = S;
     if (strip?.kind === 'ice') { this.ice += (P.vel.x - this.ice) * (1 - Math.exp(-MECH.iceEase * dt)); P.drift.set(this.ice * MECH.iceKeep, 0, 0); this.well.verb('ice'); }
     else { this.ice = P.grounded ? 0 : this.ice; P.drift.set(0, 0, 0); }
     P.wade = strip?.kind === 'goo' ? MECH.goo : 1;
     if (strip?.kind === 'goo' && Math.abs(P.vel.x) > 0.5) this.well.verb('goo');
-    // the wall kick: in the air, a wall right in front, Space fresh
-    if (fresh && !P.grounded && !P.wallrun && !P.mantle && !tech && P.airT > 0.05) {
+    // the wall kick: in the air, a wall right in front, Space fresh (a stage whose Space is its own verb opts out: `noWallKick`, the Flip's)
+    const St = this.well.stages?.[this.well.stage?.id];
+    if (fresh && !St?.noWallKick && !P.grounded && !P.wallrun && !P.mantle && !tech && P.airT > 0.05) {
       _o.set(P.pos.x, P.pos.y + 1.0, P.pos.z); _d.set(F.face, 0, 0);
       const hit = this.game.physics.raycast(_o, _d, MECH.kickReach + 0.3, P.collider, undefined, (c) => !c.isSensor());
       if (hit && Math.abs(hit.normal?.x ?? 0) > 0.7) {
@@ -86,7 +92,7 @@ export class WellMechanics {
   /** After the step: a spring landed on, a spool bonked, a dummy stomped or walked into. */
   post() {
     const P = this.P, g = this.game, feet = P.pos.y;
-    if (P.grounded && this.springCd <= 0) for (const S of this.springs) if (this.on(S, P.pos.x, 0.2) && Math.abs(feet - S.top) < 0.2) {
+    if (P.grounded && this.springCd <= 0) for (const S of this.springs) if (this.here(S) && this.on(S, P.pos.x, 0.2) && Math.abs(feet - S.top) < 0.2) {
       this.springCd = 0.35; P.impulse(new THREE.Vector3(0, MECH.spring - Math.max(0, P.vel.y), 0), 'spring'); P.airJumps = Math.max(P.airJumps, 1);
       if (S.mesh) S.squash = 1;
       this.well.verb('spring');
@@ -95,7 +101,7 @@ export class WellMechanics {
     if (this.vy0 > 0.5) {
       const head = P.pos.y + P.height;
       for (const S of this.spools) {
-        if (!this.on(S, P.pos.x, 0.15)) continue;
+        if (!this.here(S) || !this.on(S, P.pos.x, 0.15)) continue;
         const struck = S.hidden && !S.shown ? this.head0 <= S.bottom + 0.02 && head >= S.bottom - 0.02 : head >= S.bottom - 0.12 && head <= S.bottom + 0.1 && P.vel.y <= 0.5;
         if (!struck) continue;
         if (S.hidden && !S.shown) { S.shown = true; S.collider?.setEnabled(true); if (S.mesh) S.mesh.visible = true; P.pos.y = Math.min(P.pos.y, S.bottom - P.height - 0.02); P.vel.y = 0; P.body.setNextKinematicTranslation({ x: P.pos.x, y: P.pos.y, z: P.pos.z }); }
@@ -107,7 +113,7 @@ export class WellMechanics {
     }
     // a stomp dummy: from above a bounce, from the side a shove
     for (const D of this.dummies) {
-      if (D.flat > 0) continue;
+      if (D.flat > 0 || !this.here(D)) continue;
       const dx = P.pos.x - D.x, top = D.y + D.head;
       if (Math.abs(dx) > 0.75) continue;
       if (this.vy0 < -0.5 && feet > top - 0.45 && feet < top + 0.35) {
