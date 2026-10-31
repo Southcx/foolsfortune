@@ -35,10 +35,13 @@ export const TARGETS = {
   duck: { name: 'gallery duck', height: 1.05, radius: 0.46, weight: 0.75, wind: 0.6, reach: 1.15, shove: 4.5, cruise: 3.4, fly: 2.1, dive: 0.55, speed: 9.5 },
 };
 /** Where they stand: [stage, kind, m along its lane, its floor's height there (m, 0 if left out)]; a flyer keeps its height over that
- *  floor (over a gap, the ledges' height either side). */
+ *  floor. Dovina's ruling (2026-10-31): never a duck over a pit (a dive that shoves you into one you could not see coming is cheap), so
+ *  the Run's flies over the far ledge; waves 2 to 4 hers by lane (a lane not built yet is passed over: each spot checked once it is). */
 export const PLACES = [
-  ['wings', 'quintain', WINGS.strawman + 2.3], ['run', 'hopper', 75], ['run', 'duck', 59, 5], ['run', 'hopper', 96], ['climb', 'duck', 30],
+  ['wings', 'quintain', WINGS.strawman + 2.3], ['run', 'hopper', 75], ['run', 'duck', 70, 5], ['run', 'hopper', 96], ['climb', 'duck', 30],
   ['stomp', 'hopper', 30], ['brawl', 'duck', 25], ['machine', 'quintain', 16],
+  ['arsenal', 'duck', 30], ['arsenal', 'duck', 62], ['swing', 'quintain', 12], ['pit', 'hopper', 40], ['pit', 'hopper', 95],
+  ['maze', 'hopper', 60], ['maze', 'hopper', 150],
 ];
 
 /** How often a flying duck says `fly` again (real s): its rotor's whirr lasts 4 s a call (Wanda's). */
