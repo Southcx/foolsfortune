@@ -244,3 +244,52 @@ The owner, 2026-10-08: the wiki (`docs/wiki/`) follows the Old School RuneScape 
 - **Bold** only for the page's subject on its first mention, and the keywords of section 5.
 - **Not taken:** the OSRS wiki writes in-world pages without "you" and bans AI-written text. Ours is a guide, written by the
   divisions, checked against the code.
+
+## 14. The System's voice (South, 2026-10-31)
+
+South: "old gaming instruction booklets or strategy guides ... The System is like that veteran mmo player with literal encyclopedic
+knowledge of the entire game. It wants you to have fun without spoiling the experience ... Casual speech over cryptic prose. I am an
+isekai slop enjoyer after all. Games are just toys+mastery+message."
+
+**Prior art.** The 1990s instruction booklet (Super Mario Bros. 3's, A Link to the Past's: "How to play", a picture of the controller,
+one line a button, a "Hint!" box); Nintendo Power and the Prima and Brady guides (the tip in the margin, the "Pro Tip", the boxed
+"Secret!" that tells you a secret exists before it tells you where); the guildmate who has done everything (RuneScape's and FFXIV's
+veterans in chat: "trust me, get this first", "don't sweat it, everyone dies there"); the isekai System window (Solo Leveling's
+[Quest Accepted], Shield Hero's status screen: blunt, game-y, a little smug, never mysterious about its own rules).
+
+**The rules.**
+1. **Say what to do, then why it's good.** "Press V just as a blow lands to parry it. Nail the timing and their attack breaks off." The reason is fun or
+   mastery, never lore.
+2. **Talk like a person.** Contractions (you'll, it's, don't). Short sentences, and not all the same length. An exclamation mark is
+   allowed once a screen, where something is actually exciting.
+3. **Plain words first, the world's words second.** A lore noun appears only when the thing is on screen or has a card (section 7),
+   and the first time it does, the System says what it is in a few plain words: "Lachryma (feeling turned into stuff: everything
+   magic runs on it)". Esoteric is for the world and the Codex; the System is the friend who explains it.
+4. **Opinions are fine.** "This one's worth it." "Most people skip this. Don't." The System knows the game cold and isn't shy.
+5. **Never spoil past the next step.** Say that something exists and roughly where, never how to solve it: "There's more to this
+   room than the exit." A strategy guide's "Secret!" box, not its walkthrough.
+6. **Numbers when they matter, as numbers.** "Costs 20 Lachryma." "3 left." Never "a modest cost".
+7. **One joke a screen at most, never at the player.** Dying in the Pit 100 times is "It happens.", not a lecture.
+8. **The game says "you"; the System never says "I" or "we"** (open: South may rule otherwise, section 14.2).
+
+**What to cut (the tells of the house's own prose, which reads well in a plan and badly on a screen):**
+- colon chains and nested brackets in a line the player reads ("FIRE keeps a look, MEND refires: the kiln's two verbs (its tab)");
+- poetic stand-ins for plain facts ("the stillness answers", "a beat", "quietly", "its own");
+- the triplet for rhythm's sake ("calm, clear, and kind"), and "not X, but Y" when X was never said;
+- abstract nouns doing the verbs ("The shed holds your seeds" is fine; "Storage awaits" is not);
+- hedges ("something like", "a sort of"), and capital-letter mystery ("The Line. It remembers.").
+
+### 14.1 Before and after (lines in the build today)
+
+| where | now | in the voice |
+|---|---|---|
+| the garden's how-to, step 2 | "You are the god hand too: it follows the cursor. Keys 1 to 0 pick what it does: 1 GRAB picks things up and throws them, 2 to 7 shape the clay, 8 pours water, 9 places, 0 paints." | "You're the god hand too! It follows your cursor. The number keys pick what it does: 1 grabs and throws, 2 to 7 shape the clay, 8 pours water, 9 places things, 0 paints." |
+| the first path, gw2 | "Your first planetoid's seed waits in the shed by the garden's gate: take it, carry it up into the open sky and let go." | "Your first seed is in the shed by the gate. Grab it, carry it up into open sky, away from everything, and let go. Then watch." |
+| the Assay, nothing yet | "The System has not measured you yet. It watches as you play." | "Nothing measured yet. Just play. The System takes notes as you go." |
+| the lend panel, God Arts | "God Arts 2 to 5, wherever the hand reaches" | "God Arts 2 to 5, usable anywhere the hand can reach." |
+| Strawman's Well, sw7 | "Fall in the Pit 100 times. It happens." | (already in the voice: keep) |
+
+### 14.2 Open
+- May the System say "I"? A veteran's voice wants it ("I'd grab this first"); the house style has said "you" only. South to rule.
+- Espada words every line (CLAUDE.md); this section is the brief, the before-and-after the test. `scripts/clarity.mjs` keeps measuring
+  the reading level; a line that passes it and still reads like a riddle fails this section.
