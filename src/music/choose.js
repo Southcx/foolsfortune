@@ -34,6 +34,7 @@ import { OPEN_SEA, setSea } from './opensea.js';
 import { READING, setReading } from './reading.js';
 import { DRAFTING } from './drafting.js';
 import { DUEL, hearDuel } from './duel.js';
+import { WINGS } from './wings.js';
 import { seasonOf } from '../progress/seasons.js';
 
 const DWELL_IN = 1.5, DWELL_OUT = 2.5; // (seconds under before the dive's music starts; seconds up before it stops)
@@ -71,6 +72,7 @@ export function chooseMusic(game, { overlay = false } = {}) {
     S.deep = v?.kind === 'lachryma' || (S.deep ? depth > DEEP_OUT : depth > DEEP_IN);
     return S.deep ? DEEP : SHALLOWS;
   }
+  if (game.strawmanWell?.here) return !game.strawmanWell.stage || game.strawmanWell.stage.id === 'wings' ? WINGS : null; // (Strawman's Well: the wings' soft-shoe, a stage left quiet: music/wings.js)
   if (game.bazaar?.here) { hearCasino(game); return CASINO; } // (Raku's bazaar: the floor's march, the table's lounge, music/casino.js)
   if (game.raceway?.active) { hearRace(game); return RACEWAY; } // (the Raceway: the place, the countdown, the race and its last lap, music/raceway.js)
   if (game.opensea?.active) { hearSea(game); return OPEN_SEA; } // (the open sea: its mode the square's law, its strangeness the rows off the lanes, music/opensea.js)
