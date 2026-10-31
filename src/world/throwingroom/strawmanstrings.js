@@ -171,6 +171,12 @@ export class StrawmanStrings {
     const lg = el('div', 'rooms'), lr = el('div', 'room', '<span class="n">▤</span><span><b>Build your string</b><s>Choose what LMB and RMB play.</s></span>');
     lr.onclick = () => showLoadoutPage(g);
     lg.appendChild(lr); im.appendChild(lg);
+    if (g.strawmanWell) { // (inside its head: the 2D platformer's test bench, world/strawmanwell/; docs/plans/STRAWMANS-WELL.md 1)
+      im.appendChild(el('div', 'grp', "THE WELL · Inside Strawman's head"));
+      const wg = el('div', 'rooms'), wr = el('div', 'room', "<span class=\"n\">▤</span><span><b>Strawman's Well</b><s>The 2D platformer's test bench.</s></span>");
+      wr.onclick = () => { menu?.close(); g.strawmanWell.arrive(); };
+      wg.appendChild(wr); im.appendChild(wg);
+    }
     im.appendChild(el('div', 'grp', 'STANCE · How Strawman takes a blow'));
     const sg = el('div', 'rooms');
     for (const [m, label, line] of STANCES) {

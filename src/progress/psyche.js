@@ -23,12 +23,13 @@ const EVENTS = new Set(SOURCES.map((s) => s.event));
 export function installPsyche(game) {
   const L = game.ledger;
   const exp = (d) => L.get(`exp.${d}`);
+  const lv = (d) => (game.lend?.has?.('summit') ? 99 : levelOf(exp(d))); // (the Summit lend: every domain read at 99, the ledger untouched: progress/lend.js)
   game.psyche = {
     exp,
-    level: (d) => levelOf(exp(d)),
-    total: () => Object.keys(DOMAINS).reduce((a, d) => a + levelOf(exp(d)), 0),
+    level: lv,
+    total: () => Object.keys(DOMAINS).reduce((a, d) => a + lv(d), 0),
     /** What the Courier's level widens this knob to (godpowers.js RAMP.tools, on the ramp's curve: SPINE.md 1.1): a multiplier of the tool's own number, or a bonus to a count. */
-    widen: (key) => widenOf(key, RAMP.tools[key] ? levelOf(exp(RAMP.tools[key].domain)) : 1),
+    widen: (key) => widenOf(key, RAMP.tools[key] ? lv(RAMP.tools[key].domain) : 1),
     /** The class's multiplier on a domain's experience: CLASS.affinity in the domain of the Major you read as, else 1. */
     affinity: (d) => (game.laidSpread?.class?.domain === d ? CLASS.affinity : 1),
   };
