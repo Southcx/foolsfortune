@@ -24,7 +24,7 @@
 import * as THREE from 'three';
 import { zoneOf } from '../../render/zonemap.js';
 import { STAGES, PIT, stageOf, rankOf, starsOf, VERB } from '../../progress/strawmanwell.js';
-import { AT, LANES, laneOf, laneAt } from './layout.js';
+import { AT, LANES, WINGS, laneOf, laneAt } from './layout.js';
 import { WellFrame } from './wellframe.js';
 import { StageKit } from './stagekit.js';
 import { WellMechanics } from './mechanics.js';
@@ -34,6 +34,9 @@ import { FloodStage } from './flood.js';
 import { buildWings, buildRun, buildClimb, buildStomp, clearClimb, stageDoor } from './stages.js';
 import { buildBrawl, buildMachine, BRAWL } from './stagesmachine.js';
 import { MODS, MOD } from './stagemods.js';
+import { profileOf } from '../../progress/movementprofiles.js';
+
+const PROFILE_LABEL = (id) => profileOf(id).label.toUpperCase();
 
 /** The theatre's air: a warm haze under the stage lights. */
 export const AIR = { fog: 0x3a2618, density: 0.006 };
@@ -63,17 +66,25 @@ export class StrawmansWell {
     for (const x of BRAWL.spawns) this.dummies.spawn(new THREE.Vector3(AT.x + x, AT.y, LANES.brawl.z), this.stages.brawl.arena);
     K.finish();
     g.scene.add(room);
-    this.plates();
+    this.plates(); this.rackPlate();
     this.built = true;
   }
   teardown() {
     if (!this.built) return;
-    this.frame.remove(); this.listen(false);
+    this.frame.remove(); this.game.movementProfiles?.lift(); this.listen(false);
     this.dummies.clear(); this.machine.clear(); this.mech.clear(); this.flood.clear(); clearClimb(this);
     for (const M of MODS) M.clear?.(this);
     this.wings?.strawman?.dispose?.();
     this.kit.dispose();
     this.room = null; this.kit = null; this.wings = null; this.stages = {}; this.stage = null; this.built = false;
+  }
+
+  /** The rack's plate: the profile worn, drawn again when it changes. */
+  rackPlate() {
+    const mp = this.game.movementProfiles; if (!mp || !this.wings?.rack) return;
+    const R = this.wings.rack, id = mp.id; if (R.id === id) return;
+    R.plate?.removeFromParent(); R.plate?.material?.dispose?.(); R.plate?.geometry?.dispose?.();
+    R.plate = this.kit.lane(LANES.wings).label('PROFILE', WINGS.rack, 3.15, { dz: -2.2 + 0.42, width: 2.2, sub: PROFILE_LABEL(id) }); R.id = id;
   }
 
   /** The wings' plates over the doors: each stage's best stars from the ledger (well.stage.stars.<id>), drawn again on each return. */
@@ -100,7 +111,7 @@ export class StrawmansWell {
   /** Back out to the workshop's hub, everything the frame laid taken off. */
   leave() {
     const g = this.game, C = g.course;
-    const home = () => { this.frame.remove(); this.listen(false); this.stage = null; C?.teleport(C.hubSpawn.v, C.hubSpawn.yaw); };
+    const home = () => { this.frame.remove(); g.movementProfiles?.lift(); this.listen(false); this.stage = null; C?.teleport(C.hubSpawn.v, C.hubSpawn.yaw); };
     g.seam?.cross(home) || home();
   }
   /** A stage entered (from its door in the wings), or the wings again (from a stage's door). */
@@ -113,6 +124,7 @@ export class StrawmansWell {
     const g = this.game, L = laneOf(id);
     if (this.stage?.id && this.stage.id !== id) MOD[this.stage.id]?.leave?.(this);
     this.frame.apply({ z: L.z, x0: AT.x - 2, x1: AT.x + L.len + 2, band: [AT.y + L.band[0], AT.y + L.band[1]], face: 1 });
+    g.movementProfiles?.apply(); // (the build worn here: progress/movementprofiles.js; taken off with the frame)
     this.kit?.show(id); this.listen(true);
     if (id === 'wings') { this.stage = { id: 'wings' }; if (this.kit) this.plates(); return; }
     this.stage = { id, t0: g.events?.time ?? 0, hits: 0, string: 0, cleared: false, check: 0, kos: 0 };
@@ -156,7 +168,10 @@ export class StrawmansWell {
   spots() {
     const S = this.stage, P = this.game.player, out = [];
     if (!S) return out;
-    if (S.id === 'wings') for (const [id, D] of Object.entries(this.wings.doors)) out.push({ ref: id, pos: new THREE.Vector3(AT.x + D.x, AT.y + 2.9, LANES.wings.z - 1.6), x: AT.x + D.x });
+    if (S.id === 'wings') {
+      for (const [id, D] of Object.entries(this.wings.doors)) out.push({ ref: id, pos: new THREE.Vector3(AT.x + D.x, AT.y + 2.9, LANES.wings.z - 1.6), x: AT.x + D.x });
+      out.push({ ref: 'profile', pos: new THREE.Vector3(AT.x + WINGS.rack, AT.y + 2.2, LANES.wings.z - 1.2), x: AT.x + WINGS.rack }); // (the movement profiles' rack)
+    }
     else {
       const St = this.stages[S.id]; if (St) out.push({ ref: 'wings', pos: new THREE.Vector3(AT.x + St.door[0], AT.y + St.door[1] + 2.9, laneOf(S.id).z - 1.6), x: AT.x + St.door[0], y: AT.y + St.door[1] });
       if (S.id === 'flood') for (const L of this.flood.spots) out.push({ ref: L.ref, pos: L.pos, x: L.pos.x, y: AT.y });
@@ -173,6 +188,7 @@ export class StrawmansWell {
   }
   use(ref) {
     if (ref === 'hub') return this.leave();
+    if (ref === 'profile') { this.game.movementProfiles?.next(); this.rackPlate(); return; }
     if (ref === 'wings') return this.go('wings');
     if (laneOf(ref)) return this.go(ref);
     const M = MOD[this.stage?.id]; if (M?.use?.(this, ref)) return;
@@ -184,7 +200,7 @@ export class StrawmansWell {
     this.wire();
     if (!this.built) return;
     const g = this.game, P = g.player, here = this.here;
-    if (!here) { if (this.frame.on) { this.frame.remove(); this.listen(false); this.stage = null; } return; }
+    if (!here) { if (this.frame.on) { this.frame.remove(); g.movementProfiles?.lift(); this.listen(false); this.stage = null; } return; }
     if (!this.frame.on && !g.god?.controlling) { const L = laneAt(P.pos.z); if (L) this.enterLane(L.id); } // (set down here some other way: a place's travel)
     const S = this.stage, inp = g.input;
     // F at what the chevron is on; W at a door; F held at the Flood's POUR

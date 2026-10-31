@@ -48,7 +48,7 @@ export const laneOf = (id) => LANES[id] || null;
 export const WINGS = {
   doors: { run: 7, climb: 11.5, stomp: 16, brawl: 25, machine: 29.5, flood: 34, arsenal: 38.5, swing: 43, flip: 47.5, pit: 52, jar: 56.5, troupe: 61,
     script: 65.5, depth: 70, chase: 74.5, wall: 79, maze: 83.5, arena: 88 },
-  hub: 1.6, strawman: 20.5,
+  hub: 1.6, strawman: 20.5, rack: 4.3, // (rack: the movement profiles' rack, F to change: progress/movementprofiles.js)
 };
 
 /** Is a point in the Well (its zone's box)? */
