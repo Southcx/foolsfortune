@@ -17,5 +17,5 @@ export function gardenGrowthAchievements({ C, F }) {
   C('gw5', 'garden', 'Seeds and Slabs', 2, 'count', 'Read the Code', 'Read a real barcode or QR code at the plate shrine.', 'scan.read', 1);
   C('gw6', 'garden', 'Seeds and Slabs', 3, 'mechanic', 'Not a Scratch', 'Carve a spirit slab flawless.', 'slab.flawless', 1);
   C('gw7', 'garden', 'Seeds and Slabs', 3, 'count', 'Full Grown', 'Feed a planetoid of the ring until it is large.', 'seed.grow.large', 1);
-  F('gw8', 'garden', 'Seeds and Slabs', 4, 'collect', 'A Sky of Your Own', 'Let all six seeds of the ring go.', (L) => ['clay', 'crystal', 'coral', 'bowl', 'ring', 'bone'].filter((k) => L.get(`seed.plant.${k}`) >= 1).length, 6);
+  F('gw8', 'garden', 'Seeds and Slabs', 4, 'collect', 'A Sky of Your Own', "Let all six planetoids' seeds go in the ring.", (L) => ['clay', 'crystal', 'coral', 'bowl', 'ring', 'bone'].filter((k) => L.get(`seed.plant.${k}`) >= 1).length, 6);
 }
