@@ -41,6 +41,7 @@ import { pairAchievements } from './pairachievements.js';
 import { areaAchievements } from './areaachievements.js';
 import { mimicryAchievements } from './mimicryachievements.js';
 import { sandboxAchievements } from './sandboxachievements.js';
+import { gardenGrowthAchievements } from './gardengrowthachievements.js';
 const FOUNDING_SHELLS = CASTER_SHELLS.filter((r) => r.family === 'founding').map((r) => r.id);
 
 export const TIERS = [null, { name: 'Easy', pts: 1 }, { name: 'Medium', pts: 2 }, { name: 'Hard', pts: 3 }, { name: 'Elite', pts: 4 }, { name: 'Master', pts: 5 }, { name: 'Grandmaster', pts: 6 }];
@@ -61,7 +62,7 @@ export const CATS = [
   { id: 'emocean', name: 'THE EMOCEAN', subs: ['Sailing', 'Sea Stages', 'Crude', 'The Open Sea'] },
   { id: 'collect', name: 'COLLECTION', subs: ['Logged', 'The Collection Log'] },
   { id: 'psyche', name: 'THE DOMAINS', subs: ['Levels'] },
-  { id: 'garden', name: 'THE SPIRIT GARDEN', subs: ['The Press', 'The Garden', 'The Mycelium', 'The Spirits', 'The Firings', "The Garden's Life"] },
+  { id: 'garden', name: 'THE SPIRIT GARDEN', subs: ['The Press', 'The Garden', 'The Mycelium', 'The Spirits', 'The Firings', "The Garden's Life", 'Seeds and Slabs'] },
   { id: 'sky', name: 'THE SKY', subs: ['Weather', 'The Day'] },
   { id: 'general', name: 'GENERAL', subs: ['Time', 'Persistence', 'The Spread', 'The Stones', 'Pairs', 'Achievements'] },
 ];
@@ -691,6 +692,7 @@ export function buildAchievements(game) {
   C('gy19', 'garden', "The Garden's Life", 3, 'mechanic', 'Farewell, Desire', 'Let a spirit of Desire go home when it asks.', 'spirit.farewell.desire', 1, { hidden: true });
   C('gy20', 'garden', "The Garden's Life", 3, 'mechanic', 'Farewell, Grief', 'Let a spirit of Grief go home when it asks.', 'spirit.farewell.grief', 1, { hidden: true });
   C('gy21', 'garden', "The Garden's Life", 3, 'mechanic', 'Farewell, Dread', 'Let a spirit of Dread go home when it asks.', 'spirit.farewell.dread', 1, { hidden: true });
+  gardenGrowthAchievements({ C, F }); // (seeds, slabs and scans: progress/gardengrowthachievements.js)
   F('sg4', 'garden', 'The Garden', 5, 'collect', 'Room to Grow', 'Widen the garden as far as it goes.', (L) => L.get('garden.upgrade.slot') + L.get('garden.upgrade.bed'), 7);
 
   // ---------------------------------------------------------------- THE SKY (progress/weather.js: emotional weather and the day)

@@ -201,3 +201,35 @@ That side is Petra's, and so is the choice of decoder library.
 - `scan.read { what, kind, cls, sealed, again, own }`
 
 Every event carries `by`.
+
+## 6. Teaching it: the garden's how-to and the first path
+
+South, 2026-10-30, by Petra: "The Spirit garden is a notorious culprit of lacking any form of tutorialization." Measured by Petra: a
+first entry showed the realm-naming page and nothing after it.
+
+**The how-to** (`progress/gardenhowto.js` `GARDEN_HOWTO`), in Raku's tables' way (`progress/casino/howto.js`):
+- Seven steps, one thing each, in the order of the first visit: you are the Jar; you are the hand (1 to 0); the shed; the ring; a
+  lotus; the plate shrine; the bench.
+- Each step's `show` names the spot the camera turns to and rings.
+- It plays after the realm is named on the first entry, and again on `/howto` in the garden. Finished or skipped once, it plays no more
+  on entry: the ledger's `garden.howto`, from the event of that name.
+- `card` is the garden on one card, a click away.
+
+**The starter slab** (`GIFT`: a clapperjar, one star). A new save has no appraised photo, so the plate shrine had nothing to teach.
+- The first entry gives one slab, so the shrine and the bench are learned on the first visit with nothing to fetch.
+- Prior art: Spectrobes: Origins hands you the first fossil; Pokemon hands you the starter.
+- A clapperjar because it is the clay folk's lowest tier, Anagami's own. One star because it sets in 120 real s, time enough to learn the
+  brush and the pick. A clean dig is flawless, which earns the bone seed.
+- Given, never made: `slab.make { from: 'gift', by: 'environment' }` counts nothing. Carving it is the Courier's.
+
+**The first path** (`progress/goals.js` `FIRST`): three Easy steps after the Shrine's rest (sr1), each with its where:
+
+| step | achievement | what it teaches without saying so |
+|---|---|---|
+| gw1 | Through the Arch: enter your Spirit Garden | the Shrine's arch; the garden is yours |
+| gw2 | Seedling: let a planetoid's seed go in the ring | the shed, the hand's GRAB, the sky as a place you build in |
+| gw3 | Unearthed: carve a spirit slab free | the plate shrine, the bench, every tool as a verb |
+
+The garden's other achievements (Seeds and Slabs): gw4 Set in Stone (a photo set into a slab), gw5 Read the Code (a scan), gw6 Not a
+Scratch (a flawless carving), gw7 Full Grown (a planetoid fed to large), gw8 A Sky of Your Own (all six seeds of the ring let go).
+`seed.plant.ring` counts only the ring's seeds, since a moonlet sets itself at an awakening.

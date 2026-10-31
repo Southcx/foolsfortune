@@ -6,7 +6,7 @@
 //
 //   gardenGrowthRules({ on, L, log, g })   (tracking/rules.js calls it; a seed is said once the ring takes seeds: `realm.orbit.seeds`, true from v352)
 //   events read: garden.enter, well.foe, sea.square.done, spirit.wish.done, mimic.solve, feeling.wake (an act that may earn a seed), seed.plant { seed, slot }, seed.grow { seed, size }, slab.make { kind, stars, from },
-//   slab.carve { kind, score, bared, cracked, flawless }, scan.read { what, kind, cls, sealed, again, own }
+//   slab.carve { kind, score, bared, cracked, flawless }, scan.read { what, kind, cls, sealed, again, own }, garden.howto { done | skipped }
 // ---------------------------------------------------------------------------------------
 
 import { SEEDS, seedsEarned } from '../../progress/seeds.js';
@@ -21,7 +21,7 @@ export function gardenGrowthRules({ on, L, log, g }) {
     }
   };
   for (const ev of ['garden.enter', 'well.foe', 'sea.square.done', 'spirit.wish.done', 'mimic.solve', 'feeling.wake']) on(ev, (e) => { if ((e?.by ?? 'courier') === 'courier') grant(); });
-  on('seed.plant', (e) => { if (e.by === 'courier') L.inc('seed.plant'); });
+  on('seed.plant', (e) => { if (e.by === 'courier') { L.inc('seed.plant'); if (!e.inner) { L.inc('seed.plant.ring'); L.inc(`seed.plant.${e.seed}`); } } }); // (a moonlet sets itself at an awakening: only the ring's is the hand's act)
   on('seed.feed', (e) => { if (e.by === 'courier') { L.inc('seed.feed'); L.inc('seed.fed.minutes', Math.round(e.minutes || 0)); } }); // (Petra's: { seed, minutes, from, feeling }; seed.grow says what shows)
   let grown = null; // (the size a feed reached this tick, said once)
   on('seed.grow', (e) => {
@@ -31,7 +31,8 @@ export function gardenGrowthRules({ on, L, log, g }) {
     const first = grown == null; grown = e.size;
     if (first) queueMicrotask(() => { say('gain', `A planetoid grows: ${grown}.`, 'seed.grow', 0.5); grown = null; });
   });
-  on('slab.make', (e) => { if (e.by !== 'courier') return; L.inc('slab.make'); L.inc(`slab.make.${e.from || 'plate'}`); });
+  on('slab.make', (e) => { if (e.by !== 'courier') return; // (the clay's starter, from: 'gift', comes by the environment: progress/gardenhowto.js GIFT)
+   L.inc('slab.make'); L.inc(`slab.make.${e.from || 'plate'}`); });
   on('slab.carve', (e) => {
     if (e.by !== 'courier') return;
     L.inc('slab.carve'); L.hi('slab.best', Math.round(100 * (e.score || 0)));
@@ -39,6 +40,7 @@ export function gardenGrowthRules({ on, L, log, g }) {
     say(e.flawless ? 'record' : 'gain', e.flawless ? 'A flawless carving. The spirit steps out of the stone whole, and shining.'
       : `The spirit steps out of the stone: ${Math.round(100 * (e.bared || 0))}% bared, ${Math.round(100 * (e.cracked || 0))}% cracked.`, 'slab.carve', 0.5);
   });
+  on('garden.howto', (e) => { if (e.by === 'courier') L.inc('garden.howto'); }); // (finished or skipped once: it plays no more on entry; progress/gardenhowto.js)
   on('scan.read', (e) => {
     if (e.by !== 'courier' || e.own) return;
     if (e.again) { L.inc('scan.again'); say('info', 'You have read this code before. It gives a little, once.', 'scan.again'); return; }

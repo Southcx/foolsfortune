@@ -40,6 +40,7 @@ import { Plants } from './plants.js';
 import { Races } from './races.js';
 import { Orbit } from './orbit.js';
 import { CarvingBench } from './bench.js';
+import { GardenHowto } from './howto.js';
 import { Cascades } from './cascades.js';
 import { GardenPress } from './press.js';
 import { Daturas } from '../../vfx/datura.js';
@@ -110,6 +111,7 @@ export class Realm {
     this.cascades = new Cascades(this); // (water spilling from one planetoid to the next: world/garden/cascades.js)
     this.press = new GardenPress(this, this.site.features.find((f) => f.kind === 'athanor')); // (Soul Alchemy's press on the Athanor: world/garden/press.js)
     this.bench = new CarvingBench(this); // (a plate's slab carved free below the plate shrine: world/garden/bench.js)
+    this.howto ||= new GardenHowto(this); // (the garden taught in seven steps on the first entry, and /howto: world/garden/howto.js)
     this.plots.onSeed = (P, dir) => this.plants.seed(P, dir, 2.5);
     this.plots.wet = (p) => this.waterworks.feelingAt(p.planet, p.dir); // (water standing at a plot is a neighbour in its formation: item 11)
     this.hand = new GardenHand(this);
@@ -134,15 +136,15 @@ export class Realm {
     R?.setRenderTarget(was ?? null);
     this.site.show(false);
   }
-  dumpAll() { return ({ name: this.name, placed: this.plots.dump(), clay: { ...this.waiting.clay, ...Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dump()]).filter(([, a]) => a)) }, ground: { ...this.waiting.ground, ...Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dumpGround()]).filter(([, a]) => a)) }, awaken: this.awaken.dump(), water: this.waterworks.dump(), plants: this.plants.dump(), tracks: this.races.dump(), orbit: this.orbit.dump() }); }
+  dumpAll() { return ({ name: this.name, placed: this.plots.dump(), clay: { ...this.waiting.clay, ...Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dump()]).filter(([, a]) => a)) }, ground: { ...this.waiting.ground, ...Object.fromEntries(Object.entries(this.clays).map(([id, c]) => [id, c.dumpGround()]).filter(([, a]) => a)) }, awaken: this.awaken.dump(), gift: this.howto?.gifted || undefined, water: this.waterworks.dump(), plants: this.plants.dump(), tracks: this.races.dump(), orbit: this.orbit.dump() }); }
   loadAll(d) {
-    this.name = d?.name || null; this.awaken.load(d?.awaken); this.orbit.load(d?.orbit); // (the seeds' planetoids first: their clay loads next)
+    this.name = d?.name || null; (this.howto ||= new GardenHowto(this)).gifted = !!d?.gift; this.awaken.load(d?.awaken); this.orbit.load(d?.orbit); // (the seeds' planetoids first: their clay loads next)
     for (const [id, c] of Object.entries(this.clays)) { c.load(d?.clay?.[id]); c.loadGround(d?.ground?.[id]); if (d?.clay?.[id] || d?.ground?.[id]) this.reshape(this.site.by[id], true); }
     // a planetoid that comes later (Myggdrasil's, given on entering): its clay kept until it is adopted (adopt), never dropped
     this.waiting = { clay: Object.fromEntries(Object.entries(d?.clay || {}).filter(([id]) => !this.clays[id])), ground: Object.fromEntries(Object.entries(d?.ground || {}).filter(([id]) => !this.clays[id])) };
     this.plots.load(d?.placed); this.plots.veins(); this.flowAll(); this.waterworks.load(d?.water); this.plants.load(d?.plants); this.races.load(d?.tracks);
   }
-  resetAll() { this.orbit.load(null); this.name = null; this.waiting = { clay: {}, ground: {} }; this.plots.waiting = []; for (const [id, c] of Object.entries(this.clays)) { if (c.dump() || c.painted) { c.restore({ h: new Float32Array(c.h.length), g: new Uint8Array(c.ground.length), painted: 0 }); this.reshape(this.site.by[id], true); } } this.waterworks.load(null); this.plants.load(null); this.races.load(null); this.plots.veins(); }
+  resetAll() { this.orbit.load(null); this.name = null; if (this.howto) this.howto.gifted = false; this.waiting = { clay: {}, ground: {} }; this.plots.waiting = []; for (const [id, c] of Object.entries(this.clays)) { if (c.dump() || c.painted) { c.restore({ h: new Float32Array(c.h.length), g: new Uint8Array(c.ground.length), painted: 0 }); this.reshape(this.site.by[id], true); } } this.waterworks.load(null); this.plants.load(null); this.races.load(null); this.plots.veins(); }
 
   /** The garden's looks, parked for the warm-up (main.js compiles them with the rest). */
   parked() {
@@ -195,6 +197,7 @@ export class Realm {
       this.hopOut();
       this.orbit.sync(); // (the inner ring's moonlets earned since the last visit set on their berths)
       this.sync();
+      this.howto?.gift(); // (the clay's starter slab, once a save: progress/gardenhowto.js GIFT)
       this.awaken.visitors(); // (the wild ones the garden draws come by once a game day: progress/realm.js VISITORS)
       g.events?.emit('garden.enter', { shrine: this.back.shrine, by: 'courier' });
       this.namingDue = !this.name; // (asked once the seam is back up: a page opened under the cover held it black, GARDEN-SWEEP #1)
@@ -215,7 +218,7 @@ export class Realm {
     if (!this.active) return;
     this.leaveDue = false;
     const go = () => {
-      this.press?.leave('garden'); this.bench?.end(false, 'garden'); // (the press view ends with the garden: what waits in the mouth goes back; a dig is put off)
+      this.howto?.close(false, true); this.howto && (this.howto.asked = false); this.press?.leave('garden'); this.bench?.end(false, 'garden'); // (the press view ends with the garden: what waits in the mouth goes back; a dig is put off)
       this.active = false; this.site.show(false); this.awaken.cancel(); // (a waking or a merging is put off, not spent)
       this.rainLook.clear(); // (no drop left hanging for the next visit: CASEBOOK rule 15)
       if (this.tribulation?.active) this.tribulation.cancel(); // (a tribulation is not carried out of the garden: its music and its storm end here, GARDEN-SWEEP #14)
@@ -319,6 +322,7 @@ export class Realm {
     this.plants.tick(raw * 24000 / DAY_MS); this.plants.update(); // (a step of the green each game hour while you are here)
     this.moonflowers(raw);
     g.gardenMycelium?.update(raw); // (a spore bed's ring lit when it comes ready: Dovina's)
+    this.howto?.update(); // (the how-to: due once named, put away under a station: world/garden/howto.js)
     this.bench?.update(raw); // (a set slab's held view counted out: world/garden/bench.js)
     this.orbit.update(raw); // (the moonlets earned while inside set, a large planetoid's own moon turned)
     this.hearMycelium(raw);

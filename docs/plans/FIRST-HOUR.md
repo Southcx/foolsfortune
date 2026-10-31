@@ -65,21 +65,24 @@ Box, no Movement Arts, all seven feelings locked.
 A new STORY save's three goals are the first three undone steps of the path, in its order. A step done gives its place to the next at
 once (`goal.next`, Nook Miles+'s refill). The path ends when it is walked, or once 40 achievements off the path are done (you found
 your own way). Each step says where it is (`FIRST.where`), after the achievement's words in the goals' window and in the "Next goal" line.
-DEBUG never walks it. Every step is an existing Easy achievement or one of the two added for it, so the path is a pointer over the
+DEBUG never walks it. Every step is an existing Easy achievement or one of the five added for it (sr1, sk12; the garden's gw1 .. gw3, SEEDS-SLABS-SCANS.md 6), so the path is a pointer over the
 ledger and pays nothing of its own (the design laws).
 
 | step | achievement | where | what it teaches without saying so |
 |---|---|---|---|
 | 1 | sr1 Catch Your Breath *(new)*: rest at a Shrine | the Bisque Shrine, beside where you wake | the Shrine refills the pool and is where you come back |
-| 2 | fk1 Small Talk | Saggar, in the workshop | the folk and F |
-| 3 | sk12 Lookout *(new)*: awaken to Wonder | the atrium rail's vantage point | feelings are learned by doing what they are |
-| 4 | br1 First Casualties: break 10 pots | the workshop | the pots feed the pool; 15 opens the kick, 25 Stomp |
-| 5 | tc1 First Hinge: open a chest | the hub, through the hole | cubes, the currency |
-| 6 | pl6 Reached the Dunes | the Index | the Index sends you to rooms |
-| 7 | jl1 Pop!: burst a slip jelly | the Weir | creatures pay cubes |
-| 8 | sf1 Board Rider | the Dunes | the Solar Skiff |
-| 9 | an1 First Cast | the Weir | the Sondelass's rod, angling |
-| 10 | cx3 On the Course: a lap of the basement ring | the basement | the course, and the core movement as a skill |
+| 2 | gw1 Through the Arch *(new)*: enter your Spirit Garden | the same Shrine's arch | the garden is yours, entered at any Shrine |
+| 3 | gw2 Seedling *(new)*: let a planetoid's seed go in the ring | the garden's shed, then the open sky | the god hand's GRAB; you build the sky |
+| 4 | gw3 Unearthed *(new)*: carve a spirit slab free | the plate shrine on the Athanor (the clay's starter slab) | every tool is a verb; clean is stronger |
+| 5 | fk1 Small Talk | Saggar, in the workshop | the folk and F |
+| 6 | sk12 Lookout *(new)*: awaken to Wonder | the atrium rail's vantage point | feelings are learned by doing what they are |
+| 7 | br1 First Casualties: break 10 pots | the workshop | the pots feed the pool; 15 opens the kick, 25 Stomp |
+| 8 | tc1 First Hinge: open a chest | the hub, through the hole | cubes, the currency |
+| 9 | pl6 Reached the Dunes | the Index | the Index sends you to rooms |
+| 10 | jl1 Pop!: burst a slip jelly | the Weir | creatures pay cubes |
+| 11 | sf1 Board Rider | the Dunes | the Solar Skiff |
+| 12 | an1 First Cast | the Weir | the Sondelass's rod, angling |
+| 13 | cx3 On the Course: a lap of the basement ring | the basement | the course, and the core movement as a skill |
 
 The goals' window shows each as FIRST STEP. The log says "Your first 3 goals are set" at the start, and "Next goal: ..." at each refill.
 
