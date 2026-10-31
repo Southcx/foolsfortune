@@ -2,7 +2,8 @@
 // THE SCANNER: any real barcode or QR code read into the game (docs/plans/SEEDS-SLABS-SCANS.md 3; Dovina's rules in progress/scans.js:
 // readCode, holdOf, scanResult, SCAN). On the desk the code's digits are typed (`/scan 5012345678900`, or into the scan page's field); on a
 // phone whose browser reads codes (BarcodeDetector: Chrome on Android) the camera reads it, frames never leaving the device; where it
-// cannot (iOS has no BarcodeDetector), the digits are typed there too. The page is opened at the plate shrine (its row) or by `/scan`.
+// cannot (iOS has no BarcodeDetector), a photo is taken with the system camera sheet and read in the page (world/scanphoto.js), and the
+// digits can still be typed. The page is opened at the plate shrine (its row) or by `/scan`.
 // A code is judged by its hash, so the same code gives everyone the same thing: a material into the Pneuka Box (makeMaterial), or a
 // SPIRIT SLAB (world/garden/bench.js: its creature, feeling, class as stars and grain as its seed), SEALED when its kind was never
 // photographed (it opens once one is met). A code read again gives a minute of play in cubes once, then nothing; three new codes a game
@@ -14,11 +15,12 @@
 // Prior art: Monster Rancher (any CD seeds a monster, the same disc the same monster), Skannerz (real UPCs as monsters and items),
 // Barcode Battler, Pokemon Sun and Moon's QR scanner (a few a day), the Shape Detection API's BarcodeDetector.
 //
-//   game.scanner = new Scanner(game)   .commands() (the chat's /scan)   .read(text, how) -> result   .open()   .left() -> new codes left today   .update()
+//   game.scanner = new Scanner(game)   .commands() (the chat's /scan)   .read(text, how) -> result   .open()   .photo(file)   .left() -> new codes left today   .update()
 // ---------------------------------------------------------------------------------------
 import { scanResult, SCAN, ROSTER } from '../progress/scans.js';
 import { makeMaterial } from '../progress/econ/materials.js';
 import { today } from '../core/calendar.js';
+import { readPhoto } from './scanphoto.js';
 
 /** The formats the camera looks for (the shop's barcodes and QR codes), and how often it looks (real seconds). */
 const CAMERA = { formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39', 'qr_code'], every: 0.25 };
@@ -81,12 +83,30 @@ export class Scanner {
       field.addEventListener('keydown', (e) => { if (e.code === 'Enter' || e.code === 'NumpadEnter') { go(); e.preventDefault(); } e.stopPropagation(); });
       const row = (t, sub, run) => { const d = el('div', 'room', `<span class="n">▦</span><span><b>${t}</b><s>${sub}</s></span>`); if (run) d.onclick = run; rows.appendChild(d); return d; };
       row('Read the code typed', `${this.left()} of ${SCAN.perDay} new codes left this game day · a code read again gives a little, once`, go);
+      if (!canSee) row(this.reading ? 'Reading the photo...' : 'Take a photo', 'the system camera: the photo is read on this device and let go', () => { if (!this.reading) this.photoInput().click(); });
       if (canSee) row(this.stream ? 'Stop the camera' : 'Read with the camera', this.stream ? 'hold a barcode or QR code in the view' : 'the camera\'s frames never leave this device', () => { if (this.stream) this.stop(); else this.start(); this.open(); });
       if (this.video) im.appendChild(this.video);
       im.appendChild(field); im.appendChild(rows);
       if (g.input?.device !== 'touch') setTimeout(() => field.focus?.(), 0); // (on a phone the keyboard rises only when the field is tapped: it would cover the page, and the camera's row)
     }, { title: 'THE SCANNER', sub: 'a real barcode or QR code: the same code gives everyone the same thing' });
   }
+  /** The photo route's file input (made once): the system camera sheet on a phone, a file on the desk. */
+  photoInput() {
+    if (this.fileIn) return this.fileIn;
+    const f = (this.fileIn = document.createElement('input')); f.type = 'file'; f.accept = 'image/*'; f.setAttribute('capture', 'environment'); f.style.display = 'none';
+    f.addEventListener('change', () => { const file = f.files?.[0]; f.value = ''; if (file) this.photo(file); });
+    document.body.appendChild(f); return f;
+  }
+  /** A photo read for a code and, found, read as the code (`how` 'photo'); none found, said where it was asked. Counts nothing until read. */
+  async photo(file) {
+    const g = this.game; this.reading = true; this.reopen();
+    let text = null; try { text = await readPhoto(file); } catch { text = null; }
+    this.reading = false;
+    if (text) this.read(text, 'photo'); else g.log?.say('warn', 'No code found in that photo: try it closer and flatter, or type its digits.', { key: 'scan.photo', throttle: 1 });
+    this.reopen();
+  }
+  /** The scan page drawn again if it is still the one open. */
+  reopen() { const menu = this.game.indexMenu || this.game.course?.menu; if (menu?.open && menu.page?.name === 'scan') this.open(); }
   /** The camera on, looking for a code a few times a real second. */
   async start() {
     if (this.stream) return;
