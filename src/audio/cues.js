@@ -293,6 +293,7 @@ const RULES = {
   'well.stage.clear': (s, e, g) => { if (e.by !== 'courier') return; g.music?.duck?.(2, 0.4); s.wellClear?.(e.rank); }, // (the pit band's sting by rank)
   'well.dummy.ko': (s, e) => { if (e.by === 'courier') s.wellKo?.(); }, // (the house roaring)
   'well.dummy.trophy': (s, e) => { if (e.by === 'courier') s.wellTrophy?.(); }, // (a home run)
+  'well.target': (s, e) => s.wellTarget?.(e.kind, e.beat, e.id), // (a training target's body: audio/welltargets.js)
   'well.pit.death': (s) => s.wellPit?.(), // (the quick retry: tiny)
   'well.flood.fill': (s) => s.wellFlood?.(), // (the basin full)
   // a quest's jingle lands with the quest splash's word (Calissa's ui/questsplash.js: EVENT! / QUEST COMPLETE!, sent as it slams in, which
