@@ -4,7 +4,7 @@
 // STEP), the achievement's name and words, its tier, a bar filled to `frac` with `cur` of `goal` beside it, and a gold check when done.
 // It reads what is and says nothing of what happened (the log does: tracking/goals.js). Summoned on `/goals` (goals.ask) for a while;
 // shown a beat when a game day lays them (goals.set), when the first path lays its next step (goal.next) and when one is done (goal.done: its row's check stamped, the others dimmed). Hidden
-// at sea while the rail readout stands in the same corner.
+// at sea while the rail readout stands in the same corner. It shares the left edge with the quest journal (`leftColumn`: one under the other).
 //
 //   MATTER     the Brine frame's structure and line (ui/brineframe.js) dressed in Clay: unglazed earthenware, its grog speckled, the
 //              window colour fired faintly into it, and a cord-marked band under the header (Jōmon ware's rope impressions) in place of
@@ -15,7 +15,7 @@
 // edge, shown a beat as it moves), Animal Crossing's Nook Miles+ (three a day, one out of the way), Jōmon cord-marked ware.
 //
 //   new GoalsWindow(game)   .show(seconds)   .hide()   .draw()      (game.goals.list(): [{ id, slot, first, name, desc, tier, cur, goal, frac, done }])
-//   clayDress(selector) -> CSS   (the Clay dress for any Brine frame)
+//   clayDress(selector) -> CSS   (the Clay dress for any Brine frame)   leftColumn(root, on, fit?)   (the left edge's windows stacked)
 // ---------------------------------------------------------------------------------------
 import { brineFrame, dot, GOLD, SALT, INK, COUNT_FACE } from './brineframe.js';
 import { FONT } from './theme.js';
@@ -37,7 +37,7 @@ ${sel} .bf-tab{background:linear-gradient(180deg,#5c3424,#36190f)}`;
 
 const CSS = `
 .gw{position:fixed;left:calc(10*var(--d));top:calc(40*var(--d));z-index:3;width:calc(150*var(--d));pointer-events:none;
-  opacity:0;transform:translateX(calc(-6*var(--d)));transition:opacity ${GOALS_LOOK.fade}s,transform ${GOALS_LOOK.fade}s}
+  opacity:0;transform:translateX(calc(-6*var(--d)));transition:opacity ${GOALS_LOOK.fade}s,transform ${GOALS_LOOK.fade}s,top ${GOALS_LOOK.fade}s}
 .gw.on{opacity:1;transform:none}
 ${clayDress('.gw.clay')}
 .gw-row{display:grid;grid-template-columns:1fr auto;column-gap:calc(4*var(--d));row-gap:var(--d);padding:calc(3*var(--d)) 0;transition:opacity .3s}
@@ -62,6 +62,20 @@ ${clayDress('.gw.clay')}
 @keyframes gw-stamp{0%{transform:scale(2.4) rotate(-12deg);opacity:0}60%{opacity:1}100%{transform:none}}
 .gw-none{font-size:calc(9*var(--d));opacity:.7;padding:calc(3*var(--d)) 0}
 `;
+/** The left edge's System windows (this one, the quest journal: ui/questjournal.js) stand one under another in the order they came on,
+ *  so neither covers the other; `fit(top)` lets a window size itself to what is left under its top (CSS px). */
+const COLUMN = [];
+export function leftColumn(root, on, fit = null) {
+  const i = COLUMN.findIndex((c) => c.root === root);
+  if (i >= 0) COLUMN.splice(i, 1);
+  if (on) COLUMN.push({ root, fit });
+  if (typeof requestAnimationFrame !== 'function') return;
+  requestAnimationFrame(() => {
+    const d = dot(); let top = 40 * d;
+    for (const c of COLUMN) { c.root.style.top = `${top}px`; c.fit?.(top); top += c.root.offsetHeight + 20 * d; }
+  });
+}
+
 let styled = false;
 function style() {
   if (styled || typeof document === 'undefined') return;
@@ -117,8 +131,9 @@ export class GoalsWindow {
     if (this.game?.railReadout?.on) return;
     this.draw(hit); if (!this.root) return;
     requestAnimationFrame(() => this.root?.classList.add('on'));
+    leftColumn(this.root, true);
     clearTimeout(this.timer); this.timer = setTimeout(() => this.hide(), seconds * 1000);
   }
 
-  hide() { clearTimeout(this.timer); this.root?.classList.remove('on', 'beat'); }
+  hide() { clearTimeout(this.timer); if (!this.root) return; this.root.classList.remove('on', 'beat'); leftColumn(this.root, false); }
 }

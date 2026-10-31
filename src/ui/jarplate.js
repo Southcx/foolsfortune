@@ -91,7 +91,7 @@ export class JarPlate {
   /** Each frame: shown while the god hand is taken (out of a cinematic and the goals window's way), its numbers written when they change, the jar redrawn at a few frames a real second. */
   update(raw = 1 / 60) {
     const g = this.game, H = g.god, B = typeof document !== 'undefined' ? document.body.classList : null;
-    const want = !!(H?.active && H.state !== 'off' && H.readout) && !g.title?.active && !B?.contains('cine') && !g.goalsWindow?.root?.classList.contains('on');
+    const want = !!(H?.active && H.state !== 'off' && H.readout) && !g.title?.active && !B?.contains('cine') && !g.goalsWindow?.root?.classList.contains('on') && !g.questJournal?.on;
     if (want && !this.root) this.build();
     if (want !== this.on && this.root) { this.on = want; this.root.classList.toggle('on', want); if (want) this.frame.layout(); }
     if (!this.on) return;
