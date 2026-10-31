@@ -492,3 +492,13 @@ Ranked next: bundles that restore the Workshop (Stardew, Dark Cloud 2's Georama)
 per module (Hades' heat, Balatro's stakes), clue fog and power gems in the duel, parts from beasts and square completion at sea.
 Built after: clue fog (PUZZLE-DUELS.md 19.3), the forge (a beast's part from its carves, OPEN-SEA.md 15.4), a square completed
 (OPEN-SEA.md 15.5).
+
+## 28. The endgame first, then every curve (South, 2026-10-31; docs/plans/ENDGAME.md, a plan)
+
+STORY is a test bench for now; the curve is set backwards from the top. The summit is every track at its cap, and the domains' The World
+is the long pole (2,100 hours at middling play today, a placeholder awaiting South's ruling). The top opens three games rather than
+ending one: Wells deeper and stranger, seeded by the game day; floors you author and share (Mario Maker's); and real co-op. The Wells are
+the genre engine: a run is a board of spaces moved across on your own dice (Mario Party's board, Fool's Fortune's title), each space a
+genre floor (a sidescroller first) that modifies the camera and the play space, never the core movement (NieR: Automata's genre shifts,
+Undertale's, WarioWare's). Next: a DEBUG preset `top` so the end is playable now.
+

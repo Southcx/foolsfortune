@@ -659,6 +659,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 - **the lend panel** (`game.lend`, `src/progress/lend.js`) — DEBUG's switches, one a category (arts, knacks, moves, Shrines, Figment telegraphs, ...): a lent
   category answers yes at its gates without the ledger; never counted, never outside DEBUG. The all-arts switch (`system.lendAll`) is its
   arts row. Drawn by `src/ui/lendpanel.js` (the Codex's LENDS, QAIS's Lends); a lent art wears the hollow mark. *Not:* "Lab mode".
+- **the summit / the Well's board / a genre floor** (plain names, a plan, not built; `docs/plans/ENDGAME.md`) — every track at its cap (the domains' The World, Creative mode, the garden grown) / a Well run as a board of spaces moved across on your own dice, a floor a space, the FOE at its end / one floor module of one genre (a sidescroller, a bullet hell, a rhythm space ...) under a fixed contract: its avatar, a frame that modifies the camera and the play space never the core movement, its lent verbs, its win, loss and haul. *Not:* a Well's floor today (the Dunemaw's), a table (Raku's), the duel's board.
 - **a preset** (a plan, not built; `docs/plans/DEBUG-MODE.md`) — a moment of play as data (ledger counts, kit, cubes, lends, a place), loaded into the
   DEBUG save to start a test there. *Not:* a debug chest (items only), a replay.
 - **the ledger** (`src/progress/stats.js`) — every count the game keeps. An **achievement** (`src/progress/achievements.js`) is a predicate over
