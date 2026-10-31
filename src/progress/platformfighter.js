@@ -19,6 +19,7 @@
 //   SHIELD   shieldstun(damage)   shieldDamage(damage)   DODGE   LANDING   lCancel(lag)   TECH   GRAB   grabHold(percent)   LEDGE
 //   STALE   stale(damage, queue, move)   SMASH   charged(damage, frames)   MOVES { id: { name, from, damage, angle, base, growth,
 //   startup, active: [a, b], total, landing?, autoCancel?, charge?, hits?, special? } }   koPercent(move, weight, distance)
+//   SNAP   fillKeys(move, keys) -> the keys with hold, snap and active filled from the frame data (KEY-POSES.md 6)
 // ---------------------------------------------------------------------------------------
 
 /** A frame: Melee counts in frames at 60 a real second; everything here does too. */
@@ -146,4 +147,22 @@ export function koPercent(move, weight, distance) {
     if ((v * v) / (2 * LAUNCH.decay) >= distance) return p;
   }
   return Infinity;
+}
+
+/** The key poses' timing from the frame data (KEY-POSES.md 6, 7): a fighter's key names only its pose; its hold, snap and active come
+ *  from MOVES, so a contact sheet shows the rule's own timing. Keys named 'lead', 'strike', 'follow' take frames 1..startup-1, the
+ *  active frames and the rest to `total`; each span is its snap (into the pose, at most SNAP's) and then its hold. A key with any other
+ *  name keeps what it was given. For `registerKeys('fighter', KEYS, fillKeys)` (courier/anim/keyposes.js): cached, the same array a call. */
+export const SNAP = { lead: 2, strike: 1, follow: 3 };
+const _filled = new WeakMap();
+export function fillKeys(move, keys) {
+  const m = MOVES[move]; if (!m || !Array.isArray(keys)) return keys;
+  const hit = _filled.get(keys); if (hit) return hit;
+  const [a0, a1] = m.active, span = { lead: Math.max(0, m.startup - 1), strike: a1 - a0 + 1, follow: Math.max(0, m.total - a1) };
+  const out = keys.map((k) => {
+    const n = span[k.pose]; if (n == null) return k;
+    const snap = Math.min(SNAP[k.pose], n);
+    return { ...k, snap, hold: n - snap, active: k.pose === 'strike' };
+  });
+  _filled.set(keys, out); return out;
 }
