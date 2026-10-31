@@ -58,7 +58,7 @@ export function buildWings(well, S) {
   const doors = { hub: { ...stageDoor(S, WINGS.hub, 0, 'THE HUB', 'back out'), x: WINGS.hub, to: 'hub' } };
   for (const st of STAGES.filter((s) => s.wave === 1)) doors[st.id] = { ...stageDoor(S, WINGS.doors[st.id], 0, st.family.toUpperCase(), null), x: WINGS.doors[st.id], to: st.id };
   const sm = new StrawmanModel(); sm.group.position.copy(S.at(WINGS.strawman, 0, -1.1)); S.add(sm.group); // (centre stage: never a creature, never counted)
-  S.label("STRAWMAN'S WELL", WINGS.strawman, 6.4, { dz: -BACK + 0.13, width: 4.6, sub: 'W at a door' });
+  S.label('F AT A DOOR', WINGS.strawman, 3.15, { dz: -BACK + 0.13, width: 2.2 }); // (on the doors' row: the room's name is the place plate's, under the Sight; a sign up at 6.4 stood behind the Sight, Petra's shots, v360)
   return { doors, strawman: sm };
 }
 
