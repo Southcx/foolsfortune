@@ -46,6 +46,16 @@ export const VERB = {
   jarRoll: { name: 'Jar roll', from: 'Metroid\'s morph ball' }, jarThrow: { name: 'Throw the Jar', from: 'Kirby: Canvas Curse' },
   lanes: { name: 'Lane hop', from: 'Tomba!, Klonoa' }, chase: { name: 'Chase', from: 'Rayman' }, autoscroll: { name: 'Auto-scroll', from: 'Super Mario Bros 3' },
   beat: { name: 'Beat blocks', from: 'Super Mario 3D World' },
+  wallFace: { name: 'Into the wall', from: 'Zelda: A Link Between Worlds' }, seeded: { name: 'The day\'s maze', from: 'Spelunky' },
+  // the platform fighter's kit (FIGHTER.md; South, 2026-10-31: "adding all the other SSBM-like and platform fighter mechanics")
+  shield: { name: 'Shield', from: 'Super Smash Bros. Melee' }, spotDodge: { name: 'Spot dodge', from: 'Melee' }, roll: { name: 'Roll', from: 'Melee' },
+  airDodge: { name: 'Air dodge', from: 'Melee' }, wavedash: { name: 'Wavedash', from: 'Melee' }, shortHop: { name: 'Short hop', from: 'Melee' },
+  fastFall: { name: 'Fast fall', from: 'Melee' }, lCancel: { name: 'L-cancel', from: 'Melee' }, grab: { name: 'Grab', from: 'Melee' },
+  pummel: { name: 'Pummel', from: 'Melee' }, throw: { name: 'Throw', from: 'Melee' }, jab: { name: 'Jab', from: 'Melee' }, tilt: { name: 'Tilt', from: 'Melee' },
+  smash: { name: 'Charged smash', from: 'Melee' }, aerial: { name: 'Aerial', from: 'Melee' }, special: { name: 'Special', from: 'Melee' },
+  ledgeGrab: { name: 'Ledge hang', from: 'Melee' }, ledgeGetup: { name: 'Ledge getup', from: 'Melee' }, tech: { name: 'Tech', from: 'Melee' },
+  di: { name: 'Survival DI', from: 'Melee' }, crouchCancel: { name: 'Crouch cancel', from: 'Melee' }, powerShield: { name: 'Powershield', from: 'Melee' },
+  shieldBreak: { name: 'Shield break', from: 'Melee' }, edgeguard: { name: 'Edgeguard', from: 'Melee' }, stock: { name: 'Take a stock', from: 'Melee' },
 };
 
 /** The stages, in the wings' order, and the wave each is built in (the plan's section 4). `par` real seconds for a rank. */
@@ -65,6 +75,9 @@ export const STAGES = [
   { id: 'script', wave: 3, family: 'The Script', par: 150, verbs: ['rules', 'drawLine'] },
   { id: 'depth', wave: 3, family: 'The Depth', par: 60, verbs: ['lanes'] },
   { id: 'chase', wave: 3, family: 'The Chase', par: 90, verbs: ['chase', 'autoscroll', 'beat'] },
+  { id: 'wall', wave: 3, family: 'The Wall', par: 90, verbs: ['wallFace'] },
+  { id: 'maze', wave: 3, family: 'The Maze', par: 180, verbs: ['seeded'] },
+  { id: 'arena', wave: 4, family: 'The Arena', par: 180, verbs: ['shield', 'spotDodge', 'roll', 'airDodge', 'wavedash', 'shortHop', 'fastFall', 'lCancel', 'grab', 'pummel', 'throw', 'jab', 'tilt', 'smash', 'aerial', 'special', 'ledgeGrab', 'ledgeGetup', 'tech', 'di', 'crouchCancel', 'powerShield', 'shieldBreak', 'edgeguard', 'stock'] },
 ];
 export const stageOf = (id) => STAGES.find((s) => s.id === id) || null;
 

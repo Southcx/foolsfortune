@@ -45,8 +45,8 @@ export const ZONE_TESTS = [
   // Raku's bazaar (world/bazaar/bazaar.js BAZAAR: x 0, y 200, z -3000): the casino's hall under its dome, indoors (no sky, no weather)
   // the Sandbox (world/sandbox/sandbox.js, progress/sandbox.js SANDBOX: x 3080, y 200, z -3000): the hand's physics room, indoors; BEFORE the Touchstone's test, whose 300 m box holds it
   { id: 'sandbox', test: (p) => Math.abs(p.x - 3080) < 60 && p.z > -3060 && p.z < -2940 && p.y > 150 && p.y < 450 },
-  // Strawman's Well (world/strawmanwell/layout.js AT, ZONE: x 3400, y 200, z -3000 and its lanes south to -3280): the 2D platformer's test bench, indoors
-  { id: 'strawmanwell', test: (p) => p.x > 3350 && p.x < 3700 && p.z > -3310 && p.z < -2960 && p.y > 150 && p.y < 450 },
+  // Strawman's Well (world/strawmanwell/layout.js AT, ZONE: x 3400, y 200, z -3000 and its 18 lanes south to -3720): the 2D platformer's test bench, indoors
+  { id: 'strawmanwell', test: (p) => p.x > 3350 && p.x < 3700 && p.z > -3750 && p.z < -2960 && p.y > 150 && p.y < 450 },
   // the Touchstone (world/touchstone/touchstone.js TOUCHSTONE: x 3000, y 200, z -3000): the Assay's dark room, indoors
   { id: 'touchstone', test: (p) => Math.abs(p.x - 3000) < 150 && p.z > -3150 && p.z < -2850 && p.y > 150 && p.y < 450 }, // (Petra's place, 2026-10-29)
   { id: 'bazaar', test: (p) => Math.abs(p.x) < 200 && p.z > -3200 && p.z < -2800 && p.y > 150 && p.y < 450 }, // (Petra's place, 2026-10-15)

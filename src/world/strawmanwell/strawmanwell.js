@@ -33,6 +33,7 @@ import { StrawDummies } from './dummy.js';
 import { FloodStage } from './flood.js';
 import { buildWings, buildRun, buildClimb, buildStomp, clearClimb, stageDoor } from './stages.js';
 import { buildBrawl, buildMachine, BRAWL } from './stagesmachine.js';
+import { MODS, MOD } from './stagemods.js';
 
 /** The theatre's air: a warm haze under the stage lights. */
 export const AIR = { fog: 0x3a2618, density: 0.006 };
@@ -42,8 +43,8 @@ export class StrawmansWell {
   constructor(game) {
     this.game = game; this.built = false; this.frame = new WellFrame(game);
     this.mech = new WellMechanics(this); this.machine = new WellMachine(this); this.dummies = new StrawDummies(this); this.flood = new FloodStage(this);
-    this.frame.pre((dt) => { if (this.built) { this.mech.pre(dt); this.flood.pre(dt); } });
-    this.frame.post((dt) => { if (this.built) this.mech.post(dt); });
+    this.frame.pre((dt) => { if (this.built) { this.mech.pre(dt); this.flood.pre(dt); for (const M of MODS) M.pre?.(this, dt); } });
+    this.frame.post((dt) => { if (this.built) { this.mech.post(dt); for (const M of MODS) M.post?.(this, dt); } });
     this.stage = null; this.stages = {}; this.seen = new Set(); this.offs = []; this.retryT = 0;
   }
 
@@ -57,6 +58,7 @@ export class StrawmansWell {
     this.wings = buildWings(this, K.lane(LANES.wings));
     for (const [id, fn] of Object.entries(BUILDERS)) this.stages[id] = fn(this, K.lane(LANES[id]));
     this.stages.flood = this.flood.build(K.lane(LANES.flood));
+    for (const M of MODS) this.stages[M.id] = M.build(this, K.lane(LANES[M.id])); // (waves 2 to 4: a module a stage, stagemods.js)
     for (const [id, S] of Object.entries(this.stages)) S.exit = stageDoor(K.lane(LANES[id]), S.door[0], S.door[1], 'THE WINGS', 'W');
     for (const x of BRAWL.spawns) this.dummies.spawn(new THREE.Vector3(AT.x + x, AT.y, LANES.brawl.z), this.stages.brawl.arena);
     K.finish();
@@ -68,6 +70,7 @@ export class StrawmansWell {
     if (!this.built) return;
     this.frame.remove(); this.listen(false);
     this.dummies.clear(); this.machine.clear(); this.mech.clear(); this.flood.clear(); clearClimb(this);
+    for (const M of MODS) M.clear?.(this);
     this.wings?.strawman?.dispose?.();
     this.kit.dispose();
     this.room = null; this.kit = null; this.wings = null; this.stages = {}; this.stage = null; this.built = false;
@@ -76,7 +79,7 @@ export class StrawmansWell {
   /** The wings' plates over the doors: each stage's best stars from the ledger (well.stage.stars.<id>), drawn again on each return. */
   plates() {
     const g = this.game, S = this.kit.lane(LANES.wings);
-    for (const st of STAGES.filter((s) => s.wave === 1)) {
+    for (const st of STAGES) {
       const D = this.wings.doors[st.id]; if (!D) continue;
       const n = Math.max(0, Math.min(3, g.ledger?.get?.(`well.stage.stars.${st.id}`) || 0)), stars = '★'.repeat(n) + '☆'.repeat(3 - n);
       if (D.stars === stars) continue;
@@ -108,12 +111,14 @@ export class StrawmansWell {
   }
   enterLane(id) {
     const g = this.game, L = laneOf(id);
+    if (this.stage?.id && this.stage.id !== id) MOD[this.stage.id]?.leave?.(this);
     this.frame.apply({ z: L.z, x0: AT.x - 2, x1: AT.x + L.len + 2, band: [AT.y + L.band[0], AT.y + L.band[1]], face: 1 });
     this.kit?.show(id); this.listen(true);
     if (id === 'wings') { this.stage = { id: 'wings' }; if (this.kit) this.plates(); return; }
     this.stage = { id, t0: g.events?.time ?? 0, hits: 0, string: 0, cleared: false, check: 0, kos: 0 };
     if (id === 'brawl') { const F = this.stages.brawl.flag; F.post.visible = F.flag.visible = false; }
     g.events?.emit('well.stage.enter', { stage: id, by: 'courier' });
+    MOD[id]?.enter?.(this);
   }
 
   /** The Courier's own moves heard while in the Well (the bench's checklist: well.verb), and nothing kept once out. */
@@ -155,6 +160,7 @@ export class StrawmansWell {
     else {
       const St = this.stages[S.id]; if (St) out.push({ ref: 'wings', pos: new THREE.Vector3(AT.x + St.door[0], AT.y + St.door[1] + 2.9, laneOf(S.id).z - 1.6), x: AT.x + St.door[0], y: AT.y + St.door[1] });
       if (S.id === 'flood') for (const L of this.flood.spots) out.push({ ref: L.ref, pos: L.pos, x: L.pos.x, y: AT.y });
+      const M = MOD[S.id]; if (M?.spots) out.push(...M.spots(this));
     }
     return out.filter((o) => Math.abs(P.pos.x - o.x) < 1.1 && (o.y == null || Math.abs(P.pos.y - o.y) < 1.6));
   }
@@ -169,6 +175,7 @@ export class StrawmansWell {
     if (ref === 'hub') return this.leave();
     if (ref === 'wings') return this.go('wings');
     if (laneOf(ref)) return this.go(ref);
+    const M = MOD[this.stage?.id]; if (M?.use?.(this, ref)) return;
     this.flood.use(ref);
   }
 
@@ -185,19 +192,22 @@ export class StrawmansWell {
     if (it?.id === 'strawmanwell' && P.peekLatch?.('KeyF')) { P.latch('KeyF'); this.use(it.ref); }
     if (inp.wasPressed('KeyW') && !g.god?.controlling) { const d = this.spots().find((o) => o.ref === 'hub' || o.ref === 'wings' || laneOf(o.ref)); if (d) this.use(d.ref); }
     this.flood.hold(it?.id === 'strawmanwell' ? it.ref : null, inp.isDown('KeyF'));
+    MOD[S?.id]?.hold?.(this, it?.id === 'strawmanwell' ? it.ref : null, inp.isDown('KeyF'));
     if (S && S.id !== 'wings') this.watch(S, dt);
     this.mech.update(dt); this.machine.update(dt); this.dummies.update(dt); if (this.flood.grid) this.flood.update(dt);
+    for (const M of MODS) M.update?.(this, dt);
     this.wings?.strawman?.update?.(dt);
     this.frame.camera(g.rawDt ?? dt);
+    MOD[S?.id]?.camera?.(this, g.rawDt ?? dt); // (a stage's own camera over the frame's: the Chase's scroll, the Flip's roll)
   }
 
   /** In a stage: the goal, the checkpoints, a fall's retry, and the verbs read from the body. */
   watch(S, dt) {
     const g = this.game, P = g.player, St = this.stages[S.id], ax = P.pos.x - AT.x, ay = P.pos.y - AT.y;
     if (!St) return;
-    if (!S.cleared && Math.abs(ax - St.goal[0]) < 0.9 && Math.abs(ay - St.goal[1]) < 2.4 && (S.id !== 'brawl' || S.kos >= BRAWL.kos)) this.clear();
+    if (!S.cleared && St.goal && Math.abs(ax - St.goal[0]) < 0.9 && Math.abs(ay - St.goal[1]) < 2.4 && (S.id !== 'brawl' || S.kos >= BRAWL.kos) && (!St.ready || St.ready())) this.clear();
     if (P.grounded) St.checks.forEach(([x, y], i) => { if (i > S.check && ax >= x - 0.5 && Math.abs(ay - y) < 1.5) S.check = i; });
-    if (ay < -6 && this.retryT <= 0) this.retryT = PIT.retry;
+    if (ay < -6 && this.retryT <= 0 && !St.noRetry) { this.retryT = PIT.retry; g.events?.emit('well.pit.death', { stage: S.id, cause: 'fall', by: 'courier' }); }
     if (this.retryT > 0 && (this.retryT -= g.rawDt ?? dt) <= 0) {
       const [x, y] = St.checks[S.check] || St.checks[0];
       P.moveTo(new THREE.Vector3(AT.x + x, AT.y + y + 0.05, laneOf(S.id).z), new THREE.Vector3()); this.frame.face = 1; this.retryT = 0;
