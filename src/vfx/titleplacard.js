@@ -20,8 +20,9 @@
 // (5.4) into the English title cut rough in Cinzel and gilded (arriving 6.5 to 7.4), settled (8.0), the System's hanko burned in the
 // window colour (8.4), held, the exit up into the light (11.0). A title not in TITLES skips the writing and the comb: the cut sweeps in
 // on its own. Any key dismisses it once settled (to the exit). One at a time: the rest wait in a queue, and nothing starts on the title
-// screen, in a cinematic or in a live moment (`game.liveMoment()`: one up then leaves at once, and comes again if unsettled). It never
-// pauses play and adds no log line (the log already says the title: tracking.js).
+// screen, in a cinematic, while the quest splash stands (ui/questsplash.js: the two pop-ups never at once) or in a live moment
+// (`game.liveMoment()`: one up then leaves at once, and comes again if unsettled). It never pauses play and adds no log line (the log
+// already says the title: tracking.js).
 //
 // Events, for Wanda's sound: `placard.beat { k, tier, title, id }` (id the achievement's), k one of descend, contact, write, comb,
 // settle, seal, exit (write and comb only when written; a beat a dismissal skips is not sent; one re-queued beats again from descend).
@@ -698,7 +699,7 @@ export class TitlePlacard {
   }
 
   update(dt, slot) {
-    const g = this.game, B = document.body.classList, busy = !!(g.title?.active || B.contains('cine') || g.liveMoment?.()); // (a race, a trial, a crossing, a duel, a FOE under way: core/livemoment.js; the owner, v296: never mid-race)
+    const g = this.game, B = document.body.classList, busy = !!(g.title?.active || B.contains('cine') || g.liveMoment?.() || g.questSplash?.active); // (a race, a trial, a crossing, a duel, a FOE under way: core/livemoment.js; the owner, v296: never mid-race)
     if (!this.active && !this.building && !this.pending) { if (!this.queue.length || busy) { this.frame.userData.overlayHidden = true; return; } this.begin(this.queue.shift()); }
     if (this.building) {
       const b = this.building; this.frame.userData.overlayHidden = true;

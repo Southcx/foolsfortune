@@ -2,8 +2,9 @@
 // THE QUEST JOURNAL: the quests (Dovina's progress/quests.js, game.quests: docs/plans/QUESTS.md) as a System window at the view's left
 // edge, the goals window's sibling (ui/goalswindow.js), in Anagami's dress (OVERLAY.md 15.4: Clay). It reads what is and says nothing of
 // what happened (the log does: tracking/quests.js). Summoned on `/quests` (quests.ask) for a while; shown a beat when a quest begins
-// (quest.start) and when one is complete (quest.done), that quest lit and the others dimmed; and on the recap (recap.show) with what you
-// did last time above the quests, the goals window standing under it for what is still open today.
+// and when one is complete, that quest lit and the others dimmed, handed over by the quest splash once it has had its say
+// (ui/questsplash.js: it waits out a live moment, so the beat does too); and on the recap (recap.show) with what you did last time above
+// the quests, the goals window standing beside it for what is still open today.
 //
 //   A QUEST    its state in RuneScape's three colours, each with its own shape and word (CLARITY.md 7: never colour alone): NOT STARTED
 //              an open ring in iron red, IN PROGRESS a ring half filled in yellow Seto, COMPLETE a full disc in Oribe green with a check
@@ -117,8 +118,6 @@ export class QuestJournal {
     this.game = game; this.root = null; this.on = false; this.timer = 0; this.shownPts = null;
     const ev = game?.events; if (!ev?.on) return;
     ev.on('quests.ask', (e) => this.show(L.ask, { quests: e?.quests, points: e?.points }));
-    ev.on('quest.start', (e) => this.show(L.start, { lit: e?.id, kind: 'start' }));
-    ev.on('quest.done', (e) => this.show(L.done, { lit: e?.id, kind: 'done' }));
     ev.on('recap.show', (e) => { if (e?.last?.length || e?.open?.length) this.show(L.recap, { recap: e }); });
   }
 
