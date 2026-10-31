@@ -107,8 +107,12 @@ exist. A Well space that plays it for two real minutes proves the contract.
 
 ## 4. How the curve gets set from here
 
-1. **Make the top playable now.** Add a DEBUG preset `top` (DEBUG-MODE.md 5: presets are data, mine): every track at its cap in
-   section 1, written as ledger counts. South plays the end before the beginning, as GODHAND.md 11 asked of the hand.
+1. **Make the top playable now: built as the lend panel's THE SUMMIT row** (South, 2026-10-31: "build the 'top' as an extension of
+   the 'lent' system"). Where every other lend answers yes at a gate, the Summit answers the cap at a level read: every domain at 99
+   (`game.psyche.level`, `widen`), every attribute at rank 10 (`alchemy.rank`; a firing still writes the kept rank), the palm die a d20.
+   The ledger is never written, so switching it off puts every number back where play left it. It is off on a new DEBUG save, so the
+   curve is still felt; the other caps of section 1 (the garden's Firing, every seed, every achievement) are the panel's other rows.
+   Still to fold in: the garden's seeds grown to large, which is the ring's runtime (Petra's).
 2. **Rule the summit's distance.** Decide the hours for The World (section 1's ruling).
 3. **Work back.** Each track's ramp follows the god powers' `t^1.6` (most of the gain in the last third, as OSRS's) unless it has
    reason not to. STORY's first 40 hours then become a curve with a known end.
