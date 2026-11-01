@@ -232,17 +232,10 @@ export function bootFrame(game, made) {
     if (!godOn && !aboard) { game.lock.update(game.rawDt); techs.tick(dt); game.parries.update(dt); } // (the lock's camera runs in real seconds: a hit-stop does not stall it)
     game.rail?.update(dt); // (the crossing: before the camera, which rides its shot)
     game.opensea?.update(dt); // (the free helm: before the camera, which rides its shot)
-    game.seaLooks?.update(dt); // (dresses the islets once, the first frame game.opensea.props exists)
-    game.puzzleLooks?.update(dt); // (dresses the islets' puzzles once they exist, and plays a dig)
-    game.bottleLooks?.update(dt); game.salvageLooks?.update(dt); game.shipPartWear?.update(); // (the drift bottles bobbing and read, the wrecks and the haul, the parts worn)
     game.seaFight?.update(dt); // (the ship's gun, the serpent's mind and body, the hull)
-    game.seaHull?.update(game.rawDt);
-    game.jarPlate?.update(game.rawDt ?? dt); // (the Pneuka Jar's plate while the god hand is taken: ui/jarplate.js)
     game.realm?.update(dt); // (the garden: the Jar, the hand and its own camera)
-    game.guestJars?.update(game.rawDt);
-    game.launchLotuses?.update(game.rawDt); game.facilityLooks?.update(game.rawDt); game.seedLooks?.update(game.rawDt); // (the garden's lotuses opening and flinging, the gate's veil, the seeds' looks and the pour: vfx/garden/)
+    game.systems.run('looks', dt, game.rawDt ?? dt); // (what joined the looks where it was built: the open sea's dressers, the garden's, the Jar's plate; core/systems.js)
     game.scanner?.update(game.rawDt); // (the scanner's camera looking for a code while its page is open: world/scanner.js)
-    game.slabLook?.update(game.rawDt); game.rareSpirits?.update(game.rawDt); game.benchLook?.update(); game.howtoRing?.update(); // (carving a slab drawn over the bench, a rare spirit's inversion, the how-to's ring: vfx/garden/; the bench's window: ui/benchlook.js)
     env.water.update(dt);
     game.paintTrack.update(dt); game.paintmap.update(dt, camera.position.x, camera.position.z); game.stains?.update(dt); game.stains?.tick(game.rawDt); game.loadGauge?.update(game.rawDt);
     env.rigging.update(dt);
