@@ -66,7 +66,8 @@ export class GodJar {
   hit(amount, from, kind = 'raid') {
     const V = this;
     if (!V.alive || this.M.state !== 'on') return;
-    const b = V.jarCracks.strike(amount);
+    const b = V.jarCracks.strike(amount, { pool: this.M.game.lachryma }); // (the Courier's pool is the Jar's shield: one Vessoul, one pool)
+    if (!(amount > 0) || (b.shield > 0 && !b.region)) { this.M.game.events?.emit('jar.shield', { kind, amount, shield: +b.shield.toFixed(1) }); return; }
     V.flash = 1;
     this.M.cam.shake = Math.max(this.M.cam.shake, 0.5);
     this.addCrack(from, amount);

@@ -171,7 +171,7 @@ export const DEFAULTS = {
     range: 36, dist: 17, minDist: 8, maxDist: 46, pitchDeg: 36, fov: 24, clipAbove: 3.9,
     hoverH: 1.7, grabSpeed: 14, throwBoost: 1.15, throwMax: 30, panSpeed: 1.0, edgeScroll: 16,
     castHeight: 7, castCooldown: 0.35, pushRadius: 5.5, pushForce: 11,
-    regenEvery: 9, regenMax: 6, raidDamage: 7, ballDamage: 14, blastDamage: 22, thrownDamage: 4, reforge: 7,
+    regenEvery: 9, regenMax: 6, raidDamage: 20, ballDamage: 14, blastDamage: 22, thrownDamage: 4, reforge: 7,
   },
   shells: {
     start: 4,
