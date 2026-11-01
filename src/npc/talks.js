@@ -31,6 +31,10 @@ const glows = (g) => (g.alchemy?.colour?.s ?? 0) >= 0.3;
 // the folk notice (Espada's, 2026-10-21): an `again` line for a milestone, shown while its count sits in a band, as Saggar's pots are
 const known = (g) => (g.ledger?.under?.('feeling.known.') || []).filter(([, v]) => v > 0).length; // (the seven feelings, awakened to)
 const band = (k, lo, hi = Infinity) => (g) => L(g, k) >= lo && L(g, k) < hi;
+// a family of counts summed (Strawman's Well's stages and targets, each kept under its own id)
+const sum = (g, pre) => (g.ledger?.under?.(pre) || []).reduce((n, [, v]) => n + (v || 0), 0);
+const sumBand = (pre, lo, hi = Infinity) => (g) => sum(g, pre) >= lo && sum(g, pre) < hi;
+const understudy = (g) => L(g, 'quest.done.understudy') > 0; // (Strawman's quest done: QUESTS.md; Pip's lines follow it)
 
 // the next step (Espada's, for FIRST-HOUR.md 5): the first goal still undone on the list (game.goals), named by whoever stands nearer
 // it: Saggar the workshop's steps, Pip the basement's and the Dunes'; each sends you to the other for the rest
@@ -63,7 +67,7 @@ export const TALKS = {
         { mood: 'calm', text: "I'm Saggar. I keep the kiln. Everything on this island came out of her belly, one way or another." },
         { mood: 'sly', text: "You too. {p:0.4}The Immaculate One fired you in her with his own hands, they say. {p:0.3}{small}Wouldn't let a soul near the door.{/}" },
       ], next: 'menu' },
-      again: { lines: [{ mood: 'joy', text: 'Back again? {bounce}Good.{/} The kiln likes company. {p:0.3}{small}So do I.{/}' }, { mood: 'awe', when: glows, text: 'Look at you, lit up from inside like a good firing. {p:0.3}{small}Who\'s been at the press?{/}' }, { mood: 'calm', when: band('courier.shatter', 1, 4), text: "You came back to me in pieces. {p:0.3}{mood:joy}And out of my kiln whole again. {p:0.3}{small}That's what she's for.{/}" }, { mood: 'awe', when: (g) => known(g) >= 1 && known(g) < 7, text: (g) => `{slow}You feel more than you did.{/} {p:0.3}${known(g)} of the seven, if I'm any judge. {p:0.3}{small}The kiln can tell.{/}` }, { mood: 'joy', when: band('duel.won', 1, 3), text: 'They say you set a gone-wrong one right. {p:0.3}{bounce}Mended it!{/} {p:0.3}{small}I mend things too, you know.{/}' }, SAGGAR_STEP], next: 'menu' },
+      again: { lines: [{ mood: 'joy', text: 'Back again? {bounce}Good.{/} The kiln likes company. {p:0.3}{small}So do I.{/}' }, { mood: 'awe', when: glows, text: 'Look at you, lit up from inside like a good firing. {p:0.3}{small}Who\'s been at the press?{/}' }, { mood: 'calm', when: band('courier.shatter', 1, 4), text: "You came back to me in pieces. {p:0.3}{mood:joy}And out of my kiln whole again. {p:0.3}{small}That's what she's for.{/}" }, { mood: 'awe', when: (g) => known(g) >= 1 && known(g) < 7, text: (g) => `{slow}You feel more than you did.{/} {p:0.3}${known(g)} of the seven, if I'm any judge. {p:0.3}{small}The kiln can tell.{/}` }, { mood: 'joy', when: band('duel.won', 1, 3), text: 'They say you set a gone-wrong one right. {p:0.3}{bounce}Mended it!{/} {p:0.3}{small}I mend things too, you know.{/}' }, { mood: 'awe', when: band('seed.plant.ring', 1, 4), text: 'Something\'s taking root in that Pneuka Jar of yours. {p:0.3}{small}I can hear it, like a kiln ticking as it cools.{/}' }, { mood: 'calm', when: (g) => L(g, 'slab.carve') >= 1 && L(g, 'slab.flawless') < 1 && L(g, 'slab.carve') < 6, text: 'You\'ve been at the stone with a chisel. {p:0.3}It\'s on your hands. {p:0.4}{small}Gently, now. Whatever\'s in there slept a long time.{/}' }, { mood: 'joy', when: band('slab.flawless', 1, 3), text: 'A flawless carving? {p:0.3}{bounce}Not a crack in it!{/} {p:0.3}{small}Took me twenty years to fire a bowl that clean.{/}' }, SAGGAR_STEP], next: 'menu' },
       menu: { lines: [], choices: [
         { text: 'What are the clapperjars?', go: 'jars' },
         { text: 'About the pots I broke…', go: 'pots' },
@@ -109,11 +113,12 @@ export const TALKS = {
         { mood: 'fear', text: "I'm Pip. I'm Mistress Saggar's apprentice. {p:0.4}{small}I'm hiding.{/}" },
         { mood: 'sad', text: 'She sent me down for glaze and the clapperjars {tremble}clapped at me{/}. All of them. {slow}At once.{/}' },
       ], next: 'menu' },
-      again: { lines: [{ mood: 'fear', text: '{shake}Is it gone?{/} {p:0.4}{mood:joy}Oh, it\'s you again. {bounce}Hello!{/}' }, { mood: 'awe', when: glows, text: 'You\'re glowing! {p:0.3}{small}Is it hot? Can I... no. I\'d only break it.{/}' }, { mood: 'surprise', when: band('duel.won', 1, 5), text: 'You {big}fought one of the wrong ones{/}? {shake}With a puzzle?{/} {p:0.3}{mood:joy}I\'m good at puzzles! {p:0.3}{small}Not the fighting part.{/}' }, { mood: 'joy', when: band('shrine.found', 1, 3), text: 'You found a Shrine! {p:0.3}{small}Is it quiet there? I\'d like somewhere quiet.{/}' }, PIP_STEP], next: 'menu' },
+      again: { lines: [{ mood: 'fear', text: '{shake}Is it gone?{/} {p:0.4}{mood:joy}Oh, it\'s you again. {bounce}Hello!{/}' }, { mood: 'awe', when: glows, text: 'You\'re glowing! {p:0.3}{small}Is it hot? Can I... no. I\'d only break it.{/}' }, { mood: 'surprise', when: band('duel.won', 1, 5), text: 'You {big}fought one of the wrong ones{/}? {shake}With a puzzle?{/} {p:0.3}{mood:joy}I\'m good at puzzles! {p:0.3}{small}Not the fighting part.{/}' }, { mood: 'joy', when: band('shrine.found', 1, 3), text: 'You found a Shrine! {p:0.3}{small}Is it quiet there? I\'d like somewhere quiet.{/}' }, { mood: 'surprise', when: (g) => !understudy(g) && sum(g, 'well.stage.enter.') >= 1 && sum(g, 'well.stage.enter.') < 6, text: 'You went {big}inside{/} Strawman\'s head? {p:0.3}{shake}Is it all straw?{/} {p:0.3}{mood:confused}A theatre? {p:0.3}{small}I didn\'t sew a theatre in there. I don\'t think I did.{/}' }, { mood: 'sad', when: band('well.dummy.ko', 1, 11), text: 'You met my old tries. {p:0.3}The button one, the sock one... {p:0.4}{small}Go easy on them. They didn\'t stand back up the first time either.{/}' }, { mood: 'fear', when: sumBand('well.target.ko.', 1, 6), text: 'The {shake}duck{/}. You found the duck. {p:0.3}I copied it off a fair. {p:0.4}{small}It kept falling over, so I soldered it. It still falls over.{/}' }, { mood: 'joy', when: (g) => understudy(g), text: 'Strawman\'s been different. {p:0.3}{slow}Standing up straighter.{/} {p:0.4}{small}I think you gave it a good part.{/}' }, PIP_STEP], next: 'menu' },
       menu: { lines: [], choices: [
         { text: 'Why are you scared of them?', go: 'scared' },
         { text: 'Want me to deal with them?', go: 'deal' },
         { text: 'Have you met the Prince?', go: 'prince' },
+        { text: 'Tell me about Strawman.', go: 'strawman' },
         { text: 'Bye, Pip.', go: 'bye' },
       ] },
       scared: { lines: [
@@ -131,6 +136,12 @@ export const TALKS = {
         { mood: 'awe', text: 'Just a cup. {p:0.5}And it was the most {big}perfect{/} thing I have ever seen, and I had to sit down on the floor.' },
         { mood: 'sad', text: 'I made a cup after that. {p:0.4}It leans. {p:0.5}{small}I keep it under my bed, so it doesn\'t have to see his.{/}' },
         { mood: 'joy', text: 'One day I\'ll make something he looks at twice. {p:0.4}{small}Or once. Once would be fine.{/}' },
+      ], next: 'menu' },
+      strawman: { lines: [
+        { mood: 'joy', text: 'Strawman? {p:0.3}{bounce}I made Strawman!{/} {p:0.4}{small}Well. I sewed Strawman.{/}' },
+        { mood: 'sad', text: 'Everything here is clay, and clay breaks. {p:0.4}{slow}I break things.{/} {p:0.3}So I made something that {big}can\'t{/}.' },
+        { mood: 'fear', text: 'It took a lot of tries. {p:0.4}{small}The ones that fell over, I couldn\'t throw away. They\'re... around.{/}' },
+        { when: understudy, mood: 'awe', text: 'It always stood back up. {p:0.4}{slow}Now it gets to do something else.{/} {p:0.3}{small}Thank you.{/}' },
       ], next: 'menu' },
       bye: { lines: [{ mood: 'fear', text: "Bye! I'll just… stay here. {small}In the corner. Where it's safe.{/}" }] },
     },

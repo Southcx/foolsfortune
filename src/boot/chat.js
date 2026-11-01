@@ -24,6 +24,7 @@ import { mudraCommands } from '../godhand/mudras.js';
 import { installCalibrateButtons } from '../ui/calibratebutton.js';
 import { installCollectionsLook } from '../ui/collectionslook.js';
 import { installGodArtsLook } from '../ui/godartslook.js';
+import { installGodArtSelector } from '../ui/godartselector.js';
 import { installSealBookLook } from '../ui/sealbooklook.js';
 import { Flourishes } from '../vfx/flourishes.js';
 import { ToolSkins } from '../vfx/toolskinwear.js';
@@ -44,6 +45,7 @@ export function bootChat(game, made) {
   game.presets = new Presets(game); // (/preset: the DEBUG save put at a moment of play, debug/presetloader.js, Dovina's rows in debug/presets.js; DEBUG-MODE.md 5)
   game.startAt = new StartAt(game); // (?at=dunes|raceway|godhand|workshop: set down there after the title; debug/startat.js)
   mudraCommands(game); // (/mudra: the god hand holds one of its poses, DEBUG: godhand/mudras.js)
+  installGodArtSelector(); // (the god hand's art selector dressed: arts.js's #goddomains and #godarts, ui/godartselector.js)
   installGodArtsLook(); // (the Codex's GOD ARTS shelf dressed: Dovina's codex/godarts.js classes, ui/godartslook.js)
   installCollectionsLook(); // (the Codex's COLLECTIONS shelf dressed: Dovina's codex/collections.js classes, ui/collectionslook.js)
   installSealBookLook(game); // (the Codex's SEAL BOOK shelf dressed as a goshuincho, by island: Petra's codex/sealbook.js classes, ui/sealbooklook.js)

@@ -296,8 +296,8 @@ socketed, and every attribute at rank 10:
 | a release's pressure | 1 unit a 40 Lachryma | none | none | / aperture 1.5 (amethyst) |
 
 **The selector.** The hand's 25 arts are grouped by their seven domains. Keys 1 to 7 pick a domain, and pressing the same key again steps
-through its arts. The bar shows that domain's arts under a strip of the seven domains. This is a placeholder until Calissa rules on the
-look (her handoff). Miracles stay on MMB.
+through its arts. The bar shows that domain's arts under a strip of the seven domains. Its look is Calissa's (`ui/godartselector.js`, 2026-11-01): the
+domains as glazed tiles on a kiln shelf, the arts as test tiles. Miracles stay on MMB.
 
 ## As built (Dovina, 2026-10-13)
 
