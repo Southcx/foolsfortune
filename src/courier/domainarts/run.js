@@ -292,10 +292,8 @@ export class DomainArtsRun {
     }
     if (cause === 'parry') { // (a shot sent back: struck its thrower? the catch's feat; the catch's own throw strikes half again as hard)
       const T = this.thrown, mine = T && this.now < T.until && T.pr.pos && c.pos && T.pr.pos.distanceTo(c.pos) < (c.radius ?? 0.6) + 1.2;
-      if (mine) { // (the catch's x1.5: its own blow struck again for the half, after it, as the catch's; nothing reads pr.mult)
-        const extra = power * (this.does('catch').mult - 1), at = c.pos.clone().add(UP), dir = T.pr.vel?.clone?.().normalize?.() ?? UP.clone();
-        this.thrown = null; // (once: the catch's blow is spent)
-        if (extra > 0) queueMicrotask(() => { if (c.alive) this.game.creatures?.strike?.(c, at, dir, extra, 'catch', 'courier', null, type); });
+      if (mine) { // (the catch's x1.5 on the blow's damage: creatures.strike reads `dmg`)
+        out = { ...(out || {}), dmg: this.does('catch').mult }; this.thrown = null; // (once: the catch's blow is spent)
         this.arts?.used('catch', T.from === c ? 1 : 0.6);
       }
       if ((mine && T.from === c) || [...(this.game.projectiles || [])].some((q) => (q.reflected || q.parried) && q.from === c)) this.game.events?.emit('parry.return', { kind: c.kind, by: 'courier' });
