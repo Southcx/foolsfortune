@@ -5,8 +5,8 @@
 // aim camera set a little behind the chest on the line to it and pointed at it, so a tool's ray from "the camera" starts at the body and
 // runs in the plane (the psygun's skip, the hook's probe, the rod's cast, the brush's stream, the fork's throw). The body is turned to the
 // reticle's side while a tool is out, and its pitch follows the reticle, so what reads the body's look (`P.lookDir`, the aim's arm)
-// agrees. With no tool out the reticle keeps ahead of the run. A placeholder mark (a thin ring and a dot, depth-tested off) shows where
-// it is until the psygun's reticle is drawn there (Calissa's: `game.aim.screen`).
+// agrees. With no tool out the reticle keeps ahead of the run. Its mark is the tool in hand's (Calissa's PlaneMarks,
+// vfx/strawmanwell/planemark.js); the psygun's reticle is drawn there by its own look (`game.aim.screen`).
 //
 // Prior art: the mouse reticle of side-on shooters (Terraria, Noita, Metroid Dread's free aim, Contra's eight ways made continuous),
 // Celeste-likes' aim from the body not the camera.
@@ -15,6 +15,7 @@
 //   A.pitch   A.point (world)   A.show(on)   A.dispose()   PLANE_RETICLE (its numbers)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { PlaneMarks } from '../vfx/strawmanwell/planemark.js';
 
 /** The reticle's reach from the chest (m), where it starts (ahead, a little up), the chest's height (m), how far behind the chest the
  *  aim camera sits on the line (m), and the turn the mouse gives (the view's own metres a pixel, scaled). */
@@ -58,7 +59,7 @@ export class PlaneReticle {
     this.cam.position.copy(_c).addScaledVector(_p, -PLANE_RETICLE.back);
     _m.lookAt(this.cam.position, this.point, _up); this.cam.quaternion.setFromRotationMatrix(_m);
     this.cam.fov = this.game.camera?.fov ?? 52; this.cam.updateMatrixWorld(true);
-    if (this.mark?.visible) this.mark.position.copy(this.point);
+    if (this.mark?.on) this.mark.update(this.game.rawDt ?? 1 / 60, this.chest(_c), this.point);
   }
   camera() { return this.cam; }
 
@@ -69,15 +70,10 @@ export class PlaneReticle {
     return out.set((_p.x * innerWidth) / 2, (_p.y * innerHeight) / 2);
   }
 
-  /** The placeholder mark: a thin ring and a dot on the reticle, over everything (Calissa's reticle to come). */
+  /** The mark on the reticle, over everything: the tool in hand's own (Calissa's vfx/strawmanwell/planemark.js; the psygun draws its own reticle). */
   show(on) {
-    if (on && !this.mark) {
-      const g = new THREE.Group(), mat = new THREE.MeshBasicMaterial({ color: 0xf2e6c8, depthTest: false, depthWrite: false, transparent: true, opacity: 0.9 });
-      g.add(new THREE.Mesh(new THREE.RingGeometry(0.22, 0.27, 28), mat), new THREE.Mesh(new THREE.CircleGeometry(0.05, 12), mat));
-      g.renderOrder = 999; for (const m of g.children) m.renderOrder = 999;
-      this.game.scene.add(g); this.mark = g;
-    }
-    if (this.mark) { this.mark.visible = !!on; if (on) this.mark.position.copy(this.point); }
+    if (on && !this.mark) this.mark = new PlaneMarks(this.game);
+    if (this.mark) { this.mark.show(on, this.game.belt?.inHand?.id ?? null); if (on) this.mark.update(0, this.chest(_c), this.point); }
   }
-  dispose() { if (this.mark) { this.mark.removeFromParent(); for (const m of this.mark.children) m.geometry.dispose(); this.mark.children[0].material.dispose(); this.mark = null; } }
+  dispose() { this.mark?.dispose(); this.mark = null; }
 }
