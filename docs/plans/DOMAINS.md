@@ -637,8 +637,9 @@ Checked headless (DEBUG, the Summit lend):
 - **Reactions:** grief over mirth wiped 112 cells and calmed the jelly. Wonder over dread flared as "awe" for 1.
 - **The Catch:** the shot was held still while V was held, then thrown at 12 m/s, its blow x1.5, the Courier's.
 
-Two small asks of Petra are left. The catch's x1.5 reaches `creatures.strike` as `onStrike`'s `dmg` (it reads only `type` today). The
-stamp could pass the cell's x and z, so a reaction finds its stamp's middle; until then it is found by where the brush points.
+Petra's two follow-ups are in (7807c84): `creatures.strike` reads `onStrike`'s `dmg`, the catch's x1.5 (measured: a parried shot 2, a
+caught one 3), and the stamp passes each cell's middle, so a reaction calms or flares what stands where the paints met (measured: a
+slip jelly 4 m from the Courier calmed).
 
 **Catch-up EXP** (`CATCH_UP`, `progress/domains.js`; FFXIV's Armoury Bonus): a domain more than 10 levels below your highest earns
 x1.5, and the ledger keeps what it added (`exp.catchup.<domain>`). It answers the critic's finding that a fighter's Spellscription

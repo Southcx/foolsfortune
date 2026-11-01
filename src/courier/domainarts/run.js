@@ -292,7 +292,10 @@ export class DomainArtsRun {
     }
     if (cause === 'parry') { // (a shot sent back: struck its thrower? the catch's feat; the catch's own throw strikes half again as hard)
       const T = this.thrown, mine = T && this.now < T.until && T.pr.pos && c.pos && T.pr.pos.distanceTo(c.pos) < (c.radius ?? 0.6) + 1.2;
-      if (mine) { out = { ...(out || {}), dmg: this.does('catch').mult }; this.arts?.used('catch', T.from === c ? 1 : 0.6); }
+      if (mine) { // (the catch's x1.5 on the blow's damage: creatures.strike reads `dmg`)
+        out = { ...(out || {}), dmg: this.does('catch').mult }; this.thrown = null; // (once: the catch's blow is spent)
+        this.arts?.used('catch', T.from === c ? 1 : 0.6);
+      }
       if ((mine && T.from === c) || [...(this.game.projectiles || [])].some((q) => (q.reflected || q.parried) && q.from === c)) this.game.events?.emit('parry.return', { kind: c.kind, by: 'courier' });
     }
     const S = DOMAIN_ARTS.shatter, st = this.game.stun;
