@@ -2,7 +2,11 @@
 // Lab (workbench/animstage.js: the game's own animation stack, the tool in the hand) on the frame each key has snapped in, front over
 // side, captioned with the key's numbers. One source with the game: the table is read through keysOf (courier/anim/keyposes.js).
 //
-//   keySheet(out, ['cutlass:c1,c2,c3', ...])   VW, VH (env: a view's size in px, default 320 x 420)
+// A move the Anim Lab has no play for (the fighter's: the Arena's kit drives those) is shown as stills: each key's own pose
+// (KeyTrack.keyPose) laid on the lab's Courier with nothing in the hands. A table the game has not registered is read from its file,
+// its timing filled by the rule's fillKeys where that module is there (the fighter's: progress/platformfighter.js).
+//
+//   keySheet(out, ['cutlass:c1,c2,c3', 'fighter:jab1,fsmash', ...])   VW, VH (env: a view's size in px, default 320 x 420)
 //
 // Prior art: the animator's contact sheet (one column a key), Guilty Gear Xrd's frame-by-frame review, the Anim Lab's snapshot.
 import { chromium } from 'playwright';
@@ -13,7 +17,9 @@ import os from 'node:os';
 import path from 'node:path';
 
 /** The tool as the Anim Lab wears it, by its moveset's id (the key table's key). */
-const LAB_TOOL = { cutlass: 'sondelass:cutlass', kick: 'none' };
+const LAB_TOOL = { cutlass: 'sondelass:cutlass', kick: 'none', fighter: 'none' };
+/** Where a table's timing is filled when the game has not registered it: the module and its export. */
+const FILL = { fighter: ['/src/progress/platformfighter.js', 'fillKeys'] };
 
 export async function keySheet(out, want) {
   const VW = +(process.env.VW || 320), VH = +(process.env.VH || 420);
@@ -30,7 +36,7 @@ export async function keySheet(out, want) {
   const rows = [];
   for (const w of want) {
     const [tool, list] = w.split(':');
-    const got = await page.evaluate(async ({ tool, moves, labTool }) => {
+    const got = await page.evaluate(async ({ tool, moves, labTool, fill }) => {
       document.getElementById('overlay')?.style.setProperty('display', 'none');
       const g = __game.game; await g.workbench.ready?.(); const wb = g.workbench;
       await g.clipPack?.social; wb.toggle(true); wb.show('models'); wb.root.style.display = 'none';
@@ -39,12 +45,33 @@ export async function keySheet(out, want) {
       document.querySelectorAll('body > div').forEach((d) => { if (d.textContent.includes('recording') || d.className.includes('animlab')) d.style.display = 'none'; });
       if (lab.state.tool !== labTool) lab.setTool(labTool);
       clearTimeout(lab.pending);
-      const { keysOf } = await import('/src/courier/anim/keyposes.js');
+      const { keysOf, KeyTrack } = await import('/src/courier/anim/keyposes.js');
+      let table = null, filler = null; // (a table the game has not registered: read from its file, filled by the rule's own where it is there)
+      try { table = (await import(`/src/courier/anim/keys/${tool}.js`)).KEYS; } catch { /* (none) */ }
+      if (fill) try { filler = (await import(fill[0]))[fill[1]]; } catch { /* (the rule's module not on this branch: the table's own numbers) */ }
+      const keysFor = (id) => keysOf(tool, id) || (table?.[id] ? (filler ? filler(id, table[id]) : table[id]) : null);
+      const KT = new KeyTrack(g.character.clips), still = g.character.clips.pose();
       const M = lab.R.moveset, cv = g.renderer.domElement, W = cv.width, H = cv.height, res = [];
       for (const id of moves) {
-        const keys = keysOf(tool, id), slot = M?.string?.indexOf(id) ?? -1;
-        const play = lab.plays.find((p) => p.id === (slot >= 0 ? `move:string.${slot + 1}` : `move:other.${id}`));
-        if (!keys || !play) { res.push({ id, missing: !keys ? 'no keys' : 'no play' }); continue; }
+        const keys = keysFor(id), slot = M?.string?.indexOf(id) ?? -1;
+        const play = M && lab.plays.find((p) => p.id === (slot >= 0 ? `move:string.${slot + 1}` : `move:other.${id}`));
+        if (!keys) { res.push({ id, missing: 'no keys' }); continue; }
+        if (!play) { // (stills: each key's own pose on the lab's Courier, framed by the stance's take)
+          lab.record(lab.plays.find((p) => p.id === 'stance:idleA')); clearTimeout(lab.pending); lab.state.playing = false; lab.seek(0);
+          const ch = lab.R.rig, cells = [], at = ch.root.position.clone(), facing = ch.root.quaternion.clone(); // (where the lab pins the body)
+          for (const K of keys) {
+            const shots = [];
+            for (const v of ['front', 'side']) {
+              KT.keyPose(K, still); still.p[0] = 0; still.p[2] = 0; ch.resetPose(); ch.applyPose(still); // (the clip's travel left to the capsule, as the kit draws it)
+               ch.root.position.copy(at); ch.root.quaternion.copy(facing); ch.root.updateMatrixWorld(true);
+              lab.state.view = v; lab.applyShow(); g.post.render(wb.scene, lab.camera(v, W / H, { ui: false }));
+              const c = document.createElement('canvas'); c.width = W; c.height = H; c.getContext('2d').drawImage(cv, 0, 0); shots.push(c.toDataURL('image/png'));
+            }
+            cells.push({ pose: K.pose, clip: K.clip, frame: K.frame, hold: K.hold | 0, snap: K.snap | 0, active: !!K.active, plant: K.plant || '', live: false, at: 'still', shots });
+          }
+          const total = keys.reduce((n, K) => n + (K.hold | 0), 0);
+          res.push({ id, cells, total, rate: 1, real: +(total / 60).toFixed(3) }); continue;
+        }
         lab.record(play); clearTimeout(lab.pending); lab.state.playing = false;
         const T = lab.take, rate = M.def(id)?.rate || 1, cells = [];
         keys.forEach((K, i) => {
@@ -64,7 +91,7 @@ export async function keySheet(out, want) {
         res.push({ id, cells, total, rate, real: +(total / 60 / rate).toFixed(3) });
       }
       return res;
-    }, { tool, moves: list.split(','), labTool: LAB_TOOL[tool] || tool });
+    }, { tool, moves: list.split(','), labTool: LAB_TOOL[tool] || tool, fill: FILL[tool] || null });
     for (const r of got) {
       if (r.missing) { console.log(`${tool}:${r.id}: ${r.missing}`); continue; }
       r.cells.forEach((c, j) => c.shots.forEach((u, v) => { const f = path.join(tmp, `${rows.length}-${j}-${v}.png`); fs.writeFileSync(f, Buffer.from(u.split(',')[1], 'base64')); c.shots[v] = f; }));

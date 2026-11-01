@@ -28,6 +28,7 @@
 //   yawTo between moves, held through one)   S.engaged (a string runs: the guard stays down)   S.open(t) (a guard break: the sleeves
 //   thrown wide and the guard down for t real s)   S.restyle({ head, body, legs, sleeves, cuffs, hat, heart, on }) (another stitching: the
 //   Well's troupe, Pip's earlier tries, vfx/strawmanwell/pipstries.js; never Strawman's own)
+//   S.hold(id, t) (a move held at its own time t, never running on or ending: the Arena's key poses; hold(null) lets it run)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { STRAWMAN_MOVES, SLEEVES, MOVE_EASE, CHANNELS, REST, poseAt } from './strawmanmoves.js';
@@ -191,6 +192,16 @@ export class StrawmanModel {
     else { this.mv = null; this.p.turn = wrap(this.p.turn); }
   }
   get playing() { return this.mv?.id ?? null; }
+  /** Move `id` held at its own time `t` (s) instead of its clock running: a key pose kept as long as it is asked for (the Arena's straw
+   *  fighters stepped by their frame data, KEY-POSES.md; Dovina's ask). Begun if another move or none is under way, begun again if `t`
+   *  goes back; its kicks pass as their moments do; it never ends while held (`t` stops short of its end). `hold(null)` lets the clock
+   *  run on from where it stands. */
+  hold(id, t = 0) {
+    if (id == null) { if (this.mv) this.mv.held = null; return true; }
+    if ((this.mv?.id !== id || t < this.mv.t - 1e-6) && !this.play(id)) return false;
+    this.mv.held = Math.max(0, Math.min(t, this.mv.M.end - 1e-3));
+    return true;
+  }
 
   /** Which ring of the target a world point is on (1 the bull's-eye, 2 and 3 the rings, 0 off the target). */
   ring(point) {
@@ -218,7 +229,7 @@ export class StrawmanModel {
     // a move under way: its contacts and kicks as their moments pass, then its pose; a blow broken off eases back on its own
     const mv = this.mv, p = this.p, want = this.want;
     if (mv) {
-      mv.t += raw;
+      mv.t = mv.held != null ? mv.held : mv.t + raw; // (a held move stands at the time asked: hold())
       while (mv.i < mv.at.length && mv.at[mv.i].t <= mv.t) {
         const e = mv.at[mv.i++];
         if (e.kick) this.kick(e.kick); else mv.onContact?.(e.blow, e.contact);

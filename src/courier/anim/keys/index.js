@@ -4,9 +4,13 @@
 // A move with no keys plays its clip as before.
 //
 //   import './courier/anim/keys/index.js'   KEY_TABLES (the tool ids registered, for the contact sheet)
+//   FIGHTER_KEYS (the Arena fighter's table, not registered here: its timing is the rule's, so whoever lands the fighter kit calls
+//   registerKeys('fighter', FIGHTER_KEYS, fillKeys) with platformfighter.js's fillKeys)
 // ---------------------------------------------------------------------------------------
 import { registerKeys } from '../keyposes.js';
 import { KEYS as CUTLASS } from './cutlass.js';
 
 export const KEY_TABLES = { cutlass: CUTLASS };
 for (const [tool, KEYS] of Object.entries(KEY_TABLES)) registerKeys(tool, KEYS);
+
+export { KEYS as FIGHTER_KEYS } from './fighter.js';
