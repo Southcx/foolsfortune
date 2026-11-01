@@ -60,6 +60,32 @@ export const BARRAGE_CYCLE = [
   { pose: 'punchL', clip: 'Cmu_Flurry', frame: 22, snap: 1, hold: 3, active: true },
 ];
 
+/** The iconic extremes no clip holds whole (South, 2026-11-01: "Dropkick, kamen rider kick, falcon knee ... follow references as close
+ *  as practicable"): each strike a clip's frame with bone turns laid over it (a key's `fix`, keyposes.js), solved by aiming each limb
+ *  along the reference's line from the side (parents first: the hips' lean, the neck, the thighs, the shins, the arms) and read back
+ *  front and side against the reference. The lead-in and the follow-through are the clip's own frames round it. */
+const FIX = {
+  // Captain Falcon's Knee Smash (Melee's forward air; its sweetspot one frame): the right knee driven up to the chest, the heel tucked
+  // under, the body leaning back off it, both arms flung back and down, the trailing leg long behind
+  falconKnee: { spine: [-0.37, -0.001, 0.062], spine003: [0.386, 0.039, 0.262], thighR: [0.282, 0.02, 0.139], shinR: [1.904, -0.184, -0.131],
+    thighL: [1.345, -0.106, -0.133], shinL: [-0.37, 0.059, -0.314], upper_armR: [-0.523, -0.019, 0.07], forearmR: [-1.379, -0.398, 0.48],
+    upper_armL: [-1.668, 0.353, -0.321], forearmL: [-1.957, 0.528, -0.36] },
+  // Kamen Rider's Rider Kick (Toei, 1971): the body one diagonal line down onto the foe, the right leg straight along it with the toe
+  // pointed, the left knee drawn up and its foot tucked back, the head up and looking down the line, both arms spread up and back
+  riderKick: { spine: [-0.275, 0.083, -0.312], spine004: [0.438, 0.26, 1.13], thighR: [1.476, -0.557, -0.609], shinR: [-1.129, -0.07, 0.111],
+    footR: [1.204, 0.297, 0.429], thighL: [-0.652, -0.244, 0.696], shinL: [2.387, -0.461, -0.185], upper_armR: [0.021, -0.023, -1.655],
+    forearmR: [-0.638, -0.122, 0.365], upper_armL: [1.473, 0.149, 0.164], forearmL: [-0.8, 0.141, -0.331] },
+  // the wrestler's dropkick: the body laid flat in the air, both feet together and soles first, the arms thrown down and wide to land on
+  dropkick: { spine: [-0.409, 0.379, -0.931], spine003: [0.054, 0, 0.208], thighR: [1.274, -0.327, -0.439], shinR: [-1.129, -0.07, 0.111],
+    thighL: [-0.127, -0.032, 0.49], shinL: [-0.465, 0.04, -0.17], upper_armR: [-0.502, 1.028, -2.289], forearmR: [-0.979, -0.161, 0.301],
+    upper_armL: [0.746, -0.337, -0.822], forearmL: [-0.918, 0.423, -0.819] },
+};
+export const ICONIC = {
+  falconKnee: [{ pose: 'lead', clip: 'Cmu_KneeStrike', frame: 8 }, { pose: 'strike', clip: 'Cmu_KneeStrike', frame: 14, fix: FIX.falconKnee }, { pose: 'follow', clip: 'Cmu_KneeStrike', frame: 22 }],
+  riderKick: [{ pose: 'lead', clip: 'Cmu_FlyingKick', frame: 24 }, { pose: 'strike', clip: 'Cmu_FlyingKick', frame: 34, fix: FIX.riderKick }, { pose: 'follow', clip: 'Cmu_FlyingKick', frame: 44 }],
+  dropkick: [{ pose: 'lead', clip: 'Cmu_FlyingKick', frame: 26 }, { pose: 'strike', clip: 'Cmu_FlyingKick', frame: 34, fix: FIX.dropkick }, { pose: 'follow', clip: 'Cmu_FlyingKick', frame: 44 }],
+};
+
 /** J's set: the jabs, the barrage (its charge, then the cycle), its finisher, the uppercut, the dash straight, the specials. */
 export const BRAWLER = {
   jab1: keys('Fist_Combo1', 1, 4, 8),             // the left jab, farthest at 4
@@ -75,4 +101,7 @@ export const BRAWLER = {
   dash: keys('Cmu_StraightPunch', 8, 15, 22),     // the dash straight: the lunging oi zuki, its strike 13..18
   uspecial: keys('Fist_Uppercut', 5, 11, 16),     // the uppercut rising (the recovery)
   sspecial: keys('Cmu_StraightPunch', 6, 15, 24), // the straight lunging 4 m
+  fair: ICONIC.falconKnee,                        // the knee (the bare set's forward air's slot)
+  dair: ICONIC.riderKick,                         // the Rider Kick down the diagonal
+  nair: ICONIC.dropkick,                          // the dropkick, both feet out
 };
