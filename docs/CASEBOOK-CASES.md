@@ -4807,3 +4807,16 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   Measured headless: with `costMult { '*': 0.5 }`, a shot of 10 costs 5 and the shield and the hull still 10; `setTo` 50 to 80
   and back to 50.
 - **Rule:** 385
+
+### 2026-11-01 · A feeling's sky left a texture on the card each time it faded (vfx/sky.js; found by Petra, the Emocean sweep's repeat check)
+- **Seen:** the Emocean sweep's "nothing left behind after 12 crossings" failed on textures, 165 to 171. Over 24 crossings the count
+  climbed one texture a round trip on both ends of the route (152 to 163 at Anagami, 166 to 177 at Margarite), with objects and
+  geometries flat.
+- **Cause, as measured:** each texture uploaded was tracked with the stack it was made at (three's `dispose` listener is added at the
+  upload), and those never disposed were listed at the end: three 512 x 256 baked canvases from `Sky.loadFeeling`, none of them in the
+  sky's `feel.tex` any more. A feeling's sky that fades out is disposed and dropped from `feel.tex`, but `uSkyFeeling` still pointed at
+  it. The dome's shader samples it with `uFeeling` at 0, so three uploaded the disposed texture again at the next draw (the seam's warm
+  found it in the uniforms first), and that copy had no owner left to let it go.
+- **Fix:** the uniform is unbound (`null`, its value at rest) before the texture is disposed. After: 163 to 163 textures over 12
+  crossings, the sweep 234 of 234.
+- **Rule:** 386

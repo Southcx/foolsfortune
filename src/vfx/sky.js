@@ -103,7 +103,7 @@ export class Sky {
       F.k = 0;
       if (F.shown !== aspect) {
         const gone = F.shown; F.shown = ready ? aspect : null;
-        if (gone && gone !== F.shown && F.tex[gone]) { F.tex[gone].dispose(); delete F.tex[gone]; delete F.loading[gone]; } // (faded out: let go, 8 MB on the GPU each; loaded again if its weather falls again. Its small copy stays)
+        if (gone && gone !== F.shown && F.tex[gone]) { if (G.uSkyFeeling.value === F.tex[gone]) G.uSkyFeeling.value = null; F.tex[gone].dispose(); delete F.tex[gone]; delete F.loading[gone]; } // (unbound first: a disposed texture still bound is drawn, so uploaded again, and nothing then lets that copy go) // (faded out: let go, 8 MB on the GPU each; loaded again if its weather falls again. Its small copy stays)
       }
     }
     G.uFeeling.value = F.shown ? F.k : 0;

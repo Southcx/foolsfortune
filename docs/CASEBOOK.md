@@ -1077,3 +1077,5 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
   or in front of (a soft platform, a ledge's lip, a prop) is drawn behind the plane; its height is the stage's rule and is not moved to hide a clip.
 385. **A cost that is harm taken never reads a use's multiplier.** A shield's or a hull's drain is named by its
   own tag and scaled only by a modifier written for it; a blow is measured against the base pool, never the widened one; a result is settled, never spent.
+386. **A texture is unbound from every uniform and material before it is disposed.** Three uploads anything still
+  bound at the next draw, disposed or not, and the copy it makes then belongs to no one: let go of the reference first, then the texture.
