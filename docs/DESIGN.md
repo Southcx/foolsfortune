@@ -558,4 +558,7 @@ the mind. Feelings are downstream of both (South, 2026-11-01). A body's constitu
 (`progress/combat/constitution.js`). The vessel's one rule is `progress/combat/vessel.js`, measured by `scripts/substrate.mjs`.
 
 The seven Domains each answer one question every interaction asks (DOMAINS.md): when and where, in what form, what is known, with how
-much force, whose, of which kind, under which rule.
+much force, whose, of which kind, under which rule. Anything can be done at a price (South, 2026-11-01: "The sky is the limit, anything
+can be justifiable for an appropriate cost"): seven prices, from the clock to overreach (a power cast short of pool, doubled, its
+shortfall cracked from the vessel) to aberrance (a creature whose rules you rewrite goes aberrant and is met by a duel). Two domains
+raised together give one of 21 pairings, a move that asks both questions at once.
