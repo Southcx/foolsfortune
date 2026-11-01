@@ -11,31 +11,31 @@ import { KNACKS, knackWord } from '../../progress/knacks.js';
 
 export function systemLineRules({ on, log }) {
   on('sign.help', (e) => log.say('system', `${e.sign}: ${e.help}`));
-  on('vfx.test', (e) => log.say('system', e.found ? `You play ${e.fx}.` : `There is no effect called ${e.fx}.`, { key: 'vfx', win: 0.5 }));
-  on('workbench.open', () => log.say('system', 'You open the workbench.', { key: 'wb.open', win: 0.5 }));
-  on('workbench.close', () => log.say('system', 'You close the workbench.', { key: 'wb.close', win: 0.5 }));
+  on('vfx.test', (e) => log.say('system', e.found ? `Playing ${e.fx}.` : `No effect named ${e.fx}.`, { key: 'vfx', win: 0.5 }));
+  on('workbench.open', () => log.say('system', 'Workbench opened.', { key: 'wb.open', win: 0.5 }));
+  on('workbench.close', () => log.say('system', 'Workbench closed.', { key: 'wb.close', win: 0.5 }));
   on('vfx.list', (e) => log.say('system', `Effects: ${e.names.join(', ')}.`));
   // the knacks and the ostraca's places (progress/knacks.js, world/ostraca.js; the words are placeholders for Espada's)
-  on('knack.open', (e) => log.say('system', `New knack: ${KNACKS[e.knack]?.name || e.knack}${KNACKS[e.knack]?.does ? ` (${KNACKS[e.knack].does})` : ''}. It is on. Type /knack ${knackWord(e.knack)} off to switch it off.`));
-  on('rutter.get', (e) => log.say('gain', `You make a route map (rank ${e.rank}). This game day it is worth about ${e.worth} cubes.`)); // (Espada's words; the ledger's counts are Dovina's)
-  on('rail.refuse', (e) => { if (e.what === 'dive') log.say('info', `Your ${e.ship} cannot dive. It keeps to the surface.`, { key: 'rail.refuse', throttle: 2 }); }); // (a heavy hull: progress/rail/ships.js; Espada's words)
+  on('knack.open', (e) => log.say('system', `New knack: ${KNACKS[e.knack]?.name || e.knack}${KNACKS[e.knack]?.does ? ` (${KNACKS[e.knack].does})` : ''}. Switched on. Type /knack ${knackWord(e.knack)} off to switch it off.`));
+  on('rutter.get', (e) => log.say('gain', `Route map made (rank ${e.rank}). Worth about ${e.worth} cubes this game day.`)); // (Espada's words; the ledger's counts are Dovina's)
+  on('rail.refuse', (e) => { if (e.what === 'dive') log.say('info', `Your ${e.ship} cannot dive. It stays on the surface.`, { key: 'rail.refuse', throttle: 2 }); }); // (a heavy hull: progress/rail/ships.js; Espada's words)
   on('debug.chest', (e) => { // (docs/plans/DEBUG-CHESTS.md; Espada's words; nothing counted)
     if (e.first) log.say('system', `Debug chest (${e.kit}). Nothing it gives is counted.`);
-    log.say('system', e.n ? `The debug chest gives: ${e.what.join(', ')}.` : 'Debug chest: you already have everything it gives.', { key: `debug.${e.kit}`, throttle: 0.5 });
+    log.say('system', e.n ? `Debug chest gives: ${e.what.join(', ')}.` : 'Debug chest: nothing new. You have everything it gives.', { key: `debug.${e.kit}`, throttle: 0.5 });
   });
-  on('knack.set', (e) => log.say('system', `You switch ${KNACKS[e.knack]?.name || e.knack} ${e.on ? 'on' : 'off'}.`));
+  on('knack.set', (e) => log.say('system', `${KNACKS[e.knack]?.name || e.knack} switched ${e.on ? 'on' : 'off'}.`));
   // the title (title/): which game was chosen (the words are Espada's to set: docs/HANDOFFS.md)
   // replays (debug/replay.js): what is being played, and when it gives the controls back
   on('replay.play', (e) => log.say('system', `Playing a replay: ${Math.round(e.frames / 60)} seconds of play${e.exact ? '' : ', begun mid-session (the loose world is as it boots)'}.`));
-  on('replay.end', () => log.say('system', 'The replay ends here. The controls are yours.'));
+  on('replay.end', () => log.say('system', 'Replay ended. Controls returned.'));
   on('replay.save', (e) => log.say('system', `This session's replay is saved: ${Math.round(e.frames / 60)} seconds${e.full ? ' (the first twenty minutes: it was full)' : ''}.`));
-  on('replay.record', () => log.say('system', 'A new replay begins here.'));
+  on('replay.record', () => log.say('system', 'Replay recording started.'));
 }
 
 export function commandEchoRules({ on, L, log }) {
-  on('tuning.tuned', (e) => log.say('info', `${e.count} tuning ${e.count === 1 ? 'knob stands' : 'knobs stand'} away from the defaults (Tab): what you see is not the stock game.`)); // (debug/tuned.js)
+  on('tuning.tuned', (e) => log.say('info', `${e.count} tuning ${e.count === 1 ? 'knob is' : 'knobs are'} off the defaults (Tab). This is not the stock game.`)); // (debug/tuned.js)
   on('cavern.force', () => log.say('info', 'You drop through the Great Dunemaw into the great cavern.', { key: 'cavernforce', throttle: 0.5 })); // (/cavern: world/well/dunemaw.js)
-  on('aberrant.look', (e) => log.say('info', e.mode === 'invert' ? 'Aberrants are drawn inverted, to compare.' : 'Aberrants wear their own look.', { key: 'aberrant.look', throttle: 0.5 })); // (/aberrant: vfx/databug.js, DEBUG)
-  on('rail.force', (e) => log.say('info', e.setPieces?.length ? `The next sea stage sails into ${e.setPieces.join(', then ')}.` : 'The next sea stage is the sea\'s to choose.', { key: 'railforce', throttle: 0.5 })); // (/crossing: world/emocean/stage.js)
+  on('aberrant.look', (e) => log.say('info', e.mode === 'invert' ? 'Aberrants drawn inverted, for comparison.' : 'Aberrants drawn with the aberrant\'s look.', { key: 'aberrant.look', throttle: 0.5 })); // (/aberrant: vfx/databug.js, DEBUG)
+  on('rail.force', (e) => log.say('info', e.setPieces?.length ? `Next sea stage: ${e.setPieces.join(', then ')}.` : 'Next sea stage: chosen at random.', { key: 'railforce', throttle: 0.5 })); // (/crossing: world/emocean/stage.js)
   on('rave.start', () => L.inc('rave.count'));
 }
