@@ -12,6 +12,10 @@
 //   machine  the inside of a sewing machine: its arm, gears that turn, bobbins, a painted clockwork sky
 //   flood    the toy theatre's sea: rows of cut-out waves rocking in their grooves, a storm sky, a lighthouse
 //   arena    the platform fighter's stage at rehearsal: the hall's bare back wall, the backdrop half painted on its frame, the clutter
+//   noh      (swing, depth, wall, script) the Noh stage: the old pine on the mirror board, the bridge and its five-coloured curtain,
+//            the hinoki pillars, masks on stands, the white gravel (South, 2026-11-01: Japanese theatre)
+//   kabuki   (chase, arsenal, pit, flip, jar) the kabuki stage: a painted great wave and red Fuji, the three-striped curtain drawn
+//            aside, a castle among cherry trees, red lanterns and a noren, the wave boards along the foot
 // Only the shown lane's sheets exist: a lane is painted when it is shown (a few regions a frame, more under the seam's cover) and let
 // go when it is left. The placeholder back flat stands until the lane's flats are up, then is hidden; its collider is the kit's and
 // stays. A play surface of the flat's kind nearer in (the Run's wall-run flat, a thin box behind the plane) is dressed where it
@@ -31,9 +35,12 @@ import { BRAWL } from './flats/brawl.js';
 import { MACHINE } from './flats/machine.js';
 import { FLOOD } from './flats/flood.js';
 import { ARENA } from './flats/arena.js';
+import { NOH } from './flats/noh.js';
+import { KABUKI } from './flats/kabuki.js';
 
 /** A lane's theme, by its id. */
-const THEMES = { wings: WINGS, run: RUN, climb: CLIMB, stomp: STOMP, brawl: BRAWL, machine: MACHINE, flood: FLOOD, arena: ARENA };
+const THEMES = { wings: WINGS, run: RUN, climb: CLIMB, stomp: STOMP, brawl: BRAWL, machine: MACHINE, flood: FLOOD, arena: ARENA,
+  swing: NOH, depth: NOH, wall: NOH, script: NOH, chase: KABUKI, arsenal: KABUKI, pit: KABUKI, flip: KABUKI, jar: KABUKI };
 /** How long the painting may take a frame (real ms): in play, and under the seam's cover (nothing of the world is drawn). */
 export const FLATS = { slice: 6, covered: 24 };
 

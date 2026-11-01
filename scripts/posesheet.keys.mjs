@@ -17,9 +17,11 @@ import os from 'node:os';
 import path from 'node:path';
 
 /** The tool as the Anim Lab wears it, by its moveset's id (the key table's key). */
-const LAB_TOOL = { cutlass: 'sondelass:cutlass', kick: 'none', fighter: 'none' };
+const LAB_TOOL = { cutlass: 'sondelass:cutlass', kick: 'none', fighter: 'none', brawler: 'none', sondelass: 'sondelass:cutlass' };
+/** A table kept in another file than its tool's name (the fighter kits': courier/anim/keys/fighterkits.js), as [file, export]. */
+const TABLE = { brawler: ['fighterkits', 'BRAWLER'], sondelass: ['fighterkits', 'SONDELASS'] };
 /** Where a table's timing is filled when the game has not registered it: the module and its export. */
-const FILL = { fighter: ['/src/progress/platformfighter.js', 'fillKeys'] };
+const FILL = { fighter: ['/src/progress/platformfighter.js', 'fillKeys'], brawler: ['/src/progress/platformfighter.js', 'fillKeys'], sondelass: ['/src/progress/platformfighter.js', 'fillKeys'] };
 
 export async function keySheet(out, want) {
   const VW = +(process.env.VW || 320), VH = +(process.env.VH || 420);
@@ -36,7 +38,7 @@ export async function keySheet(out, want) {
   const rows = [];
   for (const w of want) {
     const [tool, list] = w.split(':');
-    const got = await page.evaluate(async ({ tool, moves, labTool, fill }) => {
+    const got = await page.evaluate(async ({ tool, moves, labTool, fill, src }) => {
       document.getElementById('overlay')?.style.setProperty('display', 'none');
       const g = __game.game; await g.workbench.ready?.(); const wb = g.workbench;
       await g.clipPack?.social; wb.toggle(true); wb.show('models'); wb.root.style.display = 'none';
@@ -47,9 +49,9 @@ export async function keySheet(out, want) {
       clearTimeout(lab.pending);
       const { keysOf, KeyTrack } = await import('/src/courier/anim/keyposes.js');
       let table = null, filler = null; // (a table the game has not registered: read from its file, filled by the rule's own where it is there)
-      try { table = (await import(`/src/courier/anim/keys/${tool}.js`)).KEYS; } catch { /* (none) */ }
+      try { table = src ? (await import(`/src/courier/anim/keys/${src[0]}.js`))[src[1]] : (await import(`/src/courier/anim/keys/${tool}.js`)).KEYS; } catch { /* (none) */ }
       if (fill) try { filler = (await import(fill[0]))[fill[1]]; } catch { /* (the rule's module not on this branch: the table's own numbers) */ }
-      const keysFor = (id) => keysOf(tool, id) || (table?.[id] ? (filler ? filler(id, table[id]) : table[id]) : null);
+      const keysFor = (id) => keysOf(src ? `fighter.${tool}` : tool, id) || (table?.[id] ? (filler ? filler(id, table[id]) : table[id]) : null);
       const KT = new KeyTrack(g.character.clips), still = g.character.clips.pose();
       const M = lab.R.moveset, cv = g.renderer.domElement, W = cv.width, H = cv.height, res = [];
       for (const id of moves) {
@@ -91,7 +93,7 @@ export async function keySheet(out, want) {
         res.push({ id, cells, total, rate, real: +(total / 60 / rate).toFixed(3) });
       }
       return res;
-    }, { tool, moves: list.split(','), labTool: LAB_TOOL[tool] || tool, fill: FILL[tool] || null });
+    }, { tool, moves: list.split(','), labTool: LAB_TOOL[tool] || tool, fill: FILL[tool] || null, src: TABLE[tool] || null });
     for (const r of got) {
       if (r.missing) { console.log(`${tool}:${r.id}: ${r.missing}`); continue; }
       r.cells.forEach((c, j) => c.shots.forEach((u, v) => { const f = path.join(tmp, `${rows.length}-${j}-${v}.png`); fs.writeFileSync(f, Buffer.from(u.split(',')[1], 'base64')); c.shots[v] = f; }));

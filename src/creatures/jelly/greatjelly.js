@@ -106,7 +106,7 @@ export class GreatJelly {
       this.plates--; c.flash = 0.6; g.glyphs?.pop('ward', p.clone(), { color: 0xffffff, size: 0.7, life: 0.7, float: 0.25, burst: true, ring: true });
       sfx.shatter?.(0.8, g.listenerDistance(c.pos), 'clay'); return;
     }
-    const k = hitMult(ph, part, type) / (g.stun?.bonus(c) ?? 1); // (the reel is its own x3: the stun's bonus is not added on top)
+    const k = hitMult(ph, part, type) / (g.stun?.bonus(c) ?? 1); // (the reel is its own x3: strike's stun bonus taken back out, not added on top)
     this.bodyHurt(p, dir, power * k, cause, by, from);
     if (c.alive && !this.scripted) this.calls(by);
   }

@@ -29,6 +29,7 @@ import { RAIL_PRACTICE } from './railpractice.js';
 import { SEA_TOUR } from './opensea.js';
 import { READING } from './reading.js';
 import { DRAFTING } from './drafting.js';
+import { WINGS } from './wings.js';
 import { CASINO_TOUR } from './casino.js';
 import { GREAT_JELLY_TOUR } from './greatjelly.js';
 import { DUEL_TOUR } from './duel.js';
@@ -70,6 +71,7 @@ export const TRACKS = [
   { id: 'raceway', score: RACEWAY_TOUR, title: 'The Raceway', where: 'the Solar Skiff\'s test track: the paddock, the countdown, the race', notes: 'E major with its flat seventh at 140 bpm (E D A B): the paddock waiting in the sun on a phaser guitar, the grid held on a heartbeat and a riser, the race on four to the floor with a supersaw\'s arpeggio, the last lap with the Answer on brass, and the flag.' },
   { id: 'reading', score: READING, title: 'The Reading', where: 'the Pneuka Box turned over, a spread laid', notes: 'A reader\'s table at night in 3/4: E Phrygian dominant over a drone, the harp turning the chords, the Five laid a note a bar on the celesta as the cards are laid; the suit leading the spread answers it (Wands a horn, Cups the vibes, Swords a flute, Pentacles a marimba).' },
   { id: 'drafting', score: DRAFTING, title: 'The Drafting Table', where: 'the track editor open at the Raceway', notes: 'The Raceway\'s turnaround (E D A B) slowed to a lounge at 92 in a triplet swing: a Rhodes in sevenths and ninths, an upright walking, brushes and a ride, the vibes thinking aloud a phrase every two bars (Super Mario Maker\'s build mode: the race\'s own tune, sat down).' },
+  { id: 'wings', score: WINGS, title: 'The Wings', where: 'the wings of Strawman\'s Well', notes: 'The pit tuning (an A on the strings and the flute, fifths plucked under it), then a music-hall soft-shoe in 3/4 at 100 in F for a toy pit band: a piano\'s oom-pah-pah, the bass plucked, brushes, the tune on a celesta like a music box and the flute doubling it the second time round (a theatre before curtain-up).' },
   { id: 'opensea', score: SEA_TOUR, title: 'Off the Lanes', where: 'the open sea, at the free helm', notes: 'A swell in 6/8 whose mode is the square\'s law: Lydian by Margarite, Dorian in the middle (here at a quay, the deck aboard), Phrygian by Entropolis; then three rows off the lanes and lost (a drone, a whale, the tune frayed and a theremin wandering), then moored at an islet (a music box).' },
   { id: 'railpractice.overhead', score: RAIL_PRACTICE.overhead, title: 'Rail practice: overhead', where: 'a rail view played alone, 16 bars', notes: 'E minor at 160 bpm (a bar 1.5 s): a tick on every beat, a crash every four bars, over the Crude Sea\'s turn: the grid an overhead view\'s patterns are learned on.' },
   { id: 'railpractice.side', score: RAIL_PRACTICE.side, title: 'Rail practice: side', where: 'a rail view played alone, 16 bars', notes: 'E minor at 160 bpm (a bar 1.5 s): a tick on every beat, a crash every four bars, over the Crude Sea\'s turn: the grid a side view\'s patterns are learned on.' },

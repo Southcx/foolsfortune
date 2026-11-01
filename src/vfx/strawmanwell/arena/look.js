@@ -7,6 +7,7 @@
 //   the fighters    the kit's placeholder looks swapped for the rehearsal's (arena/fighterlooks.js: the same contract, so the kit never
 //                   knows): the rolling percent and its cast stars, the shield as gauze in a hoop, the stage lift and its follow-spot,
 //                   the shot's halo, the stage manager's clipboard for the frame data
+//   the barrage     the brawler's held jab drawn as ghost fists, the tsuke's beats under it (arena/barrage.js)
 //   the cast        each straw fighter restitched as an understudy in rehearsal blacks with Strawman's paper target pinned on
 //                   (arena/understudy.js), once, as the kit makes them
 // Nothing here moves a body or decides a rule: the kit's numbers are read, its looks object replaced whole when the room is dressed.
@@ -19,12 +20,14 @@
 import { RehearsalSet } from './set.js';
 import { ArenaFighterLooks } from './fighterlooks.js';
 import { dressUnderstudy } from './understudy.js';
+import { BarrageLook } from './barrage.js';
 
 const kitOf = (ctx) => ctx.well?.stages?.arena?.kit || null;
 
 export function dressArena(ctx) {
   const lane = ctx.lanes.arena; if (!lane || !kitOf(ctx)) return null;
   const set = new RehearsalSet(ctx, lane); ctx.add(set.group, 'arena');
+  const barrage = new BarrageLook(ctx); ctx.add(barrage.group, 'arena');
   /** The kit's looks made the rehearsal's (again if the kit was built anew), and every straw fighter it has made an understudy. */
   const keep = () => {
     const K = kitOf(ctx); if (!K) return;
@@ -33,7 +36,7 @@ export function dressArena(ctx) {
   };
   keep();
   return {
-    update(dt) { keep(); set.update(dt); },
-    dispose() { set.dispose(); },
+    update(dt) { keep(); set.update(dt); barrage.update(dt, kitOf(ctx)); },
+    dispose() { set.dispose(); barrage.dispose(); },
   };
 }

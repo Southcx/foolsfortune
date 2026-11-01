@@ -24,6 +24,13 @@ const CEREMONY = { heard: false }; // (a score ceremony seen this session: the t
 /** How far a Raceway trap's look is from the camera (m), for its tell's level; undefined if either is missing. */
 const trapDistance = (g, i) => { const at = g.raceway?.traps?.list?.[i]?.look?.root?.position; return at && g.camera ? at.distanceTo(g.camera.position) : undefined; };
 
+/** A done quest's points by its id, for the splash that lands later (quest.splash carries none). */
+const QUEST_POINTS = new Map();
+function questSting(s, g, kind, points) {
+  if (kind === 'done') { g.music?.duck?.(4.6, 0.2); s.questDone?.(points); }
+  else { g.music?.duck?.(1.8, 0.4); s.questStart?.(); }
+}
+
 const RULES = {
   'dreamvane.survey': (s) => s.surveySwing?.(), // (the heel going up; the blow's own sound is cartography's survey)
   'psygun.change': (s) => s.gunSwap?.(), // (shells.js)
@@ -282,6 +289,29 @@ const RULES = {
   'slab.use': (s, e) => s.slabUse?.(e.verb, e.stratum, e.cracked, e.broke),
   'slab.carve': (s, e) => s.slabCarve?.(e.flawless, e.cracked),
   'scan.read': (s, e) => s.scanRead?.(e.sealed, e.again),
+  'well.stage.enter': (s, e) => { if (e.stage !== 'wings') s.wellStageEnter?.(); }, // (Strawman's Well: the curtain drawn on a stage, audio/strawmanswell.js)
+  'well.stage.clear': (s, e, g) => { if (e.by !== 'courier') return; g.music?.duck?.(2, 0.4); s.wellClear?.(e.rank); }, // (the pit band's sting by rank)
+  'well.dummy.ko': (s, e) => { if (e.by === 'courier') s.wellKo?.(); }, // (the house roaring)
+  'well.dummy.trophy': (s, e) => { if (e.by === 'courier') s.wellTrophy?.(); }, // (a home run)
+  'well.target': (s, e) => s.wellTarget?.(e.kind, e.beat, e.id), // (a training target's body: audio/welltargets.js)
+  'well.fighter.hit': (s, e) => s.arenaHit?.(e.move, e.damage, e.result, e.percent), // (the Arena: a hit on its impact frame)
+  'well.fighter.ko': (s, e) => { if (e.by === 'courier') s.arenaKo?.(); },
+  'well.fighter.stock': (s, e) => s.arenaStock?.(e.left),
+  'well.hyoshigi': (s, e) => s.wellHyoshigi?.(e.kind), // (the Well's theatre: audio/welltheatre.js, Calissa's looks)
+  'well.tsuke': (s, e) => s.wellTsuke?.(e.kind),
+  'well.mie': (s) => s.wellMie?.(),
+  'well.noh': (s, e) => s.wellNoh?.(e.kind),
+  'well.kurogo.enter': (s) => s.wellKurogo?.(false),
+  'well.kurogo.leave': (s) => s.wellKurogo?.(true),
+  'well.dorodoro': (s) => s.wellDorodoro?.(),
+  'well.pit.death': (s) => s.wellPit?.(), // (the quick retry: tiny)
+  'well.flood.fill': (s) => s.wellFlood?.(), // (the basin full)
+  // a quest's jingle lands with the quest splash's word (Calissa's ui/questsplash.js: EVENT! / QUEST COMPLETE!, sent as it slams in, which
+  // may be seconds after the quest's own event while a live moment or the title placard holds it); with no splash, on the event itself
+  'quest.start': (s, e, g) => { if (!g.questSplash) questSting(s, g, 'start'); }, // (a quest begun: audio/quests.js; its steps are the log's, unheard)
+  'quest.done': (s, e, g) => { QUEST_POINTS.set(e.id ?? e.quest, e.points); if (!g.questSplash) questSting(s, g, 'done', e.points); },
+  'quest.splash': (s, e, g) => questSting(s, g, e.kind, QUEST_POINTS.get(e.id ?? e.quest)),
+  'recap.show': (s, e) => { if (e.auto) s.questRecap?.(); },
   'mimic.open': (s) => s.mimicOpen?.(),
   'mimic.step': (s, e) => s.mimicStep?.(e.i),
   'mimic.turn': (s) => s.mimicTurn?.(),

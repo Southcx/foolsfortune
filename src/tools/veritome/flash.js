@@ -97,7 +97,7 @@ export class Flash {
         t.mem?.see(g.player, 'courier', g.player.pos, 0.6); // (it saw where the light came from)
         if (t.attack?.phase === 'wind') t.cancel?.('dazzled');
       }
-      if (hasTag(t, 'creature') || t.type === 'clapper') { if (g.stun?.add(t, amount, { by: 'courier', cause: 'flash' })) downs++; }
+      if (hasTag(t, 'creature') || t.type === 'clapper') { if (g.creatures?.stagger(t, amount, { type: 'ego', by: 'courier', cause: 'flash' })) downs++; }
     }
     this.seen = seen; // (what it reached, kept off the bus: the Mark asks, tools/pairspecials.js)
     g.events?.emit('flash.fire', { hits, downs, lens });

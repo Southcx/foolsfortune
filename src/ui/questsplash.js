@@ -50,6 +50,8 @@ body.hud-touch .qs{padding-top:calc(var(--hud-log-y,60px) + var(--hud-log-h,36px
 .qs.on .qs-burst{animation:qs-burst-in .35s ${S.slam * 0.4}s ease-out both,qs-spin 9s linear infinite}
 @keyframes qs-burst-in{0%{opacity:0;transform:scale(.3)}100%{opacity:1;transform:scale(1)}}
 @keyframes qs-spin{to{rotate:360deg}}
+.qs.qs-lean.on .qs-burst{animation:qs-burst-in .35s ${S.slam * 0.4}s ease-out both}
+.qs.qs-lean .qs-word{filter:none}
 .qs-word{position:relative;font-family:${FONT.deco};font-weight:900;font-size:calc(var(--qs-size,12)*var(--u));line-height:1;letter-spacing:.03em;white-space:nowrap;
   color:${GOLD};background:linear-gradient(180deg,#fff4c8 0%,${GOLD} 45%,#c98a1c 100%);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;
   -webkit-text-stroke:calc(.45*var(--u)) ${INK};paint-order:stroke fill;
@@ -106,6 +108,7 @@ export class QuestSplash {
     if (this.root || typeof document === 'undefined') return;
     style();
     const r = (this.root = make('div', 'qs'));
+    if (this.game?.graphics?.machine?.mobile) r.classList.add('qs-lean'); // (the phone: the sunburst still and the word's two drop-shadows off; headless, the spin and the filters over the 2x canvas starved the compositor for 14 real s: Petra, 2026-11-01. The desk's look as it was)
     r.setAttribute('aria-live', 'polite');
     this.stage = make('div', 'qs-stage');
     r.append(make('div', 'qs-hush'), make('div', 'qs-flash'), this.stage);

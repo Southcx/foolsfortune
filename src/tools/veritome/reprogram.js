@@ -100,7 +100,7 @@ export class Reprogram {
     if (this.open || g.weapon?.drawT > 0.3 || g.god?.controlling) return null;
     let best = null, bd = REACH;
     for (const c of g.creatures?.list || []) {
-      if (!c.alive || !hasTag(c, 'programmable') || !g.stun?.stunned(c)) continue;
+      if (!c.alive || !hasTag(c, 'programmable') || !(g.stun?.stunned(c) || g.domainArtsRun?.mayReprogram?.(c))) continue; // (or an open mind: Receptivity, a domain's rung)
       const d = Math.hypot(c.pos.x - P.pos.x, c.pos.z - P.pos.z);
       if (d < bd && Math.abs(c.pos.y - P.pos.y) < 2) { bd = d; best = c; }
     }
