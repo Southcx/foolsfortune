@@ -43,6 +43,7 @@ import { AwakeningLook } from '../vfx/awakeninglook.js';
 import { GodhandLooks } from '../vfx/godhand/godhandlooks.js';
 import { DomainLooks } from '../vfx/domainlooks.js';
 import { installSentinelBody } from '../vfx/sentinelbody.js';
+import { SentinelLook } from '../vfx/sentinellook.js';
 import { PalmDieLook } from '../vfx/godhand/palmdie.js';
 import { MawWipe } from '../vfx/mawwipe.js';
 import { AreaWipe } from '../vfx/areawipe.js';
@@ -86,6 +87,7 @@ export async function bootWorld(game, made) {
   game.aberrantWipe = new AberrantWipe(game); // (the battle transition into a puzzle duel with an aberrant: catch, bug, crackle on close(onCovered, { foe }), the shatter on open(); a screen volume of the glow, vfx/aberrantwipe.js)
   game.weatherLook = new WeatherLook(game); // (the weather's and the hour's look: reads game.weather; with none, the painting as it is)
   game.godhandLooks = new GodhandLooks(game); // (the god powers' marks, the miracles' falls, the drawn sign: vfx/godhand/godhandlooks.js)
+  game.sentinelLook = new SentinelLook(game); // (a sentinel's moments: the sand it rises from, its slam, a crack, a mend, its fall: vfx/sentinellook.js)
   installSentinelBody(game); // (a sentinel's body for its mind: game.makeSentinelBody({ scale }), vfx/sentinelbody.js)
   game.domainLooks = new DomainLooks(game); // (the domains' effects at their moments: a level-up at the Courier, a god power's act beside its mark; vfx/domainlooks.js)
   game.palmDieLook = new PalmDieLook(game); // (the palm die in the god hand's palm, in your stones' mineral: vfx/godhand/palmdie.js)

@@ -39,6 +39,7 @@ import { FEELING_EFFECTS } from './library/feelings.js'; // (the seven feelings'
 import { CLASS_ART_EFFECTS } from './library/classarts/index.js'; // (the 76 class arts' looks, a domain's grammar in its suit's colour: vfx/classartlooks.js plays them)
 import { PAIR_SPECIAL_EFFECTS } from './library/pairspecials/index.js'; // (the 21 pair specials' looks, the main's and the sub's grammars braided: vfx/pairspeciallooks.js plays them)
 import { GARDEN_EFFECTS } from './library/garden.js'; // (the Spirit Garden's: a launch lotus's fling and catch, a chimney's smoke: vfx/garden/launchlotus.js, facilitylooks.js)
+import { SENTINEL_EFFECTS } from './library/sentinel.js'; // (a sentinel's moments: vfx/sentinellook.js plays them)
 import { PANIC_EFFECTS } from './library/panic.js'; // (a creature struck by a thrown thing: its sweat flung, its stars spun off: vfx/panic.js plays them)
 import { SLAB_EFFECTS } from './library/slabs.js'; // (carving a slab: each verb's moment, the fossil lifting and the spirit waking: vfx/garden/slablook.js plays them)
 const L = (o) => o; // (a layer: only for readability)
@@ -449,5 +450,6 @@ export const LIBRARY = {
   ...PAIR_SPECIAL_EFFECTS,
   ...GARDEN_EFFECTS,
   ...PANIC_EFFECTS,
+  ...SENTINEL_EFFECTS,
   ...SLAB_EFFECTS,
 };
