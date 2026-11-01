@@ -27,3 +27,8 @@ Delete your row's note in your branch when it is built.
 - **Espada:** the domain ladder's words: the 11 traits, the seven rungs at 60, True Odds' row labels and Borrow a Verb's log lines. They go to Dovina as one note in `docs/handoffs/dovina/` (all four live in her files). Pip's and Saggar's lines were already on main (9590502).
 - **Wanda:** the domain ladder heard: `domain.milestone`, `domain.trait.learn`, `borrow.use { kind }` (`slipjelly` or `wisp`), and the depth rungs' moments if cheap. Files: new `src/audio/domainladder.js`, `cues.js`, `sfx.js`, two lines in `worldmoments.js`, her glossary line, OST.md.
 - **Petra:** the Well's phone frame, once `/perfab` reports. Until then: the odds tag at the Tithe console in a shot, and Borrow a Verb in real play.
+
+## At 21:45 UTC (v383 live)
+- **Merged:** Dovina 6213972 (Espada's ladder words in), Wanda 014e4b8 and 07d18ba (the domain ladder heard), Espada 0a3a6d8 and 1c6eb09 (her note to Dovina, now built: Dovina deletes it). Casebook rule 391 numbered.
+- **Done this round:** Espada's row and Wanda's row. Dovina's own list goes on. Calissa's look pass has not landed.
+- **Petra:** the phone's v375 field report puts Strawman's Well at 24 to 29 fps against the workshop's 29 to 30 (Minimum tier, 4 to 8 ms a frame more). Which family of draws costs that waits on `/perfab`.
