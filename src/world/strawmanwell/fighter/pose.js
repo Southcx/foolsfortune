@@ -77,15 +77,15 @@ export class CourierPose {
   target(F, ch, C) {
     const A = this.A, B = this.B, st = F.st;
     const seq = (id, frame, startup, a1, total) => {
-      const P = POSES[id]; if (!P) return 0;
+      const P = F.kit?.poses?.[id] || POSES[id]; if (!P) return 0; // (a tool's own clip for the slot, else the bare set's)
       const K = this.keyTimes(ch, P.clip, P.limb); if (!K) return 0;
       if (frame < startup) { C.sample(P.clip, K.lead, A, false); return smooth((frame + 1) / EASE.lead); }
       if (frame <= a1) { C.sample(P.clip, K.lead, A, false); C.blend(A, C.sample(P.clip, K.strike, B, false), smooth((frame - startup + 1) / EASE.strike)); return 1; }
       C.sample(P.clip, K.strike, A, false); C.blend(A, C.sample(P.clip, K.follow, B, false), smooth((frame - a1) / EASE.follow));
       return 1 - smooth((frame - (total - EASE.out)) / EASE.out);
     };
-    if (st === 'attack' && F.m) { const m = moveOf(F.m); return seq(F.m, F.mf, m.startup, m.active[1], m.total); }
-    if (st === 'throw' && F.m) { const m = moveOf(F.m); return seq(F.m, F.f, m.startup, m.active[1], m.total); }
+    if (st === 'attack' && F.m) { const m = moveOf(F.m, F); return seq(F.m, F.mf, m.startup, m.active[1], m.total); }
+    if (st === 'throw' && F.m) { const m = moveOf(F.m, F); return seq(F.m, F.f, m.startup, m.active[1], m.total); }
     if (st === 'grab') return seq('grab', F.f, 7, 8, 30);
     if (st === 'pummel') return seq('pummel', F.f, KIT.pummelAt, KIT.pummelAt + 1, 24);
     if (st === 'getup' && F.getup === 'attack') { const [a0, a1] = KIT.getupAttackAt; return seq('getupAttack', F.f, a0, a1, F.getupN); }

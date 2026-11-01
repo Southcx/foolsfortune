@@ -59,7 +59,7 @@ export function pummelStep(F) {
   if (F.f >= GRAB.pummel.total) { const n = F.holdN; go(F, 'hold'); F.holdN = n; }
 }
 export function throwStep(F) {
-  const V = F.victim, m = moveOf(F.m); F.mo.mode = 'hold';
+  const V = F.victim, m = moveOf(F.m, F); F.mo.mode = 'hold';
   if (V && V.holder === F && F.f >= m.startup) { // (let go on the throw's own frame, weight-blind)
     V.holder = null; F.victim = null; V.st = 'idle'; // (out of the hold, so the throw's blow is taken by the body)
     const hit = hitOf(F, F.m), res = takeHit(V, F, hit);

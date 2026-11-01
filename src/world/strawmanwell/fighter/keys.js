@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
-// THE ARENA'S KEYS (docs/plans/FIGHTER.md 2): while the fighter kit is on, the keys its controls table takes (Shift the shield, E the
-// smash, R the grab, LMB the attack, RMB the special) are the kit's alone: hidden from everything else that reads the game's input (the
-// psygun's trigger and draw, the belt's lend and swap, the techs' latches, the core's dash and slide) by the input's own claim
+// THE ARENA'S KEYS (docs/plans/FIGHTER.md 2, 8): while the fighter kit is on, the keys its controls table takes (Shift the shield, R the
+// grab, LMB the attack, RMB the special; E retired 2026-11-01, still held up so the blink cannot fire) are the kit's alone: hidden
+// from everything else that reads the game's input (the psygun's trigger and draw, the belt's lend and swap, the techs' latches, the core's dash and slide) by the input's own claim
 // (`input.claim('arena', MASKED)`, core/input.js: the claimed codes read up and unpressed to every other reader, `axis` too), released
 // whole when the kit leaves. The kit reads the true keys underneath (`input.rawDown`, `input.rawPressed`). A press is latched once a
 // render frame and spent by the first fixed step that reads it, so a tap in a frame with no fixed step (a fast display) is never lost,
@@ -18,7 +18,7 @@
 /** Hidden from the rest of the game while the kit is on: its own keys, and what else they would set going (the tools and techs). */
 export const MASKED = new Set(['Mouse0', 'Mouse1', 'Mouse2', 'ShiftLeft', 'ShiftRight', 'KeyE', 'KeyR', 'KeyQ', 'KeyX', 'KeyV', 'KeyG', 'KeyC', 'KeyH', 'KeyY', 'KeyT']);
 /** What the kit reads fresh: latched each render frame until a fixed step spends it. */
-const READ = ['KeyA', 'KeyD', 'KeyW', 'KeyS', 'Space', 'Mouse0', 'Mouse2', 'KeyE', 'KeyR', 'ShiftLeft', 'ShiftRight'];
+const READ = ['KeyA', 'KeyD', 'KeyW', 'KeyS', 'Space', 'Mouse0', 'Mouse2', 'KeyR', 'ShiftLeft', 'ShiftRight'];
 
 const OWNER = 'arena';
 
