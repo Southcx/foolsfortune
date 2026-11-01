@@ -43,6 +43,7 @@ import { AwakeningLook } from '../vfx/awakeninglook.js';
 import { GodhandLooks } from '../vfx/godhand/godhandlooks.js';
 import { DomainLooks } from '../vfx/domainlooks.js';
 import { installSentinelBody } from '../vfx/sentinelbody.js';
+import { installDropSprites } from '../vfx/dropsprites.js';
 import { SentinelLook } from '../vfx/sentinellook.js';
 import { PalmDieLook } from '../vfx/godhand/palmdie.js';
 import { MawWipe } from '../vfx/mawwipe.js';
@@ -89,6 +90,7 @@ export async function bootWorld(game, made) {
   game.godhandLooks = new GodhandLooks(game); // (the god powers' marks, the miracles' falls, the drawn sign: vfx/godhand/godhandlooks.js)
   game.sentinelLook = new SentinelLook(game); // (a sentinel's moments: the sand it rises from, its slam, a crack, a mend, its fall: vfx/sentinellook.js)
   installSentinelBody(game); // (a sentinel's body for its mind: game.makeSentinelBody({ scale }), vfx/sentinelbody.js)
+  installDropSprites(game); // (the drops' 48 x 48 sprites by broader kind: game.dropSprites.texture(cat), vfx/dropsprites.js)
   game.domainLooks = new DomainLooks(game); // (the domains' effects at their moments: a level-up at the Courier, a god power's act beside its mark; vfx/domainlooks.js)
   game.palmDieLook = new PalmDieLook(game); // (the palm die in the god hand's palm, in your stones' mineral: vfx/godhand/palmdie.js)
   game.awakeningLook = new AwakeningLook(game); // (a feeling's heavy weather flooding round the Courier on feeling.wake, its clip on feeling.embody: vfx/awakeninglook.js)
