@@ -15,12 +15,6 @@ import { DUNE } from '../world/dunes/dunes.js';
 import { ROOFED } from '../render/zonemap.js';
 import { LACHRYMA } from '../music/lachryma.js';
 import { chooseMusic, chooseTitleMusic } from '../music/choose.js';
-import { ChestFx } from '../vfx/chestfx.js';
-import { WireCompass } from '../vfx/wirecompass.js';
-import { VaneHud } from '../vfx/vanehud.js';
-import { CrucibelleHud } from '../vfx/crucibellehud.js';
-import { VeritomeFrame } from '../vfx/veritomeframe.js';
-import { TollReach } from '../vfx/tollreach.js';
 
 const FIXED = 1 / 60;
 
@@ -350,15 +344,8 @@ export function bootFrame(game, made) {
     game.temper.update();
     game.vfx.update(game.rawDt || dt);
     game.cine.update(game.rawDt || dt);
-    (game.chestFx ||= new ChestFx(game)).update(dt); // (the chest's opening: Mesh Create's effect meshes, vfx/chestfx.js)
     game.releaseCrack.update(game.rawDt ?? dt); // (after the vessel's cracks are set: it holds a release's back for its pressure beat)
     game.hudRing.update(dt); // (the 3D HUD, the Mind's layer in the world: docs/plans/OVERLAY.md)
-    (game.wireCompass ||= new WireCompass(game)).visible = !!game.belt?.isWorn('dreamvane') || !!game.crucibelle?.held; // (the compass is the Dreamvane's: worn, it shows; and the Crucibelle's in the hands, for its pendulum)
-    game.wireCompass.update(dt);
-    (game.vaneHud ||= new VaneHud(game, game.wireCompass)).update(dt); // (the Dreamvane's own marks on the compass: vfx/vanehud.js)
-    (game.crucibelleHud ||= new CrucibelleHud(game, game.wireCompass)).update(dt); // (the Crucibelle's pendulum on the compass, the beat for the eye: vfx/crucibellehud.js)
-    (game.veritomeFrame ||= new VeritomeFrame(game)).update(game.rawDt || dt); // (the lens's frame: what a plate would hold, in the third person while the Veritome is drawn: vfx/veritomeframe.js)
-    (game.tollReach ||= new TollReach(game)).update(game.rawDt ?? dt); // (the Crucibelle's toll's reach at the feet, lit on the beat: vfx/tollreach.js)
     game.systems.run('marks', dt, game.rawDt ?? dt); // (the world's dressers and each tool's marks, joined where each was built: core/systems.js)
 
     game.mood.end(game.rawDt); // (and the room's lights borrowed again, just before the draw)

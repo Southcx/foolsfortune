@@ -40,6 +40,9 @@ import { shapeWarmMesh } from '../vfx/shapes/layer.js';
 import { WireCompass } from '../vfx/wirecompass.js';
 import { VaneHud } from '../vfx/vanehud.js';
 import { CrucibelleHud } from '../vfx/crucibellehud.js';
+import { VeritomeFrame } from '../vfx/veritomeframe.js';
+import { TollReach } from '../vfx/tollreach.js';
+import { ChestFx } from '../vfx/chestfx.js';
 import { LockheartReliquary } from '../vfx/lockheartreliquary.js';
 import { SoulBrushDesk } from '../vfx/soulbrushdesk.js';
 import { PsygunReticle } from '../vfx/psygunreticle.js'; // (the psygun variants' looks: OVERLAY.md 19)
@@ -129,6 +132,16 @@ export async function bootWarmup(game, made) {
   // the first tick after the warm-up and compiled in play (3 programs, measured; casebook rules 17 and 18); their own update hides them after
   game.wireCompass ||= new WireCompass(game); game.vaneHud ||= new VaneHud(game, game.wireCompass); game.crucibelleHud ||= new CrucibelleHud(game, game.wireCompass);
   for (const o of [game.wireCompass.tape, game.wireCompass.wpTape, game.wireCompass.wpWorld, game.vaneHud.group, game.vaneHud.res, game.crucibelleHud.group, game.crucibelleHud.ring]) if (o) o.visible = true;
+  // (each frame, in the marks phase: core/systems.js. The compass shows while the Dreamvane is worn or the Crucibelle is in the hands;
+  // its two tools' marks draw on it after it, so the three are one system, in that order)
+  game.systems.add('marks', (dt) => {
+    game.wireCompass.visible = !!game.belt?.isWorn('dreamvane') || !!game.crucibelle?.held;
+    game.wireCompass.update(dt); game.vaneHud.update(dt); game.crucibelleHud.update(dt);
+  }, { name: 'wireCompass' });
+  game.veritomeFrame ||= new VeritomeFrame(game); game.tollReach ||= new TollReach(game); game.chestFx ||= new ChestFx(game); // (the lens's frame, the toll's reach, a chest's opening)
+  game.systems.add('marks', game.veritomeFrame, { clock: 'raw', name: 'veritomeFrame' });
+  game.systems.add('marks', game.tollReach, { clock: 'raw', name: 'tollReach' });
+  game.systems.add('marks', game.chestFx, { name: 'chestFx' });
   game.present.shade(true); // (shaded as they will be drawn: compiled flat, then turned smooth by the pass a second later, every program was built twice)
   try { await renderer.compileAsync(scene, camera); } catch (e) { console.warn('shader warm-up', e); }
   game.hudLayout = new HudLayout(game); // (where the instruments stand on touch, the thumbs' areas, the log's ticker and the turn card: ui/hudlayout.js)
