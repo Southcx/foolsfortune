@@ -537,4 +537,7 @@ Soul Alchemy is the eye's craft (Potion Craft's map). Spirit Cooking is the hand
 - **The tells** are the interface, never a thermometer.
 - **What a dish serves:** a held draught that bends the next presses, and seasoning for Focus, Dexterity and Perception.
 - **Clay is the kitchen:** pots from the kiln, their walls a heat you chose, a new donabe sealed with porridge.
+- **A feeling's taste is what it feels like to eat** (South, 2026-11-01): Wonder cool and fizzy, Mirth sweet, Desire rich, Fury
+  chilli, Gall bitter (the poison alarm), Grief salt and the onion's tears, Dread sour (the spoilage warning).
+- **The hearth is in the Spirit Garden**, where the slice-of-life activities live.
 - **Failure is comedy** and goes to the World Mushroom.

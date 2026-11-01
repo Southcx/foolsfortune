@@ -6,8 +6,8 @@ can adopt. Use real cooking techniques as this is a great opportunity to slip in
 implementation is fantasy or unrealistic. Your intuition is very correct that this is VERY much associated with Soul Alchemy."
 
 The research, every number with its source, is `research/SPIRIT-COOKING.md`. It covers about 25 games, 21 real techniques with their
-numbers, the flavour-to-feeling traditions, and a pitfall table. This plan is the design drawn from it. Section 12 lists what waits on
-South.
+numbers, the flavour-to-feeling traditions, and a pitfall table. This plan is the design drawn from it. Section 12 has South's rulings
+(2026-11-01).
 
 ## 1. What it is, in one breath
 
@@ -110,29 +110,38 @@ A dish is a short list of moves and its ingredients. Families keep the moves fro
 - **By repair.** A recipe handed over with lines missing, where the order of moves is the puzzle (Venba). It comes on a cracked clay
   slab, called a recipe slab, never an ostracon.
 
-## 6. Flavour and feeling
+## 6. Flavour and feeling (ruled by South, 2026-11-01)
 
 Each ingredient adds to a taste vector. The dish's **dominant** taste picks its feeling. Its **balance** sets the grade, as Salt Fat
-Acid Heat teaches: a dish with one loud flavour and nothing to answer it is flat or harsh. The five native feelings follow the garden's
-canon (Wu Xing, Espada's ruling: SPIRIT-GARDEN.md), because that is already taught.
+Acid Heat teaches: a dish with one loud flavour and nothing to answer it is flat or harsh.
 
-| feeling | taste | why |
-|---|---|---|
-| Wonder (wood) | sour, and cooling (mint, citrus zest) | Wu Xing's wood is sour; cooling is a real sensation (TRPM8) |
-| Mirth (fire) | bitter in a pinch: roast, char, coffee, cocoa | Wu Xing's fire is bitter; a learned pleasure (bittersweet) |
-| Desire (earth) | sweet: honey, fat, richness | Wu Xing's earth is sweet; love is tasted sweet in the research |
-| Grief (metal) | the alliums' tears: onion, leek, horseradish | Wu Xing's metal is pungent and grief; an onion's tear compound is literally the lachrymatory factor |
-| Dread (water) | salty: brine, the sea, preserved things | Wu Xing's water is salty and fear; salt is what keeps things from rotting |
-| Gall | bitter in a heap, and astringent: unripe fruit, over-steeped tea | bitterness you can taste (LORE.md); astringency warns off unripe fruit |
-| Fury | capsaicin's burn: chilli, mustard, ginger | a pain, not a taste (TRPV1), sought for the rush |
+South's rulings shaped the map:
+- "Mirth and Wonder are positive feelings, why would they be associated with bitter? Bitter is like, poison."
+- "Fury is chili, spicy is mad, steaming."
 
-Not feelings:
+So a feeling's taste is what it feels like to eat. The pleasant feelings get the pleasant tastes. Bitter, the body's poison alarm, is
+Gall's alone.
+
+The map leaves the garden's Wu Xing pairing where the two disagree. That pairing (SPIRIT-GARDEN.md) still holds for the garden's
+planting; it is not the kitchen's.
+
+| feeling | taste | ingredients | what it teaches |
+|---|---|---|---|
+| Wonder | cool and fizzy | mint, citrus zest, a sparkling spring | cooling is a real sensation (TRPM8, menthol's receptor), and so is a fizz's prickle: tastes that aren't tastes |
+| Mirth | sweet | fruit, honey, candy, syrup | sweet is the body's "energy here" signal, the taste of a party |
+| Desire | rich | butter, cream, oil, marrow | fat is a candidate sixth basic taste (oleogustus), the one a craving reaches for |
+| Fury | chilli heat | chilli, mustard, ginger, pepper | capsaicin is pain, not taste (TRPV1), and you sweat and steam as if angry |
+| Gall | bitter, and astringent | bile-bitter leaves, unripe fruit, over-steeped tea | bitter is the body's poison alarm (about 25 receptors for it); astringency warns off the unripe |
+| Grief | salt, and the onion's tears | salt, brine, onion, leek, horseradish | tears are salt water, and an onion's tear compound is literally the lachrymatory factor |
+| Dread | sour | vinegar, ferments on the turn, sour milk | sour is the body's spoilage warning: the taste that says "this may have gone" |
+
+Dread's sour is the warning, not the kitchen's whole sour: a squeeze of acid at the taste-and-adjust (section 8) is balance, not Dread.
+A dish turns toward Dread only when sour dominates it.
+
+Three tastes are not feelings:
 - **Umami** sets how long the draught holds. Dashi's kombu and katsuobushi together multiply it, the real synergy Ikeda found in 1907.
 - **Kokumi** (body, from ferments: soy, miso) sets its strength.
-- **Fat** is the carrier: whether two feelings are felt at once as an agate (GLOSSARY section 2).
-
-Bitter as two feelings by dose teaches something true: bitterness is the toxin alarm, pleasant only in a pinch. Gall is never a bad
-ingredient, only an overdose. This waits on South's ruling (section 12).
+- **Salt as seasoning** at the last move lifts every taste. It counts toward Grief only when it dominates.
 
 ## 7. What a dish gives
 
@@ -211,10 +220,14 @@ Plain names throughout until South calls it settled: the cooking station, a dish
 5. **The words** (Espada): dish names, recipe slabs, a folk's broken family recipe.
 6. **Bread first, then rice, then broth.** Each family lands as its own round, and South plays each before the next.
 
-## 12. For South
+## 12. Ruled (South, 2026-11-01)
 
-1. Is a dish a **held draught**, one at a time, feeding the press (section 7), or a buff of its own kind?
-2. **Bitter by dose**: Mirth in a pinch, Gall in a heap? And **Fury**: chilli's burn (this plan) or sour (the tradition's wood)?
-3. **The hearth in the Spirit Garden** first, and the portable pot later?
-4. **Seasoning from cooking:** Focus, Dexterity, Perception?
-5. A **sibling at the pot**: from the start, or later?
+1. **A dish is a held draught,** one at a time, feeding the press (section 7). South: "yes".
+2. **Bitter is Gall's alone.** The pleasant feelings take the pleasant tastes (section 6).
+3. **Fury is chilli.**
+4. **The hearth is in the Spirit Garden.** South: "The Spirit garden is our facility hotspot where all the slice-of-life activities
+   occur currently. Let's keep that trend." A portable pot comes later, if ever.
+5. **A sibling at the pot comes later.** South is still making the avatars.
+
+Open: none for South before the build. The seasoning sources (Focus, Dexterity, Perception) and the numbers in section 9 are Dovina's,
+priced with `scripts/economy.mjs` when the rules are written.
