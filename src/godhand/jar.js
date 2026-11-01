@@ -18,6 +18,7 @@ import { pneukaJarPainting, paintFlash } from '../vfx/vessoulpaint.js';
 import { crackPointOn, crackRibbon } from '../vfx/crackskin.js';
 import { PneukaJarClips } from './pneukajarclips.js';
 import { stream } from '../core/rng.js';
+import { jarCracks } from './jarcracks.js';
 const simRand = stream('godhand/jar'); // (the simulation's chance: core/rng.js, the same twice)
 
 const UP = new THREE.Vector3(0, 1, 0);
@@ -26,7 +27,8 @@ const _v = new THREE.Vector3();
 export class GodJar {
   constructor(M, gltf) {
     this.M = M;
-    this.pos = new THREE.Vector3(); this.hp = T.god.jarHp; this.max = T.god.jarHp; this.alive = true; this.mendBy = null;
+    this.pos = new THREE.Vector3(); this.max = T.god.jarHp; jarCracks(this, this.max); // (hp read off the jar form's cracks: SUBSTRATE.md F1)
+    this.alive = true; this.mendBy = null;
     this.scars = 0; this.reforgeT = 0; this.flash = 0; this.cracks = { dark: [], gold: [] };
     this.build(gltf);
   }
@@ -64,14 +66,14 @@ export class GodJar {
   hit(amount, from, kind = 'raid') {
     const V = this;
     if (!V.alive || this.M.state !== 'on') return;
-    V.hp = Math.max(0, V.hp - amount);
+    const b = V.jarCracks.strike(amount);
     V.flash = 1;
     this.M.cam.shake = Math.max(this.M.cam.shake, 0.5);
     this.addCrack(from, amount);
     sfx.jarHit(Math.min(1.5, amount / 10));
     this.M.game.fx.impact?.(V.pos.clone().setY(V.pos.y + 0.7), UP, { sparks: 10, dust: 8 });
-    this.M.game.events?.emit('jar.hit', { kind, amount });
-    if (V.hp <= 0) this.shatter();
+    this.M.game.events?.emit('jar.hit', { kind, amount, region: b.region });
+    if (b.shatter || V.hp <= 1e-6) this.shatter();
   }
 
   /** A raider reaches it: it claps, breaks on the jar, and the jar takes the blow. */

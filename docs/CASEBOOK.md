@@ -1079,3 +1079,5 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
   own tag and scaled only by a modifier written for it; a blow is measured against the base pool, never the widened one; a result is settled, never spent.
 386. **A texture is unbound from every uniform and material before it is disposed.** Three uploads anything still
   bound at the next draw, disposed or not, and the copy it makes then belongs to no one: let go of the reference first, then the texture.
+387. **A state with its own way out of being stuck is never also handed a shared one.** A generic recovery
+  that resets to idle silently undoes every purposeful state it reaches first; exempt them, and measure the state reaching its goal.

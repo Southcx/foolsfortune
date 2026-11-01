@@ -4820,3 +4820,14 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the uniform is unbound (`null`, its value at rest) before the texture is disposed. After: 163 to 163 textures over 12
   crossings, the sweep 234 of 234.
 - **Rule:** 386
+
+### 2026-11-01 · The siege's raiders never reached the Pneuka Jar (creatures/clappers.js; found by Petra, measuring a raid for SUBSTRATE.md F1)
+- **Seen:** over 150 real s and 5 raid waves in the siege, the god hand's Jar took 0 hits and its pool stayed at 100. Every raider
+  left 'raid' for idle, taunt or nap within about 10 real s and crept in at about 0.03 m/s.
+- **Cause, as measured:** traced one raider frame by frame. At 7.7 m it met cover, and the clapperjars' generic stuck check (every
+  0.5 real s) asked `pickTarget`, got none, and set it idle before the raid's own sidestep (1.2 real s) could act; idle then chose a
+  taunt. With that check skipped, the raiders stalled at 4.24 m: the Jar's dais is a 0.35 m step and a clapperjar's autostep 0.12 m.
+- **Fix:** the stuck check skips 'raid' and 'guard', which carry their own; a raider stopped for 0.6 real s below a Jar standing
+  higher (within 6 m) hops up (vy 5.2), else sidesteps. After: 19 hits in 5 waves, 133 hp (14, 21, 28, 35, 35 a wave), the undefended
+  Jar shattering in wave 5 and re-forming; the basement sweep's fails the same 4 as before the change; stress 0 violations.
+- **Rule:** 387

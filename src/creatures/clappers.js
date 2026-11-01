@@ -353,7 +353,13 @@ export class Clappers {
           if (d < 0.95 && Math.abs(c.pos.y - god.jar.pos.y) < 1.2) { god.raidStrike(c); break; }
           // (blocked by something: sidestep for a moment)
           c.raidT = (c.raidT || 0) + dt;
-          if (c.raidT > 1.2) { c.detour = c.pos.distanceTo(c.raidFrom || c.pos) < 0.6 ? (c.detour ? 0 : (simRand() < 0.5 ? 1.2 : -1.2)) : 0; c.raidFrom = c.pos.clone(); c.raidT = 0; }
+          if (c.raidT > 0.6) {
+            const stuck = c.pos.distanceTo(c.raidFrom || c.pos) < 0.3;
+            // (the jar's dais is a step taller than a clapperjar's stride: a raider stopped below it hops up, else it sidesteps)
+            if (stuck && c.grounded && god.jar.pos.y - c.pos.y > 0.15 && d < 6) { c.vy = 5.2; c.grounded = false; c.detour = 0; }
+            else c.detour = stuck ? (c.detour ? 0 : (simRand() < 0.5 ? 1.2 : -1.2)) : 0;
+            c.raidFrom = c.pos.clone(); c.raidT = 0;
+          }
           if (c.detour) c.target = c.pos.clone().add(new THREE.Vector3(Math.sin(c.heading + c.detour), 0, Math.cos(c.heading + c.detour)).multiplyScalar(2));
           break;
         }
@@ -418,7 +424,7 @@ export class Clappers {
       if (c.pos.y < (c.killY ?? -5)) { this.hit(c, c.pos.clone(), UP, 1, 'splat'); continue; }
       c.body.setNextKinematicTranslation({ x: c.pos.x, y: c.pos.y + (HALF + RADIUS) * C.scale, z: c.pos.z });
       // stuck? pick somewhere else
-      if (!physical && c.speed > 1) {
+      if (!physical && c.speed > 1 && c.state !== 'raid' && c.state !== 'guard') { // (a raid and a guard have their own detour: never idled here)
         c.stuckT += dt;
         if (c.stuckT > 0.5) {
           if (c.pos.distanceTo(c.lastPos) < c.speed * 0.5 * 0.3) { c.target = this.pickTarget(c); if (!c.target) c.state = 'idle'; }
