@@ -33,6 +33,8 @@
 //   game.belt.mainHand ('R' | 'L': the hand the main is held in, drawn)   game.belt.freeHand (the other: where a lent verb's gesture goes)
 // ---------------------------------------------------------------------------------------
 import { TOOL_IDS, START, pairOf, swapRefusal } from '../progress/toolpairs.js';
+import * as THREE from 'three';
+import { lendHand } from './lend.js';
 
 /** X draws and stows the main; R is the sub's verb, on the press (PNEUKA-BOX.md 5: Gulp is a parry, so R can never wait for its release). */
 export const DRAW_KEY = 'KeyX', LEND_KEY = 'KeyR';
@@ -107,6 +109,8 @@ export class ToolBelt {
     }
     if (inp.wasPressed(SWAP_KEY)) this.swap();
     if (inp.wasPressed(LEND_KEY) && !busy) {
+      const bv = this.game.domainArtsRun?.borrowed?.(); // (Borrow a Verb, Possession's rung at 60: a creature's move in the sub's place a while; courier/domainarts/depth.js)
+      if (bv) { const at = lendHand(this.game, new THREE.Vector3()), dir = this.game.aim?.dir?.(new THREE.Vector3()) ?? this.game.camera.getWorldDirection(new THREE.Vector3()); if (bv.fire(at, dir)) this.game.events?.emit('borrow.use', { kind: bv.kind, by: 'courier' }); return; }
       const t = this.get(this.sub);
       const A = this.game.classArtsRun, free = !!A?.freeLend?.(); // (Choice, a class's art: the lend after a swap paid for, courier/classarts/body.js)
       if (free) this.game.lachryma?.addModifier?.('art.choice', { costMult: { '*': 0 } });

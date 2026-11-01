@@ -120,6 +120,7 @@ export class SlipJellies {
     g.creatures.add(c);
     g.ai?.add(c.brain);
     this.list.push(c);
+    c.lendVerb = (at, dir, by) => this.lendGlob(c, at, dir, by); // (Borrow a Verb, Possession's rung at 60: its spit glob thrown as yours, courier/domainarts/depth.js)
     return c;
   }
 
@@ -483,9 +484,9 @@ export class SlipJellies {
       q.v.y -= 9.81 * dt;
       const from = q.m.position.clone(); q.m.position.addScaledVector(q.v, dt);
       const step = q.m.position.clone().sub(from), len = step.length();
-      const hitP = len > 1e-4 ? g.physics.raycast(from, step.normalize(), len, null, undefined, (k) => !k.isSensor() && !g.physics.entityOf(k)?.type) : null;
+      const hitP = len > 1e-4 ? g.physics.raycast(from, step.normalize(), len, q.by ? P?.collider : null, undefined, (k) => !k.isSensor() && !g.physics.entityOf(k)?.type) : null;
       // (sent back by a parry, it strikes whatever it meets, its own thrower too; else it looks for its foe)
-      const hitC = q.reflected ? g.creatures?.near(q.m.position, 0.5).find((k) => !k.ally) : null;
+      const hitC = q.reflected ? g.creatures?.near(q.m.position, 0.5).find((k) => !k.ally && !(q.by && k === q.c)) : null; // (a borrowed one spares its lender)
       const foe = q.reflected ? null : q.foe, F = foe ? (foe === P ? _a.copy(P.pos).setY(P.pos.y + 0.9) : foe.center?.(_a) ?? _a.copy(foe.pos)) : null;
       const nearF = !!(F && foe.alive !== false && q.m.position.distanceTo(F) < JELLY.spit.hit);
       if (hitP || nearF || hitC || q.t > 4) {
@@ -495,10 +496,26 @@ export class SlipJellies {
         if (q.paint && n.y > 0.5) g.paintmap?.stamp(at.x, at.y, at.z, 1.1, q.paint, 0.8); // (the brush's bat sent it back in its feeling)
         sfx.jellySquelch(g.listenerDistance(at), 0.8);
         if (nearF && q.c.alive) this.strike(q.c, foe, 'spit');
-        if (hitC) g.creatures.strike(hitC, at, _b.copy(q.v).normalize(), 1, 'parry', 'courier');
+        if (hitC) g.creatures.strike(hitC, at, _b.copy(q.v).normalize(), 1, q.by ? 'borrow' : 'parry', q.by || 'courier');
         this.dropGlob(i);
       }
     }
+  }
+  /** Its spit glob thrown as someone else's (Borrow a Verb): from `at` along `dir`, arced to land where the aim ray meets the world (or
+   *  its longest spit's reach), as its own spit is aimed; already sent back (q.reflected), so it strikes the first creature it meets as
+   *  `by`'s blow; it paints and spills as its own does. */
+  lendGlob(c, at, dir, by = 'courier') {
+    const g = this.game, S = JELLY.spit, d = _b.copy(dir).normalize();
+    const hit = g.physics.raycast(at, d, S.max, g.player?.collider, undefined, (k) => !k.isSensor());
+    const aim = hit ? hit.point.clone() : at.clone().addScaledVector(d, S.max);
+    const flat = Math.hypot(aim.x - at.x, aim.z - at.z), tFlight = Math.max(0.15, flat / S.speed);
+    const v = new THREE.Vector3(aim.x - at.x, 0, aim.z - at.z); if (v.lengthSq() < 1e-6) v.set(d.x, 0, d.z);
+    v.setLength(S.speed); v.y = (aim.y - at.y) / tFlight + 0.5 * 9.81 * tFlight;
+    const m = new THREE.Mesh(this.globGeo, this.globMat); m.position.copy(at); g.scene.add(m);
+    const q = { m, v, t: 0, c, foe: null, pos: m.position, vel: v, lachryma: 2, from: c, reflected: true, by, vanish: () => { q.gone = true; } };
+    this.globs.push(q); (g.projectiles ||= new Set()).add(q);
+    sfx.jellySquelch(0, 0.9);
+    return true;
   }
   dropGlob(i) { const q = this.globs[i]; this.game.scene.remove(q.m); q.mark?.clear(); this.game.projectiles?.delete(q); this.globs.splice(i, 1); }
 

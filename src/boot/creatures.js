@@ -38,6 +38,7 @@ import { RareFinds } from '../world/dunes/rarefinds.js';
 import { DunesDress } from '../vfx/dunes/index.js';
 import { RacewayDress } from '../vfx/raceway/index.js';
 import { JellyMountLook } from '../vfx/jellymount/look.js';
+import { OddsTags } from '../feedback/oddstags.js';
 
 export async function bootCreatures(game, made) {
   const { scene, level, loader, bytes, clapG } = made;
@@ -50,6 +51,7 @@ export async function bootCreatures(game, made) {
   game.dissolve = new Dissolve(game); // (a zandatsu's pieces, come undone into Lachryma: vfx/dissolve.js)
   game.spawnLook = new SpawnLook(game); // (how a creature comes in: the island's own rise from the ground, an Egregore or a stray tears in from midair: vfx/spawnlook.js)
   game.blowFeel = new BlowFeel(game); // (a melee blow's weight, looks only: its sparks, ring, ribbon flare, camera kick, flinch: vfx/blowfeel.js)
+  game.oddsTags = new OddsTags(game); // (the world's chances pinned to their thing, for True Odds: feedback/oddstags.js)
   game.figmentScatter = new FigmentScatter(game); // (a Figment's death: snapped, its wire, motes into the air and the ground: vfx/figmentscatter.js)
   game.jellies = new SlipJellies(game, await loader.parseAsync(bytes(jellyB64), ''));
   // (their homes over 45 m from the busker's mat on Grog's pier, a slip jelly's leash and sight together: it was 32, the owner's R9)

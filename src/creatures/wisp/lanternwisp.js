@@ -81,6 +81,7 @@ export class LanternWisps {
     this.list.push(c);
     this.play(c, 'Idle');
     this.look.dress(c); // [look]
+    c.lendVerb = (at, dir, by) => this.lendBolt(c, at, dir, by); // (Borrow a Verb, Possession's rung at 60: its flame ball thrown as yours)
     return c;
   }
   head(c) { return new THREE.Vector3(c.pos.x, c.pos.y + WISP.hover + WISP.height + 0.2, c.pos.z); }
@@ -165,6 +166,15 @@ export class LanternWisps {
     this.bolts.push(q); (g.projectiles ||= new Set()).add(q);
     g.events?.emit(`${c.ev || 'wisp'}.cast`, { by: 'creature' });
   }
+  /** Its flame ball thrown as someone else's (Borrow a Verb): from `at` along `dir`, already sent back (q.reflected), striking the first
+   *  creature it meets as `by`'s blow. */
+  lendBolt(c, at, dir, by = 'courier') {
+    const g = this.game, W = WISP.cast, v = new THREE.Vector3().copy(dir).normalize().multiplyScalar(W.speed);
+    const m = this.look.bolt(at.clone());
+    const q = { m, pos: m.position, vel: v, v, t: 0, c, foe: null, lachryma: 1, from: c, reflected: true, by, vanish: () => { q.gone = true; } };
+    this.bolts.push(q); (g.projectiles ||= new Set()).add(q);
+    return true;
+  }
   updateBolts(dt) {
     const g = this.game, P = g.player, W = WISP.cast;
     for (let i = this.bolts.length - 1; i >= 0; i--) {
@@ -174,10 +184,10 @@ export class LanternWisps {
       const wall = len > 1e-4 ? g.physics.raycast(from, step.normalize(), len, P?.collider, undefined, (k) => !k.isSensor() && !g.physics.entityOf(k)?.type) : null;
       const chest = P ? _a.copy(P.pos).setY(P.pos.y + 1.1) : null;
       const onCourier = !q.reflected && chest && q.pos.distanceTo(chest) < W.reach;
-      const onFoe = q.reflected ? g.creatures.near(q.pos, 0.6).find((k) => !k.ally) : null; // (sent back by a parry, it strikes what it meets, its own caster too)
+      const onFoe = q.reflected ? g.creatures.near(q.pos, 0.6).find((k) => !k.ally && !(q.by && k === q.c)) : null; // (sent back by a parry, it strikes what it meets, its own caster too)
       if (q.gone || wall || onCourier || onFoe || q.t > W.life) {
         if (onCourier && !(P.invuln > 0)) g.vesselDamage?.hit({ from: q.c.pos.clone(), k: W.k, why: 'wisp', by: 'creature' });
-        if (onFoe) g.creatures.strike(onFoe, q.pos.clone(), q.vel.clone().normalize(), W.power, 'parry', 'courier');
+        if (onFoe) g.creatures.strike(onFoe, q.pos.clone(), q.vel.clone().normalize(), W.power, q.by ? 'borrow' : 'parry', q.by || 'courier');
         if (!q.gone) g.fx?.impact?.(q.pos.clone(), q.vel.clone().normalize().negate(), { sparks: 8, dust: 0 });
         g.scene.remove(q.m); q.mark?.clear?.(); g.projectiles?.delete(q); this.bolts.splice(i, 1);
       }
