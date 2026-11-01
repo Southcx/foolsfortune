@@ -7,10 +7,12 @@
 // Pit's retries and a clear's sting have the room.
 //   TUNE    four bars: the A, the fifths, a last plucked note and the hush before the band
 //   WINGS   sixteen bars, looped: F, the C7 walk, F7 lifting to Bb, its minor's sigh (Bbm), home
+//   ARENA   the same tune as a galop at 138 for the Arena's fights (Dovina's platform-fighter stage): brass on the tune, the snare on
+//           the off, a crash every eight bars; back to the soft-shoe on the bar line when the fight is over
 // Prior art: a pit orchestra tuning before the curtain (every theatre, and Fantasia's opening), the soft-shoe of the music hall and
 // vaudeville, Paper Mario's stage shows, Puppeteer's theatre of the head.
 //
-//   import { WINGS } from './wings.js'   (music/choose.js, while game.strawmanWell.here and in the wings)
+//   import { WINGS, setWings } from './wings.js'   (music/choose.js: the wings, and the Arena with setWings({ arena: true }))
 // ---------------------------------------------------------------------------------------
 
 const E = (i, b, d, n, v, o) => ({ i, b, d, n, v, o });
@@ -45,10 +47,31 @@ const band = (i) => {
   return ev;
 };
 
+/** The Arena on (Dovina's platform-fighter stage, set by music/choose.js): the band strikes up its galop. */
+const W = { arena: false };
+export function setWings({ arena = false } = {}) { W.arena = !!arena; }
+
+// the Arena's galop: the same tune at a fighting pace, two bars of 2/4 a bar of the waltz, the brass on the tune, a snare on the off
+const galop = (i) => {
+  const k = Math.floor(i / 2) % 16, half = i % 2, [root, ch] = PROG[k], ev = [];
+  ev.push(E('pizz', 0, 0.5, half ? root + 7 : root, 0.3), E('kick', 0, 1, null, 0.3));
+  ev.push(E('snare', 1, 1, null, 0.2), E('hat', 0.5, 0.5, null, 0.08), E('hat', 1.5, 0.5, null, 0.08));
+  ch.forEach((n) => ev.push(E('piano', 1, 0.4, n, 0.07)));
+  for (const [b, d, n] of TUNE[k]) {
+    const bb = b * (2 / 3) - half * 2; if (bb < 0 || bb >= 2) continue; // (the waltz's three beats squeezed into two bars of two)
+    ev.push(E('brass', bb, Math.min(d * 0.66, 2 - bb), n, 0.12), E('celesta', bb, 0.4, n + 12, 0.1));
+  }
+  if (i % 8 === 7) ev.push(E('crash', 0, 1, null, 0.12));
+  return ev;
+};
+
 export const WINGS = {
   title: 'The Wings', root: 65, bpm: 100, beats: 3, arrange: true, loopFrom: 1, moodless: true, fadeIn: 1.2, scale: [0, 2, 4, 7, 9],
   sections: [
     { id: 'tune', bars: 4, gain: 2, bar: (i) => tuning(i) },
     { id: 'wings', bars: 32, gain: 2, bar: (i) => band(i) },
+    { id: 'arena', bars: 32, bpm: 138, beats: 2, gain: 2, bar: (i) => galop(i) },
   ],
+  // the Arena's galop while a fight is on, the wings' soft-shoe again when it is over, each on the bar line (iMUSE's resequencing)
+  jump: (section, bar) => (W.arena ? 2 : section === 0 ? null : section === 2 || bar >= 31 ? 1 : null),
 };

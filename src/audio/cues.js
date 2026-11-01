@@ -294,6 +294,9 @@ const RULES = {
   'well.dummy.ko': (s, e) => { if (e.by === 'courier') s.wellKo?.(); }, // (the house roaring)
   'well.dummy.trophy': (s, e) => { if (e.by === 'courier') s.wellTrophy?.(); }, // (a home run)
   'well.target': (s, e) => s.wellTarget?.(e.kind, e.beat, e.id), // (a training target's body: audio/welltargets.js)
+  'well.fighter.hit': (s, e) => s.arenaHit?.(e.move, e.damage, e.result, e.percent), // (the Arena: a hit on its impact frame)
+  'well.fighter.ko': (s, e) => { if (e.by === 'courier') s.arenaKo?.(); },
+  'well.fighter.stock': (s, e) => s.arenaStock?.(e.left),
   'well.pit.death': (s) => s.wellPit?.(), // (the quick retry: tiny)
   'well.flood.fill': (s) => s.wellFlood?.(), // (the basin full)
   // a quest's jingle lands with the quest splash's word (Calissa's ui/questsplash.js: EVENT! / QUEST COMPLETE!, sent as it slams in, which

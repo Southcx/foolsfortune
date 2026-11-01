@@ -10,11 +10,14 @@
 //   A TROPHY         (well.dummy.trophy) a home run: the bat's crack, a long whistle up and a bell where it lands
 //   THE PIT          (well.pit.death) the quick retry: one tiny wooden tick and a blip, under everything (it fires a lot)
 //   THE FLOOD        (well.flood.fill) the basin full: a glug rising to a held chord
+//   THE ARENA        (well.fighter.hit / .ko / .stock) a hit by its weight on the impact frame, a shield's clink and a powershield's
+//                    ping; a KO the house's roar; a stock lost a falling whistle and the house's sigh (the last, a falling three)
 //
 // Prior art: Sonic the Hedgehog's act clear and its tally, Super Meat Boy's instant retry (a sound you stop hearing), Super Smash Bros.'
 // KO roar and Home-Run Contest, a theatre's curtain and the hyoshigi's knocks before it.
 //
-//   sfx.wellEnter() .wellClear(rank) .wellKo() .wellTrophy() .wellPit() .wellFlood()
+//   sfx.wellEnter() .wellClear(rank) .wellKo() .wellTrophy() .wellPit() .wellFlood() .arenaHit(move, damage, result, percent)
+//   .arenaKo() .arenaStock(left)
 // ---------------------------------------------------------------------------------------
 
 const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
@@ -70,5 +73,30 @@ export class StrawmansWellSounds {
     const t = this.ctx.currentTime, d = this.out(0.45, 0.7);
     for (let i = 0; i < 5; i++) this.tone(t + i * 0.08, 0.1, { f0: 180 + i * 60, f1: 260 + i * 70, gain: 0.12, dest: d }); // (the glug rising)
     [0, 7, 12, 16].forEach((st) => this.tone(t + 0.45, 1.6, { f0: hz(KEY + 12 + st), gain: 0.035, dest: d })); // (full)
+  }
+
+  /** The Arena: a hit on its impact frame, by weight (Dovina's light under 6, heavy under 13, a finisher past), a shield's or a
+   *  powershield's answer, a throw's thud; louder as the struck one's percent climbs (Smash's crowd-pleasing crack at high percent). */
+  arenaHit(move, damage = 6, result = 'hit', percent = 0) {
+    if (!this.ok() || !this.allow('arenaHit', 20) || !this.hitOk?.()) return;
+    const t = this.ctx.currentTime, d = this.ctx.createGain(); d.gain.value = 2.4; d.connect(this.out(0.4, 0.3)); setTimeout(() => d.disconnect(), 2000);
+    if (result === 'miss') return;
+    if (result === 'shield') { this.noise(t, 0.06, { type: 'bandpass', f0: 1800, q: 3, gain: 0.35, dest: d }); this.tone(t, 0.25, { f0: 620, f1: 560, gain: 0.05, dest: d }); return; } // (a dull glass clink)
+    if (result === 'power') { [88, 95].forEach((m, i) => this.tone(t + i * 0.04, 0.4, { f0: hz(m), gain: 0.06, dest: d })); this.noise(t, 0.05, { type: 'highpass', f0: 6000, gain: 0.2, dest: d }); return; } // (a bright ping: perfect)
+    const w = damage < 6 ? 0 : damage < 13 ? 1 : 2, hot = Math.min(1, percent / 150), thrown = /throw$/.test(move || '');
+    this.noise(t, 0.04 + w * 0.03, { type: 'bandpass', f0: thrown ? 600 : 1600 - w * 400, q: 1.2, gain: 0.45 + w * 0.12, dest: d }); // (the smack)
+    this.tone(t, 0.1 + w * 0.08, { f0: 200 - w * 50, f1: 70 - w * 15, type: 'triangle', gain: 0.25 + w * 0.08, dest: d }); // (the body)
+    if (w === 2) { this.tone(t, 0.5, { f0: 75, f1: 32, gain: 0.25, dest: d }); this.noise(t + 0.02, 0.25, { type: 'highpass', f0: 3500, gain: 0.15 + hot * 0.15, dest: d }); } // (a finisher's crack)
+    if (move === 'nspecial') this.tone(t, 0.12, { f0: 1500, f1: 600, type: 'square', gain: 0.02, dest: d }); // (the shot's zap)
+  }
+  /** A foe knocked past the blast line: the house roaring over a star-KO's far pop. */
+  arenaKo() { this.wellKo(); }
+  /** One of your stocks lost: a falling whistle into a soft thud, the house's sigh. */
+  arenaStock(left = 0) {
+    if (!this.ok() || !this.allow('arenaStock', 1)) return;
+    const t = this.ctx.currentTime, d = this.out(0.35, 0.6);
+    this.tone(t, 0.6, { f0: hz(88), f1: hz(70), gain: 0.05, dest: d }); this.tone(t + 0.55, 0.3, { f0: 110, f1: 60, type: 'triangle', gain: 0.25, dest: d });
+    this.noise(t + 0.6, 0.9, { type: 'bandpass', f0: 500, f1: 350, q: 0.8, gain: 0.12, attack: 0.2, dest: d }); // (the house's "aww")
+    if (!left) [0, -1, -5].forEach((st, i) => this.tone(t + 1 + i * 0.2, 0.5, { f0: hz(KEY + 12 + st), type: 'triangle', gain: 0.05, dest: d })); // (the last: a falling three)
   }
 }
