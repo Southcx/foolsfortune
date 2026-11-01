@@ -407,6 +407,11 @@ the King's. Law: a posted price, no haggling (Raku's opposite). Never says the Q
   Contractors under no letter) and their brig the ***False Light***. **Their mark** (the owner, 2026-10-20): every Wrecker hull runs on a **forged seal** in its cradle; a ship that should answer to no one answers to a counterfeit name. Who first forged them is *open*; **Old Nobody**, a rogue Leviathan
   (authored by no one, and what Odysseus told the Cyclops): it comes back, and Letty posts WANTED: NOBODY.
 - **The fish**: five aspects; the Emocean is the ultimate fishing hole.
+- **The sentinel** (plain name; Espada's, 2026-10-30): a shield-bearer haniwa, the clay figure set round a Kofun tomb to guard the
+  dead. It rises when the island is warped too far, as an immune response. It is the island's own Figment (an antibody, not a soldier):
+  it mends and never hunts. **What the folk say** (talks.js, 2026-11-01): Grog, who remembers the town that was, pities it ("it's only
+  trying to keep the shape it remembers"). Letty, the war hawk, cheers it on and wants one of her own. Poll shouts ANTIBODY. Raku, once
+  he can see the odds, admits the Tithe was always honest: a miser's horror at a fair game.
 
 ## 8. Things and looks
 
