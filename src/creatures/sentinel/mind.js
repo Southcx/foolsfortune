@@ -82,7 +82,8 @@ export function sentinelMind(g, S) {
           const R = g.rejection, out = g.creations?.erode?.(m.at, S.wear);
           const i = R.marks.indexOf(m); if (i >= 0) R.marks.splice(i, 1);
           R.dissonance = Math.max(0, R.dissonance - S.mend);
-          g.events?.emit('sentinel.mend', { volume: +(out?.volume || 0).toFixed(2), by: 'environment' });
+          c.mended = (c.mended || 0) + 1;
+          g.events?.emit('sentinel.mend', { volume: +(out?.volume || 0).toFixed(2), last: R.marks.length === 0, ground: S.ground(), by: 'environment' });
           return 'done';
         },
       });
@@ -91,7 +92,7 @@ export function sentinelMind(g, S) {
         tick: (x, dt) => {
           const c = x.c; c.pose = 'idle'; c.want.set(0, 0, 0);
           c.calmT = (c.calmT || 0) + dt;
-          if (c.calmT > S.settle) { W.vanish(c, 'environment', 'settled'); return 'done'; }
+          if (c.calmT > S.settle) { W.vanish(c, 'environment', c.mended ? 'settled' : 'driven'); return 'done'; }
           return marks().length || foe(x) ? 'done' : 'run';
         },
       });

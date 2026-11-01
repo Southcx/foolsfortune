@@ -7,18 +7,20 @@
 // (wisp/lanternwisp.js, `c.ev = 'sentinel'`: its events say sentinel.*), a placeholder until Calissa's clay body (her handoff).
 //
 //   game.sentinels = new Sentinels(game)   .send(at, level)   .update(dt)   .list   SENTINEL (its numbers)
-//   events: sentinel.wake { level, by }, sentinel.seek { by }, sentinel.mend { volume, by }, and from its body sentinel.hit, .burst, .cast
+//   events: sentinel.wake { level, ground, by }, sentinel.seek { by }, sentinel.mend { volume, last, ground, by }, and from its body sentinel.hit,
+//   .burst { cause: 'settled' (sunk after mending) | 'driven' (sunk with nothing mended) | a blow's }, .cast
 //
 // Prior art: the immune system's white blood cell (it seeks the damage, not you); Black & White's and Populous's land answering the god;
 // Left 4 Dead's director for the pacing (rejection's own); the slip jelly's and the wisp's minds for the parts (docs/AI.md).
 // ---------------------------------------------------------------------------------------
 import { Reasoner } from '../ai/index.js';
 import { sentinelMind } from './mind.js';
+import { groundOf } from '../../godhand/matter.js';
 
 /** Its numbers. from: the Dissonance Level it is first sent at; one alive at a time; mend: the dissonance a mend takes off; wear: the
  *  radius (m) of the creation worn back at a mark; reach: how near (m) it mends from; marks: how many warp marks rejection keeps;
  *  settle: real s with nothing to mend before it sinks; gone: real s a sunk or burst body lingers before it is taken down. */
-export const SENTINEL = { from: 4, alive: 1, mend: 18, wear: 2.6, reach: 2.2, marks: 12, settle: 10, gone: 6, hp: 9 };
+export const SENTINEL = { from: 4, alive: 1, mend: 18, wear: 2.6, reach: 2.2, marks: 12, settle: 10, gone: 6, hp: 9, ground: () => groundOf().firm.name }; // (`ground`: the island's firm layer, its word in the log)
 
 export class Sentinels {
   constructor(game) {
@@ -33,7 +35,7 @@ export class Sentinels {
     const c = W.spawn(at);
     c.kind = 'sentinel'; c.name = 'sentinel'; c.ev = 'sentinel'; c.once1 = true; c.sentinel = true; c.hp = c.maxHp = SENTINEL.hp;
     this.list.push(c);
-    g.events?.emit('sentinel.wake', { level, by: 'environment' });
+    g.events?.emit('sentinel.wake', { level, ground: SENTINEL.ground(), by: 'environment' });
     if (c.brain.action) c.brain.end('swap');
     c.brain.reasoner = new Reasoner(this.mind.actions(W)); c.brain.decide();
     return c;
