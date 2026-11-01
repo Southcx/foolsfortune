@@ -248,6 +248,7 @@ export class ClassArtsBody extends Tech {
   press() {
     const g = this.game, R = this.worn('action');
     if (!R) { g.log?.say('warn', 'You wear no action art yet. /art lists the ones you have opened.', { key: 'art.none', throttle: 3 }); return; }
+    if (R.domain) { g.domainArtsRun?.press?.(R); return; } // (a domain's rung worn in the action slot: Plating, Re-type, courier/domainarts/run.js)
     const act = ACTS[R.id];
     if (act?.again?.(this, R)) return; // (a second press that is the art's own, inside its cooldown: Blink Mark's blink to its mark)
     if (!this.ready(R.id)) { g.log?.say('warn', `${R.label} is cooling down.`, { key: 'art.cool', throttle: 1.5 }); sfx.fizzle?.(); return; }

@@ -127,39 +127,53 @@ export class VesselDamage {
   get P() { return this.game.player; }
 
   /** A blow on them: resolved to a region, that region cracked by `k` (0..1). */
-  hit({ point = null, from = null, dir = null, k = 0.5, shatter = 0, why = 'blow', by = 'environment' } = {}) { // (`shatter` 0..1: the blow's own breaking power, a move's property: SUBSTRATE.md F5b)
-    if ((this.game.duel?.active || this.game.duel?.pending) && by !== 'courier') return -1; // (a puzzle duel is a pocket: nothing outside reaches you, PUZZLE-DUELS.md 16.1)
-    if (this.game.cradles?.sealed) return this.game.cradles.struck({ point, from, dir, k, why, by }); // (a sealed Jar is struck only through its cradle: world/cradles.js)
-    if (!this.boxes || this.game.death?.active) return -1;
-    if (this.game.jellyMount?.absorb?.(k)) return -1; // (ridden, the slip jelly takes the blow first, as Yoshi does: courier/jellymount/jellymount.js)
-    this.game.classArtsRun?.struck?.({ from, k, by }); // (who struck: Grudge's, and Payback's blow dealt back: a class's art, courier/classarts/body.js)
-    if (this.game.courierMind) k *= courierMindEffect(this.game.courierMind.mind).fragility; // (the Courier's mental state: Prismatic takes x2, Stoic x0.5, shield and clay alike: the owner's ruling)
-    k *= this.game.classArtsRun?.takenMult?.() ?? 1; // (Bulwark braced: a class's art, courier/classarts/body.js)
-    const P = this.P, mid = new THREE.Vector3(P.pos.x, P.pos.y + 1.0, P.pos.z);
-    let region = 1;
-    if (point) region = this.boxes.nearest(point).region;
-    else {
-      // the line the blow came along: from the attacker toward their middle, or back along the push (its own vectors: the capsule tests
-      // use the module's scratch ones)
-      const o = from ? from.clone().setY(Math.max(from.y + 0.4, P.pos.y + 0.3)) : mid.clone().addScaledVector(dir || new THREE.Vector3(0, 0, 1), -2.5);
-      region = this.boxes.raycast(o, mid.clone().sub(o).normalize()).region;
+  hit({ point = null, from = null, dir = null, k = 0.5, shatter = 0, why = 'blow', by = 'environment', past = false, region: bound = null } = {}) { // (`shatter` 0..1: the blow's own breaking power, SUBSTRATE.md F5b; `past`: a blow already past every gate (Postpone's held blow landing at `bound`): courier/domainarts/run.js)
+    const g = this.game;
+    if (!this.boxes || g.death?.active) return -1;
+    if (!past) {
+      if ((g.duel?.active || g.duel?.pending) && by !== 'courier') return -1; // (a puzzle duel is a pocket: nothing outside reaches you, PUZZLE-DUELS.md 16.1)
+      if (g.cradles?.sealed) return g.cradles.struck({ point, from, dir, k, why, by }); // (a sealed Jar is struck only through its cradle: world/cradles.js)
+      if (g.jellyMount?.absorb?.(k)) return -1; // (ridden, the slip jelly takes the blow first, as Yoshi does: courier/jellymount/jellymount.js)
+      g.classArtsRun?.struck?.({ from, k, by }); // (who struck: Grudge's, and Payback's blow dealt back: a class's art, courier/classarts/body.js)
+      if (g.courierMind) k *= courierMindEffect(g.courierMind.mind).fragility; // (the Courier's mental state: Prismatic takes x2, Stoic x0.5, shield and clay alike: the owner's ruling)
+      k *= g.classArtsRun?.takenMult?.() ?? 1; // (Bulwark braced: a class's art, courier/classarts/body.js)
     }
-    // the one rule (progress/combat/vessel.js blowOn): the pool's shield first (Halo's), then the region cracked by what is left, and the
-    // shatter where a region already cracked through is struck or the cracks pass the line (sooner for a blow with `shatter`)
-    const pool = this.game.lachryma;
-    const res = blowOn({ form: 'courier', crack: Object.fromEntries(REGIONS.map((r, i) => [r, this.crack[i]])) }, { region: REGIONS[region], k, shatter, pool: pool ? pool.value : null });
-    if (res.shield > 0) {
-      pool.drain(res.shield, 'shield'); this.game.classArtsRun?.surrender?.(res.shield); // (Surrender, a class's art: guarding, the shield's cost given back)
-      if (res.crack <= 0) { this.game.events?.emit('vessel.shield', { k: +k.toFixed(2), left: +pool.fraction.toFixed(2), why, by }); return -1; }
-      if (res.shield > 0.5) this.game.events?.emit('vessel.shieldbreak', { why, by });
+    const bi = typeof bound === 'number' ? bound : REGIONS.indexOf(bound); // (bound as an index or a name: Postpone keeps the index)
+    let region = bi >= 0 && bi < REGIONS.length ? bi : 1;
+    if (!(bi >= 0 && bi < REGIONS.length)) {
+      const P = this.P, mid = new THREE.Vector3(P.pos.x, P.pos.y + 1.0, P.pos.z);
+      if (point) region = this.boxes.nearest(point).region;
+      else {
+        // the line the blow came along: from the attacker toward their middle, or back along the push (its own vectors: the capsule tests
+        // use the module's scratch ones)
+        const o = from ? from.clone().setY(Math.max(from.y + 0.4, P.pos.y + 0.3)) : mid.clone().addScaledVector(dir || new THREE.Vector3(0, 0, 1), -2.5);
+        region = this.boxes.raycast(o, mid.clone().sub(o).normalize()).region;
+      }
     }
-    if (this.game.classArtsRun?.ward?.()) { this.game.events?.emit('vessel.ward', { k: +k.toFixed(2), why, by }); return -1; } // (Steadfast: the next blow past the shield cracks nothing)
-    if (res.shatter && this.game.classArtsRun?.rebirth?.()) { this.mendAll(); return -1; } // (Rebirth, once a game day: whole instead, a class's art)
-    if (res.shatter) { this.game.death?.begin({ why, by, region: REGIONS[region] }); return region; } // (courier/vessel/death.js)
+    // the one rule (progress/combat/vessel.js blowOn): the pool's shield first (Halo's); what it cannot hold goes on past the gates below
+    // (Postpone's defer, Steadfast's ward, the Plating) and then cracks the region, shattering where a region already cracked through is
+    // struck or the cracks pass the line (sooner for a blow with `shatter`)
+    const state = () => ({ form: 'courier', crack: Object.fromEntries(REGIONS.map((r, i) => [r, this.crack[i]])) });
+    const pool = g.lachryma;
+    if (!past && pool) {
+      const sh = blowOn(state(), { region: REGIONS[region], k, pool: pool.value });
+      if (sh.shield > 0) {
+        pool.drain(sh.shield, 'shield'); g.classArtsRun?.surrender?.(sh.shield); // (Surrender, a class's art: guarding, the shield's cost given back)
+        if (sh.crack <= 0) { g.events?.emit('vessel.shield', { k: +k.toFixed(2), left: +pool.fraction.toFixed(2), why, by }); return -1; }
+        if (sh.shield > 0.5) g.events?.emit('vessel.shieldbreak', { why, by });
+      }
+      k = sh.crack / FORMS.courier.crack; // (the blow's share past the shield)
+    }
+    if (!past && g.domainArtsRun?.defer?.({ point, from, dir, k, why, by })) return -1; // (Postpone: held, to land later with `past`: a domain's rung)
+    if (!past && g.classArtsRun?.ward?.()) { g.events?.emit('vessel.ward', { k: +k.toFixed(2), why, by }); return -1; } // (Steadfast: the next blow past the shield cracks nothing)
+    k = g.domainArtsRun?.plate?.(region, k) ?? k; if (!(k > 0)) return region; // (Plating: the plate over this region takes its share, never one that would shatter)
+    const res = blowOn(state(), { region: REGIONS[region], k, shatter });
+    if (res.shatter && g.classArtsRun?.rebirth?.()) { this.mendAll(); return -1; } // (Rebirth, once a game day: whole instead, a class's art)
+    if (res.shatter) { g.death?.begin({ why, by, region: REGIONS[region] }); return region; } // (courier/vessel/death.js)
     this.crack[region] = res.state.crack[REGIONS[region]];
     this.quiet[region] = 0; this.peak[region] = Math.max(this.peak[region], this.crack[region]);
     sfx.vesselCrack?.(this.crack[region], REGIONS[region]); // (Wanda's: docs/HANDOFFS.md)
-    this.game.events?.emit('vessel.crack', { region: REGIONS[region], k: +this.crack[region].toFixed(2), why, by });
+    g.events?.emit('vessel.crack', { region: REGIONS[region], k: +this.crack[region].toFixed(2), why, by });
     return region;
   }
 

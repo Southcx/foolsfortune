@@ -111,6 +111,7 @@ export class Creatures {
     if (by === 'courier') c.touched = true; // (the Courier struck it: a sibling finishing it credits them, coop/fight.js)
     const g = this.game, ps = by === 'courier' ? g.pairSpecials?.onStrike?.(c, cause, type, power, point, dir) : null; // (a pair's special on the blow: tools/pairspecials.js)
     if (ps?.type) type = ps.type;
+    const da = by === 'courier' ? g.domainArtsRun?.onStrike?.(c, cause, type, power) : null; if (da?.type) type = da.type; // (Re-type, a domain's rung: courier/domainarts/run.js)
     const m = multiplier(type, affinityOf(c), // (its body's type, never its feeling: progress/combat/constitution.js, SUBSTRATE.md F3)
       [...c.status.keys()].filter((n) => st(c, n)));
     // (the damage alone, never the build-up: the Courier's mental state, Prismatic x1.5 to Stoic x0.67, the owner's ruling in
