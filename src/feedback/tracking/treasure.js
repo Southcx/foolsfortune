@@ -34,6 +34,6 @@ export function treasureRules({ on, L, log, where, g }) {
     if (L.first(`curio.first.${e.id}`)) log.say('record', `Logged: the ${c.name}. ${c.blurb}`);
   });
   on('econ.grant', (e) => log.say('system', `The System grants you ${plural(e.n, 'Lachryma cube')}.`));
-  on('tithe.pull', () => { log.say('loot', said(g, `You feed the Tithe ${plural(TITHE.cost, 'cube')}. A sealed chest falls onto the dais: {use} at it breaks the seal.`), { tone: '#d6c8ff' }); }); // (how to open it, said where it lands: QA-A; the words a placeholder for Espada's)
+  on('tithe.pull', () => { log.say('loot', said(g, `You feed the Tithe ${plural(TITHE.cost, 'cube')}, and a sealed chest drops onto the dais. Press {use} by it to break the seal.`), { tone: '#d6c8ff' }); }); // (how to open it, said where it lands: QA-A; Espada's words)
   on('chest.drop', (e) => { L.inc('chest.drop'); if (e.from === 'catch') log.say('loot', 'A chest falls out of the air.', { tone: tone(e.tier) }); });
 }
