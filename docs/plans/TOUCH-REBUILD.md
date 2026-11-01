@@ -59,7 +59,7 @@ only renames it:
 | **C** (above A) | vertical | A / Cross | JUMP | JUMP | JUMP | HOP | FORM (Astral, Umbral) | (none) |
 | **D** (the arc's top) | the secondary verb | Y / Triangle | (none) | the tool's RMB (AIM, SPECIAL, the lens) | SPECIAL | NOSE (in the air) | LOCK (tap: the nearest) | BROADSIDE |
 | **E** (the arc's left end) | defend | R1 | PARRY (once learned) | PARRY | GRAB | TAIL (in the air) | PARRY | PARRY (the spit) |
-| **F** (the arc's far end, ringed) | the meter | R2 | ART (the class art or the rung on G) | ART | (none) | BOOST (a banked flare) | SURGE | MOUNT |
+| **F** (the outer ring, second from the fold's root, ringed) | the meter | R2 | ART (the class art or the rung on G) | ART | (none) | BOOST (a banked flare) | SURGE | MOUNT |
 
 - **A slot with no verb in a context is not drawn** (never a dead tile). The layout reads the mode's mask: the Arena's `MASKED` keys
   hide their slots.
@@ -69,7 +69,6 @@ only renames it:
     has no tile.
   - **In a 3D mode**, CROUCH is a tile, **G**: a small one (60 px) on the arc's inner end beside B, pressed for the posture's cycle
     and held for the slide, as today. G is drawn only in 3D, so a side-on mode shows six slots and a 3D one seven.
-  would. That frees a slot and puts CROUCH where the slide already is: the stick.
 
 ### 3.1.1 The geometry (Calissa's, 2026-11-01; mock-ups in `docs/ref/touch-rebuild/` on claude/calissa-art-cups ab31bdc)
 
@@ -86,10 +85,13 @@ Measured from A's centre, which sits 52 px in from the safe area's right edge an
 | inner | B | 60 | 120 | 152° |
 | inner | D | 60 | 120 | 122° (the diagonal: the easiest reach after A) |
 | inner | C | 60 | 120 | 92° (straight up) |
-| outer | F the meter | 54 | 196 | 176° (the far end, ringed, gold when full) |
-| outer | E | 48 | 194 | 153° |
-| outer | PICK | 44 | 192 | 131° |
-| outer | BELT | 44 | 192 | 110° |
+| outer | E | 48 | 192 | 110° (the fold's root: the stack lies here, section 7) |
+| outer | F the meter | 54 | 192 | 131° (ringed, gold when full) |
+| outer | PICK | 44 | 192 | 153° |
+| outer | BELT | 44 | 192 | 176° (the far end) |
+
+The outer ring's order was reversed on 2026-11-01 for the fold (section 7): what a fight presses lies nearest the root, what a fight
+never presses furthest out.
 
 - **The inner radius** is 120 so four 60 px tiles 30° apart never touch.
 - **Into the middle:** the outer ring reaches about 80 px into the centre 60%, at its lower-right corner only, under where the bodies
@@ -97,8 +99,8 @@ Measured from A's centre, which sits 52 px in from the safe area's right edge an
 - **A directional slot** wears four small gold chevrons on its rim.
 - **The stick, side-on:** in a side-on mode the stick's ring carries a gold notch for crouch, labelled until the first path has taught
   it.
-- **A conflict:** Calissa's covering message put F "at the top of the outer ring over C". Her note's table and all three mock-ups put
-  it at the far end, as ruled. The table here follows the note and the mock-ups.
+- **F's place** was first the far end (ruling 2, section 6). The fold moved it second from the root (section 7), so a fight's
+  half-open fold holds parry and the meter and nothing else.
 
 ### 3.2 A press reads the stick (directional presses)
 
@@ -209,9 +211,71 @@ The crossing and the jelly mount get their first working touch from this table. 
 
 1. **Crouch on the stick:** "Depends on the mode, yes for 2d, no for 3d movement." So it is the stick's down in a side-on mode, and
    the G tile in 3D (section 3.1).
-2. **The meter slot F:** "Use your best judgment." It stays at the arc's far end, ringed, its meter on the rim. A rung or a class art
+2. **The meter slot F:** "Use your best judgment." It went to the arc's far end, ringed, its meter on the rim (moved second from the root by the fold, section 7). A rung or a class art
    is pressed less often than a special, so the slot the eye meets first (the arc's top) goes to D, the tool's second verb. F glows
    when ready, as the ultimates of Genshin and Zenless do, so it is found without being in the way.
 3. **One layout or many:** "You got it". One skeleton for every action mode, with the layout editor's per-context offsets on top.
 
-Calissa's view and mock-ups are in (section 3.1.1). Next: South rules the plan whole, then Petra's driver half and Calissa's tiles are built.
+4. **The plan whole, and the reach** (2026-11-01): "yes to the touch rebuild, but i'm not a fan of how far the tertiary action tiles
+   reach out across the screen. If UI *has* to be that intrusive, then we need a 'hide all Touch UI' setting or button, or a collapse
+   option ... I liked the old square tiles. You know that clacking wood toy that is popular in mexico and folds up into a stack of
+   tiles. Use that thing for inspiration." So: square tiles, the outer ring folds (section 7), and a setting and a tile hide them all.
+
+## 7. The arc's fold (South's ruling 4)
+
+**Prior art.** The Jacob's ladder: in Mexico, the tablitas. It is six or so wooden blocks joined by crossed ribbons. Tip the top
+block and each one flips over the next, clacking down the chain; tip it back and they fold into one stack. Also Breath of the Wild's
+Pro HUD (the HUD stripped, the world kept), and the auto-hiding HUDs of console action games (shown in a fight, gone outside it).
+What is taken: the chain, the flip one tile after another, the clack, and the stack you can hold. The origami is the motion's
+feel; the square wooden tile is the shape.
+
+**The tiles are square** (the old ones: today's glazed clay `TouchTile`, slightly rounded corners). The circles of the mock-ups go.
+Sizes and places stay as in 3.1.1.
+
+**The outer ring is a chain** of four tiles, hinged edge to edge: E, F, PICK, BELT, from the root out (3.1.1). It has three
+states.
+
+| state | when | what is out | its left edge at 896 x 414 |
+|---|---|---|---|
+| **folded** | outside a fight, by default | one square stack at the root (110°), the next tile's face on top, the meter's glow on its edge | x 712 (5 px into the middle: out of it, near enough) |
+| **half open** | in a fight (a live moment `fight`, the Arena, the crossing, the helm, a sea serpent hunting the hull) | E and F open; PICK and BELT stay folded on F's back, their edges showing on F's rim | x 649 (68 px into the middle) |
+| **open** | the stack or F's rim tapped | all four | x 588 (129 px into the middle: today's mock-ups) |
+
+- **The cascade.** Opening flips the tiles out one after another along the arc. Each flip takes about 60 ms, so four take a quarter
+  of a real second. Each tile clacks as it lands. Folding is the same run reversed, a little faster, and the clacks are lighter.
+- **When it folds back.** After a pick or a belt choice is made. Or 3 real s with no press on the outer ring. Or when a fight ends
+  (half open, then folded).
+- **A press while it moves** is a press on the tile under the finger once it has landed. A tile in flight cannot be pressed, and
+  each flip is short enough that this never costs a parry window (60 ms against the parry's 0.26 s).
+- **E not learned** (no parry yet): it is not in the chain. The chain is then F, PICK, BELT, and half open shows F alone.
+- **The inner ring never folds**, and neither does A. What a fight presses over and over stays put (3.7: a slot's place never
+  changes). The fold changes only whether the outer tiles are drawn, never where.
+
+**The touch controls' setting** (a settings row; Espada's label, these are placeholders):
+- **FOLDED**, the default: the table above.
+- **SHOWN**: the outer ring always open, as the mock-ups.
+- **HIDDEN**: no tile is drawn, the stick's ring is not drawn (the stick still works where a thumb lands), and the look area, taps
+  and double taps still work. One faint tile stays at the top bar's right end to bring them back.
+
+**The top bar's fold tile.** One tile on the top bar folds every tile into one stack at A's corner, the inner ring and A as well.
+The top bar folds already, and the log folds with its tab (`log.fold`), so this is the same gesture. Tapping the stack cascades
+everything back out: A first, then the inner ring, then the outer ring to whatever state the setting and the moment ask for. While
+this is folded, a live fight opening does not unfold it. You folded it, so it stays folded until you open it.
+
+**Two avenues.** The fold's state is seen in the stack and heard in the clack. Nothing of it goes to the log: it is a control, not
+a happening.
+
+**Kept.** The fold's state for the outer ring is not saved: it follows the moment. The top bar's fold and the setting are kept in
+the settings scope, beside the touch layout (`touchLayout`).
+
+**What it replaces.** The far shelf's ⋯ tile ("the fold" in today's glossary) goes with the far shelf when the rebuild lands
+(PICK and BELT replace it). Until then the new one is always called "the arc's fold" in full.
+
+**Who builds it**, after section 5's first pass:
+- **Calissa:** the mock-ups redrawn with square tiles, and the cascade as a strip of frames (folded, half open, open, and the top
+  bar's fold). Then the chain's look: the ribbons between tiles shown only while a tile flips, and the stack's edges.
+- **Wanda:** the clack. It is wood or clay on clay, one per tile, pitched by the tile's size. Folding is lighter. It must stay
+  inside the phone mixer's burst cap.
+- **Petra:** the three states in the touch driver, a press landing only on a landed tile, the setting's row, and the top bar's
+  tile.
+- **Dovina:** the chain's order and the state table as data (`TOUCH_ARC`'s `fold`), and the live moments that open it.
