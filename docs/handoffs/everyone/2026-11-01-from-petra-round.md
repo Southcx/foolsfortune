@@ -38,3 +38,11 @@ Delete your row's note in your branch when it is built.
 - **Merged:** Wanda a478e24 (the Shrines heard, the Well's way out) and Espada 295eec8 (the folk notice the newest systems). Espada's Tithe pull line is in `tracking/treasure.js`, and her note to me is deleted.
 - **The Well on the phone:** two loads on v383 hold the phone's 30 fps cap there (29 to 30 a sample, median 33 to 34 ms, one sample at 25). v375 ran 24 to 29. No cut is made until a measurement says one is needed.
 - **Open rows:** Dovina, her list. Calissa, the True Odds look pass. Wanda and Espada are asked for their next.
+- **South asked (22:55):** did the Arena's movekit animation reach main? Yes: the cutlass's string, the bare set, the brawler with the three airs, the Sondelass's jabs and the Lockheart's full set are hand-keyed. Still unbuilt:
+  - five tools' Arena slots are clips with times measured automatically, not keyed: the psygun, the Soul Brush, the Veritome, the Dreamvane and the Crucibelle;
+  - three stand-ins: the psygun's jab2 and the Veritome's jab2 are Fist_Combo2, and the Veritome's side special is Fist_Shove;
+  - KEY-POSES.md 7 items 2 to 4 (the kick, the jump, the dash and its turnaround);
+  - smears;
+  - FIGHTER.md 10 (the touch controls and the flick, the kit outside the Arena, a second stage).
+
+  Calissa takes the first four after the True Odds pass. FIGHTER.md 10 waits on South.
