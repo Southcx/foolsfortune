@@ -13,7 +13,7 @@ import { CREATURES } from '../../tools/veritome/bestiary.js';
 const kname = (k) => (CREATURES[k]?.name || { wisp: 'Lantern Wisp', greatjelly: 'Great Slip Jelly' }[k] || k).toLowerCase();
 
 const KIND = { passive: 'always on while it holds a notch', reaction: 'always on while it holds a notch', action: 'worn on the art key' };
-const WHY = { closed: 'You have not opened that rung yet.', cool: 'It is still settling.', pool: 'Your pool is too low for it.', none: 'No creature near enough.', unknown: 'No rung is called that.', here: 'You are where you stood.' };
+const WHY = { closed: 'You have not opened that rung yet.', cool: 'It is still settling.', pool: 'Your pool is too low for it.', none: 'No creature near enough.', unknown: 'No rung is called that.', here: 'You are where you stood.', record: 'Not while a time is being kept.' };
 const tname = (t) => TYPES[t]?.name || t;
 
 export function domainArtsRules({ on, log }) {

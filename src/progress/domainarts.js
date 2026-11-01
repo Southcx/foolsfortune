@@ -64,12 +64,13 @@ export const FEATS = {
   // a fight ended with no crack taken in it (a vow kept by hand: A Vow's idea without it)
   cleanFight: { event: 'combat.end', test: (e, s) => { const ok = !s.cracked && s.fought; s.cracked = false; s.fought = false; return ok; }, mark: ['vessel.crack'], start: ['combat.start'], anyBy: true },
   // a windup read with no crack taken since the last (the blow seen coming: a body's make-up is what made it)
+  sculpt: { event: 'god.sculpt', test: (e) => (e.volume || 0) >= 6 },
   cleanRead: { event: 'windup.read', test: (e, s) => { const ok = !s.cracked; s.cracked = false; return ok; }, mark: ['vessel.crack'] },
 };
 export const FEAT_WORDS = {
   lateParry: 'blows parried at the last moment', shieldRun: 'runs of six blows on your shield unbroken', candid: 'candid photographs',
   heavyThrow: 'thrown hits over 300 joules', longRelease: 'fish let go after a long fight', weakDown: 'creatures downed by their weakness',
-  cleanMacro: 'macros typed clean', blinkChain: 'three blinks inside two seconds', cleanFight: 'fights ended without a crack', cleanRead: 'windups read without a crack',
+  cleanMacro: 'macros typed clean', blinkChain: 'three blinks inside two seconds', sculpt: 'creations raised', cleanFight: 'fights ended without a crack', cleanRead: 'windups read without a crack',
 };
 
 /** A standing rule's triggers and verbs (South, 2026-11-01: case by case; DOMAINS.md 14, 16). Every trigger is an act of your own (the
@@ -128,6 +129,11 @@ export const DOMAIN_ARTS = {
   // OURANURGY: where you were, and when (Tracer's Recall; Blink Mark's mark is a place, this is a time)
   recall: R('ouranurgy', 30, 'action', 'Recall', 'Blink back to where you stood 3 seconds ago, your pool as it was then if it was fuller.',
     'Nothing is marked: the last 3 seconds are always kept.', { back: 3, max: 24 }, ['blinkChain', 10], { cost: 10, cooldown: 12 }),
+  // MANIFESTATION: the pool set solid where you need to stand (Mirror's Edge's runner vision made solid; a modifier in the world, never a
+  // change to the jump: the core movement lands on it as on any ground). Never on a timed record (a race, a trial, Strawman's Well's
+  // courses: the critic's catch), so no record is set by it.
+  footholds: R('manifestation', 30, 'action', 'Footholds', 'Set a step of Lachrymite where you are about to be: under your feet in the air, a stair ahead on the ground.',
+    'Three may stand at once, each for 6 seconds. Not in a race or a timed course.', { at: 3, dur: 6, size: 0.9 }, ['sculpt', 10], { cost: 6, cooldown: 0.4 }),
   // DIVINATION: what a body is made of (Outer Wilds: knowledge is the progression)
   makeup: R('divination', 30, 'passive', "A Body's Make-up", 'Lock on to a creature and you read what it is made of, and so the type that bites it.',
     'A kind read so is known: Re-type finds its weakness from then on.', {}, ['cleanRead', 20]),

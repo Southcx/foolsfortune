@@ -33,11 +33,14 @@
 //          .mayReprogram(c) -> bool (Receptivity: an open mind, no stun needed)   .openMind(c) -> bool
 //   events: domain.art.fire { art, ...what, by }, domain.art.end { art, why, by }, domain.art.refuse { art, why, by },
 //   domain.makeup { kind, weak, first, by }
-// The second relations (level 30, wave 2): Recall (the action: back to where you stood 3 s ago, by the blink's own forced body), A Body's
+// The second relations (level 30, waves 2 and 3): Footholds (the action: a step of Lachrymite under your feet in the air or a stair
+// ahead, three at once, never on a timed record), Recall (the action: back to where you stood 3 s ago, by the blink's own forced body), A Body's
 // Make-up (a lock-on reads a kind's constitution, which Re-type then knows), A Vow (a thing sworn off for every cost x0.75, broken at a
 // crack's stake). Prior art: Overwatch's Tracer (Recall), Outer Wilds (knowledge as progression), Hunter x Hunter's vows.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { RAPIER, GROUPS } from '../../core/physics.js';
+import { liveMoment } from '../../core/livemoment.js';
 import { DOMAIN_ARTS, RULE_WHEN, VOWS, VOW, shatterOf } from '../../progress/domainarts.js';
 import { PRESSURE } from '../../progress/stones.js';
 import { typeWeaknessOf } from '../../progress/combat/constitution.js';
@@ -55,6 +58,7 @@ const _a = new THREE.Vector3(), _b = new THREE.Vector3();
  *  a blow from a real foe (never Strawman's). */
 const WATCH_MIN = 1, SHATTER_SHOWN = 3, SHATTER_R = 14, RECEPTIVE_R = 30;
 const TYPE_ORDER = Object.keys(TYPES);
+let stepMat = null;
 /** Recall's trail is sampled every TRAIL_EVERY real s (a blink lands within a body's length of where you stood). */
 const TRAIL_EVERY = 0.1;
 
@@ -70,6 +74,7 @@ export class DomainArtsRun {
     this.saidShatter = new WeakMap(); this.ruleAt = -99; this.wasLow = false;
     this.trail = []; // (Recall: [t, x, y, z, pool] every TRAIL_EVERY real s, the last DOMAIN_ARTS.recall.does.back + a little)
     this.vowOn = null; this.vowWait = -99; this.vowKept = 0; this.readKinds = new Set(); this.lockRef = null;
+    this.steps = []; // (Footholds: { body, mesh, h, until })
     const on = (n, fn) => game.events?.on?.(n, fn);
     on('move.parry', (e) => { if ((e.by ?? 'courier') === 'courier' && e.what === 'blow' && !e.training) this.parried(); });
     for (const [id, W] of Object.entries(RULE_WHEN)) if (W.event) on(W.event, (e) => { if (W.test(e)) this.rule(id); });
@@ -133,7 +138,7 @@ export class DomainArtsRun {
     if ((this.coolUntil?.[id] ?? 0) > this.now) return this.refuse(id, 'cool');
     const A = DOMAIN_ARTS[id];
     if (A.cost && !g.lachryma?.spend?.(A.cost, 'art')) return this.refuse(id, 'pool');
-    const ok = id === 'plating' ? this.platingGo() : id === 'retype' ? this.retypeGo() : id === 'recall' ? this.recallGo() : false;
+    const ok = id === 'plating' ? this.platingGo() : id === 'retype' ? this.retypeGo() : id === 'recall' ? this.recallGo() : id === 'footholds' ? this.footholdGo() : false;
     if (!ok) { if (A.cost) g.lachryma?.gain?.(A.cost, 'refund'); return false; }
     if (id !== 'plating') (this.coolUntil ||= {})[id] = this.now + (A.cooldown || 0); // (Plating's cooldown runs from its end: unplate)
     return true;
@@ -196,6 +201,34 @@ export class DomainArtsRun {
     const L = g.lachryma; if (L && pool > L.value) L.gain(pool - L.value, 'art');
     this.fire('recall', { dist: +d.toFixed(1) }); this.arts?.used('recall', Math.min(1, d / 12));
     return true;
+  }
+
+  /** Footholds (Manifestation 30): a step of Lachrymite, a fixed box in the static group (the core movement lands on it as on any ground:
+   *  the class arts' Earth Wall's way, courier/classarts/body.js), under where the feet will be next in the air, a stair's rise ahead on
+   *  the ground; the oldest goes when a fourth is set. Never in a race, a trial or Strawman's Well's frame (no record set by it). */
+  footholdGo() {
+    const g = this.game, P = g.player, W = g.physics?.world, D = this.does('footholds');
+    const live = liveMoment(g); if (live === 'race' || live === 'trial' || g.strawmanWell?.frame?.on) return !this.refuse('footholds', 'record');
+    if (!W || !g.scene) return false;
+    const f = P.forward?.() || new THREE.Vector3(0, 0, -1), air = !P.grounded;
+    const at = air ? new THREE.Vector3(P.pos.x + P.vel.x * 0.12, P.pos.y - 0.12, P.pos.z + P.vel.z * 0.12) : P.pos.clone().addScaledVector(f.setY(0).normalize(), 1.0).setY(P.pos.y + 0.45);
+    const h = 0.18, s = D.size;
+    const body = W.createRigidBody(RAPIER.RigidBodyDesc.fixed().setTranslation(at.x, at.y - h / 2, at.z));
+    W.createCollider(RAPIER.ColliderDesc.cuboid(s / 2, h / 2, s / 2).setCollisionGroups(GROUPS.static), body);
+    stepMat ||= new THREE.MeshStandardMaterial({ color: 0xcfeaff, emissive: 0x6fb8e8, emissiveIntensity: 0.45, roughness: 0.25, metalness: 0.05, transparent: true, opacity: 0.85 }); // (a placeholder: Lachrymite's look is Calissa's)
+    const mesh = new THREE.Mesh(new THREE.BoxGeometry(s, h, s), stepMat); mesh.position.set(at.x, at.y - h / 2, at.z); mesh.castShadow = mesh.receiveShadow = true; g.scene.add(mesh);
+    this.steps.push({ body, mesh, until: this.now + D.dur });
+    while (this.steps.length > D.at) this.dropStep(0);
+    this.play('domain.manifestation.cast', { pos: at.clone(), scale: 0.4 });
+    this.fire('footholds', { air, n: this.steps.length });
+    this.arts?.used('footholds', air ? 0.8 : 0.4); // (a step set under you in the air is the art asked well; a stair, rote)
+    return true;
+  }
+  dropStep(i) {
+    const S = this.steps[i]; if (!S) return; this.steps.splice(i, 1);
+    if (S.body) this.game.physics?.removeBody?.(S.body);
+    this.game.scene?.remove(S.mesh); S.mesh.geometry.dispose();
+    this.play('domain.manifestation.hit', { pos: S.mesh.position.clone(), scale: 0.3 });
   }
 
   // ---- A Vow (Spellscription 30) ------------------------------------------------
@@ -285,6 +318,7 @@ export class DomainArtsRun {
     const g = this.game, P = g.player; if (!P || !this.arts) return;
     if (this.held && this.now >= this.held.at) this.land();
     if (this.plateOn && this.now >= this.plateOn.until) this.unplate('melt');
+    for (let i = this.steps.length - 1; i >= 0; i--) if (this.now >= this.steps[i].until) this.dropStep(i);
     if (this.retypeOn && this.now >= this.retypeOn.until) {
       const R = this.retypeOn; this.retypeOn = null;
       g.events?.emit('domain.art.end', { art: 'retype', why: 'time', by: 'courier' });
