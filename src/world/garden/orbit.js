@@ -140,7 +140,7 @@ export class Orbit {
       F = feedOf({ material: { kind: sl.data.kind, tier: sl.data.tier }, worth: worthOf(sl.id, sl.data) }); box.take(item.slot); from = 'material';
     } else if (item.matter > 0) {
       const left = this.matterLeft(); if (left <= 0) return { why: 'Your seeds take no more of the island\'s matter this game day.' };
-      F = feedOf({ matter: item.matter }); F.minutes = Math.min(F.minutes, left); this.day.m += F.minutes; from = 'matter';
+      F = feedOf({ matter: item.matter, feeling: item.feeling ?? null }); F.minutes = Math.min(F.minutes, left); this.day.m += F.minutes; from = 'matter';
     } else return { why: 'Nothing to feed it.' };
     r.minutes += F.minutes; const k = F.feeling || 'none'; r.fed[k] = (r.fed[k] || 0) + F.minutes;
     g.events?.emit('seed.feed', { seed: id, minutes: +F.minutes.toFixed(2), from, feeling: F.feeling || undefined, by: 'courier' });
@@ -165,11 +165,13 @@ export class Orbit {
     if (room <= 1e-3) { this.pourEnd(); this.game.log?.say('warn', 'Your seeds take no more of the island\'s matter this game day.', { key: 'seed.matter', throttle: 2 }); return false; }
     if (this.pouring && this.pouring.id !== id) this.pourEnd();
     const v = Math.min(total, VERBS.pourRate * dt, room), H = M.held, k = v / total;
+    const P2 = (this.pouring ||= { id, m3: 0, water: 0, feeling: null });
+    if (H.water * k > 1e-4 && H.feeling) { P2.water += H.water * k; P2.feeling = H.feeling; } // (the water's feeling poured with it: a seed fed on Grief water wears its rain-moss, progress/seeds.js feedOf)
     H.water -= H.water * k; H.loose -= H.loose * k; H.firm -= H.firm * k;
-    (this.pouring ||= { id, m3: 0 }).m3 += v;
+    P2.m3 += v;
     return true;
   }
-  pourEnd() { const p = this.pouring; this.pouring = null; if (p?.m3 > 1e-3) this.feed(p.id, { matter: p.m3 }); }
+  pourEnd() { const p = this.pouring; this.pouring = null; if (p?.m3 > 1e-3) this.feed(p.id, { matter: p.m3, feeling: p.water > p.m3 * 0.5 ? p.feeling : null }); } // (the feeling counts when water was most of the pour)
 
   /** A large planetoid's own moonlet: a small planetoid of its parent's kind, dressed by Calissa's seed looks, not walked on. */
   ownMoon(r) {
