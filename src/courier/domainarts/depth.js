@@ -23,7 +23,9 @@
 // shot (Relay); Pokemon's type chart walked as a cycle and Persona's Technical (Walk the Cycle: one ailment made the next's opening);
 // Pokemon's Disable and Final Fantasy's Silence (A Seal on a Creature: one of its moves outlawed a while).
 //
-//   const D = new DepthRungs(run)   .press(id) -> bool   .onStrike(c, cause, power)   .update(dt)
+//   True Odds         a passive: within 4 m of the Tithe's console, the next pull's chance of each tier, pity counted in (game.oddsTags)
+//   Borrow a Verb     a passive: a mind you rewrite lends you its own move (c.lendVerb) on R for 20 real s, 4 pool a throw
+//   const D = new DepthRungs(run)   .press(id) -> bool   .onStrike(c, cause, power)   .borrowed() -> { kind, fire(at, dir) } | null   .update(dt)
 //   events (through the run): domain.art.fire { art: 'fuse' | 'walkCycle' | 'sealCreature' | 'relay' | 'catchWeather', ... },
 //   domain.art.end { art: 'fuse' | 'sealCreature', why }, domain.art.refuse { art, why }
 // ---------------------------------------------------------------------------------------
@@ -31,6 +33,7 @@ import * as THREE from 'three';
 import { TYPES, TRUMPS } from '../../progress/combat/types.js';
 import { BOTTLES } from '../../progress/brushload.js';
 import { DOMAIN_ARTS } from '../../progress/domainarts.js';
+import { TIERS, titheOdds } from '../../world/treasure/treasure.js';
 
 const UP = new THREE.Vector3(0, 1, 0);
 const _a = new THREE.Vector3(), _b = new THREE.Vector3();
@@ -50,6 +53,9 @@ export class DepthRungs {
     this.sealed = []; // (the Seal: { c, kind, until, h })
     this.relayAt = null; // (Relay's chain: { done: Set, n, until })
     this.caught = 0; // (Catch the Weather: Lachryma caught since it last said so)
+    this.borrow = null; // (Borrow a Verb: { c, until, at } the lender and its window)
+    this.oddsShown = false; // (True Odds: the Tithe's tag standing)
+    run.game.events?.on?.('reprogram.run', (e) => { if (!e.refused) this.lend(); });
   }
   get game() { return this.run.game; }
   get now() { return this.run.now; }
@@ -205,7 +211,44 @@ export class DepthRungs {
     }
   }
 
+  // ---- BORROW A VERB (Possession 60): the belt's R asks borrowed() (tools/belt.js, Petra's) -----------------
+  /** A mind just rewritten: if it carries a verb to lend (c.lendVerb, the creature's own), it is yours on R for `dur` real s. */
+  lend() {
+    if (!this.run.on('borrowVerb')) return;
+    const c = this.game.reprogram?.c; if (!c?.alive || typeof c.lendVerb !== 'function') return;
+    const D = this.does('borrowVerb');
+    this.borrow = { c, until: this.now + D.dur, at: -99 };
+    if (c.pos) this.play('domain.possession.cast', { pos: c.pos.clone().add(UP), scale: 0.5 });
+    this.run.fire('borrowVerb', { kind: c.kind, dur: D.dur });
+  }
+  /** What R throws now in the sub's place, or null: the lender alive and its window open. */
+  borrowed() {
+    const B = this.borrow; if (!B) return null;
+    if (!this.run.on('borrowVerb') || !B.c.alive || this.now >= B.until) { this.borrow = null; this.game.events?.emit('domain.art.end', { art: 'borrowVerb', why: B.c.alive ? 'time' : 'gone', kind: B.c.kind, by: 'courier' }); return null; }
+    return { kind: B.c.kind, fire: (at, dir) => {
+      const D = this.does('borrowVerb');
+      if (this.now - B.at < D.every) return false; // (a borrowed move is a tool, not a stream)
+      if (!this.game.lachryma?.spend?.(D.cost, 'art')) { this.run.refuse('borrowVerb', 'pool'); return false; }
+      const ok = B.c.lendVerb(at, dir, 'courier') !== false;
+      if (!ok) { this.game.lachryma?.gain?.(D.cost, 'refund'); return false; }
+      B.at = this.now; this.run.arts?.used('borrowVerb', 0.7);
+      return true;
+    } };
+  }
+
+  // ---- TRUE ODDS (Divination 60): game.oddsTags (Petra's) ------------------------------------------------
+  /** Near the Tithe's console: the next pull's chance of each tier, its pity counted in (treasure.js titheOdds, rollTier's own rule). */
+  oddsTick() {
+    const g = this.game, P = g.player, C = g.chests, T = C?.tithe, tags = g.oddsTags;
+    const near = !!(this.run.on('trueOdds') && P && T && tags && P.pos.distanceTo(T.pos) <= this.does('trueOdds').reach);
+    if (!near) { if (this.oddsShown) { tags?.hide?.('trueOdds.tithe'); this.oddsShown = false; } return; }
+    const odds = titheOdds(C.since()), rows = TIERS.map((t, i) => ({ label: t.name[0].toUpperCase() + t.name.slice(1), p: odds[i] })).filter((r) => r.p > 0);
+    tags.show('trueOdds.tithe', { at: T.slot ?? T.pos, rows, ttl: 0.3 });
+    if (!this.oddsShown) { this.oddsShown = true; this.run.arts?.used('trueOdds', 0.4); this.run.fire('trueOdds', { what: 'tithe' }); }
+  }
+
   update(dt) {
+    this.oddsTick();
     this.fuseHold();
     this.sealTick();
     this.catchTick(dt);

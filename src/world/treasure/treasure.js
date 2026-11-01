@@ -40,6 +40,18 @@ export function rollTier(since, r = simRand()) {
   return tier;
 }
 
+/** The chances of the next pull, tier by tier, read off the same rule rollTier throws (True Odds, Divination's rung at 60, shows them
+ *  at the console; the pity's lamps alone say only how near a guarantee is). */
+export function titheOdds(since) {
+  const p = TITHE.pity, out = TIERS.map(() => 0);
+  if (since.prismatic + 1 >= p.prismatic) { out[4] = 1; return out; }
+  if (since.epic + 1 >= p.epic) { out[4] = TITHE.epicPrismatic; out[3] = 1 - TITHE.epicPrismatic; return out; }
+  const total = TIERS.reduce((a, t) => a + t.weight, 0);
+  TIERS.forEach((t, i) => { out[i] = t.weight / total; });
+  if (since.rare + 1 >= p.rare) { out[2] += out[0] + out[1]; out[0] = out[1] = 0; }
+  return out;
+}
+
 /** How many cubes a chest of this tier holds (a random amount in its range, leaning a little high or low). */
 export function cubesIn(tier, r = simRand()) {
   const [a, b] = TIERS[tier].cubes;

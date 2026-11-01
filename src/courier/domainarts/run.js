@@ -100,6 +100,8 @@ export class DomainArtsRun {
     on('photo.take', (e) => { if (e.candid === 'candid' && this.on('watch') && this.shown.size) this.arts?.used('watch', 0.9); }); // (the watch read, the plate taken unseen)
   }
   get arts() { return this.game.domainArts; }
+  /** Borrow a Verb: the belt's R asks here first (tools/belt.js). */
+  borrowed() { return this.depth.borrowed(); }
   open(id) { return !!this.arts?.open?.(id); }
   /** Working now: a passive or reaction holding a notch, an action worn (domainArts.on). */
   on(id) { return !!this.arts?.on?.(id); }

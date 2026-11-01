@@ -80,6 +80,10 @@ export const FEATS = {
   twoStrike: { event: 'impact.strike', test: (e) => (e.n || 0) >= 2 },
   // an annihilation (Impact on a body carrying Delirium's status, or the reverse: the cycle known end to end)
   annihilate: { event: 'combat.annihilate', test: () => true },
+  // a mind rewritten (reprogrammed, not refused): another mind made yours a while, Borrow a Verb's idea without it
+  mindRewritten: { event: 'reprogram.run', test: (e) => !e.refused },
+  // a Tithe pull of rare or better (the odds lived through until they paid: True Odds' idea without it)
+  titheRare: { event: 'tithe.pull', test: (e) => (e.tier ?? 0) >= 2 },
   // a seal set in a cradle (your seal set on a thing, so that it runs as you)
   sealSet: { event: 'seal.set', test: () => true },
   cleanRead: { event: 'windup.read', test: (e, s) => { const ok = !s.cracked; s.cracked = false; return ok; }, mark: ['vessel.crack'] },
@@ -87,7 +91,7 @@ export const FEATS = {
 export const FEAT_WORDS = {
   lateParry: 'blows parried at the last moment', shieldRun: 'runs of six blows on your shield unbroken', candid: 'candid photographs',
   heavyThrow: 'thrown hits over 300 joules', longRelease: 'fish let go after a long fight', weakDown: 'creatures downed by their weakness',
-  cleanMacro: 'macros typed clean', blinkChain: 'three blinks inside two seconds', sculpt: 'creations raised', cleanFight: 'fights ended without a crack', cleanRead: 'windups read without a crack', twoAtOnce: 'two afflictions on one creature inside a second', bigMop: 'mops of 40 Lachryma or more', twoStrike: 'throws that struck two creatures', annihilate: 'annihilations', sealSet: 'seals set in cradles', parryReturn: 'shots parried back into their thrower', macroWorn: 'macros worn to their end', awakened: 'feelings awakened',
+  cleanMacro: 'macros typed clean', blinkChain: 'three blinks inside two seconds', sculpt: 'creations raised', cleanFight: 'fights ended without a crack', cleanRead: 'windups read without a crack', twoAtOnce: 'two afflictions on one creature inside a second', bigMop: 'mops of 40 Lachryma or more', twoStrike: 'throws that struck two creatures', annihilate: 'annihilations', mindRewritten: 'minds rewritten', titheRare: 'Tithe pulls of rare or better', sealSet: 'seals set in cradles', parryReturn: 'shots parried back into their thrower', macroWorn: 'macros worn to their end', awakened: 'feelings awakened',
 };
 
 /** A standing rule's triggers and verbs (South, 2026-11-01: case by case; DOMAINS.md 14, 16). Every trigger is an act of your own (the
@@ -168,8 +172,8 @@ export const DOMAIN_ARTS = {
     'A reaction a stamp, not a cell. Creatures standing in it take it; you never do.', { calm: 3, flare: 1, radius: 1.5, every: 0.25 }, ['awakened', 4]),
 
   // THE DEPTH RUNGS (level 60: DOMAINS.md 14's column, 18.1). Each turns what the domain's earlier rungs taught into a thing you aim.
-  // The runtime is courier/domainarts/depth.js. True Odds (Divination) and Borrow a Verb (Possession) wait on a place to show odds and on
-  // the lend's hook (Petra's: docs/handoffs/petra/).
+  // The runtime is courier/domainarts/depth.js (True Odds and Borrow a Verb on Petra's two hooks of 2026-11-01: game.oddsTags, and the
+  // belt's R asking `borrowed()`).
   // OURANURGY: afflictions set off on your beat (Chrono Trigger's combined techs; Into the Breach's ordered turn). 8 s is time to build
   // two statuses with two tools (a status builds in two to four blows); x1.5 is the beat's reward, and left to run out it is no gain.
   fuse: R('ouranurgy', 60, 'action', 'The Fuse', 'Fuse the nearest foe: for 8 seconds every affliction put on it waits. Press again to set them all off at once, each half again as long.',
@@ -182,6 +186,15 @@ export const DOMAIN_ARTS = {
   // first blow, still a stagger; 3 m is two bodies' widths, so a relay is aimed, never luck across a room.
   relay: R('psychokinesis', 60, 'passive', 'Relay', 'A creature you strike heavily passes the force on to the next one behind it, three links at most.',
     'Heavy is a thrown hit or a blow of power 2 or more. Each link keeps three quarters of the force, and the next body must stand within 3 metres along the line.', { minPower: 2, reach: 3, cone: 0.7, keep: 0.75, links: 3 }, ['twoStrike', 10]),
+  // DIVINATION: the world's chance read as numbers (Darkest Dungeon's scouting; the gacha's published rates, which the law asks for and
+  // the Tithe's lamps only hinted at). Within 4 m of the Tithe's console, the next pull's chance of each tier, pity counted in.
+  trueOdds: R('divination', 60, 'passive', 'True Odds', "Chance shown as numbers: near the Tithe's console, the next pull's chance of each tier, its pity counted in.",
+    'The chances are the game\'s own, never rounded in your favour. More of the world\'s chances will show as they are read.', { reach: 4 }, ['titheRare', 10]),
+  // POSSESSION: a mind's own move lent to you (Kirby's copy; Prey's typhon powers). On R in the sub's place while it lasts (Petra's belt
+  // asks borrowed()); 20 s is about a Dunes fight's two thirds; 4 pool a throw and 1.2 s between, so a borrowed move is a tool, not a
+  // stream (the jelly's glob strikes for 1, the wisp's flame for its cast's).
+  borrowVerb: R('possession', 60, 'passive', 'Borrow a Verb', 'Reprogram a creature and its own move is yours on R for 20 seconds, in place of your sub\'s.',
+    'A slip jelly lends its spit glob, a Lantern Wisp its flame ball. It ends if the lender is downed. Each throw costs 4 of your pool.', { dur: 20, cost: 4, every: 1.2 }, ['mindRewritten', 30]),
   // ALTERATION: one affliction made the next one's opening (the trumps as a cycle, types.js; Persona's Technical). The time kept and
   // capped by the new status's own: the kind changes, never the time, so the skill is the order, not a longer lock.
   walkCycle: R('alteration', 60, 'action', 'Walk the Cycle', 'Turn every affliction on the nearest foe into the one its type beats: doubt into charm, charm into confusion, confusion into a stun, blindness into doubt.',

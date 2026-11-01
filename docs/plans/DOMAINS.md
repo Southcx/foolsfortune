@@ -702,7 +702,7 @@ What it costs: the god hand's powers come 5 levels later at 20 (from 15) and 40 
 Ouranurgy's Portal moved from 15 to 40, because it had two powers at 15 and nothing at 40. The rungs come 5 sooner. Still open: the
 60, 90 and 99 rungs (21 designs, section 14's later columns), the next waves.
 
-### 18.1 The depth rungs at 60 (built: five of seven)
+### 18.1 The depth rungs at 60 (built: all seven)
 
 The ten at 60 is the ladder's depth (section 2's ri): each rung turns what the domain's earlier rungs taught into a thing you aim. Five
 need no new hook and are built (`progress/domainarts.js` the rows, `courier/domainarts/depth.js` the runtime, owned by `run.js`). The
@@ -727,4 +727,17 @@ Checked headless (DEBUG, the Summit lend):
 **A fix to the notches** found on the way: with every notch full, putting a rung on gave the freed notch to whichever open rung came
 next in the table, not to the one you chose. Now the rungs you put on go first (`pin`, kept in the save), then the table's order, and
 one past the budget waits for a notch. When a passive opens with the notches full, the log says how to wear it.
+
+**The last two, on Petra's hooks (main 8f52016):**
+
+| domain | rung | kind | in play | its numbers and why | feat way |
+|---|---|---|---|---|---|
+| Divination | **True Odds** | passive | within 4 m of the Tithe's console, its tag (`game.oddsTags`) gives the next pull's chance of each tier, pity counted in (`titheOdds`, `world/treasure/treasure.js`: `rollTier`'s own rule read as chances, never a second table) | the Lockheart's wheel and a duel's flee already show their odds; the Tithe showed only lamps. Fresh: 60 / 26 / 10.5 / 3 / 0.5 %; nine pulls from the rare pity, 0 / 0 / 96.5 / 3 / 0.5 %; 39 from the epic, 88 / 12 % epic and prismatic | 10 Tithe pulls of rare or better |
+| Possession | **Borrow a Verb** | passive | a mind you rewrite that has a move to lend (`c.lendVerb`: the slip jelly's spit glob, the Lantern Wisp's flame ball) lends it on R in the sub's place for 20 real s; it ends if the lender is downed | 4 pool a throw and 1.2 s between: a borrowed move is a tool, not a stream | 30 minds rewritten |
+
+Checked headless (DEBUG, the Summit lend):
+- **Borrow a Verb:** after a reprogram, `borrowed()` gave the slip jelly's glob. One throw flew and cost 4. A second inside 1.2 s was refused, and the window's end returned null.
+- **True Odds:** at the real Tithe's console (1.4 m), the tag stood under `trueOdds.tithe`. Not seen in a screenshot: the headless renderer drew black after the move into Raku's Bazaar. The tag's look is Petra's placeholder, and Calissa is asked to dress it.
+
+Still to come for True Odds: the crystals' chances (a key, a fossil) once their numbers are a table to read, not lines in `world/dunes/crystals.js` (Petra's).
 
