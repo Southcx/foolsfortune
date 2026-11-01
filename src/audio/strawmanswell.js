@@ -16,7 +16,7 @@
 // Prior art: Sonic the Hedgehog's act clear and its tally, Super Meat Boy's instant retry (a sound you stop hearing), Super Smash Bros.'
 // KO roar and Home-Run Contest, a theatre's curtain and the hyoshigi's knocks before it.
 //
-//   sfx.wellEnter() .wellClear(rank) .wellKo() .wellTrophy() .wellPit() .wellFlood() .arenaHit(move, damage, result, percent)
+//   sfx.wellStageEnter() .wellClear(rank) .wellKo() .wellTrophy() .wellPit() .wellFlood() .arenaHit(move, damage, result, percent)
 //   .arenaKo() .arenaStock(left)
 // ---------------------------------------------------------------------------------------
 
@@ -26,8 +26,8 @@ const KEY = 65; // (F: the wings' key, music/wings.js)
 const RANK = { SS: { climb: 5, claps: 18, crash: true }, S: { climb: 4, claps: 12, crash: true }, A: { climb: 3, claps: 6 }, B: { climb: 2, claps: 0 }, C: { climb: 2, claps: 0 }, D: { climb: 0, claps: 0 } };
 
 export class StrawmansWellSounds {
-  wellEnter() {
-    if (!this.ok() || !this.allow('wellEnter', 1)) return;
+  wellStageEnter() {
+    if (!this.ok() || !this.allow('wellStageEnter', 1)) return;
     const t = this.ctx.currentTime, d = this.out(0.3, 0.5);
     this.noise(t, 0.7, { type: 'bandpass', f0: 900, f1: 2600, q: 0.7, gain: 0.25, attack: 0.15, dest: d }); // (the curtain drawn)
   }
