@@ -16,7 +16,7 @@ import { PoolCaps } from '../progress/poolcaps.js';
 import { SkiffSettings } from '../courier/skiff/skiffsettings.js';
 import { PerfReadout } from '../debug/perfreadout.js';
 import { FieldReport } from '../debug/fieldreport.js';
-import { Presets } from '../debug/presets.js';
+import { Presets } from '../debug/presetloader.js';
 import { StartAt } from '../debug/startat.js';
 import { sightCommands } from '../progress/sight.js';
 import { mudraCommands } from '../godhand/mudras.js';
@@ -39,7 +39,7 @@ export function bootChat(game, made) {
   sightCommands(game); // (/sight: the Sight's waypoint on the chat line)
   game.perfReadout = new PerfReadout(game, { diag, renderer }); // (the phone measurement panel: ?perf, /perf, the knob visual.perfReadout; debug/perfreadout.js, MOBILE.md 10.3)
   game.fieldReport = new FieldReport(game, { renderer, cloud }); // (what this load did on its device, to the page's private store: debug/fieldreport.js)
-  game.presets = new Presets(game); // (/preset: the DEBUG save put at a moment of play, debug/presets.js; DEBUG-MODE.md 5)
+  game.presets = new Presets(game); // (/preset: the DEBUG save put at a moment of play, debug/presetloader.js, Dovina's rows in debug/presets.js; DEBUG-MODE.md 5)
   game.startAt = new StartAt(game); // (?at=dunes|raceway|godhand|workshop: set down there after the title; debug/startat.js)
   mudraCommands(game); // (/mudra: the god hand holds one of its poses, DEBUG: godhand/mudras.js)
   installGodArtsLook(); // (the Codex's GOD ARTS shelf dressed: Dovina's codex/godarts.js classes, ui/godartslook.js)

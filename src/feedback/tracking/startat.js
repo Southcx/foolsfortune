@@ -10,7 +10,7 @@ export function startAtRules({ on, log }) {
   on('start.at', (e) => log.say(e.ok ? 'system' : 'warn', e.ok ? `Started at ${e.place}.` : `Could not start at "${e.place}": ${e.why}.`, { key: 'start.at', throttle: 1 }));
 }
 
-/** A preset loaded (debug/presets.js): a tester's start, never counted. */
+/** A preset loaded (debug/presetloader.js): a tester's start, never counted. */
 export function presetRules({ on, log }) {
   on('debug.preset', (e) => log.say(e.ok ? 'system' : 'warn', e.ok ? `Preset loaded: ${e.id}.` : `Could not load preset "${e.id}": ${e.why}.`, { key: 'preset', throttle: 1 }));
 }

@@ -178,7 +178,7 @@ export function areaRules(ctx) {
   touchPlayRules(ctx); // (touch play's settings: the layout kept, gyro steering's motion access: core/layoutkeep.js, core/gyrosteer.js)
   perfReadoutRules(ctx); // (/perf: the performance readout, debug/perfreadout.js; nothing counted)
   startAtRules(ctx); // (?at=: where the Courier was set down, debug/startat.js; nothing counted)
-  presetRules(ctx); // (/preset: a moment of play loaded into the DEBUG save, debug/presets.js; nothing counted)
+  presetRules(ctx); // (/preset: a moment of play loaded into the DEBUG save, debug/presetloader.js; nothing counted)
   lockheartRules(ctx); // (the Lockheart's Overload recoil) // (the god hand's matter, miracles, epics and the island's rejection)
   voyageRules(sea);
   gardenRules(ctx);
