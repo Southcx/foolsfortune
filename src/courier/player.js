@@ -31,6 +31,7 @@ import { move, moverUnder, wallHits, underfoot, floorBelow, groundNormal, critte
 import { probeWall, inWater, tryWallrun, stepWallrun, endWallrun, wallJump, dashFx, jumpFx } from './player/air.js';
 import { tryMantle, stepMantle } from './player/mantle.js';
 import { look, updateBody, updateCamera } from './player/view.js';
+const NO_MODS = Object.freeze({}); // (the core as it is: no mode's switch on)
 
 const _v = new THREE.Vector3();
 /** A creature's blow among the outside pushes (player.impulse's `why`): what Unshaken holds against (a class's art, courier/classarts/body.js). */
@@ -68,6 +69,9 @@ export class Player {
     this.airT = 0;
     this.coyote = 0;
     this.jumpBuf = 0;
+    // a mode's switches on the core (FIGHTER.md 2: the Arena's fighter kit), read by fixedUpdate; empty, the core is as it was:
+    // ownJumps (the mode does every jump), noCoyote, noSlide, noWallrun, noRisingMantle (no climb of a ledge risen past)
+    this.mods = NO_MODS;
     this.landed = 0;
     this.sprinting = false;
 
@@ -305,7 +309,7 @@ export class Player {
     // ---- slide: crouch while moving fast on the ground ----
     // Starts above slideMinSpeed, or from a sprint that's still spinning up (so a
     // quick sprint-crouch never falls into a plain crouch). The boost is on a cooldown.
-    const wantSlide = !locked && (this.slideBuf > 0 || (crouchKey && this.landT > 0)); // (a brace is not a slide)
+    const wantSlide = !locked && !this.mods.noSlide && (this.slideBuf > 0 || (crouchKey && this.landT > 0)); // (a brace is not a slide)
     const fast = hs > M.slideMinSpeed || (sprintKey && hs > M.walkSpeed * 0.8);
     if (!this.sliding && wantSlide && this.grounded && fast && this.slideCd <= 0) {
       this.sliding = true;
@@ -339,8 +343,8 @@ export class Player {
 
     // ---- jumps: ground (with coyote time), wall jump, air jump ----
     let jumped = false;
-    this.coyote = this.grounded ? M.coyoteTime : this.coyote - dt;
-    this.jumpBuf = liveMove && inp.isDown('Space') && this.jumpHeldLast !== true ? M.jumpBuffer : this.jumpBuf - dt;
+    this.coyote = this.grounded ? M.coyoteTime : this.mods.noCoyote ? 0 : this.coyote - dt;
+    this.jumpBuf = this.mods.ownJumps ? 0 : liveMove && inp.isDown('Space') && this.jumpHeldLast !== true ? M.jumpBuffer : this.jumpBuf - dt;
     this.jumpHeldLast = inp.isDown('Space');
     if (this.grounded) { this.airJumps = M.airJumps; this.dashCharges = M.dashCharges; }
     const rising = this.postureT > 0 && this.posture !== 'prone'; // (getting up off the belly: Space now waits in its buffer for the end, not eaten)
@@ -379,7 +383,7 @@ export class Player {
 
     // ---- wallrun ----
     if (this.wallrun && !jumped) this.stepWallrun(dt, hv, iz);
-    else if (!this.grounded && !jumped && !this.wallrun && iz > 0 && this.wallCd <= 0 && this.airT > 0.06) this.tryWallrun(hv);
+    else if (!this.grounded && !jumped && !this.wallrun && !this.mods.noWallrun && iz > 0 && this.wallCd <= 0 && this.airT > 0.06) this.tryWallrun(hv);
 
     // ---- horizontal velocity ----
     if (this.wallrun) {
@@ -467,7 +471,7 @@ export class Player {
     else this.vel.y = 0; // grounded: no push into the floor (snap-to-ground keeps us down)
 
     // falling/jumping at a ledge while pushing forward: pull up onto it
-    if (!this.grounded && !this.wallrun && iz > 0 && this.vel.y < M.mantleRiseMax && this.tryMantle(M.mantleMin, this.vel.y)) return;
+    if (!this.grounded && !this.wallrun && !this.mods.noRisingMantle && iz > 0 && this.vel.y < M.mantleRiseMax && this.tryMantle(M.mantleMin, this.vel.y)) return;
     // walking or running into a low wall (above what the feet step up by themselves): step over it without stopping
     // (and pinned against a lip the controller's own autostep should have taken but did not, 0.08 m up: an eighth of a second pinned, the
     // owner's R6 at a 0.23 m step in the basement, v132; the step-over is the same move, so the core movement is unchanged elsewhere)

@@ -492,10 +492,14 @@ export class Character {
     st.keyPlant = null; // (a key move's planted soles, said again each frame by the move that owns the legs: anim/keyposes.js plantFeet)
     s.techs?.animate(this, base, dt, s);
     this.lendGesture.pose(dt, base); // (the sub's verb lent on R, over the stance, the air and any tech: anim/lendgesture.js)
+    // (hitlag: the pose held as it was on the frame `hold` was asked, its 60 Hz frames run out in game time: KEY-POSES.md 3, FIGHTER.md)
+    const HL = st.hold; if (HL) { HL.f -= dt * 60; if (HL.f <= 0) st.hold = null; else if (HL.pose) base.copy(HL.pose); else HL.pose = this.clips.pose().copy(base); }
     this.applyPose(base);
 
     // ---- procedural layer ----
     root.position.y -= st.dip;
+    // (its shake, the drawn body only, never the capsule: side to side on the ground, up and down in the air, every other frame, decaying)
+    if (st.hold?.shake) { const H = st.hold, k = (Math.floor(H.f) & 1 ? 1 : -1) * Math.max(0, H.f / H.full), [gx, ay] = H.shake; if (H.air) root.position.y += ay * k; else { root.position.x += Math.cos(s.yaw) * gx * k; root.position.z -= Math.sin(s.yaw) * gx * k; } }
     st.turn = damp(st.turn, s.turnRate || 0, 8, dt);
     const lean = clamp(-st.turn * gs * 0.012, -0.3, 0.3) * (1 - air);
     // sliding on a slope: lie along it (pitch down a hill, roll across one)
@@ -556,6 +560,9 @@ export class Character {
   }
 
   // the feet and the knees: feet.js
+  /** Hitlag (KEY-POSES.md 3): the drawn pose held `frames` 60 Hz frames of game time from the next frame, and shaken by `shake` [m on
+   *  the ground, m in the air] if given, decaying; `air` the up-and-down shake. A second hold restarts it. */
+  hold(frames, { shake = null, air = false } = {}) { this.st.hold = frames > 0 ? { f: frames, full: frames, shake, air, pose: null } : null; }
   footIK(dt, s, planted, stretch, speed, gaitW) { footIK(this, dt, s, planted, stretch, speed, gaitW); }
   guardKnees(k) { guardKnees(this, k); }
 
