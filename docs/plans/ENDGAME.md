@@ -27,8 +27,8 @@ These numbers are what is written now. Some are placeholders, marked as such.
 | the standings | Fool's Fortune at 340 points, of 1,349 written | a quarter of all points: the rest is for achievement hunters |
 
 **What this says:** the domains are the long pole by an order of magnitude. Everything else tops out in tens of hours. 2,100 hours is
-OSRS's max cape territory, which is a choice, not an accident. **Ruling needed (South):** is "The World" meant to be that far?
-Options: keep it (a lifetime goal, as OSRS's), or set `PACE.hours99` so masterful play reaches The World in 200 to 300 hours.
+OSRS's max cape territory, which is a choice, not an accident. **Ruled (South, 2026-10-31): keep it**, a lifetime goal as OSRS's
+("I think what we've settled on previously is correct, I won't be able to tell you firsthand for a couple years"). `PACE.hours99` stays.
 
 ## 2. What the top is for
 
@@ -113,14 +113,13 @@ exist. A Well space that plays it for two real minutes proves the contract.
    The ledger is never written, so switching it off puts every number back where play left it. It is off on a new DEBUG save, so the
    curve is still felt; the other caps of section 1 (the garden's Firing, every seed, every achievement) are the panel's other rows.
    Still to fold in: the garden's seeds grown to large, which is the ring's runtime (Petra's).
-2. **Rule the summit's distance.** Decide the hours for The World (section 1's ruling).
+2. **The summit's distance:** ruled, kept as written (section 1).
 3. **Work back.** Each track's ramp follows the god powers' `t^1.6` (most of the gain in the last third, as OSRS's) unless it has
    reason not to. STORY's first 40 hours then become a curve with a known end.
 4. **Build the board and the first genre floor** (Petra's runtime; my rules: the board, the spaces' table, each floor's contract).
 
 ## 5. Open
 
-- The summit's hours (section 1).
 - Whether a Well always has a board, or only some do (the Dunemaw could stay a dungeon of floors, with the board as a second kind).
 - How many players share one board when co-op is real.
 - Names, all plain until settled: the board, a genre floor, a space.

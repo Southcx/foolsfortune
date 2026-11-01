@@ -28,10 +28,10 @@ export function scaffold(S, len, { ends = true, top = 28 } = {}) {
   S.box(-16, len + 16, -16, -14, 0, { hidden: true }); // (a catch floor: a fall is a retry, never the world's end)
   for (const k of [1, 3, 5]) S.lamp((len * k) / 6, 7.5);
 }
-const floor = (S, x0, x1, top = 0, color = COLOR.boards) => S.box(x0, x1, top + FLOOR, top, color);
-const sign = (S, text, x, y, sub = null) => S.label(text, x, y, { dz: -BACK + 0.13, width: 2.6, sub });
+export const floor = (S, x0, x1, top = 0, color = COLOR.boards) => S.box(x0, x1, top + FLOOR, top, color);
+export const sign = (S, text, x, y, sub = null) => S.label(text, x, y, { dz: -BACK + 0.13, width: 2.6, sub });
 /** A slope whose top runs from (xa, ya) to (xb, yb), 2 m thick under it. */
-const slope = (S, xa, ya, xb, yb, color = COLOR.slope) => {
+export const slope = (S, xa, ya, xb, yb, color = COLOR.slope) => {
   const a = Math.atan2(yb - ya, xb - xa), l = Math.hypot(xb - xa, yb - ya), t = 2, nx = -Math.sin(a) * t / 2, ny = Math.cos(a) * t / 2, mx = (xa + xb) / 2 - nx, my = (ya + yb) / 2 - ny;
   return S.box(mx - l / 2, mx + l / 2, my - t / 2, my + t / 2, color, { rotZ: a });
 };
@@ -56,10 +56,11 @@ export function buildWings(well, S) {
   floor(S, -1, len + 1);
   S.box(-1, len + 1, 9, 10, COLOR.wing, { outline: false }); // (the fly loft's beam over the wings)
   const doors = { hub: { ...stageDoor(S, WINGS.hub, 0, 'THE HUB', 'back out'), x: WINGS.hub, to: 'hub' } };
-  for (const st of STAGES.filter((s) => s.wave === 1)) doors[st.id] = { ...stageDoor(S, WINGS.doors[st.id], 0, st.family.toUpperCase(), null), x: WINGS.doors[st.id], to: st.id };
+  for (const st of STAGES.filter((s) => WINGS.doors[s.id] != null)) doors[st.id] = { ...stageDoor(S, WINGS.doors[st.id], 0, st.family.toUpperCase(), null), x: WINGS.doors[st.id], to: st.id };
+  const rack = { x: WINGS.rack, plate: null, id: null }; S.box(WINGS.rack - 0.5, WINGS.rack + 0.5, 0, 1.6, COLOR.spool, { dz: -1.2, d: 0.6, collide: false }); // (the movement profiles' rack: its plate is the room's, strawmanwell.js rackPlate)
   const sm = new StrawmanModel(); sm.group.position.copy(S.at(WINGS.strawman, 0, -1.1)); S.add(sm.group); // (centre stage: never a creature, never counted)
-  S.label("STRAWMAN'S WELL", WINGS.strawman, 6.4, { dz: -BACK + 0.13, width: 4.6, sub: 'W at a door' });
-  return { doors, strawman: sm };
+  S.label('F AT A DOOR', WINGS.strawman, 3.15, { dz: -BACK + 0.13, width: 2.2 }); // (on the doors' row: the room's name is the place plate's, under the Sight; a sign up at 6.4 stood behind the Sight, Petra's shots, v360)
+  return { doors, strawman: sm, rack };
 }
 
 // ---------------------------------------------------------------------------------------- The Run (3.1)

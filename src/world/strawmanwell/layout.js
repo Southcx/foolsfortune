@@ -15,24 +15,41 @@ export const AT = { x: 3400, y: 200, z: -3000 };
 /** Metres between lanes (south, -z, from the wings). */
 export const LANE = 40;
 /** The zone's box (render/zonemap.js reads these numbers). */
-export const ZONE = { x0: AT.x - 50, x1: AT.x + 300, z0: AT.z - 7 * LANE - 30, z1: AT.z + 40, y0: AT.y - 50, y1: AT.y + 250 };
+export const ZONE = { x0: AT.x - 50, x1: AT.x + 300, z0: AT.z - 18 * LANE - 30, z1: AT.z + 40, y0: AT.y - 50, y1: AT.y + 250 }; // (18 lanes south of the wings: render/zonemap.js's box says the same)
 
 /** Each stage's lane: its order south of the wings, its length (m of run), the camera's height band over the floor (m) and where you
  *  start (m along the lane); its goal and checkpoints are its builder's (world/strawmanwell/stages*.js). The wings are the hub. */
 const ROWS = [
-  ['wings', 0, 40, [2.2, 5], 4],
+  ['wings', 0, 92, [2.2, 5], 4],
   ['run', 1, 112, [2.2, 9], 2],
   ['climb', 2, 56, [2.2, 10], 2],
   ['stomp', 3, 44, [2.2, 6], 2],
   ['brawl', 4, 58, [3, 7], 18],
   ['machine', 5, 66, [2.2, 7], 2],
   ['flood', 6, 52, [1.5, 9], 2],
+  // waves 2 to 4 (each built in its own module, world/strawmanwell/stages/<id>.js, registered in stagemods.js): lengths first cuts
+  ['arsenal', 7, 90, [-3.5, 9], 2], // (its last beat is dug down to a passage 5 m under the boards)
+  ['swing', 8, 90, [2.2, 12], 2],
+  ['flip', 9, 90, [2.2, 12], 2],
+  ['pit', 10, 130, [2.2, 9], 2],
+  ['jar', 11, 80, [-0.5, 8], 2],
+  ['troupe', 12, 70, [-5.6, 6], 4], // (wave 3: its cellar and the floaters' drop go 7 m under the boards)
+  ['script', 13, 70, [2.2, 9], 2],
+  ['depth', 14, 80, [2.2, 8], 2],
+  ['chase', 15, 160, [2.2, 9], 2],
+  ['wall', 16, 80, [2.2, 9], 2],
+  ['maze', 17, 46, [2.2, 23], 2], // (wave 3: the day's 4 x 4 rooms, 41 m by 28 m, stood up along the lane)
+  ['arena', 18, 90, [3, 11], 40.5], // (the Courier set down on the main stage's left, FIGHTER.md 5: stages/arena.js ARENA)
 ];
 export const LANES = Object.fromEntries(ROWS.map(([id, k, len, band, start]) => [id, { id, k, z: AT.z - k * LANE, len, band, start }]));
 export const laneOf = (id) => LANES[id] || null;
 
 /** The wings' doors, one a stage in STAGES' order (m along the wings), the way out, and where Strawman stands (centre stage). */
-export const WINGS = { doors: { run: 7, climb: 11.5, stomp: 16, brawl: 25, machine: 29.5, flood: 34 }, hub: 1.6, strawman: 20.5 };
+export const WINGS = {
+  doors: { run: 7, climb: 11.5, stomp: 16, brawl: 25, machine: 29.5, flood: 34, arsenal: 38.5, swing: 43, flip: 47.5, pit: 52, jar: 56.5, troupe: 61,
+    script: 65.5, depth: 70, chase: 74.5, wall: 79, maze: 83.5, arena: 88 },
+  hub: 1.6, strawman: 20.5, rack: 4.3, // (rack: the movement profiles' rack, F to change: progress/movementprofiles.js)
+};
 
 /** Is a point in the Well (its zone's box)? */
 export const inWell = (p) => p.x > ZONE.x0 && p.x < ZONE.x1 && p.z > ZONE.z0 && p.z < ZONE.z1 && p.y > ZONE.y0 && p.y < ZONE.y1;

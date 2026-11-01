@@ -73,7 +73,8 @@ Build it as a modular piece with a small interface, not a one-off. Free assets o
   Island's "Book!", Watch Dogs, .hack, Persona 5; `docs/plans/OVERLAY.md`): the System's sight laid over the world, diegetic and spatial,
   maximal with a strict hierarchy. It may carry words and numbers in the System's own type (a tag on a thing, a window summoned before
   the Courier, a rolling count); it never narrates. **The UI is never stock**: no default panel, font or button.
-- **One toast: a title** (the owner, 2026-10-15): an achievement that awards a title opens the one pop-up; the log says it too (a standing gets none). The windows are
+- **One toast: a title** (the owner, 2026-10-15): an achievement that awards a title opens the one pop-up; the log says it too (a standing gets none).
+  The one other: a quest begun or done gets its splash and jingle (South, 2026-10-31: "the event pop up splash is okay"; QUESTS.md 5). The windows are
   the player's own, seen by no one else unless allowed (the owner, 2026-10-16).
 - **Every number that matters has two avenues or more** (the owner, 2026-10-15: the Lachrymato Bottles drain as well as the Lachrimeter):
   the body or the world, the overlay, a sound, and the log when it changes.

@@ -36,6 +36,7 @@ export class StageKit {
   /** A stage's lane builder: its boxes in lane metres, in a group of the lane's own (`show` draws one lane at a time: the others stand
    *  behind its back flat, in the frustum but never seen). */
   lane(L) {
+    this.z = L.z; // (the lane being laid now: the room's mechanics stamp what they are given with it, mechanics.js and machine.js)
     const K = this, X = (x) => AT.x + x, Y = (y) => AT.y + y;
     if (!this.groups.has(L.id)) { const gr = new THREE.Group(); gr.name = `strawmanwell.${L.id}`; gr.userData.zone = 'strawmanwell'; this.room.add(gr); this.groups.set(L.id, gr); }
     const into = this.groups.get(L.id);

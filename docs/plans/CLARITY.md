@@ -276,7 +276,8 @@ pages. The cut list below would flatten Grog if read as house-wide.
 6. **Numbers when they matter, as numbers.** "Costs 20 Lachryma." "3 left." Never "a modest cost".
 7. **One joke in an event's lines at most, never at the player.** Dying in the Pit 100 times is "It happens.", not a lecture. A pun
    in a name (a quest's, a stage's) doesn't count: nobody reads a name as a sentence.
-8. **The game says "you"; the System never says "I" or "we"** (open: South may rule otherwise, section 14.2).
+8. **The game says "you"; the System never says "I" or "we"** (South, 2026-10-31: "The system should not say 'I' but can still make
+   recommendations"). The veteran shows in the imperative and the opinion: "Grab this first." "Most people skip this. Don't."
 
 **What to cut (the tells of the house's own prose, which reads well in a plan and badly on a screen):**
 - colon chains and nested brackets in a line the player reads ("FIRE keeps a look, MEND refires: the kiln's two verbs (its tab)");
@@ -296,8 +297,5 @@ pages. The cut list below would flatten Grog if read as house-wide.
 | Strawman's Well, sw7 | "Fall in the Pit 100 times. It happens." | (already in the voice: keep) |
 
 ### 14.2 Open
-- May the System say "I"? A veteran's voice wants it ("I'd grab this first"); the house style has said "you" only. South to rule.
-  Espada votes no: the veteran comes through in the imperative and the opinion ("Grab this first." "Most people skip this. Don't."),
-  and an "I" makes the System a character, which then needs a name, a face and a want.
 - Espada words every line (CLAUDE.md); this section is the brief, the before-and-after the test. `scripts/clarity.mjs` keeps measuring
   the reading level; a line that passes it and still reads like a riddle fails this section.

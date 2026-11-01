@@ -30,6 +30,9 @@ export class WellMachine {
   constructor(well) { this.well = well; this.game = well.game; this.items = []; this.crates = []; this.movers = []; this.balls = []; }
 
   get P() { return this.game.player; }
+  add(it) { if (it.z == null) it.z = this.well.kit?.z ?? null; this.items.push(it); return it; }
+  /** Is the Courier in this item's lane? (stamped with the lane the kit was laying when it was made) */
+  here(it) { return it.z == null || Math.abs(this.P.pos.z - it.z) < 2; }
   /** Is the Courier standing on a top at `top` between x0 and x1? */
   standing(x0, x1, top) { const P = this.P; return P.grounded && P.pos.x > x0 - 0.25 && P.pos.x < x1 + 0.25 && Math.abs(P.pos.y - top) < 0.2; }
 
@@ -47,34 +50,34 @@ export class WellMachine {
     const col = w.createCollider(RAPIER.ColliderDesc.cuboid(len / 2, 0.12, 1.2).setDensity(SEESAW.density).setFriction(1).setCollisionGroups(GROUPS.prop), body);
     const mesh = new THREE.Mesh(new THREE.BoxGeometry(len, 0.24, 2.4), new THREE.MeshStandardMaterial({ color: COLOR.spool, roughness: 0.9, flatShading: true }));
     mesh.castShadow = mesh.receiveShadow = true; mesh.position.copy(at); into.add(mesh);
-    const S = { kind: 'seesaw', body, col, mesh, at: at.clone(), len }; this.items.push(S); return S;
+    const S = { kind: 'seesaw', body, col, mesh, at: at.clone(), len }; this.add(S); return S;
   }
 
   belt(at, size, vx) {
     const M = this.game.movers; if (!M?.belt) return null;
     const b = M.belt({ pos: [at.x, at.y, at.z], vel: [vx, 0, 0], size }).build(COLOR.felt, COLOR.thread);
-    this.movers.push(b); this.items.push({ kind: 'belt', m: b }); return b;
+    this.movers.push(b); this.add({ kind: 'belt', m: b }); return b;
   }
   shuttle(at, size, to, { move = 3, dwell = 0.8 } = {}) {
     const M = this.game.movers; if (!M?.shuttle) return null;
     const m = M.shuttle({ pos: [at.x, at.y, at.z], to, move, dwell }); m.box(size, COLOR.spool, [0, 0, 0]);
-    this.movers.push(m); this.items.push({ kind: 'mover', m }); return m;
+    this.movers.push(m); this.add({ kind: 'mover', m }); return m;
   }
 
   /** { mesh, collider, x0, x1, top } built by the stage's kit (`own`). */
-  crumble(part) { Object.assign(part, { kind: 'crumble', t: 0, down: 0, x: part.mesh.position.x, y0: part.mesh.position.y }); this.items.push(part); return part; }
+  crumble(part) { Object.assign(part, { kind: 'crumble', t: 0, down: 0, x: part.mesh.position.x, y0: part.mesh.position.y }); this.add(part); return part; }
   /** pad: { x0, x1, top, mesh }, door: { mesh, collider } */
-  switch(pad, door) { const S = { kind: 'switch', pad, door, open: 0, y0: door.mesh.position.y, k: 0 }; this.items.push(S); return S; }
+  switch(pad, door) { const S = { kind: 'switch', pad, door, open: 0, y0: door.mesh.position.y, k: 0 }; this.add(S); return S; }
   /** A key (its mesh) at `at`, and the door its lock opens. */
-  key(mesh, door) { const K = { kind: 'key', mesh, door, held: false, used: false, home: mesh.position.clone(), y0: door.mesh.position.y, k: 0 }; this.items.push(K); return K; }
-  cannon(at, dir, range, into) { const C = { kind: 'cannon', at: at.clone(), dir, range, t: CANNON.every * 0.5, into }; this.items.push(C); return C; }
+  key(mesh, door) { const K = { kind: 'key', mesh, door, held: false, used: false, home: mesh.position.clone(), y0: door.mesh.position.y, k: 0 }; this.add(K); return K; }
+  cannon(at, dir, range, into) { const C = { kind: 'cannon', at: at.clone(), dir, range, t: CANNON.every * 0.5, into }; this.add(C); return C; }
 
   update(dt) {
     const g = this.game, P = this.P, W = this.well;
     for (const c of this.crates) if (c.e.body?.isValid?.() !== false && Math.abs(c.e.body.translation().x - c.x0) > 0.3) W.verb('push');
     if (g.techs?.get?.('carry')?.item && this.crates.some((c) => c.e === g.techs.get('carry').item)) W.verb('carry');
     for (const m of this.movers) if (P.platform === m) W.verb(m.surface ? 'conveyor' : 'mover');
-    for (const it of this.items) this[`tick_${it.kind}`]?.(it, dt);
+    for (const it of this.items) if (this.here(it)) this[`tick_${it.kind}`]?.(it, dt); // (only the lane you stand in runs: every lane starts at the same x)
     this.tickBalls(dt);
   }
 
