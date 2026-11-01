@@ -459,3 +459,149 @@ count is a coincidence the lore may want (Espada's to rule).
   needs a short journal (6 real s) for that; Petra's call how.
 - **Made aberrants in the economy:** their row in `scripts/economy.mjs` before the pairing is built.
 - **Which bank powers replace which rungs:** chosen per domain in its round (section 5's order), each measured in play.
+
+## 11. How a domain grows: shu, ha, ri
+
+South, 2026-11-01: "Continue to think hard about the full progression/ ability unlocks/ training methodologies of each of the domains."
+
+The ladder of section 2 is the oldest pedagogy of the martial arts and the tea room: **shu-ha-ri** (守破離: keep the form, break the
+form, leave the form; Aikido's and the Urasenke tea school's). It gives every band of levels a feeling, not only a number:
+
+| band | levels | the time it takes (one domain, middling / masterful) | the feeling | what it gives |
+|---|---|---|---|---|
+| **shu** (keep) | 1 to 29 | 15 h / 3 h to 30 | the question learned by asking it | widening: the question's numbers grow |
+| **ha** (break) | 30 to 59 | 86 h / 17 h to 60 | the form broken: a new way to answer | the relations, one at 30 and one at 45 |
+| **ri** (leave) | 60 to 98 | 300 h / 60 h to 99 | the form left behind: two questions in one | depth (60, 80), and the pairings at 60 in both |
+| **the summit** | 99 | | the question answered for good | the rule-break, a title |
+
+The times are the curve's (`expAt`, domains.js: 97,404 EXP to 30, 552,013 to 60, 1,935,567 to 99) at PACE's six acts a real minute, and
+they're one domain's alone. All seven are trained by different play, so the seven 30s come over about 100 hours of varied middling play,
+and over 21 of masterful play. The design law holds: **skill skips grind** (the feat way opens a rung years early, section 12) and
+**grind closes the gap** (every act pays something, and the level opens it anyway).
+
+What the bands are NOT:
+- A band never gates the core movement, a tool or a mode. Every domain's question can be asked from the first minute; the band says how
+  far it bends.
+- A level is never lost. No decay, no respec: OSRS's promise, and the level is the proof.
+- A band never shows a bar to grind. The Codex shows the level and the next rung, with its two ways (STATUS shelf).
+
+## 12. How a rung opens: two ways, then the lesson
+
+Every rung above the widening is an art, and **arts open only by achievement** (DESIGN.md 22). So each rung is an achievement over the
+ledger with its two ways (Monster Hunter's and OSRS's level-or-quest gates):
+
+- **The count way:** the domain's level reaches the rung's (`exp.<domain>` in the ledger, so it's retroactive like everything else).
+- **The feat way:** the rung's own act done well, before you have it, n times. Each feat is the rung's idea done the hard way without its
+  help: Postpone's feat is ten parries in the last fifth of a window (time held to its edge), Plating's a fight where the shield took
+  six blows and never broke (the pool held as armour by hand). It's how a god-gamer gets a rung at level 12 (OSRS's quest skips, Sekiro's
+  Esoteric Texts found early).
+- **Its achievement tier** is the rung's band: 15 Medium, 30 and 45 Hard, 60 Elite, 80 Master, 99 Grandmaster (section 16 moved the first relations to 15). The 99's awards a title (the
+  one pop-up: the domain's own, Espada's to name; plain for now: "Ouranurgist" and so on).
+
+**The lesson** (shu-ha-ri's first beat: the teacher shows once). The moment a rung opens, the log says it in the System's voice, one line
+of what it does and one of how ("Postpone: a blow that gets past your shield lands 4 seconds late. Parry before it lands to halve it.").
+The first five uses each pay the domain's masterful act ("the kata"): Hades' first-time bonuses, FFXIV's job quest at every rung,
+never a tutorial (DESIGN.md 22: the mechanic is the lesson).
+
+**Wearing it.** A passive and a reaction are always on once open (a rung is the domain's own nature, not a charm). An **action** is worn
+on the art key in the action slot the class arts use (CLASS-ARTS.md; FF Tactics' one action set): one action at a time, a class's or a
+domain's, so choosing a domain's action is a real build choice (Hollow Knight's notches). A rung's price (section 7) is always shown
+before it's paid.
+
+## 13. How each domain is trained
+
+Every domain has a **home** (the mode that asks its question most), its **methods** (OSRS's training methods: a slow easy one, a steady
+one, a fast hard one) and **what it really teaches** (the law: every system teaches something real without saying so). A method's
+quality is what its event already carries (domains.js SOURCES); the rates are the curve's at PACE.
+
+| domain | home | rote (0.4x) | steady (1x) | masterful (5x) | what it teaches for real |
+|---|---|---|---|---|---|
+| **Ouranurgy** | Strawman's Well's courses, the Raceway, the rail | blinking about; a portal laid | a course run (its rank), a race (its medal), a crossing (its stage) | a gold race; an SS course; a postponed blow parried (30+); blade mode's eight cuts | timing to a window, and a racing line (the shortest way through space and time) |
+| **Manifestation** | the god hand's Sculpt and Manifest, the mimicry puzzles, the Soul Brush's paint | paint laid; a pillar raised | a creation that stands; a made track validated | a three-star mimicry; a plate that took a crack (30+); a foothold run (45+) | states of matter (a change of state costs: plating's melt loses a share) and load (an arch stands, a tower falls) |
+| **Divination** | the safari (the Veritome), the crystals, the windups | a plate of a kind you hold | a fresh plate; a crystal near its fret; a windup read | a candid four-star plate; a crystal's sweet spot; a call made right (80+) | observation, the ear (pitch, the crystals) and **calibration**: Call it (80) is scored by the Brier score, the forecaster's real measure |
+| **Psychokinesis** | the Sandbox, the Arena, the Throwing Room | a grab; a light throw | a thrown hit (its joules); a trick combo banked | a 600 J hit; a strike of three; a KO off a launch; a shattered shell (30+) | momentum and energy (E = ½mv², the thrown hit's joules shown), and the parabola of a throw |
+| **Possession** | the Weir's angling, the spirits, reprogramming | a drain | a fish landed (the pulls answered); a wish granted | a fish let go after a long fight; a farewell; a mind reprogrammed while open (30+) | reading another's state and intent (theory of mind): when a fish tires, when a Figment is open |
+| **Alteration** | Soul Alchemy's press, the garden's tending, the mop | a stroke of the hand; a bed tended | a blot mopped; a garden brought to harmony | a weakness struck by a re-type (30+); a firing in a tile's heart | conversion: the colour wheel (Oklab's real mixing), the type chart, and, once built, Spirit Cooking's real techniques |
+| **Spellscription** | the rhythm mode, Celestial mode, the macro lattice | a song played | a sigil drawn; a macro typed | a rhythm run at 95%; a macro typed clean; a standing rule that fired into a down (30+) | keeping time, a hand's stroke order, and the conditional (if X, then Y): the first thing a programmer learns |
+
+Gaps this closes in domains.js (built this round):
+- **Every rung trains its own domain** (`domain.art.use`, its quality the rung's own measure).
+- **Ouranurgy and Spellscription get kill sources** at last, through their rungs: a postponed blow parried, a rule's blow that downs.
+- **Strawman's Well's courses** pay Ouranurgy by their rank (`well.stage.clear`), and **the Arena's KOs** Psychokinesis.
+
+## 14. The rungs as built (wave 1) and as ruled for the next waves
+
+**Revised by section 16** (a hostile review, the same night): the first relations open at **15**, not 30, and five of the seven changed. Section 17 is the ladder as built; this section's table is kept as the first draft.
+
+The ladder for the build (section 3's rows are the reasons; where this table differs, this table rules, and the bank of section 8 fed it):
+
+| domain | 30 (ha) | 45 (ha) | 60 (ri) | 80 (ri) | 99 |
+|---|---|---|---|---|---|
+| Ouranurgy | **Postpone** (reaction) | Anchor (action: a mark, recalled within 8 s along your path; Tracer's) | the fuse | Stasis (a bubble at a fifth of the game time) | Ouranurgy's rewind |
+| Manifestation | **Plating** (action) | Footholds (action: a step of Lachrymite in the air, three at once) | Catch the weather | a made thing of a feeling | a second vessel |
+| Divination | **The crack to come** (passive) | A body's make-up | True odds | Call it (Brier-scored) | See the next roll |
+| Psychokinesis | **Shatter** (passive) | The catch (reaction) | Relay | Heft | Banked motion |
+| Possession | **Receptivity** (passive) | The link | Borrow a verb | Ride | No border |
+| Alteration | **Re-type** (action) | Reactions | Walk the cycle | The exchange | Re-make a body |
+| Spellscription | **A standing rule** (passive) | A vow | A seal on a creature | Rewrite a tag | A place's law |
+
+Two changes from section 3, and why:
+- **Spellscription's 30 is the standing rule** (was 45), and the chain goes to the bank. The chain had no moment a player would feel;
+  a written "when X, then Y" fires in the first fight. South's case-by-case ruling decides each trigger: the triggers offered set up a
+  play (your sub's verb, a Bottle drunk, a blink), and none answers a check of skill for you (no "parry when struck").
+- **Possession's Receptivity is a gift, never a gate.** Section 3 said "a possession only takes when it is open", which would change a
+  base rule (base change bad). Now an open mind shows on its body, and reprogramming one costs half and holds longer; a closed mind is
+  as it always was.
+
+The 30s, as built (`progress/domainarts.js` the rules, `courier/domainarts/` the runtime: section 15):
+
+| rung | what it does in play | its numbers and why | its look (the domain's library effects, Calissa's grammar) | feat way |
+|---|---|---|---|---|
+| **Postpone** | a blow that gets past the shield is held, and cracks you 4 real s later; a parry inside those 4 s halves it; one held at a time | 4 s: FFXIV's Doom is long enough to answer, short enough to matter; a half, not all: the parry answers the blow late, not cleanly | `domain.ouranurgy.hold` on you while one is held (the turning hoops), `.hit` when it lands | 10 parries in the last fifth of a blow's window |
+| **Plating** | the art key sets pool solid on the region facing the nearest foe (else the chest): its next crack is taken by the plate instead | held 20 of the pool's max while it stands; struck, it's spent; worn off after 30 real s it melts back at 15 (latent heat: a change of state costs) | `domain.manifestation.cast` at the region, `.hold` while it stands, `.hit` when it takes the crack | a fight where the shield took 6 blows and never broke |
+| **The crack to come** | a windup aimed at you shows which region it would crack, and burns hotter when that crack would shatter you | read off the vessel's own raycast (the same rule the blow will use), so it never lies | `domain.divination.hold` at the region, every windup | 20 windups read in fights without a crack |
+| **Shatter** | your heaviest blows (a charge, a smash, a launcher, a finisher, a thrown hit over 300 J) break a Figment's glaze shell faster: its stun builds by 1 + shatter | shatter 0.25 at 30, to 0.6 at 99 on the ramp (SUBSTRATE F5b's property) | `domain.psychokinesis.hit` on the struck | 25 thrown hits over 300 J |
+| **Receptivity** | a mind in its optimal Agitation band, or under a status, shows open; reprogramming an open mind costs half and holds half again as long | the band is the EmO yield's own optimum (combat/emo.js), the same open the drain wants | `domain.possession.hold` on the open creature while the Veritome is drawn | 10 minds reprogrammed while stunned |
+| **Re-type** | the art key turns the tool in hand's blows into the type that bites the nearest creature (its constitution's weakness) for 20 real s | 10 pool, 30 s clock; picking the type for you is the art (the skill is knowing when to spend it), and the log says which type | `domain.alteration.cast` on you, `.hit` on each re-typed blow | 15 creatures downed by their weakness |
+| **A standing rule** | one rule written: when (you parry / your shield breaks / a creature is stunned / your pool drops below a quarter), then (your sub's verb / your main and sub swapped) | each trigger at most once in 3 real s (a rule that fires on itself is no rule) | `domain.spellscription.cast` (the stroke and the seal) as it fires | 20 macros typed clean |
+
+## 16. Interrogated: a hostile review, and what changed
+
+The plan was handed to a reviewer playing a shipping MMO and ARPG designer (OSRS, FFXIV, Monster Hunter, Hades, Hollow Knight), told
+to break it. What it found, and what was done:
+
+| finding | the fix taken |
+|---|---|
+| **Pacing: most players never reach ha.** 15 h middling for one domain's 30 means a player spread evenly gets nothing for about 100 h, then all seven at once. FFXIV gives an action every 2 to 4 levels. | The first relation opens at **15** (2.7 h middling, a playthrough holds all seven). The ladder becomes 15, 30, 45 (ha), 60, 80 (ri), 99. The god powers (15, 35, 60, 80) and the rungs read as one track in the Codex (next round). |
+| **Shatter was a number** (a stun-build multiplier), against SUBSTRATE F5b and section 2's "a rule per tier". | Shatter is an **execute**: a shell whose stun is past (1 - shatter) of full glows, and a heavy blow (power 2+) then breaks it at once (Sekiro's deathblow, Smash's KO). |
+| **Receptivity was a flat discount.** Reprogramming already needs a stun, so "open when stunned" opened every target, and "holds longer" broke Possession's own "never a status's duration". | Open is the **Agitation band alone**, and its gift is a **verb**: reprogramming an open mind with no stun first (Shin Megami Tensei: talk to a demon that is still on its feet). |
+| **The crack to come had little to show**: the vessel's raycast from attacker to middle mostly reads "torso", and the shield and region are settled at the strike, not the windup. | Divination's first rung is **the Watch**: a Figment's head-down bouts and how long until it looks up (stealth's `vigilAt`, which is seeded and never lies). A new kind of knowing, the safari's (Metal Gear Solid's cones, Hitman's instinct). The crack to come goes to the bank. |
+| **Postpone's held blow re-met every gate** (a refilled shield, a duel's pocket, the mount, a cradle) and pulled cracks 4 s from their cause (WoW's Stagger is known to be hard to read). | It lands **past every gate**, on the region it was bound for (the hook's `past`, `region`); only a real foe's blow parried halves it; a held blow wants a mark on the Lachrimeter (Calissa); and every always-on rung can be **taken off** (the notches, below). |
+| **Re-type picking the weakness for you** skips the lesson and games EXP (every kill a weakness kill). | It finds the weakness only for a kind **you know** (photographed, or downed five times: familiarity 2); else it turns to the next type in turn, and you learn the chart by the hits. A weakness found by trying pays most. |
+| **Using a rung was its own fastest farm** (Postpone and parry on clapperjars, a plate cycled on a jelly). | A rung's uses pay fully up to **20 a game hour**, then a quarter (`WEAR`); a graze held by Postpone pays nothing; feats never count training bodies, practice or the Sandbox's pen. |
+| **The shared action slot made passives free** while class reactions fight for one slot: power creep with no budget. | **The psyche's notches** (Hollow Knight's): you wear up to `notchesFor(total)` always-on rungs, two at first and one more for each hundred of the seven levels summed, seven at most, each switched with `/rung`. Actions still share the art key's slot. |
+| **Plating was too good**: 20 held pool took a whole crack (the shield's 20 takes 0.57), cast before a fight it was permanent, and it might stop a shatter (Rebirth at 30). | It takes **0.85** of the crack, **never a crack that would shatter**, and its cooldown runs **from its end**. |
+| **Standing rules became auto-play**: "drink a Bottle when low" duplicates the Bottles, and "when the shield breaks" answers survival for you (an assist, by ruling 6.5). | Triggers are **your own acts only** (you parry, stun, down, blink), and each firing **costs 5 pool**. |
+| **Feats trivial or impossible**: Postpone's 50 ms window can't be hit on touch; Receptivity's was just reprogramming. | Postpone's is the last **third** (83 ms, five frames: the touch's latency allowed for). Each feat now asks for its rung's idea against a real foe (table, section 17). |
+| **Ouranurgy and Spellscription had no kill EXP** and must reach their rungs without it. | Strawman's Well's courses pay Ouranurgy by their rank now; kill sources for both (a down inside blade mode or a stilled window; a down by a sigil or a macro) need a cause on `creature.struck`: next round. |
+| **Missing pieces**: an EXP bar, a how-near readout, a practice spot, catch-up EXP, one Codex ladder. | `/rung` gives the how-near for both ways now. The Codex ladder with the bar, catch-up EXP (FFXIV's Armoury Bonus) and a practice spot a rung (Strawman's attack strings; Sekiro's Hanbei) are next round's. |
+| **Rungs that duplicate class arts** (Anchor and Blink Mark, Stasis and Hang Time, Ride and Tame, Catch the weather and Catch the Rain, a place's law and Sanctum). | Each later rung is written as **the deeper form** of its class art's verb when it is built (a class art is a taste; the domain's is the craft), or cut. Ruled per rung in its wave. |
+
+## 17. As built (wave 1): the seven first relations, at level 15
+
+| domain | rung | kind | in play | its look (Calissa's domain grammar) | feat way |
+|---|---|---|---|---|---|
+| Ouranurgy | **Postpone** | reaction (a notch) | a blow past the shield is held 4 s, then lands on the clay where it was bound; parry a real foe's blow in that time and it lands at half | the turning hoops over you while held, the pillar's hit as it lands | 10 parries in the last third of the window |
+| Manifestation | **Plating** | action (the art key) | 20 of the pool set solid over the region facing the nearest foe (its max held off, the tube's source), taking 0.85 of that region's next crack, never a shatter; melts back at 15 after 30 s; pressed again, melted by choice | the crystal growing at the region, held while it stands, its hit as it breaks | 10 runs of six blows on the shield unbroken |
+| Divination | **The Watch** | passive (a notch) | each Figment within 30 m whose head is down for a beat or more shows the iris over it, and a ping as it looks up | the iris held over its head, the sonar ping | 10 candid photographs |
+| Psychokinesis | **Shatter** | passive (a notch) | a shell whose stun is past (1 - shatter) of full glows; a blow of power 2+ on it breaks it at once; shatter 0.25 at 15 to 0.6 at 99 | the shockwave's rim held on it, its wall as it breaks | 25 thrown hits over 300 J |
+| Possession | **Receptivity** | passive (a notch) | with the Veritome in hand, a mind in its best band of agitation shows open, and you may reprogram it with no stun | the tethers drawn round it | 10 fish let go after a fight of 20 s or more |
+| Alteration | **Re-type** | action (the art key) | 20 s of blows as the nearest creature's weakness if you know its kind, else the next type in turn; 10 pool, 30 s | the band swept up you, through each blow | 15 creatures downed by their weakness |
+| Spellscription | **A Standing Rule** | passive (a notch) | when you parry / stun / down / blink, your sub lends its verb or main and sub swap, for 5 pool, once in 3 s at most | the stroke and seal written at your feet | 20 macros typed clean |
+
+Built in my files: `progress/domainarts.js` (the rows, the feats, the notches, the uses' wear, `/rung`, `/rule`),
+`progress/domainartachievements.js` (a rung's two ways as one achievement, THE DOMAINS' Rungs), `feedback/tracking/domainarts.js`
+(the log), `progress/domains.js` (`domain.art.use`, `well.stage.clear`, `well.fighter.ko`), `progress/stealth.js` (a watch's `left`),
+and the runtime `courier/domainarts/run.js` (new, Petra's at the gate). The four hooks it needs are Petra's
+(`docs/handoffs/petra/2026-11-01-from-dovina-domain-hooks.md`): Postpone's defer and its `past` landing, Plating's plate, Re-type's
+type, the art key's route, Receptivity's reprogram. The Watch, Shatter's execute and the standing rule run without them.

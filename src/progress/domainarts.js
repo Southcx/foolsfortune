@@ -1,0 +1,208 @@
+// ---------------------------------------------------------------------------------------
+// A DOMAIN'S RUNGS (docs/plans/DOMAINS.md 11 to 15; South, 2026-11-01: "Continue to think hard about the full progression/ ability
+// unlocks/ training methodologies of each of the domains ... get to building what the abilities would look like ingame"). Above its
+// widening, each domain's ladder is a set of arts, one a rung (30, 45, 60, 80, 99: shu-ha-ri, DOMAINS.md 11), and an art opens only by
+// achievement (DESIGN.md 22), by either of two ways:
+//   the count way  the domain's level reaches the rung's (`exp.<domain>` in the ledger: retroactive, as every achievement)
+//   the feat way   the rung's own idea done the hard way before you have it, n times (`domain.feat.<key>`; FEATS below)
+// A passive or a reaction is on while it holds one of the psyche's notches (notchesFor: a budget you can see, each switchable). An action is
+// worn on the art key, in the one action slot the class arts use (progress/classarts.js: a class's action or a domain's).
+// The first KATA uses of each open rung pay the domain a masterful act (`domain.art.use { kata: true }`: Hades' first-time bonuses, the
+// teacher showing once), every later use its own quality (domains.js SOURCES). Every number here is a first number, each with its reason;
+// the runtime is courier/domainarts/ (game.domainArtsRun).
+//
+// Wave 1 is each domain's first relation, at level 15 (DOMAINS.md 16: moved from 30 on the critic's pacing). The next rungs are written in
+// DOMAINS.md 16's table and come as their own rows here. A passive or reaction takes a notch (notchesFor): Hollow Knight's budget.
+//
+// Prior art: shu-ha-ri (Aikido's and the Urasenke tea school's ladder of keep, break, leave); Old School RuneScape's skills and its
+// quest-or-level gates (Monster Hunter's too); FFXIV's job quest at each rung; Final Fantasy Tactics' action slot; Hollow Knight's charm
+// notches (one slot, a choice you can see); FFXIV's Doom (Postpone), Hollow Knight's Baldur Shell (Plating), Metal Gear Solid's
+// vision cones and Hitman's instinct (the watch), Sekiro's deathblow and Smash's KO power (Shatter), Shin Megami Tensei's negotiation moods (Receptivity), Pokemon's Soak (Re-type), Final
+// Fantasy XII's Gambits (a standing rule).
+//
+//   DOMAIN_ARTS[id] = { domain, level, kind: 'passive'|'reaction'|'action', label, line, how, does, cost?, cooldown?, feat: [key, n] }
+//   FEATS[key] = { event, test(e, s) }   FEAT_WORDS[key]   RULE_WHEN, RULE_THEN (a standing rule's choices)   KATA   WEAR   notchesFor(total)
+//   domainArtOpen(id, L, game?) -> bool   openDomainArts(L, game?) -> [id]   artsOfDomain(domain) -> [id]   isDomainArt(id)
+//   shatterOf(level) -> 0..1   game.domainArts = new DomainArts(game)   .open(id) .on(id) .worn() .notches() .toggle(id) .progress(id) .used(id, q)
+//   .rule { when, then } .setRule(when, then)   commands /rung, /rule
+//   events: domain.art.learn { art, domain, kind, by }, domain.art.use { art, domain, q, kata, by }, domain.art.wear { art, on, by },
+//   domain.art.ask, domain.rule.set { when, then, by }, domain.rule.ask, domain.rule.refuse
+// ---------------------------------------------------------------------------------------
+import { levelOf } from './domains.js';
+
+/** The first uses of an open rung that pay its domain a masterful act (the teacher shows once; five, a kata's repetitions). */
+export const KATA = 5;
+/** Ours: a rung's uses pay their domain fully up to WEAR uses a game hour, a quarter after (the critic's farm: a Postpone loop on
+ *  clapperjars, a plate cycled on a jelly; OSRS's diminishing returns are in its XP-rate tables, ours in the use). */
+export const WEAR = 20;
+/** THE PSYCHE'S NOTCHES (Hollow Knight's): how many always-on rungs (passives and reactions) you may wear at once: two, and one more for
+ *  each hundred of the seven domains' levels summed, seven at most. A rung worn is always on; one set aside is off, exactly as without
+ *  it (a modifier switched off restores the base: DESIGN.md 22). Actions take no notch: they share the art key's one slot. */
+export const notchesFor = (totalLevel = 7) => Math.min(7, 2 + Math.floor(totalLevel / 100));
+
+/** What a rung's feat counts: the event, and when it counts. `s` is the counter's own state (a run that a test may keep). Every feat is
+ *  against a real foe (`training` and `practice` payloads never count: the Sandbox's pen, Strawman, a practice duel). */
+export const FEATS = {
+  // a parry in the last third of a blow's 0.25 real s window (move.parry's `lead`, the time still to go: 0.083 or less, five frames at
+  // 60: the touch's own latency allowed for), from a real foe
+  lateParry: { event: 'move.parry', test: (e) => e.what === 'blow' && e.lead != null && e.lead <= 0.083 },
+  // six blows in a row on the shield with no break and no crack between (the pool held as armour by hand: Plating's idea without it)
+  shieldRun: { event: 'vessel.shield', test: (e, s) => { s.run = (s.run || 0) + 1; if (s.run >= 6) { s.run = 0; return true; } return false; },
+    reset: ['vessel.shieldbreak', 'vessel.crack'], anyBy: true },
+  // a candid photograph (STEALTH.md 6): a Figment that never knew you were there (the watch read before it was needed)
+  candid: { event: 'photo.take', test: (e) => e.candid === 'candid' && !!e.kind && e.kind !== 'nothing' },
+  heavyThrow: { event: 'impact.hit', test: (e) => (e.energy || 0) >= 300 },
+  // a fish let go after a fight of 20 real s or more: its state read through the line, and its freedom given at its weakest
+  longRelease: { event: 'angle.release', test: (e) => (e.secs || 0) >= 20 },
+  weakDown: { event: 'creature.struck', test: (e) => e.kill && (e.k || 1) > 1 },
+  cleanMacro: { event: 'reprogram.run', test: (e) => !e.refused && (e.misses || 0) === 0 && (e.chars || 0) >= 8 },
+};
+export const FEAT_WORDS = {
+  lateParry: 'blows parried at the last moment', shieldRun: 'runs of six blows on your shield unbroken', candid: 'candid photographs',
+  heavyThrow: 'thrown hits over 300 joules', longRelease: 'fish let go after a long fight', weakDown: 'creatures downed by their weakness',
+  cleanMacro: 'macros typed clean',
+};
+
+/** A standing rule's triggers and verbs (South, 2026-11-01: case by case; DOMAINS.md 14, 16). Every trigger is an act of your own (the
+ *  critic: a rule on what is done to you answers a check of survival for you, an assist), and every verb sets up a play (your sub's
+ *  verb, the belt swapped), none parries, dodges or aims. Each firing costs COST pool, at most once in `every` real s. */
+export const RULE_WHEN = {
+  parry: { label: 'you parry', event: 'move.parry', test: (e) => (e.by ?? 'courier') === 'courier' },
+  stun: { label: 'you stun a creature', event: 'creature.stun', test: (e) => (e.by ?? 'courier') === 'courier' },
+  down: { label: 'you down a creature', event: 'creature.struck', test: (e) => e.kill && (e.by ?? 'courier') === 'courier' && !e.training },
+  blink: { label: 'you blink', event: 'move.blink', test: (e) => (e.by ?? 'courier') === 'courier' },
+};
+export const RULE_THEN = {
+  lend: { label: 'your sub lends its verb' },
+  swap: { label: 'your main and sub change places' },
+};
+
+const R = (domain, level, kind, label, line, how, does, feat, more = {}) => ({ domain, level, kind, label, line, how, does, feat, ...more });
+
+/** The first relations (wave 1: each domain's at level 15, DOMAINS.md 16: the critic's pacing, so the seven fall inside one
+ *  playthrough). `line` the effect in one line (CLARITY.md), `how` the lesson's line (said once, when it opens). */
+export const DOMAIN_ARTS = {
+  // OURANURGY (when, and where?): a blow's arrival moved in time
+  postpone: R('ouranurgy', 15, 'reaction', 'Postpone', 'A blow that gets past your shield cracks you 4 seconds late.',
+    'Parry another blow before it lands and it lands at half. It lands on the clay, wherever you are by then.', { delay: 4, parried: 0.5 }, ['lateParry', 10]), // (4 s: FFXIV's Doom; WoW's Stagger, known hard to read: so one held at a time, shown, and a notch you can take off)
+  // MANIFESTATION (in what form?): the pool's liquid set solid
+  plating: R('manifestation', 15, 'action', 'Plating', 'Set 20 of your pool solid over the part of you facing the nearest foe: it takes most of that part\'s next crack.',
+    'It holds 20 off your pool\'s top while it stands. Unspent after 30 seconds, it melts back at 15. It cannot stop a crack that would shatter you.', { held: 20, back: 15, dur: 30, takes: 0.85 }, ['shieldRun', 10], { cooldown: 8 }), // (solid takes 0.85 of a full blow, the shield's 20 pool 0.57: harder, not whole; the cooldown from its end)
+  // DIVINATION (what is known?): when a mind will look (the critic: the crack mark would mostly read "torso"; the watch is a new kind)
+  watch: R('divination', 15, 'passive', 'The Watch', 'A Figment\'s watch shows: while its head is down, how long until it looks up.',
+    'Its bouts are its own and they never lie: move while it is down (STEALTH.md).', { reach: 30 }, ['candid', 10]),
+  // PSYCHOKINESIS (with how much force?): a blow that breaks (SUBSTRATE.md F5b as written: an execute, never a number)
+  shatter: R('psychokinesis', 15, 'passive', 'Shatter', 'A Figment whose shell is near breaking glows; a heavy blow on it then breaks it at once.',
+    'Near: its stun past (1 - shatter) of full. Heavy: a blow of power 2 or more (a charge, a finisher, a heavy throw).', { minPower: 2 }, ['heavyThrow', 25]),
+  // POSSESSION (whose?): another mind's openness (the critic: open is the Agitation band alone, and its gift is a verb)
+  receptivity: R('possession', 15, 'passive', 'Receptivity', 'A mind whose agitation is in its best band shows open, and you may reprogram it without stunning it first.',
+    'Open is the band where its Lachryma yields most: agitate it, then catch it there.', {}, ['longRelease', 10]),
+  // ALTERATION (of which kind?): a blow's kind exchanged (the critic: knowing the weakness is the skill; the art turns what you know)
+  retype: R('alteration', 15, 'action', 'Re-type', 'For 20 seconds the tool in your hands strikes as another type: the nearest creature\'s weakness if you know its kind, else the next type in turn.',
+    'Know a kind (photograph it, or down it five times) and Re-type finds its weakness for you.', { dur: 20, reach: 20, knows: 2 }, ['weakDown', 15], { cost: 10, cooldown: 30 }),
+  // SPELLSCRIPTION (under which rule?): a condition written
+  standingRule: R('spellscription', 15, 'passive', 'A Standing Rule', 'Write one rule: when you do one thing, another follows, for 5 of your pool.',
+    '/rule lists the choices. Each fires at most once in 3 seconds.', { every: 3, cost: 5 }, ['cleanMacro', 20]),
+};
+
+/** Psychokinesis's shatter (SUBSTRATE.md F5b): 0.25 at 15, rising on a straight line to 0.6 at 99 (past 0.6 a heavy blow would break a
+ *  fresh shell outright, which is the 99's own rule-break, not a rung's). */
+export const shatterOf = (level) => (level < 15 ? 0 : 0.25 + 0.35 * Math.min(1, (level - 15) / 84));
+
+export const isDomainArt = (id) => !!DOMAIN_ARTS[id];
+export const artsOfDomain = (domain) => Object.keys(DOMAIN_ARTS).filter((id) => DOMAIN_ARTS[id].domain === domain);
+const got = (L, key) => L?.get?.(key) || 0;
+
+/** Whether a rung is open: its count way (the domain's level) or its feat way (its feat n times). The Summit lend reads every domain at
+ *  99, so it opens every rung (progress/lend.js: DEBUG only, never counted). */
+export function domainArtOpen(id, L, game = null) {
+  const A = DOMAIN_ARTS[id]; if (!A) return false;
+  if (game?.lend?.has?.('summit')) return true;
+  const [feat, n] = A.feat;
+  return levelOf(got(L, `exp.${A.domain}`)) >= A.level || got(L, `domain.feat.${feat}`) >= n;
+}
+export const openDomainArts = (L, game = null) => Object.keys(DOMAIN_ARTS).filter((id) => domainArtOpen(id, L, game));
+
+/** The domains' rungs kept: their feats counted, each rung said once when it opens, the standing rule written. */
+export class DomainArts {
+  constructor(game) {
+    this.game = game; this.told = []; this.rule = { when: 'parry', then: 'lend' }; this.uses = {}; this.state = {}; this.off = []; this.hourUses = {};
+    game.save?.section?.('domainArts', { scope: 'player', version: 1, dump: () => ({ told: [...this.told], rule: { ...this.rule }, uses: { ...this.uses }, off: [...this.off] }),
+      load: (d) => { this.told = [...(d?.told || [])]; this.rule = { when: 'parry', then: 'lend', ...(d?.rule || {}) }; this.uses = { ...(d?.uses || {}) }; this.off = [...(d?.off || [])]; },
+      reset: () => { this.told = []; this.rule = { when: 'parry', then: 'lend' }; this.uses = {}; this.off = []; } });
+    const byEvent = {};
+    for (const [key, F] of Object.entries(FEATS)) {
+      (byEvent[F.event] ||= []).push(['test', key, F]);
+      for (const ev of F.reset || []) (byEvent[ev] ||= []).push(['reset', key, F]);
+      for (const ev of F.mark || []) (byEvent[ev] ||= []).push(['mark', key, F]);
+    }
+    game.events?.on?.('*', (e) => {
+      const list = e?.name && byEvent[e.name]; if (!list || e.practice || e.training) return;
+      let moved = false;
+      for (const [what, key, F] of list) {
+        const s = (this.state[key] ||= {});
+        if (what === 'reset') { s.run = 0; continue; }
+        if (what === 'mark') { s.cracked = true; continue; }
+        if ((e.by ?? 'courier') !== 'courier' && !F.anyBy) continue;
+        try { if (F.test(e, s)) { game.ledger?.inc?.(`domain.feat.${key}`); moved = true; } } catch { /* a payload without the field: not counted */ }
+      }
+      if (moved) this.teach();
+    });
+    game.events?.on?.('domain.level', () => this.teach());
+    game.chat?.add?.('rule', { help: 'your standing rule (Spellscription 30): /rule (what it is and the choices), /rule <when> <then>', run: ([w, t]) => {
+      if (w && t) { if (!this.setRule(w, t)) game.events?.emit('domain.rule.refuse', { when: w, then: t, why: !this.open('standingRule') ? 'closed' : 'unknown', by: 'courier' }); return; }
+      game.events?.emit('domain.rule.ask', { rule: { ...this.rule }, open: this.open('standingRule'), when: Object.keys(RULE_WHEN), then: Object.keys(RULE_THEN), by: 'courier' });
+    } });
+    game.chat?.add?.('rung', { help: "your domains' rungs: /rung (each, open or how near, and which are on), /rung <id> (put one on or take it off)", run: ([id]) => {
+      if (id) { const ok = this.toggle(id); if (ok == null) game.events?.emit('domain.art.refuse', { art: id, why: DOMAIN_ARTS[id] ? 'closed' : 'unknown', by: 'courier' }); return; }
+      game.events?.emit('domain.art.ask', { notches: this.notches(), on: this.worn(), rungs: Object.keys(DOMAIN_ARTS).map((a) => ({ art: a, open: this.open(a), on: this.on(a), progress: this.progress(a) })), by: 'courier' });
+    } });
+    queueMicrotask?.(() => this.teach());
+  }
+  open(id) { return domainArtOpen(id, this.game.ledger, this.game); }
+  /** The notches you have now (the seven levels summed: notchesFor). */
+  notches() { return notchesFor(this.game.psyche?.total?.() ?? 7); }
+  /** The always-on rungs worn: open, not set aside, first opened first, as many as the notches hold. */
+  worn() { return Object.keys(DOMAIN_ARTS).filter((a) => DOMAIN_ARTS[a].kind !== 'action' && this.open(a) && !this.off.includes(a)).slice(0, this.notches()); }
+  /** Whether a rung is working now: an action while it is worn on the art key's slot, any other while it holds a notch. */
+  on(id) { const A = DOMAIN_ARTS[id]; if (!A || !this.open(id)) return false; return A.kind === 'action' ? this.game.classArts?.worn?.action === id : this.worn().includes(id); }
+  /** Put a rung on or take it off (an action: worn on the art key's slot). Null if it is not open. */
+  toggle(id) {
+    const A = DOMAIN_ARTS[id]; if (!A || !this.open(id)) return null;
+    if (A.kind === 'action') { this.game.classArts?.wear?.(id); return true; }
+    const was = this.on(id);
+    if (was) this.off.push(id); else { this.off = this.off.filter((x) => x !== id); if (!this.worn().includes(id)) { const w = this.worn(); if (w.length) this.off.push(w[w.length - 1]); this.off = this.off.filter((x) => x !== id); } }
+    this.game.save?.dirty?.('domainArts');
+    this.game.events?.emit('domain.art.wear', { art: id, on: this.on(id), by: 'courier' });
+    return this.on(id);
+  }
+  /** How near a rung is by each way: the domain's level of the rung's, and its feat done of n. */
+  progress(id) {
+    const A = DOMAIN_ARTS[id], L = this.game.ledger; if (!A) return null; const [feat, n] = A.feat;
+    return { level: levelOf(got(L, `exp.${A.domain}`)), of: A.level, feat, done: got(L, `domain.feat.${feat}`), n };
+  }
+  /** Say each rung once, the first time the ledger opens it (a lent one never: the Summit is not an achievement). */
+  teach() {
+    const L = this.game.ledger;
+    for (const id of Object.keys(DOMAIN_ARTS)) {
+      if (this.told.includes(id) || !domainArtOpen(id, L)) continue;
+      this.told.push(id); const A = DOMAIN_ARTS[id];
+      this.game.save?.dirty?.('domainArts');
+      this.game.events?.emit('domain.art.learn', { art: id, domain: A.domain, kind: A.kind, by: 'courier' });
+      if (A.kind === 'action' && !this.game.classArts?.worn?.action) this.game.classArts?.wear?.(id); // (an empty action slot takes it, as a class's art)
+    }
+  }
+  /** A use of a rung: the first KATA pay its domain a masterful act (domains.js reads `kata`). */
+  used(id, q = 0.5, more = {}) {
+    const A = DOMAIN_ARTS[id]; if (!A) return;
+    const n = (this.uses[id] = (this.uses[id] || 0) + 1); this.game.save?.dirty?.('domainArts');
+    const hour = Math.floor((this.game.ledger?.play ?? 0) / 150), H = this.hourUses; if (H.hour !== hour) { H.hour = hour; H.n = {}; } // (a game hour: 150 real s)
+    const m = (H.n[id] = (H.n[id] || 0) + 1), worn = m > WEAR ? 0.25 : 1;
+    this.game.events?.emit('domain.art.use', { art: id, domain: A.domain, kind: A.kind, q: Math.max(0, Math.min(1, q)) * worn, kata: n <= KATA, ...more, by: 'courier' });
+  }
+  setRule(when, then) {
+    if (!this.open('standingRule') || !RULE_WHEN[when] || !RULE_THEN[then]) return false;
+    this.rule = { when, then }; this.game.save?.dirty?.('domainArts');
+    this.game.events?.emit('domain.rule.set', { when, then, by: 'courier' }); return true;
+  }
+}

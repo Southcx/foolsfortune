@@ -561,4 +561,6 @@ The seven Domains each answer one question every interaction asks (DOMAINS.md): 
 much force, whose, of which kind, under which rule. Anything can be done at a price (South, 2026-11-01: "The sky is the limit, anything
 can be justifiable for an appropriate cost"): seven prices, from the clock to overreach (a power cast short of pool, doubled, its
 shortfall cracked from the vessel) to aberrance (a creature whose rules you rewrite goes aberrant and is met by a duel). Two domains
-raised together give one of 21 pairings, a move that asks both questions at once.
+raised together give one of 21 pairings, a move that asks both questions at once. A domain grows by shu-ha-ri (keep the form 1 to 14, break it
+from 15, leave it from 60): each rung above the widening is an art opened by the domain's level or by its feat, the first relations at 15
+(DOMAINS.md 16, 17), worn under the psyche's notches (Hollow Knight's budget, each switchable), an action sharing the art key's slot.

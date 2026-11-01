@@ -24,7 +24,7 @@
 //
 //   EXPOSE { posture, pace, light, weather, inHand }   exposureOf({ posture, speed, sliding, inHand, light, aspect, strength, indoors })
 //   STEP { surface, gait }   stepNoise({ surface, speed, posture, aspect, strength }) -> radius m (0: silent)   LAND   landNoise(fall)
-//   VIGIL { up, down, scanEvery, scanFor, caution }   vigilAt(t, seed, wary, caution) -> { up, k }
+//   VIGIL { up, down, scanEvery, scanFor, caution }   vigilAt(t, seed, wary, caution) -> { up, k, left }
 //   CANDID   candidOf(aware) -> { k, word }   (the photo's multiplier for a subject that did not know)
 //   const S = new Stealth(game)   S.loud  (the brain's sight multiplier for the Courier, this frame)   S.update(dt)
 //   events: stealth.candid { kind, d, by }   stealth.spook { kind, d, cause, by }
@@ -90,7 +90,7 @@ export function vigilAt(t, seed = 1, wary = 1, caution = false) {
   const V = VIGIL, w = Math.max(0.4, wary) * (caution ? 1 / V.cautionEvery : 1);
   const every = (V.scanEvery[0] + hash(seed * 31) * (V.scanEvery[1] - V.scanEvery[0])) / w, scan = V.scanFor[0] + hash(seed * 17) * (V.scanFor[1] - V.scanFor[0]);
   const into = (t + hash(seed) * (every + scan)) % (every + scan), up = into >= every;
-  return { up, k: up ? V.up : caution ? V.cautionDown : V.down };
+  return { up, k: up ? V.up : caution ? V.cautionDown : V.down, left: up ? 0 : every - into }; // (left: real s until its head comes up: the Watch reads it, progress/domainarts.js)
 }
 
 /** A photograph's subject that did not know you were there is worth more (New Pokemon Snap: the behaviour seen unseen is the prize; real
@@ -128,7 +128,7 @@ export class Stealth {
       if (!c.brain || c.training) continue;
       if (c.noticedT != null && this.noticed.get(c) !== c.noticedT) { this.noticed.set(c, c.noticedT); this.caution.set(c, this.t + VIGIL.caution); } // (its "!" at you: the minds stamp noticedT)
       const until = this.caution.get(c) || 0, v = vigilAt(this.t, c.id || 1, 2 - (c.traits?.bold ?? 1), until > this.t);
-      if (!c.vigil) c.vigil = { up: v.up, k: v.k }; else { c.vigil.up = v.up; c.vigil.k = v.k; }
+      if (!c.vigil) c.vigil = { up: v.up, k: v.k, left: v.left }; else { c.vigil.up = v.up; c.vigil.k = v.k; c.vigil.left = v.left; }
     }
   }
 }

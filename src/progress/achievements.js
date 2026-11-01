@@ -60,7 +60,7 @@ export const CATS = [
   { id: 'explore', name: 'EXPLORATION', subs: ['Charting', 'Places', 'Shrines', 'The Dreamvane', 'The Wells', 'Folk', 'The Finds', 'Digging', 'The Seal Book'] },
   { id: 'emocean', name: 'THE EMOCEAN', subs: ['Sailing', 'Sea Stages', 'Crude', 'The Open Sea'] },
   { id: 'collect', name: 'COLLECTION', subs: ['Logged', 'The Collection Log'] },
-  { id: 'psyche', name: 'THE DOMAINS', subs: ['Levels'] },
+  { id: 'psyche', name: 'THE DOMAINS', subs: ['Levels', 'Rungs'] },
   { id: 'garden', name: 'THE SPIRIT GARDEN', subs: ['The Press', 'The Garden', 'The Mycelium', 'The Spirits', 'The Firings', "The Garden's Life", 'Seeds and Slabs'] },
   { id: 'sky', name: 'THE SKY', subs: ['Weather', 'The Day'] },
   { id: 'general', name: 'GENERAL', subs: ['Time', 'Persistence', 'The Spread', 'The Stones', 'Pairs', 'Achievements'] },
