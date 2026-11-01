@@ -63,27 +63,25 @@ export const BARRAGE_CYCLE = [
 /** The iconic extremes no clip holds whole (South, 2026-11-01: "Dropkick, kamen rider kick, falcon knee ... follow references as close
  *  as practicable"): each strike a clip's frame with bone turns laid over it (a key's `fix`, keyposes.js), solved by aiming each limb
  *  along the reference's line from the side (parents first: the hips' lean, the neck, the thighs, the shins, the arms) and read back
- *  front and side against the reference. The lead-in and the follow-through are the clip's own frames round it. */
+ *  front and side against the reference. The lead-in is the clip's chamber a beat before; the follow-through the same chamber, the
+ *  legs drawn back in (an air's retract, Smash's), never the clip's landing. */
 const FIX = {
-  // Captain Falcon's Knee Smash (Melee's forward air; its sweetspot one frame): the right knee driven up to the chest, the heel tucked
-  // under, the body leaning back off it, both arms flung back and down, the trailing leg long behind
-  falconKnee: { spine: [-0.37, -0.001, 0.062], spine003: [0.386, 0.039, 0.262], thighR: [0.282, 0.02, 0.139], shinR: [1.904, -0.184, -0.131],
-    thighL: [1.345, -0.106, -0.133], shinL: [-0.37, 0.059, -0.314], upper_armR: [-0.523, -0.019, 0.07], forearmR: [-1.379, -0.398, 0.48],
-    upper_armL: [-1.668, 0.353, -0.321], forearmL: [-1.957, 0.528, -0.36] },
+  // Captain Falcon's Knee Smash (Melee's forward air; its sweetspot one frame): the right knee driven up past the hip, the shin
+  // hanging under it, the body leaning back off it, both arms flung back and down, the trailing leg long behind (ssbwiki: frame 14)
+  falconKnee: { spine: [-0.213, -0.016, 0.119], spine004: [0.48, 0.079, 0.342], thighR: [0.38, 0.024, 0.123], shinR: [1.178, 0.006, 0.009], footR: [0.009, -0.001, -0.118], thighL: [1.012, 0.004, 0.007], shinL: [-0.169, 0.029, -0.339], footL: [1.239, -0.135, -0.188], upper_armR: [-0.758, -0.087, 0.217], forearmR: [-1.594, -0.382, 0.374], upper_armL: [-1.957, 0.05, -0.034], forearmL: [-2.179, 0.245, -0.128] },
   // Kamen Rider's Rider Kick (Toei, 1971): the body one diagonal line down onto the foe, the right leg straight along it with the toe
   // pointed, the left knee drawn up and its foot tucked back, the head up and looking down the line, both arms spread up and back
   riderKick: { spine: [-0.275, 0.083, -0.312], spine004: [0.438, 0.26, 1.13], thighR: [1.476, -0.557, -0.609], shinR: [-1.129, -0.07, 0.111],
     footR: [1.204, 0.297, 0.429], thighL: [-0.652, -0.244, 0.696], shinL: [2.387, -0.461, -0.185], upper_armR: [0.021, -0.023, -1.655],
     forearmR: [-0.638, -0.122, 0.365], upper_armL: [1.473, 0.149, 0.164], forearmL: [-0.8, 0.141, -0.331] },
-  // the wrestler's dropkick: the body laid flat in the air, both feet together and soles first, the arms thrown down and wide to land on
-  dropkick: { spine: [-0.409, 0.379, -0.931], spine003: [0.054, 0, 0.208], thighR: [1.274, -0.327, -0.439], shinR: [-1.129, -0.07, 0.111],
-    thighL: [-0.127, -0.032, 0.49], shinL: [-0.465, 0.04, -0.17], upper_armR: [-0.502, 1.028, -2.289], forearmR: [-0.979, -0.161, 0.301],
-    upper_armL: [0.746, -0.337, -0.822], forearmL: [-0.918, 0.423, -0.819] },
+  // the wrestler's dropkick: the body laid flat in the air, both feet together and soles first, the back arm
+  // thrown up overhead and the front one bent down to land on (Marty Scurll's missile dropkick, the reference)
+  dropkick: { spine: [-0.405, 0.334, -0.844], spine004: [0.404, 0.414, 1.676], thighR: [1.221, -0.271, -0.385], shinR: [-1.099, -0.048, 0.079], thighL: [-0.189, -0.055, 0.562], shinL: [-0.432, 0.045, -0.206], upper_armR: [0.355, -0.191, -0.982], forearmR: [-0.429, -0.054, 0.247], upper_armL: [0.652, -0.422, -1.129], forearmL: [-0.361, 0.367, -1.588] },
 };
 export const ICONIC = {
-  falconKnee: [{ pose: 'lead', clip: 'Cmu_KneeStrike', frame: 8 }, { pose: 'strike', clip: 'Cmu_KneeStrike', frame: 14, fix: FIX.falconKnee }, { pose: 'follow', clip: 'Cmu_KneeStrike', frame: 22 }],
-  riderKick: [{ pose: 'lead', clip: 'Cmu_FlyingKick', frame: 24 }, { pose: 'strike', clip: 'Cmu_FlyingKick', frame: 34, fix: FIX.riderKick }, { pose: 'follow', clip: 'Cmu_FlyingKick', frame: 44 }],
-  dropkick: [{ pose: 'lead', clip: 'Cmu_FlyingKick', frame: 26 }, { pose: 'strike', clip: 'Cmu_FlyingKick', frame: 34, fix: FIX.dropkick }, { pose: 'follow', clip: 'Cmu_FlyingKick', frame: 44 }],
+  falconKnee: [{ pose: 'lead', clip: 'Cmu_KneeStrike', frame: 8 }, { pose: 'strike', clip: 'Cmu_KneeStrike', frame: 14, fix: FIX.falconKnee }, { pose: 'follow', clip: 'Cmu_KneeStrike', frame: 8 }],
+  riderKick: [{ pose: 'lead', clip: 'Cmu_FlyingKick', frame: 24 }, { pose: 'strike', clip: 'Cmu_FlyingKick', frame: 34, fix: FIX.riderKick }, { pose: 'follow', clip: 'Cmu_FlyingKick', frame: 24 }],
+  dropkick: [{ pose: 'lead', clip: 'Cmu_FlyingKick', frame: 26 }, { pose: 'strike', clip: 'Cmu_FlyingKick', frame: 34, fix: FIX.dropkick }, { pose: 'follow', clip: 'Cmu_FlyingKick', frame: 26 }],
 };
 
 /** J's set: the jabs, the barrage (its charge, then the cycle), its finisher, the uppercut, the dash straight, the specials. */
