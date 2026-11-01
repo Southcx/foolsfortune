@@ -145,6 +145,7 @@ export async function bootWarmup(game, made) {
   } });
   game.railReadout = new RailReadout(game); game.railResults = new RailResults(game); // (the crossing's score aboard and the trip's results window, built on first use: ui/railreadout.js, ui/railresults.js; RAIL-STANDARDS.md 6)
   game.jarPlate = new JarPlate(game); // (the Pneuka Jar's numbers while the god hand is taken, from game.god.readout(): ui/jarplate.js)
+  game.systems.add('looks', game.jarPlate, { clock: 'raw', name: 'jarPlate' }); // (core/systems.js)
   game.goalsWindow = new GoalsWindow(game); // (the game day's three goals as a System window, on /goals and a beat at goals.set and goal.done: ui/goalswindow.js)
   game.questJournal = new QuestJournal(game); // (the quests as a System window under the goals window's: on /quests, a beat at quest.start and quest.done, and the recap: ui/questjournal.js)
   game.questSplash = new QuestSplash(game); // (a quest begun or done: EVENT! or QUEST COMPLETE! over the play, then the journal's beat; waits out a live moment: ui/questsplash.js)
