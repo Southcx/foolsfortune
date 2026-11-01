@@ -19,9 +19,20 @@ The code does not yet believe it. The substrate this plan proposes is what the f
 | substrate | what it is | it is read as |
 |---|---|---|
 | **the pool** (Lachryma) | the Vessoul's well of feeling | ammo, shield, fuel, boost, the cost of every art |
-| **the vessel** | the Vessoul's body, in whatever form it wears | health: cracks, mended, shattered and made whole |
-| **the feelings** (seven) | what any Lachryma is *of* | a blow's type, a status, a weather, a taste, a colour |
+| **the vessel** | the body, in whatever form it wears: any body with a shell | health: cracks, mended, shattered and made whole |
+| **the mind** | what a body thinks and feels with | afflictions (statuses), then mental state and EmO, then feelings, then behaviour |
 | **the clock** | the game day and its hours | weather, regen's rhythm, a game day's resets |
+
+**Force meets a hybrid body in five ways, the damage types** (South, 2026-11-01: "The damage types were carefully considered based on
+the types of ways to interact with a hybrid physical-psychic body. Feelings and emotions determine behavior, they are downstream of the
+damage types and status afflictions."). The chain is always the same, and always in this order:
+
+> **a blow's type** (Impact, Ego, Influence, Illusion, Delirium) **->** what it does to the body (Impact: the vessel's cracks) and to the
+> mind (the four psychic types: an affliction, doubt, charm, blind, confusion) **->** the mind's state (mental state, EmO) **->** the
+> feeling it shows **->** what it does next.
+
+A feeling is never a damage type. It is what a body feels *because* of what was done to it. A weather or a draught is a feeling pushed
+on a mind from outside, which is why it sways a mind's settle and a status's build-up. It never changes a blow's type.
 
 Everything else should be a **modifier with a visible source** on one of these four (CLAUDE.md: base change bad, modifiers good), or a
 readout of one. A module may add a verb. It never adds a fifth substrate.
@@ -95,24 +106,39 @@ What it teaches: one body, whatever shape you take. The Hanko plan's "a body's p
 
 ### F2. The pool on the sea and the rail
 
-The pool is ammo everywhere. A plain shot costs on the water what it costs on foot: 4, with the rail's absorb (+2) and graze (+1)
-refuelling it, as the parry soak does on foot.
+The pool pays for what is special everywhere: a charge, a shell, a lance, a mount (South, 2026-11-01). **A plain shot draws on the
+Lachryma round it, not the pool:**
+- at sea it is free, because the Emocean is Lachryma;
+- on foot it costs 4 today.
+
+The plain shot's cost can become a modifier with a source you can see: the ambient Lachryma where you stand. It is free on the sea,
+cheaper in a strong weather (Lachryma falling), cheaper on paint or by crude, and full under a roof with nothing near. That waits on
+South: it changes how the psygun feels on foot. The rail's absorb (+2) and graze (+1) refuel the pool for the special shots, as the
+parry soak does on foot.
 - **The Surge** fills only from absorb past a full pool. Today one absorb is counted twice.
 - **The open sea's fuel** becomes the Lachrymato Bottle it is already drawn as.
 - **One cost per tool.** A tool costs the same in every mode, with a mode's *modifier* shown where it bites. Today the flash is 6 on
   foot and the rail, and 8 plus a 12 s cooldown at sea.
 
-### F3. Wake the type chart
+### F3. Wake the type chart: a body's constitution
 
-**A Figment's damage type is its feeling's** (`TYPE_OF`: Wonder and Gall Ego, Mirth and Fury Impact, Desire Influence, Grief Illusion,
-Dread Delirium). Set `c.affinity` from the creature's feeling, and the trump cycle, x1.25 and the build bonus all start working.
-- The aberrants' palettes and the weather's feeling already say what a Figment is of.
-- The flash, the parry's stun and the toll go through `strike` with their own types (Ego, Impact, Influence), so the mind and EmO hear
-  them.
-- **The stun bonus moves into `strike`, once.**
-- A tool's type is its own: the brush's paint is its feeling's type, the Lockheart Delirium, the Crucibelle Influence.
+South ruled the type chart stays the type chart: the five types are the ways force meets a hybrid physical-psychic body (section 1),
+and feelings are downstream. So the chart wakes from **what each body is made of**, never from its feeling.
 
-What it teaches: the Pokemon chart, as feeling against feeling. You learn which feeling answers which by fighting.
+- **A creature's constitution** (data, a row per kind in the bestiary's rules) is how physical and how psychic its body is. It decides
+  which types bite and which glance off:
+  - a slip jelly is a body of slip, so Impact splits it and Illusion finds little mind to fool;
+  - a Lantern Wisp is a mind round a flame, so Impact passes through and Ego (the self) and Illusion (what it sees) land;
+  - a clapperjar is clay with a small mind;
+  - an aberrant's mind is broken: Delirium is its weakness, and its body is its kind's.
+- **The trump cycle stays as coded** (Impact > Illusion > Ego > Influence > Delirium > Impact). It is set from the constitution, not
+  the feeling: `c.affinity` is the type the body *is*, and the x1.25 and the build bonus start working.
+- **The psychic types go through `strike`.** The flash (Ego), the parry's stun (Impact), the toll (Influence) and the Lockheart
+  (Delirium) all go through it, so the mind and EmO hear them. **The stun bonus moves into `strike`, once.**
+- **Feelings stay downstream.** A frightened Figment (Dread in its mind, from blind or confusion) flees; a charmed one follows. Its
+  feeling shows on its body and in its behaviour, and its type never moves.
+
+What it teaches: a body and a mind are attacked differently. You learn by fighting which bodies are mostly flesh and which mostly mind.
 
 ### F4. One unit of damage: the blow
 
@@ -128,11 +154,39 @@ The duplicated tables go:
 - one flash cost;
 - `FOE.hp`.
 
-### F5. The Arena on the vessel (proposed only: FIGHTER.md is in flux)
+### F5. The Arena on the vessel (ruled yes, at Dovina's discretion)
 
 Smash's percent is the vessel's cracks drawn as a number: crack sum / 3.6 x 100. The fiction for launch is the clay body splitting
-under blows: knockback grows with your cracks, as it grows with percent. A KO past a blast line is the Arena's shatter, made whole on
-the respawn plate. The 60-point shield bubble is the pool, spent under a `guard` tag. Melee's numbers all stay.
+under blows, so knockback grows with your cracks as it grows with percent. A KO past a blast line is the Arena's shatter, made whole
+on the respawn plate. The 60-point shield bubble is the pool, spent under a `guard` tag. Melee's numbers all stay.
+
+### F5b. Shatter: a blow that breaks what is cracked (South: "this opens up design space for creating moves that have 'shatter' capability")
+
+Once every shelled body is a vessel (section 1), **a crack is a promise and a shatter is its keeping**. The vessels:
+- the Courier, a sibling, the Jar and a ship;
+- a pot, a clapperjar and a straw dummy;
+- a Figment's glaze shell. Its poise meter is that shell's crazing, and the crackle break is the shell shattering.
+
+**`shatter` is a property of a blow** (a number 0..1 on the move's row), like knockback. Against a body whose cracks pass
+`1 - shatter` of its break point, the blow breaks it outright:
+- **the Courier:** shatter. The Arena's KO is the same thing past a blast line.
+- **a Figment:** the shell bursts, a stun at its next depth, open to the drain.
+- **a pot or a clapperjar:** it bursts.
+- **a ship:** the leg is lost.
+
+Most blows carry none. A few carry a lot, and they are the game's finishers:
+- the cutlass's Guard Crush;
+- a fully charged smash;
+- the Lockheart's flail at full fill;
+- a tier IV shell.
+
+What it gives play:
+- **A read:** a cracked body is a threat to its owner, so cracking first and shattering second is a two-beat combo the eye can follow.
+  The cracks show (kintsugi on the healed, crazing on the hurt).
+- **A defence:** mend before you are cracked enough to break.
+- **A Domain's dial:** how much shatter your blows carry is Psychokinesis's (force), and how cracked a body must be before you can see
+  it is Divination's (section 4).
+- **One rule everywhere:** the Arena's KO percent, the crackle break, a pot's burst and the vessel's shatter.
 
 ### F6. The duel reads the real pool
 
@@ -168,35 +222,21 @@ The Lachrimeter's tube already shows caps as a held stretch. It should show the 
   on the hand through the well itself.
 - **A dish is a held draught** (SPIRIT-COOKING.md): the same draught the pool already knows, stretched by the cook.
 
-## 4. The Domains: yes, now, as dials on the substrate
+## 4. The Domains: now, in parallel, as questions
 
-South asked whether now is the time to build the Domains out. **Yes, but as the second half of this work, not the first.** A domain's
-impact should be *which dial of the substrate it widens*. Until the substrate is one thing (F1 to F4), building the domains out means
-writing their impact onto 22 meters.
+The first draft gave each domain one dial of the substrate. South asked for deeper ("the dials you listed are good starters, but I
+think we can go much deeper than that! Think outside the box"). The design is now **DOMAINS.md**: each domain is one question every
+interaction asks:
+- Ouranurgy: when, and where?
+- Manifestation: in what form?
+- Divination: what is known?
+- Psychokinesis: with how much force?
+- Possession: whose?
+- Alteration: of which kind?
+- Spellscription: under which rule?
 
-**The rule: each domain widens one family of the substrate's dials.** It keeps the glossary's law: widening is reach, a count, a
-duration or a share, never accuracy or tempo, which are the attributes'. And it is never a flat damage multiplier: skill decides
-damage.
-
-| domain | its dial on the substrate | what its level widens (examples) | its gap today |
-|---|---|---|---|
-| **Ouranurgy** (space and time) | **the clock and reach** | ranges, a hook's reach, a portal's span, the regen delay's start | strong; three dead keys to wire or cut |
-| **Manifestation** (making) | **Lachryma made solid** | a made thing's hold and hp (a creation, a ward, a wall, a spirit called), the Bottles' capacity, how much overflow condenses into cubes a game day | starved: 3 sources off the hand; give it what the tools make (the brush's paint set, a shell's deployable, a sigil's wall). The vessel's own numbers stay the attributes' (Willpower the shield, Resilience the mending) |
-| **Divination** (knowing) | **what is shown** | the Figment telegraph ladder (built), tags, forecast hours, a foe skill seen, stealth's watch read sooner | strongest; keep |
-| **Psychokinesis** (force) | **the blow's push** | knockback, a throw's carried weight, launch, stagger length (never damage) | the psygun earns it nothing; give it the gun's push |
-| **Possession** (other minds) | **minds and EmO** | a status's duration on a foe, EmO's yield band, reprogramming's slots, a decoy's pull | spread thin; it owns mind and EmO, the drain and the Lockheart |
-| **Alteration** (change) | **the feelings** | a draught's strength and hold, paint's reach and build, a type's trump bonus, Transmute | the vaguest; this gives it the most visible dial, the type chart F3 wakes |
-| **Spellscription** (writing) | **costs** | costMult on inscribed things (sigils, shells, seals), a sigil's count, copies | promised crafting unbuilt; it owns efficiency |
-
-What this fixes:
-- Every domain changes ordinary play.
-- No two share a dial, nor a dial with an attribute: Alteration owns feelings, Manifestation what is made, the attributes the body.
-- Each tool can pay the domain whose dial it pulls. A tool's kill pays its type's domain via F3, and the stub ends.
-- Manifestation and Alteration stop overlapping.
-- The six dead keys either get wired to their dial or are cut.
-
-**The domains' experience follows the same rule:** a domain is fed by acting on its dial. Manifestation by making things; Possession by statuses landed and drains. Each needs a skill way that pays more, per the design law. The audit's flat-quality
-sources go.
+Each climbs a ladder: a widening (1 to 29), a new relation (30), depth (60 to 98), a rule-break at 99. It is built in parallel with the
+folds above: each rung names the fold it needs.
 
 ## 5. Build order
 
@@ -218,10 +258,13 @@ sources go.
    experience, its god powers at 60, and a per-domain title at 99.
 6. **The Arena (F5)** once South calls FIGHTER settled.
 
-## 6. For South
+## 6. Ruled (South, 2026-11-01)
 
-1. **Ships take cracks like the Courier** (one vessel in every form), in place of "hits it can bear"?
-2. **Plain shots cost the pool on the water** as on foot, refuelled by absorbs and grazes?
-3. **A Figment's damage type is its feeling's** (the type chart woken)?
-4. **The domains as dials**, a domain a round after the substrate fold, weakest first?
-5. **The Arena's percent as cracks**: when FIGHTER is settled, or never?
+1. **Ships take cracks like the Courier.** Yes.
+2. **Shots on the water:** only the special or charged shots cost the pool. A plain shot draws on the ambient Lachryma (F2).
+3. **A Figment's type is not its feeling's.** The types are how force meets a hybrid body, and feelings are downstream of the types and
+   the afflictions (section 1, F3). The chart wakes from each body's constitution.
+4. **The Domains as dials:** yes, in parallel with the substrate where that helps. And deeper than dials (DOMAINS.md, from this).
+5. **The Arena's percent as cracks:** yes, at Dovina's discretion. It opens shatter as a blow's property (F5b).
+
+Still open for South: the plain shot's cost on foot as the ambient Lachryma round you (F2).
