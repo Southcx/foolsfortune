@@ -166,6 +166,7 @@ export class VesselDamage {
     }
     if (!past && g.domainArtsRun?.defer?.({ point, from, dir, k, why, by })) return -1; // (Postpone: held, to land later with `past`: a domain's rung)
     if (!past && g.classArtsRun?.ward?.()) { g.events?.emit('vessel.ward', { k: +k.toFixed(2), why, by }); return -1; } // (Steadfast: the next blow past the shield cracks nothing)
+    k = g.domainArtsRun?.share?.(k, region, { point, from, dir, why, by }) ?? k; // (Possession's link: a bound creature takes its half, a domain's rung)
     k = g.domainArtsRun?.plate?.(region, k) ?? k; if (!(k > 0)) return region; // (Plating: the plate over this region takes its share, never one that would shatter)
     const res = blowOn(state(), { region: REGIONS[region], k, shatter });
     if (res.shatter && g.classArtsRun?.rebirth?.()) { this.mendAll(); return -1; } // (Rebirth, once a game day: whole instead, a class's art)

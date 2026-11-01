@@ -24,7 +24,7 @@
 // (the parryable marked, and a promise kept), Bloodborne's gun parry, Kirby's inhale.
 //
 //   answer(game, { tool, how, at, radius, paint }) -> 'shot' | 'blow' | null   (the window's one call)
-//   deflect(game, { at, radius, speedMin, outMin, assist, iframes, tool, paint }) -> the projectile sent back, or null
+//   deflect(game, { at, radius, speedMin, outMin, assist, iframes, tool, paint }) -> the projectile sent back, or null   throwBack(game, pr, dir, mult)
 //   guard(game, { at, radius, tool })                                           -> the projectile turned aside, or null
 //   PRESS   pressWindowOf(game)   inBlowWindow(game, windup)   toBlowWindow(game, windup)   pressAnswers(game, windup)   shotAnswers(game, projectile)   (the window,
 //   asked by the press and by the parry mark alike: vfx/parrymark.js shows hot exactly what a V pressed now answers)
@@ -127,9 +127,20 @@ function turn(game, hit) {
   pr.blocked = true;
 }
 
+/** A projectile the Courier holds (Psychokinesis's catch, a domain's rung: courier/domainarts/run.js) let go along `dir` (a unit vector),
+ *  by the same path a parried one leaves: its own speed and the Courier's (x1.25, at least 12 m/s), the Courier's now, its blow `mult`. */
+export function throwBack(game, pr, dir, mult = 1) {
+  const sp = velOf(pr, new THREE.Vector3()).length();
+  setVel(pr, _v.copy(dir).normalize().multiplyScalar(Math.max(sp * 1.25, 12)));
+  pr.mark?.clear(); pr.mark = null;
+  pr.parried = true; pr.reflected = true; pr.by = 'courier'; pr.mult = (pr.mult ?? 1) * mult;
+  return pr;
+}
+
 export function deflect(game, { at, radius = 2, speedMin = 4.5, outMin = 12, assist = 0.45, iframes = 0.35, tool = 'kick', paint = null } = {}) {
   const hit = incoming(game, at, radius, speedMin);
   if (!hit) return blow(game, { tool, how: 'return', at, radius }) ? true : null; // (no shot in reach: a blow in its window, answered as every tool answers one)
+  if (game.domainArtsRun?.catch?.(hit.pr)) { breath(game, hit.t, iframes); return hit.pr; } // (caught, not sent back: the rung holds it and lets it go through throwBack)
   send(game, hit, { outMin, assist, paint });
   breath(game, hit.t, iframes);
   game.events?.emit('move.parry', { speed: hit.sp, tool, how: 'return', what: 'shot', d: +hit.d.toFixed(2), reach: radius, by: 'courier' });
