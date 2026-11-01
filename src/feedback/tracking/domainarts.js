@@ -26,8 +26,11 @@ export function domainArtsRules({ on, log }) {
     else if (e.art === 'retype') log.say('system', `Your blows strike as ${tname(e.type)}${e.known ? `: what the ${kname(e.kind)} is weak to` : ''}.`, { key: 'rung.retype', throttle: 0.5 });
     else if (e.art === 'shatter') log.say('gain', 'Shattered.', { key: 'rung.shatter', throttle: 1 });
     else if (e.art === 'recall') log.say('system', 'You are back where you stood.', { key: 'rung.recall', throttle: 0.5 });
+    else if (e.art === 'catch') log.say('system', 'You catch the shot. Let go to throw it.', { key: 'rung.catch', throttle: 0.5 });
+    else if (e.art === 'link') log.say('system', `Half the blow goes to the ${kname(e.kind)} you are linked to.`, { key: 'rung.link', throttle: 1.5 });
     else if (e.art === 'standingRule') log.say('system', `Your rule: ${RULE_THEN[e.then]?.label ?? e.then}.`, { key: 'rung.rule', throttle: 2 });
   });
+  on('domain.react', (e) => log.say('system', e.kind === 'cancel' ? 'The paints cancel: bare ground, and calm.' : `The paints flare: ${e.agate}.`, { key: 'rung.react', throttle: 1 }));
   on('domain.art.end', (e) => {
     if (e.art === 'postpone') log.say('warn', e.why === 'parried' ? 'The held blow lands, halved.' : 'The held blow lands.', { key: 'rung.postpone.end', throttle: 0.5 });
     else if (e.art === 'plating') log.say('system', e.why === 'struck' ? `The plate on your ${e.region} takes the blow and breaks.` : 'Your plate melts back into your pool.', { key: 'rung.plating.end', throttle: 0.5 });

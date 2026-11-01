@@ -37,6 +37,12 @@
 // ahead, three at once, never on a timed record), Recall (the action: back to where you stood 3 s ago, by the blink's own forced body), A Body's
 // Make-up (a lock-on reads a kind's constitution, which Re-type then knows), A Vow (a thing sworn off for every cost x0.75, broken at a
 // crack's stake). Prior art: Overwatch's Tracer (Recall), Outer Wilds (knowledge as progression), Hunter x Hunter's vows.
+// Wave 4 (the three on Petra's hooks of 2026-11-01): The Catch (parry.js deflect asks `catch(pr)`: a shot parried with the parry still
+// held is held before the chest up to 1.5 real s, then thrown where you aim through parry.js throwBack, x1.5 where it strikes), The Link
+// (damage.js asks `share(k, region)`: half a crack struck on the last creature you reprogrammed instead, an Influence blow), Reactions
+// (paintmap.js asks `react(was, aspect)` a cell: opposites wiped to bare ground and calm on what stands there, an agate flared as the
+// old paint's blow; once a stamp). Prior art: Half-Life 2's gravity gun, Dishonored 2's Domino, Divinity: Original Sin 2's surfaces.
+//   hooks: .catch(pr) -> bool   .share(k, region, ctx) -> k kept   .react(was, aspect, x?, z?) -> 'cancel' | aspect | undefined
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../../core/physics.js';
@@ -49,6 +55,8 @@ import { TYPES } from '../../progress/combat/types.js';
 import { EMO } from '../../progress/combat/emo.js';
 import { REGIONS } from '../vessel/damage.js';
 import { BREAK_AT } from '../../progress/combat/vessel.js'; // (the vessel's one rule's line: SUBSTRATE.md F1)
+import { throwBack } from '../parry.js';
+import { OPPOSITE, agateOf, TYPE_OF } from '../../progress/weather.js';
 
 const UP = new THREE.Vector3(0, 1, 0);
 const _a = new THREE.Vector3(), _b = new THREE.Vector3();
@@ -58,6 +66,8 @@ const _a = new THREE.Vector3(), _b = new THREE.Vector3();
  *  a blow from a real foe (never Strawman's). */
 const WATCH_MIN = 1, SHATTER_SHOWN = 3, SHATTER_R = 14, RECEPTIVE_R = 30;
 const TYPE_ORDER = Object.keys(TYPES);
+/** The parry's key (V), held past the parry for the Catch. */
+const PARRY_KEY = 'KeyV';
 let stepMat = null;
 /** Recall's trail is sampled every TRAIL_EVERY real s (a blink lands within a body's length of where you stood). */
 const TRAIL_EVERY = 0.1;
@@ -75,11 +85,15 @@ export class DomainArtsRun {
     this.trail = []; // (Recall: [t, x, y, z, pool] every TRAIL_EVERY real s, the last DOMAIN_ARTS.recall.does.back + a little)
     this.vowOn = null; this.vowWait = -99; this.vowKept = 0; this.readKinds = new Set(); this.lockRef = null;
     this.steps = []; // (Footholds: { body, mesh, h, until })
+    this.caught = null; this.thrown = null; // (the Catch: the shot held { pr, until, h }, then the one let go { pr, from, until })
+    this.boundTo = null; // (the Link: the last creature reprogrammed)
+    this.reactAt = -99; this.reactions = null; // (Reactions: one a stamp, gathered in a microtask)
     const on = (n, fn) => game.events?.on?.(n, fn);
     on('move.parry', (e) => { if ((e.by ?? 'courier') === 'courier' && e.what === 'blow' && !e.training) this.parried(); });
     for (const [id, W] of Object.entries(RULE_WHEN)) if (W.event) on(W.event, (e) => { if (W.test(e)) this.rule(id); });
     for (const [id, V] of Object.entries(VOWS)) if (V.event) on(V.event, (e) => { if ((e.by ?? 'courier') === 'courier' && this.vowOn === id) this.breakVow(); });
     on('creature.struck', (e) => { if (this.vowOn && e.kill && !e.training && (e.by ?? 'courier') === 'courier') this.arts?.used('vow', 0.9); }); // (a down made under a vow)
+    on('reprogram.run', (e) => { if (!e.refused) this.boundTo = game.reprogram?.c || this.boundTo; }); // (the Link's creature: the one just rewritten)
     on('photo.take', (e) => { if (e.candid === 'candid' && this.on('watch') && this.shown.size) this.arts?.used('watch', 0.9); }); // (the watch read, the plate taken unseen)
   }
   get arts() { return this.game.domainArts; }
@@ -276,6 +290,11 @@ export class DomainArtsRun {
       out = { type: R.type }; R.n++; if (typeWeaknessOf(c) === R.type) R.weak++;
       if (c.pos) this.play('domain.alteration.hit', { pos: c.pos.clone().add(UP) });
     }
+    if (cause === 'parry') { // (a shot sent back: struck its thrower? the catch's feat; the catch's own throw strikes half again as hard)
+      const T = this.thrown, mine = T && this.now < T.until && T.pr.pos && c.pos && T.pr.pos.distanceTo(c.pos) < (c.radius ?? 0.6) + 1.2;
+      if (mine) { out = { ...(out || {}), dmg: this.does('catch').mult }; this.arts?.used('catch', T.from === c ? 1 : 0.6); }
+      if ((mine && T.from === c) || [...(this.game.projectiles || [])].some((q) => (q.reflected || q.parried) && q.from === c)) this.game.events?.emit('parry.return', { kind: c.kind, by: 'courier' });
+    }
     const S = DOMAIN_ARTS.shatter, st = this.game.stun;
     if (this.on('shatter') && power >= S.does.minPower && st && !c.training && this.inRange(c)) {
       const sh = this.shatterNow(), poise = c.poise ?? 1, left = (1 - st.meter(c)) * poise;
@@ -285,6 +304,75 @@ export class DomainArtsRun {
       this.arts?.used('shatter', Math.min(1, power / 4));
     }
     return out;
+  }
+
+  // ---- THE CATCH (Psychokinesis 30): parry.js deflect asks; held while the parry is, then thrown where you aim ----
+  catch(pr) {
+    if (!this.on('catch') || this.caught || !pr || !this.game.input?.down?.has?.(PARRY_KEY)) return false;
+    pr.parried = true; pr.reflected = true; // (held, it is the Courier's: it strikes no one, and no parry takes it again)
+    const D = this.does('catch'), P = this.game.player;
+    this.caught = { pr, until: this.now + D.hold, h: this.play('domain.psychokinesis.hold', { pos: P.pos.clone().add(UP), scale: 0.4, follow: (hh) => { const at = this.caught?.at; if (at) hh.pos.copy(at); return !!this.caught; } }) };
+    this.fire('catch', { kind: pr.from?.kind ?? null });
+    return true;
+  }
+  holdCaught() {
+    const C = this.caught; if (!C) return;
+    const g = this.game, P = g.player, pr = C.pr;
+    if (pr.gone || (pr.body && !pr.body.isValid?.())) { this.caught = null; return; }
+    const d = g.aim?.dir?.(_b) ?? g.camera.getWorldDirection(_b);
+    C.at = _a.copy(P.pos).setY(P.pos.y + 1.2).addScaledVector(d.setY(0).normalize(), 0.9).clone();
+    if (pr.body) { pr.body.setTranslation(C.at, true); pr.body.setLinvel({ x: 0, y: 0, z: 0 }, true); } else { pr.pos.copy(C.at); pr.vel?.set?.(0, 0, 0); }
+    if (typeof pr.t === 'number') pr.t = Math.min(pr.t, 0.2); // (its own clock held while held: a lifetime is not spent in the hand)
+    if (!g.input?.down?.has?.(PARRY_KEY) || this.now >= C.until) this.letGo();
+  }
+  letGo() {
+    const C = this.caught; if (!C) return; this.caught = null;
+    const g = this.game, dir = (g.aim?.dir?.(new THREE.Vector3()) ?? g.camera.getWorldDirection(new THREE.Vector3())).normalize();
+    throwBack(g, C.pr, dir, this.does('catch').mult);
+    this.thrown = { pr: C.pr, from: C.pr.from ?? null, until: this.now + 3 };
+    this.play('domain.psychokinesis.cast', { pos: C.pr.pos?.clone?.() ?? g.player.pos.clone().add(UP), dir });
+    g.events?.emit('domain.art.end', { art: 'catch', why: 'thrown', by: 'courier' });
+  }
+
+  // ---- THE LINK (Possession 30): damage.js asks with a crack's share past the shield; half struck on the bound creature ----
+  bound() {
+    const c = this.boundTo, P = this.game.player;
+    if (!c?.alive || c.training || !P || !c.pos || c.pos.distanceTo(P.pos) > this.does('link').reach) return null;
+    return c;
+  }
+  share(k, region, ctx = {}) {
+    if (!this.on('link') || !(k > 0) || (ctx.by && ctx.by !== 'creature')) return k;
+    const c = this.bound(); if (!c) return k;
+    const D = this.does('link'), moved = k * D.share, g = this.game;
+    const dir = _a.copy(c.pos).sub(g.player.pos).setY(0); if (dir.lengthSq() < 1e-6) dir.set(0, 0, 1);
+    g.creatures?.strike?.(c, c.pos.clone().add(UP), dir.normalize().clone(), moved * D.power, 'link', 'courier', null, 'influence');
+    this.play('domain.possession.hit', { pos: c.pos.clone().add(UP) });
+    this.fire('link', { kind: c.kind, region, k: +moved.toFixed(2) });
+    this.arts?.used('link', Math.min(1, 0.4 + moved));
+    return k - moved;
+  }
+
+  // ---- REACTIONS (Alteration 30): paintmap.js asks a cell at a time; one reaction a stamp, gathered in a microtask ----
+  react(was, aspect, x = null, z = null) {
+    if (!this.on('reactions') || !was || !aspect || was === aspect) return undefined;
+    const kind = OPPOSITE[was] === aspect ? 'cancel' : agateOf(was, aspect) ? 'flare' : null; if (!kind) return undefined;
+    if (!this.reactions) { this.reactions = { kind, was, aspect, cells: 0, x: 0, z: 0, at: 0 }; queueMicrotask(() => this.reacted()); }
+    const R = this.reactions; R.cells++; if (x != null) { R.x += x; R.z += z; R.at++; }
+    return kind === 'cancel' ? 'cancel' : aspect; // (opposites: bare ground at once; an agate: the new paint takes it, flared)
+  }
+  reacted() {
+    const R = this.reactions; this.reactions = null; if (!R || this.now - this.reactAt < this.does('reactions').every) return;
+    this.reactAt = this.now;
+    const g = this.game, D = this.does('reactions'), P = g.player;
+    const at = R.at ? new THREE.Vector3(R.x / R.at, P.pos.y, R.z / R.at) : (g.paintReticle?.point?.clone?.() ?? P.pos.clone()); // (the stamp's middle, else where the brush points)
+    for (const c of g.creatures?.near?.(at, D.radius) || []) {
+      if (!c.alive || c.ally) continue;
+      if (R.kind === 'cancel') g.creatures.apply?.(c, 'calm', D.calm, 1, 'courier');
+      else g.creatures.strike(c, c.pos.clone().add(UP), _a.set(0, 1, 0).clone(), D.flare, 'reaction', 'courier', null, TYPE_OF[R.was] || 'impact');
+    }
+    this.play(R.kind === 'cancel' ? 'domain.alteration.cast' : 'domain.alteration.hit', { pos: at.clone().add(UP) });
+    g.events?.emit('domain.react', { kind: R.kind, was: R.was, aspect: R.aspect, cells: R.cells, agate: agateOf(R.was, R.aspect), by: 'courier' });
+    this.arts?.used('reactions', R.kind === 'flare' ? 0.8 : 0.6);
   }
 
   shatterNow() { return shatterOf(this.game.psyche?.level?.('psychokinesis') ?? 15); }
@@ -328,6 +416,9 @@ export class DomainArtsRun {
       this.trailAt = this.now;
       if (this.open('recall')) { this.trail.push([this.now, P.pos.x, P.pos.y, P.pos.z, g.lachryma?.value ?? 0]); while (this.trail.length && this.trail[0][0] < this.now - this.does('recall').back - 0.5) this.trail.shift(); }
     }
+    this.holdCaught();
+    if (this.reactions) this.reacted(); // (a stamp's reaction, if its microtask has not run yet)
+    if (this.thrown && this.now > this.thrown.until) this.thrown = null;
     this.vowTick(dt);
     this.makeupTick();
     this.watch();
