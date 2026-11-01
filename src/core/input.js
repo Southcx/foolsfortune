@@ -3,6 +3,8 @@
 // `hold`, so every key read works on them; `axis(id)` is a move read with a stick's push (the keys give exactly -1, 0 or 1, as before),
 // and `device` is the device last touched (keyboard, touch, pad), which the HUD and the help follow (docs/plans/MOBILE.md 6.1).
 //   input.isDown(code)  wasPressed(code)  spend(...codes)  hold(code, on, edge?) (a driver's press)  axis(id) (core/bindings.js AXES)
+//   input.claim(owner, codes)  release(owner)  rawDown(code)  rawPressed(code): codes a mode takes for its own (the Arena's fighter kit,
+//   FIGHTER.md 2) read as up and unpressed by everyone else until released; the owner reads them underneath (Melee's pad read by one game)
 //   input.axes[id] = v | undefined (a driver's analog push)  input.device  input.onDevice(d)  input.setDevice(d)
 //   input.touchDrag { panX, panY (px), pinch (the log of the scale), twist (rad), fingers }: the fingers on glass this frame, where the
 //   pointer is free (core/touchcursor.js); a camera that wants them reads them, and they are cleared with the frame as the wheel is
@@ -104,7 +106,13 @@ export class Input {
     } catch { this.lockError(); }
   }
 
-  isDown(code) { return this.down.has(code); }
+  isDown(code) { return this.down.has(code) && !this.held?.has(code); }
+  rawDown(code) { return this.down.has(code); }
+  rawPressed(code) { return this.pressed.has(code); }
+  /** `codes` taken by `owner` (any string): up and unpressed to every other reader until `release(owner)`; a second owner may claim more. */
+  claim(owner, codes) { (this.claims ||= new Map()).set(owner, new Set(codes)); this.reclaim(); }
+  release(owner) { if (this.claims?.delete(owner)) this.reclaim(); }
+  reclaim() { const h = new Set(); for (const S of this.claims.values()) for (const c of S) h.add(c); this.held = h.size ? h : null; }
   /** A driver's press or release of a code (a pressed edge on the way down, as a key's), counted: a code two holders hold (the pad's
    *  dash button and its sprint latch, both Shift) stays down until both let go. A holder's own state (the sprint latch, a stick's key)
    *  never presses a held code again; a control a person pressed (`edge`, core/actions.js) gives its edge all the same, as a key pressed
@@ -115,9 +123,9 @@ export class Input {
     if (n > 0) { this.holdN.set(code, n); this.down.add(code); } else { this.holdN.delete(code); this.down.delete(code); }
   }
   /** A move axis, -1 .. 1: a driver's analog push while it gives one, else the keys (exactly -1, 0 or 1). */
-  axis(id) { const v = this.axes[id]; if (v != null) return v; const A = AXES[id]; return A ? (this.down.has(A.pos) ? 1 : 0) - (this.down.has(A.neg) ? 1 : 0) : 0; }
+  axis(id) { const v = this.axes[id]; if (v != null) return v; const A = AXES[id]; return A ? (this.isDown(A.pos) ? 1 : 0) - (this.isDown(A.neg) ? 1 : 0) : 0; }
   setDevice(d) { if (this.device === d) return; this.device = d; this.onDevice?.(d); }
-  wasPressed(code) { return this.pressed.has(code); }
+  wasPressed(code) { return this.pressed.has(code) && !this.held?.has(code); }
   /** A press that closed or picked something is spent: no one else this frame, nor the Courier's latch, sees it (CASEBOOK rule 20). */
   spend(...codes) { for (const c of codes) { this.pressed.delete(c); this.onSpend?.(c); } }
 
