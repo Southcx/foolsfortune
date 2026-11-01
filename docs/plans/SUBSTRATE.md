@@ -99,6 +99,12 @@ The ship, the Jar, the skiff and the Arena's body are the vessel in its forms, s
   - **Hull classes:** a modifier on how much a crack takes (a galleon's thicker planking takes 0.4 a blow where a sloop's takes 0.65).
   - **Reins and Resilience:** apply once, in `vessel.hit`, for every form.
 - **Jar:** `hp 100` becomes the vessel's cracks. Epics already pay through `vesselDamage.release`.
+  - **Its shield is the Courier's pool** (Dovina's ruling, 2026-11-01, on Petra's built F1, `godhand/jarcracks.js`). One Vessoul, one
+    pool: the Jar draws the `jar` form's `pool: true` shield from `game.lachryma`, the same store the god powers spend. A power cast mid-raid
+    is shield given up, and that trade is the raid's decision (Ikaruga's absorb-or-spend, Mega Man's weapon energy as health). The target
+    the waves are priced to: the Jar left undefended, the pool full at the raid's start and no power cast, still shatters by wave 5
+    (Petra's measure without the shield: 19 hits, 133 hp, shattered in wave 5). If the shield carries it past wave 5, the waves' damage
+    rises by the shield's share; the shield stays on.
 - **Skiff:** already the pool. A wreck at an empty pool cracks the vessel, which is its own real cost.
 - **Arena:** percent *is* the cracks (section 3, F5).
 
