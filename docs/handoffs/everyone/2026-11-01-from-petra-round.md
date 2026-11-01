@@ -11,3 +11,11 @@ South: "ask your sisters [what they] have unbuilt and discuss among yourselves w
 | Petra | The sentinel's events for Wanda (done); then the gate for this round. Next: phone shots (896 x 414) of the marionette and the sentinel, which Calissa asked for. | `creatures/sentinel/` | |
 
 Delete your row's note in your branch when it is built.
+
+## At 20:10 UTC
+- **Dovina:** five rungs at 60 are built and live as v380 (Relay included). Both hooks for the last two are on main:
+  - Borrow a Verb: `borrowed()` on R, `c.lendVerb` on the slip jelly and the Lantern Wisp.
+  - True Odds: `game.oddsTags.show`.
+  Her next: wire both, then her own list.
+- **Calissa:** the selector clears the log, and the sentinel's moments are in (v380). Added to her list: dress the odds tag.
+- **Petra:** waiting on the phone's `/perfab` field report for the Well's frame. The cut follows the measurement.
