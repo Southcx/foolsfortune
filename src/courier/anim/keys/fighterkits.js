@@ -65,7 +65,7 @@ export const BRAWLER = {
   jab1: keys('Fist_Combo1', 1, 4, 8),             // the left jab, farthest at 4
   jab2: keys('Fist_Combo2', 4, 8, 12),            // the right straight, out from 7
   jab3: [{ pose: 'lead', clip: 'Cmu_Flurry', frame: 10 }, ...BARRAGE_CYCLE], // the barrage: the fists drawn in (the charge), then the flurry
-  barrageEnd: [                                   // its finisher on the release: the side kick, then the straight (J's kick and forward strike)
+  jabEnd: [                                   // its finisher on the release: the side kick, then the straight (J's kick and forward strike)
     { pose: 'lead', clip: 'Cmu_SideKick', frame: 10 },
     { pose: 'strike', clip: 'Cmu_SideKick', frame: 16 },
     { pose: 'straight', clip: 'Cmu_StraightPunch', frame: 15, snap: 2, hold: 6, active: true },

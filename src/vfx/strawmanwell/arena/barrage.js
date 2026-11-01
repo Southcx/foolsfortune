@@ -19,8 +19,8 @@ import * as THREE from 'three';
 export const BARRAGE_LOOK = { per: 2.2, life: 0.12, ahead: [0.5, 1.5], height: [0.85, 1.6], size: [0.5, 0.78], z: 0.28, col: 0x7a8cff, max: 28 };
 const B = BARRAGE_LOOK;
 
-/** Is fighter F in the barrage (the brawler's held jab3, or a move the kit names barrage)? */
-export const barrageOn = (kit, F) => !!F && F.st === 'attack' && (F.m === 'barrage' || (F.m === 'jab3' && (kit?.set === 'brawler' || kit?.kitId === 'brawler' || F.set === 'brawler')));
+/** Is fighter F in the barrage (the brawler's held jab3: its kit's jab3 is the one that loops)? */
+export const barrageOn = (kit, F) => !!F && F.st === 'attack' && F.m === 'jab3' && !!(F.kit?.moves?.jab3?.loop || kit?.set === 'brawler'); // (Dovina's brawler: F.kit's jab3 loops, progress/fighterkits.js)
 
 /** A fist side-on, knuckles forward (right), its speed lines trailing left; white so the vertex colours tint it. */
 function fistTexture() {
@@ -47,7 +47,7 @@ export class BarrageLook {
     const mesh = new THREE.Mesh(this.geo, this.mat); mesh.frustumCulled = false; this.group.add(mesh);
     this.fists = []; this.acc = 0; this.was = false; this.side = new THREE.Color(B.col); this.c = new THREE.Color();
     const g = ctx.game;
-    this.off = g.events?.on?.('well.fighter.hit', (e) => { if (e?.by === 'courier' && e.move === 'barrageEnd') this.say('battari'); });
+    this.off = g.events?.on?.('well.fighter.hit', (e) => { if (e?.by === 'courier' && e.move === 'jabEnd') this.say('battari'); });
   }
 
   say(kind) { const g = this.ctx.game, p = g.player?.pos; g.events?.emit('well.tsuke', { kind, x: p?.x ?? 0, y: p?.y ?? 0, by: 'courier' }); }
