@@ -174,7 +174,7 @@ function air(F, I) {
   if (I.atkP || I.smashP) { F.tumble = false; return startMove(F, pickAir(I, F)); }
   if (I.specP) { F.tumble = false; return startMove(F, pickSpecial(I, F)); }
   if (I.jumpP && F.airJumps > 0) { F.tumble = false; F.fastfall = false; F.mo.jump = 'air'; if (F.who !== 'courier') F.airJumps--; }
-  // (the Courier's double jump is the core's own: it spends P.airJumps, read back after the step)
+  // (the Courier's double jump is made by its body (courierbody.js airJump): it spends P.airJumps, read back after the step)
 }
 
 function airdodge(F, I) {

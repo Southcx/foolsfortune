@@ -5,9 +5,11 @@
 //   the keys      the controls table read from the true keys (fighter/keys.js): the stick from A, D, W and S, Space, LMB, E, RMB, Shift
 //                 and R, their fresh presses, a side tapped twice for a dash
 //   the kernel    stepped once; where it says 'free' the core movement runs as ever (the walk and run, the air's drift, the double
-//                 jump), with the kit's own few knobs set on the instance first: no core jump the kit did not ask for (every ground jump
-//                 is the kit's jumpsquat), no coyote time, no slide, no wall run, the run held (Shift, as the core reads it) while the kit
-//                 dashes, the facing the kit's; after the core's step the fall held to the build's terminal or its fast fall
+//                 jump, which the kit asks for and does itself), the core's own switches set on `player.mods` while the kit is on
+//                 (courier/player.js: ownJumps, noCoyote, noSlide, noWallrun, noRisingMantle), so no core jump the kit did not make (every
+//                 ground jump is the kit's jumpsquat, every air jump its own too, spending the core's count), no coyote time, no slide, no
+//                 wall run, no mantle of a ledge risen past; the run held (Shift, as the core reads it) while the kit dashes, the facing
+//                 the kit's; after the core's step the fall held to the build's terminal or its fast fall
 //   owned         anything else (hitlag, the shield, a dodge, a grounded move, a launch, the ledge, the grab): the core does not run
 //                 that step; the kit sets the velocity and the controller moves the body (`player.move`), or holds it, or sets it
 //                 where it hangs
@@ -17,17 +19,25 @@
 // owner of the step at a time, the core's state handed back as it was: courier/moves/techs.js); Melee's action-state physics over its
 // characters' common movement (the decomp's ftCommon_ApplyPhysics).
 //
-//   const B = new CourierBody(kit)   B.intent() -> I   B.pre(dt)   B.step(dt) -> true (owned)   B.post(dt)   B.run   B.stats()
+//   const B = new CourierBody(kit)   B.engage()   B.release()   B.intent() -> I   B.pre(dt)   B.step(dt) -> true (owned)   B.post(dt)   B.run   B.stats()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { T } from '../../../core/config.js';
 import { FIGHTER_BASE } from '../../../progress/movementprofiles.js';
+import { KIT } from './moves.js';
 
 const HOLD_ST = new Set(['hitstun', 'broken']); // (their fall is the kit's own: the launch's speed is not the core's to clamp)
+/** The core's switches while the kit is on (courier/player.js `mods`). */
+const MODS = Object.freeze({ ownJumps: true, noCoyote: true, noSlide: true, noWallrun: true, noRisingMantle: true });
 
 export class CourierBody {
   constructor(kit) { this.kit = kit; this.game = kit.game; this.run = false; this.wasG = true; }
   get P() { return this.game.player; }
+
+  /** The core's switches on (entering the Arena), what was there kept to put back. */
+  engage() { const P = this.P; if (this.saved) return; this.saved = { mods: P.mods }; P.mods = MODS; }
+  /** The core's switches as they were (leaving the Arena). */
+  release() { const P = this.P; if (!this.saved) return; P.mods = this.saved.mods; this.saved = null; }
 
   /** The Courier's numbers as a fighter: the build worn (movementprofiles.js: its fighter half; its move half is already T.movement). */
   stats() {
@@ -61,15 +71,22 @@ export class CourierBody {
     const mo = F.mo;
     // the facing is the kit's (the frame's turn is off while it claims the step)
     W.face = F.face; P.yaw = F.face > 0 ? Math.PI / 2 : -Math.PI / 2;
-    // the core's knobs: every jump the kit's, no coyote time, no slide, no wall run; the run held while the kit dashes
-    P.jumpBuf = 0; P.landT = 0; P.slideBuf = 0; P.wallCd = Math.max(P.wallCd, 0.2);
-    if (!P.grounded) P.coyote = 0;
-    P.jumpHeldLast = mo.mode === 'free' && mo.jump === 'air' ? false : true;
-    if (mo.jump === 'air') F.fastfall = false;
+    // the double jump is the kit's too (the core's jumps are off: player.mods.ownJumps): the core's own air jump, made here
+    if (mo.jump === 'air') { F.fastfall = false; if (mo.mode === 'free' && !P.grounded && P.airJumps > 0) this.airJump(I); }
     this.run = mo.mode === 'free' && !!mo.run;
     if (P.sliding || P.wallrun || P.dashT > 0) P.endCore?.();
     if (mo.kick) { P.vel.x = mo.kick.vx; P.vel.y = mo.kick.vy; P.grounded = false; }
     if (mo.mode !== 'free' && P.techs?.active) P.techs.stop();
+  }
+
+  /** The core's air jump (courier/player.js: the pop up and the momentum swung toward the stick), spent from the core's count. */
+  airJump(I) {
+    const P = this.P, M = T.movement;
+    P.airJumps--;
+    P.vel.y = Math.max(P.vel.y, M.jumpVelocity * M.airJumpMult);
+    if (Math.abs(I.x) > KIT.stick) P.vel.x = Math.sign(I.x) * Math.max(Math.abs(P.vel.x), M.walkSpeed);
+    P.jumpFx(0.6); P.sfx.airJump(); P.airJumpPulse = true; // (the animation reads and clears it)
+    P.ev('move.jump', { kind: 'air' });
   }
 
   /** The claim's step: true when the kit moved the body itself and the core does not run. */
