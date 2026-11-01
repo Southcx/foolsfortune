@@ -118,7 +118,7 @@ export class PaintMap {
       if (this.crude[n] && !crude && this.k[n] > 0.05) continue; // (paint does not cover crude: it is wiped up, the mop's, or cleaned)
       if (this.k[n] < 0.05) fresh += CELL * CELL;
       if (this.k[n] >= 0.05 && this.asp[n] >= 0 && this.asp[n] !== a && !crude && !this.crude[n]) { // (Alteration's reactions, a domain's rung: courier/domainarts/run.js; nothing while it is off)
-        const rx = this.game?.domainArtsRun?.react?.(ASPECTS[this.asp[n]], aspect);
+        const rx = this.game?.domainArtsRun?.react?.(ASPECTS[this.asp[n]], aspect, px, pz);
         if (rx === 'cancel') { this.k[n] = 0; this.asp[n] = -1; this.live.add(n); continue; }
         if (rx && ASPECTS.includes(rx)) { this.asp[n] = ASPECTS.indexOf(rx); this.k[n] = Math.min(1, Math.max(this.k[n], add)); this.h[n] = y; this.wetT[n] = this.clock; this.live.add(n); continue; }
       }

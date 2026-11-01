@@ -111,7 +111,7 @@ export class Creatures {
     if (by === 'courier') c.touched = true; // (the Courier struck it: a sibling finishing it credits them, coop/fight.js)
     const g = this.game, ps = by === 'courier' ? g.pairSpecials?.onStrike?.(c, cause, type, power, point, dir) : null; // (a pair's special on the blow: tools/pairspecials.js)
     if (ps?.type) type = ps.type;
-    const da = by === 'courier' ? g.domainArtsRun?.onStrike?.(c, cause, type, power) : null; if (da?.type) type = da.type; // (Re-type, a domain's rung: courier/domainarts/run.js)
+    const da = by === 'courier' ? g.domainArtsRun?.onStrike?.(c, cause, type, power) : null; if (da?.type) type = da.type; const daK = da?.dmg ?? 1; // (Re-type, a domain's rung: courier/domainarts/run.js)
     const m = multiplier(type, affinityOf(c), // (its body's type, never its feeling: progress/combat/constitution.js, SUBSTRATE.md F3)
       [...c.status.keys()].filter((n) => st(c, n)));
     // (the damage alone, never the build-up: the Courier's mental state, Prismatic x1.5 to Stoic x0.67, the owner's ruling in
@@ -121,6 +121,7 @@ export class Creatures {
     const art = by === 'courier' ? g.classArtsRun?.onStrike?.(c, m) : null; // (a class's art: Momentum's one blow, Edge on a weak point: courier/classarts/body.js)
     if (art) { dmgK *= art.dmg; buildK *= art.build; }
     if (ps) { dmgK *= ps.dmg ?? 1; buildK *= ps.build ?? 1; }
+    dmgK *= daK; // (a domain rung on the blow: the Catch's caught shot x1.5, courier/domainarts/run.js)
     const annihilates = (type === 'impact' && st(c, TYPES.delirium.builds)) || (type === 'delirium' && st(c, TYPES.impact.builds));
     let dmg = power * dmgK * m.dmg * (st(c, 'soft') ? 2 : 1) * (g.stun?.bonus(c) ?? 1); // (a stunned thing takes the stun's bonus, here once for every kind: SUBSTRATE.md F3)
     if (c.friend) dmg = Math.min(dmg, (c.maxHp ?? Infinity) * FRIENDLY.cap); // (FRIENDLY.cap of its full health at most: Dovina's)
