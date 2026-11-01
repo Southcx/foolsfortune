@@ -605,3 +605,19 @@ Built in my files: `progress/domainarts.js` (the rows, the feats, the notches, t
 and the runtime `courier/domainarts/run.js` (new, Petra's at the gate). The four hooks it needs are Petra's
 (`docs/handoffs/petra/2026-11-01-from-dovina-domain-hooks.md`): Postpone's defer and its `past` landing, Plating's plate, Re-type's
 type, the art key's route, Receptivity's reprogram. The Watch, Shatter's execute and the standing rule run without them.
+
+### 17.1 Wave 2 (the same night): three second relations, at level 30, that need no new hook
+
+| domain | rung | kind | in play | why it is not its class art | feat way |
+|---|---|---|---|---|---|
+| Ouranurgy | **Recall** | action | back to where you stood 3 real s ago, by the blink's own forced body (24 m at most), the pool as it was then if it was fuller; 10 pool, 12 s | Blink Mark's mark is a *place* you set; Recall's is a *time* always kept (Tracer's Recall), the first taste of the 99's rewind | 10 runs of three blinks inside two seconds |
+| Divination | **A Body's Make-up** | passive (a notch) | a lock-on reads a kind's constitution once a session: "the slip jelly's body is weak to Delirium"; the kind is then known (`domain.read.<kind>`) | no class art reads a body; it feeds Re-type, the Divination and Alteration pairing (section 9, 14) at the first rung | 20 windups read without a crack |
+| Spellscription | **A Vow** | passive (a notch) | swear off one thing (`/vow`: never blink, never jump, never lend, never sprint) and every cost is x0.75 while kept; broken, a crack (a release's unit through the stones) and 30 s before another | a rule written on *yourself*, the stake section 7.4's grammar (Hunter x Hunter's vows) | 10 fights ended without a crack |
+
+Checked headless (DEBUG, the Summit lend):
+- **Vow:** a cost of 10 read 7.4 under it; breaking it cracked 0.6 and returned the cost to 9.9.
+- **Make-up and Re-type:** a lock-on to a slip jelly read its make-up, and Re-type then chose Delirium, said as its weakness.
+- **Recall:** it moved the body back by the blink.
+
+Commands: `/rung`, `/rule`, `/vow`. The Codex's STATUS shelf has THE RUNGS: each rung, open or how near by both ways, its notch on
+or off.

@@ -175,6 +175,10 @@ export const SOURCES = [
   // a masterful act, the teacher showing once; past twenty a game hour a quarter (the rung's `q` already worn down: domainarts.js WEAR)
   ...['ouranurgy', 'manifestation', 'divination', 'psychokinesis', 'possession', 'alteration', 'spellscription'].map((d) => (
     { event: 'domain.art.use', domain: d,             base: 8, quality: (e) => (e.by === 'courier' && e.domain === d ? (e.kata ? 1 : q01(e.q)) : null) })),
+  // a down by when or by what you wrote (domainarts.js DOWN_AFTER): Ouranurgy's and Spellscription's kills at last, as a creature's down is
+  // paid (its acts by its size), masterful-ish: the blink into the blow and the rule that set it up are both the domain asked well
+  ...['ouranurgy', 'spellscription'].map((d) => (
+    { event: 'domain.down', domain: d,                acts: (e) => Math.min(8, 1 + Math.floor((e.maxHp || 1) / 8)), quality: (e) => (e.by === 'courier' && e.domain === d ? 0.75 : null) })),
   // Strawman's Well (STRAWMANS-WELL.md): a course cleared is a way through space and time (Ouranurgy), its quality its rank, a big act
   // of about its time; a straw fighter knocked past a blast line in the Arena is force delivered (Psychokinesis), the lower its percent
   // the better the blow (a KO at 60% masterful, at 200% rote)

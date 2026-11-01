@@ -24,7 +24,7 @@
 //   FEATS[key] = { event, test(e, s) }   FEAT_WORDS[key]   RULE_WHEN, RULE_THEN (a standing rule's choices)   KATA   WEAR   notchesFor(total)
 //   domainArtOpen(id, L, game?) -> bool   openDomainArts(L, game?) -> [id]   artsOfDomain(domain) -> [id]   isDomainArt(id)
 //   shatterOf(level) -> 0..1   game.domainArts = new DomainArts(game)   .open(id) .on(id) .worn() .notches() .toggle(id) .progress(id) .used(id, q)
-//   .rule { when, then } .setRule(when, then)   commands /rung, /rule
+//   .rule { when, then } .setRule(when, then)   .vow .swear(id)   VOWS, VOW   commands /rung, /rule, /vow
 //   events: domain.art.learn { art, domain, kind, by }, domain.art.use { art, domain, q, kata, by }, domain.art.wear { art, on, by },
 //   domain.art.ask, domain.rule.set { when, then, by }, domain.rule.ask, domain.rule.refuse
 // ---------------------------------------------------------------------------------------
@@ -35,6 +35,9 @@ export const KATA = 5;
 /** Ours: a rung's uses pay their domain fully up to WEAR uses a game hour, a quarter after (the critic's farm: a Postpone loop on
  *  clapperjars, a plate cycled on a jelly; OSRS's diminishing returns are in its XP-rate tables, ours in the use). */
 export const WEAR = 20;
+/** Ours: how soon after a blink, or after a glyph or macro, a down counts as the domain's (a blink into the killing blow; a written thing
+ *  that set it up: a stun's few seconds). */
+export const DOWN_AFTER = { blink: 2, write: 4 };
 /** THE PSYCHE'S NOTCHES (Hollow Knight's): how many always-on rungs (passives and reactions) you may wear at once: two, and one more for
  *  each hundred of the seven domains' levels summed, seven at most. A rung worn is always on; one set aside is off, exactly as without
  *  it (a modifier switched off restores the base: DESIGN.md 22). Actions take no notch: they share the art key's one slot. */
@@ -56,11 +59,17 @@ export const FEATS = {
   longRelease: { event: 'angle.release', test: (e) => (e.secs || 0) >= 20 },
   weakDown: { event: 'creature.struck', test: (e) => e.kill && (e.k || 1) > 1 },
   cleanMacro: { event: 'reprogram.run', test: (e) => !e.refused && (e.misses || 0) === 0 && (e.chars || 0) >= 8 },
+  // three blinks inside two real s (where you were, and where you will be, juggled: Recall's idea without it)
+  blinkChain: { event: 'move.blink', test: (e, s) => { const now = performance.now() / 1000; s.at = [...(s.at || []), now].filter((x) => x > now - 2); if (s.at.length >= 3) { s.at = []; return true; } return false; } },
+  // a fight ended with no crack taken in it (a vow kept by hand: A Vow's idea without it)
+  cleanFight: { event: 'combat.end', test: (e, s) => { const ok = !s.cracked && s.fought; s.cracked = false; s.fought = false; return ok; }, mark: ['vessel.crack'], start: ['combat.start'], anyBy: true },
+  // a windup read with no crack taken since the last (the blow seen coming: a body's make-up is what made it)
+  cleanRead: { event: 'windup.read', test: (e, s) => { const ok = !s.cracked; s.cracked = false; return ok; }, mark: ['vessel.crack'] },
 };
 export const FEAT_WORDS = {
   lateParry: 'blows parried at the last moment', shieldRun: 'runs of six blows on your shield unbroken', candid: 'candid photographs',
   heavyThrow: 'thrown hits over 300 joules', longRelease: 'fish let go after a long fight', weakDown: 'creatures downed by their weakness',
-  cleanMacro: 'macros typed clean',
+  cleanMacro: 'macros typed clean', blinkChain: 'three blinks inside two seconds', cleanFight: 'fights ended without a crack', cleanRead: 'windups read without a crack',
 };
 
 /** A standing rule's triggers and verbs (South, 2026-11-01: case by case; DOMAINS.md 14, 16). Every trigger is an act of your own (the
@@ -76,6 +85,17 @@ export const RULE_THEN = {
   lend: { label: 'your sub lends its verb' },
   swap: { label: 'your main and sub change places' },
 };
+
+/** A vow's restrictions (Spellscription 30; Hunter x Hunter's vows, a real oath's binding): what you swear off, and how it is seen to be
+ *  broken (an event of yours, or a state read each frame). Kept, every cost is x VOW.costMult; broken, the stake is a crack (a release's
+ *  unit through the stones) and no vow for VOW.again real s. */
+export const VOWS = {
+  noBlink: { label: 'never blink', event: 'move.blink' },
+  noJump: { label: 'never leave the ground by a jump', event: 'move.jump' },
+  noLend: { label: 'never lend your sub', event: 'tool.lend' },
+  noSprint: { label: 'never sprint', state: (g) => !!g.player?.sprinting },
+};
+export const VOW = { costMult: 0.75, again: 30, keptEvery: 60 };
 
 const R = (domain, level, kind, label, line, how, does, feat, more = {}) => ({ domain, level, kind, label, line, how, does, feat, ...more });
 
@@ -103,6 +123,17 @@ export const DOMAIN_ARTS = {
   // SPELLSCRIPTION (under which rule?): a condition written
   standingRule: R('spellscription', 15, 'passive', 'A Standing Rule', 'Write one rule: when you do one thing, another follows, for 5 of your pool.',
     '/rule lists the choices. Each fires at most once in 3 seconds.', { every: 3, cost: 5 }, ['cleanMacro', 20]),
+
+  // THE SECOND RELATIONS (level 30, wave 2: DOMAINS.md 17). Each is the deeper form of the nearest class art's verb, never its copy.
+  // OURANURGY: where you were, and when (Tracer's Recall; Blink Mark's mark is a place, this is a time)
+  recall: R('ouranurgy', 30, 'action', 'Recall', 'Blink back to where you stood 3 seconds ago, your pool as it was then if it was fuller.',
+    'Nothing is marked: the last 3 seconds are always kept.', { back: 3, max: 24 }, ['blinkChain', 10], { cost: 10, cooldown: 12 }),
+  // DIVINATION: what a body is made of (Outer Wilds: knowledge is the progression)
+  makeup: R('divination', 30, 'passive', "A Body's Make-up", 'Lock on to a creature and you read what it is made of, and so the type that bites it.',
+    'A kind read so is known: Re-type finds its weakness from then on.', {}, ['cleanRead', 20]),
+  // SPELLSCRIPTION: a condition written on yourself (Hunter x Hunter's vows)
+  vow: R('spellscription', 30, 'passive', 'A Vow', 'Swear off one thing and every cost is a quarter less while you keep it. Break it and it cracks you.',
+    '/vow lists the vows. A broken vow waits 30 seconds before another.', {}, ['cleanFight', 10]),
 };
 
 /** Psychokinesis's shatter (SUBSTRATE.md F5b): 0.25 at 15, rising on a straight line to 0.6 at 99 (past 0.6 a heavy blow would break a
@@ -126,15 +157,16 @@ export const openDomainArts = (L, game = null) => Object.keys(DOMAIN_ARTS).filte
 /** The domains' rungs kept: their feats counted, each rung said once when it opens, the standing rule written. */
 export class DomainArts {
   constructor(game) {
-    this.game = game; this.told = []; this.rule = { when: 'parry', then: 'lend' }; this.uses = {}; this.state = {}; this.off = []; this.hourUses = {};
-    game.save?.section?.('domainArts', { scope: 'player', version: 1, dump: () => ({ told: [...this.told], rule: { ...this.rule }, uses: { ...this.uses }, off: [...this.off] }),
-      load: (d) => { this.told = [...(d?.told || [])]; this.rule = { when: 'parry', then: 'lend', ...(d?.rule || {}) }; this.uses = { ...(d?.uses || {}) }; this.off = [...(d?.off || [])]; },
-      reset: () => { this.told = []; this.rule = { when: 'parry', then: 'lend' }; this.uses = {}; this.off = []; } });
+    this.game = game; this.told = []; this.rule = { when: 'parry', then: 'lend' }; this.uses = {}; this.state = {}; this.off = []; this.hourUses = {}; this.vow = null;
+    game.save?.section?.('domainArts', { scope: 'player', version: 1, dump: () => ({ told: [...this.told], rule: { ...this.rule }, uses: { ...this.uses }, off: [...this.off], vow: this.vow }),
+      load: (d) => { this.told = [...(d?.told || [])]; this.rule = { when: 'parry', then: 'lend', ...(d?.rule || {}) }; this.uses = { ...(d?.uses || {}) }; this.off = [...(d?.off || [])]; this.vow = VOWS[d?.vow] ? d.vow : null; },
+      reset: () => { this.told = []; this.rule = { when: 'parry', then: 'lend' }; this.uses = {}; this.off = []; this.vow = null; } });
     const byEvent = {};
     for (const [key, F] of Object.entries(FEATS)) {
       (byEvent[F.event] ||= []).push(['test', key, F]);
       for (const ev of F.reset || []) (byEvent[ev] ||= []).push(['reset', key, F]);
       for (const ev of F.mark || []) (byEvent[ev] ||= []).push(['mark', key, F]);
+      for (const ev of F.start || []) (byEvent[ev] ||= []).push(['start', key, F]);
     }
     game.events?.on?.('*', (e) => {
       const list = e?.name && byEvent[e.name]; if (!list || e.practice || e.training) return;
@@ -143,12 +175,25 @@ export class DomainArts {
         const s = (this.state[key] ||= {});
         if (what === 'reset') { s.run = 0; continue; }
         if (what === 'mark') { s.cracked = true; continue; }
+        if (what === 'start') { s.fought = true; s.cracked = false; continue; }
         if ((e.by ?? 'courier') !== 'courier' && !F.anyBy) continue;
         try { if (F.test(e, s)) { game.ledger?.inc?.(`domain.feat.${key}`); moved = true; } } catch { /* a payload without the field: not counted */ }
       }
       if (moved) this.teach();
     });
     game.events?.on?.('domain.level', () => this.teach());
+    // A DOWN BY WHEN AND BY WHAT RULE (the critic: Ouranurgy and Spellscription had no kill EXP): a creature downed within DOWN_AFTER.blink
+    // real s of a blink is a down by where you were when (Ouranurgy's), and within DOWN_AFTER.write of a glyph with sigils or a clean
+    // macro a down by what you wrote (Spellscription's): `domain.down { domain, maxHp }`, paid by domains.js as a creature's down is
+    const t = () => this.game.ledger?.play ?? 0, at = { blink: -99, write: -99 };
+    game.events?.on?.('move.blink', (e) => { if ((e.by ?? 'courier') === 'courier') at.blink = t(); });
+    game.events?.on?.('brush.glyph', (e) => { if ((e.sigils || 0) > 0) at.write = t(); });
+    game.events?.on?.('reprogram.run', (e) => { if (!e.refused) at.write = t(); });
+    game.events?.on?.('creature.struck', (e) => {
+      if (!e.kill || e.training || (e.by ?? 'courier') !== 'courier') return;
+      if (t() - at.blink <= DOWN_AFTER.blink) game.events.emit('domain.down', { domain: 'ouranurgy', kind: e.kind, maxHp: e.maxHp, by: 'courier' });
+      if (t() - at.write <= DOWN_AFTER.write) game.events.emit('domain.down', { domain: 'spellscription', kind: e.kind, maxHp: e.maxHp, by: 'courier' });
+    });
     game.chat?.add?.('rule', { help: 'your standing rule (Spellscription 30): /rule (what it is and the choices), /rule <when> <then>', run: ([w, t]) => {
       if (w && t) { if (!this.setRule(w, t)) game.events?.emit('domain.rule.refuse', { when: w, then: t, why: !this.open('standingRule') ? 'closed' : 'unknown', by: 'courier' }); return; }
       game.events?.emit('domain.rule.ask', { rule: { ...this.rule }, open: this.open('standingRule'), when: Object.keys(RULE_WHEN), then: Object.keys(RULE_THEN), by: 'courier' });
@@ -156,6 +201,10 @@ export class DomainArts {
     game.chat?.add?.('rung', { help: "your domains' rungs: /rung (each, open or how near, and which are on), /rung <id> (put one on or take it off)", run: ([id]) => {
       if (id) { const ok = this.toggle(id); if (ok == null) game.events?.emit('domain.art.refuse', { art: id, why: DOMAIN_ARTS[id] ? 'closed' : 'unknown', by: 'courier' }); return; }
       game.events?.emit('domain.art.ask', { notches: this.notches(), on: this.worn(), rungs: Object.keys(DOMAIN_ARTS).map((a) => ({ art: a, open: this.open(a), on: this.on(a), progress: this.progress(a) })), by: 'courier' });
+    } });
+    game.chat?.add?.('vow', { help: 'your vow (Spellscription 30): /vow (what it is and the vows), /vow <id> (swear it), /vow off', run: ([id]) => {
+      if (id) { const ok = id === 'off' ? this.swear(null) : this.swear(id); if (!ok) game.events?.emit('domain.vow.refuse', { vow: id, why: !this.open('vow') ? 'closed' : VOWS[id] || id === 'off' ? 'wait' : 'unknown', by: 'courier' }); return; }
+      game.events?.emit('domain.vow.ask', { vow: this.vow, open: this.open('vow'), vows: Object.keys(VOWS), by: 'courier' });
     } });
     queueMicrotask?.(() => this.teach());
   }
@@ -199,6 +248,12 @@ export class DomainArts {
     const hour = Math.floor((this.game.ledger?.play ?? 0) / 150), H = this.hourUses; if (H.hour !== hour) { H.hour = hour; H.n = {}; } // (a game hour: 150 real s)
     const m = (H.n[id] = (H.n[id] || 0) + 1), worn = m > WEAR ? 0.25 : 1;
     this.game.events?.emit('domain.art.use', { art: id, domain: A.domain, kind: A.kind, q: Math.max(0, Math.min(1, q)) * worn, kata: n <= KATA, ...more, by: 'courier' });
+  }
+  /** Swear a vow (or none): the runtime keeps it, its modifier and its breaking (courier/domainarts/run.js). */
+  swear(id) {
+    if (id && (!this.open('vow') || !VOWS[id] || (this.game.domainArtsRun?.vowWait ?? 0) > (this.game.domainArtsRun?.now ?? 0))) return false;
+    this.vow = id; this.game.save?.dirty?.('domainArts');
+    this.game.events?.emit('domain.vow.set', { vow: id, by: 'courier' }); return true;
   }
   setRule(when, then) {
     if (!this.open('standingRule') || !RULE_WHEN[when] || !RULE_THEN[then]) return false;

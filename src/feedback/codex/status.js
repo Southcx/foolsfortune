@@ -8,7 +8,7 @@
 // stat chips beneath and none on the chart.
 //
 // Prior art: the radar (spider) chart of Pro Evolution Soccer's player cards and Persona 5's social stats; OSRS's skills tab (a level
-// a skill, the total at the foot); FFXIV's character window.
+// a skill, the total at the foot); FFXIV's character window; Hollow Knight's charm notches (THE RUNGS: what is worn, of how many).
 //
 //   renderStatus(codex, host)
 // ---------------------------------------------------------------------------------------
@@ -21,6 +21,7 @@ import { iconEl } from '../../ui/icons/icons.js';
 import { wheelSRGB } from '../../vfx/wheelcolour.js';
 import { CHARMS, SOCKETS, SOCKET_AT } from '../../progress/bracelet.js';
 import { APTITUDES } from '../../progress/aptitude.js';
+import { DOMAIN_ARTS, FEAT_WORDS } from '../../progress/domainarts.js';
 
 const CSS = `
 #codex .st-wrap { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 18px; }
@@ -99,6 +100,26 @@ function bracelet(codex) {
   return c;
 }
 
+/** THE RUNGS (DOMAINS.md 12, 17; progress/domainarts.js): each domain's rungs above its widening, open or how near by both ways (the
+ *  level, or the feat), and the psyche's notches: an always-on rung worn or set aside with a click, an action worn on the art key. */
+function rungs(codex) {
+  const g = codex.game, A = g.domainArts, c = document.createElement('div'); c.className = 'st-card st-bracelet';
+  if (!A) return c;
+  c.innerHTML = `<h3>THE RUNGS</h3><div class="st-sum"><b>${A.worn().length}/${A.notches()}</b>notches worn · click an open rung to put it on or take it off</div>`;
+  const row = document.createElement('div'); row.className = 'st-chips';
+  for (const id of Object.keys(DOMAIN_ARTS)) {
+    const R = DOMAIN_ARTS[id], open = A.open(id), on = A.on(id), P = A.progress(id), L = DOMAIN_LOOK[R.domain], chip = document.createElement('span');
+    chip.className = `st-chip st-socket${open ? '' : ' shut'}`; chip.title = `${R.line} ${R.how}`;
+    const state = !open ? `level ${P.level}/${P.of} · or ${P.done}/${P.n} ${FEAT_WORDS[P.feat] || P.feat}` : R.kind === 'action' ? (on ? 'on the art key' : 'an action: click to wear') : on ? 'on' : 'off';
+    chip.innerHTML = `<i></i>${R.label}<small>${DOMAINS[R.domain].name} · ${state}</small>`;
+    chip.querySelector('i').appendChild(iconEl(L.icon, { pal: open ? L.pal : 'grey', px: 1 }));
+    if (open) chip.onclick = () => { A.toggle(id); codex.render(); };
+    row.appendChild(chip);
+  }
+  c.append(row);
+  return c;
+}
+
 /** THE ASSAY (APTITUDE.md 7; the owner named it 2026-10-19): each aptitude the System measures from play, ??? until it has five readings,
  *  then its median in its unit, its best and which way it is going (the better way green), and from twenty a line of the recent readings
  *  (the better way drawn up). Labels and units are Dovina's table (progress/aptitude.js), placeholders for Espada's words. */
@@ -151,6 +172,6 @@ export function renderStatus(codex, host) {
   b.innerHTML = `<h3>SOUL ALCHEMY</h3><div class="st-sum"><b>${atts.reduce((n, t) => n + t.r, 0)}</b>ranks of ${ranks * 7}</div>`
     + radar(atts, [1 / 3, 2 / 3, 1], `rgba(${soul.join(',')},.35)`, `rgb(${soul.join(',')})`, keyed)
     + `<div class="st-chips">${atts.map((t) => `<span class="st-chip" title="${t.does}"><i style="background:${t.colour}"></i>${t.name}<b>${t.r}/${ranks}</b><small>seasoning ${Math.round(t.s * 100)}</small></span>`).join('')}</div>`;
-  wrap.append(a, b, bracelet(codex), assay(g));
+  wrap.append(a, b, rungs(codex), bracelet(codex), assay(g));
   host.appendChild(wrap);
 }

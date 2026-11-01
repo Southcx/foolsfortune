@@ -31,10 +31,15 @@
 //   hooks: .defer({ point, from, dir, k, why, by }) -> bool (Postpone: true, the blow is held)   .plate(region, k) -> k left (0: plated)
 //          .onStrike(c, cause, type, power) -> { type? } | null   .press(R) (a domain's worn action on the art key)
 //          .mayReprogram(c) -> bool (Receptivity: an open mind, no stun needed)   .openMind(c) -> bool
-//   events: domain.art.fire { art, ...what, by }, domain.art.end { art, why, by }, domain.art.refuse { art, why, by }
+//   events: domain.art.fire { art, ...what, by }, domain.art.end { art, why, by }, domain.art.refuse { art, why, by },
+//   domain.makeup { kind, weak, first, by }
+// The second relations (level 30, wave 2): Recall (the action: back to where you stood 3 s ago, by the blink's own forced body), A Body's
+// Make-up (a lock-on reads a kind's constitution, which Re-type then knows), A Vow (a thing sworn off for every cost x0.75, broken at a
+// crack's stake). Prior art: Overwatch's Tracer (Recall), Outer Wilds (knowledge as progression), Hunter x Hunter's vows.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { DOMAIN_ARTS, RULE_WHEN, shatterOf } from '../../progress/domainarts.js';
+import { DOMAIN_ARTS, RULE_WHEN, VOWS, VOW, shatterOf } from '../../progress/domainarts.js';
+import { PRESSURE } from '../../progress/stones.js';
 import { typeWeaknessOf } from '../../progress/combat/constitution.js';
 import { familiarityOf } from '../../progress/familiarity.js';
 import { TYPES } from '../../progress/combat/types.js';
@@ -50,6 +55,8 @@ const _a = new THREE.Vector3(), _b = new THREE.Vector3();
  *  a blow from a real foe (never Strawman's). */
 const WATCH_MIN = 1, SHATTER_SHOWN = 3, SHATTER_R = 14, RECEPTIVE_R = 30;
 const TYPE_ORDER = Object.keys(TYPES);
+/** Recall's trail is sampled every TRAIL_EVERY real s (a blink lands within a body's length of where you stood). */
+const TRAIL_EVERY = 0.1;
 
 export class DomainArtsRun {
   constructor(game) {
@@ -61,9 +68,13 @@ export class DomainArtsRun {
     this.near = new Map(); // (Shatter's glow: creature -> h)
     this.marked = new Map(); // (Receptivity: creature -> h)
     this.saidShatter = new WeakMap(); this.ruleAt = -99; this.wasLow = false;
+    this.trail = []; // (Recall: [t, x, y, z, pool] every TRAIL_EVERY real s, the last DOMAIN_ARTS.recall.does.back + a little)
+    this.vowOn = null; this.vowWait = -99; this.vowKept = 0; this.readKinds = new Set(); this.lockRef = null;
     const on = (n, fn) => game.events?.on?.(n, fn);
     on('move.parry', (e) => { if ((e.by ?? 'courier') === 'courier' && e.what === 'blow' && !e.training) this.parried(); });
     for (const [id, W] of Object.entries(RULE_WHEN)) if (W.event) on(W.event, (e) => { if (W.test(e)) this.rule(id); });
+    for (const [id, V] of Object.entries(VOWS)) if (V.event) on(V.event, (e) => { if ((e.by ?? 'courier') === 'courier' && this.vowOn === id) this.breakVow(); });
+    on('creature.struck', (e) => { if (this.vowOn && e.kill && !e.training && (e.by ?? 'courier') === 'courier') this.arts?.used('vow', 0.9); }); // (a down made under a vow)
     on('photo.take', (e) => { if (e.candid === 'candid' && this.on('watch') && this.shown.size) this.arts?.used('watch', 0.9); }); // (the watch read, the plate taken unseen)
   }
   get arts() { return this.game.domainArts; }
@@ -122,10 +133,9 @@ export class DomainArtsRun {
     if ((this.coolUntil?.[id] ?? 0) > this.now) return this.refuse(id, 'cool');
     const A = DOMAIN_ARTS[id];
     if (A.cost && !g.lachryma?.spend?.(A.cost, 'art')) return this.refuse(id, 'pool');
-    const ok = id === 'plating' ? this.platingGo() : id === 'retype' ? this.retypeGo() : false;
+    const ok = id === 'plating' ? this.platingGo() : id === 'retype' ? this.retypeGo() : id === 'recall' ? this.recallGo() : false;
     if (!ok) { if (A.cost) g.lachryma?.gain?.(A.cost, 'refund'); return false; }
     if (id !== 'plating') (this.coolUntil ||= {})[id] = this.now + (A.cooldown || 0); // (Plating's cooldown runs from its end: unplate)
-    g.events?.emit('art.use', { art: id, kind: 'action', domain: A.domain, accented: false, by: 'courier' });
     return true;
   }
   refuse(art, why) { this.game.events?.emit('domain.art.refuse', { art, why, by: 'courier' }); return false; }
@@ -163,7 +173,7 @@ export class DomainArtsRun {
 
   retypeGo() {
     const D = this.does('retype'), foe = this.nearestFoe(D.reach), L = this.game.ledger;
-    const known = foe && familiarityOf(L, foe.kind).level >= D.knows ? typeWeaknessOf(foe.kind) : null; // (knowing the kind is the skill: Divination's and the Veritome's)
+    const known = foe && (familiarityOf(L, foe.kind).level >= D.knows || L?.get?.(`domain.read.${foe.kind}`) > 0) ? typeWeaknessOf(foe) : null; // (knowing the kind is the skill: Divination's make-up, the Veritome's plates, the downs)
     const type = known || TYPE_ORDER[(TYPE_ORDER.indexOf(this.lastRetype) + 1) % TYPE_ORDER.length]; // (else the next type in turn: you learn the chart by the hits)
     this.lastRetype = type;
     this.retypeOn = { type, until: this.now + D.dur, n: 0, weak: 0, known: !!known };
@@ -172,12 +182,65 @@ export class DomainArtsRun {
     return true;
   }
 
+  /** Recall (Ouranurgy 30): the blink forced back along the line to where you stood `back` real s ago (the blink's own body: its
+   *  collision, its look), and the pool as it was then if it was fuller (Tracer's Recall). Never past `max` m. */
+  recallGo() {
+    const g = this.game, P = g.player, D = this.does('recall'), T = this.trail, want = this.now - D.back;
+    const then = T.find((x) => x[0] >= want) || T[0]; if (!then) return !this.refuse('recall', 'none');
+    const to = new THREE.Vector3(then[1], then[2], then[3]), d = to.distanceTo(P.pos);
+    if (d < 0.5) return !this.refuse('recall', 'here');
+    const B = g.techs?.get?.('blink'); if (!B?.force) return !this.refuse('recall', 'none');
+    const from = P.pos.clone(), pool = then[4];
+    this.play('domain.ouranurgy.cast', { pos: from.clone() });
+    B.force(to.clone().sub(P.pos), Math.min(d, D.max), () => { this.play('domain.ouranurgy.hit', { pos: g.player.pos.clone().add(UP) }); });
+    const L = g.lachryma; if (L && pool > L.value) L.gain(pool - L.value, 'art');
+    this.fire('recall', { dist: +d.toFixed(1) }); this.arts?.used('recall', Math.min(1, d / 12));
+    return true;
+  }
+
+  // ---- A Vow (Spellscription 30) ------------------------------------------------
+  /** The vow sworn (domainArts.vow) made the pool's modifier while its rung holds a notch; a state vow read each frame. */
+  vowTick(dt) {
+    const g = this.game, want = this.on('vow') ? this.arts?.vow ?? null : null;
+    if (want !== this.vowOn) {
+      if (this.vowOn) g.lachryma?.removeModifier?.('domain.vow');
+      this.vowOn = want; this.vowKept = 0;
+      if (want) g.lachryma?.addModifier?.('domain.vow', { costMult: { '*': VOW.costMult }, source: 'A Vow' });
+    }
+    if (!this.vowOn) return;
+    if (VOWS[this.vowOn]?.state?.(g)) return this.breakVow();
+    this.vowKept += dt; if (this.vowKept >= VOW.keptEvery) { this.vowKept = 0; this.arts?.used('vow', 0.6); }
+  }
+  breakVow() {
+    const g = this.game, id = this.vowOn; if (!id) return;
+    g.lachryma?.removeModifier?.('domain.vow'); this.vowOn = null; this.vowWait = this.now + VOW.again;
+    if (this.arts) { this.arts.vow = null; g.save?.dirty?.('domainArts'); }
+    this.play('domain.spellscription.hit', { pos: g.player.pos.clone().add(UP) });
+    g.vesselDamage?.release?.({ amount: PRESSURE.unit, why: 'vow', by: 'courier' }); // (the stake: one release's unit through the stones, a crack)
+    g.events?.emit('domain.art.end', { art: 'vow', why: 'broken', vow: id, by: 'courier' });
+  }
+
+  // ---- A Body's Make-up (Divination 30) -----------------------------------------
+  /** On a lock-on to a creature of a kind not read this session: its affinity and the type that bites it, said once; the kind is then
+   *  known to Re-type (`domain.read.<kind>` in the ledger: a fact, kept). */
+  makeupTick() {
+    const g = this.game, c = g.lock?.target?.ref;
+    if (c === this.lockRef) return; this.lockRef = c;
+    if (!this.on('makeup') || !c?.kind || !c.alive || c.training || this.readKinds.has(c.kind)) return;
+    const weak = typeWeaknessOf(c); if (!weak) return;
+    this.readKinds.add(c.kind);
+    const first = !(g.ledger?.get?.(`domain.read.${c.kind}`) > 0); g.ledger?.inc?.(`domain.read.${c.kind}`);
+    if (c.pos) this.play('domain.divination.cast', { pos: c.pos.clone().add(UP), scale: 0.5 });
+    g.events?.emit('domain.makeup', { kind: c.kind, weak, first, by: 'courier' });
+    this.arts?.used('makeup', first ? 0.9 : 0.3);
+  }
+
   // ---- the strike: Re-type's type, Shatter's break --------------------------
   onStrike(c, cause, type, power) {
     let out = null;
     const R = this.retypeOn;
     if (R && this.now < R.until && type !== R.type) {
-      out = { type: R.type }; R.n++; if (typeWeaknessOf(c.kind) === R.type) R.weak++;
+      out = { type: R.type }; R.n++; if (typeWeaknessOf(c) === R.type) R.weak++;
       if (c.pos) this.play('domain.alteration.hit', { pos: c.pos.clone().add(UP) });
     }
     const S = DOMAIN_ARTS.shatter, st = this.game.stun;
@@ -227,6 +290,12 @@ export class DomainArtsRun {
       g.events?.emit('domain.art.end', { art: 'retype', why: 'time', by: 'courier' });
       this.arts.used('retype', R.n ? (R.known ? 0.5 : 0.4 + 0.6 * (R.weak / R.n)) : 0.2); // (a weakness found by trying pays most; one read off what you knew, middling)
     }
+    if (!this.trailAt || this.now - this.trailAt >= TRAIL_EVERY) { // (Recall's trail: only while Recall is open, so nothing is kept for nothing)
+      this.trailAt = this.now;
+      if (this.open('recall')) { this.trail.push([this.now, P.pos.x, P.pos.y, P.pos.z, g.lachryma?.value ?? 0]); while (this.trail.length && this.trail[0][0] < this.now - this.does('recall').back - 0.5) this.trail.shift(); }
+    }
+    this.vowTick(dt);
+    this.makeupTick();
     this.watch();
     this.shatterGlow();
     this.receptivity();
