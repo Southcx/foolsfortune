@@ -63,7 +63,9 @@ export const HOOVER = { range: 7, cone: 0.7, pull: 9, drain: 3.6 }; // (its reac
 // swung, so a blow's reach is the forearm's line out to the coffin (melee.js measures the left hand, `tip` past it). `strike`: the blow's
 // own window in the clip (the windup's backswing is not a blow). Numbers proposed to Dovina (docs/handoffs/dovina/): a coffin is heavier
 // than it is sharp (the club's power, a little less damage), the third the whirl that throws them off.
-const FLAIL = 'lockheart.flail', TAP = 0.16, CHAIN = { rest: 0.22, out: 0.62 };
+const FLAIL = 'lockheart.flail', TAP = 0.16, CHAIN = { rest: 0.22, out: 0.62, arena: 1.1 }; // (arena: the chain let out in the Arena's fighter kit, read from the side camera as a flail: Calissa, 2026-11-01)
+// the Arena's fighter swinging (world/strawmanwell/fighter/kit.js: its Courier's kernel state), the flail's other driver beside the combo engine
+const arenaSwing = (g) => g.strawmanWell?.stages?.arena?.kit?.courier?.st === 'attack';
 const MOVES = {
   f1: { rule: 'flail1', clip: 'Lock_FlailCombo1', strike: [0.27, 0.48], chain: [0.48, 0.83], hit: { power: 1.0, dmg: 0.8, push: 3 }, lunge: 2.4, arc: 'r2l' },
   f2: { rule: 'flail2', clip: 'Lock_FlailCombo2', strike: [0.36, 0.52], chain: [0.56, 0.9], hit: { power: 1.3, dmg: 1.1, push: 2, lift: 2.5 }, lunge: 2.4, arc: 'over' },
@@ -457,9 +459,10 @@ export class Lockheart extends HeldTool {
     const v = this.lastHand ? _s2.subVectors(_s1, this.lastHand).length() / dt : 0;
     (this.lastHand ||= new THREE.Vector3()).copy(_s1);
     this.handV = THREE.MathUtils.damp(this.handV || 0, Math.min(v, 30), 20, dt);
-    const want = this.moves.busy ? 0.25 + 0.75 * THREE.MathUtils.smoothstep(this.handV, 1.5, 6) : 0;
+    const arena = arenaSwing(this.game), out = arena ? CHAIN.arena : CHAIN.out;
+    const want = this.moves.busy || arena ? 0.25 + 0.75 * THREE.MathUtils.smoothstep(this.handV, 1.5, 6) : 0;
     this.flailK = THREE.MathUtils.damp(this.flailK, want, want > this.flailK ? 16 : 5, dt);
-    const fk = this.flailK, len = CHAIN.rest + (CHAIN.out - CHAIN.rest) * fk;
+    const fk = this.flailK, len = CHAIN.rest + (out - CHAIN.rest) * fk;
     if (fk > 0.001) {
       ch.shoulder('L', _s2); _s2.subVectors(_s1, _s2).normalize();
       this.chainDir = (this.chainDir || _s2.clone()).lerp(_s2, 1 - Math.exp(-20 * dt)).normalize();
