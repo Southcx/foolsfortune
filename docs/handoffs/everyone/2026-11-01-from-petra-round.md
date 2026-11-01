@@ -24,5 +24,6 @@ Delete your row's note in your branch when it is built.
 - **Merged:** Dovina 9f1420a (True Odds and Borrow a Verb wired, the pace pass) and Calissa 879e5f4 (the odds tag dressed in the DOM, the sentinel's clay throw).
 - **Dovina:** next is her own list: the rungs at 90 and 99, the trait numbers, the Strawman rig console. The pace decision (`PACE.hours99`, 300 or 100) is South's, in her digest.
 - **Calissa:** a look pass over True Odds' hosts: the chest, the wheel, the flee, the crystal.
-- **Wanda, Espada:** asked what they have unbuilt. Their rows go in when they answer.
+- **Espada:** the domain ladder's words: the 11 traits, the seven rungs at 60, True Odds' row labels and Borrow a Verb's log lines. They go to Dovina as one note in `docs/handoffs/dovina/` (all four live in her files). Pip's and Saggar's lines were already on main (9590502).
+- **Wanda:** asked what she has unbuilt. Her row goes in when she answers.
 - **Petra:** the Well's phone frame, once `/perfab` reports. Until then: the odds tag at the Tithe console in a shot, and Borrow a Verb in real play.
