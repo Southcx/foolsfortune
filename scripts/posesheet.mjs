@@ -4,6 +4,11 @@
 //
 //   node scripts/posesheet.mjs <out.png> <clip>[@t1,t2,...] ...   (times in clip seconds; default: 5 samples across the clip)
 //   SIDE=only|both (default both)  ANGLE=deg (the side view's angle, default 90)
+//   node scripts/posesheet.mjs <out.png> --keys <tool>:<move>,<move> ...   THE KEY-POSE MODE (docs/plans/KEY-POSES.md 7): a row a move of
+//     a key table (courier/anim/keys/<tool>.js), a column a key, front over side, shot in the Anim Lab as the game's own stack plays it
+//     (the key track, the tool in the hand, the IK, rom.js last; workbench/animstage.js) on the frame the key has fully snapped in; under
+//     it the key's name, clip and frame, hold and snap (60 Hz frames), a gold bar where the blow's strike window is live (measured, the
+//     clip's) and a red one where the table marks it active; the move's frames totalled at the row's end.
 //
 // Prior art: the animator's contact sheet and the turnaround sheet (one row a clip, front and side by each frame).
 import { chromium } from 'playwright';
@@ -14,7 +19,8 @@ import os from 'node:os';
 import path from 'node:path';
 
 const [out, ...want] = process.argv.slice(2);
-if (!out || !want.length) { console.error('usage: node scripts/posesheet.mjs out.png Clip[@t,t] ...'); process.exit(1); }
+if (!out || !want.length) { console.error('usage: node scripts/posesheet.mjs out.png Clip[@t,t] ... | --keys tool:move,move ...'); process.exit(1); }
+if (want[0] === '--keys') { await import('./posesheet.keys.mjs').then((m) => m.keySheet(out, want.slice(1))); process.exit(0); }
 const ANGLE = +(process.env.ANGLE || 90), VIEWS = process.env.SIDE === 'only' ? ['side'] : ['front', 'side'];
 const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'poses-'));
 const server = await createServer({ root: process.cwd(), logLevel: 'error', server: { host: '127.0.0.1', port: 5230, strictPort: false } });

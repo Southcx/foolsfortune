@@ -4743,3 +4743,53 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   35 PASS): the gun's aim point 0.00 m off the plane and 33 m ahead, the hook's probe on the plane, the Swing's ring bitten and swung,
   every tool drawn and its LMB answered, the camera given back on leaving.
 - **Rule:** 379
+### 2026-10-31 · The goals window stood below the view (ui/brineframe.js; found by Calissa, probing the quest journal)
+- **Seen:** headless, at 1280 x 720, the goals window was `on` at full opacity with `top: 60px`, yet its box began at 780 px: under
+  the view's foot. Shown beside the quest journal, only the journal was seen.
+- **Cause, as measured:** a window built on a Brine frame sets its own `position: fixed` (`.gw`) and the frame sets
+  `.bf{position:relative}`, at the same specificity. Each sheet is injected the first time its kind is built, so whichever lands
+  last wins. When the goals window was the first Brine window of a session (a game day's goals laid at boot), the frame's sheet
+  landed after it, the window became `relative` and fell into the page's flow below the canvas.
+- **Fix:** the frame's position is a default a host may override: `:where(.bf){position:relative}` (zero specificity), so any host's
+  own position wins whatever the order. After (the same probe, desk and phone): the goals window's box at its `top`, beside the
+  journal.
+- **Rule:** 380
+
+### 2026-11-02 · Only the gallery ducks came into the Well (world/strawmanwell/targets.js; found by Calissa, probing the training targets)
+- **Seen:** headless, the Well built, `game.wellTargets.list` held 3 targets of the 8 placed: the three ducks; no hopper or quintain.
+- **Cause, as measured:** each spot's floor was found by a raycast down at the moment of `populate()`, called straight after the
+  Well's `build()`. The room's colliders had just been made and were not yet in the physics' scene queries (they join at the next
+  step), so every ray found nothing; a grounded kind with no floor under it was skipped, and only the flyer (which holds a height
+  anyway) was placed.
+- **Fix:** the spots stand on their lanes' floor at y 0 (each chosen there) and a target settles from there by the dummies' own
+  ground test, which runs after steps; the raycast stays for play (a hop's landing, the duck's dive), when the queries are live.
+- **Rule:** 381
+
+### 2026-11-01 · The far shelf stood lower than the top bar beside it (ui/touch/strip.js; found by South, on an iPhone)
+- **Seen:** on a phone on its side, SWAP, GRAPPLE, STOW and FAN on their clay shelf sat a few pixels lower and taller than MENU, LOG and
+  PAUSE on theirs, side by side along the top edge: two shelves out of line.
+- **Cause, as measured:** two rules laid one row. The top bar centres its shelf on its 44 px row (`y0 = top + (44 - 55) / 2`, the tiles
+  8 px in and 4 down, the shelf 55 px tall); the far shelf hung its shelf from the top of its 52 px row with a 6 px inset (shelf 59 px,
+  tiles 6 down). At 896 x 414: the far shelf's tiles 7.5 px lower, its shelf 4 px taller.
+- **Fix:** the far shelf is laid by the top bar's own geometry (`TOP_BAR.h`, 8 px in, 4 down, a shelf of the tile and its foot and 8).
+  After (896 x 414 at 2x): both shelves' tops and feet in one line.
+- **Rule:** 382
+
+### 2026-11-01 · The stick fought the log's tap (ui/hudlayout.js; found by South, on an iPhone)
+- **Seen:** a tap or double tap on the log's ticker, top left, to open it often made the floating stick instead.
+- **Cause, as measured:** the move area (the stick's hit layer) was the whole left half of the screen, top to foot, so it stood over the
+  log's ticker (y 56..80 at 896 x 414) and the top row; the stick took the touch first.
+- **Fix:** on touch the move area starts under the top bar, the top row and the ticker (y 88 at 896 x 414). After: the ticker and the
+  shelves are theirs; the stick's home and the rest of the left half unchanged.
+- **Rule:** 383
+
+### 2026-11-01 · The Courier stood through the Arena's soft platforms (vfx/strawmanwell/props/cloth.js; found by South, in the Arena's shots)
+- **Seen:** the Courier and the straw fighters standing at their starting marks drawn through the side platforms' tape measures, their
+  heads and shoulders inside the plank.
+- **Cause, as measured:** the side platforms' top is 1.3 m (their foot 1.1 m), the Courier stands about 1.75 m, and the marks (-4.5;
+  4.5, 6.2) are under them. Raising them clear of a standing head (foot over 1.85 m) would put them out of reach: the Courier's full
+  hop is 1.03 m and a full hop and a double jump 1.76 m (measured in the Arena), so no height both clears the head and can be jumped
+  onto. The plank was drawn 2.16 m deep, centred on the plane the bodies stand in.
+- **Fix:** a soft platform's tape measure (and the Brawl's ribbon) is drawn behind the plane, its front face 0.42 m back
+  (`CLOTH.clear`): a body under it stands in front of it, a body on it stands on its lip. The heights and colliders stand as they were.
+- **Rule:** 384

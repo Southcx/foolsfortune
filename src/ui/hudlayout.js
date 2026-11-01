@@ -82,7 +82,7 @@ export const HUD_LAYOUT = {
     sight: { anchor: 'tr', w: 172, h: 178, touch: { anchor: 'tr', scale: 0.2 } },
     lachrimeterTube: { anchor: 'br', w: 112, h: 189, touch: { anchor: 'tr', below: 'sight', above: 'cluster', scale: 0.2, min: 0.5, // (0.5: on its side it stands small between the Sight and the cluster, out of the centre 60%, South 2026-10-29)
       else: { anchor: 'br', leftOf: 'cluster', scale: 0.2 } } }, // (up the right edge under the Sight; on its side the phone has no room there: left of the cluster)
-    psygunCylinder: { anchor: 'br', w: 190, h: 160, touch: { anchor: 'br', leftOf: 'cluster', scale: 0.115 } }, // (on a phone on its side: the bottom band left of the cluster, under the centre 60%, South 2026-10-29; it stood beside the tube)
+    psygunCylinder: { anchor: 'br', w: 190, h: 160, touch: { anchor: 'br', leftOf: 'cluster', scale: 0.115 } }, // (its size on touch; on a phone on its side placed beside the tube, bottom left: besideTube, South 2026-11-01)
   },
 };
 
@@ -191,6 +191,9 @@ export class HudLayout {
         A.strip = rect(Z.left, top, Z.right - Z.left, Z.base - top);
       }
     }
+    // the move area starts under the top bar, the top row and the log's ticker (South, 2026-11-01: a thumb's stick fought the log's tap):
+    // a touch up there is theirs, never the stick's
+    if (this.touch) { const top = Math.max(A.topBar.y + A.topBar.h, A.strip.y + A.strip.h, this.log.y + this.log.h) + gap; A.move = rect(A.move.x, top, A.move.w, Math.max(0, V.h - top)); }
     this.duelR = this.duel ? this.duelLayout() : null;
     if (this.duelR) { A.topBar = this.duelR.topBar; A.cluster = rect(0, 0, 0, 0); A.strip = rect(0, 0, 0, 0); this.log = this.duelR.log; } // (the duel's own: the cluster and the strip stand down)
     this.rects.clear();
@@ -338,6 +341,7 @@ export class HudLayout {
   box(id, depth = 0) {
     if (this.duelR?.inst[id]) return this.duelR.inst[id]; // (the duel's phone screen: the tube small at the left flank's foot)
     if (id === 'lachrimeterTube' && this.touch && !this.portrait) return this.footTube(); // (South, 2026-10-29: the duel's place, walking too)
+    if (id === 'psygunCylinder' && this.touch && !this.portrait) return this.besideTube(this.specs.get(id), depth); // (South, 2026-11-01: beside the Lachrimeter, the spiritual link short)
     if (this.rects.has(id)) return this.rects.get(id);
     const spec = this.specs.get(id); if (!spec || depth > 4) return null;
     this.rects.set(id, null); // (a cycle reads as nothing)
@@ -351,6 +355,13 @@ export class HudLayout {
   footTube() {
     const B = this.bounds, D = HUD_LAYOUT.duel, T = HUD_LAYOUT.instruments.lachrimeterTube, w = (D.tube * T.w) / T.h;
     return { x: B.x, y: B.y + B.h - D.tube, w, h: D.tube, scale: D.tube / T.h };
+  }
+
+  /** The psygun's cylinder on a phone on its side: at its own size, right of the tube in the bottom-left corner, their feet in line, so the
+   *  spiritual link from the bulb to it is a short thread and not a line across the screen (South, 2026-11-01). */
+  besideTube(spec, depth) {
+    const t = this.footTube(), r = spec?.touch ? this.solve(spec.touch, spec, depth) : null; if (!r) return null;
+    return { ...r, x: t.x + t.w + HUD_LAYOUT.gap, y: t.y + t.h - r.h };
   }
 
   /** The desk's own rule (the 480-line present's lines, from the view's corner): what the instruments do without asking. */

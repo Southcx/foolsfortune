@@ -26,7 +26,9 @@
 //   SLEEVES.guard)   S.play(id, { onContact(blow, contact), onEnd })   S.breakOff(channels?)   S.playing (the move's id, or null)
 //   S.parts.left | right | both | hat   (what strikes: the parry mark rides there)   S.yaw, S.yawTo (the facing, turned toward
 //   yawTo between moves, held through one)   S.engaged (a string runs: the guard stays down)   S.open(t) (a guard break: the sleeves
-//   thrown wide and the guard down for t real s)
+//   thrown wide and the guard down for t real s)   S.restyle({ head, body, legs, sleeves, cuffs, hat, heart, on }) (another stitching: the
+//   Well's troupe, Pip's earlier tries, vfx/strawmanwell/pipstries.js; never Strawman's own)
+//   S.hold(id, t) (a move held at its own time t, never running on or ending: the Arena's key poses; hold(null) lets it run)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { STRAWMAN_MOVES, SLEEVES, MOVE_EASE, CHANNELS, REST, poseAt } from './strawmanmoves.js';
@@ -108,13 +110,13 @@ export class StrawmanModel {
     // the hat: a tall block standing up behind the head, its top rim a lighter band
     const hatPivot = this.hatPivot = new THREE.Group(); hatPivot.position.set(0, 1.84, -0.16); rock.add(hatPivot); // (its base on the post: it nods there)
     const hat = new THREE.Mesh(new THREE.BoxGeometry(0.34, 0.48, 0.26), M(std(C.hat, { roughness: 0.6 })));
-    hat.position.set(0, 0.24, 0); hat.rotation.z = 0.06; hatPivot.add(hat);
+    hat.position.set(0, 0.24, 0); hat.rotation.z = 0.06; hatPivot.add(hat); this.hat = hat;
     const rim = new THREE.Mesh(new THREE.BoxGeometry(0.37, 0.05, 0.29), M(std(C.band, { roughness: 0.5 }))); rim.position.set(0, 0.24, 0); hat.add(rim);
     // the crossbar and its sleeves (charcoal, tapered, the cuffs flared with the cream spiral)
     // (the bar between the shoulders; each sleeve carries the rest of it, so a sleeve folded into the guard never leaves a bare stick out)
     const bar = new THREE.Mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.34, 8), postM); bar.rotation.z = Math.PI / 2; bar.position.set(0, 1.52, -0.1); rock.add(bar);
     const sleeveM = M(std(C.sleeve)), cuffM = M(std(0xffffff, { map: cuffTexture() }));
-    this.arms = [];
+    this.arms = []; this.sleeves = []; this.cuffs = []; // (each side's sleeve and its lip, and its cuff: what a restyle recloths)
     const halfG = new THREE.CylinderGeometry(0.03, 0.03, 0.68, 8); // (one geometry, both halves)
     for (const s of [-1, 1]) { // (each sleeve on its own shoulder: they fold into a guard, and one rises for the swing)
       const arm = new THREE.Group(); arm.position.set(s * 0.17, 1.5, -0.08); rock.add(arm); this.arms.push(arm);
@@ -123,6 +125,7 @@ export class StrawmanModel {
       sl.rotation.z = s * Math.PI / 2; sl.position.set(s * 0.33, 0, 0); arm.add(sl);
       const cuff = new THREE.Mesh(new THREE.CircleGeometry(0.2, 20), cuffM); cuff.position.set(s * 0.67, 0, 0); cuff.rotation.y = s * Math.PI / 2; arm.add(cuff);
       const lip = new THREE.Mesh(new THREE.TorusGeometry(0.195, 0.025, 6, 20), sleeveM); lip.position.copy(cuff.position); lip.rotation.y = s * Math.PI / 2; arm.add(lip);
+      this.sleeves.push([sl, lip]); this.cuffs.push(cuff);
     }
     this.mode = 'still'; this.pose = 0; // (the guard's weight 0..1)
     this.p = { ...REST }; this.want = { ...REST }; this.mv = null; this.yaw = 0; this.yawTo = 0; this.engaged = false; // (the pose as drawn, a move's under way, the facing)
@@ -139,7 +142,7 @@ export class StrawmanModel {
     // the cord and the heart
     const cord = new THREE.Mesh(new THREE.TorusGeometry(0.11, 0.008, 6, 24), M(std(0x1c1418))); cord.rotation.x = Math.PI / 2 - 0.35; cord.position.set(0, 0.0, 0.03); sack.add(cord);
     const heart = new THREE.Mesh(new THREE.ExtrudeGeometry(heartShape(), { depth: 0.02, bevelEnabled: true, bevelSize: 0.006, bevelThickness: 0.006, bevelSegments: 2 }), M(std(C.lacquer, { roughness: 0.15, metalness: 0.2 })));
-    heart.position.set(0.04, -0.12, 0.2); heart.rotation.set(-0.15, 0, 0.2); sack.add(heart);
+    heart.position.set(0.04, -0.12, 0.2); heart.rotation.set(-0.15, 0, 0.2); sack.add(heart); this.heart = heart;
     // the legs: stubby stitched sacks hanging below
     for (const s of [-1, 1]) {
       const leg = new THREE.Mesh(new THREE.CapsuleGeometry(0.1, 0.08, 4, 10), this.legMat ||= M(std(0xb39a72))); leg.position.set(s * 0.16, -BODY_H - 0.06, 0.06); leg.rotation.z = s * 0.15; sack.add(leg); // (stubby lumps)
@@ -189,6 +192,16 @@ export class StrawmanModel {
     else { this.mv = null; this.p.turn = wrap(this.p.turn); }
   }
   get playing() { return this.mv?.id ?? null; }
+  /** Move `id` held at its own time `t` (s) instead of its clock running: a key pose kept as long as it is asked for (the Arena's straw
+   *  fighters stepped by their frame data, KEY-POSES.md; Dovina's ask). Begun if another move or none is under way, begun again if `t`
+   *  goes back; its kicks pass as their moments do; it never ends while held (`t` stops short of its end). `hold(null)` lets the clock
+   *  run on from where it stands. */
+  hold(id, t = 0) {
+    if (id == null) { if (this.mv) this.mv.held = null; return true; }
+    if ((this.mv?.id !== id || t < this.mv.t - 1e-6) && !this.play(id)) return false;
+    this.mv.held = Math.max(0, Math.min(t, this.mv.M.end - 1e-3));
+    return true;
+  }
 
   /** Which ring of the target a world point is on (1 the bull's-eye, 2 and 3 the rings, 0 off the target). */
   ring(point) {
@@ -216,7 +229,7 @@ export class StrawmanModel {
     // a move under way: its contacts and kicks as their moments pass, then its pose; a blow broken off eases back on its own
     const mv = this.mv, p = this.p, want = this.want;
     if (mv) {
-      mv.t += raw;
+      mv.t = mv.held != null ? mv.held : mv.t + raw; // (a held move stands at the time asked: hold())
       while (mv.i < mv.at.length && mv.at[mv.i].t <= mv.t) {
         const e = mv.at[mv.i++];
         if (e.kick) this.kick(e.kick); else mv.onContact?.(e.blow, e.contact);
@@ -288,6 +301,41 @@ export class StrawmanModel {
     if (K.tip) { this.a.x += K.tip[0]; this.a.y += K.tip[1]; }
     if (K.sack) { this.sv.x += K.sack[0]; this.sv.y += K.sack[1]; }
     if (K.hat) this.hatV += K.hat;
+  }
+
+  /** Restitched as another doll (Strawman's Well's troupe, vfx/strawmanwell/pipstries.js: one of Pip's earlier tries at Strawman). Never
+   *  called on Strawman itself, which stays as drawn. Each key changes one part and the rest stays; what it is handed becomes this
+   *  model's own, disposed with it (a part's colour is its map: update() sets the sack's own colour for a held breath):
+   *    head { geometry, map, scale, position, rotation: [x, y, z] (its x is the look's, set each frame) }   body { geometry, map }
+   *    legs { map }   sleeves [hexL, hexR] (each sleeve and its lip)   cuffs [mapL, mapR]   hat false (hidden) | { rotation: [x, y, z] }
+   *    heart false (hidden)   on { head, sack, hat, rock: [Object3D] } (hung on that part, in its frame: they swing and nod with it) */
+  restyle({ head, body, legs, sleeves, cuffs, hat, heart, on } = {}) {
+    const own = (m) => { m.name ||= 'strawman'; if (!this.mats.includes(m)) this.mats.push(m); return m; };
+    const cloth = (map) => own(new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.85, map })); // (as the sack's own: one program)
+    const reshape = (mesh, geo) => { if (geo && mesh.geometry !== geo) { mesh.geometry.dispose(); mesh.geometry = geo; } };
+    if (head) {
+      reshape(this.head, head.geometry);
+      if (head.map) this.head.material = this.headMat = cloth(head.map);
+      if (head.scale) this.head.scale.fromArray(head.scale);
+      if (head.position) this.head.position.fromArray(head.position);
+      if (head.rotation) this.head.rotation.fromArray(head.rotation);
+    }
+    if (body) { reshape(this.body, body.geometry); if (body.map) this.body.material = this.bodyMat = cloth(body.map); }
+    if (legs?.map) { const m = cloth(legs.map); for (const l of this.legs) l.material = m; }
+    (sleeves || []).forEach((hex, i) => {
+      if (hex == null || !this.sleeves[i]) return;
+      const m = own(new THREE.MeshStandardMaterial({ color: hex, roughness: 0.85, side: THREE.DoubleSide })); // (as the sleeves' own)
+      for (const o of this.sleeves[i]) o.material = m;
+    });
+    (cuffs || []).forEach((map, i) => { if (map && this.cuffs[i]) this.cuffs[i].material = cloth(map); });
+    if (hat === false) this.hat.visible = false;
+    else if (hat?.rotation) this.hat.rotation.fromArray(hat.rotation);
+    if (heart === false) this.heart.visible = false;
+    const at = { head: this.head, sack: this.sack, hat: this.hatPivot, rock: this.rock };
+    for (const [part, list] of Object.entries(on || {})) for (const o of list || []) {
+      at[part]?.add(o); o.traverse((x) => { for (const m of [].concat(x.material || [])) own(m); });
+    }
+    return this;
   }
 
   dispose() {

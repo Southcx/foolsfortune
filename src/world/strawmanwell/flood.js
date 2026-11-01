@@ -18,7 +18,7 @@
 import * as THREE from 'three';
 import { GRID, CELL } from '../../progress/strawmanwell.js';
 import { SandGrid, worldToCell } from './grid.js';
-import { GridLook } from './gridlook.js';
+import { GridLook } from '../../vfx/strawmanwell/gridlook.js';
 import { GridBody } from './gridbody.js';
 import { COLOR, BACK } from './stagekit.js';
 import { AT } from './layout.js';

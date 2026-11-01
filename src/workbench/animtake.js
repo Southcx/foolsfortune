@@ -85,7 +85,7 @@ function rawClip(R, name, fps, capture) {
 /** What is on show this frame: the move (its clip, its clip time, its strike live), or the emote's clip, or the stance. */
 function infoOf(R) {
   const c = R.moveset?.cur, E = R.techs.get('emote'), L = R.techs.get('launch');
-  if (c) { const s = c.def.track?.strike; return { what: c.id, clip: c.def.clip, t: c.t, strike: !!s && c.t >= s[0] && c.t <= s[1] && c.phase !== 'fall' }; }
+  if (c) { const s = c.def.track?.strike, K = c.kt?.key; return { what: c.id, clip: c.def.clip, t: c.t, strike: !!s && c.t >= s[0] && c.t <= s[1] && c.phase !== 'fall', key: K ? { i: c.kt.i, into: c.kt.frame - c.kt.ks } : null }; } // (`key`: the key pose on show, KEY-POSES.md 7: the contact sheet's)
   if (L?.o?.clip) return { what: L.o.tag, clip: L.o.clip, t: L.clipT };
   if (E?.cur) { const n = E.clipOf?.(); return { what: `/${E.cur}`, clip: n, t: n ? E.timeIn(n) : 0 }; }
   const t = R.tool;

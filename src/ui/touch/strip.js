@@ -28,7 +28,7 @@
 import { TouchTile, TILE } from './tile.js';
 import { touchTiles } from './presses.js';
 import { placeOf, windowOpen } from './areas.js';
-import { shelf } from './topbar.js';
+import { shelf, TOP_BAR } from './topbar.js';
 import { stripOf, beltPairOf, nearOf } from './actioncontext.js';
 import { CURSOR } from '../../core/touchcursor.js';
 
@@ -103,22 +103,25 @@ export class TouchStrip {
    *  strip, in one row on one clay shelf from the folded top bar's end toward the Sight, as large as fit (44 px down to the least). */
   layoutTop(Z) {
     this.layoutNear();
-    const G = STRIP.gap, F = TILE.foot, room = Z.w - 2 * STRIP.shelf;
+    // (laid as the folded top bar beside it lays its own (topbar.js layout: the shelf centred on its 44 px row, the tiles 8 px in and 4 down), so
+    // the two shelves stand as one row, their tops and feet in line: South, 2026-11-01)
+    const G = STRIP.gap, F = TILE.foot, IN = 8, room = Z.w - 2 * IN;
     const spanOf = (list, sz) => list.reduce((a, id) => a + this.tiles.get(id).widthFor(sz), 0) + (list.length - 1) * G + (this.pair.length && this.ids.length ? G : 0);
     // (as many as the room holds at 44 px, the rest folded behind the ⋯: MOBILE.md 4.1, Dovina's measurement)
     let ids = this.farIds(Infinity); for (let max = ids.length - 1; max > 1 && spanOf(ids, TILE.min) > room; max--) ids = this.farIds(max);
     this.farNow = ids;
     const span = (sz) => ids.reduce((a, id) => a + this.tiles.get(id).widthFor(sz), 0) + (ids.length - 1) * G + (this.pair.length && this.ids.length ? G : 0);
     let sz = STRIP.size; while (sz > TILE.min && span(sz) > room) sz -= 2;
-    let x = Z.x + STRIP.shelf; const y = Z.y + STRIP.shelf;
+    const H = sz + F + 8, y0 = Z.y + (Math.min(Z.h, TOP_BAR.h) - H) / 2, y = y0 + 4;
+    let x = Z.x + IN;
     ids.forEach((id, i) => {
       const t = this.tiles.get(id), w = t.widthFor(sz);
       if (i === this.pairShown && i) x += G; // (a breath between the pair and the tool's row)
-      if (x + w > Z.x + Z.w - STRIP.shelf) { t.set({ hidden: true }); t.over = true; return; } // (past the Sight: folded away, never over it)
+      if (x + w > Z.x + Z.w - IN) { t.set({ hidden: true }); t.over = true; return; } // (past the Sight: folded away, never over it)
       t.over = false; t.place(x, y, sz, w); x += w + G;
     });
-    const Wd = Math.min(Z.w, x - G + STRIP.shelf - Z.x), H = sz + F + 2 * STRIP.shelf;
-    Object.assign(this.shelf.style, { transform: `translate(${Math.round(Z.x)}px, ${Math.round(Z.y)}px)`, width: `${Math.round(Wd)}px`, height: `${Math.round(H)}px` });
+    const Wd = Math.min(Z.w, x - G + IN - Z.x);
+    Object.assign(this.shelf.style, { transform: `translate(${Math.round(Z.x)}px, ${Math.round(y0)}px)`, width: `${Math.round(Wd)}px`, height: `${Math.round(H)}px` });
     this.shelf.style.setProperty('--h', `${H}px`);
     this.shelf.classList.toggle('off', !this.shown);
   }
