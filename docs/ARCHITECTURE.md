@@ -17,6 +17,9 @@ the gate; any division may propose a change to it (a question to Petra, or a not
    it is two modules.
 5. **The folder is the owner.** The layout below follows the five lanes (CLAUDE.md, Threads), so who owns a file can be read off its path.
 6. **Measured, not assumed.** A change that may cost frames is measured (`npm run perf`) before it lands.
+7. **Register, never wire in (docs/plans/SOLID.md).** A per-frame thing joins a phase of `game.systems` where it is built; it never adds a
+   line to `boot/frame.js`. A caller asks a tool or a creature what it can do (its interface, its tags), never which one it is
+   (`npm run check`: `solid.frame-update`, `solid.tool-switch`, `solid.kind-switch`, ratchets that only fall).
 
 ## Layout
 

@@ -245,6 +245,22 @@ for (const [f, src] of text) src.split('\n').forEach((l, i) => {
   const j = l.indexOf(' // '); if (j >= 0 && SWALLOWED.test(l.slice(j + 4))) add('comment.swallows', f, i + 1, 'code after a comment on the same line never runs: move the comment to its own line (casebook rule 240)', true);
 });
 
+// ---- 15. SOLID's ratchets (docs/plans/SOLID.md): debt that only falls.
+// solid.frame-update: a system updated by hand in the frame's tick (boot/frame.js); a new one registers with game.systems where it
+//   is built (core/systems.js), so the frame never grows (open/closed).
+// solid.tool-switch: a tool named by its id outside its own folder (`=== 'psygun'`); ask the tool or the belt what it can do.
+// solid.kind-switch: a creature named by its kind outside creatures/ (`.kind === 'wisp'`); ask its tags (core/tags.js hasTag).
+const TOOL_IDS = ['psygun', 'sondelass', 'soulbrush', 'veritome', 'dreamvane', 'crucibelle', 'lockheart'];
+const KINDS = ['slipjelly', 'wisp', 'sentinel', 'clapper', 'dummy', 'target', 'spirit'];
+const TOOL_EQ = new RegExp(`[!=]==\\s*['"](${TOOL_IDS.join('|')})['"]|['"](${TOOL_IDS.join('|')})['"]\\s*[!=]==`, 'g');
+const KIND_EQ = new RegExp(`\\.kind\\s*[!=]==\\s*['"](${KINDS.join('|')})['"]`, 'g');
+for (const [f, raw] of text) {
+  const src = code(raw), r = rel(f);
+  if (r === 'src/boot/frame.js') for (const m of src.matchAll(/\.(?:update|tick)\(/g)) add('solid.frame-update', f, lineOf(src, m.index), 'a system updated by hand in the frame: register it with game.systems where it is built');
+  for (const m of src.matchAll(TOOL_EQ)) { const id = m[1] || m[2]; if (!r.startsWith(`src/tools/${id}/`)) add('solid.tool-switch', f, lineOf(src, m.index), `the tool '${id}' named by id outside its folder: ask the tool what it can do`); }
+  if (!r.startsWith('src/creatures/')) for (const m of src.matchAll(KIND_EQ)) add('solid.kind-switch', f, lineOf(src, m.index), `a creature's kind '${m[1]}' switched on outside creatures/: ask its tags`);
+}
+
 // ---- tally against the baseline
 const counts = {};
 for (const x of findings) if (!x.hard) counts[`${x.rule}|${x.file}`] = (counts[`${x.rule}|${x.file}`] || 0) + 1;
