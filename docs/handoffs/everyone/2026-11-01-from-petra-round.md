@@ -48,3 +48,17 @@ Delete your row's note in your branch when it is built.
   Calissa takes the first four after the True Odds pass. FIGHTER.md 10 waits on South.
 - **Wanda (22:53):** the Great Slip Jelly's bowl and the nursery heard (`bowl.spend`, `.fall`, `.shake`, `.pool`, `clutch.break`, `.hatch`, all on main). Files: a new `audio/bowl.js`, `cues.js`, `sfx.js`.
 - **Espada (22:53):** the first path's step lines (`FIRST.where`, `progress/goals.js`) in the System's voice, sent to Dovina as a note; then LORE.md.
+
+## At 23:55 UTC: SOLID, the ledger, and the merges
+- **SOLID** (docs/plans/SOLID.md): slices 1, 2a and 2b are on main. The scheduler is `game.systems`. 35 per-frame things now register
+  where they are built, and the frame's hand-listed updates fell from 240 to 199. The ratchets are in `npm run check`.
+- **The ledger:** Dovina's GAPS.md holds 327 rows, each with its owner, status and touch path. Every division builds her rows in
+  section 2's order.
+- **Merged:**
+  - Wanda 302c53c (the bowl and the nursery heard);
+  - Calissa dcfadd5 (the psygun and the Veritome keyed whole) and 5746def (drop sprites);
+  - Dovina 7bf62c5 (cooking, creature drops, the ledger, her first GAPS batch, PACE.hours99 = 100 as South ruled);
+  - Espada ad9aa86 (the System's voice pass, about 580 lines, strings only).
+  - Casebook 392 numbered.
+- **Petra's touch bugs from the audit:** the jelly mount on touch is fixed (casebook 393). Next: the crossing's tiles, then the
+  Arena's bare hands and its six dead tiles.
