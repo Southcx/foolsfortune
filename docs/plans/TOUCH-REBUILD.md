@@ -71,6 +71,35 @@ only renames it:
     and held for the slide, as today. G is drawn only in 3D, so a side-on mode shows six slots and a 3D one seven.
   would. That frees a slot and puts CROUCH where the slide already is: the stick.
 
+### 3.1.1 The geometry (Calissa's, 2026-11-01; mock-ups in `docs/ref/touch-rebuild/` on claude/calissa-art-cups ab31bdc)
+
+The arc is two rings round A.
+- **The inner ring** holds what a fight presses over and over.
+- **The outer ring** holds the deliberate presses, so a swap, a pick or an art never goes off in a flurry.
+
+Measured from A's centre, which sits 52 px in from the safe area's right edge and 50 px up from its bottom ((802, 343) at 896 x 414):
+
+| ring | slot | size (px) | radius (px) | angle |
+|---|---|---|---|---|
+| the corner | A | 80 | | |
+| inner | G CROUCH (3D only) | 60 | 120 | 183° |
+| inner | B | 60 | 120 | 152° |
+| inner | D | 60 | 120 | 122° (the diagonal: the easiest reach after A) |
+| inner | C | 60 | 120 | 92° (straight up) |
+| outer | F the meter | 54 | 196 | 176° (the far end, ringed, gold when full) |
+| outer | E | 48 | 194 | 153° |
+| outer | PICK | 44 | 192 | 131° |
+| outer | BELT | 44 | 192 | 110° |
+
+- **The inner radius** is 120 so four 60 px tiles 30° apart never touch.
+- **Into the middle:** the outer ring reaches about 80 px into the centre 60%, at its lower-right corner only, under where the bodies
+  stand.
+- **A directional slot** wears four small gold chevrons on its rim.
+- **The stick, side-on:** in a side-on mode the stick's ring carries a gold notch for crouch, labelled until the first path has taught
+  it.
+- **A conflict:** Calissa's covering message put F "at the top of the outer ring over C". Her note's table and all three mock-ups put
+  it at the far end, as ruled. The table here follows the note and the mock-ups.
+
 ### 3.2 A press reads the stick (directional presses)
 
 Every arc button reads the stick's direction **at the moment it lands** (Brawlhalla's rule). Neutral, toward, up, down and away are
@@ -185,4 +214,4 @@ The crossing and the jelly mount get their first working touch from this table. 
    when ready, as the ultimates of Genshin and Zenless do, so it is found without being in the way.
 3. **One layout or many:** "You got it". One skeleton for every action mode, with the layout editor's per-context offsets on top.
 
-Next: Calissa's view and mock-ups (section 5.2), then South rules the plan whole before Petra's driver half is built.
+Calissa's view and mock-ups are in (section 3.1.1). Next: South rules the plan whole, then Petra's driver half and Calissa's tiles are built.
