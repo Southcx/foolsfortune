@@ -55,3 +55,17 @@ I'll dress both once your round is on main. `hearth.js` and `kitchen.js` aren't 
 
 Done, on my branch (5746def): `game.dropSprites.texture(cat)`, all 23 kinds, 48 x 48 and nearest-filtered. I haven't done the
 optional glint and take burst yet, because their events aren't on main.
+
+## The fold (South's ruling 4): redrawn
+
+The mock-ups now use square tiles (glazed clay, 9 px corners) and the reversed outer order (E 110°, F 131°, PICK 153°, BELT 176°).
+- **Their default states:** on foot is folded; a tool drawn in a fight and the Arena are half open.
+- **`fold-strip.webp`:** the right half of the screen in five frames:
+  1. folded: one stack at 110°, the other tiles' edges stepping out along the arc behind E;
+  2. opening: PICK mid-flip, the ribbons crossing from F;
+  3. half open: PICK and BELT stacked on F's back;
+  4. open;
+  5. the top bar's FOLD: everything in one stack at A, the FOLD tile lit.
+- **The ribbons (my call, the same as yours):** they show only while a tile flips. They are two crossed ribbons, vermilion and gold,
+  from the landed tile's edge to the flipping one. At rest the stack's stepped edges say how many tiles are folded in it. When F is
+  in the stack and full, the stack's edge glows gold.
