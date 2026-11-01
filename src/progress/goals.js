@@ -30,17 +30,24 @@ import { today } from '../core/calendar.js';
 
 export const GOALS = { near: 0.25, elsewhere: 5, stretch: { tier: 3, of: 3 }, look: 1, never: ['general'] }; // (never: categories that are not done by playing tonight: time, sessions, achievements about achievements)
 export const SLOTS = ['near', 'elsewhere', 'stretch'];
-/** The first path's steps, in the order the map meets them (FIRST-HOUR.md 4), where each is (placeholder words, Espada's), and how many
+/** The first path's steps, in the order the map meets them (FIRST-HOUR.md 4), where each is (Espada's words), and how many
  *  achievements off the path end it early. */
 export const FIRST = {
   path: ['sr1', 'gw1', 'gw2', 'gw3', 'fk1', 'sk12', 'br1', 'tc1', 'pl6', 'jl1', 'sf1', 'an1', 'cx3'],
-  where: { // (each {id} said for the device last touched: progress/devicewords.js deviceText, at the log's line; Espada's words, 2026-10-27)
-    sr1: 'The Shrine is beside where you wake.', gw1: 'At the Shrine beside where you wake, {use} and choose YOUR SPIRIT GARDEN.',
-    gw2: 'Your first planetoid\'s seed waits in the shed by the garden\'s gate: take it, carry it up into the open sky and let go.', gw3: 'Your first spirit slab waits at the plate shrine on the Athanor: a launch lotus flies you there. {use} at the shrine, then carve.',
-    fk1: 'Saggar is on the workshop floor.', sk12: 'The nearest is the atrium rail, upstairs in the workshop.',
-    br1: 'The pots are all round the workshop: {use} lifts one, {primary} throws it.', tc1: 'A chest stands in the basement\'s hub, down the hole in the workshop floor.',
-    pl6: 'The Index in the basement\'s hub sends you there.', jl1: 'Three sit on the sand just past the Weir, in the Dunes.', sf1: 'In the Dunes, {skiff} calls the Solar Skiff.',
-    an1: 'At the Weir\'s pier, {box} opens your Pneuka Box: make the Sondelass your main there, then {draw} draws it; choose its rod form.', cx3: 'The course rings the basement\'s hub: eight stations, one lap.',
+  where: { // (each {id} said for the device last touched: progress/devicewords.js deviceText, at the log's line; Espada's words, 2026-11-01)
+    sr1: 'The Shrine is next to where you wake. Press {use} at it.',
+    gw1: 'Press {use} at the Shrine and choose YOUR SPIRIT GARDEN.',
+    gw2: 'The seed is in the shed by the gate. Carry it into open sky and let go.',
+    gw3: 'The slab is at the plate shrine on the Athanor. A launch lotus flies you there.',
+    fk1: 'Mistress Saggar is on the workshop floor, by the kiln.',
+    sk12: 'The atrium rail, upstairs in the workshop, is a vantage point.',
+    br1: 'Pots are all over the workshop. Press {use} to pick one up and {primary} to throw it.',
+    tc1: 'A chest is in the basement\'s hub. Drop through the hole in the workshop floor.',
+    pl6: 'Use the Index in the basement\'s hub and choose the Dunes.',
+    jl1: 'Slip jellies are on the sand past the Weir.',
+    sf1: 'On the Dunes, press {skiff} to call the Solar Skiff.',
+    an1: 'Go to the Weir\'s pier. Open the Pneuka Box ({box}), set the Sondelass as Main, draw it ({draw}) and switch to the rod.',
+    cx3: 'The course circles the basement\'s hub. Pass all eight stations.',
   },
   enough: 40,
 };

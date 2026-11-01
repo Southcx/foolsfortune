@@ -1,4 +1,4 @@
-# Spirit Cooking (a plan, not built)
+# Spirit Cooking (a plan; bread built 2026-11-01)
 
 South, 2026-11-01: "Cooking is something worth looking at too. Call it 'Spirit Cooking' and do extensive design research on other
 cooking games like cooking mama, battle chef brigade, fantasy life i, and so forth for how the minigames should play and techniques you
@@ -231,3 +231,36 @@ Plain names throughout until South calls it settled: the cooking station, a dish
 
 Open: none for South before the build. The seasoning sources (Focus, Dexterity, Perception) and the numbers in section 9 are Dovina's,
 priced with `scripts/economy.mjs` when the rules are written.
+
+## 13. Built (2026-11-01: South, "did spirit cooking ever get implemented along with custom minigame UI? If not please start working on it")
+
+Bread, the first family, is playable at the hearth. Everything else in this plan is data waiting for its round.
+
+| part | where | what it does |
+|---|---|---|
+| the flavour map | `progress/cooking/flavour.js` | `INGREDIENTS` (the pantry's six staples and nine add-ins, one a feeling plus kombu and miso), `tasteOf`, `leadOf` (the first 0.4 of salt is seasoning, not Grief), `balanceOf` (flat, heavy, sharp, one-note, balanced, each with its fix), `ADJUST` |
+| the moves | `progress/cooking/moves.js` | all fourteen moves as data, plus **bake** (the oven: section 5 named it and section 4's table did not); knead, proof and bake are played. `widthOf` (practice widens, never moves the heart), `scoreOf`, `tellAt`, `practiceFrom` |
+| the dishes | `progress/cooking/dishes.js` | `FAMILIES` (bread built; rice, broth and tea as data), `dishFor`, `GRADES`, `serve` (the draught: feeling, strength, hold) |
+| what is kept | `progress/cooking/cooking.js` | practice, recipes and best grades, the proof on the game clock, the held draught (`fadeK`, asked by `courier/mind.js`) |
+| the hearth | `world/garden/hearth.js` | a placeholder clay fire bowl on the Athanor's west shoulder (latitude 38, longitude 270); F opens the window |
+| the window | `world/garden/kitchen.js` | choose an add-in; KNEAD (a beat every 0.75 s: on it builds three times as fast; STRETCH A PIECE reads the windowpane); PROOF (on the game clock, POKE IT reads the dent, LEAVE IT closes); BAKE (STEAM in the first quarter, KNOCK, TAKE IT OUT); TASTE and ADJUST; served |
+| the log and the ledger | `feedback/tracking/cooking.js` | `cook.serve`, `cook.serve.<grade>`, `cook.dish.<id>`, `cook.true`, `cook.learn`, `cook.move.<move>`, `cook.hit.<move>`, hi `cook.grade` |
+| achievements | `progress/cookingachievements.js` | The Hearth (the Spirit Garden's new sub): Bread and Water, Perfect Crumb, A True Loaf, Seven Loaves, Daily Bread |
+
+Where the build differs from the plan, with the reason:
+
+1. **A fifth grade, FAIR (0.3 to 0.6), below GOOD.** It serves a weak draught (strength 0.25, three quarters of a drink's hold), so a
+   clumsy loaf still pays. That is the design law ("grind closes the gap"). DUBIOUS is kept for a ruined move or an average under 0.3.
+2. **The draught's strength is also how loud its feeling is.** It is multiplied by the dominant taste over 0.8, an add-in's full
+   measure, with a floor of 0.2. A plain loaf's starch is a whisper of Mirth (0.12 at GREAT), and a honey loaf is Mirth's full voice.
+3. **Each move scores 0.6 to 1 inside its band, falling outside it to a floor of 0.15 while not ruined.** A move's heart is a third of
+   its narrowest width.
+4. **The add-ins come from creatures.** A creature of a feeling drops that feeling's add-in (`progress/creaturedrops.js`, below), so
+   the weather decides what you can cook. The pantry's staples are free, so a dish can always be cooked.
+
+Measured headless (2026-11-01): a honey loaf kneaded to 0.84, proofed to 0.5 and baked to 0.72 with steam, tasted one-note and given heat,
+served PERFECT, holding Mirth at 0.83 for 120 real s; the mind's fade slowed to 0.415 while it held. Priced (`node scripts/cooking.mjs`): the largest lift any loaf gives one material at the press is 0.67 of a tier's step (a TRUE
+loaf: 0.08 of the way toward its feeling, against a common material's own 0.3), so a dish leans the press and never buys a tier.
+Still to come: the looks (Calissa's),
+the sounds (Wanda's: the knead's thump on the beat, the oven, the knock), the words (Espada's: dish names, the tells), bonds with spirits,
+batch and auto-cook, the other families.

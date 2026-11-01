@@ -4871,3 +4871,13 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the rungs you put on are kept in order (`pin`, in the save), and `worn()` takes them first, then the table's order. A
   rung past the budget waits, neither worn nor set aside. After: `/rung relay` wore Relay, and a struck slip jelly passed the blow on.
 - **Rule:** 391
+
+### 2026-11-01 · The hearth's window froze in play: its pulse, its oven and its drawing never moved (world/garden/kitchen.js; found by Dovina, re-probing after SOLID's scheduler)
+- **Seen:** the cooking station's window opened and took clicks. But its update ran from the frame's tick, which returns early while
+  an index window is up (`boot/frame.js`, `modalOpen()`). So the knead's pulse stood still, the oven never browned and the canvas was
+  never drawn. The first probe called the window's methods by hand and passed.
+- **Cause, as measured:** a window shown on the index menu's page pauses the game's frame. Nothing per-frame runs under it: not a
+  hand line in the frame, not a `game.systems` phase.
+- **Fix:** the window drives its own `requestAnimationFrame` loop while it is open (real seconds), and stops when it closes. After: a
+  probe clicking the buttons in real time kneaded on the pulse, baked to colour in 16.6 real s and served a PERFECT mint loaf.
+- **Rule:** NEW:modal-runs-itself

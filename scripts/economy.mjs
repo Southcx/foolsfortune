@@ -342,7 +342,7 @@ export function domainPace(hours99 = PACE.hours99) {
 }
 {
   const f = (h) => (h < 10 ? h.toFixed(1) : Math.round(h).toString()).padStart(5);
-  for (const h99 of [PACE.hours99, 100]) {
+  for (const h99 of [PACE.hours99, 300]) {
     const P = domainPace(h99);
     console.log(`\nTHE DOMAIN LADDER'S PACE (99 in ${h99} real hours of middling play, focused on one domain; the catch-up's x${CATCH_UP.mult} past ${CATCH_UP.below} levels behind not counted; spread evenly over the seven, each domain's tens take seven times as long)`);
     console.log(`  ${'to'.padEnd(11)}${P.tens.map((t) => String(t).padStart(5)).join('')}   to 99`);

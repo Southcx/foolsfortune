@@ -1089,3 +1089,6 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
   prefix is counted wrong when a part inside it takes the same prefix; name the part for itself (a pool's numeral, not a floor's).
 391. **A budget gives the slot freed to the one that asked for it.** When a slot in a full budget is freed for a
   choice, the choice takes it by its own rank, never by the next in a list's order; keep the player's order with the budget.
+NEW:modal-runs-itself. **A window over a paused game keeps its own clock.** Anything shown while the index or the Codex is open
+  animates on its own animation frame, since the frame's tick (hand lines and `game.systems` alike) does not run under a modal. A probe
+  that calls a window's methods by hand proves nothing about its clock: click it in real time.

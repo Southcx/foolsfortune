@@ -9,8 +9,10 @@ import { mimicryAchievements } from './mimicryachievements.js';
 import { sandboxAchievements } from './sandboxachievements.js';
 import { strawmanWellAchievements } from './strawmanwellachievements.js';
 import { stealthAchievements } from './stealthachievements.js';
+import { cookingAchievements } from './cookingachievements.js';
+import { countAchievements } from './countachievements.js';
 import { domainArtAchievements } from './domainartachievements.js';
 
 export function moduleAchievements({ C, H, F }) {
-  mimicryAchievements({ C, F }); sandboxAchievements({ C, H }); strawmanWellAchievements({ C, H, F }); stealthAchievements({ C, H, F }); domainArtAchievements({ F });
+  mimicryAchievements({ C, F }); sandboxAchievements({ C, H }); strawmanWellAchievements({ C, H, F }); stealthAchievements({ C, H, F }); cookingAchievements({ C, H, F }); countAchievements({ C, F }); domainArtAchievements({ F });
 }

@@ -53,6 +53,10 @@ export const APTITUDES = {
   // against taken, a leg's share. a leg with fewer than 3 met is no sample
   inhibition: { label: 'Holding back', unit: '% of outlined shots answered', better: 'high', line: 'How well you hold back for the one answer that works.',
     tally: { marks: { 'move.parry': (e) => (e.tool === 'sloop' && e.by === 'courier' ? [1, 0] : null), 'rail.hit': (e) => (e.kind === 'outlined' ? [0, 1] : null) }, flush: 'rail.leg.end', min: 3 } },
+  // the rail's lock-on swept (multiple object tracking: Pylyshyn and Storm, 1988; the lock-on's eight its limit): how many targets a volley
+  // held when it was let go. A volley of fewer than 2 is no sample (one lock is aiming, not tracking). GAPS.md G14
+  tracking: { label: 'Tracking', unit: 'targets held', better: 'high', event: 'rail.volley',
+    value: (e) => (e.by === 'courier' && e.locks >= 2 ? e.locks : null), line: 'How many moving things your eye can keep at once.' },
   // the Lockheart opened: how far past its measure the coffin was held (0 at the measure, 100 at twice: the most it holds). A fuller
   // coffin lands harder and recoils harder (outcomes.js: the nuke's recoil by power), so holding on is a pump of BART's balloon. Not
   // better or worse: `style` says the trend's two ways instead of better and worse, and no best is said.

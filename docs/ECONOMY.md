@@ -128,11 +128,25 @@ its rutter, which pays by rank (`ECON.passage.share`, raised 0.6 to 0.8 the same
 a third of a middling diver's, a grind that never closed; now about half, doubling at an S). The tanker's Chaos run passes 1.5x at its
 best, as hauling does, because a failed stage loses more than a good one gains; open, for the owner if it plays rich.
 
-**Crude** (`ECON.crude`, `.ships`, `.wellFill`; canon: `docs/LORE.md`, "Lachryma as crude"): five grades by aspect, mirth (cheap,
-stable) to dread (richest, most volatile); only crude spills, by volatility and cargo size. The tanker holds 60, is slow, spills x0.35;
-its best dread run pays about 1.38x and one failed stage makes a loss. The sloop carries errands. Island demand swings 0.75 to 1.35
-(0.6 to 1.6 paid a perfect hauler 3x). A Well run draws 12% of its fill, yields what is left (never under 15%), refills 3% an hour of
-play while its mind ruminates.
+**Crude** (`ECON.crude.fields`, `.ships`, `.wellFill`; canon: `docs/LORE.md`, "Lachryma as crude"). Crude carries no feeling (the
+owner, 2026-10-11). It is graded by its **field**, as oil is Brent, in three grades:
+
+| field | worth | volatility |
+| --- | ---: | ---: |
+| Margarite crude | 0.5 | 0.5 (light and sweet) |
+| Dunemaw crude | 0.85 | 1.1 |
+| Entropolis crude | 1.25 | 1.6 (heavy and sour, the richest and the worst to spill) |
+
+- **Spills.** Only crude spills, by its volatility and the cargo's size.
+- **The ships.** The tanker holds 60, is slow, and spills at x0.35. Its best Entropolis run pays about 1.4x, and one failed stage
+  makes a loss. The sloop carries errands.
+- **Island demand** swings 0.75 to 1.35. A swing of 0.6 to 1.6 paid a perfect hauler 3x, so it was narrowed.
+- **A Well run** draws 12% of its fill and yields what is left, never under 15%. The fill comes back at 3% an hour of play while its
+  mind ruminates.
+
+**Not yet re-simulated.** The runs above were simulated when crude had five grades by feeling. The fields' three grades have not been
+re-simulated since. G136 stays open for that measure. It is the next run of `scripts/economy.mjs`'s passage block once its rows read
+`fields`.
 
 **The islands on the Law-Chaos line** (`ECON.islands`; the owner: a stable mind is safer and less lucrative, a chaotic one riskier and
 richer). Well runs, x aim and share of runs lost, poor / middling / masterful:
@@ -143,7 +157,7 @@ richer). Well runs, x aim and share of runs lost, poor / middling / masterful:
 | Anagami Island (Kaolin's: Creation) | 0.57 | 1.02 | 1.15 | 20% / 15% / 12% |
 | Entropolis (the Queen's: Chaos) | 0.45 | 1.23 | 1.59 | 51% / 40% / 31% |
 
-**The toxic symbiosis** (the owner, 2026-10-04): Entropolis prices crude low, Margarite high (`ECON.islands[i].crude`). A clean dread
+**The toxic symbiosis** (the owner, 2026-10-04): Entropolis prices crude low, Margarite high (`ECON.islands[i].crude`). A clean Entropolis-crude
 tanker run between them (distance 6) pays -0.73x to 1.09x over a fortnight of game days: knowing *when* to sail is the skill.
 **Bounties** (Letty Marque): a named stray brought to Margarite pays 2.5x a hunt's worth of its class, less Letty's 20% (`ECON.bounty`,
 `bountyPay`): 48 cubes for a Guppy, 2,880 for a Leviathan.
@@ -211,6 +225,22 @@ Five numbers stood without a reason. Each is measured by the simulator's last bl
 - **The standings** (`RANKS`, `progress/achievements.js`): 0, 10, 30, 70, 130, 220, 340 points, against 1349 written. The steps shrink
   (x3.0 down to x1.5) as OSRS's levels and every RPG's early ranks do: the first standings come in a session, the later ones in weeks.
   The top, Fool's Fortune, is a quarter of the points: reachable without completing everything.
+
+## A creature's drops: a material faucet, never cubes (2026-11-01)
+
+South: "We'll have them drop out of enemies as a 2d billboard sprite." A creature the Courier brings down in the world now also drops
+things (`progress/creaturedrops.js`). It drops no cubes beyond its existing burst, so the aim (480 cubes a real hour) is unchanged.
+
+- **How many.** A down gives 1 + 2 x its agitation's yield (`yieldOf`): one when downed rote, up to three in the optimal band.
+- **What, by body.** The material kinds its body is made of (`DROP_TABLES`).
+- **What, by feeling.** Its feeling's add-in, an ingredient for Spirit Cooking.
+- **The rare roll.** For example a shard at 1 in 12 for a slip jelly, or a brass Possibilikey at 1 in 60. Luck sways it by up to x1.5.
+
+This is the press's input, which the Wells, the garden and the scanner fed before. Two loops are closed by it:
+- a hunt's feeling becomes a dish, and the dish's draught leans the press;
+- a hunt's body becomes a material, and the material walks the soul colour.
+
+Nothing here is sold for cubes yet. A material's worth is the Purser's, as before.
 
 ## Measuring it
 

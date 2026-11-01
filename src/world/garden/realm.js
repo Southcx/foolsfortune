@@ -542,7 +542,7 @@ export class Realm {
         else this.tribulation.begin();
         return;
       }
-      default: if (g.gardenMycelium?.use(f)) return; break; // (a spore bed, Myggdrasil's roots: world/garden/mycelium.js, Dovina's)
+      default: if (g.gardenMycelium?.use(f) || g.hearth?.use(f)) return; break; // (a spore bed, Myggdrasil's roots: world/garden/mycelium.js; the hearth: world/garden/hearth.js; Dovina's)
     }
     this.sync();
   }

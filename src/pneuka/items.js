@@ -7,7 +7,7 @@
 // the fish they land and the caster shells; a new kind of item is a new entry here and nothing else (the Pneuka Box, its window, the
 // ground, the bank all read this). The seven tools are not items (main and sub: tools/belt.js); TOOL_INFO says what each is.
 //
-//   ITEMS[id] = { id, kind: 'curio' | 'lure' | 'psygun' | 'instrument' | 'heart' | 'key' | 'material' | 'fish' | 'map' | 'bottle' | 'whistle' | 'slab', name, glyph, color, tier, examine, card, lure, stack (false, or how many a slot holds) }      itemOf(id)
+//   ITEMS[id] = { id, kind: 'curio' | 'lure' | 'psygun' | 'instrument' | 'heart' | 'key' | 'material' | 'fish' | 'map' | 'bottle' | 'whistle' | 'slab' | 'ingredient', name, glyph, color, tier, examine, card, lure, stack (false, or how many a slot holds) }      itemOf(id)
 //   TOOL_INFO, toolInfo(id) -> { tool, name, place, examine }
 // ---------------------------------------------------------------------------------------
 import { CURIOS, TIERS } from '../world/treasure/treasure.js';
@@ -20,6 +20,7 @@ import { KINDS as MAT_KINDS } from '../progress/econ/materials.js';
 import { ECON } from '../progress/econ/table.js';
 import { BOTTLES } from '../progress/brushload.js';
 import { PSYGUNS } from '../tools/psygun/kinds.js';
+import { INGREDIENTS } from '../progress/cooking/flavour.js';
 
 export const ITEMS = {};
 /** A slot colour for a hue in degrees (HSL at saturation 0.55, lightness 0.6): the materials, by the middle of their kind's arc. */
@@ -112,5 +113,12 @@ ITEMS.rutter = { id: 'rutter', kind: 'rutter', key: 'rutter', name: 'ROUTE MAP',
 // plate shrine's bench (world/garden/bench.js); its creature, stars and seed in its data
 ITEMS.slab = { id: 'slab', kind: 'slab', key: 'slab', name: 'SPIRIT SLAB', glyph: '▤', color: 0x9c8a74, tier: 2,
   examine: 'A block of the island\'s stone, banded clay over sand over sandstone. Something of Lachrymite sleeps inside it, and wants carving out.', card: null, lure: false, stack: false };
+
+// Spirit Cooking's ingredients (progress/cooking/flavour.js, Dovina's): what a creature of a feeling drops (progress/creaturedrops.js) and
+// a dish is seasoned with at the hearth; the pantry's staples are the hearth's own and never things. Eight to a slot. Names and lines are
+// placeholders for Espada's; their sprites are Calissa's (DROP_CATEGORIES).
+const ING_NAMES = { mint: 'MINT', honey: 'HONEYCOMB', butter: 'BUTTER', chilli: 'CHILLI', bitterleaf: 'BITTER LEAF', onion: 'ONION', vinegar: 'VINEGAR', kombu: 'KOMBU', miso: 'MISO' };
+const ING_TONE = { mint: 0x8fe0b8, honey: 0xe8b84a, butter: 0xf2e2a0, chilli: 0xd8452e, bitterleaf: 0x4f6a38, onion: 0xc9a0b8, vinegar: 0x9a8a5a, kombu: 0x3a4a3a, miso: 0xa8743e };
+for (const [k, I] of Object.entries(INGREDIENTS)) if (!I.pantry) ITEMS[`ing.${k}`] = { id: `ing.${k}`, kind: 'ingredient', key: k, name: ING_NAMES[k] || k.toUpperCase(), glyph: '❦', color: ING_TONE[k] ?? 0xb0a080, tier: 0, examine: I.line, card: null, lure: false, stack: 8 };
 
 export const itemOf = (id) => ITEMS[id] || null;
