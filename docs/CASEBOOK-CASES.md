@@ -4880,4 +4880,4 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   hand line in the frame, not a `game.systems` phase.
 - **Fix:** the window drives its own `requestAnimationFrame` loop while it is open (real seconds), and stops when it closes. After: a
   probe clicking the buttons in real time kneaded on the pulse, baked to colour in 16.6 real s and served a PERFECT mint loaf.
-- **Rule:** NEW:modal-runs-itself
+- **Rule:** 392
