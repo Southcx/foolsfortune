@@ -67,6 +67,7 @@ Prior art: the booklet's glossary page (A Link to the Past's "Items" spread, one
 | a Figment | `Figments are the island's thoughts walking around. Most are harmless.` |
 | an aberrant | `An aberrant is a Figment that's gone wrong. Get close and it pulls you into a puzzle duel.` |
 | a clapperjar | `Clapperjars are the little clapping pots. They're the island's folk too, just small ones.` |
+| a candid photograph | `A candid photograph is one the Figment never noticed. They're worth more.` |
 | Strawman | `Strawman is the practice dummy. Hit it all you like: it always stands back up.` |
 | the System | `The System is the game talking to you. It teaches, keeps score and saves.` |
 
