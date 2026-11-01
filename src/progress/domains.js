@@ -16,7 +16,7 @@
 //
 //   DOMAINS[id] = { id, name, does }   SOURCES = [{ event, domain, base | acts | acts(e), quality(e) -> 0..1 }]   PACE = { hours99, actsPerMin }
 //   SKILL = { floor, ceil, power }   skillWeight(q) -> floor .. ceil   expFor(e) -> [[domain, exp]]   scaleOf(domain) -> on PACE
-//   toNext(level) -> exp      expAt(level) -> exp      levelOf(exp) -> 1..99
+//   toNext(level) -> exp      expAt(level) -> exp      levelOf(exp) -> 1..99   CATCH_UP   catchUpOf(level, highest) -> multiplier
 //   (widening: progress/godpowers.js RAMP.tools, widenOf(key, level))
 // ---------------------------------------------------------------------------------------
 import { stageQuality } from './econ/emocean.js';
@@ -170,6 +170,20 @@ export const SOURCES = [
   // world; its quality the gems the cast cleared (12 a masterful one), a cast that cleared none middling at best; a practice duel none
   ...['ouranurgy', 'manifestation', 'divination', 'psychokinesis', 'possession', 'alteration', 'spellscription'].map((d) => (
     { event: 'duel.power',    domain: d,                base: 6, quality: (e) => (e.by === 'courier' && !e.practice && e.domain === d ? 0.35 + 0.65 * q01((e.cleared ?? 2) / 12) : null) })),
+  // A DOMAIN'S RUNGS (progress/domainarts.js; DOMAINS.md 13): every rung trains its own domain by using it, its quality the rung's own
+  // measure (a postponed blow parried, a plate that took its crack, a weakness found by Re-type); the first five uses of each (`kata`)
+  // a masterful act, the teacher showing once; past twenty a game hour a quarter (the rung's `q` already worn down: domainarts.js WEAR)
+  ...['ouranurgy', 'manifestation', 'divination', 'psychokinesis', 'possession', 'alteration', 'spellscription'].map((d) => (
+    { event: 'domain.art.use', domain: d,             base: 8, quality: (e) => (e.by === 'courier' && e.domain === d ? (e.kata ? 1 : q01(e.q)) : null) })),
+  // a down by when or by what you wrote (domainarts.js DOWN_AFTER): Ouranurgy's and Spellscription's kills at last, as a creature's down is
+  // paid (its acts by its size), masterful-ish: the blink into the blow and the rule that set it up are both the domain asked well
+  ...['ouranurgy', 'spellscription'].map((d) => (
+    { event: 'domain.down', domain: d,                acts: (e) => Math.min(8, 1 + Math.floor((e.maxHp || 1) / 8)), quality: (e) => (e.by === 'courier' && e.domain === d ? 0.75 : null) })),
+  // Strawman's Well (STRAWMANS-WELL.md): a course cleared is a way through space and time (Ouranurgy), its quality its rank, a big act
+  // of about its time; a straw fighter knocked past a blast line in the Arena is force delivered (Psychokinesis), the lower its percent
+  // the better the blow (a KO at 60% masterful, at 200% rote)
+  { event: 'well.stage.clear', domain: 'ouranurgy',     acts: (e) => Math.max(1, Math.round((e.t || 30) / 10)), quality: (e) => (e.by === 'courier' ? ({ SS: 1, S: 0.85, A: 0.65, B: 0.45, C: 0.3, D: 0.15 })[e.rank] ?? 0.3 : null) },
+  { event: 'well.fighter.ko', domain: 'psychokinesis',  acts: 3, quality: (e) => (e.by === 'courier' ? q01(1 - ((e.percent || 100) - 60) / 140) : null) },
 ];
 
 /** How long 99 takes in any domain at middling quality (0.5: the grind), and how often a domain's acts come. */
@@ -210,6 +224,13 @@ export function expFor(e) {
   }
   return out;
 }
+
+/** CATCH-UP (DOMAINS.md 13; FFXIV's Armoury Bonus, +50% EXP for a job below your highest; OSRS's lack of one is why its low skills
+ *  are a chore): a domain more than `below` levels under your highest earns `mult` times. The domains are pushed by different play, and a
+ *  fighter's Spellscription lags; the bonus closes the gap without paying the high one more. 10 levels is about 2% of the curve's EXP at
+ *  60, so it never touches a player who rounds out as they go. */
+export const CATCH_UP = { below: 10, mult: 1.5 };
+export const catchUpOf = (level, highest) => (highest - level > CATCH_UP.below ? CATCH_UP.mult : 1);
 
 /** EXP from one level to the next (v0.1's curve), the total to reach a level, and the level an EXP total stands at. */
 export const toNext = (level) => Math.floor(Math.pow(level, 1.5) * 50 + 100);

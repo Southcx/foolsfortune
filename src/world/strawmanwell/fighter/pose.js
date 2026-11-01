@@ -6,8 +6,9 @@
 //              the follow-through a beat after). Held on the move's own frames, not the clip's clock: the lead-in through the startup,
 //              the strike snapped to on the first active frame and held through the active ones, the follow-through held through the
 //              recovery, each snapped into by platformfighter.js's SNAP (fillKeys' rule), let go over the last 4. A smash's charge holds
-//              the lead-in. Gameplay never reads this: the boxes are the move's data (moves.js BOXES). A stand-in for Petra's key track
-//              (courier/anim/keyposes.js, registerKeys / keysOf, not on this branch yet): the sequences move there when it lands
+//              the lead-in. Gameplay never reads this: the boxes are the move's data (moves.js BOXES). A kit's set with Calissa's key
+//              table ('fighter.brawler', 'fighter.sondelass': courier/anim/keyposes.js keysOf) takes each beat's still from its key
+//              (the clip frame with its `fix` laid over: the Falcon Knee, the Rider Kick, the dropkick as their references hold them)
 //   a state    held (moves.js HOLDS): the jumpsquat and the landing a crouch, the shield the block, the ledge the hang, a knockdown on
 //              the belly; a dodge, a getup or a roll played through its own frames
 //   hitlag     the character's own hold (courier/character.js `hold`, asked by the kit once on the hit frame, kit.js): the pose frozen as
@@ -27,6 +28,12 @@ import { measureSwing } from '../../../tools/melee.js';
 import { DODGE, SHIELD, TECH, LEDGE, SNAP } from '../../../progress/platformfighter.js';
 import { POSES, HOLDS, KIT } from './moves.js';
 import { moveOf } from './fighterstate.js';
+import { KeyTrack, keysOf, registerKeys } from '../../../courier/anim/keyposes.js';
+import { FIGHTER_BRAWLER_KEYS, FIGHTER_SONDELASS_KEYS } from '../../../courier/anim/keys/index.js';
+
+// (Calissa's key tables for the kits' sets, KEY-POSES.md 6: their timing the kit's own frames below, so no fill)
+registerKeys('fighter.brawler', FIGHTER_BRAWLER_KEYS); registerKeys('fighter.sondelass', FIGHTER_SONDELASS_KEYS);
+const setOf = (kit) => (kit?.tool === 'unarmed' ? 'fighter.brawler' : kit?.tool === 'sondelass' ? 'fighter.sondelass' : null);
 
 const smooth = (x) => { const t = Math.min(1, Math.max(0, x)); return t * t * (3 - 2 * t); };
 const EASE = { lead: SNAP.lead + 1, strike: SNAP.strike + 1, follow: SNAP.follow + 1, out: 4 }; // (the snaps into each key: platformfighter.js SNAP, KEY-POSES.md 6)
@@ -73,10 +80,30 @@ export class CourierPose {
     }
   }
 
+  /** A move with a key table (Calissa's, courier/anim/keys/fighterkits.js): each beat's still the key's own (its clip frame and its
+   *  `fix`, KeyTrack.keyPose), held on the move's frames as seq's: the lead through the startup, the strike keys through the active
+   *  frames (more than one, as the barrage's flurry: each its own `hold` in turn, looped), the follow through the recovery. */
+  keyed(KK, C, frame, startup, a1, total, loops = 0) {
+    const A = this.A, B = this.B, T = (this.kt ||= new KeyTrack(C));
+    const lead = KK.find((k) => k.pose === 'lead') || KK[0], follow = KK.find((k) => k.pose === 'follow') || KK[KK.length - 1];
+    const hits = KK.filter((k) => k !== lead && k !== follow), strike = hits.length ? hits : [follow];
+    if (frame < startup) { T.keyPose(lead, A); return smooth((frame + 1) / EASE.lead); }
+    if (frame <= a1) {
+      let i = 0;
+      if (strike.length > 1) { const per = strike.map((k) => Math.max(1, (k.hold | 0) + (k.snap | 0) || 4)), n = per.reduce((a, b) => a + b, 0); let t = (loops * (a1 - startup + 1) + frame - startup) % n; while (t >= per[i]) t -= per[i++]; }
+      const first = !i && !loops, prev = first ? lead : strike[(i + strike.length - 1) % strike.length], into = frame - startup;
+      T.keyPose(prev, A); C.blend(A, T.keyPose(strike[i], B), first ? smooth((into + 1) / EASE.strike) : 1); return 1;
+    }
+    T.keyPose(strike[strike.length - 1], A); C.blend(A, T.keyPose(follow, B), smooth((frame - a1) / EASE.follow));
+    return 1 - smooth((frame - (total - EASE.out)) / EASE.out);
+  }
+
   /** Into this.A: the pose the fighter's state wants; returns its weight (0: the core's own animation). */
   target(F, ch, C) {
     const A = this.A, B = this.B, st = F.st;
     const seq = (id, frame, startup, a1, total) => {
+      const set = setOf(F.kit), KK = set && keysOf(set, id), own = F.kit?.poses?.[id];
+      if (KK && (!own || KK.some((k) => k.clip === own.clip))) return this.keyed(KK, C, frame, startup, a1, total, F.loops || 0); // (a key table's slot, unless the loadout put another move's clip there)
       const P = F.kit?.poses?.[id] || POSES[id]; if (!P) return 0; // (a tool's own clip for the slot, else the bare set's)
       const K = this.keyTimes(ch, P.clip, P.limb); if (!K) return 0;
       if (frame < startup) { C.sample(P.clip, K.lead, A, false); return smooth((frame + 1) / EASE.lead); }

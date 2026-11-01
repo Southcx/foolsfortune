@@ -8,13 +8,14 @@
 // Prior art: Old School RuneScape's skills (EXP only from doing the thing, a level-up message, the level as proof), and the event-
 // sourced counters the ledger already keeps (an achievement is a predicate over them).
 //
+// Catch-up (domains.js CATCH_UP): a domain far under your highest earns more, the ledger keeping what it added (`exp.catchup.<domain>`).
 // A class's affinity (CLASSES.md 6.2, a modifier with a source you can see: the class your laid spread reads as): read as a Major, its
 // domain's experience counts CLASS.affinity times, and the ledger keeps what the class added (`exp.affinity.<domain>`).
 //
 //   installPsyche(game) -> game.psyche = { exp(domain), level(domain), total(), widen(key), affinity(domain) }
 // ---------------------------------------------------------------------------------------
 import { isTraining } from './combat/throwingroom.js';
-import { DOMAINS, SOURCES, expFor, levelOf } from './domains.js';
+import { DOMAINS, SOURCES, expFor, levelOf, catchUpOf } from './domains.js';
 import { RAMP, widenOf } from './godpowers.js';
 import { CLASS } from './spreads.js';
 
@@ -37,9 +38,10 @@ export function installPsyche(game) {
     if (!EVENTS.has(e.name) || (e.by && e.by !== 'courier') || isTraining(e)) return; // (a training body pays no exp: combat/throwingroom.js)
     for (const [d, n] of expFor(e)) {
       if (!(n > 0)) continue;
-      const was = levelOf(exp(d)), k = game.psyche.affinity(d);
-      L.inc(`exp.${d}`, n * k);
+      const was = levelOf(exp(d)), k = game.psyche.affinity(d), top = Math.max(...Object.keys(DOMAINS).map((x) => levelOf(exp(x)))), c = catchUpOf(was, top);
+      L.inc(`exp.${d}`, n * k * c);
       if (k !== 1) L.inc(`exp.affinity.${d}`, n * (k - 1)); // (what the class added: the Codex can show it)
+      if (c !== 1) L.inc(`exp.catchup.${d}`, n * k * (c - 1)); // (what catch-up added: domains.js CATCH_UP)
       const now = levelOf(exp(d));
       if (now > was) game.events.emit('domain.level', { domain: d, level: now, by: 'courier' });
     }

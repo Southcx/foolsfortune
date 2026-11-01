@@ -22,6 +22,7 @@ import { stream, randDir } from '../../core/rng.js';
 import { GunMoves, FAN_KEY } from './gunmoves.js';
 import { VariantPlay } from './variantplay.js';
 import { lendHand, LENT_MODELS } from '../lend.js';
+import { CHARGE_SHATTER } from './kinds.js'; // (a charged beam's breaking power: SUBSTRATE.md F5b)
 const simRand = stream('tools/psygun/weapon'); // (the simulation's chance: core/rng.js, the same twice)
 
 const UP = new THREE.Vector3(0, 1, 0);
@@ -478,7 +479,7 @@ export class Weapon {
       if (ent.type === 'breakable') { hits++; game.breakables.damage(ent, C.damage * p * full, hit.point, dir, 1.3 + 0.5 * p); }
       else if (ent.type === 'rope') game.breakables.cutRope(ent.rope, ent.index, hit.point, dir);
       else if (ent.type === 'clapper') { hits++; game.clappers.hit(ent, hit.point, dir, 1.6, 'charged'); }
-      else if (hasTag(ent, 'hurtable')) { hits++; game.creatures.strike(ent, hit.point, dir, (1.6 + 1.4 * p) * full * this.play.weak(ent, hit.point), 'charged'); }
+      else if (hasTag(ent, 'hurtable')) { hits++; game.creatures.strike(ent, hit.point, dir, (1.6 + 1.4 * p) * full * this.play.weak(ent, hit.point), 'charged', 'courier', null, undefined, 1, { shatter: full > 1 ? (this.play.P?.fullDraw?.shatter ?? CHARGE_SHATTER) : CHARGE_SHATTER }); }
       else if (ent.type === 'slice') { hits++; game.breakables.crumble(ent, hit.point, dir); }
       else game.physics.kick(body, dir.clone().multiplyScalar(Math.min(C.impulse * p, body.mass() * 25)), hit.point);
     }

@@ -19,7 +19,7 @@ export const moveOf = (id, F = null) => F?.kit?.moves?.[id] || MOVES[id] || KIT_
 export function go(F, st) { F.st = st; F.f = 0; F.active = false; if (st !== 'attack') { F.m = null; F.charge = 0; } if (st !== 'idle') F.running = false; }
 /** A move begun: its frame 1 is the first after this one (Melee counts the frame it is input as frame 1). */
 export function startMove(F, id) {
-  go(F, 'attack'); F.m = id; F.mf = 0; F.charge = 0; F.hits = new Set(); F.wd = false; F.tumble = false;
+  go(F, 'attack'); F.m = id; F.mf = 0; F.loops = 0; F.charge = 0; F.hits = new Set(); F.wd = false; F.tumble = false;
   const m = moveOf(id, F); F.rehitEvery = m?.every ? m.every : m?.hits > 1 ? Math.max(1, Math.ceil((m.active[1] - m.active[0] + 1) / m.hits)) : 0;
   const kind = /^jab/.test(id) ? 'jab' : /tilt$/.test(id) ? 'tilt' : /smash$/.test(id) ? null : /air$/.test(id) ? 'aerial' : /special$/.test(id) ? 'special' : null;
   if (kind) F.env.verb(F, kind);
@@ -39,10 +39,11 @@ export function land(F, n, { slide = false } = {}) { go(F, 'land'); F.lagN = n; 
 /** The blow A's move `id` deals now: its damage charged (a smash held) and staled (A's last nine hits), and its knockback's numbers. */
 export function hitOf(A, id, { damage = null, scale = 1 } = {}) {
   const m = moveOf(id, A); if (!m) return null;
-  let d = damage ?? m.damage;
+  const L = m.late && A.st === 'attack' && A.mf >= m.late.at ? { ...m, ...m.late } : m; // (a clean hit, then the late one: Melee's sweetspot in time)
+  let d = damage ?? L.damage;
   if (m.charge && A.charge) d = charged(d, A.charge);
   d = stale(d, A.stale, id) * scale;
-  return { move: id, damage: Math.round(d * 10) / 10, angle: m.angle, base: m.base, growth: m.growth, throw: !!m.throw };
+  return { move: id, damage: Math.round(d * 10) / 10, angle: L.angle, base: L.base, growth: L.growth, throw: !!m.throw, late: L !== m };
 }
 /** A move that hit goes to the front of A's stale queue (STALE.size long). */
 export function noteStale(A, id) { A.stale.unshift(id); if (A.stale.length > STALE.size) A.stale.length = STALE.size; }

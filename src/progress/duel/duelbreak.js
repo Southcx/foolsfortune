@@ -25,8 +25,10 @@ export const DUEL_BREAK = {
   orbsPer: 2,   // junk landed per orb shed (a landing of 8 sheds 4); at least 3, at most 12
   orb: 8,       // pool a orb gives when the Courier runs it
   showerReach: 6,    // cells from the Courier the orbs land within
-  poolMax: 100,
+  poolMax: 100, // (the default ceiling of a side's pool; a side carries its own, `S.poolMax`: capOf)
 };
+/** A side's pool's ceiling: its own (the Courier's max, passed by the session), else the default. */
+export const capOf = (S) => S?.poolMax ?? DUEL_BREAK.poolMax;
 /** The finisher (code `FINISHER`, a duel's; not `stun.finisher`): the god hand's finish on a broken foe, paid from the pool; dazed, stunned, out cold. */
 export const FINISHER = { ap: 2, pool: [60, 40, 20] };
 

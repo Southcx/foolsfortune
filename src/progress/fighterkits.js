@@ -81,9 +81,16 @@ export const BRAWLER = {
   dash: { name: 'Dash straight', from: 'the brawler', damage: 10, angle: 40, base: 60, growth: 70, startup: 7, active: [7, 11], total: 40 },
   uspecial: { name: 'Uppercut rising', from: 'the brawler (the recovery)', damage: 10, angle: 85, base: 35, growth: 70, startup: 4, active: [4, 9], total: 32, special: 'recover' },
   sspecial: { name: 'Straight lunge', from: 'the brawler (a 4 m lunge)', damage: 9, angle: 361, base: 45, growth: 60, startup: 9, active: [9, 16], total: 42, special: 'lunge', lunge: 4 },
+  // the three airs South asked for by name (2026-11-01: "Dropkick, kamen rider kick, falcon knee"), each played as its reference plays:
+  fair: { name: 'Flying knee', from: 'the brawler (Melee\'s Knee Smash: one clean frame)', damage: 20, angle: 361, base: 10, growth: 100, startup: 14, active: [14, 30], total: 46, landing: 19, autoCancel: [[1, 2], [38, 99]],
+    late: { at: 15, damage: 5, base: 0, growth: 100 } }, // (frame 14 the knee, 15 on a tap: whiffing the sweetspot is the price of its 20)
+  dair: { name: 'Dive kick', from: 'the brawler (Kamen Rider\'s Rider Kick; Sheik\'s and Zero Suit\'s stall and dive)', damage: 13, angle: 45, base: 30, growth: 80, startup: 12, active: [12, 40], total: 52, landing: 28, autoCancel: [[1, 3]],
+    special: 'dive', dive: { angle: -50, speed: 16 }, late: { at: 20, damage: 8, base: 20, growth: 70 } }, // (a stall of 12, then 16 m/s down the line; landed in it, 28 frames of lag)
+  nair: { name: 'Dropkick', from: 'the brawler (the wrestler\'s dropkick; a sex kick\'s strong then weak)', damage: 12, angle: 361, base: 20, growth: 100, startup: 5, active: [5, 22], total: 44, landing: 22, autoCancel: [[1, 3], [36, 99]],
+    late: { at: 9, damage: 6, base: 0, growth: 100 } }, // (strong for 4 frames, then a lingering weak hit; a long landing: both feet out is a commitment)
 };
-/** The brawler's boxes the bare set has not got (its finisher's is a jab's, a step further). */
-export const BRAWLER_BOXES = { jabEnd: [[0.82, 1.1, 0.42]] };
+/** The brawler's boxes the bare set's do not fit (its finisher's a jab's a step further; its three airs where their limbs strike). */
+export const BRAWLER_BOXES = { jabEnd: [[0.82, 1.1, 0.42]], fair: [[0.42, 1.12, 0.44]], nair: [[0.72, 0.85, 0.5]], dair: [[0.5, 0.2, 0.48]] }; // (the knee close and high, both soles out ahead, the foot down the dive's line)
 
 const STATUS_ANGLE = { airborne: 88, trip: 20 };
 const r1 = (x) => Math.round(x * 10) / 10;

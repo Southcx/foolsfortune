@@ -10,7 +10,7 @@
 // Sunshine's was, so the game asks it without a read-back; uploaded to two small textures for the look (the colour; the height and
 // the motif byte), which is Calissa's: vfx/paintmotifs.js (each feeling's pattern, crude's oil film, the gloss).
 //
-//   const pm = new PaintMap()   pm.update(dt, focusX, focusZ)   pm.patch(material) (the ground's shaders: tops of things only)
+//   const pm = new PaintMap()   pm.game = game (optional: a stamp's reactions)   pm.update(dt, focusX, focusZ)   pm.patch(material) (the ground's shaders: tops of things only)
 //   pm.stamp(x, y, z, r, aspect, k) -> m² newly covered   pm.drink(x, y, z, r, want) -> paint taken (0..want, in cell-fulls)
 //   pm.at(x, y, z) -> { k, aspect, crude } | null   pm.wipe(ax, az, bx, bz, y, width, want, crude, centre?) -> { got, aspect, smear }
 //   pm.slick(x, y, z, r, k) (crude that fades: a fight's)   pm.count(x, y, z, r, crude) -> cells   pm.onRecentre (set by stains.js: the blots laid again)   ASPECT_COLOR
@@ -117,6 +117,11 @@ export class PaintMap {
       if (this.h[n] !== NONE && Math.abs(this.h[n] - y) > NEAR && this.k[n] > 0.05) continue; // (another floor's paint: leave it)
       if (this.crude[n] && !crude && this.k[n] > 0.05) continue; // (paint does not cover crude: it is wiped up, the mop's, or cleaned)
       if (this.k[n] < 0.05) fresh += CELL * CELL;
+      if (this.k[n] >= 0.05 && this.asp[n] >= 0 && this.asp[n] !== a && !crude && !this.crude[n]) { // (Alteration's reactions, a domain's rung: courier/domainarts/run.js; nothing while it is off)
+        const rx = this.game?.domainArtsRun?.react?.(ASPECTS[this.asp[n]], aspect);
+        if (rx === 'cancel') { this.k[n] = 0; this.asp[n] = -1; this.live.add(n); continue; }
+        if (rx && ASPECTS.includes(rx)) { this.asp[n] = ASPECTS.indexOf(rx); this.k[n] = Math.min(1, Math.max(this.k[n], add)); this.h[n] = y; this.wetT[n] = this.clock; this.live.add(n); continue; }
+      }
       if (this.k[n] >= 0.05 && this.asp[n] === opp && !crude && !this.crude[n]) { this.k[n] = Math.max(0, this.k[n] - add); if (this.k[n] < 0.05) { this.k[n] = 0; this.asp[n] = -1; } this.live.add(n); continue; } // (opposites cancel)
       if (this.asp[n] === a && this.crude[n] === (crude ? 1 : 0)) this.k[n] = Math.min(1, this.k[n] + add); // (the same: it thickens)
       else { this.asp[n] = a; this.k[n] = Math.min(1, Math.max(add, crude ? this.k[n] : 0)); this.crude[n] = crude ? 1 : 0; } // (another: the last writer takes it)

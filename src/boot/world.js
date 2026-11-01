@@ -64,7 +64,7 @@ export async function bootWorld(game, made) {
   game.chests = new Chests(game); // (treasure chests, the Tithe and how they open: see chests.js)
   game.chests.rave = new Rave(game); // (what a prismatic chest does to the room: vfx/rave.js; compiled and drawn once by the warm-up below, with the rest)
   mark('sky');
-  game.paintmap = new PaintMap();
+  game.paintmap = new PaintMap(); game.paintmap.game = game; // (its stamp asks a domain's rung, Alteration's reactions: courier/domainarts/run.js)
   game.paintTrack = new PaintTrack(game); // (the Courier through paint: prints and smears, world/ground/painttrack.js) // (where Lachryma lies on the ground: the Soul Brush's paint, the stains; the ground's shaders read it: world/ground/paintmap.js)
   const level = new Level(scene, physics, breakables); level.paintmap = game.paintmap; // (before the places that add static geometry to it: the shore's jetty, the Dunemaw's stones)
   game.level = level;

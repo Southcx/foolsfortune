@@ -13,7 +13,7 @@
 //   fall(board) -> events   clears(board, rs) -> { cells: Set, events }   pinch(board, side) -> events   ACTIONS[kind] = { cost, legal, apply }
 // ---------------------------------------------------------------------------------------
 import { DIRS, KINDS, hasTag } from './board.js';
-import { DUEL_BREAK } from './duelbreak.js';
+import { DUEL_BREAK, capOf } from './duelbreak.js';
 
 const key = (x, y) => x + ',' + y;
 const unkey = (k) => k.split(',').map(Number);
@@ -148,7 +148,7 @@ export const ACTIONS = {
       return true; },
     apply: (s, side, a) => { const b = s.board, S = s.sides[side], ev = [{ type: 'drag', side, path: a.path }];
       for (let i = 1; i < a.path.length; i++) { const [x, y] = a.path[i], q = b.at(x, y); // (an orb the dragged gem passes over is drunk: Lachryma to the pool, PUZZLE-DUELS.md 22)
-        if (q?.kind === 'orb') { b.set(x, y, null); S.pool = Math.min(DUEL_BREAK.poolMax, S.pool + DUEL_BREAK.orb); S.drunk = (S.drunk || 0) + 1; ev.push({ type: 'orb.drink', side, at: [x, y], pool: S.pool }); }
+        if (q?.kind === 'orb') { b.set(x, y, null); S.pool = Math.min(capOf(S), S.pool + DUEL_BREAK.orb); S.drunk = (S.drunk || 0) + 1; ev.push({ type: 'orb.drink', side, at: [x, y], pool: S.pool }); }
         b.swap(a.path[i - 1], a.path[i]); }
       return ev; } },
   rotate: { form: 'hand', cost: 1, // (Hexic: a 2x2 turned clockwise)

@@ -34,3 +34,20 @@ What turns them on, in your files, in the order that pays most:
 (its section 5).
 
 Delete this note in your branch when it is taken.
+
+## Taken (Petra, 2026-11-01)
+- C1 (HARM_TAGS), C2 and F6 (the duel holds regen, settles with pool.setTo), the raid's blow (baseMax): 635e135.
+- F3: strike reads affinityOf; the stun bonus once in strike; creatures.stagger types the flash, the parry, the toll and the
+  Lockheart: 635e135, d50a5a7.
+- F2 (the Surge only past a full pool; plain shots were already free at sea) and F7 (addModifier { source, secs } on the game clock,
+  sources()): 9d88e0b.
+- F1 for the Courier: courier/vessel/damage.js hit through blowOn, hit({ shatter }) for F5b: b7a7646.
+
+## Left, and why
+- F1 for the ships: run.hits/run.bears is read by the rail readout's hull pips (Calissa's), the results' tally (scored by bears left),
+  the open sea's hull (ui/seahull.js) and stage.js. Cracks carried leg to leg need all four moved together, on a mechanic in flux
+  (the rail and the crossing). Next round, with Calissa: the readout as six regions' cracks.
+- F1 for the Jar: god.jar.hp is read by the raids, the Jar's plate and the readout; the `jar` form's pool shield changes the raids'
+  balance. Next round, with the numbers measured in a raid first.
+- F5b: taken. Dovina's values (moves.js, kinds.js CHARGE_SHATTER) read through creatures.strike's { shatter } from the moveset and the
+  charged beam: a shell past (1 - shatter) of its stun meter breaks outright. The duel's pool ceiling is the Courier's real max.

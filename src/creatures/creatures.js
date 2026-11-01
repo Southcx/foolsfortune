@@ -101,7 +101,7 @@ export class Creatures {
     return this.game.stun?.add(c, amount * k, { by, cause });
   }
 
-  strike(c, point, dir, power = 1, cause = 'shot', by = 'courier', from = null, type = typeOf(cause), buildK = 1) {
+  strike(c, point, dir, power = 1, cause = 'shot', by = 'courier', from = null, type = typeOf(cause), buildK = 1, { shatter = 0 } = {}) { // (`shatter` 0..1: the blow's own breaking power, a move's row, SUBSTRATE.md F5b)
     if (!c?.alive || !hasTag(c, 'hurtable')) return false;
     if (c.ally && !c.friend && by === 'courier') return false; // (their own: a spirit they called up is not struck by them; a friend, another Courier, is: friendly fire)
     if (by === 'courier' && c.aberrant && !c.dataBugMended) { // (an aberrant cannot be harmed in the world: the blow rings off it with the resist mark, and opens nothing; nearness does: world/duel/duelfoes.js, PUZZLE-DUELS.md 16.2)
@@ -111,6 +111,7 @@ export class Creatures {
     if (by === 'courier') c.touched = true; // (the Courier struck it: a sibling finishing it credits them, coop/fight.js)
     const g = this.game, ps = by === 'courier' ? g.pairSpecials?.onStrike?.(c, cause, type, power, point, dir) : null; // (a pair's special on the blow: tools/pairspecials.js)
     if (ps?.type) type = ps.type;
+    const da = by === 'courier' ? g.domainArtsRun?.onStrike?.(c, cause, type, power) : null; if (da?.type) type = da.type; // (Re-type, a domain's rung: courier/domainarts/run.js)
     const m = multiplier(type, affinityOf(c), // (its body's type, never its feeling: progress/combat/constitution.js, SUBSTRATE.md F3)
       [...c.status.keys()].filter((n) => st(c, n)));
     // (the damage alone, never the build-up: the Courier's mental state, Prismatic x1.5 to Stoic x0.67, the owner's ruling in
@@ -136,6 +137,7 @@ export class Creatures {
     c.mind = pushed(c.mind, MIND.perBlow * power); this.mindMoved(c, by);
     c.emo = rise(c.emo, power);
     this.build(c, type, power * m.build * buildK, by, cause); // (`buildK`: a share of the build-up, as the Pentagun's pentacle's fifth)
+    if (shatter > 0 && c.alive && !this.game.stun?.stunned(c) && (this.game.stun?.meter(c) ?? 0) >= 1 - shatter) this.game.stun?.add(c, Infinity, { by, cause: 'shatter' }); // (a shell past (1 - shatter) of its meter breaks outright: progress/combat/vessel.js's line, the Figment's glaze shell)
     g.temper?.set(c, { state: c.mind, emo: c.emo, enrage: enraged(c.emo) });
     return true;
   }

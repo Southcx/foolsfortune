@@ -35,6 +35,8 @@ import { Knacks } from '../progress/knacks.js';
 import { Goals } from '../progress/goals.js';
 import { Quests } from '../progress/quests.js';
 import { Stealth } from '../progress/stealth.js';
+import { DomainArts } from '../progress/domainarts.js';
+import { DomainArtsRun } from '../courier/domainarts/run.js';
 import { MovementProfiles } from '../progress/movementprofiles.js';
 import { Recap } from '../progress/recap.js';
 import { Aptitude } from '../progress/aptitude.js';
@@ -90,6 +92,8 @@ export function bootProgress(game, made) {
   game.goals = new Goals(game); // (the game day's three goals, from the achievements: progress/goals.js)
   game.movementProfiles = new MovementProfiles(game); // (the Courier's movement builds, worn only in Strawman's Well: progress/movementprofiles.js)
   game.stealth = new Stealth(game); // (how seen and heard the Courier is, a creature's watch: progress/stealth.js, STEALTH.md)
+  game.domainArts = new DomainArts(game); // (a domain's rungs, opened by its level or a feat: progress/domainarts.js, DOMAINS.md 12)
+  game.domainArtsRun = new DomainArtsRun(game); // (the rungs in play: courier/domainarts/run.js)
   game.quests = new Quests(game); game.recap = new Recap(game); // (someone's trouble fixed in steps, and what you were doing: progress/quests.js, progress/recap.js)
   game.firstToday = new FirstToday(game); // (the first of each module a game day pays a little: progress/firsttoday.js)
   game.gardenBackdrop = () => gardenBackdropOf(game); // (your Spirit Garden as your half of a duel's backdrop: progress/gardenbackdrop.js, the view's to draw)

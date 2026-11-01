@@ -96,9 +96,9 @@ export class DuelSession {
   open(c, feeling, ruleset) {
     const g = this.game, P = g.player, pool = g.lachryma;
     const tools = (g.belt?.tools || []).filter((t) => g.belt.isWorn(t.id)).map((t) => t.id);
-    this.startPool = Math.round(Math.min(100, pool?.available ?? 30)); // (the board's share of the real pool; above 100 it waits, untouched)
+    this.startPool = Math.round(pool?.available ?? 30); this.poolMax = Math.round(pool?.max ?? 100); // (the real pool on the board, its ceiling the pool's own max: SUBSTRATE.md F6)
     if (pool && !c.practice) pool.addModifier('duel', { regenMult: 0, source: 'the puzzle duel' }); // (the pool held while the board is up: no regen behind it, SUBSTRATE.md F6)
-    this.state = newDuel({ ruleset, seed: Math.floor(duelRand() * 2 ** 31), forms: ['hand', 'courier'], pool: [this.startPool, 30], tools: [tools, []],
+    this.state = newDuel({ ruleset, seed: Math.floor(duelRand() * 2 ** 31), forms: ['hand', 'courier'], pool: [this.startPool, 30], poolMax: [this.poolMax, 100], tools: [tools, []],
       luck: [g.ledger ? Math.min(2, Math.floor(luckOf(g.ledger).level / 10)) : 0, 0], // (Luck's sway on a flee, 0..2: a tenth of its level, as ruled)
       rerolls: [g.rerolls?.left() ?? 0, 0], lesson: lessonDue(g.ledger), dim: g.lend?.has?.('feelings') ? [] : notAwakened(g.ledger), learned: learnedOf(g.ledger), // (a feeling not yet awakened gives half a gem's pool: PUZZLE-DUELS.md 26; an aberrant's skill learned: its secret found, or enough won, learned.js)
       levels: Object.fromEntries(Object.keys(DOMAINS).map((d) => [d, g.psyche?.level?.(d) ?? 1])) }); // (the PvE duel's powers cost less with their domain's level: powers.js powerCost) // (the first duel a lesson until one is won: lesson.js, PUZZLE-DUELS 18.3) // (Luck's re-rolls left this game day: a failed Flee is thrown again, progress/duel/flee.js)

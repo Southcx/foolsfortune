@@ -19,9 +19,10 @@
 //   CLASS_ARTS[id] = { cls, kind: 'action' | 'reaction', label, line, does: { ...numbers }, cost?, cooldown?, feat: [key, n] }
 //   FEATS[key] = { event, test(e) }   (what a class-scoped feat counts)   ACCENT = { k, cost }   OPEN = { action, reaction } (real minutes)
 //   artOpen(id, L, game?) -> bool (game: the DEBUG save's Class Arts lend)   artsOf(cls) -> [id, id]   openArts(L) -> [id]   accent(id, clsNow) -> { k, cost }
-//   game.classArts = new ClassArts(game)   .worn { action, reaction }   .wear(id)   events: art.learn { art, cls, by }, art.wear { art, slot, by }
+//   game.classArts = new ClassArts(game)   .worn { action, reaction }   .wear(id) (a class's art, or a domain's action: domainarts.js)   events: art.learn { art, cls, by }, art.wear { art, slot, by }
 // ---------------------------------------------------------------------------------------
 import { MAJOR_TITLE } from './spreads.js';
+import { DOMAIN_ARTS, domainArtOpen } from './domainarts.js';
 
 /** Time played as the class that opens its arts by the count way, real minutes; the accent while read as the art's own class. */
 export const OPEN = { action: 45, reaction: 90 };
@@ -215,7 +216,7 @@ export class ClassArts {
     });
     game.events?.on?.('spread.class', () => { this.tickTime(); this.teach(); });
     game.chat?.add?.('art', { help: "your class's arts: /art (the two you wear, and your class's), /art <id> (wear an art you have opened)", run: ([id]) => {
-      if (id) { if (!this.wear(id)) this.game.events?.emit('art.refuse', { art: id, why: CLASS_ARTS[id] ? 'closed' : 'unknown', by: 'courier' }); return; }
+      if (id) { if (!this.wear(id)) this.game.events?.emit('art.refuse', { art: id, why: CLASS_ARTS[id] || DOMAIN_ARTS[id] ? 'closed' : 'unknown', by: 'courier' }); return; }
       const cls = this.game.laidSpread?.class?.id ?? 'arcana.fool';
       this.game.events?.emit('art.ask', { cls, worn: { ...this.worn }, here: artsOf(cls).map((a) => ({ art: a, open: artOpen(a, this.game.ledger, this.game), progress: this.progress(a) })), by: 'courier' });
     } });
@@ -245,12 +246,16 @@ export class ClassArts {
   }
   /** Wear an open art in its slot (the action or the reaction). */
   wear(id) {
+    const D = DOMAIN_ARTS[id]; // (a domain's action shares the one action slot: DOMAINS.md 12; its passives and reactions are always on)
+    if (D) { if (D.kind !== 'action' || !domainArtOpen(id, this.game.ledger, this.game)) return false; this.worn.action = id; this.game.save?.dirty?.('classArts'); this.game.events?.emit('art.wear', { art: id, slot: 'action', domain: D.domain, by: 'courier' }); return true; }
     const R = CLASS_ARTS[id]; if (!R || !artOpen(id, this.game.ledger, this.game)) return false;
     this.worn[R.kind] = id; this.game.save?.dirty?.('classArts'); this.game.events?.emit('art.wear', { art: id, slot: R.kind, by: 'courier' }); return true;
   }
   /** The worn action's numbers for the class read now (the accent applied), for the runtime that plays it. */
   numbers(slot = 'action') {
-    const id = this.worn[slot]; if (!id) return null; const R = CLASS_ARTS[id], a = accent(id, this.game.laidSpread?.class?.id ?? null);
+    const id = this.worn[slot]; if (!id) return null;
+    if (DOMAIN_ARTS[id]) return { id, ...DOMAIN_ARTS[id], accented: false }; // (a domain's action: `domain` set, played by game.domainArtsRun, never accented by a class)
+    const R = CLASS_ARTS[id], a = accent(id, this.game.laidSpread?.class?.id ?? null);
     const does = Object.fromEntries(Object.entries(R.does).map(([k, v]) => [k, typeof v !== 'number' || a.k === 1 ? v : SCALE.includes(k) ? v * a.k : BONUS.includes(k) ? 1 + (v - 1) * a.k : v]));
     return { id, ...R, does, cost: R.cost != null && typeof R.cost === 'number' ? Math.round(R.cost * a.cost) : R.cost, accented: a.k > 1 };
   }

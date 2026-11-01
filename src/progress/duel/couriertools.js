@@ -21,7 +21,7 @@
 //   shotAt(s, side, dir) -> cell   groupOf(board, cell) -> cells   fromOf(s, side, a) -> colour
 // ---------------------------------------------------------------------------------------
 import { DIRS, KINDS, hasTag, paletteOf } from './board.js';
-import { DUEL_BREAK } from './duelbreak.js';
+import { DUEL_BREAK, capOf } from './duelbreak.js';
 import { resolve } from './rules.js';
 
 const DIR = { N: DIRS.N, S: DIRS.S, E: DIRS.E, W: DIRS.W };
@@ -99,7 +99,7 @@ export const COURIER_ACTIONS = {
       for (let i = 1; i < P.length; i++) { const [x, y] = P[i]; if (!mineIn(b, side, x, y) || !open(b.at(x, y)) || Math.abs(x - P[i - 1][0]) + Math.abs(y - P[i - 1][1]) !== 1) return false; }
       return true; },
     apply: (s, side, a) => { const b = s.board, S = s.sides[side], events = [], body = b.at(...S.at); b.set(S.at[0], S.at[1], null);
-      for (const [x, y] of a.path.slice(1)) { const p = b.at(x, y); if (p?.kind === 'orb') { b.set(x, y, null); S.pool = Math.min(DUEL_BREAK.poolMax, S.pool + DUEL_BREAK.orb); S.drunk = (S.drunk || 0) + 1; events.push({ type: 'orb.drink', side, at: [x, y], pool: S.pool }); } }
+      for (const [x, y] of a.path.slice(1)) { const p = b.at(x, y); if (p?.kind === 'orb') { b.set(x, y, null); S.pool = Math.min(capOf(S), S.pool + DUEL_BREAK.orb); S.drunk = (S.drunk || 0) + 1; events.push({ type: 'orb.drink', side, at: [x, y], pool: S.pool }); } }
       const to = a.path[a.path.length - 1]; b.set(to[0], to[1], body); S.at = [...to]; events.unshift({ type: 'run', side, path: a.path }); return events; } },
   shoot: { form: 'courier', tool: 'psygun', cost: 1, pool: 5,
     legal: (s, side, a) => !!shotAt(s, side, a.dir),

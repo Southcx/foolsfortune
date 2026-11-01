@@ -686,7 +686,7 @@ export class Moveset {
     else if (kind === 'clapper') { g.clappers.hit(ent, at, dir, power, cause); if (h.lift || h.push) g.clappers.knock?.(ent, kv.clone()); if (h.lift) this.lifted(c); }
     else if (kind === 'creature') {
       if (h.guardBreak) ent.breakGuard?.(at, dir, 'courier'); // (a guard break: the guard opened first, so this blow lands through it)
-      g.creatures.strike(ent, at, dir, this.worth(h, c), cause); if (h.lift || h.push) ent.knock?.(kv.clone());
+      g.creatures.strike(ent, at, dir, this.worth(h, c), cause, 'courier', null, undefined, 1, { shatter: h.shatter ?? (c?.def ? this.rule(c.def)?.shatter : 0) ?? 0 }); if (h.lift || h.push) ent.knock?.(kv.clone());
       this.struck(ent, c);
     }
     if (c && (c.kind === 'air' || c.kind === 'launcher')) { this.airHits++; this.P.vel.y = Math.max(this.P.vel.y, 0.6); } // (a hit in the air holds them up a beat)
