@@ -13,7 +13,7 @@ export function stealthRules({ on, L, log }) {
     L.inc('photo.candid'); L.inc(`photo.candid.${e.kind}`);
     if (e.d != null && e.d <= 3) L.hi('photo.candid.near', 1);
     if (phaseAt() === 'night') L.hi('photo.candid.night', 1);
-    log.say('gain', 'Candid! It never knew you were there.', { key: 'photo.candid', throttle: 4 });
-    if (L.get('photo.candid') === 1) log.say('system', "A candid photograph is one the Figment never noticed. They're worth more.", { key: 'photo.candid.gloss', throttle: 1 }); // (the first time only: Espada's gloss)
+    log.say('gain', 'Candid shot! The Figment never noticed you.', { key: 'photo.candid', throttle: 4 });
+    if (L.get('photo.candid') === 1) log.say('system', 'A candid photograph is one taken before the Figment notices you. It is worth more.', { key: 'photo.candid.gloss', throttle: 1 }); // (the first time only: Espada's gloss)
   });
 }

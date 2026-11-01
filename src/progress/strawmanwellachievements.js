@@ -18,7 +18,7 @@ export function strawmanWellAchievements({ C, H, F }) {
   C('sw4', 'hand', "Strawman's Well", 1, 'mechanic', 'Out of Bounds', 'Knock a dummy past the blast line.', 'well.dummy.ko', 1);
   C('sw5', 'hand', "Strawman's Well", 3, 'endure', 'Home-Run Contest', 'Knock 100 dummies past the blast line.', 'well.dummy.ko', 100);
   C('sw6', 'hand', "Strawman's Well", 2, 'mechanic', 'Trophy Stand', 'Take a dummy past 100% as a trophy.', 'well.dummy.trophy', 1);
-  C('sw7', 'hand', "Strawman's Well", 2, 'endure', 'Rehearsal', 'Fall in the Pit 100 times. It happens.', 'well.pit.death', 100);
+  C('sw7', 'hand', "Strawman's Well", 2, 'endure', 'Rehearsal', 'Fall in the Pit 100 times.', 'well.pit.death', 100);
   F('sw8', 'hand', "Strawman's Well", 3, 'collect', 'The Whole Repertoire', 'Use every verb of the first wave at least once.', (L) => built.flatMap((s) => s.verbs).filter((v) => L.get(`well.verb.${v}`) >= 1).length, built.flatMap((s) => s.verbs).length);
   F('sw9', 'hand', "Strawman's Well", 5, 'collect', 'Every Trick in the Book', 'Use every verb in Strawman\'s Well.', (L) => Object.keys(VERB).filter((v) => L.get(`well.verb.${v}`) >= 1).length, Object.keys(VERB).length);
   H('sw10', 'hand', "Strawman's Well", 3, 'mechanic', 'Flood Gate', 'Fill a basin with 500 cells of Lachryma in one pour.', 'well.flood.best', 500);

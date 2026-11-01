@@ -13,7 +13,7 @@ export function toolRules({ on, L, log }) {
   on('tool.equip', (e) => {
     L.inc('tool.equip'); L.inc(`tool.equip.${e.tool}`); L.inc(`tool.equip.${e.as}.${e.tool}`);
     const P = PAIRS.find((p) => p.n === e.pair);
-    log.say('info', `You make the ${TOOLNAME(e.tool)} your ${e.as}${e.off ? `, and set the ${TOOLNAME(e.off)} aside` : ''}.${P ? ` Your pair: ${P.label}.` : ''}`, { key: 'tequip', throttle: 0.2 });
+    log.say('info', `${TOOLNAME(e.tool)} swapped to ${e.as === 'sub' ? 'Sub' : 'Main'}.${e.off ? ` ${TOOLNAME(e.off)} put back on the shelf.` : ''}${P ? ` Pair: ${P.label}.` : ''}`, { key: 'tequip', throttle: 0.2 });
   });
   on('tool.lend', (e) => { L.inc('tool.lend'); L.inc(`tool.lend.${e.tool}`); }); // (the sub's verb on R: what it did is its own event's line)
   on('borrow.use', (e) => { if (e.by === 'courier') { L.inc('borrow.use'); L.inc(`borrow.use.${e.kind}`); } }); // (Borrow a Verb: a creature's move thrown on R, tools/belt.js)

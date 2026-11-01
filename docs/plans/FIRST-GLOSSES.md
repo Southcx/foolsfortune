@@ -4,8 +4,8 @@ CLARITY.md 14, rule 3: a lore word goes on screen only when its thing is there, 
 it in a short sentence of its own. This file is the one place those sentences live, so every division uses the same one. They're
 Espada's. Add a row when a new lore word first reaches the screen.
 
-Prior art: the booklet's glossary page (A Link to the Past's "Items" spread, one line an item) and the strategy guide's sidebar
-("What's a Heart Container?").
+Prior art: the instruction booklet's glossary page (A Link to the Past's "Items" spread, Final Fantasy VII's "Materia" page): one
+term, one plain sentence of what it is or does. The voice is CLARITY.md 14 (revised 2026-11-01): neutral, exact, no chat.
 
 **How to use a gloss:**
 - Use it once, at the first moment the word matters (the first `log.say`, the how-to step or the tooltip). After that the word
@@ -17,59 +17,59 @@ Prior art: the booklet's glossary page (A Link to the Past's "Items" spread, one
 
 | word | its gloss |
 |---|---|
-| Lachryma | `Lachryma is feeling turned into stuff. Everything magic runs on it.` |
-| the pool | `Your pool is the Lachryma you carry. It pays for your moves, and it's your shield too.` |
-| cube | `Cubes are Lachryma squeezed solid. They're the money here.` |
-| Lachrymite | `Lachrymite is solid Lachryma: crystals, cubes, shards, all the same stuff.` |
-| crude | `Crude is raw Lachryma with no feeling in it. It sells, and it spills.` |
-| the feelings | `Lachryma always carries a feeling: Wonder, Mirth, Desire, Fury, Gall, Grief or Dread. You learn each one by feeling it.` |
-| the Lachrimeter | `The tube in the corner is your Lachrimeter. It shows how full your pool is.` |
+| Lachryma | `Lachryma is feeling in physical form. It powers every art and tool.` |
+| the pool | `Your pool is the Lachryma you carry. It pays for shots and arts, and shields you from damage.` |
+| cube | `Cubes are solid Lachryma. They are the currency.` |
+| Lachrymite | `Lachrymite is solid Lachryma. Crystals, cubes and shards are all Lachrymite.` |
+| crude | `Crude is raw Lachryma with no feeling in it. It can be sold, and it can spill.` |
+| the feelings | `Lachryma always carries one of seven feelings: Wonder, Mirth, Desire, Fury, Gall, Grief or Dread. Each is learned by feeling it.` |
+| the Lachrimeter | `The Lachrimeter, in the corner, shows how full your pool is.` |
 
 ## You
 
 | word | its gloss |
 |---|---|
-| the Courier | (never glossed: it's you. The game says "you".) |
-| your Pneuka Jar | `Your Pneuka Jar is your true form, a little jar with a world inside.` |
-| the god hand | `Press ~ and you become the god hand: a huge hand that reshapes the ground.` |
-| the vessel | `Your body is a vessel of clay. Hits crack it, and the kiln mends it.` |
-| shatter / made whole | `Run out and you shatter. Don't worry: you're made whole again, back at the workshop.` |
-| the Pneuka Box | `Your Pneuka Box (P) is your bag. Everything you carry is in there.` |
+| the Courier | (never glossed: the game says "you".) |
+| your Pneuka Jar | `Your Pneuka Jar is your true form: a small jar with a world inside it.` |
+| the god hand | `Press ~ to become the god hand, a giant hand that reshapes the ground.` |
+| the vessel | `Your body is a clay vessel. Damage cracks it. The kiln mends it.` |
+| shatter / made whole | `If you shatter, you are made whole again at the workshop.` |
+| the Pneuka Box | `The Pneuka Box (P) is your inventory.` |
 
 ## Places
 
 | word | its gloss |
 |---|---|
-| a Shrine | `Shrines are where you rest, fast-travel and step into your Spirit Garden.` |
-| the Spirit Garden | `Your Spirit Garden is the little world inside your Pneuka Jar. It's yours to grow.` |
-| a planetoid | `Planetoids are the tiny worlds your garden is made of. You grow them from seeds.` |
-| the Index | `The Index is the console in the basement. Pick a room and it sends you there.` |
-| the Dunes | `The Dunes are the sand sea outside the workshop.` |
-| a Well | `A Well is a dungeon: a pocket where the world's gone strange. It's different every game day.` |
-| the Emocean | `The Emocean is the sea between the islands. It's made of Lachryma.` |
+| a Shrine | `At a Shrine you can rest, fast-travel and enter your Spirit Garden.` |
+| the Spirit Garden | `Your Spirit Garden is the world inside your Pneuka Jar. Grow it as you like.` |
+| a planetoid | `Planetoids are the small worlds that make up your garden. Each grows from a seed.` |
+| the Index | `The Index is the console in the basement. Choose a room to travel there.` |
+| the Dunes | `The Dunes are the desert outside the workshop.` |
+| a Well | `A Well is a dungeon. Its layout changes every game day.` |
+| the Emocean | `The Emocean is the sea of Lachryma between the islands.` |
 
 ## The tools (the first time each is worn)
 
 | word | its gloss |
 |---|---|
-| the psygun | `The psygun shoots Lachryma. Every shot costs a little from your pool.` |
-| the Sondelass | `The Sondelass is one blade with three forms: a cutlass, a fishing rod and a grappling hook.` |
-| the Soul Brush | `The Soul Brush paints with Lachryma, and mops it up again.` |
-| the Veritome | `The Veritome is a book that's also a camera. Take a plate of something and the book learns about it.` |
-| the Dreamvane | `The Dreamvane finds things: it dowses, digs and reads the weather.` |
-| the Crucibelle | `The Crucibelle is a bell. Ring it on the beat and things listen.` |
-| the Lockheart | `The Lockheart is a coffin on a chain. It swallows Lachryma and spins for prizes.` |
+| the psygun | `The psygun fires Lachryma. Each shot costs a little from your pool.` |
+| the Sondelass | `The Sondelass is a blade with three forms: cutlass, fishing rod and grappling hook.` |
+| the Soul Brush | `The Soul Brush paints Lachryma onto surfaces and mops it up again.` |
+| the Veritome | `The Veritome is a book and a camera. Photograph something to record it.` |
+| the Dreamvane | `The Dreamvane finds things. It dowses, digs and reads the weather.` |
+| the Crucibelle | `The Crucibelle is a bell. Ring it on the beat to stagger what hears it.` |
+| the Lockheart | `The Lockheart is a coffin on a chain. It draws in Lachryma and spins for prizes.` |
 
 ## Creatures and people
 
 | word | its gloss |
 |---|---|
-| a Figment | `Figments are the island's thoughts walking around. Most are harmless.` |
-| an aberrant | `An aberrant is a Figment that's gone wrong. Get close and it pulls you into a puzzle duel.` |
-| a clapperjar | `Clapperjars are the little clapping pots. They're the island's folk too, just small ones.` |
-| a candid photograph | `A candid photograph is one the Figment never noticed. They're worth more.` |
-| Strawman | `Strawman is the practice dummy. Hit it all you like: it always stands back up.` |
-| the System | `The System is the game talking to you. It teaches, keeps score and saves.` |
+| a Figment | `Figments are creatures made of the island's thoughts. Most are harmless.` |
+| an aberrant | `An aberrant is a Figment gone wrong. Get close and it starts a puzzle duel.` |
+| a clapperjar | `Clapperjars are small clapping pots, the lowest of the clay folk.` |
+| a candid photograph | `A candid photograph is one taken before the Figment notices you. It is worth more.` |
+| Strawman | `Strawman is the training dummy. It always stands back up.` |
+| the System | `The System is the game's own voice. It teaches, keeps records and saves.` |
 
 ## Not glossed
 

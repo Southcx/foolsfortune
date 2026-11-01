@@ -378,7 +378,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
   in movement. *Not:* temper, "personality" or "stats". → detail
 - **the crown** (`FOE.crown`, `src/progress/combat/dunemaw.js`) — the broken urn on the Great Slip Jelly's head, cracked in stages then burst off;
   under it, the core, its weak point. *Not:* a chest's tier.
-- **Strawman** (`STRAWMAN`, `src/vfx/strawman.js`) — the Workshop's test dummy, stitched by Pip: it never falls and the ledger never counts it.
+- **Strawman** (`STRAWMAN`, `src/vfx/strawman.js`) — the Workshop's test dummy, stitched by Pip and sentient (South, 2026-11-01), its own distortion Strawman's Well: it never falls and the ledger never counts it.
   Named with no article. Its **attack strings** (`STRAWMAN_STRINGS`, `vfx/strawmanmoves.js`): its moves in a set order, picked at the
   sparring circle's lectern. *Not:* a tool's string (the moveset). → detail
 - **the Pithos** — what the folk call the Great Slip Jelly, the Great Dunemaw's FOE, crowned with the broken urn it grew in; the log says "the

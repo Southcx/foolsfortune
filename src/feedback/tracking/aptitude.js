@@ -16,7 +16,7 @@ export function aptitudeRules({ on, log }) {
     log.say('system', e.ok ? `${T.label}: ${num(e.value)} ${e.unit}${e.best ? ', your best' : ''}.` : `${T.label}: too few answers to read. Try it again.`, { key: 'assay.trial', throttle: 0.5 }); });
   on('aptitude.ask', (e) => {
     const R = e.readings || {}, any = Object.values(R).some((r) => r.n > 0);
-    if (!any) { log.say('system', 'The System has not measured you yet. It watches as you play.', { key: 'assay', throttle: 1 }); return; }
+    if (!any) { log.say('system', 'No readings yet. The System measures you as you play.', { key: 'assay', throttle: 1 }); return; }
     for (const [id, r] of Object.entries(R)) {
       if (id.startsWith('trial.')) { const T = TRIALS[id.slice(6)]; if (T && r.n) log.say('system', `${T.label} (a standard trial): ${num(r.median)} ${T.unit} (best ${num(r.best)}, ${r.n} runs)`, { key: `assay.${id}`, throttle: 1 }); continue; }
       const A = APTITUDES[id]; if (!A || !r.n) continue;

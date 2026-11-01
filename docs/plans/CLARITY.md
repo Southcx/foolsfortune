@@ -245,57 +245,68 @@ The owner, 2026-10-08: the wiki (`docs/wiki/`) follows the Old School RuneScape 
 - **Not taken:** the OSRS wiki writes in-world pages without "you" and bans AI-written text. Ours is a guide, written by the
   divisions, checked against the code.
 
-## 14. The System's voice (South, 2026-10-31)
+## 14. The System's voice (South, 2026-10-31; revised 2026-11-01)
 
-South: "old gaming instruction booklets or strategy guides ... The System is like that veteran mmo player with literal encyclopedic
-knowledge of the entire game. It wants you to have fun without spoiling the experience ... Casual speech over cryptic prose. I am an
-isekai slop enjoyer after all. Games are just toys+mastery+message."
+South, 2026-10-31: "old gaming instruction booklets or strategy guides". South, 2026-11-01, on the first draft: "too casual", "the
+System does not say 'I'", "when doing a weapon swap, the chatlog should just be brief and natural like: 'X swapped to Main'. Examine the
+writing style of instruction booklets to games; that's the tone we're going for."
 
-**Prior art.** The 1990s instruction booklet (Super Mario Bros. 3's, A Link to the Past's: "How to play", a picture of the controller,
-one line a button, a "Hint!" box); Nintendo Power and the Prima and Brady guides (the tip in the margin, the "Pro Tip", the boxed
-"Secret!" that tells you a secret exists before it tells you where); the guildmate who has done everything (RuneScape's and FFXIV's
-veterans in chat: "trust me, get this first", "don't sweat it, everyone dies there"); the isekai System window (Solo Leveling's
-[Quest Accepted], Shield Hero's status screen: blunt, game-y, a little smug, never mysterious about its own rules).
+**Prior art, read for its sentences.** The instruction booklets of the cartridge and early disc years: Super Mario Bros. 3, A Link to the
+Past, Super Metroid, Final Fantasy VII, Ocarina of Time. What they share:
+- **The imperative, then the result.** "Press the A Button to jump." "Use the Control Pad to move." One action, one effect, one sentence.
+- **Item and status lines as a name and what it does.** "Heart Container: increases your life by one heart." Nothing else.
+- **Messages in the window are clipped status reports.** "Received the Potion." "Party member changed." The thing first, then what
+  happened, usually as a past participle. No "you decide to", no scene-setting.
+- **Neutral and exact.** No slang, no chumminess, few contractions. Warmth comes from clarity and the odd exclamation mark on a real
+  reward ("Collect 100 coins for an extra life!"), not from a personality.
+- **Boxed notes, marked.** "Hint:" for a recommendation, "Note:" for a rule's fine print, "Caution:" for what can be lost. Short, and
+  never a walkthrough.
+- **Game terms capitalized and named the same way every time**, button and key names in capitals (here the device word: F, USE, LMB).
 
 **What it covers:** the System only: the log's system lines, help, how-tos, item and art lines, quests and the recap. Not the folk
-(`npc/talks.js` keeps each voice: Saggar loud, Grog slow, Raku haggling), not the world (ostraca, steles), not the Codex's lore
-pages. The cut list below would flatten Grog if read as house-wide.
+(`npc/talks.js` keeps each voice), not the world (ostraca, steles), not the Codex's lore pages.
 
 **The rules.**
-1. **Say what to do, then why it's good.** "Press V just as a blow lands to parry it. Nail the timing and their attack breaks off." The reason is fun or
-   mastery, never lore.
-2. **Talk like a person.** Contractions (you'll, it's, don't). Short sentences, and not all the same length. An exclamation mark is
-   allowed once in an event's lines, never on two log lines in a row, and only where something is actually exciting.
-3. **Plain words first, the world's words second.** A lore noun appears only when the thing is on screen or has a card (section 7),
-   and the first time it does, the System glosses it in a short sentence of its own: "This is Lachryma. It's feeling turned into
-   stuff, and everything magic runs on it." One gloss a noun, kept in `docs/plans/FIRST-GLOSSES.md` (Espada's), so no division
-   invents its own. Esoteric is for the world and the Codex; the System is the friend who explains it.
-4. **Opinions are fine.** "This one's worth it." "Most people skip this. Don't." The System knows the game cold and isn't shy.
-5. **Never spoil past the next step.** Say that something exists and roughly where, never how to solve it: "There's more to this
-   room than the exit." A strategy guide's "Secret!" box, not its walkthrough.
-6. **Numbers when they matter, as numbers.** "Costs 20 Lachryma." "3 left." Never "a modest cost".
-7. **One joke in an event's lines at most, never at the player.** Dying in the Pit 100 times is "It happens.", not a lecture. A pun
-   in a name (a quest's, a stage's) doesn't count: nobody reads a name as a sentence.
-8. **The game says "you"; the System never says "I" or "we"** (South, 2026-10-31: "The system should not say 'I' but can still make
-   recommendations"). The veteran shows in the imperative and the opinion: "Grab this first." "Most people skip this. Don't."
+1. **Two registers, both short.**
+   - *A status line* (the log saying what just happened): the thing first, then what happened. "Psygun swapped to Main." "Shrine found."
+     "Inside: 12 Lachryma cubes." "Blow postponed. It lands in 3 seconds." No "You make the", no "you decide to", no adverbs.
+   - *An instruction* (help, a how-to step, a goal's hint, a gloss, an art's line): the imperative, then the result. "Press F at the
+     Shrine to rest." "Hold RMB to aim. Release to fire."
+2. **The System never says "I" or "we"** (South, 2026-10-31 and 2026-11-01), and has no personality of its own: no opinions, no "trust
+   me", no "don't sweat it", no jokes at the player. A recommendation is a "Hint:" line stating a fact: "Hint: a parried blow breaks
+   off the attack."
+3. **Plain and exact.** Contractions sparingly, never slang. One idea a sentence. Numbers as numerals ("Costs 20 Lachryma." "3 left.").
+4. **Exclamation marks only for a real reward or a big moment** (a quest done, a rare catch, "Shutter chance!"), never two lines running.
+5. **Plain words first, the world's words second.** A lore noun appears only when the thing is on screen or has a card (section 7), and
+   the first time, the System glosses it once in a sentence of its own, copied from `docs/plans/FIRST-GLOSSES.md` (Espada's).
+6. **Never spoil past the next step.** Say that something exists and roughly where, not how to solve it ("Note: this room has a
+   second exit.").
+7. **"Hold" means a button held down, nothing else.** The house's prose leans on hold, holds and held for keep, contain, store, last,
+   carry and block ("It holds 12 cubes", "while it holds", "a totem holds the last one"). On screen, use the plain verb: contains,
+   keeps, stores, lasts, carries, blocks. A mechanic named for holding is called by its own name (a Postponed blow, not "the held
+   blow"). The same goes for the other house tics: things that "wait", "sit", "lie" or "stand" somewhere ("the seed waits in the shed":
+   "The seed is in the shed"), "a beat", "its own", "quietly".
 
 **What to cut (the tells of the house's own prose, which reads well in a plan and badly on a screen):**
-- colon chains and nested brackets in a line the player reads ("FIRE keeps a look, MEND refires: the kiln's two verbs (its tab)");
-- poetic stand-ins for plain facts ("the stillness answers", "a beat", "quietly", "its own");
-- the triplet for rhythm's sake ("calm, clear, and kind"), and "not X, but Y" when X was never said;
-- abstract nouns doing the verbs ("The shed holds your seeds" is fine; "Storage awaits" is not);
+- colon chains and nested brackets in a line the player reads (a single "Label: value" is fine: "Pair: The Chariot.");
+- poetic stand-ins for plain facts ("the stillness answers", "the island remembers");
+- chatty asides and filler ("just", "go ahead and", "you'll want to");
+- the triplet for rhythm's sake, and "not X, but Y" when X was never said;
 - hedges ("something like", "a sort of"), and capital-letter mystery ("The Line. It remembers.").
 
-### 14.1 Before and after (lines in the build today)
+### 14.1 Before and after (lines in the build)
 
-| where | now | in the voice |
+| where | before | in the voice |
 |---|---|---|
-| the garden's how-to, step 2 | "You are the god hand too: it follows the cursor. Keys 1 to 0 pick what it does: 1 GRAB picks things up and throws them, 2 to 7 shape the clay, 8 pours water, 9 places, 0 paints." | "You're the god hand too! It follows your cursor. The number keys pick what it does: 1 grabs and throws, 2 to 7 shape the clay, 8 pours water, 9 places things, 0 paints." |
-| the first path, gw2 | "Your first planetoid's seed waits in the shed by the garden's gate: take it, carry it up into the open sky and let go." | "Your first seed is in the shed by the gate. Grab it, carry it up into open sky, away from everything, and let go. Then watch." |
-| the Assay, nothing yet | "The System has not measured you yet. It watches as you play." | "Nothing measured yet. Just play. The System takes notes as you go." |
-| the lend panel, God Arts | "God Arts 2 to 5, wherever the hand reaches" | "God Arts 2 to 5, usable anywhere the hand can reach." |
-| Strawman's Well, sw7 | "Fall in the Pit 100 times. It happens." | (already in the voice: keep) |
+| the tools, a swap (`tracking/tools.js`) | "You make the Psygun your main, and set the Sondelass aside. Your pair: The Chariot." | "Psygun swapped to Main. Sondelass put back on the shelf. Pair: The Chariot." |
+| a chest (`tracking/treasure.js`) | "It holds 12 Lachryma cubes." | "Inside: 12 Lachryma cubes." |
+| Postpone (`tracking/domainarts.js`) | "A blow is held. It lands in 3 seconds." | "Blow postponed. It lands in 3 seconds." |
+| the garden's how-to, step 2 | "You are the god hand too: it follows the cursor. Keys 1 to 0 pick what it does: 1 GRAB picks things up and throws them ..." | "You also control the god hand. It follows the cursor. Press 1 to 0 to choose what it does: 1 grabs and throws, 2 to 7 shape the clay, 8 pours water, 9 places, 0 paints." |
+| the first path, gw2 | "Your first planetoid's seed waits in the shed by the garden's gate: take it, carry it up into the open sky and let go." | "The seed is in the shed by the gate. Carry it into open sky and let go." |
+| the Assay, nothing yet | "The System has not measured you yet. It watches as you play." | "No readings yet. The System measures you as you play." |
+| Strawman's Well, sw7 | "Fall in the Pit 100 times. It happens." | "Fall in the Pit 100 times." |
 
 ### 14.2 Open
 - Espada words every line (CLAUDE.md); this section is the brief, the before-and-after the test. `scripts/clarity.mjs` keeps measuring
-  the reading level; a line that passes it and still reads like a riddle fails this section.
+  the reading level; a line that passes it and still reads like a riddle, or like a chatty friend, fails this section.
+- The full pass over the log's lines (735 `log.say` calls in 110 files) goes file by file, the System's lines only.

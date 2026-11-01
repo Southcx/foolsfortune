@@ -18,7 +18,7 @@ export function veritomeRules({ on, L, log, g }) {
   on('photo.take', (e) => {
     L.inc('photo.take'); L.inc(`photo.shot.${e.kind}`);
     first('photo', said(g, "Logged: your first photograph. It stays in the Veritome's memory until you appraise it ({codex})."));
-    if (e.held) { L.inc('photo.held'); if (e.held === 'chance') L.inc('photo.chance'); log.say('battle', e.held === 'chance' ? 'Shutter chance! You catch it at the height of the moment.' : 'You hold it in the lens for a clean photograph.', { key: 'phheld', throttle: 1 }); }
+    if (e.held) { L.inc('photo.held'); if (e.held === 'chance') L.inc('photo.chance'); log.say('battle', e.held === 'chance' ? 'Shutter chance! Photographed at the peak of the moment.' : 'Steady shot. A clean photograph.', { key: 'phheld', throttle: 1 }); }
     if (e.unwritten) { L.inc('photo.unwritten', e.unwritten); log.say('info', `The photograph shows ${e.unwritten === 1 ? 'a thing' : `${e.unwritten} things`} as they truly are.`, { key: 'phtrue', throttle: 1 }); }
     if (e.left === 0) log.say('info', "The Veritome's memory is full: 24 photos.", { key: 'memorylast', throttle: 5 });
   });

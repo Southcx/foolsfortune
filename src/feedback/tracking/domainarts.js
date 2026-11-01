@@ -25,18 +25,18 @@ export function domainArtsRules({ on, log }) {
   on('domain.art.learn', (e) => { const A = DOMAIN_ARTS[e.art]; if (!A) return;
     log.say('gain', `You open ${A.label}, a ${DOMAINS[A.domain].name} rung (${KIND[A.kind]}). ${A.line}`);
     log.say('system', A.how, { key: `rung.how.${e.art}` });
-    if (A.kind !== 'action' && e.on === false) log.say('system', `Your notches are full: /rung ${e.art} puts it on in place of another.`, { key: `rung.full.${e.art}` }); });
+    if (A.kind !== 'action' && e.on === false) log.say('system', `All notches in use. Type /rung ${e.art} to swap it in.`, { key: `rung.full.${e.art}` }); });
   on('domain.trait.learn', (e) => { const T = TRAITS[e.trait]; if (!T) return; // (progress/domainladder.js: a milestone's trait)
     log.say('gain', `${T.label}: ${T.line}`); });
   on('domain.art.fire', (e) => {
-    if (e.art === 'postpone') log.say('system', e.parried ? `The blow you are holding is cut to ${share(e.left ?? 0.5)}.` : `A blow is held. It lands in ${e.delay} seconds.`, { key: 'rung.postpone', throttle: 0.5 });
+    if (e.art === 'postpone') log.say('system', e.parried ? `Postponed blow reduced to ${share(e.left ?? 0.5)}.` : `Blow postponed. It lands in ${e.delay} seconds.`, { key: 'rung.postpone', throttle: 0.5 });
     else if (e.art === 'plating') log.say('system', `Your ${e.region} is plated.`, { key: 'rung.plating', throttle: 0.5 });
     else if (e.art === 'retype') log.say('system', `Your blows strike as ${tname(e.type)}${e.known ? `: what the ${kname(e.kind)} is weak to` : ''}.`, { key: 'rung.retype', throttle: 0.5 });
     else if (e.art === 'shatter') log.say('gain', 'Shattered.', { key: 'rung.shatter', throttle: 1 });
     else if (e.art === 'recall') log.say('system', 'You are back where you stood.', { key: 'rung.recall', throttle: 0.5 });
     else if (e.art === 'catch') log.say('system', 'You catch the shot. Let go to throw it.', { key: 'rung.catch', throttle: 0.5 });
     else if (e.art === 'link') log.say('system', `${cap(share(e.share ?? 0.5))} of the blow goes to the ${kname(e.kind)} you are linked to.`, { key: 'rung.link', throttle: 1.5 });
-    else if (e.art === 'fuse') log.say('system', `The ${kname(e.kind)} is fused: what you put on it waits ${e.window} seconds.`, { key: 'rung.fuse', throttle: 0.5 });
+    else if (e.art === 'fuse') log.say('system', `${cap(kname(e.kind))} fused. Afflictions on it are delayed ${e.window} seconds.`, { key: 'rung.fuse', throttle: 0.5 });
     else if (e.art === 'walkCycle') log.say('system', `Walked: ${list(e.turned.map(([a, b]) => `${SW[a] || a} into ${SW[b] || b}`))}.`, { key: 'rung.cycle', throttle: 0.5 });
     else if (e.art === 'sealCreature') log.say('system', e.broke ? `The seal breaks off the ${kname(e.kind)}'s ${e.blow}.` : `Sealed: the ${kname(e.kind)} cannot ${e.blow} for ${e.dur} seconds.`, { key: 'rung.seal', throttle: 0.5 });
     else if (e.art === 'relay') log.say('gain', e.links > 1 ? `The force passes on, ${e.links} links.` : 'The force passes on.', { key: 'rung.relay', throttle: 1 });
@@ -46,7 +46,7 @@ export function domainArtsRules({ on, log }) {
   });
   on('domain.react', (e) => log.say('system', e.kind === 'cancel' ? 'The paints cancel: bare ground, and calm.' : `The paints flare: ${e.agate}.`, { key: 'rung.react', throttle: 1 }));
   on('domain.art.end', (e) => {
-    if (e.art === 'postpone') log.say('warn', e.why === 'parried' ? 'The held blow lands, halved.' : 'The held blow lands.', { key: 'rung.postpone.end', throttle: 0.5 });
+    if (e.art === 'postpone') log.say('warn', e.why === 'parried' ? 'The postponed blow lands, halved.' : 'The postponed blow lands.', { key: 'rung.postpone.end', throttle: 0.5 });
     else if (e.art === 'plating') log.say('system', e.why === 'struck' ? `The plate on your ${e.region} takes the blow and breaks.` : 'Your plate melts back into your pool.', { key: 'rung.plating.end', throttle: 0.5 });
     else if (e.art === 'retype') log.say('system', 'Your blows strike as themselves again.', { key: 'rung.retype.end', throttle: 0.5 });
     else if (e.art === 'fuse' && e.why !== 'gone') log.say('system', !e.n ? 'The fuse goes off with nothing in it.' : e.why === 'chosen' ? `The fuse goes off: ${list(e.statuses.map((x) => SW[x] || x))} at once, half again as long.` : `The fuse runs out: ${list(e.statuses.map((x) => SW[x] || x))} as they were.`, { key: 'rung.fuse.end', throttle: 0.5 });

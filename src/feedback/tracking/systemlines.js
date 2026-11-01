@@ -21,7 +21,7 @@ export function systemLineRules({ on, log }) {
   on('rail.refuse', (e) => { if (e.what === 'dive') log.say('info', `Your ${e.ship} cannot dive. It keeps to the surface.`, { key: 'rail.refuse', throttle: 2 }); }); // (a heavy hull: progress/rail/ships.js; Espada's words)
   on('debug.chest', (e) => { // (docs/plans/DEBUG-CHESTS.md; Espada's words; nothing counted)
     if (e.first) log.say('system', `Debug chest (${e.kit}). Nothing it gives is counted.`);
-    log.say('system', e.n ? `The debug chest gives: ${e.what.join(', ')}.` : 'The debug chest is empty for you: you hold all it gives.', { key: `debug.${e.kit}`, throttle: 0.5 });
+    log.say('system', e.n ? `The debug chest gives: ${e.what.join(', ')}.` : 'Debug chest: you already have everything it gives.', { key: `debug.${e.kit}`, throttle: 0.5 });
   });
   on('knack.set', (e) => log.say('system', `You switch ${KNACKS[e.knack]?.name || e.knack} ${e.on ? 'on' : 'off'}.`));
   // the title (title/): which game was chosen (the words are Espada's to set: docs/HANDOFFS.md)

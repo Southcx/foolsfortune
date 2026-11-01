@@ -348,7 +348,8 @@ a round knight, a toothed golem), household vessels on legs at the foot. Which o
   the smallest mark on a die that still counts. Saggar's old master, the head maid before her: *open*.
 - **Strawman**: Pip stitched it, the one thing in a workshop of clay that cannot shatter, made by the apprentice afraid of breaking
   things. A scarecrow, a training dummy, and the argument set up to be knocked down: it always stands back up, and the real argument is
-  still out there. The heart charm is Pip's. The log uses its name with no article: "Strawman rocks back up."
+  still out there. **Strawman is sentient** (South, 2026-11-01): a training dummy that thinks, neither clay folk nor Figment, the one
+  mind on the island sewn rather than fired. It does not speak (its body and the log say what it does). The heart charm is Pip's. The log uses its name with no article: "Strawman rocks back up."
 - **Strawman's Well** (canon, 2026-10-31; Dovina's STRAWMANS-WELL.md 1): the inside of Strawman's head is a toy theatre made of Pip's
   sewing kit at giant scale, rehearsing being struck. The dummies on its stages are Pip's earlier tries, the ones that didn't stand
   back up; that is why there are many of them and why only Strawman never falls. The training targets (Calissa's,
@@ -358,8 +359,9 @@ a round knight, a toothed golem), household vessels on legs at the foot. Which o
   Pip knows them all and says so (`npc/talks.js`, 2026-11-01): Strawman is Pip's answer to breaking things, the tries that fell over were
   never thrown away, and once The Understudy is done Pip sees Strawman "standing up straighter". Saggar hears the garden's seeds take root
   in your Pneuka Jar "like a kiln ticking as it cools", and knows a flawless carving by what it cost her to fire a clean bowl. Its quest, The Understudy, has it play a different
-  part. *Open:* whose distortion makes a Well inside a straw dummy, neither folk nor Figment (left blank; South rules what Strawman
-  is). *Parked for its lore name:* a straw man learning to be a steel man.
+  part. **Whose distortion** (South, 2026-11-01): Strawman's own. A sentient dummy struck every day for a living dreams of nothing
+  but being struck, so its mind folds into a pocket of distortion as a Well does, though no dungeon: a theatre where it rehearses
+  the one part it knows. *Parked for its lore name:* a straw man learning to be a steel man.
 
 **Seger, the Witness Cone** (commissions; stoneware; not yet in the world). Hermann Seger invented the pyrometric cone; a witness cone
 slumps when the firing reaches its heat: it certifies the work, it does not do it. Tall, three-sided, pale, a number pressed in its side;
