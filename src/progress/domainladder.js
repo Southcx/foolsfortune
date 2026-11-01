@@ -37,20 +37,20 @@ export const KIND_WORDS = { start: 'From the start', rung: 'Rung', power: 'Power
  *  why it is the size it is. */
 export const TRAITS = {
   // ALTERATION has five powers at 1 and none at 40 or 50: its middle is traits
-  retypeLong: { domain: 'alteration', at: 40, of: 'retype', label: 'Enhanced Re-type', line: 'Re-type lasts 30 seconds, not 20.', set: { dur: 30 } }, // (a Dunes fight with two or three Figments runs about half a real minute: a guess, to be read off the ledger's fight times)
-  reactionsWide: { domain: 'alteration', at: 50, of: 'reactions', label: 'Enhanced Reactions', line: 'A reaction reaches 2.5 metres, not 1.5.', set: { radius: 2.5 } }, // (a body's width further: a creature standing beside the stamp is in it)
+  retypeLong: { domain: 'alteration', at: 40, of: 'retype', label: 'Enhanced Re-type', line: 'Re-type lasts 30 seconds now, up from 20.', set: { dur: 30 } }, // (a Dunes fight with two or three Figments runs about half a real minute: a guess, to be read off the ledger's fight times)
+  reactionsWide: { domain: 'alteration', at: 50, of: 'reactions', label: 'Enhanced Reactions', line: 'Your reactions reach 2.5 m now, up from 1.5.', set: { radius: 2.5 } }, // (a body's width further: a creature standing beside the stamp is in it)
   // PSYCHOKINESIS has no power at 50
-  catchLong: { domain: 'psychokinesis', at: 50, of: 'catch', label: 'Enhanced Catch', line: 'A caught shot can be held 2.5 seconds, not 1.5.', set: { hold: 2.5 } }, // (time to turn round and aim it at a second foe, not only the one that threw it)
+  catchLong: { domain: 'psychokinesis', at: 50, of: 'catch', label: 'Enhanced Catch', line: 'You can hold a caught shot for 2.5 seconds now, up from 1.5. Long enough to pick a new target.', set: { hold: 2.5 } }, // (time to turn round and aim it at a second foe, not only the one that threw it)
   // SPELLSCRIPTION has no power at 50
-  ruleCheap: { domain: 'spellscription', at: 50, of: 'standingRule', label: 'Enhanced Standing Rule', line: 'Your rule fires for 2 of your pool, not 5.', set: { cost: 2 } }, // (two is a shot's cost at half: the rule nearly pays for itself)
+  ruleCheap: { domain: 'spellscription', at: 50, of: 'standingRule', label: 'Enhanced Standing Rule', line: 'Your standing rule fires for 2 pool now, down from 5.', set: { cost: 2 } }, // (two is a shot's cost at half: the rule nearly pays for itself)
   // THE SEVENTIES: one a domain
-  postponeDeep: { domain: 'ouranurgy', at: 70, of: 'postpone', label: 'Enhanced Postpone', line: 'A held blow you parry lands at a quarter, not half.', set: { parried: 0.25 } }, // (the late parry made worth the wait)
-  platingWhole: { domain: 'manifestation', at: 70, of: 'plating', label: 'Enhanced Plating', line: 'Plating takes the whole of its part\'s next crack. It still cannot stop one that would shatter you.', set: { takes: 1 } }, // (solid at last whole; the shatter line kept, so it never makes you unbreakable)
-  watchFar: { domain: 'divination', at: 70, of: 'watch', label: 'Enhanced Watch', line: 'You see a Figment\'s watch from 50 metres, not 30.', set: { reach: 50 } }, // (a Dunes area's open sand read from its edge)
-  catchHard: { domain: 'psychokinesis', at: 70, of: 'catch', label: 'Mighty Catch', line: 'A caught shot thrown back strikes twice as hard, not half again.', set: { mult: 2 } }, // (the parry's send-back is 1: the catch doubles it)
-  linkDeep: { domain: 'possession', at: 70, of: 'link', label: 'Enhanced Link', line: 'The bound creature takes two thirds of a crack meant for you, not half.', set: { share: 2 / 3 } }, // (it carries more than you do)
-  reactionsCalm: { domain: 'alteration', at: 70, of: 'reactions', label: 'Lasting Reactions', line: 'A cancel calms what stands in it for 5 seconds, not 3.', set: { calm: 5 } }, // (long enough to reprogram or walk past it)
-  vowDeep: { domain: 'spellscription', at: 70, of: 'vow', label: 'Enhanced Vow', line: 'A vow kept takes a third off every cost, not a quarter.', set: { costMult: 2 / 3 } }, // (its stake is the same crack: the price of keeping it rises with its worth)
+  postponeDeep: { domain: 'ouranurgy', at: 70, of: 'postpone', label: 'Enhanced Postpone', line: 'Parry a held blow and only a quarter of it lands, down from half.', set: { parried: 0.25 } }, // (the late parry made worth the wait)
+  platingWhole: { domain: 'manifestation', at: 70, of: 'plating', label: 'Enhanced Plating', line: "Plating soaks up its part's whole next crack. It still won't stop one that would shatter you.", set: { takes: 1 } }, // (solid at last whole; the shatter line kept, so it never makes you unbreakable)
+  watchFar: { domain: 'divination', at: 70, of: 'watch', label: 'Enhanced Watch', line: "You can read a Figment's watch from 50 m now, up from 30.", set: { reach: 50 } }, // (a Dunes area's open sand read from its edge)
+  catchHard: { domain: 'psychokinesis', at: 70, of: 'catch', label: 'Hard Return', line: 'A caught shot you throw back hits twice as hard, up from half again.', set: { mult: 2 } }, // (the parry's send-back is 1: the catch doubles it)
+  linkDeep: { domain: 'possession', at: 70, of: 'link', label: 'Enhanced Link', line: 'The bound creature takes two thirds of a crack meant for you, up from half.', set: { share: 2 / 3 } }, // (it carries more than you do)
+  reactionsCalm: { domain: 'alteration', at: 70, of: 'reactions', label: 'Lasting Reactions', line: "A cancel calms whatever's in it for 5 seconds, up from 3.", set: { calm: 5 } }, // (long enough to reprogram or walk past it)
+  vowDeep: { domain: 'spellscription', at: 70, of: 'vow', label: 'Enhanced Vow', line: 'A kept vow takes a third off every cost, up from a quarter.', set: { costMult: 2 / 3 } }, // (its stake is the same crack: the price of keeping it rises with its worth)
 };
 
 /** The rungs still to come (DOMAINS.md 14's later columns, kept by name so the ladder shows the whole climb). */

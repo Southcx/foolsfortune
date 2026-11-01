@@ -685,7 +685,7 @@ Eleven traits, the numbers drafts with their reasons in `TRAITS`:
 | 70 | Ouranurgy | Enhanced Postpone | a parried held blow at a quarter, not half | the late parry made worth the wait |
 | 70 | Manifestation | Enhanced Plating | takes the whole crack, not 0.85 | solid at last; never a shattering crack |
 | 70 | Divination | Enhanced Watch | 30 m to 50 m | a Dunes area's open sand read from its edge |
-| 70 | Psychokinesis | Mighty Catch | thrown x1.5 to x2 | the parry's send-back is x1: the catch doubles it |
+| 70 | Psychokinesis | Hard Return | thrown x1.5 to x2 | the parry's send-back is x1: the catch doubles it |
 | 70 | Possession | Enhanced Link | half to two thirds | it carries more than you |
 | 70 | Alteration | Lasting Reactions | calm 3 s to 5 s | long enough to reprogram it or walk past |
 | 70 | Spellscription | Enhanced Vow | costs x0.75 to x2/3 | the stake is the same crack: worth rises, price rises |

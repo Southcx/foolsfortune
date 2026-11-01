@@ -176,33 +176,33 @@ export const DOMAIN_ARTS = {
   // belt's R asking `borrowed()`).
   // OURANURGY: afflictions set off on your beat (Chrono Trigger's combined techs; Into the Breach's ordered turn). 8 s is time to build
   // two statuses with two tools (a status builds in two to four blows); x1.5 is the beat's reward, and left to run out it is no gain.
-  fuse: R('ouranurgy', 60, 'action', 'The Fuse', 'Fuse the nearest foe: for 8 seconds every affliction put on it waits. Press again to set them all off at once, each half again as long.',
-    'Left to the end of the 8 seconds, they go off as they were. Set off into a stun, they pay most.', { window: 8, mult: 1.5, reach: 20 }, ['twoAtOnce', 15], { cost: 10, cooldown: 20 }),
+  fuse: R('ouranurgy', 60, 'action', 'The Fuse', 'Fuse the nearest foe. For 8 seconds, every affliction you put on it waits. Press again and they all go off at once, each lasting half again as long.',
+    'Let the 8 seconds run out and they go off as normal. Set them off into a stun for the biggest payoff.', { window: 8, mult: 1.5, reach: 20 }, ['twoAtOnce', 15], { cost: 10, cooldown: 20 }),
   // MANIFESTATION: the weather's liquid caught (Breath of the Wild's chemistry; FLUDD refilled from the world). 3 a real s at full
   // strength is a quarter of the mop's 12: the sky's slow trickle beside the hand's work, a middling Bottle in about a real minute.
-  catchWeather: R('manifestation', 60, 'passive', 'Catch the Weather', "Stand in a feeling's weather under the open sky with a Bottle worn and the Bottle fills with that feeling.",
-    'Only a feeling you know, and only while the Bottle is empty or already holds it. The stronger the weather, the faster.', { rate: 3, min: 0.2, say: 20 }, ['bigMop', 15]),
+  catchWeather: R('manifestation', 60, 'passive', 'Catch the Weather', "Stand in a feeling's weather, out under the sky, with a Bottle on, and the Bottle fills with that feeling.",
+    "Only feelings you know, and only if the Bottle's empty or already holds that one. Stronger weather fills it faster.", { rate: 3, min: 0.2, say: 20 }, ['bigMop', 15]),
   // PSYCHOKINESIS: force passed on (Katamari; billiards' combination shot). Three quarters a link: three links leave 0.42 of the
   // first blow, still a stagger; 3 m is two bodies' widths, so a relay is aimed, never luck across a room.
-  relay: R('psychokinesis', 60, 'passive', 'Relay', 'A creature you strike heavily passes the force on to the next one behind it, three links at most.',
-    'Heavy is a thrown hit or a blow of power 2 or more. Each link keeps three quarters of the force, and the next body must stand within 3 metres along the line.', { minPower: 2, reach: 3, cone: 0.7, keep: 0.75, links: 3 }, ['twoStrike', 10]),
+  relay: R('psychokinesis', 60, 'passive', 'Relay', 'Hit a creature hard and the force carries on to the one behind it, up to three in a row.',
+    '"Hard" means a thrown hit, or a blow of power 2 or more. Each link keeps three quarters of the force, and the next body has to be within 3 m, in line.', { minPower: 2, reach: 3, cone: 0.7, keep: 0.75, links: 3 }, ['twoStrike', 10]),
   // DIVINATION: the world's chance read as numbers (Darkest Dungeon's scouting; the gacha's published rates, which the law asks for and
   // the Tithe's lamps only hinted at). Within 4 m of the Tithe's console, the next pull's chance of each tier, pity counted in.
-  trueOdds: R('divination', 60, 'passive', 'True Odds', "Chance shown as numbers: near the Tithe's console, the next pull's chance of each tier, its pity counted in; near a crystal, what opening it may give.",
-    'The chances are the game\'s own, never rounded in your favour. More of the world\'s chances will show as they are read.', { reach: 4 }, ['titheRare', 10]),
+  trueOdds: R('divination', 60, 'passive', 'True Odds', "See chance as real numbers. Near the Tithe's console you get the next pull's odds for each tier, pity included. Near a crystal you see what it might give.",
+    "These are the game's real odds, never rounded in your favour. More of the world's chances show up as you learn to read them.", { reach: 4 }, ['titheRare', 10]),
   // POSSESSION: a mind's own move lent to you (Kirby's copy; Prey's typhon powers). On R in the sub's place while it lasts (Petra's belt
   // asks borrowed()); 20 s is about a Dunes fight's two thirds; 4 pool a throw and 1.2 s between, so a borrowed move is a tool, not a
   // stream (the jelly's glob strikes for 1, the wisp's flame for its cast's).
-  borrowVerb: R('possession', 60, 'passive', 'Borrow a Verb', 'Reprogram a creature and its own move is yours on R for 20 seconds, in place of your sub\'s.',
-    'A slip jelly lends its spit glob, a Lantern Wisp its flame ball. It ends if the lender is downed. Each throw costs 4 of your pool.', { dur: 20, cost: 4, every: 1.2 }, ['mindRewritten', 30]),
+  borrowVerb: R('possession', 60, 'passive', 'Borrow a Verb', "Reprogram a creature and you can use its move on R for 20 seconds, in place of your sub's.",
+    'A slip jelly lends its spit glob, a Lantern Wisp its flame ball. Each throw costs 4 pool, and the loan ends if the lender goes down.', { dur: 20, cost: 4, every: 1.2 }, ['mindRewritten', 30]),
   // ALTERATION: one affliction made the next one's opening (the trumps as a cycle, types.js; Persona's Technical). The time kept and
   // capped by the new status's own: the kind changes, never the time, so the skill is the order, not a longer lock.
-  walkCycle: R('alteration', 60, 'action', 'Walk the Cycle', 'Turn every affliction on the nearest foe into the one its type beats: doubt into charm, charm into confusion, confusion into a stun, blindness into doubt.',
-    'Each keeps the time it had left, never more than the new one lasts. A foe with no affliction cannot be walked.', { reach: 20 }, ['annihilate', 15], { cost: 8, cooldown: 10 }),
+  walkCycle: R('alteration', 60, 'action', 'Walk the Cycle', 'Turn every affliction on the nearest foe into the one it beats: doubt into charm, charm into confusion, confusion into a stun, blindness into doubt.',
+    "Each keeps the time it had left, never more than the new one would last. A foe with no afflictions can't be walked.", { reach: 20 }, ['annihilate', 15], { cost: 8, cooldown: 10 }),
   // SPELLSCRIPTION: a rule on a creature (Pokemon's Disable; Final Fantasy's Silence). Cast on a windup, so it is read as a parry is,
   // from range; 20 s is a Dunes fight's two thirds. A FOE keeps its authored fight and refuses it (depth.js FOE_CLASS).
-  sealCreature: R('spellscription', 60, 'action', 'A Seal on a Creature', 'Seal a creature as it winds up a blow: the blow breaks off, and it cannot use that kind of blow for 20 seconds.',
-    'Only while it winds up. A FOE keeps its own rule and refuses the seal.', { dur: 20, reach: 20 }, ['sealSet', 20], { cost: 12, cooldown: 15 }),
+  sealCreature: R('spellscription', 60, 'action', 'A Seal on a Creature', "Seal a creature as it winds up a blow. The blow breaks off, and it can't use that kind of blow for 20 seconds.",
+    'Only works mid-windup. A FOE follows its own rules and shrugs the seal off.', { dur: 20, reach: 20 }, ['sealSet', 20], { cost: 12, cooldown: 15 }),
 };
 
 /** Psychokinesis's shatter (SUBSTRATE.md F5b): 0.25 at 10, rising on a straight line to 0.6 at 99 (past 0.6 a heavy blow would break a

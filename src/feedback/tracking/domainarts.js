@@ -41,7 +41,7 @@ export function domainArtsRules({ on, log }) {
     else if (e.art === 'sealCreature') log.say('system', e.broke ? `The seal breaks off the ${kname(e.kind)}'s ${e.blow}.` : `Sealed: the ${kname(e.kind)} cannot ${e.blow} for ${e.dur} seconds.`, { key: 'rung.seal', throttle: 0.5 });
     else if (e.art === 'relay') log.say('gain', e.links > 1 ? `The force passes on, ${e.links} links.` : 'The force passes on.', { key: 'rung.relay', throttle: 1 });
     else if (e.art === 'catchWeather') log.say('system', `Your Bottle catches ${cap(e.aspect)}: ${e.lachryma} Lachryma.`, { key: 'rung.catchweather', throttle: 20 });
-    else if (e.art === 'borrowVerb') log.say('system', `The ${kname(e.kind)} lends you its move: R throws it for ${e.dur} seconds.`, { key: 'rung.borrow', throttle: 0.5 });
+    else if (e.art === 'borrowVerb') log.say('system', `The ${kname(e.kind)} lends you its move. Press R to throw it for the next ${e.dur} seconds.`, { key: 'rung.borrow', throttle: 0.5 });
     else if (e.art === 'standingRule') log.say('system', `Your rule: ${RULE_THEN[e.then]?.label ?? e.then}.`, { key: 'rung.rule', throttle: 2 });
   });
   on('domain.react', (e) => log.say('system', e.kind === 'cancel' ? 'The paints cancel: bare ground, and calm.' : `The paints flare: ${e.agate}.`, { key: 'rung.react', throttle: 1 }));
@@ -51,7 +51,7 @@ export function domainArtsRules({ on, log }) {
     else if (e.art === 'retype') log.say('system', 'Your blows strike as themselves again.', { key: 'rung.retype.end', throttle: 0.5 });
     else if (e.art === 'fuse' && e.why !== 'gone') log.say('system', !e.n ? 'The fuse goes off with nothing in it.' : e.why === 'chosen' ? `The fuse goes off: ${list(e.statuses.map((x) => SW[x] || x))} at once, half again as long.` : `The fuse runs out: ${list(e.statuses.map((x) => SW[x] || x))} as they were.`, { key: 'rung.fuse.end', throttle: 0.5 });
     else if (e.art === 'sealCreature' && e.why === 'time') log.say('system', 'Your seal fades.', { key: 'rung.seal.end', throttle: 1 });
-    else if (e.art === 'borrowVerb') log.say('system', `The ${kname(e.kind)}'s move is its own again.`, { key: 'rung.borrow.end', throttle: 1 });
+    else if (e.art === 'borrowVerb') log.say('system', `The ${kname(e.kind)} takes its move back.`, { key: 'rung.borrow.end', throttle: 1 });
     else if (e.art === 'vow') log.say('warn', `You broke your vow to ${VOWS[e.vow]?.label}. It cracks you.`, { key: 'rung.vow.end', throttle: 0.5 });
   });
   on('domain.art.refuse', (e) => log.say('warn', `${DOMAIN_ARTS[e.art]?.label ?? e.art}: ${WHY[e.why] || e.why}`, { key: 'rung.refuse', throttle: 1 }));
