@@ -354,7 +354,10 @@ a round knight, a toothed golem), household vessels on legs at the foot. Which o
   back up; that is why there are many of them and why only Strawman never falls. The training targets (Calissa's,
   2026-10-31: the target hopper, the quintain, the gallery duck) are older still: Pip's first tries at a thing to hit that wouldn't
   break, each borrowed from a game Pip had seen (archery, the joust, the fairground), each knocked over and patched with Pip's stitches
-  where it failed. Strawman is the try that worked, so the targets and the dummies are its elder siblings, and they still fall. Its quest, The Understudy, has it play a different
+  where it failed. Strawman is the try that worked, so the targets and the dummies are its elder siblings, and they still fall.
+  Pip knows them all and says so (`npc/talks.js`, 2026-11-01): Strawman is Pip's answer to breaking things, the tries that fell over were
+  never thrown away, and once The Understudy is done Pip sees Strawman "standing up straighter". Saggar hears the garden's seeds take root
+  in your Pneuka Jar "like a kiln ticking as it cools", and knows a flawless carving by what it cost her to fire a clean bowl. Its quest, The Understudy, has it play a different
   part. *Open:* whose distortion makes a Well inside a straw dummy, neither folk nor Figment (left blank; South rules what Strawman
   is). *Parked for its lore name:* a straw man learning to be a steel man.
 
