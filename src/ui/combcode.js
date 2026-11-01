@@ -109,7 +109,7 @@ export class CodeCard {
     }
     const cs = Math.round(side * 0.82), cv = document.createElement('canvas'); cv.width = cv.height = Math.round(cs * dpr); cv.style.width = cv.style.height = `${cs}px`; cv.style.alignSelf = 'center';
     const x = cv.getContext('2d'); x.scale(dpr, dpr); drawCombCode(x, this.text, { size: cs }); this.art.append(cv);
-    this.hint.textContent = Q ? 'A phone\'s scanner reads it off the screen.' : 'Too long for one code: COPY it instead.'; // (plain words, Espada's to rule)
+    this.hint.textContent = Q ? 'A phone\'s scanner reads it off the screen.' : 'Too long for one code. COPY it instead.'; // (plain words, Espada's to rule)
   }
   hide() { this.root?.classList.remove('on'); clearTimeout(this.timer); }
 }

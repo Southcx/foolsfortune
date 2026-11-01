@@ -209,7 +209,7 @@ export function bootFrame(game, made) {
     game.ledger.tick(dt);
     save.flush(); // (whatever changed this frame, written whole: core/save.js)
     cloud.update(game.rawDt || dt); // (and what changed sent to the cloud, at most once a real minute: core/cloudsave.js)
-    game.fieldReport?.frame(game.rawDt || dt); // (this load's field report: debug/fieldreport.js)
+    game.fieldReport?.frame(game.rawDt || dt); game.perfAB?.frame(game.rawDt || dt); // (this load's field report: debug/fieldreport.js; /perfab's timing, debug/perfab.js)
     game.tracking.update(dt);
     game.achievements.tick(dt);
     game.log.tick(dt);

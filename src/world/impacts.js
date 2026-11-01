@@ -10,7 +10,7 @@
 // the house's own god hand throw (godhand.js: what is thrown at the jar chips it, by its speed).
 //
 //   game.impacts = new ThrownHits(game)   .update(dt) (boot/frame.js)   .track(body, mass?)   (a body that is not the level's: the ball)
-//   events: impact.hit { power, heavy, energy, speed, mass, creature, panic, training, by }   impact.strike { n, training, by }
+//   events: impact.hit { power, heavy, energy, speed, mass, creature, target (its id), thrown (what struck it: its kind), panic, training, by }   impact.strike { n, training, by }
 //   (a training body's, the Sandbox's pen's, marked `training`: counted by no one, tracking.js and psyche.js)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -57,7 +57,7 @@ export class ThrownHits {
         if (hit.heavy) g.stun?.add?.(c, 0.5, { by, cause: 'thrown' });
         b.setLinvel({ x: v.x * 0.45, y: Math.abs(v.y) * 0.3 + 1, z: v.z * 0.45 }, true); // (it gives up most of its speed in the blow)
         const n = (this.flight.get(b) || 0) + 1; this.flight.set(b, n);
-        g.events?.emit('impact.hit', { power: +hit.power.toFixed(2), heavy: hit.heavy, energy: hit.energy, speed: +sp.toFixed(1), mass: +mass.toFixed(1), creature: c.kind || c.type || null, panic: true, training: !!(c.training || isTraining(c)), by });
+        g.events?.emit('impact.hit', { power: +hit.power.toFixed(2), heavy: hit.heavy, energy: hit.energy, speed: +sp.toFixed(1), mass: +mass.toFixed(1), creature: c.kind || c.type || null, target: c.id ?? null, thrown: ((e) => e?.kind || e?.type || null)(g.physics.entityOf?.(b.collider?.(0))), panic: true, training: !!(c.training || isTraining(c)), by });
         if (n === IMPACT.strike) g.events?.emit('impact.strike', { n, by, training: !!(c.training || isTraining(c)) });
       }
     }
