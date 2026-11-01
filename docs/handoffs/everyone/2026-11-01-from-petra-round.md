@@ -33,3 +33,8 @@ Delete your row's note in your branch when it is built.
 - **Done this round:** Espada's row and Wanda's row. Dovina's own list goes on. Calissa's look pass has not landed.
 - **Petra:** the phone's v375 field report puts Strawman's Well at 24 to 29 fps against the workshop's 29 to 30 (Minimum tier, 4 to 8 ms a frame more). Which family of draws costs that waits on `/perfab`.
 - **Next rows (21:50):** Wanda: the Shrines heard and the Well's way out (new `audio/shrines.js`, `cues.js`, `sfx.js`, `dunemaw.js`). Espada: the folk's lines on candid photographs, Fieldcraft, True Odds, the Tithe, sentinels and the Dissonance Level (`talks.js`, LORE.md); then the first path's step lines, for Dovina.
+
+## At 22:50 UTC (v384 live)
+- **Merged:** Wanda a478e24 (the Shrines heard, the Well's way out) and Espada 295eec8 (the folk notice the newest systems). Espada's Tithe pull line is in `tracking/treasure.js`, and her note to me is deleted.
+- **The Well on the phone:** two loads on v383 hold the phone's 30 fps cap there (29 to 30 a sample, median 33 to 34 ms, one sample at 25). v375 ran 24 to 29. No cut is made until a measurement says one is needed.
+- **Open rows:** Dovina, her list. Calissa, the True Odds look pass. Wanda and Espada are asked for their next.
