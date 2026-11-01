@@ -1,10 +1,6 @@
 **Wanda's open list** (the notes it replaces are deleted; each line names who asked).
 
 - **Placeholders that want real sounds** (Petra, 2026-10-06 and 07; each calls an existing method today):
-  - the Soul Brush and the jets: `brushReady`, `glassCrack` (`bottle.crack`), `jetStart`, `jetCharge`, `jetLaunch`; a looped spray and
-    mop under `load.working` (`brush.paint`, `brush.mop`, `move.hover`, `move.rocket`, `move.skim`, `stain.*`);
-  - the parries: the Dreamvane's spin, a soak or gulp, the Veritome's shutter; the tools' answers (`parry.try { tool }`,
-    `move.parry { tool, how, what }`);
   - the Shrines: `sfx.rest` (a rest), the Wake Whistle (`well.escape.start`: a 1.5 s breath), the wake (`well.leave { how: 'escape' }`);
   - at sea: the gun on the sixteenth (`sfx.tap(9)`), the volley (`seekers`), polarity, the roll, a hit, a ricochet, a shot drunk;
     `rail.broadside`, `rail.ram`, `rail.warn`, `rail.part`, `rail.bite`, `rail.toll { onBeat }`, `rail.end`;
@@ -22,8 +18,9 @@
   for each event as it animates it (or the events go on the bus and a rule in `audio/cues.js` calls it). A duel cue then, too.
 - **The crossing's ships and foes** (Calissa, 2026-10-20): a hull voice a ship once the models land (ids from ships.js: sloop, frigate,
   destroyer, galleon, tanker; the tanker and galleon never dive, so their mast fold is the roll's only); the fold on the ship's roll once ship.js has a `rail.roll`.
-- **The Soul Brush rebuilt as FLUDD** (Dovina, 2026-10-09; `docs/plans/LACHRYMA-LOOP.md` 5a): the squirt, the hover's hiss running dry,
-  the rocket's charge, the mop's slosh refilling, the cleaned ground's sparkle; once its verbs are on main. Gall and Fury's paint and
-  their fish (phase 2 of `docs/plans/GALL-AND-FURY.md`) after it.
+- **The Soul Brush's last FLUDD moment** (Dovina, 2026-10-09): the cleaned ground's sparkle (the squirt, the hover, the rocket and the mop
+  are built: `audio/brushjets.js`). Gall and Fury's paint and their fish (phase 2 of `docs/plans/GALL-AND-FURY.md`) after it.
+- **A sentinel** (Petra, 2026-11-01): placeholders built (`audio/sentinel.js`); its real voice once its body and mind are on main.
+- **The open sea** (Dovina, 2026-10-20): waits on South's ear only: the singing stone's voice and the dowse's presence at sea.
 - **The caster shells' music moments** (CASTER-SHELLS.md, later batches): RYNO (92) jumping the cue to its climax, The Fool (99) the
   Lockheart's wheel and landing, Stop-Motion (58) the field on the beat, Thirteen (96) the silence after the bolt; once their runner exists.
