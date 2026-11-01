@@ -49,6 +49,12 @@ const RULES = {
   // a Well's pools (world/well/dunemaw.js): down a floor, or back up to the mouth (not when shattered: the reform has its own)
   'well.floor': (s, e) => s.poolDown?.(e.floor),
   'well.leave': (s, e) => { if (e.shattered) return; if (e.how === 'escape') s.wellWake?.(); else s.poolUp?.(); }, // (the wake: audio/shrines.js)
+  'bowl.spend': (s, e) => s.bowlSpend?.(e.what, e.state), // (audio/bowl.js: over the runtime's own shatter)
+  'bowl.fall': (s, e) => s.bowlFall?.(e.what),
+  'bowl.shake': (s) => s.bowlShake?.(),
+  'bowl.pool': (s) => s.bowlPool?.(),
+  'clutch.break': (s, e) => s.clutchBreak?.(e.roe),
+  'clutch.hatch': (s, e) => s.clutchHatch?.(e.called),
   'shrine.find': (s, e) => (e.by === 'courier' ? s.shrineFind?.() : null),
   'shrine.rest': (s, e) => (e.by === 'courier' ? s.shrineRest?.() : null),
   'shrine.travel': (s, e) => (e.by === 'courier' ? s.shrineTravel?.() : null),
