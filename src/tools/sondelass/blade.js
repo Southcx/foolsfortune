@@ -112,7 +112,7 @@ export class BladeMode {
       if (this.weakFor !== t.ref) { this.weakFor = t.ref; this.weak = (simRand() - 0.5) * Math.PI * 0.8; } // (its line: a different angle for each)
     } else {
       // nothing locked: the line goes through where the crosshair points, a few metres out
-      g.camera.getWorldPosition(_a); g.camera.getWorldDirection(_b);
+      const C = g.aim.camera(); C.getWorldPosition(_a); C.getWorldDirection(_b); // (the aim's camera: core/aimsource.js)
       this.pt.copy(_a).addScaledVector(_b, 3.2);
       this.size = 0.8; this.weakFor = null;
     }

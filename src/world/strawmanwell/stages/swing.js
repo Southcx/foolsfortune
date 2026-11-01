@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // STRAWMAN'S WELL, THE SWING (docs/plans/STRAWMANS-WELL.md 3.6): over pits on the end of the Sondelass's line. The Sondelass is lent for
 // the stage in its hook form (the belt's main, given back on leaving: arsenalaim.js lendTool), and its hook aimed in the plane: LMB throws
-// it along the keys' aim (none held: up and ahead, Bionic Commando's), drawn to the nearest hook ring or thread inside SWING.cone of it,
+// it along the keys' aim (none held: the mouse's reticle, else up and ahead, Bionic Commando's), drawn to the nearest hook ring or thread inside SWING.cone of it,
 // else biting whatever the aim meets. The line, its reel (LMB held), its paying out (RMB held), its let go (RMB tapped, Space in the air)
 // and the swing are the house's (tools/sondelass/hookshot.js, grapple.js); the stage wraps only the hook's throw and its aim on the
 // instance while the Courier stands in it, the frame's way, and gives them back.
@@ -21,7 +21,7 @@ import * as THREE from 'three';
 import { scaffold, floor, goalFlag, sign } from '../stages.js';
 import { COLOR } from '../stagekit.js';
 import { AT } from '../layout.js';
-import { aimOf, lendTool } from './arsenalaim.js';
+import { aimOf, reticleOf, lendTool } from './arsenalaim.js';
 
 /** The hook's pick: the cone about the aim a ring or a thread is drawn into (rad), and how far (m). */
 export const SWING = { cone: 0.62, reach: 14, chest: 0.9 };
@@ -98,10 +98,10 @@ export default {
   },
 
   chest(out) { const P = this.st.well.game.player; return out.set(P.pos.x, P.pos.y + SWING.chest, P.pos.z); },
-  /** The aim: the keys' eight ways, and with none held up and ahead. */
+  /** The aim: the keys' eight ways; none held, the mouse's reticle (else up and ahead). */
   aim(out) {
     const W = this.st.well, R = W.frame.realInput;
-    if (R && !['KeyW', 'KeyA', 'KeyS', 'KeyD'].some((k) => R.isDown(k))) return out.set(W.frame.face, 1, 0).normalize();
+    if (R && !['KeyW', 'KeyA', 'KeyS', 'KeyD'].some((k) => R.isDown(k))) return reticleOf(W, out) || out.set(W.frame.face, 1, 0).normalize(); // (the mouse's reticle, else up and ahead)
     return aimOf(W, out);
   },
   /** Where the throw goes: the hold best inside the cone (a ring, a point of the thread), else along the aim. */
@@ -135,6 +135,7 @@ export default {
   enter(well) {
     const st = this.st; if (!st) return;
     st.lend?.restore(); st.lend = lendTool(well, 'sondelass', { form: 'hook', draw: true }); this.wrap();
+    well.frame.aimer?.off.set(well.frame.face * 3, 3); // (the reticle starts up and ahead, Bionic Commando's throw)
     st.on = null; st.att = null; st.pending = null;
   },
   leave() {

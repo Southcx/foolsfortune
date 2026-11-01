@@ -28,7 +28,7 @@ import * as THREE from 'three';
 import { overlayFlat } from './lachrimetertube.js';
 import { RedrawGate } from './redrawgate.js';
 
-const TAU = Math.PI * 2, DEG = Math.PI / 180;
+const TAU = Math.PI * 2, DEG = Math.PI / 180, _at = new THREE.Vector2();
 const TQ = 0.25;                // (real s: the film's slow drift steps this often; 1/66 of its cycle, no step to see)
 const D = 160;                  // the canvas, in dots of the present (a square round the screen's middle)
 const INK = '#17111f', PALE = '#f4ecff';
@@ -86,7 +86,7 @@ export class PsygunReticle {
     this.root.userData.overlayHidden = false;
     const g = this.game, W = g.weapon, H = slot.view.h || innerHeight, lp = H / 480;
     const ads = W.adsEase ?? 0; this.mesh.material.opacity = 1 - ads * 0.3;
-    this.mesh.scale.set(D * lp, D * lp, 1); this.mesh.position.set(0, 0, 300);
+    this.mesh.scale.set(D * lp, D * lp, 1); const at = g.aim?.screen(_at) ?? _at.set(0, 0); this.mesh.position.set(at.x, at.y, 300); // (where the aim is on the screen: the middle, or a side-on mode's reticle, core/aimsource.js)
     const S = g.shells, heart = S?.gun?.heart != null && S.selected === S.gun.heart;
     this.slug = cl(this.slug + (heart ? dt : -dt) / 0.3);
     const fov = g.camera?.fov ?? 70, spread = W.spreadDeg?.(g.player) ?? 0;

@@ -4727,3 +4727,19 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   (they settle in the garden on their own), so their slabs could never be opened either: the roster is now the four a photo can carry
   (slip jelly, clapperjar, the Lantern Wisp, spirit).
 - **Rule:** 378
+
+### 2026-11-01 · No tool aimed in Strawman's Well: the psygun shot into the backdrop, the hook found nothing (found by South, in play)
+- **Seen:** South: "not being able to grapple or swing with the sondelass, or aim with the Psygun" in Strawman's Well.
+- **Cause, as read and then measured:** every tool took its aim from `game.camera` (the crosshair's ray from the eye). In the Well the
+  camera is the audience's seat, 14 m in front of the stage looking along -z, and the frame zeroes the mouse; so the psygun's aim point,
+  the hook's probe, the rod's cast, the brush's stream and the fork's throw all ran into the backdrop. The hook's own probe used
+  `P.lookDir`, held level. Only the two stages that wrapped their own tool (the Arsenal's gun, the Swing's hook, on the keys) aimed, and
+  their key aim showed no reticle; the gun's crosshair stood in the screen's middle, where nothing went. The arm's aim pitch was read
+  from the camera's position too.
+- **Fix:** the aim source (`game.aim`, core/aimsource.js): tools ask `game.aim.camera()` for their aim, `game.camera` for what is drawn.
+  The Well's frame lends the plane reticle (courier/planereticle.js): a reticle on the stage's plane moved by the mouse, an aim camera
+  behind the chest on the line to it; the body faces the reticle's side and its pitch follows. The stages' key aim falls back to it
+  (`reticleOf`, arsenalaim.js); the psygun's reticle stands at `game.aim.screen()`. Measured headless (`node scripts/sweeps/strawmanwell.mjs`,
+  35 PASS): the gun's aim point 0.00 m off the plane and 33 m ahead, the hook's probe on the plane, the Swing's ring bitten and swung,
+  every tool drawn and its LMB answered, the camera given back on leaving.
+- **Rule:** 379

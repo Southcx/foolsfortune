@@ -26,6 +26,7 @@
 //   answer for a key, or undefined to read on; `faceLock` the facing is the claim's to set. Cleared by remove)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { PlaneReticle } from '../../courier/planereticle.js';
 
 /** The camera's seat: `dist` m in front of the plane, `lift` m over the body, `lead` m ahead of the facing, its ease (1/s), its field
  *  of view (degrees), and how far inside a stage's ends it keeps its middle. */
@@ -45,9 +46,10 @@ export class WellFrame {
    *  height band (world y), `face` the facing to start with. */
   apply(spec) {
     this.spec = { ...spec }; this.face = spec.face ?? 1; this.snapCam = true;
+    (this.aimer ||= new PlaneReticle(this.game)).set({ z: spec.z }); // (the tools' aim along the plane, lent to game.aim: courier/planereticle.js)
     if (this.on) return;
     const g = this.game, P = g.player, self = this;
-    this.on = true;
+    this.on = true; g.aim?.lend('well', this.aimer); this.aimFace = this.face;
     // the plane: the fixed step wrapped on the instance (whatever was there kept, to give back exactly)
     this.ownStep = Object.prototype.hasOwnProperty.call(P, 'fixedUpdate') ? P.fixedUpdate : null;
     const step = this.ownStep || Object.getPrototypeOf(P).fixedUpdate;
@@ -81,6 +83,7 @@ export class WellFrame {
     if (this.ownStep) P.fixedUpdate = this.ownStep; else delete P.fixedUpdate;
     P.input = this.realInput;
     P.drift.set(0, 0, 0); P.wade = 1;
+    this.game.aim?.clear('well'); this.aimer?.show(false);
     this.on = false; this.ownStep = null; this.realInput = null; this.spec = null; this.claim = null;
   }
 
@@ -89,6 +92,9 @@ export class WellFrame {
   /** This fixed step's Space is the room's (a drop through, a wall kick): called from a `pre` hook, the core reads the press as one
    *  already held (its own jumpHeldLast), so it is no jump, and the key stays truthful for whoever else reads it. */
   suppressJump() { const P = this.game.player; P.jumpHeldLast = true; P.jumpBuf = 0; }
+
+  /** A tool in the hands (the belt's say: tools/belt.js). */
+  get toolOut() { return !!this.game.belt?.inHand; }
 
   /** The tech that owns the step, or null. */
   get tech() { return this.game.player.techs?.active?.id ?? null; }
@@ -122,9 +128,10 @@ export class WellFrame {
     if (R) {
       const a = R.axis('moveX'), want = Math.abs(a) > 0.2 ? Math.sign(a) : 0;
       const free = !this.tech && !P.mantle && !P.wallrun && !this.claim?.faceLock;
-      if (free && want && want !== this.face) this.face = want;
+      const out = this.toolOut, aimed = out ? this.aimFace : want; // (a tool out: the body faces the reticle's side, its pitch the reticle's)
+      if (free && aimed && aimed !== this.face) this.face = aimed;
     }
-    P.yaw = this.face > 0 ? Math.PI / 2 : -Math.PI / 2; P.pitch = 0; P.view = 'tp';
+    P.yaw = this.face > 0 ? Math.PI / 2 : -Math.PI / 2; P.pitch = this.toolOut ? this.aimer?.pitch ?? 0 : 0; P.view = 'tp';
     for (const fn of this.pres) fn(dt);
   }
   /** After the step: the body put back on the plane, then the room's own `post` hooks. */
@@ -153,5 +160,8 @@ export class WellFrame {
     _m.lookAt(cam.position, _look, _up); cam.quaternion.setFromRotationMatrix(_m);
     cam.fov = C.fov; cam.updateProjectionMatrix(); cam.updateMatrixWorld();
     g.character?.setFade?.(1);
+    // the aim along the plane: the reticle moved by the mouse while a tool is out (courier/planereticle.js), the facing it wants kept for the step
+    const out = this.toolOut && !this.claim;
+    if (this.aimer) { this.aimFace = this.aimer.update(dt, this.realInput, this.face, out, cam); this.aimer.show(out && g.belt?.inHand?.id !== 'psygun'); } // (the psygun's own reticle stands there: vfx/psygunreticle.js)
   }
 }

@@ -67,6 +67,7 @@ import { ProneHolster } from '../tools/proneholster.js';
 import { Dreamvane } from '../tools/dreamvane/dreamvane.js';
 import { Crucibelle } from '../tools/crucibelle/crucibelle.js';
 import { Lockheart } from '../tools/lockheart/lockheart.js';
+import { AimSource } from '../core/aimsource.js';
 
 export function bootTools(game, made) {
   const { save, env, player } = made;
@@ -84,6 +85,7 @@ export function bootTools(game, made) {
   applyCineOverrides(save); game.cine = new Cine(game); // (cinematic events as data: cine/sequences.js)
   game.auras = new Auras(game); // (a status, shown round whatever has it: vfx/auras.js)
   game.temper = new Temper(game); // (a creature's mental state and agitation, shown with its body: vfx/temper.js)
+  game.aim = new AimSource(game); // (where the tools aim from: the camera, or a mode's own aim, core/aimsource.js)
   const weapon = new Weapon(game);
   game.weapon = weapon;
   // movement techs (priority order: the first that wants the step gets it)

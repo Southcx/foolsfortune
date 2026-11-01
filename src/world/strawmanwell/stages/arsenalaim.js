@@ -6,7 +6,7 @@
 // the instance, the frame's way (wellframe.js), each wrapper asking at the call whether it is still wanted and handing the call on to
 // the weapon's own when not; taken off whole when the stage is left. The shot, its cost, its tracer, its hits and `shot.fire` are the
 // house's.
-//   the aim     A and D across, W up, S down; none of them: the facing. On the ground S alone is the crouched shot ahead (Contra's prone
+//   the aim     A and D across, W up, S down; none of them: the mouse's reticle (the frame's, courier/planereticle.js), else the facing. On the ground S alone is the crouched shot ahead (Contra's prone
 //               shot); in the air, straight down
 //   a tool lent the belt's main (and its form) made a stage's for its length, and the main, the sub, the form and whether it was out given
 //               back on leaving (the belt's own `equip`, quietly: a script's, never refused or said)
@@ -14,7 +14,7 @@
 // Prior art: Contra's and Metal Slug's eight-way run and gun (the stick is the aim, the facing the default), Mega Man's charge kept in
 // the button; the frame's wrap-and-give-back (wellframe.js), the stress test's wrap of `move`.
 //
-//   aimOf(well, out) -> Vector3 (unit, in the plane)   chestOf(well, out)   const A = new PlaneAim(well, ['arsenal', 'pit'])   A.on()   A.off()
+//   aimOf(well, out) -> Vector3 (unit, in the plane)   reticleOf(well, out) -> Vector3 | null   chestOf(well, out)   const A = new PlaneAim(well, ['arsenal', 'pit'])   A.on()   A.off()
 //   const L = lendTool(well, id, { form, draw })   L.restore()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -27,9 +27,14 @@ export function aimOf(well, out = new THREE.Vector3()) {
   const R = well.frame.realInput, P = well.game.player, face = well.frame.face || 1;
   if (!R) return out.set(face, 0, 0);
   const h = (R.isDown('KeyD') ? 1 : 0) - (R.isDown('KeyA') ? 1 : 0), v = (R.isDown('KeyW') ? 1 : 0) - (R.isDown('KeyS') ? 1 : 0);
-  if (!h && !v) return out.set(face, 0, 0);
+  if (!h && !v) return reticleOf(well, out) || out.set(face, 0, 0); // (no key held: where the mouse's reticle is, courier/planereticle.js)
   if (!h) return v < 0 && P.grounded ? out.set(face, 0, 0) : out.set(0, v, 0);
   return out.set(h, v, 0).normalize();
+}
+/** The plane reticle's way (unit, in the plane) while the frame lends the aim (core/aimsource.js), or null. */
+export function reticleOf(well, out = new THREE.Vector3()) {
+  const A = well.game.aim; if (!A?.lent) return null;
+  A.dir(out).setZ(0); return out.lengthSq() > 1e-6 ? out.normalize() : null;
 }
 /** Where a shot leaves from: the chest, a little ahead along the aim. */
 export function chestOf(well, aim, out = new THREE.Vector3()) {
