@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE DOMAINS' RUNGS AS ACHIEVEMENTS (docs/plans/DOMAINS.md 12; progress/domainarts.js): each rung opens only by achievement, and the
 // achievement is that rung's two ways read as one predicate over the ledger (its domain's level, or its feat done n times). Tier by the
-// rung's band: the first relations (15) Medium. In THE DOMAINS' own sub, Rungs.
+// rung's band: the first relations (10) Medium. In THE DOMAINS' own sub, Rungs.
 //
 // Prior art: Old School RuneScape's skill guides (what each level opens, listed by the skill), FFXIV's job quests (one at each rung).
 //
@@ -10,7 +10,7 @@
 import { DOMAIN_ARTS, FEAT_WORDS } from './domainarts.js';
 import { DOMAINS, levelOf } from './domains.js';
 
-const TIER = { 15: 2, 30: 3, 45: 3, 60: 4, 80: 5, 99: 6 };
+const TIER = { 10: 2, 15: 2, 30: 3, 45: 3, 60: 4, 80: 5, 99: 6 };
 
 export function domainArtAchievements({ F }) {
   let i = 0;

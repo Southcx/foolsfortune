@@ -1,6 +1,6 @@
 // ---------------------------------------------------------------------------------------
 // A DOMAIN'S RUNGS IN PLAY (docs/plans/DOMAINS.md 16, 17; the rules Dovina's, progress/domainarts.js): the runtime of the seven first
-// relations (each domain's at level 15).
+// relations (each domain's at level 10).
 // Each rung is a modifier with a source you can see (DESIGN.md 22), drawn in its domain's own grammar from the library
 // (vfx/library/domains.js, Calissa's: Ouranurgy falls from above, Manifestation grows up and crystallises, Divination sweeps flat,
 // Psychokinesis throws out, Possession draws in, Alteration sweeps a band, Spellscription writes), so a rung reads as its domain at a
@@ -48,6 +48,7 @@ import * as THREE from 'three';
 import { RAPIER, GROUPS } from '../../core/physics.js';
 import { liveMoment } from '../../core/livemoment.js';
 import { DOMAIN_ARTS, RULE_WHEN, VOWS, VOW, shatterOf } from '../../progress/domainarts.js';
+import { TRAITS, traitOpen, doesOf } from '../../progress/domainladder.js';
 import { PRESSURE } from '../../progress/stones.js';
 import { typeWeaknessOf } from '../../progress/combat/constitution.js';
 import { familiarityOf } from '../../progress/familiarity.js';
@@ -100,7 +101,8 @@ export class DomainArtsRun {
   open(id) { return !!this.arts?.open?.(id); }
   /** Working now: a passive or reaction holding a notch, an action worn (domainArts.on). */
   on(id) { return !!this.arts?.on?.(id); }
-  does(id) { return DOMAIN_ARTS[id].does; }
+  /** A rung's numbers, with its open traits laid over (progress/domainladder.js: a milestone's modifier, never the row changed). */
+  does(id) { const g = this.game; return doesOf(id, g.ledger, g.psyche?.level ? (d) => g.psyche.level(d) : null) || DOMAIN_ARTS[id].does; }
   fire(art, more = {}) { this.game.events?.emit('domain.art.fire', { art, ...more, by: 'courier' }); }
   play(name, ctx) { return this.game.vfx?.play?.(name, ctx) || null; }
   /** Where a region of the vessel is in the world now (its first capsule's middle), for a look to sit on. */
@@ -135,7 +137,7 @@ export class DomainArtsRun {
     const H = this.held; if (!H || H.parried) return;
     H.parried = true; H.blow.k *= this.does('postpone').parried;
     this.play('domain.ouranurgy.hit', { pos: this.game.player.pos.clone().add(UP) });
-    this.fire('postpone', { parried: true });
+    this.fire('postpone', { parried: true, left: this.does('postpone').parried });
   }
   land() {
     const H = this.held; this.held = null; H.h?.stop?.();
@@ -252,7 +254,7 @@ export class DomainArtsRun {
     if (want !== this.vowOn) {
       if (this.vowOn) g.lachryma?.removeModifier?.('domain.vow');
       this.vowOn = want; this.vowKept = 0;
-      if (want) g.lachryma?.addModifier?.('domain.vow', { costMult: { '*': VOW.costMult }, source: 'A Vow' });
+      if (want) g.lachryma?.addModifier?.('domain.vow', { costMult: { '*': this.does('vow').costMult ?? VOW.costMult }, source: 'A Vow' });
     }
     if (!this.vowOn) return;
     if (VOWS[this.vowOn]?.state?.(g)) return this.breakVow();
@@ -350,7 +352,7 @@ export class DomainArtsRun {
     const dir = _a.copy(c.pos).sub(g.player.pos).setY(0); if (dir.lengthSq() < 1e-6) dir.set(0, 0, 1);
     g.creatures?.strike?.(c, c.pos.clone().add(UP), dir.normalize().clone(), moved * D.power, 'link', 'courier', null, 'influence');
     this.play('domain.possession.hit', { pos: c.pos.clone().add(UP) });
-    this.fire('link', { kind: c.kind, region, k: +moved.toFixed(2) });
+    this.fire('link', { kind: c.kind, region, k: +moved.toFixed(2), share: D.share });
     this.arts?.used('link', Math.min(1, 0.4 + moved));
     return k - moved;
   }
@@ -378,7 +380,7 @@ export class DomainArtsRun {
     this.arts?.used('reactions', R.kind === 'flare' ? 0.8 : 0.6);
   }
 
-  shatterNow() { return shatterOf(this.game.psyche?.level?.('psychokinesis') ?? 15); }
+  shatterNow() { return shatterOf(this.game.psyche?.level?.('psychokinesis') ?? 10); }
   /** A shell near breaking: its stun past (1 - shatter) of full, not already down. */
   inRange(c) { const st = this.game.stun; return !!st && c?.alive && !st.stunned(c) && st.meter(c) >= 1 - this.shatterNow(); }
 
@@ -403,10 +405,22 @@ export class DomainArtsRun {
     A.used('standingRule', 0.7);
   }
 
+  /** Say each trait once, the first time it opens (its rung's numbers change from then: `does`). Kept in the rungs' told list. */
+  teachTraits() {
+    const g = this.game, A = this.arts, lv = g.psyche?.level ? (d) => g.psyche.level(d) : null; if (!A?.told) return;
+    for (const [id, T] of Object.entries(TRAITS)) {
+      const key = `trait.${id}`; if (A.told.includes(key) || !traitOpen(id, g.ledger, lv) || !this.open(T.of)) continue;
+      if (g.lend?.has?.('summit')) continue; // (a lent level is not an achievement: said only when earned)
+      A.told.push(key); g.save?.dirty?.('domainArts');
+      g.events?.emit('domain.trait.learn', { trait: id, art: T.of, domain: T.domain, by: 'courier' });
+    }
+  }
+
   // ---- each frame ----------------------------------------------------------------
   update(dt) {
     this.now += dt;
     const g = this.game, P = g.player; if (!P || !this.arts) return;
+    if (!this.traitAt || this.now - this.traitAt >= 1) { this.traitAt = this.now; this.teachTraits(); }
     if (this.held && this.now >= this.held.at) this.land();
     if (this.plateOn && this.now >= this.plateOn.until) this.unplate('melt');
     for (let i = this.steps.length - 1; i >= 0; i--) if (this.now >= this.steps[i].until) this.dropStep(i);

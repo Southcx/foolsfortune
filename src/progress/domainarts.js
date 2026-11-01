@@ -11,7 +11,7 @@
 // teacher showing once), every later use its own quality (domains.js SOURCES). Every number here is a first number, each with its reason;
 // the runtime is courier/domainarts/ (game.domainArtsRun).
 //
-// Wave 1 is each domain's first relation, at level 15 (DOMAINS.md 16: moved from 30 on the critic's pacing). The next rungs are written in
+// Wave 1 is each domain's first relation, at level 10 (DOMAINS.md 16 moved it from 30 to 15; 18, South's milestone every ten, to 10). The next rungs are written in
 // DOMAINS.md 16's table and come as their own rows here. A passive or reaction takes a notch (notchesFor): Hollow Knight's budget.
 //
 // Prior art: shu-ha-ri (Aikido's and the Urasenke tea school's ladder of keep, break, leave); Old School RuneScape's skills and its
@@ -106,29 +106,28 @@ export const VOW = { costMult: 0.75, again: 30, keptEvery: 60 };
 
 const R = (domain, level, kind, label, line, how, does, feat, more = {}) => ({ domain, level, kind, label, line, how, does, feat, ...more });
 
-/** The first relations (wave 1: each domain's at level 15, DOMAINS.md 16: the critic's pacing, so the seven fall inside one
- *  playthrough). `line` the effect in one line (CLARITY.md), `how` the lesson's line (said once, when it opens). */
+/** The first relations (wave 1: each domain's at level 10, DOMAINS.md 16 and 18: the critic's pacing, then South's milestone every ten). `line` the effect in one line (CLARITY.md), `how` the lesson's line (said once, when it opens). */
 export const DOMAIN_ARTS = {
   // OURANURGY (when, and where?): a blow's arrival moved in time
-  postpone: R('ouranurgy', 15, 'reaction', 'Postpone', 'A blow that gets past your shield cracks you 4 seconds late.',
+  postpone: R('ouranurgy', 10, 'reaction', 'Postpone', 'A blow that gets past your shield cracks you 4 seconds late.',
     'Parry another blow before it lands and it lands at half. It lands on the clay, wherever you are by then.', { delay: 4, parried: 0.5 }, ['lateParry', 10]), // (4 s: FFXIV's Doom; WoW's Stagger, known hard to read: so one held at a time, shown, and a notch you can take off)
   // MANIFESTATION (in what form?): the pool's liquid set solid
-  plating: R('manifestation', 15, 'action', 'Plating', 'Set 20 of your pool solid over the part of you facing the nearest foe: it takes most of that part\'s next crack.',
+  plating: R('manifestation', 10, 'action', 'Plating', 'Set 20 of your pool solid over the part of you facing the nearest foe: it takes most of that part\'s next crack.',
     'It holds 20 off your pool\'s top while it stands. Unspent after 30 seconds, it melts back at 15. It cannot stop a crack that would shatter you.', { held: 20, back: 15, dur: 30, takes: 0.85 }, ['shieldRun', 10], { cooldown: 8 }), // (solid takes 0.85 of a full blow, the shield's 20 pool 0.57: harder, not whole; the cooldown from its end)
   // DIVINATION (what is known?): when a mind will look (the critic: the crack mark would mostly read "torso"; the watch is a new kind)
-  watch: R('divination', 15, 'passive', 'The Watch', 'A Figment\'s watch shows: while its head is down, how long until it looks up.',
+  watch: R('divination', 10, 'passive', 'The Watch', 'A Figment\'s watch shows: while its head is down, how long until it looks up.',
     'Its bouts are its own and they never lie: move while it is down (STEALTH.md).', { reach: 30 }, ['candid', 10]),
   // PSYCHOKINESIS (with how much force?): a blow that breaks (SUBSTRATE.md F5b as written: an execute, never a number)
-  shatter: R('psychokinesis', 15, 'passive', 'Shatter', 'A Figment whose shell is near breaking glows; a heavy blow on it then breaks it at once.',
+  shatter: R('psychokinesis', 10, 'passive', 'Shatter', 'A Figment whose shell is near breaking glows; a heavy blow on it then breaks it at once.',
     'Near: its stun past (1 - shatter) of full. Heavy: a blow of power 2 or more (a charge, a finisher, a heavy throw).', { minPower: 2 }, ['heavyThrow', 25]),
   // POSSESSION (whose?): another mind's openness (the critic: open is the Agitation band alone, and its gift is a verb)
-  receptivity: R('possession', 15, 'passive', 'Receptivity', 'A mind whose agitation is in its best band shows open, and you may reprogram it without stunning it first.',
+  receptivity: R('possession', 10, 'passive', 'Receptivity', 'A mind whose agitation is in its best band shows open, and you may reprogram it without stunning it first.',
     'Open is the band where its Lachryma yields most: agitate it, then catch it there.', {}, ['longRelease', 10]),
   // ALTERATION (of which kind?): a blow's kind exchanged (the critic: knowing the weakness is the skill; the art turns what you know)
-  retype: R('alteration', 15, 'action', 'Re-type', 'For 20 seconds the tool in your hands strikes as another type: the nearest creature\'s weakness if you know its kind, else the next type in turn.',
+  retype: R('alteration', 10, 'action', 'Re-type', 'For 20 seconds the tool in your hands strikes as another type: the nearest creature\'s weakness if you know its kind, else the next type in turn.',
     'Know a kind (photograph it, or down it five times) and Re-type finds its weakness for you.', { dur: 20, reach: 20, knows: 2 }, ['weakDown', 15], { cost: 10, cooldown: 30 }),
   // SPELLSCRIPTION (under which rule?): a condition written
-  standingRule: R('spellscription', 15, 'passive', 'A Standing Rule', 'Write one rule: when you do one thing, another follows, for 5 of your pool.',
+  standingRule: R('spellscription', 10, 'passive', 'A Standing Rule', 'Write one rule: when you do one thing, another follows, for 5 of your pool.',
     '/rule lists the choices. Each fires at most once in 3 seconds.', { every: 3, cost: 5 }, ['cleanMacro', 20]),
 
   // THE SECOND RELATIONS (level 30, wave 2: DOMAINS.md 17). Each is the deeper form of the nearest class art's verb, never its copy.
@@ -158,9 +157,9 @@ export const DOMAIN_ARTS = {
     'A reaction a stamp, not a cell. Creatures standing in it take it; you never do.', { calm: 3, flare: 1, radius: 1.5, every: 0.25 }, ['awakened', 4]),
 };
 
-/** Psychokinesis's shatter (SUBSTRATE.md F5b): 0.25 at 15, rising on a straight line to 0.6 at 99 (past 0.6 a heavy blow would break a
+/** Psychokinesis's shatter (SUBSTRATE.md F5b): 0.25 at 10, rising on a straight line to 0.6 at 99 (past 0.6 a heavy blow would break a
  *  fresh shell outright, which is the 99's own rule-break, not a rung's). */
-export const shatterOf = (level) => (level < 15 ? 0 : 0.25 + 0.35 * Math.min(1, (level - 15) / 84));
+export const shatterOf = (level) => (level < 10 ? 0 : 0.25 + 0.35 * Math.min(1, (level - 10) / 89));
 
 export const isDomainArt = (id) => !!DOMAIN_ARTS[id];
 export const artsOfDomain = (domain) => Object.keys(DOMAIN_ARTS).filter((id) => DOMAIN_ARTS[id].domain === domain);

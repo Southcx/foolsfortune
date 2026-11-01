@@ -11,6 +11,7 @@ import { renderLedger, renderRecords, renderAngling, renderCurios } from './ledg
 import { renderCollections } from './collections.js';
 import { renderSealBook } from './sealbook.js';
 import { renderStatus } from './status.js';
+import { renderGodArts } from './godarts.js';
 import { now } from '../../core/calendar.js';
 import { renderVeritome } from '../../tools/veritome/ui.js';
 import { renderArcana } from './arcana.js';
@@ -41,6 +42,7 @@ const CSS = `
 #codex .shelf .tab { cursor: var(--jcur-pointer, pointer); opacity: .5; padding-bottom: 3px; white-space: nowrap; } #codex .shelf .tab.on { opacity: 1; border-bottom: 2px solid var(--accent); } #codex .shelf .tab:hover { opacity: .9; }
 #codex .body { display: grid; grid-template-columns: 250px 1fr; gap: 16px; min-height: 300px; }
 @media (max-width: 720px) { #codex .body { grid-template-columns: 1fr; } }
+@media (max-height: 480px) { #codex .cx { padding: 8px 14px; } #codex header { margin-bottom: 4px; } #codex header .sub { display: none; } #codex .shelf { flex-wrap: nowrap; overflow-x: auto; white-space: nowrap; gap: 0 16px; padding-bottom: 4px; margin-bottom: 6px; scrollbar-width: none; } } /* (a phone on its side: the shelves one scrolling row, so a page keeps the height: Calissa's ask for the GOD ARTS ladder) */
 #codex .list { display: flex; flex-direction: column; gap: 6px; }
 #codex .row { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid rgba(255,178,122,.25); border-radius: 4px; cursor: var(--jcur-pointer, pointer); background: rgba(28,13,8,.35); }
 #codex .row.sel { border-color: var(--accent); background: rgba(var(--jsel),.3); }
@@ -166,6 +168,7 @@ export class Codex {
       tabs.appendChild(t);
     }
     cx.appendChild(tabs);
+    requestAnimationFrame(() => { const on = tabs.querySelector('.on'); if (on && tabs.scrollWidth > tabs.clientWidth) tabs.scrollLeft = on.offsetLeft - (tabs.clientWidth - on.offsetWidth) / 2; }); // (one scrolling row on a phone on its side: the open shelf kept in view)
     if (this.shelf === 'lend') { // (the lend panel: ui/lendpanel.js; outside DEBUG there is none, and the shelf falls back to the arts)
       const P = lendPanel(this.game, { onChange: () => { this.sys.changed?.(); this.render(); } });
       if (P) { cx.appendChild(P); this.rows = {}; this.cardHost = null; return; }
@@ -173,6 +176,7 @@ export class Codex {
     }
     if (this.shelf === 'records') cx.appendChild(el('div', 'shelf', saveName(this.game).toUpperCase())); // (which save these are: DEBUG-MODE.md section 2)
     if (this.shelf === 'status') { renderStatus(this, cx); this.rows = {}; this.cardHost = null; return; }
+    if (this.shelf === 'god') { this.rows = {}; this.cardHost = null; renderGodArts(this, cx); return; } // (a page a domain, its ladder of milestones: codex/godarts.js)
     if (this.shelf === 'seals') { renderSealBook(this, cx); this.rows = {}; this.cardHost = null; return; } // (the places' seals and your imprints: codex/sealbook.js)
     if (this.shelf === 'collections') { renderCollections(this, cx); this.rows = {}; this.cardHost = null; return; } // (the collection log: codex/collections.js) // (the domains and the attributes as radars: codex/status.js)
     if (this.shelf === 'ledger' || this.shelf === 'records' || this.shelf === 'angle' || this.shelf === 'curios' || this.shelf === 'veritome' || this.shelf === 'arcana' || this.shelf === 'tools' || this.shelf === 'sound' || this.shelf === 'grimoire' || this.shelf === 'sondelass') {

@@ -172,7 +172,7 @@ So the god hand trains the same psyche the Courier does, and a Courier strong in
 | **Spellscription** | transcribing a thing down: glyphs, macros, maps | **the seven miracles** (section 4: written as signs, so they are this domain's); **Ward** (a circle drawn on the ground: creatures cannot cross it for its time); **Stamp** (a patch of terrain copied as a rutter of the land and pressed down elsewhere: a blueprint, the Cogitomap's cousin) | Deluge | a sign's size, a ward's span, a stamp's area | how cleanly the sign is drawn (the gesture's fit, as the brush's glyphs are scored) |
 
 - **Unlocked as the house does it** (arts only by achievement): the existing five stay as they are; each new power opens by its
-  domain's level (a power at levels 1, 15, 35, 60 of its domain, in the order listed) or by a feat of the domain on foot. The epics open
+  domain's level (a power at levels 1, 20, 40, 50 of its domain: DOMAINS.md 18, a milestone every ten; it was 1, 15, 35, 60) or by a feat of the domain on foot. The epics open
   at 80 of their domain. The numbers are mine once the powers exist.
 - **The ledger** gets `god.<power>` counts and each its `domain` source in `domains.js` (mine), as `god.manifest` and `god.sunder` are now.
 
