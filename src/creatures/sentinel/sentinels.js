@@ -3,8 +3,10 @@
 // island sends one of its own Figments to find what is warping it and put it right: it walks to where the god hand worked the island
 // (the warp marks rejection keeps), wears the hand's creations there back into the island's matter, and the island's dissonance falls
 // with each mend. It guards; it never hunts for its own sake: it fights only what struck it, and once nothing is left to mend it sinks
-// back into the island. Its mind is data (sentinel/mind.js) built from the AI parts; its body for now is the Lantern Wisp's
-// (wisp/lanternwisp.js, `c.ev = 'sentinel'`: its events say sentinel.*), a placeholder until Calissa's clay body (her handoff).
+// back into the island. Its mind is data (sentinel/mind.js) built from the AI parts. It runs on the Lantern Wisp's runtime (wisp/
+// lanternwisp.js: the capsule, the moves, the cast; `c.ev = 'sentinel'`: its events say sentinel.*), the wisp's model hidden and
+// Calissa's clay body worn in its place (vfx/sentinelbody.js, `game.makeSentinelBody`), driven here: its pose, its windup, rising out of
+// the sand, a blow's cracks, crumbling down.
 //
 //   game.sentinels = new Sentinels(game)   .send(at, level)   .update(dt)   .list   SENTINEL (its numbers)
 //   events: sentinel.wake { level, ground, by }, sentinel.seek { by }, sentinel.mend { volume, last, ground, by }, and from its body sentinel.hit,
@@ -16,6 +18,9 @@
 import { Reasoner } from '../ai/index.js';
 import { sentinelMind } from './mind.js';
 import { groundOf } from '../../godhand/matter.js';
+import { WISP } from '../wisp/lanternwisp.js';
+
+const POSE = { fight: 'watch', watch: 'watch', drift: 'walk', flee: 'walk', stun: 'stun', sleep: 'stun', melt: 'stun' };
 
 /** Its numbers. from: the Dissonance Level it is first sent at; one alive at a time; mend: the dissonance a mend takes off; wear: the
  *  radius (m) of the creation worn back at a mark; reach: how near (m) it mends from; marks: how many warp marks rejection keeps;
@@ -34,6 +39,8 @@ export class Sentinels {
     if (!W || this.list.filter((c) => c.alive).length >= SENTINEL.alive) return null;
     const c = W.spawn(at);
     c.kind = 'sentinel'; c.name = 'sentinel'; c.ev = 'sentinel'; c.once1 = true; c.sentinel = true; c.hp = c.maxHp = SENTINEL.hp;
+    const B = g.makeSentinelBody?.({ scale: 1 });
+    if (B) { c.body = B; c.model.visible = false; c.root.add(B.root); c.rise = 0; c.seenHp = c.hp; }
     this.list.push(c);
     g.events?.emit('sentinel.wake', { level, ground: SENTINEL.ground(), by: 'environment' });
     if (c.brain.action) c.brain.end('swap');
@@ -45,10 +52,27 @@ export class Sentinels {
     if (!this.list.length) return;
     const W = this.game.wisps;
     for (let i = this.list.length - 1; i >= 0; i--) {
-      const c = this.list[i]; if (c.alive) continue;
+      const c = this.list[i];
+      this.drive(c, dt);
+      if (c.alive) continue;
       if (c.deadT < SENTINEL.gone) continue;
       this.list.splice(i, 1); this.takeDown(W, c);
     }
+  }
+
+  /** Calissa's body driven from the runtime's state: on the ground (the wisp's hover taken off), its pose, its windup, a blow. */
+  drive(c, dt) {
+    const B = c.body; if (!B) return;
+    B.root.position.y = c.pos.y - c.root.position.y;
+    if (c.alive) {
+      c.rise = Math.min(1, c.rise + dt / 1.2);
+      const A = c.attack;
+      B.drive({ pose: POSE[c.pose] || 'idle', move: A ? 'slam' : null, k: A ? Math.max(0, Math.min(1, 1 - A.t / WISP.cast.wind)) : 0, rise: c.rise });
+      if (c.hp < c.seenHp) B.hit(1 - c.hp / (c.maxHp || SENTINEL.hp));
+      c.seenHp = c.hp;
+    } else if (!c.downed) { c.downed = true; B.down(); }
+    if (!c.alive) c.root.visible = !B.done; // (it crumbles where it stood: a vanish or a scatter would hide it at once)
+    B.update(dt);
   }
 
   /** A body taken down for good (a wisp re-forms; a sentinel does not). */
@@ -58,6 +82,6 @@ export class Sentinels {
     g.scene.remove(c.root); g.creatures.remove?.(c); g.ai?.remove?.(c.brain);
     g.physics.byCollider?.delete(c.col.handle);
     try { g.physics.world.removeRigidBody(c.rb); } catch { /* gone */ } // (its collider goes with it)
-    c.mixer?.stopAllAction?.();
+    c.mixer?.stopAllAction?.(); c.body?.dispose(); c.body = null;
   }
 }
