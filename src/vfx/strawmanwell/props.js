@@ -81,7 +81,7 @@ class WellProps {
     const C = this.ctx, meshes = this.mergedAll(L.id, C.color[keyName]); if (!meshes.length) return;
     const boxes = meshes.flatMap((m) => C.boxes.boxesOf(m));
     if (keyName === 'thread') this.threads(K, L, boxes);
-    else boxes.forEach((B, i) => { if (keyName === 'slope') felt(K, B); else { K.frame(frameOf(B)); this.shape(K, L, keyName, B, i); } });
+    else boxes.forEach((B, i) => { if (keyName === 'slope') felt(K, B); else if (keyName === 'spool' && L.id === 'arena' && B.w > 6) return; else { K.frame(frameOf(B)); this.shape(K, L, keyName, B, i); } }); // (the Arena's underside is the rehearsal's black drape: arena/set.js)
     for (const m of meshes) { C.boxes.hide(m); this.hidden.push(m); }
   }
 

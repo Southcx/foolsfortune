@@ -10,6 +10,7 @@
 //   the props     the sewing kit in the placeholder boxes' places: spools, pins, thread, tape, felt, buttons, thimbles (props.js)
 //   the troupe    the straw dummies as Pip's earlier tries at Strawman, and their percent (dummies.js)
 //   the grid      the Flood's falling-sand grid drawn by cell kind (gridlook.js, which the Flood stage builds)
+//   the Arena     the platform fighter's stage at rehearsal: its set, its fighters' looks, the understudies (arena/look.js)
 // The room is built on arrival and taken down whole on leaving (the Well's area): the look dresses it when it is built and lets go of
 // its own textures when it is torn down; what it adds goes into the lanes' groups, so the kit's teardown takes the meshes with it.
 //
@@ -28,6 +29,7 @@ import { dressTheatre } from './theatre.js';
 import { dressFlats } from './flats.js';
 import { dressProps } from './props.js';
 import { dressTroupe } from './dummies.js';
+import { dressArena } from './arena/look.js';
 
 /** The one palette every part draws from (Pip's sewing basket under stage light), and the light's warmth. */
 export const WELL_LOOK = {
@@ -39,7 +41,7 @@ export const WELL_LOOK = {
   footlight: 0xffd6a0, haze: 0x3a2618,
 };
 
-const PARTS = [dressTheatre, dressFlats, dressProps, dressTroupe];
+const PARTS = [dressTheatre, dressFlats, dressProps, dressTroupe, dressArena];
 
 export class WellLook {
   constructor(game) { this.game = game; this.room = null; this.parts = []; this.laneId = null; this.ctx = null; }

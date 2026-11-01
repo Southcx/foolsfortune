@@ -11,6 +11,7 @@
 //   brawl    a painted arena: arches, banners, a crowd of cut-outs
 //   machine  the inside of a sewing machine: its arm, gears that turn, bobbins, a painted clockwork sky
 //   flood    the toy theatre's sea: rows of cut-out waves rocking in their grooves, a storm sky, a lighthouse
+//   arena    the platform fighter's stage at rehearsal: the hall's bare back wall, the backdrop half painted on its frame, the clutter
 // Only the shown lane's sheets exist: a lane is painted when it is shown (a few regions a frame, more under the seam's cover) and let
 // go when it is left. The placeholder back flat stands until the lane's flats are up, then is hidden; its collider is the kit's and
 // stays. A play surface of the flat's kind nearer in (the Run's wall-run flat, a thin box behind the plane) is dressed where it
@@ -29,9 +30,10 @@ import { STOMP } from './flats/stomp.js';
 import { BRAWL } from './flats/brawl.js';
 import { MACHINE } from './flats/machine.js';
 import { FLOOD } from './flats/flood.js';
+import { ARENA } from './flats/arena.js';
 
 /** A lane's theme, by its id. */
-const THEMES = { wings: WINGS, run: RUN, climb: CLIMB, stomp: STOMP, brawl: BRAWL, machine: MACHINE, flood: FLOOD };
+const THEMES = { wings: WINGS, run: RUN, climb: CLIMB, stomp: STOMP, brawl: BRAWL, machine: MACHINE, flood: FLOOD, arena: ARENA };
 /** How long the painting may take a frame (real ms): in play, and under the seam's cover (nothing of the world is drawn). */
 export const FLATS = { slice: 6, covered: 24 };
 

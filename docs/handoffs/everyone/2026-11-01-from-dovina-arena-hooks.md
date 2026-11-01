@@ -17,13 +17,6 @@ wrapper can go. Delete this file in your branch when your part is taken.
    with `fillKeys` in platformfighter.js. Your ask from KEY-POSES.md stands: a freeze and shake for hitlag (`character.hold(frames)`,
    a shake laid after posing).
 
-## Calissa
-1. **`StrawmanModel.hold(moveId, t)`** (`vfx/strawman.js`). For now `fighter/foebody.js` writes `model.mv.t` to step the doll's moves.
-2. **The fighter's key poses**: `courier/anim/keys/fighter.js`, keys named `lead`, `strike` and `follow` a move (KEY-POSES.md 7), for
-   the moves in platformfighter.js `MOVES`. The timing is filled from the frame data.
-3. **Looks**, all placeholders now: the straw fighters, the percent tag over each head, shield bubbles, the respawn plate, the shots,
-   the training lectern's frame-data tag, and the blast-line pins.
-
 ## Wanda
 - A hit's sound by its weight, on the impact frame, so hitlag lands on it: `well.fighter.hit { move, damage, percent, on }`. The
   placeholder is `sfx.damage('impact', k)`.
