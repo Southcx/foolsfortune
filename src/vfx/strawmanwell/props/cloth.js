@@ -24,6 +24,9 @@ import { extruded, tube, hash, shade } from './kit.js';
 export const CLOTH = {
   tape: { depth: 0.45, tick: 0.5, hook: 0.28 },
   ribbon: { depth: 0.46, notch: 0.28, piping: 0.05 },
+  // a soft platform's front face set this far behind the plane (m): the bodies stand in front of it, under it or on its lip, never in it
+  // (its height is the stage's, out of a standing head's reach only past a double jump's: CASEBOOK-CASES.md, the planks through the head)
+  clear: 0.42,
   hang: { r: 0.045, inset: 0.3, back: 0.3 },
   felt: { sheet: 0.13, layer: 0.34, stitch: 0.3, inset: 0.06 },
   sequin: { r: 0.15, dx: 0.22, dz: 0.2, tilt: 0.3, bead: 0.1 },
@@ -34,26 +37,26 @@ const V = (x, y, z) => new THREE.Vector3(x, y, z);
 
 /** A tape measure as a thin platform w x h x d: the tape, ticks on its front edge and along its top's front, its hook over the right end. */
 export function tape(K, w, h, d) {
-  const P = K.pal, C = CLOTH.tape, y0 = -h / 2, y1 = h / 2, zf = d * C.depth, yellow = P.mustard;
-  K.matte.box(-w / 2, w / 2, y0, y1, -zf, zf, yellow);
+  const P = K.pal, C = CLOTH.tape, y0 = -h / 2, y1 = h / 2, zb = -d * C.depth, zf = -CLOTH.clear, zm = (zb + zf) / 2, yellow = P.mustard;
+  K.matte.box(-w / 2, w / 2, y0, y1, zb, zf, yellow);
   K.matte.box(-w / 2 + 0.02, w / 2 - 0.02, y0 + 0.02, y0 + 0.05, zf, zf + 0.012, shade(yellow, 0.7));
   for (let i = 1, x = -w / 2 + C.tick; x < w / 2 - 0.15; i++, x += C.tick) {
     const big = i % 2 === 0, tw = big ? 0.045 : 0.032, col = big ? P.velvet : P.ink;
     K.matte.box(x - tw, x + tw, big ? y0 + h * 0.12 : y1 - h * 0.55, y1, zf, zf + 0.016, col);
     K.matte.box(x - tw, x + tw, y1, y1 + 0.015, zf - (big ? 0.55 : 0.32), zf, col);
   }
-  K.metal.box(w / 2, w / 2 + 0.06, y0 - C.hook, y1 + 0.02, -zf * 0.8, zf * 0.8, P.brass);
-  K.metal.add(new THREE.CylinderGeometry(0.05, 0.05, 0.03, 8).rotateZ(Math.PI / 2).translate(w / 2 + 0.07, y0 - C.hook * 0.45, zf * 0.5), shade(P.brass, 0.75));
+  K.metal.box(w / 2, w / 2 + 0.06, y0 - C.hook, y1 + 0.02, zm + (zb - zm) * 0.8, zm + (zf - zm) * 0.8, P.brass);
+  K.metal.add(new THREE.CylinderGeometry(0.05, 0.05, 0.03, 8).rotateZ(Math.PI / 2).translate(w / 2 + 0.07, y0 - C.hook * 0.45, zf - 0.1), shade(P.brass, 0.75));
 }
 
 /** A ribbon as a soft ledge w x h x d: its ends cut swallowtail, gold piping along the edges the stalls see. */
 export function ribbon(K, w, h, d, { col = K.pal.velvet, trim = K.pal.gold } = {}) {
-  const C = CLOTH.ribbon, zf = d * C.depth, n = Math.min(C.notch, w * 0.08), p = C.piping;
-  K.matte.add(extruded([[-w / 2, h / 2], [w / 2, h / 2], [w / 2 - n, 0], [w / 2, -h / 2], [-w / 2, -h / 2], [-w / 2 + n, 0]], zf * 2, -zf), col);
+  const C = CLOTH.ribbon, zb = -d * C.depth, zf = -CLOTH.clear, n = Math.min(C.notch, w * 0.08), p = C.piping;
+  K.matte.add(extruded([[-w / 2, h / 2], [w / 2, h / 2], [w / 2 - n, 0], [w / 2, -h / 2], [-w / 2, -h / 2], [-w / 2 + n, 0]], zf - zb, zb), col);
   const xa = -w / 2 + n * 0.7, xb = w / 2 - n * 0.7;
   K.metal.box(xa, xb, h / 2 - p - 0.005, h / 2 - 0.005, zf, zf + 0.02, trim);
   K.metal.box(xa, xb, -h / 2 + 0.005, -h / 2 + p + 0.005, zf, zf + 0.02, trim);
-  for (const z of [zf - 0.16, -zf + 0.06]) K.metal.box(xa, xb, h / 2, h / 2 + 0.015, z, z + 0.1, trim);
+  for (const z of [zf - 0.16, zb + 0.06]) K.metal.box(xa, xb, h / 2, h / 2 + 0.015, z, z + 0.1, trim);
 }
 
 /** The threads a flown piece hangs from: one up from each end of its top, near its back, to the flies (`fly`: their height over the

@@ -1071,3 +1071,5 @@ NEW:one-row-one-rule. **Things that stand in one row are laid by one rule.** Two
   their own numbers drift apart by a few pixels: the second reads the first's geometry (its row height, its insets), never its own.
 NEW:hit-layer-clear. **A full-area hit layer (the stick's, a drag's) is cut clear of every control and readout in its area.** The
   layout knows where the log, the top bar and the shelves stand; the layer starts past them, so a tap on one is never the layer's.
+NEW:plane-clear. **On a side-on stage, nothing drawn stands in the plane the bodies move in unless it is solid to them.** A thing they pass under
+  or in front of (a soft platform, a ledge's lip, a prop) is drawn behind the plane; its height is the stage's rule and is not moved to hide a clip.

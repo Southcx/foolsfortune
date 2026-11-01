@@ -4767,3 +4767,14 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** on touch the move area starts under the top bar, the top row and the ticker (y 88 at 896 x 414). After: the ticker and the
   shelves are theirs; the stick's home and the rest of the left half unchanged.
 - **Rule:** NEW:hit-layer-clear
+
+### 2026-11-01 · The Courier stood through the Arena's soft platforms (vfx/strawmanwell/props/cloth.js; found by South, in the Arena's shots)
+- **Seen:** the Courier and the straw fighters standing at their starting marks drawn through the side platforms' tape measures, their
+  heads and shoulders inside the plank.
+- **Cause, as measured:** the side platforms' top is 1.3 m (their foot 1.1 m), the Courier stands about 1.75 m, and the marks (-4.5;
+  4.5, 6.2) are under them. Raising them clear of a standing head (foot over 1.85 m) would put them out of reach: the Courier's full
+  hop is 1.03 m and a full hop and a double jump 1.76 m (measured in the Arena), so no height both clears the head and can be jumped
+  onto. The plank was drawn 2.16 m deep, centred on the plane the bodies stand in.
+- **Fix:** a soft platform's tape measure (and the Brawl's ribbon) is drawn behind the plane, its front face 0.42 m back
+  (`CLOTH.clear`): a body under it stands in front of it, a body on it stands on its lip. The heights and colliders stand as they were.
+- **Rule:** NEW:plane-clear
