@@ -34,10 +34,10 @@ bottom: (802, 343) on a 896 x 414 iPhone.
 
 ## Smaller points
 
-- **PICK and BELT** sit on the outer ring between E and F, not on the edge. The right edge under the Sight is too narrow for two
-  44 px tiles beside F.
-- **The middle.** The arc keeps out of the centre 60% except its lower-right corner, which the inner ring's B and D reach into by
-  about 20 px. Every corner-arc game gives that corner up, and the bodies stand higher than it.
+- **PICK and BELT** sit on the outer ring's upper end, past E, not on the screen's edge. The right edge under the Sight is too narrow
+  for two 44 px tiles.
+- **The middle.** The arc keeps out of the centre 60% except its lower-right corner. The outer ring's F and E reach into it by about
+  80 px at the bottom, under where the bodies stand. Every corner-arc game gives that corner up.
 - **A directional slot** (A and D in the Arena; D with a tool drawn) wears four small gold chevrons on its rim, so the stick's
   reading is told on the button itself.
 - **CROUCH on the stick:** a gold notch under the stick's ring, labelled until the first path has taught it.
