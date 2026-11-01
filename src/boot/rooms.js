@@ -26,6 +26,7 @@ import { ThrownHits } from '../world/impacts.js';
 import { MimicryLooks } from '../vfx/mimicry/look.js';
 import { SandboxLook } from '../vfx/sandbox/look.js';
 import { PanicMarks } from '../vfx/panic.js';
+import { DomainArtMarks } from '../vfx/domainartmarks.js';
 import { Geysers } from '../world/dunes/geysers.js';
 import { Raceway } from '../world/raceway/raceway.js';
 import { OpenSea } from '../world/opensea/opensea.js';
@@ -78,7 +79,7 @@ export function bootRooms(game, made) {
     game.wellTargets = new TrainingTargets(game.strawmanWell); // (its filler foes, Strawman's family: world/strawmanwell/targets.js)
     game.wellLook = new WellLook(game); // (the Well dressed as Pip's toy theatre: vfx/strawmanwell/look.js)
     game.impacts = new ThrownHits(game); // (anything loose thrown or kicked fast enough strikes a creature: world/impacts.js)
-    game.mimicryLooks = new MimicryLooks(game); game.sandboxLook = new SandboxLook(game); game.panicMarks = new PanicMarks(game); // (the puzzle stones, the ghost and a step's mark; the Sandbox dressed; panic over a creature a thrown thing struck: vfx/mimicry/, vfx/sandbox/, vfx/panic.js)
+    game.mimicryLooks = new MimicryLooks(game); game.sandboxLook = new SandboxLook(game); game.panicMarks = new PanicMarks(game); game.domainArtMarks = new DomainArtMarks(game); // (the puzzle stones, the ghost and a step's mark; the Sandbox dressed; panic over a creature a thrown thing struck: vfx/mimicry/, vfx/sandbox/, vfx/panic.js)
     game.geysers = new Geysers(game); // (slip geysers: launch pads on a cycle, world/dunes/geysers.js)
     game.makeSeaSerpent = (o) => new SeaSerpentBody(game, o); // (the sea serpent's body for its mind to drive: vfx/opensea/seaserpentbody.js, drive/update/hit/down)
     installSeaBeasts(game); // (the other sea beasts' bodies: game.makeSeaBeast(id, o) for the chain chassis, game.makeUmibozu(o), /beastlook: vfx/opensea/beasts/)

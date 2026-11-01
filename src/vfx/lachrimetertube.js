@@ -19,6 +19,7 @@
 //                   down the feed tube into the bulb; a bottle drains as it feeds (two avenues for the pool: OVERLAY.md 9)
 //   the BLINK'S PEARLS a brass rail beside the column, a glass pearl a Blink charge filling with Lachryma as it comes back; in combat
 //                   only (vfx/lachrimeter/blinkpearls.js; the owner, 2026-10-18)
+//   the HELD BLOW   Postpone's blow held round the bulb as a fuse burning to its landing (vfx/lachrimeter/heldblow.js; Dovina, 2026-11-01)
 //   the CUBE PLATE  a Nixie window in a brass plate on the plinth's face, left of the pool's count: a bismuth cube and the balance,
 //                   rolling digit by digit in fixed cells (vfx/lachrimeter/cubeplate.js; the owner, 2026-10-18)
 // The plinth is clay glazed in the window colour (ui/theme.js: 15.3, the window colour is the glaze of the frame's matter), with
@@ -50,6 +51,7 @@ import { T } from '../core/config.js';
 import { tierSize } from './tierscale.js';
 import { theme, THEMES, FONT } from '../ui/theme.js';
 import { BlinkPearls, PEARL_KIND } from './lachrimeter/blinkpearls.js';
+import { HeldBlowFuse } from './lachrimeter/heldblow.js';
 import { CubePlate, PLATE_W, PLATE_H } from './lachrimeter/cubeplate.js';
 import { letGo } from './letgo.js';
 import { numeralFit } from './wornnumerals.js';
@@ -410,6 +412,9 @@ export class LachrimeterTube {
     this.pearls = new BlinkPearls({ inst, uInst: U, body, onto, at, glassOf, glassB, glassF,
       kind: (u) => overlayShader(PEARL, u, { cull: 0 }), flat: () => basic(0xffffff, { transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, depthTest: false }) });
 
+    // Postpone's held blow as a fuse round the bulb (vfx/lachrimeter/heldblow.js; Dovina's domain rung, courier/domainarts/run.js)
+    this.fuse = new HeldBlowFuse({ add, basic });
+
     // the words beside it, in root space (CSS px, never turned): the held stretch's tag, a cost's count
     const plane = (map, o) => { const m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), basic(0xffffff, { map, depthTest: false, depthWrite: false })); m.renderOrder = 20 + o; m.frustumCulled = false; m.visible = false; root.add(m); return m; };
     this.tagC = cv(8, 8); this.tag = plane(this.tagT = tex(this.tagC), 0);
@@ -433,7 +438,7 @@ export class LachrimeterTube {
     this.quiet += dt;
     const cubes = g.cubes?.balance ?? 0; if (cubes !== this.lastCubes) { if (this.lastCubes >= 0) this.quiet = 0; this.lastCubes = cubes; } // (the cubes changed: it stands a few real seconds, as a gain does)
     const blink = this.blinkOf(), combat = g.combat ? !!g.combat.engaged : true, blinkBack = !!blink && combat && blink.n < blink.max; // (a charge coming back in a fight)
-    const want = avail < max - 0.5 || this.quiet < QUIET || reserved > 0 || held > 0 || blinkBack || g.spiritualLink?.state?.owner ? 1 : 0; // (a tool UI on the link holds it up: the tool draws from the pool it is tied to)
+    const want = avail < max - 0.5 || this.quiet < QUIET || reserved > 0 || held > 0 || blinkBack || g.spiritualLink?.state?.owner || g.domainArtsRun?.held || this.fuse?.busy ? 1 : 0; // (a tool UI on the link holds it up: the tool draws from the pool it is tied to)
     this.shown += (want - this.shown) * Math.min(1, dt * (want ? 7 : 3));
     if (!want && this.shown < 0.01) this.shown = 0;
     root.userData.overlayHidden = this.shown <= 0;
@@ -528,7 +533,7 @@ export class LachrimeterTube {
     root.updateMatrixWorld(true); this.inst.updateMatrix(); this.pitch.updateMatrix();
     this.uInst.value.copy(this.inst.matrixWorld).invert();
     this.inst.getWorldQuaternion(this.turnBack).invert();
-    this.pearls.update(dt, blink, combat, this.turnBack); this.state.pearls = this.pearls.state; this.skinTick?.(dt);
+    this.pearls.update(dt, blink, combat, this.turnBack); this.state.pearls = this.pearls.state; this.fuse.update(dt, g.domainArtsRun, 4); this.skinTick?.(dt);
     this.words(C, full, cap, cost > 0 ? costN : 0, short, lineP);
   }
 

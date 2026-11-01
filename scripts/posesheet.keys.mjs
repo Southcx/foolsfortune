@@ -17,11 +17,11 @@ import os from 'node:os';
 import path from 'node:path';
 
 /** The tool as the Anim Lab wears it, by its moveset's id (the key table's key). */
-const LAB_TOOL = { cutlass: 'sondelass:cutlass', kick: 'none', fighter: 'none', brawler: 'none', sondelass: 'sondelass:cutlass' };
+const LAB_TOOL = { cutlass: 'sondelass:cutlass', kick: 'none', fighter: 'none', brawler: 'none', sondelass: 'sondelass:cutlass', lockheartFighter: 'lockheart' };
 /** A table kept in another file than its tool's name (the fighter kits': courier/anim/keys/fighterkits.js), as [file, export]. */
-const TABLE = { brawler: ['fighterkits', 'BRAWLER'], sondelass: ['fighterkits', 'SONDELASS'] };
+const TABLE = { brawler: ['fighterkits', 'BRAWLER'], sondelass: ['fighterkits', 'SONDELASS'], lockheartFighter: ['lockheart', 'FIGHTER'] };
 /** Where a table's timing is filled when the game has not registered it: the module and its export. */
-const FILL = { fighter: ['/src/progress/platformfighter.js', 'fillKeys'], brawler: ['/src/progress/platformfighter.js', 'fillKeys'], sondelass: ['/src/progress/platformfighter.js', 'fillKeys'] };
+const FILL = { fighter: ['/src/progress/platformfighter.js', 'fillKeys'], brawler: ['/src/progress/platformfighter.js', 'fillKeys'], sondelass: ['/src/progress/platformfighter.js', 'fillKeys'], lockheartFighter: ['/src/progress/platformfighter.js', 'fillKeys'] };
 
 export async function keySheet(out, want) {
   const VW = +(process.env.VW || 320), VH = +(process.env.VH || 420);

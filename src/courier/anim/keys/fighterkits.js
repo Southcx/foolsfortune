@@ -22,6 +22,13 @@
 //   SONDELASS[move] / BRAWLER[move] = [{ pose, clip, frame, snap?, hold? }]   BARRAGE_CYCLE (the flurry's punches, looped)
 // ---------------------------------------------------------------------------------------
 
+import { KEYS as CUTLASS } from './cutlass.js';
+
+/** The world's string keys as the Arena's: lead-in, strike, follow-through, the timing left to the rule (fillKeys). One look in both
+ *  places: the cutlass's c1..c3 (keys/cutlass.js) are the Sondelass's jabs. */
+const BEAT = { lead: 'lead', strike: 'strike', follow: 'follow', land: 'follow' }; // (c3's landing is its follow-through)
+const beats = (keys) => keys.filter((k) => BEAT[k.pose]).map(({ pose, clip, frame }) => ({ pose: BEAT[pose], clip, frame }));
+
 /** A move's three keys on one clip, at its lead, strike and follow frames. */
 const keys = (clip, lead, strike, follow) => [
   { pose: 'lead', clip, frame: lead },
@@ -31,9 +38,9 @@ const keys = (clip, lead, strike, follow) => [
 
 /** The cutlass in the slots. A key's clip and its frames, each measured on the blade (strike: the middle of its fastest stretch). */
 export const SONDELASS = {
-  jab1: keys('Sond_Combo1', 1, 5, 9),             // Slash: strike 2..8, the blade farthest at 4
-  jab2: keys('Sond_Combo2', 3, 7, 11),            // Rising Slash: strike 5..9, farthest at 7
-  jab3: keys('Sond_Combo3', 8, 13, 17),           // Hop Slash: strike 12..14 as the feet come down
+  jab1: beats(CUTLASS.c1),                        // Slash: the world's own keys
+  jab2: beats(CUTLASS.c2),                        // Rising Slash
+  jab3: beats(CUTLASS.c3),                        // Hop Slash: its lead, the flat cut as the feet come down, the landing
   ftilt: keys('Sond_Combo4', 6, 11, 16),          // Leap Strike: 10..12, the overhead cut at 12
   utilt: keys('Sond_Launcher', 2, 7, 12),         // the launcher: 5..8, the cut rising
   dtilt: keys('swordHeavy', 8, 14, 19),           // Low Sweep: 11..16, the blade along the floor
