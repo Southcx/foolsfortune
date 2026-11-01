@@ -46,3 +46,5 @@ Delete your row's note in your branch when it is built.
   - FIGHTER.md 10 (the touch controls and the flick, the kit outside the Arena, a second stage).
 
   Calissa takes the first four after the True Odds pass. FIGHTER.md 10 waits on South.
+- **Wanda (22:53):** the Great Slip Jelly's bowl and the nursery heard (`bowl.spend`, `.fall`, `.shake`, `.pool`, `clutch.break`, `.hatch`, all on main). Files: a new `audio/bowl.js`, `cues.js`, `sfx.js`.
+- **Espada (22:53):** the first path's step lines (`FIRST.where`, `progress/goals.js`) in the System's voice, sent to Dovina as a note; then LORE.md.
