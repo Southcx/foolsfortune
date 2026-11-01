@@ -33,14 +33,14 @@ export function breakRules({ on, L, log, where, track }) {
     const c = track.chain;
     c.n = e.t - c.t < 0.45 ? c.n + 1 : 1; c.t = e.t;
     if (c.n >= 2) { const r = L.hi('chain.max', c.n, { at: where() }); if (r === 'beat' && c.n >= 6) track.pending.set('chain.max', { text: `Your longest chain is now ${c.n}.`, t: 1.2 }); }
-    if (c.n >= 3) log.say('battle', `You chain ${c.n} breaks.`, { key: 'chain', win: 0.6, fmt: () => `You chain ${track.chain.n} breaks.` });
-    else log.say('battle', `You shatter the ${e.kind}.`, { key: `br.${e.kind}`, win: 0.9, fmt: (n) => `You shatter ${plural(n, e.kind)}.` });
+    if (c.n >= 3) log.say('battle', `Chain: ${c.n} breaks.`, { key: 'chain', win: 0.6, fmt: () => `Chain: ${track.chain.n} breaks.` });
+    else log.say('battle', `Shattered the ${e.kind}.`, { key: `br.${e.kind}`, win: 0.9, fmt: (n) => `Shattered ${plural(n, e.kind)}.` });
     first(`kind.${e.kind}`, `Logged: your first ${e.kind} broken.`);
   });
   on('room.cleared', () => {
     L.inc('room.cleared');
     const r = L.lo('room.clear.time', track.roomT, { at: where() });
-    log.say('explore', `Every pot in the workshop is broken (${clock(track.roomT)}${r === 'beat' || r === 'new' ? ', a best' : ''}). The Tab panel sets the room again.`);
+    log.say('explore', `Every pot in the workshop is broken (${clock(track.roomT)}${r === 'beat' || r === 'new' ? ', new best' : ''}). Use the Tab panel to reset the room.`);
   });
   on('room.reset', () => { track.roomT = 0; L.inc('room.reset'); });
   on('clapper.down', (e) => {

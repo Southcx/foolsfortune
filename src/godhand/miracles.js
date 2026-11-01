@@ -69,7 +69,7 @@ export class Miracles {
 
   cast(pts, epic) {
     const g = this.game, rec = recognize([pts]), feeling = signOf(rec);
-    if (!feeling) { g.log.say('warn', 'The hand does not know that sign.', { key: 'miracle.sign', throttle: 2 }); sfx.dryFire(); return; }
+    if (!feeling) { g.log.say('warn', 'Sign not recognised.', { key: 'miracle.sign', throttle: 2 }); sfx.dryFire(); return; }
     if (!this.known(feeling)) { g.log.say('warn', `You have not awakened to ${feeling[0].toUpperCase() + feeling.slice(1)}.`, { key: 'miracle.feel', throttle: 2 }); sfx.dryFire(); return; }
     let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
     for (const p of pts) { if (p.x < x0) x0 = p.x; if (p.x > x1) x1 = p.x; if (p.y < y0) y0 = p.y; if (p.y > y1) y1 = p.y; }

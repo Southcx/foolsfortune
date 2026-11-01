@@ -28,7 +28,7 @@ export function weatherRules({ on, L, log, g }) {
     if (e.by !== 'courier') return;
     L.inc('sky.read');
     const said = (e.blocks || []).map((b) => `${b.aspect ? `${NAMES[b.aspect]}${b.strength > 0.6 ? ', heavy' : ''}${b.agate ? ` (${b.agate})` : ''}` : 'fair'} ${AHEAD(b.hour - e.now)}`);
-    log.say('info', said.length ? `The vane reads the sky over ${PLACE(e.island)}: ${said.join('; then ')}.` : 'The vane cannot read further.', { key: 'skyread', throttle: 2 });
+    log.say('info', said.length ? `Vane reading over ${PLACE(e.island)}: ${said.join('; then ')}.` : 'No further reading.', { key: 'skyread', throttle: 2 });
   });
   // the Veritome's clock: clock.read { ms?, by } (no ms: now)
   on('clock.read', (e) => {

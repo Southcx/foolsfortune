@@ -30,10 +30,10 @@ export function treasureRules({ on, L, log, where, g }) {
     const c = CURIO_BY_ID[e.id], t = TIERS[c.tier];
     if (e.dupe) { L.inc('curio.dupe'); log.say('loot', `${c.name} already recorded. Converted into cubes.`, { tone: tone(c.tier) }); return; }
     L.inc('curio.total'); L.inc(`curio.tier.${t.id}`);
-    log.say('loot', `You find the ${c.name}!`, { tone: tone(c.tier) });
+    log.say('loot', `Found: the ${c.name}!`, { tone: tone(c.tier) });
     if (L.first(`curio.first.${e.id}`)) log.say('record', `Logged: the ${c.name}. ${c.blurb}`);
   });
-  on('econ.grant', (e) => log.say('system', `The System grants you ${plural(e.n, 'Lachryma cube')}.`));
+  on('econ.grant', (e) => log.say('system', `Received: ${plural(e.n, 'Lachryma cube')}.`));
   on('tithe.pull', () => { log.say('loot', said(g, `Tithe paid: ${plural(TITHE.cost, 'cube')}. A sealed chest drops onto the dais. Press {use} at it to break the seal.`), { tone: '#d6c8ff' }); }); // (how to open it, said where it lands: QA-A; Espada's words)
   on('chest.drop', (e) => { L.inc('chest.drop'); if (e.from === 'catch') log.say('loot', 'A chest falls out of the air.', { tone: tone(e.tier) }); });
 }

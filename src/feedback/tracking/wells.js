@@ -15,16 +15,16 @@ export function wellRules({ on, L, log }) {
   let cracked = false; // (a crack taken in this run: Last Straw's feat, a run without one: knacks.js)
   on('vessel.crack', () => { if (enteredAt != null) cracked = true; });
   let enteredAt = null; // (seconds of play when the run began: what a player's run takes, measured, for the pay table: Dovina)
-  on('well.enter', (e) => { if (e.by !== 'courier') return; L.inc('well.enter'); enteredAt = L.play; cracked = false; log.say('explore', 'You go down into the Great Dunemaw.'); });
+  on('well.enter', (e) => { if (e.by !== 'courier') return; L.inc('well.enter'); enteredAt = L.play; cracked = false; log.say('explore', 'Entered the Great Dunemaw.'); });
   on('well.floor', (e) => {
     if (e.by !== 'courier') return;
     L.inc('well.floor'); L.hi('well.depth', e.floor);
-    if (e.floor > 1) log.say('explore', `You go down to the ${ORD[e.floor - 1] || `${e.floor}th`} floor.`);
-    if (e.floor === 3) log.say('warn', 'The way down from here goes to the Great Slip Jelly. Once there, the only ways out are the Wake Whistle or the fight.', { key: 'well.last', throttle: 60 }); // (QA-A: the cavern taken unwarned; words a placeholder, Espada's)
+    if (e.floor > 1) log.say('explore', `Down to the ${ORD[e.floor - 1] || `${e.floor}th`} floor.`);
+    if (e.floor === 3) log.say('warn', 'Caution: the way down leads to the Great Slip Jelly. Once there, the only ways out are the Wake Whistle or winning the fight.', { key: 'well.last', throttle: 60 }); // (QA-A: the cavern taken unwarned; words a placeholder, Espada's)
   });
   on('well.leave', (e) => {
     if (e.by !== 'courier') return;
-    if (e.how === 'abandon') { enteredAt = null; log.say('warn', "You leave the Well by another way. It keeps this run's finds."); return; } // (travelled out of a run: world/places.js; words a placeholder, Espada's)
+    if (e.how === 'abandon') { enteredAt = null; log.say('warn', "Well left early. This run's finds are lost."); return; } // (travelled out of a run: world/places.js; words a placeholder, Espada's)
     if (!e.shattered) L.inc('well.out');
     else if ((e.floors || 0) + (e.foes || 0) > 0) L.inc('well.haul.lost'); // (shattered with a haul to lose: Grief's awakening, progress/feelings.js)
     if (!e.shattered && e.how !== 'escape' && enteredAt != null && !cracked) L.inc('well.run.whole'); // (up and out, the clay never cracked)
@@ -35,10 +35,10 @@ export function wellRules({ on, L, log }) {
     if (enteredAt != null && !e.shattered && e.how !== 'escape') { const secs = Math.round(L.play - enteredAt); L.inc('well.run.seconds', secs); L.inc(`well.run.seconds.f${e.floors}`, secs); L.inc(`well.run.count.f${e.floors}`); L.lo('well.run.fastest', secs); }
     enteredAt = null;
     const pay = e.pay > 0 ? `. Pay: ${e.pay} cubes` : '';
-    if (e.how === 'escape') log.say('explore', `You blow the Wake Whistle, and wake at the Dunemaw's mouth${pay}.`); // (Espada's words)
-    else log.say(e.shattered ? 'warn' : 'explore', e.shattered ? "The Well keeps this run's finds." : `You climb out of the Well${pay}.`);
+    if (e.how === 'escape') log.say('explore', `Wake Whistle blown. You wake at the Dunemaw's mouth${pay}.`); // (Espada's words)
+    else log.say(e.shattered ? 'warn' : 'explore', e.shattered ? "This run's finds are lost to the Well." : `Climbed out of the Well${pay}.`);
   });
-  on('well.astray', (e) => { if (e.by === 'courier') log.say('explore', 'The Dunemaw turns you round. You are back at the way in.', { throttle: 2 }); });
+  on('well.astray', (e) => { if (e.by === 'courier') log.say('explore', 'Lost in the Dunemaw. You are back at the way in.', { throttle: 2 }); });
   on('well.charted', (e) => { if (e.by === 'courier') L.hi('well.floor.charted', Math.round((e.charted || 0) * 100)); });
   on('well.foe', (e) => {
     if (e.by !== 'courier') return;
@@ -50,7 +50,7 @@ export function wellRules({ on, L, log }) {
     const n = NAME(e.item);
     log.say('loot', `Found: ${AN(n)} ${n}. Climb out of the Well to keep it.`, { tone: '#ffd98a' });
   });
-  on('item.get', (e) => { if (e.from === 'well') log.say('loot', `The ${NAME(e.item)} goes into your Pneuka Box.`, { tone: '#ffd98a' }); });
+  on('item.get', (e) => { if (e.from === 'well') log.say('loot', `The ${NAME(e.item)} is added to your Pneuka Box.`, { tone: '#ffd98a' }); });
   on('cogitomap.get', (e) => {
     if (e.by !== 'courier') return;
     L.inc('cogitomap.get'); L.hi('cogitomap.worth', e.worth); if ((L.get('well.enter') || 0) <= 1) L.inc('cogitomap.firstrun'); // (Ariadne's Thread's feat)
