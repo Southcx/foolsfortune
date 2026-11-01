@@ -36,6 +36,8 @@ const RAW_TECHS = new Set(['ladder', 'pole', 'grate', 'swim']);
 const BLOCKED = new Set(['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown']);
 const _look = new THREE.Vector3(), _m = new THREE.Matrix4(), _up = new THREE.Vector3(0, 1, 0);
 
+const SENT_AWAY = 20; // m off the plane: a teleport, not a drift (the plane holds a drift of centimetres)
+
 export class WellFrame {
   constructor(game) {
     this.game = game; this.on = false; this.face = 1; this.lanes = null; this.pres = []; this.posts = [];
@@ -137,7 +139,8 @@ export class WellFrame {
   /** After the step: the body put back on the plane, then the room's own `post` hooks. */
   postStep(dt) {
     const P = this.game.player, z = this.spec?.z;
-    if (z != null && (Math.abs(P.pos.z - z) > 1e-6 || P.vel.z !== 0)) {
+    // (a body far off the plane was sent away, the Index or a place's travel: never pulled back; the room's update takes the frame off)
+    if (z != null && Math.abs(P.pos.z - z) < SENT_AWAY && (Math.abs(P.pos.z - z) > 1e-6 || P.vel.z !== 0)) {
       P.pos.z = z; P.prevPos.z = z; P.renderPos.z = z; P.vel.z = 0;
       P.body.setNextKinematicTranslation({ x: P.pos.x, y: P.pos.y, z: P.pos.z });
     }

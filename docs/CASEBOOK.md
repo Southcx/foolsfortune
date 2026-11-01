@@ -1081,3 +1081,5 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
   bound at the next draw, disposed or not, and the copy it makes then belongs to no one: let go of the reference first, then the texture.
 387. **A state with its own way out of being stuck is never also handed a shared one.** A generic recovery
   that resets to idle silently undoes every purposeful state it reaches first; exempt them, and measure the state reaching its goal.
+388. **A modifier that holds the body in place lets go of a body that was sent away.** A clamp that runs
+  before its owner hears of a teleport drags the body back; it corrects only what is near it, and the owner lifts it on the next look.

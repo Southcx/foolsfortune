@@ -4831,3 +4831,14 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   higher (within 6 m) hops up (vy 5.2), else sidesteps. After: 19 hits in 5 waves, 133 hp (14, 21, 28, 35, 35 a wave), the undefended
   Jar shattering in wave 5 and re-forming; the basement sweep's fails the same 4 as before the change; stress 0 violations.
 - **Rule:** 387
+
+### 2026-11-01 · Leaving Strawman's Well by the Index left the Courier pinned to its plane (world/strawmanwell/wellframe.js; found by Petra, the basement sweep)
+- **Seen:** the basement sweep's "the Index's siege key takes the Courier there" failed: after Strawman's Well, the hub and the siege
+  both put the Courier at z -3000, falling out of the world (y -16 to -33).
+- **Cause, as measured:** the travel to the hub set the body down at (0, -14, -4), then a fixed step still wrapped by the Well's
+  frame ran its `postStep`, which puts the body back on the stage's plane (z -3000), before the Well's `update` saw the Courier gone
+  and took the frame off. The order of one tick decided it.
+- **Fix:** the plane corrects a drift only: a body more than 20 m off it (`SENT_AWAY`) was sent away and is left where it was sent.
+  After: the hub at (0, -14, -4); the basement sweep 459 of 459 (the sweep's garden list also learned the carving bench's chest:
+  `debug.bench` stands in the Spirit Garden), Strawman's Well's 35 of 35.
+- **Rule:** 388

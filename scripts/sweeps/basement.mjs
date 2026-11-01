@@ -162,7 +162,7 @@ for (const [ri, r] of rooms.entries()) {
     await S.page.keyboard.press('Enter');
   }
   await S.ticks(3); await S.settle(); await S.ticks(20);
-  const garden = /^debug\.(press|garden)$/.test(r.id); // (a debug chest in the Spirit Garden: you are the Pneuka Jar on a planetoid, Petra's note 2026-10-08)
+  const garden = /^debug\.(press|garden|bench)$/.test(r.id); // (a debug chest in the Spirit Garden: you are the Pneuka Jar on a planetoid, Petra's note 2026-10-08)
   if (garden) {
     const c = await S.common(`Index ${r.id}`, { courier: false, level: false });
     const g = await S.ev((id) => { const G = __game.game, R = G.realm, P = G.places?.pos?.(id), J = R?.jarBody?.pos || R?.jarBody?.position;
