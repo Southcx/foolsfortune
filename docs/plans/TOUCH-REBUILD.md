@@ -64,7 +64,11 @@ only renames it:
 - **A slot with no verb in a context is not drawn** (never a dead tile). The layout reads the mode's mask: the Arena's `MASKED` keys
   hide their slots.
 - A slot's place never changes, so a thumb learns six positions once.
-- CROUCH is not in the arc: **the stick pushed down past its ring, held**, crouches (and prone after 0.6 s), as a pad's stick-click
+- **CROUCH depends on the mode** (South's ruling 1, below).
+  - **In a side-on mode** (the Well's stages, the Arena), crouch is the stick pushed down past its ring, as a fighter's down is, and
+    has no tile.
+  - **In a 3D mode**, CROUCH is a tile, **G**: a small one (60 px) on the arc's inner end beside B, pressed for the posture's cycle
+    and held for the slide, as today. G is drawn only in 3D, so a side-on mode shows six slots and a 3D one seven.
   would. That frees a slot and puts CROUCH where the slide already is: the stick.
 
 ### 3.2 A press reads the stick (directional presses)
@@ -97,7 +101,7 @@ Today's far shelf (up to 10 tiles) collapses into two buttons beside the arc, bo
 - **BELT**: tap DRAW or STOW. Hold for a radial of SWAP (the main and sub), LEND (the sub's verb), the mounts (the Solar Skiff and
   the slip jelly: this fixes the jelly mount) and the class art to wear.
 
-So the busiest screen goes from 19 tiles to 6 arc slots + PICK + BELT + the top bar's 3: **11, all of them live.**
+So the busiest screen goes from 19 tiles to 7 arc slots (CROUCH included, in 3D) + PICK + BELT + the top bar's 3: **12, all of them live.**
 
 ### 3.5 The left thumb, the look area, the edges
 
@@ -139,8 +143,8 @@ of one thing. They keep their built layouts (MOBILE.md 8.2 to 8.7). Only these c
 
 | context | A | B | C | D | E | F | other |
 |---|---|---|---|---|---|---|---|
-| foot, nothing drawn | USE / KICK | DASH / BLINK | JUMP | (none) | PARRY | ART | PICK hidden; BELT |
-| a tool drawn | the tool's LMB | DASH / BLINK (air too) | JUMP | the tool's RMB, directional | PARRY | ART | PICK, BELT |
+| foot, nothing drawn | USE / KICK | DASH / BLINK | JUMP | (none) | PARRY | ART | G: CROUCH; PICK hidden; BELT |
+| a tool drawn | the tool's LMB | DASH / BLINK (air too) | JUMP | the tool's RMB, directional | PARRY | ART | G: CROUCH; PICK, BELT |
 | carrying | THROW (drag aims) | DASH | JUMP | PUT DOWN | (none) | (none) | |
 | the Arena | ATTACK (tilts, smash by flick) | SHIELD (dodge by stick) | JUMP | SPECIAL (five by stick) | GRAB | (none) | BELT (the kit by the hand) |
 | a side-on stage | the stage's own (throw, swing) | DASH | JUMP | the stage's held verb (script) | PARRY | (none) | the troupe's jobs on PICK |
@@ -172,10 +176,13 @@ The crossing and the jelly mount get their first working touch from this table. 
 5. **Order:** foot and a tool drawn first (the most played), then the Arena and the side-on stages (the most broken), then the
    crossing, the Solar Skiff and the helm. South plays each on the phone before the next.
 
-## 6. Open for South
+## 6. Ruled (South, 2026-11-01)
 
-1. **Crouch on the stick** (down past the ring, held) instead of a tile. It frees a slot and matches the slide, but it is less
-   discoverable. My call: yes, with the first path teaching it once.
-2. **The meter slot F** for the class art and the rungs. Zenless and Genshin put the ultimate at the arc's top, the slot the eye meets
-   first. My call: keep it at the far end, ringed, because a rung is used less than a special.
-3. **One layout per context, or one for all.** My call: one skeleton for all, with the editor's per-context offsets on top.
+1. **Crouch on the stick:** "Depends on the mode, yes for 2d, no for 3d movement." So it is the stick's down in a side-on mode, and
+   the G tile in 3D (section 3.1).
+2. **The meter slot F:** "Use your best judgment." It stays at the arc's far end, ringed, its meter on the rim. A rung or a class art
+   is pressed less often than a special, so the slot the eye meets first (the arc's top) goes to D, the tool's second verb. F glows
+   when ready, as the ultimates of Genshin and Zenless do, so it is found without being in the way.
+3. **One layout or many:** "You got it". One skeleton for every action mode, with the layout editor's per-context offsets on top.
+
+Next: Calissa's view and mock-ups (section 5.2), then South rules the plan whole before Petra's driver half is built.
