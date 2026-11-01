@@ -289,7 +289,7 @@ const RULES = {
   'slab.use': (s, e) => s.slabUse?.(e.verb, e.stratum, e.cracked, e.broke),
   'slab.carve': (s, e) => s.slabCarve?.(e.flawless, e.cracked),
   'scan.read': (s, e) => s.scanRead?.(e.sealed, e.again),
-  'well.stage.enter': (s, e) => { if (e.stage !== 'wings') s.wellEnter?.(); }, // (Strawman's Well: the curtain drawn on a stage, audio/strawmanswell.js)
+  'well.stage.enter': (s, e) => { if (e.stage !== 'wings') s.wellStageEnter?.(); }, // (Strawman's Well: the curtain drawn on a stage, audio/strawmanswell.js)
   'well.stage.clear': (s, e, g) => { if (e.by !== 'courier') return; g.music?.duck?.(2, 0.4); s.wellClear?.(e.rank); }, // (the pit band's sting by rank)
   'well.dummy.ko': (s, e) => { if (e.by === 'courier') s.wellKo?.(); }, // (the house roaring)
   'well.dummy.trophy': (s, e) => { if (e.by === 'courier') s.wellTrophy?.(); }, // (a home run)
