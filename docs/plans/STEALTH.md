@@ -165,7 +165,7 @@ The achievements are in the Veritome's new **Fieldcraft** sub, worded by Espada 
 
 ## 7. Handoffs
 
-**Petra.** Four lines in her files. Nothing reads stealth until they land.
+**Petra.** Four lines in her files, built (c05b48d). Her two calls, kept: the candid multiplier applies only to creatures (subjects with an awareness), and a plate's `aware` stays a boolean (0.35 and up) with `candid` beside it. The multiplier moves stars too (a 160 plate becomes 240, four stars): kept until section 8 splits stars from the score.
 1. `creatures/ai/brain.js:58`: `const loud = g.stealth ? g.stealth.loud : (the old expression)`.
 2. `creatures/ai/senses.js`: the sight gain times `(owner.vigil?.k ?? 1)`. That is the `mem.see` call in the cone, not the feel radius.
 3. `tools/veritome/subjects.js`, a subject's awareness:
