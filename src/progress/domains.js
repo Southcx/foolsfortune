@@ -124,6 +124,14 @@ export const SOURCES = [
   // to add: until then every validate pays, its acts few); a haunt is traps possessed (Possession), held its masterful end
   { event: 'race.finish',     domain: 'ouranurgy',      acts: (e) => Math.max(1, Math.round((e.seconds || 0) / 10)), quality: (e) => (e.by !== 'courier' || e.validate || e.mode === 'practice' || e.mode === 'trim' ? null : RACE_Q[e.medal] ?? (e.of > 1 ? 0.45 * (1 - (e.place - 1) / e.of) + 0.1 : 0.3)) },
   { event: 'skiff.combo.bank', domain: 'psychokinesis', base: 6,  quality: (e) => (e.by === 'courier' && e.n >= 2 ? q01(((e.mult || 1) - 1) / 4) : null) },
+  // (GAPS.md G62, G63, DOMAIN-SOURCES.md 4's last two: the Raceway's reading and riding, the sea's forge and refit) a race run under a
+  // condition that is not fair weather is the sky read and raced to (Divination), by its medal; a grind ridden to the rail's end is a
+  // line kept to (Spellscription), by its length; a sea beast's part forged is a thought made solid (Manifestation); a part worn is the
+  // ship's nature changed (Alteration), a little: it is a choice at a quay, not a feat
+  { event: 'race.finish',     domain: 'divination',     acts: 2,  quality: (e) => (e.by !== 'courier' || e.validate || e.mode === 'practice' || e.mode === 'trim' || !e.condition || e.condition === 'day.fair' ? null : e.medal === 'gold' ? 0.9 : e.medal ? 0.6 : 0.3) },
+  { event: 'skiff.grind.end', domain: 'spellscription', base: 6,  quality: (e) => (e.by === 'courier' && e.why === 'end' ? q01((e.metres || 0) / 40) : null) },
+  { event: 'ship.part',       domain: 'manifestation',  acts: 6,  quality: (e) => (e.by === 'courier' && e.how === 'forge' ? 0.9 : null) },
+  { event: 'ship.part',       domain: 'alteration',     acts: 2,  quality: (e) => (e.by === 'courier' && e.how === 'wear' ? 0.5 : null) },
   { event: 'track.validate',  domain: 'manifestation',  acts: 4,  quality: (e) => (e.by === 'courier' && e.fresh !== false ? 0.6 : null) },
   { event: 'haunt.end',       domain: 'possession',     acts: (e) => Math.max(1, Math.round((e.seconds || 0) / 10)), quality: (e) => (e.by !== 'courier' || e.why !== 'done' ? null : e.held ? 0.7 + 0.3 * q01((e.wrecks || 0) / 3) : 0.35) },
   // the open sea (OPEN-SEA.md 12 to 15): a crate hauled up on the line is a thing moved by will (Psychokinesis, by its tier); a beast

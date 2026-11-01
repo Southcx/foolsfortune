@@ -259,6 +259,8 @@ Where the build differs from the plan, with the reason:
    the weather decides what you can cook. The pantry's staples are free, so a dish can always be cooked.
 
 Measured headless (2026-11-01): a honey loaf kneaded to 0.84, proofed to 0.5 and baked to 0.72 with steam, tasted one-note and given heat,
-served PERFECT, holding Mirth at 0.83 for 120 real s; the mind's fade slowed to 0.415 while it held. Still to come: the looks (Calissa's),
+served PERFECT, holding Mirth at 0.83 for 120 real s; the mind's fade slowed to 0.415 while it held. Priced (`node scripts/cooking.mjs`): the largest lift any loaf gives one material at the press is 0.67 of a tier's step (a TRUE
+loaf: 0.08 of the way toward its feeling, against a common material's own 0.3), so a dish leans the press and never buys a tier.
+Still to come: the looks (Calissa's),
 the sounds (Wanda's: the knead's thump on the beat, the oven, the knock), the words (Espada's: dish names, the tells), bonds with spirits,
 batch and auto-cook, the other families.
