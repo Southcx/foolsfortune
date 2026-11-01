@@ -36,6 +36,7 @@ import { FighterHits } from './hits.js';
 import { ArenaKeys } from './keys.js';
 import { CourierBody } from './courierbody.js';
 import { CourierPose } from './pose.js';
+import { HandKit } from './handkit.js';
 import { StrawFighter } from './foebody.js';
 import { FighterLooks } from './looks.js';
 import { BODY, KIT } from './moves.js';
@@ -47,7 +48,7 @@ const _look = new THREE.Vector3(), _m = new THREE.Matrix4(), _up = new THREE.Vec
 export class FighterKit {
   constructor(well) {
     this.well = well; this.game = well.game; this.on = false; this.level = 3; this.count = 1; this.training = 'off';
-    this.keys = new ArenaKeys(this.game.input); this.body = new CourierBody(this); this.pose = new CourierPose(this);
+    this.keys = new ArenaKeys(this.game.input); this.body = new CourierBody(this); this.pose = new CourierPose(this); this.hand = new HandKit(this.game);
     this.foes = []; this.courier = null; this.stage = null; this.cam = null; this.cleared = false; this.lastMove = null;
     this.env = {
       verb: (F, id) => { if (F.who === 'courier') this.well.verb(id); },
@@ -210,7 +211,7 @@ export class FighterKit {
 
   /** The training tag's frame data: the Courier's last move (Melee's on-shield advantage, shieldstun less the frames left after the hit). */
   note(hit, res) {
-    const m = moveOf(hit.move); if (!m) return;
+    const m = moveOf(hit.move, this.courier); if (!m) return;
     const adv = shieldstun(hit.damage) - (m.total - m.startup);
     this.lastMove = [`${m.name.toUpperCase()}  ${hit.damage}%${res === 'shield' ? '  (shield)' : ''}`, `startup ${m.startup}f  active ${m.active[0]}-${m.active[1]}  total ${m.total}f`,
       `${m.landing ? `landing ${m.landing}f  ` : ''}on shield ${adv >= 0 ? '+' : ''}${adv}f`];
@@ -260,13 +261,14 @@ export class FighterKit {
     if (id === 'level') this.level = (this.level % 9) + 1;
     else if (id === 'foes') this.count = (this.count % 3) + 1;
     else if (id === 'train') this.training = TRAINING[(TRAINING.indexOf(this.training) + 1) % TRAINING.length];
+    else if (id === 'kit') { this.hand.next(); this.stage.plates?.(); return true; } // (the moves by the hand: no new match)
     else if (id === 'reset') { if (this.training !== 'off') { for (const F of this.all) F.percent = 0; return true; } }
     else return false;
     this.stage.plates?.();
     this.start();
     return true;
   }
-  plateText() { return { level: ['LEVEL', String(this.level)], foes: ['FOES', String(this.count)], train: ['TRAINING', this.training.toUpperCase()], reset: ['RESET', this.training !== 'off' ? 'the percents' : 'the match'] }; }
+  plateText() { return { kit: this.hand.label(), level: ['LEVEL', String(this.level)], foes: ['FOES', String(this.count)], train: ['TRAINING', this.training.toUpperCase()], reset: ['RESET', this.training !== 'off' ? 'the percents' : 'the match'] }; }
 
   dispose() {
     this.leave();

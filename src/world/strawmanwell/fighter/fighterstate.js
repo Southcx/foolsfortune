@@ -6,20 +6,21 @@
 // Prior art: Melee's decomp (ftCommon_8007D5D4's fall speed cap, ftCommon_8007CB74's traction; Fighter_ActionStateChange, the one door
 // into a state).
 //
-//   go(F, st)   startMove(F, id)   gravity(F, k?)   traction(F, slide?)   land(F, n, { slide })   moveOf(id)
+//   go(F, st)   startMove(F, id)   gravity(F, k?)   traction(F, slide?)   land(F, n, { slide })   moveOf(id, F?)
 //   hitOf(A, id, { damage, scale }) -> the blow A's move deals, charged and staled   noteStale(A, id) (a move that hit, into A's queue)
 // ---------------------------------------------------------------------------------------
 import { FRAME, MOVES, STALE, stale, charged } from '../../../progress/platformfighter.js';
 import { KIT_MOVES } from './moves.js';
 
-/** A move's data: platformfighter.js's MOVES, or the kit's two (moves.js KIT_MOVES). */
-export const moveOf = (id) => MOVES[id] || KIT_MOVES[id] || null;
+/** A move's data: the fighter's own kit's first (the tool in hand, or the brawler: progress/fighterkits.js), then platformfighter.js's
+ *  MOVES, or the kit's two (moves.js KIT_MOVES). */
+export const moveOf = (id, F = null) => F?.kit?.moves?.[id] || MOVES[id] || KIT_MOVES[id] || null;
 /** Into a state, its frame count from 0. */
 export function go(F, st) { F.st = st; F.f = 0; F.active = false; if (st !== 'attack') { F.m = null; F.charge = 0; } if (st !== 'idle') F.running = false; }
 /** A move begun: its frame 1 is the first after this one (Melee counts the frame it is input as frame 1). */
 export function startMove(F, id) {
   go(F, 'attack'); F.m = id; F.mf = 0; F.charge = 0; F.hits = new Set(); F.wd = false; F.tumble = false;
-  const m = moveOf(id); F.rehitEvery = m?.hits > 1 ? Math.max(1, Math.ceil((m.active[1] - m.active[0] + 1) / m.hits)) : 0;
+  const m = moveOf(id, F); F.rehitEvery = m?.every ? m.every : m?.hits > 1 ? Math.max(1, Math.ceil((m.active[1] - m.active[0] + 1) / m.hits)) : 0;
   const kind = /^jab/.test(id) ? 'jab' : /tilt$/.test(id) ? 'tilt' : /smash$/.test(id) ? null : /air$/.test(id) ? 'aerial' : /special$/.test(id) ? 'special' : null;
   if (kind) F.env.verb(F, kind);
 }
@@ -37,7 +38,7 @@ export function traction(F, slide = false) {
 export function land(F, n, { slide = false } = {}) { go(F, 'land'); F.lagN = n; F.slide = slide; F.tumble = false; F.vy = 0; }
 /** The blow A's move `id` deals now: its damage charged (a smash held) and staled (A's last nine hits), and its knockback's numbers. */
 export function hitOf(A, id, { damage = null, scale = 1 } = {}) {
-  const m = moveOf(id); if (!m) return null;
+  const m = moveOf(id, A); if (!m) return null;
   let d = damage ?? m.damage;
   if (m.charge && A.charge) d = charged(d, A.charge);
   d = stale(d, A.stale, id) * scale;

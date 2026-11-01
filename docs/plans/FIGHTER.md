@@ -29,17 +29,16 @@ The fighter kit is on in the Arena only. Elsewhere in the Well, the frame's keys
 
 | key | on the ground | in the air | in shield | grabbing | on the ledge |
 |---|---|---|---|---|---|
-| A / D | walk, run; tap twice to dash | drift | roll | forward / back throw | |
-| W | (a door, in the wings) | | | up throw | climb up |
+| A / D | walk, run; tap twice to dash (and, with LMB, the forward smash) | drift | roll | forward / back throw | |
+| W | up (a tilt, an up smash, the up special); tap twice to jump (tap jump) | up; tap twice for the double jump | | up throw | climb up |
 | S | crouch (crouch cancel), drop through a thin platform | fast fall, past the jump's top | spot dodge | down throw | let go |
 | Space | jump: let go within the crouch for a short hop, hold for a full hop | double jump | jump out of shield | | ledge jump |
-| LMB | jab; with A/D, W or S a tilt; running, a dash attack | an aerial, by direction to the facing | grab | pummel | attack getup |
-| E | a smash the held way (hold to charge, up to 1 real s) | an aerial the held way | | | |
+| LMB | jab; with A/D, W or S held a tilt; running, a dash attack; inside 8 frames of a key tapped twice, the smash that way (held, it charges up to 1 real s; in the jump's crouch with W, the up smash) | an aerial, by direction to the facing | grab | pummel | attack getup |
 | RMB | a special: neutral, side, up (the recovery), down | the same | | | |
 | Shift | shield (hold) | air dodge the held way; 7 frames before landing an aerial, the L-cancel; 20 frames before hitting the floor tumbling, the tech | | | roll up |
 | R | grab | | | | |
 
-DI and SDI: hold or tap A/D/W/S during hitlag.
+DI and SDI: hold or tap A/D/W/S during hitlag. E is retired from the kit (2026-11-01): the smash is a flick and LMB, Smash's own way.
 
 ## 3. The builds (movementprofiles.js)
 
@@ -127,7 +126,53 @@ with a shake, so the Arena is the key-pose pipeline's first user and its test be
 | a hit's sound on the impact frame, the KO's roar, the Arena's music | Wanda |
 | names, once settled (plain until then) | Espada |
 
-## 8. Open
+## 8. The two buttons and the kit by the hand (South, 2026-11-01)
+
+South, through Calissa: "synergize the existing melee weapon combos with the two button system of Super Smash Bros and its attack
+button and special button, with control stick double flick to jump. You have my permission to come up with new moves and chains to
+facilitate testing the movekits."
+
+- **Two buttons:** LMB is the attack and RMB the special, each read by the way held (section 2). **The Arena's flick** is the stick pushed hard
+  and fast (always "the Arena's flick": the look area's flick is a swipe); on the keys it is a key tapped twice inside 14 frames. W flicked jumps (tap jump), and flicked again in the air it's the
+  double jump: South's "double flick". A flick with LMB inside 8 frames of its second tap is the smash that way, held to charge.
+  Space still jumps. E is retired. On touch, a flick is the stick from under 0.3 to past 0.8 inside 3 frames (the touch driver's axis,
+  when the kit reads it: open below).
+- **The kit by the hand** (`progress/fighterkits.js`, read by `fighter/handkit.js`): the tool in the hands fills the slots it has moves
+  for; the rest stay the bare set's (Mario's). The cutlass's jabs and forward tilt are your melee loadout's string, its specials your
+  RMB specials (tapped the neutral, with W the up, carried up as the recovery, with S the down, or the Tidecutter). The rules:
+  - **damage** is 5% a power (Mario's jab 3% on the bare fist's 0.6), at most 30% a blow (Ganondorf's Warlock Punch);
+  - **frames:** the slot's shape is Mario's, stretched to the tool move's own `time`;
+  - **knockback:** a launcher sends up and a trip low;
+  - **reach:** a tool's boxes stand out by its reach (blade 1.35, pole 1.5, chain 1.6, brush 1.3, bell 1.1, book 1.05, gun 1.0);
+  - **open:** every move of the tool in hand is open in the Arena, unearned. It is a test room, and nothing it lends counts elsewhere.
+- **The brawler** (Closers' J, Calissa's take): a second bare set.
+
+  | move | numbers |
+  |---|---|
+  | jab | two jabs, 2% each |
+  | barrage | loops while LMB is held, 1% every 4 frames; let go, the finisher (5%, Ultimate's rapid jab) |
+  | up tilt | a rising uppercut, 11% |
+  | dash attack | a dash straight, 10%, sending out |
+  | up special | an uppercut, the recovery |
+  | side special | a 4 m lunge |
+
+- **The KIT lectern** (left of the Courier's start) cycles bare hands, the brawler and the worn tools. A tool chosen is drawn (the
+  belt's own draw); a bare set empties the hands.
+
+| tool | what it fills |
+|---|---|
+| Sondelass | every slot: the jabs and forward tilt by the loadout; up tilt the launcher, down tilt Low Sweep, the charge the forward smash, Rising Cut the up smash, Spin Slash the down smash, the air string the neutral and forward airs, Backhand the back air, the plunge the down air; neutral special the Stinger (an 8 m lunge), side special the hook, up special the W slot (else the Stinger aimed up: Fox's Firefox), down special the S slot (else the Tidecutter) |
+| psygun | jab the whip; neutral special the shot, held to charge (Samus's); side special Fan the Hammer |
+| Soul Brush | the club's combo as the jabs and forward tilt, its dash, its spin the down smash, its air string, its slam the down air |
+| Dreamvane | its combo, pause string's finisher the forward tilt, its launcher, its charge the forward smash, the Dreamquake the neutral special |
+| Crucibelle | the tolls as the jabs and forward tilt, the fever peak the neutral special |
+| Lockheart | the flail's string as the jabs and forward tilt |
+| Veritome | the bash as the jab and forward tilt |
+
+## 9. Open
+
+- **The flick on touch:** the kit reads the keys the touch driver presses; a real stick flick needs the stick's axis handed to the
+  kit (Petra's touch driver).
 
 - **Touch controls** (MOBILE.md's next pass).
 - **Whether the kit leaves the Arena:** the Brawl's dummies, and the 3D game's blows (hitstop at least).

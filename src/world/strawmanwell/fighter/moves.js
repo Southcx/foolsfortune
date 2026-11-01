@@ -94,6 +94,7 @@ export const KIT_MOVES = {
 /** The numbers the kit chose (FIGHTER.md: "where nothing was found, the number is ours and marked so"), each with its reason. */
 export const KIT = {
   dashTap: 14, // frames between two taps of A or D for a dash (Melee reads a smashed stick; a key's tap twice in about a quarter second)
+  smashWindow: 8, // frames after a flick's second tap inside which LMB is its smash (Melee reads the stick's smash within about 3 frames of the A; a key's second tap and a click are two fingers, so more)
   stick: 0.3, // the stick's share past which a direction counts (Melee's tilt threshold, 0.2875)
   jumpH: 0.8, // the jump's sideways speed off the stick, a share of the walk (Melee gives each character its own; ours keeps the run's)
   hopKeep: 0.6, // the share of the ground's speed a jump keeps (Melee's jump momentum multiplier is 0.6 to 0.8 a character)
@@ -139,12 +140,12 @@ export function pickGround(I, F) {
   if (d === 'fwd' || d === 'back') return 'ftilt';
   return 'jab1';
 }
-/** LMB or E in the air: by the stick against the facing (no turning in the air). */
+/** LMB in the air (a smash's flick there is an aerial too): by the stick against the facing (no turning in the air). */
 export function pickAir(I, F) {
   const d = dirOf(I, F);
   return d === 'fwd' ? 'fair' : d === 'back' ? 'bair' : d === 'up' ? 'uair' : d === 'down' ? 'dair' : 'nair';
 }
-/** E on the ground: the smash the held way (none held: forward). */
+/** A flick and LMB on the ground (FIGHTER.md 8): the smash the held way (none held: forward). */
 export function pickSmash(I, F) {
   const d = dirOf(I, F);
   return d === 'up' ? 'usmash' : d === 'down' ? 'dsmash' : 'fsmash';

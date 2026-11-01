@@ -46,7 +46,7 @@ export class Fighter {
   get hittable() { return this.live && this.st !== 'respawn' && this.intan <= 0 && this.invin <= 0; }
   get shielding() { return this.st === 'shield' || this.st === 'shieldstun'; }
   get scale() { return (this.size ?? this.h) / BODY; } // (the boxes' scale: the standing body's, a crouch keeps its reach)
-  get move() { return this.m ? moveOf(this.m) : null; }
+  get move() { return this.m ? moveOf(this.m, this) : null; }
 
   /** One frame. Sets `mo`, the body's motion for this frame. */
   step(I) {
@@ -98,8 +98,8 @@ export class Fighter {
   /** This frame's hit boxes in the world (only while a move is active and this body is not held in hitlag by its own hit's freeze). */
   boxes() {
     if (!this.active || !this.m) return [];
-    const B = BOXES[this.m] || [], k = this.scale;
-    return B.map(([ox, oy, r]) => ({ x: this.x + ox * k * this.face, y: this.y + oy * k, r: r * k }));
+    const B = this.kit?.boxes?.[this.m] || BOXES[this.m] || [], k = this.scale, out = this.kit?.reach || 1; // (a tool's reach pushes its boxes out: fighterkits.js)
+    return B.map(([ox, oy, r]) => ({ x: this.x + ox * out * k * this.face, y: this.y + oy * k, r: r * k * Math.sqrt(out) }));
   }
   /** The hurt capsule: a vertical segment and its radius. */
   hurtbox() { const r = this.r; return { x: this.x, y0: this.y + r, y1: this.y + Math.max(r, this.h - r), r }; }
@@ -201,8 +201,8 @@ function fall(F, I) {
 function attack(F, I) {
   const m = F.move; if (!m) return go(F, F.grounded ? 'idle' : 'air');
   const aerial = !!m.landing, mf = F.mf;
-  // the smash's charge: held at its charge frame while E is held, up to SMASH.charge frames
-  if (m.charge && mf === m.charge && I.smashH && F.charge < SMASH.charge) { F.charge++; if (F.charge === 10) F.env.verb(F, 'smash'); }
+  // the charge: held at its charge frame while its button is held (a smash's LMB, a charged special's RMB), up to SMASH.charge frames
+  if (m.charge && mf === m.charge && (m.special || m.chargeShot ? I.specH : I.smashH) && F.charge < SMASH.charge) { F.charge++; if (F.charge === 10) F.env.verb(F, 'smash'); }
   else F.mf++;
   const f = F.mf, [a0, a1] = m.active;
   F.active = f >= a0 && f <= a1;
@@ -213,8 +213,12 @@ function attack(F, I) {
   if (m.special === 'recover' && f === m.startup) { F.mo.kick = { vx: F.face * KIT.recoverX, vy: F.stats.jumpVelocity * KIT.recover }; F.vx = F.mo.kick.vx; F.vy = F.mo.kick.vy; F.grounded = false; F.fastfall = false; F.mo.noJump = true; F.mo.noAct = true; return; }
   if (m.special === 'hook' && !F.grounded && f >= a0 && f <= a1 && F.env.tryLedge(F, true)) return;
   if (m.special === 'reflect') F.reflecting = f >= KIT.reflect[0] && f <= KIT.reflect[1];
+  if (m.special === 'lunge' && f >= a0 && f <= a1) { F.vx = F.face * (m.lunge || 4) / ((a1 - a0 + 1) * FRAME); if (!F.grounded) F.vy = Math.max(F.vy, 0); vel(F); } // (a lunge: its distance over its active frames)
+  if (m.special === 'lunge' && f === a1 + 1) F.vx = 0; // (and it stops where it ends: no slide on)
+  // a barrage (the brawler's rapid jab): looped while LMB is held, its finisher on the release (Ultimate's)
+  if (m.loop && f >= m.loop[1]) { if (I.atkH) { F.mf = m.loop[0] - 1; F.hits.clear(); } else if (m.then) return startMove(F, m.then); }
   // the jab's string: LMB again once the last jab's hit is past
-  if ((F.m === 'jab1' || F.m === 'jab2') && I.atkP && f > a1) return startMove(F, F.m === 'jab1' ? 'jab2' : 'jab3');
+  if ((F.m === 'jab1' || F.m === 'jab2') && I.atkP && f > a1 && (F.m === 'jab1' || moveOf('jab3', F))) return startMove(F, F.m === 'jab1' ? 'jab2' : 'jab3');
   if (F.m === 'uspecial' && f > a1 && F.env.tryLedge(F)) return;
   if (f >= m.total) {
     F.reflecting = false;
@@ -222,6 +226,7 @@ function attack(F, I) {
     return go(F, F.grounded ? 'idle' : 'air');
   }
   // the body: an aerial drifts and falls as any air state (no jumping out of it); a grounded move slides on its traction
+  if (m.special === 'lunge' && f >= a0 && f <= a1) return;
   if (aerial || (!F.grounded && m.special)) { F.mo.noJump = true; F.mo.noAct = true; if (I.downP && F.vy <= 0 && !F.fastfall) { F.fastfall = true; F.env.verb(F, 'fastFall'); } return; }
   traction(F, F.m === 'dash'); vel(F);
 }
