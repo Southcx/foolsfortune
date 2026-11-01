@@ -111,7 +111,7 @@ export class StrawmansWell {
   /** Back out to the workshop's hub, everything the frame laid taken off. */
   leave() {
     const g = this.game, C = g.course;
-    const home = () => { this.frame.remove(); g.movementProfiles?.lift(); this.listen(false); this.stage = null; C?.teleport(C.hubSpawn.v, C.hubSpawn.yaw); };
+    const home = () => { MOD[this.stage?.id]?.leave?.(this); this.frame.remove(); g.movementProfiles?.lift(); this.listen(false); this.stage = null; C?.teleport(C.hubSpawn.v, C.hubSpawn.yaw); }; // (the stage left as a lane change leaves it: the Arena's kit taken off)
     g.seam?.cross(home) || home();
   }
   /** A stage entered (from its door in the wings), or the wings again (from a stage's door). */
@@ -200,13 +200,14 @@ export class StrawmansWell {
     this.wire();
     if (!this.built) return;
     const g = this.game, P = g.player, here = this.here;
-    if (!here) { if (this.frame.on) { this.frame.remove(); g.movementProfiles?.lift(); this.listen(false); this.stage = null; } return; }
+    if (!here) { if (this.frame.on) { MOD[this.stage?.id]?.leave?.(this); this.frame.remove(); g.movementProfiles?.lift(); this.listen(false); this.stage = null; } return; }
     if (!this.frame.on && !g.god?.controlling) { const L = laneAt(P.pos.z); if (L) this.enterLane(L.id); } // (set down here some other way: a place's travel)
     const S = this.stage, inp = g.input;
     // F at what the chevron is on; W at a door; F held at the Flood's POUR
     const it = g.interact?.cur;
     if (it?.id === 'strawmanwell' && P.peekLatch?.('KeyF')) { P.latch('KeyF'); this.use(it.ref); }
-    if (inp.wasPressed('KeyW') && !g.god?.controlling) { const d = this.spots().find((o) => o.ref === 'hub' || o.ref === 'wings' || laneOf(o.ref)); if (d) this.use(d.ref); }
+    // (noDoorKey: the stage's W is its own, the Arena's up tilt; its door is F's)
+    if (inp.wasPressed('KeyW') && !g.god?.controlling && !this.stages[S?.id]?.noDoorKey) { const d = this.spots().find((o) => o.ref === 'hub' || o.ref === 'wings' || laneOf(o.ref)); if (d) this.use(d.ref); }
     this.flood.hold(it?.id === 'strawmanwell' ? it.ref : null, inp.isDown('KeyF'));
     MOD[S?.id]?.hold?.(this, it?.id === 'strawmanwell' ? it.ref : null, inp.isDown('KeyF'));
     if (S && S.id !== 'wings') this.watch(S, dt);

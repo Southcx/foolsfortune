@@ -39,7 +39,7 @@ const ROWS = [
   ['chase', 15, 160, [2.2, 9], 2],
   ['wall', 16, 80, [2.2, 9], 2],
   ['maze', 17, 46, [2.2, 23], 2], // (wave 3: the day's 4 x 4 rooms, 41 m by 28 m, stood up along the lane)
-  ['arena', 18, 90, [3, 11], 45],
+  ['arena', 18, 90, [3, 11], 40.5], // (the Courier set down on the main stage's left, FIGHTER.md 5: stages/arena.js ARENA)
 ];
 export const LANES = Object.fromEntries(ROWS.map(([id, k, len, band, start]) => [id, { id, k, z: AT.z - k * LANE, len, band, start }]));
 export const laneOf = (id) => LANES[id] || null;

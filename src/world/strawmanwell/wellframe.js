@@ -21,6 +21,9 @@
 //
 //   const F = new WellFrame(game)   F.apply({ z, x0, x1, band: [y0, y1], face })   F.lane(...same)   F.remove()   F.on   F.face (+1 | -1)
 //   F.pre(fn)  F.post(fn)  (fn(dt) beside each fixed step)   F.camera(dt)  (each frame, after the Courier's camera)   F.suppressJump()
+//   F.claim = { step(dt) -> bool, isDown(code) -> bool | undefined, faceLock } | null   (a stage's claim on the Courier while it lasts: the
+//   Arena's fighter kit, fighter/kit.js. `step` true: it moved the body this fixed step itself and the core does not run; `isDown` its
+//   answer for a key, or undefined to read on; `faceLock` the facing is the claim's to set. Cleared by remove)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
@@ -35,7 +38,7 @@ const _look = new THREE.Vector3(), _m = new THREE.Matrix4(), _up = new THREE.Vec
 export class WellFrame {
   constructor(game) {
     this.game = game; this.on = false; this.face = 1; this.lanes = null; this.pres = []; this.posts = [];
-    this.cam = { x: 0, y: 0, lead: SIDE_CAM.lead }; this.snapCam = true;
+    this.cam = { x: 0, y: 0, lead: SIDE_CAM.lead }; this.snapCam = true; this.claim = null;
   }
 
   /** The frame laid over the Courier, or moved to another lane (a stage entered): `z` its depth, `x0` `x1` its ends, `band` the camera's
@@ -48,7 +51,7 @@ export class WellFrame {
     // the plane: the fixed step wrapped on the instance (whatever was there kept, to give back exactly)
     this.ownStep = Object.prototype.hasOwnProperty.call(P, 'fixedUpdate') ? P.fixedUpdate : null;
     const step = this.ownStep || Object.getPrototypeOf(P).fixedUpdate;
-    P.fixedUpdate = function wellStep(dt, o) { self.preStep(dt); step.call(this, dt, o); self.postStep(dt); };
+    P.fixedUpdate = function wellStep(dt, o) { self.preStep(dt); if (!self.claim?.step?.(dt)) step.call(this, dt, o); self.postStep(dt); }; // (a claim's step: the kit's own)
     // the keys: a Proxy over the input the Player reads
     const real = this.realInput = P.input, bound = new Map();
     P.input = new Proxy(real, {
@@ -78,7 +81,7 @@ export class WellFrame {
     if (this.ownStep) P.fixedUpdate = this.ownStep; else delete P.fixedUpdate;
     P.input = this.realInput;
     P.drift.set(0, 0, 0); P.wade = 1;
-    this.on = false; this.ownStep = null; this.realInput = null; this.spec = null;
+    this.on = false; this.ownStep = null; this.realInput = null; this.spec = null; this.claim = null;
   }
 
   pre(fn) { this.pres.push(fn); }
@@ -93,6 +96,7 @@ export class WellFrame {
   keyDown(code) {
     const R = this.realInput; if (!R) return false;
     if (BLOCKED.has(code)) return false;
+    const c = this.claim?.isDown?.(code); if (c !== undefined) return c; // (the claim's own answer: the Arena's run held as the core's Shift)
     const tech = this.tech;
     if (!tech) {
       if (code === 'KeyC') return R.isDown('KeyC') || R.isDown('KeyS'); // (S held: the crouch, the slide from a run)
@@ -117,7 +121,7 @@ export class WellFrame {
     const P = this.game.player, R = this.realInput;
     if (R) {
       const a = R.axis('moveX'), want = Math.abs(a) > 0.2 ? Math.sign(a) : 0;
-      const free = !this.tech && !P.mantle && !P.wallrun;
+      const free = !this.tech && !P.mantle && !P.wallrun && !this.claim?.faceLock;
       if (free && want && want !== this.face) this.face = want;
     }
     P.yaw = this.face > 0 ? Math.PI / 2 : -Math.PI / 2; P.pitch = 0; P.view = 'tp';
