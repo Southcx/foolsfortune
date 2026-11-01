@@ -16,7 +16,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 
-export const BARRAGE_LOOK = { per: 2.6, life: 0.11, ahead: [0.45, 1.25], height: [0.95, 1.5], size: [0.42, 0.62], z: 0.28, col: 0x7a8cff, max: 28 };
+export const BARRAGE_LOOK = { per: 2.2, life: 0.12, ahead: [0.5, 1.5], height: [0.85, 1.6], size: [0.5, 0.78], z: 0.28, col: 0x7a8cff, max: 28 };
 const B = BARRAGE_LOOK;
 
 /** Is fighter F in the barrage (the brawler's held jab3, or a move the kit names barrage)? */
