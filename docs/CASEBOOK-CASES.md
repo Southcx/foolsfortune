@@ -4870,4 +4870,4 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   not the one asked for.
 - **Fix:** the rungs you put on are kept in order (`pin`, in the save), and `worn()` takes them first, then the table's order. A
   rung past the budget waits, neither worn nor set aside. After: `/rung relay` wore Relay, and a struck slip jelly passed the blow on.
-- **Rule:** NEW:budget-asks-first
+- **Rule:** 391
