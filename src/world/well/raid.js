@@ -89,7 +89,7 @@ export class Raid {
     DO[id]?.begin?.(this, d);
     if (!d.windup) this.look.blow(id);
     else if (d.area) { // (its Figment attack telegraph, on the windup the body began or one of its own: creatures.js, docs/plans/FIGMENT-TELEGRAPHS.md)
-      const A = d.area, P = this.P, at = A.at === 'courier' ? P.pos.clone() : F.c.pos;
+      const A = d.area, at = A.at === 'courier' ? F.target.clone() : F.c.pos; // (the player it faces: yours, or another's in a party, coop/sharedfoe.js)
       const radius = A.radius ?? A.outer?.[1] ?? A.length ?? A.inner ?? F.c.radius * 2;
       this.g.creatures?.figmentTelegraph(F.c, id, { at, radius, eta: d.windup, area: A, ...d.mark, draw: this.drawOf(A, d) });
     }
@@ -98,7 +98,7 @@ export class Raid {
    *  islands for the sinking floor (fallen pillars), the pillars a ram is led into, the Courier as the target. */
   drawOf(A, d) {
     const B = this.B, F = this.F, ctr = B.world(0, 0, 0), wide = ARENA.pillars.width;
-    const o = { target: this.P.pos.clone(), body: F.c.radius };
+    const o = { target: F.target.clone(), body: F.c.radius };
     if (A.shape === 'gaze') Object.assign(o, { on: F.c.root, height: F.c.height });
     if (A.shape === 'raidwide') Object.assign(o, { rim: { centre: ctr, radius: ARENA.rim.from, band: 3 }, centre: ctr, radius: ARENA.rim.from });
     if (A.shape === 'floor') o.pockets = B.pillars.filter((p) => p.state !== 'whole').map((p) => { const w = B.world(p.x, 0, p.z); return { x: w.x, z: w.z, r: wide }; });

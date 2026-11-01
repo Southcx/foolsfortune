@@ -33,6 +33,7 @@
 // verbs below (ram, bash, cast, submerge, sinkInto, show, forceBare, heal), and between casts it only keeps near and slams.
 //
 //   const F = new GreatJelly(game, { bowl, nursery, at })   F.update(dt)   F.c (the body)   F.phase   F.stage   F.ended   F.dispose()
+//   F.prey (a Vector3 it aims at in place of the Courier: the shared FOE's)   F.target
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { T } from '../../core/config.js';
@@ -73,6 +74,7 @@ export class GreatJelly {
     this.crack = 0; this.sinceBreak = null; this.state = 'asleep'; this.t = 0; this.wait = 0;
     this.pool = 0; this.sinkT = 0; this.lastShare = 1; this.ended = null; this.by = 'courier';
     this.aim = new THREE.Vector3(); this.dir = new THREE.Vector3(0, 0, 1); this.ran = 0; this.struck = false;
+    this.prey = null; // (another player's Courier as this page draws it, while the party's FOE faces them: coop/sharedfoe.js)
     this.scripted = false; this.raid = null; this.autoCd = 3; this.plates = 0; // (scripted: its casts are the timeline's (world/well/raid.js); between them only its slam)
     this.offReprogram = game.events?.on('reprogram.run', () => { if (game.reprogram?.c === c && !this.ended) this.end('reprogram', 'courier'); });
   }
@@ -80,6 +82,8 @@ export class GreatJelly {
   get stage() { return Math.min(STAGES, Math.floor(this.crack / STAGE)); }
   get phase() { return this.ended ? 'end' : phaseOf({ crack: this.crack, sinceBreak: this.sinceBreak }); }
   get share() { return Math.max(0, this.c.hp) / this.c.maxHp; }
+  /** What it aims at, faces and comes up under: the Courier, or the player the shared FOE says it faces (`prey`, coop/sharedfoe.js). */
+  get target() { return this.prey || this.game.player.pos; }
   local() { return this.bowl.local(this.c.pos); }
   go(state, wait = 0) { this.state = state; this.t = 0; this.wait = wait; }
 
@@ -147,7 +151,8 @@ export class GreatJelly {
 
   // ------------------------------------------------------------------ the body, driven
   drive(dt) {
-    const g = this.game, c = this.c, P = g.player, B = this.bowl, L = this.local(), toC = _a.set(P.pos.x - c.pos.x, 0, P.pos.z - c.pos.z), dC = toC.length();
+    const g = this.game, c = this.c, P = g.player, B = this.bowl, L = this.local(), A = this.target, toC = _a.set(A.x - c.pos.x, 0, A.z - c.pos.z), dC = toC.length();
+    const dP = Math.hypot(P.pos.x - c.pos.x, P.pos.z - c.pos.z); // (its blows strike only the Courier on this page: what it aims at may be another player's, coop/sharedfoe.js)
     this.t += dt;
     c.want.set(0, 0, 0); c.face = null; c.squashTo = null;
     if (this.sinceBreak != null) this.sinceBreak += dt;
@@ -162,7 +167,7 @@ export class GreatJelly {
         return;
       }
       case 'idle': {
-        c.face = P.pos;
+        c.face = A;
         if (this.scripted) { // (its casts are the timeline's: between them it keeps near, and slams what comes close, now and then)
           this.autoCd -= dt;
           if (dC > 7 * this.k) c.want.copy(toC).setLength(GLIDE * 0.6 * this.k);
@@ -173,7 +178,7 @@ export class GreatJelly {
         if ((this.wait -= dt) > 0) { if (dC > 6 * this.k) c.want.copy(toC).setLength(GLIDE * 0.5 * this.k); return; }
         if (dC < this.within) { this.go('rear', REAR); g.creatures.windup(c, { at: c.pos, radius: this.slamR, eta: REAR, kind: 'slam', part: c.root }); c.deform.kick(4, null, 0.2); return; }
         // the ram: its aim taken now, at the scrape's start (FOE.ram.aim 0)
-        this.aim.copy(P.pos); this.dir.copy(toC).normalize(); this.scrapeFor = FOE.ram.telegraph;
+        this.aim.copy(A); this.dir.copy(toC).normalize(); this.scrapeFor = FOE.ram.telegraph;
         this.go('scrape', FOE.ram.telegraph);
         g.creatures.windup(c, { at: c.pos, radius: this.half * 2, eta: FOE.ram.telegraph, kind: 'ram', parry: false });
         g.events?.emit('foe.scrape', { by: 'creature' }); // (Wanda's scrape, Calissa's glowing crown: the tell)
@@ -195,7 +200,7 @@ export class GreatJelly {
         c.vel.copy(this.dir).multiplyScalar(FOE.ram.speed); c.want.copy(c.vel);
         this.ran += FOE.ram.speed * dt;
         // the Courier in its way: struck, once a charge
-        if (!this.struck && dC < this.half + 0.55 && Math.abs(P.pos.y - c.pos.y) < this.reachY) { this.struck = true; this.strike('ram'); }
+        if (!this.struck && dP < this.half + 0.55 && Math.abs(P.pos.y - c.pos.y) < this.reachY) { this.struck = true; this.strike('ram'); }
         const hit = B.ramHit(L.x + this.dir.x * 0.6 * this.k, L.z + this.dir.z * 0.6 * this.k, this.half);
         if (hit) { this.rammed(hit); return; }
         if (this.ran >= FOE.ram.range) { this.go('skid', SKID); }
@@ -204,7 +209,7 @@ export class GreatJelly {
       case 'skid': { c.vel.multiplyScalar(Math.max(0, 1 - dt * 5)); c.want.copy(c.vel); if (this.t >= this.wait) this.go('idle', rest()); return; }
       case 'daze': { c.vel.set(0, 0, 0); if (this.t >= this.wait) this.go('idle', rest()); return; }
       case 'rear': {
-        c.face = P.pos; c.squashTo = 1.35;
+        c.face = A; c.squashTo = 1.35;
         if (this.t >= REAR) { this.slam(c.pos); this.go('idle', RECOVER + rest()); }
         return;
       }
@@ -220,25 +225,25 @@ export class GreatJelly {
       }
       case 'under': {
         if (!this.rang && this.t >= FOE.sink.seconds - FOE.sink.telegraph) {
-          if (this.scripted) this.next = this.poolNear(P.pos, this.pool); // (Wedge: it comes up under you)
+          if (this.scripted) this.next = this.poolNear(A, this.pool); // (Wedge: it comes up under you)
           this.rang = true; B.ring(this.next, FOE.sink.telegraph); g.events?.emit('foe.rise', { pool: this.next, by: 'creature' }); }
         if (this.t >= FOE.sink.seconds) this.surface(B.pools[this.next]);
         return;
       }
       // ---- the casts' own postures (world/well/raid.js calls the verbs below; jellycasts.js says what each cast is)
       case 'bash': { // (Lidfall's windup: it rears, its crown high, the parry's outline on it; then the lunge)
-        c.face = P.pos; c.squashTo = 1.4; c.deform.wob = Math.max(c.deform.wob, 0.05);
+        c.face = A; c.squashTo = 1.4; c.deform.wob = Math.max(c.deform.wob, 0.05);
         if (this.t >= this.wait) { this.dir.copy(toC).setY(0).normalize(); this.ran = 0; this.struck = false; this.go('lunge'); c.deform.kick(8, null, 0.12); }
         return;
       }
       case 'lunge': { // (a third of a second across `reach` metres: rolled through, parried before, or struck)
         const v = this.reach / 0.3; c.vel.copy(this.dir).multiplyScalar(v); c.want.copy(c.vel); this.ran += v * dt;
-        if (!this.struck && dC < this.half + 0.7 && Math.abs(P.pos.y - c.pos.y) < this.reachY) { this.struck = true; this.strike('crownBash'); }
+        if (!this.struck && dP < this.half + 0.7 && Math.abs(P.pos.y - c.pos.y) < this.reachY) { this.struck = true; this.strike('crownBash'); }
         if (this.ran >= this.reach || this.t > 0.45) this.go('skid', SKID);
         return;
       }
       case 'cast': { // (a cast's windup: still, facing them until `lockAt`, its body the telegraph)
-        if (this.t < this.lockAt) { c.face = P.pos; this.dir.copy(toC).setY(0).normalize(); } else c.face = _b.copy(c.pos).add(this.dir);
+        if (this.t < this.lockAt) { c.face = A; this.dir.copy(toC).setY(0).normalize(); } else c.face = _b.copy(c.pos).add(this.dir);
         c.vel.multiplyScalar(Math.max(0, 1 - dt * 8));
         c.squashTo = this.pose; c.deform.wob = Math.max(c.deform.wob, 0.04 + 0.08 * Math.min(1, this.t / Math.max(0.1, this.wait)));
         if (this.t >= this.wait) this.go('idle', 0.6);
@@ -318,8 +323,8 @@ export class GreatJelly {
   // ------------------------------------------------------------------ the casts' verbs (world/well/raid.js)
   /** Shoulder Charge: the scrape for `windup`, then the ram. */
   ram(windup) {
-    const P = this.game.player, c = this.c;
-    this.aim.copy(P.pos); this.dir.set(P.pos.x - c.pos.x, 0, P.pos.z - c.pos.z).normalize(); this.scrapeFor = windup;
+    const A = this.target, c = this.c;
+    this.aim.copy(A); this.dir.set(A.x - c.pos.x, 0, A.z - c.pos.z).normalize(); this.scrapeFor = windup;
     this.go('scrape', windup);
     this.game.creatures.windup(c, { at: c.pos, radius: this.half * 2, eta: windup, kind: 'ram', parry: false });
   }
@@ -327,7 +332,7 @@ export class GreatJelly {
   bash(windup, reach) {
     this.reach = reach; this.parried = false;
     this.go('bash', windup);
-    this.game.creatures.windup(this.c, { at: this.game.player.pos.clone(), radius: 2.5, eta: windup, kind: 'bash', parry: true, part: this.c.root }); // (at the Courier: its own reach)
+    this.game.creatures.windup(this.c, { at: this.target.clone(), radius: 2.5, eta: windup, kind: 'bash', parry: true, part: this.c.root }); // (at the Courier: its own reach)
   }
   /** Any other cast's windup: still, `pose` its squash, facing them until `lockAt` seconds in. */
   cast(windup, { pose = 1.15, lockAt = windup } = {}) { this.pose = pose; this.lockAt = lockAt; this.go('cast', windup); }

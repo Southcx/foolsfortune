@@ -16,7 +16,7 @@
 //
 //   const T = new Timeline({ phases, casts, pick(share, done) -> phase, schedule(phase, t0) -> [{ t, cast }], marks, at, on })
 //   on: { phase(p, prev), cast(id, def), blow(id, def) }
-//   T.start()   T.update(dt, share)   T.stop()   T.t (seconds since the pull)   T.phase   T.casting { id, def, left } | null   T.running
+//   T.start()   T.update(dt, share)   T.stop()   T.seek(t)   T.t (seconds since the pull)   T.phase   T.casting { id, def, left } | null   T.running
 // ---------------------------------------------------------------------------------------
 
 export class Timeline {
@@ -33,6 +33,9 @@ export class Timeline {
     this.phase = null; this.enter(this.pick(share, this.done));
   }
   stop() { this.running = false; this.casting = null; this.queue = []; this.waiting = []; }
+  /** Set the clock to `t` (a shared fight's: coop/sharedfoe.js keeps a party's pages on one timeline). Forward, the casts it passes are
+   *  dropped, not fired at once (they were cast on the page that leads); back, only the clock moves. */
+  seek(t) { if (!this.running || !Number.isFinite(t)) return; if (t > this.t) this.queue = this.queue.filter((e) => e.t >= t); this.t = t; }
 
   enter(p) {
     const prev = this.phase;

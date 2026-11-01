@@ -232,7 +232,7 @@ still cannot write as a division. If the room is ever opened to people the owner
 
 ## Open
 
-- C5 built so far (Petra, 2026-11-01, `coop/sharedfoe.js`): the FOE's health and crown summed over the party's presence and scaled by its players. The party's wipe since (`down` in `w`: a shatter whole at the Lip Stone, down 20 real s; all down at once, every page's cavern laid again and the attempt one up). The haul each player's own since (`haulSalt`, world/well/dunemaw.js: the player's room id mixed into the haul's draw only, the floors still the run's seed). Still open: the FOE's body and casts shared (each page's FOE moves on its own).
+- C5 built so far (Petra, 2026-11-01, `coop/sharedfoe.js`): the FOE's health and crown summed over the party's presence and scaled by its players. The party's wipe since (`down` in `w`: a shatter whole at the Lip Stone, down 20 real s; all down at once, every page's cavern laid again and the attempt one up). The haul each player's own since (`haulSalt`, world/well/dunemaw.js: the player's room id mixed into the haul's draw only, the floors still the run's seed). One body since: the first player (the lowest peer id) leads, saying its FOE's place, its timeline (`tt`) and whom it faces (`f`, the nearest player); the others ease their FOE to it (snapped past 6 m), seek their timeline within 0.75 s, and aim Lidfall, Shoulder Charge and the surface slam at that player; a pull on any page wakes all; Ooze Rain and the slip stay each page's own. C5 is built; what is left is its test with two real players.
 
 - The siblings' words (the log's "<Name>: <line>", their meeting scenes): Espada.
 - The sibling's look (one Courier mesh, five glazes: each division's colour): Calissa.
