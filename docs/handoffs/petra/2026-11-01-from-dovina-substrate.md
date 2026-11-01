@@ -43,10 +43,11 @@ Delete this note in your branch when it is taken.
   sources()): 9d88e0b.
 - F1 for the Courier: courier/vessel/damage.js hit through blowOn, hit({ shatter }) for F5b: b7a7646.
 
+- F1 for the ships: the hull as cracks of its class's form (world/emocean/shiphull.js), run.hits a getter and setter over them so the
+  readout, the results, the trip's carry and the mends read and write as before; a spread pounding breaks every class at its bears
+  (measured, with Resilience's 0 to 2 extra), blows on one region sooner; `rail.hit` carries `region`.
+
 ## Left, and why
-- F1 for the ships: run.hits/run.bears is read by the rail readout's hull pips (Calissa's), the results' tally (scored by bears left),
-  the open sea's hull (ui/seahull.js) and stage.js. Cracks carried leg to leg need all four moved together, on a mechanic in flux
-  (the rail and the crossing). Next round, with Calissa: the readout as six regions' cracks.
 - F1 for the Jar: god.jar.hp is read by the raids, the Jar's plate and the readout; the `jar` form's pool shield changes the raids'
   balance. Next round, with the numbers measured in a raid first.
 - F5b: taken. Dovina's values (moves.js, kinds.js CHARGE_SHATTER) read through creatures.strike's { shatter } from the moveset and the

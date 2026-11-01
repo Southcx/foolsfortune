@@ -63,6 +63,7 @@ import { Shots } from '../../courier/ship/shots.js';
 import { Mounts } from '../../courier/ship/mounts.js';
 import { Waves } from './waves.js';
 import { TripRun } from './triprun.js';
+import { hullCracks } from './shiphull.js';
 import { Hazards } from './hazards.js';
 import { practiceOf } from '../../progress/rail/legs.js';
 import { showcasePassage } from '../../progress/rail/showcase.js';
@@ -192,6 +193,7 @@ export class Emocean {
       this.t = 0; this.bar = 0; this.ending = false; this.trauma = 0; this.volleys = []; this.beaten = new Set(); this.mended = new Set(); this.piece = null; this.offering = false;
       this.run = { passed: true, hits: 0, bears: (SHIPS[V.ship]?.bears ?? STAGE.bears) + (this.game.alchemy?.widen?.('resilience.bears') ?? 0), // (by hull: progress/rail/ships.js)
         ship: V.ship || 'sloop', downed: 0, spawned: 0, score: 0, chainBest: 0, volleyBest: 0, parried: 0, absorbed: 0, rolls: 0, pointBlank: 0, end: null, won: 0, stolen: 0, chain: chain(), legs: [], leg: null };
+      hullCracks(this.run, this.run.ship, this.run.bears); // (the hull as cracks, run.hits read off them: shiphull.js, SUBSTRATE.md F1)
       this.trip.pars(); this.hazards.begin(); this.result = null; this.game.railReadout?.show?.(true); // (the legs' pars played out under the cover: par.js, about 40 ms a leg)
       this.lay(trip); this.rail.seat(0);
       this.ship.begin(aspect, V.ship || 'sloop'); this.ship.look?.feeling?.(COLOR[aspect] ?? 0xffc65c);
@@ -443,15 +445,15 @@ export class Emocean {
     this.wound(n, { by, what });
     return true;
   }
-  wound(n, { by = 'creature', what = 'shot', kind = null } = {}) {
+  wound(n, { by = 'creature', what = 'shot', kind = null, shatter = 0 } = {}) {
     const r = this.run; if (!r || this.ending || this.offering) return;
     const k = this.game.classArtsRun?.reinsK?.() ?? 1; // (Reins, a class's art: a share of each hit spared, a whole one let off as it adds up)
     if (k < 1) { r.spare = (r.spare || 0) + n * (1 - k); while (r.spare >= 1 && n > 0) { r.spare -= 1; n -= 1; } if (n <= 0) { this.game.classArtsRun?.fire?.('reins'); return; } }
-    r.hits = Math.min(r.bears, r.hits + n); this.feel('hit');
-    this.game.events?.emit('rail.hit', { hits: r.hits, bears: r.bears, what, ...(kind ? { kind } : {}), by }); // (kind: a shot's, 'plain' | 'outlined')
+    const b = r.hullCracks.strike(n, { shatter }); this.feel('hit'); // (each hit a blow on the hull's cracks: shiphull.js)
+    this.game.events?.emit('rail.hit', { hits: r.hits, bears: r.bears, what, region: b.region, ...(kind ? { kind } : {}), by }); // (kind: a shot's, 'plain' | 'outlined')
     if (r.chain.links || r.chain.of) this.game.railReadout?.chainBreak?.();
     chainHit(r.chain); // (a hit breaks the chain to nothing: something seen to fall, not only hull, RAIL-MODULES.md 5)
-    if (r.hits >= r.bears) this.broken();
+    if (b.shatter || r.hits >= r.bears) this.broken();
   }
   /** Is a foe's windup showing: a pattern of its own played and not yet at its first volley (the pattern player's runs)? */
   windupShowing(f) { return !!this.trip?.player?.runs?.some((r) => r.from === f && r.k === 0 && r.t < 0); }
@@ -491,7 +493,7 @@ export class Emocean {
     if (this.piece) { const end = this.piece.finish(); if (end) r.end = end; this.piece = null; }
     r.passed = passed && r.hits < r.bears;
     if (r.passed) r.score += (r.bears - r.hits) * SCORE.bears; // (Star Fox 64's tally: what the ship could still bear)
-    const run = { ...r, chainLevel: r.chain.best }; delete run.chain; // (the chain's best level: the Full Chain achievement reads it)
+    const run = { ...r, chainLevel: r.chain.best }; delete run.chain; delete run.hullCracks; // (hits copied as a number; the cracks stay the run's) // (the chain's best level: the Full Chain achievement reads it)
     const show = this.showcase, prac = this.practice; this.showcase = null; this.practice = null;
     if (prac) { passed = true; const L = r.legs?.[0]; this.result = { legs: r.legs, passed: r.passed, bears: r.bears, hits: r.hits, score: r.score, rank: L?.rank ?? null, medal: !!L?.medal }; } // (practice: back to its pier, its result shown, nothing counted)
     else if (show) { passed = true; g.events?.emit('showcase.end', { legs: show.passage.legs.length, score: r.score, by: 'courier' }); } // (the showcase crossing: back to its pier, the voyage untouched)
