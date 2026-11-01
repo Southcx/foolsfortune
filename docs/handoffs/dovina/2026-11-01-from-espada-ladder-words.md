@@ -39,7 +39,7 @@ and the trait is about the throw back.
 
 walkCycle keeps its colon: it introduces a list the player needs. Everywhere else the colon chains are gone.
 
-## True Odds' row labels (`courier/domainarts/depth.js`, Petra's)
+## True Odds' row labels (`courier/domainarts/depth.js` `oddsTick`, yours)
 
 They stand. The tiers' own names, then `Possibilikey`, `Fossil` and `Crystal shard`, are the glossary's words, which is what a readout
 should carry.
