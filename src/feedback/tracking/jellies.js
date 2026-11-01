@@ -10,13 +10,13 @@ import { plural } from './lineformat.js';
 export function jellyRules({ on, L, log, g }) {
   const first = (key, text) => { if (L.first(key)) log.say('record', text); };
   // the slip jellies (creatures/jelly/slipjelly.js): what they do to them and what they do to them; a blow by anything else is said as what it was
-  on('jelly.notice', () => { L.inc('jelly.noticed'); log.say('battle', 'A slip jelly turns toward you.', { key: 'jnot', throttle: 4 }); });
+  on('jelly.notice', () => { L.inc('jelly.noticed'); log.say('battle', 'A slip jelly has noticed you.', { key: 'jnot', throttle: 4 }); });
   on('jelly.hit', (e) => { if (e.by === 'courier') { L.inc('jelly.hit'); L.inc(`jelly.hit.${e.cause}`); } });
-  on('jelly.strike', (e) => { L.inc('jelly.struck'); L.inc(`jelly.struck.${e.move}`); log.say('warn', e.move === 'lunge' ? 'The slip jelly throws itself at you.' : 'The slip jelly spits slip at you.', { key: `jstr.${e.move}`, throttle: 1.5 }); });
-  on('jelly.cancel', (e) => { L.inc('jelly.cancelled'); L.inc(`jelly.cancelled.${e.why}`); if (e.why === 'staggered') log.say('battle', 'Your blow breaks the slip jelly\'s wind-up.', { key: 'jcan', throttle: 1 }); });
+  on('jelly.strike', (e) => { L.inc('jelly.struck'); L.inc(`jelly.struck.${e.move}`); log.say('warn', e.move === 'lunge' ? 'The slip jelly lunges at you.' : 'The slip jelly spits at you.', { key: `jstr.${e.move}`, throttle: 1.5 }); });
+  on('jelly.cancel', (e) => { L.inc('jelly.cancelled'); L.inc(`jelly.cancelled.${e.why}`); if (e.why === 'staggered') log.say('battle', 'Slip jelly\'s wind-up broken.', { key: 'jcan', throttle: 1 }); });
   on('jelly.burst', (e) => {
     if (e.by === 'courier' && e.cause === 'zandatsu') { L.inc('jelly.burst'); L.inc('jelly.burst.zandatsu'); return; } // (said by creature.zandatsu)
-    if (e.by === 'courier') { L.inc('jelly.burst'); L.inc(`jelly.burst.${e.cause}`); log.say('battle', 'You burst the slip jelly.', { key: 'jbur', win: 1, fmt: (n) => `You burst ${plural(n, 'slip jelly').replace('jellys', 'jellies')}.` }); first('jelly', 'Logged: your first slip jelly. It forms again from its puddle in a while.'); }
+    if (e.by === 'courier') { L.inc('jelly.burst'); L.inc(`jelly.burst.${e.cause}`); log.say('battle', 'Slip jelly burst.', { key: 'jbur', win: 1, fmt: (n) => `${plural(n, 'slip jelly').replace('jellys', 'jellies')} burst.` }); first('jelly', 'Logged: your first slip jelly. It forms again from its puddle later.'); }
     else log.say('other', 'The slip jelly bursts.', { key: 'jbur2', throttle: 1 });
   });
   // a foe the owner struck and a sibling finished is the owner's (docs/plans/COOP.md: FFXIV's credit by taking part); the death itself

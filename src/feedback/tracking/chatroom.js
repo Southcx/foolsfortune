@@ -9,8 +9,8 @@ import { SIBLINGS } from '../../coop/party.js';
 
 const nameOf = (id) => SIBLINGS.find((s) => s.id === id)?.name || null;
 const UNSENT = {
-  away: 'The chatroom is in the published game only.', who: 'The chatroom cannot tell who you are: open the published game signed in.',
-  soon: 'Give the chatroom a moment between lines.', empty: 'Say something: /say <words>.', failed: 'Your line did not reach the chatroom.',
+  away: 'The chatroom is in the published game only.', who: 'The chatroom cannot tell who you are. Sign in and open the published game.',
+  soon: 'Too fast. Wait a moment between lines.', empty: 'Nothing to send. Type /say <words>.', failed: 'Line not sent to the chatroom.',
 };
 
 export function chatroomRules({ on, log }) {
@@ -19,6 +19,6 @@ export function chatroomRules({ on, log }) {
     const to = e.to && e.to !== 'all' ? ` (to ${e.to === 'owner' ? (e.mine ? 'the host' : 'you') : nameOf(e.to) || e.to})` : '';
     log.say('say', `${who}${to} : ${e.text}`, { who: nameOf(e.from) ? e.from : null });
   });
-  on('chat.dropped', (e) => log.say('warn', `${nameOf(e.from) || (e.from === 'owner' ? 'The host' : 'A guest')} writes faster than the chatroom allows: some lines were left unsaid.`, { key: `chat.drop.${e.from}`, throttle: 60 }));
+  on('chat.dropped', (e) => log.say('warn', `${nameOf(e.from) || (e.from === 'owner' ? 'The host' : 'A guest')} is writing too fast for the chatroom. Some lines were not sent.`, { key: `chat.drop.${e.from}`, throttle: 60 }));
   on('chat.unsent', (e) => log.say('warn', UNSENT[e.why] || UNSENT.failed, { key: 'chat.unsent', throttle: 2 }));
 }

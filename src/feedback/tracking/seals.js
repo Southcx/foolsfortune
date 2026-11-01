@@ -11,17 +11,17 @@
 import { SEAL_KINDS } from '../../progress/sealachievements.js';
 
 export function sealRules({ on, L, log }) {
-  on('seal.carve', (e) => { if (L.first('seal.carve')) log.say('record', `Your seal is carved: ${e.name}. It is yours for good.`); });
+  on('seal.carve', (e) => { if (L.first('seal.carve')) log.say('record', `Seal carved: ${e.name}. It is permanent.`); });
   on('seal.set', (e) => {
     if (e.by !== 'courier' || !e.cradle) return;
     L.inc('seal.set'); if (SEAL_KINDS.includes(e.kind)) L.inc(`seal.kind.${e.kind}`);
     L.inc(`seal.at.${e.cradle}`);
     const page = e.book || e.cradle; // (a place's cradles share one page: a Shrine gate's two are one Shrine, `book: 'shrine.<id>'`)
-    if (L.first(`seal.book.${page}`)) log.say('record', 'Your seal sets its imprint, and the cradle stamps its seal into your Seal Book.', { key: 'sealbook' });
+    if (L.first(`seal.book.${page}`)) log.say('record', 'Imprint set. The cradle\'s seal is stamped in your Seal Book.', { key: 'sealbook' });
   });
   on('seal.unset', (e) => {
     if (e.by !== 'courier') return;
-    if (e.why === 'dry') log.say('battle', 'Your pool runs dry, and your Pneuka Jar lifts out of the cradle.', { key: 'sealdry', throttle: 4 });
-    if (e.why === 'wrecked') { L.inc('seal.wrecked'); log.say('battle', 'The body breaks and throws your Pneuka Jar clear.', { key: 'sealwreck', throttle: 4 }); }
+    if (e.why === 'dry') log.say('battle', 'Pool empty. Your Pneuka Jar is out of the cradle.', { key: 'sealdry', throttle: 4 });
+    if (e.why === 'wrecked') { L.inc('seal.wrecked'); log.say('battle', 'Body broken. Your Pneuka Jar is thrown clear.', { key: 'sealwreck', throttle: 4 }); }
   });
 }

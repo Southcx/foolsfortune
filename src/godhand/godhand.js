@@ -141,10 +141,10 @@ export class GodMode {
 
   toggle() {
     if (this.state === 'off') {
-      if (!this.canEnter()) { this.game.log.say('warn', this.game.techs.active?.id === 'skiff' ? 'You cannot take the hand while riding the board.' : 'You need solid ground to take the hand.', { key: 'nogod', throttle: 3 }); return; }
+      if (!this.canEnter()) { this.game.log.say('warn', this.game.techs.active?.id === 'skiff' ? 'The god hand cannot be taken while riding the Solar Skiff.' : 'Stand on solid ground to take the god hand.', { key: 'nogod', throttle: 3 }); return; }
       this.enter();
     } else if (this.state === 'on') {
-      if (!this.jar.alive) { this.game.log.say('warn', 'Your Pneuka Jar is not reforged yet.', { key: 'nogod', throttle: 3 }); return; }
+      if (!this.jar.alive) { this.game.log.say('warn', 'Your Pneuka Jar is not made whole yet.', { key: 'nogod', throttle: 3 }); return; }
       this.exit();
     }
   }
@@ -391,7 +391,7 @@ export class GodMode {
       if (input.wasPressed('Mouse0') && !this.grab && K.ok && this.hover) {
         const hp = this.hoverPoint();
         if (A.gate(ART_BY_ID.telekinesis, hp)) this.beginGrab(this.hover);
-      } else if (input.wasPressed('Mouse0') && !this.grab && K.far) g.log.say('warn', 'That is out of reach.', { key: 'reach', throttle: 2 });
+      } else if (input.wasPressed('Mouse0') && !this.grab && K.far) g.log.say('warn', 'Out of reach.', { key: 'reach', throttle: 2 });
       if (this.grab && !input.isDown('Mouse0')) this.releaseGrab(false);
     } else {
       if (this.grab) this.releaseGrab(false);

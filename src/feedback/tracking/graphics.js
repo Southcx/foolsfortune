@@ -15,7 +15,7 @@ export function graphicsRules({ on, log }) {
     if (e.by === 'courier') log.say('system', `Graphics: ${name}.`, { key: 'graphics.tier', throttle: 1 });
     else log.say('system', e.chosen === 'auto' ? `Graphics: ${name}, chosen for this machine.` : `Graphics: ${name}.`, { key: 'graphics.boot', throttle: 600 });
   });
-  on('graphics.restart', () => log.say('system', 'The rest of the change takes effect when you next start the game.', { key: 'graphics.restart', throttle: 2 }));
+  on('graphics.restart', () => log.say('system', 'The rest of the change applies when the game next starts.', { key: 'graphics.restart', throttle: 2 }));
   let said = false;
-  on('graphics.lines', (e) => { if (said) return; said = true; log.say('system', `The picture drops to ${e.lines} lines to keep the frame smooth.`, { key: 'graphics.lines' }); });
+  on('graphics.lines', (e) => { if (said) return; said = true; log.say('system', `Resolution lowered to ${e.lines} lines to keep the frame rate smooth.`, { key: 'graphics.lines' }); });
 }

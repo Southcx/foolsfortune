@@ -13,12 +13,12 @@ export function anglingRules({ on, L, log, where }) {
   on('angle.charge', () => L.inc('angle.charge'));
   on('angle.cast', (e) => {
     L.inc('angle.cast'); L.inc(`angle.cast.${e.aspect}`); if (e.water) L.inc('angle.cast.water'); if (e.lure) { L.inc(`angle.lure.${e.lure}`); if (e.lure.startsWith('curio.')) L.inc('angle.lure.curio'); } L.hi('angle.cast.dist', e.dist, { at: where() }); if (e.water) L.hi('angle.cast.dist.water', e.dist, { at: where() }); // (into water: what the casting achievements read)
-    log.say('angle', e.water ? `You cast your lure. It carries a mask of ${asp(e.aspect)}.` : 'You cast your lure. It lands on dry ground.', { key: 'cast', throttle: 0.5 });
+    log.say('angle', e.water ? `Lure cast. It carries a mask of ${asp(e.aspect)}.` : 'Lure cast. It landed on dry ground.', { key: 'cast', throttle: 0.5 });
   });
   on('lure.land', (e) => L.inc(e.water ? 'lure.land.water' : 'lure.land.ground'));
-  on('angle.retrieve', () => { L.inc('angle.retrieve'); log.say('angle', 'You reel in the lure.', { key: 'ret', throttle: 1 }); });
-  on('angle.twitch', () => { L.inc('angle.twitch'); log.say('angle', 'You twitch the lure.', { key: 'twitch', win: 4, fmt: (n) => `You twitch the lure (×${n}).` }); });
-  on('angle.sound', (e) => { L.inc('angle.sound'); log.say('angle', e.stirred ? `You ping the water. ${e.stirred === 1 ? 'Something stirs.' : 'Things stir.'}` : 'You ping the water.', { key: 'sound', throttle: 2 }); });
+  on('angle.retrieve', () => { L.inc('angle.retrieve'); log.say('angle', 'Lure reeled in.', { key: 'ret', throttle: 1 }); });
+  on('angle.twitch', () => { L.inc('angle.twitch'); log.say('angle', 'Lure twitched.', { key: 'twitch', win: 4, fmt: (n) => `Lure twitched (×${n}).` }); });
+  on('angle.sound', (e) => { L.inc('angle.sound'); log.say('angle', e.stirred ? `Water pinged. ${e.stirred === 1 ? 'Something stirs.' : 'Things stir.'}` : 'Water pinged.', { key: 'sound', throttle: 2 }); });
   on('angle.lure', () => L.inc('angle.lure.change'));
   on('angle.nibble', (e) => { L.inc('angle.nibble'); log.say('angle', 'Something nibbles at the lure.', { key: 'nib', win: 5, fmt: () => 'Something nibbles at the lure.' }); });
   on('angle.bite', (e) => {
@@ -27,28 +27,28 @@ export function anglingRules({ on, L, log, where }) {
   });
   on('angle.hookset', (e) => {
     L.inc('angle.hookset'); L.inc(`angle.hookset.${e.quality}`);
-    log.say('angle', e.quality === 'perfect' ? 'You set the hook perfectly!' : e.quality === 'early' ? 'You set the hook, a little early.' : 'You set the hook, just in time.');
+    log.say('angle', e.quality === 'perfect' ? 'Hook set: perfect!' : e.quality === 'early' ? 'Hook set, a little early.' : 'Hook set, a little late.');
   });
-  on('angle.miss', () => { L.inc('angle.miss'); log.say('warn', 'The lure comes away bare. Whatever it was has gone.'); });
+  on('angle.miss', () => { L.inc('angle.miss'); log.say('warn', 'The lure came back empty. The fish is gone.'); });
   on('angle.reveal', () => L.inc('angle.reveal'));
   on('angle.notice', () => L.inc('angle.notice'));
-  on('angle.warn', () => log.say('warn', 'The line trembles: something surfaces and shudders. Brace!', { key: 'awarn', throttle: 4 }));
+  on('angle.warn', () => log.say('warn', 'Something big is on the line. Brace!', { key: 'awarn', throttle: 4 }));
   on('angle.thrash', () => L.inc('angle.thrash'));
   on('angle.brace', () => L.inc('angle.brace'));
   on('angle.crank', () => L.inc('angle.crank'));
   on('angle.retrieve.fast', () => L.inc('angle.retrieve.fast'));
-  on('angle.pump', () => { L.inc('angle.pump'); log.say('angle', 'You pump the rod and win back line.', { key: 'pump', win: 4, fmt: (n) => `You pump the rod and win back line (×${n}).` }); }); // (the words a placeholder for Espada's)
+  on('angle.pump', () => { L.inc('angle.pump'); log.say('angle', 'Rod pumped. Line won back.', { key: 'pump', win: 4, fmt: (n) => `Rod pumped. Line won back (×${n}).` }); }); // (the words a placeholder for Espada's)
   on('angle.bolt', () => { L.inc('angle.bolt'); log.say('angle', 'It bolts at the last moment!', { key: 'bolt', throttle: 3 }); });
-  on('angle.breach', () => { L.inc('angle.breach'); log.say('god', 'The water tears open: something enormous breaches!', { key: 'breach', throttle: 4 }); });
-  on('angle.spent', () => log.say('angle', 'It has stopped fighting.', { key: 'spent', throttle: 3 }));
-  on('angle.mindgone', () => { L.inc('angle.mindgone'); log.say('warn', 'Your mind slips from the lure. The line goes slack.'); });
+  on('angle.breach', () => { L.inc('angle.breach'); log.say('god', 'Something enormous breaches the water!', { key: 'breach', throttle: 4 }); });
+  on('angle.spent', () => log.say('angle', 'The fish has stopped fighting.', { key: 'spent', throttle: 3 }));
+  on('angle.mindgone', () => { L.inc('angle.mindgone'); log.say('warn', 'Pool empty. The line goes slack.'); });
   on('angle.escape', (e) => {
     L.inc('angle.escape'); L.inc(`angle.escape.${e.why}`);
     if (e.species) L.inc(`fish.lost.${e.species}`);
     if (e.why === 'snap') log.say('hurt', 'The line snaps!');
-    else if (e.why === 'spool') log.say('hurt', 'The line runs out and parts!');
-    else if (e.why === 'slip') log.say('warn', 'The hook slips free. It is gone.');
-    else if (e.why === 'stow') log.say('warn', 'You put the rod away. The line goes slack.');
+    else if (e.why === 'spool') log.say('hurt', 'The line ran out and parted!');
+    else if (e.why === 'slip') log.say('warn', 'Hook slipped free. The fish is gone.');
+    else if (e.why === 'stow') log.say('warn', 'Rod put away. The line goes slack.');
     if (e.dur > 25) L.hi('fish.fight.longestlost', e.dur);
   });
   on('angle.catch', (e) => {
@@ -61,19 +61,19 @@ export function anglingRules({ on, L, log, where }) {
     L.hi('fish.fight.longest', e.dur); L.lo('fish.fight.shortest', e.dur); L.hi('fish.depth.max', e.depth); L.hi('fish.kg.max', e.kg); L.hi('fish.cm.max', e.cm);
     const cm = e.cm >= 100 ? `${(e.cm / 100).toFixed(2)} m` : `${e.cm.toFixed(1)} cm`;
     const art = sp.name.startsWith('The ') ? '' : /^[AEIOU]/i.test(sp.name) ? 'an ' : 'a ';
-    log.say('angle', `You land ${art}${sp.name}! (${cm}, ${e.kg.toFixed(2)} kg)`);
-    if (e.cls === 'giant') log.say('angle', `It is a giant of its kind.`);
-    else if (e.cls === 'large') log.say('angle', `A fine, large one.`);
+    log.say('angle', `Landed: ${art}${sp.name}! (${cm}, ${e.kg.toFixed(2)} kg)`);
+    if (e.cls === 'giant') log.say('angle', `Size: giant.`);
+    else if (e.cls === 'large') log.say('angle', `Size: large.`);
     if (e.first) log.say('record', `Logged: your first ${sp.name}. ${sp.blurb}`);
-    else if (r === 'beat' || r === 'small') log.say('record', `A new record for the ${sp.name}: ${cm}.`);
+    else if (r === 'beat' || r === 'small') log.say('record', `New record for the ${sp.name}: ${cm}.`);
     if (e.legend) log.say('god', 'The Drowned Lachryma comes apart in your hands, and the workshop is a little quieter.');
   });
   // a landed fish let go (released by default; F keeps it: the owner, 2026-10-11, ANGLING.md 5): half again of the landing's Possession experience, never cubes
   on('angle.release', (e) => { if (e.by !== 'courier') return; L.inc('fish.release'); L.inc(`fish.release.${e.species}`);
-    log.say('angle', `You let the ${BY_SPECIES[e.species]?.name || 'fish'} go.`, { key: 'release', throttle: 0.5 }); }); // (placeholder words, Espada's to word)
+    log.say('angle', `Released: the ${BY_SPECIES[e.species]?.name || 'fish'}.`, { key: 'release', throttle: 0.5 }); }); // (placeholder words, Espada's to word)
   on('angle.keep', (e) => { if (e.by !== 'courier') return; L.inc('fish.kept'); }); // (the keep key pressed on the lift: into the Pneuka Box, sold to Old Grog)
   on('angle.mooch', (e) => { L.inc('angle.mooch'); L.inc(`angle.mooch.${e.echo}`); log.say('angle', `The lure carries an echo of ${BY_SPECIES[e.echo].name}.`); });
   on('angle.landed', (e) => L.inc('fish.lachryma', e.baubles));
-  on('angle.tide', (e) => { L.inc('angle.tide'); L.inc(`angle.tide.${e.phase}`); if (e.near) log.say('angle', `The tide is ${e.phase === 'low' ? 'at its lowest' : e.phase === 'high' ? 'at the full' : e.phase}.`); });
+  on('angle.tide', (e) => { L.inc('angle.tide'); L.inc(`angle.tide.${e.phase}`); if (e.near) log.say('angle', `Tide: ${e.phase === 'low' ? 'lowest' : e.phase === 'high' ? 'full' : e.phase}.`); });
   on('angle.legend', () => log.say('god', 'Something vast turns over in the Well.'));
 }

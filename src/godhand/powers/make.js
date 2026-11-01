@@ -29,7 +29,7 @@ export const MAKE = {
   totem: {
     begin(P, L) {
       const g = P.game, Mi = P.god.miracles, feeling = Mi?.last;
-      if (!feeling || !Mi?.known(feeling)) { g.log.say('warn', 'Call a miracle first: a totem holds the last one.', { key: 'totem.none', throttle: 2 }); return false; }
+      if (!feeling || !Mi?.known(feeling)) { g.log.say('warn', 'Call a miracle first. A totem uses the last miracle you called.', { key: 'totem.none', throttle: 2 }); return false; }
       const M = MIRACLES[feeling]; if (!g.lachryma.spend(M.cost[0], 'god')) { g.log.say('warn', 'Not enough Lachryma for the totem.', { key: 'totem.pay', throttle: 2 }); return false; }
       P.cap('totem', Math.round(P.ramp('totem', 'n')));
       const at = L.a.clone(), dur = P.ramp('totem', 'dur');

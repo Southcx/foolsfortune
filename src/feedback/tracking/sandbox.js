@@ -13,12 +13,12 @@ export function sandboxRules({ on, L, log }) {
   on('impact.hit', (e) => {
     if (e.by !== 'courier') return;
     L.inc('impact.hit'); if (e.heavy) L.inc('impact.heavy'); L.hi('impact.energy.best', e.energy || 0); L.hi('impact.speed.best', e.speed || 0);
-    if (L.first('impact.hit.first')) say('info', 'A thrown thing struck home. Whatever it hits panics, and gives up more Lachryma.', 'impact.first');
+    if (L.first('impact.hit.first')) say('info', 'Thrown hit. A creature struck by a thrown thing panics and gives up more Lachryma.', 'impact.first');
   });
-  on('impact.strike', (e) => { if (e.by !== 'courier') return; L.inc('impact.strike'); L.hi('impact.strike.best', e.n || 0); say('record', `A strike: ${e.n} struck with one throw.`, 'impact.strike'); });
-  on('sandbox.rack', (e) => { if (e.by === 'courier') say('info', 'The yard is restocked: crates, bricks and pots.', 'sb.rack', 2); });
-  on('sandbox.pen', (e) => { if (e.by === 'courier') say('info', 'Three slip jellies well up in the pen. They are for practice: nothing they do is counted.', 'sb.pen', 2); });
-  on('sandbox.ground', (e) => { if (e.by === 'courier') say('info', 'The ground is put back as it was.', 'sb.ground', 2); });
+  on('impact.strike', (e) => { if (e.by !== 'courier') return; L.inc('impact.strike'); L.hi('impact.strike.best', e.n || 0); say('record', `Strike! ${e.n} struck with one throw.`, 'impact.strike'); });
+  on('sandbox.rack', (e) => { if (e.by === 'courier') say('info', 'Yard restocked: crates, bricks and pots.', 'sb.rack', 2); });
+  on('sandbox.pen', (e) => { if (e.by === 'courier') say('info', '3 training slip jellies added to the pen. Nothing they do is counted.', 'sb.pen', 2); });
+  on('sandbox.ground', (e) => { if (e.by === 'courier') say('info', 'Ground reset.', 'sb.ground', 2); });
   on('sandbox.kick', (e) => { if (e.by === 'courier') L.inc('sandbox.kick'); });
   on('sandbox.goal', (e) => {
     if (e.by !== 'courier') return;

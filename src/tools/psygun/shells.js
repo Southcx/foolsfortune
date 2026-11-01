@@ -155,7 +155,7 @@ export class Shells {
     const { lachryma: cost, crack } = fireCost(t.id);
     // a World shell (tier V) is paid by the place: too little Lachryma here and the trigger dry-clicks, the round kept (CASTER-SHELLS.md 7.1)
     if (t.row?.tier === 5 && !lent && g.worldDraw && this.worldDry(t.row, ctx)) { sfx.dryFire(); g.events?.emit('shell.dry', { id: t.id, by: 'courier' }); return false; }
-    if (!lent && cost && g.lachryma && !g.lachryma.spend(cost, 'shell')) { sfx.dryFire(); g.log.say('warn', 'Your pool is too low to fire that shell.', { key: 'shellpool', throttle: 4 }); return false; }
+    if (!lent && cost && g.lachryma && !g.lachryma.spend(cost, 'shell')) { sfx.dryFire(); g.log.say('warn', 'Pool too low to fire that shell.', { key: 'shellpool', throttle: 4 }); return false; }
     if (!lent && --this.counts[t.id] <= 0 && !ctx.barrels) this.turnOn(); // (both barrels turn once, after: bothBarrels)
     this.runner.onShellFired(); // (the Detonator's charges go off at the next shell)
     this.game.events?.emit('shell.fire', { id: t.id, air: !ctx.player.grounded });

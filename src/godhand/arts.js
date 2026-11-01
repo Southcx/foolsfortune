@@ -293,7 +293,7 @@ export class GodArts {
   gate(a, point) {
     const g = this.game;
     this.lack = null;
-    if (!this.owns(a.id)) { g.log.say('warn', `You have not learned ${a.name}.`, { key: 'unlearned', throttle: 2 }); return false; }
+    if (!this.owns(a.id)) { g.log.say('warn', `${a.name} not learned yet.`, { key: 'unlearned', throttle: 2 }); return false; }
     return g.cartography.tierAt(point.x, point.y, point.z).tier >= a.needs; // (the zone of influence is the ground you have explored)
   }
 

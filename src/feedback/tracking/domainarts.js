@@ -13,8 +13,8 @@ import { CREATURES } from '../../tools/veritome/bestiary.js';
 
 const kname = (k) => (CREATURES[k]?.name || { wisp: 'Lantern Wisp', greatjelly: 'Great Slip Jelly' }[k] || k).toLowerCase();
 
-const KIND = { passive: 'always on while it holds a notch', reaction: 'always on while it holds a notch', action: 'worn on the art key' };
-const WHY = { closed: 'You have not opened that rung yet.', cool: 'It is still settling.', pool: 'Your pool is too low for it.', none: 'No creature near enough.', unknown: 'No rung is called that.', here: 'You are where you stood.', record: 'Not while a time is being kept.', bare: 'No creature near carries an affliction.', still: 'No creature near is winding up a blow.', foe: 'A FOE keeps its own rule.' };
+const KIND = { passive: 'always on while worn in a notch', reaction: 'always on while worn in a notch', action: 'worn on the art key' };
+const WHY = { closed: 'Rung not opened yet.', cool: 'Still cooling down.', pool: 'Not enough Lachryma in the pool.', none: 'No creature in range.', unknown: 'No rung by that name.', here: 'Already at the recall point.', record: 'Not usable during a timed run.', bare: 'No creature in range has an affliction.', still: 'No creature in range is winding up a blow.', foe: 'Does not work on a FOE.' };
 const SW = { doubt: 'doubt', charm: 'charm', blind: 'blindness', confusion: 'confusion', stun: 'a stun' };
 const list = (xs) => (xs.length < 2 ? xs.join('') : `${xs.slice(0, -1).join(', ')} and ${xs[xs.length - 1]}`);
 const tname = (t) => TYPES[t]?.name || t;
@@ -23,49 +23,49 @@ const cap = (w) => w[0].toUpperCase() + w.slice(1);
 
 export function domainArtsRules({ on, log }) {
   on('domain.art.learn', (e) => { const A = DOMAIN_ARTS[e.art]; if (!A) return;
-    log.say('gain', `You open ${A.label}, a ${DOMAINS[A.domain].name} rung (${KIND[A.kind]}). ${A.line}`);
+    log.say('gain', `Rung opened: ${A.label} (${DOMAINS[A.domain].name}, ${KIND[A.kind]}). ${A.line}`);
     log.say('system', A.how, { key: `rung.how.${e.art}` });
-    if (A.kind !== 'action' && e.on === false) log.say('system', `Your notches are full: /rung ${e.art} puts it on in place of another.`, { key: `rung.full.${e.art}` }); });
+    if (A.kind !== 'action' && e.on === false) log.say('system', `All notches in use. Type /rung ${e.art} to swap it in.`, { key: `rung.full.${e.art}` }); });
   on('domain.trait.learn', (e) => { const T = TRAITS[e.trait]; if (!T) return; // (progress/domainladder.js: a milestone's trait)
     log.say('gain', `${T.label}: ${T.line}`); });
   on('domain.art.fire', (e) => {
-    if (e.art === 'postpone') log.say('system', e.parried ? `The blow you are holding is cut to ${share(e.left ?? 0.5)}.` : `A blow is held. It lands in ${e.delay} seconds.`, { key: 'rung.postpone', throttle: 0.5 });
+    if (e.art === 'postpone') log.say('system', e.parried ? `Postponed blow reduced to ${share(e.left ?? 0.5)}.` : `Blow postponed. It lands in ${e.delay} seconds.`, { key: 'rung.postpone', throttle: 0.5 });
     else if (e.art === 'plating') log.say('system', `Your ${e.region} is plated.`, { key: 'rung.plating', throttle: 0.5 });
-    else if (e.art === 'retype') log.say('system', `Your blows strike as ${tname(e.type)}${e.known ? `: what the ${kname(e.kind)} is weak to` : ''}.`, { key: 'rung.retype', throttle: 0.5 });
+    else if (e.art === 'retype') log.say('system', `Blows re-typed to ${tname(e.type)}${e.known ? `. The ${kname(e.kind)} is weak to it` : ''}.`, { key: 'rung.retype', throttle: 0.5 });
     else if (e.art === 'shatter') log.say('gain', 'Shattered.', { key: 'rung.shatter', throttle: 1 });
-    else if (e.art === 'recall') log.say('system', 'You are back where you stood.', { key: 'rung.recall', throttle: 0.5 });
-    else if (e.art === 'catch') log.say('system', 'You catch the shot. Let go to throw it.', { key: 'rung.catch', throttle: 0.5 });
+    else if (e.art === 'recall') log.say('system', 'Recalled to your earlier position.', { key: 'rung.recall', throttle: 0.5 });
+    else if (e.art === 'catch') log.say('system', 'Shot caught. Release to throw it.', { key: 'rung.catch', throttle: 0.5 });
     else if (e.art === 'link') log.say('system', `${cap(share(e.share ?? 0.5))} of the blow goes to the ${kname(e.kind)} you are linked to.`, { key: 'rung.link', throttle: 1.5 });
-    else if (e.art === 'fuse') log.say('system', `The ${kname(e.kind)} is fused: what you put on it waits ${e.window} seconds.`, { key: 'rung.fuse', throttle: 0.5 });
+    else if (e.art === 'fuse') log.say('system', `${cap(kname(e.kind))} fused. Afflictions on it are delayed ${e.window} seconds.`, { key: 'rung.fuse', throttle: 0.5 });
     else if (e.art === 'walkCycle') log.say('system', `Walked: ${list(e.turned.map(([a, b]) => `${SW[a] || a} into ${SW[b] || b}`))}.`, { key: 'rung.cycle', throttle: 0.5 });
-    else if (e.art === 'sealCreature') log.say('system', e.broke ? `The seal breaks off the ${kname(e.kind)}'s ${e.blow}.` : `Sealed: the ${kname(e.kind)} cannot ${e.blow} for ${e.dur} seconds.`, { key: 'rung.seal', throttle: 0.5 });
-    else if (e.art === 'relay') log.say('gain', e.links > 1 ? `The force passes on, ${e.links} links.` : 'The force passes on.', { key: 'rung.relay', throttle: 1 });
-    else if (e.art === 'catchWeather') log.say('system', `Your Bottle catches ${cap(e.aspect)}: ${e.lachryma} Lachryma.`, { key: 'rung.catchweather', throttle: 20 });
-    else if (e.art === 'borrowVerb') log.say('system', `The ${kname(e.kind)} lends you its move. Press R to throw it for the next ${e.dur} seconds.`, { key: 'rung.borrow', throttle: 0.5 });
+    else if (e.art === 'sealCreature') log.say('system', e.broke ? `Seal broken on the ${kname(e.kind)}'s ${e.blow}.` : `Sealed: the ${kname(e.kind)} cannot ${e.blow} for ${e.dur} seconds.`, { key: 'rung.seal', throttle: 0.5 });
+    else if (e.art === 'relay') log.say('gain', e.links > 1 ? `Force relayed: ${e.links} links.` : 'Force relayed.', { key: 'rung.relay', throttle: 1 });
+    else if (e.art === 'catchWeather') log.say('system', `Caught by your Lachrymato Bottle: ${e.lachryma} Lachryma of ${cap(e.aspect)}.`, { key: 'rung.catchweather', throttle: 20 });
+    else if (e.art === 'borrowVerb') log.say('system', `Move borrowed from the ${kname(e.kind)}. Press R to throw it for the next ${e.dur} seconds.`, { key: 'rung.borrow', throttle: 0.5 });
     else if (e.art === 'standingRule') log.say('system', `Your rule: ${RULE_THEN[e.then]?.label ?? e.then}.`, { key: 'rung.rule', throttle: 2 });
   });
-  on('domain.react', (e) => log.say('system', e.kind === 'cancel' ? 'The paints cancel: bare ground, and calm.' : `The paints flare: ${e.agate}.`, { key: 'rung.react', throttle: 1 }));
+  on('domain.react', (e) => log.say('system', e.kind === 'cancel' ? 'Paints cancelled. The ground is bare and calm.' : `Paints reacted: ${e.agate}.`, { key: 'rung.react', throttle: 1 }));
   on('domain.art.end', (e) => {
-    if (e.art === 'postpone') log.say('warn', e.why === 'parried' ? 'The held blow lands, halved.' : 'The held blow lands.', { key: 'rung.postpone.end', throttle: 0.5 });
-    else if (e.art === 'plating') log.say('system', e.why === 'struck' ? `The plate on your ${e.region} takes the blow and breaks.` : 'Your plate melts back into your pool.', { key: 'rung.plating.end', throttle: 0.5 });
-    else if (e.art === 'retype') log.say('system', 'Your blows strike as themselves again.', { key: 'rung.retype.end', throttle: 0.5 });
-    else if (e.art === 'fuse' && e.why !== 'gone') log.say('system', !e.n ? 'The fuse goes off with nothing in it.' : e.why === 'chosen' ? `The fuse goes off: ${list(e.statuses.map((x) => SW[x] || x))} at once, half again as long.` : `The fuse runs out: ${list(e.statuses.map((x) => SW[x] || x))} as they were.`, { key: 'rung.fuse.end', throttle: 0.5 });
-    else if (e.art === 'sealCreature' && e.why === 'time') log.say('system', 'Your seal fades.', { key: 'rung.seal.end', throttle: 1 });
-    else if (e.art === 'borrowVerb') log.say('system', `The ${kname(e.kind)} takes its move back.`, { key: 'rung.borrow.end', throttle: 1 });
-    else if (e.art === 'vow') log.say('warn', `You broke your vow to ${VOWS[e.vow]?.label}. It cracks you.`, { key: 'rung.vow.end', throttle: 0.5 });
+    if (e.art === 'postpone') log.say('warn', e.why === 'parried' ? 'Postponed blow landed at half damage.' : 'Postponed blow landed.', { key: 'rung.postpone.end', throttle: 0.5 });
+    else if (e.art === 'plating') log.say('system', e.why === 'struck' ? `Plate on your ${e.region} broken. It blocked the blow.` : 'Plate returned to your pool.', { key: 'rung.plating.end', throttle: 0.5 });
+    else if (e.art === 'retype') log.say('system', 'Blows back to their usual type.', { key: 'rung.retype.end', throttle: 0.5 });
+    else if (e.art === 'fuse' && e.why !== 'gone') log.say('system', !e.n ? 'Fuse went off empty.' : e.why === 'chosen' ? `Fuse went off. Applied at once, 50% longer: ${list(e.statuses.map((x) => SW[x] || x))}.` : `Fuse ran out. Applied as they were: ${list(e.statuses.map((x) => SW[x] || x))}.`, { key: 'rung.fuse.end', throttle: 0.5 });
+    else if (e.art === 'sealCreature' && e.why === 'time') log.say('system', 'Seal expired.', { key: 'rung.seal.end', throttle: 1 });
+    else if (e.art === 'borrowVerb') log.say('system', `Borrowed move returned to the ${kname(e.kind)}.`, { key: 'rung.borrow.end', throttle: 1 });
+    else if (e.art === 'vow') log.say('warn', `Vow broken: ${VOWS[e.vow]?.label}. Your vessel cracks.`, { key: 'rung.vow.end', throttle: 0.5 });
   });
   on('domain.art.refuse', (e) => log.say('warn', `${DOMAIN_ARTS[e.art]?.label ?? e.art}: ${WHY[e.why] || e.why}`, { key: 'rung.refuse', throttle: 1 }));
   on('domain.art.wear', (e) => log.say('system', `${DOMAIN_ARTS[e.art]?.label}: ${e.on ? 'on' : 'off'}.`, { key: 'rung.wear', throttle: 0.3 }));
   on('domain.art.ask', (e) => {
-    log.say('system', `Your rungs, ${e.on.length} of ${e.notches} notches worn.`, { key: 'rung.ask', throttle: 0.5 });
+    log.say('system', `Rungs: ${e.on.length} of ${e.notches} notches worn.`, { key: 'rung.ask', throttle: 0.5 });
     for (const r of e.rungs) { const A = DOMAIN_ARTS[r.art], P = r.progress;
       log.say('system', r.open ? `${A.label} (${r.art}), ${DOMAINS[A.domain].name}: open${A.kind === 'action' ? '' : r.on ? ', on' : ', off'}. ${A.line}`
         : `${A.label}, ${DOMAINS[A.domain].name}: level ${P.level} of ${P.of}, or ${P.done} of ${P.n} ${FEAT_WORDS[P.feat] || P.feat}.`, { key: `rung.ask.${r.art}`, throttle: 0.5 }); }
   });
-  on('domain.makeup', (e) => log.say('system', `The ${kname(e.kind)}'s body is ${tname(e.weak) ? `weak to ${tname(e.weak)}` : 'read'}.${e.first ? ' Re-type knows it now.' : ''}`, { key: `makeup.${e.kind}`, throttle: 2 }));
-  on('domain.vow.set', (e) => log.say('system', e.vow ? `You vow to ${VOWS[e.vow].label}. Every cost is a quarter less while you keep it.` : 'You set your vow aside.', { key: 'vow.set', throttle: 0.3 }));
+  on('domain.makeup', (e) => log.say('system', `The ${kname(e.kind)}'s body is ${tname(e.weak) ? `weak to ${tname(e.weak)}` : 'read'}.${e.first ? ' Re-type now knows this weakness.' : ''}`, { key: `makeup.${e.kind}`, throttle: 2 }));
+  on('domain.vow.set', (e) => log.say('system', e.vow ? `Vow sworn: ${VOWS[e.vow].label}. All costs are 25% lower while you keep it.` : 'Vow set aside.', { key: 'vow.set', throttle: 0.3 }));
   on('domain.vow.ask', (e) => log.say('system', e.open ? `Your vow: ${e.vow ? VOWS[e.vow].label : 'none'}. Vows: ${e.vows.map((v) => `${v} (${VOWS[v].label})`).join(', ')}.` : 'A Vow is not open yet (/rung shows how near).', { key: 'vow.ask', throttle: 0.5 }));
-  on('domain.vow.refuse', (e) => log.say('warn', e.why === 'closed' ? 'A Vow is not open yet.' : e.why === 'wait' ? 'A broken vow waits before another.' : `No vow is called "${e.vow}". /vow lists them.`, { key: 'vow.refuse', throttle: 1 }));
+  on('domain.vow.refuse', (e) => log.say('warn', e.why === 'closed' ? 'A Vow is not open yet.' : e.why === 'wait' ? 'A vow was broken recently. Wait before swearing another.' : `No vow is called "${e.vow}". /vow lists them.`, { key: 'vow.refuse', throttle: 1 }));
   on('domain.rule.ask', (e) => log.say('system', e.open
     ? `Your rule: when ${RULE_WHEN[e.rule.when]?.label}, ${RULE_THEN[e.rule.then]?.label}. When: ${e.when.join(', ')}. Then: ${e.then.join(', ')}.`
     : 'A Standing Rule is not open yet (/rung shows how near).', { key: 'rule.ask', throttle: 0.5 }));

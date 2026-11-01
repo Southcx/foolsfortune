@@ -20,26 +20,26 @@ export function gardenRules({ on, L, log }) {
   // mycelium"), the lines placeholders for hers
   const STRAIN = STRAIN_NAMES;
   on('spore.bed', (e) => { if (e.by === 'courier') L.inc('spore.bed'); });
-  on('spore.learn', (e) => { if (e.by !== 'courier') return; L.inc('spore.learn'); L.inc(`spore.learn.${e.strain}`); log.say('gain', `You have spores of ${STRAIN[e.strain]}.`); });
+  on('spore.learn', (e) => { if (e.by !== 'courier') return; L.inc('spore.learn'); L.inc(`spore.learn.${e.strain}`); log.say('gain', `Spores of ${STRAIN[e.strain]} gained.`); });
   on('spore.inoculate', (e) => { if (e.by === 'courier') L.inc('spore.inoculate'); });
   on('spore.set', (e) => { if (e.by === 'courier') L.inc('spore.set'); });
   on('spore.harvest', (e) => {
     if (e.by !== 'courier') return;
     L.inc('spore.harvest'); L.inc(`spore.${e.verb}`);
     if (e.verb === 'graft') { if (e.pair) L.inc(`spore.graft.pair.${e.pair}`); L.hi('spore.graft.tier', e.tier || 0); if (e.up) L.inc('spore.graft.up'); for (const id of e.made) L.inc(`spore.graft.made.${id}`); }
-    log.say('loot', `${STRAIN[e.strain][0].toUpperCase()}${STRAIN[e.strain].slice(1)} gives up ${(e.names || e.made).join(', ')}.`);
+    log.say('loot', `${STRAIN[e.strain][0].toUpperCase()}${STRAIN[e.strain].slice(1)} harvest: ${(e.names || e.made).join(', ')}.`);
   });
   on('myggdrasil.feed', (e) => { if (e.by !== 'courier') return; L.inc('myggdrasil.feed'); L.inc('myggdrasil.fed', e.worth || 0); });
   on('myggdrasil.girth', (e) => { if (e.by !== 'courier') return; L.hi('myggdrasil.caps', e.caps); { const c = CAPS[e.caps - 1]; log.say('gain', `Myggdrasil grows. ${c[0].toUpperCase()}${c.slice(1)} opens.`); } });
   on('myggdrasil.fruit', (e) => { if (e.by === 'courier') L.inc('myggdrasil.fruit', e.n || 0); });
-  on('myggdrasil.pick', (e) => { if (e.by !== 'courier') return; L.inc('myggdrasil.pick', e.n || 0); log.say('loot', `You pick ${e.n} from Myggdrasil's crown.`); });
-  on('myggdrasil.hang', (e) => { if (e.by !== 'courier') return; L.inc('myggdrasil.hang'); L.inc(`myggdrasil.hang.${e.arcana}`); log.say('info', 'You hang the card on its branch. The branch takes it.'); });
-  on('keepsake.pot', (e) => { if (e.by === 'courier') { L.inc('keepsake.pot'); log.say('info', `${e.spirit || 'Your spirit'} is fired into a keepsake pot. It stays.`); } });
+  on('myggdrasil.pick', (e) => { if (e.by !== 'courier') return; L.inc('myggdrasil.pick', e.n || 0); log.say('loot', `Picked from Myggdrasil's crown: ${e.n}.`); });
+  on('myggdrasil.hang', (e) => { if (e.by !== 'courier') return; L.inc('myggdrasil.hang'); L.inc(`myggdrasil.hang.${e.arcana}`); log.say('info', 'Card hung on Myggdrasil\'s branch.'); });
+  on('keepsake.pot', (e) => { if (e.by === 'courier') { L.inc('keepsake.pot'); log.say('info', `${e.spirit || 'Your spirit'} fired into a keepsake pot.`); } });
 
   // one line a press, never one a material (SOUL-ALCHEMY 4.20, Espada's words): the press emits alchemy.press as each material's walk
-  // ends, about a real second apart, so the lines fold into one that names them all; "The colour greys." once a press
+  // ends, about a real second apart, so the lines fold into one that names them all; "The colour turns grey." once a press
   let pressed = [], greyed = false;
-  const line = () => `You press ${list(pressed)} into the bath.${greyed ? ' The colour greys.' : ''}`;
+  const line = () => `Pressed into the bath: ${list(pressed)}.${greyed ? ' The colour turns grey.' : ''}`;
   const list = (a) => (a.length < 2 ? a[0] : `${a.slice(0, -1).join(', ')} and ${a[a.length - 1]}`);
   on('alchemy.press', (e) => {
     if (e.by !== 'courier') return;
@@ -49,43 +49,43 @@ export function gardenRules({ on, L, log }) {
     if (l && l.n === 1) { pressed = []; greyed = false; } // (a new press: start the line again)
     for (const n of names) if (!pressed.includes(n)) pressed.push(n);
     greyed = greyed || !!e.greyed;
-    if (l) { l.text = pressed.length ? line() : (greyed ? 'The colour greys.' : 'You press it into the bath.'); if (l.el) l.el.lastChild.textContent = l.text; }
+    if (l) { l.text = pressed.length ? line() : (greyed ? 'The colour turns grey.' : 'Material pressed into the bath.'); if (l.el) l.el.lastChild.textContent = l.text; }
   });
   on('alchemy.refuse', (e) => { if (e.by === 'courier') L.inc(`alchemy.refuse.${e.why}`); });
   on('alchemy.fire', (e) => {
     if (e.by !== 'courier') return;
     L.inc('alchemy.fire'); L.hi(`alchemy.rank.${e.attribute}`, e.rank);
     if (e.true) L.inc('alchemy.true'); // (a true firing: within a quarter of the swatch's radius, SOUL-ALCHEMY.md 3.3; the words are placeholders for Espada's)
-    log.say('gain', `${e.true ? 'A true firing.' : 'The press fires.'} ${ATTRIBUTES[e.attribute]?.name || e.attribute}: rank ${e.rank}, for ${e.fuel} cubes.`);
+    log.say('gain', `${e.true ? 'True firing!' : 'Press fired.'} ${ATTRIBUTES[e.attribute]?.name || e.attribute}: rank ${e.rank}. Cost: ${e.fuel} cubes.`);
     const says = rankLine(e.attribute, e.rank); // (what the rank does, in plain numbers: "Willpower 2: your shield pool +18%."; alchemy.js RANK_LINES, placeholder words for Espada's)
     if (says) log.say('gain', says, { key: `alchemy.rank.${e.attribute}`, throttle: 0.5 });
   });
-  on('alchemy.season', (e) => { if (e.by === 'courier') log.say('info', `${ATTRIBUTES[e.attr]?.name || e.attr} seasons: ${e.at} of 100.`, { key: `alchemy.season.${e.attr}`, throttle: 1 }); }); // (a quarter crossed, said once; 100 is `seasoned` below; placeholder words for Espada's)
-  on('alchemy.seasoned', (e) => { if (e.by === 'courier') log.say('info', `Your ${ATTRIBUTES[e.attribute]?.name || e.attribute} is seasoned: its swatch is as wide as practice makes it.`); });
-  on('garden.slot', (e) => { if (e.by === 'courier' && e.encounter) { L.inc('garden.slot'); { const n = ENCOUNTERS[e.encounter]?.name || e.encounter; log.say('info', `${n.charAt(0).toUpperCase()}${n.slice(1)} now works a garden slot.`); } } });
+  on('alchemy.season', (e) => { if (e.by === 'courier') log.say('info', `${ATTRIBUTES[e.attr]?.name || e.attr} seasoning: ${e.at} of 100.`, { key: `alchemy.season.${e.attr}`, throttle: 1 }); }); // (a quarter crossed, said once; 100 is `seasoned` below; placeholder words for Espada's)
+  on('alchemy.seasoned', (e) => { if (e.by === 'courier') log.say('info', `${ATTRIBUTES[e.attribute]?.name || e.attribute} fully seasoned. Its swatch is at its widest.`); });
+  on('garden.slot', (e) => { if (e.by === 'courier' && e.encounter) { L.inc('garden.slot'); { const n = ENCOUNTERS[e.encounter]?.name || e.encounter; log.say('info', `${n.charAt(0).toUpperCase()}${n.slice(1)} assigned to a garden slot.`); } } });
   on('garden.collect', (e) => { if (e.by === 'courier') L.inc('garden.dividend', e.cubes); });
   on('garden.plant', (e) => { if (e.by === 'courier') L.inc('garden.plant'); });
-  on('garden.harvest', (e) => { if (e.by === 'courier') { L.inc('garden.harvest', e.count); log.say('loot', `You harvest ${e.count} from the bed.`); } });
+  on('garden.harvest', (e) => { if (e.by === 'courier') { L.inc('garden.harvest', e.count); log.say('loot', `Harvested from the bed: ${e.count}.`); } });
   // (a spirit's or a realm's own name rides as `spirit` / `realm`: the bus writes its own `name` over a payload's: core/events.js)
   // the spirits (SPIRIT-GARDEN.md 5): bound (caught by the Lockheart or the god hand, awakened, dug, settled, merged), fed, matured, released
-  const FROM = { lockheart: 'The Lockheart catches', hand: 'Your Pneuka Jar draws in', plate: 'From a photo:', fossil: 'A fossil wakes:', visit: 'A visitor settles:', merge: 'From the cocoon:' };
+  const FROM = { lockheart: 'Caught by the Lockheart:', hand: 'Drawn into your Pneuka Jar:', plate: 'From a photo:', fossil: 'Woken from a fossil:', visit: 'Visitor settled:', merge: 'From the cocoon:' };
   on('spirit.bind', (e) => {
     if (e.by !== 'courier') return;
     L.inc('spirit.bind'); L.inc(`spirit.bind.${e.from}`); L.hi('spirit.bind.cls', (e.cls || 0) + 1);
-    log.say('gain', `${FROM[e.from] || 'Bound:'} ${e.spirit || (e.kind ? `a ${e.kind}` : 'a Figment')}.${e.from === 'lockheart' || e.from === 'hand' ? ' It waits in your Pneuka Jar for the garden.' : ''}`);
+    log.say('gain', `${FROM[e.from] || 'Bound:'} ${e.spirit || (e.kind ? `a ${e.kind}` : 'a Figment')}.${e.from === 'lockheart' || e.from === 'hand' ? ' Sent to your Spirit Garden.' : ''}`);
   });
   // a catch that fails: the wheel came up free, or the hand let go (Petra's rail of the catch: tools/lockheart, godhand)
-  on('catch.miss', (e) => { if (e.by !== 'courier') return; L.inc('catch.miss'); log.say('info', `It slips the coffin. (${Math.round((e.odds || 0) * 100)}%)`, { key: 'catchmiss', throttle: 1 }); });
-  on('catch.free', (e) => { if (e.by !== 'courier') return; L.inc('catch.free'); log.say('info', e.why === 'woke' ? 'It wakes in your grip and breaks free.' : 'You let it go.', { key: 'catchfree', throttle: 1 }); });
+  on('catch.miss', (e) => { if (e.by !== 'courier') return; L.inc('catch.miss'); log.say('info', `Catch failed. Odds: ${Math.round((e.odds || 0) * 100)}%.`, { key: 'catchmiss', throttle: 1 }); });
+  on('catch.free', (e) => { if (e.by !== 'courier') return; L.inc('catch.free'); log.say('info', e.why === 'woke' ? 'It woke and broke free.' : 'Catch released.', { key: 'catchfree', throttle: 1 }); });
   on('spirit.feed', (e) => { if (e.by === 'courier') L.inc('spirit.feed'); });
-  on('spirit.mature', (e) => { if (e.by !== 'courier') return; L.inc('spirit.mature'); L.inc(`spirit.form.${e.feeling}.${e.side}`); log.say('gain', `${e.spirit || 'A spirit'} matures.`); });
+  on('spirit.mature', (e) => { if (e.by !== 'courier') return; L.inc('spirit.mature'); L.inc(`spirit.form.${e.feeling}.${e.side}`); log.say('gain', `${e.spirit || 'A spirit'} matured.`); });
   on('spirit.merge', (e) => { if (e.by === 'courier') L.inc('spirit.merge'); });
-  on('spirit.release', (e) => { if (e.by === 'courier') { L.inc('spirit.release'); log.say('info', `You release ${e.spirit || 'a spirit'}.`); } });
+  on('spirit.release', (e) => { if (e.by === 'courier') { L.inc('spirit.release'); log.say('info', `${e.spirit || 'A spirit'} released.`); } });
   // the Firings: the tribulation at the Chimney crosses the one the attributes' ranks have opened
   on('cultivation.tribulation', (e) => {
     if (e.by !== 'courier') return;
     L.inc('tribulation.tried');
-    if (!e.passed) { log.say('info', 'The Heavenly Kiln closes. Try again when you are ready.'); return; }
+    if (!e.passed) { log.say('info', 'Tribulation failed. The Heavenly Kiln closes. Try again at any time.'); return; }
     const open = firingOf(ranksOf(L)), n = Math.min(e.firing || open, open), ORD = ['First', 'Second', 'Third', 'Fourth', 'Fifth', 'Sixth'];
     L.hi('firing', n); log.say('gain', `${ORD[n - 1] || `Firing ${n}`}${ORD[n - 1] ? ' Firing' : ''}${FIRING_NAMES[n - 1] ? `: ${FIRING_NAMES[n - 1]}` : ''}. Complete.`); // (Espada's line)
   });
@@ -104,10 +104,10 @@ export function gardenRules({ on, L, log }) {
   on('spirit.visit', (e) => {
     if (!VISITORS[e.kind]) return;
     L.inc(`spirit.visit.${e.kind}`);
-    if (e.settled) { L.inc(`spirit.settle.${e.kind}`); log.say('gain', `A ${e.kind} settles in your Inner Realm.`); } else log.say('info', `A ${e.kind} visits your Inner Realm.`, { key: `visit.${e.kind}`, throttle: 30 });
+    if (e.settled) { L.inc(`spirit.settle.${e.kind}`); log.say('gain', `Visitor settled in your Inner Realm: a ${e.kind}.`); } else log.say('info', `Visitor in your Inner Realm: a ${e.kind}.`, { key: `visit.${e.kind}`, throttle: 30 });
   });
-  on('realm.name', (e) => { if (e.by === 'courier') log.say('info', `Your Inner Realm is named ${e.realm}.`); });
-  on('garden.upgrade', (e) => { if (e.by === 'courier') { L.inc(`garden.upgrade.${e.kind}`); log.say('info', `Garden widened: one more ${e.kind}.`); } });
+  on('realm.name', (e) => { if (e.by === 'courier') log.say('info', `Inner Realm named: ${e.realm}.`); });
+  on('garden.upgrade', (e) => { if (e.by === 'courier') { L.inc(`garden.upgrade.${e.kind}`); log.say('info', `Garden upgraded: 1 more ${e.kind}.`); } });
 
   // the garden made cozy (docs/plans/GARDEN-COZY.md: progress/harmony.js, progress/decor.js, progress/seasons.js); Espada's words, plain
   // until the owner calls the garden finished
@@ -116,11 +116,11 @@ export function gardenRules({ on, L, log }) {
   const planet = (id) => PLANET[id] || 'a planetoid', Planet = (id) => { const p = planet(id); return p[0].toUpperCase() + p.slice(1); };
   on('garden.tend', (e) => { if (e.by === 'courier') { L.inc('garden.tend'); L.inc(`garden.tend.${e.kind}`); } });
   on('garden.harmony', (e) => {
-    if (e.band === 'bloom') { L.inc('garden.bloom'); L.hi('garden.bloom.most', e.blooming || 1); log.say('gain', `${Planet(e.planetoid)} comes into bloom.`, { key: `bloom.${e.planetoid}`, throttle: 10 }); }
-    else if (e.band === 'briar') { L.inc('garden.briar'); log.say('info', `Briar creeps over ${planet(e.planetoid)}.`, { key: `briar.${e.planetoid}`, throttle: 10 }); }
+    if (e.band === 'bloom') { L.inc('garden.bloom'); L.hi('garden.bloom.most', e.blooming || 1); log.say('gain', `${Planet(e.planetoid)} in bloom.`, { key: `bloom.${e.planetoid}`, throttle: 10 }); }
+    else if (e.band === 'briar') { L.inc('garden.briar'); log.say('info', `Briar spreading on ${planet(e.planetoid)}.`, { key: `briar.${e.planetoid}`, throttle: 10 }); }
   });
-  on('garden.thorn', (e) => log.say('info', `Thorns sprout on ${planet(e.planetoid)}.`, { key: `thorn.${e.planetoid}`, throttle: 30 }));
-  on('garden.prune', (e) => { if (e.by === 'courier') { L.inc('garden.prune'); log.say('loot', 'You prune a thorn and keep the cutting.', { key: 'prune', throttle: 2 }); } });
+  on('garden.thorn', (e) => log.say('info', `Thorns sprouted on ${planet(e.planetoid)}.`, { key: `thorn.${e.planetoid}`, throttle: 30 }));
+  on('garden.prune', (e) => { if (e.by === 'courier') { L.inc('garden.prune'); log.say('loot', 'Thorn pruned. Briar cutting kept.', { key: 'prune', throttle: 2 }); } });
   on('garden.briar.held', (e) => { if (e.by === 'courier') L.hi('garden.briar.held', e.days); });
   on('garden.harmony.ask', (e) => {
     if (!e.planets?.length) { log.say('system', 'Your garden is at rest.', { key: 'harmony.ask', throttle: 1 }); return; }
@@ -129,21 +129,21 @@ export function gardenRules({ on, L, log }) {
   on('decor.get', (e) => {
     if (e.by !== 'courier') return;
     L.inc('decor.get', e.n || 1); if (e.first) L.inc('decor.owned');
-    if (e.from !== 'shop' && e.from !== 'gift' && e.from !== 'farewell') log.say('loot', `You get ${an(DECOR[e.id]?.name || 'garden piece')} for the shed.`, { key: 'decor.get', throttle: 1 });
+    if (e.from !== 'shop' && e.from !== 'gift' && e.from !== 'farewell') log.say('loot', `Added to the shed: ${an(DECOR[e.id]?.name || 'garden piece')}.`, { key: 'decor.get', throttle: 1 });
   });
-  on('decor.buy', (e) => { if (e.by === 'courier') { L.inc('decor.buy'); L.inc('decor.spent', e.cubes || 0); log.say('info', `You buy ${an(DECOR[e.id]?.name || 'garden piece')} for the shed: ${e.cubes} cubes.`, { key: 'decor.buy', throttle: 0.5 }); } });
+  on('decor.buy', (e) => { if (e.by === 'courier') { L.inc('decor.buy'); L.inc('decor.spent', e.cubes || 0); log.say('info', `Bought for the shed: ${an(DECOR[e.id]?.name || 'garden piece')}. Cost: ${e.cubes} cubes.`, { key: 'decor.buy', throttle: 0.5 }); } });
   on('decor.refuse', (e) => { if (e.by === 'courier') log.say('warn', e.why === 'cubes' ? 'Not enough cubes.' : e.why === 'locked' ? 'That piece is not in the catalogue yet.' : 'No such piece.', { key: 'decor.refuse', throttle: 1 }); });
   // the garden's rating, as the decor layer reports it (Petra's, when built): the lotuses open on the Dantian's lake, a set finished
   on('garden.rating', (e) => {
     if (e.by !== 'courier') return;
     const was = L.best('garden.lotuses') || 0; L.hi('garden.lotuses', e.lotuses || 0);
-    if ((e.lotuses || 0) > was) log.say('gain', `A lotus opens on the Dantian's lake. (${e.lotuses} of 5)`, { key: 'lotus', throttle: 5 });
+    if ((e.lotuses || 0) > was) log.say('gain', `Lake lotus opened on the Dantian: ${e.lotuses} of 5.`, { key: 'lotus', throttle: 5 });
     for (const set of e.sets || []) if (!L.get(`decor.set.${set}`)) { L.inc(`decor.set.${set}`); L.inc('decor.sets'); }
   });
   on('garden.enter', (e) => { // (a season said once, on the first visit in it: the season's number on the ledger as a best)
     if (e.by !== 'courier') return;
     const S = seasonOf(), n = S.year * 4 + S.i;
-    if (n > (L.best('garden.season.n') || 0)) { L.hi('garden.season.n', n); L.inc(`garden.season.${S.id}`); log.say('info', `${S.name} comes to your Inner Realm.`, { key: 'season', throttle: 5 }); }
+    if (n > (L.best('garden.season.n') || 0)) { L.hi('garden.season.n', n); L.inc(`garden.season.${S.id}`); log.say('info', `${S.name} has begun in your Inner Realm.`, { key: 'season', throttle: 5 }); }
   });
   // the spirits' wishes and the morning's digest (progress/spiritlife.js; GARDEN-COZY.md C2, C7): Espada's words. A wish is said as a
   // noun ("Pip has a wish: a Grief meal."), so the digest can list them
@@ -155,8 +155,8 @@ export function gardenRules({ on, L, log }) {
     : w.kind === 'decor' ? `a piece from the ${SETS[w.set]?.name || Cap(w.set)} set`
     : w.kind === 'photo' ? (w.of ? `a photo of a wild ${w.of}` : 'a photo of its kind in the wild')
     : w.kind === 'visit' ? `a visit from you at ${PHASE_WORD[w.phase] || w.phase}` : 'something small';
-  on('spirit.wish', (e) => { if (e.by === 'courier') log.say('info', `${Who(e)} has a wish: ${wishWords(e.wish)}.`, { key: `wish.${who(e)}`, throttle: 30 }); });
-  on('spirit.wish.done', (e) => { if (e.by !== 'courier') return; L.inc('spirit.wish.done'); L.inc(`spirit.wish.${e.wish?.kind}`); log.say('gain', `You grant ${who(e)}'s wish.`, { key: `wishdone.${who(e)}`, throttle: 2 }); });
+  on('spirit.wish', (e) => { if (e.by === 'courier') log.say('info', `Wish from ${who(e)}: ${wishWords(e.wish)}.`, { key: `wish.${who(e)}`, throttle: 30 }); });
+  on('spirit.wish.done', (e) => { if (e.by !== 'courier') return; L.inc('spirit.wish.done'); L.inc(`spirit.wish.${e.wish?.kind}`); log.say('gain', `Wish granted for ${who(e)}.`, { key: `wishdone.${who(e)}`, throttle: 2 }); });
   on('garden.digest', (e) => {
     if (e.by !== 'courier') return;
     log.say('system', `${SEASON[e.season] || 'A new season'} in your Inner Realm: game day ${e.seasonDay} of ${e.seasonDay + e.left - 1}.`, { key: 'digest.0', throttle: 5 });
@@ -164,7 +164,7 @@ export function gardenRules({ on, L, log }) {
     if (w.length) log.say('system', `Wishes: ${w.map((x) => `${who(x)}, ${wishWords(x.wish)}`).join('; ')}${e.wishes.length > 2 ? `; and ${e.wishes.length - 2} more` : ''}.`, { key: 'digest.1', throttle: 5 });
     if (e.bloom?.length) log.say('system', `In bloom: ${e.bloom.map(planet).join(', ')}.`, { key: 'digest.2', throttle: 5 });
     if (e.briar?.length) log.say('system', `Overgrown: ${e.briar.map(planet).join(', ')}.`, { key: 'digest.3', throttle: 5 });
-    if (e.mail) log.say('system', `${e.mail} letter${e.mail > 1 ? 's wait' : ' waits'} in the mailbox. Type /letters to read.`, { key: 'digest.4', throttle: 5 });
+    if (e.mail) log.say('system', `${e.mail} letter${e.mail > 1 ? 's' : ''} in the mailbox. Type /letters to read.`, { key: 'digest.4', throttle: 5 });
   });
   // letters and gifts (progress/spiritlife.js MAIL; GARDEN-COZY.md C5): Espada's words. A thank-you says which wish it thanks you for;
   // a released spirit's three postcards run in order: arriving, settling, letting you go on (Spiritfarer's Everdoor, then the mail)
@@ -187,10 +187,10 @@ export function gardenRules({ on, L, log }) {
   on('spirit.letter', (e) => { if (e.by !== 'courier') return; L.inc('spirit.letter'); L.inc(`spirit.letter.${e.about}`); });
   on('spirit.letters', (e) => { if (!e.letters?.length) { log.say('system', 'The mailbox is empty.', { key: 'letters', throttle: 1 }); return; } e.letters.forEach((m, i) => log.say('info', (LETTER[m.about] || (() => 'A letter.'))(m), { key: `letter.${i}`, throttle: 0.2 })); });
   // the season's material (progress/gardenseason.js, GARDEN-COZY.md E3) and a layout's code (/layout, D8): placeholder words, Espada's
-  on('garden.season.gift', (e) => { if (e.by !== 'courier') return; L.inc('garden.season.gift'); log.say('loot', `The garden kept you some ${e.label}${e.tier ? ', a fine one' : ''}. It is in your Pneuka Box.`, { key: 'season.gift', throttle: 2 }); });
-  on('decor.layout', (e) => log.say('system', e.pieces ? `Your garden's layout (${e.pieces} pieces): ${e.code}` : 'Your garden has nothing placed to share yet.', { key: 'layout', throttle: 1 }));
+  on('garden.season.gift', (e) => { if (e.by !== 'courier') return; L.inc('garden.season.gift'); log.say('loot', `Season's gift: ${e.label}${e.tier ? ' (fine)' : ''}. Sent to your Pneuka Box.`, { key: 'season.gift', throttle: 2 }); });
+  on('decor.layout', (e) => log.say('system', e.pieces ? `Garden layout code (${e.pieces} pieces): ${e.code}` : 'No pieces placed. Nothing to share yet.', { key: 'layout', throttle: 1 }));
   on('spirit.gift', (e) => { if (e.by !== 'courier') return; L.inc('spirit.gift'); log.say('loot', `${Who(e)} left a gift on the doorstep: ${an(DECOR[e.id]?.name || 'garden piece')}.`, { key: 'gift', throttle: 2 }); });
   // the farewell (progress/spiritlife.js FAREWELL; GARDEN-COZY.md C6): placeholders for Espada's words
-  on('spirit.farewell.ask', (e) => { if (e.by === 'courier') log.say('info', `${Who(e)} asks to go home${FAREWELL_LINES[e.feeling]?.ask ? `: "${FAREWELL_LINES[e.feeling].ask}"` : '.'} When you are ready, let it go from its page; until then it stays.`, { key: `farewell.${who(e)}`, throttle: 30 }); });
-  on('spirit.farewell', (e) => { if (e.by !== 'courier') return; L.inc('spirit.farewell'); L.inc(`spirit.farewell.${e.feeling}`); log.say('gain', `${Who(e)} goes home${FAREWELL_LINES[e.feeling]?.go ? `: "${FAREWELL_LINES[e.feeling].go}"` : '.'} It leaves you a statue of itself.`, { key: 'farewell', throttle: 2 }); });
+  on('spirit.farewell.ask', (e) => { if (e.by === 'courier') log.say('info', `${Who(e)} asks to go home${FAREWELL_LINES[e.feeling]?.ask ? `: "${FAREWELL_LINES[e.feeling].ask}"` : '.'} To let it go, open its page. Until then, it stays.`, { key: `farewell.${who(e)}`, throttle: 30 }); });
+  on('spirit.farewell', (e) => { if (e.by !== 'courier') return; L.inc('spirit.farewell'); L.inc(`spirit.farewell.${e.feeling}`); log.say('gain', `${Who(e)} goes home${FAREWELL_LINES[e.feeling]?.go ? `: "${FAREWELL_LINES[e.feeling].go}"` : '.'} Received: a statue of it.`, { key: 'farewell', throttle: 2 }); });
 }

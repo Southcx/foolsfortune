@@ -357,7 +357,7 @@ export class ChestTech extends Tech {
     if (tgt.kind === 'tithe') {
       // (a refusal at the point of use: said once, by the log)
       if (g.cubes.balance < TITHE.cost) { P.latch('KeyF'); g.log.say('warn', `You need ${TITHE.cost} Lachryma cubes for the Tithe.`, { key: 'tithe.poor', throttle: 3 }); return false; }
-      if (g.chests.daisChest()) { P.latch('KeyF'); g.log.say('warn', 'A sealed chest already waits on the dais.', { key: 'tithe.busy', throttle: 3 }); return false; }
+      if (g.chests.daisChest()) { P.latch('KeyF'); g.log.say('warn', 'A sealed chest is already on the dais. Open it first.', { key: 'tithe.busy', throttle: 3 }); return false; }
     }
     this.tgt = tgt;
     return true;

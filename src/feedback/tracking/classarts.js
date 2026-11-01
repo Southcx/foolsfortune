@@ -13,12 +13,12 @@ const KIND = { action: 'action', reaction: 'reaction' };
 const of = (w) => (w.endsWith('s') ? `${w}'` : `${w}'s`); // ("the Knight of Wands" -> "the Knight of Wands'")
 
 export function classArtsRules({ on, log }) {
-  on('art.learn', (e) => { const A = CLASS_ARTS[e.art]; if (A) log.say('gain', `You open ${A.label}, ${of(classWords(A.cls))} ${KIND[A.kind]}. ${A.line}`); });
-  on('art.wear', (e) => { const A = ART(e.art); if (A) log.say('system', `You wear ${A.label} as your ${KIND[A.kind]}.`, { key: 'art.wear', throttle: 0.5 }); });
-  on('art.refuse', (e) => log.say('warn', e.why === 'unknown' ? `No art is called ${e.art}.` : `You have not opened ${ART(e.art).label} yet.`, { key: 'art.refuse', throttle: 1 }));
+  on('art.learn', (e) => { const A = CLASS_ARTS[e.art]; if (A) log.say('gain', `${A.label} opened: ${of(classWords(A.cls))} ${KIND[A.kind]}. ${A.line}`); });
+  on('art.wear', (e) => { const A = ART(e.art); if (A) log.say('system', `${A.label} worn as your ${KIND[A.kind]}.`, { key: 'art.wear', throttle: 0.5 }); });
+  on('art.refuse', (e) => log.say('warn', e.why === 'unknown' ? `No art is called ${e.art}.` : `${ART(e.art).label} not opened yet.`, { key: 'art.refuse', throttle: 1 }));
   on('art.ask', (e) => {
     const W = (id) => (id ? ART(id)?.label : 'none');
-    log.say('system', `You read as ${classWords(e.cls)}. Worn: ${W(e.worn.action)} (action), ${W(e.worn.reaction)} (reaction).`, { key: 'art.ask', throttle: 0.5 });
+    log.say('system', `Class: ${classWords(e.cls)}. Worn: ${W(e.worn.action)} (action), ${W(e.worn.reaction)} (reaction).`, { key: 'art.ask', throttle: 0.5 });
     for (const h of e.here || []) { const A = CLASS_ARTS[h.art], P = h.progress;
       log.say('system', h.open ? `${A.label} (${h.art}): open. ${A.line}` : `${A.label}: ${P.minutes} of ${P.of} real minutes as this class, or ${P.done} of ${P.n} ${FEAT_WORDS[P.feat] || P.feat}.`, { key: `art.ask.${h.art}`, throttle: 0.5 }); }
   });

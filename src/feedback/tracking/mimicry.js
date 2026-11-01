@@ -10,7 +10,7 @@
 // ---------------------------------------------------------------------------------------
 import { MIMIC } from '../../progress/mimicry.js';
 
-const MODE_LINE = { mimic: 'Watch the hand work the ground, then make it again.', match: 'Make the ground as the outline shows. The steps are yours to find.', undo: 'Put the ground back as the outline shows.' };
+const MODE_LINE = { mimic: 'Watch the System shape the ground, then copy it.', match: 'Shape the ground to match the outline. No steps are shown.', undo: 'Return the ground to the outline.' };
 const STARS = ['', '★☆☆', '★★☆', '★★★'];
 
 export function mimicryRules({ on, L, log }) {
@@ -24,8 +24,8 @@ export function mimicryRules({ on, L, log }) {
     if (e.mode !== 'mimic') L.inc(`god.mimic.${e.mode}`); // (MATCH and UNDO: the steps read, never shown)
     if (e.stars >= 2) for (const p of e.powers || []) L.inc(`god.mimic.${p}`); // (a clean copy of a power: its mimic way)
     if (e.day != null) { L.inc('god.mimic.day'); L.hi('god.mimic.day.stars', e.stars); }
-    const why = e.stars < 3 ? (e.strokes > e.par ? ` ${e.strokes} strokes for its ${e.par}.` : e.made > MIMIC.made ? ' Some of it was made from nothing.' : ' Not quite the ground it asked.') : '';
+    const why = e.stars < 3 ? (e.strokes > e.par ? ` ${e.strokes} strokes, par ${e.par}.` : e.made > MIMIC.made ? ' Some matter was made from nothing.' : ' The ground does not fully match the target.') : '';
     say('record', `${e.label}: copied, ${STARS[e.stars]} (${Math.round(e.match * 100)}%).${why}`, 'mimic.solve');
   });
-  on('mimic.leave', (e) => { if (e.by === 'courier') say('info', `Left at ${Math.round((e.match || 0) * 100)}%. The stone keeps the puzzle for you.`, 'mimic.leave'); });
+  on('mimic.leave', (e) => { if (e.by === 'courier') say('info', `Left at ${Math.round((e.match || 0) * 100)}%. The puzzle stone saves your progress.`, 'mimic.leave'); });
 }

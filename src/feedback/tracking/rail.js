@@ -16,7 +16,7 @@ const OPENS = {
   heave: 'The sea heaves. Something vast is under it.',
 };
 const ENDS = {
-  scattered: 'The Conductor falls, and the shoal scatters.', sunk: 'The False Light goes down. Her hold floats astern.',
+  scattered: 'The Conductor falls, and the shoal scatters.', sunk: 'The False Light goes down. Her cargo floats astern.',
   struck: 'The False Light strikes her colours.', limped: 'The False Light limps off.', driven: 'Old Nobody sounds, and is gone.',
   felled: 'Old Nobody is felled.',
 };
@@ -29,8 +29,8 @@ export function railRules({ on, L, log }) {
   on('showcase.start', (e) => log.say('system', `The showcase crossing: ${e.legs.length} legs, a hull each. Nothing is counted.`));
   on('showcase.hull', (e) => { const m = (e.mounts || []).map((id, i) => `${i + 1} ${MOUNTS[id]?.name || id}`).join(', ');
     log.say('info', `Your ship is a ${e.hull} for the next leg${m ? ` (mounts: ${m})` : ''}${e.note ? `: ${e.note}` : ''}.`); });
-  on('showcase.mend', () => log.say('info', 'The showcase crossing mends your ship.', { key: 'showcase.mend', throttle: 4 }));
-  on('showcase.end', (e) => log.say('system', `The showcase crossing is over: ${n(e.score)} points, nothing counted.`));
+  on('showcase.mend', () => log.say('info', 'Ship mended by the showcase crossing.', { key: 'showcase.mend', throttle: 4 }));
+  on('showcase.end', (e) => log.say('system', `Showcase crossing over. Score: ${n(e.score)}. Nothing is counted.`));
   on('rail.beat', (e) => { if (OPENS[e.beat]) log.say('combat', OPENS[e.beat], { key: 'railbeat', throttle: 2 }); });
   // a leg's end (Petra's triprun at each leg's last bar, with par.js legResult): one line, and the counts that open a leg's lesson no
   // more (`rail.leg.<type>`: the first sailing teaches, legs.js LESSON) and its practice at the pier (RAIL-STANDARDS.md 5). A practice
@@ -64,6 +64,6 @@ export function railRules({ on, L, log }) {
     L.hi('rail.chain.best', e.chainBest || 0); L.hi('rail.volley.best', e.volleyBest || 0);
     for (const k of ['parried', 'absorbed', 'rolls', 'pointBlank', 'won', 'stolen', 'shards']) if (e[k]) L.inc(`rail.${k}`, e[k]);
     L.hi('rail.chain.level', e.chainLevel || 0); if ((e.chainLevel || 0) >= SCORE.chain.max) L.inc('rail.chain.capped'); // (the chain's level: score.js, eight threes)
-    log.say(e.passed ? 'gain' : 'warn', `The crossing: ${n(e.score)} (rank ${e.rank}), ${e.downed} of ${e.spawned} downed${e.medal ? ', a medal' : ''}${e.passed ? '' : '. The ship could bear no more'}.`);
+    log.say(e.passed ? 'gain' : 'warn', `The crossing: ${n(e.score)} (rank ${e.rank}), ${e.downed} of ${e.spawned} downed${e.medal ? ', a medal' : ''}${e.passed ? '' : '. Ship broken'}.`);
   });
 }

@@ -11,15 +11,15 @@ const PLACE = (id) => NODES[id]?.name || id;
 
 export function voyageRules({ on, L, log }) {
   let haul = 0; // (what this cargo has made so far: one crossing's sales, for the record)
-  on('emocean.hop', (e) => { if (e.by !== 'courier') return; L.inc('emocean.hop'); haul = 0; log.say('explore', `You cast off for ${PLACE(e.to)}. Fuel: ${e.fuel} cubes.`); });
+  on('emocean.hop', (e) => { if (e.by !== 'courier') return; L.inc('emocean.hop'); haul = 0; log.say('explore', `Cast off for ${PLACE(e.to)}. Fuel: ${e.fuel} cubes.`); });
   on('emocean.stage', (e) => {
     if (e.by !== 'courier') return;
     L.inc(`emocean.port.${e.to}`);
     if (e.passed) { L.inc('emocean.stage.passed'); if (!e.hits) L.inc('emocean.stage.clean'); }
     if (e.spilled) L.inc('crude.spill');
     if (e.lost) log.say('warn', `Cargo lost: ${e.lost} ${e.lost === 1 ? 'cask' : 'casks'} of crude${e.spilled ? '. The spill burns on the sea' : ''}.`);
-    if (e.passed || !e.at) log.say('explore', `You make port at ${PLACE(e.to)}.`);
-    else log.say('warn', `Your ship breaks up. You are made whole on ${PLACE(e.at)}.`); // (no continue taken: the last Shrine's island)
+    if (e.passed || !e.at) log.say('explore', `Made port at ${PLACE(e.to)}.`);
+    else log.say('warn', `Ship lost. You are made whole on ${PLACE(e.at)}.`); // (no continue taken: the last Shrine's island)
   });
   on('emocean.reckon', (e) => {
     if (e.by !== 'courier') return;

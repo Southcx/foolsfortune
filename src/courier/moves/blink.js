@@ -35,7 +35,7 @@ export class Blink extends Tech {
     if (this.forced) return !P.mantle;
     if (!P.peekLatch('KeyE') || P.mantle) return false;
     P.latch('KeyE');
-    if (this.charges <= 0) { sfx.fizzle(); this.game.log.say('warn', 'Blink is still recharging.', { key: 'blink', throttle: 2 }); return false; }
+    if (this.charges <= 0) { sfx.fizzle(); this.game.log.say('warn', 'Blink recharging.', { key: 'blink', throttle: 2 }); return false; }
     return true;
   }
 

@@ -36,7 +36,7 @@ export class Chat {
     if (text[0] !== '/') { g.events.emit('chat.say', { text: text.slice(0, 200), by: 'courier' }); return; }
     const [head, ...rest] = text.slice(1).split(/\s+/);
     const c = this.find(head || '');
-    if (!c) { g.log.say('warn', `There is no command /${head}. (/help lists them.)`, { key: 'chat.unknown', throttle: 0.5 }); return; }
+    if (!c) { g.log.say('warn', `No command /${head}. Type /help for the list.`, { key: 'chat.unknown', throttle: 0.5 }); return; }
     if (c.debug && (c.debug === true || c.debug(rest)) && g.mode !== 'debug') { g.log.say('warn', `/${c.name} works in DEBUG only.`, { key: 'chat.debug', throttle: 1 }); return; }
     try { c.run(rest, rest.join(' ')); } catch (e) { console.warn('chat', e); }
   }
@@ -69,15 +69,15 @@ export class Chat {
     this.add('say', { help: 'say it aloud (plain words do the same)', aliases: ['s'], run: (a, rest) => { if (rest) g.events.emit('chat.say', { text: rest.slice(0, 200), by: 'courier' }); } });
     this.add('stand', { help: 'stop the emote', aliases: ['stop'], run: () => g.techs?.get('emote')?.stop() });
     this.add('clear', { help: 'clears the log', run: () => g.log.clear() });
-    this.add('voice', { help: "the System's voice: /voice on | off", run: ([v]) => { const V = g.voice; if (!V) return; V.set({ on: v ? v === 'on' : !V.settings.on }); log('system', `The System's voice is ${V.settings.on ? 'on' : 'off'}.`); } });
+    this.add('voice', { help: "the System's voice: /voice on | off", run: ([v]) => { const V = g.voice; if (!V) return; V.set({ on: v ? v === 'on' : !V.settings.on }); log('system', `System voice: ${V.settings.on ? 'on' : 'off'}.`); } });
     this.add('music', { help: `the music: /music on | off | stop | ${TRACKS.map((t) => t.id).join(' | ')} (the sound test, in the Codex)`, run: ([v]) => {
       const M = g.music; if (!M) return;
       const T = v && TRACK[v.toLowerCase()];
       if (T) { if (!M.on) M.setOn(true); M.pick = T.score; log('system', `Now playing: ${T.title}.`); return; }
-      if (v === 'stop') { M.pick = null; log('system', 'The sound test is stopped.'); return; }
-      M.setOn(v ? v === 'on' : !M.on); log('system', `The music is ${M.on ? 'on' : 'off'}.`);
+      if (v === 'stop') { M.pick = null; log('system', 'Sound test stopped.'); return; }
+      M.setOn(v ? v === 'on' : !M.on); log('system', `Music: ${M.on ? 'on' : 'off'}.`);
     } });
-    this.add('window', { help: `the windows' colour: /window ${Object.keys(THEMES).join(' | ')}`, aliases: ['windows'], run: ([v]) => { const T = g.theme; if (!T) return; if (v && THEMES[v.toLowerCase()]) T.set(v.toLowerCase()); else T.next(); log('system', `The windows are ${T.name}.`); } });
+    this.add('window', { help: `the windows' colour: /window ${Object.keys(THEMES).join(' | ')}`, aliases: ['windows'], run: ([v]) => { const T = g.theme; if (!T) return; if (v && THEMES[v.toLowerCase()]) T.set(v.toLowerCase()); else T.next(); log('system', `Window colour: ${T.name}.`); } });
     this.add('where', { help: 'where you are', aliases: ['loc', 'pos'], run: () => {
       const P = g.player.pos, l = g.cartography?.layerOf(P), r = g.cartography?.roomAt(P.x, P.y, P.z, 40);
       log('system', `${l?.name || 'Somewhere'}${r && r.name !== l?.name ? ` · ${r.name}` : ''} (${P.x.toFixed(1)}, ${P.y.toFixed(1)}, ${P.z.toFixed(1)}).`);
@@ -87,6 +87,6 @@ export class Chat {
   emote(id) {
     const g = this.game, r = g.techs?.get('emote')?.request(id);
     if (r === true || r === 'already') return;
-    g.log.say('warn', 'You cannot do that right now.', { key: 'emote.busy', throttle: 1 });
+    g.log.say('warn', 'Cannot do that now.', { key: 'emote.busy', throttle: 1 });
   }
 }

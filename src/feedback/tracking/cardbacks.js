@@ -11,6 +11,6 @@ const DECK = { house: 'The house deck', arcana: 'The Major Arcana' };
 export function cardBackRules({ on, log }) {
   on('cardback.set', (e) => {
     const own = e.id === 'house' || e.id === 'arcana';
-    log.say('system', `${DECK[e.deck] || e.deck} ${own ? 'wears its own back.' : `now wears the ${e.id} back.`}`, { key: `cardback.${e.deck}`, throttle: 0.5 });
+    log.say('system', `${DECK[e.deck] || e.deck}: ${own ? 'default card back.' : `${e.id} card back.`}`, { key: `cardback.${e.deck}`, throttle: 0.5 });
   });
 }

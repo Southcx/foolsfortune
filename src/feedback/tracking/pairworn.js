@@ -11,7 +11,7 @@ export function pairWornRules({ on, L, log, g }) {
   const worn = () => pairOf(g?.belt?.main, g?.belt?.sub);
   const told = (P) => { if (L.get(`pair.${P.n}.open`) || !pairSpecialOpen(P.n, L)) return; L.inc(`pair.${P.n}.open`);
     g?.events?.emit('pair.open', { pair: P.n, card: P.card, by: 'courier' });
-    log.say('gain', `${P.card}: your ${P.tools.join(' and ')} together open ${PAIR_SPECIALS[P.n]?.label || 'their special'}. ${PAIR_SPECIALS[P.n]?.line || ''}`); };
+    log.say('gain', `${P.card}: ${PAIR_SPECIALS[P.n]?.label || 'pair special'} opened for the ${P.tools.join(' and ')}. ${PAIR_SPECIALS[P.n]?.line || ''}`); };
   on('creature.struck', (e) => { if (e.by !== 'courier' || !e.kill) return; const P = worn(); if (!P) return; L.inc(`pair.${P.n}.down`); told(P); });
   on('tool.lend', (e) => { if (e.by !== 'courier') return; const P = worn(); if (!P) return; L.inc(`pair.${P.n}.lend`); told(P); });
 }

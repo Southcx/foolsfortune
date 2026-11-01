@@ -63,7 +63,7 @@ export function installEconomy(game) {
     run: ([v]) => {
       if (game.mode !== 'debug') { game.log.say('warn', 'The System grants nothing outside DEBUG.', { key: 'grant.no', throttle: 2 }); return; }
       const id = `psygun.${(v || '').toLowerCase()}`;
-      if (!PSYGUNS[id]) { game.log.say('warn', `There is no psygun "${v || ''}". (${Object.keys(PSYGUNS).map((k) => k.slice(7)).join(', ')})`, { key: 'psy.no', throttle: 1 }); return; }
+      if (!PSYGUNS[id]) { game.log.say('warn', `No psygun "${v || ''}". (${Object.keys(PSYGUNS).map((k) => k.slice(7)).join(', ')})`, { key: 'psy.no', throttle: 1 }); return; }
       game.shells?.setGun(id);
     },
   });

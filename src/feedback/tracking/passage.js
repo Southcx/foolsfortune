@@ -14,19 +14,19 @@ const WORD = { shoal: 'the shoal', wreckers: 'the Wreckers', eyewall: 'the eyewa
 const named = (t) => WORD[t] || t;
 
 export function passageRules({ on, L, log }) {
-  on('passage.exact', (e) => { if (e.by === 'courier' && e.types?.length) log.say('explore', `Ahead lies ${e.types.map(named).join(', then ')}.`); });
-  on('passage.casks', (e) => { if (e.by !== 'courier') return; if (e.n) { L.inc('passage.casks', e.n); log.say('gain', `You take ${e.n} ${e.n === 1 ? 'cask' : 'casks'} of ${crudeName(e.field)} aboard.`); } else log.say('warn', 'Your hold is full.'); });
-  on('passage.posted', (e) => { if (e.by === 'courier') log.say('explore', `Letty posts a bounty on ${named(e.type)} ahead: ${e.cubes} cubes.`); });
+  on('passage.exact', (e) => { if (e.by === 'courier' && e.types?.length) log.say('explore', `Ahead: ${e.types.map(named).join(', then ')}.`); });
+  on('passage.casks', (e) => { if (e.by !== 'courier') return; if (e.n) { L.inc('passage.casks', e.n); log.say('gain', `${e.n} ${e.n === 1 ? 'cask' : 'casks'} of ${crudeName(e.field)} loaded aboard.`); } else log.say('warn', 'The ship\'s hold is full.'); });
+  on('passage.posted', (e) => { if (e.by === 'courier') log.say('explore', `Bounty posted by Letty: ${named(e.type)} ahead, ${e.cubes} cubes.`); });
   on('passage.bounty', (e) => { if (e.by !== 'courier') return; L.inc('passage.bounty'); log.say('gain', `Bounty paid: ${e.cubes} cubes.`); });
-  on('rutter.sell', (e) => { if (e.by !== 'courier') return; L.inc('rutter.sell'); log.say('gain', `You sell Letty your route map for ${e.cubes} cubes.`); });
-  on('rutter.buy', (e) => { if (e.by !== 'courier') return; L.inc('rutter.buy'); log.say('gain', `You buy this game day's route map of this route for ${e.cubes} cubes.`); });
-  on('passage.dive', (e) => { if (e.by === 'courier') log.say('explore', 'You follow it down: the next section is sailed below the surface.'); });
+  on('rutter.sell', (e) => { if (e.by !== 'courier') return; L.inc('rutter.sell'); log.say('gain', `Route map sold to Letty for ${e.cubes} cubes.`); });
+  on('rutter.buy', (e) => { if (e.by !== 'courier') return; L.inc('rutter.buy'); log.say('gain', `Route map bought for ${e.cubes} cubes. It covers this route for this game day.`); });
+  on('passage.dive', (e) => { if (e.by === 'courier') log.say('explore', 'Diving. The next section is sailed below the surface.'); });
   on('passage.crew', (e) => { if (e.by === 'courier') { L.inc('passage.crew'); log.say('explore', 'You take them aboard.'); } });
-  on('passage.ghost', (e) => { if (e.by === 'courier') log.say('explore', e.score != null ? `Your ghost sails beside you. Beat ${e.score} over the next section.` : 'The glass is empty: no double to race this game day.'); });
-  on('passage.adrift', (e) => { L.inc('passage.adrift'); log.say('warn', e.relaid && e.types?.length ? `Your bunker is dry. You are adrift: the current takes you on to ${e.types.map(named).join(', then ')}.` : 'Your fuel is gone. You are adrift: the current takes you.'); });
+  on('passage.ghost', (e) => { if (e.by === 'courier') log.say('explore', e.score != null ? `Your ghost sails beside you. Beat ${e.score} over the next section.` : 'The Glass is empty. No double to race this game day.'); });
+  on('passage.adrift', (e) => { L.inc('passage.adrift'); log.say('warn', e.relaid && e.types?.length ? `Bunker dry. You are adrift. The current carries you on to ${e.types.map(named).join(', then ')}.` : 'Fuel gone. You are adrift. The current carries you.'); });
   on('charybdis.rise', (e) => log.say('combat', e.feel ? `Charybdis rises, in ${e.feel}.` : 'Charybdis rises.')); // (Espada's line, the glossary's)
   on('charybdis.dive', () => log.say('combat', 'Charybdis dives.')); // (Espada's, LORE.md: its first dive only)
-  on('charybdis.felled', (e) => { log.say('combat', 'Charybdis sinks into the maelstrom. The sea goes still.'); if (e.shards) log.say('gain', `You take ${e.shards} crystal shards from the maelstrom.`); }); // (Espada's line; the pay's, the house style)
+  on('charybdis.felled', (e) => { log.say('combat', 'Charybdis sinks into the maelstrom. The sea goes still.'); if (e.shards) log.say('gain', `${e.shards} crystal shards taken from the maelstrom!`); }); // (Espada's line; the pay's, the house style)
   on('charybdis.driven', () => log.say('combat', 'Charybdis sinks back into the maelstrom.'));
-  on('passage.race', (e) => { if (e.by !== 'courier') return; if (e.beat) L.inc('passage.race.beat'); log.say(e.beat ? 'record' : 'info', e.beat ? 'You beat your double.' : 'Your double pulls ahead.'); });
+  on('passage.race', (e) => { if (e.by !== 'courier') return; if (e.beat) L.inc('passage.race.beat'); log.say(e.beat ? 'record' : 'info', e.beat ? 'Double beaten!' : 'Your double pulls ahead.'); });
 }

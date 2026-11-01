@@ -10,13 +10,13 @@ const DID = {
   3: "the hoover drinks paint off the ground into your brush's bottle.",
   4: "your shots land on the bell's beat, and each one staggers.",
   5: 'the toll reads every creature it reached, and you know each one better.',
-  6: 'the toll runs down your hooked line and stuns what it holds.',
+  6: 'the toll runs down your hooked line and stuns what is hooked.',
   7: 'you hook to your fork and are flung through the air.',
   8: 'your blows calm instead of hurt.',
   9: 'the sigil you photographed is written on what you photographed.',
   10: 'the wheel of odds turns the weather where you stand for a game hour.',
   11: 'your blow on the weak point you photographed lands as the right kind.',
-  12: 'your photograph holds the creature still for a moment.',
+  12: 'your photograph freezes the creature for a moment.',
   13: "the downed creature's Lachryma goes straight into your coffin.",
   14: 'paint laid on the beat mends your cracks.',
   15: 'your shot chains two creatures together where they stand.',
@@ -33,7 +33,7 @@ export function pairSpecialsPlayRules({ on, L, log }) {
     if (e.by !== 'courier') return;
     L.inc(`pair.${e.pair}.special`);
     // (said once in 12 real s a special: several play once a blow, a round or a toll, and the line says what it does, not each time)
-    log.say('system', `${e.special}: ${DID[e.pair] || 'your pair works as one.'}`, { key: `pair.special.${e.pair}`, throttle: 12 });
+    log.say('system', `${e.special}: ${DID[e.pair] || 'pair special used.'}`, { key: `pair.special.${e.pair}`, throttle: 12 });
   });
   // a Rite's toll read a creature: counted toward knowing its kind as a down is (progress/familiarity.js)
   on('pair.read', (e) => { if (e.by === 'courier' && e.kind) L.inc(`creature.${e.kind}.read`); });

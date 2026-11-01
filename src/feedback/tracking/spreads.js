@@ -23,14 +23,14 @@ export function spreadRules({ on, L, log }) {
     L.inc('spread.lay');
     const day = today(); // (the day's card laid counts once a game day: SPREADS.md 11.2)
     if (e.card && e.card === dayCard(day) && L.best('spread.daycard.day') !== day + 1) { L.hi('spread.daycard.day', day + 1); L.inc('spread.daycard'); }
-    log.say('info', e.card ? `You lay ${nameOf(e.card)}${e.reversed ? ', reversed,' : ''} in the ${posOf(e)}.` : `You take back the card in the ${posOf(e)}.`, { key: `slay.${e.position}`, throttle: 0.3 });
+    log.say('info', e.card ? `${nameOf(e.card)}${e.reversed ? ', reversed,' : ''} laid in the ${posOf(e)}.` : `Card taken back from the ${posOf(e)}.`, { key: `slay.${e.position}`, throttle: 0.3 });
   });
   on('spread.tally', (e) => {
     L.hi(`spread.counting.${e.spread}`, e.counting);
     if (e.lit > 0 && e.counting >= e.lit) L.inc(`spread.full.${e.spread}`);
     if (!e.dark) L.hi(`spread.undark.${e.spread}`, e.counting);
     const pct = Math.round(effectOf(e.suit, e.to) * 100);
-    log.say('info', `Your spread ${e.to > e.from ? 'lights' : 'dims'} ${SUIT[e.suit]}: ${e.to.toFixed(1)} of ${e.cap ?? TALLY.cap} (${TALLY[e.suit].does} ${pct > 0 ? '+' : ''}${pct}%).`, { key: `stally.${e.suit}`, throttle: 0.5 });
+    log.say('info', `${SUIT[e.suit]} ${e.to > e.from ? 'raised' : 'lowered'} to ${e.to.toFixed(1)} of ${e.cap ?? TALLY.cap} (${TALLY[e.suit].does} ${pct > 0 ? '+' : ''}${pct}%).`, { key: `stally.${e.suit}`, throttle: 0.5 });
   });
   on('spread.class', (e) => { // (Petra's, when the class changes: { from, to }, an id 'queen.wands' or 'arcana.emperor'; SPREADS.md 12)
     if (!e.to) return;
@@ -40,8 +40,8 @@ export function spreadRules({ on, L, log }) {
       if (!card) L.inc('spread.courts'); else if (ZODIAC_CARDS.has(card)) L.inc('spread.zodiac');
     }
     L.inc(`spread.class.${e.to}`);
-    log.say('gain', `You read as ${classLabel(e.to)}.`, { key: 'scourt', throttle: 1 });
+    log.say('gain', `Class: ${classLabel(e.to)}.`, { key: 'scourt', throttle: 1 });
   });
-  on('spread.crack', () => { L.inc('spread.crack'); log.say('info', 'Contrary suits meet, and a cell goes dark.', { key: 'scrack', throttle: 2 }); });
-  on('spread.complete', (e) => { L.inc(`spread.complete.${e.spread}`); log.say('gain', `${SPREADS[e.spread]?.label || 'The spread'} is complete: its Outcome lights.`, { key: 'sdone' }); });
+  on('spread.crack', () => { L.inc('spread.crack'); log.say('info', 'Contrary suits cancel. A cell goes dark.', { key: 'scrack', throttle: 2 }); });
+  on('spread.complete', (e) => { L.inc(`spread.complete.${e.spread}`); log.say('gain', `${SPREADS[e.spread]?.label || 'Spread'} complete! The Outcome position is lit.`, { key: 'sdone' }); });
 }

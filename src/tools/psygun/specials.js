@@ -178,7 +178,7 @@ export class Specials {
 
   // ---- HOMING: paint -------------------------------------------------------------
   startPaint() {
-    if (this.shells.counts.homing <= 0) { sfx.dryFire(); this.game.log.say('warn', 'You have no homing shells.', { key: 'dry', throttle: 2 }); return; }
+    if (this.shells.counts.homing <= 0) { sfx.dryFire(); this.game.log.say('warn', 'No homing shells.', { key: 'dry', throttle: 2 }); return; }
     this.painting = true;
     this.progress.clear();
     this.locks = [];

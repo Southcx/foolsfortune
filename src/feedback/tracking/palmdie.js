@@ -12,11 +12,11 @@ export function palmDieRules({ on, L, log }) {
   on('palm.condense', (e) => { L.inc('palm.cubes', e.n); });
   on('palm.grow', (e) => {
     L.hi('palm.sides', e.to);
-    log.say('gain', `Your palm die grows into a d${e.to}.`, { key: 'palm.grow' });
+    log.say('gain', `Palm die grown to a d${e.to}.`, { key: 'palm.grow' });
   });
   on('palm.roll', (e) => {
     L.inc('palm.roll'); if (e.held) L.inc('palm.held', e.held);
-    if (e.held) log.say('god', `Your palm die shows ${e.face} against the island's ${e.against}: ${e.held > 1 ? 'two' : 'one'} of its answer held off.`, { key: 'palm.roll', throttle: 4 });
+    if (e.held) log.say('god', `Palm die rolled ${e.face} against the island's ${e.against}. ${e.held > 1 ? 'Two' : 'One'} of its answers blocked.`, { key: 'palm.roll', throttle: 4 });
   });
   on('duel.flee', (e) => { if (e.reroll && e.by === 'courier' && !e.practice) L.inc('luck.reroll'); });
 }

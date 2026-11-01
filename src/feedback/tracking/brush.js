@@ -10,12 +10,12 @@
 import { plural } from './lineformat.js';
 
 const BRUSH_LINE = {
-  still: (n) => `Your brush holds ${n === 1 ? 'it' : plural(n, 'thing')} still.`,
+  still: (n) => `Your brush freezes ${n === 1 ? 'it' : plural(n, 'thing')} in place.`,
   bounce: (n) => `Your brush makes ${n === 1 ? 'it' : plural(n, 'thing')} spring.`,
   mend: (n) => `Your brush makes ${plural(n, 'thing')} whole.`,
   ember: (n) => `Your brush sets ${n === 1 ? 'an ember' : `${n} embers`} smouldering.`,
-  gale: (n) => (n ? `A gale answers your brush and scatters ${plural(n, 'thing')}.` : 'A gale answers your brush.'),
-  bolt: (n) => (n ? `Lightning answers your brush and stuns ${plural(n, 'clapperjar')}.` : 'Lightning answers your brush.'),
+  gale: (n) => (n ? `Your brush calls a gale. It scatters ${plural(n, 'thing')}.` : 'Your brush calls a gale.'),
+  bolt: (n) => (n ? `Your brush calls lightning. It stuns ${plural(n, 'clapperjar')}.` : 'Your brush calls lightning.'),
   light: (n) => (n ? `Your brush makes ${n === 1 ? 'it' : plural(n, 'thing')} light.` : 'Your brush lifts you.'),
   heavy: (n) => (n ? `Your brush makes ${n === 1 ? 'it' : plural(n, 'thing')} heavy.` : 'Your brush drives you down.'),
   solace: (n) => (n > 1 ? `${n} clapperjars forget themselves and dance.` : n ? 'A clapperjar forgets itself and dances.' : 'Your Pneuka Jar is soothed.'),
@@ -41,7 +41,7 @@ export function brushRules({ on, L, log }) {
   // brush.pick { feeling, by }: the radial's pick (tools/soulbrush/radial.js): a feeling the paint is refined into, or Clean
   on('brush.pick', (e) => {
     L.inc(`brush.pick.${e.feeling}`);
-    log.say('info', e.feeling === 'clean' ? 'Your brush sprays clean.' : `Your brush paints ${e.feeling[0].toUpperCase()}${e.feeling.slice(1)}.`, { key: 'brushpick', throttle: 0.5 });
+    log.say('info', e.feeling === 'clean' ? 'Soul Brush loaded: Clean.' : `Soul Brush loaded: ${e.feeling[0].toUpperCase()}${e.feeling.slice(1)}.`, { key: 'brushpick', throttle: 0.5 });
   });
   // brush.mop { lachryma, by }: Lachryma drunk into the bottle (or the pool, bottle-less)
   on('brush.mop', (e) => { if (e.by === 'courier') L.inc('mop.lachryma', e.lachryma || 0); });
@@ -50,7 +50,7 @@ export function brushRules({ on, L, log }) {
     if (e.by !== 'courier') return;
     L.inc('stain.wash'); if (e.field) L.inc(`stain.${e.field}`); // (by its crude's field: crude carries no feeling, the owner, 2026-10-11)
     if (e.stage >= STAINS.stages) L.inc('stain.wash.grown');
-    log.say('gain', `You mop up ${STAGE[e.stage] || 'a'} blot of ${crudeName(e.field)}.`.replace('  ', ' '), { key: 'stain', throttle: 1 });
+    log.say('gain', `Mopped up ${STAGE[e.stage] || 'a'} blot of ${crudeName(e.field)}.`.replace('  ', ' '), { key: 'stain', throttle: 1 });
   });
   // stain.spawn { field, aspect, kind, by: 'environment' }: a full-grown blot gives up an aberrant Figment (the weather's feeling where it rises, or none)
   on('stain.spawn', (e) => {
@@ -60,14 +60,14 @@ export function brushRules({ on, L, log }) {
   // bottle.crack { bottle, spilled, by: 'creature' | 'environment' }: a broken shield cracked the glass
   on('bottle.crack', (e) => {
     L.inc('bottle.crack');
-    log.say('combat', `Your ${bottleName(e.bottle)} cracks: ${Math.round(e.spilled || 0)} Lachryma spilled.`, { key: 'bottle', throttle: 1 });
+    log.say('combat', `Your ${bottleName(e.bottle)} cracked. ${Math.round(e.spilled || 0)} Lachryma spilled.`, { key: 'bottle', throttle: 1 });
   });
 }
 
 export function brushToolRules({ on, L, log, where }) {
   const first = (key, text) => { if (L.first(key)) log.say('record', text); };
   // ---- the Soul Brush: the club, the brush slide, Celestial mode, the sigils (src/tools/soulbrush/soulbrush.js, src/tools/soulbrush/)
-  on('brush.draw', () => { L.inc('brush.draw'); log.say('info', 'You draw the Soul Brush.', { key: 'bdraw', throttle: 2 }); });
+  on('brush.draw', () => { L.inc('brush.draw'); log.say('info', 'Soul Brush drawn.', { key: 'bdraw', throttle: 2 }); });
   on('brush.stow', () => L.inc('brush.stow'));
   on('brush.swing', (e) => { L.inc('brush.swing'); if (e.slam) L.inc(e.air ? 'brush.slam.dive' : 'brush.slam.swing'); });
   on('brush.flick', () => L.inc('brush.flick'));
@@ -79,19 +79,19 @@ export function brushToolRules({ on, L, log, where }) {
   });
   on('brush.slam', (e) => {
     L.inc('brush.slam'); L.hi('brush.slam.power', e.power); if (e.air) L.inc('brush.slam.air');
-    if (e.big) { first('brush.slam', 'Logged: your first brush slam.'); log.say('battle', e.air ? 'You come down with the brush, and the ground answers.' : 'You bring the brush down.', { key: 'bslam', throttle: 1.5 }); }
+    if (e.big) { first('brush.slam', 'Logged: your first brush slam.'); log.say('battle', e.air ? 'Brush slam from the air. The ground shakes.' : 'Brush slam.', { key: 'bslam', throttle: 1.5 }); }
   });
   on('brush.slide', (e) => {
     if (e.phase !== 'end') return;
     L.inc('brush.slide'); L.inc('brush.slide.dist', e.dist); L.hi('brush.slide.best', e.dist, { at: where() });
     first('brush.slide', 'Logged: your first brush slide.');
-    if (e.dist >= 8) log.say('move', `You paint ${Math.round(e.dist)} m of paint behind you.`, { key: 'bslide', throttle: 2 });
+    if (e.dist >= 8) log.say('move', `${Math.round(e.dist)} m of paint laid behind you.`, { key: 'bslide', throttle: 2 });
   });
   on('brush.canvas', (e) => {
     if (!e.open) { L.hi('brush.drawings.best', e.drawings); return; }
     L.inc('brush.canvas');
     first('brush.canvas', 'Logged: your first time in Celestial mode.');
-    log.say('info', 'The world stills, and becomes paper.', { key: 'bcanvas', throttle: 6 });
+    log.say('info', 'Celestial mode. The world stops and turns to paper.', { key: 'bcanvas', throttle: 6 });
   });
   on('brush.read', (e) => { L.inc('brush.read'); L.inc(`brush.read.${e.technique}`); if (e.strokes > 1) L.inc('brush.read.multi'); });
   on('brush.miss', () => L.inc('brush.miss')); on('brush.mark', () => L.inc('brush.mark')); // (mark: a dot on a thing, R18; the star over it says so)
@@ -105,6 +105,6 @@ export function brushToolRules({ on, L, log, where }) {
   on('sigil.pop', (e) => {
     L.inc('sigil.pop', e.popped); L.inc(`sigil.pop.${e.sigil}`, e.popped);
     if (e.cleared) { L.inc('sigil.cleared', e.cleared); L.hi('sigil.cleared.best', e.cleared); first('sigil.cleared', 'Logged: your first clapperjar erased.'); }
-    log.say('battle', e.cleared ? `You erase ${plural(e.cleared, 'clapperjar')}.` : `Your mark lifts ${plural(e.popped, 'sigil')}.`, { key: 'sigil', win: 0.6 });
+    log.say('battle', e.cleared ? `You erase ${plural(e.cleared, 'clapperjar')}.` : `${plural(e.popped, 'sigil')} lifted by your mark.`, { key: 'sigil', win: 0.6 });
   });
 }

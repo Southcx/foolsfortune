@@ -28,12 +28,12 @@ export function bootChatCommands(game) {
   // (for directing the effects: play any effect by name where the Courier stands, or the Lockheart's whole opening without keys)
   // (the clock is the Veritome's: docs/plans/OVERLAY.md; carried, it tells the time; the words are the log's rule, tracking/weather.js)
   game.chat.add('time', { help: 'the game day and game hour (the Veritome tells it)', run: () => {
-    if (!game.belt?.isWorn('veritome')) { game.log.say('info', 'You have no Veritome to tell the time.', { key: 'notime', throttle: 2 }); return; }
+    if (!game.belt?.isWorn('veritome')) { game.log.say('info', 'No Veritome worn. The Veritome tells the time.', { key: 'notime', throttle: 2 }); return; }
     game.events.emit('clock.read', { by: 'courier' }); // (the time is read where it is said: the calendar's, which a replay pins)
   } });
   game.vertexPaint = new VertexPaint(game); // (a trial, off by default: a zone's mood lamps baked into its statics per vertex, vfx/vertexpaint.js)
   game.chat.add('vertexpaint', { debug: true, help: "bake a zone's mood lamps into its walls and switch the lamps off: /vertexpaint [zone] (basement), /vertexpaint off", run: ([a]) => {
-    if (a === 'off') { game.log.say('info', game.vertexPaint.unbake('basement') ? 'Vertex painting off: the lamps are lit again.' : 'Nothing is vertex painted.', { key: 'vertexpaint', throttle: 0.5 }); return; }
+    if (a === 'off') { game.log.say('info', game.vertexPaint.unbake('basement') ? 'Vertex painting off. The lamps are lit again.' : 'Nothing is vertex painted.', { key: 'vertexpaint', throttle: 0.5 }); return; }
     const s = game.vertexPaint.bake(a || 'basement');
     game.log.say('info', `Vertex painted ${s.zone}: ${s.lamps} lamps baked into ${s.meshes} meshes (${Math.round(s.trisBefore)} -> ${Math.round(s.trisAfter)} triangles, ${s.rays} rays, ${s.ms} ms).`, { key: 'vertexpaint', throttle: 0.5 });
   } });

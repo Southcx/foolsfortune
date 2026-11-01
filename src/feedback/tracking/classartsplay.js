@@ -14,7 +14,7 @@ export function classArtsPlayRules({ on, L, log }) {
   on('art.use', (e) => {
     if (e.by !== 'courier') return;
     L.inc(`art.use.${e.art}`);
-    log.say('system', `You use ${label(e.art)}${e.accented ? ', sharpened by your class' : ''}.`, { key: `art.use.${e.art}`, throttle: 0.5 });
+    log.say('system', `${label(e.art)} used${e.accented ? ', accented by your class' : ''}.`, { key: `art.use.${e.art}`, throttle: 0.5 });
   });
   on('art.fire', (e) => {
     if (e.by !== 'courier') return;
@@ -22,6 +22,6 @@ export function classArtsPlayRules({ on, L, log }) {
     const what = e.cubes ? `: ${e.cubes} more cubes` : e.pool ? `: ${e.pool} back to your pool` : e.hint ? `: ${e.hint}` : ''; // (Dividend's cubes, Rally's pool, Intuition's hint)
     log.say('system', `${label(e.art)} triggers${what}.`, { key: `art.fire.${e.art}`, throttle: 1 });
   });
-  on('art.end', (e) => { if (e.by === 'courier') log.say('system', `${label(e.art)} wears off.`, { key: `art.end.${e.art}`, throttle: 1 }); });
-  on('vessel.ward', () => log.say('system', 'You stand firm: the blow cracks nothing.', { key: 'vessel.ward', throttle: 1 }));
+  on('art.end', (e) => { if (e.by === 'courier') log.say('system', `${label(e.art)} ended.`, { key: `art.end.${e.art}`, throttle: 1 }); });
+  on('vessel.ward', () => log.say('system', 'Blow warded. No cracks taken.', { key: 'vessel.ward', throttle: 1 }));
 }

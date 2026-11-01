@@ -54,7 +54,7 @@ export const FORCE = {
       }
       const side = P.ramp('slab', 'side'), got = F.take(L.a.x, L.a.z, side / 2, side * side * 20);
       const v = got.water + got.loose + got.firm;
-      if (v < 0.05) { g.log.say('warn', 'There is no matter there to lift: only the island itself.', { key: 'slab.none', throttle: 2 }); return false; }
+      if (v < 0.05) { g.log.say('warn', 'Nothing to lift there. Only loose matter can be lifted.', { key: 'slab.none', throttle: 2 }); return false; }
       const h = Math.max(0.2, v / (side * side));
       const LK = g.godhandLooks; // (its layers and edges: vfx/godhand/marks.js; else one box)
       const mesh = LK ? LK.slab(got, side, h, P.domainColour('slab')) : new THREE.Mesh(new THREE.BoxGeometry(side, h, side), new THREE.MeshStandardMaterial({ color: got.firm >= got.loose ? groundOf().firm.colour : groundOf().loose.colour, roughness: 0.9 }));

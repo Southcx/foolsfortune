@@ -11,16 +11,16 @@ import { plural } from './lineformat.js';
 import { MIRACLES, EPICS, GOD_POWERS, POWER_EVENTS } from '../../progress/godpowers.js';
 
 // the domains' other powers, counted alike (`god.power.<id>`); what each says, where it says anything (placeholders for Espada's)
-const POWER_SAYS = { portal: 'A portal opens, and its twin.', fold: 'The ground folds over.', setfast: 'It sets fast.', totem: 'A totem holds the weather.', herd: 'They walk where you drew.', take: 'You take it in hand.', muster: 'Clay hands come up to carry.', ward: 'A ward is written.', stamp: 'The ground is pressed again.' };
+const POWER_SAYS = { portal: 'Portal pair opened.', fold: 'Ground folded over.', setfast: 'Creation set. It will not crumble.', totem: 'Totem raised. It keeps the weather.', herd: 'Herded. They walk the line you drew.', take: 'Taken in hand.', muster: 'Muster. Clay workers rise to carry.', ward: 'Ward written.', stamp: 'Ground pressed again.' };
 
 
 const LEVEL_SAYS = [ // (the Dissonance Level, 0 to 5)
-  'The island settles.',
-  'The island stirs against you.',
-  'The island pushes back.',
-  'The island turns on you.',
-  'The island will not have you.',
-  'The island rises against you whole.',
+  'Dissonance Level 0. The island is calm.',
+  'Dissonance Level 1. Slip jellies come for your Pneuka Jar.',
+  'Dissonance Level 2. Slip jellies and a Lantern Wisp come for your Pneuka Jar.',
+  'Dissonance Level 3. Stronger Figments come for your Pneuka Jar.',
+  'Dissonance Level 4. A sentinel rises to mend the ground you warped.',
+  'Dissonance Level 5. The island sends its strongest answer. Defeat it to clear the dissonance.',
 ];
 
 export function godRules({ on, L, log }) {
@@ -32,12 +32,12 @@ export function godRules({ on, L, log }) {
     if (says) log.say('god', says(e), { key: `gm.${verb}`, throttle: 3 });
   });
   matter('scoop'); matter('pour');
-  matter('shape', () => 'The ground moves under your hand.');
-  matter('carve', () => 'You cut a channel.');
+  matter('shape', () => 'Ground moved.');
+  matter('carve', () => 'Channel cut.');
   on('god.sculpt', (e) => {
     if (e.by !== 'courier') return;
     L.inc('god.sculpt'); L.inc(`god.sculpt.${e.shape}`); L.hi('god.sculpt.volume', Math.round(e.volume || 0));
-    log.say('god', { pillar: 'You raise a pillar of clay.', arch: 'You raise an arch of clay.', ramp: 'You raise a ramp of clay.' }[e.shape] || 'You raise clay.', { key: 'gsc', throttle: 1 });
+    log.say('god', { pillar: 'Clay pillar raised.', arch: 'Clay arch raised.', ramp: 'Clay ramp raised.' }[e.shape] || 'Clay raised.', { key: 'gsc', throttle: 1 });
   });
   for (const id of POWER_EVENTS) on(`god.${id}`, (e) => {
     if (e.by !== 'courier') return;
@@ -49,14 +49,14 @@ export function godRules({ on, L, log }) {
     if (e.by !== 'courier') return;
     L.inc('god.miracle'); L.inc(`god.miracle.${e.feeling}`); L.hi('god.miracle.score', Math.round((e.score || 0) * 100));
     if (e.size >= 0.9 && e.score >= 0.95 && e.level >= 5) L.inc(`god.miracle.${e.feeling}.great`); // (an epic's feat way: skills.js EPIC_ARTS)
-    log.say('god', `You call down ${MIRACLES[e.feeling]?.label || 'a miracle'}.`, { key: 'gmir', throttle: 1 });
+    log.say('god', `${MIRACLES[e.feeling]?.label || 'Miracle'} called down.`, { key: 'gmir', throttle: 1 });
     first('god.miracle', 'Logged: your first miracle.');
   });
   on('god.epic', (e) => {
     if (e.by !== 'courier') return;
     L.inc('god.epic'); L.inc(`god.epic.${e.epic}`);
-    log.say('god', `${EPICS[e.epic]?.label || 'An epic miracle'}. The release cracks you.`);
-    if (e.epic === 'prophecy') log.say('god', 'You see the next raid coming, and it comes later.');
+    log.say('god', `${EPICS[e.epic]?.label || 'Epic miracle'}! The release cracks your vessel.`);
+    if (e.epic === 'prophecy') log.say('god', 'Next raid foreseen. It comes later.');
   });
   on('god.dissonance', (e) => {
     if (e.level > 0) L.hi('god.dissonance.level', e.level);
@@ -65,7 +65,7 @@ export function godRules({ on, L, log }) {
   on('god.rejection.beaten', (e) => {
     if (e.by !== 'courier') return;
     L.inc('god.rejection.beaten');
-    log.say('god', 'You put down the island\'s answer. It lets you be, for now.');
+    log.say('god', 'The island\'s answer defeated. Dissonance cleared.');
   });
 }
 
@@ -76,13 +76,13 @@ export function godHandRules({ on, L, log }) {
   on('god.grab', (e) => { L.inc('god.grab'); if (e.clapper) L.inc('god.grab.clapper'); });
   on('god.throw', (e) => { L.inc('god.throw'); L.hi('god.throw.speed', e.speed); });
   on('god.select', (e) => L.inc(`god.select.${e.id}`));
-  on('god.sunder', (e) => { L.inc('god.sunder'); L.inc('god.cuts', e.cuts); L.hi('god.cuts.best', e.cuts); log.say('god', e.cuts ? `Your blade cleaves ${plural(e.cuts, 'clapperjar')}.` : 'The blade finds nothing.', { key: 'sund', win: 1 }); });
+  on('god.sunder', (e) => { L.inc('god.sunder'); L.inc('god.cuts', e.cuts); L.hi('god.cuts.best', e.cuts); log.say('god', e.cuts ? `Your blade cleaves ${plural(e.cuts, 'clapperjar')}.` : 'The blade missed.', { key: 'sund', win: 1 }); });
   on('god.swell', () => L.inc('god.swell'));
   on('god.wring', () => L.inc('god.wring'));
-  on('god.manifest', (e) => { L.inc('god.manifest'); L.hi('god.manifest.len', e.len); log.say('god', 'You raise a wall of clay.', { key: 'mani', win: 1.5 }); });
+  on('god.manifest', (e) => { L.inc('god.manifest'); L.hi('god.manifest.len', e.len); log.say('god', 'Clay wall raised.', { key: 'mani', win: 1.5 }); });
   on('god.raid', (e) => { L.inc('god.raid'); L.hi('god.wave.max', e.wave); log.say('god', `Raid, wave ${e.wave}: ${plural(e.n, 'clapperjar')} approach.`); });
-  on('god.wave', (e) => { L.inc('god.wave'); log.say('god', `Wave ${e.wave} is cleared.`); });
+  on('god.wave', (e) => { L.inc('god.wave'); log.say('god', `Wave ${e.wave} cleared.`); });
   on('jar.hit', (e) => { L.inc('jar.hit'); L.inc('jar.damage', e.amount || 0); L.inc(`jar.hit.${e.kind}`); }); // (the god hand's jar: GLOSSARY)
   on('jar.shatter', () => { L.inc('jar.shatter'); log.say('hurt', 'Your Pneuka Jar breaks.'); });
-  on('jar.reforge', () => { L.inc('jar.reforge'); log.say('god', 'Your Pneuka Jar is reforged.'); });
+  on('jar.reforge', () => { L.inc('jar.reforge'); log.say('god', 'Your Pneuka Jar is made whole.'); });
 }
