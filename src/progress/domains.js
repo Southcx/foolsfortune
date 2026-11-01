@@ -170,6 +170,16 @@ export const SOURCES = [
   // world; its quality the gems the cast cleared (12 a masterful one), a cast that cleared none middling at best; a practice duel none
   ...['ouranurgy', 'manifestation', 'divination', 'psychokinesis', 'possession', 'alteration', 'spellscription'].map((d) => (
     { event: 'duel.power',    domain: d,                base: 6, quality: (e) => (e.by === 'courier' && !e.practice && e.domain === d ? 0.35 + 0.65 * q01((e.cleared ?? 2) / 12) : null) })),
+  // A DOMAIN'S RUNGS (progress/domainarts.js; DOMAINS.md 13): every rung trains its own domain by using it, its quality the rung's own
+  // measure (a postponed blow parried, a plate that took its crack, a weakness found by Re-type); the first five uses of each (`kata`)
+  // a masterful act, the teacher showing once; past twenty a game hour a quarter (the rung's `q` already worn down: domainarts.js WEAR)
+  ...['ouranurgy', 'manifestation', 'divination', 'psychokinesis', 'possession', 'alteration', 'spellscription'].map((d) => (
+    { event: 'domain.art.use', domain: d,             base: 8, quality: (e) => (e.by === 'courier' && e.domain === d ? (e.kata ? 1 : q01(e.q)) : null) })),
+  // Strawman's Well (STRAWMANS-WELL.md): a course cleared is a way through space and time (Ouranurgy), its quality its rank, a big act
+  // of about its time; a straw fighter knocked past a blast line in the Arena is force delivered (Psychokinesis), the lower its percent
+  // the better the blow (a KO at 60% masterful, at 200% rote)
+  { event: 'well.stage.clear', domain: 'ouranurgy',     acts: (e) => Math.max(1, Math.round((e.t || 30) / 10)), quality: (e) => (e.by === 'courier' ? ({ SS: 1, S: 0.85, A: 0.65, B: 0.45, C: 0.3, D: 0.15 })[e.rank] ?? 0.3 : null) },
+  { event: 'well.fighter.ko', domain: 'psychokinesis',  acts: 3, quality: (e) => (e.by === 'courier' ? q01(1 - ((e.percent || 100) - 60) / 140) : null) },
 ];
 
 /** How long 99 takes in any domain at middling quality (0.5: the grind), and how often a domain's acts come. */
