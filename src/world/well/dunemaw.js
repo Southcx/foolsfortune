@@ -280,7 +280,9 @@ export class Dunemaw {
   /** Shattered in the Well: the run is lost (courier/vessel/death.js makes them whole at the last Shrine; the mouth if there is none). */
   reformAt() {
     if (!this.run) return null;
-    const C = this.cur; if (C?.isCavern && C.raid?.pulled && !C.foe?.ended) return this.wipe();
+    const C = this.cur;
+    if (C?.isCavern && !C.foe?.ended && this.game.sharedFoe?.down()) { const at = C.bowl?.lipStand || C.arrive; return { pos: at.pos.clone(), yaw: at.yaw, keep: true }; } // (a party's fight: whole at the Lip Stone, the fight going on; all down is the party's wipe, coop/sharedfoe.js)
+    if (C?.isCavern && C.raid?.pulled && !C.foe?.ended) return this.wipe();
     this.end('shatter'); return this.mouthSpot();
   }
   /** A wipe in the great cavern's fight (shattered, or swallowed at the enrage): the attempt is lost, not the run. The cavern is laid
