@@ -153,12 +153,12 @@ Counted by `tracking/stealth.js` from `photo.take`'s `candid` and `d`:
 - `photo.candid.near`: within 3 m;
 - `photo.candid.night`.
 
-The achievements are in the Veritome's new **Fieldcraft** sub. Names are placeholders for Espada.
+The achievements are in the Veritome's new **Fieldcraft** sub, worded by Espada (2026-11-01).
 
 | id | tier | name | what |
 |---|---|---|---|
 | fc1 | Easy | Candid | one candid photograph of a Figment |
-| fc2 | Hard | Hide and Seek | 50 candid photographs |
+| fc2 | Hard | Fly on the Wall | 50 candid photographs |
 | fc3 | Medium | Field Notes | a candid photograph of every kind of Figment in the Dunes (the slip jelly and the Lantern Wisp) |
 | fc4 | Hard | Close Encounter | a candid photograph from 3 m or closer |
 | fc5 | Medium | Night Watch | a candid photograph at night |
