@@ -212,6 +212,22 @@ Five numbers stood without a reason. Each is measured by the simulator's last bl
   (x3.0 down to x1.5) as OSRS's levels and every RPG's early ranks do: the first standings come in a session, the later ones in weeks.
   The top, Fool's Fortune, is a quarter of the points: reachable without completing everything.
 
+## A creature's drops: a material faucet, never cubes (2026-11-01)
+
+South: "We'll have them drop out of enemies as a 2d billboard sprite." A creature the Courier brings down in the world now also drops
+things (`progress/creaturedrops.js`). It drops no cubes beyond its existing burst, so the aim (480 cubes a real hour) is unchanged.
+
+- **How many.** A down gives 1 + 2 x its agitation's yield (`yieldOf`): one when downed rote, up to three in the optimal band.
+- **What, by body.** The material kinds its body is made of (`DROP_TABLES`).
+- **What, by feeling.** Its feeling's add-in, an ingredient for Spirit Cooking.
+- **The rare roll.** For example a shard at 1 in 12 for a slip jelly, or a brass Possibilikey at 1 in 60. Luck sways it by up to x1.5.
+
+This is the press's input, which the Wells, the garden and the scanner fed before. Two loops are closed by it:
+- a hunt's feeling becomes a dish, and the dish's draught leans the press;
+- a hunt's body becomes a material, and the material walks the soul colour.
+
+Nothing here is sold for cubes yet. A material's worth is the Purser's, as before.
+
 ## Measuring it
 
 - **F3**'s `econ` line (and F4's report): cubes an hour in and out, the aim, the top three faucets and top two drains. It reads only

@@ -187,7 +187,7 @@ export const SOURCES = [
 ];
 
 /** How long 99 takes in any domain at middling quality (0.5: the grind), and how often a domain's acts come. */
-export const PACE = { hours99: 300, actsPerMin: 6 };
+export const PACE = { hours99: 100, actsPerMin: 6 };
 
 /** How much quality weighs: floor + (ceil - floor) x quality^power. Rote (0) 0.4, middling (0.5) about 1, masterful (1) 5. */
 export const SKILL = { floor: 0.4, ceil: 5, power: 3 };

@@ -223,6 +223,7 @@ export function bootFrame(game, made) {
     game.cradles.update(dt); // (sealing and unsealing; an engine's draw; a body's hull)
     game.seam.update(game.rawDt); // (a cover over a change of place: render/seam.js)
     game.ground.update(dt); // (things on the floor turn; F picks up the one the chevron is on)
+    game.creatureDrops?.update(dt); game.hearth?.update(game.rawDt); // (a down's drops thrown, bobbing, taken: world/drops/creaturedrops.js; the hearth's window: world/garden/kitchen.js)
     game.belt.tick(); // (what is not worn stays put away: tools/belt.js)
     if ((game.mindWatch = (game.mindWatch || 0) + game.rawDt) > 1) { game.mindWatch = 0; game.macros.watch(game); } // (a Function newly learned: tools/veritome/mind/macros.js)
     // the music: what the place calls for (the title, a fight, a dive, the skiff, the dunes, the workshop: music/choose.js); a
