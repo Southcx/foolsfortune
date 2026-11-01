@@ -542,27 +542,20 @@ Soul Alchemy is the eye's craft (Potion Craft's map). Spirit Cooking is the hand
 - **The hearth is in the Spirit Garden**, where the slice-of-life activities live.
 - **Failure is comedy** and goes to the World Mushroom.
 
-## 32. One Vessoul: one pool, one vessel, seven feelings, one clock (2026-11-01; docs/plans/SUBSTRATE.md, a plan)
+## 32. One Vessoul: one pool, one vessel, the mind, one clock (2026-11-01; docs/plans/SUBSTRATE.md)
 
 South: "a small number of core parameters (like the lachryma pool), and then modify them contextually." The Vessoul is one being in
-every form (hand, Jar, Courier, ship), so it has one well and one body. The four substrates:
-- **the pool:** ammo, shield, fuel, boost, every cost;
-- **the vessel:** health as cracks, in every form;
-- **the feelings:** a blow's type, a status, a weather, a taste;
+every form (hand, Jar, Courier, ship), so it has one well and one body, and every shelled thing in the world takes blows the same way.
+The four substrates:
+- **the pool:** ammo for what is special (a plain shot draws on the Lachryma round it), shield, fuel, boost, every cost;
+- **the vessel:** health as cracks in any shelled body (the Courier, a ship, the Jar, a pot, a Figment's glaze shell), broken by a
+  blow's `shatter`;
+- **the mind:** afflictions, then mental state and EmO, then feelings, then behaviour;
 - **the clock:** the game day and its hours.
 
-Every module is a modifier with a visible source on one of these. The audit found 22 health-like meters, about 30 damage formulas and a
-type chart that never fires. The folds:
-- ships, the Jar and the Arena take blows as the vessel;
-- the pool is ammo on the water too;
-- a Figment's type is its feeling's;
-- one unit of damage, the blow.
+The five damage types are how force meets a hybrid physical-psychic body: Impact cracks the vessel, and the four psychic types afflict
+the mind. Feelings are downstream of both (South, 2026-11-01). A body's constitution, what it is made of, sets which type bites it
+(`progress/combat/constitution.js`). The vessel's one rule is `progress/combat/vessel.js`, measured by `scripts/substrate.mjs`.
 
-Then the seven Domains each widen one dial of the substrate:
-- Ouranurgy: the clock and reach;
-- Manifestation: Lachryma made solid;
-- Divination: what is shown;
-- Psychokinesis: the blow's push;
-- Possession: minds and EmO;
-- Alteration: the feelings;
-- Spellscription: costs.
+The seven Domains each answer one question every interaction asks (DOMAINS.md): when and where, in what form, what is known, with how
+much force, whose, of which kind, under which rule.
