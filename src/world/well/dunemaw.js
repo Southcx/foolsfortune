@@ -51,6 +51,11 @@ import { Finds, artifactMaterial } from './finds.js';
 import { UrnCrown } from '../../vfx/urncrown.js';
 import { NURSERY, FOE } from '../../progress/combat/dunemaw.js';
 
+/** The haul rolled each player's own (COOP.md C5, MH's rewards per hunter): the run's seed lays the floors for the whole party, and the
+ *  player's own room id is mixed into the haul's draw only, so two guests on one game day's run find different materials. Alone and
+ *  headless (no id) it is 0: the haul as it always was. */
+const haulSalt = (g) => { const id = String(g.guests?.me ?? ''); let h = 0; for (let i = 0; i < id.length; i++) h = Math.imul(h ^ id.charCodeAt(i), 0x01000193) >>> 0; return h; };
+
 export const WELL_ID = 'dunemaw';
 /** Where the floors are built: far west of the basement and far below the Dunes (its own zone, render/zones.js, and its own map layer,
  *  feedback/cartography.js: both decided by height). The grid's north-west corner. */
@@ -241,9 +246,9 @@ export class Dunemaw {
     }
     if (up || !this.mobs.length || R.cleared.has(n)) return;
     R.cleared.add(n);
-    const r = seeded((R.seed ^ Math.imul(n + 7, 0x27d4eb2d)) >>> 0), kind = r.pick(KIND_IDS), foe = this.mobs.some((c) => c.cls && c.downBy === 'courier');
+    const own = haulSalt(g), r = seeded((R.seed ^ own ^ Math.imul(n + 7, 0x27d4eb2d)) >>> 0), kind = r.pick(KIND_IDS), foe = this.mobs.some((c) => c.cls && c.downBy === 'courier');
     const tier = Math.min(4, n - 1 + (deckDraw(g.ledger, 'well.rare', RARE, r()) ? 1 : 0) + (foe ? 1 : 0)), item = `mat.${kind}`;
-    R.haul.push({ id: item, data: makeMaterial(kind, (R.seed + n) >>> 0, tier, g.weather?.at?.(`well:${WELL_ID}`)) }); // (it remembers the weather it was won in: Dovina's 7a, ruled A)
+    R.haul.push({ id: item, data: makeMaterial(kind, (R.seed + n + own) >>> 0, tier, g.weather?.at?.(`well:${WELL_ID}`)) }); // (it remembers the weather it was won in: Dovina's 7a, ruled A)
     g.events?.emit('well.find', { well: WELL_ID, floor: n, item, tier, by: 'courier' });
   }
 

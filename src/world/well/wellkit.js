@@ -260,7 +260,7 @@ export function buildFloor(game, layout, origin, floor = 1) {
   const arrive = { pos: onSand(layout.start, 0, 0).addScaledVector(toward, 2.6).setY(up.pos.y + 0.05), yaw: Math.atan2(toward.x, toward.z) };
   // each pool its floor's number in neuralese, read upright as you arrive (Calissa's: vfx/wornnumerals.js): the way up this floor's,
   // the way down the next's (none down into the cavern); never acted on, so no Arabic beside them
-  const poolNumber = (n, ink) => numeralDecals([{ n, pos: new THREE.Vector3(0, 0.06, 0), normal: new THREE.Vector3(0, 1, 0), up: toward, size: 1.1 }], { ink, name: 'well-floor-numeral' });
+  const poolNumber = (n, ink) => numeralDecals([{ n, pos: new THREE.Vector3(0, 0.06, 0), normal: new THREE.Vector3(0, 1, 0), up: toward, size: 1.1 }], { ink, name: 'well-pool-numeral' });
   { const m = poolNumber(floor, '#6a3a1e'); m.position.copy(up.pos); group.add(m); }
   if (floor < 3) { const m = poolNumber(floor + 1, '#f2c35a'); m.renderOrder = 3; down.mouth.group.add(m); }
   // the sandfalls, in their doorways (wellshift.js)

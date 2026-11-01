@@ -1085,3 +1085,5 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
   before its owner hears of a teleport drags the body back; it corrects only what is near it, and the owner lifts it on the next look.
 389. **A command the player types takes the thing's label, never its code id.** A line that tells them what
   to type says the label's word, and the command reads it; an id that outlives a rename leaks into player text otherwise.
+390. **A name's prefix says what kind of thing it is; a part takes its own.** Something counted by its name's
+  prefix is counted wrong when a part inside it takes the same prefix; name the part for itself (a pool's numeral, not a floor's).

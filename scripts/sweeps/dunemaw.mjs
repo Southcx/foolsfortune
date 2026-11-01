@@ -505,7 +505,7 @@ if (part('careless')) {
   S.check('careless: F then P and Esc mid-wipe still lands on floor 1', w.active && w.floor === 1, W0(w));
   await S.common('careless-after-esc');
   // a resize mid-floor
-  await S.page.setViewportSize({ width: 640, height: 400 }); await S.ticks(10);
+  await S.page.setViewportSize({ width: 640, height: 400 }); await S.page.waitForTimeout(250); await S.ticks(10); // (the resize is applied 150 real ms after the last event: render/present.js, a phone's storm of resizes)
   const small = await S.ev(() => { const c = __game.renderer.domElement; return [c.clientWidth, c.clientHeight]; });
   await S.common('careless-resized');
   await S.page.setViewportSize({ width: 960, height: 600 }); await S.ticks(10);

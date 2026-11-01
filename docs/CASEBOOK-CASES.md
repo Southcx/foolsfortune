@@ -4851,3 +4851,13 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** `knackWord` (the label in one lower-case word: laststraw) is what both lines say, and `knackOf` reads it (the id still
   answers). After: the Dunemaw sweep's cavern and fight parts 52 of 52.
 - **Rule:** 389
+
+### 2026-11-01 · The Dunemaw sweep counted the pools' numerals as floors, and measured a resize before it applied (world/well/wellkit.js, scripts/sweeps/dunemaw.mjs; found by Petra, the full Dunemaw sweep)
+- **Seen:** 8 of 220 failed, the same before the party's wipe and after: "one floor standing" saw 5, "nothing left of the floors"
+  saw 2 after the run ended; "the canvas follows a resize" read 960 x 600 after a resize to 640 x 400.
+- **Cause, as measured:** the pools' neuralese numerals (cb17ab2) were named `well-floor-numeral`, which the sweep's `/^well-floor-/`
+  counts as a floor: each floor's two and the warm floor's two (excluded as a group, not its children). No leak: the groups went
+  as before. The resize: `render/present.js` applies a resize 150 real ms after the last event (the phone's storms), and the
+  sweep's 10 ticks run in less.
+- **Fix:** the numeral is `well-pool-numeral`; the sweep waits 250 real ms before it measures. After: the Dunemaw sweep 220 of 220.
+- **Rule:** 390
