@@ -12,7 +12,7 @@
 // Prior art: Super Smash Bros.' damage percent, knockback and blast zones; the Lantern Wisp's body (creatures/wisp/lanternwisp.js: a
 // kinematic capsule, a mind that sets `want`, a body that moves and poses).
 //
-//   const D = new StrawDummies(well)   D.spawn(at, arena)   D.swipe(c)   D.update(dt)   D.clear()   D.list
+//   const D = new StrawDummies(well)   D.spawn(at, arena, { kind, name, body, mind, size })   D.swipe(c)   D.update(dt)   D.clear()   D.list
 //   arena: { x0, x1, top, z, stage }   events: well.dummy.ko { stage, percent, by }, well.dummy.trophy { kind, by }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -34,15 +34,18 @@ let NEXT = 1;
 export class StrawDummies {
   constructor(well) { this.well = well; this.game = well.game; this.list = []; this.mind = dummyMind(this); }
 
-  spawn(at, arena) {
-    const g = this.game, M = this.mind, H = DUMMY.height, R = DUMMY.radius;
-    const model = new StrawmanModel(); model.group.scale.setScalar(DUMMY.scale); arena.into.add(model.group);
+  /** `opts` lets a kin of the dummy (Calissa's training targets, targets.js) stand on this spawn: { kind, name, body, mind, size }.
+   *  `body()` returns a model with a `group` (a StrawmanModel's shape), `mind` a dummyMind-shaped { traits, drives, actions }, `size`
+   *  { height, radius, scale }; each falls back to the straw dummy's. The kind is carried on `well.dummy.ko` and `well.dummy.trophy`. */
+  spawn(at, arena, opts = {}) {
+    const g = this.game, M = opts.mind || this.mind, Z = opts.size || {}, H = Z.height ?? DUMMY.height, R = Z.radius ?? DUMMY.radius;
+    const model = opts.body ? opts.body() : new StrawmanModel(); if (!opts.body) model.group.scale.setScalar(Z.scale ?? DUMMY.scale); arena.into.add(model.group);
     const w = g.physics.world;
     const rb = w.createRigidBody(RAPIER.RigidBodyDesc.kinematicPositionBased().setTranslation(at.x, at.y + H / 2, at.z));
     const col = w.createCollider(RAPIER.ColliderDesc.capsule(H / 2 - R, R).setCollisionGroups(groups(G.CRITTER, 0xffff)), rb);
     const traits = rollTraits(M.traits);
     const c = {
-      type: 'creature', kind: 'dummy', name: 'straw dummy', training: true, id: NEXT++, model, rb, col, arena, home: at.clone(),
+      type: 'creature', kind: opts.kind || 'dummy', name: opts.name || 'straw dummy', training: true, id: NEXT++, model, rb, col, arena, home: at.clone(),
       pos: at.clone(), vel: new THREE.Vector3(), want: new THREE.Vector3(), face: -1, radius: R, height: H, alive: true, out: 0,
       hp: 999, maxHp: 999, poise: DUMMY.poise * (traits.bold ?? 1), stunFor: DUMMY.stunFor, traits, rel: new Map(),
       percent: 0, tumble: 0, grounded: false, attack: null, chain: 0, lastT: -99, lastBy: null,
@@ -86,7 +89,7 @@ export class StrawDummies {
     const g = this.game, W = this.well; if (!c.alive || c.out > 0) return;
     const p = THREE.MathUtils.clamp(power, 0.5, 3), now = g.events?.time ?? 0;
     if (by === 'courier') {
-      if (c.percent >= PERCENT.trophyAt && c.tumble > 0) { W.verb('trophy'); g.events?.emit('well.dummy.trophy', { kind: 'dummy', by }); this.out(c, null, 'trophy'); return; }
+      if (c.percent >= PERCENT.trophyAt && c.tumble > 0) { W.verb('trophy'); g.events?.emit('well.dummy.trophy', { kind: c.kind, by }); this.out(c, null, 'trophy'); return; }
       c.chain = now - c.lastT < 0.9 ? c.chain + 1 : 1; W.noteString(c.chain);
       if (c.chain >= 3) W.verb('string');
       if (!c.grounded && c.tumble > 0) W.verb('juggle');
@@ -125,7 +128,7 @@ export class StrawDummies {
     const g = this.game; if (c.out > 0) return;
     if (ko) {
       const by = c.lastBy === 'courier' && (g.events?.time ?? 0) - c.lastT < DUMMY.credit ? 'courier' : 'environment';
-      g.events?.emit('well.dummy.ko', { stage: c.arena.stage, percent: Math.round(c.percent), by });
+      g.events?.emit('well.dummy.ko', { stage: c.arena.stage, kind: c.kind, percent: Math.round(c.percent), by });
       if (by === 'courier') this.well.verb('ringOut');
       this.well.onKO?.(by);
     }
