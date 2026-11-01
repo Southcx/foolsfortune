@@ -1,0 +1,220 @@
+# Spirit Cooking (a plan, not built)
+
+South, 2026-11-01: "Cooking is something worth looking at too. Call it 'Spirit Cooking' and do extensive design research on other
+cooking games like cooking mama, battle chef brigade, fantasy life i, and so forth for how the minigames should play and techniques you
+can adopt. Use real cooking techniques as this is a great opportunity to slip in some real world details on processes, even if the
+implementation is fantasy or unrealistic. Your intuition is very correct that this is VERY much associated with Soul Alchemy."
+
+The research, every number with its source, is `research/SPIRIT-COOKING.md`. It covers about 25 games, 21 real techniques with their
+numbers, the flavour-to-feeling traditions, and a pitfall table. This plan is the design drawn from it. Section 12 lists what waits on
+South.
+
+## 1. What it is, in one breath
+
+You cook a dish in two to four short moves, each a real technique:
+- sear until the surface is dry and brown;
+- take syrup off at the soft ball;
+- never let the kombu boil.
+
+Each move is judged by how near you held its heart. The dish served is a **held draught**: a feeling, its strength and how long it
+lasts, which bends the next presses at the Athanor. Cooking is the hand and the clock; Soul Alchemy is the eye. One feeds the other.
+
+## 2. Why this shape (the decisions, each with its prior art)
+
+1. **The hand-and-clock craft, so the press stays the eye's.** Soul Alchemy is already a map craft: a soul colour walked on the colour
+   wheel, Potion Craft's marker. A second map craft (Atelier's grids) would be a re-skin. Cooking trains *time and temperature*
+   instead: hold a value in a band, lift at the tune, stop at the colour. It is a different skill feeding the same substrate.
+2. **A dish is two to four moves, graded as their average** (Cooking Mama: under 10 s a step, the dish the average of its steps). A
+   clean run is quick: skill skips grind.
+3. **Skill is holding a value inside a band, and the band is Soul Alchemy's swatch.**
+   - Each move has a heart and a width.
+   - Practice widens the width toward a ceiling, and never the heart: SOUL-ALCHEMY.md 3.2's `r = r_rank + (ceiling - r_rank) x
+     practice / 100`, and its true firing.
+   - A **true cook** is the heart of every move.
+   - Grind closes the gap; skill skips it.
+4. **The tell is the interface, never a thermometer.** Real cooks judge by what the food does, and so does the game. A thermometer is a
+   late-earned knack (assists are knacks). The tells:
+   - the cold-water test (a spoon of syrup dropped in: a thread, a soft ball, a brittle crack);
+   - the roux's colour;
+   - the rinse water clearing;
+   - a sauce coating the back of a spoon;
+   - the steam's first wisp.
+5. **"Critical" is a skill state, never a die.** Breath of the Wild rolls 5% per material; here the true cook is the critical. A time
+   window, like the Blood Moon's, is a flourish (a longer hold), never the only way to the best dish.
+6. **One trade-off a dish, neither end best.** A darker roux has more flavour and a quarter of the thickening. A harder sear has more
+   Maillard and more risk. A longer ferment has more depth and less bite. This is MYCELIUM.md's refusal of dominant choices.
+7. **Failure is comedy, cheaply fixed** (Mama will fix it). A failed dish is a "dubious dish": a little pool back, no draught. It feeds
+   the World Mushroom, the garden's sink, or is rotted back to materials. Nothing spoils, there is no hunger meter, nothing perishes.
+8. **Never a chore** (Fantasy Life's Auto Mode, Cook, Serve, Delicious's parallel clock):
+   - Long steps (a simmer, a ferment, a proof, a bake) run on the game clock while you do other things.
+   - A mastered dish can be batched, up to ten.
+   - **Auto-cook is a knack**, earned by true cooks of that dish, at one grade below your best.
+
+## 3. Where you cook
+
+- **The hearth in the Spirit Garden.** A plain cooking station beside the Athanor, a feature the hand places. The garden is cozy, and
+  the press is a few steps away, which is where a draught is spent.
+- **A portable clay pot later** (Tears of the Kingdom's), for cooking at a Shrine.
+- **The pot is a part you chose.** It is made and glazed at the kiln (a sink), and its wall decides its heat:
+  - a thick wall answers the dial late and holds steady, so its bands are wider and slower;
+  - a thin one is quick and narrow.
+  - That is how real clay pots behave (a donabe is even and slow, heavier is steadier) and it is base change bad, modifiers good.
+- **A new pot must be seasoned with rice porridge before its first use**, as a real donabe is (medome: rice at about a fifth of the
+  water, an hour's simmer, cooled overnight). It is a slow, nearly free ritual and a natural first-hour step. It is called "medome" or
+  "sealing the pot", never "seasoning" (section 10).
+- **Never thermal shock.** A hot pot set down cold cracks (tagines and donabes do). A cracked pot goes back to the kiln.
+
+## 4. The moves (one real technique each, its heart, its tell)
+
+Each move is one gesture, chosen so no two moves feel the same. The research's main complaint about Fantasy Life i was copy-paste
+minigames. Every gesture is touch-first: a thumb with a wide good zone.
+
+| move | the real process (research B) | gesture | heart and band | tell | trade-off |
+|---|---|---|---|---|---|
+| **cut** | knife cuts by size: brunoise 3 mm, small dice 5 mm, julienne 3 x 3 x 30-50 mm, chiffonade 4-10 mm | strokes across, in time | the target size | the pieces as they fall | a finer cut cooks faster, a coarser one keeps bite |
+| **sear** | Maillard 140-165 C; water holds a surface at 100 C, so dry it first | hold, then lift | lift in the brown, before black | the sizzle quietens as the surface dries; the colour | harder is more flavour and more risk |
+| **simmer** (dashi) | kombu goes bitter if boiled; take it out at the first steam (about 60-80 C); katsuobushi steeps 3 min off the heat | do nothing correctly: keep the dial down | under the boil | the first wisp of steam; a bubble is too far | a longer steep is deeper and more bitter |
+| **sugar** | the stages by the cold-water test: soft ball 112-116 C, hard crack 146-154 C, burnt 177 C | drop a spoon in water to read it | the asked stage | the drop in the water: thread, ball, crack | a harder stage keeps longer and is less tender |
+| **roux** | equal flour and fat by weight, cooked white, blond, brown, dark; a chocolate roux has a quarter of white's thickening | stir, and stop | the asked colour | the colour; a scorched smell is too far | darker is more flavour and less body |
+| **emulsion** | oil into yolk slowly; hollandaise butter at 60-63 C, eggs curdle at 71-76 C; rescue with a fresh yolk and a spoon of water | pour rate against whisk rate (a drag against a ring) | a pour the whisk can take | glossy and thick; split and greasy | the one rhythm move; a rescue costs a yolk |
+| **rice** | wash until the water runs almost clear; soak 20-30 min; water 1 : 1.1-1.2 | rinse, pour off, until clear; then the ratio | clear water; the line on the pot | the rinse water's cloudiness | none: rice is the honest move |
+| **knead** | the windowpane test: stretched thin, light through it without a tear | fold and push in a rhythm | the windowpane | a stretched piece against the light | over-kneaded is tight |
+| **proof** | bulk proof warm, about 21-23 C over hours; too warm races to overproof | patience on the game clock | the dough doubled | it springs back slowly when pressed | longer is more flavour, risks collapse |
+| **ferment** | koji (Aspergillus oryzae) at about 30 C for about 48 h; it heats itself; harvest before it spores | tend a thermostat, now and then, on the game clock | about 30 C, never 36 | its smell and its white bloom | longer is deeper and sweeter, less bite |
+| **steep** (tea) | green 70-80 C for 1-3 min, oolong 85-95 C, black near boiling 3-5 min | wait for the water's own tell, then pour | the leaf's band | the bubbles ("shrimp eyes", "crab eyes", "fish eyes") | hotter is stronger and more bitter |
+| **smoke** | cold smoking under 30 C (never past 43 C, so the fish does not cook); hot smoking 52-93 C | keep the fire low and fed | the asked band | the smoke's colour: thin blue good, white heavy bad | longer is stronger and drier |
+| **bleed** (ikejime) | a fish spiked, its spine wired and bled stays out of rigor for hours and tastes cleaner | two calm presses, at the fish's stillness | the stillness | the fish going still | a better fish, a slower catch |
+| **serve** | setting it out | one placing gesture | none: a look, never a power | none | none |
+
+Fourteen moves. A dish uses two to four of them, from its family (section 5).
+
+## 5. The dishes (families and first dishes)
+
+A dish is a short list of moves and its ingredients. Families keep the moves from repeating in a row:
+
+- **Bread** (knead, proof, the oven): the first dish. The kiln's bread, the clay world's own. Bread scoring and steam give oven spring
+  in the first ten minutes.
+- **Rice** in a donabe (rice, simmer): the second. It seals the new pot's lesson.
+- **Broth** (simmer, steep): dashi first. Umami's dish (section 6).
+- **Sear** (cut, sear, serve): fish from the Weir, bled or not.
+- **Sauce** (roux or emulsion, simmer): the mother sauces as five dishes to find.
+- **Sweet** (sugar): candy by its stage. Desire's dish.
+- **Ferment** (ferment): koji from the mycelium's koji bed (MYCELIUM.md 3). Its long clock is the game's.
+- **Tea** (steep): the quickest dish. A leaf's band is a swatch ring.
+- **Smoke** (smoke): fish and the Wells' haul.
+
+**Recipes are found three ways**, and never by blind failure (Rune Factory's hidden gates are the pitfall):
+- **By experiment.** The pot recognises a combination and keeps it (Breath of the Wild's compendium, Tears of the Kingdom's recipe
+  log). The Codex keeps every one from the start: the wiki problem is refused.
+- **By tasting.** A dish one of the folk or a spirit gives you teaches its recipe (Final Fantasy XV's Ignis).
+- **By repair.** A recipe handed over with lines missing, where the order of moves is the puzzle (Venba). It comes on a cracked clay
+  slab, called a recipe slab, never an ostracon.
+
+## 6. Flavour and feeling
+
+Each ingredient adds to a taste vector. The dish's **dominant** taste picks its feeling. Its **balance** sets the grade, as Salt Fat
+Acid Heat teaches: a dish with one loud flavour and nothing to answer it is flat or harsh. The five native feelings follow the garden's
+canon (Wu Xing, Espada's ruling: SPIRIT-GARDEN.md), because that is already taught.
+
+| feeling | taste | why |
+|---|---|---|
+| Wonder (wood) | sour, and cooling (mint, citrus zest) | Wu Xing's wood is sour; cooling is a real sensation (TRPM8) |
+| Mirth (fire) | bitter in a pinch: roast, char, coffee, cocoa | Wu Xing's fire is bitter; a learned pleasure (bittersweet) |
+| Desire (earth) | sweet: honey, fat, richness | Wu Xing's earth is sweet; love is tasted sweet in the research |
+| Grief (metal) | the alliums' tears: onion, leek, horseradish | Wu Xing's metal is pungent and grief; an onion's tear compound is literally the lachrymatory factor |
+| Dread (water) | salty: brine, the sea, preserved things | Wu Xing's water is salty and fear; salt is what keeps things from rotting |
+| Gall | bitter in a heap, and astringent: unripe fruit, over-steeped tea | bitterness you can taste (LORE.md); astringency warns off unripe fruit |
+| Fury | capsaicin's burn: chilli, mustard, ginger | a pain, not a taste (TRPV1), sought for the rush |
+
+Not feelings:
+- **Umami** sets how long the draught holds. Dashi's kombu and katsuobushi together multiply it, the real synergy Ikeda found in 1907.
+- **Kokumi** (body, from ferments: soy, miso) sets its strength.
+- **Fat** is the carrier: whether two feelings are felt at once as an agate (GLOSSARY section 2).
+
+Bitter as two feelings by dose teaches something true: bitterness is the toxin alarm, pleasant only in a pinch. Gall is never a bad
+ingredient, only an overdose. This waits on South's ruling (section 12).
+
+## 7. What a dish gives
+
+- **A held draught**, one at a time (Stardew's one food buff: eating another replaces it):
+  - its feeling: the dish's dominant taste;
+  - its strength: the grade, times kokumi;
+  - its hold: the grade, times umami.
+  - It feeds the press through the existing `draughtPull`: each material pressed is pulled a further 0.08 x the strength toward the
+    feeling (SOUL-ALCHEMY.md 3.4).
+  - It shows on the Lachrimeter and the Sight, as a draught already does (two avenues).
+  - A draught today fades over a real minute. A cooked one holds longer by its grade (section 9's numbers).
+- **Seasoning**, to the attributes whose skill cooking is, at most 10 a game hour from cooking, as every source (SOUL-ALCHEMY.md 6):
+  - **Focus**: a move's band held (sustained attention).
+  - **Dexterity**: a cut to its size (hand speed).
+  - **Perception**: a taste read right before the last adjustment (anticipation).
+  - So: cook well, a swatch widens, the press gets kinder. That is the loop South named.
+- **Bonds.** A spirit's favourite dish raises its bond faster. Spirits already like one feeling's fruit and dislike the one that
+  overcomes it (MYCELIUM.md 5). The folk have orders (Dave the Diver's sushi bar). A sibling at the pot adds half or a quarter of its
+  skill (Fantasy Life i's buddies).
+- **The grade:** four steps, Good, Great, Perfect, True. Each is a visible threshold on the dish's average, and True is a true cook. No
+  999 cap (Atelier's).
+
+## 8. The last move: taste and adjust
+
+Every dish ends with up to two tastings, a spoon each, and one adjustment:
+- a pinch of salt;
+- a squeeze of acid;
+- fat;
+- heat.
+
+The tasting reads the dish's balance in the dish's own tells (too flat, too sharp, too heavy), never as a number. A right adjustment
+lifts the grade one step. This is Salt Fat Acid Heat's lesson, the one move every real cook makes. Reading the dish right is
+Perception's seasoning.
+
+## 9. The numbers (first guesses, to be priced in `scripts/economy.mjs`)
+
+| thing | number | why |
+|---|---|---|
+| a move's length | 3 to 10 real s (patience moves on the game clock) | Cooking Mama's under 10 s |
+| a move's band | its heart plus or minus a width; the width grows by practice to a ceiling | Soul Alchemy's swatch rule |
+| the grade's steps | average of the moves at 0.6 Good, 0.75 Great, 0.9 Perfect; True a heart in every move | four visible steps |
+| a draught's hold | 1 real minute (today's) x (1 + umami) x the grade's 1, 1.5, 2, 3 | a cooked draught outlasts a drunk one |
+| a draught's strength | the grade's 0.4, 0.6, 0.8, 1, x (1 + kokumi x 0.25) | `draughtPull` x strength is the press's lever |
+| batch | up to 10, once a dish is cooked True three times | Fantasy Life's batch after mastery |
+| auto-cook | a knack, by True cooks of that dish; one grade below your best | assists are knacks |
+| seasoning from cooking | at most 10 a game hour, shared across the three attributes | SOUL-ALCHEMY.md 6's cap |
+| a pot | a kiln's firing price; thick or thin wall | a sink you choose |
+
+**What it is worth.** A dish is not a faucet of cubes: it pays in draughts, seasoning and bonds. The economy check is that a draught's
+lift to the press does not out-earn the press's own tiers. That is the same test as the graft's x1.62 (ECONOMY.md).
+
+## 10. Words (glossary collisions to avoid)
+
+Several words are already taken:
+- **Seasoning** is Soul Alchemy's meter. Food is "salted" or "adjusted to taste".
+- **Plate** is the Veritome's photograph. A dish is "served", never "plated".
+- **Station** is the course's and the kiln's. Say "the cooking station".
+- **Firing** is the kiln's and the press's. Cooking verbs are cook, simmer, bake.
+- **Kiln** is the workshop's. A bread oven is "the oven".
+- **Ostracon** is taken. A broken recipe comes on "a recipe slab".
+- **Recipe** is also decor's and the caster shells'. Say "a dish's recipe".
+- **Provision** is a material kind. A dish is not one unless ruled so.
+
+Plain names throughout until South calls it settled: the cooking station, a dish, a move, the taste-and-adjust, a held draught.
+
+## 11. Build order (when South says go)
+
+1. **The rules** (Dovina, `progress/cooking/`): moves as data (heart, width, gesture, tell, trade-off), dishes, the grade, the taste
+   vector and the flavour map, the draught it serves, seasoning. Plus `scripts/cooking.mjs`, which prices it against the aim.
+2. **The station and the moves' runtime** (Petra): the hearth as a garden feature; each move a small minigame on the input layer; the
+   game-clock moves; the draught laid as the existing one.
+3. **The looks** (Calissa): the pots and their glazes, each move's tell drawn honestly (the syrup in the cold water, the roux's ramp,
+   the rinse water, the steam), the served dish, the hearth.
+4. **The sounds** (Wanda): the sizzle quietening as a surface dries, the boil's first bubble, the kettle's stages of bubbles, the whisk.
+   Each tell has two avenues.
+5. **The words** (Espada): dish names, recipe slabs, a folk's broken family recipe.
+6. **Bread first, then rice, then broth.** Each family lands as its own round, and South plays each before the next.
+
+## 12. For South
+
+1. Is a dish a **held draught**, one at a time, feeding the press (section 7), or a buff of its own kind?
+2. **Bitter by dose**: Mirth in a pinch, Gall in a heap? And **Fury**: chilli's burn (this plan) or sour (the tradition's wood)?
+3. **The hearth in the Spirit Garden** first, and the portable pot later?
+4. **Seasoning from cooking:** Focus, Dexterity, Perception?
+5. A **sibling at the pot**: from the start, or later?
