@@ -58,7 +58,7 @@ export class TouchStrip {
     if (!t) {
       const onPress = e.cycle ? (tid, down, inside) => this.cyclePress(tid, down, inside)
         : e.id === MORE ? (tid, down, inside) => { if (!down && inside) { this.folded = !this.folded; this.relayout(); } }
-        : e.id === 'skiff' ? (tid, down, inside) => { if (!down && inside) this.game.touchUI?.topBar?.open('skiff'); } // (what the top bar's SKIFF presses: folded under MENU on a phone)
+        : e.id === 'skiff' ? (tid, down) => this.game.touchUI?.topBar?.hold('skiff', down) // (what the top bar's SKIFF presses: folded under MENU on a phone)
           : (tid, down) => touchTiles.report(this.game, tid, down);
       t = new TouchTile(e.id, { size: STRIP.size, glyph: e.glyph ?? null, word: e.word ?? null, corner: e.corner ?? null, tint: e.tint ?? null, fit: true, onPress }); this.tiles.set(e.id, t);
     }

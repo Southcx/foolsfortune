@@ -4881,3 +4881,12 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the window drives its own `requestAnimationFrame` loop while it is open (real seconds), and stops when it closes. After: a
   probe clicking the buttons in real time kneaded on the pulse, baked to colour in 16.6 real s and served a PERFECT mint loaf.
 - **Rule:** 392
+
+### 2026-11-01 · The slip jelly mount could not be chosen on touch (ui/touch/topbar.js, strip.js; found by Dovina's touch audit)
+- **Seen:** on a phone the SKIFF tile always called the last mount. The mounts' choice never opened, so the slip jelly was never offered.
+- **Cause, as measured:** the tile sent Y as a 60 ms tap (`touchShell.open`: a keydown, then a keyup 60 ms later), whatever the finger
+  did. The choice opens only after Y has been held for 0.35 real s (`courier/jellymount/jellymount.js`), so no touch could reach it.
+- **Fix:** the SKIFF tile holds Y for as long as the finger is down (`touchShell.hold`, `topBar.hold`). A tap still calls the last
+  mount; a hold opens the choice, steered by the stick. After: holding Y headless for 40 frames opened the choice offering the jelly,
+  and letting go called it (`jellyMount.last` 'jelly').
+- **Rule:** 393

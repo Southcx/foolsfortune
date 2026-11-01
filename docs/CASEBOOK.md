@@ -1092,3 +1092,6 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 392. **A window over a paused game keeps its own clock.** Anything shown while the index or the Codex is open
   animates on its own animation frame, since the frame's tick (hand lines and `game.systems` alike) does not run under a modal. A probe
   that calls a window's methods by hand proves nothing about its clock: click it in real time.
+393. **A touch control holds a key as long as the finger does.** A verb whose key is read held (a
+  choice, a charge, a guard) is never sent from a tile as a fixed tap; the tile sends down on press and up on release.
+

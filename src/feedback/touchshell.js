@@ -15,7 +15,7 @@
 //
 // Prior art: the virtual gamepad layer of the mobile ports (the view reports, the input layer decides); VirtualKeys (coop/sibling.js).
 //
-//   game.touchShell = new TouchShell(game)   .open(what)   .tile(id, down)   .verbs (the pause menu's)   OPENS (what -> code)   events read: touch.art, touch.mod, touch.size
+//   game.touchShell = new TouchShell(game)   .open(what)   .hold(what, down)   .tile(id, down)   .verbs (the pause menu's)   OPENS (what -> code)   events read: touch.art, touch.mod, touch.size
 // ---------------------------------------------------------------------------------------
 
 import { PauseVerbs } from './help/pauseverbs.js';
@@ -47,6 +47,14 @@ export class TouchShell {
     if (g.touch) g.touch.control(id, down); else g.actions?.press('touch', id, down); // (through the driver: a tool's own first, core/touchtools.js)
   }
   /** A top bar tile tapped (ui/touch/topbar.js calls it). */
+  /** A key held for as long as the finger is: the SKIFF tile's Y, so a tap calls the last mount and a hold shows the mounts' choice
+   *  (0.35 real s, courier/jellymount/jellymount.js; a 60 ms tap could never reach it: Dovina's touch audit, 2026-11-01). */
+  hold(what, down) {
+    const code = OPENS[what]; if (!code) return;
+    const opts = { code, key: code.slice(3).toLowerCase(), bubbles: true };
+    dispatchEvent(new KeyboardEvent(down ? 'keydown' : 'keyup', opts));
+  }
+
   open(what) {
     const g = this.game;
     if (what === 'pause' || what === 'settings') return g.pause?.();

@@ -60,7 +60,7 @@ export class TouchTopBar {
   constructor(game) {
     this.game = game; this.onOpen = null; this.tiles = new Map(); this.shown = false; this.ids = []; this.folded = true; this.touched = 0;
     this.shelf = shelf();
-    for (const id of [...TOP_BAR.ids, 'pause']) this.tiles.set(id, new TouchTile(`top.${id}`, { size: TILE.small, glyph: id, word: null, onPress: (_, down, inside) => { if (!down && inside) { if (id !== 'pause') this.fold(true); this.open(id); } } }));
+    for (const id of [...TOP_BAR.ids, 'pause']) this.tiles.set(id, new TouchTile(`top.${id}`, { size: TILE.small, glyph: id, word: null, onPress: id === 'skiff' ? (_, down) => this.hold(id, down) : (_, down, inside) => { if (!down && inside) { if (id !== 'pause') this.fold(true); this.open(id); } } }));
     this.tiles.set('menu', new TouchTile('top.menu', { size: TILE.small, glyph: 'menu', word: null, onPress: (_, down, inside) => { if (!down && inside) this.fold(!this.folded); } }));
     this.tiles.set('log', new TouchTile('top.log', { size: TILE.small, glyph: 'chat', word: null, onPress: (_, down, inside) => { const L = game.hudLayout?.touchLog; if (!down && inside && L) { if (game.hudLayout.duelR) L.setSheet(!L.sheet); else L.fold(!L.folded); } } })); // (the log's fold on the bar beside MENU: South, 2026-10-27, it stood alone under the bar)
   }
@@ -77,6 +77,13 @@ export class TouchTopBar {
   get items() { return this.folded ? ['menu', 'log', 'pause'] : ['menu', 'log', ...this.ids, 'pause']; }
 
   /** A window asked for: said on the bus, handed to the shell, and to the listener. */
+  /** SKIFF: Y held while the finger is down (a tap the last mount, a hold the mounts' choice, steered by the stick). */
+  hold(what, down) {
+    const g = this.game;
+    if (down) { this.fold(true); g.events?.emit?.('touch.open', { what, by: 'courier' }); }
+    try { g.touchShell?.hold?.(what, down); } catch (e) { console.warn('touchShell.hold', e); }
+  }
+
   open(what) {
     const g = this.game;
     g.events?.emit?.('touch.open', { what, by: 'courier' });
