@@ -23,7 +23,8 @@
 // Prior art: Firebase Performance Monitoring's per-session traces, MetricKit's daily payloads (iOS), the Web Vitals library's report on
 // visibilitychange, and a crash reporter's "previous session ended unexpectedly" breadcrumb (Crashlytics, Sentry).
 //
-//   ?hide=word,word   draws whose material or object name holds a word are skipped (a suspect tried on the phone, a load each)
+//   ?hide=word,word   draws whose material or object name holds a word are skipped (a suspect tried on the phone, a load each);
+//                     `field.hide` the same at run time (the A/B: debug/perfab.js)
 //   const field = new FieldReport(game, { renderer, cloud })   field.frame(rawDt)   (each frame, boot/frame.js)
 // ---------------------------------------------------------------------------------------
 import { paceOf } from '../progress/pace.js';
@@ -71,11 +72,12 @@ export class FieldReport {
     const R = renderer, direct = R?.renderBufferDirect;
     // `?hide=a,b`: draws whose material or object name (or material type) holds one of the words are skipped, so a suspect can be tried
     // on the phone itself, a load each (the gate's bisection, never a player's setting)
-    const hide = (typeof location !== 'undefined' ? new URLSearchParams(location.search).get('hide') || '' : '').toLowerCase().split(',').map((w) => w.trim()).filter(Boolean);
-    if (hide.length) this.moment(`hiding ${hide.join(', ')}`);
-    const hidden = (m, o) => { const k = `${m.name} ${m.type} ${o?.name || ''}`.toLowerCase(); return hide.some((w) => k.includes(w)); };
+    // (also set at run time by the A/B, debug/perfab.js: `field.hide = [...]`)
+    this.hide = (typeof location !== 'undefined' ? new URLSearchParams(location.search).get('hide') || '' : '').toLowerCase().split(',').map((w) => w.trim()).filter(Boolean);
+    if (this.hide.length) this.moment(`hiding ${this.hide.join(', ')}`);
+    const hidden = (m, o) => { let k = `${m.name} ${m.type} ${o?.name || ''}`; for (let p = o?.parent, d = 0; p && d < 6; p = p.parent, d++) if (p.name) k += ` ${p.name}`; k = k.toLowerCase(); return this.hide.some((w) => k.includes(w)); }; // (its own names and its ancestors': most draws are unnamed parts of a named group)
     if (direct) R.renderBufferDirect = (camera, scene, geometry, material, object, group) => {
-      if (hide.length && material && hidden(material, object)) return;
+      if (this.hide.length && material && hidden(material, object)) return;
       this.drawsNow = (this.drawsNow || 0) + 1; this.vertsNow = (this.vertsNow || 0) + (geometry?.index?.count ?? geometry?.attributes?.position?.count ?? 0) * (object?.isInstancedMesh ? object.count : 1);
       if (this.watching && material && !this.drawn.has(material.uuid)) {
         this.drawn.add(material.uuid);
