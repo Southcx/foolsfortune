@@ -17,8 +17,9 @@
 //   game.systems.run('looks', dt, rawDt)   (the frame, at the phase's point)   .list(phase) -> names   PHASES
 // ---------------------------------------------------------------------------------------
 
-/** The phases, in the order the frame runs them. Each is a fixed point in boot/frame.js's tick. */
-export const PHASES = ['looks'];
+/** The phases, in the order the frame runs them. Each is a fixed point in boot/frame.js's tick: `looks` after the rooms' runtimes
+ *  (the crossing, the open sea, the garden), `marks` after the effects (the world's dressers and each tool's marks). */
+export const PHASES = ['looks', 'marks'];
 
 export class Systems {
   constructor() { this.phases = new Map(PHASES.map((p) => [p, []])); }

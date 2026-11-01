@@ -349,12 +349,6 @@ export function bootFrame(game, made) {
     game.auras.update();
     game.temper.update();
     game.vfx.update(game.rawDt || dt);
-    game.racewayLooks.update(game.rawDt || dt);
-    game.dunesDress.update(game.rawDt || dt); game.racewayDress.update(game.rawDt || dt); // (vfx/dunes/, vfx/raceway/)
-    game.skiffSlipArc.update(game.rawDt || dt);
-    game.jellyMountLook?.update(game.rawDt || dt); // (the slip jelly mount's body, puddles and the mounts' ring, after the techs' tick: vfx/jellymount/look.js)
-    game.worldLooks.update(dt);
-    game.racewayCavern.update(game.rawDt || dt); game.racewayFog.update(game.rawDt || dt); game.racewayProps.update(game.rawDt || dt); game.racewayPark.update(); game.racewaySiphons.update(game.rawDt || dt); game.racewayMade.update(); game.trackEditorMarks.update(game.rawDt || dt); // (the vein lanes, the pots, the antlion chaser, the patches: vfx/racewayprops.js)
     game.cine.update(game.rawDt || dt);
     (game.chestFx ||= new ChestFx(game)).update(dt); // (the chest's opening: Mesh Create's effect meshes, vfx/chestfx.js)
     game.releaseCrack.update(game.rawDt ?? dt); // (after the vessel's cracks are set: it holds a release's back for its pressure beat)
@@ -363,12 +357,9 @@ export function bootFrame(game, made) {
     game.wireCompass.update(dt);
     (game.vaneHud ||= new VaneHud(game, game.wireCompass)).update(dt); // (the Dreamvane's own marks on the compass: vfx/vanehud.js)
     (game.crucibelleHud ||= new CrucibelleHud(game, game.wireCompass)).update(dt); // (the Crucibelle's pendulum on the compass, the beat for the eye: vfx/crucibellehud.js)
-    game.hookMark.update(game.rawDt ?? dt); // (the hook's mark, while the hook form is in the hands)
     (game.veritomeFrame ||= new VeritomeFrame(game)).update(game.rawDt || dt); // (the lens's frame: what a plate would hold, in the third person while the Veritome is drawn: vfx/veritomeframe.js)
     (game.tollReach ||= new TollReach(game)).update(game.rawDt ?? dt); // (the Crucibelle's toll's reach at the feet, lit on the beat: vfx/tollreach.js)
-    game.bracelets.update(game.rawDt ?? dt); // (the bracelet's glow: vfx/braceletwear.js)
-    game.pneukaJarLook.update(game.rawDt ?? dt); // (the Jar in the vessel's looks, live; its pendant's swing)
-    game.lockheartReach.update(game.rawDt ?? dt); game.carryThrowMark.update(game.rawDt ?? dt); game.lobArcMark.update(game.rawDt ?? dt); game.flareReveal.update(); // (each tool its own marks: the Lockheart's, and empty hands' throw)
+    game.systems.run('marks', dt, game.rawDt ?? dt); // (the world's dressers and each tool's marks, joined where each was built: core/systems.js)
 
     game.mood.end(game.rawDt); // (and the room's lights borrowed again, just before the draw)
     game.zones.update(game.rawDt); // (what is drawn: the zone the camera is in, and what can be seen from it)

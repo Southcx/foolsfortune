@@ -69,6 +69,7 @@ export function bootProgress(game, made) {
   game.bracelet = new Bracelet(game); // (the ring's sockets and charms: progress/bracelet.js; BRACELET.md)
   game.bracelets = installBracelets(game); // (the bracelet, working name: worn at the hand's wrist, the Pneuka Jar's neck, the Courier's left wrist; driven from the bus: vfx/braceletwear.js)
   game.pneukaJarLook = new PneukaJarLook(game); // (the Pneuka Jar fired in the vessel's looks, and its own lid, handles, shape, foot, pendant and hop's burst: vfx/pneukajar/look.js)
+  for (const name of ['bracelets', 'pneukaJarLook']) game.systems.add('marks', game[name], { clock: 'raw', name }); // (core/systems.js)
   game.voyage = new Voyage(game); // (the Emocean hop's systems: the hold, the crossing, the reckoning: progress/voyage.js)
   game.garden = new Garden(game); // (the Spirit Garden: the dividend's slots, the beds, the long sink: progress/garden.js)
   game.sporeBeds = new SporeBeds(game, { itemOf }); // (the mycelium's beds: progress/sporebeds.js, docs/plans/MYCELIUM.md)

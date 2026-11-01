@@ -69,6 +69,7 @@ export async function bootCreatures(game, made) {
   game.rareFinds = new RareFinds(game); // (an area's condition-bound find: the ridges' fulgurite, the ruins' Wisp: world/dunes/rarefinds.js)
   game.dunesDress = new DunesDress(game); game.racewayDress = new RacewayDress(game); // (the living dressing, looks only: the Dunes' dust devils, mirage, geodes and fulgurites; the Raceway's spectators, banners, lanterns and fireworks: vfx/dunes/, vfx/raceway/)
   game.jellyMountLook = new JellyMountLook(game); // (the slip jelly mount's body, its moments and the mounts' ring, over Petra's runtime: vfx/jellymount/)
+  for (const name of ['dunesDress', 'racewayDress', 'jellyMountLook']) game.systems.add('marks', game[name], { clock: 'raw', name }); // (core/systems.js)
   game.folk = new Folk(game, clapG);
   placePeople(game, game.folk);
   game.dialogue = new Dialogue(game);
