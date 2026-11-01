@@ -23,7 +23,7 @@ import { TRUMPS } from './types.js';
 
 export const CONSTITUTION = {
   slipjelly: { affinity: 'impact', body: 0.85, line: 'a body of slip: force made flesh' },
-  greatjelly:{ affinity: 'impact', body: 0.9, line: 'the Great Slip Jelly: slip grown round a broken urn' },
+  greatjelly:{ affinity: 'impact', body: 0.9, line: 'the Great Slip Jelly: slip grown round a broken urn' }, // (the FOE spawns as a slipjelly (greatjelly.js J.spawn), so it reads that row: the same type; this row is for a kind of its own)
   clutch:    { affinity: 'impact', body: 0.8, line: 'a clutch of slip, not yet minded' },
   rolypoly:  { affinity: 'impact', body: 0.75, line: 'a shell that rolls' },
   dummy:     { affinity: 'impact', body: 1, line: 'straw and stitching' },
@@ -33,6 +33,12 @@ export const CONSTITUTION = {
   clapper:   { affinity: 'influence', body: 0.6, line: 'clay folk: they clap and they follow' },
   sibling:   { affinity: 'influence', body: 0.6, line: 'a Courier, a division\'s voice in clay' },
   beast:     { affinity: 'ego', body: 0.55, line: 'an Egregore: a myth that knows what it is' },
+  // the open sea's beasts register by their SEA_BEASTS id (Petra, 2026-11-01): each an Egregore (Ego), its body by how much of it is flesh
+  seaSerpent:   { affinity: 'ego', body: 0.7, line: 'the sea serpent: a myth with scales' },
+  akhlut:       { affinity: 'ego', body: 0.75, line: 'the akhlut: an orca that walks as a wolf' },
+  worldSerpent: { affinity: 'ego', body: 0.6, line: 'Jormungandr: the myth that circles the world' },
+  umibozu:      { affinity: 'ego', body: 0.35, line: 'the umibozu: a sea monk, more shadow than flesh' },
+  bigSquid:     { affinity: 'ego', body: 0.8, line: 'the kraken: a myth with arms' },
   aberrant:  { affinity: 'delirium', body: null, line: 'a mind come apart: its data showing through' }, // (laid over its kind's body)
 };
 /** The row for a creature (its kind's; an aberrant takes `aberrant`'s affinity over its own kind's body). */

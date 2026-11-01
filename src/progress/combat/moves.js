@@ -13,7 +13,9 @@
 // Prior art: Devil May Cry 3 and Bayonetta (the launcher, the air string, the pause combo), Kingdom Hearts (finishers in the air), Final
 // Fantasy XV's warp-strike economy of a special, and Tony Hawk's bail as a counted thing.
 //
-//   MOVES[tool][move] = { power, hits?, time, cost?, status?, unlock }   unlocked(tool, move, L) -> bool   dps(tool, string) -> power/s
+//   MOVES[tool][move] = { power, hits?, time, cost?, status?, shatter?, unlock }   shatter 0..1: how far it breaks a cracked body outright
+//   (SUBSTRATE.md F5b, progress/combat/vessel.js blowOn; South, 2026-11-01: only a charged or special blow has it). The scale: a full
+//   charge 0.25 (a body at 75% of its break line breaks), a crush or a wave a third, a spread blow less (the Dreamquake's 0.2 over 5 m)   unlocked(tool, move, L) -> bool   dps(tool, string) -> power/s
 //   RECORDS (ledger keys the moves' events feed)
 // ---------------------------------------------------------------------------------------
 
@@ -34,7 +36,7 @@ export const MOVES = {
     pause1: { power: 1.0, time: 0.4, unlock: always }, pause2: { power: 1.0, time: 0.4, unlock: always },
     pause3: { power: 2.6, time: 0.9, unlock: always, status: 'stagger' },                                    // (the pause string's finisher staggers: j3)
     thrust2: { power: 0.9, hits: 3, time: 0.9, unlock: always, status: 'stagger' },                         // (t2, Sond_ThrustCombo: the held thrust stabs three times; pause3's 2.6 as three, Calissa 2026-10-10)
-    charge: { power: 4.0, time: 1.3, unlock: always },                                                        // (a full charge, the psygun's 0.85 s and the swing)
+    charge: { power: 4.0, time: 1.3, shatter: 0.25, unlock: always },                                                        // (a full charge, the psygun's 0.85 s and the swing)
     launcher: { power: 0.8, time: 0.55, status: 'airborne', unlock: uses('cut.hit', 50) },                    // (position, not damage; after 50 cutlass blows)
     air1: { power: 0.9, time: 0.35, unlock: uses('move.launch', 10) }, air2: { power: 1.0, time: 0.38, unlock: uses('move.launch', 10) },
     plunge: { power: 2.0, time: 0.6, status: 'stagger', unlock: uses('move.launch', 10) },                   // (2.9 a second over the air string: short, and earned)
@@ -58,7 +60,7 @@ export const MOVES = {
     spinSlash: { power: 0.85, hits: 4, time: 1.17, cost: 8, parent: 'backhand', unlock: either(hits('backhand', 60), best('sond.struck.best', 3)) }, // (three struck by one blow)
     powerSlash: { power: 3.0, time: 1.2, cost: 8, parent: 'heavyChop', unlock: either(hits('heavyChop', 60), finishes('heavyChop', 5)) },
     risingCut: { power: 2.3, time: 0.9, cost: 6, status: 'airborne', parent: 'quickSlash', unlock: either(hits('quickSlash', 60), uses('move.launch', 10)) },
-    guardCrush: { power: 2.8, time: 1.11, cost: 6, status: 'stagger', parent: 'stinger', unlock: either(uses('cut.stinger', 30), uses('sond.effect.guardBreak', 1)) },
+    guardCrush: { power: 2.8, time: 1.11, cost: 6, shatter: 0.3, status: 'stagger', parent: 'stinger', unlock: either(uses('cut.stinger', 30), uses('sond.effect.guardBreak', 1)) },
     backstepSlash: { power: 2.5, time: 1.0, cost: 5, parent: 'c3', unlock: either(hits('c3', 30), uses('parry.sondelass', 10)) }, // (out of reach and back in: ten parries with the Sondelass know when to leave)
     // THE CMU PASS (Calissa's, 2026-10-29: 7 normals and 6 specials of kicks and off-hand blows; MELEE-LOADOUT-EARNING.md 2): the same
     // two ways as the rows above, and a third the plan gives every CMU row, the unarmed kick's blows (`kick.hit`: 60 a normal, 150 a
@@ -77,7 +79,7 @@ export const MOVES = {
     risingKick: { power: 2.7, time: 1.1, cost: 6, status: 'airborne', parent: 'frontKick', unlock: either(hits('frontKick', 60), uses('move.launch', 10), uses('kick.hit', 150)) },
     flurry: { power: 1.0, hits: 3, time: 1.05, cost: 5, status: 'stagger', parent: 'bodyBlow', unlock: either(hits('bodyBlow', 60), finishes('bodyBlow', 5), uses('kick.hit', 150)) },
     breakKick: { power: 2.7, time: 1.18, cost: 6, status: 'stagger', parent: 'guardBreak', unlock: either(hits('guardBreak', 60), uses('sond.effect.guardBreak', 3), uses('kick.hit', 150)) },
-    special: { id: 'tidecutter', power: 7, time: 2.63, cost: 12, unlock: uses('cut.hit', 500) },             // (a line of slip: the Sondelass mastered; its clip's 2.63 real s, the strike at 1.80)
+    special: { id: 'tidecutter', power: 7, time: 2.63, cost: 12, shatter: 0.35, unlock: uses('cut.hit', 500) },             // (a line of slip: the Sondelass mastered; its clip's 2.63 real s, the strike at 1.80)
     // THE PAID CUT (working name; Calissa's price, the owner's to tune in play, 2026-10-10): in a blow's recovery, once its strike is
     // past, a press pays `cost` and the next move begins at once (tools/moveset.js). The reasoning: a fresh pool is 100 (core/config.js
     // lachryma.max; the maker's stone, progress/stones.js, leaves it so; a stone moves it by -15..+30 and the cost by x0.85..1.15). A paid
@@ -112,9 +114,9 @@ export const MOVES = {
     combo3: { power: 1.6, time: 0.6, unlock: always }, pick: { power: 1.6, time: 0.55, unlock: always },     // (2.6 a second)
     pause1: { power: 1.1, time: 0.45, unlock: always }, pause2: { power: 1.1, time: 0.45, unlock: always }, pause3: { power: 2.6, time: 0.85, unlock: always },
     launcher: { power: 0.8, time: 0.55, status: 'airborne', unlock: uses('dreamvane.hit', 50) },              // (Vane_Thrust: position, not damage, as every launcher)
-    charge: { power: 4.2, time: 1.3, unlock: always },                                                        // (the pick driven (`drive`): half at no charge, all at full, as the cutlass's charge)
+    charge: { power: 4.2, time: 1.3, shatter: 0.25, unlock: always },                                                        // (the pick driven (`drive`): half at no charge, all at full, as the cutlass's charge)
     vault: { power: 0, time: 0.8, unlock: always },                                                           // (a pole-vault: movement, 1.6 m over a low thing; never a weapon)
-    special: { id: 'dreamquake', power: 5, time: 1.2, cost: 10, radius: 5, status: 'stagger', unlock: uses('dreamvane.hit', 200) },
+    special: { id: 'dreamquake', power: 5, time: 1.2, cost: 10, radius: 5, shatter: 0.2, status: 'stagger', unlock: uses('dreamvane.hit', 200) },
   },
   crucibelle: {
     toll1: { power: 0.8, time: 0.5, status: 'stagger', unlock: always }, toll2: { power: 0.8, time: 0.5, unlock: always },

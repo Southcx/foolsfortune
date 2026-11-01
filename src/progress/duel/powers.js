@@ -34,6 +34,7 @@
 import { paletteOf, piece, hasTag, KINDS } from './board.js';
 import { RAMP_CURVE } from '../godpowers.js';
 import { awake } from './foeskills.js';
+import { capOf } from './duelbreak.js';
 
 const mineIn = (b, side, x, y) => b.in(x, y) && b.mine(side, x);
 const slimeAt = (b, side, at) => (at && mineIn(b, side, at[0], at[1]) && b.at(at[0], at[1])?.slime ? b.at(at[0], at[1]) : null);
@@ -144,7 +145,7 @@ export const DUEL_POWERS = {
     reach: (s, side, a) => ring(a.at, 1).filter(([x, y]) => mineIn(s.board, side, x, y) && s.board.at(x, y)?.kind === 'junk'),
     apply: (s, side, a) => { const b = s.board, S = s.sides[side], cells = [];
       for (const [x, y] of DUEL_POWERS.absorb.reach(s, side, a)) { cells.push({ at: [x, y], id: b.at(x, y).id }); b.set(x, y, null); }
-      const n = Math.min(100 - S.pool, cells.length * DUEL_POWERS.absorb.each); S.pool += n;
+      const n = Math.min(capOf(S) - S.pool, cells.length * DUEL_POWERS.absorb.each); S.pool += n;
       return [{ type: 'absorb', side, at: a.at, cells, n, pool: S.pool }]; } },
 };
 export const POWER_IDS = Object.keys(DUEL_POWERS);

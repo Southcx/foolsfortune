@@ -33,7 +33,7 @@ export const PSYGUNS = {
   'psygun.carbine': {
     id: 'psygun.carbine', name: 'THE CARBINE', chambers: 3, shape: 'triangle', cap: 16, capacity: { bomb: 8, well: 8, anchor: 8 },
     loadout: ['slicer', 'push', 'bomb'],
-    play: { scope: { zoom: 2.5, breath: 3 }, fullDraw: { timeMult: 1.6, dmgMult: 2.5, falloff: 0 }, dart: { statusMult: 1.5 }, weakScoped: 2, turn: 0.25 }, // (the scope on ADS, the full draw, status shells as darts)
+    play: { scope: { zoom: 2.5, breath: 3 }, fullDraw: { timeMult: 1.6, dmgMult: 2.5, falloff: 0, shatter: 0.35 }, dart: { statusMult: 1.5 }, weakScoped: 2, turn: 0.25 }, // (the scope on ADS, the full draw, status shells as darts)
     blurb: 'Three deep chambers: sixteen of a shell, eight of the heavy ones.',
   },
   'psygun.pentagun': {
@@ -51,6 +51,9 @@ export const PSYGUNS = {
   },
 };
 export const DEFAULT_PSYGUN = 'psygun.first';
+/** A charged beam's shatter (SUBSTRATE.md F5b; progress/combat/moves.js's scale: a full charge 0.25, as the cutlass's): every variant's
+ *  charge, the Carbine's full draw its own (`play.fullDraw.shatter`, 0.35: the slowest shot breaks the most). Plain shots have none. */
+export const CHARGE_SHATTER = 0.25;
 /** How many of a shell type a psygun holds: its own exception, else the shell's tier's share of the cap. */
 export const capacityOf = (gun, typeId) => gun.capacity[typeId] ?? chamberHolds(typeId, gun.cap);
 /** What the chamber at `i` holds of a type: its capacity, twice for a rare or the Caster's own in the Pepperbox's heart. */
