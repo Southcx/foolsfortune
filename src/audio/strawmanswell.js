@@ -2,7 +2,7 @@
 // STRAWMAN'S WELL HEARD (Dovina's world/strawmanwell/, docs/plans/STRAWMANS-WELL.md; her handoff of 2026-10-31): the toy theatre inside
 // Strawman's head, its boards wood and its room a hall (the zone's acoustic carries every sound here). A stage is a turn on the boards,
 // so what is heard is the theatre's: the curtain, the house, the band in the pit.
-//   A STAGE ENTERED  (well.stage.enter) the curtain drawn: a cloth's swish and a woodblock's two knocks (the kabuki's ki)
+//   A STAGE ENTERED  (well.stage.enter) the curtain drawn: a cloth's swish (the hyoshigi's ki under it is the theatre's: welltheatre.js)
 //   A STAGE CLEARED  (well.stage.clear { rank }) the pit band's sting by rank: SS and S a fanfare up to the octave under a cymbal and the
 //                    house's applause, S's a step shorter; A a bright tag; B and C a plain "ta-da"; D a kind shrug down and up (it still
 //                    counts: a clear is a clear)
@@ -30,7 +30,6 @@ export class StrawmansWellSounds {
     if (!this.ok() || !this.allow('wellEnter', 1)) return;
     const t = this.ctx.currentTime, d = this.out(0.3, 0.5);
     this.noise(t, 0.7, { type: 'bandpass', f0: 900, f1: 2600, q: 0.7, gain: 0.25, attack: 0.15, dest: d }); // (the curtain drawn)
-    [0, 0.16].forEach((dt) => this.noise(t + 0.5 + dt, 0.03, { type: 'bandpass', f0: 1900, q: 5, gain: 0.7, dest: d })); // (the woodblock's knocks)
   }
   wellClear(rank = 'B') {
     if (!this.ok() || !this.allow('wellClear', 1)) return;
