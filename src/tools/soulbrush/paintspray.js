@@ -56,7 +56,7 @@ export class PaintSpray {
 
   /** The aim from `from`: the camera's centre ray, converged on what it meets within 40 m (so the stream lands where the crosshair is). */
   aim(from, out = new THREE.Vector3()) {
-    const g = this.game, cam = g.camera;
+    const g = this.game, cam = g.aim.camera(); // (the aim's camera: core/aimsource.js)
     if (g.lock?.active) { g.lock.point(_a); return out.copy(_a).sub(from).normalize(); }
     cam.getWorldPosition(_a); cam.getWorldDirection(_b);
     const hit = g.physics?.raycast(_a, _b, 40, g.player?.collider, undefined, (c) => !c.isSensor?.());

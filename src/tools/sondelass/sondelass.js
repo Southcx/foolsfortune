@@ -364,7 +364,7 @@ export class Sondelass extends Tech {
   lend() { return this.enabled && this.hookshot.lend(); }
   /** The camera's aim: a ray from the eye through the crosshair, as the Psygun's own aim reads it. */
   aim(dirOut, originOut) {
-    const cam = this.game.camera;
+    const cam = this.game.aim.camera(); // (the aim's camera: core/aimsource.js)
     cam.getWorldDirection(dirOut);
     if (originOut) cam.getWorldPosition(originOut);
     return dirOut;
