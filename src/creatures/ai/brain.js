@@ -55,7 +55,7 @@ export class Brain {
     if (this.sees) return this.sees(out);
     const hidden = !!g.character?.hidden || (g.character?.dissolve ?? 0) > 0.5 || !!g.god?.active || (P.veiledT ?? 0) > 0; // (veiled: a song's mirage, tools/crucibelle/crucibelle.js)
     const sp = Math.hypot(P.vel?.x || 0, P.vel?.z || 0);
-    const loud = (P.sliding ? 1.2 : P.crouching ? 0.45 : sp > 5 ? 1.35 : sp > 0.5 ? 0.9 : 0.55) * (g.belt?.inHand ? 1.15 : 1);
+    const loud = g.stealth ? g.stealth.loud : (P.sliding ? 1.2 : P.crouching ? 0.45 : sp > 5 ? 1.35 : sp > 0.5 ? 0.9 : 0.55) * (g.belt?.inHand ? 1.15 : 1); // (the Courier's exposure: progress/stealth.js, STEALTH.md)
     out.push({ ent: P, kind: 'courier', pos: P.pos, vel: P.vel, loud, height: 1.7, hidden });
     for (const o of g.creatures?.near(c.pos, this.watchR) || []) if (o !== c) out.push({ ent: o, kind: o.kind, pos: o.pos, vel: o.vel, loud: o.loud ?? 1, height: o.height });
     // DECOYS: anything put up to be seen as something it is not (a Courier of smoke: the Crucibelle's mirage); a mind takes it for its kind

@@ -61,7 +61,7 @@ export class Senses {
       if (ang > half) continue;
       if (!this.clear(owner, w.ent, _to, now)) continue;
       const near = Math.pow(1 - dh / this.sight, 1.4), centre = 1 - 0.6 * (ang / (half || 1));
-      mem.see(w.ent, w.kind, w.pos, dt * this.rate * near * centre * (w.loud ?? 1), w.vel);
+      mem.see(w.ent, w.kind, w.pos, dt * this.rate * near * centre * (w.loud ?? 1) * (owner.vigil?.k ?? 1), w.vel); // (its watch: head down sees less, STEALTH.md 4)
     }
     // and what was heard since it last listened
     const S = this.game.ai?.stimuli;
