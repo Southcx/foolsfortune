@@ -37,7 +37,7 @@ export const SUBJECTS = {
     const aware = awareOf(g, c); if (aware >= 0.35) states.add('aware');
     return { pos: c.pos.clone().setY(c.pos.y + 0.75), r: 0.8, ref: c, states, aware, engaged: aware >= 1 && ['chase', 'wind', 'recover'].includes(c.state), facing: new THREE.Vector3(Math.sin(c.yaw), 0, Math.cos(c.yaw)) };
   }) },
-  wisp: { name: 'Lantern Wisp', find: (g) => (g.wisps?.list || []).filter((c) => c.alive).map((c) => {
+  wisp: { name: 'Lantern Wisp', find: (g) => (g.wisps?.list || []).filter((c) => c.alive && c.kind === 'wisp').map((c) => {
     const states = new Set([c.state]), aware = awareOf(g, c);
     if (aware >= 0.35) states.add('aware');
     for (const k of c.status?.keys() || []) states.add(k);

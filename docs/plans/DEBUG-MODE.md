@@ -115,7 +115,7 @@ PRESETS.dunemawBowl = {
 ```
 
 - **A preset's writes are marked** (`first('debug.preset.<id>')`), and the Codex says "Preset: {label}" beside its records.
-- **They will live in a presets module under `src/debug/`** (not built; data, Dovina's), each naming what it is for, like a debug chest's kit. A QAIS test may name a
+- **They live in `src/debug/presets.js`** (built 2026-11-01, Petra's loader and `/preset <id>`; the rows are Dovina's: `fresh`, `everything` and `dunemaw` stand until she writes hers), each naming what it is for, like a debug chest's kit. A QAIS test may name a
   preset (`preset: 'gardenFiring2'`); its "take me there" applies it.
 - **The first five:**
 

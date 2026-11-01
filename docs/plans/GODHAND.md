@@ -335,7 +335,7 @@ What is in, and what is not yet. Numbers live in the modules named; nothing here
   scaled by the domain's level; seeing is not an act). EXP for each act goes to its domain (`domains.js`), and its count to `god.power.<id>`. Fold
   and Stamp are `MatterField.patch`. Set marks voxel chunks (`creations.setFast`); for good is a `creations` save section (world scope),
   its chunks kept as runs. Herd and Take set a creature's mind aside while it walks (`P.walk`). Looks are rings and lines in the
-  domain's colour (`DOMAIN_COLOUR`). The island's own antibody Figment (rejection's answer, a sentinel) is the ordinary Figments until its mind is built; its body is
+  domain's colour (`DOMAIN_COLOUR`). The island's own antibody Figment (rejection's answer, a sentinel: `creatures/sentinel/`); its body is
   `SentinelBody` (`vfx/sentinelbody.js`, a fired-clay haniwa guardian risen out of the sand).
 - **The Codex's STATUS shelf** (`feedback/codex/status.js`): two radars, the domains' levels and Soul Alchemy's ranks, with the next
   step as a faint ring and the numbers beneath.

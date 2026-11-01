@@ -11,6 +11,7 @@
 import { Scanner } from '../world/scanner.js';
 import { GodMode } from '../godhand/godhand.js';
 import { Rejection } from '../godhand/rejection.js';
+import { Sentinels } from '../creatures/sentinel/sentinels.js';
 import { Creations } from '../godhand/creations.js';
 import { IslandMatter } from '../godhand/islandmatter.js';
 import { Interact } from '../courier/interact.js';
@@ -46,6 +47,7 @@ export function bootGodHand(game, made) {
   game.matter = new IslandMatter(game); // (the island's matter the hand moves: godhand/islandmatter.js; GODHAND.md 3)
   game.creations = new Creations(game); // (the hand's voxel creations: godhand/creations.js; GODHAND.md 7)
   game.rejection = new Rejection(game); // (the island's immune response to the hand: godhand/rejection.js; GODHAND.md 10)
+  game.sentinels = new Sentinels(game); // (rejection's antibody: one sent from the fourth Dissonance Level to mend the warp marks, creatures/sentinel/)
   game.realm = new Realm(game, { god }); // (the Spirit Garden entered at a Shrine: the Jar on its planetoids, the hand over it: world/garden/realm.js)
   game.scanner = new Scanner(game); // (a real barcode or QR code read into a material or a spirit slab: /scan, the plate shrine; world/scanner.js)
   game.readingTable = new ReadingTable(game); // (the Pneuka Box's loadout as a two-card reading: Dovina's window mounts .el and calls draw(state), ui/readingtable.js)
