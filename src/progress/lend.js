@@ -43,6 +43,7 @@ export class Lend {
     this.game = game;
     this.state = fresh();
     game.save?.section('lend', { scope: 'settings', version: 1, dump: () => this.state, load: (d) => { this.state = { ...fresh(), ...(d || {}) }; }, reset: () => { this.state = fresh(); } });
+    game.chat?.add?.('presets', { debug: true, help: 'the DEBUG presets written so far (debug/presets.js; the loader is to come: DEBUG-MODE.md 5)', run: () => game.events?.emit('presets.ask', { by: 'courier' }) });
   }
   /** Is this category lent? Only ever in DEBUG. */
   has(id) { return this.game.mode === 'debug' && !!this.state[id]; }

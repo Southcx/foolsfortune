@@ -67,9 +67,14 @@ export const SLOTS = {
     fsmash: { row: 'charge', shatter: 0.4 }, nspecial: { row: 'special', special: null },
   },
   crucibelle: { jab1: { row: 'toll1' }, jab2: { row: 'toll2' }, ftilt: { row: 'toll3' }, nspecial: { row: 'feverPeak', special: null } },
-  lockheart: { jab1: { row: 'flail1' }, jab2: { row: 'flail2' }, ftilt: { row: 'flail3' } },
+  lockheart: { jab1: { row: 'flail1' }, jab2: { row: 'flail2' }, ftilt: { row: 'flail3' }, dair: { row: 'flail3', angle: 280, name: 'Anchor drop', from: 'the Lockheart: the coffin dropped straight down on its chain (a meteor spike)' } }, // (the anchor drop a meteor spike: a coffin dropped on its chain, the flail's heaviest straight down)
   veritome: { jab1: { row: 'bash1' }, ftilt: { row: 'bash2' } },
 };
+
+/** A slot's rule laid over the movekit's move (fightertoolkits.js, Calissa's: its frames and look stay hers). The Lockheart's snare a
+ *  tether grab (on a hit on the ground, the foe hauled in and held: its own grab, Scorpion's spear, the kusarigama's yank; hits.js);
+ *  its bell rope a tether recovery as well as a rise (it catches a ledge on the chain while active: the hook's, kernel.js). */
+export const SLOT_RULES = { lockheart: { sspecial: { snare: true }, uspecial: { tether: true } } };
 
 /** The brawler (Closers' J): a second bare set. Numbers ours, each against Mario's: the jabs lighter and the barrage the damage; the
  *  uppercut a heavier up tilt; the straight a dash attack that sends out, not up. */
@@ -136,6 +141,7 @@ export function kitFor(tool, { string = null, specials = null, variant = 'standa
     const { row, ...extra } = def; put(slot, row, extra);
   }
   for (const [slot, m] of Object.entries(TOOL_KITS[rt] || {})) if (!moves[slot]) moves[slot] = { ...m };
+  for (const [slot, rule] of Object.entries(SLOT_RULES[rt] || {})) if (moves[slot]) Object.assign(moves[slot], rule); // (a slot's rule over its movekit: the Lockheart's snare and bell rope)
   for (const [slot, [name, from]] of Object.entries(ROW_NAMES[rt] || {})) if (moves[slot]) Object.assign(moves[slot], { name, from }); // (the tool's own movekit under its rows: fightertoolkits.js, Calissa's)
   for (const m of Object.values(moves)) if (m.lunge === undefined) delete m.lunge;
   return { tool: rt, reach: REACH[rt] || 1, moves, ...(TOOL_BOXES[rt] ? { boxes: { ...TOOL_BOXES[rt] } } : {}) };

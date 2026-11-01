@@ -42,6 +42,9 @@ export class FighterHits {
         if (res === 'miss') continue;
         noteStale(A, A.m);
         this.struck(A, V, hit, res);
+        if (res === 'hit' && moveOf(A.m, A)?.snare && A.grounded && V.live && !V.holder && !A.victim) { // (a snare: the foe hauled in and held, its own grab: Scorpion's spear, the kusarigama's yank)
+          V.x = A.x + A.face * 0.75 * A.scale; V.y = A.y; V.grounded = true; A.hl = 0; connectGrab(A, V); break;
+        }
         if (A.hl > 0) break; // (frozen by its own hit: the rest wait)
       }
     }

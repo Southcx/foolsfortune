@@ -32,7 +32,7 @@ import { KeyTrack, keysOf, registerKeys } from '../../../courier/anim/keyposes.j
 import { FIGHTER_BRAWLER_KEYS, FIGHTER_SONDELASS_KEYS, FIGHTER_LOCKHEART_KEYS } from '../../../courier/anim/keys/index.js';
 
 // (Calissa's key tables for the kits' sets, KEY-POSES.md 6: their timing the kit's own frames below, so no fill)
-registerKeys('fighter.brawler', FIGHTER_BRAWLER_KEYS); registerKeys('fighter.sondelass', FIGHTER_SONDELASS_KEYS); registerKeys('fighter.lockheart', FIGHTER_LOCKHEART_KEYS);
+registerKeys('fighter.brawler', FIGHTER_BRAWLER_KEYS); registerKeys('fighter.sondelass', FIGHTER_SONDELASS_KEYS); registerKeys('fighter.lockheart', FIGHTER_LOCKHEART_KEYS); registerKeys('fighter.lockheart', FIGHTER_LOCKHEART_KEYS);
 const SETS = { unarmed: 'fighter.brawler', sondelass: 'fighter.sondelass', lockheart: 'fighter.lockheart' };
 const setOf = (kit) => SETS[kit?.tool] || null;
 
