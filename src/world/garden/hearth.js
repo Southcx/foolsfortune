@@ -39,5 +39,4 @@ export class Hearth {
   }
   /** F at a place: the hearth's is ours. */
   use(f) { if (f?.kind !== 'hearth') return false; this.kitchen.open(); return true; }
-  update(dt) { this.kitchen.update(dt); }
 }

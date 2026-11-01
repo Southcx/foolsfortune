@@ -13,7 +13,7 @@
 // poke tests and the hollow knock (every bread book: Hamelman 2004, Forkish 2012), Salt Fat Acid Heat (taste, then adjust), Breath
 // of the Wild (an ingredient's nature leans the dish).
 //
-//   const k = new Kitchen(game)   .open()   .update(dt)   .step   .close()
+//   const k = new Kitchen(game)   .open()   .update(dt) (its own animation frame while open)   .step   .close()
 // ---------------------------------------------------------------------------------------
 import { MOVES, scoreOf, tellAt } from '../../progress/cooking/moves.js';
 import { FAMILIES, dishFor, serve, GRADES } from '../../progress/cooking/dishes.js';
@@ -54,6 +54,7 @@ export class Kitchen {
   /** One step's page: the canvas, the tell, the step's buttons. */
   show(step) {
     this.step = step; removeEventListener('keydown', this.keyFn, true);
+    if (!this.raf) { let last = performance.now(); const loop = (t) => { if (!this.step) { this.raf = null; return; } this.update(Math.min(0.1, (t - last) / 1000)); last = t; this.raf = requestAnimationFrame(loop); }; this.raf = requestAnimationFrame(loop); } // (its own clock: the index window pauses the game's frame, boot/frame.js modalOpen)
     if (step === 'knead') addEventListener('keydown', this.keyFn, true);
     this.menu.showPage('hearth', (im, el) => {
       const root = el('div', 'ck'); im.appendChild(root);
@@ -172,7 +173,7 @@ export class Kitchen {
   update(dt) {
     if (!this.step) return;
     if (this.menu?.page?.name !== 'hearth' || !this.menu.open) { this.step = null; removeEventListener('keydown', this.keyFn, true); return; } // (F closed it)
-    const S = this.st, raw = this.game.rawDt ?? dt;
+    const S = this.st, raw = dt;
     if (S) { S.beatT = (S.beatT || 0) + raw; S.flash = Math.max(0, (S.flash || 0) - raw * 3); }
     if (this.step === 'bake' && S) { S.v = Math.min(1.02, S.v + MOVES.bake.rate * raw); if (S.v >= MOVES.bake.over) { this.tell(tellAt(MOVES.bake, S.v)); this.finish('bake', S.v); return; } }
     this.stretched = Math.max(0, (this.stretched || 0) - raw); this.poked = Math.max(0, (this.poked || 0) - raw);

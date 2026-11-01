@@ -80,7 +80,7 @@ export function bootProgress(game, made) {
   game.codexPages = { ...(game.codexPages || {}), grimoire: renderGrimoire }; // (the Grimoire of Echoes, the Codex's page of the mycelium: its tab is codex.js's)
   if (game.realm) { game.gardenMycelium = new GardenMycelium(game.realm); game.hearth = new Hearth(game.realm); } // (the mycelium in the Inner Realm: Myggdrasil's planetoid, the spore beds, the pots: world/garden/mycelium.js; Spirit Cooking's hearth on the Athanor: world/garden/hearth.js)
   game.cooking = new Cooking(game); // (Spirit Cooking kept: practice, recipes, the proof, a dish's held draught: progress/cooking/cooking.js)
-  game.creatureDrops = new CreatureDrops(game); // (what a creature you brought down drops, on the ground: world/drops/creaturedrops.js)
+  game.creatureDrops = new CreatureDrops(game); game.systems?.add('looks', game.creatureDrops, { name: 'creatureDrops' }); // (what a creature you brought down drops, on the ground: world/drops/creaturedrops.js)
   game.alchemy = new SoulAlchemy(game); // (the spirit press: the soul colour, the attributes: progress/alchemy.js)
   game.weather = new Weather(game); // (emotional weather and the day: progress/weather.js)
   game.courierMind = new CourierMind(game); // (your mental state and your draught, kept: courier/mind.js; the garden's rain reads it)
