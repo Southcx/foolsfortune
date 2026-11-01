@@ -6,16 +6,7 @@ Each hook below is done for now inside the kit's own files, by wrapping or setti
 wrapper can go. Delete this file in your branch when your part is taken.
 
 ## Petra
-1. **An input claim** (`core/input.js`): `input.claim(owner, codes)` / `release(owner)`. For now `fighter/keys.js` wraps the instance's
-   `isDown` and `wasPressed` while in the Arena, hiding Mouse0 to 2, Shift, E, R, Q, X, V, G, C, H, Y and T, and deletes the wrappers
-   on leaving.
-2. **Modifier switches on the body** (`courier/player.js`): `player.mods = { ownJumps, noCoyote, noSlide, noWallrun, noRisingMantle }`,
-   read by `fixedUpdate`. For now `fighter/courierbody.js` writes `jumpBuf`, `jumpHeldLast`, `coyote`, `landT`, `slideBuf` and `wallCd`
-   every step. Known leak: the core's mantle can still climb a ledge the Courier rises past while pushing toward it.
-3. **The pose.** For now `fighter/pose.js` adds a passive tech whose `animate` blends clip samples into `base`, and freezes hitlag by
-   copying the last pose. It moves onto your key track once Calissa's fighter keys exist: `registerKeys('fighter', KEYS, fillKeys)`,
-   with `fillKeys` in platformfighter.js. Your ask from KEY-POSES.md stands: a freeze and shake for hitlag (`character.hold(frames)`,
-   a shake laid after posing).
+Done (2250f03): the input claim, `player.mods`, `character.hold`. The kit moves onto them this round.
 
 ## Calissa
 1. **`StrawmanModel.hold(moveId, t)`** (`vfx/strawman.js`). For now `fighter/foebody.js` writes `model.mv.t` to step the doll's moves.
