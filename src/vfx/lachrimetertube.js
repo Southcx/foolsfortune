@@ -52,6 +52,7 @@ import { tierSize } from './tierscale.js';
 import { theme, THEMES, FONT } from '../ui/theme.js';
 import { BlinkPearls, PEARL_KIND } from './lachrimeter/blinkpearls.js';
 import { HeldBlowFuse } from './lachrimeter/heldblow.js';
+import { DOMAIN_ARTS } from '../progress/domainarts.js';
 import { CubePlate, PLATE_W, PLATE_H } from './lachrimeter/cubeplate.js';
 import { letGo } from './letgo.js';
 import { numeralFit } from './wornnumerals.js';
@@ -533,7 +534,7 @@ export class LachrimeterTube {
     root.updateMatrixWorld(true); this.inst.updateMatrix(); this.pitch.updateMatrix();
     this.uInst.value.copy(this.inst.matrixWorld).invert();
     this.inst.getWorldQuaternion(this.turnBack).invert();
-    this.pearls.update(dt, blink, combat, this.turnBack); this.state.pearls = this.pearls.state; this.fuse.update(dt, g.domainArtsRun, 4); this.skinTick?.(dt);
+    this.pearls.update(dt, blink, combat, this.turnBack); this.state.pearls = this.pearls.state; this.fuse.update(dt, g.domainArtsRun, DOMAIN_ARTS.postpone.does?.delay ?? 4); this.skinTick?.(dt);
     this.words(C, full, cap, cost > 0 ? costN : 0, short, lineP);
   }
 
