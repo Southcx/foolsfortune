@@ -701,3 +701,30 @@ is Dovina's (`ga-*` classes); its bespoke look is Calissa's (docs/handoffs/calis
 What it costs: the god hand's powers come 5 levels later at 20 (from 15) and 40 (from 35), and three come 10 sooner at 50 (from 60).
 Ouranurgy's Portal moved from 15 to 40, because it had two powers at 15 and nothing at 40. The rungs come 5 sooner. Still open: the
 60, 90 and 99 rungs (21 designs, section 14's later columns), the next waves.
+
+### 18.1 The depth rungs at 60 (built: five of seven)
+
+The ten at 60 is the ladder's depth (section 2's ri): each rung turns what the domain's earlier rungs taught into a thing you aim. Five
+need no new hook and are built (`progress/domainarts.js` the rows, `courier/domainarts/depth.js` the runtime, owned by `run.js`). The
+two that need Petra's files wait (`docs/handoffs/petra/`): **True Odds** (Divination) needs a place for the odds to be shown, and
+**Borrow a Verb** (Possession) needs the lend's hook (`tools/lend.js`).
+
+| domain | rung | kind | in play | its numbers and why | feat way |
+|---|---|---|---|---|---|
+| Ouranurgy | **The Fuse** | action | the nearest foe fused for 8 s: every affliction put on it waits, its time and strength kept; press again (free) to set them all off at once, each x1.5; left to run out, they go as they were | 8 s is time to build two statuses with two tools; x1.5 is the beat's reward, and no gain if you don't choose it; 10 pool, 20 s from the release; a fuse set off into a stun pays most | 15 times two afflictions on one creature inside a second |
+| Manifestation | **Catch the Weather** | passive | in a feeling's weather under the open sky, a Bottle worn fills with that feeling (a feeling you know; the Bottle empty or already of it) | 3 a real s at full strength, a quarter of the mop's 12: a middling Bottle in about a real minute; under 0.2 strength, nothing | 15 mops of 40 Lachryma or more |
+| Psychokinesis | **Relay** | passive | a heavy blow (a thrown hit, or power 2 or more) passes on to the next creature behind the struck one, within 3 m along the line (cos 0.7), as an Impact blow of three quarters; three links | three links leave 0.42 of the first blow, still a stagger; 3 m is two bodies' widths, so a relay is aimed, never luck across a room | 10 throws that struck two creatures |
+| Alteration | **Walk the Cycle** | action | every affliction on the nearest foe turned into the one its type trumps (types.js): doubt into charm, charm into confusion, confusion into a stun, blindness into doubt | the time kept and capped by the new status's own (a doubt's 6 s becomes charm's 4): the skill is the order, never a longer lock; 8 pool, 10 s | 15 annihilations |
+| Spellscription | **A Seal on a Creature** | action | cast on a creature winding up a blow: the blow breaks off, and each blow of that kind it starts in the next 20 s breaks off too; a FOE (class 2 and up) refuses it | cast on a windup, so it is read as a parry is, from range; 20 s is about two thirds of a Dunes fight; 12 pool, 15 s | 20 seals set in cradles |
+
+Checked headless (DEBUG, the Summit lend):
+- **Walk the Cycle:** doubt and confusion on a slip jelly turned into charm (4.0 s, capped) and a stun.
+- **The Fuse:** blind and charm held (6.5 s and 5.2 s), set off at 9.7 s and 7.8 s; a third press was refused on its cooldown.
+- **A Seal on a Creature:** refused with no windup. On a lunge, the lunge broke off and was sealed; a second lunge broke off, and a cast went through.
+- **Relay:** a power-3 blow on one slip jelly struck the one 2 m behind it for 2.25 (8 to 5.75).
+- **Catch the Weather:** in a forced Grief at strength 1, an empty middling Bottle took 30 in 10 real s and its grade became Grief.
+
+**A fix to the notches** found on the way: with every notch full, putting a rung on gave the freed notch to whichever open rung came
+next in the table, not to the one you chose. Now the rungs you put on go first (`pin`, kept in the save), then the table's order, and
+one past the budget waits for a notch. When a passive opens with the notches full, the log says how to wear it.
+

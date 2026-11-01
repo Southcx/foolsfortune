@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE DOMAINS' RUNGS AS ACHIEVEMENTS (docs/plans/DOMAINS.md 12; progress/domainarts.js): each rung opens only by achievement, and the
 // achievement is that rung's two ways read as one predicate over the ledger (its domain's level, or its feat done n times). Tier by the
-// rung's band: the first relations (10) Medium. In THE DOMAINS' own sub, Rungs.
+// rung's band: the first relations (10) Medium, the second (30) Hard, the depth (60) Elite. In THE DOMAINS' own sub, Rungs.
 //
 // Prior art: Old School RuneScape's skill guides (what each level opens, listed by the skill), FFXIV's job quests (one at each rung).
 //

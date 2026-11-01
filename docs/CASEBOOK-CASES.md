@@ -4861,3 +4861,13 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   sweep's 10 ticks run in less.
 - **Fix:** the numeral is `well-pool-numeral`; the sweep waits 250 real ms before it measures. After: the Dunemaw sweep 220 of 220.
 - **Rule:** 390
+
+### 2026-11-01 · Putting a rung on with every notch full gave the notch to another rung (progress/domainarts.js; found by Dovina, the depth rungs' probe)
+- **Seen:** under the Summit lend, with seven notches and ten open passives, `/rung relay` set a worn rung aside, and Relay stayed off.
+  Catch the Weather took the freed notch instead.
+- **Cause, as measured:** `worn()` was the open rungs not set aside, in the table's order, cut at the notch count. `toggle` freed a
+  notch by setting the last worn rung aside, and the next open rung in the table's order (Catch the Weather, before Relay) took it,
+  not the one asked for.
+- **Fix:** the rungs you put on are kept in order (`pin`, in the save), and `worn()` takes them first, then the table's order. A
+  rung past the budget waits, neither worn nor set aside. After: `/rung relay` wore Relay, and a struck slip jelly passed the blow on.
+- **Rule:** NEW:budget-asks-first

@@ -41,7 +41,7 @@ export const PRESETS = {
     at: 'workshop', ledger: everyDomain(50), kit: allTools(), belt: { main: 'psygun', sub: 'lockheart' }, cubes: 2000, lend: {},
   },
   domainsTop: {
-    label: 'Every domain at 80', for: 'the epic miracles and the 70 traits earned (the 60 and 90 rungs not built yet): the late ladder without the Summit lend',
+    label: 'Every domain at 80', for: 'the depth rungs at 60, the 70 traits and the epic miracles earned (True Odds, Borrow a Verb and the 90s not built yet): the late ladder without the Summit lend',
     at: 'workshop', ledger: everyDomain(80), kit: allTools(), belt: { main: 'psygun', sub: 'lockheart' }, cubes: 5000, lend: {},
   },
   dunemawReturn: {

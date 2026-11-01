@@ -71,12 +71,23 @@ export const FEATS = {
   macroWorn: { event: 'reprogram.wear', test: () => true, anyBy: true },
   // a feeling awakened (to mix the feelings you must know them: reactions' idea, the house's opposites cancel, seen four times over)
   awakened: { event: 'feeling.wake', test: () => true },
+  // THE DEPTH FEATS (level 60): each rung's idea done by hand before it is yours
+  // two different afflictions landed on one kind of creature within a real s (the Fuse's set-off, timed by your own two hands)
+  twoAtOnce: { event: 'creature.status', test: (e, s) => { if (e.fused || e.cycled || e.status === 'stun' || e.status === 'calm') return false; const now = performance.now() / 1000, L = s.last; s.last = { kind: e.kind, status: e.status, at: now }; return !!L && L.kind === e.kind && L.status !== e.status && now - L.at <= 1; } },
+  // a hold of the mop that drank 40 Lachryma or more (a quarter of a middling Bottle: the world's Lachryma caught on purpose)
+  bigMop: { event: 'brush.mop', test: (e) => (e.lachryma || 0) >= 40 },
+  // one throw that struck two creatures (a strike: the force passed on by aim alone)
+  twoStrike: { event: 'impact.strike', test: (e) => (e.n || 0) >= 2 },
+  // an annihilation (Impact on a body carrying Delirium's status, or the reverse: the cycle known end to end)
+  annihilate: { event: 'combat.annihilate', test: () => true },
+  // a seal set in a cradle (your seal set on a thing, so that it runs as you)
+  sealSet: { event: 'seal.set', test: () => true },
   cleanRead: { event: 'windup.read', test: (e, s) => { const ok = !s.cracked; s.cracked = false; return ok; }, mark: ['vessel.crack'] },
 };
 export const FEAT_WORDS = {
   lateParry: 'blows parried at the last moment', shieldRun: 'runs of six blows on your shield unbroken', candid: 'candid photographs',
   heavyThrow: 'thrown hits over 300 joules', longRelease: 'fish let go after a long fight', weakDown: 'creatures downed by their weakness',
-  cleanMacro: 'macros typed clean', blinkChain: 'three blinks inside two seconds', sculpt: 'creations raised', cleanFight: 'fights ended without a crack', cleanRead: 'windups read without a crack', parryReturn: 'shots parried back into their thrower', macroWorn: 'macros worn to their end', awakened: 'feelings awakened',
+  cleanMacro: 'macros typed clean', blinkChain: 'three blinks inside two seconds', sculpt: 'creations raised', cleanFight: 'fights ended without a crack', cleanRead: 'windups read without a crack', twoAtOnce: 'two afflictions on one creature inside a second', bigMop: 'mops of 40 Lachryma or more', twoStrike: 'throws that struck two creatures', annihilate: 'annihilations', sealSet: 'seals set in cradles', parryReturn: 'shots parried back into their thrower', macroWorn: 'macros worn to their end', awakened: 'feelings awakened',
 };
 
 /** A standing rule's triggers and verbs (South, 2026-11-01: case by case; DOMAINS.md 14, 16). Every trigger is an act of your own (the
@@ -155,6 +166,30 @@ export const DOMAIN_ARTS = {
   // ALTERATION: the feelings' paints meeting (Divinity: Original Sin 2's surfaces; Magicka's elements)
   reactions: R('alteration', 30, 'passive', 'Reactions', 'Paint one feeling over another and they react: opposites cancel to bare ground and calm what stands there; two that wedge flare as the old paint\'s blow.',
     'A reaction a stamp, not a cell. Creatures standing in it take it; you never do.', { calm: 3, flare: 1, radius: 1.5, every: 0.25 }, ['awakened', 4]),
+
+  // THE DEPTH RUNGS (level 60: DOMAINS.md 14's column, 18.1). Each turns what the domain's earlier rungs taught into a thing you aim.
+  // The runtime is courier/domainarts/depth.js. True Odds (Divination) and Borrow a Verb (Possession) wait on a place to show odds and on
+  // the lend's hook (Petra's: docs/handoffs/petra/).
+  // OURANURGY: afflictions set off on your beat (Chrono Trigger's combined techs; Into the Breach's ordered turn). 8 s is time to build
+  // two statuses with two tools (a status builds in two to four blows); x1.5 is the beat's reward, and left to run out it is no gain.
+  fuse: R('ouranurgy', 60, 'action', 'The Fuse', 'Fuse the nearest foe: for 8 seconds every affliction put on it waits. Press again to set them all off at once, each half again as long.',
+    'Left to the end of the 8 seconds, they go off as they were. Set off into a stun, they pay most.', { window: 8, mult: 1.5, reach: 20 }, ['twoAtOnce', 15], { cost: 10, cooldown: 20 }),
+  // MANIFESTATION: the weather's liquid caught (Breath of the Wild's chemistry; FLUDD refilled from the world). 3 a real s at full
+  // strength is a quarter of the mop's 12: the sky's slow trickle beside the hand's work, a middling Bottle in about a real minute.
+  catchWeather: R('manifestation', 60, 'passive', 'Catch the Weather', "Stand in a feeling's weather under the open sky with a Bottle worn and the Bottle fills with that feeling.",
+    'Only a feeling you know, and only while the Bottle is empty or already holds it. The stronger the weather, the faster.', { rate: 3, min: 0.2, say: 20 }, ['bigMop', 15]),
+  // PSYCHOKINESIS: force passed on (Katamari; billiards' combination shot). Three quarters a link: three links leave 0.42 of the
+  // first blow, still a stagger; 3 m is two bodies' widths, so a relay is aimed, never luck across a room.
+  relay: R('psychokinesis', 60, 'passive', 'Relay', 'A creature you strike heavily passes the force on to the next one behind it, three links at most.',
+    'Heavy is a thrown hit or a blow of power 2 or more. Each link keeps three quarters of the force, and the next body must stand within 3 metres along the line.', { minPower: 2, reach: 3, cone: 0.7, keep: 0.75, links: 3 }, ['twoStrike', 10]),
+  // ALTERATION: one affliction made the next one's opening (the trumps as a cycle, types.js; Persona's Technical). The time kept and
+  // capped by the new status's own: the kind changes, never the time, so the skill is the order, not a longer lock.
+  walkCycle: R('alteration', 60, 'action', 'Walk the Cycle', 'Turn every affliction on the nearest foe into the one its type beats: doubt into charm, charm into confusion, confusion into a stun, blindness into doubt.',
+    'Each keeps the time it had left, never more than the new one lasts. A foe with no affliction cannot be walked.', { reach: 20 }, ['annihilate', 15], { cost: 8, cooldown: 10 }),
+  // SPELLSCRIPTION: a rule on a creature (Pokemon's Disable; Final Fantasy's Silence). Cast on a windup, so it is read as a parry is,
+  // from range; 20 s is a Dunes fight's two thirds. A FOE keeps its authored fight and refuses it (depth.js FOE_CLASS).
+  sealCreature: R('spellscription', 60, 'action', 'A Seal on a Creature', 'Seal a creature as it winds up a blow: the blow breaks off, and it cannot use that kind of blow for 20 seconds.',
+    'Only while it winds up. A FOE keeps its own rule and refuses the seal.', { dur: 20, reach: 20 }, ['sealSet', 20], { cost: 12, cooldown: 15 }),
 };
 
 /** Psychokinesis's shatter (SUBSTRATE.md F5b): 0.25 at 10, rising on a straight line to 0.6 at 99 (past 0.6 a heavy blow would break a
@@ -178,10 +213,10 @@ export const openDomainArts = (L, game = null) => Object.keys(DOMAIN_ARTS).filte
 /** The domains' rungs kept: their feats counted, each rung said once when it opens, the standing rule written. */
 export class DomainArts {
   constructor(game) {
-    this.game = game; this.told = []; this.rule = { when: 'parry', then: 'lend' }; this.uses = {}; this.state = {}; this.off = []; this.hourUses = {}; this.vow = null;
-    game.save?.section?.('domainArts', { scope: 'player', version: 1, dump: () => ({ told: [...this.told], rule: { ...this.rule }, uses: { ...this.uses }, off: [...this.off], vow: this.vow }),
-      load: (d) => { this.told = [...(d?.told || [])]; this.rule = { when: 'parry', then: 'lend', ...(d?.rule || {}) }; this.uses = { ...(d?.uses || {}) }; this.off = [...(d?.off || [])]; this.vow = VOWS[d?.vow] ? d.vow : null; },
-      reset: () => { this.told = []; this.rule = { when: 'parry', then: 'lend' }; this.uses = {}; this.off = []; this.vow = null; } });
+    this.game = game; this.told = []; this.rule = { when: 'parry', then: 'lend' }; this.uses = {}; this.state = {}; this.off = []; this.hourUses = {}; this.vow = null; this.pin = [];
+    game.save?.section?.('domainArts', { scope: 'player', version: 1, dump: () => ({ told: [...this.told], rule: { ...this.rule }, uses: { ...this.uses }, off: [...this.off], pin: [...this.pin], vow: this.vow }),
+      load: (d) => { this.told = [...(d?.told || [])]; this.rule = { when: 'parry', then: 'lend', ...(d?.rule || {}) }; this.uses = { ...(d?.uses || {}) }; this.off = [...(d?.off || [])]; this.pin = (d?.pin || []).filter((a) => DOMAIN_ARTS[a]); this.vow = VOWS[d?.vow] ? d.vow : null; },
+      reset: () => { this.told = []; this.rule = { when: 'parry', then: 'lend' }; this.uses = {}; this.off = []; this.pin = []; this.vow = null; } });
     const byEvent = {};
     for (const [key, F] of Object.entries(FEATS)) {
       (byEvent[F.event] ||= []).push(['test', key, F]);
@@ -232,8 +267,12 @@ export class DomainArts {
   open(id) { return domainArtOpen(id, this.game.ledger, this.game); }
   /** The notches you have now (the seven levels summed: notchesFor). */
   notches() { return notchesFor(this.game.psyche?.total?.() ?? 7); }
-  /** The always-on rungs worn: open, not set aside, first opened first, as many as the notches hold. */
-  worn() { return Object.keys(DOMAIN_ARTS).filter((a) => DOMAIN_ARTS[a].kind !== 'action' && this.open(a) && !this.off.includes(a)).slice(0, this.notches()); }
+  /** The always-on rungs worn: open, not set aside, the ones you put on last first (`pin`), then the table's order, as many as the
+   *  notches hold. One past the budget is neither worn nor set aside: it waits for a notch. */
+  worn() {
+    const keys = Object.keys(DOMAIN_ARTS), rank = (a) => { const i = this.pin.indexOf(a); return i >= 0 ? i : 1000 + keys.indexOf(a); };
+    return keys.filter((a) => DOMAIN_ARTS[a].kind !== 'action' && this.open(a) && !this.off.includes(a)).sort((a, b) => rank(a) - rank(b)).slice(0, this.notches());
+  }
   /** Whether a rung is working now: an action while it is worn on the art key's slot, any other while it holds a notch. */
   on(id) { const A = DOMAIN_ARTS[id]; if (!A || !this.open(id)) return false; return A.kind === 'action' ? this.game.classArts?.worn?.action === id : this.worn().includes(id); }
   /** Put a rung on or take it off (an action: worn on the art key's slot). Null if it is not open. */
@@ -241,7 +280,8 @@ export class DomainArts {
     const A = DOMAIN_ARTS[id]; if (!A || !this.open(id)) return null;
     if (A.kind === 'action') { this.game.classArts?.wear?.(id); return true; }
     const was = this.on(id);
-    if (was) this.off.push(id); else { this.off = this.off.filter((x) => x !== id); if (!this.worn().includes(id)) { const w = this.worn(); if (w.length) this.off.push(w[w.length - 1]); this.off = this.off.filter((x) => x !== id); } }
+    if (was) { this.off.push(id); this.pin = this.pin.filter((x) => x !== id); } // (taken off: its notch goes to the next waiting)
+    else { this.off = this.off.filter((x) => x !== id); this.pin = [id, ...this.pin.filter((x) => x !== id)]; } // (put on: first in line, so the one put on last is the one that loses its notch)
     this.game.save?.dirty?.('domainArts');
     this.game.events?.emit('domain.art.wear', { art: id, on: this.on(id), by: 'courier' });
     return this.on(id);
@@ -258,7 +298,7 @@ export class DomainArts {
       if (this.told.includes(id) || !domainArtOpen(id, L)) continue;
       this.told.push(id); const A = DOMAIN_ARTS[id];
       this.game.save?.dirty?.('domainArts');
-      this.game.events?.emit('domain.art.learn', { art: id, domain: A.domain, kind: A.kind, by: 'courier' });
+      this.game.events?.emit('domain.art.learn', { art: id, domain: A.domain, kind: A.kind, on: this.on(id), by: 'courier' });
       if (A.kind === 'action' && !this.game.classArts?.worn?.action) this.game.classArts?.wear?.(id); // (an empty action slot takes it, as a class's art)
     }
   }

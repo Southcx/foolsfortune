@@ -57,6 +57,7 @@ import { EMO } from '../../progress/combat/emo.js';
 import { REGIONS } from '../vessel/damage.js';
 import { BREAK_AT } from '../../progress/combat/vessel.js'; // (the vessel's one rule's line: SUBSTRATE.md F1)
 import { throwBack } from '../parry.js';
+import { DepthRungs } from './depth.js';
 import { OPPOSITE, agateOf, TYPE_OF } from '../../progress/weather.js';
 
 const UP = new THREE.Vector3(0, 1, 0);
@@ -89,6 +90,7 @@ export class DomainArtsRun {
     this.caught = null; this.thrown = null; // (the Catch: the shot held { pr, until, h }, then the one let go { pr, from, until })
     this.boundTo = null; // (the Link: the last creature reprogrammed)
     this.reactAt = -99; this.reactions = null; // (Reactions: one a stamp, gathered in a microtask)
+    this.depth = new DepthRungs(this); // (the rungs at 60: the Fuse, Catch the Weather, Relay, Walk the Cycle, A Seal on a Creature: depth.js)
     const on = (n, fn) => game.events?.on?.(n, fn);
     on('move.parry', (e) => { if ((e.by ?? 'courier') === 'courier' && e.what === 'blow' && !e.training) this.parried(); });
     for (const [id, W] of Object.entries(RULE_WHEN)) if (W.event) on(W.event, (e) => { if (W.test(e)) this.rule(id); });
@@ -151,12 +153,13 @@ export class DomainArtsRun {
   press(R) {
     const id = R?.id, g = this.game;
     if (!DOMAIN_ARTS[id] || !this.open(id)) return this.refuse(id, 'closed');
+    if (id === 'fuse' && this.depth.fused) { this.depth.fuseRelease('chosen'); return true; } // (set off on your beat: free; its cooldown runs from the release, depth.js)
     if ((this.coolUntil?.[id] ?? 0) > this.now) return this.refuse(id, 'cool');
     const A = DOMAIN_ARTS[id];
     if (A.cost && !g.lachryma?.spend?.(A.cost, 'art')) return this.refuse(id, 'pool');
-    const ok = id === 'plating' ? this.platingGo() : id === 'retype' ? this.retypeGo() : id === 'recall' ? this.recallGo() : id === 'footholds' ? this.footholdGo() : false;
+    const ok = id === 'plating' ? this.platingGo() : id === 'retype' ? this.retypeGo() : id === 'recall' ? this.recallGo() : id === 'footholds' ? this.footholdGo() : this.depth.press(id);
     if (!ok) { if (A.cost) g.lachryma?.gain?.(A.cost, 'refund'); return false; }
-    if (id !== 'plating') (this.coolUntil ||= {})[id] = this.now + (A.cooldown || 0); // (Plating's cooldown runs from its end: unplate)
+    if (id !== 'plating' && id !== 'fuse') (this.coolUntil ||= {})[id] = this.now + (A.cooldown || 0); // (Plating's cooldown runs from its end: unplate; the Fuse's from its release)
     return true;
   }
   refuse(art, why) { this.game.events?.emit('domain.art.refuse', { art, why, by: 'courier' }); return false; }
@@ -300,6 +303,7 @@ export class DomainArtsRun {
       }
       if ((mine && T.from === c) || [...(this.game.projectiles || [])].some((q) => (q.reflected || q.parried) && q.from === c)) this.game.events?.emit('parry.return', { kind: c.kind, by: 'courier' });
     }
+    this.depth.onStrike(c, cause, power); // (Relay: a heavy blow passed on to the next body behind)
     const S = DOMAIN_ARTS.shatter, st = this.game.stun;
     if (this.on('shatter') && power >= S.does.minPower && st && !c.training && this.inRange(c)) {
       const sh = this.shatterNow(), poise = c.poise ?? 1, left = (1 - st.meter(c)) * poise;
@@ -437,6 +441,7 @@ export class DomainArtsRun {
     if (this.reactions) this.reacted(); // (a stamp's reaction, if its microtask has not run yet)
     if (this.thrown && this.now > this.thrown.until) this.thrown = null;
     this.vowTick(dt);
+    this.depth.update(dt);
     this.makeupTick();
     this.watch();
     this.shatterGlow();
