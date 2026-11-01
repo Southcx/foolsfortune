@@ -19,8 +19,8 @@ import * as THREE from 'three';
 import { Bubble } from './caster/bubble.js';
 
 export const DOMAIN_ART_MARKS = {
-  watch: { ticks: 12, r: 0.22, up: 1.75, len: 0.07, w: 0.025, col: 0x9fd8ff, ember: 0xff8a3a, dark: 0x1a2430, max: 6 },
-  shatter: { pattern: 'crackle', tint: 0xbfd2c6, rim: 0xf4ecd8, film: 0.3, k: 0.55, crack: 0.6, breathe: 0.18, rate: 5, max: 3 },
+  watch: { ticks: 12, r: 0.3, up: 1.75, len: 0.12, w: 0.05, col: 0x9fd8ff, ember: 0xff8a3a, dark: 0x1a2430, max: 6 },
+  shatter: { pattern: 'crackle', tint: 0x6e5c48, rim: 0xffd36a, film: 0.3, k: 0.95, crack: 0.75, breathe: 0.18, rate: 5, max: 3 },
 };
 const W = DOMAIN_ART_MARKS.watch, S = DOMAIN_ART_MARKS.shatter;
 const _v = new THREE.Vector3();
@@ -75,7 +75,7 @@ export class DomainArtMarks {
         if (n++ >= S.max || !c?.alive || !c.pos) continue;
         let B = this.shells.get(c);
         if (!B) {
-          B = this.freeShells.pop() || new Bubble({ shape: 'sphere', radius: 1, cell: 0.3, pattern: S.pattern, tint: S.tint, rim: S.rim, film: S.film, k: 0 });
+          B = this.freeShells.pop() || new Bubble({ shape: 'sphere', radius: 1, cell: 0.6, pattern: S.pattern, tint: S.tint, rim: S.rim, film: S.film, k: 0 });
           if (!B.object.parent) g.scene?.add(B.object);
           B.object.visible = true; this.shells.set(c, B);
         }
