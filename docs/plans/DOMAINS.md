@@ -622,7 +622,11 @@ Checked headless (DEBUG, the Summit lend):
 - **Footholds:** one set, three standing at most, and gone after 6 s. Seen in a screenshot: a pale step and the crystal growing.
 
 The other three 30s (Psychokinesis's catch, Possession's link, Alteration's reactions) want hooks in the parry, the vessel and the
-paint map, so they're the next wave's, specified with Petra.
+paint map, so they're the next wave's: specified for Petra in `docs/handoffs/petra/2026-11-01-from-dovina-rung-hooks-wave4.md`.
+
+**Catch-up EXP** (`CATCH_UP`, `progress/domains.js`; FFXIV's Armoury Bonus): a domain more than 10 levels below your highest earns
+x1.5, and the ledger keeps what it added (`exp.catchup.<domain>`). It answers the critic's finding that a fighter's Spellscription
+lags. The Codex's domain chips now show each domain's next rung and level, and the catch-up mark while it applies.
 
 Commands: `/rung`, `/rule`, `/vow`. The Codex's STATUS shelf has THE RUNGS: each rung, open or how near by both ways, its notch on
 or off.

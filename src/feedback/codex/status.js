@@ -12,7 +12,7 @@
 //
 //   renderStatus(codex, host)
 // ---------------------------------------------------------------------------------------
-import { DOMAINS, MAX_LEVEL, expAt, toNext } from '../../progress/domains.js';
+import { DOMAINS, MAX_LEVEL, expAt, toNext, catchUpOf, CATCH_UP } from '../../progress/domains.js';
 import { ATTRIBUTES } from '../../progress/alchemy.js';
 import { ECON } from '../../progress/econ/table.js';
 import { DOMAIN_ORDER, DOMAIN_COLOUR } from '../../progress/godpowers.js';
@@ -157,11 +157,13 @@ export function renderStatus(codex, host) {
     return { id, name: DOMAINS[id].name, lv, value: lv / MAX_LEVEL, next: Math.min(1, (lv + Math.max(0, Math.min(1, into))) / MAX_LEVEL), colour: hex(DOMAIN_COLOUR[id]), into };
   });
   const total = doms.reduce((n, d) => n + d.lv, 0), world = doms.every((d) => d.lv >= MAX_LEVEL);
+  const top = Math.max(...doms.map((d) => d.lv)), nextRung = (d) => Object.values(DOMAIN_ARTS).filter((R) => R.domain === d.id && R.level > d.lv).sort((x, y) => x.level - y.level)[0];
+  const extra = (d) => { const R = nextRung(d), c = catchUpOf(d.lv, top); return `${R ? ` · ${R.label} at ${R.level}` : ''}${c !== 1 ? ` · catching up x${CATCH_UP.mult}` : ''}`; }; // (the next rung, and catch-up's bonus: domains.js CATCH_UP)
   const a = document.createElement('div'); a.className = 'st-card';
   const cls = g.laidSpread?.class?.label; // (the class your laid spread reads as, as the Pneuka Box's header says it: CLASSES.md)
   a.innerHTML = `<h3>THE DOMAINS</h3><div class="st-sum"><b>${total}</b>total level of ${MAX_LEVEL * 7}${world ? ' · THE WORLD' : ''}${cls ? ` · you read as ${cls}` : ''}</div>`
     + radar(doms, [33, 66, 99].map((l) => l / MAX_LEVEL), world ? 'rgba(212,165,60,.85)' : 'rgba(255,178,122,.28)', world ? '#d4a53c' : '#ffb27a', keyed) // (the Codex's amber; The World's gold)
-    + `<div class="st-chips">${doms.map((d) => `<span class="st-chip"><i style="background:${d.colour}"></i>${d.name}<b>${d.lv}</b><small>${d.lv >= MAX_LEVEL ? 'max' : `${Math.round(d.into * 100)}% to ${d.lv + 1}`}</small></span>`).join('')}</div>`;
+    + `<div class="st-chips">${doms.map((d) => `<span class="st-chip"><i style="background:${d.colour}"></i>${d.name}<b>${d.lv}</b><small>${d.lv >= MAX_LEVEL ? 'max' : `${Math.round(d.into * 100)}% to ${d.lv + 1}`}${extra(d)}</small></span>`).join('')}</div>`;
   // Soul Alchemy's attributes: a rank each (0..ranks), its seasoning toward the next as the faint ring
   const atts = Object.values(ATTRIBUTES).map((t) => {
     const r = Al?.rank?.(t.id) ?? 0, s = (Al?.seasoning?.(t.id) ?? 0) / 100, [cr, cg, cb] = wheelSRGB(t.hue, 0.65);

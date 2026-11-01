@@ -16,7 +16,7 @@
 //
 //   DOMAINS[id] = { id, name, does }   SOURCES = [{ event, domain, base | acts | acts(e), quality(e) -> 0..1 }]   PACE = { hours99, actsPerMin }
 //   SKILL = { floor, ceil, power }   skillWeight(q) -> floor .. ceil   expFor(e) -> [[domain, exp]]   scaleOf(domain) -> on PACE
-//   toNext(level) -> exp      expAt(level) -> exp      levelOf(exp) -> 1..99
+//   toNext(level) -> exp      expAt(level) -> exp      levelOf(exp) -> 1..99   CATCH_UP   catchUpOf(level, highest) -> multiplier
 //   (widening: progress/godpowers.js RAMP.tools, widenOf(key, level))
 // ---------------------------------------------------------------------------------------
 import { stageQuality } from './econ/emocean.js';
@@ -224,6 +224,13 @@ export function expFor(e) {
   }
   return out;
 }
+
+/** CATCH-UP (DOMAINS.md 13; FFXIV's Armoury Bonus, +50% EXP for a job below your highest; OSRS's lack of one is why its low skills
+ *  are a chore): a domain more than `below` levels under your highest earns `mult` times. The domains are pushed by different play, and a
+ *  fighter's Spellscription lags; the bonus closes the gap without paying the high one more. 10 levels is about 2% of the curve's EXP at
+ *  60, so it never touches a player who rounds out as they go. */
+export const CATCH_UP = { below: 10, mult: 1.5 };
+export const catchUpOf = (level, highest) => (highest - level > CATCH_UP.below ? CATCH_UP.mult : 1);
 
 /** EXP from one level to the next (v0.1's curve), the total to reach a level, and the level an EXP total stands at. */
 export const toNext = (level) => Math.floor(Math.pow(level, 1.5) * 50 + 100);
