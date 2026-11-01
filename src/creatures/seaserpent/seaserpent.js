@@ -94,7 +94,7 @@ export class SeaSerpents {
     const c = {
       type: 'creature', kind: beast, name: beast === 'seaSerpent' ? 'sea serpent' : beast, id: NEXT++, row, B, N, GAP, root, look, eyes, body, lair, shape,
       home: home.clone(), pos: shape ? home.clone() : spine[0].p, /* (a shape's place is its own: its parts are where its body draws them) */ vel: new THREE.Vector3(), want: new THREE.Vector3(), yaw, speed: 0, radius: B.headR, height: 2,
-      alive: true, hp: row.hp, maxHp: row.hp, poise: B.poise * (traits.bold ?? 1), stunFor: B.stunFor, traits, rel: new Map(), loud: 1.4, affinity: null,
+      alive: true, hp: row.hp, maxHp: row.hp, poise: B.poise * (traits.bold ?? 1), stunFor: B.stunFor, traits, rel: new Map(), loud: 1.4,
       spine, under: 1, goUnder: 1, rear: 0, wantRear: 0, phase: simRand() * 6.28, attack: null, coiled: null, habit: null, flash: 0, dying: null,
       cd: Object.fromEntries(Object.keys(row.moves).map((k, i) => [k, 1 + i])),
       wake: new ShipWake(g), wakeBody: new THREE.Object3D(),

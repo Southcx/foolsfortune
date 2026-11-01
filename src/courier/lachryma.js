@@ -7,7 +7,7 @@
 //   - spend() is all-or-nothing, drain() takes what it can (continuous use)
 //   - reserve()/commit()/refund() lets a mechanic hold energy while it winds
 //     up (a charge) and give it back if cancelled
-//   - modifiers stack: { regenMult, costMult: { tag|'*': x }, maxBonus, regenDelayMult, reachMult (the bauble magnet's radius: a
+//   - modifiers stack (`source` what holds it, `secs` game seconds it lasts; sources() lists them): { regenMult, costMult: { tag|'*': x }, maxBonus, regenDelayMult, reachMult (the bauble magnet's radius: a
 //     stone's reach, progress/stones.js modifier()) }
 //   - events: change, spend, gain, empty, full, overflow, denied
 // ---------------------------------------------------------------------------
@@ -17,6 +17,8 @@ import { T } from '../core/config.js';
 import { sfx } from '../audio/sfx.js';
 import { stream } from '../core/rng.js';
 import { OXIDATION, oxidationMaterial } from '../vfx/oxidation.js';
+/** Tags that are harm taken, not a use: `costMult['*']` never scales them (SUBSTRATE.md C1). */
+export const HARM_TAGS = new Set(['shield', 'hull']);
 const simRand = stream('courier/lachryma'); // (the simulation's chance: core/rng.js, the same twice)
 
 export class LachrymaPool {
@@ -43,15 +45,21 @@ export class LachrymaPool {
   }
 
   // ---- modifiers -----------------------------------------------------------
-  addModifier(id, mod) { this.modifiers.set(id, mod); this.value = Math.min(this.value, this.max); }
-  removeModifier(id) { this.modifiers.delete(id); this.value = Math.min(this.value, this.max); }
+  /** A modifier, with an optional `source` (what the tube says holds it) and `secs` (game seconds it lasts, counted in update: never a
+   *  wall-clock timer, so a pause or the hitstop holds it too, SUBSTRATE.md F7). Adding an id again replaces it and restarts its time. */
+  addModifier(id, mod) { this.modifiers.set(id, mod); if (mod?.secs > 0) (this.timed ||= new Map()).set(id, mod.secs); else this.timed?.delete(id); this.value = Math.min(this.value, this.max); }
+  removeModifier(id) { this.modifiers.delete(id); this.timed?.delete(id); this.value = Math.min(this.value, this.max); }
+  /** Each live modifier with its source and the game seconds it has left (null: until removed). */
+  sources() { return [...this.modifiers].map(([id, m]) => ({ id, source: m?.source ?? id, left: this.timed?.get(id) ?? null })); }
   product(fn) { let k = 1; for (const m of this.modifiers.values()) k *= fn(m) ?? 1; return k; }
 
   get max() { let b = this.baseMax, k = 1; for (const m of this.modifiers.values()) { b += m.maxBonus || 0; k *= m.maxMult || 1; } return b * k; } // (maxMult: Willpower's widening, read live)
   get available() { return this.value - this.reserved; }
   get fraction() { return this.value / this.max; }
 
-  cost(base, tag = '*') { return base * this.product((m) => m.costMult?.[tag] ?? m.costMult?.['*']); }
+  /** A use's cost after the modifiers. A harm tag (`HARM_TAGS`: the shield's and the hull's drains) is harm taken, not a use: it reads
+   *  only a modifier named for it, never `'*'`, so a cheaper art never makes the shield cheaper (SUBSTRATE.md C1). */
+  cost(base, tag = '*') { return base * this.product((m) => (HARM_TAGS.has(tag) ? m.costMult?.[tag] : m.costMult?.[tag] ?? m.costMult?.['*'])); }
 
   // ---- spending ------------------------------------------------------------
   /** All-or-nothing. Returns true if paid. */
@@ -76,6 +84,16 @@ export class LachrymaPool {
     return c;
   }
 
+  /** The pool set to `v` (clamped to 0 .. max) as a settling, not a use: no cost multiplier, never refused. What a mode that held the
+   *  pool hands back (the puzzle duel's board, SUBSTRATE.md F6). Said as a gain or a spend of the difference. */
+  setTo(v, source = 'settle') {
+    const before = this.value; this.value = Math.max(0, Math.min(this.max, v));
+    const d = this.value - before;
+    if (d > 1e-6) this.emit('gain', { source, amount: d, value: this.value });
+    else if (d < -1e-6) { this.sinceSpend = 0; this.emit('spend', { tag: source, amount: -d, value: this.value }); if (this.value <= 1e-6) this.emit('empty', { value: 0 }); }
+    return d;
+  }
+
   // Reservations: energy set aside while something winds up.
   reserve(amount) { const a = Math.min(amount, this.available); this.reserved += a; this.sinceSpend = 0; return a; }
   commit(amount, tag = '*') {
@@ -98,6 +116,7 @@ export class LachrymaPool {
   }
 
   update(dt) {
+    if (this.timed?.size) for (const [id, t] of this.timed) { if (t - dt <= 0) this.removeModifier(id); else this.timed.set(id, t - dt); }
     this.sinceSpend += dt;
     const delay = this.regenDelay * this.product((m) => m.regenDelayMult);
     if (this.sinceSpend < delay || this.value >= this.max) return;

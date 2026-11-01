@@ -39,8 +39,7 @@ export const OUTCOME_FX = {
   cubes(g, at, { power }) { const w = Math.round(ECON.lockheart.cubes * power); g.cubes?.burst?.(at.clone().setY(at.y + 0.4), w, { count: 6 + Math.round(4 * power), up: 5, from: 'lockheart' }); return w; },
   mend(g, at, { power }) {
     g.lachryma.gain(g.lachryma.max, 'lockheart');
-    g.lachryma.addModifier('mend', { regenMult: 2 + power, regenDelayMult: 0.3 });
-    setTimeout(() => g.lachryma.removeModifier('mend'), 18000 * power);
+    g.lachryma.addModifier('mend', { regenMult: 2 + power, regenDelayMult: 0.3, source: 'the Lockheart\'s mend', secs: 18 * power }); // (its time on the game clock: courier/lachryma.js)
     burst(g, at, 30, 0xb8f2a6, { speed: 2, up: 3, gravity: -1, size: 0.08 }); sfx.mended?.();
     return 1;
   },

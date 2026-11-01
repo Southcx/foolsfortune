@@ -203,8 +203,7 @@ export class Crucibelle extends HeldTool {
       g.spirits?.rally(secs, Math.min(2, power));
       for (const c of g.creatures.near(P.pos, 20)) if (!c.ally && g.ai.eco.relation(c, P) === REL.KIN) { g.creatures.apply(c, 'haste', secs, 1, 'courier'); g.creatures.apply(c, 'empower', secs, 1, 'courier'); n++; }
       n += g.spirits?.list.length || 0;
-      g.lachryma.addModifier('rally', { regenMult: 2.5, regenDelayMult: 0.3, costMult: { '*': 0.75 } });
-      clearTimeout(this.rallyTimer); this.rallyTimer = setTimeout(() => g.lachryma.removeModifier('rally'), secs * 1000);
+      g.lachryma.addModifier('rally', { regenMult: 2.5, regenDelayMult: 0.3, costMult: { '*': 0.75 }, source: 'the rally', secs }); // (its time on the game clock: courier/lachryma.js)
     } else if (id === 'lull') {
       for (const c of g.creatures.near(P.pos, 11 * power)) if (!c.ally && g.ai.eco.relation(c, P) !== REL.KIN) { g.creatures.apply(c, 'sleep', 7 * power * (g.psyche?.widen?.('possession.song') ?? 1), 1, 'courier'); n++; }
       for (const c of g.clappers?.list || []) if (c.alive && !c.ally && c.pos.distanceTo(P.pos) < 9 * power) { g.clappers.stun(c, 3 * power, g.shells.glowOutline, g.shells.xray); n++; }

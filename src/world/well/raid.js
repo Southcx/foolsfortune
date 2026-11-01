@@ -28,8 +28,8 @@ import { PHASES, CASTS, NOVA_AT, ENRAGE, phaseOf, timeline } from '../../progres
 import { bearingXZ, dishY, BOWL_AT } from './bowl.js';
 import { ARENA } from '../../progress/combat/dunemaw.js';
 import { FoeLook } from '../../vfx/foelook.js';
+import { SHIELD } from '../../courier/vessel/damage.js'; // (the one shield constant: a full blow's cost to the pool)
 
-const SHIELD = 35; // (Lachryma a full blow costs the pool: courier/vessel/damage.js's; a share of the pool is a blow of share * max / SHIELD)
 const HIDDEN_OK = new Set(['slipNova', 'broodCall', 'swallow', 'overflow']); // (cast from under the slip: the transition's own)
 const CALF_HP = 12; // (a sherd's health in plain blows: four in 30 s is about 1.6 blows a real second; Dovina's to set as CASTS.calving.area.hp)
 const BROOD_SPEED = 3; // (m/s: from the rim to W0 in about 8 real seconds, the add's window)
@@ -123,7 +123,8 @@ export class Raid {
     let mult = this.sodden > 0 ? 2 : 1;
     if (this.sodden > 0) { this.sodden = 0; this.moment('dry'); }
     if (raidwide && g.input?.isDown?.('KeyV')) mult *= 0.5;
-    const pool = g.lachryma, k = eff.pool ? (eff.pool * (pool?.max ?? 100) / SHIELD) * mult : 0.55 * (eff.hits || 1) * mult;
+    const pool = g.lachryma, k = eff.pool ? (eff.pool * (pool?.baseMax ?? 100) / SHIELD) * mult // (a share of the base pool, never the widened max: a bigger pool (Willpower, the ruby) bears more of these blows, SUBSTRATE.md)
+      : 0.55 * (eff.hits || 1) * mult;
     if (from && !raidwide) {
       const v = _v.set(P.pos.x - from.x, 0, P.pos.z - from.z); if (v.lengthSq() < 1e-4) v.set(0, 0, 1); v.normalize();
       P.impulse(v.clone().multiplyScalar(9).setY(5), 'foe');

@@ -4793,3 +4793,17 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** a soft platform's tape measure (and the Brawl's ribbon) is drawn behind the plane, its front face 0.42 m back
   (`CLOTH.clear`): a body under it stands in front of it, a body on it stands on its lip. The heights and colliders stand as they were.
 - **Rule:** 384
+
+### 2026-11-01 · The shield grew with every cheaper art; the raid's blow grew with the pool; a duel's loss could be refused (found by Dovina, SUBSTRATE.md's audit)
+- **Seen:** read from the code. A sapphire made the Courier 18% tougher, and two arts made the shield free. Willpower and the ruby did
+  not make the Great Dunemaw's raid any safer. A puzzle duel's write-back went through `spend`.
+- **Cause:** one map holding two meanings. `costMult['*']` was meant for what a use costs, but the shield's and the hull's drains
+  (`drain(_, 'shield')`, `'hull'`) read it too, so harm taken was discounted like a use. The raid set a blow as a share of
+  `pool.max`, so a wider pool took a proportionally wider blow. The duel settled its result with `spend`, which is all-or-nothing and
+  scaled by the multipliers, so a loss larger than what was left was refused whole. The pool also kept regenerating under the board.
+- **Fix:** `HARM_TAGS` (courier/lachryma.js): a harm tag reads only a modifier named for it, never `'*'`. The raid's share is of
+  `baseMax`, and its `SHIELD` is imported, not declared twice. The duel holds regen with a sourced modifier while the board is up and
+  settles with `pool.setTo` (never a use, never refused). `strike` reads the body's type from its constitution (`affinityOf`).
+  Measured headless: with `costMult { '*': 0.5 }`, a shot of 10 costs 5 and the shield and the hull still 10; `setTo` 50 to 80
+  and back to 50.
+- **Rule:** 385
