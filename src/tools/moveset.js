@@ -137,6 +137,7 @@ import { featTint } from '../vfx/oxidation.js';
 import { blowWeight } from '../vfx/blowfeel.js';
 import { stream } from '../core/rng.js';
 import { T } from '../core/config.js';
+import { KeyTrack, keysOf, plantFeet } from '../courier/anim/keyposes.js';
 
 /** The hit-stop's length by the blow's weight class (vfx/blowfeel.js blowWeight; Calissa's ask, 2026-10-25): a light blow stops
  *  shorter, a finisher longest, the stop grown with the blow as Sakurai's (a share of the length the damage gives). */
@@ -406,7 +407,7 @@ export class Moveset {
     // the move plays on
     c.tPrev = c.t;
     if (c.phase === 'fall') { if (P.grounded) this.land(); }
-    else c.t += dt * (c.def.rate || 1);
+    else { c.t += dt * (c.def.rate || 1); c.kt?.update(dt * (c.def.rate || 1)); }
     if (c.kind === 'launcher' && c.high == null && c.t >= (c.def.track?.strike[0] ?? 0)) c.high = !!(c.def.high && c.holdB); // (held to its strike: High Time)
     if (c.kind === 'launcher' && c.high && !this.arc && c.t >= (c.def.track?.strike[1] ?? 0)) this.leap(c); // (from its strike's end: their own arc, before a cut can go on from it)
     const end = c.def.to ?? this.dur(c.def);
@@ -492,6 +493,7 @@ export class Moveset {
     if (join) { (this.from ||= ch.clips.pose()).copy(join); this.fadeT = 0; }
     const c = (this.cur = { id, def, kind, n, t: def.from || 0, tPrev: def.from || 0, phase: 'play', landed: false, holdB: kind === 'launcher' });
     this.offset = false; this.drop = null;
+    const keys = keysOf(this.id, id); if (keys) c.kt = (this._kt ||= new KeyTrack(ch.clips)).play(keys, this.last || null); // (a move with key poses, anim/keys/<tool>.js, drawn by the key track; its timing as a blow the clip's: KEY-POSES.md 6)
     if (kind === 'launcher') { this.juggle = null; this.arc = null; c.y0 = P.pos.y; }
     else if (kind !== 'air') this.arc = null; // (only the air string keeps High Time's arc)
     this.hit.clear(); this.buffer = 0; this.rec = null;
@@ -741,8 +743,7 @@ export class Moveset {
       return { pose: out, w: 1 - THREE.MathUtils.smoothstep(r.t, r.dur - 0.3, r.dur) };
     }
     if (c.def.body === 'whole') return null;
-    C.sample(c.def.clip, c.t, out, c.kind === 'charge-hold');
-    this.joined(C, out);
+    if (c.kt) { c.kt.sample(out); (this.last ||= C.pose()).copy(out); this.fadeT = 1; } else { C.sample(c.def.clip, c.t, out, c.kind === 'charge-hold'); this.joined(C, out); } // (a key's snap is its join)
     const end = c.def.to ?? this.dur(c.def), fade = c.def.fade;
     const w = Math.min(1, (c.t - (c.def.from || 0)) / 0.05 + (this.from && this.fadeT < 1 ? 1 : 0)) * (fade ? 1 - THREE.MathUtils.smoothstep(c.t, end - fade, end) : 1);
     return { pose: out, w: Math.min(1, w) };
@@ -767,8 +768,9 @@ export class Moveset {
     if (this.legW < 0.01 || (!c && !this.legHeld)) { this.legHeld = false; return; }
     if (!this.LOWER || this.LOWER.length !== C.nb) this.LOWER = Float32Array.from(ch.MASK_UPPER, (v) => 1 - v);
     if (!c) { C.blend(base, this._lp, this.legW * w * this.legFw, this.LOWER, 1); return; } // (the move is over: its last legs eased out, not dropped in a frame: casebook rule 46)
-    const pose = C.sample(c.def.clip, c.t, (this._lp ||= C.pose()), c.kind === 'charge-hold'), R = rootOf(C, c.def.clip);
-    if (R) { R.at(c.t, _a); pose.p[0] -= _a.x; pose.p[2] -= _a.z; }
+    const K = c.kt?.key, pose = K ? c.kt.sample((this._lp ||= C.pose())) : C.sample(c.def.clip, c.t, (this._lp ||= C.pose()), c.kind === 'charge-hold'), R = rootOf(C, K ? K.clip : c.def.clip);
+    if (R) { R.at(K ? (K.frame | 0) / C.fps : c.t, _a); pose.p[0] -= _a.x; pose.p[2] -= _a.z; }
+    if (K) plantFeet(ch, c.kt.plant, this.legW * w); // (a key's planted soles held by footIK)
     const end = c.def.to ?? this.dur(c.def), fw = c.def.fade ? 1 - THREE.MathUtils.smoothstep(c.t, end - c.def.fade, end) : 1;
     this.legFw = fw; this.legHeld = true;
     C.blend(base, pose, this.legW * w * fw, this.LOWER, 1);

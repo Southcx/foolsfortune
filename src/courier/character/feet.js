@@ -84,11 +84,14 @@ export function footIK(ch, dt, s, planted, stretch, speed, gaitW) {
   // foot locks (world space); a teleport drops them
   if (st.lockPos && st.lockPos.distanceToSquared(s.pos) > 1) for (const k of LR) { ch.lock[k].on = false; ch.lock[k].w = 0; }
   (st.lockPos = st.lockPos || new THREE.Vector3()).copy(s.pos);
-  const lockable = T.anim.footLock && planted > 0.9 && gaitW > 0.25;
+  // (a key move owning the legs says its planted soles (anim/keyposes.js plantFeet, KEY-POSES.md 6): those in place of the gait cycle's,
+  //  lockable whatever the override, so a stepped hip over a planted foot bends the knee and never slides the sole)
+  const KP = st.keyPlant && st.keyPlant.w > 0.5 ? st.keyPlant : null;
+  const lockable = T.anim.footLock && planted > 0.9 && (KP ? true : gaitW > 0.25);
   for (const k of LR) {
     const L = ch.lock[k];
     if (L.on && s.groundVel) L.p.addScaledVector(s.groundVel, dt); // (a locked foot rides its platform)
-    const want = lockable && st.contact[k] > 0.6;
+    const want = lockable && (KP ? KP[k] > 0.5 : st.contact[k] > 0.6);
     if (!want) L.lost = false;
     if (want && !L.on && !L.lost) { L.on = true; L.p.copy(anim[k]); L.w = 1; } // (locks where the foot is: no pop)
     // (let go when the body has run 0.35 m off it, a start or a turn outrunning the cycle: eased off, and not caught again until the
