@@ -6,7 +6,7 @@
 //   30  a rung       the second relation (waves 2 to 4)
 //   40  a power      (the ones that opened at 35), or a trait where the domain has none
 //   50  a power      (the ones that opened at 60), or a trait
-//   60  a rung       depth (five built: DOMAIN_ARTS; True Odds and Borrow a Verb planned), and the pairings open at 60 in both
+//   60  a rung       depth (all seven built: DOMAIN_ARTS), and the pairings open at 60 in both
 //   70  a trait      one of the domain's rungs made stronger
 //   80  the epic     the domain's epic miracle (EPICS)
 //   90  a rung       the last relation (planned)
@@ -57,9 +57,9 @@ export const TRAITS = {
 const PLANNED = {
   ouranurgy: { 90: ['Stasis', 'A bubble where time runs at a fifth.'], 99: ['The Rewind', 'The area put back as it was 6 seconds ago. You keep only what you know.'] },
   manifestation: { 90: ['Made of a Feeling', 'A made thing of a feeling: a wall of Grief\'s rain, a ward of Fury\'s sparks.'], 99: ['A Second Vessel', 'A clay double made from your pool, with its own cracks.'] },
-  divination: { 60: ['True Odds', 'The world\'s chances shown as numbers: a chest\'s tier, the wheel, a flee.'], 90: ['Call It', 'Commit to a read of a creature\'s next move. Right, and your read is exact a while.'], 99: ['See the Next Roll', 'Your own dice\'s next throw shown before you commit, once a game hour.'] },
+  divination: { 90: ['Call It', 'Commit to a read of a creature\'s next move. Right, and your read is exact a while.'], 99: ['See the Next Roll', 'Your own dice\'s next throw shown before you commit, once a game hour.'] },
   psychokinesis: { 90: ['Heft', 'A carried mass held off your pool\'s top, thrown as hard as it weighs.'], 99: ['Banked Motion', 'Your speed stored as you move and let go as one blow.'] },
-  possession: { 60: ['Borrow a Verb', 'A creature\'s move lent to you a while, on R as your sub\'s.'], 90: ['Ride', 'Leave your vessel standing and drive a creature\'s body.'], 99: ['No Border', 'A bound spirit\'s pool and yours are one.'] },
+  possession: { 90: ['Ride', 'Leave your vessel standing and drive a creature\'s body.'], 99: ['No Border', 'A bound spirit\'s pool and yours are one.'] },
   alteration: { 90: ['The Exchange', 'Pool into mending, or a crack into pool, at a loss.'], 99: ['Re-make a Body', 'A creature\'s make-up changed a while.'] },
   spellscription: { 90: ['Rewrite a Tag', 'Add a tag to a thing, or take one off.'], 99: ['A Place\'s Law', 'An inscription that changes one rule inside its circle.'] },
 };
