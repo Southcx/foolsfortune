@@ -105,6 +105,14 @@ The ship, the Jar, the skiff and the Arena's body are the vessel in its forms, s
     the waves are priced to: the Jar left undefended, the pool full at the raid's start and no power cast, still shatters by wave 5
     (Petra's measure without the shield: 19 hits, 133 hp, shattered in wave 5). If the shield carries it past wave 5, the waves' damage
     rises by the shield's share; the shield stays on.
+  - **Measured and priced (v370):** at `raidDamage 7` the shield held every strike, so Petra raised it to 20. Undefended, the Jar now
+    shatters in wave 5 after 19 strikes: 10 held by the shield (388 pool drained, about 1.9 pool a point) and 9 cracking it for 180 hp. A
+    raider's clap is the baseline, the blow you let through. **`ballDamage 14` and `blastDamage 22` stay as they are** (Dovina, 2026-11-01).
+    A lobber's ball is 0.7 of a clap, but it comes on a clock (every 3.4 real s) and you can answer it: grab it or send it back. One
+    lobber left alone drains about 27 pool a throw against about 6 back from regen in the gap, so a full pool lasts about 60 real s and the
+    Jar shatters about 45 real s after that. That is a nag that has to be answered, not a killer. A blast is 22 only at its heart, falls off
+    to nothing at 1.1 R, is a one-off, and is usually a barrel you set off yourself. 1.1 claps at worst teaches you not to stand in your own
+    fire. Look again if the raid waves get lobbers, or if blasts come from foes rather than barrels.
 - **Skiff:** already the pool. A wreck at an empty pool cracks the vessel, which is its own real cost.
 - **Arena:** percent *is* the cracks (section 3, F5).
 
