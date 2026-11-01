@@ -216,7 +216,7 @@ function attack(F, I) {
   if (m.special === 'lunge' && f >= a0 && f <= a1) { F.vx = F.face * (m.lunge || 4) / ((a1 - a0 + 1) * FRAME); if (!F.grounded) F.vy = Math.max(F.vy, 0); vel(F); } // (a lunge: its distance over its active frames)
   if (m.special === 'lunge' && f === a1 + 1) F.vx = 0; // (and it stops where it ends: no slide on)
   // a barrage (the brawler's rapid jab): looped while LMB is held, its finisher on the release (Ultimate's)
-  if (m.loop && f >= m.loop[1]) { if (I.atkH) { F.mf = m.loop[0] - 1; F.hits.clear(); } else if (m.then) return startMove(F, m.then); }
+  if (m.loop && f >= m.loop[1]) { if (I.atkH) { F.mf = m.loop[0] - 1; F.loops++; F.hits.clear(); } else if (m.then) return startMove(F, m.then); }
   // the jab's string: LMB again once the last jab's hit is past
   if ((F.m === 'jab1' || F.m === 'jab2') && I.atkP && f > a1 && (F.m === 'jab1' || moveOf('jab3', F))) return startMove(F, F.m === 'jab1' ? 'jab2' : 'jab3');
   if (F.m === 'uspecial' && f > a1 && F.env.tryLedge(F)) return;
@@ -227,6 +227,11 @@ function attack(F, I) {
   }
   // the body: an aerial drifts and falls as any air state (no jumping out of it); a grounded move slides on its traction
   if (m.special === 'lunge' && f >= a0 && f <= a1) return;
+  if (m.special === 'dive' && !F.grounded) { // (a dive kick: held still in the air through its startup, then down its line until it lands or ends)
+    const D = m.dive || {}, r = ((D.angle ?? -45) * Math.PI) / 180;
+    if (f < a0) { F.vx *= 0.8; F.vy = 0; } else if (f <= a1) { F.vx = F.face * Math.cos(r) * (D.speed || 15); F.vy = Math.sin(r) * (D.speed || 15); }
+    F.mo.noJump = true; F.mo.noAct = true; vel(F); return;
+  }
   if (aerial || (!F.grounded && m.special)) { F.mo.noJump = true; F.mo.noAct = true; if (I.downP && F.vy <= 0 && !F.fastfall) { F.fastfall = true; F.env.verb(F, 'fastFall'); } return; }
   traction(F, F.m === 'dash'); vel(F);
 }

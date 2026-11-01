@@ -155,6 +155,14 @@ facilitate testing the movekits."
   | dash attack | a dash straight, 10%, sending out |
   | up special | an uppercut, the recovery |
   | side special | a 4 m lunge |
+  | forward air | the flying knee (Captain Falcon's Knee Smash): 20% on its one clean frame (14), 5% after; land in it, 19 frames |
+  | down air | the dive kick (Kamen Rider's Rider Kick): held still 12 frames, then 16 m/s down a line 50° below level until it lands (13%, 8% from frame 20); landing in it costs 28 frames |
+  | neutral air | the dropkick: 12% for its first 4 frames, then a weak 6% that lingers to frame 22; 22 frames of landing |
+
+  The three airs are the brawler's showpieces, so each has the price its reference has: the knee misses its 20 by one frame, the dive
+  kick commits the whole jump to its line, and the dropkick lands slowly. Their poses are Calissa's key tables (`fighter.brawler`,
+  `courier/anim/keys/fighterkits.js`), drawn by the Arena's pose layer as written (each still's `fix` laid over its clip frame).
+  A move's `late` is the clean and late hit (`{ at, damage, base, growth }`, read by `hitOf`); `special: 'dive'` is the stall and dive.
 
 - **The KIT lectern** (left of the Courier's start) cycles bare hands, the brawler and the worn tools. A tool chosen is drawn (the
   belt's own draw); a bare set empties the hands.
