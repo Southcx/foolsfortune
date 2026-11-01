@@ -17,7 +17,7 @@
 //   DOWN     down(): it slumps and crumbles back into the island's sand over DOWN real s (a sand mound sinking flat), then `done`.
 //
 //   game.makeSentinelBody({ scale }) (installSentinelBody, boot/world.js) or new SentinelBody(game, { scale }) -> s;   s.root (a Group, its feet at the origin, facing +Z: the runtime places and turns it)
-//   s.drive({ pose, move, k, rise })   s.hit(k)   s.down()   s.update(dt)   s.done   s.dispose()
+//   s.drive({ pose, move, k, rise })   s.hit(k)   s.down()   s.update(dt)   s.done   s.dispose()   s.bolt(from) -> its thrown clod (in the scene)
 //   s.center(out) (its chest, world)   s.head(out) (over its head, world)   SENTINEL_BODY { height, radius } (m, at scale 1: the capsule)
 //
 // Prior art: the haniwa of the Kofun period (Japan, 3rd-6th c.: unglazed terracotta figures set round a tomb to guard it, the shield-
@@ -81,7 +81,16 @@ function kit() {
   const sand = plain(new THREE.LatheGeometry([[1.05, 0], [0.9, 0.06], [0.68, 0.14], [0.5, 0.2], [0.001, 0.22]].map(([r, y]) => new THREE.Vector2(r, y)), 18));
   tint(sand, L.sand, 0xb89466, 0, 0.22);
   const solid = { vertexColors: true, roughness: 0.82, metalness: 0, emissive: 0xffffff, emissiveIntensity: 0 };
+  // the clod it throws: a lump of the island's clay with sand stuck to it, its faces knocked about (one mesh: the parry mark hulls it)
+  const clod = new THREE.IcosahedronGeometry(0.2, 1), cp = clod.attributes.position, cc = new Float32Array(cp.count * 3), ca = new THREE.Color();
+  for (let i = 0; i < cp.count; i++) {
+    const x = cp.getX(i), y = cp.getY(i), z = cp.getZ(i), n = 0.82 + 0.3 * Math.abs(Math.sin(x * 23.1 + y * 17.7 + z * 11.3));
+    cp.setXYZ(i, x * n, y * n * 0.85, z * n);
+    ca.setHex(Math.sin(x * 41 + z * 29) > 0.35 ? L.sand : L.clay).lerp(new THREE.Color(L.clayDark), Math.max(0, -y) * 1.6); cc.set([ca.r, ca.g, ca.b], i * 3);
+  }
+  clod.setAttribute('color', new THREE.BufferAttribute(cc, 3)); clod.computeVertexNormals();
   KIT = {
+    clod, clodMat: new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9, metalness: 0, flatShading: true }),
     body: mergeGeometries([torso, band, collar, ash]), head, arm, club, shield, light, sand,
     clay: new THREE.MeshStandardMaterial({ ...solid, flatShading: false }),
     glow: new THREE.MeshBasicMaterial({ color: L.light, side: THREE.DoubleSide, toneMapped: false }),
@@ -189,6 +198,19 @@ if (uCrack > 0.01) { float e = crackNet(vSp * 5.0); float w = 0.02 + 0.05 * uCra
     // a blow's flash on the clay
     this.flash = Math.max(0, this.flash - dt);
     this.mat.emissiveIntensity = (this.flash / L.flash) * 0.55;
+  }
+
+  /** Its throw (the wisp runtime's hook, creatures/wisp/lanternwisp.js release: `c.body?.bolt?.(from)`): a clod of the island's clay,
+   *  thrown from its club hand, added to the scene; the runtime moves and spins it and removes it at its end (geometry and material
+   *  shared by every sentinel, never disposed with one). A puff of its clay off the hand as it lets go. */
+  bolt(from) {
+    const K = kit(), m = new THREE.Mesh(K.clod, K.clodMat); m.castShadow = true; m.name = 'sentinel.clod';
+    this.root.updateMatrixWorld(true);
+    const hand = this.armR.localToWorld(new THREE.Vector3(0, -0.95, 0.4));
+    m.position.copy(Number.isFinite(hand.x) ? hand : from); m.scale.setScalar(this.scale);
+    (this.game.scene || this.root.parent)?.add(m);
+    this.game.vfx?.play?.('sentinel.crack', { pos: m.position.clone() });
+    return m;
   }
 
   dispose() { this.root.removeFromParent(); this.mat.dispose(); this.eyes.dispose(); }
