@@ -25,5 +25,5 @@ Delete your row's note in your branch when it is built.
 - **Dovina:** next is her own list: the rungs at 90 and 99, the trait numbers, the Strawman rig console. The pace decision (`PACE.hours99`, 300 or 100) is South's, in her digest.
 - **Calissa:** a look pass over True Odds' hosts: the chest, the wheel, the flee, the crystal.
 - **Espada:** the domain ladder's words: the 11 traits, the seven rungs at 60, True Odds' row labels and Borrow a Verb's log lines. They go to Dovina as one note in `docs/handoffs/dovina/` (all four live in her files). Pip's and Saggar's lines were already on main (9590502).
-- **Wanda:** asked what she has unbuilt. Her row goes in when she answers.
+- **Wanda:** the domain ladder heard: `domain.milestone`, `domain.trait.learn`, `borrow.use { kind }` (`slipjelly` or `wisp`), and the depth rungs' moments if cheap. Files: new `src/audio/domainladder.js`, `cues.js`, `sfx.js`, two lines in `worldmoments.js`, her glossary line, OST.md.
 - **Petra:** the Well's phone frame, once `/perfab` reports. Until then: the odds tag at the Tithe console in a shot, and Borrow a Verb in real play.
