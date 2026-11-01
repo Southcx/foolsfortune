@@ -509,9 +509,23 @@ const RULES = {
   'dreamvane.twirl': (s, e) => s.vaneSpin?.(e.on),
   'sentinel.wake': (s) => s.sentinelWake?.(),
   'sentinel.seek': (s) => s.sentinelSeek?.(),
-  'sentinel.mend': (s, e) => s.sentinelMend?.(e.by),
+  'sentinel.mend': (s, e) => s.sentinelMend?.(e.ground, e.last),
+  'sentinel.step': (s, e, g) => sentinelVoice(s, e, g)?.sentinelStep?.(),
+  'sentinel.windup': (s, e, g) => sentinelVoice(s, e, g)?.sentinelWindup?.(),
+  'sentinel.cast': (s, e, g) => sentinelVoice(s, e, g)?.sentinelSlam?.(),
+  'sentinel.crack': (s, e, g) => sentinelVoice(s, e, g)?.sentinelCrack?.(e.hp),
+  'sentinel.fall': (s, e, g) => sentinelVoice(s, e, g)?.sentinelFall?.(),
+  'sentinel.burst': (s, e, g) => sentinelVoice(s, e, g)?.sentinelSink?.(e.cause),
   'keepsake.pot': (s, e) => s.keepsakeSong?.({ feeling: e.feeling || feelingOfKind(e.kind) }, 1),
 };
+
+/** A sentinel's body heard from where it stands: `at` when the event carries it, else where it last stood (the slam and the sink carry none). */
+const SENTINEL_AT = { x: 0, y: 0, z: 0, known: false };
+function sentinelVoice(s, e, g) {
+  if (e.at) { SENTINEL_AT.x = e.at[0]; SENTINEL_AT.y = e.at[1]; SENTINEL_AT.z = e.at[2]; SENTINEL_AT.known = true; }
+  if (!SENTINEL_AT.known || !s.voiceAt) return s;
+  return s.voiceAt(() => SENTINEL_AT, { listener: () => g.camera, tag: 'sentinel', gain: 1, near: 6, far: 45 });
+}
 
 export function hearEvents(game, sfx) {
   for (const [name, fn] of Object.entries(RULES)) game.events.on(name, (e) => fn(sfx, e, game));
