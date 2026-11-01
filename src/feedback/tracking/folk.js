@@ -10,7 +10,7 @@ export function folkRules({ on, L, log, g }) {
   on('npc.talk', (e) => {
     L.inc('npc.talk'); L.inc(`npc.talk.${e.npc}`);
     const n = g.folk?.byId[e.npc];
-    if (e.first && n) log.say('explore', `You meet ${n.name}, ${n.def.title}.`);
+    if (e.first && n) log.say('explore', `Met ${n.name}, ${n.def.title}.`);
   });
   on('npc.say', (e) => { L.inc('npc.lines'); L.inc(`npc.mood.${e.mood || 'calm'}`); const n = g.folk?.byId[e.npc]; log.say('npc', `${n?.name || 'Someone'} : ${e.line}`); });
   on('npc.choose', (e) => log.say('say', `Courier : ${e.text}`));

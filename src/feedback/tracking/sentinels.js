@@ -15,7 +15,7 @@ export function sentinelRules({ on, L, log }) {
   for (const k of ['step', 'windup', 'crack', 'fall']) on(`sentinel.${k}`, () => {}); // (the body's moments, for the ear: heard, never said)
   on('sentinel.burst', (e) => {
     if (e.cause === 'settled') return; // (its last mend said it sank)
-    if (e.cause === 'driven') { log.say('other', `The sentinel sinks back into the ${ground}. The island still remembers.`, { key: 'snst', throttle: 4 }); return; }
+    if (e.cause === 'driven') { log.say('other', `The sentinel sinks back into the ${ground}.`, { key: 'snst', throttle: 4 }); return; }
     if (e.by !== 'courier') return;
     L.inc('sentinel.burst');
     log.say('battle', 'You put down the sentinel.', { key: 'snbr', throttle: 2 });

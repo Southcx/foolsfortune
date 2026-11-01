@@ -12,7 +12,7 @@ export function palmDieRules({ on, L, log }) {
   on('palm.condense', (e) => { L.inc('palm.cubes', e.n); });
   on('palm.grow', (e) => {
     L.hi('palm.sides', e.to);
-    log.say('gain', `Your palm die grows into a d${e.to}.`, { key: 'palm.grow' });
+    log.say('gain', `Palm die grown to a d${e.to}.`, { key: 'palm.grow' });
   });
   on('palm.roll', (e) => {
     L.inc('palm.roll'); if (e.held) L.inc('palm.held', e.held);

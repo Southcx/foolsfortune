@@ -17,20 +17,20 @@ const clock = (s) => { const m = Math.floor(s / 60), r = s - m * 60; return `${m
 const TRACKS = { sun: 'the Sun Circuit', gorge: 'the Gorge Run', coaster: 'the Coaster', made: 'your track' }; // (working names: Espada's)
 const ORD = (n) => `${n}${n === 1 ? 'st' : n === 2 ? 'nd' : n === 3 ? 'rd' : 'th'}`;
 const CUP_NAMES = { clay: 'the Clay Cup', sibling: 'the Sibling Cup' };
-const FAILS = { flare: 'You flared: the test asked for none.', snakes: 'Not enough snaking carves.', grind: 'Not enough rail ground.', trick: 'No spin landed square.', pool: 'Your pool ran too low.', lane: 'You never rode the recharge strip.', slow: 'Slower than bronze.', bail: 'You bailed.', bump: 'You touched a rival.', wall: 'You hit a wall.', land: 'You landed hard.' };
+const FAILS = { flare: 'Flare used. This test allows none.', snakes: 'Not enough snaking carves.', grind: 'Not enough rail grinding.', trick: 'No spin landed square.', pool: 'Your pool ran too low.', lane: 'You never rode the recharge strip.', slow: 'Slower than bronze.', bail: 'You bailed.', bump: 'You touched a rival.', wall: 'You hit a wall.', land: 'You landed hard.' };
 const STADIUM = { race: 'a race against the rivals', hotlap: 'a hot lap', pots: 'a pot smash', escape: 'the escape' };
 
 export function raceModeRules({ on, L, log, g }) {
   const say = (kind, text, key, throttle = 2) => log.say(kind, text, { key, throttle });
   // ---- the modes
   on('race.start', (e) => {
-    if (e.mode === 'hotlap') say('skiff', `A hot lap of ${TRACKS[e.track]}: a flying start, the clock begins at the line.`, 'rm.start');
-    else if (e.mode === 'practice') say('skiff', `Practice on ${TRACKS[e.track]}. Hold Backspace to rewind; nothing is recorded.`, 'rm.start');
-    else if (e.mode === 'pots') say('skiff', `A pot smash on ${TRACKS[e.track]}: every pot you ride through takes a second off.`, 'rm.start');
-    else if (e.mode === 'escape') say('skiff', 'The crater. Ride for the climb out.', 'rm.start');
-    else if (e.mode === 'daily') say('skiff', `The game day's race on ${TRACKS[e.track]}: ${conditionWords(e.condition)}, whatever the sky says.`, 'rm.start');
-    else if (e.mode === 'trim') say('skiff', `A test lap of ${TRACKS[e.track]}: your last test lap rides beside you, and each gate gives the split.`, 'rm.start');
-    if (e.mode !== 'race') say('info', g?.input?.device === 'touch' ? 'RESTART in the pause menu starts again; RETIRE retires.' : said(g, '{restart} starts again; holding {toGate} retires.'), 'rm.keys', 60);
+    if (e.mode === 'hotlap') say('skiff', `Hot lap: ${TRACKS[e.track]}. Flying start. The clock starts at the line.`, 'rm.start');
+    else if (e.mode === 'practice') say('skiff', `Practice: ${TRACKS[e.track]}. Hold Backspace to rewind. Nothing is recorded.`, 'rm.start');
+    else if (e.mode === 'pots') say('skiff', `Pot smash: ${TRACKS[e.track]}. Each pot you ride through takes 1 second off.`, 'rm.start');
+    else if (e.mode === 'escape') say('skiff', 'The escape. Ride up and out of the crater.', 'rm.start');
+    else if (e.mode === 'daily') say('skiff', `The game day's race: ${TRACKS[e.track]}. Condition: ${conditionWords(e.condition)}, regardless of the weather.`, 'rm.start');
+    else if (e.mode === 'trim') say('skiff', `Test lap: ${TRACKS[e.track]}. Your last test lap rides beside you. Each gate shows the split.`, 'rm.start');
+    if (e.mode !== 'race') say('info', g?.input?.device === 'touch' ? 'Tap RESTART in the pause menu to start again, or RETIRE to retire.' : said(g, 'Press {restart} to start again. Hold {toGate} to retire.'), 'rm.keys', 60);
   });
   on('race.restart', () => L.inc('race.restart'));
   on('race.photo', (e) => { if (e.by !== 'courier') return; L.inc('race.photo'); if (e.won) L.inc('race.photo.won'); L.lo('race.photo.gap', e.gap); const gap = (+e.gap).toFixed(2); say('record', e.won ? `Photo finish: you take it by ${gap} s.` : `Photo finish: ${e.who || 'a rival'} takes it by ${gap} s.`, 'rm.photo', 1); /* (Espada's words) */ });
@@ -40,53 +40,53 @@ export function raceModeRules({ on, L, log, g }) {
     if (e.mode === 'daily' && e.day != null) { // (the game day's race: one board a game day, raced as often as you like; its best kept by the day)
       L.inc('race.daily'); if (e.medal) L.inc('race.daily.medal'); if (e.medal === 'gold') L.inc('race.daily.gold');
       const sky = String(e.condition || '').split('.')[1]; if (sky && sky !== 'fair') L.inc(`race.daily.sky.${sky}`);
-      const b = L.lo(`race.daily.${e.day}`, e.seconds); if (b) say('record', `Your best in today's race: ${clock(e.seconds)}.`, 'rm.daily', 1);
+      const b = L.lo(`race.daily.${e.day}`, e.seconds); if (b) say('record', `New best in the game day's race: ${clock(e.seconds)}.`, 'rm.daily', 1);
     }
     if (e.mode === 'trim') { L.inc('race.trim'); say('record', `Test lap: ${clock(e.seconds)} (${(e.recordClass || 'stock').toUpperCase()}).`, 'rm.fin'); }
-    if (e.mode === 'hotlap') { L.inc('race.hotlap'); if (e.recordClass) L.lo(`race.hotlap.${e.track}.${e.recordClass}`, e.seconds); const b = L.lo(`race.hotlap.${e.track}`, e.seconds); say('record', `A hot lap of ${clock(e.seconds)}${b ? ', your best' : ''}.`, 'rm.fin'); }
+    if (e.mode === 'hotlap') { L.inc('race.hotlap'); if (e.recordClass) L.lo(`race.hotlap.${e.track}.${e.recordClass}`, e.seconds); const b = L.lo(`race.hotlap.${e.track}`, e.seconds); say('record', `Hot lap: ${clock(e.seconds)}${b ? ', your best' : ''}.`, 'rm.fin'); }
     if (e.mode === 'pots') { L.inc('race.pots'); L.lo(`race.pots.${e.track}`, e.seconds); L.hi('race.pots.smashed.best', e.pots?.smashed || 0); say('record', `${e.pots?.smashed} of ${e.pots?.of} pots: ${clock(e.raw)} less ${e.pots?.smashed} s, ${clock(e.seconds)}.`, 'rm.fin'); }
     if (e.mode === 'escape') { L.inc('race.escape.out'); L.lo('race.escape', e.seconds); say('record', `Out of the crater in ${clock(e.seconds)}, ${e.margin} m ahead of the jaws.`, 'rm.fin'); }
     if (e.mode === 'licence') { L.inc('licence.pass'); if (e.medal) L.inc(`licence.${e.test}.${e.medal}`); L.lo(`licence.${e.test}.best`, e.seconds); say('record', `Licence passed in ${clock(e.seconds)}: ${e.medal}.`, 'rm.fin'); }
   });
-  on('race.end', (e) => { if (e.why === 'caught') say('warn', 'The antlion has you. Backspace to try again.', 'rm.end'); });
+  on('race.end', (e) => { if (e.why === 'caught') say('warn', 'Caught by the antlion. Press Backspace to try again.', 'rm.end'); });
   on('race.pot', () => L.inc('race.pot'));
-  on('race.escape.wake', () => say('warn', 'The crater wakes. Something is coming up the road behind you.', 'rm.wake'));
-  on('race.escape.near', () => say('warn', 'It is right behind you.', 'rm.near', 4));
+  on('race.escape.wake', () => say('warn', 'The crater is awake. A chaser is coming up the road behind you.', 'rm.wake'));
+  on('race.escape.near', () => say('warn', 'The chaser is right behind you.', 'rm.near', 4));
   on('race.escape.caught', () => L.inc('race.escape.caught'));
-  on('licence.fail', (e) => { L.inc('licence.fail'); say('warn', `Licence failed. ${FAILS[e.why] || ''} Backspace to try again.`, 'rm.fail', 1); });
+  on('licence.fail', (e) => { L.inc('licence.fail'); say('warn', `Licence failed. ${FAILS[e.why] || ''} Press Backspace to try again.`, 'rm.fail', 1); });
   // ---- the cups
-  on('cup.start', (e) => say('skiff', `${CUP_NAMES[e.cup]}: three races, points by place.`, 'cup'));
-  on('cup.race', (e) => say('skiff', `Race ${e.round}: ${ORD(e.place)}, ${e.points} points. You have ${e.total}.`, 'cup.race'));
-  on('cup.finish', (e) => { L.inc('cup.finish'); if (e.place === 1) L.inc(`cup.${e.cup}.win`); say('record', e.place === 1 ? `You win ${CUP_NAMES[e.cup]}, with ${e.points} points.` : `${CUP_NAMES[e.cup]} ends: ${ORD(e.place)}, with ${e.points} points.`, 'cup.fin'); });
-  on('cup.end', (e) => say('warn', `${CUP_NAMES[e.cup]} is off.`, 'cup.end'));
+  on('cup.start', (e) => say('skiff', `${CUP_NAMES[e.cup]}: 3 races, points by place.`, 'cup'));
+  on('cup.race', (e) => say('skiff', `Race ${e.round}: ${ORD(e.place)}, ${e.points} points. Total: ${e.total}.`, 'cup.race'));
+  on('cup.finish', (e) => { L.inc('cup.finish'); if (e.place === 1) L.inc(`cup.${e.cup}.win`); say('record', e.place === 1 ? `Won ${CUP_NAMES[e.cup]} with ${e.points} points!` : `${CUP_NAMES[e.cup]} finished. Place: ${ORD(e.place)}, with ${e.points} points.`, 'cup.fin'); });
+  on('cup.end', (e) => say('warn', `${CUP_NAMES[e.cup]} cancelled.`, 'cup.end'));
   // ---- the City Trial
   let patches = 0;
-  on('citytrial.start', (e) => { patches = 0; L.inc('citytrial.start'); say('skiff', `The City Trial: ${Math.round(e.seconds / 60 * 10) / 10} real minutes to take what patches you can, then the Stadium.`, 'ct'); });
+  on('citytrial.start', (e) => { patches = 0; L.inc('citytrial.start'); say('skiff', `The City Trial. Collect patches for ${Math.round(e.seconds / 60 * 10) / 10} real minutes, then go to the Stadium.`, 'ct'); });
   on('citytrial.clock', (e) => say('skiff', `${e.left} s left to roam.`, `ct.clock.${e.left}`, 1));
   on('citytrial.patch', (e) => { patches++; L.inc('citytrial.patch'); L.inc(`citytrial.patch.${e.kind}`); L.hi('citytrial.patch.best', patches); });
-  on('citytrial.stadium', (e) => say('skiff', `The Stadium: ${STADIUM[e.event] || e.event}, on ${TRACKS[e.track]}, on the board you built.`, 'ct.stadium'));
+  on('citytrial.stadium', (e) => say('skiff', `The Stadium: ${STADIUM[e.event] || e.event} on ${TRACKS[e.track]}, with the board you built.`, 'ct.stadium'));
   on('citytrial.end', (e) => { if (e.why === 'finish') L.inc('citytrial.done'); else say('warn', 'The City Trial is over.', 'ct.end'); });
   // ---- the wager
-  on('wager.place', (e) => { L.inc('wager.place'); say('skiff', `${e.stake} cubes on you to ${e.on === 'win' ? 'win' : 'make the podium'}, at ${e.odds} to 1.`, 'wager'); });
-  on('wager.settle', (e) => { if (e.won) { L.inc('wager.won'); L.inc('wager.paid', e.paid); say('record', `The wager pays ${e.paid} cubes.`, 'wager.s'); } else { L.inc('wager.lost'); say('info', e.why === 'finish' ? 'The wager is lost.' : 'The stake is forfeit.', 'wager.s'); } });
+  on('wager.place', (e) => { L.inc('wager.place'); say('skiff', `Wager placed: ${e.stake} cubes on you to ${e.on === 'win' ? 'win' : 'make the podium'}, at ${e.odds} to 1.`, 'wager'); });
+  on('wager.settle', (e) => { if (e.won) { L.inc('wager.won'); L.inc('wager.paid', e.paid); say('record', `Wager won: ${e.paid} cubes paid.`, 'wager.s'); } else { L.inc('wager.lost'); say('info', e.why === 'finish' ? 'Wager lost.' : 'The stake is forfeit.', 'wager.s'); } });
   // ---- the board's rules (courier/skiff/boardrules.js)
-  on('skiff.hull', (e) => { if (e.by !== 'courier') return; L.inc('skiff.hull'); L.inc('skiff.hull.damage', Math.round(e.damage)); if (e.left < 20) say('warn', 'Your pool runs low: one more hard knock wrecks the board. Find a recharge strip.', 'hull.low', 8); });
-  on('skiff.wreck', (e) => { if (e.by !== 'courier') return; L.inc('skiff.wreck'); say('warn', 'The board is wrecked: your pool was empty.', 'wreck', 2); });
-  on('skiff.refill', (e) => { if (e.by !== 'courier' || !e.fresh) return; L.inc('skiff.refill'); say('skiff', 'The recharge strip fills your pool.', 'refill', 10); });
-  on('skiff.scorch', (e) => { if (e.by !== 'courier') return; L.inc('skiff.scorch'); say('warn', 'Your sail overheats and luffs: ease off the flare.', 'scorch', 4); });
-  on('skiff.manual', (e) => { if (e.by !== 'courier') return; L.inc('skiff.manual'); L.hi('skiff.manual.best', e.seconds); if (e.fell) say('warn', 'You lose the manual.', 'manual', 3); else if (e.seconds >= 2) say('skiff', `A ${e.seconds.toFixed(1)} s manual.`, 'manual', 2); });
+  on('skiff.hull', (e) => { if (e.by !== 'courier') return; L.inc('skiff.hull'); L.inc('skiff.hull.damage', Math.round(e.damage)); if (e.left < 20) say('warn', 'Pool low. One more hard knock wrecks the board. Find a recharge strip.', 'hull.low', 8); });
+  on('skiff.wreck', (e) => { if (e.by !== 'courier') return; L.inc('skiff.wreck'); say('warn', 'Board wrecked. Your pool was empty.', 'wreck', 2); });
+  on('skiff.refill', (e) => { if (e.by !== 'courier' || !e.fresh) return; L.inc('skiff.refill'); say('skiff', 'Pool refilled by the recharge strip.', 'refill', 10); });
+  on('skiff.scorch', (e) => { if (e.by !== 'courier') return; L.inc('skiff.scorch'); say('warn', 'Sail overheated. Ease off the flare.', 'scorch', 4); });
+  on('skiff.manual', (e) => { if (e.by !== 'courier') return; L.inc('skiff.manual'); L.hi('skiff.manual.best', e.seconds); if (e.fell) say('warn', 'Manual lost.', 'manual', 3); else if (e.seconds >= 2) say('skiff', `Manual: ${e.seconds.toFixed(1)} s.`, 'manual', 2); });
   on('skiff.flare.banked', (e) => { if (e.by === 'courier') L.inc('skiff.flare.banked'); });
   on('skiff.shoulder', (e) => { if (e.by === 'courier') L.inc('skiff.shoulder'); });
   on('skiff.nearmiss', (e) => { if (e.by !== 'courier') return; L.inc('skiff.nearmiss'); L.inc(`skiff.nearmiss.${e.what}`); say('skiff', 'Near miss.', 'nearmiss', 3); });
   on('skiff.gap', (e) => { if (e.by !== 'courier') return; L.inc('skiff.gap'); L.inc(`skiff.gap.${e.gap}`); const n = L.get(`skiff.gap.${e.gap}`); say('skiff', `Gap: ${e.label}, ${e.points}.${n === 1 ? ' Your first time.' : ''}`, `gap.${e.gap}`, 1); });
-  on('skiff.buoy', (e) => { if (e.by !== 'courier') return; L.inc(e.hit ? 'skiff.buoy.hit' : 'skiff.buoy.miss'); L.hi('skiff.buoy.power', e.power); if (!e.hit) say('warn', 'You miss a buoy: your power is gone.', 'buoy', 3); else if (e.power === 5) say('skiff', 'Full power.', 'buoy.full', 6); });
-  on('skiff.part', (e) => say('skiff', `You fit the ${e.part.split('.').reverse().join(' ')}.`, 'part', 0.5));
-  on('skiff.siphon', (e) => { L.inc('skiff.siphon'); if (e.took > 0) say('warn', `The drain gate drinks ${e.took} of your Lachryma.`, 'siphon', 3); });
-  on('pool.cap', (e) => { if (e.source === 'cracks' && e.share > 0) say('warn', `Your cracks hold ${Math.round(e.share * 100)}% of your Lachryma back until they mend.`, 'pool.cap', 6); });
-  on('skiff.glaze', (e) => { if (e.by !== 'courier') return; L.inc('skiff.glaze'); say('skiff', e.glaze ? 'Your hull comes out of the kiln glazed.' : 'Your hull is bare again.', 'skiff.glaze', 0.5); });
-  on('skiff.setting', (e) => say('info', e.on ? 'The balance is turned round: A pushes the lean left.' : 'The balance is as it was: A pushes the lean right.', 'skiff.set', 0.5));
+  on('skiff.buoy', (e) => { if (e.by !== 'courier') return; L.inc(e.hit ? 'skiff.buoy.hit' : 'skiff.buoy.miss'); L.hi('skiff.buoy.power', e.power); if (!e.hit) say('warn', 'Buoy missed. Power lost.', 'buoy', 3); else if (e.power === 5) say('skiff', 'Full power.', 'buoy.full', 6); });
+  on('skiff.part', (e) => say('skiff', `Fitted: the ${e.part.split('.').reverse().join(' ')}.`, 'part', 0.5));
+  on('skiff.siphon', (e) => { L.inc('skiff.siphon'); if (e.took > 0) say('warn', `Siphon: ${e.took} Lachryma drained.`, 'siphon', 3); });
+  on('pool.cap', (e) => { if (e.source === 'cracks' && e.share > 0) say('warn', `Your cracks cap your pool by ${Math.round(e.share * 100)}% until they mend.`, 'pool.cap', 6); });
+  on('skiff.glaze', (e) => { if (e.by !== 'courier') return; L.inc('skiff.glaze'); say('skiff', e.glaze ? 'Hull glaze fired.' : 'Hull glaze removed.', 'skiff.glaze', 0.5); });
+  on('skiff.setting', (e) => say('info', e.on ? 'Balance inverted. A pushes the lean left.' : 'Balance set to default. A pushes the lean right.', 'skiff.set', 0.5));
   // ---- the rivals' grudges and takedowns (world/raceway/rivals.js)
   on('race.taunt', (e) => say('skiff', `${e.who} claps at you as it passes.`, 'taunt', 8));
-  on('race.nemesis', (e) => { if (e.beaten) { L.inc('race.nemesis.beaten'); say('record', `You beat ${e.who}: the grudge is settled.`, 'nemesis'); } else say('skiff', `${e.who} beat you, and will remember it.`, 'nemesis'); });
+  on('race.nemesis', (e) => { if (e.beaten) { L.inc('race.nemesis.beaten'); say('record', `Nemesis beaten: ${e.who}.`, 'nemesis'); } else say('skiff', `${e.who} beat you. It is now your nemesis.`, 'nemesis'); });
   on('race.takedown', (e) => { if (e.by === 'courier' && e.how) L.inc(`race.takedown.${e.how}`); });
 }

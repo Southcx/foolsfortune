@@ -13,6 +13,6 @@ export function toolSkinRules({ on, L, log }) {
     if (e.by !== 'courier') return;
     L.inc('toolskin.set'); L.inc(`toolskin.${e.tool}.${e.skin}`);
     const name = TOOL_LABEL[e.tool] || 'tool';
-    log.say('system', e.skin === 'stock' ? `Your ${name} is as it was made.` : `Your ${name} wears ${skinOf(e.tool, e.skin).label}.`, { key: 'toolskin.set', throttle: 0.3 });
+    log.say('system', e.skin === 'stock' ? `${name} skin: stock.` : `${name} skin: ${skinOf(e.tool, e.skin).label}.`, { key: 'toolskin.set', throttle: 0.3 });
   });
 }

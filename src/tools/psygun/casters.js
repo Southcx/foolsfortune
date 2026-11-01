@@ -185,7 +185,7 @@ export class Casters {
     const t = this.pick(ray.origin, ray.dir, T.weapon.range, 1.4);
     const end = t ? t.point : ray.origin.clone().addScaledVector(ray.dir, T.weapon.range);
     g.fx.tracer(muzzle, end);
-    if (!t || !this.pin(t)) { g.log.say('warn', 'There is nothing there to anchor.', { key: 'cast', throttle: 2 }); sfx.fizzle(); }
+    if (!t || !this.pin(t)) { g.log.say('warn', 'Nothing there to anchor.', { key: 'cast', throttle: 2 }); sfx.fizzle(); }
   }
 
   /** Pin a picked thing where it is. */
@@ -255,7 +255,7 @@ export class Casters {
     const t = this.pick(ray.origin, ray.dir, T.weapon.range, 1.0, (r) => r.clapper || r.ent?.type === 'breakable');
     const end = t ? t.point : ray.origin.clone().addScaledVector(ray.dir, T.weapon.range);
     g.fx.tracer(muzzle, end);
-    if (!t || !this.hatchAt(t)) { g.log.say('warn', 'There is nothing there to hatch.', { key: 'cast', throttle: 2 }); sfx.fizzle(); }
+    if (!t || !this.hatchAt(t)) { g.log.say('warn', 'Nothing there to hatch.', { key: 'cast', throttle: 2 }); sfx.fizzle(); }
   }
 
   /** A pot cracks and a clapperjar hatches; a clapperjar is turned. */

@@ -19,6 +19,6 @@ export function stunRules({ on, L, log }) {
     }
     L.inc('stun'); L.inc(`stun.${e.kind}`); L.inc(`stun.cause.${e.cause}`); L.inc('status.applied'); L.inc('status.stun'); // (the stun is Impact's status: the five forces' achievements read it with the others)
     log.say('battle', `The ${KIND(e.kind)} is dazed.`, { key: 'stun', throttle: 1 });
-    if (L.first('stun')) log.say('record', 'Logged: your first stun. A stunned mind is open: stand close and press the middle button to reprogram it, or cut it along its line with the Sondelass. Strike it again while it is down to take it deeper.');
+    if (L.first('stun')) log.say('record', 'Logged: first stun. A stunned mind is open. Stand close and press MMB to reprogram it, or cut it along its line with the Sondelass. Strike it again while it is stunned to stun it deeper.');
   });
 }

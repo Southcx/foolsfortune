@@ -15,10 +15,10 @@ export function strawmanWellRules({ on, L, log }) {
     if (e.by !== 'courier') return;
     L.inc('well.stage.clear'); L.inc(`well.stage.clear.${e.stage}`); L.hi(`well.stage.stars.${e.stage}`, e.stars || 0);
     if (Number.isFinite(e.t)) L.lo(`well.stage.time.${e.stage}`, Math.round(e.t * 10) / 10);
-    say('gain', `${stageOf(e.stage)?.family || 'The stage'} cleared. Rank ${e.rank}.`, 'well.clear', 0.5);
+    say('gain', `${stageOf(e.stage)?.family || 'Stage'} cleared. Rank ${e.rank}.`, 'well.clear', 0.5);
   });
   on('well.dummy.ko', (e) => { if (e.by !== 'courier') return; L.inc('well.dummy.ko'); if (e.kind && e.kind !== 'dummy') L.inc(`well.target.ko.${e.kind}`); }); // (a training target counts as a dummy, and by its kind)
-  on('well.dummy.trophy', (e) => { if (e.by !== 'courier') return; L.inc('well.dummy.trophy'); say('gain', 'Trophy! That dummy hit 100% and went flying.', 'well.trophy'); });
+  on('well.dummy.trophy', (e) => { if (e.by !== 'courier') return; L.inc('well.dummy.trophy'); say('gain', 'Trophy! Straw dummy launched at 100%.', 'well.trophy'); });
   on('well.pit.death', (e) => { if (e.by === 'courier') L.inc('well.pit.death'); });
   on('well.flood.fill', (e) => { if (e.by === 'courier') L.hi('well.flood.best', e.cells || 0); });
   on('well.fighter.ko', (e) => { if (e.by !== 'courier') return; L.inc('well.fighter.ko'); say('gain', `KO! At ${Math.round(e.percent || 0)}%.`, 'well.fighter.ko', 0.3); });

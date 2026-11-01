@@ -17,7 +17,7 @@ export function gardenGrowthRules({ on, L, log, g }) {
     for (const id of seedsEarned(L)) {
       if (L.get(`seed.earn.${id}`)) continue;
       L.inc('seed.earn'); L.inc(`seed.earn.${id}`);
-      if (g?.realm?.orbit?.seeds) say('gain', SEEDS[id].inner ? `A moonlet of ${SEEDS[id].feeling[0].toUpperCase() + SEEDS[id].feeling.slice(1)} rises round your garden's heart.` : 'A planetoid\'s seed is yours. It waits in the garden\'s shed: carry it up to the ring with the god hand.', `seed.${id}`, 0);
+      if (g?.realm?.orbit?.seeds) say('gain', SEEDS[id].inner ? `Moonlet of ${SEEDS[id].feeling[0].toUpperCase() + SEEDS[id].feeling.slice(1)} risen round your garden\'s heart.` : 'Planetoid\'s seed earned! It is in the garden\'s shed. Carry it up to the ring with the god hand.', `seed.${id}`, 0);
     }
   };
   for (const ev of ['garden.enter', 'well.foe', 'sea.square.done', 'spirit.wish.done', 'mimic.solve', 'feeling.wake']) on(ev, (e) => { if ((e?.by ?? 'courier') === 'courier') grant(); });
@@ -29,7 +29,7 @@ export function gardenGrowthRules({ on, L, log, g }) {
     L.inc('seed.grow'); L.inc(`seed.grow.${e.size}`);
     // (a feed past several sizes emits one seed.grow a size in the same tick: say only the last, once the tick is done; Petra, v355)
     const first = grown == null; grown = e.size;
-    if (first) queueMicrotask(() => { say('gain', `A planetoid grows: ${grown}.`, 'seed.grow', 0.5); grown = null; });
+    if (first) queueMicrotask(() => { say('gain', `Planetoid grown: ${grown}.`, 'seed.grow', 0.5); grown = null; });
   });
   on('slab.make', (e) => { if (e.by !== 'courier') return; // (the clay's starter, from: 'gift', comes by the environment: progress/gardenhowto.js GIFT)
    L.inc('slab.make'); L.inc(`slab.make.${e.from || 'plate'}`); });
@@ -37,14 +37,14 @@ export function gardenGrowthRules({ on, L, log, g }) {
     if (e.by !== 'courier') return;
     L.inc('slab.carve'); L.hi('slab.best', Math.round(100 * (e.score || 0)));
     if (e.flawless) { L.inc('slab.flawless'); grant(); }
-    say(e.flawless ? 'record' : 'gain', e.flawless ? 'A flawless carving. The spirit steps out of the stone whole, and shining.'
-      : `The spirit steps out of the stone: ${Math.round(100 * (e.bared || 0))}% bared, ${Math.round(100 * (e.cracked || 0))}% cracked.`, 'slab.carve', 0.5);
+    say(e.flawless ? 'record' : 'gain', e.flawless ? 'Flawless carving! The spirit is freed whole, with a rare look.'
+      : `Spirit freed. ${Math.round(100 * (e.bared || 0))}% bared, ${Math.round(100 * (e.cracked || 0))}% cracked.`, 'slab.carve', 0.5);
   });
   on('garden.howto', (e) => { if (e.by === 'courier') L.inc('garden.howto'); }); // (finished or skipped once: it plays no more on entry; progress/gardenhowto.js)
   on('scan.read', (e) => {
     if (e.by !== 'courier' || e.own) return;
-    if (e.again) { L.inc('scan.again'); say('info', 'You have read this code before. It gives a little, once.', 'scan.again'); return; }
+    if (e.again) { L.inc('scan.again'); say('info', 'Code already scanned. A repeat scan gives a small reward, once.', 'scan.again'); return; }
     L.inc('scan.read'); L.hi('scan.cls.best', (e.cls || 0) + 1); if (e.sealed) L.inc('scan.sealed');
-    say('gain', e.what === 'material' ? 'The code holds a material.' : e.sealed ? 'The code holds a sealed slab: meet its creature in the world to open it.' : 'The code holds a slab to carve.', 'scan.read', 0.5);
+    say('gain', e.what === 'material' ? 'Code scanned: a material.' : e.sealed ? 'Code scanned: a sealed slab. Meet its creature in the world to open it.' : 'Code scanned: a spirit slab to carve.', 'scan.read', 0.5);
   });
 }

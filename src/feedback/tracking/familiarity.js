@@ -15,6 +15,6 @@ export function familiarityRules({ on, L, log }) {
     L.inc(`creature.${e.kind}.struck`);
     if (e.kill) L.inc(`creature.${e.kind}.down`);
     const now = familiarityOf(L, e.kind);
-    if (now.level > before) log.say('record', `You know this kind better: ${now.name}.`, { key: `fam.${e.kind}` });
+    if (now.level > before) log.say('record', `Familiarity raised: ${now.name}.`, { key: `fam.${e.kind}` });
   });
 }

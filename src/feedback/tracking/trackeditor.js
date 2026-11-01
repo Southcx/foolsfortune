@@ -29,7 +29,7 @@ export function trackEditorRules({ on, L, log }) {
     if (e.by === 'courier' && e.target === 'rival') { L.inc('trap.wreck'); L.inc(`trap.wreck.${e.kind}`); }
     if (e.target === 'courier') { L.inc('trap.taken'); log.say('skiff', e.possessor && e.possessor !== 'you' ? `${e.possessor}'s ${LABEL[e.kind] || 'trap'} catches you.` : `The ${LABEL[e.kind] || 'trap'} catches you.`, { key: `trap.hit.${e.kind}`, throttle: 2 }); }
   });
-  on('trap.parry', () => { L.inc('trap.parry'); log.say('skiff', 'You send the flame home: the turret is stunned.', { key: 'trap.parry', throttle: 2 }); });
+  on('trap.parry', () => { L.inc('trap.parry'); log.say('skiff', 'Flame sent back. The turret is stunned.', { key: 'trap.parry', throttle: 2 }); });
   on('trap.warp', (e) => { if (e.target !== 'courier') return; L.inc(e.back ? 'trap.warp.back' : 'trap.warp.on'); log.say('skiff', e.back ? 'The portal throws you back.' : 'The portal carries you on.', { key: 'trap.warp', throttle: 2 }); });
   on('haunt.end', (e) => {
     L.inc('haunt.end'); L.hi('haunt.wrecks.best', e.wrecks || 0); if (e.held) L.inc('haunt.held');

@@ -13,7 +13,7 @@ const num = (v) => (Math.abs(v) >= 10 ? Math.round(v) : Math.round(v * 10) / 10)
 export function aptitudeRules({ on, log }) {
   // a standard trial is announced as one (APTITUDE.md 10.4), so its number is said when it ends
   on('aptitude.trial', (e) => { const T = TRIALS[e.trial]; if (!T) return;
-    log.say('system', e.ok ? `${T.label}: ${num(e.value)} ${e.unit}${e.best ? ', your best' : ''}.` : `${T.label}: too few answers to read. Try it again.`, { key: 'assay.trial', throttle: 0.5 }); });
+    log.say('system', e.ok ? `${T.label}: ${num(e.value)} ${e.unit}${e.best ? ', your best' : ''}.` : `${T.label}: too few answers to measure. Try again.`, { key: 'assay.trial', throttle: 0.5 }); });
   on('aptitude.ask', (e) => {
     const R = e.readings || {}, any = Object.values(R).some((r) => r.n > 0);
     if (!any) { log.say('system', 'No readings yet. The System measures you as you play.', { key: 'assay', throttle: 1 }); return; }

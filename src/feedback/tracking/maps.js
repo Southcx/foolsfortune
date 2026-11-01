@@ -9,6 +9,6 @@ import { plural } from './lineformat.js';
 export function mapRules({ on, L, log }) {
   const first = (key, text) => { if (L.first(key)) log.say('record', text); };
   on('map.pulse', (e) => { L.inc('map.pulse'); if (e.god) L.inc('map.pulse.god'); });
-  on('map.surveyed', (e) => { L.inc('map.cells', e.gained); if (e.gained > 0) log.say('explore', `Your survey charts ${plural(e.gained, 'new area')}.`, { key: 'sv', win: 2 }); });
-  on('map.room', (e) => { L.inc('map.room'); if (L.first(`room.${e.id}`)) log.say('explore', `You have charted ${e.place}.`); });
+  on('map.surveyed', (e) => { L.inc('map.cells', e.gained); if (e.gained > 0) log.say('explore', `Survey charted ${plural(e.gained, 'new area')}.`, { key: 'sv', win: 2 }); });
+  on('map.room', (e) => { L.inc('map.room'); if (L.first(`room.${e.id}`)) log.say('explore', `Charted: ${e.place}.`); });
 }

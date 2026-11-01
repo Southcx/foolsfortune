@@ -12,11 +12,11 @@ import { DOMAINS } from '../../progress/domains.js';
 const DOMAIN_NAME = (d) => DOMAINS[d]?.name || d;
 
 export function standingRules({ on, L, log, g }) {
-  on('domain.level', (e) => { if (e.by === 'courier') log.say('gain', `Your ${DOMAIN_NAME(e.domain)} reaches level ${e.level}.`); }); // (progress/psyche.js)
+  on('domain.level', (e) => { if (e.by === 'courier') log.say('gain', `${DOMAIN_NAME(e.domain)} reached level ${e.level}.`); }); // (progress/psyche.js)
   // ---- achievements and standing (achievements.js decides; the log says it here)
   on('achievement.unlock', (e) => {
     log.say('ach', `Achievement complete (${e.tierName}, ${e.points} ${e.points === 1 ? 'pt' : 'pts'}): ${e.ach}.`);
-    if (e.title) log.say('ach', `You have earned the title "${e.title}".`);
+    if (e.title) log.say('ach', `Title earned: "${e.title}".`);
   });
   on('standing.up', (e) => log.say('ach', `You are now known as ${/^Fool/.test(e.standing) ? '' : /^[AEIOU]/i.test(e.standing) ? 'an ' : 'a '}${e.standing}.`));
 
@@ -25,7 +25,7 @@ export function standingRules({ on, L, log, g }) {
     if (g.system?.lendAll) return; // (the all-arts switch lends everything: nothing to say)
     const a = BY_ID[e.ability];
     L.inc(e.variant ? 'art.variant' : a.realm === 'god' ? 'art.god' : 'art.move');
-    log.say('art', e.variant ? `You learn the ${e.title} variant of ${a.name}. (B: the Codex)` : `You learn ${a.realm === 'god' ? 'the god art' : 'the art of'} ${e.title}. (B: the Codex)`);
+    log.say('art', e.variant ? `Learned: the ${e.title} variant of ${a.name}. Press B to open the Codex.` : `Learned: ${a.realm === 'god' ? 'the God Art' : 'the art of'} ${e.title}. Press B to open the Codex.`);
     sfx.systemUnlock?.();
   });
 }

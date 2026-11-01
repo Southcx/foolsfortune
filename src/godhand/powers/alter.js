@@ -12,7 +12,7 @@ export const ALTER = {
     begin(P, L) {
       const g = P.game, F = P.F; if (!F) return false;
       const r = P.ramp('transmute', 'r'), feeling = L.shift ? strongest(g.draught) : null;
-      if (L.shift && !feeling) { g.log.say('warn', 'You have drunk no feeling to give it.', { key: 'transmute.none', throttle: 2 }); return false; }
+      if (L.shift && !feeling) { g.log.say('warn', 'No feeling drunk. Drink a feeling first to give it.', { key: 'transmute.none', throttle: 2 }); return false; }
       F.transmute(L.a.x, L.a.z, r, feeling ? { feeling } : { swap: true });
       P.ring(L.a, r, P.domainColour('transmute'), 0.8);
       P.emit('transmute', { feeling, r: +r.toFixed(1) });

@@ -18,13 +18,13 @@ export function groundMovementRules({ on, L, log, where, track }) {
   on('move.land', (e) => {
     L.inc('move.land');
     const drop = e.drop || 0;
-    if (drop > 0.5) { const r = L.hi('fall.max', drop, { at: where() }); track.note('fall.max', r, `Your longest fall is now ${Math.round(drop)} m.`, 12, drop); }
+    if (drop > 0.5) { const r = L.hi('fall.max', drop, { at: where() }); track.note('fall.max', r, `New longest fall: ${Math.round(drop)} m.`, 12, drop); }
     if (drop >= 12) L.inc('land.drop12');
     if (drop >= 20) L.inc('land.drop20');
-    if (drop >= 10) log.say('move', `You land from a ${Math.round(drop)} m fall.`, { key: 'land', win: 1 });
-    if (e.air > 0.3) { const r = L.hi('air.longest', e.air, { at: where() }); track.note('air.longest', r, `Your longest airtime is now ${fx(e.air, 1)} s.`, 2.5, e.air); }
+    if (drop >= 10) log.say('move', `Landed from a ${Math.round(drop)} m fall.`, { key: 'land', win: 1 });
+    if (e.air > 0.3) { const r = L.hi('air.longest', e.air, { at: where() }); track.note('air.longest', r, `New longest airtime: ${fx(e.air, 1)} s.`, 2.5, e.air); }
   });
-  on('move.roll', (e) => { L.inc('move.roll'); if (e.mitigated) { L.inc('roll.fall'); L.hi('roll.fall.height', e.fall || 0); log.say('move', 'You roll out of the fall.', { key: 'roll', win: 1.5 }); } });
+  on('move.roll', (e) => { L.inc('move.roll'); if (e.mitigated) { L.inc('roll.fall'); L.hi('roll.fall.height', e.fall || 0); log.say('move', 'Rolled out of the fall.', { key: 'roll', win: 1.5 }); } });
   on('courier.impulse', (e) => { L.inc(`courier.impulse.${e.why}`); });
   on('courier.respawn', (e) => { L.inc('courier.respawn'); L.inc(`courier.respawn.${e.why}`); });
   on('courier.rescue', (e) => L.inc(`courier.rescue.${e.kind}`));
