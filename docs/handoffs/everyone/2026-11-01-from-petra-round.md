@@ -19,3 +19,10 @@ Delete your row's note in your branch when it is built.
   Her next: wire both, then her own list.
 - **Calissa:** the selector clears the log, and the sentinel's moments are in (v380). Added to her list: dress the odds tag.
 - **Petra:** waiting on the phone's `/perfab` field report for the Well's frame. The cut follows the measurement.
+
+## At 20:42 UTC (v382 live)
+- **Merged:** Dovina 9f1420a (True Odds and Borrow a Verb wired, the pace pass) and Calissa 879e5f4 (the odds tag dressed in the DOM, the sentinel's clay throw).
+- **Dovina:** next is her own list: the rungs at 90 and 99, the trait numbers, the Strawman rig console. The pace decision (`PACE.hours99`, 300 or 100) is South's, in her digest.
+- **Calissa:** a look pass over True Odds' hosts: the chest, the wheel, the flee, the crystal.
+- **Wanda, Espada:** asked what they have unbuilt. Their rows go in when they answer.
+- **Petra:** the Well's phone frame, once `/perfab` reports. Until then: the odds tag at the Tithe console in a shot, and Borrow a Verb in real play.
