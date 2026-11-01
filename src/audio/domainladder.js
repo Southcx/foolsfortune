@@ -82,7 +82,7 @@ export class DomainLadderSounds {
     if (k === 'wisp') { // (its flame thrown, as its own cast without the draw-in)
       this.noise(t + 0.05, 0.25, { f0: 1500, f1: 300, gain: 0.5, dest: d }); this.tone(t + 0.05, 0.2, { f0: 140, f1: 70, gain: 0.3, dest: d });
       for (let i = 0; i < 5; i++) this.noise(t + 0.07 + Math.random() * 0.25, 0.01, { type: 'highpass', f0: 4000, gain: 0.22, dest: d });
-    } else if (k === 'jelly' || k === 'greatjelly') { // (a glop flung)
+    } else if (k === 'slipjelly' || k === 'jelly' || k === 'greatjelly') { // (a glop flung)
       this.tone(t + 0.05, 0.18, { f0: 260, f1: 90, gain: 0.25, dest: d }); this.noise(t + 0.05, 0.15, { type: 'lowpass', f0: 900, f1: 300, gain: 0.35, dest: d });
     } else this.noise(t + 0.05, 0.3, { type: 'bandpass', f0: 2000, f1: 500, q: 1.2, gain: 0.9, dest: d }); // (a plain thrown breath)
   }
