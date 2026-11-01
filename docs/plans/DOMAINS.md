@@ -647,3 +647,57 @@ lags. The Codex's domain chips now show each domain's next rung and level, and t
 
 Commands: `/rung`, `/rule`, `/vow`. The Codex's STATUS shelf has THE RUNGS: each rung, open or how near by both ways, its notch on
 or off.
+
+## 18. A milestone every ten levels (South, 2026-11-01)
+
+South: "I think every 10 levels should be a milestone within the Domain progression, but yes the God Arts section in the Codex needs a
+UI overhaul for readability ... give each domain a sub-page within the tab."
+
+Section 16 left each domain with something at 15, 30, 35, 60 and 80: gaps of up to 25 levels, which is 340,000 EXP between 35 and
+60 (about 50 real hours of middling play in one domain). Now every ten holds something, read as one ladder (`progress/domainladder.js`
+LADDER; Old School RuneScape's skill guides, FFXIV's job levels, WoW's talent rows every ten before 2012):
+
+| level | what | as built |
+|---|---|---|
+| 1 | the domain's powers from the start | as before |
+| **10** | **a rung**: the first relation | moved from 15 (EXP 17,395 to 6,450: the first rung comes in about a third of the time) |
+| **20** | **a power** | the powers that opened at 15 (Ouranurgy: Hasten / Stay) |
+| **30** | **a rung**: the second relation | as built (waves 2 to 4) |
+| **40** | **a power**, or a trait | the powers that opened at 35 (Ouranurgy: Portal, moved from 15); Alteration: Enhanced Re-type |
+| **50** | **a power**, or a trait | the powers that opened at 60 (Ouranurgy: Swap, from 35); Psychokinesis, Alteration, Spellscription: a trait |
+| **60** | **a rung**: depth | to come (section 14's 60 column); the pairings open at 60 in both |
+| **70** | **a trait** | one a domain |
+| **80** | **the epic miracle** | as before |
+| **90** | **a rung**: the last relation | to come (section 14's 80 column, moved up: 80 is the epic's) |
+| **99** | **the summit**: the rule-break and the title | to come |
+
+**A trait** is new: one of the domain's rungs made stronger at a level (FFXIV's job traits, "Enhanced Unmend"). It's a modifier laid
+over the rung's own numbers while it's open (`doesOf`: the row is never changed, CLAUDE.md's "base change bad"), and the log says it
+once when it opens (`domain.trait.learn`). Its two ways: the level, or the rung's own feat done as many times over as the trait's tens, 5 at 50 and 7 at 70 (skill skips grind).
+Eleven traits, the numbers drafts with their reasons in `TRAITS`:
+
+| level | domain | trait | what changes | why |
+|---|---|---|---|---|
+| 40 | Alteration | Enhanced Re-type | 20 s to 30 s | a Dunes fight with two or three Figments runs about half a real minute (a guess: read it off the fight times) |
+| 50 | Alteration | Enhanced Reactions | reach 1.5 m to 2.5 m | a creature beside the stamp is in it |
+| 50 | Psychokinesis | Enhanced Catch | held 1.5 s to 2.5 s | time to turn and aim at a second foe |
+| 50 | Spellscription | Enhanced Standing Rule | 5 pool to 2 | the rule nearly pays for itself |
+| 70 | Ouranurgy | Enhanced Postpone | a parried held blow at a quarter, not half | the late parry made worth the wait |
+| 70 | Manifestation | Enhanced Plating | takes the whole crack, not 0.85 | solid at last; never a shattering crack |
+| 70 | Divination | Enhanced Watch | 30 m to 50 m | a Dunes area's open sand read from its edge |
+| 70 | Psychokinesis | Mighty Catch | thrown x1.5 to x2 | the parry's send-back is x1: the catch doubles it |
+| 70 | Possession | Enhanced Link | half to two thirds | it carries more than you |
+| 70 | Alteration | Lasting Reactions | calm 3 s to 5 s | long enough to reprogram it or walk past |
+| 70 | Spellscription | Enhanced Vow | costs x0.75 to x2/3 | the stake is the same crack: worth rises, price rises |
+
+A ten crossed says so on the bus (`domain.milestone { domain, level, rows, by }`) so the level-up there can be bigger than a level's;
+the log's lines are the openings' own. Shatter's ramp starts at 10 (0.25 at 10 to 0.6 at 99).
+
+**The Codex's GOD ARTS shelf is now a page a domain** (`feedback/codex/godarts.js`): the domain's tabs, its header (its question, its
+level and the bar to the next, the next milestone), and its ladder from 1 to 99, each step yours, next, ahead or still to come, with a
+card beside it (a power's is the arts' card; a rung's its kind, its two ways and its traits; a trait's its rung and two ways). The page
+is Dovina's (`ga-*` classes); its bespoke look is Calissa's (docs/handoffs/calissa/).
+
+What it costs: the god hand's powers come 5 levels later at 20 (from 15) and 40 (from 35), and three come 10 sooner at 50 (from 60).
+Ouranurgy's Portal moved from 15 to 40, because it had two powers at 15 and nothing at 40. The rungs come 5 sooner. Still open: the
+60, 90 and 99 rungs (21 designs, section 14's later columns), the next waves.

@@ -18,6 +18,7 @@ import { isTraining } from './combat/throwingroom.js';
 import { DOMAINS, SOURCES, expFor, levelOf, catchUpOf } from './domains.js';
 import { RAMP, widenOf } from './godpowers.js';
 import { CLASS } from './spreads.js';
+import { TENS, milestoneAt } from './domainladder.js';
 
 const EVENTS = new Set(SOURCES.map((s) => s.event));
 
@@ -44,6 +45,7 @@ export function installPsyche(game) {
       if (c !== 1) L.inc(`exp.catchup.${d}`, n * k * (c - 1)); // (what catch-up added: domains.js CATCH_UP)
       const now = levelOf(exp(d));
       if (now > was) game.events.emit('domain.level', { domain: d, level: now, by: 'courier' });
+      for (const at of TENS) if (was < at && now >= at && milestoneAt(d, at).length) game.events.emit('domain.milestone', { domain: d, level: at, rows: milestoneAt(d, at).map((r) => r.id), by: 'courier' }); // (a ten crossed: progress/domainladder.js, for a bigger moment than a level's)
     }
   });
   return game.psyche;

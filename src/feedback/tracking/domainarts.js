@@ -7,6 +7,7 @@
 // ---------------------------------------------------------------------------------------
 import { DOMAIN_ARTS, FEAT_WORDS, RULE_WHEN, RULE_THEN, VOWS } from '../../progress/domainarts.js';
 import { DOMAINS } from '../../progress/domains.js';
+import { TRAITS } from '../../progress/domainladder.js';
 import { TYPES } from '../../progress/combat/types.js';
 import { CREATURES } from '../../tools/veritome/bestiary.js';
 
@@ -15,19 +16,23 @@ const kname = (k) => (CREATURES[k]?.name || { wisp: 'Lantern Wisp', greatjelly: 
 const KIND = { passive: 'always on while it holds a notch', reaction: 'always on while it holds a notch', action: 'worn on the art key' };
 const WHY = { closed: 'You have not opened that rung yet.', cool: 'It is still settling.', pool: 'Your pool is too low for it.', none: 'No creature near enough.', unknown: 'No rung is called that.', here: 'You are where you stood.', record: 'Not while a time is being kept.' };
 const tname = (t) => TYPES[t]?.name || t;
+const share = (k) => (Math.abs(k - 0.5) < 0.01 ? 'half' : Math.abs(k - 0.25) < 0.01 ? 'a quarter' : Math.abs(k - 2 / 3) < 0.01 ? 'two thirds' : `${Math.round(k * 100)} in a hundred`);
+const cap = (w) => w[0].toUpperCase() + w.slice(1);
 
 export function domainArtsRules({ on, log }) {
   on('domain.art.learn', (e) => { const A = DOMAIN_ARTS[e.art]; if (!A) return;
     log.say('gain', `You open ${A.label}, a ${DOMAINS[A.domain].name} rung (${KIND[A.kind]}). ${A.line}`);
     log.say('system', A.how, { key: `rung.how.${e.art}` }); });
+  on('domain.trait.learn', (e) => { const T = TRAITS[e.trait]; if (!T) return; // (progress/domainladder.js: a milestone's trait)
+    log.say('gain', `${T.label}: ${T.line}`); });
   on('domain.art.fire', (e) => {
-    if (e.art === 'postpone') log.say('system', e.parried ? 'The blow you are holding is halved.' : `A blow is held. It lands in ${e.delay} seconds.`, { key: 'rung.postpone', throttle: 0.5 });
+    if (e.art === 'postpone') log.say('system', e.parried ? `The blow you are holding is cut to ${share(e.left ?? 0.5)}.` : `A blow is held. It lands in ${e.delay} seconds.`, { key: 'rung.postpone', throttle: 0.5 });
     else if (e.art === 'plating') log.say('system', `Your ${e.region} is plated.`, { key: 'rung.plating', throttle: 0.5 });
     else if (e.art === 'retype') log.say('system', `Your blows strike as ${tname(e.type)}${e.known ? `: what the ${kname(e.kind)} is weak to` : ''}.`, { key: 'rung.retype', throttle: 0.5 });
     else if (e.art === 'shatter') log.say('gain', 'Shattered.', { key: 'rung.shatter', throttle: 1 });
     else if (e.art === 'recall') log.say('system', 'You are back where you stood.', { key: 'rung.recall', throttle: 0.5 });
     else if (e.art === 'catch') log.say('system', 'You catch the shot. Let go to throw it.', { key: 'rung.catch', throttle: 0.5 });
-    else if (e.art === 'link') log.say('system', `Half the blow goes to the ${kname(e.kind)} you are linked to.`, { key: 'rung.link', throttle: 1.5 });
+    else if (e.art === 'link') log.say('system', `${cap(share(e.share ?? 0.5))} of the blow goes to the ${kname(e.kind)} you are linked to.`, { key: 'rung.link', throttle: 1.5 });
     else if (e.art === 'standingRule') log.say('system', `Your rule: ${RULE_THEN[e.then]?.label ?? e.then}.`, { key: 'rung.rule', throttle: 2 });
   });
   on('domain.react', (e) => log.say('system', e.kind === 'cancel' ? 'The paints cancel: bare ground, and calm.' : `The paints flare: ${e.agate}.`, { key: 'rung.react', throttle: 1 }));

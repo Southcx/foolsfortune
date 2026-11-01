@@ -11,6 +11,7 @@ import { renderLedger, renderRecords, renderAngling, renderCurios } from './ledg
 import { renderCollections } from './collections.js';
 import { renderSealBook } from './sealbook.js';
 import { renderStatus } from './status.js';
+import { renderGodArts } from './godarts.js';
 import { now } from '../../core/calendar.js';
 import { renderVeritome } from '../../tools/veritome/ui.js';
 import { renderArcana } from './arcana.js';
@@ -173,6 +174,7 @@ export class Codex {
     }
     if (this.shelf === 'records') cx.appendChild(el('div', 'shelf', saveName(this.game).toUpperCase())); // (which save these are: DEBUG-MODE.md section 2)
     if (this.shelf === 'status') { renderStatus(this, cx); this.rows = {}; this.cardHost = null; return; }
+    if (this.shelf === 'god') { this.rows = {}; this.cardHost = null; renderGodArts(this, cx); return; } // (a page a domain, its ladder of milestones: codex/godarts.js)
     if (this.shelf === 'seals') { renderSealBook(this, cx); this.rows = {}; this.cardHost = null; return; } // (the places' seals and your imprints: codex/sealbook.js)
     if (this.shelf === 'collections') { renderCollections(this, cx); this.rows = {}; this.cardHost = null; return; } // (the collection log: codex/collections.js) // (the domains and the attributes as radars: codex/status.js)
     if (this.shelf === 'ledger' || this.shelf === 'records' || this.shelf === 'angle' || this.shelf === 'curios' || this.shelf === 'veritome' || this.shelf === 'arcana' || this.shelf === 'tools' || this.shelf === 'sound' || this.shelf === 'grimoire' || this.shelf === 'sondelass') {
