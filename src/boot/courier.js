@@ -29,6 +29,7 @@ import { Combat } from '../core/combat.js';
 import { Vessel } from '../courier/vessel/vessel.js';
 import { IDLES } from '../courier/anim/idlebreak.js';
 import { CourierSquash } from '../courier/anim/squash.js';
+import '../courier/anim/keys/index.js'; // (the key pose tables registered with the key track: courier/anim/keys/)
 import { Actions } from '../core/actions.js';
 import { TouchDriver } from '../core/touchdriver.js';
 import { PadDriver } from '../core/paddriver.js';

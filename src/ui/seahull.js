@@ -49,7 +49,7 @@ export class SeaHull {
   }
   update() {
     const g = this.game, F = g.seaFight, R = g.opensea;
-    const want = !!(F && R?.sailing && (F.hull < F.bears || F.serpent)) && !g.railReadout?.on && !g.goalsWindow?.root?.classList.contains('on');
+    const want = !!(F && R?.sailing && (F.hull < F.bears || F.serpent)) && !g.railReadout?.on && !g.goalsWindow?.root?.classList.contains('on') && !g.questJournal?.on;
     if (want) this.build();
     if (!this.root) return;
     if (want !== this.on) { this.on = want; this.root.classList.toggle('on', want); if (want) requestAnimationFrame(() => this.frame?.layout()); }

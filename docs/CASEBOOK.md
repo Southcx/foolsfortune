@@ -1065,3 +1065,13 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
   and a check reads one through the other.
 379. **A tool aims from `game.aim`, never from `game.camera`.** The camera is what is seen; a mode whose
   view is not the aim (a side-on stage, a fixed camera) lends its own aim camera, and a tool that read the eye would aim into the backdrop.
+380. **A shared base style that its hosts override is written at zero specificity** (`:where(.bf)`). Sheets injected on
+  first use land in whatever order play builds them, so a base rule at the hosts' specificity wins or loses by the session's history.
+381. **A physics query asks the world as of its last step.** Colliders made in this frame (a room just built) are not
+  in the scene queries until the next step, so a raycast placing things at build time finds nothing: place from the build's own numbers.
+382. **Things that stand in one row are laid by one rule.** Two shelves side by side each centring or insetting by
+  their own numbers drift apart by a few pixels: the second reads the first's geometry (its row height, its insets), never its own.
+383. **A full-area hit layer (the stick's, a drag's) is cut clear of every control and readout in its area.** The
+  layout knows where the log, the top bar and the shelves stand; the layer starts past them, so a tap on one is never the layer's.
+384. **On a side-on stage, nothing drawn stands in the plane the bodies move in unless it is solid to them.** A thing they pass under
+  or in front of (a soft platform, a ledge's lip, a prop) is drawn behind the plane; its height is the stage's rule and is not moved to hide a clip.
