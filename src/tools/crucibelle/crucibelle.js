@@ -238,7 +238,7 @@ export class Crucibelle extends HeldTool {
     for (const cr of g.creatures.near(P.pos, range)) {
       if (cr.ally) continue;
       const d = _a.set(cr.pos.x - P.pos.x, 0, cr.pos.z - P.pos.z); if (d.length() > 0.3 && d.normalize().angleTo(f) > cone) continue;
-      g.stun?.add(cr, 0.22 * k, { by: 'courier', cause: 'toll' }); cr.knock?.(d.clone().multiplyScalar(2.5 * k).setY(1)); n++;
+      g.creatures?.stagger(cr, 0.22 * k, { type: 'influence', by: 'courier', cause: 'toll' }); cr.knock?.(d.clone().multiplyScalar(2.5 * k).setY(1)); n++;
       if (R) { g.creatures.strike(cr, cr.pos, d, R.power, 'toll'); if (c) this.moves.struck(cr, c); } // (the row's power and status: progress/combat/moves.js crucibelle)
     }
     for (const cl of g.clappers?.list || []) {

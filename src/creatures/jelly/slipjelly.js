@@ -155,7 +155,7 @@ export class SlipJellies {
     const g = this.game;
     if (!c.alive) return;
     if (st(c, 'sleep')) g.creatures.clearStatus(c, 'sleep');
-    const dmg = power * (st(c, 'melt') ? 1.5 : 1) * (g.stun?.bonus(c) ?? 1);
+    const dmg = power * (st(c, 'melt') ? 1.5 : 1); // (the stun's bonus is strike's, once: creatures/creatures.js)
     c.hp -= dmg; c.lastHitBy = by; c.hurtT = 0.35; c.flash = 1;
     // where it was struck, dented; the whole of it set wobbling and leaning away
     const local = c.root.worldToLocal(_a.copy(p));

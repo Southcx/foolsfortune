@@ -166,7 +166,7 @@ function shot(game, { tool, how, at, radius, paint }) {
   } else if (how === 'shatter') { for (const h of hits) { gone(game, h.pr); game.fx?.impact?.(h.t.clone(), new THREE.Vector3(0, 1, 0), { sparks: 10, dust: 4 }); } }
   else if (how === 'stagger') {
     gone(game, pr); game.fx?.impact?.(hit.t.clone(), new THREE.Vector3(0, 1, 0), { sparks: 12, dust: 0 });
-    if (pr.from?.alive) game.stun?.add(pr.from, 1, { by: 'courier', cause: 'parry' });
+    if (pr.from?.alive) game.creatures?.stagger(pr.from, 1, { type: 'impact', by: 'courier', cause: 'parry' });
   } else turn(game, hit);
   breath(game, hit.t);
   game.events?.emit('move.parry', { speed: hit.sp, tool, how: did, what: 'shot', d: +hit.d.toFixed(2), reach: radius, ...(amount ? { amount: +amount.toFixed(2) } : {}), by: 'courier' });
@@ -178,7 +178,7 @@ function blow(game, { tool, how, at, radius }) {
   if (!c) return null;
   const lead = +Math.max(0, c.windup.t - 0.3).toFixed(3); // (seconds before the strike: read before parried() unwinds it; domains.js weighs it)
   game.creatures.parried(c);
-  game.stun?.add(c, how === 'shutter' ? 1.25 : how === 'stagger' ? 1 : 0.5, { by: 'courier', cause: 'parry' }); // (the shutter: a full flash's stun and more)
+  game.creatures?.stagger(c, how === 'shutter' ? 1.25 : how === 'stagger' ? 1 : 0.5, { type: 'impact', by: 'courier', cause: 'parry' }); // (the shutter: a full flash's stun and more)
   if (how === 'shutter') { game.flash?.burst?.(); c.brain?.senses?.dazzle?.(1.4); }
   breath(game, c.center ? c.center(_p) : _p.copy(c.pos));
   game.lastParried = c; // (what was parried, for an art that answers it: Riposte Rush, courier/classarts/body.js)

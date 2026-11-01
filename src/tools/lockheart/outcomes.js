@@ -45,7 +45,7 @@ export const OUTCOME_FX = {
   },
   daze(g, at, { power, reach, by }) {
     let n = 0;
-    for (const c of foes(g, at, reach)) { if (g.stun?.add(c, 1.3 * power, { by, cause: 'lockheart' })) n++; }
+    for (const c of foes(g, at, reach)) { if (g.creatures?.stagger(c, 1.3 * power, { type: 'delirium', by, cause: 'lockheart' })) n++; }
     for (const c of g.clappers?.list || []) if (c.alive && !c.ally && c.pos.distanceTo(at) < reach) { g.clappers.stun(c, 3 + power, g.shells.glowOutline, g.shells.xray); n++; }
     g.glyphs?.pop('star', at.clone().setY(at.y + 1), { color: 0xffd76a, size: 1.2, life: 1, burst: true, ring: true });
     burst(g, at.clone().setY(at.y + 0.8), 60, 0xffd76a, { speed: reach * 1.2, up: 0.5, gravity: 0, life: 0.6, size: 0.1 });

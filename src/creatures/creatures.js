@@ -93,6 +93,14 @@ export class Creatures {
     return out.sort((a, b) => a[0] - b[0]).map((x) => x[1]);
   }
   /** A blow lands on a creature (anything that strikes asks the tag, not the kind). */
+  /** A stun-only verb (the flash, the parry, the toll, the Lockheart): its stun scaled by the type chart against the body's own type
+   *  (`affinityOf`), as a blow's build is, then laid on through the stun meter (creatures/stun.js). Returns what stun.add returns. */
+  stagger(c, amount, { type = 'impact', by = 'courier', cause = 'stagger' } = {}) {
+    if (!c) return false;
+    const k = c.type === 'creature' ? multiplier(type, affinityOf(c), [...(c.status?.keys?.() || [])].filter((n) => st(c, n))).build : 1;
+    return this.game.stun?.add(c, amount * k, { by, cause });
+  }
+
   strike(c, point, dir, power = 1, cause = 'shot', by = 'courier', from = null, type = typeOf(cause), buildK = 1) {
     if (!c?.alive || !hasTag(c, 'hurtable')) return false;
     if (c.ally && !c.friend && by === 'courier') return false; // (their own: a spirit they called up is not struck by them; a friend, another Courier, is: friendly fire)
@@ -113,7 +121,7 @@ export class Creatures {
     if (art) { dmgK *= art.dmg; buildK *= art.build; }
     if (ps) { dmgK *= ps.dmg ?? 1; buildK *= ps.build ?? 1; }
     const annihilates = (type === 'impact' && st(c, TYPES.delirium.builds)) || (type === 'delirium' && st(c, TYPES.impact.builds));
-    let dmg = power * dmgK * m.dmg * (st(c, 'soft') ? 2 : 1);
+    let dmg = power * dmgK * m.dmg * (st(c, 'soft') ? 2 : 1) * (g.stun?.bonus(c) ?? 1); // (a stunned thing takes the stun's bonus, here once for every kind: SUBSTRATE.md F3)
     if (c.friend) dmg = Math.min(dmg, (c.maxHp ?? Infinity) * FRIENDLY.cap); // (FRIENDLY.cap of its full health at most: Dovina's)
     const took = c.hurt(point, dir, dmg, cause, by, from, type); // (`from`: the thing that struck, when it is not the Courier)
     if (took === 'blocked') return true; // (a blow it turned aside shows its own block and builds nothing: no stun, no mind, no status: the owner's T51)
