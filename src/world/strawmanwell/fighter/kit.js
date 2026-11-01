@@ -138,7 +138,7 @@ export class FighterKit {
     if (F.ledge) { F.ledge.by = null; F.ledge = null; }
     const at = new THREE.Vector3(THREE.MathUtils.clamp(F.x, B.x0 + 3, B.x1 - 3), THREE.MathUtils.clamp(F.y, B.y0 + 3, B.y1 - 3), this.stage.z);
     g.vfx?.play?.('blow.finisher', { pos: at, dir: new THREE.Vector3(Math.sign(F.x - this.stage.mid) || 1, 0, 0), power: 2 });
-    sfx.damage?.('impact', 1);
+    if (!sfx.arenaHit) sfx.damage?.('impact', 1); // (a placeholder until Wanda's Arena sounds are in: they answer the events themselves)
     if (F.who === 'courier') {
       g.events?.emit('well.fighter.stock', { stage: 'arena', left: Math.max(0, F.stocks), cause: credit ? 'creature' : 'environment', by: 'courier' });
       g.character?.setHidden?.(true);
@@ -180,8 +180,8 @@ export class FighterKit {
     if (res === 'hit') {
       g.vfx?.play?.(V.who === 'courier' ? 'hit.blunt' : 'hit.blunt.straw', { pos, dir, power: Math.min(2, hit.damage / 8) });
       g.vfx?.play?.(`blow.${weight}`, { pos, dir, power: 1 });
-      sfx.damage?.('impact', Math.min(1, hit.damage / 15));
-    } else { g.vfx?.play?.('hit.shot', { pos, dir, power: 0.6 }); sfx.damage?.('impact', 0.3); }
+      if (!sfx.arenaHit) sfx.damage?.('impact', Math.min(1, hit.damage / 15));
+    } else { g.vfx?.play?.('hit.shot', { pos, dir, power: 0.6 }); if (!sfx.arenaHit) sfx.damage?.('impact', 0.3); }
     if (A.who === 'courier') {
       if (res === 'hit') {
         V.combo = V.inCombo ? (V.combo || 1) + 1 : 1; this.well.noteString(V.combo); if (V.combo >= 3) this.well.verb('string');

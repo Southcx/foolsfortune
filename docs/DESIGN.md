@@ -512,3 +512,29 @@ written, which the recap reads. Done quests give quest points. The recap (Xenobl
 the last session got done, each quest's next step, and the game day's open goals. A quest's start and end get a splash and a jingle, the one
 pop-up besides a title's (South, 2026-10-31). The System says all of it in a strategy guide's
 voice, plain and casual (CLARITY.md 14). The first quest is Strawman's, through Strawman's Well.
+
+## 30. Stealth: a safari of Figments (South, 2026-11-01; docs/plans/STEALTH.md)
+
+The minds already see in a cone, fill an awareness from a glimpse to certainty and hear stimuli (Thief's guards). Stealth is the
+Courier's side of that, as modifiers with sources you can see:
+- **How visible you are:** your posture, your pace (stillness hides best), the hour's light, a veiling weather.
+- **How loud you are:** your footsteps by the ground under them (sand quiet, metal loud), with rain covering them.
+- **The watcher's rhythm:** a Figment's head down at its business, then up to scan, in bouts of its own. Deer stalking's rule: move
+  while it is down.
+- **Caution after a fright:** the Metal Gear phase.
+
+It teaches fieldcraft without saying so. It is the first step of the Veritome as a safari (New Pokemon Snap's): a Figment photographed
+unaware is worth half again, and the overhaul that follows rates a plate's behaviour apart from its framing.
+
+## 31. Spirit Cooking: the hand and the clock (South, 2026-11-01; docs/plans/SPIRIT-COOKING.md, a plan)
+
+Soul Alchemy is the eye's craft (Potion Craft's map). Spirit Cooking is the hand's and the clock's:
+- **A dish** is two to four real techniques, graded on average (Cooking Mama).
+- **Each move** is held near its heart in a band that practice widens, Soul Alchemy's swatch rule. Some examples:
+  - sear when the surface is dry;
+  - take sugar at the soft ball by the cold-water test;
+  - never boil the kombu.
+- **The tells** are the interface, never a thermometer.
+- **What a dish serves:** a held draught that bends the next presses, and seasoning for Focus, Dexterity and Perception.
+- **Clay is the kitchen:** pots from the kiln, their walls a heat you chose, a new donabe sealed with porridge.
+- **Failure is comedy** and goes to the World Mushroom.

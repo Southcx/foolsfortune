@@ -80,6 +80,7 @@ import { mapRules } from './maps.js';
 import { courseRules } from './course.js';
 import { systemLineRules, commandEchoRules } from './systemlines.js';
 import { veritomeRules } from './veritome.js';
+import { stealthRules } from './stealth.js';
 import { itemRules } from './items.js';
 import { chatLineRules } from './chatline.js';
 import { folkRules } from './folk.js';
@@ -117,7 +118,7 @@ export function areaRules(ctx) {
   courseRules(ctx);
   systemLineRules(ctx);
   placeEnterRules(ctx);
-  veritomeRules(ctx);
+  veritomeRules(ctx); stealthRules(ctx); // (a candid photograph: progress/stealth.js)
   itemRules(ctx);
   chatLineRules(ctx);
   folkRules(ctx);
