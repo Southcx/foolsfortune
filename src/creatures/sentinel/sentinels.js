@@ -10,7 +10,8 @@
 //
 //   game.sentinels = new Sentinels(game)   .send(at, level)   .update(dt)   .list   SENTINEL (its numbers)
 //   events: sentinel.wake { level, ground, by }, sentinel.seek { by }, sentinel.mend { volume, last, ground, by }, and from its body sentinel.hit,
-//   .burst { cause: 'settled' (sunk after mending) | 'driven' (sunk with nothing mended) | a blow's }, .cast
+//   .burst { cause: 'settled' (sunk after mending) | 'driven' (sunk with nothing mended) | a blow's }, .cast (its slam let go); the body's
+//   moments for the ear (Wanda's): sentinel.step { at }, .windup { at }, .crack { hp, at }, .fall { at }, all by 'environment'
 //
 // Prior art: the immune system's white blood cell (it seeks the damage, not you); Black & White's and Populous's land answering the god;
 // Left 4 Dead's director for the pacing (rejection's own); the slip jelly's and the wisp's minds for the parts (docs/AI.md).
@@ -24,8 +25,8 @@ const POSE = { fight: 'watch', watch: 'watch', drift: 'walk', flee: 'walk', stun
 
 /** Its numbers. from: the Dissonance Level it is first sent at; one alive at a time; mend: the dissonance a mend takes off; wear: the
  *  radius (m) of the creation worn back at a mark; reach: how near (m) it mends from; marks: how many warp marks rejection keeps;
- *  settle: real s with nothing to mend before it sinks; gone: real s a sunk or burst body lingers before it is taken down. */
-export const SENTINEL = { from: 4, alive: 1, mend: 18, wear: 2.6, reach: 2.2, marks: 12, settle: 10, gone: 6, hp: 9, ground: () => groundOf().firm.name }; // (`ground`: the island's firm layer, its word in the log)
+ *  settle: real s with nothing to mend before it sinks; stride: m between footfalls; gone: real s a sunk or burst body lingers before it is taken down. */
+export const SENTINEL = { from: 4, alive: 1, mend: 18, wear: 2.6, reach: 2.2, marks: 12, settle: 10, gone: 6, hp: 9, stride: 1.1, ground: () => groundOf().firm.name }; // (`ground`: the island's firm layer, its word in the log)
 
 export class Sentinels {
   constructor(game) {
@@ -68,12 +69,18 @@ export class Sentinels {
       c.rise = Math.min(1, c.rise + dt / 1.2);
       const A = c.attack;
       B.drive({ pose: POSE[c.pose] || 'idle', move: A ? 'slam' : null, k: A ? Math.max(0, Math.min(1, 1 - A.t / WISP.cast.wind)) : 0, rise: c.rise });
-      if (c.hp < c.seenHp) B.hit(1 - c.hp / (c.maxHp || SENTINEL.hp));
+      if (A && !c.wound) this.say(c, 'windup');
+      c.wound = !!A;
+      if (c.hp < c.seenHp) { B.hit(1 - c.hp / (c.maxHp || SENTINEL.hp)); this.say(c, 'crack', { hp: Math.max(0, c.hp) }); }
       c.seenHp = c.hp;
-    } else if (!c.downed) { c.downed = true; B.down(); }
+      const sp = Math.hypot(c.vel.x, c.vel.z); // (a footfall a stride, the stride by its pace)
+      if (sp > 0.3 && (c.stride = (c.stride || 0) + dt * sp) > SENTINEL.stride) { c.stride = 0; this.say(c, 'step'); }
+    } else if (!c.downed) { c.downed = true; B.down(); this.say(c, 'fall'); }
     if (!c.alive) c.root.visible = !B.done; // (it crumbles where it stood: a vanish or a scatter would hide it at once)
     B.update(dt);
   }
+
+  say(c, what, extra = {}) { this.game.events?.emit(`sentinel.${what}`, { ...extra, at: [+c.pos.x.toFixed(2), +c.pos.y.toFixed(2), +c.pos.z.toFixed(2)], by: 'environment' }); }
 
   /** A body taken down for good (a wisp re-forms; a sentinel does not). */
   takeDown(W, c) {
