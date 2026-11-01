@@ -8,7 +8,8 @@
 //                  claim's `step`, `post`)
 //   the hits       every active box against every body of the other side, the grabs, the shots (hits.js); what a hit was said by an
 //                  event, shown by the house's hit effects, heard by its damage sounds
-//   the keys       the Arena's own (keys.js), the drawn body's key poses and hitlag's freeze and shake (pose.js)
+//   the keys       the Arena's own, claimed on the input (keys.js); the core's switches on `player.mods` (courierbody.js); the drawn body's
+//                  key poses (pose.js) and hitlag's hold (the character's `hold`, asked once on the hit frame)
 //   the match      three stocks each; a KO past a blast line, the platform back in, two real s invincible; every foe's stocks taken,
 //                  the stage cleared (the room's rank: time, hits taken, the longest string); the Courier's taken, the match again
 //   the lecterns   the foes' level (1 to 9), how many (1 to 3), training (stand, shield, jump: no stocks lost, the boxes shown, the
@@ -73,7 +74,7 @@ export class FighterKit {
   enter() {
     if (this.on || !this.stage) return;
     const g = this.game, P = g.player, W = this.well.frame;
-    this.on = true; this.keys.on();
+    this.on = true; this.keys.on(); this.body.engage(); this.hlSeen = 0;
     W.claim = { step: (dt) => this.body.step(dt), isDown: (c) => (c === 'ShiftLeft' ? this.body.run : c === 'ShiftRight' ? false : undefined), faceLock: true };
     const t = this.pose.tech(P); if (P.techs && !P.techs.list.includes(t)) P.techs.add(t);
     P.techs?.active && P.techs.stop(); P.endCore?.();
@@ -85,10 +86,10 @@ export class FighterKit {
   leave() {
     if (!this.on) return;
     const g = this.game, P = g.player;
-    this.on = false; this.keys.off();
+    this.on = false; this.keys.off(); this.body.release(); g.character?.hold?.(0);
     if (this.well.frame.claim) this.well.frame.claim = null;
     const t = this.pose.t, L = P.techs?.list; if (t && L) { const i = L.indexOf(t); if (i >= 0) L.splice(i, 1); }
-    this.pose.lift(g.character); g.character?.setHidden?.(false);
+    g.character?.setHidden?.(false);
     this.hits?.clear(); for (const f of this.foes) f.show(false);
     for (const L2 of this.stage?.ledges || []) L2.by = null;
     this.looks?.update([], { z: this.stage?.z ?? 0 }); for (const T of this.looks?.tags?.values() || []) T.s.visible = false;
@@ -117,14 +118,23 @@ export class FighterKit {
   }
 
   // ------------------------------------------------------------------------------------------- the fixed step
-  pre() { if (!this.on) return; this.pose.lift(this.game.character); this.body.pre(); }
+  pre() { if (!this.on) return; this.body.pre(); }
   post() {
     if (!this.on) return;
     this.body.post();
     for (const f of this.active) { if (!f.F.live && f.F.st !== 'dead') continue; const I = f.think(); f.F.step(I); f.move(I); }
     this.hits.resolve(this.all);
+    this.lag();
     for (const F of this.all) this.blast(F);
     this.match();
+  }
+
+  /** The Courier's hitlag, once on the hit frame (the hit, a shield's, a pummel's): the drawn pose held its frames and, if the Courier was
+   *  struck and launched, shaken (side to side on the ground, up and down in the air). The capsule never moves. */
+  lag() {
+    const C = this.courier, n = C?.hl > 0 ? C.hl : 0;
+    if (n > this.hlSeen) this.game.character?.hold?.(n, { shake: C.launch ? KIT.shake : null, air: !C.grounded });
+    this.hlSeen = n;
   }
 
   /** Past a blast line: a KO (a stock gone; none in training), and out a beat before the platform. */
@@ -148,6 +158,7 @@ export class FighterKit {
       if (by === 'courier') this.well.verb('stock');
     }
     F.stale = []; go(F, 'dead'); F.vx = F.vy = F.kvx = F.kvy = 0; F.hl = 0; F.launch = null;
+    if (F === this.courier) { g.character?.hold?.(0); this.hlSeen = 0; }
   }
 
   /** The match's beats: back in on the platform, out of stocks, the clear, the match again. */
@@ -213,7 +224,6 @@ export class FighterKit {
     for (const f of this.foes) if (f.model.group.visible || f.F.live) f.look(dt);
     this.looks.update(this.all, { boxes: this.training !== 'off', z });
     for (const f of this.foes.slice(this.count)) { const T = this.looks.tags.get(f.F); if (T) T.s.visible = false; }
-    this.pose.shake(this.game.character);
     const L = this.stage.lecterns.train;
     this.looks.frameData(this.training !== 'off' ? this.lastMove || ['TRAINING', 'strike a straw fighter: its numbers show here'] : null, new THREE.Vector3(L.x, this.stage.top + 4.2, z - 1));
   }

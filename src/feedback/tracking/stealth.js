@@ -14,5 +14,6 @@ export function stealthRules({ on, L, log }) {
     if (e.d != null && e.d <= 3) L.hi('photo.candid.near', 1);
     if (phaseAt() === 'night') L.hi('photo.candid.night', 1);
     log.say('gain', 'Candid! It never knew you were there.', { key: 'photo.candid', throttle: 4 });
+    if (L.get('photo.candid') === 1) log.say('system', "A candid photograph is one the Figment never noticed. They're worth more.", { key: 'photo.candid.gloss', throttle: 1 }); // (the first time only: Espada's gloss)
   });
 }

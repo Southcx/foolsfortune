@@ -144,8 +144,8 @@ The ruling is named objects, in a table per tool. Names read in a diff and capti
   from `MOVES` under the rule in section 6, so the sheet shows the frame data's own timing. The fill is `fillKeys(move, keys)`
   (platformfighter.js), registered with the table (`registerKeys('fighter', KEYS, fillKeys)`, Petra's keyposes.js, built 580288d) and
   cached, so `keysOf` hands back the same array each call. Keys named `lead`, `strike` and `follow` take the startup, the active frames
-  and the rest; each span snaps in (lead 2, strike 1, follow 3 at most) and holds the remainder. A fresh forward smash, for one, reads
-  lead 2 + 9, strike 1 + 4, follow 3 + 22: Mario's 41 frames.
+  and the rest; each key holds its whole span, snapping in over its first frames (lead 2, strike 1, follow 3 at most). A fresh forward
+  smash, for one, reads lead 11, strike 5, follow 25: Mario's 41 frames, the strike landing on frame 12, the first active one.
 - **Whose.** The keys' poses are Calissa's (`courier/anim/keys/`). The fighter's timing is Dovina's (`MOVES`). The track that plays
   them is Petra's.
 

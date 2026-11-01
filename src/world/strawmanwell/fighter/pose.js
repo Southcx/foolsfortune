@@ -10,17 +10,17 @@
 //              (courier/anim/keyposes.js, registerKeys / keysOf, not on this branch yet): the sequences move there when it lands
 //   a state    held (moves.js HOLDS): the jumpsquat and the landing a crouch, the shield the block, the ledge the hang, a knockdown on
 //              the belly; a dodge, a getup or a roll played through its own frames
-//   hitlag     the pose frozen as it was on the frame of the hit (the animation's time held), and the drawn body only shaken: side to
-//              side on the ground, up and down in the air, decaying over the freeze; the hurt capsule never moves (squash.js's way: laid
-//              on after the frame is posed, taken off before anything reads the body)
+//   hitlag     the character's own hold (courier/character.js `hold`, asked by the kit once on the hit frame, kit.js): the pose frozen as
+//              it was on the next animate and held its frames of game time, the drawn body shaken (victim only) side to side on the
+//              ground, up and down in the air, decaying; the hurt capsule never moves
 // The layer rides on the Courier's techs as a passive one of the kit's own (courier/moves/techs.js's contract: blended over the core's
 // animation, the body's facing held to the fighter's), added on entering the Arena and taken off on leaving.
 //
 // Prior art: Sakurai's three-beat attack and his hitstop shake (Famitsu columns; KEY-POSES.md's table), Guilty Gear Xrd's held key
 // frames over a full-rate world, Skullgirls' snap into the key pose; the house's squash (courier/anim/squash.js) and hurt (anim/hurt.js).
 //
-//   const L = new CourierPose(kit)   L.tech(player) -> the passive tech (added to player.techs)   L.animate(ch, base, dt)   L.shake(ch)
-//   L.lift(ch)   L.legs (the feet are the pose's: no foot IK)
+//   const L = new CourierPose(kit)   L.tech(player) -> the passive tech (added to player.techs)   L.animate(ch, base, dt)
+//   L.legs (the feet are the pose's: no foot IK)
 // ---------------------------------------------------------------------------------------
 import { Tech } from '../../../courier/moves/techs.js';
 import { measureSwing } from '../../../tools/melee.js';
@@ -45,7 +45,7 @@ class FighterPoseTech extends Tech {
 }
 
 export class CourierPose {
-  constructor(kit) { this.kit = kit; this.keys = new Map(); this.legs = false; this.shook = null; this.have = false; }
+  constructor(kit) { this.kit = kit; this.keys = new Map(); this.legs = false; }
   tech(P) { return (this.t ||= new FighterPoseTech(P.techs, this)); }
 
   /** A clip's three key moments (s), measured once. */
@@ -63,8 +63,7 @@ export class CourierPose {
 
   animate(ch, base) {
     const F = this.kit.courier, C = ch.clips; if (!F || !this.kit.on) { this.legs = false; return; }
-    this.last ||= C.pose(); this.A ||= C.pose(); this.B ||= C.pose();
-    if (F.hl > 0 && this.have) { base.copy(this.last); this.legs = true; return; } // (hitlag: the frame of the hit, held)
+    this.A ||= C.pose(); this.B ||= C.pose();
     const w = this.target(F, ch, C);
     this.legs = w > 0.5;
     if (w > 0.001) {
@@ -72,7 +71,6 @@ export class CourierPose {
       C.blend(base, this.A, w);
       base.p[0] = px; base.p[2] = pz; // (the clip's root travel stays the capsule's: the body never walks off its own place)
     }
-    this.last.copy(base); this.have = true;
   }
 
   /** Into this.A: the pose the fighter's state wants; returns its weight (0: the core's own animation). */
@@ -107,21 +105,5 @@ export class CourierPose {
     else if (H.span) C.sample(H.clip, H.span[0] + (H.span[1] - H.span[0]) * Math.min(1, F.f / Math.max(1, N || 30)), A, false);
     else C.sample(H.clip, F.f / 60, A, true);
     return smooth((F.f + 1) / EASE.lead);
-  }
-
-  /** Hitlag's shake laid on the drawn body (after the frame is posed): the victim's only, decaying over the freeze. */
-  shake(ch) {
-    const F = this.kit.courier; this.lift(ch);
-    if (!F || !(F.hl > 0) || !F.launch || !ch?.root) return;
-    const k = F.hl / Math.max(1, F.hlFull), s = (F.hl & 1 ? 1 : -1) * k, [gx, ay] = KIT.shake;
-    const d = F.grounded ? { x: gx * s, y: 0 } : { x: 0, y: ay * s };
-    ch.root.position.x += d.x; ch.root.position.y += d.y; ch.root.updateMatrixWorld(true);
-    this.shook = { ...d, at: ch.root.position.clone() };
-  }
-  /** The shake taken off (before anything reads the body again): only if the root is still where the shake left it (the next frame's
-   *  posing sets it afresh from the feet, and then there is nothing to take off). */
-  lift(ch) {
-    const d = this.shook; this.shook = null; if (!d || !ch?.root || !ch.root.position.equals(d.at)) return;
-    ch.root.position.x -= d.x; ch.root.position.y -= d.y; ch.root.updateMatrixWorld(true);
   }
 }

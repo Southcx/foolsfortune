@@ -537,4 +537,32 @@ Soul Alchemy is the eye's craft (Potion Craft's map). Spirit Cooking is the hand
 - **The tells** are the interface, never a thermometer.
 - **What a dish serves:** a held draught that bends the next presses, and seasoning for Focus, Dexterity and Perception.
 - **Clay is the kitchen:** pots from the kiln, their walls a heat you chose, a new donabe sealed with porridge.
+- **A feeling's taste is what it feels like to eat** (South, 2026-11-01): Wonder cool and fizzy, Mirth sweet, Desire rich, Fury
+  chilli, Gall bitter (the poison alarm), Grief salt and the onion's tears, Dread sour (the spoilage warning).
+- **The hearth is in the Spirit Garden**, where the slice-of-life activities live.
 - **Failure is comedy** and goes to the World Mushroom.
+
+## 32. One Vessoul: one pool, one vessel, seven feelings, one clock (2026-11-01; docs/plans/SUBSTRATE.md, a plan)
+
+South: "a small number of core parameters (like the lachryma pool), and then modify them contextually." The Vessoul is one being in
+every form (hand, Jar, Courier, ship), so it has one well and one body. The four substrates:
+- **the pool:** ammo, shield, fuel, boost, every cost;
+- **the vessel:** health as cracks, in every form;
+- **the feelings:** a blow's type, a status, a weather, a taste;
+- **the clock:** the game day and its hours.
+
+Every module is a modifier with a visible source on one of these. The audit found 22 health-like meters, about 30 damage formulas and a
+type chart that never fires. The folds:
+- ships, the Jar and the Arena take blows as the vessel;
+- the pool is ammo on the water too;
+- a Figment's type is its feeling's;
+- one unit of damage, the blow.
+
+Then the seven Domains each widen one dial of the substrate:
+- Ouranurgy: the clock and reach;
+- Manifestation: Lachryma made solid;
+- Divination: what is shown;
+- Psychokinesis: the blow's push;
+- Possession: minds and EmO;
+- Alteration: the feelings;
+- Spellscription: costs.
