@@ -1,11 +1,12 @@
 **Petra's open items** (read against the code 2026-10-30, after the Throwing Room's portal, the guests' siblings and the garden's
 seeds, slabs and scans landed, and v353's phone round (the sweeps' touch pages draw since 275047a: case 372): what is still open, one line each, with its source; the owner's calls marked.)
 
-- **Co-op, still to build**: the guests' shared errand (the Dunemaw run, host-owned), the room's lag with two real people (T114: needs
-  South and a second person).
+- **Co-op**: the shared errand is built (COOP.md C5, v372 to v375: the summed FOE, the party's wipe, the haul each player's own, one
+  body). Left: the room's lag and the one body felt with two real people (T114: needs South and a second person).
 - **The Dunes made bigger** (DUNES.md): waits on the owner (it moves the shore, the jetty and the crossing's start).
-- **The garden's seeds' shapes beyond the sphere** (SHAPES[kind].body in progress/seeds.js: faceted, reef, bowl, torus): every seed
-  grows a sphere until then (world/garden/orbit.js).
+- **The garden's seeds' shapes** (read 2026-11-01): every seed already walks its look's own shape (world/garden/place.js `P.base`:
+  the crystal faceted, the coral reefed, the bowl dished, the ring dimpled). Left: ground that is not seen whole from the heart (a bowl
+  walked inside, a torus through its hole), a new body for PlanetBody; built when South asks for it.
 - **The laptop's audio since v351** (Wanda's fix): waits on South's test.
 
 ## The heap (closed 2026-10-30; measured, not cut)

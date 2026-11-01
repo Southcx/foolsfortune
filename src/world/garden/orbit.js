@@ -10,7 +10,8 @@
 // lotuses and veins moved out to its new ground (realm.regrow). Its colour leans to the feeling it was fed most (tintOf, in its look). Past medium
 // it keeps a moonlet of its own in close orbit, so its size reads at a glance. The seven feelings' moonlets stand on the inner ring
 // round the Dantian's waist (place.js MOONLET_RING), set there as they are earned, a jump from its ground, never fed.
-// Every seed's planetoid is a sphere for now (SHAPES[kind].body: the faceted, reef, bowl and torus bodies to come), drawn by its kind
+// Every seed's planetoid walks its kind's own shape (place.js: the ground is its look's `shape`, faceted, reefed, dished, dimpled), as far
+// as a shape seen from its heart can go: a bowl walked inside or a torus through its hole are bodies still to come. Drawn by its kind
 // (`look: kind`): its colours, its feeling and the tint of what it was fed are Calissa's looks (vfx/garden/seedlooks.js, read from
 // `planted`). Kept in the realm's save: each seed's slot, size and what it was fed, and the game day's matter.
 // Events: seed.plant { seed, slot, inner }, seed.grow { seed, size }, seed.feed { seed, minutes, from }, each with `by`.
