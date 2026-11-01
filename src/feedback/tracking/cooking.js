@@ -15,14 +15,14 @@ const art = (name) => (/^[AEIOU]/.test(name) ? 'an' : 'a');
 
 export function cookingRules({ on, L, log }) {
   on('cook.move', (e) => { if (e.by !== 'courier') return; L.inc(`cook.move.${e.move}`); if (e.hit) L.inc(`cook.hit.${e.move}`); });
-  on('cook.learn', (e) => { if (e.by !== 'courier') return; L.inc('cook.learn'); log.say('system', `A new recipe: ${e.label}. The hearth will remember it.`, { key: 'cook.learn', throttle: 1 }); });
-  on('cook.proof', (e) => { if (e.by !== 'courier') return; log.say('info', 'Your dough is proofing at the hearth. Come back in about a game hour and poke it.', { key: 'cook.proof', throttle: 2 }); });
-  on('cook.dubious', (e) => { if (e.by !== 'courier') return; L.inc('cook.dubious'); log.say('warn', 'A dubious dish. It goes back to the Lachryma it was made of.', { key: 'cook.dubious', throttle: 1 }); });
+  on('cook.learn', (e) => { if (e.by !== 'courier') return; L.inc('cook.learn'); log.say('system', `New recipe: ${e.label}.`, { key: 'cook.learn', throttle: 1 }); });
+  on('cook.proof', (e) => { if (e.by !== 'courier') return; log.say('info', 'The dough is proofing at the hearth. Return in about a game hour and poke it.', { key: 'cook.proof', throttle: 2 }); });
+  on('cook.dubious', (e) => { if (e.by !== 'courier') return; L.inc('cook.dubious'); log.say('warn', 'Dubious dish. A little Lachryma returns to your pool.', { key: 'cook.dubious', throttle: 1 }); });
   on('cook.serve', (e) => {
     if (e.by !== 'courier') return;
     L.inc('cook.serve'); L.inc(`cook.serve.${e.grade}`); L.inc(`cook.dish.${e.dish}`); L.hi('cook.grade', ORDER.indexOf(e.grade));
     if (e.true) { L.inc('cook.true'); L.inc(`cook.true.${e.dish}`); }
-    const held = e.feeling ? ` It holds ${e.feeling} for ${e.hold} real seconds.` : '';
+    const held = e.feeling ? ` Its ${e.feeling} lasts ${e.hold} real seconds.` : '';
     log.say('gain', `You served ${art(e.label)} ${e.label.toLowerCase()}: ${e.grade}.${held}`, { key: 'cook.serve', throttle: 1 });
   });
   on('drop.take', (e) => {

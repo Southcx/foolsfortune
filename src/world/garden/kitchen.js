@@ -151,10 +151,10 @@ export class Kitchen {
     const R = this.served, G = GRADES.find((x) => x.id === R.grade);
     root.appendChild(el('div', 'ck-done', `${R.dish.label} · ${G.label}`));
     const D = R.draught;
-    root.appendChild(el('div', 'ck-line', D ? `It holds ${D.feeling.toUpperCase()} at ${Math.round(D.strength * 100)}% for ${D.hold} real seconds. Press at the Athanor while it lasts.` : 'Dubious. It goes to the Lachryma it was made of: a little back in your pool.'));
+    root.appendChild(el('div', 'ck-line', D ? `Draught: ${D.feeling.toUpperCase()} at ${Math.round(D.strength * 100)}%, lasting ${D.hold} real seconds. Use the press at the Athanor before it fades.` : 'Dubious. A little Lachryma returns to your pool.'));
     btn('BAKE ANOTHER', () => { this.st = null; this.show('choose'); });
     btn('CLOSE', () => this.close(), 'big');
-    this.tell(R.grade === 'true' ? 'A true loaf: every move at its heart.' : '');
+    this.tell(R.grade === 'true' ? 'True loaf. Every move was at its heart.' : '');
     this.draw = () => this.drawLoaf(this.st?.lastBake ?? 0.7, this.st?.steamed, true);
   }
 
