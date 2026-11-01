@@ -48,7 +48,11 @@ const RULES = {
   'creature.mind': (s, e) => { const k = { fluid: 0.45, prismatic: 1 }[e.state]; if (k) s.prismatic?.(k); }, // (a mind entering Fluid or Prismatic: a half sweep, a full one; the event says only the state entered, so Prismatic falling back to Fluid sounds the half)
   // a Well's pools (world/well/dunemaw.js): down a floor, or back up to the mouth (not when shattered: the reform has its own)
   'well.floor': (s, e) => s.poolDown?.(e.floor),
-  'well.leave': (s, e) => { if (!e.shattered) s.poolUp?.(); },
+  'well.leave': (s, e) => { if (e.shattered) return; if (e.how === 'escape') s.wellWake?.(); else s.poolUp?.(); }, // (the wake: audio/shrines.js)
+  'shrine.find': (s, e) => (e.by === 'courier' ? s.shrineFind?.() : null),
+  'shrine.rest': (s, e) => (e.by === 'courier' ? s.shrineRest?.() : null),
+  'shrine.travel': (s, e) => (e.by === 'courier' ? s.shrineTravel?.() : null),
+  'shrine.storage': (s, e) => (e.by === 'courier' ? s.shrineStorage?.() : null),
   'combat.annihilate': (s) => { s.damage?.('impact', 1); s.damage?.('delirium', 1); s.prismatic?.(1); }, // (the two ends of the line at once: audio/damage.js)
   'lockheart.ultimate.end': (s) => s.ultimateEnd?.(), // (its cue and its landing are music: music/lockheart.js, music/choose.js)
   // the crossing's rail shooter (audio/rail.js): a lock's tone and a down, each on the music's next sixteenth (Rez)

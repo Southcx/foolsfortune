@@ -1,7 +1,6 @@
 **Wanda's open list** (the notes it replaces are deleted; each line names who asked).
 
 - **Placeholders that want real sounds** (Petra, 2026-10-06 and 07; each calls an existing method today):
-  - the Shrines: `sfx.rest` (a rest), the Wake Whistle (`well.escape.start`: a 1.5 s breath), the wake (`well.leave { how: 'escape' }`);
   - at sea: the gun on the sixteenth (`sfx.tap(9)`), the volley (`seekers`), polarity, the roll, a hit, a ricochet, a shot drunk;
     `rail.broadside`, `rail.ram`, `rail.warn`, `rail.part`, `rail.bite`, `rail.toll { onBeat }`, `rail.end`;
   - the Dunemaw bowl: `bowl.spend`, `bowl.fall`, `bowl.shake`, `clutch.hatch`, `clutch.break`, `foe.*` (the fight's own blows).
