@@ -37,8 +37,9 @@ export const SEEDS = {
 /** The seeds the ledger has earned (the world side gives each once: a seed placed or waiting in the shed). */
 export const seedsEarned = (L) => Object.keys(SEEDS).filter((id) => (L?.get?.(SEEDS[id].key) || 0) >= SEEDS[id].n);
 
-/** A seed's kind and the body it grows (`body`: PlanetBody's shape; every kind is a sphere until Petra builds its own, `sphere` the
- *  fallback), with the line its card shows. */
+/** A seed's kind and the body it grows (`body`: PlanetBody's shape, `sphere` the fallback), with the line its card shows. Each kind is
+ *  walked on its look's own shape (world/garden/place.js `P.base = look.shape`): the crystal faceted, the coral reefed, the bowl dished,
+ *  the ring dimpled. Not built: ground not seen whole from the planetoid's heart (inside a bowl, through a ring's hole). */
 export const SHAPES = {
   clay:    { body: 'sphere',  line: 'Round, all clay: the garden as it began.' },
   crystal: { body: 'faceted', line: 'Faceted; past medium it splits open like a geode and you can stand inside.' },

@@ -211,7 +211,7 @@ function attack(F, I) {
   // what the specials do on their own frames
   if (m.special === 'shot' && f === m.startup) F.env.shot(F);
   if (m.special === 'recover' && f === m.startup) { F.mo.kick = { vx: F.face * (m.drift ?? KIT.recoverX), vy: F.stats.jumpVelocity * (m.rise ?? KIT.recover) }; F.vx = F.mo.kick.vx; F.vy = F.mo.kick.vy; F.grounded = false; F.fastfall = false; F.mo.noJump = true; F.mo.noAct = true; return; }
-  if (m.special === 'hook' && !F.grounded && f >= a0 && f <= a1 && F.env.tryLedge(F, true)) return;
+  if ((m.special === 'hook' || m.tether) && !F.grounded && f >= a0 && f <= a1 && F.env.tryLedge(F, true)) return;
   if (m.special === 'reflect') { const W = m.reflect || KIT.reflect; F.reflecting = f >= W[0] && f <= W[1]; } // (a move's own window, else the toll's)
   if (m.special === 'lunge' && f >= a0 && f <= a1) { F.vx = F.face * (m.lunge || 4) / ((a1 - a0 + 1) * FRAME); if (!F.grounded) F.vy = Math.max(F.vy, 0); vel(F); } // (a lunge: its distance over its active frames)
   if (m.special === 'lunge' && f === a1 + 1) F.vx = 0; // (and it stops where it ends: no slide on)

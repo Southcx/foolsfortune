@@ -115,17 +115,20 @@ PRESETS.dunemawBowl = {
 ```
 
 - **A preset's writes are marked** (`first('debug.preset.<id>')`), and the Codex says "Preset: {label}" beside its records.
-- **They live in `src/debug/presets.js`** (built 2026-11-01, Petra's loader and `/preset <id>`; the rows are Dovina's: `fresh`, `everything` and `dunemaw` stand until she writes hers), each naming what it is for, like a debug chest's kit. A QAIS test may name a
+- **They live in `src/debug/presets.js`** (`PRESETS`, data, Dovina's: its header gives the shape; the loader is Petra's, `src/debug/presetloader.js`, `/preset <id>`), each naming what it is for, like a debug chest's kit. A QAIS test may name a
   preset (`preset: 'gardenFiring2'`); its "take me there" applies it.
-- **The first five:**
+- **The first five, as written** (2026-11-01; places only where `game.places` has one, so the garden and the great bowl wait for
+  a place id or the loader's `enter`):
 
 | preset | where | what it is for |
 |---|---|---|
 | `fresh` | the workshop | nothing done, nothing lent: STORY's rules in the DEBUG save, for testing an unlock path from the start |
-| `everything` | the workshop | every category lent, the whole kit, 10,000 cubes: today's DEBUG |
-| `gardenFiring2` | the Dantian | the second Firing reached by ranks (Myggdrasil given), garden materials: the garden mid-game |
-| `dunemawBowl` | the great bowl | three floors cleared, the cutlass and kick unlocks earned: the fight |
-| `entropolisOpen` | the shore's jetty | the reckoning past 0.6, a rutter, a galleon's fuel: the long crossing |
+| `everything` | the workshop | every category lent but the Summit and Achievements, the seven tools, 10,000 cubes: today's DEBUG |
+| `domainsMid` | the workshop | every domain at 50, earned not lent: the ladder's rungs, powers and 40/50 traits (DOMAINS.md 18) |
+| `domainsTop` | the workshop | every domain at 80: the epics and the 70 traits, without the Summit lend |
+| `dunemawReturn` | the Great Dunemaw's mouth | three runs down and its FOE beaten once, a Wake Whistle and bottles |
+
+Still to write once their places exist: `gardenFiring2` (the Dantian) and `entropolisOpen` (the jetty with a reckoning past 0.6).
 
 Presets wait on the save split (section 2). Until then, the debug chests carry the items, and the lend panel the unlocks.
 
