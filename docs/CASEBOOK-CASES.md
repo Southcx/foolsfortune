@@ -4890,3 +4890,13 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   mount; a hold opens the choice, steered by the stick. After: holding Y headless for 40 frames opened the choice offering the jelly,
   and letting go called it (`jellyMount.last` 'jelly').
 - **Rule:** 393
+
+### 2026-11-01 · The crossing had no touch tiles (ui/touch/cluster.js; found by Dovina's touch audit)
+- **Seen:** on a phone, a crossing showed no cluster. FIRE, ROLL, FORM and SURGE were bound (`core/bindings.js`, ctx `rail`) and had
+  no tile, so only the look area's sweep (the lock-on) could be played.
+- **Cause, as measured:** `clusterContext` returned an empty list whenever `g.rail.stage.active`, a stand-down written before the
+  crossing had touch bindings, and never revisited when the bindings came.
+- **Fix:** `railCluster` (ui/touch/actioncontext.js): FIRE, ROLL with its charges as pips, FORM worded as the form it turns you into,
+  and SURGE once its gauge is full. The cluster shows it on the crossing. After, headless on a crossing: the cluster showed fire, roll
+  and form; FORM turned the ship Astral to Umbral; ROLL spent a charge (2 to 1).
+- **Rule:** 394

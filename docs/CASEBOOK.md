@@ -1094,4 +1094,6 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
   that calls a window's methods by hand proves nothing about its clock: click it in real time.
 393. **A touch control holds a key as long as the finger does.** A verb whose key is read held (a
   choice, a charge, a guard) is never sent from a tile as a fixed tap; the tile sends down on press and up on release.
+394. **A verb bound for touch has a tile in its context.** A binding with a `touch` control that no
+  cluster, strip or screen shows is a dead verb on a phone; a context's stand-down is revisited when its bindings arrive.
 

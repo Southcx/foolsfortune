@@ -29,7 +29,7 @@
 // Prior art: Genshin Impact's attack and skill tiles changing with the character, Call of Duty Mobile's fire button by weapon, Into the
 // Breach's strip of moves with END TURN the largest; the cluster's own reading of the skiff (cluster.js clusterContext).
 //
-//   footCluster(game) toolCluster(game, tool) duelCluster(game) duelTools(game) helmCluster(game) -> [entry]   stripOf(game) -> [entry]   nearOf(game) -> [entry]   beltPairOf(game) -> [entry]
+//   footCluster(game) toolCluster(game, tool) duelCluster(game) duelTools(game) helmCluster(game) railCluster(game) -> [entry]   stripOf(game) -> [entry]   nearOf(game) -> [entry]   beltPairOf(game) -> [entry]
 //   inHandCtx(game) -> 'psygun' | 'cutlass' | 'rod' | 'hook' | 'brush' | 'veritome' | 'dreamvane' | 'crucibelle' | 'lockheart' | null
 //   entry { id, glyph, word, corner, lit, dim, tint, charge }   broadsideOf(game) -> { side, charge, bears }   mountsOf(game) -> [entry]   ACTION_TILES (the words and glyphs by tool)
 // ---------------------------------------------------------------------------------------
@@ -138,6 +138,20 @@ export function helmCluster(g) {
   const up = E('throttle.up', 'throttleup', THROTTLE_WORDS[Math.min(3, t + 1)], { dim: t >= 3 }), down = E('throttle.down', 'throttledown', THROTTLE_WORDS[Math.max(0, t - 1)], { dim: t <= 0 });
   if (g.seaFight?.serpent) return [E('fire', 'psfire', 'FIRE'), E('parry', 'parry', 'PARRY'), up, down];
   return [use ? E('use', null, use) : null, up, down];
+}
+
+/** On the crossing (ctx `rail`; Dovina's touch audit, 2026-11-01: its verbs had bindings and no tiles): FIRE (held, the auto fire),
+ *  ROLL with its charges as pips, FORM (Astral or Umbral, the face the one you would become), and SURGE once its gauge is full. The
+ *  lock-on is the look area's sweep (core/touchdriver.js, `Ship.touchAt`); BOOST and BRAKE wait for the stick's push (TOUCH-REBUILD.md 4). */
+export function railCluster(g) {
+  const P = g.rail?.ship; if (!g.rail?.stage?.active || !P) return [];
+  const umbral = P.form === 'umbral';
+  return [
+    E('fire', 'psfire', 'FIRE'),
+    E('roll', null, 'ROLL', { pips: Math.max(0, Math.min(3, P.charges | 0)), dim: (P.charges | 0) <= 0 }),
+    E('form', null, umbral ? 'ASTRAL' : 'UMBRAL'),
+    (P.surge || 0) >= 100 ? E('surge', null, 'SURGE', { lit: true }) : null,
+  ];
 }
 
 /** The broadside's side now (seafight.js `broadside`'s own test: the camera's look on port's normal, past SEA_FIGHT.broadside.beam), and
