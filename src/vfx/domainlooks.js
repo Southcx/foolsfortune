@@ -4,6 +4,9 @@
 //   domain.level { domain, by }   the domain's level-up (`domain.<d>.level`) at the Courier, or at the Pneuka Jar while the god hand is up,
 //                                 following them; queued, one at a time, DOMAIN_LOOKS.gap real s apart (seven at once never land on one
 //                                 spot), and held while the Spirit Garden, a puzzle duel, the shatter or a seam has the screen
+//   domain.milestone { domain, level, rows, by }   a ten that holds something (Dovina's, progress/psyche.js): a bigger beat in the
+//                                 level-up's place (that domain's queued level-up taken up into it): the level-up played twice,
+//                                 swelling (MILESTONE); the summit's (99) a third time, bigger
 //   god.<power> { repeat }        a god power's act (godhand/powers.js says it from its domain's handler): its domain's `.cast` or `.hit`
 //                                 where the act begins or lands (POWER_LOOK: the drag's two ends, the press, the jar for Read), scaled
 //                                 to the power's reach (progress/godpowers.js rampOf) and clamped to the god hand's view. It plays
@@ -17,7 +20,7 @@
 // (Lionhead, 2001: the cast's look at the hand's spot, sized to the miracle's reach).
 //
 //   game.domainLooks = new DomainLooks(game)   (boot/world.js, beside the god hand's looks)   .update(rawDt) each frame (boot/frame.js)
-//   DOMAIN_LOOKS (the knobs)   POWER_LOOK (what each god power plays, and where)
+//   DOMAIN_LOOKS (the knobs)   POWER_LOOK (what each god power plays, and where)   MILESTONE (a milestone's beat)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { GOD_POWERS, POWER_EVENTS, rampOf } from '../progress/godpowers.js';
@@ -29,6 +32,11 @@ export const DOMAIN_LOOKS = {
   repeat: 0.7,                    // a charm's repeat plays its look again this strong
   stale: 0.75,                    // m: a kept stroke whose end is this far from the cursor is an old one (a press and release in one frame)
 };
+
+/** A milestone's beat: [moment, scale, delay real s], the level-up swelling in two, the summit's (99) a third over them (FFXII's licence
+ *  learned, a bell rung twice). Only the level-up's own effect: the domain's cast and landing are sized for the god hand's high view and
+ *  bury the Courier under the shoulder camera (measured 2026-11-01: Manifestation's cast at 1.1 filled the frame). */
+export const MILESTONE = { beats: [['level', 1, 0], ['level', 1.25, 0.45]], summit: ['level', 1.45, 0.9] };
 
 const R = (id, key, k = 1) => (g) => (rampOf(id, key, g) ?? 1) * k;
 const span = (k = 1, lo = 0) => (g, a, b) => Math.max(lo, a.distanceTo(b) * k);
@@ -61,11 +69,17 @@ export class DomainLooks {
     this.queue = []; this.wait = 0; this.later = []; this.stroke = null;
     const E = game.events;
     E?.on?.('domain.level', (e) => { if (e.by === 'courier' && e.domain) this.levelUp(e.domain); });
+    E?.on?.('domain.milestone', (e) => { if (e.by === 'courier' && e.domain) this.milestone(e.domain, e.level); });
     for (const id of POWER_EVENTS) E?.on?.(`god.${id}`, (e) => this.power(id, e));
   }
 
   /** A domain's level-up said: queued (one a domain: a second of the same before its turn is the same beat). */
-  levelUp(domain) { if (!this.queue.includes(domain)) this.queue.push(domain); }
+  levelUp(domain) { if (!this.queue.some((q) => q.domain === domain)) this.queue.push({ domain }); }
+  /** A milestone said: the domain's queued level-up made its milestone, or a new one queued. */
+  milestone(domain, level = 0) {
+    const q = this.queue.find((x) => x.domain === domain);
+    if (q) { q.level = level; q.milestone = true; } else this.queue.push({ domain, level, milestone: true });
+  }
 
   /** Where the Vessoul stands now: the Pneuka Jar while the god hand is up, else the Courier's feet. */
   vessoulAt(out) {
@@ -100,7 +114,14 @@ export class DomainLooks {
     if (L) this.stroke = L; // (the drag in hand: read at its release)
     for (let i = this.later.length - 1; i >= 0; i--) { const q = this.later[i]; if ((q.t -= dt) <= 0) { this.later.splice(i, 1); this.play(q.name, q.ctx, q.k); } }
     if ((this.wait -= dt) > 0 || !this.queue.length || this.busy() || !this.vessoulAt(_p)) return;
-    const domain = this.queue.shift(); this.wait = DOMAIN_LOOKS.gap;
-    this.play(`domain.${domain}.level`, { pos: _p.clone(), follow: (h) => { if (this.vessoulAt(_p)) h.pos.copy(_p); return true; } }); // (it goes with them as they move)
+    const { domain, milestone, level } = this.queue.shift();
+    const follow = (h) => { if (this.vessoulAt(_p)) h.pos.copy(_p); return true; }; // (it goes with them as they move)
+    if (!milestone) { this.wait = DOMAIN_LOOKS.gap; this.play(`domain.${domain}.level`, { pos: _p.clone(), follow }); return; }
+    const beats = level >= 99 ? [...MILESTONE.beats, MILESTONE.summit] : MILESTONE.beats;
+    for (const [m, scale, delay] of beats) {
+      const ctx = { pos: _p.clone(), scale, dir: UP.clone(), follow }, name = `domain.${domain}.${m}`;
+      if (delay > 0) this.later.push({ t: delay, name, ctx, k: 1 }); else this.play(name, ctx);
+    }
+    this.wait = DOMAIN_LOOKS.gap + beats[beats.length - 1][2]; // (the next waits for this one's last beat)
   }
 }

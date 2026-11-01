@@ -13,6 +13,7 @@
 // ---------------------------------------------------------------------------------------
 import { kitFor } from '../../../progress/fighterkits.js';
 import { SONDELASS_MOVES } from '../../../tools/sondelass/sondelassloadout.js';
+import { TOOL_POSES } from '../../../courier/anim/keys/fightertoolposes.js';
 
 const BARE = ['standard', 'brawler'];
 const rowOf = (id) => (id ? SONDELASS_MOVES[id]?.rule || id : null);
@@ -38,11 +39,11 @@ export class HandKit {
         const ids = L?.string || ['c1', 'c2', 'c3', 'c4'], poses = {};
         ['jab1', 'jab2', 'jab3', 'ftilt'].forEach((slot, i) => { const c = SONDELASS_MOVES[ids[i]]?.clip; if (c) poses[slot] = { clip: c, limb: 'R' }; });
         const tap = SONDELASS_MOVES[sp.tap]?.clip; if (tap) poses.nspecial = { clip: tap, limb: 'R' };
-        kit.poses = poses;
+        kit.poses = { ...TOOL_POSES.sondelass, ...poses };
         if (!sp.back) kit.boxes = { ...(kit.boxes || {}), dspecial: [[0, 0.6, 1.8]] }; // (the Tidecutter's ring, about its 4.2 m with the blade's reach)
       }
-    } else kit = kitFor(tool, { variant: this.variant });
-    if (kit && kit.moves.nspecial && !kit.moves.nspecial.chargeShot && kit.moves.nspecial.special !== 'shot') {
+    } else { kit = kitFor(tool, { variant: this.variant }); if (kit && TOOL_POSES[tool]) kit.poses = { ...TOOL_POSES[tool] }; } // (each tool's own clips: keys/fightertoolposes.js)
+    if (kit && kit.moves.nspecial && !kit.moves.nspecial.chargeShot && kit.moves.nspecial.special !== 'shot' && !kit.boxes?.nspecial) {
       const r = kit.moves.nspecial.radius; // (a special that is not the shot needs a box of its own: a lunge's ahead, an area's round)
       kit.boxes = { ...(kit.boxes || {}), nspecial: r ? [[0, 0.8, Math.min(3, r * 0.5)]] : [[0.85, 1.0, 0.45]] };
     }

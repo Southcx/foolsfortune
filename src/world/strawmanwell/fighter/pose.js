@@ -29,11 +29,12 @@ import { DODGE, SHIELD, TECH, LEDGE, SNAP } from '../../../progress/platformfigh
 import { POSES, HOLDS, KIT } from './moves.js';
 import { moveOf } from './fighterstate.js';
 import { KeyTrack, keysOf, registerKeys } from '../../../courier/anim/keyposes.js';
-import { FIGHTER_BRAWLER_KEYS, FIGHTER_SONDELASS_KEYS } from '../../../courier/anim/keys/index.js';
+import { FIGHTER_BRAWLER_KEYS, FIGHTER_SONDELASS_KEYS, FIGHTER_LOCKHEART_KEYS } from '../../../courier/anim/keys/index.js';
 
 // (Calissa's key tables for the kits' sets, KEY-POSES.md 6: their timing the kit's own frames below, so no fill)
-registerKeys('fighter.brawler', FIGHTER_BRAWLER_KEYS); registerKeys('fighter.sondelass', FIGHTER_SONDELASS_KEYS);
-const setOf = (kit) => (kit?.tool === 'unarmed' ? 'fighter.brawler' : kit?.tool === 'sondelass' ? 'fighter.sondelass' : null);
+registerKeys('fighter.brawler', FIGHTER_BRAWLER_KEYS); registerKeys('fighter.sondelass', FIGHTER_SONDELASS_KEYS); registerKeys('fighter.lockheart', FIGHTER_LOCKHEART_KEYS);
+const SETS = { unarmed: 'fighter.brawler', sondelass: 'fighter.sondelass', lockheart: 'fighter.lockheart' };
+const setOf = (kit) => SETS[kit?.tool] || null;
 
 const smooth = (x) => { const t = Math.min(1, Math.max(0, x)); return t * t * (3 - 2 * t); };
 const EASE = { lead: SNAP.lead + 1, strike: SNAP.strike + 1, follow: SNAP.follow + 1, out: 4 }; // (the snaps into each key: platformfighter.js SNAP, KEY-POSES.md 6)
@@ -45,7 +46,11 @@ class FighterPoseTech extends Tech {
   get engaged() { return !!this.L.kit.on; }
   get keepsLegs() { return this.L.legs; }
   get overrides() { return this.L.legs ? 1 : 0; }
-  faceYaw() { const F = this.L.kit.courier; return this.L.kit.on && F ? (F.face > 0 ? Math.PI / 2 : -Math.PI / 2) : null; }
+  faceYaw() { // (a back special drawn turned away: its strike is behind, fightertoolkits.js)
+    const F = this.L.kit.courier; if (!this.L.kit.on || !F) return null;
+    const face = F.st === 'attack' && F.m === 'bspecial' ? -F.face : F.face;
+    return face > 0 ? Math.PI / 2 : -Math.PI / 2;
+  }
   label() { const F = this.L.kit.courier; return this.L.kit.on && F ? F.st.toUpperCase() : ''; }
   animate(ch, base, dt) { this.L.animate(ch, base, dt); }
   tick() { this.L.kit.watch?.(); }
