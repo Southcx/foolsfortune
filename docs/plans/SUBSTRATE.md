@@ -222,35 +222,21 @@ The Lachrimeter's tube already shows caps as a held stretch. It should show the 
   on the hand through the well itself.
 - **A dish is a held draught** (SPIRIT-COOKING.md): the same draught the pool already knows, stretched by the cook.
 
-## 4. The Domains: yes, now, as dials on the substrate
+## 4. The Domains: now, in parallel, as questions
 
-South asked whether now is the time to build the Domains out. **Yes, but as the second half of this work, not the first.** A domain's
-impact should be *which dial of the substrate it widens*. Until the substrate is one thing (F1 to F4), building the domains out means
-writing their impact onto 22 meters.
+The first draft gave each domain one dial of the substrate. South asked for deeper ("the dials you listed are good starters, but I
+think we can go much deeper than that! Think outside the box"). The design is now **DOMAINS.md**: each domain is one question every
+interaction asks:
+- Ouranurgy: when, and where?
+- Manifestation: in what form?
+- Divination: what is known?
+- Psychokinesis: with how much force?
+- Possession: whose?
+- Alteration: of which kind?
+- Spellscription: under which rule?
 
-**The rule: each domain widens one family of the substrate's dials.** It keeps the glossary's law: widening is reach, a count, a
-duration or a share, never accuracy or tempo, which are the attributes'. And it is never a flat damage multiplier: skill decides
-damage.
-
-| domain | its dial on the substrate | what its level widens (examples) | its gap today |
-|---|---|---|---|
-| **Ouranurgy** (space and time) | **the clock and reach** | ranges, a hook's reach, a portal's span, the regen delay's start | strong; three dead keys to wire or cut |
-| **Manifestation** (making) | **Lachryma made solid** | a made thing's hold and hp (a creation, a ward, a wall, a spirit called), the Bottles' capacity, how much overflow condenses into cubes a game day | starved: 3 sources off the hand; give it what the tools make (the brush's paint set, a shell's deployable, a sigil's wall). The vessel's own numbers stay the attributes' (Willpower the shield, Resilience the mending) |
-| **Divination** (knowing) | **what is shown** | the Figment telegraph ladder (built), tags, forecast hours, a foe skill seen, stealth's watch read sooner | strongest; keep |
-| **Psychokinesis** (force) | **the blow's push** | knockback, a throw's carried weight, launch, stagger length (never damage) | the psygun earns it nothing; give it the gun's push |
-| **Possession** (other minds) | **minds and EmO** | a status's duration on a foe, EmO's yield band, reprogramming's slots, a decoy's pull | spread thin; it owns mind and EmO, the drain and the Lockheart |
-| **Alteration** (change) | **the feelings** | a draught's strength and hold, paint's reach and build, a type's trump bonus, Transmute | the vaguest; this gives it the most visible dial, the type chart F3 wakes |
-| **Spellscription** (writing) | **costs** | costMult on inscribed things (sigils, shells, seals), a sigil's count, copies | promised crafting unbuilt; it owns efficiency |
-
-What this fixes:
-- Every domain changes ordinary play.
-- No two share a dial, nor a dial with an attribute: Alteration owns feelings, Manifestation what is made, the attributes the body.
-- Each tool can pay the domain whose dial it pulls. A tool's kill pays its type's domain via F3, and the stub ends.
-- Manifestation and Alteration stop overlapping.
-- The six dead keys either get wired to their dial or are cut.
-
-**The domains' experience follows the same rule:** a domain is fed by acting on its dial. Manifestation by making things; Possession by statuses landed and drains. Each needs a skill way that pays more, per the design law. The audit's flat-quality
-sources go.
+Each climbs a ladder: a widening (1 to 29), a new relation (30), depth (60 to 98), a rule-break at 99. It is built in parallel with the
+folds above: each rung names the fold it needs.
 
 ## 5. Build order
 
