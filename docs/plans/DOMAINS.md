@@ -624,6 +624,22 @@ Checked headless (DEBUG, the Summit lend):
 The other three 30s (Psychokinesis's catch, Possession's link, Alteration's reactions) want hooks in the parry, the vessel and the
 paint map, so they're the next wave's: specified for Petra in `docs/handoffs/petra/2026-11-01-from-dovina-rung-hooks-wave4.md`.
 
+### 17.2 Wave 4 (the same night): the last three second relations, on Petra's hooks
+
+| domain | rung | kind | in play | its hook (Petra's file) | feat way |
+|---|---|---|---|---|---|
+| Psychokinesis | **The Catch** | reaction (a notch) | a shot parried with V still held is held before the chest up to 1.5 real s, then thrown where you aim, x1.5 where it strikes; let go of V at once and it is sent back as ever | `courier/parry.js` deflect asks `catch(pr)`; `throwBack` lets it go | 15 shots parried back into their thrower |
+| Possession | **The Link** | passive (a notch) | the last creature you reprogrammed is bound while it lives within 30 m: half of every crack meant for you is struck on it instead, as an Influence blow of yours | `courier/vessel/damage.js` asks `share(k, region)` after the ward, before the plate | 15 macros worn to their end |
+| Alteration | **Reactions** | passive (a notch) | a feeling's paint laid over its opposite wipes both to bare ground and calms what stands there (3 real s); over a feeling it wedges with (an agate), it flares as the old paint's damage type (power 1) on what stands there; one reaction a stamp, at most every 0.25 s; never on you | `world/ground/paintmap.js` stamp asks `react(was, aspect)` a cell | 4 feelings awakened |
+
+Checked headless (DEBUG, the Summit lend):
+- **The Link:** a 0.59 crack was split, 0.30 kept, and the bound slip jelly struck from 8 to 6.8.
+- **Reactions:** grief over mirth wiped 112 cells and calmed the jelly. Wonder over dread flared as "awe" for 1.
+- **The Catch:** the shot was held still while V was held, then thrown at 12 m/s, its blow x1.5, the Courier's.
+
+Two small asks of Petra are left. The catch's x1.5 reaches `creatures.strike` as `onStrike`'s `dmg` (it reads only `type` today). The
+stamp could pass the cell's x and z, so a reaction finds its stamp's middle; until then it is found by where the brush points.
+
 **Catch-up EXP** (`CATCH_UP`, `progress/domains.js`; FFXIV's Armoury Bonus): a domain more than 10 levels below your highest earns
 x1.5, and the ledger keeps what it added (`exp.catchup.<domain>`). It answers the critic's finding that a fighter's Spellscription
 lags. The Codex's domain chips now show each domain's next rung and level, and the catch-up mark while it applies.

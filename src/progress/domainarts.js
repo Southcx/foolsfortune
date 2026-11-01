@@ -65,12 +65,18 @@ export const FEATS = {
   cleanFight: { event: 'combat.end', test: (e, s) => { const ok = !s.cracked && s.fought; s.cracked = false; s.fought = false; return ok; }, mark: ['vessel.crack'], start: ['combat.start'], anyBy: true },
   // a windup read with no crack taken since the last (the blow seen coming: a body's make-up is what made it)
   sculpt: { event: 'god.sculpt', test: (e) => (e.volume || 0) >= 6 },
+  // a shot sent back by a parry that struck the one who threw it (courier/domainarts/run.js says it: the catch's idea without it)
+  parryReturn: { event: 'parry.return', test: () => true },
+  // a reprogrammed mind's macro worn to its end (a hold on a mind kept as long as it lasts: the link's idea without it)
+  macroWorn: { event: 'reprogram.wear', test: () => true, anyBy: true },
+  // a feeling awakened (to mix the feelings you must know them: reactions' idea, the house's opposites cancel, seen four times over)
+  awakened: { event: 'feeling.wake', test: () => true },
   cleanRead: { event: 'windup.read', test: (e, s) => { const ok = !s.cracked; s.cracked = false; return ok; }, mark: ['vessel.crack'] },
 };
 export const FEAT_WORDS = {
   lateParry: 'blows parried at the last moment', shieldRun: 'runs of six blows on your shield unbroken', candid: 'candid photographs',
   heavyThrow: 'thrown hits over 300 joules', longRelease: 'fish let go after a long fight', weakDown: 'creatures downed by their weakness',
-  cleanMacro: 'macros typed clean', blinkChain: 'three blinks inside two seconds', sculpt: 'creations raised', cleanFight: 'fights ended without a crack', cleanRead: 'windups read without a crack',
+  cleanMacro: 'macros typed clean', blinkChain: 'three blinks inside two seconds', sculpt: 'creations raised', cleanFight: 'fights ended without a crack', cleanRead: 'windups read without a crack', parryReturn: 'shots parried back into their thrower', macroWorn: 'macros worn to their end', awakened: 'feelings awakened',
 };
 
 /** A standing rule's triggers and verbs (South, 2026-11-01: case by case; DOMAINS.md 14, 16). Every trigger is an act of your own (the
@@ -140,6 +146,16 @@ export const DOMAIN_ARTS = {
   // SPELLSCRIPTION: a condition written on yourself (Hunter x Hunter's vows)
   vow: R('spellscription', 30, 'passive', 'A Vow', 'Swear off one thing and every cost is a quarter less while you keep it. Break it and it cracks you.',
     '/vow lists the vows. A broken vow waits 30 seconds before another.', {}, ['cleanFight', 10]),
+  // THE SECOND RELATIONS, WAVE 4 (level 30: the three that wanted hooks in the parry, the vessel's blow and the paint map: Petra's).
+  // PSYCHOKINESIS: the force held, then given back (Half-Life 2's gravity gun; the parry's send-back made a choice of where)
+  catch: R('psychokinesis', 30, 'reaction', 'The Catch', 'Parry a shot and keep holding the parry: you catch it, and let go to throw it where you aim, half again as hard.',
+    'Held at most 1.5 seconds, then thrown. Let go of the parry at once and it is sent back as ever.', { hold: 1.5, mult: 1.5 }, ['parryReturn', 15]),
+  // POSSESSION: whose body takes the blow (Dishonored 2's Domino)
+  link: R('possession', 30, 'passive', 'The Link', 'The last creature you reprogrammed is bound to you: a crack meant for you is split, half on it.',
+    'Bound while it lives and stands within 30 metres. The half is struck on it as an Influence blow, by you.', { share: 0.5, reach: 30, power: 4 }, ['macroWorn', 15]),
+  // ALTERATION: the feelings' paints meeting (Divinity: Original Sin 2's surfaces; Magicka's elements)
+  reactions: R('alteration', 30, 'passive', 'Reactions', 'Paint one feeling over another and they react: opposites cancel to bare ground and calm what stands there; two that wedge flare as the old paint\'s blow.',
+    'A reaction a stamp, not a cell. Creatures standing in it take it; you never do.', { calm: 3, flare: 1, radius: 1.5, every: 0.25 }, ['awakened', 4]),
 };
 
 /** Psychokinesis's shatter (SUBSTRATE.md F5b): 0.25 at 15, rising on a straight line to 0.6 at 99 (past 0.6 a heavy blow would break a
