@@ -117,18 +117,17 @@ PRESETS.dunemawBowl = {
 - **A preset's writes are marked** (`first('debug.preset.<id>')`), and the Codex says "Preset: {label}" beside its records.
 - **They live in `src/debug/presets.js`** (`PRESETS`, data, Dovina's: its header gives the shape; the loader is Petra's, `src/debug/presetloader.js`, `/preset <id>`), each naming what it is for, like a debug chest's kit. A QAIS test may name a
   preset (`preset: 'gardenFiring2'`); its "take me there" applies it.
-- **The first five, as written** (2026-11-01; places only where `game.places` has one, so the garden and the great bowl wait for
-  a place id or the loader's `enter`):
+- **The first seven, as written** (2026-11-01; places from `game.places`, the garden's a via place: Petra's `garden`, 71c4825):
 
 | preset | where | what it is for |
 |---|---|---|
 | `fresh` | the workshop | nothing done, nothing lent: STORY's rules in the DEBUG save, for testing an unlock path from the start |
 | `everything` | the workshop | every category lent but the Summit and Achievements, the seven tools, 10,000 cubes: today's DEBUG |
 | `domainsMid` | the workshop | every domain at 50, earned not lent: the ladder's rungs, powers and 40/50 traits (DOMAINS.md 18) |
-| `domainsTop` | the workshop | every domain at 80: the epics and the 70 traits, without the Summit lend |
+| `domainsTop` | the workshop | every domain at 80: the depth rungs at 60, the 70 traits and the epics, without the Summit lend |
 | `dunemawReturn` | the Great Dunemaw's mouth | three runs down and its FOE beaten once, a Wake Whistle and bottles |
-
-Still to write once their places exist: `gardenFiring2` (the Dantian) and `entropolisOpen` (the jetty with a reckoning past 0.6).
+| `gardenFiring2` | the Spirit Garden (`garden`) | Soul Alchemy past its first firing: Willpower at rank 1, twenty materials pressed, a press of each kind to hand |
+| `entropolisOpen` | the jetty's end (`jetty`) | the route to Entropolis reckoned to 65%, past its opening line (0.6), the sloop moored |
 
 Presets wait on the save split (section 2). Until then, the debug chests carry the items, and the lend panel the unlocks.
 

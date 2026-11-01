@@ -188,7 +188,7 @@ export const DOMAIN_ARTS = {
     'Heavy is a thrown hit or a blow of power 2 or more. Each link keeps three quarters of the force, and the next body must stand within 3 metres along the line.', { minPower: 2, reach: 3, cone: 0.7, keep: 0.75, links: 3 }, ['twoStrike', 10]),
   // DIVINATION: the world's chance read as numbers (Darkest Dungeon's scouting; the gacha's published rates, which the law asks for and
   // the Tithe's lamps only hinted at). Within 4 m of the Tithe's console, the next pull's chance of each tier, pity counted in.
-  trueOdds: R('divination', 60, 'passive', 'True Odds', "Chance shown as numbers: near the Tithe's console, the next pull's chance of each tier, its pity counted in.",
+  trueOdds: R('divination', 60, 'passive', 'True Odds', "Chance shown as numbers: near the Tithe's console, the next pull's chance of each tier, its pity counted in; near a crystal, what opening it may give.",
     'The chances are the game\'s own, never rounded in your favour. More of the world\'s chances will show as they are read.', { reach: 4 }, ['titheRare', 10]),
   // POSSESSION: a mind's own move lent to you (Kirby's copy; Prey's typhon powers). On R in the sub's place while it lasts (Petra's belt
   // asks borrowed()); 20 s is about a Dunes fight's two thirds; 4 pool a throw and 1.2 s between, so a borrowed move is a tool, not a

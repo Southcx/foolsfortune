@@ -23,7 +23,8 @@
 // shot (Relay); Pokemon's type chart walked as a cycle and Persona's Technical (Walk the Cycle: one ailment made the next's opening);
 // Pokemon's Disable and Final Fantasy's Silence (A Seal on a Creature: one of its moves outlawed a while).
 //
-//   True Odds         a passive: within 4 m of the Tithe's console, the next pull's chance of each tier, pity counted in (game.oddsTags)
+//   True Odds         a passive: within 4 m of the Tithe's console, the next pull's chance of each tier, pity counted in; of a crystal, what
+//                     opening it may give (CRYSTAL_FINDS, world/dunes/crystals.js) (game.oddsTags)
 //   Borrow a Verb     a passive: a mind you rewrite lends you its own move (c.lendVerb) on R for 20 real s, 4 pool a throw
 //   const D = new DepthRungs(run)   .press(id) -> bool   .onStrike(c, cause, power)   .borrowed() -> { kind, fire(at, dir) } | null   .update(dt)
 //   events (through the run): domain.art.fire { art: 'fuse' | 'walkCycle' | 'sealCreature' | 'relay' | 'catchWeather', ... },
@@ -34,6 +35,7 @@ import { TYPES, TRUMPS } from '../../progress/combat/types.js';
 import { BOTTLES } from '../../progress/brushload.js';
 import { DOMAIN_ARTS } from '../../progress/domainarts.js';
 import { TIERS, titheOdds } from '../../world/treasure/treasure.js';
+import { CRYSTAL_FINDS } from '../../world/dunes/crystals.js';
 
 const UP = new THREE.Vector3(0, 1, 0);
 const _a = new THREE.Vector3(), _b = new THREE.Vector3();
@@ -54,7 +56,7 @@ export class DepthRungs {
     this.relayAt = null; // (Relay's chain: { done: Set, n, until })
     this.caught = 0; // (Catch the Weather: Lachryma caught since it last said so)
     this.borrow = null; // (Borrow a Verb: { c, until, at } the lender and its window)
-    this.oddsShown = false; // (True Odds: the Tithe's tag standing)
+    this.oddsShown = {}; // (True Odds: which tags stand, the Tithe's and a crystal's)
     run.game.events?.on?.('reprogram.run', (e) => { if (!e.refused) this.lend(); });
   }
   get game() { return this.run.game; }
@@ -239,12 +241,28 @@ export class DepthRungs {
   // ---- TRUE ODDS (Divination 60): game.oddsTags (Petra's) ------------------------------------------------
   /** Near the Tithe's console: the next pull's chance of each tier, its pity counted in (treasure.js titheOdds, rollTier's own rule). */
   oddsTick() {
-    const g = this.game, P = g.player, C = g.chests, T = C?.tithe, tags = g.oddsTags;
-    const near = !!(this.run.on('trueOdds') && P && T && tags && P.pos.distanceTo(T.pos) <= this.does('trueOdds').reach);
-    if (!near) { if (this.oddsShown) { tags?.hide?.('trueOdds.tithe'); this.oddsShown = false; } return; }
-    const odds = titheOdds(C.since()), rows = TIERS.map((t, i) => ({ label: t.name[0].toUpperCase() + t.name.slice(1), p: odds[i] })).filter((r) => r.p > 0);
-    tags.show('trueOdds.tithe', { at: T.slot ?? T.pos, rows, ttl: 0.3 });
-    if (!this.oddsShown) { this.oddsShown = true; this.run.arts?.used('trueOdds', 0.4); this.run.fire('trueOdds', { what: 'tithe' }); }
+    const g = this.game, P = g.player, tags = g.oddsTags, on = this.run.on('trueOdds') && P && tags, R = on ? this.does('trueOdds').reach : 0;
+    const shown = {};
+    // the Tithe's next pull, pity counted in
+    const C = g.chests, T = C?.tithe;
+    if (on && T && P.pos.distanceTo(T.pos) <= R) {
+      const odds = titheOdds(C.since());
+      shown.tithe = { at: T.slot ?? T.pos, rows: TIERS.map((t, i) => ({ label: t.name[0].toUpperCase() + t.name.slice(1), p: odds[i] })).filter((r) => r.p > 0) };
+    }
+    // the nearest standing crystal's finds when it opens (CRYSTAL_FINDS, the roll's own table): a Possibilikey and a fossil, likelier
+    // while it rings (a fork struck into it); a crystal shard is sure while it rings
+    const X = on ? g.crystals?.near?.(P.pos, R).filter((e) => e.hp > 0 && (e.rise ?? 1) > 0.5).sort((a, b) => a.pos.distanceTo(P.pos) - b.pos.distanceTo(P.pos))[0] : null;
+    if (X) {
+      const k = X.ringT > 0 ? 'ring' : 'dull';
+      shown.crystal = { at: X.pos.clone().setY(X.pos.y + 1.2 + (X.size || 0) * 0.6), rows: [
+        { label: 'Possibilikey', p: CRYSTAL_FINDS.key[k] }, { label: 'Fossil', p: CRYSTAL_FINDS.fossil[k] }, { label: 'Crystal shard', p: k === 'ring' ? 1 : 0 },
+      ] };
+    }
+    for (const what of ['tithe', 'crystal']) {
+      const S = shown[what], key = `trueOdds.${what}`, was = (this.oddsShown ||= {})[what];
+      if (S) { tags.show(key, { at: S.at, rows: S.rows, ttl: 0.3 }); if (!was) { this.oddsShown[what] = true; this.run.arts?.used('trueOdds', 0.4); this.run.fire('trueOdds', { what }); } }
+      else if (was) { tags?.hide?.(key); this.oddsShown[what] = false; }
+    }
   }
 
   update(dt) {

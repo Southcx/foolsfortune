@@ -23,6 +23,8 @@
 import { DOMAINS, expAt } from '../progress/domains.js';
 
 const TOOLS = ['psygun', 'sondelass', 'soulbrush', 'veritome', 'dreamvane', 'crucibelle', 'lockheart'];
+const KINDS = ['eldritch', 'arcane', 'finery', 'mechanism', 'edge', 'art', 'provision']; // (materials.js KIND_IDS: a material of each kind, the debug kits' format)
+const mats = (count, tier) => KINDS.map((k) => [`mat.${k}`, count, { tier }]);
 const allTools = () => TOOLS.map((t) => [`tool.${t}`, 1]);
 const everyDomain = (level) => Object.fromEntries(Object.keys(DOMAINS).map((d) => [`exp.${d}`, expAt(level)]));
 
@@ -43,6 +45,16 @@ export const PRESETS = {
   domainsTop: {
     label: 'Every domain at 80', for: 'the depth rungs at 60, the 70 traits and the epic miracles earned (True Odds, Borrow a Verb and the 90s not built yet): the late ladder without the Summit lend',
     at: 'workshop', ledger: everyDomain(80), kit: allTools(), belt: { main: 'psygun', sub: 'lockheart' }, cubes: 5000, lend: {},
+  },
+  gardenFiring2: {
+    label: 'The second firing', for: 'Soul Alchemy past its first firing: one attribute at rank 1, twenty materials pressed, a press of each kind to hand; set down in the Spirit Garden by the Dantian, the press a hop away',
+    at: 'garden', ledger: { 'alchemy.press': 20, 'alchemy.fire': 1, 'alchemy.true': 1 }, best: { 'alchemy.rank.willpower': 1 },
+    kit: [...mats(3, 1), ...mats(1, 2)], belt: { main: 'soulbrush', sub: 'dreamvane' }, cubes: 1500, lend: { garden: true },
+  },
+  entropolisOpen: {
+    label: 'Entropolis reckoned', for: 'the route to Entropolis (the Queen\'s locked node) reckoned past its opening line (0.6: RECKON.open), at the jetty\'s end with the sloop moored',
+    at: 'jetty', ledger: { 'emocean.hop': 2 }, best: { 'emocean.reckon.anagami-entra': 65 },
+    kit: [['tool.dreamvane', 1], ['tool.psygun', 1]], belt: { main: 'psygun', sub: 'dreamvane' }, cubes: 2500, lend: {},
   },
   dunemawReturn: {
     label: 'Back at the Great Dunemaw', for: 'a Courier who has been down three times and beaten its FOE once: the mouth with a Wake Whistle and bottles',

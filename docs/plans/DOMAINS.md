@@ -741,3 +741,25 @@ Checked headless (DEBUG, the Summit lend):
 
 Still to come for True Odds: the crystals' chances (a key, a fossil) once their numbers are a table to read, not lines in `world/dunes/crystals.js` (Petra's).
 
+### 18.2 The pace to each milestone (measured, 2026-11-01)
+
+`node scripts/economy.mjs` (its last section, `domainPace`) reads real hours from each ten to the next off the curve (`toNext`) and
+`PACE` (99 in `PACE.hours99` real hours of middling play, focused on one domain). `scaleOf` puts every domain's average source on the
+one pace, so `SOURCES`' weights never move a domain's pace; they only decide which acts feed it. The pace has two levers: `PACE.hours99`
+(a placeholder until South sets it) and the curve (South's v0.1).
+
+| 99 in | quality | 10 | 20 | 30 | 40 | 50 | 60 | 70 | 80 | 90 | 99 | to 99 |
+|---|---|---|---|---|---|---|---|---|---|---|---|---|
+| 300 h (today) | middling | 1.0 | 4.5 | 9.6 | 16 | 23 | 31 | 40 | 50 | 60 | 64 | 300 |
+| 300 h | skilled (0.8) | 0.4 | 1.6 | 3.4 | 5.6 | 8.2 | 11 | 14 | 18 | 21 | 23 | 106 |
+| 100 h (proposed) | middling | 0.3 | 1.5 | 3.2 | 5.3 | 7.7 | 10 | 13 | 17 | 20 | 21 | 100 |
+| 100 h | skilled (0.8) | 0.1 | 0.5 | 1.1 | 1.9 | 2.7 | 3.7 | 4.8 | 5.9 | 7.1 | 7.5 | 35 |
+
+Read: focused on one domain. Spread evenly over the seven, each domain's tens take seven times as long, and a milestone in *some*
+domain comes about as often as the focused figure. The catch-up's x1.5 is not counted.
+
+**Finding.** The round's aim was "no ten more than about 3 real hours from the last". That can't be met by retuning `SOURCES`, and at
+300 hours to 99 the tens can't average under 30. At today's pace a mid-game milestone is 23 to 31 hours of middling play away. At 100
+hours it is 8 to 10 (about 3 to 4 skilled), which is the closest the curve allows without making the first tens trivial. No number was
+changed: `PACE.hours99` is South's to set, and the question is in the digest (`docs/handoffs/dovina/owner-digest.md`, 3).
+

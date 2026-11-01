@@ -9,7 +9,8 @@
 // keeps of "gold per hour by activity" (OSRS's money-making guide is the players' own: a wiki table of activities by gp/h).
 //
 //   node scripts/economy.mjs            cubes an hour by profile (before and after R38), mixed profiles, the Tithe's return and its odds as
-//                                       met, the curio curve under the deck, the Lockheart per opening, the mastery dividend, achievement points
+//                                       met, the curio curve under the deck, the Lockheart per opening, the mastery dividend, achievement points,
+//                                       and the domain ladder's pace (real hours from each ten to the next: DOMAINS.md 18.2)
 //   node scripts/economy.mjs --doc      also checks docs/ECONOMY.md's profile table against the run (fails on drift); --write rewrites it
 // ---------------------------------------------------------------------------------------
 import { ECON } from '../src/progress/econ/table.js';
@@ -27,6 +28,8 @@ import { DECOR, priceOf } from '../src/progress/decor.js';
 import { SIZES, MATTER_FEED } from '../src/progress/seeds.js';
 import { wellPay, cogitomapWorth, demand, fuel, haulProfit, spillChance, crudeRun, wellYield, drawWell, islandRun, wellSeed, purserPrice } from '../src/progress/econ/islands.js';
 import { KIND_IDS, makeMaterial, press, distance } from '../src/progress/econ/materials.js';
+import { PACE, expAt, skillWeight, MAX_LEVEL, CATCH_UP } from '../src/progress/domains.js';
+import { TENS } from '../src/progress/domainladder.js';
 
 // the numbers as they stood before R38 (git: src/tools/veritome/cards.js, ceremony.js, the outcome and crystal formulas, weir.js)
 const OLD = {
@@ -327,3 +330,23 @@ console.log(`  the reckoning (Divination): a wave's lane marked ${reckonLead(0)}
   const pts = byTier.reduce((a, n, i) => a + n * (i + 1), 0), RANKS = [...src.match(/RANKS = \[([\s\S]*?)\];/)[1].matchAll(/\[(\d+), '((?:[^'\\]|\\.)*)'\]/g)].map((m) => [+m[1], m[2].replace(/\\'/g, "'")]); // (read as text: achievements.js reaches three.js)
   console.log(`  the standings: ${RANKS.map(([p, n]) => `${n} ${p} (${((p / pts) * 100).toFixed(1)}%)`).join(', ')}; steps x${RANKS.slice(2).map(([p], i) => (p / RANKS[i + 1][0]).toFixed(1)).join(' x')} of ${pts} points written`);
 }
+
+// THE DOMAIN LADDER'S PACE (DOMAINS.md 18.2): real hours from each milestone to the next, read off the curve (domains.js toNext) and PACE
+// (99 in PACE.hours99 of middling play, every domain alike: scaleOf puts each domain's average source on it, so SOURCES' weights never
+// move a domain's pace, only which acts feed it). Focused: all your play feeding the one domain. Spread: play shared evenly over the seven
+// (a domain gets a seventh; the time to the next milestone in ANY domain is then about the focused figure). Quality as skillWeight reads it.
+export function domainPace(hours99 = PACE.hours99) {
+  const E99 = expAt(MAX_LEVEL), from = [1, ...TENS.slice(0, -1)];
+  const hours = (a, b, q) => ((expAt(b) - expAt(a)) / E99) * hours99 * (skillWeight(0.5) / skillWeight(q));
+  return { tens: TENS, rows: [['rote', 0], ['middling', 0.5], ['skilled', 0.8], ['masterful', 1]].map(([name, q]) => ({ name, q, each: TENS.map((t, i) => hours(from[i], t, q)), total: hours(1, MAX_LEVEL, q) })) };
+}
+{
+  const f = (h) => (h < 10 ? h.toFixed(1) : Math.round(h).toString()).padStart(5);
+  for (const h99 of [PACE.hours99, 100]) {
+    const P = domainPace(h99);
+    console.log(`\nTHE DOMAIN LADDER'S PACE (99 in ${h99} real hours of middling play, focused on one domain; the catch-up's x${CATCH_UP.mult} past ${CATCH_UP.below} levels behind not counted; spread evenly over the seven, each domain's tens take seven times as long)`);
+    console.log(`  ${'to'.padEnd(11)}${P.tens.map((t) => String(t).padStart(5)).join('')}   to 99`);
+    for (const r of P.rows) console.log(`  ${r.name.padEnd(11)}${r.each.map(f).join('')}   ${f(r.total)}`);
+  }
+}
+

@@ -17,8 +17,13 @@ the Arena; the first five DEBUG presets as data.
    good to wait that long? The other choice is Portal at 20 and Hasten at 40.
 2. **Alteration's middle.** It has five powers at level 1 and nothing but traits from 30 to 80. Keep it, or move one of the five
    (Carve, say) up to 40 so its climb has a power in it?
-3. **The 60, 90 and 99 rungs.** 21 designs are written (DOMAINS.md 14). Build them next, or the Codex's look and the milestone
-   moment first?
+3. **The pace to each milestone (new; replaces "build the 60s next", which is done: all seven are in).** Measured
+   (`node scripts/economy.mjs`, DOMAINS.md 18.2). At today's placeholder pace (99 in 300 real hours of middling play in one domain),
+   the tens take 1, 4.5, 10, 16, 23, 31, 40, 50, 60 and 64 real hours. Skilled play is about 2.8x faster, rote about 2.4x slower.
+   Playing all seven domains evenly, a milestone lands somewhere about every 31 hours by the mid-game. "The next one is never far
+   off" doesn't hold past 30. My call: **99 in 100 hours**, curve kept. Mid tens become 8 to 10 hours (about 3 to 4 skilled), the
+   late tens about 20, and all seven at 99 about 700 hours of middling play (about 140 masterful), down from 2,100. Or keep 300 and
+   let the late game be the grind. It's one number (`PACE.hours99`).
 4. **The Tithe's near miss** (still open): about 40% of sealed-chest reveals climb past the tier they give and fall back. It's a look,
    never the odds. Keep it as spectacle at 42%, or lower it to 15%?
 5. **Strawman's lore** (Espada's ask): the Brawl's straw dummies are Pip's earlier tries, the ones that didn't stand back up. Canon?
