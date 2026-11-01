@@ -40,6 +40,9 @@ function placeholderTone(midi, beat, dur, gain) {
 }
 const REGROW = 180, GROW = 6, OPEN = 0.5, OPEN_SWEET = 0.85; // (the stave stands whole a moment as it gives: its last fret's light, or the sweet run)
 const _m = new THREE.Matrix4(), _s = new THREE.Vector3(), _p = new THREE.Vector3(), _c = new THREE.Color();
+/** What a crystal gives as it opens beyond its cubes, by chance: a Possibilikey, a Lachrymite fossil; `ring` if it rang at its fret,
+ *  `dull` if not. Read by True Odds (Dovina's, courier/domainarts/depth.js). */
+export const CRYSTAL_FINDS = { key: { ring: 0.22, dull: 0.06 }, fossil: { ring: 0.1, dull: 0.03 } };
 const BASE = new THREE.Color(0xcdb8f2), RING = new THREE.Color(0xfff1d6), SPENT = new THREE.Color(0x5d4a7a);
 
 export class Crystals {
@@ -206,8 +209,8 @@ export class Crystals {
       if (worth + more > 0) g.cubes?.burst?.(e.pos.clone().setY(e.pos.y + 0.4), worth + more, { count: 4 + Math.round(e.size * 4), up: 4.5, from: 'crystal' });
       let shard = false, key = null;
       if (ringing && g.pneuka) { g.pneuka.add('mat.shard', 'crystal'); shard = true; }
-      if (g.pneuka && simRand() < (ringing ? 0.22 : 0.06)) { key = rollKey(); g.pneuka.add(key, 'crystal'); }
-      let fossil = false; if (g.pneuka && simRand() < (ringing ? 0.1 : 0.03)) { g.pneuka.add('fossil.lachrymite', 'crystal'); fossil = true; } // (a creature's shape in the set Lachryma: the Grove wakes it, world/garden/awaken.js)
+      if (g.pneuka && simRand() < CRYSTAL_FINDS.key[ringing ? 'ring' : 'dull']) { key = rollKey(); g.pneuka.add(key, 'crystal'); }
+      let fossil = false; if (g.pneuka && simRand() < CRYSTAL_FINDS.fossil[ringing ? 'ring' : 'dull']) { g.pneuka.add('fossil.lachrymite', 'crystal'); fossil = true; } // (a creature's shape in the set Lachryma: the Grove wakes it, world/garden/awaken.js)
       e.regrowT = REGROW + GROW; e.ringT = 0; e.openT = R.sweet ? OPEN_SWEET : OPEN;
       T.spot = { th: simRand() * Math.PI * 2, fret: Math.floor(simRand() * FRETS) }; // (it grows back with its spot somewhere new)
       g.events?.emit('crystal.harvest', { by, tool, ringing, worth, shed, shard, key, fossil, sweet: R.sweet, nature: T.kind });

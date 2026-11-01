@@ -80,6 +80,8 @@ export class Places {
 export function installPlaces(game) {
   const P = new Places(game), V = (x, y, z) => new THREE.Vector3(x, y, z);
   P.add('workshop', { name: 'the workshop', at: () => game.player.spawn.clone(), note: 'where a new Courier wakes; the kiln and the folk' });
+  P.add('garden', { name: 'the Spirit Garden', at: () => game.player.spawn.clone(), note: 'in at the last Shrine rested at, by the Dantian', // (a place reached its own way: the garden is entered, never travelled to)
+    via: () => !!game.realm && (game.realm.active || !!game.realm.enter(game.shrines?.get?.(game.shrines.last) || null)) });
   P.add('kiln', { name: 'the kiln', at: () => KILN_AT.clone().setZ(KILN_AT.z + 1), stand: () => KILN_AT, note: 'F: the kiln window (glazes, mending)' }); // (in the kiln's light, facing its mouth: 2.5 m from Saggar, so F is the kiln's)
   P.add('strawman', { name: 'Strawman', at: () => TR.strawman.clone(), note: 'F: its mode; the bout is said in the log' });
   P.add('spraywall', { name: 'the spray wall', at: () => new THREE.Vector3(TR.wall.x, 0, TR.wall.z), yaw: -Math.PI / 2, near: 2.5, note: 'clay that keeps every dent' });
