@@ -297,6 +297,7 @@ export function bootFrame(game, made) {
       game.lentModels.update(game.rawDt); // (the sub's verb's tool at the hand for its window, over where it hangs: tools/lend.js)
       game.party.update(dt, acc / FIXED);
       game.guests.update(dt);
+      game.sharedFoe?.update(dt);
       game.meetings.update(dt);
       diag.end('anim');
       weapon.tryFire(game.aim.camera(), player, character);

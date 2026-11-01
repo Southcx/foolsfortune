@@ -4842,3 +4842,12 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   After: the hub at (0, -14, -4); the basement sweep 459 of 459 (the sweep's garden list also learned the carving bench's chest:
   `debug.bench` stands in the Spirit Garden), Strawman's Well's 35 of 35.
 - **Rule:** 388
+
+### 2026-11-01 · A new knack's line told the player to type its code id (progress/knacks.js, tracking/systemlines.js; found by Petra, the Dunemaw sweep)
+- **Seen:** the Dunemaw sweep's "no code id in the log" failed on the fight: "New knack: Last Straw (...). It is on. Type /knack
+  thickWalls off to switch it off."
+- **Cause, as measured:** the line and `/knack`'s own list both printed the knack's id (`thickWalls`, named before Espada called it
+  Last Straw), and `/knack` read only ids, so the id was the only word that worked.
+- **Fix:** `knackWord` (the label in one lower-case word: laststraw) is what both lines say, and `knackOf` reads it (the id still
+  answers). After: the Dunemaw sweep's cavern and fight parts 52 of 52.
+- **Rule:** 389

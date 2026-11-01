@@ -8,6 +8,7 @@
 //
 //   bootCoop(game, made) -> nothing
 // ---------------------------------------------------------------------------------------
+import { SharedFoe } from '../coop/sharedfoe.js';
 import { Character } from '../courier/character.js';
 import { rigUniforms } from '../render/outline.js';
 import courierB64 from '../assets/courier.glb?b64';
@@ -33,6 +34,7 @@ export function bootCoop(game, made) {
   game.siblingShatter = new SiblingShatter(game); // (a sibling emptied by friendly fire breaks and is drawn back together beside you: vfx/siblingshatter.js)
   game.meetings = new Meetings(game, game.party, { makeRig }); // (each sibling met once where its craft lives: coop/meeting.js)
   game.guests = new Guests(game, { makeRig }); // (people there with you, over the published page's room: coop/guests.js)
+  game.sharedFoe = new SharedFoe(game); // (guests on the Great Dunemaw's errand fight one FOE: its health and crown the party's sum, coop/sharedfoe.js, COOP.md C5)
   game.siblingChannel = new SiblingChannel(game); // (the divisions steer their siblings through the published build's store)
   game.coopUsage = new CoopUsage(game); // (what asking and letters spend of yours, capped by the hour: /usage, coop/usage.js)
   game.answers = new SiblingAnswers(game); // ("@petra ...": a sibling answers in seconds, through the page's sample: coop/answer.js)

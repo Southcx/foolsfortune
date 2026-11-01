@@ -232,5 +232,7 @@ still cannot write as a division. If the room is ever opened to people the owner
 
 ## Open
 
+- C5 built so far (Petra, 2026-11-01, `coop/sharedfoe.js`): the FOE's health and crown summed over the party's presence and scaled by its players. Still open: the wipe (all shattered, back together), the FOE's body and casts shared (each page's FOE moves on its own), the haul per guest.
+
 - The siblings' words (the log's "<Name>: <line>", their meeting scenes): Espada.
 - The sibling's look (one Courier mesh, five glazes: each division's colour): Calissa.

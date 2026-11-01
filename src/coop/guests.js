@@ -4,7 +4,7 @@
 // stands and faces, how it moves (speed, ground, slide, crouch, the dash), and its look (its glazes). Each page draws the others as
 // Couriers in its own world, wearing their own glazes and moving as they move, smoothed between messages. Each player keeps their own
 // world (the same build and seed lay out the same land); nothing in the simulation is shared yet, so nothing can disagree: what a
-// shared errand shares (Monster Hunter's model: the host's quest) is Dovina's ruling to come. Away from the published build (the dev
+// shared errand shares is the Great Dunemaw's FOE (COOP.md C5): each page's `w` in the presence, summed by coop/sharedfoe.js. Away from the published build (the dev
 // server, the headless runs) there is no room and no one comes.
 // The room also carries the chat line: what you say aloud goes to everyone here (the room's `chat` topic, open to Contributors), and
 // so does a sibling's answer to you (coop/answer.js), so a guest hears your siblings as you do; what arrives is shown, never obeyed.
@@ -72,7 +72,9 @@ export class Guests {
   feed(peers) {
     const here = new Set();
     for (const p of peers) {
-      if (p.isMe || p.kind !== 'viewer' || !p.presence?.c) continue;
+      if (p.isMe) { this.me = p.peer; continue; } // (our own peer id: the shared FOE's first player is the lowest, coop/sharedfoe.js)
+      if (p.kind !== 'viewer' || !p.presence?.c) { this.game.sharedFoe?.forget(p.peer); continue; }
+      this.game.sharedFoe?.hear(p.peer, p.presence.w);
       here.add(p.peer);
       const G = this.list.find((x) => x.peer === p.peer);
       if (G) { if (p.updatedAt !== G.upd) { G.upd = p.updatedAt; this.take(G, p.presence.c); } continue; } // (only a new word from that peer: another's leaves it as it was)
@@ -88,6 +90,7 @@ export class Guests {
       });
     }
     for (const G of [...this.list]) if (!here.has(G.peer)) this.drop(G);
+    for (const peer of [...(this.game.sharedFoe?.peers.keys() || [])]) if (!here.has(peer)) this.game.sharedFoe.forget(peer); // (gone from the room: what they did stays, as the FOE holds it; their count no longer adds)
   }
 
   /** A line from someone here: shown in the log as theirs (or as a sibling's answer to them), never acted on. */
@@ -177,7 +180,8 @@ export class Guests {
     const R = this.game.realm, J = R?.active ? R.jarBody : null; // (in the Spirit Garden: the Pneuka Jar where it hops)
     const r = J ? { p: J.pos.clone().addScaledVector(J.up, -J.radius).toArray().map(r2), u: J.up.toArray().map(r2), f: J.forward.toArray().map(r2), v: J.vel.toArray().map(r2), h: J.hops, g: J.grounded ? 1 : 0 } : null;
     const k = (this.game.party?.list || []).filter((S) => !this.game.siblingShatter?.holds?.(S)).slice(0, PARTY).map((S) => { const B = S.body; return { i: S.id, p: B.pos.toArray().map(r2), v: B.vel.toArray().map(r2), y: r2(B.bodyYaw), g: B.grounded ? 1 : 0, s: (B.sliding ? FLAGS.slide : 0) | (B.crouching ? FLAGS.crouch : 0) | (B.dashBlend > 0.5 ? FLAGS.dash : 0) }; }); // (your siblings, as a guest sees them: in pieces, not said)
-    return { c: { z: place, p: P.pos.toArray().map(r2), v: P.vel.toArray().map(r2), y: r2(P.bodyYaw), g: P.grounded ? 1 : 0, s, look: this.game.vessel?.look || null, ...(r ? { r } : {}), ...(k.length ? { k } : {}) } };
+    const w = this.game.sharedFoe?.say(); // (in the great cavern: what you did to its FOE, for the party's sum)
+    return { ...(w ? { w } : {}), c: { z: place, p: P.pos.toArray().map(r2), v: P.vel.toArray().map(r2), y: r2(P.bodyYaw), g: P.grounded ? 1 : 0, s, look: this.game.vessel?.look || null, ...(r ? { r } : {}), ...(k.length ? { k } : {}) } };
   }
 
   update(dt) {

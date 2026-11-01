@@ -1083,3 +1083,5 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
   that resets to idle silently undoes every purposeful state it reaches first; exempt them, and measure the state reaching its goal.
 388. **A modifier that holds the body in place lets go of a body that was sent away.** A clamp that runs
   before its owner hears of a teleport drags the body back; it corrects only what is near it, and the owner lifts it on the next look.
+389. **A command the player types takes the thing's label, never its code id.** A line that tells them what
+  to type says the label's word, and the command reads it; an id that outlives a rename leaks into player text otherwise.

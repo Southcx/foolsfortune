@@ -65,6 +65,11 @@ export const KNACKS = {
   // Two-Tone (an agate's two colours on a creature's body) waits for the agate named at appraisal (`appraise.mood`), which it counts.
 };
 
+/** A knack as the player types it: its label in one lower-case word (Last Straw: laststraw), never its code id in player text. */
+export const knackWord = (id) => String(KNACKS[id]?.name || id).toLowerCase().replace(/[^a-z0-9]/g, '');
+/** The knack a typed word names: its label's word, or its id (the old way still answers). */
+export const knackOf = (w) => (w in KNACKS ? w : Object.keys(KNACKS).find((k) => knackWord(k) === String(w || '').toLowerCase().replace(/[^a-z0-9]/g, '')) || w);
+
 export class Knacks {
   constructor(game) {
     this.game = game; this.off = new Set(); this.heard = new Set(); this.lookT = 1;
@@ -72,7 +77,7 @@ export class Knacks {
       dump: () => ({ off: [...this.off], heard: [...this.heard] }),
       load: (d) => { this.off = new Set(Array.isArray(d?.off) ? d.off : []); this.heard = new Set(Array.isArray(d?.heard) ? d.heard : []); },
       reset: () => { this.off.clear(); this.heard.clear(); } });
-    game.chat?.add?.('knack', { help: 'your knacks (assists you have earned): /knack, or /knack <id> on|off', run: (args) => this.command(args) });
+    game.chat?.add?.('knack', { help: 'your knacks (assists you have earned): /knack, or /knack <name> on|off (its name in one word: laststraw)', run: (args) => this.command(args) });
   }
   /** Once a real second: a knack the ledger has opened since the last look is said, once (the ledger decides; this only notices). */
   update(dt = 0) {
@@ -95,9 +100,9 @@ export class Knacks {
     return true;
   }
   command(args = []) {
-    const [id, v] = args, log = this.game.log;
-    if (!id) { for (const [k, d] of Object.entries(KNACKS)) log?.say('system', `Knack: ${d.name} (${d.does}). ${this.open(k) ? (this.on(k) ? 'On' : 'Off') : 'Not yet earned'}. /knack ${k} on|off`, { key: `knack.${k}`, throttle: 0.5 }); return; }
-    if (!KNACKS[id]) { log?.say('warn', `No knack called ${id}.`, { key: 'knack', throttle: 1 }); return; }
+    const [said, v] = args, log = this.game.log, id = knackOf(said);
+    if (!id) { for (const [k, d] of Object.entries(KNACKS)) log?.say('system', `Knack: ${d.name} (${d.does}). ${this.open(k) ? (this.on(k) ? 'On' : 'Off') : 'Not yet earned'}. /knack ${knackWord(k)} on|off`, { key: `knack.${k}`, throttle: 0.5 }); return; }
+    if (!KNACKS[id]) { log?.say('warn', `No knack called ${said}.`, { key: 'knack', throttle: 1 }); return; }
     if (!this.open(id)) { log?.say('warn', `You have not earned ${KNACKS[id].name} yet.`, { key: 'knack', throttle: 1 }); return; }
     this.set(id, v ? v !== 'off' : !this.on(id));
   }

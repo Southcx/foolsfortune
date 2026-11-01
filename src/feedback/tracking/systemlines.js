@@ -7,7 +7,7 @@
 //   systemLineRules({ on, log })
 //   commandEchoRules({ on, L, log })   (feedback/tracking/rules.js calls them)
 // ---------------------------------------------------------------------------------------
-import { KNACKS } from '../../progress/knacks.js';
+import { KNACKS, knackWord } from '../../progress/knacks.js';
 
 export function systemLineRules({ on, log }) {
   on('sign.help', (e) => log.say('system', `${e.sign}: ${e.help}`));
@@ -16,7 +16,7 @@ export function systemLineRules({ on, log }) {
   on('workbench.close', () => log.say('system', 'You close the workbench.', { key: 'wb.close', win: 0.5 }));
   on('vfx.list', (e) => log.say('system', `Effects: ${e.names.join(', ')}.`));
   // the knacks and the ostraca's places (progress/knacks.js, world/ostraca.js; the words are placeholders for Espada's)
-  on('knack.open', (e) => log.say('system', `New knack: ${KNACKS[e.knack]?.name || e.knack}${KNACKS[e.knack]?.does ? ` (${KNACKS[e.knack].does})` : ''}. It is on. Type /knack ${e.knack} off to switch it off.`));
+  on('knack.open', (e) => log.say('system', `New knack: ${KNACKS[e.knack]?.name || e.knack}${KNACKS[e.knack]?.does ? ` (${KNACKS[e.knack].does})` : ''}. It is on. Type /knack ${knackWord(e.knack)} off to switch it off.`));
   on('rutter.get', (e) => log.say('gain', `You make a route map (rank ${e.rank}). This game day it is worth about ${e.worth} cubes.`)); // (Espada's words; the ledger's counts are Dovina's)
   on('rail.refuse', (e) => { if (e.what === 'dive') log.say('info', `Your ${e.ship} cannot dive. It keeps to the surface.`, { key: 'rail.refuse', throttle: 2 }); }); // (a heavy hull: progress/rail/ships.js; Espada's words)
   on('debug.chest', (e) => { // (docs/plans/DEBUG-CHESTS.md; Espada's words; nothing counted)
