@@ -52,6 +52,7 @@ import { HudLayout } from '../ui/hudlayout.js';
 import { BUILD } from '../core/progress.js';
 import { makeWaterMaterial, waterGeometry } from '../vfx/water.js';
 import { SKY_GLSL } from '../vfx/sky.js';
+import { AimSource } from '../core/aimsource.js';
 import { liquidTexture, liquidTexture2, causticTexture } from '../vfx/liquid.js';
 
 /** The box's room: 20 m a side and 5 m high round the Courier's spawn, a pillar and a ledge to move against. */
@@ -140,6 +141,7 @@ async function bootBox(made) {
   const { player, input } = made;
   game.system = new System(game);
   game.vfx = new Vfx(game);
+  game.aim = new AimSource(game);
   const weapon = (game.weapon = new Weapon(game));
   const techs = new Techs(player, game);
   for (const T0 of [Hang, Latch, Roll, Slam, Blink, Hover, Rocket, Stomp, Kick, Recoil, Emote]) techs.add(new T0(techs));

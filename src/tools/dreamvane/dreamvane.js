@@ -239,7 +239,7 @@ export class Dreamvane extends HeldTool {
   }
   throwFork() {
     const g = this.game, P = this.P, F = this.fork;
-    g.camera.getWorldPosition(_a); P.lookDir(_b);
+    const C = g.aim.camera(); C.getWorldPosition(_a); if (g.aim.lent) C.getWorldDirection(_b); else P.lookDir(_b); // (the aim's camera: core/aimsource.js)
     const hit = g.physics.raycast(_a, _b, FORK.reach, P.collider, FORK_HITS, (k) => !k.isSensor());
     const aim = hit ? hit.point : _a.clone().addScaledVector(_b, FORK.reach);
     const from = this.toolPoint(-0.55, 0, 0, new THREE.Vector3());

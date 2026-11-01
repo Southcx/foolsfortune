@@ -377,7 +377,7 @@ export class Specials {
     const g = this.game;
     if (this.painting) {
       if (this.shells.type.id !== 'homing') this.cancelPaint();
-      else this.stepPaint(dt, g.camera);
+      else this.stepPaint(dt, g.aim.camera());
     }
     this.updatePreview(g.camera, g.weapon);
     this.updateReticles(dt, g.camera);

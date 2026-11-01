@@ -1063,3 +1063,5 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 378. **A thing kept under one module's key is looked up by that key, or through a map named beside it.** When the
   code's kind and the glossary's word differ (`clapper`, `clapperjar`), the module that joins two tables owns the map (`photoKindOf`),
   and a check reads one through the other.
+379. **A tool aims from `game.aim`, never from `game.camera`.** The camera is what is seen; a mode whose
+  view is not the aim (a side-on stage, a fixed camera) lends its own aim camera, and a tool that read the eye would aim into the backdrop.

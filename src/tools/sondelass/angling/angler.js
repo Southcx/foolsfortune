@@ -182,7 +182,7 @@ export class Angler {
   // ---------------------------------------------------------------- landing point of a cast
   aimAt(power) {
     const g = this.game, P = this.P;
-    g.camera.getWorldPosition(_o); g.camera.getWorldDirection(_d);
+    const C = g.aim.camera(); C.getWorldPosition(_o); C.getWorldDirection(_d); // (the aim's camera: core/aimsource.js)
     const maxD = 6 + 30 * power;
     const hit = g.physics.raycast(_o, _d, maxD, P.collider, GROUPS.controllerQuery, (c) => !c.isSensor());
     const dEnd = hit ? hit.distance : maxD;

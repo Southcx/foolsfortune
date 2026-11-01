@@ -155,7 +155,7 @@ export const CASTERS_OWN = {
     },
     // God Hand: the hand reaches in, grabs what is where the shell lands and throws it the way you aim
     godHand: (R, row, at) => {
-      const g = R.game, n = row.n, aim = new THREE.Vector3(0, 0, -1).applyQuaternion(g.camera.quaternion).setY(0).normalize().setY(0.35).normalize();
+      const g = R.game, n = row.n, aim = new THREE.Vector3(0, 0, -1).applyQuaternion(g.aim.camera().quaternion).setY(0).normalize().setY(0.35).normalize();
       const c = foesNear(g, at, n.r)[0];
       g.vfx?.play?.('shell.mallet.land', { pos: at });
       if (c) { if (isBoss(c)) wrench(g, c, 10); else { c.knock?.(aim.clone().multiplyScalar(n.throw)); g.creatures.strike(c, centerOf(c), aim.clone(), 3, 'shot', 'courier', null, 'impact'); } return; }

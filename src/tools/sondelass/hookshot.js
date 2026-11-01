@@ -90,8 +90,8 @@ export class Hookshot {
   /** What a throw along the aim would hit: { point, normal, kind, ent, body } or null (the affordance for the chevron, and fire's own ray). */
   probe(at = null) {
     const g = this.game, P = this.tool.P;
-    g.camera.getWorldPosition(_o);
-    if (at) _d.copy(at).sub(_o).normalize(); else P.lookDir(_d); // (`at`: a point to throw at in place of the aim)
+    const C = g.aim.camera(); C.getWorldPosition(_o); // (the aim's camera: core/aimsource.js; lent, its own way too)
+    if (at) _d.copy(at).sub(_o).normalize(); else if (g.aim.lent) C.getWorldDirection(_d); else P.lookDir(_d); // (`at`: a point to throw at in place of the aim)
     const hit = g.physics.raycast(_o, _d, at ? Math.min(this.range, _o.distanceTo(at) + 0.6) : this.range, P.collider, HOOKABLE, (c) => !c.isSensor());
     if (!hit) return null;
     const ent = hit.entity, body = hit.collider.parent();
@@ -126,7 +126,7 @@ export class Hookshot {
     const r = this.probe(at);
     this.result = r;
     if (r) this.target.copy(r.point);
-    else { g.camera.getWorldPosition(_o); this.tool.P.lookDir(_d); this.target.copy(_o).addScaledVector(_d, this.range); }
+    else { const C = g.aim.camera(); C.getWorldPosition(_o); if (g.aim.lent) C.getWorldDirection(_d); else this.tool.P.lookDir(_d); this.target.copy(_o).addScaledVector(_d, this.range); }
     this.flying = true; this.phase = 'out'; this.t = 0;
     this.grap.visible = true; this.grap.scale.setScalar(GRAP);
     this.line.rope.reset(this.pos, this.pos);

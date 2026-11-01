@@ -254,8 +254,8 @@ export function bootFrame(game, made) {
       // fade the courier out when the 3rd-person camera is pressed up against them (never in a cinema shot: a framed close-up is meant)
       const near = camera.position.distanceTo(character.bones.spine003.getWorldPosition(new THREE.Vector3()));
       character.setFade(player.fpWeight > 0.5 || game.cinema?.shots?.size ? 1 : THREE.MathUtils.smoothstep(near, 0.45, 1.1));
-      weapon.computeAimPoint(camera, player);
-      const aimDir = weapon.aimPoint.clone().sub(camera.position).normalize();
+      weapon.computeAimPoint(game.aim.camera(), player); // (the aim's camera: the view's own, or a mode's: core/aimsource.js)
+      const aimDir = weapon.aimPoint.clone().sub(game.aim.camera().position).normalize(); // (from where the aim starts: the eye, or a side-on mode's chest)
       // heading change rate (the slide leans into turns)
       const heading = Math.atan2(player.vel.x, player.vel.z);
       const turnRate = dt > 0 && Math.hypot(player.vel.x, player.vel.z) > 1 ? Math.atan2(Math.sin(heading - (lastHeading ?? heading)), Math.cos(heading - (lastHeading ?? heading))) / dt : 0;
@@ -299,7 +299,7 @@ export function bootFrame(game, made) {
       game.guests.update(dt);
       game.meetings.update(dt);
       diag.end('anim');
-      weapon.tryFire(camera, player, character);
+      weapon.tryFire(game.aim.camera(), player, character);
       if (weapon.charge > 0) fx.chargeTick(character.gunPoint('muzzle', new THREE.Vector3()), weapon.charge, dt);
     } else player.renderPos.copy(player.pos);
     god.applyCamera(dt);
