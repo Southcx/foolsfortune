@@ -29,6 +29,7 @@ import { dressTheatre } from './theatre.js';
 import { dressFlats } from './flats.js';
 import { dressProps } from './props.js';
 import { dressTroupe } from './dummies.js';
+import { dressKurogo } from './kurogo.js';
 import { dressArena } from './arena/look.js';
 
 /** The one palette every part draws from (Pip's sewing basket under stage light), and the light's warmth. */
@@ -41,7 +42,7 @@ export const WELL_LOOK = {
   footlight: 0xffd6a0, haze: 0x3a2618,
 };
 
-const PARTS = [dressTheatre, dressFlats, dressProps, dressTroupe, dressArena];
+const PARTS = [dressTheatre, dressFlats, dressProps, dressTroupe, dressArena, dressKurogo];
 
 export class WellLook {
   constructor(game) { this.game = game; this.room = null; this.parts = []; this.laneId = null; this.ctx = null; }

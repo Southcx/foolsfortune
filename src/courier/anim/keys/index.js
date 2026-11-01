@@ -14,3 +14,4 @@ export const KEY_TABLES = { cutlass: CUTLASS };
 for (const [tool, KEYS] of Object.entries(KEY_TABLES)) registerKeys(tool, KEYS);
 
 export { KEYS as FIGHTER_KEYS } from './fighter.js';
+export { SONDELASS as FIGHTER_SONDELASS_KEYS, BRAWLER as FIGHTER_BRAWLER_KEYS, BARRAGE_CYCLE } from './fighterkits.js';
