@@ -13,7 +13,7 @@ export function questsRules({ on, L, log }) {
     if (e.by !== 'courier' || !e.next) return; // (the last step is the quest's done line)
     log.say('system', `${e.quest}: ${e.did || `${bare(e.say)}. Done.`} Next: ${e.next}`, { key: `quest.step.${e.id}`, throttle: 0.5 });
   });
-  on('quest.done', (e) => { if (e.by !== 'courier') return; L.inc('quest.done'); log.say('gain', `Quest complete: ${e.quest}! +${e.points} quest point${e.points === 1 ? '' : 's'}.`, { key: `quest.done.${e.id}`, throttle: 1 }); });
+  on('quest.done', (e) => { if (e.by !== 'courier') return; L.inc('quest.done'); L.inc(`quest.done.${e.id}`); log.say('gain', `Quest complete: ${e.quest}! +${e.points} quest point${e.points === 1 ? '' : 's'}.`, { key: `quest.done.${e.id}`, throttle: 1 }); });
   on('quests.ask', (e) => {
     const qs = e.quests || [];
     if (!qs.length) { log.say('system', 'No quests yet. They turn up when someone has a problem you can fix.', { key: 'quests.ask', throttle: 1 }); return; }
