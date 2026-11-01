@@ -504,6 +504,12 @@ const RULES = {
   'myggdrasil.fruit': (s, e) => s.myggFruit?.(e.n),
   'myggdrasil.girth': (s, e) => s.myggCap?.(e.caps),
   'myggdrasil.hang': (s, e) => s.myggHang?.(e.arcana),
+  // the tools' parries in their own material, the Dreamvane's held spin (audio/brushjets.js); a sentinel's placeholders (audio/sentinel.js)
+  'move.parry': (s, e) => { if ((e.by ?? 'courier') === 'courier') s.parryAnswer?.(e.tool, e.how, e.what); },
+  'dreamvane.twirl': (s, e) => s.vaneSpin?.(e.on),
+  'sentinel.wake': (s) => s.sentinelWake?.(),
+  'sentinel.seek': (s) => s.sentinelSeek?.(),
+  'sentinel.mend': (s, e) => s.sentinelMend?.(e.by),
   'keepsake.pot': (s, e) => s.keepsakeSong?.({ feeling: e.feeling || feelingOfKind(e.kind) }, 1),
 };
 
@@ -511,6 +517,7 @@ export function hearEvents(game, sfx) {
   for (const [name, fn] of Object.entries(RULES)) game.events.on(name, (e) => fn(sfx, e, game));
   installHaptics(game);
   sfx.musicGrid = () => game.music?.grid?.(); // (the cue's key and beat for a bank that has no game: the puzzle duel's notes, audio/puzzleduel.js)
+  sfx.brushNow = () => { const L = game.techs?.get('soulbrush')?.load, a = game.techs?.active?.id; return { spray: !!(L?.working && L.mode === 'paint'), mop: !!(L?.working && L.mode === 'mop'), drinking: !!L?.mopAt, jet: a === 'hover' || a === 'skim' ? a : a === 'rocket' ? 'gather' : null }; }; // (the load's and the jets' loop, audio/brushjets.js)
   sfx.acousticNow = () => game.zones?.acoustic; // (the first zone.acoustic fires at boot, before the context: read again when it starts)
   installAudioHealth(game, sfx); // (the mixer watched for falling behind, into the field report: audio/health.js)
 }
