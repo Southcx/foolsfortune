@@ -6,7 +6,8 @@
 //
 //   game.wisps = new LanternWisps(game, gltf)   .spawn(home)   .update(dt)   .list   WISP (its numbers)
 //   a Lantern Wisp is a creature (creatures.js's contract): hurt, knock, center, head, vanish, cancel; tagged hurtable, programmable
-//   events: wisp.hit { cause, by }, wisp.burst { cause, by } (put out), wisp.cast { by }, wisp.notice { by }
+//   events: wisp.hit { cause, by }, wisp.burst { cause, by } (put out), wisp.cast { by }, wisp.notice { by }; a body lent another mind
+//   (a sentinel: `c.ev`) says its own prefix, and with `c.once1` never forms again
 //
 // Prior art: the slip jelly's body (jelly/slipjelly.js: a kinematic capsule, a mind that sets `want`, a body that moves and poses);
 // the hovering casters of the action game (Zelda's Wizzrobe, Dark Souls' Wisp, Kingdom Hearts' Wizard Heartless); a crossfaded clip a
@@ -114,7 +115,7 @@ export class LanternWisps {
     c.drives.add('fear', (0.15 + 0.1 * power) / (c.traits.bold ?? 1));
     g.ai?.stimuli.emit('pain', c.pos, { radius: 16, strength: 0.9, by, source: c, about: culprit, aboutPos: culprit?.pos });
     c.brain.signal();
-    g.events?.emit('wisp.hit', { cause, by });
+    g.events?.emit(`${c.ev || 'wisp'}.hit`, { cause, by });
     if (c.hp <= 0) this.burst(c, by, cause, culprit); else this.play(c, 'Hit', { once: true, fade: 0.08 });
   }
   /** Put out: the Death clip, its flame gone, its Lachryma on the sand; it forms again at home in a while. */
@@ -127,13 +128,13 @@ export class LanternWisps {
     const at = c.center(new THREE.Vector3());
     if (by === 'courier') g.cubes?.burst?.(at, Math.round(ECON.wisp.burst * yieldOf(c.emo)), { count: 4, up: 3, from: 'wisp' });
     g.fx?.absorbSparkle?.(at);
-    g.events?.emit('wisp.burst', { by, cause });
+    g.events?.emit(`${c.ev || 'wisp'}.burst`, { by, cause });
   }
   vanish(c, by, cause) {
     if (!c.alive) return;
     c.alive = false; c.dying = null; c.deadT = 0; this.cancel(c, cause); c.col.setEnabled(false); c.root.visible = false;
     c.brain.end('gone'); c.status.clear();
-    this.game.events?.emit('wisp.burst', { by, cause });
+    this.game.events?.emit(`${c.ev || 'wisp'}.burst`, { by, cause });
   }
   reform(c) {
     c.alive = true; c.hp = WISP.hp; c.dying = null; c.attack = null; c.pos.copy(c.home); c.vel.set(0, 0, 0); c.lift = 0;
@@ -162,7 +163,7 @@ export class LanternWisps {
     const m = this.look.bolt(from); // [look] the ember, its tail and its spark (in the scene)
     const q = { m, pos: m.position, vel: v, v, t: 0, c, foe, lachryma: 1, from: c, mark: g.parryMark?.mark(m), vanish: () => { q.gone = true; } };
     this.bolts.push(q); (g.projectiles ||= new Set()).add(q);
-    g.events?.emit('wisp.cast', { by: 'creature' });
+    g.events?.emit(`${c.ev || 'wisp'}.cast`, { by: 'creature' });
   }
   updateBolts(dt) {
     const g = this.game, P = g.player, W = WISP.cast;
@@ -191,7 +192,7 @@ export class LanternWisps {
         if (c.dying != null) c.mixer.update(dt); // (the Death clip plays out; a wisp gone or far has no pose to run: the deep clean's tick profile)
         if (c.dying != null && (c.dying -= dt) <= 0) { c.dying = null; if (this.game.figmentScatter?.play(c, { hide: true }) == null) c.root.visible = false; } // (a Figment's scatter, then gone: vfx/figmentscatter.js)
         c.deadT += dt;
-        if (c.deadT > WISP.respawn && Math.hypot(P.pos.x - c.home.x, P.pos.z - c.home.z) > 12) this.reform(c);
+        if (!c.once1 && c.deadT > WISP.respawn && Math.hypot(P.pos.x - c.home.x, P.pos.z - c.home.z) > 12) this.reform(c);
         continue;
       }
       const far = Math.abs(P.pos.x - c.pos.x) > 150 || Math.abs(P.pos.z - c.pos.z) > 150 || Math.abs(P.pos.y - c.pos.y) > 60;

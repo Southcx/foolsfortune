@@ -4,17 +4,18 @@
 // often sends its Dissonance Level's answer: slip jellies and Lantern Wisps (the Figments the island has), spawned past the edge of the hand's view and
 // coming for your Pneuka Jar (or the Courier, the hand away). A Dissonance Level's change is an event (god.dissonance {level,
 // by:'environment'}); the fifth level's answer put down by you is god.rejection.beaten, and clears the dissonance. A rest at a Shrine clears it too.
-// Placeholders: the answer is the island's ordinary Figments, stronger; the island's own (an antibody Figment) is Espada's and
-// Calissa's to name and dress.
+// From the fourth Dissonance Level the answer also brings a sentinel (creatures/sentinel/: the island's antibody), which walks to the
+// warp marks (`marks`: where the hand worked the island, the newest SENTINEL.marks) and mends them. Its body is a placeholder (Calissa's).
 //
 // Prior art: GTA's wanted level; Left 4 Dead's AI director (spawns paced, out of sight, never on top of you).
 //
-//   game.rejection = new Rejection(game)   .dissonance  .level (the Dissonance Level, 0..5)   .update(dt)   .clear(why)
+//   game.rejection = new Rejection(game)   .dissonance  .level (the Dissonance Level, 0..5)   .marks [{ at, t }]   .update(dt)   .clear(why)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { REJECTION, dissonanceOf, dissonanceLevelOf } from '../progress/rejection.js';
 import { GOD_POWERS, dissonanceScale } from '../progress/godpowers.js';
 import { stream } from '../core/rng.js';
+import { SENTINEL } from '../creatures/sentinel/sentinels.js';
 
 // (every power that works on the island; seeing (Strata, Course, Read) is not an act on it)
 const SEEN = new Set(['strata', 'course', 'read', 'telekinesis', 'miracle']);
@@ -27,15 +28,18 @@ export class Rejection {
     this.game = game;
     this.dissonance = 0; this.level = 0; this.quiet = 0; this.wait = REJECTION.every * 0.5;
     this.sent = []; // (the island's answer still alive)
+    this.marks = []; // (the warp marks a sentinel mends)
     this.boss = null;
     for (const n of ACTS) game.events?.on(n, (e) => this.feel(n, e));
-    game.events?.on('shrine.rest', () => this.clear('rest'));
+    game.events?.on('shrine.rest', () => { this.marks.length = 0; this.clear('rest'); });
   }
 
   feel(name, e) {
     const h = dissonanceOf(name, e) * dissonanceScale(domainOf(name, e), this.game); // (a master's hand jars it less: GODHAND.md 11)
     if (h <= 0) return;
     this.dissonance += h; this.quiet = 0;
+    const g = this.game, cur = g.god?.cursor, at = g.god?.active && cur?.ok ? cur.point : g.god?.active ? g.god.jar?.pos : null;
+    if (at) { this.marks.push({ at: at.clone(), t: g.events?.time ?? 0 }); if (this.marks.length > SENTINEL.marks) this.marks.shift(); }
   }
 
   update(dt) {
@@ -83,6 +87,7 @@ export class Rejection {
       const c = mark(g.jellies?.spawn?.(at, { cls: A.cls || 0, size: A.size ?? null, once: true }));
       if (c && A.boss && !this.boss) this.boss = c;
     }
+    if (this.level >= SENTINEL.from && this.marks.length && room()) mark(g.sentinels?.send?.(home.clone(), this.level));
     for (let i = 0; i < (A.wisp || 0) && room(); i++) mark(g.wisps?.spawn?.(home.clone().add(new THREE.Vector3((rand() - 0.5) * 8, 1, (rand() - 0.5) * 8))));
     g.events?.emit('god.rejection.answer', { level: this.level, n: this.sent.length, by: 'environment' });
   }

@@ -30,6 +30,7 @@ import { figmentTelegraphRules } from './figmenttelegraphs.js';
 import { ostracaRules } from './ostraca.js';
 import { passageRules } from './passage.js';
 import { wispRules } from './wisps.js';
+import { sentinelRules } from './sentinels.js';
 import { poolRules } from './pool.js';
 import { pairRules } from './pairs.js';
 import { godRules, godHandRules } from './god.js';
@@ -45,7 +46,7 @@ import { graphicsRules } from './graphics.js';
 import { instrumentRules } from './instruments.js';
 import { touchPlayRules } from './touchplay.js';
 import { perfReadoutRules } from './perfreadout.js';
-import { startAtRules } from './startat.js';
+import { startAtRules, presetRules } from './startat.js';
 import { familiarityRules } from './familiarity.js';
 import { sealRules } from './seals.js';
 import { spreadRules } from './spreads.js';
@@ -141,6 +142,7 @@ export function areaRules(ctx) {
   ctx.on('rail.leg.end', (e) => { if (e.practice && e.by === 'courier') ctx.L.inc('rail.practice'); }); // (practice's own count, the one thing it keeps: RAIL-STANDARDS.md 5)
   moveRules(ctx); // (the movesets: launchers, air strings, specials, the skiff's bails)
   wispRules(ctx); // (the Lantern Wisps)
+  sentinelRules(ctx); // (rejection's antibody)
   familiarityRules(ctx); // (how well each kind of creature is known: the overlay's readouts)
   sealRules(ctx); // (the Seal Book: the cradles your seal set in)
   spreadRules(ctx); // (the spread laid on the Box's underside: progress/laidspread.js)
@@ -176,6 +178,7 @@ export function areaRules(ctx) {
   touchPlayRules(ctx); // (touch play's settings: the layout kept, gyro steering's motion access: core/layoutkeep.js, core/gyrosteer.js)
   perfReadoutRules(ctx); // (/perf: the performance readout, debug/perfreadout.js; nothing counted)
   startAtRules(ctx); // (?at=: where the Courier was set down, debug/startat.js; nothing counted)
+  presetRules(ctx); // (/preset: a moment of play loaded into the DEBUG save, debug/presets.js; nothing counted)
   lockheartRules(ctx); // (the Lockheart's Overload recoil) // (the god hand's matter, miracles, epics and the island's rejection)
   voyageRules(sea);
   gardenRules(ctx);
