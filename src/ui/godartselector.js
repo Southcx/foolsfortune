@@ -10,7 +10,8 @@
 //                 a gold chip, the art's icon in a glazed well, its name pressed beneath. The chosen art lifted, its glaze run down the
 //                 whole tile and ringed in gold; one not learned (or the ground's tier too short) greenware, grey and dashed; one the pool
 //                 cannot pay with an ember rim breathing
-// On the phone on its side (max-height 480px) the tiles and cards shrink and the cards keep only their icon and key.
+// On the phone on its side (max-height 480px) the tiles and cards shrink and the cards keep only their icon and key. Both stand centred
+// unless the log's box reaches under them; then they slide right until clear of it (clearOfLog, SELECTOR).
 //
 // Prior art: the potter's test-tile board (a glaze a tile, dipped halfway so the band reads against the bisque); a kiln shelf's bats and
 // posts; Black & White's and Populous's miracle bars (the god's arts as a short row under the hand); the GOD ARTS shelf's dress
@@ -78,6 +79,20 @@ const lum = (hex) => { const n = parseInt(hex.slice(1), 16); return (0.2126 * (n
  *  the colour its glaze is known by (the tenmoku's star violet, the shino's fire flash). */
 const glazeOf = (d) => { const c = DOMAIN_LOOK[d]?.colours; if (!c) return null; const L = lum(c.body); return (L < 0.15 || L > 0.75) && (c.edge || c.accent) ? (L < 0.15 ? c.edge || c.accent : c.accent) : c.body; };
 
+/** The shelf and the cards stand centred, unless the log's box (#chatlog, bottom left on the desk) reaches under them: then both are
+ *  slid right until clear of it (SELECTOR.gap), never past the Lachrimeter's corner (SELECTOR.right). */
+export const SELECTOR = { gap: 12, right: 96 };
+function clearOfLog(doms, bar) {
+  const log = document.getElementById('chatlog'), W = innerWidth;
+  const w = Math.max(doms.offsetWidth, bar.offsetWidth), half = w / 2;
+  let cx = W / 2;
+  const r = log && log.offsetParent !== null ? log.getBoundingClientRect() : null;
+  const top = Math.min(doms.getBoundingClientRect().top, bar.getBoundingClientRect().top);
+  if (r && r.width > 0 && r.bottom > top && r.right + SELECTOR.gap > cx - half) cx = Math.min(r.right + SELECTOR.gap + half, W - SELECTOR.right - half);
+  const left = Math.abs(cx - W / 2) < 1 ? '' : `${Math.round(cx)}px`;
+  if (doms.style.left !== left) { doms.style.left = left; bar.style.left = left; }
+}
+
 /** Install the dress; it keeps `--gd-c` on each tab (its own glaze) and on the cards' bar (the chosen domain's). */
 export function installGodArtSelector() {
   if (typeof document === 'undefined' || document.getElementById('godartselector-css')) return;
@@ -92,6 +107,9 @@ export function installGodArtSelector() {
     const follow = () => { const on = tabs.find((t) => t.classList.contains('on')); const c = on && glazeOf(on.dataset.d); if (c) bar.style.setProperty('--gd-c', c); };
     new MutationObserver(follow).observe(doms, { subtree: true, attributes: true, attributeFilter: ['class'] });
     follow();
+    const clear = () => clearOfLog(doms, bar);
+    addEventListener('resize', clear);
+    setInterval(() => { if (doms.style.display === 'flex') clear(); }, 400); // (the log is dragged, folded and grows: read it while the bar is up)
   };
   bind();
   const hud = document.getElementById('hud');
