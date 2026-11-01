@@ -19,7 +19,7 @@ export function poolRules({ L, log, g }) {
     const max = P.max || 100, low = max * POOL_LOW.frac;
     if (e.value > 0 && e.value < low && e.value + e.amount >= low) {
       L.inc('lach.low');
-      log.say('warn', `Your pool is low: ${Math.round(e.value)} of ${Math.round(max)}. Stop spending and it fills again.`, { key: 'llow', throttle: POOL_LOW.throttle });
+      log.say('warn', `Pool low: ${Math.round(e.value)} of ${Math.round(max)}. Stop spending to refill it.`, { key: 'llow', throttle: POOL_LOW.throttle });
     }
   });
   P.on('gain', (e) => {
@@ -30,7 +30,7 @@ export function poolRules({ L, log, g }) {
     log.say('gain', `You absorb ${Math.round(sum)} Lachryma.`, { key: 'lgain', win: 2.5, fmt: () => `You absorb ${Math.round(sum)} Lachryma.` });
   });
   P.on('denied', () => { L.inc('lach.denied'); log.say('warn', 'You do not have enough Lachryma.', { key: 'lden', throttle: 2.5 }); });
-  P.on('empty', () => { L.inc('lach.empty'); log.say('warn', L.get('lach.empty') > 1 ? 'Your pool is empty.' : `Your pool is empty. It fills again on its own once you stop spending: ${(P.regenRate * (P.product?.((m) => m.regenMult) ?? 1)).toFixed(1)} a second, starting ${P.regenDelay.toFixed(1)} real seconds after.`, { key: 'lemp', throttle: 8 }); }); // (the first time, how it comes back: FIRST-HOUR.md 3)
+  P.on('empty', () => { L.inc('lach.empty'); log.say('warn', L.get('lach.empty') > 1 ? 'Your pool is empty.' : `Your pool is empty. Stop spending and it refills at ${(P.regenRate * (P.product?.((m) => m.regenMult) ?? 1)).toFixed(1)} a second after ${P.regenDelay.toFixed(1)} seconds.`, { key: 'lemp', throttle: 8 }); }); // (the first time, how it comes back: FIRST-HOUR.md 3)
   P.on('full', () => L.inc('lach.full'));
   P.on('overflow', (e) => L.inc('lach.overflow', e.amount));
 }

@@ -72,7 +72,7 @@ export function gardenRules({ on, L, log }) {
   on('spirit.bind', (e) => {
     if (e.by !== 'courier') return;
     L.inc('spirit.bind'); L.inc(`spirit.bind.${e.from}`); L.hi('spirit.bind.cls', (e.cls || 0) + 1);
-    log.say('gain', `${FROM[e.from] || 'Bound:'} ${e.spirit || (e.kind ? `a ${e.kind}` : 'a Figment')}.${e.from === 'lockheart' || e.from === 'hand' ? ' It waits in your Pneuka Jar for the garden.' : ''}`);
+    log.say('gain', `${FROM[e.from] || 'Bound:'} ${e.spirit || (e.kind ? `a ${e.kind}` : 'a Figment')}.${e.from === 'lockheart' || e.from === 'hand' ? ' It goes to your Spirit Garden.' : ''}`);
   });
   // a catch that fails: the wheel came up free, or the hand let go (Petra's rail of the catch: tools/lockheart, godhand)
   on('catch.miss', (e) => { if (e.by !== 'courier') return; L.inc('catch.miss'); log.say('info', `It slips the coffin. (${Math.round((e.odds || 0) * 100)}%)`, { key: 'catchmiss', throttle: 1 }); });
@@ -164,7 +164,7 @@ export function gardenRules({ on, L, log }) {
     if (w.length) log.say('system', `Wishes: ${w.map((x) => `${who(x)}, ${wishWords(x.wish)}`).join('; ')}${e.wishes.length > 2 ? `; and ${e.wishes.length - 2} more` : ''}.`, { key: 'digest.1', throttle: 5 });
     if (e.bloom?.length) log.say('system', `In bloom: ${e.bloom.map(planet).join(', ')}.`, { key: 'digest.2', throttle: 5 });
     if (e.briar?.length) log.say('system', `Overgrown: ${e.briar.map(planet).join(', ')}.`, { key: 'digest.3', throttle: 5 });
-    if (e.mail) log.say('system', `${e.mail} letter${e.mail > 1 ? 's wait' : ' waits'} in the mailbox. Type /letters to read.`, { key: 'digest.4', throttle: 5 });
+    if (e.mail) log.say('system', `${e.mail} letter${e.mail > 1 ? 's' : ''} in the mailbox. Type /letters to read.`, { key: 'digest.4', throttle: 5 });
   });
   // letters and gifts (progress/spiritlife.js MAIL; GARDEN-COZY.md C5): Espada's words. A thank-you says which wish it thanks you for;
   // a released spirit's three postcards run in order: arriving, settling, letting you go on (Spiritfarer's Everdoor, then the mail)

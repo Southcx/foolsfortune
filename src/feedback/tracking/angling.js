@@ -27,12 +27,12 @@ export function anglingRules({ on, L, log, where }) {
   });
   on('angle.hookset', (e) => {
     L.inc('angle.hookset'); L.inc(`angle.hookset.${e.quality}`);
-    log.say('angle', e.quality === 'perfect' ? 'You set the hook perfectly!' : e.quality === 'early' ? 'You set the hook, a little early.' : 'You set the hook, just in time.');
+    log.say('angle', e.quality === 'perfect' ? 'You set the hook perfectly!' : e.quality === 'early' ? 'You set the hook, a little early.' : 'You set the hook, a little late.');
   });
   on('angle.miss', () => { L.inc('angle.miss'); log.say('warn', 'The lure comes away bare. Whatever it was has gone.'); });
   on('angle.reveal', () => L.inc('angle.reveal'));
   on('angle.notice', () => L.inc('angle.notice'));
-  on('angle.warn', () => log.say('warn', 'The line trembles: something surfaces and shudders. Brace!', { key: 'awarn', throttle: 4 }));
+  on('angle.warn', () => log.say('warn', 'Something big is on the line. Brace!', { key: 'awarn', throttle: 4 }));
   on('angle.thrash', () => L.inc('angle.thrash'));
   on('angle.brace', () => L.inc('angle.brace'));
   on('angle.crank', () => L.inc('angle.crank'));

@@ -16,7 +16,7 @@ const ORDER_LINE = { warp: 'step through to your side', follow: 'follow you', ho
 
 export function partyRules({ on, log }) {
   on('party.down', () => log.say('warn', 'You are made whole at the Lip Stone; your party fights on.', { key: 'party.down', throttle: 3 })); // (the shared FOE's fight: coop/sharedfoe.js)
-  on('party.wipe', () => log.say('warn', 'Your whole party is down: the Great Slip Jelly rises again, whole.', { key: 'party.wipe', throttle: 3 }));
+  on('party.wipe', () => log.say('warn', 'Party defeated. The Great Slip Jelly recovers fully.', { key: 'party.wipe', throttle: 3 }));
   on('party.meet', (e) => { log.say('gain', `You meet ${nameOf(e.sibling)}.`); const l = roomLine(e.sibling, 'meet'); if (l) log.say('say', `${nameOf(e.sibling)} : ${l}`); });
   const line = (id, kind, n) => { const l = roomLine(id, kind, n); if (l) log.say('say', `${nameOf(id)} : ${l}`, { key: `room.${kind}.${id}`, throttle: kind === 'idle' ? 120 : 5 }); };
   on('sibling.arrive', (e) => { log.say('info', `${nameOf(e.sibling)} arrives.`, { key: `room.in.${e.sibling}`, throttle: 5 }); line(e.sibling, 'arrive'); });

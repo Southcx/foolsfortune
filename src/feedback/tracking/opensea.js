@@ -33,11 +33,11 @@ export function openSeaRules({ on, L, log, g }) {
   on('sea.bottle', (e) => { if (e.by !== 'courier') return; L.inc('sea.bottle'); log.say('explore', `A bottle adrift, a note inside: "${e.text}"`, { key: 'sea.bottle', throttle: 1 }); });
   on('sea.gust', (e) => { if (e.by === 'courier') L.inc('sea.gust'); }); // (a cat's paw caught: the sail and the water say it; the ledger counts it)
   on('sea.rip', (e) => { if (e.by !== 'courier') return; L.inc('sea.rip'); log.say('info', 'A current takes the ship. Ride it, or steer out of its band.', { key: 'sea.rip', throttle: 60 }); });
-  on('sea.luff', (e) => { if (e.by !== 'courier') return; L.inc('sea.luff'); log.say('info', 'Your sail luffs: you are head to wind. Bear away and it fills.', { key: 'sea.luff', throttle: 30 }); });
+  on('sea.luff', (e) => { if (e.by !== 'courier') return; L.inc('sea.luff'); log.say('info', 'Sail luffing. You are head to wind. Turn away from the wind to fill the sail.', { key: 'sea.luff', throttle: 30 }); });
   on('opensea.moor', (e) => { L.inc('sea.moor'); if (e.islet) log.say('info', said(g, `${landingLine(e.islet, e.kit)} ({use} at the ship to board again.)`), { key: 'sea.moor', throttle: 3 }); });
   on('sea.chart', (e) => { if (e.by !== 'courier') return; L.inc('sea.chart'); log.say('explore', 'You chart a new square of sea.', { key: 'sea.chart', throttle: 6 }); });
   on('sea.find', (e) => { if (e.by !== 'courier') return; L.inc(`sea.find.${e.tier}`); log.say('explore', `You find ${KIND[e.kind] || 'something'} (${e.tier}). Report it at a dock.`, { key: `sea.find.${e.id}`, throttle: 1 }); });
-  on('sea.fix', (e) => { if (e.ok) { L.inc('sea.fix'); log.say('info', e.how === 'sky' ? 'You read the sky and know where you are.' : 'A landmark you know: you know where you are.', { key: 'sea.fix', throttle: 4 }); } else log.say('warn', 'The sky is hidden: no reading.', { key: 'sea.fix.no', throttle: 4 }); });
+  on('sea.fix', (e) => { if (e.ok) { L.inc('sea.fix'); log.say('info', e.how === 'sky' ? 'You read the sky and know where you are.' : 'A landmark you know: you know where you are.', { key: 'sea.fix', throttle: 4 }); } else log.say('warn', 'No reading. The sky is hidden.', { key: 'sea.fix.no', throttle: 4 }); });
   on('sea.report', (e) => L.inc('sea.report'));
   // the migrations (progress/opensea/migrations.js; OPEN-SEA.md 13): the dock's board posts a game day's herds; one photographed pays once
   const kind = (id) => id.replace(/([A-Z])/g, ' $1').toLowerCase(); // (a species' plain words from its id until Espada names them)
@@ -45,10 +45,10 @@ export function openSeaRules({ on, L, log, g }) {
   on('sea.plate', (e) => { if (e.by !== 'courier') return; L.inc('sea.plate'); log.say('info', 'You take a plate over the bow.', { key: 'sea.plate', throttle: 2 }); });
   on('sea.herd.paid', (e) => { if (e.by !== 'courier') return; log.say('gain', `The herds you photographed pay ${e.cubes} cubes (${e.n}).`, { key: 'sea.herd.paid', throttle: 1 }); });
   on('seaserpent.paid', (e) => { if (e.by !== 'courier') return; if (e.hull >= e.of) L.inc('seaserpent.down.whole'); log.say('gain', `Sinking the sea serpent pays ${e.cubes} cubes. Your hull came through able to take ${e.hull} of ${e.of} hits.`, { key: 'ss.paid', throttle: 1 }); }); // (Dovina's serpentPay; words a placeholder, Espada's)
-  on('sea.herd', (e) => { if (e.by !== 'courier') return; L.inc('sea.herd'); L.inc(`sea.herd.${e.id}`); log.say('gain', `You photograph the herd: ${e.cubes} cubes when you next dock.`, { key: 'sea.herd', throttle: 2 }); });
+  on('sea.herd', (e) => { if (e.by !== 'courier') return; L.inc('sea.herd'); L.inc(`sea.herd.${e.id}`); log.say('gain', `Herd photographed. ${e.cubes} cubes paid at your next dock.`, { key: 'sea.herd', throttle: 2 }); });
   on('sea.dock', (e) => log.say('info', `${ISLAND[e.island] || 'The dock'}: ${e.paid ? `your reports pay ${e.paid} cubes` : 'nothing to report'}; ${e.short ? `you can pay for ${e.fuelCost} cubes of fuel` : `the tank filled for ${e.fuelCost} cubes`}.`, { key: 'sea.dock', throttle: 1 }));
-  on('sea.square.done', (e) => { if (e.by !== 'courier') return; L.inc('sea.square.done'); L.inc(`sea.square.done.c${e.cls}`); log.say('find', `Square ${e.square} is charted whole: you have found everything in it. ${e.cubes} cubes. ${e.n} of ${e.of} squares done.`, { key: 'sea.square', throttle: 1 }); });
-  on('sea.tow', (e) => { L.inc('sea.tow'); log.say('warn', `Your tank is dry: a tug tows you to the lane for ${e.fee} cubes.`, { key: 'sea.tow', throttle: 2 }); });
+  on('sea.square.done', (e) => { if (e.by !== 'courier') return; L.inc('sea.square.done'); L.inc(`sea.square.done.c${e.cls}`); log.say('find', `Square ${e.square} complete! Everything in it found. ${e.cubes} cubes. ${e.n} of ${e.of} squares complete.`, { key: 'sea.square', throttle: 1 }); });
+  on('sea.tow', (e) => { L.inc('sea.tow'); log.say('warn', `Out of fuel. A tug tows you to the lane for ${e.fee} cubes.`, { key: 'sea.tow', throttle: 2 }); });
   on('sea.secret', (e) => { L.inc(`sea.secret.${e.kind}`); log.say('explore', secretLine(e.kind, e.islet), { key: 'sea.secret', throttle: 1 }); });
   // the islets' puzzles say what they are (the owner tried them and "didn't know what I was looking at", 2026-10-30): once a piece, when you first
   // come near it, what it is and which tool solves it. The words are PLACEHOLDERS, plain, for Espada to word; {dvDowse} is the dowse's own
@@ -72,5 +72,5 @@ export function openSeaRules({ on, L, log, g }) {
   on('sea.echo', () => { L.inc('sea.echo'); log.say('explore', 'The listening stone hears its phrase. Something rises out of the sand.', { key: 'sea.echo', throttle: 1 }); });
   on('sea.dig', (e) => { if (e.by !== 'courier') return; L.inc('sea.dig'); L.inc(`sea.dig.${e.tier}`); log.say('find', `You dig up a buried cache (${e.tier}): ${e.cubes} cubes.`, { key: 'sea.dig', throttle: 1 }); });
   on('sea.stele', (e) => { L.inc('sea.stele.read'); log.say('info', `The stele reads: ${e.line}`, { key: `sea.stele.${e.islet}`, throttle: 3 }); });
-  on('sea.fuel.low', () => log.say('warn', 'Fuel is low: make for a dock.', { key: 'sea.fuel', throttle: 10 }));
+  on('sea.fuel.low', () => log.say('warn', 'Fuel low. Head for a dock.', { key: 'sea.fuel', throttle: 10 }));
 }

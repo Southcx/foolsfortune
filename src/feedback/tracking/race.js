@@ -29,7 +29,7 @@ const WEATHER_SAYS = {
 
 export function raceRules({ on, L, log, g }) {
   on('raceway.enter', () => log.say('info', said(g, 'The Raceway. Three tracks round the hub: the Sun Circuit to the south-west, the Gorge Run to the south-east, the Coaster to the north-east. {use} at a track\'s start pillar begins a race of three laps. {skiff} brings the Solar Skiff.'), { key: 'rw.enter', throttle: 30 }));
-  on('raceway.pit', (e) => { L.inc('raceway.pit'); log.say('warn', 'The antlion takes you. The sand slides to its jaws: keep your speed on the slope.', { key: 'rw.pit', throttle: 4 }); });
+  on('raceway.pit', (e) => { L.inc('raceway.pit'); log.say('warn', 'Caught by the antlion. Hint: keep your speed up on the slope.', { key: 'rw.pit', throttle: 4 }); });
   on('race.start', (e) => {
     if (e.track === 'made') return; // (a made track's: tracking/trackeditor.js, never the park's counts)
     if (e.mode && e.mode !== 'race' && e.mode !== 'daily') return; // (the other modes: racemodes.js; the game day's race is a race, and counts as one too)
@@ -65,8 +65,8 @@ export function raceRules({ on, L, log, g }) {
   // the skiff's racing verbs
   on('skiff.carve', (e) => { if (e.by !== 'courier') return; L.inc('skiff.carve'); L.inc(`skiff.carve.tier${e.tier}`); L.hi('skiff.carve.best', e.tier); });
   on('skiff.pop', (e) => { if (e.by !== 'courier') return; L.inc('skiff.pop'); if (e.perfect) { L.inc('skiff.pop.perfect'); log.say('skiff', 'A perfect pop.', { key: 'pop.perfect', throttle: 1.5 }); } });
-  on('skiff.pop.miss', (e) => { if (e.by === 'courier') log.say('info', 'Too late to pop: let go of Space as the board leaves the crest.', { key: 'pop.miss', throttle: 12 }); });
-  on('skiff.plate', (e) => { if (e.by !== 'courier') return; if (e.power > 0.05) L.inc('skiff.plate'); else log.say('info', 'The boost pad is dark: no sun to feed it.', { key: 'plate.dark', throttle: 30 }); });
+  on('skiff.pop.miss', (e) => { if (e.by === 'courier') log.say('info', 'Too late. To pop, release Space as the board leaves the crest.', { key: 'pop.miss', throttle: 12 }); });
+  on('skiff.plate', (e) => { if (e.by !== 'courier') return; if (e.power > 0.05) L.inc('skiff.plate'); else log.say('info', 'Boost pad inactive. It needs sunlight.', { key: 'plate.dark', throttle: 30 }); });
   // the trick combo (courier/skiff/combo.js): what it banks and loses, said; its gauge is Calissa's
   on('skiff.combo.bank', (e) => {
     if (e.by !== 'courier') return; L.inc('skiff.combo.bank'); L.hi('skiff.combo.best', e.points); L.hi('skiff.combo.longest', e.n);
@@ -74,7 +74,7 @@ export function raceRules({ on, L, log, g }) {
   });
   on('skiff.combo.drop', (e) => { if (e.by !== 'courier') return; L.inc('skiff.combo.drop'); if (e.n >= 2 && e.why !== 'off') log.say('warn', `Your combo of ${e.n} is lost.`, { key: 'combo.drop', throttle: 2 }); });
   on('skiff.grab', (e) => { if (e.by !== 'courier') return; L.inc('skiff.grab'); L.inc(`skiff.grab.${e.grab}`); L.hi('skiff.grab.best', e.seconds); });
-  on('skiff.grab.late', (e) => { if (e.by === 'courier') log.say('warn', 'You land still grabbing: let go before the sand.', { key: 'grab.late', throttle: 6 }); });
+  on('skiff.grab.late', (e) => { if (e.by === 'courier') log.say('warn', 'Landed while grabbing. Release the grab before you land.', { key: 'grab.late', throttle: 6 }); });
   on('skiff.land.slope', (e) => { if (e.by === 'courier') L.inc('skiff.land.slope'); });
   on('raceway.branch', (e) => { if (e.by !== 'courier') return; L.inc('raceway.cavern'); log.say('skiff', 'Through the cavern and out.', { key: 'rw.cavern', throttle: 10 }); });
   on('skiff.grind', (e) => { if (e.by === 'courier') L.inc('skiff.grind'); });

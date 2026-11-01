@@ -17,7 +17,7 @@ export function worldShellRules({ on, L, log }) {
   on('shell.found', (e) => {
     if (e.tier !== 5) return;
     L.inc('shell.world.found'); L.inc(`shell.world.found.${e.id}`);
-    log.say('gain', `A World shell condenses out of the blot: ${nameOf(e.id)}.`, { key: 'shell.found' });
+    log.say('gain', `World shell found in the blot: ${nameOf(e.id)}.`, { key: 'shell.found' });
   });
   on('shell.draw', (e) => {
     if (e.by !== 'courier') return;

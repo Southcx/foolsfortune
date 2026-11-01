@@ -45,5 +45,5 @@ export function veritomeRules({ on, L, log, g }) {
     L.inc('card.pages'); L.inc(`card.pages.${e.section}`); // (a card is bound once: every card.get is its first, progress/collection.js)
     log.say('gain', `${CARD(e.card)} is bound into your collection (rank ${e.rank}).`, { key: `cget.${e.card}`, throttle: 1 });
   });
-  on('card.condense', (e) => { L.inc('card.condense'); log.say('loot', `${CARD(e.card)} is bound already: it condenses into ${plural(e.cubes, 'Lachryma cube')}.`, { tone: '#ffd98a' }); });
+  on('card.condense', (e) => { L.inc('card.condense'); log.say('loot', `${CARD(e.card)} already bound. Converted into ${plural(e.cubes, 'Lachryma cube')}.`, { tone: '#ffd98a' }); });
 }

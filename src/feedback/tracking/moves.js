@@ -24,7 +24,7 @@ export function moveRules({ on, L, log, g }) {
   const learn = () => { for (const id of LEARNABLE) { if (L.get(`sond.learn.${id}`) || !unlocked('sondelass', id, L)) continue;
     L.inc(`sond.learn.${id}`); const row = SONDELASS_MOVES[id], kind = row?.kind === 'special' ? 'special' : 'move';
     g?.events?.emit('move.learn', { tool: 'sondelass', move: id, parent: MOVES.sondelass[id].parent, by: 'courier' });
-    log.say('gain', `You learn a new Sondelass ${kind}: ${row?.label || id}. Slot it at the sparring circle's lectern.`); } };
+    log.say('gain', `New Sondelass ${kind} learned: ${row?.label || id}. Equip it at the sparring circle's lectern.`); } };
   for (const ev of OPENERS) on(ev, (e) => { if ((e.by ?? 'courier') === 'courier') queueMicrotask(learn); }); // (after the counts below are kept)
   // move.launch { tool, by }: a launcher lifted something; move.air { tool, hits, by }: an air string ended with `hits` blows landed
   on('move.launch', (e) => { if (e.by === 'courier') L.inc('move.launch'); });

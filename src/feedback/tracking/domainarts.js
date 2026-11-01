@@ -65,7 +65,7 @@ export function domainArtsRules({ on, log }) {
   on('domain.makeup', (e) => log.say('system', `The ${kname(e.kind)}'s body is ${tname(e.weak) ? `weak to ${tname(e.weak)}` : 'read'}.${e.first ? ' Re-type knows it now.' : ''}`, { key: `makeup.${e.kind}`, throttle: 2 }));
   on('domain.vow.set', (e) => log.say('system', e.vow ? `You vow to ${VOWS[e.vow].label}. Every cost is a quarter less while you keep it.` : 'You set your vow aside.', { key: 'vow.set', throttle: 0.3 }));
   on('domain.vow.ask', (e) => log.say('system', e.open ? `Your vow: ${e.vow ? VOWS[e.vow].label : 'none'}. Vows: ${e.vows.map((v) => `${v} (${VOWS[v].label})`).join(', ')}.` : 'A Vow is not open yet (/rung shows how near).', { key: 'vow.ask', throttle: 0.5 }));
-  on('domain.vow.refuse', (e) => log.say('warn', e.why === 'closed' ? 'A Vow is not open yet.' : e.why === 'wait' ? 'A broken vow waits before another.' : `No vow is called "${e.vow}". /vow lists them.`, { key: 'vow.refuse', throttle: 1 }));
+  on('domain.vow.refuse', (e) => log.say('warn', e.why === 'closed' ? 'A Vow is not open yet.' : e.why === 'wait' ? 'After a broken vow, wait before swearing another.' : `No vow is called "${e.vow}". /vow lists them.`, { key: 'vow.refuse', throttle: 1 }));
   on('domain.rule.ask', (e) => log.say('system', e.open
     ? `Your rule: when ${RULE_WHEN[e.rule.when]?.label}, ${RULE_THEN[e.rule.then]?.label}. When: ${e.when.join(', ')}. Then: ${e.then.join(', ')}.`
     : 'A Standing Rule is not open yet (/rung shows how near).', { key: 'rule.ask', throttle: 0.5 }));
