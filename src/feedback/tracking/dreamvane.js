@@ -9,7 +9,7 @@ import { plural, an, ITEM } from './lineformat.js';
 
 export function dreamvaneRules({ on, L, log }) {
   const first = (key, text) => { if (L.first(key)) log.say('record', text); };
-  on('sealed.open', () => { L.inc('sealed.open'); log.say('info', 'The fork rings. The slab sinks into the sand.'); });
+  on('sealed.open', () => { L.inc('sealed.open'); log.say('info', 'Sealed door opened with the Dreamvane\'s fork.'); });
   on('plaster.break', () => L.inc('plaster.break'));
   // the last three tools (tools/dreamvane/dreamvane.js, crucibelle.js, lockheart.js): what they find, sing and let out
   const KINDNAME = { crystal: 'crystal', chest: 'a chest', creature: 'something alive', clapper: 'a clapperjar', spirit: 'a spirit', bauble: 'loose Lachryma', liquid: 'liquid Lachryma', cube: 'a cube' };

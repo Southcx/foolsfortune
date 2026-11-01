@@ -26,7 +26,7 @@ export function passageRules({ on, L, log }) {
   on('passage.adrift', (e) => { L.inc('passage.adrift'); log.say('warn', e.relaid && e.types?.length ? `Bunker dry. You are adrift. The current carries you on to ${e.types.map(named).join(', then ')}.` : 'Fuel gone. You are adrift. The current carries you.'); });
   on('charybdis.rise', (e) => log.say('combat', e.feel ? `Charybdis rises, in ${e.feel}.` : 'Charybdis rises.')); // (Espada's line, the glossary's)
   on('charybdis.dive', () => log.say('combat', 'Charybdis dives.')); // (Espada's, LORE.md: its first dive only)
-  on('charybdis.felled', (e) => { log.say('combat', 'Charybdis sinks into the maelstrom. The sea goes still.'); if (e.shards) log.say('gain', `${e.shards} crystal shards taken from the maelstrom!`); }); // (Espada's line; the pay's, the house style)
+  on('charybdis.felled', (e) => { log.say('combat', 'Charybdis defeated. The maelstrom calms.'); if (e.shards) log.say('gain', `${e.shards} crystal shards taken from the maelstrom!`); }); // (Espada's line; the pay's, the house style)
   on('charybdis.driven', () => log.say('combat', 'Charybdis sinks back into the maelstrom.'));
   on('passage.race', (e) => { if (e.by !== 'courier') return; if (e.beat) L.inc('passage.race.beat'); log.say(e.beat ? 'record' : 'info', e.beat ? 'Double beaten!' : 'Your double pulls ahead.'); });
 }

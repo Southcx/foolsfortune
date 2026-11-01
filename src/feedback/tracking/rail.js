@@ -11,9 +11,9 @@ import { MOUNTS } from '../../progress/rail/mounts.js';
 
 // the first beat of each set piece, said once as it begins (rail.beat { beat, by: 'environment' }, Petra's rail at each beat's bar)
 const OPENS = {
-  boil: 'The crude boils under the hull.',
-  sails: 'Sails astern: the Wreckers\' brig, the False Light.',
-  heave: 'The sea heaves. Something vast is under it.',
+  boil: 'The shoal surfaces under the hull.',
+  sails: 'The False Light, the Wreckers\' brig, appears astern.',
+  heave: 'Old Nobody surfaces under the ship.',
 };
 const ENDS = {
   scattered: 'The Conductor falls, and the shoal scatters.', sunk: 'The False Light goes down. Her cargo floats astern.',

@@ -91,7 +91,7 @@ export function brushToolRules({ on, L, log, where }) {
     if (!e.open) { L.hi('brush.drawings.best', e.drawings); return; }
     L.inc('brush.canvas');
     first('brush.canvas', 'Logged: your first time in Celestial mode.');
-    log.say('info', 'Celestial mode. The world stops and turns to paper.', { key: 'bcanvas', throttle: 6 });
+    log.say('info', 'Celestial mode on. Time stops while you draw.', { key: 'bcanvas', throttle: 6 });
   });
   on('brush.read', (e) => { L.inc('brush.read'); L.inc(`brush.read.${e.technique}`); if (e.strokes > 1) L.inc('brush.read.multi'); });
   on('brush.miss', () => L.inc('brush.miss')); on('brush.mark', () => L.inc('brush.mark')); // (mark: a dot on a thing, R18; the star over it says so)
