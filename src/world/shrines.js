@@ -16,7 +16,6 @@
 //   .near(pos) -> shrine within reach | null   .find(s)   .rest(id)   .travel(id)   .reformAt() -> { pos, yaw }   .garden()   .inward(s) (the garden, after the gate's door)   s.threshold (its cradle)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { sfx } from '../audio/sfx.js';
 import { ShrineModel, SHRINE_PILLAR_X } from '../vfx/shrine.js';
 import { cradleNumber } from '../vfx/cradlelook.js';
 import RAPIER from '@dimforge/rapier3d-compat';
@@ -121,7 +120,6 @@ export class Shrines {
     const g = this.game;
     g.lachryma?.reset?.(); // (the spec's "mind settled to Balanced" waits on the Courier having a mental state: only creatures do yet)
     this.last = id; g.save?.dirty('shrines');
-    sfx.rest?.(); // (a placeholder: Wanda's)
     g.events?.emit('shrine.rest', { shrine: id, by: 'courier' });
   }
 

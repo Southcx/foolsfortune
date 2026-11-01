@@ -32,3 +32,4 @@ Delete your row's note in your branch when it is built.
 - **Merged:** Dovina 6213972 (Espada's ladder words in), Wanda 014e4b8 and 07d18ba (the domain ladder heard), Espada 0a3a6d8 and 1c6eb09 (her note to Dovina, now built: Dovina deletes it). Casebook rule 391 numbered.
 - **Done this round:** Espada's row and Wanda's row. Dovina's own list goes on. Calissa's look pass has not landed.
 - **Petra:** the phone's v375 field report puts Strawman's Well at 24 to 29 fps against the workshop's 29 to 30 (Minimum tier, 4 to 8 ms a frame more). Which family of draws costs that waits on `/perfab`.
+- **Next rows (21:50):** Wanda: the Shrines heard and the Well's way out (new `audio/shrines.js`, `cues.js`, `sfx.js`, `dunemaw.js`). Espada: the folk's lines on candid photographs, Fieldcraft, True Odds, the Tithe, sentinels and the Dissonance Level (`talks.js`, LORE.md); then the first path's step lines, for Dovina.
