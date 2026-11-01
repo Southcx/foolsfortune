@@ -32,7 +32,7 @@ export const BOXES = {
   nair: [[0.45, 0.85, 0.52]], fair: [[0.72, 1.05, 0.46]], bair: [[-0.78, 0.85, 0.44]], uair: [[0.1, 1.95, 0.5]], dair: [[0.1, -0.05, 0.46]],
   nspecial: [], // (a shot: projectiles.js carries its own box)
   sspecial: [[0.7, 1.0, 0.3], [1.4, 1.0, 0.3], [2.1, 1.0, 0.3], [2.8, 1.0, 0.3]], // (the hook's line, a tether's reach)
-  uspecial: [[0.3, 1.7, 0.44]], dspecial: [[0, 0.9, 0.8]],
+  uspecial: [[0.3, 1.7, 0.44]], dspecial: [[0, 0.9, 0.8]], bspecial: [[-0.8, 1.0, 0.45]],
   ledgeAttack: [[0.85, 0.5, 0.46]], getupAttack: [[0.85, 0.3, 0.5], [-0.85, 0.3, 0.5]],
 };
 /** The grab's box (GRAB.reach is its farthest point: 1.2 m). */
@@ -150,9 +150,11 @@ export function pickSmash(I, F) {
   const d = dirOf(I, F);
   return d === 'up' ? 'usmash' : d === 'down' ? 'dsmash' : 'fsmash';
 }
-/** RMB: neutral, side (turned that way on the ground), up, down. */
+/** RMB: neutral, side (turned that way on the ground), up, down; away from the facing, the back special where the kit has one
+ *  (progress/fightertoolkits.js: the five specials), else the side special turned. */
 export function pickSpecial(I, F) {
   const d = dirOf(I, F);
+  if (d === 'back' && F.kit?.moves?.bspecial) return 'bspecial';
   return d === 'up' ? 'uspecial' : d === 'down' ? 'dspecial' : d ? 'sspecial' : 'nspecial';
 }
 /** Which throw the held way picks, against the grabber's facing. */

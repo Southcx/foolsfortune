@@ -28,6 +28,7 @@
 // ---------------------------------------------------------------------------------------
 import { MOVES as BASE } from './platformfighter.js';
 import { MOVES as RULES } from './combat/moves.js';
+import { TOOL_KITS, TOOL_BOXES, ROW_NAMES } from './fightertoolkits.js';
 
 /** % a power (Mario's jab 3% on the bare fist's 0.6), and the most one blow may deal (Ganondorf's Warlock Punch, Melee's heaviest
  *  single blow, about 30%: the Tidecutter's 7 power would be 35). */
@@ -134,6 +135,8 @@ export function kitFor(tool, { string = null, specials = null, variant = 'standa
     if (def.keep) { moves[slot] = { ...BASE[slot], ...(def.charge ? { charge: Math.max(1, BASE[slot].startup - 4) } : {}), chargeShot: !!def.chargeShot }; continue; }
     const { row, ...extra } = def; put(slot, row, extra);
   }
+  for (const [slot, m] of Object.entries(TOOL_KITS[rt] || {})) if (!moves[slot]) moves[slot] = { ...m };
+  for (const [slot, [name, from]] of Object.entries(ROW_NAMES[rt] || {})) if (moves[slot]) Object.assign(moves[slot], { name, from }); // (the tool's own movekit under its rows: fightertoolkits.js, Calissa's)
   for (const m of Object.values(moves)) if (m.lunge === undefined) delete m.lunge;
-  return { tool: rt, reach: REACH[rt] || 1, moves };
+  return { tool: rt, reach: REACH[rt] || 1, moves, ...(TOOL_BOXES[rt] ? { boxes: { ...TOOL_BOXES[rt] } } : {}) };
 }

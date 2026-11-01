@@ -167,9 +167,9 @@ facilitate testing the movekits."
 - **The KIT lectern** (left of the Courier's start) cycles bare hands, the brawler and the worn tools. A tool chosen is drawn (the
   belt's own draw); a bare set empties the hands.
 
-| tool | what it fills |
+| tool | what its combat rows fill (the rest: section 9) |
 |---|---|
-| Sondelass | every slot: the jabs and forward tilt by the loadout; up tilt the launcher, down tilt Low Sweep, the charge the forward smash, Rising Cut the up smash, Spin Slash the down smash, the air string the neutral and forward airs, Backhand the back air, the plunge the down air; neutral special the Stinger (an 8 m lunge), side special the hook, up special the W slot (else the Stinger aimed up: Fox's Firefox), down special the S slot (else the Tidecutter) |
+| Sondelass | the jabs and forward tilt by the loadout; up tilt the launcher, down tilt Low Sweep, the charge the forward smash, Rising Cut the up smash, Spin Slash the down smash, the air string the neutral and forward airs, Backhand the back air, the plunge the down air; neutral special the Stinger (an 8 m lunge), side special the hook, up special the W slot (else the Stinger aimed up: Fox's Firefox), down special the S slot (else the Tidecutter) |
 | psygun | jab the whip; neutral special the shot, held to charge (Samus's); side special Fan the Hammer |
 | Soul Brush | the club's combo as the jabs and forward tilt, its dash, its spin the down smash, its air string, its slam the down air |
 | Dreamvane | its combo, pause string's finisher the forward tilt, its launcher, its charge the forward smash, the Dreamquake the neutral special |
@@ -177,7 +177,31 @@ facilitate testing the movekits."
 | Lockheart | the flail's string as the jabs and forward tilt |
 | Veritome | the bash as the jab and forward tilt |
 
-## 9. Open
+## 9. Each tool's movekit (South, 2026-11-01)
+
+South: "create a full super smash bros style movekit per lachryma tool type, including the five special (directional plus neutral)
+and five normal attacks. Be creative with giving each lachryma tool it's identity, use specific references that complement each
+lachryma tool."
+
+Every tool in the hands fills **ten slots**: five normals (the jab, the forward, up and down tilts, the dash attack) and five
+specials (neutral, forward, **back**, up, down). The back special is RMB with the stick held away from the facing: the facing is
+kept and the body is drawn turned to strike behind (Smash's B-reverse). A kit with no back special (the bare sets) turns its side
+special as before. A slot section 8's rows fill keeps its row; `progress/fightertoolkits.js` (`TOOL_KITS`, `TOOL_BOXES`) fills the
+rest, each move's numbers against the Melee character nearest its reference. Poses: `courier/anim/keys/fightertoolposes.js` (each
+tool's own clips), keyed where a table exists (the Sondelass's and the Lockheart's). The specials' behaviours are the kernel's own:
+a shot (now with an arc, a size, a speed and a behind), a lunge, a recovery (its own rise and drift), a reflect (its own window).
+
+| tool | identity | jab · f tilt · u tilt · d tilt · dash | neutral · forward · back · up · down special |
+|---|---|---|---|
+| psygun | the gunslinger (Revolver Ocelot, Samus, the Western) | pistol whip, butt stroke · Point blank (Equilibrium's gun kata) · Sky shot · Dance! (shots at the boots, a trip) · Quick draw (Lucky Luke) | charge shot (Samus) · Fan the Hammer · Over the shoulder (Ocelot's ricochet, a shot behind) · Recoil jump (TF2's rocket jump, a spike under) · Ricochet twirl (a reflect) |
+| Sondelass | the pirate's blade, rod and hook | the loadout's string · loadout slot 4 · the launcher · Low Sweep · the dash slash | Stinger (Devil May Cry) · the hook (a tether) · Keelhaul (cast behind, hauled through to the front) · the W slot · the S slot or the Tidecutter |
+| Soul Brush | the calligrapher (Okami, Splatoon) | the club's combo, Brush sweep · combo3 · Ink flick · Floor stroke (the roller, a trip) · the dive | Cherry Bomb (Okami: a lobbed burst) · Power Slash (Okami: a 3 m line) · Galestorm (Okami: wind behind) · Super Jump (Splatoon) · Splashdown (Splatoon: a slam ringed both ways) |
+| Veritome | the camera that is a book (Fatal Frame, Pokemon Snap) | bash, spine back · bash 2 · Page fan (3 hits) · Low plate (a trip) · Paparazzo | Zero Shot (Fatal Frame: 18% on one frame, 4% after) · Pester ball (Pokemon Snap: lobbed) · Over-the-shoulder flash · Elwind (Robin's) · Capture circle (a reflect) |
+| Dreamvane | the pole that dowses and reads the sky (Sun Wukong) | the combo · the pause finisher · the launcher · Staff sweep (both sides) · Ruyi thrust (the staff run out long) | Dreamquake · Trident throw (Poseidon, Sheik's needles' line) · Lightning rod (Raiden: a column behind) · Pole vault · Geyser (the water witch) |
+| Crucibelle | the bell (Dojoji, Quasimodo) | the tolls · toll 3 · High note · Low note (a trip) · Town crier (2 hits) | the fever peak · Thrown note (a ring of sound) · Dojoji (the bell brought down behind, a spike) · Bell rope (Quasimodo) · the toll (a reflect) |
+| Lockheart | the coffin on a chain (keys/lockheart.js) | the flail · flail 3 · Censer (the Botafumeiro) · Chain sweep (both sides) · Meteor bowl | Get over here (Scorpion: hauls them in) · Snare (the kusarigama) · Vampire Killer (Simon Belmont: cracked behind) · Bell rope (whirled, 3 hits) · The Opening (the gulp, a reflect) |
+
+## 10. Open
 
 - **The flick on touch:** the kit reads the keys the touch driver presses; a real stick flick needs the stick's axis handed to the
   kit (Petra's touch driver).

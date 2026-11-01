@@ -16,7 +16,7 @@ import { FRAME } from '../../../progress/platformfighter.js';
 import { GRAB_BOX, KIT, BOXES } from './moves.js';
 import { takeHit } from './kernelhurt.js';
 import { connectGrab } from './kernelholds.js';
-import { hitOf, noteStale } from './fighterstate.js';
+import { hitOf, noteStale, moveOf } from './fighterstate.js';
 
 /** Does a sphere { x, y, r } meet a capsule { x, y0, y1, r }? */
 export function touches(c, s) {
@@ -57,17 +57,18 @@ export class FighterHits {
     }
   }
 
-  /** The neutral special's shot, out of A's hand. */
+  /** A shot special's shot, out of A's hand: the psygun's by KIT.shot, a move's own `shot` laid over it (fightertoolkits.js: its
+   *  speed, lift `vy` and `grav`, size, life, `back` thrown behind). */
   shoot(A) {
-    const S = KIT.shot, k = A.scale, hit = hitOf(A, 'nspecial');
-    const s = { owner: A, team: A.team, x: A.x + A.face * 0.6 * k, y: A.y + 1.1 * k, vx: A.face * S.speed, life: S.life, r: S.r, hit, look: null };
+    const id = A.m || 'nspecial', o = moveOf(id, A)?.shot || {}, S = { ...KIT.shot, ...o }, k = A.scale, hit = hitOf(A, id), dir = o.back ? -A.face : A.face;
+    const s = { owner: A, team: A.team, move: id, x: A.x + dir * 0.6 * k, y: A.y + 1.1 * k, vx: dir * S.speed, vy: S.vy || 0, grav: S.grav || 0, life: S.life, r: S.r, hit, look: null };
     s.look = this.shotLook?.(s) ?? null;
     this.shots.push(s); return s;
   }
   fly(list) {
     const B = this.bounds;
     for (const s of this.shots) {
-      s.x += s.vx * FRAME; s.life--;
+      s.x += s.vx * FRAME; if (s.grav || s.vy) { s.vy -= s.grav * FRAME; s.y += s.vy * FRAME; if (s.y < 0.1) s.life = 0; } s.life--; // (an arc: a lob falls)
       for (const V of list) {
         if (V.team === s.team || !V.live) continue;
         // the toll's reflect: sent back faster and harder, its side changed
@@ -76,7 +77,7 @@ export class FighterHits {
         const res = takeHit(V, s.owner, { ...s.hit, shot: true });
         if (res === 'miss') continue;
         if (res === 'power') { this.reflect(s, V); continue; }
-        if (res === 'hit') noteStale(s.owner, 'nspecial');
+        if (res === 'hit') noteStale(s.owner, s.move || 'nspecial');
         this.struck(s.owner, V, s.hit, res, s);
         s.life = 0; break;
       }

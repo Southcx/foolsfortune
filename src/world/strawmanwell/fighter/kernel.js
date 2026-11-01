@@ -138,7 +138,7 @@ function idle(F, I) {
   if (I.grabP) return startGrab(F);
   if (I.shieldH) return shieldUp(F, I.shieldP);
   if (I.smashP) { if (sx) F.face = sx; return smash(F, pickSmash(I, F)); }
-  if (I.specP) { if (sx) F.face = sx; return startMove(F, pickSpecial(I, F)); }
+  if (I.specP) { const id = pickSpecial(I, F); if (sx && id !== 'bspecial') F.face = sx; return startMove(F, id); } // (a back special strikes behind: the facing kept)
   if (I.atkP) { const id = pickGround(I, F); if (sx && id !== 'dash') F.face = sx; return startMove(F, id); }
   if (I.jumpP) return jumpsquat(F);
   F.mo.run = F.running;
@@ -210,9 +210,9 @@ function attack(F, I) {
   if (I.shieldP && aerial) F.lcAt = F.now;
   // what the specials do on their own frames
   if (m.special === 'shot' && f === m.startup) F.env.shot(F);
-  if (m.special === 'recover' && f === m.startup) { F.mo.kick = { vx: F.face * KIT.recoverX, vy: F.stats.jumpVelocity * KIT.recover }; F.vx = F.mo.kick.vx; F.vy = F.mo.kick.vy; F.grounded = false; F.fastfall = false; F.mo.noJump = true; F.mo.noAct = true; return; }
+  if (m.special === 'recover' && f === m.startup) { F.mo.kick = { vx: F.face * (m.drift ?? KIT.recoverX), vy: F.stats.jumpVelocity * (m.rise ?? KIT.recover) }; F.vx = F.mo.kick.vx; F.vy = F.mo.kick.vy; F.grounded = false; F.fastfall = false; F.mo.noJump = true; F.mo.noAct = true; return; }
   if (m.special === 'hook' && !F.grounded && f >= a0 && f <= a1 && F.env.tryLedge(F, true)) return;
-  if (m.special === 'reflect') F.reflecting = f >= KIT.reflect[0] && f <= KIT.reflect[1];
+  if (m.special === 'reflect') { const W = m.reflect || KIT.reflect; F.reflecting = f >= W[0] && f <= W[1]; } // (a move's own window, else the toll's)
   if (m.special === 'lunge' && f >= a0 && f <= a1) { F.vx = F.face * (m.lunge || 4) / ((a1 - a0 + 1) * FRAME); if (!F.grounded) F.vy = Math.max(F.vy, 0); vel(F); } // (a lunge: its distance over its active frames)
   if (m.special === 'lunge' && f === a1 + 1) F.vx = 0; // (and it stops where it ends: no slide on)
   // a barrage (the brawler's rapid jab): looped while LMB is held, its finisher on the release (Ultimate's)
