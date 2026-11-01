@@ -25,13 +25,23 @@ const inDunes = (g) => !!g.dunes?.active;
 /** What a clapperjar is doing when it is in the thick of it with the Courier (a charged shot can hold it then). */
 export const ENGAGED = new Set(['taunt', 'flee', 'stumble', 'hide', 'cower', 'scalded', 'knocked', 'stunned', 'raid', 'guard']);
 
+/** A creature's awareness of the Courier, 0..1: its mind's memory of them (creatures/ai/memory.js), what the candid score reads. */
+const awareOf = (g, c) => c.brain?.mem?.fact(g.player)?.aware ?? 0;
+
 export const SUBJECTS = {
   slipjelly: { name: 'slip jelly', find: (g) => (g.jellies?.list || []).filter((c) => c.alive).map((c) => {
     const states = new Set([c.state]);
     if (c.air) states.add('air');
     if (c.stash > 0) states.add('carry'); // (it has eaten Lachryma, and carries it)
     for (const k of c.status?.keys() || []) states.add(k);
-    return { pos: c.pos.clone().setY(c.pos.y + 0.75), r: 0.8, ref: c, states, aware: !!c.aggro, engaged: c.aggro && ['chase', 'wind', 'recover'].includes(c.state), facing: new THREE.Vector3(Math.sin(c.yaw), 0, Math.cos(c.yaw)) };
+    const aware = awareOf(g, c); if (aware >= 0.35) states.add('aware');
+    return { pos: c.pos.clone().setY(c.pos.y + 0.75), r: 0.8, ref: c, states, aware, engaged: aware >= 1 && ['chase', 'wind', 'recover'].includes(c.state), facing: new THREE.Vector3(Math.sin(c.yaw), 0, Math.cos(c.yaw)) };
+  }) },
+  wisp: { name: 'Lantern Wisp', find: (g) => (g.wisps?.list || []).filter((c) => c.alive).map((c) => {
+    const states = new Set([c.state]), aware = awareOf(g, c);
+    if (aware >= 0.35) states.add('aware');
+    for (const k of c.status?.keys() || []) states.add(k);
+    return { pos: c.center(new THREE.Vector3()), r: 0.6, ref: c, states, aware, engaged: aware >= 1 && ['chase', 'wind'].includes(c.state), facing: new THREE.Vector3(Math.sin(c.yaw), 0, Math.cos(c.yaw)) };
   }) },
   clapper: { name: 'clapperjar', find: (g) => (g.clappers?.list || []).filter((c) => c.alive).map((c) => {
     const st = new Set([c.state]);

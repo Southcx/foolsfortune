@@ -18,6 +18,7 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { SUBJECTS } from './subjects.js';
+import { candidOf } from '../../progress/stealth.js';
 
 const POSE = { wind: 60, chase: 20, sleep: 30, melt: 30, infight: 80, air: 60, dance: 50, bite: 50, fight: 50, mend: 40, nap: 30, stunned: 20, greed: 20, raider: 30, celebrate: 30, taunt: 30, cower: 25, forage: 20, inspect: 30, heavy: 30, light: 30, still: 30, bounce: 30, ember: 30, gold: 20 };
 const _l = new THREE.Vector3();
@@ -67,13 +68,14 @@ export function scorePhoto(game, camera, { maxDist = 45 } = {}) {
       let pose = 0;
       for (const st of s.states) pose = Math.max(pose, POSE[st] || 0);
       if (s.from === 'below' && fwd.y < 0.2) pose -= 60; // (a tower is taken from its foot, looking up)
-      out.push({ kind, ref: s.ref, sub: s.sub || null, aware: !!s.aware, engaged: !!s.engaged, states: s.states, size, centre, facing, pose, z, frac, ndc: { x: ndc.x, y: ndc.y }, score: 0 });
+      const aware = typeof s.aware === 'number' ? s.aware : s.aware ? 1 : 0, candid = s.aware === undefined ? null : candidOf(aware); // (only a subject that can know you is candid: STEALTH.md 6)
+      out.push({ kind, ref: s.ref, sub: s.sub || null, aware, candid: candid?.word || null, candidK: candid?.k ?? 1, d: +d.toFixed(1), engaged: !!s.engaged, states: s.states, size, centre, facing, pose, z, frac, ndc: { x: ndc.x, y: ndc.y }, score: 0 });
     }
   }
   const counts = {};
   for (const s of out) counts[s.kind] = (counts[s.kind] || 0) + 1;
   for (const s of out) {
-    s.score = Math.round((100 * s.size + 50 * s.centre + 50 * s.facing + s.pose + Math.min(60, 20 * (counts[s.kind] - 1))) * (game.classArtsRun?.photoK?.() ?? 1)); // (Radiance, a class's art)
+    s.score = Math.round((100 * s.size + 50 * s.centre + 50 * s.facing + s.pose + Math.min(60, 20 * (counts[s.kind] - 1))) * s.candidK * (game.classArtsRun?.photoK?.() ?? 1)); // (unseen pays: candidOf; Radiance, a class's art)
     s.stars = starsOf(s.score);
   }
   out.sort((a, b) => b.score - a.score);
@@ -92,7 +94,7 @@ const has = (states, st) => (states.has ? states.has(st) : states.includes(st));
 /** A photograph as the memory keeps it: what was in it, as it was, and nothing live. */
 export function serial(r) {
   return {
-    subjects: r.subjects.slice(0, 12).map((s) => ({ kind: s.kind, sub: s.sub || null, states: [...s.states], score: s.score, stars: s.stars, frac: +s.frac.toFixed(3), ndc: s.ndc ? { x: +s.ndc.x.toFixed(3), y: +s.ndc.y.toFixed(3) } : null, aware: !!s.aware, engaged: !!s.engaged })),
+    subjects: r.subjects.slice(0, 12).map((s) => ({ kind: s.kind, sub: s.sub || null, states: [...s.states], score: s.score, stars: s.stars, frac: +s.frac.toFixed(3), ndc: s.ndc ? { x: +s.ndc.x.toFixed(3), y: +s.ndc.y.toFixed(3) } : null, aware: (s.aware ?? 0) >= 0.35, candid: s.candid || null, engaged: !!s.engaged })),
     stars: r.stars, kinds: r.kinds, sky: !!r.sky, sun: !!r.sun,
   };
 }
