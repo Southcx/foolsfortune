@@ -10,34 +10,27 @@ The backdrops are real frames. The tiles are drawn in the Clay dress, with each 
 **Yes to the skeleton.** One arc, relabelled and never moved, directional presses, no dead tiles: I'd build exactly that. My changes are
 to the geometry.
 
-## The arc's shape and sizes
+## The arc's shape and sizes (redrawn to South's rulings of 2026-11-01)
 
-Two rings round A, measured from A's centre. A's centre sits 52 px in from the right of the safe area and 50 px up from its bottom
-(802, 343 on a 896 x 414 iPhone).
+The arc is two rings round A, measured from A's centre. A's centre sits 52 px in from the safe area's right edge and 50 px up from its
+bottom: (802, 343) on a 896 x 414 iPhone.
 
 | ring | slot | size (px) | radius (px) | angle |
 |---|---|---|---|---|
-| — | **A** | 80 | 0 | (the corner) |
-| inner: the verbs a fight mashes | **B** | 60 | 96 | 178° (left: the thumb slides) |
-| inner | **D** | 60 | 96 | 137° (the diagonal: the easiest reach after A, so the second weapon verb gets it) |
-| inner | **C** | 60 | 96 | 96° (up: the thumb flicks) |
-| outer: the deliberate verbs | **E** | 48 | 162 | 170° |
-| outer | **PICK** | 44 | 160 | 147° |
-| outer | **BELT** | 44 | 160 | 123° |
-| outer | **F** (the meter) | 54 | 166 | 99° |
+| (the corner) | **A** | 80 | | |
+| inner | **G** CROUCH (3D only) | 60 | 120 | 183° (the inner end, beside B) |
+| inner | **B** | 60 | 120 | 152° |
+| inner | **D** | 60 | 120 | 122° (the diagonal: the easiest reach after A, so the second weapon verb has it) |
+| inner | **C** | 60 | 120 | 92° (up: the thumb flicks to it) |
+| outer | **F** the meter | 54 | 196 | 176° (the far end, as ruled; ringed, gold when full) |
+| outer | **E** | 48 | 194 | 153° |
+| outer | **PICK** | 44 | 192 | 131° |
+| outer | **BELT** | 44 | 192 | 110° |
 
-In units of su (1 su = 4.14 px here): A 19, inner 14.5, outer 11.5; the rings at 23 and 39.
-
-Why two rings: a mashing thumb lives inside the inner ring. The outer ring takes a reach, so a swap, a pick or an art is never pressed
-by accident in a flurry.
-
-## Where the meter slot sits
-
-**At the top of the outer ring, over C.** I'd move it there from the far end, for two reasons:
-- **The eye:** a full meter is a moment, and the top of the arc is where the eye meets it (Genshin's and Zenless's ult).
-- **The thumb:** the far-left end is where the thumb sweeps when it dodges off B, so an art would go off by mistake there.
-
-The meter's ring is the slot's rim: violet as it fills, gold and glowing when full (see `tool.webp`).
+- **The inner ring** holds what a fight presses over and over. **The outer ring** holds the deliberate presses, so a swap, a pick or an
+  art never goes off in a flurry.
+- **Why the inner radius grew from 96 to 120:** with G added, four 60 px tiles 30° apart need it to keep from touching.
+- **In the Arena, G is not drawn.** There the stick's ring carries a gold notch: crouch is the stick pushed down.
 
 ## Smaller points
 
