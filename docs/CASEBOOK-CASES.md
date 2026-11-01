@@ -4749,3 +4749,21 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
 - **Fix:** the spots stand on their lanes' floor at y 0 (each chosen there) and a target settles from there by the dummies' own
   ground test, which runs after steps; the raycast stays for play (a hop's landing, the duck's dive), when the queries are live.
 - **Rule:** NEW:query-after-step
+
+### 2026-11-01 · The far shelf stood lower than the top bar beside it (ui/touch/strip.js; found by South, on an iPhone)
+- **Seen:** on a phone on its side, SWAP, GRAPPLE, STOW and FAN on their clay shelf sat a few pixels lower and taller than MENU, LOG and
+  PAUSE on theirs, side by side along the top edge: two shelves out of line.
+- **Cause, as measured:** two rules laid one row. The top bar centres its shelf on its 44 px row (`y0 = top + (44 - 55) / 2`, the tiles
+  8 px in and 4 down, the shelf 55 px tall); the far shelf hung its shelf from the top of its 52 px row with a 6 px inset (shelf 59 px,
+  tiles 6 down). At 896 x 414: the far shelf's tiles 7.5 px lower, its shelf 4 px taller.
+- **Fix:** the far shelf is laid by the top bar's own geometry (`TOP_BAR.h`, 8 px in, 4 down, a shelf of the tile and its foot and 8).
+  After (896 x 414 at 2x): both shelves' tops and feet in one line.
+- **Rule:** NEW:one-row-one-rule
+
+### 2026-11-01 · The stick fought the log's tap (ui/hudlayout.js; found by South, on an iPhone)
+- **Seen:** a tap or double tap on the log's ticker, top left, to open it often made the floating stick instead.
+- **Cause, as measured:** the move area (the stick's hit layer) was the whole left half of the screen, top to foot, so it stood over the
+  log's ticker (y 56..80 at 896 x 414) and the top row; the stick took the touch first.
+- **Fix:** on touch the move area starts under the top bar, the top row and the ticker (y 88 at 896 x 414). After: the ticker and the
+  shelves are theirs; the stick's home and the rest of the left half unchanged.
+- **Rule:** NEW:hit-layer-clear

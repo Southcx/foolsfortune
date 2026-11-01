@@ -1067,3 +1067,7 @@ NEW:base-yields. **A shared base style that its hosts override is written at zer
   first use land in whatever order play builds them, so a base rule at the hosts' specificity wins or loses by the session's history.
 NEW:query-after-step. **A physics query asks the world as of its last step.** Colliders made in this frame (a room just built) are not
   in the scene queries until the next step, so a raycast placing things at build time finds nothing: place from the build's own numbers.
+NEW:one-row-one-rule. **Things that stand in one row are laid by one rule.** Two shelves side by side each centring or insetting by
+  their own numbers drift apart by a few pixels: the second reads the first's geometry (its row height, its insets), never its own.
+NEW:hit-layer-clear. **A full-area hit layer (the stick's, a drag's) is cut clear of every control and readout in its area.** The
+  layout knows where the log, the top bar and the shelves stand; the layer starts past them, so a tap on one is never the layer's.
