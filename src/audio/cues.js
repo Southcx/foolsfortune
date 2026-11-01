@@ -188,6 +188,11 @@ const RULES = {
   'balance.start': (s) => s.balanceBreath?.(),
   'pool.cap': (s, e) => s.poolCapClink?.(e.share, e.regions),
   'domain.level': (s, e, g) => (e.by === 'courier' ? s.domainLevelUp?.(e.domain, e.level, g.music?.grid?.()) : null),
+  'domain.milestone': (s, e, g) => (e.by === 'courier' ? s.ladderMilestone?.(e.domain, e.level, e.rows, g.music?.grid?.()) : null), // (audio/domainladder.js)
+  'domain.trait.learn': (s, e) => (e.by === 'courier' ? s.ladderTrait?.(e.domain) : null),
+  'borrow.use': (s, e) => (e.by === 'courier' ? s.borrowUse?.(e.kind) : null),
+  'domain.art.end': (s, e) => (e.by === 'courier' && e.art === 'fuse' && e.n > 0 ? s.fuseBurst?.(e.n) : null),
+  'domain.art.fire': (s, e) => { if (e.by !== 'courier') return; if (e.art === 'sealCreature' && e.broke) s.sealBreak?.(); else if (e.art === 'relay') s.relayChain?.(e.links); },
   'sky.read': (s, e, g) => (e.by === 'courier' ? s.skyReadNotes?.(e.blocks, g.music?.grid?.()) : null),
   'sight.calibrate': (s, e) => s.sightCalibrate?.(e.from),
   // the Great Dunemaw, Strawman's strings and the Dunes (audio/dunemaw.js)

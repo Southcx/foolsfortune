@@ -178,10 +178,9 @@ export class WorldMomentSounds {
     const now = this.ctx.currentTime, t = gridT(this, grid), d = this.out(0.3, 0.55, true);
     const up = grid?.root != null && Number.isFinite(+grid.root) ? ((((grid.root - 64) % 12) + 12) % 12) : 0, root = 76 + up + (DOMAIN_STEP[key] ?? 0);
     [-12, -5, 0].forEach((s, i) => this.tone(t + i * 0.07, 0.14, { f0: hz(root + s - 12), type: 'triangle', gain: 0.12, dest: d })); // (the run up)
-    const at = t + 0.21, big = Math.round(num(level, 2, 1, 99)) % 10 === 0;
+    const at = t + 0.21; // (a ten's flourish is the milestone's now: audio/domainladder.js, on domain.milestone)
     this.tone(at, 1.4, { f0: hz(root), gain: 0.12, dest: d }); this.tone(at, 0.6, { f0: hz(root) * 2.76, gain: 0.025, dest: d }); // (its bell)
     this.tone(at, 1.0, { f0: hz(root - 12), type: 'triangle', gain: 0.07, dest: d });
-    if (big) { this.tone(at + 0.12, 1.4, { f0: hz(root + 7), gain: 0.07, dest: d }); this.noise(at, 1.0, { type: 'highpass', f0: 7000, gain: 0.05, attack: 0.1, dest: d }); } // (a tenth level: a fifth over, a shimmer)
   }
   /** The sky read: the vane turned to the wind, then each forecast block (`{ aspect, strength }`) a note, at most four. */
   skyReadNotes(blocks = [], grid = null) {
