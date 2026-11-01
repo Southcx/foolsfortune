@@ -24,7 +24,7 @@
 // through stun.js). Every creature carries a MENTAL STATE (`mind`, -2 Stoic .. +2 Prismatic: progress/combat/mind.js), pushed toward
 // Prismatic by blows and back by a resisted status or by quiet, which scales how long a status holds it; and an EMOTIONAL OUTPUT (`emo`,
 // 0 .. 1: progress/combat/emo.js), raised by blows and by hunting, falling at rest, which its mind reads (an enraged one presses harder)
-// and its body shows (vfx/temper.js). A creature may declare its own `affinity` (a type) and `mindRest` (its nature's state).
+// and its body shows (vfx/temper.js). A creature's type is its body's (`affinityOf`, progress/combat/constitution.js); it may declare its own `mindRest` (its nature's state).
 //
 // Prior art: the status ailments of the JRPG (Final Fantasy's Stop, Slow, Sleep, Confuse, Berserk; Dragon Quest's Sap for "soft"),
 // each a timer on the target rather than a change to its code, and the "damageable" interface of most engines (Unreal's TakeDamage,
@@ -52,6 +52,7 @@ import { courierMindEffect, DRAUGHT } from '../progress/stones.js';
 import { TYPE_OF } from '../progress/weather.js';
 import { friendlyDamage, tolerance, FRIENDLY } from '../progress/combat/friendly.js';
 import { figmentMarkOf } from '../progress/combat/figmenttelegraphs.js';
+import { affinityOf } from '../progress/combat/constitution.js';
 
 /** The draught's worth on a blow (progress/stones.js DRAUGHT): of the drunk feeling's damage type, its status builds up to half again as
  *  fast at a full draught (its share 0..1, fading over a real minute); any other type, as it is. */
@@ -102,7 +103,8 @@ export class Creatures {
     if (by === 'courier') c.touched = true; // (the Courier struck it: a sibling finishing it credits them, coop/fight.js)
     const g = this.game, ps = by === 'courier' ? g.pairSpecials?.onStrike?.(c, cause, type, power, point, dir) : null; // (a pair's special on the blow: tools/pairspecials.js)
     if (ps?.type) type = ps.type;
-    const m = multiplier(type, c.affinity ?? null, [...c.status.keys()].filter((n) => st(c, n)));
+    const m = multiplier(type, affinityOf(c), // (its body's type, never its feeling: progress/combat/constitution.js, SUBSTRATE.md F3)
+      [...c.status.keys()].filter((n) => st(c, n)));
     // (the damage alone, never the build-up: the Courier's mental state, Prismatic x1.5 to Stoic x0.67, the owner's ruling in
     // progress/stones.js; and another Courier struck, friendly fire at a fifth, progress/combat/friendly.js)
     let dmgK = by === 'courier' && g.courierMind ? courierMindEffect(g.courierMind.mind).power : 1;

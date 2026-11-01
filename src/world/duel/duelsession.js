@@ -96,7 +96,8 @@ export class DuelSession {
   open(c, feeling, ruleset) {
     const g = this.game, P = g.player, pool = g.lachryma;
     const tools = (g.belt?.tools || []).filter((t) => g.belt.isWorn(t.id)).map((t) => t.id);
-    this.startPool = Math.round(Math.min(100, pool?.available ?? 30));
+    this.startPool = Math.round(Math.min(100, pool?.available ?? 30)); // (the board's share of the real pool; above 100 it waits, untouched)
+    if (pool && !c.practice) pool.addModifier('duel', { regenMult: 0, source: 'the puzzle duel' }); // (the pool held while the board is up: no regen behind it, SUBSTRATE.md F6)
     this.state = newDuel({ ruleset, seed: Math.floor(duelRand() * 2 ** 31), forms: ['hand', 'courier'], pool: [this.startPool, 30], tools: [tools, []],
       luck: [g.ledger ? Math.min(2, Math.floor(luckOf(g.ledger).level / 10)) : 0, 0], // (Luck's sway on a flee, 0..2: a tenth of its level, as ruled)
       rerolls: [g.rerolls?.left() ?? 0, 0], lesson: lessonDue(g.ledger), dim: g.lend?.has?.('feelings') ? [] : notAwakened(g.ledger), learned: learnedOf(g.ledger), // (a feeling not yet awakened gives half a gem's pool: PUZZLE-DUELS.md 26; an aberrant's skill learned: its secret found, or enough won, learned.js)
@@ -498,7 +499,8 @@ export class DuelSession {
     g.cinema?.unshot('duel'); document.body.classList.remove('duel');
     if (g.input?.enabled) g.input.requestLock?.();
     const pool = g.lachryma, d = this.practice ? 0 : Math.round((s?.sides[0].pool ?? this.startPool) - this.startPool);
-    if (pool && d > 0) pool.gain(d, 'duel'); else if (pool && d < 0) pool.spend(-d, 'duel');
+    pool?.removeModifier('duel');
+    if (pool && d) pool.setTo(pool.value + d, 'duel'); // (the board's result settled into the real pool: never a use, so no cost multiplier and never refused, SUBSTRATE.md C2)
     this.dragLeft = null; this.dragClock(null); this.armPower(null); this.clockShown = undefined;
     const V = this.view, home = this.home; this.home = null; // (the instance held while the tsuitate folds away, then the world again and the foe where it stood)
     if (g.duelInstance?.active) g.duelInstance.close(() => !V || (!V.closing && !V.root?.visible) || V.isOpen, () => this.putBack(home)); else this.putBack(home);

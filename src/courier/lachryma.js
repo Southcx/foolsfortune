@@ -17,6 +17,8 @@ import { T } from '../core/config.js';
 import { sfx } from '../audio/sfx.js';
 import { stream } from '../core/rng.js';
 import { OXIDATION, oxidationMaterial } from '../vfx/oxidation.js';
+/** Tags that are harm taken, not a use: `costMult['*']` never scales them (SUBSTRATE.md C1). */
+export const HARM_TAGS = new Set(['shield', 'hull']);
 const simRand = stream('courier/lachryma'); // (the simulation's chance: core/rng.js, the same twice)
 
 export class LachrymaPool {
@@ -51,7 +53,9 @@ export class LachrymaPool {
   get available() { return this.value - this.reserved; }
   get fraction() { return this.value / this.max; }
 
-  cost(base, tag = '*') { return base * this.product((m) => m.costMult?.[tag] ?? m.costMult?.['*']); }
+  /** A use's cost after the modifiers. A harm tag (`HARM_TAGS`: the shield's and the hull's drains) is harm taken, not a use: it reads
+   *  only a modifier named for it, never `'*'`, so a cheaper art never makes the shield cheaper (SUBSTRATE.md C1). */
+  cost(base, tag = '*') { return base * this.product((m) => (HARM_TAGS.has(tag) ? m.costMult?.[tag] : m.costMult?.[tag] ?? m.costMult?.['*'])); }
 
   // ---- spending ------------------------------------------------------------
   /** All-or-nothing. Returns true if paid. */
@@ -74,6 +78,16 @@ export class LachrymaPool {
     this.emit('spend', { tag, amount: c, value: this.value, partial: true });
     if (this.value <= 1e-6) this.emit('empty', { value: 0 });
     return c;
+  }
+
+  /** The pool set to `v` (clamped to 0 .. max) as a settling, not a use: no cost multiplier, never refused. What a mode that held the
+   *  pool hands back (the puzzle duel's board, SUBSTRATE.md F6). Said as a gain or a spend of the difference. */
+  setTo(v, source = 'settle') {
+    const before = this.value; this.value = Math.max(0, Math.min(this.max, v));
+    const d = this.value - before;
+    if (d > 1e-6) this.emit('gain', { source, amount: d, value: this.value });
+    else if (d < -1e-6) { this.sinceSpend = 0; this.emit('spend', { tag: source, amount: -d, value: this.value }); if (this.value <= 1e-6) this.emit('empty', { value: 0 }); }
+    return d;
   }
 
   // Reservations: energy set aside while something winds up.
