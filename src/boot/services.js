@@ -16,6 +16,7 @@ import { FX } from '../vfx/particles.js';
 import { Breakables } from '../world/props/breakables.js';
 import { Hud } from '../feedback/hud.js';
 import { Events } from '../core/events.js';
+import { Systems } from '../core/systems.js';
 import { GameLog } from '../feedback/gamelog.js';
 import { Stats } from '../progress/stats.js';
 import { TimeScale } from '../core/time.js';
@@ -59,7 +60,8 @@ export async function bootServices(made) {
   const stats = { broken: 0, total: 0 };
   const events = new Events();
   const game = {
-    scene, physics, fx, hud, camera, renderer, stats, events, save, cloud, constantIndex, // (constantIndex: render/constantindex.js, on a phone)
+    scene, physics, fx, hud, camera, renderer, stats, events, save, cloud, constantIndex, systems: new Systems(), // (systems: what runs each frame, registered where it is built: core/systems.js)
+    // (constantIndex: render/constantindex.js, on a phone)
     reseed, get seed() { return sessionSeed(); }, // (the simulation's chance: core/rng.js; the stress test and replays set it)
     ledger: new Stats(save), // (the quiet ledger: everything counted; see stats.js; kept in the save's player scope)
     listenerDistance: (p) => camera.position.distanceTo(p),

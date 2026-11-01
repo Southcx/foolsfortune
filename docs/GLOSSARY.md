@@ -980,6 +980,7 @@ Entry: **term** (`code`, `path`) — meaning. *Not:* the confusion it prevents. 
 
 ## 10. Engine and process
 
+- **the systems / a phase** (plain names; `Systems`, `game.systems`, `PHASES`, `src/core/systems.js`; docs/plans/SOLID.md) — what runs each frame, each registered where it is built (`add(phase, sys, { clock, name, when })`) in place of a line in the frame / a named point in the frame's tick where a phase's systems run in the order they joined (`looks` so far). *Not:* the System (the game's voice), a class's art, a stage (the rail's, the Well's).
 - **event** (`game.events`) — a message on the bus, named `domain.verb`; its payload never uses `name` or `t`, and an outcome carries `by`.
 - **rescue** (`courier.rescue`, `Player.guard()`) — the body's safety net taking it out of a bad state, counted by the stress test, never hidden.
   *Not:* the cutlass's guard.
