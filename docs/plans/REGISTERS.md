@@ -96,7 +96,8 @@ Section 4 is the list to rule on.
    enamel onto glass and metal too, so the word holds for clay and glass. Each island gets its own station that fires one: Anagami's
    kiln; others to name. "At the kiln" becomes "at a finishing station (on Anagami, the kiln)".
 3. **crack / MEND at the kiln.** Same as 2: the mend happens at any island's station, and the crack pattern follows the base material
-   (clay cracks, glass crazes, nacre chips). That is Calissa's to draw.
+   (clay cracks, glass crazes, nacre chips). That is Calissa's to draw, once a second base material exists (clay's is built; the god hand
+   note's last open item, closed 2026-11-02).
 4. **the island's matter: "clay, sand, Lachryma, crude".** → "the explored area's layered ground: **the island's own materials** (on Anagami,
    clay and sand), Lachryma and crude". Code: `clay` and `sand` stay as Anagami's two layers for now. A new island brings its own pair
    (the field's layer names become data). Mine.

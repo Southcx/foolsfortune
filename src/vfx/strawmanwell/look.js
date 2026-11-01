@@ -11,6 +11,7 @@
 //   the troupe    the straw dummies as Pip's earlier tries at Strawman, and their percent (dummies.js)
 //   the grid      the Flood's falling-sand grid drawn by cell kind (gridlook.js, which the Flood stage builds)
 //   the Arena     the platform fighter's stage at rehearsal: its set, its fighters' looks, the understudies (arena/look.js)
+//   the marionette  the chase stage's giant puppet as Strawman's own, sewn by Pip (marionette.js)
 // The room is built on arrival and taken down whole on leaving (the Well's area): the look dresses it when it is built and lets go of
 // its own textures when it is torn down; what it adds goes into the lanes' groups, so the kit's teardown takes the meshes with it.
 //
@@ -31,6 +32,7 @@ import { dressProps } from './props.js';
 import { dressTroupe } from './dummies.js';
 import { dressKurogo } from './kurogo.js';
 import { dressArena } from './arena/look.js';
+import { dressMarionette } from './marionette.js';
 
 /** The one palette every part draws from (Pip's sewing basket under stage light), and the light's warmth. */
 export const WELL_LOOK = {
@@ -42,7 +44,7 @@ export const WELL_LOOK = {
   footlight: 0xffd6a0, haze: 0x3a2618,
 };
 
-const PARTS = [dressTheatre, dressFlats, dressProps, dressTroupe, dressArena, dressKurogo];
+const PARTS = [dressTheatre, dressFlats, dressProps, dressTroupe, dressArena, dressKurogo, dressMarionette];
 
 export class WellLook {
   constructor(game) { this.game = game; this.room = null; this.parts = []; this.laneId = null; this.ctx = null; }
