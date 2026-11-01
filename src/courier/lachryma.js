@@ -7,7 +7,7 @@
 //   - spend() is all-or-nothing, drain() takes what it can (continuous use)
 //   - reserve()/commit()/refund() lets a mechanic hold energy while it winds
 //     up (a charge) and give it back if cancelled
-//   - modifiers stack: { regenMult, costMult: { tag|'*': x }, maxBonus, regenDelayMult, reachMult (the bauble magnet's radius: a
+//   - modifiers stack (`source` what holds it, `secs` game seconds it lasts; sources() lists them): { regenMult, costMult: { tag|'*': x }, maxBonus, regenDelayMult, reachMult (the bauble magnet's radius: a
 //     stone's reach, progress/stones.js modifier()) }
 //   - events: change, spend, gain, empty, full, overflow, denied
 // ---------------------------------------------------------------------------
@@ -45,8 +45,12 @@ export class LachrymaPool {
   }
 
   // ---- modifiers -----------------------------------------------------------
-  addModifier(id, mod) { this.modifiers.set(id, mod); this.value = Math.min(this.value, this.max); }
-  removeModifier(id) { this.modifiers.delete(id); this.value = Math.min(this.value, this.max); }
+  /** A modifier, with an optional `source` (what the tube says holds it) and `secs` (game seconds it lasts, counted in update: never a
+   *  wall-clock timer, so a pause or the hitstop holds it too, SUBSTRATE.md F7). Adding an id again replaces it and restarts its time. */
+  addModifier(id, mod) { this.modifiers.set(id, mod); if (mod?.secs > 0) (this.timed ||= new Map()).set(id, mod.secs); else this.timed?.delete(id); this.value = Math.min(this.value, this.max); }
+  removeModifier(id) { this.modifiers.delete(id); this.timed?.delete(id); this.value = Math.min(this.value, this.max); }
+  /** Each live modifier with its source and the game seconds it has left (null: until removed). */
+  sources() { return [...this.modifiers].map(([id, m]) => ({ id, source: m?.source ?? id, left: this.timed?.get(id) ?? null })); }
   product(fn) { let k = 1; for (const m of this.modifiers.values()) k *= fn(m) ?? 1; return k; }
 
   get max() { let b = this.baseMax, k = 1; for (const m of this.modifiers.values()) { b += m.maxBonus || 0; k *= m.maxMult || 1; } return b * k; } // (maxMult: Willpower's widening, read live)
@@ -112,6 +116,7 @@ export class LachrymaPool {
   }
 
   update(dt) {
+    if (this.timed?.size) for (const [id, t] of this.timed) { if (t - dt <= 0) this.removeModifier(id); else this.timed.set(id, t - dt); }
     this.sinceSpend += dt;
     const delay = this.regenDelay * this.product((m) => m.regenDelayMult);
     if (this.sinceSpend < delay || this.value >= this.max) return;

@@ -58,7 +58,7 @@ const RET = { chase: 1, free: 1, astern: 1, above: 1, side: 1 }; // (the cursor 
  *  surface from below: the dive's look). */
 const FORM = { astral: { pace: 1.2, box: 1, spread: 3, heavy: 1, locks: 8, cruise: 0 }, umbral: { pace: 0.85, box: 0.8, spread: 1, heavy: 2.5, locks: 4, cruise: -1.6 } };
 const WIDE = { snap: 1.75, reach: 1.5 }; // (the knack Wide Sights, an assist offered plainly: RAIL-STANDARDS.md 7, the Game Accessibility Guidelines' auto-aim)
-const SURGE = { full: 100, per: 4, mercy: 1.1 }; // (an absorbed shot fills 4; full at 100; untouchable half a bar of the cue)
+const SURGE = { full: 100, per: 4, mercy: 1.1 }; // (an absorbed shot past a full pool fills 4; full at 100; untouchable half a bar of the cue)
 const _fv = new THREE.Vector3();
 const _ray = new THREE.Raycaster(), _c2 = new THREE.Vector2(), _o = new THREE.Vector3(), _d = new THREE.Vector3(), _w = new THREE.Vector3(), _e = new THREE.Vector3(), _nz = new THREE.Vector3(), _sw = new THREE.Vector3();
 const ABEAM_WAY = [-1, 0, 0];
@@ -292,7 +292,13 @@ export class Ship {
     this.onHit?.(s, kind); // (kind: 'plain' | 'outlined', what struck: the Assay's inhibition reads it on rail.hit)
     return true;
   }
-  absorb(s) { this.surge = Math.min(SURGE.full, this.surge + SURGE.per); this.onAbsorb?.(s); sfx.absorb?.(0); }
+  /** A shot of your colour drunk: the pool takes it first (the stage's onAbsorb), and the Surge fills only from what spills past a full
+   *  pool (SUBSTRATE.md F2: one pool; the Surge is overflow, never a second store). */
+  absorb(s) {
+    const L = this.game?.lachryma, per = T.ship.absorb || 1, room = L ? Math.max(0, L.max - L.value) : 0;
+    const over = L ? Math.max(0, per - room) / per : 1;
+    this.surge = Math.min(SURGE.full, this.surge + SURGE.per * over); this.onAbsorb?.(s); sfx.absorb?.(0);
+  }
   /** A foe's shot passed close without a hit (the shot field's call, once a shot: Dovina's measure): Lachryma to the pool, capped a bar
    *  (T.ship.graze; the owner's ruling, 2026-10-20). The stage pays it (onGraze). */
   graze(s) { this.onGraze?.(s); }
