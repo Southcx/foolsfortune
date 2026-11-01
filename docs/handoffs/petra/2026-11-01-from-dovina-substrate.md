@@ -49,4 +49,5 @@ Delete this note in your branch when it is taken.
   (the rail and the crossing). Next round, with Calissa: the readout as six regions' cracks.
 - F1 for the Jar: god.jar.hp is read by the raids, the Jar's plate and the readout; the `jar` form's pool shield changes the raids'
   balance. Next round, with the numbers measured in a raid first.
-- F5b's values: the rows. The cutlass's are in tools/sondelass/cutlassmoves.js, the psygun's in tools/psygun/kinds.js; Dovina's to set.
+- F5b: taken. Dovina's values (moves.js, kinds.js CHARGE_SHATTER) read through creatures.strike's { shatter } from the moveset and the
+  charged beam: a shell past (1 - shatter) of its stun meter breaks outright. The duel's pool ceiling is the Courier's real max.
