@@ -101,7 +101,9 @@ A build is worn only in the Well and comes off whole on leaving. The original is
   - a main stage 22 m wide with ledges at both ends;
   - two thin side platforms at 1.3 m;
   - a top platform at 2.6 m, reached from a side one.
-- **The blast lines.** About 35 m from mid-stage on both sides and above, and 17 m below. That is where a fresh, fully charged forward smash KOs a weight-100 body at about 110% (platformfighter.js `koPercent`), as Mario's does in Melee.
+- **The blast lines.** 26 m from mid-stage on both sides, 20 m above and 17 m below. Measured with gravity and the launch angle (the
+  kit's kernel, round 2): a fresh, fully charged forward smash from mid-stage reaches 26 m at about 110%, and an up smash reaches 20 m up
+  at about 125%, as Mario's do in Melee. `koPercent` leaves out the angle and gravity, so it reads short; the measurement rules.
 - **Stocks.** Three each. A KO respawns on a platform above the stage, intangible on it, then 2 real s invincible.
 - **The foes.** Straw fighters (Strawman's dummies with a fighter's mind), one to three.
   - They use the same kit and the same rules.

@@ -113,7 +113,8 @@ export class Tracking {
       }
       (this.prev ||= at.clone()).copy(at);
       const sp = Math.hypot(P.vel.x, P.vel.z);
-      if (sp > 5 && s !== 'skiff' && s !== 'grapple' && s !== 'launch' && !P.platform) { const r = L.hi('speed.max', sp, { at: this.where() }); this.note('speed.max', r, `Your top speed is now ${fx(sp, 1)} m/s.`, 10, sp); }
+      const lent = g.strawmanWell?.frame?.claim || (g.movementProfiles?.on && g.movementProfiles.id !== 'original'); // (a fighter's launch, a borrowed build: not the Courier's own speed)
+      if (sp > 5 && s !== 'skiff' && s !== 'grapple' && s !== 'launch' && !P.platform && !lent) { const r = L.hi('speed.max', sp, { at: this.where() }); this.note('speed.max', r, `Your top speed is now ${fx(sp, 1)} m/s.`, 10, sp); }
       L.hi('speed.any.max', Math.hypot(P.vel.x, P.vel.z, P.vel.y));
     } else this.prev = null;
 

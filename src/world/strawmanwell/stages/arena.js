@@ -5,7 +5,7 @@
 //   the stage       a main stage 22 m wide, its two ends ledges to hang from; two thin side platforms at 1.3 m (jumped up through,
 //                   dropped through with S + Space); a top one at 2.6 m, reached from a side one; an underside narrower than its top
 //                   (Battlefield's), so a recovery from below meets a wall, not a floor
-//   the blast lines 35 m from mid-stage on both sides and above, 17 m below (pins mark the sides), where a fresh full forward smash KOs a
+//   the blast lines 26 m from mid-stage on both sides, 20 m above, 17 m below (pins mark the sides), where a fresh full forward smash KOs a
 //                   weight-100 body at about 110% (platformfighter.js koPercent)
 //   the lecterns    F at one: the foes' level (1 to 9), how many (1 to 3), training (off, stand, shield, jump), the reset; the way back to
 //                   the wings is the door at the stage's left end (F; W is the up tilt here, never a door)
@@ -25,7 +25,7 @@ import { FighterKit } from '../fighter/kit.js';
 export const ARENA = {
   mid: 45, half: 11, thick: 2.5, under: { half: 9.2, to: -4.2 },
   sides: [[-9.2, -3.6, 1.3], [3.6, 9.2, 1.3]], top: [-2.8, 2.8, 2.6],
-  blast: { side: 35, up: 35, down: 17 },
+  blast: { side: 26, up: 20, down: 17 }, // (measured with gravity and the angle, kotest: a fresh full forward smash from mid-stage reaches 26 m at 110%, an up smash 20 m up at about 125%: Mario's in Melee)
   courier: -4.5, foes: [4.5, 6.2, 2.8],
   door: -10.1, lecterns: { level: -8.4, foes: -6.8, train: 7.9, reset: 9.5 },
 };

@@ -22,7 +22,10 @@ export function strawmanWellRules({ on, L, log }) {
   on('well.pit.death', (e) => { if (e.by === 'courier') L.inc('well.pit.death'); });
   on('well.flood.fill', (e) => { if (e.by === 'courier') L.hi('well.flood.best', e.cells || 0); });
   on('well.fighter.ko', (e) => { if (e.by !== 'courier') return; L.inc('well.fighter.ko'); say('gain', `KO! At ${Math.round(e.percent || 0)}%.`, 'well.fighter.ko', 0.3); });
-  on('well.fighter.stock', (e) => { if (e.by === 'courier') L.inc('well.fighter.stock.lost'); });
+  on('well.fighter.stock', (e) => {
+    if (e.by === 'courier') L.inc('well.fighter.stock.lost');
+    say('battle', e.left > 0 ? `Stock lost. ${e.left} left.` : 'Out of stocks. The match starts over.', 'well.fighter.stock', 0.3);
+  });
   on('profile.wear', (e) => { L.inc(`profile.wear.${e.id}`); const P = profileOf(e.id); say('system', `Profile: ${P.label}. ${P.line}`, 'profile', 0.3); });
   on('profile.ask', (e) => say('system', `Profile worn: ${profileOf(e.id).label}. The others: ${e.ids.filter((i) => i !== e.id).join(', ')}. Type /profile <name>, or press F at the rack in the wings.`, 'profile.ask', 0.5));
   on('well.verb', (e) => {
