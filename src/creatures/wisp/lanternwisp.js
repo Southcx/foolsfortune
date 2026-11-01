@@ -161,7 +161,7 @@ export class LanternWisps {
     const to = foe === g.player ? _a.copy(g.player.pos).setY(g.player.pos.y + 1.1) : (foe.center?.(_a) ?? _a.copy(foe.pos));
     const flight = from.distanceTo(to) / W.speed, lead = _b.copy(foe.vel ?? UP.clone().set(0, 0, 0)).setY(0).multiplyScalar(Math.min(0.8, flight));
     const v = to.clone().add(lead).sub(from).normalize().multiplyScalar(W.speed);
-    const m = this.look.bolt(from); // [look] the ember, its tail and its spark (in the scene)
+    const m = c.body?.bolt?.(from) ?? this.look.bolt(from); // [look] the ember, its tail and its spark (in the scene); a body that throws its own (the sentinel's clay clod, SentinelBody.bolt) supplies it
     const q = { m, pos: m.position, vel: v, v, t: 0, c, foe, lachryma: 1, from: c, mark: g.parryMark?.mark(m), vanish: () => { q.gone = true; } };
     this.bolts.push(q); (g.projectiles ||= new Set()).add(q);
     g.events?.emit(`${c.ev || 'wisp'}.cast`, { by: 'creature' });
