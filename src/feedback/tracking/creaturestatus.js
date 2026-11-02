@@ -12,7 +12,7 @@ export function creatureStatusRules({ on, L, log }) {
   on('flash.fire', (e) => { L.inc('flash.fire'); L.inc('flash.hits', e.hits); if (e.lens) L.inc('flash.lens'); });
   on('stun.build', (e) => { if (e.by === 'courier') L.inc(`stun.build.${e.cause}`); });
   // (creature.stun, the stun and its depth: feedback/tracking/stun.js)
-  on('creature.status', (e) => { if (e.by === 'courier') { L.inc('status.applied'); L.inc(`status.${e.status}`); } });
+  on('creature.status', (e) => { if (e.by === 'courier') { L.inc('status.applied'); L.inc(`status.${e.status}`); if (e.weak) { L.inc('mind.cracked'); L.inc(`mind.cracked.${e.status}`); L.inc(`mind.cracked.kind.${e.kind}`); } } }); // (weak: the status its grain opens it to, G292)
   on('creature.resist', (e) => { if (e.by === 'courier') { L.inc('status.resisted'); log.say('battle', `The ${KIND(e.kind)} resists ${e.status}.`, { key: 'resist', win: 1.5 }); } });
   on('combat.annihilate', (e) => { if (e.by === 'courier') { L.inc('combat.annihilate'); L.inc(`combat.annihilate.${e.type}`); log.say('battle', `Annihilation: Impact meets Delirium on the ${KIND(e.kind)}.`, { key: 'annihilate', win: 1 }); } });
 }

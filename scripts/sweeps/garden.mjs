@@ -159,6 +159,11 @@ check('naming page: no calibration under it', d0.calibration.length === 0, d0.ca
 await page.evaluate(() => document.querySelector('#indexmenu .room')?.click()); // (named as a player would: the first name)
 await ticks(2);
 for (const [label, n] of [['named+0s', 0], ['named+0.5s', 30], ['named+2s', 90]]) { await ticks(n); const f = await shot(`entry-${label}`); note(`entry ${label}`, { file: path.basename(f), lum: await shotLum(f), seam: (await sw('dom()')).seam }); }
+// the garden's how-to opens on the first named entry and holds the view ('howto'): noted, then skipped as a player would (SKIP), which says
+// garden.howto and marks it seen (progress/gardenhowto.js); every check after it wants the garden's own view (the garden is in flux: a note)
+note('entry: the garden\'s how-to', await ev(() => ({ showing: !!__game.game.realm.howto?.showing, view: __game.game.realm.camera?.pv?.name || null })));
+await ev(() => __game.game.realm.howto?.close(false));
+await ticks(30);
 const s1 = await sw('state()');
 check('entry: the realm is named', !!s1.named, s1.named);
 check('entry: the camera is in the garden zone', s1.zone === 'garden', `zones.current=${s1.zone} cam=${JSON.stringify(s1.cam)}`);
