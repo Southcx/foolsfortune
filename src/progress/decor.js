@@ -19,6 +19,7 @@
 // shows, and Stardew Valley's bundles (a set finished restores something you can see).
 //
 //   DECOR[id] = { name, set, size, tints, from: [sources], season?, color? (its own, over its set's) }   SETS, SOURCES, LOTUSES, CLUTTER, SET   priceOf(id) -> cubes
+//   CENTRE_FEATS[centrepiece] = achievement id (a centrepiece put in the catalogue by its achievement)
 //   regionPoints(pieces) -> n   rating(pieces, { cellsOf }) -> { points, lotuses, regions, sets }   (pieces: [{ id, region, pos }])
 //   game.decor = new Decor(game)   .owns(id)   .stored(id)   .give(id, from)   .buy(id) -> { ok, why? }   .take(id) -> bool   .put(id)
 //   .place(id, at, { yaw, tint }) -> i   .move(i, at?, yaw?)   .remove(i)   .s.placed: [[id, planetoid, face, iu, iv, yaw, tint]]
@@ -136,6 +137,14 @@ export const DECOR = {
   briarThrone: P('Briar Throne', 'briar', 'centre', 2, ['briar', 'wish']),
 };
 /** A piece's cells on the grid by its size (GARDEN-COZY.md D1: about a metre a cell). */
+/** A centrepiece's third way (GARDEN-COZY.md D5, "an achievement, for the set centrepieces"): the achievement that puts it in the shed's
+ *  catalogue, a predicate over the ledger read when the catalogue is drawn (never a gift set by a hook). Each is its set's own deed: a
+ *  feeling's centrepiece by letting a spirit of that feeling go home when it asks (gy17 .. gy21), the Tea Path's by a first bloom, the
+ *  Kiln Yard's by a hundred sculpts, the Stargazer's by all four seasons, the Briar Throne by keeping a planetoid overgrown a season. */
+export const CENTRE_FEATS = {
+  moonDeck: 'gy17', bandstand: 'gy18', teaHouse: 'gy19', rainPavilion: 'gy20', moonGate: 'gy21',
+  deerScarer: 'gy1', tunnelKiln: 'ir2', constellationPavement: 'gy10', briarThrone: 'gy5',
+};
 export const CELLS = { small: 1, medium: 4, large: 9, centre: 16 };
 /** What a piece costs: its size's minutes of play (ECON.decor). */
 export const priceOf = (id) => Math.round((ECON.decor[DECOR[id]?.size] || 0) * ECON.perMinute);
@@ -224,6 +233,7 @@ export class Decor {
       if (this.owns(id)) return true;
       if (D.from.includes('season')) return D.season === season;
       if (D.from.includes('lotus') && lotusOpen(D.set)) return true;
+      if (CENTRE_FEATS[id] && this.game.achievements?.done?.(CENTRE_FEATS[id])) return true; // (its achievement: then bought)
       return D.from.includes('shop') && (D.set === 'plain' || met.has(D.set) || lotusOpen(D.set)); });
   }
   /** A piece given (a gift, a wish's thanks, a visitor's, a lotus's recipe, briar fruit made into it): one copy to storage. */

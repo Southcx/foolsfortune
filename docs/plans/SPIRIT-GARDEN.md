@@ -157,3 +157,14 @@ drunk for 5 real seconds. `game.draught` beside it: the feeling of the Lachryma 
 Kept in the save with the pool (state that must agree is one section). The log says "You are brimming." and "You settle." (Espada's).
 
 Asked of the owner: none; every rule above is a default the owner may overturn.
+
+
+## Rulings carried from DESIGN.md (section 16, the Spirit Garden half)
+
+The owner, 2026-10-05. Moved verbatim from `docs/DESIGN.md` by G56 (2026-11-02); the numbered heading stays there as a pointer.
+
+**The Spirit Garden** (`src/progress/garden.js`; OSRS's Miscellania and herb runs, Palworld, FFXIV housing):
+- **Dividend slots** (`ECON.dividend`): a mastered encounter (every achievement in its group done) in a slot pays 5% of its rate an
+  hour of play, filling for 8 game days (8 real hours), then waits. Three slots to start.
+- **Beds**: a material planted grows more of its kind in 6 game hours (15 real minutes).
+- **Upgrades**: more slots and beds, each dearer, in cubes. Later, caught Figments work them.

@@ -37,10 +37,10 @@ export function domainArtsRules({ on, log }) {
     else if (e.art === 'catch') log.say('system', 'Shot caught. Release to throw it.', { key: 'rung.catch', throttle: 0.5 });
     else if (e.art === 'link') log.say('system', `${cap(share(e.share ?? 0.5))} of the blow goes to the ${kname(e.kind)} you are linked to.`, { key: 'rung.link', throttle: 1.5 });
     else if (e.art === 'fuse') log.say('system', `${cap(kname(e.kind))} fused. Afflictions on it are delayed ${e.window} seconds.`, { key: 'rung.fuse', throttle: 0.5 });
-    else if (e.art === 'walkCycle') log.say('system', `Walked: ${list(e.turned.map(([a, b]) => `${SW[a] || a} into ${SW[b] || b}`))}.`, { key: 'rung.cycle', throttle: 0.5 });
+    else if (e.art === 'walkCycle') log.say('system', `Afflictions turned: ${list(e.turned.map(([a, b]) => `${SW[a] || a} into ${SW[b] || b}`))}.`, { key: 'rung.cycle', throttle: 0.5 });
     else if (e.art === 'sealCreature') log.say('system', e.broke ? `Seal broken on the ${kname(e.kind)}'s ${e.blow}.` : `Sealed: the ${kname(e.kind)} cannot ${e.blow} for ${e.dur} seconds.`, { key: 'rung.seal', throttle: 0.5 });
     else if (e.art === 'relay') log.say('gain', e.links > 1 ? `Force relayed: ${e.links} links.` : 'Force relayed.', { key: 'rung.relay', throttle: 1 });
-    else if (e.art === 'catchWeather') log.say('system', `Caught by your Lachrymato Bottle: ${e.lachryma} Lachryma of ${cap(e.aspect)}.`, { key: 'rung.catchweather', throttle: 20 });
+    else if (e.art === 'catchWeather') log.say('system', `Lachrymato Bottle filled: ${e.lachryma} ${cap(e.aspect)} Lachryma.`, { key: 'rung.catchweather', throttle: 20 });
     else if (e.art === 'borrowVerb') log.say('system', `Move borrowed from the ${kname(e.kind)}. Press R to throw it for the next ${e.dur} seconds.`, { key: 'rung.borrow', throttle: 0.5 });
     else if (e.art === 'standingRule') log.say('system', `Your rule: ${RULE_THEN[e.then]?.label ?? e.then}.`, { key: 'rung.rule', throttle: 2 });
   });
@@ -49,7 +49,7 @@ export function domainArtsRules({ on, log }) {
     if (e.art === 'postpone') log.say('warn', e.why === 'parried' ? 'Postponed blow landed at half damage.' : 'Postponed blow landed.', { key: 'rung.postpone.end', throttle: 0.5 });
     else if (e.art === 'plating') log.say('system', e.why === 'struck' ? `Plate on your ${e.region} broken. It blocked the blow.` : 'Plate returned to your pool.', { key: 'rung.plating.end', throttle: 0.5 });
     else if (e.art === 'retype') log.say('system', 'Blows back to their usual type.', { key: 'rung.retype.end', throttle: 0.5 });
-    else if (e.art === 'fuse' && e.why !== 'gone') log.say('system', !e.n ? 'Fuse went off empty.' : e.why === 'chosen' ? `Fuse went off. Applied at once, 50% longer: ${list(e.statuses.map((x) => SW[x] || x))}.` : `Fuse ran out. Applied as they were: ${list(e.statuses.map((x) => SW[x] || x))}.`, { key: 'rung.fuse.end', throttle: 0.5 });
+    else if (e.art === 'fuse' && e.why !== 'gone') log.say('system', !e.n ? 'Fuse set off. No afflictions to release.' : e.why === 'chosen' ? `Fuse went off. Applied at once, 50% longer: ${list(e.statuses.map((x) => SW[x] || x))}.` : `Fuse ran out. Applied as they were: ${list(e.statuses.map((x) => SW[x] || x))}.`, { key: 'rung.fuse.end', throttle: 0.5 });
     else if (e.art === 'sealCreature' && e.why === 'time') log.say('system', 'Seal expired.', { key: 'rung.seal.end', throttle: 1 });
     else if (e.art === 'borrowVerb') log.say('system', `Borrowed move returned to the ${kname(e.kind)}.`, { key: 'rung.borrow.end', throttle: 1 });
     else if (e.art === 'vow') log.say('warn', `Vow broken: ${VOWS[e.vow]?.label}. Your vessel cracks.`, { key: 'rung.vow.end', throttle: 0.5 });

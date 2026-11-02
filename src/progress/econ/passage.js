@@ -21,7 +21,7 @@
 //   lanes(chart) -> [[waypoint id, ...]]   next(chart, id) -> [ids]   classOf(type) -> 'threat' | 'boss' | 'haven'
 //   sight(reckoning, widen, lead) -> 0..   confidence(depth, sight, level) -> 0..1   tierOf(c, depth) -> 'exact' | 'two' | 'three' | 'class' | 'star'
 //   portent(chart, waypoint, depth, sight, level) -> { tier, candidates, cls, confidence, feel?, storm }   rutterWorth({ minutes, rank, read, daysOld, storms }) -> cubes
-//   feelOf(from, to, col, columns, r, lean?) -> aspect | null   choke(chart) -> Set(ids every lane passes)   STORM
+//   PLUME[island] = { feelings, reach, chance }   feelOf(from, to, col, columns, r, lean?) -> aspect | null   (a waypoint's `front`: a cancelled plume)   choke(chart) -> Set(ids every lane passes)   STORM
 // ---------------------------------------------------------------------------------------
 import { ECON } from './table.js';
 import { NATIVE, weatherAt } from '../weather.js';
@@ -60,12 +60,21 @@ export const STORM = { count: (columns) => (columns >= 5 ? 2 : 1), minCol: 1, st
 /** A waypoint's feeling: its place on the Law-Chaos line between the two islands (their `law`, -2 Margarite's mirth .. +2 Entropolis's
  *  dread), a step of the day's dice either way, and, near the island left, the weather it had at the game day's start (`lean`:
  *  { aspect, strength }). A tenth of the open sea is fair (no feeling: the Emocean between egos). */
+/** An island's plumes (GALL-AND-FURY.md 4; GAPS G112): the feelings its weather carries out to sea beyond Anagami's five, the share of
+ *  the route nearest it they reach (`reach`, a third: a waypoint in the column or two off its shore), and how often a waypoint there is
+ *  one (`chance`: half, so the Queen's sea is often hers and never always). Margarite has none (Law's end). A front: a Fury plume's
+ *  waypoint joined to a Dread one cancels (Fury and Dread are opposites, weather.js OPPOSITE), the one further from the plume's island
+ *  left fair and marked `front`. */
+export const PLUME = { entra: { feelings: ['fury', 'gall'], reach: 1 / 3, chance: 0.5 } };
+
 export function feelOf(from, to, col, columns, r, lean = null) {
   const t = (col + 0.5) / columns, a = ECON.islands[from]?.law ?? 0, b = ECON.islands[to]?.law ?? 0;
   if (lean?.aspect && r() < lean.strength * (1 - t)) return lean.aspect;
+  const plume = PLUME[to] && t >= 1 - PLUME[to].reach ? PLUME[to] : PLUME[from] && t <= PLUME[from].reach ? PLUME[from] : null; // (rolled only near a plume's island, so every other route's sea is as it was)
+  if (plume && r() < plume.chance) return plume.feelings[pick(r, plume.feelings.length)];
   if (r() < 0.1) return null;
   const mood = a + (b - a) * t + (r() - 0.5) * 2.2;
-  return NATIVE[Math.max(0, Math.min(4, Math.round(mood) + 2))]; // (Anagami's five; Entropolis's plumes carry Gall and Fury in phase 2)
+  return NATIVE[Math.max(0, Math.min(4, Math.round(mood) + 2))]; // (Anagami's five; Entropolis's plumes carry Gall and Fury: PLUME)
 }
 
 /** The waypoints every lane passes through (a storm is never put on one: it must be avoidable). */
@@ -148,6 +157,14 @@ export function seaChart({ from, to, day = 0, danger = 0, distance = 4, casks = 
   // ---- the feelings (the weather the island left had at the game day's start leans the first columns), then the storm marks
   const w0 = weatherAt(from, Math.floor(day) * DAY_MS), lean = w0.aspect ? { aspect: w0.aspect, strength: w0.strength } : null;
   for (const id of ids) waypoints[id].feel = feelOf(from, to, waypoints[id].col, C, r, lean);
+  // ---- the fronts: a Fury plume met by Dread cancels, the waypoint further from the plume's island left fair (PLUME)
+  const home = PLUME[to] ? C - 1 : PLUME[from] ? 0 : null;
+  if (home != null) for (const [x, y] of E) {
+    const A = waypoints[x], B = waypoints[y]; if (!A || !B) continue;
+    const pair = new Set([A.feel, B.feel]); if (!(pair.has('fury') && pair.has('dread'))) continue;
+    const far = Math.abs(A.col - home) > Math.abs(B.col - home) ? A : B;
+    far.feel = null; far.front = true;
+  }
   const chart = { route, from, to, day: Math.floor(day), columns: C, rows: R, waypoints, edges: E,
     first: ids.filter((id) => waypoints[id].col === 0), last: ids.filter((id) => waypoints[id].col === C - 1) };
   const blocked = choke(chart), stormable = ids.filter((id) => classOf(waypoints[id].type) === 'threat' && waypoints[id].col >= STORM.minCol && !blocked.has(id));

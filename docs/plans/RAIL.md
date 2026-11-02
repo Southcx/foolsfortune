@@ -151,3 +151,26 @@ always the last leg. The wild routes are meant for the skilled; a novice can sti
 - Counted: `rail.continue`, `rail.continue.cubes`.
 
 **Open for the owner:** nothing yet.
+
+
+## Rulings carried from DESIGN.md (sections 13 and 21)
+
+Moved verbatim from `docs/DESIGN.md` by G56 (2026-11-02); the numbered heading stays there as a pointer.
+
+### Section 13, the slice's music ruling (2026-10-04, evening)
+
+- **The music is the stage's clock**: every stage runs its cue's 150 real seconds.
+
+### Section 21: the crossing, the Emocean as a rail shooter (the owner, 2026-10-07)
+
+A hundred bars of Wanda's Crude Sea: the first half teaches one idea an act (the gun and lock-on, polarity, the parry), the second is
+one **set piece** (the shoal, the pirates, the rogue Leviathan), with camera grammars from Star Fox, Ikaruga, Einhander and Sin &
+Punishment.
+- **Pays no cubes** (section 11). Its reward is a rank against a measured par and a medal; its stakes the cargo (pirates take casks:
+  measured -1.4 to +2 casks); the Leviathan is a deck, certain within 14 crossings on the Margarite run.
+- The ship mounts two of your tools (the Crucibelle the bomb, the Veritome photographs the Leviathan); polarity is your draught; the
+  parry is V.
+- `node scripts/rail.mjs` plays it against three players: novices clear the common set piece three times in five, good players
+  always, an expert fells the Leviathan about one time in four. Par and the medal line are re-measured from the ledger once played.
+
+*(Superseded in part: "polarity" in the ship's mounts and the first half's acts is retired for the Astral and Umbral forms, `docs/plans/RAIL-OVERHAUL.md` section 4 and the glossary's retired words.)*

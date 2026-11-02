@@ -33,7 +33,8 @@ lasts, which bends the next presses at the Athanor. Cooking is the hand and the 
    - A **true cook** is the heart of every move.
    - Grind closes the gap; skill skips it.
 4. **The tell is the interface, never a thermometer.** Real cooks judge by what the food does, and so does the game. A thermometer is a
-   late-earned knack (assists are knacks). The tells:
+   late-earned knack (assists are knacks: `KNACKS.thermometer`, opened at 150 dishes served or 20 True cooks, shows the move's value and its
+   heart beside the tells; built 2026-11-02, its switch in the cooking window Petra's). The tells:
    - the cold-water test (a spoon of syrup dropped in: a thread, a soft ball, a brittle crack);
    - the roux's colour;
    - the rinse water clearing;
@@ -263,7 +264,7 @@ served PERFECT, holding Mirth at 0.83 for 120 real s; the mind's fade slowed to 
 loaf: 0.08 of the way toward its feeling, against a common material's own 0.3), so a dish leans the press and never buys a tier.
 Still to come: the looks (Calissa's),
 the sounds (Wanda's: the knead's thump on the beat, the oven, the knock), the words (Espada's: dish names, the tells), bonds with spirits,
-batch and auto-cook, the other families.
+the other families (batch and auto-cook: section 15).
 
 ## 14. Pasta, noodles and seafood on a 3D stage (South, 2026-11-02, by way of Calissa)
 
@@ -314,3 +315,27 @@ Angling now feeds the hearth: a reason to fish for a feeling.
 **New pantry staples:** egg, for fresh pasta; kansui, alkaline water that makes noodles springy and yellow.
 
 **The ledger and achievements:** `cook.family.<family>`. **Al Dente** (`cook.hit.boil`) and **Soul Seafood** (`cook.family.seafood`).
+
+## 15. Batch and auto-cook (built 2026-11-02, G228)
+
+The two conveniences a dish earns once the hand knows it (section 2.8). The rules are `progress/cooking/batch.js`; the hearth's window
+plays them through a small marked hook (`world/garden/kitchen.js`, "G228 hook"). Neither is ever a better dish than the hand's.
+
+| thing | the rule | why |
+|---|---|---|
+| batch | up to 10 of one dish, opened for that dish by 3 TRUE cooks of it (`cook.true.<dish>`) | a dish mastered, not lucked; Fantasy Life's batch, Atelier's yield |
+| its grade | the one cook you played: every serving is that grade | it is a hand cook, so it can only equal one |
+| its cost | the add-in times n (n fish for a fish dish); the pantry free | OSRS's make-X: n of a thing costs n of what it is made of |
+| its servings | one served at once (its draught laid); the rest into the Pneuka Box as `dish.<dish>.<grade>`, ten to a slot | a whole batch's rest fits one slot |
+| the draught | never stacks: eating a serving replaces the draught held, a drink's or a dish's | Stardew's one buff (section 7) |
+| on the ledger | one cook: one `cook.serve`, one `cook.true` at most, whatever n; `cook.batch`, `cook.batch.servings`, hi `cook.batch.size`, `cook.eat` | batching never grinds a count or an achievement faster |
+| auto-cook | a knack (`autoCook`): the dish with no minigame, at one grade below your best for it (hi `cook.best.<dish>`), never above PERFECT, never DUBIOUS | the plan's line; Monster Hunter's auto gives the plain steak |
+| auto per dish | opened by 5 cooks of it (`cook.dish.<dish>`) or one TRUE of it | a count way and a feat way (DESIGN.md 22) |
+| an auto cook | takes the add-in; instant (the proof's game hour skipped); no practice, no seasoning; may be batched where the batch is open; counts `cook.serve` and `cook.auto` | the hand did not cook, so the hand's attributes are not seasoned |
+
+A serving carries its dish and grade in its id; its draught is worked out again when eaten (`serveAt`: the dish's base and add-in at that
+grade, no adjustment, since the adjustment's lift is already in the grade). The other families (rice, broth, tea) and their long steps
+on the game clock are still to come; the batch and auto-cook are family-blind.
+
+Achievement: **Ten at Once** (hi `cook.batch.size` 10).
+

@@ -20,6 +20,7 @@ export function cookingAchievements({ C, H, F }) {
   C('ck5', 'garden', 'The Hearth', 3, 'endure', 'Daily Bread', 'Serve 50 dishes.', 'cook.serve', 50);
   C('ck6', 'garden', 'The Hearth', 1, 'mechanic', 'Al Dente', 'Boil pasta to the soul: a thin white thread left at its heart.', 'cook.hit.boil', 1);
   C('ck7', 'garden', 'The Hearth', 2, 'collect', 'Soul Seafood', 'Sear a fish you landed from the Lachryma.', 'cook.family.seafood', 1);
+  H('ck8', 'garden', 'The Hearth', 2, 'mechanic', 'Ten at Once', 'Cook a batch of ten: a dish you have cooked TRUE three times.', 'cook.batch.size', 10); // (progress/cooking/batch.js BATCH)
   C('loot1', 'battle', 'Slip Jellies', 1, 'count', 'Spoils', 'Pick up 25 things a creature dropped.', 'drop.take', 25);
   C('loot2', 'battle', 'Slip Jellies', 3, 'mechanic', 'Lucky Find', 'Pick up a rare drop.', 'drop.rare', 1);
 }

@@ -30,6 +30,8 @@ import { wellPay, cogitomapWorth, demand, fuel, haulProfit, spillChance, crudeRu
 import { KIND_IDS, makeMaterial, press, distance } from '../src/progress/econ/materials.js';
 import { PACE, expAt, skillWeight, MAX_LEVEL, CATCH_UP } from '../src/progress/domains.js';
 import { TENS } from '../src/progress/domainladder.js';
+import { STAINS } from '../src/progress/brushload.js';
+import { DUE_EVERY } from '../src/progress/combat/worldshells.js';
 
 // the numbers as they stood before R38 (git: src/tools/veritome/cards.js, ceremony.js, the outcome and crystal formulas, weir.js)
 const OLD = {
@@ -350,3 +352,9 @@ export function domainPace(hours99 = PACE.hours99) {
   }
 }
 
+
+{ // THE WORLD SHELLS' FIND (CASTER-SHELLS.md 7.3; worldshells.js DUE_EVERY): full-grown blots at the Shore's steady state, a World shell every DUE_EVERY
+  const SHORE_CAP = 6, perDay = Math.min(STAINS.shore, SHORE_CAP / STAINS.stages); // (stains.js: the Shore holds six; each game day lays two, each full-grown three game days later)
+  const hunt = perDay, casual = perDay / 2; // (a game day is a real hour; a hunter mops every one that grows, a casual player about half)
+  console.log(`\nTHE WORLD SHELLS' FIND: the Shore grows ${perDay} full-grown blots a game day (a real hour); a World shell every ${DUE_EVERY} mopped, so one each ${(DUE_EVERY / hunt).toFixed(1)} real hours hunting, ${(DUE_EVERY / casual).toFixed(1)} casually; each full-grown blot has risen as an aberrant slip jelly first (${DUE_EVERY} duels a shell)`);
+}

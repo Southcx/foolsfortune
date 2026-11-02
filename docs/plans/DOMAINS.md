@@ -763,3 +763,24 @@ domain comes about as often as the focused figure. The catch-up's x1.5 is not co
 hours it is 8 to 10 (about 3 to 4 skilled), which is the closest the curve allows without making the first tens trivial. No number was
 changed then. **Ruled (South, 2026-11-01: "Yeah why not, again these numbers are all placeholder"): `PACE.hours99` is 100.**
 
+
+## Rulings carried from DESIGN.md (sections 10 and 15)
+
+Section 10 is the owner's design document v0.1, given 2026-10-04; section 15 is the owner, 2026-10-05. Moved verbatim from `docs/DESIGN.md` by G56 (2026-11-02); the numbered heading stays there as a pointer.
+
+v0.1 describes a grid-tactics game; its systems are mined, its combat model is not. **Keep**, **adapt**, **hold** or **cut**:
+
+- **The six (+1) domains** (ruled, 2026-10-04; `src/progress/domains.js`, `src/progress/psyche.js`): Ouranurgy (displacement),
+  Manifestation, Divination, Psychokinesis, Possession, Alteration, and **Spellscription** as the +1 (transcribing: the Soul Brush's
+  glyphs, the Veritome's macros).
+- **Skill levels to 99 by EXP, "The World" at all seven maxed** (adapt): EXP comes from doing the skill well, so competence drives the
+  level.
+- **Achievements unlock abilities, passives, spells, cosmetics, titles and lore** (keep). **Spell mastery at 10 / 50 / 200 / 500
+  casts** (keep: the arts' variants). **Luck rises from statistically unlikely events** (keep: a retroactive ledger predicate;
+  `src/progress/luck.js`).
+
+### Widening: what a level does (section 15)
+
+A domain's level widens reach, capacity and options, **never accuracy**. Fifteen knobs, linear in the level, each read by its tool
+(`WIDEN`, `widenAt` in `progress/domains.js`; `game.psyche.widen(key)`; printed by `node scripts/combat.mjs`). Level 1 is the tool
+exactly as it is. `divination.reckon` lengthens the reckoning; `spellscription.copy` duplicates good Cogitomaps.

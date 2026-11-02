@@ -205,162 +205,61 @@ wheel, set by how cleanly it was stunned, and keys augment it); **conversion** (
 
 ## 10. Mined from the owner's design document v0.1 (given 2026-10-04)
 
-v0.1 describes a grid-tactics game; its systems are mined, its combat model is not. **Keep**, **adapt**, **hold** or **cut**:
-
-- **Five damage types on a Law-Chaos line** (keep; `src/progress/combat/types.js`): Impact (lawful, physical), Ego (lawful, mental),
-  Influence (neutral, social), Illusion (chaotic, perceptual), Delirium (chaotic, entropic). **Annihilation**: Impact and Delirium
-  amplify each other on a target afflicted by the other. Enough of one type applies its status (Impact: stun, slow, armour break; Ego:
-  doubt, pacified; Influence: charm or taunt, misdirect; Illusion: blind, phantom pain; Delirium: confusion, reality tear). *Adapt*:
-  each tool deals a type; the trump list is to become a closed cycle.
-- **Mental state, Stoic, Resolved, Balanced, Fluid, Prismatic** (keep): how open a creature is to statuses and buffs.
-- **Emotional Output (EmO)** (keep, central): a Figment's agitation rises as it is fought; its Lachryma yield peaks in a band, past
-  which it enrages; Soothe lowers it. Catch or harvest in the band.
-- **The six (+1) domains** (ruled, 2026-10-04; `src/progress/domains.js`, `src/progress/psyche.js`): Ouranurgy (displacement),
-  Manifestation, Divination, Psychokinesis, Possession, Alteration, and **Spellscription** as the +1 (transcribing: the Soul Brush's
-  glyphs, the Veritome's macros).
-- **Skill levels to 99 by EXP, "The World" at all seven maxed** (adapt): EXP comes from doing the skill well, so competence drives the
-  level.
-- **Achievements unlock abilities, passives, spells, cosmetics, titles and lore** (keep). **Spell mastery at 10 / 50 / 200 / 500
-  casts** (keep: the arts' variants). **Luck rises from statistically unlikely events** (keep: a retroactive ledger predicate;
-  `src/progress/luck.js`).
-- **Soul Alchemy's attributes** (adapt: section 16). *Cut*: any attribute that does a skill ("Perception: accuracy" is aim assist).
-- **Figment classes**: Guppy, Barracuda, Marlin, Whale, Leviathan (keep). **Traits revealed by reading** (keep: the bestiary).
-  **Wells as dungeons with Etrian Odyssey cartography**, shortcuts and FOEs (keep).
-- **Overflow converted at 20%, up to 50%** (adapt: the Lockheart's conversion mode). **Defeat costs a share of the cubes** (hold).
-- **Later layers**: Contractors, the Ship, Bounties, Psychic Storms (the Emocean now), the grid inside a Well, never the core movement.
-- **Cut**: the post-battle report screen and level-up notifications (the log is the only text feedback).
+Moved (G56, 2026-11-02): the damage types, mental state, EmO, Figment classes, overflow and the cuts to `docs/plans/SYSTEMS.md`; the seven
+domains, levels, achievements and Luck to `docs/plans/DOMAINS.md`; the attributes to `docs/plans/SOUL-ALCHEMY.md`. Each is under "Rulings
+carried from DESIGN.md (section 10)".
 
 ---
 
 ## 11. The three layers (ruled, 2026-10-04)
 
-1. **Wells**: dungeons on an Island of Ego (exploration, cartography, the tactical layer).
-2. **The island**: action combat (the game as it stands).
-3. **The Emocean**: travel between islands, a node map and rail-shooter stages (FTL, KH2's gummy ship).
-
-**The rule for the seams**: one Courier, one purse, one ledger, one set of seven tools across all three. A layer may add verbs, never
-its own currency, levels or gear (KH2's gummy ship is the warning). The Emocean pays at the price at the other end.
+Moved (G56, 2026-11-02) to `docs/plans/SLICE.md`, "Rulings carried from DESIGN.md (sections 11 and 13)".
 
 ---
 
 ## 12. Rulings of 2026-10-04
 
-1. **The Lockheart's keys**: LOADED and ECHO cost 6 minutes of play; **a fancy key is reused**, breaking after each opening at a
-   chance that rises with use (`ECON.lockheart.keyWear`: 20%, then 15 points more; about 2.7 openings, never more than seven). Brass
-   is spent.
-2. **The Vessoul** is the player's entity: the god hand, the Pneuka Jar, the Courier and the Emocean's ships; the Solar Skiff is a
-   limb (GLOSSARY).
-3. **Kintsugi**: gold where a crack mends, gone as the mend completes; a subtle sizzle (Wanda's).
-4. **Espada's cast** for commissions and bounties stands (Seger the Witness Cone; Letty Marque and her Tulpa Poll).
-5. **The STE100 trim** of the UI text comes after the systems plan.
-6. **The chests' beams** become a glaze that changes as the chest charges (Calissa's).
+Moved (G56, 2026-11-02): items 1, 3, 4 and 6 to `docs/plans/SYSTEMS.md`; item 2 (the Vessoul) to `docs/plans/SUBSTRATE.md`; item 5 (the
+STE100 trim) to `docs/plans/CLARITY.md`. Each is under "Rulings carried from DESIGN.md (section 12...)".
 
 ## 13. Rulings of 2026-10-04, evening (the slice)
 
-- **Jellies for now** in the Emocean's stage; the Egregore after the slice.
-- **The Purser buys Cogitomaps**: dearest on Margarite, cheapest on the island whose Well it maps; only a good map pays the trip
-  (`purserPrice`).
-- **Divination charts the course**: a route's **reckoning** (0 to 1, of a game day) marks each wave's lane ahead on the rail and later
-  opens unfound nodes. Knowledge, never numbers (`src/progress/econ/emocean.js`).
-- **The music is the stage's clock**: every stage runs its cue's 150 real seconds.
+Moved (G56, 2026-11-02): the slice's rulings to `docs/plans/SLICE.md` (sections 11 and 13); the music ruling to `docs/plans/RAIL.md`
+(sections 13 and 21).
 
 ## 14. Co-op (the owner, 2026-10-05; after the slice)
 
-- Slice first, co-op after: each division gets a clay folk form with abilities suited to its role (the owner's; not argued on balance).
-- **Friendly fire is on**: a fifth of the damage; statuses land on allies with fast-rising tolerance (`combat/friendly.js`: x2 build-up
-  and half the hold the second time, immune the third within 20 real seconds; Monster Hunter, WoW's diminishing returns).
+Moved (G56, 2026-11-02) to `docs/plans/COOP.md`, "Rulings carried from DESIGN.md (section 14)".
 
 ## 15. Widening: what a level does (the owner, 2026-10-05: "lock it in for now")
 
-A domain's level widens reach, capacity and options, **never accuracy**. Fifteen knobs, linear in the level, each read by its tool
-(`WIDEN`, `widenAt` in `progress/domains.js`; `game.psyche.widen(key)`; printed by `node scripts/combat.mjs`). Level 1 is the tool
-exactly as it is. `divination.reckon` lengthens the reckoning; `spellscription.copy` duplicates good Cogitomaps.
+Moved (G56, 2026-11-02) to `docs/plans/DOMAINS.md`, "Rulings carried from DESIGN.md (sections 10 and 15)".
 
 ## 16. The Spirit Garden and Soul Alchemy (the owner, 2026-10-05)
 
-One line between the progressions: the **domains** widen the **tools** (what the Courier does); the **attributes** widen the **vessel**
-(what the Courier is). Neither does a skill for the player.
-
-**Soul Alchemy** (`src/progress/alchemy.js`, `materials.js press()`; Potion Craft's map, Atelier): the Courier's **soul colour** (hue
-and saturation, starting grey) walks each material's **path** in the order pressed; the order is the skill. **Firing** inside an
-attribute's target raises it one rank and spends cubes (the long sink); targets narrow with each rank. The seven: **Willpower** (the
-shield's pool), **Focus** (how long built statuses hold), **Charisma** (prices, the haggle), **Perception** (how far ahead intent
-shows), **Dexterity** (drawing and stowing), **Visualization** (the Soul Brush's canvas), **Resilience** (mending; a ship's hits). Luck
-stays apart. The vessel's glow takes the soul colour.
-
-**The Spirit Garden** (`src/progress/garden.js`; OSRS's Miscellania and herb runs, Palworld, FFXIV housing):
-- **Dividend slots** (`ECON.dividend`): a mastered encounter (every achievement in its group done) in a slot pays 5% of its rate an
-  hour of play, filling for 8 game days (8 real hours), then waits. Three slots to start.
-- **Beds**: a material planted grows more of its kind in 6 game hours (15 real minutes).
-- **Upgrades**: more slots and beds, each dearer, in cubes. Later, caught Figments work them.
+Moved (G56, 2026-11-02): Soul Alchemy and the attributes to `docs/plans/SOUL-ALCHEMY.md`; the Spirit Garden's slots, beds and upgrades to
+`docs/plans/SPIRIT-GARDEN.md`. Each is under "Rulings carried from DESIGN.md (section 16...)".
 
 ## 17. Time: one game day is one real hour (the owner, 2026-10-05; settled)
 
-A game day must be tasted in a sitting. `DAY_MS` = 3,600,000 (`core/calendar.js`): a game hour is 2.5 real minutes, a game minute 2.5
-real seconds. The clock runs on the wall clock, scaled, so the garden grows while you are away; one clock for everything (`now()`,
-`today()`), pinned in a replay (`setClock`). Nothing reads `Date.now()` for game time.
-
-**Two kinds of number, never mixed:** the calendar (a Well's drift, ripening, caps, demand) is in game time; rates of income
-(`ECON.perMinute`) are per hour of play. "Seven days" in an achievement means seven game days.
+Moved (G56, 2026-11-02) to `docs/ECONOMY.md`, "Rulings carried from DESIGN.md (section 17...)".
 
 ## 18. Emotional weather (the owner, 2026-10-05; docs/plans/WEATHER.md)
 
-An island's mood falling as Lachryma: mirth, wonder, desire, grief, dread, and calm. Each feeds its damage type, sways mental states,
-draws its fish, makes its crude cheap where it falls, changes the Emocean's danger and the reckoning's reach, and feeds a ruminating
-Well. A pure function of the island and the game hour (same for everyone, replayable, forecastable by Divination). Margarite leans to
-mirth, Entropolis to dread; a dread fog over the King's island (under 1% of game hours) is a hidden achievement. It changes what pays,
-never a skill.
+Moved (G56, 2026-11-02) to `docs/plans/WEATHER.md`, "Rulings carried from DESIGN.md (sections 18 and 19...)".
 
 ## 19. Rulings of 2026-10-05, the weather round
 
-- **Shown order: Wonder, Mirth, Desire, Grief, Dread** (`DISPLAY_ORDER`); the Law-Chaos order (mirth to dread) is the systems' only.
-- **Wells come in radically different genres**; one Courier, one purse, one ledger, the same seven tools in every one.
-- **Weather is asked by place** with an exposure (open, roofed, deep); the open Emocean has no mood.
-- **Hunger is renamed Desire**: neutral, Influence's. *Hunger* is a folk word now. Its crude: crude desire.
-- **The Crucibelle's notes follow the weather** (Wanda's five scales): approved.
-- **A beach** on the Dunes' edge; the weather ends at the waterline. **Entering a Well**: a wordless descent through the maw.
-- **Cycles of expansion and contraction**: the world grows, the player's load does not; every expansion is followed by a contraction
-  pass (docs/plans/WHEEL.md). The baseline creature suite is the Lantern Wisp's 18 clips.
-- **The wheel is approved** (docs/plans/WHEEL.md): one feeling or one **agate**; Plutchik's hues; Faith, Gall and Fury after the
-  slice; about one weather game hour in eight is an agate.
+Moved (G56, 2026-11-02): to `docs/plans/WEATHER.md` (shown order, place, Desire, the Crucibelle), `docs/plans/ENDGAME.md` (Wells as every
+genre), `docs/plans/DUNES.md` (the beach, entering a Well) and `docs/plans/WHEEL.md` (expansion and contraction, the wheel).
 
 ## 20. The stones: how a Courier takes Lachryma in (the owner, 2026-10-06; LORE.md "The stones")
 
-The stones are the vessel's **intake**; every stone trades a gain for a loss (Dark Souls' rings, Path of Exile's keystones). One set
-at a time. The table is `src/progress/stones.js`.
-
-| knob | what it is | wired |
-|---|---|---|
-| **pool** | size, regen, costs (`LachrymaPool` modifiers) | yes (main.js) |
-| **reach** | the bauble magnet's radius | Petra (`courier/lachryma.js`) |
-| **heady** | how far a drink pushes your mental state toward Prismatic (x1.5 power, x2 fragility; brimming four times as far) | Petra |
-| **tint** | how strongly the place's feeling comes in: the **draught**, building its status up to x1.5 | Petra |
-| **gulp** | a cap on the take a real second | Petra |
-| **overflow** | the Lockheart's share, or bled off | Petra |
-
-| Stone | Gain | Cost |
-|---|---|---|
-| Amethyst | sober: heady x0.4, tint x0.5, gulp 25 a real second, overflow bled | slower regen, shorter reach |
-| Citrine | a tenth of what is drunk kept as cubes | 15 less to hold |
-| Moonstone | regen and reach x1.3 at night | x0.85 and x0.9 by day |
-| Onyx | no tint, all overflow to the Lockheart | slower, shorter |
-| Emerald | reach x1.5, tint x2 | heady x1.3 |
-| Sapphire | costs x0.85 | regen x0.8 |
-| Ruby | 30 more to hold | costs x1.15, heady x1.25 |
-| Diamond | an agate's two feelings both drunk | heady x2 |
-| Opal | each drink a chance by Luck: a tenth doubled | a tenth lost |
+Moved (G56, 2026-11-02) to `docs/plans/DICE.md`, "Rulings carried from DESIGN.md (section 20...)", with the table of the stones.
 
 ## 21. The crossing: the Emocean as a rail shooter (the owner, 2026-10-07; docs/plans/RAIL.md)
 
-A hundred bars of Wanda's Crude Sea: the first half teaches one idea an act (the gun and lock-on, polarity, the parry), the second is
-one **set piece** (the shoal, the pirates, the rogue Leviathan), with camera grammars from Star Fox, Ikaruga, Einhander and Sin &
-Punishment.
-- **Pays no cubes** (section 11). Its reward is a rank against a measured par and a medal; its stakes the cargo (pirates take casks:
-  measured -1.4 to +2 casks); the Leviathan is a deck, certain within 14 crossings on the Margarite run.
-- The ship mounts two of your tools (the Crucibelle the bomb, the Veritome photographs the Leviathan); polarity is your draught; the
-  parry is V.
-- `node scripts/rail.mjs` plays it against three players: novices clear the common set piece three times in five, good players
-  always, an expert fells the Leviathan about one time in four. Par and the medal line are re-measured from the ledger once played.
+Moved (G56, 2026-11-02) to `docs/plans/RAIL.md`, "Rulings carried from DESIGN.md (sections 13 and 21)".
 
 ---
 

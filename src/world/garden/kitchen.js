@@ -19,6 +19,7 @@ import { MOVES, scoreOf, tellAt } from '../../progress/cooking/moves.js';
 import { FAMILIES, dishFor, serve, GRADES } from '../../progress/cooking/dishes.js';
 import { tasteOf, balanceOf, ADJUST, INGREDIENTS } from '../../progress/cooking/flavour.js';
 import { itemOf } from '../../pneuka/items.js';
+import { batchMax, autoCookOf, serveAt, BATCH } from '../../progress/cooking/batch.js'; // (G228 hook: batch and auto-cook, Dovina's rules in progress/cooking/batch.js)
 import { COLOR } from '../../progress/weather.js';
 
 const CSS = `
@@ -80,14 +81,29 @@ export class Kitchen {
     const pick = (k) => { this.addin = k; this.show('choose'); };
     btn('PLAIN', () => pick(null), this.addin ? '' : 'on');
     for (const k of Object.keys(have)) btn(`${itemOf(`ing.${k}`)?.name || k} ×${have[k]}`, () => pick(k), this.addin === k ? 'on' : '');
-    if (!Object.keys(have).length) root.appendChild(el('div', 'ck-line', 'Creatures drop what a dish can be seasoned with: a creature of a feeling drops that feeling\'s taste.'));
-    btn('BEGIN', () => this.begin(), 'big');
+    if (!Object.keys(have).length) root.appendChild(el('div', 'ck-line', 'Creatures drop add-ins. A creature of a feeling drops that feeling\'s taste.'));
+    { // (G228 hook: batch and auto-cook, Dovina's rules in progress/cooking/batch.js: up to ten at once once a dish is cooked TRUE three times; auto-cook (the knack) at one grade below your best
+      const dish = `bread.${this.addin || 'plain'}`, L = this.game.ledger, max = batchMax(dish, L, this.addin ? have[this.addin] : Infinity);
+      this.n = Math.min(this.n || 1, max);
+      if (max > 1) for (const k of [...new Set([1, 5, BATCH.max, max])].filter((k) => k <= max).sort((a, b) => a - b)) btn(`×${k}`, () => { this.n = k; this.show('choose'); }, this.n === k ? 'on' : '');
+      const auto = this.game.knacks?.on?.('autoCook') ? autoCookOf(dish, L) : null;
+      if (auto) btn(`AUTO-COOK${this.n > 1 ? ` ×${this.n}` : ''} · ${GRADES.find((G) => G.id === auto).label}`, () => this.autoCook(auto));
+    }
+    btn(this.n > 1 ? `BEGIN ×${this.n}` : 'BEGIN', () => this.begin(), 'big');
     this.draw = () => this.drawDough(0.1, false);
   }
   begin() {
-    if (this.addin) { const i = this.game.pneuka?.slots.findIndex((s) => s?.id === `ing.${this.addin}`); if (i >= 0) this.game.pneuka.take(i); }
-    this.st = { addin: this.addin, scores: [], hits: [], ruined: false, v: 0, beatT: 0, lastBeat: -1, steamed: 0, taste: null, tasted: false };
+    const n = this.n || 1; this.takeAddins(n);
+    this.st = { addin: this.addin, n, scores: [], hits: [], ruined: false, v: 0, beatT: 0, lastBeat: -1, steamed: 0, taste: null, tasted: false };
     this.show('knead');
+  }
+  /** The add-in taken from the Pneuka Box n times (a batch costs its add-in times n; the pantry is free). // (G228 hook: batch and auto-cook, Dovina's rules in progress/cooking/batch.js) */
+  takeAddins(n) { if (this.addin) for (let k = 0; k < n; k++) { const i = this.game.pneuka?.slots.findIndex((s) => s?.id === `ing.${this.addin}`); if (i >= 0) this.game.pneuka.take(i); } }
+  /** Auto-cook: the dish made with no minigame at the grade the rules give (no practice, no seasoning, never TRUE). // (G228 hook: batch and auto-cook, Dovina's rules in progress/cooking/batch.js) */
+  autoCook(grade) {
+    const n = this.n || 1; this.takeAddins(n);
+    const res = serveAt('bread', this.addin, grade); this.C.serve(res, { n, auto: true });
+    this.served = res; this.st = { addin: this.addin, n, served: true, lastBake: 0.7, steamed: 1 }; this.show('served');
   }
 
   // ------------------------------------------------------------------ knead: a beat
@@ -109,22 +125,22 @@ export class Kitchen {
   // ------------------------------------------------------------------ proof: on the game clock
   page_proof(root, row, btn) {
     const C = this.C;
-    if (!C.proofing && this.st) C.startProof(this.st.addin, { score: this.st.scores[0], hit: this.st.hits[0] });
+    if (!C.proofing && this.st) C.startProof(this.st.addin, { score: this.st.scores[0], hit: this.st.hits[0] }, this.st.n || 1); // (G228 hook: batch and auto-cook, Dovina's rules in progress/cooking/batch.js)
     btn('POKE IT', () => { this.poked = 1.2; this.tell(tellAt(MOVES.proof, C.proofValue())); });
     btn('INTO THE OVEN', () => {
       const v = C.proofValue(), p = C.takeProof(); // (a dough left proofing and come back to: its add-in and the knead's score kept with it)
-      if (!this.st) this.st = { addin: p?.addin ?? null, scores: [p?.knead?.score ?? 0.5], hits: [!!p?.knead?.hit], ruined: false };
+      if (!this.st) this.st = { addin: p?.addin ?? null, n: p?.n || 1, scores: [p?.knead?.score ?? 0.5], hits: [!!p?.knead?.hit], ruined: false }; // (G228 hook: batch and auto-cook, Dovina's rules in progress/cooking/batch.js)
       this.finish('proof', v);
     }, 'big');
     btn('LEAVE IT', () => this.close());
-    this.tell('It rises on the game clock while you do other things: about a game hour to double. Come back and poke it.');
+    this.tell('It rises on the game clock, about a game hour to double. Come back and poke it.');
     this.draw = () => { this.lastProof = C.proofValue(); this.drawProof(this.lastProof); };
   }
 
   // ------------------------------------------------------------------ bake: hold, steam early, take out at the colour
   page_bake(root, row, btn) {
     const M = MOVES.bake, S = this.st; S.v = 0; S.steamed = 0;
-    btn('STEAM', () => { if (S.v <= M.steamUntil) { S.steamed = 1; this.tell('A cloud of steam: the crust stays soft while the loaf springs up.'); } else this.tell('Too late for steam: the crust has set.'); });
+    btn('STEAM', () => { if (S.v <= M.steamUntil) { S.steamed = 1; this.tell('Steamed. The crust stays soft while the loaf rises.'); } else this.tell('Too late to steam. The crust has set.'); });
     btn('KNOCK', () => this.tell(tellAt(M, S.v)));
     btn('TAKE IT OUT', () => this.finish('bake', S.v), 'big');
     this.tell('The oven is hot. Steam it in the first minutes, then watch the crust.');
@@ -145,7 +161,7 @@ export class Kitchen {
     const S = this.st, right = S.tasted && (k === B.fix || (!k && B.ok));
     if (S.tasted) this.C.tasted(right);
     const res = serve({ family: 'bread', addin: S.addin, scores: S.scores, hits: S.hits, ruined: S.ruined, adjusted: k, rightFix: right && !!k });
-    this.C.serve(res); this.served = res; S.served = true; this.show('served');
+    this.C.serve(res, { n: S.n || 1 }); this.served = res; S.served = true; this.show('served'); // (G228 hook: batch and auto-cook, Dovina's rules in progress/cooking/batch.js)
   }
 
   // ------------------------------------------------------------------ served
@@ -154,6 +170,7 @@ export class Kitchen {
     root.appendChild(el('div', 'ck-done', `${R.dish.label} · ${G.label}`));
     const D = R.draught;
     root.appendChild(el('div', 'ck-line', D ? `Draught: ${D.feeling.toUpperCase()} at ${Math.round(D.strength * 100)}%, lasting ${D.hold} real seconds. Use the press at the Athanor before it fades.` : 'Dubious. A little Lachryma returns to your pool.'));
+    if (D && (this.st?.n || 1) > 1) root.appendChild(el('div', 'ck-line', `The other ${this.st.n - 1} are in your Pneuka Box: eat one there for its draught. It replaces the one you hold.`)); // (G228 hook: batch and auto-cook, Dovina's rules in progress/cooking/batch.js)
     btn('BAKE ANOTHER', () => { this.st = null; this.show('choose'); });
     btn('CLOSE', () => this.close(), 'big');
     this.tell(R.grade === 'true' ? 'True loaf. Every move was at its heart.' : '');
@@ -166,7 +183,7 @@ export class Kitchen {
     if (move === 'bake') { if (S.steamed) r.score = Math.min(1, r.score + 0.05); else r.score = Math.max(0, r.score - 0.05); S.lastBake = v; } // (oven spring: steam in the first minutes, the rise a loaf gets or misses)
     S.scores.push(r.score); S.hits.push(r.hit); if (r.ruined) S.ruined = true;
     this.C.moved(move, r, `bread.${S.addin || 'plain'}`);
-    if (r.ruined) { this.served = serve({ family: 'bread', addin: S.addin, scores: S.scores, hits: S.hits, ruined: true }); this.C.serve(this.served); S.served = true; return this.show('served'); }
+    if (r.ruined) { this.served = serve({ family: 'bread', addin: S.addin, scores: S.scores, hits: S.hits, ruined: true }); this.C.serve(this.served, { n: S.n || 1 }); S.served = true; return this.show('served'); } // (G228 hook: batch and auto-cook, Dovina's rules in progress/cooking/batch.js)
     this.show({ knead: 'proof', proof: 'bake', bake: 'taste' }[move]);
   }
   tell(s) { if (this.tellEl) this.tellEl.textContent = s; }

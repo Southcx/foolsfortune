@@ -22,9 +22,10 @@ export function strawmanWellAchievements({ C, H, F }) {
   F('sw8', 'hand', "Strawman's Well", 3, 'collect', 'The Whole Repertoire', 'Use every verb of the first wave at least once.', (L) => built.flatMap((s) => s.verbs).filter((v) => L.get(`well.verb.${v}`) >= 1).length, built.flatMap((s) => s.verbs).length);
   F('sw9', 'hand', "Strawman's Well", 5, 'collect', 'Every Trick in the Book', 'Use every verb in Strawman\'s Well.', (L) => Object.keys(VERB).filter((v) => L.get(`well.verb.${v}`) >= 1).length, Object.keys(VERB).length);
   H('sw10', 'hand', "Strawman's Well", 3, 'mechanic', 'Flood Gate', 'Fill a basin with 500 cells of Lachryma in one pour.', 'well.flood.best', 500);
-  // the Arena (FIGHTER.md) and the builds (progress/movementprofiles.js)
+  // the Arena and the flat stage (FIGHTER.md 5) and the builds (progress/movementprofiles.js)
   C('sw11', 'hand', "Strawman's Well", 2, 'mechanic', 'Main Event', 'Take every stock in the Arena.', 'well.stage.clear.arena', 1);
-  C('sw12', 'hand', "Strawman's Well", 3, 'endure', 'Fifty KOs', 'KO 50 straw fighters in the Arena.', 'well.fighter.ko', 50);
+  C('sw15', 'hand', "Strawman's Well", 2, 'mechanic', 'Flat Out', 'Take every stock on the flat stage.', 'well.stage.clear.flatstage', 1); // (the Arena's sw11 beside it)
+  C('sw12', 'hand', "Strawman's Well", 3, 'endure', 'Fifty KOs', 'KO 50 straw fighters on the fighter stages (the Arena and the flat stage).', 'well.fighter.ko', 50);
   F('sw13', 'hand', "Strawman's Well", 2, 'collect', 'Wardrobe', 'Try every movement build at the rack in the wings.', (L) => PROFILE_IDS().filter((id) => id !== 'original' && L.get(`profile.wear.${id}`) >= 1).length, PROFILE_IDS().length - 1);
-  F('sw14', 'hand', "Strawman's Well", 4, 'collect', 'Tournament Ready', 'Use every fighter verb in the Arena at least once.', (L) => (STAGES.find((s) => s.id === 'arena')?.verbs || []).filter((v) => L.get(`well.verb.${v}`) >= 1).length, STAGES.find((s) => s.id === 'arena')?.verbs.length || 1);
+  F('sw14', 'hand', "Strawman's Well", 4, 'collect', 'Tournament Ready', 'Use every fighter verb on the fighter stages at least once.', (L) => (STAGES.find((s) => s.id === 'arena')?.verbs || []).filter((v) => L.get(`well.verb.${v}`) >= 1).length, STAGES.find((s) => s.id === 'arena')?.verbs.length || 1);
 }

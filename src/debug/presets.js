@@ -61,4 +61,22 @@ export const PRESETS = {
     at: 'well.mouth', ledger: { 'well.floor': 9, 'well.foe': 1, 'cut.hit': 300, 'kick.hit': 40 }, best: { 'well.depth': 3, 'well.foe.cls': 2 },
     kit: [['tool.sondelass', 1], ['tool.psygun', 1], ['whistle.wake', 1], ['bottle.medium', 2]], belt: { main: 'sondelass', sub: 'psygun' }, cubes: 3000, lend: {},
   },
+  // the round of 2026-11-02 (G51: a preset a QAIS round, the Brief naming it)
+  clapperjarDuel: {
+    label: 'The clapperjar, rehearsed', for: 'the sparring circle\'s lectern, its CLAP pick (PRACTICE.clap): the aberrant clapperjar\'s board and its clap back secret kept to the duel\'s cue (ABERRANTS.md 5.2); powers to 30 so the duel\'s powers are there',
+    at: 'sparring.circle', ledger: everyDomain(30), kit: [['tool.crucibelle', 1], ['tool.psygun', 1]], belt: { main: 'crucibelle', sub: 'psygun' }, cubes: 500, lend: {},
+  },
+  encoreLearned: {
+    label: 'Encore learned', for: 'the clapperjar\'s secret found once (Encore, its learned skill, in the PvE duel\'s powers: a second drag that turn) and the Lantern Wisp\'s and slip jelly\'s found too, for a duel with all three learned skills',
+    at: 'sparring.circle', ledger: { ...everyDomain(30), 'duel.secret.clapback': 1, 'duel.secret.snuff': 1, 'duel.secret.dissolve': 1, 'duel.won': 3 }, kit: [['tool.crucibelle', 1], ['tool.psygun', 1]], belt: { main: 'crucibelle', sub: 'psygun' }, cubes: 500, lend: {},
+  },
+  hangarOpen: {
+    label: 'The hangar, everything open', for: 'the mech v2 (MECHS.md 9): the frames earned through mk1 to mk5, every technique opened by its count way, the boxing ring\'s circuit open to the champion; set down in the hangar',
+    at: 'hangar', ledger: { 'mech.seal': 3, 'mech.launch': 3, 'giant.down.straw': 1, 'giant.down': 1, 'giant.down.offcable': 1, 'mech.blow': 100, 'mech.step': 2000, 'mech.jump': 150, 'mech.destroy.cells': 1500, 'mech.blow.head': 40, 'mech.prop.hit': 30, 'mech.prop.throw': 20, 'mech.barrier': 30, 'mech.bout.won': 2, 'mech.bout.won.sparring': 1, 'mech.bout.won.heavy': 1 },
+    best: { 'mech.sync.run': 30 }, kit: [], cubes: 1000, lend: {},
+  },
+  biteSense: {
+    label: 'Bite Sense opened', for: 'the angler past 200 hooks set: the knack Bite Sense open (the !!! window x1.3, toggled in the knacks window), at the Weir with the rod',
+    at: 'weir', ledger: { 'angle.hookset': 200, 'angle.hookset.perfect': 30, 'angle.bite': 260, 'fish.total': 150 }, kit: [['tool.sondelass', 1]], belt: { main: 'sondelass', sub: null }, cubes: 300, lend: {},
+  },
 };

@@ -7,7 +7,7 @@
 // the fish they land and the caster shells; a new kind of item is a new entry here and nothing else (the Pneuka Box, its window, the
 // ground, the bank all read this). The seven tools are not items (main and sub: tools/belt.js); TOOL_INFO says what each is.
 //
-//   ITEMS[id] = { id, kind: 'curio' | 'lure' | 'psygun' | 'instrument' | 'heart' | 'key' | 'material' | 'fish' | 'map' | 'bottle' | 'whistle' | 'slab' | 'ingredient', name, glyph, color, tier, examine, card, lure, stack (false, or how many a slot holds) }      itemOf(id)
+//   ITEMS[id] = { id, kind: 'curio' | 'lure' | 'psygun' | 'instrument' | 'heart' | 'key' | 'material' | 'fish' | 'map' | 'bottle' | 'whistle' | 'slab' | 'ingredient' | 'dish', name, glyph, color, tier, examine, card, lure, stack (false, or how many a slot holds) }      itemOf(id)
 //   TOOL_INFO, toolInfo(id) -> { tool, name, place, examine }
 // ---------------------------------------------------------------------------------------
 import { CURIOS, TIERS } from '../world/treasure/treasure.js';
@@ -21,6 +21,7 @@ import { ECON } from '../progress/econ/table.js';
 import { BOTTLES } from '../progress/brushload.js';
 import { PSYGUNS } from '../tools/psygun/kinds.js';
 import { INGREDIENTS } from '../progress/cooking/flavour.js';
+import { servingItem } from '../progress/cooking/batch.js';
 
 export const ITEMS = {};
 /** A slot colour for a hue in degrees (HSL at saturation 0.55, lightness 0.6): the materials, by the middle of their kind's arc. */
@@ -121,4 +122,6 @@ const ING_NAMES = { mint: 'MINT', honey: 'HONEYCOMB', butter: 'BUTTER', chilli: 
 const ING_TONE = { mint: 0x8fe0b8, honey: 0xe8b84a, butter: 0xf2e2a0, chilli: 0xd8452e, bitterleaf: 0x4f6a38, onion: 0xc9a0b8, vinegar: 0x9a8a5a, kombu: 0x3a4a3a, miso: 0xa8743e };
 for (const [k, I] of Object.entries(INGREDIENTS)) if (!I.pantry) ITEMS[`ing.${k}`] = { id: `ing.${k}`, kind: 'ingredient', key: k, name: ING_NAMES[k] || k.toUpperCase(), glyph: '❦', color: ING_TONE[k] ?? 0xb0a080, tier: 0, examine: I.line, card: null, lure: false, stack: 8 };
 
-export const itemOf = (id) => ITEMS[id] || null;
+// a serving of a dish (Spirit Cooking's batch: progress/cooking/batch.js, Dovina's): `dish.<dish>.<grade>`, made on asking (the dishes are
+// too many to list, and the id says all), ten to a slot; eaten from the box for its draught (pneuka/ui.js Eat)
+export const itemOf = (id) => ITEMS[id] || (String(id).startsWith('dish.') ? servingItem(id) : null);

@@ -84,3 +84,27 @@ Cubes go through `game.cubes` with the reasons `well`, `fuel`, `crude`, `bounty`
 Map, Every Nook and Cranium, Bounce Back, A Well Healed (hidden), Cartographer's Cut (a placeholder name, R57). THE EMOCEAN, Sailing:
 Cast Off, Weathered It, Not a Scratch, Ports of Call, Dead Reckoning (a placeholder name, R57); Crude: Black Gold, Gusher, Toxic
 Symbiosis (hidden), Slick (hidden).
+
+
+## Rulings carried from DESIGN.md (sections 11 and 13)
+
+Moved verbatim from `docs/DESIGN.md` by G56 (2026-11-02); the numbered heading stays there as a pointer.
+
+The music bullet of section 13 is in `docs/plans/RAIL.md`.
+
+### Section 11: the three layers (ruled, 2026-10-04)
+
+1. **Wells**: dungeons on an Island of Ego (exploration, cartography, the tactical layer).
+2. **The island**: action combat (the game as it stands).
+3. **The Emocean**: travel between islands, a node map and rail-shooter stages (FTL, KH2's gummy ship).
+
+**The rule for the seams**: one Courier, one purse, one ledger, one set of seven tools across all three. A layer may add verbs, never
+its own currency, levels or gear (KH2's gummy ship is the warning). The Emocean pays at the price at the other end.
+
+### Section 13: rulings of 2026-10-04, evening (the slice)
+
+- **Jellies for now** in the Emocean's stage; the Egregore after the slice.
+- **The Purser buys Cogitomaps**: dearest on Margarite, cheapest on the island whose Well it maps; only a good map pays the trip
+  (`purserPrice`).
+- **Divination charts the course**: a route's **reckoning** (0 to 1, of a game day) marks each wave's lane ahead on the rail and later
+  opens unfound nodes. Knowledge, never numbers (`src/progress/econ/emocean.js`).

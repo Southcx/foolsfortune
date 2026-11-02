@@ -40,3 +40,28 @@ The owner's ask (2026-10-05): a day and night, and **emotional weather**, five c
   - `buildMult` in the creatures (a damage type's build-up in its weather), as before.
 - A rare weather (a dread fog over Margarite, hidden achievement sk4) counting toward Luck.
 - Later, not now: the player's acts sway an island's mood. Wanda: each weather's sound; Espada: whose mood it is, the names.
+
+
+## Rulings carried from DESIGN.md (sections 18 and 19)
+
+Moved verbatim from `docs/DESIGN.md` by G56 (2026-11-02); the numbered heading stays there as a pointer.
+
+The other bullets of section 19 are in `docs/plans/ENDGAME.md`, `docs/plans/DUNES.md` and `docs/plans/WHEEL.md`.
+
+### Section 18: emotional weather (the owner, 2026-10-05)
+
+An island's mood falling as Lachryma: mirth, wonder, desire, grief, dread, and calm. Each feeds its damage type, sways mental states,
+draws its fish, makes its crude cheap where it falls, changes the Emocean's danger and the reckoning's reach, and feeds a ruminating
+Well. A pure function of the island and the game hour (same for everyone, replayable, forecastable by Divination). Margarite leans to
+mirth, Entropolis to dread; a dread fog over the King's island (under 1% of game hours) is a hidden achievement. It changes what pays,
+never a skill.
+
+*(Extended: the five aspects are seven since Gall and Fury were built, `docs/plans/GALL-AND-FURY.md`; the seven feelings are in the glossary.)*
+
+### Section 19: rulings of 2026-10-05, the weather round
+
+- **Shown order: Wonder, Mirth, Desire, Grief, Dread** (`DISPLAY_ORDER`); the Law-Chaos order (mirth to dread) is the systems' only.
+  *(Superseded by the seven feelings' shown order, most positive to most negative: Wonder, Mirth, Desire, Fury, Gall, Grief, Dread; `docs/plans/GALL-AND-FURY.md` and the glossary.)*
+- **Weather is asked by place** with an exposure (open, roofed, deep); the open Emocean has no mood.
+- **Hunger is renamed Desire**: neutral, Influence's. *Hunger* is a folk word now. Its crude: crude desire.
+- **The Crucibelle's notes follow the weather** (Wanda's five scales): approved.

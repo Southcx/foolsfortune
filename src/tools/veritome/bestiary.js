@@ -85,12 +85,29 @@ const JELLY = {
     { id: 'watch', when: st('watch'), text: 'It watches what it does not know (a clapperjar, a stranger) from a distance, turning to keep it in sight.' },
   ],
 };
-export const CREATURES = { clapper: CLAPPER, slipjelly: JELLY };
+const WISP = {
+  name: 'Lantern Wisp', glyph: '♨',
+  blurb: 'A Figment of the Dunes\' nights: a little flame in a lantern on a body of smoke and clay, curious and skittish, that keeps its distance and throws its fire.',
+  facts: [
+    { id: 'seen', when: () => true, text: 'A Lantern Wisp: a flame in a clay lantern, carried by smoke. It hangs in the air as if something were holding it up.' },
+    { id: 'idle', when: st('idle'), text: 'Left alone it hangs still, and its flame burns down low. Tired, it barely moves at all.' },
+    { id: 'wander', when: st('wander'), text: 'It drifts over the sand with no errand, the way a light on a fen drifts.' },
+    { id: 'investigate', when: st('investigate'), battle: true, text: 'A noise draws it: it comes over to look at what it heard, lantern held up. Make one and it will come to you.' },
+    { id: 'watch', when: st('watch'), battle: true, text: 'What it half-saw it watches from where it is, turning to keep it in sight, before it decides.' },
+    { id: 'hunt', when: st('chase'), battle: true, text: 'It fights from eight paces, circling, and backs off if you close: run at it and it gives ground.' },
+    { id: 'cast', when: st('wind'), battle: true, text: 'Its flame swells before it throws a ball of it. Parry the ball and it flies back at the Wisp.' },
+    { id: 'flee', when: st('flee', 'sent home'), battle: true, text: 'Frightened (struck, or one of its kin put out near it), it runs for home with its flame low.' },
+    { id: 'home', when: st('go home'), text: 'It has a home on the sand and will not be drawn more than about twenty-six paces from it.' },
+    { id: 'stunned', when: st('stunned', 'stun', 'sleep', 'halt'), battle: true, text: 'Held still, its smoke stops moving and the flame stands straight up. Long enough for a blade.' },
+    { id: 'aberrant', when: (s) => !!s.ref?.aberrant || s.states.includes('aberrant'), battle: true, text: 'At night one drinks a blot of crude and goes wrong, its flame the colour of the weather where it drank. Come near and it pulls you into its own fight.' },
+  ],
+};
+export const CREATURES = { clapper: CLAPPER, slipjelly: JELLY, wisp: WISP };
 for (const sp of SPECIES) CREATURES[`fish.${sp.id}`] = { name: sp.name, glyph: '❧', blurb: sp.blurb, fish: sp.id, tier: sp.tier, legend: !!sp.legend, facts: fishFacts(sp) };
 export const CREATURE_IDS = Object.keys(CREATURES);
 
 /** Which creature a photographed subject is (or null: a pot is not a creature). */
-export const creatureOf = (s) => (s.kind === 'clapper' ? 'clapper' : s.kind === 'slipjelly' ? 'slipjelly' : s.kind === 'fish' && s.sub ? `fish.${s.sub}` : null);
+export const creatureOf = (s) => (s.sub && CREATURES[`fish.${s.sub}`] ? `fish.${s.sub}` : CREATURES[s.kind] ? s.kind : null); // (a pot is not a creature: no row)
 
 /** The understanding a number of known facts (of so many) is. */
 export const tierOf = (n, of) => (n <= 0 ? 0 : n >= of ? 4 : n >= Math.ceil(of * 2 / 3) ? 3 : n >= 3 ? 2 : 1);
