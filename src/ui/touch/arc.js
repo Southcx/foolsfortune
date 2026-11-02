@@ -158,7 +158,7 @@ export class TouchArc {
     const kicks = ctx === 'foot' && !use; // (nothing to use: A is the kick, V's press, and E (the same press, the parry) stands down so no two tiles are one thing)
     if (kicks) slots = slots.filter((s) => s.slot !== 'E').map((s) => (s.slot === 'A' ? { ...s, action: 'parry' } : s));
     const face = {
-      A: ctx === 'tool' ? { glyph: tc?.[0]?.glyph, word: tc?.[0]?.word, corner: tc?.[0]?.corner } : kicks ? { glyph: null, word: 'KICK' } : { label: use }, // (the kick's glyph is Calissa's to draw: its word until then)
+      A: ctx === 'tool' ? { glyph: tc?.[0]?.glyph, word: tc?.[0]?.word, corner: tc?.[0]?.corner } : kicks ? { glyph: 'kick', word: 'KICK' } : { label: use }, // (the kick's glyph: ui/icons/touchart.js)
       B: blinks ? { glyph: 'blink', word: 'BLINK' } : { glyph: 'dash', word: null },
       C: { glyph: 'jump', word: null }, D: tc ? { glyph: tc[1]?.glyph, word: tc[1]?.word } : null, E: { glyph: 'parry', word: 'PARRY' },
       F: art ? { glyph: art.glyph, word: String(art.word || '').length <= 6 ? art.word : null, charge: art.charge, dim: art.dim } : null, // (a long art's name would fall under the least type in one cell: its glyph alone)

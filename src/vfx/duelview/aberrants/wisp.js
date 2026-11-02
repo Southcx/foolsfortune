@@ -54,7 +54,7 @@ export class WispElite {
   open(state, foe) { this.on = WispElite.fits(state, foe); this.foe = foe; this.dark = 0; this.view.clash.setStyle(this.on ? 1 : 0, 0); }
 
   close() {
-    const L = this.foe?.look; if (L) { L.dim = 1; L.gutter = 0; }
+    const L = this.foe?.look; if (L && typeof L === 'object') { L.dim = 1; L.gutter = 0; } // (only a lantern's look: another body's field of that name is not ours)
     if (this.foe?.model && this.foe.alive !== false) this.foe.model.visible = true;
     this.on = false; this.foe = null; this.count.visible = false; this.view.clash.setStyle(0, 0);
   }

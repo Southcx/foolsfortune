@@ -12,18 +12,19 @@
 // Porcelain, core and trim are plain MeshStandardMaterials (vertex coloured, no program of their own), so the Courier's finish can
 // be chained onto them after the build. Hard surface the house's way: a groove is a real gap between two plates over the core, a
 // chamfer an extrusion's bevel, a socket a cup the ball sits in, so any part's ball fits any part's cup.
-// A FORM (FORMS): the proportions a whole frame is built in: `hero` (the clay warrior) or `doll` (Elemental Gearbolt's mechanical
-// girls and Haydee's white android: a narrow ribcage, wide hips, long tapered legs on a heel, slender arms, smaller hands, a smooth
-// shell and a visor, fewer grooves). Every part reads `S.F`.
+// A FORM (FORMS): the proportions a whole frame is built in: `hero` (the clay warrior), `doll` (Haydee's white android, Elemental
+// Gearbolt's mechanical girls: an hourglass, its ribcage narrow and its hips broad, the legs long on armoured high heels, few grooves)
+// or `drossel` (Drossel von Flügel's: a tall, corseted Victorian robot girl in a crinoline of plates on stiletto legs). Every part
+// reads `S.F`; a form with `fem` set is built by the feminine library (femcores.js, femlegs.js, femlimbs.js, femheads.js).
 // Prior art: the decor kit's Piece (vfx/garden/decorpieces/kit.js); Gundam's real-robot panel lines cut as gaps (Okawara's "realistic
 // joints, panels"); the ball-jointed doll's ball in its cup; kintsugi's gold line on a mend; Elemental Gearbolt (Alfa System, 1997)
-// and Haydee (Haydee Interactive, 2016) for the doll form.
+// and Haydee (Haydee Interactive, 2016) for the doll form; Fireball (Jinni's Animation Studios for Disney Japan, 2008) for drossel.
 //
 //   MECH_LOOK (the palette and the shared sizes)   FORMS   formOf(id)   seg(F)   band(prof, y0, y1, k, n)   profAt(prof, y)   panel(prof, a0, a1, seg)
 //   plate(pts, depth, bev)   sidePlate   mirror   shell(prof, seg, start, len)   sculpt(geo, fn)   curved(prof, th, a0, a1, seg)
 //   cup(r)   limb(p, prof, c, foot, cupR, sc, core)   seam(P, pts, r, c)   labTone(ph, k)   ball(P, r, at)   threadGeometry(r, turns, pitch, tube)
 //   crackNet(r, seed, c) -> Piece   aimOf(dy, dz) -> rotation.x pointing a joint's -Y along (dy, dz)   mechMaterials() -> mats
-//   bake(joint, S, mats, owned) -> the meshes added (one a program)
+//   bake(joint, S, mats, owned) -> the meshes added (one a program)   tube(P, pts, r, c) (a smooth rod through points)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { Piece } from '../../garden/decorpieces/kit.js';
@@ -44,10 +45,11 @@ export const MECH_LOOK = {
 const L = MECH_LOOK, PI = Math.PI;
 
 /** A frame's proportions: limb radii, hand size, the ribcage's [width, -, depth], the hips' width, the head's size, the pauldron's
- *  scale, the joints' balls, a heel (the doll's raised ankle), the grooves' count (1 all, 0 the fewest). */
+ *  scale, the joints' balls, a heel (a raised ankle), the grooves' count (1 all, 0 the fewest), and `fem` (which feminine build). */
 export const FORMS = {
-  hero: { id: 'hero', limb: 1, hand: 1, chest: [1, 1, 1], hips: 1, head: 1, pauldron: 1, joint: 1, heel: 0, grooves: 1 },
-  doll: { id: 'doll', limb: 0.66, hand: 0.8, chest: [0.7, 1, 0.84], hips: 1.32, head: 0.86, pauldron: 0.78, joint: 0.8, heel: 1, grooves: 0 },
+  hero: { id: 'hero', fem: null, limb: 1, hand: 1, chest: [1, 1, 1], hips: 1, head: 1, pauldron: 1, joint: 1, heel: 0, grooves: 1 },
+  doll: { id: 'doll', fem: 'haydee', limb: 0.62, hand: 0.82, chest: [0.66, 1, 0.8], hips: 1.45, head: 0.84, pauldron: 0.7, joint: 0.62, heel: 1, grooves: 0 },
+  drossel: { id: 'drossel', fem: 'drossel', limb: 0.5, hand: 0.74, chest: [0.58, 1, 0.72], hips: 1.1, head: 0.92, pauldron: 0.62, joint: 0.55, heel: 1, grooves: 0 },
 };
 export const formOf = (id) => FORMS[id?.id || id] || FORMS.hero;
 /** One segment's pieces (porcelain, core, trim, gold, labradorite, glow) and the form it is built in. */
@@ -93,6 +95,10 @@ export const cup = (r) => shell([[r * 1.18, -r * 0.24], [r * 1.3, r * 0.1], [r *
 export function limb(p, prof, c, foot, cupR, sc = [1, 1, 1], core = null) {
   p.lathe(prof, { c, sc }, 28); if (cupR) p.geo(cup(cupR), { at: [0, -foot, 0], c: L.ivory });
   if (core) { const r = Math.min(...prof.map(([x]) => x)) * 0.92; core.lathe([[r, prof[0][1]], [r, prof[prof.length - 1][1]]], { c: L.core, sc }, 18); }
+}
+/** A smooth tube through points (a panel's raised line, a lace, a hem), in `P`. */
+export function tube(P, pts, r = 0.04, c = L.gold, seg = 24) {
+  P.geo(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(pts.map((q) => new THREE.Vector3(...q))), seg, r, 6, false), { c });
 }
 /** A kintsugi seam: a gold line run along points (a crack mended), in `P`. */
 export function seam(P, pts, r = 0.035, c = L.gold) { for (let i = 1; i < pts.length; i++) P.rod(pts[i - 1], pts[i], r, { c }, 4); }

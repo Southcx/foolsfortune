@@ -17,7 +17,8 @@
 //                   as its secret goes (duelview/aberrants/wisp.js)
 //                   2 an aberrant slip jelly's bog of Gall (aberrants/jelly.js); 3 Strawman's practice yard at harvest (a stubble field
 //                   under a big pale sky, its fellow dummies, targets and bales on the horizon, bunting, straw on the wind, the chalk
-//                   ring round its feet; aberrants/strawman.js)
+//                   ring round its feet; aberrants/strawman.js); 4 an aberrant clapperjar's festival at night (a kagura stage's boards,
+//                   paper lanterns strung in arcs over lit stalls, fireworks, confetti; its lanterns flaring on each clap: aberrants/clapper.js)
 // It collapses on close. The board's slab (vfx/duelview/board.js) is drawn by the same program in its other mode, split on the same
 // plane, so the Line's seam on the slab and the clash's seam are one cut.
 //
@@ -197,6 +198,63 @@ vec3 yard(vec3 dir, vec2 q, float t, float fl, float gust) {
     col = mix(col, straw * (1.15 - 0.25 * kf), on * inD(segD(o, vec2(-0.018, -0.018 * tilt), vec2(0.018, 0.018 * tilt)) - 0.0011, aa) * (0.9 - 0.3 * kf)); }
   return col;
 }
+// 4 an aberrant clapperjar's festival at night (ABERRANTS.md 5.2; aberrants/clapper.js): Mirth's mind as a matsuri: a kagura stage's
+// hinoki boards round its feet, polished, its lantern light pooled on them, dark gravel beyond; overhead an indigo night warm at the
+// horizon, a row of lit stalls under the shrine's trees, paper lanterns strung in sagging arcs, fireworks opening high up, confetti
+// drifting down. uStyle.y its last clap's swell (the lanterns flare on it). Shapes in angles (azimuth, height), as the yard's
+vec3 festival(vec3 dir, vec2 q, float t, float fl, float clap) {
+  vec3 warm = srgb(vec3(1.0, 0.7, 0.3)), red = srgb(vec3(0.84, 0.15, 0.1)), paper = srgb(vec3(1.0, 0.9, 0.68)), wood = srgb(vec3(0.3, 0.17, 0.09)), hinoki = srgb(vec3(0.74, 0.55, 0.33));
+  float lit = 1.0 + 0.7 * clamp(clap, 0.0, 1.0);
+  if (fl > 0.5) { // the ground: the stage's boards (laid across the board's axis) inside its beam, gravel outside, lantern pools on both
+    vec3 f3 = vW - uOriginF, al = normalize(cross(uPlaneN, vec3(0.0, 1.0, 0.0))); float a = dot(f3, uPlaneN), b = dot(f3, al), fw = fwidth(a) + fwidth(b);
+    float edge = max(abs(a), abs(b)), inside = 1.0 - smoothstep(2.3, 2.3 + max(0.02, fw), edge);
+    float pi = floor(b * 3.2), seam = abs(fract(b * 3.2) - 0.5) * 2.0, joint = abs(fract(a * 0.45 + h21(vec2(pi, 3.0))) - 0.5) * 2.0;
+    seam = mix(seam, 0.0, smoothstep(0.1, 0.35, fw * 3.2)); joint = mix(joint, 0.0, smoothstep(0.1, 0.35, fw * 0.45)); // (the seams fade before they crawl)
+    vec3 board = hinoki * (0.42 + 0.16 * h21(vec2(pi, 7.0)) + 0.12 * fbm(vec2(a * 0.6, b * 9.0)));
+    board *= 1.0 - 0.7 * smoothstep(0.88, 0.97, seam) - 0.5 * smoothstep(0.94, 0.99, joint);
+    float beam = 1.0 - smoothstep(0.0, 0.18 + fw, abs(edge - 2.38)); board = mix(board, wood * 0.6, beam);
+    vec3 gravel = vec3(0.03, 0.025, 0.03) + vec3(0.05, 0.04, 0.035) * vn(vW.xz * 9.0);
+    vec3 col = mix(gravel, board, max(inside, beam));
+    float r = length(vW.xz - uOriginF.xz), pool = exp(-pow(r / 1.8, 2.0)), spots = 0.0;
+    for (int k = 0; k < 4; k++) { float fk = float(k), ang = fk * 1.57 + 0.8; spots += exp(-pow(length(vec2(a, b) - vec2(cos(ang), sin(ang)) * 3.4) / 0.9, 2.0)); } // (pools under the near lanterns)
+    float sheen = pow(fbm(vec2(a * 0.4, b * 0.4) + t * 0.01), 2.0) * inside;
+    return col * (0.55 + 0.9 * pool * lit) + warm * (pool * 0.18 * lit + spots * 0.12) + paper * sheen * 0.06;
+  }
+  float ax = atan(dir.z, dir.x), y = dir.y, aa = max(0.0015, fwidth(y) * 1.2);
+  vec3 col = mix(srgb(vec3(0.42, 0.16, 0.12)) * 0.5, srgb(vec3(0.07, 0.05, 0.2)) * 0.6, smoothstep(-0.02, 0.32, y)); // (an indigo night, warm at the horizon)
+  col = mix(col, srgb(vec3(0.02, 0.015, 0.06)), smoothstep(0.3, 0.9, y));
+  float st = h21(floor(vec2(ax * 60.0, y * 60.0))); col += vec3(0.7) * step(0.996, st) * smoothstep(0.25, 0.5, y) * (0.6 + 0.4 * sin(t * 2.0 + st * 50.0));
+  // the shrine's trees, the stalls under them: a cell a stall, its roof, its lit front, a noren of red and white
+  float th = 0.05 + 0.05 * fbm(vec2(ax * 5.0, 1.0)) + 0.03 * fbm(vec2(ax * 17.0, 4.0)); col = mix(col, srgb(vec3(0.02, 0.025, 0.03)), inD(y - th, aa));
+  float PS = 0.16, sc = floor(ax / PS), sx = (fract(ax / PS) - 0.5) * PS, shs = h21(vec2(sc, 21.0));
+  if (shs > 0.25) { float hw = 0.05 + 0.015 * shs, roof = 0.045 + 0.01 * shs;
+    float front = inD(boxD(vec2(sx, y), vec2(0.0, roof * 0.5), vec2(hw * 0.9, roof * 0.5)), aa), cap = inD(max(abs(sx) - hw, abs(y - roof - 0.008) - 0.009 + abs(sx) * 0.12), aa);
+    float noren = step(roof * 0.62, y) * step(y, roof * 0.95) * step(abs(sx), hw * 0.88), stripe = step(0.5, fract(sx / 0.012));
+    vec3 lamp = warm * (0.55 + 0.25 * sin(t * 1.3 + sc)) * lit; col = mix(col, lamp, front); col = mix(col, mix(red * 0.7, paper * 0.75, stripe) * lit, noren * front); col = mix(col, wood * 0.35, cap); }
+  // the lantern strings: three arcs sagging between far poles, a paper lantern every so often, red or white, swinging, glowing
+  for (int k = 0; k < 3; k++) { float fk = float(k), PB = 0.7 + 0.25 * fk, u = fract(ax / PB + 0.21 * fk), top = 0.16 + 0.1 * fk, yl = top - (0.05 + 0.02 * fk) * (1.0 - pow(2.0 * u - 1.0, 2.0));
+    col = mix(col, vec3(0.01), inD(abs(y - yl) - 0.0012, aa) * 0.9);
+    float LP = 0.045 + 0.01 * fk, li = floor(ax / LP), lx = (fract(ax / LP) - 0.5) * LP, sw = sin(t * 1.6 + li * 1.3) * 0.004, ly = y - (yl - 0.016);
+    vec2 e = vec2((lx - sw) / 0.011, ly / 0.014); float body = length(e), lr = h21(vec2(li, fk + 40.0));
+    vec3 lc = (lr < 0.6 ? red * 1.3 : paper) * lit, glo = (lr < 0.6 ? srgb(vec3(1.0, 0.45, 0.25)) : warm);
+    float rib = 0.75 + 0.25 * smoothstep(0.2, 0.5, abs(fract(e.y * 2.5) - 0.5)), core = 1.0 - smoothstep(0.0, 1.0, body);
+    col += glo * exp(-body * body * 0.35) * 0.08 * lit; col = mix(col, lc * (0.55 + 0.6 * core) * rib, inD(body - 1.0, aa / 0.014));
+    col = mix(col, vec3(0.02), inD(max(abs(lx - sw) - 0.0055, abs(abs(ly) - 0.0145) - 0.0022), aa)); } // (its black caps)
+  // fireworks high up: a cell a shell, now and then a ring of sparks opening and falling
+  vec2 fp = vec2(ax, y), fc = vec2(0.55, 0.22), fcel = floor((fp - vec2(0.0, 0.32)) / fc); float fh = h21(fcel + 61.0), life = fract(t * 0.23 + fh * 7.0);
+  if (fh > 0.55 && fcel.y >= 0.0 && fcel.y < 2.0) { vec2 c = (fcel + vec2(0.3 + 0.4 * h21(fcel + 3.0), 0.5)) * fc + vec2(0.0, 0.32), d = fp - c - vec2(0.0, -0.04 * life * life);
+    float R = 0.09 * sqrt(life), rr = length(d), an = atan(d.y, d.x) / 6.2832 * 16.0, spoke = abs(fract(an) - 0.5) * 2.0;
+    float spark = (1.0 - smoothstep(0.0, 0.006 + 0.01 * life, abs(rr - R))) * (1.0 - smoothstep(0.25, 0.6, spoke)) + exp(-rr * rr * 900.0) * (1.0 - life) * 0.4;
+    float pick = h21(fcel + 9.0); vec3 fcC = pick < 0.33 ? uFoe * 1.4 : pick < 0.66 ? srgb(vec3(1.0, 0.45, 0.6)) : srgb(vec3(0.55, 1.0, 0.6));
+    col += fcC * spark * (1.0 - life) * 0.9; }
+  // confetti drifting down, two layers, each piece turning (its width beating)
+  for (int k = 0; k < 2; k++) { float kf = float(k); vec2 sp = vec2(ax + 0.03 * sin(t * 0.7 + kf), y + t * (0.022 + 0.012 * kf)), cell = vec2(0.05, 0.045), cc = floor(sp / cell);
+    vec2 o = (fract(sp / cell) - 0.5) * cell - vec2((h21(cc + kf * 13.0) - 0.5) * 0.03, (h21(cc + 7.0) - 0.5) * 0.02); float ch = h21(cc + kf * 31.0);
+    float flip = abs(sin(t * (2.0 + 3.0 * ch) + ch * 20.0)), pc = inD(boxD(o, vec2(0.0), vec2(0.0035 * flip + 0.0006, 0.0022)), aa);
+    float pk = h21(cc + 5.0); vec3 cf = pk < 0.3 ? uFoe * 1.3 : pk < 0.5 ? red * 1.4 : pk < 0.7 ? paper : pk < 0.85 ? srgb(vec3(1.0, 0.4, 0.65)) : srgb(vec3(0.4, 0.8, 1.0));
+    col = mix(col, cf * (0.75 + 0.4 * flip), step(0.62, ch) * pc * step(-0.1, y) * (0.95 - 0.35 * kf)); }
+  return col;
+}
 // your half as your Spirit Garden (uGarden: on, bloom, briar, daylight; the garden's mood's colours, aberrants and gardenground.js): its sky
 // by the season and the hour, its planetoids floating round the horizon, a meadow (flowers by its bloom, thorns by its briar), your bound
 // spirits as lights drifting over it (up to four), fireflies after dark; the film still running faintly through it (it is your mind)
@@ -309,7 +367,7 @@ void main() {
   vec3 L = foeLook(q, t, uMotif);
   vec3 foe = mix(uHaze, uFoeDeep, smoothstep(-0.1, 0.5, dir.y));
   foe = foe * (1.0 - L.y * 0.55) + uFoe * L.x * 1.5 + vec3(0.95, 0.97, 1.0) * L.z;
-  if (uStyle.x > 2.5) foe = yard(normalize(vW - uCentre), q, t, fl, uStyle.y); else if (uStyle.x > 1.5) foe = bog(normalize(vW - uCentre), q, t, fl, uStyle.y); else if (uStyle.x > 0.5) foe = fens(normalize(vW - uCentre), q, t, fl, uStyle.y); // (an aberrant's own ground in place of its feeling's: 1 the Wisp's fens, 2 the jelly's bog, 3 Strawman's yard)
+  if (uStyle.x > 3.5) foe = festival(normalize(vW - uCentre), q, t, fl, uStyle.y); else if (uStyle.x > 2.5) foe = yard(normalize(vW - uCentre), q, t, fl, uStyle.y); else if (uStyle.x > 1.5) foe = bog(normalize(vW - uCentre), q, t, fl, uStyle.y); else if (uStyle.x > 0.5) foe = fens(normalize(vW - uCentre), q, t, fl, uStyle.y); // (an aberrant's own ground in place of its feeling's: 1 the Wisp's fens, 2 the jelly's bog, 3 Strawman's yard, 4 the clapperjar's festival)
   vec3 col = mix(cour, foe, k);
   // the seam: crackling light on the Line's plane, pushed on a line
   vec3 along = normalize(cross(uPlaneN, vec3(0.0, 1.0, 0.0)));
