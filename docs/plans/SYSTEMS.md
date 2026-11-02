@@ -72,3 +72,44 @@ Built: E1 a Well (the Great Dunemaw, `world/well/`); E3 the Spirit Garden (`worl
 | E2 | **Cogitomaps as tickets**: a charted map is a ticket to a seeded run of its Well; Spellscription copies a good one; traded and hauled | Dovina (item, value); Petra (the run from a seed) | |
 | E5 | **Island demand beyond crude**: each island wants different kinds of material, classes of Figment, particular Wells | Dovina (the model, simulated first) | |
 | E6 | Contractors, Gambits, the grid and the Metronome | held | a Well's tactical layer, later |
+
+
+## Rulings carried from DESIGN.md (section 10)
+
+The owner, 2026-10-04. Moved verbatim from `docs/DESIGN.md` by G56 (2026-11-02); the numbered heading stays there as a pointer.
+
+Also from section 10: the domains, skill levels, achievements and Luck are in `docs/plans/DOMAINS.md`; the attributes in `docs/plans/SOUL-ALCHEMY.md`.
+
+v0.1 describes a grid-tactics game; its systems are mined, its combat model is not. **Keep**, **adapt**, **hold** or **cut**:
+
+- **Five damage types on a Law-Chaos line** (keep; `src/progress/combat/types.js`): Impact (lawful, physical), Ego (lawful, mental),
+  Influence (neutral, social), Illusion (chaotic, perceptual), Delirium (chaotic, entropic). **Annihilation**: Impact and Delirium
+  amplify each other on a target afflicted by the other. Enough of one type applies its status (Impact: stun, slow, armour break; Ego:
+  doubt, pacified; Influence: charm or taunt, misdirect; Illusion: blind, phantom pain; Delirium: confusion, reality tear). *Adapt*:
+  each tool deals a type; the trump list is to become a closed cycle.
+  *(Superseded in part: "the trump list is to become a closed cycle" is built, Phase B above: Impact > Illusion > Ego > Influence > Delirium > Impact.)*
+- **Mental state, Stoic, Resolved, Balanced, Fluid, Prismatic** (keep): how open a creature is to statuses and buffs.
+- **Emotional Output (EmO)** (keep, central): a Figment's agitation rises as it is fought; its Lachryma yield peaks in a band, past
+  which it enrages; Soothe lowers it. Catch or harvest in the band.
+- **Figment classes**: Guppy, Barracuda, Marlin, Whale, Leviathan (keep). **Traits revealed by reading** (keep: the bestiary).
+  **Wells as dungeons with Etrian Odyssey cartography**, shortcuts and FOEs (keep).
+- **Overflow converted at 20%, up to 50%** (adapt: the Lockheart's conversion mode). **Defeat costs a share of the cubes** (hold).
+  *(Partly superseded by `docs/plans/DICE.md` section 8, item 2: overflow goes to the Lockheart first, then the palm die condenses the rest into cubes. The conversion figures stay as the Lockheart's conversion mode.)*
+- **Later layers**: Contractors, the Ship, Bounties, Psychic Storms (the Emocean now), the grid inside a Well, never the core movement.
+- **Cut**: the post-battle report screen and level-up notifications (the log is the only text feedback).
+
+
+## Rulings carried from DESIGN.md (section 12, items 1, 3, 4 and 6)
+
+Moved verbatim from `docs/DESIGN.md` by G56 (2026-11-02); the numbered heading stays there as a pointer.
+
+Item 2 of section 12 is in `docs/plans/SUBSTRATE.md`; item 5 in `docs/plans/CLARITY.md`.
+
+Rulings of 2026-10-04:
+
+1. **The Lockheart's keys**: LOADED and ECHO cost 6 minutes of play; **a fancy key is reused**, breaking after each opening at a
+   chance that rises with use (`ECON.lockheart.keyWear`: 20%, then 15 points more; about 2.7 openings, never more than seven). Brass
+   is spent.
+3. **Kintsugi**: gold where a crack mends, gone as the mend completes; a subtle sizzle (Wanda's).
+4. **Espada's cast** for commissions and bounties stands (Seger the Witness Cone; Letty Marque and her Tulpa Poll).
+6. **The chests' beams** become a glaze that changes as the chest charges (Calissa's).

@@ -8,3 +8,12 @@
 - **Bigger: not built.** Proposed 1,600 m across (`DUNE.half` 520 to 800, the barrier out to match). It moves the shore, the jetty and
   the crossing's start (all placed against the barrier's 480 m), so it waits on the owner's yes and Petra's measure of the terrain's cost.
 - **Withdrawn (Dovina, 2026-10-25):** the bigger ground. More Dunes come as more areas past the barrier, never a bigger ground (`docs/plans/AREAS.md` 5).
+
+
+## Rulings carried from DESIGN.md (section 19, one bullet)
+
+Moved verbatim from `docs/DESIGN.md` by G56 (2026-11-02); the numbered heading stays there as a pointer.
+
+Rulings of 2026-10-05, the weather round:
+
+- **A beach** on the Dunes' edge; the weather ends at the waterline. **Entering a Well**: a wordless descent through the maw.

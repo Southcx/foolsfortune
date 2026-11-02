@@ -101,3 +101,16 @@ The grain rides all of it (speed, size, regularity, how often an emote fires, wh
 size and the flame carries most of it (`LW_Flame` is emissive, one uniform). **Not yet built:** a creature's clip suite (the Courier's is `courier/anim/suite.js`) (floats
 blended by velocity, the mood loop from `shown().a`, an emote at an onset, the grain's dials on playback), the rig specced in `rom.js`.
 ("Wisp" means only the creature; the spirit press's ring is "lights".)
+
+
+## Rulings carried from DESIGN.md (section 19, two bullets)
+
+Moved verbatim from `docs/DESIGN.md` by G56 (2026-11-02); the numbered heading stays there as a pointer.
+
+Rulings of 2026-10-05, the weather round:
+
+- **Cycles of expansion and contraction**: the world grows, the player's load does not; every expansion is followed by a contraction
+  pass (docs/plans/WHEEL.md). The baseline creature suite is the Lantern Wisp's 18 clips.
+- **The wheel is approved** (docs/plans/WHEEL.md): one feeling or one **agate**; Plutchik's hues; Faith, Gall and Fury after the
+  slice; about one weather game hour in eight is an agate.
+  *(Superseded in part: "Faith, Gall and Fury after the slice" is overtaken by this page's head note: Faith is cut, and Gall and Fury are built as the sixth and seventh feelings, `docs/plans/GALL-AND-FURY.md`.)*

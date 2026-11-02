@@ -236,3 +236,12 @@ still cannot write as a division. If the room is ever opened to people the owner
 
 - The siblings' words (the log's "<Name>: <line>", their meeting scenes): Espada.
 - The sibling's look (one Courier mesh, five glazes: each division's colour): Calissa.
+
+
+## Rulings carried from DESIGN.md (section 14)
+
+The owner, 2026-10-05; after the slice. Moved verbatim from `docs/DESIGN.md` by G56 (2026-11-02); the numbered heading stays there as a pointer.
+
+- Slice first, co-op after: each division gets a clay folk form with abilities suited to its role (the owner's; not argued on balance).
+- **Friendly fire is on**: a fifth of the damage; statuses land on allies with fast-rising tolerance (`combat/friendly.js`: x2 build-up
+  and half the hold the second time, immune the third within 20 real seconds; Monster Hunter, WoW's diminishing returns).

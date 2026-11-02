@@ -622,3 +622,26 @@ gather, and both are wanted. `makeMaterial(kind, seed, tier, won)` takes `{ stre
 - **Espada:** answered (section 4.20's lines; the seals' names to confirm); the folk noticing the soul glow read `game.alchemy.colour` (`s`, 0 .. 1, is the glow's strength; `h` its hue).
 - **Wanda:** answered (section 4: the sound); builds it on `alchemy.step` and `alchemy.fire`.
 - **Petra:** built the first pass (d4597a1); now the press view, the station of 4.2 to 4.13 and the events of 4.19 (4.25), on section 3 as ruled.
+
+
+## Rulings carried from DESIGN.md (sections 10 and 16)
+
+Moved verbatim from `docs/DESIGN.md` by G56 (2026-11-02); the numbered heading stays there as a pointer.
+
+The Spirit Garden half of section 16 is in `docs/plans/SPIRIT-GARDEN.md`.
+
+### Section 10
+
+- **Soul Alchemy's attributes** (adapt: section 16). *Cut*: any attribute that does a skill ("Perception: accuracy" is aim assist).
+
+### Section 16: the progressions, and Soul Alchemy (the owner, 2026-10-05)
+
+One line between the progressions: the **domains** widen the **tools** (what the Courier does); the **attributes** widen the **vessel**
+(what the Courier is). Neither does a skill for the player.
+
+**Soul Alchemy** (`src/progress/alchemy.js`, `materials.js press()`; Potion Craft's map, Atelier): the Courier's **soul colour** (hue
+and saturation, starting grey) walks each material's **path** in the order pressed; the order is the skill. **Firing** inside an
+attribute's target raises it one rank and spends cubes (the long sink); targets narrow with each rank. The seven: **Willpower** (the
+shield's pool), **Focus** (how long built statuses hold), **Charisma** (prices, the haggle), **Perception** (how far ahead intent
+shows), **Dexterity** (drawing and stowing), **Visualization** (the Soul Brush's canvas), **Resilience** (mending; a ship's hits). Luck
+stays apart. The vessel's glow takes the soul colour.

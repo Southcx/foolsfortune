@@ -82,6 +82,9 @@ Lachryma is every feeling; a place carries a few. Gall and Fury are rare under A
   may be Gall or Fury. That makes the rebuilt fight the first place you meet them.
 - **The Emocean, from Entropolis:** the Queen's island's plumes carry Fury and Gall out to sea. A waypoint near Entropolis can have
   either feeling, and a front between a Fury plume and a Dread plume cancels.
+  Built (G112, `PLUME`, `progress/econ/passage.js`): a waypoint in the third of a route nearest Entropolis is Fury or Gall half the
+  time; a Fury waypoint joined to a Dread one cancels, the one further from Entropolis left fair and marked `front`. Measured over 200
+  game days: on Entropolis's routes Gall about 8% of waypoints, Fury 7%, fronts 2 to 4%; Anagami to Margarite as before.
 - **Margarite** never has them (Law's end).
 
 The names of the weathers (WHEEL.md's placeholders, Espada's to settle):
