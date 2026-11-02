@@ -15,7 +15,7 @@
 //
 //   const k = new Kitchen(game)   .open()   .update(dt) (its own animation frame while open)   .step   .close()
 // ---------------------------------------------------------------------------------------
-import { MOVES, scoreOf, tellAt } from '../../progress/cooking/moves.js';
+import { MOVES, scoreOf, tellAt, widthOf } from '../../progress/cooking/moves.js';
 import { FAMILIES, dishFor, serve, GRADES } from '../../progress/cooking/dishes.js';
 import { tasteOf, balanceOf, ADJUST, INGREDIENTS } from '../../progress/cooking/flavour.js';
 import { itemOf } from '../../pneuka/items.js';
@@ -196,6 +196,18 @@ export class Kitchen {
     if (this.step === 'bake' && S) { S.v = Math.min(1.02, S.v + MOVES.bake.rate * raw); if (S.v >= MOVES.bake.over) { this.tell(tellAt(MOVES.bake, S.v)); this.finish('bake', S.v); return; } }
     this.stretched = Math.max(0, (this.stretched || 0) - raw); this.poked = Math.max(0, (this.poked || 0) - raw);
     this.draw?.();
+    if ((this.step === 'proof' || this.step === 'bake') && this.game.knacks?.on?.('thermometer')) this.drawGauge(this.step, this.step === 'proof' ? this.lastProof : S?.v); // (the Thermometer, a knack: progress/knacks.js)
+  }
+
+  /** The Thermometer's bar under the food: the value on the move's own unit, its band (practice's width) and heart marked. Only with the knack. */
+  drawGauge(move, v) {
+    const x = this.cv?.getContext('2d'), M = MOVES[move]; if (!x || !M || v == null) return;
+    const L = 40, W = 480, Y = 218, at = (u) => L + W * Math.max(0, Math.min(1, u)), w = widthOf(M, this.C.practice(move));
+    x.fillStyle = 'rgba(20,12,8,.75)'; x.fillRect(L, Y, W, 10);
+    x.fillStyle = 'rgba(120,200,140,.55)'; x.fillRect(at(M.heart - w), Y, at(M.heart + w) - at(M.heart - w), 10);
+    x.fillStyle = '#ffd36a'; x.fillRect(at(M.heart) - 1, Y - 3, 2, 16);
+    x.fillStyle = '#f4ead8'; x.beginPath(); x.moveTo(at(v), Y - 1); x.lineTo(at(v) - 5, Y - 8); x.lineTo(at(v) + 5, Y - 8); x.fill();
+    x.font = '11px monospace'; x.fillText(`${v.toFixed(2)} (heart ${M.heart})`, L, Y - 4);
   }
 
   // ------------------------------------------------------------------ the drawings (placeholders: Calissa's to dress)

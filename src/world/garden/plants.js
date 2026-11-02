@@ -19,6 +19,8 @@ import { NX, NY, CELL_DIRS, GROUNDS } from './clay.js';
 import { GROUND } from '../../progress/realm.js';
 import { GardenPlants } from '../../vfx/garden/gardenplants.js';
 import { PATCH } from './thornpatches.js';
+import { souredBy, scorchStep } from '../../progress/gardenweather.js';
+import { FEELINGS } from './water.js';
 
 const PLANT = { most: 3, wet: 0.02, every: 1 }; // (stages; metres of water that wets; game hours a step)
 const _d = new THREE.Vector3();
@@ -48,19 +50,31 @@ export class Plants {
     for (const P of this.R.site.planets) {
       const G = this.grids[P.id]; if (!G) continue;
       const clay = this.R.clays[P.id], Wt = this.R.waterworks.waters[P.id]?.w, next = G.slice();
-      const wetAt = (k) => !!Wt && Wt[k] > PLANT.wet, thorny = this.thorny(P);
-      let changed = false;
+      const wetAt = (k) => !!Wt && Wt[k] > PLANT.wet, thorny = this.thorny(P), Wp = this.R.waterworks.waters[P.id];
+      const sour = (k) => wetAt(k) && souredBy(Wp.mix(k), FEELINGS); // (Gall: a cell in water led by Gall wilts as on dead ground and grows none, progress/gardenweather.js)
+      let changed = this.scorch(P, clay);
       for (let k = 0; k < NX * NY; k++) {
         const j = (k / NX) | 0, i = k % NX, nb = [j * NX + (i + 1) % NX, j * NX + (i + NX - 1) % NX, Math.min(NY - 1, j + 1) * NX + i, Math.max(0, j - 1) * NX + i];
         const fertile = SPREADS[clay.ground[k]], wet = wetAt(k) || nb.some(wetAt);
         if (G[k]) {
-          if (!fertile) { next[k] = G[k] - 1; changed = true; continue; } // (ash, slate or bare clay: it wilts)
+          if (!fertile || sour(k)) { next[k] = G[k] - 1; changed = true; continue; } // (ash, slate or bare clay, or soured water: it wilts)
           if (wet && G[k] < PLANT.most) { next[k] = G[k] + 1; changed = true; }
           if (G[k] === PLANT.most && wet) for (const n of nb) if (!G[n] && SPREADS[clay.ground[n]] && !(thorny && thorny[n]) && (wetAt(n) || wet)) { next[n] = 1; changed = true; }
         }
       }
       if (changed) { G.set(next); this.dirty.add(P.id); }
     }
+  }
+
+  /** Fury: moss sat under Fury rain at `stiffAt` or harder for `scorch` game hours turns to ash (the clock per planetoid, the rain falls
+   *  on them all; let go the moment it stops: progress/gardenweather.js scorchStep). True when it scorched. */
+  scorch(P, clay) {
+    const ww = this.R.waterworks, r = scorchStep((this.scorchH ||= {})[P.id] || 0, ww.feeling?.(), ww.rain?.() || 0, PLANT.every);
+    this.scorchH[P.id] = r.hours; if (!r.scorch || !clay) return false;
+    const moss = GROUNDS.indexOf('moss') + 1, ash = GROUNDS.indexOf('ash') + 1; if (moss < 1 || ash < 1) return false;
+    let any = false; for (let k = 0; k < NX * NY; k++) if (clay.ground[k] === moss) { clay.ground[k] = ash; any = true; }
+    if (any) { clay.version++; this.R.reshape?.(P); this.R.game?.events?.emit('garden.scorch', { planetoid: P.id, by: 'environment' }); }
+    return any;
   }
 
   /** The cells under a thorn patch's clumps on P (within PATCH.reach of one), or null when it has none: no green seeds into them. */

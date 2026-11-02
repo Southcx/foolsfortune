@@ -71,7 +71,7 @@ export function courseFrom(F, x, z, steps) {
 export const SIGHT = {
   strata: {
     hold(P, L) { drawSection(P, L.a, L.b); sectionLife = 4; },
-    end(P, L) { const len = drawSection(P, L.a, L.b); sectionLife = 4; P.emit('strata', { len: +len.toFixed(1), act: false }); },
+    end(P, L) { const len = drawSection(P, L.a, L.b); sectionLife = 4; P.emit('strata', { len: +len.toFixed(1), act: false, a: [+L.a.x.toFixed(2), +L.a.z.toFixed(2)], b: [+L.b.x.toFixed(2), +L.b.z.toFixed(2)] }); }, // (the drag's ends, world: a veiled puzzle reads along them, world/mimicry/mimicry.js)
     passive(P, dt) { if (section?.visible && !P.L && (sectionLife -= dt) <= 0) section.visible = false; },
   },
 

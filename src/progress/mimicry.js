@@ -109,7 +109,7 @@ for (const [id, P] of Object.entries(MIMIC_PUZZLES)) { P.id = id; P.family ??= '
 export const MIMIC_LADDER = ['mound', 'hollow', 'twins', 'ditch', 'heap', 'level', 'fill', 'flock', 'claybed', 'order', 'unmade', 'slab', 'swap', 'gate', 'copy', 'moat', 'under'];
 /** The families the runtime runs now (world/mimicry/mimicry.js): a puzzle of another is never open, and the ladder steps over it. The
  *  runtime's builder sets a family true here once its hooks are in (docs/handoffs/petra/2026-11-02-from-dovina-mimicry-puzzles.md). */
-export const MIMIC_RUNS = { matter: true, creation: false, herd: false };
+export const MIMIC_RUNS = { matter: true, creation: true, herd: false }; // (creation: Petra's hooks in, 2026-11-02; herd waits on clapperjars Herd can walk)
 export const MIMIC_LIVE = MIMIC_LADDER.filter((id) => MIMIC_RUNS[MIMIC_PUZZLES[id].family]);
 /** Open: the first live rung, or the live one before it solved; in DEBUG, the lend panel's `mimicry` row opens every live one. */
 export const mimicOpen = (id, L, g = null) => {

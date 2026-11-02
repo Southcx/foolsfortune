@@ -41,6 +41,7 @@ export const SUBJECTS = {
     const states = new Set([c.state]), aware = awareOf(g, c);
     if (aware >= 0.35) states.add('aware');
     for (const k of c.status?.keys() || []) states.add(k);
+    if (c.aberrant) states.add('aberrant'); // (a plate of an aberrant Wisp teaches the bestiary's aberrant fact: bestiary.js, G169)
     return { pos: c.center(new THREE.Vector3()), r: 0.6, ref: c, states, aware, engaged: aware >= 1 && ['chase', 'wind'].includes(c.state), facing: new THREE.Vector3(Math.sin(c.yaw), 0, Math.cos(c.yaw)) };
   }) },
   clapper: { name: 'clapperjar', find: (g) => (g.clappers?.list || []).filter((c) => c.alive).map((c) => {
@@ -48,6 +49,7 @@ export const SUBJECTS = {
     if (!c.grounded || c.state === 'knocked') st.add('air');
     if ((c.stash || 0) >= 3 || c.raider) st.add('greed');
     if (c.raider) st.add('raider');
+    if (c.aberrant) st.add('aberrant'); // (one gone wrong in Mirth's weather: creatures/clapperaberrant.js)
     if (c.ally) st.add('ally');
     if (c.state === 'mendGo') st.add('mend');
     // infighting: a turned jar on a raider's heels, or a raider it has just knocked down

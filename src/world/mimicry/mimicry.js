@@ -11,17 +11,18 @@
 //
 //   game.mimicry = new Mimicry(game)   (boot/rooms.js)   .update(dt) (boot/frame.js)   .active   .lends(power) -> bool   .tool(power, key)
 //   events: mimic.open { puzzle, mode, site }   mimic.turn { puzzle }   mimic.solve { puzzle, label, mode, tier, match, stars, strokes,
-//   par, made, powers, domains, first, day }   mimic.leave { puzzle, match }   (each with by: 'courier'; tracking/mimicry.js books them)
+//   par, made, powers, domains, first, day }   mimic.leave { puzzle, match }   mimic.read { puzzle, cells } (a veil read)   .veiled() -> mask | null   (each with by: 'courier'; tracking/mimicry.js books them)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
-import { MIMIC, MIMIC_SITES, MIMIC_LADDER, MIMIC_PUZZLES, MIMIC_TOOL, mimicOpen, framesOn, dayPuzzle, lay, snap, restore, matchOf, gradeOf, siteAt, siteOf, eachCell } from '../../progress/mimicry.js';
+import { MIMIC, MIMIC_SITES, MIMIC_LADDER, MIMIC_PUZZLES, MIMIC_TOOL, mimicOpen, framesOn, dayPuzzle, lay, snap, restore, scoreOf, unveil, gradeOf, siteAt, siteOf, eachCell } from '../../progress/mimicry.js';
+import { sculptOf, voxelSnap, restoreVoxels } from '../../progress/mimicrysculpt.js';
 import { DUNES_AREAS } from '../../progress/areas.js';
 import { today } from '../../core/calendar.js';
 import { DUNE } from '../dunes/dunes.js';
 import { ECON } from '../../progress/econ/table.js';
 import { ARTS } from '../../godhand/arts.js';
 
-const STROKES = { 'god.shape': 'shape', 'god.carve': 'carve', 'god.scoop': 'scoop', 'god.pour': 'scoop', 'god.transmute': 'transmute', 'god.fold': 'fold', 'god.stamp': 'stamp', 'god.slab': 'slab' };
+const STROKES = { 'god.shape': 'shape', 'god.carve': 'carve', 'god.scoop': 'scoop', 'god.pour': 'scoop', 'god.transmute': 'transmute', 'god.fold': 'fold', 'god.stamp': 'stamp', 'god.slab': 'slab', 'god.sculpt': 'sculpt', 'god.herd': 'herd' }; // (a Layer View read, god.strata, is not a stroke: it lifts the veil)
 const TICK = 0.5, IDLE = 2; // (real seconds between scorings; a clean copy left alone this long is finished)
 
 export class Mimicry {
@@ -30,8 +31,11 @@ export class Mimicry {
     this.stones = MIMIC_SITES.map((site) => this.stone(site));
     game.interact?.add('mimicry', () => this.offer());
     for (const ev of Object.keys(STROKES)) game.events?.on?.(ev, (e) => this.stroke(ev, e));
+    game.events?.on?.('god.strata', (e) => this.read(e));
   }
   get active() { return !!this.S; }
+  /** A veiled puzzle's cells still hidden (fr.veil && !read), patch cells in snap's order, or null: the ghost hides them. */
+  veiled() { const S = this.S; if (!S?.fr.veil) return null; const out = new Uint8Array(S.fr.veil.length); for (let o = 0; o < out.length; o++) out[o] = S.fr.veil[o] && !S.read[o] ? 1 : 0; return out; }
   /** A power the open puzzle lends (only its own, only while it is open). */
   lends(power) { return !!this.S && this.S.P.powers.includes(power); }
   /** The puzzle's fixed toolkit number for a power (null: the ramp's own). */
@@ -68,13 +72,13 @@ export class Mimicry {
     }
     const at = st.patch, F = g.matter?.ensure?.(new THREE.Vector3(at.x, at.y, at.z));
     if (!F) return;
-    const fr = framesOn(F, P, at); // (made on a copy of the island's own field: its grid and its slope)
+    const fr = framesOn(F, P, at, g.creations?.grid); // (made on a copy of the island's own field: its grid and its slope; a creation's start what already stands on the patch)
     restore(F, at, fr.start);
     if (!g.god?.controlling) g.god?.toggle?.();
     if (!g.god?.controlling) { g.log?.say('warn', 'You need solid ground to take the hand.', { key: 'mimic.ground', throttle: 3 }); return; }
     g.god.cam?.focus?.set(at.x, at.y, at.z); // (the view on the patch, not on the Courier beside the stone)
     const first = ARTS.findIndex((a) => a.id === P.powers[0]); if (first >= 0) g.god.arts?.select?.(first); // (the puzzle's first power in hand)
-    this.S = { P, st, at, F, fr, t: 0, tick: 0, idle: 0, strokes: 0, made: 0, match: 0, demo: P.mode === 'mimic' ? { i: 0, t: MIMIC.replay } : null };
+    this.S = { P, st, at, F, fr, read: fr.veil ? new Uint8Array(fr.veil.length) : null, t: 0, tick: 0, idle: 0, strokes: 0, made: 0, match: 0, demo: P.mode === 'mimic' ? { i: 0, t: MIMIC.replay } : null };
     g.events?.emit('mimic.open', { puzzle: P.id, label: P.label, line: P.line, mode: P.mode, site: st.site.id, powers: P.powers, by: 'courier' });
   }
 
@@ -92,14 +96,32 @@ export class Mimicry {
     eachCell(S.F, S.at, (k) => { S.F.kept[k] = 1; }); // (the mending passes the patch by while the puzzle is open: godhand/matter.js kept)
     if (S.demo) { // (the System's own steps, one a beat, then the patch put back)
       if ((S.demo.t -= raw) > 0) return;
-      if (S.demo.i < S.P.steps.length) { lay(S.F, [S.P.steps[S.demo.i]], S.at); g.events?.emit('mimic.step', { puzzle: S.P.id, i: S.demo.i, op: S.P.steps[S.demo.i].op, by: 'courier' }); S.demo.i++; S.demo.t = MIMIC.replay; return; }
-      restore(S.F, S.at, S.fr.start); S.demo = null; g.events?.emit('mimic.turn', { puzzle: S.P.id, by: 'courier' }); return;
+      if (S.demo.i < S.P.steps.length) { this.demoStep(S.P.steps[S.demo.i]); g.events?.emit('mimic.step', { puzzle: S.P.id, i: S.demo.i, op: S.P.steps[S.demo.i].op, by: 'courier' }); S.demo.i++; S.demo.t = MIMIC.replay; return; }
+      restore(S.F, S.at, S.fr.start); this.putBack(); S.demo = null; g.events?.emit('mimic.turn', { puzzle: S.P.id, by: 'courier' }); return;
     }
     if (!g.god?.controlling) { this.finish(true); return; } // (the hand put away: judged as it stands)
     S.idle += raw;
     if ((S.tick -= raw) > 0) return;
-    S.tick = TICK; S.match = matchOf(snap(S.F, S.at), S.fr.target, S.fr.start);
+    S.tick = TICK; S.match = scoreOf(S.fr, S.fr.family === 'creation' ? { voxels: g.creations ? voxelSnap(g.creations.grid, S.at) : null } : { snap: snap(S.F, S.at) });
     if (S.match >= MIMIC.clean && S.idle >= IDLE) this.finish(false);
+  }
+
+  /** One of the System's steps: the matter's laid on the field; a creation's raised by the hand's own Sculpt (godhand/creations.js). */
+  demoStep(step) {
+    const S = this.S, C = this.game.creations;
+    if (step.op === 'sculpt') { if (C) { const c = sculptOf(step, (x, z) => S.F.groundAt(x, z), S.at); C.raise(c.shape, c.a, c.b, c.opts); } return; }
+    lay(S.F, [step], S.at);
+  }
+  /** The demonstration over: a creation puzzle's creations put back as they stood (restoreVoxels), the chunks queued to remesh. */
+  putBack() {
+    const S = this.S, C = this.game.creations; if (S?.fr.family !== 'creation' || !C) return;
+    restoreVoxels(C.grid, S.fr.vstart); for (const k of C.grid.takeDirty()) C.queue.add(k);
+  }
+  /** A Layer View read over a veiled puzzle: the veil lifted along its line (progress/mimicry.js unveil). */
+  read(e) {
+    const S = this.S; if (!S?.read || !e?.a || !e?.b) return;
+    const n = unveil(S.read, [e.a[0] - S.at.x, e.a[1] - S.at.z], [e.b[0] - S.at.x, e.b[1] - S.at.z]);
+    if (n > 0) this.game.events?.emit('mimic.read', { puzzle: S.P.id, cells: n, by: 'courier' });
   }
 
   finish(left) {

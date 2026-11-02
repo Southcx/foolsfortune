@@ -24,6 +24,7 @@
 //   H.setArt(a)   H.setSize(m)   H.keep(entry)   H.undoLast()   H.undo()
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { strokeK } from '../../progress/gardenweather.js';
 import { sfx } from '../../audio/sfx.js';
 import { FEATURES, costOf } from '../../progress/realm.js';
 import { FEELING_COLOR } from './plots.js';
@@ -215,7 +216,8 @@ export class GardenHand {
     if ((this.brushT -= dt) > 0) return;
     this.brushT = HAND.every;
     if (this.stroke.path && this.stroke.planet === P) this.stroke.path.push(dir.clone());
-    if (clay.brush(dir, how, STROKE[how] ?? 0.12, this.size, { to: this.stroke.to })) { this.stroke.moved = true; this.R.reshape(P); this.R.waterworks?.disturb(P); }
+    const ww = this.R.waterworks, stiff = strokeK(ww?.feeling?.(), ww?.rain?.() || 0); // (Fury rain bakes the clay: strokes half as strong, progress/gardenweather.js)
+    if (clay.brush(dir, how, (STROKE[how] ?? 0.12) * stiff, this.size, { to: this.stroke.to })) { this.stroke.moved = true; this.R.reshape(P); this.R.waterworks?.disturb(P); }
   }
   /** A stroke kept to undo, stamped in the realm's one count of undoable acts (decor's are stamped there too: decorlayer.js push). */
   keep(u) { u.n = this.R.undoN = (this.R.undoN || 0) + 1; this.undos.push(u); if (this.undos.length > STROKE.undo) this.undos.shift(); }
