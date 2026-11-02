@@ -10,12 +10,13 @@
 // Solar Skiffing trial (world/dunes/solar.js: begun at a thing in the world, its course laid on the Dunes' own ground).
 //
 //   game.mimicry = new Mimicry(game)   (boot/rooms.js)   .update(dt) (boot/frame.js)   .active   .lends(power) -> bool   .tool(power, key)
-//   events: mimic.open { puzzle, mode, site }   mimic.turn { puzzle }   mimic.solve { puzzle, label, mode, tier, match, stars, strokes,
+//   events: mimic.open { puzzle, mode, family, site }   mimic.turn { puzzle }   mimic.solve { puzzle, label, mode, tier, match, stars, strokes,
 //   par, made, powers, domains, first, day }   mimic.leave { puzzle, match }   mimic.read { puzzle, cells } (a veil read)   .veiled() -> mask | null   (each with by: 'courier'; tracking/mimicry.js books them)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { MIMIC, MIMIC_SITES, MIMIC_LADDER, MIMIC_PUZZLES, MIMIC_TOOL, mimicOpen, framesOn, dayPuzzle, lay, snap, restore, scoreOf, unveil, gradeOf, siteAt, siteOf, eachCell } from '../../progress/mimicry.js';
 import { sculptOf, voxelSnap, restoreVoxels } from '../../progress/mimicrysculpt.js';
+import { MimicFlock } from './flock.js';
 import { DUNES_AREAS } from '../../progress/areas.js';
 import { today } from '../../core/calendar.js';
 import { DUNE } from '../dunes/dunes.js';
@@ -27,7 +28,7 @@ const TICK = 0.5, IDLE = 2; // (real seconds between scorings; a clean copy left
 
 export class Mimicry {
   constructor(game) {
-    this.game = game; this.S = null;
+    this.game = game; this.S = null; this.flock = new MimicFlock(game); // (a herd puzzle's clapperjars: world/mimicry/flock.js)
     this.stones = MIMIC_SITES.map((site) => this.stone(site));
     game.interact?.add('mimicry', () => this.offer());
     for (const ev of Object.keys(STROKES)) game.events?.on?.(ev, (e) => this.stroke(ev, e));
@@ -78,8 +79,9 @@ export class Mimicry {
     if (!g.god?.controlling) { g.log?.say('warn', 'You need solid ground to take the hand.', { key: 'mimic.ground', throttle: 3 }); return; }
     g.god.cam?.focus?.set(at.x, at.y, at.z); // (the view on the patch, not on the Courier beside the stone)
     const first = ARTS.findIndex((a) => a.id === P.powers[0]); if (first >= 0) g.god.arts?.select?.(first); // (the puzzle's first power in hand)
+    if (fr.family === 'herd') this.flock.spawn(fr.flock, at, fr.pen, F); // (after the patch is restored to its start: the bodies stand on its bed)
     this.S = { P, st, at, F, fr, read: fr.veil ? new Uint8Array(fr.veil.length) : null, t: 0, tick: 0, idle: 0, strokes: 0, made: 0, match: 0, demo: P.mode === 'mimic' ? { i: 0, t: MIMIC.replay } : null };
-    g.events?.emit('mimic.open', { puzzle: P.id, label: P.label, line: P.line, mode: P.mode, site: st.site.id, powers: P.powers, by: 'courier' });
+    g.events?.emit('mimic.open', { puzzle: P.id, label: P.label, line: P.line, mode: P.mode, family: P.family, site: st.site.id, powers: P.powers, by: 'courier' });
   }
 
   stroke(ev, e) {
@@ -93,28 +95,32 @@ export class Mimicry {
     if (!this.S && it?.id === 'mimicry' && PL?.peekLatch?.('KeyF')) { PL.latch('KeyF'); const st = this.stones.find((s) => `mimic.${s.site.id}` === it.ref); if (st) this.start(st); }
     const S = this.S; if (!S) return;
     const raw = g.rawDt ?? dt; S.t += raw;
+    this.flock.update(raw);
     eachCell(S.F, S.at, (k) => { S.F.kept[k] = 1; }); // (the mending passes the patch by while the puzzle is open: godhand/matter.js kept)
     if (S.demo) { // (the System's own steps, one a beat, then the patch put back)
       if ((S.demo.t -= raw) > 0) return;
       if (S.demo.i < S.P.steps.length) { this.demoStep(S.P.steps[S.demo.i]); g.events?.emit('mimic.step', { puzzle: S.P.id, i: S.demo.i, op: S.P.steps[S.demo.i].op, by: 'courier' }); S.demo.i++; S.demo.t = MIMIC.replay; return; }
+      if (this.flock.bodies.some((c) => c.godWalk)) return; // (a herd step's bodies still walking: the turn waits for them)
       restore(S.F, S.at, S.fr.start); this.putBack(); S.demo = null; g.events?.emit('mimic.turn', { puzzle: S.P.id, by: 'courier' }); return;
     }
     if (!g.god?.controlling) { this.finish(true); return; } // (the hand put away: judged as it stands)
     S.idle += raw;
     if ((S.tick -= raw) > 0) return;
-    S.tick = TICK; S.match = scoreOf(S.fr, S.fr.family === 'creation' ? { voxels: g.creations ? voxelSnap(g.creations.grid, S.at) : null } : { snap: snap(S.F, S.at) });
+    S.tick = TICK; S.match = scoreOf(S.fr, S.fr.family === 'creation' ? { voxels: g.creations ? voxelSnap(g.creations.grid, S.at) : null } : S.fr.family === 'herd' ? { bodies: this.flock.local(S.at) } : { snap: snap(S.F, S.at) });
     if (S.match >= MIMIC.clean && S.idle >= IDLE) this.finish(false);
   }
 
   /** One of the System's steps: the matter's laid on the field; a creation's raised by the hand's own Sculpt (godhand/creations.js). */
   demoStep(step) {
     const S = this.S, C = this.game.creations;
+    if (step.op === 'herd') { this.flock.demo(step, S.at); return; }
     if (step.op === 'sculpt') { if (C) { const c = sculptOf(step, (x, z) => S.F.groundAt(x, z), S.at); C.raise(c.shape, c.a, c.b, c.opts); } return; }
     lay(S.F, [step], S.at);
   }
   /** The demonstration over: a creation puzzle's creations put back as they stood (restoreVoxels), the chunks queued to remesh. */
   putBack() {
-    const S = this.S, C = this.game.creations; if (S?.fr.family !== 'creation' || !C) return;
+    const S = this.S, C = this.game.creations; if (S?.fr.family === 'herd') { this.flock.reset(S.at); return; }
+    if (S?.fr.family !== 'creation' || !C) return;
     restoreVoxels(C.grid, S.fr.vstart); for (const k of C.grid.takeDirty()) C.queue.add(k);
   }
   /** A Layer View read over a veiled puzzle: the veil lifted along its line (progress/mimicry.js unveil). */
@@ -126,7 +132,7 @@ export class Mimicry {
 
   finish(left) {
     const g = this.game, S = this.S; if (!S) return;
-    this.S = null;
+    this.S = null; this.flock.clear(); // (the puzzle's clapperjars sunk into the sand, counted nowhere)
     const G = gradeOf({ match: S.match, strokes: S.strokes, par: S.P.par, made: S.made, allow: S.fr.made });
     if (!G.solved) { g.events?.emit('mimic.leave', { puzzle: S.P.id, match: G.match, by: 'courier' }); return; }
     const L = g.ledger, first = !((L?.get?.(`god.mimic.solved.${S.P.id}`) || 0) > 0), day = S.P.id === 'day' ? today() : null;
