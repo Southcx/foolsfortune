@@ -32,7 +32,8 @@ const BY_TYPE = Object.fromEntries(TRAITS.map((t) => [t.type, t]));
 /** A species' mean grain (its island's ego's climate; LORE.md). The slip jellies were the boomtown's folk: bold and erratic. */
 export const SPECIES = {
   slipjelly: { o: 0.2, c: -0.6, e: 0.7, a: -0.2, n: 0.3 },
-  lanternwisp: { o: 0.5, c: 0.2, e: -0.3, a: 0.4, n: 0.4 }, // (a placeholder: the owner's baseline creature)
+  wisp: { o: 0.5, c: 0.2, e: -0.3, a: 0.4, n: 0.4 }, // (the Lantern Wisp, keyed by its creature kind `wisp`: curious and skittish, it keeps its distance; a placeholder, the owner's baseline creature)
+  clapper: { o: 0.4, c: -0.2, e: 0.3, a: 0.5, n: 0.5 }, // (the clapperjar, kind `clapper`: the clay folk's earthenware, chatty, gentle and easily frightened: it claps, then runs)
 };
 /** How far individuals stray from their species' mean (an Egregore, authored by no one, strays furthest). */
 export const SPREAD = { figment: 0.35, egregore: 0.7 };

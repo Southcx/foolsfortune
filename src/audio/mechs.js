@@ -13,14 +13,13 @@
 //           a rival's blow by its tell (TELL, the move's own: the ear learns it as the eye does), `bout.strike` its blow landing on you
 //           (answered: a whiff past), `bout.punch` yours (landed by k; blocked a dull clank; a counter brighter; the star's punch the
 //           biggest), `bout.star` a star gained (a twinkle) or spent, `bout.hearts` winded (a dry wheeze of the frame), `bout.down` a
-//           frame down and the crowd, `bout.count` the count (a bell tick a number, rising), `bout.up` back up, `bout.joint` a joint
-//           strained (a creak) or snapped (a crack), `bout.over` the bell rung out (won: the crowd and a brass button; lost: one low bell)
+//           frame down and the crowd, `bout.count` the count (a bell tick a number, rising), `bout.up` back up, `bout.over` the bell rung out (won: the crowd and a brass button; lost: one low bell)
 //
 // Prior art: Punch-Out!! (the tells' own sounds, the bell, the ref's count, the crowd), Pacific Rim's and Evangelion's weight (a launch's
 // hydraulics, a step's sub), the Shrine Gate's wake for the neuralese (audio/shrines.js's suzu), Rock 'Em Sock 'Em's spring.
 //
 //   sfx.mechMount(beat, n) .cityBreak(cells, chunks) .cityFelled(topple) .cityLand(k, on) .boutBell(n) .boutTell(tell) .boutStrike(answered, k)
-//      .boutPunch(e) .boutStar(stars) .boutWinded() .boutDown(who) .boutCount(n) .boutUp() .boutJoint(to) .boutOver(winner)
+//      .boutPunch(e) .boutStar(stars) .boutWinded() .boutDown(who) .boutCount(n) .boutUp() .boutOver(winner)
 // ---------------------------------------------------------------------------------------
 
 const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
@@ -36,7 +35,7 @@ const TELL = {
 };
 /** Each moment's level against the parry's clang (set by ear in the probe). */
 const LEVEL = { 'mount.lift': 1.3, 'mount.turn': 3.2, 'mount.lock': 1.35, 'mount.wake': 2.6, 'mount.power': 1.45, city: 1, felled: 0.62, land: 1.25, bell: 1.45, tell: 2.6,
-  strike: 1.95, punch: 4.3, star: 3.2, winded: 3.5, down: 1, up: 2, count: 5.5, 'joint.strain': 10, 'joint.snap': 1.4, won: 1.6, lost: 2 };
+  strike: 1.95, punch: 4.3, star: 3.2, winded: 3.5, down: 1, up: 2, count: 5.5, won: 1.6, lost: 2 };
 
 export class MechSounds {
   mechOut(key, gain, verb, ui = false) { const d = this.ctx.createGain(); d.gain.value = LEVEL[key] ?? 1; d.connect(this.out(gain, verb, ui)); setTimeout(() => d.disconnect(), 9000); return d; }
@@ -134,12 +133,6 @@ export class MechSounds {
     const t = this.ctx.currentTime, d = this.mechOut('up', 0.4, 0.6);
     this.noise(t, 0.6, { type: 'bandpass', f0: 1200, f1: 700, q: 1, gain: 0.2, attack: 0.1, dest: d }); this.tone(t, 0.6, { f0: 80, f1: 140, gain: 0.15, dest: d }); // (hydraulics up off the mat)
     this.mechCrowd(t + 0.3, 1.2, 0.1, d);
-  }
-  boutJoint(to = 'fractured') {
-    if (!this.ok() || !this.allow('boutJoint', 4)) return;
-    const t = this.ctx.currentTime, d = this.mechOut(to === 'snapped' ? 'joint.snap' : 'joint.strain', 0.4, 0.4);
-    if (to === 'snapped') { this.noise(t, 0.05, { type: 'highpass', f0: 2500, gain: 0.5, dest: d }); this.mechClang(t, 0.7, d, 260); return; } // (a joint snapped)
-    for (let i = 0; i < 5; i++) this.noise(t + i * 0.04, 0.03, { type: 'bandpass', f0: 500 + i * 120, q: 8, gain: 0.3, dest: d }); // (a joint strained: steel creaking)
   }
   boutOver(winner = 'me') {
     if (!this.ok() || !this.allow('boutOver', 1)) return;

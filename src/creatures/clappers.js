@@ -762,7 +762,7 @@ export class Clappers {
   goWrong(c, aspect, shiny = false) { return goWrongClapper(this, c, aspect, shiny); } // (an aberrant clapperjar: creatures/clapperaberrant.js)
   hit(c, point, dir, power = 1, cause = 'shot', custom = null) {
     if (!c.alive) return;
-    if (c.aberrant && !c.dataBugMended) { if (point) this.game.glyphs?.pop('ward', point.clone(), { color: 0xffffff, size: 0.7, life: 0.7, float: 0.25, burst: true, ring: true }); return; } // (an aberrant takes no blow in the world: its duel is how it is met, creatures.js strike)
+    if ((c.aberrant && !c.dataBugMended) || c.puzzle) { if (point) this.game.glyphs?.pop('ward', point.clone(), { color: 0xffffff, size: 0.7, life: 0.7, float: 0.25, burst: true, ring: true }); return; } // (an aberrant takes no blow in the world: its duel is how it is met, creatures.js strike)
     if (c.aberrant || c.dataBugMended) this.game.creatures?.remove(c); // (out of the registry with its body: goWrong)
     c.alive = false;
     if (point) this.game.vfx?.hit({ ent: c, kind: 'clapper', cause, point, dir, power, kill: true }); // (vfx/library.js 'hit.*')

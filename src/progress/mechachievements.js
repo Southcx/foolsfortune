@@ -10,6 +10,7 @@
 // ---------------------------------------------------------------------------------------
 import { LEG_TYPES } from './mechs/parts.js';
 import { TECHNIQUE_IDS } from './mechs/techniques.js';
+import { CHALLENGE_IDS } from './mechs/challenges.js';
 
 export const MECH_LEGS = Object.keys(LEG_TYPES);
 
@@ -31,5 +32,13 @@ export function mechAchievements({ C, H, F }) {
   C('mk14', 'hand', 'The Hangar', 3, 'mechanic', 'Bring It Down', 'Bring a building down with one blow.', 'mech.destroy.topple', 1);
   C('mk15', 'hand', 'The Hangar', 4, 'mechanic', 'Under the Rubble', 'Fell a giant with a falling building.', 'giant.down.weapon.rubble', 1);
   C('mk16', 'hand', 'The Hangar', 3, 'mechanic', 'Spare Parts', 'Strike a giant with its own torn-off arm.', 'mech.limb.own', 1);
+  // the night of 2026-11-02 (MECHS.md 11): the smash challenges and the giants' wrestling (words placeholders, Espada's)
+  F('mk18', 'hand', 'The Hangar', 2, 'collect', 'Podium', 'Win a medal in every smash challenge.', (L) => CHALLENGE_IDS.filter((c) => L.get(`challenge.medal.${c}`) >= 1).length, CHALLENGE_IDS.length);
+  F('mk19', 'hand', 'The Hangar', 5, 'collect', 'All Gold', 'Win gold in every smash challenge.', (L) => CHALLENGE_IDS.filter((c) => L.get(`challenge.medal.${c}`) >= 3).length, CHALLENGE_IDS.length, { title: 'Wrecker' });
+  C('mk20', 'hand', 'The Hangar', 3, 'mechanic', 'Strike!', 'Knock down all ten pins with one throw.', 'bowling.strike', 1);
+  C('mk21', 'hand', 'The Hangar', 2, 'mechanic', 'Picked Up the Spare', 'Knock down the last pins with your second throw.', 'bowling.spare', 1);
+  C('mk22', 'hand', 'The Hangar', 3, 'mechanic', 'Giant Swing', 'Lift a giant and throw it.', 'giant.throw', 1);
+  C('mk23', 'hand', 'The Hangar', 4, 'mechanic', 'Through the Wall', 'Throw a giant through a building.', 'giant.throw.building', 1);
+  C('mk24', 'hand', 'The Hangar', 4, 'mechanic', 'Sand Breaker', 'Fell the dune colossus.', 'giant.down.colossus', 1);
   F('mk17', 'hand', 'The Hangar', 4, 'collect', 'Every Technique', 'Use every technique.', (L) => TECHNIQUE_IDS.filter((t) => L.get(`mech.technique.${t}`) >= 1).length, TECHNIQUE_IDS.length);
 }

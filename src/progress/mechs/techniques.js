@@ -45,6 +45,8 @@ export const TECHNIQUES = {
     opens: { count: ['mech.prop.throw', 20], feat: ['mech.javelin.giant', 1] } }, // (feat: a thrown post or girder striking a giant)
   shieldUp: { label: 'Slab Shield', line: 'Holding a slab of building, V: it takes the blows in front until it breaks', keys: 'V with a slab', kJ: 0, k: 0, stagger: 0, reach: 0,
     opens: { count: ['mech.barrier', 30], feat: ['mech.shield.broke', 1] } }, // (feat: a slab broken taking a blow for you)
+  giantThrow: { label: 'Giant Throw', line: 'F on a staggered giant: lift it, then RMB throws it where you aim, LMB slams it down', keys: 'F on a staggered giant, then RMB or LMB', kJ: 2500, k: 0, stagger: 0, reach: 18,
+    opens: { count: ['giant.stagger', 15], feat: ['mech.javelin.giant', 1] } }, // (its numbers giants.js GRAPPLE; the frame's legs must hold the giant: canLift. Feat: a thrown post or girder striking a giant)
 };
 export const TECHNIQUE_IDS = Object.keys(TECHNIQUES);
 

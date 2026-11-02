@@ -439,3 +439,48 @@ The mechanic is in flux: no checks are written for it until South settles it.
   of like the automatons from FFXI puppetmaster job").
 
 The form, the pauldrons and the helm are kept as a mech's style (`vfx/mechs/mechstyle.js`, save section `mechStyle`, `/mechstyle`).
+
+## 11. The night of 2026-11-02: smash challenges and giant wrestling (South: "have fun with the giant mech module")
+
+South asked for the mechs to be made more fun overnight, Dovina and Calissa together. Dovina's half is rules and their runtime; every
+look is Calissa's (MECHS.md 10).
+
+### 11.1 The smash challenges (`progress/mechs/challenges.js`; Ultimate Destruction's minigames)
+
+Begun at a lectern in the proving ground's north strip (`LANE.lectern`), each against a limit, scored off events the mech already says,
+paid bronze, silver and gold (`medalOf`). A challenge lays out its own targets and props and takes them away; it adds no physics.
+
+| challenge | what | limit | scored by | medals |
+|---|---|---|---|---|
+| Javelin | a post or girder thrown from the line | 3 throws | best distance (m) | 60 / 100 / 140 |
+| Bullseye | rings on the ground 110 m down the lane | 3 throws | ring points (100, 50, 25, 10) | 100 / 175 / 250 |
+| Bowling | the water tower thrown at ten clay pins | 2 throws | pins down; a strike, a spare | 7 / 9 / 10 |
+| Demolition | the toy city | 60 real s | cells broken | 400 / 900 / 1600 |
+| Wrecking Crew | the toy city | 120 real s | buildings felled | 2 / 4 / 6 |
+
+The pins fall by `pinChain`: a pin struck falls along the ball's way and takes only what lies within 7.5 m and 32 degrees of the way it
+fell. Measured: the head pin alone takes 7 (the two edges, the middle standing), the pocket takes 9, so a spare is the game and a strike
+is a straight throw through the middle. The medal bars carry their reasons in the module and are to be retuned on South's play.
+
+Events: `challenge.start { id }`, `challenge.score { id, add, total, what }`, `challenge.end { id, score, medal, best }`,
+`challenge.quit { id }`. Ledger and log: `feedback/tracking/mechnight.js`. Achievements mk18 to mk21.
+
+### 11.2 The dune colossus and giant wrestling (`progress/mechs/giants.js`)
+
+- **The dune colossus**: 22 m, the Dunes' sand risen in Fury's weather. It wakes as you come within 90 m. Its four moves each ask a
+  different answer: the sweep through the legs (jump), the burrow (it sinks, a ring opens where you stood, it erupts: dash out), the hurl
+  (a clod thrown from 30 to 140 m: dash across its line) and the wave (a cone of sand: back out, or be slowed). Opened by the straw giant
+  felled three times, or once off the cable (`giantOpen`).
+- **Giant wrestling** (`GRAPPLE`, technique `giantThrow`): a staggered giant within 18 m is lifted with F, held up to 3 real s while it
+  struggles (the battery drains), then thrown with RMB along the aim (an Impact blow on the toy city where it lands, and a fall on itself)
+  or slammed down with LMB. Only legs that hold three tonnes a metre of the giant's height can lift it: every frame lifts the straw giant,
+  only the crab legs and the tread lift the colossus.
+- Events: `giant.grab { id }`, `giant.throw { id, hit, cells }`, `giant.slam { id }`, `giant.slip { id, why }`. Achievements mk22 to mk24.
+
+### 11.3 Who builds what (the night)
+
+- **Dovina:** the rules above, the tracking, the achievements, the simulator, and the runtime by a builder (`world/hangar/challenges.js`,
+  the colossus and the grapple in `world/hangar/giant.js` and the pilot's F).
+- **Calissa:** the colossus's body, the lane's lectern, the rings, the pins and the finish line's looks, over the placeholders
+  (handoff in `docs/handoffs/calissa/`).
+- **Wanda:** a pin's clatter, a strike's roar, a medal's sting, the colossus's sand.
