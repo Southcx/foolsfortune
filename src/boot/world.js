@@ -44,7 +44,9 @@ import { GodhandLooks } from '../vfx/godhand/godhandlooks.js';
 import { DomainLooks } from '../vfx/domainlooks.js';
 import { installSentinelBody } from '../vfx/sentinelbody.js';
 import { installDropSprites } from '../vfx/dropsprites.js';
-import { installMechLooks } from '../vfx/mechs/clayframe.js';
+import { installMechLooks } from '../vfx/mechs/partsbody.js';
+import { installMechMount } from '../vfx/mechs/mount.js';
+import { installMechHelms } from '../vfx/mechs/helms.js';
 import { SentinelLook } from '../vfx/sentinellook.js';
 import { PalmDieLook } from '../vfx/godhand/palmdie.js';
 import { MawWipe } from '../vfx/mawwipe.js';
@@ -102,7 +104,8 @@ export async function bootWorld(game, made) {
   game.sentinelLook = new SentinelLook(game); // (a sentinel's moments: the sand it rises from, its slam, a crack, a mend, its fall: vfx/sentinellook.js)
   installSentinelBody(game); // (a sentinel's body for its mind: game.makeSentinelBody({ scale }), vfx/sentinelbody.js)
   installDropSprites(game); // (the drops' 48 x 48 sprites by broader kind: game.dropSprites.texture(cat), vfx/dropsprites.js)
-  installMechLooks(game); // (a mech's body for the hangar: the clay frame, vfx/mechs/clayframe.js)
+  installMechLooks(game); // (a mech's body for the hangar: the parts body, vfx/mechs/partsbody.js)
+  installMechMount(game); installMechHelms(game); // (the Jar screwed into its back and the waking traces; a helm and its plumes: vfx/mechs/)
   game.domainLooks = new DomainLooks(game); // (the domains' effects at their moments: a level-up at the Courier, a god power's act beside its mark; vfx/domainlooks.js)
   game.systems.add('fx', game.domainLooks, { clock: 'raw', name: 'domainLooks' }); // (the `fx` phase: core/systems.js)
   game.palmDieLook = new PalmDieLook(game); // (the palm die in the god hand's palm, in your stones' mineral: vfx/godhand/palmdie.js)
