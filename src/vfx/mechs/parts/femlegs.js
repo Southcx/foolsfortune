@@ -153,20 +153,62 @@ export const halfSpace = ([nx, ny, nz], o) => { const l = Math.hypot(nx, ny, nz)
  *  of it (`thigh`), which is the gluteal fold where the rump meets the thigh's back; at each hip a spherical socket cut into the body
  *  over the ball, its front and outer side ending in one rounded rim just over the ball's equator (`thigh.cut`), a crescent of the
  *  ball showing between it and the thigh's own lip; on top the
- *  waist column's well (`navel`), its lip under the dantian's equator. The leotard's panel lines are fine trim beads laid
+ *  dantian's socket, open at the front and back. The leotard's panel lines are fine trim beads laid
  *  on its surface. Sizes in m, the pelvis's frame. */
+/** The waist column's lower ball, the dantian (South, 2026-11-02: "the dantian should double in size"): where it sits in the waist's
+ *  frame and its radius; the pelvis's socket and the waist drum (femcores.js) seat it, the parts body registers it from femcores' spine. */
+export const DANTIAN = { lo: 0.13, r: 0.76 };
+/** The doll's figures (South, 2026-11-02: "Really make the female mecha a fertility goddess and pull out all the stops on 'appeal' ...
+ *  an A, B and C option"): one set of proportions each, read from the form as `F.figure` (a, b or c). The silhouette rule for all
+ *  three (South's back-view sketch): from the waist out and straight down into the thigh's outside in one curve, widest low at the
+ *  thighs' upper third, then in to the knee; the pelvis no wider than the thighs' tops (`bout` x <= 1.3 + `thigh.r0`), so the thighs
+ *  carry the hip's mass and no lobe of the pelvis hangs over them. Joint heights and the seat rule are the same in every figure.
+ *    bout, waist, belly, glute   the pelvis's masses (ellipsoids: at, r)
+ *    thigh { r0, max, at, p }    the thigh's radius at the hip, its widest, where (a share of its length) and the fall to the knee
+ *                                (p under 1 full and round, over 1 a straight cone)
+ *    calf { k, swell }           the shin's girth and the calf's swell behind
+ *    bust { r, h, amp, y }       the chest plates (femcores.js TORSO.bust)
+ *    waistK                      the torso's girth at the wasp waist (1 as drawn), eased out to 1 up the ribs
+ *  Prior art: A the Venus of Willendorf and the Jomon dogu (mass low and heaviest); B the Callipygian Venus and Canova's Venus
+ *  Italica (the classical ideal: a high round rump, long thighs, the narrowest waist); C the Cucuteni-Trypillia figures and the Venus
+ *  of Hohle Fels stylised (an amphora's flare at the hips, tapering cone legs, the most graphic). */
+export const FIGURES = {
+  a: { id: 'a', label: 'the Venus',
+    bout: { at: [0, -0.3, 0.02], r: [2.04, 0.84, 1.18] }, waist: { at: [0, 0.5, -0.05], r: [1.1, 0.58, 0.8] }, belly: { at: [0, -0.02, 0.58], r: [0.98, 0.54, 0.68] },
+    glute: { at: [0.82, -0.5, -0.9], r: [1.0, 0.86, 0.8] }, thigh: { r0: 0.74, max: 1.26, at: 0.3, p: 0.75 }, calf: { k: 1.08, swell: 0.42 },
+    bust: { r: 0.72, h: 0.72, amp: 0.32, y: 1.96 }, waistK: 1.06 },
+  b: { id: 'b', label: 'the Galatea',
+    bout: { at: [0, -0.26, 0.02], r: [1.92, 0.78, 1.04] }, waist: { at: [0, 0.5, -0.05], r: [0.94, 0.58, 0.72] }, belly: { at: [0, 0.04, 0.46], r: [0.72, 0.42, 0.5] },
+    glute: { at: [0.74, -0.3, -0.94], r: [0.9, 0.8, 0.84] }, thigh: { r0: 0.62, max: 1.1, at: 0.42, p: 0.95 }, calf: { k: 0.92, swell: 0.3 },
+    bust: { r: 0.54, h: 0.56, amp: 0.24, y: 2.1 }, waistK: 0.86 },
+  c: { id: 'c', label: 'the goddess of the harvest',
+    bout: { at: [0, -0.22, 0.02], r: [2.2, 0.72, 1.06] }, waist: { at: [0, 0.5, -0.05], r: [0.9, 0.56, 0.7] }, belly: { at: [0, 0.02, 0.5], r: [0.84, 0.46, 0.6] },
+    glute: { at: [0.8, -0.4, -0.86], r: [0.92, 0.76, 0.72] }, thigh: { r0: 0.9, max: 1.2, at: 0.16, p: 1.4 }, calf: { k: 0.84, swell: 0.12 },
+    bust: { r: 0.76, h: 0.78, amp: 0.34, y: 2.02 }, waistK: 0.86 },
+};
+export const figureOf = (F) => FIGURES[F?.figure] || FIGURES.a;
+/** A figure's thigh as a lathe profile [[r m, y in lengths]]: from r0 at the hip swelling to its widest at `at`, then falling to the knee. */
+function thighProf({ r0, max, at, p }) {
+  const rk = 0.44, end = 1.04, pts = [];
+  for (let i = 0; i <= 16; i++) {
+    const u = -0.01 + ((end + 0.01) * i) / 16, v = Math.max(0, u);
+    const r = v <= at ? r0 + (max - r0) * Math.sin((PI / 2) * (v / at)) : rk + (max - rk) * Math.cos((PI / 2) * Math.min(1, (v - at) / (end - at))) ** p;
+    pts.push([r, -u]);
+  }
+  return pts;
+}
 const PELVIS = {
   bout: { at: [0, -0.24, 0.02], r: [2.34, 0.82, 1.1] }, waist: { at: [0, 0.5, -0.05], r: [1.04, 0.58, 0.76] }, belly: { at: [0, 0.02, 0.5], r: [0.82, 0.48, 0.58] },
   glute: { at: [0.78, -0.42, -0.86], r: [0.92, 0.8, 0.72] }, crest: { y0: 0.18, y1: 0.44, a0: -1.0, a1: 0.6, r0: 0.08, r1: 0.11 },
-  thigh: { gap: 0.05, back: 0.86, top: 0.25 }, hood: { lip: 0.22, reach: 0.95 }, navel: { y: 0.87, r: 0.42, front: [0, 1.02, 0.56], fr: 0.3 },
-  k: { body: 0.34, glute: 0.3, crest: 0.12, hood: 0.13, thigh: 0.12, socket: 0.07 }, cell: 0.07, far: 0.3, hooded: false,
+  thigh: { gap: 0.05, back: 0.86, top: 0.25 }, hood: { lip: 0.22, reach: 0.95 },
+  k: { body: 0.34, glute: 0.3, crest: 0.12, hood: 0.13, thigh: 0.2, socket: 0.07 }, cell: 0.07, far: 0.3, hooded: false,
 };
 /** The thigh's axis down from the hip at its rest rotation [x, 0, z] (Euler XYZ of -Y). */
 const axisOf = (rx, rz) => [Math.sin(rz), -Math.cos(rz) * Math.cos(rx), -Math.cos(rz) * Math.sin(rx)];
 /** The pelvis's field (its +X half: mirrored). o: { hip: [x, y, z], axis, R (the hip ball), thighR(t) (the thigh's radius t m down its
  *  axis), holes (the legs' sockets and openings: a biped's) }. */
 function pelvisField(o) {
-  const P = PELVIS, k = P.k;
+  const fig = o.fig || FIGURES.a, P = { ...PELVIS, bout: fig.bout, waist: fig.waist, belly: fig.belly, glute: fig.glute }, k = P.k;
   const glute = ellipsoid(P.glute.at, P.glute.r);
   let body = blend(k.body, ellipsoid(P.bout.at, P.bout.r), ellipsoid(P.waist.at, P.waist.r), ellipsoid(P.belly.at, P.belly.r));
   body = blend(k.glute, body, glute);
@@ -182,8 +224,12 @@ function pelvisField(o) {
   // behind: the cleft between the cheeks
   const cleft = ellipsoid([0, -0.48, -1.5], [0.09, 0.62, 0.42]);
   body = carve(0.1, body, cleft); // (the sacral dimples dropped: under 2 of the mesh's cells they pitted the surface)
-  // the waist column's socket, its front let down so the ball shows
-  const N = P.navel; body = carve(k.socket, body, sphere([0, N.y, 0], N.r), sphere(N.front, N.fr));
+  // the dantian's socket (the waist column's lower ball, twice the others' size): a cup round its foot, open at the front and back
+  // its top ended in a rounded rim a little over the ball's equator (never thin walls of the waist's mass torn by the carve), the
+  // cup holding the ball's lower half, its upper half and heart seen whole
+  const dy = L.waist + DANTIAN.lo;
+  body = meet(0.16, body, (x, y, z) => y - (dy + 0.1));
+  body = carve(0.1, body, sphere([0, dy, 0], DANTIAN.r + 0.04));
   if (o.holes) {
     const [hx, hy, hz] = o.hip, [ax, ay, az] = o.axis, T = P.thigh, Hd = P.hood, ss = (e0, e1, v) => { const u = Math.min(1, Math.max(0, (v - e0) / (e1 - e0))); return u * u * (3 - 2 * u); };
     const socket = sphere(o.hip, o.R + 0.05);
@@ -205,7 +251,7 @@ function pelvisField(o) {
       const s0 = -Hd.lip + 1.6 * (1 - w); // (the lip's latitude: low round the front and outside, past the ball's top where w is 0)
       return Math.max(s0 * r - t, r - (o.R + Hd.reach));
     };
-    body = carve(k.socket, carve(k.thigh, PELVIS.hooded ? carve(k.hood, body, hood) : body, thigh), socket); // (the hood's cut left winged shelves: off)
+    body = carve(k.thigh, PELVIS.hooded ? carve(k.hood, body, hood) : body, thigh); void socket; // (the hood's cut left winged shelves, and the hip ball's own socket tore thin walls at the pelvis's upper corners: both off, the ball seated inside the thigh's room)
   }
   const env = blend(0, ...[P.bout, P.waist, P.glute, P.belly].map((e) => ellipsoid(e.at, e.r.map((r) => r + 0.12))), (x, y, z) => crestBound(x, y, z) + 0.05);
   return mirrorX(bounded(body, env, P.far)); // (exact: the body never stands past the envelope, so past P.far only its sign is read)
@@ -213,17 +259,15 @@ function pelvisField(o) {
 /** Haydee's pelvis sculpted (PELVIS): a biped's with its legs' sockets and openings, any other leg type's closed and pressed out to its
  *  width (sx against the biped's), the waistband in trim and the crests' gilt lips laid on its surface. */
 function haydeePelvis(S, o = {}) {
-  const holes = !!o.hip, sx = o.sx || 1, key = holes ? `fem.pelvis.${o.hip.map((v) => v.toFixed(2))}.${o.axis.map((v) => v.toFixed(3))}.${o.R.toFixed(2)}.${o.key || ''}` : 'fem.pelvis.closed';
+  const holes = !!o.hip, sx = o.sx || 1, fig = o.fig || FIGURES.a;
+  const key = (holes ? `fem.pelvis.${o.hip.map((v) => v.toFixed(2))}.${o.axis.map((v) => v.toFixed(3))}.${o.R.toFixed(2)}.${o.key || ''}` : 'fem.pelvis.closed') + `.${fig.id}`;
   const f = pelvisField({ ...o, holes });
-  sculptSide(S.p, f, [[-2.6, -1.24, -1.62], [2.6, 1.14, 1.18]], PELVIS.cell, { key, tone: aoTone(f), sc: [sx, 1, 1] });
-  // the waistband (trim) round the surface just over the waist groove, and the crests' gilt lips
-  const at = (q) => [q[0] * sx, q[1], q[2]], band = [];
-  for (let i = 0; i <= 40; i++) { const a = (i / 40) * Math.PI * 2, q = surfAt(f, [0, 0.68, 0], [Math.sin(a), 0, Math.cos(a)]); if (q) band.push(at([q[0] * 1.004, q[1], q[2] * 1.004])); }
-  if (band.length > 20) tube(S.trim, band, 0.032, L.trimL, 80);
+  sculptSide(S.p, f, [[-2.6, -1.4, -1.86], [2.6, 1.14, 1.3]], PELVIS.cell, { key, tone: aoTone(f), sc: [sx, 1, 1] });
+  const at = (q) => [q[0] * sx, q[1], q[2]]; // (the waistband dropped: the dantian's socket opens the pelvis's top front and back)
   // the leotard's panel lines, read as fine trim beads: the front panel's two edges, the seat's
   for (const phi of [0.6, 2.42]) for (const s of [1, -1]) {
     const line = []; let last = null;
-    for (let y = 0.56; y > -1.1; y -= 0.08) {
+    for (let y = 0.2; y > -1.1; y -= 0.08) {
       const q = surfAt(f, [0, y, 0], [Math.sin(phi), 0, Math.cos(phi)]); if (!q) break;
       const r = Math.hypot(q[0], q[2]); if (last != null && Math.abs(r - last) > 0.22) break; last = r;
       line.push(at([s * q[0] * 0.997, q[1], q[2] * 0.997]));
@@ -274,9 +318,8 @@ function haydeeFoot(S, R) {
  *  over the knee's; the shin's top a lip under the knee's, its foot a cup over the ankle's; the thigh's back flattened under the rump
  *  (`flat`); a shallow groove with a trim inlay where a panel line reads. Balls: the hip's 0.88, the knee's 0.62, the ankle's 0.6
  *  (x the form's `joint`). */
-const BIPED = {
+const BIPED = { // (the thigh is the figure's, FIGURES `thigh`)
   haydee: { hipX: 1.3, A: [-0.14, 0.27, -0.13], toe: -0.1, FH: FOOT.fh * FOOT.k, hipBall: 0.88, kneeBall: 0.62, ankleBall: FOOT.ball,
-    TH: [[0.66, 0.01], [0.7, -0.05], [0.78, -0.15], [0.9, -0.27], [1.05, -0.39], [1.13, -0.49], [1.08, -0.62], [0.9, -0.74], [0.66, -0.86], [0.5, -1.0], [0.44, -1.04]],
     SH: [[0.42, 0.06], [0.52, -0.04], [0.6, -0.2], [0.63, -0.34], [0.53, -0.56], [0.4, -0.78], [0.36, -0.86]] },
 };
 /** The thigh's back pressed in under the rump near its top (the pelvis carves it the same, PELVIS.thigh.back). */
@@ -284,21 +327,22 @@ const flat = (x, y, z, u) => [x, y, z < 0 ? z * (1 - (1 - PELVIS.thigh.back) * b
 /** The thigh's radius t m down its axis (for the pelvis's carve). */
 const thighROf = (TH, T) => { const P = TH.map(([r, y]) => [r, y * T]).reverse(); return (t) => profAt(P, -t); };
 function bipedLegs(ctx) {
-  const { H, F, joint, put, ballAt } = ctx, B = BIPED[F.fem] || BIPED.haydee, { A, FH, hipX } = B, j = F.joint;
+  const { H, F, joint, put, ballAt } = ctx, B = BIPED[F.fem] || BIPED.haydee, { A, FH, hipX } = B, j = F.joint, fig = figureOf(F);
   const len = (H - 0.35 - FH - 0.1) / (Math.cos(A[0]) + Math.cos(A[0] + A[1])), T = len, Sh = len;
-  const calf = (x, y, z, u) => [x, y, z * (z < 0 ? 1 + 0.35 * bump(u, 0.04, 0.62) : 0.92)];
+  const TH = thighProf(fig.thigh), SH = B.SH.map(([r, y]) => [r * fig.calf.k, y]); // (the figure's thigh and calf)
+  const calf = (x, y, z, u) => [x, y, z * (z < 0 ? 1 + fig.calf.swell * bump(u, 0.04, 0.62) : 0.92)];
   const RH = B.hipBall * j, RK = B.kneeBall * j, RA = B.ankleBall * j;
-  put(ctx.pelvis, (S) => haydeePelvis(S, { hip: [hipX, -0.35, 0], axis: axisOf(A[0], B.toe), R: RH, thighR: thighROf(B.TH, T), key: T.toFixed(2) }));
+  put(ctx.pelvis, (S) => haydeePelvis(S, { hip: [hipX, -0.35, 0], axis: axisOf(A[0], B.toe), R: RH, thighR: thighROf(TH, T), key: T.toFixed(2), fig }));
   const legs = {};
   for (const [s, k] of SIDES) {
     const hip = joint(`hip${k}`, ctx.pelvis, [s * hipX, -0.35, 0], [A[0], 0, s * B.toe]);
     const knee = joint(`knee${k}`, hip, [0, -T, 0], [A[1], 0, 0]);
     const ankle = joint(`ankle${k}`, knee, [0, -Sh, 0], [A[2], 0, -s * B.toe]);
     put(hip, (S) => {
-      jointBall(S, RH); coreOf(S, 0.3, T - RK * 1.1, RH * 1.05); socketLimb(S, B.TH, T, { bot: RK, fn: flat }); // (no top lip, no groove: the hip ball sits up in the pelvis, and rings stacked on the thigh read as tyres)
-      bead(S, [[s * 1.18, -0.12 * T, -0.15], [s * 1.12, -0.38 * T, 0.05], [s * 0.86, -0.68 * T, 0.32]].map(([x, y, z]) => { const r = Math.hypot(x, z), R0 = profAt(B.TH.map(([a, b]) => [a, b * T]).reverse(), y) * 1.004; return [(x / r) * R0, y, (z / r) * R0]; }), 0.016);
+      jointBall(S, RH); coreOf(S, 0.3, T - RK * 1.1, RH * 1.05); socketLimb(S, TH, T, { bot: RK, fn: flat }); // (no top lip, no groove: the hip ball sits up in the pelvis, and rings stacked on the thigh read as tyres)
+      bead(S, [[s * 1.18, -0.12 * T, -0.15], [s * 1.12, -0.38 * T, 0.05], [s * 0.86, -0.68 * T, 0.32]].map(([x, y, z]) => { const r = Math.hypot(x, z), R0 = profAt(TH.map(([a, b]) => [a, b * T]).reverse(), y) * 1.004; return [(x / r) * R0, y, (z / r) * R0]; }), 0.016);
     });
-    put(knee, (S) => { jointBall(S, RK); coreOf(S, 0.18, Sh - RA * 1.1, RK * 1.05); socketLimb(S, B.SH, Sh, { top: RK, bot: RA, fn: calf, grooves: [0.52] }); });
+    put(knee, (S) => { jointBall(S, RK); coreOf(S, 0.18, Sh - RA * 1.1, RK * 1.05); socketLimb(S, SH, Sh, { top: RK, bot: RA, fn: calf, grooves: [0.52] }); });
     put(ankle, (S) => { jointBall(S, RA); haydeeFoot(S, RA); });
     ballAt(`hip${k}`, hip, RH); ballAt(`knee${k}`, knee, RK); ballAt(`ankle${k}`, ankle, RA);
     legs[k] = { hip, knee, ankle };
@@ -321,8 +365,8 @@ function bipedLegs(ctx) {
 function springLegs(ctx) {
   const { H, F: FF, joint, put, ballAt } = ctx, F = 0.36 * FOOT.k, A = [-0.65, 1.45, -1.05], T = 2.3, M = 1.9, hipX = 1.35, j = FF.joint;
   const Sh = (H - 0.35 - F - 0.09 - T * Math.cos(A[0]) - M * Math.cos(A[0] + A[1] + A[2])) / Math.cos(A[0] + A[1]);
-  const { TH, SH, hipBall } = BIPED.haydee, RH = hipBall * j, RK = 0.5 * j, RN = 0.4 * j, RT = 0.44 * j;
-  put(ctx.pelvis, (S) => haydeePelvis(S, { hip: [hipX, -0.35, 0], axis: axisOf(A[0], 0.02), R: RH, thighR: thighROf(TH, T), key: 'spring' }));
+  const { hipBall } = BIPED.haydee, fig = figureOf(FF), TH = thighProf(fig.thigh), SH = BIPED.haydee.SH.map(([r, y]) => [r * fig.calf.k, y]), RH = hipBall * j, RK = 0.5 * j, RN = 0.4 * j, RT = 0.44 * j;
+  put(ctx.pelvis, (S) => haydeePelvis(S, { hip: [hipX, -0.35, 0], axis: axisOf(A[0], 0.02), R: RH, thighR: thighROf(TH, T), key: 'spring', fig }));
   const legs = {};
   for (const [s, k] of SIDES) {
     const hip = joint(`hip${k}`, ctx.pelvis, [s * hipX, -0.35, 0], [A[0], 0, s * 0.02]);
@@ -369,7 +413,7 @@ function crabLegs(ctx) {
   const { H, F, joint, put, ballAt } = ctx, j = F.joint;
   const hy = -0.3, up = [0.9, 1.7], out = 2.75, rr = 0.46;
   put(ctx.pelvis, (S) => {
-    haydeePelvis(S, { sx: 1.95 / 1.72 });
+    haydeePelvis(S, { sx: 1.95 / 1.72, fig: figureOf(F) });
     S.g.ring(1.1, 0.04, { at: [0, 0.5, 0], sc: [1.2, 1, 0.85], c: L.gold }, 36, 4);
   });
   const legs = [];
@@ -416,7 +460,7 @@ function treadLegs(ctx) {
   const { H, joint, put, ballAt, mats, owned } = ctx;
   const len = 5.4, R = 1.15, w = 1.3, podX = 2.45, podY = R + 0.05 - H, wy = -R * 0.46, wr = R * 0.42;
   put(ctx.pelvis, (S) => {
-    haydeePelvis(S, { sx: 1.9 / 1.72 });
+    haydeePelvis(S, { sx: 1.9 / 1.72, fig: figureOf(ctx.F) });
     S.g.ring(1.95, 0.06, { at: [0, -0.62, 0], c: L.gold }, 40, 5); // (the turret ring)
     S.p.lathe([[0.001, -1.05], [1.75, -0.95], [2.05, -0.72], [1.85, -0.5]], { c: L.mid }, 36);
   });

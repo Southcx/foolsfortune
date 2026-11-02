@@ -29,7 +29,7 @@
 import { MECH_LOOK as L, band, profAt, panel, jointBall, shell, sculpt, tube } from './kit.js';
 import * as THREE from 'three';
 import { sphere, ellipsoid, cone, torus, blend, carve } from './sdf.js';
-import { aoTone, surfAt, sculptSide, socketProf, bead } from './femlegs.js';
+import { aoTone, surfAt, sculptSide, socketProf, bead, DANTIAN, figureOf } from './femlegs.js';
 
 const PI = Math.PI;
 const WIN = [1.32, 2.82]; // (the back's window round the cradle's boss: cores.js's own)
@@ -43,9 +43,13 @@ const TORSO = {
   // (`spine`), the ribcage ~15% broader (`wide`, eased in up the ribs), the chest plates 1.25x, the shoulder line falling to the caps
   haydee: { prof: [[0.3, 0.5], [0.42, 0.6], [0.58, 0.86], [0.78, 1.25], [0.92, 1.65], [0.97, 2.05], [0.95, 2.28], [0.85, 2.56], [0.66, 2.82], [0.46, 2.99], [0.3, 3.08]],
     d: 0.78, back: 0.68, wide: 1.15, bust: { x: 0.52, y: 2.02, s: 0.2, amp: 0.27, r: 0.62, h: 0.62 }, under: 1.68, shoulderY: 2.38, cup: 0.42,
-    spine: { lo: 0.42, hi: 1.24, r: 0.38, rt: 0.3 }, ribs: { top: 1.36, cell: 0.058 } },
+    spine: { lo: DANTIAN.lo, hi: 1.24, r: DANTIAN.r, rt: 0.3 }, ribs: { top: 1.36, cell: 0.058 } },
 };
 
+/** A torso in a figure (femlegs.js FIGURES): its chest plates the figure's, its wasp waist drawn in or let out by `waistK`, eased
+ *  back to the profile as drawn up the ribs. */
+const figured = (T, fig) => ({ ...T, fig: fig.id, bust: { ...T.bust, ...fig.bust },
+  prof: T.prof.map(([r, y]) => [r * (fig.waistK + (1 - fig.waistK) * Math.min(1, Math.max(0, (y - 0.5) / 1.0))), y]) });
 /** How much broader the ribcage is drawn than its profile at height y (T.wide eased in over the ribs, 1 at the waist). */
 const wideAt = (T, y) => 1 + ((T.wide || 1) - 1) * Math.min(1, Math.max(0, (y - 0.6) / 0.8)) ** 0.7;
 function planOf(T) {
@@ -91,7 +95,7 @@ function ribField(T, P) {
 const onSurf = (f, rays, k = 1.0) => rays.map(([o, d]) => surfAt(f, o, d)).filter(Boolean).map(([x, y, z]) => [x * k, y, z * k]);
 
 export function femCoreLook(id, F) {
-  const T = TORSO[F.fem] || TORSO.haydee, P = band(T.prof, T.prof[0][1], T.prof[T.prof.length - 1][1], 1, 40), W = planOf(T);
+  const T = figured(TORSO[F.fem] || TORSO.haydee, figureOf(F)), P = band(T.prof, T.prof[0][1], T.prof[T.prof.length - 1][1], 1, 40), W = planOf(T);
   const top = P[P.length - 1][1], depth = (y) => profAt(P, y) * T.back, wide = (y) => profAt(P, y);
   const gap = Math.asin(Math.min(0.9, 0.5 / profAt(P, 2.1)));
   const mounts = {
@@ -122,7 +126,7 @@ export function femCoreLook(id, F) {
   /** The sculpted lower ribcage (ribField), one mesh a core's grooves; `c` the core's shade of it. */
   const ribs = (S, bands, c = null) => {
     const f = ribField(T, P), lo = P[0][1] - 0.1, Wd = profAt(P, T.ribs.top) * 1.3;
-    sculptSide(S.p, f, [[-Wd, lo, -Wd * 0.8], [Wd, T.ribs.top + 0.02, Wd * 0.9]], T.ribs.cell, { key: `fem.ribs.${F.fem}.${c ?? 0}`, tone: aoTone(f, L.dark, c ?? L.pale) });
+    sculptSide(S.p, f, [[-Wd, lo, -Wd * 0.8], [Wd, T.ribs.top + 0.02, Wd * 0.9]], T.ribs.cell, { key: `fem.ribs.${F.fem}.${T.fig}.${c ?? 0}`, tone: aoTone(f, L.dark, c ?? L.pale) });
     // the rib margins (sunk lines from the arch's top down and out to the flanks) and the core's bands round the ribs
     for (const s of [1, -1]) {
       const m = onSurf(f, [0, 1, 2, 3, 4].map((i) => { const u = i / 4; return [[0, 1.14 - 0.42 * u, 0], [s * (0.12 + 0.9 * u), 0, 1 - 0.55 * u]]; }));
