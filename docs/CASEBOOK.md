@@ -1099,3 +1099,7 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 
 395. **A system joins its phase after it is built, and a missing one throws.** A registration that reads
   `game[name]` before the line that builds it passes `undefined`; quietly ignored, the system never runs and nothing says so.
+
+NEW:drops-belong-to-place. **A thing that falls in a place belongs to that place's rules.** A creature's drop in a Well is the run's
+  haul (lost with a shatter, home up the way up); a drop left lying is cleared when its render zone is left. A pickup that skips the
+  place's own economy is a leak of value; one that outlives its place is a leak of objects.

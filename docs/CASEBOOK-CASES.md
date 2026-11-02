@@ -4922,3 +4922,15 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   phase. After: the world phase lists 40; `looks` (16) and `marks` (24) were unchanged by the throw, so no earlier registration was
   passing nothing.
 - **Rule:** 395
+
+## A Well's creature drops came home through a shatter, and lay in the cavern after it (2026-11-02, Dovina; found by Petra's sweep)
+- **Seen:** the Dunemaw sweep's `shatter: the haul does not come home` failed: after a shattered run the Box held more `mat.*` than
+  before. And `careless: the great cavern three times leaves no objects`: the scene's objects 4867 -> 4893 after three trips, bodies
+  and colliders level.
+- **Cause, as measured:** `world/drops/creaturedrops.js` (5fe5a73) put a drop taken in a Well straight into the Pneuka Box, outside the
+  run's haul, so a shatter (`well.leave { shattered, pay: 0 }`) lost the haul and kept the drops. Drops still lying when the Courier
+  left the cavern stayed in the scene for their whole `DROPS.life` (300 real s): 26 objects over three trips.
+- **Fix:** taken while `game.well.active`, a drop goes into `game.well.run.haul` (`drop.take { haul: true }`), so it follows the haul's
+  rules. A drop records its render zone when thrown, and is cleared when the Courier's zone is another. The same sweep's third FAIL
+  (`the log says what it drops`) was a stale grep: the line reads "Dropped: <name>." now; the sweep reads both.
+- **Rule:** NEW:drops-belong-to-place
