@@ -76,17 +76,18 @@ export class PuzzleDuelSounds {
       case 'allclear': return this.duelAllClear(e.side);
       case 'refund': return this.duelRefund(e.side);
       case 'turn': return this.duelTurnCutIn?.(e.side); // (the turn's change cut in, as a foe skill is: audio/duelcasts.js)
-      case 'foe.skill': { if (performance.now() / 1000 - (this._duelDesperateAt ?? -1e9) < CUT_IN.burst) return this.duelFoeSkill(e.skill, e.n); // (the limit break's burst: no cut-in, its cast at once)
-        const at = this.duelCutIn?.(e.skill) ?? 0; setTimeout(() => this.duelFoeSkill(e.skill, e.n), (at + CUT_IN.gesture) * 1000); return; } // (the view plays it at its cut-in's start: the sting, then the skill's own sound as its cast begins after the cut-in, audio/duelcasts.js)
+      case 'foe.skill': { if (performance.now() / 1000 - (this._duelDesperateAt ?? -1e9) < CUT_IN.burst) return this.duelFoeSkill(e.skill, e.n, e); // (the limit break's burst: no cut-in, its cast at once)
+        const at = this.duelCutIn?.(e.skill) ?? 0; setTimeout(() => this.duelFoeSkill(e.skill, e.n, e), (at + CUT_IN.gesture) * 1000); return; } // (the view plays it at its cut-in's start: the sting, then the skill's own sound as its cast begins after the cut-in, audio/duelcasts.js)
       case 'foe.desperate': this._duelDesperateAt = performance.now() / 1000; return this.duelCutIn?.('desperate'); // (the limit break's cut-in)
+      case 'power': if (e.power === 'encore' && e.side !== 1) return this.duelEncore?.(); // (the clapperjar's Encore, learned: audio/clapperjar.js)
       case 'power': if (BANDED.has(e.power) && e.side !== 1) { this.duelJarCutIn?.(false); if (e.power !== 'absorb') setTimeout(() => this.duelPower?.(e.domain, e), JAR_CUT.cast * 1000); return; } // (your cut-in first, the power's own sound at its cast: audio/duelcasts.js JAR_CUT)
         return e.power === 'absorb' ? null : this.duelPower?.(e.domain, e); // (a duel power cast: audio/duelcasts.js; a learned skill sounds as its aberrant's own, on its own event)
       case 'absorb': return this.duelAbsorb?.(e.cells?.length); // (the slip jelly's Absorb, learned: audio/duelsecrets.js)
       case 'foe.soon': return this.duelFoeLastTick(); // (a foe skill on its last count, told in the foe's turn: it fires on its next)
       case 'foe.stagger': return this.duelFoeStagger();
-      case 'secret.step': return e.id === 'snuff' ? this.duelLantern?.(e.k, e.n) : null; // (an aberrant's secret, heard as its own thing: audio/duelsecrets.js)
-      case 'secret.half': return e.id === 'snuff' ? this.duelLanternHalf?.() : e.id === 'dissolve' ? this.duelSag?.() : null;
-      case 'duel.secret': return e.id === 'snuff' ? this.duelSnuff?.() : e.id === 'dissolve' ? this.duelDissolve?.() : this.duelEnd(e.winner);
+      case 'secret.step': return e.id === 'snuff' ? this.duelLantern?.(e.k, e.n) : e.id === 'clapback' ? this.duelClapBack?.(e.kept, e.streak) : null; // (an aberrant's secret, heard as its own thing: audio/duelsecrets.js)
+      case 'secret.half': return e.id === 'snuff' ? this.duelLanternHalf?.() : e.id === 'dissolve' ? this.duelSag?.() : e.id === 'clapback' ? this.duelClapHalf?.() : null;
+      case 'duel.secret': return e.id === 'snuff' ? this.duelSnuff?.() : e.id === 'dissolve' ? this.duelDissolve?.() : e.id === 'clapback' ? this.duelClapApart?.() : this.duelEnd(e.winner);
       case 'ember.cool': return this.duelEmberCool();
       case 'hint': return this.duelHint();
       case 'fall': return this.duelFall();
@@ -175,10 +176,12 @@ export class PuzzleDuelSounds {
     [1, 2.4, 3.9].forEach((q, j) => this.tone(t + 0.56, 1.4, { f0: hz(r + 6) * q, gain: [0.09, 0.03, 0.015][j], dest: d }));
   }
   /** The aberrant's foe skills (PvE, PUZZLE-DUELS.md 23), from its side (right) and below the key: each its own gesture. */
-  duelFoeSkill(skill = '', n = 1) {
+  duelFoeSkill(skill = '', n = 1, e = {}) {
     if (skill === 'kindle') return this.duelKindle?.(n); // (the Lantern Wisp's own: audio/duelsecrets.js)
     if (skill === 'spew') return this.duelSpew?.(n); // (the slip jelly's own)
     if (skill === 'harden') return this.duelHarden?.(n);
+    if (skill === 'shuffle') return this.duelShuffle?.(n); // (the clapperjar's own: audio/clapperjar.js)
+    if (skill === 'syncopate') return this.duelSyncopate?.(e.off !== false);
     if (!this.ok() || !this.allow(`duelFoe.${skill}`, 2)) return;
     const t = this.ctx.currentTime, d = this.duelOut({ hurl: 1, sap: 1, petrify: 0.65 }[skill] ?? 0.4, 0.45, 0.45), r = duelRoot(this) - 24; // (levelled by ear and meter: each within about 6 dB of the others)
     switch (skill) {
