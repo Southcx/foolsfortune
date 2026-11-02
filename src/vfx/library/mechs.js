@@ -28,6 +28,10 @@
 //   giant.sand.shed    sand pouring off a colossus's joint, its dust drifting   giant.sand.slump  its fall: a heave of sand
 //   giant.field.hit    a flash of hex chips where a blow stops on the AT field   giant.field.grind  sparks and hex chips where two
 //   fields grind (`dir` toward the mech)   giant.field.tear  the field torn open: hex shards thrown, a film flash
+// And the mech night's (vfx/mechs/challenges/, giants/colossusmarks.js, post.js, grapple.js): challenge.line.lit, challenge.lamp,
+//   challenge.pin.chips, challenge.pin.thud, challenge.ball.dust, challenge.hit, challenge.strike, challenge.medal.1..3 (the lane's
+//   moments); giant.sand.pour, giant.burrow.draw, giant.clod.trail, giant.clod.burst, giant.wave.spray (the colossus's tells and marks);
+//   giant.post.bell; giant.strain.spark, giant.grab.dust, giant.grab.lift, giant.throw.trail, giant.slam, giant.throw.impact (wrestling).
 // The specials that read faint at 40 m on bright sand (scan, gust, sunder, pull) each carry a dark alpha-over core under their light
 // and a ground mark where they touch (mech.scan.ground, mech.gust.ground, mech.sunder.scar), 2 to 3 times the width they had.
 // Prior art: the house's domain grammars (vfx/library/domains.js: Riot's primary, secondary and tertiary; Kevin Leroy's 0.1 s hit frame),
@@ -232,6 +236,105 @@ export const MECH_SPECIAL_EFFECTS = {
     L({ type: 'shape', form: 'hoop', face: 'camera', ramp: 'film', main: 'none', dur: 0.7, scale: [[0, 3], [1, 30]], erode: [[0, 0.04], [0.6, 0.12], [1, 1]], glow: 2.6 }),
     L({ type: 'shape', form: 'disc', face: 'camera', ramp: 'film', main: 'rays', tile: [24, 1], dur: 0.45, scale: [[0, 4], [1, 14]], erode: [[0, 0.1], [1, 1]], glow: 2.8, core: 0.8 }),
     L({ type: 'shake', at: 0, k: 0.4 }),
+  ] },
+  // =============================================================================================== THE MECH NIGHT (vfx/mechs/challenges/, giants/)
+  // the smash challenges' moments (vfx/mechs/challenges/moments.js), the colossus's marks and tells (giants/colossusmarks.js), the giant
+  // post's bell (giants/post.js) and giant wrestling's (giants/grapple.js), at the mech's scale
+  'challenge.line.lit': { layers: [
+    L({ type: 'sprites', count: [26, 34], shape: 'sparkle', spawn: 'line', r: 0.4, dir: 'up', speed: [2, 6], size: [0.5, 0.9], sizeEnd: 0, life: [0.5, 0.9], drag: 1.5, color: [0xffd36a, 0xfff2c8, 0xe0442a], twinkle: 8 }),
+  ] },
+  'challenge.lamp': { layers: [
+    L({ type: 'sprites', count: 1, shape: 'star4', size: 3.2, sizeEnd: 0, life: 0.35, color: 0xfff0c8, rot: 0.3 }),
+    L({ type: 'shape', form: 'hoop', face: 'camera', ramp: 'gold', main: 'none', dur: 0.4, scale: [[0, 0.6], [1, 3.4]], erode: [[0, 0.04], [0.6, 0.12], [1, 1]], glow: 2.2 }),
+  ] },
+  'challenge.pin.chips': { layers: [ // (a pin knocked: glazed clay chips off its foot, a puff of the yard's dust; `dir` the way it falls)
+    L({ type: 'sprites', pool: 'alpha', count: [16, 22], shape: 'chip', spawn: 'sphere', r: 0.8, dir: 'cone', cone: 55, speed: [4, 9], size: [0.25, 0.55], life: [0.9, 1.4], gravity: 14, floor: 'ground', color: [0xf4eee2, 0xe8dcc4, 0xc8452e, 0x9a4f2c], spin: [-10, 10] }),
+    L({ type: 'sprites', pool: 'alpha', count: [8, 12], shape: 'puff', spawn: 'disc', r: 1.4, dir: 'out', lift: 0.3, speed: [2, 5], size: [1.6, 2.4], sizeEnd: 4, life: [0.9, 1.5], drag: 2, color: SAND.concat(DUST), alpha: 0.38 }),
+  ] },
+  'challenge.pin.thud': { layers: [ // (a pin down on the ground along its length)
+    L({ type: 'sprites', pool: 'alpha', count: [14, 20], shape: 'puff', spawn: 'disc', r: 3, dir: 'out', lift: 0.25, speed: [3, 7], size: [2, 3.2], sizeEnd: 5, life: [1, 1.7], drag: 1.8, color: SAND.concat(DUST), alpha: 0.4 }),
+    L({ type: 'sprites', pool: 'alpha', count: [8, 12], shape: 'chip', spawn: 'disc', r: 3, dir: 'cone', axis: 'up', cone: 45, speed: [3, 7], size: [0.25, 0.5], life: [0.8, 1.2], gravity: 14, floor: 'ground', color: CLAY, spin: [-8, 8] }),
+  ] },
+  'challenge.ball.dust': { layers: [ // (the rolled tower's foot on the yard)
+    L({ type: 'sprites', pool: 'alpha', count: [4, 6], shape: 'puff', spawn: 'disc', r: 1.5, dir: 'out', lift: 0.5, speed: [1, 3], size: [1.6, 2.6], sizeEnd: 4.2, life: [0.9, 1.5], drag: 1.6, color: SAND.concat(DUST), alpha: 0.36 }),
+  ] },
+  'challenge.hit': { layers: [ // (a throw scored: a gold ring out where it landed, chips and a glint)
+    L({ type: 'shape', form: 'ring', ramp: 'gold', main: 'ripple', tile: [6, 1], dur: 0.8, scale: [[0, 2], [1, 16]], offset: [0, 0.2, 0], edgeV: [0.4, 0.3], erode: OUT, glow: 2.4, back: 0.6 }),
+    L({ type: 'sprites', count: 1, shape: 'star4', size: 7, sizeEnd: 0, life: 0.35, color: 0xfff2c8, rot: 0.3 }),
+    L({ type: 'sprites', count: [14, 20], shape: 'glint', spawn: 'disc', r: 3, dir: 'up', speed: [3, 8], size: [0.5, 0.8], sizeEnd: 0, life: [0.5, 0.9], drag: 1.5, color: [0xffd36a, 0xffffff], twinkle: 9 }),
+  ] },
+  'challenge.strike': { layers: [ // (STRIKE or SPARE at the pins: a gold sunburst over them, the house's confetti flung up)
+    L({ type: 'shape', form: 'disc', face: 'camera', ramp: 'gold', main: 'rays', tile: [24, 1], scroll: [0.2, 0], dur: 0.9, scale: [[0, 6], [0.3, 18], [1, 22]], erode: [[0, 0.1], [0.5, 0.15], [1, 1]], glow: 2.6, core: 0.6 }),
+    L({ type: 'sprites', pool: 'alpha', count: [60, 80], shape: 'diamond', spawn: 'disc', r: 8, dir: 'cone', axis: 'up', cone: 40, speed: [12, 22], size: [0.5, 0.9], life: [2, 3], gravity: 9, drag: 1.4, color: [0xffd36a, 0xe0442a, 0xf4eee2, 0x2a6fd8], spin: [-12, 12] }),
+    L({ type: 'light', color: 0xffd36a, k: 60, range: 40, dur: 0.7 }),
+  ] },
+  'challenge.medal.1': { layers: [ // (a challenge's end, bronze .. gold: confetti in the medal's metal over the lane)
+    L({ type: 'sprites', pool: 'alpha', count: [40, 50], shape: 'diamond', spawn: 'disc', r: 14, dir: 'cone', axis: 'up', cone: 30, speed: [8, 14], size: [0.5, 0.9], life: [2.2, 3.2], gravity: 6, drag: 1.2, color: [0xc8803c, 0xe0a060, 0x8a5428], spin: [-10, 10] }),
+  ] },
+  'challenge.medal.2': { layers: [
+    L({ type: 'sprites', pool: 'alpha', count: [60, 72], shape: 'diamond', spawn: 'disc', r: 14, dir: 'cone', axis: 'up', cone: 30, speed: [9, 16], size: [0.5, 0.9], life: [2.4, 3.4], gravity: 6, drag: 1.2, color: [0xe8ecf2, 0xb8c0cc, 0xffffff], spin: [-10, 10] }),
+    L({ type: 'sprites', count: [14, 18], shape: 'glint', spawn: 'disc', r: 12, dir: 'up', speed: [4, 9], size: [0.6, 1], sizeEnd: 0, life: [0.8, 1.3], color: [0xffffff, 0xd8e0ff], twinkle: 9 }),
+  ] },
+  'challenge.medal.3': { layers: [
+    L({ type: 'sprites', pool: 'alpha', count: [90, 110], shape: 'diamond', spawn: 'disc', r: 16, dir: 'cone', axis: 'up', cone: 32, speed: [10, 18], size: [0.55, 1], life: [2.6, 3.6], gravity: 6, drag: 1.2, color: [0xffd36a, 0xf2b82e, 0xfff2c8, 0xe0442a], spin: [-10, 10] }),
+    L({ type: 'shape', form: 'disc', face: 'camera', ramp: 'gold', main: 'rays', tile: [28, 1], scroll: [0.15, 0], dur: 1.2, scale: [[0, 6], [0.3, 24], [1, 28]], erode: [[0, 0.1], [0.5, 0.18], [1, 1]], glow: 2.4, core: 0.5 }),
+    L({ type: 'sprites', count: [20, 26], shape: 'glint', spawn: 'disc', r: 14, dir: 'up', speed: [4, 10], size: [0.7, 1.1], sizeEnd: 0, life: [0.9, 1.4], color: [0xffe9a8, 0xffffff], twinkle: 10 }),
+    L({ type: 'light', color: 0xffd36a, k: 70, range: 50, dur: 1 }),
+  ] },
+  'giant.sand.pour': { layers: [ // (a windup's tell: sand running off the arm about to swing, in a falling sheet)
+    L({ type: 'sprites', pool: 'alpha', count: [14, 20], shape: 'streak', spawn: 'sphere', r: 1, dir: 'cone', axis: 'up', cone: 160, speed: [0.3, 1.5], size: [0.22, 0.38], life: [1.1, 1.7], stretch: 5, gravity: 12, floor: 'ground', color: SAND }),
+    L({ type: 'sprites', pool: 'alpha', count: [3, 5], shape: 'puff', spawn: 'sphere', r: 1, dir: 'sphere', speed: [0.3, 1], size: [1.6, 2.6], sizeEnd: 3.6, life: [1.2, 1.9], drag: 1.4, gravity: 0.5, color: SAND.concat(DUST), alpha: 0.28 }),
+  ] },
+  'giant.burrow.draw': { layers: [ // (round the burrow's vortex: sand drawn in and down toward its eye)
+    L({ type: 'sprites', pool: 'alpha', count: [10, 14], shape: 'puff', spawn: 'ring', r: 1, dir: 'in', speed: [3, 6], size: [1.4, 2.2], sizeEnd: 0.6, life: [0.9, 1.4], drag: 0.6, color: SAND.concat(DUST), alpha: 0.34 }),
+    L({ type: 'sprites', count: [3, 5], shape: 'soft', spawn: 'ring', r: 1, dir: 'in', speed: [2, 4], size: [0.6, 1], sizeEnd: 0, life: [0.6, 1], color: [0xff7a2a, 0xffb04a] }),
+  ] },
+  'giant.clod.trail': { layers: [ // (the hurled clod's sand streaming off it)
+    L({ type: 'sprites', pool: 'alpha', count: [3, 5], shape: 'puff', spawn: 'sphere', r: 1.2, dir: 'sphere', speed: [0.2, 0.8], size: [1.4, 2.2], sizeEnd: 3.4, life: [0.8, 1.3], drag: 1.6, gravity: 1, color: SAND.concat(DUST), alpha: 0.34 }),
+    L({ type: 'sprites', pool: 'alpha', count: [4, 6], shape: 'soft', spawn: 'sphere', r: 1.2, dir: 'sphere', speed: [0.5, 2], size: [0.25, 0.45], life: [0.8, 1.2], gravity: 10, color: SAND }),
+  ] },
+  'giant.clod.burst': { layers: [ // (a clod come down: fired-clay shards over the sand the runtime throws)
+    L({ type: 'sprites', pool: 'alpha', count: [26, 34], shape: 'shard', spawn: 'sphere', r: 1.5, dir: 'cone', axis: 'up', cone: 60, speed: [6, 14], size: [0.5, 1.1], life: [1, 1.6], gravity: 16, floor: 'ground', color: CLAY, spin: [-10, 10] }),
+    L({ type: 'sprites', pool: 'alpha', count: [12, 16], shape: 'puff', spawn: 'disc', r: 3, dir: 'out', lift: 0.4, speed: [3, 7], size: [2.4, 3.6], sizeEnd: 6, life: [1.2, 2], drag: 1.6, color: SAND.concat(DUST), alpha: 0.42 }),
+    L({ type: 'shake', at: 0, k: 0.2 }),
+  ] },
+  'giant.wave.spray': { layers: [ // (the cone's crest breaking: sand flung forward off its lip)
+    L({ type: 'sprites', pool: 'alpha', count: [24, 32], shape: 'puff', spawn: 'disc', r: 6, dir: 'cone', cone: 35, speed: [8, 16], size: [2.2, 3.4], sizeEnd: 6, life: [1, 1.7], drag: 1.6, gravity: 2, color: SAND.concat(DUST), alpha: 0.42 }),
+    L({ type: 'sprites', pool: 'alpha', count: [24, 30], shape: 'streak', spawn: 'disc', r: 6, dir: 'cone', cone: 40, speed: [10, 18], size: [0.25, 0.4], life: [0.8, 1.2], stretch: 5, gravity: 12, floor: 'ground', color: SAND }),
+  ] },
+  'giant.post.bell': { layers: [ // (the post's bell struck: a giant called)
+    L({ type: 'shape', form: 'hoop', face: 'camera', ramp: 'gold', main: 'none', dur: 1.1, scale: [[0, 1], [1, 10]], erode: [[0, 0.04], [0.6, 0.14], [1, 1]], glow: 2 }),
+    L({ type: 'shape', form: 'hoop', face: 'camera', ramp: 'gold', main: 'none', at: 0.25, dur: 1.1, scale: [[0, 1], [1, 8]], erode: [[0, 0.04], [0.6, 0.14], [1, 1]], glow: 1.8 }),
+    L({ type: 'sprites', count: [8, 12], shape: 'glint', spawn: 'sphere', r: 1.5, dir: 'sphere', speed: [1, 3], size: [0.3, 0.5], sizeEnd: 0, life: [0.6, 1], color: [0xffe9a8, 0xffffff], twinkle: 10 }),
+  ] },
+  'giant.strain.spark': { layers: [ // (the frame's joint under a held giant: embers spat from it)
+    L({ type: 'sprites', count: [4, 7], shape: 'streak', spawn: 'sphere', r: 0.5, dir: 'sphere', speed: [3, 7], size: [0.12, 0.2], life: [0.3, 0.6], stretch: 4, gravity: 10, color: [0xffb04a, 0xff7a2a, 0xfff2c8] }),
+    L({ type: 'sprites', pool: 'alpha', count: [1, 2], shape: 'puff', spawn: 'sphere', r: 0.4, dir: 'up', speed: [1, 2], size: [0.8, 1.2], sizeEnd: 2.2, life: [0.8, 1.2], drag: 1.6, color: [0x8a7a6a, 0x6a5a4a], alpha: 0.3 }),
+  ] },
+  'giant.grab.dust': { layers: [ // (a foot pressed into the yard under the weight)
+    L({ type: 'sprites', pool: 'alpha', count: [6, 9], shape: 'puff', spawn: 'ring', r: 1.8, dir: 'out', lift: 0.15, speed: [2, 5], size: [1.6, 2.6], sizeEnd: 4.4, life: [0.9, 1.5], drag: 1.8, color: SAND.concat(DUST), alpha: 0.38 }),
+    L({ type: 'sprites', pool: 'alpha', count: [3, 5], shape: 'chip', spawn: 'ring', r: 1.8, dir: 'cone', axis: 'up', cone: 50, speed: [2, 4], size: [0.2, 0.4], life: [0.6, 1], gravity: 14, floor: 'ground', color: CLAY, spin: [-8, 8] }),
+  ] },
+  'giant.grab.lift': { layers: [ // (the giant torn off the ground: a ring of dust where it stood)
+    L({ type: 'sprites', pool: 'alpha', count: [26, 34], shape: 'puff', spawn: 'ring', r: 5, dir: 'out', lift: 0.3, speed: [5, 10], size: [3, 4.4], sizeEnd: 7, life: [1.4, 2.2], drag: 1.6, color: SAND.concat(DUST), alpha: 0.42 }),
+    L({ type: 'shake', at: 0, k: 0.22 }),
+  ] },
+  'giant.throw.trail': { layers: [ // (a thrown giant's whoosh: streaks along its flight and sand torn off it)
+    L({ type: 'sprites', count: [5, 8], shape: 'streak', spawn: 'sphere', r: 5, dir: 'cone', speed: [2, 5], size: [0.4, 0.7], life: [0.25, 0.45], stretch: 9, color: [0xfff2c8, 0xf4eee2] }),
+    L({ type: 'sprites', pool: 'alpha', count: [3, 5], shape: 'puff', spawn: 'sphere', r: 5, dir: 'sphere', speed: [0.3, 1], size: [2.4, 3.6], sizeEnd: 5.4, life: [0.8, 1.3], drag: 1.6, color: SAND.concat(DUST), alpha: 0.34 }),
+  ] },
+  'giant.slam': { layers: [ // (a giant driven into the ground at the mech's feet: the powerbomb)
+    L({ type: 'shape', form: 'ring', ramp: 'ink', main: 'cracks', tile: [5, 2], mainK: 0.7, dur: 3, scale: 16, offset: [0, 0.1, 0], erode: [[0, 0.5], [0.06, 0.1], [0.75, 0.2], [1, 1]], glow: 0.4, add: 0, order: 5, turn: 'random' }),
+    L({ type: 'shape', form: 'ring', ramp: 'white', main: 'ripple', tile: [8, 1], dur: 0.8, scale: [[0, 4], [1, 34]], offset: [0, 0.3, 0], edgeV: [0.4, 0.3], erode: OUT, glow: 1.6, back: 0.6 }),
+    L({ type: 'sprites', pool: 'alpha', count: [60, 80], shape: 'puff', spawn: 'disc', r: 12, dir: 'out', lift: 0.35, speed: [8, 18], size: [4.5, 7], sizeEnd: 12, life: [2, 3.2], drag: 1.4, color: SAND.concat(DUST), alpha: 0.5 }),
+    L({ type: 'sprites', pool: 'alpha', count: [40, 54], shape: 'chip', spawn: 'disc', r: 8, dir: 'cone', axis: 'up', cone: 45, speed: [10, 20], size: [0.6, 1.4], life: [1.4, 2.2], gravity: 16, floor: 'ground', color: CLAY.concat(SAND), spin: [-8, 8] }),
+    L({ type: 'shake', at: 0, k: 0.6 }), L({ type: 'hitstop', at: 0, dur: 0.08 }),
+  ] },
+  'giant.throw.impact': { layers: [ // (a thrown giant into a building or the ground: debris and a column of dust)
+    L({ type: 'sprites', pool: 'alpha', count: [50, 64], shape: 'puff', spawn: 'sphere', r: 8, dir: 'sphere', speed: [6, 14], size: [4, 6.5], sizeEnd: 11, life: [2, 3.2], drag: 1.4, gravity: -0.4, color: SAND.concat(DUST), alpha: 0.48 }),
+    L({ type: 'sprites', pool: 'alpha', count: [40, 52], shape: 'chip', spawn: 'sphere', r: 6, dir: 'cone', axis: 'up', cone: 70, speed: [10, 22], size: [0.7, 1.6], life: [1.4, 2.2], gravity: 16, floor: 'ground', color: CLAY.concat([0x8a8478, 0x6a645a]), spin: [-8, 8] }),
+    L({ type: 'shape', form: 'ring', ramp: 'white', main: 'ripple', tile: [8, 1], dur: 0.8, scale: [[0, 4], [1, 28]], offset: [0, 0.3, 0], edgeV: [0.4, 0.3], erode: OUT, glow: 1.4, back: 0.6 }),
+    L({ type: 'shake', at: 0, k: 0.5 }),
   ] },
   // =============================================================================================== READY (any part's)
   'mech.ready': { layers: [
