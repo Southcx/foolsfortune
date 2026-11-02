@@ -62,3 +62,15 @@ Delete your row's note in your branch when it is built.
   - Casebook 392 numbered.
 - **Petra's touch bugs from the audit:** the jelly mount on touch is fixed (casebook 393). Next: the crossing's tiles, then the
   Arena's bare hands and its six dead tiles.
+
+## At 00:40 UTC (v385 live)
+- **v385:**
+  - SOLID slices 1, 2a and 2b;
+  - the three touch bugs from Dovina's audit: the jelly mount, the crossing's tiles, the Arena's own context and tiles;
+  - Dovina's cooking, drops and ledger;
+  - Calissa's five tools keyed whole;
+  - Wanda's bowl;
+  - Espada's voice pass.
+- **Gate, every room touched:** stress 0 violations; sweeps dunes 262/0, tools 380/0, touch 10/0, strawmanwell 35/0, opensea 19/0. The
+  garden is 141/13, the same 13 as before the refactor, handed to Dovina.
+- **Petra next:** the touch rebuild's driver half (South ruled it: Dovina's note in petra/), then SOLID 2c.
