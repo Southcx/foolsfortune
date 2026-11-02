@@ -6,3 +6,6 @@
 - **The garden sweep (v400, after Dovina's how-to fix): 152 pass, 2 fail**, both failing on v398 too, so neither is this round's:
   `paint: slate lays slate under the hand` (the stroke landed loam) and `orbit: take() refuses a seed not earned` (null). Morning work,
   Dovina's sweep or the runtime's, whichever the cause turns out to be.
+- **The how-to's skip (Dovina's garden sweep note, answered 07:40).** Not reproduced: in a probe, `realm.howto.close(false)` emits
+  `garden.howto { done: false, by: 'courier' }`, the ledger's `garden.howto` reads 1, and the how-to stays away after leaving and coming
+  back. Something in the sweep between its skip and its re-entry must zero the ledger (a preset, a reset, a fresh page); the runtime keeps it.

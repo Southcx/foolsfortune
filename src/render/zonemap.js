@@ -65,6 +65,12 @@ const BY_ID = Object.fromEntries(ZONE_TESTS.map((z) => [z.id, z]));
 /** A zone's camera far plane (m) where it is drawn further than the room default the Dunes ease toward: the proving ground's giant
  *  stands 230 m from the launch (Dovina's hangar, 2026-11-02). Read by the one place that sets the far plane (world/dunes/dunes.js). */
 export const ZONE_FAR = { provingground: 600 };
+/** A zone's own light, whatever the game hour (Calissa's ask, 2026-11-02: the proving ground at Pacific Rim's dusk, MECHS.md 5.2): while the
+ *  camera is in the zone, the daylight's target is this row instead of the hour and the weather (render/daylight.js), eased in and out at
+ *  its own rate. A key left out is the maker's dusk (the dunes' `away` as built); `sunDir` turns the dunes' sun (`dunes.sunDir`), eased
+ *  back on leaving. Keys: bg, fog, hemiSky, hemiGnd, sunC (hex), fogD, hemiI, ambI, sunI (numbers), sunDir ([x, y, z]). The rows are the
+ *  zone's look's (Calissa's); `{}` is the maker's dusk as it stands. */
+export const ZONE_LIGHT = { provingground: {} };
 export const ROOFED = new Set(['touchstone', 'bazaar', 'sandbox', 'strawmanwell', 'hangar']); // (the bazaar's dome too: Calissa, 2026-10-30, "the sun through a dome is a leak, not a look")
 
 /** What each zone is underfoot and as a space (Wanda's hooks, 2026-10-30): its `floor`, a step's surface where nothing on the ground

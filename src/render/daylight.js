@@ -14,10 +14,13 @@
 //
 //   game.daylight = new Daylight(game) (after the dunes and the weather look)   .update(dt) (each tick, before dunes.update)
 //   .k { day, night } (the hour's shares: the rest is dusk)   with no `game.weather`, the dusk as the maker painted it
+// A zone with its own light (render/zonemap.js ZONE_LIGHT: the proving ground's dusk) takes its row in place of the hour and the weather
+// while the camera is in it, the dunes' sun turned to its `sunDir` and eased home on leaving.
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { hourGrade, fogOf, lightOf } from '../vfx/weather.js';
 import { MOON } from '../vfx/nightsky.js';
+import { ZONE_LIGHT } from './zonemap.js';
 
 // the keys: the maker's dusk is the base (dunes.js `away`); the day and the night are blended over it by the hour. Their horizons are
 // the owner's paintings' own (sky_day.webp about #b8d4e8, sky_night.webp about #280a17), so the fog melts into the sky at every hour
@@ -26,7 +29,7 @@ const NIGHT = { bg: 0x280a17, fog: 0x2e1626, fogK: 0.9, hemiSky: 0x4c3a7a, hemiG
 const COLOURS = ['bg', 'fog', 'hemiSky', 'hemiGnd', 'sunC'], NUMBERS = ['fogD', 'hemiI', 'ambI', 'sunI'];
 const RATE = 1.5; // (how fast the light eases to its target, per second: the hour moves slowly, a weather comes in over seconds)
 const DAYBREAK = 0.7; // (Petra's: the share of the night's weight Daybreak, a class's art, takes off while its game hour lasts)
-const _c = new THREE.Color();
+const _c = new THREE.Color(), _c2 = new THREE.Vector3();
 
 export class Daylight {
   constructor(game) {
@@ -36,7 +39,8 @@ export class Daylight {
     this.goal = this.base ? Object.fromEntries([...COLOURS.map((k) => [k, A[k].clone()]), ...NUMBERS.map((k) => [k, A[k]])]) : null;
     this.k = { day: 0, night: 0 };
     this.wx = { aspect: null, strength: 0 }; // (the weather's share, eased: it comes in over seconds)
-    this.poll = 0;
+    this.poll = 0; this.zone = null;
+    this.sunHome = game.dunes?.sunDir?.clone() || null; this.sunWant = this.sunHome?.clone() || null; // (the dunes' sun as built, and where it is eased toward)
     this.day = Object.fromEntries(Object.entries(DAY).map(([k, v]) => [k, typeof v === 'number' && COLOURS.includes(k) ? new THREE.Color(v) : v]));
     this.night = Object.fromEntries(Object.entries(NIGHT).map(([k, v]) => [k, typeof v === 'number' && COLOURS.includes(k) ? new THREE.Color(v) : v]));
   }
@@ -49,12 +53,20 @@ export class Daylight {
     const T = this.goal, e = 1 - Math.exp(-dt * RATE);
     for (const k of COLOURS) A[k].lerp(T[k], e);
     for (const k of NUMBERS) A[k] += (T[k] - A[k]) * e;
+    const sd = g.dunes?.sunDir; if (sd && this.sunWant && sd.distanceToSquared(this.sunWant) > 1e-6) sd.lerp(this.sunWant, e).normalize(); // (a zone's sun turned in, or home)
     A.hemiI = Math.max(0, A.hemiI) + (g.weatherLook?.lift || 0) * 4 * e; // (a far bolt's slow glow in the cloud: a lift, never a flash)
   }
 
   /** The light the hour and the weather ask for. */
   target(sky) {
     const B = this.base, T = this.goal, D = this.day, N = this.night;
+    const Z = ZONE_LIGHT[this.game.zones?.current]; this.zone = Z ? this.game.zones.current : null;
+    if (this.sunHome) this.sunWant.copy(Z?.sunDir ? _c2.fromArray(Z.sunDir).normalize() : this.sunHome);
+    if (Z) { // (a zone with its own light: its row, the maker's dusk where it says nothing; no hour, no weather)
+      for (const k of COLOURS) T[k].copy(Z[k] != null ? _c.setHex(Z[k]) : B[k]);
+      for (const k of NUMBERS) T[k] = Z[k] ?? B[k];
+      this.k.day = 0; this.k.night = 0; return;
+    }
     const h = hourGrade(sky.phase ?? 0), d = h.day, n = h.night * (this.game.classArtsRun?.daylit?.() ? 1 - DAYBREAK : 1); // (Daybreak, a class's art: the dark lit a game hour)
     this.k.day = d; this.k.night = n;
     for (const k of COLOURS) T[k].copy(B[k]).lerp(D[k], d).lerp(N[k], n);
