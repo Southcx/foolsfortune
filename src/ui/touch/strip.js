@@ -31,6 +31,8 @@ import { placeOf, windowOpen } from './areas.js';
 import { shelf, TOP_BAR } from './topbar.js';
 import { stripOf, beltPairOf, nearOf } from './actioncontext.js';
 import { CURSOR } from '../../core/touchcursor.js';
+import { arcContext } from './arc.js';
+import { openRadial } from './radial.js';
 
 /** The numbers (CSS px): the strip's tile (44, the least: 48 until the owner asked for room, 2026-10-26), a note pad, the pair's; the gaps; the shelf's padding; the room kept off the look area's edge. */
 const MORE = 'strip.more';
@@ -76,19 +78,12 @@ export class TouchStrip {
   }
   /** A binding pressed and let go, as a key tapped. */
   tap(id) { touchTiles.report(this.game, id, true); setTimeout(() => touchTiles.report(this.game, id, false), 90); }
-  /** The radial: the pick's choices on an arc under its tile, each a tile; a tap on one picks it, anywhere else closes it. */
+  /** The radial: the pick's choices on an arc under its tile (radial.js, shared with the arc's PICK and BELT). */
   openRadial(e) {
     this.closeRadial(); const src = this.tiles.get(e.id); if (!src?.el) return;
-    const b = src.el.getBoundingClientRect(), cx = b.left + b.width / 2, cy = b.top + b.height / 2, n = e.radial.length, R = 64, s = STRIP.size;
-    this.radial = e.radial.map((r, i) => {
-      const a = Math.PI * (0.15 + 0.7 * (n > 1 ? i / (n - 1) : 0.5)), t = new TouchTile(`radial.${r.id}`, { size: s, glyph: r.glyph ?? null, word: r.word ?? null, fit: true,
-        onPress: (_, down, inside) => { if (!down && inside) { this.tap(r.id); this.closeRadial(); } } });
-      t.place(cx + Math.cos(a) * R - s / 2, cy + Math.sin(a) * R - s / 2 + 8, s); t.set({ hidden: false, lit: !!r.lit }); t.update(performance.now() / 1000); return t;
-    });
-    this.radialOff = (ev) => { if (!this.radial?.some((t) => t.el.contains(ev.target))) this.closeRadial(); };
-    setTimeout(() => document.addEventListener('pointerdown', this.radialOff, true), 0);
+    this.radialClose = openRadial(src.el, e.radial, { onPick: (r) => this.tap(r.id), size: STRIP.size });
   }
-  closeRadial() { if (this.radialOff) document.removeEventListener('pointerdown', this.radialOff, true); this.radialOff = null; for (const t of this.radial || []) t.el.remove(); this.radial = null; }
+  closeRadial() { this.radialClose?.(); this.radialClose = null; }
 
   /** Where it may stand over the cluster's bounds: the HUD layout's strip room (hudlayout.js stripArea: clear of the Sight, the top
    *  bar and the log), or the cluster's own column without it. */
@@ -190,7 +185,7 @@ export class TouchStrip {
   /** Each frame: read the moment, lay out what changed, put each tile's state on it. `cb` the cluster's bounds (or null). */
   update(now, on, cb) {
     const g = this.game, menuOpen = !!g.hudLayout?.stripTop && g.touchUI?.topBar?.folded === false; // (the top bar's row opened over the top row: the strip stands down under it)
-    const show = !!on && !windowOpen(g) && !g.touch?.screenTaken?.() && !menuOpen; // (the pads or the paper hold the screen: the strip stands down, Petra's ruling)
+    const show = !!on && !windowOpen(g) && !g.touch?.screenTaken?.() && !menuOpen && !arcContext(g); // (on foot and a tool drawn the arc's PICK and BELT hold the far and near shelves' tiles: ui/touch/arc.js) // (the pads or the paper hold the screen: the strip stands down, Petra's ruling)
     const top = !!g.hudLayout?.stripTop, entries = show ? (top ? stripOf(g) : folding(stripOf(g), this.folded)) : [], pair = show ? beltPairOf(g) : [];
     const near = show && top ? nearOf(g) : [], all = [...pair, ...entries, ...near];
     for (const e of all) this.tile(e);

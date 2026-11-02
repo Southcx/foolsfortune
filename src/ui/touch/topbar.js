@@ -20,6 +20,7 @@
 import { TouchTile, TILE } from './tile.js';
 import { placeOf } from './areas.js';
 import { mountFace } from './actioncontext.js';
+import { arcContext } from './arc.js';
 
 /** The windows in order (the glyph is `touch.<id>`), whether each stands only in the garden, and what says it is open; the gap before
  *  PAUSE (CSS px). */
@@ -61,6 +62,7 @@ export class TouchTopBar {
     this.game = game; this.onOpen = null; this.tiles = new Map(); this.shown = false; this.ids = []; this.folded = true; this.touched = 0;
     this.shelf = shelf();
     for (const id of [...TOP_BAR.ids, 'pause']) this.tiles.set(id, new TouchTile(`top.${id}`, { size: TILE.small, glyph: id, word: null, onPress: id === 'skiff' ? (_, down) => this.hold(id, down) : (_, down, inside) => { if (!down && inside) { if (id !== 'pause') this.fold(true); this.open(id); } } }));
+    this.tiles.set('fold', new TouchTile('top.fold', { size: TILE.small, glyph: 'more', word: null, onPress: (_, down, inside) => { if (!down && inside) this.foldArc(); } })); // (the arc's fold tile: TOUCH-REBUILD.md 7; its own glyph Calissa's)
     this.tiles.set('menu', new TouchTile('top.menu', { size: TILE.small, glyph: 'menu', word: null, onPress: (_, down, inside) => { if (!down && inside) this.fold(!this.folded); } }));
     this.tiles.set('log', new TouchTile('top.log', { size: TILE.small, glyph: 'chat', word: null, onPress: (_, down, inside) => { const L = game.hudLayout?.touchLog; if (!down && inside && L) { if (game.hudLayout.duelR) L.setSheet(!L.sheet); else L.fold(!L.folded); } } })); // (the log's fold on the bar beside MENU: South, 2026-10-27, it stood alone under the bar)
   }
@@ -74,7 +76,13 @@ export class TouchTopBar {
     this.relayout();
   }
   /** What stands now, in order: MENU, the windows while open, PAUSE. */
-  get items() { return this.folded ? ['menu', 'log', 'pause'] : ['menu', 'log', ...this.ids, 'pause']; }
+  get items() { const f = this.arcShown ? ['fold'] : []; return this.folded ? ['menu', 'log', ...f, 'pause'] : ['menu', 'log', ...f, ...this.ids, 'pause']; }
+  /** The fold tile: HIDDEN's way back (the setting to FOLDED), else the whole arc folded to one stack or out again. */
+  foldArc() {
+    const g = this.game, A = g.touchUI?.arc; if (!A) return;
+    if (A.setting === 'hidden') { g.settings?.set('touchControls', 'folded'); return; }
+    A.collapse(!A.collapsed);
+  }
 
   /** A window asked for: said on the bus, handed to the shell, and to the listener. */
   /** SKIFF: Y held while the finger is down (a tap the last mount, a hold the mounts' choice, steered by the stick). */
@@ -100,7 +108,7 @@ export class TouchTopBar {
     const one = n * s + (n - 1) * G + (TOP_BAR.pauseGap - G) + 16;
     const per = one <= A.w ? n : Math.max(1, Math.floor((A.w - 16 + G) / (s + G))), rows = Math.ceil(n / per), F = TILE.foot;
     const W = per === n ? one : per * s + (per - 1) * G + 16, H = rows * (s + F) + (rows - 1) * G + 8;
-    const all = this.ids.length + 3, full = all * s + (all - 1) * G + (TOP_BAR.pauseGap - G) + 16; // (folded, the tab stands where the opened row's MENU does: the row unfolds from it)
+    const all = this.ids.length + 3 + (this.arcShown ? 1 : 0), full = all * s + (all - 1) * G + (TOP_BAR.pauseGap - G) + 16; // (folded, the tab stands where the opened row's MENU does: the row unfolds from it)
     const top = !!this.game.hudLayout?.stripTop, x0 = per === n && !top ? A.x + (A.w - (this.folded && full <= A.w ? full : W)) / 2 : A.x, y0 = rows === 1 ? A.y + (Math.min(A.h, TOP_BAR.h) - H) / 2 : A.y;
     Object.assign(this.shelf.style, { transform: `translate(${Math.round(x0)}px, ${Math.round(y0)}px)`, width: `${Math.round(W)}px`, height: `${Math.round(H)}px` });
     this.shelf.style.setProperty('--h', `${Math.min(H, s + F + 8)}px`);
@@ -112,6 +120,7 @@ export class TouchTopBar {
 
   update(now, on) {
     const g = this.game, ids = TOP_BAR.ids.filter((id) => { try { return !TOP_BAR.when[id] || TOP_BAR.when[id](g); } catch { return false; } });
+    const arcShown = !!on && !!arcContext(g); if (arcShown !== this.arcShown) { this.arcShown = arcShown; if (!arcShown) this.tiles.get('fold').set({ hidden: true }); this.relayout(); this.shown = !on; } // (the fold tile stands while the arc holds the moment)
     if (ids.join() !== this.ids.join()) { this.ids = ids; this.relayout(); for (const id of TOP_BAR.ids) if (!ids.includes(id)) this.tiles.get(id).set({ hidden: true }); this.shown = !on; }
     if (!!on !== this.shown) {
       this.shown = !!on; this.shelf.classList.toggle('off', !on);
@@ -120,10 +129,10 @@ export class TouchTopBar {
     if (!on) return;
     if (!this.folded && now - this.touched > TOP_BAR.fold) this.fold(true); // (left open and untouched: folded again)
     for (const id of this.items) {
-      const t = this.tiles.get(id); let lit = false; try { lit = id === 'menu' ? !this.folded : id === 'log' ? (g.hudLayout?.duelR ? !!g.hudLayout.touchLog?.sheet : !g.hudLayout?.touchLog?.folded) : !!TOP_BAR.open[id]?.(g); } catch { /* not there */ }
+      const t = this.tiles.get(id); let lit = false; try { lit = id === 'fold' ? !!g.touchUI?.arc?.collapsed : id === 'menu' ? !this.folded : id === 'log' ? (g.hudLayout?.duelR ? !!g.hudLayout.touchLog?.sheet : !g.hudLayout?.touchLog?.folded) : !!TOP_BAR.open[id]?.(g); } catch { /* not there */ }
       if (t.state.pressed) this.touched = now;
       if (id === 'skiff') t.face({ glyph: mountFace(g).glyph }); // (the mount a tap calls: the Solar Skiff, or the slip jelly when it was chosen last)
-      t.set({ lit: lit || t.state.pressed }); t.update(now);
+      t.set({ lit: lit || t.state.pressed, dim: id === 'fold' && g.touchUI?.arc?.setting === 'hidden' }); t.update(now); // (HIDDEN: the fold tile faint, the arc's way back)
     }
   }
 }

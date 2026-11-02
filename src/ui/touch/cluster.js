@@ -27,6 +27,7 @@ import { TouchTile, TILE } from './tile.js';
 import { touchTiles } from './presses.js';
 import { placeOf, windowOpen } from './areas.js';
 import { footCluster, toolCluster, helmCluster, railCluster, arenaCluster, inHandCtx } from './actioncontext.js';
+import { arcContext } from './arc.js';
 
 /** The numbers (CSS px): the gap between tiles, the margin off the area's corner; the Jar's least speed for JUMP (m/s); the room kept
  *  clear of the art bar's edge (its side strip stands there). */
@@ -53,6 +54,7 @@ export function useLabel(game) {
 export function clusterContext(game) {
   const g = game || {}, T = g.player?.techs?.get?.('skiff') || g.techs?.get?.('skiff');
   const use = useLabel(g) ? 'use' : null;
+  if (arcContext(g)) return []; // (on foot and a tool drawn the arc holds the moment, HIDDEN included: ui/touch/arc.js)
   if (T?.active && T.phase === 'ride') {
     const boost = (T.combo?.stocks || 0) > 0.001 ? 'boost' : null;
     return T.air || T.grind?.on ? ['hop', 'nose', 'tail', boost] : ['hop', 'flare', 'brake', boost];

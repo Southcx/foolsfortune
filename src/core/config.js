@@ -383,6 +383,9 @@ export const DEFAULTS = {
     perfReadout: false, // the performance readout, a corner panel of the frame, the display, the machine and what the host allows (debug/perfreadout.js; also ?perf and /perf; a setting)
     shake: 'full', // every camera's shake (the rail's, the Courier's, the god hand's): 'full' | 'half' | 'off' (a setting: the Game Accessibility Guidelines, RAIL-STANDARDS.md 1)
   },
+  // touch play's arc (ui/touch/arc.js, TOUCH-REBUILD.md 7): its fold column folded, shown or hidden (a setting), and the whole arc folded to
+  // one stack by the top bar's fold tile (kept with the settings)
+  touch: { controls: 'folded', collapsed: false },
   audio: {
     volume: 0.7,
     haptics: true, // small buzzes on a device that can buzz (audio/haptics.js; a setting)

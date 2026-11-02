@@ -86,21 +86,32 @@ export async function bootWorld(game, made) {
   { // (the moonflowers on the pond's far shore: sacred datura is a desert native; vfx/datura.js)
     const at = (a, k = 1.12) => ({ x: DUNE.x + POND.x + Math.cos(a) * POND.rx * k, z: DUNE.z + POND.z + Math.sin(a) * POND.rz * k });
     game.daturas = new Daturas(game, [{ ...at(-2.2), n: 9 }, { ...at(-1.75, 1.18), n: 6 }, { ...at(-2.6, 1.1), n: 7 }]);
+    game.systems.add('fx', game.daturas, { clock: 'raw', name: 'daturas' }); // (the `fx` phase: core/systems.js)
   }
   game.mawWipe = new MawWipe(game); // (the seam into a Well, covered: close(onCovered), then open() when the floor is built)
+  game.systems.add('fx', game.mawWipe, { clock: 'raw', name: 'mawWipe' }); // (the `fx` phase: core/systems.js)
   game.areaWipe = new AreaWipe(game); // (the seam's kind 'area': a change of area covered by the island's frame, the card and the name; DOM, vfx/areawipe.js)
+  game.systems.add('fx', game.areaWipe, { clock: 'raw', name: 'areaWipe' }); // (the `fx` phase: core/systems.js)
   game.aberrantWipe = new AberrantWipe(game); // (the battle transition into a puzzle duel with an aberrant: catch, bug, crackle on close(onCovered, { foe }), the shatter on open(); a screen volume of the glow, vfx/aberrantwipe.js)
+  game.systems.add('fx', (d) => game.aberrantWipe.update(d, game.camera), { clock: 'raw', name: 'aberrantWipe' }); // (the `fx` phase: core/systems.js)
   game.weatherLook = new WeatherLook(game); // (the weather's and the hour's look: reads game.weather; with none, the painting as it is)
+  game.systems.add('fx', (d) => game.weatherLook.update(d, game.camera), { name: 'weatherLook' }); // (the `fx` phase: core/systems.js)
   game.godhandLooks = new GodhandLooks(game); // (the god powers' marks, the miracles' falls, the drawn sign: vfx/godhand/godhandlooks.js)
+  game.systems.add('fx', (d) => game.godhandLooks.update(d, game.camera), { clock: 'raw', name: 'godhandLooks' }); // (the `fx` phase: core/systems.js)
   game.sentinelLook = new SentinelLook(game); // (a sentinel's moments: the sand it rises from, its slam, a crack, a mend, its fall: vfx/sentinellook.js)
   installSentinelBody(game); // (a sentinel's body for its mind: game.makeSentinelBody({ scale }), vfx/sentinelbody.js)
   installDropSprites(game); // (the drops' 48 x 48 sprites by broader kind: game.dropSprites.texture(cat), vfx/dropsprites.js)
   installMechLooks(game); // (a mech's body for the hangar: the clay frame, vfx/mechs/clayframe.js)
   game.domainLooks = new DomainLooks(game); // (the domains' effects at their moments: a level-up at the Courier, a god power's act beside its mark; vfx/domainlooks.js)
+  game.systems.add('fx', game.domainLooks, { clock: 'raw', name: 'domainLooks' }); // (the `fx` phase: core/systems.js)
   game.palmDieLook = new PalmDieLook(game); // (the palm die in the god hand's palm, in your stones' mineral: vfx/godhand/palmdie.js)
+  game.systems.add('fx', game.palmDieLook, { clock: 'raw', name: 'palmDieLook' }); // (the `fx` phase: core/systems.js)
   game.awakeningLook = new AwakeningLook(game); // (a feeling's heavy weather flooding round the Courier on feeling.wake, its clip on feeling.embody: vfx/awakeninglook.js)
+  game.systems.add('fx', (d) => game.awakeningLook.update(d, game.camera), { clock: 'raw', name: 'awakeningLook' }); // (the `fx` phase: core/systems.js)
   game.nightSky = new NightSky(game, { seaBearing: SHORE.angle }); // (the night alive: the stars' wheel, meteors and showers, the aurora over the sea at the Shore, the moon's phases, the constellations, each feeling's night; vfx/nightsky.js)
+  game.systems.add('fx', (d) => game.nightSky.update(d, game.camera), { clock: 'raw', name: 'nightSky' }); // (the `fx` phase: core/systems.js)
   game.shore = new Shore(game); // (the shore's look: the crude sea from the sand, the swash, the wet sand; it builds once the beach exists)
+  game.systems.add('fx', () => game.shore.update(game.dunes.t ?? 0, game.camera), { name: 'shore' }); // (the `fx` phase: core/systems.js)
   mark('dunes');
   game.seam = new Seam(game); // (a place changed under a cover: render/seam.js)
   game.well = new Dunemaw(game); // (the Great Dunemaw: the Well in the Dunes, its mouth out on the sand: world/well/dunemaw.js)
@@ -116,9 +127,12 @@ export async function bootWorld(game, made) {
   game.paintmap.aspectOf = () => loadAspect(game);
   game.ai?.eco.provide('slip', (pos, range) => game.paintmap.spots.filter((d) => d.age > d.delay && d.life - d.age > 4 && d.r > 0.7 && d.n.y > 0.7 && d.c.distanceTo(pos) < range).slice(0, 6).map((d) => ({ pos: d.c, radius: d.r, ref: d }))); // (wet ground is water to anything made of sand and water: creatures/ai/ecology.js; the offer's id is the minds' data)
   game.waterFx = new WaterFx(game, renderer); // (a swim's feedback: the rings and the wake's V in the ripple tank, the dive's crown, the drips; vfx/waterfx.js)
+  game.systems.add('fx', (d) => game.waterFx.update(d, game.camera), { clock: 'raw', name: 'waterFx' }); // (the `fx` phase: core/systems.js)
   game.brushLoad = new BrushLoad(game); // (the Soul Brush's load, seen: saturate, paint, mop, the slide on wet ground; driven by the brush's mechanics, vfx/brushload.js)
   game.parryMark = new ParryMark(game); // (what can be parried wears Lachryma, and nothing else: parryMark.mark(obj, { eta }); hot, with a glint, while V would answer it: vfx/parrymark.js)
+  game.systems.add('fx', (d) => game.parryMark.update(d, game.camera), { clock: 'raw', name: 'parryMark' }); // (the `fx` phase: core/systems.js)
   game.figmentTelegraphs = new FigmentTelegraphs(game); // (what Divination draws of a windup: figmentTelegraphs.show(id, figmentMarkOf(...), { origin, facing, eta }); vfx/figmenttelegraph.js, wired by creatures.windup and the timeline runner)
+  game.systems.add('fx', (d) => game.figmentTelegraphs.update(d, game.camera), { name: 'figmentTelegraphs' }); // (the `fx` phase: core/systems.js)
   game.railLook = RailLook; // (the crossing's look for the rail: RAIL_VIEWS, swingLook, ShipWake, ShoalLook, BrigLook, BoarderLook, LeviathanLook; vfx/rail.js, the sloop's feeling/hurt/hoist)
   level.build();
   mark('level');
