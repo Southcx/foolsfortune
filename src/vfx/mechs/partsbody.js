@@ -18,10 +18,10 @@
 //   THE CRADLE   in the back between the shoulder blades (vfx/mechs/parts/cores.js CRADLE, the Jar's own size): `cradle` { frame (at
 //                the well's floor, +Y out along its axis), depth, turns, pitch, collar, tines, bore }; seat(out) is the frame's world
 //                point. The mount's animation is the runtime's (no seal or turn here); sealed lights the eyes and the well's floor
-//   THE FORM     `form` 'hero' | 'doll' | 'drossel' (kit.js FORMS: the doll Haydee's hourglass android, drossel Fireball's corseted
-//                duchess in her crinoline), read on build; setForm rebuilds. A feminine form builds every slot from its own library
-//                (parts/femcores.js, femlegs.js, femlimbs.js, femheads.js): every part id, every leg type, its own shape, a pear
-//                (the hero's complement: a narrow top, the weight in the hips and thighs)
+//   THE FORM     `form` 'hero' | 'doll' (kit.js FORMS: the doll Haydee's android), read on build; setForm rebuilds. The doll builds
+//                every slot from its own library (parts/femcores.js, femlegs.js, femlimbs.js, femheads.js): every part id, every leg
+//                type, its own shape, a pear (the hero's complement: a narrow top, the weight in the hips and thighs), its balls the
+//                skin's. (Drossel's form is retired: her crinoline a hip piece, her sleeve a pauldron.)
 //   THE HELM     a feminine form has no head: a helm floats over its collar (vfx/mechs/helms.js wearHelm), the form's own (FORMS
 //                `helm`) while none is chosen; a helm chosen (the hangar's game.mechHelm) is worn again whenever the frame or its
 //                head is rebuilt, a default one taken off when the form no longer has one
@@ -31,6 +31,9 @@
 //                to call; a fractured joint calls it); underdamped, a beat of overshoot and settle
 //   A PAULDRON   setPauldron(id) (vfx/mechs/parts/pauldrons.js PAULDRONS) swaps only the two pauldrons, hung on their own joints off the
 //                chest at the shoulders (pauldronL/R), riding a part of the arm's swing; 'default' the arms part's own
+//   A HIP PIECE  setHip(id) (vfx/mechs/parts/hips.js HIPS: the crinoline, tassets, kusazuri, pteruges) hung from a belt round the
+//                pelvis as pauldrons hang from the shoulders, each plate a hinge on a spring the thighs push open (stepped in pose(),
+//                after the legs); built again with the legs
 //   THE BACK     setCape(id) (vfx/mechs/capes.js CAPES: the drums' ring, the flame halo, Fujin's wind bag, the heavenly sash, the
 //   PIECE        knight's cape) worn at the shoulders and back clear of the cradle, laid out again whenever the frame is rebuilt or a
 //                part swapped; its cloth stepped in pose() with the chest plates' springs (the same frame time)
@@ -46,9 +49,10 @@
 // Sock 'Em Robots for the snap; kintsugi for the mend; secondary motion as a damped spring (the animator's follow-through and
 // overlap, Thomas and Johnston's The Illusion of Life, 1981; the jiggle bones of fighting games' armour) for the chest plates.
 //
-//   const B = new MechPartsBody(game, { form?, pauldron?, cape? })   B.build(stats) (progress/mechs/frame.js assemble)   B.group   B.joints   B.mats   B.height
+//   const B = new MechPartsBody(game, { form?, pauldron?, hip?, cape? })   B.build(stats) (progress/mechs/frame.js assemble)   B.group   B.joints   B.mats   B.height
 //   B.pose({ pos, yaw, gait, walk, kneel, armL, armR, sealed, barrier, lean, joints, holding, dt? })   B.jiggle(v)   BUST_SPRING   B.seat(out)   B.back(out)   B.hand(side, out)
-//   B.arms[side]   B.partAt(part, out)   B.showJoints(J, holding)   B.limbs (the same)   B.setForm(form)   B.setPauldron(id)   B.setCape(id)   B.form   B.pauldron   B.capeId   B.cape
+//   B.arms[side]   B.partAt(part, out)   B.showJoints(J, holding)   B.limbs (the same)   B.setForm(form)   B.setPauldron(id)   B.setHip(id)   B.setCape(id)
+//   B.form   B.pauldron   B.hipId   B.capeId   B.cape
 //   B.equip(slot, id)   B.setJoint(id, state) -> { group, joint, slots } | null   B.mend()   B.state { [joint]: state }   B.dispose()
 //   LIMB (what each joint takes off with it)   installMechLooks(game) -> game.makeMechBody(stats? | sel?, { form, pauldron }?) (a MechPartsBody, built if given)
 // ---------------------------------------------------------------------------------------
@@ -67,6 +71,7 @@ import { WEAPON_LOOKS } from './parts/weapons.js';
 import { BOOSTER_LOOKS, GENERATOR_LOOKS, BACK_LOOKS } from './parts/backs.js';
 import { wearHelm, HELMS } from './helms.js';
 import { wearCape, CAPES } from './capes.js';
+import { wearHip, HIPS } from './parts/hips.js';
 
 const PI = Math.PI, SIDES = [[1, 'L'], [-1, 'R']];
 /** What each joint takes off with it when it snaps (Dovina's joints.js `limb`, as slots). The waist never snaps. */
@@ -84,12 +89,12 @@ export const BUST_SPRING = { stiffness: 140, damping: 3.6, travel: 0.34, gain: 1
 const _v = new THREE.Vector3(), _w = new THREE.Vector3(), _on = new THREE.Color(L.film), _off = new THREE.Color(L.hollow);
 
 export class MechPartsBody {
-  constructor(game = null, { form = 'hero', pauldron = 'default', cape = null } = {}) {
+  constructor(game = null, { form = 'hero', pauldron = 'default', hip = null, cape = null } = {}) {
     this.game = game;
     this.group = new THREE.Group(); this.group.name = 'mech';
     this.mats = mechMaterials();
     Object.assign(this.mats, { porcelain: this.mats.p, gold: this.mats.g, labradorite: this.mats.l, glow: this.mats.e });
-    this.form = form; this.pauldron = pauldron; this.capeId = CAPES[cape] ? cape : null; this.arms = {}; this.hurt = new Set();
+    this.form = form; this.pauldron = pauldron; this.capeId = CAPES[cape] ? cape : null; this.hipId = HIPS[hip] ? hip : null; this.arms = {}; this.hurt = new Set();
     this.joints = {}; this.owned = {}; this.balls = []; this.state = {}; this.snapped = {}; this.legJoints = [];
     this.sealK = 0; this.travel = 0; this.sparkAt = 0;
     this.bounce = { L: { x: 0, v: 0 }, R: { x: 0, v: 0 } }; this.lastY = null; this.lastVy = 0; this.lastT = null;
@@ -128,7 +133,7 @@ export class MechPartsBody {
     this.put(j.cradle, 'cradle', cradle);
     const C = cradleParts(this.mats); j.cradle.add(C.collar, C.bore, ...C.tines);
     this.cradle = { frame: j.cradle, depth: CRADLE.depth, turns: CRADLE.turns, pitch: CRADLE.pitch, r: CRADLE.r, collar: C.collar, tines: C.tines, bore: C.bore };
-    for (const slot of ['legs', 'core', 'head', 'arms', 'pauldron', 'weaponL', 'weaponR', 'booster', 'generator', 'back']) this.buildSlot(slot);
+    for (const slot of ['legs', 'hip', 'core', 'head', 'arms', 'pauldron', 'weaponL', 'weaponR', 'booster', 'generator', 'back']) this.buildSlot(slot);
     this.layoutArms();
     this.group.updateMatrixWorld(true);
     this.height = +new THREE.Box3().setFromObject(this.body).max.y.toFixed(2);
@@ -139,6 +144,8 @@ export class MechPartsBody {
   }
   /** The back piece worn again on the frame as it now stands (capes.js; laid out by the frame's shoulders, back, Jar and hips). */
   wearCape() { return this.capeId ? wearCape(this, this.capeId, this.game?.scene || null) : wearCape(this, null); }
+  /** A hip piece put on ('crinoline' | 'tassets' | 'kusazuri' | 'pteruges'; null or 'none' takes it off). */
+  setHip(id) { this.hipId = HIPS[id] ? id : null; if (this.body) { this.buildSlot('hip'); if (this.capeId) this.wearCape(); } return this; }
   /** A back piece put on ('renko' | 'kohai' | 'kazebukuro' | 'tenne' | 'knight'; null or 'none' takes it off). */
   setCape(id) { this.capeId = CAPES[id] ? id : null; if (this.body) this.wearCape(); return this; }
 
@@ -154,6 +161,9 @@ export class MechPartsBody {
         put: (joint, build) => this.put(joint, 'legs', build), ballAt: (jid, obj, r, at) => this.ballAt('legs', jid, obj, r, at) };
       const LEGS = this.F.fem ? FEM_LEGS : LEG_LOOKS;
       this.legs = (LEGS[id] || LEGS.clayLegs)(ctx);
+      if (this.hipPiece) this.buildSlot('hip'); // (the hip piece hung again on the new pelvis)
+    } else if (slot === 'hip') {
+      this.hipPiece?.dispose(); this.hipPiece = this.hipId ? wearHip(this, this.hipId) : null; this.owned.hip ||= [];
     } else if (slot === 'core') {
       const C = coreLook(id, this.F), M = C.mounts; this.core = C;
       this.put(j.waist, 'core', (S) => C.waist(S)); this.put(j.chest, 'core', (S) => C.chest(S));
@@ -230,7 +240,7 @@ export class MechPartsBody {
       j[`elbow${k}`].position.set(0, -A.upper, 0); this.rest(j[`elbow${k}`], [-0.2 - Math.min(0.8, over * 0.3), 0, -s * (A.bend ?? (A.splay ? A.splay * 0.6 : 0.04))]);
       j[`wrist${k}`].position.set(0, -A.fore, 0); this.rest(j[`wrist${k}`], [0, 0, 0]);
       const twist = s * (-PI / 2 + 0.45); this.rest(j[`hand${k}`], [0, twist, 0]);
-      tw.set(0, twist, 0); q.set(...gripAt(A)).applyEuler(tw); j[`grip${k}`].position.copy(q); this.rest(j[`grip${k}`], [0, 0, 0]); this.arms[k]?.held.position.copy(q);
+      tw.set(0, twist, 0); q.set(...gripAt(A, this.F)).applyEuler(tw); j[`grip${k}`].position.copy(q); this.rest(j[`grip${k}`], [0, 0, 0]); this.arms[k]?.held.position.copy(q);
     }
   }
 
@@ -279,7 +289,7 @@ export class MechPartsBody {
     for (const id of Object.keys(LIMB)) if (this.state[id] !== 'whole') { this.setJoint(id, 'whole'); this.unmark(id, 'mend'); for (const b of this.balls) if (b.id === id) this.craze(b, 'mend'); }
   }
 
-  /** The frame rebuilt in another form ('hero' | 'doll' | 'drossel'), its parts, pauldron and fractured joints kept. */
+  /** The frame rebuilt in another form ('hero' | 'doll'), its parts, pauldron and fractured joints kept. */
   setForm(form) {
     const F = formOf(form); if (F.id === this.form && this.body) return this;
     this.form = F.id; if (this.body) this.rebuild(); return this;
@@ -335,6 +345,10 @@ export class MechPartsBody {
     for (const id of Object.keys(this.snapped)) j[id].traverse((o) => { if (o.userData.rest) held.set(o, o.quaternion.clone()); });
     for (const o of Object.values(j)) o.rotation.copy(o.userData.rest);
     this.legs?.pose({ gait, walk, kneel, travel: this.travel });
+    const now0 = (typeof performance !== 'undefined' ? performance.now() : Date.now()) / 1000;
+    const step = dt !== undefined ? dt : this.lastT === null ? 0 : now0 - this.lastT; // (one frame's real time, for the springs, the plates and the cloth)
+    this.lastT = now0;
+    this.hipPiece?.update(step);
     const sw = Math.sin(PI * gait) * walk;
     this.body.position.y = -(this.legs?.drop(kneel) ?? 0) - Math.abs(sw) * (this.stats.legType === 'tank' ? 0 : 0.2);
     j.waist.rotation.x += kneel * 0.22; this.body.rotation.z = lean; // (lean: a leg gone, the frame kneels to that side)
@@ -348,9 +362,6 @@ export class MechPartsBody {
     }
     for (const [id, st] of Object.entries(this.state)) if (st === 'fractured') { const o = j[id], d = SAG[id], sd = id.endsWith('R') ? -1 : 1; o.rotation.x += d[0]; o.rotation.z += d[2] * sd; }
     for (const [o, q] of held) o.quaternion.copy(q);
-    const now0 = (typeof performance !== 'undefined' ? performance.now() : Date.now()) / 1000;
-    const step = dt !== undefined ? dt : this.lastT === null ? 0 : now0 - this.lastT; // (one frame's real time, for the springs and the cloth)
-    this.lastT = now0;
     this.bust(step);
     // sealed: the eyes and the well's floor lit, eased
     this.sealK += ((sealed ? 1 : 0) - this.sealK) * 0.12;
@@ -359,7 +370,7 @@ export class MechPartsBody {
     this.mats.crack.color.setRGB(1, 0.62 + 0.25 * Math.sin(now * 5.3), 0.3);
     this.barrier.visible = barrier > 0.01; this.barrierMat.opacity = 0.08 + 0.2 * barrier;
     G.updateMatrixWorld(true);
-    this.cape?.update(Math.min(Math.max(step, 0), 1));
+    this.cape?.update(Math.min(Math.max(step, 0), 1), this.sealK);
     if (now > this.sparkAt) {
       const hurt = Object.keys(this.state).filter((id) => this.state[id] === 'fractured');
       this.sparkAt = now + 1.6 + Math.random() * 2.4;
@@ -397,7 +408,7 @@ export class MechPartsBody {
     for (const slot of Object.keys(this.owned)) this.takeDown(slot);
     if (this.cradle) { this.cradle.collar.geometry.dispose(); this.cradle.bore.geometry.dispose(); for (const t of this.cradle.tines) t.geometry.dispose(); this.cradle = null; }
     if (this.barrier) { this.barrier.geometry.dispose(); this.barrierMat.dispose(); this.barrier = null; }
-    this.cape?.dispose(); this.cape = null;
+    this.cape?.dispose(); this.cape = null; this.hipPiece = null;
     if (this.body) { this.group.remove(this.body); this.body = null; }
     this.joints = {}; this.legJoints = []; this.balls = []; this.lastPos = null; this.arms = {}; this.hurt.clear();
   }

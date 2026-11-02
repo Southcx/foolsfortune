@@ -1,15 +1,21 @@
 // ---------------------------------------------------------------------------------------
 // A MECH'S BACK PIECE (plain name; South, 2026-11-02: "what's the name of the ring of drums around raijin/fujin's cloth? I think we should
 // use motifs of that sort of aura ring halo at the shoulders, perhaps add it like a cape slot? Mecha knights with cloth physics?"): a
-// look a frame wears at its shoulders and back, any form (the hero, the doll, Drossel), chosen and kept in the mech's style (slot `cape`,
+// look a frame wears at its shoulders and back, any form (the hero, the doll), chosen and kept in the mech's style (slot `cape`,
 // vfx/mechs/mechstyle.js). Never over the cradle between the shoulder blades, where the Pneuka Jar screws in: a halo stands behind it
 // with the Jar framed in its opening, a cloth hangs from the shoulders either side of it or from a yoke under it. Looks only.
-//   renko       the drums' ring (renkō): Raijin's hoop of eight taiko, mitsudomoe on their heads, turning, the film crackling between
-//   kohai       the flame halo (kaen kōhai): Fudō Myōō's carved flames in gold and the film round an open ring
-//   kazebukuro  Fūjin's wind bag: a long tube of cloth from shoulder to shoulder billowing up over and behind the helm
-//   tenne       the heavenly sash (ten'e, 天衣): a stiffened loop of sash standing behind the helm, its two ends falling from the shoulders
-//   knight      a mecha knight's cape: heavy cloth hung from a gold yoke that runs from clasp to clasp under the cradle, to the knees
-// The halos are rigid, in the chest's frame, floating and bobbing as the helm does (capes/halos.js); the cloths are small verlet grids
+//   renko       the drums' ring (renkō): Raijin's hoop of eight lacquered taiko round the shoulders, turning, a drum roll chasing round
+//               it (each head flashing in turn, a ring of the film off it, the lightning jumping on to the next)
+//   kohai       the flame halo (kaen kōhai): Fudō Myōō's karura flames, S-curled tongues in two rows, gold over the film, licking up
+//               round an open ring framing the shoulders, embers rising
+//   kazebukuro  Fūjin's wind bag: a long tube of cloth from shoulder to shoulder billowing up over and behind the helm, banded in the
+//               body glaze, its cuffs gilt
+//   tenne       the heavenly sash (ten'e, 天衣): a stiffened loop of sash standing behind the helm, its two ends falling from the
+//               shoulders, both edged in gold
+//   knight      a mecha knight's cape: heavy lined cloth (the trim glaze over the body glaze, a gilt rolled hem) hung from a gold yoke
+//               that runs from clasp to clasp under the cradle, to the knees
+// The halos are rigid rings close behind the shoulders, in the chest's frame, framing the shoulders and the Jar, alive in the frame's
+// time and brighter while the Jar is sealed in (capes/halos.js); the cloths are small verlet grids
 // in the world (capes/cloth.js), pinned in the chest's frame and swung by the frame's own motion, kept off the back, the Jar, the
 // hips and the thighs by spheres fitted to those parts' own boxes (the pear's hips included). Their numbers are one table (CAPE_CLOTH,
 // capes/knobs.js). Drawn in the parts body's programs: the cloth and the sashes in its trim (the trim glaze), the halos in its gold,
@@ -21,7 +27,7 @@
 // cloth (2001); the floating helm and its sprung plumes (vfx/mechs/helms.js).
 //
 //   CAPES[id] = { label }   CAPE_CLOTH   wearCape(body, id | null, scene) -> handle | null (null takes the worn one off)
-//   handle.update(dt)   handle.dispose()   frameOf(body) -> the frame's metrics the pieces are laid out by
+//   handle.update(dt, seal 0..1)   handle.dispose()   frameOf(body) -> the frame's metrics the pieces are laid out by
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { MECH_LOOK as L, seg, tube, labTone } from './parts/kit.js';
@@ -39,6 +45,10 @@ export const CAPES = {
   tenne: { label: 'Heavenly sash' },
   knight: { label: "Knight's cape" },
 };
+/** The heavenly sash's columns across its width (shares of it: a narrow band each side, gilt). */
+const SASH = [-0.5, -0.38, 0, 0.38, 0.5];
+/** The knight's cape's lining, a vertex tone under the body glaze (a shade deeper than the plates). */
+const LINING = 0xb5ada1;
 const smooth = (x) => { const t = Math.min(1, Math.max(0, x)); return t * t * (3 - 2 * t); };
 const _m = new THREE.Matrix4(), _b = new THREE.Box3(), _v = new THREE.Vector3();
 
@@ -75,24 +85,26 @@ export function frameOf(body) {
   const pelvis = boxIn(j.chest, j.pelvis), R = 1.0 + 0.85 * sw, scl = R / 2.6;
   const spheres = [];
   for (const id of ['chest', 'booster', 'generator', 'backMount', 'pelvis', 'hipL', 'hipR', 'kneeL', 'kneeR']) if (j[id]) spheres.push(...spheresOf(boxIn(j[id], j[id]), j[id]));
+  if (j.hipBelt) spheres.push(...spheresOf(boxIn(j.hipBelt, j.hipBelt, true), j.hipBelt)); // (a hip piece's plates)
   spheres.push({ joint: j.cradle, at: new THREE.Vector3(0, 0.6, 0), r: 0.72 }); // (the Pneuka Jar in its cradle)
   if (body.helm?.root && j.head) { const hb = boxIn(j.head, body.helm.root, true); if (!hb.isEmpty()) spheres.push({ joint: j.head, at: hb.getCenter(new THREE.Vector3()), r: Math.max(...hb.getSize(_v).toArray()) * 0.42 }); }
   return {
     sw, sy, cap, depthAt, jar, top: chest.max.y, chest, pelvis, hip: body.hip, R, scl, spheres,
-    haloY: sy + 0.45, haloZ: Math.min(jar.z - 1.05 - 0.2 * scl, chest.min.z - 1.0),
     foot: -(L.chestBase + L.waist), // (the pelvis's height in the chest's frame)
   };
 }
 
-/** A flat ribbon along a curve (chest frame), its width across in the curve's plane, away from `about`: a stiffened sash. */
+/** A flat ribbon along a curve (chest frame), its width across in the curve's plane, away from `about`: a stiffened sash; its two
+ *  edges handed back (for their gold). */
 function ribbon(pts, w, about) {
-  const curve = new THREE.CatmullRomCurve3(pts.map((p) => new THREE.Vector3(...p))), N = 48, pos = [], idx = [];
+  const curve = new THREE.CatmullRomCurve3(pts.map((p) => new THREE.Vector3(...p))), N = 48, pos = [], idx = [], edges = [[], []];
   for (let i = 0; i <= N; i++) {
     const p = curve.getPoint(i / N), o = new THREE.Vector3(p.x - about[0], p.y - about[1], 0).normalize(), k = w * (0.75 + 0.25 * Math.sin((i / N) * PI));
     pos.push(p.x - o.x * k / 2, p.y - o.y * k / 2, p.z, p.x + o.x * k / 2, p.y + o.y * k / 2, p.z);
+    edges[0].push([p.x - o.x * k / 2, p.y - o.y * k / 2, p.z]); edges[1].push([p.x + o.x * k / 2, p.y + o.y * k / 2, p.z]);
     if (i < N) { const a = i * 2; idx.push(a, a + 1, a + 2, a + 1, a + 3, a + 2); }
   }
-  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals(); return g;
+  const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setIndex(idx); g.computeVertexNormals(); return { g, edges };
 }
 /** A gold knot (a ring round a ball) at a cloth's pin. */
 const knot = (S, at, r) => { S.g.ball(r, { at, c: L.gold }, 14, 10); S.g.geo(new THREE.TorusGeometry(r * 1.25, r * 0.28, 8, 20), { at, c: L.bronze }); };
@@ -113,20 +125,21 @@ const DRAPES = {
     }
     tube(S.g, yoke.map(([x, y, z]) => [x, y + 0.05, z]), 0.07 * fr.scl + 0.03, L.gold, 32); // (the yoke's rail, clasp to clasp under the cradle)
     for (const s of [-1, 1]) { const [x, y, z] = yoke[s < 0 ? 0 : C - 1]; S.g.ring(0.26 * fr.scl + 0.08, 0.06 * fr.scl + 0.02, { at: [x, y + 0.08, z + 0.05], c: L.gold }, 24, 6); S.l.ball(0.17 * fr.scl + 0.05, { at: [x, y + 0.12, z + 0.05], sc: [1, 0.6, 1], c: labTone(0.4, 0.2) }, 16, 10); } // (the clasps)
-    return [{ ...K, rest: out, pins: [...Array(C).keys()], colour: (c, r) => (r >= Rn - 2 ? L.trimD : c === 0 || c === C - 1 ? L.trimD : r % 4 === 3 ? L.trimL : L.trimM) }];
+    return [{ ...K, rest: out, pins: [...Array(C).keys()], lining: LINING, colour: (c, r) => (c === 0 || c === C - 1 ? L.trimM : r % 4 === 3 ? L.trimM : L.trimL) }];
   },
   tenne(fr, S) {
     const K = CAPE_CLOTH.tenne, top = fr.sy + fr.cap, k = fr.scl, z0 = -fr.depthAt(fr.sy) * 0.85 - 0.12, zb = fr.jar.z - 0.95 - 0.3 * k;
     const lift = Math.max(fr.top + 1.1 * k, fr.jar.y + 1.1) - top;
     const loop = [[-fr.sw * 0.9, top * 0.97, z0], [-fr.sw * 1.05 - 0.3 * k, top + lift * 0.45, zb * 0.7], [-fr.sw * 0.6, top + lift * 0.9, zb], [0, top + lift, zb], [fr.sw * 0.6, top + lift * 0.9, zb], [fr.sw * 1.05 + 0.3 * k, top + lift * 0.45, zb * 0.7], [fr.sw * 0.9, top * 0.97, z0]];
-    S.trim.geo(ribbon(loop, 0.62 * k + 0.12, [0, top]), { c: L.trimL }); // (the stiffened loop behind the helm)
-    tube(S.g, loop.map(([x, y, z]) => [x, y, z - 0.03]), 0.02 + 0.015 * k, L.gold, 48);
+    const R = ribbon(loop, 0.62 * k + 0.12, [0, top]);
+    S.trim.geo(R.g, { c: L.trimL }); // (the stiffened loop behind the helm)
+    for (const e of R.edges) tube(S.g, e, 0.025 + 0.015 * k, L.gold, 64); // (its gilt edges)
     const cloths = [], w = 0.5 * k + 0.12, len = top - (fr.foot - fr.hip * 0.72), Rn = K.rows;
     for (const s of [-1, 1]) {
       const ax = s * fr.sw * 0.9, ay = top * 0.97, rest = [];
       knot(S, [ax, ay, z0], 0.13 * k + 0.05);
-      for (let r = 0; r < Rn; r++) for (let c = 0; c < K.cols; c++) rest.push([ax + s * 0.15 * r / Rn + (c - 1) * w * 0.5, ay - (r * len) / (Rn - 1), z0 - 0.25 - r * 0.06]);
-      cloths.push({ ...K, rest, pins: [0, 1, 2], colour: (c, r) => (c !== 1 ? L.trimM : r % 3 === 2 ? L.trimL : L.trimL) });
+      for (let r = 0; r < Rn; r++) for (let c = 0; c < K.cols; c++) rest.push([ax + s * 0.15 * r / Rn + SASH[c] * w, ay - (r * len) / (Rn - 1), z0 - 0.25 - r * 0.06]);
+      cloths.push({ ...K, rest, pins: [...Array(K.cols).keys()], colour: () => L.trimL, part: (c) => (c === 0 || c === K.cols - 2 ? 2 : 0) }); // (its edges gilt)
     }
     return cloths;
   },
@@ -142,7 +155,7 @@ const DRAPES = {
     }
     for (const t of [0, PI]) knot(S, path(t).toArray(), 0.16 * k + 0.06);
     const last = (K.rows - 1) * K.cols, pins = [...Array(K.cols).keys(), ...Array(K.cols).keys()].map((c, i) => (i < K.cols ? c : last + c));
-    return [{ ...K, rest, pins, wrap: true, colour: (c, r) => (r % 3 === 1 ? L.trimM : L.trimL) }];
+    return [{ ...K, rest, pins, wrap: true, colour: () => L.trimL, part: (c, r) => (r < 1 || r >= K.rows - 2 ? 2 : r % 4 === 2 ? 1 : 0) }]; // (gilt cuffs, banded in the body glaze)
   },
 };
 
@@ -158,13 +171,13 @@ export function wearCape(body, id, scene) {
     const S = seg(), specs = DRAPES[id](fr, S);
     for (const k of ['p', 'trim', 'g', 'l']) if (S[k].pos.length) { const m = new THREE.Mesh(S[k].done(), mats[k]); m.name = `mech-cape.${id}.${k}`; m.castShadow = true; root.add(m); own.push(m); }
     const into = scene || body.game?.scene || body.group.parent || body.group;
-    for (const sp of specs) cloths.push(new Cloth({ ...sp, mat: mats.trim }).attach(into));
+    for (const sp of specs) cloths.push(new Cloth({ ...sp, mats: [mats.trim, mats.p, mats.g] }).attach(into));
   }
   const spheres = fr.spheres.map((s) => ({ ...s, c: new THREE.Vector3() }));
   const handle = {
     id, root, cloths, halo,
-    update(dt = 1 / 60) {
-      halo?.update(dt);
+    update(dt = 1 / 60, seal = 0) {
+      halo?.update(dt, seal);
       if (!cloths.length) return;
       let vis = root.visible && !!body.group.parent; for (let o = body.group; o && vis; o = o.parent) if (o.visible === false) vis = false;
       for (const s of spheres) s.c.copy(s.at).applyMatrix4(s.joint.matrixWorld);

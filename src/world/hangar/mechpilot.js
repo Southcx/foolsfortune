@@ -317,7 +317,7 @@ export class MechPilot {
     const g = this.game, S = this.stats, pool = g.lachryma;
     if (this.giant && by === 'creature' && this.hangar.props?.shieldTake(this.giant.pos)) return; // (the slab held up takes it: props.js)
     const kk = k * this.specials.wardK * (S.armour[region] ?? 1) * (this.giant ? this.weapons.blockK(this.giant.pos) : 1);
-    this.mech?.jiggle?.(Math.min(2, 1.5 * kk)); // (the doll's and Drossel's chest plates kicked by the blow: partsbody.js BUST_SPRING)
+    this.mech?.jiggle?.(Math.min(2, 1.5 * kk)); // (the doll's chest plates kicked by the blow: partsbody.js BUST_SPRING)
     const was = this.broken(region), r = blowOn(this.state.vessel, { region, k: kk, pool: this.pressing ? null : pool?.available ?? null }, 'mech');
     if (r.shield > 0) pool?.drain(r.shield, 'mech');
     this.state.hurt(r.state);
