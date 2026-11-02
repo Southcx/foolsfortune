@@ -125,6 +125,11 @@ export const ACTIONS = [
   { id: 'raRoll',   keys: ['KeyE'],       pad: 'B',     touch: 'roll',       ctx: 'rail', how: 'tap' },   // (the barrel roll; its two charges)
   { id: 'raForm',   keys: ['KeyQ'],       pad: 'Y',     touch: 'form',       ctx: 'rail', how: 'tap' },   // (Astral and Umbral)
   { id: 'raSurge',  keys: ['KeyR'],       pad: 'X',     touch: 'surge',      ctx: 'rail', how: 'tap' },   // (shown only with the surge's gauge full)
+  // ---- a mech's parts' specials (Calissa's, 2026-11-02: world/hangar/mechspecials.js; on touch, the arc's PICK and its radial)
+  { id: 'mkHead',   keys: ['KeyE'],       pad: 'Y',     touch: 'mech.head',  ctx: 'mech', how: 'tap' },
+  { id: 'mkArms',   keys: ['KeyQ'],       pad: 'LB',    touch: 'mech.arms',  ctx: 'mech', how: 'tap' },
+  { id: 'mkLegs',   keys: ['KeyR'],       pad: 'RB',    touch: 'mech.legs',  ctx: 'mech', how: 'tap' },
+  { id: 'mkCore',   keys: ['KeyY'],       pad: 'Back',  touch: 'mech.core',  ctx: 'mech', how: 'tap' },
   { id: 'raBoost',  keys: ['ShiftLeft'],  pad: 'RB',    touch: 'boost',      ctx: 'rail', how: 'hold' },
   { id: 'raBrake',  keys: ['KeyC'],       pad: 'LB',    touch: 'brake',      ctx: 'rail', how: 'hold' },
   // ---- the free helm (M4: the open sea; Petra's ctx `helm`). The rudder on the move area's stick (A / D); the throttle a notch a tap

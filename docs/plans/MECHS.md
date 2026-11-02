@@ -1,4 +1,7 @@
-# Mechs: giant robots the Pneuka Jar pilots (Dovina's plan; South's ask, 2026-11-02)
+# Mechs: giant robots the Pneuka Jar pilots (Calissa's module since 2026-11-02; Dovina's plan; South's ask, 2026-11-02)
+
+> South, 2026-11-02, later: "Supercede Dovina's notes on the mech module, I want you to take over and run with it" (to Calissa). Where
+> this plan and Calissa's rulings below disagree, Calissa's stand: section 10.
 
 > South, 2026-11-02: "Giant robots. Pilotable. They should have a cradle for the Pneuka Jar to screw into. I'm thinking... Neon Genesis
 > Evangelion mixed with armored core, mixed with the giant robot sections from Ratchet and clank. This is a request for a fun,
@@ -12,7 +15,7 @@ barrier**, **the hangar**, **the proving ground**, **a giant**. Espada proposes 
 ## 0. The ruling on riding (South, 2026-11-02)
 
 **What rides is the Pneuka Jar, sealed in a cradle or set in a saddle; the Courier rides only the Solar Skiff.** The slip jelly mount
-carries the Jar in a saddle on its crown (today it carries the Courier cross-legged). A mech carries it sealed in its chest's cradle. The
+carries the Jar in a saddle on its crown (today it carries the Courier cross-legged). A mech carries it sealed in the cradle between its shoulder blades (10.1). The
 ships already do: the helm's cradle (HANKO.md). Every mount to come does the same. Petra's to change on the jelly mount (its seat, its
 rider), Calissa's to draw (a saddle that fits the Jar's foot ring).
 
@@ -66,7 +69,7 @@ Nine slots. Each part is a row of honest numbers (`PARTS`, `src/progress/mechs/p
 | **legs** | the load limit, the leg length (the stride and the walk's top speed), the leg type | mass |
 | **booster** | thrust (kN): the dash, the jump, the hover | draw while firing |
 | **generator** | output (kW) and capacity (kJ, the battery while off the cable) | mass |
-| **left arm weapon / right arm weapon** | a tool's giant form (4.3) | mass, draw per use |
+| **left arm weapon / right arm weapon** | the blade, the blaster or the fist (4.3) | mass, draw per use |
 | **back unit** | one more: missiles, a shield, a radar, a camera | mass, draw |
 
 **Leg types** (each its own movement, AC's four):
@@ -93,21 +96,25 @@ What moves it:
 
 Sync starts at 0.3 on sealing and settles toward 0.4 at rest.
 
-### 4.3 The seven tools at giant scale (the arm weapons)
+### 4.3 The arm weapons: a blade and a blaster (South, 2026-11-02)
 
-Every tool has a giant form, so a mech fights in the Courier's own grammar:
+> "the mechs don't need access to all the lachryma tools. A blade and a blaster is more than enough for now, we can bake special moves
+> into a per-part basis, and amplify/modify existing God Art abilities." (passed on by Calissa)
 
-| tool | giant form | its verb at scale |
-|---|---|---|
-| psygun | **the big gun** | a rifle: shots, a charged beam that pierces a giant's barrier while it holds |
-| Sondelass | **the great blade** | a cutlass string of three, the third a launcher that staggers |
-| Soul Brush | **the great brush** | paints the ground in a swath of the pool's feeling (the paint map at scale); a giant in its paint is slowed |
-| Crucibelle | **the great bell** | a toll in a cone that stuns smaller things outright and adds stagger to a giant |
-| Lockheart | **the great flail** | a coffin on a chain: the heaviest blow, momentum-scaled; it can hoover a giant's barrier into the battery |
-| Dreamvane | **the great vane** | a back unit only: the radar and the weak point marked |
-| Veritome | **the great lens** | a back unit only: photographs a giant (a plate, the bestiary at scale) |
+| weapon | what it does |
+|---|---|
+| **the big gun** (the blaster) | a rifle: shots, and a charged beam that pierces a giant's barrier while it holds |
+| **the great blade** | a cutlass string of three, the third a launcher that staggers |
+| **the fist** | the bare hands: a punch string of three (Giant Clank's) |
 
-And the bare hands: **the fist**, a punch string of three (Giant Clank's).
+**Retired** with the ruling: the great brush, bell and flail (arm weapons), and the great vane and lens (back units). A saved frame
+wearing one falls back to the clay frame's part in that slot.
+
+**Next, not yet designed** (South's direction):
+- special moves carried by a part, each part its own;
+- the God Arts amplified or modified when cast from the frame.
+
+The back units that stay are the missiles and the shield.
 
 ### 4.4 Energy and the cable (Evangelion's five minutes)
 
@@ -129,7 +136,7 @@ And the bare hands: **the fist**, a punch string of three (Giant Clank's).
 
 ### 4.6 Stagger and the heavy blow (Armored Core 6's ACS)
 
-A giant fills a **stagger** gauge with every blow (impact weighs most: the flail, the fist, the charge). Full, it **staggers** for 3 real
+A giant fills a **stagger** gauge with every blow (impact weighs most: the fist and the charge). Full, it **staggers** for 3 real
 s: every blow lands x2, and a charge or a heavy blow on it then is a **critical** (x3, its region broken).
 
 ### 4.7 Damage by region (the vessel's rule, Front Mission's parts)
@@ -204,7 +211,7 @@ The hangar's door opens on the Dunes: a mech walked in the world. Cross-module f
   (a lightning rod). Real, and a reason to stand tall in a storm;
 - **thrown things**: its hands pick up a boulder or a pot of the island's size and throw it, an Impact blow by its energy
   (`world/impacts.js`): the mass is huge, so is the blow;
-- **the paint map**: the great brush paints at scale; walking in crude, the mech slides.
+- **the paint map**: walking in crude, the mech slides.
 
 ## 6. Economy
 
@@ -391,3 +398,43 @@ the commit).
 - **Espada:** the techniques', props' and rivals' words, and the log lines.
 - **Petra:** the gate; the camera's shake on a collapse; whether a building's chunk may enter the ammo.js physics later (for now a chunk
   is flown by its own ballistics).
+
+## 10. Calissa's rulings (from 2026-11-02, the module handed over)
+
+### 10.1 The cradle and the mount
+
+The cradle sits **between the shoulder blades** (Evangelion's entry plug), built to the Pneuka Jar's own measurements (`JAR_ANATOMY`): a
+well tilted back, two turns of thread, a gold collar, four tines (`vfx/mechs/partsbody.js` `body.cradle`). The seat is measured off the
+body as built (`MechPilot.seatH()`), not the old fixed height. Sealing plays **the mech's mount** (`vfx/mechs/mount.js`): the Jar flies from
+the walkway over the shoulder, screws itself in, and the frame wakes; the lift waits for it (`game.mechMount.playing`).
+
+**The frame is blank until a Jar is in it**: plates and trim bisque, the core dull stone. The mount's wave paints the Courier's own finishes
+on as it runs (`vfx/mechs/mechglaze.js`): the plates take the BODY glaze, the accents and pauldrons the TRIM glaze, the core between the
+plates the SKIN. When the Jar leaves, the colours drain back out. A firing at the kiln is worn by the frame too.
+
+### 10.2 A part's special
+
+Every head, core, arms and legs part carries one move, a god power at the frame's scale (`progress/mechs/specials.js` PART_SPECIALS,
+`world/hangar/mechspecials.js`). Each is on its slot's key (the head E, the arms Q, the legs R, the core Y), paid from the battery, and
+amplified by the domain's level (x1.6 at 99). The kinds:
+
+- **Scan**: the giant's weak point marked.
+- **Barrier**: blows on the frame lessened.
+- **Hasten**: the frame's walk and arms quickened.
+- **Sunder**: a long clay blade carving a line.
+- **Telekinesis**: a loose thing drawn into the hand.
+- **Gust**: a cone of wind.
+- **Shape, Lift Ground and Carve**: the ground heaved round the feet.
+- **Portal**: a step through, 40 m.
+
+The mechanic is in flux: no checks are written for it until South settles it.
+
+### 10.3 The look (Calissa's)
+
+- **The parts body** (`vfx/mechs/parts/`): every part id its own silhouette.
+- **The frame's form**: heroic, or the doll (Elemental Gearbolt's dolls, Haydee).
+- **Pauldrons**: large and iconic, chosen apart from the arms.
+- **Helms**: animal crests on kabuto and knights' helms (the stag, the tyrant, the mammoth, the sabretooth, the pterosaur, the
+  triceratops), with plumes on sprung bones.
+
+The form, the pauldrons and the helm are kept as a mech's style (`vfx/mechs/mechstyle.js`, save section `mechStyle`, `/mechstyle`).

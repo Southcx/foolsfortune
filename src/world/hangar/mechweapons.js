@@ -1,23 +1,21 @@
 // ---------------------------------------------------------------------------------------
 // THE MECH'S WEAPONS (docs/plans/MECHS.md 4.3, 4.5, 4.6, 4.9): the arm weapons on LMB and RMB and the back unit on G, each the part's own
 // verb read from its numbers (progress/mechs/parts.js; no tool is named here: a part with `string` swings a string, one with `charge`
-// shoots and charges, `paint` paints a swath, `cone` tolls a cone, `momentum` swings by the frame's momentum, `volley` fires missiles,
-// `block` is a shield), and the charge (an assault boost into a giant, its blow the frame's momentum: frame.js chargeK). Each blow on a
+// shoots and charges, `volley` fires missiles, `block` is a shield; South, 2026-11-02: a blade and a blaster, the brush, bell, flail,
+// vane and lens retired), and the charge (an assault boost into a giant, its blow the frame's momentum: frame.js chargeK). Each blow on a
 // giant goes through its rules (giant.js blow: the barrier, the stagger, its vessel) at the part's k x outputK(sync) and its stagger.
-//   the fist and the great blade: a string of three (the third heavy where the part says), a blow landing a beat after the press
-//   the big gun: a shot at most `rate` a real s on a press; held `charge.hold` real s and let go, the charged beam (it pierces a barrier)
-//   the great brush: a swath `paint.width` wide painted on the ground in the pool's feeling (the paint map), the giant in it slowed
-//   the great bell: a toll in a `cone` degrees wide: stagger, little crack;   the great flail: k the frame's momentum, the part's k at least
+//   the fist and the blade: a string of three (the third heavy where the part says), a blow landing a beat after the press
+//   the blaster: a shot at most `rate` a real s on a press; held `charge.hold` real s and let go, the charged beam (it pierces a barrier)
 // An arm broken (MECHS.md 4.7) has no weapon; the back broken, no back unit. Shots are drawn as plain tracer lines (Calissa's looks later).
 //
 // Prior art: Armored Core's arm units (one trigger a hand), Ratchet & Clank's Giant Clank (a punch string and a charge), Evangelion's
-// pallet rifle and progressive knife, the Courier's own tools' grammar (TOOLS-TOGETHER.md: the gun shoots, the bell tolls).
+// pallet rifle and progressive knife, the Courier's own tools' grammar (TOOLS-TOGETHER.md: the gun shoots, the blade cuts); a part's own move is its special (mechspecials.js).
 //
 //   const W = new MechWeapons(pilot)   W.reset()   W.arm(side, { down, pressed, released })   W.backUnit(pressed)   W.update(dt)
 //   W.swing(side) -> 0..1 (the pose)   W.charge(speed)   W.blockK(fromPos) -> the shield's share of a blow from there   TIMING   REGION_OF
 //   W.later(t, fn, side?)   W.cancel(side) (an arm's blow still to land called back)   W.cityBlow(P, kind, k, heavy)
-// v2 (MECHS.md 9): every blow also strikes the toy city where it lands (city.js: a fist a ball on the first cell along the arms' aim, the
-// bell a cone, a shot the first cell on its line, the beam a ray through everything); an arm past a fractured joint works at its lock
+// v2 (MECHS.md 9): every blow also strikes the toy city where it lands (city.js: a fist a ball on the first cell along the arms' aim, a
+// shot the first cell on its line, the beam a ray through everything); an arm past a fractured joint works at its lock
 // (joints.js lockOf: k and timing), an arm gone at a joint has no weapon, the back mount snapped no back unit.
 //   events: mech.hit { weapon, region, staggered, pierced, arm?, crit, blocked?, felled?, by }
 // ---------------------------------------------------------------------------------------
@@ -28,18 +26,17 @@ import { MECH_BODY } from './mech.js';
 import { GIANT_LOOK } from './giant.js';
 
 /** Real seconds the parts' verbs take (placeholders for feel, South's to judge in play): a melee blow lands `land` after the press; a
- *  string keeps if the next press comes within `string`; between blows `cool`; the bell's toll, the brush's swath and the flail's swing
- *  their own; the brush's slow lasts `slowFor`; missiles fly `fly`; the charge strikes once in `charge`. */
-export const TIMING = { land: 0.3, string: 1.1, cool: 0.5, bell: 1.6, brush: 0.9, flail: 1.3, slowFor: 6, fly: 0.8, charge: 1, charge2: 5 };
-/** Where on a giant each kind of blow lands (vessel.js FORMS.giant regions). A marked weak point (the great vane) takes the head. */
-export const REGION_OF = { string: 'body', shot: 'body', beam: 'body', paint: 'legs', cone: 'head', momentum: 'body', volley: 'body', charge: 'body' };
+ *  string keeps if the next press comes within `string`; between blows `cool`; missiles fly `fly`; the charge strikes once in `charge`. */
+export const TIMING = { land: 0.3, string: 1.1, cool: 0.5, fly: 0.8, charge: 1, charge2: 5 };
+/** Where on a giant each kind of blow lands (vessel.js FORMS.giant regions). */
+export const REGION_OF = { string: 'body', shot: 'body', beam: 'body', volley: 'body', charge: 'body' };
 const FRONT = Math.cos((70 * Math.PI) / 180); // (a melee blow lands on what stands within 70 degrees of the mech's facing)
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _f = new THREE.Vector3();
 
 export class MechWeapons {
   constructor(pilot) { this.p = pilot; this.game = pilot.game; this.tracers = []; this.mat = null; this.reset(); }
   reset() {
-    this.arms = { L: this.newArm(), R: this.newArm() }; this.pending = []; this.chargeCool = 0; this.backCool = 0; this.shieldUp = false; this.marked = false;
+    this.arms = { L: this.newArm(), R: this.newArm() }; this.pending = []; this.chargeCool = 0; this.backCool = 0; this.shieldUp = false; this.marked = false; // (marked: a head's special, Scan, has the giant's weak point shown: mechspecials.js)
     for (const T of this.tracers) { T.line.parent?.remove(T.line); T.line.geometry.dispose(); T.line.material.dispose(); } this.tracers = [];
   }
   newArm() { return { cool: 0, n: 0, sinceT: 9, hold: 0, swing: 0 }; }
@@ -61,17 +58,13 @@ export class MechWeapons {
     }
     if (!pressed || A.cool > 0) return;
     if (P.string) { A.n = A.sinceT < TIMING.string ? (A.n % P.string) + 1 : 1; A.sinceT = 0; A.cool = TIMING.cool / lock; this.melee(side, P, { heavy: !!P.heavy && A.n === P.string, kind: 'string' }); return; }
-    if (P.paint) { A.cool = TIMING.brush / lock; this.melee(side, P, { kind: 'paint' }); return; }
-    if (P.cone) { A.cool = TIMING.bell / lock; this.melee(side, P, { kind: 'cone' }); return; }
-    if (P.momentum) { A.cool = TIMING.flail / lock; this.melee(side, P, { kind: 'momentum', heavy: true }); }
   }
 
-  /** The back unit on G: missiles, the shield raised or lowered, the vane's mark. TODO(Dovina): the great lens's plate at scale. */
+  /** The back unit on G: missiles, the shield raised or lowered. */
   backUnit(pressed) {
     const B = this.p.broken('back') || !this.p.armLock('back') ? null : this.stats.parts.back; if (!B || !pressed || this.backCool > 0) return; // (the back mount snapped: the back unit is gone)
     if (B.volley) { this.backCool = 2; this.p.spend(B.cost || 0); const G = this.p.giant, d = this.gap(); this.tracer(this.p.mech.back(_a), G ? G.c.center(_b) : _a.clone().addScaledVector(this.p.forward(_f), B.range), 0xffe0a0); if (G && d <= B.range) this.later(TIMING.fly, () => { for (let i = 0; i < B.volley; i++) this.land(B, 'volley', { k: B.k, stagger: B.stagger }); }); return; }
-    if (B.block) { this.shieldUp = !this.shieldUp; this.backCool = 0.3; return; }
-    if (B.mark) { this.marked = !this.marked; this.backCool = 0.3; }
+    if (B.block) { this.shieldUp = !this.shieldUp; this.backCool = 0.3; }
   }
   /** The share of a blow from `from` that gets through: the shield raised takes it from the front. */
   blockK(from) {
@@ -90,22 +83,18 @@ export class MechWeapons {
     this.arms[side].swing = 1; this.p.spend(P.cost || 0); this.p.faceGiant(P.range * 2);
     const lock = this.p.armLock(side) || 1;
     this.later(TIMING.land / lock, () => {
-      if (kind === 'paint') this.paint(P);
-      const k = (kind === 'momentum' ? Math.max(P.k, chargeK(this.stats.mass, this.p.speed)) : P.k * (P.mass ? 1 : this.stats.punch)) * lock;
+      const k = P.k * (P.mass ? 1 : this.stats.punch) * lock;
       this.cityBlow(P, kind, k * this.out(), heavy); // (the toy city takes the blow where it lands: city.js, MECHS.md 9.1)
-      if (kind === 'cone') { if (this.gap() <= P.range && this.inFront(Math.cos(((P.cone / 2) * Math.PI) / 180))) this.land(P, kind, { stagger: P.stagger * lock, arm: side }); return; }
       if (this.gap() > P.range || !this.inFront()) return;
       this.land(P, kind, { k, heavy, arm: side });
-      if (kind === 'paint') this.p.giant?.slow(P.paint.slow, TIMING.slowFor);
     }, side);
   }
-  /** A melee blow on the toy city: the bell's cone over everything ahead, the rest a ball on the first cell along the arms' aim within
-   *  the part's reach (a fist a ball of 2 m, the heavy third and the flail 3 m: destruction.js carve's ball). The brush paints, it breaks nothing. */
+  /** A melee blow on the toy city: a ball on the first cell along the arms' aim within the part's reach (a fist a ball of 2 m, the heavy
+   *  third 3 m: destruction.js carve's ball). */
   cityBlow(P, kind, k, heavy) {
-    const C = this.p.hangar.city; if (!C?.built || kind === 'paint') return;
+    const C = this.p.hangar.city; if (!C?.built) return;
     const T = this.p.tech, from = T.chest(_a), dir = T.aim(_f);
-    if (kind === 'cone') { C.strike({ kind: 'cone', at: from, dir, r: P.range / 4, angle: ((P.cone / 2) * Math.PI) / 180 }, k, 'courier'); return; }
-    T.cityBlow(from, dir, MECH_BODY.radius + P.range, k, heavy || kind === 'momentum' ? 3 : 2);
+    T.cityBlow(from, dir, MECH_BODY.radius + P.range, k, heavy ? 3 : 2);
   }
 
   /** A shot of the big gun, or the charged beam: aimed at the giant while it is within the lock and in view, else straight ahead. */
@@ -124,19 +113,12 @@ export class MechWeapons {
     if (locked && d <= P.range) this.land(P, beam ? 'beam' : 'shot', beam ? { k: P.charge.k * armK, pierce: true, stagger: P.stagger * 3, arm: side } : { k: P.k * armK, stagger: P.stagger, arm: side });
   }
 
-  /** The great brush's swath laid on the paint map in the pool's feeling (the weather's where you stand, else Wonder). */
-  paint(P) {
-    const pm = this.game.paintmap; if (!pm?.stamp) return;
-    const f = this.p.forward(_f), r = P.paint.width / 2, aspect = this.game.weather?.here?.(this.p.pos)?.aspect || 'wonder';
-    for (let s = MECH_BODY.radius; s <= MECH_BODY.radius + P.range; s += r) pm.stamp(this.p.pos.x + f.x * s, this.p.pos.y, this.p.pos.z + f.z * s, r, aspect, 1);
-  }
-
   /** The charge: an assault boost into the giant, a heavy blow of the frame's momentum (once a contact). */
   charge(speed) {
     if (this.chargeCool > 0 || speed < TIMING.charge2) return;
     this.chargeCool = TIMING.charge;
     const k = chargeK(this.stats.mass, speed);
-    this.land({ id: 'charge', stagger: 0 }, 'charge', { k, heavy: true, stagger: 30 * k }); // (stagger: impact weighs most, MECHS.md 4.6; 30 a full charge, the flail's order)
+    this.land({ id: 'charge', stagger: 0 }, 'charge', { k, heavy: true, stagger: 30 * k }); // (stagger: impact weighs most, MECHS.md 4.6; 30 a full charge)
   }
 
   /** A blow on the giant through its rules, said as mech.hit. */

@@ -9,7 +9,7 @@
 // a real second), mech.technique.<id>, mech.through, mech.pound.fell, mech.drop.high, mech.roof, mech.destroy.cells / .chunks /
 // .buildings / .topple, mech.prop.grab.<prop>, mech.prop.hit, mech.prop.spin3, mech.prop.throw, mech.javelin.giant, mech.shield.broke,
 // mech.limb.own, mech.joint.snap.<who>, giant.down.weapon.rubble (by giant.down), the boxing ring's mech.bout, mech.bout.won,
-// mech.bout.won.<rival>, mech.bout.how.<how>, mech.bout.perfect, mech.bout.chargebreak, mech.bout.stars (hi).
+// mech.bout.won.<rival>, mech.bout.how.<how>, mech.bout.perfect, mech.bout.chargebreak, mech.bout.stars (hi); mech.special, mech.special.<power>.
 //
 // Prior art: Armored Core's mission debrief (what broke, what it cost), Evangelion's sync test readouts (a ratio, a record kept).
 //
@@ -60,6 +60,7 @@ export function mechRules({ on, L, log }) {
     if (!mine(e)) return; L.inc(`mech.technique.${e.id}`);
     if (e.through) L.inc('mech.through'); if (e.fell && e.id === 'groundPound') L.inc('mech.pound.fell'); if (e.id === 'elbowDrop' && (e.height || 0) >= 30) L.inc('mech.drop.high');
   });
+  on('mech.special', (e) => { if (mine(e)) { L.inc('mech.special'); L.inc(`mech.special.${e.power}`); } }); // (a part's special: world/hangar/mechspecials.js)
   on('mech.roof', (e) => { if (mine(e)) L.inc('mech.roof'); });
   on('city.break', (e) => { if (!mine(e)) return; L.inc('mech.destroy.cells', e.cells || 0); if (e.chunks) L.inc('mech.destroy.chunks', e.chunks); });
   on('city.felled', (e) => {

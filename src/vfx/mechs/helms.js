@@ -1,142 +1,381 @@
 // ---------------------------------------------------------------------------------------
-// A MECH'S HELM / A PLUME (plain names; South, 2026-11-02: "variant helms that are like a fusion of sengoku samurai army leaders with
-// incredibly ornate features, and eastern european medieval knight helms with extravagant feather plumes (with physics bones to sway)"):
-// a helm worn over any mech head (vfx/mechs/partsbody.js `joints.head`), the head's own shell set aside while it is worn, its plumes
-// a chain of bones each, sprung toward their rest shape and swung by the frame's own motion (verlet, as hair and capes are). Four:
-//   kabuto     the daimyo's: a ribbed lacquer bowl (suji-bachi) with a gold tehen rosette, a five-lame shikoro flared wide and its
-//              fukigaeshi turned back at the temples, a great gold crescent maedate (Date Masamune's), a menpo with a gold moustache
-//              and the eyes lit; a horsehair tuft swinging off the back
-//   antlers    the general's: a smooth momonari bowl under Honda Tadakatsu's deer antlers in black lacquer, the shikoro long, and a
-//              crest of three tall feathers out of a gold socket (the knights' plume set on the kabuto)
-//   szyszak    the winged hussar's (Polish-Lithuanian, the Hungarian zischägge): a fluted round bowl with a crest ridge and a spike,
-//              a peak, a sliding nasal, cheek plates and the lobster-tail of lames; a bunch of five ostrich plumes at the crown
-//   bascinet   the gilded knight's: a tall pointed bowl, the pig-faced visor with its breaths, a gold-edged aventail of lames, the
-//              kuwagata's hoe horns in gold (the kabuto's crest on the knight's helm), three long feathers down the back from the apex
-// Built in the parts body's own programs (its porcelain vertex-coloured: lacquer, iron and bone; its gold; its labradorite; its glow
-// for the eyes, lit with the cradle), in a frame the head's size (fitted to the head shell's box). A plume is one ribbon mesh in the
-// world (two crossed strips a feather on a feather card's alpha), rewritten each frame from its bones.
-// Prior art: the kabuto (suji-bachi, momonari, shikoro, fukigaeshi, maedate: Date Masamune's crescent, Honda Tadakatsu's antlers,
-// Kuroda's and Kato's tall hats as the extravagance), the menpo; the szyszak and the hussars' plumes (the Polish winged hussars),
-// the Hungarian zischägge, the pig-faced bascinet, the Burgundian and German crests and plumes of the tournament; the verlet chains
-// of hair and capes (Jakobsen, "Advanced Character Physics", 2001), and the tie in a skinned bone chain (spring bones: VRM's).
+// A MECH'S HELM / A PLUME (plain names; South, 2026-11-02: "a fusion of sengoku samurai army leaders with incredibly ornate features,
+// and eastern european medieval knight helms with extravagant feather plumes (with physics bones to sway)", and on review: "a stronger
+// silhouette, more stylized with juxtaposed elements, animalistic and primal variants like power rangers. If you're doing honda's
+// antlers, make it a beefy af stag"): a helm worn over any mech head (vfx/mechs/partsbody.js `joints.head`), the head's own shell set
+// aside while it is worn, its plumes a chain of bones each, sprung toward their rest shape and swung by the frame's own motion (verlet,
+// as hair and capes are). Each is one animal's spirit on a sengoku bowl and a knight's crest, told from 40 m by its silhouette alone:
+// big confident shapes at juxtaposed scales (a huge crest on a compact bowl, a sharp jaw under a round dome). Eight:
+//   stag         Honda Tadakatsu's antlers made heavy: beams thick as a forearm, branching wide as the shoulders, a burr of gold at
+//                each root; a heavy brow, a muzzle of a jaw guard, a tuft of rust between the beams
+//   tyrant       a tyrannosaur's skull: the eyes lit inside its open mouth, the upper jaw a visor and the lower a deep U, teeth framing
+//                the face, a brow ridge with hornlets, a short fan of feathers off the back
+//   mammoth      a high double dome, ear flaps for fukigaeshi, a trunk of ringed lames down the face, tusks sweeping out, down,
+//                forward and up from the cheeks; shaggy hair down the back
+//   sabretooth   a big cat's head: ears up, a short muzzle, two fangs down past the chin, a mane of plumes round the back and sides
+//   pterosaur    a beak of a visor far forward, a crest blade swept far back, fukigaeshi as wings with their finger spars
+//   triceratops  a great frill fanned behind the neck (its edge knobbed in gold), two brow horns over the visor and a
+//                nose horn on the beak
+//   kabuto       the daimyo's: a ribbed dark bowl with a gold tehen, the shikoro flared, fukigaeshi turned back, Date Masamune's
+//                crescent maedate tapering to points, a menpo with its moustache and the eyes lit; a horsehair tuft off the back
+//   szyszak      the winged hussar's: a fluted bowl with a spike, a peak, the sliding nasal, cheek plates, the lobster-tail, and a great
+//                bunch of ostrich plumes out of a crest of eagle's wings
+// Built in the parts body's own programs: its porcelain for the shells (vertex-coloured in neutral bone, ivory and grey, so it takes
+// the Courier's glaze as light and shade), its trim for the crests, horns, antlers, frills and accents (`mats.trim`; while the body has
+// none, the porcelain tinted terracotta), its gold for edges, its core for the dark under a visor (`mats.core`, else a plain dark), its
+// glow for the eyes (lit with the cradle) and a soft halo of that same colour round each eye. Fitted to the head shell's box, low and
+// a little over it so the shikoro meets the collar. A plume is one ribbon mesh in the world (two crossed strips a feather on a feather
+// card's alpha), rewritten each frame from its bones.
+// Prior art: the zords' helmets of Power Rangers (Mighty Morphin's Tyrannosaurus, Mastodon, Sabre-toothed Tiger, Pterodactyl and
+// Triceratops: one animal read whole from the helm's outline, the visor in its mouth); the kawari-kabuto, the sengoku's "strange
+// helmets" of animal and object crests (Honda Tadakatsu's antlers, Date Masamune's crescent, Kuroda's and Kato's tall hats, the
+// rabbit-eared, the catfish-tailed); the suji-bachi, shikoro, fukigaeshi and menpo; the European crest helms of the tournament (the
+// German and Burgundian great crests of beasts and horns, the Zürich armorial's), the szyszak and the hussars' plumes and wings; the
+// verlet chains of hair and capes (Jakobsen, "Advanced Character Physics", 2001), and the tie in a skinned bone chain (VRM's spring bones).
 //
-//   HELMS[id] = { label }   wearHelm(body, id | null) -> handle | null (the helm worn, the head's shell set aside; null takes it off)
-//   handle.update(rawDt)   handle.dispose()   installMechHelms(game) -> game.mechHelm(id) (the hangar's mech; `/helm id`)   HELM_LOOK
+//   HELMS[id] = { label }   wearHelm(body, id | null, scene) -> handle | null (the helm worn, the head's shell set aside; null takes it
+//   off)   handle.update(rawDt)   handle.dispose()   installMechHelms(game) -> game.mechHelm(id) (the hangar's mech; `/helm id`)   HELM_LOOK
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
+import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { Piece } from '../garden/decorpieces/kit.js';
+import { plate } from './parts/kit.js';
 
-/** The colours: the lacquer, the iron, the bone of the menpo, the gold; the plumes' (muted earth tones and one dark stone). */
+/** The colours: the shells' neutrals (bone, ivory, a warm grey, a dark lacquer), the trim's relative tones (the glaze is the colour),
+ *  the terracotta the trim takes while the body has no trim program, the core's dark (and the neutral it is authored in where the core program carries its own colour), the gold; the plumes' earth tones. */
 export const HELM_LOOK = {
-  lacquer: 0x2a1c18, lacquerR: 0x6e2a1e, iron: 0x4c4a4c, bone: 0xe6dccb, ivory: 0xd2c3a6, cord: 0x8a3a24, ochre: 0xb48a46,
-  plume: { ivory: 0xece2cf, ochre: 0xc89a52, rust: 0xa45c3c, slate: 0x6c7076, umber: 0x5a4030, lab: 0x3a4658 },
-  gravity: 9.8, damping: 0.94, stiff: [0.32, 0.05],
+  bone: 0xe6dccb, ivory: 0xd2c3a6, grey: 0x9a938a, dark: 0x3e3834, cord: 0x6a4a3a,
+  trim: 0xffffff, trimD: 0xa8a8a8, trimDD: 0x6a6a6a, terracotta: 0xa45a3a, core: 0x1c1411, coreTone: 0x6a6662, gold: 0xd9ab4c,
+  plume: { ivory: 0xece2cf, ochre: 0xc89a52, rust: 0xa45c3c, slate: 0x6c7076, umber: 0x5a4030 },
+  halo: 0.85, gravity: 9.8, damping: 0.94, stiff: [0.32, 0.05],
 };
-const L = HELM_LOOK, PI = Math.PI;
+const L = HELM_LOOK, PI = Math.PI, V = THREE.Vector3;
 
 export const HELMS = {
+  stag: { label: 'Stag helm' },
+  tyrant: { label: 'Tyrant helm' },
+  mammoth: { label: 'Mammoth helm' },
+  sabretooth: { label: 'Sabretooth helm' },
+  pterosaur: { label: 'Pterosaur helm' },
+  triceratops: { label: 'Triceratops helm' },
   kabuto: { label: "Daimyo's kabuto" },
-  antlers: { label: 'Antlered kabuto' },
   szyszak: { label: "Hussar's szyszak" },
-  bascinet: { label: 'Gilded bascinet' },
 };
 
-// ------------------------------------------------------------------ shapes, in head units (the skull's radius 1, the brow at y 0, the face +Z)
-/** A bowl of `ribs` lacquer ridges (a suji-bachi), radius r, height h, its rim at y 0. */
-function bowl(p, r, h, c, ribs = 0, pointed = 0) {
-  const prof = []; for (let i = 0; i <= 10; i++) { const a = (i / 10) * PI / 2; prof.push([Math.max(0.001, Math.cos(a) * r * (1 - pointed * (i / 10) ** 2)), Math.sin(a) * h + pointed * h * 0.6 * (i / 10) ** 3]); }
-  p.lathe(prof, { c }, 28);
-  for (let i = 0; i < ribs; i++) { const a = (i / ribs) * PI * 2; p.lathe(prof.map(([x, y]) => [x * 1.012, y]).slice(0, 9), { c: L.ochre, rot: [0, a, 0], sc: [0.035, 1, 1] }, 3); }
+// ------------------------------------------------------------------ shapes, in head units (the bowl's radius R, its rim at y 0, the face +Z)
+const R = 1.55;
+const _Y = new V(0, 1, 0), _q = new THREE.Quaternion(), _eu = new THREE.Euler();
+/** Points along a Bezier curve through control points (de Casteljau), n + 1 of them. */
+function bez(ctrl, n = 8) {
+  const out = [];
+  for (let i = 0; i <= n; i++) { const t = i / n; let P = ctrl.map((c) => new V(...c)); while (P.length > 1) P = P.slice(1).map((b, j) => P[j].clone().lerp(b, t)); out.push(P[0].toArray()); }
+  return out;
 }
-/** The shikoro: `n` lames hanging from the bowl's rim, each wider and lower, open at the face (from `-gap` to `gap` round +Z). */
-function shikoro(p, r, n, drop, flare, c, cord, gap = 1.1) {
+/** A tube tapering from r0 to r1 along points (a horn, a beam, a tusk), balls at its knees and a rounded tip. */
+function taper(P, pts, r0, r1, o = {}, seg = 9) {
+  const n = pts.length - 1;
   for (let i = 0; i < n; i++) {
-    const R = r * (1.02 + i * flare), y = -i * drop, len = PI * 2 - gap * 2;
-    const g = new THREE.CylinderGeometry(R, R + flare * r * 0.9, drop * 1.05, 28, 1, true, gap, len);
-    p.geo(g, { at: [0, y - drop / 2, 0], c: i % 2 ? c : L.lacquerR });
-    p.geo(new THREE.TorusGeometry(R + flare * r * 0.9, 0.025, 4, 28, len).rotateX(PI / 2).rotateY(-(PI / 2 + gap)), { at: [0, y - drop, 0], c: cord });
+    const a = new V(...pts[i]), b = new V(...pts[i + 1]), d = b.clone().sub(a), len = d.length(); if (len < 1e-4) continue;
+    const ra = r0 + (r1 - r0) * (i / n), rb = r0 + (r1 - r0) * ((i + 1) / n);
+    _q.setFromUnitVectors(_Y, d.normalize()); _eu.setFromQuaternion(_q, 'YXZ');
+    P.geo(new THREE.CylinderGeometry(rb, ra, len * 1.02, seg, 1), { ...o, at: a.clone().add(b).multiplyScalar(0.5).toArray(), rot: [_eu.x, _eu.y, _eu.z] });
+    if (i > 0) P.ball(ra, { ...o, at: pts[i] }, seg, 6);
+  }
+  P.ball(r1, { ...o, at: pts[n] }, seg, 6);
+}
+/** A point a share t along a polyline. */
+const along = (pts, t) => { const f = t * (pts.length - 1), i = Math.min(pts.length - 2, Math.floor(f)), k = f - i; return new V(...pts[i]).lerp(new V(...pts[i + 1]), k).toArray(); };
+const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
+
+/** A bowl of `ribs` ridges (a suji-bachi), radius r, height h, its rim at y 0; `pointed` draws its crown up; `sc` stretches it. */
+function bowl(p, r, h, c, { ribs = 0, ribC = L.grey, pointed = 0, sc = [1, 1, 1] } = {}) {
+  const prof = []; for (let i = 0; i <= 12; i++) { const a = (i / 12) * PI / 2; prof.push([Math.max(0.001, Math.cos(a) * r * (1 - pointed * (i / 12) ** 2)), Math.sin(a) * h + pointed * h * 0.6 * (i / 12) ** 3]); }
+  p.lathe(prof, { c, sc }, 32);
+  for (let i = 0; i < ribs; i++) { const a = (i / ribs) * PI * 2; p.lathe(prof.map(([x, y]) => [x * 1.015, y]).slice(0, 11), { c: ribC, rot: [0, a, 0], sc: [0.04 * sc[0], sc[1], sc[2]] }, 3); }
+}
+/** The shikoro: `n` lames hanging from the rim, each wider and lower, open at the face (from -gap to gap round +Z). */
+function shikoro(p, r, n, drop, flare, cs, cord, gap = 1.05) {
+  for (let i = 0; i < n; i++) {
+    const Rr = r * (1.0 + i * flare), y = -i * drop, len = PI * 2 - gap * 2;
+    p.geo(new THREE.CylinderGeometry(Rr, Rr + flare * r * 0.9, drop * 1.06, 32, 1, true, gap, len), { at: [0, y - drop / 2, 0], c: cs[i % cs.length] });
+    p.geo(new THREE.TorusGeometry(Rr + flare * r * 0.9, 0.03, 4, 32, len).rotateX(PI / 2).rotateY(-(PI / 2 + gap)), { at: [0, y - drop, 0], c: cord });
   }
 }
-/** The fukigaeshi: the shikoro's top lames turned back at the temples, a gold-rimmed wing each side. */
-function fukigaeshi(p, g, r) {
+/** A flat outline (x, y) extruded thin and placed: a wing, an ear, a fukigaeshi. Mirrored for the right side by s. */
+function flat(P, pts, s, o, depth = 0.08) {
+  const q = s < 0 ? pts.map(([x, y]) => [-x, y]).reverse() : pts;
+  P.geo(plate(q, depth, 0.025), o);
+}
+/** The fukigaeshi: the top lames turned back at the temples, a wing each side, gold-rimmed. */
+function fukigaeshi(p, g, r, size = 1, c = L.dark) {
   for (const s of [-1, 1]) {
-    const sh = new THREE.Shape([new THREE.Vector2(0, 0), new THREE.Vector2(0.55, 0.12), new THREE.Vector2(0.62, -0.32), new THREE.Vector2(0.05, -0.4)]);
-    const geo = new THREE.ExtrudeGeometry(sh, { depth: 0.06, bevelEnabled: true, bevelSize: 0.02, bevelThickness: 0.02, bevelSegments: 1 });
-    p.geo(geo.clone(), { at: [s * r * 0.92, 0.02, r * 0.32], rot: [0, s * -0.9 + (s < 0 ? PI : 0), 0], c: L.lacquer });
-    g.geo(new THREE.TorusGeometry(0.1, 0.03, 4, 10), { at: [s * r * 1.08, -0.08, r * 0.5], rot: [0, s * 0.6, 0] });
+    const pts = [[0, 0.1], [0.7 * size, 0.35 * size], [0.85 * size, -0.25 * size], [0.1, -0.5 * size]];
+    flat(p, pts, s, { at: [s * r * 0.9, 0.0, r * 0.38], rot: [0, s * 0.95, 0], c });
+    g.rod([s * r * 0.9, 0.1, r * 0.38], [s * (r * 0.9 + 0.7 * size * Math.cos(0.95)), 0.35 * size, r * 0.38 - 0.7 * size * Math.sin(0.95)], 0.04, {}, 5);
   }
 }
-/** A menpo: the face mask, a gold moustache, two hollow eyes lit in `glow` (the haniwa's hollows kept, a mask over them). */
-function menpo(p, g, glow, r) {
-  p.lathe([[0.001, -0.85], [0.42, -0.8], [0.62, -0.5], [0.66, -0.15], [0.62, 0.05]], { c: L.iron, at: [0, 0, r * 0.32], sc: [1, 1, 0.55] }, 18);
-  p.box(0.34, 0.16, 0.22, { at: [0, -0.32, r * 0.68], c: L.iron }, 0.06); // (the nose)
+/** The eyes: two slits in the glow, a recess of the core round each, a gold lid over it, a halo spec for the soft light. */
+function eyes(B, { x = 0.4, y = -0.25, z = R * 0.9, w = 0.46, h = 0.15, tilt = 0.2, yaw = 0.25, lid = true } = {}) {
   for (const s of [-1, 1]) {
-    g.rod([s * 0.06, -0.5, r * 0.7], [s * 0.42, -0.42, r * 0.56], 0.04, {}, 5); g.rod([s * 0.42, -0.42, r * 0.56], [s * 0.56, -0.3, r * 0.44], 0.03, {}, 5);
-    glow.box(0.3, 0.1, 0.06, { at: [s * 0.3, -0.06, r * 0.84], rot: [0, 0, s * -0.18] }, 0.03);
+    const rot = [0, s * yaw, s * -tilt];
+    B.c.box(w * 1.35, h * 2.2, 0.16, { at: [s * x, y, z - 0.07], rot }, 0.05);
+    B.e.box(w, h, 0.1, { at: [s * x, y, z + 0.02], rot }, 0.04);
+    if (lid) B.g.box(w * 1.3, 0.05, 0.08, { at: [s * x - s * Math.sin(tilt) * 0.0, y + h * 1.25, z + 0.04], rot }, 0.02);
+    B.halos.push({ at: [s * x, y, z + 0.1], w: w * 2.6, h: h * 5.5, rot });
   }
-  g.box(0.5, 0.05, 0.08, { at: [0, -0.58, r * 0.7] }, 0.02);
 }
-/** Deer antlers in black lacquer, a tine every so far, from the bowl's temples. */
-function antlers(p, r) {
-  for (const s of [-1, 1]) {
-    const pts = [[s * r * 0.55, 0.55, 0.15], [s * 1.1, 1.3, 0.05], [s * 1.6, 2.2, -0.25], [s * 1.7, 3.1, -0.55], [s * 1.5, 3.8, -0.85]];
-    for (let i = 1; i < pts.length; i++) p.rod(pts[i - 1], pts[i], 0.11 - i * 0.015, { c: L.lacquer }, 6);
-    for (const [i, out, up] of [[1, 0.55, 0.7], [2, 0.6, 0.85], [3, 0.4, 0.7]]) { const a = pts[i]; p.rod(a, [a[0] + s * out * 0.3, a[1] + up, a[2] + 0.35], 0.06, { c: L.lacquer }, 5); }
+/** A menpo: the face mask, its nose, a gold moustache. */
+function menpo(B, r) {
+  B.p.lathe([[0.001, -0.95], [0.46, -0.9], [0.68, -0.55], [0.72, -0.15], [0.68, 0.05]], { c: L.grey, at: [0, 0, r * 0.32], sc: [1.05, 1, 0.6] }, 20);
+  B.p.box(0.34, 0.18, 0.24, { at: [0, -0.42, r * 0.74], c: L.grey }, 0.06);
+  for (const s of [-1, 1]) { B.g.rod([s * 0.06, -0.6, r * 0.76], [s * 0.46, -0.5, r * 0.6], 0.05, {}, 5); B.g.rod([s * 0.46, -0.5, r * 0.6], [s * 0.62, -0.32, r * 0.46], 0.035, {}, 5); }
+  B.g.box(0.5, 0.06, 0.08, { at: [0, -0.7, r * 0.74] }, 0.02);
+}
+/** A U of an arc lying flat (a jaw), centred on +Z, opening behind. */
+function jawArc(P, Rr, tube, arc, o) {
+  P.geo(new THREE.TorusGeometry(Rr, tube, 8, 22, arc).rotateZ(PI / 2 - arc / 2).rotateX(PI / 2), o);
+}
+/** Teeth along a jaw's U: cones pointing up (dir 1) or down (-1). */
+function teeth(P, Rr, cz, y, arc, n, len, dir, o, sc = [1, 1]) {
+  for (let i = 0; i < n; i++) {
+    const a = PI / 2 - arc / 2 + (arc * (i + 0.5)) / n, big = Math.abs(i - (n - 1) / 2) > (n - 1) * 0.3 ? 1.35 : 1;
+    P.cone(0.075 * big, len * big, { ...o, at: [Math.cos(a) * Rr * sc[0], y + dir * len * big * 0.5, cz + Math.sin(a) * Rr * sc[1]], rot: [dir > 0 ? 0 : PI, 0, 0] }, 6);
   }
 }
 
 // ------------------------------------------------------------------ the helms
-function build(id, r) {
-  const p = new Piece(), g = new Piece(), lab = new Piece(), glow = new Piece(), plumes = [];
-  if (id === 'kabuto') {
-    bowl(p, r, r * 0.95, L.lacquer, 24);
-    g.ring(0.22, 0.06, { at: [0, r * 0.95, 0] }, 16); g.ball(0.14, { at: [0, r * 0.97, 0] }, 12, 8); // (the tehen)
-    g.box(r * 2.04, 0.12, 0.2, { at: [0, 0.02, r * 0.9], rot: [0.2, 0, 0] }, 0.04); // (the brow's band, the mabisashi's edge)
-    p.box(r * 2.1, 0.05, 0.75, { at: [0, 0.06, r * 0.95], rot: [-0.32, 0, 0], c: L.lacquer }, 0.02); // (the peak)
-    shikoro(p, r, 5, 0.26, 0.14, L.lacquer, L.cord);
-    fukigaeshi(p, g, r);
-    g.geo(new THREE.TorusGeometry(1.25, 0.09, 6, 28, PI * 0.95).rotateZ(PI * 0.025), { at: [0, 0.65, r * 1.0], sc: [1.25, 1, 0.5] }); // (the crescent maedate)
-    lab.box(0.24, 0.3, 0.08, { at: [0, 0.38, r * 1.02] }, 0.05); // (its mount: a plate of the stone)
-    menpo(p, g, glow, r);
-    plumes.push({ at: [0, r * 0.6, -r * 0.8], dir: [0, 0.3, -1], len: 2.4, n: 7, w: 0.5, c: L.plume.ivory, kind: 'tuft', count: 5, spread: 0.35 });
-  } else if (id === 'antlers') {
-    bowl(p, r, r * 1.05, L.lacquerR);
-    p.box(r * 2.1, 0.05, 0.6, { at: [0, 0.06, r * 0.95], rot: [-0.28, 0, 0], c: L.lacquer }, 0.02);
-    shikoro(p, r, 6, 0.28, 0.1, L.lacquer, L.ochre);
-    fukigaeshi(p, g, r);
-    antlers(p, r);
-    g.cyl(0.12, 0.18, 0.5, { at: [0, r * 1.15, -0.1] }, 12); // (the plume's socket)
-    menpo(p, g, glow, r);
-    plumes.push({ at: [0, r * 1.38, -0.1], dir: [0, 1, -0.25], len: 4.2, n: 8, w: 0.6, c: L.plume.ochre, kind: 'feather', count: 3, spread: 0.22 });
-  } else if (id === 'szyszak') {
-    bowl(p, r, r * 1.0, L.iron, 16);
-    p.box(0.1, r * 0.25, r * 1.6, { at: [0, r * 0.98, 0], c: L.iron }, 0.04); // (the crest ridge)
-    g.cone(0.08, 0.7, { at: [0, r * 1.25, 0] }, 8); g.ball(0.11, { at: [0, r * 1.0, 0] }, 10, 6); // (the spike)
-    p.box(r * 2.0, 0.05, 0.85, { at: [0, 0.0, r * 0.98], rot: [-0.18, 0, 0], c: L.iron }, 0.02); // (the peak)
-    g.box(0.12, 1.25, 0.08, { at: [0, -0.32, r * 1.08] }, 0.03); g.ball(0.13, { at: [0, 0.32, r * 1.08] }, 10, 6); // (the sliding nasal)
-    for (const s of [-1, 1]) { p.box(0.08, 0.95, 0.75, { at: [s * r * 0.92, -0.5, r * 0.42], rot: [0, 0, s * 0.12], c: L.iron }, 0.04); g.ball(0.07, { at: [s * r * 0.97, -0.25, r * 0.55] }, 8, 6); }
-    for (let i = 0; i < 5; i++) p.geo(new THREE.CylinderGeometry(r * (0.95 + i * 0.05), r * (1.0 + i * 0.06), 0.24, 22, 1, true, PI / 2 + 0.3, PI * 1.0 - 0.6), { at: [0, -0.08 - i * 0.2, -0.05 * i], rot: [0.12 * i, 0, 0], c: i % 2 ? L.iron : 0x5c5a5c }); // (the lobster-tail)
-    p.box(r * 1.5, 0.9, 0.1, { at: [0, -0.5, r * 0.86], c: L.lacquer }, 0.04); // (the dark under it, where the eyes are)
-    for (const s of [-1, 1]) glow.box(0.32, 0.1, 0.06, { at: [s * 0.3, -0.18, r * 0.92] }, 0.03);
-    g.cyl(0.15, 0.1, 0.45, { at: [0, r * 0.95, -r * 0.55], rot: [-0.5, 0, 0] }, 10); // (the plume holder)
-    plumes.push({ at: [0, r * 1.15, -r * 0.65], dir: [0, 1, -0.45], len: 3.6, n: 8, w: 0.9, c: L.plume.ivory, kind: 'ostrich', count: 5, spread: 0.42, tint: [L.plume.ivory, L.plume.rust, L.plume.ivory, L.plume.slate, L.plume.ivory] });
-  } else {
-    bowl(p, r, r * 1.35, L.ivory, 0, 0.7);
-    g.box(r * 2.0, 0.1, 0.2, { at: [0, 0.02, r * 0.88] }, 0.03);
-    // the pig-faced visor: a snout of plates, its breaths, the sights lit
-    p.lathe([[0.001, -1.0], [0.3, -0.92], [0.55, -0.55], [0.62, -0.1], [0.5, 0.15]], { c: L.ivory, at: [0, 0, r * 0.45], rot: [PI / 2 - 0.1, 0, 0], sc: [1.4, 1, 1.15] }, 18);
-    for (let i = 0; i < 6; i++) p.cyl(0.04, 0.04, 0.12, { at: [(i - 2.5) * 0.12, -0.38, r * 1.33], rot: [PI / 2, 0, 0], c: L.lacquer }, 6);
-    for (const s of [-1, 1]) glow.box(0.42, 0.07, 0.08, { at: [s * 0.28, 0.02, r * 1.16], rot: [0, s * -0.3, 0] }, 0.03);
-    g.rod([-0.6, 0.15, r * 1.0], [0.6, 0.15, r * 1.0], 0.03, {}, 4);
-    // the aventail: lames of gold-edged plate round the neck
-    for (let i = 0; i < 4; i++) { p.geo(new THREE.CylinderGeometry(r * (1.0 + i * 0.07), r * (1.06 + i * 0.08), 0.24, 26, 1, true), { at: [0, -0.15 - i * 0.22, 0], c: i % 2 ? L.ivory : L.bone }); g.geo(new THREE.TorusGeometry(r * (1.06 + i * 0.08), 0.02, 3, 26).rotateX(PI / 2), { at: [0, -0.27 - i * 0.22, 0] }); }
-    // the kuwagata: the hoe horns in gold, the stone between them
-    for (const s of [-1, 1]) { g.rod([s * 0.2, 0.25, r * 0.95], [s * 0.75, 1.2, r * 0.9], 0.07, {}, 6); g.rod([s * 0.75, 1.2, r * 0.9], [s * 0.9, 2.1, r * 0.75], 0.05, {}, 6); }
-    lab.ball(0.2, { at: [0, 0.3, r * 1.0] }, 12, 8);
-    g.cyl(0.08, 0.14, 0.35, { at: [0, r * 1.62, -0.1], rot: [-0.4, 0, 0] }, 10);
-    plumes.push({ at: [0, r * 1.7, -0.2], dir: [0, 0.55, -1], len: 4.6, n: 9, w: 1.0, c: L.plume.rust, kind: 'feather', count: 3, spread: 0.3, droop: 1, tint: [L.plume.rust, L.plume.lab, L.plume.ochre] });
+function stag(B) {
+  const { p, t, g, c } = B;
+  bowl(p, R, R * 0.92, L.bone, { sc: [1, 1, 1.05] });
+  p.arc(R * 0.9, 0.12, { rot: [0, PI / 2, 0], sc: [1, 1.02, 1.1], c: L.grey }, PI, 18); // (a ridge over the crown)
+  g.ring(R, 0.06, { at: [0, 0.03, 0], sc: [1, 1, 1.05] }, 32);
+  shikoro(p, R, 4, 0.3, 0.12, [L.bone, L.grey], L.cord);
+  fukigaeshi(p, g, R, 1.15, L.grey);
+  // the brow: heavy, its ridge over each eye, a gold mon between
+  for (const s of [-1, 1]) t.box(1.25, 0.38, 0.7, { at: [s * 0.6, 0.0, R * 0.86], rot: [-0.2, s * 0.3, s * -0.22], c: L.trimD }, 0.14);
+  g.cyl(0.22, 0.22, 0.08, { at: [0, 0.22, R * 1.06], rot: [PI / 2 - 0.3, 0, 0] }, 14);
+  // the muzzle: a jaw guard thrust forward, long and narrow like a deer's
+  p.lathe([[0.001, 0], [0.5, 0.05], [0.56, 0.5], [0.46, 1.1], [0.3, 1.6], [0.12, 1.85], [0.001, 1.9]], { c: L.bone, at: [0, -0.75, R * 0.45], rot: [PI / 2 + 0.25, 0, 0], sc: [0.85, 1, 0.7] }, 20); // (long and narrow: a deer's, not a pig's)
+  g.rod([-0.7, -0.38, R * 0.85], [0.7, -0.38, R * 0.85], 0.05, {}, 5);
+  B.c.box(R * 1.35, 0.55, 0.3, { at: [0, -0.28, R * 0.78] }, 0.08);
+  eyes(B, { x: 0.46, y: -0.26, z: R * 0.93, w: 0.5, h: 0.16, tilt: 0.24, yaw: 0.3 });
+  // the antlers: a beam each side, thick and branching, wide as the shoulders
+  for (const s of [-1, 1]) {
+    const beam = bez([[s * 0.75, 0.7, 0.35], [s * 2.3, 1.2, 0.8], [s * 3.1, 2.7, -0.1], [s * 3.0, 4.1, -1.0]], 10);
+    taper(t, beam, 0.34, 0.12, { c: L.trim });
+    g.ball(0.44, { at: beam[0], sc: [1, 0.75, 1] }, 14, 8); // (the burr)
+    for (const [k, d, r0] of [[0.1, [s * 0.5, 0.9, 1.5], 0.22], [0.35, [-s * 0.3, 1.6, 0.6], 0.22], [0.58, [-s * 0.6, 1.5, 0.2], 0.19], [0.8, [s * 0.7, 1.1, -0.3], 0.16]]) {
+      const a = along(beam, k), m = add(a, [d[0] * 0.55, d[1] * 0.45, d[2] * 0.55]), e = add(a, d);
+      taper(t, bez([a, m, add(e, [0, 0.25, 0])], 5), r0, 0.06, { c: L.trim });
+    }
   }
-  return { p, g, lab, glow, plumes };
+  B.plumes.push({ at: [0, R * 0.85, -R * 0.25], dir: [0, 1, -0.55], len: 2.4, n: 6, w: 0.6, c: L.plume.rust, kind: 'tuft', count: 5, spread: 0.3, tint: [L.plume.ochre, L.plume.rust, L.plume.umber, L.plume.rust, L.plume.ochre] });
+}
+
+function tyrant(B) {
+  const { p, t, g, c } = B;
+  bowl(p, R, R * 0.78, L.bone, { sc: [1, 1, 1.15] });
+  shikoro(p, R, 3, 0.3, 0.1, [L.grey, L.bone], L.cord, 1.25);
+  // the upper jaw: a visor of the skull's snout, thrust over the face, its teeth down
+  p.box(R * 1.6, 0.5, 1.7, { at: [0, -0.08, R * 0.95], rot: [-0.06, 0, 0], c: L.bone }, 0.22);
+  p.box(R * 1.1, 0.42, 0.9, { at: [0, 0.18, R * 1.35], rot: [-0.22, 0, 0], c: L.bone }, 0.18);
+  teeth(p, 1.08, R * 0.82, -0.32, PI * 0.95, 9, 0.38, -1, { c: L.ivory }, [1, 0.95]);
+  // the brow ridge: a heavy ledge over each eye, its hornlets
+  for (const s of [-1, 1]) {
+    t.box(0.95, 0.36, 0.7, { at: [s * 0.62, 0.28, R * 0.72], rot: [-0.15, s * 0.3, s * -0.25], c: L.trimD }, 0.15);
+    taper(t, bez([[s * 0.8, 0.42, R * 0.6], [s * 1.0, 0.8, R * 0.45], [s * 0.95, 1.05, R * 0.15]], 4), 0.14, 0.03, { c: L.trim });
+    t.box(0.12, 0.12, 1.6, { at: [s * 0.95, 0.35, -0.2], rot: [0.25, 0, 0], c: L.trimDD }, 0.05); // (a ridge back over the skull)
+  }
+  // the face, deep in its mouth
+  c.box(R * 1.35, 0.85, 0.35, { at: [0, -0.62, R * 0.72] }, 0.1);
+  eyes(B, { x: 0.42, y: -0.55, z: R * 0.86, w: 0.5, h: 0.16, tilt: 0.28, yaw: 0.25, lid: false });
+  // the lower jaw: a deep U under the face, hinged at the cheeks, its teeth up
+  jawArc(p, 1.12, 0.24, PI * 1.05, { at: [0, -1.18, R * 0.62], sc: [1.1, 1, 1.05], c: L.bone });
+  teeth(p, 1.12, R * 0.62, -0.98, PI * 0.9, 8, 0.32, 1, { c: L.ivory }, [1.1, 1.05]);
+  t.box(1.0, 0.16, 0.3, { at: [0, -1.38, R * 0.62 + 1.12], c: L.trimD }, 0.06); // (the chin)
+  for (const s of [-1, 1]) {
+    p.box(0.3, 1.25, 0.8, { at: [s * 1.2, -0.6, R * 0.38], rot: [0.15, 0, s * 0.08], c: L.grey }, 0.1); // (the cheek)
+    g.ball(0.2, { at: [s * 1.24, -0.95, R * 0.42] }, 12, 8); // (the hinge)
+  }
+  B.plumes.push({ at: [0, R * 0.55, -R * 0.95], dir: [0, 0.55, -1], len: 1.7, n: 5, w: 0.75, c: L.plume.ochre, kind: 'feather', count: 7, spread: 0.36, droop: 0.35,
+    tint: [L.plume.rust, L.plume.ochre, L.plume.slate, L.plume.ivory, L.plume.slate, L.plume.ochre, L.plume.rust] });
+}
+
+function mammoth(B) {
+  const { p, t, g, c } = B;
+  bowl(p, R, R * 1.15, L.ivory);
+  p.ball(R * 0.62, { at: [0, R * 1.0, -0.35], sc: [1.05, 0.8, 1], c: L.ivory }, 18, 12); // (the high cranium's second dome)
+  p.ring(R * 0.62, 0.06, { at: [0, R * 0.95, -0.35], c: L.grey }, 24);
+  g.ring(R, 0.07, { at: [0, 0.03, 0] }, 32);
+  shikoro(p, R, 4, 0.3, 0.1, [L.grey, L.ivory], L.cord);
+  // the ears: great flaps for fukigaeshi
+  for (const s of [-1, 1]) {
+    const ear = []; for (let i = 0; i <= 12; i++) { const a = -PI * 0.55 + (i / 12) * PI * 1.3; ear.push([0.95 + Math.cos(a) * 0.95 * (1 + 0.06 * Math.sin(a * 5)), -0.45 + Math.sin(a) * 1.15]); }
+    ear.push([0.05, -0.2], [0.05, 0.3]);
+    flat(p, ear, s, { at: [s * R * 0.85, 0.05, R * 0.15], rot: [0, s * 0.55, s * -0.12], c: L.grey });
+    g.rod([s * R * 0.85, 0.5, R * 0.15], [s * R * 0.85, -0.9, R * 0.15], 0.04, {}, 5);
+  }
+  // the face's dark, its eyes either side of the trunk's root
+  c.box(R * 1.4, 0.55, 0.3, { at: [0, -0.22, R * 0.8] }, 0.08);
+  t.box(R * 1.5, 0.26, 0.5, { at: [0, 0.12, R * 0.88], rot: [-0.2, 0, 0], c: L.trimD }, 0.1); // (the brow)
+  eyes(B, { x: 0.58, y: -0.2, z: R * 0.94, w: 0.44, h: 0.15, tilt: 0.12, yaw: 0.35 });
+  // the trunk: ringed lames down the face, curling out at the foot
+  const trunk = bez([[0, 0.0, R * 0.98], [0, -1.0, R * 1.3], [0, -1.9, R * 1.05], [0, -2.4, R * 1.55]], 9);
+  for (let i = 0; i < trunk.length - 1; i++) {
+    const a = new V(...trunk[i]), b = new V(...trunk[i + 1]), r0 = 0.36 - i * 0.025;
+    taper(p, [trunk[i], trunk[i + 1]], r0, r0 * 0.9, { c: i % 2 ? L.grey : L.ivory });
+    if (i % 2 === 0) { _q.setFromUnitVectors(_Y, b.clone().sub(a).normalize()); _eu.setFromQuaternion(_q, 'YXZ'); g.geo(new THREE.TorusGeometry(r0 * 1.02, 0.035, 4, 16).rotateX(PI / 2), { at: trunk[i], rot: [_eu.x, _eu.y, _eu.z] }); }
+  }
+  // the tusks: out, down, forward and up from the cheeks
+  for (const s of [-1, 1]) {
+    const tusk = bez([[s * 0.62, -0.62, R * 0.82], [s * 2.6, -2.2, R * 1.5], [s * 3.4, -1.2, R * 2.7], [s * 2.4, 0.8, R * 3.0]], 12);
+    taper(t, tusk, 0.5, 0.1, { c: L.trim });
+    g.cyl(0.3, 0.32, 0.22, { at: along(tusk, 0.04), rot: [0.6, 0, s * 0.7] }, 14);
+  }
+  B.plumes.push({ at: [0, R * 1.0, -R * 0.75], dir: [0, -0.1, -1], len: 3.0, n: 7, w: 0.7, c: L.plume.umber, kind: 'tuft', count: 7, spread: 0.32, droop: 1,
+    tint: [L.plume.umber, L.plume.rust, L.plume.umber, L.plume.ochre, L.plume.umber, L.plume.rust, L.plume.umber] });
+}
+
+function sabretooth(B) {
+  const { p, t, g, c } = B;
+  bowl(p, R, R * 0.85, L.bone, { sc: [1.05, 1, 1] });
+  shikoro(p, R, 3, 0.3, 0.12, [L.bone, L.grey], L.cord);
+  // the ears: tall, laid back a little, their insides dark
+  for (const s of [-1, 1]) {
+    flat(t, [[-1.0, 0], [1.0, 0], [0.24, 2.5], [-0.1, 2.6]], 1, { at: [s * 0.95, R * 0.58, -0.15], rot: [-0.35, s * 0.35, s * -0.4], c: L.trim }, 0.14);
+    flat(c, [[-0.6, 0.2], [0.6, 0.2], [0.12, 1.9]], 1, { at: [s * 0.98, R * 0.6, -0.04], rot: [-0.35, s * 0.35, s * -0.4] }, 0.05);
+  }
+  // the brow, a cat's frown
+  for (const s of [-1, 1]) t.box(1.0, 0.3, 0.6, { at: [s * 0.55, 0.05, R * 0.86], rot: [-0.2, s * 0.35, s * -0.32], c: L.trimD }, 0.12);
+  c.box(R * 1.3, 0.5, 0.3, { at: [0, -0.28, R * 0.8] }, 0.08);
+  eyes(B, { x: 0.47, y: -0.22, z: R * 0.94, w: 0.52, h: 0.15, tilt: 0.36, yaw: 0.3 });
+  // the muzzle: short and broad, its nose, the whisker pads
+  p.lathe([[0.001, 0], [0.55, 0.05], [0.62, 0.35], [0.5, 0.62], [0.001, 0.7]], { c: L.bone, at: [0, -0.68, R * 0.62], rot: [PI / 2, 0, 0], sc: [1.4, 1, 0.9] }, 20);
+  t.geo(new THREE.ConeGeometry(0.22, 0.24, 3).rotateX(PI / 2).rotateZ(PI), { at: [0, -0.48, R * 0.62 + 0.72], c: L.trimDD });
+  for (const s of [-1, 1]) for (let i = 0; i < 3; i++) g.rod([s * 0.5, -0.7 - i * 0.08, R * 0.62 + 0.45], [s * 1.25, -0.6 - i * 0.18, R * 0.62 + 0.3], 0.018, {}, 3);
+  // the fangs: down past the chin
+  for (const s of [-1, 1]) taper(p, bez([[s * 0.36, -0.85, R * 0.62 + 0.5], [s * 0.42, -1.6, R * 0.62 + 0.7], [s * 0.36, -2.3, R * 0.62 + 0.45]], 6), 0.17, 0.025, { c: L.ivory });
+  p.box(0.9, 0.2, 0.5, { at: [0, -1.1, R * 0.62 + 0.25], c: L.grey }, 0.08); // (the chin)
+  // the mane: plumes round the back and the cheeks
+  const mane = [L.plume.ochre, L.plume.rust, L.plume.umber, L.plume.ochre, L.plume.rust];
+  B.plumes.push({ at: [0, R * 0.7, -R * 0.75], dir: [0, 0.35, -1], len: 2.2, n: 6, w: 0.7, c: L.plume.ochre, kind: 'tuft', count: 5, spread: 0.42, droop: 0.7, tint: mane });
+  for (const s of [-1, 1]) B.plumes.push({ at: [s * R * 0.85, R * 0.2, -R * 0.35], dir: [s * 1, 0.1, -0.7], len: 1.8, n: 5, w: 0.6, c: L.plume.rust, kind: 'tuft', count: 3, spread: 0.35, droop: 0.8, tint: [L.plume.rust, L.plume.ochre, L.plume.umber] });
+}
+
+function pterosaur(B) {
+  const { p, t, g, c } = B;
+  bowl(p, R, R * 0.8, L.bone, { sc: [1, 1, 1.1] });
+  shikoro(p, R, 3, 0.28, 0.1, [L.grey, L.bone], L.cord);
+  // the crest: a blade swept far back from the brow, its leading edge gold
+  t.geo(plate([[R * 0.6, R * 0.6], [-0.2, R * 0.95], [-4.6, 2.9], [-5.3, 2.75], [-3.8, 1.9], [-1.0, 0.5]], 0.2, 0.06).rotateY(-PI / 2), { c: L.trim });
+  g.rod([0, R * 0.95 + 0.02, -0.2], [0, 2.95, -4.6], 0.06, {}, 5);
+  // the beak: a visor thrust far forward over the face, its jaw below
+  p.lathe([[0.001, 0], [0.62, 0.1], [0.66, 0.6], [0.38, 1.7], [0.001, 2.7]], { c: L.bone, at: [0, 0.0, R * 0.7], rot: [PI / 2 + 0.12, 0, 0], sc: [1.15, 1, 0.55] }, 20);
+  g.rod([0, 0.26, R * 1.05], [0, -0.04, R * 0.7 + 2.65], 0.035, {}, 4);
+  p.lathe([[0.001, 0], [0.45, 0.1], [0.4, 0.8], [0.001, 1.5]], { c: L.grey, at: [0, -0.8, R * 0.75], rot: [PI / 2 - 0.1, 0, 0], sc: [1.1, 1, 0.4] }, 16);
+  c.box(R * 1.3, 0.5, 0.3, { at: [0, -0.45, R * 0.78] }, 0.08);
+  eyes(B, { x: 0.45, y: -0.42, z: R * 0.92, w: 0.5, h: 0.15, tilt: 0.22, yaw: 0.3 });
+  // the wings: fukigaeshi as membranes swept back, their finger spars gold
+  for (const s of [-1, 1]) {
+    const wing = [[0, 0.25], [1.4, 0.7], [3.3, 1.2], [3.0, 0.7], [2.5, 0.0], [1.9, 0.25], [1.4, -0.45], [0.8, -0.2], [0.2, -0.55]];
+    const o = { at: [s * R * 0.92, -0.05, R * 0.25], rot: [0, s * 0.85, s * 0.3] };
+    flat(t, wing, s, { ...o, c: L.trimD }, 0.06);
+    const M = new THREE.Matrix4().compose(new V(...o.at), new THREE.Quaternion().setFromEuler(new THREE.Euler(...o.rot, 'YXZ')), new V(1, 1, 1));
+    const w = (x, y) => new V(s * x, y, 0.05).applyMatrix4(M).toArray();
+    g.rod(w(0, 0.25), w(1.4, 0.7), 0.05, {}, 5); g.rod(w(1.4, 0.7), w(3.3, 1.2), 0.04, {}, 5); g.rod(w(1.4, 0.7), w(2.5, 0.0), 0.03, {}, 4); g.rod(w(1.4, 0.7), w(1.4, -0.45), 0.03, {}, 4);
+  }
+  B.plumes.push({ at: [0, 2.8, -5.1], dir: [0, -0.2, -1], len: 2.2, n: 6, w: 0.45, c: L.plume.slate, kind: 'feather', count: 2, spread: 0.3, droop: 0.9, tint: [L.plume.slate, L.plume.rust] });
+}
+
+function triceratops(B) {
+  const { p, t, g, c } = B;
+  bowl(p, R, R * 0.85, L.bone);
+  g.ring(R, 0.06, { at: [0, 0.03, 0] }, 32);
+  shikoro(p, R, 3, 0.3, 0.1, [L.grey, L.bone], L.cord);
+  // the frill: a great fan behind the neck, scalloped, its edge knobbed in gold
+  const fr = [], N = 40, A0 = -0.2, A1 = PI + 0.2;
+  for (let i = 0; i <= N; i++) { const a = A0 + ((A1 - A0) * i) / N, k = 1 + 0.07 * Math.cos(a * 14); fr.push([Math.cos(a) * 3.1 * k, Math.sin(a) * 2.7 * k]); }
+  fr.push([-2.0, -0.9], [2.0, -0.9]);
+  const shape = new THREE.Shape(fr.map(([x, y]) => new THREE.Vector2(x, y)));
+  const frill = { at: [0, 0.35, -R * 0.55], rot: [-0.55, 0, 0] };
+  t.geo(new THREE.ExtrudeGeometry(shape, { depth: 0.14, bevelEnabled: true, bevelSize: 0.04, bevelThickness: 0.04, bevelSegments: 1, curveSegments: 10 }).translate(0, 0, -0.07), { ...frill, c: L.trim });
+  const FM = new THREE.Matrix4().compose(new V(...frill.at), new THREE.Quaternion().setFromEuler(new THREE.Euler(...frill.rot)), new V(1, 1, 1));
+  for (let i = 0; i < 15; i++) { const a = A0 + 0.12 + ((A1 - A0 - 0.24) * i) / 14; g.cone(0.13, 0.36, { at: new V(Math.cos(a) * 3.35, Math.sin(a) * 2.95, 0).applyMatrix4(FM).toArray(), rot: [-0.55, 0, a - PI / 2] }, 6); }
+  // the face: the visor's dark, the eyes under the horns, the beak
+  c.box(R * 1.35, 0.55, 0.3, { at: [0, -0.2, R * 0.8] }, 0.08);
+  t.box(R * 1.45, 0.24, 0.45, { at: [0, 0.14, R * 0.9], rot: [-0.25, 0, 0], c: L.trimD }, 0.1);
+  eyes(B, { x: 0.46, y: -0.2, z: R * 0.93, w: 0.48, h: 0.15, tilt: 0.2, yaw: 0.3 });
+  p.lathe([[0.001, 0], [0.5, 0.05], [0.55, 0.45], [0.32, 0.95], [0.001, 1.3]], { c: L.bone, at: [0, -0.7, R * 0.68], rot: [PI / 2 + 0.35, 0, 0], sc: [1.0, 1, 0.75] }, 18);
+  g.rod([-0.45, -0.45, R * 0.88], [0.45, -0.45, R * 0.88], 0.04, {}, 4);
+  // the horns: two long over the visor, one short on the nose
+  for (const s of [-1, 1]) taper(t, bez([[s * 0.5, 0.3, R * 0.85], [s * 0.7, 0.95, R * 1.5], [s * 0.6, 1.55, R * 2.55]], 8), 0.25, 0.035, { c: L.trim });
+  taper(t, bez([[0, -0.4, R * 1.1], [0, -0.1, R * 1.35], [0, 0.4, R * 1.55]], 4), 0.2, 0.03, { c: L.trim });
+}
+
+function kabuto(B) {
+  const { p, t, g, lab } = B;
+  bowl(p, R, R * 0.95, L.dark, { ribs: 24, ribC: L.grey });
+  g.ring(0.24, 0.07, { at: [0, R * 0.95, 0] }, 16); g.ball(0.15, { at: [0, R * 0.97, 0] }, 12, 8); // (the tehen)
+  g.box(R * 2.04, 0.12, 0.2, { at: [0, 0.02, R * 0.9], rot: [0.2, 0, 0] }, 0.04);
+  p.box(R * 2.1, 0.06, 0.8, { at: [0, 0.06, R * 0.95], rot: [-0.32, 0, 0], c: L.dark }, 0.02); // (the peak)
+  shikoro(p, R, 5, 0.27, 0.15, [L.dark, L.grey], L.cord);
+  fukigaeshi(p, g, R, 1.35, L.dark);
+  for (const s of [-1, 1]) t.box(0.45, 0.45, 0.06, { at: [s * (R * 0.9 + 0.55), 0.05, R * 0.38 - 0.45], rot: [0, s * 0.95, 0], c: L.trimD }, 0.05); // (the mon on each)
+  // the crescent maedate: a thin moon tapering to its points, horns up
+  const Rc = 2.4, cy = 0.55 + Rc;
+  for (const s of [-1, 1]) { const arc = []; for (let i = 0; i <= 12; i++) { const a = -PI / 2 + s * (i / 12) * 1.25; arc.push([Math.cos(a) * Rc, cy + Math.sin(a) * Rc, R * 1.0 - (i / 12) * 0.35]); } taper(g, arc, 0.17, 0.025); }
+  lab.box(0.3, 0.38, 0.1, { at: [0, 0.45, R * 1.02] }, 0.05); // (its mount: a plate of the stone)
+  menpo(B, R);
+  B.c.box(R * 1.2, 0.45, 0.3, { at: [0, -0.18, R * 0.78] }, 0.08);
+  eyes(B, { x: 0.36, y: -0.16, z: R * 0.9, w: 0.42, h: 0.14, tilt: 0.22, yaw: 0.3, lid: false });
+  B.plumes.push({ at: [0, R * 0.6, -R * 0.82], dir: [0, 0.3, -1], len: 2.6, n: 7, w: 0.55, c: L.plume.ivory, kind: 'tuft', count: 5, spread: 0.35 });
+}
+
+function szyszak(B) {
+  const { p, t, g } = B;
+  bowl(p, R, R * 1.0, L.grey, { ribs: 16, ribC: L.bone });
+  p.box(0.12, R * 0.25, R * 1.6, { at: [0, R * 0.98, 0], c: L.grey }, 0.04); // (the crest ridge)
+  g.cone(0.09, 0.8, { at: [0, R * 1.28, 0.2] }, 8); g.ball(0.12, { at: [0, R * 1.0, 0.2] }, 10, 6); // (the spike)
+  p.box(R * 2.0, 0.06, 0.9, { at: [0, 0.0, R * 0.98], rot: [-0.18, 0, 0], c: L.grey }, 0.02); // (the peak)
+  g.box(R * 2.0, 0.06, 0.1, { at: [0, 0.03, R * 1.38] }, 0.02);
+  g.box(0.14, 1.45, 0.09, { at: [0, -0.36, R * 1.1] }, 0.03); g.ball(0.15, { at: [0, 0.36, R * 1.1] }, 10, 6); g.cone(0.14, 0.3, { at: [0, -1.15, R * 1.1], rot: [PI, 0, 0] }, 4); // (the sliding nasal)
+  for (const s of [-1, 1]) { p.box(0.1, 1.05, 0.85, { at: [s * R * 0.92, -0.55, R * 0.42], rot: [0, 0, s * 0.12], c: L.grey }, 0.04); g.ball(0.08, { at: [s * R * 0.98, -0.28, R * 0.6] }, 8, 6); }
+  for (let i = 0; i < 5; i++) p.geo(new THREE.CylinderGeometry(R * (0.95 + i * 0.05), R * (1.0 + i * 0.06), 0.26, 24, 1, true, PI / 2 + 0.3, PI * 1.0 - 0.6), { at: [0, -0.08 - i * 0.22, -0.05 * i], rot: [0.12 * i, 0, 0], c: i % 2 ? L.grey : L.bone }); // (the lobster-tail)
+  B.c.box(R * 1.5, 0.95, 0.12, { at: [0, -0.5, R * 0.86] }, 0.04);
+  eyes(B, { x: 0.4, y: -0.22, z: R * 0.94, w: 0.46, h: 0.15, tilt: 0.18, yaw: 0.25, lid: false });
+  // the crest: an eagle's two wings either side of the plume holder
+  for (const s of [-1, 1]) {
+    const wing = []; for (let i = 0; i <= 7; i++) { const a = i / 7; wing.push([0.2 + a * 1.5, 0.1 + a * 2.0 + Math.sin(a * PI) * 0.3]); }
+    for (let i = 7; i >= 0; i--) { const a = i / 7; wing.push([0.2 + a * 1.5 - 0.35 - (i % 2) * 0.12, a * 2.0 - 0.05]); }
+    flat(t, wing, s, { at: [0, R * 0.95, -R * 0.55], rot: [-0.5, s * 0.25, s * -0.25], c: L.trim }, 0.08);
+  }
+  g.cyl(0.18, 0.12, 0.5, { at: [0, R * 0.95, -R * 0.55], rot: [-0.5, 0, 0] }, 10); // (the plume holder)
+  B.plumes.push({ at: [0, R * 1.15, -R * 0.68], dir: [0, 1, -0.4], len: 4.4, n: 9, w: 1.0, c: L.plume.ivory, kind: 'ostrich', count: 7, spread: 0.36,
+    tint: [L.plume.ivory, L.plume.rust, L.plume.ivory, L.plume.slate, L.plume.ivory, L.plume.ochre, L.plume.ivory] });
+}
+
+const BUILD = { stag, tyrant, mammoth, sabretooth, pterosaur, triceratops, kabuto, szyszak };
+function build(id) {
+  const B = { p: new Piece(), t: new Piece(), g: new Piece(), lab: new Piece(), c: new Piece(), e: new Piece(), plumes: [], halos: [] };
+  BUILD[id](B);
+  B.c.ball(R * 0.6, { at: [0, -0.5, -0.1] }, 16, 12); // (the face's dark under every helm: the head's own shell is set aside)
+  return B;
+}
+
+// ------------------------------------------------------------------ the eyes' halo: soft planes of the glow's colour, added
+let HALO = null;
+function haloCard() {
+  if (HALO || typeof document === 'undefined') return HALO;
+  const cv = document.createElement('canvas'); cv.width = cv.height = 64; const x = cv.getContext('2d');
+  const gr = x.createRadialGradient(32, 32, 0, 32, 32, 32); gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.25, 'rgba(255,255,255,0.55)'); gr.addColorStop(1, 'rgba(255,255,255,0)');
+  x.fillStyle = gr; x.fillRect(0, 0, 64, 64); HALO = new THREE.CanvasTexture(cv); return HALO;
+}
+function haloMesh(specs) {
+  if (!specs.length) return null;
+  const geos = specs.map(({ at, w, h, rot }) => new THREE.PlaneGeometry(w, h).applyMatrix4(new THREE.Matrix4().compose(new V(...at), new THREE.Quaternion().setFromEuler(new THREE.Euler(...rot, 'YXZ')), new V(1, 1, 1))));
+  const geo = mergeGeometries(geos); for (const g of geos) g.dispose();
+  const mat = new THREE.MeshBasicMaterial({ name: 'mech-helm-halo', map: haloCard(), color: 0x000000, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, side: THREE.DoubleSide });
+  const m = new THREE.Mesh(geo, mat); m.name = 'mech-helm-halo'; m.renderOrder = 2; return m;
 }
 
 // ------------------------------------------------------------------ the plume: bones sprung to their rest, one ribbon mesh
@@ -165,10 +404,10 @@ class Plume {
     const C = new THREE.Color();
     for (const S of specs) for (let f = 0; f < (S.count || 1); f++) {
       const n = S.n, seg = (S.len * k) / n, off = ((f - ((S.count || 1) - 1) / 2) * (S.spread || 0));
-      const dir = new THREE.Vector3(...S.dir).normalize(), side = new THREE.Vector3(1, 0, 0);
-      const rest = [], at = new THREE.Vector3(S.at[0] + off * 0.6, S.at[1], S.at[2]).multiplyScalar(k);
-      const d = dir.clone().applyAxisAngle(new THREE.Vector3(0, 0, 1), -off * 0.9).applyAxisAngle(new THREE.Vector3(1, 0, 0), Math.abs(off) * 0.25);
-      for (let i = 0; i <= n; i++) { rest.push(at.clone()); const bend = (S.droop ?? 0.55) * (i / n) ** 1.5; at.addScaledVector(d.clone().lerp(new THREE.Vector3(0, -0.4, -1).normalize(), bend).normalize(), seg); }
+      const dir = new V(...S.dir).normalize(), side = new V(1, 0, 0);
+      const rest = [], at = new V(S.at[0] + off * 0.6, S.at[1], S.at[2]).multiplyScalar(k);
+      const d = dir.clone().applyAxisAngle(new V(0, 0, 1), -off * 0.9).applyAxisAngle(new V(1, 0, 0), Math.abs(off) * 0.25);
+      for (let i = 0; i <= n; i++) { rest.push(at.clone()); const bend = (S.droop ?? 0.55) * (i / n) ** 1.5; at.addScaledVector(d.clone().lerp(new V(0, -0.4, -1).normalize(), bend).normalize(), seg); }
       C.set((S.tint || [])[f] ?? S.c);
       this.feathers.push({ n, seg, rest, w: (S.w * k) * (1 - Math.abs(off) * 0.2), col: C.clone(), fluffy: S.kind === 'ostrich' || S.kind === 'tuft', p: rest.map((v) => v.clone()), q: rest.map((v) => v.clone()), side });
     }
@@ -188,10 +427,11 @@ class Plume {
     scene.add(this.mesh); this.primed = false;
   }
   update(dt) {
+    if (!this.feathers.length) { this.mesh.visible = false; return; }
     const H = this.head; H.updateWorldMatrix(true, false);
     const M = H.matrixWorld, pos = this.mesh.geometry.attributes.position, A = pos.array;
-    const dt2 = Math.min(dt, 1 / 30) ** 2, gy = -L.gravity * dt2, t = (this._t ||= new THREE.Vector3()), dv = (this._d ||= new THREE.Vector3());
-    const right = (this._r ||= new THREE.Vector3()).set(1, 0, 0).transformDirection(M), s1 = (this._s1 ||= new THREE.Vector3()), s2 = (this._s2 ||= new THREE.Vector3());
+    const dt2 = Math.min(dt, 1 / 30) ** 2, gy = -L.gravity * dt2, t = (this._t ||= new V()), dv = (this._d ||= new V());
+    const right = (this._r ||= new V()).set(1, 0, 0).transformDirection(M), s1 = (this._s1 ||= new V()), s2 = (this._s2 ||= new V());
     this.mesh.visible = !!this.visible;
     for (const F of this.feathers) {
       if (!this.primed) { const sc = dv.setFromMatrixScale(M).x; F.segW = F.seg * sc; F.wW = F.w * sc; for (let i = 0; i <= F.n; i++) { F.p[i].copy(F.rest[i]).applyMatrix4(M); F.q[i].copy(F.p[i]); } }
@@ -217,7 +457,15 @@ class Plume {
 }
 
 // ------------------------------------------------------------------ wearing one
-const _b = new THREE.Box3(), _m = new THREE.Matrix4();
+const _b = new THREE.Box3(), _m = new THREE.Matrix4(), _c = new THREE.Color();
+/** A vertex-coloured program whose own colour is white: the vertices carry the hue (the parts body's way). */
+const neutral = (m) => !!m?.vertexColors && (m.color ? m.color.r + m.color.g + m.color.b > 2.6 : true);
+/** Each vertex colour multiplied by (or set to) a tone. */
+function tone(geo, hex, mul) {
+  const a = geo.attributes.color; if (!a) return; _c.set(hex);
+  for (let i = 0; i < a.count; i++) mul ? a.setXYZ(i, a.getX(i) * _c.r, a.getY(i) * _c.g, a.getZ(i) * _c.b) : a.setXYZ(i, _c.r, _c.g, _c.b);
+}
+
 /** The helm `id` worn over `body`'s head (its shell set aside, kept for taking it off); null takes the worn one off. */
 export function wearHelm(body, id, scene) {
   body.helm?.dispose(); body.helm = null;
@@ -226,32 +474,43 @@ export function wearHelm(body, id, scene) {
   head.updateWorldMatrix(true, true); _m.copy(head.matrixWorld).invert(); _b.makeEmpty();
   const shell = [];
   for (const o of head.children) if (o.isMesh) { shell.push(o); const g = o.geometry; g.computeBoundingBox(); _b.union(g.boundingBox.clone().applyMatrix4(o.matrix)); }
-  if (_b.isEmpty()) _b.set(new THREE.Vector3(-0.6, 0, -0.6), new THREE.Vector3(0.6, 1.2, 0.6));
-  const half = Math.max(_b.max.x - _b.min.x, _b.max.z - _b.min.z) / 2, k = half * 0.74, r = 1.55; // (k: metres a head unit; the bowl a little over the skull)
+  if (_b.isEmpty()) _b.set(new V(-0.6, 0, -0.6), new V(0.6, 1.2, 0.6));
+  const half = Math.max(_b.max.x - _b.min.x, _b.max.z - _b.min.z) / 2, tall = _b.max.y - _b.min.y;
+  const k = Math.max(half, tall * 0.42) * 1.0; // (metres a head unit: the bowl a little over the skull, a tall narrow head given its due)
   const root = new THREE.Group(); root.name = 'mech-helm';
-  root.position.set((_b.min.x + _b.max.x) / 2, _b.min.y + (_b.max.y - _b.min.y) * 0.38, (_b.min.z + _b.max.z) / 2); root.scale.setScalar(k);
-  const B = build(id, r), mats = body.mats || {};
-  B.p.ball(r * 0.6, { at: [0, -0.45, -0.1], c: L.lacquer }, 16, 12); // (the face's dark under every helm: the head's own shell is set aside)
-  const mat = {
-    p: mats.porcelain || new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.35 }),
-    g: mats.gold || new THREE.MeshStandardMaterial({ color: 0xd9ab4c, metalness: 0.85, roughness: 0.3 }),
-    lab: mats.lab || mats.labradorite || new THREE.MeshStandardMaterial({ color: 0x2a3441, metalness: 0.3, roughness: 0.25 }),
-    glow: mats.glow || new THREE.MeshBasicMaterial({ color: 0xd8ccff }),
-  };
-  const own = Object.entries(mat).filter(([key]) => !(mats.porcelain && key === 'p') && !(mats.gold && key === 'g') && !(mats.lab || mats.labradorite ? key === 'lab' : false) && !(mats.glow && key === 'glow')).map(([, m]) => m);
-  for (const [P, m] of [[B.p, mat.p], [B.g, mat.g], [B.lab, mat.lab], [B.glow, mat.glow]]) {
-    if (!P.pos.length) continue; const geo = P.done();
-    const tone = P === B.g ? 0xd9ab4c : P === B.lab ? 0x2a3441 : P === B.glow ? 0xffffff : null; // (a vertex-coloured program takes its colour per vertex)
-    if (tone != null && m.vertexColors && geo.attributes.color) { const C = new THREE.Color(tone), a = geo.attributes.color; for (let i = 0; i < a.count; i++) a.setXYZ(i, C.r, C.g, C.b); }
-    const mesh = new THREE.Mesh(geo, m); mesh.castShadow = m !== mat.glow; mesh.receiveShadow = true; root.add(mesh);
+  root.position.set((_b.min.x + _b.max.x) / 2, _b.min.y + tall * 0.3, (_b.min.z + _b.max.z) / 2); root.scale.setScalar(k); // (low: the shikoro down to the collar)
+  const B = build(id), mats = body.mats || {}, own = [];
+  const mk = (m) => { own.push(m); return m; };
+  const P = mats.porcelain || mats.p || mk(new THREE.MeshPhysicalMaterial({ name: 'mech-helm-porcelain', vertexColors: true, roughness: 0.3, clearcoat: 0.6, side: THREE.DoubleSide }));
+  const trim = mats.trim || null, core = mats.core || null;
+  const parts = [
+    [B.p, P, null],
+    [B.t, trim || P, trim ? (neutral(trim) ? [L.terracotta, true] : null) : [L.terracotta, true]],
+    [B.g, mats.gold || mats.g || mk(new THREE.MeshStandardMaterial({ name: 'mech-helm-gold', color: L.gold, metalness: 0.85, roughness: 0.3 })), [L.gold, false]],
+    [B.lab, mats.labradorite || mats.lab || mats.l || mk(new THREE.MeshStandardMaterial({ name: 'mech-helm-lab', color: 0x2a3441, metalness: 0.3, roughness: 0.25 })), [0x2a3441, false]],
+    [B.c, core || mk(new THREE.MeshStandardMaterial({ name: 'mech-helm-core', color: L.core, roughness: 0.92 })), core ? [neutral(core) ? L.core : L.coreTone, false] : [0xffffff, false]],
+    [B.e, mats.glow || mats.e || mk(new THREE.MeshBasicMaterial({ name: 'mech-helm-glow', color: 0xd8ccff, toneMapped: false })), [0xffffff, false]],
+  ];
+  for (const [Pc, m, tn] of parts) {
+    if (!Pc.pos.length) continue; const geo = Pc.done();
+    if (tn && m.vertexColors) tone(geo, tn[0], tn[1]);
+    const mesh = new THREE.Mesh(geo, m); mesh.castShadow = Pc !== B.e; mesh.receiveShadow = Pc !== B.e; mesh.name = `mech-helm.${id}`; root.add(mesh);
   }
+  const glowMat = parts[5][1], halo = haloMesh(B.halos); if (halo) root.add(halo);
   head.add(root);
   for (const o of shell) o.visible = false;
   const plume = new Plume(B.plumes, root, 1, scene || body.group.parent || body.group); // (its bones in the helm's frame: k is the root's scale)
   const handle = {
     id, root, plume,
-    update(rawDt) { plume.visible = root.visible && !!body.group.parent && body.group.visible !== false; let o = body.group; while (o && plume.visible) { if (o.visible === false) plume.visible = false; o = o.parent; } plume.update(rawDt); },
-    dispose() { root.parent?.remove(root); root.traverse((o) => { if (o.isMesh) o.geometry.dispose(); }); for (const m of own) m.dispose(); plume.dispose(); for (const o of shell) o.visible = true; },
+    update(rawDt) {
+      if (halo) halo.material.color.copy(glowMat.color).multiplyScalar(L.halo);
+      plume.visible = root.visible && !!body.group.parent && body.group.visible !== false; let o = body.group; while (o && plume.visible) { if (o.visible === false) plume.visible = false; o = o.parent; }
+      plume.update(rawDt);
+    },
+    dispose() {
+      root.parent?.remove(root); root.traverse((o) => { if (o.isMesh) o.geometry.dispose(); });
+      if (halo) halo.material.dispose(); for (const m of own) m.dispose(); plume.dispose(); for (const o of shell) o.visible = true;
+    },
   };
   body.helm = handle;
   return handle;

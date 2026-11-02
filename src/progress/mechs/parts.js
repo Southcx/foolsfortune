@@ -45,7 +45,7 @@ export const PARTS = {
   lightCore: { slot: 'core', label: 'Light core', line: 'Bisque thin: light, and it cracks sooner.', mass: 9, draw: 35, armour: 1.35, earn: 'mk2' },
   // arms
   clayArms:   { slot: 'arms', label: 'Clay arms', line: 'Holds what a frame needs, punches well.', mass: 6, draw: 40, load: 12, punch: 1, aim: 1 },
-  strongArms: { slot: 'arms', label: 'Strong arms', line: 'Holds the heavy tools; a harder fist.', mass: 8, draw: 60, load: 18, punch: 1.4, aim: 0.85, earn: 'mk3' },
+  strongArms: { slot: 'arms', label: 'Strong arms', line: 'Holds heavy weapons; a harder fist.', mass: 8, draw: 60, load: 18, punch: 1.4, aim: 0.85, earn: 'mk3' },
   quickArms:  { slot: 'arms', label: 'Quick arms', line: 'Light and quick to aim; holds little.', mass: 4.5, draw: 35, load: 8, punch: 0.8, aim: 1.4, earn: 'mk4' },
   // legs (each type's frame; `leg` is the pendulum's length: the stride and the walk's top speed come from it)
   clayLegs:    { slot: 'legs', label: 'Clay legs', line: 'Biped. The stride every frame learns on.', mass: 14, draw: 40, load: 60, type: 'biped', leg: 6, armour: 1 },
@@ -59,18 +59,14 @@ export const PARTS = {
   clayGenerator:  { slot: 'generator', label: 'Clay generator', line: 'Five minutes off the cable at rest.', mass: 4, output: 600, capacity: 48000 },
   bigGenerator:   { slot: 'generator', label: 'Big generator', line: 'More output and battery; heavy.', mass: 6.5, output: 900, capacity: 72000, earn: 'mk5' },
   lightGenerator: { slot: 'generator', label: 'Light generator', line: 'Light, and a short battery.', mass: 2.5, output: 450, capacity: 30000, earn: 'mk2' },
-  // arm weapons: the seven tools at giant scale (MECHS.md 4.3) and the bare fist
+  // arm weapons: the blade and the blaster, and the bare fist (South, 2026-11-02: "the mechs don't need access to all the lachryma tools. A
+  // blade and a blaster is more than enough for now"; MECHS.md 4.3: the brush, bell and flail retired, with the vane and the lens)
   fist:       { slot: 'weapon', label: 'Fist', line: 'Three punches, the third a heavy one.', mass: 0, tool: null, k: 0.8, stagger: 16, cost: 0, range: 9, string: 3, heavy: true },
-  bigGun:     { slot: 'weapon', label: 'Big gun', line: 'A rifle; held, a beam that pierces a barrier.', mass: 5, tool: 'psygun', k: 0.45, stagger: 5, cost: 150, range: 220, rate: 3, charge: { hold: 1.2, k: 2.2, cost: 2500, pierce: true } },
-  greatBlade: { slot: 'weapon', label: 'Great blade', line: 'A cutlass string of three; the third staggers.', mass: 4, tool: 'sondelass', k: 1.1, stagger: 12, cost: 350, range: 13, string: 3, heavy: true, earn: 'mk2' },
-  greatBrush: { slot: 'weapon', label: 'Great brush', line: 'Paints a swath of your feeling; a giant in it is slowed.', mass: 3.5, tool: 'soulbrush', k: 0.5, stagger: 4, cost: 400, range: 16, paint: { width: 10, slow: 0.6 }, earn: 'mk1' },
-  greatBell:  { slot: 'weapon', label: 'Great bell', line: 'A toll in a cone: stuns small things, staggers a giant.', mass: 6, tool: 'crucibelle', k: 0.4, stagger: 32, cost: 900, range: 30, cone: 50, earn: 'mk3' },
-  greatFlail: { slot: 'weapon', label: 'Great flail', line: 'A coffin on a chain: the heaviest blow, by your momentum.', mass: 9, tool: 'lockheart', k: 0.9, stagger: 26, cost: 700, range: 18, momentum: true, heavy: true, earn: 'mk3' },
+  bigGun:     { slot: 'weapon', label: 'Blaster', line: 'Shots on a press; held, a beam that pierces a barrier.', mass: 5, tool: 'psygun', k: 0.45, stagger: 5, cost: 150, range: 220, rate: 3, charge: { hold: 1.2, k: 2.2, cost: 2500, pierce: true } },
+  greatBlade: { slot: 'weapon', label: 'Blade', line: 'A cutlass string of three; the third staggers.', mass: 4, tool: 'sondelass', k: 1.1, stagger: 12, cost: 350, range: 13, string: 3, heavy: true, earn: 'mk2' },
   // back units
   missiles:  { slot: 'back', label: 'Missiles', line: 'Six motes of Lachryma, homing.', mass: 3, tool: null, k: 0.2, stagger: 3, cost: 900, range: 260, volley: 6, earn: 'mk3' },
   shield:    { slot: 'back', label: 'Shield', line: 'Raised, it takes blows from the front.', mass: 4, tool: null, cost: 0, hold: 300, block: 0.25, earn: 'mk2' },
-  greatVane: { slot: 'back', label: 'Great vane', line: 'A radar: marks a giant\'s weak point.', mass: 2, tool: 'dreamvane', draw: 20, cost: 0, mark: true, earn: 'mk4' },
-  greatLens: { slot: 'back', label: 'Great lens', line: 'Photographs a giant: a plate at scale.', mass: 2.5, tool: 'veritome', cost: 500, range: 300, plate: true, earn: 'mk1' },
 };
 
 /** The frame every hangar starts with (given at the first visit: MECHS.md 6). */
