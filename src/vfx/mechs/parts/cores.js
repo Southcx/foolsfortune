@@ -34,9 +34,9 @@
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { JAR_ANATOMY } from '../../pneukajar/shape.js';
-import { MECH_LOOK as L, FORMS, band, profAt, panel, cup, seam, ball, threadGeometry, shell, sculpt } from './kit.js';
+import { MECH_LOOK as L, FORMS, band, profAt, panel, seam, ball, threadGeometry, shell, sculpt } from './kit.js';
 import { blend, carve, meet, ellipsoid } from './sdf.js';
-import { sideSculpt, aoTone, onto } from './arms.js';
+import { sideSculpt, aoTone, onto, socket } from './arms.js';
 import { femCoreLook } from './femcores.js';
 
 const PI = Math.PI;
@@ -65,6 +65,11 @@ function spline(pts) {
  *  flanks' panels and covers the core), with a few strong forms blended on: the two pectoral masses, the plastron's two rectus masses; the sternal valley carved
  *  between the pectorals; the costal arch and the lines cut as clean grooves; its foot arched over the dantian. */
 const PH = 1.0;
+/** A sculpt's tone with its panel lines shaded in (k 0..1 from `lineK(x, y)`), toward `ink`. */
+function lineTone(tone, lineK, ink) {
+  const I = new THREE.Color(ink);
+  return (x, y, z, nx, ny, nz) => { const c = tone(x, y, z, nx, ny, nz), k = lineK(x, y) * 0.42; return [c[0] + (I.r - c[0]) * k, c[1] + (I.g - c[1]) * k, c[2] + (I.b - c[2]) * k]; };
+}
 function cuirassField(P, W, top, C, F) {
   const wk = C.w * F.chest[0] * 1.03, dk = C.d * F.chest[2] * 1.03, r = spline(P);
   const A = (y) => r(y) * wk, B = (y) => r(y) * dk + 0.03; // (the half width and the front's depth)
@@ -75,29 +80,28 @@ function cuirassField(P, W, top, C, F) {
   const pz = (x, y, k) => B(y) * Math.sqrt(Math.max(0, 1 - (x / A(y)) ** 2)) + lift(x, y) - k; // (a point k under the base's front at x, y)
   const forms = [
     ellipsoid([0.7, 2.42, pz(0.7, 2.42, 0.3)], [0.62, 0.48, 0.4]), ellipsoid([-0.7, 2.42, pz(0.7, 2.42, 0.3)], [0.62, 0.48, 0.4]), // (the pectorals)
-    ellipsoid([0.26, 0.92, pz(0.26, 0.92, 0.12)], [0.22, 0.62, 0.18]), ellipsoid([-0.26, 0.92, pz(0.26, 0.92, 0.12)], [0.22, 0.62, 0.18]), // (the rectus masses)
   ];
   let solid = blend(0.22, base, forms[0], forms[1]);
-  solid = blend(0.14, solid, forms[2], forms[3]);
   solid = carve(0.14, solid, ellipsoid([0, 2.5, pz(0, 2.5, -0.25)], [0.14, 0.6, 0.31])); // (the sternal valley, cut into the keel)
   const near = (x, y, z) => { const d = base(x, y, z); return d > 0.5 || d < -0.7 ? d : solid(x, y, z); }; // (far off: the base alone)
   const phiOf = (x, z) => Math.atan2(x / wk, Math.max(z, -1) / dk);
-  let plateF = meet(0.04, (x, y, z) => { const d = near(x, y, z); return Math.max(d, -(d + 0.2)); },
-    (x, y, z) => Math.max((Math.abs(phiOf(x, z)) - PH - G * 0.9) * A(y) * 0.8, y - (top - 0.08), 0.06 - y, -z));
+  let plateF = meet(0.07, (x, y, z) => { const d = near(x, y, z); return Math.max(d, -(d + 0.2)); },
+    (x, y, z) => Math.max((Math.abs(phiOf(x, z)) - PH - G * 0.9) * A(y) * 0.8, y - (top - 0.08), 0.24 - y, -z)); // (its foot a level rim, clear of the waist's taper: no tongues hanging off it)
   plateF = carve(0.06, plateF, ellipsoid([0, -0.12, 1.4], [0.5, 0.5, 1.4])); // (the plastron's arch over the dantian)
   // the lines: the costal arch round the plastron, the linea alba and its tendinous lines inside it, the abdomen's bands outside it
-  const lines = (x, y, z) => {
-    let d = plateF(x, y, z); if (d > 0.06) return d;
-    const e = archE(x, y), inArch = e < 1 && y > 0.05, cuts = [];
-    if (y > 0.05) cuts.push(Math.abs(e - 1) * ARCH[2] - 0.02); // (the costal arch)
-    if (inArch) { cuts.push(Math.abs(x) - 0.016); if (y < 1.75) cuts.push(Math.abs(y - 0.66) - 0.015, Math.abs(y - 1.18) - 0.015); }
-    else if (y < 1.05) cuts.push(Math.abs(y - 0.37) - 0.018, Math.abs(y - 0.71) - 0.018, Math.abs(y - 1.02) - 0.018);
-    for (const c of cuts) d = Math.max(d, -Math.max(c, -d - 0.03));
-    return d;
+  // (drawn in the plate's tone, never cut: a groove thinner than two cells comes out jagged, so the lines are shaded in, `lineK`)
+  const lineK = (x, y) => {
+    const e = archE(x, y), inArch = e < 1 && y > 0.25; let k = 0;
+    const ln = (dist, w) => { const t = Math.min(1, dist / w); k = Math.max(k, (1 - t) * (1 - t)); }; // (a soft valley of shade, not a hard ink line)
+    if (y > 0.25) ln(Math.abs(e - 1) * ARCH[2], 0.11); // (the costal arch)
+    if (inArch) { ln(Math.abs(x), 0.09); if (y < 1.75) { ln(Math.abs(y - 0.66), 0.08); ln(Math.abs(y - 1.18), 0.08); } }
+    else if (y < 1.05) { ln(Math.abs(y - 0.71), 0.09); ln(Math.abs(y - 1.02), 0.09); }
+    return k;
   };
+  const lines = plateF;
   let X = 0; for (let y = 0; y <= top; y += 0.1) X = Math.max(X, A(y) * Math.sin(PH + 0.15) + 0.1);
   let Z = 0; for (let y = 0; y <= top; y += 0.1) Z = Math.max(Z, B(y) + lift(0, y) + 0.35);
-  return { f: lines, solid: near, bounds: [[-X, 0.02, 0.0], [X, top, Z]] };
+  return { f: lines, lineK, solid: near, bounds: [[-X, 0.02, 0.0], [X, top, Z]] };
 }
 
 /** The cores' numbers: the profile [[r, y], ...], the plan (w across, d ahead, back behind, the keel's and the pectorals' swell), the
@@ -141,12 +145,12 @@ export function coreLook(id, F = FORMS.hero) {
       one(a0, a1); if (a0 > 0) one(-a1, -a0);
     }
   };
-  const inner = (S) => S.core.geo(sculpt(shell(band(P, P[0][1], top, 0.95, 16), 32), W), { c: L.core });
+  const inner = (S) => S.p.geo(sculpt(shell(band(P, P[0][1], top, 0.95, 16), 32), W), { c: L.dark }); // (under the panels: a porcelain a little darker, so a groove reads as an incised line, never a black one)
   /** The back from phi a to the spine: a blade either side of the window, the spine's strips above and below it. */
   const backPlates = (S, y0, y1, a, c = L.mid) => panels(S, [[y0, y1, a, PI - gap - G, c], [y0, WIN[0], PI - gap - G, PI - G, c], [WIN[1], y1, PI - gap - G, PI - G, c]]);
   const sockets = (S) => {
-    S.p.geo(cup(0.4 * F.joint).rotateX(PI), { at: [0, mounts.neck[0], mounts.neck[1]], c: L.ivory });
-    for (const s of [-1, 1]) S.p.geo(cup(C.cup * F.joint).rotateZ(s * PI / 2), { at: [s * mounts.shoulder[0], mounts.shoulder[1], 0], c: L.ivory });
+    socket(S.p, 0.4 * F.joint, { at: [0, mounts.neck[0], mounts.neck[1]], rot: [PI, 0, 0] }); // (the sockets: sculpted, so each ball sits in its plate)
+    for (const s of [-1, 1]) socket(S.p, C.cup * F.joint, { at: [s * mounts.shoulder[0], mounts.shoulder[1], 0], rot: [0, 0, s * PI / 2] });
   };
   const gorget = (S, y, c = L.trimM) => S.trim.geo(sculpt(shell([[0.36, y], [profAt(P, y) * 0.9, y + 0.01], [profAt(P, y) * 0.96, y + 0.14], [0.5, y + 0.26]], 28), W), { c });
   const hoop = (S, y, h, k = 1.06, c = L.trimM, piece = S.trim) => piece.geo(sculpt(shell(band(P, y - h, y + h, k, 2), 36), W), { c });
@@ -155,7 +159,7 @@ export function coreLook(id, F = FORMS.hero) {
       inner(S);
       if (!F.fem && F.id === 'hero') {
         const Cu = cuirassField(P, W, top, C, F);
-        sideSculpt(S.p, Cu.f, Cu.bounds, 0.06, { key: `core.cuirass|${id}|${F.chest.join(',')}`, tone: aoTone(Cu.f, L.pale, L.mid, 0.06) });
+        sideSculpt(S.p, Cu.f, Cu.bounds, 0.065, { key: `core.cuirass|${id}|${F.chest.join(',')}`, tone: lineTone(aoTone(Cu.f, L.pale, L.mid, 0.06), Cu.lineK, L.dark) });
         panels(S, [[1.05, top - 0.2, PH + 2 * G, 1.95, L.mid], // (the flanks)
           [0.06, 0.34, PH + 2 * G, PI - 0.2, L.dark, 1.05], [0.4, 0.68, PH + 2 * G, PI - 0.2, L.mid, 1.05], [0.74, 0.99, PH + 2 * G, PI - 0.2, L.pale, 1.05]]); // (the abdomen's bands round the sides)
         panels(S, [[1.82, 1.9, PH + 2 * G, PI - G, L.trimD, 1.05]], S.trim); // (the trim rim under the pectorals, round the sides and back)
@@ -214,7 +218,7 @@ function dantian(S) {
   S.e.ball(r * 0.3, { c: 0xffffff }, 18, 12); S.e.ring(r * 0.42, 0.018, { rot: [PI / 2, 0, 0], at: [0, 0, r * 0.62], c: 0xffffff }, 32, 4); // (the heart lit, a ring before it)
   S.g.ring(r * 1.006, r * 0.06, { c: L.gold }, 40, 5); S.g.ring(r * 1.006, r * 0.045, { rot: [0, 0, PI / 2], c: L.gold }, 40, 5); // (the equator and the meridian)
   for (const a of [0, PI / 2, PI, PI * 1.5]) S.g.ball(0.035, { at: [Math.cos(a) * r * 0.5, Math.sin(a) * r * 0.5, Math.sqrt(r * r * 1.02 - r * r * 0.25)], c: L.gold }, 8, 6); // (the reticle's studs)
-  S.core.cyl(0.46, 0.5, 0.42, { at: [0, 0.82, 0], c: L.core }, 20); // (the column up into the chest, clear of the heart)
+  S.p.cyl(0.46, 0.5, 0.42, { at: [0, 0.82, 0], c: L.dark }, 20); // (the column up into the chest, clear of the heart)
   S.trim.lathe([[0.44, 0.6], [0.58, 0.64], [0.6, 0.72], [0.5, 0.78]], { c: L.trimM }, 32); // (a collar where the column meets the ball's crown)
 }
 
@@ -223,7 +227,7 @@ function dantian(S) {
 export function cradle(S) {
   const { p, g, e } = S, R = CRADLE.r, D = CRADLE.depth, B = CRADLE.boss;
   p.geo(shell([[R, D], [B - 0.04, D], [B, D - 0.05], [B + 0.03, D - 0.2], [B + 0.06, -0.3]], 8, PI / 8), { c: L.pale }); // (the boss, an octagon)
-  S.core.geo(shell([[B + 0.07, D - 0.26], [B + 0.08, D - 0.34]], 8, PI / 8), { c: L.core }); // (a groove round it)
+  p.geo(shell([[B + 0.07, D - 0.26], [B + 0.08, D - 0.34]], 8, PI / 8), { c: L.dark }); // (a groove round it, incised)
   S.trim.geo(shell([[B + 0.04, 0.16], [B + 0.3, 0.02], [B + 0.42, -0.1], [B + 0.44, -0.22], [B + 0.05, -0.34]], 8, PI / 8), { c: L.trimM }); // (the flange the back's plates close on)
   g.geo(shell([[B + 0.43, -0.08], [B + 0.46, -0.13], [B + 0.43, -0.18]], 8, PI / 8), { c: L.gold });
   g.geo(threadGeometry(R - 0.03, CRADLE.turns, CRADLE.pitch, 0.03).rotateX(-PI / 2), { at: [0, D - 0.02, 0], c: L.gold });

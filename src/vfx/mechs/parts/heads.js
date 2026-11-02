@@ -23,7 +23,14 @@ import { sideSculpt, aoTone } from './arms.js';
 import { femHeadLook } from './femheads.js';
 
 const PI = Math.PI;
-const neckSeg = (len, r) => (S) => { const k = S.F.joint; jointBall(S, r * k); S.core.cyl(r * 0.6 * k, r * 0.72 * k, len, { at: [0, len / 2, 0], c: L.core }, 14); S.trim.lathe([[r * 0.95 * k, len * 0.35], [r * 1.05 * k, len * 0.5], [r * 0.95 * k, len * 0.65]], { c: L.trimD }, 20); };
+/** The neck: its ball, and a column of porcelain from the ball up into the head's underside (the head stands HEAD_LIFT over the collar,
+ *  partsbody.js), waisted, with one fine bead of trim at its waist; no dark ring. */
+const neckSeg = (len, r) => (S) => {
+  const k = S.F.joint, top = len + 0.22 * (S.F.head ?? 1) + 0.08, w = r * k;
+  jointBall(S, w);
+  S.p.lathe([[w * 0.66, w * 0.6], [w * 0.56, top * 0.45], [w * 0.52, top * 0.62], [w * 0.6, top * 0.85], [w * 0.7, top]], { c: L.mid }, 20);
+  S.trim.ring(w * 0.56, 0.022, { at: [0, top * 0.55, 0], c: L.trimL }, 24, 4);
+};
 
 /** The haniwa's face as one field: a mask's front blended out of the skull, the brows, cheeks, nose and chin swelled on, the eyes'
  *  sockets and the mouth carved in (the hollows' glow sits at their floors). */
@@ -44,10 +51,10 @@ export const HEAD_LOOKS = {
     neck: 0.42, ball: 0.4, neckSeg: neckSeg(0.42, 0.4),
     build(S) {
       const { p, e } = S;
-      p.lathe([[0.001, -0.05], [0.42, -0.02], [0.52, 0.2], [0.55, 0.55], [0.5, 0.85], [0.3, 1.02], [0.001, 1.08]], { c: L.mid }, 28); // (the skull)
+      p.lathe([[0.001, 0.02], [0.2, -0.02], [0.3, -0.12], [0.4, -0.13], [0.48, -0.04], [0.53, 0.2], [0.55, 0.55], [0.5, 0.85], [0.3, 1.02], [0.001, 1.08]], { c: L.mid }, 28); // (the skull, its underside a rolled rim round a shallow socket the neck rises into)
       sideSculpt(S.core, FACE, [[-0.56, 0.08, 0.12], [0.56, 0.86, 0.72]], 0.042, { key: 'head.clay.face', tone: aoTone(FACE, L.core, L.coreD, 0.05) }); // (the face)
       p.geo(shell([[0.7, 0.62], [0.76, 0.84], [0.68, 1.12], [0.44, 1.32], [0.18, 1.41], [0.001, 1.43]], 32), { sc: [1, 1, 1.1], c: L.mid }); // (the helmet's bowl)
-      S.core.ring(0.72, 0.045, { at: [0, 0.63, 0], sc: [1, 1, 1.1], c: L.coreD }, 32, 4); // (its brim: a groove under the bowl)
+      S.g.ring(0.735, 0.016, { at: [0, 0.63, 0], sc: [1, 1, 1.1], c: L.gold }, 40, 4); // (its brim: a fine gold inlay under the bowl)
       p.geo(sidePlate([[0.42, 0.9], [1.12, 0.98], [1.18, 1.03], [0.48, 1.28]], 0.3, 0.05), { c: L.pale }); // (the beak, ahead)
       for (let i = 0; i < 3; i++) p.geo(new THREE.CylinderGeometry(0.68 + i * 0.08, 0.74 + i * 0.09, 0.2, 28, 1, true, PI * 0.45, PI * 1.1), { at: [0, 0.5 - i * 0.23, -0.02], c: i % 2 ? L.mid : L.pale }); // (the neck guard's lames)
       for (const s of [-1, 1]) { S.trim.cyl(0.1, 0.14, 0.4, { at: [s * 0.6, 0.28, 0.1], c: L.trimM }, 12); S.trim.ball(0.15, { at: [s * 0.62, 0.05, 0.1], sc: [0.8, 1.1, 0.8], c: L.trimM }, 14, 10); } // (the mizura)
@@ -62,7 +69,7 @@ export const HEAD_LOOKS = {
       const { p, g, l, e } = S;
       p.geo(shell([[0.001, -0.04], [0.36, 0], [0.44, 0.3], [0.46, 0.9], [0.42, 1.45], [0.3, 1.82], [0.12, 1.98], [0.001, 2.0]], 32), { sc: [1, 1, 1.18], c: L.pale }); // (the tall helm)
       S.trim.geo(shell([[0.48, 0.05], [0.52, 0.2], [0.5, 0.36]], 32), { sc: [1, 1, 1.18], c: L.trimM }); // (its collar band)
-      S.core.ring(0.47, 0.035, { at: [0, 1.0, 0], sc: [1, 1, 1.18], c: L.coreD }, 32, 4); // (a groove round its waist)
+      g.ring(0.465, 0.014, { at: [0, 1.0, 0], sc: [1, 1, 1.18], c: L.gold }, 40, 4); // (a fine gold inlay round its waist)
       S.core.box(0.62, 0.11, 0.18, { at: [0, 1.32, 0.45], c: L.coreD }, 0.05); // (the visor's slit)
       e.box(0.5, 0.04, 0.05, { at: [0, 1.32, 0.53], c: 0xffffff }, 0.02);
       // the great lens: a bezel of the stone, a gold ring, the glass lit from inside

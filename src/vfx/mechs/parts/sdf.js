@@ -27,7 +27,7 @@
 import * as THREE from 'three';
 
 /** The grid (m a cell at a part's default), the relaxation's share, the cache's size. */
-export const SDF_LOOK = { cell: 0.045, relax: 0.35, cache: 96, band: 1.6 };
+export const SDF_LOOK = { cell: 0.045, relax: 0.35, cache: 96, band: 1.6, trueNormals: true };
 
 const len3 = (x, y, z) => Math.sqrt(x * x + y * y + z * z);
 const clamp01 = (t) => (t < 0 ? 0 : t > 1 ? 1 : t);
@@ -148,6 +148,11 @@ export function mesh(f, [[x0, y0, z0], [x1, y1, z1]], cell = SDF_LOOK.cell, { ke
     const m0 = l00 + (l10 - l00) * b, m1 = l01 + (l11 - l01) * b; return m0 + (m1 - m0) * c;
   };
   const nv = pos.length / 3, grad = (x, y, z, out) => { const e = cell * 0.5; out[0] = G(x + e, y, z) - G(x - e, y, z); out[1] = G(x, y + e, z) - G(x, y - e, z); out[2] = G(x, y, z + e) - G(x, y, z - e); const l = len3(out[0], out[1], out[2]) || 1; out[0] /= l; out[1] /= l; out[2] /= l; return out; };
+  // the shading's normals off the field itself (Quilez's tetrahedral gradient: four calls), so a sculpt shades smooth, not as the grid's facets
+  const gradF = (x, y, z, out) => {
+    const e = cell * 0.3, a = f(x + e, y - e, z - e), b = f(x - e, y - e, z + e), c = f(x - e, y + e, z - e), d = f(x + e, y + e, z + e);
+    out[0] = a - b - c + d; out[1] = -a - b + c + d; out[2] = -a + b - c + d; const l = len3(out[0], out[1], out[2]) || 1; out[0] /= l; out[1] /= l; out[2] /= l; return out;
+  };
   const g = [0, 0, 0];
   if (relax > 0) {
     const acc = new Float32Array(nv * 3), cnt = new Uint16Array(nv);
@@ -163,7 +168,7 @@ export function mesh(f, [[x0, y0, z0], [x1, y1, z1]], cell = SDF_LOOK.cell, { ke
   const P = new Float32Array((quads.length / 4) * 18), N = new Float32Array(P.length), K = new Float32Array(P.length), col = new THREE.Color();
   const vn = new Float32Array(nv * 3), vc = new Float32Array(nv * 3);
   for (let v = 0; v < nv; v++) {
-    const x = pos[v * 3], y = pos[v * 3 + 1], z = pos[v * 3 + 2]; grad(x, y, z, g); vn.set(g, v * 3);
+    const x = pos[v * 3], y = pos[v * 3 + 1], z = pos[v * 3 + 2]; (SDF_LOOK.trueNormals ? gradF : grad)(x, y, z, g); vn.set(g, v * 3);
     const t = tone ? tone(x, y, z, g[0], g[1], g[2]) : 0xffffff;
     if (Array.isArray(t)) vc.set(t, v * 3); else { col.set(t); vc[v * 3] = col.r; vc[v * 3 + 1] = col.g; vc[v * 3 + 2] = col.b; }
   }
