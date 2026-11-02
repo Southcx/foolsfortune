@@ -538,6 +538,8 @@ burst; a steel block and a glass tower barely catch from one shot (they are for 
   second to its body (about 1.2 blows: fire is a setup for the throw, not a kill). A water tower puts it out.
 - **The dune colossus does not burn**: fire vitrifies its sand, firing it to glass (0.25 a real second), and at full it is glass for 12 real s, taking blows
   x1.5 and unable to burrow. The flamer is the answer to its burrow.
+- A straw giant standing against a burning building keeps catching (its fuel refilled while it touches fire); a colossus's glaze holds
+  half a real second after the flame leaves it, then fades at half the rate it built (`vitrify.fed`, `.ebb`).
 - Smoke is a look only for now: no rule hides a tell behind it.
 
 ### 12.4 The city breaking better (Calissa's asks)
@@ -552,7 +554,7 @@ burst; a steel block and a glass tower barely catch from one shot (they are for 
 ### 12.5 Events and the ledger
 `city.ignite { building, lot, at, cause, by }`, `city.burn { building, lot, cells, k, at, by }` (about 1 Hz), `city.char { building, lot,
 cells, at, by }`, `city.douse { building, lot, cells, cause, by }`, `city.out { building, lot }`, `city.felled { ..., cause: 'fire' }`,
-`city.break { ..., cause: 'heat' }`, `mech.flame { on, by }`, `mech.heat { k }`, `giant.burn { id, k, by }`, `giant.vitrify { id, on, by }`.
+`city.break { ..., cause: 'heat' }` (glass burst) and `{ cells: 0, chunks, cause: 'fire' }` (pieces cut loose by a burn-away), `mech.flame { on, by }`, `mech.heat { k }`, `giant.burn { id, k, by }`, `giant.vitrify { id, on, by }`.
 Ledger (`tracking/mechfire.js`): city.ignite(.cause), city.burned.cells, city.felled.fire, city.douse(.cause), mech.heat.full,
 giant.burn.<id>, giant.vitrify. Achievements: mk26 Kindling (opens the flamer), mk27 Burnt Down, mk28 Bucket Brigade, mk29 Bonfire,
 mk30 Glassed.

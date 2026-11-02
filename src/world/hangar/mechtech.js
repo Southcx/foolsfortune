@@ -5,7 +5,7 @@
 // paid from the battery (the pilot's spent kJ), carving the toy city where it lands (city.js strike, its `carve` shape in metres, a cell
 // a metre) and striking the straw giant in its reach (giant.js blow, its k x outputK(sync) and its stagger, said as mech.hit):
 //   Thunderclap   LMB and RMB pressed within TECH.chord real s: a cone of shock ahead (the first arm's blow called back); glass breaks
-//   Ground Pound  C on the ground: a ball carved at the frame's feet, the giant's legs struck in reach
+//   Ground Pound  C on the ground: a ball carved at the frame's feet, the giant's legs struck in reach, fire within FIRE.douse.pound smothered
 //   Elbow Drop    C in the air: the frame driven down; where it lands a ball carved and the giant's head struck, harder a metre fallen
 //   Super Jump    Space held TECH.superHold real s standing still, then let go: the jump x jumpK (a tap standing still jumps on its
 //                 release once this is open; moving, Space jumps on the press as before)
@@ -31,6 +31,7 @@
 import * as THREE from 'three';
 import { TECHNIQUES, techniqueOpen } from '../../progress/mechs/techniques.js';
 import { outputK } from '../../progress/mechs/rules.js';
+import { FIRE } from '../../progress/mechs/fire.js';
 import { legsLeft } from '../../progress/mechs/joints.js';
 import { PROVING } from './layout.js';
 import { MECH_BODY, seatOf, heightOf } from './mech.js';
@@ -132,6 +133,7 @@ export class MechTech {
     _a.copy(p.pos).addScaledVector(p.forward(_f), MECH_BODY.radius * 0.8).setY(p.pos.y + 1);
     const s = this.city?.strike({ kind: 'ball', at: _a, r: T.carve.r }, k, 'courier');
     if (p.weapons.gap() <= T.reach) this.hitGiant('groundPound', k, T.stagger, 'legs', true);
+    this.city?.fire.douseAt(_a.copy(p.pos).setY(p.pos.y + 1), FIRE.douse.pound, 'pound', 'courier'); // (the pound smothers fire at the frame's feet)
     this.done('groundPound', s?.felled.length ? { fell: true } : {});
   }
   elbowDrop() { const p = this.p; p.spend(TECHNIQUES.elbowDrop.kJ); this.diving = { y0: Math.max(p.peakY ?? p.pos.y, p.pos.y) }; p.vy = Math.min(p.vy, -TECH.dive); this.cool.elbowDrop = this.t + TECH.rest; }

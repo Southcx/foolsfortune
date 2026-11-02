@@ -27,12 +27,17 @@
 //   S.barrier { up, downT }   S.stagger { v, quietT, staggerT }   S.vessel   S.down (real s left down, 0 standing)   S.dispose()   GIANT_LOOK   DOWN_FOR
 //   S.joints (joints.js newJoints: strained by every blow, a snapped one's part hidden and handed to S.onLimb(part, at, joint))   GIANT_PARTS   GIANT_JOINTS
 //   S.G (the id's row)   S.radius   S.under (burrowed)   S.air (carried: { ctr, pitch })   S.carry(ctr, pitch)   S.putDown(x, y, z)   S.stash() S.unstash(at?)   S.armsK(move)
+//   S.light(by) -> bool (the straw giant set alight)   S.douse(by)   S.burn ({ left, by } while alight)   S.glaze(dt, by) (the colossus's sand fired toward glass)   S.glass { k, on, t }
 //   events: giant.wake { id }, giant.windup { id, move, by: 'creature' }, giant.stagger { id }, giant.down { id, weapon, leg }, mech.barrier { neutralised },
-//   mech.joint { who: 'giant', joint, to, label, by }
+//   mech.joint { who: 'giant', joint, to, label, by }, giant.burn { id, k, by } (alight at 1, about 1 Hz, out at 0), giant.vitrify { id, on, by }
+// Fire (MECHS.md 12; the numbers Dovina's, fire.js GIANT_FIRE): alight, the straw giant's barrier is held down, its stagger gauge rises and its
+// body takes a share of a blow a real second (through blow(), weapon 'fire'); a water tower puts it out. Glazed through, the colossus is glass
+// for a while: it takes more from every blow and cannot burrow (giantmoves.js canStart).
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { tag } from '../../core/tags.js';
 import { GIANTS } from '../../progress/mechs/giants.js';
+import { GIANT_FIRE } from '../../progress/mechs/fire.js';
 import { makeMats, buildBody } from './giantbodies.js';
 import { GiantMoves } from './giantmoves.js';
 import { BARRIER, barrierStep, staggerStep, blowMult } from '../../progress/mechs/rules.js';
@@ -95,7 +100,7 @@ export class Giant {
     this.air = null; this.stashed = null; this.sink = 0; this.moves.clear();
     this.barrier = { up: this.G.barrier ? 1 : 0, downT: this.G.barrier ? 0 : Infinity };
     this.stagger = { v: 0, quietT: 0, staggerT: 0 };
-    this.vessel = newVessel('giant'); this.joints = newJoints();
+    this.vessel = newVessel('giant'); this.joints = newJoints(); this.burn = null; this.glass = { k: 0, on: false, t: 0, fed: 0 };
     const g = this.game, H = this.G.height, R = this.radius;
     const c = this.c = {
       type: 'creature', kind: 'giant', name: this.G.label, id: `giant.${NEXT++}`, giant: this.G.id, pos: this.pos, radius: R, height: H, alive: true,
@@ -128,7 +133,7 @@ export class Giant {
     const holds = this.barrierHolds;
     if (holds && !pierce) return { blocked: true, pierced: false, staggered: this.stagger.staggerT > 0 };
     if (region === 'body' && from) region = this.sideOf(from);
-    const was = this.stagger.staggerT > 0, mult = blowMult(this.stagger, heavy) * (holds ? BARRIER.pierce : 1);
+    const was = this.stagger.staggerT > 0, mult = blowMult(this.stagger, heavy) * (holds ? BARRIER.pierce : 1) * (this.glass.on ? GIANT_FIRE.colossus.vitrify.blowK : 1); // (glass: brittle)
     const r = blowOn(this.vessel, { region, k: k * mult }, 'giant');
     let state = r.state;
     if (was && heavy) state = { form: state.form, crack: { ...state.crack, [region]: Math.max(state.crack[region], REGION_BREAK) } }; // (a critical: its region broken)
@@ -178,8 +183,41 @@ export class Giant {
     this.emit('giant.down', { weapon: this.lastWeapon, leg: this.game.hangar?.state?.stats.legType ?? null, by });
   }
 
+  /** Set alight (the straw giant; fuel GIANT_FIRE.straw.fuel real s, refilled by more flame). True when it caught just now. */
+  light(by = 'courier') {
+    const F = GIANT_FIRE[this.G.id]; if (!F?.burns || !this.c?.alive || this.down > 0) return false;
+    const was = !!this.burn; this.burn = { left: F.fuel, sayT: 0, by: was ? this.burn.by : by };
+    if (!was) this.emit('giant.burn', { k: 1, by });
+    return !was;
+  }
+  /** Put out (a water tower's burst). True when it was alight. */
+  douse(by = 'courier') { if (!this.burn) return false; this.putOut(by); return true; }
+  putOut(by) { const B = this.burn; this.burn = null; this.emit('giant.burn', { k: 0, by: by || B?.by || 'environment' }); }
+  /** The colossus's sand fired toward glass: `dt` real s in flame builds `glass.k` at GIANT_FIRE.colossus.vitrify.rate; at 1 it is glass for `hold` real s. */
+  glaze(dt, by = 'courier') {
+    const V = GIANT_FIRE[this.G.id]?.vitrify, Q = this.glass; if (!V || !this.c?.alive || this.down > 0 || Q.on) return;
+    Q.fed = V.fed; Q.k = Math.min(1, Q.k + V.rate * dt); // (fed: real s the glaze holds before it ebbs; the flame comes every fire step)
+    if (Q.k < 1) return;
+    Q.on = true; Q.t = V.hold; Q.by = by; this.emit('giant.vitrify', { on: true, by });
+    if (this.windup?.kind === 'ring') this.cancel(); // (glass does not sink: a burrow begun is broken off)
+  }
+  /** Fire's clocks on real time: the straw giant's burn (barrier held down, stagger rising, its body taking a share of a blow), the glass's hold and the glaze's ebb. */
+  fireTick(dt) {
+    const B = this.burn, V = GIANT_FIRE[this.G.id]?.vitrify, Q = this.glass;
+    if (B) {
+      const F = GIANT_FIRE[this.G.id]; B.left -= dt; B.sayT += dt;
+      this.barrier = { up: 0, downT: Math.max(this.barrier.downT, 0.3) }; // (held down as a broken barrier; it rises 0.3 s after the fire goes out)
+      this.blow({ weapon: 'fire', k: F.k * dt, stagger: F.stagger * dt, region: 'body', by: B.by });
+      if (B.left <= 0 || !this.c?.alive) this.putOut(B.by);
+      else if (B.sayT >= 1) { B.sayT = 0; this.emit('giant.burn', { k: +(B.left / F.fuel).toFixed(2), by: B.by }); }
+    }
+    if (Q.on) { Q.t -= dt; if (Q.t <= 0) { Q.on = false; Q.k = 0; this.emit('giant.vitrify', { on: false, by: Q.by || 'environment' }); } }
+    else if (Q.k > 0) { if (Q.fed > 0) Q.fed -= dt; else Q.k = Math.max(0, Q.k - V.rate * V.ebb * dt); } // (the glaze ebbs at half the rate it builds once the flame has been gone half a real s)
+  }
+
   update(dt, mech) {
     if (!this.c) return;
+    if (this.burn && this.down > 0) this.putOut(this.burn.by); // (felled while alight: the fire is out)
     this.moves.tick(dt, mech); // (a clod in flight, a fan fading, a slow held: whether the giant is up or down)
     if (this.down > 0) { this.down -= dt; this.anim = Math.min(1, this.anim + dt); this.pose(dt); if (this.down <= 0) this.stand(); return; }
     if (this.air) { this.pose(dt); return; } // (carried: no mind, no barrier, no stagger ticking; giantgrapple.js moves it)
@@ -192,6 +230,7 @@ export class Giant {
     if (b.fell) this.game.events?.emit('mech.barrier', { neutralised: true, giant: this.G.id, by: 'courier' });
     if (b.rose) this.game.events?.emit('mech.barrier', { neutralised: false, giant: this.G.id, by: 'creature' });
     this.barrier = { up: b.up, downT: b.downT };
+    this.fireTick(this.game.rawDt ?? dt); // (after the barrier's step, so a fire holds it down)
     this.stagger = staggerStep(this.stagger, { dt });
     if (this.awake && mech && this.stagger.staggerT <= 0) this.act(dt, mech, d);
     this.pose(dt);

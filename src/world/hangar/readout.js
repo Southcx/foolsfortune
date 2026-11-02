@@ -8,6 +8,8 @@
 // Prior art: Evangelion's entry-plug displays (sync ratio, the internal battery's countdown, the umbilical's state), Armored Core's
 // AP and energy gauges, the house's own DOM readouts (ui/railreadout.js).
 //
+// Its heat (fire in the toy city, cityfire.js) is `heat` and a HEAT line while above 0.
+//
 //   const R = new MechReadout(hangar)   R.update(dt, shown)   R.hide()   R.read() -> state   READOUT
 // ---------------------------------------------------------------------------------------
 import { regionsOf } from '../../progress/combat/vessel.js';
@@ -44,6 +46,8 @@ export class MechReadout {
         barrierDown: Number.isFinite(B.downT) ? B.downT : 0, stagger: Math.min(1, s.v / STAGGER.full), staggered: s.staggerT > 0 };
     }
     st.challenge = H.challenges?.lines?.() || null; // (the smash challenge under way, or the lectern's offer: Dovina's challenges.js)
+    st.heat = H.city?.fire?.heat || 0; // (the mech in fire, 0..1: cityfire.js; a HEAT line under the panel until the look draws it)
+    if (st.heat > 0) st.challenge = [...(st.challenge || []), `HEAT ${Math.round(st.heat * 100)}%`];
     return st;
   }
 }

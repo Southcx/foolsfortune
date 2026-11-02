@@ -64,7 +64,7 @@ export const HEAT = { rise: 0.5, fall: 0.25, near: 3, drainKW: 400, crack: { reg
  *  at 1 it is glass for `hold` real s, taking blows x`blowK` and unable to burrow (glass does not sink): the answer to its burrow. */
 export const GIANT_FIRE = {
   straw: { burns: true, fuel: 30, k: 0.04, stagger: 6, touch: 3 },
-  colossus: { burns: false, vitrify: { rate: 0.25, hold: 12, blowK: 1.5 } },
+  colossus: { burns: false, vitrify: { rate: 0.25, hold: 12, blowK: 1.5, fed: 0.5, ebb: 0.5 } }, // (fed: real s the glaze holds after the flame leaves it, the flame arriving every fire step; ebb: then it fades at half the rate it builds)
 };
 
 /** A building's fire, alongside its cells (the same index as b.mat). `t` the scorch and soften clocks; `by` who started it. */
