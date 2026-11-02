@@ -75,7 +75,7 @@ Nine slots. Each part is a row of honest numbers (`PARTS`, `src/progress/mechs/p
 - **tetrapod**: hovers on its booster without draining while still (a stable platform), slow to walk.
 - **tank**: treads, no stride (sync from steady aim instead), the most load, no jump, turns on the spot.
 
-**The assembly's checks** (the gantry refuses what fails, saying why):
+**The assembly's checks** (the gantry shows each in red, saying why, and lets the frame go out with its penalty: refused, an overweight frame's penalty could never be played; Armored Core 6 lets an overweight frame sortie too):
 - **overweight**: the total mass past the legs' load limit: the mech can stand but not boost, and walks at half.
 - **over the arm load**: the weapons' mass past the arms' limit: the arm weapons aim slowly (half turn rate).
 - **under-powered**: the parts' draw past the generator's output: the battery drains even standing on the cable.

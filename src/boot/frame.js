@@ -323,7 +323,7 @@ export function bootFrame(game, made) {
     else if (dm < 0.01) scene.fog.color.setHex(PALETTE.deep);
     game.graphics.shadowsWanted = under < 1; renderer.shadowMap.autoUpdate = under < 1 && (T.visual.shadowEvery | 0) <= 1; // (every frame, or on the graphics tier's own turns: render/graphics.js beforeDraw)
     game.bazaar?.light(); // (the bazaar's own air under its dome: world/bazaar/bazaar.js)
-    game.sandbox?.light(); game.strawmanWell?.light(); game.touchstone?.light(); // (the Touchstone's dark: world/touchstone/touchstone.js)
+    game.sandbox?.light(); game.hangar?.light(); game.strawmanWell?.light(); game.touchstone?.light(); // (the Touchstone's dark: world/touchstone/touchstone.js)
     game.bazaarHall?.update(game.rawDt ?? dt); // (the dome's turn, the wheel's and the carousel's spin, the neon's film walk: vfx/bazaarhall.js)
     game.touchstoneLook?.update(game.rawDt ?? dt); // (the plinth you stand at lit, the stone's sign of the trial running, a run's streak rubbed in: vfx/touchstonelook.js)
     game.mimicryLooks?.update(game.rawDt ?? dt); game.sandboxLook?.update(game.rawDt ?? dt); game.panicMarks?.update(); game.domainArtMarks?.update(game.rawDt ?? dt); // (the puzzle stones and the ghost, the Sandbox's ball, net and shadow, panic's marks let go: vfx/mimicry/, vfx/sandbox/, vfx/panic.js)

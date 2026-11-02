@@ -5,7 +5,7 @@
 // narrates (the log does: Dovina's rules on the mech's events). Its classes are `mk-readout` and `mk-ro-*` for Calissa's dress.
 //
 // Prior art: Evangelion's entry-plug displays (sync ratio, the internal battery's countdown, the umbilical's state), Armored Core's
-// AP and energy gauges, the house's own DOM readouts (ui/railreadout.js).
+// AP and energy gauges, the house's own DOM readouts (ui/railreadout.js). It stands bottom right, left of the Lachrimeter's tube.
 //
 //   const R = new MechReadout(hangar)   R.update(dt, shown)   R.hide()   READOUT
 // ---------------------------------------------------------------------------------------
@@ -15,7 +15,7 @@ import { STAGGER, ENERGY } from '../../progress/mechs/rules.js';
 /** How often it is redrawn (real s), and how near (m) the giant must be for its line. */
 export const READOUT = { every: 0.1, giantNear: 200 };
 const CSS = `
-.mk-readout{position:fixed;left:12px;top:42%;z-index:3;min-width:190px;padding:8px 10px;background:rgba(20,12,8,.72);border:1px solid #c8925e;border-radius:6px;
+.mk-readout{position:fixed;right:130px;bottom:12px;z-index:3;min-width:190px;padding:8px 10px;background:rgba(20,12,8,.72);border:1px solid #c8925e;border-radius:6px;
   color:#f2e2c8;font:12px/1.45 ui-monospace,monospace;pointer-events:none;white-space:pre}
 .mk-readout .mk-ro-low{color:#ff8a6a}.mk-readout .mk-ro-ok{color:#9fe4ff}
 `;
@@ -42,8 +42,9 @@ export class MechReadout {
       `BATTERY  ${(M.battery / 1000).toFixed(1)} MJ  <span class="${low ? 'mk-ro-low' : 'mk-ro-ok'}">${net > 0 ? clock(left) : 'FILLING'}</span>`,
       `DRAW     ${Math.round(net)} kW`,
       `${M.cable !== null ? '<span class="mk-ro-ok">CABLE</span>' : '<span class="mk-ro-low">OFF CABLE</span>'}`,
-      ...regionsOf('mech').map((r) => `${r.toUpperCase().padEnd(8)} ${pct(V.crack[r] || 0)}${this.hangar.state.broken(r) ? '  BROKEN' : ''}`),
     ];
+    const R = regionsOf('mech').map((r) => `${r.toUpperCase().padEnd(5)}${this.hangar.state.broken(r) ? 'BROKE' : pct(V.crack[r] || 0).padStart(5)}`);
+    for (let i = 0; i < R.length; i += 2) lines.push(`${R[i]}   ${R[i + 1] ?? ''}`); // (the regions two to a line: the panel kept clear of the log and the goals)
     if (Gi?.c && Math.hypot(Gi.pos.x - M.pos.x, Gi.pos.z - M.pos.z) < READOUT.giantNear) {
       const B = Gi.barrier, s = Gi.stagger;
       lines.push('', `GIANT    ${Gi.down > 0 ? `DOWN ${Math.ceil(Gi.down)}s` : Gi.awake ? 'AWAKE' : 'WAITING'}`,

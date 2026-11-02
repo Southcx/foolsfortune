@@ -6,7 +6,7 @@
 // Prior art: Ratchet & Clank's Giant Clank kaiju (a slow body with a few big, readable blows), Shadow of the Colossus (a giant's moves
 // read from far off), Pacific Rim's kaiju, Strawman's family (Pip's tries: vfx/strawmanwell/dummies.js).
 //
-//   GIANTS[id] = { id, label, line, height (m), reach (m), speed (m/s), barrier (bool), wakes ('staggered' | 'near'), moves { id: { k, every, windup, reach, region } }, drops }
+//   GIANTS[id] = { id, label, line, height (m), reach (m), speed (m/s), barrier (bool), wakes ('staggered' | 'near'), moves { id: { k, every, windup, reach, region } } }   (its drops: DROP_TABLES.giant, progress/creaturedrops.js)
 //   giantOf(id)
 // ---------------------------------------------------------------------------------------
 
@@ -19,7 +19,6 @@ export const GIANTS = {
       swipe: { k: 0.7, every: 4, windup: 1.1, reach: 14, region: 'core', answer: 'boost' },   // an arm swung across: dash out or through
       slam:  { k: 1.2, every: 9, windup: 1.8, reach: 10, region: 'head', answer: 'back' },    // both arms down: step back out of it
     },
-    drops: 'giantStraw',
   },
 };
 export const giantOf = (id) => GIANTS[id] || null;

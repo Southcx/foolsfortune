@@ -15,14 +15,14 @@
 // Prior art: Evangelion's cage and launch catapult (the unit clamped in a gantry, the plug inserted from a bridge at its chest, the lift
 // up the shaft), Armored Core's garage, the Sandbox's and the Touchstone's rooms (world/sandbox/sandbox.js: the area, arrival, F wiring).
 //
-//   game.hangar = new Hangar(game)   .build()   .teardown()   .built   .here   .arrive()   .leave()   .update(dt)
+//   game.hangar = new Hangar(game)   .build()   .teardown()   .built   .here   .arrive()   .leave()   .update(dt)   .light()
 //   .state (MechState: the frame and its cracks, save section `mech`)   .pilot (MechPilot)   .giant (StrawGiant)   .field (ProvingGround)
 //   .cradle (the mech's body cradle while built)   .deck (the lift's deck)   events: hangar.enter, hangar.leave { by }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { StageKit } from '../strawmanwell/stagekit.js';
 import { label } from '../basement/basement.js';
-import { wholeOf } from '../../render/zonemap.js';
+import { wholeOf, zoneOf } from '../../render/zonemap.js';
 import { HANGAR, PROVING } from './layout.js';
 import { MechState } from './mechstate.js';
 import { MechPilot } from './mechpilot.js';
@@ -33,6 +33,10 @@ import { MechAssembly } from './assembly.js';
 
 const C = { floor: 0x8a7a68, wall: 0x7a5a48, roof: 0x3a2a22, iron: 0x4c4a48, walk: 0x6b5a4a, lectern: 0x6b4a36, gold: 0xd9a441, door: 0x6b5a3a, deck: 0x5a5048 };
 const GAP = 4, DOOR_H = 5, REACH = 1.8; // (the south wall's door gap and its height, F's reach to the lectern and the door, in metres)
+
+/** The two rooms' air (fog colour, exponential density): the hall's at the Sandbox's warmth; the yard's a dusk haze about a tenth as
+ *  thick, so a 16 m giant reads at 200 m (exp(-(0.0012 x 200)^2) keeps 94% of it). */
+export const AIR = { hangar: { fog: 0x5a4a3c, density: 0.0045 }, provingground: { fog: 0x9a8a78, density: 0.0012, far: 600 } };
 
 export class Hangar {
   constructor(game) {
@@ -133,6 +137,17 @@ export class Hangar {
       const f = this.field.offer(P); if (f && (!best || f.d < best.d)) best = f;
       return best;
     });
+  }
+
+  /** Each room's own air, after the room's fog is graded each frame (as the Sandbox's and the Touchstone's): the hangar a warm hall's
+   *  haze; the proving ground an open yard's, thin enough to see the giant 200 m off and the sky over it. */
+  light() {
+    const g = this.game, F = g.scene?.fog, z = zoneOf(g.camera.position); if (!F) return;
+    const A = AIR[z]; if (!A) return;
+    F.color.setHex(A.fog); F.density = A.density;
+    if (z === 'provingground' && g.scene.background?.isColor) g.scene.background.setHex(A.fog); // (the yard's horizon as its haze, not the hall's dark)
+    // (the yard's far plane opened past the giant, 230 m off at launch: the Dunes set it each frame before this, and set it back on leaving)
+    const cam = g.camera; if (A.far && Math.abs(cam.far - A.far) > 1) { cam.far = A.far; cam.updateProjectionMatrix(); }
   }
 
   update(dt) {

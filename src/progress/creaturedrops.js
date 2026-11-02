@@ -67,6 +67,7 @@ export const DROP_TABLES = {
   wisp:      { materials: { finery: 2, arcane: 2 }, addin: 3, extra: [{ id: 'mat.shard', w: 1 }], rare: [{ id: 'key.brass', p: 1 / 40 }] }, // (a mind round a flame: its glass a lens, its light a pigment)
   clapper:   { materials: { art: 3, finery: 1 }, addin: 2, extra: [], rare: [] }, // (clay folk: their craft; a fight with one is rare and small)
   sentinel:  { materials: { edge: 2, mechanism: 1, art: 1 }, addin: 1, extra: [{ id: 'mat.shard', w: 1 }], rare: [{ id: 'mat.eldritch', p: 1 / 10 }] }, // (fired clay with a shield: edges and its make; an idol sometimes: the island's own)
+  giant:     { materials: { provision: 2, art: 2, mechanism: 1 }, addin: 0, extra: [{ id: 'mat.shard', w: 2 }], rare: [{ id: 'key.brass', p: 1 / 6 }] }, // (the straw giant: straw and scaffold at scale, its stuffing food and craft; a rare Possibilikey: MECHS.md 6)
   spirit:    { materials: { eldritch: 1, arcane: 1 }, addin: 2, extra: [], rare: [] },
 };
 /** Who drops nothing here (their own systems pay them). */
