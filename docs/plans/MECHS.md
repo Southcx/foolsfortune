@@ -435,6 +435,7 @@ The mechanic is in flux: no checks are written for it until South settles it.
 - **The frame's form**: heroic, or the doll (Elemental Gearbolt's dolls, Haydee).
 - **Pauldrons**: large and iconic, chosen apart from the arms.
 - **Helms**: animal crests on kabuto and knights' helms (the stag, the tyrant, the mammoth, the sabretooth, the pterosaur, the
-  triceratops), with plumes on sprung bones.
+  triceratops), with plumes on sprung bones, at a head's proportion, faceless and floating over the collar on no neck (South: "kind
+  of like the automatons from FFXI puppetmaster job").
 
 The form, the pauldrons and the helm are kept as a mech's style (`vfx/mechs/mechstyle.js`, save section `mechStyle`, `/mechstyle`).
