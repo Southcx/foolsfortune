@@ -100,8 +100,8 @@ for (const id of CIRCUIT) {
 // ---------------------------------------------------------------------------------------- the smash challenges (MECHS.md 11.1)
 import { PROPS } from '../src/progress/mechs/techniques.js';
 import { CHALLENGES, PINS, pinSpots, pinChain } from '../src/progress/mechs/challenges.js';
-console.log('\nTHE SMASH CHALLENGES: how far each prop carries from the hand (12 m up, g 9.81, standing; a running throw adds the walk)');
-const reachOf = (v, deg, H = 12) => { const a = (deg * Math.PI) / 180, vx = v * Math.cos(a), vy = v * Math.sin(a); return vx * ((vy + Math.sqrt(vy * vy + 2 * 9.81 * H)) / 9.81); };
+console.log('\nTHE SMASH CHALLENGES: how far each prop carries from the hand (3 m up, as a throw measured in play, g 9.81, standing; a running throw adds the walk)');
+const reachOf = (v, deg, H = 3) => { const a = (deg * Math.PI) / 180, vx = v * Math.cos(a), vy = v * Math.sin(a); return vx * ((vy + Math.sqrt(vy * vy + 2 * 9.81 * H)) / 9.81); };
 for (const p of ['post', 'girder', 'chunk', 'tower']) console.log(`  ${pad(p, 7)} ${PROPS[p].thrown.speed} m/s  ${[10, 23, 35, 45].map((d) => `${d}°: ${f(reachOf(PROPS[p].thrown.speed, d), 0)} m`).join('  ')}`);
 console.log(`  javelin bars ${CHALLENGES.javelin.medals.join(' / ')} m; bullseye's bull at ${CHALLENGES.bullseye.target} m; the head pin ${PINS.at - CHALLENGES.bowling.from} m past bowling's own line`);
 const P = pinSpots();
