@@ -5,7 +5,7 @@ South liked the old square tiles, and pointed at the Mexican tablitas (the Jacob
 
 What I need from you:
 - The three mock-ups redrawn with **square tiles** (today's glazed clay `TouchTile`), sizes and places as in 3.1.1. The outer ring's
-  order is now reversed: E at 110°, F at 131°, PICK at 153°, BELT at 176°.
+  order is now reversed: (superseded 2026-11-02: South asked for equal padding, so the tiles sit on one grid with one gutter; read TOUCH-REBUILD.md 3.1.1 and 7. The fold is now one column: F on top, PICK, BELT; parry joined the block round A.)
 - **The cascade as a strip of frames**: folded (one stack at 110°), half open (E and F, the rest folded on F's back), open, and the
   top bar's fold (everything stacked at A's corner).
 - Your call on the ribbons. Mine: shown only while a tile flips, so nothing extra stands on screen at rest.

@@ -59,7 +59,7 @@ only renames it:
 | **C** (above A) | vertical | A / Cross | JUMP | JUMP | JUMP | HOP | FORM (Astral, Umbral) | (none) |
 | **D** (the arc's top) | the secondary verb | Y / Triangle | (none) | the tool's RMB (AIM, SPECIAL, the lens) | SPECIAL | NOSE (in the air) | LOCK (tap: the nearest) | BROADSIDE |
 | **E** (the arc's left end) | defend | R1 | PARRY (once learned) | PARRY | GRAB | TAIL (in the air) | PARRY | PARRY (the spit) |
-| **F** (the outer ring, second from the fold's root, ringed) | the meter | R2 | ART (the class art or the rung on G) | ART | (none) | BOOST (a banked flare) | SURGE | MOUNT |
+| **F** (the top of the fold's column, ringed) | the meter | R2 | ART (the class art or the rung on G) | ART | (none) | BOOST (a banked flare) | SURGE | MOUNT |
 
 - **A slot with no verb in a context is not drawn** (never a dead tile). The layout reads the mode's mask: the Arena's `MASKED` keys
   hide their slots.
@@ -70,37 +70,41 @@ only renames it:
   - **In a 3D mode**, CROUCH is a tile, **G**: a small one (60 px) on the arc's inner end beside B, pressed for the posture's cycle
     and held for the slide, as today. G is drawn only in 3D, so a side-on mode shows six slots and a 3D one seven.
 
-### 3.1.1 The geometry (Calissa's, 2026-11-01; mock-ups in `docs/ref/touch-rebuild/` on claude/calissa-art-cups ab31bdc)
+### 3.1.1 The geometry (the grid: South, 2026-11-02; the placement drawn in `docs/ref/touch-rebuild/grid-placement.jpg`)
 
-The arc is two rings round A.
-- **The inner ring** holds what a fight presses over and over.
-- **The outer ring** holds the deliberate presses, so a swap, a pick or an art never goes off in a flurry.
+**The arc is a grid** (South, 2026-11-02: "the tiles need equal padding or else it looks awful"). Calissa's first geometry put the
+tiles on two rings round A. Tiles of three sizes on circles leave gaps of every width between neighbours, and the eye reads that as
+mess. So every tile sits on one grid with one gutter, the way a keyboard or a tile wall does.
 
-Measured from A's centre, which sits 52 px in from the safe area's right edge and 50 px up from its bottom ((802, 343) at 896 x 414):
+- **The cell** is 48 px, **the gutter** 8 px (a 56 px pitch). The safe area's edges sit two gutters (16 px) off.
+- **A** takes 2 x 2 cells (104 px), so the gap round it is the gutter too. Every other tile is one cell.
+- **A 48 px tile** is above the 44 px least a thumb hits cleanly (Apple's HIG).
 
-| ring | slot | size (px) | radius (px) | angle |
-|---|---|---|---|---|
-| the corner | A | 80 | | |
-| inner | G CROUCH (3D only) | 60 | 120 | 183° |
-| inner | B | 60 | 120 | 152° |
-| inner | D | 60 | 120 | 122° (the diagonal: the easiest reach after A) |
-| inner | C | 60 | 120 | 92° (straight up) |
-| outer | E | 48 | 192 | 110° (the fold's root: the stack lies here, section 7) |
-| outer | F the meter | 54 | 192 | 131° (ringed, gold when full) |
-| outer | PICK | 44 | 192 | 153° |
-| outer | BELT | 44 | 192 | 176° (the far end) |
+Cells are counted from A's corner: the column from the right, the row from the bottom. At 896 x 414:
 
-The outer ring's order was reversed on 2026-11-01 for the fold (section 7): what a fight presses lies nearest the root, what a fight
-never presses furthest out.
+| slot | cell | box (x, y, w, h) | from A's centre |
+|---|---|---|---|
+| A | columns 0-1, rows 0-1 | 776, 294, 104, 104 | |
+| C (vertical) | 0, 2 | 832, 238, 48, 48 | 88 px |
+| D (secondary) | 1, 2 | 776, 238, 48, 48 | 88 px |
+| B (evade) | 2, 0 | 720, 350, 48, 48 | 88 px |
+| G CROUCH (3D only) | 2, 1 | 720, 294, 48, 48 | 88 px |
+| E (defend) | 2, 2 | 720, 238, 48, 48 | 119 px |
+| F (the meter): the fold's top | 3, 2 | 664, 238, 48, 48 | 163 px |
+| PICK | 3, 1 | 664, 294, 48, 48 | 143 px |
+| BELT | 3, 0 | 664, 350, 48, 48 | 143 px |
 
-- **The inner radius** is 120 so four 60 px tiles 30° apart never touch.
-- **Into the middle:** the outer ring reaches about 80 px into the centre 60%, at its lower-right corner only, under where the bodies
-  stand.
+- **The whole block** is 216 x 160 px. It never reaches left of x 664: 53 px into the centre 60%, at its lower-right corner only.
+  The rings reached x 588.
+- **What a fight presses** (A, B, C, D, E, G) is the 3 x 3 block round A, everything within 119 px of its centre. The deliberate
+  presses (F, PICK, BELT) are the column beyond it, the arc's fold (section 7).
+- **An empty cell stays empty.** A slot with no verb is not drawn (G in a side-on mode, E before parry is learned), and nothing moves
+  up to fill its cell. A thumb learns cells, not neighbours.
 - **A directional slot** wears four small gold chevrons on its rim.
 - **The stick, side-on:** in a side-on mode the stick's ring carries a gold notch for crouch, labelled until the first path has taught
   it.
-- **F's place** was first the far end (ruling 2, section 6). The fold moved it second from the root (section 7), so a fight's
-  half-open fold holds parry and the meter and nothing else.
+- **The rings' history:** F went to the far end (ruling 2, section 6), then second from the fold's root (ruling 4). The grid puts it on
+  top of the fold, always showing (section 7).
 
 ### 3.2 A press reads the stick (directional presses)
 
@@ -220,6 +224,8 @@ The crossing and the jelly mount get their first working touch from this table. 
    reach out across the screen. If UI *has* to be that intrusive, then we need a 'hide all Touch UI' setting or button, or a collapse
    option ... I liked the old square tiles. You know that clacking wood toy that is popular in mexico and folds up into a stack of
    tiles. Use that thing for inspiration." So: square tiles, the outer ring folds (section 7), and a setting and a tile hide them all.
+5. **Equal padding** (2026-11-02, on Calissa's square-tile mock-ups): "Its better but the tiles need equal padding or else it looks
+   awful." So the rings became one grid with one gutter (3.1.1). Parry joined the block round A, and the fold became one column.
 
 ## 7. The arc's fold (South's ruling 4)
 
@@ -232,50 +238,51 @@ feel; the square wooden tile is the shape.
 **The tiles are square** (the old ones: today's glazed clay `TouchTile`, slightly rounded corners). The circles of the mock-ups go.
 Sizes and places stay as in 3.1.1.
 
-**The outer ring is a chain** of four tiles, hinged edge to edge: E, F, PICK, BELT, from the root out (3.1.1). It has three
-states.
+**The fold is one column** of three tiles hinged edge to edge: F on top, then PICK, then BELT, hanging down the grid's fourth
+column (3.1.1), as the toy hangs from the block in your hand.
 
-| state | when | what is out | its left edge at 896 x 414 |
-|---|---|---|---|
-| **folded** | outside a fight, by default | one square stack at the root (110°), the next tile's face on top, the meter's glow on its edge | x 712 (5 px into the middle: out of it, near enough) |
-| **half open** | in a fight (a live moment `fight`, the Arena, the crossing, the helm, a sea serpent hunting the hull) | E and F open; PICK and BELT stay folded on F's back, their edges showing on F's rim | x 649 (68 px into the middle) |
-| **open** | the stack or F's rim tapped | all four | x 588 (129 px into the middle: today's mock-ups) |
+| state | what is out | its left edge at 896 x 414 |
+|---|---|---|
+| **folded**, the default | F alone, the top of a stack: PICK and BELT folded on its back, their edges stepped on its rim | x 664 |
+| **open** | F, PICK and BELT down the column | x 664: the fold opens downward, never further in |
 
-- **The cascade.** Opening flips the tiles out one after another along the arc. Each flip takes about 60 ms, so four take a quarter
-  of a real second. Each tile clacks as it lands. Folding is the same run reversed, a little faster, and the clacks are lighter.
-- **When it folds back.** After a pick or a belt choice is made. Or 3 real s with no press on the outer ring. Or when a fight ends
-  (half open, then folded).
-- **A press while it moves** is a press on the tile under the finger once it has landed. A tile in flight cannot be pressed, and
-  each flip is short enough that this never costs a parry window (60 ms against the parry's 0.26 s).
-- **E not learned** (no parry yet): it is not in the chain. The chain is then F, PICK, BELT, and half open shows F alone.
-- **The inner ring never folds**, and neither does A. What a fight presses over and over stays put (3.7: a slot's place never
-  changes). The fold changes only whether the outer tiles are drawn, never where.
+- **A tap on the stack is F** (the art, the boost, the surge, the mount), so the meter is one tap in a fight, folded or not. With its
+  meter empty it refuses, as an open F would.
+- **A pull opens it.** A swipe down off the stack, the toy's own motion, cascades PICK and BELT out below it. Where F has no verb (the
+  Arena), PICK is the stack's face and a tap opens it.
+- **The cascade.** Each tile flips over the last, about 60 ms a flip, with a clack as it lands. Folding is the same run reversed, a
+  little faster, and the clacks are lighter.
+- **When it folds back.** After a pick or a belt choice. Or 3 real s with no press on the column.
+- **A press while it moves** lands on a tile only once the tile has landed.
+- **Parry is no longer in the fold.** It sits in the block round A (cell 2, 2), with what a fight presses over and over. Fights no
+  longer open anything.
+- **The block round A never folds** except by the top bar's fold tile (below). A slot's place never changes (3.7).
 
 **The touch controls' setting** (a settings row; Espada's label, these are placeholders):
 - **FOLDED**, the default: the table above.
-- **SHOWN**: the outer ring always open, as the mock-ups.
+- **SHOWN**: the fold's column always open.
 - **HIDDEN**: no tile is drawn, the stick's ring is not drawn (the stick still works where a thumb lands), and the look area, taps
   and double taps still work. One faint tile stays at the top bar's right end to bring them back.
 
-**The top bar's fold tile.** One tile on the top bar folds every tile into one stack at A's corner, the inner ring and A as well.
+**The top bar's fold tile.** One tile on the top bar folds every tile into one stack at A's corner, the block round A and A as well.
 The top bar folds already, and the log folds with its tab (`log.fold`), so this is the same gesture. Tapping the stack cascades
-everything back out: A first, then the inner ring, then the outer ring to whatever state the setting and the moment ask for. While
+everything back out: A first, then the block round A, then the fold's column, folded. While
 this is folded, a live fight opening does not unfold it. You folded it, so it stays folded until you open it.
 
 **Two avenues.** The fold's state is seen in the stack and heard in the clack. Nothing of it goes to the log: it is a control, not
 a happening.
 
-**Kept.** The fold's state for the outer ring is not saved: it follows the moment. The top bar's fold and the setting are kept in
+**Kept.** Whether the fold's column is open is not saved: it folds itself back. The top bar's fold and the setting are kept in
 the settings scope, beside the touch layout (`touchLayout`).
 
 **What it replaces.** The far shelf's ⋯ tile ("the fold" in today's glossary) goes with the far shelf when the rebuild lands
 (PICK and BELT replace it). Until then the new one is always called "the arc's fold" in full.
 
 **Who builds it**, after section 5's first pass:
-- **Calissa:** the mock-ups redrawn with square tiles, and the cascade as a strip of frames (folded, half open, open, and the top
-  bar's fold). Then the chain's look: the ribbons between tiles shown only while a tile flips, and the stack's edges.
+- **Calissa:** the tiles on the grid (3.1.1), in the square glazed clay, the stack's stepped rim, and the ribbons shown only while a tile
+  flips. Her square-tile mock-ups (claude/calissa-art-cups dd20b3c) are on the rings: the grid's placements replace them.
 - **Wanda:** the clack. It is wood or clay on clay, one per tile, pitched by the tile's size. Folding is lighter. It must stay
   inside the phone mixer's burst cap.
-- **Petra:** the three states in the touch driver, a press landing only on a landed tile, the setting's row, and the top bar's
-  tile.
-- **Dovina:** the chain's order and the state table as data (`TOUCH_ARC`'s `fold`), and the live moments that open it.
+- **Petra:** the grid's placement from cells (one cell size, one gutter, A spanning four), the stack's tap and pull, a press landing
+  only on a landed tile, the setting's row, and the top bar's tile.
+- **Dovina:** the cells and the fold's column as data (`TOUCH_ARC`'s `cell`, `fold`).
