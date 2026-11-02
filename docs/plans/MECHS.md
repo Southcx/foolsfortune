@@ -452,7 +452,7 @@ paid bronze, silver and gold (`medalOf`). A challenge lays out its own targets a
 
 | challenge | what | limit | scored by | medals |
 |---|---|---|---|---|
-| Javelin | a post or girder thrown from the line | 3 throws | best distance (m) | 100 / 140 / 170 |
+| Javelin | a post or girder thrown from the line | 3 throws | best distance (m) | 80 / 120 / 155 (measured in play: a level post 84 m) |
 | Bullseye | rings on the ground 70 m down the lane | 3 throws | ring points (100, 50, 25, 10) | 100 / 175 / 250 |
 | Bowling | the water tower thrown at ten clay pins | 2 throws | pins down; a strike, a spare | 7 / 9 / 10 |
 | Demolition | the toy city | 60 real s | cells broken | 400 / 900 / 1600 |
@@ -467,7 +467,7 @@ Events: `challenge.start { id }`, `challenge.score { id, add, total, what }`, `c
 
 ### 11.2 The dune colossus and giant wrestling (`progress/mechs/giants.js`)
 
-- **The dune colossus**: 22 m, the Dunes' sand risen in Fury's weather. It wakes as you come within 90 m. Its four moves each ask a
+- **The dune colossus**: 22 m tall, its footprint 6.5 m in radius (`GIANTS.colossus.radius`: its arms hang at 6.2 m; the straw giant 5), the Dunes' sand risen in Fury's weather. It wakes as you come within 90 m. Its four moves each ask a
   different answer: the sweep through the legs (jump), the burrow (it sinks, a ring opens where you stood, it erupts: dash out), the hurl
   (a clod thrown from 30 to 140 m: dash across its line) and the wave (a cone of sand: back out, or be slowed). Opened by the straw giant
   felled three times, or once off the cable (`giantOpen`).

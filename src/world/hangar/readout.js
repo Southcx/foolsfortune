@@ -37,9 +37,10 @@ export class MechReadout {
       battery: M.battery, capacity: S.capacity, low: M.battery < S.capacity * ENERGY.low, net, left, cable: M.cable !== null,
       regions: regionsOf('mech').map((r) => ({ id: r, k: V.crack[r] || 0, broke: !!H.state.broken(r) })), giant: null,
     };
-    if (Gi?.c && Math.hypot(Gi.pos.x - M.pos.x, Gi.pos.z - M.pos.z) < READOUT.giantNear) {
+    const at = Gi?.stashed || Gi?.pos; // (a carried or burrowed giant is stashed far off: its true place is kept, giant.js stash)
+    if (Gi?.c && at && (Gi.air || Math.hypot(at.x - M.pos.x, at.z - M.pos.z) < READOUT.giantNear)) {
       const B = Gi.barrier, s = Gi.stagger;
-      st.giant = { word: Gi.down > 0 ? `DOWN ${Math.ceil(Gi.down)}` : Gi.awake ? 'AWAKE' : 'WAITING', barrier: B.downT > 0 ? 0 : B.up,
+      st.giant = { word: Gi.air ? 'HELD' : Gi.under ? 'UNDER THE SAND' : Gi.down > 0 ? `DOWN ${Math.ceil(Gi.down)}` : Gi.awake ? 'AWAKE' : 'WAITING', barrier: B.downT > 0 ? 0 : B.up,
         barrierDown: Number.isFinite(B.downT) ? B.downT : 0, stagger: Math.min(1, s.v / STAGGER.full), staggered: s.staggerT > 0 };
     }
     st.challenge = H.challenges?.lines?.() || null; // (the smash challenge under way, or the lectern's offer: Dovina's challenges.js)

@@ -62,7 +62,8 @@ let NEXT = 1;
 export class Giant {
   constructor(game, id = 'straw') {
     this.game = game; this.G = GIANTS[id] || GIANTS.straw; this.pos = new THREE.Vector3(); this.yaw = 0; this.c = null; this.group = null;
-    this.radius = GIANT_LOOK.radius; this.mats = makeMats(this.G.id); this.geos = [];
+    // (its row's footprint: GIANTS radius, the colossus's arms at 6.2 m)
+    this.radius = this.G.radius ?? GIANT_LOOK.radius; this.mats = makeMats(this.G.id); this.geos = [];
     this.moves = new GiantMoves(this); this.sink = 0; this.air = null; this.stashed = null; this.windup = null;
   }
   /** Burrowed: sunk out of sight in a burrow's windup (nothing hits it, nothing collides with it). */
