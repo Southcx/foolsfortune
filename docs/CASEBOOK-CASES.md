@@ -4913,3 +4913,12 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   `any, arena`, the cluster and the near shelf were as above, the strip and the belt's pair were empty, and the touch ATTACK and
   SPECIAL reached the kit as the mouse's own (state `attack`).
 - **Rule:** 394
+
+### 2026-11-02 · The Great Dunemaw dropped out of the frame on the move to the `world` phase (boot/world.js, core/systems.js; found by Petra's probe before the push)
+- **Seen:** the world phase listed 39 systems, not 40. `well` was missing, so the Great Dunemaw would never have updated.
+- **Cause, as measured:** its registration sat with the dock's, the bazaar's and the Touchstone's, 22 lines above `game.well = new
+  Dunemaw(game)`. `game.systems.add` got `undefined` and returned a no-op remover, as it was written to.
+- **Fix:** the Well registers on the line after its construction. `Systems.add` now throws on a missing system, naming it and its
+  phase. After: the world phase lists 40; `looks` (16) and `marks` (24) were unchanged by the throw, so no earlier registration was
+  passing nothing.
+- **Rule:** 395

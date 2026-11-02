@@ -51,5 +51,6 @@ export function bootChat(game, made) {
   installSealBookLook(game); // (the Codex's SEAL BOOK shelf dressed as a goshuincho, by island: Petra's codex/sealbook.js classes, ui/sealbooklook.js)
   installCalibrateButtons(game); // (the Sight's TRACK buttons, set by a plate's pick and a charted room: ui/calibratebutton.js)
   game.skiffParts = new SkiffParts(game); game.skiffPaint = new SkiffPaint(game); skiffSetCommands(game); game.trackEditor = new TrackEditor(game); game.haunt = new Haunt(game); // (made tracks and the haunt mode: world/raceway/editor.js, haunt.js; TRACK-EDITOR.md)
+  game.systems.add('world', game.trackEditor, { clock: 'raw', name: 'trackEditor', after: 'race' }); game.systems.add('world', game.haunt, { name: 'haunt', after: 'trackEditor' }); // (core/systems.js)
   game.skiffSettings = new SkiffSettings(game); game.poolCaps = new PoolCaps(game); // (the Solar Skiff's garage and settings, after the chat line they speak on: progress/skiffparts.js, courier/skiff/skiffsettings.js; caps on the pool, a cracked region 5% of its max until mended: progress/poolcaps.js)
 }

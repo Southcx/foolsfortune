@@ -1097,3 +1097,5 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 394. **A verb bound for touch has a tile in its context.** A binding with a `touch` control that no
   cluster, strip or screen shows is a dead verb on a phone; a context's stand-down is revisited when its bindings arrive.
 
+395. **A system joins its phase after it is built, and a missing one throws.** A registration that reads
+  `game[name]` before the line that builds it passes `undefined`; quietly ignored, the system never runs and nothing says so.

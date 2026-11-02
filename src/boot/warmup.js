@@ -162,6 +162,7 @@ export async function bootWarmup(game, made) {
   game.goalsWindow = new GoalsWindow(game); // (the game day's three goals as a System window, on /goals and a beat at goals.set and goal.done: ui/goalswindow.js)
   game.questJournal = new QuestJournal(game); // (the quests as a System window under the goals window's: on /quests, a beat at quest.start and quest.done, and the recap: ui/questjournal.js)
   game.questSplash = new QuestSplash(game); // (a quest begun or done: EVENT! or QUEST COMPLETE! over the play, then the journal's beat; waits out a live moment: ui/questsplash.js)
+  game.systems.add('world', () => game.questSplash.update(), { name: 'questSplash', after: 'quests' }); // (between the quests and the recap, as they ran: core/systems.js)
   game.assayWindow = new AssayWindow(game); // (the Assay as the isekai status sheet, summoned on /assay (aptitude.ask) before the Courier: ui/assaywindow.js)
   installTouchControls(game); // (touch play's controls, their look: built only once touch is on, ui/touch/index.js)
   game.touchShell = new TouchShell(game); // (what those controls do: a tile pressed through the bindings, the top bar's windows by their keys: feedback/touchshell.js)

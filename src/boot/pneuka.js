@@ -56,6 +56,7 @@ export function bootPneuka(game, made) {
   game.iconWarm = new IconWarm(game); // (the Box's pictures made ahead in quiet frames: boot/iconwarm.js)
   game.collection = new Collection(game); // (the cards bound, kept in the Codex: progress/collection.js; the Veritome keeps none)
   game.laidSpread = new LaidSpread(game); // (the spread laid on the Box's underside, its four tallies the modifiers: progress/laidspread.js)
+  game.systems.add('world', game.laidSpread, { clock: 'raw', name: 'laidSpread' }); // (recounted each frame in the world too: core/systems.js)
   game.belt.tick(); game.pneuka.seed(); game.pneuka.reconcile(); // (a new Courier: the Magician's pair worn, the made lures in the box; and two tools worn, never one twice)
   game.pneukaUI = new PneukaUI(game);
   game.pneukaUI.onClose = () => { if (input.enabled && !cursorFree()) input.requestLock(); };
