@@ -149,7 +149,7 @@ export const DUEL_POWERS = {
       return [{ type: 'absorb', side, at: a.at, cells, n, pool: S.pool }]; } },
   // The clapperjar's Encore, yours (learned.js): a crowd calling for more. Cast before the drag, it lets you drag a second time this
   // turn. The PvE duel's one drag a turn is its pace (23.1), so it rests longest and costs most of the learned three.
-  encore: { domain: 'ouranurgy', label: 'Encore', line: 'You may drag twice this turn', cost: 20, rest: 4, target: null, learned: true,
+  encore: { domain: 'ouranurgy', label: 'Encore', line: 'Drag twice this turn', cost: 20, rest: 4, target: null, learned: true,
     legal: (s, side) => !s.sides[side].dragged && !s.sides[side].encore,
     reach: () => [],
     apply: (s, side) => { s.sides[side].encore = 1; return [{ type: 'encore', side }]; } },

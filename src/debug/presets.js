@@ -75,6 +75,11 @@ export const PRESETS = {
     at: 'hangar', ledger: { 'mech.seal': 3, 'mech.launch': 3, 'giant.down.straw': 1, 'giant.down': 1, 'giant.down.offcable': 1, 'mech.blow': 100, 'mech.step': 2000, 'mech.jump': 150, 'mech.destroy.cells': 1500, 'mech.blow.head': 40, 'mech.prop.hit': 30, 'mech.prop.throw': 20, 'mech.barrier': 30, 'mech.bout.won': 2, 'mech.bout.won.sparring': 1, 'mech.bout.won.heavy': 1 },
     best: { 'mech.sync.run': 30 }, kit: [], cubes: 1000, lend: {},
   },
+  mechNight: {
+    label: 'The mech night, everything open', for: 'MECHS.md 11: the smash challenges at the lane\'s lectern, the dune colossus at the giant post (the straw giant felled three times), Giant Throw opened, the ring open to the secret shadow frame (champion beaten, a perfect bout); in the hangar with the crab legs and the tread earned (assemble them at the lectern to lift the colossus)',
+    at: 'hangar', ledger: { 'mech.seal': 3, 'mech.launch': 3, 'giant.down.straw': 3, 'giant.down': 3, 'giant.down.offcable': 1, 'giant.stagger': 15, 'mech.blow': 100, 'mech.step': 2000, 'mech.jump': 150, 'mech.destroy.cells': 1500, 'mech.blow.head': 40, 'mech.prop.hit': 30, 'mech.prop.throw': 20, 'mech.barrier': 30, 'mech.bout.won': 3, 'mech.bout.won.sparring': 1, 'mech.bout.won.heavy': 1, 'mech.bout.won.champion': 1, 'mech.bout.perfect': 1 },
+    best: { 'mech.sync.run': 30 }, kit: [], cubes: 1000, lend: {},
+  },
   biteSense: {
     label: 'Bite Sense opened', for: 'the angler past 200 hooks set: the knack Bite Sense open (the !!! window x1.3, toggled in the knacks window), at the Weir with the rod',
     at: 'weir', ledger: { 'angle.hookset': 200, 'angle.hookset.perfect': 30, 'angle.bite': 260, 'fish.total': 150 }, kit: [['tool.sondelass', 1]], belt: { main: 'sondelass', sub: null }, cubes: 300, lend: {},

@@ -19,10 +19,12 @@
 //
 //   const P = new MechProps(hangar)   P.build(into)   P.teardown()   P.update(dt)   P.held (the prop in hand, or null)   P.heldMass
 //   P.spawn(prop, { at, mass?, label?, from?, part?, vel?, mesh? }) -> rec   P.spawnLimb({ from: 'mech' | 'giant' | 'rival', part, at, label, vel? })
-//   P.addChunk({ mesh, mass, at })   P.addGirder(at)   P.nearest(pos, reach) -> rec   P.grab() -> bool   P.drop()
+//   P.addChunk({ mesh, mass, at })   P.addGirder(at)   P.nearest(pos, reach) -> rec   P.grab() -> bool (a prop taken, else the challenges' lectern)   P.drop()
+//   P.discard(rec) (out of play, no burst)
 //   P.swing({ spin, k? }) -> things struck   P.throw({ javelin }) -> bool   P.shieldTake(fromPos) -> bool (the slab took the blow)
 //   PROP_PLACES   PROP_LOOK   HANDLING
-//   events: mech.grab { prop, by }, mech.prop.hit { prop, n, own?, by }, mech.prop.throw { prop, hit, javelin?, own?, by },
+//   events: mech.grab { prop, by }, mech.prop.hit { prop, n, own?, by }, mech.prop.throw { prop, hit, javelin?, own?, from, at, by } (from and at:
+//   world [x, y, z] to 0.1 m, where it left the hand and where it came down),
 //   mech.prop.break { prop, shield?, by }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -55,6 +57,7 @@ const LIMB_SIZE = { arm: [1.6, 1.6, 5.5], forearm: [2.2, 2.2, 3], leg: [1.8, 2, 
 const R = stream('world/hangar/props');
 const _a = new THREE.Vector3(), _b = new THREE.Vector3(), _f = new THREE.Vector3(), _q = new THREE.Quaternion();
 let NEXT = 1;
+const tenth = (v) => [Math.round(v.x * 10) / 10, Math.round(v.y * 10) / 10, Math.round(v.z * 10) / 10]; // (a world point as [x, y, z] to 0.1 m: the throw's events)
 
 export class MechProps {
   constructor(hangar) { this.hangar = hangar; this.game = hangar.game; this.list = []; this.held = null; this.built = false; this.mats = null; this.geos = []; }
@@ -124,8 +127,16 @@ export class MechProps {
   }
 
   // ------------------------------------------------------------------ in hand
-  /** F: the nearest prop into the right hand (the arm and its hand must be there). */
+  /** F: the nearest prop into the right hand, else the smash challenges' lectern when the frame stands at it (true: F was spent). With
+   *  no challenge running and nothing in hand, the lectern goes first (a loose post beside it never hides the page); while one runs, its
+   *  props are what F is for. */
   grab() {
+    const C = this.hangar.challenges;
+    if (!this.held && C && !C.run && C.use()) return true;
+    return this.pickUp() || !!C?.use();
+  }
+  /** The nearest prop into the right hand (the arm and its hand must be there). */
+  pickUp() {
     const M = this.pilot, B = M.mech; if (this.held || !B?.arms?.R) return false;
     if (!armOK(M.state.joints, 'R') || M.broken('armR')) return false;
     const r = this.nearest(M.pos); if (!r) return false;
@@ -180,9 +191,15 @@ export class MechProps {
     if (!dir) { dir = M.aimDir(_f).clone(); dir.y = Math.max(dir.y + HANDLING.up + 0.25, HANDLING.up); dir.normalize(); }
     this.held = null; this.into.attach(r.mesh); r.mesh.position.copy(from);
     r.state = 'flying'; r.vel.copy(dir).multiplyScalar(sp).add(_b.copy(M.vel).setY(0));
-    r.flight = { k: thrownK(r.P, sp, r.mass), javelin, left: javelin ? HANDLING.pierce : 1, hit: null, giant: false, struck: new Set() };
+    r.flight = { k: thrownK(r.P, sp, r.mass), javelin, left: javelin ? HANDLING.pierce : 1, hit: null, giant: false, struck: new Set(), from: tenth(from) }; // (from: where it left the hand, the challenges' throw line)
     M.spend(javelin ? TECHNIQUES.javelin.kJ : TECHNIQUES.throw.kJ); M.weapons.arms.R.swing = 1;
     return true;
+  }
+  /** A prop taken out of play without a burst (a challenge's, cleared when it ends): out of the hand, off the list, its mesh let go. */
+  discard(r) {
+    if (this.held === r) this.held = null;
+    const i = this.list.indexOf(r); if (i >= 0) this.list.splice(i, 1);
+    r.mesh.parent?.remove(r.mesh); if (r.ownGeo) r.mesh.traverse((o) => o.geometry?.dispose());
   }
   /** A blow from `from` on the frame: the slab held up (V) takes it from the front. */
   shieldTake(from) {
@@ -216,7 +233,7 @@ export class MechProps {
     r.vel.y -= HANDLING.g * dt; m.position.addScaledVector(r.vel, dt);
     if (F?.javelin) m.lookAt(_b.copy(m.position).add(r.vel)); else { m.rotation.x += r.spin.x * dt; m.rotation.z += r.spin.z * dt; }
     const Gi = this.hangar.giant, C = this.hangar.city, by = 'courier';
-    if (F && !F.giant && Gi?.c?.alive && Math.hypot(m.position.x - Gi.pos.x, m.position.z - Gi.pos.z) < GIANT_LOOK.radius + 1 && m.position.y > Gi.pos.y && m.position.y < Gi.pos.y + Gi.G.height) {
+    if (F && !F.giant && Gi?.c?.alive && Math.hypot(m.position.x - Gi.pos.x, m.position.z - Gi.pos.z) < (Gi.radius ?? GIANT_LOOK.radius) + 1 && m.position.y > Gi.pos.y && m.position.y < Gi.pos.y + Gi.G.height) {
       F.giant = true; F.hit = 'giant'; // (the giant struck at all: the throw's hit, whatever came first)
       const res = Gi.blow({ weapon: r.prop, k: F.k, stagger: 20 * F.k, heavy: F.k >= 1, region: 'body', from: prev, by });
       this.game.events?.emit('mech.hit', { weapon: r.prop, region: 'body', staggered: !!res.staggered, pierced: !!res.pierced, crit: !!res.crit, ...(res.blocked ? { blocked: true } : {}), ...(res.felled ? { felled: true } : {}), by });
@@ -235,7 +252,8 @@ export class MechProps {
   }
   endFlight(r) {
     const F = r.flight; r.flight = null;
-    this.game.events?.emit('mech.prop.throw', { prop: r.prop, hit: F.hit || 'ground', ...(F.javelin ? { javelin: true } : {}), ...(r.from === 'giant' ? { own: true } : {}), by: 'courier' });
+    this.game.events?.emit('mech.prop.throw', { prop: r.prop, hit: F.hit || 'ground', ...(F.javelin ? { javelin: true } : {}), ...(r.from === 'giant' ? { own: true } : {}), from: F.from, at: tenth(r.mesh.position), by: 'courier' });
+    if (this.hangar.challenges?.catchBall(r)) return; // (a bowling challenge's tower rolls on to the pins instead of bursting: challenges.js)
     if (!r.P.hand || --r.hits <= 0) { this.shatter(r); this.game.events?.emit('mech.prop.break', { prop: r.prop, by: 'courier' }); return; } // (a slab and a tank burst where they land; a club spends a hit)
     r.vel.y = Math.min(0, r.vel.y); r.state = 'flying'; // (it drops the rest of the way and lies there)
   }

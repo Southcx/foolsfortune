@@ -9,7 +9,7 @@
 // and Dune's sandworm (the ground rings before it erupts), its hurl Monster Hunter's ranged roar-and-throw; the wrestling Ultimate Destruction's
 // and the kaiju films' (a monster thrown through a building).
 //
-//   GIANTS[id] = { id, label, line, height (m), reach (m), speed (m/s), barrier (bool), wakes ('staggered' | 'near'), moves { id: { k, every, windup, reach, region } } }   (its drops: DROP_TABLES.giant, progress/creaturedrops.js)
+//   GIANTS[id] = { id, label, line, height (m), radius (m, its footprint), reach (m), speed (m/s), barrier (bool), wakes ('staggered' | 'near'), moves { id: { k, every, windup, reach, region } } }   (its drops: DROP_TABLES.giant, progress/creaturedrops.js)
 //   giantOf(id)   GIANT_IDS   giantOpen(id, L)   GRAPPLE   giantMass(G)   canLift(load, G)
 //   a move: { kind ('melee' | 'ring' | 'hurl' | 'wave'), k, every, windup, reach, region, answer, ... its kind's own }
 // ---------------------------------------------------------------------------------------
@@ -17,7 +17,7 @@
 export const GIANTS = {
   straw: {
     id: 'straw', label: 'Straw giant', line: 'Pip\'s biggest try at Strawman, stitched on a scaffold. It waits to be hit.',
-    height: 16, reach: 14, speed: 2.2, barrier: true, wakes: 'staggered',
+    height: 16, radius: 5, reach: 14, speed: 2.2, barrier: true, wakes: 'staggered',
     // its moves on the mech (k a full blow on the mech's vessel; every real s; windup real s before it lands, the answer's window)
     moves: {
       swipe: { k: 0.7, every: 4, windup: 1.1, reach: 14, region: 'core', answer: 'boost' },   // an arm swung across: dash out or through
@@ -28,7 +28,7 @@ export const GIANTS = {
   // first. It wakes as you come near, fights from range as well as close, and goes under the sand: a giant that makes you move.
   colossus: {
     id: 'colossus', label: 'Dune colossus', line: 'The Dunes\' sand risen into a body in Fury\'s weather. It hears you coming.',
-    height: 22, reach: 16, speed: 3.2, barrier: true, wakes: 'near', wakeAt: 90, body: 'sand',
+    height: 22, radius: 6.5, reach: 16, speed: 3.2, barrier: true, wakes: 'near', wakeAt: 90, body: 'sand',
     opens: { count: ['giant.down.straw', 3], feat: ['giant.down.offcable', 1] }, // (the straw giant felled three times, or once on the battery alone)
     moves: {
       // kind: 'melee' strikes what is in reach at the windup's end (the straw giant's own); 'ring' erupts under where the mech stood at the

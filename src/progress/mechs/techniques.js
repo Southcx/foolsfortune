@@ -25,25 +25,25 @@
  *  strikes (at sync 0.5; outputK multiplies); stagger: what it puts in a giant's gauge; carve: the shape it cuts out of a building where
  *  it lands (destruction.js carve: r in cells); reach: m from the frame. `fall` scales a landing move by its fall (k + fall m x it). */
 export const TECHNIQUES = {
-  grab: { label: 'Grab', line: 'Pick up a loose thing: a post, a girder, a chunk of building, a limb', keys: 'F near it', kJ: 0, k: 0, stagger: 0, reach: 10, opens: null },
-  throw: { label: 'Throw', line: 'Throw what you hold where you aim', keys: 'RMB holding a thing', kJ: 200, k: 0, stagger: 0, reach: 0, opens: null }, // (its k the thing's own: PROPS thrown)
-  thunderclap: { label: 'Thunderclap', line: 'Both hands clapped: a shock in front that staggers and breaks glass', keys: 'LMB and RMB together', kJ: 900, k: 0.35, stagger: 40, reach: 40,
+  grab: { label: 'Grab', line: 'Pick up a loose thing (a post, a girder, a piece of building, a limb)', keys: 'F near it', kJ: 0, k: 0, stagger: 0, reach: 10, opens: null },
+  throw: { label: 'Throw', line: 'Throw the thing in your hands where you aim', keys: 'RMB with a thing in hand', kJ: 200, k: 0, stagger: 0, reach: 0, opens: null }, // (its k the thing's own: PROPS thrown)
+  thunderclap: { label: 'Thunderclap', line: 'Clap both hands. The shock in front staggers and breaks glass', keys: 'LMB and RMB together', kJ: 900, k: 0.35, stagger: 40, reach: 40,
     carve: { kind: 'cone', r: 40, angle: 0.5, only: 'glass' }, opens: { count: ['mech.blow', 100], feat: ['mech.stagger.both', 1] } }, // (feat: a giant staggered by blows from both arms inside a real second)
-  groundPound: { label: 'Ground Pound', line: 'Both fists into the ground: everything near is thrown off its feet', keys: 'C on the ground', kJ: 1200, k: 0.6, stagger: 30, reach: 14,
+  groundPound: { label: 'Ground Pound', line: 'Punch both fists into the ground. Everything near is knocked off its feet', keys: 'C on the ground', kJ: 1200, k: 0.6, stagger: 30, reach: 14,
     carve: { kind: 'ball', r: 6 }, opens: { count: ['mech.step', 2000], feat: ['mech.pound.fell', 1] } }, // (feat: a building's foot broken by one pound)
-  elbowDrop: { label: 'Elbow Drop', line: 'From the air, down on your elbow: the higher, the harder', keys: 'C in the air', kJ: 600, k: 0.5, fall: 0.06, stagger: 25, reach: 8,
+  elbowDrop: { label: 'Elbow Drop', line: 'Drop elbow first from the air. The higher the drop, the harder the blow', keys: 'C in the air', kJ: 600, k: 0.5, fall: 0.06, stagger: 25, reach: 8,
     carve: { kind: 'ball', r: 5 }, opens: { count: ['mech.jump', 150], feat: ['mech.drop.high', 1] } }, // (feat: landed from 30 m or more)
-  superJump: { label: 'Super Jump', line: 'Space held, then let go: a jump two and a half times as high', keys: 'Space held 1 real s', kJ: 1500, k: 0, stagger: 0, reach: 0, jumpK: 2.5,
+  superJump: { label: 'Super Jump', line: 'Hold Space, then release. Jumps two and a half times as high', keys: 'Space held 1 real s', kJ: 1500, k: 0, stagger: 0, reach: 0, jumpK: 2.5,
     opens: { count: ['mech.jump', 60], feat: ['mech.roof', 1] } }, // (feat: stood on a building's roof)
-  battering: { label: 'Battering Ram', line: 'The assault boost through a building: its walls are no wall', keys: 'Shift held into a building', kJ: 0, k: 1.2, stagger: 20, reach: 6,
+  battering: { label: 'Battering Ram', line: 'Boost into a building and straight through its walls', keys: 'Shift held into a building', kJ: 0, k: 1.2, stagger: 20, reach: 6,
     carve: { kind: 'capsule', r: 4 }, opens: { count: ['mech.destroy.cells', 1500], feat: ['mech.through', 1] } }, // (feat: through a building wall to wall in one boost; its kJ the boost's own)
-  uppercut: { label: 'Uppercut', line: 'W and LMB: a blow up through the chin, a giant\'s head knocked back, a roof knocked off', keys: 'W + LMB', kJ: 300, k: 0.9, stagger: 35, reach: 9,
+  uppercut: { label: 'Uppercut', line: 'A blow up through the chin. Knocks a giant\'s head back, or a roof off', keys: 'W + LMB', kJ: 300, k: 0.9, stagger: 35, reach: 9,
     carve: { kind: 'ball', r: 3, up: 8 }, opens: { count: ['mech.blow.head', 40], feat: ['mech.crit', 1] } }, // (feat: a critical: a heavy blow on a staggered giant)
-  spin: { label: 'Wrecking Spin', line: 'Holding a club, LMB held: a full turn that strikes all round', keys: 'LMB held with a club', kJ: 700, k: 1.0, stagger: 30, reach: 0,
+  spin: { label: 'Wrecking Spin', line: 'With a club in hand, hold LMB. A full turn that strikes all round', keys: 'LMB held with a club in hand', kJ: 700, k: 1.0, stagger: 30, reach: 0,
     carve: { kind: 'ball', r: 0 }, opens: { count: ['mech.prop.hit', 30], feat: ['mech.prop.spin3', 1] } }, // (reach and r: the club's own reach; feat: three things struck in one swing)
-  javelin: { label: 'Javelin', line: 'A post or girder thrown point first: it goes through what it meets', keys: 'RMB held, let go, with a post or girder', kJ: 400, k: 0, stagger: 0, reach: 0, pierce: 3,
+  javelin: { label: 'Javelin', line: 'Throw a post or girder point first. It goes through what it meets', keys: 'RMB held, let go, with a post or girder', kJ: 400, k: 0, stagger: 0, reach: 0, pierce: 3,
     opens: { count: ['mech.prop.throw', 20], feat: ['mech.javelin.giant', 1] } }, // (feat: a thrown post or girder striking a giant)
-  shieldUp: { label: 'Slab Shield', line: 'Holding a slab of building, V: it takes the blows in front until it breaks', keys: 'V with a slab', kJ: 0, k: 0, stagger: 0, reach: 0,
+  shieldUp: { label: 'Slab Shield', line: 'With a slab of building in hand, press V. It blocks blows from the front until it breaks', keys: 'V with a slab', kJ: 0, k: 0, stagger: 0, reach: 0,
     opens: { count: ['mech.barrier', 30], feat: ['mech.shield.broke', 1] } }, // (feat: a slab broken taking a blow for you)
   giantThrow: { label: 'Giant Throw', line: 'F on a staggered giant: lift it, then RMB throws it where you aim, LMB slams it down', keys: 'F on a staggered giant, then RMB or LMB', kJ: 2500, k: 0, stagger: 0, reach: 18,
     opens: { count: ['giant.stagger', 15], feat: ['mech.javelin.giant', 1] } }, // (its numbers giants.js GRAPPLE; the frame's legs must hold the giant: canLift. Feat: a thrown post or girder striking a giant)
@@ -56,9 +56,9 @@ export const TECHNIQUE_IDS = Object.keys(TECHNIQUES);
 export const PROPS = {
   post:   { label: 'Lamp post', line: 'A clay lamp post pulled out of the street', mass: 1.5, hand: { k: 0.8, reach: 10, hits: 8 }, thrown: { speed: 40, cap: 1.2 }, from: 'street' },
   girder: { label: 'Girder', line: 'A steel beam out of a broken building', mass: 6, hand: { k: 1.3, reach: 12, hits: 14 }, thrown: { speed: 32, cap: 2 }, from: 'building' },
-  chunk:  { label: 'Chunk', line: 'A piece of a building, as it came off', mass: 0, hand: null, thrown: { speed: 28, cap: 3 }, shield: 4, from: 'building' }, // (mass its own: destruction.js chunkMass; shield when 8 t or more: a slab)
+  chunk:  { label: 'Chunk', line: 'A piece broken off a building', mass: 0, hand: null, thrown: { speed: 28, cap: 3 }, shield: 4, from: 'building' }, // (mass its own: destruction.js chunkMass; shield when 8 t or more: a slab)
   limb:   { label: 'Limb', line: 'An arm or a leg torn off a frame', mass: 4, hand: { k: 1.0, reach: 9, hits: 10 }, thrown: { speed: 30, cap: 1.5 }, from: 'joint' },
-  tower:  { label: 'Water tower', line: 'A tank on legs, full', mass: 12, hand: null, thrown: { speed: 22, cap: 2.5 }, from: 'street' },
+  tower:  { label: 'Water tower', line: 'A full water tank on legs', mass: 12, hand: null, thrown: { speed: 22, cap: 2.5 }, from: 'street' },
 };
 /** The thrown hit's energy scale (frame.js P0: a full blow is about 900 kJ). */
 const P0 = 900;

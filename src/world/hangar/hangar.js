@@ -16,8 +16,8 @@
 // up the shaft), Armored Core's garage, the Sandbox's and the Touchstone's rooms (world/sandbox/sandbox.js: the area, arrival, F wiring).
 //
 //   game.hangar = new Hangar(game)   .build()   .teardown()   .built   .here   .arrive()   .leave()   .update(dt)   .light()
-//   .state (MechState: the frame and its cracks, save section `mech`)   .pilot (MechPilot)   .giant (StrawGiant)   .field (ProvingGround)   .bout (RingBout)
-//   .city (ToyCity: the voxel buildings, city.js)   .props (MechProps: what the mech picks up, props.js)
+//   .state (MechState: the frame and its cracks, save section `mech`)   .pilot (MechPilot)   .giant (Giant: the straw giant, or the dune colossus once called)   .post (GiantPost)   .field (ProvingGround)   .bout (RingBout)
+//   .city (ToyCity: the voxel buildings, city.js)   .props (MechProps: what the mech picks up, props.js)   .challenges (SmashChallenges: the lane's lectern and five smash challenges, challenges.js)
 //   .cradle (the mech's body cradle while built)   .deck (the lift's deck)   events: hangar.enter, hangar.leave { by }
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
@@ -27,13 +27,15 @@ import { wholeOf, zoneOf } from '../../render/zonemap.js';
 import { HANGAR, PROVING } from './layout.js';
 import { MechState } from './mechstate.js';
 import { MechPilot } from './mechpilot.js';
-import { StrawGiant } from './giant.js';
+import { Giant } from './giant.js';
+import { GiantPost } from './giantpost.js';
 import { ProvingGround } from './provingground.js';
 import { MechReadout } from './readout.js';
 import { MechAssembly } from './assembly.js';
 import { ToyCity } from './city.js';
 import { MechProps } from './props.js';
 import { RingBout } from './ringbout.js';
+import { SmashChallenges } from './challenges.js';
 
 const C = { floor: 0x8a7a68, wall: 0x7a5a48, roof: 0x3a2a22, iron: 0x4c4a48, walk: 0x6b5a4a, lectern: 0x6b4a36, gold: 0xd9a441, door: 0x6b5a3a, deck: 0x5a5048 };
 const GAP = 4, DOOR_H = 5, REACH = 1.8; // (the south wall's door gap and its height, F's reach to the lectern and the door, in metres)
@@ -45,12 +47,13 @@ export const AIR = { hangar: { fog: 0x5a4a3c, density: 0.0045 }, provingground: 
 export class Hangar {
   constructor(game) {
     this.game = game; this.built = false;
-    this.state = new MechState(game); this.pilot = new MechPilot(this); this.giant = new StrawGiant(game); this.field = new ProvingGround(game);
+    this.state = new MechState(game); this.pilot = new MechPilot(this); this.giant = new Giant(game, 'straw'); this.post = new GiantPost(game); this.field = new ProvingGround(game);
     this.readout = new MechReadout(this); this.assembly = new MechAssembly(this);
     this.city = new ToyCity(this); this.props = new MechProps(this); // (v2: the toy city and what is loose in it, MECHS.md 9.1, 9.2)
     this.city.onChunk = (c) => this.props.addChunk(c); this.city.onGirder = (at) => this.props.addGirder(at);
-    this.giant.onLimb = (part, at) => this.props.spawnLimb({ from: 'giant', part, at, label: this.giant.G.label });
+    this.bindGiant();
     this.bout = new RingBout(this); // (the proving ground's boxing ring: a Punch-Out bout with a rival frame, world/hangar/ringbout.js)
+    this.challenges = new SmashChallenges(this); // (the lane's smash challenges: the lectern, the lane, the scoring; world/hangar/challenges.js)
     this.cradle = null; this.deck = null;
   }
 
@@ -92,12 +95,25 @@ export class Hangar {
     K.finish();
     g.scene.add(room);
     this.field.build(); this.bout.build();
-    this.city.build(this.field.group); this.props.build(this.field.group); // (whole on every visit)
+    this.city.build(this.field.group); this.props.build(this.field.group); this.challenges.build(this.field.group); // (whole on every visit)
     this.pilot.build(); this.pilot.toGantry();
     const P = PROVING.at, Gs = PROVING.giant;
-    this.giant.spawn(this.field.group, new THREE.Vector3(P.x + Gs.x, P.y, P.z + Gs.z), Gs.yaw);
+    this.giant.spawn(this.field.group, new THREE.Vector3(P.x + Gs.x, P.y, P.z + Gs.z), Gs.yaw); this.post.build(this.field.group);
     this.addCradle();
     this.built = true;
+  }
+
+  /** The standing giant's limbs thrown off as props (props.js). */
+  bindGiant() { this.giant.onLimb = (part, at) => this.props.spawnLimb({ from: 'giant', part, at, label: this.giant.G.label }); }
+  /** F at the giant post: the next open giant stands in the yard in place of the one standing (giantpost.js `next`). */
+  callGiant() {
+    const g = this.game, id = this.post.next(this.giant.G.id);
+    if (!id) { g.log?.say('warn', 'No other giant is open yet.', { key: 'giant.call.none', throttle: 3 }); return; }
+    const P = PROVING.at, Gs = PROVING.giant;
+    this.pilot.tech.grapple.reset(); this.giant.dispose();
+    this.giant = new Giant(g, id); this.bindGiant();
+    this.giant.spawn(this.field.group, new THREE.Vector3(P.x + Gs.x, P.y, P.z + Gs.z), Gs.yaw);
+    g.events?.emit('giant.call', { id, by: 'courier' });
   }
 
   /** The mech's chest cradle (a body: its controller is the pilot's; F inside is the cable, never an unseal: X unseals). */
@@ -116,7 +132,7 @@ export class Hangar {
     const g = this.game;
     if (this.cradle) { g.cradles?.remove(this.cradle); this.cradle = null; }
     this.readout.hide(); this.assembly.close();
-    this.bout.teardown(); this.props.teardown(); this.city.teardown(); this.giant.dispose(); this.pilot.dispose(); this.field.teardown();
+    this.challenges.teardown(); this.bout.teardown(); this.props.teardown(); this.city.teardown(); this.post.dispose(); this.giant.dispose(); this.pilot.dispose(); this.field.teardown();
     this.kit?.dispose(); this.room = null; this.kit = null; this.deck = null; this.built = false;
   }
 
@@ -144,6 +160,7 @@ export class Hangar {
       near('lectern', HANGAR.lectern.x, HANGAR.lectern.z, REACH, 1.6);
       near('door', HANGAR.door.x, HANGAR.door.z, 2.4, 3);
       const f = this.field.offer(P); if (f && (!best || f.d < best.d)) best = f;
+      const gp = this.post.offer(P); if (gp && (!best || gp.d < best.d)) best = gp;
       return best;
     });
   }
@@ -164,13 +181,15 @@ export class Hangar {
     const g = this.game, C2 = g.cradles, on = !!this.cradle && C2?.sealed === this.cradle && C2.phase === 'on';
     if (!on) this.pilot.idle(dt); else this.pilot.drawCable();
     this.giant.update(dt, this.bout.active ? null : this.pilot.target()); // (no giant cuts into a bout)
+    this.pilot.tech.grapple.update(dt); // (a giant lifted or thrown: giantgrapple.js)
     this.bout.tick(dt);
     this.city.update(dt, g.rawDt ?? dt); this.props.update(dt); // (the chunks falling, the city re-meshed, the props in flight)
+    this.challenges.update(dt, g.rawDt ?? dt); // (after the props: a tower landed this frame rolls on)
     this.readout.update(g.rawDt ?? dt, on && this.pilot.mode === 'pilot' && !this.bout.active); // (a bout has its own readout: ringbout.js)
     const it = g.interact?.cur, P = g.player;
     if (it?.id === 'hangar' && P.peekLatch?.('KeyF') && !C2?.sealed) {
       P.latch('KeyF');
-      if (it.ref === 'lectern') this.assembly.open(); else this.leave();
+      if (it.ref === 'lectern') this.assembly.open(); else if (it.ref === 'giantpost') this.callGiant(); else this.leave();
     }
   }
 }

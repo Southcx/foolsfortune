@@ -96,3 +96,13 @@ for (const id of CIRCUIT) {
     return `${n} ${won.length}/12${won.length ? ` ${f(won.reduce((a, x) => a + x.t, 0) / won.length, 0)} s` : ''}`; });
   console.log(`${pad(id, 10)}${row.join('   ')}`);
 }
+
+// ---------------------------------------------------------------------------------------- the smash challenges (MECHS.md 11.1)
+import { PROPS } from '../src/progress/mechs/techniques.js';
+import { CHALLENGES, PINS, pinSpots, pinChain } from '../src/progress/mechs/challenges.js';
+console.log('\nTHE SMASH CHALLENGES: how far each prop carries from the hand (12 m up, g 9.81, standing; a running throw adds the walk)');
+const reachOf = (v, deg, H = 12) => { const a = (deg * Math.PI) / 180, vx = v * Math.cos(a), vy = v * Math.sin(a); return vx * ((vy + Math.sqrt(vy * vy + 2 * 9.81 * H)) / 9.81); };
+for (const p of ['post', 'girder', 'chunk', 'tower']) console.log(`  ${pad(p, 7)} ${PROPS[p].thrown.speed} m/s  ${[10, 23, 35, 45].map((d) => `${d}°: ${f(reachOf(PROPS[p].thrown.speed, d), 0)} m`).join('  ')}`);
+console.log(`  javelin bars ${CHALLENGES.javelin.medals.join(' / ')} m; bullseye's bull at ${CHALLENGES.bullseye.target} m; the head pin ${PINS.at - CHALLENGES.bowling.from} m past bowling's own line`);
+const P = pinSpots();
+console.log('  the pins fall (pinChain, the ball straight down the lane):', [['head', [0]], ['the pocket', [0, 1]], ['the front three', [0, 1, 2]], ['a corner', [6]], ['the middle', [4]]].map(([n, s]) => `${n} ${pinChain(P, s, [1, 0]).size}`).join(', '));

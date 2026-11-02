@@ -8,7 +8,7 @@
 //
 //   mechNightRules({ on, L, log })   (feedback/tracking/rules.js calls it)
 //   ledger: challenge.play, challenge.play.<id>, challenge.best.<id> (hi), challenge.medal.<id> (hi 0..3), challenge.gold, bowling.strike,
-//     bowling.spare, giant.grab, giant.throw, giant.throw.building, giant.throw.cells (hi), giant.slam, giant.down.<id> (tracking/mechs.js)
+//     bowling.spare, giant.grab, giant.throw, giant.throw.building, giant.throw.cells (hi), giant.slam, giant.call, giant.down.<id> (tracking/mechs.js)
 // ---------------------------------------------------------------------------------------
 import { CHALLENGES, MEDAL_NAMES } from '../../progress/mechs/challenges.js';
 import { giantOf } from '../../progress/mechs/giants.js';
@@ -40,5 +40,6 @@ export function mechNightRules({ on, L, log }) {
     log.say('battle', e.hit === 'building' ? `You throw the ${giant(e.id)} through a building.` : `You throw the ${giant(e.id)}.`, { key: 'giant.throw', throttle: 1 });
   });
   on('giant.slam', (e) => { if (!mine(e)) return; L.inc('giant.slam'); log.say('battle', `You slam the ${giant(e.id)} into the ground.`, { key: 'giant.slam', throttle: 1 }); });
+  on('giant.call', (e) => { if (!mine(e)) return; L.inc('giant.call'); log.say('info', `The ${giant(e.id)} stands in the yard.`, { key: 'giant.call', throttle: 1 }); }); // (giant.call { id }: the giant post, world/hangar/giantpost.js)
   on('giant.slip', (e) => log.say('info', e.why === 'heavy' ? `The ${giant(e.id)} is too heavy for these legs.` : `The ${giant(e.id)} struggles free.`, { key: 'giant.slip', throttle: 2 }));
 }
