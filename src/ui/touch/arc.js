@@ -17,14 +17,14 @@
 //              or ARC_FOLD_TIME.idle real seconds untouched. SHOWN keeps it open; HIDDEN draws no arc at all (the top bar's fold tile
 //              brings it back). Each cascade and refold says `touch.fold { state, tiles, by }` (Wanda's clack).
 //   COLLAPSED  the top bar's fold tile: the whole arc folded to one stack in A's cell, a tap opening it again (kept: T.touch.collapsed).
-// Built for the contexts South plays first (TOUCH-REBUILD.md 5's order): on foot and a tool drawn. Elsewhere (the Arena, the Solar
-// Skiff, the crossing, the helm, carrying, pushing) `arcContext` is null and the cluster and strip stand as before, until each moves.
+// Built for the contexts South plays first (TOUCH-REBUILD.md 5's order): on foot, a tool drawn, and sealed in a mech. Elsewhere (the
+// Arena, the Solar Skiff, the crossing, the helm, carrying, pushing) `arcContext` is null and the cluster and strip stand as before, until each moves.
 //
 // Prior art: Brawlhalla's and Brawl Stars' fixed slots renamed by context; a keyboard's one gutter; the Jacob's ladder (the tablitas);
 // Breath of the Wild's Pro HUD for HIDDEN; the strip's pick tiles and radial (strip.js) that PICK and BELT replace.
 //
 //   new TouchArc(game)   .update(now, on)   .relayout()   .ctx   .fold ('folded' | 'open')   .collapse(on)   .owns() -> bool   ARC_PRESS
-//   arcContext(game) -> 'foot' | 'tool' | null
+//   arcContext(game) -> 'mech' | 'foot' | 'tool' | null
 // ---------------------------------------------------------------------------------------
 import { T, saveTuning } from '../../core/config.js';
 import { ACTIONS } from '../../core/bindings.js';
@@ -51,8 +51,17 @@ const CONTROL = new Map(ACTIONS.map((a) => [a.id, a.touch])); // (an input actio
 const techs = (g) => g.techs || g.player?.techs;
 const learned = (g, id) => { const t = techs(g)?.get?.(id); return !!t && (t.usable ? t.usable() : !!t.enabled); };
 
+/** Sealed in the hangar's frame, its seal's beat done and the mount's shot over (world/hangar/mechpilot.js reads the keys then). */
+const mechSealed = (g) => { const H = g?.hangar, C = g?.cradles; return !!H?.cradle && C?.sealed === H.cradle && C.phase === 'on' && !g.mechMount?.playing; };
+/** The frame's faces (MECHS.md 4.9; the words placeholders, Espada's to rule): the arms on A and D, the boost, the jump, the barrier pressed
+ *  on E, the back unit on F; BELT tapped the cable (or a prop in reach), held the cable or stepping out (X). */
+const MECH_FACE = { A: { glyph: null, word: 'L ARM' }, B: { glyph: 'dash', word: 'BOOST' }, C: { glyph: 'jump', word: null }, D: { glyph: null, word: 'R ARM' },
+  E: { glyph: 'parry', word: 'PRESS' }, F: { glyph: null, word: 'UNIT' } }; // (F: the back unit; 'BACK' read as going back)
+const MECH_BELT = [{ id: 'use', glyph: null, word: 'CABLE' }, { id: 'tool', glyph: null, word: 'EXIT' }];
+
 /** Which of the arc's contexts the moment is, or null (the cluster's then). */
 export function arcContext(g) {
+  if (mechSealed(g)) return 'mech'; // (sealed in a frame and its mount played out: the frame's own slots, MECHS.md 4.9)
   const L = g?.actions?.live?.(); if (!L || !L.has('foot') || L.has('arena')) return null;
   if (g.duel?.active || g.duel?.pending || g.realm?.active || g.god?.controlling || g.rail?.stage?.active || g.opensea?.sailing) return null;
   const S = techs(g)?.get?.('skiff'); if (S?.active) return null;
@@ -146,7 +155,9 @@ export class TouchArc {
     this.picks = ctx === 'tool' ? [...stripOf(g).filter((e) => e.id !== 'art'), third].filter(Boolean) : ctx === 'mech' ? mechPicks(g) : [];
     const pair = beltPairOf(g), drawE = pair.find((e) => e.id === 'tool');
     this.belt = [...pair.filter((e) => e.id !== 'tool'), art].filter(Boolean); this.beltTap = drawE || this.belt.find((e) => e.id === 'skiff') || null;
+    if (ctx === 'mech') { this.belt = MECH_BELT; this.beltTap = MECH_BELT[0]; }
     const has = (id) => {
+      if (ctx === 'mech') return true; // (every slot of the frame's is always there: mechpilot.js reads them all)
       if (id === 'use') return ctx === 'foot' || !!use; // (on foot A is never empty: USE with a thing in reach, else the kick, Dovina's ruling 2026-11-02)
       if (id === 'parry') return ctx === 'tool' || learned(g, 'kick');
       if (id === 'art') return !!art;
@@ -166,6 +177,7 @@ export class TouchArc {
       PICK: this.picks[0] ? { glyph: this.picks[0].glyph ?? 'more', word: this.picks[0].word ?? null, corner: this.picks[0].corner ?? null, tint: this.picks[0].tint ?? null } : null,
       BELT: this.beltTap ? { glyph: this.beltTap.glyph, word: this.beltTap.word, lit: !!this.beltTap.lit } : null,
     };
+    if (ctx === 'mech') Object.assign(face, MECH_FACE);
     this.control = Object.fromEntries(slots.map((s) => [s.slot, typeof s.action === 'string' ? CONTROL.get(s.action) : null]));
     return { slots, face };
   }
