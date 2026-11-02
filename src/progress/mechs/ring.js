@@ -81,10 +81,31 @@ export const RIVALS = {
       dynamite: M({ tell: 'blink', windup: 0.75, k: 2, answers: ['dodge'], counter: 0.8, star: true }), // (k 2 on the neck: fractured in one, snapped by the next)
       feint: M({ tell: 'blink', windup: 0.75, k: 0, feint: true, recover: 0.2 }), // (the blink with nothing after: dodge it and you are the one open)
     } },
+  // THE SHADOW FRAME (Punch-Out!!'s dream fight, Mr. Dream after Tyson; MECHS.md 11.4): the secret fourth, every move of the three before it in
+  // one frame, quicker. It is never on the ladder's card until the champion is down and you have once won a bout untouched (`secret`).
+  shadow: { label: 'Shadow frame', line: 'A frame with no colours. It boxes like all three before it, a little quicker.', stamina: 340, guard: 'both',
+    speed: [1.1, 1.2, 1.35], getUp: [6, 9], gap: 0.8, secret: ['mech.bout.perfect', 1],
+    opening: { secs: 60, pattern: ['charge', 'wait', 'dynamite', 'flurry', 'dynamite', 'wait'] },
+    pattern: ['jab', 'hook', 'flurry', 'wait', 'uppercut', 'feint', 'dynamite', 'jab', 'charge', 'taunt'],
+    moves: {
+      jab: M({ tell: 'shoulder', windup: 0.55, k: 0.45 }),
+      hook: M({ tell: 'cock', windup: 0.85, k: 0.8, answers: ['dodge', 'duck'], side: 'L', counter: 0.9 }),
+      flurry: M({ tell: 'shoulder', windup: 0.45, k: 0.3, hits: 5, every: 0.3 }),
+      uppercut: M({ tell: 'crouch', windup: 1, k: 0.95, answers: ['dodge'], counter: 1.1, star: true }),
+      charge: M({ tell: 'hops', windup: 2.2, k: 1.4, region: 'core', answers: ['dodge'], counter: 1.3 }), // (no break on its charge: it learned from the heavy frame)
+      dynamite: M({ tell: 'blink', windup: 0.7, k: 2, answers: ['dodge'], counter: 0.8, star: true }),
+      feint: M({ tell: 'blink', windup: 0.7, k: 0, feint: true, recover: 0.2 }),
+      taunt: M({ tell: 'beckon', windup: 1.8, k: 0, taunt: true, recover: 0 }), // (its one gift: a head punch while it beckons is a star)
+    } },
 };
-export const CIRCUIT = ['sparring', 'heavy', 'champion'];
-/** Is a rival open: the first always, each next once the one before it is beaten (the circuit's ladder, a ledger predicate). */
-export const rivalOpen = (id, L) => { const i = CIRCUIT.indexOf(id); return i === 0 || (i > 0 && (L?.get?.(`mech.bout.won.${CIRCUIT[i - 1]}`) || 0) >= 1); };
+export const CIRCUIT = ['sparring', 'heavy', 'champion', 'shadow'];
+/** Is a rival open: the first always, each next once the one before it is beaten (the circuit's ladder, a ledger predicate); a rival with
+ *  a `secret` also wants that count ([key, n]) before it is offered at all. */
+export const rivalOpen = (id, L) => {
+  const i = CIRCUIT.indexOf(id), S = RIVALS[id]?.secret;
+  if (i < 0) return false; if (i === 0) return true;
+  return (L?.get?.(`mech.bout.won.${CIRCUIT[i - 1]}`) || 0) >= 1 && (!S || (L?.get?.(S[0]) || 0) >= S[1]);
+};
 
 const side0 = () => ({ stamina: 100, max: 100, joints: newJoints(), downs: 0, downsAll: 0, state: 'ready', t: 0, landed: 0, taken: 0, points: 0 });
 

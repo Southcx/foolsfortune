@@ -477,6 +477,15 @@ Events: `challenge.start { id }`, `challenge.score { id, add, total, what }`, `c
   only the crab legs and the tread lift the colossus.
 - Events: `giant.grab { id }`, `giant.throw { id, hit, cells }`, `giant.slam { id }`, `giant.slip { id, why }`. Achievements mk22 to mk24.
 
+### 11.4 The shadow frame (`ring.js`; Punch-Out!!'s dream fight)
+
+A secret fourth rival on the circuit: every move of the three before it in one frame, quicker (the jab, the hook, a five-punch flurry,
+the uppercut, the hopping charge, the champion's blink and its feint, and one taunt). It is offered only once the champion is beaten and
+you have won a bout untouched (`secret: ['mech.bout.perfect', 1]`, read by `rivalOpen`). Its charge has no break: it learned from the
+heavy frame. Measured (scripts/mechs.mjs, 12 bouts a stand-in): the expert wins every bout in about 93 s, the decent 8 of 12 in about
+106 s, the novice and the masher none (the champion: 104 s, 8 of 12). Its body is the sparring frame's placeholder until Calissa's.
+Achievement mk25 (hidden, the title Dreamer).
+
 ### 11.3 Who builds what (the night)
 
 - **Dovina:** the rules above, the tracking, the achievements, the simulator, and the runtime by a builder (`world/hangar/challenges.js`,

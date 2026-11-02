@@ -40,5 +40,6 @@ export function mechAchievements({ C, H, F }) {
   C('mk22', 'hand', 'The Hangar', 3, 'mechanic', 'Giant Swing', 'Lift a giant and throw it.', 'giant.throw', 1);
   C('mk23', 'hand', 'The Hangar', 4, 'mechanic', 'Through the Wall', 'Throw a giant through a building.', 'giant.throw.building', 1);
   C('mk24', 'hand', 'The Hangar', 4, 'mechanic', 'Sand Breaker', 'Fell the dune colossus.', 'giant.down.colossus', 1);
+  C('mk25', 'hand', 'The Hangar', 5, 'mechanic', 'Shadow Boxing', 'Beat the shadow frame.', 'mech.bout.won.shadow', 1, { hidden: true, title: 'Dreamer' });
   F('mk17', 'hand', 'The Hangar', 4, 'collect', 'Every Technique', 'Use every technique.', (L) => TECHNIQUE_IDS.filter((t) => L.get(`mech.technique.${t}`) >= 1).length, TECHNIQUE_IDS.length);
 }
