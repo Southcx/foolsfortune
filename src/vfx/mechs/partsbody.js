@@ -80,6 +80,8 @@ import { wearHelm, HELMS } from './helms.js';
 import { wearCape, CAPES } from './capes.js';
 import { wearHip, HIPS } from './parts/hips.js';
 import { MechHydraulics } from './hydraulics.js';
+/** The doll's figures (South, 2026-11-02: "an A, B and C option"), built by the fem parts from `F.figure`. */
+export const FIGURE_IDS = ['a', 'b', 'c'];
 
 const PI = Math.PI, SIDES = [[1, 'L'], [-1, 'R']];
 /** What each joint takes off with it when it snaps (Dovina's joints.js `limb`, as slots). The waist never snaps. */
@@ -133,7 +135,7 @@ export class MechPartsBody {
   build(stats) {
     this.clear();
     if (stats?.form) this.form = stats.form;
-    this.F = formOf(this.form); this.form = this.F.id;
+    this.F = { ...formOf(this.form) }; this.form = this.F.id; if (this.F.fem) this.F.figure = FIGURE_IDS.includes(this.figure) ? this.figure : 'a'; // (the doll's figure: A, B or C)
     this.stats = stats?.parts ? stats : assemble(stats || {});
     this.sel = { ...this.stats.sel };
     for (const id of Object.keys(LIMB)) this.state[id] = 'whole';
@@ -316,6 +318,8 @@ export class MechPartsBody {
     const F = formOf(form); if (F.id === this.form && this.body) return this;
     this.form = F.id; if (this.body) this.rebuild(); return this;
   }
+  /** The doll's figure ('a' | 'b' | 'c': the fem parts' FIGURES), the frame rebuilt in it; a hero keeps its own. */
+  setFigure(id) { const f = FIGURE_IDS.includes(id) ? id : 'a'; if (f === this.figure) return this; this.figure = f; if (this.body && this.F?.fem) this.rebuild(); return this; }
   /** Both pauldrons swapped in place (PAULDRONS: 'default', 'none', 'osode', 'zaku', 'wing', 'spaulder', 'disc', 'horn'). */
   setPauldron(id) { this.pauldron = PAULDRONS[id] !== undefined ? id : 'default'; if (this.body) { this.buildSlot('pauldron'); if (this.capeId) this.wearCape(); } return this; }
   rebuild() {

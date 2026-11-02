@@ -11,17 +11,17 @@
 // Prior art: Armored Core's paint and decal page beside its assembly (a look kept apart from the parts), the Pneuka Jar's look
 // (vfx/pneukajar/look.js: slots of looks over one model, one save section).
 //
-//   installMechStyle(game) -> game.mechStyle { form, pauldron, hip, helm, cape, set(slot, id), wear(body) }   `/mechstyle form|pauldron|hip|helm|cape <id>`
+//   installMechStyle(game) -> game.mechStyle { form, figure (the doll's A, B or C), pauldron, hip, helm, cape, set(slot, id), wear(body) }   `/mechstyle form|pauldron|hip|helm|cape <id>`
 // ---------------------------------------------------------------------------------------
 import { formOf } from './parts/kit.js';
 import { CAPES } from './capes.js';
 import { HIPS } from './parts/hips.js';
 
 /** The looks a frame starts in. */
-export const MECH_STYLE = { form: 'hero', pauldron: null, hip: null, helm: null, cape: null };
+export const MECH_STYLE = { form: 'hero', figure: 'a', pauldron: null, hip: null, helm: null, cape: null };
 /** A kept look read back: a retired form migrated (Drossel's: the doll in her crinoline), an unknown hip or back piece dropped. */
 const loaded = (s) => {
-  const out = { form: s.form === 'doll' ? 'doll' : 'hero', pauldron: s.pauldron ?? null, hip: HIPS[s.hip] ? s.hip : null, helm: s.helm ?? null, cape: CAPES[s.cape] ? s.cape : null };
+  const out = { form: s.form === 'doll' ? 'doll' : 'hero', pauldron: s.pauldron ?? null, hip: HIPS[s.hip] ? s.hip : null, helm: s.helm ?? null, cape: CAPES[s.cape] ? s.cape : null, figure: ['a', 'b', 'c'].includes(s.figure) ? s.figure : 'a' };
   if (s.form === 'drossel') { out.form = 'doll'; out.hip ??= 'crinoline'; }
   return out;
 };
@@ -31,11 +31,11 @@ const helmOf = (L) => L.helm ?? formOf(L.form).helm ?? null;
 export function installMechStyle(game) {
   const L = { ...MECH_STYLE, worn: null };
   const body = () => game.hangar?.pilot?.mech || null;
-  const said = () => game.events?.emit('mech.style', { form: L.form, pauldron: L.pauldron, hip: L.hip, helm: L.helm, cape: L.cape, by: 'courier' });
+  const said = () => game.events?.emit('mech.style', { form: L.form, figure: L.figure, pauldron: L.pauldron, hip: L.hip, helm: L.helm, cape: L.cape, by: 'courier' });
   /** Put the kept looks on a body (its form first: a form rebuilds the parts the pauldrons and the helm sit on). */
   L.wear = (B = body()) => {
     if (!B) return;
-    if (B.form !== L.form) B.setForm?.(L.form);
+    if (B.form !== L.form) { B.figure = L.figure; B.setForm?.(L.form); } else if ((B.figure ?? 'a') !== L.figure) B.setFigure?.(L.figure); // (the doll's figure: read on its build)
     if ((B.pauldron ?? null) !== L.pauldron) B.setPauldron?.(L.pauldron);
     if ((B.hipId ?? null) !== L.hip) B.setHip?.(L.hip);
     const helm = helmOf(L); if ((B.helm?.id ?? null) !== helm) game.mechHelm?.(helm);
@@ -48,15 +48,16 @@ export function installMechStyle(game) {
     if (slot === 'form') { if (L.form === 'drossel') { L.hip = 'crinoline'; L.form = 'doll'; } L.form = L.form === 'doll' ? 'doll' : 'hero'; }
     if (slot === 'hip' && !HIPS[L.hip]) L.hip = null;
     if (slot === 'cape' && !CAPES[L.cape]) L.cape = null;
+    if (slot === 'figure' && !['a', 'b', 'c'].includes(L.figure)) L.figure = 'a';
     game.save?.dirty('mechStyle'); L.wear(); said();
     return true;
   };
-  game.save?.section('mechStyle', { scope: 'player', version: 1, dump: () => ({ form: L.form, pauldron: L.pauldron, hip: L.hip, helm: L.helm, cape: L.cape }),
+  game.save?.section('mechStyle', { scope: 'player', version: 1, dump: () => ({ form: L.form, figure: L.figure, pauldron: L.pauldron, hip: L.hip, helm: L.helm, cape: L.cape }),
     load: (s) => { Object.assign(L, MECH_STYLE, s ? loaded(s) : {}); },
     reset: () => Object.assign(L, MECH_STYLE) });
   // a frame built or rebuilt (the assembly page, the gantry) wears the kept looks
   game.systems?.add?.('looks', () => { const B = body(); if (B && (L.worn !== B || B.form !== L.form)) L.wear(B); }, { clock: 'raw', name: 'mechStyle' });
-  game.chat?.add?.('mechstyle', { help: `a mech's style: /mechstyle form hero|doll, /mechstyle pauldron <id|none>, /mechstyle hip ${Object.keys(HIPS).join('|')}|none, /mechstyle helm <id|none>, /mechstyle cape ${Object.keys(CAPES).join('|')}|none`, run: ([slot, id]) => { L.set(slot, id ?? null); } });
+  game.chat?.add?.('mechstyle', { help: `a mech's style: /mechstyle form hero|doll, /mechstyle figure a|b|c (the doll's), /mechstyle pauldron <id|none>, /mechstyle hip ${Object.keys(HIPS).join('|')}|none, /mechstyle helm <id|none>, /mechstyle cape ${Object.keys(CAPES).join('|')}|none`, run: ([slot, id]) => { L.set(slot, id ?? null); } });
   game.mechStyle = L;
   return L;
 }
