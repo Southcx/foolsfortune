@@ -4943,3 +4943,16 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   rules. A drop records its render zone when thrown, and is cleared when the Courier's zone is another. The same sweep's third FAIL
   (`the log says what it drops`) was a stale grep: the line reads "Dropped: <name>." now; the sweep reads both.
 - **Rule:** 397
+
+### 2026-11-02 · Choosing a drill from the Throwing Room's page opened the pause menu, now and then (boot/title.js, core/input.js; found by Petra's Workshop sweep)
+- **Seen:** the Workshop sweep's `throwing: Spray, twenty taps end the drill with twenty shots` failed 3 runs in 10 with `fired: 0`, on
+  this build and on 66725fb before it. In the failing runs the point clicked was the pause menu's help table (`#overlay`), the pointer
+  unlocked.
+- **Cause, as measured:** opening the page releases the pointer lock; closing it (the drill's row) asks the lock back
+  (`course.menu.onClose`). When the row was chosen quickly, the release's `pointerlockchange` landed 0 to 10 ms after that request, with
+  no window open any more, so the lock handler read it as you leaving and opened the pause menu; the request then failed. And one
+  refused request reached `lockError` up to three times (the document's `pointerlockerror` for each of its two tries, and the promise's
+  catch), so its tries ran out at once and the 1.4 s retry never ran.
+- **Fix:** `requestLock` stamps `lockAskedAt`; an unlock within 500 ms of the game's own request is not a pause. `lockError` counts one
+  refusal once (calls within 120 ms are one). After the fix: 6 runs in 6, 20 shots fired, the lock on the canvas.
+- **Rule:** 398

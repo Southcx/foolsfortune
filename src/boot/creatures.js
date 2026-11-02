@@ -82,8 +82,10 @@ export async function bootCreatures(game, made) {
   game.jellyMountLook = new JellyMountLook(game); // (the slip jelly mount's body, its moments and the mounts' ring, over Petra's runtime: vfx/jellymount/)
   for (const name of ['dunesDress', 'racewayDress', 'jellyMountLook']) game.systems.add('marks', game[name], { clock: 'raw', name }); // (core/systems.js)
   game.folk = new Folk(game, clapG);
+  game.systems.add('sim', game.folk, { name: 'folk' }); // (the `sim` phase: core/systems.js)
   placePeople(game, game.folk);
   game.dialogue = new Dialogue(game);
+  game.systems.add('sim', game.dialogue, { clock: 'raw', name: 'dialogue', after: 'folk' }); // (the `sim` phase: core/systems.js)
   installPlaces(game); game.agent = new Agent(game); // (the game as an AI player sees and drives it: world/places.js, agent/agent.js; docs/plans/COOP.md)
   for (const id of ['codex', 'pneuka', 'indexmenu', 'mapui', 'dialogue']) theme.watch(document.getElementById(id));
   theme.watch(document.getElementById('overlay'), { sound: false, point: '.go .opt' }); // (the title: the glove waits at BEGIN)

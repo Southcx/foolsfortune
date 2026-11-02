@@ -62,6 +62,7 @@ export function bootPneuka(game, made) {
   game.pneukaUI.onClose = () => { if (input.enabled && !cursorFree()) input.requestLock(); };
   // the folk's counters (shop/: Raku's treasury and Old Grog's pier, opened from their talk)
   game.shops = new Shops(game);
+  game.systems.add('sim', game.shops, { name: 'shops', after: 'dialogue' }); // (the `sim` phase: core/systems.js)
   game.shopUI = new ShopUI(game);
   game.shopUI.onClose = () => { if (input.enabled && !cursorFree() && !game.dialogue?.open) input.requestLock(); };
   game.kilnUI = new KilnUI(game);
