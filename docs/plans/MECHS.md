@@ -452,8 +452,8 @@ paid bronze, silver and gold (`medalOf`). A challenge lays out its own targets a
 
 | challenge | what | limit | scored by | medals |
 |---|---|---|---|---|
-| Javelin | a post or girder thrown from the line | 3 throws | best distance (m) | 60 / 100 / 140 |
-| Bullseye | rings on the ground 110 m down the lane | 3 throws | ring points (100, 50, 25, 10) | 100 / 175 / 250 |
+| Javelin | a post or girder thrown from the line | 3 throws | best distance (m) | 100 / 140 / 170 |
+| Bullseye | rings on the ground 70 m down the lane | 3 throws | ring points (100, 50, 25, 10) | 100 / 175 / 250 |
 | Bowling | the water tower thrown at ten clay pins | 2 throws | pins down; a strike, a spare | 7 / 9 / 10 |
 | Demolition | the toy city | 60 real s | cells broken | 400 / 900 / 1600 |
 | Wrecking Crew | the toy city | 120 real s | buildings felled | 2 / 4 / 6 |
