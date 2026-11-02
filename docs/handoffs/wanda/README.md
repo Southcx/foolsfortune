@@ -2,8 +2,7 @@
 
 - **Placeholders that want real sounds** (Petra, 2026-10-06 and 07; each calls an existing method today):
   - at sea: the gun on the sixteenth (`sfx.tap(9)`), the volley (`seekers`), polarity, the roll, a hit, a ricochet, a shot drunk;
-    `rail.broadside`, `rail.ram`, `rail.warn`, `rail.part`, `rail.bite`, `rail.toll { onBeat }`, `rail.end`;
-  - the Dunemaw bowl: `foe.*` (the fight's own blows).
+    `rail.broadside`, `rail.ram`, `rail.warn`, `rail.part`, `rail.bite`, `rail.toll { onBeat }`, `rail.end`.
 - **The settings' save sections** (Petra, 2026-10-05): `foolsfortune.voice`, `.music`, `.rhythm` into `game.save` sections, scope
   `settings`, once the save can carry an adopted key's value.
 - **The Dunemaw's places, the geysers and Strawman:** `docs/handoffs/everyone/2026-10-06-from-wanda-the-dunemaw-s-sound.md`.
