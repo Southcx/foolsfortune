@@ -4,19 +4,27 @@
 // the tetrapod's legs and the tank's pods) and the same rule: the hip at the part's own height, the feet on the ground, so the seat
 // stands 3 m over the hip. The balls small and sunk into the limbs' ends (the joint shows as the interstitial in the gap), the limbs
 // lathed in dense smooth profiles, sculpted (a calf's swell behind, a knee's cap), a panel line where Haydee has one.
+// THE WEIGHT LOW (South, 2026-11-02: "accentuate the proportions by approximately 40%, we're looking to capture almost fertility idol
+// vibes, which is all in the hips and thighs. pear shape over hourglass. It needs to read like the complement to the male mecha"):
+// the pelvis about 40% broader than the first pass and widest low, at the thighs' roots; the thighs thick and tapering to the knee,
+// the calves strong; the tetrapod's pelvis and the tank's hulls and gown broad and low. Mass and silhouette, stylised, never detail.
+// Haydee's thighs set closer (South, 2026-11-02: "reduce the thigh gap on the haydee chassis by about 12%": hipX 1.5 to 1.44, the
+// pelvis as broad), and her pelvis seats the waist column's lower ball in an ivory socket (femcores.js `spine`).
 //   haydee (the `doll` form)
-//     clayLegs    a sculpted pelvis (broad rounded hips, a leotard's panel line, the seat's two swells), long tapered thighs, a calf's
+//     clayLegs    a sculpted pelvis (broad rounded hips, a leotard's panel line, the seat's two swells), thick thighs tapering to the knee, a strong calf's
 //                 swell, armoured high-heeled feet: the arch, the foot on its toe, a real heel under the ankle; knees drawn together
-//     springLegs  the reverse joint as a high heel made whole: a sleek thigh, a long calf, the metatarsal a heel's pylon, a pointed shoe
-//     crabLegs    four long dancer's legs off an egg of a pelvis, each tapering to a stiletto point with its spur
-//     treadLegs   two pods under smooth rounded hulls, a panel band round each, the hourglass pelvis on its turret ring
+//     springLegs  the reverse joint as a high heel made whole: a thick thigh, a strong calf, the metatarsal a heel's pylon, a pointed shoe
+//     crabLegs    four long dancer's legs off a broad, low pelvis, each tapering to a stiletto point with its spur
+//     treadLegs   two pods under smooth rounded hulls, a panel band round each, the broad pelvis on its wide turret ring
 //   drossel
-//     clayLegs    a crinoline of plates (a bell of twelve open at the front, ruffled in trim, its hem gilt, a bustle behind), long
-//                 slender legs, a garter, a brooch at each knee, buttoned boots in trim on stiletto heels
+//     clayLegs    a crinoline of plates as wide as the hips (a bell of twelve open at the front, ruffled in trim, its hem gilt, a bustle behind), long
+//                 legs thick in the thigh, a garter, a brooch at each knee, buttoned boots in trim on stiletto heels
 //     springLegs  the same gown on reverse joints, the boots long, the toes en pointe
 //     crabLegs    a gown with spider's legs: a wide bell, four long booted legs reaching out from under its hem, en pointe
 //     treadLegs   a full ball gown down to the ground, three tiers of ruffles, the treads peeping out under its hem
-// Prior art: Haydee (Haydee Interactive, 2016: the white android's hourglass, high-heeled armoured feet and sparse panel lines);
+// Prior art: the Venus of Willendorf (c. 25,000 BC) and of Hohle Fels (c. 38,000 BC), the Cucuteni-Trypillia goddess figurines and the
+// Jomon dogu (the weight read as mass in the hips and thighs, the top narrow); Haydee (Haydee Interactive, 2016: the white android's
+// high-heeled armoured feet and sparse panel lines);
 // Elemental Gearbolt's mechanical girls (Alfa System, 1997); Drossel von Flügel of Fireball (Jinni's Animation Studios for Disney
 // Japan, 2008: the bell of a skirt-like hip armour and the long stiletto legs); the Victorian crinoline, bustle and button boot; the
 // ballet's pointe shoe; the Spider Tank and the Tachikoma (the tetrapod's reach); the Dalek and the Victorian automaton dolls on wheels
@@ -45,28 +53,29 @@ const coreOf = (S, r, len) => S.core.lathe([[r, 0.05], [r, -len]], { c: L.core }
 // ------------------------------------------------------------------ the pelvises
 /** Haydee's pelvis: broad rounded hips pressed in at the crotch, the seat's two swells behind, cut as a leotard (a front panel, the
  *  hips, the seat), its waist ring in trim; the panel lines are real grooves over the core. */
-function haydeePelvis(S, sx = 1.42) {
-  const prof = band([[0.001, -0.82], [0.42, -0.8], [0.9, -0.62], [1.18, -0.32], [1.26, -0.02], [1.15, 0.28], [0.85, 0.46], [0.55, 0.6], [0.4, 0.78], [0.001, 0.8]], -0.82, 0.8, 1, 36);
+function haydeePelvis(S, sx = 1.72) {
+  const prof = band([[0.001, -0.92], [0.5, -0.9], [1.05, -0.72], [1.38, -0.44], [1.46, -0.14], [1.3, 0.2], [0.95, 0.42], [0.6, 0.58], [0.44, 0.76], [0.001, 0.8]], -0.92, 0.8, 1, 36);
   const fn = (x, y, z) => {
     const r = Math.hypot(x, z) || 1, f = Math.max(0, -z / r), ax = Math.abs(x) * sx;
     const nip = 1 - 0.42 * clamp((-y - 0.25) / 0.55) * Math.max(0, z / r + 0.2); // (the crotch drawn in at the front)
-    let zz = z * (z > 0 ? 0.78 : 0.8) - f * 0.3 * bump(y, -0.8, 0.2) * Math.exp(-((ax - 0.62) ** 2) / 0.2); // (the seat)
+    let zz = z * (z > 0 ? 0.8 : 0.86) - f * 0.3 * bump(y, -0.9, 0.2) * Math.exp(-((ax - 0.8) ** 2) / 0.3); // (the seat)
     return [x * sx * nip, y, zz];
   };
   const G = 0.03, cut = (a0, a1, c = L.pale) => S.p.geo(sculpt(panel(prof, a0, a1, 24), fn), { c });
   S.core.geo(sculpt(shell(prof.map(([r, y]) => [r * 0.95, y]), 40), fn), { c: L.core });
   cut(-0.78, 0.78); for (const s of [1, -1]) { const [a, b] = s > 0 ? [0.78 + 2 * G, 2.25] : [-2.25, -0.78 - 2 * G]; cut(a, b); }
   cut(2.25 + 2 * G, PI - G); cut(-PI + G, -2.25 - 2 * G);
-  S.trim.lathe([[0.42, 0.7], [0.48, 0.74], [0.42, 0.78]], { sc: [1.42, 1, 0.8], c: L.trimL }, 32);
-  }
-const BELL = { short: [[0.9, 0.45], [1.05, 0.2], [1.45, -0.3], [2.0, -0.9], [2.42, -1.5], [2.62, -1.95]],
-  wide: [[0.9, 0.45], [1.05, 0.2], [1.45, -0.3], [2.05, -0.95], [2.55, -1.55], [2.75, -1.95]],
-  gown: [[0.95, 0.5], [1.15, 0.25], [1.7, -0.15], [2.3, -0.65], [2.75, -1.3], [2.98, -2.0], [3.05, -2.42]] };
+  S.trim.lathe([[0.42, 0.66], [0.48, 0.7], [0.42, 0.74]], { sc: [sx, 1, 0.8], c: L.trimL }, 32);
+  S.p.lathe([[0.34, 0.68], [0.44, 0.72], [0.47, 0.8], [0.42, 0.86], [0.34, 0.88]], { c: L.ivory }, 32); // (the socket the waist column's ball sits in)
+}
+const BELL = { short: [[1.0, 0.5], [1.38, 0.22], [1.98, -0.3], [2.62, -0.9], [3.05, -1.5], [3.25, -1.95]],
+  wide: [[1.0, 0.5], [1.38, 0.22], [2.0, -0.3], [2.7, -0.95], [3.2, -1.55], [3.4, -1.95]],
+  gown: [[1.0, 0.55], [1.4, 0.28], [2.05, -0.15], [2.75, -0.65], [3.25, -1.3], [3.5, -2.0], [3.6, -2.42]] };
 /** Drossel's hips and her crinoline: a small rounded hip shell, then a bell of plates (open at the front unless `closed`), each plate
  *  ruffled in trim at its tiers and gilt at its hem, a petticoat of the interstitial inside, the waistband and its brooch, a bustle. */
 function drosselPelvis(S, bell = BELL.short, { closed = false, n = 12, tiers = 2 } = {}) {
   const { p, g } = S;
-  p.lathe([[0.001, -0.62], [0.55, -0.56], [0.86, -0.3], [0.9, 0.05], [0.7, 0.4], [0.4, 0.55], [0.001, 0.56]], { sc: [1.05, 1, 0.82], c: L.pale }, 32);
+  p.lathe([[0.001, -0.7], [0.77, -0.64], [1.2, -0.34], [1.26, 0.02], [0.98, 0.38], [0.56, 0.55], [0.001, 0.56]], { sc: [1.05, 1, 0.86], c: L.pale }, 32);
   p.geo(cup(0.34), { at: [0, 0.45, 0], c: L.ivory });
   const open = closed ? 0 : 0.62, gap = 0.035, asc = [...bell].reverse(), prof = band(asc, bell[bell.length - 1][1], bell[0][1], 1, 18), last = bell[bell.length - 1];
   const yT = (t) => bell[0][1] + (last[1] - bell[0][1]) * t;
@@ -82,9 +91,9 @@ function drosselPelvis(S, bell = BELL.short, { closed = false, n = 12, tiers = 2
   S.trim.lathe([[0.94, 0.32], [1.02, 0.4], [0.98, 0.56], [0.88, 0.62]], { sc: [1, 1, 0.92], c: L.trimL }, 36); // (the waistband)
   g.ring(1.0, 0.03, { at: [0, 0.32, 0], sc: [1, 1, 0.92], c: L.gold }, 40, 4);
   g.ring(0.16, 0.035, { at: [0, 0.46, 0.96], rot: [PI / 2, 0, 0], c: L.gold }, 20, 4); S.l.ball(0.12, { at: [0, 0.46, 1.0], sc: [1, 1, 0.5], c: labTone(0.6, 0.2) }, 16, 10);
-  S.trim.ball(0.62, { at: [0, 0.05, -1.05], sc: [1.35, 0.7, 0.75], c: L.trimL }, 28, 16); // (the bustle)
-  for (const s of [-1, 1]) S.trim.ball(0.34, { at: [s * 0.42, 0.42, -1.18], sc: [1.3, 0.7, 0.5], rot: [0, 0, s * 0.35], c: L.trimM }, 20, 12); // (its bow)
-  g.ball(0.12, { at: [0, 0.42, -1.25], c: L.gold }, 12, 8);
+  S.trim.ball(0.72, { at: [0, 0.05, -1.3], sc: [1.4, 0.7, 0.75], c: L.trimL }, 28, 16); // (the bustle)
+  for (const s of [-1, 1]) S.trim.ball(0.34, { at: [s * 0.42, 0.42, -1.48], sc: [1.3, 0.7, 0.5], rot: [0, 0, s * 0.35], c: L.trimM }, 20, 12); // (its bow)
+  g.ball(0.12, { at: [0, 0.42, -1.55], c: L.gold }, 12, 8);
 }
 
 // ------------------------------------------------------------------ the feet
@@ -112,25 +121,25 @@ function pointe(S, h, piece = 'trim') {
 
 // ------------------------------------------------------------------ the bipeds
 const BIPED = {
-  haydee: { hipX: 1.12, A: [-0.14, 0.27, -0.13], toe: -0.07, FH: 1.55, pelvis: (S) => haydeePelvis(S),
-    TH: [[0.5, 0.14], [0.8, 0.04], [0.9, -0.12], [0.86, -0.36], [0.72, -0.62], [0.54, -0.88], [0.42, -1.0], [0.38, -1.04]],
-    SH: [[0.36, 0.06], [0.44, -0.04], [0.5, -0.2], [0.52, -0.34], [0.44, -0.56], [0.32, -0.8], [0.25, -0.95], [0.22, -1.03]] },
-  drossel: { hipX: 0.66, A: [-0.1, 0.2, -0.1], toe: -0.03, FH: 1.8, pelvis: (S) => drosselPelvis(S),
-    TH: [[0.34, 0.12], [0.48, 0.02], [0.5, -0.25], [0.44, -0.62], [0.33, -0.95], [0.3, -1.03]],
-    SH: [[0.28, 0.05], [0.34, -0.05], [0.37, -0.25], [0.32, -0.5], [0.22, -0.82], [0.17, -0.97], [0.16, -1.03]] },
+  haydee: { hipX: 1.44, A: [-0.14, 0.27, -0.13], toe: -0.1, FH: 1.55, pelvis: (S) => haydeePelvis(S),
+    TH: [[0.66, 0.14], [1.08, 0.04], [1.2, -0.12], [1.12, -0.36], [0.9, -0.62], [0.66, -0.86], [0.5, -1.0], [0.44, -1.04]],
+    SH: [[0.42, 0.06], [0.52, -0.04], [0.6, -0.2], [0.63, -0.34], [0.53, -0.56], [0.38, -0.8], [0.29, -0.95], [0.26, -1.03]] },
+  drossel: { hipX: 0.95, A: [-0.1, 0.2, -0.1], toe: -0.06, FH: 1.8, pelvis: (S) => drosselPelvis(S),
+    TH: [[0.48, 0.12], [0.68, 0.02], [0.72, -0.25], [0.62, -0.62], [0.44, -0.95], [0.38, -1.03]],
+    SH: [[0.36, 0.05], [0.44, -0.05], [0.48, -0.25], [0.42, -0.5], [0.28, -0.82], [0.21, -0.97], [0.2, -1.03]] },
 };
 function thighDress(S, B, T, s) {
   if (B === BIPED.drossel) { // (the garter: a trim band and a gold bead ring)
-    S.trim.lathe([[0.5, -0.18 * T], [0.54, -0.22 * T], [0.5, -0.26 * T]], { c: L.trimM }, 32); S.g.ring(0.52, 0.02, { at: [0, -0.27 * T, 0], c: L.gold }, 32, 4);
-  } else { line(S, 0.86, -0.36 * T); tube(S.core, [[s * 0.9, -0.05 * T, -0.15], [s * 0.86, -0.38 * T, 0.05], [s * 0.66, -0.7 * T, 0.28]], 0.02, L.coreD, 14); }
+    S.trim.lathe([[0.7, -0.18 * T], [0.75, -0.22 * T], [0.7, -0.26 * T]], { c: L.trimM }, 32); S.g.ring(0.72, 0.02, { at: [0, -0.27 * T, 0], c: L.gold }, 32, 4);
+  } else { line(S, 1.12, -0.36 * T); tube(S.core, [[s * 1.2, -0.05 * T, -0.15], [s * 1.12, -0.38 * T, 0.05], [s * 0.85, -0.7 * T, 0.32]], 0.02, L.coreD, 14); }
 }
 function kneeDress(S, B) {
   if (B === BIPED.drossel) { S.g.ring(0.15, 0.03, { at: [0, 0.02, 0.33], rot: [PI / 2, 0, 0], c: L.gold }, 20, 4); S.l.ball(0.11, { at: [0, 0.02, 0.36], sc: [1, 1, 0.5], c: labTone(0.2, 0.2) }, 14, 10); }
-  else S.p.geo(shell([[0.001, 0.22], [0.24, 0.17], [0.32, 0.0], [0.26, -0.2], [0.001, -0.26]], 20, -1.0, 2.0), { at: [0, 0, 0.2], sc: [1, 1, 0.8], c: L.pale }); // (the kneecap)
+  else S.p.geo(shell([[0.001, 0.22], [0.24, 0.17], [0.32, 0.0], [0.26, -0.2], [0.001, -0.26]], 20, -1.0, 2.0), { at: [0, 0, 0.3], sc: [1.1, 1, 0.8], c: L.pale }); // (the kneecap)
 }
 function shinDress(S, B, Sh, s) {
   if (B === BIPED.drossel) { for (let i = 0; i < 6; i++) { const u = 0.15 + i * 0.13, r = profAt([...B.SH].reverse(), -u); S.g.ball(0.045, { at: [s * (r + 0.02), -u * Sh, 0.06], c: L.gold }, 8, 6); } S.g.ring(0.35, 0.025, { at: [0, -0.04 * Sh, 0], c: L.gold }, 28, 4); }
-  else line(S, 0.47, -0.5 * Sh);
+  else line(S, 0.56, -0.5 * Sh);
 }
 function bipedLegs(ctx) {
   const { H, F, joint, put, ballAt } = ctx, B = BIPED[F.fem] || BIPED.haydee, { A, FH, hipX } = B, j = F.joint, D = B === BIPED.drossel;
@@ -164,7 +173,7 @@ function bipedLegs(ctx) {
 
 // ------------------------------------------------------------------ the reverse joint
 function springLegs(ctx) {
-  const { H, F: FF, joint, put, ballAt } = ctx, D = FF.fem === 'drossel', F = 0.36, A = [-0.65, 1.45, -1.05], T = 2.3, M = 1.9, hipX = D ? 0.7 : 1.1, j = FF.joint;
+  const { H, F: FF, joint, put, ballAt } = ctx, D = FF.fem === 'drossel', F = 0.36, A = [-0.65, 1.45, -1.05], T = 2.3, M = 1.9, hipX = D ? 0.98 : 1.5, j = FF.joint;
   const Sh = (H - 0.35 - F - 0.09 - T * Math.cos(A[0]) - M * Math.cos(A[0] + A[1] + A[2])) / Math.cos(A[0] + A[1]);
   const TH = D ? BIPED.drossel.TH : BIPED.haydee.TH, SH = D ? BIPED.drossel.SH : BIPED.haydee.SH;
   put(ctx.pelvis, D ? (S) => drosselPelvis(S) : (S) => haydeePelvis(S));
@@ -174,18 +183,18 @@ function springLegs(ctx) {
     const knee = joint(`knee${k}`, hip, [0, -T, 0], [A[1], 0, 0]);
     const ankle = joint(`ankle${k}`, knee, [0, -Sh, 0], [A[2], 0, 0]);
     const toe = joint(`toe${k}`, ankle, [0, -M, 0], [-(A[0] + A[1] + A[2]), 0, -s * 0.02]);
-    put(hip, (S) => { ball(S.g, 0.52 * j); coreOf(S, 0.3, T); lathe(S.p, TH, T, L.pale); if (D) thighDress(S, BIPED.drossel, T, s); else line(S, 0.85, -0.4 * T); });
+    put(hip, (S) => { ball(S.g, 0.52 * j); coreOf(S, 0.3, T); lathe(S.p, TH, T, L.pale); if (D) thighDress(S, BIPED.drossel, T, s); else line(S, 1.1, -0.4 * T); });
     put(knee, (S) => {
       ball(S.g, 0.44 * j); coreOf(S, 0.18, Sh);
       lathe(D ? S.trim : S.p, SH, Sh, D ? L.trimM : L.pale, (x, y, z, u) => [x, y, z * (z > 0 ? 1 + 0.3 * bump(u, 0.04, 0.6) : 0.95)]); // (the calf's swell faces forward: the shin runs back)
       S.g.cyl(0.04, 0.04, Sh * 0.6, { at: [0, -Sh * 0.45, 0.2], c: L.gold }, 8); // (the piston, sunk in the calf)
-      if (D) kneeDress(S, BIPED.drossel); else line(S, 0.46, -0.55 * Sh);
+      if (D) kneeDress(S, BIPED.drossel); else line(S, 0.54, -0.55 * Sh);
     });
     put(ankle, (S) => {
       ball(S.g, 0.36 * j); coreOf(S, 0.14, M);
-      lathe(D ? S.trim : S.p, [[0.28, 0.06], [0.33, -0.08], [0.3, -0.45], [0.22, -0.85], [0.2, -1.02]], M, D ? L.trimM : L.mid);
-      if (D) for (let i = 0; i < 4; i++) S.g.ball(0.04, { at: [s * 0.32, -(0.2 + i * 0.18) * M, 0.0], c: L.gold }, 8, 6);
-      else line(S, 0.3, -0.4 * M);
+      lathe(D ? S.trim : S.p, [[0.32, 0.06], [0.38, -0.08], [0.34, -0.45], [0.24, -0.85], [0.21, -1.02]], M, D ? L.trimM : L.mid);
+      if (D) for (let i = 0; i < 4; i++) S.g.ball(0.04, { at: [s * 0.36, -(0.2 + i * 0.18) * M, 0.0], c: L.gold }, 8, 6);
+      else line(S, 0.34, -0.4 * M);
     });
     put(toe, (S) => {
       ball(S.g, 0.3 * j);
@@ -215,17 +224,17 @@ function springLegs(ctx) {
 // ------------------------------------------------------------------ the tetrapod
 function crabLegs(ctx) {
   const { H, F, joint, put, ballAt } = ctx, D = F.fem === 'drossel', j = F.joint;
-  const hy = D ? -1.8 : -0.2, up = D ? [-0.45, 1.5] : [1.0, 1.8], out = D ? 2.6 : 2.75, rr = D ? 0.3 : 0.36;
+  const hy = D ? -1.8 : -0.3, up = D ? [-0.45, 1.5] : [0.9, 1.7], out = D ? 2.6 : 2.75, rr = D ? 0.4 : 0.46;
   put(ctx.pelvis, (S) => {
     if (D) { drosselPelvis(S, BELL.wide, { closed: true, n: 14, tiers: 3 }); return; }
-    haydeePelvis(S, 1.55);
-    S.g.ring(1.1, 0.04, { at: [0, 0.5, 0], sc: [1, 1, 0.85], c: L.gold }, 36, 4);
+    haydeePelvis(S, 1.95);
+    S.g.ring(1.1, 0.04, { at: [0, 0.5, 0], sc: [1.2, 1, 0.85], c: L.gold }, 36, 4);
   });
   const legs = [];
   for (const [s, k] of SIDES) {
     const side = joint(`hip${k}`, ctx.pelvis, [0, 0, 0]);
     for (const f of [1, -1]) {
-      const at = [s * (D ? 0.95 : 1.2), hy, f * (D ? 0.85 : 0.9)], yaw = Math.atan2(at[0], at[2]), nm = `${k}${f > 0 ? 'F' : 'B'}`;
+      const at = [s * (D ? 1.3 : 1.7), hy, f * (D ? 1.0 : 1.0)], yaw = Math.atan2(at[0], at[2]), nm = `${k}${f > 0 ? 'F' : 'B'}`;
       const root = joint(`leg${nm}`, side, at, [0, yaw, 0]);
       const Lu = Math.hypot(...up), a1 = aimOf(up[0], up[1]);
       const upper = joint(`upper${nm}`, root, [0, 0, 0], [a1, 0, 0]);
@@ -265,12 +274,12 @@ function crabLegs(ctx) {
 // ------------------------------------------------------------------ the tank
 function treadLegs(ctx) {
   const { H, F, joint, put, ballAt, mats, owned } = ctx, D = F.fem === 'drossel';
-  const len = D ? 5.4 : 6.0, R = D ? 1.0 : 1.15, w = D ? 1.0 : 1.3, podX = D ? 1.3 : 2.1, podY = R + 0.05 - H, wy = -R * 0.46, wr = R * 0.42;
+  const len = D ? 5.4 : 5.4, R = D ? 1.0 : 1.15, w = D ? 1.0 : 1.3, podX = D ? 1.6 : 2.45, podY = R + 0.05 - H, wy = -R * 0.46, wr = R * 0.42;
   put(ctx.pelvis, (S) => {
     if (D) { drosselPelvis(S, BELL.gown, { closed: true, n: 16, tiers: 3 }); return; }
-    haydeePelvis(S, 1.5);
-    S.g.ring(1.5, 0.06, { at: [0, -0.6, 0], c: L.gold }, 40, 5); // (the turret ring)
-    S.p.lathe([[0.001, -1.0], [1.3, -0.9], [1.55, -0.7], [1.4, -0.5]], { c: L.mid }, 36);
+    haydeePelvis(S, 1.9);
+    S.g.ring(1.95, 0.06, { at: [0, -0.62, 0], c: L.gold }, 40, 5); // (the turret ring)
+    S.p.lathe([[0.001, -1.05], [1.75, -0.95], [2.05, -0.72], [1.85, -0.5]], { c: L.mid }, 36);
   });
   const wheel = new Piece();
   wheel.cyl(wr, wr, 0.2, { rot: [0, 0, PI / 2], c: L.gold }, 20); wheel.cyl(wr * 0.4, wr * 0.4, 0.3, { rot: [0, 0, PI / 2], c: L.bronze }, 12);

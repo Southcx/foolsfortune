@@ -12,10 +12,13 @@
 // Porcelain, core and trim are plain MeshStandardMaterials (vertex coloured, no program of their own), so the Courier's finish can
 // be chained onto them after the build. Hard surface the house's way: a groove is a real gap between two plates over the core, a
 // chamfer an extrusion's bevel, a socket a cup the ball sits in, so any part's ball fits any part's cup.
-// A FORM (FORMS): the proportions a whole frame is built in: `hero` (the clay warrior), `doll` (Haydee's white android, Elemental
-// Gearbolt's mechanical girls: an hourglass, its ribcage narrow and its hips broad, the legs long on armoured high heels, few grooves)
-// or `drossel` (Drossel von Flügel's: a tall, corseted Victorian robot girl in a crinoline of plates on stiletto legs). Every part
-// reads `S.F`; a form with `fem` set is built by the feminine library (femcores.js, femlegs.js, femlimbs.js, femheads.js).
+// A FORM (FORMS): the proportions a whole frame is built in: `hero` (the clay warrior, a top-heavy inverted triangle), `doll` (Haydee's
+// white android, Elemental Gearbolt's mechanical girls) or `drossel` (Drossel von Flügel's: a corseted Victorian robot girl in a
+// crinoline of plates). The two feminine forms are the hero's complement (South, 2026-11-02: "pear shape over hourglass ... almost
+// fertility idol vibes, which is all in the hips and thighs"): the triangle the other way, a narrow top over a broad pelvis and thick
+// tapering thighs, the weight low; and both wear a floating helm over the collar, never a head (`helm`, the one worn when none is
+// chosen: vfx/mechs/helms.js). Every part reads `S.F`; a form with `fem` set is built by the feminine library (femcores.js,
+// femlegs.js, femlimbs.js, femheads.js).
 // Prior art: the decor kit's Piece (vfx/garden/decorpieces/kit.js); Gundam's real-robot panel lines cut as gaps (Okawara's "realistic
 // joints, panels"); the ball-jointed doll's ball in its cup; kintsugi's gold line on a mend; Elemental Gearbolt (Alfa System, 1997)
 // and Haydee (Haydee Interactive, 2016) for the doll form; Fireball (Jinni's Animation Studios for Disney Japan, 2008) for drossel.
@@ -44,12 +47,13 @@ export const MECH_LOOK = {
 };
 const L = MECH_LOOK, PI = Math.PI;
 
-/** A frame's proportions: limb radii, hand size, the ribcage's [width, -, depth], the hips' width, the head's size, the pauldron's
- *  scale, the joints' balls, a heel (a raised ankle), the grooves' count (1 all, 0 the fewest), and `fem` (which feminine build). */
+/** A frame's proportions: limb radii, hand size, the ribcage's [width, -, depth], the hips' width, the head's size (a feminine form's:
+ *  the floating helm's), the pauldron's scale, the joints' balls, a heel (a raised ankle), the grooves' count (1 all, 0 the fewest),
+ *  `fem` (which feminine build) and `helm` (the helm a feminine form wears while none is chosen). */
 export const FORMS = {
   hero: { id: 'hero', fem: null, limb: 1, hand: 1, chest: [1, 1, 1], hips: 1, head: 1, pauldron: 1, joint: 1, heel: 0, grooves: 1 },
-  doll: { id: 'doll', fem: 'haydee', limb: 0.62, hand: 0.82, chest: [0.66, 1, 0.8], hips: 1.45, head: 0.84, pauldron: 0.7, joint: 0.62, heel: 1, grooves: 0 },
-  drossel: { id: 'drossel', fem: 'drossel', limb: 0.5, hand: 0.74, chest: [0.58, 1, 0.72], hips: 1.1, head: 0.92, pauldron: 0.62, joint: 0.55, heel: 1, grooves: 0 },
+  doll: { id: 'doll', fem: 'haydee', limb: 0.62, hand: 0.82, chest: [0.66, 1, 0.8], hips: 1.45, head: 0.84, pauldron: 0.7, joint: 0.62, heel: 1, grooves: 0, helm: 'negroli' },
+  drossel: { id: 'drossel', fem: 'drossel', limb: 0.5, hand: 0.74, chest: [0.58, 1, 0.72], hips: 1.1, head: 0.92, pauldron: 0.62, joint: 0.55, heel: 1, grooves: 0, helm: 'szyszak' },
 };
 export const formOf = (id) => FORMS[id?.id || id] || FORMS.hero;
 /** One segment's pieces (porcelain, core, trim, gold, labradorite, glow) and the form it is built in. */
