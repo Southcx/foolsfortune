@@ -285,4 +285,5 @@ the settings scope, beside the touch layout (`touchLayout`).
   inside the phone mixer's burst cap.
 - **Petra:** the grid's placement from cells (one cell size, one gutter, A spanning four), the stack's tap and pull, a press landing
   only on a landed tile, the setting's row, and the top bar's tile.
-- **Dovina:** the cells and the fold's column as data (`TOUCH_ARC`'s `cell`, `fold`).
+- **Dovina:** the cells and the fold's column as data: done, `src/progress/toucharc.js` (`ARC_GRID`, `ARC_CELLS`, `ARC_FOLD`,
+  `TOUCH_ARC` a context's slots as input action ids, `arcRect`, `arcOf`, `foldOf`).
