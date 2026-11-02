@@ -73,7 +73,7 @@ export class MechWeapons {
   }
 
   /** The gap (m) from the mech's footprint to the giant's, or Infinity. */
-  gap() { const G = this.p.giant; if (!G?.c?.alive) return Infinity; return Math.hypot(G.pos.x - this.p.pos.x, G.pos.z - this.p.pos.z) - MECH_BODY.radius - GIANT_LOOK.radius; }
+  gap() { const G = this.p.giant; if (!G?.c?.alive) return Infinity; return Math.hypot(G.pos.x - this.p.pos.x, G.pos.z - this.p.pos.z) - MECH_BODY.radius - (G.radius ?? GIANT_LOOK.radius); }
   inFront(cos = FRONT) { const G = this.p.giant; if (!G) return false; _a.subVectors(G.pos, this.p.pos).setY(0).normalize(); return _a.dot(this.p.forward(_f)) >= cos; }
   later(t, fn, side = null) { this.pending.push({ t, fn, side }); }
   /** An arm's blow still to land called back (the Thunderclap takes both hands: mechtech.js). */

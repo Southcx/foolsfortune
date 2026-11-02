@@ -269,7 +269,7 @@ export class ToyCity {
       C.vy -= CHUNK.g * dt; p.y += C.vy * dt; C.mesh.rotateOnWorldAxis(C.axis, C.spin * dt);
       const foot = p.y - C.bottom, fell = C.y0 - p.y;
       let on = null;
-      if (Gi?.c?.alive && Gi.down <= 0 && Math.hypot(p.x - Gi.pos.x, p.z - Gi.pos.z) < GIANT_LOOK.radius + C.half && foot <= Gi.pos.y + Gi.G.height && foot > Gi.pos.y) on = 'giant';
+      if (Gi?.c?.alive && Gi.down <= 0 && Math.hypot(p.x - Gi.pos.x, p.z - Gi.pos.z) < (Gi.radius ?? GIANT_LOOK.radius) + C.half && foot <= Gi.pos.y + Gi.G.height && foot > Gi.pos.y) on = 'giant';
       else if (M?.mode === 'pilot' && Math.hypot(p.x - M.pos.x, p.z - M.pos.z) < MECH_BODY.radius + C.half && foot <= M.pos.y + heightOf(M.stats) && foot > M.pos.y) on = 'mech';
       else if (p.y <= C.landY) { p.y = C.landY; on = C.onBuilding ? 'building' : 'ground'; }
       if (!on) continue;

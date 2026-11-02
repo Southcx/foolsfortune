@@ -58,7 +58,7 @@ function buildStraw(S) {
   shell(S, 12);
 }
 
-/** The dune colossus: 22 m of piled sand. Body to 17.5 m, head to 22; its footprint within the giants' 5 m radius (GIANT_LOOK). */
+/** The dune colossus: 22 m of piled sand. Body to 17.5 m, head to 22; its footprint the row's 6.5 m radius (GIANTS.colossus.radius). */
 function buildColossus(S) {
   const H = S.G.height, root = S.group = new THREE.Group(); root.name = 'giant.colossus';
   S.body = new THREE.Group(); S.body.name = 'colossus.body'; root.add(S.body);

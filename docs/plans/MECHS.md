@@ -467,7 +467,7 @@ Events: `challenge.start { id }`, `challenge.score { id, add, total, what }`, `c
 
 ### 11.2 The dune colossus and giant wrestling (`progress/mechs/giants.js`)
 
-- **The dune colossus**: 22 m, the Dunes' sand risen in Fury's weather. It wakes as you come within 90 m. Its four moves each ask a
+- **The dune colossus**: 22 m tall, its footprint 6.5 m in radius (`GIANTS.colossus.radius`: its arms hang at 6.2 m; the straw giant 5), the Dunes' sand risen in Fury's weather. It wakes as you come within 90 m. Its four moves each ask a
   different answer: the sweep through the legs (jump), the burrow (it sinks, a ring opens where you stood, it erupts: dash out), the hurl
   (a clod thrown from 30 to 140 m: dash across its line) and the wave (a cone of sand: back out, or be slowed). Opened by the straw giant
   felled three times, or once off the cable (`giantOpen`).

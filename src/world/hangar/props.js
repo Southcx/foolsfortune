@@ -127,8 +127,14 @@ export class MechProps {
   }
 
   // ------------------------------------------------------------------ in hand
-  /** F: the nearest prop into the right hand, else the smash challenges' lectern when the frame stands at it (true: F was spent). */
-  grab() { return this.pickUp() || !!this.hangar.challenges?.use(); }
+  /** F: the nearest prop into the right hand, else the smash challenges' lectern when the frame stands at it (true: F was spent). With
+   *  no challenge running and nothing in hand, the lectern goes first (a loose post beside it never hides the page); while one runs, its
+   *  props are what F is for. */
+  grab() {
+    const C = this.hangar.challenges;
+    if (!this.held && C && !C.run && C.use()) return true;
+    return this.pickUp() || !!C?.use();
+  }
   /** The nearest prop into the right hand (the arm and its hand must be there). */
   pickUp() {
     const M = this.pilot, B = M.mech; if (this.held || !B?.arms?.R) return false;
@@ -227,7 +233,7 @@ export class MechProps {
     r.vel.y -= HANDLING.g * dt; m.position.addScaledVector(r.vel, dt);
     if (F?.javelin) m.lookAt(_b.copy(m.position).add(r.vel)); else { m.rotation.x += r.spin.x * dt; m.rotation.z += r.spin.z * dt; }
     const Gi = this.hangar.giant, C = this.hangar.city, by = 'courier';
-    if (F && !F.giant && Gi?.c?.alive && Math.hypot(m.position.x - Gi.pos.x, m.position.z - Gi.pos.z) < GIANT_LOOK.radius + 1 && m.position.y > Gi.pos.y && m.position.y < Gi.pos.y + Gi.G.height) {
+    if (F && !F.giant && Gi?.c?.alive && Math.hypot(m.position.x - Gi.pos.x, m.position.z - Gi.pos.z) < (Gi.radius ?? GIANT_LOOK.radius) + 1 && m.position.y > Gi.pos.y && m.position.y < Gi.pos.y + Gi.G.height) {
       F.giant = true; F.hit = 'giant'; // (the giant struck at all: the throw's hit, whatever came first)
       const res = Gi.blow({ weapon: r.prop, k: F.k, stagger: 20 * F.k, heavy: F.k >= 1, region: 'body', from: prev, by });
       this.game.events?.emit('mech.hit', { weapon: r.prop, region: 'body', staggered: !!res.staggered, pierced: !!res.pierced, crit: !!res.crit, ...(res.blocked ? { blocked: true } : {}), ...(res.felled ? { felled: true } : {}), by });

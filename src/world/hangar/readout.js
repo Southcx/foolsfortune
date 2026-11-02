@@ -45,9 +45,10 @@ export class MechReadout {
     ];
     const R = regionsOf('mech').map((r) => `${r.toUpperCase().padEnd(5)}${this.hangar.state.broken(r) ? 'BROKE' : pct(V.crack[r] || 0).padStart(5)}`);
     for (let i = 0; i < R.length; i += 2) lines.push(`${R[i]}   ${R[i + 1] ?? ''}`); // (the regions two to a line: the panel kept clear of the log and the goals)
-    if (Gi?.c && Math.hypot(Gi.pos.x - M.pos.x, Gi.pos.z - M.pos.z) < READOUT.giantNear) {
+    const at = Gi?.stashed || Gi?.pos; // (a carried or burrowed giant is stashed far off: its true place is kept: giant.js stash)
+    if (Gi?.c && at && (Gi.air || Math.hypot(at.x - M.pos.x, at.z - M.pos.z) < READOUT.giantNear)) {
       const B = Gi.barrier, s = Gi.stagger;
-      lines.push('', `GIANT    ${Gi.down > 0 ? `DOWN ${Math.ceil(Gi.down)}s` : Gi.awake ? 'AWAKE' : 'WAITING'}`,
+      lines.push('', `GIANT    ${Gi.air ? 'HELD' : Gi.under ? 'UNDER THE SAND' : Gi.down > 0 ? `DOWN ${Math.ceil(Gi.down)}s` : Gi.awake ? 'AWAKE' : 'WAITING'}`,
         `BARRIER  ${B.downT > 0 ? `DOWN ${Math.ceil(B.downT)}s` : pct(B.up)}`,
         `STAGGER  ${s.staggerT > 0 ? 'STAGGERED' : pct(s.v / STAGGER.full)}`);
     }
