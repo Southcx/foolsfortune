@@ -47,6 +47,7 @@ export async function keySheet(out, want) {
       document.querySelectorAll('body > div').forEach((d) => { if (d.textContent.includes('recording') || d.className.includes('animlab')) d.style.display = 'none'; });
       if (lab.state.tool !== labTool) lab.setTool(labTool);
       clearTimeout(lab.pending);
+      g.settings?.set?.('keyPoses', true); // (the trials behind `visual.keyPoses`, the kick's guard string among them, shot as they would play)
       const { keysOf, KeyTrack } = await import('/src/courier/anim/keyposes.js');
       let table = null, filler = null; // (a table the game has not registered: read from its file, filled by the rule's own where it is there)
       try { table = src ? (await import(`/src/courier/anim/keys/${src[0]}.js`))[src[1]] : (await import(`/src/courier/anim/keys/${tool}.js`)).KEYS; } catch { /* (none) */ }

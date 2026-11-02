@@ -39,6 +39,7 @@ import { Push } from '../courier/moves/push.js';
 import { Carry } from '../courier/moves/carry.js';
 import { Kick } from '../courier/moves/kick.js';
 import { Recoil } from '../courier/moves/recoil.js';
+import { KeyLocomotion } from '../courier/anim/keylocomotion.js';
 import { RacewayLooks } from '../vfx/racewaylooks.js';
 import { SkiffSlipArc } from '../vfx/skiffsliparc.js';
 import { WorldLooks } from '../vfx/worldshells.js';
@@ -105,6 +106,7 @@ export function bootTools(game, made) {
   game.belt.add(heldTool(techs.get('crucibelle'), 'THE CRUCIBELLE', 'hip'));
   game.belt.add(heldTool(techs.get('lockheart'), 'THE LOCKHEART', 'neck'));
   game.classArtsRun = techs.add(new ClassArtsBody(techs)); // (a class's worn action on G and its reaction: courier/classarts/body.js, CLASS-ARTS.md)
+  techs.add(new KeyLocomotion(techs)); // (the jump, landing, air dash and turnaround as held keys: a trial behind `visual.keyPoses`, courier/anim/keylocomotion.js)
   game.proneHolster = techs.add(new ProneHolster(techs)); // (lying down: every tool put away, none drawn, the one in the hands back out once up: tools/proneholster.js)
   player.techs = techs;
   game.techs = techs;
