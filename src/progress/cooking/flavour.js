@@ -14,8 +14,10 @@
 // that each lean a dish one way.
 //
 //   TASTES   FEELING_TASTE { feeling: taste }   INGREDIENTS { id: { taste: { t: 0..1 }, from, line } }   PANTRY
-//   tasteOf(ids) -> { t: sum }   leadOf(taste) -> { feeling, share } | null   balanceOf(taste) -> { tell, fix, ok }
+//   fishFeeling(id)   isFish(id)   fishTaste(id)   tasteOf(ids) -> { t: sum } (a fish and a glutamate together: umami x2)   leadOf(taste) -> { feeling, share } | null   balanceOf(taste) -> { tell, fix, ok }
 // ---------------------------------------------------------------------------------------
+
+import { SPECIES, ASPECTS } from '../../tools/sondelass/angling/species.js';
 
 /** The tastes, the feeling's seven first (the feelings' display order), then the three that are not feelings. */
 export const TASTES = ['cool', 'sweet', 'rich', 'heat', 'bitter', 'salt', 'sour', 'umami', 'kokumi'];
@@ -34,6 +36,8 @@ export const INGREDIENTS = {
   oil:     { taste: { rich: 0.25 }, pantry: true, line: 'A neutral oil.' },
   starter: { taste: { sour: 0.08, kokumi: 0.1 }, pantry: true, line: 'A sourdough starter kept alive at the hearth: wild yeast and lactic bacteria.' },
   rice:    { taste: { sweet: 0.1 }, pantry: true, line: 'Short-grain rice: wash it until the water runs almost clear.' },
+  egg:     { taste: { rich: 0.2, umami: 0.05 }, pantry: true, line: 'Egg: its yolk is what makes fresh pasta silky and gold.' },
+  kansui:  { taste: { bitter: 0.04 }, pantry: true, line: 'Kansui: alkaline water. It makes noodles springy and yellow (the gluten tightens; the flour\'s flavones turn gold).' },
   // the add-ins: one a feeling (a creature of that feeling drops its own: progress/creaturedrops.js)
   mint:       { taste: { cool: 0.8 }, from: 'wonder', line: 'Mint: menthol tricks the cold receptor (TRPM8), so it tastes cool without being cold.' },
   honey:      { taste: { sweet: 0.8, kokumi: 0.05 }, from: 'mirth', line: 'Honey: sweet is the body\'s "energy here".' },
@@ -48,13 +52,24 @@ export const INGREDIENTS = {
 };
 /** The staples the hearth always has. */
 export const PANTRY = Object.keys(INGREDIENTS).filter((k) => INGREDIENTS[k].pantry);
+/** A fish landed from the Lachryma, as an ingredient (`fish.<species>`, the Pneuka Box's own id): its feeling is the one it is drawn to
+ *  most (its `aff`), tasted as that feeling's taste, with a fish's inosinate (umami) and body. SOULSEAFOOD: the Weir's fish feed the hearth. */
+const FISH_FEELING = Object.fromEntries(SPECIES.map((F) => [F.id, ASPECTS[F.aff.indexOf(Math.max(...F.aff))]?.id]));
+export const fishFeeling = (id) => FISH_FEELING[String(id).replace(/^fish\./, '')] || null;
+export const isFish = (id) => /^fish\./.test(String(id)) && !!fishFeeling(id);
+export const fishTaste = (id) => { const f = fishFeeling(id); return f ? { [FEELING_TASTE[f]]: 0.7, umami: 0.35, kokumi: 0.1 } : {}; };
+/** Umami's synergy (Ikeda's dashi: kombu's glutamate with a fish's inosinate tastes several times as savoury as either alone; Yamaguchi,
+ *  1967): a glutamate ingredient and a fish together double the dish's umami. */
+const GLUTAMATE = new Set(['kombu', 'miso']);
+
 /** The add-in a feeling's creature drops. */
 export const ADDIN_OF = Object.fromEntries(Object.entries(INGREDIENTS).filter(([, I]) => FEELING_TASTE[I.from]).map(([k, I]) => [I.from, k]));
 
 /** The taste of a list of ingredient ids (each counted once a time it appears). */
 export function tasteOf(ids = []) {
   const t = Object.fromEntries(TASTES.map((k) => [k, 0]));
-  for (const id of ids) for (const [k, v] of Object.entries(INGREDIENTS[id]?.taste || {})) t[k] += v;
+  for (const id of ids) for (const [k, v] of Object.entries(isFish(id) ? fishTaste(id) : INGREDIENTS[id]?.taste || {})) t[k] += v;
+  if (ids.some((id) => GLUTAMATE.has(id)) && ids.some(isFish)) t.umami *= 2; // (the synergy: dashi's)
   return t;
 }
 

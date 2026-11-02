@@ -12,13 +12,23 @@
 // Prior art: Cooking Mama (steps averaged), Stardew Valley (one food buff at a time, the next replacing it), Breath of the Wild (a
 // recipe recognised from what went in, kept in a book from the first), Fantasy Life (batch once mastered).
 //
-//   FAMILIES   DISHES { id: { family, moves, base, label, line } }   dishFor(family, addin) -> { id, label }
+//   FAMILIES (bread built; pasta, sheets, noodles, seafood on the 3D stage)   DISHES { id: { family, moves, base, label, line } }   dishFor(family, addin) -> { id, label }
 //   GRADES [{ id, at, strength, hold }]   gradeOf(scores, hits, ruined) -> grade   lift(grade) -> grade   serve({ family, addin, scores, hits, ruined, adjusted }) -> served
 // ---------------------------------------------------------------------------------------
-import { INGREDIENTS, tasteOf, leadOf, ADJUST, FEELING_TASTE } from './flavour.js';
+import { tasteOf, leadOf, ADJUST, FEELING_TASTE, isFish } from './flavour.js';
+import { SPECIES } from '../../tools/sondelass/angling/species.js';
+
+const itemName = (id) => SPECIES.find((F) => `fish.${F.id}` === id)?.name || null;
 
 export const FAMILIES = {
   bread: { label: 'BREAD', moves: ['knead', 'proof', 'bake'], base: ['flour', 'water', 'salt', 'starter'], built: true, line: 'Flour, water, salt and the starter, kneaded, proofed and baked.' },
+  // the 3D stage's (South, 2026-11-02: "Pasta themed! Italian-Japanese cooking ... Spirit Pasta, Soul Noodles ... SOULSEAFOOD"; played on
+  // Calissa's stage with the god hand working the dough, `stage: '3d'`). Labels plain, Espada's to name. `fish`: a landed fish may be its
+  // add-in (its feeling the fish's), the Italian-Japanese wafu way (a fish pasta, a fish noodle soup) and seafood's whole point.
+  pasta:   { label: 'PASTA', moves: ['knead', 'roll', 'cut', 'boil'], base: ['flour', 'egg', 'salt'], stage: '3d', fish: true, noun: 'TAGLIATELLE', line: 'Flour and egg kneaded, rolled thin, cut to ribbons and boiled to the soul.' },
+  sheets:  { label: 'SHEETS', moves: ['knead', 'laminate', 'roll', 'boil'], base: ['flour', 'egg', 'salt'], stage: '3d', fish: true, noun: 'LASAGNE', line: 'Folded and rolled until it is satin, then boiled.' },
+  noodles: { label: 'NOODLES', moves: ['knead', 'pull', 'boil'], base: ['flour', 'water', 'salt', 'kansui'], stage: '3d', fish: true, noun: 'NOODLES', line: 'Hand-pulled: kneaded, doubled and doubled again, boiled.' },
+  seafood: { label: 'SEAFOOD', moves: ['bleed', 'sear'], base: ['salt', 'oil'], stage: '3d', fish: true, needsFish: true, noun: '', line: 'A fish you landed from the Lachryma, bled calm and seared skin down.' },
   rice:  { label: 'RICE', moves: ['rice', 'simmer'], base: ['rice', 'water'], built: false },
   broth: { label: 'BROTH', moves: ['simmer', 'steep'], base: ['water', 'kombu'], built: false },
   tea:   { label: 'TEA', moves: ['steep'], base: ['water'], built: false },
@@ -28,7 +38,11 @@ export const FAMILIES = {
 const ADDIN_DISH = { mint: 'MINT', honey: 'HONEY', butter: 'BUTTER', chilli: 'CHILLI', bitterleaf: 'BITTERLEAF', onion: 'ONION', vinegar: 'SOUR', kombu: 'KELP', miso: 'MISO' };
 export function dishFor(family, addin = null) {
   const F = FAMILIES[family]; if (!F) return null;
-  const noun = family === 'bread' ? 'LOAF' : F.label;
+  if (addin && isFish(addin)) { // (a fish: named by its species; seafood is the fish itself, seared)
+    const name = (itemName(addin) || 'FISH').toUpperCase();
+    return { id: `${family}.${addin}`, label: family === 'seafood' ? `SEARED ${name}` : `${name} ${F.noun}`, family, addin };
+  }
+  const noun = family === 'bread' ? 'LOAF' : F.noun || F.label;
   return { id: `${family}.${addin || 'plain'}`, label: addin ? `${ADDIN_DISH[addin] || addin.toUpperCase()} ${noun}` : `PLAIN ${noun}`, family, addin };
 }
 
@@ -60,6 +74,7 @@ export const DRINK_HOLD = 60;
 /** The dish served: its recipe, grade, taste, and the draught it lays ({ feeling, strength, hold real s }) or none. */
 export function serve({ family, addin = null, scores = [], hits = [], ruined = false, adjusted = null, rightFix = false }) {
   const dish = dishFor(family, addin), F = FAMILIES[family];
+  if (F?.needsFish && !isFish(addin)) return { dish, grade: 'dubious', taste: tasteOf(F.base), draught: null, why: 'nofish' }; // (seafood is a fish)
   let G = gradeOf(scores, hits, ruined);
   if (rightFix) G = lift(G);
   const ids = [...(F?.base || []), ...(addin ? [addin] : [])], t = tasteOf(ids);

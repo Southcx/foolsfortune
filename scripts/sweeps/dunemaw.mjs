@@ -480,7 +480,7 @@ if (part('fight')) {
     return ids.map((id) => ({ id, item: !!ITEMS[id], glaze: !!(GLAZES[id] || GLAZES[id.replace(/^glaze\./, '')]), inBox: g.pneuka.count(id), ledger: g.ledger.get(`foe.drop.${id}`) })); }, DROP);
   // (as defined in greatjelly.js DROPS' give: the glaze opens at the kiln through its achievement; the log says each drop)
   S.check('accept 8: beating it opens the Jelly-crown glaze at the kiln (GLAZES.jellycrown, gated by gj1)', got[0].glaze && got[0].ledger > 0, got[0]);
-  const dropSaid = await S.ev(() => __game.game.log.lines.map((l) => l.text).filter((t) => /^It drops /.test(t)));
+  const dropSaid = await S.ev(() => __game.game.log.lines.map((l) => l.text).filter((t) => /^(It drops|Dropped:) /.test(t))); // (the line reads "Dropped: <name>.": tracking/dunemaw.js)
   S.check('accept 8: the log says what it drops', dropSaid.some((t) => /Jelly-crown/.test(t)), dropSaid);
   S.note('accept 8: the five cosmetics, as the game knows them', got);
   S.check('accept 8: the haul comes home (finds and slip roe)', box1.length > box0.length, { before: box0.length, after: box1.length, new: box1.filter((x, i) => !box0.includes(x)).slice(0, 8) });

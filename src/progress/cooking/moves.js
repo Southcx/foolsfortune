@@ -15,7 +15,7 @@
 //
 //   MOVES { id: { label, line, gesture, clock, rate, heart, width: [w0, wMax], over, unit, tells: [[at, words]], tradeoff, attr } }
 //   widthOf(move, practice) -> half-width   scoreOf(move, value, practice) -> { score 0..1, hit (inside the heart), ruined }
-//   tellAt(move, value) -> words
+//   tellAt(move, value) -> words   pullOver(gluten) -> the pull's snap for that dough
 // ---------------------------------------------------------------------------------------
 
 export const MOVES = {
@@ -41,9 +41,59 @@ export const MOVES = {
     tells: [[0, 'Pale and soft.'], [0.4, 'Golden. It knocks dull.'], [0.62, 'Deep brown, and it knocks hollow.'], [0.85, 'Dark at the edges. It smells of scorch.'], [0.97, 'Black.']],
     tradeoff: 'A darker crust is more flavour, nearer burnt.', attr: 'focus',
   },
-  // the other families' moves, as data for the rounds after bread (SPIRIT-COOKING.md 4's table): not played yet
-  cut:      { label: 'CUT', gesture: 'strokes', clock: 'real', heart: 0.5, width: [0.1, 0.18], over: 1, unit: 'piece size against the asked', attr: 'dexterity', later: true },
-  sear:     { label: 'SEAR', gesture: 'hold', clock: 'real', heart: 0.65, width: [0.08, 0.14], over: 1, unit: 'browning (Maillard 140-165 C), 1 black', attr: 'focus', later: true },
+  // the pasta, noodle and seafood families' moves (South, 2026-11-02: "Make it fully fleshed out minigame featuring the Godhand working
+  // the dough, in 3d ... Pasta themed! Italian-Japanese cooking ... SOULSEAFOOD BECAUSE THEY FISH IN LACHRYMA"; played on Calissa's 3D
+  // stage, `stage: '3d'`). Each is a real technique and each tell is what a cook really reads.
+  roll: {
+    label: 'ROLL', line: 'Roll it thinner pass by pass. Hold it to the light: stop when you can see your hand through it.', stage: '3d',
+    gesture: 'roll', clock: 'real', perPass: 0.09, // (a pass through the rollers, or a long push of the pin; a pasta machine's nine settings, the heart its seventh: about 0.8 mm)
+    heart: 0.72, width: [0.08, 0.15], over: 1, unit: 'thinness, 1 torn',
+    tells: [[0, 'Thick as a biscuit. No light comes through.'], [0.4, 'Even, but the light stops at it.'], [0.62, 'Held to the light, you can see your hand through it.'], [0.88, 'Paper thin. The edges are starting to tear.']],
+    tradeoff: 'Thinner is silkier and cooks faster, nearer torn.', attr: 'dexterity',
+  },
+  laminate: {
+    label: 'LAMINATE', line: 'Fold the sheet and roll it again; each fold doubles its layers. Stop when it is smooth as satin, square at the edges.', stage: '3d',
+    gesture: 'fold', clock: 'real', perFold: 0.125, // (a fold a press: 4 folds, 16 layers, at the heart; 8, overworked)
+    heart: 0.5, width: [0.1, 0.17], over: 1, unit: 'folds over 8 (layers = 2^folds)',
+    tells: [[0, 'Ragged edges, a rough face.'], [0.25, 'The edges straighten.'], [0.45, 'Smooth as satin, square at the edges.'], [0.75, 'Tight and rubbery. It springs back from the roller.']],
+    tradeoff: 'More folds is more bite, until it fights you.', attr: 'dexterity',
+  },
+  cut: {
+    label: 'CUT', line: 'Cut ribbons a finger wide, every one the same.', stage: '3d',
+    gesture: 'strokes', clock: 'real', // (value: the ribbons' width against the asked, 0.5 even and right: tagliatelle about 6 mm)
+    heart: 0.5, width: [0.1, 0.18], over: 1.01, unit: 'ribbon width against the asked',
+    tells: [[0, 'Thread-thin, like angel hair.'], [0.3, 'Narrow: tagliolini.'], [0.42, 'Even ribbons, a finger wide.'], [0.65, 'Broad: pappardelle.'], [0.85, 'Ragged and uneven.']],
+    tradeoff: 'The cut sets how the sauce clings.', attr: 'dexterity',
+  },
+  pull: {
+    label: 'PULL', line: 'Stretch the rope, fold it in two and stretch again: each pull doubles the strands. Stop before it snaps.', stage: '3d',
+    gesture: 'stretch', clock: 'real', perPull: 0.125, // (a doubling a pull: 1 rope, 2, 4 .. 256 strands at 8; lamian, hand-pulled noodles)
+    heart: 0.75, width: [0.07, 0.13], over: 1, unit: 'doublings over 8 (strands = 2^pulls)',
+    tells: [[0, 'One thick rope.'], [0.25, 'Four strands, thick as a finger.'], [0.5, 'Sixteen strands, round as chopsticks.'], [0.7, 'Sixty-four strands, thin as string.'], [0.9, 'Two hundred and fifty-six, thread-fine. It is near snapping.']],
+    tradeoff: 'Finer noodles need more gluten: knead well first or they snap.', attr: 'dexterity',
+  },
+  boil: {
+    label: 'BOIL', line: 'Boil in water salted like the sea. Bite one: take it out while a thin white thread is left at its heart.', stage: '3d',
+    gesture: 'hold', clock: 'real', rate: 1 / 20, // (fresh pasta's 2 to 3 minutes and dried pasta's 9 to 12 as 20 real s; water at about 1% salt, 10 g a litre)
+    heart: 0.78, width: [0.06, 0.12], over: 1, unit: 'doneness by the bite, 1 mush',
+    tells: [[0, 'Raw. It snaps.'], [0.45, 'It bends, chalky all through.'], [0.68, 'A thin white thread at its heart: l\'anima, the soul. Al dente.'], [0.88, 'Soft all through. The soul is gone.'], [0.97, 'Mush.']],
+    tradeoff: 'Al dente keeps its bite and its soul; a minute more and both are gone.', attr: 'focus',
+  },
+  sear: {
+    label: 'SEAR', line: 'Skin down in a hot pan. Do not move it: it lets go of the pan by itself when the crust is made.', stage: '3d',
+    gesture: 'hold', clock: 'real', rate: 1 / 14, // (Maillard browning at 140 to 165 C: a fillet's skin crisps in about 3 to 4 minutes, as 14 real s)
+    heart: 0.65, width: [0.08, 0.14], over: 1, unit: 'browning (Maillard 140-165 C), 1 black',
+    tells: [[0, 'Grey, stuck to the pan.'], [0.4, 'The skin tightens. It still clings.'], [0.58, 'Golden, and it lets go of the pan by itself.'], [0.82, 'Dark. The edge smokes.'], [0.96, 'Black.']],
+    tradeoff: 'A deeper crust is more flavour, nearer burnt.', attr: 'focus',
+  },
+  bleed: {
+    label: 'BLEED', line: 'The fish thrashes and stills in turns. Press the spike behind its eye in the still moment: a quick, calm end.', stage: '3d',
+    gesture: 'press', clock: 'real', period: 2.4, // (ikejime: the thrash and stillness come round every 2.4 real s; the press's moment in it is the value, 0.5 the stillness)
+    heart: 0.5, width: [0.08, 0.14], over: 1.01, unit: 'the moment between thrashes, 0.5 its stillness',
+    tells: [[0, 'It thrashes.'], [0.3, 'It slows.'], [0.42, 'Still. Now.'], [0.6, 'It gathers itself again.']],
+    tradeoff: 'A calm end keeps the flesh sweet: rigor comes later and less lactic acid sours it.', attr: 'focus',
+  },
+  // the other families' moves, as data for the rounds after (SPIRIT-COOKING.md 4's table): not played yet
   simmer:   { label: 'SIMMER', gesture: 'keep', clock: 'real', heart: 0.6, width: [0.1, 0.18], over: 0.8, unit: 'heat, 0.8 the boil', attr: 'focus', later: true },
   sugar:    { label: 'SUGAR', gesture: 'test', clock: 'real', heart: 0.5, width: [0.06, 0.12], over: 1, unit: 'syrup stage (soft ball 112-116 C .. hard crack 146-154 C)', attr: 'perception', later: true },
   roux:     { label: 'ROUX', gesture: 'stir', clock: 'real', heart: 0.5, width: [0.08, 0.15], over: 1, unit: 'colour, white to dark', attr: 'focus', later: true },
@@ -52,7 +102,6 @@ export const MOVES = {
   ferment:  { label: 'FERMENT', gesture: 'tend', clock: 'game', heart: 0.5, width: [0.1, 0.16], over: 0.85, unit: 'koji at 30 C, 0.85 sporing', attr: 'focus', later: true },
   steep:    { label: 'STEEP', gesture: 'wait', clock: 'real', heart: 0.55, width: [0.08, 0.14], over: 1, unit: 'water heat by its bubbles', attr: 'perception', later: true },
   smoke:    { label: 'SMOKE', gesture: 'keep', clock: 'real', heart: 0.4, width: [0.1, 0.16], over: 0.9, unit: 'fire low and fed, thin blue smoke', attr: 'focus', later: true },
-  bleed:    { label: 'BLEED', gesture: 'press', clock: 'real', heart: 0.5, width: [0.1, 0.15], over: 1, unit: 'the fish\'s stillness', attr: 'focus', later: true },
 };
 
 /** A move's band now: its width at no practice, grown toward its ceiling by practice (0..100). Never its heart. */
@@ -71,6 +120,10 @@ export function scoreOf(M, value, practice = 0) {
 
 /** What the food shows at `value`: the tell's words (the last step it has passed). */
 export function tellAt(M, value) { let w = M.tells?.[0]?.[1] || ''; for (const [at, words] of M.tells || []) if (value >= at) w = words; return w; }
+
+/** Where the pull snaps for dough kneaded to `gluten` (the knead's value): short gluten snaps early, a dough at the windowpane (0.8) can
+ *  take all eight doublings. The pull's `over` for that dough. */
+export const pullOver = (gluten = 0.8) => Math.min(1, 0.5 + 0.5 * Math.min(1, Math.max(0, gluten) / 0.8));
 
 /** Practice a move earns from one cooking of it: more for a good one (skill skips grind), some for any (grind closes the gap). */
 export const practiceFrom = (score) => 3 + 7 * score;

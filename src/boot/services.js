@@ -114,6 +114,7 @@ export async function bootServices(made) {
     .register('touchstone', { zones: ['touchstone'], build: (g) => g.touchstone?.build(), teardown: (g) => g.touchstone?.teardown() }) // (the Assay's room: built on entry, down whole after)
     .register('sandbox', { zones: ['sandbox'], build: (g) => g.sandbox?.build(), teardown: (g) => g.sandbox?.teardown() }) // (the hand's physics room: built on entry, down whole after, the stock and the ball with it)
     .register('strawmanwell', { zones: ['strawmanwell'], build: (g) => { g.strawmanWell?.build(); g.wellTargets?.populate(); }, teardown: (g) => { g.wellTargets?.clear(); g.strawmanWell?.teardown(); } }) // (the 2D platformer's test bench: built on entry, down whole after, its dummies, training targets and parts with it)
+    .register('hangar', { zones: ['hangar', 'provingground'], build: (g) => g.hangar?.build(), teardown: (g) => g.hangar?.teardown() }) // (the mechs' hall and its proving ground, one area: built on entry, down whole after, the mech back in its gantry)
     .register('margarite', { zones: ['margarite'] })
     .register('opensea', { zones: ['opensea'], build: (g) => g.opensea?.build(), teardown: (g) => g.opensea?.teardown() }); // (comes down whole: the islets' dressing with it, opensea.js)
   game.time = new TimeScale(game); // (who slows the world, and by how much: see core/time.js)

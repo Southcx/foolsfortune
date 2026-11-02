@@ -264,3 +264,53 @@ loaf: 0.08 of the way toward its feeling, against a common material's own 0.3), 
 Still to come: the looks (Calissa's),
 the sounds (Wanda's: the knead's thump on the beat, the oven, the knock), the words (Espada's: dish names, the tells), bonds with spirits,
 batch and auto-cook, the other families.
+
+## 14. Pasta, noodles and seafood on a 3D stage (South, 2026-11-02, by way of Calissa)
+
+> "really beautify the Spirit Cooking module, It's effectively a whole minigame. Make it fully fleshed out minigame featuring the
+> Godhand working the dough, in 3d. Use softbody physics for the doughy material. We can make the whole thing Pasta themed!
+> Italian-Japanese cooking ... Spirit Pasta, Soul Noodles ... SOULSEAFOOD BECAUSE THEY FISH IN LACHRYMA"
+
+**Who builds what.**
+- **Calissa:** the stage, in her files. A 3D cooking stage opened at the hearth, where the god hand works a soft dough (a position-based
+  soft body with plastic shape matching, so it keeps what you do to it).
+- **Dovina:** the rules, in `progress/cooking/`. The stage plays them through `scoreOf`, `tellAt` and `serve`.
+- **Espada:** the names and the lore.
+
+**The new moves** (`MOVES`, each a real technique, each tell what a cook really reads):
+
+| move | gesture | its value | its heart, and the tell there |
+|---|---|---|---|
+| roll | a pass a stroke | thinness, 1 torn | 0.72: you can see your hand through the sheet (a pasta machine's 7th of 9, about 0.8 mm) |
+| laminate | a fold a press | folds over 8 (layers 2^folds) | 0.5, 4 folds: smooth as satin, square at the edges |
+| cut | strokes | ribbon width against the asked | 0.5: even ribbons, a finger wide (tagliatelle, about 6 mm) |
+| pull | a doubling a pull | doublings over 8 (strands 2^pulls) | 0.75: 64 strands, thin as string |
+| boil | held | doneness by the bite | 0.78: a thin white thread at the heart, **l'anima** (Italian for "the soul": the al dente core) |
+| sear | held | Maillard browning | 0.65: golden, and it lets go of the pan by itself |
+| bleed | a press in the fish's rhythm | the moment between thrashes | 0.5: still. Ikejime: a calm end keeps the flesh sweet |
+
+**The pull snaps on short gluten.** `pullOver(gluten)`: the knead's value sets where the pull snaps. A dough kneaded to the windowpane
+takes all eight doublings; a dough kneaded to half snaps at six.
+
+**The families** (`FAMILIES`, `stage: '3d'`). All four take a landed fish as their add-in.
+
+| family | moves | base | a dish |
+|---|---|---|---|
+| pasta | knead, roll, cut, boil | flour, egg, salt | MISO TAGLIATELLE, or a fish's (PALE REGRET TAGLIATELLE) |
+| sheets | knead, laminate, roll, boil | flour, egg, salt | LASAGNE |
+| noodles | knead, pull, boil | flour, water, salt, kansui | the hand-pulled; KELP NOODLES |
+| seafood | bleed, sear | salt, oil, and a fish (needed) | SEARED TIN MIRTH |
+
+The Italian-Japanese way is wafu pasta: any family's add-in can be miso, kombu or a fish, alongside the creatures' add-ins.
+
+**SOULSEAFOOD.** A fish landed at the Weir is an ingredient as it lies in the Box (`fish.<species>`).
+- **Its feeling** is the one the species is drawn to most (`fishFeeling`: Pale Regret, Grief; Tin Mirth, Mirth).
+- **Its taste** is that feeling's taste, with a fish's umami and body.
+- **Umami's synergy:** kombu or miso with a fish doubles the dish's umami, and with it the draught's hold. This is dashi's real
+  chemistry: glutamate and inosinate together (Ikeda; Yamaguchi, 1967).
+
+Angling now feeds the hearth: a reason to fish for a feeling.
+
+**New pantry staples:** egg, for fresh pasta; kansui, alkaline water that makes noodles springy and yellow.
+
+**The ledger and achievements:** `cook.family.<family>`. **Al Dente** (`cook.hit.boil`) and **Soul Seafood** (`cook.family.seafood`).

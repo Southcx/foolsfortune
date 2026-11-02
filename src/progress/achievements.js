@@ -49,7 +49,7 @@ export const CATS = [
   { id: 'break', name: 'BREAKING', subs: ['Pots', 'Clapperjars', 'Shells', 'The Workshop'] },
   { id: 'move', name: 'MOVEMENT', subs: ['Distance', 'Air', 'Ground', 'The Arts'] },
   { id: 'skiff', name: 'SOLAR SKIFFING', subs: ['The Board', 'Tricks', 'The Sundial', 'The Raceway', 'The Build Lot'] },
-  { id: 'hand', name: 'THE HAND', subs: ['Reach', 'Arts', 'Matter', 'Miracles', 'Bracelet', 'Raids', 'Rejection', 'Lachryma', 'Mimicry', 'Physics', "Strawman's Well"] },
+  { id: 'hand', name: 'THE HAND', subs: ['Reach', 'Arts', 'Matter', 'Miracles', 'Bracelet', 'Raids', 'Rejection', 'Lachryma', 'Mimicry', 'Physics', "Strawman's Well", 'The Hangar'] },
   { id: 'sond', name: 'THE SONDELASS', subs: ['Cutlass', 'Grapple'] },
   { id: 'brush', name: 'THE SOUL BRUSH', subs: ['The Club', 'The Slide', 'The Canvas', 'Sigils'] },
   { id: 'veritome', name: 'THE VERITOME', subs: ['The Lens', 'Fieldcraft', 'The Darkroom', 'The Bestiary', 'The Book'] },

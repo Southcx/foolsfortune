@@ -19,6 +19,7 @@ import { KILN_AT } from '../courier/moves/kiln.js';
 import { SolarTrial } from '../world/dunes/solar.js';
 import { Mimicry } from '../world/mimicry/mimicry.js';
 import { Sandbox } from '../world/sandbox/sandbox.js';
+import { Hangar } from '../world/hangar/hangar.js';
 import { StrawmansWell } from '../world/strawmanwell/strawmanwell.js';
 import { WellLook } from '../vfx/strawmanwell/look.js';
 import { TrainingTargets } from '../world/strawmanwell/targets.js';
@@ -80,7 +81,8 @@ export function bootRooms(game, made) {
     game.wellLook = new WellLook(game); // (the Well dressed as Pip's toy theatre: vfx/strawmanwell/look.js)
     game.impacts = new ThrownHits(game); // (anything loose thrown or kicked fast enough strikes a creature: world/impacts.js)
     // (the rooms' runtimes each frame: core/systems.js, the `world` phase; the Well's targets and its look after the Well, the hits after what throws)
-    for (const name of ['solar', 'mimicry', 'sandbox', 'strawmanWell']) game.systems.add('world', game[name], { name });
+    game.hangar = new Hangar(game); // (the mechs' room off the Index: a gantry, a lift, a proving ground and the straw giant: world/hangar/, docs/plans/MECHS.md)
+    for (const name of ['solar', 'mimicry', 'sandbox', 'strawmanWell', 'hangar']) game.systems.add('world', game[name], { name });
     game.systems.add('world', game.wellTargets, { name: 'wellTargets', after: 'strawmanWell' });
     game.systems.add('world', game.wellLook, { clock: 'raw', name: 'wellLook', after: 'wellTargets' });
     game.systems.add('world', game.impacts, { name: 'impacts', after: ['sandbox', 'strawmanWell'] });
