@@ -7,10 +7,14 @@
 // Prior art: de Casteljau's curve (bez); the parts kit's plates (vfx/mechs/parts/kit.js `plate`); the Piece batches of the garden's
 // decor (vfx/garden/decorpieces/kit.js).
 //
-//   HELM_LOOK (L)  R  bez  taper  rod  along  add  gem  facet  icoDome  bowl  shikoro  flat  fukigaeshi  teeth  orn(B, root, fn)
+//   HELM_LOOK (L)  R  bez  taper  rod  along  add  gem  facet  icoDome  bowl  shikoro  flat  fukigaeshi  teeth  orn(B, root, fn)  stage  edge
+//   the magitech (South, 2026-11-02: "that sci-fantasy magitech flare"): onBowl  trace  circuits  crystal  halo  plaque(B, n, at, rot)
+//   (gold inlay run over the bowl as a bus and its pins, Lachrymite crystals, a ring floating apart from the bowl, the Arcana's number in
+//   neuralese numerals on a stone plaque; numeralOf, npc/neuralesespelling.js: a bar five, two dots joined two, a dot one, a ring zero)
 // ---------------------------------------------------------------------------------------
 import * as THREE from 'three';
 import { plate } from '../parts/kit.js';
+import { numeralOf } from '../../../npc/neuralesespelling.js';
 
 /** The colours: the shells' neutrals (bone, ivory, a warm grey, a dark lacquer), the trim's relative tones (the glaze is the colour),
  *  the terracotta the trim takes while the body has no trim program, the core's dark (and the neutral it is authored in where the core program carries its own colour), the gold; the plumes' earth tones. */
@@ -113,3 +117,80 @@ export function orn(B, root, fn, k = L.orn) {
   P.forEach((x, j) => { const A = x.pos; for (let i = n0[j]; i < A.length; i += 3) for (let a = 0; a < 3; a++) A[i + a] = root[a] + (A[i + a] - root[a]) * k; });
   for (let i = m0; i < B.plumes.length; i++) { const s = B.plumes[i]; s.at = s.at.map((v, a) => root[a] + (v - root[a]) * k); s.len *= k; s.w *= k; }
 }
+
+const _e2 = new THREE.Euler(), _q2 = new THREE.Quaternion(), _v2 = new V();
+/** A faceted frustum from a to b (an n-sided prism stage of a crown), radius ra at a and rb at b, `sc` stretching it across. */
+export function stage(P, a, b, ra, rb, n, o = {}) {
+  const A = new V(...a), Bv = new V(...b), d = Bv.clone().sub(A), len = d.length();
+  _q.setFromUnitVectors(_Y, d.normalize()); _eu.setFromQuaternion(_q, 'XYZ');
+  P.geo(facet(new THREE.CylinderGeometry(rb, ra, len * 1.04, n, 1)), { ...o, at: A.add(Bv).multiplyScalar(0.5).toArray(), rot: [_eu.x, _eu.y, _eu.z] });
+}
+/** Gold along a run of points (an edge). */
+export const edge = (g, pts, r = 0.05) => { for (let i = 1; i < pts.length; i++) g.rod(pts[i - 1], pts[i], r, {}, 5); };
+
+/** A point on a bowl (radius r, height h, stretched by sc) at azimuth a (0 the face, + toward +X) and elevation e, stood off by k. */
+export const onBowl = (r, h, a, e, k = 1.0, sc = [1, 1, 1]) => [Math.sin(a) * Math.cos(e) * r * k * sc[0], Math.sin(e) * h * k * sc[1], Math.cos(a) * Math.cos(e) * r * k * sc[2]];
+/** Gold inlay along a path [[a, e], ...] over a bowl, each leg subdivided so it follows the facets, a faceted node at its ends (a
+ *  circuit's trace, neuralese's bus and its pins). */
+export function trace(P, r, h, path, { k = 1.0, sc, w = 0.032, node = 0.09, steps = 4 } = {}) {
+  let prev = onBowl(r, h, path[0][0], path[0][1], k, sc);
+  for (let i = 1; i < path.length; i++) {
+    const [a0, e0] = path[i - 1], [a, e] = path[i];
+    for (let s = 1; s <= steps; s++) { const q = onBowl(r, h, a0 + ((a - a0) * s) / steps, e0 + ((e - e0) * s) / steps, k, sc); P.rod(prev, q, w); prev = q; }
+  }
+  if (node) for (const [a, e] of [path[0], path[path.length - 1]]) P.geo(gem(node), { at: onBowl(r, h, a, e, k, sc) });
+}
+/** The circuit over a bowl: a bus round it at elevation e0 (open at the face, from -skip to skip) and n pins climbing off it, each with
+ *  one turn and a node at its end, seeded so a helm always wears the same. */
+export function circuits(P, r, h, { seed = 1, n = 6, e0 = 0.2, e1 = 0.95, skip = 0.55, sc, ring = true, k } = {}) {
+  let s = (seed * 7919) % 2147483647 || 1; const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647);
+  if (ring) { const path = []; for (let i = 0; i <= 20; i++) path.push([skip + (i / 20) * (2 * PI - 2 * skip), e0]); trace(P, r, h, path, { sc, k, node: 0, steps: 2 }); }
+  for (let i = 0; i < n; i++) {
+    const a = skip + ((i + 0.5) / n) * (2 * PI - 2 * skip), eA = e0 + (0.12 + rnd() * 0.3) * (e1 - e0), da = (rnd() - 0.5) * 0.6, eB = Math.min(e1, eA + (0.15 + rnd() * 0.3) * (e1 - e0));
+    trace(P, r, h, [[a, e0], [a, eA], [a + da, eA], [a + da, eB]], { sc, k });
+  }
+}
+/** A Lachrymite crystal: a six-sided prism with its point and a short heel, flat-shaded, its axis along local Y. */
+export function crystal(P, at, len, r = len * 0.22, rot = [0, 0, 0]) {
+  const body = new THREE.CylinderGeometry(r, r, len * 0.55, 6, 1), top = new THREE.ConeGeometry(r, len * 0.3, 6, 1).translate(0, len * 0.425, 0), heel = new THREE.ConeGeometry(r, len * 0.15, 6, 1).rotateX(PI).translate(0, -len * 0.35, 0);
+  for (const x of [body, top, heel]) P.geo(facet(x), { at, rot });
+}
+/** Euler angles turning local Y onto `dir` and then by `rot`. */
+export function aim(dir, rot = [0, 0, 0]) {
+  _q2.setFromEuler(_e2.set(...rot)).multiply(_q.setFromUnitVectors(_Y, _v2.set(...dir).normalize()));
+  _eu.setFromQuaternion(_q2, 'XYZ'); return [_eu.x, _eu.y, _eu.z];
+}
+/** A ring floating apart from the bowl (a halo, a wheel, a wreath): a heavy faceted gold torus, `gems` crystals standing out of it
+ *  (or in along it: `inward`), `spokes` to a crystal hub. Its plane XY turned by rot (the default lies flat). */
+export function halo(B, at, r, { rot = [PI / 2, 0, 0], tube = 0.08, gems = 6, len = 0.42, spokes = 0, hub = 0, inward = false, phase = 0 } = {}) {
+  B.g.geo(facet(new THREE.TorusGeometry(r, tube * L.chunk, 4, 14)), { at, rot });
+  const e = new THREE.Euler(...rot);
+  for (let i = 0; i < gems; i++) {
+    const a = phase + (i / gems) * PI * 2, d = [Math.cos(a), Math.sin(a), 0], off = new V(d[0] * (r + (inward ? -len * 0.35 : len * 0.35)), d[1] * (r + (inward ? -len * 0.35 : len * 0.35)), 0).applyEuler(e);
+    crystal(B.lab, add(at, off.toArray()), len, len * 0.24, aim(inward ? [-d[0], -d[1], 0] : d, rot));
+  }
+  for (let i = 0; i < spokes; i++) { const a = phase + ((i + 0.5) / spokes) * PI * 2, q = new V(Math.cos(a) * r, Math.sin(a) * r, 0).applyEuler(e); B.g.rod(at, add(at, q.toArray()), tube * 0.45); }
+  if (hub) B.lab.geo(gem(hub), { at });
+}
+/** The Arcana's number as a stone plaque with the numeral in gold, neuralese's running hand: a bus along its top, each digit hung on its
+ *  pin under it, its marks counted down (a bar five, two dots joined two, a dot one, an open ring zero). Its face +Z turned by rot. */
+export function plaque(B, n, at, rot = [0, PI, 0], s = 0.55) {
+  const D = numeralOf(n), e = new THREE.Euler(...rot), w = s * (0.44 * D.length + 0.3), hg = s * 1.2, z = 0.06;
+  const put = (x, y) => add(at, new V(x, y, z).applyEuler(e).toArray());
+  B.lab.box(w, hg, 0.1, { at, rot }, 0.03);
+  B.g.box(w * 0.86, s * 0.08, 0.06, { at: put(0, hg * 0.34), rot }, 0.01);
+  D.forEach((d, i) => {
+    const x = (i - (D.length - 1) / 2) * s * 0.44, st = s * 0.17; let y = hg * 0.34 - s * 0.11;
+    B.g.box(s * 0.06, s * 0.12, 0.06, { at: put(x, y + s * 0.05), rot }, 0.01);
+    if (d.zero) { B.g.geo(new THREE.TorusGeometry(s * 0.1, s * 0.035, 4, 8), { at: put(x, y - s * 0.11), rot }); return; }
+    if (d.bar) { B.g.box(s * 0.34, s * 0.075, 0.06, { at: put(x, y - st * 0.5), rot }, 0.01); y -= st; }
+    for (let k = 0; k < d.pairs; k++) { for (const sx of [-1, 1]) B.g.geo(gem(s * 0.065), { at: put(x + sx * s * 0.1, y - st * 0.5) }); B.g.box(s * 0.2, s * 0.035, 0.05, { at: put(x, y - st * 0.5), rot }, 0.005); y -= st; }
+    if (d.dot) B.g.geo(gem(s * 0.07), { at: put(x, y - st * 0.5) });
+  });
+}
+/** A point on a band of radius r at azimuth a: x across it, y up, z out from it (a plate stood on a crown's band, facing out). */
+export const onBand = (a, r, x, y, z = 0) => [Math.sin(a) * (r + z) + Math.cos(a) * x, y, Math.cos(a) * (r + z) - Math.sin(a) * x];
+/** Euler angles (the order Piece.geo composes, XYZ) turning a plate to face out at azimuth a, its top leaning in by tilt. */
+export const yawTilt = (a, tilt = 0, roll = 0) => { _q2.setFromEuler(_e2.set(0, a, 0)).multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(-tilt, 0, roll))); _eu.setFromQuaternion(_q2, 'XYZ'); return [_eu.x, _eu.y, _eu.z]; };
+/** How far out a bowl (radius r, height h) stands at height y. */
+export const across = (r, h, y) => r * Math.sqrt(Math.max(0, 1 - (y / h) ** 2));
