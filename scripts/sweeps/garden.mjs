@@ -161,9 +161,13 @@ await ticks(2);
 for (const [label, n] of [['named+0s', 0], ['named+0.5s', 30], ['named+2s', 90]]) { await ticks(n); const f = await shot(`entry-${label}`); note(`entry ${label}`, { file: path.basename(f), lum: await shotLum(f), seam: (await sw('dom()')).seam }); }
 // the garden's how-to opens on the first named entry and holds the view ('howto'): noted, then skipped as a player would (SKIP), which says
 // garden.howto and marks it seen (progress/gardenhowto.js); every check after it wants the garden's own view (the garden is in flux: a note)
-note('entry: the garden\'s how-to', await ev(() => ({ showing: !!__game.game.realm.howto?.showing, view: __game.game.realm.camera?.pv?.name || null })));
-await ev(() => __game.game.realm.howto?.close(false));
-await ticks(30);
+const clearHowto = async (where) => { // (skipped as a player would; then the camera given time to come back out of the how-to's view)
+  const st = await ev(() => ({ showing: !!__game.game.realm.howto?.showing, view: __game.game.realm.camera?.pv?.name || null, seen: __game.game.ledger.get('garden.howto') || 0 }));
+  await ev(() => __game.game.realm.howto?.close(false));
+  for (let i = 0; i < 20 && await ev(() => __game.game.realm.camera?.pv?.name === 'howto'); i++) await ticks(15);
+  note(`${where}: the garden's how-to`, { ...st, after: await ev(() => __game.game.realm.camera?.view) });
+};
+await clearHowto('entry');
 const s1 = await sw('state()');
 check('entry: the realm is named', !!s1.named, s1.named);
 check('entry: the camera is in the garden zone', s1.zone === 'garden', `zones.current=${s1.zone} cam=${JSON.stringify(s1.cam)}`);
@@ -429,6 +433,7 @@ check('after ~, the second visit: the Jar full size', jG2.scale.every((x) => x >
 phase = 'terraform';
 await enter(); await ticks(40); await settle(); await closeAll(); await ticks(10);
 const view = () => ev(() => __game.game.realm.camera?.view);
+await clearHowto('views'); // (the god hand then the garden again: noted if the how-to stood again)
 check('views: the garden opens behind the Jar', (await view()) === 'behind', await view());
 await press('Backquote', 4);
 const ov = await ev(() => { const R = __game.game.realm, c = __game.camera, d = new __game.THREE.Vector3(0, 0, -1).applyQuaternion(c.quaternion), down = R.jarBody.up.clone().negate(); return { view: R.camera.view, offDeg: +(Math.acos(Math.max(-1, Math.min(1, d.dot(down)))) * 180 / Math.PI).toFixed(1) }; });
