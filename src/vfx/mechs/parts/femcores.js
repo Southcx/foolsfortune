@@ -26,10 +26,10 @@
 //   femCoreLook(id, F) -> the same contract as cores.js coreLook: { mounts, prof, plan, chest(S), waist(S), spine, bust: { at(s), rot(s), build(S, s) } }
 //   (spine: Haydee's waist column's two balls { lo, hi, r, rt } in the waist's frame, for the parts body's crazing)
 // ---------------------------------------------------------------------------------------
-import { MECH_LOOK as L, band, profAt, panel, cup, jointBall, shell, sculpt, tube } from './kit.js';
+import { MECH_LOOK as L, band, profAt, panel, jointBall, shell, sculpt } from './kit.js';
 import * as THREE from 'three';
 import { sphere, ellipsoid, cone, torus, blend, carve } from './sdf.js';
-import { aoTone, surfAt, sculptSide } from './femlegs.js';
+import { aoTone, surfAt, sculptSide, socketProf, bead } from './femlegs.js';
 
 const PI = Math.PI;
 const WIN = [1.32, 2.82]; // (the back's window round the cradle's boss: cores.js's own)
@@ -69,21 +69,26 @@ function planOf(T) {
 function ribField(T, P) {
   const B = T.bust, Sp = T.spine, hi = Sp.hi - L.chestBase, top = T.ribs.top, y0 = P[0][1], N = 96;
   const R = new Float32Array(N + 1), WX = new Float32Array(N + 1); // (the profile and the widening tabled: the field reads them a sample)
-  for (let i = 0; i <= N; i++) { const y = y0 + ((top - y0) * i) / N; R[i] = profAt(P, y) * (1.03 - 0.035 * Math.min(1, Math.max(0, (y - top + 0.18) / 0.18))); WX[i] = wideAt(T, y); } // (drawn in under the panels' lap at its top)
+  const foot = hi + 0.3 * Sp.rt, flare = Sp.rt + 0.21; // (the foot's lip 0.3 of the ball over its equator, flared to a thick rim round it)
+  for (let i = 0; i <= N; i++) {
+    const y = y0 + ((top - y0) * i) / N; WX[i] = wideAt(T, y);
+    R[i] = Math.max(profAt(P, y) * (1.03 - 0.035 * Math.min(1, Math.max(0, (y - top + 0.18) / 0.18))), flare - 0.55 * Math.max(0, y - foot - 0.04)); // (drawn in under the panels' lap at its top)
+  }
   const tab = (A, y) => { const u = Math.max(0, Math.min(N, ((y - y0) / (top - y0)) * N)), i = Math.min(N - 1, u | 0), t = u - i; return A[i] + (A[i + 1] - A[i]) * t; };
   const barrel = (X, y, Z) => {
     const wx = tab(WX, y), r0 = Math.hypot(X / wx, Z), c = r0 > 1e-5 ? Z / r0 : 0, f = Math.max(0, c);
     const x0 = X / (wx * (1 - 0.05 * f * bump(y, 0.4, 1.6)));
     const z0 = Z > 0 ? (Z - f ** 1.5 * B.amp * Math.exp(-(((Math.abs(X) - B.x) ** 2) + ((y - B.y) * 0.8) ** 2) / B.s)) / T.d : (Z + 0.08 * bump(y, 1.4, 2.9)) / T.back;
     const side = (Math.hypot(x0, z0) - tab(R, y)) * 0.66, cap = y - top, h = Math.min(1, Math.max(0, 0.5 + (cap - side) / 0.12)); // (its top rounded)
-    return Math.max(side + (cap - side) * h + 0.06 * h * (1 - h), y0 - 0.06 - y);
+    const d = side + (cap - side) * h + 0.06 * h * (1 - h), lo = foot - y, g = Math.min(1, Math.max(0, 0.5 + (lo - d) / 0.12)); // (its foot rounded too)
+    return d + (lo - d) * g + 0.06 * g * (1 - g);
   };
   let f = blend(0.12, barrel, ellipsoid([0.5, 0.86, -0.04], [0.2, 0.36, 0.36]), ellipsoid([-0.5, 0.86, -0.04], [0.2, 0.36, 0.36])); // (the floating ribs)
   f = carve(0.07, f, sphere([0, hi, 0], Sp.rt + 0.05), ellipsoid([0, 0.62, 0.66], [0.38, 0.56, 0.3])); // (the ball's socket; the costal arch)
   return f;
 }
 /** A line laid on a sculpt's surface: each point the ray's hit from inside (from, dir pairs), pressed a hair in. */
-const onSurf = (f, rays, k = 0.995) => rays.map(([o, d]) => surfAt(f, o, d)).filter(Boolean).map(([x, y, z]) => [x * k, y, z * k]);
+const onSurf = (f, rays, k = 1.0) => rays.map(([o, d]) => surfAt(f, o, d)).filter(Boolean).map(([x, y, z]) => [x * k, y, z * k]);
 
 export function femCoreLook(id, F) {
   const T = TORSO[F.fem] || TORSO.haydee, P = band(T.prof, T.prof[0][1], T.prof[T.prof.length - 1][1], 1, 40), W = planOf(T);
@@ -106,7 +111,10 @@ export function femCoreLook(id, F) {
   const hoop = (S, y, h, k = 1.05, c = L.trimM, piece = S.trim) => piece.geo(sculpt(shell(band(P, y - h, y + h, k, 2), 44), W), { c });
   const backPlates = (S, y0, y1, a, c = L.pale) => panels(S, [[y0, y1, a, PI - gap - G, c], [y0, WIN[0], PI - gap - G, PI - G, c], [WIN[1], y1, PI - gap - G, PI - G, c]]);
   const sockets = (S) => {
-    for (const s of [-1, 1]) S.p.geo(cup(T.cup).rotateZ(s * PI / 2), { at: [s * mounts.shoulder[0], mounts.shoulder[1], 0], c: L.ivory });
+    // the shoulder's socket in the chest's side: a cup round the ball opening outward along the arm's hang (its axis the arm's rest
+    // splay, femlimbs.js), its rolled lip just past the ball's equator, its back a dome sunk into the chest; mostly under the pauldron
+    const R = T.cup / 1.05, prof = socketProf(R, R * 0.35, -R * 1.15, false, -0.1), splay = 0.48;
+    for (const s of [-1, 1]) S.p.geo(new THREE.LatheGeometry(prof.map(([r, y]) => new THREE.Vector2(r, y)), 36).rotateZ(s * splay), { at: [s * mounts.shoulder[0], mounts.shoulder[1], 0], c: L.pale });
   };
   const U = T.under;
   /** The sculpted lower ribcage (ribField), one mesh a core's grooves; `c` the core's shade of it. */
@@ -116,11 +124,11 @@ export function femCoreLook(id, F) {
     // the rib margins (sunk lines from the arch's top down and out to the flanks) and the core's bands round the ribs
     for (const s of [1, -1]) {
       const m = onSurf(f, [0, 1, 2, 3, 4].map((i) => { const u = i / 4; return [[0, 1.14 - 0.42 * u, 0], [s * (0.12 + 0.9 * u), 0, 1 - 0.55 * u]]; }));
-      if (m.length > 3) tube(S.core, m, 0.02, L.coreD, 16);
+      if (m.length > 3) bead(S, m, 0.016);
     }
     for (const y of bands) {
       const ring = onSurf(f, Array.from({ length: 41 }, (_, i) => { const a = (i / 40) * PI * 2; return [[0, y, 0], [Math.sin(a), 0, Math.cos(a)]]; }));
-      if (ring.length > 30) tube(S.core, ring, 0.024, L.coreD, 80);
+      if (ring.length > 30) bead(S, ring, 0.018, L.trimM, 80);
     }
   };
 
@@ -147,13 +155,14 @@ export function femCoreLook(id, F) {
       panels(S, [[R0, U + 0.5, -0.06, 0.06, L.trimL, 1.07]], S.trim); // (the sternum strip)
     },
   };
-  /** Haydee's collar, sculpted: a rolled ring round the neck's well (a dish the helm floats over), the two clavicles running out of it
-   *  down to the shoulders' caps under the skin of the trim, blended into it. */
+  /** Haydee's collar, sculpted: a socket for the neck's ball (a rolled rim round a cup, rising off the chest's top on a short flare),
+   *  so the gap to the floating helm reads as a neck; the two clavicles running out of it to the shoulders, blended into it. */
   const collar = (S) => {
     const ends = [on(0.5, top - 0.14, 1.02), on(1.25, T.shoulderY + 0.24, 1.01)];
-    const f0 = blend(0.12, torus([0, top - 0.06, 0], 0.37, 0.085), cone(ends[0], ends[1], 0.075, 0.05));
-    const f = carve(0.05, (x, y, z) => f0(Math.abs(x), y, z), sphere([0, top + 0.14, 0], 0.31));
-    sculptSide(S.trim, f, [[-1.15, T.shoulderY + 0.1, -0.6], [1.15, top + 0.08, 0.62]], 0.045, { key: `fem.collar.${F.fem}`, tone: aoTone(f, L.trimD, L.trimL) });
+    const nk = [0, mounts.neck[0], mounts.neck[1]], rn = 0.21; // (the neck's ball: the head's, at the neck joint, the helm floating over it)
+    const f0 = blend(0.12, torus([nk[0], nk[1] - 0.07, nk[2]], rn + 0.1, 0.075), cone([0, top - 0.16, 0.02], [0, nk[1] - 0.1, nk[2]], 0.46, rn + 0.12), cone(ends[0], ends[1], 0.075, 0.05));
+    const f = carve(0.05, (x, y, z) => f0(Math.abs(x), y, z), sphere(nk, rn + 0.05)); // (the neck's socket: a rolled rim round a cup under the gap)
+    sculptSide(S.trim, f, [[-1.15, T.shoulderY + 0.1, -0.6], [1.15, top + 0.12, 0.62]], 0.04, { key: `fem.collar.${F.fem}.2`, tone: aoTone(f, L.trimD, L.trimL) });
   };
   /** The waist column's lower ball made the dantian, a target point (South, 2026-11-02: "Think of the waist joint like the dantian.
    *  Its a target point!"): larger than the other balls, a heart of the glow (lit while sealed) round the skin's, and a gold reticle
@@ -173,7 +182,7 @@ export function femCoreLook(id, F) {
       S.p.geo(dome, { sc: [1, 0.94, 1], c: L.pale });
       S.g.ring(r * 0.99, 0.035, { at: [0, 0, 0.02], sc: [1, 0.94, 1], c: L.gold }, 36, 4); // (the plate's rim)
       if (id === 'kilnCore') S.trim.geo(shell([[r * 0.62, h * 0.72], [r * 0.7, h * 0.66], [r * 0.62, h * 0.6]], 32).rotateX(PI / 2), { sc: [1, 0.94, 1], c: L.trimM });
-      S.core.geo(shell([[r * 0.9, -0.1], [r * 0.8, 0.0]], 24).rotateX(PI / 2), { c: L.coreD }); // (the gap under the rim)
+      S.core.geo(shell([[r * 0.9, -0.1], [r * 0.8, 0.0]], 24).rotateX(PI / 2), { c: L.core }); // (the gap under the rim)
     },
   };
   return {
@@ -189,11 +198,12 @@ export function femCoreLook(id, F) {
       const Sp = T.spine;
       {
         dantian(S, Sp.r, [0, Sp.lo, 0]); jointBall(S, Sp.rt, [0, Sp.hi, 0]);
-        S.core.lathe([[0.19, Sp.lo + Sp.r * 0.95], [0.19, Sp.hi - Sp.rt * 0.9]], { c: L.core }, 18);
-        const a = Sp.lo + Sp.r * 0.98, b = Sp.hi - Sp.rt * 0.75, m = (a + b) / 2;
-        S.p.lathe([[0.2, a], [0.29, a + 0.05], [0.33, m - 0.08], [0.33, m + 0.08], [0.29, b - 0.05], [0.2, b]], { c: L.pale }, 32); // (the drum)
-        S.trim.lathe([[0.335, m - 0.045], [0.36, m], [0.335, m + 0.045]], { c: L.trimM }, 32);
-        for (const y of [a + 0.02, b - 0.02]) S.p.lathe([[0.22, y - 0.03], [0.25, y], [0.22, y + 0.03]], { c: L.ivory }, 24); // (the drum's lips)
+        // the drum between them lathed with a socket at each end (femlegs.js socketProf): a cup over the dantian, a lip under the upper ball
+        const a = Sp.lo + Sp.r * 0.95, b = Sp.hi - Sp.rt * 0.95, m = (a + b) / 2, rd = 0.33;
+        S.p.lathe([[rd, a], [rd + 0.01, m], [rd, b]], { c: L.pale }, 36);
+        S.p.lathe(socketProf(Sp.r, rd, -Sp.r * 0.95, false).map(([r, y]) => [r, y + Sp.lo]), { c: L.pale }, 36);
+        S.p.lathe(socketProf(Sp.rt, rd, -Sp.rt * 0.95).map(([r, y]) => [r, y + Sp.hi]), { c: L.pale }, 36);
+        S.trim.ring(rd + 0.012, 0.016, { at: [0, m, 0], c: L.trimM }, 48, 5); // (a fine trim bead round the drum)
       }
     },
   };
