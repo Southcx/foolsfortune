@@ -29,7 +29,7 @@
 import { MOTIF, quote } from './motifs.js';
 
 const E = (i, b, d, n, v, o) => ({ i, b, d, n, v, o });
-const D = { line: 0.5, mine: true, pinch: false, practice: false, heat: 0, heard: null, wisp: false, lamp: 1, jelly: false, sag: 0 };
+const D = { line: 0.5, mine: true, pinch: false, practice: false, heat: 0, heard: null, wisp: false, lamp: 1, jelly: false, sag: 0, clapper: false, off: false, clapHalf: false };
 
 /** The duel as the music last heard it: its Line's share of the board that is yours, whose turn, the pinch, practice; and the chain's
  *  heat, from duel.chain on the bus (subscribed once a game). */
@@ -40,6 +40,7 @@ export function hearDuel(game) {
   const secret = s?.rs?.secret; // (the aberrant's own colour, by its ruleset's secret: rulesets.js)
   D.wisp = !D.practice && secret === 'snuff'; D.lamp = D.wisp ? 1 - (s?.secret?.k ?? 0) : 1; // (the aberrant Lantern Wisp: its fen colour, its lantern's light)
   D.jelly = !D.practice && secret === 'dissolve'; D.sag = D.jelly ? s?.secret?.k ?? 0 : 0; // (the aberrant slip jelly: Gall's colour, heavier as its slime piles)
+  D.clapper = !D.practice && secret === 'clapback'; D.off = D.clapper && !!s?.secret?.off; D.clapHalf = D.clapper && !!s?.secret?.half; // (the aberrant clapperjar: its clap on the beat (or the off-beat, Syncopated), Mirth's colour)
   if (!b) return;
   D.line = b.line / Math.max(1, b.w);
   D.mine = s.toMove === 0;
@@ -84,20 +85,34 @@ const gall = (i, c) => {
   [0.75, 2.75].forEach((b, k) => ev.push(E('marimba', b, 0.25, TRI[c][(i + k) % 3] + 24, 0.06)));
   return ev;
 };
+/** THE CLAPPERJAR'S COLOUR (ABERRANTS.md 5.2: Mirth): its clap is the secret's tell, so it stands on the beat exactly as the arranger
+ *  schedules it (secrets.js clapOf judges a drag against this very clock), a clap on each of the bar's four beats, or on each "and"
+ *  once Syncopate moves it (D.off: heard from the next bar); half there it claps harder, a soft flam ahead of each (the clap itself
+ *  never moved). Over it Mirth popping in steps: bongos in sixteenths (too even to read as on or off) and a toy celesta skipping up the
+ *  chord every fourth bar. Never a cue that names the secret: only its clap. */
+const mirth = (i, c) => {
+  if (!D.clapper) return [];
+  const at = D.off ? [0.5, 1.5, 2.5, 3.5] : [0, 1, 2, 3], v = D.clapHalf ? 0.9 : 0.6;
+  const ev = at.map((b) => E('clap', b, 0.25, null, v));
+  if (D.clapHalf) at.forEach((b) => { if (b >= 0.125) ev.push(E('clap', b - 0.125, 0.125, null, 0.18)); });
+  for (let n = 0; n < 16; n++) ev.push(E('bongo', n * 0.25, 0.25, null, 0.08, { hi: n % 2 === 1 }));
+  if (i % 4 === 3) [0, 1, 2, 1, 2].forEach((k, n) => ev.push(E('celesta', 0.25 + n * 0.5, 0.4, TRI[c][k] + 12 + (n > 2 ? 12 : 0), 0.08)));
+  return ev;
+};
 const cool = () => { D.heat = Math.max(0, D.heat - 1); }; // (a step a bar)
 
 const SECTIONS = [
   { id: 'open', bars: 2, gain: 7, bar: (i) => (i === 0 ? [E('riser', 0, 8, null, 0.2), ...pad('G', 0.05), E('bell', 0, 1, 79, 0.12)]
     : [...pizz('D', 0.18), E('pizz', 3.5, 0.5, 62, 0.25), E('reverse', 2, 2, null, 0.25)]) },
-  { id: 'even', bars: 8, gain: 3, bar: (i) => { const c = EVEN_CH[i % 4], ev = [...four(), ...pizz(c), ...bass(c), ...pad(c), ...turnTune(i, 'marimba', 0, 0.3), ...heat(i, c), ...fen(i, c), ...gall(i, c)]; cool();
+  { id: 'even', bars: 8, gain: 3, bar: (i) => { const c = EVEN_CH[i % 4], ev = [...four(), ...pizz(c), ...bass(c), ...pad(c), ...turnTune(i, 'marimba', 0, 0.3), ...heat(i, c), ...fen(i, c), ...gall(i, c), ...mirth(i, c)]; cool();
     if (!D.mine) return ev.filter((e) => e.i !== 'snap'); // (the foe's turn: the backbeat holds its breath)
     return ev; } },
   { id: 'ahead', bars: 8, gain: 3.5, bar: (i) => { const c = AHEAD_CH[i % 4], ev = [...four(1.05), ...[0.5, 1.5, 2.5, 3.5].map((b) => E('ohat', b, 0.5, null, 0.16)), ...twinkle(c), ...bass(c, 0.32),
-    ...pad(c, 0.04), E('supersaw', 0, 4, TRI[c], 0.03, { cutoff: 1800 }), ...turnTune(i, 'vibes', 12, 0.26), ...heat(i, c), ...fen(i, c), ...gall(i, c), ...(i % 4 === 0 ? [E('crash', 0, 1, null, 0.3)] : [])]; cool(); return ev; } },
+    ...pad(c, 0.04), E('supersaw', 0, 4, TRI[c], 0.03, { cutoff: 1800 }), ...turnTune(i, 'vibes', 12, 0.26), ...heat(i, c), ...fen(i, c), ...gall(i, c), ...mirth(i, c), ...(i % 4 === 0 ? [E('crash', 0, 1, null, 0.3)] : [])]; cool(); return ev; } },
   { id: 'pinch', bars: 8, gain: 6, scale: [0, 2, 4, 7, 9], bar: (i) => { const c = PINCH_CH[i % 4];
     const ev = [...[0, 2].flatMap((b) => [E('kick', b, 1, null, 0.6), E('kick', b + 0.28, 1, null, 0.4)]), ...ticks(), E('sub', 0, 4, ROOT[c], 0.012),
       ...[0, 0.5, 1, 1.5, 2, 2.5, 3, 3.5].map((b) => E('strings', b, 0.5, ROOT[c] + 12, 0.1, { spic: true, bright: 1300 })), ...pad(c, 0.06),
-      ...(i % 2 ? [] : quote(MOTIF.FIVE, 'marimba', { up: -12, v: 0.26 })), ...heat(i, c), ...fen(i, c), ...gall(i, c), ...(i === 7 ? [E('riser', 0, 4, null, 0.2)] : [])]; cool(); return ev; } },
+      ...(i % 2 ? [] : quote(MOTIF.FIVE, 'marimba', { up: -12, v: 0.26 })), ...heat(i, c), ...fen(i, c), ...gall(i, c), ...mirth(i, c), ...(i === 7 ? [E('riser', 0, 4, null, 0.2)] : [])]; cool(); return ev; } },
   { id: 'practice', bars: 8, gain: 3.4, bar: (i) => { const c = CALM_CH[i % 4]; D.heat = 0;
     return [...pad(c, 0.06), ...[0, 1, 2, 3].map((b, k) => E('marimba', b, 1, TRI[c][k % 3], 0.16)), E('upright', 0, 2, ROOT[c], 0.28), E('upright', 2, 2, ROOT[c] + 7, 0.2),
       ...(i % 4 === 0 ? quote(MOTIF.ANSWER, 'celesta', { up: 12, x: 2, v: 0.14 }) : [])]; } },
