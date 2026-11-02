@@ -27,6 +27,7 @@ export function bootCourse(game, made) {
   mark('course');
   game.course = course;
   game.gateRing = new GateRing(game); // (the Index's hoops and the gate-out under the seam: vfx/gatering.js)
+  game.systems.add('fx', game.gateRing, { clock: 'raw', name: 'gateRing' }); // (the `fx` phase: core/systems.js)
   game.circuits = new Circuits(game); // (timed laps through the gymnasium's pieces)
   course.menu.onClose = () => { if (input.enabled && !cursorFree()) input.requestLock(); };
   // Mind Mapping: the map and compass, and the named places in them

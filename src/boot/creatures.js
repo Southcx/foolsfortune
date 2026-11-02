@@ -47,9 +47,11 @@ export async function bootCreatures(game, made) {
   game.creatures = new Creatures(game);
   game.throwingRoom = new ThrowingRoom(game, level.throwingRoom); // (the Throwing Room off the Workshop: its pots, Strawman, the drills; world/throwingroom/)
   (game.throwingRoomDress = new ThrowingRoomDress(game)).update(0); // (its stand-ins dressed: the drill targets as fired plates, the Index's lectern; vfx/throwingroomkit.js)
+  game.systems.add('fx', game.throwingRoomDress, { clock: 'raw', name: 'throwingRoomDress' }); // (the `fx` phase: core/systems.js)
   game.stun = new Stun(game); // (a mind knocked out of itself, for anything that can be: stun.js)
   game.dissolve = new Dissolve(game); // (a zandatsu's pieces, come undone into Lachryma: vfx/dissolve.js)
   game.spawnLook = new SpawnLook(game); // (how a creature comes in: the island's own rise from the ground, an Egregore or a stray tears in from midair: vfx/spawnlook.js)
+  game.systems.add('fx', (d) => game.spawnLook.update(d, game.camera), { clock: 'raw', name: 'spawnLook' }); // (the `fx` phase: core/systems.js)
   game.blowFeel = new BlowFeel(game); // (a melee blow's weight, looks only: its sparks, ring, ribbon flare, camera kick, flinch: vfx/blowfeel.js)
   game.oddsTags = new OddsTags(game); // (the world's chances pinned to their thing, for True Odds: feedback/oddstags.js)
   game.figmentScatter = new FigmentScatter(game); // (a Figment's death: snapped, its wire, motes into the air and the ground: vfx/figmentscatter.js)

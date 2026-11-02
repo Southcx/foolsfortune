@@ -32,6 +32,7 @@ export function bootCoop(game, made) {
   };
   game.party = new Party(game, { makeRig }); // (the siblings: coop/party.js)
   game.siblingShatter = new SiblingShatter(game); // (a sibling emptied by friendly fire breaks and is drawn back together beside you: vfx/siblingshatter.js)
+  game.systems.add('fx', game.siblingShatter, { name: 'siblingShatter' }); // (the `fx` phase: core/systems.js)
   game.meetings = new Meetings(game, game.party, { makeRig }); // (each sibling met once where its craft lives: coop/meeting.js)
   game.guests = new Guests(game, { makeRig }); // (people there with you, over the published page's room: coop/guests.js)
   game.sharedFoe = new SharedFoe(game); // (guests on the Great Dunemaw's errand fight one FOE: its health and crown the party's sum, coop/sharedfoe.js, COOP.md C5)

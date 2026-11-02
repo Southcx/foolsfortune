@@ -22,8 +22,9 @@
 
 /** The phases, in the order the frame runs them. Each is a fixed point in boot/frame.js's tick: `looks` after the rooms' runtimes
  *  (the crossing, the open sea, the garden), `world` after the props and the pool (the rooms' and progress's own services: the
- *  Well, the Raceway, the pier, the quests ...), `marks` after the effects (the world's dressers and each tool's marks). */
-export const PHASES = ['looks', 'world', 'marks'];
+ *  Well, the Raceway, the pier, the quests ...), `fx` with the effects (the weather's look, the night, the water, the wipes,
+ *  the glitch and the storm warp, the duel's view ...), `marks` after the effects (the world's dressers and each tool's marks). */
+export const PHASES = ['looks', 'world', 'fx', 'marks'];
 
 export class Systems {
   constructor() { this.phases = new Map(PHASES.map((p) => [p, []])); }
