@@ -1,6 +1,6 @@
 # The VFX catalogue (generated: do not edit)
 
-Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-11-02). 629 effects in 41 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
+Every effect the game can play, read from the code by `node scripts/vfxcatalogue.mjs` (2026-11-02). 646 effects in 42 families. How effects are made and named: docs/VFX.md; the library's plan: docs/plans/art/VFX-LIBRARY.md.
 
 **Play one:** `game.vfx.play(name, { pos, dir, normal, tint, power, scale, feeling, domain, suit, follow })`; a held one returns a handle (`h.pos`, `h.k`, `h.stop()`). A name falls back from the most particular (`hit.slash.crystal` -> `hit.slash` -> `hit`), so a new name always plays something.
 
@@ -447,10 +447,10 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `hit` | one-shot | sprites:core, shape:disc, sprites:streak, sprites:soft | what every blow shows, whatever struck what: the 0.1 s white core, a star of rays, sparks thrown along the blow, motes left hanging | audio/cues.js, audio/godpowers.js, audio/seaserpent.js +37 |
+| `hit` | one-shot | sprites:core, shape:disc, sprites:streak, sprites:soft | what every blow shows, whatever struck what: the 0.1 s white core, a star of rays, sparks thrown along the blow, motes left hanging | audio/crossing.js, audio/cues.js, audio/godpowers.js +39 |
 | `hit.blunt` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft, sprites:puff | a blunt blow: a ring of rays knocked out flat, and dust lifting off | vfx/blowfeeleffects.js, world/strawmanwell/fighter/kit.js |
 | `hit.blunt.clay` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft, sprites:puff, sprites:chip | extends `hit.blunt`. what clay gives up: chips of it, falling, and a puff of its dust | vfx/vfx.js |
-| `hit.blunt.clay.kill` | one-shot | sprites:core, shape:ring×2, sprites:streak, sprites:soft, sprites:puff, sprites:chip, sprites:star4 | extends `hit.blunt.clay`. a kill: what it was made of bursts in a pop of its colour (a second shape), and a few stars of it go up (a finishing beat on top of its own death) |  |
+| `hit.blunt.clay.kill` | one-shot | sprites:core, shape:ring×2, sprites:streak, sprites:soft, sprites:puff, sprites:chip, sprites:star4 | extends `hit.blunt.clay`. a kill: what it was made of bursts in a pop of its colour (a second shape), and a few stars of it go up (a finishing beat on top of its own death) | vfx/mechs/partsbody.js |
 | `hit.blunt.crystal` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft, sprites:puff, sprites:shard, sprites:sparkle | extends `hit.blunt`. crystal rings and splinters: shards and glints in the stone's colours |  |
 | `hit.blunt.jelly` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft×2, sprites:puff, sprites:bubble | extends `hit.blunt`. jelly: bubbles that float off, drops of its goo that fall |  |
 | `hit.blunt.jelly.kill` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft×2, sprites:puff, sprites:bubble×2, shape:sphere | extends `hit.blunt.jelly`.  |  |
@@ -463,7 +463,7 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `hit.shot.clay.kill` | one-shot | sprites:core, shape:ring×2, sprites:streak, sprites:soft, sprites:chip, sprites:puff, sprites:star4 | extends `hit.shot.clay`.  |  |
 | `hit.shot.crystal` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft, sprites:shard | extends `hit.shot`.  |  |
 | `hit.shot.jelly` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft×2, sprites:puff, sprites:bubble | extends `hit.blunt.jelly`.  |  |
-| `hit.shot.metal` | one-shot | sprites:core, shape:ring, sprites:streak×2, sprites:soft | extends `hit.shot`.  |  |
+| `hit.shot.metal` | one-shot | sprites:core, shape:ring, sprites:streak×2, sprites:soft | extends `hit.shot`.  | vfx/mechs/partsbody.js |
 | `hit.shot.stone` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft, sprites:chip, sprites:puff | extends `hit.shot`.  |  |
 | `hit.shot.straw` | one-shot | sprites:core, shape:ring, sprites:streak×2, sprites:soft | extends `hit.shot`.  |  |
 | `hit.shot.wood` | one-shot | sprites:core, shape:ring, sprites:streak, sprites:soft, sprites:shard | extends `hit.shot`.  |  |
@@ -540,9 +540,9 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `domain.psychokinesis.hold` | held | shape:band, shape:ring×2, sprites:chip, sprites:puff | held: the lift: warped air round the body, a push breathing out, debris orbiting | courier/domainarts/run.js |
 | `domain.psychokinesis.level` | one-shot | shape:ring×3, shape:band×3, shape:sphere, flash, light, shake, sprites:chip, sprites:streak, sprites:puff | the level-up: two shockwave walls, debris lifted high, a dust curtain, a shake |  |
 | `domain.spellscription.cast` | one-shot | shape:crescent×4, shape:ring×3, shape:quad, shape:sphere, shape:band, sprites:talisman, sprites:soft | written: strokes in the air, a circle drawn by a racing brush, a seal stamped at its heart, ink left | courier/domainarts/depth.js, courier/domainarts/run.js |
-| `domain.spellscription.hit` | one-shot | shape:ring, shape:quad, shape:sphere, sprites:crescent, sprites:soft | a seal stamped on the point in the camera's plane, a circle written round it | courier/domainarts/depth.js, courier/domainarts/run.js |
+| `domain.spellscription.hit` | one-shot | shape:ring, shape:quad, shape:sphere, sprites:crescent, sprites:soft | a seal stamped on the point in the camera's plane, a circle written round it | courier/domainarts/depth.js, courier/domainarts/run.js, vfx/mechs/mount.js |
 | `domain.spellscription.hold` | held | shape:ring×2, shape:crescent, shape:band, sprites:soft, sprites:sparkle | held: the written circle turning, a brush tracing it, a band of script at the chest | courier/domainarts/depth.js |
-| `domain.spellscription.level` | one-shot | shape:crescent×6, shape:ring×3, shape:quad, shape:sphere, shape:band×2, flash, light, shake, sprites:talisman, sprites:soft | the level-up: five strokes, a circle drawn round the Courier, the seal stamped at the feet, two bands of script |  |
+| `domain.spellscription.level` | one-shot | shape:crescent×6, shape:ring×3, shape:quad, shape:sphere, shape:band×2, flash, light, shake, sprites:talisman, sprites:soft | the level-up: five strokes, a circle drawn round the Courier, the seal stamped at the feet, two bands of script | vfx/mechs/mount.js |
 
 ### flourish (27)
 
@@ -575,6 +575,28 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 | `flourish.whole.leaves` | one-shot | sprites:leaf |  |  |
 | `flourish.whole.moths` | one-shot | sprites:moth, sprites:soft |  |  |
 | `flourish.whole.porcelain` | one-shot | sprites:shard, sprites:swirl, sprites:glint |  |  |
+
+### mech (17)
+
+| effect | kind | layers | what | asked by |
+|---|---|---|---|---|
+| `mech.blink.step` | one-shot | shape:ring, shape:pillar, sprites:star4 |  | vfx/mechs/speciallooks.js |
+| `mech.gust` | one-shot | shape:wave, sprites:puff, sprites:chip, sprites:streak |  | vfx/mechs/speciallooks.js |
+| `mech.gust.cone` | one-shot | shape:cone |  | vfx/mechs/speciallooks.js |
+| `mech.hasten.halo` | held | shape:ring, shape:hoop, shape:quad×2 |  | vfx/mechs/speciallooks.js |
+| `mech.hasten.hold` | held | shape:ring×3, sprites:star4, sprites:streak |  | vfx/mechs/speciallooks.js |
+| `mech.pull.motes` | one-shot | sprites:streak, sprites:soft |  | vfx/mechs/speciallooks.js |
+| `mech.pull.snap` | one-shot | shape:ring, sprites:puff, sprites:chip |  | vfx/mechs/speciallooks.js |
+| `mech.pull.tether` | one-shot | shape:beam |  | vfx/mechs/speciallooks.js |
+| `mech.quake` | one-shot | shape:ring, shape:band, shape:disc, sprites:puff, sprites:chip, shake |  | vfx/mechs/speciallooks.js |
+| `mech.ready` | one-shot | sprites:star4, shape:hoop, sprites:glint |  | vfx/mechs/speciallooks.js |
+| `mech.scan.iris` | one-shot | shape:disc, shape:hoop, sprites:star4 |  | vfx/mechs/speciallooks.js |
+| `mech.scan.mark` | held | shape:disc, shape:hoop×3, shape:ring, sprites:star4 |  | vfx/mechs/speciallooks.js |
+| `mech.scan.sweep` | one-shot | shape:cone×2 |  | vfx/mechs/speciallooks.js |
+| `mech.sunder.crumble` | one-shot | sprites:chip, sprites:puff, sprites:sparkle |  | vfx/mechs/speciallooks.js |
+| `mech.sunder.edge` | one-shot | shape:beam×2 |  | vfx/mechs/speciallooks.js |
+| `mech.ward.cast` | one-shot | shape:ring, shape:hoop, shape:disc, shape:crescent×3, sprites:talisman, shake |  | vfx/mechs/speciallooks.js |
+| `mech.ward.hold` | held | shape:ring, shape:hoop, shape:band, sprites:talisman |  | vfx/mechs/speciallooks.js |
 
 ### aura (14)
 
@@ -819,7 +841,7 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `cut` | one-shot | shape:disc, sprites:streak, sprites:glint | a cut through the air (the cutlass meeting something, the blade mode's planes, the god hand's slash): a seam of light along the stroke, a hot star at its middle, glints thrown off it ('from' -> 'to' in the context: spawn 'line') | cine/overture.board.js, cine/sequence.js, music/lockheart.js +12 |
+| `cut` | one-shot | shape:disc, sprites:streak, sprites:glint | a cut through the air (the cutlass meeting something, the blade mode's planes, the god hand's slash): a seam of light along the stroke, a hot star at its middle, glints thrown off it ('from' -> 'to' in the context: spawn 'line') | cine/overture.board.js, cine/sequence.js, music/lockheart.js +13 |
 
 ### dunemaw (1)
 
@@ -837,7 +859,7 @@ Columns: the name; held (plays until stopped) or a one-shot; its layers (type:wh
 
 | effect | kind | layers | what | asked by |
 |---|---|---|---|---|
-| `impact` | one-shot | shape:cone, sprites:streak, sprites:puff |  | audio/cues.js, audio/damage.js, audio/shellparts.js +55 |
+| `impact` | one-shot | shape:cone, sprites:streak, sprites:puff |  | audio/cues.js, audio/damage.js, audio/shellparts.js +56 |
 
 ### implode (1)
 

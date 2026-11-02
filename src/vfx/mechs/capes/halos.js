@@ -6,10 +6,11 @@
 // Built in the parts body's gold and labradorite (so the mount's glazing leaves them their own), and in programs of their own: the
 // drums' lacquer and hide, the flames' licking gold and film.
 //   renko   the drums' ring (renkō, 連鼓): Raijin's hoop of eight taiko, lacquer-red barrels with gold tacks and hoops, pale hide heads
-//           each a mitsudomoe in gold, the hoop turning; a drum roll chases round it: each drum in turn struck (its heads flash, it
+//           each a mitsudomoe in vermilion filling most of it (2026-11-02: gold went dark brown at distance), the hoop turning; a drum roll chases round it: each drum in turn struck (its heads flash, it
 //           swells a little, a ring of the film runs off it) and the lightning jumps on from the drum before
 //   kohai   the flame halo (kaen kōhai, 迦楼羅炎): Fudō Myōō's karura flames, S-curled tongues with hooked tips in two overlapping rows
-//           (gold behind, the film's light before) round an open ring, licking (each tongue's tip swaying and stretching up it, in
+//           (gold behind; before it fire, ember at the root through a gold core to the film's violet only at the tip, additive, licking
+//           faster than the gold) round an open ring, licking (each tongue's tip swaying and stretching up it, in
 //           the vertex program), the film breathing, embers drifting up off it
 // Prior art: the Wind God and Thunder God screens of Tawaraya Sōtatsu (Kennin-ji, early 17th c.: Raijin's ring of drums on a hoop,
 // the mitsudomoe on their heads) and Ogata Kōrin's copy; the taiko's byō-uchi (the tacked hide) and its lacquered dō; Fudō Myōō's
@@ -31,13 +32,13 @@ const PI = Math.PI;
 export const HALO_FIT = { R: [2.0, 0.8], lift: 0.2, gap: 0.95, back: 0.35, bob: 0.06 };
 /** How the halos live (real seconds): `idle` the strength with no Jar sealed (1 sealed); the drums' turn (rad/s), a lap of the roll,
  *  a strike's decay, its swell, its ring's run and reach; the flames' lick (rad/s), sway (of a tongue's height), stretch, the film's
- *  breath, and the embers (count, rise m/s, life s). */
+ *  breath, and the embers (count, rise m/s, life s); the inner row's fire against the gold's (its lick's speed, sway and stretch x). */
 export const HALO_LIFE = {
   idle: 0.3,
   renko: { turn: 0.12, lap: 1.6, decay: 0.16, swell: 0.08, ring: 0.45, reach: 1.9 },
-  kohai: { lick: 2.6, sway: 0.11, stretch: 0.06, breath: 3.1, embers: 18, rise: 1.1, life: 1.8 },
+  kohai: { lick: 2.6, sway: 0.11, stretch: 0.06, breath: 3.1, embers: 18, rise: 1.1, life: 1.8, fireLick: 2.3, fireSway: 1.8, fireStretch: 2.2 },
 };
-const COLOURS = { lacquer: 0x8a1c14, hide: 0xefe4cc };
+const COLOURS = { lacquer: 0x8a1c14, hide: 0xefe4cc, tomoe: 0xd8341c };
 
 /** Where the halo's plane stands for this frame, and its radius. */
 function fit(fr) {
@@ -93,11 +94,35 @@ function licking(mat, U) {
   return mat;
 }
 
+/** The inner row as fire (2026-11-02: South's last look, "it reads as lavender petals"): the lick's vertex wave run faster (`uLick`), and
+ *  each tongue coloured up its height (aTongue.w) from an ember root through a gold core to the film's violet only at the tip, additive,
+ *  its brightness the lick's strength; a flicker run up it so the light moves as the shape does. */
+function fire(mat, U) {
+  licking(mat, U);
+  const lick = mat.onBeforeCompile;
+  mat.onBeforeCompile = (sh) => {
+    lick(sh);
+    sh.vertexShader = sh.vertexShader.replace('#include <common>', '#include <common>\nvarying float vFireU; varying float vFirePh;')
+      .replace('#include <project_vertex>', `{ vec2 rr = position.xy - aTongue.xy; float cz = cos(aTongue.z), sz = sin(aTongue.z); vFireU = clamp((-sz * rr.x + cz * rr.y) / max(aTongue.w, 1e-3), 0.0, 1.0); vFirePh = aPhase; }
+  #include <project_vertex>`);
+    sh.fragmentShader = sh.fragmentShader.replace('#include <common>', `#include <common>
+varying float vFireU; varying float vFirePh; uniform vec4 uLick;`)
+      .replace('vec4 diffuseColor = vec4( diffuse, opacity );', `float fu = vFireU, fl = 0.75 + 0.25 * sin(uLick.x * 9.0 + vFirePh * 2.0 - fu * 7.0);
+  vec3 emb = vec3(1.0, 0.32, 0.06), gld = vec3(1.0, 0.78, 0.3), tip = vec3(${hexVec(L.film)});
+  vec3 fc = mix(emb, gld, smoothstep(0.0, 0.45, fu)); fc = mix(fc, vec3(1.0, 0.95, 0.8), smoothstep(0.3, 0.55, fu) * (1.0 - smoothstep(0.55, 0.8, fu)) * 0.6); fc = mix(fc, tip, smoothstep(0.72, 1.0, fu));
+  vec4 diffuseColor = vec4(fc * (1.6 * uLick.w) * fl, opacity * (1.0 - 0.55 * smoothstep(0.8, 1.0, fu)));`);
+  };
+  mat.customProgramCacheKey = () => 'mech-halo-fire';
+  return mat;
+}
+const hexVec = (h) => { const c = new THREE.Color(h); return `${c.r.toFixed(3)}, ${c.g.toFixed(3)}, ${c.b.toFixed(3)}`; };
+
 export const HALOS = {
   renko(fr, mats, own) {
     const P = fit(fr), R = P.R, rd = R * 0.15, len = rd * 0.95, group = new THREE.Group(), ring = new THREE.Group(), Kl = HALO_LIFE.renko; group.add(ring);
     const lac = new THREE.MeshPhysicalMaterial({ name: 'mech-halo-lacquer', color: COLOURS.lacquer, roughness: 0.28, metalness: 0.05, clearcoat: 1, clearcoatRoughness: 0.1 });
     const hide = new THREE.MeshStandardMaterial({ name: 'mech-halo-hide', color: COLOURS.hide, roughness: 0.7, metalness: 0 });
+    const tomoeM = new THREE.MeshStandardMaterial({ name: 'mech-halo-tomoe', color: COLOURS.tomoe, emissive: COLOURS.tomoe, emissiveIntensity: 0.35, roughness: 0.45, metalness: 0 });
     const flash = new THREE.MeshBasicMaterial({ name: 'mech-halo-flash', color: 0xffffff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
     // the hoop and its stones (the body's gold and labradorite)
     const S = seg();
@@ -108,17 +133,17 @@ export const HALOS = {
     // one drum (its axis +Z, to the back and the front), drawn eight times: the lacquered barrel, the hide heads, the gold
     const barrel = new Piece(), heads = new Piece(), gold = new Piece();
     barrel.geo(shell([[rd * 0.92, -len / 2], [rd * 1.04, -len * 0.25], [rd * 1.08, 0], [rd * 1.04, len * 0.25], [rd * 0.92, len / 2]], 28).rotateX(PI / 2), { c: 0xffffff });
-    const tom = plate(tomoe(rd * 0.62), 0.03, 0.01); // (small on the head, so the pale hide reads round it)
+    const tom = plate(tomoe(rd * 0.86), 0.04, 0.012), toms = new Piece(); // (vermilion on the pale hide, filling most of the head: read from afar)
     for (const z of [-1, 1]) {
       heads.geo(new THREE.CircleGeometry(rd * 0.93, 32), { at: [0, 0, z * len / 2], rot: [0, z > 0 ? 0 : PI, 0], c: 0xffffff });
       gold.geo(new THREE.TorusGeometry(rd * 0.95, rd * 0.06, 6, 32), { at: [0, 0, z * len / 2], c: L.gold }); // (its hoop)
       for (let t = 0; t < 14; t++) { const b = (t / 14) * PI * 2; gold.ball(rd * 0.05, { at: [Math.cos(b) * rd * 1.0, Math.sin(b) * rd * 1.0, z * len * 0.38], c: L.gold }, 6, 4); } // (the tacks)
-      for (let m = 0; m < 3; m++) gold.geo(tom, { at: [0, 0, z * (len / 2 + 0.02)], rot: [0, z > 0 ? 0 : PI, (m / 3) * PI * 2], c: L.gold }); // (the mitsudomoe)
+      for (let m = 0; m < 3; m++) toms.geo(tom, { at: [0, 0, z * (len / 2 + 0.03)], rot: [0, z > 0 ? 0 : PI, (m / 3) * PI * 2], c: 0xffffff }); // (the mitsudomoe)
     }
     gold.ring(rd * 1.07, rd * 0.035, { at: [0, 0, 0], rot: [PI / 2, 0, 0], c: L.gold }, 32, 4); // (a gilt band round the barrel's belly)
     const disc = new Piece(); for (const z of [-1, 1]) disc.geo(new THREE.CircleGeometry(rd * 0.9, 28), { at: [0, 0, z * (len / 2 + 0.04)], rot: [0, z > 0 ? 0 : PI, 0], c: 0xffffff });
     const inst = (geo, mat, name) => { const m = new THREE.InstancedMesh(geo, mat, 8); m.name = `mech-cape.renko.${name}`; m.castShadow = mat !== flash; ring.add(m); own.push(m); return m; };
-    const D = [inst(barrel.done(), lac, 'barrel'), inst(heads.done(), hide, 'heads'), inst(gold.done(), mats.g, 'gold')];
+    const D = [inst(barrel.done(), lac, 'barrel'), inst(heads.done(), hide, 'heads'), inst(gold.done(), mats.g, 'gold'), inst(toms.done(), tomoeM, 'tomoe')];
     const F = inst(disc.done(), flash, 'flash'), Rg = inst(new THREE.TorusGeometry(rd * 1.1, rd * 0.05, 6, 32), flash, 'ring');
     const drums = [...Array(8).keys()].map((k) => { const a = (k / 8) * PI * 2 + PI / 8; return { a, at: new THREE.Vector3(Math.cos(a) * R, Math.sin(a) * R, 0), hit: -9 }; });
     const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), Zax = new THREE.Vector3(0, 0, 1), sc = new THREE.Vector3(), col = new THREE.Color(), film = new THREE.Color(L.film);
@@ -149,13 +174,14 @@ export const HALOS = {
       }
       if (Z) { const since = t - drums[((beat % 8) + 8) % 8].hit; Z.set({ k: Math.exp(-since / (Kl.decay * 1.2)) * (0.15 + 0.85 * str) }); Z.update(dt); }
       draw();
-    }, dispose() { Z?.dispose(); for (const m of [lac, hide, flash]) m.dispose(); } };
+    }, dispose() { Z?.dispose(); for (const m of [lac, hide, flash, tomoeM]) m.dispose(); } };
   },
   kohai(fr, mats, own) {
     const P = fit(fr), R = P.R, Rr = R * 0.8, k0 = fr.scl, open = 0.62, Kl = HALO_LIFE.kohai, group = new THREE.Group();
     const U = { value: new THREE.Vector4(0, Kl.sway, Kl.stretch, HALO_LIFE.idle) };
     const goldM = licking(new THREE.MeshStandardMaterial({ name: 'mech-halo-flame', color: L.gold, roughness: 0.3, metalness: 0.7, emissive: 0x3a2208, side: THREE.DoubleSide }), U);
-    const filmM = licking(new THREE.MeshStandardMaterial({ name: 'mech-halo-film', color: L.film, emissive: L.film, emissiveIntensity: 0.45, roughness: 0.3, metalness: 0.1, side: THREE.DoubleSide }), U);
+    const U2 = { value: new THREE.Vector4(0, Kl.sway * Kl.fireSway, Kl.stretch * Kl.fireStretch, HALO_LIFE.idle) };
+    const filmM = fire(new THREE.MeshBasicMaterial({ name: 'mech-halo-fire', color: 0xffffff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, side: THREE.DoubleSide }), U2);
     const emberM = new THREE.MeshBasicMaterial({ name: 'mech-halo-ember', color: 0xffffff, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false });
     // the ring, open at its foot, and its jewel (the body's gold, trim and labradorite)
     const S = seg();
@@ -176,8 +202,8 @@ export const HALOS = {
       const g = Pc.done(); g.setAttribute('aTongue', new THREE.Float32BufferAttribute(tg, 4)); g.setAttribute('aPhase', new THREE.Float32BufferAttribute(ph, 1));
       return g;
     };
-    const gm = new THREE.Mesh(row(13, Rr, R * 0.27, R * 0.6, 0, 0.14 * k0, 0), goldM), fm = new THREE.Mesh(row(13, Rr * 0.97, R * 0.12, R * 0.4, -0.14 * k0 - 0.05, 0.08 * k0, 0.5), filmM);
-    for (const [m, nm] of [[gm, 'flames'], [fm, 'film']]) { m.name = `mech-cape.kohai.${nm}`; m.castShadow = true; group.add(m); own.push(m); }
+    const gm = new THREE.Mesh(row(13, Rr, R * 0.27, R * 0.6, 0, 0.14 * k0, 0), goldM), fm = new THREE.Mesh(row(13, Rr * 0.97, R * 0.17, R * 0.52, -0.14 * k0 - 0.05, 0.08 * k0, 0.5), filmM);
+    for (const [m, nm] of [[gm, 'flames'], [fm, 'fire']]) { m.name = `mech-cape.kohai.${nm}`; m.castShadow = m === gm; group.add(m); own.push(m); } // (the fire is light: no shadow)
     // the embers: small motes off the flames' tips, rising and fading
     const E = new THREE.InstancedMesh(new THREE.OctahedronGeometry(0.07 * k0 + 0.03, 0), emberM, Kl.embers); E.name = 'mech-cape.kohai.embers'; group.add(E); own.push(E);
     const m4 = new THREE.Matrix4(), q = new THREE.Quaternion(), v = new THREE.Vector3(), Zax = new THREE.Vector3(0, 0, 1), sc = new THREE.Vector3(), col = new THREE.Color(), hot = new THREE.Color(L.ember), cool = new THREE.Color(L.film);
@@ -191,7 +217,7 @@ export const HALOS = {
       str += (HALO_LIFE.idle + (1 - HALO_LIFE.idle) * Math.min(1, Math.max(0, seal)) - str) * Math.min(1, dt * 3);
       group.position.y = P.y + Math.sin(t * 0.9) * HALO_FIT.bob * fr.scl;
       U.value.x = t * (Kl.lick / 2.6); U.value.w = 0.45 + 0.55 * str;
-      filmM.emissiveIntensity = (0.25 + 0.5 * str) * (0.75 + 0.25 * Math.sin(t * Kl.breath) ** 2);
+      U2.value.x = t * (Kl.lick / 2.6) * Kl.fireLick; U2.value.w = (0.45 + 0.55 * str) * (0.8 + 0.2 * Math.sin(t * Kl.breath) ** 2); // (the fire: licking faster, breathing)
       for (let i = 0; i < motes.length; i++) {
         const M = motes[i]; let age = t - M.born;
         if (age > Kl.life) { spawn(M, t); age = 0; }

@@ -33,7 +33,8 @@
 //                chest at the shoulders (pauldronL/R), riding a part of the arm's swing; 'default' the arms part's own
 //   A HIP PIECE  setHip(id) (vfx/mechs/parts/hips.js HIPS: the crinoline, tassets, kusazuri, pteruges) hung from a belt round the
 //                pelvis as pauldrons hang from the shoulders, each plate a hinge on a spring the thighs push open (stepped in pose(),
-//                after the legs); built again with the legs
+//                after the legs, the forearms and what the hands hold pushing too); built again with the legs; a bell (the crinoline)
+//                splays the arms' hang out clear of it (its `splay`)
 //   THE BACK     setCape(id) (vfx/mechs/capes.js CAPES: the drums' ring, the flame halo, Fujin's wind bag, the heavenly sash, the
 //   PIECE        knight's cape) worn at the shoulders and back clear of the cradle, laid out again whenever the frame is rebuilt or a
 //                part swapped; its cloth stepped in pose() with the chest plates' springs (the same frame time)
@@ -145,7 +146,7 @@ export class MechPartsBody {
   /** The back piece worn again on the frame as it now stands (capes.js; laid out by the frame's shoulders, back, Jar and hips). */
   wearCape() { return this.capeId ? wearCape(this, this.capeId, this.game?.scene || null) : wearCape(this, null); }
   /** A hip piece put on ('crinoline' | 'tassets' | 'kusazuri' | 'pteruges'; null or 'none' takes it off). */
-  setHip(id) { this.hipId = HIPS[id] ? id : null; if (this.body) { this.buildSlot('hip'); if (this.capeId) this.wearCape(); } return this; }
+  setHip(id) { this.hipId = HIPS[id] ? id : null; if (this.body) { this.buildSlot('hip'); this.layoutArms(); if (this.capeId) this.wearCape(); } return this; } // (the arms laid out again: a bell's piece splays them clear of it)
   /** A back piece put on ('renko' | 'kohai' | 'kazebukuro' | 'tenne' | 'knight'; null or 'none' takes it off). */
   setCape(id) { this.capeId = CAPES[id] ? id : null; if (this.body) this.wearCape(); return this; }
 
@@ -236,7 +237,7 @@ export class MechPartsBody {
     const over = Math.max(0, reach - (shoulderY - 1.0));
     const tw = new THREE.Euler(0, 0, 0), q = new THREE.Vector3();
     for (const [s, k] of SIDES) {
-      this.rest(j[`shoulder${k}`], [-0.08 - Math.min(0.9, over * 0.35), 0, s * (A.splay ?? 0.1)]); this.rest(j[`pauldron${k}`], [-0.03 - Math.min(0.9, over * 0.35) * 0.35, 0, s * (0.04 - (A.slope ?? 0))]); // (slope: a shoulder line falling to the cap)
+      this.rest(j[`shoulder${k}`], [-0.08 - Math.min(0.9, over * 0.35), 0, s * ((A.splay ?? 0.1) + (this.hipPiece?.splay ?? 0))]); this.rest(j[`pauldron${k}`], [-0.03 - Math.min(0.9, over * 0.35) * 0.35, 0, s * (0.04 - (A.slope ?? 0))]); // (slope: a shoulder line falling to the cap)
       j[`elbow${k}`].position.set(0, -A.upper, 0); this.rest(j[`elbow${k}`], [-0.2 - Math.min(0.8, over * 0.3), 0, -s * (A.bend ?? (A.splay ? A.splay * 0.6 : 0.04))]);
       j[`wrist${k}`].position.set(0, -A.fore, 0); this.rest(j[`wrist${k}`], [0, 0, 0]);
       const twist = s * (-PI / 2 + 0.45); this.rest(j[`hand${k}`], [0, twist, 0]);
