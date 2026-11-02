@@ -29,12 +29,14 @@ import { DODGE, SHIELD, TECH, LEDGE, SNAP } from '../../../progress/platformfigh
 import { POSES, HOLDS, KIT } from './moves.js';
 import { moveOf } from './fighterstate.js';
 import { KeyTrack, keysOf, registerKeys } from '../../../courier/anim/keyposes.js';
-import { FIGHTER_BRAWLER_KEYS, FIGHTER_SONDELASS_KEYS, FIGHTER_LOCKHEART_KEYS, FIGHTER_PSYGUN_KEYS, FIGHTER_VERITOME_KEYS } from '../../../courier/anim/keys/index.js';
+import { FIGHTER_BRAWLER_KEYS, FIGHTER_SONDELASS_KEYS, FIGHTER_LOCKHEART_KEYS, FIGHTER_PSYGUN_KEYS, FIGHTER_VERITOME_KEYS, FIGHTER_SOULBRUSH_KEYS, FIGHTER_DREAMVANE_KEYS, FIGHTER_CRUCIBELLE_KEYS } from '../../../courier/anim/keys/index.js';
 
 // (Calissa's key tables for the kits' sets, KEY-POSES.md 6: their timing the kit's own frames below, so no fill)
 registerKeys('fighter.brawler', FIGHTER_BRAWLER_KEYS); registerKeys('fighter.sondelass', FIGHTER_SONDELASS_KEYS); registerKeys('fighter.lockheart', FIGHTER_LOCKHEART_KEYS);
 registerKeys('fighter.psygun', FIGHTER_PSYGUN_KEYS); registerKeys('fighter.veritome', FIGHTER_VERITOME_KEYS);
-const SETS = { unarmed: 'fighter.brawler', sondelass: 'fighter.sondelass', lockheart: 'fighter.lockheart', psygun: 'fighter.psygun', veritome: 'fighter.veritome' };
+registerKeys('fighter.soulbrush', FIGHTER_SOULBRUSH_KEYS); registerKeys('fighter.dreamvane', FIGHTER_DREAMVANE_KEYS); registerKeys('fighter.crucibelle', FIGHTER_CRUCIBELLE_KEYS);
+const SETS = { unarmed: 'fighter.brawler', sondelass: 'fighter.sondelass', lockheart: 'fighter.lockheart', psygun: 'fighter.psygun', veritome: 'fighter.veritome',
+  brush: 'fighter.soulbrush', dreamvane: 'fighter.dreamvane', crucibelle: 'fighter.crucibelle' };
 const setOf = (kit) => SETS[kit?.tool] || null;
 
 const smooth = (x) => { const t = Math.min(1, Math.max(0, x)); return t * t * (3 - 2 * t); };
