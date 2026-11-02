@@ -188,3 +188,6 @@ export const rainOf = ({ state = 'Balanced', brimming = false } = {}) => Math.mi
  *  gift slot. It never sculpts, paints, places, waters, catches, releases or takes (Animal Crossing's visitors do not dig): your inner
  *  world is yours. Nothing a guest does moves the economy beyond the gift. */
 export const GUEST = { gifts: 1, may: ['hop', 'look', 'pet', 'spar', 'gift'] };
+
+// ---- Gall and Fury in the garden (GALL-AND-FURY.md 8): souring, baking and scorching, read by the waterworks, the plants and the hand
+export { SPOIL, souredBy, strokeK, fadeK, scorchStep } from './gardenweather.js';

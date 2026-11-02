@@ -110,6 +110,21 @@ A build is worn only in the Well and comes off whole on leaving. The original is
 - **The clear.** Every foe's stocks taken. The rank comes from the time, the hits taken and the longest string.
 - **Training.** A lectern for UnclePunch-style training: the % reset, the foes standing, shielding or jumping, and the frame data of the last move shown as a tag.
 
+### 5.1 The flat stage (stages/flatstage.js)
+
+Final Destination's layout for one against one, the wings' last door. Built by the same builder as the Arena (`fighterStage`,
+`stages/fighterstage.js`), with the same kit, rules, stocks, training and rank; only the numbers differ.
+
+- **The layout.** One main stage 27.5 m wide with ledges at both ends; no platforms; an underside in two steps tapering in (12 m and
+  8.5 m either side, to 4.2 m and 7 m down).
+- **The blast lines.** 28.5 m from mid-stage on both sides, 18.8 m above and 21.9 m below: each of the Arena's moved by Melee's own
+  difference between Final Destination and Battlefield (libmelee: the ground's edge 85.57 against 68.4, the sides 246 against 224, the
+  top 188 against 200, the bottom 140 against 108.8). So only the top is tighter: vertical KOs come a little sooner, the sides about 7
+  points of percent later from mid-stage by `koPercent` (unmeasured in the kernel yet), the bottom a longer fall to recover from.
+- **One foe.** No FOES lectern: the kit's count stays 1. The lecterns are the level, the kit, training and the reset.
+- **The ledger.** Its events carry `stage: 'flatstage'` (`well.fighter.hit`, `.ko`, `.stock`, `well.stage.clear`); its clear is
+  `well.stage.clear.flatstage` (Flat Out, sw15, beside the Arena's Main Event); KOs are also counted a stage (`well.fighter.ko.<stage>`).
+
 ## 6. Drawn with key poses (KEY-POSES.md)
 
 Every move here is a pose sequence: the lead-in, the strike held through its active frames, the follow-through. Hitlag is a held pose
@@ -208,4 +223,3 @@ a shot (now with an arc, a size, a speed and a behind), a lunge, a recovery (its
 
 - **Touch controls** (MOBILE.md's next pass).
 - **Whether the kit leaves the Arena:** the Brawl's dummies, and the 3D game's blows (hitstop at least).
-- **A second stage:** Final Destination's flat layout for 1v1.
