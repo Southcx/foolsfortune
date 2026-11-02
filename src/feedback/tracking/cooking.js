@@ -27,10 +27,10 @@ export function cookingRules({ on, L, log }) {
     if (e.n > 1) { L.inc('cook.batch'); L.inc('cook.batch.servings', e.n); L.hi('cook.batch.size', e.n); }
     if (e.auto) L.inc('cook.auto');
     const held = e.feeling ? ` Its ${e.feeling} lasts ${e.hold} real seconds.` : '';
-    const how = e.auto ? 'auto-cooked' : 'served';
-    const what = e.n > 1 ? `a batch of ${e.n}, ${e.label.toLowerCase()}` : `${art(e.label)} ${e.label.toLowerCase()}`;
+    const how = e.auto ? 'Auto-cooked' : 'Served'; // (Espada's form, 2026-11-02: "Served: <dish>. Grade: <grade>.")
+    const what = e.n > 1 ? `${e.label} x ${e.n}` : e.label;
     const rest = e.kept > 0 ? ` ${e.kept} ${e.kept === 1 ? 'serving is' : 'servings are'} in your Pneuka Box.` : '';
-    log.say('gain', `You ${how} ${what}: ${e.grade}.${held}${rest}`, { key: 'cook.serve', throttle: 1 });
+    log.say('gain', `${how}: ${what}. Grade: ${e.grade}.${held}${rest}`, { key: 'cook.serve', throttle: 1 });
   });
   on('cook.eat', (e) => {
     if (e.by !== 'courier') return;
@@ -43,5 +43,5 @@ export function cookingRules({ on, L, log }) {
     L.inc('drop.take'); if (e.cat) L.inc(`drop.take.${e.cat}`); L.first('drop.first');
     const it = itemOf(e.item); if (it) log.say('gain', `+ ${it.name.toLowerCase()}`, { key: `drop.${e.item}`, throttle: 0.6 });
   });
-  on('drop.fall', (e) => { if (e.by === 'courier' && e.rare) { L.inc('drop.rare'); log.say('gain', 'Something rare fell.', { key: 'drop.rare', throttle: 2 }); } });
+  on('drop.fall', (e) => { if (e.by === 'courier' && e.rare) { L.inc('drop.rare'); log.say('gain', 'Rare drop!', { key: 'drop.rare', throttle: 2 }); } });
 }

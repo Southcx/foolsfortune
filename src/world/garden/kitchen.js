@@ -81,7 +81,7 @@ export class Kitchen {
     const pick = (k) => { this.addin = k; this.show('choose'); };
     btn('PLAIN', () => pick(null), this.addin ? '' : 'on');
     for (const k of Object.keys(have)) btn(`${itemOf(`ing.${k}`)?.name || k} ×${have[k]}`, () => pick(k), this.addin === k ? 'on' : '');
-    if (!Object.keys(have).length) root.appendChild(el('div', 'ck-line', 'Creatures drop what a dish can be seasoned with: a creature of a feeling drops that feeling\'s taste.'));
+    if (!Object.keys(have).length) root.appendChild(el('div', 'ck-line', 'Creatures drop add-ins. A creature of a feeling drops that feeling\'s taste.'));
     { // (G228 hook: batch and auto-cook, Dovina's rules in progress/cooking/batch.js: up to ten at once once a dish is cooked TRUE three times; auto-cook (the knack) at one grade below your best
       const dish = `bread.${this.addin || 'plain'}`, L = this.game.ledger, max = batchMax(dish, L, this.addin ? have[this.addin] : Infinity);
       this.n = Math.min(this.n || 1, max);
@@ -133,14 +133,14 @@ export class Kitchen {
       this.finish('proof', v);
     }, 'big');
     btn('LEAVE IT', () => this.close());
-    this.tell('It rises on the game clock while you do other things: about a game hour to double. Come back and poke it.');
+    this.tell('It rises on the game clock, about a game hour to double. Come back and poke it.');
     this.draw = () => { this.lastProof = C.proofValue(); this.drawProof(this.lastProof); };
   }
 
   // ------------------------------------------------------------------ bake: hold, steam early, take out at the colour
   page_bake(root, row, btn) {
     const M = MOVES.bake, S = this.st; S.v = 0; S.steamed = 0;
-    btn('STEAM', () => { if (S.v <= M.steamUntil) { S.steamed = 1; this.tell('A cloud of steam: the crust stays soft while the loaf springs up.'); } else this.tell('Too late for steam: the crust has set.'); });
+    btn('STEAM', () => { if (S.v <= M.steamUntil) { S.steamed = 1; this.tell('Steamed. The crust stays soft while the loaf rises.'); } else this.tell('Too late to steam. The crust has set.'); });
     btn('KNOCK', () => this.tell(tellAt(M, S.v)));
     btn('TAKE IT OUT', () => this.finish('bake', S.v), 'big');
     this.tell('The oven is hot. Steam it in the first minutes, then watch the crust.');

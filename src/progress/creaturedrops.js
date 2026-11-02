@@ -40,7 +40,7 @@ export const DROP_CATEGORIES = {
   'ing.rich':      { label: 'RICH', generic: 'a pat of butter on a leaf', items: ['ing.butter'] },
   'ing.heat':      { label: 'HEAT', generic: 'a red chilli', items: ['ing.chilli'] },
   'ing.bitter':    { label: 'BITTER', generic: 'a dark serrated leaf', items: ['ing.bitterleaf'] },
-  'ing.salt':      { label: 'SALT AND TEARS', generic: 'an onion, its skin split', items: ['ing.onion'] },
+  'ing.salt':      { label: 'SALT', generic: 'an onion, its skin split', items: ['ing.onion'] },
   'ing.sour':      { label: 'SOUR', generic: 'a stoppered cruet of vinegar', items: ['ing.vinegar'] },
   'ing.umami':     { label: 'UMAMI', generic: 'a folded strip of kombu', items: ['ing.kombu'] },
   'ing.body':      { label: 'BODY', generic: 'a small crock of miso', items: ['ing.miso'] },

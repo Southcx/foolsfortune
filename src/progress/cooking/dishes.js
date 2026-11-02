@@ -36,7 +36,7 @@ export const FAMILIES = {
 };
 
 /** A dish is its family with one add-in (or none): the pot recognises it and keeps its recipe (names placeholders for Espada's). */
-const ADDIN_DISH = { mint: 'MINT', honey: 'HONEY', butter: 'BUTTER', chilli: 'CHILLI', bitterleaf: 'BITTERLEAF', onion: 'ONION', vinegar: 'SOUR', kombu: 'KELP', miso: 'MISO' };
+const ADDIN_DISH = { mint: 'MINT', honey: 'HONEY', butter: 'BUTTER', chilli: 'CHILLI', bitterleaf: 'BITTER LEAF', onion: 'ONION', vinegar: 'SOUR', kombu: 'KELP', miso: 'MISO' };
 export function dishFor(family, addin = null) {
   const F = FAMILIES[family]; if (!F) return null;
   if (addin && isFish(addin)) { // (a fish: named by its species; seafood is the fish itself, seared)
