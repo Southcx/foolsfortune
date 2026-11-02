@@ -4,7 +4,7 @@ South, 2026-10-30: "designing Godhand puzzles and working out creative and abstr
 object, warping it IAW the godhand power suite, then making the player recreate the steps applied like a mimicry game ... Islands of
 Insight (failed puzzle MMO) and Puzzle Pirates are good prior art reference."
 
-Rules: `src/progress/mimicry.js`. World: `src/world/mimicry/mimicry.js`. Log and ledger: `src/feedback/tracking/mimicry.js`.
+Rules: `src/progress/mimicry.js` (the herd's `src/progress/mimicryherd.js`, the creations' `src/progress/mimicrysculpt.js`). World: `src/world/mimicry/mimicry.js`. Log and ledger: `src/feedback/tracking/mimicry.js`.
 Achievements: `src/progress/mimicryachievements.js`. Check: `node scripts/mimicry.mjs`.
 
 ## 1. What it is
@@ -57,19 +57,23 @@ Measured by `scripts/mimicry.mjs` on every puzzle and on two game days' puzzles:
 
 ## 5. The ladder, the stones and the lending
 
-Fourteen puzzles. The first is open, and each solved opens the next (`MIMIC_LADDER`). There is also the game day's puzzle, seeded and
+Seventeen puzzles, fifteen of them live today (`MIMIC_LIVE`: the two whose family the runtime does not run yet are stepped over, section 7).
+The first is open, and each solved opens the next live one (`MIMIC_LADDER`). There is also the game day's puzzle, seeded and
 the same for everyone (`dayPuzzle`), at the Gnomon flats' stone once its rungs are done.
 
 | stone (area) | rungs | teaches |
 |---|---|---|
 | the Gnomon flats | One Mound, A Hollow, Two Mounds, The Ditch, Level It, Unmade | Shape (raise, lower, level), Carve, UNDO |
-| the shore | Move the Heap, Fill the Hollow, The Slab | Scoop and Pour, Lift Ground |
-| the crystal ridges | Sand to Clay, Order of Things, The Moat | Transmute, MATCH |
-| the ruins | Swap, Copy | Swap (Ouranurgy), Copy Terrain (Spellscription) |
+| the shore | Move the Heap, Fill the Hollow, The Flock, The Slab | Scoop and Pour, Herd (Possession), Lift Ground |
+| the crystal ridges | Sand to Clay, Order of Things, The Moat, Below the Surface | Transmute, MATCH, Layer View (Divination) |
+| the ruins | Swap, Pillar and Arch, Copy | Swap (Ouranurgy), Sculpt (Manifestation), Copy Terrain (Spellscription) |
+
+The ladder: One Mound, A Hollow, Two Mounds, The Ditch, Move the Heap, Level It, Fill the Hollow, **The Flock**, Sand to Clay, Order of
+Things, Unmade, The Slab, Swap, **Pillar and Arch**, Copy, The Moat, **Below the Surface**.
 
 - **A puzzle's powers are lent while it is open.** `powerOpen` asks `game.mimicry.lends`, so Swap at Ouranurgy 1 is the puzzle's tool,
   never yours to keep.
-- **A clean copy (two stars) of the puzzle for Transmute, Lift Ground, Swap or Copy Terrain is that power's third way to be learned**
+- **A clean copy (two stars) of the puzzle for Transmute, Lift Ground, Swap, Copy Terrain, Herd, Sculpt or Layer View is that power's third way to be learned**
   (`progress/skills.js` MIMIC_WAY), beside its count way and its feat way. This is the domain gaps' answer:
   - Ouranurgy and Spellscription had no power below level 15. Their powers can now be learned by copying the System. The System teaches
     the God Arts the way it teaches the Movement Arts.
@@ -83,16 +87,56 @@ the same for everyone (`dayPuzzle`), at the Gnomon flats' stone once its rungs a
 - The game day's puzzle pays 3 minutes of play, once a game day.
 - A rung is a few minutes' thought, so it pays about the aim; it is never a farm.
 
-## 7. Next (not built)
+## 7. The three domains' puzzles (GAPS G141 to G143)
 
-- **Possession:** a herding puzzle (Herd a flock of clapperjars into a pen drawn on the ground). It is a different family: creatures,
-  not matter.
-- **Manifestation:** Sculpt's creations copied (a pillar, an arch). It needs the creations compared voxel to voxel, not the field.
-- **Divination:** a Layer View puzzle (the start's lower layers hidden; read them before you copy).
+Every domain now has a rung. A puzzle's **family** says what is copied, and so how it is judged (`scoreOf`). A family the runtime does
+not run yet (`MIMIC_RUNS`) is never open, and the ladder and the achievements count only the live rungs (`MIMIC_LIVE`). So a rung
+waiting on the runtime never blocks the next one. The runtime's hooks are in `docs/handoffs/petra/2026-11-02-from-dovina-mimicry-puzzles.md`.
+
+| puzzle (stone) | family | runs today | teaches |
+|---|---|---|---|
+| The Flock (the shore) | herd | no (the flock needs spawning) | Herd takes the nearest few within its reach |
+| Pillar and Arch (the ruins) | creation | no (the demonstration and the snapshot need the creations) | a stroke's length decides what Sculpt raises |
+| Below the Surface (the ridges) | matter, veiled | yes (without the veil until the ghost hides it) | read the ground before you copy it |
+
+**The Flock** (Possession, MIMIC, tier 2, par 2; `progress/mimicryherd.js`):
+- Six clapperjars stand in two knots of three, 8 m apart, and a hexagonal pen is drawn between them (2.4 m to a corner).
+- Herd at the toolkit's numbers reaches 6 m and takes the nearest 4 (`MIMIC_TOOL.herd`, RAMP's level-open row). So each knot is out of
+  reach of the other's drag, par is one drag a knot, and one drag from between the knots takes only four of the six.
+- **Score:** the flock's share inside the pen's polygon. A body outside counts 1 - d / 0.75 within 0.75 m of the line (a shoulder over
+  the line is not a miss), then nothing.
+- Numbers: five of six in scores 0.83 (solved); all six 1.00 (clean); four of six 0.67 (not solved, so the drag from between fails).
+- **What it teaches:** Herd's cap. The lesson is reading how many it takes and from how far, never a tutorial.
+
+**Pillar and Arch** (Manifestation, MIMIC, tier 2, par 2; `progress/mimicrysculpt.js`):
+- The System raises a pillar (a stroke under 1.5 m) and an arch over a 6 m span (1.8 m high: 0.3 of its span). Both are sized as the
+  hand sizes them at the toolkit's scale 1 (`SCULPT`, godhand/matterarts.js `sculpt`).
+- **Score:** voxel to voxel over the creations' own grid (godhand/voxels.js), never the field: a creation stands over the ground.
+  - The solids are read at 0.5 m cells (each holding its eight voxels' solid share) and softened over half a metre (two box passes).
+  - Then the same Dice of the two changes the matter uses, times the share of the asked volume raised, up to 80% (`VOX.enough`).
+  - It works only inside the solids' bounds: about 1 ms a score on a desk, the matter's 1.3.
+- The start is whatever already stands on the patch, so a creation of yours beside the stone is neither required nor wiped.
+- Numbers: the System's 1.00; nothing 0; a hand's copy half a metre off 0.78; the pillar alone 0.22.
+- **What it teaches:** what the stroke's length makes. The arch's span is read off its height.
+
+**Below the Surface** (Divination, MATCH, tier 3, par 3; the veil, `veilOf`, `unveil`):
+- A mound is shown. Two hollows are asked, each 0.8 m deep, hidden while the target lies more than 0.2 m under the start's ground
+  (`MIMIC.veil`). A raise's ring sinks about 0.1 m and stays shown, a hint and no more.
+- A Layer View read lifts the veil within 2 m of its line (`MIMIC.reveal`). Three reads across the patch see it all.
+- Layer View is lent (`lend: ['strata']`) and is the power in hand as the puzzle opens. A read is not a stroke.
+- Scored as any matter puzzle. Numbers: the veil hides 32 cells (8 m²); copying only what is shown scores 0.33; the System's 1.00; a
+  hand's copy 0.77.
+- **What it teaches:** that what you see is not all that was done. Until the ghost hides the veiled cells, it plays as a plain MATCH.
+
+The solves pay their domains as the rest do (`domains.js`: Possession is in the list now; Divination already by MATCH).
+
+## 8. Next (not built)
+
 - **Looks:**
   - Calissa's ghost (in place of the gold wire);
   - the stone's dress;
   - the System's step marks during the demonstration;
-  - the readout tag (MATCH, strokes, stars) on the stone while it is open.
+  - the readout tag (MATCH, strokes, stars) on the stone while it is open;
+  - the herd puzzle's pen on the ground, and the ghost's veil (`docs/handoffs/calissa/2026-11-02-from-dovina-mimicry-looks.md`).
 - **Sounds:** Wanda's chime a step, the turn's call and the solve's stars.
 - **Words:** Espada's labels and lines.
