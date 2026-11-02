@@ -27,6 +27,7 @@ export function poolRules({ L, log, g }) {
     L.inc('lach.gain', e.amount); L.inc(`lach.gain.${e.source}`, e.amount);
     if (e.source === 'regen') return;
     sum = (at > L.play - 2.5 ? sum : 0) + e.amount; at = L.play; // (folded into one line)
+    if (Math.round(sum) < 1) return; // (a sliver kept folding until it is a whole one: "You absorb 0 Lachryma" said nothing true, casebook 399)
     log.say('gain', `You absorb ${Math.round(sum)} Lachryma.`, { key: 'lgain', win: 2.5, fmt: () => `You absorb ${Math.round(sum)} Lachryma.` });
   });
   P.on('denied', () => { L.inc('lach.denied'); log.say('warn', 'You do not have enough Lachryma.', { key: 'lden', throttle: 2.5 }); });

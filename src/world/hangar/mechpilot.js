@@ -40,6 +40,7 @@ import { HANGAR, PROVING, SOCKET_REACH, clampProving } from './layout.js';
 import { MechBody, MECH_BODY, seatOf, heightOf } from './mech.js';
 import { MechWeapons } from './mechweapons.js';
 import { MechTech } from './mechtech.js';
+import { MechSpecials } from './mechspecials.js';
 import { strainBlow, lockOf, headOff, legsLeft, past } from '../../progress/mechs/joints.js';
 import { GIANT_LOOK } from './giant.js';
 
@@ -68,7 +69,7 @@ export class MechPilot {
     this.hangar = hangar; this.game = hangar.game; this.state = hangar.state;
     this.pos = new THREE.Vector3(); this.vel = new THREE.Vector3(); this.yaw = 0; this.vy = 0;
     this.camYaw = 0; this.camPitch = 0.28; this.shake = 0; this.mode = 'gantry'; this.kneel = 0; this.dt = 0;
-    this.mech = null; this.weapons = new MechWeapons(this); this.tech = new MechTech(this); this.cableLine = null;
+    this.mech = null; this.weapons = new MechWeapons(this); this.tech = new MechTech(this); this.specials = new MechSpecials(this); this.cableLine = null;
     this.resetRun();
   }
   get stats() { return this.state.stats; }
@@ -80,18 +81,21 @@ export class MechPilot {
   resetRun() {
     this.sync = SYNC.start; this.battery = this.stats.capacity; this.cable = null; this.berserk = 0; this.phase = 0; this.gait = 0; this.walking = false;
     this.shiftT = -1; this.assault = false; this.boostT = 0; this.grounded = true; this.lastWish = null; this.faceT = 0; this.syncSaid = 0; this.spentKJ = 0;
-    this.prevDown = {}; this.pressing = false; this.weapons.reset(); this.tech?.reset(); this.peakY = null;
+    this.prevDown = {}; this.pressing = false; this.weapons.reset(); this.tech?.reset(); this.specials?.reset(); this.peakY = null;
   }
 
   /** The body built (or rebuilt on assembling) into the scene. */
-  build() { if (!this.mech) { this.mech = new MechBody(this.game); this.game.scene.add(this.mech.group); } this.mech.build(this.stats); this.pose(); }
+  build() { if (!this.mech) { this.mech = this.game.makeMechBody?.() ?? new MechBody(this.game); this.game.scene.add(this.mech.group); } this.mech.build(this.stats); this.pose(); } // (the parts body, vfx/mechs/partsbody.js; the placeholder where it is not installed)
+  /** The cradle's height above the frame's feet, measured off the body as built (its seat between the shoulder blades), else the rule's. */
+  seatH() { const B = this.mech; if (!B?.seat || !B.group) return seatOf(this.stats); B.group.updateMatrixWorld(true); return B.seat(_c).y - B.group.position.y; }
+  clampPos() { clampProving(this.pos, MECH_BODY.radius); }
   dispose() { this.weapons.dispose(); this.mech?.dispose(); this.mech = null; this.dropCable(); }
 
   /** Back in the gantry, kneeling no more, its seat at the walkway's height (the lift raised or lowered for the frame's legs). */
   toGantry() {
     const A = HANGAR.at, Gn = HANGAR.gantry;
     this.mode = 'gantry'; this.kneel = 0; this.vel.set(0, 0, 0); this.vy = 0; this.yaw = Gn.yaw; this.camYaw = Gn.yaw;
-    this.pos.set(A.x + Gn.x, A.y + HANGAR.walkY + 0.6 - seatOf(this.stats), A.z + Gn.z);
+    this.pos.set(A.x + Gn.x, A.y + HANGAR.walkY + 0.6 - this.seatH(), A.z + Gn.z);
     this.dropCable(); this.resetRun(); this.pose();
   }
   toField(at, yaw) { this.mode = 'pilot'; this.pos.copy(at); this.yaw = yaw; this.camYaw = yaw; this.vel.set(0, 0, 0); this.vy = 0; this.grounded = true; this.pose(); }
@@ -124,7 +128,7 @@ export class MechPilot {
   /** Not sealed (the hangar's frame): it kneels where it stopped, the cable line kept to its socket. */
   idle(dt) {
     if (this.mode === 'parked') this.kneel = Math.min(1, this.kneel + dt / PILOT.kneel);
-    this.weapons.update(dt); this.pose(); this.drawCable();
+    this.weapons.update(dt * this.specials.hasteK); this.pose(); this.drawCable();
     const c = this.hangar.cradle; if (c) this.placeCradle(c);
   }
 
@@ -161,7 +165,7 @@ export class MechPilot {
     const legsOut = this.broken('legs'), J = this.state.joints, legs = legsLeft(J);
     const legK = legs === 2 ? Math.min(lockOf(J, 'legL'), lockOf(J, 'legR')) : legs === 1 ? JOINT_PILOT.oneLeg : 0; // (a fractured hip strides at joints.js legLocked; a leg gone, it drags itself; none, it sits)
     const pm = this.hangar.props?.heldMass || 0, loadK = (S.mass / (S.mass + pm)) * (S.mass + pm > S.load ? 0.5 : 1); // (a prop held is load: frame.js's overweight rule past the legs' load)
-    const top = S.walkTop * out * (legsOut ? 0.5 : 1) * legK * loadK, moving = wish.lengthSq() > 0.01;
+    const top = S.walkTop * this.specials.hasteK * out * (legsOut ? 0.5 : 1) * legK * loadK, moving = wish.lengthSq() > 0.01;
     // turning: toward the wish, or the giant a beat after a blow (faceGiant)
     let want = moving ? Math.atan2(wish.x, wish.z) : null;
     if (this.faceT > 0 && this.giant) { this.faceT -= dt; want = Math.atan2(this.giant.pos.x - this.pos.x, this.giant.pos.z - this.pos.z); }
@@ -204,6 +208,7 @@ export class MechPilot {
     if (!used.R) this.weapons.arm('R', { down: K.down('Mouse2'), pressed: K.pressed('Mouse2'), released: K.released('Mouse2') });
     if (this.berserk > 0 && this.giant && this.weapons.gap() < 14) { this.weapons.arm('L', { pressed: true }); this.weapons.arm('R', { pressed: true }); } // (berserk: it strikes)
     this.weapons.backUnit(K.pressed('KeyG'));
+    this.specials.drive(K, dt); // (each worn part's special on its slot's key: mechspecials.js)
     this.pressing = K.down('KeyV');
     if (K.pressed('KeyF')) { const P = this.hangar.props; if (P?.held) P.drop(); else if (!P?.grab()) this.plug(); } // (F: a prop in reach picked up, the one held put down, else the cable)
     if (this.assault && this.giant && this.weapons.gap() < 1.5) { this.weapons.charge(this.speed); this.vel.multiplyScalar(0.2); this.assault = false; this.shiftT = -1; }
@@ -311,7 +316,7 @@ export class MechPilot {
   hurt(region, k, by = 'creature') {
     const g = this.game, S = this.stats, pool = g.lachryma;
     if (this.giant && by === 'creature' && this.hangar.props?.shieldTake(this.giant.pos)) return; // (the slab held up takes it: props.js)
-    const kk = k * (S.armour[region] ?? 1) * (this.giant ? this.weapons.blockK(this.giant.pos) : 1);
+    const kk = k * this.specials.wardK * (S.armour[region] ?? 1) * (this.giant ? this.weapons.blockK(this.giant.pos) : 1);
     const was = this.broken(region), r = blowOn(this.state.vessel, { region, k: kk, pool: this.pressing ? null : pool?.available ?? null }, 'mech');
     if (r.shield > 0) pool?.drain(r.shield, 'mech');
     this.state.hurt(r.state);

@@ -1,4 +1,7 @@
-# Mechs: giant robots the Pneuka Jar pilots (Dovina's plan; South's ask, 2026-11-02)
+# Mechs: giant robots the Pneuka Jar pilots (Calissa's module since 2026-11-02; Dovina's plan; South's ask, 2026-11-02)
+
+> South, 2026-11-02, later: "Supercede Dovina's notes on the mech module, I want you to take over and run with it" (to Calissa). Where
+> this plan and Calissa's rulings below disagree, Calissa's stand: section 10.
 
 > South, 2026-11-02: "Giant robots. Pilotable. They should have a cradle for the Pneuka Jar to screw into. I'm thinking... Neon Genesis
 > Evangelion mixed with armored core, mixed with the giant robot sections from Ratchet and clank. This is a request for a fun,
@@ -12,7 +15,7 @@ barrier**, **the hangar**, **the proving ground**, **a giant**. Espada proposes 
 ## 0. The ruling on riding (South, 2026-11-02)
 
 **What rides is the Pneuka Jar, sealed in a cradle or set in a saddle; the Courier rides only the Solar Skiff.** The slip jelly mount
-carries the Jar in a saddle on its crown (today it carries the Courier cross-legged). A mech carries it sealed in its chest's cradle. The
+carries the Jar in a saddle on its crown (today it carries the Courier cross-legged). A mech carries it sealed in the cradle between its shoulder blades (10.1). The
 ships already do: the helm's cradle (HANKO.md). Every mount to come does the same. Petra's to change on the jelly mount (its seat, its
 rider), Calissa's to draw (a saddle that fits the Jar's foot ring).
 
@@ -395,3 +398,43 @@ the commit).
 - **Espada:** the techniques', props' and rivals' words, and the log lines.
 - **Petra:** the gate; the camera's shake on a collapse; whether a building's chunk may enter the ammo.js physics later (for now a chunk
   is flown by its own ballistics).
+
+## 10. Calissa's rulings (from 2026-11-02, the module handed over)
+
+### 10.1 The cradle and the mount
+
+The cradle sits **between the shoulder blades** (Evangelion's entry plug), built to the Pneuka Jar's own measurements (`JAR_ANATOMY`): a
+well tilted back, two turns of thread, a gold collar, four tines (`vfx/mechs/partsbody.js` `body.cradle`). The seat is measured off the
+body as built (`MechPilot.seatH()`), not the old fixed height. Sealing plays **the mech's mount** (`vfx/mechs/mount.js`): the Jar flies from
+the walkway over the shoulder, screws itself in, and the frame wakes; the lift waits for it (`game.mechMount.playing`).
+
+**The frame is blank until a Jar is in it**: plates and trim bisque, the core dull stone. The mount's wave paints the Courier's own finishes
+on as it runs (`vfx/mechs/mechglaze.js`): the plates take the BODY glaze, the accents and pauldrons the TRIM glaze, the core between the
+plates the SKIN. When the Jar leaves, the colours drain back out. A firing at the kiln is worn by the frame too.
+
+### 10.2 A part's special
+
+Every head, core, arms and legs part carries one move, a god power at the frame's scale (`progress/mechs/specials.js` PART_SPECIALS,
+`world/hangar/mechspecials.js`). Each is on its slot's key (the head E, the arms Q, the legs R, the core Y), paid from the battery, and
+amplified by the domain's level (x1.6 at 99). The kinds:
+
+- **Scan**: the giant's weak point marked.
+- **Barrier**: blows on the frame lessened.
+- **Hasten**: the frame's walk and arms quickened.
+- **Sunder**: a long clay blade carving a line.
+- **Telekinesis**: a loose thing drawn into the hand.
+- **Gust**: a cone of wind.
+- **Shape, Lift Ground and Carve**: the ground heaved round the feet.
+- **Portal**: a step through, 40 m.
+
+The mechanic is in flux: no checks are written for it until South settles it.
+
+### 10.3 The look (Calissa's)
+
+- **The parts body** (`vfx/mechs/parts/`): every part id its own silhouette.
+- **The frame's form**: heroic, or the doll (Elemental Gearbolt's dolls, Haydee).
+- **Pauldrons**: large and iconic, chosen apart from the arms.
+- **Helms**: animal crests on kabuto and knights' helms (the stag, the tyrant, the mammoth, the sabretooth, the pterosaur, the
+  triceratops), with plumes on sprung bones.
+
+The form, the pauldrons and the helm are kept as a mech's style (`vfx/mechs/mechstyle.js`, save section `mechStyle`, `/mechstyle`).

@@ -62,8 +62,8 @@ export const PARTS = {
   // arm weapons: the blade and the blaster, and the bare fist (South, 2026-11-02: "the mechs don't need access to all the lachryma tools. A
   // blade and a blaster is more than enough for now"; MECHS.md 4.3: the brush, bell and flail retired, with the vane and the lens)
   fist:       { slot: 'weapon', label: 'Fist', line: 'Three punches, the third a heavy one.', mass: 0, tool: null, k: 0.8, stagger: 16, cost: 0, range: 9, string: 3, heavy: true },
-  bigGun:     { slot: 'weapon', label: 'Big gun', line: 'A rifle; held, a beam that pierces a barrier.', mass: 5, tool: 'psygun', k: 0.45, stagger: 5, cost: 150, range: 220, rate: 3, charge: { hold: 1.2, k: 2.2, cost: 2500, pierce: true } },
-  greatBlade: { slot: 'weapon', label: 'Great blade', line: 'A cutlass string of three; the third staggers.', mass: 4, tool: 'sondelass', k: 1.1, stagger: 12, cost: 350, range: 13, string: 3, heavy: true, earn: 'mk2' },
+  bigGun:     { slot: 'weapon', label: 'Blaster', line: 'Shots on a press; held, a beam that pierces a barrier.', mass: 5, tool: 'psygun', k: 0.45, stagger: 5, cost: 150, range: 220, rate: 3, charge: { hold: 1.2, k: 2.2, cost: 2500, pierce: true } },
+  greatBlade: { slot: 'weapon', label: 'Blade', line: 'A cutlass string of three; the third staggers.', mass: 4, tool: 'sondelass', k: 1.1, stagger: 12, cost: 350, range: 13, string: 3, heavy: true, earn: 'mk2' },
   // back units
   missiles:  { slot: 'back', label: 'Missiles', line: 'Six motes of Lachryma, homing.', mass: 3, tool: null, k: 0.2, stagger: 3, cost: 900, range: 260, volley: 6, earn: 'mk3' },
   shield:    { slot: 'back', label: 'Shield', line: 'Raised, it takes blows from the front.', mass: 4, tool: null, cost: 0, hold: 300, block: 0.25, earn: 'mk2' },

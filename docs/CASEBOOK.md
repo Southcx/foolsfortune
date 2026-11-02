@@ -1109,3 +1109,6 @@ aimed at a fixed corner of the board while the Lachrimeter moved (the desk's tub
 398. **A release the game asked for can land after the window that asked has closed.** An event answering the game's
   own request (an unlock, a refusal) is read against the request still in flight, never as the player's act; and one refusal is one
   count, however many ways the browser tells it.
+
+399. **A line that would say a zero says nothing.** A count rounded for the log is said only once it is a whole
+  one; the ledger keeps the fractions.
