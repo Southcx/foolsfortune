@@ -86,7 +86,8 @@ export class PneukaJarClips {
     if (this.wait > 0) { this.wait -= dt; R.update(0); return; } // (summon held at its first frame, tiny)
     if (this.game.realm?.active) this.garden(dt);
     else if (G.state === 'in' || G.state === 'on') this.world();
-    else if (this.game.cradles?.sealed && this.game.cradles.phase !== 'out') this.choose('idle'); // (sealed in a cradle: summoned, then still; world/cradles.js)
+    else if (this.game.cradles?.sealed && this.game.cradles.phase !== 'out') this.choose('idle');
+    else if (this.game.jellyMount?.jarRides) { if (R.move === 'hop' && !this.game.jellyMount.air) R.play('land'); else this.choose('idle'); } // (in the saddle on the slip jelly mount: courier/jellymount/jarrider.js) // (sealed in a cradle: summoned, then still; world/cradles.js)
     this.hit = null;
     this.lastHp = J.hp;
     R.update(dt);

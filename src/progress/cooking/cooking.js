@@ -12,12 +12,14 @@
 // shown, never lost), Soul Alchemy's swatch (practice widens the band).
 //
 //   game.cooking = new Cooking(game)   .practice(move)   .learn(dish, grade)   .known   .best(dishId)   .serve(result)   .fadeK()
-//   .proofing { addin, t0, game hour started }   .startProof(addin)   .proofValue()   .update(dt)
-// Events (with `by`): cook.move { move, score, hit, ruined, dish }, cook.serve { dish, label, grade, feeling, strength, hold, first, true },
-//   cook.dubious { dish }, cook.proof { addin }, cook.learn { dish, label }
+//   .proofing { addin, knead, n, t0 }   .startProof(addin, knead, n)   .proofValue()   .serve(res, { n, auto })   .eat(slot)   .lay(draught)
+// Events (with `by`): cook.move { move, score, hit, ruined, dish }, cook.serve { dish, label, grade, feeling, strength, hold, first, true, n, kept, auto },
+//   cook.dubious { dish, n }, cook.proof { addin }, cook.learn { dish, label }, cook.eat { dish, label, grade, feeling, strength, hold }
+// A batch's servings and the auto-cook: progress/cooking/batch.js (a serving is a thing in the Pneuka Box, `dish.<dish>.<grade>`).
 // ---------------------------------------------------------------------------------------
 import { MOVES, practiceFrom } from './moves.js';
 import { gradeById } from './dishes.js';
+import { servingId, servingOf, serveAt } from './batch.js';
 import { now as calNow, DAY_MS } from '../../core/calendar.js';
 const GAME_HOUR = DAY_MS / 24;
 import { DRAUGHT } from '../stones.js';
@@ -51,21 +53,37 @@ export class Cooking {
   /** The taste read right before the adjustment: Perception's seasoning. */
   tasted(right) { if (right) this.game.alchemy?.season?.('perception', 4, 'cook.taste'); }
 
-  /** A dish served (dishes.js serve's result): its recipe kept, its best kept, its draught laid. */
-  serve(res) {
+  /** A dish served (dishes.js serve's result, or batch.js serveAt's for an auto-cook): its recipe kept, its best kept, its draught laid.
+   *  `n` servings (a batch: progress/cooking/batch.js), the first served at once and the rest put in the Pneuka Box as servings; `auto`
+   *  an auto-cook (no practice, no best raised, never TRUE). On the ledger a batch is one cook whatever its n. */
+  serve(res, { n = 1, auto = false } = {}) {
     const id = res.dish.id, prev = this.s.known[id], first = !prev;
     const G = gradeById(res.grade), order = ['dubious', 'fair', 'good', 'great', 'perfect', 'true'];
-    if (G.id === 'dubious') { this.game.lachryma?.gain?.(2, 'cook'); this.emit('cook.dubious', { dish: id }); this.dirty(); return res; } // (a little Lachryma back: the comedy's cheap fix; no recipe kept)
+    if (G.id === 'dubious') { this.game.lachryma?.gain?.(2, 'cook'); this.emit('cook.dubious', { dish: id, n }); this.dirty(); return res; } // (a little Lachryma back: the comedy's cheap fix; no recipe kept; a batch's add-ins spent with it)
     this.s.known[id] = { label: res.dish.label, best: prev && order.indexOf(prev.best) >= order.indexOf(G.id) ? prev.best : G.id, n: (prev?.n || 0) + 1, trues: (prev?.trues || 0) + (G.id === 'true' ? 1 : 0) };
     if (first) this.emit('cook.learn', { dish: id, label: res.dish.label });
+    this.lay(res.draught);
+    let kept = 0; // (the batch's rest, into the Box: a thing that will not fit falls at your feet, box.add)
+    if (n > 1) { const sid = servingId(id, G.id); for (let i = 1; i < n; i++) { this.game.pneuka?.add(sid, 'cook'); kept++; } }
     const D = res.draught;
-    if (D) {
-      this.game.draught = { [D.feeling]: D.strength };
-      this.s.hold = { feeling: D.feeling, strength: D.strength, until: performance.now() / 1000 + D.hold, hold: D.hold };
-    }
-    this.emit('cook.serve', { dish: id, label: res.dish.label, grade: G.id, feeling: D?.feeling || null, strength: D?.strength || 0, hold: D?.hold || 0, first, true: G.id === 'true' });
+    this.emit('cook.serve', { dish: id, label: res.dish.label, grade: G.id, feeling: D?.feeling || null, strength: D?.strength || 0, hold: D?.hold || 0, first, true: G.id === 'true', n, kept, auto });
     this.dirty();
     return res;
+  }
+  /** A draught laid and held (one at a time: it replaces whatever draught is held, a drink's or a dish's). */
+  lay(D) {
+    if (!D) return;
+    this.game.draught = { [D.feeling]: D.strength };
+    this.s.hold = { feeling: D.feeling, strength: D.strength, until: performance.now() / 1000 + D.hold, hold: D.hold };
+  }
+  /** A serving from a batch eaten out of the Pneuka Box (its slot): its draught laid, replacing the one held. */
+  eat(slot) {
+    const box = this.game.pneuka, S = servingOf(box?.slots?.[slot]?.id); if (!S) return false;
+    box.take(slot);
+    const res = serveAt(S.family, S.addin, S.grade), D = res.draught; this.lay(D);
+    this.emit('cook.eat', { dish: S.dish, label: S.label, grade: S.grade, feeling: D?.feeling || null, strength: D?.strength || 0, hold: D?.hold || 0 });
+    this.dirty();
+    return true;
   }
 
   /** The mind's fade while a dish's draught holds: what makes its strength last its hold, not a drink's real minute (1 otherwise). */
@@ -78,7 +96,7 @@ export class Cooking {
 
   // ------------------------------------------------------------------ the proof, on the game clock
   /** Dough set to proof at the hearth (after the knead): its add-in and the knead's score kept with it. */
-  startProof(addin, knead) { this.s.proof = { addin, knead, t0: calNow() }; this.emit('cook.proof', { addin }); this.dirty(); }
+  startProof(addin, knead, n = 1) { this.s.proof = { addin, knead, n, t0: calNow() }; this.emit('cook.proof', { addin }); this.dirty(); }
   /** How far it has risen, 0..1 on the proof's scale (MOVES.proof: 0.5 doubled in its `rate` game hours). */
   proofValue() { const p = this.s.proof; if (!p) return 0; return Math.max(0, (calNow() - p.t0) / GAME_HOUR) * MOVES.proof.rate * 0.5; }
   takeProof() { const p = this.s.proof; this.s.proof = null; this.dirty(); return p; }

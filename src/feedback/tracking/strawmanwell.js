@@ -21,7 +21,7 @@ export function strawmanWellRules({ on, L, log }) {
   on('well.dummy.trophy', (e) => { if (e.by !== 'courier') return; L.inc('well.dummy.trophy'); say('gain', 'Trophy! Straw dummy launched at 100%.', 'well.trophy'); });
   on('well.pit.death', (e) => { if (e.by === 'courier') L.inc('well.pit.death'); });
   on('well.flood.fill', (e) => { if (e.by === 'courier') L.hi('well.flood.best', e.cells || 0); });
-  on('well.fighter.ko', (e) => { if (e.by !== 'courier') return; L.inc('well.fighter.ko'); say('gain', `KO! At ${Math.round(e.percent || 0)}%.`, 'well.fighter.ko', 0.3); });
+  on('well.fighter.ko', (e) => { if (e.by !== 'courier') return; L.inc('well.fighter.ko'); if (e.stage) L.inc(`well.fighter.ko.${e.stage}`); say('gain', `KO! At ${Math.round(e.percent || 0)}%.`, 'well.fighter.ko', 0.3); });
   on('well.fighter.stock', (e) => {
     if (e.by === 'courier') L.inc('well.fighter.stock.lost');
     say('battle', e.left > 0 ? `Stock lost. ${e.left} left.` : 'Out of stocks. The match starts over.', 'well.fighter.stock', 0.3);

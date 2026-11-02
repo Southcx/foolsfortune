@@ -45,8 +45,8 @@ export const ZONE_TESTS = [
   // Raku's bazaar (world/bazaar/bazaar.js BAZAAR: x 0, y 200, z -3000): the casino's hall under its dome, indoors (no sky, no weather)
   // the Sandbox (world/sandbox/sandbox.js, progress/sandbox.js SANDBOX: x 3080, y 200, z -3000): the hand's physics room, indoors; BEFORE the Touchstone's test, whose 300 m box holds it
   { id: 'sandbox', test: (p) => Math.abs(p.x - 3080) < 60 && p.z > -3060 && p.z < -2940 && p.y > 150 && p.y < 450 },
-  // Strawman's Well (world/strawmanwell/layout.js AT, ZONE: x 3400, y 200, z -3000 and its 18 lanes south to -3720): the 2D platformer's test bench, indoors
-  { id: 'strawmanwell', test: (p) => p.x > 3350 && p.x < 3700 && p.z > -3750 && p.z < -2960 && p.y > 150 && p.y < 450 },
+  // Strawman's Well (world/strawmanwell/layout.js AT, ZONE: x 3400, y 200, z -3000 and its 19 lanes south to -3760): the 2D platformer's test bench, indoors
+  { id: 'strawmanwell', test: (p) => p.x > 3350 && p.x < 3700 && p.z > -3790 && p.z < -2960 && p.y > 150 && p.y < 450 },
   // the hangar and its proving ground (world/hangar/layout.js HANGAR: x 3800, y 200, z -3000, 60 m square; PROVING: x 4100, 360 m square): the mechs' hall, indoors, and the yard beside it, under the sky
   { id: 'hangar', test: (p) => Math.abs(p.x - 3800) < 32 && Math.abs(p.z + 3000) < 32 && p.y > 150 && p.y < 450 },
   { id: 'provingground', test: (p) => p.x > 3900 && p.x < 4300 && Math.abs(p.z + 3000) < 200 && p.y > 150 && p.y < 450 },

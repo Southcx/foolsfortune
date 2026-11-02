@@ -157,3 +157,36 @@ dealt, and the hand that throws. Espada's to write into the world.
 ## 9. Open
 
 1. The d% has no suit yet (section 2).
+
+
+## Rulings carried from DESIGN.md (section 20)
+
+Moved verbatim from `docs/DESIGN.md` by G56 (2026-11-02); the numbered heading stays there as a pointer.
+
+The stones: how a Courier takes Lachryma in (the owner, 2026-10-06; LORE.md "The stones").
+
+The stones are the vessel's **intake**; every stone trades a gain for a loss (Dark Souls' rings, Path of Exile's keystones). One set
+at a time. The table is `src/progress/stones.js`.
+
+| knob | what it is | wired |
+|---|---|---|
+| **pool** | size, regen, costs (`LachrymaPool` modifiers) | yes (main.js) |
+| **reach** | the bauble magnet's radius | Petra (`courier/lachryma.js`) |
+| **heady** | how far a drink pushes your mental state toward Prismatic (x1.5 power, x2 fragility; brimming four times as far) | Petra |
+| **tint** | how strongly the place's feeling comes in: the **draught**, building its status up to x1.5 | Petra |
+| **gulp** | a cap on the take a real second | Petra |
+| **overflow** | the Lockheart's share, or bled off | Petra |
+
+| Stone | Gain | Cost |
+|---|---|---|
+| Amethyst | sober: heady x0.4, tint x0.5, gulp 25 a real second, overflow bled | slower regen, shorter reach |
+| Citrine | a tenth of what is drunk kept as cubes | 15 less to hold |
+| Moonstone | regen and reach x1.3 at night | x0.85 and x0.9 by day |
+| Onyx | no tint, all overflow to the Lockheart | slower, shorter |
+| Emerald | reach x1.5, tint x2 | heady x1.3 |
+| Sapphire | costs x0.85 | regen x0.8 |
+| Ruby | 30 more to hold | costs x1.15, heady x1.25 |
+| Diamond | an agate's two feelings both drunk | heady x2 |
+| Opal | each drink a chance by Luck: a tenth doubled | a tenth lost |
+
+*(Section 1 of this page is the later merge with the dice; the stones' rules stand as this table has them. "Brimming" is now "overflow".)*

@@ -25,3 +25,20 @@ Done since 01:45:
 | Calissa | The duel view's fallback elite (today any aberrant without its own is dressed as the Wisp, and its close wrote to `foe.look`); the clapperjar's own elite; a `touch.kick` glyph for the arc's A. The hangar is yours. | `vfx/duelview/`, `ui/icons/`, `world/hangar/` |
 | Dovina | G36 and G13; the arc's contexts are ruled (skiff, mech, Arena, crossing, helm, carrying). | `progress/` |
 | Petra | The arc's next context, the Solar Skiff; then the Pneuka Jar riding the slip jelly mount in a saddle (South's ruling); SOLID slice 2 onward. | `ui/touch/arc.js`, `courier/jellymount/`, `boot/` |
+
+## The next round (05:30 UTC, v399)
+
+Done since 04:20:
+- Calissa: the duel view's fallback dresses nothing; the clapperjar's elite; the kick's touch glyph; helms and the doll's form.
+- Espada: the cooking and depth words to Dovina; the help pages.
+- Dovina: three mimicry puzzles, the flat stage, centrepieces, briar visitors, Auto-Cook, Gall and Fury in the garden's rules.
+- Wanda: mech v2's sounds, the clapperjar's beats, the crossing (v398).
+- Petra: the Pneuka Jar rides the slip jelly mount in a saddle (South's ruling).
+
+| who | the task | files |
+|---|---|---|
+| Calissa | The saddle's look on `game.jellyMount.rider.saddle` (a Group, a placeholder clay ring today); then Dovina's flat stage and mimicry looks notes (the ghost hides `game.mimicry.veiled()`'s cells). | `vfx/jellymount/`, `vfx/strawmanwell/`, `vfx/mimicry/` |
+| Wanda | Dovina's flat stage note (the galop on `flatstage`), then her clapperjar note. | `audio/`, `music/choose.js` |
+| Espada | Dovina's clapperjar note's words; the garden's scorch line (`garden.scorch`, a placeholder in `tracking/garden.js`). | strings by note |
+| Dovina | Grain's species key (`wisp`: Petra reads `c.kind`); then her own next. | `progress/` |
+| Petra | Dovina's hooks (Bite Sense, the thermometer, the aberrant Wisp's state, briar visitors, grain at spawn, the flat stage's chain, Gall and Fury in the garden), then the three mimicry families; the arc's skiff context after. | `tools/`, `world/garden/`, `world/mimicry/`, `creatures/` |

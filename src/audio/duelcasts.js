@@ -52,7 +52,7 @@ export const TURN_CUT_IN = { slam: 0.12, hold: 0.28 };
 export const CUT_IN_HOLD = { skill: 0.62, desperate: 0.65 };
 const hz = (m) => 440 * Math.pow(2, (m - 69) / 12);
 /** Each cut-in's chord, semitones over the foe's root (two octaves under the duel's key). */
-const STAB = { hurl: [0, 3, 6, 9], petrify: [0, 1, 2, 13], seal: [0, 6, 12], sap: [0, 3, 7], reclaim: [0, 7, 12], kindle: [0, 4, 6, 11], spew: [0, 1, 5, 8], harden: [0, 5, 10, 15], desperate: [0, 1, 3, 7, 13] };
+const STAB = { hurl: [0, 3, 6, 9], petrify: [0, 1, 2, 13], seal: [0, 6, 12], sap: [0, 3, 7], reclaim: [0, 7, 12], kindle: [0, 4, 6, 11], spew: [0, 1, 5, 8], harden: [0, 5, 10, 15], shuffle: [0, 4, 7, 11], syncopate: [0, 5, 7, 10], desperate: [0, 1, 3, 7, 13] };
 
 export class DuelCastSounds {
   /** The sting under a foe skill's cut-in (`desperate`: the limit break, the largest). */

@@ -53,6 +53,7 @@ import { TYPE_OF } from '../progress/weather.js';
 import { friendlyDamage, tolerance, FRIENDLY } from '../progress/combat/friendly.js';
 import { figmentMarkOf } from '../progress/combat/figmenttelegraphs.js';
 import { affinityOf } from '../progress/combat/constitution.js';
+import { SPECIES, drawGrain, traitsOf, weakTo, TRAITS } from '../progress/combat/temperament.js';
 
 /** The draught's worth on a blow (progress/stones.js DRAUGHT): of the drunk feeling's damage type, its status builds up to half again as
  *  fast at a full draught (its share 0..1, fading over a real minute); any other type, as it is. */
@@ -79,7 +80,11 @@ export class Creatures {
   addFriend(c) { c.status ||= new Map(); c.mind ??= 0; c.emo ??= 0; c.build ||= {}; c.friend = true; c.ally = true; this.friends.push(c); return c; }
   removeFriend(c) { const i = this.friends.indexOf(c); if (i >= 0) this.friends.splice(i, 1); }
   /** A creature joins: its statuses, mind and build-up made ready; its full health is what it came with unless it says (`maxHp`: the readouts, progress/familiarity.js). */
-  add(c) { c.status ||= new Map(); c.mind ??= c.mindRest ?? 0; c.emo ??= 0; c.build ||= {}; if (c.maxHp == null && c.hp > 0) c.maxHp = c.hp; this.list.push(c); return c; }
+  add(c) {
+    c.status ||= new Map(); c.mind ??= c.mindRest ?? 0; c.emo ??= 0; c.build ||= {}; if (c.maxHp == null && c.hp > 0) c.maxHp = c.hp;
+    if (c.grain == null && SPECIES[c.kind]) { c.grain = drawGrain(c.kind, c.seed ?? c.id ?? 1); c.traits ??= traitsOf(c.grain); } // (who it is, drawn about its species by its kind: progress/combat/temperament.js, G292; a mind with traits of its own keeps them)
+    this.list.push(c); return c;
+  }
   remove(c) { const i = this.list.indexOf(c); if (i >= 0) this.list.splice(i, 1); }
   /** The living creatures within r of p (horizontal and vertical both), nearest first. */
   near(p, r) {
@@ -177,7 +182,8 @@ export class Creatures {
     if (s && s.t >= dur && s.k >= k) return false;
     c.status.set(name, { t: Math.max(dur, s?.t || 0), dur, k: Math.max(k, s?.k || 0) });
     c.onStatus?.(name, dur, k, by);
-    this.game.events?.emit('creature.status', { kind: c.kind, status: name, dur: +dur.toFixed(1), by });
+    const weak = c.grain ? weakTo(c.grain).includes(TRAITS.find((t) => t.opens === name)?.type) : undefined; // (a mind cracked by its weakness: the grain's strongest trait opens it, G292)
+    this.game.events?.emit('creature.status', { kind: c.kind, status: name, dur: +dur.toFixed(1), by, ...(weak ? { weak } : {}) });
     return true;
   }
   clearStatus(c, name) { c.status.delete(name); }

@@ -71,6 +71,7 @@ export class Awaken {
    *  SETTLE.lapse game days resets it. */
   visitors() {
     const day = today(), counts = this.realm.plots.counts(), room = (counts.features.spiritHouse || 0) * FEATURES.spiritHouse.n - (this.game.bound?.list || []).filter((e) => e.from === 'visit').length;
+    counts.briar = this.game.harmony?.briarCount?.() || 0; // (an overgrown garden draws the briar's visitors: progress/realm.js BRIAR_VISITORS, G119)
     let free = room;
     for (const kind of Object.keys(VISITORS)) {
       const v = this.visits[kind] ||= { n: 0, day: -1, met: day };

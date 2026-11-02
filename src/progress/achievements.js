@@ -682,6 +682,7 @@ export function buildAchievements(game) {
   F('gy13', 'garden', "The Garden's Life", 3, 'collect', 'Every Wish', 'Meet a wish of each kind: a meal, a feature, a garden piece, a photo and a visit.', (L) => ['food', 'feature', 'decor', 'photo', 'visit'].filter((k) => L.get(`spirit.wish.${k}`) >= 1).length, 5);
   C('gy14', 'garden', "The Garden's Life", 2, 'count', 'Pen Pal', 'Get ten letters in your garden\'s mailbox.', 'spirit.letter', 10);
   C('gy15', 'garden', "The Garden's Life", 3, 'mechanic', 'Postmarked', 'Get a postcard from a spirit you released.', 'spirit.letter.postcard', 1);
+  F('gy22', 'garden', "The Garden's Life", 3, 'mechanic', 'Briar Guests', 'Have a briar visitor settle in your overgrown garden.', (L) => ['wisp', 'blotling'].filter((k) => L.get(`spirit.settle.${k}`) >= 1).length, 1); // (realm.js BRIAR_VISITORS)
   C('gy16', 'garden', "The Garden's Life", 3, 'mechanic', 'Bon Voyage', 'Let a spirit go home when it asks.', 'spirit.farewell', 1);
   // a farewell's keepsake glaze (the owner, 2026-10-22: "a statue plus the glaze"): one hidden achievement a feeling, each opening that
   // feeling's farewell glaze (Calissa's GLAZES, `ach: 'gy17'` ..); the statue is the decor piece (spiritlife.js farewell)

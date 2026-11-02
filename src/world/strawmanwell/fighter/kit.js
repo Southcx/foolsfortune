@@ -1,7 +1,8 @@
 // ---------------------------------------------------------------------------------------
 // THE FIGHTER KIT (docs/plans/FIGHTER.md; South, 2026-10-31: "all the other SSBM-like and platform fighter mechanics to include a shield
-// and grab and beyond ... Go wild!"): the Arena's platform fighter, on in the Arena only and taken off whole on leaving it, a modifier
-// over the core movement with a source you can see (the Arena itself, and the percent's tag over the Courier in the pool's place).
+// and grab and beyond ... Go wild!"): the platform fighter, on in its stage only (the Arena or the flat stage: one kit a stage, built
+// by stages/fighterstage.js, `stage.id` its own) and taken off whole on leaving it, a modifier over the core movement with a source you
+// can see (the stage itself, and the percent's tag over the Courier in the pool's place).
 // It puts together:
 //   the fighters   the Courier (fighter/courierbody.js over the Player) and one to three straw fighters (foebody.js, foemind.js), each a
 //                  fighter of the one kernel (kernel.js), stepped at the fixed rate through the frame's hooks (wellframe.js: `pre`, the
@@ -16,7 +17,7 @@
 //                  last move's frame data on a tag), the percent reset
 //   the camera     Smash's: framing every fighter in play, zoomed out as they spread
 // Events (each with `by`; the tracking is Dovina's, feedback/tracking/strawmanwell.js): well.verb (the Arena row's verbs, through the
-// room's `verb`), well.fighter.hit { move, damage, percent, on, foe, result, by }, well.fighter.ko { stage, percent, foe, by },
+// room's `verb`), well.fighter.hit { stage, move, damage, percent, on, foe, result, by }, well.fighter.ko { stage, percent, foe, by },
 // well.fighter.stock { stage, left, cause, by: 'courier' }.
 //
 // Prior art: Super Smash Bros. Melee (the match, the stocks, the respawn platform, the camera, UnclePunch's training), the house's
@@ -60,7 +61,7 @@ export class FighterKit {
     };
   }
 
-  /** The Arena laid (stages/arena.js): its shapes, ledges, blast lines and spawns; the straw fighters made, waiting. */
+  /** The stage laid (stages/fighterstage.js): its id, its shapes, ledges, blast lines and spawns; the straw fighters made, waiting. */
   build(stage, into) {
     this.stage = stage; this.into = into;
     this.looks = new FighterLooks(into); this.looks.z = stage.z;
@@ -97,10 +98,10 @@ export class FighterKit {
     this.looks?.frameData(null, new THREE.Vector3());
     this.courier = null; this.cam = null;
   }
-  /** The kit off if the Arena is no longer where the Courier is (left by a door, a seam, the hub): the pose tech's tick asks each frame. */
+  /** The kit off if its stage is no longer where the Courier is (left by a door, a seam, the hub): the pose tech's tick asks each frame. */
   watch() {
     const W = this.well;
-    if (this.on && (W.stage?.id !== 'arena' || !W.frame.on || !W.built)) this.leave();
+    if (this.on && (W.stage?.id !== this.stage?.id || !W.frame.on || !W.built)) this.leave();
   }
 
   /** The match from the top: three stocks each, the Courier on the left, the foes on the right, everyone at 0%. */
@@ -115,7 +116,7 @@ export class FighterKit {
       f.F.stocks = 3; f.F.stale = []; f.F.respawnAt(St.foeSpawns[i], St.top); f.F.face = -1; f.F.grounded = true;
       if (!on) f.F.st = 'out';
     });
-    if (S && S.id === 'arena') { S.t0 = this.game.events?.time ?? 0; S.hits = 0; S.string = 0; S.cleared = false; }
+    if (S && S.id === St.id) { S.t0 = this.game.events?.time ?? 0; S.hits = 0; S.string = 0; S.cleared = false; }
   }
 
   // ------------------------------------------------------------------------------------------- the fixed step
@@ -151,11 +152,11 @@ export class FighterKit {
     g.vfx?.play?.('blow.finisher', { pos: at, dir: new THREE.Vector3(Math.sign(F.x - this.stage.mid) || 1, 0, 0), power: 2 });
     if (!sfx.arenaHit) sfx.damage?.('impact', 1); // (a placeholder until Wanda's Arena sounds are in: they answer the events themselves)
     if (F.who === 'courier') {
-      g.events?.emit('well.fighter.stock', { stage: 'arena', left: Math.max(0, F.stocks), cause: credit ? 'creature' : 'environment', by: 'courier' });
+      g.events?.emit('well.fighter.stock', { stage: this.stage.id, left: Math.max(0, F.stocks), cause: credit ? 'creature' : 'environment', by: 'courier' });
       g.character?.setHidden?.(true);
     } else {
       const by = credit?.who === 'courier' ? 'courier' : 'environment';
-      g.events?.emit('well.fighter.ko', { stage: 'arena', percent, foe: F.id, by });
+      g.events?.emit('well.fighter.ko', { stage: this.stage.id, percent, foe: F.id, by });
       if (by === 'courier') this.well.verb('stock');
     }
     F.stale = []; go(F, 'dead'); F.vx = F.vy = F.kvx = F.kvy = 0; F.hl = 0; F.launch = null;
@@ -187,7 +188,7 @@ export class FighterKit {
   struck(A, V, hit, res) {
     const g = this.game, z = this.stage.z, side = Math.sign(V.x - A.x) || A.face;
     const pos = new THREE.Vector3(V.x - side * V.r * 0.6, V.y + (V.size ?? V.h) * 0.55, z + 0.3), dir = new THREE.Vector3(side, 0.3, 0);
-    g.events?.emit('well.fighter.hit', { move: hit.move, damage: hit.damage, percent: Math.round(V.percent), on: V.who === 'courier' ? 'courier' : 'foe', foe: V.who === 'courier' ? A.id : V.id, result: res, by: A.who === 'courier' ? 'courier' : 'creature' });
+    g.events?.emit('well.fighter.hit', { stage: this.stage.id, move: hit.move, damage: hit.damage, percent: Math.round(V.percent), on: V.who === 'courier' ? 'courier' : 'foe', foe: V.who === 'courier' ? A.id : V.id, result: res, by: A.who === 'courier' ? 'courier' : 'creature' });
     const weight = hit.damage < 6 ? 'light' : hit.damage < 13 ? 'heavy' : 'finisher';
     if (res === 'hit') {
       g.vfx?.play?.(V.who === 'courier' ? 'hit.blunt' : 'hit.blunt.straw', { pos, dir, power: Math.min(2, hit.damage / 8) });
@@ -253,11 +254,11 @@ export class FighterKit {
   spots() {
     const St = this.stage, C = this.courier; if (!this.on || !C) return [];
     if (this.training === 'off' && this.active.some((f) => f.F.live && Math.abs(f.F.x - C.x) < 4 && f.F.st !== 'out')) return [];
-    return Object.entries(St.lecterns).map(([id, L]) => ({ ref: `arena.${id}`, pos: new THREE.Vector3(L.x, St.top + 2.2, St.z - 1.2), x: L.x, y: St.top }));
+    return Object.entries(St.lecterns).map(([id, L]) => ({ ref: `${St.id}.${id}`, pos: new THREE.Vector3(L.x, St.top + 2.2, St.z - 1.2), x: L.x, y: St.top }));
   }
   use(ref) {
-    if (!ref?.startsWith?.('arena.')) return false;
-    const id = ref.slice(6);
+    const pre = `${this.stage?.id}.`; if (!ref?.startsWith?.(pre)) return false;
+    const id = ref.slice(pre.length);
     if (id === 'level') this.level = (this.level % 9) + 1;
     else if (id === 'foes') this.count = (this.count % 3) + 1;
     else if (id === 'train') this.training = TRAINING[(TRAINING.indexOf(this.training) + 1) % TRAINING.length];

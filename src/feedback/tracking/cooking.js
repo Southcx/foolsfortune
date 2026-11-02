@@ -4,7 +4,8 @@
 // world/drops/creaturedrops.js). Plain words, Espada's to word (CLARITY.md).
 //
 // Ledger: cook.serve, cook.serve.<grade>, cook.dish.<id>, cook.family.<family>, cook.true, cook.true.<dish>, cook.dubious, cook.move.<move>, cook.hit.<move>,
-// cook.learn (a new recipe), hi cook.grade (0 dubious .. 5 true); drop.take, drop.take.<cat>, drop.rare, first drop.first.
+// cook.learn (a new recipe), hi cook.grade (0 dubious .. 5 true), hi cook.best.<dish> (the same, a dish's), cook.batch, cook.batch.servings,
+// hi cook.batch.size, cook.auto, cook.eat (a batch's serving eaten from the Box); drop.take, drop.take.<cat>, drop.rare, first drop.first.
 //
 //   cookingRules({ on, L, log })   (tracking/rules.js calls it)
 // ---------------------------------------------------------------------------------------
@@ -21,14 +22,26 @@ export function cookingRules({ on, L, log }) {
   on('cook.serve', (e) => {
     if (e.by !== 'courier') return;
     L.inc('cook.serve'); L.inc(`cook.serve.${e.grade}`); L.inc(`cook.dish.${e.dish}`); L.inc(`cook.family.${String(e.dish).split('.')[0]}`); L.hi('cook.grade', ORDER.indexOf(e.grade));
-    if (e.true) { L.inc('cook.true'); L.inc(`cook.true.${e.dish}`); }
+    L.hi(`cook.best.${e.dish}`, ORDER.indexOf(e.grade)); // (a dish's best: what auto-cook reads, progress/cooking/batch.js autoCookOf)
+    if (e.true) { L.inc('cook.true'); L.inc(`cook.true.${e.dish}`); } // (a batch is one cook: its TRUE counts once, whatever its n)
+    if (e.n > 1) { L.inc('cook.batch'); L.inc('cook.batch.servings', e.n); L.hi('cook.batch.size', e.n); }
+    if (e.auto) L.inc('cook.auto');
     const held = e.feeling ? ` Its ${e.feeling} lasts ${e.hold} real seconds.` : '';
-    log.say('gain', `You served ${art(e.label)} ${e.label.toLowerCase()}: ${e.grade}.${held}`, { key: 'cook.serve', throttle: 1 });
+    const how = e.auto ? 'Auto-cooked' : 'Served'; // (Espada's form, 2026-11-02: "Served: <dish>. Grade: <grade>.")
+    const what = e.n > 1 ? `${e.label} x ${e.n}` : e.label;
+    const rest = e.kept > 0 ? ` ${e.kept} ${e.kept === 1 ? 'serving is' : 'servings are'} in your Pneuka Box.` : '';
+    log.say('gain', `${how}: ${what}. Grade: ${e.grade}.${held}${rest}`, { key: 'cook.serve', throttle: 1 });
+  });
+  on('cook.eat', (e) => {
+    if (e.by !== 'courier') return;
+    L.inc('cook.eat');
+    const held = e.feeling ? ` Its ${e.feeling} lasts ${e.hold} real seconds.` : '';
+    log.say('gain', `You ate ${art(e.label)} ${e.label.toLowerCase()}.${held}`, { key: 'cook.eat', throttle: 1 });
   });
   on('drop.take', (e) => {
     if (e.by !== 'courier') return;
     L.inc('drop.take'); if (e.cat) L.inc(`drop.take.${e.cat}`); L.first('drop.first');
     const it = itemOf(e.item); if (it) log.say('gain', `+ ${it.name.toLowerCase()}`, { key: `drop.${e.item}`, throttle: 0.6 });
   });
-  on('drop.fall', (e) => { if (e.by === 'courier' && e.rare) { L.inc('drop.rare'); log.say('gain', 'Something rare fell.', { key: 'drop.rare', throttle: 2 }); } });
+  on('drop.fall', (e) => { if (e.by === 'courier' && e.rare) { L.inc('drop.rare'); log.say('gain', 'Rare drop!', { key: 'drop.rare', throttle: 2 }); } });
 }

@@ -48,7 +48,7 @@ export const INGREDIENTS = {
   vinegar:    { taste: { sour: 0.8 }, from: 'dread', line: 'Vinegar: sour is the body\'s "this may have gone".' },
   // what is not a feeling: how long, how strong
   kombu:      { taste: { umami: 0.7, salt: 0.1 }, from: 'shore', line: 'Kombu: kelp, its glutamate the first umami Ikeda named (1908). Never boil it.' },
-  miso:       { taste: { kokumi: 0.6, salt: 0.3, umami: 0.3 }, from: 'koji', line: 'Miso: soybeans fermented with koji (Aspergillus oryzae). Body, kokumi.' },
+  miso:       { taste: { kokumi: 0.6, salt: 0.3, umami: 0.3 }, from: 'koji', line: 'Miso: soybeans fermented with koji (Aspergillus oryzae). It adds body (kokumi).' },
 };
 /** The staples the hearth always has. */
 export const PANTRY = Object.keys(INGREDIENTS).filter((k) => INGREDIENTS[k].pantry);
@@ -88,11 +88,11 @@ export function leadOf(t) {
  *  (fat with nothing sharp: a squeeze of acid), sharp (sour or bitter alone: fat), one-note (sweet alone: a little heat), or balanced. */
 export function balanceOf(t) {
   const loud = Math.max(t.cool, t.sweet, t.rich, t.heat, t.bitter, t.sour);
-  if (t.salt < 0.3) return { tell: 'flat', fix: 'salt', line: 'It tastes flat, as if something is missing.' };
-  if (t.rich > 0.5 && t.sour < 0.15) return { tell: 'heavy', fix: 'acid', line: 'It sits heavy on the tongue.' };
-  if ((t.sour > 0.5 || t.bitter > 0.5) && t.rich < 0.2) return { tell: 'sharp', fix: 'fat', line: 'It catches at the back of the throat.' };
+  if (t.salt < 0.3) return { tell: 'flat', fix: 'salt', line: 'Flat. Something is missing.' };
+  if (t.rich > 0.5 && t.sour < 0.15) return { tell: 'heavy', fix: 'acid', line: 'Heavy on the tongue.' };
+  if ((t.sour > 0.5 || t.bitter > 0.5) && t.rich < 0.2) return { tell: 'sharp', fix: 'fat', line: 'Sharp at the back of the throat.' };
   if (t.sweet > 0.6 && loud === t.sweet && t.heat < 0.1) return { tell: 'one-note', fix: 'heat', line: 'Sweet, and only sweet.' };
-  return { tell: 'balanced', fix: null, ok: true, line: 'Every taste answers another.' };
+  return { tell: 'balanced', fix: null, ok: true, line: 'Balanced. Every taste answers another.' };
 }
 
 /** What an adjustment adds (the taste-and-adjust's four, a spoon each). */

@@ -65,7 +65,7 @@ export const HOOVER = { range: 7, cone: 0.7, pull: 9, drain: 3.6 }; // (its reac
 // than it is sharp (the club's power, a little less damage), the third the whirl that throws them off.
 const FLAIL = 'lockheart.flail', TAP = 0.16, CHAIN = { rest: 0.22, out: 0.62, arena: 1.1 }; // (arena: the chain let out in the Arena's fighter kit, read from the side camera as a flail: Calissa, 2026-11-01)
 // the Arena's fighter swinging (world/strawmanwell/fighter/kit.js: its Courier's kernel state), the flail's other driver beside the combo engine
-const arenaSwing = (g) => g.strawmanWell?.stages?.arena?.kit?.courier?.st === 'attack';
+const arenaSwing = (g) => { const W = g.strawmanWell, id = W?.stage?.id; return (id === 'arena' || id === 'flatstage') && W.stages?.[id]?.kit?.courier?.st === 'attack'; }; // (either fighter stage: the Arena or the flat stage, FIGHTER.md 5.1)
 const MOVES = {
   f1: { rule: 'flail1', clip: 'Lock_FlailCombo1', strike: [0.27, 0.48], chain: [0.48, 0.83], hit: { power: 1.0, dmg: 0.8, push: 3 }, lunge: 2.4, arc: 'r2l' },
   f2: { rule: 'flail2', clip: 'Lock_FlailCombo2', strike: [0.36, 0.52], chain: [0.56, 0.9], hit: { power: 1.3, dmg: 1.1, push: 2, lift: 2.5 }, lunge: 2.4, arc: 'over' },

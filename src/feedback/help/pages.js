@@ -82,7 +82,7 @@ export const PAGES = [
     rows: [
       ['E', 'blink: a dodge along the move keys (two charges, the pearls by the Lachrimeter)'],
       ['C in the air, looking down', 'ground slam; then Space for the slam jump, or hold C for the slam slide'],
-      ['Shift while crouched', 'roll: a dodge with a beat of invulnerability (on its own out of a fall of 20 m or more)'],
+      ['Shift while crouched', 'roll: a dodge with a moment of invulnerability (it also happens by itself on landing from 20 m or higher)'],
       ['land on a pot or clapperjar', 'stomp bounce'],
       ['hold C in paint', 'Paint Dive: fast, up painted walls; Space launches out'],
       ['C in the air by a wall', 'wall latch: cling a moment, WASD to crawl, Space to kick off'],
@@ -93,7 +93,7 @@ export const PAGES = [
   },
   {
     id: 'climb', title: 'CLIMBING AND WATER', src: 'courier/moves/ladder.js, hang.js, pole.js, grate.js, swim.js',
-    lead: 'What you do when the world gives you something to hold, and when there is no floor.',
+    lead: 'Ladders, ledges, cables, poles, grates, beams and deep water.',
     rows: [
       ['walk into a ladder', 'climb: W S, Shift fast, C slide down, Space kick off (the gun stays out at a walk)'],
       ['jump at a ledge, bar or cable', 'hang: A D shimmy, W pull up, C drop, Space kick off; a slanted cable is a zipline'],
@@ -104,7 +104,7 @@ export const PAGES = [
   },
   {
     id: 'psygun', title: 'THE PSYGUN', src: 'tools/psygun/',
-    lead: 'Your first tool, worn on the back. It fires Lachryma, and CASTER SHELLS: each a numbered type (TYPE-00 the Cleave to TYPE-10 the Hatch) held in a chamber.',
+    lead: 'Your first tool, worn on the back. It fires Lachryma, and CASTER SHELLS: each a numbered type (TYPE-00 the Cleave to TYPE-10 the Hatch) loaded in a chamber.',
     rows: [
       ['X · R', `as your main, draw or holster (firing or aiming draws it) · as your sub, ${lent('psygun')}`],
       ['Q', 'fan the hammer: six shots at once, once learned'],
@@ -114,7 +114,7 @@ export const PAGES = [
       ['1 2 3 … · − · wheel', 'pick a chamber'],
     ],
     notes: [
-      'Which shells sit in the chambers is chosen in the Pneuka Box (P, under the Psygun): left click loads the next type, right click lists them all.',
+      'Shells are loaded into the chambers in the Pneuka Box (P, under the Psygun): left click loads the next type, right click lists them all.',
       'Psyguns differ in how many chambers they have and how deep each one is: one is narrow and deep, another wide and shallow.',
     ],
   },
@@ -143,15 +143,15 @@ export const PAGES = [
       ['LMB · hold LMB', 'the club: three blows · on the ground the bristles saturate, then the mode works; in the air, the charge and the slam'],
       ['1 · 2', 'PAINT: spray Lachryma, laying its feeling on the ground · MOP: drink stains and paint into your Lachrymato Bottle'],
       ['RMB tap', 'FLICK: a fan of paint ahead'],
-      ['hold RMB', 'the Celestial Brush: the world stops and turns to paper; LMB draws, let go of RMB and the painting takes'],
+      ['hold RMB', 'Celestial mode: time stops and the view becomes paper; LMB draws, let go of RMB to cast what you drew'],
       ['C at speed', 'the Brush Slide: the same slide, painting in your wake; on painted ground it runs on'],
       ['MMB', 'lock on'],
     ],
-    notes: () => ['A Lachrymato Bottle worn on the upper back (the Pneuka Box) holds what the mop drinks and feeds your mind below half; a broken shield can crack it. Painted ground gives what stands in it the feeling\'s status. Opt-in arts on the load: /art hover, /art rocket, /art skim.', `What the Celestial Brush knows: ${Object.entries(TECHNIQUES).map(([k, t]) => `${STROKE[k] || k}, ${t.name}`).join('; ')}. Anything else is laid on the world as paint.`],
+    notes: () => ['A Lachrymato Bottle worn on the upper back (fitted in the Pneuka Box) stores what the mop takes up and refills your pool when it is below half. A broken shield can crack it. Painted ground gives what stands in it the feeling\'s status. Opt-in arts on the load: /art hover, /art rocket, /art skim.', `What Celestial mode reads: ${Object.entries(TECHNIQUES).map(([k, t]) => `${STROKE[k] || k}, ${t.name}`).join('; ')}. Any other stroke is laid on the world as paint.`],
   },
   {
     id: 'veritome', title: 'THE VERITOME', src: 'tools/veritome/',
-    lead: 'A book that is a camera, held open in both hands. A photograph is the truth of a thing. It keeps no things: those are the Pneuka Box\'s.',
+    lead: 'A book that is a camera, held open in both hands. It stores no items; those go in the Pneuka Box.',
     rows: [
       ['X · R', `as your main, draw or stow · as your sub, ${lent('veritome')}`],
       ['hold RMB · LMB · wheel', 'raise the lens · take a photo · zoom'],
@@ -178,7 +178,7 @@ export const PAGES = [
   },
   {
     id: 'crucibelle', title: 'THE CRUCIBELLE', src: 'tools/crucibelle/',
-    lead: 'A smoking bell held up like a lantern: an amplifier, and the musician is you. Five notes, always in the key of what is playing.',
+    lead: 'A smoking bell held up like a lantern. Five notes, always in the key of the music playing.',
     rows: () => [
       ['X · R', `as your main, draw or stow · as your sub, ${lent('crucibelle')}`],
       ['1 – 5 · hold RMB', 'the five notes · an octave up'],
@@ -189,7 +189,7 @@ export const PAGES = [
   },
   {
     id: 'lockheart', title: 'THE LOCKHEART', src: 'tools/lockheart/',
-    lead: 'A little coffin on a chain at your neck: weaponised luck. It drinks the Lachryma you cannot hold, and opens when it is full.',
+    lead: 'A little coffin on a chain at your neck. It stores the Lachryma your pool has no room for, and opens when it is full.',
     rows: [
       ['X · R', `as your main, draw or stow · as your sub, ${lent('lockheart')}`],
       ['hold LMB', 'vacuum: loose Lachryma in front of you is drawn in, and from a mind laid low'],

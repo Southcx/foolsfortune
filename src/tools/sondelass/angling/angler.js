@@ -450,11 +450,12 @@ export class Angler {
     this.weir.ripples.ring(lure.pos.x, lure.poolY(), lure.pos.z, 1.1, this.aspectColor, 0.7);
     this.tremble = 1; sfx.bite(k);
     this.P.shake = Math.max(this.P.shake, 0.18);
-    this.bite = { fish: f, kind, t: 0, window: f.window };
+    const win = f.window * (this.game.knacks?.on?.('biteSense') ? 1.3 : 1); // (Bite Sense, a knack: the window a third longer, progress/knacks.js)
+    this.bite = { fish: f, kind, t: 0, window: win };
     // the bite: "!!!", big, over the lure, for as long as the window is open (it shakes harder as it closes)
     const at = () => _w.copy(lure.pos).addScaledVector(UP, 0.9);
     this.biteGlyph?.close();
-    this.biteGlyph = this.game.glyphs.pop('bang3', at(), { color: 0xffd76a, size: k === 2 ? 1.1 : 0.9, burst: true, ring: true, hold: f.window, float: 0.9, follow: at });
+    this.biteGlyph = this.game.glyphs.pop('bang3', at(), { color: 0xffd76a, size: k === 2 ? 1.1 : 0.9, burst: true, ring: true, hold: win, float: 0.9, follow: at });
     this.game.time.pulse('bite', 0.35, 0.05); // (a flinch)
     this.emit('angle.bite', { kind });
   }

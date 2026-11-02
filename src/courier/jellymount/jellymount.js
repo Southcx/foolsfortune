@@ -1,7 +1,7 @@
 // ---------------------------------------------------------------------------------------
 // THE SLIP JELLY MOUNT IN PLAY (gj3's drop; the rules and numbers Dovina's, progress/jellymount.js JELLY_MOUNT; the lines Espada's,
 // docs/handoffs/everyone/2026-10-30-from-espada-words-ahead.md 4): a slip jelly called up out of the ground to carry the Courier, who sits
-// cross-legged on its crown. Riding is a tech (it owns the step); getting off gives the core movement back exactly. The body is the wild
+// cross-legged on its crown; since South's ruling (2026-11-02) the Pneuka Jar rides there in a saddle in their place (jarrider.js). Riding is a tech (it owns the step); getting off gives the core movement back exactly. The body is the wild
 // slip jelly's own mesh and melt (creatures/jelly/slipjelly.js, deform.js), placed here on the ground in the ride; its look (your seal on
 // it, its call, slump, air and moments, the mounts' ring) is Calissa's, vfx/jellymount/, laid over after this tick.
 //   THE CALL    Y, on open ground in the Dunes or at the Raceway (where the Solar Skiff is called): tapped, the mount last chosen comes;
@@ -35,6 +35,7 @@ import { COLOR } from '../../progress/weather.js';
 import { surfaceUnder } from '../stepsurface.js';
 import { BRUSH } from '../../progress/brushload.js';
 import { MountChoice } from './mountchoice.js';
+import { JarRider } from './jarrider.js';
 
 /** Petra's, where the rows are silent: the crown the rider sits on (m over the ground: the wild jelly is 1.5 tall, its crown rounded);
  *  how much of its life a blow on the rider takes (a crack's share k: a wild jelly's lunge is k 0.7 on the clay and 2.5 on a creature, so
@@ -53,7 +54,10 @@ export class JellyMount extends Tech {
     this.tint = null; this.drunk = 0; this.rideT = 0; this.endWhy = null;
   }
   get riding() { return this.active; }
-  get handsBusy() { return false; }
+  /** The Pneuka Jar rides in its saddle (South, 2026-11-02; jarrider.js): no hands, so the tools go away while it does. */
+  get handsBusy() { return this.jarRides; }
+  get jarRides() { return this.active && !!this._rider?.shown; }
+  get rider() { return (this._rider ||= new JarRider(this.game)); }
   /** Real seconds until it can be called again (0: now). */
   get readyIn() { return Math.max(0, this.reformAt - this.now); }
   get skiff() { return this.mgr.get('skiff'); }
@@ -95,6 +99,7 @@ export class JellyMount extends Tech {
     this.air = false; this.landT = 9; this.chain = 0; this.rideT = 0; this.endWhy = null; this.drunk = 0;
     this.groundY = this.groundAt(P.pos) ?? P.pos.y; this.seatY = this.groundY;
     this.ensureBody(); this.shown = true; this.body.root.visible = true; this.body.deform.target.squash = 1;
+    this.rider.on(); // (the Courier folds into the Pneuka Jar, which sits in the saddle on the crown)
     void g.clipPack?.social; // (the sitting loop is the suite's social pack: asked now, in by the time it holds; the skiff's stance until then)
     g.events?.emit('mount.call', { mount: 'slipjelly', by: 'courier' });
   }
@@ -140,14 +145,14 @@ export class JellyMount extends Tech {
     if (!this.air && P.latch('Space')) {
       this.chain = this.landT <= J.hop.window ? Math.min(J.hop.links, this.chain + 1) : 0; // (within the window of a landing a link more; out of rhythm none)
       P.vel.y = J.hop.up * (1 + J.hop.gain * this.chain); this.air = true;
-      this.body.deform.kick(-2.5, null, 0.12);
+      this.body.deform.kick(-2.5, null, 0.12); this.rider.hop();
       g.events?.emit('mount.hop', { chain: this.chain, mount: 'slipjelly', by: 'courier' });
     }
     // the ground it follows (the capsule held at the seat over it), or the fall
     const gy = this.groundAt(P.pos);
     if (this.air) {
       P.vel.y -= 24 * dt;
-      if (gy != null && P.pos.y - SEAT <= gy && P.vel.y <= 0) { this.air = false; this.landT = 0; this.body.deform.kick(-1.2 - Math.min(3, -P.vel.y * 0.15), null, 0.2); } // (it lands and splashes: no ride is lost to a fall)
+      if (gy != null && P.pos.y - SEAT <= gy && P.vel.y <= 0) { this.air = false; this.landT = 0; this.rider.land(-P.vel.y); this.body.deform.kick(-1.2 - Math.min(3, -P.vel.y * 0.15), null, 0.2); } // (it lands and splashes: no ride is lost to a fall)
     } else if (gy == null || P.pos.y - SEAT > gy + 0.6) { this.air = true; P.vel.y = Math.min(P.vel.y, 0); } // (off a ledge)
     else { const want = (gy + SEAT - P.pos.y) / dt; P.vel.y = damp(P.vel.y, Math.max(-12, Math.min(12, want)), 18, dt); }
     if (gy != null) this.groundY = gy;
@@ -213,7 +218,7 @@ export class JellyMount extends Tech {
     this.choice?.close(); this.choice = null; this.yRide = null;
     P.setShape('stand'); P.vel.y = Math.min(P.vel.y, 0);
     if (this.groundY != null && P.pos.y > this.groundY + 0.05 && !this.air) P.pos.y = this.groundY + 0.02;
-    this.shown = false; if (this.body) this.body.root.visible = false;
+    this.shown = false; if (this.body) this.body.root.visible = false; this._rider?.off();
     g.events?.emit('mount.end', { why, secs: +this.rideT.toFixed(1), mount: 'slipjelly', by: 'courier' });
     this.phase = null;
   }
@@ -254,6 +259,7 @@ export class JellyMount extends Tech {
     const P = this.P, p = P.renderPos ?? P.pos, gy = this.groundY ?? p.y - SEAT;
     B.root.position.set(p.x, Math.min(gy, p.y - SEAT * 0.9), p.z);
     B.root.rotation.y = this.heading;
+    this.rider.place(p, this.heading); // (the Jar on the crown: the rider's feet are the seat)
     B.root.scale.set(1, Math.max(0.05, (p.y - B.root.position.y) / SEAT) || 0.05, 1); // (on the ground in the ride; its call, slump and air are shaped after this by its look, vfx/jellymount/look.js)
     B.deform.feet = Math.min(1, this.v.length() / J.speeds.cruise);
     B.deform.update(dt, this.accel || null);

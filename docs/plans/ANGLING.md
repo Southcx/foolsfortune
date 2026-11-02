@@ -136,7 +136,8 @@ point here, not clutter.
   (`angle.release { species, tier, secs, answered, by }`) pays **half again** on top; keeping it pays its worth in cubes. The choice is
   cubes or more growth, never cubes or none (it was none for a kept fish until 2026-10-29: the fight was the skill either way).
 - **Size kept:** `fish.size.<id>` (a ledger `hi`); the Codex's bestiary shows your biggest. Size ladders per species as achievements.
-- **Bite Sense** (a knack; Espada names it): the !!! window 30% wider; opens at 200 bites set or 25 set in the window's first third.
+- **Bite Sense** (a knack; Espada names it; `KNACKS.biteSense`, built 2026-11-02): the !!! window 30% wider; opens at 200 hooks set or 25 set
+  perfect (the window's sweet middle, `angle.hookset.perfect`); the window's switch is Petra's (`angler.js`).
 
 ## 6. Order
 

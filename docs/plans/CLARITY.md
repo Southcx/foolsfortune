@@ -310,3 +310,12 @@ Past, Super Metroid, Final Fantasy VII, Ocarina of Time. What they share:
 - Espada words every line (CLAUDE.md); this section is the brief, the before-and-after the test. `scripts/clarity.mjs` keeps measuring
   the reading level; a line that passes it and still reads like a riddle, or like a chatty friend, fails this section.
 - The full pass over the log's lines (735 `log.say` calls in 110 files) goes file by file, the System's lines only.
+
+
+## Rulings carried from DESIGN.md (section 12, item 5)
+
+Moved verbatim from `docs/DESIGN.md` by G56 (2026-11-02); the numbered heading stays there as a pointer.
+
+Rulings of 2026-10-04:
+
+5. **The STE100 trim** of the UI text comes after the systems plan.

@@ -123,3 +123,12 @@ exist. A Well space that plays it for two real minutes proves the contract.
 - Whether a Well always has a board, or only some do (the Dunemaw could stay a dungeon of floors, with the board as a second kind).
 - How many players share one board when co-op is real.
 - Names, all plain until settled: the board, a genre floor, a space.
+
+
+## Rulings carried from DESIGN.md (section 19, one bullet)
+
+Moved verbatim from `docs/DESIGN.md` by G56 (2026-11-02); the numbered heading stays there as a pointer.
+
+Rulings of 2026-10-05, the weather round:
+
+- **Wells come in radically different genres**; one Courier, one purse, one ledger, the same seven tools in every one.

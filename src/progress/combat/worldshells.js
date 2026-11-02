@@ -71,9 +71,12 @@ export function scaledN(row, k) {
 }
 
 export const WORLD_SHELLS = CASTER_SHELLS.filter((r) => r.tier === 5);
-/** Full-grown blots mopped up for each World shell found (ledger `stain.wash.grown`). Twelve: about one a real hour and a half of play
- *  that hunts blots, a guess until the blots' rate is measured (CASTER-SHELLS.md 7.4). */
-export const DUE_EVERY = 12;
+/** Full-grown blots mopped up for each World shell found (ledger `stain.wash.grown`). Measured (scripts/economy.mjs, THE WORLD SHELLS'
+ *  FIND): the Shore lays STAINS.shore blots a game day (a real hour) up to six, and a blot is full-grown after STAINS.stages game days, so
+ *  a player who lets them grow mops at most 2 full-grown an hour (the 12 first written assumed 8). Three keeps the aim of one World shell
+ *  each 1.5 real hours of play that hunts blots, and each of the three has already risen as an aberrant slip jelly: three duels a shell
+ *  (CASTER-SHELLS.md 7.3). */
+export const DUE_EVERY = 3;
 /** World shells owed by the ledger and not yet given. */
 export const worldDue = (L) => Math.floor((L.get('stain.wash.grown') || 0) / DUE_EVERY) - (L.get('shell.world.found') || 0);
 /** The World shell given next: the one found fewest times, the lowest number first. */

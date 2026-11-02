@@ -97,7 +97,7 @@ holds), `rift` (a portal).
 | II | 20 | half | 10 | Tithe chests (rare and up), bounties, the Purser |
 | III | 80 | 2 | 25 | epic chests, a Well's FOE, Charybdis |
 | IV | 400 (never sold) | 1 | the Caster's toll | one each, found in the world |
-| V | 400 (never sold) | 1 | drawn from the place (section 7) | every 12th full-grown blot mopped up |
+| V | 400 (never sold) | 1 | drawn from the place (section 7) | every 3rd full-grown blot mopped up |
 
 - **The Caster's toll** (Outlaw Star's rare three): a tier IV shell is paid in the vessel, not the pool. Each one fired **cracks a
   region** (the vessel's own rule, `game.vessel`); a fourth with three regions cracked **shatters you**. Mended at the kiln as now.
@@ -384,14 +384,16 @@ Calissa's new modules. The dry click and the hook in the runner: Petra's (`shell
 - So World is a tier, not a family. The Feelings keep 81 to 90; Calm stays 89.
 
 ### 7.3 Where they come from (a faucet of power, not cubes)
-- **Every 12th full-grown blot you mop up gives a World shell** (`DUE_EVERY`), the one of the nine you have found fewest of, so a
+- **Every 3rd full-grown blot you mop up gives a World shell** (`DUE_EVERY`), the one of the nine you have found fewest of, so a
   collector meets all nine.
   - It is a sure count, never a roll: Nook Miles' stamp card, the house's pity made plain.
   - It is read from the ledger (`stain.wash.grown` against `shell.world.found`), so a reload never gives twice.
   - Mopping blots had no reward but the blotling it prevents; now it has a reason.
 - Never sold. Worth 400, for the Codex, as a tier IV.
-- **Unmeasured:** the rate at which blots are mopped. The guess is about 8 an hour when hunting, so one World shell every 1.5 real
-  hours. `scripts/economy.mjs` gets the row once `stain.wash.grown` has a measured rate, and `DUE_EVERY` moves then.
+- **Measured** (2026-11-02, `scripts/economy.mjs`, THE WORLD SHELLS' FIND): the Shore lays 2 blots a game day (a real hour) up to 6,
+  and a blot is full-grown after 3 game days, so a hunter mops at most 2 full-grown an hour, not the 8 guessed. `DUE_EVERY` moved from 12
+  to 3 to keep one World shell each 1.5 real hours of hunting (3 casually). Each of the three has risen as an aberrant slip jelly
+  before it is mopped, so a World shell costs about three duels.
 
 ### 7.4 The ledger and the achievements
 - **Events.**

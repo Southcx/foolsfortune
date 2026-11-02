@@ -58,6 +58,9 @@ export const VERB = {
   shieldBreak: { name: 'Shield break', from: 'Melee' }, edgeguard: { name: 'Edgeguard', from: 'Melee' }, stock: { name: 'Take a stock', from: 'Melee' },
 };
 
+/** The platform fighter's verbs, one checklist for both of its stages (the Arena and the flat stage). */
+const FIGHTER_VERBS = ['shield', 'spotDodge', 'roll', 'airDodge', 'wavedash', 'shortHop', 'fastFall', 'lCancel', 'grab', 'pummel', 'throw', 'jab', 'tilt', 'smash', 'aerial', 'special', 'ledgeGrab', 'ledgeGetup', 'tech', 'di', 'crouchCancel', 'powerShield', 'shieldBreak', 'edgeguard', 'stock'];
+
 /** The stages, in the wings' order, and the wave each is built in (the plan's section 4). `par` real seconds for a rank. */
 export const STAGES = [
   { id: 'run', wave: 1, family: 'The Run', par: 60, verbs: ['run', 'jump', 'doubleJump', 'dash', 'slide', 'crawl', 'wallJump', 'wallRun', 'mantle', 'dropThrough', 'spring', 'slope', 'ice', 'goo'] },
@@ -77,7 +80,8 @@ export const STAGES = [
   { id: 'chase', wave: 3, family: 'The Chase', par: 90, verbs: ['chase', 'autoscroll', 'beat'] },
   { id: 'wall', wave: 3, family: 'The Wall', par: 90, verbs: ['wallFace'] },
   { id: 'maze', wave: 3, family: 'The Maze', par: 180, verbs: ['seeded'] },
-  { id: 'arena', wave: 4, family: 'The Arena', par: 180, verbs: ['shield', 'spotDodge', 'roll', 'airDodge', 'wavedash', 'shortHop', 'fastFall', 'lCancel', 'grab', 'pummel', 'throw', 'jab', 'tilt', 'smash', 'aerial', 'special', 'ledgeGrab', 'ledgeGetup', 'tech', 'di', 'crouchCancel', 'powerShield', 'shieldBreak', 'edgeguard', 'stock'] },
+  { id: 'arena', wave: 4, family: 'The Arena', par: 180, verbs: FIGHTER_VERBS },
+  { id: 'flatstage', wave: 4, family: 'The Flat Stage', par: 180, verbs: FIGHTER_VERBS }, // (Final Destination's layout, FIGHTER.md 5.1: the same kit, verbs and par as the Arena's, unmeasured apart)
 ];
 export const stageOf = (id) => STAGES.find((s) => s.id === id) || null;
 

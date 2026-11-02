@@ -24,14 +24,14 @@ export const MOVES = {
     label: 'KNEAD', line: 'Fold and push in time. Stop when a stretched piece lets the light through without tearing.',
     gesture: 'beat', clock: 'real', beat: 0.75, perBeat: 0.06, offBeat: 0.02, // (a fold, a push and a quarter turn about every 0.75 s, a baker's pace; on the beat it builds three times as fast)
     heart: 0.8, width: [0.12, 0.2], over: 1, unit: 'gluten built, 1 overworked',
-    tells: [[0, 'Shaggy. It tears as soon as you pull it.'], [0.45, 'Smoother. A stretched piece tears before it thins.'], [0.68, 'It stretches thin and the light comes through: the windowpane.'], [0.92, 'Tight. It fights back and tears.']],
+    tells: [[0, 'Shaggy. It tears as soon as you pull it.'], [0.45, 'Smoother. A stretched piece tears before it thins.'], [0.68, 'Windowpane. A stretched piece lets light through without tearing.'], [0.92, 'Tight. It fights back and tears.']],
     tradeoff: 'Underworked bread is dense; overworked is tough.', attr: 'dexterity',
   },
   proof: {
     label: 'PROOF', line: 'Leave it somewhere warm. Press a floured finger in: ready when the dent springs back slowly.',
     gesture: 'wait', clock: 'game', rate: 1, // (doubled in about a game hour at the hearth's warmth: real bulk proof is hours at 21-23 C; the game hour is 150 real s)
     heart: 0.5, width: [0.1, 0.16], over: 0.85, unit: 'risen, 0.5 doubled, 0.85 collapsing',
-    tells: [[0, 'Barely risen. The dent springs straight back.'], [0.38, 'Puffy. The dent springs back slowly.'], [0.62, 'Overblown. The dent stays.'], [0.85, 'It sighs and sinks.']],
+    tells: [[0, 'Barely risen. The dent springs straight back.'], [0.38, 'Puffy. The dent springs back slowly.'], [0.62, 'Overblown. The dent stays.'], [0.85, 'Collapsed. It rose too long and sank.']],
     tradeoff: 'A longer proof is more flavour and risks collapse.', attr: 'focus',
   },
   bake: {
@@ -76,7 +76,7 @@ export const MOVES = {
     label: 'BOIL', line: 'Boil in water salted like the sea. Bite one: take it out while a thin white thread is left at its heart.', stage: '3d',
     gesture: 'hold', clock: 'real', rate: 1 / 20, // (fresh pasta's 2 to 3 minutes and dried pasta's 9 to 12 as 20 real s; water at about 1% salt, 10 g a litre)
     heart: 0.78, width: [0.06, 0.12], over: 1, unit: 'doneness by the bite, 1 mush',
-    tells: [[0, 'Raw. It snaps.'], [0.45, 'It bends, chalky all through.'], [0.68, 'A thin white thread at its heart: l\'anima, the soul. Al dente.'], [0.88, 'Soft all through. The soul is gone.'], [0.97, 'Mush.']],
+    tells: [[0, 'Raw. It snaps.'], [0.45, 'It bends, chalky all through.'], [0.68, 'A thin white thread at its heart: l\'anima, the soul. Al dente.'], [0.88, 'Soft all through. Overcooked.'], [0.97, 'Mush.']],
     tradeoff: 'Al dente keeps its bite and its soul; a minute more and both are gone.', attr: 'focus',
   },
   sear: {
@@ -90,7 +90,7 @@ export const MOVES = {
     label: 'BLEED', line: 'The fish thrashes and stills in turns. Press the spike behind its eye in the still moment: a quick, calm end.', stage: '3d',
     gesture: 'press', clock: 'real', period: 2.4, // (ikejime: the thrash and stillness come round every 2.4 real s; the press's moment in it is the value, 0.5 the stillness)
     heart: 0.5, width: [0.08, 0.14], over: 1.01, unit: 'the moment between thrashes, 0.5 its stillness',
-    tells: [[0, 'It thrashes.'], [0.3, 'It slows.'], [0.42, 'Still. Now.'], [0.6, 'It gathers itself again.']],
+    tells: [[0, 'It thrashes.'], [0.3, 'It slows.'], [0.42, 'Still. Strike now.'], [0.6, 'It gathers itself again.']],
     tradeoff: 'A calm end keeps the flesh sweet: rigor comes later and less lactic acid sours it.', attr: 'focus',
   },
   // the other families' moves, as data for the rounds after (SPIRIT-COOKING.md 4's table): not played yet

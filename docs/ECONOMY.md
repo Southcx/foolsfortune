@@ -249,3 +249,17 @@ Nothing here is sold for cubes yet. A material's worth is the Purser's, as befor
   `cubes.earn(n, why)`; a new drain `cubes.spend(n, why)`.
 - `/grant [n]` (DEBUG) is listed apart from income. When the panel and the simulator disagree, fix the simulator's `PLAY` rates
   first, then the table. Prior art: Machinations, OSRS's money-making guide, EVE's monthly economic report, FFXIV's chosen sinks.
+
+
+## Rulings carried from DESIGN.md (section 17)
+
+The owner, 2026-10-05; settled. Moved verbatim from `docs/DESIGN.md` by G56 (2026-11-02); the numbered heading stays there as a pointer.
+
+Time: one game day is one real hour.
+
+A game day must be tasted in a sitting. `DAY_MS` = 3,600,000 (`core/calendar.js`): a game hour is 2.5 real minutes, a game minute 2.5
+real seconds. The clock runs on the wall clock, scaled, so the garden grows while you are away; one clock for everything (`now()`,
+`today()`), pinned in a replay (`setClock`). Nothing reads `Date.now()` for game time.
+
+**Two kinds of number, never mixed:** the calendar (a Well's drift, ripening, caps, demand) is in game time; rates of income
+(`ECON.perMinute`) are per hour of play. "Seven days" in an achievement means seven game days.

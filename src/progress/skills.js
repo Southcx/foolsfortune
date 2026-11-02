@@ -258,7 +258,7 @@ const POWER_FEATS = {
 };
 /** A power's mimic way (South, 2026-10-30; docs/plans/MIMICRY.md): its mimicry puzzle copied cleanly (two stars), learned by watching
  *  the System do it and doing it back. The powers a puzzle on the ladder teaches (progress/mimicry.js MIMIC_OPS). */
-const MIMIC_WAY = new Set(['transmute', 'slab', 'fold', 'stamp']);
+const MIMIC_WAY = new Set(['transmute', 'slab', 'fold', 'stamp', 'herd', 'sculpt', 'strata']); // (Herd, Sculpt, Layer View: G141 to G143, MIMICRY.md 7)
 const OLD_FIVE = new Set(GOD_ARTS.map((a) => a.id));
 const countWay = (domain, at) => led(`exp.${domain}`, expAt(at), `${DOMAINS[domain].name} ${at}`);
 const powerArt = (id, P, feat, extra = {}) => ({

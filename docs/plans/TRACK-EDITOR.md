@@ -138,8 +138,13 @@ Ward and Stamp, so Spellscription is the rule-writer's domain.
 - **No cubes from a made track's race.** A track you made can be made easy; paying for it is a farm. Made tracks pay in the ledger
   (achievements: a track validated, a party won, a haunt won, a wreck by each trap, a gold on a shared track), and in titles.
 - **The existing tracks' haunted races pay as races do** (their medals, the wager), since those tracks are the house's.
-- **Trap kinds open as god powers do:** each trap by its power's domain level (the count way) or a feat on the Raceway (the feat way):
-  arts only by achievement.
+- **Trap kinds open by achievement** (`TRAP_OPEN`, `trapOpen`, `progress/traps.js`; built 2026-11-02, G309):
+  - Rising pillars and the gust gate are given.
+  - Each later trap has a count way: 2, 4, 6, 8, then 10 haunted races (where you meet traps fired at you).
+  - Each also has a feat way: wrecking 3 rivals with the trap before it while you haunt, or riding a portal on 3 times for the portal,
+    or sending a turret's flame back once for the turret.
+  - The god powers still make them; their level never gates them.
+  - About 40 real minutes of haunted racing opens the whole box (Super Mario Maker's elements opened as you build).
 
 ## 9. Beyond the editor: what else makes the racing ours
 
@@ -209,8 +214,7 @@ pieces added on top of the ground. Now a made track IS a house track:
   against a par of 421 (the reference race 468 s): broken through easily, so HAUNT.parK (0.9) wants tuning per track, likely lower on the
   long tracks, once the owner has played it.
 - **Not yet:** the traps' and pieces' looks and tells beyond placeholders (Calissa), their sounds (Wanda), their names (Espada), the
-  party mode and live guests (W4, W5), Read showing a possessed trap's next intent, trap kinds opened by achievement (they open with
-  their god powers for now), fords and bridges on a made track (the lot's ground is only raised, never cut).
+  party mode and live guests (W4, W5), Read showing a possessed trap's next intent, fords and bridges on a made track (the lot's ground is only raised, never cut).
 
 ## 13. Asynchronous haunts (round of 2026-10-24, the owner: "Both")
 

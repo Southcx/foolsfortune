@@ -176,12 +176,12 @@ export const DOMAIN_ARTS = {
   // belt's R asking `borrowed()`).
   // OURANURGY: afflictions set off on your beat (Chrono Trigger's combined techs; Into the Breach's ordered turn). 8 s is time to build
   // two statuses with two tools (a status builds in two to four blows); x1.5 is the beat's reward, and left to run out it is no gain.
-  fuse: R('ouranurgy', 60, 'action', 'The Fuse', 'Fuse the nearest foe. For 8 seconds, every affliction you put on it waits. Press again and they all go off at once, each lasting half again as long.',
-    'Let the 8 seconds run out and they go off as normal. Set them off into a stun for the biggest payoff.', { window: 8, mult: 1.5, reach: 20 }, ['twoAtOnce', 15], { cost: 10, cooldown: 20 }),
+  fuse: R('ouranurgy', 60, 'action', 'The Fuse', 'Fuse the nearest foe. For 8 seconds, every affliction you put on it is delayed. Press again and they all go off at once, each lasting half again as long.',
+    'Let the 8 seconds run out and they go off as normal. Hint: set them off on a stunned foe for the most effect.', { window: 8, mult: 1.5, reach: 20 }, ['twoAtOnce', 15], { cost: 10, cooldown: 20 }),
   // MANIFESTATION: the weather's liquid caught (Breath of the Wild's chemistry; FLUDD refilled from the world). 3 a real s at full
   // strength is a quarter of the mop's 12: the sky's slow trickle beside the hand's work, a middling Bottle in about a real minute.
   catchWeather: R('manifestation', 60, 'passive', 'Catch the Weather', "Stand in a feeling's weather, out under the sky, with a Bottle on, and the Bottle fills with that feeling.",
-    "Only feelings you know, and only if the Bottle's empty or already holds that one. Stronger weather fills it faster.", { rate: 3, min: 0.2, say: 20 }, ['bigMop', 15]),
+    "Only feelings you have awakened to, and only if the Bottle's empty or already holds that one. Stronger weather fills it faster.", { rate: 3, min: 0.2, say: 20 }, ['bigMop', 15]),
   // PSYCHOKINESIS: force passed on (Katamari; billiards' combination shot). Three quarters a link: three links leave 0.42 of the
   // first blow, still a stagger; 3 m is two bodies' widths, so a relay is aimed, never luck across a room.
   relay: R('psychokinesis', 60, 'passive', 'Relay', 'Hit a creature hard and the force carries on to the one behind it, up to three in a row.',

@@ -18,7 +18,7 @@
 // mechanic each); Puzzle Pirates (Three Rings, 2003: the duty puzzles' fixed toolkits and their ratings, Incredible to Poor); Simon
 // (Milton Bradley, 1978: the sequence shown, then repeated); golf's par; Picross's before-and-after; From Dust's matter (the field itself).
 //
-//   MIMIC = { half, cell, soft, settle, solve, clean, replay, made }   MIMIC_PUZZLES[id] = { label, line, mode, tier, powers, setup, steps, par }
+//   MIMIC = { half, cell, soft, settle, solve, clean, replay, made }   MIMIC_PUZZLES[id] = { label, line, mode, tier, family, powers, lend?, veil?, flock?, pen?, setup, steps, par }
 //   MIMIC_TOOL[power] = { key: value }   (the puzzle's fixed toolkit: the hand's level-1 numbers while it is open, so a copy is fair at any level)
 //   MIMIC_OPS[op] -> its power        powersOf(steps) -> [power]        domainsOf(powers) -> [domain]
 //   newPatch() -> MatterField          lay(F, steps, at)                 snap(F, at) -> { firm, loose, w, tint }
@@ -26,9 +26,22 @@
 //   matchOf(now, target, start) -> 0..1                                  gradeOf({ match, strokes, par, made, allow }) -> { solved, stars }
 //   dayPuzzle(day) -> puzzle (seeded, the same for everyone)             mimicOpen(id, L) -> bool (the ladder: one opens the next)
 //   MIMIC_SITES [{ id, area, r, bearing, rungs, day? }]   siteAt(site, oasis) -> { x, z, out }   siteOf(puzzle id) -> site
+//
+// THE FAMILIES (MIMICRY.md 7; GAPS G141 to G143): a puzzle's `family` says what is copied and so how it is judged. `matter` (the default):
+// the island's matter field, matchOf. `creation`: Sculpt's creations, voxel to voxel (progress/mimicrysculpt.js). `herd`: a flock walked
+// into a pen drawn on the ground (progress/mimicryherd.js). `veil` (a matter puzzle's flag, Layer View's): the target is hidden where it
+// lies under the start's ground until a Layer View read crosses it (`veilOf`, `unveil`). `lend`: powers a puzzle lends beyond its steps'
+// own (the reading power, Layer View: not a stroke). A family the runtime does not run yet (`MIMIC_RUNS`) is never open, and the ladder
+// skips it (`MIMIC_LIVE`), so a rung waiting on the runtime never blocks the next.
+//
+//   MIMIC_RUNS { family: bool }   MIMIC_LIVE [id]   framesOn(field, puzzle, at, grid?) -> frames (+ { family, vstart, vtarget } | { flock, pen } | { veil })
+//   scoreOf(frames, { snap, voxels, bodies }) -> 0..1   veilOf(start, target) -> Uint8Array   unveil(read, a, b) -> cells newly read
 // ---------------------------------------------------------------------------------------
 import { MatterField, FEELINGS } from '../godhand/matter.js';
 import { GOD_POWERS } from './godpowers.js';
+import { VoxelGrid, SHAPES } from '../godhand/voxels.js';
+import { flockOf, penOf, herdMatchOf } from './mimicryherd.js';
+import { sculptOf, voxelSnap, restoreVoxels, voxelMatchOf } from './mimicrysculpt.js';
 
 /** The patch's numbers. `half`: half the patch's side in metres (12 m square, a garden bed's work, inside the island field's 72 m).
  *  `cell`: the island field's own (godhand/matter.js MATTER.cell), so the target is cell for cell what the hand can make. `soft`: cells a box
@@ -36,17 +49,21 @@ import { GOD_POWERS } from './godpowers.js';
  *  last step (the slump and the water come to rest, as the player's will). `solve`: the match that solves it; `clean`: the match a
  *  two-star copy needs; three stars also want the strokes at par and nothing made from nowhere (`made`, m³). `replay`: real seconds a
  *  shown step holds before the next. `taper`: metres over which a bed thins to nothing at the patch's edge (1.6 m over 2: under clay's angle of repose). `pay`: minutes of play a puzzle's first solve pays by its tier (cubes at the stone; ECONOMY.md: a
- *  rung is a few minutes' thought), the game day's once a game day. `weights`: what a layer's difference counts (water half: it runs and dries while you work). */
-export const MIMIC = { half: 6, cell: 0.5, pad: 4, soft: 3, settle: 4, dt: 1 / 30, solve: 0.68, clean: 0.85, made: 0.5, enough: 0.8, taper: 2, pay: { 1: 2, 2: 3, 3: 4, day: 3 }, replay: 1.6, weights: { firm: 1, loose: 1, w: 0.5, tint: 0.5 }, floor: 1.5 };
+ *  rung is a few minutes' thought), the game day's once a game day. `weights`: what a layer's difference counts (water half: it runs and dries while you work).
+ *  `veil`: metres the target must lie under the start's ground to be hidden in a veiled puzzle (0.2: a raise's ring sinks about 0.1 as
+ *  it gives up its matter, which stays shown, a hint and no more). `reveal`: metres either side of a Layer View read the veil lifts
+ *  (2: a read across the patch at the toolkit's 12 m shows a 4 m band, so three reads see it all). */
+export const MIMIC = { half: 6, cell: 0.5, pad: 4, soft: 3, settle: 4, dt: 1 / 30, solve: 0.68, clean: 0.85, made: 0.5, enough: 0.8, taper: 2, pay: { 1: 2, 2: 3, 3: 4, day: 3 }, replay: 1.6, weights: { firm: 1, loose: 1, w: 0.5, tint: 0.5 }, floor: 1.5, veil: 0.2, reveal: 2 };
 
 /** The puzzle's toolkit (Puzzle Pirates' duty puzzles: one set of tools for everyone): while a puzzle is open its powers read these in
  *  place of their ramp's (progress/godpowers.js rampOf asks `game.mimicry.tool`), the hand's own numbers at level 1, so a copy made at
  *  Alteration 80 is the same puzzle as at 1. The steps below are written to them. */
-export const MIMIC_TOOL = { shape: { r: 1.6, made: 0.5 }, carve: { w: 1.4, depth: 1.2, len: 18 }, scoop: { carry: 20 }, fold: { side: 4 }, stamp: { side: 4 }, slab: { side: 4 }, transmute: { r: 2.5 } };
+export const MIMIC_TOOL = { shape: { r: 1.6, made: 0.5 }, carve: { w: 1.4, depth: 1.2, len: 18 }, scoop: { carry: 20 }, fold: { side: 4 }, stamp: { side: 4 }, slab: { side: 4 }, transmute: { r: 2.5 },
+  sculpt: { len: 16, scale: 1, made: 0.6 }, herd: { r: 6, n: 4, dur: 20 }, strata: { len: 12 } }; // (Sculpt, Herd, Layer View: RAMP's level-open row, as mimicrysculpt.js SCULPT and mimicryherd.js HERD)
 const CARVE = { w: 1.4, depth: 1.2 };
 
 /** Each step's op and the power it is (`GOD_POWERS`): the powers a puzzle lends are its steps' own. */
-export const MIMIC_OPS = { raise: 'shape', smooth: 'shape', carve: 'carve', pour: 'scoop', move: 'scoop', transmute: 'transmute', fold: 'fold', stamp: 'stamp', slab: 'slab' };
+export const MIMIC_OPS = { raise: 'shape', smooth: 'shape', carve: 'carve', pour: 'scoop', move: 'scoop', transmute: 'transmute', fold: 'fold', stamp: 'stamp', slab: 'slab', sculpt: 'sculpt', herd: 'herd' };
 export const powersOf = (steps) => [...new Set(steps.map((s) => MIMIC_OPS[s.op]).filter(Boolean))];
 export const domainsOf = (powers) => [...new Set(powers.map((p) => GOD_POWERS[p]?.domain).filter(Boolean))];
 
@@ -74,28 +91,46 @@ export const MIMIC_PUZZLES = {
   order: { label: 'Order of Things', line: 'A channel, and water standing in it.', mode: 'match', tier: 2, setup: [BED, { op: 'pour', at: [-4, 4], r: 1.2, vol: 2, kind: 'water' }], steps: [{ op: 'carve', a: [-4, 0], b: [4, 0], ...CARVE }, { op: 'move', from: [-4, 4], to: [0, 0], r: 1.2, vol: 2 }] },
   moat: { label: 'The Moat', line: 'A mound inside a ditch.', mode: 'match', tier: 3, setup: [BED], steps: [{ op: 'raise', at: [0, 0], r: 1.6, dh: 1 }, { op: 'carve', a: [-3.5, -3.5], b: [3.5, -3.5], ...CARVE }, { op: 'carve', a: [3.5, -3.5], b: [3.5, 3.5], ...CARVE }] },
   unmade: { label: 'Unmade', line: 'Put the ground back as it was.', mode: 'undo', tier: 2, setup: [BED], steps: [{ op: 'raise', at: [-3, 2], r: 1.6, dh: 1 }, { op: 'raise', at: [3, -2], r: 1.6, dh: -0.8 }] },
+  // Possession (Herd), a creature family (G141): two knots of three clapperjars 8 m apart (past Herd's 6 m reach from either), a pen
+  // between them; Herd takes four at the toolkit's numbers, so par is a drag a knot, and one drag from between takes four of six
+  flock: { label: 'The Flock', line: 'Every clapperjar walked into the pen.', mode: 'mimic', tier: 2, family: 'herd', setup: [{ op: 'bed', firm: 0.4 }],
+    flock: [{ at: [-4, -3], n: 3, spread: 1 }, { at: [4, -3], n: 3, spread: 1 }], pen: { at: [0, 3], r: 2.4, sides: 6 },
+    steps: [{ op: 'herd', from: [-4, -3], to: [-0.8, 3] }, { op: 'herd', from: [4, -3], to: [0.8, 3] }] },
+  // Manifestation (Sculpt), voxel to voxel (G142): a pillar (a stroke under 1.5 m) and an arch of a 6 m span (so 1.8 m high: 0.3 of it)
+  gate: { label: 'Pillar and Arch', line: 'A pillar, and an arch beside it.', mode: 'mimic', tier: 2, family: 'creation', setup: [{ op: 'bed', firm: 0.4 }],
+    steps: [{ op: 'sculpt', a: [-3.5, -3] }, { op: 'sculpt', a: [-3, 2], b: [3, 2] }] },
+  // Divination (Layer View), veiled (G143): a mound shown, two hollows asked under the ground and hidden until read; the mound alone
+  // is under half the change, so a copy of what is seen is never solved. Layer View is lent first, in hand as the puzzle opens
+  under: { label: 'Below the Surface', line: 'A mound, and what was dug where you cannot see.', mode: 'match', tier: 3, veil: true, lend: ['strata'], setup: [BED],
+    steps: [{ op: 'raise', at: [-3, -3], r: 1.6, dh: 1 }, { op: 'raise', at: [2.5, -2], r: 1.6, dh: -0.8 }, { op: 'raise', at: [-1, 3], r: 1.6, dh: -0.8 }] },
 };
-for (const [id, P] of Object.entries(MIMIC_PUZZLES)) { P.id = id; P.powers = powersOf(P.steps); P.domains = domainsOf(P.powers); P.par ??= P.steps.length; }
+for (const [id, P] of Object.entries(MIMIC_PUZZLES)) { P.id = id; P.family ??= 'matter'; P.powers = [...new Set([...(P.lend || []), ...powersOf(P.steps)])]; P.domains = domainsOf(P.powers); P.par ??= P.steps.length; }
 /** The ladder's order (the first rung open; each solved opens the next of its domain's line, and the mix opens with the first rungs). */
-export const MIMIC_LADDER = ['mound', 'hollow', 'twins', 'ditch', 'heap', 'level', 'fill', 'claybed', 'order', 'unmade', 'slab', 'swap', 'copy', 'moat'];
-/** Open: the first rung, or the one before it on the ladder solved; in DEBUG, the lend panel's `mimicry` row opens them all. */
+export const MIMIC_LADDER = ['mound', 'hollow', 'twins', 'ditch', 'heap', 'level', 'fill', 'flock', 'claybed', 'order', 'unmade', 'slab', 'swap', 'gate', 'copy', 'moat', 'under'];
+/** The families the runtime runs now (world/mimicry/mimicry.js): a puzzle of another is never open, and the ladder steps over it. The
+ *  runtime's builder sets a family true here once its hooks are in (docs/handoffs/petra/2026-11-02-from-dovina-mimicry-puzzles.md). */
+export const MIMIC_RUNS = { matter: true, creation: true, herd: false }; // (creation: Petra's hooks in, 2026-11-02; herd waits on clapperjars Herd can walk)
+export const MIMIC_LIVE = MIMIC_LADDER.filter((id) => MIMIC_RUNS[MIMIC_PUZZLES[id].family]);
+/** Open: the first live rung, or the live one before it solved; in DEBUG, the lend panel's `mimicry` row opens every live one. */
 export const mimicOpen = (id, L, g = null) => {
+  const P = MIMIC_PUZZLES[id]; if (P && !MIMIC_RUNS[P.family]) return false;
   if (g?.lend?.has?.('mimicry')) return true;
-  const i = MIMIC_LADDER.indexOf(id);
+  const i = MIMIC_LIVE.indexOf(id);
   if (i < 0) return id === 'day';
-  return i === 0 || (L?.get?.(`god.mimic.solved.${MIMIC_LADDER[i - 1]}`) || 0) > 0;
+  return i === 0 || (L?.get?.(`god.mimic.solved.${MIMIC_LIVE[i - 1]}`) || 0) > 0;
 };
 
 /** The puzzle stones, one an area of the Dunes (docs/plans/AREAS.md: each area its things), placed in the Dunes' own frame (areas.js:
  *  r metres from the oasis, its bearing atan2(z, x) in degrees); each sets its own rungs, the lowest open one first. Alteration's first
  *  steps in the Gnomon flats (and the game day's puzzle once they are done), the moving of things by the shore, the mix on the crystal
- *  ridges, Swap and Copy in the ruins (old forms copied and moved: the ruins are what Kaolin Anagami keeps of others). The patch lies
+ *  ridges, Swap, Copy and Sculpt in the ruins (old forms copied and moved: the ruins are what Kaolin Anagami keeps of others), Herd by
+ *  the shore, Layer View last on the ridges. The patch lies
  *  9 m beyond its stone, away from the oasis. */
 export const MIMIC_SITES = [
   { id: 'flats', area: 'flats', r: 200, bearing: 150, rungs: ['mound', 'hollow', 'twins', 'ditch', 'level', 'unmade'], day: true },
-  { id: 'shore', area: 'shore', r: 200, bearing: 10, rungs: ['heap', 'fill', 'slab'] },
-  { id: 'ridges', area: 'ridges', r: 220, bearing: -60, rungs: ['claybed', 'order', 'moat'] },
-  { id: 'ruins', area: 'ruins', r: 250, bearing: 80, rungs: ['swap', 'copy'] },
+  { id: 'shore', area: 'shore', r: 200, bearing: 10, rungs: ['heap', 'fill', 'flock', 'slab'] }, // (the flock: herding is moving things too, creatures)
+  { id: 'ridges', area: 'ridges', r: 220, bearing: -60, rungs: ['claybed', 'order', 'moat', 'under'] }, // (below the surface: the ridges' strata stand bare)
+  { id: 'ruins', area: 'ruins', r: 250, bearing: 80, rungs: ['swap', 'gate', 'copy'] }, // (a pillar and an arch: the ruins' own forms)
 ];
 /** A site's place in the world: the Dunes' oasis `D` ({ x, z }) and its polar offset; `out` the unit way away from the oasis. */
 export function siteAt(site, D) { const b = (site.bearing * Math.PI) / 180, out = { x: Math.cos(b), z: Math.sin(b) }; return { x: D.x + out.x * site.r, z: D.z + out.z * site.r, out }; }
@@ -161,29 +196,69 @@ export function cloneField(F) {
   C.timeCells = null; C.bb = F.bb ? [...F.bb] : null;
   return C;
 }
-/** A puzzle's frames on a field (the island's, in the world): `at` its middle; its start and target as the System makes them there. */
-export function framesOn(F, P, at) {
+/** A puzzle's frames on a field (the island's, in the world): `at` its middle; its start and target as the System makes them there.
+ *  `grid`: the island's creations (game.creations.grid), for a creation puzzle's start (what already stands on the patch). */
+export function framesOn(F, P, at, grid = null) {
   if (typeof P === 'string') P = MIMIC_PUZZLES[P] || null;
   if (!P) return null;
   const C = cloneField(F);
   eachCell(C, at, (k) => { C.firm[k] = 0; C.loose[k] = 0; C.w[k] = 0; C.kept[k] = 1e9; }); // (the patch cleared to its authored ground first, and kept from the mending, as the real one is while open)
-  lay(C, P.setup, at); settle(C);
-  const before = snap(C, at);
-  const { made } = lay(C, P.steps, at); settle(C);
-  const after = snap(C, at);
-  return P.mode === 'undo' ? { start: after, target: before, steps: P.steps, mode: P.mode, made } : { start: before, target: after, steps: P.steps, mode: P.mode, made };
+  return framesWith(C, P, at, grid);
 }
 
 /** A puzzle's frames: its start and its target as the System made them (UNDO turns them about). */
 export function framesOf(P, base = null) {
   if (typeof P === 'string') P = MIMIC_PUZZLES[P] || null;
   if (!P) return null;
-  const F = newPatch(base);
-  lay(F, P.setup); settle(F);
-  const before = snap(F);
-  const { made } = lay(F, P.steps); settle(F);
-  const after = snap(F);
-  return P.mode === 'undo' ? { start: after, target: before, steps: P.steps, mode: P.mode, made } : { start: before, target: after, steps: P.steps, mode: P.mode, made };
+  return framesWith(newPatch(base), P, { x: 0, z: 0, y: 0 }, null);
+}
+
+/** The frames by family, on a field of the puzzle's own: the matter's start and target always (a creation or a herd leaves the ground
+ *  as set up: its ghost is empty, the runtime's matter untouched); a creation's grids as `vstart` and `vtarget`; a herd's flock and pen
+ *  (patch-local); a veiled puzzle's hidden cells. */
+function framesWith(C, P, at, grid) {
+  const family = P.family || 'matter';
+  lay(C, P.setup, at); settle(C);
+  const before = snap(C, at), base = { family, steps: P.steps, mode: P.mode };
+  if (family === 'herd') return { ...base, start: before, target: before, made: 0, flock: flockOf(P), pen: penOf(P) };
+  if (family === 'creation') {
+    const vstart = voxelSnap(grid, at), T = new VoxelGrid(); restoreVoxels(T, vstart);
+    let made = 0;
+    for (const s of P.steps) { if (s.op !== 'sculpt') continue; const c = sculptOf(s, (x, z) => C.groundAt(x, z), at), sh = c.shape === 'pillar' ? SHAPES.pillar(c.a, c.opts) : SHAPES[c.shape](c.a, c.b, c.opts); T.stamp(sh.sdf, sh.box); made += c.est; }
+    return { ...base, start: before, target: before, made, vstart, vtarget: voxelSnap(T, at) };
+  }
+  const { made } = lay(C, P.steps, at); settle(C);
+  const after = snap(C, at);
+  const fr = P.mode === 'undo' ? { ...base, start: after, target: before, made } : { ...base, start: before, target: after, made };
+  if (P.veil) fr.veil = veilOf(fr.start, fr.target);
+  return fr;
+}
+
+/** A copy judged by its family: the matter's (`snap`, matchOf), the creations' over the patch's box (`voxels`, voxelSnap of the
+ *  island's grid), or the flock's places (`bodies`, patch-local [x, z]). */
+export function scoreOf(fr, now = {}) {
+  if (fr.family === 'herd') return herdMatchOf(now.bodies || [], fr.pen);
+  if (fr.family === 'creation') return now.voxels ? voxelMatchOf(now.voxels, fr.vtarget, fr.vstart) : 0;
+  return now.snap ? matchOf(now.snap, fr.target, fr.start) : 0;
+}
+
+// ---- the veil (Layer View's puzzle): what is asked under the ground is not shown until read
+/** The cells a veiled puzzle hides: where the target's ground lies more than `veil` under the start's (a hollow, a cut). */
+export function veilOf(start, target) {
+  const m = target.m, out = new Uint8Array(m * m);
+  for (let o = 0; o < m * m; o++) if (target.firm[o] + target.loose[o] < start.firm[o] + start.loose[o] - MIMIC.veil) out[o] = 1;
+  return out;
+}
+/** A Layer View read from `a` to `b` (patch-local [x, z]) lifts the veil within `reveal` of its line: marks `read` (a Uint8Array the
+ *  patch's size, kept by the runtime while the puzzle is open). Returns how many cells it newly read. A cell hidden is veil && !read. */
+export function unveil(read, a, b) {
+  const m = Math.round((MIMIC.half * 2) / MIMIC.cell), dx = b[0] - a[0], dz = b[1] - a[1], L2 = dx * dx + dz * dz || 1e-9;
+  let n = 0;
+  for (let j = 0; j < m; j++) for (let i = 0; i < m; i++) {
+    const x = -MIMIC.half + (i + 0.5) * MIMIC.cell, z = -MIMIC.half + (j + 0.5) * MIMIC.cell, t = Math.max(0, Math.min(1, ((x - a[0]) * dx + (z - a[1]) * dz) / L2));
+    if (Math.hypot(x - a[0] - dx * t, z - a[1] - dz * t) <= MIMIC.reveal && !read[j * m + i]) { read[j * m + i] = 1; n++; }
+  }
+  return n;
 }
 
 /** A layer softened over about a metre (two box passes of `soft` cells: a Gaussian's cheap stand-in), so a stroke half a metre off
@@ -235,7 +310,7 @@ export function dayPuzzle(day) {
     else steps.push({ op: 'move', from: [-5, -5], to: at(), r: 1.6, vol: 4 });
   }
   const setup = steps.some((s) => s.op === 'move') ? [BED, { op: 'pour', at: [-5, -5], r: 1.6, vol: 5, kind: 'loose' }] : [BED];
-  const P = { id: 'day', label: "The Game Day's Puzzle", line: 'Made new each game day.', mode: day % 2 ? 'match' : 'mimic', tier: 2, setup, steps, day };
+  const P = { id: 'day', label: "The Game Day's Puzzle", line: 'Made new each game day.', mode: day % 2 ? 'match' : 'mimic', tier: 2, family: 'matter', setup, steps, day };
   P.powers = powersOf(steps); P.domains = domainsOf(P.powers); P.par = steps.length;
   return P;
 }

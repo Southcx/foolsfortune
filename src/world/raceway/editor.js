@@ -31,7 +31,7 @@ import * as THREE from 'three';
 import { RW } from './track.js';
 import { LOT, MADE, RULES, CARRY, blankTrack, budgetOf, validate, hashOf, isValidated, shareCode, readCode, cleanDef } from '../../progress/trackdef.js';
 import { PIECES, PIECE_KINDS } from '../../progress/trackpieces.js';
-import { TRAPS, TRAP_KINDS } from '../../progress/traps.js';
+import { TRAPS, TRAP_KINDS, TRAP_OPEN, trapOpen } from '../../progress/traps.js';
 import { GOD_POWERS } from '../../progress/godpowers.js';
 
 const CAM = { h: 130, min: 40, max: 170, lean: 0.35, pan: 1.1 }; // (the camera's height over the lot, its range, how far it stands back for its lean, pan speed a metre of height; kept inside the
@@ -306,6 +306,8 @@ export class TrackEditor {
     const P = GOD_POWERS[power]; if (!P || (P.at ?? 1) <= 1) return true;
     return !!g.system?.unlocked?.(power) || (g.psyche?.level?.(P.domain) ?? 1) >= P.at;
   }
+  /** A trap kind in the box: by achievement (traps.js TRAP_OPEN, G309), every one in the DEBUG save's racing or arts lend. */
+  trapOpen(kind) { const g = this.game; return !!(g.lend?.has?.('racing') || g.lend?.has?.('arts')) || trapOpen(kind, g.ledger); }
   panel() {
     if (typeof document === 'undefined') return;
     let el = this.el; if (!el) { el = this.el = document.createElement('div'); el.id = 'tedit'; document.body.appendChild(el); el.addEventListener('pointerdown', (e) => e.stopPropagation()); }
@@ -327,7 +329,7 @@ export class TrackEditor {
       <h3>MAP</h3><div class="map"></div>
       <h3>THE LINE</h3><div class="row">${btn('Select', this.tool === 'select', 'tool:select', false, 'Drag a point, a piece or a trap; raise or lower a point. RMB takes one out.')}${btn('Point', this.tool === 'point', 'tool:point', false, 'Click a point into the line.')}${btn('Ride it', false, 'ride', false, 'Sail the line; a point every 35 m.')}${btn('New oval', false, 'reset')}</div>
       <h3>PIECES</h3><div class="row">${PIECE_KINDS.map((k) => btn(PIECES[k].label, this.tool === k, `tool:${k}`, !this.powerOpen(PIECES[k].power), this.powerOpen(PIECES[k].power) ? PIECES[k].line : `Opens with the god power ${GOD_POWERS[PIECES[k].power]?.label || PIECES[k].power}.`)).join('')}</div>
-      <h3>TRAPS</h3><div class="row">${TRAP_KINDS.map((k) => btn(TRAPS[k].label, this.tool === k, `tool:${k}`, !this.powerOpen(TRAPS[k].power), this.powerOpen(TRAPS[k].power) ? TRAPS[k].line : `Opens with the god power ${GOD_POWERS[TRAPS[k].power]?.label || TRAPS[k].power}.`)).join('')}</div>
+      <h3>TRAPS</h3><div class="row">${TRAP_KINDS.map((k) => btn(TRAPS[k].label, this.tool === k, `tool:${k}`, !this.trapOpen(k), this.trapOpen(k) ? TRAPS[k].line : `${TRAP_OPEN[k]?.hint || 'Not yet open'}.`)).join('')}</div>
       ${pendLine}
       <h3>RULES</h3><div class="row">${Object.entries(RULES).map(([id, r]) => btn(r.label, D.rules.includes(id), `rule:${id}`, false, r.line)).join('')}</div>
       <h3>SELECTED</h3><div>${selLine}</div>

@@ -282,3 +282,13 @@ folds above: each rung names the fold it needs.
 5. **The Arena's percent as cracks:** yes, at Dovina's discretion. It opens shatter as a blow's property (F5b).
 
 Still open for South: the plain shot's cost on foot as the ambient Lachryma round you (F2).
+
+
+## Rulings carried from DESIGN.md (section 12, item 2)
+
+Moved verbatim from `docs/DESIGN.md` by G56 (2026-11-02); the numbered heading stays there as a pointer.
+
+Rulings of 2026-10-04:
+
+2. **The Vessoul** is the player's entity: the god hand, the Pneuka Jar, the Courier and the Emocean's ships; the Solar Skiff is a
+   limb (GLOSSARY).

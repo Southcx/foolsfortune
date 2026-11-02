@@ -27,7 +27,7 @@ export class Bound {
   bind(c, from, by = 'courier') {
     const g = this.game;
     if (!this.catchable(c)) return null;
-    const e = { kind: c.kind, name: c.name, cls: c.cls || 0, from, emo: +(c.emo || 0).toFixed(2), mind: +(c.mind || 0).toFixed(2), traits: c.traits ? { ...c.traits } : null, at: calNow() };
+    const e = { kind: c.kind, name: c.name, cls: c.cls || 0, from, emo: +(c.emo || 0).toFixed(2), mind: +(c.mind || 0).toFixed(2), traits: c.traits ? { ...c.traits } : null, grain: c.grain ? { ...c.grain } : null, at: calNow() };
     this.list.push(e);
     g.save?.dirty('bound');
     if (c.kind === 'slipjelly' || c.kind === 'spirit') g.jellies?.take(c, by); else { c.alive = false; c.root && (c.root.visible = false); g.creatures.remove(c); }

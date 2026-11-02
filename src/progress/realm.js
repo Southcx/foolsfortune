@@ -12,7 +12,7 @@
 //
 //   PHASE[feeling]   GENERATES[f] -> f   OVERCOMES[f] -> f   formation(feature, neighbours, onVein) -> multiplier
 //   PLANETOID_PLOTS[id] = { radius, plots }   FEATURES[id] = { size, job, does, firing }   costOf(feature, feeling) -> { cubes, material }
-//   DRILLS[id] = { stat, gain }   drillGain(stat now, fatigue) -> points   FATIGUE   VISITORS[kind] = { wants, settle }   wantsMet(kind, garden) -> 0..1
+//   DRILLS[id] = { stat, gain }   drillGain(stat now, fatigue) -> points   FATIGUE   VISITORS[kind] = { wants: { feature?, feeling?, briar? }, settle }   BRIAR_VISITORS   wantsMet(kind, garden) -> 0..1
 //   TRIBULATION   strikesOf(firing) -> { strikes, every, outlined, may }
 //   GROUND[material]   GROWTH   WATERS   mixWater(a, b) -> { feeling, volume }   VEIN   veinEnd(heights) -> index   RACE   raceSpeed(spirit, stretch, done)
 //   SPAR   SETTLE   ORBIT   orbitSlot(n) -> { angle, radius, tilt }   RAIN   rainOf(state) -> 0..1   GUEST (the rules for SPIRIT-GARDEN.md's list)
@@ -91,13 +91,20 @@ export const VISITORS = {
   clapperjar: { wants: { feature: { lantern: 2 }, feeling: { mirth: 2 } }, settle: 3, does: 'clapperjars come to lights in a merry garden' },
   glint: { wants: { feature: { pond: 2 }, feeling: { wonder: 2 } }, settle: 4, does: 'glints come to deep water in a wondering garden' },
   lobber: { wants: { feature: { drillYard: 1 }, feeling: { desire: 2 } }, settle: 3, does: 'lobbers come to a drill yard in a wanting garden' },
+  // the briar visitors (GARDEN-COZY.md A6, C4: the briar garden a choice, with its own life): `briar` is how many planetoids are in briar
+  // (harmony.js briarCount: under HARMONY.briar), so only a garden let grow wild draws them; Viva Pinata's sours, kept, never punished
+  wisp: { wants: { briar: 1, feeling: { dread: 2 } }, settle: 4, does: 'Lantern Wisps come to a briar in a dreading garden' },
+  blotling: { wants: { briar: 2 }, settle: 3, does: 'blotlings come where two planetoids have run to briar' },
 };
-/** How far the garden meets a kind's wants, 0..1: `garden` = { features: { id: n }, feelings: { f: n } } (features placed, by feeling).
+/** The visitors only a briar garden draws (their wants carry `briar`). */
+export const BRIAR_VISITORS = Object.keys(VISITORS).filter((k) => VISITORS[k].wants.briar);
+/** How far the garden meets a kind's wants, 0..1: `garden` = { features: { id: n }, feelings: { f: n }, briar? } (features placed, by feeling;
+ *  briar: planetoids in briar).
  *  At 1 the kind visits once a game day; each visit while met counts toward settling. */
 export function wantsMet(kind, garden = {}) {
   const W = VISITORS[kind]?.wants;
   if (!W) return 0;
-  const parts = [...Object.entries(W.feature || {}).map(([f, n]) => Math.min(1, (garden.features?.[f] || 0) / n)), ...Object.entries(W.feeling || {}).map(([f, n]) => Math.min(1, (garden.feelings?.[f] || 0) / n))];
+  const parts = [...Object.entries(W.feature || {}).map(([f, n]) => Math.min(1, (garden.features?.[f] || 0) / n)), ...Object.entries(W.feeling || {}).map(([f, n]) => Math.min(1, (garden.feelings?.[f] || 0) / n)), ...(W.briar ? [Math.min(1, (garden.briar || 0) / W.briar)] : [])];
   return parts.length ? parts.reduce((a, b) => a + b, 0) / parts.length : 0;
 }
 
@@ -181,3 +188,6 @@ export const rainOf = ({ state = 'Balanced', brimming = false } = {}) => Math.mi
  *  gift slot. It never sculpts, paints, places, waters, catches, releases or takes (Animal Crossing's visitors do not dig): your inner
  *  world is yours. Nothing a guest does moves the economy beyond the gift. */
 export const GUEST = { gifts: 1, may: ['hop', 'look', 'pet', 'spar', 'gift'] };
+
+// ---- Gall and Fury in the garden (GALL-AND-FURY.md 8): souring, baking and scorching, read by the waterworks, the plants and the hand
+export { SPOIL, souredBy, strokeK, fadeK, scorchStep } from './gardenweather.js';
