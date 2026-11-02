@@ -46,6 +46,7 @@ export async function bootCreatures(game, made) {
   // the clay folk and their talk (npc/): placed now that the rooms they stand in are built
   // the creatures that fight back (creatures.js): for now the slip jellies on the flats past the Weir (creatures/jelly/slipjelly.js)
   game.creatures = new Creatures(game);
+  game.systems.add('minds', game.creatures, { name: 'creatures', after: 'ai' }); // (the `minds` phase: core/systems.js)
   game.throwingRoom = new ThrowingRoom(game, level.throwingRoom); // (the Throwing Room off the Workshop: its pots, Strawman, the drills; world/throwingroom/)
   (game.throwingRoomDress = new ThrowingRoomDress(game)).update(0); // (its stand-ins dressed: the drill targets as fired plates, the Index's lectern; vfx/throwingroomkit.js)
   game.systems.add('fx', game.throwingRoomDress, { clock: 'raw', name: 'throwingRoomDress' }); // (the `fx` phase: core/systems.js)
@@ -64,6 +65,11 @@ export async function bootCreatures(game, made) {
   // (the Lantern Wisps: the Dunes' second creature, on the owner's model (the owner, v170): three round the oasis, away from the jellies)
   game.wisps = new LanternWisps(game, await loader.parseAsync(bytes((await import('../assets/lantern_wisp.glb?b64')).default), ''));
   for (const [dx, dz] of [[-38, -72], [10, -86], [40, -60]]) { const x = WEIR_SPAWN.pos[0] + dx, z = WEIR_SPAWN.pos[2] + dz; game.wisps.spawn(new THREE.Vector3(x, game.dunes?.heightAt?.(x, z) ?? WEIR_SPAWN.pos[1], z)); }
+  // (the `minds` phase, core/systems.js: the island's bodies hold still in the Spirit Garden, the minds and statuses run on)
+  game.systems.add('minds', game.jellies, { name: 'jellies', after: 'creatures', when: () => !game.realm?.active });
+  game.systems.add('minds', game.wisps, { name: 'wisps', after: 'jellies', when: () => !game.realm?.active });
+  game.systems.add('minds', game.stun, { name: 'stun', after: 'wisps' }); game.systems.add('minds', game.dissolve, { name: 'dissolve', after: 'stun' });
+  game.systems.add('minds', game.figmentScatter, { name: 'figmentScatter', after: 'dissolve' }); game.systems.add('minds', game.oddsTags, { clock: 'raw', name: 'oddsTags', after: 'figmentScatter' });
   game.mirage = new Mirages(game); // (Couriers of smoke that minds take for them: the Crucibelle's mirage)
   game.spirits = new Spirits(game); // (smoke spirits on their side: the Crucibelle's and the Lockheart's: spirits.js)
   game.bound = new Bound(game); // (the Figments caught, waiting in the Jar for the garden: creatures/bound.js)
