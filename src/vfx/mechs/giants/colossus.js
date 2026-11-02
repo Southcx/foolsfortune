@@ -4,19 +4,22 @@
 // a giant's size, fitted to her own skeleton part by part (`colossus.*`, found by name):
 //   body / pelvis / torso / chest   one hollow column of fired clay from her pelvis's foot to the chest's top (7 to 17.4 m): the
 //                 haniwa's skirt flaring at the hips, a waist, a broad chest, pressed front to back as her boxes are; the potter's
-//                 raised ridges round it, a collar at its top; sand heaped at the waist and the neck
+//                 raised ridges round it, a collar at its top; sand heaped at the waist and the neck. Over it the warrior's keikō
+//                 so the side reads as a figure, not a column: a breastplate standing proud of the chest and leaning forward at its
+//                 top (its lames banded), a back plate the crests stand out of, a two-tiered skirt flared out over the hips
 //   ridge0..3    each of her back's crests a cluster of Lachrymite grown out through the clay (four to six points, lit in the film)
 //   head / skull / eyeL / eyeR   a tall cylinder head on her head's joint, its face three hollows (two almond eyes where her eyes are
 //                 and a round mouth) with a calm light deep in each eye, raised almond rims round them, red ochre on the cheeks, the
 //                 haniwa warrior's looped hair (mizura) at the sides and a topknot
 //   armL/R, shoulderL/R, upperArmL/R   a shoulder guard of layered clay plates (the keikō's) over her shoulder, a tube arm, bands
 //   forearmL/R, fistL/R   a tube forearm and a mitten fist where her fist is; sand ruffs at the shoulder, the elbow and the wrist
-//   legL/R       the haniwa's base column on her 7 m leg, flaring to the ground, banded, a ruff at its foot and its hip
+//   legL/R       the haniwa's base column on her 7 m leg, flaring to the ground, banded, a ruff at its foot and its hip, a broad
+//                 foot reaching forward from its foot
 //   barrier      left to the AT field's look (giants/atfield.js)
 // Every piece hangs on the joint her part hangs on, so her pose, her joints' visibility (a snapped arm hidden) and her slump carry it.
 //   STATES   sand shed from its joints always (more as it walks, a pour when staggered), its eyes' calm light guttering when staggered,
 //            warming to an ember through a windup (the tell every move shares) and out while down, a slump of sand where it falls; the
-//            crystals breathing with the eyes. The windups' own tells and the moves' marks are giants/colossusmarks.js's.
+//            crystals breathing with the eyes; a soft glow sprite over each eye (`glow` m wide) so the calm light reads from 40 m. The windups' own tells and the moves' marks are giants/colossusmarks.js's.
 // Prior art: haniwa (Kofun-period terracotta figures: the hollow cylinder body, the cut-through eyes and mouth, the ridged bands, the
 // warrior's keikō armour, tube arms and mizura hair), Shadow of the Colossus (a giant whose body is the land's own stone, its weak
 // points lit), the Daimajin films (a stone guardian woken), Dune's and Tremors' sand that hides it, the island's sentinel
@@ -29,7 +32,7 @@ import { Soup, giantCanvas, hidePlaceholder, uvs } from './kit.js';
 
 /** Its colours and timings: the fired clay's base, the ridges darker, the sand, the crystals' film tint, the eyes' calm light and the
  *  windup's ember, how often a joint sheds (real s; quicker walking, a pour staggered). */
-export const COLOSSUS_LOOK = { clay: 0xb06a44, ridge: 0x7a4026, sand: 0xd9b98a, sandDark: 0xb8956a, crystal: 0xb9a8ff, eye: 0xffe2a8, ember: 0xff8a3a, shed: 0.35 };
+export const COLOSSUS_LOOK = { clay: 0xb06a44, ridge: 0x7a4026, sand: 0xd9b98a, sandDark: 0xb8956a, crystal: 0xb9a8ff, eye: 0xffe2a8, ember: 0xff8a3a, shed: 0.35, glow: 2.2 };
 const K = COLOSSUS_LOOK, PI = Math.PI;
 const _v = new THREE.Vector3(), _c = new THREE.Color();
 
@@ -43,6 +46,16 @@ function materials() {
     eye: new THREE.MeshBasicMaterial({ color: K.eye, toneMapped: false }),
   };
 }
+let GLOW = null;
+/** The eyes' soft glow: a radial falloff drawn once, shared. */
+function glowTexture() {
+  if (GLOW) return GLOW;
+  const cv = document.createElement('canvas'); cv.width = cv.height = 64; const g = cv.getContext('2d'), r = g.createRadialGradient(32, 32, 0, 32, 32, 32);
+  r.addColorStop(0, 'rgba(255,255,255,1)'); r.addColorStop(0.25, 'rgba(255,255,255,0.55)'); r.addColorStop(1, 'rgba(255,255,255,0)');
+  g.fillStyle = r; g.fillRect(0, 0, 64, 64); GLOW = new THREE.CanvasTexture(cv); GLOW.colorSpace = THREE.SRGBColorSpace; return GLOW;
+}
+/** A shell of a sphere's front (its +z cap, `arc` of a half turn either side), for a plate laid over a body. */
+const cap = (arc = 0.42, ws = 20, hs = 12) => new THREE.SphereGeometry(1, ws, hs, PI / 2 - arc * PI, arc * 2 * PI, PI * 0.12, PI * 0.76);
 /** A ruff of sand: a lumpy torus, the sand heaped round a joint (laid flat: its hole along y). */
 function ruff(r, tube, seed = 1) {
   const g = new THREE.TorusGeometry(r, tube, 6, 18), P = g.attributes.position;
@@ -59,7 +72,7 @@ export function dressColossus(giant, game) {
   const Gi = giant, root = Gi.group, part = (n) => root.getObjectByName(`colossus.${n}`) || null, mats = materials(), S = new Soup();
   const body = Gi.body, place = (n) => part(n)?.position ?? new THREE.Vector3();
   // ------------------------------------------------------------------ the body: a ridged hollow column from the pelvis to the chest
-  const pel = place('pelvis'), tor = place('torso'), D = 0.66; // (pressed front to back as her boxes are: 6.2 deep of 9.6 wide)
+  const pel = place('pelvis'), tor = place('torso'), D = 0.76; // (pressed front to back, a little deeper than her boxes: the armour gives it the rest)
   const y0 = pel.y - 1.3, y1 = tor.y + 4 - 0.1; // (her pelvis's foot to her torso's top)
   const prof = [[3.4, 0], [4.9, 0.3], [5.0, 0.9], [4.3, 2.3], [3.9, 3.4], [4.4, 5.6], [4.95, 8.2], [4.8, 9.8], [3.4, y1 - y0]].map(([r, y]) => new THREE.Vector2(r, y));
   S.add(body, uvs(new THREE.LatheGeometry(prof, 28), 4, 2), 'clay', { at: [0, y0, 0], scale: [1, 1, D] });
@@ -68,13 +81,26 @@ export function dressColossus(giant, game) {
   S.add(body, ruff(4.6, 0.9, 1.3), 'sand', { at: [0, y0 + 2.9, 0], scale: [1, 1, D] }); // (sand heaped at the waist)
   S.add(body, ruff(2.2, 0.8), 'sandDark', { at: [0, y1 + 0.2, 0] }); // (at the neck)
   S.add(body, ruff(4.2, 1.1, 0.7), 'sand', { at: [0, y0 + 0.2, 0], scale: [1, 1, D] }); // (and at the skirt's hem)
+  // ------------------------------------------------------------------ the keikō: a breastplate, a back plate, the flared skirt
+  const cy = tor.y + 1.2; // (the chest's middle)
+  S.add(body, cap(0.4), 'clay', { at: [0, cy, 1.0], rot: [0.22, 0, 0], scale: [4.7, 4.4, 3.0] }); // (the breastplate, its top leaning out)
+  for (const dy of [-2.2, -0.9, 0.5]) { // (its lames: ridges across it, following its curve)
+    const r = Math.sqrt(1 - (dy / 4.4) ** 2) + 0.02;
+    S.add(body, new THREE.TorusGeometry(1, 0.05, 5, 24, PI * 0.8), 'ridge', { at: [0, cy + dy, 1.0 + dy * 0.22], rot: [PI / 2 + 0.22, 0, PI * 0.1], scale: [4.7 * r, 3.0 * r, 1] });
+  }
+  S.add(body, new THREE.CylinderGeometry(0.5, 0.5, 9.2, 8), 'ridge', { at: [0, cy + 2.4, 2.1], rot: [0, 0, PI / 2], scale: [1, 1, 1.2] }); // (the collar's front rim)
+  S.add(body, cap(0.38), 'clay', { at: [0, cy - 0.6, -0.6], rot: [-0.1, PI, 0], scale: [4.4, 4.8, 3.4] }); // (the back plate)
+  for (const [ty, r0, r1, h] of [[y0 + 1.2, 4.7, 5.9, 2.2], [y0 - 0.6, 5.4, 6.6, 2.0]]) { // (the skirt's two tiers, flaring out over the thighs)
+    S.add(body, uvs(new THREE.CylinderGeometry(r0, r1, h, 28, 1, true), 4, 1), 'clay', { at: [0, ty, 0], scale: [1, 1, 0.84] });
+    S.add(body, new THREE.TorusGeometry(r1, 0.24, 5, 28).rotateX(PI / 2), 'ridge', { at: [0, ty - h / 2, 0], scale: [1, 1, 0.84] });
+  }
   // ------------------------------------------------------------------ the back's crests: Lachrymite grown out through the clay
   for (let i = 0; i < 4; i++) {
     const R = part(`ridge${i}`); if (!R) continue;
     const n = 4 + (i % 3), s = 1 + 0.25 * (i % 2);
     for (let k = 0; k < n; k++) {
-      const a = (k / n) * PI * 2 + i, len = (2.2 + 1.6 * ((k * 7 + i * 3) % 5) / 4) * s, r = 0.38 * s + 0.08 * (k % 2);
-      const rx = -0.9 + 0.35 * Math.cos(a), rz = 0.45 * Math.sin(a);
+      const a = (k / n) * PI * 2 + i, len = 1.5 * (2.2 + 1.6 * ((k * 7 + i * 3) % 5) / 4) * s, r = 0.38 * s + 0.08 * (k % 2);
+      const rx = -1.15 + 0.35 * Math.cos(a), rz = 0.45 * Math.sin(a);
       for (const g of point(len, r)) S.add(R, g, 'crystal', { at: [Math.sin(a) * 0.5, 0.2 + Math.cos(a) * 0.4, 0], rot: [rx, 0, rz] });
     }
     S.add(R, new THREE.IcosahedronGeometry(1.1, 0), 'clay', { scale: [1, 0.7, 0.8] }); // (the clay it broke through, heaped)
@@ -86,6 +112,8 @@ export function dressColossus(giant, game) {
     for (const y of [-1.6, 1.7]) S.add(leg, new THREE.TorusGeometry(1.85 - y * 0.05, 0.22, 5, 18).rotateX(PI / 2), 'ridge', { at: [0, y, 0] });
     S.add(leg, ruff(2.3, 0.75, 1.1), 'sand', { at: [0, -3.3, 0] });
     S.add(leg, ruff(1.75, 0.6, 0.9), 'sandDark', { at: [0, 3.3, 0] });
+    S.add(leg, new THREE.SphereGeometry(1, 16, 8, 0, PI * 2, 0, PI / 2), 'clay', { at: [0, -3.5, 0.9], scale: [2.3, 1.3, 3.4] }); // (the foot, reaching forward)
+    S.add(leg, new THREE.TorusGeometry(1, 0.08, 5, 20).rotateX(PI / 2), 'ridge', { at: [0, -3.2, 0.9], scale: [2.3, 1, 3.4] });
   }
   // ------------------------------------------------------------------ the head: a tall cylinder, its face three hollows with a calm light
   const H = Gi.head || part('head'), sk = part('skull'), head = new THREE.Group(); head.name = 'giant.dress.colossusHead'; (H || body).add(head);
@@ -114,9 +142,10 @@ export function dressColossus(giant, game) {
     const i = k === 'R' ? 0 : 1, A = Gi.arms?.[i], fa = Gi.fore?.[i], s = k === 'L' ? 1 : -1; // (her arms[0] its right, arms[1] its left; fore[i] the forearm's group at the elbow)
     if (A) {
       S.add(A, ruff(1.7, 0.7, 1.2), 'sandDark', { at: [0, -0.6, 0], rot: [0, 0, s * 0.3] });
+      S.add(A, new THREE.SphereGeometry(1, 16, 12), 'clay', { at: [-s * 0.4, -0.4, 0.2], scale: [2.2, 2.4, 2.7] }); // (the deltoid's mass under the guard)
       for (let j = 0; j < 3; j++) { // (the keikō's shoulder guard: three curved plates stepping down the arm)
-        const r = 2.4 - j * 0.2, y = 1.3 - j * 1.0;
-        S.add(A, new THREE.SphereGeometry(r, 16, 8, 0, PI * 2, 0, PI * 0.45), j === 1 ? 'ridge' : 'clay', { at: [s * 0.3, y, 0], rot: [0, 0, -s * (0.35 + j * 0.12)], scale: [1, 0.75, 1] });
+        const r = 2.9 - j * 0.25, y = 1.4 - j * 1.1;
+        S.add(A, new THREE.SphereGeometry(r, 18, 8, 0, PI * 2, 0, PI * 0.45), j === 1 ? 'ridge' : 'clay', { at: [s * 0.4, y, 0.15], rot: [0.12, 0, -s * (0.4 + j * 0.14)], scale: [1, 0.7, 1.3] });
       }
       S.add(A, uvs(new THREE.CylinderGeometry(1.35, 1.45, 5.8, 14), 2, 1), 'clay', { at: [0, -3.4, 0] });
       for (const y of [-2.4, -5.4]) S.add(A, new THREE.TorusGeometry(1.48, 0.17, 5, 16).rotateX(PI / 2), 'ridge', { at: [0, y, 0] });
@@ -133,6 +162,8 @@ export function dressColossus(giant, game) {
     }
   }
   const meshes = S.done(mats);
+  const glowMat = new THREE.SpriteMaterial({ map: glowTexture(), color: K.eye, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false });
+  for (const sgn of [1, -1]) { const g = new THREE.Sprite(glowMat); g.name = 'giant.dress.eyeGlow'; g.scale.setScalar(K.glow); g.position.set(...onFace(sgn * Math.abs(eyeP.x), eyeP.y, 0.4).at); g.renderOrder = 3; head.add(g); }
   hidePlaceholder(Gi.mats, true, ['barrier']);
 
   let shedT = 0, eyeK = 1, wasDown = false;
@@ -145,6 +176,7 @@ export function dressColossus(giant, game) {
       const want = down ? 0 : st ? 0.35 + 0.3 * Math.abs(Math.sin(t * 11)) : 0.85 + 0.15 * Math.sin(t * 0.9) + 0.5 * wk;
       eyeK += (want - eyeK) * Math.min(1, dt * 4); dress.eyeK = eyeK;
       mats.eye.color.setHex(K.eye).lerp(_c.setHex(K.ember), Math.min(1, wk * 1.4)).multiplyScalar(0.25 + 1.6 * eyeK);
+      glowMat.color.setHex(K.eye).lerp(_c.setHex(K.ember), Math.min(1, wk * 1.4)); glowMat.opacity = Math.min(0.6, 0.15 + 0.4 * eyeK); // (a warm halo, never a white bulb)
       mats.crystal.emissiveIntensity = 0.35 + 0.4 * eyeK + 0.15 * Math.sin(t * 1.7);
       if (down && !wasDown) { root.updateMatrixWorld(true); play('giant.sand.slump', { pos: _v.copy(Gi.pos).setY(Gi.pos.y + 0.3), scale: 1.6 }); }
       wasDown = down;
@@ -158,6 +190,7 @@ export function dressColossus(giant, game) {
       for (const m of meshes) { m.removeFromParent(); m.geometry.dispose(); }
       head.removeFromParent();
       for (const m of Object.values(mats)) m.dispose();
+      glowMat.dispose();
       hidePlaceholder(Gi.mats, false);
     },
   };

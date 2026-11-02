@@ -12,7 +12,9 @@
 //                         edge throbbing faster as the eruption nears (her ring's opacity read as its beat), sand drawn in round it
 //     giant.clod          a lump of fired clay (lumpy, a crust of sand on it) trailing sand; where it ends, shards over her sand
 //     giant.wave          a cone of sand risen like a breaking wave: a sheet swept across her cone's angle, rising to a crest that
-//                         curls over at its front, travelling out and falling as her fan fades, spray thrown off its lip
+//                         curls over at its front, travelling out and falling as her fan fades, spray thrown off its lip; drawn
+//                         wet and dark (a damp sand body, low roughness) so it reads on the bright sand, its crest lit pale and the
+//                         underside of its lip in shadow
 // Prior art: Tremors' and Dune's worm (the sand rings before it erupts: here a sinking vortex, an antlion's pit), Hokusai's Great
 // Wave (the curl of the crest), Shadow of the Colossus (a giant read from far off by its body), Monster Hunter's tells (an arm
 // raised, sand pouring before a sweep), the island's sentinel's slam (vfx/sentinellook.js).
@@ -23,7 +25,7 @@ import * as THREE from 'three';
 import { CLOD } from '../../../world/hangar/giantmoves.js';
 
 /** The marks' colours and timings: the ember edge, the sand, how often each spills (real s), the wave's crest (a share of its reach). */
-export const MARKS_LOOK = { ember: 0xff6a20, sand: 0xd9b98a, sandDark: 0xa8845a, clay: 0xa85a36, pour: 0.11, trail: 0.05, draw: 0.16, crest: 0.3 };
+export const MARKS_LOOK = { ember: 0xff6a20, sand: 0xd9b98a, sandDark: 0xa8845a, clay: 0xa85a36, pour: 0.11, trail: 0.05, draw: 0.16, crest: 0.42, held: 2.2 };
 const ML = MARKS_LOOK, PI = Math.PI, _a = new THREE.Vector3(), _b = new THREE.Vector3();
 
 function spiralTex() {
@@ -38,7 +40,7 @@ function spiralTex() {
 }
 function streakTex() {
   const W = 128, H = 256, cv = document.createElement('canvas'); cv.width = W; cv.height = H; const g = cv.getContext('2d');
-  const gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, 'rgba(250,236,206,1)'); gr.addColorStop(0.3, 'rgba(217,185,138,1)'); gr.addColorStop(1, 'rgba(168,132,90,0.9)');
+  const gr = g.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, 'rgba(255,250,240,1)'); gr.addColorStop(1, 'rgba(225,215,200,0.95)'); // (light: the sheet's own colours tint it)
   g.fillStyle = gr; g.fillRect(0, 0, W, H);
   for (let k = 0; k < 90; k++) { g.fillStyle = `rgba(${k % 2 ? '120,84,48' : '255,244,220'},0.25)`; g.fillRect((k * 37) % W, (k * 61) % H, 2, 20 + (k % 7) * 8); }
   const t = new THREE.CanvasTexture(cv); t.colorSpace = THREE.SRGBColorSpace; t.wrapS = t.wrapT = THREE.RepeatWrapping; return t;
@@ -49,13 +51,19 @@ function lump(r, seed = 1) {
   for (let i = 0; i < P.count; i++) { _a.fromBufferAttribute(P, i); const k = 1 + 0.18 * Math.sin(_a.x * 2.1 * seed + _a.y * 1.3) * Math.cos(_a.z * 1.7 - _a.y); P.setXYZ(i, _a.x * k, _a.y * k * 0.9, _a.z * k); }
   g.computeVertexNormals(); return g;
 }
+/** A row of the wave's profile coloured: wet dark sand rising to a damp face, the crest and the lip's top lit pale, under the lip in shadow. */
+function waveTone(i) {
+  if (i <= 5) { const f = i / 5; return [0.2 + 0.12 * f, 0.13 + 0.08 * f, 0.08 + 0.05 * f]; } // (wet sand, dark to the lip: the bright yard behind never washes it out)
+  if (i <= 7) return i === 6 ? [1.15, 1.02, 0.8] : [1.0, 0.88, 0.68];
+  return [0.2, 0.13, 0.08];
+}
 /** The wave's sheet: a profile (out along the cone, up) swept across `angle` either side of +z, its front curling over. */
 function waveGeo(R, angle, H) {
   const prof = [[0, 0], [0.3, 0.06], [0.55, 0.2], [0.72, 0.42], [0.84, 0.66], [0.93, 0.86], [1, 1], [1.06, 1.02], [1.1, 0.92], [1.11, 0.78], [1.08, 0.66]];
   const N = prof.length, M = 28, pos = [], uv = [], col = [], idx = [];
   for (let j = 0; j <= M; j++) {
     const th = -angle + (2 * angle * j) / M;
-    for (let i = 0; i < N; i++) { const [r, y] = prof[i]; pos.push(Math.sin(th) * r * R, y * H * (0.75 + 0.25 * Math.cos((th / angle) * PI * 0.5)), Math.cos(th) * r * R); uv.push(j / M * 6, i / (N - 1)); const f = Math.min(1, i / 6), w = i >= 6 ? 1 : 0; col.push(0.42 + 0.5 * f + 0.08 * w, 0.3 + 0.55 * f + 0.1 * w, 0.18 + 0.5 * f + 0.15 * w); }
+    for (let i = 0; i < N; i++) { const [r, y] = prof[i]; pos.push(Math.sin(th) * r * R, y * H * (0.75 + 0.25 * Math.cos((th / angle) * PI * 0.5)), Math.cos(th) * r * R); uv.push(j / M * 6, i / (N - 1)); col.push(...waveTone(i)); }
   }
   for (let j = 0; j < M; j++) for (let i = 0; i < N - 1; i++) { const a = j * N + i, b = a + N; idx.push(a, b, a + 1, b, b + 1, a + 1); }
   const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setAttribute('color', new THREE.Float32BufferAttribute(col, 3)); g.setIndex(idx); g.computeVertexNormals();
@@ -72,7 +80,7 @@ export class ColossusMarks {
       band: new THREE.MeshBasicMaterial({ color: 0xc23a10, toneMapped: false, polygonOffset: true, polygonOffsetFactor: -7, polygonOffsetUnits: -7 }),
       edge: new THREE.MeshBasicMaterial({ color: ML.ember, transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, toneMapped: false, side: THREE.DoubleSide }),
       clay: m({ color: ML.clay, flatShading: true }), crust: m({ color: ML.sand }),
-      wave: new THREE.MeshStandardMaterial({ map: streakTex(), vertexColors: true, transparent: true, side: THREE.DoubleSide, roughness: 1, depthWrite: false }),
+      wave: new THREE.MeshStandardMaterial({ map: streakTex(), vertexColors: true, transparent: true, side: THREE.DoubleSide, roughness: 0.42, metalness: 0.05, depthWrite: false }),
     };
     this.geos = { lump: lump(CLOD.size * 0.72), crust: lump(CLOD.size * 0.5, 2.3), held: lump(1, 1.7) };
   }
@@ -100,7 +108,7 @@ export class ColossusMarks {
     if (mv === 'hurl' && Gi.fore?.[0]) {
       if (!this.held) { this.held = new THREE.Mesh(this.geos.held, this.mats.clay); this.held.name = 'giant.dress.heldClod'; this.held.castShadow = true; }
       if (this.held.parent !== Gi.fore[0]) Gi.fore[0].add(this.held);
-      this.held.position.set(0, -7.6, 1.6); this.held.scale.setScalar(0.4 + CLOD.size * 0.62 * k); this.held.rotation.y = t * 0.6;
+      this.held.position.set(0, -7.6, 2.4); this.held.scale.setScalar(ML.held * (0.4 + CLOD.size * 0.62 * k)); this.held.rotation.y = t * 0.6;
     } else this.dropHeld();
   }
   dropHeld() { this.held?.removeFromParent(); }
@@ -155,7 +163,7 @@ export class ColossusMarks {
     this.marks.set(o, { own, step: () => {
       const op = o.userData.own?.opacity ?? 0.3, p = THREE.MathUtils.clamp(1 - op / 0.6, 0, 1), e = 1 - (1 - p) * (1 - p);
       own.scale.set(0.3 + 0.7 * e, Math.sin(PI * Math.min(1, 0.15 + p * 1.05)) * 1.1, 0.3 + 0.7 * e);
-      sheet.material.opacity = Math.min(1, op / 0.6 * 1.6);
+      sheet.material.opacity = Math.min(1, op / 0.6 * 2.6); // (near solid while it stands: a translucent sheet vanished on the bright sand)
       if (sprayed < 3 && p >= sprayed * 0.25) { sprayed++; this.play('giant.wave.spray', { pos: _a.copy(own.position).addScaledVector(fwd, R * (0.35 + 0.65 * e)).setY(own.position.y + H * 0.5), dir: fwd.clone().setY(0.35).normalize(), scale: R / 10, floor: own.position.y }); }
     }, free: () => sheet.material.dispose() });
   }

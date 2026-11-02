@@ -248,15 +248,15 @@ export const MECH_SPECIAL_EFFECTS = {
     L({ type: 'shape', form: 'hoop', face: 'camera', ramp: 'gold', main: 'none', dur: 0.4, scale: [[0, 0.6], [1, 3.4]], erode: [[0, 0.04], [0.6, 0.12], [1, 1]], glow: 2.2 }),
   ] },
   'challenge.pin.chips': { layers: [ // (a pin knocked: glazed clay chips off its foot, a puff of the yard's dust; `dir` the way it falls)
-    L({ type: 'sprites', pool: 'alpha', count: [16, 22], shape: 'chip', spawn: 'sphere', r: 0.8, dir: 'cone', cone: 55, speed: [4, 9], size: [0.25, 0.55], life: [0.9, 1.4], gravity: 14, floor: 'ground', color: [0xf4eee2, 0xe8dcc4, 0xc8452e, 0x9a4f2c], spin: [-10, 10] }),
-    L({ type: 'sprites', pool: 'alpha', count: [8, 12], shape: 'puff', spawn: 'disc', r: 1.4, dir: 'out', lift: 0.3, speed: [2, 5], size: [1.6, 2.4], sizeEnd: 4, life: [0.9, 1.5], drag: 2, color: SAND.concat(DUST), alpha: 0.38 }),
+    L({ type: 'sprites', pool: 'alpha', count: [21, 29], shape: 'chip', spawn: 'sphere', r: 1.44, dir: 'cone', cone: 55, speed: [6.4, 14.4], size: [0.62, 1.38], life: [0.9, 1.4], gravity: 14, floor: 'ground', color: [0xf4eee2, 0xe8dcc4, 0xc8452e, 0x9a4f2c], spin: [-10, 10] }),
+    L({ type: 'sprites', pool: 'alpha', count: [10, 16], shape: 'puff', spawn: 'disc', r: 2.52, dir: 'out', lift: 0.3, speed: [3.2, 8], size: [4, 6], sizeEnd: 10, life: [0.9, 1.5], drag: 2, color: SAND.concat(DUST), alpha: 0.38 }),
   ] },
   'challenge.pin.thud': { layers: [ // (a pin down on the ground along its length)
-    L({ type: 'sprites', pool: 'alpha', count: [14, 20], shape: 'puff', spawn: 'disc', r: 3, dir: 'out', lift: 0.25, speed: [3, 7], size: [2, 3.2], sizeEnd: 5, life: [1, 1.7], drag: 1.8, color: SAND.concat(DUST), alpha: 0.4 }),
-    L({ type: 'sprites', pool: 'alpha', count: [8, 12], shape: 'chip', spawn: 'disc', r: 3, dir: 'cone', axis: 'up', cone: 45, speed: [3, 7], size: [0.25, 0.5], life: [0.8, 1.2], gravity: 14, floor: 'ground', color: CLAY, spin: [-8, 8] }),
+    L({ type: 'sprites', pool: 'alpha', count: [18, 26], shape: 'puff', spawn: 'disc', r: 5.4, dir: 'out', lift: 0.25, speed: [4.8, 11.2], size: [4.4, 7.04], sizeEnd: 11, life: [1, 1.7], drag: 1.8, color: SAND.concat(DUST), alpha: 0.4 }),
+    L({ type: 'sprites', pool: 'alpha', count: [10, 16], shape: 'chip', spawn: 'disc', r: 5.4, dir: 'cone', axis: 'up', cone: 45, speed: [4.8, 11.2], size: [0.55, 1.1], life: [0.8, 1.2], gravity: 14, floor: 'ground', color: CLAY, spin: [-8, 8] }),
   ] },
   'challenge.ball.dust': { layers: [ // (the rolled tower's foot on the yard)
-    L({ type: 'sprites', pool: 'alpha', count: [4, 6], shape: 'puff', spawn: 'disc', r: 1.5, dir: 'out', lift: 0.5, speed: [1, 3], size: [1.6, 2.6], sizeEnd: 4.2, life: [0.9, 1.5], drag: 1.6, color: SAND.concat(DUST), alpha: 0.36 }),
+    L({ type: 'sprites', pool: 'alpha', count: [5, 8], shape: 'puff', spawn: 'disc', r: 2.7, dir: 'out', lift: 0.5, speed: [1.6, 4.8], size: [4, 6.5], sizeEnd: 10.5, life: [0.9, 1.5], drag: 1.6, color: SAND.concat(DUST), alpha: 0.36 }),
   ] },
   'challenge.hit': { layers: [ // (a throw scored: a gold ring out where it landed, chips and a glint)
     L({ type: 'shape', form: 'ring', ramp: 'gold', main: 'ripple', tile: [6, 1], dur: 0.8, scale: [[0, 2], [1, 16]], offset: [0, 0.2, 0], edgeV: [0.4, 0.3], erode: OUT, glow: 2.4, back: 0.6 }),
@@ -308,12 +308,12 @@ export const MECH_SPECIAL_EFFECTS = {
     L({ type: 'sprites', count: [8, 12], shape: 'glint', spawn: 'sphere', r: 1.5, dir: 'sphere', speed: [1, 3], size: [0.3, 0.5], sizeEnd: 0, life: [0.6, 1], color: [0xffe9a8, 0xffffff], twinkle: 10 }),
   ] },
   'giant.strain.spark': { layers: [ // (the frame's joint under a held giant: embers spat from it)
-    L({ type: 'sprites', count: [4, 7], shape: 'streak', spawn: 'sphere', r: 0.5, dir: 'sphere', speed: [3, 7], size: [0.12, 0.2], life: [0.3, 0.6], stretch: 4, gravity: 10, color: [0xffb04a, 0xff7a2a, 0xfff2c8] }),
-    L({ type: 'sprites', pool: 'alpha', count: [1, 2], shape: 'puff', spawn: 'sphere', r: 0.4, dir: 'up', speed: [1, 2], size: [0.8, 1.2], sizeEnd: 2.2, life: [0.8, 1.2], drag: 1.6, color: [0x8a7a6a, 0x6a5a4a], alpha: 0.3 }),
+    L({ type: 'sprites', count: [5, 9], shape: 'streak', spawn: 'sphere', r: 0.9, dir: 'sphere', speed: [4.8, 11.2], size: [0.31, 0.52], life: [0.3, 0.6], stretch: 4, gravity: 10, color: [0xffb04a, 0xff7a2a, 0xfff2c8] }),
+    L({ type: 'sprites', pool: 'alpha', count: [1, 3], shape: 'puff', spawn: 'sphere', r: 0.72, dir: 'up', speed: [1.6, 3.2], size: [2.08, 3.12], sizeEnd: 5.72, life: [0.8, 1.2], drag: 1.6, color: [0x8a7a6a, 0x6a5a4a], alpha: 0.3 }),
   ] },
   'giant.grab.dust': { layers: [ // (a foot pressed into the yard under the weight)
-    L({ type: 'sprites', pool: 'alpha', count: [6, 9], shape: 'puff', spawn: 'ring', r: 1.8, dir: 'out', lift: 0.15, speed: [2, 5], size: [1.6, 2.6], sizeEnd: 4.4, life: [0.9, 1.5], drag: 1.8, color: SAND.concat(DUST), alpha: 0.38 }),
-    L({ type: 'sprites', pool: 'alpha', count: [3, 5], shape: 'chip', spawn: 'ring', r: 1.8, dir: 'cone', axis: 'up', cone: 50, speed: [2, 4], size: [0.2, 0.4], life: [0.6, 1], gravity: 14, floor: 'ground', color: CLAY, spin: [-8, 8] }),
+    L({ type: 'sprites', pool: 'alpha', count: [8, 12], shape: 'puff', spawn: 'ring', r: 3.24, dir: 'out', lift: 0.15, speed: [3.2, 8], size: [3.52, 5.72], sizeEnd: 9.68, life: [0.9, 1.5], drag: 1.8, color: SAND.concat(DUST), alpha: 0.38 }),
+    L({ type: 'sprites', pool: 'alpha', count: [4, 6], shape: 'chip', spawn: 'ring', r: 3.24, dir: 'cone', axis: 'up', cone: 50, speed: [3.2, 6.4], size: [0.44, 0.88], life: [0.6, 1], gravity: 14, floor: 'ground', color: CLAY, spin: [-8, 8] }),
   ] },
   'giant.grab.lift': { layers: [ // (the giant torn off the ground: a ring of dust where it stood)
     L({ type: 'sprites', pool: 'alpha', count: [26, 34], shape: 'puff', spawn: 'ring', r: 5, dir: 'out', lift: 0.3, speed: [5, 10], size: [3, 4.4], sizeEnd: 7, life: [1.4, 2.2], drag: 1.6, color: SAND.concat(DUST), alpha: 0.42 }),

@@ -8,8 +8,9 @@
 //                    type): STRIKE, SPARE, "7 DOWN", "+50", "MISS", "142 M"; popped in, held, risen and let go in 2.4 real s
 //   challenge.end    the medal's glint: confetti in its metal over the lane (bronze, silver, gold; none, a puff of dust)
 // THE TAG          a word on a canvas of its own in the System's type (DotGothic16 for words, Jersey 15 for counts), an ink outline a
-//                  dot wide, a hairline under it and a dashed leader down to its thing (the house's tag grammar: vfx/creaturetags.js,
-//                  vfx/strawmanwell/percenttag.js), drawn as a sprite at a fixed size on screen so it reads from the line 115 m off
+//                  dot wide, on a hex-cornered plate of ink rimmed in its tone (feedback/oddstags.js's plate) so it reads gold on a gold
+//                  burst or a bright sky, a hairline under it and a dashed leader down to its thing (the house's tag grammar:
+//                  vfx/creaturetags.js, vfx/strawmanwell/percenttag.js), drawn as a sprite at a fixed size on screen so it reads from the line 115 m off
 // Prior art: Wii Sports' bowling (STRIKE said over the pins, never across the screen), Ultimate Destruction's medal screens (here
 // confetti over the lane), a drag strip's christmas tree, Watch Dogs' leader line.
 //
@@ -49,13 +50,18 @@ export class WordTag {
     g.clearRect(0, 0, W, H);
     const px = num ? 104 : 82; g.font = `${px}px ${num ? COUNT : WORD}`; g.textAlign = 'center'; g.textBaseline = 'alphabetic'; g.lineJoin = 'round';
     const base = 96, tw = Math.min(W - 24, g.measureText(this.text).width);
+    // the plate of ink behind the word, its corners cut (the odds tag's hex plate), a hairline of its tone inside the rim
+    const pw = Math.min(W - 6, tw + 56), ph = px * 0.8 + 30, pX = (W - pw) / 2, pY = base - px * 0.8 - 12, cut = 16;
+    const hex = (x, y, w, h, c) => { g.beginPath(); g.moveTo(x + c, y); g.lineTo(x + w - c, y); g.lineTo(x + w, y + c); g.lineTo(x + w, y + h - c); g.lineTo(x + w - c, y + h); g.lineTo(x + c, y + h); g.lineTo(x, y + h - c); g.lineTo(x, y + c); g.closePath(); };
+    hex(pX, pY, pw, ph, cut); g.fillStyle = 'rgba(13,10,18,0.86)'; g.fill();
+    hex(pX + 4, pY + 4, pw - 8, ph - 8, cut - 3); g.lineWidth = 2; g.strokeStyle = this.tone[1]; g.globalAlpha = 0.55; g.stroke(); g.globalAlpha = 1;
     const fill = g.createLinearGradient(0, base - px * 0.75, 0, base); fill.addColorStop(0, this.tone[0]); fill.addColorStop(1, this.tone[1]);
     g.lineWidth = 12; g.strokeStyle = 'rgba(13,10,18,0.5)'; g.strokeText(this.text, W / 2, base + 4, W - 24); // (its drop shadow)
     g.lineWidth = 8; g.strokeStyle = INK; g.strokeText(this.text, W / 2, base, W - 24); g.fillStyle = fill; g.fillText(this.text, W / 2, base, W - 24);
     // the hairline under it and the leader down to the thing (the tag's own line)
     const x0 = W / 2 - tw / 2;
-    g.fillStyle = INK; g.fillRect(x0 - 3, base + 8, tw + 6, 6); g.fillStyle = this.tone[1]; g.fillRect(x0, base + 9, tw, 3);
-    for (let y = base + 18; y < H - 2; y += 9) { g.fillStyle = INK; g.fillRect(W / 2 - 3, y, 6, 6); g.fillStyle = 'rgba(244,239,226,0.9)'; g.fillRect(W / 2 - 1.5, y + 1.5, 3, 3); }
+    g.fillStyle = this.tone[1]; g.fillRect(x0, base + 6, tw, 3);
+    for (let y = pY + ph + 4; y < H - 2; y += 9) { g.fillStyle = INK; g.fillRect(W / 2 - 3, y, 6, 6); g.fillStyle = 'rgba(244,239,226,0.9)'; g.fillRect(W / 2 - 1.5, y + 1.5, 3, 3); }
     this.texture.needsUpdate = true;
   }
   /** Stepped (real s) at its thing's place; false once it has gone. */

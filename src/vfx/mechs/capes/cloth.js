@@ -11,6 +11,8 @@
 // under the trim), and an edge joining the two all round in `mats[2]` (a gilt hem), the foot's edge `hem` times as thick (a rolled
 // hem), and with `border` (m) a band of the edge's program that wide laid on the outer face all round (a gilt border that reads from
 // afar). The constraints are relaxed forward and back in turn, so a cloth at rest hangs square, never drifting to one side.
+// With `folds` (0..1) the outer face is shaded by its own curvature each frame: a particle sunk below its neighbours (a fold's valley,
+// seen from outside) darkened, one standing proud of them (a ridge) lit with a sheen, so heavy cloth reads as cloth, not a sheet.
 // Prior art: Jakobsen's "Advanced Character Physics" (2001: position verlet, constraints relaxed in turn, collision by projection);
 // Müller et al.'s position-based dynamics (2007: the shape pull as a goal-position constraint, as in shape matching; symmetric
 // Gauss-Seidel sweeps against the one-sided drift); the helms' plumes (vfx/mechs/helms.js: the same verlet, chained to a bone's rest);
@@ -27,8 +29,8 @@ const _t = new THREE.Vector3(), _d = new THREE.Vector3(), _w = new THREE.Vector3
 
 export class Cloth {
   constructor({ cols, rows, rest, pins = [], wrap = false, shape = 0, lift = 0, wind = 0, bend = 0.15, damping = CAPE_CLOTH.damping, colour = () => 0xffffff,
-    part = () => 0, thick = 0, hem = 1, lining = 0xffffff, edge = 0xffffff, border = 0, mat, mats }) {
-    Object.assign(this, { cols, rows, wrap, shape, lift, wind, bend, damping, thick, hem, border });
+    part = () => 0, thick = 0, hem = 1, lining = 0xffffff, edge = 0xffffff, border = 0, folds = 0, mat, mats }) {
+    Object.assign(this, { cols, rows, wrap, shape, lift, wind, bend, damping, thick, hem, border, folds });
     const n = cols * rows;
     this.rest = rest.map((p) => new THREE.Vector3(...p));
     this.p = this.rest.map((v) => v.clone()); this.q = this.rest.map((v) => v.clone()); this.prevPin = this.rest.map((v) => v.clone());
@@ -86,7 +88,8 @@ export class Cloth {
     }
     geo.setAttribute('position', new THREE.BufferAttribute(pos, 3).setUsage(THREE.DynamicDrawUsage));
     geo.setAttribute('normal', new THREE.BufferAttribute(nor, 3).setUsage(THREE.DynamicDrawUsage));
-    geo.setAttribute('color', new THREE.BufferAttribute(col, 3)); geo.setIndex(idx);
+    geo.setAttribute('color', new THREE.BufferAttribute(col, 3).setUsage(folds ? THREE.DynamicDrawUsage : THREE.StaticDrawUsage)); geo.setIndex(idx);
+    if (folds) { this.base = col.slice(0, n * 3); this.gap = this.rest[id(1, 0)].distanceTo(this.rest[id(0, 0)]) || 1; }
     const list = mats || [mat, mat, mat];
     this.mesh = new THREE.Mesh(geo, list); this.mesh.name = 'mech-cape-cloth'; this.mesh.frustumCulled = false; this.mesh.castShadow = true; this.mesh.receiveShadow = true;
     this.mesh.matrixAutoUpdate = false; this.primed = false; this.t = 0;
@@ -177,7 +180,22 @@ export class Cloth {
         });
       }
     }
+    if (this.folds) this.shadeFolds(G.attributes.color);
     A.needsUpdate = true; B.needsUpdate = true; G.computeBoundingSphere();
+  }
+  /** The outer face's tones by its curvature: the Laplacian (the neighbours' mean less the particle) along the outward normal, over
+   *  the grid's spacing; a valley darker by up to `folds`, a ridge lifted into a sheen. */
+  shadeFolds(attr) {
+    const { cols, rows, id, N, p, wrap, base, side } = this, out = attr.array, k = this.folds / (this.gap * 0.18);
+    for (let r = 0; r < rows; r++) for (let c = 0; c < cols; c++) {
+      const i = id(c, r); _a.set(0, 0, 0); let m = 0;
+      const nb = (cc, rr) => { if (rr < 0 || rr >= rows || (!wrap && (cc < 0 || cc >= cols))) return; _a.add(p[id(cc, rr)]); m++; };
+      nb(c - 1, r); nb(c + 1, r); nb(c, r - 1); nb(c, r + 1);
+      const lap = m ? _a.multiplyScalar(1 / m).sub(p[i]).dot(N[i]) * side : 0, v = Math.max(-1, Math.min(1, lap * k));
+      const f = v > 0 ? 1 - 0.7 * v : 1 + 0.3 * -v; // (a valley in shadow; a ridge catching the light)
+      for (let q = 0; q < 3; q++) out[i * 3 + q] = Math.min(1.25, base[i * 3 + q] * f);
+    }
+    attr.needsUpdate = true;
   }
   dispose() { this.mesh.parent?.remove(this.mesh); this.mesh.geometry.dispose(); }
 }

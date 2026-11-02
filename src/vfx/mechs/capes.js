@@ -14,7 +14,7 @@
 //               shoulders, both edged in gold
 //   knight      a mecha knight's cape: heavy lined cloth with its thickness seen (the trim glaze over a dark lining in the body glaze, a
 //               rolled hem three times as thick, a gilt border all round wide enough to read from afar, its front edges turned back at
-//               the clasps as lapels showing the lining) hung from a gold yoke that runs from clasp to clasp under the cradle, to the knees
+//               the clasps as lapels showing the lining; pleated, its folds shaded by their curvature) hung from a gold yoke that runs from clasp to clasp under the cradle, to the knees
 // The halos are rigid rings close behind the shoulders, in the chest's frame, framing the shoulders and the Jar, alive in the frame's
 // time and brighter while the Jar is sealed in (capes/halos.js); the cloths are small verlet grids
 // in the world (capes/cloth.js), pinned in the chest's frame and swung by the frame's own motion, kept off the back, the Jar, the
@@ -131,7 +131,8 @@ const DRAPES = {
     }
     for (let r = 0; r < Rn; r++) for (let c = 0; c < C; c++) {
       const v = r / (Rn - 1), u = (c / (C - 1)) * 2 - 1, [x0, y0, z0] = yoke[c];
-      out.push([x0 + (u * Math.max(fr.sw * 1.3, hipW * 0.95) - x0) * v ** 0.8, y0 + (yB - y0) * v, z0 + (zB - z0) * Math.min(1, v * 1.6)]);
+      const pleat = K.pleats * fr.scl * Math.sin(c * PI / 2) * (0.2 + 0.8 * v) * (c > 0 && c < C - 1 ? 1 : 0); // (its folds, deeper toward the hem)
+      out.push([x0 + (u * Math.max(fr.sw * 1.3, hipW * 0.95) - x0) * v ** 0.8, y0 + (yB - y0) * v, z0 + (zB - z0) * Math.min(1, v * 1.6) - pleat]);
     }
     tube(S.g, yoke.map(([x, y, z]) => [x, y + 0.05, z]), 0.07 * fr.scl + 0.03, L.gold, 32); // (the yoke's rail, clasp to clasp under the cradle)
     for (const s of [-1, 1]) { const [x, y, z] = yoke[s < 0 ? 0 : C - 1]; S.g.ring(0.26 * fr.scl + 0.08, 0.06 * fr.scl + 0.02, { at: [x, y + 0.08, z + 0.05], c: L.gold }, 24, 6); S.l.ball(0.17 * fr.scl + 0.05, { at: [x, y + 0.12, z + 0.05], sc: [1, 0.6, 1], c: labTone(0.4, 0.2) }, 16, 10); } // (the clasps)
