@@ -62,7 +62,7 @@ export class TouchTopBar {
     this.game = game; this.onOpen = null; this.tiles = new Map(); this.shown = false; this.ids = []; this.folded = true; this.touched = 0;
     this.shelf = shelf();
     for (const id of [...TOP_BAR.ids, 'pause']) this.tiles.set(id, new TouchTile(`top.${id}`, { size: TILE.small, glyph: id, word: null, onPress: id === 'skiff' ? (_, down) => this.hold(id, down) : (_, down, inside) => { if (!down && inside) { if (id !== 'pause') this.fold(true); this.open(id); } } }));
-    this.tiles.set('fold', new TouchTile('top.fold', { size: TILE.small, glyph: 'more', word: null, onPress: (_, down, inside) => { if (!down && inside) this.foldArc(); } })); // (the arc's fold tile: TOUCH-REBUILD.md 7; its own glyph Calissa's)
+    this.tiles.set('fold', new TouchTile('top.fold', { size: TILE.small, glyph: 'fold', word: null, onPress: (_, down, inside) => { if (!down && inside) this.foldArc(); } })); // (the arc's fold tile: TOUCH-REBUILD.md 7; its own glyph Calissa's)
     this.tiles.set('menu', new TouchTile('top.menu', { size: TILE.small, glyph: 'menu', word: null, onPress: (_, down, inside) => { if (!down && inside) this.fold(!this.folded); } }));
     this.tiles.set('log', new TouchTile('top.log', { size: TILE.small, glyph: 'chat', word: null, onPress: (_, down, inside) => { const L = game.hudLayout?.touchLog; if (!down && inside && L) { if (game.hudLayout.duelR) L.setSheet(!L.sheet); else L.fold(!L.folded); } } })); // (the log's fold on the bar beside MENU: South, 2026-10-27, it stood alone under the bar)
   }

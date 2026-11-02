@@ -28,6 +28,7 @@ import * as THREE from 'three';
 import { uiIcon } from '../icons/icons.js';
 import { schillerInk, SCHILLER } from '../../vfx/oxidation.js';
 import { FONT } from '../theme.js';
+import { installArcDress } from './arcdress.js';
 
 /** The numbers (CSS px): the cluster's main tile, the others (80 and 60 since the owner's ask for room, 2026-10-26: 96 and 72 before), the least, the least type; the rim's width, the foot's depth; the ember
  *  and gold; the rim's samples; the share of a tile the glyph may fill. */
@@ -49,6 +50,7 @@ export function tileStyle() {
   if (styled || typeof document === 'undefined') return;
   styled = true;
   const s = document.createElement('style'); s.setAttribute('data-touchtiles', ''); s.textContent = CSS; document.head.appendChild(s);
+  installArcDress(); // (the arc's slots and its fold: ui/touch/arcdress.js)
 }
 
 const rr = (g, x, y, w, h, r) => { g.beginPath(); g.moveTo(x + r, y); g.arcTo(x + w, y, x + w, y + h, r); g.arcTo(x + w, y + h, x, y + h, r); g.arcTo(x, y + h, x, y, r); g.arcTo(x, y, x + w, y, r); g.closePath(); };
