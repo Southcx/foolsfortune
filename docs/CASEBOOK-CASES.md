@@ -4900,3 +4900,16 @@ a rule in `docs/CASEBOOK.md`'s short list (or `NEW:<slug>` until the gate number
   and SURGE once its gauge is full. The cluster shows it on the crossing. After, headless on a crossing: the cluster showed fire, roll
   and form; FORM turned the ship Astral to Umbral; ROLL spent a charge (2 to 1).
 - **Rule:** 394
+
+### 2026-11-01 · The Arena had no bare-handed attack on touch, and six dead tiles (core/actions.js, core/bindings.js, ui/touch/; found by Dovina's touch audit)
+- **Seen:** in the Arena on a phone, bare hands had no ATTACK, SPECIAL, SHIELD or GRAB tile. CROUCH, PARRY, DRAW, SWAP, ART and
+  BLINK stood on screen and did nothing. Pushing the stick past its ring raised the shield.
+- **Cause, as measured:** the Arena ran under the `foot` context, so the foot's tiles were shown. The fighter kit masks their keys
+  (`input.claim('arena', MASKED)`), so they were dead. LMB and RMB had tiles only as a drawn tool's. The stick's sprint holds Shift,
+  which the kit reads as its shield.
+- **Fix:** an `arena` context while the kit holds its keys (`actions.live`). It has five bindings for touch and the pad (ATTACK LMB,
+  SPECIAL RMB, JUMP, SHIELD Shift, GRAB R; TOUCH-REBUILD.md 4's slots), its cluster (ATTACK, SPECIAL, JUMP, SHIELD) and GRAB on the near
+  shelf. The foot's tiles stand down, and the stick holds no sprint there. After, headless in the Arena: the live contexts were
+  `any, arena`, the cluster and the near shelf were as above, the strip and the belt's pair were empty, and the touch ATTACK and
+  SPECIAL reached the kit as the mouse's own (state `attack`).
+- **Rule:** 394

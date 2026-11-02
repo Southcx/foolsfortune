@@ -26,7 +26,7 @@
 import { TouchTile, TILE } from './tile.js';
 import { touchTiles } from './presses.js';
 import { placeOf, windowOpen } from './areas.js';
-import { footCluster, toolCluster, helmCluster, railCluster, inHandCtx } from './actioncontext.js';
+import { footCluster, toolCluster, helmCluster, railCluster, arenaCluster, inHandCtx } from './actioncontext.js';
 
 /** The numbers (CSS px): the gap between tiles, the margin off the area's corner; the Jar's least speed for JUMP (m/s); the room kept
  *  clear of the art bar's edge (its side strip stands there). */
@@ -63,6 +63,7 @@ export function clusterContext(game) {
   }
   if (g.duel?.active) return []; // (the duel's phone screen holds its tiles: duelscreen.js)
   if (g.opensea?.sailing) return helmCluster(g).filter(Boolean); // (the open sea's helm: its own verbs, the stick the rudder alone)
+  if (g.actions?.live?.()?.has('arena')) return arenaCluster(g); // (the Arena: ATTACK, SPECIAL, JUMP, SHIELD; GRAB on the near shelf)
   if (g.rail?.stage?.active) return railCluster(g).filter(Boolean); // (the crossing: FIRE, ROLL, FORM, SURGE; the sweep is the lock)
   if (T?.active || g.god?.controlling || g.duel?.pending) return [];
   const ctx = inHandCtx(g), tool = ctx && toolCluster(g, ctx);

@@ -29,7 +29,7 @@
 // Prior art: Genshin Impact's attack and skill tiles changing with the character, Call of Duty Mobile's fire button by weapon, Into the
 // Breach's strip of moves with END TURN the largest; the cluster's own reading of the skiff (cluster.js clusterContext).
 //
-//   footCluster(game) toolCluster(game, tool) duelCluster(game) duelTools(game) helmCluster(game) railCluster(game) -> [entry]   stripOf(game) -> [entry]   nearOf(game) -> [entry]   beltPairOf(game) -> [entry]
+//   footCluster(game) toolCluster(game, tool) duelCluster(game) duelTools(game) helmCluster(game) railCluster(game) arenaCluster(game) -> [entry]   stripOf(game) -> [entry]   nearOf(game) -> [entry]   beltPairOf(game) -> [entry]
 //   inHandCtx(game) -> 'psygun' | 'cutlass' | 'rod' | 'hook' | 'brush' | 'veritome' | 'dreamvane' | 'crucibelle' | 'lockheart' | null
 //   entry { id, glyph, word, corner, lit, dim, tint, charge }   broadsideOf(game) -> { side, charge, bears }   mountsOf(game) -> [entry]   ACTION_TILES (the words and glyphs by tool)
 // ---------------------------------------------------------------------------------------
@@ -154,6 +154,15 @@ export function railCluster(g) {
   ];
 }
 
+/** In the Arena (ctx `arena`, the fighter kit holding its keys; Dovina's touch audit, 2026-11-01): ATTACK, SPECIAL, JUMP and SHIELD,
+ *  the slots of TOUCH-REBUILD.md 4's table; GRAB on the near shelf (nearOf). The stick moves, and a quick double push of it is the
+ *  flick (the dash, tap jump, and the smash with ATTACK); the foot's tiles stand down, their keys masked by the kit. */
+const inArena = (g) => !!g.actions?.live?.()?.has('arena');
+export function arenaCluster(g) {
+  if (!inArena(g)) return [];
+  return [E('attack', null, 'ATTACK'), E('special', null, 'SPECIAL'), E('jump', 'jump'), E('shield', null, 'SHIELD')];
+}
+
 /** The broadside's side now (seafight.js `broadside`'s own test: the camera's look on port's normal, past SEA_FIGHT.broadside.beam), and
  *  its reload as a charge 0..1 (1 loaded); no side bearing, the readier side's, `bears` false. */
 export function broadsideOf(g) {
@@ -243,6 +252,7 @@ export function artTile(g) {
  *  ground, as the foot cluster's) and JUMP (the hook's third is JUMP already); at the helm, BROADSIDE and the mounts. */
 export function nearOf(g) {
   if (g.duel?.active) return [];
+  if (inArena(g)) return [E('grab', null, 'GRAB')];
   if (atHelm(g)) { const B = broadsideOf(g); return [B ? E('broadside', 'broadside', 'BROADSIDE', { charge: B.charge, dim: !B.bears }) : null, ...mountsOf(g)].filter(Boolean).slice(0, 3); }
   if (!onFoot(g)) return [];
   const ctx = inHandCtx(g); if (!ctx) return [];
