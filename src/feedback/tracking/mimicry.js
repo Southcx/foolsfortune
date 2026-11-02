@@ -10,12 +10,13 @@
 // ---------------------------------------------------------------------------------------
 import { MIMIC } from '../../progress/mimicry.js';
 
+const FAMILY_LINE = { herd: 'Watch the System walk them, then copy it.', creation: 'Watch the System raise it, then copy it.' }; // (a MIMIC puzzle that is not of the ground: placeholders, Espada's to rule)
 const MODE_LINE = { mimic: 'Watch the System shape the ground, then copy it.', match: 'Shape the ground to match the outline. No steps are shown.', undo: 'Return the ground to the outline.' };
 const STARS = ['', '★☆☆', '★★☆', '★★★'];
 
 export function mimicryRules({ on, L, log }) {
   const say = (kind, text, key, throttle = 1) => log.say(kind, text, { key, throttle });
-  on('mimic.open', (e) => { if (e.by !== 'courier') return; L.inc('god.mimic.opened'); say('system', `${e.label}: ${e.line} ${MODE_LINE[e.mode] || ''}`, 'mimic.open'); });
+  on('mimic.open', (e) => { if (e.by !== 'courier') return; L.inc('god.mimic.opened'); say('system', `${e.label}: ${e.line} ${(e.mode === 'mimic' && FAMILY_LINE[e.family]) || MODE_LINE[e.mode] || ''}`, 'mimic.open'); });
   on('mimic.turn', (e) => { if (e.by === 'courier') say('system', 'Your turn.', 'mimic.turn'); });
   on('mimic.solve', (e) => {
     if (e.by !== 'courier') return;
