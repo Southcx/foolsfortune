@@ -268,7 +268,8 @@ export class MechPilot {
   step(beat) {
     this.phase = 0; this.walking = true;
     this.sync = syncStep(this.sync, { beat: beat === 'beat', fought: beat === 'fought', ceiling: this.ceiling() });
-    this.game.events?.emit('mech.step', { beat, by: 'courier' });
+    const S = this.stats; // (the ear's: the legs' type, the frame's mass in tonnes, where the foot came down, MECHS.md 9 Wanda's footfalls)
+    this.game.events?.emit('mech.step', { beat, legs: S.legType, mass: +(S.mass || 0).toFixed(1), at: this.pos.clone(), by: 'courier' });
   }
   ceiling() { const m = this.game.courierMind; return syncCeiling(m?.v ?? 0.5, !!m?.brimming); }
   staggerHit() { this.sync = syncStep(this.sync, { staggerHit: true, ceiling: this.ceiling() }); }
