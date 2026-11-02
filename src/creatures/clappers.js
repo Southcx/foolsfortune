@@ -18,6 +18,7 @@ import { prepProfile } from '../world/props/pottery.js';
 import { sfx } from '../audio/sfx.js';
 import { JointLimits, CLAPPER_ROM } from '../courier/anim/rom.js';
 import { stream, randDir } from '../core/rng.js';
+import { goWrongClapper } from './clapperaberrant.js';
 import { actPose, startAct } from './idleacts.js';
 import { greyTexture, greyTint, cloneTinted } from '../vfx/greytint.js';
 import { starGeometry } from '../vfx/dizzy.js';
@@ -139,7 +140,7 @@ export class Clappers {
       floor, pos: pos.clone(), prevPos: pos.clone(), vy: fromKiln ? 3.2 : 0, heading: fromKiln ? f.heading : simRand() * Math.PI * 2,
       state: 'idle', timer: 0.3 + simRand(), target: null, speed: 0, current: null, stuckT: 0, lastPos: pos.clone(),
       squeakT: 0, stash: 0, kv: new THREE.Vector3(), grounded: true, peakY: pos.y, heat: 0, stunT: 0, pulledT: 0,
-      clapT: 0, clapRate: 0, look: 0, blinkT: 2 + simRand() * 3, squash: 0, squashV: 0, hop: 0, spin: 0, t: simRand() * 10,
+      clapT: 0, clapRate: 0, headTurn: 0, blinkT: 2 + simRand() * 3, squash: 0, squashV: 0, hop: 0, spin: 0, t: simRand() * 10,
       temper: simRand(), act: null, actT: 0, actDur: 0, actW: 0, actSeed: simRand() * 10,
     };
     // (its joints' limits, applied last: rom.js)
@@ -237,7 +238,7 @@ export class Clappers {
       if (!c.alive) continue;
       if (farFrom(P, c.pos) && !c.held) continue; // (far from the Courier, a clapperjar rests where it is, as the jellies and wisps do: the deep clean's tick profile)
       c.prevPos.copy(c.pos);
-      if (c.held || c.pinned) { // in the god hand's grip, or anchored: no walking, no falling
+      if (c.held || c.pinned || c.dueling) { // in the god hand's grip, anchored, or in a puzzle duel (world/duel/duelsession.js pin): no walking, no falling
         if (c.held) { c.pos.copy(c.holdPos); c.state = 'knocked'; c.spin = Math.sin(c.t * 9) * 0.4; c.speed = 0; }
         c.grounded = false; c.kv.set(0, 0, 0); c.vy = 0; c.peakY = c.pos.y;
         c.body.setNextKinematicTranslation({ x: c.pos.x, y: c.pos.y + (HALF + RADIUS) * C.scale, z: c.pos.z });
@@ -611,9 +612,9 @@ export class Clappers {
         // (it watches them, unless it is busy with itself: then it looks where its act looks)
         const wantLook = (['idle', 'taunt', 'cower', 'stunned'].includes(c.state)
           ? THREE.MathUtils.clamp(wrap(Math.atan2(player.x - c.pos.x, player.z - c.pos.z) - c.heading), -1.2, 1.2) : 0) * (1 - 0.85 * c.actW) + A.look;
-        c.look = THREE.MathUtils.damp(c.look, c.state === 'stunned' ? Math.sin(c.t * 5) * 0.8 : wantLook, 6, dt);
+        c.headTurn = THREE.MathUtils.damp(c.headTurn, c.state === 'stunned' ? Math.sin(c.t * 5) * 0.8 : wantLook, 6, dt);
         const up = _v.copy(UP).applyQuaternion(c.headInv);
-        b.head.quaternion.multiply(_q.setFromAxisAngle(up.normalize(), c.look));
+        b.head.quaternion.multiply(_q.setFromAxisAngle(up.normalize(), c.headTurn)); // (`headTurn`, never `look`: a creature's `look` is its look's object, the duel view's elites write to it)
         const hinge = _v.copy(X).applyQuaternion(c.headInv);
         b.head.quaternion.multiply(_q.setFromAxisAngle(hinge.normalize(), -lid));
       }
@@ -758,8 +759,11 @@ export class Clappers {
   }
 
   /** `custom`, if given, comes apart the jar in place of the usual burst of shards (a zandatsu cuts it into chunks instead). */
+  goWrong(c, aspect, shiny = false) { return goWrongClapper(this, c, aspect, shiny); } // (an aberrant clapperjar: creatures/clapperaberrant.js)
   hit(c, point, dir, power = 1, cause = 'shot', custom = null) {
     if (!c.alive) return;
+    if (c.aberrant && !c.dataBugMended) { if (point) this.game.glyphs?.pop('ward', point.clone(), { color: 0xffffff, size: 0.7, life: 0.7, float: 0.25, burst: true, ring: true }); return; } // (an aberrant takes no blow in the world: its duel is how it is met, creatures.js strike)
+    if (c.aberrant || c.dataBugMended) this.game.creatures?.remove(c); // (out of the registry with its body: goWrong)
     c.alive = false;
     if (point) this.game.vfx?.hit({ ent: c, kind: 'clapper', cause, point, dir, power, kill: true }); // (vfx/library.js 'hit.*')
     this.dropJob(c);

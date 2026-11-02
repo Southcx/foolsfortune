@@ -27,11 +27,12 @@ import { phaseAt } from '../../progress/weather.js';
 import { WEIR_SPAWN } from '../../tools/sondelass/angling/weir.js';
 import { rollShiny } from '../../progress/duel/drops.js';
 import { stream } from '../../core/rng.js';
+import { today } from '../../core/calendar.js';
 const simRand = stream('world/duel/duelfoes'); // (the simulation's chance: core/rng.js, the same twice)
 
 /** drinkY: how far above a blot (m) a Wisp drinks it; scan: real s between looks; test: the test Wisp's home and its chest, m from the
  *  dunes' spawn (south of the pond, short of the Dunes' own Wisps at 60 to 86 m). */
-export const DUEL_FOES = { drinkY: 2.5, scan: 0.5, test: { dx: 18, dz: -24, chest: [12, -19] },
+export const DUEL_FOES = { drinkY: 2.5, scan: 0.5, test: { dx: 18, dz: -24, chest: [12, -19] }, clap: { feeling: 'mirth', strength: 0.5 },
   pull: { near: 4, far: 6, fill: 1.5, drain: 0.75 } }; // (the pull: m, m, real s from 0 to 1 inside near, real s from 1 to 0 outside far: PUZZLE-DUELS.md 16.3)
 
 export class DuelFoes {
@@ -67,6 +68,7 @@ export class DuelFoes {
   update() {
     const g = this.game, W = g.wisps;
     this.updatePull(g.rawDt ?? 1 / 60);
+    this.clapperWrong();
     if (!W) return;
     // the test Wisp, by the Weir (DEBUG): stood once, kept aberrant each time it forms again
     if (!this.test && g.mode === 'debug' && g.dunes) {
@@ -88,6 +90,19 @@ export class DuelFoes {
       S.wash(s, 'creature'); // (the blot spent: drunk, not mopped, so the ledger never counts it)
       g.events?.emit('wisp.drink', { field: s.field, aspect: c.grade, at: [s.x, s.y, s.z], by: 'creature' });
     }
+  }
+
+  /** A clapperjar goes wrong in Mirth (Dovina's G1: the clay folk that clap keep time, and a laugh that will not stop is Mirth's): while
+   *  the weather over the workshop is Mirth at DUEL_FOES.clap.strength or more, one clapperjar near the Courier goes aberrant, once a
+   *  game day, one at a time. Its rules are the kernel's (RULESETS.clapperjar); its body joins the registry (creatures/clappers.js goWrong). */
+  clapperWrong() {
+    const g = this.game, C = g.clappers, P = g.player; if (!C?.list?.length || !P || this.clapDay === today()) return;
+    if (C.list.some((c) => c.alive && c.aberrant && !c.dataBugMended)) return;
+    const w = g.weather?.here?.(P.pos), K = DUEL_FOES.clap; if (w?.aspect !== K.feeling || (w.strength ?? 0) < K.strength) return;
+    let pick = null, best = 30; for (const c of C.list) { const d = c.alive && !c.held && !c.raider ? c.pos.distanceTo(P.pos) : Infinity; if (d < best) { best = d; pick = c; } }
+    if (!pick) return;
+    this.clapDay = today(); C.goWrong(pick, 'mirth', rollShiny(simRand));
+    g.events?.emit('clapper.wrong', { at: [+pick.pos.x.toFixed(1), +pick.pos.y.toFixed(1), +pick.pos.z.toFixed(1)], by: 'environment' });
   }
 
   /** Its flame goes wrong: aberrant (a data bug again if it was mended), its grade the weather's feeling where it drank. */

@@ -40,7 +40,7 @@ const PAGE = { title: 'THE SPARRING CIRCLE', sub: 'your loadout, a stance or a s
 const STANCES = [['still', 'Still', 'Takes every blow.'], ['guard', 'Guard', 'Blocks a blow from in front: strike from the side or behind.'], ['aberrant', 'Aberrant', 'Stands wrong. Step close and the duel begins.']]; // (the third: a practice puzzle duel, South 2026-10-27; words placeholders for Espada's)
 /** The practice duel's difficulty, shown under the Aberrant row while it is worn (Dovina's PRACTICE, progress/duel/rulesets.js; read by the
  *  duel's session at its open as `practicePick`). Words placeholders for Espada's. */
-const PRACTICE_PICKS = [['idle', 'Idle', 'It never moves. Try the verbs and the skills.'], ['plain', 'Plain', 'A small board and a plain player.'], ['wisp', 'Wisp', "The Lantern Wisp's board."], ['jelly', 'Slip jelly', "An aberrant slip jelly's board: slime, and a lot of it."], ['clap', 'Clapperjar', "An aberrant clapperjar's board: it keeps time to the music."]];
+const PRACTICE_PICKS = [['idle', 'Idle', 'It never moves. Practise the moves and skills here.'], ['plain', 'Plain', 'A small board and a plain opponent.'], ['wisp', 'Wisp', "The Lantern Wisp's board."], ['jelly', 'Slip jelly', "An aberrant slip jelly's board. Expect a lot of slime."], ['clap', 'Clapperjar', "An aberrant clapperjar's board."]];
 const _v = new THREE.Vector3();
 
 export class StrawmanStrings {
