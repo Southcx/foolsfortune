@@ -126,7 +126,7 @@ export class Ostraca {
     if (this.s.opened) this.open(true);
     { const at = c.clone().add(_v.set(0, 0, -s + 0.6)); at.y = D.heightAt(at.x, at.z); const st = this.addStele(STELAE.find((x2) => x2.id === 'stele.sealed'), at, c.clone()); if (st) st.look.group.visible = !!door.open; } // (on the sand where it stands, facing the room; drawn once the door is open: shut, nothing sees in, and it is not read through the wall)
   }
-  /** The fork rang in the door: the slab sinks into the sand (once, kept). */
+  /** The Dreamvane's fork struck at the sealed door: the door opens (once, kept). */
   open(quiet = false) {
     const g = this.game, d = this.door; if (!d || d.open) return;
     d.open = true; d.m.visible = false; g.physics.world.removeCollider(d.col, true);

@@ -66,7 +66,7 @@ export function anglingRules({ on, L, log, where }) {
     else if (e.cls === 'large') log.say('angle', `Size: large.`);
     if (e.first) log.say('record', `Logged: your first ${sp.name}. ${sp.blurb}`);
     else if (r === 'beat' || r === 'small') log.say('record', `New record for the ${sp.name}: ${cm}.`);
-    if (e.legend) log.say('god', 'The Drowned Lachryma comes apart in your hands, and the workshop is a little quieter.');
+    if (e.legend) log.say('god', 'Legendary catch!');
   });
   // a landed fish let go (released by default; F keeps it: the owner, 2026-10-11, ANGLING.md 5): half again of the landing's Possession experience, never cubes
   on('angle.release', (e) => { if (e.by !== 'courier') return; L.inc('fish.release'); L.inc(`fish.release.${e.species}`);
@@ -75,5 +75,5 @@ export function anglingRules({ on, L, log, where }) {
   on('angle.mooch', (e) => { L.inc('angle.mooch'); L.inc(`angle.mooch.${e.echo}`); log.say('angle', `The lure carries an echo of ${BY_SPECIES[e.echo].name}.`); });
   on('angle.landed', (e) => L.inc('fish.lachryma', e.baubles));
   on('angle.tide', (e) => { L.inc('angle.tide'); L.inc(`angle.tide.${e.phase}`); if (e.near) log.say('angle', `Tide: ${e.phase === 'low' ? 'lowest' : e.phase === 'high' ? 'full' : e.phase}.`); });
-  on('angle.legend', () => log.say('god', 'Something vast turns over in the Well.'));
+  on('angle.legend', () => log.say('god', 'The Drowned Lachryma has appeared in the Weir\'s Well.'));
 }

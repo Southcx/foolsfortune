@@ -26,7 +26,7 @@ export function lockheartOutcomeRules({ on, L, log }) {
   });
   on('lockheart.outcome', (e) => {
     L.inc(`lockheart.out.${e.outcome}`); L.hi('lockheart.rank', e.rank);
-    const O = { dud: 'Dud. Only a moth comes out.', bite: 'Bite. The Lockheart drains your pool.', spill: 'Lachryma spilled.', cubes: `${plural(e.n, 'cube')} poured out.`, mend: 'Pool refilled.',
+    const O = { dud: 'Dud. Nothing inside.', bite: 'Bite. The Lockheart drains your pool.', spill: 'Lachryma spilled.', cubes: `${plural(e.n, 'cube')} poured out.`, mend: 'Pool refilled.',
       daze: `Daze ring released${e.n ? `. ${plural(e.n, 'thing')} dazed` : ''}.`, hush: `Hush released${e.n ? `. ${plural(e.n, 'thing')} asleep` : ''}.`, kin: `${e.n ? `${plural(e.n, 'creature')} now treat` : 'No creature nearby treats'} you as kin.`,
       spirit: `${e.n > 1 ? `${e.n} smoke spirits summoned` : 'Smoke spirit summoned'}.`, chest: 'A chest drops from the air!', nuke: `OVERLOAD!${e.n ? ` ${plural(e.n, 'thing')} caught in the blast.` : ''}` };
     log.say(e.rank >= 4 ? 'ach' : 'luck', O[e.outcome] || e.outcome, { tone: e.rank >= 4 ? '#ff5ad0' : undefined });
