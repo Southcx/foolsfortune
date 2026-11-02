@@ -3,3 +3,6 @@
 - **Grain's species key.** Petra draws grain by `c.kind` at registration (creatures.js `add`). The slip jelly's kind is `slipjelly`
   (in SPECIES); the Lantern Wisp's is `wisp` (SPECIES has `lanternwisp`), so it draws none until Dovina adds `wisp`.
 - **Gall's linger.** The water's shares never fade today (world/garden/water.js), so `fadeK` has nothing to slow. It goes in when they do.
+- **The garden sweep (v400, after Dovina's how-to fix): 152 pass, 2 fail**, both failing on v398 too, so neither is this round's:
+  `paint: slate lays slate under the hand` (the stroke landed loam) and `orbit: take() refuses a seed not earned` (null). Morning work,
+  Dovina's sweep or the runtime's, whichever the cause turns out to be.
