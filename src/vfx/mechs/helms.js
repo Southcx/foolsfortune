@@ -6,7 +6,9 @@
 // aside while it is worn, its plumes a chain of bones each, sprung toward their rest shape and swung by the frame's own motion (verlet,
 // as hair and capes are). Each is one animal's spirit on a sengoku bowl and a knight's crest, told from 40 m by its silhouette alone:
 // big confident shapes at a head's proportion (South, 2026-11-02, on the first set: "WAY too big and wide ... Maintain normal head
-// proportions"). FACELESS AND FLOATING (South: "it was much cooler when the mech didnt have a face and was just a floating helmet, kind
+// proportions"; then "still too wide and about 20% too large ... a little too round, please make them icosahedron derived ... Chunky,
+// battle ready, not dainty and fragile"): every bowl an icosahedron's dome, flat-shaded so each facet is a plate; the lames flat; horns,
+// antlers and tusks thick five-sided beams ending in cut points; every bar and spar heavy; the plumes few and broad. FACELESS AND FLOATING (South: "it was much cooler when the mech didnt have a face and was just a floating helmet, kind
 // of like the automatons from FFXI puppetmaster job"): under every brim only the dark of the empty shell and one faint light deep in it
 // (lit with the cradle); the neck is hidden and the helm hangs over the collar with a gap, bobbing slowly. Eight:
 //   stag         Honda Tadakatsu's antlers made heavy: thick branching beams about two heads across, a gold burr at each root, a
@@ -46,7 +48,7 @@ export const HELM_LOOK = {
   bone: 0xe6dccb, ivory: 0xd2c3a6, grey: 0x9a938a, dark: 0x3e3834, cord: 0x6a4a3a,
   trim: 0xffffff, trimD: 0xa8a8a8, trimDD: 0x6a6a6a, terracotta: 0xa45a3a, core: 0x1c1411, coreTone: 0x6a6662, gold: 0xd9ab4c,
   plume: { ivory: 0xece2cf, ochre: 0xc89a52, rust: 0xa45c3c, slate: 0x6c7076, umber: 0x5a4030 },
-  fit: 0.72, float: 0.42, bob: [0.06, 1.6], // (a head's size; floated over the collar; the bob's height in the head's frame and its rate)
+  fit: 0.58, narrow: 0.86, float: 0.42, bob: [0.06, 1.6], detail: 1, facets: 5, chunk: 1.4, // (a head's size; floated over the collar; the bob's height in the head's frame and its rate)
   gravity: 9.8, damping: 0.94, stiff: [0.32, 0.05],
 };
 const L = HELM_LOOK, PI = Math.PI, V = THREE.Vector3;
@@ -72,33 +74,47 @@ function bez(ctrl, n = 8) {
   return out;
 }
 /** A tube tapering from r0 to r1 along points (a horn, a beam, a tusk), balls at its knees and a rounded tip. */
-function taper(P, pts, r0, r1, o = {}, seg = 9) {
-  const n = pts.length - 1;
+function taper(P, pts, r0, r1, o = {}, seg = HELM_LOOK.facets) {
+  const n = pts.length - 1; r0 *= HELM_LOOK.chunk; r1 *= HELM_LOOK.chunk; // (battle-ready: thick, few sides)
   for (let i = 0; i < n; i++) {
     const a = new V(...pts[i]), b = new V(...pts[i + 1]), d = b.clone().sub(a), len = d.length(); if (len < 1e-4) continue;
     const ra = r0 + (r1 - r0) * (i / n), rb = r0 + (r1 - r0) * ((i + 1) / n);
     _q.setFromUnitVectors(_Y, d.normalize()); _eu.setFromQuaternion(_q, 'YXZ');
     P.geo(new THREE.CylinderGeometry(rb, ra, len * 1.02, seg, 1), { ...o, at: a.clone().add(b).multiplyScalar(0.5).toArray(), rot: [_eu.x, _eu.y, _eu.z] });
-    if (i > 0) P.ball(ra, { ...o, at: pts[i] }, seg, 6);
+    if (i > 0) P.geo(gem(ra), { ...o, at: pts[i] });
   }
-  P.ball(r1, { ...o, at: pts[n] }, seg, 6);
+  P.geo(new THREE.ConeGeometry(r1 * 1.15, r1 * 3, seg, 1).translate(0, r1 * 1.5, 0), { ...o, at: pts[n], rot: (() => { const d = new V(...pts[n]).sub(new V(...pts[n - 1])).normalize(); _q.setFromUnitVectors(_Y, d); _eu.setFromQuaternion(_q, 'YXZ'); return [_eu.x, _eu.y, _eu.z]; })() }); // (a cut point, not a bead)
 }
 /** A point a share t along a polyline. */
 const along = (pts, t) => { const f = t * (pts.length - 1), i = Math.min(pts.length - 2, Math.floor(f)), k = f - i; return new V(...pts[i]).lerp(new V(...pts[i + 1]), k).toArray(); };
 const add = (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]];
 
-/** A bowl of `ribs` ridges (a suji-bachi), radius r, height h, its rim at y 0; `pointed` draws its crown up; `sc` stretches it. */
-function bowl(p, r, h, c, { ribs = 0, ribC = L.grey, pointed = 0, sc = [1, 1, 1] } = {}) {
-  const prof = []; for (let i = 0; i <= 12; i++) { const a = (i / 12) * PI / 2; prof.push([Math.max(0.001, Math.cos(a) * r * (1 - pointed * (i / 12) ** 2)), Math.sin(a) * h + pointed * h * 0.6 * (i / 12) ** 3]); }
-  p.lathe(prof, { c, sc }, 32);
-  for (let i = 0; i < ribs; i++) { const a = (i / ribs) * PI * 2; p.lathe(prof.map(([x, y]) => [x * 1.015, y]).slice(0, 11), { c: ribC, rot: [0, a, 0], sc: [0.04 * sc[0], sc[1], sc[2]] }, 3); }
+/** A faceted knuckle (a knee of a horn, a boss): an icosahedron, flat-shaded. */
+const gem = (r) => { const g = new THREE.IcosahedronGeometry(r, 0); g.computeVertexNormals(); return g; };
+/** The helm's shell from an icosahedron (South, 2026-11-02: "a little too round, please make them icosahedron derived"): its upper
+ *  half (the faces whose middles stand over the rim), stretched to radius r and height h, flat-shaded so every facet is a plate. */
+function icoDome(r, h, detail = HELM_LOOK.detail) {
+  const g = new THREE.IcosahedronGeometry(1, detail), P = g.attributes.position.array, keep = [];
+  for (let i = 0; i < P.length; i += 9) if ((P[i + 1] + P[i + 4] + P[i + 7]) / 3 > -0.12) for (let k = 0; k < 9; k += 3) keep.push(P[i + k] * r, Math.max(P[i + k + 1], -0.12) * h, P[i + k + 2] * r);
+  const out = new THREE.BufferGeometry(); out.setAttribute('position', new THREE.Float32BufferAttribute(keep, 3)); out.computeVertexNormals(); g.dispose();
+  return out;
+}
+/** A bowl, radius r, height h, its rim at y 0: the icosahedron's dome; `ribs` lays every other facet in `ribC` (a suji-bachi's
+ *  plates, here the facets themselves); `sc` stretches it. */
+function bowl(p, r, h, c, { ribs = 0, ribC = L.grey, sc = [1, 1, 1] } = {}) {
+  const d = icoDome(r, h);
+  if (!ribs) { p.geo(d, { c, sc }); return; }
+  const P = d.attributes.position.array, A = [], B2 = []; // (every other facet in the second tone: the plates of a suji-bachi read as facets)
+  for (let i = 0; i < P.length; i += 9) (((i / 9) % 2) ? B2 : A).push(...P.slice(i, i + 9));
+  for (const [arr, col] of [[A, c], [B2, ribC]]) { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(arr, 3)); g.computeVertexNormals(); p.geo(g, { c: col, sc }); }
+  d.dispose();
 }
 /** The shikoro: `n` lames hanging from the rim, each wider and lower, open at the face (from -gap to gap round +Z). */
 function shikoro(p, r, n, drop, flare, cs, cord, gap = 1.05) {
   for (let i = 0; i < n; i++) {
     const Rr = r * (1.0 + i * flare), y = -i * drop, len = PI * 2 - gap * 2;
-    p.geo(new THREE.CylinderGeometry(Rr, Rr + flare * r * 0.9, drop * 1.06, 32, 1, true, gap, len), { at: [0, y - drop / 2, 0], c: cs[i % cs.length] });
-    p.geo(new THREE.TorusGeometry(Rr + flare * r * 0.9, 0.03, 4, 32, len).rotateX(PI / 2).rotateY(-(PI / 2 + gap)), { at: [0, y - drop, 0], c: cord });
+    p.geo(new THREE.CylinderGeometry(Rr, Rr + flare * r * 0.9, drop * 1.06, 10, 1, true, gap, len), { at: [0, y - drop / 2, 0], c: cs[i % cs.length] });
+    p.geo(new THREE.TorusGeometry(Rr + flare * r * 0.9, 0.06, 4, 10, len).rotateX(PI / 2).rotateY(-(PI / 2 + gap)), { at: [0, y - drop, 0], c: cord });
   }
 }
 /** A flat outline (x, y) extruded thin and placed: a wing, an ear, a fukigaeshi. Mirrored for the right side by s. */
@@ -166,7 +182,7 @@ function tyrant(B) {
 function mammoth(B) {
   const { p, t, g, c } = B;
   bowl(p, R, R * 1.15, L.ivory);
-  p.ball(R * 0.62, { at: [0, R * 1.0, -0.35], sc: [1.05, 0.8, 1], c: L.ivory }, 18, 12); // (the high cranium's second dome)
+  p.geo(icoDome(R * 0.62, R * 0.62), { at: [0, R * 0.8, -0.35], sc: [1.05, 0.9, 1], c: L.ivory }); // (the high cranium's second dome, faceted)
   p.ring(R * 0.62, 0.06, { at: [0, R * 0.95, -0.35], c: L.grey }, 24);
   g.ring(R, 0.07, { at: [0, 0.03, 0] }, 32);
   shikoro(p, R, 4, 0.3, 0.1, [L.grey, L.ivory], L.cord);
@@ -271,7 +287,7 @@ function szyszak(B) {
   g.box(R * 2.0, 0.06, 0.1, { at: [0, 0.03, R * 1.38] }, 0.02);
   g.box(0.14, 1.45, 0.09, { at: [0, -0.36, R * 1.1] }, 0.03); g.ball(0.15, { at: [0, 0.36, R * 1.1] }, 10, 6); g.cone(0.14, 0.3, { at: [0, -1.15, R * 1.1], rot: [PI, 0, 0] }, 4); // (the sliding nasal)
   for (const s of [-1, 1]) { p.box(0.1, 1.05, 0.85, { at: [s * R * 0.92, -0.55, R * 0.42], rot: [0, 0, s * 0.12], c: L.grey }, 0.04); g.ball(0.08, { at: [s * R * 0.98, -0.28, R * 0.6] }, 8, 6); }
-  for (let i = 0; i < 5; i++) p.geo(new THREE.CylinderGeometry(R * (0.95 + i * 0.05), R * (1.0 + i * 0.06), 0.26, 24, 1, true, PI / 2 + 0.3, PI * 1.0 - 0.6), { at: [0, -0.08 - i * 0.22, -0.05 * i], rot: [0.12 * i, 0, 0], c: i % 2 ? L.grey : L.bone }); // (the lobster-tail)
+  for (let i = 0; i < 5; i++) p.geo(new THREE.CylinderGeometry(R * (0.95 + i * 0.05), R * (1.0 + i * 0.06), 0.26, 8, 1, true, PI / 2 + 0.3, PI * 1.0 - 0.6), { at: [0, -0.08 - i * 0.22, -0.05 * i], rot: [0.12 * i, 0, 0], c: i % 2 ? L.grey : L.bone }); // (the lobster-tail)
   // the crest: an eagle's two wings either side of the plume holder
   for (const s of [-1, 1]) {
     const wing = []; for (let i = 0; i <= 7; i++) { const a = i / 7; wing.push([0.2 + a * 1.5, 0.1 + a * 2.0 + Math.sin(a * PI) * 0.3]); }
@@ -286,8 +302,10 @@ function szyszak(B) {
 const BUILD = { stag, tyrant, mammoth, sabretooth, pterosaur, triceratops, kabuto, szyszak };
 function build(id) {
   const B = { p: new Piece(), t: new Piece(), g: new Piece(), lab: new Piece(), c: new Piece(), e: new Piece(), plumes: [] };
+  for (const P of [B.g, B.t, B.p]) { const rod = P.rod.bind(P); P.rod = (a, b, r, o, seg) => rod(a, b, r * HELM_LOOK.chunk * 1.2, o, 5); } // (every bar and spar chunky)
   BUILD[id](B);
-  B.c.ball(R * 0.92, { at: [0, -0.15, -0.05], sc: [1, 0.85, 1] }, 18, 12); // (the void under every helm: no face, the dark inside the shell, FFXI's automatons)
+  for (const pl of B.plumes) { pl.w *= 1.45; pl.count = Math.max(2, Math.round((pl.count || 1) * 0.6)); pl.spread = (pl.spread || 0) * 1.25; if (pl.tint) pl.tint = pl.tint.filter((_, i) => i % 2 === 0 || pl.tint.length <= 3); } // (broad and few: battle-ready, not dainty)
+  B.c.geo(gem(R * 0.86), { at: [0, -0.1, -0.1], sc: [1, 0.7, 1] }); // (the void under every helm: no face, the dark inside the shell, FFXI's automatons)
   B.e.ball(0.16, { at: [0, -0.3, R * 0.35] }, 10, 8); // (a faint light deep in it, lit with the cradle: the only sign something is inside)
   return B;
 }
@@ -393,7 +411,7 @@ export function wearHelm(body, id, scene) {
   const half = Math.max(_b.max.x - _b.min.x, _b.max.z - _b.min.z) / 2, tall = _b.max.y - _b.min.y;
   const k = Math.max(half, tall * 0.42) * HELM_LOOK.fit; // (metres a head unit: the bowl a head's size, a tall narrow head given its due)
   const root = new THREE.Group(); root.name = 'mech-helm';
-  const y0 = _b.min.y + tall * HELM_LOOK.float; root.position.set((_b.min.x + _b.max.x) / 2, y0, (_b.min.z + _b.max.z) / 2); root.scale.setScalar(k); // (floating: a gap over the collar, the neck gone)
+  const y0 = _b.min.y + tall * HELM_LOOK.float; root.position.set((_b.min.x + _b.max.x) / 2, y0, (_b.min.z + _b.max.z) / 2); root.scale.set(k * HELM_LOOK.narrow, k, k); // (floating: a gap over the collar, the neck gone)
   const B = build(id), mats = body.mats || {}, own = [];
   const mk = (m) => { own.push(m); return m; };
   const P = mats.porcelain || mats.p || mk(new THREE.MeshPhysicalMaterial({ name: 'mech-helm-porcelain', vertexColors: true, roughness: 0.3, clearcoat: 0.6, side: THREE.DoubleSide }));
