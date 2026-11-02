@@ -120,7 +120,7 @@ export function gardenRules({ on, L, log }) {
     else if (e.band === 'briar') { L.inc('garden.briar'); log.say('info', `Briar spreading on ${planet(e.planetoid)}.`, { key: `briar.${e.planetoid}`, throttle: 10 }); }
   });
   on('garden.thorn', (e) => log.say('info', `Thorns sprouted on ${planet(e.planetoid)}.`, { key: `thorn.${e.planetoid}`, throttle: 30 }));
-  on('garden.scorch', (e) => log.say('info', `The Fury rain scorched the moss on ${planet(e.planetoid)} to ash.`, { key: `scorch.${e.planetoid}`, throttle: 30 })); // (G111: the words a placeholder, Espada's to rule)
+  on('garden.scorch', (e) => log.say('info', `Moss on ${planet(e.planetoid)} burned to ash in Fury's rain.`, { key: `scorch.${e.planetoid}`, throttle: 30 })); // (G111; Espada's, 2026-11-02)
   on('garden.prune', (e) => { if (e.by === 'courier') { L.inc('garden.prune'); log.say('loot', 'Thorn pruned. Briar cutting kept.', { key: 'prune', throttle: 2 }); } });
   on('garden.briar.held', (e) => { if (e.by === 'courier') L.hi('garden.briar.held', e.days); });
   on('garden.harmony.ask', (e) => {

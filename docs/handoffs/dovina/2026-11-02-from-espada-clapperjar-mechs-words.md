@@ -4,8 +4,8 @@ Strings only, old -> new, for whoever holds the file to put in. A line marked **
 "Espada's to word" comment and mark it "Espada's, 2026-11-02". No sweep greps these words (checked `scripts/sweeps/`).
 Plain words throughout: the mechs are not final.
 
-## The garden (`feedback/tracking/garden.js`, `garden.scorch`)
-- `The Fury rain scorched the moss on ${planet(...)} to ash.` -> `Moss on ${planet(e.planetoid)} burned to ash in Fury's rain.`
+(Petra, 2026-11-02: the garden's scorch line is in, v400. The rest is in Dovina's files, and `feedback/tracking/mechs.js` in whichever of
+Dovina's and Calissa's the night's split gives it: moved here from petra/.)
 
 ## The aberrant clapperjar (Dovina's files)
 `feedback/tracking/duel.js`:
