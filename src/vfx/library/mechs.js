@@ -63,8 +63,8 @@ export const MECH_SPECIAL_EFFECTS = {
   ] },
   'mech.scan.sweep': { layers: [
     // PRIMARY: a cone of thin rings from the head (its tip) widening to the giant (its base), swept out once
-    L({ type: 'shape', form: 'cone', face: 'dir', ramp: 'ink', main: 'ripple', tile: [1, 10], scroll: [0, 3], dur: 0.85, stretch: [0.5, 1, 0.5], // (a dark core under the light: it reads on bright sand)
-      edgeV: [0.05, 0.25], rim: -0.4, erode: [[0, 0.5], [0.15, 0.1], [0.6, 0.2], [1, 1]], glow: 0.5, core: 0, add: 0, order: 5 }),
+    L({ type: 'shape', form: 'cone', face: 'dir', ramp: 'ink', main: 'ripple', tile: [1, 10], scroll: [0, 3], dur: 0.7, stretch: [0.4, 1, 0.4], // (a thin dark ring-core under the light, eroded to the rings only: enough to read on bright sand, never a tunnel)
+      edgeV: [0.05, 0.25], rim: -0.4, erode: [[0, 0.6], [0.15, 0.42], [0.5, 0.55], [1, 1]], glow: 0.5, core: 0, add: 0, order: 5 }),
     L({ type: 'shape', form: 'cone', face: 'dir', ramp: 'divination', main: 'ripple', tile: [1, 10], scroll: [0, 3], mask: 'noise', maskTile: [2, 2], dur: 0.85, stretch: [0.55, 1, 0.55],
       edgeV: [0.05, 0.25], rim: -0.5, erode: [[0, 0.5], [0.15, 0.06], [0.6, 0.12], [1, 1]], rampShift: COOL, glow: 2.2, core: 0.3, add: 1, back: 0.6 }),
     L({ type: 'shape', form: 'cone', face: 'dir', ramp: 'divination', main: 'rays', tile: [24, 1], scroll: [0.3, 0], at: 0.08, dur: 0.6, stretch: [0.3, 1, 0.3],
